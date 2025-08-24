@@ -6,7 +6,7 @@
     <derivedcompoundref refid="struct_car" prot="public" virt="non-virtual">Car</derivedcompoundref>
     <derivedcompoundref refid="struct_truck" prot="public" virt="non-virtual">Truck</derivedcompoundref>
     <sectiondef kind="protected-attrib">
-      <memberdef kind="variable" id="struct_vehicle_1ad7970f528d429f6fc1725173e93a77c2" prot="protected" static="no" mutable="no">
+      <memberdef kind="variable" id="struct_vehicle_1ad7970f528d429f6fc1725173e93a77c2" prot="protected" static="no" mutable="no" thread_local="no">
         <type>
           <ref refid="struct_object" kindref="compound">Object</ref>
         </type>

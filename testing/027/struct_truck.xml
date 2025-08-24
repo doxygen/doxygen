@@ -4,7 +4,7 @@
     <compoundname>Truck</compoundname>
     <basecompoundref refid="struct_vehicle" prot="public" virt="non-virtual">Vehicle</basecompoundref>
     <sectiondef kind="protected-attrib">
-      <memberdef kind="variable" id="struct_truck_1ad0ac321609dda1a6c552488b05ec7ac8" prot="protected" static="no" mutable="no">
+      <memberdef kind="variable" id="struct_truck_1ad0ac321609dda1a6c552488b05ec7ac8" prot="protected" static="no" mutable="no" thread_local="no">
         <type>
           <ref refid="struct_vehicle" kindref="compound">Vehicle</ref>
         </type>

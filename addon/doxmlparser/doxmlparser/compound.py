@@ -3741,7 +3741,7 @@ class memberdefType(GeneratedsSuper):
     __hash__ = GeneratedsSuper.__hash__
     subclass = None
     superclass = None
-    def __init__(self, kind=None, id=None, prot=None, static=None, extern=None, strong=None, const=None, explicit=None, inline=None, refqual=None, virt=None, volatile=None, mutable=None, noexcept=None, noexceptexpression=None, nodiscard=None, constexpr=None, consteval=None, constinit=None, readable=None, writable=None, initonly=None, settable=None, privatesettable=None, protectedsettable=None, gettable=None, privategettable=None, protectedgettable=None, final=None, sealed=None, new=None, add=None, remove=None, raise_=None, optional=None, required=None, accessor=None, attribute=None, property=None, readonly=None, bound=None, removable=None, constrained=None, transient=None, maybevoid=None, maybedefault=None, maybeambiguous=None, templateparamlist=None, type_=None, definition=None, argsstring=None, name=None, qualifiedname=None, read=None, write=None, bitfield=None, reimplements=None, reimplementedby=None, qualifier=None, param=None, enumvalue=None, requiresclause=None, initializer=None, exceptions=None, briefdescription=None, detaileddescription=None, inbodydescription=None, location=None, references=None, referencedby=None, gds_collector_=None, **kwargs_):
+    def __init__(self, kind=None, id=None, prot=None, static=None, extern=None, strong=None, const=None, explicit=None, inline=None, refqual=None, virt=None, volatile=None, mutable=None, thread_local=None, noexcept=None, noexceptexpression=None, nodiscard=None, constexpr=None, consteval=None, constinit=None, readable=None, writable=None, initonly=None, settable=None, privatesettable=None, protectedsettable=None, gettable=None, privategettable=None, protectedgettable=None, final=None, sealed=None, new=None, add=None, remove=None, raise_=None, optional=None, required=None, accessor=None, attribute=None, property=None, readonly=None, bound=None, removable=None, constrained=None, transient=None, maybevoid=None, maybedefault=None, maybeambiguous=None, templateparamlist=None, type_=None, definition=None, argsstring=None, name=None, qualifiedname=None, read=None, write=None, bitfield=None, reimplements=None, reimplementedby=None, qualifier=None, param=None, enumvalue=None, requiresclause=None, initializer=None, exceptions=None, briefdescription=None, detaileddescription=None, inbodydescription=None, location=None, references=None, referencedby=None, gds_collector_=None, **kwargs_):
         self.gds_collector_ = gds_collector_
         self.gds_elementtree_node_ = None
         self.original_tagname_ = None
@@ -3773,6 +3773,8 @@ class memberdefType(GeneratedsSuper):
         self.volatile_nsprefix_ = None
         self.mutable = _cast(None, mutable)
         self.mutable_nsprefix_ = None
+        self.thread_local = _cast(None, thread_local)
+        self.thread_local_nsprefix_ = None
         self.noexcept = _cast(None, noexcept)
         self.noexcept_nsprefix_ = None
         self.noexceptexpression = _cast(None, noexceptexpression)
@@ -4109,6 +4111,10 @@ class memberdefType(GeneratedsSuper):
         return self.mutable
     def set_mutable(self, mutable):
         self.mutable = mutable
+    def get_thread_local(self):
+        return self.thread_local
+    def set_thread_local(self, thread_local):
+        self.thread_local = thread_local
     def get_noexcept(self):
         return self.noexcept
     def set_noexcept(self, noexcept):
@@ -4415,6 +4421,9 @@ class memberdefType(GeneratedsSuper):
         if self.mutable is not None and 'mutable' not in already_processed:
             already_processed.add('mutable')
             outfile.write(' mutable=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.mutable), input_name='mutable')), ))
+        if self.thread_local is not None and 'thread_local' not in already_processed:
+            already_processed.add('thread_local')
+            outfile.write(' thread_local=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.thread_local), input_name='thread_local')), ))
         if self.noexcept is not None and 'noexcept' not in already_processed:
             already_processed.add('noexcept')
             outfile.write(' noexcept=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.noexcept), input_name='noexcept')), ))
@@ -4675,6 +4684,11 @@ class memberdefType(GeneratedsSuper):
             already_processed.add('mutable')
             self.mutable = value
             self.validate_DoxBool(self.mutable)    # validate type DoxBool
+        value = find_attr_value_('thread_local', node)
+        if value is not None and 'thread_local' not in already_processed:
+            already_processed.add('thread_local')
+            self.thread_local = value
+            self.validate_DoxBool(self.thread_local)    # validate type DoxBool
         value = find_attr_value_('noexcept', node)
         if value is not None and 'noexcept' not in already_processed:
             already_processed.add('noexcept')

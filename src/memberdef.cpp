@@ -126,6 +126,7 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     bool isInline() const override;
     bool isExplicit() const override;
     bool isMutable() const override;
+    bool isThreadLocal() const override;
     bool isGettable() const override;
     bool isPrivateGettable() const override;
     bool isProtectedGettable() const override;
@@ -675,6 +676,8 @@ class MemberDefAliasImpl : public DefinitionAliasMixin<MemberDef>
     { return getMdAlias()->isExplicit(); }
     bool isMutable() const override
     { return getMdAlias()->isMutable(); }
+    bool isThreadLocal() const override
+    { return getMdAlias()->isThreadLocal(); }
     bool isGettable() const override
     { return getMdAlias()->isGettable(); }
     bool isPrivateGettable() const override
@@ -2831,6 +2834,7 @@ StringVector MemberDefImpl::getLabels(const Definition *container) const
         if      (inlineInfo && isInline())              sl.emplace_back("inline");
         if      (isExplicit())                          sl.emplace_back("explicit");
         if      (isMutable())                           sl.emplace_back("mutable");
+        if      (isThreadLocal())                       sl.emplace_back("thread_local");
         if      (isStatic())                            sl.emplace_back("static");
         if      (isGettable())                          sl.emplace_back("get");
         if      (isProtectedGettable())                 sl.emplace_back("protected get");
@@ -5270,6 +5274,11 @@ bool MemberDefImpl::isExplicit() const
 bool MemberDefImpl::isMutable() const
 {
   return m_memSpec.isMutable();
+}
+
+bool MemberDefImpl::isThreadLocal() const
+{
+  return m_memSpec.isThreadLocal();
 }
 
 bool MemberDefImpl::isGettable() const

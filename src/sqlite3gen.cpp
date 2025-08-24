@@ -189,6 +189,7 @@ const char * table_schema[][2] = {
       "\tvolatile             INTEGER DEFAULT 0, -- 0:no 1:yes\n"
       "\tvirt                 INTEGER DEFAULT 0, -- 0:no 1:virtual 2:pure-virtual\n"
       "\tmutable              INTEGER DEFAULT 0, -- 0:no 1:yes\n"
+      "\tthread_local         INTEGER DEFAULT 0, -- 0:no 1:yes\n"
       "\tinitonly             INTEGER DEFAULT 0, -- 0:no 1:yes\n"
       "\tattribute            INTEGER DEFAULT 0, -- 0:no 1:yes\n"
       "\tproperty             INTEGER DEFAULT 0, -- 0:no 1:yes\n"
@@ -623,6 +624,7 @@ SqlStmt memberdef_insert={
     "volatile,"
     "virt,"
     "mutable,"
+    "thread_local,"
     "initonly,"
     "attribute,"
     "property,"
@@ -682,6 +684,7 @@ SqlStmt memberdef_insert={
     ":volatile,"
     ":virt,"
     ":mutable,"
+    ":thread_local,"
     ":initonly,"
     ":attribute,"
     ":property,"
@@ -1693,6 +1696,7 @@ static void generateSqlite3ForMember(const MemberDef *md, struct Refid scope_ref
   if (md->memberType() == MemberType::Variable)
   {
     bindIntParameter(memberdef_insert,":mutable",md->isMutable());
+    bindIntParameter(memberdef_insert,":thread_local",md->isThreadLocal());
     bindIntParameter(memberdef_insert,":initonly",md->isInitonly());
     bindIntParameter(memberdef_insert,":attribute",md->isAttribute());
     bindIntParameter(memberdef_insert,":property",md->isProperty());

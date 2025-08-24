@@ -73,7 +73,7 @@
       </memberdef>
     </sectiondef>
     <sectiondef kind="var">
-      <memberdef kind="variable" id="018__def_8c_1a96c77f9f3a7baec84b9b8add26a31787" prot="public" static="no" mutable="no">
+      <memberdef kind="variable" id="018__def_8c_1a96c77f9f3a7baec84b9b8add26a31787" prot="public" static="no" mutable="no" thread_local="no">
         <type>int</type>
         <definition>int var</definition>
         <argsstring/>

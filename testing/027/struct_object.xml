@@ -4,7 +4,7 @@
     <compoundname>Object</compoundname>
     <derivedcompoundref refid="struct_vehicle" prot="public" virt="non-virtual">Vehicle</derivedcompoundref>
     <sectiondef kind="private-attrib">
-      <memberdef kind="variable" id="struct_object_1a1b6037fba835e83243ababce426ff9af" prot="private" static="no" mutable="no">
+      <memberdef kind="variable" id="struct_object_1a1b6037fba835e83243ababce426ff9af" prot="private" static="no" mutable="no" thread_local="no">
         <type>int</type>
         <definition>int Object::ref</definition>
         <argsstring/>

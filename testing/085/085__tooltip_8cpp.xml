@@ -53,7 +53,7 @@
       </memberdef>
     </sectiondef>
     <sectiondef kind="var">
-      <memberdef kind="variable" id="085__tooltip_8cpp_1a5cccf7694b5d688466063895f39ee5d1" prot="public" static="no" mutable="no">
+      <memberdef kind="variable" id="085__tooltip_8cpp_1a5cccf7694b5d688466063895f39ee5d1" prot="public" static="no" mutable="no" thread_local="no">
         <type>FILE *</type>
         <definition>FILE* unit</definition>
         <argsstring/>

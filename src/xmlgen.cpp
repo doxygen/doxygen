@@ -904,6 +904,10 @@ static void generateXMLForMember(const MemberDef *md,TextStream &ti,TextStream &
     if (md->isMutable()) t << "yes"; else t << "no";
     t << "\"";
 
+    t << " thread_local=\"";
+    if (md->isThreadLocal()) t << "yes"; else t << "no";
+    t << "\"";
+
     if (md->isInitonly())
     {
       t << " initonly=\"yes\"";
