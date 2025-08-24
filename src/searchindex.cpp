@@ -537,15 +537,6 @@ void SearchIndexExternal::write(const QCString &fileName)
 
 //---------------------------------------------------------------------------------------------
 
-namespace SearchIndexThreadLocal
-{
-  static THREAD_LOCAL bool active = true;
-  bool isActive() { return active; }
-  void setActive(bool b) { active = b; }
-}
-
-//---------------------------------------------------------------------------------------------
-
 void initSearchIndexer()
 {
   bool searchEngine      = Config_getBool(SEARCHENGINE);
