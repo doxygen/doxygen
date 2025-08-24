@@ -2614,11 +2614,13 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
      )
   {
     auto parser { createDocParser() };
+    SearchIndexThreadLocal::setActive(inheritedFrom==nullptr);
     auto ast    { validatingParseDoc(*parser.get(),
                                      briefFile(),briefLine(),
                                      getOuterScope()?getOuterScope():d,
                                      this,briefDescription(),TRUE,FALSE,
                                      QCString(),TRUE,FALSE) };
+    SearchIndexThreadLocal::setActive(true);
     if (!ast->isEmpty())
     {
       ol.startMemberDescription(anchor(),inheritId);
