@@ -2227,50 +2227,6 @@ bool matchTemplateArguments(const ArgumentList &srcAl,const ArgumentList &dstAl)
 
 //---------------------------------------------------------------------------------------
 
-static void findMembersWithSpecificName(const MemberName *mn,
-                                        const QCString &args,
-                                        bool checkStatics,
-                                        const FileDef *currentFile,
-                                        bool checkCV,
-                                        std::vector<const MemberDef *> &members)
-{
-  //printf("  Function with global scope name '%s' args='%s'\n",
-  //       mn->memberName(),args);
-  for (const auto &md_p : *mn)
-  {
-    const MemberDef *md = md_p.get();
-    const FileDef  *fd=md->getFileDef();
-    const GroupDef *gd=md->getGroupDef();
-    //printf("  md->name()='%s' md->args='%s' fd=%p gd=%p current=%p ref=%s\n",
-    //    qPrint(md->name()),args,fd,gd,currentFile,qPrint(md->getReference()));
-    if (
-        ((gd && gd->isLinkable()) || (fd && fd->isLinkable()) || md->isReference()) &&
-        md->getNamespaceDef()==nullptr && md->isLinkable() &&
-        (!checkStatics || (!md->isStatic() && !md->isDefine()) ||
-         currentFile==nullptr || fd==currentFile) // statics must appear in the same file
-       )
-    {
-      bool match=TRUE;
-      if (!args.isEmpty() && !md->isDefine() && args!="()")
-      {
-        const ArgumentList &mdAl = md->argumentList();
-        auto argList_p = stringToArgumentList(md->getLanguage(),args);
-        match=matchArguments2(
-            md->getOuterScope(),fd,&mdAl,
-            Doxygen::globalScope,fd,argList_p.get(),
-            checkCV,md->getLanguage());
-      }
-      if (match)
-      {
-        //printf("Found match!\n");
-        members.push_back(md);
-      }
-    }
-  }
-}
-
-//---------------------------------------------------------------------------------------
-
 GetDefResult getDefs(const GetDefInput &input)
 {
   GetDefResult result;
