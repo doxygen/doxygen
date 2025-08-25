@@ -4,7 +4,7 @@
     <compoundname>Integer</compoundname>
     <basecompoundref prot="public" virt="non-virtual">Object</basecompoundref>
     <sectiondef kind="protected-attrib">
-      <memberdef kind="variable" id="interface_integer_1a35e89216966d8179a1b77f14b8211fda" prot="protected" static="no" mutable="no" thread_local="no">
+      <memberdef kind="variable" id="interface_integer_1a35e89216966d8179a1b77f14b8211fda" prot="protected" static="no" mutable="no">
         <type>int</type>
         <definition>int Integer::integer</definition>
         <argsstring/>

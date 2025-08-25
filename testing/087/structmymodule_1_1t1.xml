@@ -3,7 +3,7 @@
   <compounddef id="structmymodule_1_1t1" kind="type" language="Fortran" prot="public">
     <compoundname>mymodule::t1</compoundname>
     <sectiondef kind="public-attrib">
-      <memberdef kind="variable" id="structmymodule_1_1t1_1a40dabbcb827e13ffbb38bb7e9e5957cc" prot="public" static="no" mutable="no" thread_local="no">
+      <memberdef kind="variable" id="structmymodule_1_1t1_1a40dabbcb827e13ffbb38bb7e9e5957cc" prot="public" static="no" mutable="no">
         <type>integer</type>
         <definition>integer mymodule::t1::publicvariable</definition>
         <argsstring/>

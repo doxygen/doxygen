@@ -3,7 +3,7 @@
   <compounddef id="structs" kind="struct" language="C++" prot="public">
     <compoundname>s</compoundname>
     <sectiondef kind="public-attrib">
-      <memberdef kind="variable" id="structs_1afbd4a62a1d1e5d85ea3fcb5954434f29" prot="public" static="no" mutable="no" thread_local="no">
+      <memberdef kind="variable" id="structs_1afbd4a62a1d1e5d85ea3fcb5954434f29" prot="public" static="no" mutable="no">
         <type>int</type>
         <definition>int s::s</definition>
         <argsstring/>

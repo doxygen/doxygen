@@ -3,7 +3,7 @@
   <compounddef id="namespacem2" kind="namespace" language="Fortran">
     <compoundname>m2</compoundname>
     <sectiondef kind="var">
-      <memberdef kind="variable" id="088__module__var_8f90_1aa9535f64b6a936c2e53e2f4ddd2f7043" prot="private" static="no" mutable="no" thread_local="no">
+      <memberdef kind="variable" id="088__module__var_8f90_1aa9535f64b6a936c2e53e2f4ddd2f7043" prot="private" static="no" mutable="no">
         <type>integer, private</type>
         <definition>integer, private m2::v1</definition>
         <argsstring/>
@@ -17,7 +17,7 @@
         </inbodydescription>
         <location file="088_module_var.f90" line="24" column="1" bodyfile="088_module_var.f90" bodystart="24" bodyend="24"/>
       </memberdef>
-      <memberdef kind="variable" id="088__module__var_8f90_1aab4499a13318c88c757d70bbfc8278e5" prot="public" static="no" mutable="no" thread_local="no">
+      <memberdef kind="variable" id="088__module__var_8f90_1aab4499a13318c88c757d70bbfc8278e5" prot="public" static="no" mutable="no">
         <type>integer</type>
         <definition>integer m2::v2</definition>
         <argsstring/>
@@ -31,7 +31,7 @@
         </inbodydescription>
         <location file="088_module_var.f90" line="26" column="1" bodyfile="088_module_var.f90" bodystart="26" bodyend="26"/>
       </memberdef>
-      <memberdef kind="variable" id="088__module__var_8f90_1a14cb0c2e7f4f108ca3a06b79f6635c5c" prot="private" static="no" mutable="no" thread_local="no">
+      <memberdef kind="variable" id="088__module__var_8f90_1a14cb0c2e7f4f108ca3a06b79f6635c5c" prot="private" static="no" mutable="no">
         <type>integer, private</type>
         <definition>integer, private m2::v3</definition>
         <argsstring/>
@@ -45,7 +45,7 @@
         </inbodydescription>
         <location file="088_module_var.f90" line="28" column="1" bodyfile="088_module_var.f90" bodystart="28" bodyend="28"/>
       </memberdef>
-      <memberdef kind="variable" id="088__module__var_8f90_1a7e7474396674938ae25b1a2300109b1c" prot="public" static="no" mutable="no" thread_local="no">
+      <memberdef kind="variable" id="088__module__var_8f90_1a7e7474396674938ae25b1a2300109b1c" prot="public" static="no" mutable="no">
         <type>integer, public</type>
         <definition>integer, public m2::v4</definition>
         <argsstring/>

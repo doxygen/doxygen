@@ -3,7 +3,7 @@
   <compounddef id="namespace_n" kind="namespace" language="C++">
     <compoundname>N</compoundname>
     <sectiondef kind="var">
-      <memberdef kind="variable" id="namespace_n_1a406e233433deabc7b1612470373d53e0" prot="public" static="no" mutable="no" thread_local="no">
+      <memberdef kind="variable" id="namespace_n_1a406e233433deabc7b1612470373d53e0" prot="public" static="no" mutable="no">
         <type>int</type>
         <definition>int N::var</definition>
         <argsstring/>

@@ -55,7 +55,7 @@
       </memberdef>
     </sectiondef>
     <sectiondef kind="var">
-      <memberdef kind="variable" id="group___b_1gacb559820d9ca11295b4500f179ef6392" prot="public" static="yes" mutable="no" thread_local="no">
+      <memberdef kind="variable" id="group___b_1gacb559820d9ca11295b4500f179ef6392" prot="public" static="yes" mutable="no">
         <type>int</type>
         <definition>int i</definition>
         <argsstring/>

@@ -15,7 +15,7 @@
     <innerclass refid="interfacestrings_1_1push" prot="private">strings::push</innerclass>
     <innerclass refid="interfacestrings_1_1len" prot="public">strings::len</innerclass>
     <sectiondef kind="var">
-      <memberdef kind="variable" id="namespacestrings_1a45584f6a9f6f13e5370bd883d744f0a6" prot="private" static="no" mutable="no" thread_local="no">
+      <memberdef kind="variable" id="namespacestrings_1a45584f6a9f6f13e5370bd883d744f0a6" prot="private" static="no" mutable="no">
         <type>integer, parameter</type>
         <definition>integer, parameter strings::ck</definition>
         <argsstring/>

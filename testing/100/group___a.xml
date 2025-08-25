@@ -56,7 +56,7 @@
       </memberdef>
     </sectiondef>
     <sectiondef kind="var">
-      <memberdef kind="variable" id="group___a_1gacb559820d9ca11295b4500f179ef6392" prot="public" static="no" mutable="no" thread_local="no">
+      <memberdef kind="variable" id="group___a_1gacb559820d9ca11295b4500f179ef6392" prot="public" static="no" mutable="no">
         <type>int</type>
         <definition>int i</definition>
         <argsstring/>
@@ -71,7 +71,7 @@
         </inbodydescription>
         <location file="100_a.c" line="81" column="5" bodyfile="100_a.c" bodystart="81" bodyend="-1"/>
       </memberdef>
-      <memberdef kind="variable" id="group___a_1ga37d972ae0b47b9099e30983131d31916" prot="public" static="yes" mutable="no" thread_local="no">
+      <memberdef kind="variable" id="group___a_1ga37d972ae0b47b9099e30983131d31916" prot="public" static="yes" mutable="no">
         <type>int</type>
         <definition>int j</definition>
         <argsstring/>

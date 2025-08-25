@@ -3,7 +3,7 @@
   <compounddef id="namespacem1" kind="namespace" language="Fortran">
     <compoundname>m1</compoundname>
     <sectiondef kind="var">
-      <memberdef kind="variable" id="088__module__var_8f90_1a55e8d6a2f6109fb1922ad6632985d31e" prot="public" static="no" mutable="no" thread_local="no">
+      <memberdef kind="variable" id="088__module__var_8f90_1a55e8d6a2f6109fb1922ad6632985d31e" prot="public" static="no" mutable="no">
         <type>integer, public</type>
         <definition>integer, public m1::v1</definition>
         <argsstring/>
@@ -17,7 +17,7 @@
         </inbodydescription>
         <location file="088_module_var.f90" line="12" column="1" bodyfile="088_module_var.f90" bodystart="12" bodyend="12"/>
       </memberdef>
-      <memberdef kind="variable" id="088__module__var_8f90_1a7b21adea511c81513d1be2f1f3b6b9eb" prot="public" static="no" mutable="no" thread_local="no">
+      <memberdef kind="variable" id="088__module__var_8f90_1a7b21adea511c81513d1be2f1f3b6b9eb" prot="public" static="no" mutable="no">
         <type>integer, public</type>
         <definition>integer, public m1::v2</definition>
         <argsstring/>
@@ -31,7 +31,7 @@
         </inbodydescription>
         <location file="088_module_var.f90" line="15" column="1" bodyfile="088_module_var.f90" bodystart="15" bodyend="15"/>
       </memberdef>
-      <memberdef kind="variable" id="088__module__var_8f90_1a1ef6299cbb534bef991fc651df8274ec" prot="public" static="no" mutable="no" thread_local="no">
+      <memberdef kind="variable" id="088__module__var_8f90_1a1ef6299cbb534bef991fc651df8274ec" prot="public" static="no" mutable="no">
         <type>integer, public</type>
         <definition>integer, public m1::v3</definition>
         <argsstring/>

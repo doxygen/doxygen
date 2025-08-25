@@ -40,7 +40,7 @@
       </memberdef>
     </sectiondef>
     <sectiondef kind="var">
-      <memberdef kind="variable" id="111__autolink_8cpp_1ab16669b1a4a2c5dc4f8d41107e1295dc" prot="public" static="no" mutable="no" thread_local="no">
+      <memberdef kind="variable" id="111__autolink_8cpp_1ab16669b1a4a2c5dc4f8d41107e1295dc" prot="public" static="no" mutable="no">
         <type>int</type>
         <definition>int my_int</definition>
         <argsstring/>
