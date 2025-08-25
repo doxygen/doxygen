@@ -128,6 +128,7 @@ class MemberDef : public Definition
     virtual bool isInline() const = 0;
     virtual bool isExplicit() const = 0;
     virtual bool isMutable() const = 0;
+    virtual bool isThreadLocal() const = 0;
     virtual bool isGettable() const = 0;
     virtual bool isPrivateGettable() const = 0;
     virtual bool isProtectedGettable() const = 0;

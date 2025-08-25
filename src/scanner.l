@@ -1326,6 +1326,10 @@ NONLopt [^\n]*
                                           yyextra->current->spec.setMutable(true);
                                           lineCount(yyscanner);
                                         }
+<FindMembers>{B}*"thread_local"{BN}+    { if (yyextra->insideJava) REJECT;
+                                          yyextra->current->spec.setThreadLocal(true);
+                                          lineCount(yyscanner);
+                                        }
 <FindMembers>{B}*"explicit"{BN}+        { if (yyextra->insideJava) REJECT;
                                           yyextra->current->spec.setExplicit(true);
                                           lineCount(yyscanner);

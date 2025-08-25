@@ -6690,6 +6690,11 @@ static void findMember(const Entry *root,
       spec.setMutable(true);
       done=false;
     }
+    if (funcDecl.stripPrefix("thread_local "))
+    {
+      spec.setThreadLocal(true);
+      done=false;
+    }
     if (funcDecl.stripPrefix("virtual "))
     {
       done=false;
