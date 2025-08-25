@@ -1188,7 +1188,7 @@ void GroupDefImpl::writeDocumentation(OutputList &ol)
     ++hierarchyLevel;
   }
 
-  startFile(ol,getOutputFileBase(),name(),m_title,HighlightedItem::Topics,
+  startFile(ol,getOutputFileBase(),false,name(),m_title,HighlightedItem::Topics,
             FALSE /* additionalIndices*/, QCString() /*altSidebarName*/, hierarchyLevel);
 
   ol.startHeaderSection();

@@ -189,11 +189,11 @@ void OutputList::generateDoc(const QCString &fileName,int startLine,
   if (ast && count>0) writeDoc(ast.get(),ctx,md);
 }
 
-void OutputList::startFile(const QCString &name,const QCString &manName,const QCString &title, int hierarchyLevel)
+void OutputList::startFile(const QCString &name,bool isSource,const QCString &manName,const QCString &title, int hierarchyLevel)
 {
   newId();
   m_codeGenList.setId(m_id);
-  foreach(&OutputGenIntf::startFile,name,manName,title,m_id,hierarchyLevel);
+  foreach(&OutputGenIntf::startFile,name,isSource,manName,title,m_id,hierarchyLevel);
 }
 
 void OutputList::parseText(const QCString &textStr)

@@ -124,7 +124,7 @@ class HtmlGenerator : public OutputGenerator, public OutputGenIntf
     void addCodeGen(OutputCodeList &list) override;
     void cleanup() override;
     void writeDoc(const IDocNodeAST *node,const Definition *,const MemberDef *,int id) override;
-    void startFile(const QCString &name,const QCString &manName,const QCString &title,int id, int hierarchyLevel) override;
+    void startFile(const QCString &name,bool isSource,const QCString &manName,const QCString &title,int id, int hierarchyLevel) override;
     void endFile() override;
 
     void writeFooter(const QCString &navPath) override;

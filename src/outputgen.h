@@ -140,7 +140,7 @@ class OutputGenIntf
     virtual void writeStyleInfo(int part) = 0;
     virtual void writeSearchInfo() = 0;
     virtual void writeFooter(const QCString &navPath) = 0;
-    virtual void startFile(const QCString &name,const QCString &manName,const QCString &title,int id, int hierarchyLevel) = 0;
+    virtual void startFile(const QCString &name,bool isSource,const QCString &manName,const QCString &title,int id, int hierarchyLevel) = 0;
     virtual void endFile() = 0;
     virtual void startTitleHead(const QCString &fileName) = 0;
     virtual void endTitleHead(const QCString &fileName,const QCString &name) = 0;

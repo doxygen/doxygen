@@ -375,7 +375,7 @@ class OutputList
                      bool markdownSupport=Config_getBool(MARKDOWN_SUPPORT),
                      bool autolinkSupport=Config_getBool(AUTOLINK_SUPPORT));
 
-    void startFile(const QCString &name,const QCString &manName,const QCString &title, int hierarchyLevel=0);
+    void startFile(const QCString &name, bool isSource,const QCString &manName,const QCString &title, int hierarchyLevel=0);
     void parseText(const QCString &textStr);
 
     //////////////////////////////////////////////////

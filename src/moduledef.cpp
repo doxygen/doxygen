@@ -353,7 +353,7 @@ void ModuleDefImpl::writeDocumentation(OutputList &ol)
   {
     pageTitle = theTranslator->trModuleReference(displayName());
   }
-  startFile(ol,getOutputFileBase(),name(),pageTitle,HighlightedItem::ModuleVisible,false,QCString(),0);
+  startFile(ol,getOutputFileBase(),false,name(),pageTitle,HighlightedItem::ModuleVisible,false,QCString());
 
   // ---- title part
   ol.startHeaderSection();
