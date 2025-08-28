@@ -153,9 +153,6 @@ void TextGeneratorOLImpl::writeLink(const QCString &extRef,const QCString &file,
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
 
-// an inheritance tree of depth of 100000 should be enough for everyone :-)
-const int maxInheritanceDepth = 100000;
-
 /*!
   Removes all anonymous scopes from string s
   Possible examples:
@@ -5296,9 +5293,14 @@ QCString parseCommentAsText(const Definition *scope,const MemberDef *md,
   TextStream t;
   auto parser { createDocParser() };
   auto ast    { validatingParseDoc(*parser.get(),
-                                   fileName,lineNr,
-                                   scope,md,doc,FALSE,FALSE,
-                                   QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT),false) };
+                                   fileName,
+                                   lineNr,
+                                   scope,
+                                   md,
+                                   doc,
+                                   DocOptions().
+                                   setAutolinkSupport(false))
+              };
   auto astImpl = dynamic_cast<const DocNodeAST*>(ast.get());
   if (astImpl)
   {
@@ -5386,8 +5388,13 @@ void writeTypeConstraints(OutputList &ol,const Definition *d,const ArgumentList 
     linkifyText(TextGeneratorOLImpl(ol),d,nullptr,nullptr,a.type);
     ol.endConstraintType();
     ol.startConstraintDocs();
-    ol.generateDoc(d->docFile(),d->docLine(),d,nullptr,a.docs,TRUE,FALSE,
-                   QCString(),FALSE,FALSE);
+    ol.generateDoc(d->docFile(),
+                   d->docLine(),
+                   d,
+                   nullptr,
+                   a.docs,
+                   DocOptions().
+                   setIndexWords(true));
     ol.endConstraintDocs();
   }
   ol.endConstraintList();

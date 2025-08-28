@@ -1511,18 +1511,14 @@ static void writeSingleFileIndex(OutputList &ol,const FileDef *fd)
     ol.startIndexValue(hasBrief);
     if (hasBrief)
     {
-      //ol.docify(" (");
-      ol.generateDoc(
-          fd->briefFile(),fd->briefLine(),
-          fd,nullptr,
-          fd->briefDescription(TRUE),
-          FALSE, // index words
-          FALSE, // isExample
-          QCString(), // example name
-          TRUE,  // single line
-          TRUE   // link from index
-          );
-      //ol.docify(")");
+      ol.generateDoc(fd->briefFile(),
+                     fd->briefLine(),
+                     fd,
+                     nullptr,
+                     fd->briefDescription(true),
+                     DocOptions().
+                     setSingleLine(true).
+                     setLinkFromIndex(true));
     }
     if (doc)
     {
@@ -2072,18 +2068,14 @@ static void writeNamespaceIndex(OutputList &ol)
       ol.startIndexValue(hasBrief);
       if (hasBrief)
       {
-        //ol.docify(" (");
-        ol.generateDoc(
-                 nd->briefFile(),nd->briefLine(),
-                 nd.get(),nullptr,
-                 nd->briefDescription(TRUE),
-                 FALSE, // index words
-                 FALSE, // isExample
-                 QCString(),     // example name
-                 TRUE,  // single line
-                 TRUE   // link from index
-                );
-        //ol.docify(")");
+        ol.generateDoc(nd->briefFile(),
+                       nd->briefLine(),
+                       nd.get(),
+                       nullptr,
+                       nd->briefDescription(true),
+                       DocOptions().
+                       setSingleLine(true).
+                       setLinkFromIndex(true));
       }
       ol.endIndexValue(nd->getOutputFileBase(),hasBrief);
 
@@ -2200,16 +2192,14 @@ static void writeAnnotatedClassList(OutputList &ol,ClassDef::CompoundType ct)
       ol.startIndexValue(hasBrief);
       if (hasBrief)
       {
-        ol.generateDoc(
-                 cd->briefFile(),cd->briefLine(),
-                 cd.get(),nullptr,
-                 cd->briefDescription(TRUE),
-                 FALSE,  // indexWords
-                 FALSE,  // isExample
-                 QCString(),     // example name
-                 TRUE,  // single line
-                 TRUE   // link from index
-                );
+        ol.generateDoc(cd->briefFile(),
+                       cd->briefLine(),
+                       cd.get(),
+                       nullptr,
+                       cd->briefDescription(true),
+                       DocOptions().
+                       setSingleLine(true).
+                       setLinkFromIndex(true));
       }
       ol.endIndexValue(cd->getOutputFileBase(),hasBrief);
 
@@ -4093,8 +4083,7 @@ void writeGraphInfo(OutputList &ol)
 
   {
     auto fd = createFileDef("","graph_legend.dox");
-    ol.generateDoc("graph_legend",1,fd.get(),nullptr,legendDocs,FALSE,FALSE,
-        QCString(),FALSE,FALSE,FALSE);
+    ol.generateDoc("graph_legend",1,fd.get(),nullptr,legendDocs,DocOptions());
   }
 
   // restore config settings
@@ -4168,9 +4157,13 @@ static void writeGroupTreeNode(OutputList &ol, const GroupDef *gd, int level, FT
 
     ol.startIndexListItem();
     ol.startIndexItem(gd->getReference(),gd->getOutputFileBase());
-    ol.generateDoc(gd->getDefFileName(),gd->getDefLine(),
-                  gd,nullptr,gd->groupTitle(),false,false,
-                  QCString(),true,false);
+    ol.generateDoc(gd->getDefFileName(),
+                   gd->getDefLine(),
+                   gd,
+                   nullptr,
+                   gd->groupTitle(),
+                   DocOptions().
+                   setSingleLine(true));
     ol.endIndexItem(gd->getReference(),gd->getOutputFileBase());
 
     if (gd->isReference())
@@ -4736,18 +4729,14 @@ static void writeConceptIndex(OutputList &ol)
       ol.startIndexValue(hasBrief);
       if (hasBrief)
       {
-        //ol.docify(" (");
-        ol.generateDoc(
-                 cd->briefFile(),cd->briefLine(),
-                 cd.get(),nullptr,
-                 cd->briefDescription(TRUE),
-                 FALSE, // index words
-                 FALSE, // isExample
-                 QCString(),     // example name
-                 TRUE,  // single line
-                 TRUE   // link from index
-                );
-        //ol.docify(")");
+        ol.generateDoc(cd->briefFile(),
+                       cd->briefLine(),
+                       cd.get(),
+                       nullptr,
+                       cd->briefDescription(true),
+                       DocOptions().
+                       setSingleLine(true).
+                       setLinkFromIndex(true));
       }
       ol.endIndexValue(cd->getOutputFileBase(),hasBrief);
 
@@ -4931,9 +4920,13 @@ static void writeIndex(OutputList &ol)
     {
       ol.startHeaderSection();
       ol.startTitleHead(QCString());
-      ol.generateDoc(Doxygen::mainPage->docFile(),Doxygen::mainPage->getStartBodyLine(),
-                  Doxygen::mainPage.get(),nullptr,Doxygen::mainPage->title(),false,false,
-                  QCString(),true,false);
+      ol.generateDoc(Doxygen::mainPage->docFile(),
+                     Doxygen::mainPage->getStartBodyLine(),
+                     Doxygen::mainPage.get(),
+                     nullptr,
+                     Doxygen::mainPage->title(),
+                     DocOptions().
+                     setSingleLine(true));
       headerWritten = TRUE;
     }
   }
@@ -4967,9 +4960,13 @@ static void writeIndex(OutputList &ol)
     }
 
     ol.startTextBlock();
-    ol.generateDoc(defFileName,defLine,Doxygen::mainPage.get(),nullptr,
-                Doxygen::mainPage->documentation(),true,false,
-                QCString(),false,false);
+    ol.generateDoc(defFileName,
+                   defLine,
+                   Doxygen::mainPage.get(),
+                   nullptr,
+                   Doxygen::mainPage->documentation(),
+                   DocOptions().
+                   setIndexWords(true));
     ol.endTextBlock();
     ol.endPageDoc();
   }
@@ -5029,8 +5026,12 @@ static void writeIndex(OutputList &ol)
   if (!Config_getString(PROJECT_NUMBER).isEmpty())
   {
     ol.startProjectNumber();
-    ol.generateDoc(defFileName,defLine,Doxygen::mainPage.get(),nullptr,Config_getString(PROJECT_NUMBER),false,false,
-                   QCString(),false,false);
+    ol.generateDoc(defFileName,
+                   defLine,
+                   Doxygen::mainPage.get(),
+                   nullptr,
+                   Config_getString(PROJECT_NUMBER),
+                   DocOptions());
     ol.endProjectNumber();
   }
   ol.endIndexSection(IndexSection::isTitlePageStart);

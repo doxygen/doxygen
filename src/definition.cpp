@@ -1462,8 +1462,14 @@ void DefinitionImpl::writeToc(OutputList &ol, const LocalToc &localToc) const
         const Definition *scope = p->def->definitionType()==Definition::TypeMember ? p->def->getOuterScope() : p->def;
         QCString docTitle = si->title();
         if (docTitle.isEmpty()) docTitle = si->label();
-        ol.generateDoc(docFile(),getStartBodyLine(),scope,md,docTitle,TRUE,FALSE,
-                       QCString(),TRUE,FALSE);
+        ol.generateDoc(docFile(),
+                       getStartBodyLine(),
+                       scope,
+                       md,
+                       docTitle,
+                       DocOptions().
+                       setIndexWords(true).
+                       setSingleLine(true));
         ol.endTocEntry(si);
       }
     }

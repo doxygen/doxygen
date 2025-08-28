@@ -1419,18 +1419,13 @@ QCString getSQLDocBlock(const Definition *scope,
 
   TextStream t;
   auto parser { createDocParser() };
-  auto ast    { validatingParseDoc(
-                *parser.get(),
-                fileName,
-                lineNr,
-                scope,
-                toMemberDef(def),
-                doc,
-                FALSE,
-                FALSE,
-                QCString(),
-                FALSE,
-                FALSE)
+  auto ast    { validatingParseDoc(*parser.get(),
+                                   fileName,
+                                   lineNr,
+                                   scope,
+                                   toMemberDef(def),
+                                   doc,
+                                   DocOptions())
               };
   auto astImpl = dynamic_cast<const DocNodeAST*>(ast.get());
   if (astImpl)

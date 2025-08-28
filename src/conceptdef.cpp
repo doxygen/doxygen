@@ -326,10 +326,16 @@ void ConceptDefImpl::writeBriefDescription(OutputList &ol) const
   if (hasBriefDescription())
   {
     auto parser { createDocParser() };
-    auto ast    { validatingParseDoc(
-                        *parser.get(),briefFile(),briefLine(),this,nullptr,
-                        briefDescription(),TRUE,FALSE,
-                        QCString(),TRUE,FALSE) };
+    auto ast    { validatingParseDoc(*parser.get(),
+                                     briefFile(),
+                                     briefLine(),
+                                     this,
+                                     nullptr,
+                                     briefDescription(),
+                                     DocOptions().
+                                     setIndexWords(true).
+                                     setSingleLine(true))
+                };
     if (!ast->isEmpty())
     {
       ol.startParagraph();
@@ -468,8 +474,12 @@ void ConceptDefImpl::writeDetailedDescription(OutputList &ol,const QCString &tit
     // repeat brief description
     if (!briefDescription().isEmpty() && repeatBrief)
     {
-      ol.generateDoc(briefFile(),briefLine(),this,nullptr,briefDescription(),FALSE,FALSE,
-          QCString(),FALSE,FALSE);
+      ol.generateDoc(briefFile(),
+                     briefLine(),
+                     this,
+                     nullptr,
+                     briefDescription(),
+                     DocOptions());
     }
     if (!briefDescription().isEmpty() && repeatBrief &&
         !documentation().isEmpty())
@@ -483,8 +493,13 @@ void ConceptDefImpl::writeDetailedDescription(OutputList &ol,const QCString &tit
     // write documentation
     if (!documentation().isEmpty())
     {
-      ol.generateDoc(docFile(),docLine(),this,nullptr,documentation(),TRUE,FALSE,
-          QCString(),FALSE,FALSE);
+      ol.generateDoc(docFile(),
+                     docLine(),
+                     this,
+                     nullptr,
+                     documentation(),
+                     DocOptions().
+                     setIndexWords(true));
     }
 
     writeSourceDef(ol);
@@ -682,10 +697,15 @@ void ConceptDefImpl::writeDeclarationLink(OutputList &ol,bool &found,const QCStr
     if (!briefDescription().isEmpty() && Config_getBool(BRIEF_MEMBER_DESC))
     {
       auto parser { createDocParser() };
-      auto ast    { validatingParseDoc(
-                                *parser.get(),briefFile(),briefLine(),this,nullptr,
-                                briefDescription(),FALSE,FALSE,
-                                QCString(),TRUE,FALSE) };
+      auto ast    { validatingParseDoc(*parser.get(),
+                                       briefFile(),
+                                       briefLine(),
+                                       this,
+                                       nullptr,
+                                       briefDescription(),
+                                       DocOptions().
+                                       setSingleLine(true))
+                  };
       if (!ast->isEmpty())
       {
         ol.startMemberDescription(anchor());

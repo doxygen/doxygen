@@ -334,9 +334,15 @@ static void generateBriefDoc(TextStream &t,const Definition *def)
   {
     auto parser { createDocParser() };
     auto ast    { validatingParseDoc(*parser.get(),
-                                     def->briefFile(),def->briefLine(),
-                                     def,nullptr,brief,FALSE,FALSE,
-                                     QCString(),TRUE,TRUE) };
+                                     def->briefFile(),
+                                     def->briefLine(),
+                                     def,
+                                     nullptr,
+                                     brief,
+                                     DocOptions().
+                                     setSingleLine(true).
+                                     setLinkFromIndex(true))
+                 };
     const DocNodeAST *astImpl = dynamic_cast<const DocNodeAST*>(ast.get());
     if (astImpl)
     {

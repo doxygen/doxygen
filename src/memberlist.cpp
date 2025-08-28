@@ -411,11 +411,15 @@ void MemberList::writePlainDeclarations(OutputList &ol, bool inGroup,
               {
                 auto parser { createDocParser() };
                 auto ast    { validatingParseDoc(*parser.get(),
-                                                 md->briefFile(),md->briefLine(),
-                                                 cd,md,
+                                                 md->briefFile(),
+                                                 md->briefLine(),
+                                                 cd,
+                                                 md,
                                                  md->briefDescription(),
-                                                 TRUE,FALSE,
-                                                 QCString(),TRUE,FALSE) };
+                                                 DocOptions().
+                                                 setIndexWords(true).
+                                                 setSingleLine(true))
+                            };
                 if (!ast->isEmpty())
                 {
                   ol.startMemberDescription(md->anchor());
@@ -551,8 +555,7 @@ void MemberList::writeDeclarations(OutputList &ol,
     if (!subtitle.stripWhiteSpace().isEmpty())
     {
       ol.startMemberSubtitle();
-      ol.generateDoc("[generated]",-1,ctx,nullptr,subtitle,FALSE,FALSE,
-                     QCString(),FALSE,FALSE);
+      ol.generateDoc("[generated]", -1, ctx, nullptr, subtitle, DocOptions());
       ol.endMemberSubtitle();
     }
   }
@@ -593,8 +596,12 @@ void MemberList::writeDeclarations(OutputList &ol,
         {
           //printf("Member group has docs!\n");
           ol.startMemberGroupDocs();
-          ol.generateDoc(mg->docFile(),mg->docLine(),mg->memberContainer(),nullptr,mg->documentation()+"\n",FALSE,FALSE,
-              QCString(),FALSE,FALSE);
+          ol.generateDoc(mg->docFile(),
+                         mg->docLine(),
+                         mg->memberContainer(),
+                         nullptr,
+                         mg->documentation()+"\n",
+                         DocOptions());
           ol.endMemberGroupDocs();
         }
         ol.startMemberGroup();

@@ -167,11 +167,7 @@ void OutputList::popGeneratorState()
 
 void OutputList::generateDoc(const QCString &fileName,int startLine,
                   const Definition *ctx,const MemberDef * md,
-                  const QCString &docStr,bool indexWords,
-                  bool isExample,const QCString &exampleName,
-                  bool singleLine,bool linkFromIndex,
-                  bool markdownSupport,
-                  bool autolinkSupport)
+                  const QCString &docStr,const DocOptions &options)
 {
   if (docStr.isEmpty()) return;
 
@@ -183,9 +179,13 @@ void OutputList::generateDoc(const QCString &fileName,int startLine,
   // - no formats there should be warnings as well
   auto parser { createDocParser() };
   auto ast    { validatingParseDoc(*parser.get(),
-                                   fileName,startLine,
-                                   ctx,md,docStr,indexWords,isExample,exampleName,
-                                   singleLine,linkFromIndex,markdownSupport,autolinkSupport) };
+                                   fileName,
+                                   startLine,
+                                   ctx,
+                                   md,
+                                   docStr,
+                                   options)
+               };
   if (ast && count>0) writeDoc(ast.get(),ctx,md);
 }
 

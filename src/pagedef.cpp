@@ -294,8 +294,14 @@ void PageDefImpl::writeDocumentation(OutputList &ol)
 
     if (si->title() != manPageName)
     {
-      ol.generateDoc(docFile(),getStartBodyLine(),this,nullptr,si->title(),true,false,
-                     QCString(),true,false,Config_getBool(MARKDOWN_SUPPORT),false);
+      ol.generateDoc(docFile(),
+                     getStartBodyLine(),
+                     this,
+                     nullptr,
+                     si->title(),
+                     DocOptions().
+                     setSingleLine(true).
+                     setAutolinkSupport(false));
       ol.endSection(si->label(),si->type());
     }
   }
@@ -316,8 +322,15 @@ void PageDefImpl::writeDocumentation(OutputList &ol)
     ol.startPageDoc(si->title());
     ol.startHeaderSection();
     ol.startTitleHead(getOutputFileBase());
-    ol.generateDoc(docFile(),getStartBodyLine(),this,nullptr,title,true,false,
-                   QCString(),true,false,Config_getBool(MARKDOWN_SUPPORT),false);
+    ol.generateDoc(docFile(),
+                   getStartBodyLine(),
+                   this,
+                   nullptr,
+                   title,
+                   DocOptions().
+                   setIndexWords(true).
+                   setSingleLine(true).
+                   setAutolinkSupport(false));
     ol.endTitleHead(getOutputFileBase(),title);
     ol.endHeaderSection();
   }
@@ -377,36 +390,14 @@ void PageDefImpl::writePageDocumentation(OutputList &ol) const
     ol.writeString(" - ");
     ol.popGeneratorState();
   }
-  ol.disableAllBut(OutputType::Html);
-    ol.generateDoc(
+  ol.generateDoc(
       docFile(),           // fileName
       docLine(),           // startLine
       this,                // context
       nullptr,             // memberdef
       docStr,              // docStr
-      true,                // index words
-      false,               // not an example
-      QCString(),          // exampleName
-      false,               // singleLine
-      false,               // linkFromIndex
-      TRUE                 // markdown support
-      );
-  ol.enableAll();
-  ol.disable(OutputType::Html);
-    ol.generateDoc(
-      docFile(),           // fileName
-      docLine(),           // startLine
-      this,                // context
-      nullptr,             // memberdef
-      docStr,              // docStr
-      false,               // index words
-      false,               // not an example
-      QCString(),          // exampleName
-      false,               // singleLine
-      false,               // linkFromIndex
-      TRUE                 // markdown support
-      );
-  ol.enable(OutputType::Html);
+      DocOptions().
+      setIndexWords(true));
   ol.endTextBlock();
 
   if (hasSubPages())

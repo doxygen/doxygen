@@ -33,6 +33,7 @@
 #include "docbookgen.h"
 #include "xmlgen.h"
 #include "devnullgen.h"
+#include "docoptions.h"
 
 class OutputCodeList;
 
@@ -370,10 +371,7 @@ class OutputList
 
     void generateDoc(const QCString &fileName,int startLine,
                      const Definition *ctx,const MemberDef *md,const QCString &docStr,
-                     bool indexWords,bool isExample,const QCString &exampleName,
-                     bool singleLine,bool linkFromIndex,
-                     bool markdownSupport=Config_getBool(MARKDOWN_SUPPORT),
-                     bool autolinkSupport=Config_getBool(AUTOLINK_SUPPORT));
+                     const DocOptions &options);
 
     void startFile(const QCString &name, bool isSource,const QCString &manName,const QCString &title, int hierarchyLevel=0);
     void parseText(const QCString &textStr);

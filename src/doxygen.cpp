@@ -9976,18 +9976,15 @@ static void generateExampleDocs()
     {
       lineNoOptStr="{lineno}";
     }
-    g_outputList->generateDoc(pd->docFile(),                       // file
-                         pd->docLine(),                            // startLine
-                         pd.get(),                                 // context
-                         nullptr,                                  // memberDef
-                         (pd->briefDescription().isEmpty()?"":pd->briefDescription()+"\n\n")+
-                         pd->documentation()+"\n\n\\include"+lineNoOptStr+" "+pd->name(), // docs
-                         TRUE,                                     // index words
-                         TRUE,                                     // is example
-                         pd->name(),
-                         FALSE,
-                         FALSE
-                        );
+    g_outputList->generateDoc(pd->docFile(),                            // file
+                              pd->docLine(),                            // startLine
+                              pd.get(),                                 // context
+                              nullptr,                                  // memberDef
+                              (pd->briefDescription().isEmpty()?"":pd->briefDescription()+"\n\n")+
+                              pd->documentation()+"\n\n\\include"+lineNoOptStr+" "+pd->name(), // docs
+                              DocOptions().
+                              setIndexWords(true).
+                              setExample(pd->name()));
     endFile(*g_outputList); // contains g_outputList->endContents()
   }
   g_outputList->enable(OutputType::Man);

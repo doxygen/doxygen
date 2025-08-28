@@ -249,8 +249,12 @@ void DirDefImpl::writeDetailedDescription(OutputList &ol,const QCString &title)
     // repeat brief description
     if (!briefDescription().isEmpty() && Config_getBool(REPEAT_BRIEF))
     {
-      ol.generateDoc(briefFile(),briefLine(),this,nullptr,briefDescription(),FALSE,FALSE,
-                     QCString(),FALSE,FALSE);
+      ol.generateDoc(briefFile(),
+                     briefLine(),
+                     this,
+                     nullptr,
+                     briefDescription(),
+                     DocOptions());
     }
     // separator between brief and details
     if (!briefDescription().isEmpty() && Config_getBool(REPEAT_BRIEF) &&
@@ -269,8 +273,13 @@ void DirDefImpl::writeDetailedDescription(OutputList &ol,const QCString &title)
     // write documentation
     if (!documentation().isEmpty())
     {
-      ol.generateDoc(docFile(),docLine(),this,nullptr,documentation()+"\n",TRUE,FALSE,
-                     QCString(),FALSE,FALSE);
+      ol.generateDoc(docFile(),
+                     docLine(),
+                     this,
+                     nullptr,
+                     documentation()+"\n",
+                     DocOptions().
+                     setIndexWords(true));
     }
   }
 }
@@ -281,9 +290,15 @@ void DirDefImpl::writeBriefDescription(OutputList &ol)
   if (hasBriefDescription())
   {
     auto parser { createDocParser() };
-    auto ast    { validatingParseDoc(
-         *parser.get(), briefFile(),briefLine(),this,nullptr,briefDescription(),TRUE,FALSE,
-         QCString(),FALSE,FALSE) };
+    auto ast    { validatingParseDoc(*parser.get(),
+                                     briefFile(),
+                                     briefLine(),
+                                     this,
+                                     nullptr,
+                                     briefDescription(),
+                                     DocOptions().
+                                     setIndexWords(true))
+                };
     if (!ast->isEmpty())
     {
       ol.startParagraph();
@@ -382,13 +397,14 @@ void DirDefImpl::writeSubDirList(OutputList &ol)
         if (!dd->briefDescription().isEmpty() && Config_getBool(BRIEF_MEMBER_DESC))
         {
           ol.startMemberDescription(dd->getOutputFileBase());
-          ol.generateDoc(briefFile(),briefLine(),dd,nullptr,dd->briefDescription(),
-              FALSE, // indexWords
-              FALSE, // isExample
-              QCString(), // exampleName
-              TRUE,  // single line
-              TRUE   // link from index
-              );
+          ol.generateDoc(briefFile(),
+                         briefLine(),
+                         dd,
+                         nullptr,
+                         dd->briefDescription(),
+                         DocOptions().
+                         setSingleLine(true).
+                         setLinkFromIndex(true));
           ol.endMemberDescription();
         }
         ol.endMemberDeclaration(dd->anchor(),QCString());
@@ -467,13 +483,14 @@ void DirDefImpl::writeFileList(OutputList &ol)
         if (!fd->briefDescription().isEmpty() && Config_getBool(BRIEF_MEMBER_DESC))
         {
           ol.startMemberDescription(fd->getOutputFileBase());
-          ol.generateDoc(briefFile(),briefLine(),fd,nullptr,fd->briefDescription(),
-              FALSE, // indexWords
-              FALSE, // isExample
-              QCString(), // exampleName
-              TRUE,  // single line
-              TRUE   // link from index
-              );
+          ol.generateDoc(briefFile(),
+                         briefLine(),
+                         fd,
+                         nullptr,
+                         fd->briefDescription(),
+                         DocOptions().
+                         setSingleLine(true).
+                         setLinkFromIndex(true));
           ol.endMemberDescription();
         }
         ol.endMemberDeclaration(fd->anchor(),QCString());

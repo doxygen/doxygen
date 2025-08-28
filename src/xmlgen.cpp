@@ -456,8 +456,13 @@ static void writeXMLDocBlock(TextStream &t,
   // convert the documentation string into an abstract syntax tree
   auto parser { createDocParser() };
   auto ast    { validatingParseDoc(*parser.get(),
-                                   fileName,lineNr,scope,md,text,FALSE,FALSE,
-                                   QCString(),FALSE,FALSE) };
+                                   fileName,
+                                   lineNr,
+                                   scope,
+                                   md,
+                                   text,
+                                   DocOptions())
+               };
   auto astImpl = dynamic_cast<const DocNodeAST*>(ast.get());
   if (astImpl)
   {

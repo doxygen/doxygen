@@ -1564,9 +1564,14 @@ void ClassDefImpl::writeBriefDescription(OutputList &ol,bool exampleFlag) const
     ol.disableAllBut(OutputType::Man);
     ol.writeString(" - ");
     ol.popGeneratorState();
-    ol.generateDoc(briefFile(),briefLine(),this,nullptr,
-                   briefDescription(),TRUE,FALSE,QCString(),
-                   TRUE,FALSE);
+    ol.generateDoc(briefFile(),
+                   briefLine(),
+                   this,
+                   nullptr,
+                   briefDescription(),
+                   DocOptions().
+                   setIndexWords(true).
+                   setSingleLine(true));
     ol.pushGeneratorState();
     ol.disable(OutputType::RTF);
     ol.writeString(" \n");
@@ -1597,8 +1602,12 @@ void ClassDefImpl::writeDetailedDocumentationBody(OutputList &ol) const
   // repeat brief description
   if (!briefDescription().isEmpty() && repeatBrief)
   {
-    ol.generateDoc(briefFile(),briefLine(),this,nullptr,briefDescription(),FALSE,FALSE,
-                   QCString(),FALSE,FALSE);
+    ol.generateDoc(briefFile(),
+                   briefLine(),
+                   this,
+                   nullptr,
+                   briefDescription(),
+                   DocOptions());
   }
   if (!briefDescription().isEmpty() && repeatBrief &&
       !documentation().isEmpty())
@@ -1611,8 +1620,13 @@ void ClassDefImpl::writeDetailedDocumentationBody(OutputList &ol) const
   // write documentation
   if (!documentation().isEmpty())
   {
-    ol.generateDoc(docFile(),docLine(),this,nullptr,documentation(),TRUE,FALSE,
-                   QCString(),FALSE,FALSE);
+    ol.generateDoc(docFile(),
+                   docLine(),
+                   this,
+                   nullptr,
+                   documentation(),
+                   DocOptions().
+                   setIndexWords(true));
   }
   // write type constraints
   writeTypeConstraints(ol,this,m_typeConstraints);
@@ -1622,10 +1636,8 @@ void ClassDefImpl::writeDetailedDocumentationBody(OutputList &ol) const
         this,
         nullptr,         // memberDef
         inlineTemplateArgListToDoc(m_tempArgs),    // docStr
-        TRUE,         // indexWords
-        FALSE,        // isExample
-        QCString(),FALSE,FALSE
-        );
+        DocOptions().
+        setIndexWords(true));
 
   // write examples
   if (hasExamples())
@@ -2691,9 +2703,14 @@ void ClassDefImpl::writeDeclarationLink(OutputList &ol,bool &found,const QCStrin
     {
       auto parser { createDocParser() };
       auto ast    { validatingParseDoc(*parser.get(),
-                                briefFile(),briefLine(),this,nullptr,
-                                briefDescription(),FALSE,FALSE,
-                                QCString(),TRUE,FALSE) };
+                                       briefFile(),
+                                       briefLine(),
+                                       this,
+                                       nullptr,
+                                       briefDescription(),
+                                       DocOptions().
+                                       setSingleLine(true))
+                  };
       if (!ast->isEmpty())
       {
         ol.startMemberDescription(anchor());
