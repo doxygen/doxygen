@@ -13,6 +13,22 @@
 \RequirePackage{longtable}
 \RequirePackage{xltabular}
 \RequirePackage{tabularray}
+\ExplSyntaxOn
+\IfPackageAtLeastTF{tabularray}{2025-03-11}
+{
+  \IfPackageAtLeastTF{tabularray}{2025-03-12}
+  {
+    %newer version, do nothing
+  }
+  {
+     %the required version
+     \bool_gset_false:N \g__tblr_use_intarray_bool
+  }
+}
+{
+  %older version, do nothing
+}
+\ExplSyntaxOff
 \UseTblrLibrary{varwidth}
 \RequirePackage{fancyvrb}
 \RequirePackage{tabularx}
