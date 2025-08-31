@@ -30,6 +30,21 @@
 }
 \ExplSyntaxOff
 \UseTblrLibrary{varwidth}
+\ExplSyntaxOn
+\int_new:N \g__doxy_nohyper_int
+\AtBeginDocument
+  {
+    \renewenvironment{tblrNoHyper}
+      {
+        \int_compare:nNnT {\g__doxy_nohyper_int} = {0} {\begin{NoHyper}}
+        \int_gincr:N \g__doxy_nohyper_int
+      }
+      {
+        \int_gdecr:N \g__doxy_nohyper_int
+        \int_compare:nNnT {\g__doxy_nohyper_int} = {0} {\end{NoHyper}}
+      }
+  }
+\ExplSyntaxOff
 \RequirePackage{fancyvrb}
 \RequirePackage{tabularx}
 \RequirePackage{multicol}
