@@ -177,7 +177,7 @@ static bool handleIPrefix(yyscan_t yyscanner,const QCString &, const StringVecto
 
 [[maybe_unused]] static const char *stateToString(int state);
 
-static QCString fileInfoVal(QCString name, FileInfo fi);
+static QCString fileInfoLookup(const FileInfo &fi,const std::string &name);
 
 typedef bool (*DocCmdFunc)(yyscan_t yyscanner,const QCString &name, const StringVector &optList);
 typedef EntryType (*MakeEntryType)();
@@ -556,6 +556,7 @@ static int yyread(yyscan_t yyscanner,char *buf,int max_size);
 static void addCite(yyscan_t yyscanner);
 static void addIline(yyscan_t yyscanner,int lineNr);
 static void addIlineBreak(yyscan_t yyscanner,int lineNr);
+static void escapeLabel(QCString &label);
 
 #define unput_string(yytext,yyleng) do { for (int i=(int)yyleng-1;i>=0;i--) unput(yytext[i]); } while(0)
 
@@ -1928,8 +1929,9 @@ STopt  [^\n@\\]*
                                         }
 <SectionLabel>{CMD}"fileinfo"("{"[^}]*"}")? {
                                           FileInfo fi(yyextra->fileName.str());
-                                          bool first = true;
-                                          if (yytext[9] == '{')
+                                          bool hasOption = false;
+                                          QCString label;
+                                          if (yytext[yyleng-1] == '}') // has parameters
                                           {
                                             StringVector optList;
                                             QCString txt = yytext;
@@ -1939,18 +1941,18 @@ STopt  [^\n@\\]*
                                             {
                                               QCString optStripped = QCString(opt_).stripWhiteSpace();
                                               std::string opt = optStripped.lower().str();
-                                              QCString result = fileInfoVal(opt,fi);
+                                              QCString result = fileInfoLookup(fi,opt);
                                               if (!result.isEmpty())
                                               {
-                                                if (!first)
+                                                if (hasOption) // oops: already found an option
                                                 {
                                                   warn(yyextra->fileName,yyextra->lineNr,"Multiple options specified with \\fileinfo, discarding '{}'", optStripped);
                                                 }
                                                 else
                                                 {
-                                                  yyextra->sectionLabel+=result;
+                                                  label = result;
                                                 }
-                                                first = false;
+                                                hasOption = true;
                                               }
                                               else
                                               {
@@ -1958,17 +1960,19 @@ STopt  [^\n@\\]*
                                               }
                                             }
                                           }
-                                          if (first) // no options specified
+                                          if (!hasOption)
                                           {
                                             if (Config_getBool(FULL_PATH_NAMES))
                                             {
-                                              yyextra->sectionLabel+=stripFromPath(yyextra->fileName);
+                                              label=stripFromPath(yyextra->fileName);
                                             }
                                             else
                                             {
-                                              yyextra->sectionLabel+=yyextra->fileName;
+                                              label=yyextra->fileName;
                                             }
                                           }
+                                          escapeLabel(label);
+                                          yyextra->sectionLabel+=label;
                                         }
 <SectionLabel>{DOCNL}                   {
                                           yyextra->sectionTitle.clear();
@@ -3505,14 +3509,20 @@ static bool handleFileInfoSection(yyscan_t yyscanner,const QCString &cmdName, co
   return handleFileInfoResult(yyscanner,cmdName, optList, true);
 }
 
-static QCString fileInfoVal(QCString name, FileInfo fi)
+static QCString fileInfoLookup(const FileInfo &fi,const std::string &optionName)
 {
-  if (name == "name")      return fi.baseName();
-  if (name == "extension") return fi.extension(true);
-  if (name == "filename")  return fi.fileName();
-  if (name == "directory") return fi.dirPath();
-  if (name == "full")      return fi.absFilePath();
-  return "";
+  using OptionFunc = std::function<QCString(const FileInfo &)>;
+  static std::unordered_map<std::string,OptionFunc> options =
+  {
+    // name,       function producing the value
+    { "name",      [](const FileInfo &fi_) { return fi_.baseName();      } },
+    { "extension", [](const FileInfo &fi_) { return fi_.extension(true); } },
+    { "filename",  [](const FileInfo &fi_) { return fi_.fileName();      } },
+    { "directory", [](const FileInfo &fi_) { return fi_.dirPath();       } },
+    { "full",      [](const FileInfo &fi_) { return fi_.absFilePath();   } }
+  };
+  auto it = options.find(optionName);
+  return (it!=options.end()) ? it->second(fi) : QCString();
 }
 
 static bool handleFileInfoResult(yyscan_t yyscanner,const QCString &, const StringVector &optList, bool isSection)
@@ -3530,7 +3540,7 @@ static bool handleFileInfoResult(yyscan_t yyscanner,const QCString &, const Stri
   {
     QCString optStripped = QCString(opt_).stripWhiteSpace();
     std::string opt = optStripped.lower().str();
-    QCString result = fileInfoVal(opt,fi);
+    QCString result = fileInfoLookup(fi,opt);
     if (!result.isEmpty())
     {
       if (!first)
@@ -4341,6 +4351,28 @@ static void addXRefItem(yyscan_t yyscanner,
   }
   yyextra->outputXRef.clear();
 }
+
+//-----------------------------------------------------------------------------
+
+// make label match LABELID pattern
+static void escapeLabel(QCString &label)
+{
+  if (label.isEmpty()) return;
+  char c = label[0];
+  if (!((c>='a' && c<='z') || (c>='A' && c<='Z') || c=='_' || c<0))
+  {
+    label[0]='_'; // replace invalid starting char by _
+  }
+  for (size_t i=1; i<label.size(); i++)
+  {
+    c = label[i];
+    if (!((c>='a' && c<='z') || (c>='A' && c<='Z') || (c>='0' && c<='9') || c=='_' || c<0))
+    {
+      label[i]='_'; // replace invalid char by _
+    }
+  }
+}
+
 
 //-----------------------------------------------------------------------------
 
