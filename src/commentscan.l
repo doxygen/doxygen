@@ -177,6 +177,8 @@ static bool handleIPrefix(yyscan_t yyscanner,const QCString &, const StringVecto
 
 [[maybe_unused]] static const char *stateToString(int state);
 
+static QCString fileInfoLookup(const FileInfo &fi,const std::string &name);
+
 typedef bool (*DocCmdFunc)(yyscan_t yyscanner,const QCString &name, const StringVector &optList);
 typedef EntryType (*MakeEntryType)();
 
@@ -554,6 +556,7 @@ static int yyread(yyscan_t yyscanner,char *buf,int max_size);
 static void addCite(yyscan_t yyscanner);
 static void addIline(yyscan_t yyscanner,int lineNr);
 static void addIlineBreak(yyscan_t yyscanner,int lineNr);
+static void escapeLabel(QCString &label);
 
 #define unput_string(yytext,yyleng) do { for (int i=(int)yyleng-1;i>=0;i--) unput(yytext[i]); } while(0)
 
@@ -1918,25 +1921,93 @@ STopt  [^\n@\\]*
 
   /* ----- handle arguments of the section/subsection/.. commands ------- */
 
-<SectionLabel>{LABELID}                 { // first argument
-                                          yyextra->sectionLabel=yyextra->raisePrefix+yytext;
-                                          addOutput(yyscanner,yyextra->sectionLabel.data());
-                                          yyextra->sectionTitle.clear();
-                                          BEGIN(SectionTitle);
+<SectionLabel>{LABELID}                 {
+                                          yyextra->sectionLabel+=yytext;
                                         }
-<SectionLabel>{DOCNL}                   { // missing argument
-                                          warn(yyextra->fileName,yyextra->lineNr,
+<SectionLabel>{CMD}"lineinfo"("{}")?    {
+                                          yyextra->sectionLabel += QCString().setNum(yyextra->lineNr);
+                                        }
+<SectionLabel>{CMD}"fileinfo"("{"[^}]*"}")? {
+                                          FileInfo fi(yyextra->fileName.str());
+                                          bool hasOption = false;
+                                          QCString label;
+                                          if (yytext[yyleng-1] == '}') // has parameters
+                                          {
+                                            StringVector optList;
+                                            QCString txt = yytext;
+                                            QCString optStr = txt.mid(10,yyleng-11).stripWhiteSpace();
+                                            optList = split(optStr.str(),",");
+                                            for (const auto &opt_ : optList)
+                                            {
+                                              QCString optStripped = QCString(opt_).stripWhiteSpace();
+                                              std::string opt = optStripped.lower().str();
+                                              QCString result = fileInfoLookup(fi,opt);
+                                              if (!result.isEmpty())
+                                              {
+                                                if (hasOption) // oops: already found an option
+                                                {
+                                                  warn(yyextra->fileName,yyextra->lineNr,"Multiple options specified with \\fileinfo, discarding '{}'", optStripped);
+                                                }
+                                                else
+                                                {
+                                                  label = result;
+                                                }
+                                                hasOption = true;
+                                              }
+                                              else
+                                              {
+                                                warn(yyextra->fileName,yyextra->lineNr,"Unknown option specified with \\fileinfo: '{}'", optStripped);
+                                              }
+                                            }
+                                          }
+                                          if (!hasOption)
+                                          {
+                                            if (Config_getBool(FULL_PATH_NAMES))
+                                            {
+                                              label=stripFromPath(yyextra->fileName);
+                                            }
+                                            else
+                                            {
+                                              label=yyextra->fileName;
+                                            }
+                                          }
+                                          escapeLabel(label);
+                                          yyextra->sectionLabel+=label;
+                                        }
+<SectionLabel>{DOCNL}                   {
+                                          yyextra->sectionTitle.clear();
+                                          if (yyextra->sectionLabel.isEmpty())
+                                          { // missing argument
+                                            warn(yyextra->fileName,yyextra->lineNr,
                                               "\\section command has no label"
                                               );
+                                          }
+                                          else
+                                          {
+                                            yyextra->sectionLabel=yyextra->raisePrefix+yyextra->sectionLabel;
+                                            addOutput(yyscanner,yyextra->sectionLabel.data());
+                                            addSection(yyscanner);
+                                          }
                                           if (*yytext=='\n') yyextra->lineNr++;
                                           addOutput(yyscanner,'\n');
                                           BEGIN( Comment );
                                         }
 <SectionLabel>.                         { // invalid character for section label
-                                          warn(yyextra->fileName,yyextra->lineNr,
+                                          if (yyextra->sectionLabel.isEmpty())
+                                          {
+                                            warn(yyextra->fileName,yyextra->lineNr,
                                               "Invalid or missing section label"
                                               );
-                                          BEGIN(Comment);
+                                            BEGIN(Comment);
+                                          }
+                                          else
+                                          {
+                                            yyextra->sectionLabel=yyextra->raisePrefix+yyextra->sectionLabel;
+                                            addOutput(yyscanner,yyextra->sectionLabel.data());
+                                            yyextra->sectionTitle.clear();
+                                            unput_string(yytext,yyleng);
+                                            BEGIN(SectionTitle);
+                                          }
                                         }
 <SectionTitle>{STAopt}/"\n"             { // end of section title
                                           addSection(yyscanner);
@@ -3292,6 +3363,7 @@ static bool handleSection(yyscan_t yyscanner,const QCString &s, const StringVect
   setOutput(yyscanner,OutputDoc);
   //printf("handleSection(%s) raiseLevel=%d\n",qPrint(s),yyextra->raiseLevel);
   BEGIN(SectionLabel);
+  yyextra->sectionLabel.clear();
   // determine natural section level
   if      (s=="section")         yyextra->sectionLevel=SectionType::Section;
   else if (s=="subsection")      yyextra->sectionLevel=SectionType::Subsection;
@@ -3436,48 +3508,25 @@ static bool handleFileInfoSection(yyscan_t yyscanner,const QCString &cmdName, co
 {
   return handleFileInfoResult(yyscanner,cmdName, optList, true);
 }
+
+static QCString fileInfoLookup(const FileInfo &fi,const std::string &optionName)
+{
+  using OptionFunc = std::function<QCString(const FileInfo &)>;
+  static std::unordered_map<std::string,OptionFunc> options =
+  {
+    // name,       function producing the value
+    { "name",      [](const FileInfo &fi_) { return fi_.baseName();      } },
+    { "extension", [](const FileInfo &fi_) { return fi_.extension(true); } },
+    { "filename",  [](const FileInfo &fi_) { return fi_.fileName();      } },
+    { "directory", [](const FileInfo &fi_) { return fi_.dirPath();       } },
+    { "full",      [](const FileInfo &fi_) { return fi_.absFilePath();   } }
+  };
+  auto it = options.find(optionName);
+  return (it!=options.end()) ? it->second(fi) : QCString();
+}
+
 static bool handleFileInfoResult(yyscan_t yyscanner,const QCString &, const StringVector &optList, bool isSection)
 {
-  using OutputWriter = std::function<void(yyscan_t,FileInfo &,bool)>;
-  static std::unordered_map<std::string,OutputWriter> options =
-  { // name,        writer
-    { "name",      [](yyscan_t s,FileInfo &fi,bool isSect) { addOutput(s,fi.baseName());
-                                                             if (isSect)
-                                                             {
-                                                               struct yyguts_t *yyg = (struct yyguts_t*)s;
-                                                               yyextra->sectionTitle+=fi.baseName();
-                                                             }
-                                                           } },
-    { "extension", [](yyscan_t s,FileInfo &fi,bool isSect) { addOutput(s,fi.extension(true));
-                                                             if (isSect)
-                                                             {
-                                                               struct yyguts_t *yyg = (struct yyguts_t*)s;
-                                                               yyextra->sectionTitle+=fi.extension(true);
-                                                             }
-                                                           } },
-    { "filename",  [](yyscan_t s,FileInfo &fi,bool isSect) { addOutput(s,fi.fileName());
-                                                             if (isSect)
-                                                             {
-                                                               struct yyguts_t *yyg = (struct yyguts_t*)s;
-                                                               yyextra->sectionTitle+=fi.fileName();
-                                                             }
-                                                           } },
-    { "directory", [](yyscan_t s,FileInfo &fi,bool isSect) { addOutput(s,fi.dirPath());
-                                                             if (isSect)
-                                                             {
-                                                               struct yyguts_t *yyg = (struct yyguts_t*)s;
-                                                               yyextra->sectionTitle+=fi.dirPath();
-                                                             }
-                                                           } },
-    { "full",      [](yyscan_t s,FileInfo &fi,bool isSect) { addOutput(s,fi.absFilePath());
-                                                             if (isSect)
-                                                             {
-                                                               struct yyguts_t *yyg = (struct yyguts_t*)s;
-                                                               yyextra->sectionTitle+=fi.absFilePath();
-                                                             }
-                                                           } },
-  };
-
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   if (!yyextra->spaceBeforeCmd.isEmpty())
   {
@@ -3491,8 +3540,8 @@ static bool handleFileInfoResult(yyscan_t yyscanner,const QCString &, const Stri
   {
     QCString optStripped = QCString(opt_).stripWhiteSpace();
     std::string opt = optStripped.lower().str();
-    auto it = options.find(opt);
-    if (it != options.end())
+    QCString result = fileInfoLookup(fi,opt);
+    if (!result.isEmpty())
     {
       if (!first)
       {
@@ -3500,7 +3549,11 @@ static bool handleFileInfoResult(yyscan_t yyscanner,const QCString &, const Stri
       }
       else
       {
-        it->second(yyscanner,fi,isSection);
+        addOutput(yyscanner,result);
+        if (isSection)
+        {
+          yyextra->sectionTitle+=result;
+        }
       }
       first = false;
     }
@@ -4298,6 +4351,28 @@ static void addXRefItem(yyscan_t yyscanner,
   }
   yyextra->outputXRef.clear();
 }
+
+//-----------------------------------------------------------------------------
+
+// make label match LABELID pattern
+static void escapeLabel(QCString &label)
+{
+  if (label.isEmpty()) return;
+  char c = label[0];
+  if (!((c>='a' && c<='z') || (c>='A' && c<='Z') || c=='_' || c<0))
+  {
+    label[0]='_'; // replace invalid starting char by _
+  }
+  for (size_t i=1; i<label.size(); i++)
+  {
+    c = label[i];
+    if (!((c>='a' && c<='z') || (c>='A' && c<='Z') || (c>='0' && c<='9') || c=='_' || c<0))
+    {
+      label[i]='_'; // replace invalid char by _
+    }
+  }
+}
+
 
 //-----------------------------------------------------------------------------
 
