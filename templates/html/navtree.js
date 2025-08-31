@@ -740,10 +740,7 @@ function initNavTree(toroot,relpath,allMembersFile) {
             tr = tr.prev();
           }
           id = $(tr).attr('id');
-          let text = is_anon_enum ? 'anonymous enum' : $(this).find('a:first,div.groupHeader').text();
-          if (text.length==0) { // look for undocumented member as well
-            text = $(this).find('b:first').text();
-          }
+          let text = is_anon_enum ? 'anonymous enum' : $(this).find(':first-child').text();
           let isMemberGroupHeader = $(tr).hasClass('groupHeader');
           if ($(tr).is(":visible") && last_id!=id && id!==undefined) {
             if (isMemberGroupHeader && inMemberGroup) {
