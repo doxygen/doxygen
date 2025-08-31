@@ -645,7 +645,7 @@ class LocalToc
 /* 50 */ TSPEC(Default)           TSPEC(Delete)          TSPEC(NoExcept)          TSPEC(Attribute)    TSPEC(Property)           \
 /* 55 */ TSPEC(Readonly)          TSPEC(Bound)           TSPEC(Constrained)       TSPEC(Transient)    TSPEC(MaybeVoid)          \
 /* 60 */ TSPEC(MaybeDefault)      TSPEC(MaybeAmbiguous)  TSPEC(Published)         TSPEC(ConstEval)    TSPEC(ConstInit)          \
-/* 65 */ TSPEC(NoDiscard)
+/* 65 */ TSPEC(NoDiscard)         TSPEC(ThreadLocal)
 
 /** Wrapper class for a number of boolean properties.
  *  The properties are packed together, and initialized to false.

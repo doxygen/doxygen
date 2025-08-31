@@ -3334,7 +3334,7 @@ void ClassDefImpl::writeMemberList(OutputList &ol) const
             (prot!=Protection::Public || (virt!=Specifier::Normal && getLanguage()!=SrcLangExt::ObjC) ||
              md->isFriend() || md->isRelated() || md->isExplicit() ||
              md->isMutable() || (md->isInline() && Config_getBool(INLINE_INFO)) ||
-             md->isSignal() || md->isSlot() ||
+             md->isSignal() || md->isSlot() || md->isThreadLocal() ||
              (getLanguage()==SrcLangExt::IDL &&
               (md->isOptional() || md->isAttribute() || md->isUNOProperty())) ||
              md->isStatic() || lang==SrcLangExt::VHDL
@@ -3354,6 +3354,7 @@ void ClassDefImpl::writeMemberList(OutputList &ol) const
                                                    sl.emplace_back("inline");
             if (md->isExplicit())                  sl.emplace_back("explicit");
             if (md->isMutable())                   sl.emplace_back("mutable");
+            if (md->isThreadLocal())               sl.emplace_back("thread_local");
             if (prot==Protection::Protected)       sl.emplace_back("protected");
             else if (prot==Protection::Private)    sl.emplace_back("private");
             else if (prot==Protection::Package)    sl.emplace_back("package");
