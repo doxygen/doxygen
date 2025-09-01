@@ -339,9 +339,9 @@ static void generateBriefDoc(TextStream &t,const Definition *def)
                                      def,
                                      nullptr,
                                      brief,
-                                     DocOptions().
-                                     setSingleLine(true).
-                                     setLinkFromIndex(true))
+                                     DocOptions()
+                                     .setSingleLine(true)
+                                     .setLinkFromIndex(true))
                  };
     const DocNodeAST *astImpl = dynamic_cast<const DocNodeAST*>(ast.get());
     if (astImpl)

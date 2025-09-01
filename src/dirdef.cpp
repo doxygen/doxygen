@@ -278,8 +278,8 @@ void DirDefImpl::writeDetailedDescription(OutputList &ol,const QCString &title)
                      this,
                      nullptr,
                      documentation()+"\n",
-                     DocOptions().
-                     setIndexWords(true));
+                     DocOptions()
+                     .setIndexWords(true));
     }
   }
 }
@@ -296,8 +296,8 @@ void DirDefImpl::writeBriefDescription(OutputList &ol)
                                      this,
                                      nullptr,
                                      briefDescription(),
-                                     DocOptions().
-                                     setIndexWords(true))
+                                     DocOptions()
+                                     .setIndexWords(true))
                 };
     if (!ast->isEmpty())
     {
@@ -402,9 +402,9 @@ void DirDefImpl::writeSubDirList(OutputList &ol)
                          dd,
                          nullptr,
                          dd->briefDescription(),
-                         DocOptions().
-                         setSingleLine(true).
-                         setLinkFromIndex(true));
+                         DocOptions()
+                         .setSingleLine(true)
+                         .setLinkFromIndex(true));
           ol.endMemberDescription();
         }
         ol.endMemberDeclaration(dd->anchor(),QCString());
@@ -488,9 +488,9 @@ void DirDefImpl::writeFileList(OutputList &ol)
                          fd,
                          nullptr,
                          fd->briefDescription(),
-                         DocOptions().
-                         setSingleLine(true).
-                         setLinkFromIndex(true));
+                         DocOptions()
+                         .setSingleLine(true)
+                         .setLinkFromIndex(true));
           ol.endMemberDescription();
         }
         ol.endMemberDeclaration(fd->anchor(),QCString());

@@ -9987,9 +9987,9 @@ static void generateExampleDocs()
                               nullptr,                                  // memberDef
                               (pd->briefDescription().isEmpty()?"":pd->briefDescription()+"\n\n")+
                               pd->documentation()+"\n\n\\include"+lineNoOptStr+" "+pd->name(), // docs
-                              DocOptions().
-                              setIndexWords(true).
-                              setExample(pd->name()));
+                              DocOptions()
+                              .setIndexWords(true)
+                              .setExample(pd->name()));
     endFile(*g_outputList); // contains g_outputList->endContents()
   }
   g_outputList->enable(OutputType::Man);

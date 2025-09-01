@@ -2623,9 +2623,9 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
                                      getOuterScope()?getOuterScope():d,
                                      this,
                                      briefDescription(),
-                                     DocOptions().
-                                     setIndexWords(inheritedFrom==nullptr).
-                                     setSingleLine(true))
+                                     DocOptions()
+                                     .setIndexWords(inheritedFrom==nullptr)
+                                     .setSingleLine(true))
                 };
     if (!ast->isEmpty())
     {
@@ -3280,8 +3280,8 @@ void MemberDefImpl::_writeEnumValues(OutputList &ol,const Definition *container,
                          getOuterScope()?getOuterScope():container,
                          fmd,
                          fmd->briefDescription(),
-                         DocOptions().
-                         setIndexWords(true));
+                         DocOptions()
+                         .setIndexWords(true));
         }
         if (hasDetails)
         {
@@ -3290,8 +3290,8 @@ void MemberDefImpl::_writeEnumValues(OutputList &ol,const Definition *container,
                          getOuterScope()?getOuterScope():container,
                          fmd,
                          fmd->documentation()+"\n",
-                         DocOptions().
-                         setIndexWords(true));
+                         DocOptions()
+                         .setIndexWords(true));
         }
         ol.endDescTableData();
         ol.endDescTableRow();
@@ -3850,8 +3850,8 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
                    scopedContainer,
                    this,
                    brief,
-                   DocOptions().
-                   setSingleLine(true));
+                   DocOptions()
+                   .setSingleLine(true));
     ol.endParagraph();
   }
 
@@ -3873,8 +3873,8 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
                      scopedContainer,
                      this,
                      detailed+"\n",
-                     DocOptions().
-                     setIndexWords(true));
+                     DocOptions()
+                     .setIndexWords(true));
     }
 
     if (!inbodyDocumentation().isEmpty())
@@ -3884,8 +3884,8 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
                      scopedContainer,
                      this,
                      inbodyDocumentation()+"\n",
-                     DocOptions().
-                     setIndexWords(true));
+                     DocOptions()
+                     .setIndexWords(true));
     }
   }
   else if (!brief.isEmpty() && (Config_getBool(REPEAT_BRIEF) || !Config_getBool(BRIEF_MEMBER_DESC)))
@@ -3897,8 +3897,8 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
                      scopedContainer,
                      this,
                      inbodyDocumentation()+"\n",
-                     DocOptions().
-                     setIndexWords(true));
+                     DocOptions()
+                     .setIndexWords(true));
     }
   }
 
@@ -3914,8 +3914,8 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
                  scopedContainer,
                  this,         // memberDef
                  inlineArgListToDoc(docArgList),    // docStr
-                 DocOptions().
-                 setIndexWords(true));
+                 DocOptions()
+                 .setIndexWords(true));
 
   const ArgumentList &docTemplateArgList = m_templateMaster ?
                                    m_templateMaster->templateArguments() :
@@ -3925,8 +3925,8 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
                  scopedContainer,
                  this,         // memberDef
                  inlineTemplateArgListToDoc(docTemplateArgList),    // docStr
-                 DocOptions().
-                 setIndexWords(true));
+                 DocOptions()
+                 .setIndexWords(true));
 
   _writeEnumValues(ol,scopedContainer,cfname,ciname,cname);
   _writeReimplements(ol);
@@ -4072,8 +4072,8 @@ void MemberDefImpl::writeMemberDocSimple(OutputList &ol, const Definition *conta
                    briefLine(),
                    getOuterScope()?getOuterScope():container,this,
                    brief,
-                   DocOptions().
-                   setSingleLine(true));
+                   DocOptions()
+                   .setSingleLine(true));
   }
 
   /* write detailed description */

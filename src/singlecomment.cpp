@@ -34,9 +34,9 @@ static void generateHtmlOutput(const QCString &fileName,const QCString &doc)
                                 nullptr,
                                 nullptr,
                                 doc,
-                                DocOptions().
-                                setMarkdownSupport(true).
-                                setAutolinkSupport(true))
+                                DocOptions()
+                                .setMarkdownSupport(true)
+                                .setAutolinkSupport(true))
            };
   const DocNodeAST *astImpl = dynamic_cast<const DocNodeAST*>(ast.get());
   if (astImpl)

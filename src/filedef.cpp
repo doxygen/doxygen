@@ -514,8 +514,8 @@ void FileDefImpl::writeDetailedDescription(OutputList &ol,const QCString &title)
                      this,
                      nullptr,
                      documentation()+"\n",
-                     DocOptions().
-                     setIndexWords(true));
+                     DocOptions()
+                     .setIndexWords(true));
     }
     //printf("Writing source ref for file %s\n",qPrint(name()));
     if (Config_getBool(SOURCE_BROWSER))
@@ -551,9 +551,9 @@ void FileDefImpl::writeBriefDescription(OutputList &ol)
                                      this,
                                      nullptr,
                                      briefDescription(),
-                                     DocOptions().
-                                     setIndexWords(true).
-                                     setSingleLine(true))
+                                     DocOptions()
+                                     .setIndexWords(true)
+                                     .setSingleLine(true))
                 };
     if (!ast->isEmpty())
     {

@@ -1666,9 +1666,9 @@ void VhdlDocGen::writeVHDLDeclaration(MemberDefMutable* mdef,OutputList &ol,
                    mdef->getOuterScope()?mdef->getOuterScope():d,
                    mdef,
                    s,
-                   DocOptions().
-                   setIndexWords(true).
-                   setSingleLine(true));
+                   DocOptions()
+                   .setIndexWords(true)
+                   .setSingleLine(true));
     if (detailsVisible)
     {
       ol.pushGeneratorState();
@@ -1767,8 +1767,8 @@ void VhdlDocGen::writeVHDLDeclarations(const MemberList* ml,OutputList &ol,
                    nullptr,
                    nullptr,
                    subtitle,
-                   DocOptions().
-                   setSingleLine(true));
+                   DocOptions()
+                   .setSingleLine(true));
     ol.endMemberSubtitle();
   } //printf("memberGroupList=%p\n",memberGroupList);
 

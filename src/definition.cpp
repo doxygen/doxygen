@@ -1467,9 +1467,9 @@ void DefinitionImpl::writeToc(OutputList &ol, const LocalToc &localToc) const
                        scope,
                        md,
                        docTitle,
-                       DocOptions().
-                       setIndexWords(true).
-                       setSingleLine(true));
+                       DocOptions()
+                       .setIndexWords(true)
+                       .setSingleLine(true));
         ol.endTocEntry(si);
       }
     }

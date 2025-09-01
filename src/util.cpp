@@ -5297,8 +5297,8 @@ QCString parseCommentAsText(const Definition *scope,const MemberDef *md,
                                    scope,
                                    md,
                                    doc,
-                                   DocOptions().
-                                   setAutolinkSupport(false))
+                                   DocOptions()
+                                   .setAutolinkSupport(false))
               };
   auto astImpl = dynamic_cast<const DocNodeAST*>(ast.get());
   if (astImpl)
@@ -5392,8 +5392,8 @@ void writeTypeConstraints(OutputList &ol,const Definition *d,const ArgumentList 
                    d,
                    nullptr,
                    a.docs,
-                   DocOptions().
-                   setIndexWords(true));
+                   DocOptions()
+                   .setIndexWords(true));
     ol.endConstraintDocs();
   }
   ol.endConstraintList();

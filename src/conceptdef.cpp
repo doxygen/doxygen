@@ -332,9 +332,9 @@ void ConceptDefImpl::writeBriefDescription(OutputList &ol) const
                                      this,
                                      nullptr,
                                      briefDescription(),
-                                     DocOptions().
-                                     setIndexWords(true).
-                                     setSingleLine(true))
+                                     DocOptions()
+                                     .setIndexWords(true)
+                                     .setSingleLine(true))
                 };
     if (!ast->isEmpty())
     {
@@ -498,8 +498,8 @@ void ConceptDefImpl::writeDetailedDescription(OutputList &ol,const QCString &tit
                      this,
                      nullptr,
                      documentation(),
-                     DocOptions().
-                     setIndexWords(true));
+                     DocOptions()
+                     .setIndexWords(true));
     }
 
     writeSourceDef(ol);
@@ -703,8 +703,8 @@ void ConceptDefImpl::writeDeclarationLink(OutputList &ol,bool &found,const QCStr
                                        this,
                                        nullptr,
                                        briefDescription(),
-                                       DocOptions().
-                                       setSingleLine(true))
+                                       DocOptions()
+                                       .setSingleLine(true))
                   };
       if (!ast->isEmpty())
       {

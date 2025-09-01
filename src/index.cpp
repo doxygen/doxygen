@@ -1516,9 +1516,9 @@ static void writeSingleFileIndex(OutputList &ol,const FileDef *fd)
                      fd,
                      nullptr,
                      fd->briefDescription(true),
-                     DocOptions().
-                     setSingleLine(true).
-                     setLinkFromIndex(true));
+                     DocOptions()
+                     .setSingleLine(true)
+                     .setLinkFromIndex(true));
     }
     if (doc)
     {
@@ -2073,9 +2073,9 @@ static void writeNamespaceIndex(OutputList &ol)
                        nd.get(),
                        nullptr,
                        nd->briefDescription(true),
-                       DocOptions().
-                       setSingleLine(true).
-                       setLinkFromIndex(true));
+                       DocOptions()
+                       .setSingleLine(true)
+                       .setLinkFromIndex(true));
       }
       ol.endIndexValue(nd->getOutputFileBase(),hasBrief);
 
@@ -2197,9 +2197,9 @@ static void writeAnnotatedClassList(OutputList &ol,ClassDef::CompoundType ct)
                        cd.get(),
                        nullptr,
                        cd->briefDescription(true),
-                       DocOptions().
-                       setSingleLine(true).
-                       setLinkFromIndex(true));
+                       DocOptions()
+                       .setSingleLine(true)
+                       .setLinkFromIndex(true));
       }
       ol.endIndexValue(cd->getOutputFileBase(),hasBrief);
 
@@ -4162,8 +4162,8 @@ static void writeGroupTreeNode(OutputList &ol, const GroupDef *gd, int level, FT
                    gd,
                    nullptr,
                    gd->groupTitle(),
-                   DocOptions().
-                   setSingleLine(true));
+                   DocOptions()
+                   .setSingleLine(true));
     ol.endIndexItem(gd->getReference(),gd->getOutputFileBase());
 
     if (gd->isReference())
@@ -4734,9 +4734,9 @@ static void writeConceptIndex(OutputList &ol)
                        cd.get(),
                        nullptr,
                        cd->briefDescription(true),
-                       DocOptions().
-                       setSingleLine(true).
-                       setLinkFromIndex(true));
+                       DocOptions()
+                       .setSingleLine(true)
+                       .setLinkFromIndex(true));
       }
       ol.endIndexValue(cd->getOutputFileBase(),hasBrief);
 
@@ -4925,8 +4925,8 @@ static void writeIndex(OutputList &ol)
                      Doxygen::mainPage.get(),
                      nullptr,
                      Doxygen::mainPage->title(),
-                     DocOptions().
-                     setSingleLine(true));
+                     DocOptions()
+                     .setSingleLine(true));
       headerWritten = TRUE;
     }
   }
@@ -4965,8 +4965,8 @@ static void writeIndex(OutputList &ol)
                    Doxygen::mainPage.get(),
                    nullptr,
                    Doxygen::mainPage->documentation(),
-                   DocOptions().
-                   setIndexWords(true));
+                   DocOptions()
+                   .setIndexWords(true));
     ol.endTextBlock();
     ol.endPageDoc();
   }

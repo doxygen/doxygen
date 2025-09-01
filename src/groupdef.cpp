@@ -838,8 +838,8 @@ void GroupDefImpl::writeDetailedDescription(OutputList &ol,const QCString &title
                      this,
                      nullptr,
                      documentation()+"\n",
-                     DocOptions().
-                     setIndexWords(true));
+                     DocOptions()
+                     .setIndexWords(true));
     }
 
     // write inbody documentation
@@ -850,8 +850,8 @@ void GroupDefImpl::writeDetailedDescription(OutputList &ol,const QCString &title
                      this,
                      nullptr,
                      inbodyDocumentation()+"\n",
-                     DocOptions().
-                     setIndexWords(true));
+                     DocOptions()
+                     .setIndexWords(true));
     }
   }
 }
@@ -867,9 +867,9 @@ void GroupDefImpl::writeBriefDescription(OutputList &ol)
                                      this,
                                      nullptr,
                                      briefDescription(),
-                                     DocOptions().
-                                     setIndexWords(true).
-                                     setSingleLine(true))
+                                     DocOptions()
+                                     .setIndexWords(true)
+                                     .setSingleLine(true))
                 };
     if (!ast->isEmpty())
     {
@@ -951,8 +951,8 @@ void GroupDefImpl::writeFiles(OutputList &ol,const QCString &title)
                        fd,
                        nullptr,
                        fd->briefDescription(),
-                       DocOptions().
-                       setSingleLine(true));
+                       DocOptions()
+                       .setSingleLine(true));
         ol.endMemberDescription();
       }
       ol.endMemberDeclaration(QCString(),QCString());
@@ -997,8 +997,8 @@ void GroupDefImpl::writeNestedGroups(OutputList &ol,const QCString &title)
                        gd,
                        nullptr,
                        gd->groupTitle(),
-                       DocOptions().
-                       setSingleLine(true));
+                       DocOptions()
+                       .setSingleLine(true));
         ol.endIndexItem(gd->getReference(),gd->getOutputFileBase());
         ol.endMemberItem(OutputGenerator::MemberItemType::Normal);
         if (!gd->briefDescription().isEmpty() && Config_getBool(BRIEF_MEMBER_DESC))
@@ -1009,8 +1009,8 @@ void GroupDefImpl::writeNestedGroups(OutputList &ol,const QCString &title)
                          gd,
                          nullptr,
                          gd->briefDescription(),
-                         DocOptions().
-                         setSingleLine(true));
+                         DocOptions()
+                         .setSingleLine(true));
           ol.endMemberDescription();
         }
         ol.endMemberDeclaration(QCString(),QCString());
@@ -1048,8 +1048,8 @@ void GroupDefImpl::writeDirs(OutputList &ol,const QCString &title)
                        dd,
                        nullptr,
                        dd->briefDescription(),
-                       DocOptions().
-                       setSingleLine(true));
+                       DocOptions()
+                       .setSingleLine(true));
         ol.endMemberDescription();
       }
       ol.endMemberDeclaration(QCString(),QCString());
@@ -1103,8 +1103,8 @@ void GroupDefImpl::writePageDocumentation(OutputList &ol)
                      pd,
                      nullptr,
                      (pd->documentation()+pd->inbodyDocumentation()),
-                     DocOptions().
-                     setIndexWords(true));
+                     DocOptions()
+                     .setIndexWords(true));
       ol.endTextBlock();
     }
   }
@@ -1248,10 +1248,10 @@ void GroupDefImpl::writeDocumentation(OutputList &ol)
                  this,
                  nullptr,
                  m_title,
-                 DocOptions().
-                 setIndexWords(true).
-                 setSingleLine(true).
-                 setAutolinkSupport(false));
+                 DocOptions()
+                 .setIndexWords(true)
+                 .setSingleLine(true)
+                 .setAutolinkSupport(false));
   ol.popGeneratorState();
   //1.}
   addGroupListToTitle(ol,this);

@@ -299,9 +299,9 @@ void PageDefImpl::writeDocumentation(OutputList &ol)
                      this,
                      nullptr,
                      si->title(),
-                     DocOptions().
-                     setSingleLine(true).
-                     setAutolinkSupport(false));
+                     DocOptions()
+                     .setSingleLine(true)
+                     .setAutolinkSupport(false));
       ol.endSection(si->label(),si->type());
     }
   }
@@ -327,10 +327,10 @@ void PageDefImpl::writeDocumentation(OutputList &ol)
                    this,
                    nullptr,
                    title,
-                   DocOptions().
-                   setIndexWords(true).
-                   setSingleLine(true).
-                   setAutolinkSupport(false));
+                   DocOptions()
+                   .setIndexWords(true)
+                   .setSingleLine(true)
+                   .setAutolinkSupport(false));
     ol.endTitleHead(getOutputFileBase(),title);
     ol.endHeaderSection();
   }
@@ -396,8 +396,8 @@ void PageDefImpl::writePageDocumentation(OutputList &ol) const
       this,                // context
       nullptr,             // memberdef
       docStr,              // docStr
-      DocOptions().
-      setIndexWords(true));
+      DocOptions()
+      .setIndexWords(true));
   ol.endTextBlock();
 
   if (hasSubPages())

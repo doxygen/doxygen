@@ -3515,11 +3515,11 @@ static QCString fileInfoLookup(const FileInfo &fi,const std::string &optionName)
   static std::unordered_map<std::string,OptionFunc> options =
   {
     // name,       function producing the value
-    { "name",      [](const FileInfo &fi_) { return fi_.baseName();      } },
-    { "extension", [](const FileInfo &fi_) { return fi_.extension(true); } },
-    { "filename",  [](const FileInfo &fi_) { return fi_.fileName();      } },
-    { "directory", [](const FileInfo &fi_) { return fi_.dirPath();       } },
-    { "full",      [](const FileInfo &fi_) { return fi_.absFilePath();   } }
+    { "name",      [](const FileInfo &fi_) -> QCString { return fi_.baseName();      } },
+    { "extension", [](const FileInfo &fi_) -> QCString { return fi_.extension(true); } },
+    { "filename",  [](const FileInfo &fi_) -> QCString { return fi_.fileName();      } },
+    { "directory", [](const FileInfo &fi_) -> QCString { return fi_.dirPath();       } },
+    { "full",      [](const FileInfo &fi_) -> QCString { return fi_.absFilePath();   } }
   };
   auto it = options.find(optionName);
   return (it!=options.end()) ? it->second(fi) : QCString();

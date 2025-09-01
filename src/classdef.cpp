@@ -1569,9 +1569,9 @@ void ClassDefImpl::writeBriefDescription(OutputList &ol,bool exampleFlag) const
                    this,
                    nullptr,
                    briefDescription(),
-                   DocOptions().
-                   setIndexWords(true).
-                   setSingleLine(true));
+                   DocOptions()
+                   .setIndexWords(true)
+                   .setSingleLine(true));
     ol.pushGeneratorState();
     ol.disable(OutputType::RTF);
     ol.writeString(" \n");
@@ -1625,8 +1625,8 @@ void ClassDefImpl::writeDetailedDocumentationBody(OutputList &ol) const
                    this,
                    nullptr,
                    documentation(),
-                   DocOptions().
-                   setIndexWords(true));
+                   DocOptions()
+                   .setIndexWords(true));
   }
   // write type constraints
   writeTypeConstraints(ol,this,m_typeConstraints);
@@ -1636,8 +1636,8 @@ void ClassDefImpl::writeDetailedDocumentationBody(OutputList &ol) const
         this,
         nullptr,         // memberDef
         inlineTemplateArgListToDoc(m_tempArgs),    // docStr
-        DocOptions().
-        setIndexWords(true));
+        DocOptions()
+        .setIndexWords(true));
 
   // write examples
   if (hasExamples())
@@ -2708,8 +2708,8 @@ void ClassDefImpl::writeDeclarationLink(OutputList &ol,bool &found,const QCStrin
                                        this,
                                        nullptr,
                                        briefDescription(),
-                                       DocOptions().
-                                       setSingleLine(true))
+                                       DocOptions()
+                                       .setSingleLine(true))
                   };
       if (!ast->isEmpty())
       {

@@ -583,8 +583,8 @@ void ModuleDefImpl::writeDetailedDescription(OutputList &ol,const QCString &titl
                      this,
                      nullptr,
                      documentation()+"\n",
-                     DocOptions().
-                     setIndexWords(true));
+                     DocOptions()
+                     .setIndexWords(true));
     }
     ol.endTextBlock();
   }
@@ -601,9 +601,9 @@ void ModuleDefImpl::writeBriefDescription(OutputList &ol)
                                      this,
                                      nullptr,
                                      briefDescription(),
-                                     DocOptions().
-                                     setIndexWords(true).
-                                     setSingleLine(true))
+                                     DocOptions()
+                                     .setIndexWords(true)
+                                     .setSingleLine(true))
                 };
     if (!ast->isEmpty())
     {
@@ -914,8 +914,8 @@ void ModuleDefImpl::writeDeclarationLink(OutputList &ol,bool &found,const QCStri
                                        this,
                                        nullptr,
                                        briefDescription(),
-                                       DocOptions().
-                                       setSingleLine(true))
+                                       DocOptions()
+                                       .setSingleLine(true))
                    };
       if (!ast->isEmpty())
       {
@@ -966,8 +966,8 @@ void ModuleDefImpl::writeExports(OutputList &ol,const QCString &title)
                          mod,
                          nullptr,
                          mod->briefDescription(),
-                         DocOptions().
-                         setSingleLine(true));
+                         DocOptions()
+                         .setSingleLine(true));
           ol.endMemberDescription();
         }
         ol.endMemberDeclaration(QCString(),QCString());
@@ -1022,8 +1022,8 @@ void ModuleDefImpl::writeFiles(OutputList &ol,const QCString &title)
                          fd,
                          nullptr,
                          fd->briefDescription(),
-                         DocOptions().
-                         setSingleLine(true));
+                         DocOptions()
+                         .setSingleLine(true));
           ol.endMemberDescription();
         }
         ol.endMemberDeclaration(QCString(),QCString());

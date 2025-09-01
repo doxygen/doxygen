@@ -416,9 +416,9 @@ void MemberList::writePlainDeclarations(OutputList &ol, bool inGroup,
                                                  cd,
                                                  md,
                                                  md->briefDescription(),
-                                                 DocOptions().
-                                                 setIndexWords(true).
-                                                 setSingleLine(true))
+                                                 DocOptions()
+                                                 .setIndexWords(true)
+                                                 .setSingleLine(true))
                             };
                 if (!ast->isEmpty())
                 {

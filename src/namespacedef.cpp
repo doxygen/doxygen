@@ -723,8 +723,8 @@ void NamespaceDefImpl::writeDetailedDescription(OutputList &ol,const QCString &t
                      this,
                      nullptr,
                      documentation()+"\n",
-                     DocOptions().
-                     setIndexWords(true));
+                     DocOptions()
+                     .setIndexWords(true));
     }
     ol.endTextBlock();
   }
@@ -741,9 +741,9 @@ void NamespaceDefImpl::writeBriefDescription(OutputList &ol)
                                      this,
                                      nullptr,
                                      briefDescription(),
-                                     DocOptions().
-                                     setIndexWords(true).
-                                     setSingleLine(true))
+                                     DocOptions()
+                                     .setIndexWords(true)
+                                     .setSingleLine(true))
                  };
     if (!ast->isEmpty())
     {
@@ -1432,8 +1432,8 @@ void NamespaceLinkedRefMap::writeDeclaration(OutputList &ol,const QCString &titl
                        nd,
                        nullptr,
                        nd->briefDescription(),
-                       DocOptions().
-                       setSingleLine(true));
+                       DocOptions()
+                       .setSingleLine(true));
         ol.endMemberDescription();
       }
       ol.endMemberDeclaration(QCString(),QCString());

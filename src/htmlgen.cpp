@@ -623,20 +623,20 @@ static QCString substituteHtmlKeywords(const QCString &file,
   result = substituteKeywords(file,result,
   {
     // keyword           value getter
-    { "$datetime",       [&]() { return "<span class=\"datetime\"></span>"; } },
-    { "$date",           [&]() { return "<span class=\"date\"></span>";     } },
-    { "$time",           [&]() { return "<span class=\"time\"></span>";     } },
-    { "$year",           [&]() { return "<span class=\"year\"></span>";     } },
-    { "$navpath",        [&]() { return navPath;        } },
-    { "$stylesheet",     [&]() { return cssFile;        } },
-    { "$treeview",       [&]() { return treeViewCssJs;  } },
-    { "$searchbox",      [&]() { return searchBox;      } },
-    { "$search",         [&]() { return searchCssJs;    } },
-    { "$mathjax",        [&]() { return mathJaxJs;      } },
-    { "$darkmode",       [&]() { return darkModeJs;     } },
-    { "$generatedby",    [&]() { return generatedBy;    } },
-    { "$extrastylesheet",[&]() { return extraCssText;   } },
-    { "$relpath$",       [&]() { return relPath;        } } //<-- obsolete: for backwards compatibility only
+    { "$datetime",       [&]() -> QCString { return "<span class=\"datetime\"></span>"; } },
+    { "$date",           [&]() -> QCString { return "<span class=\"date\"></span>";     } },
+    { "$time",           [&]() -> QCString { return "<span class=\"time\"></span>";     } },
+    { "$year",           [&]() -> QCString { return "<span class=\"year\"></span>";     } },
+    { "$navpath",        [&]() -> QCString { return navPath;        } },
+    { "$stylesheet",     [&]() -> QCString { return cssFile;        } },
+    { "$treeview",       [&]() -> QCString { return treeViewCssJs;  } },
+    { "$searchbox",      [&]() -> QCString { return searchBox;      } },
+    { "$search",         [&]() -> QCString { return searchCssJs;    } },
+    { "$mathjax",        [&]() -> QCString { return mathJaxJs;      } },
+    { "$darkmode",       [&]() -> QCString { return darkModeJs;     } },
+    { "$generatedby",    [&]() -> QCString { return generatedBy;    } },
+    { "$extrastylesheet",[&]() -> QCString { return extraCssText;   } },
+    { "$relpath$",       [&]() -> QCString { return relPath;        } } //<-- obsolete: for backwards compatibility only
   });
 
   result = substitute(result,"$relpath^",relPath); //<-- must be done after the previous substitutions
