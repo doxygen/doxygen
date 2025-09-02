@@ -1117,12 +1117,15 @@ int Markdown::Private::processEmphasis(std::string_view data,size_t offset)
   AUTO_TRACE("data='{}' offset={}",Trace::trunc(data),offset);
   const size_t size = data.size();
 
-  if ((offset>0 && !isOpenEmphChar(data.data()[-1])) || // invalid char before * or _
-      (size>1 && data[0]!=data[1] && !(isIdChar(data[1]) || extraChar(data[1]))) || // invalid char after * or _
-      (size>2 && data[0]==data[1] && !(isIdChar(data[2]) || extraChar(data[2]))))   // invalid char after ** or __
+  if (!(offset>1 && static_cast<unsigned char>(data.data()[-2])==0xc2 && static_cast<unsigned char>(data.data()[-1])==0xa0)) // check UTF-8 non-breaking space
   {
-    AUTO_TRACE_EXIT("invalid surrounding characters");
-    return 0;
+    if ((offset>0 && !isOpenEmphChar(data.data()[-1])) || // invalid char before * or _
+        (size>1 && data[0]!=data[1] && !(isIdChar(data[1]) || extraChar(data[1]))) || // invalid char after * or _
+        (size>2 && data[0]==data[1] && !(isIdChar(data[2]) || extraChar(data[2]))))   // invalid char after ** or __
+    {
+      AUTO_TRACE_EXIT("invalid surrounding characters");
+      return 0;
+    }
   }
 
   char c = data[0];
