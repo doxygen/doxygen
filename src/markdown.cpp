@@ -89,11 +89,19 @@ enum class ExplicitPageResult
    c=='>' || c==':' || c==',' || \
    c==';' || c=='\'' || c=='"' || c=='`')
 
-// is character at position i in data allowed before an emphasis section
+// is character c allowed before an emphasis section
 #define isOpenEmphChar(c) \
   (c=='\n' || c==' ' || c=='\'' || c=='<' || \
    c=='>'  || c=='{' || c=='('  || c=='[' || \
    c==','  || c==':' || c==';')
+
+// test for non breakable space (UTF-8)
+#define isUtf8Nbsp(c1,c2) \
+  (c1==static_cast<char>(0xc2) && c2==static_cast<char>(0xa0))
+
+#define isAllowedEmphStr(data,offset) \
+  (!(offset>0 && isOpenEmphChar(data.data()[-1])) && \
+   !(offset>1 && isUtf8Nbsp(data.data()[-2],data.data()[-1])))
 
 // is character at position i in data an escape that prevents ending an emphasis section
 // so for example *bla (*.txt) is cool*
@@ -1117,7 +1125,7 @@ int Markdown::Private::processEmphasis(std::string_view data,size_t offset)
   AUTO_TRACE("data='{}' offset={}",Trace::trunc(data),offset);
   const size_t size = data.size();
 
-  if ((offset>0 && !isOpenEmphChar(data.data()[-1])) || // invalid char before * or _
+  if (isAllowedEmphStr(data,offset) || // invalid char before * or _
       (size>1 && data[0]!=data[1] && !(isIdChar(data[1]) || extraChar(data[1]))) || // invalid char after * or _
       (size>2 && data[0]==data[1] && !(isIdChar(data[2]) || extraChar(data[2]))))   // invalid char after ** or __
   {
