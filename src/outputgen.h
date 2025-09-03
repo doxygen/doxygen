@@ -320,6 +320,9 @@ class OutputGenIntf
     virtual void endLocalToc() = 0;
     virtual void startTocEntry(const SectionInfo *si) = 0;
     virtual void endTocEntry(const SectionInfo *si) = 0;
+    virtual void generateDocTocEntry(const QCString &fileName,int startLine,const SectionInfo *si,
+                     const Definition *ctx,const MemberDef *md,const QCString &docStr,
+                     const DocOptions &options,int id) = 0;
     virtual void cleanup() = 0;
     virtual void startPlainFile(const QCString &name) = 0;
     virtual void endPlainFile() = 0;

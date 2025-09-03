@@ -749,6 +749,10 @@ class OutputList
     { foreach(&OutputGenIntf::startTocEntry,si); }
     void endTocEntry(const SectionInfo *si)
     { foreach(&OutputGenIntf::endTocEntry,si); }
+    void generateDocTocEntry(const QCString &fileName,int startLine,const SectionInfo *si,
+                     const Definition *ctx,const MemberDef *md,const QCString &docStr,
+                     const DocOptions &options)
+    { foreach(&OutputGenIntf::generateDocTocEntry,fileName,startLine,si,ctx,md,docStr,options,m_id); }
     void cleanup()
     { foreach(&OutputGenIntf::cleanup); }
     void startPlainFile(const QCString &name)

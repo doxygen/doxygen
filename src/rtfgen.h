@@ -302,6 +302,9 @@ class RTFGenerator : public OutputGenerator, public OutputGenIntf
     void endLocalToc() override {}
     void startTocEntry(const SectionInfo *) override {}
     void endTocEntry(const SectionInfo *) override {}
+    void generateDocTocEntry(const QCString &fileName,int startLine,const SectionInfo *si,
+                     const Definition *ctx,const MemberDef *md,const QCString &docStr,
+                     const DocOptions &options,int id) override {}
 
     void startPlainFile(const QCString &name) override { OutputGenerator::startPlainFile(name); }
     void endPlainFile() override { OutputGenerator::endPlainFile(); }
