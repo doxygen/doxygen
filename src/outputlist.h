@@ -380,8 +380,8 @@ class OutputList
     // OutputGenIntf implementation
     //////////////////////////////////////////////////
 
-    void writeDoc(const IDocNodeAST *ast,const Definition *ctx,const MemberDef *md)
-    { foreach(&OutputGenIntf::writeDoc,ast,ctx,md,m_id); }
+    void writeDoc(const IDocNodeAST *ast,const Definition *ctx,const MemberDef *md,int sectionLevel=-1)
+    { foreach(&OutputGenIntf::writeDoc,ast,ctx,md,m_id,sectionLevel); }
     void startIndexSection(IndexSection is)
     { foreach(&OutputGenIntf::startIndexSection,is); }
     void endIndexSection(IndexSection is)

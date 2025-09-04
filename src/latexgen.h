@@ -115,7 +115,7 @@ class LatexGenerator : public OutputGenerator, public OutputGenIntf
     std::unique_ptr<OutputGenIntf> clone() override { return std::make_unique<LatexGenerator>(*this); }
     void addCodeGen(OutputCodeList &list) override;
     void cleanup() override;
-    void writeDoc(const IDocNodeAST *node,const Definition *ctx,const MemberDef *,int id) override;
+    void writeDoc(const IDocNodeAST *node,const Definition *ctx,const MemberDef *,int id,int sectionLevel) override;
     void startFile(const QCString &name,bool isSource,const QCString &manName,const QCString &title,int id,int hierarchyLevel) override;
     void endFile() override;
 

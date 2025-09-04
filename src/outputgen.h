@@ -131,7 +131,7 @@ class OutputGenIntf
     virtual OutputType type() const = 0;
     virtual std::unique_ptr<OutputGenIntf> clone() = 0;
     virtual void addCodeGen(OutputCodeList &list) = 0;
-    virtual void writeDoc(const IDocNodeAST *ast,const Definition *ctx,const MemberDef *md, int id) = 0;
+    virtual void writeDoc(const IDocNodeAST *ast,const Definition *ctx,const MemberDef *md, int id,int sectionLevel) = 0;
     virtual void startIndexSection(IndexSection is) = 0;
     virtual void endIndexSection(IndexSection is) = 0;
     virtual void writePageLink(const QCString &name,bool first) = 0;

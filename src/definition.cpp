@@ -1469,7 +1469,9 @@ void DefinitionImpl::writeToc(OutputList &ol, const LocalToc &localToc) const
                        docTitle,
                        DocOptions()
                        .setIndexWords(true)
-                       .setSingleLine(true));
+                       .setSingleLine(true)
+                       .setSectionLevel(si->type().level())
+                      );
         ol.endTocEntry(si);
       }
     }

@@ -726,11 +726,11 @@ DB_GEN_C
     m_pageLinks += link;
 }
 
-void DocbookGenerator::writeDoc(const IDocNodeAST *ast,const Definition *ctx,const MemberDef *,int)
+void DocbookGenerator::writeDoc(const IDocNodeAST *ast,const Definition *ctx,const MemberDef *,int,int sectionLevel)
 {
 DB_GEN_C
   auto astImpl = dynamic_cast<const DocNodeAST*>(ast);
-  if (astImpl)
+  if (astImpl && sectionLevel<=m_tocState.maxLevel)
   {
     DocbookDocVisitor visitor(m_t,*m_codeList,ctx?ctx->getDefFileExtension():QCString());
     std::visit(visitor,astImpl->root);

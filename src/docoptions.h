@@ -30,6 +30,7 @@ struct DocOptions
     bool linkFromIndex()     const { return m_linkFromIndex;   }
     bool markdownSupport()   const { return m_markdownSupport; }
     bool autolinkSupport()   const { return m_autolinkSupport; }
+    int sectionLevel()       const { return m_sectionLevel;    }
 
     // === setters for optional params
 
@@ -59,6 +60,10 @@ struct DocOptions
     DocOptions &setAutolinkSupport(bool b)
     { m_autolinkSupport=b; return *this; }
 
+    /// Restrict output up to the given section level
+    DocOptions &setSectionLevel(int l)
+    { m_sectionLevel=l; return *this; }
+
   private:
     // optional params with defaults
     bool m_indexWords = false;
@@ -68,6 +73,7 @@ struct DocOptions
     bool m_linkFromIndex = false;
     bool m_markdownSupport = Config_getBool(MARKDOWN_SUPPORT);
     bool m_autolinkSupport = Config_getBool(AUTOLINK_SUPPORT);
+    int  m_sectionLevel = -1;
 };
 
 #endif

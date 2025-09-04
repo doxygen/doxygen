@@ -2720,10 +2720,10 @@ void HtmlGenerator::endExamples()
   m_t << "</dl>\n";
 }
 
-void HtmlGenerator::writeDoc(const IDocNodeAST *ast,const Definition *ctx,const MemberDef *,int id)
+void HtmlGenerator::writeDoc(const IDocNodeAST *ast,const Definition *ctx,const MemberDef *,int id,int sectionLevel)
 {
   const DocNodeAST *astImpl = dynamic_cast<const DocNodeAST*>(ast);
-  if (astImpl)
+  if (astImpl && sectionLevel<=m_tocState.maxLevel)
   {
     m_codeList->setId(id);
     HtmlDocVisitor visitor(m_t,*m_codeList,ctx,fileName());
