@@ -2720,10 +2720,10 @@ void HtmlGenerator::endExamples()
   m_t << "</dl>\n";
 }
 
-void HtmlGenerator::writeDoc(const IDocNodeAST *ast,const Definition *ctx,const MemberDef *,int id)
+void HtmlGenerator::writeDoc(const IDocNodeAST *ast,const Definition *ctx,const MemberDef *,int id,int sectionLevel)
 {
   const DocNodeAST *astImpl = dynamic_cast<const DocNodeAST*>(ast);
-  if (astImpl)
+  if (astImpl && sectionLevel<=m_tocState.maxLevel)
   {
     m_codeList->setId(id);
     HtmlDocVisitor visitor(m_t,*m_codeList,ctx,fileName());
@@ -3731,24 +3731,3 @@ void HtmlGenerator::endTocEntry(const SectionInfo *si)
   }
 }
 
-void HtmlGenerator::generateDocTocEntry(const QCString &fileName,int startLine,const SectionInfo *si,
-                     const Definition *ctx,const MemberDef *md,const QCString &docStr,
-                     const DocOptions &options,int id)
-{
-  SectionType type = si->type();
-  int nextLevel = type.level();
-  if (type.isSection() && nextLevel<=m_tocState.maxLevel)
-  {
-    if (docStr.isEmpty()) return;
-    auto parser { createDocParser() };
-    auto ast    { validatingParseDoc(*parser.get(),
-                                   fileName,
-                                   startLine,
-                                   ctx,
-                                   md,
-                                   docStr,
-                                   options)
-               };
-    if (ast) writeDoc(ast.get(),ctx,md,id);
-  }
-}

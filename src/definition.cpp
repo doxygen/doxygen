@@ -1462,15 +1462,16 @@ void DefinitionImpl::writeToc(OutputList &ol, const LocalToc &localToc) const
         const Definition *scope = p->def->definitionType()==Definition::TypeMember ? p->def->getOuterScope() : p->def;
         QCString docTitle = si->title();
         if (docTitle.isEmpty()) docTitle = si->label();
-        ol.generateDocTocEntry(docFile(),
+        ol.generateDoc(docFile(),
                        getStartBodyLine(),
-                       si,
                        scope,
                        md,
                        docTitle,
                        DocOptions()
                        .setIndexWords(true)
-                       .setSingleLine(true));
+                       .setSingleLine(true)
+                       .setSectionLevel(si->type().level())
+                      );
         ol.endTocEntry(si);
       }
     }

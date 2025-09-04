@@ -186,7 +186,7 @@ void OutputList::generateDoc(const QCString &fileName,int startLine,
                                    docStr,
                                    options)
                };
-  if (ast && count>0) writeDoc(ast.get(),ctx,md);
+  if (ast && count>0) writeDoc(ast.get(),ctx,md,options.sectionLevel());
 }
 
 void OutputList::startFile(const QCString &name,bool isSource,const QCString &manName,const QCString &title, int hierarchyLevel)

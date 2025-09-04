@@ -380,8 +380,8 @@ class OutputList
     // OutputGenIntf implementation
     //////////////////////////////////////////////////
 
-    void writeDoc(const IDocNodeAST *ast,const Definition *ctx,const MemberDef *md)
-    { foreach(&OutputGenIntf::writeDoc,ast,ctx,md,m_id); }
+    void writeDoc(const IDocNodeAST *ast,const Definition *ctx,const MemberDef *md,int sectionLevel=-1)
+    { foreach(&OutputGenIntf::writeDoc,ast,ctx,md,m_id,sectionLevel); }
     void startIndexSection(IndexSection is)
     { foreach(&OutputGenIntf::startIndexSection,is); }
     void endIndexSection(IndexSection is)
@@ -749,10 +749,6 @@ class OutputList
     { foreach(&OutputGenIntf::startTocEntry,si); }
     void endTocEntry(const SectionInfo *si)
     { foreach(&OutputGenIntf::endTocEntry,si); }
-    void generateDocTocEntry(const QCString &fileName,int startLine,const SectionInfo *si,
-                     const Definition *ctx,const MemberDef *md,const QCString &docStr,
-                     const DocOptions &options)
-    { foreach(&OutputGenIntf::generateDocTocEntry,fileName,startLine,si,ctx,md,docStr,options,m_id); }
     void cleanup()
     { foreach(&OutputGenIntf::cleanup); }
     void startPlainFile(const QCString &name)

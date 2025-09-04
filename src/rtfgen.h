@@ -102,7 +102,7 @@ class RTFGenerator : public OutputGenerator, public OutputGenIntf
     std::unique_ptr<OutputGenIntf> clone() override { return std::make_unique<RTFGenerator>(*this); }
     void addCodeGen(OutputCodeList &list) override;
     void cleanup() override;
-    void writeDoc(const IDocNodeAST *ast,const Definition *,const MemberDef *,int) override;
+    void writeDoc(const IDocNodeAST *ast,const Definition *,const MemberDef *,int,int) override;
     void startFile(const QCString &name,bool isSource,const QCString &manName,const QCString &title,int id,int hierarchyLevel) override;
     void endFile() override;
 
@@ -302,9 +302,6 @@ class RTFGenerator : public OutputGenerator, public OutputGenIntf
     void endLocalToc() override {}
     void startTocEntry(const SectionInfo *) override {}
     void endTocEntry(const SectionInfo *) override {}
-    void generateDocTocEntry(const QCString &fileName,int startLine,const SectionInfo *si,
-                     const Definition *ctx,const MemberDef *md,const QCString &docStr,
-                     const DocOptions &options,int id) override {}
 
     void startPlainFile(const QCString &name) override { OutputGenerator::startPlainFile(name); }
     void endPlainFile() override { OutputGenerator::endPlainFile(); }

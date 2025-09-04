@@ -131,7 +131,7 @@ class OutputGenIntf
     virtual OutputType type() const = 0;
     virtual std::unique_ptr<OutputGenIntf> clone() = 0;
     virtual void addCodeGen(OutputCodeList &list) = 0;
-    virtual void writeDoc(const IDocNodeAST *ast,const Definition *ctx,const MemberDef *md, int id) = 0;
+    virtual void writeDoc(const IDocNodeAST *ast,const Definition *ctx,const MemberDef *md, int id,int sectionLevel) = 0;
     virtual void startIndexSection(IndexSection is) = 0;
     virtual void endIndexSection(IndexSection is) = 0;
     virtual void writePageLink(const QCString &name,bool first) = 0;
@@ -320,9 +320,6 @@ class OutputGenIntf
     virtual void endLocalToc() = 0;
     virtual void startTocEntry(const SectionInfo *si) = 0;
     virtual void endTocEntry(const SectionInfo *si) = 0;
-    virtual void generateDocTocEntry(const QCString &fileName,int startLine,const SectionInfo *si,
-                     const Definition *ctx,const MemberDef *md,const QCString &docStr,
-                     const DocOptions &options,int id) = 0;
     virtual void cleanup() = 0;
     virtual void startPlainFile(const QCString &name) = 0;
     virtual void endPlainFile() = 0;
