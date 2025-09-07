@@ -4736,11 +4736,11 @@ static void findTemplateInstanceRelation(const Entry *root,
                      root->fileName,root->startLine,root->startColumn,templSpec,freshInstance));
   if (instanceClass)
   {
-    instanceClass->setArtificial(TRUE);
-    instanceClass->setLanguage(root->lang);
-
     if (freshInstance)
     {
+      instanceClass->setArtificial(TRUE);
+      instanceClass->setLanguage(root->lang);
+
       AUTO_TRACE_ADD("found fresh instance '{}'",instanceClass->name());
       instanceClass->setTemplateBaseClassNames(templateNames);
 
