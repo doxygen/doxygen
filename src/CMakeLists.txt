@@ -73,15 +73,6 @@ add_custom_command(
 set_source_files_properties(${GENERATED_SRC}/configoptions.cpp PROPERTIES GENERATED 1)
 
 
-# ce_parse.h
-add_custom_command(
-    COMMAND ${BISON_EXECUTABLE} -l -d ${CMAKE_CURRENT_LIST_DIR}/constexp.y -o ce_parse.c
-    DEPENDS ${CMAKE_CURRENT_LIST_DIR}/constexp.y
-    OUTPUT ${GENERATED_SRC}/ce_parse.h
-    WORKING_DIRECTORY ${GENERATED_SRC}
-)
-set_source_files_properties(${GENERATED_SRC}/ce_parse.h PROPERTIES GENERATED 1)
-
 # all resource files
 file(GLOB RESOURCES CONFIGURE_DEPENDS ${PROJECT_SOURCE_DIR}/templates/*/*)
 
@@ -227,7 +218,7 @@ add_library(doxymain STATIC
     #
     ${GENERATED_SRC}/ce_parse.cpp
     # custom generated files
-    ${GENERATED_SRC}/ce_parse.h
+    ${GENERATED_SRC}/ce_parse.hpp
     ${GENERATED_SRC}/resources.cpp
     #
     aliases.cpp
