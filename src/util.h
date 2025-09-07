@@ -349,8 +349,6 @@ QCString stripExtensionGeneral(const QCString &fName, const QCString &ext);
 
 QCString stripExtension(const QCString &fName);
 
-//void replaceNamespaceAliases(QCString &scope,size_t i);
-
 int computeQualifiedIndex(const QCString &name);
 
 void addDirPrefix(QCString &fileName);

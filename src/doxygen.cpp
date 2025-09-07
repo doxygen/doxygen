@@ -5675,6 +5675,9 @@ static const ClassDef *findClassDefinition(FileDef *fd,NamespaceDef *nd,
 {
   SymbolResolver resolver(fd);
   const ClassDef *tcd = resolver.resolveClass(nd,scopeName,true,true);
+  //printf("findClassDefinition(fd=%s,ns=%s,scopeName=%s)='%s'\n",
+  //    qPrint(fd?fd->name():""),qPrint(nd?nd->name():""),
+  //    qPrint(scopeName),qPrint(tcd?tcd->name():""));
   return tcd;
 }
 
@@ -6198,8 +6201,8 @@ static void addMemberFunction(const Entry *root,
       // don't be fooled by anonymous scopes
       tcd=cd;
     }
-    //printf("Looking for %s inside nd=%s result=%p (%s) cd=%p\n",
-    //    qPrint(scopeName),nd?qPrint(nd->name()):"<none>",tcd,tcd?qPrint(tcd->name()):"",cd);
+    //printf("Looking for %s inside nd=%s result=%s cd=%s\n",
+    //    qPrint(scopeName),nd?qPrint(nd->name()):"<none>",tcd?qPrint(tcd->name()):"",qPrint(cd->name()));
 
     if (cd && tcd==cd) // member's classes match
     {

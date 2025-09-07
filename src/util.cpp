@@ -4847,28 +4847,6 @@ QCString stripExtension(const QCString &fName)
   return stripExtensionGeneral(fName, Doxygen::htmlFileExtension);
 }
 
-#if 0
-void replaceNamespaceAliases(QCString &scope,size_t i)
-{
-  printf("replaceNamespaceAliases(%s,%zu)\n",qPrint(scope),i);
-  while (i>0)
-  {
-    QCString ns = scope.left(i);
-    if (!ns.isEmpty())
-    {
-      auto it = Doxygen::namespaceAliasMap.find(ns.str());
-      if (it!=Doxygen::namespaceAliasMap.end())
-      {
-        scope=it->second+scope.right(scope.length()-i);
-        i=it->second.length();
-      }
-    }
-    if (i>0 && ns==scope.left(i)) break;
-  }
-  printf("result=%s\n",qPrint(scope));
-}
-#endif
-
 QCString stripPath(const QCString &s)
 {
   QCString result=s;
