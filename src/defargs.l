@@ -502,6 +502,7 @@ CPPC  "/\/"
                                            }
                                            else
                                            {
+  					     yyextra->argSharpCount=0;
                                              yyextra->curTypeConstraint.clear();
                                              yyextra->lastExtendsContext=YY_START;
                                              BEGIN(ReadTypeConstraint);
@@ -534,8 +535,20 @@ CPPC  "/\/"
 					  *yyextra->copyArgValue += *yytext;
 					}
 <ReadTypeConstraint>[,)>]               {
-                                          unput(*yytext);
-                                          BEGIN(yyextra->lastExtendsContext);
+                                          if (yytext[0]!='>' || yyextra->argSharpCount==0)
+                                          {
+                                            unput(*yytext);
+                                            BEGIN(yyextra->lastExtendsContext);
+                                          }
+                                          else
+                                          {
+                                            yyextra->curTypeConstraint+=yytext;
+  					    yyextra->argSharpCount--;
+                                          }
+                                        }
+<ReadTypeConstraint>"<"                 {
+                                          yyextra->curTypeConstraint+=yytext;
+  					  yyextra->argSharpCount++;
                                         }
 <ReadTypeConstraint>.                   {
                                           yyextra->curTypeConstraint+=yytext;

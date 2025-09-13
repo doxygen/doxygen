@@ -1033,7 +1033,8 @@ static void addClassToContext(const Entry *root)
     }
     std::unique_ptr<ArgumentList> tArgList;
     int i=0;
-    if ((root->lang==SrcLangExt::CSharp || root->lang==SrcLangExt::Java) && (i=fullName.findRev('<'))!=-1)
+    if ((root->lang==SrcLangExt::CSharp || root->lang==SrcLangExt::Java) &&
+        (i=fullName.find('<'))!=-1)
     {
       // a Java/C# generic class looks like a C++ specialization, so we need to split the
       // name and template arguments here
