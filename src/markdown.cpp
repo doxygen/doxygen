@@ -100,8 +100,8 @@ enum class ExplicitPageResult
   (c1==static_cast<char>(0xc2) && c2==static_cast<char>(0xa0))
 
 #define isAllowedEmphStr(data,offset) \
-  (!(offset>0 && isOpenEmphChar(data.data()[-1])) && \
-   !(offset>1 && isUtf8Nbsp(data.data()[-2],data.data()[-1])))
+  ((offset>0 && !isOpenEmphChar(data.data()[-1])) && \
+   (offset>1 && !isUtf8Nbsp(data.data()[-2],data.data()[-1])))
 
 // is character at position i in data an escape that prevents ending an emphasis section
 // so for example *bla (*.txt) is cool*
