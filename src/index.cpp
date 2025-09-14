@@ -468,9 +468,8 @@ void endFileWithNavPath(OutputList &ol,const DefinitionMutable *d,bool showPageN
 static void writeMemberToIndex(const Definition *def,const MemberDef *md,bool addToIndex)
 {
   bool isAnonymous = md->isAnonymous();
-  bool hideUndocMembers = Config_getBool(HIDE_UNDOC_MEMBERS);
   const MemberVector &enumList = md->enumFieldList();
-  bool isDir = !enumList.empty() && md->isEnumerate();
+  bool isDir = md->isEnumerate() && std::any_of(enumList.begin(),enumList.end(),[](const auto &emd) { return emd->hasDocumentation(); });
   auto defType = def->definitionType();
   bool namespaceMemberInFileDocs = md->getNamespaceDef() && defType==Definition::TypeFile;
   bool lAddToIndex = addToIndex && !namespaceMemberInFileDocs;
@@ -496,7 +495,7 @@ static void writeMemberToIndex(const Definition *def,const MemberDef *md,bool ad
     }
     for (const auto &emd : enumList)
     {
-      if (!hideUndocMembers || emd->hasDocumentation())
+      if (emd->hasDocumentation())
       {
         namespaceMemberInFileDocs = emd->getNamespaceDef() && defType==Definition::TypeFile;
         lAddToIndex = addToIndex && !namespaceMemberInFileDocs;
