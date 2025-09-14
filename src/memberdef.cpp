@@ -3387,12 +3387,19 @@ void MemberDefImpl::_writeGroupInclude(OutputList &ol,bool inGroup) const
   // only write out the include file if this is not part of a class or file
   // definition
   bool showGroupedMembInc = Config_getBool(SHOW_GROUPED_MEMB_INC);
+  bool forceLocalIncludes = Config_getBool(FORCE_LOCAL_INCLUDES);
   const FileDef *fd = getFileDef();
   QCString nm;
   if (inGroup && fd && showGroupedMembInc)
   {
-    nm = fd->absFilePath();
-    nm = stripFromIncludePath(nm);
+    if (!Config_getList(STRIP_FROM_INC_PATH).empty())
+    {
+      nm = stripFromIncludePath(fd->absFilePath());
+    }
+    else
+    {
+      nm = fd->name();
+    }
   }
   if (!nm.isEmpty())
   {
@@ -3409,7 +3416,7 @@ void MemberDefImpl::_writeGroupInclude(OutputList &ol,bool inGroup) const
       ol.docify("#include ");
     }
 
-    if (isIDLorJava) ol.docify("\""); else ol.docify("<");
+    if (isIDLorJava || forceLocalIncludes) ol.docify("\""); else ol.docify("<");
 
     if (fd->isLinkable())
     {
@@ -3420,7 +3427,7 @@ void MemberDefImpl::_writeGroupInclude(OutputList &ol,bool inGroup) const
       ol.docify(nm);
     }
 
-    if (isIDLorJava) ol.docify("\""); else ol.docify(">");
+    if (isIDLorJava || forceLocalIncludes) ol.docify("\""); else ol.docify(">");
 
     ol.endTypewriter();
     ol.endParagraph();
