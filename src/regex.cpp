@@ -189,6 +189,9 @@ class Ex::Private
 
     /** The pattern string as passed by the user */
     std::string pattern;
+
+    /** Number of capture groups in the pattern (excluding the whole match) */
+    size_t captureCount = 0;
 };
 
 /** Compiles a regular expression passed as a string into a stream of tokens that can be used for
@@ -198,6 +201,7 @@ void Ex::Private::compile()
 {
   error = false;
   data.clear();
+  captureCount = 0;
   if (pattern.empty()) return;
   const char *start = pattern.c_str();
   const char *ps = start;
@@ -205,6 +209,10 @@ void Ex::Private::compile()
 
   int prevTokenPos=-1;
   int tokenPos=0;
+
+  // capture group assignment
+  std::vector<size_t> captureStack;
+  size_t nextCaptureId = 0;
 
   auto addToken = [&](PToken tok)
   {
@@ -274,12 +282,27 @@ void Ex::Private::compile()
         addToken(PToken(PToken::Kind::Any));
         break;
       case '(': // begin of capture group
-        prevTokenPos = tokenPos;
-        addToken(PToken(PToken::Kind::BeginCapture));
+        {
+          prevTokenPos = tokenPos;
+          addToken(PToken(PToken::Kind::BeginCapture));
+          size_t id = ++nextCaptureId; // groups start at 1, 0 is whole match
+          data.back().setValue(id);
+          captureStack.push_back(id);
+        }
         break;
       case ')': // end of capture group
-        prevTokenPos = tokenPos;
-        addToken(PToken(PToken::Kind::EndCapture));
+        {
+          prevTokenPos = tokenPos;
+          if (captureStack.empty())
+          {
+            error=true;
+            return;
+          }
+          size_t id = captureStack.back();
+          captureStack.pop_back();
+          addToken(PToken(PToken::Kind::EndCapture));
+          data.back().setValue(id);
+        }
         break;
       case '[': // character class
         {
@@ -402,6 +425,12 @@ void Ex::Private::compile()
     }
     ps++;
   }
+  if (!captureStack.empty()) // Unmatched '('?
+  {
+    error=true;
+    return;
+  }
+  captureCount = nextCaptureId;
   //addToken(PToken(PToken::Kind::End));
 }
 
@@ -412,6 +441,7 @@ void Ex::Private::dump()
   size_t l = data.size();
   size_t i =0;
   DBG("==== compiled token stream for pattern '%s' ===\n",pattern.c_str());
+  DBG("captureCount=%zu\n",captureCount);
   while (i<l)
   {
     DBG("[%s:%04x]\n",data[i].kindStr(),data[i].value());
@@ -531,7 +561,7 @@ bool Ex::Private::matchAt(size_t tokenPos,size_t tokenLen,std::string_view str,M
       size_t tokenStart = ++tokenPos;
       while (tokenPos<tokenLen && data[tokenPos].kind()!=PToken::Kind::EndCapture) { tokenPos++; }
       Match rangeMatch;
-      rangeMatch.init(str);
+      rangeMatch.init(str,0);
       bool found = matchAt(tokenStart,tokenPos,str,rangeMatch,index,level+1);
       if (found)
       {
@@ -614,12 +644,12 @@ bool Ex::Private::matchAt(size_t tokenPos,size_t tokenLen,std::string_view str,M
               (isIdChar(str[index]) || index==0 || !isIdChar(str[index-1]))) return false;
           break;
         case PToken::Kind::BeginCapture:
-          DBG("BeginCapture(%zu)\n",index);
-          match.startCapture(index);
+          DBG("BeginCapture(%zu) gid=%u\n",index,tok.value());
+          match.startCapture(tok.value(),index);
           break;
         case PToken::Kind::EndCapture:
-          DBG("EndCapture(%zu)\n",index);
-          match.endCapture(index);
+          DBG("EndCapture(%zu) gid=%u\n",index,tok.value());
+          match.endCapture(tok.value(),index);
           break;
         case PToken::Kind::Any:
           if (index>=str.length()) return false;
@@ -707,7 +737,7 @@ bool Ex::match(std::string_view str,Match &match,size_t pos) const
 {
   bool found=false;
   if (p->data.size()==0 || p->error) return found;
-  match.init(str);
+  match.init(str,p->captureCount);
 
   PToken tok = p->data[0];
   if (tok.kind()==PToken::Kind::BeginOfLine) // only test match at the given position
@@ -721,10 +751,10 @@ bool Ex::match(std::string_view str,Match &match,size_t pos) const
       size_t index = str.find(tok.asciiValue(),pos);
       if (index==std::string::npos)
       {
-        DBG("Ex::match(str='%s',pos=%zu)=false (no start char '%c')\n",str.c_str(),pos,tok.asciiValue());
+        DBG("Ex::match(str='%s',pos=%zu)=false (no start char '%c')\n",std::string(str).c_str(),pos,tok.asciiValue());
         return false;
       }
-      DBG("pos=%zu str='%s' char='%c' index=%zu\n",index,str.c_str(),tok.asciiValue(),index);
+      DBG("pos=%zu str='%s' char='%c' index=%zu\n",index,std::string(str).c_str(),tok.asciiValue(),index);
       pos=index;
     }
     while (pos<str.length()) // search for a match starting at pos
@@ -734,7 +764,7 @@ bool Ex::match(std::string_view str,Match &match,size_t pos) const
       pos++;
     }
   }
-  DBG("Ex::match(str='%s',pos=%zu)=%d\n",str.c_str(),pos,found);
+  DBG("Ex::match(str='%s',pos=%zu)=%d\n",std::string(str).c_str(),pos,found);
   return found;
 }
 

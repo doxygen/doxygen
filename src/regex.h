@@ -83,10 +83,8 @@ class Ex
      *  @note that special characters `.`, `*`, `?`, `$`, `+`, `[` do not have a special
      *  meaning in a character range. `^` only has a special meaning as the first character.
      *
-     *  @note that capture ranges cannot be nested, and `*`, `+`, and `?` do not work on
-     *  capture ranges. e.g. `(abd)?` is not valid. If multiple capture ranges are
-     *  specified then some character has to be in between them,
-     *  e.g. this does not work `(.*)(a.*)`, but this does `(.*)a(.*)`.
+     *  @note capture ranges can be nested. Quantifiers (`*`, `+`, `?`) on entire capture ranges
+     *  are not supported.
      *
      *  In Wildcard mode `*` is used to match any sequence of zero or more characters.
      *  The character `?` can be used to match an optional character. Character ranges are
@@ -189,41 +187,41 @@ class Match
 
   private:
     friend class Ex;
-    void init(std::string_view str)
+    void init(std::string_view str,size_t captureCount)
     {
       m_subMatches.clear();
-      m_subMatches.emplace_back(str);
+      m_subMatches.reserve(captureCount+1);
+      for (size_t i=0;i<captureCount+1;i++)
+      {
+        m_subMatches.emplace_back(str);
+      }
       m_str = str;
     }
-    void startCapture(size_t index)
+    void startCapture(size_t groupId,size_t index)
     {
-      if (!m_insideCapture) // when backtracking we can re-entry the capture multiple times
-                            // only update the index, example `\s*(x)`
+      if (groupId < m_subMatches.size())
       {
-        m_captureIndex = m_subMatches.size();
-        m_subMatches.emplace_back(m_str);
-        m_insideCapture = true;
+        m_subMatches[groupId].setStart(index);
       }
-      m_subMatches.back().setStart(index);
     }
-    void endCapture(size_t index)
+    void endCapture(size_t groupId,size_t index)
     {
-      if (index>m_subMatches.back().position())
+      if (groupId < m_subMatches.size())
       {
-        m_captureIndex=0;
-        m_subMatches.back().setEnd(index);
-        m_insideCapture = false;
+        if (index>m_subMatches[groupId].position())
+        {
+          m_subMatches[groupId].setEnd(index);
+        }
       }
     }
     void setMatch(size_t pos,size_t len)
     {
-      m_subMatches[m_captureIndex].setMatch(pos,len);
+      // Always set the whole match
+      m_subMatches[0].setMatch(pos,len);
     }
 
     std::vector<SubMatch> m_subMatches;
-    size_t m_captureIndex=0;
     std::string_view m_str;
-    bool m_insideCapture=false;
 };
 
 /** Class to iterate through matches.
