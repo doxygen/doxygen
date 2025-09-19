@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright (C) 1997-2021 by Dimitri van Heesch.
+ * Copyright (C) 1997-2025 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -83,8 +83,8 @@ class Ex
      *  @note that special characters `.`, `*`, `?`, `$`, `+`, `[` do not have a special
      *  meaning in a character range. `^` only has a special meaning as the first character.
      *
-     *  @note capture ranges can be nested. Quantifiers (`*`, `+`, `?`) on entire capture ranges
-     *  are not supported.
+     *  @note capture ranges can be nested. Optional capture ranges `(...)?` are supported but
+     *  repeated ranges `(...)*` or `(...)+` are not.
      *
      *  In Wildcard mode `*` is used to match any sequence of zero or more characters.
      *  The character `?` can be used to match an optional character. Character ranges are
@@ -208,7 +208,7 @@ class Match
     {
       if (groupId < m_subMatches.size())
       {
-        if (index>m_subMatches[groupId].position())
+        if (index>=m_subMatches[groupId].position())
         {
           m_subMatches[groupId].setEnd(index);
         }

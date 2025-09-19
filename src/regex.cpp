@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright (C) 1997-2021 by Dimitri van Heesch.
+ * Copyright (C) 1997-2025 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -520,38 +520,102 @@ bool Ex::Private::matchAt(size_t tokenPos,size_t tokenLen,std::string_view str,M
     size_t startIndex = index;
     size_t len = str.length();
     PToken tok = data[++tokenPos];
-    if (tok.kind()==PToken::Kind::Character) // 'x*' -> eat x's
+
+    // Special handling for an optional capture group: (...)?
+    if (type==OptionalRange && tok.kind()==PToken::Kind::BeginCapture)
+    {
+      size_t groupId = tok.value();
+      size_t innerStart = tokenPos + 1;
+
+      // Find matching EndCapture, accounting for nesting depth
+      size_t tp = innerStart;
+      int depth = 1;
+      while (tp<tokenLen && depth>0)
+      {
+        if (data[tp].kind()==PToken::Kind::BeginCapture) depth++;
+        else if (data[tp].kind()==PToken::Kind::EndCapture) depth--;
+        tp++;
+      }
+      if (depth!=0) return false; // malformed, unmatched ')'
+      size_t endCapturePos = tp - 1;            // position of EndCapture
+      size_t afterSeqPos   = endCapturePos + 2; // skip EndCapture and End marker
+
+      // Try with the group present
+      Match tmp;
+      tmp.init(str, /*captureCount*/ captureCount);
+      bool innerOk = matchAt(innerStart,endCapturePos,str,tmp,index,level+1);
+      if (innerOk)
+      {
+        size_t capLen = tmp.length();
+
+        // Copy nested captures from tmp (they may exist inside the group)
+        for (size_t gid=1; gid<tmp.size(); gid++)
+        {
+          size_t sp = tmp[gid].position();
+          size_t sl = tmp[gid].length();
+          if (sp!=std::string::npos && sl!=std::string::npos)
+          {
+            match.startCapture(gid,sp);
+            match.endCapture(gid,sp+sl);
+          }
+        }
+        // Set the outer group's capture
+        match.startCapture(groupId,index);
+        match.endCapture(groupId,index+capLen);
+
+        bool ok = matchAt(afterSeqPos,tokenLen,str,match,index+capLen,level+1);
+        if (ok)
+        {
+          match.setMatch(pos,(index+capLen)-pos+match.length());
+          return true;
+        }
+      }
+
+      // Try with the group absent (empty capture)
+      match.startCapture(groupId,index);
+      match.endCapture(groupId,index); // zero-length
+
+      bool ok2 = matchAt(afterSeqPos,tokenLen,str,match,index,level+1);
+      if (ok2)
+      {
+        match.setMatch(pos,index-pos+match.length());
+        return true;
+      }
+      return false;
+    }
+
+    if (tok.kind()==PToken::Kind::Character) // 'x*' or 'x?'
     {
       char c_tok = tok.asciiValue();
       while (index<len && str[index]==c_tok) { index++; if (type==Optional) break; }
       tokenPos++;
     }
-    else if (tok.isCharClass()) // '[a-f0-4]* -> eat matching characters
+    else if (tok.isCharClass()) // '[a-f0-4]*' or '[...]?' -> eat matching characters
     {
       while (index<len && matchCharClass(tokenPos,str[index])) { index++; if (type==Optional) break; }
       tokenPos+=tok.value()+1; // skip over character ranges + end token
     }
-    else if (tok.kind()==PToken::Kind::Alpha) // '\a*' -> eat start id characters
+    else if (tok.kind()==PToken::Kind::Alpha) // '\a*' or '\a?' -> eat start id characters
     {
       while (index<len && isStartIdChar(str[index])) { index++; if (type==Optional) break; }
       tokenPos++;
     }
-    else if (tok.kind()==PToken::Kind::AlphaNum) // '\w*' -> eat id characters
+    else if (tok.kind()==PToken::Kind::AlphaNum) // '\w*' or '\w?' -> eat id characters
     {
       while (index<len && isIdChar(str[index])) { index++; if (type==Optional) break; }
       tokenPos++;
     }
-    else if (tok.kind()==PToken::Kind::WhiteSpace) // '\s*' -> eat spaces
+    else if (tok.kind()==PToken::Kind::WhiteSpace) // '\s*' or '\s?' -> eat spaces
     {
       while (index<len && isspace(str[index])) { index++; if (type==Optional) break; }
       tokenPos++;
     }
-    else if (tok.kind()==PToken::Kind::Digit) // '\d*' -> eat digits
+    else if (tok.kind()==PToken::Kind::Digit) // '\d*' or '\d?' -> eat digits
     {
       while (index<len && isdigit(str[index])) { index++; if (type==Optional) break; }
       tokenPos++;
     }
-    else if (tok.kind()==PToken::Kind::Any) // '.*' -> eat all
+    else if (tok.kind()==PToken::Kind::Any) // '.*' or '.?' -> eat all
     {
       if (type==Optional) index++; else index = str.length();
       tokenPos++;
