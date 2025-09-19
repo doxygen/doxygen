@@ -312,6 +312,25 @@ The, technical, reason for this is that the `stdout` can be buffered.
 It is possible to overcome this by means of the `-b` of Doxygen, like e.g `doxygen -b > out.txt 2>&1`.
 Note this might cost a little more time though.
 
+\section faq_staticinline How do I get Doxygen to show static inline functions?
+
+Ordinarily, Doxygen does not show static functions.
+But you have to declare an inline function to be static,
+otherwise it can only be used once.\n
+Meanwhile some static inline functions may be intended only for internal library use.
+The convention here is that internal functions have names starting with 2 underscores.\n
+You can expose the wanted functions with an \ref cfg_input_filter "INPUT_FILTER":
+\verbatim
+INPUT_FILTER          = "sed -E '/^static inline [^ ]+ [^_]{2}/s/static //'"
+\endverbatim
+This filter drops the \b static from \b static \b inline.
+You will get an entry for `foo()` but not for `__bar()`.
+\note
+Use part or all of the \b sed command below if your code contains tabs and / or multiple spaces:
+\verbatim
+/^[[:space:]]*static[[:space:]]+inline[[:space:]]+[^[:space:]]+[[:space:]]+[^_]{2}/s/static[[:space:]]+//
+\endverbatim
+
 \htmlonly
 Go to the <a href="trouble.html">next</a> section or return to the
  <a href="index.html">index</a>.
