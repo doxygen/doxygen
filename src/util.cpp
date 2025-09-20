@@ -1495,16 +1495,24 @@ void trimBaseClassScope(const BaseClassList &bcl,QCString &s,int level=0)
   }
 }
 
-static void stripIrrelevantString(QCString &target,const QCString &str)
+static void stripIrrelevantString(QCString &target,const QCString &str,bool insideTemplate)
 {
+  AUTO_TRACE("target='{}' str='{}'",target,str);
   if (target==str) { target.clear(); return; }
   int i=0,p=0;
   int l=static_cast<int>(str.length());
-  bool changed=FALSE;
+  bool changed=false;
+  int sharpCount=0;
   while ((i=target.find(str,p))!=-1)
   {
+    for (int q=p;q<i;q++)
+    {
+      if (target[q]=='<') sharpCount++;
+      else if (target[q]=='>' && sharpCount>0) sharpCount--;
+    }
     bool isMatch = (i==0 || !isId(target.at(i-1))) && // not a character before str
-      (i+l==static_cast<int>(target.length()) || !isId(target.at(i+l))); // not a character after str
+         (i+l==static_cast<int>(target.length()) || !isId(target.at(i+l))) && // not a character after str
+         !insideTemplate && sharpCount==0; // not inside template, because e.g. <const A> is different than <A>, see issue #11663
     if (isMatch)
     {
       int i1=target.find('*',i+l);
@@ -1513,20 +1521,21 @@ static void stripIrrelevantString(QCString &target,const QCString &str)
       {
         // strip str from target at index i
         target=target.left(i)+target.right(target.length()-i-l);
-        changed=TRUE;
+        changed=true;
         i-=l;
       }
       else if ((i1!=-1 && i<i1) || (i2!=-1 && i<i2)) // str before * or &
       {
         // move str to front
         target=str+" "+target.left(i)+target.right(target.length()-i-l);
-        changed=TRUE;
+        changed=true;
         i++;
       }
     }
     p = i+l;
   }
   if (changed) target=target.stripWhiteSpace();
+  AUTO_TRACE_EXIT("target='{}'",target,str);
 }
 
 /*! According to the C++ spec and Ivan Vecerina:
@@ -1546,12 +1555,12 @@ static void stripIrrelevantString(QCString &target,const QCString &str)
   const T* param    ->   const T* param   // const needed
   \endcode
  */
-void stripIrrelevantConstVolatile(QCString &s)
+void stripIrrelevantConstVolatile(QCString &s,bool insideTemplate)
 {
   //printf("stripIrrelevantConstVolatile(%s)=",qPrint(s));
-  stripIrrelevantString(s,"const");
-  stripIrrelevantString(s,"volatile");
-  stripIrrelevantString(s,"final");
+  stripIrrelevantString(s,"const",insideTemplate);
+  stripIrrelevantString(s,"volatile",insideTemplate);
+  stripIrrelevantString(s,"final",insideTemplate);
   //printf("%s\n",qPrint(s));
 }
 
@@ -1570,17 +1579,17 @@ static QCString stripDeclKeywords(const QCString &s)
 }
 
 // forward decl for circular dependencies
-static QCString extractCanonicalType(const Definition *d,const FileDef *fs,QCString type,SrcLangExt lang);
+static QCString extractCanonicalType(const Definition *d,const FileDef *fs,QCString type,SrcLangExt lang,bool insideTemplate);
 
 static QCString getCanonicalTemplateSpec(const Definition *d,const FileDef *fs,const QCString& spec,SrcLangExt lang)
 {
-
+  AUTO_TRACE("spec={}",spec);
   QCString templSpec = spec.stripWhiteSpace();
   // this part had been commented out before... but it is needed to match for instance
   // std::list<std::string> against list<string> so it is now back again!
   if (!templSpec.isEmpty() && templSpec.at(0) == '<')
   {
-    templSpec = "< " + extractCanonicalType(d,fs,templSpec.right(templSpec.length()-1).stripWhiteSpace(),lang);
+    templSpec = "< " + extractCanonicalType(d,fs,templSpec.right(templSpec.length()-1).stripWhiteSpace(),lang,true);
   }
   QCString resolvedType = lang==SrcLangExt::Java ? templSpec : resolveTypeDef(d,templSpec);
   if (!resolvedType.isEmpty()) // not known as a typedef either
@@ -1588,6 +1597,7 @@ static QCString getCanonicalTemplateSpec(const Definition *d,const FileDef *fs,c
     templSpec = resolvedType;
   }
   //printf("getCanonicalTemplateSpec(%s)=%s\n",qPrint(spec),qPrint(templSpec));
+  AUTO_TRACE_EXIT("result={}",templSpec);
   return templSpec;
 }
 
@@ -1746,13 +1756,13 @@ static QCString getCanonicalTypeForIdentifier(
   return result;
 }
 
-static QCString extractCanonicalType(const Definition *d,const FileDef *fs,QCString type,SrcLangExt lang)
+static QCString extractCanonicalType(const Definition *d,const FileDef *fs,QCString type,SrcLangExt lang,bool insideTemplate)
 {
   AUTO_TRACE("d={} fs={} type='{}'",d?d->name():"",fs?fs->name():"",type);
   type = type.stripWhiteSpace();
 
   // strip const and volatile keywords that are not relevant for the type
-  stripIrrelevantConstVolatile(type);
+  stripIrrelevantConstVolatile(type,insideTemplate);
 
   // strip leading keywords
   type.stripPrefix("class ");
@@ -1842,7 +1852,7 @@ static QCString extractCanonicalArgType(const Definition *d,const FileDef *fs,co
     type+=arg.array;
   }
 
-  return extractCanonicalType(d,fs,type,lang);
+  return extractCanonicalType(d,fs,type,lang,false);
 }
 
 static std::mutex g_matchArgsMutex;
@@ -1906,8 +1916,8 @@ static bool matchArgument2(
   QCString sDstName = " "+dstA.name;
   QCString srcType  = srcA.type;
   QCString dstType  = dstA.type;
-  stripIrrelevantConstVolatile(srcType);
-  stripIrrelevantConstVolatile(dstType);
+  stripIrrelevantConstVolatile(srcType,false);
+  stripIrrelevantConstVolatile(dstType,false);
   //printf("'%s'<->'%s'\n",qPrint(sSrcName),qPrint(dstType.right(sSrcName.length())));
   //printf("'%s'<->'%s'\n",qPrint(sDstName),qPrint(srcType.right(sDstName.length())));
   if (sSrcName==dstType.right(sSrcName.length()))
@@ -4135,19 +4145,28 @@ void addMembersToMemberGroup(MemberList *ml,
  */
 int extractClassNameFromType(const QCString &type,int &pos,QCString &name,QCString &templSpec,SrcLangExt lang)
 {
+  AUTO_TRACE("type='{}' name='{}' lang={}",type,name,lang);
   static const reg::Ex re_norm(R"(\a[\w:]*)");
   static const reg::Ex re_fortran(R"(\a[\w:()=]*)");
   const reg::Ex *re = &re_norm;
 
   name.clear();
   templSpec.clear();
-  if (type.isEmpty()) return -1;
+  if (type.isEmpty())
+  {
+    AUTO_TRACE_EXIT("empty type");
+    return -1;
+  }
   size_t typeLen=type.length();
   if (typeLen>0)
   {
     if (lang == SrcLangExt::Fortran)
     {
-      if (type[pos]==',') return -1;
+      if (type[pos]==',')
+      {
+        AUTO_TRACE_EXIT("comma");
+        return -1;
+      }
       if (!type.lower().startsWith("type"))
       {
         re = &re_fortran;
@@ -4198,12 +4217,14 @@ int extractClassNameFromType(const QCString &type,int &pos,QCString &name,QCStri
       }
       //printf("extractClassNameFromType([in] type=%s,[out] pos=%d,[out] name=%s,[out] templ=%s)=TRUE i=%d\n",
       //    qPrint(type),pos,qPrint(name),qPrint(templSpec),i);
+      AUTO_TRACE_EXIT("pos={} templSpec='{}' return={}",pos,templSpec,i);
       return static_cast<int>(i);
     }
   }
   pos = static_cast<int>(typeLen);
   //printf("extractClassNameFromType([in] type=%s,[out] pos=%d,[out] name=%s,[out] templ=%s)=FALSE\n",
   //       qPrint(type),pos,qPrint(name),qPrint(templSpec));
+  AUTO_TRACE_EXIT("not found");
   return -1;
 }
 
