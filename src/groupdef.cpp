@@ -998,7 +998,8 @@ void GroupDefImpl::writeNestedGroups(OutputList &ol,const QCString &title)
                        nullptr,
                        gd->groupTitle(),
                        DocOptions()
-                       .setSingleLine(true));
+                       .setSingleLine(true)
+                       .setAutolinkSupport(false));
         ol.endIndexItem(gd->getReference(),gd->getOutputFileBase());
         ol.endMemberItem(OutputGenerator::MemberItemType::Normal);
         if (!gd->briefDescription().isEmpty() && Config_getBool(BRIEF_MEMBER_DESC))

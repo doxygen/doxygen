@@ -654,7 +654,14 @@ static void writeClassTreeToOutput(OutputList &ol,const BaseClassList &bcl,int l
       {
         //printf("Writing class %s\n",qPrint(cd->displayName()));
         ol.startIndexItem(cd->getReference(),cd->getOutputFileBase());
-        ol.parseText(cd->displayName());
+        ol.generateDoc(cd->getDefFileName(),
+                       cd->getDefLine(),
+                       cd,
+                       nullptr,
+                       cd->displayName(),
+                       DocOptions()
+                       .setSingleLine(true)
+                       .setAutolinkSupport(false));
         ol.endIndexItem(cd->getReference(),cd->getOutputFileBase());
         if (cd->isReference())
         {
@@ -787,7 +794,14 @@ static void writeDirTreeNode(OutputList &ol, const DirDef *dd, int level, FTVHel
 
   ol.startIndexListItem();
   ol.startIndexItem(dd->getReference(),dd->getOutputFileBase());
-  ol.parseText(dd->shortName());
+  ol.generateDoc(dd->getDefFileName(),
+                 dd->getDefLine(),
+                 dd,
+                 nullptr,
+                 dd->shortName(),
+                 DocOptions()
+                 .setSingleLine(true)
+                 .setAutolinkSupport(false));
   ol.endIndexItem(dd->getReference(),dd->getOutputFileBase());
   if (dd->isReference())
   {
@@ -845,7 +859,14 @@ static void writeDirTreeNode(OutputList &ol, const DirDef *dd, int level, FTVHel
         {
           ol.startIndexListItem();
           ol.startIndexItem(reference,outputBase);
-          ol.parseText(fd->displayName());
+          ol.generateDoc(fd->getDefFileName(),
+                         fd->getDefLine(),
+                         fd,
+                         nullptr,
+                         fd->displayName(),
+                         DocOptions()
+                         .setSingleLine(true)
+                         .setAutolinkSupport(false));
           ol.endIndexItem(reference,outputBase);
           ol.endIndexListItem();
           if (ftv && (src || doc))
@@ -1011,7 +1032,14 @@ static void writeClassTreeForList(OutputList &ol,const ClassLinkedMap &cl,bool &
           //printf("Writing class %s isLinkable()=%d isLinkableInProject()=%d cd->isImplicitTemplateinstance()=%d\n",
           //    qPrint(cd->displayName()),cd->isLinkable(),cd->isLinkableInProject(),cd->isImplicitTemplateInstance());
           ol.startIndexItem(cd->getReference(),cd->getOutputFileBase());
-          ol.parseText(cd->displayName());
+          ol.generateDoc(cd->getDefFileName(),
+                         cd->getDefLine(),
+                         cd.get(),
+                         nullptr,
+                         cd->displayName(),
+                         DocOptions()
+                         .setSingleLine(true)
+                         .setAutolinkSupport(false));
           ol.endIndexItem(cd->getReference(),cd->getOutputFileBase());
           if (cd->isReference())
           {
@@ -4162,7 +4190,8 @@ static void writeGroupTreeNode(OutputList &ol, const GroupDef *gd, int level, FT
                    nullptr,
                    gd->groupTitle(),
                    DocOptions()
-                   .setSingleLine(true));
+                   .setSingleLine(true)
+                   .setAutolinkSupport(false));
     ol.endIndexItem(gd->getReference(),gd->getOutputFileBase());
 
     if (gd->isReference())
@@ -4455,7 +4484,14 @@ static void writeModuleTreeNode(OutputList &ol, const ModuleDef *mod,
   }
   ol.startIndexListItem();
   ol.startIndexItem(mod->getReference(),mod->getOutputFileBase());
-  ol.parseText(mod->qualifiedName());
+  ol.generateDoc(mod->getDefFileName(),
+                 mod->getDefLine(),
+                 mod,
+                 nullptr,
+                 mod->qualifiedName(),
+                 DocOptions()
+                 .setSingleLine(true)
+                 .setAutolinkSupport(false));
   ol.endIndexItem(mod->getReference(),mod->getOutputFileBase());
   if (mod->isReference())
   {
