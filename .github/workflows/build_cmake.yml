@@ -72,13 +72,13 @@ jobs:
           }
         - {
             name: "macOS Latest Release (Intel)",
-            os: macos-13,
+            os: macos-14,
             build_type: "Release", cc: "clang", cxx: "clang++",
             build_gen: "Unix Makefiles"
           }
         - {
             name: "macOS Latest Debug (Intel)",
-            os: macos-13,
+            os: macos-14,
             build_type: "Debug", cc: "clang", cxx: "clang++",
             build_gen: "Unix Makefiles"
           }
@@ -243,7 +243,6 @@ jobs:
 
     - name: Install Graphviz (MacOS)
       run: |
-        brew install svn || true
         if ! brew install graphviz; then
           # Workaround issue with unexpected symlinks: https://github.com/actions/runner-images/issues/6817
           for f in 2to3 idle3 pydoc3 python3 python3-config; do
