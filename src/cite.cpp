@@ -101,11 +101,8 @@ void CitationManager::insert(const QCString &label)
 
 const CiteInfo *CitationManager::find(const QCString &label) const
 {
-  auto it = p->entries.find(label.lower().str());
-  if (it!=p->entries.end())
-  {
+  if (auto it = p->entries.find(label.lower().str()); it != p->entries.end())
     return it->second.get();
-  }
   return nullptr;
 }
 
@@ -583,15 +580,12 @@ QCString CitationManager::latexBibFiles()
   {
     QCString bibFile = getBibFile(bibdata);
     FileInfo fi(bibFile.str());
-    if (fi.exists())
+    if (fi.exists() && !bibFile.isEmpty())
     {
-      if (!bibFile.isEmpty())
-      {
-        if (i) result += ",";
-        i++;
-        result += bibTmpFile;
-        result += QCString().setNum(i);
-      }
+      if (i) result += ",";
+      i++;
+      result += bibTmpFile;
+      result += QCString().setNum(i);
     }
   }
   return result;
