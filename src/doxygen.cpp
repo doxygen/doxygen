@@ -9460,15 +9460,11 @@ static void flushUnresolvedRelations()
 // Returns TRUE if the entry and member definition have equal file names,
 // otherwise FALSE.
 
-static bool haveEqualFileNames(const Entry *root,const MemberDef *md)
+static bool haveEqualFileNames(const Entry *root, const MemberDef *md)
 {
-  const FileDef *fd = md->getFileDef();
-  if (!fd)
-  {
-    return FALSE;
-  }
-
-  return fd->absFilePath() == root->fileName;
+  if (const FileDef *fd = md->getFileDef())
+    return fd->absFilePath() == root->fileName;
+  return false;
 }
 
 //----------------------------------------------------------------------------
