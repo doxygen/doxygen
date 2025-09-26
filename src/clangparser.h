@@ -14,9 +14,9 @@ class FileDef;
 class ClangParser;
 class Definition;
 
-namespace clang { namespace tooling {
+namespace clang::tooling {
   class CompilationDatabase;
-} }
+}
 
 /** @brief Clang parser object for a single translation unit, which consists of a source file
  *  and the directly or indirectly included headers
