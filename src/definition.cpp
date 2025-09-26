@@ -1926,13 +1926,11 @@ const QCString &DefinitionAliasImpl::name() const
 
 Definition *toDefinition(DefinitionMutable *dm)
 {
-  if (dm==nullptr) return nullptr;
-  return dm->toDefinition_();
+  return dm ? dm->toDefinition_() : nullptr;
 }
 
 DefinitionMutable *toDefinitionMutable(Definition *d)
 {
-  if (d==nullptr) return nullptr;
-  return d->toDefinitionMutable_();
+  return d ? d->toDefinitionMutable_() : nullptr;
 }
 
