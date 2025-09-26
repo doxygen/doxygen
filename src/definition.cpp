@@ -1572,13 +1572,9 @@ static QCString abbreviate(const QCString &s,const QCString &name)
     stripWord(result,str);
   }
 
-  // capitalize first word
-  if (!result.isEmpty())
-  {
-    char c=result[0];
-    if (c>='a' && c<='z') c+='A'-'a';
-    result[0]=c;
-  }
+  // capitalize first character
+  if (!result.isEmpty()) result[0] = static_cast<char>(std::toupper(result[0]));
+
   return result;
 }
 
