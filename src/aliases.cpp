@@ -216,7 +216,9 @@ static size_t findEndOfCommand(std::string_view s)
   size_t i = 0;
   while (i < s.size() && isId(s[i])) ++i;
   if (i < s.size() && s[i] == '{')
+  {
     i += extractAliasArgs(s.substr(i)).length() + 2; // +2 for '{' and '}'
+  }
   return i;
 }
 

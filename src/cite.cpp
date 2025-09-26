@@ -102,7 +102,9 @@ void CitationManager::insert(const QCString &label)
 const CiteInfo *CitationManager::find(const QCString &label) const
 {
   if (auto it = p->entries.find(label.lower().str()); it != p->entries.end())
+  {
     return it->second.get();
+  }
   return nullptr;
 }
 

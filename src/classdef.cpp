@@ -1389,13 +1389,11 @@ void ClassDefImpl::insertUsedFile(const FileDef *fd)
 {
   if (fd == nullptr) return;
 
-  if (std::find(m_files.begin(),m_files.end(),fd) == m_files.end())
-    m_files.push_back(fd);
+  if (std::find(m_files.begin(), m_files.end(), fd) == m_files.end()) m_files.push_back(fd);
 
   for (const auto &ti : m_templateInstances)
   {
-    if (ClassDefMutable *cdm = toClassDefMutable(ti.classDef))
-      cdm->insertUsedFile(fd);
+    if (ClassDefMutable *cdm = toClassDefMutable(ti.classDef)) cdm->insertUsedFile(fd);
   }
 }
 
