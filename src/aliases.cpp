@@ -204,12 +204,11 @@ struct Marker
  */
 static size_t findEndOfCommand(std::string_view s)
 {
-  char c=' ';
-  size_t i=0;
-  if (!s.empty())
+  size_t i = 0;
+  while (i < s.size() && isId(s[i])) ++i;
+  if (i < s.size() && s[i] == '{')
   {
-    while (i<s.length() && (c=s[i]) && isId(c)) i++;
-    if (c=='{') i+=extractAliasArgs(s.substr(i)).length()+2; // +2 for '{' and '}'
+    i += extractAliasArgs(s.substr(i)).length() + 2; // +2 for '{' and '}'
   }
   return i;
 }

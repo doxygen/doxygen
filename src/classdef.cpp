@@ -1387,19 +1387,13 @@ void ClassDefImpl::findSectionsInDocumentation()
 // add a file name to the used files set
 void ClassDefImpl::insertUsedFile(const FileDef *fd)
 {
-  if (fd==nullptr) return;
-  auto it = std::find(m_files.begin(),m_files.end(),fd);
-  if (it==m_files.end())
-  {
-    m_files.push_back(fd);
-  }
+  if (fd == nullptr) return;
+
+  if (std::find(m_files.begin(), m_files.end(), fd) == m_files.end()) m_files.push_back(fd);
+
   for (const auto &ti : m_templateInstances)
   {
-    ClassDefMutable *cdm = toClassDefMutable(ti.classDef);
-    if (cdm)
-    {
-      cdm->insertUsedFile(fd);
-    }
+    if (ClassDefMutable *cdm = toClassDefMutable(ti.classDef)) cdm->insertUsedFile(fd);
   }
 }
 

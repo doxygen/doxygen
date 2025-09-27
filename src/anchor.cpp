@@ -45,15 +45,9 @@ constexpr auto prefix = "autotoc_md";
 
 std::string AnchorGenerator::addPrefixIfNeeded(const std::string &anchor)
 {
-  if (Config_getEnum(MARKDOWN_ID_STYLE)==MARKDOWN_ID_STYLE_t::GITHUB &&
-      (anchor.empty() || anchor.front() == '-' || std::isdigit(anchor.front())))
-  {
-    return prefix+anchor;
-  }
-  else
-  {
-    return anchor;
-  }
+  return (Config_getEnum(MARKDOWN_ID_STYLE) == MARKDOWN_ID_STYLE_t::GITHUB &&
+         (anchor.empty() || anchor.front() == '-' || std::isdigit(anchor.front())))
+    ? prefix + anchor : anchor;
 }
 
 std::string AnchorGenerator::generate(const std::string &label)
