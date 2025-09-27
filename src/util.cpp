@@ -111,35 +111,19 @@ void TextGeneratorOLImpl::writeString(std::string_view s,bool keepSpaces) const
   //printf("TextGeneratorOlImpl::writeString('%s',%d)\n",s,keepSpaces);
   if (keepSpaces)
   {
-    char cs[2];
-    cs[1]='\0';
-    for (size_t i=0;i<s.length();i++)
+    for (char c : s)
     {
-      char c = s[i];
-      if (c==' ')
-      {
-        m_ol.writeNonBreakableSpace(1);
-      }
-      else
-      {
-        cs[0]=c;
-        m_ol.docify(cs);
-      }
+      if (c == ' ') m_ol.writeNonBreakableSpace(1);
+      else m_ol.docify(std::string_view(&c, 1));
     }
   }
-  else
-  {
-    m_ol.docify(s);
-  }
+  else m_ol.docify(s);
 }
 
 void TextGeneratorOLImpl::writeBreak(int indent) const
 {
   m_ol.lineBreak("typebreak");
-  for (int i=0;i<indent;i++)
-  {
-    m_ol.writeNonBreakableSpace(3);
-  }
+  for (int i = 0; i < indent; ++i) m_ol.writeNonBreakableSpace(3);
 }
 
 void TextGeneratorOLImpl::writeLink(const QCString &extRef,const QCString &file,

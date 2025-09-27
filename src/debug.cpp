@@ -153,22 +153,18 @@ DebugLex::~DebugLex()
   print(m_mask,"Finished",qPrint(m_lexName),qPrint(m_fileName));
 }
 
-void DebugLex::print(Debug::DebugMask mask,const char *state,const char *lexName,const char *fileName)
+void DebugLex::print(Debug::DebugMask mask,
+                     const char *state,
+                     const char *lexName,
+                     const char *fileName)
 {
-  if (fileName && *fileName)
-  {
-    if (Debug::isFlagSet(mask))
-    {
-      fprintf(stderr,"%s lexical analyzer: %s (for: %s)\n",state, lexName, fileName);
-    }
-  }
-  else
-  {
-    if (Debug::isFlagSet(mask))
-    {
-      fprintf(stderr,"%s lexical analyzer: %s\n",state, lexName);
-    }
-  }
+  if (!Debug::isFlagSet(mask)) return;
+
+  fprintf(stderr, "%s lexical analyzer: %s%s%s\n",
+          state,
+          lexName,
+          (fileName && *fileName) ? " (for: " : "",
+          (fileName && *fileName) ? fileName : "");
 }
 
 //------------------------------------------------------------------------
