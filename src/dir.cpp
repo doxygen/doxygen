@@ -260,7 +260,7 @@ bool Dir::exists() const
   return fi.exists() && fi.isDir();
 }
 
-bool Dir::isEmpty(const std::string subdir) const
+bool Dir::isEmpty(const std::string &subdir) const
 {
   fs::path pth = path();
   pth /= subdir;
