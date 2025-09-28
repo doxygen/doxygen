@@ -353,7 +353,7 @@ class Tester:
                 exe_string += ' %s' % (redirx)
                 exe_string += ' %s more "%s/temp"' % (separ,xmlxsd_output)
 
-                xmllint_out = xpopen(exe_string,exe_string1,getStderr=True)
+                xmllint_out = xpopen(exe_string,exe_string1,get_stderr=True)
                 if xmllint_out:
                     xmllint_out = re.sub(r'.*validates','',xmllint_out).rstrip('\n')
                 else:
@@ -378,7 +378,7 @@ class Tester:
                 exe_string += ' %s' % (redirx)
                 exe_string += ' %s more "%s/temp"' % (separ,xmlxsd_output)
 
-                xmllint_out = xpopen(exe_string,exe_string1,getStderr=True)
+                xmllint_out = xpopen(exe_string,exe_string1,get_stderr=True)
                 if xmllint_out:
                     xmllint_out = re.sub(r'.*validates','',xmllint_out).rstrip('\n')
                 else:
@@ -408,7 +408,7 @@ class Tester:
                 exe_string += ' %s' % (redirx)
                 exe_string += ' %s more "%s/temp"' % (separ,xmlxsd_output)
 
-                xmllint_out = xpopen(exe_string,exe_string1,getStderr=True)
+                xmllint_out = xpopen(exe_string,exe_string1,get_stderr=True)
                 if xmllint_out:
                     xmllint_out = re.sub(r'.*validates','',xmllint_out).rstrip('\n')
                 else:
@@ -449,7 +449,7 @@ class Tester:
             exe_string += ' %s more "%s/temp"' % (separ,docbook_output)
 
             failed_docbook=False
-            xmllint_out = xpopen(exe_string,exe_string1,getStderr=True)
+            xmllint_out = xpopen(exe_string,exe_string1,get_stderr=True)
             xmllint_out = self.cleanup_xmllint_docbook(xmllint_out)
             if xmllint_out:
                 xmllint_out  = clean_header(xmllint_out)
@@ -478,7 +478,7 @@ class Tester:
             exe_string += ' %s' % (redirx)
             exe_string += ' %s more "%s/temp"' % (separ,html_output)
             failed_html=False
-            xmllint_out = xpopen(exe_string,exe_string1,getStderr=True)
+            xmllint_out = xpopen(exe_string,exe_string1,get_stderr=True)
             xmllint_out = self.cleanup_xmllint(xmllint_out)
             if xmllint_out:
                 xmllint_out  = clean_header(xmllint_out)
@@ -493,7 +493,7 @@ class Tester:
                 exe_string1 = exe_string
                 exe_string += ' %s' % (redirx)
                 exe_string += ' %s more "%s/temp"' % (separ,html_output)
-                xmllint_out = xpopen(exe_string,exe_string1,getStderr=True)
+                xmllint_out = xpopen(exe_string,exe_string1,get_stderr=True)
                 xmllint_out = self.cleanup_xmllint(xmllint_out)
                 if xmllint_out:
                     msg += (xmllint_out,)
@@ -519,7 +519,7 @@ class Tester:
             exe_string += ' %s' % (redirl)
             if outType:
                 exe_string += ' %s more temp' % (separ)
-            latex_out = xpopen(exe_string,exe_string1,getStderr=outType)
+            latex_out = xpopen(exe_string,exe_string1,get_stderr=outType)
             os.chdir(cur_directory)
             if (outType and latex_out.find("Error")!=-1):
                 msg += ("PDF generation failed\n  For a description of the problem see 'refman.log' in the latex directory of this test",)
