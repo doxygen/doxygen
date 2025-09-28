@@ -24,21 +24,18 @@ def xopen(fname, mode='r', encoding='utf-8'):
     return io.open(fname, mode=mode, encoding=encoding)
 
 
-def xpopen(cmd, cmd1="",encoding='utf-8-sig', getStderr=False):
-    '''Unified file pipe opening for Python 2 an Python 3.
-
-    Python 2 does not have the encoding argument. Python 3 has one. and
-    '''
+def xpopen(cmd, cmd1="", encoding='utf-8-sig', get_stderr=False):
+    '''Unified file pipe opening for Python 2 an Python 3.'''
 
     if sys.version_info[0] == 2:
-        return os.popen(cmd).read() # Python 2 without encoding
-    else:
-        if (getStderr):
-            proc = subprocess.Popen(shlex.split(cmd1),stdout=subprocess.PIPE,stderr=subprocess.PIPE,encoding=encoding) # Python 3 with encoding
-            return proc.stderr.read()
-        else:
-            proc = subprocess.Popen(shlex.split(cmd),stdout=subprocess.PIPE,stderr=subprocess.PIPE,encoding=encoding) # Python 3 with encoding
-            return proc.stdout.read()
+        return os.popen(cmd).read()  # Python 2 without encoding
+
+    proc = subprocess.Popen(shlex.split(cmd1 if get_stderr else cmd),
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE,
+                            encoding=encoding)  # Python 3 with encoding
+    return (proc.stderr if get_stderr else proc.stdout).read()
+
 
 def clean_header(errmsg):
     # messages (due to the usage of more) have a contents like:
