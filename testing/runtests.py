@@ -10,6 +10,7 @@ import os
 import sys
 import subprocess
 import shlex
+import io
 
 config_reg = re.compile(r'.*\/\/\s*(?P<name>\S+):\s*(?P<value>.*)$')
 bkmk_reg = re.compile(r'.*bkmkstart\s+([A-Z]{10}).*')
@@ -18,15 +19,10 @@ pageref_reg = re.compile(r'.*PAGEREF\s+([A-Z]{10}).*')
 
 
 def xopen(fname, mode='r', encoding='utf-8'):
-    '''Unified file opening for Python 2 an Python 3.
+    '''Unified file opening for Python 2 an Python 3.'''
 
-    Python 2 does not have the encoding argument. Python 3 has one.
-    '''
+    return io.open(fname, mode=mode, encoding=encoding)
 
-    if sys.version_info[0] == 2:
-        return open(fname, mode=mode) # Python 2 without encoding
-    else:
-        return open(fname, mode=mode, encoding=encoding) # Python 3 with encoding
 
 def xpopen(cmd, cmd1="",encoding='utf-8-sig', getStderr=False):
     '''Unified file pipe opening for Python 2 an Python 3.
