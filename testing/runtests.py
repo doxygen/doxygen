@@ -38,26 +38,30 @@ def xpopen(cmd, cmd1="", encoding='utf-8-sig', get_stderr=False):
 
 
 def clean_header(errmsg):
-    # messages (due to the usage of more) have a contents like:
-    # ::::::::::::
-    # <file name>
-    # ::::::::::::
-    # we want to skip these
-    msg = errmsg.split('\n')
-    rtnmsg = ""
-    cnt = -1
-    for o in msg:
-        if (o):
-            if (cnt == -1):
-                if o.startswith(":::::::"):
-                    cnt = 3
-            if (cnt > 0):
-                cnt-=1
-            else:
-                rtnmsg+=o
-                rtnmsg+="\n"
-    return rtnmsg
- 
+    ''' Messages (due to the usage of more) have a content like:
+            ::::::::::::
+            <file name>
+            ::::::::::::
+        This function skips such headers and returns only the main content.
+    '''
+
+    lines = errmsg.splitlines()
+    rtn_msg = ""
+    skip = 0
+    for line in lines:
+        if not line:
+            continue
+        if skip > 0:
+            skip -= 1
+            continue
+        if line.startswith(":::::::"):
+            skip = 3
+            continue
+        rtn_msg += line
+        rtn_msg += "\n"
+    return rtn_msg
+
+
 class Tester:
     def __init__(self,args,test):
         self.args      = args
