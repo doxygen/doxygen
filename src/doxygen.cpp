@@ -3719,7 +3719,6 @@ static void addMethodToClass(const Entry *root,ClassDefMutable *cd,
     // for PHP we use Class::method and Namespace\method
     scopeSeparator="::";
   }
-//  QCString optArgs = root->argList.empty() ? args : QCString();
   if (!relates.isEmpty() || isFriend || Config_getBool(HIDE_SCOPE_NAMES))
   {
     if (!type.isEmpty())
@@ -3887,7 +3886,7 @@ static void buildFunctionList(const Entry *root)
                root->fileName, root->startLine, root->bodyLine, root->tArgLists.size(), root->mGrpId,
                root->spec, root->proto, root->docFile);
 
-    bool isFriend=root->type.find("friend ")!=-1;
+    bool isFriend=root->type=="friend" || root->type.find("friend ")!=-1;
     QCString rname = removeRedundantWhiteSpace(root->name);
     //printf("rname=%s\n",qPrint(rname));
 

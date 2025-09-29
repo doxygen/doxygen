@@ -2238,7 +2238,7 @@ GetDefResult getDefs(const GetDefInput &input)
 {
   GetDefResult result;
   if (input.memberName.isEmpty()) return result;
-  AUTO_TRACE("getDefsNew(scopeName={},memberName={},forceEmptyScope={})",
+  AUTO_TRACE("scopeName={},memberName={},forceEmptyScope={}",
       input.scopeName,input.memberName,input.forceEmptyScope);
 
   //printf("@@ --- getDefsNew(%s,%s)-----------\n",qPrint(scName),qPrint(mbName));

@@ -4324,7 +4324,8 @@ void MemberDefImpl::warnIfUndocumentedParams() const
           isVoidReturn        || // void return type
           isFortranSubroutine || // fortran subroutine
           isConstructor()     || // a constructor
-          isDestructor()         // or destructor
+          isDestructor()      || // or a destructor
+          isFriend()             // or a friend
          )
        )
     {
