@@ -113,11 +113,20 @@ void TextGeneratorOLImpl::writeString(std::string_view s,bool keepSpaces) const
   {
     for (char c : s)
     {
-      if (c == ' ') m_ol.writeNonBreakableSpace(1);
-      else m_ol.docify(std::string_view(&c, 1));
+      if (c == ' ')
+      {
+        m_ol.writeNonBreakableSpace(1);
+      }
+      else
+      {
+        m_ol.docify(std::string_view(&c, 1));
+      }
     }
   }
-  else m_ol.docify(s);
+  else
+  {
+    m_ol.docify(s);
+  }
 }
 
 void TextGeneratorOLImpl::writeBreak(int indent) const
