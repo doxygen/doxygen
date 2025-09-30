@@ -1573,7 +1573,11 @@ static QCString abbreviate(const QCString &s,const QCString &name)
   }
 
   // capitalize first character
-  if (!result.isEmpty()) result[0] = static_cast<char>(std::toupper(result[0]));
+  if (!result.isEmpty())
+  {
+    char c = result[0];
+    if (c >= 'a' && c <= 'z') result[0] += 'A' - 'a';
+  }
 
   return result;
 }
