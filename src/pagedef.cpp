@@ -480,27 +480,11 @@ void PageDefImpl::setTitle(const QCString &title)
 
 PageDef *toPageDef(Definition *d)
 {
-  if (d==nullptr) return nullptr;
-  if (d && typeid(*d)==typeid(PageDefImpl))
-  {
-    return static_cast<PageDef*>(d);
-  }
-  else
-  {
-    return nullptr;
-  }
+  return (d && typeid(*d) == typeid(PageDefImpl)) ? static_cast<PageDef*>(d) : nullptr;
 }
 
 const PageDef *toPageDef(const Definition *d)
 {
-  if (d==nullptr) return nullptr;
-  if (d && typeid(*d)==typeid(PageDefImpl))
-  {
-    return static_cast<const PageDef*>(d);
-  }
-  else
-  {
-    return nullptr;
-  }
+  return (d && typeid(*d) == typeid(PageDefImpl)) ? static_cast<const PageDef*>(d) : nullptr;
 }
 

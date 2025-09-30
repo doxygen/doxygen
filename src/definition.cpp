@@ -1572,13 +1572,13 @@ static QCString abbreviate(const QCString &s,const QCString &name)
     stripWord(result,str);
   }
 
-  // capitalize first word
+  // capitalize first character
   if (!result.isEmpty())
   {
-    char c=result[0];
-    if (c>='a' && c<='z') c+='A'-'a';
-    result[0]=c;
+    char c = result[0];
+    if (c >= 'a' && c <= 'z') result[0] += 'A' - 'a';
   }
+
   return result;
 }
 
@@ -1930,13 +1930,11 @@ const QCString &DefinitionAliasImpl::name() const
 
 Definition *toDefinition(DefinitionMutable *dm)
 {
-  if (dm==nullptr) return nullptr;
-  return dm->toDefinition_();
+  return dm ? dm->toDefinition_() : nullptr;
 }
 
 DefinitionMutable *toDefinitionMutable(Definition *d)
 {
-  if (d==nullptr) return nullptr;
-  return d->toDefinitionMutable_();
+  return d ? d->toDefinitionMutable_() : nullptr;
 }
 
