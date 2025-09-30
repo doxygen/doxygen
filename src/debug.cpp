@@ -160,11 +160,14 @@ void DebugLex::print(Debug::DebugMask mask,
 {
   if (!Debug::isFlagSet(mask)) return;
 
-  fprintf(stderr, "%s lexical analyzer: %s%s%s\n",
-          state,
-          lexName,
-          (fileName && *fileName) ? " (for: " : "",
-          (fileName && *fileName) ? fileName : "");
+  if (fileName && *fileName)
+  {
+    fprintf(stderr, "%s lexical analyzer: %s (for: %s)\n", state, lexName, fileName);
+  }
+  else
+  {
+    fprintf(stderr, "%s lexical analyzer: %s\n", state, lexName);
+  }
 }
 
 //------------------------------------------------------------------------
