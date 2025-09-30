@@ -1371,7 +1371,7 @@ static void writeInnerConcepts(const ConceptLinkedRefMap &cl,TextStream &t)
 {
   for (const auto &cd : cl)
   {
-    if (cd->isHidden())
+    if (!cd->isHidden())
     {
       t << "    <innerconcept refid=\"" << cd->getOutputFileBase()
         << "\">" << convertToXML(cd->name()) << "</innerconcept>\n";
@@ -1383,7 +1383,7 @@ static void writeInnerModules(const ModuleLinkedRefMap &ml,TextStream &t)
 {
   for (const auto &mod : ml)
   {
-    if (mod->isHidden())
+    if (!mod->isHidden())
     {
       t << "    <innermodule refid=\"" << mod->getOutputFileBase()
         << "\">" << convertToXML(mod->name()) << "</innermodule>\n";
