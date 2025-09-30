@@ -9463,7 +9463,9 @@ static void flushUnresolvedRelations()
 static bool haveEqualFileNames(const Entry *root, const MemberDef *md)
 {
   if (const FileDef *fd = md->getFileDef())
+  {
     return fd->absFilePath() == root->fileName;
+  }
   return false;
 }
 
