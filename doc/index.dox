@@ -34,8 +34,8 @@ Doxygen also supports the hardware description language VHDL.
 
 Doxygen can help you in three ways:
 <ol>
-<li> It can generate an on-line documentation browser (in HTML) and/or an
-     off-line reference manual (in \LaTeX) from a set
+<li> It can generate an online documentation browser (in HTML) and/or an
+     offline reference manual (in \LaTeX) from a set
      of documented source files.
      There is also support for generating output in RTF (MS-Word),
      PostScript, hyperlinked PDF, compressed HTML, and Unix man pages.
@@ -49,7 +49,7 @@ Doxygen can help you in three ways:
      by means of include dependency graphs, inheritance diagrams,
      and collaboration diagrams, which are all generated automatically.
 <li> You can also use Doxygen for creating normal documentation (as I did
-     for the Doxygen user manual and web-site).
+     for the Doxygen user manual and website).
 </ol>
 
 Doxygen is developed under macOS and Linux, but is set-up to be highly
@@ -177,7 +177,7 @@ Thanks go to:
 <li>Joerg Baumann, for adding conditional documentation blocks,
     PDF links, and the configuration generator.
 <li>Tim Mensch for adding the todo command.
-<li>Christian Hammond for redesigning the web-site.
+<li>Christian Hammond for redesigning the website.
 <li>Ken Wong for providing the HTML tree view code.
 <li>Talin for adding support for C# style comments with XML markup.
 <li>Petr Prikryl for coordinating the internationalization support.
