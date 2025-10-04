@@ -92,10 +92,6 @@ class IndexList
     void enable()
     { m_enabled = TRUE; }
 
-    /** returns true iff the indices are enabled */
-    bool isEnabled() const
-    { return m_enabled; }
-
     /** Add an index generator to the list, using a syntax similar to std::make_unique<T>() */
     template<class T,class... As>
     void addIndex(As&&... args)

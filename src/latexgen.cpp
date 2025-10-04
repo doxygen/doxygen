@@ -1500,18 +1500,6 @@ void LatexGenerator::endTitleHead(const QCString &fileName,const QCString &name)
   }
 }
 
-void LatexGenerator::startTitle()
-{
-  if (Config_getBool(COMPACT_LATEX))
-  {
-    m_t << "\\doxysubsection{";
-  }
-  else
-  {
-    m_t << "\\doxysection{";
-  }
-}
-
 void LatexGenerator::startGroupHeader(const QCString &,int extraIndentLevel)
 {
   if (Config_getBool(COMPACT_LATEX))

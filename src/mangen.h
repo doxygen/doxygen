@@ -290,9 +290,6 @@ class ManGenerator : public OutputGenerator, public OutputGenIntf
     void endPlainFile() override { OutputGenerator::endPlainFile(); }
 
   private:
-    void startTitle();
-    void endTitle();
-
     bool m_firstCol = true;
     int  m_col = 0;
     bool m_paragraph = true;

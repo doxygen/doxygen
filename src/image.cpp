@@ -205,7 +205,6 @@ Image::Image(uint32_t w,uint32_t h) : p(std::make_unique<Private>())
   p->height = h;
 }
 
-uint32_t Image::width() const  { return p->width; }
 uint32_t Image::height() const { return p->height; }
 
 Image::~Image() = default;

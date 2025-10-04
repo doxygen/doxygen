@@ -237,34 +237,6 @@ void LatexDocVisitor::visitCaption(const DocNodeList &children)
   }
 }
 
-QCString LatexDocVisitor::escapeMakeIndexChars(const char *s)
-{
-  QCString result;
-  const char *p=s;
-  char str[2]; str[1]=0;
-  char c = 0;
-  if (p)
-  {
-    while ((c=*p++))
-    {
-      switch (c)
-      {
-        case '!': m_t << "\"!"; break;
-        case '"': m_t << "\"\""; break;
-        case '@': m_t << "\"@"; break;
-        case '|': m_t << "\\texttt{\"|}"; break;
-        case '[': m_t << "["; break;
-        case ']': m_t << "]"; break;
-        case '{': m_t << "\\lcurly{}"; break;
-        case '}': m_t << "\\rcurly{}"; break;
-        default:  str[0]=c; filter(str); break;
-      }
-    }
-  }
-  return result;
-}
-
-
 LatexDocVisitor::LatexDocVisitor(TextStream &t,OutputCodeList &ci,LatexCodeGenerator &lcg,
                                  const QCString &langExt, int hierarchyLevel)
   : m_t(t), m_ci(ci), m_lcg(lcg), m_insidePre(FALSE),
@@ -2040,17 +2012,6 @@ void LatexDocVisitor::endDiaFile(bool hasCaption)
 {
   if (m_hide) return;
   visitPostEnd(m_t,hasCaption);
-}
-
-
-void LatexDocVisitor::writeDiaFile(const QCString &baseName, const DocVerbatim &s)
-{
-  QCString shortName = makeShortName(baseName);
-  QCString outDir = Config_getString(LATEX_OUTPUT);
-  writeDiaGraphFromFile(baseName+".dia",outDir,shortName,DiaOutputFormat::EPS,s.srcFile(),s.srcLine());
-  visitPreStart(m_t, s.hasCaption(), shortName, s.width(), s.height());
-  visitCaption(s.children());
-  visitPostEnd(m_t, s.hasCaption());
 }
 
 void LatexDocVisitor::writePlantUMLFile(const QCString &baseName, const DocVerbatim &s)
