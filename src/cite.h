@@ -25,28 +25,28 @@
 class CiteInfoOption
 {
   public:
-    CiteInfoOption() {}
-    static CiteInfoOption makeNumber()      { return CiteInfoOption(NUMBER); }
-    static CiteInfoOption makeShortAuthor() { return CiteInfoOption(SHORTAUTHOR); }
-    static CiteInfoOption makeYear()        { return CiteInfoOption(YEAR); }
+    constexpr CiteInfoOption() {};
+    static constexpr CiteInfoOption makeNumber()      { return CiteInfoOption(NUMBER); }
+    static constexpr CiteInfoOption makeShortAuthor() { return CiteInfoOption(SHORTAUTHOR); }
+    static constexpr CiteInfoOption makeYear()        { return CiteInfoOption(YEAR); }
 
-    void changeToNumber()         { m_bits = (m_bits & OptionMask) | NUMBER; }
-    void setNoPar()               { m_bits |= NOPAR_BIT; }
-    void setNoCite()              { m_bits |= NOCITE_BIT; }
+    constexpr void changeToNumber() noexcept        { m_bits = (m_bits & OptionMask) | NUMBER; }
+    constexpr void setNoPar() noexcept              { m_bits |= NOPAR_BIT; }
+    constexpr void setNoCite() noexcept             { m_bits |= NOCITE_BIT; }
 
-    bool isUnknown() const        { return (m_bits & TypeMask)==0; }
-    bool isNumber() const         { return (m_bits & NUMBER)!=0; }
-    bool isShortAuthor() const    { return (m_bits & SHORTAUTHOR)!=0; }
-    bool isYear() const           { return (m_bits & YEAR)!=0; }
+    constexpr bool isUnknown() const noexcept       { return (m_bits & TypeMask)==0; }
+    constexpr bool isNumber() const noexcept        { return (m_bits & NUMBER)!=0; }
+    constexpr bool isShortAuthor() const noexcept   { return (m_bits & SHORTAUTHOR)!=0; }
+    constexpr bool isYear() const noexcept          { return (m_bits & YEAR)!=0; }
 
-    bool noPar() const            { return (m_bits & NOPAR_BIT)!=0; }
-    bool noCite() const           { return (m_bits & NOCITE_BIT)!=0; }
+    constexpr bool noPar() const noexcept           { return (m_bits & NOPAR_BIT)!=0; }
+    constexpr bool noCite() const noexcept          { return (m_bits & NOCITE_BIT)!=0; }
 
     friend inline bool operator==(const CiteInfoOption &t1,const CiteInfoOption &t2) { return t1.m_bits==t2.m_bits; }
     friend inline bool operator!=(const CiteInfoOption &t1,const CiteInfoOption &t2) { return !(operator==(t1,t2)); }
 
   private:
-    CiteInfoOption(int bits) : m_bits(bits) {}
+    constexpr CiteInfoOption(int bits) : m_bits(bits) {}
 
     enum Bits
     {
