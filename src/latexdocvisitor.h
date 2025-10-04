@@ -218,10 +218,6 @@ class LatexDocVisitor : public DocVisitor
     {
       if (!m_tableStateStack.empty()) m_tableStateStack.top().currentColumn = col;
     }
-    size_t numCols() const
-    {
-      return !m_tableStateStack.empty() ? m_tableStateStack.top().numCols : 0;
-    }
     void setNumCols(size_t num)
     {
       if (!m_tableStateStack.empty()) m_tableStateStack.top().numCols = num;
