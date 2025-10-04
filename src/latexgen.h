@@ -106,9 +106,6 @@ class LatexGenerator : public OutputGenerator, public OutputGenIntf
     static void writeFooterFile(TextStream &t);
     void clearBuffer();
 
-    void setCurrentDoc(const Definition *,const QCString &,bool) {}
-    void addWord(const QCString &,bool) {}
-
     //----------------------------------------------------------------------
 
     OutputType type() const override { return OutputType::Latex; }
@@ -321,9 +318,6 @@ class LatexGenerator : public OutputGenerator, public OutputGenIntf
 
 
   private:
-    void startTitle();
-    void endTitle()   { m_t << "}"; }
-
     bool m_firstDescItem = true;
     bool m_disableLinks = false;
     QCString m_relPath;
