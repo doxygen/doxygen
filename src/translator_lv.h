@@ -1991,6 +1991,260 @@ class TranslatorLatvian : public TranslatorAdapter_1_8_4
       if (single) result+="a:"; else result+="iem:";
       return result;
     }
+
+    /*
+     * Latvian translations for version 1.8.15
+     *
+     * Artyom Fedosov, 2025
+     * Github: artyom-fedosov
+     */
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.8.15
+    //////////////////////////////////////////////////////////////////////////
+
+    /** VHDL design unit hierarchy */
+    QCString trDesignUnitHierarchy() override
+    { return "Projektēšanas vienību hierarhija"; }
+    /** VHDL design unit list */
+    QCString trDesignUnitList() override
+    { return "Projektēšanas vienību saraksts"; }
+    /** VHDL design unit members */
+    QCString trDesignUnitMembers() override
+    { return "Projektēšanas vienības locekļi"; }
+    /** VHDL design unit list description */
+    QCString trDesignUnitListDescription() override
+    {
+      return "Šeit ir visu projektēšanas vienību locekļu saraksts ar saitēm uz ""
+             "tām vienībām, kurām tie pieder:";
+    }
+    /** VHDL design unit index */
+    QCString trDesignUnitIndex() override
+    { return "Projektēšanas vienību rādītājs"; }
+    /** VHDL design units */
+    QCString trDesignUnits() override
+    { return "Projektēšanas vienības"; }
+    /** VHDL functions/procedures/processes */
+    QCString trFunctionAndProc() override
+    { return "Funkcijas/Procedūras/Procesi"; }
+    /** VHDL type */
+    QCString trVhdlType(VhdlSpecifier type,bool single) override
+    {
+      switch(type)
+      {
+      case VhdlSpecifier::LIBRARY:
+        if (single) return "Bibliotēka";
+        else        return "Bibliotēkas";
+      case VhdlSpecifier::PACKAGE:
+        if (single) return "Pakotne";
+        else        return "Pakotnes";
+      case VhdlSpecifier::SIGNAL:
+        if (single) return "Signāls";
+        else        return "Signāli";
+      case VhdlSpecifier::COMPONENT:
+        if (single) return "Komponents";
+        else        return "Komponenti";
+      case VhdlSpecifier::CONSTANT:
+        if (single) return "Konstante";
+        else        return "Konstantes";
+      case VhdlSpecifier::ENTITY:
+        if (single) return "Vienība";
+        else        return "Vienības";
+      case VhdlSpecifier::TYPE:
+        if (single) return "Tips";
+        else        return "Tipi";
+      case VhdlSpecifier::SUBTYPE:
+        if (single) return "Apakštips";
+        else        return "Apakštipi";
+      case VhdlSpecifier::FUNCTION:
+        if (single) return "Funkcija";
+        else        return "Funkcijas";
+      case VhdlSpecifier::RECORD:
+        if (single) return "Ieraksts";
+        else        return "Ieraksti";
+      case VhdlSpecifier::PROCEDURE:
+        if (single) return "Procedūra";
+        else        return "Procedūras";
+      case VhdlSpecifier::ARCHITECTURE:
+        if (single) return "Arhitektūra";
+        else        return "Arhitektūras";
+      case VhdlSpecifier::ATTRIBUTE:
+        if (single) return "Atribūts";
+        else        return "Atribūti";
+      case VhdlSpecifier::PROCESS:
+        if (single) return "Process";
+        else        return "Procesi";
+      case VhdlSpecifier::PORT:
+        if (single) return "Ports";
+        else        return "Porti";
+      case VhdlSpecifier::USE:
+        if (single) return "Lietošanas nosacījums";
+        else        return "Lietošanas nosacījumi";
+      case VhdlSpecifier::GENERIC:
+        if (single) return "Ģenerisks";
+        else        return "Ģeneriski";
+      case VhdlSpecifier::PACKAGE_BODY:
+        return "Pakotnes ķermenis";
+      case VhdlSpecifier::UNITS:
+        return "Vienības";
+      case VhdlSpecifier::SHAREDVARIABLE:
+        if (single) return "Koplietojams mainīgais";
+        else        return "Koplietojamie mainīgie";
+      case VhdlSpecifier::VFILE:
+        if (single) return "Fails";
+        else        return "Faili";
+      case VhdlSpecifier::GROUP:
+        if (single) return "Grupa";
+        else        return "Grupas";
+      case VhdlSpecifier::INSTANTIATION:
+        if (single) return "Instancēšana";
+        else        return "Instancēšanas";
+      case VhdlSpecifier::ALIAS:
+        if (single) return "Aizstājvārds";
+        else        return "Aizstājvārdi";
+      case VhdlSpecifier::CONFIG:
+        if (single) return "Konfigurācija";
+        else        return "Konfigurācijas";
+      case VhdlSpecifier::MISCELLANEOUS:
+        return "Dažādi";
+      case VhdlSpecifier::UCF_CONST:
+        return "Ierobežojumi";
+      default:
+        return "Klase";
+      }
+    }
+    QCString trCustomReference(const QCString &name) override
+    { return name+" Atsauce"; }
+
+    /* Slice */
+    QCString trConstants() override
+    {
+      return "Konstantes";
+    }
+    QCString trConstantDocumentation() override
+    {
+      return "Konstantes dokumentācija";
+    }
+    QCString trSequences() override
+    {
+      return "Secības";
+    }
+    QCString trSequenceDocumentation() override
+    {
+      return "Secības dokumentācija";
+    }
+    QCString trDictionaries() override
+    {
+      return "Vārdnīcas";
+    }
+    QCString trDictionaryDocumentation() override
+    {
+      return "Vārdnīcas dokumentācija";
+    }
+    QCString trSliceInterfaces() override
+    {
+      return "Saskarnes";
+    }
+    QCString trInterfaceIndex() override
+    {
+      return "Saskarņu rādītājs";
+    }
+    QCString trInterfaceList() override
+    {
+      return "Saskarņu saraksts";
+    }
+    QCString trInterfaceListDescription() override
+    {
+      return "Šeit ir saskarnes ar īsiem aprakstiem:";
+    }
+    QCString trInterfaceHierarchy() override
+    {
+      return "Saskarņu hierarhija";
+    }
+    QCString trInterfaceHierarchyDescription() override
+    {
+      return "Šis pārmantošanas saraksts tiek kārtots aptuveni, bet ne pilnībā, alfabētiskā secībā:";
+    }
+    QCString trInterfaceDocumentation() override
+    {
+      return "Saskarnes dokumentācija";
+    }
+    QCString trStructs() override
+    {
+      return "Struktūras";
+    }
+    QCString trStructIndex() override
+    {
+      return "Struktūru rādītājs";
+    }
+    QCString trStructList() override
+    {
+      return "Struktūru saraksts";
+    }
+    QCString trStructListDescription() override
+    {
+      return "Šeit ir struktūras ar īsiem aprakstiem:";
+    }
+    QCString trStructDocumentation() override
+    {
+      return "Struktūras dokumentācija";
+    }
+    QCString trExceptionIndex() override
+    {
+      return "Izņēmumu rādītājs";
+    }
+    QCString trExceptionList() override
+    {
+      return "Izņēmumu saraksts";
+    }
+    QCString trExceptionListDescription() override
+    {
+      return "Šeit ir izņēmumi ar īsiem aprakstiem:";
+    }
+    QCString trExceptionHierarchy() override
+    {
+      return "Izņēmumu hierarhija";
+    }
+    QCString trExceptionHierarchyDescription() override
+    {
+      return "Šis pārmantošanas saraksts tiek kārtots aptuveni, bet ne pilnībā, alfabētiskā secībā:";
+    }
+    QCString trExceptionDocumentation() override
+    {
+      return "Izņēmumu dokumentācija";
+    }
+    QCString trCompoundReferenceSlice(const QCString &clName, ClassDef::CompoundType compType, bool isLocal) override
+    {
+      QCString result="Atsauce uz";
+      if (isLocal) result+=" lokālo";
+      switch(compType)
+      {
+      case ClassDef::Class:      result+=" klasi"; break;
+      case ClassDef::Struct:     result+=" struktūru"; break;
+      case ClassDef::Union:      result+=" savienojumu"; break;
+      case ClassDef::Interface:  result+=" saskarni"; break;
+      case ClassDef::Protocol:   result+=" protokolu"; break;
+      case ClassDef::Category:   result+=" kategoriju"; break;
+      case ClassDef::Exception:  result+=" izņēmumu"; break;
+      default: break;
+      }
+      return result + clName;
+    }
+    QCString trOperations() override
+    {
+      return "Operācijas";
+    }
+    QCString trOperationDocumentation() override
+    {
+      return "Operācijas dokumentācija";
+    }
+    QCString trDataMembers() override
+    {
+      return "Klases lauki";
+    }
+    QCString trDataMemberDocumentation() override
+    {
+      return "Klases lauku dokumentācija";
+    }
 };
 
 #endif
