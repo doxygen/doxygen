@@ -24,7 +24,7 @@
   cross-platform graph drawing toolkit and can be found 
   at https://www.graphviz.org/
 
-  If you have the "dot" tool in the path, you can set
+  If you have the "dot" tool in the PATH (environment variable), you can set
   \ref cfg_have_dot "HAVE_DOT" to \c YES in the configuration file to 
   let Doxygen use it.
 
@@ -82,7 +82,7 @@
   <li> A \b yellow box indicates a class. A box can have a 
        little marker in the lower right corner to indicate that the class 
        contains base classes that are hidden. 
-       For the class diagrams the maximum tree width is currently 8 elements. 
+       For the class diagrams, the maximum tree width is currently 8 elements.
        If a tree is wider some nodes will be hidden.
        If the box is filled with a 
        dashed pattern the inheritance relation is virtual.
@@ -122,7 +122,7 @@
        include dependency graph) or public inheritance (for the other graphs).
   <li> A <b>dark green</b> arrow indicates protected inheritance.
   <li> A <b>dark red</b> arrow indicates private inheritance.
-  <li> A <b>purple dashed</b> arrow indicated a "usage" relation, the 
+  <li> A <b>purple dashed</b> arrow indicates a "usage" relation, the
        edge of the arrow is labeled with the variable(s) responsible for the
        relation.
        Class \c A uses class \c B, if class \c A has a member variable \c m 
