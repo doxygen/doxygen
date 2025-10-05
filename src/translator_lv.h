@@ -2014,7 +2014,7 @@ class TranslatorLatvian : public TranslatorAdapter_1_8_4
     /** VHDL design unit list description */
     QCString trDesignUnitListDescription() override
     {
-      return "Šeit ir visu projektēšanas vienību locekļu saraksts ar saitēm uz ""
+      return "Šeit ir visu projektēšanas vienību locekļu saraksts ar saitēm uz "
              "tām vienībām, kurām tie pieder:";
     }
     /** VHDL design unit index */
