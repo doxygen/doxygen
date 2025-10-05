@@ -136,7 +136,7 @@ in the documentation of the class MyClassName regardless of the name of the actu
 header file in which the definition of MyClassName is contained.
 
 If you want Doxygen to show that the include file should be included using
-quotes instead of angle brackets you should type:
+quotes instead of angle brackets, you should type:
 \verbatim
 /*! \class MyClassName myhdr.h "path/myhdr.h"
  *
@@ -308,7 +308,7 @@ so I started to write my own tool...
 
 When redirecting all the console output of Doxygen, i.e. messages and warnings, this can be interleaved or
 in a non-expected order.
-The, technical, reason for this is that the `stdout` can be buffered.
+The technical reason for this is that the `stdout` can be buffered.
 It is possible to overcome this by means of the `-b` of Doxygen, like e.g `doxygen -b > out.txt 2>&1`.
 Note this might cost a little more time though.
 
