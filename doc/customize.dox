@@ -142,11 +142,11 @@ This will create 3 files:
   contains a couple of commands of the form \$word. These will be replaced
   by Doxygen on the fly.
 - footer.html is a HTML fragment which Doxygen normally uses to end
-  a HTML page. Also here special commands can be used. This file contain the
+  a HTML page. Also here special commands can be used. This file contains the
   link to www.doxygen.org and the body and html end tags.
 - customdoxygen.css is the default cascading style sheet
   used by Doxygen. It is recommended only to look into this file and overrule
-  some settings you like by putting them in a separate stylesheets and
+  some settings you like by putting them in a separate stylesheet and
   referencing those extra files
   via \ref cfg_html_extra_stylesheet "HTML_EXTRA_STYLESHEET".
 
@@ -155,8 +155,8 @@ You should edit these files and then reference them from the configuration file.
 - \ref cfg_html_footer "HTML_FOOTER" = \c footer.html
 - \ref cfg_html_extra_stylesheet "HTML_EXTRA_STYLESHEET" = \c my_customdoxygen.css
 
-\note it is not longer recommended to use \ref cfg_html_stylesheet "HTML_STYLESHEET",
-as it make it difficult to upgrade to a newer version of Doxygen. Use
+\note it is no longer recommended to use \ref cfg_html_stylesheet "HTML_STYLESHEET",
+as it makes it difficult to upgrade to a newer version of Doxygen. Use
 \ref cfg_html_extra_stylesheet "HTML_EXTRA_STYLESHEET" instead.
 
 See the documentation of the \ref cfg_html_header "HTML_HEADER" tag
@@ -168,7 +168,7 @@ it as a source file. Doxygen will copy it for you.
 
 \note If you use images or other external content in a custom header you
 need to make sure these end up in the HTML output directory yourself,
-for instance by writing a script that runs Doxygen can then copies the
+for instance by writing a script that runs Doxygen and then copies the
 images to the output.
 
 \warning The structure of headers and footers may change after upgrading to
@@ -201,7 +201,7 @@ LAYOUT_FILE = DoxygenLayout.xml
 \endverbatim
 To change the layout all you need to do is edit the layout file.
 
-The toplevel structure of the file looks as follows:
+The top-level structure of the file looks as follows:
 \verbatim
 <doxygenlayout version="1.0">
   <navindex>
@@ -261,7 +261,7 @@ www.google.com:
   </navindex>
 \endverbatim
 
-The url field can also be a relative URL. If the URL starts with \@ref
+The URL field can also be a relative URL. If the URL starts with \@ref
 the link will point to a documented entities, such as a class, a function,
 a group, or a related page. Suppose we have defined a page using \@page with
 label mypage, then a tab with label "My Page" to this page would look
