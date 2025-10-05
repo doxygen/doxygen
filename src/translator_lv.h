@@ -2245,6 +2245,20 @@ class TranslatorLatvian : public TranslatorAdapter_1_8_4
     {
       return "Klases lauku dokumentācija";
     }
+
+    /*
+     * Latvian translations for version 1.8.19
+     *
+     * Artyom Fedosov, 2025
+     * Github: artyom-fedosov
+     */
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.8.19
+    //////////////////////////////////////////////////////////////////////////
+
+    /** VHDL design unit documentation */
+    QCString trDesignUnitDocumentation() override
+    { return "Projektēšanas vienības dokumentācija"; }
 };
 
 #endif
