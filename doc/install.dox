@@ -21,7 +21,7 @@
 
 First go to the
 <a href="https://www.doxygen.org/download.html">download</a> page
-to get the latest distribution, if you have not downloaded Doxygen already.
+to get the latest distribution if you have not downloaded Doxygen already.
 
 \section install_src_unix Compiling from source on UNIX
 
@@ -37,7 +37,7 @@ following to build the executable:
     \addindex python
 <li>You need \c python (version 2.7 or higher, see https://www.python.org).
 <li>In order to generate a \c Makefile for your platform, you need
-    <a href="https://cmake.org/">cmake</a> version 3.14 or later.
+    <a href="https://cmake.org/">Cmake</a> version 3.14 or later.
     \addindex cmake
 </ul>
 
@@ -46,7 +46,7 @@ tools should be installed.
 
 <ul>
 <li>Qt Software's GUI toolkit
-    <a href="https://doc.qt.io/">Qt</A>
+    <a href="https://doc.qt.io/">Qt</a>
     \addindex Qt
     version 5.14 or higher (including Qt 6).
     This is needed to build the GUI front-end Doxywizard.
@@ -68,11 +68,11 @@ tools should be installed.
 
 For testing at least these additional dependencies should be available:
 <ul>
-<li>xmllint (libxml2-ultils)</li>
+<li>xmllint (libxml2-utils)</li>
 <li>bibtex (texlive-binaries)</li>
 </ul>
 
-Compilation is now done by performing the following steps:
+Compilation steps:
 
 <ol>
 <li>Unpack the archive, unless you already have done that:
