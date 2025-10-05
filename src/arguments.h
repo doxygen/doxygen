@@ -119,7 +119,7 @@ class ArgumentList
     void setConstSpecifier(bool b)        { m_constSpecifier = b; }
     void setVolatileSpecifier(bool b)     { m_volatileSpecifier = b; }
     void setPureSpecifier(bool b)         { m_pureSpecifier = b; }
-    void setTrailingReturnType(const QCString &s) { m_trailingReturnType = s; }
+    void setTrailingReturnType(const QCString &s);
     void setIsDeleted(bool b)             { m_isDeleted = b; }
     void setRefQualifier(RefQualifierType t) { m_refQualifier = t; }
     void setNoParameters(bool b)          { m_noParameters = b; }

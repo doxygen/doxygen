@@ -2024,6 +2024,12 @@ bool matchArguments2(const Definition *srcScope,const FileDef *srcFileScope,cons
     return FALSE; // one member is has a different ref-qualifier than the other
   }
 
+  if (srcAl->trailingReturnType() != dstAl->trailingReturnType())
+  {
+    NOMATCH
+    return FALSE; // one member is has a different return type than the other
+  }
+
   // so far the argument list could match, so we need to compare the types of
   // all arguments.
   auto srcIt = srcAl->begin();
@@ -2196,7 +2202,7 @@ void mergeArguments(ArgumentList &srcAl,ArgumentList &dstAl,bool forceNameOverwr
 
 bool matchTemplateArguments(const ArgumentList &srcAl,const ArgumentList &dstAl)
 {
-  AUTO_TRACE("srcAl=%s dstAl=%s",argListToString(srcAl),argListToString(dstAl));
+  AUTO_TRACE("srcAl={} dstAl={}",argListToString(srcAl),argListToString(dstAl));
   if (srcAl.size()!=dstAl.size()) // different number of template parameters -> overload
   {
     AUTO_TRACE_EXIT("different number of parameters");

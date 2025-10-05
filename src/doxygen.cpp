@@ -4040,14 +4040,13 @@ static void buildFunctionList(const Entry *root)
               bool staticsInDifferentFiles =
                 root->isStatic && md->isStatic() && root->fileName!=md->getDefFileName();
 
-              if (
-                  matchArguments2(md->getOuterScope(),mfd,&mdAl,
-                    rnd ? rnd : Doxygen::globalScope,rfd,&root->argList,
-                    FALSE,root->lang) &&
-                  sameTemplateArgs &&
+              if (sameTemplateArgs &&
                   matchingReturnTypes &&
                   sameRequiresClause &&
-                  !staticsInDifferentFiles
+                  !staticsInDifferentFiles &&
+                  matchArguments2(md->getOuterScope(),mfd,&mdAl,
+                    rnd ? rnd : Doxygen::globalScope,rfd,&root->argList,
+                    FALSE,root->lang)
                  )
               {
                 GroupDef *gd=nullptr;
