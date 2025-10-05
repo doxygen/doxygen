@@ -16,9 +16,9 @@
  */
 /*! \page emojisup Emoji support
 
-The [Unicode consortium](http://www.unicode.org/) has defined a set of
+The [Unicode Consortium](http://www.unicode.org/) has defined a set of
 [emoji](https://en.wikipedia.org/wiki/Emoji) with the corresponding Unicode
-sequences. Doxygen supports the subset of emoji characters as used by GitHub (based on the list
+sequences. Doxygen supports the subset of emoji characters used by GitHub (based on the list
 https://api.github.com/emojis).
 An emoji is created using the \ref cmdemoji "\\emoji" command.
 For example `\emoji smile` or `\emoji :smile:` both produce \emoji smile.
@@ -39,7 +39,7 @@ For the different Doxygen output types there is an output defined:
 
 \section emojiimage Emoji image retrieval
 
-In the list of images can be downloaded via the following Python script:
+In the list, images can be downloaded via the following Python script:
 \code{.py}
 # script to download the emoticons from GitHub and to produce a table for
 # inclusion in Doxygen. Works with python 2.7+ and python 3.x
@@ -115,10 +115,10 @@ if __name__=="__main__":
 \endcode
 
 When invoking the script with the `-d image_dir` option,
-the images will by downloaded to the `image_dir` directory.
+the images will be downloaded to the `image_dir` directory.
 
 When invoking the script with the `-s` option,
-no progress messages are shown while fetching the images, except for when fetching an image fails.
+no progress messages are shown while fetching the images, except when fetching an image fails.
 
 By means of the Doxygen configuration parameter
 \ref cfg_latex_emoji_directory "LATEX_EMOJI_DIRECTORY" the requested directory can be selected.
