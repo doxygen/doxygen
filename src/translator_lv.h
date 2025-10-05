@@ -1931,6 +1931,66 @@ class TranslatorLatvian : public TranslatorAdapter_1_8_4
     {
       return "Metožu dokumentācija";
     }
+
+    /*
+     * Latvian translations for version 1.8.4
+     *
+     * Artyom Fedosov, 2025
+     * Github: artyom-fedosov
+     */
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.8.4
+    //////////////////////////////////////////////////////////////////////////
+
+    /** old style UNO IDL services: implemented interfaces */
+    QCString trInterfaces() override
+    { return "Eksportētās saskarnes"; }
+
+    /** old style UNO IDL services: inherited services */
+    QCString trServices() override
+    { return "Iekļautie pakalpojumi"; }
+
+    /** UNO IDL constant groups */
+    QCString trConstantGroups() override
+    { return "Konstantu grupas"; }
+
+    /** UNO IDL constant groups */
+    QCString trConstantGroupReference(const QCString &namespaceName) override
+    {
+      QCString result=namespaceName;
+      result+=" Atsauce uz konstantu grupu";
+      return result;
+    }
+    /** UNO IDL service page title */
+    QCString trServiceReference(const QCString &sName) override
+    {
+      QCString result=sName;
+      result+=" Atsauce uz pakalpojumu";
+      return result;
+    }
+    /** UNO IDL singleton page title */
+    QCString trSingletonReference(const QCString &sName) override
+    {
+      QCString result=sName;
+      result+=" Atsauce uz Singletona";
+      return result;
+    }
+    /** UNO IDL service page */
+    QCString trServiceGeneratedFromFiles(bool single) override
+    {
+      // single is true implies a single file
+      QCString result="Šī pakalpojuma dokumentācija tika ģenerēta no sekojošā fail";
+      if (single) result+="a:"; else result+="iem:";
+      return result;
+    }
+    /** UNO IDL singleton page */
+    QCString trSingletonGeneratedFromFiles(bool single) override
+    {
+      // single is true implies a single file
+      QCString result="Šī Singletona dokumentācija tika ģenerēta no sekojošā fail";
+      if (single) result+="a:"; else result+="iem:";
+      return result;
+    }
 };
 
 #endif
