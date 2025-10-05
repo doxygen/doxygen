@@ -210,7 +210,8 @@ static QCString readTextFileByName(const QCString &file)
     FileInfo fi(absFileName);
     if (fi.exists())
     {
-      return fileToString(absFileName,Config_getBool(FILTER_SOURCE_FILES));
+      size_t indent=0;
+      return detab(fileToString(absFileName,Config_getBool(FILTER_SOURCE_FILES)),indent);
     }
   }
 
@@ -225,7 +226,8 @@ static QCString readTextFileByName(const QCString &file)
            showFileDefMatches(Doxygen::exampleNameLinkedMap,file)
           );
     }
-    return fileToString(fd->absFilePath(),Config_getBool(FILTER_SOURCE_FILES));
+    size_t indent = 0;
+    return detab(fileToString(fd->absFilePath(),Config_getBool(FILTER_SOURCE_FILES)),indent);
   }
   else
   {

@@ -4536,7 +4536,8 @@ bool MemberDefImpl::hasMultiLineInitializer() const
 
 void MemberDefImpl::setInitializer(const QCString &initializer)
 {
-  m_initializer=initializer;
+  size_t indent=0;
+  m_initializer=detab(initializer,indent);
   int l=static_cast<int>(m_initializer.length());
   int p=l-1;
   while (p>=0 && isspace(static_cast<uint8_t>(m_initializer.at(p)))) p--;

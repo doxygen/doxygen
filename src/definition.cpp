@@ -1038,9 +1038,10 @@ void DefinitionImpl::writeInlineCode(OutputList &ol,const QCString &scopeName) c
 
       auto &codeOL = ol.codeGenerators();
       codeOL.startCodeFragment("DoxyCode");
+      size_t indent = 0;
       intf->parseCode(codeOL,           // codeOutIntf
                       scopeName,        // scope
-                      codeFragment,     // input
+                      detab(codeFragment,indent), // input
                       p->lang,     // lang
                       Config_getBool(STRIP_CODE_COMMENTS),
                       FALSE,            // isExample

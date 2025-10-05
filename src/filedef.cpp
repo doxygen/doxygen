@@ -1242,8 +1242,9 @@ void FileDefImpl::writeSourceBody(OutputList &ol,[[maybe_unused]] ClangTUParser 
                        FALSE,QCString(),this
                       );
     }
+    size_t indent = 0;
     intf->parseCode(codeOL,QCString(),
-        fileToString(absFilePath(),filterSourceFiles,TRUE),
+        detab(fileToString(absFilePath(),filterSourceFiles,TRUE),indent),
         getLanguage(),      // lang
         Config_getBool(STRIP_CODE_COMMENTS),
         FALSE,              // isExampleBlock
@@ -1285,9 +1286,10 @@ void FileDefImpl::parseSource([[maybe_unused]] ClangTUParser *clangParser)
   {
     auto intf = Doxygen::parserManager->getCodeParser(getDefFileExtension());
     intf->resetCodeParserState();
+    size_t indent = 0;
     intf->parseCode(
             devNullList,QCString(),
-            fileToString(absFilePath(),filterSourceFiles,TRUE),
+            detab(fileToString(absFilePath(),filterSourceFiles,TRUE),indent),
             getLanguage(),
             Config_getBool(STRIP_CODE_COMMENTS),
             FALSE,QCString(),this
