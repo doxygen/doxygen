@@ -1932,15 +1932,15 @@ class TranslatorLatvian : public TranslatorAdapter_1_9_2
       return "Metožu dokumentācija";
     }
 
-    /*
-     * Latvian translations for version 1.8.4
-     *
-     * Artyom Fedosov, 2025
-     * Github: artyom-fedosov
-     */
-    //////////////////////////////////////////////////////////////////////////
-    // new since 1.8.4
-    //////////////////////////////////////////////////////////////////////////
+/*
+ * Latvian translations for version 1.8.4
+ *
+ * Artyom Fedosov, 2025
+ * Github: artyom-fedosov
+ */
+//////////////////////////////////////////////////////////////////////////
+// new since 1.8.4
+//////////////////////////////////////////////////////////////////////////
 
     /** old style UNO IDL services: implemented interfaces */
     QCString trInterfaces() override
@@ -1992,15 +1992,15 @@ class TranslatorLatvian : public TranslatorAdapter_1_9_2
       return result;
     }
 
-    /*
-     * Latvian translations for version 1.8.15
-     *
-     * Artyom Fedosov, 2025
-     * Github: artyom-fedosov
-     */
-    //////////////////////////////////////////////////////////////////////////
-    // new since 1.8.15
-    //////////////////////////////////////////////////////////////////////////
+/*
+ * Latvian translations for version 1.8.15
+ *
+ * Artyom Fedosov, 2025
+ * Github: artyom-fedosov
+ */
+//////////////////////////////////////////////////////////////////////////
+// new since 1.8.15
+//////////////////////////////////////////////////////////////////////////
 
     /** VHDL design unit hierarchy */
     QCString trDesignUnitHierarchy() override
@@ -2246,15 +2246,15 @@ class TranslatorLatvian : public TranslatorAdapter_1_9_2
       return "Klases lauku dokumentācija";
     }
 
-    /*
-     * Latvian translations for version 1.8.19
-     *
-     * Artyom Fedosov, 2025
-     * Github: artyom-fedosov
-     */
-    //////////////////////////////////////////////////////////////////////////
-    // new since 1.8.19
-    //////////////////////////////////////////////////////////////////////////
+/*
+ * Latvian translations for version 1.8.19
+ *
+ * Artyom Fedosov, 2025
+ * Github: artyom-fedosov
+ */
+//////////////////////////////////////////////////////////////////////////
+// new since 1.8.19
+//////////////////////////////////////////////////////////////////////////
 
     /** VHDL design unit documentation */
     QCString trDesignUnitDocumentation() override
