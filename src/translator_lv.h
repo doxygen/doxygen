@@ -2659,6 +2659,20 @@ class TranslatorLatvian : public TranslatorAdapter_1_9_2
     {
       return "Kopēt uz starpliktuvi";
     }
+
+/*
+ * Latvian translations for version 1.11.0
+ *
+ * Artyom Fedosov, 2025
+ * Github: artyom-fedosov
+ */
+//////////////////////////////////////////////////////////////////////////
+// new since 1.11.0
+//////////////////////////////////////////////////////////////////////////
+    QCString trImportant() override
+    {
+      return "Svarīgi";
+    }
 };
 
 #endif
