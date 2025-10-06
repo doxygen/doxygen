@@ -2307,6 +2307,19 @@ class TranslatorLatvian : public TranslatorAdapter_1_9_2
     {
       return "Koncepta definīcija";
     }
+
+/*
+ * Latvian translations for version 1.9.4
+ *
+ * Artyom Fedosov, 2025
+ * Github: artyom-fedosov
+ */
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.4
+//////////////////////////////////////////////////////////////////////////
+
+    QCString trPackageList() override
+    { return "Pakotņu saraksts"; }
 };
 
 #endif
