@@ -2574,6 +2574,76 @@ class TranslatorLatvian : public TranslatorAdapter_1_9_2
     }
     QCString trDefinition() override  { return "Definīcija";}
     QCString trDeclaration() override { return "Deklarācija";}
+
+/*
+ * Latvian translations for version 1.9.8
+ *
+ * Artyom Fedosov, 2025
+ * Github: artyom-fedosov
+ */
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.8
+//////////////////////////////////////////////////////////////////////////
+
+    QCString trTopics() override
+    { return "Tēmas"; }
+    QCString trTopicDocumentation() override
+    { return "Tēmu dokumentācija"; }
+    QCString trTopicList() override
+    { return "Tēmu saraksts"; }
+    QCString trTopicIndex() override
+    { return "Tēmu rādītājs"; }
+    QCString trTopicListDescription() override
+    { return "Šeit ir visu tēmu saraksts ar īsiem aprakstiem:"; }
+    QCString trModuleMembersDescriptionTotal(ModuleMemberHighlight::Enum hl) override
+    {
+      bool extractAll = Config_getBool(EXTRACT_ALL);
+      QCString result="Šeit ir visu ";
+      if (!extractAll) result+="dokumentētu ";
+      result+="moduļa ";
+      QCString singularResult = "";
+      QCString pluralResult = "";
+      switch (hl)
+      {
+      case ModuleMemberHighlight::All:
+        singularResult="locekļa";
+        pluralResult="locekļu";
+        break;
+      case ModuleMemberHighlight::Functions:
+        singularResult="funkcijas";
+        pluralResult="funkciju";
+        break;
+      case ModuleMemberHighlight::Variables:
+        singularResult="mainīga";
+        pluralResult="mainīgu";
+        break;
+      case ModuleMemberHighlight::Typedefs:
+        singularResult="tipdefs";
+        pluralResult="tipdefu";
+        break;
+      case ModuleMemberHighlight::Enums:
+        singularResult="enumerācijas";
+        pluralResult="enumerāciju";
+        break;
+      case ModuleMemberHighlight::EnumValues:
+        singularResult="enumerācijas vērtības";
+        pluralResult="enumerācijas vērtību";
+        break;
+      case ModuleMemberHighlight::Total: // for completeness
+        break;
+      }
+      result+=(pluralResult.isEmpty() ? singularResult+"s" : pluralResult);
+      result+=" ar saitēm uz ";
+      if (extractAll)
+        result+="moduļa dokumentāciju katram " + singularResult + ":";
+      else
+        result+="moduli, kam tie pieder:";
+      return result;
+    }
+    QCString trExportedModules() override
+    {
+      return "Eksportētie moduļi";
+    }
 };
 
 #endif
