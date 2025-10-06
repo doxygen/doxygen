@@ -2259,6 +2259,54 @@ class TranslatorLatvian : public TranslatorAdapter_1_9_2
     /** VHDL design unit documentation */
     QCString trDesignUnitDocumentation() override
     { return "Projektēšanas vienības dokumentācija"; }
+
+/*
+ * Latvian translations for version 1.9.2
+ *
+ * Artyom Fedosov, 2025
+ * Github: artyom-fedosov
+ */
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.2
+//////////////////////////////////////////////////////////////////////////
+
+    /** C++20 concept */
+    QCString trConcept(bool first_capital, bool singular) override
+    {
+      return createNoun(first_capital, singular, "koncept", "i", "s");
+    }
+    /*! used as the title of the HTML page of a C++20 concept page */
+    QCString trConceptReference(const QCString &conceptName) override
+    {
+      return "Atsauce uz konceptu " + conceptName;
+    }
+
+    /*! used as the title of page containing all the index of all concepts. */
+    QCString trConceptList() override
+    { return "Konceptu saraksts"; }
+
+    /*! used as the title of chapter containing the index listing all concepts. */
+    QCString trConceptIndex() override
+    { return "Konceptu rādītājs"; }
+
+    /*! used as the title of chapter containing all information about concepts. */
+    QCString trConceptDocumentation() override
+    { return "Konceptu dokumentācija"; }
+
+    /*! used as an introduction to the concept list */
+    QCString trConceptListDescription(bool extractAll) override
+    {
+      QCString result="Šeit ir saraksts ar visiem ";
+      if (!extractAll) result+="dokumentētiem ";
+      result+="konceptiem ar īsiem aprakstiem:";
+      return result;
+    }
+
+    /*! used to introduce the definition of the C++20 concept */
+    QCString trConceptDefinition() override
+    {
+      return "Koncepta definīcija";
+    }
 };
 
 #endif
