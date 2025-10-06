@@ -2320,6 +2320,27 @@ class TranslatorLatvian : public TranslatorAdapter_1_9_2
 
     QCString trPackageList() override
     { return "Pakotņu saraksts"; }
+
+/*
+ * Latvian translations for version 1.9.6
+ *
+ * Artyom Fedosov, 2025
+ * Github: artyom-fedosov
+ */
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.6
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This is used for translation of the word that will be
+     *  followed by a single name of the VHDL process flowchart.
+     */
+    QCString trFlowchart() override
+    { return "Blokshēma:"; }
+
+    /*! Please translate also updated body of the method
+     *  trMemberFunctionDocumentation(), now better adapted for
+     *  VHDL sources documentation.
+     */
 };
 
 #endif
