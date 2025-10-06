@@ -104,6 +104,7 @@ Richard Kim: [unreachable] ryk at dspwiz dot com
 
 TranslatorLatvian
 Lauris: lauris at nix dot lv
+Fedosov Artyom Dmitrievich: artjomsfedosovs2 at gmail dot com
 
 TranslatorLithuanian
 Tomas Simonaitis: [unreachable] haden at homelan dot lt
