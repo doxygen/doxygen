@@ -102,7 +102,7 @@ class TranslatorRussian : public Translator
     /* Isn't used when optimization for C is on. */
     QCString trMemberList() override
     {
-      return "Cписок членов класса";
+      return "Список членов класса";
     }
 
     /*! this is the first part of a sentence that is followed by a class name */
@@ -1937,7 +1937,7 @@ class TranslatorRussian : public Translator
     {
       // single is true implies a single file
       QCString result="Документация для этого сервиса "
-                                "сгенерирована из следующего файл";
+                      "сгенерирована из следующего файл";
       if (single) result+="а:"; else result+="ов:";
       return result;
     }
@@ -1946,7 +1946,7 @@ class TranslatorRussian : public Translator
     {
       // single is true implies a single file
       QCString result="Документация по этому одиночке "
-                                "сгенерирована из следующего файл";
+                      "сгенерирована из следующего файл";
       if (single) result+="а:"; else result+="ов:";
       return result;
     }
@@ -2008,7 +2008,7 @@ class TranslatorRussian : public Translator
         return "Компоненты";
     case VhdlSpecifier::CONSTANT:
       if (single)
-        return "Конатанта";
+        return "Константа";
       else
         return "Константы";
     case VhdlSpecifier::ENTITY:
