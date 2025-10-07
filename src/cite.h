@@ -25,7 +25,7 @@
 class CiteInfoOption
 {
   public:
-    constexpr CiteInfoOption() {};
+    constexpr CiteInfoOption() {}
     static constexpr CiteInfoOption makeNumber()      { return CiteInfoOption(NUMBER); }
     static constexpr CiteInfoOption makeShortAuthor() { return CiteInfoOption(SHORTAUTHOR); }
     static constexpr CiteInfoOption makeYear()        { return CiteInfoOption(YEAR); }
