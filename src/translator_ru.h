@@ -102,7 +102,7 @@ class TranslatorRussian : public Translator
     /* Isn't used when optimization for C is on. */
     QCString trMemberList() override
     {
-      return "Cписок членов класса";
+      return "Список членов класса";
     }
 
     /*! this is the first part of a sentence that is followed by a class name */
