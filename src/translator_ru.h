@@ -1937,7 +1937,7 @@ class TranslatorRussian : public Translator
     {
       // single is true implies a single file
       QCString result="Документация для этого сервиса "
-                                "сгенерирована из следующего файл";
+                      "сгенерирована из следующего файл";
       if (single) result+="а:"; else result+="ов:";
       return result;
     }
@@ -1946,7 +1946,7 @@ class TranslatorRussian : public Translator
     {
       // single is true implies a single file
       QCString result="Документация по этому одиночке "
-                                "сгенерирована из следующего файл";
+                      "сгенерирована из следующего файл";
       if (single) result+="а:"; else result+="ов:";
       return result;
     }
