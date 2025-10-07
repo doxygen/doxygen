@@ -2008,7 +2008,7 @@ class TranslatorRussian : public Translator
         return "Компоненты";
     case VhdlSpecifier::CONSTANT:
       if (single)
-        return "Конатанта";
+        return "Константа";
       else
         return "Константы";
     case VhdlSpecifier::ENTITY:
