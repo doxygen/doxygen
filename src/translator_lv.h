@@ -48,7 +48,7 @@
  *  Last Doxygen version covered   : 1.8.2
  */
 
-class TranslatorLatvian : public TranslatorAdapter_1_9_2
+class TranslatorLatvian : public Translator
 {
   public:
 
@@ -2259,6 +2259,420 @@ class TranslatorLatvian : public TranslatorAdapter_1_9_2
     /** VHDL design unit documentation */
     QCString trDesignUnitDocumentation() override
     { return "Projektēšanas vienības dokumentācija"; }
+
+/*
+ * Latvian translations for version 1.9.2
+ *
+ * Artyom Fedosov, 2025
+ * Github: artyom-fedosov
+ */
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.2
+//////////////////////////////////////////////////////////////////////////
+
+    /** C++20 concept */
+    QCString trConcept(bool first_capital, bool singular) override
+    {
+      return createNoun(first_capital, singular, "koncept", "i", "s");
+    }
+    /*! used as the title of the HTML page of a C++20 concept page */
+    QCString trConceptReference(const QCString &conceptName) override
+    {
+      return "Atsauce uz konceptu " + conceptName;
+    }
+
+    /*! used as the title of page containing all the index of all concepts. */
+    QCString trConceptList() override
+    { return "Konceptu saraksts"; }
+
+    /*! used as the title of chapter containing the index listing all concepts. */
+    QCString trConceptIndex() override
+    { return "Konceptu rādītājs"; }
+
+    /*! used as the title of chapter containing all information about concepts. */
+    QCString trConceptDocumentation() override
+    { return "Konceptu dokumentācija"; }
+
+    /*! used as an introduction to the concept list */
+    QCString trConceptListDescription(bool extractAll) override
+    {
+      QCString result="Šeit ir saraksts ar visiem ";
+      if (!extractAll) result+="dokumentētiem ";
+      result+="konceptiem ar īsiem aprakstiem:";
+      return result;
+    }
+
+    /*! used to introduce the definition of the C++20 concept */
+    QCString trConceptDefinition() override
+    {
+      return "Koncepta definīcija";
+    }
+
+/*
+ * Latvian translations for version 1.9.4
+ *
+ * Artyom Fedosov, 2025
+ * Github: artyom-fedosov
+ */
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.4
+//////////////////////////////////////////////////////////////////////////
+
+    QCString trPackageList() override
+    { return "Pakotņu saraksts"; }
+
+/*
+ * Latvian translations for version 1.9.6
+ *
+ * Artyom Fedosov, 2025
+ * Github: artyom-fedosov
+ */
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.6
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This is used for translation of the word that will be
+     *  followed by a single name of the VHDL process flowchart.
+     */
+    QCString trFlowchart() override
+    { return "Blokshēma:"; }
+
+    /*! Please translate also updated body of the method
+     *  trMemberFunctionDocumentation(), now better adapted for
+     *  VHDL sources documentation.
+     */
+
+/*
+ * Latvian translations for version 1.9.7
+ *
+ * Artyom Fedosov, 2025
+ * Github: artyom-fedosov
+ */
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.7
+//////////////////////////////////////////////////////////////////////////
+    /*! used in the compound documentation before a list of related symbols.
+     *
+     *  Supersedes trRelatedFunctions
+     */
+    QCString trRelatedSymbols() override
+    { return "Saistītie simboli"; }
+
+    /*! subscript for the related symbols
+     *
+     *  Supersedes trRelatedSubscript
+     */
+    QCString trRelatedSymbolsSubscript() override
+    { return "(Jāņem vērā, ka tie nav locekļu simboli.)"; }
+
+    /*! used in the class documentation as a header before the list of all
+     * related classes.
+     *
+     * Supersedes trRelatedFunctionDocumentation
+     */
+    QCString trRelatedSymbolDocumentation() override
+    { return "Klases draugi un ar klasi saistīto simbolu dokumentācija"; }
+
+    /*! the compound type as used for the xrefitems */
+    QCString trCompoundType(ClassDef::CompoundType compType, SrcLangExt lang) override
+    {
+      QCString result;
+      switch(compType)
+      {
+      case ClassDef::Class:
+        if (lang == SrcLangExt::Fortran) trType(true,true);
+        else result=trClass(true,true);
+        break;
+      case ClassDef::Struct:     result="Struktūra"; break;
+      case ClassDef::Union:      result="Savienojums"; break;
+      case ClassDef::Interface:  result="Saskarne"; break;
+      case ClassDef::Protocol:   result="Protokols"; break;
+      case ClassDef::Category:   result="Categorija"; break;
+      case ClassDef::Exception:  result="Izņēmums"; break;
+      case ClassDef::Service:    result="Serviss"; break;
+      case ClassDef::Singleton:  result="Singletons"; break;
+      default: break;
+      }
+      return result;
+    }
+
+    QCString trFileMembersDescriptionTotal(FileMemberHighlight::Enum hl) override
+    {
+      bool extractAll = Config_getBool(EXTRACT_ALL);
+      QCString result="Šeit ir visu ";
+      if (!extractAll) result+="dokumentētu ";
+
+      switch (hl)
+      {
+      case FileMemberHighlight::All:
+        if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+        {
+          result+="funkciju, mainīgo, definīciju, enumerāciju un tipdefu";
+        }
+        else
+        {
+          result+="faila locekļu";
+        }
+        break;
+      case FileMemberHighlight::Functions:
+        result+="funkciju";
+        break;
+      case FileMemberHighlight::Variables:
+        result+="mainīgo";
+        break;
+      case FileMemberHighlight::Typedefs:
+        result+="tipdefu";
+        break;
+      case FileMemberHighlight::Sequences:
+        result+="sekvences";
+        break;
+      case FileMemberHighlight::Dictionaries:
+        result+="vārdnīcu";
+        break;
+      case FileMemberHighlight::Enums:
+        result+="enumerāciju";
+        break;
+      case FileMemberHighlight::EnumValues:
+        result+="enumerācijas vērtību";
+        break;
+      case FileMemberHighlight::Defines:
+        result+="makro komandu";
+        break;
+      case FileMemberHighlight::Total: // for completeness
+        break;
+      }
+      result+=" saraksts ar saitēm uz ";
+      if (extractAll)
+        result+="failiem, kam tie pieder:";
+      else
+        result+="dokumentāciju:";
+      return result;
+    }
+    QCString trCompoundMembersDescriptionTotal(ClassMemberHighlight::Enum hl) override
+    {
+      bool extractAll = Config_getBool(EXTRACT_ALL);
+      QCString result="Šeit ir visu ";
+      if (!extractAll)
+      {
+        result+="dokumentētu ";
+      }
+
+      switch (hl)
+      {
+      case ClassMemberHighlight::All:
+        if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+        {
+          result+="struktūru un savienojumu lauku";
+        }
+        else
+        {
+          result+="klases locekļu";
+        }
+        break;
+      case ClassMemberHighlight::Functions:
+        result+="funkciju";
+        break;
+      case ClassMemberHighlight::Variables:
+        result+="mainīgo";
+        break;
+      case ClassMemberHighlight::Typedefs:
+        result+="tipdefu";
+        break;
+      case ClassMemberHighlight::Enums:
+        result+="enumerāciju";
+        break;
+      case ClassMemberHighlight::EnumValues:
+        result+="enumerācijas vērtību";
+        break;
+      case ClassMemberHighlight::Properties:
+        result+="īpašību";
+        break;
+      case ClassMemberHighlight::Events:
+        result+="notikumu";
+        break;
+      case ClassMemberHighlight::Related:
+        result+="saistīto simbolu";
+        break;
+      case ClassMemberHighlight::Total: // for completeness
+        break;
+      }
+      result+=" saraksts ar saitēm uz ";
+      if (!extractAll)
+      {
+        if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+        {
+          result+="katra lauka struktūru/savienojumu dokumentāciju:";
+        }
+        else
+        {
+          result+="katra locekļa klases dokumentāciju:";
+        }
+      }
+      else
+      {
+        if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+        {
+          result+="struktūrām/savienojumiem, kam tie pieder:";
+        }
+        else
+        {
+          result+="klasēm, kam tās pieder:";
+        }
+      }
+      return result;
+    }
+    QCString trNamespaceMembersDescriptionTotal(NamespaceMemberHighlight::Enum hl) override
+    {
+      bool extractAll = Config_getBool(EXTRACT_ALL);
+      QCString result="Šeit ir visu ";
+      if (!extractAll) result+="documentētu ";
+      QCString singularResult = "";
+      QCString pluralResult = "";
+      switch (hl)
+      {
+      case NamespaceMemberHighlight::All:
+        singularResult="locekļa";
+        pluralResult="locekļu";
+        break;
+      case NamespaceMemberHighlight::Functions:
+        singularResult="funkcijas";
+        pluralResult="funkciju";
+        break;
+      case NamespaceMemberHighlight::Variables:
+        singularResult="mainīga";
+        pluralResult="mainīgu";
+        break;
+      case NamespaceMemberHighlight::Typedefs:
+        singularResult="tipdefa";
+        pluralResult="tipdefu";
+        break;
+      case NamespaceMemberHighlight::Sequences:
+        singularResult="sekvences";
+        pluralResult="sekvenču";
+        break;
+      case NamespaceMemberHighlight::Dictionaries:
+        singularResult="vārdnīcas";
+        pluralResult="vārdnīcu";
+        break;
+      case NamespaceMemberHighlight::Enums:
+        singularResult="enumerācijas";
+        pluralResult="enumerāciju";
+        break;
+      case NamespaceMemberHighlight::EnumValues:
+        singularResult="enumerācijas vērtības";
+        pluralResult="enumerācijas vērtību";
+        break;
+      case NamespaceMemberHighlight::Total: // for completeness
+        break;
+      }
+      result+=" ar saitēm uz ";
+      if (extractAll)
+        result+="nosaukumvietas dokumentāciju katram " + singularResult + ":";
+      else
+        result+="nosaukumvietu, kam tie pieder:";
+      return result;
+    }
+    QCString trDefinition() override  { return "Definīcija";}
+    QCString trDeclaration() override { return "Deklarācija";}
+
+/*
+ * Latvian translations for version 1.9.8
+ *
+ * Artyom Fedosov, 2025
+ * Github: artyom-fedosov
+ */
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.8
+//////////////////////////////////////////////////////////////////////////
+
+    QCString trTopics() override
+    { return "Tēmas"; }
+    QCString trTopicDocumentation() override
+    { return "Tēmu dokumentācija"; }
+    QCString trTopicList() override
+    { return "Tēmu saraksts"; }
+    QCString trTopicIndex() override
+    { return "Tēmu rādītājs"; }
+    QCString trTopicListDescription() override
+    { return "Šeit ir visu tēmu saraksts ar īsiem aprakstiem:"; }
+    QCString trModuleMembersDescriptionTotal(ModuleMemberHighlight::Enum hl) override
+    {
+      bool extractAll = Config_getBool(EXTRACT_ALL);
+      QCString result="Šeit ir visu ";
+      if (!extractAll) result+="dokumentētu ";
+      result+="moduļa ";
+      QCString singularResult = "";
+      QCString pluralResult = "";
+      switch (hl)
+      {
+      case ModuleMemberHighlight::All:
+        singularResult="locekļa";
+        pluralResult="locekļu";
+        break;
+      case ModuleMemberHighlight::Functions:
+        singularResult="funkcijas";
+        pluralResult="funkciju";
+        break;
+      case ModuleMemberHighlight::Variables:
+        singularResult="mainīga";
+        pluralResult="mainīgu";
+        break;
+      case ModuleMemberHighlight::Typedefs:
+        singularResult="tipdefs";
+        pluralResult="tipdefu";
+        break;
+      case ModuleMemberHighlight::Enums:
+        singularResult="enumerācijas";
+        pluralResult="enumerāciju";
+        break;
+      case ModuleMemberHighlight::EnumValues:
+        singularResult="enumerācijas vērtības";
+        pluralResult="enumerācijas vērtību";
+        break;
+      case ModuleMemberHighlight::Total: // for completeness
+        break;
+      }
+      result+=(pluralResult.isEmpty() ? singularResult+"s" : pluralResult);
+      result+=" ar saitēm uz ";
+      if (extractAll)
+        result+="moduļa dokumentāciju katram " + singularResult + ":";
+      else
+        result+="moduli, kam tie pieder:";
+      return result;
+    }
+    QCString trExportedModules() override
+    {
+      return "Eksportētie moduļi";
+    }
+
+/*
+ * Latvian translations for version 1.10.0
+ *
+ * Artyom Fedosov, 2025
+ * Github: artyom-fedosov
+ */
+//////////////////////////////////////////////////////////////////////////
+// new since 1.10.0
+//////////////////////////////////////////////////////////////////////////
+
+    QCString trCopyToClipboard() override
+    {
+      return "Kopēt uz starpliktuvi";
+    }
+
+/*
+ * Latvian translations for version 1.11.0
+ *
+ * Artyom Fedosov, 2025
+ * Github: artyom-fedosov
+ */
+//////////////////////////////////////////////////////////////////////////
+// new since 1.11.0
+//////////////////////////////////////////////////////////////////////////
+    QCString trImportant() override
+    {
+      return "Svarīgi";
+    }
 };
 
 #endif
