@@ -42,6 +42,7 @@ class Image
     void fillRect(uint32_t x,uint32_t y,uint32_t width,uint32_t height,uint8_t colIndex,uint32_t mask);
     bool save(const QCString &fileName);
     friend uint32_t stringLength(const QCString &s);
+    uint32_t width() const;
     uint32_t height() const;
     static uint32_t stringLength(const QCString &s);
 
