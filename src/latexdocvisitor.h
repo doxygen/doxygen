@@ -139,7 +139,6 @@ class LatexDocVisitor : public DocVisitor
                    const QCString &anchor,bool refToTable=false,bool refToSection=false);
     void endLink(const QCString &ref,const QCString &file,
                  const QCString &anchor,bool refToTable=false,bool refToSection=false, SectionType sectionType = SectionType::Anchor);
-    QCString escapeMakeIndexChars(const char *s);
     void startDotFile(const QCString &fileName,const QCString &width,
                       const QCString &height, bool hasCaption,
                       const QCString &srcFile,int srcLine);
@@ -155,7 +154,6 @@ class LatexDocVisitor : public DocVisitor
                       const QCString &height, bool hasCaption,
                       const QCString &srcFile,int srcLine);
     void endDiaFile(bool hasCaption);
-    void writeDiaFile(const QCString &fileName, const DocVerbatim &s);
     void writePlantUMLFile(const QCString &fileName, const DocVerbatim &s);
     void startPlantUmlFile(const QCString &fileName,const QCString &width,
                       const QCString &height, bool hasCaption,
@@ -217,10 +215,6 @@ class LatexDocVisitor : public DocVisitor
     void setCurrentColumn(size_t col)
     {
       if (!m_tableStateStack.empty()) m_tableStateStack.top().currentColumn = col;
-    }
-    size_t numCols() const
-    {
-      return !m_tableStateStack.empty() ? m_tableStateStack.top().numCols : 0;
     }
     void setNumCols(size_t num)
     {

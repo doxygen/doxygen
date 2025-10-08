@@ -494,19 +494,6 @@ void ManGenerator::writeChar(char c)
   m_paragraph=FALSE;
 }
 
-void ManGenerator::startTitle()
-{
-  if (!m_firstCol) m_t << "\n";
-  m_t << ".SH \"";
-  m_firstCol=FALSE;
-  m_paragraph=FALSE;
-}
-
-void ManGenerator::endTitle()
-{
-    m_t << "\"";
-}
-
 void ManGenerator::startItemListItem()
 {
   if (!m_firstCol) m_t << "\n";

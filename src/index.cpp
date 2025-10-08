@@ -2279,11 +2279,6 @@ class AlphaIndexTableCell
     {
     }
 
-    const ClassDef *classDef() const { return m_class; }
-    std::string letter()       const { return m_letter; }
-    int row()                  const { return m_row; }
-    int column()               const { return m_col; }
-
   private:
     std::string m_letter;
     const ClassDef *m_class;
