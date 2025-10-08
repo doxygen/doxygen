@@ -2270,21 +2270,6 @@ static QCString letterToLabel(const QCString &startLetter)
 
 //----------------------------------------------------------------------------
 
-/** Class representing a cell in the alphabetical class index. */
-class AlphaIndexTableCell
-{
-  public:
-    AlphaIndexTableCell(int row,int col,const std::string &letter,const ClassDef *cd) :
-      m_letter(letter), m_class(cd), m_row(row), m_col(col)
-    {
-    }
-
-  private:
-    std::string m_letter;
-    const ClassDef *m_class;
-    int m_row;
-    int m_col;
-};
 
 using UsedIndexLetters = std::set<std::string>;
 

@@ -35,7 +35,7 @@ enum class Protection   {
 #undef PROTSPEC
 };
 
-[[maybe_unused]] static const char *to_string(Protection prot)
+[[maybe_unused]] static constexpr const char *to_string(Protection prot) noexcept
 {
   const char *result = "ERROR";
   switch (prot)
@@ -47,7 +47,7 @@ enum class Protection   {
   return result;
 }
 
-[[maybe_unused]] static const char *to_string_lower(Protection prot)
+[[maybe_unused]] static constexpr const char *to_string_lower(Protection prot) noexcept
 {
   const char *result = "error";
   switch (prot)
@@ -59,7 +59,7 @@ enum class Protection   {
   return result;
 }
 
-[[maybe_unused]] static const char *to_string_lower_class(Protection prot)
+[[maybe_unused]] static constexpr const char *to_string_lower_class(Protection prot) noexcept
 {
   const char *result = "error";
   switch (prot)
@@ -83,7 +83,7 @@ enum class Specifier   {
 #undef SPECSPEC
 };
 
-[[maybe_unused]] static const char *to_string(Specifier spec)
+[[maybe_unused]] static constexpr const char *to_string(Specifier spec) noexcept
 {
   const char *result = "ERROR";
   switch (spec)
@@ -95,7 +95,7 @@ enum class Specifier   {
   return result;
 }
 
-[[maybe_unused]] static const char *to_string_lower(Specifier spec)
+[[maybe_unused]] static constexpr const char *to_string_lower(Specifier spec) noexcept
 {
   const char *result = "error";
   switch (spec)
@@ -122,7 +122,7 @@ enum class MethodTypes   {
 #undef MTSPEC
 };
 
-[[maybe_unused]] static const char *to_string(MethodTypes mt)
+[[maybe_unused]] static constexpr const char *to_string(MethodTypes mt) noexcept
 {
   const char *result = "ERROR";
   switch (mt)
@@ -146,7 +146,7 @@ enum class RelatesType   {
 #undef RTSPEC
 };
 
-[[maybe_unused]] static const char *to_string(RelatesType rt)
+[[maybe_unused]] static constexpr const char *to_string(RelatesType rt) noexcept
 {
   const char *result = "ERROR";
   switch (rt)
@@ -170,7 +170,7 @@ enum class Relationship   {
 #undef RSSPEC
 };
 
-[[maybe_unused]] static const char *to_string(Relationship rs)
+[[maybe_unused]] static constexpr const char *to_string(Relationship rs) noexcept
 {
   const char *result = "ERROR";
   switch (rs)
@@ -210,7 +210,7 @@ enum class SrcLangExt {
 #undef SRCLANGEXT
 };
 
-[[maybe_unused]] static const char *to_string(SrcLangExt sle)
+[[maybe_unused]] static constexpr const char *to_string(SrcLangExt sle) noexcept
 {
   const char *result = "ERROR";
   switch (sle)
@@ -237,7 +237,7 @@ struct Grouping
     GROUPING_HIGHEST = GROUPING_INGROUP
   };
 
-  static const char *getGroupPriName( GroupPri_t priority )
+  static constexpr const char *getGroupPriName( GroupPri_t priority ) noexcept
   {
     switch( priority )
     {
@@ -368,21 +368,21 @@ class MemberListType
     };
 
   public:
-    static MemberListType Invalid() { return MemberListType(Invalid_); }
-    constexpr bool isInvalid() const { return m_type==Invalid_; }
+    static constexpr MemberListType Invalid() noexcept { return MemberListType(Invalid_); }
+    constexpr bool isInvalid() const noexcept { return m_type==Invalid_; }
 #define ML_TYPE(x,bits,to_pub,to_prot,label,xml_str)                                                                   \
     static MemberListType x() { return MemberListType(static_cast<int>(x##_)|static_cast<int>(bits)); } \
-    bool is##x() const { return (m_type&TypeMask)==x##_; }
+    constexpr bool is##x() const noexcept { return (m_type&TypeMask)==x##_; }
     ML_TYPES
 #undef ML_TYPE
-    constexpr bool isPublic()         const { return (m_type & Public)!=0;        }
-    constexpr bool isOnlyPublic()     const { return (m_type & OnlyPublic)!=0;    }
-    constexpr bool isProtected()      const { return (m_type & Protected)!=0;     }
-    constexpr bool isPackage()        const { return (m_type & Package)!=0;       }
-    constexpr bool isPrivate()        const { return (m_type & Private)!=0;       }
-    constexpr bool isDetailed()       const { return (m_type & Detailed)!=0;      }
-    constexpr bool isDeclaration()    const { return (m_type & Declaration)!=0;   }
-    constexpr bool isDocumentation()  const { return (m_type & Documentation)!=0; }
+    constexpr bool isPublic()         const noexcept { return (m_type & Public)!=0;        }
+    constexpr bool isOnlyPublic()     const noexcept { return (m_type & OnlyPublic)!=0;    }
+    constexpr bool isProtected()      const noexcept { return (m_type & Protected)!=0;     }
+    constexpr bool isPackage()        const noexcept { return (m_type & Package)!=0;       }
+    constexpr bool isPrivate()        const noexcept { return (m_type & Private)!=0;       }
+    constexpr bool isDetailed()       const noexcept { return (m_type & Detailed)!=0;      }
+    constexpr bool isDeclaration()    const noexcept { return (m_type & Declaration)!=0;   }
+    constexpr bool isDocumentation()  const noexcept { return (m_type & Documentation)!=0; }
     std::string to_string() const
     {
       switch (type())
@@ -395,11 +395,11 @@ class MemberListType
       }
       return "[unknown]";
     }
-    int to_int() const
+    constexpr int to_int() const noexcept
     {
       return m_type!=Invalid_ ? m_type&TypeMask : -1;
     }
-    constexpr const char *toLabel() const
+    constexpr const char *toLabel() const noexcept
     {
       switch (type())
       {
@@ -411,7 +411,7 @@ class MemberListType
       }
       return "";
     }
-    constexpr const char *toXML() const
+    constexpr const char *toXML() const noexcept
     {
       switch (type())
       {
@@ -423,7 +423,7 @@ class MemberListType
       }
       return "";
     }
-    MemberListType toPublic() const
+    constexpr MemberListType toPublic() const noexcept
     {
       switch (type())
       {
@@ -435,7 +435,7 @@ class MemberListType
       }
       return Invalid();
     }
-    MemberListType toProtected() const
+    constexpr MemberListType toProtected() const noexcept
     {
       switch (type())
       {
@@ -451,7 +451,7 @@ class MemberListType
     friend inline bool operator!=(const MemberListType &t1,const MemberListType &t2) { return !(operator==(t1,t2)); }
 
   private:
-    explicit MemberListType(int t) : m_type(t) {}
+    explicit constexpr MemberListType(int t) noexcept : m_type(t) {}
     std::string bits_to_string() const
     {
       std::string result;
@@ -464,7 +464,7 @@ class MemberListType
       if (m_type&Documentation) result+=",Documentation";
       return result;
     }
-    constexpr TypeName type() const { return static_cast<TypeName>(m_type & TypeMask); }
+    constexpr TypeName type() const noexcept { return static_cast<TypeName>(m_type & TypeMask); }
     int m_type = static_cast<int>(Invalid_);
 };
 
@@ -512,7 +512,7 @@ enum class CodeSymbolType
   Dictionary
 };
 
-constexpr const char *codeSymbolType2Str(CodeSymbolType type)
+constexpr const char *codeSymbolType2Str(CodeSymbolType type) noexcept
 {
   switch (type)
   {
@@ -587,41 +587,41 @@ class LocalToc
       Docbook                = 3, // ...
       numTocTypes            = 4  // number of enum values
     };
-    LocalToc() : m_mask(None) { memset(m_level,0,sizeof(m_level)); }
+    constexpr LocalToc() noexcept : m_mask(None) { for (size_t i=0;i<numTocTypes;i++) m_level[i]=0; }
 
     // setters
-    void enableHtml(int level)
+    constexpr void enableHtml(int level) noexcept
     {
       m_mask|=(1<<Html);
       m_level[Html]=level;
     }
-    void enableLatex(int level)
+    constexpr void enableLatex(int level) noexcept
     {
       m_mask|=(1<<Latex);
       m_level[Latex]=level;
     }
-    void enableXml(int level)
+    constexpr void enableXml(int level) noexcept
     {
       m_mask|=(1<<Xml);
       m_level[Xml]=level;
     }
-    void enableDocbook(int level)
+    constexpr void enableDocbook(int level) noexcept
     {
       m_mask|=(1<<Docbook);
       m_level[Docbook]=level;
     }
 
     // getters
-    bool isHtmlEnabled()  const { return (m_mask & (1<<Html))!=0;  }
-    bool isLatexEnabled() const { return (m_mask & (1<<Latex))!=0; }
-    bool isXmlEnabled()   const { return (m_mask & (1<<Xml))!=0;   }
-    bool isDocbookEnabled()   const { return (m_mask & (1<<Docbook))!=0;   }
-    bool nothingEnabled() const { return m_mask == None; }
-    int htmlLevel()       const { return m_level[Html]; }
-    int latexLevel()      const { return m_level[Latex]; }
-    int xmlLevel()        const { return m_level[Xml]; }
-    int docbookLevel()    const { return m_level[Docbook]; }
-    int mask()            const { return m_mask; }
+    constexpr bool isHtmlEnabled()    const noexcept { return (m_mask & (1<<Html))!=0;  }
+    constexpr bool isLatexEnabled()   const noexcept { return (m_mask & (1<<Latex))!=0; }
+    constexpr bool isXmlEnabled()     const noexcept { return (m_mask & (1<<Xml))!=0;   }
+    constexpr bool isDocbookEnabled() const noexcept { return (m_mask & (1<<Docbook))!=0;   }
+    constexpr bool nothingEnabled()   const noexcept { return m_mask == None; }
+    constexpr int htmlLevel()         const noexcept { return m_level[Html]; }
+    constexpr int latexLevel()        const noexcept { return m_level[Latex]; }
+    constexpr int xmlLevel()          const noexcept { return m_level[Xml]; }
+    constexpr int docbookLevel()      const noexcept { return m_level[Docbook]; }
+    constexpr int mask()              const noexcept { return m_mask; }
 
   private:
     int m_mask;
@@ -632,7 +632,7 @@ class LocalToc
 
 
 #define TYPE_SPECIFIERS                                                                                                         \
-/*  0 */ TSPEC(Template)          TSPEC(Generic)         TSPEC(Ref)               TSPEC(Value)        TSPEC(Interface)          \
+/*  0 */ TSPEC0(Template)         TSPEC(Generic)         TSPEC(Ref)               TSPEC(Value)        TSPEC(Interface)          \
 /*  5 */ TSPEC(Struct)            TSPEC(Union)           TSPEC(Exception)         TSPEC(Protocol)     TSPEC(Category)           \
 /* 10 */ TSPEC(SealedClass)       TSPEC(AbstractClass)   TSPEC(Enum)              TSPEC(Service)      TSPEC(Singleton)          \
 /* 15 */ TSPEC(ForwardDecl)       TSPEC(Local)           TSPEC(EnumStruct)        TSPEC(ConstExpr)    TSPEC(PrivateGettable)    \
@@ -653,14 +653,29 @@ class LocalToc
 class TypeSpecifier
 {
   public:
-    TypeSpecifier() { reset(); }
+    constexpr TypeSpecifier() noexcept :
+#define TSPEC(x) ,m_is##x(0)
+#define TSPEC0(x) m_is##x(0)
+      TYPE_SPECIFIERS
+#undef TSPEC0
+#undef TSPEC
+    {}
 
-    void reset() { std::memset(this, 0, sizeof(*this)); }
+    constexpr void reset() noexcept
+    {
+#define TSPEC(x)  m_is##x = 0;
+#define TSPEC0(x) TSPEC(x)
+      TYPE_SPECIFIERS
+#undef TSPEC0
+#undef TSPEC
+    }
 
-    void merge(const TypeSpecifier &other)
+    constexpr void merge(const TypeSpecifier &other) noexcept
     {
 #define TSPEC(x) m_is##x = m_is##x || other.is##x();
+#define TSPEC0(x) TSPEC(x)
       TYPE_SPECIFIERS
+#undef TSPEC0
 #undef TSPEC
     }
 
@@ -668,7 +683,9 @@ class TypeSpecifier
     {
       bool eq = true;
 #define TSPEC(x) eq = eq && (t1.m_is##x == t2.m_is##x);
+#define TSPEC0(x) TSPEC(x)
       TYPE_SPECIFIERS
+#undef TSPEC0
 #undef TSPEC
       return eq;
     }
@@ -677,7 +694,6 @@ class TypeSpecifier
     {
       return !(operator==(t1,t2));
     }
-
 
     std::string to_string() const
     {
@@ -688,20 +704,24 @@ class TypeSpecifier
         if (!first) result+=",";                                          \
         result+=#x; first=false;                                          \
       }
+#define TSPEC0(x) TSPEC(x)
       TYPE_SPECIFIERS
+#undef TSPEC0
 #undef TSPEC
       result+="]";
       return result;
     }
 
     // generate getter and setter for each property
-#define TSPEC(x)                                                          \
-    public:                                                               \
-      TypeSpecifier &set##x(bool b) { m_is##x = b; return *this; }        \
-      bool is##x() const { return m_is##x; }                              \
-    private:                                                              \
+#define TSPEC(x)                                                                             \
+    public:                                                                                  \
+      constexpr TypeSpecifier &set##x(bool b) noexcept { m_is##x = b; return *this; }        \
+      constexpr bool is##x() const noexcept { return m_is##x; }                              \
+    private:                                                                                 \
       bool m_is##x : 1;
+#define TSPEC0(x) TSPEC(x)
     TYPE_SPECIFIERS
+#undef TSPEC0
 #undef TSPEC
 
 };
@@ -793,15 +813,15 @@ class EntryType
 {
   public:
 #define ETYPE(x,bits)                                                                            \
-    static EntryType make##x() { return EntryType(static_cast<int>(x)|static_cast<int>(bits)); } \
-    bool is##x() const { return (m_type&TypeMask)==x; }
+    static constexpr EntryType make##x() noexcept { return EntryType(static_cast<int>(x)|static_cast<int>(bits)); } \
+    constexpr bool is##x() const noexcept { return (m_type&TypeMask)==x; }
     ENTRY_TYPES
 #undef ETYPE
-    bool isCompound()    const { return (m_type & Compound)!=0;    }
-    bool isScope()       const { return (m_type & Scope)!=0;       }
-    bool isFile()        const { return (m_type & File)!=0;        }
-    bool isCompoundDoc() const { return (m_type & CompoundDoc)!=0; }
-    bool isDoc()         const { return (m_type & Doc)!=0;         }
+    constexpr bool isCompound()    const noexcept { return (m_type & Compound)!=0;    }
+    constexpr bool isScope()       const noexcept { return (m_type & Scope)!=0;       }
+    constexpr bool isFile()        const noexcept { return (m_type & File)!=0;        }
+    constexpr bool isCompoundDoc() const noexcept { return (m_type & CompoundDoc)!=0; }
+    constexpr bool isDoc()         const noexcept { return (m_type & Doc)!=0;         }
     std::string to_string() const
     {
       switch (type())
@@ -836,7 +856,7 @@ class EntryType
       TypeMask      = 0x0000FFFF,
       CategoryMask  = 0xFFFF0000
     };
-    explicit EntryType(int t) : m_type(t) {}
+    explicit constexpr EntryType(int t) noexcept : m_type(t) {}
     std::string bits_to_string() const
     {
       std::string result;
@@ -846,7 +866,7 @@ class EntryType
       if (m_type&CompoundDoc) result+=",CompoundDoc";
       return result;
     }
-    TypeName type() const { return static_cast<TypeName>(m_type & TypeMask); }
+    constexpr TypeName type() const noexcept { return static_cast<TypeName>(m_type & TypeMask); }
     unsigned int m_type = Empty;
 };
 
