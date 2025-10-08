@@ -1,0 +1,9 @@
+IndentWidth: 2
+IndentAccessModifiers: true
+UseTab: Never
+BreakBeforeBraces: Allman
+PointerAlignment: Right
+AllowShortFunctionsOnASingleLine: Inline
+---
+Language: Cpp
+ColumnLimit: 80
