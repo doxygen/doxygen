@@ -587,7 +587,6 @@ class LocalToc
       Docbook                = 3, // ...
       numTocTypes            = 4  // number of enum values
     };
-    constexpr LocalToc() noexcept : m_mask(None) { for (size_t i=0;i<numTocTypes;i++) m_level[i]=0; }
 
     // setters
     constexpr void enableHtml(int level) noexcept
@@ -624,8 +623,8 @@ class LocalToc
     constexpr int mask()              const noexcept { return m_mask; }
 
   private:
-    int m_mask;
-    int m_level[numTocTypes];
+    int m_mask = None;
+    int m_level[numTocTypes] = {};
 };
 
 //---------------------------------------------------------------------------------------
