@@ -20,7 +20,6 @@
 #include <vector>
 #include <sstream>
 #include <iostream>
-#include <fstream>
 #include <string>
 #include <algorithm>
 #include <filesystem>
@@ -30,11 +29,6 @@
 
 #include "version.h"
 
-#ifdef _WIN32
-#include <windows.h>
-#else
-#include <sys/stat.h>
-#endif
 
 #define FIELD_TYPE 1
 #define FIELD_NAME 2
