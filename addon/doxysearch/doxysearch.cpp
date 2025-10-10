@@ -74,11 +74,10 @@ static std::string uriDecode(const std::string & sSrc)
   {
     if (*pSrc == '%') // replace %2A with corresponding ASCII character
     {
-      char dec1, dec2;
+      int           dec1, dec2;
       unsigned char c1=*(pSrc+1);
       unsigned char c2=*(pSrc+2);
-      if (-1 != (dec1 = HEX2DEC(c1))
-       && -1 != (dec2 = HEX2DEC(c2)))
+      if (-1 != (dec1 = hex2dec(c1)) && -1 != (dec2 = hex2dec(c2)))
       {
         *pEnd++ = (dec1 << 4) + dec2;
         pSrc += 3;
