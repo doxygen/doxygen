@@ -301,8 +301,8 @@ inline std::string fileToString(const std::string &fileName)
 
 bool dirExists(const char *path)
 {
-  struct stat info = {};
-  return stat(path,&info)==0 && (info.st_mode&S_IFDIR);
+  std::error_code ec;
+  return std::filesystem::is_directory(path, ec);
 }
 
 /** main function to index data */
