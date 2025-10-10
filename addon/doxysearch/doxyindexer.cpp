@@ -104,7 +104,7 @@ static void addWords(const std::string &s,Xapian::Document &doc,int wfd)
 /** Adds all identifiers in \a s to document \a doc with weight \a wfd */
 static void addIdentifiers(const std::string &s,Xapian::Document &doc,int wfd)
 {
-  std::regex id_re("[A-Z_a-z][A-Z_a-z0-9]*");
+  static const std::regex id_re("[A-Z_a-z][A-Z_a-z0-9]*");
   auto id_begin = std::sregex_iterator(s.begin(), s.end(), id_re);
   auto id_end   = std::sregex_iterator();
 
