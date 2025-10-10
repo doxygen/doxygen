@@ -23,6 +23,7 @@
 #include <iterator>
 #include <regex>
 #include <filesystem>
+#include <unordered_map>
 
 
 // Xapian include
@@ -176,18 +177,21 @@ class XMLContentHandler
     void startElement(const std::string &name, const XMLHandlers::Attributes &attrib)
     {
       m_data="";
-      if (name=="field")
-      {
-        std::string fieldName = XMLHandlers::value(attrib,"name");
-        if      (fieldName=="type")     m_curFieldName=TypeField;
-        else if (fieldName=="name")     m_curFieldName=NameField;
-        else if (fieldName=="args")     m_curFieldName=ArgsField;
-        else if (fieldName=="tag")      m_curFieldName=TagField;
-        else if (fieldName=="url")      m_curFieldName=UrlField;
-        else if (fieldName=="keywords") m_curFieldName=KeywordField;
-        else if (fieldName=="text")     m_curFieldName=TextField;
-        else m_curFieldName=UnknownField;
-      }
+
+      if (name != "field") return;
+
+      static const std::unordered_map<std::string, FieldNames> fieldMap{
+        { "type", TypeField },
+        { "name", NameField },
+        { "args", ArgsField },
+        { "tag", TagField },
+        { "url", UrlField },
+        { "keywords", KeywordField },
+        { "text", TextField }
+      };
+      std::string fieldName = XMLHandlers::value(attrib, "name");
+      auto        it        = fieldMap.find(fieldName);
+      m_curFieldName        = (it != fieldMap.end()) ? it->second : UnknownField;
     }
 
     /** Handler for an end tag. Called for `</doc>` and `</field>` tags */
