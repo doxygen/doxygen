@@ -22,8 +22,8 @@
 #include <fstream>
 #include <iterator>
 #include <regex>
+#include <filesystem>
 
-#include <sys/stat.h>
 
 // Xapian include
 #include <xapian.h>
