@@ -30,13 +30,13 @@
 #include "version.h"
 
 
-#define FIELD_TYPE 1
-#define FIELD_NAME 2
-#define FIELD_ARGS 3
-#define FIELD_TAG  4
-#define FIELD_URL  5
-#define FIELD_KEYW 6
-#define FIELD_DOC  7
+constexpr Xapian::valueno FIELD_TYPE{ 1 };
+constexpr Xapian::valueno FIELD_NAME{ 2 };
+constexpr Xapian::valueno FIELD_ARGS{ 3 };
+constexpr Xapian::valueno FIELD_TAG{ 4 };
+constexpr Xapian::valueno FIELD_URL{ 5 };
+constexpr Xapian::valueno FIELD_KEYW{ 6 };
+constexpr Xapian::valueno FIELD_DOC{ 7 };
 
 #define HEX2DEC(x) (((x)>='0' && (x)<='9')?((x)-'0'):\
                     ((x)>='a' && (x)<='f')?((x)-'a'+10):\
