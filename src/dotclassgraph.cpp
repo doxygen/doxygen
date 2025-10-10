@@ -398,11 +398,16 @@ QCString DotClassGraph::getBaseName() const
 
 void DotClassGraph::computeTheGraph()
 {
+  QCString rankdir = Config_getString(DOT_RANKDIR_CLASS);
+  if (rankdir.isEmpty() && m_lrRank)
+  {
+    rankdir = "LR";
+  }
   computeGraph(
     m_startNode,
     m_graphType,
     m_graphFormat,
-    m_lrRank ? "LR" : "",
+    rankdir,
     m_graphType == GraphType::Inheritance,
     TRUE,
     m_startNode->label(),
