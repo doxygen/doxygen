@@ -38,9 +38,13 @@ constexpr Xapian::valueno FIELD_URL{ 5 };
 constexpr Xapian::valueno FIELD_KEYW{ 6 };
 constexpr Xapian::valueno FIELD_DOC{ 7 };
 
-#define HEX2DEC(x) (((x)>='0' && (x)<='9')?((x)-'0'):\
-                    ((x)>='a' && (x)<='f')?((x)-'a'+10):\
-                    ((x)>='A' && (x)<='F')?((x)-'A'+10):-1)
+constexpr int             hex2dec(unsigned char c)
+{
+  if (c >= '0' && c <= '9') return c - '0';
+  if (c >= 'a' && c <= 'f') return c - 'a' + 10;
+  if (c >= 'A' && c <= 'F') return c - 'A' + 10;
+  return -1;
+}
 
 
 bool dirExists(const std::string &dirname)
