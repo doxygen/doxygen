@@ -299,7 +299,6 @@ static void usage(const char *name, int exitVal = 1)
 int main(int argc,char **argv)
 {
   // process inputs that were passed to us via QUERY_STRING
-  std::string callback;
   try
   {
     std::string queryString;
