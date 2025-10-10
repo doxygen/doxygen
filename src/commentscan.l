@@ -66,6 +66,9 @@ typedef yyguts_t *yyscan_t;
 #include "trace.h"
 #include "debug.h"
 #include "stringutil.h"
+#include "config.h"
+#include "configimpl.h"
+#include "configoptions.h"
 
 // forward declarations
 static bool handleBrief(yyscan_t yyscanner,const QCString &, const StringVector &);
@@ -620,6 +623,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 MODULE_ID ({ID}".")*{ID}
 LINENR    {Bopt}[1-9][0-9]*
 IFILELINE  ("\\ifile \""[^"]*"\" \\iline "[0-9]+" "("iprefix \""[^"]*"\" ")?("iraise "[0-9]+" ")?)
+DOXYCFG   [A-Z][A-Z_0-9]*
 
   // C start comment 
 CCS   "/\*"
@@ -2391,7 +2395,7 @@ STopt  [^\n@\\]*
                                           unput(*yytext);
                                           BEGIN(GuardParam);
                                         }
-<GuardParam>{B}*[a-z_A-Z0-9.\-]+        { // parameter of if/ifnot yyextra->guards
+<GuardParam>{B}*[a-z_A-Z0-9.\-]+({CMD}"doxyconfig"{B}+{DOXYCFG})? { // parameter of if/ifnot yyextra->guards
                                           handleGuard(yyscanner,yytext);
                                         }
 <GuardParam>{DOCNL}                     { // end of argument
@@ -4935,7 +4939,105 @@ static void handleGuard(yyscan_t yyscanner,const QCString &expr)
   bool sectionEnabled = false;
   if (!expr.isEmpty())
   {
-    sectionEnabled=prs.parse(yyextra->fileName,yyextra->lineNr,expr.stripWhiteSpace());
+    if (expr.contains("@doxyconfig") || expr.contains("\\doxyconfig"))
+    {
+      GrowBuf growBuf;
+      signed char c = 0;
+      const char *p=expr.data();
+      size_t len = expr.length();
+      while ((c=*p++)!=0)
+      {
+        switch(c)
+        {
+          case '\\':
+          case '@':
+            if (*p == 'd' && QCString(p).startsWith("doxyconfig"))
+            {
+              p+=10; // skip doxyconfig
+              while (*p==' ' || *p=='\t') {p++;}
+              GrowBuf growBufConfig;
+              while ((c=*p++)!=0)
+              {
+                 if ((c>='A' && c<='Z') || (c>='0' && c<='9') || c=='_') growBufConfig.addChar(c);
+                 else
+                 {
+                   break;
+                 }
+              }
+              p--;
+              if (!growBufConfig.empty())
+              {
+                growBufConfig.addChar(0);
+                ConfigOption * opt = ConfigImpl::instance()->get(growBufConfig.get());
+                if (opt)
+                {
+                  switch (opt->kind())
+                  {
+                    case ConfigOption::O_Bool:
+                      // In case the value is not in the settings the default is not usedin valueStringRef,
+                      // but the user expects here the value used and not the settings value
+                      //growBuf.addStr(*(static_cast<ConfigBool*>(opt)->valueStringRef()));
+                      growBuf.addStr(*(static_cast<ConfigBool*>(opt)->valueRef())? "YES" : "NO");
+                      break;
+                    case ConfigOption::O_String:
+                      // due to the fact that there can be any character in the string
+                      warn(yyextra->fileName,yyextra->lineNr,
+                           "String setting '{}' not possible in conditional statement, ignored", growBufConfig.get());
+                      break;
+                    case ConfigOption::O_Enum:
+                      growBuf.addStr(*(static_cast<ConfigEnum*>(opt)->valueRef()));
+                      break;
+                    case ConfigOption::O_Int:
+                      // In case the value is not in the settings the default is not usedin valueStringRef,
+                      // but the user expects here the value used and not the settings value
+                      //growBuf.addStr(*(static_cast<ConfigInt*>(opt)->valueStringRef()));
+                      growBuf.addStr(QCString().setNum(*(static_cast<ConfigInt*>(opt)->valueRef())));
+                      break;
+                    case ConfigOption::O_List:
+                      warn(yyextra->fileName,yyextra->lineNr,
+                           "List setting '{}' not possible in conditional statement, ignored", growBufConfig.get());
+                      break;
+                    case ConfigOption::O_Obsolete:
+                      warn(yyextra->fileName,yyextra->lineNr,
+                           "Obsolete setting '{}' not possible in conditional statement, ignored", growBufConfig.get());
+                      break;
+                    case ConfigOption::O_Disabled:
+                      warn(yyextra->fileName,yyextra->lineNr,
+                           "Disabled setting '{}' not possible in conditional statement, ignored", growBufConfig.get());
+                      break;
+                    case ConfigOption::O_Info:
+                      warn(yyextra->fileName,yyextra->lineNr,
+                           "Info setting '{}' not possible in conditional statement, ignored", growBufConfig.get());
+                      break;
+                  }
+                }
+                else
+                {
+                  warn(yyextra->fileName,yyextra->lineNr,
+                       "Unknown setting '{}' not possible in conditional statement, ignored", growBufConfig.get());
+                }
+              }
+            }
+            else
+            {
+              growBuf.addChar(c);
+            }
+            break;
+          default:
+            growBuf.addChar(c);
+            break;
+        }
+      }
+      if (!growBuf.empty())
+      {
+        growBuf.addChar(0);
+        sectionEnabled=prs.parse(yyextra->fileName,yyextra->lineNr,QCString(growBuf.get()).stripWhiteSpace());
+      }
+    }
+    else
+    {
+      sectionEnabled=prs.parse(yyextra->fileName,yyextra->lineNr,expr.stripWhiteSpace());
+    }
   }
   bool parentEnabled = yyextra->guards->top().parentVisible();
   if (parentEnabled)
