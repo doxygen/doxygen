@@ -292,7 +292,9 @@ inline std::string fileToString(const std::string &fileName)
   std::ifstream t(fileName);
   std::string result;
   t.seekg(0, std::ios::end);
-  result.reserve(t.tellg());
+  auto size = t.tellg();
+  if (size < 0) size = 0;
+  result.reserve(static_cast<std::size_t>(size));
   t.seekg(0, std::ios::beg);
   result.assign(std::istreambuf_iterator<char>(t),
                 std::istreambuf_iterator<char>());
