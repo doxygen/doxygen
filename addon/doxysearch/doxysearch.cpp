@@ -302,6 +302,7 @@ static void usage(const char *name, int exitVal = 1)
 int main(int argc,char **argv)
 {
   // process inputs that were passed to us via QUERY_STRING
+  std::string callback;
   try
   {
     std::string queryString;
@@ -341,7 +342,7 @@ int main(int argc,char **argv)
     std::cout << "Content-Type:application/javascript;charset=utf-8\r\n\n";
     // parse query string
     std::vector<std::string> parts = split(queryString,'&');
-    std::string searchFor,callback;
+    std::string              searchFor;
     int num=1,page=0;
     for (std::vector<std::string>::const_iterator it=parts.begin();it!=parts.end();++it)
     {
