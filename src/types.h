@@ -629,7 +629,7 @@ class LocalToc
 
 //---------------------------------------------------------------------------------------
 
-
+// clang-format off
 #define TYPE_SPECIFIERS                                                                                                         \
 /*  0 */ TSPEC0(Template)         TSPEC(Generic)         TSPEC(Ref)               TSPEC(Value)        TSPEC(Interface)          \
 /*  5 */ TSPEC(Struct)            TSPEC(Union)           TSPEC(Exception)         TSPEC(Protocol)     TSPEC(Category)           \
@@ -645,6 +645,7 @@ class LocalToc
 /* 55 */ TSPEC(Readonly)          TSPEC(Bound)           TSPEC(Constrained)       TSPEC(Transient)    TSPEC(MaybeVoid)          \
 /* 60 */ TSPEC(MaybeDefault)      TSPEC(MaybeAmbiguous)  TSPEC(Published)         TSPEC(ConstEval)    TSPEC(ConstInit)          \
 /* 65 */ TSPEC(NoDiscard)         TSPEC(ThreadLocal)
+// clang-format on
 
 /** Wrapper class for a number of boolean properties.
  *  The properties are packed together, and initialized to false.

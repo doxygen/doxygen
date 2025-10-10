@@ -787,6 +787,7 @@ static auto endCb(void (LayoutParser::*fn)(Args...))
   return [=](LayoutParser &parser,const std::string &id) { (parser.*fn)(id); };
 }
 
+// clang-format off
 static const std::map< std::string, ElementCallbacks > g_elementHandlers =
 {
   // path/name
@@ -1351,6 +1352,7 @@ static const std::map< std::string, ElementCallbacks > g_elementHandlers =
   { "directory/memberdecl/dirs",                  { startCb(&LayoutParser::startSimpleEntry, LayoutDocEntry::DirSubDirs)         } },
   { "directory/memberdecl/files",                 { startCb(&LayoutParser::startSimpleEntry, LayoutDocEntry::DirFiles)           } },
 };
+// clang-format on
 
 } // namespace
 
