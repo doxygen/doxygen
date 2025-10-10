@@ -317,7 +317,8 @@ int main(int argc,const char **argv)
   std::string outputDir;
   for (int i=1;i<argc;i++)
   {
-    if (std::string(argv[i])=="-o")
+    const std::string arg{ argv[i] };
+    if (arg == "-o")
     {
       if (i>=argc-1)
       {
@@ -335,11 +336,11 @@ int main(int argc,const char **argv)
         }
       }
     }
-    else if (std::string(argv[i])=="-h" || std::string(argv[i])=="--help")
+    else if (arg == "-h" || arg == "--help")
     {
       usage(argv[0],0);
     }
-    else if (std::string(argv[i])=="-v" || std::string(argv[i])=="--version")
+    else if (arg == "-v" || arg == "--version")
     {
       std::cerr << argv[0] << " version: " << getFullVersion() << std::endl;
       exit(0);
