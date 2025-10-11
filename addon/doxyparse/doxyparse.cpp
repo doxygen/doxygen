@@ -41,6 +41,7 @@
 #include <sstream>
 #include <map>
 #include <algorithm>
+#include <filesystem>
 #include "qcstring.h"
 #include "namespacedef.h"
 #include "portable.h"
@@ -538,9 +539,7 @@ int main(int argc,char **argv) {
   startYamlDocument();
   listSymbols();
 
-  std::string cleanup_command = "rm -rf ";
-  cleanup_command += tmpdir.str();
-  (void)system(cleanup_command.c_str());
-
-  exit(0);
+  std::error_code ec;
+  std::filesystem::remove_all(tmpdir.str(), ec);
+  return 0;
 }
