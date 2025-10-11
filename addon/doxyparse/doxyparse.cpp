@@ -115,21 +115,11 @@ static void findXRefSymbols(FileDef *fd)
 }
 
 static bool ignoreStaticExternalCall(const MemberDef *context, const MemberDef *md) {
-  if (md->isStatic()) {
-    if(md->getFileDef() && context->getFileDef()) {
-      if(md->getFileDef()->getOutputFileBase() == context->getFileDef()->getOutputFileBase())
-        // TODO ignore prefix of file
-        return false;
-      else
-        return true;
-    }
-    else {
-      return false;
-    }
-  }
-  else {
-    return false;
-  }
+  if (!md->isStatic()) return false;
+  if (!md->getFileDef() || !context->getFileDef()) return false;
+
+  // TODO ignore prefix of file
+  return md->getFileDef()->getOutputFileBase() != context->getFileDef()->getOutputFileBase();
 }
 
 static void startYamlDocument() {
