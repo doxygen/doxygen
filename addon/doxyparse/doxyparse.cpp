@@ -41,6 +41,7 @@
 #include <cstdlib>
 #include <sstream>
 #include <map>
+#include <algorithm>
 #include "qcstring.h"
 #include "namespacedef.h"
 #include "portable.h"
@@ -185,11 +186,13 @@ static int isPartOfCStruct(const MemberDef * md) {
   return is_c_code && md->getClassDef() != nullptr;
 }
 
-std::string sanitizeString(std::string data) {
-  QCString new_data = QCString(data.c_str());
-  new_data = substitute(new_data,"\"", "");
-  new_data = substitute(new_data,"\'", ""); // https://github.com/analizo/analizo/issues/138
-  return !new_data.isEmpty() ? new_data.data() : "";
+[[nodiscard]] std::string sanitizeString(std::string data)
+{
+  data.erase(std::remove_if(data.begin(), data.end(), [](unsigned char c) {
+               return c == '"' || c == '\'';
+             }),
+             data.end());
+  return data;
 }
 
 std::string argumentData(const Argument &argument) {
