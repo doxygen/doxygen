@@ -84,19 +84,14 @@ if(build_wizard)
   endif()
 endif()
 
-# use C++17 standard for compiling (unless very new Clang is present)
-if(
-  (CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang" AND
-  CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 17) OR
-  (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND
-  CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 19)
-)
-  set(CMAKE_CXX_STANDARD 20)
-else()
-  set(CMAKE_CXX_STANDARD 17)
-endif()
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS ON)
+
+check_cxx_compiler_flag("-std=c++20" COMPILER_SUPPORTS_CXX20)
+if(COMPILER_SUPPORTS_CXX20)
+  set(CMAKE_CXX_STANDARD 20)
+endif()
 
 if(ENABLE_CLANG_TIDY)
   find_program("CLANGTIDY" "clang-tidy")
