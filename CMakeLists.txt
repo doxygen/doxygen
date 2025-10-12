@@ -94,18 +94,15 @@ if(COMPILER_SUPPORTS_CXX20)
 endif()
 
 if(ENABLE_CLANG_TIDY)
-  find_program("CLANGTIDY" "clang-tidy")
-  if(CLANGTIDY)
-    set(CMAKE_CXX_CLANG_TIDY clang-tidy;
-                             -header-filter=.;
-                             -checks=-*,cppcoreguidelines-special-member-functions
-                             #-checks=-*,cppcoreguidelines-missing-std-forward
-                             #-checks=-*,cppcoreguidelines-init-variables
-                             #-checks=-*,cppcoreguidelines-misleading-capture-default-by-value
-                             #-checks=-*,modernize-use-nullptr
-                             #-checks=-*,modernize-use-override
-                             #-checks=-*,modernize-use-emplace
-                             )
+  find_program(CLANG_TIDY clang-tidy)
+  if(CLANG_TIDY)
+    set(CLANG_TIDY_CHECKS "-*,bugprone-*,clang-analyzer-*,cppcoreguidelines-*,performance-*,portability-*")
+    set(CMAKE_CXX_CLANG_TIDY
+      ${CLANG_TIDY}
+      -p=${CMAKE_BINARY_DIR}
+      -header-filter=.
+      -checks=${CLANG_TIDY_CHECKS}
+    )
   else()
     message(SEND_ERROR "clang-tidy requested but executable not found")
   endif()
