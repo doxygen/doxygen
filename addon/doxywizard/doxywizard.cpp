@@ -63,14 +63,14 @@ MainWindow::MainWindow()
 {
   QMenu *file = menuBar()->addMenu(tr("File"));
   file->addAction(tr("Open..."),
-                  this, SLOT(openConfig()), Qt::CTRL|Qt::Key_O);
+                  this, SLOT(openConfig()), QKeySequence{ Qt::CTRL | Qt::Key_O });
   m_recentMenu = file->addMenu(tr("Open recent"));
   file->addAction(tr("Save"),
-                  this, SLOT(saveConfig()), Qt::CTRL|Qt::Key_S);
+                  this, SLOT(saveConfig()), QKeySequence{ Qt::CTRL | Qt::Key_S });
   file->addAction(tr("Save as..."),
-                  this, SLOT(saveConfigAs()), Qt::SHIFT|Qt::CTRL|Qt::Key_S);
+                  this, SLOT(saveConfigAs()), QKeySequence{ Qt::SHIFT | Qt::CTRL | Qt::Key_S });
   file->addAction(tr("Quit"),
-                  this, SLOT(quit()), Qt::CTRL|Qt::Key_Q);
+                  this, SLOT(quit()), QKeySequence{ Qt::CTRL | Qt::Key_Q });
 
   QMenu *settings = menuBar()->addMenu(tr("Settings"));
   m_resetDefault = settings->addAction(tr("Reset to factory defaults"),
@@ -81,7 +81,7 @@ MainWindow::MainWindow()
                   this,SLOT(clearRecent()));
   settings->addSeparator();
   m_runMenu = settings->addAction(tr("Run doxygen"),
-                  this,SLOT(runDoxygenMenu()),Qt::CTRL|Qt::Key_R);
+                                  this, SLOT(runDoxygenMenu()), QKeySequence{ Qt::CTRL | Qt::Key_R });
   m_runMenu->setEnabled(false);
 
   QMenu *help = menuBar()->addMenu(tr("Help"));
