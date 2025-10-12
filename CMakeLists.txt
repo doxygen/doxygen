@@ -41,7 +41,7 @@ include(CheckCXXCompilerFlag)
 set(force_qt CACHE INTERNAL "Forces doxywizard to build using the specified major version, this can be Qt5 or Qt6")
 set_property(CACHE force_qt PROPERTY STRINGS OFF Qt6 Qt5)
 
-SET(enlarge_lex_buffers "262144" CACHE INTERNAL "Sets the lex input and read buffers to the specified size")
+set(enlarge_lex_buffers "262144" CACHE INTERNAL "Sets the lex input and read buffers to the specified size")
 
 if(enable_coverage)
   if("${PROJECT_BINARY_DIR}" STREQUAL "${PROJECT_SOURCE_DIR}")
