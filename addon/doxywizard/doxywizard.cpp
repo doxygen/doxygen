@@ -706,8 +706,8 @@ void MainWindow::saveLog()
     }
     else
     {
-      QMessageBox::warning(nullptr,tr("Warning"),
-          tr("Cannot open file ")+fn+tr(" for writing. Nothing saved!"),tr("ok"));
+      QMessageBox::warning(nullptr, tr("Warning"),
+                           tr("Cannot open file ") + fn + tr(" for writing. Nothing saved!"), QMessageBox::Ok);
     }
   }
 }
