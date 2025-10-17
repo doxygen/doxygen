@@ -18,7 +18,6 @@
  *
  */
 
-#include <stdlib.h>
 #if !defined(_WIN32) || defined(__CYGWIN__)
   #include <unistd.h>
 #else
@@ -41,6 +40,8 @@
 #include <cstdlib>
 #include <sstream>
 #include <map>
+#include <algorithm>
+#include <filesystem>
 #include "qcstring.h"
 #include "namespacedef.h"
 #include "portable.h"
@@ -114,21 +115,11 @@ static void findXRefSymbols(FileDef *fd)
 }
 
 static bool ignoreStaticExternalCall(const MemberDef *context, const MemberDef *md) {
-  if (md->isStatic()) {
-    if(md->getFileDef() && context->getFileDef()) {
-      if(md->getFileDef()->getOutputFileBase() == context->getFileDef()->getOutputFileBase())
-        // TODO ignore prefix of file
-        return false;
-      else
-        return true;
-    }
-    else {
-      return false;
-    }
-  }
-  else {
-    return false;
-  }
+  if (!md->isStatic()) return false;
+  if (!md->getFileDef() || !context->getFileDef()) return false;
+
+  // TODO ignore prefix of file
+  return md->getFileDef()->getOutputFileBase() != context->getFileDef()->getOutputFileBase();
 }
 
 static void startYamlDocument() {
@@ -185,11 +176,13 @@ static int isPartOfCStruct(const MemberDef * md) {
   return is_c_code && md->getClassDef() != nullptr;
 }
 
-std::string sanitizeString(std::string data) {
-  QCString new_data = QCString(data.c_str());
-  new_data = substitute(new_data,"\"", "");
-  new_data = substitute(new_data,"\'", ""); // https://github.com/analizo/analizo/issues/138
-  return !new_data.isEmpty() ? new_data.data() : "";
+[[nodiscard]] std::string sanitizeString(std::string data)
+{
+  data.erase(std::remove_if(data.begin(), data.end(), [](unsigned char c) {
+               return c == '"' || c == '\'';
+             }),
+             data.end());
+  return data;
 }
 
 std::string argumentData(const Argument &argument) {
@@ -536,9 +529,7 @@ int main(int argc,char **argv) {
   startYamlDocument();
   listSymbols();
 
-  std::string cleanup_command = "rm -rf ";
-  cleanup_command += tmpdir.str();
-  (void)system(cleanup_command.c_str());
-
-  exit(0);
+  std::error_code ec;
+  std::filesystem::remove_all(tmpdir.str(), ec);
+  return 0;
 }
