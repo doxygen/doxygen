@@ -4552,8 +4552,6 @@ static void findUsedClassesForClass(const Entry *root,
             usedClassName = typeCd->name();
           }
 
-          int sp=usedClassName.find('<');
-          if (sp==-1) sp=0;
           // replace any namespace aliases
           replaceNamespaceAliases(usedClassName);
           // add any template arguments to the class
