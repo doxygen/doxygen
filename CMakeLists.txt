@@ -36,6 +36,8 @@ option(enable_coverage "Enable coverage reporting for gcc/clang [development]" O
 option(enable_tracing  "Enable tracing option in release builds [development]" OFF)
 option(enable_lex_debug "Enable debugging info for lexical scanners in release builds [development]" OFF)
 
+set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
+
 include(CheckCXXCompilerFlag)
 
 set(force_qt CACHE INTERNAL "Forces doxywizard to build using the specified major version, this can be Qt5 or Qt6")
