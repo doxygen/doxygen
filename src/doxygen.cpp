@@ -2607,7 +2607,7 @@ static MemberDef *addVariableToFile(
     {
       static const reg::Ex re(R"(\a\w*)");
       reg::Match match;
-      std::string typ = ttype.str();
+      const std::string &typ = ttype.str();
       if (reg::search(typ,match,re))
       {
         QCString typeValue = match.str();
