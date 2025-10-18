@@ -142,7 +142,7 @@ QCString dateTimeFromString(const QCString &spec,std::tm &dt,int &format)
   }
 
   // find a matching pattern
-  std::string s = spec.str();
+  const std::string &s = spec.str();
   for (const auto &fmt : g_specFormats)
   {
     reg::Match m;
