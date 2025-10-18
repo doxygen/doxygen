@@ -63,14 +63,14 @@ MainWindow::MainWindow()
 {
   QMenu *file = menuBar()->addMenu(tr("File"));
   file->addAction(tr("Open..."),
-                  this, SLOT(openConfig()), Qt::CTRL|Qt::Key_O);
+                  this, SLOT(openConfig()), QKeySequence{ Qt::CTRL | Qt::Key_O });
   m_recentMenu = file->addMenu(tr("Open recent"));
   file->addAction(tr("Save"),
-                  this, SLOT(saveConfig()), Qt::CTRL|Qt::Key_S);
+                  this, SLOT(saveConfig()), QKeySequence{ Qt::CTRL | Qt::Key_S });
   file->addAction(tr("Save as..."),
-                  this, SLOT(saveConfigAs()), Qt::SHIFT|Qt::CTRL|Qt::Key_S);
+                  this, SLOT(saveConfigAs()), QKeySequence{ Qt::SHIFT | Qt::CTRL | Qt::Key_S });
   file->addAction(tr("Quit"),
-                  this, SLOT(quit()), Qt::CTRL|Qt::Key_Q);
+                  this, SLOT(quit()), QKeySequence{ Qt::CTRL | Qt::Key_Q });
 
   QMenu *settings = menuBar()->addMenu(tr("Settings"));
   m_resetDefault = settings->addAction(tr("Reset to factory defaults"),
@@ -81,7 +81,7 @@ MainWindow::MainWindow()
                   this,SLOT(clearRecent()));
   settings->addSeparator();
   m_runMenu = settings->addAction(tr("Run doxygen"),
-                  this,SLOT(runDoxygenMenu()),Qt::CTRL|Qt::Key_R);
+                                  this, SLOT(runDoxygenMenu()), QKeySequence{ Qt::CTRL | Qt::Key_R });
   m_runMenu->setEnabled(false);
 
   QMenu *help = menuBar()->addMenu(tr("Help"));
@@ -706,8 +706,8 @@ void MainWindow::saveLog()
     }
     else
     {
-      QMessageBox::warning(nullptr,tr("Warning"),
-          tr("Cannot open file ")+fn+tr(" for writing. Nothing saved!"),tr("ok"));
+      QMessageBox::warning(nullptr, tr("Warning"),
+                           tr("Cannot open file ") + fn + tr(" for writing. Nothing saved!"), QMessageBox::Ok);
     }
   }
 }
@@ -807,13 +807,15 @@ void MainWindow::outputLogFinish()
 //-----------------------------------------------------------------------
 int main(int argc,char **argv)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
   static const char ENV_VAR_QT_DEVICE_PIXEL_RATIO[] = "QT_DEVICE_PIXEL_RATIO";
   if (!qEnvironmentVariableIsSet(ENV_VAR_QT_DEVICE_PIXEL_RATIO)
-        && !qEnvironmentVariableIsSet("QT_AUTO_SCREEN_SCALE_FACTOR")
-        && !qEnvironmentVariableIsSet("QT_SCALE_FACTOR")
-        && !qEnvironmentVariableIsSet("QT_SCREEN_SCALE_FACTORS")) {
+      && !qEnvironmentVariableIsSet("QT_AUTO_SCREEN_SCALE_FACTOR")
+      && !qEnvironmentVariableIsSet("QT_SCALE_FACTOR")
+      && !qEnvironmentVariableIsSet("QT_SCREEN_SCALE_FACTORS")) {
     QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
   }
+#endif
 
   QApplication a(argc,argv);
   int locArgc = argc;
