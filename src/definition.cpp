@@ -158,7 +158,7 @@ static bool matchExcludedSymbols(const QCString &name)
 {
   const StringVector &exclSyms = Config_getList(EXCLUDE_SYMBOLS);
   if (exclSyms.empty()) return FALSE; // nothing specified
-  std::string symName = name.str();
+  const std::string &symName = name.str();
   for (const auto &pat : exclSyms)
   {
     QCString pattern = pat;
