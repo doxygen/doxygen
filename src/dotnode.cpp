@@ -197,7 +197,7 @@ QCString DotNode::convertLabel(const QCString &l, LabelStyle style)
 {
   QCString bBefore("\\_/<({[: =-+@%#~?$"); // break before character set
   QCString bAfter(">]),:;|");              // break after  character set
-  QCString p(l);
+  const QCString &p(l);
   if (p.isEmpty()) return QCString();
   QCString result;
   char pc=0;
