@@ -36,7 +36,9 @@ option(enable_coverage "Enable coverage reporting for gcc/clang [development]" O
 option(enable_tracing  "Enable tracing option in release builds [development]" OFF)
 option(enable_lex_debug "Enable debugging info for lexical scanners in release builds [development]" OFF)
 
-set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
+if(CMAKE_BUILD_TYPE STREQUAL "Release")
+  set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
+endif()
 
 include(CheckCXXCompilerFlag)
 
