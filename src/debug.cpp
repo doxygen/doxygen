@@ -88,7 +88,7 @@ void Debug::print_(DebugMask mask, int prio, fmt::string_view fmt, fmt::format_a
 
 static char asciiToLower(char in) {
   if (in <= 'Z' && in >= 'A')
-    return in + ' ';
+    return in - 'A' + 'a';
   return in;
 }
 
