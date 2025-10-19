@@ -120,8 +120,7 @@ void DefinitionImpl::Private::setDefFileName(const QCString &df)
 void DefinitionImpl::Private::init(const QCString &df, const QCString &n)
 {
   setDefFileName(df);
-  const QCString &lname = n;
-  if (lname!="<globalScope>")
+  if (n!="<globalScope>")
   {
     //extractNamespaceName(m_name,m_localName,ns);
     localName=stripScope(n);
