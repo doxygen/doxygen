@@ -197,12 +197,11 @@ QCString DotNode::convertLabel(const QCString &l, LabelStyle style)
 {
   QCString bBefore("\\_/<({[: =-+@%#~?$"); // break before character set
   QCString bAfter(">]),:;|");              // break after  character set
-  QCString p(l);
-  if (p.isEmpty()) return QCString();
+  if (l.isEmpty()) return QCString();
   QCString result;
   char pc=0;
   uint32_t idx = 0;
-  int charsLeft=static_cast<int>(p.length());
+  int charsLeft=static_cast<int>(l.length());
   int sinceLast=0;
   int foldLen = Config_getInt(DOT_WRAP_THRESHOLD); // ideal text length
   QCString br;
@@ -224,9 +223,9 @@ QCString DotNode::convertLabel(const QCString &l, LabelStyle style)
   {
     br = "\\l";
   }
-  while (idx < p.length())
+  while (idx < l.length())
   {
-    char c = p[idx++];
+    char c = l[idx++];
     char cs[2] = { c, 0 };
     const char *replacement = cs;
     if (style!=LabelStyle::Plain)
@@ -279,14 +278,14 @@ QCString DotNode::convertLabel(const QCString &l, LabelStyle style)
       sinceLast=1;
     }
     else if (charsLeft>1+foldLen/4 && sinceLast>foldLen+foldLen/3 &&
-      !isupper(c) && isupper(p[idx]))
+      !isupper(c) && isupper(l[idx]))
     {
       result+=replacement;
       result+=br;
       foldLen = (foldLen+sinceLast+1)/2;
       sinceLast=0;
     }
-    else if (charsLeft>foldLen/3 && sinceLast>foldLen && bAfter.contains(c) && (c!=':' || p[idx]!=':'))
+    else if (charsLeft>foldLen/3 && sinceLast>foldLen && bAfter.contains(c) && (c!=':' || l[idx]!=':'))
     {
       result+=replacement;
       result+=br;

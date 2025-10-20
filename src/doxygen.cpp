@@ -2607,7 +2607,7 @@ static MemberDef *addVariableToFile(
     {
       static const reg::Ex re(R"(\a\w*)");
       reg::Match match;
-      std::string typ = ttype.str();
+      const std::string &typ = ttype.str();
       if (reg::search(typ,match,re))
       {
         QCString typeValue = match.str();
@@ -4552,8 +4552,6 @@ static void findUsedClassesForClass(const Entry *root,
             usedClassName = typeCd->name();
           }
 
-          int sp=usedClassName.find('<');
-          if (sp==-1) sp=0;
           // replace any namespace aliases
           replaceNamespaceAliases(usedClassName);
           // add any template arguments to the class

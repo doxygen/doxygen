@@ -120,8 +120,7 @@ void DefinitionImpl::Private::setDefFileName(const QCString &df)
 void DefinitionImpl::Private::init(const QCString &df, const QCString &n)
 {
   setDefFileName(df);
-  QCString lname = n;
-  if (lname!="<globalScope>")
+  if (n!="<globalScope>")
   {
     //extractNamespaceName(m_name,m_localName,ns);
     localName=stripScope(n);
@@ -158,7 +157,7 @@ static bool matchExcludedSymbols(const QCString &name)
 {
   const StringVector &exclSyms = Config_getList(EXCLUDE_SYMBOLS);
   if (exclSyms.empty()) return FALSE; // nothing specified
-  std::string symName = name.str();
+  const std::string &symName = name.str();
   for (const auto &pat : exclSyms)
   {
     QCString pattern = pat;
