@@ -536,7 +536,16 @@ const Definition *SymbolResolver::Private::getResolvedSymbolRec(
           )
          )
       {
-         getResolvedSymbol(visitedKeys,scope,d,args,checkCV,insideCode,explicitScopePart,strippedTemplateParams,false,
+        if (d->definitionType()==Definition::TypeMember)
+        {
+          const MemberDef *emd = dynamic_cast<const MemberDef *>(d);
+          if (emd->isEnumValue() && emd->getEnumScope() && emd->getEnumScope()->isStrong() && explicitScopePart.isEmpty())
+          {
+            // skip lookup for strong enum values without explicit scope, see issue #11799
+            continue;
+          }
+        }
+        getResolvedSymbol(visitedKeys,scope,d,args,checkCV,insideCode,explicitScopePart,strippedTemplateParams,false,
             minDistance,bestMatch,bestTypedef,bestTemplSpec,bestResolvedType);
       }
       if  (minDistance==0) break; // we can stop reaching if we already reached distance 0

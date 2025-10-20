@@ -897,6 +897,9 @@ void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
     const QCString &text, bool autoBreak,bool external,
     bool keepSpaces,int indentLevel)
 {
+  AUTO_TRACE("scope={} fileScope={} text={} autoBreak={} external={} keepSpaces={} indentLevel={}",
+      scope?scope->name():"",fileScope?fileScope->name():"",
+      text,autoBreak,external,keepSpaces,indentLevel);
   if (text.isEmpty()) return;
   //printf("linkify='%s'\n",qPrint(text));
   std::string_view txtStr=text.view();
@@ -975,12 +978,14 @@ void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
     bool found=FALSE;
     if (!insideString)
     {
+      const Definition   *d=nullptr;
       const ClassDef     *cd=nullptr;
       const ConceptDef   *cnd=nullptr;
       //printf("** Match word '%s'\n",qPrint(matchWord));
 
       SymbolResolver resolver(fileScope);
-      cd=resolver.resolveClass(scope,matchWord);
+      d=resolver.resolveSymbol(scope,matchWord);
+      cd=dynamic_cast<const ClassDef *>(d);
       const MemberDef *typeDef = resolver.getTypedef();
       if (typeDef) // First look at typedef then class, see bug 584184.
       {
@@ -1008,7 +1013,11 @@ void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
           }
         }
       };
-      if (!found && (cd || (cd=getClass(matchWord))))
+      if (!found && d)
+      {
+        writeCompoundName(d);
+      }
+      else if ((cd=getClass(matchWord)))
       {
         writeCompoundName(cd);
       }
