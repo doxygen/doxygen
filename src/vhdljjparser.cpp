@@ -520,7 +520,6 @@ void VHDLOutlineParser::addVhdlType(const QCString &n,int startLine,EntryType se
     VhdlSpecifier spec,const QCString &args,const QCString &type,Protection prot)
 {
   VhdlParser::SharedState *s = &p->shared;
-  QCString name(n);
   if (isFuncProcProced() || VhdlDocGen::getFlowMember())  return;
 
   if (s->parse_sec==VhdlSection::GEN_SEC)
@@ -528,7 +527,7 @@ void VHDLOutlineParser::addVhdlType(const QCString &n,int startLine,EntryType se
     spec=VhdlSpecifier::GENERIC;
   }
 
-  StringVector ql=split(name.str(),",");
+  StringVector ql=split(n.str(),",");
 
   for (size_t u=0;u<ql.size();u++)
   {
