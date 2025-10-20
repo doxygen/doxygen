@@ -88,8 +88,7 @@ struct VHDLOutlineParser::Private
 void VHDLOutlineParser::Private::parseVhdlfile(const QCString &fileName,
                                                const QCString &inputBuffer,bool inLine)
 {
-  QCString s =inputBuffer;
-  CharStream *stream = new CharStream(reinterpret_cast<const JJChar*>(s.data()), (int)s.size(), 1, 1);
+  CharStream *stream = new CharStream(reinterpret_cast<const JJChar*>(inputBuffer.data()), (int)inputBuffer.size(), 1, 1);
   VhdlParserTokenManager *tokenManager = new VhdlParserTokenManager(stream);
   VhdlTokenManagerErrorHandler *tokErrHandler=new VhdlTokenManagerErrorHandler(fileName.data());
   vhdlParser=new VhdlParser(tokenManager);
