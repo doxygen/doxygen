@@ -235,28 +235,20 @@ TuneColorDialog::TuneColorDialog(int hue,int sat,int gamma,QWidget *parent) : QD
 static constexpr void hsl2rgb(double h,double s,double l,
                               double *pRed,double *pGreen,double *pBlue)
 {
-  double v;
-  double r,g,b;
-
-  r = l;   // default to gray
-  g = l;
-  b = l;
-  v = (l <= 0.5) ? (l * (1.0 + s)) : (l + s - l * s);
+  double r = l;   // default to gray
+  double g = l;
+  double b = l;
+  double v = (l <= 0.5) ? (l * (1.0 + s)) : (l + s - l * s);
   if (v > 0)
   {
-    double m;
-    double sv;
-    int sextant;
-    double fract, vsf, mid1, mid2;
-
-    m       = l + l - v;
-    sv      = (v - m ) / v;
-    h      *= 6.0;
-    sextant = (int)h;
-    fract   = h - sextant;
-    vsf     = v * sv * fract;
-    mid1    = m + vsf;
-    mid2    = v - vsf;
+    double m       = l + l - v;
+    double sv      = (v - m ) / v;
+    h             *= 6.0;
+    int sextant    = (int)h;
+    double fract   = h - sextant;
+    double vsf     = v * sv * fract;
+    double mid1    = m + vsf;
+    double mid2    = v - vsf;
     switch (sextant)
     {
       case 0:
