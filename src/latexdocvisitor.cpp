@@ -350,7 +350,14 @@ void LatexDocVisitor::operator()(const DocURL &u)
 void LatexDocVisitor::operator()(const DocLineBreak &)
 {
   if (m_hide) return;
+  if (m_insideItem)
+  {
+  m_t << "\\\\\n";
+  }
+  else
+  {
   m_t << "~\\newline\n";
+  }
 }
 
 void LatexDocVisitor::operator()(const DocHorRuler &)
@@ -1215,11 +1222,11 @@ void LatexDocVisitor::operator()(const DocHtmlDescList &dl)
 void LatexDocVisitor::operator()(const DocHtmlDescTitle &dt)
 {
   if (m_hide) return;
-  m_t << "\n\\item[";
+  m_t << "\n\\item[{\\parbox[t]{\\linewidth}{";
   m_insideItem=TRUE;
   visitChildren(dt);
   m_insideItem=FALSE;
-  m_t << "]";
+  m_t << "}}]";
 }
 
 void LatexDocVisitor::operator()(const DocHtmlDescData &dd)
