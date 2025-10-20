@@ -137,11 +137,16 @@ set(DOC_FILES
 )
 
 set(DOC_FILES_IMAGES
-        add.png
-        del.png
-        file.png
-        folder.png
-        refresh.png
+        add.eps
+        add.svg
+        del.eps
+        del.svg
+        file.eps
+        file.svg
+        folder.eps
+        folder.svg
+        refresh.eps
+        refresh.svg
 )
 
 if (build_doc_chm)

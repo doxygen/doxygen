@@ -69,7 +69,7 @@ InputString::InputString( QGridLayout *layout,int &row,
       m_br->setIconSize(QSize(24,24));
       if (m==StringFile || m==StringImage || m==StringFileDir)
       {
-        m_brFile = m_br->addAction(QIcon(QString::fromLatin1(":/images/file.png")),QString(),this,SLOT(browseFile()));
+        m_brFile = m_br->addAction(QIcon(QString::fromLatin1(":/images/file.svg")),QString(),this,SLOT(browseFile()));
         m_brFile->setToolTip(tr("Browse to a file"));
         if (m==StringImage)
         {
@@ -82,7 +82,7 @@ InputString::InputString( QGridLayout *layout,int &row,
       }
       if (m==StringDir || m==StringFileDir)
       {
-        m_brDir = m_br->addAction(QIcon(QString::fromLatin1(":/images/folder.png")),QString(),this,SLOT(browseDir()));
+        m_brDir = m_br->addAction(QIcon(QString::fromLatin1(":/images/folder.svg")),QString(),this,SLOT(browseDir()));
         m_brDir->setToolTip(tr("Browse to a folder"));
       }
       rowLayout->addWidget( m_br);

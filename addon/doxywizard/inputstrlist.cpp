@@ -36,13 +36,13 @@ InputStrList::InputStrList( QGridLayout *layout,int &row,
 
   QToolBar *toolBar = new QToolBar;
   toolBar->setIconSize(QSize(24,24));
-  m_add = toolBar->addAction(QIcon(QString::fromLatin1(":/images/add.png")),QString(),
+  m_add = toolBar->addAction(QIcon(QString::fromLatin1(":/images/add.svg")),QString(),
                              this,SLOT(addString()));
   m_add->setToolTip(tr("Add item"));
-  m_del = toolBar->addAction(QIcon(QString::fromLatin1(":/images/del.png")),QString(),
+  m_del = toolBar->addAction(QIcon(QString::fromLatin1(":/images/del.svg")),QString(),
                              this,SLOT(delString()));
   m_del->setToolTip(tr("Delete selected item"));
-  m_upd = toolBar->addAction(QIcon(QString::fromLatin1(":/images/refresh.png")),QString(),
+  m_upd = toolBar->addAction(QIcon(QString::fromLatin1(":/images/refresh.svg")),QString(),
                              this,SLOT(updateString()));
   m_upd->setToolTip(tr("Update selected item"));
 
@@ -56,13 +56,13 @@ InputStrList::InputStrList( QGridLayout *layout,int &row,
   {
     if (lm&ListFile)
     {
-      m_brFile = toolBar->addAction(QIcon(QString::fromLatin1(":/images/file.png")),QString(),
+      m_brFile = toolBar->addAction(QIcon(QString::fromLatin1(":/images/file.svg")),QString(),
                                     this,SLOT(browseFiles()));
       m_brFile->setToolTip(tr("Browse to a file"));
     }
     if (lm&ListDir)
     {
-      m_brDir = toolBar->addAction(QIcon(QString::fromLatin1(":/images/folder.png")),QString(),
+      m_brDir = toolBar->addAction(QIcon(QString::fromLatin1(":/images/folder.svg")),QString(),
                                    this,SLOT(browseDir()));
       m_brDir->setToolTip(tr("Browse to a folder"));
     }

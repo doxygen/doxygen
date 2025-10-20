@@ -111,17 +111,17 @@ static void visitPreStart(TextStream &t, bool hasCaption, QCString name,  QCStri
 {
     if (inlineImage)
     {
-      t << "\n\\begin{DoxyInlineImage}\n";
+      t << "\n\\begin{DoxyInlineImage}%\n";
     }
     else
     {
       if (hasCaption)
       {
-        t << "\n\\begin{DoxyImage}\n";
+        t << "\n\\begin{DoxyImage}%\n";
       }
       else
       {
-        t << "\n\\begin{DoxyImageNoCaption}\n"
+        t << "\n\\begin{DoxyImageNoCaption}%\n"
                "  \\mbox{";
       }
     }
@@ -170,11 +170,11 @@ static void visitPreStart(TextStream &t, bool hasCaption, QCString name,  QCStri
       {
         if (Config_getBool(PDF_HYPERLINKS))
         {
-          t << "\n\\doxyfigcaption{";
+          t << "%\n\\doxyfigcaption{";
         }
         else
         {
-          t << "\n\\doxyfigcaptionnolink{";
+          t << "%\n\\doxyfigcaptionnolink{";
         }
       }
       else
@@ -190,11 +190,11 @@ static void visitPostEnd(TextStream &t, bool hasCaption, bool inlineImage = FALS
 {
     if (inlineImage)
     {
-      t << "\n\\end{DoxyInlineImage}\n";
+      t << "%\n\\end{DoxyInlineImage}\n";
     }
     else
     {
-      t << "}\n"; // end mbox or caption
+      t << "}%\n"; // end mbox or caption
       if (hasCaption)
       {
         t << "\\end{DoxyImage}\n";
