@@ -284,8 +284,7 @@ int VHDLOutlineParser::checkInlineCode(QCString &doc)
   {
     if ((int)str.length()<pos) return -1;
     reg::Match match;
-    const std::string s = str.str();
-    if (reg::search(s,match,re,pos)) // match found
+    if (reg::search(str.str(),match,re,pos)) // match found
     {
       return (int)match.position();
     }
