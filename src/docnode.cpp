@@ -1428,10 +1428,9 @@ void DocHtmlSummary::parse()
   Token tok = parser()->tokenizer.lex();
   while (!tok.is_any_of(TokenRetval::TK_NONE, TokenRetval::TK_EOF))
   {
-    HtmlTagType tagId = HtmlTagType::UNKNOWN;
     // check of </summary>
     if (tok.value()==TokenRetval::TK_HTMLTAG &&
-        (tagId=Mappers::htmlTagMapper->map(parser()->context.token->name))==HtmlTagType::XML_SUMMARY &&
+        (Mappers::htmlTagMapper->map(parser()->context.token->name))==HtmlTagType::XML_SUMMARY &&
         parser()->context.token->endTag
        )
     {

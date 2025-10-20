@@ -2270,7 +2270,7 @@ void ClassDefImpl::writeSummaryLinks(OutputList &ol) const
               innerCd->visibleInParentsDeclList()
              )
           {
-            const LayoutDocEntrySection *ls = (const LayoutDocEntrySection*)lde.get();
+            const LayoutDocEntrySection *ls = dynamic_cast<const LayoutDocEntrySection *>(lde.get());
             ol.writeSummaryLink(QCString(),"nested-classes",ls->title(lang),first);
             first=FALSE;
             break;

@@ -52,7 +52,7 @@ class DotDirPropertyBuilder
     DotDirPropertyBuilder &makeTruncated (bool b=true) { m_property.isTruncated =b; return *this; }
     DotDirPropertyBuilder &makeOriginal  (bool b=true) { m_property.isOriginal  =b; return *this; }
     DotDirPropertyBuilder &makePeripheral(bool b=true) { m_property.isPeripheral=b; return *this; }
-    operator DotDirProperty() { return std::move(m_property); }
+    operator DotDirProperty() { return m_property; }
   private:
     DotDirProperty m_property;
 };
