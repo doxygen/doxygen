@@ -978,14 +978,12 @@ void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
     bool found=FALSE;
     if (!insideString)
     {
-      const Definition   *d=nullptr;
       const ClassDef     *cd=nullptr;
       const ConceptDef   *cnd=nullptr;
       //printf("** Match word '%s'\n",qPrint(matchWord));
 
       SymbolResolver resolver(fileScope);
-      d=resolver.resolveSymbol(scope,matchWord);
-      cd=dynamic_cast<const ClassDef *>(d);
+      cd=resolver.resolveClass(scope,matchWord);
       const MemberDef *typeDef = resolver.getTypedef();
       if (typeDef) // First look at typedef then class, see bug 584184.
       {
@@ -1013,11 +1011,7 @@ void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
           }
         }
       };
-      if (!found && d)
-      {
-        writeCompoundName(d);
-      }
-      else if ((cd=getClass(matchWord)))
+      if ((cd=getClass(matchWord)))
       {
         writeCompoundName(cd);
       }
@@ -1028,6 +1022,10 @@ void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
       else if ((cnd=getConcept(matchWord))) // search for concepts
       {
         writeCompoundName(cnd);
+      }
+      else if (const Definition *d=nullptr; cd==nullptr && !found && (d=resolver.resolveSymbol(scope,matchWord)))
+      {
+        writeCompoundName(d);
       }
       else
       {
