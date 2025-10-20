@@ -100,13 +100,7 @@ endif()
 if(ENABLE_CLANG_TIDY)
   find_program(CLANG_TIDY clang-tidy)
   if(CLANG_TIDY)
-    set(CLANG_TIDY_CHECKS "-*,bugprone-*,clang-analyzer-*,cppcoreguidelines-*,performance-*,portability-*")
-    set(CMAKE_CXX_CLANG_TIDY
-      ${CLANG_TIDY}
-      -p=${CMAKE_BINARY_DIR}
-      -header-filter=.
-      -checks=${CLANG_TIDY_CHECKS}
-    )
+    set(CMAKE_CXX_CLANG_TIDY ${CLANG_TIDY})
   else()
     message(SEND_ERROR "clang-tidy requested but executable not found")
   endif()
