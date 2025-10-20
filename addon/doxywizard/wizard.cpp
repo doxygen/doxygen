@@ -550,7 +550,8 @@ Step1::Step1(Wizard *wizard,const QHash<QString,Input*> &modelData) : m_wizard(w
 
   //---------------------------------------------------
   QFrame *f = new QFrame( this );
-  f->setFrameStyle( QFrame::HLine | QFrame::Sunken );
+  f->setFrameShape(QFrame::HLine);
+  f->setFrameShadow(QFrame::Sunken);
   layout->addWidget(f);
 
   l = new QLabel(this);
@@ -576,7 +577,8 @@ Step1::Step1(Wizard *wizard,const QHash<QString,Input*> &modelData) : m_wizard(w
 
   //---------------------------------------------------
   f = new QFrame( this );
-  f->setFrameStyle( QFrame::HLine | QFrame::Sunken );
+  f->setFrameShape(QFrame::HLine);
+  f->setFrameShadow(QFrame::Sunken);
   layout->addWidget(f);
 
   l = new QLabel(this);
@@ -795,7 +797,8 @@ Step2::Step2(Wizard *wizard,const QHash<QString,Input*> &modelData)
 
   //---------------------------------------------------
   QFrame *f = new QFrame( this );
-  f->setFrameStyle( QFrame::HLine | QFrame::Sunken );
+  f->setFrameShape(QFrame::HLine);
+  f->setFrameShadow(QFrame::Sunken);
   layout->addWidget(f);
 
   m_optimizeLangGroup = new QButtonGroup(this);
