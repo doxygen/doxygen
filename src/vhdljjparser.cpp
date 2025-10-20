@@ -633,8 +633,7 @@ void VHDLOutlineParser::addProto(const QCString &s1,const QCString &s2,const QCS
 {
   VhdlParser::SharedState *s = &p->shared;
   (void)s5; // avoid unused warning
-  QCString name=s2;
-  StringVector ql=split(name.str(),",");
+  StringVector ql=split(s2.str(),",");
 
   for (const auto &n : ql)
   {
