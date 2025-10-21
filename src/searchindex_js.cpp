@@ -224,7 +224,8 @@ static void addMemberToSearchIndex(const MemberDef *md)
       )
      )
   {
-    if (!md->name().isEmpty())
+    QCString n = md->name();
+    if (!n.isEmpty())
     {
       bool isFriendToHide = hideFriendCompounds &&
         (md->typeString()=="friend class" ||
@@ -232,48 +233,48 @@ static void addMemberToSearchIndex(const MemberDef *md)
          md->typeString()=="friend union");
       if (!(md->isFriend() && isFriendToHide))
       {
-        g_searchIndexInfo[SEARCH_INDEX_ALL].add(SearchTerm(md->name(),md));
+        g_searchIndexInfo[SEARCH_INDEX_ALL].add(SearchTerm(n,md));
       }
       if (md->isFunction() || md->isSlot() || md->isSignal())
       {
-        g_searchIndexInfo[SEARCH_INDEX_FUNCTIONS].add(SearchTerm(md->name(),md));
+        g_searchIndexInfo[SEARCH_INDEX_FUNCTIONS].add(SearchTerm(n,md));
       }
       else if (md->isVariable())
       {
-        g_searchIndexInfo[SEARCH_INDEX_VARIABLES].add(SearchTerm(md->name(),md));
+        g_searchIndexInfo[SEARCH_INDEX_VARIABLES].add(SearchTerm(n,md));
       }
       else if (md->isSequence())
       {
-        g_searchIndexInfo[SEARCH_INDEX_SEQUENCES].add(SearchTerm(md->name(),md));
+        g_searchIndexInfo[SEARCH_INDEX_SEQUENCES].add(SearchTerm(n,md));
       }
       else if (md->isDictionary())
       {
-        g_searchIndexInfo[SEARCH_INDEX_DICTIONARIES].add(SearchTerm(md->name(),md));
+        g_searchIndexInfo[SEARCH_INDEX_DICTIONARIES].add(SearchTerm(n,md));
       }
       else if (md->isTypedef())
       {
-        g_searchIndexInfo[SEARCH_INDEX_TYPEDEFS].add(SearchTerm(md->name(),md));
+        g_searchIndexInfo[SEARCH_INDEX_TYPEDEFS].add(SearchTerm(n,md));
       }
       else if (md->isEnumerate())
       {
-        g_searchIndexInfo[SEARCH_INDEX_ENUMS].add(SearchTerm(md->name(),md));
+        g_searchIndexInfo[SEARCH_INDEX_ENUMS].add(SearchTerm(n,md));
       }
       else if (md->isEnumValue())
       {
-        g_searchIndexInfo[SEARCH_INDEX_ENUMVALUES].add(SearchTerm(md->name(),md));
+        g_searchIndexInfo[SEARCH_INDEX_ENUMVALUES].add(SearchTerm(n,md));
       }
       else if (md->isProperty())
       {
-        g_searchIndexInfo[SEARCH_INDEX_PROPERTIES].add(SearchTerm(md->name(),md));
+        g_searchIndexInfo[SEARCH_INDEX_PROPERTIES].add(SearchTerm(n,md));
       }
       else if (md->isEvent())
       {
-        g_searchIndexInfo[SEARCH_INDEX_EVENTS].add(SearchTerm(md->name(),md));
+        g_searchIndexInfo[SEARCH_INDEX_EVENTS].add(SearchTerm(n,md));
       }
       else if (md->isRelated() || md->isForeign() ||
                (md->isFriend() && !isFriendToHide))
       {
-        g_searchIndexInfo[SEARCH_INDEX_RELATED].add(SearchTerm(md->name(),md));
+        g_searchIndexInfo[SEARCH_INDEX_RELATED].add(SearchTerm(n,md));
       }
     }
   }
@@ -283,41 +284,42 @@ static void addMemberToSearchIndex(const MemberDef *md)
       )
      )
   {
-    if (!md->name().isEmpty())
+    QCString n = md->name();
+    if (!n.isEmpty())
     {
-      g_searchIndexInfo[SEARCH_INDEX_ALL].add(SearchTerm(md->name(),md));
+      g_searchIndexInfo[SEARCH_INDEX_ALL].add(SearchTerm(n,md));
 
       if (md->isFunction())
       {
-        g_searchIndexInfo[SEARCH_INDEX_FUNCTIONS].add(SearchTerm(md->name(),md));
+        g_searchIndexInfo[SEARCH_INDEX_FUNCTIONS].add(SearchTerm(n,md));
       }
       else if (md->isVariable())
       {
-        g_searchIndexInfo[SEARCH_INDEX_VARIABLES].add(SearchTerm(md->name(),md));
+        g_searchIndexInfo[SEARCH_INDEX_VARIABLES].add(SearchTerm(n,md));
       }
       else if (md->isSequence())
       {
-        g_searchIndexInfo[SEARCH_INDEX_SEQUENCES].add(SearchTerm(md->name(),md));
+        g_searchIndexInfo[SEARCH_INDEX_SEQUENCES].add(SearchTerm(n,md));
       }
       else if (md->isDictionary())
       {
-        g_searchIndexInfo[SEARCH_INDEX_DICTIONARIES].add(SearchTerm(md->name(),md));
+        g_searchIndexInfo[SEARCH_INDEX_DICTIONARIES].add(SearchTerm(n,md));
       }
       else if (md->isTypedef())
       {
-        g_searchIndexInfo[SEARCH_INDEX_TYPEDEFS].add(SearchTerm(md->name(),md));
+        g_searchIndexInfo[SEARCH_INDEX_TYPEDEFS].add(SearchTerm(n,md));
       }
       else if (md->isEnumerate())
       {
-        g_searchIndexInfo[SEARCH_INDEX_ENUMS].add(SearchTerm(md->name(),md));
+        g_searchIndexInfo[SEARCH_INDEX_ENUMS].add(SearchTerm(n,md));
       }
       else if (md->isEnumValue())
       {
-        g_searchIndexInfo[SEARCH_INDEX_ENUMVALUES].add(SearchTerm(md->name(),md));
+        g_searchIndexInfo[SEARCH_INDEX_ENUMVALUES].add(SearchTerm(n,md));
       }
       else if (md->isDefine())
       {
-        g_searchIndexInfo[SEARCH_INDEX_DEFINES].add(SearchTerm(md->name(),md));
+        g_searchIndexInfo[SEARCH_INDEX_DEFINES].add(SearchTerm(n,md));
       }
     }
   }
