@@ -2475,7 +2475,11 @@ Token DocHtmlDescTitle::parse()
                     }
                   }
                 }
-
+                break;
+              case CommandType::CMD_LINEBREAK:
+                {
+                  children().append<DocLineBreak>(parser(),thisVariant(),parser()->context.token->attribs);
+                }
                 break;
               default:
                 warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Illegal command '{:c}{}' found as part of a <dt> tag",
