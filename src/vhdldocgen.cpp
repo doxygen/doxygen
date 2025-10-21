@@ -548,14 +548,13 @@ void VhdlDocGen::findAllArchitectures(std::vector<QCString>& qll,const ClassDef 
 
 const ClassDef* VhdlDocGen::findArchitecture(const ClassDef *cd)
 {
-  QCString nn=cd->name();
   for (const auto &citer : *Doxygen::classLinkedMap)
   {
     QCString jj=citer->name();
     StringVector ql=split(jj.str(),":");
     if (ql.size()>1)
     {
-      if (ql[0]==nn)
+      if (ql[0]==cd->name())
       {
         return citer.get();
       }

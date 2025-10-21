@@ -242,7 +242,7 @@ void PageDefImpl::writeDocumentation(OutputList &ol)
   PageDef *pd = this;
   while (pd->hasParentPage())
   {
-    pd = (PageDef *)pd->getOuterScope();
+    pd = dynamic_cast<PageDef *>(pd->getOuterScope());
     ++hierarchyLevel;
   }
 

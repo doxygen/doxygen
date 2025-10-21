@@ -88,8 +88,7 @@ struct VHDLOutlineParser::Private
 void VHDLOutlineParser::Private::parseVhdlfile(const QCString &fileName,
                                                const QCString &inputBuffer,bool inLine)
 {
-  QCString s =inputBuffer;
-  CharStream *stream = new CharStream(reinterpret_cast<const JJChar*>(s.data()), (int)s.size(), 1, 1);
+  CharStream *stream = new CharStream(reinterpret_cast<const JJChar*>(inputBuffer.data()), (int)inputBuffer.size(), 1, 1);
   VhdlParserTokenManager *tokenManager = new VhdlParserTokenManager(stream);
   VhdlTokenManagerErrorHandler *tokErrHandler=new VhdlTokenManagerErrorHandler(fileName.data());
   vhdlParser=new VhdlParser(tokenManager);
@@ -285,8 +284,7 @@ int VHDLOutlineParser::checkInlineCode(QCString &doc)
   {
     if ((int)str.length()<pos) return -1;
     reg::Match match;
-    const std::string s = str.str();
-    if (reg::search(s,match,re,pos)) // match found
+    if (reg::search(str.str(),match,re,pos)) // match found
     {
       return (int)match.position();
     }
@@ -522,7 +520,6 @@ void VHDLOutlineParser::addVhdlType(const QCString &n,int startLine,EntryType se
     VhdlSpecifier spec,const QCString &args,const QCString &type,Protection prot)
 {
   VhdlParser::SharedState *s = &p->shared;
-  QCString name(n);
   if (isFuncProcProced() || VhdlDocGen::getFlowMember())  return;
 
   if (s->parse_sec==VhdlSection::GEN_SEC)
@@ -530,7 +527,7 @@ void VHDLOutlineParser::addVhdlType(const QCString &n,int startLine,EntryType se
     spec=VhdlSpecifier::GENERIC;
   }
 
-  StringVector ql=split(name.str(),",");
+  StringVector ql=split(n.str(),",");
 
   for (size_t u=0;u<ql.size();u++)
   {
@@ -636,8 +633,7 @@ void VHDLOutlineParser::addProto(const QCString &s1,const QCString &s2,const QCS
 {
   VhdlParser::SharedState *s = &p->shared;
   (void)s5; // avoid unused warning
-  QCString name=s2;
-  StringVector ql=split(name.str(),",");
+  StringVector ql=split(s2.str(),",");
 
   for (const auto &n : ql)
   {

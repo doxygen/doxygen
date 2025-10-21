@@ -57,7 +57,6 @@ static void format_warn(const QCString &file,int line,const QCString &text)
 {
   QCString fileSubst = file.isEmpty() ? "<unknown>" : file;
   QCString lineSubst; lineSubst.setNum(line);
-  QCString textSubst = text;
   QCString versionSubst;
   // substitute markers by actual values
   QCString msgText =
@@ -72,7 +71,7 @@ static void format_warn(const QCString &file,int line,const QCString &text)
           ),
           "$version",versionSubst
         ),
-        "$text",textSubst
+        "$text",text
       );
   if (g_warnBehavior == WARN_AS_ERROR_t::YES)
   {
