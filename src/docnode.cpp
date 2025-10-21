@@ -2517,6 +2517,10 @@ Token DocHtmlDescTitle::parse()
                 parser()->handleAHref(thisVariant(),children(),parser()->context.token->attribs);
               }
             }
+            else if (tagId==HtmlTagType::HTML_BR)
+            {
+              children().append<DocLineBreak>(parser(),thisVariant(),parser()->context.token->attribs);
+            }
             else
             {
               warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Unexpected html tag <{}{}> found within <dt> context",
