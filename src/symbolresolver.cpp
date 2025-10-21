@@ -539,7 +539,7 @@ const Definition *SymbolResolver::Private::getResolvedSymbolRec(
         if (d->definitionType()==Definition::TypeMember)
         {
           const MemberDef *emd = dynamic_cast<const MemberDef *>(d);
-          if (emd->isEnumValue() && emd->getEnumScope() && emd->getEnumScope()->isStrong() && explicitScopePart.isEmpty())
+          if (emd && emd->isEnumValue() && emd->getEnumScope() && emd->getEnumScope()->isStrong() && explicitScopePart.isEmpty())
           {
             // skip lookup for strong enum values without explicit scope, see issue #11799
             continue;
