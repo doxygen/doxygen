@@ -224,7 +224,7 @@ static void addMemberToSearchIndex(const MemberDef *md)
       )
      )
   {
-    QCString n = md->name();
+    const QCString &n = md->name();
     if (!n.isEmpty())
     {
       bool isFriendToHide = hideFriendCompounds &&
@@ -284,7 +284,7 @@ static void addMemberToSearchIndex(const MemberDef *md)
       )
      )
   {
-    QCString n = md->name();
+    const QCString &n = md->name();
     if (!n.isEmpty())
     {
       g_searchIndexInfo[SEARCH_INDEX_ALL].add(SearchTerm(n,md));
