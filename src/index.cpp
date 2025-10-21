@@ -548,7 +548,8 @@ void addMembersToIndex(T *def,LayoutDocManager::LayoutPart part,
                                      def->getReference(),def->getOutputFileBase(),anchor,
                                      hasMembers && !preventSeparateIndex,
                                      addToIndex,
-                                     def);
+                                     def,
+                                     convertToHtml(name));
   //printf("addMembersToIndex(def=%s hasMembers=%d numClasses=%d)\n",qPrint(def->name()),hasMembers,numClasses);
   if (hasMembers || numClasses>0 || numConcepts>0)
   {
@@ -649,6 +650,7 @@ static void writeClassTreeToOutput(OutputList &ol,const BaseClassList &bcl,int l
       //printf("Passed...\n");
       bool hasChildren = visitedClasses.find(cd)==visitedClasses.end() &&
                          classHasVisibleChildren(cd);
+      QCString escapedName = convertToHtml(cd->displayName()); // avoid objective-C '<Protocol>' to be interpreted as XML/HTML tag
       //printf("tree4: Has children %s: %d\n",qPrint(cd->name()),hasChildren);
       if (cd->isLinkable())
       {
@@ -658,7 +660,7 @@ static void writeClassTreeToOutput(OutputList &ol,const BaseClassList &bcl,int l
                        cd->getDefLine(),
                        cd,
                        nullptr,
-                       cd->displayName(),
+                       escapedName,
                        DocOptions()
                        .setSingleLine(true)
                        .setAutolinkSupport(false));
@@ -681,7 +683,7 @@ static void writeClassTreeToOutput(OutputList &ol,const BaseClassList &bcl,int l
           }
           else
           {
-            ftv->addContentsItem(hasChildren,cd->displayName(),cd->getReference(),cd->getOutputFileBase(),cd->anchor(),FALSE,FALSE,cd);
+            ftv->addContentsItem(hasChildren,cd->displayName(),cd->getReference(),cd->getOutputFileBase(),cd->anchor(),FALSE,FALSE,cd,escapedName);
           }
         }
       }
@@ -696,7 +698,7 @@ static void writeClassTreeToOutput(OutputList &ol,const BaseClassList &bcl,int l
         }
         if (ftv)
         {
-          ftv->addContentsItem(hasChildren,cd->displayName(),QCString(),QCString(),QCString(),FALSE,FALSE,cd);
+          ftv->addContentsItem(hasChildren,cd->displayName(),QCString(),QCString(),QCString(),FALSE,FALSE,cd,escapedName);
         }
       }
       if (hasChildren)
@@ -1027,6 +1029,7 @@ static void writeClassTreeForList(OutputList &ol,const ClassLinkedMap &cl,bool &
         bool hasChildren = visitedClasses.find(cd.get())==visitedClasses.end() &&
                            classHasVisibleChildren(cd.get());
         //printf("list: Has children %s: %d\n",qPrint(cd->name()),hasChildren);
+        QCString escapedName = convertToHtml(cd->displayName()); // avoid objective-C '<Protocol>' to be interpreted as XML/HTML tag
         if (cd->isLinkable())
         {
           //printf("Writing class %s isLinkable()=%d isLinkableInProject()=%d cd->isImplicitTemplateinstance()=%d\n",
@@ -1036,7 +1039,7 @@ static void writeClassTreeForList(OutputList &ol,const ClassLinkedMap &cl,bool &
                          cd->getDefLine(),
                          cd.get(),
                          nullptr,
-                         cd->displayName(),
+                         escapedName,
                          DocOptions()
                          .setSingleLine(true)
                          .setAutolinkSupport(false));
@@ -1050,11 +1053,13 @@ static void writeClassTreeForList(OutputList &ol,const ClassLinkedMap &cl,bool &
           if (addToIndex)
           {
             if (cd->getLanguage()!=SrcLangExt::VHDL) // prevents double insertion in Design Unit List
-            	  Doxygen::indexList->addContentsItem(hasChildren,cd->displayName(),cd->getReference(),cd->getOutputFileBase(),cd->anchor(),FALSE,FALSE);
+            {
+              Doxygen::indexList->addContentsItem(hasChildren,cd->displayName(),cd->getReference(),cd->getOutputFileBase(),cd->anchor(),FALSE,FALSE,cd.get(),escapedName);
+            }
           }
           if (ftv)
           {
-            ftv->addContentsItem(hasChildren,cd->displayName(),cd->getReference(),cd->getOutputFileBase(),cd->anchor(),FALSE,FALSE,cd.get());
+            ftv->addContentsItem(hasChildren,cd->displayName(),cd->getReference(),cd->getOutputFileBase(),cd->anchor(),FALSE,FALSE,cd.get(),escapedName);
           }
         }
         else
@@ -1064,11 +1069,11 @@ static void writeClassTreeForList(OutputList &ol,const ClassLinkedMap &cl,bool &
           ol.endIndexItem(QCString(),QCString());
           if (addToIndex)
           {
-            Doxygen::indexList->addContentsItem(hasChildren,cd->displayName(),QCString(),QCString(),QCString(),FALSE,FALSE);
+            Doxygen::indexList->addContentsItem(hasChildren,cd->displayName(),QCString(),QCString(),QCString(),FALSE,FALSE,cd.get(),escapedName);
           }
           if (ftv)
           {
-            ftv->addContentsItem(hasChildren,cd->displayName(),QCString(),QCString(),QCString(),FALSE,FALSE,cd.get());
+            ftv->addContentsItem(hasChildren,cd->displayName(),QCString(),QCString(),QCString(),FALSE,FALSE,cd.get(),escapedName);
           }
         }
         if (cd->getLanguage()==SrcLangExt::VHDL && hasChildren)
@@ -1782,10 +1787,11 @@ static void writeClassTree(const ListType &cl,FTVHelp *ftv,bool addToIndex,bool 
       }
       if (classVisibleInIndex(cd) && !cd->isImplicitTemplateInstance())
       {
+        QCString displayName = cd->displayName(false);
         if (ftv)
         {
-          ftv->addContentsItem(count>0,cd->displayName(FALSE),cd->getReference(),
-                               cd->getOutputFileBase(),cd->anchor(),FALSE,TRUE,cd);
+          ftv->addContentsItem(count>0,displayName,cd->getReference(),
+                               cd->getOutputFileBase(),cd->anchor(),FALSE,TRUE,cd,convertToHtml(displayName));
         }
         if (addToIndex &&
             (cd->getOuterScope()==nullptr ||
@@ -1794,7 +1800,7 @@ static void writeClassTree(const ListType &cl,FTVHelp *ftv,bool addToIndex,bool 
            )
         {
           addMembersToIndex(cd,LayoutDocManager::Class,
-                            cd->displayName(FALSE),
+                            displayName,
                             cd->anchor(),
                             cd->partOfGroups().empty() && !cd->isSimple());
         }
