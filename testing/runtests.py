@@ -10,61 +10,58 @@ import os
 import sys
 import subprocess
 import shlex
+import io
 
 config_reg = re.compile(r'.*\/\/\s*(?P<name>\S+):\s*(?P<value>.*)$')
-bkmk_reg = re.compile(r'.*bkmkstart\s+([A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z]).*')
-hyper_reg = re.compile(r'.*HYPERLINK\s+[\\l]*\s+"([A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z])".*')
-pageref_reg = re.compile(r'.*PAGEREF\s+([A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z]).*')
+bkmk_reg = re.compile(r'.*bkmkstart\s+([A-Z]{10}).*')
+hyper_reg = re.compile(r'.*HYPERLINK\s+[\\l]*\s+"([A-Z]{10})".*')
+pageref_reg = re.compile(r'.*PAGEREF\s+([A-Z]{10}).*')
 
 
 def xopen(fname, mode='r', encoding='utf-8'):
-    '''Unified file opening for Python 2 an Python 3.
+    '''Unified file opening for Python 2 an Python 3.'''
 
-    Python 2 does not have the encoding argument. Python 3 has one.
-    '''
+    return io.open(fname, mode=mode, encoding=encoding)
 
-    if sys.version_info[0] == 2:
-        return open(fname, mode=mode) # Python 2 without encoding
-    else:
-        return open(fname, mode=mode, encoding=encoding) # Python 3 with encoding
 
-def xpopen(cmd, cmd1="",encoding='utf-8-sig', getStderr=False):
-    '''Unified file pipe opening for Python 2 an Python 3.
-
-    Python 2 does not have the encoding argument. Python 3 has one. and
-    '''
+def xpopen(cmd, cmd1="", encoding='utf-8-sig', get_stderr=False):
+    '''Unified file pipe opening for Python 2 an Python 3.'''
 
     if sys.version_info[0] == 2:
-        return os.popen(cmd).read() # Python 2 without encoding
-    else:
-        if (getStderr):
-            proc = subprocess.Popen(shlex.split(cmd1),stdout=subprocess.PIPE,stderr=subprocess.PIPE,encoding=encoding) # Python 3 with encoding
-            return proc.stderr.read()
-        else:
-            proc = subprocess.Popen(shlex.split(cmd),stdout=subprocess.PIPE,stderr=subprocess.PIPE,encoding=encoding) # Python 3 with encoding
-            return proc.stdout.read()
+        return os.popen(cmd).read()  # Python 2 without encoding
+
+    proc = subprocess.Popen(shlex.split(cmd1 if get_stderr else cmd),
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE,
+                            encoding=encoding)  # Python 3 with encoding
+    return (proc.stderr if get_stderr else proc.stdout).read()
+
 
 def clean_header(errmsg):
-    # messages (due to the usage of more) have a contents like:
-    # ::::::::::::
-    # <file name>
-    # ::::::::::::
-    # we want to skip these
-    msg = errmsg.split('\n')
-    rtnmsg = ""
-    cnt = -1
-    for o in msg:
-        if (o):
-            if (cnt == -1):
-                if o.startswith(":::::::"):
-                    cnt = 3
-            if (cnt > 0):
-                cnt-=1
-            else:
-                rtnmsg+=o
-                rtnmsg+="\n"
-    return rtnmsg
- 
+    ''' Messages (due to the usage of more) have a content like:
+            ::::::::::::
+            <file name>
+            ::::::::::::
+        This function skips such headers and returns only the main content.
+    '''
+
+    lines = errmsg.splitlines()
+    rtn_msg = ""
+    skip = 0
+    for line in lines:
+        if not line:
+            continue
+        if skip > 0:
+            skip -= 1
+            continue
+        if line.startswith(":::::::"):
+            skip = 3
+            continue
+        rtn_msg += line
+        rtn_msg += "\n"
+    return rtn_msg
+
+
 class Tester:
     def __init__(self,args,test):
         self.args      = args
@@ -356,7 +353,7 @@ class Tester:
                 exe_string += ' %s' % (redirx)
                 exe_string += ' %s more "%s/temp"' % (separ,xmlxsd_output)
 
-                xmllint_out = xpopen(exe_string,exe_string1,getStderr=True)
+                xmllint_out = xpopen(exe_string,exe_string1,get_stderr=True)
                 if xmllint_out:
                     xmllint_out = re.sub(r'.*validates','',xmllint_out).rstrip('\n')
                 else:
@@ -381,7 +378,7 @@ class Tester:
                 exe_string += ' %s' % (redirx)
                 exe_string += ' %s more "%s/temp"' % (separ,xmlxsd_output)
 
-                xmllint_out = xpopen(exe_string,exe_string1,getStderr=True)
+                xmllint_out = xpopen(exe_string,exe_string1,get_stderr=True)
                 if xmllint_out:
                     xmllint_out = re.sub(r'.*validates','',xmllint_out).rstrip('\n')
                 else:
@@ -411,7 +408,7 @@ class Tester:
                 exe_string += ' %s' % (redirx)
                 exe_string += ' %s more "%s/temp"' % (separ,xmlxsd_output)
 
-                xmllint_out = xpopen(exe_string,exe_string1,getStderr=True)
+                xmllint_out = xpopen(exe_string,exe_string1,get_stderr=True)
                 if xmllint_out:
                     xmllint_out = re.sub(r'.*validates','',xmllint_out).rstrip('\n')
                 else:
@@ -452,7 +449,7 @@ class Tester:
             exe_string += ' %s more "%s/temp"' % (separ,docbook_output)
 
             failed_docbook=False
-            xmllint_out = xpopen(exe_string,exe_string1,getStderr=True)
+            xmllint_out = xpopen(exe_string,exe_string1,get_stderr=True)
             xmllint_out = self.cleanup_xmllint_docbook(xmllint_out)
             if xmllint_out:
                 xmllint_out  = clean_header(xmllint_out)
@@ -481,7 +478,7 @@ class Tester:
             exe_string += ' %s' % (redirx)
             exe_string += ' %s more "%s/temp"' % (separ,html_output)
             failed_html=False
-            xmllint_out = xpopen(exe_string,exe_string1,getStderr=True)
+            xmllint_out = xpopen(exe_string,exe_string1,get_stderr=True)
             xmllint_out = self.cleanup_xmllint(xmllint_out)
             if xmllint_out:
                 xmllint_out  = clean_header(xmllint_out)
@@ -496,7 +493,7 @@ class Tester:
                 exe_string1 = exe_string
                 exe_string += ' %s' % (redirx)
                 exe_string += ' %s more "%s/temp"' % (separ,html_output)
-                xmllint_out = xpopen(exe_string,exe_string1,getStderr=True)
+                xmllint_out = xpopen(exe_string,exe_string1,get_stderr=True)
                 xmllint_out = self.cleanup_xmllint(xmllint_out)
                 if xmllint_out:
                     msg += (xmllint_out,)
@@ -522,7 +519,7 @@ class Tester:
             exe_string += ' %s' % (redirl)
             if outType:
                 exe_string += ' %s more temp' % (separ)
-            latex_out = xpopen(exe_string,exe_string1,getStderr=outType)
+            latex_out = xpopen(exe_string,exe_string1,get_stderr=outType)
             os.chdir(cur_directory)
             if (outType and latex_out.find("Error")!=-1):
                 msg += ("PDF generation failed\n  For a description of the problem see 'refman.log' in the latex directory of this test",)
