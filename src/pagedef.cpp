@@ -240,7 +240,7 @@ void PageDefImpl::writeDocumentation(OutputList &ol)
   bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
   int hierarchyLevel = -1; // Pages start at the root
   PageDef *pd = this;
-  while (pd->hasParentPage())
+  while (pd && pd->hasParentPage())
   {
     pd = dynamic_cast<PageDef *>(pd->getOuterScope());
     ++hierarchyLevel;
