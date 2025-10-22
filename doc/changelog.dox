@@ -188,7 +188,7 @@
 <li>Refactoring: remove old getDefs routine (dead code) [<a href="https://github.com/doxygen/doxygen/commit/169bbf2c863ef863d0ba60f22603817141829c18">view</a>]</li>
 <li>[libmd5] Smaller code cleanups [<a href="https://github.com/doxygen/doxygen/commit/817d9af66af43b1de2ba95f3f63bf191d72f3387">view</a>]</li>
 <li>[mscgen] Declared some variables as pointer to const [<a href="https://github.com/doxygen/doxygen/commit/df652b4d540dc18db42c0cc67740cce9a48486e2">view</a>]</li>
-<li>[mscgen] Fix copy &amp; past bug, probably max quality was ment [<a href="https://github.com/doxygen/doxygen/commit/8c2a6292ced945a9d068b3109c067c9f127dda5f">view</a>]</li>
+<li>[mscgen] Fix copy &amp; past bug, probably max quality was meant [<a href="https://github.com/doxygen/doxygen/commit/8c2a6292ced945a9d068b3109c067c9f127dda5f">view</a>]</li>
 <li>[mscgen] Make variables more local [<a href="https://github.com/doxygen/doxygen/commit/c8e0967e014b4cc0bcf5bbc1b23c74ab2a4b2867">view</a>]</li>
 <li>fix(cite): remove unnecessary semicolon [<a href="https://github.com/doxygen/doxygen/commit/af99c86fa45df95a67c41f75bc6fdfbad110d12a">view</a>]</li>
 <li>fix(classdef): warning [cppcoreguidelines-pro-type-cstyle-cast] [<a href="https://github.com/doxygen/doxygen/commit/10567c038178bee2d00317f8eb9daf33526c5558">view</a>]</li>
