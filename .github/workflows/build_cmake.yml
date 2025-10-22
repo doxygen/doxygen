@@ -142,7 +142,6 @@ jobs:
 
     - name: Install libclang (Ubuntu 24.04)
       run: |
-        sudo apt update
         sudo apt remove llvm-14 llvm-14-dev llvm-14-tools llvm-14-runtime clang-14 clang-format-14 libclang-common-14-dev libclang-cpp14 libclang1-14 libllvm14
         sudo apt remove llvm-15 llvm-15-dev llvm-15-tools llvm-15-runtime clang-15 clang-format-15 libclang-common-15-dev libclang-cpp15 libclang1-15 libllvm15
         sudo apt remove llvm-16 llvm-16-dev llvm-16-tools llvm-16-runtime clang-16 clang-format-16 libclang-common-16-dev libclang-cpp16 libclang1-16 libllvm16
@@ -161,9 +160,7 @@ jobs:
       if: matrix.config.cc == 'clang' && startsWith(matrix.config.os,'ubuntu-24')
 
     - name: Install libxapian (Ubuntu 24.04)
-      run: |
-        sudo apt update
-        sudo apt install libxapian-dev
+      run: sudo apt install libxapian-dev
       if: startsWith(matrix.config.os,'ubuntu-24')
 
     - name: Install MikTeX (Windows)
@@ -189,9 +186,7 @@ jobs:
       if: matrix.config.os == 'windows-latest'
 
     - name: Install Ghostscript (Linux)
-      run: |
-        sudo apt update
-        sudo apt-get install ghostscript
+      run: sudo apt-get install ghostscript
       if: startsWith(matrix.config.os,'ubuntu-')
 
     - name: Install Ghostscript (Windows)
@@ -209,9 +204,7 @@ jobs:
       if: matrix.config.os == 'windows-latest'
 
     - name: Install xmllint (Linux)
-      run: |
-         sudo apt-get update
-         sudo apt-get install libxml2-utils
+      run: sudo apt-get install libxml2-utils
       if: startsWith(matrix.config.os,'ubuntu-')
 
     - name: Install xmllint (MacOS)
@@ -236,9 +229,7 @@ jobs:
       if: matrix.config.os == 'windows-latest'
 
     - name: Install Graphviz (Linux)
-      run: |
-        sudo apt update
-        sudo apt-get install graphviz
+      run: sudo apt-get install graphviz
       if: startsWith(matrix.config.os,'ubuntu-')
 
     - name: Install Graphviz (MacOS)
