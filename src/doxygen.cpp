@@ -4044,8 +4044,8 @@ static void buildFunctionList(const Entry *root)
                   matchingReturnTypes &&
                   sameRequiresClause &&
                   !staticsInDifferentFiles &&
-                  matchArguments2(md->getOuterScope(),mfd,&mdAl,
-                    rnd ? rnd : Doxygen::globalScope,rfd,&root->argList,
+                  matchArguments2(md->getOuterScope(),mfd,md->typeString(),&mdAl,
+                    rnd ? rnd : Doxygen::globalScope,rfd,root->type,&root->argList,
                     FALSE,root->lang)
                  )
               {
@@ -4201,8 +4201,8 @@ static void findFriends()
           //    mmd->isRelated(),mmd->isFriend(),mmd->isFunction());
           if (fmd && mmd &&
               (mmd->isFriend() || (mmd->isRelated() && mmd->isFunction())) &&
-              matchArguments2(mmd->getOuterScope(), mmd->getFileDef(), &mmd->argumentList(),
-                              fmd->getOuterScope(), fmd->getFileDef(), &fmd->argumentList(),
+              matchArguments2(mmd->getOuterScope(), mmd->getFileDef(), mmd->typeString(), &mmd->argumentList(),
+                              fmd->getOuterScope(), fmd->getFileDef(), fmd->typeString(), &fmd->argumentList(),
                               TRUE,mmd->getLanguage()
                              )
 
@@ -4340,8 +4340,8 @@ static void transferFunctionReferences()
       const ArgumentList &mdefAl = mdef->argumentList();
       const ArgumentList &mdecAl = mdec->argumentList();
       if (
-          matchArguments2(mdef->getOuterScope(),mdef->getFileDef(),const_cast<ArgumentList*>(&mdefAl),
-                          mdec->getOuterScope(),mdec->getFileDef(),const_cast<ArgumentList*>(&mdecAl),
+          matchArguments2(mdef->getOuterScope(),mdef->getFileDef(),mdef->typeString(),const_cast<ArgumentList*>(&mdefAl),
+                          mdec->getOuterScope(),mdec->getFileDef(),mdec->typeString(),const_cast<ArgumentList*>(&mdecAl),
                           TRUE,mdef->getLanguage()
             )
          ) /* match found */
@@ -4384,10 +4384,10 @@ static void transferRelatedFunctionDocumentation()
             //printf("  Member found: related='%d'\n",rmd->isRelated());
             if (rmd &&
                 (rmd->isRelated() || rmd->isForeign()) && // related function
-                matchArguments2( md->getOuterScope(), md->getFileDef(), &md->argumentList(),
-                  rmd->getOuterScope(),rmd->getFileDef(),&rmd->argumentList(),
-                  TRUE,md->getLanguage()
-                  )
+                matchArguments2( md->getOuterScope(), md->getFileDef(), md->typeString(), &md->argumentList(),
+                                rmd->getOuterScope(),rmd->getFileDef(),rmd->typeString(),&rmd->argumentList(),
+                                TRUE,md->getLanguage()
+                               )
                )
             {
               AUTO_TRACE_ADD("Found related member '{}'",md->name());
@@ -5561,8 +5561,8 @@ static void addMemberDocs(const Entry *root,
   else
   {
     if (
-          matchArguments2( md->getOuterScope(), md->getFileDef(),const_cast<ArgumentList*>(&mdAl),
-                           rscope,rfd,&root->argList,
+          matchArguments2( md->getOuterScope(), md->getFileDef(),md->typeString(),const_cast<ArgumentList*>(&mdAl),
+                           rscope,rfd,root->type,&root->argList,
                            TRUE, root->lang
                          )
        )
@@ -5820,8 +5820,8 @@ static bool findGlobalMember(const Entry *root,
         bool matching=
           (mdAl.empty() && root->argList.empty()) ||
           md->isVariable() || md->isTypedef() || /* in case of function pointers */
-          matchArguments2(md->getOuterScope(),md.get()->getFileDef(),&mdAl,
-                          rnd ? rnd : Doxygen::globalScope,fd,&root->argList,
+          matchArguments2(md->getOuterScope(),md->getFileDef(),md->typeString(),&mdAl,
+                          rnd ? rnd : Doxygen::globalScope,fd,root->type,&root->argList,
                           FALSE,root->lang);
 
         // for template members we need to check if the number of
@@ -6218,7 +6218,7 @@ static void addMemberFunction(const Entry *root,
       //printf("defTemplArgs=%p\n",defTemplArgs);
 
       // do we replace the decl argument lists with the def argument lists?
-      bool substDone=FALSE;
+      bool substDone=false;
       ArgumentList argList;
 
       /* substitute the occurrences of class template names in the
@@ -6241,15 +6241,15 @@ static void addMemberFunction(const Entry *root,
         argList = mdAl;
       }
 
-      AUTO_TRACE_ADD("matching '{}'<=>'{}' className='{}' namespaceName='{}'",
-          argListToString(argList,TRUE),argListToString(root->argList,TRUE),className,namespaceName);
-
       bool matching=
         md->isVariable() || md->isTypedef() || // needed for function pointers
         matchArguments2(
-            md->getClassDef(),md->getFileDef(),&argList,
-            cd,fd,&root->argList,
+            md->getClassDef(),md->getFileDef(),md->typeString(),&argList,
+            cd,fd,root->type,&root->argList,
             TRUE,root->lang);
+
+      AUTO_TRACE_ADD("matching '{}'<=>'{}' className='{}' namespaceName='{}' result={}",
+          argListToString(argList,TRUE),argListToString(root->argList,TRUE),className,namespaceName,matching);
 
       if (md->getLanguage()==SrcLangExt::ObjC && md->isVariable() && root->section.isFunction())
       {
@@ -6265,8 +6265,20 @@ static void addMemberFunction(const Entry *root,
             className+"::",""); // see bug700693 & bug732594
         memType=substitute(stripTemplateSpecifiersFromScope(memType,TRUE),
             className+"::",""); // see bug758900
+        if (memType=="auto" && !argList.trailingReturnType().isEmpty())
+        {
+          memType = argList.trailingReturnType();
+          memType.stripPrefix(" -> ");
+        }
+        if (funcType=="auto" && !root->argList.trailingReturnType().isEmpty())
+        {
+          funcType = root->argList.trailingReturnType();
+          funcType.stripPrefix(" -> ");
+          argList.setTrailingReturnType(root->argList.trailingReturnType());
+          substDone=true;
+        }
         AUTO_TRACE_ADD("Comparing return types '{}'<->'{}' #args {}<->{}",
-            md->typeString(),funcType,md->templateArguments().size(),root->tArgLists.back().size());
+            memType,funcType,md->templateArguments().size(),root->tArgLists.back().size());
         if (md->templateArguments().size()!=root->tArgLists.back().size() || memType!=funcType)
         {
           //printf(" ---> no matching\n");
@@ -7072,8 +7084,8 @@ static void findMember(const Entry *root,
 
                 newMember=
                   className!=rmd->getOuterScope()->name() ||
-                  !matchArguments2(rmd->getOuterScope(),rmd->getFileDef(),&rmdAl,
-                      cd,fd,&root->argList,
+                  !matchArguments2(rmd->getOuterScope(),rmd->getFileDef(),rmd->typeString(),&rmdAl,
+                      cd,fd,root->type,&root->argList,
                       TRUE,root->lang);
                 if (!newMember)
                 {
@@ -7160,8 +7172,8 @@ static void findMember(const Entry *root,
                     const ArgumentList &rmdAl = rmd->argumentList();
                     // check for matching argument lists
                     if (
-                        matchArguments2(rmd->getOuterScope(),rmd->getFileDef(),&rmdAl,
-                          cd,fd,&root->argList,
+                        matchArguments2(rmd->getOuterScope(),rmd->getFileDef(),rmd->typeString(),&rmdAl,
+                          cd,fd,root->type,&root->argList,
                           TRUE,root->lang)
                        )
                     {
@@ -8371,8 +8383,8 @@ static void computeMemberRelationsForBaseClass(const ClassDef *cd,const BaseClas
                   //      );
                   if (
                       lang==SrcLangExt::Python ||
-                      matchArguments2(bmd->getOuterScope(),bmd->getFileDef(),&bmdAl,
-                        md->getOuterScope(), md->getFileDef(), &mdAl,
+                      matchArguments2(bmd->getOuterScope(),bmd->getFileDef(),bmd->typeString(),&bmdAl,
+                        md->getOuterScope(), md->getFileDef(), md->typeString(),&mdAl,
                         TRUE,lang
                         )
                      )

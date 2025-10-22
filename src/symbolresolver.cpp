@@ -858,9 +858,9 @@ void SymbolResolver::Private::getResolvedSymbol(
         }
         std::unique_ptr<ArgumentList> argList = stringToArgumentList(md->getLanguage(),actArgs);
         const ArgumentList &mdAl = md->argumentList();
-        match = matchArguments2(md->getOuterScope(),md->getFileDef(),&mdAl,
-              scope, md->getFileDef(),argList.get(),
-              checkCV,md->getLanguage());
+        match = matchArguments2(md->getOuterScope(),md->getFileDef(),md->typeString(),&mdAl,
+                                scope,              md->getFileDef(),md->typeString(),argList.get(),
+                                checkCV,md->getLanguage());
         AUTO_TRACE_ADD("match={}",match);
       }
 

@@ -162,8 +162,8 @@ void writePageRef(OutputList &ol,const QCString &cn,const QCString &mn);
 
 //QCString getCanonicalTemplateSpec(const Definition *d,const FileDef *fs,const QCString& spec);
 
-bool matchArguments2(const Definition *srcScope,const FileDef *srcFileScope,const ArgumentList *srcAl,
-                     const Definition *dstScope,const FileDef *dstFileScope,const ArgumentList *dstAl,
+bool matchArguments2(const Definition *srcScope,const FileDef *srcFileScope,const QCString &srcReturnType,const ArgumentList *srcAl,
+                     const Definition *dstScope,const FileDef *dstFileScope,const QCString &dstReturnType,const ArgumentList *dstAl,
                      bool checkCV,SrcLangExt lang
                     );
 

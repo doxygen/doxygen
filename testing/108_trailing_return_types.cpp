@@ -1,5 +1,6 @@
 // objective: check that modifiers are correctly parsed with trailing return types
 // check: class_c.xml
+// check: class_matching.xml
 
 /** @brief A structure. */
 class C {
@@ -18,3 +19,17 @@ public:
     /** @brief Defaulted move operator. */
     auto operator=(C&&) -> C& = default;
 };
+
+/** A class */
+class Matching
+{
+  public:
+    /** @brief the declaration with normal return type */
+    template<class T>
+    std::vector<std::size_t> make_foo(T t);
+};
+
+/** The definition with matching trailing return type */
+template<class T>
+auto Matching::make_foo(T t) -> std::vector<std::size_t> {}
+

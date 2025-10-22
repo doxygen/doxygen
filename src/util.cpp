@@ -1858,12 +1858,12 @@ static QCString extractCanonicalArgType(const Definition *d,const FileDef *fs,co
 static std::mutex g_matchArgsMutex;
 
 // a bit of debug support for matchArguments
-#define MATCH
-#define NOMATCH
+//#define MATCH
+//#define NOMATCH
 //#define MATCH   printf("Match at line %d\n",__LINE__);
 //#define NOMATCH printf("Nomatch at line %d\n",__LINE__);
-//#define MATCH   AUTO_TRACE_EXIT("match at line {}",__LINE__);
-//#define NOMATCH AUTO_TRACE_EXIT("no match at line {}",__LINE__);
+#define MATCH   AUTO_TRACE_EXIT("match at line {}",__LINE__);
+#define NOMATCH AUTO_TRACE_EXIT("no match at line {}",__LINE__);
 
 static bool matchCanonicalTypes(
     const Definition *srcScope,const FileDef *srcFileScope,const QCString &srcType,
@@ -1892,8 +1892,8 @@ static bool matchCanonicalTypes(
   // 'int x' matches 'int y'. A simple literal string match would treat these as different.
   auto srcAl = stringToArgumentList(lang,srcType.mid(i1+1));
   auto dstAl = stringToArgumentList(lang,dstType.mid(i2+1));
-  return matchArguments2(srcScope,srcFileScope,srcAl.get(),
-                         dstScope,dstFileScope,dstAl.get(),
+  return matchArguments2(srcScope,srcFileScope,srcType.left(j1),srcAl.get(),
+                         dstScope,dstFileScope,dstType.left(j2),dstAl.get(),
                          true,lang);
 }
 
@@ -1963,9 +1963,9 @@ static bool matchArgument2(
 
 
 // new algorithm for argument matching
-bool matchArguments2(const Definition *srcScope,const FileDef *srcFileScope,const ArgumentList *srcAl,
-                               const Definition *dstScope,const FileDef *dstFileScope,const ArgumentList *dstAl,
-                               bool checkCV,SrcLangExt lang)
+bool matchArguments2(const Definition *srcScope,const FileDef *srcFileScope,const QCString &srcReturnType,const ArgumentList *srcAl,
+                     const Definition *dstScope,const FileDef *dstFileScope,const QCString &dstReturnType,const ArgumentList *dstAl,
+                     bool checkCV,SrcLangExt lang)
 {
   ASSERT(srcScope!=nullptr && dstScope!=nullptr);
 
@@ -2031,7 +2031,7 @@ bool matchArguments2(const Definition *srcScope,const FileDef *srcFileScope,cons
     return FALSE; // one member is has a different ref-qualifier than the other
   }
 
-  if (srcAl->trailingReturnType() != dstAl->trailingReturnType())
+  if (srcReturnType=="auto" && dstReturnType=="auto" && srcAl->trailingReturnType()!=dstAl->trailingReturnType())
   {
     NOMATCH
     return FALSE; // one member is has a different return type than the other

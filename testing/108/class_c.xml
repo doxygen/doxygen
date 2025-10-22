@@ -16,7 +16,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="108_trailing_return_types.cpp" line="8" column="18"/>
+        <location file="108_trailing_return_types.cpp" line="9" column="18"/>
       </memberdef>
       <memberdef kind="function" id="class_c_1a0c18882ecf4845fe4c4b36700f2494df" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -31,7 +31,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="108_trailing_return_types.cpp" line="10" column="10"/>
+        <location file="108_trailing_return_types.cpp" line="11" column="10"/>
       </memberdef>
       <memberdef kind="function" id="class_c_1a04dd9ca5948792c146024e91dc007446" prot="public" static="no" const="no" explicit="no" inline="no" final="yes" virt="virtual">
         <type>int</type>
@@ -46,7 +46,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="108_trailing_return_types.cpp" line="12" column="18"/>
+        <location file="108_trailing_return_types.cpp" line="13" column="18"/>
       </memberdef>
       <memberdef kind="function" id="class_c_1a67f38ea378777e64ac87f0f50c619be9" prot="public" static="no" const="no" explicit="no" inline="no" final="yes" virt="virtual">
         <type>int</type>
@@ -61,7 +61,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="108_trailing_return_types.cpp" line="14" column="18"/>
+        <location file="108_trailing_return_types.cpp" line="15" column="18"/>
       </memberdef>
       <memberdef kind="function" id="class_c_1af38c9dfcbee6ef5ee3d56fe3992f57b5" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type><ref refid="class_c" kindref="compound">C</ref> &amp;</type>
@@ -79,7 +79,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="108_trailing_return_types.cpp" line="17" column="10"/>
+        <location file="108_trailing_return_types.cpp" line="18" column="10"/>
       </memberdef>
       <memberdef kind="function" id="class_c_1a5103c38b9ec827c03fe5f0b63071846b" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type><ref refid="class_c" kindref="compound">C</ref> &amp;</type>
@@ -97,7 +97,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="108_trailing_return_types.cpp" line="19" column="10"/>
+        <location file="108_trailing_return_types.cpp" line="20" column="10"/>
       </memberdef>
     </sectiondef>
     <briefdescription>
@@ -105,7 +105,7 @@
     </briefdescription>
     <detaileddescription>
     </detaileddescription>
-    <location file="108_trailing_return_types.cpp" line="5" column="1" bodyfile="108_trailing_return_types.cpp" bodystart="5" bodyend="20"/>
+    <location file="108_trailing_return_types.cpp" line="6" column="1" bodyfile="108_trailing_return_types.cpp" bodystart="6" bodyend="21"/>
     <listofallmembers>
       <member refid="class_c_1a04dd9ca5948792c146024e91dc007446" prot="public" virt="virtual">
         <scope>C</scope>

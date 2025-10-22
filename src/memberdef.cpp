@@ -6220,8 +6220,8 @@ void combineDeclarationAndDefinition(MemberDefMutable *mdec,MemberDefMutable *md
     ArgumentList &mdefAl = const_cast<ArgumentList&>(mdef->argumentList());
     ArgumentList &mdecAl = const_cast<ArgumentList&>(mdec->argumentList());
     if (sameNumTemplateArgs &&
-        matchArguments2(mdef->getOuterScope(),mdef->getFileDef(),&mdefAl,
-                        mdec->getOuterScope(),mdec->getFileDef(),&mdecAl,
+        matchArguments2(mdef->getOuterScope(),mdef->getFileDef(),mdef->typeString(),&mdefAl,
+                        mdec->getOuterScope(),mdec->getFileDef(),mdec->typeString(),&mdecAl,
                         TRUE,mdef->getLanguage()
                        )
        ) /* match found */

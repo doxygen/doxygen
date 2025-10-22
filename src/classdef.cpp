@@ -3782,8 +3782,8 @@ void ClassDefImpl::mergeMembersFromBaseClasses(bool mergeVirtualBaseClass)
                   const ArgumentList &srcAl = srcMd->argumentList();
                   const ArgumentList &dstAl = dstMd->argumentList();
                   found=matchArguments2(
-                      srcMd->getOuterScope(),srcMd->getFileDef(),&srcAl,
-                      dstMd->getOuterScope(),dstMd->getFileDef(),&dstAl,
+                      srcMd->getOuterScope(),srcMd->getFileDef(),srcMd->typeString(),&srcAl,
+                      dstMd->getOuterScope(),dstMd->getFileDef(),dstMd->typeString(),&dstAl,
                       TRUE,lang
                       );
                   //printf("      Yes, matching (%s<->%s): %d\n",
@@ -5326,8 +5326,8 @@ bool ClassDefImpl::containsOverload(const MemberDef *md) const
       const ArgumentList &classAl = classMd->argumentList();
       const ArgumentList &al      = md->argumentList();
       bool found = matchArguments2(
-          classMd->getOuterScope(),classMd->getFileDef(),&classAl,
-          md->getOuterScope(),md->getFileDef(),&al,
+          classMd->getOuterScope(),classMd->getFileDef(),classMd->typeString(),&classAl,
+          md->getOuterScope(),md->getFileDef(),md->typeString(),&al,
           true,getLanguage()
           );
       if (found)

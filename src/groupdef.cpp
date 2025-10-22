@@ -379,9 +379,9 @@ bool GroupDefImpl::insertMember(MemberDef *md,bool docOnly)
 
     if (srcMd->isFunction() && md->isFunction() && // both are a function
         (tSrcMdAl.size()==tMdAl.size()) &&       // same number of template arguments
-        matchArguments2(srcMd->getOuterScope(),srcMd->getFileDef(),&srcMdAl,
-                        md->getOuterScope(),md->getFileDef(),&mdAl,
-                        TRUE,srcMd->getLanguage()
+        matchArguments2(srcMd->getOuterScope(),srcMd->getFileDef(),srcMd->typeString(),&srcMdAl,
+                           md->getOuterScope(),   md->getFileDef(),   md->typeString(),&mdAl,
+                           TRUE,srcMd->getLanguage()
                        ) && // matching parameters
         sameScope // both are found in the same scope
        )

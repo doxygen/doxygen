@@ -35,5 +35,18 @@ bool ArgumentList::hasTemplateDocumentation() const
 /*! Sets the trailing return type for a method */
 void ArgumentList::setTrailingReturnType(const QCString &s)
 {
-  m_trailingReturnType = removeRedundantWhiteSpace(s);
+  m_trailingReturnType = s;
+}
+
+void ArgumentList::appendTrailingReturnType(const QCString &s)
+{
+  m_trailingReturnType += s;
+}
+
+void ArgumentList::finishTrailingReturnType()
+{
+  if (!m_trailingReturnType.isEmpty())
+  {
+    m_trailingReturnType = " "+removeRedundantWhiteSpace(m_trailingReturnType);
+  }
 }

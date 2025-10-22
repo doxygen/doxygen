@@ -5208,12 +5208,14 @@ NONLopt [^\n]*
                                           lineCount(yyscanner) ;
                                           yyextra->current->spec.setOverride(true);
                                           yyextra->current->args += " override ";
+                                          if (YY_START==TrailingReturn) yyextra->current->argList.finishTrailingReturnType();
                                           BEGIN(FuncQual);
                                         }
 <FuncQual,TrailingReturn>{BN}*"final"{BN}*             { // C++11 final method
                                           lineCount(yyscanner) ;
                                           yyextra->current->spec.setFinal(true);
                                           yyextra->current->args += " final ";
+                                          if (YY_START==TrailingReturn) yyextra->current->argList.finishTrailingReturnType();
                                           BEGIN(FuncQual);
                                         }
 <FuncQual>{BN}*"sealed"{BN}*            { // sealed member function
@@ -5268,6 +5270,7 @@ NONLopt [^\n]*
                                           yyextra->current->args += " = 0";
                                           yyextra->current->virt = Specifier::Pure;
                                           yyextra->current->argList.setPureSpecifier(TRUE);
+                                          if (YY_START==TrailingReturn) yyextra->current->argList.finishTrailingReturnType();
                                           BEGIN(FuncQual);
                                         }
 <FuncQual,TrailingReturn>{BN}*"="{BN}*"delete"{BN}*     { // C++11 explicitly delete member
@@ -5275,12 +5278,14 @@ NONLopt [^\n]*
                                           yyextra->current->args += " = delete";
                                           yyextra->current->spec.setDelete(true);
                                           yyextra->current->argList.setIsDeleted(TRUE);
+                                          if (YY_START==TrailingReturn) yyextra->current->argList.finishTrailingReturnType();
                                           BEGIN(FuncQual);
                                         }
 <FuncQual,TrailingReturn>{BN}*"="{BN}*"default"{BN}*     { // C++11 explicitly defaulted constructor/assignment operator
                                           lineCount(yyscanner);
                                           yyextra->current->args += " = default";
                                           yyextra->current->spec.setDefault(true);
+                                          if (YY_START==TrailingReturn) yyextra->current->argList.finishTrailingReturnType();
                                           BEGIN(FuncQual);
                                         }
 <FuncQual>{BN}*"->"{BN}*                {
@@ -5293,17 +5298,19 @@ NONLopt [^\n]*
 <TrailingReturn>[{;]                    {
                                           if (yyextra->roundCount>0) REJECT;
                                           unput(*yytext);
+                                          yyextra->current->argList.finishTrailingReturnType();
                                           BEGIN(FuncQual);
                                         }
 <TrailingReturn>"requires"{BN}+         {
                                           if (yyextra->insideJava) REJECT;
                                           yyextra->requiresContext = FuncQual;
                                           yyextra->current->req+=' ';
+                                          yyextra->current->argList.finishTrailingReturnType();
                                           BEGIN(RequiresClause);
                                         }
 <TrailingReturn>"("                     {
                                           yyextra->roundCount++;
-                                          yyextra->current->argList.setTrailingReturnType(yyextra->current->argList.trailingReturnType()+yytext);
+                                          yyextra->current->argList.appendTrailingReturnType(yytext);
                                           yyextra->current->args+=yytext;
                                         }
 <TrailingReturn>")"                     {
@@ -5317,16 +5324,16 @@ NONLopt [^\n]*
                                                  "Found ')' without opening '(' for trailing return type '{})...'",
                                                  yyextra->current->argList.trailingReturnType());
                                           }
-                                          yyextra->current->argList.setTrailingReturnType(yyextra->current->argList.trailingReturnType()+yytext);
+                                          yyextra->current->argList.appendTrailingReturnType(yytext);
                                           yyextra->current->args+=yytext;
                                         }
 <TrailingReturn>.                       {
-                                          yyextra->current->argList.setTrailingReturnType(yyextra->current->argList.trailingReturnType()+yytext);
+                                          yyextra->current->argList.appendTrailingReturnType(yytext);
                                           yyextra->current->args+=yytext;
                                         }
 <TrailingReturn>\n                      {
                                           lineCount(yyscanner);
-                                          yyextra->current->argList.setTrailingReturnType(yyextra->current->argList.trailingReturnType()+yytext);
+                                          yyextra->current->argList.appendTrailingReturnType(yytext);
                                           yyextra->current->args+=' ';
                                         }
 <FuncRound,FuncFunc>{BN}*","{BN}*       {
