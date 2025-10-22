@@ -137,7 +137,7 @@ class ConfigList : public ConfigOption
     WidgetType widgetType() const { return m_widgetType; }
     StringVector *valueRef() { return &m_value; }
     StringVector getDefault() { return m_defaultValue; }
-    void emptyValueToDefault() override { if (m_value.empty() && !m_defaultValue.empty()) m_value=m_defaultValue; };
+    void emptyValueToDefault() override { if (m_value.empty() && !m_defaultValue.empty()) m_value=m_defaultValue; }
     void writeTemplate(TextStream &t,bool sl,bool) override;
     void compareDoxyfile(TextStream &t,Config::CompareMode compareMode) override;
     void writeXMLDoxyfile(TextStream &t) override;
@@ -205,7 +205,7 @@ class ConfigString : public ConfigOption
     void writeXSDDoxyfile(TextStream &t) override;
     void substEnvVars() override;
     void init() override { m_value = m_defValue; }
-    void emptyValueToDefault() override { if (m_value.isEmpty()) m_value=m_defValue; };
+    void emptyValueToDefault() override { if (m_value.isEmpty()) m_value=m_defValue; }
     bool isDefault() override { return m_value.stripWhiteSpace() == m_defValue.stripWhiteSpace(); }
 
   private:

@@ -52,7 +52,7 @@ struct VhdlConfNode
     compSpec=cs;
     isInlineConf=false;  // primary configuration?
     isLeaf=leaf;
-  };
+  }
 
   QCString confVhdl;
   QCString arch;

@@ -355,9 +355,9 @@ class HtmlGenerator : public OutputGenerator, public OutputGenIntf
       int indent = 0;
       int maxLevel = 0;
       BoolVector inLi;
-      void writeIndent(TextStream &t) { for (int i=0;i<indent*2;i++) t << " "; };
-      void incIndent(TextStream &t,const QCString &text) { writeIndent(t); t << text << "\n"; indent++; };
-      void decIndent(TextStream &t,const QCString &text) { indent--; writeIndent(t); t << text << "\n"; };
+      void writeIndent(TextStream &t) { for (int i=0;i<indent*2;i++) t << " "; }
+      void incIndent(TextStream &t,const QCString &text) { writeIndent(t); t << text << "\n"; indent++; }
+      void decIndent(TextStream &t,const QCString &text) { indent--; writeIndent(t); t << text << "\n"; }
     };
     TocState m_tocState;
 };

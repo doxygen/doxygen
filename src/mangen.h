@@ -222,8 +222,8 @@ class ManGenerator : public OutputGenerator, public OutputGenIntf
     void endDescTableTitle() override { endBoldEmphasis(); }
     void startDescTableRow() override {}
     void endDescTableRow() override {}
-    void startDescTableInit() override {};
-    void endDescTableInit() override {};
+    void startDescTableInit() override {}
+    void endDescTableInit() override {}
     void startDescTableData() override { m_t << "\n"; m_firstCol=TRUE; }
     void endDescTableData() override {}
 
