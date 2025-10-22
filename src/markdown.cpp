@@ -161,6 +161,7 @@ struct Markdown::Private
       const QCString &link, const QCString &attributes,
       const FileDef *fd);
   int isHeaderline(std::string_view data, bool allowAdjustLevel);
+  int isAtxHeaderLevel(std::string_view data, size_t &i);
   int isAtxHeader(std::string_view data, QCString &header,QCString &id,bool allowAdjustLevel,
       bool *pIsIdGenerated=nullptr);
   void writeOneLineHeaderOrRuler(std::string_view data);
@@ -2092,16 +2093,11 @@ QCString Markdown::Private::extractTitleId(QCString &title, int level, bool *pIs
   return "";
 }
 
-
-int Markdown::Private::isAtxHeader(std::string_view data,
-                       QCString &header,QCString &id,bool allowAdjustLevel,bool *pIsIdGenerated)
+// find start of header text and determine heading level
+int Markdown::Private::isAtxHeaderLevel (std::string_view data, size_t &i)
 {
-  AUTO_TRACE("data='{}' header={} id={} allowAdjustLevel={}",Trace::trunc(data),Trace::trunc(header),id,allowAdjustLevel);
-  size_t i = 0;
-  int level = 0, blanks=0;
   const size_t size = data.size();
-
-  // find start of header text and determine heading level
+  int level = 0, blanks=0;
   while (i<size && data[i]==' ') i++;
   if (i>=size || data[i]!='#')
   {
@@ -2113,10 +2109,23 @@ int Markdown::Private::isAtxHeader(std::string_view data,
     return 0;
   }
   while (i<size && data[i]==' ') i++,blanks++;
-  if (level==1 && blanks==0)
+  if (level>=1 && blanks==0)
   {
     return 0; // special case to prevent #someid seen as a header (see bug 671395)
   }
+
+  return level;
+}
+
+int Markdown::Private::isAtxHeader(std::string_view data,
+                       QCString &header,QCString &id,bool allowAdjustLevel,bool *pIsIdGenerated)
+{
+  AUTO_TRACE("data='{}' header={} id={} allowAdjustLevel={}",Trace::trunc(data),Trace::trunc(header),id,allowAdjustLevel);
+  size_t i = 0;
+  int level = 0;
+  const size_t size = data.size();
+
+  if (!(level = isAtxHeaderLevel(data, i))) return 0;
 
   // find end of header text
   size_t end=i;
@@ -2918,6 +2927,10 @@ size_t Markdown::Private::writeBlockQuote(std::string_view data)
       }
       else
       {
+        curLevel=level;
+        i = indent;
+        size_t ii = i;
+        if (!isAtxHeaderLevel(data, ii)) break; // begin of markdown section command
         out += txt;
       }
       isGitHubFirst = false;
@@ -2939,6 +2952,7 @@ size_t Markdown::Private::writeBlockQuote(std::string_view data)
   {
     out+="</blockquote>";
   }
+  out+="\\ilinebr ";
   AUTO_TRACE_EXIT("i={}",i);
   return i;
 }
