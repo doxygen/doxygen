@@ -1,0 +1,67 @@
+{
+  "version": 3,
+  "configurePresets": [
+    {
+      "name": "linux-makefiles-gcc-debug",
+      "displayName": "Linux Makefiles GCC Debug",
+      "generator": "Unix Makefiles",
+      "binaryDir": "${sourceDir}/build/Linux-Makefiles-GCC-Debug",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      },
+      "toolchainFile": "${sourceDir}/cmake/toolchains/gcc-linux.cmake"
+    },
+    {
+      "name": "linux-makefiles-gcc-release",
+      "displayName": "Linux Makefiles GCC Release",
+      "generator": "Unix Makefiles",
+      "binaryDir": "${sourceDir}/build/Linux-Makefiles-GCC-Release",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      },
+      "toolchainFile": "${sourceDir}/cmake/toolchains/gcc-linux.cmake"
+    },
+    {
+      "name": "linux-makefiles-clang-debug",
+      "displayName": "Linux Makefiles Clang Debug",
+      "generator": "Unix Makefiles",
+      "binaryDir": "${sourceDir}/build/Linux-Makefiles-Clang-Debug",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      },
+      "toolchainFile": "${sourceDir}/cmake/toolchains/clang-linux.cmake"
+    },
+    {
+      "name": "linux-makefiles-clang-release",
+      "displayName": "Linux Makefiles Clang Release",
+      "generator": "Unix Makefiles",
+      "binaryDir": "${sourceDir}/build/Linux-Makefiles-Clang-Release",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      },
+      "toolchainFile": "${sourceDir}/cmake/toolchains/clang-linux.cmake"
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "linux-makefiles-gcc-debug",
+      "configurePreset": "linux-makefiles-gcc-debug",
+      "configuration": "Debug"
+    },
+    {
+      "name": "linux-makefiles-gcc-release",
+      "configurePreset": "linux-makefiles-gcc-release",
+      "configuration": "Release"
+    },
+    {
+      "name": "linux-makefiles-clang-debug",
+      "configurePreset": "linux-makefiles-clang-debug",
+      "configuration": "Debug"
+    },
+    {
+      "name": "linux-makefiles-clang-release",
+      "configurePreset": "linux-makefiles-clang-release",
+      "configuration": "Release"
+    }
+  ]
+}
