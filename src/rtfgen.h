@@ -186,7 +186,7 @@ class RTFGenerator : public OutputGenerator, public OutputGenIntf
     void endDoxyAnchor(const QCString &,const QCString &) override;
     void addLabel(const QCString &,const QCString &) override;
     void writeChar(char c) override;
-    void writeLatexSpacing() override {};//{ m_t << "\\hspace{0.3cm}"; }
+    void writeLatexSpacing() override {}//{ m_t << "\\hspace{0.3cm}"; }
     void writeStartAnnoItem(const QCString &type,const QCString &file,
                             const QCString &path,const QCString &name) override;
     void startCenter() override { m_t << "{\\qc\n"; }

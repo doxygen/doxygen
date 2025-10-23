@@ -34,7 +34,7 @@ class LexOutlineParser : public OutlineParserInterface
                     const char *fileBuf,
                     const std::shared_ptr<Entry> &root,
                     ClangTUParser *clangParser) override;
-    bool needsPreprocessing(const QCString &/* extension */) const override { return TRUE; };
+    bool needsPreprocessing(const QCString &/* extension */) const override { return TRUE; }
     void parsePrototype(const QCString &/* text */) override {}
 
   private:

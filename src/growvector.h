@@ -69,8 +69,8 @@ class GrowVector
         Iterator operator++(int)    { Iterator tmp = *this; ++(*this); return tmp; }
         Iterator& operator--()      { m_pos--; return *this; }
         Iterator operator--(int)    { Iterator tmp = *this; --(*this); return tmp; }
-        friend bool operator== (const Iterator& a, const Iterator& b) { return a.m_pos == b.m_pos; };
-        friend bool operator!= (const Iterator& a, const Iterator& b) { return a.m_pos != b.m_pos; };
+        friend bool operator== (const Iterator& a, const Iterator& b) { return a.m_pos == b.m_pos; }
+        friend bool operator!= (const Iterator& a, const Iterator& b) { return a.m_pos != b.m_pos; }
 
       private:
         C     *m_vec;
