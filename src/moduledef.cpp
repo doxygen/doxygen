@@ -1346,7 +1346,7 @@ void ModuleManager::addMemberToModule(const Entry *root,MemberDef *md)
 {
   std::lock_guard lock(p->mutex);
   auto mod = p->moduleFileMap.find(root->fileName);
-  if (mod && root->exported)
+  if (mod && root->exported && md->getClassDef()==nullptr)
   {
     toModuleDefImpl(mod)->addMemberToModule(root,md);
     auto mdm = toMemberDefMutable(md);

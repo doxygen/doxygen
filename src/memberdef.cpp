@@ -1927,7 +1927,6 @@ void MemberDefImpl::writeLink(OutputList &ol,
   QCString sep = getLanguageSpecificSeparator(lang,TRUE);
   QCString n = name();
   const ClassDef *classDef = getClassDef();
-  const ModuleDef *moduleDef = getModuleDef();
   const NamespaceDef *nspace = getNamespaceDef();
   if (!hideScopeNames)
   {
@@ -1935,11 +1934,11 @@ void MemberDefImpl::writeLink(OutputList &ol,
     {
       n.prepend(m_enumScope->displayName()+sep);
     }
-    if (classDef && gd && !isRelated())
+    if (classDef && (gd || mod) && !isRelated())
     {
       n.prepend(classDef->displayName()+sep);
     }
-    else if (nspace && (gd || fd || moduleDef))
+    else if (nspace && (gd || fd || mod))
     {
       n.prepend(nspace->displayName()+sep);
     }
