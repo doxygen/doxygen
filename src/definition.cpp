@@ -688,7 +688,7 @@ class FilterCache
       assert(startLineOffset <= endLineOffset);
       const size_t fragmentSize = endLineOffset-startLineOffset;
       return std::tie(startLineOffset,fragmentSize);
-    };
+    }
 
     //! Shrinks buffer \a str which should hold the contents of \a fileName to the
     //! fragment starting a line \a startLine and ending at line \a endLine
