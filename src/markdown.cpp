@@ -74,41 +74,50 @@ enum class ExplicitPageResult
 //-----------
 
 // is character c part of an identifier?
-#define isIdChar(c) \
-  ((c>='a' && c<='z') || \
-   (c>='A' && c<='Z') || \
-   (c>='0' && c<='9') || \
-   (static_cast<unsigned char>(c)>=0x80)) // unicode characters
+static constexpr bool isIdChar(char c)
+{
+  return (c>='a' && c<='z') ||
+         (c>='A' && c<='Z') ||
+         (c>='0' && c<='9') ||
+         (static_cast<unsigned char>(c)>=0x80); // unicode characters
+}
 
 // is character allowed right at the beginning of an emphasis section
-#define extraChar(c) \
-  (c=='-' || c=='+' || c=='!' || \
-   c=='?' || c=='$' || c=='@' || \
-   c=='&' || c=='*' || c=='_' || c=='%' || \
-   c=='[' || c=='(' || c=='.' || \
-   c=='>' || c==':' || c==',' || \
-   c==';' || c=='\'' || c=='"' || c=='`')
+static constexpr bool extraChar(char c)
+{
+  return c=='-' || c=='+' || c=='!' || c=='?' || c=='$' || c=='@'  ||
+         c=='&' || c=='*' || c=='_' || c=='%' || c=='[' || c=='('  ||
+         c=='.' || c=='>' || c==':' || c==',' || c==';' || c=='\'' ||
+         c=='"' || c=='`';
+}
 
 // is character c allowed before an emphasis section
-#define isOpenEmphChar(c) \
-  (c=='\n' || c==' ' || c=='\'' || c=='<' || \
-   c=='>'  || c=='{' || c=='('  || c=='[' || \
-   c==','  || c==':' || c==';')
+static constexpr bool isOpenEmphChar(char c)
+{
+  return c=='\n' || c==' ' || c=='\'' || c=='<' ||
+         c=='>'  || c=='{' || c=='('  || c=='[' ||
+         c==','  || c==':' || c==';';
+}
 
 // test for non breakable space (UTF-8)
-#define isUtf8Nbsp(c1,c2) \
-  (c1==static_cast<char>(0xc2) && c2==static_cast<char>(0xa0))
+static constexpr bool isUtf8Nbsp(char c1,char c2)
+{
+  return c1==static_cast<char>(0xc2) && c2==static_cast<char>(0xa0);
+}
 
-#define isAllowedEmphStr(data,offset) \
-  ((offset>0 && !isOpenEmphChar(data.data()[-1])) && \
-   (offset>1 && !isUtf8Nbsp(data.data()[-2],data.data()[-1])))
+static constexpr bool isAllowedEmphStr(const std::string_view &data,size_t offset)
+{
+  return ((offset>0 && !isOpenEmphChar(data.data()[-1])) &&
+          (offset>1 && !isUtf8Nbsp(data.data()[-2],data.data()[-1])));
+}
 
-// is character at position i in data an escape that prevents ending an emphasis section
-// so for example *bla (*.txt) is cool*
-#define ignoreCloseEmphChar(c,cn) \
-  (c=='('  || c=='{' || c=='[' || (c=='<' && cn!='/') || \
-   c=='\\' || \
-   c=='@')
+// is character c an escape that prevents ending an emphasis section
+// so for example *bla (*.txt) is cool*, the c=='(' prevents '*' from ending the emphasis section.
+static constexpr bool ignoreCloseEmphChar(char c,char cn)
+{
+  return c=='('  || c=='{' || c=='[' || (c=='<' && cn!='/') || c=='\\' || c=='@';
+}
+
 //----------
 
 struct TableCell
@@ -120,22 +129,7 @@ struct TableCell
 
 struct Markdown::Private
 {
-  Private(const QCString &fn,int line,int indent)
-    : fileName(fn), lineNr(line), indentLevel(indent)
-  {
-    // setup callback table for special characters
-    actions[static_cast<unsigned int>('_')] = [this](std::string_view data,size_t offset) { return processEmphasis      (data,offset); };
-    actions[static_cast<unsigned int>('*')] = [this](std::string_view data,size_t offset) { return processEmphasis      (data,offset); };
-    actions[static_cast<unsigned int>('~')] = [this](std::string_view data,size_t offset) { return processEmphasis      (data,offset); };
-    actions[static_cast<unsigned int>('`')] = [this](std::string_view data,size_t offset) { return processCodeSpan      (data,offset); };
-    actions[static_cast<unsigned int>('\\')]= [this](std::string_view data,size_t offset) { return processSpecialCommand(data,offset); };
-    actions[static_cast<unsigned int>('@')] = [this](std::string_view data,size_t offset) { return processSpecialCommand(data,offset); };
-    actions[static_cast<unsigned int>('[')] = [this](std::string_view data,size_t offset) { return processLink          (data,offset); };
-    actions[static_cast<unsigned int>('!')] = [this](std::string_view data,size_t offset) { return processLink          (data,offset); };
-    actions[static_cast<unsigned int>('<')] = [this](std::string_view data,size_t offset) { return processHtmlTag       (data,offset); };
-    actions[static_cast<unsigned int>('-')] = [this](std::string_view data,size_t offset) { return processNmdash        (data,offset); };
-    actions[static_cast<unsigned int>('"')] = [this](std::string_view data,size_t offset) { return processQuoted        (data,offset); };
-  }
+  Private(const QCString &fn,int line,int indent) : fileName(fn), lineNr(line), indentLevel(indent) { }
 
   QCString processQuotations(std::string_view data,size_t refIndent);
   QCString processBlocks(std::string_view data,size_t indent);
@@ -177,15 +171,32 @@ struct Markdown::Private
     QCString link;
     QCString title;
   };
-  using Action_t = std::function<int(std::string_view,size_t)>;
 
   std::unordered_map<std::string,LinkRef> linkRefs;
   QCString       fileName;
   int            lineNr = 0;
   int            indentLevel=0;  // 0 is outside markdown, -1=page level
   QCString       out;
-  std::array<Action_t,256> actions;
 };
+
+Markdown::ActionTable_t Markdown::fill_table()
+{
+  Markdown::ActionTable_t a{};
+  a[static_cast<unsigned int>('_')] = [](Markdown::Private &obj,std::string_view data,size_t offset) { return obj.processEmphasis      (data,offset); };
+  a[static_cast<unsigned int>('*')] = [](Markdown::Private &obj,std::string_view data,size_t offset) { return obj.processEmphasis      (data,offset); };
+  a[static_cast<unsigned int>('~')] = [](Markdown::Private &obj,std::string_view data,size_t offset) { return obj.processEmphasis      (data,offset); };
+  a[static_cast<unsigned int>('`')] = [](Markdown::Private &obj,std::string_view data,size_t offset) { return obj.processCodeSpan      (data,offset); };
+  a[static_cast<unsigned int>('\\')]= [](Markdown::Private &obj,std::string_view data,size_t offset) { return obj.processSpecialCommand(data,offset); };
+  a[static_cast<unsigned int>('@')] = [](Markdown::Private &obj,std::string_view data,size_t offset) { return obj.processSpecialCommand(data,offset); };
+  a[static_cast<unsigned int>('[')] = [](Markdown::Private &obj,std::string_view data,size_t offset) { return obj.processLink          (data,offset); };
+  a[static_cast<unsigned int>('!')] = [](Markdown::Private &obj,std::string_view data,size_t offset) { return obj.processLink          (data,offset); };
+  a[static_cast<unsigned int>('<')] = [](Markdown::Private &obj,std::string_view data,size_t offset) { return obj.processHtmlTag       (data,offset); };
+  a[static_cast<unsigned int>('-')] = [](Markdown::Private &obj,std::string_view data,size_t offset) { return obj.processNmdash        (data,offset); };
+  a[static_cast<unsigned int>('"')] = [](Markdown::Private &obj,std::string_view data,size_t offset) { return obj.processQuoted        (data,offset); };
+  return a;
+}
+Markdown::ActionTable_t Markdown::actions = Markdown::fill_table();
+
 
 Markdown::Markdown(const QCString &fileName,int lineNr,int indentLevel)
   : prv(std::make_unique<Private>(fileName,lineNr,indentLevel))
@@ -198,15 +209,14 @@ Markdown::~Markdown() = default;
 
 void Markdown::setIndentLevel(int level) { prv->indentLevel = level; }
 
-
-enum Alignment { AlignNone, AlignLeft, AlignCenter, AlignRight };
+enum class Alignment { None, Left, Center, Right };
 
 
 //---------- constants -------
 //
-const char *g_utf8_nbsp = "\xc2\xa0";      // UTF-8 nbsp
-const char *g_doxy_nbsp = "&_doxy_nbsp;";  // doxygen escape command for UTF-8 nbsp
-const size_t codeBlockIndent = 4;
+static const char *g_utf8_nbsp = "\xc2\xa0";      // UTF-8 nbsp
+static const char *g_doxy_nbsp = "&_doxy_nbsp;";  // doxygen escape command for UTF-8 nbsp
+static const size_t codeBlockIndent = 4;
 
 //---------- helpers -------
 
@@ -307,23 +317,23 @@ static QCString escapeSpecialChars(const QCString &s)
 /** helper function to convert presence of left and/or right alignment markers
  *  to an alignment value
  */
-static Alignment markersToAlignment(bool leftMarker,bool rightMarker)
+static constexpr Alignment markersToAlignment(bool leftMarker,bool rightMarker)
 {
   if (leftMarker && rightMarker)
   {
-    return AlignCenter;
+    return Alignment::Center;
   }
   else if (leftMarker)
   {
-    return AlignLeft;
+    return Alignment::Left;
   }
   else if (rightMarker)
   {
-    return AlignRight;
+    return Alignment::Right;
   }
   else
   {
-    return AlignNone;
+    return Alignment::None;
   }
 }
 
@@ -377,23 +387,24 @@ static QCString getFilteredImageAttributes(std::string_view fmt, const QCString 
 // \startuml..\enduml
 QCString Markdown::Private::isBlockCommand(std::string_view data,size_t offset)
 {
+  QCString result;
   AUTO_TRACE("data='{}' offset={}",Trace::trunc(data),offset);
 
   using EndBlockFunc = QCString (*)(const std::string &,bool,char);
 
-  static const auto getEndBlock   = [](const std::string &blockName,bool,char) -> QCString
+  static constexpr auto getEndBlock   = [](const std::string &blockName,bool,char) -> QCString
   {
     return "end"+blockName;
   };
-  static const auto getEndCode    = [](const std::string &blockName,bool openBracket,char) -> QCString
+  static constexpr auto getEndCode    = [](const std::string &blockName,bool openBracket,char) -> QCString
   {
     return openBracket ? QCString("}") : "end"+blockName;
   };
-  static const auto getEndUml     = [](const std::string &/* blockName */,bool,char) -> QCString
+  static constexpr auto getEndUml     = [](const std::string &/* blockName */,bool,char) -> QCString
   {
     return "enduml";
   };
-  static const auto getEndFormula = [](const std::string &/* blockName */,bool,char nextChar) -> QCString
+  static constexpr auto getEndFormula = [](const std::string &/* blockName */,bool,char nextChar) -> QCString
   {
     switch (nextChar)
     {
@@ -428,14 +439,13 @@ QCString Markdown::Private::isBlockCommand(std::string_view data,size_t offset)
   const size_t size = data.size();
   bool openBracket = offset>0 && data.data()[-1]=='{';
   bool isEscaped = offset>0 && (data.data()[-1]=='\\' || data.data()[-1]=='@');
-  if (isEscaped) return QCString();
+  if (isEscaped) return result;
 
   size_t end=1;
   while (end<size && (data[end]>='a' && data[end]<='z')) end++;
-  if (end==1) return QCString();
+  if (end==1) return result;
   std::string blockName(data.substr(1,end-1));
   auto it = blockNames.find(blockName);
-  QCString result;
   if (it!=blockNames.end()) // there is a function assigned
   {
     result = it->second(blockName, openBracket, end<size ? data[end] : 0);
@@ -450,7 +460,7 @@ size_t Markdown::Private::isSpecialCommand(std::string_view data,size_t offset)
 
   using EndCmdFunc = size_t (*)(std::string_view,size_t);
 
-  static const auto endOfLine = [](std::string_view data_,size_t offset_) -> size_t
+  static constexpr auto endOfLine = [](std::string_view data_,size_t offset_) -> size_t
   {
     // skip until the end of line (allowing line continuation characters)
     char lc = 0;
@@ -464,7 +474,7 @@ size_t Markdown::Private::isSpecialCommand(std::string_view data,size_t offset)
     return offset_;
   };
 
-  static const auto endOfLabels = [](std::string_view data_,size_t offset_,bool multi_) -> size_t
+  static constexpr auto endOfLabels = [](std::string_view data_,size_t offset_,bool multi_) -> size_t
   {
     if (offset_<data_.size() && data_[offset_]==' ') // we expect a space before the label
     {
@@ -510,12 +520,12 @@ size_t Markdown::Private::isSpecialCommand(std::string_view data,size_t offset)
     return 0;
   };
 
-  static const auto endOfLabel = [](std::string_view data_,size_t offset_) -> size_t
+  static constexpr auto endOfLabel = [](std::string_view data_,size_t offset_) -> size_t
   {
     return endOfLabels(data_,offset_,false);
   };
 
-  static const auto endOfLabelOpt = [](std::string_view data_,size_t offset_) -> size_t
+  static constexpr auto endOfLabelOpt = [](std::string_view data_,size_t offset_) -> size_t
   {
     size_t index=offset_;
     if (index<data_.size() && data_[index]==' ') // skip over optional spaces
@@ -534,7 +544,7 @@ size_t Markdown::Private::isSpecialCommand(std::string_view data,size_t offset)
     return endOfLabel(data_,offset_);
   };
 
-  static const auto endOfParam = [](std::string_view data_,size_t offset_) -> size_t
+  static constexpr auto endOfParam = [](std::string_view data_,size_t offset_) -> size_t
   {
     size_t index=offset_;
     if (index<data_.size() && data_[index]==' ') // skip over optional spaces
@@ -553,12 +563,12 @@ size_t Markdown::Private::isSpecialCommand(std::string_view data,size_t offset)
     return endOfLabels(data_,offset_,true);
   };
 
-  static const auto endOfRetVal = [](std::string_view data_,size_t offset_) -> size_t
+  static constexpr auto endOfRetVal = [](std::string_view data_,size_t offset_) -> size_t
   {
     return endOfLabels(data_,offset_,true);
   };
 
-  static const auto endOfFuncLike = [](std::string_view data_,size_t offset_,bool allowSpaces) -> size_t
+  static constexpr auto endOfFuncLike = [](std::string_view data_,size_t offset_,bool allowSpaces) -> size_t
   {
     if (offset_<data_.size() && data_[offset_]==' ') // we expect a space before the name
     {
@@ -591,12 +601,12 @@ size_t Markdown::Private::isSpecialCommand(std::string_view data,size_t offset)
     return 0;
   };
 
-  static const auto endOfFunc = [](std::string_view data_,size_t offset_) -> size_t
+  static constexpr auto endOfFunc = [](std::string_view data_,size_t offset_) -> size_t
   {
     return endOfFuncLike(data_,offset_,true);
   };
 
-  static const auto endOfGuard = [](std::string_view data_,size_t offset_) -> size_t
+  static constexpr auto endOfGuard = [](std::string_view data_,size_t offset_) -> size_t
   {
     return endOfFuncLike(data_,offset_,false);
   };
@@ -1854,13 +1864,13 @@ void Markdown::Private::processInline(std::string_view data)
   while (i<size)
   {
     // skip over characters that do not trigger a specific action
-    while (end<size && ((action=actions[static_cast<uint8_t>(data[end])])==nullptr)) end++;
+    while (end<size && ((action=Markdown::actions[static_cast<uint8_t>(data[end])])==nullptr)) end++;
     // and add them to the output
     out+=data.substr(i,end-i);
     if (end>=size) break;
     i=end;
     // do the action matching a special character at i
-    int iend = action(data.substr(i),i);
+    int iend = action(*this,data.substr(i),i);
     if (iend<=0) // update end
     {
       end=i+1-iend;
@@ -2562,7 +2572,7 @@ size_t Markdown::Private::writeTableBlock(std::string_view data)
   size_t cc = 0;
   size_t ret = findTableColumns(data.substr(i),start,end,cc);
   size_t k=0;
-  std::vector<int> columnAlignment(columns);
+  std::vector<Alignment> columnAlignment(columns);
 
   bool leftMarker=false, rightMarker=false, startFound=false;
   size_t j=start+i;
@@ -2706,10 +2716,10 @@ size_t Markdown::Private::writeTableBlock(std::string_view data)
       // use appropriate alignment style
       switch (columnAlignment[c])
       {
-        case AlignLeft:   out+="Left\""; break;
-        case AlignRight:  out+="Right\""; break;
-        case AlignCenter: out+="Center\""; break;
-        case AlignNone:   out+="None\""; break;
+        case Alignment::Left:   out+="Left\""; break;
+        case Alignment::Right:  out+="Right\""; break;
+        case Alignment::Center: out+="Center\""; break;
+        case Alignment::None:   out+="None\""; break;
       }
 
       if (rowSpan > 1)

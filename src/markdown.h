@@ -41,6 +41,10 @@ class Markdown
   private:
     struct Private;
     std::unique_ptr<Private> prv;
+    using Action_t      = std::function<int(Private&,std::string_view,size_t)>;
+    using ActionTable_t = std::array<Action_t,256>;
+    static ActionTable_t fill_table();
+    static ActionTable_t actions;
 };
 
 class MarkdownOutlineParser : public OutlineParserInterface
