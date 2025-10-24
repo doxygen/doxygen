@@ -16,7 +16,6 @@
 --header-separator-color: ##CC;
 --group-header-separator-color: ##DE;
 --group-header-color: ##44;
---inherit-header-color: gray;
 
 --footer-foreground-color: ##33;
 --footer-logo-width: 75px;
@@ -25,8 +24,6 @@
 
 --title-background-color: white;
 --title-separator-color: ##CC;
---directory-separator-color: ##AA;
---separator-color: ##66;
 
 --blockquote-background-color: ##F8;
 --blockquote-border-color: ##AA;
@@ -44,7 +41,6 @@
 
 /* brief member declaration list */
 --memdecl-background-color: ##FA;
---memdecl-separator-color: ##E2;
 --memdecl-foreground-color: #555;
 --memdecl-template-color: ##60;
 --memdecl-border-color: ##DA;
@@ -54,7 +50,6 @@
 --memdef-title-background-color: ##E6;
 --memdef-proto-background-color: ##F0;
 --memdef-proto-text-color: ##2b;
---memdef-doc-background-color: white;
 --memdef-param-name-color: #602020;
 --memdef-template-color: ##60;
 
@@ -76,21 +71,17 @@
 --nav-breadcrumb-separator-color: ##CC;
 --nav-breadcrumb-active-bg: ##F0;
 --nav-breadcrumb-color: ##44;
---nav-breadcrumb-border-color: ##E5;
 --nav-splitbar-bg-color: ##E0;
 --nav-splitbar-handle-color: ##AA;
 --nav-font-size-level1: 13px;
 --nav-font-size-level2: 10px;
 --nav-font-size-level3: 9px;
 --nav-text-normal-color: ##30;
---nav-text-hover-color: white;
---nav-text-active-color: white;
 --nav-menu-button-color: ##45;
 --nav-menu-background-color: white;
 --nav-menu-foreground-color: #555555;
 --nav-menu-active-bg: ##E0;
 --nav-menu-active-color: ##AA;
---nav-menu-toggle-color: rgba(255, 255, 255, 0.5);
 --nav-arrow-color: ##C0;
 --nav-arrow-selected-color: ##A0;
 
@@ -138,8 +129,6 @@
 --code-vhdl-char-color: #000000;
 --code-vhdl-keyword-color: #700070;
 --code-vhdl-logic-color: #FF0000;
---code-link-color: ##60;
---code-external-link-color: ##60;
 --fragment-foreground-color: black;
 --fragment-background-color: ##FC;
 --fragment-border-color: ##CC;
