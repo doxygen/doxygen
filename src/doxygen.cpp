@@ -11443,7 +11443,11 @@ static int computeIdealCacheParam(size_t v)
   //printf("computeIdealCacheParam(v=%u)\n",v);
 
   int r=0;
-  while (v!=0) v>>=1,r++;
+  while (v!=0)
+  {
+    v >>= 1;
+    r++;
+  }
   // r = log2(v)
 
   // convert to a valid cache size value

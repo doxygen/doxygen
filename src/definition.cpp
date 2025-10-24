@@ -164,9 +164,15 @@ static bool matchExcludedSymbols(const QCString &name)
     bool forceStart=FALSE;
     bool forceEnd=FALSE;
     if (pattern.at(0)=='^')
-      pattern=pattern.mid(1),forceStart=TRUE;
-    if (pattern.at(pattern.length()-1)=='$')
-      pattern=pattern.left(pattern.length()-1),forceEnd=TRUE;
+    {
+      pattern    = pattern.mid(1);
+      forceStart = true;
+    }
+    if (pattern.at(pattern.length() - 1) == '$')
+    {
+      pattern  = pattern.left(pattern.length() - 1);
+      forceEnd = true;
+    }
     if (pattern.find('*')!=-1) // wildcard mode
     {
       const reg::Ex re(substitute(pattern,"*",".*").str());
@@ -781,7 +787,8 @@ bool readCodeFragment(const QCString &fileName,bool isMacro,
         //printf("parsing char '%c'\n",c);
         if (c=='\n')
         {
-          lineNr++,col=0;
+          lineNr++;
+          col = 0;
         }
         else if (c=='\t')
         {
@@ -790,13 +797,21 @@ bool readCodeFragment(const QCString &fileName,bool isMacro,
         else if (pc=='/' && c=='/') // skip single line comment
         {
           while ((c=*p++)!='\n' && c!=0);
-          if (c=='\n') lineNr++,col=0;
+          if (c == '\n')
+          {
+            lineNr++;
+            col = 0;
+          }
         }
         else if (pc=='/' && c=='*') // skip C style comment
         {
           while (((c=*p++)!='/' || pc!='*') && c!=0)
           {
-            if (c=='\n') lineNr++,col=0;
+            if (c == '\n')
+            {
+              lineNr++;
+              col = 0;
+            }
             pc=c;
           }
         }
