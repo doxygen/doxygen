@@ -85,7 +85,7 @@ constant_expression: logical_or_expression
                      TOK_QUESTIONMARK logical_or_expression
                      TOK_COLON logical_or_expression
 		     {
-		       bool c = ($1.isInt() ? ((long)$1 != 0) : ((double)$1 != 0.0));
+		       bool c = ($1.type()==CPPValue::Type::Int ? ((long)$1 != 0) : ((double)$1 != 0.0));
 		       $$ = c ? $3 : $5;
 	             }
 ;
@@ -181,7 +181,7 @@ additive_expression: multiplicative_expression
 		     { $$ = $1; }
 		   | additive_expression TOK_PLUS multiplicative_expression
 		     {
-		       if (!$1.isInt() || !$3.isInt())
+		       if ($1.type()!=CPPValue::Type::Int || $3.type()!=CPPValue::Type::Int)
 		       {
 		         $$ = CPPValue( (double)$1 + (double)$3 );
 		       }
@@ -192,7 +192,7 @@ additive_expression: multiplicative_expression
 		     }
 		   | additive_expression TOK_MINUS multiplicative_expression
 		     {
-		       if (!$1.isInt() || !$3.isInt())
+		       if ($1.type()!=CPPValue::Type::Int || $3.type()!=CPPValue::Type::Int)
 		       {
 		         $$ = CPPValue( (double)$1 - (double)$3 );
 		       }
@@ -207,7 +207,7 @@ multiplicative_expression: unary_expression
 			   { $$ = $1; }
 			 | multiplicative_expression TOK_STAR unary_expression
 			   {
-			     if (!$1.isInt() || !$3.isInt())
+			     if ($1.type()!=CPPValue::Type::Int || $3.type()!=CPPValue::Type::Int)
 			     {
 			       $$ = CPPValue( (double)$1 * (double)$3 );
 			     }
@@ -218,7 +218,7 @@ multiplicative_expression: unary_expression
 			   }
 			 | multiplicative_expression TOK_DIVIDE unary_expression
 			   {
-			     if (!$1.isInt() || !$3.isInt())
+			     if ($1.type()!=CPPValue::Type::Int || $3.type()!=CPPValue::Type::Int)
 			     {
 			       $$ = CPPValue( (double)$1 / (double)$3 );
 			     }
@@ -243,7 +243,7 @@ unary_expression: primary_expression
 		  { $$ = $1; }
 		| TOK_MINUS unary_expression
 		  {
-		    if ($2.isInt())
+		    if ($2.type()==CPPValue::Type::Int)
                       $$ = CPPValue(-(long)$2);
                     else
 		      $$ = CPPValue(-(double)$2);

@@ -13,58 +13,61 @@
  *
  */
 
-#include <stdlib.h>
+#include <cstdlib>
+#include <cassert>
 
 #include "cppvalue.h"
 #include "constexp.h"
 
-CPPValue CPPValue::parseOctal(const std::string& token)
+CPPValue CPPValue::parseOctal(const std::string &token)
 {
   long val = 0;
-  for (const char *p = token.c_str(); *p != 0; p++)
+  for (const char c : token)
   {
-    if (*p >= '0' && *p <= '7') val = val * 8 + *p - '0';
+    if (c >= '0' && c <= '7') val = val * 8 + c - '0';
   }
   return CPPValue(val);
 }
 
-CPPValue CPPValue::parseDecimal(const std::string& token)
+CPPValue CPPValue::parseDecimal(const std::string &token)
 {
   long val = 0;
-  for (const char *p = token.c_str(); *p != 0; p++)
+  for (const char c : token)
   {
-    if (*p >= '0' && *p <= '9') val = val * 10 + *p - '0';
+    if (c >= '0' && c <= '9') val = val * 10 + c - '0';
   }
   return CPPValue(val);
 }
 
-CPPValue CPPValue::parseHexadecimal(const std::string& token)
+CPPValue CPPValue::parseHexadecimal(const std::string &token)
 {
   long val = 0;
-  for (const char *p = token.c_str(); *p != 0; p++)
+  for (const char c : token)
   {
-    if      (*p >= '0' && *p <= '9') val = val * 16 + *p - '0';
-    else if (*p >= 'a' && *p <= 'f') val = val * 16 + *p - 'a' + 10;
-    else if (*p >= 'A' && *p <= 'F') val = val * 16 + *p - 'A' + 10;
+    if      (c >= '0' && c <= '9') val = val * 16 + c - '0';
+    else if (c >= 'a' && c <= 'f') val = val * 16 + c - 'a' + 10;
+    else if (c >= 'A' && c <= 'F') val = val * 16 + c - 'A' + 10;
   }
   //printf("parseHexadecimal %s->%x\n",qPrint(token),val);
   return CPPValue(val);
 }
 
-CPPValue CPPValue::parseBinary(const std::string& token)
+CPPValue CPPValue::parseBinary(const std::string &token)
 {
   long val = 0;
-  for (const char *p = token.c_str(); *p != 0; p++)
+  for (const char c : token)
   {
-    if (*p >= '0' && *p <= '1') val = val * 2 + *p - '0';
+    if (c >= '0' && c <= '1') val = val * 2 + c - '0';
   }
   return CPPValue(val);
 }
 
-CPPValue CPPValue::parseCharacter(const std::string& token) // does not work for '\n' and the alike
+CPPValue CPPValue::parseCharacter(const std::string &token) // does not work for '\n' and the alike
 {
+  assert(token.length()>0);
   if (token[1]=='\\')
   {
+    assert(token.length()>1);
     switch(token[2])
     {
       case 'n':  return CPPValue('\n');
@@ -89,14 +92,14 @@ CPPValue CPPValue::parseCharacter(const std::string& token) // does not work for
                  return parseOctal(token);
       case 'x':
       case 'X':  return parseHexadecimal(token);
-      default:   printf("Invalid escape sequence %s found!\n",token.c_str());
+      default:   printf("Invalid escape sequence %s found!\n",std::string(token).c_str());
                  return CPPValue(0L);
     }
   }
   return CPPValue(token[1]);
 }
 
-CPPValue CPPValue::parseFloat(const std::string& token)
+CPPValue CPPValue::parseFloat(const std::string &token)
 {
   return CPPValue(std::stod(token));
 }
