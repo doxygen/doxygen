@@ -30,6 +30,7 @@ option(use_sys_spdlog  "Use system spdlog library instead of the one bundled." O
 option(use_sys_fmt     "Use system fmt library instead of the one bundled." OFF)
 option(use_sys_sqlite3 "Use system sqlite3 library instead of the one bundled." OFF)
 option(static_libclang "Link to a statically compiled version of LLVM/libclang." OFF)
+option(static_libxapian "Link to a statically compiled version of libxapian." OFF)
 option(win_static      "Link with /MT in stead of /MD on windows" OFF)
 option(enable_console  "Enable that executables on Windows get the CONSOLE bit set for the doxywizard executable [development]"  OFF)
 option(enable_coverage "Enable coverage reporting for gcc/clang [development]" OFF)
@@ -217,6 +218,10 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${JAVA_CC_EXTRA_FLAGS}")
 
 if(POLICY CMP0063)
   cmake_policy(SET CMP0063 NEW)
+endif()
+
+if(POLICY CMP0116)
+  cmake_policy(SET CMP0116 NEW)
 endif()
 
 # when using mutrace comment the next 3 lines and uncomment the last 2
