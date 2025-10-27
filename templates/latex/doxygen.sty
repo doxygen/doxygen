@@ -478,8 +478,8 @@
           {vline{1-Z}={2-Z}{solid},%    show vertical lines for all rows except the first
            measure=vbox,%               needed to allow nested lists and tables
            colspec=\DoxyTableColSpec}}% set column type for all columns
-  \SetCell[c=#1]{l} \tf{#3} \\[1ex]%
-  \hline%
+  \SetCell[c=#1]{l} \tf{#3} \\\nopagebreak%
+  \hline\nopagebreak%
   #4
   \end{longtblr}%
   \par\addvspace{6pt}%
