@@ -38,6 +38,7 @@
 #include "trace.h"
 #include "anchor.h"
 #include "aliases.h"
+#include "requirementstracker.h"
 
 #if !ENABLE_DOCPARSER_TRACING
 #undef  AUTO_TRACE
@@ -3211,6 +3212,8 @@ QCString DocSimpleSect::typeString() const
     case Important:  return "important";
     case User:       return "user";
     case Rcs:        return "rcs";
+    case Satisfies:  return "satisfies";
+    case Verifies:   return "verifies";
   }
   return "unknown";
 }
@@ -3719,6 +3722,208 @@ Token DocPara::handleXRefItem()
   }
   parser()->tokenizer.setStatePara();
   return retval;
+}
+
+Token DocPara::handleRequirementRef(bool isSatisfies)
+{
+  AUTO_TRACE();
+  Token retval=parser()->tokenizer.lex();
+  if (!retval.is(TokenRetval::TK_WHITESPACE))
+  {
+    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),
+                   "expected whitespace after '@{}' command",
+                   isSatisfies ? "satisfies" : "verifies");
+    return retval;
+  }
+
+  parser()->tokenizer.setStatePara();
+  retval=parser()->tokenizer.lex();
+
+  QCString reqId;
+  if (retval.is(TokenRetval::TK_WORD) || retval.is(TokenRetval::TK_LNKWORD))
+  {
+    reqId = parser()->context.token->name;
+
+    // Get the qualified name of the current scope
+    QCString qualifiedName;
+    if (parser()->context.memberDef)
+    {
+      // If we're inside a member (function/method), use the member's qualified name
+      qualifiedName = parser()->context.memberDef->qualifiedName();
+    }
+    else if (parser()->context.scope)
+    {
+      // Otherwise use the scope (class/namespace)
+      qualifiedName = parser()->context.scope->qualifiedName();
+    }
+    else if (!parser()->context.context.isEmpty())
+    {
+      qualifiedName = parser()->context.context;
+    }
+
+    if (!qualifiedName.isEmpty() && !reqId.isEmpty())
+    {
+      // Add the reference to the requirements tracker
+      RequirementsTracker &tracker = RequirementsTracker::instance();
+      if (isSatisfies)
+      {
+        tracker.addSatisfiedBy(reqId, qualifiedName);
+      }
+      else
+      {
+        tracker.addVerifiedBy(reqId, qualifiedName);
+      }
+    }
+
+    // Use the same approach as handleSimpleSection to add the requirement display
+    DocSimpleSect::Type sectType = isSatisfies ? DocSimpleSect::Satisfies : DocSimpleSect::Verifies;
+    DocSimpleSect *ss=nullptr;
+    bool needsSeparator = FALSE;
+
+    // Helper function to recursively search for a SimpleSect of given type in a node list
+    std::function<DocSimpleSect*(DocNodeList&)> findSimpleSectInList;
+    findSimpleSectInList = [&](DocNodeList& nodeList) -> DocSimpleSect* {
+      for (auto &child : nodeList)
+      {
+        if (DocSimpleSect *sect = std::get_if<DocSimpleSect>(&child))
+        {
+          if (sect->type() == sectType)
+          {
+            return sect;
+          }
+        }
+        // Check compound nodes that might contain SimpleSects
+        else if (DocPara *para = std::get_if<DocPara>(&child))
+        {
+          if (DocSimpleSect *found = findSimpleSectInList(para->children()))
+          {
+            return found;
+          }
+        }
+      }
+      return nullptr;
+    };
+
+    // Traverse up to find the root node
+    DocNodeVariant *current = thisVariant();
+    DocNodeVariant *root = current;
+    while (current)
+    {
+      root = current;
+      DocNodeVariant *nextParent = nullptr;
+
+      std::visit([&](auto &&arg) {
+        using T = std::decay_t<decltype(arg)>;
+        if constexpr (std::is_base_of_v<DocNode, T>)
+        {
+          nextParent = arg.parent();
+        }
+      }, *current);
+
+      if (nextParent)
+      {
+        current = nextParent;
+      }
+      else
+      {
+        break;
+      }
+    }
+
+    // Search from the root for an existing section of the same type
+    if (DocRoot *docRoot = std::get_if<DocRoot>(root))
+    {
+      ss = findSimpleSectInList(docRoot->children());
+      if (ss)
+      {
+        needsSeparator = TRUE;
+      }
+    }
+    else if (DocPara *docPara = std::get_if<DocPara>(root))
+    {
+      ss = findSimpleSectInList(docPara->children());
+      if (ss)
+      {
+        needsSeparator = TRUE;
+      }
+    }
+
+    // If not found at root level, check immediate children
+    if (!ss && !children().empty() &&                                  // has previous element
+        (ss=children().get_last<DocSimpleSect>()) &&                   // was a simple sect
+        ss->type()==sectType)                                          // of same type
+    {
+      // append to previous section
+      needsSeparator = TRUE;
+    }
+
+    if (!ss)
+    {
+      // Start new section
+      children().append<DocSimpleSect>(parser(),thisVariant(),sectType);
+      ss = children().get_last<DocSimpleSect>();
+    }
+
+    // Add separator if appending to existing section
+    if (needsSeparator)
+    {
+      ss->children().append<DocSimpleSectSep>(parser(),ss->thisVariant());
+    }
+
+    // Create a paragraph for the requirement reference
+    ss->children().append<DocPara>(parser(),ss->thisVariant());
+    DocPara *par = ss->children().get_last<DocPara>();
+
+    // Try to get the requirement URL from the tracker
+    RequirementsTracker &tracker = RequirementsTracker::instance();
+    RequirementsTracker::RequirementsCollection* collection = tracker.findCollectionByPrefix(reqId);
+
+    if (collection) {
+      auto reqIt = collection->requirements.find(reqId);
+      if (reqIt != collection->requirements.end() && !reqIt->second.url.isEmpty()) {
+        // Create an external hyperlink to the requirement
+        HtmlAttribList attribs;
+        par->children().append<DocHRef>(parser(),par->thisVariant(),attribs,reqIt->second.url,QCString(),QCString());
+        DocHRef *href = par->children().get_last<DocHRef>();
+        href->children().append<DocWord>(parser(),href->thisVariant(),reqId);
+      } else {
+        // Fallback to plain text if no URL available
+        par->children().append<DocWord>(parser(),par->thisVariant(),reqId);
+      }
+    } else {
+      // Fallback to plain text if requirement not found
+      par->children().append<DocWord>(parser(),par->thisVariant(),reqId);
+    }
+  }
+  else
+  {
+    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),
+                   "missing requirement ID after '@{}' command",
+                   isSatisfies ? "satisfies" : "verifies");
+    parser()->tokenizer.setStatePara();
+    return retval;
+  }
+
+  parser()->tokenizer.setStatePara();
+
+  // Check if the next token is a period - consume it to avoid dangling punctuation
+  Token nextTok = parser()->tokenizer.lex();
+  if (nextTok.is_any_of(TokenRetval::TK_WORD, TokenRetval::TK_SYMBOL))
+  {
+    if (parser()->context.token->name != ".")
+    {
+      // Not a period, return it for normal processing
+      return nextTok;
+    }
+    // If it IS a period, we just consume it (don't return it)
+  }
+  else
+  {
+    // Not a word/symbol token, return it for normal processing
+    return nextTok;
+  }
+
+  return Token::make_RetVal_OK();
 }
 
 void DocPara::handleShowDate(char cmdChar,const QCString &cmdName)
@@ -4941,6 +5146,12 @@ Token DocPara::handleCommand(char cmdChar, const QCString &cmdName)
         //printf("Found scope='%s'\n",qPrint(parser()->context.context));
         parser()->tokenizer.setStatePara();
       }
+      break;
+    case CommandType::CMD_SATISFIES:
+      retval = handleRequirementRef(true);
+      break;
+    case CommandType::CMD_VERIFIES:
+      retval = handleRequirementRef(false);
       break;
     default:
       // we should not get here!

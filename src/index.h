@@ -81,6 +81,8 @@ enum class HighlightedItem
   Globals,
   Pages,
   Examples,
+  Requirements,
+  Traceability,
   Search,
   UserGroup,
 
@@ -223,6 +225,8 @@ class Index
 
 void writeGraphInfo(OutputList &ol);
 void writeIndexHierarchy(OutputList &ol);
+void writeRequirementsIndex(OutputList &ol);
+void writeTraceabilityIndex(OutputList &ol);
 void startTitle(OutputList &ol,const QCString &fileName,const DefinitionMutable *def=nullptr);
 void endTitle(OutputList &ol,const QCString &fileName,const QCString &name);
 void startFile(OutputList &ol,const QCString &name,bool isSource,const QCString &manName,

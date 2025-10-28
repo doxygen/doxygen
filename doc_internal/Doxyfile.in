@@ -323,6 +323,11 @@ ALLEXTERNALS           = NO
 EXTERNAL_GROUPS        = YES
 EXTERNAL_PAGES         = YES
 #---------------------------------------------------------------------------
+# Configuration options related to the requirements traceability
+#---------------------------------------------------------------------------
+REQUIREMENTS_FILES     =
+REQUIREMNETS_TAGFILES  =
+#---------------------------------------------------------------------------
 # Configuration options related to diagram generator tools
 #---------------------------------------------------------------------------
 HIDE_UNDOC_RELATIONS   = YES

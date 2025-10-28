@@ -442,6 +442,9 @@ The following table gives an overview of the doxygen configuration settings and 
 <dt>New in 1.8.20</dt>
 <dt></dt>              <dd>PYTHON_DOCSTRING</dd>
 <!-- PLACEHOLDER -->
+<dt>New in 1.8.XX</dt>
+<dt></dt>              <dd>REQUIREMENTS_TAGFILES</dd>
+<dt></dt>              <dd>REQUIREMENTS_FILES</dd>
 </dl>
 
 # Directives
@@ -450,4 +453,7 @@ The following table gives an overview of the doxygen configuration settings and 
 <dt>New in 1.2.1</dt>
 <dt></dt>              <dd>@@INCLUDE</dd>
 <dt></dt>              <dd>@@INCLUDE_PATH</dd>
+<dt>New in 1.8.XX</dt>
+<dt></dt>              <dd>@@SATISFIES</dd>
+<dt></dt>              <dd>@@VERIFIES</dd>
 </dl>

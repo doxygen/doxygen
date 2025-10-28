@@ -32,6 +32,7 @@
 #include "util.h"
 #include "groupdef.h"
 #include "language.h"
+#include "requirementstracker.h"
 #include "htmlgen.h"
 #include "htmlhelp.h"
 #include "ftvhelp.h"
@@ -3899,6 +3900,192 @@ static void writeExampleIndex(OutputList &ol)
 
 //----------------------------------------------------------------------------
 
+void writeRequirementsIndex(OutputList &ol)
+{
+  RequirementsTracker &tracker = RequirementsTracker::instance();
+  if (!tracker.hasRequirements()) return;
+
+  const auto &collections = tracker.collections();
+  if (collections.empty()) return;
+
+  ol.pushGeneratorState();
+  ol.disable(OutputType::Man);
+  ol.disable(OutputType::Docbook);
+
+  LayoutNavEntry *lne = LayoutDocManager::instance().rootNavEntry()->find(LayoutNavEntry::Requirements);
+  QCString title = lne ? lne->title() : QCString("Requirements");
+  bool addToIndex = lne==nullptr || lne->visible();
+
+  startFile(ol,"requirements",QCString(),title,HighlightedItem::Requirements);
+
+  startTitle(ol,QCString());
+  ol.parseText(title);
+  endTitle(ol,QCString(),QCString());
+
+  ol.startContents();
+
+  if (addToIndex)
+  {
+    Doxygen::indexList->addContentsItem(TRUE,title,QCString(),"requirements",QCString(),TRUE,TRUE);
+    Doxygen::indexList->incContentsDepth();
+  }
+
+  ol.startTextBlock();
+  QCString intro = lne ? lne->intro() : QCString("External requirements specifications.");
+  ol.parseText(intro);
+  ol.endTextBlock();
+
+  ol.startItemList();
+  for (const auto &collection : collections)
+  {
+    if (collection.requirements.empty())
+    {
+      continue;
+    }
+
+    ol.startItemListItem();
+    QCString displayTitle = collection.displayTitle;
+    QCString linkUrl;
+    bool isExternal = false;
+
+    // Create link to requirements documentation
+    if (!collection.pageFilename.isEmpty())
+    {
+      // Determine if this is an external URL or internal page
+      if (collection.destination.isEmpty())
+      {
+        // Internal page from REQUIREMENTS_FILES (pageFilename is the Doxygen-generated page)
+        linkUrl = collection.pageFilename;
+        isExternal = false;
+      }
+      else if (collection.destination.contains("://"))
+      {
+        // Full URL with protocol (http://, https://, file://, etc.)
+        linkUrl = collection.destination + "/" + collection.pageFilename;
+        isExternal = true;
+      }
+      else
+      {
+        // Relative or absolute path from REQUIREMENTS_TAGFILES
+        // destination is the path (e.g., "../../requirements/html")
+        // pageFilename is from tag file (e.g., "index.html")
+        linkUrl = collection.destination + "/" + collection.pageFilename;
+        isExternal = true;
+      }
+
+      ol.writeString("<a href=\"");
+      ol.writeString(linkUrl);
+      if (isExternal)
+      {
+        ol.writeString("\" target=\"_blank\">");
+      }
+      else
+      {
+        ol.writeString("\">");
+      }
+      ol.writeString(displayTitle);
+      ol.writeString("</a>");
+    }
+    else
+    {
+      ol.writeString(displayTitle);
+    }
+
+    if (addToIndex && !linkUrl.isEmpty())
+    {
+      Doxygen::indexList->addContentsItem(FALSE,displayTitle,QCString(),linkUrl,QCString(),FALSE,TRUE);
+    }
+
+    ol.endItemListItem();
+  }
+  ol.endItemList();
+
+  if (addToIndex)
+  {
+    Doxygen::indexList->decContentsDepth();
+  }
+
+  endFile(ol);
+  ol.popGeneratorState();
+}
+
+//----------------------------------------------------------------------------
+
+void writeTraceabilityIndex(OutputList &ol)
+{
+  RequirementsTracker &tracker = RequirementsTracker::instance();
+  if (!tracker.hasRequirements()) return;
+
+  const auto &collections = tracker.collections();
+  if (collections.empty()) return;
+
+  ol.pushGeneratorState();
+  ol.disable(OutputType::Man);
+  ol.disable(OutputType::Docbook);
+
+  LayoutNavEntry *lne = LayoutDocManager::instance().rootNavEntry()->find(LayoutNavEntry::Traceability);
+  QCString title = lne ? lne->title() : QCString("Traceability");
+  bool addToIndex = lne==nullptr || lne->visible();
+
+  startFile(ol,"traceability",QCString(),title,HighlightedItem::Traceability);
+
+  startTitle(ol,QCString());
+  ol.parseText(title);
+  endTitle(ol,QCString(),QCString());
+
+  ol.startContents();
+
+  if (addToIndex)
+  {
+    Doxygen::indexList->addContentsItem(TRUE,title,QCString(),"traceability",QCString(),TRUE,TRUE);
+    Doxygen::indexList->incContentsDepth();
+  }
+
+  ol.startTextBlock();
+  QCString intro = lne ? lne->intro() : QCString("Summary of imported requirements specifications.");
+  ol.parseText(intro);
+  ol.endTextBlock();
+
+  ol.startItemList();
+  for (const auto &collection : collections)
+  {
+    if (collection.requirements.empty())
+    {
+      continue;
+    }
+
+    ol.startItemListItem();
+    QCString displayTitle = collection.displayTitle;
+    QCString pageBase = collection.pageName;
+
+    ol.writeObjectLink(QCString(),pageBase,QCString(),displayTitle);
+
+    QCString metaText = " &mdash; ";
+    metaText += QCString().setNum(static_cast<int>(collection.requirements.size()));
+    metaText += collection.requirements.size()==1 ? " requirement" : " requirements";
+  ol.writeString(metaText.data());
+
+    if (addToIndex)
+    {
+      Doxygen::indexList->addContentsItem(FALSE,displayTitle,QCString(),pageBase,QCString(),FALSE,TRUE);
+    }
+
+    ol.endItemListItem();
+  }
+  ol.endItemList();
+
+  if (addToIndex)
+  {
+    Doxygen::indexList->decContentsDepth();
+  }
+
+  endFile(ol);
+  ol.popGeneratorState();
+}
+
+
+//----------------------------------------------------------------------------
+
 static void countRelatedPages(int &docPages,int &indexPages)
 {
   docPages=indexPages=0;
@@ -4017,6 +4204,32 @@ static void writePageIndex(OutputList &ol)
         writePages(pd.get(),&ftv);
       }
     }
+
+    // Add Requirements section with external links to requirements documentation
+    RequirementsTracker &tracker = RequirementsTracker::instance();
+    if (tracker.hasRequirements())
+    {
+      const auto &collections = tracker.collections();
+      if (!collections.empty())
+      {
+        // Add a "Requirements" parent item
+        ftv.addContentsItem(true, "Requirements", QCString(), QCString(), QCString(), false, true, nullptr);
+        ftv.incContentsDepth();
+
+        for (const auto &collection : collections)
+        {
+          if (!collection.requirements.empty() && !collection.destination.isEmpty())
+          {
+            // Create external link to requirements documentation
+            QCString externalUrl = collection.destination + "/index.html";
+            ftv.addContentsItem(false, collection.displayTitle, QCString(), externalUrl, QCString(), false, true, nullptr);
+          }
+        }
+
+        ftv.decContentsDepth();
+      }
+    }
+
     TextStream t;
     ftv.generateTreeViewInline(t);
     ol.writeString(t.str());
@@ -5502,6 +5715,42 @@ static void writeIndexHierarchyEntries(OutputList &ol,const LayoutNavEntryList &
           msg("Generating example index...\n");
           writeExampleIndex(ol);
           break;
+        case LayoutNavEntry::Requirements:
+          {
+            bool hasReq = RequirementsTracker::instance().hasRequirements();
+            lne->setVisible(hasReq);
+            if (!hasReq)
+            {
+              break;
+            }
+            if (addToIndex)
+            {
+              Doxygen::indexList->addContentsItem(TRUE,lne->title(),QCString(),lne->baseFile(),QCString());
+              Doxygen::indexList->incContentsDepth();
+              needsClosing=TRUE;
+            }
+            msg("Generating requirements index...\n");
+            writeRequirementsIndex(ol);
+          }
+          break;
+        case LayoutNavEntry::Traceability:
+          {
+            bool hasReq = RequirementsTracker::instance().hasRequirements();
+            lne->setVisible(hasReq);
+            if (!hasReq)
+            {
+              break;
+            }
+            if (addToIndex)
+            {
+              Doxygen::indexList->addContentsItem(TRUE,lne->title(),QCString(),lne->baseFile(),QCString());
+              Doxygen::indexList->incContentsDepth();
+              needsClosing=TRUE;
+            }
+            msg("Generating traceability index...\n");
+            writeTraceabilityIndex(ol);
+          }
+          break;
         case LayoutNavEntry::User:
           if (addToIndex)
           {
@@ -5564,6 +5813,7 @@ static void writeIndexHierarchyEntries(OutputList &ol,const LayoutNavEntryList &
         case LayoutNavEntry::Namespaces:
         case LayoutNavEntry::Classes:
         case LayoutNavEntry::Files:
+        case LayoutNavEntry::Traceability:
         case LayoutNavEntry::UserGroup:
           Doxygen::indexList->decContentsDepth();
           break;
@@ -5618,6 +5868,8 @@ static bool quickLinkVisible(LayoutNavEntry::Kind kind)
     case LayoutNavEntry::FileList:           return index.numDocumentedFiles()>0 && showFiles;
     case LayoutNavEntry::FileGlobals:        return index.numDocumentedFileMembers(FileMemberHighlight::All)>0;
     case LayoutNavEntry::Examples:           return !Doxygen::exampleLinkedMap->empty();
+    case LayoutNavEntry::Requirements:       return RequirementsTracker::instance().hasRequirements();
+    case LayoutNavEntry::Traceability:       return RequirementsTracker::instance().hasRequirements();
     case LayoutNavEntry::None:             // should never happen, means not properly initialized
       assert(kind != LayoutNavEntry::None);
       return FALSE;

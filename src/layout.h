@@ -186,6 +186,8 @@ struct LayoutNavEntry
       NSPEC(FileList,) \
       NSPEC(FileGlobals,) \
       NSPEC(Examples,) \
+      NSPEC(Requirements,) \
+      NSPEC(Traceability,) \
       NSPEC(User,) \
       NSPEC(UserGroup,)
 

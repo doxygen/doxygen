@@ -1020,7 +1020,7 @@ class DocSimpleSect : public DocCompoundNode
     {
        Unknown, See, Return, Author, Authors, Version, Since, Date,
        Note, Warning, Copyright, Pre, Post, Invar, Remark, Attention, Important,
-       User, Rcs
+       User, Rcs, Satisfies, Verifies
     };
     DocSimpleSect(DocParser *parser,DocNodeVariant *parent,Type t);
     Type type() const       { return m_type; }
@@ -1092,6 +1092,7 @@ class DocPara : public DocCompoundNode
     Token handleHtmlEndTag(const QCString &tagName);
     Token handleSimpleSection(DocSimpleSect::Type t,bool xmlContext=FALSE);
     Token handleXRefItem();
+    Token handleRequirementRef(bool isSatisfies);
     Token handleParamSection(const QCString &cmdName,DocParamSect::Type t, bool xmlContext, int direction);
     void handleIncludeOperator(const QCString &cmdName,DocIncOperator::Type t);
     template<class T> void handleFile(const QCString &cmdName);
