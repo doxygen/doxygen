@@ -2227,4 +2227,19 @@ void DocTokenizer::popState()
   yyextra->stateStack.pop();
 }
 
+int DocTokenizer::getState()
+{
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  return YYSTATE;
+}
+
+void DocTokenizer::setState(int newState)
+{
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  BEGIN(newState);
+}
+
+
 #include "doctokenizer.l.h"

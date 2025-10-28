@@ -1199,6 +1199,35 @@ void DocParser::handleImage(DocNodeVariant *parent, DocNodeList &children)
   children.get_last<DocImage>()->parse();
 }
 
+void DocParser::handleRef(DocNodeVariant *parent, DocNodeList &children, char cmdChar, const QCString &cmdName)
+{
+  AUTO_TRACE("cmdName={}",cmdName);
+  QCString saveCmdName = cmdName;
+  int saveState = tokenizer.getState();
+  Token tok=tokenizer.lex();
+  if (!tok.is(TokenRetval::TK_WHITESPACE))
+  {
+    warn_doc_error(context.fileName,tokenizer.getLineNr(),"expected whitespace after '{:c}{}' command",
+      cmdChar,qPrint(saveCmdName));
+    return;
+  }
+  tokenizer.setStateRef();
+  tok=tokenizer.lex(); // get the reference id
+  if (!tok.is(TokenRetval::TK_WORD))
+  {
+    warn_doc_error(context.fileName,tokenizer.getLineNr(),"unexpected token {} as the argument of '{:c}{}'",
+        tok.to_string(),cmdChar,saveCmdName);
+    goto endref;
+  }
+  children.append<DocRef>(this,parent,
+                            context.token->name,
+                            context.context);
+  children.get_last<DocRef>()->parse();
+endref:
+  tokenizer.setState(saveState);
+}
+
+
 
 /* Helper function that deals with the most common tokens allowed in
  * title like sections.

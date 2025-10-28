@@ -1100,7 +1100,6 @@ class DocPara : public DocCompoundNode
     void handleCite(char cmdChar,const QCString &cmdName);
     void handleDoxyConfig(char cmdChar,const QCString &cmdName);
     void handleEmoji(char cmdChar,const QCString &cmdName);
-    void handleRef(char cmdChar,const QCString &cmdName);
     void handleSection(char cmdChar,const QCString &cmdName);
     void handleInheritDoc();
     void handleVhdlFlow();

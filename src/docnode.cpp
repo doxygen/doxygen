@@ -1436,6 +1436,12 @@ void DocHtmlSummary::parse()
     {
       break;
     }
+    else if (((tok.value()==TokenRetval::TK_COMMAND_AT) || (tok.value()==TokenRetval::TK_COMMAND_BS)) &&
+             (Mappers::cmdMapper->map(parser()->context.token->name)== CommandType::CMD_REF))
+    {
+      parser()->handleRef(thisVariant(),children(),
+                          tok.value()==TokenRetval::TK_COMMAND_AT ? '@' : '\\',parser()->context.token->name);
+    }
     else if (!parser()->defaultHandleToken(thisVariant(),tok,children()))
     {
       parser()->errorHandleDefaultToken(thisVariant(),tok,children(),"summary section");
@@ -3961,33 +3967,6 @@ void DocPara::handleLink(const QCString &cmdName,bool isJavaLink)
   }
 }
 
-void DocPara::handleRef(char cmdChar,const QCString &cmdName)
-{
-  AUTO_TRACE("cmdName={}",cmdName);
-  QCString saveCmdName = cmdName;
-  Token tok=parser()->tokenizer.lex();
-  if (!tok.is(TokenRetval::TK_WHITESPACE))
-  {
-    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"expected whitespace after '{:c}{}' command",
-      cmdChar,qPrint(saveCmdName));
-    return;
-  }
-  parser()->tokenizer.setStateRef();
-  tok=parser()->tokenizer.lex(); // get the reference id
-  if (!tok.is(TokenRetval::TK_WORD))
-  {
-    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"unexpected token {} as the argument of '{:c}{}'",
-        tok.to_string(),cmdChar,saveCmdName);
-    goto endref;
-  }
-  children().append<DocRef>(parser(),thisVariant(),
-                            parser()->context.token->name,
-                            parser()->context.context);
-  children().get_last<DocRef>()->parse();
-endref:
-  parser()->tokenizer.setStatePara();
-}
-
 void DocPara::handleInclude(const QCString &cmdName,DocInclude::Type t)
 {
   AUTO_TRACE("cmdName={}",cmdName);
@@ -4884,7 +4863,7 @@ Token DocPara::handleCommand(char cmdChar, const QCString &cmdName)
       break;
     case CommandType::CMD_REF: // fall through
     case CommandType::CMD_SUBPAGE:
-      handleRef(cmdChar,cmdName);
+      parser()->handleRef(thisVariant(),children(),cmdChar,cmdName);
       break;
     case CommandType::CMD_SECREFLIST:
       {
