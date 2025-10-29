@@ -938,6 +938,14 @@ void LatexDocVisitor::operator()(const DocSimpleSect &s)
       m_t << "\\begin{DoxyImportant}{";
       filter(theTranslator->trImportant());
       break;
+    case DocSimpleSect::Satisfies:
+      m_t << "\\begin{DoxyParagraph}{";
+      filter(theTranslator->trSatisfies());
+      break;
+    case DocSimpleSect::Verifies:
+      m_t << "\\begin{DoxyParagraph}{";
+      filter(theTranslator->trVerifies());
+      break;
     case DocSimpleSect::User:
       m_t << "\\begin{DoxyParagraph}{";
       break;

@@ -1428,9 +1428,9 @@ void HtmlDocVisitor::operator()(const DocSimpleSect &s)
     case DocSimpleSect::Important:
       m_t << theTranslator->trImportant(); break;
     case DocSimpleSect::Satisfies:
-      m_t << "Satisfies"; break;
+      m_t << theTranslator->trSatisfies(); break;
     case DocSimpleSect::Verifies:
-      m_t << "Verifies"; break;
+      m_t << theTranslator->trVerifies(); break;
     case DocSimpleSect::User: break;
     case DocSimpleSect::Rcs: break;
     case DocSimpleSect::Unknown:  break;

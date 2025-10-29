@@ -565,6 +565,10 @@ void ManDocVisitor::operator()(const DocSimpleSect &s)
       m_t << theTranslator->trAttention(); break;
     case DocSimpleSect::Important:
       m_t << theTranslator->trImportant(); break;
+    case DocSimpleSect::Satisfies:
+      m_t << theTranslator->trSatisfies(); break;
+    case DocSimpleSect::Verifies:
+      m_t << theTranslator->trVerifies(); break;
     case DocSimpleSect::User: break;
     case DocSimpleSect::Rcs: break;
     case DocSimpleSect::Unknown:  break;
