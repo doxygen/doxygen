@@ -1153,8 +1153,11 @@ void ClassDefImpl::internalInsertMember(MemberDef *md,
                   addMemberToList(MemberListType::PacAttribs(),md,TRUE);
                   break;
                 case Protection::Public:
-                  addMemberToList(MemberListType::PubAttribs(),md,TRUE);
-                  isSimple=TRUE;
+                  {
+                    addMemberToList(MemberListType::PubAttribs(),md,TRUE);
+                    const int MAX_CELL_SIZE=60;
+                    isSimple=md->typeString().length()+md->name().length()+md->argsString().length()<=MAX_CELL_SIZE;
+                  }
                   break;
                 case Protection::Private:
                   addMemberToList(MemberListType::PriAttribs(),md,TRUE);
