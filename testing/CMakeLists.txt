@@ -1,7 +1,7 @@
 # run all tests sequentially (keep for backward compatibility)
 add_custom_target(tests
   COMMENT "Running doxygen tests..."
-  COMMAND ${Python_EXECUTABLE} ${PROJECT_SOURCE_DIR}/testing/runtests.py --xmlxsd --doxygen ${PROJECT_BINARY_DIR}/bin/doxygen --inputdir ${PROJECT_SOURCE_DIR}/testing --outputdir ${PROJECT_BINARY_DIR}/testing
+  COMMAND ${Python_EXECUTABLE} ${TOP}/testing/runtests.py --xmlxsd --doxygen ${PROJECT_BINARY_DIR}/bin/doxygen --inputdir ${TOP}/testing --outputdir ${PROJECT_BINARY_DIR}/testing
   DEPENDS doxygen ${update_doxmlparser_dependency}
 )
 
@@ -15,6 +15,6 @@ foreach(TEST_FILE ${TEST_FILES})
   string(REGEX REPLACE "^.*/([0-9][0-9][0-9]*).*$" "\\1" TEST_ID "${TEST_FILE}")
   # add a test target for each test
   add_test(NAME ${TEST_NAME}
-    COMMAND ${Python_EXECUTABLE} ${PROJECT_SOURCE_DIR}/testing/runtests.py --id ${TEST_ID} --xmlxsd --doxygen $<TARGET_FILE:doxygen> --inputdir ${PROJECT_SOURCE_DIR}/testing --outputdir ${PROJECT_BINARY_DIR}/testing
+    COMMAND ${Python_EXECUTABLE} ${TOP}/testing/runtests.py --id ${TEST_ID} --xmlxsd --doxygen $<TARGET_FILE:doxygen> --inputdir ${TOP}/testing --outputdir ${PROJECT_BINARY_DIR}/testing
   )
 endforeach()
