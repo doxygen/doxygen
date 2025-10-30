@@ -37,7 +37,7 @@ endif()
 
 include_directories(
   .
-  ${PROJECT_SOURCE_DIR}/libversion
+  ${TOP}/libversion
   ${GENERATED_SRC}
 )
 
@@ -63,8 +63,8 @@ set_source_files_properties(${GENERATED_SRC_WIZARD}/settings.h PROPERTIES GENERA
 
 # generate configdoc.cpp
 add_custom_command(
-    COMMAND ${Python_EXECUTABLE} ${PROJECT_SOURCE_DIR}/src/configgen.py -wiz ${PROJECT_SOURCE_DIR}/src/config.xml > ${GENERATED_SRC_WIZARD}/configdoc.cpp
-    DEPENDS  ${PROJECT_SOURCE_DIR}/src/configgen.py ${PROJECT_SOURCE_DIR}/src/config.xml
+    COMMAND ${Python_EXECUTABLE} ${TOP}/src/configgen.py -wiz ${TOP}/src/config.xml > ${GENERATED_SRC_WIZARD}/configdoc.cpp
+    DEPENDS  ${TOP}/src/configgen.py ${TOP}/src/config.xml
     OUTPUT ${GENERATED_SRC_WIZARD}/configdoc.cpp
 )
 set_source_files_properties(${GENERATED_SRC_WIZARD}/configdoc.cpp PROPERTIES GENERATED 1)
@@ -79,15 +79,15 @@ endif()
 foreach(lex_file ${LEX_FILES})
     if (depfile_supported)
         add_custom_command(
-            COMMAND ${Python_EXECUTABLE} ${PROJECT_SOURCE_DIR}/src/pre_lex.py ${PROJECT_SOURCE_DIR}/addon/doxywizard/${lex_file}.l  ${GENERATED_SRC_WIZARD}/${lex_file}.l ${GENERATED_SRC_WIZARD}/${lex_file}.corr ${GENERATED_SRC_WIZARD}/${lex_file}.d ${PROJECT_SOURCE_DIR}/src
-            DEPENDS ${PROJECT_SOURCE_DIR}/src/pre_lex.py ${PROJECT_SOURCE_DIR}/addon/doxywizard/${lex_file}.l
+            COMMAND ${Python_EXECUTABLE} ${TOP}/src/pre_lex.py ${TOP}/addon/doxywizard/${lex_file}.l  ${GENERATED_SRC_WIZARD}/${lex_file}.l ${GENERATED_SRC_WIZARD}/${lex_file}.corr ${GENERATED_SRC_WIZARD}/${lex_file}.d ${TOP}/src
+            DEPENDS ${TOP}/src/pre_lex.py ${TOP}/addon/doxywizard/${lex_file}.l
             DEPFILE ${GENERATED_SRC_WIZARD}/${lex_file}.d
             OUTPUT  ${GENERATED_SRC_WIZARD}/${lex_file}.l ${GENERATED_SRC_WIZARD}/${lex_file}.corr ${GENERATED_SRC_WIZARD}/${lex_file}.d
         )
     else()
         add_custom_command(
-            COMMAND ${Python_EXECUTABLE} ${PROJECT_SOURCE_DIR}/src/pre_lex.py ${PROJECT_SOURCE_DIR}/addon/doxywizard/${lex_file}.l  ${GENERATED_SRC_WIZARD}/${lex_file}.l ${GENERATED_SRC_WIZARD}/${lex_file}.corr ${GENERATED_SRC_WIZARD}/${lex_file}.d ${PROJECT_SOURCE_DIR}/src
-            DEPENDS ${PROJECT_SOURCE_DIR}/src/pre_lex.py ${PROJECT_SOURCE_DIR}/addon/doxywizard/${lex_file}.l ${LEX_INC_FILES}
+            COMMAND ${Python_EXECUTABLE} ${TOP}/src/pre_lex.py ${TOP}/addon/doxywizard/${lex_file}.l  ${GENERATED_SRC_WIZARD}/${lex_file}.l ${GENERATED_SRC_WIZARD}/${lex_file}.corr ${GENERATED_SRC_WIZARD}/${lex_file}.d ${TOP}/src
+            DEPENDS ${TOP}/src/pre_lex.py ${TOP}/addon/doxywizard/${lex_file}.l ${LEX_INC_FILES}
             OUTPUT  ${GENERATED_SRC_WIZARD}/${lex_file}.l ${GENERATED_SRC_WIZARD}/${lex_file}.corr ${GENERATED_SRC_WIZARD}/${lex_file}.d
         )
     endif()
@@ -97,15 +97,15 @@ foreach(lex_file ${LEX_FILES})
 
     if (depfile_supported)
         add_custom_command(
-            COMMAND ${Python_EXECUTABLE} ${PROJECT_SOURCE_DIR}/src/pre_lex.py ${PROJECT_SOURCE_DIR}/addon/doxywizard/${lex_file}.l  ${GENERATED_SRC_WIZARD}/${lex_file}.l ${GENERATED_SRC_WIZARD}/${lex_file}.corr ${GENERATED_SRC_WIZARD}/${lex_file}.d ${PROJECT_SOURCE_DIR}/src
-            DEPENDS ${PROJECT_SOURCE_DIR}/src/pre_lex.py ${PROJECT_SOURCE_DIR}/addon/doxywizard/${lex_file}.l
+            COMMAND ${Python_EXECUTABLE} ${TOP}/src/pre_lex.py ${TOP}/addon/doxywizard/${lex_file}.l  ${GENERATED_SRC_WIZARD}/${lex_file}.l ${GENERATED_SRC_WIZARD}/${lex_file}.corr ${GENERATED_SRC_WIZARD}/${lex_file}.d ${TOP}/src
+            DEPENDS ${TOP}/src/pre_lex.py ${TOP}/addon/doxywizard/${lex_file}.l
             DEPFILE ${GENERATED_SRC_WIZARD}/${lex_file}.d
             OUTPUT  ${GENERATED_SRC_WIZARD}/${lex_file}.l ${GENERATED_SRC_WIZARD}/${lex_file}.corr ${GENERATED_SRC_WIZARD}/${lex_file}.d
         )
     else()
         add_custom_command(
-            COMMAND ${Python_EXECUTABLE} ${PROJECT_SOURCE_DIR}/src/pre_lex.py ${PROJECT_SOURCE_DIR}/addon/doxywizard/${lex_file}.l  ${GENERATED_SRC_WIZARD}/${lex_file}.l ${GENERATED_SRC_WIZARD}/${lex_file}.corr ${GENERATED_SRC_WIZARD}/${lex_file}.d ${PROJECT_SOURCE_DIR}/src
-	    DEPENDS ${PROJECT_SOURCE_DIR}/src/pre_lex.py ${PROJECT_SOURCE_DIR}/addon/doxywizard/${lex_file}.l ${LEX_INC_FILES}
+            COMMAND ${Python_EXECUTABLE} ${TOP}/src/pre_lex.py ${TOP}/addon/doxywizard/${lex_file}.l  ${GENERATED_SRC_WIZARD}/${lex_file}.l ${GENERATED_SRC_WIZARD}/${lex_file}.corr ${GENERATED_SRC_WIZARD}/${lex_file}.d ${TOP}/src
+	    DEPENDS ${TOP}/src/pre_lex.py ${TOP}/addon/doxywizard/${lex_file}.l ${LEX_INC_FILES}
             OUTPUT  ${GENERATED_SRC_WIZARD}/${lex_file}.l ${GENERATED_SRC_WIZARD}/${lex_file}.corr ${GENERATED_SRC_WIZARD}/${lex_file}.d
 	)
     endif()
@@ -114,8 +114,8 @@ foreach(lex_file ${LEX_FILES})
     set_source_files_properties(${GENERATED_SRC_WIZARD}/${lex_file}.d PROPERTIES GENERATED 1)
 
     add_custom_command(
-        COMMAND ${Python_EXECUTABLE} ${PROJECT_SOURCE_DIR}/src/scan_states.py ${GENERATED_SRC_WIZARD}/${lex_file}.l > ${GENERATED_SRC_WIZARD}/${lex_file}.l.h
-        DEPENDS ${PROJECT_SOURCE_DIR}/src/scan_states.py ${GENERATED_SRC_WIZARD}/${lex_file}.l
+        COMMAND ${Python_EXECUTABLE} ${TOP}/src/scan_states.py ${GENERATED_SRC_WIZARD}/${lex_file}.l > ${GENERATED_SRC_WIZARD}/${lex_file}.l.h
+        DEPENDS ${TOP}/src/scan_states.py ${GENERATED_SRC_WIZARD}/${lex_file}.l
         OUTPUT  ${GENERATED_SRC_WIZARD}/${lex_file}.l.h
     )
     set_source_files_properties(${GENERATED_SRC_WIZARD}/${lex_file}.l.h PROPERTIES GENERATED 1)
@@ -125,8 +125,8 @@ foreach(lex_file ${LEX_FILES})
                 ${GENERATED_SRC_WIZARD}/${lex_file}_intermediate.cpp
                 COMPILE_FLAGS "${LEX_FLAGS}")
     add_custom_command(
-        COMMAND ${Python_EXECUTABLE} ${PROJECT_SOURCE_DIR}/src/post_lex.py ${GENERATED_SRC_WIZARD}/${lex_file}_intermediate.cpp ${GENERATED_SRC_WIZARD}/${lex_file}.cpp  ${GENERATED_SRC_WIZARD}/${lex_file}.corr ${PROJECT_SOURCE_DIR}/addon/doxywizard/${lex_file}.l  ${GENERATED_SRC_WIZARD}/${lex_file}.l
-        DEPENDS ${PROJECT_SOURCE_DIR}/src/post_lex.py ${GENERATED_SRC_WIZARD}/${lex_file}_intermediate.cpp ${GENERATED_SRC_WIZARD}/${lex_file}.corr
+        COMMAND ${Python_EXECUTABLE} ${TOP}/src/post_lex.py ${GENERATED_SRC_WIZARD}/${lex_file}_intermediate.cpp ${GENERATED_SRC_WIZARD}/${lex_file}.cpp  ${GENERATED_SRC_WIZARD}/${lex_file}.corr ${TOP}/addon/doxywizard/${lex_file}.l  ${GENERATED_SRC_WIZARD}/${lex_file}.l
+        DEPENDS ${TOP}/src/post_lex.py ${GENERATED_SRC_WIZARD}/${lex_file}_intermediate.cpp ${GENERATED_SRC_WIZARD}/${lex_file}.corr
         OUTPUT  ${GENERATED_SRC_WIZARD}/${lex_file}.cpp
     )
 endforeach()
@@ -159,7 +159,7 @@ ${GENERATED_SRC_WIZARD}/config_doxyw.l.h
 ${GENERATED_SRC_WIZARD}/configdoc.cpp
 ${doxywizard_MOC}
 ${doxywizard_RESOURCES_RCC}
-${PROJECT_SOURCE_DIR}/templates/icon/doxygen.rc
+${TOP}/templates/icon/doxygen.rc
 )
 
 set_property(TARGET doxywizard PROPERTY WIN32_EXECUTABLE true)
