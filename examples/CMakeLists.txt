@@ -1,7 +1,7 @@
 file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/examples
                     ${PROJECT_BINARY_DIR}/html/examples
                     ${PROJECT_BINARY_DIR}/latex/examples)
-file(GLOB EXAMPLE_FILES RELATIVE ${PROJECT_SOURCE_DIR}/examples "*")
+file(GLOB EXAMPLE_FILES RELATIVE ${TOP}/examples "*")
 
 if (build_doc_chm)
   file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/chm/html/examples)
@@ -15,7 +15,7 @@ if (DOT)
 endif()
 
 foreach (f  ${EXAMPLE_FILES})
-  configure_file(${PROJECT_SOURCE_DIR}/examples/${f} ${PROJECT_BINARY_DIR}/examples/${f} COPYONLY)
+  configure_file(${TOP}/examples/${f} ${PROJECT_BINARY_DIR}/examples/${f} COPYONLY)
   set_source_files_properties("${PROJECT_BINARY_DIR}/examples/${f}" PROPERTIES GENERATED 1)
 endforeach()
 
@@ -61,9 +61,9 @@ set(BASIC_EXAMPLES
   EXAMPLE_manual  EXAMPLE_mux
 )
 
-configure_file(${PROJECT_SOURCE_DIR}/templates/icon/doxygen.ico ${PROJECT_BINARY_DIR}/examples/doxygen.ico COPYONLY)
-configure_file(${PROJECT_SOURCE_DIR}/doc/doxygen_manual.css ${PROJECT_BINARY_DIR}/examples/doxygen_manual.css COPYONLY)
-configure_file(${PROJECT_SOURCE_DIR}/doc/doxygen_manual_chm.css ${PROJECT_BINARY_DIR}/examples/doxygen_manual_chm.css COPYONLY)
+configure_file(${TOP}/templates/icon/doxygen.ico ${PROJECT_BINARY_DIR}/examples/doxygen.ico COPYONLY)
+configure_file(${TOP}/doc/doxygen_manual.css ${PROJECT_BINARY_DIR}/examples/doxygen_manual.css COPYONLY)
+configure_file(${TOP}/doc/doxygen_manual_chm.css ${PROJECT_BINARY_DIR}/examples/doxygen_manual_chm.css COPYONLY)
 
 foreach (f_inp  ${BASIC_EXAMPLES})
         list(LENGTH ${f_inp} f_len)
