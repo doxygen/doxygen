@@ -1,8 +1,8 @@
 find_package(Iconv)
 
 include_directories(
-	${PROJECT_SOURCE_DIR}/src
-	${PROJECT_SOURCE_DIR}/libversion
+        ${TOP}/src
+        ${TOP}/libversion
 	${GENERATED_SRC}
 	${Iconv_INCLUDE_DIRS}
 	${CLANG_INCLUDEDIR}
@@ -10,7 +10,7 @@ include_directories(
 
 add_executable(doxyapp
 doxyapp.cpp
-${PROJECT_SOURCE_DIR}/templates/icon/doxygen.rc
+${TOP}/templates/icon/doxygen.rc
 )
 include(ApplyEditbin)
 apply_editbin(doxyapp console)
