@@ -1,27 +1,27 @@
 # vim:ts=4:sw=4:expandtab:autoindent:
 
 include_directories(
-    ${PROJECT_SOURCE_DIR}/deps/TinyDeflate
-    ${PROJECT_SOURCE_DIR}/deps/filesystem
-    ${PROJECT_SOURCE_DIR}/deps/libmd5
-    ${PROJECT_SOURCE_DIR}/deps/liblodepng
-    ${PROJECT_SOURCE_DIR}/deps/libmscgen
-    ${PROJECT_SOURCE_DIR}/libversion
-    ${PROJECT_SOURCE_DIR}/libxml
-    ${PROJECT_SOURCE_DIR}/vhdlparser
-    ${PROJECT_SOURCE_DIR}/src
+    ${TOP}/deps/TinyDeflate
+    ${TOP}/deps/filesystem
+    ${TOP}/deps/libmd5
+    ${TOP}/deps/liblodepng
+    ${TOP}/deps/libmscgen
+    ${TOP}/libversion
+    ${TOP}/libxml
+    ${TOP}/vhdlparser
+    ${TOP}/src
     ${CLANG_INCLUDEDIR}
     ${GENERATED_SRC}
 )
 
 if (NOT use_sys_spdlog)
-    include_directories(${PROJECT_SOURCE_DIR}/deps/spdlog/include)
+    include_directories(${TOP}/deps/spdlog/include)
 endif()
 if (NOT use_sys_fmt)
-    include_directories(${PROJECT_SOURCE_DIR}/deps/fmt/include)
+    include_directories(${TOP}/deps/fmt/include)
 endif()
 if (NOT use_sys_sqlite3)
-    include_directories(${PROJECT_SOURCE_DIR}/deps/sqlite3)
+    include_directories(${TOP}/deps/sqlite3)
 endif()
 
 
@@ -74,12 +74,12 @@ set_source_files_properties(${GENERATED_SRC}/configoptions.cpp PROPERTIES GENERA
 
 
 # all resource files
-file(GLOB RESOURCES CONFIGURE_DEPENDS ${PROJECT_SOURCE_DIR}/templates/*/*)
+file(GLOB RESOURCES CONFIGURE_DEPENDS ${TOP}/templates/*/*)
 
 # resources.cpp
 add_custom_command(
     COMMENT  "Generating ${GENERATED_SRC}/resources.cpp"
-    COMMAND ${Python_EXECUTABLE} ${CMAKE_CURRENT_LIST_DIR}/res2cc_cmd.py ${PROJECT_SOURCE_DIR}/templates ${GENERATED_SRC}/resources.cpp
+    COMMAND ${Python_EXECUTABLE} ${CMAKE_CURRENT_LIST_DIR}/res2cc_cmd.py ${TOP}/templates ${GENERATED_SRC}/resources.cpp
     DEPENDS ${RESOURCES} ${CMAKE_CURRENT_LIST_DIR}/res2cc_cmd.py
     OUTPUT ${GENERATED_SRC}/resources.cpp
 )
@@ -186,8 +186,8 @@ BISON_TARGET(constexp
 
 if(enable_coverage)
     add_custom_command(
-        COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/src/constexp.y ${PROJECT_BINARY_DIR}/src
-        DEPENDS ${PROJECT_SOURCE_DIR}/src/constexp.y
+        COMMAND ${CMAKE_COMMAND} -E copy ${TOP}/src/constexp.y ${PROJECT_BINARY_DIR}/src
+        DEPENDS ${TOP}/src/constexp.y
         OUTPUT  ${PROJECT_BINARY_DIR}/src/constexp.y
     )
 endif()
@@ -339,7 +339,7 @@ endif()
 
 add_executable(doxygen
     main.cpp
-    ${PROJECT_SOURCE_DIR}/templates/icon/doxygen.rc
+    ${TOP}/templates/icon/doxygen.rc
 )
 
 # enable to monitor compilation times
