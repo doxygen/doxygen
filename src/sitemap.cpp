@@ -72,10 +72,10 @@ void Sitemap::finalize()
 void Sitemap::addIndexFile(const QCString & fileName)
 {
   QCString fn = fileName;
-  QCString sidemapUrl = Config_getString(SITEMAP_URL);
+  QCString sitemapUrl = Config_getString(SITEMAP_URL);
   addHtmlExtensionIfMissing(fn);
   p->doc << "  <url>\n";
-  p->doc << "    <loc>" << convertToXML(sidemapUrl + fn) << "</loc>\n";
+  p->doc << "    <loc>" << convertToXML(sitemapUrl + fn) << "</loc>\n";
   p->doc << "  </url>\n";
 }
 
