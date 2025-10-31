@@ -16,6 +16,8 @@
  */
 
 /*
+ * 31 Oct 2025 : Updated to "new since 1.16.0" by
+ *               Rob Mellor <rob@dropbearsoftware.com>
  * 15 Dec 2001 : Translation to greek by
  *               Harry Kalogirou <no email>
  *
@@ -50,7 +52,7 @@
 #ifndef TRANSLATOR_GR_H
 #define TRANSLATOR_GR_H
 
-class TranslatorGreek : public Translator
+class TranslatorGreek : public TranslatorAdapter_1_16_0
 {
   public:
 
