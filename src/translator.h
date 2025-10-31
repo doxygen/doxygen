@@ -768,16 +768,25 @@ class Translator
 //////////////////////////////////////////////////////////////////////////
 // new since 1.15.0
 //////////////////////////////////////////////////////////////////////////
+    /*! Used for the requirements traceability feature */
     virtual QCString trRequirements() = 0;
+    /*! Used for the traceability index page title */
     virtual QCString trTraceability() = 0;
     /** Returns the title for a traceability page for a specific requirement
      *  @param name The name/title of the requirement
      */
     virtual QCString trTraceabilityFor(const QCString &name) = 0;
+    /*! Used in traceability table header */
     virtual QCString trRequirementID() = 0;
+    /*! Used in requirements index page */
+    virtual QCString trExternalRequirementSpecifications() = 0;
+    /*! Used in traceability table header */
     virtual QCString trSatisfiedBy() = 0;
+    /*! Used in traceability table header */
     virtual QCString trVerifiedBy() = 0;
+    /*! Used in @satisfies/@verifies section documentation */
     virtual QCString trSatisfies() = 0;
+    /*! Used in @satisfies/@verifies section documentation */
     virtual QCString trVerifies() = 0;
     /** Returns the description text for the Requirements index page */
     virtual QCString trRequirementsDescription() = 0;

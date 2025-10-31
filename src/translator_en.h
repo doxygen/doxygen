@@ -2641,6 +2641,12 @@ class TranslatorEnglish : public Translator
       return "Requirement ID";
     }
 
+    /*! Used in requirements index page */
+    QCString trExternalRequirementSpecifications() override
+    {
+      return "External requirements specifications.";
+    }
+
     /*! Used in traceability table header */
     QCString trSatisfiedBy() override
     {
@@ -2653,13 +2659,13 @@ class TranslatorEnglish : public Translator
       return "Verified By";
     }
 
-    /*! Used in @satisfies/@verifies documentation */
+    /*! Used in @satisfies/@verifies section documentation */
     QCString trSatisfies() override
     {
       return "Satisfies";
     }
 
-    /*! Used in @satisfies/@verifies documentation */
+    /*! Used in @satisfies/@verifies section documentation */
     QCString trVerifies() override
     {
       return "Verifies";
