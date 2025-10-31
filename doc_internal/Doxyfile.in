@@ -326,7 +326,7 @@ EXTERNAL_PAGES         = YES
 # Configuration options related to the requirements traceability
 #---------------------------------------------------------------------------
 REQUIREMENTS_FILES     =
-REQUIREMNETS_TAGFILES  =
+REQUIREMENTS_TAGFILES  =
 #---------------------------------------------------------------------------
 # Configuration options related to diagram generator tools
 #---------------------------------------------------------------------------
