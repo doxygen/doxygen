@@ -3180,7 +3180,12 @@ int getPrefixIndex(const QCString &name)
     const char *ps=s.c_str();
     const char *pd=name.data();
     int i=0;
-    while (*ps!=0 && *pd!=0 && *ps==*pd) ps++,pd++,i++;
+    while (*ps!=0 && *pd!=0 && *ps==*pd)
+    {
+      ps++;
+      pd++;
+      i++;
+    }
     if (*ps==0 && *pd!=0)
     {
       return i;
@@ -4191,7 +4196,7 @@ int extractClassNameFromType(const QCString &type,int &pos,QCString &name,QCStri
       size_t te = ts;
       size_t tl = 0;
 
-      while (ts<typeLen && type[static_cast<uint32_t>(ts)]==' ') ts++,tl++; // skip any whitespace
+      while (ts<typeLen && type[static_cast<uint32_t>(ts)]==' ') { ts++; tl++; } // skip any whitespace
       if (ts<typeLen && type[static_cast<uint32_t>(ts)]=='<') // assume template instance
       {
         // locate end of template
@@ -4583,7 +4588,15 @@ int getScopeFragment(const QCString &s,int p,int *l)
   while (sp<sl)
   {
     char c=s.at(sp);
-    if (c==':') sp++,p++; else break;
+    if (c==':')
+    {
+      sp++;
+      p++;
+    }
+    else
+    {
+      break;
+    }
   }
   while (sp<sl)
   {
@@ -4960,9 +4973,9 @@ QCString stripLeadingAndTrailingEmptyLines(const QCString &s,int &docLine)
   char c = 0;
   while ((c=*p))
   {
-    if (c==' ' || c=='\t' || c=='\r') i++,p++;
-    else if (c=='\\' && literal_at(p,"\\ilinebr")) i+=8,li=i,p+=8;
-    else if (c=='\n') i++,li=i,docLine++,p++;
+    if (c==' ' || c=='\t' || c=='\r') { i++; p++; }
+    else if (c=='\\' && literal_at(p,"\\ilinebr")) { i+=8; li=i; p+=8; }
+    else if (c=='\n') { i++; li=i; docLine++; p++; }
     else break;
   }
 
@@ -4972,10 +4985,10 @@ QCString stripLeadingAndTrailingEmptyLines(const QCString &s,int &docLine)
   while (b>=0)
   {
     c=*p;
-    if (c==' ' || c=='\t' || c=='\r') b--,p--;
-    else if (c=='r' && b>=7 && literal_at(p-7,"\\ilinebr")) bi=b-7,b-=8,p-=8;
-    else if (c=='>' && b>=11 && literal_at(p-11,"\\ilinebr<br>")) bi=b-11,b-=12,p-=12;
-    else if (c=='\n') bi=b,b--,p--;
+    if (c==' ' || c=='\t' || c=='\r') { b--; p--; }
+    else if (c=='r' && b>=7 && literal_at(p-7,"\\ilinebr")) { bi=b-7; b-=8; p-=8; }
+    else if (c=='>' && b>=11 && literal_at(p-11,"\\ilinebr<br>")) { bi=b-11; b-=12; p-=12; }
+    else if (c=='\n') { bi=b; b--; p--; }
     else break;
   }
 
@@ -5900,9 +5913,9 @@ QCString stripIndentation(const QCString &s,bool skipFirstLine)
   bool skipFirst = skipFirstLine;
   while ((c=*p++))
   {
-    if      (c=='\t') indent+=tabSize - (indent%tabSize);
-    else if (c=='\n') indent=0,searchIndent=true,skipFirst=false;
-    else if (c==' ')  indent++;
+    if      (c=='\t') { indent+=tabSize - (indent%tabSize); }
+    else if (c=='\n') { indent=0; searchIndent=true; skipFirst=false; }
+    else if (c==' ')  { indent++; }
     else if (searchIndent && !skipFirst)
     {
       searchIndent=false;
@@ -6133,9 +6146,9 @@ QCString extractDirection(QCString &docs)
                               ),dir.end());
       unsigned char ioMask=0;
       size_t inIndex  = dir.find( "in");
-      if ( inIndex!=std::string::npos) dir.erase( inIndex,2),ioMask|=(1<<0);
+      if ( inIndex!=std::string::npos) { dir.erase( inIndex,2); ioMask|=(1<<0); }
       size_t outIndex = dir.find("out");
-      if (outIndex!=std::string::npos) dir.erase(outIndex,3),ioMask|=(1<<1);
+      if (outIndex!=std::string::npos) { dir.erase(outIndex,3); ioMask|=(1<<1); }
       if (dir.empty() && ioMask!=0) // only in and/or out attributes found
       {
         docs = s.substr(l); // strip attributes

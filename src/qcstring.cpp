@@ -273,44 +273,70 @@ long QCString::toLong(bool *ok,int base) const
   if ( !p )
     goto bye;
   while ( l && qisspace(*p) )			// skip leading space
-    l--,p++;
-  if ( l && *p == '-' ) {
+  {
+    l--;
+    p++;
+  }
+  if ( l && *p == '-' )
+  {
     l--;
     p++;
     neg = 1;
-  } else if ( *p == '+' ) {
+  } else if ( *p == '+' )
+  {
     l--;
     p++;
   }
 
   // NOTE: toULong() code is similar
   if ( !l || !ok_in_base(*p,base) )
+  {
     goto bye;
-  while ( l && ok_in_base(*p,base) ) {
+  }
+  while ( l && ok_in_base(*p,base) )
+  {
     l--;
     int dv = 0;
-    if ( *p>='0' && *p<='9' ) {
+    if ( *p>='0' && *p<='9' )
+    {
       dv = *p-'0';
-    } else {
+    }
+    else
+    {
       if ( *p >= 'a' && *p <= 'z' )
+      {
         dv = *p - 'a' + 10;
+      }
       else
+      {
         dv = *p - 'A' + 10;
+      }
     }
     if ( val > max_mult || (val == max_mult && dv > (INT_MAX%base)+neg) )
+    {
       goto bye;
+    }
     val = base*val + dv;
     p++;
   }
   if ( neg )
+  {
     val = -val;
+  }
   while ( l && qisspace(*p) )			// skip trailing space
-    l--,p++;
+  {
+    l--;
+    p++;
+  }
   if ( !l )
+  {
     is_ok = TRUE;
+  }
 bye:
   if ( ok )
+  {
     *ok = is_ok;
+  }
   return is_ok ? val : 0;
 }
 
@@ -322,39 +348,66 @@ unsigned long QCString::toULong(bool *ok,int base) const
   const unsigned long max_mult = 429496729;		// UINT_MAX/10, rounded down
   bool is_ok = FALSE;
   if ( !p )
+  {
     goto bye;
+  }
   while ( l && qisspace(*p) )			// skip leading space
-    l--,p++;
+  {
+    l--;
+    p++;
+  }
   if ( *p == '+' )
-    l--,p++;
+  {
+    l--;
+    p++;
+  }
 
   // NOTE: toLong() code is similar
   if ( !l || !ok_in_base(*p,base) )
+  {
     goto bye;
-  while ( l && ok_in_base(*p,base) ) {
+  }
+  while ( l && ok_in_base(*p,base) )
+  {
     l--;
     uint32_t dv = 0;
-    if ( *p>='0' && *p<='9' ) {
+    if ( *p>='0' && *p<='9' )
+    {
       dv = *p-'0';
-    } else {
+    }
+    else
+    {
       if ( *p >= 'a' && *p <= 'z' )
+      {
         dv = *p - 'a' + 10;
+      }
       else
+      {
         dv = *p - 'A' + 10;
+      }
     }
     if ( val > max_mult || (val == max_mult && dv > (UINT_MAX%base)) )
+    {
       goto bye;
+    }
     val = base*val + dv;
     p++;
   }
 
   while ( l && qisspace(*p) )			// skip trailing space
-    l--,p++;
+  {
+    l--;
+    p++;
+  }
   if ( !l )
+  {
     is_ok = TRUE;
+  }
 bye:
   if ( ok )
+  {
     *ok = is_ok;
+  }
   return is_ok ? val : 0;
 }
 
@@ -366,39 +419,66 @@ uint64_t QCString::toUInt64(bool *ok,int base) const
   const uint64_t max_mult = 1844674407370955161ULL;  // ULLONG_MAX/10, rounded down
   bool is_ok = FALSE;
   if ( !p )
+  {
     goto bye;
+  }
   while ( l && qisspace(*p) )		 	   // skip leading space
-    l--,p++;
+  {
+    l--;
+    p++;
+  }
   if ( *p == '+' )
-    l--,p++;
+  {
+    l--;
+    p++;
+  }
 
   // NOTE: toULong() code is similar
   if ( !l || !ok_in_base(*p,base) )
+  {
     goto bye;
-  while ( l && ok_in_base(*p,base) ) {
+  }
+  while ( l && ok_in_base(*p,base) )
+  {
     l--;
     uint32_t dv = 0;
-    if ( *p>='0' && *p<='9' ) {
+    if ( *p>='0' && *p<='9' )
+    {
       dv = *p-'0';
-    } else {
+    }
+    else
+    {
       if ( *p >= 'a' && *p <= 'z' )
+      {
         dv = *p - 'a' + 10;
+      }
       else
+      {
         dv = *p - 'A' + 10;
+      }
     }
     if ( val > max_mult || (val == max_mult && dv > (ULLONG_MAX%base)) )
+    {
       goto bye;
+    }
     val = base*val + dv;
     p++;
   }
 
   while ( l && qisspace(*p) )			// skip trailing space
-    l--,p++;
+  {
+    l--;
+    p++;
+  }
   if ( !l )
+  {
     is_ok = TRUE;
+  }
 bye:
   if ( ok )
+  {
     *ok = is_ok;
+  }
   return is_ok ? val : 0;
 }
 
@@ -406,41 +486,44 @@ bye:
 
 void *qmemmove( void *dst, const void *src, size_t len )
 {
-  if ( dst > src ) {
+  if ( dst > src )
+  {
     char *d = static_cast<char *>(dst) + len - 1;
     const char *s = static_cast<const char *>(src) + len - 1;
     while ( len-- )
+    {
       *d-- = *s--;
+    }
   }
-  else if ( dst < src ) {
+  else if ( dst < src )
+  {
     char *d = static_cast<char *>(dst);
     const char *s = static_cast<const char *>(src);
     while ( len-- )
+    {
       *d++ = *s++;
+    }
   }
   return dst;
 }
 
 char *qstrdup( const char *str )
 {
-  if ( !str )
-    return nullptr;
+  if ( !str ) return nullptr;
   char *dst = new char[qstrlen(str)+1];
   return strcpy( dst, str );
 }
 
 void qstrfree( const char *str )
 {
-  delete[](str);
+  delete [](str);
 }
 
 char *qstrncpy( char *dst, const char *src, size_t len )
 {
-  if ( !src )
-    return nullptr;
+  if ( !src ) return nullptr;
   strncpy( dst, src, len );
-  if ( len > 0 )
-    dst[len-1] = '\0';
+  if ( len > 0 ) dst[len-1] = '\0';
   return dst;
 }
 
@@ -455,7 +538,9 @@ int qstricmp( const char *s1, const char *s2 )
   for ( ; !(res = ((c=toLowerChar(*s1)) - toLowerChar(*s2))); s1++, s2++ )
   {
     if ( !c ) // strings are equal
+    {
       break;
+    }
   }
   return res;
 }
@@ -471,9 +556,13 @@ int qstrnicmp( const char *s1, const char *s2, size_t len )
     char c = toLowerChar(*s1);
     int res = c-toLowerChar(*s2);
     if ( res!=0 ) // strings are not equal
+    {
       return res;
+    }
     if ( c==0 ) // strings are equal
+    {
       break;
+    }
   }
   return 0;
 }

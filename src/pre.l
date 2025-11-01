@@ -2590,8 +2590,15 @@ static inline void addTillEndOfString(yyscan_t yyscanner,const QCString &expr,QC
   int cc;
   while ((cc=getNextChar(yyscanner,expr,rest,pos))!=EOF && cc!=0)
   {
-    if (cc=='\\') arg+=(char)cc,cc=getNextChar(yyscanner,expr,rest,pos);
-    else if (cc==term) return;
+    if (cc=='\\')
+    {
+      arg+=(char)cc;
+      cc=getNextChar(yyscanner,expr,rest,pos);
+    }
+    else if (cc==term)
+    {
+      return;
+    }
     arg+=(char)cc;
   }
 }
@@ -3379,13 +3386,22 @@ static QCString removeMarkers(const QCString &s)
               while (*p && !(pc=='*' && c=='/')) // search end of comment
               {
                 if (*p=='@' && *(p+1)=='@')
-                  result+=c,p++;
-                else
+                {
                   result+=c;
+                  p++;
+                }
+                else
+                {
+                  result+=c;
+                }
                 pc=c;
                 c=*++p;
               }
-              if (*p) result+=c,p++;
+              if (*p)
+              {
+                result+=c;
+                p++;
+              }
             }
           }
           break;

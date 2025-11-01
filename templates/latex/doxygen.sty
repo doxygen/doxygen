@@ -406,7 +406,7 @@
 \def\hascaption{#2}%
 \def\haslabel{#3}%
 \ifx\hascaption\empty% if caption is empty
-  \SetTblrOuter[longtblr]{theme=DoxyTableBareTheme}% table without caption or label
+  \SetTblrOuter[longtblr]{theme=DoxyTableBareTheme,entry=none}% table without caption or label
 \else% caption not empty
   \ifx\haslabel\empty% if label is empty
     \SetTblrOuter[longtblr]{theme=DoxyTableCaptionTheme,caption={#2}}% set table caption
@@ -461,7 +461,7 @@
 % #3: Title of the table e.g. Params, Enumerator
 % #4: Body
 \NewDocumentCommand{\DoxyParamTable}{m m +m +m}{%
-  \SetTblrOuter[longtblr]{theme=DoxyTableBareTheme}% set table caption and label
+  \SetTblrOuter[longtblr]{theme=DoxyTableBareTheme,entry=none}% set table caption and label
   \sbox0{% render table off-screen first to capture its width in \wd0
     \begin{tblr}{measure=vbox,colspec={*{#1}{|l}|}}%
     \SetCell[c=#1]{l} \tf{#3} \\[1ex]%

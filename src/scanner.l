@@ -2269,8 +2269,8 @@ NONLopt [^\n]*
                                           yyextra->delimiter = &yytext[1];
                                           BEGIN(HereDocEnd);
                                         }
-<HereDocEnd>^{ID}                       { // id at start of the line could mark the end of the block
-                                          if (yyextra->delimiter==yytext) // it is the end marker
+<HereDocEnd>^{Bopt}{ID}                 { // id at start of the line could mark the end of the block
+                                          if (yyextra->delimiter==QCString(yytext).stripWhiteSpace()) // it is the end marker
                                           {
                                             BEGIN(yyextra->lastHereDocContext);
                                           }
@@ -5143,7 +5143,7 @@ NONLopt [^\n]*
                                           if (yyextra->insidePHP)
                                           {
                                             yyextra->lastCopyArgStringContext=YY_START;
-                                            BEGIN(SkipPHPString);
+                                            BEGIN(CopyArgPHPString);
                                           }
                                         }
 <ReadFuncArgType,ReadTempArgs,CopyArgString,CopyArgPHPString,CopyArgRound,CopyArgSquare,CopyArgSharp>"<="|">="|"<=>" {
@@ -7678,7 +7678,9 @@ static void lineCount(yyscan_t yyscanner)
   {
     if (*p=='\n')
     {
-      yyextra->yyLineNr++,yyextra->column=0,yyextra->yyColNr=1;
+      yyextra->yyLineNr++;
+      yyextra->column=0;
+      yyextra->yyColNr=1;
     }
     else if (*p=='\t')
     {
@@ -7686,7 +7688,8 @@ static void lineCount(yyscan_t yyscanner)
     }
     else
     {
-      yyextra->column++,yyextra->yyColNr++;
+      yyextra->column++;
+      yyextra->yyColNr++;
     }
   }
   //printf("lineCount()=%d\n",yyextra->column);
