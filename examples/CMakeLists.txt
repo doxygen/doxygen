@@ -83,8 +83,8 @@ foreach (f_inp  ${BASIC_EXAMPLES})
         COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_BINARY_DIR}/html/examples/${f}
         COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_BINARY_DIR}/latex/examples/${f}
         COMMAND ${CMAKE_COMMAND} -E env PROJECT_BINARY_DIR=${PROJECT_BINARY_DIR} EXTRA_SETTINGS=docuexample.cfg ${EXECUTABLE_OUTPUT_PATH}/doxygen ${f}.cfg
-        COMMAND ${Python_EXECUTABLE}  ${TOP}/examples/strip_example.py  < ${PROJECT_BINARY_DIR}/latex/examples/${f}/latex/refman.tex > ${PROJECT_BINARY_DIR}/latex/examples/${f}/latex/refman_doc.tex
-        DEPENDS doxygen ${f}.${f_ext} ${f}.cfg ${TOP}/examples/strip_example.py ${f_dep} baseexample.cfg docuexample.cfg
+        COMMAND ${Python_EXECUTABLE}  ${PROJECT_SOURCE_DIR}/examples/strip_example.py  < ${PROJECT_BINARY_DIR}/latex/examples/${f}/latex/refman.tex > ${PROJECT_BINARY_DIR}/latex/examples/${f}/latex/refman_doc.tex
+        DEPENDS doxygen ${f}.${f_ext} ${f}.cfg ${PROJECT_SOURCE_DIR}/examples/strip_example.py ${f_dep} baseexample.cfg docuexample.cfg
         OUTPUT ${PROJECT_BINARY_DIR}/html/examples/${f}/html/index.html ${PROJECT_BINARY_DIR}/latex/examples/${f}/latex/refman_doc.tex
         WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/examples
     )
@@ -123,8 +123,8 @@ if (DOT)
         COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_BINARY_DIR}/html/examples/diagrams
         COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_BINARY_DIR}/latex/examples/diagrams
         COMMAND ${CMAKE_COMMAND} -E env PROJECT_BINARY_DIR=${PROJECT_BINARY_DIR} EXTRA_SETTINGS=docuexample.cfg ${EXECUTABLE_OUTPUT_PATH}/doxygen diagrams.cfg
-        COMMAND ${Python_EXECUTABLE}  ${TOP}/examples/strip_example.py  < ${PROJECT_BINARY_DIR}/latex/examples/diagrams/latex/refman.tex > ${PROJECT_BINARY_DIR}/latex/examples/diagrams/latex/refman_doc.tex
-        DEPENDS doxygen diagrams_a.h diagrams_b.h diagrams_c.h diagrams_d.h diagrams_e.h diagrams.cfg ${TOP}/examples/strip_example.py baseexample.cfg docuexample.cfg
+        COMMAND ${Python_EXECUTABLE}  ${PROJECT_SOURCE_DIR}/examples/strip_example.py  < ${PROJECT_BINARY_DIR}/latex/examples/diagrams/latex/refman.tex > ${PROJECT_BINARY_DIR}/latex/examples/diagrams/latex/refman_doc.tex
+        DEPENDS doxygen diagrams_a.h diagrams_b.h diagrams_c.h diagrams_d.h diagrams_e.h diagrams.cfg ${PROJECT_SOURCE_DIR}/examples/strip_example.py baseexample.cfg docuexample.cfg
         OUTPUT ${PROJECT_BINARY_DIR}/html/examples/diagrams/html/index.html ${PROJECT_BINARY_DIR}/latex/examples/diagrams/latex/refman_doc.tex
         WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/examples
   )

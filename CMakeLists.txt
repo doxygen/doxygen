@@ -60,7 +60,6 @@ endif()
 
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/Sanitizers")
-set(TOP "${PROJECT_SOURCE_DIR}")
 include(version)
 
 message(STATUS "Using Cmake version ${CMAKE_VERSION}")
