@@ -1203,13 +1203,13 @@ void DocParser::handleRef(DocNodeVariant *parent, DocNodeList &children, char cm
 {
   AUTO_TRACE("cmdName={}",cmdName);
   QCString saveCmdName = cmdName;
-  int saveState = tokenizer.getState();
+  tokenizer.pushState();
   Token tok=tokenizer.lex();
   if (!tok.is(TokenRetval::TK_WHITESPACE))
   {
     warn_doc_error(context.fileName,tokenizer.getLineNr(),"expected whitespace after '{:c}{}' command",
       cmdChar,qPrint(saveCmdName));
-    return;
+    goto endref;
   }
   tokenizer.setStateRef();
   tok=tokenizer.lex(); // get the reference id
@@ -1224,7 +1224,7 @@ void DocParser::handleRef(DocNodeVariant *parent, DocNodeList &children, char cm
                             context.context);
   children.get_last<DocRef>()->parse();
 endref:
-  tokenizer.setState(saveState);
+  tokenizer.popState();
 }
 
 

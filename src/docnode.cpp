@@ -1436,11 +1436,11 @@ void DocHtmlSummary::parse()
     {
       break;
     }
-    else if (((tok.value()==TokenRetval::TK_COMMAND_AT) || (tok.value()==TokenRetval::TK_COMMAND_BS)) &&
+    else if (tok.is_any_of(TokenRetval::TK_COMMAND_AT, TokenRetval::TK_COMMAND_BS) &&
              (Mappers::cmdMapper->map(parser()->context.token->name)== CommandType::CMD_REF))
     {
       parser()->handleRef(thisVariant(),children(),
-                          tok.value()==TokenRetval::TK_COMMAND_AT ? '@' : '\\',parser()->context.token->name);
+                          tok.command_to_char(),parser()->context.token->name);
     }
     else if (!parser()->defaultHandleToken(thisVariant(),tok,children()))
     {
@@ -1976,7 +1976,7 @@ static Token skipSpacesForTable(DocParser *parser)
         break;
       }
     }
-    else if (tok.is(TokenRetval::TK_COMMAND_AT) || tok.is(TokenRetval::TK_COMMAND_BS))
+    else if (tok.is_any_of(TokenRetval::TK_COMMAND_AT, TokenRetval::TK_COMMAND_BS))
     {
       QCString cmdName=parser->context.token->name;
       AUTO_TRACE_ADD("command={}",cmdName);

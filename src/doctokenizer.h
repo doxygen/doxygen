@@ -194,9 +194,6 @@ class DocTokenizer
     void pushState();
     void popState();
 
-    int  getState();
-    void setState(int newState);
-
     // operations on the scanner
     void findSections(const QCString &input,const Definition *d,
         const QCString &fileName);
