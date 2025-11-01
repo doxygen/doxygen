@@ -17,10 +17,10 @@ string(TIMESTAMP YEAR "%Y")
 
 # Always install man pages
 file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/man)
-configure_file(${TOP}/doc/doxygen.1          ${PROJECT_BINARY_DIR}/man/doxygen.1)
-configure_file(${TOP}/doc/doxywizard.1       ${PROJECT_BINARY_DIR}/man/doxywizard.1)
-configure_file(${TOP}/doc/doxysearch.1       ${PROJECT_BINARY_DIR}/man/doxysearch.1)
-configure_file(${TOP}/doc/doxyindexer.1      ${PROJECT_BINARY_DIR}/man/doxyindexer.1)
+configure_file(${PROJECT_SOURCE_DIR}/doc/doxygen.1          ${PROJECT_BINARY_DIR}/man/doxygen.1)
+configure_file(${PROJECT_SOURCE_DIR}/doc/doxywizard.1       ${PROJECT_BINARY_DIR}/man/doxywizard.1)
+configure_file(${PROJECT_SOURCE_DIR}/doc/doxysearch.1       ${PROJECT_BINARY_DIR}/man/doxysearch.1)
+configure_file(${PROJECT_SOURCE_DIR}/doc/doxyindexer.1      ${PROJECT_BINARY_DIR}/man/doxyindexer.1)
 
 
 include(GNUInstallDirs)
@@ -163,8 +163,8 @@ file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/src
 
 foreach (f  ${DOC_FILES})
 add_custom_command(OUTPUT ${PROJECT_BINARY_DIR}/doc/${f}
-    COMMAND ${CMAKE_COMMAND} -E copy ${TOP}/doc/${f} ${PROJECT_BINARY_DIR}/doc/
-    DEPENDS ${TOP}/doc/${f}
+    COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/doc/${f} ${PROJECT_BINARY_DIR}/doc/
+    DEPENDS ${PROJECT_SOURCE_DIR}/doc/${f}
     )
 set_source_files_properties(${PROJECT_BINARY_DIR}/doc/${f} PROPERTIES GENERATED 1)
 list(APPEND OUT_DOC_FILES "${PROJECT_BINARY_DIR}/doc/${f}")
@@ -172,8 +172,8 @@ endforeach()
 
 foreach (f  ${DOC_FILES_IMAGES})
 add_custom_command(OUTPUT ${PROJECT_BINARY_DIR}/doc/images/${f}
-    COMMAND ${CMAKE_COMMAND} -E copy ${TOP}/addon/doxywizard/images/${f} ${PROJECT_BINARY_DIR}/doc/images/
-    DEPENDS ${TOP}/addon/doxywizard/images/${f}
+    COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/addon/doxywizard/images/${f} ${PROJECT_BINARY_DIR}/doc/images/
+    DEPENDS ${PROJECT_SOURCE_DIR}/addon/doxywizard/images/${f}
     )
 set_source_files_properties(${PROJECT_BINARY_DIR}/doc/images/${f} PROPERTIES GENERATED 1)
 list(APPEND OUT_DOC_FILES "${PROJECT_BINARY_DIR}/doc/images/${f}")
@@ -181,27 +181,27 @@ endforeach()
 
 foreach (f  ${DOC_FILES_CHM})
 add_custom_command(OUTPUT ${PROJECT_BINARY_DIR}/doc/${f}
-    COMMAND ${CMAKE_COMMAND} -E copy ${TOP}/doc/${f} ${PROJECT_BINARY_DIR}/doc/
-    DEPENDS ${TOP}/doc/${f}
+    COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/doc/${f} ${PROJECT_BINARY_DIR}/doc/
+    DEPENDS ${PROJECT_SOURCE_DIR}/doc/${f}
     )
 set_source_files_properties(${PROJECT_BINARY_DIR}/doc/${f} PROPERTIES GENERATED 1)
 list(APPEND OUT_DOC_CHM_FILES "${PROJECT_BINARY_DIR}/doc/${f}")
 endforeach()
 
-configure_file(${TOP}/doc/manual.sty         ${PROJECT_BINARY_DIR}/doc/manual.sty COPYONLY)
-configure_file(${TOP}/doc/doxygen_manual.tex ${PROJECT_BINARY_DIR}/doc/doxygen_manual.tex COPYONLY)
-configure_file(${TOP}/templates/icon/doxygen.ico ${PROJECT_BINARY_DIR}/doc/doxygen.ico COPYONLY)
+configure_file(${PROJECT_SOURCE_DIR}/doc/manual.sty         ${PROJECT_BINARY_DIR}/doc/manual.sty COPYONLY)
+configure_file(${PROJECT_SOURCE_DIR}/doc/doxygen_manual.tex ${PROJECT_BINARY_DIR}/doc/doxygen_manual.tex COPYONLY)
+configure_file(${PROJECT_SOURCE_DIR}/templates/icon/doxygen.ico ${PROJECT_BINARY_DIR}/doc/doxygen.ico COPYONLY)
 
 # Call the main page "Introduction" in LaTeX, which is more appropriate for that format.
 set(MAINPAGE_TITLE Doxygen)
-configure_file(${TOP}/doc/index.dox          ${PROJECT_BINARY_DIR}/doc/index_html.dox)
+configure_file(${PROJECT_SOURCE_DIR}/doc/index.dox          ${PROJECT_BINARY_DIR}/doc/index_html.dox)
 set(MAINPAGE_TITLE Introduction)
-configure_file(${TOP}/doc/index.dox          ${PROJECT_BINARY_DIR}/doc/index_latex.dox)
+configure_file(${PROJECT_SOURCE_DIR}/doc/index.dox          ${PROJECT_BINARY_DIR}/doc/index_latex.dox)
 
 # doc/language.dox (see tag Doxyfile:INPUT)
 add_custom_command(
-        COMMAND ${Python_EXECUTABLE} translator.py --doc ${TOP}
-        DEPENDS ${TOP}/VERSION ${TOP}/doc/maintainers.txt ${TOP}/doc/language.tpl ${PROJECT_BINARY_DIR}/doc/translator.py ${LANG_FILES}
+        COMMAND ${Python_EXECUTABLE} translator.py --doc ${PROJECT_SOURCE_DIR}
+        DEPENDS ${PROJECT_SOURCE_DIR}/VERSION ${PROJECT_SOURCE_DIR}/doc/maintainers.txt ${PROJECT_SOURCE_DIR}/doc/language.tpl ${PROJECT_BINARY_DIR}/doc/translator.py ${LANG_FILES}
         OUTPUT language.dox
         WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/doc
 )
@@ -231,16 +231,16 @@ add_custom_target(doxygen_pdf
         COMMENT "Generating Doxygen Manual PDF."
         COMMAND ${CMAKE_COMMAND} -E remove refman.tex
         COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_BINARY_DIR}/doc/manual.sty  .
-        COMMAND ${CMAKE_COMMAND} -E copy ${TOP}/doc/doxygen_logo.pdf  .
-        COMMAND ${CMAKE_COMMAND} -E chdir ${PROJECT_BINARY_DIR}/latex ${Python_EXECUTABLE} ${TOP}/doc/replace_version.py "${PROJECT_BINARY_DIR}/doc/doxygen_manual.tex" "${PROJECT_BINARY_DIR}/latex/doxygen_manual.tex" "${VERSION}"
-        COMMAND ${CMAKE_COMMAND} -E chdir ${PROJECT_BINARY_DIR}/latex ${Python_EXECUTABLE} ${TOP}/doc/replace_version.py "${PROJECT_BINARY_DIR}/doc/manual.sty" "${PROJECT_BINARY_DIR}/latex/manual.sty" "${VERSION}"
+        COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/doc/doxygen_logo.pdf  .
+        COMMAND ${CMAKE_COMMAND} -E chdir ${PROJECT_BINARY_DIR}/latex ${Python_EXECUTABLE} ${PROJECT_SOURCE_DIR}/doc/replace_version.py "${PROJECT_BINARY_DIR}/doc/doxygen_manual.tex" "${PROJECT_BINARY_DIR}/latex/doxygen_manual.tex" "${VERSION}"
+        COMMAND ${CMAKE_COMMAND} -E chdir ${PROJECT_BINARY_DIR}/latex ${Python_EXECUTABLE} ${PROJECT_SOURCE_DIR}/doc/replace_version.py "${PROJECT_BINARY_DIR}/doc/manual.sty" "${PROJECT_BINARY_DIR}/latex/manual.sty" "${VERSION}"
         COMMAND ${PDFLATEX}  -shell-escape doxygen_manual.tex || (${CMAKE_COMMAND} -E echo "See ${PROJECT_BINARY_DIR}/latex/doxygen_manual.log for error messages" && ${CMAKE_COMMAND} -E false)
         COMMAND ${MAKEINDEX} doxygen_manual.idx
         COMMAND ${PDFLATEX}  -shell-escape doxygen_manual.tex || (${CMAKE_COMMAND} -E echo "See ${PROJECT_BINARY_DIR}/latex/doxygen_manual.log for error messages" && ${CMAKE_COMMAND} -E false)
         COMMAND ${MAKEINDEX} doxygen_manual.idx
         COMMAND ${PDFLATEX}  -shell-escape doxygen_manual.tex || (${CMAKE_COMMAND} -E echo "See ${PROJECT_BINARY_DIR}/latex/doxygen_manual.log for error messages" && ${CMAKE_COMMAND} -E false)
-        DEPENDS ${PROJECT_BINARY_DIR}/doc/manual.sty ${TOP}/doc/doxygen_logo.pdf
-        DEPENDS run_doxygen ${TOP}/doc/replace_version.py ${PROJECT_BINARY_DIR}/doc/doxygen_manual.tex
+        DEPENDS ${PROJECT_BINARY_DIR}/doc/manual.sty ${PROJECT_SOURCE_DIR}/doc/doxygen_logo.pdf
+        DEPENDS run_doxygen ${PROJECT_SOURCE_DIR}/doc/replace_version.py ${PROJECT_BINARY_DIR}/doc/doxygen_manual.tex
         WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/latex
 )
 add_custom_target(docs

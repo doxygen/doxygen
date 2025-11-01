@@ -31,8 +31,8 @@ file(GLOB LANG_FILES CONFIGURE_DEPENDS "${TOP}/src//translator_??.h")
 
 foreach (f  ${DOC_FILES})
 add_custom_command(OUTPUT ${PROJECT_BINARY_DIR}/doc_internal/${f}
-    COMMAND ${CMAKE_COMMAND} -E copy ${TOP}/doc/${f} ${PROJECT_BINARY_DIR}/doc_internal/
-    DEPENDS ${TOP}/doc/${f}
+    COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/doc/${f} ${PROJECT_BINARY_DIR}/doc_internal/
+    DEPENDS ${PROJECT_SOURCE_DIR}/doc/${f}
     )
 set_source_files_properties(${PROJECT_BINARY_DIR}/doc_internal/${f} PROPERTIES GENERATED 1)
 endforeach()
@@ -50,8 +50,8 @@ add_custom_command(
 )
 
 add_custom_command(
-        COMMAND ${Python_EXECUTABLE} translator.py --doc_internal ${TOP}
-        DEPENDS ${TOP}/VERSION ${TOP}/doc/maintainers.txt ${TOP}/doc/language.tpl ${PROJECT_BINARY_DIR}/doc_internal/translator.py ${LANG_FILES}
+        COMMAND ${Python_EXECUTABLE} translator.py --doc_internal ${PROJECT_SOURCE_DIR}
+        DEPENDS ${PROJECT_SOURCE_DIR}/VERSION ${PROJECT_SOURCE_DIR}/doc/maintainers.txt ${PROJECT_SOURCE_DIR}/doc/language.tpl ${PROJECT_BINARY_DIR}/doc_internal/translator.py ${LANG_FILES}
         OUTPUT translator_report.md
         WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/doc_internal
 )

@@ -1,14 +1,14 @@
 include_directories(
-    ${TOP}/deps/liblodepng
-    ${TOP}/deps/libmscgen
+    ${PROJECT_SOURCE_DIR}/deps/liblodepng
+    ${PROJECT_SOURCE_DIR}/deps/libmscgen
     ${GENERATED_SRC}
 )
 
 set(LEX_FILES mscgen_lexer) 
 foreach(lex_file ${LEX_FILES})
     add_custom_command(
-        COMMAND ${Python_EXECUTABLE} ${TOP}/src/scan_states.py ${TOP}/deps/libmscgen/${lex_file}.l > ${GENERATED_SRC}/${lex_file}.l.h
-        DEPENDS ${TOP}/src/scan_states.py ${TOP}/deps/libmscgen/${lex_file}.l
+        COMMAND ${Python_EXECUTABLE} ${PROJECT_SOURCE_DIR}/src/scan_states.py ${PROJECT_SOURCE_DIR}/deps/libmscgen/${lex_file}.l > ${GENERATED_SRC}/${lex_file}.l.h
+        DEPENDS ${PROJECT_SOURCE_DIR}/src/scan_states.py ${PROJECT_SOURCE_DIR}/deps/libmscgen/${lex_file}.l
         OUTPUT  ${GENERATED_SRC}/${lex_file}.l.h
     )
     set_source_files_properties(${GENERATED_SRC}/${lex_file}.l.h PROPERTIES GENERATED 1)

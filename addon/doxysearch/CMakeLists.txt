@@ -12,14 +12,14 @@ elseif(static_libxapian)
 endif()
 
 include_directories(
-        ${TOP}/libversion
-        ${TOP}/libxml
+        ${PROJECT_SOURCE_DIR}/libversion
+        ${PROJECT_SOURCE_DIR}/libxml
         ${XAPIAN_INCLUDE_DIR}
         ${ZLIB_INCLUDE_DIRS}
 )
 add_executable(doxyindexer
                doxyindexer.cpp
-               ${TOP}/templates/icon/doxygen.rc
+               ${PROJECT_SOURCE_DIR}/templates/icon/doxygen.rc
 )
 
 target_link_libraries(doxyindexer
@@ -34,7 +34,7 @@ target_link_libraries(doxyindexer
 
 add_executable(doxysearch.cgi
                doxysearch.cpp
-               ${TOP}/templates/icon/doxygen.rc
+               ${PROJECT_SOURCE_DIR}/templates/icon/doxygen.rc
 )
 
 target_link_libraries(doxysearch.cgi

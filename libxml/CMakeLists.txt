@@ -1,10 +1,10 @@
 include_directories(
-    ${TOP}/libxml
+    ${PROJECT_SOURCE_DIR}/libxml
 )
 
 add_custom_command(
-    COMMAND ${Python_EXECUTABLE} ${TOP}/src/scan_states.py ${TOP}/libxml/xml.l > ${GENERATED_SRC}/xml.l.h
-    DEPENDS ${TOP}/src/scan_states.py ${TOP}/libxml/xml.l
+    COMMAND ${Python_EXECUTABLE} ${PROJECT_SOURCE_DIR}/src/scan_states.py ${PROJECT_SOURCE_DIR}/libxml/xml.l > ${GENERATED_SRC}/xml.l.h
+    DEPENDS ${PROJECT_SOURCE_DIR}/src/scan_states.py ${PROJECT_SOURCE_DIR}/libxml/xml.l
     OUTPUT  ${GENERATED_SRC}/xml.l.h
 )
 set_source_files_properties(${GENERATED_SRC}/xml.l.h PROPERTIES GENERATED 1)

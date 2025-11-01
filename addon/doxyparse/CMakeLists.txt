@@ -1,8 +1,8 @@
 find_package(Iconv)
 
 include_directories(
-        ${TOP}/src
-        ${TOP}/libversion
+	${PROJECT_SOURCE_DIR}/src
+	${PROJECT_SOURCE_DIR}/libversion
 	${GENERATED_SRC}
 	${Iconv_INCLUDE_DIRS}
 	${CLANG_INCLUDEDIR}
@@ -10,7 +10,7 @@ include_directories(
 
 add_executable(doxyparse
 doxyparse.cpp
-${TOP}/templates/icon/doxygen.rc
+${PROJECT_SOURCE_DIR}/templates/icon/doxygen.rc
 )
 
 include(ApplyEditbin)

@@ -20,30 +20,30 @@ if (JAVACC_FOUND)
 	message(STATUS "  Fall back to JavaCC not installed, using existing files.")
     else()
         add_custom_command(
-	    COMMAND ${JAVACC_EXECUTABLE} ${JAVACC_FLAGS} -OUTPUT_DIRECTORY=${TOP}/vhdlparser ${TOP}/vhdlparser/vhdlparser.jj
-            DEPENDS ${TOP}/vhdlparser/vhdlparser.jj
-            OUTPUT ${TOP}/vhdlparser/CharStream.cc ${TOP}/vhdlparser/CharStream.h ${TOP}/vhdlparser/ErrorHandler.h ${TOP}/vhdlparser/ParseException.cc ${TOP}/vhdlparser/ParseException.h ${TOP}/vhdlparser/Token.cc ${TOP}/vhdlparser/Token.h ${TOP}/vhdlparser/TokenManager.h ${TOP}/vhdlparser/TokenMgrError.cc ${TOP}/vhdlparser/TokenMgrError.h ${TOP}/vhdlparser/VhdlParser.cc ${TOP}/vhdlparser/VhdlParser.h ${TOP}/vhdlparser/VhdlParserConstants.h ${TOP}/vhdlparser/VhdlParserTokenManager.cc ${TOP}/vhdlparser/VhdlParserTokenManager.h
+	    COMMAND ${JAVACC_EXECUTABLE} ${JAVACC_FLAGS} -OUTPUT_DIRECTORY=${PROJECT_SOURCE_DIR}/vhdlparser ${PROJECT_SOURCE_DIR}/vhdlparser/vhdlparser.jj
+            DEPENDS ${PROJECT_SOURCE_DIR}/vhdlparser/vhdlparser.jj
+            OUTPUT ${PROJECT_SOURCE_DIR}/vhdlparser/CharStream.cc ${PROJECT_SOURCE_DIR}/vhdlparser/CharStream.h ${PROJECT_SOURCE_DIR}/vhdlparser/ErrorHandler.h ${PROJECT_SOURCE_DIR}/vhdlparser/ParseException.cc ${PROJECT_SOURCE_DIR}/vhdlparser/ParseException.h ${PROJECT_SOURCE_DIR}/vhdlparser/Token.cc ${PROJECT_SOURCE_DIR}/vhdlparser/Token.h ${PROJECT_SOURCE_DIR}/vhdlparser/TokenManager.h ${PROJECT_SOURCE_DIR}/vhdlparser/TokenMgrError.cc ${PROJECT_SOURCE_DIR}/vhdlparser/TokenMgrError.h ${PROJECT_SOURCE_DIR}/vhdlparser/VhdlParser.cc ${PROJECT_SOURCE_DIR}/vhdlparser/VhdlParser.h ${PROJECT_SOURCE_DIR}/vhdlparser/VhdlParserConstants.h ${PROJECT_SOURCE_DIR}/vhdlparser/VhdlParserTokenManager.cc ${PROJECT_SOURCE_DIR}/vhdlparser/VhdlParserTokenManager.h
         )
     endif()
 endif()
 
 add_custom_command(
-    COMMAND ${Python_EXECUTABLE} ${TOP}/vhdlparser/vhdl_adj.py ${TOP}/vhdlparser/VhdlParser.cc ${GENERATED_SRC}/VhdlParser_adj.cc
-    DEPENDS ${TOP}/vhdlparser/VhdlParser.cc ${TOP}/vhdlparser/vhdl_adj.py
+    COMMAND ${Python_EXECUTABLE} ${PROJECT_SOURCE_DIR}/vhdlparser/vhdl_adj.py ${PROJECT_SOURCE_DIR}/vhdlparser/VhdlParser.cc ${GENERATED_SRC}/VhdlParser_adj.cc
+    DEPENDS ${PROJECT_SOURCE_DIR}/vhdlparser/VhdlParser.cc ${PROJECT_SOURCE_DIR}/vhdlparser/vhdl_adj.py
     OUTPUT  ${GENERATED_SRC}/VhdlParser_adj.cc
 )
 set_source_files_properties(${GENERATED_SRC}/VhdlParser_adj.cc PROPERTIES GENERATED 1)
 
 add_custom_command(
-    COMMAND ${Python_EXECUTABLE} ${TOP}/vhdlparser/vhdl_adj.py ${TOP}/vhdlparser/VhdlParserTokenManager.cc ${GENERATED_SRC}/VhdlParserTokenManager_adj.cc
-    DEPENDS ${TOP}/vhdlparser/VhdlParserTokenManager.cc ${TOP}/vhdlparser/vhdl_adj.py
+    COMMAND ${Python_EXECUTABLE} ${PROJECT_SOURCE_DIR}/vhdlparser/vhdl_adj.py ${PROJECT_SOURCE_DIR}/vhdlparser/VhdlParserTokenManager.cc ${GENERATED_SRC}/VhdlParserTokenManager_adj.cc
+    DEPENDS ${PROJECT_SOURCE_DIR}/vhdlparser/VhdlParserTokenManager.cc ${PROJECT_SOURCE_DIR}/vhdlparser/vhdl_adj.py
     OUTPUT  ${GENERATED_SRC}/VhdlParserTokenManager_adj.cc
 )
 set_source_files_properties(${GENERATED_SRC}/VhdlParserTokenManager_adj.cc PROPERTIES GENERATED 1)
 
 include_directories(
-	${TOP}/src
-	${TOP}/vhdlparser
+	${PROJECT_SOURCE_DIR}/src
+	${PROJECT_SOURCE_DIR}/vhdlparser
 	${GENERATED_SRC})
 add_library(vhdlparser STATIC
 CharStream.cc
