@@ -110,6 +110,7 @@
 #include "moduledef.h"
 #include "stringutil.h"
 #include "singlecomment.h"
+#include "requirementstracker.h"
 
 #include <sqlite3.h>
 
@@ -223,6 +224,7 @@ void clearAll()
   CitationManager::instance().clear();
   Doxygen::mainPage.reset();
   FormulaManager::instance().clear();
+  RequirementsTracker::instance().reset();
 }
 
 class Statistics
@@ -9882,18 +9884,28 @@ static void resolveUserReferences()
 // generate all separate documentation pages
 
 
-static void generatePageDocs()
+static void generatePageDocsForList(const std::vector<PageDef*> &pages, OutputList &ol)
 {
-  //printf("documentedPages=%d real=%d\n",documentedPages,Doxygen::pageLinkedMap->count());
-  if (Index::instance().numDocumentedPages()==0) return;
-  for (const auto &pd : *Doxygen::pageLinkedMap)
+  for (const auto &pd : pages)
   {
     if (!pd->getGroupDef() && !pd->isReference())
     {
       msg("Generating docs for page {}...\n",pd->name());
-      pd->writeDocumentation(*g_outputList);
+      pd->writeDocumentation(ol);
     }
   }
+}
+
+static void generatePageDocs()
+{
+  //printf("documentedPages=%d real=%d\n",documentedPages,Doxygen::pageLinkedMap->count());
+  if (Index::instance().numDocumentedPages()==0) return;
+  std::vector<PageDef*> pageList;
+  for (const auto &pd : *Doxygen::pageLinkedMap)
+  {
+    pageList.push_back(pd.get());
+  }
+  generatePageDocsForList(pageList, *g_outputList);
 }
 
 //----------------------------------------------------------------------------
@@ -10587,8 +10599,6 @@ static void generateDiskNames()
   }
 }
 
-
-
 //----------------------------------------------------------------------------
 
 static std::unique_ptr<OutlineParserInterface> getParserForFile(const QCString &fn)
@@ -11171,6 +11181,41 @@ void readFileOrDirectory(const QCString &s,
             recursive,killSet,paths);
       }
     }
+  }
+}
+
+//----------------------------------------------------------------------------
+// Wrapper functions to make static parseFile functions accessible
+
+std::unique_ptr<OutlineParserInterface> getParserForFileExt(const QCString &fileName)
+{
+  return getParserForFile(fileName);
+}
+
+std::shared_ptr<Entry> parseFileWithParser(OutlineParserInterface &parser,
+                                           FileDef *fd, 
+                                           const QCString &fileName,
+                                           ClangTUParser *clangParser,
+                                           bool newTU)
+{
+  return parseFile(parser, fd, fileName, clangParser, newTU);
+}
+
+void buildPageListFromEntry(Entry *root)
+{
+  buildPageList(root);
+}
+
+OutputList* getGlobalOutputList()
+{
+  return g_outputList;
+}
+
+void generateDocsForPages(const std::vector<PageDef*> &pages)
+{
+  if (g_outputList)
+  {
+    generatePageDocsForList(pages, *g_outputList);
   }
 }
 
@@ -12339,6 +12384,37 @@ void searchInputFiles()
     }
   }
 
+  // Process REQUIREMENTS_FILES as special input files
+  const StringVector &reqFilesList=Config_getList(REQUIREMENTS_FILES);
+  if (!reqFilesList.empty())
+  {
+    g_s.begin("Processing REQUIREMENTS_FILES...\n");
+    for (const auto &s : reqFilesList)
+    {
+      QCString path=s.c_str();
+      size_t l = path.length();
+      if (l>0)
+      {
+        // strip trailing slashes
+        if (path.at(l-1)=='\\' || path.at(l-1)=='/') path=path.left(l-1);
+
+        readFileOrDirectory(
+            path,                               // s
+            Doxygen::inputNameLinkedMap,        // fnDict
+            &excludeNameSet,                    // exclSet
+            &Config_getList(FILE_PATTERNS),     // patList
+            &exclPatterns,                      // exclPatList
+            &g_inputFiles,                      // resultList
+            nullptr,                            // resultSet
+            alwaysRecursive,                    // recursive
+            TRUE,                               // errorIfNotExist
+            &killSet,                           // killSet
+            &Doxygen::inputPaths);              // paths
+      }
+    }
+    g_s.end();
+  }
+
   // Sort the FileDef objects by full path to get a predictable ordering over multiple runs
   std::stable_sort(Doxygen::inputNameLinkedMap->begin(),
             Doxygen::inputNameLinkedMap->end(),
@@ -12640,6 +12716,14 @@ void parseInput()
     {
       readTagFile(root,s.c_str());
     }
+
+
+  /**************************************************************************
+   *             Handle Requirements Tag Files                              *
+   **************************************************************************/
+
+    msg("Initializing requirements traceability support\n");
+    RequirementsTracker::instance().initialize();
   }
 
   /**************************************************************************
@@ -13221,6 +13305,11 @@ void generateOutput()
   generateFileDocs();
   g_s.end();
 
+  // Generate traceability pages before regular page documentation
+  g_s.begin("Generating traceability pages...\n");
+  RequirementsTracker::instance().generateTraceabilityPages();
+  g_s.end();
+
   g_s.begin("Generating page documentation...\n");
   generatePageDocs();
   g_s.end();
@@ -13245,6 +13334,16 @@ void generateOutput()
   generateNamespaceDocs();
   g_s.end();
 
+  // Generate traceability pages after namespaces but before page output
+  g_s.begin("Generating traceability pages...\n");
+  RequirementsTracker::instance().generateTraceabilityPages();
+  g_s.end();
+
+  // Process any generated .dox files
+  g_s.begin("Processing generated .dox files...\n");
+  RequirementsTracker::instance().processGeneratedDoxFiles();
+  g_s.end();
+
   if (Config_getBool(GENERATE_LEGEND))
   {
     g_s.begin("Generating graph info page...\n");
@@ -13258,6 +13357,12 @@ void generateOutput()
 
   if (g_outputList->size()>0)
   {
+    if (RequirementsTracker::instance().hasRequirements())
+    {
+      g_s.begin("Generating traceability index...\n");
+      writeTraceabilityIndex(*g_outputList);
+      g_s.end();
+    }
     writeIndexHierarchy(*g_outputList);
   }
 
@@ -13392,11 +13497,18 @@ void generateOutput()
     g_s.print();
 
     Debug::clearFlag(Debug::Time);
+    
+    // Clean up requirements traceability temporary files
+    RequirementsTracker::instance().finalize();
+    
     msg("finished...\n");
     Debug::setFlag(Debug::Time);
   }
   else
   {
+    // Clean up requirements traceability temporary files
+    RequirementsTracker::instance().finalize();
+    
     msg("finished...\n");
   }
 

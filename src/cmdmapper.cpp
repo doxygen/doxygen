@@ -159,6 +159,8 @@ static const CommandMap<CommandType> g_cmdMap =
   { "endiliteral",   CommandType::CMD_ENDILITERAL },
   { "ianchor" ,      CommandType::CMD_IANCHOR },
   { "iprefix" ,      CommandType::CMD_IPREFIX },
+  { "satisfies",     CommandType::CMD_SATISFIES },
+  { "verifies",      CommandType::CMD_VERIFIES },
 };
 
 //----------------------------------------------------------------------------
