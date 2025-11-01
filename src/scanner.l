@@ -7678,7 +7678,9 @@ static void lineCount(yyscan_t yyscanner)
   {
     if (*p=='\n')
     {
-      yyextra->yyLineNr++,yyextra->column=0,yyextra->yyColNr=1;
+      yyextra->yyLineNr++;
+      yyextra->column=0;
+      yyextra->yyColNr=1;
     }
     else if (*p=='\t')
     {
@@ -7686,7 +7688,8 @@ static void lineCount(yyscan_t yyscanner)
     }
     else
     {
-      yyextra->column++,yyextra->yyColNr++;
+      yyextra->column++;
+      yyextra->yyColNr++;
     }
   }
   //printf("lineCount()=%d\n",yyextra->column);

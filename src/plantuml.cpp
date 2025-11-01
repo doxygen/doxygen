@@ -99,12 +99,12 @@ StringVector PlantumlManager::writePlantUMLSource(const QCString &outDirArg,cons
               switch (state)
               {
                 case InName: // looking for the name part
-                  if      (isId(c) || c=='-') inpName+=c;
-                  else if (c=='.')            state=InExt;
-                  else                        rest+=c, state=InRest;
+                  if      (isId(c) || c=='-') { inpName+=c; }
+                  else if (c=='.')            { state=InExt; }
+                  else                        { rest+=c; state=InRest; }
                   break;
                 case InExt: // skipping over extension part
-                  if (!isId(c) && c!='-')     rest+=c, state=InRest;
+                  if (!isId(c) && c!='-')     { rest+=c; state=InRest; }
                   break;
                 case InRest: // gather rest until new line
                   rest+=c;

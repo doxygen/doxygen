@@ -3369,8 +3369,16 @@ static void generateFunctionLink(yyscan_t yyscanner,OutputCodeList &ol,const QCS
     // See also bug 549022.
     goto exit;
   }
-  if (i==-1) i=locFunc.findRev("."),len=1;
-  if (i==-1) i=locFunc.findRev("\\"),len=1; // for PHP
+  if (i==-1)
+  {
+    i=locFunc.findRev(".");
+    len=1;
+  }
+  if (i==-1)
+  {
+    i=locFunc.findRev("\\");
+    len=1; // for PHP
+  }
   if (i>0)
   {
     funcScope=locFunc.left(i);
