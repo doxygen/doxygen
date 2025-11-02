@@ -72,6 +72,7 @@ endif()
 
 set(clang    "0" CACHE INTERNAL "used in settings.h")
 
+if (NOT DEFINED MACOS_VERSION_MIN) # to allow overruling with -DMACOS_VERSION_MIN
 set(MACOS_VERSION_MIN 10.14)
 if(use_libclang)
   set(clang    "1" CACHE INTERNAL "used in settings.h")
@@ -88,10 +89,11 @@ if(use_sys_sqlite3)
   find_package(SQLite3 REQUIRED)
 endif()
 if(build_search AND CMAKE_SYSTEM MATCHES "Darwin")
-  set(MACOS_VERSION_MIN 10.15)
+  set(MACOS_VERSION_MIN 10.15) # needs std::filesystem
 endif()
 if(build_wizard AND CMAKE_SYSTEM MATCHES "Darwin")
-  set(MACOS_VERSION_MIN 11.0)
+  set(MACOS_VERSION_MIN 11.0) # needs Qt
+endif()
 endif()
 
 # use C++17 standard for compiling (unless very new Clang is present)

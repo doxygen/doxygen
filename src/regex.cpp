@@ -657,12 +657,14 @@ bool Ex::Private::matchAt(size_t tokenPos,size_t tokenLen,std::string_view str,M
     {
       char c_tok = tok.asciiValue();
       if (index>=str.length() || str[index]!=c_tok) return false; // end of string, or non matching char
-      index++,tokenPos++;
+      index++;
+      tokenPos++;
     }
     else if (tok.isCharClass())
     {
       if (index>=str.length() || !matchCharClass(tokenPos,str[index])) return false;
-      index++,tokenPos+=tok.value()+1; // skip over character ranges + end token
+      index++;
+      tokenPos+=tok.value()+1; // skip over character ranges + end token
     }
     else
     {
