@@ -352,12 +352,6 @@ void XMLCodeGenerator::writeLineNumber(const QCString &extRef,const QCString &co
   }
 }
 
-void XMLCodeGenerator::finish()
-{
-  XML_DB(("(finish insideCodeLine=%d)\n",m_insideCodeLine));
-  if (m_insideCodeLine) endCodeLine();
-}
-
 void XMLCodeGenerator::startCodeFragment(const QCString &)
 {
   XML_DB(("(startCodeFragment)\n"));
