@@ -3642,11 +3642,6 @@ void HtmlGenerator::endMemberDeclaration(const QCString &anchor,const QCString &
 {
 }
 
-QCString HtmlGenerator::getMathJaxMacros()
-{
-  return getConvertLatexMacro();
-}
-
 QCString HtmlGenerator::getNavTreeCss()
 {
   ResourceMgr &mgr = ResourceMgr::instance();
