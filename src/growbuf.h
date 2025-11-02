@@ -64,7 +64,6 @@ class GrowBuf
       m_str = std::exchange(other.m_str,static_cast<char*>(nullptr));
       return *this;
     }
-    void reserve(size_t size) { if (m_len<size) { m_len = size; m_str = static_cast<char*>(realloc(m_str,m_len)); } }
     void clear()      { m_pos=0; }
     void addChar(char c)  { if (m_pos>=m_len) { m_len+=GROW_AMOUNT; m_str = static_cast<char*>(realloc(m_str,m_len)); }
                         m_str[m_pos++]=c;
@@ -112,11 +111,9 @@ class GrowBuf
                       addStr(tmp);
     }
     char *get() { return m_str; }
-    const char *get() const { return m_str; }
     size_t getPos() const   { return m_pos; }
     void setPos(size_t newPos) { m_pos = newPos; }
     const char &at(size_t i) const { return m_str[i]; }
-    bool empty() const { return m_pos==0; }
   private:
     char *m_str;
     size_t m_pos;
