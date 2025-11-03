@@ -3014,6 +3014,7 @@ static bool expandExpression(yyscan_t yyscanner,QCString &expr,QCString *rest,in
     {
       if (state->expandedDict.find(macroName.str())==state->expandedDict.end()) // expand macro
       {
+        bool expanded=false;
         Define *def=isDefined(yyscanner,macroName);
         // In case EXPAND_ONLY_PREDEF is enabled prevent expansion unless the macro was explicitly
         // predefined
@@ -3046,7 +3047,28 @@ static bool expandExpression(yyscan_t yyscanner,QCString &expr,QCString *rest,in
           //printf(" <<<< call replaceFunctionMacro: replaced=%d\n",replaced);
           len+=l;
         }
-        //printf(" macroName='%s' expMacro='%s' replaced=%d\n",qPrint(macroName),qPrint(expMacro),replaced);
+        else if (macroName=="__VA_OPT__")
+        {
+          // expr='( something __VA_OPT__(value) )' or '( something __VA_OPT__(value) something_else )'
+          static const reg::Ex re(R"(__VA_OPT__\((.*)\)(.*)\))");
+          reg::Match m;
+          if (reg::search(expr.mid(p).str(),m,re))
+          {
+            assert(m.size()==3);
+            std::string value     = m[1].str();
+            std::string remainder = m[2].str();
+            //printf("value='%s' remainder='%s'\n",qPrint(value),qPrint(remainder));
+            expMacro = stripWhiteSpace(remainder).empty() ? std::string() : value;
+            expanded=true;
+            replaced=true;
+            len+=l+2+m[1].str().length();
+          }
+          else
+          {
+            //printf("no match for '%s'\n",qPrint(expr));
+          }
+        }
+        //printf(" macroName='%s' expMacro='%s' replaced=%d expanded=%d\n",qPrint(macroName),qPrint(expMacro),replaced,expanded);
 
         if (replaced) // expand the macro and rescan the expression
         {
@@ -3055,8 +3077,7 @@ static bool expandExpression(yyscan_t yyscanner,QCString &expr,QCString *rest,in
           QCString restExpr=expr.right(expr.length()-len-p);
           addSeparatorsIfNeeded(yyscanner,expr,resultExpr,restExpr,p);
           processConcatOperators(resultExpr);
-          //printf(" macroName=%s restExpr='%s' def->nonRecursive=%d\n",qPrint(macroName),qPrint(restExpr),def->nonRecursive);
-          bool expanded=false;
+          //printf(" macroName=%s restExpr='%s' def->nonRecursive=%d\n",qPrint(macroName),qPrint(restExpr),def ? def->nonRecursive : false);
           if (def && !def->nonRecursive)
           {
             state->expandedDict.emplace(toStdString(macroName),def);
