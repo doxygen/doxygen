@@ -796,7 +796,15 @@ DocRef::DocRef(DocParser *parser,DocNodeVariant *parent,const QCString &target,c
       }
       else if (Config_getBool(HIDE_SCOPE_NAMES))
       {
-        m_text=stripScope(m_text);
+        int funcPos = m_text.find('(');
+        if (funcPos!=-1) // see issue #11834
+        {
+          m_text=stripScope(m_text.left(funcPos))+m_text.mid(funcPos);
+        }
+        else
+        {
+          m_text=stripScope(m_text);
+        }
       }
 
       m_file = compound->getOutputFileBase();
