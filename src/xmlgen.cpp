@@ -493,7 +493,6 @@ void writeXMLCodeBlock(TextStream &t,FileDef *fd)
                 nullptr,           // memberDef
                 TRUE         // showLineNumbers
                 );
-  //xmlList.get<XMLCodeGenerator>(OutputType::XML)->finish();
   xmlList.endCodeFragment("DoxyCode");
 }
 
