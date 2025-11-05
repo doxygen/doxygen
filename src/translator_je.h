@@ -33,7 +33,9 @@ class TranslatorJapaneseEn : public TranslatorEnglish
 {
   public:
     QCString idLanguage() override
-    { return "japanese-en"; }
+    {
+      return "japanese-en";
+    }
     QCString latexLanguageSupportCommand() override
     {
       return "\\usepackage{CJKutf8}\n";

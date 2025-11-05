@@ -1,9 +1,8 @@
 /** The main function */
 void main()
 {
-  const char* a = "Some special character here:  ";
+  const char *a = "Some special character here:  ";
 
-  Test t;
+  Test        t;
   t.example();
 }
-

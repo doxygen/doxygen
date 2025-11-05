@@ -22,7 +22,7 @@ class Bug
      *
      *  More text.
      */
-     void foo();
+    void foo();
 };
 
 /** \deprecated This class is deprecated */
@@ -58,5 +58,3 @@ class Reminder
     /** \reminder Need to rework this before the next release. */
     void reminder();
 };
-
-

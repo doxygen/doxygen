@@ -24,35 +24,38 @@ typedef JAVACC_STRING_TYPE   JJStringBuffer;
 typedef JAVACC_SIMPLE_STRING JJSimpleString;
 
 // Abstraction on stream classes to read a block of data into a buffer.
-class ReaderStream {
-public:
-  // Read block of data into a buffer and return the actual number read.
-  virtual size_t read(JAVACC_CHAR_TYPE *buffer, int offset, size_t len) { return 0; }
-  virtual bool   endOfInput() { return true; }
-  virtual ~ReaderStream() {}
+class ReaderStream
+{
+  public:
+    // Read block of data into a buffer and return the actual number read.
+    virtual size_t read(JAVACC_CHAR_TYPE *buffer, int offset, size_t len) { return 0; }
+    virtual bool   endOfInput() { return true; }
+    virtual ~ReaderStream() {}
 };
 
 const JAVACC_CHAR_TYPE EMPTY[] = { 0 };
 
 #ifndef MAX
-#define MAX(a,b) ((a)>=(b)?(a):(b))
+#define MAX(a, b) ((a) >= (b) ? (a) : (b))
 #endif
 #ifndef MIN
-#define MIN(a,b) ((a)<=(b)?(a):(b))
+#define MIN(a, b) ((a) <= (b) ? (a) : (b))
 #endif
 
-template<typename T>
+template <typename T>
 struct JJEnter
 {
-    JJEnter(T f_) : f{f_} {f();}
-    ~JJEnter(){}
+    JJEnter(T f_) :
+        f{ f_ } { f(); }
+    ~JJEnter() {}
     T f;
 };
-template<typename T>
+template <typename T>
 struct JJExit
 {
-    JJExit(T f_) : f{f_} {}
-    ~JJExit(){f();}
+    JJExit(T f_) :
+        f{ f_ } {}
+    ~JJExit() { f(); }
     T f;
 };
 

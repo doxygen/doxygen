@@ -37,52 +37,74 @@ class HtmlHelp : public IndexIntf
     /*! used in imageNumber param of HTMLHelp::addContentsItem() function
         to specify document icon in tree view.
         Writes \<param name="ImageNumber" value="xx"\> in .HHC file. */
-    enum ImageNumber {
-      BOOK_CLOSED=1,    BOOK_OPEN,
-      BOOK_CLOSED_NEW,  BOOK_OPEN_NEW,
-      FOLDER_CLOSED,    FOLDER_OPEN,
-      FOLDER_CLOSED_NEW,FOLDER_OPEN_NEW,
-      QUERY,            QUERY_NEW,
-      TEXT,             TEXT_NEW,
-      WEB_DOC,          WEB_DOC_NEW,
-      WEB_LINK,         WEB_LINK_NEW,
-      INFO,             INFO_NEW,
-      LINK,             LINK_NEW,
-      BOOKLET,          BOOKLET_NEW,
-      EMAIL,            EMAIL_NEW,
-      EMAIL2,           EMAIL2_NEW,
-      IMAGE,            IMAGE_NEW,
-      AUDIO,            AUDIO_NEW,
-      MUSIC,            MUSIC_NEW,
-      VIDEO,            VIDEO_NEW,
-      INDEX,            INDEX_NEW,
-      IDEA,             IDEA_NEW,
-      NOTE,             NOTE_NEW,
-      TOOL,             TOOL_NEW
+    enum ImageNumber
+    {
+      BOOK_CLOSED = 1,
+      BOOK_OPEN,
+      BOOK_CLOSED_NEW,
+      BOOK_OPEN_NEW,
+      FOLDER_CLOSED,
+      FOLDER_OPEN,
+      FOLDER_CLOSED_NEW,
+      FOLDER_OPEN_NEW,
+      QUERY,
+      QUERY_NEW,
+      TEXT,
+      TEXT_NEW,
+      WEB_DOC,
+      WEB_DOC_NEW,
+      WEB_LINK,
+      WEB_LINK_NEW,
+      INFO,
+      INFO_NEW,
+      LINK,
+      LINK_NEW,
+      BOOKLET,
+      BOOKLET_NEW,
+      EMAIL,
+      EMAIL_NEW,
+      EMAIL2,
+      EMAIL2_NEW,
+      IMAGE,
+      IMAGE_NEW,
+      AUDIO,
+      AUDIO_NEW,
+      MUSIC,
+      MUSIC_NEW,
+      VIDEO,
+      VIDEO_NEW,
+      INDEX,
+      INDEX_NEW,
+      IDEA,
+      IDEA_NEW,
+      NOTE,
+      NOTE_NEW,
+      TOOL,
+      TOOL_NEW
     };
   public:
     HtmlHelp();
     ~HtmlHelp();
     NON_COPYABLE(HtmlHelp)
 
-    void initialize();
-    void finalize();
-    void incContentsDepth();
-    void decContentsDepth();
-    void addContentsItem(bool isDir,
-                         const QCString &name,
-                         const QCString &ref,
-                         const QCString &file,
-                         const QCString &anchor,
-                         bool separateIndex,
-                         bool addToNavIndex,
-                         const Definition *def,
-                         const QCString &nameAsHtml);
-    void addIndexItem(const Definition *context,const MemberDef *md,
-                      const QCString &sectionAnchor, const QCString &title);
-    void addIndexFile(const QCString &name);
-    void addImageFile(const QCString &);
-    void addStyleSheetFile(const QCString &);
+    void                         initialize();
+    void                         finalize();
+    void                         incContentsDepth();
+    void                         decContentsDepth();
+    void                         addContentsItem(bool              isDir,
+                                                 const QCString   &name,
+                                                 const QCString   &ref,
+                                                 const QCString   &file,
+                                                 const QCString   &anchor,
+                                                 bool              separateIndex,
+                                                 bool              addToNavIndex,
+                                                 const Definition *def,
+                                                 const QCString   &nameAsHtml);
+    void                         addIndexItem(const Definition *context, const MemberDef *md,
+                                              const QCString &sectionAnchor, const QCString &title);
+    void                         addIndexFile(const QCString &name);
+    void                         addImageFile(const QCString &);
+    void                         addStyleSheetFile(const QCString &);
 
     static inline const QCString hhcFileName = "index.hhc";
     static inline const QCString hhkFileName = "index.hhk";
@@ -90,9 +112,7 @@ class HtmlHelp : public IndexIntf
   private:
     class Private;
     std::unique_ptr<Private> p;
-    QCString recode(const QCString &s);
-
+    QCString                 recode(const QCString &s);
 };
 
 #endif /* HTMLHELP_H */
-

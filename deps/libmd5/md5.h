@@ -24,31 +24,33 @@
 #define MD5_H
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
 #include "md5_loc.h"
 
 #define md5byte unsigned char
 
-//#if SIZEOF_UNSIGNED_LONG==4
-//# define UWORD32 unsigned long
-//#elif SIZEOF_UNSIGNED_INT==4
-//#else
-//# error I do not know what to use for a UWORD32.
-//#endif
+  //#if SIZEOF_UNSIGNED_LONG==4
+  //# define UWORD32 unsigned long
+  //#elif SIZEOF_UNSIGNED_INT==4
+  //#else
+  //# error I do not know what to use for a UWORD32.
+  //#endif
 
-struct MD5Context {
-	UWORD32 buf[4];
-	UWORD32 bytes[2];
-	UWORD32 in[16];
-};
+  struct MD5Context
+  {
+      UWORD32 buf[4];
+      UWORD32 bytes[2];
+      UWORD32 in[16];
+  };
 
-void MD5Init(struct MD5Context *context);
-void MD5Update(struct MD5Context *context, md5byte const *buf, unsigned len);
-void MD5Final(unsigned char digest[16], struct MD5Context *context);
-void MD5Buffer (const char *buf,unsigned int len,unsigned char sig[16]);
-void MD5SigToString(unsigned char sig[16],char str[33]);
+  void MD5Init(struct MD5Context *context);
+  void MD5Update(struct MD5Context *context, md5byte const *buf, unsigned len);
+  void MD5Final(unsigned char digest[16], struct MD5Context *context);
+  void MD5Buffer(const char *buf, unsigned int len, unsigned char sig[16]);
+  void MD5SigToString(unsigned char sig[16], char str[33]);
 
 #ifdef __cplusplus
 }

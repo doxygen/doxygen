@@ -1,11 +1,15 @@
 class Enum_Test
 {
   public:
-    enum TEnum { Val1, Val2 };
+    enum TEnum
+    {
+      Val1,
+      Val2
+    };
 
     /*! Another enum, with inline docs */
-    enum AnotherEnum 
-    { 
+    enum AnotherEnum
+    {
       V1, /*!< value 1 */
       V2  /*!< value 2 */
     };

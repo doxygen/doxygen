@@ -23,26 +23,27 @@
 /*! \brief Class representing a HTML attribute. */
 struct HtmlAttrib
 {
-  HtmlAttrib(const QCString &n,const QCString &v) : name(n), value(v) {}
-  QCString name;
-  QCString value;
+    HtmlAttrib(const QCString &n, const QCString &v) :
+        name(n), value(v) {}
+    QCString name;
+    QCString value;
 };
 
 /*! \brief Class representing a list of HTML attributes. */
 class HtmlAttribList : public std::vector<HtmlAttrib>
 {
   public:
-    void mergeAttribute(const QCString &optName,const QCString &optValue)
+    void mergeAttribute(const QCString &optName, const QCString &optValue)
     {
-      auto it = std::find_if(begin(),end(),
-                           [&optName](const auto &opt) { return opt.name==optName; });
-      if (it!=end()) // attribute name already in the list: append values
+      auto it = std::find_if(begin(), end(),
+                             [&optName](const auto &opt) { return opt.name == optName; });
+      if (it != end()) // attribute name already in the list: append values
       {
         it->value += " " + optValue;
       }
       else // attribute name not yet in the list
       {
-        emplace_back(optName,optValue);
+        emplace_back(optName, optValue);
       }
     }
 
@@ -51,37 +52,35 @@ class HtmlAttribList : public std::vector<HtmlAttrib>
       QCString result;
       for (const auto &att : *this)
       {
-        if (!att.value.isEmpty())  // ignore attribute without values as they
-                                   // are not XHTML compliant, with the exception
-                                   // of the alt attribute with the img tag
+        if (!att.value.isEmpty()) // ignore attribute without values as they
+                                  // are not XHTML compliant, with the exception
+                                  // of the alt attribute with the img tag
         {
-          if (att.name=="alt" && pAltValue) // optionally return the value of alt separately
-                                            // need to convert <img> to <object> for SVG images,
-                                            // which do not support the alt attribute
+          if (att.name == "alt" && pAltValue) // optionally return the value of alt separately
+                                              // need to convert <img> to <object> for SVG images,
+                                              // which do not support the alt attribute
           {
             *pAltValue = att.value;
           }
           else
           {
-            result+=" "+att.name+"=\""+convertToXML(att.value)+"\"";
+            result += " " + att.name + "=\"" + convertToXML(att.value) + "\"";
           }
         }
-        else if (att.name=="open")
+        else if (att.name == "open")
         {
           // The open attribute is a boolean attribute.
           // Specifies that the details should be visible (open) to the user
           // As it is a boolean attribute the initialization value is of no interest
-          result+=" "+att.name+"=\"true\"";
+          result += " " + att.name + "=\"true\"";
         }
-        else if (att.name=="nowrap") // In XHTML, attribute minimization is forbidden, and the nowrap attribute must be defined as <td nowrap="nowrap">.
+        else if (att.name == "nowrap") // In XHTML, attribute minimization is forbidden, and the nowrap attribute must be defined as <td nowrap="nowrap">.
         {
-          result+=" "+att.name+"=\"nowrap\"";
+          result += " " + att.name + "=\"nowrap\"";
         }
       }
       return result;
     }
-
 };
 
 #endif
-

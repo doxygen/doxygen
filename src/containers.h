@@ -25,16 +25,16 @@
 #include <unordered_map>
 #include <stack>
 
-using StringUnorderedMap = std::unordered_map<std::string,std::string>;
+using StringUnorderedMap = std::unordered_map<std::string, std::string>;
 using StringUnorderedSet = std::unordered_set<std::string>;
-using StringMap          = std::map<std::string,std::string>;
+using StringMap          = std::map<std::string, std::string>;
 using StringSet          = std::set<std::string>;
 using StringMultiSet     = std::multiset<std::string>;
 using StringVector       = std::vector<std::string>;
 using StringViewVector   = std::vector<std::string_view>;
 using BoolStack          = std::stack<bool>;
 using BoolVector         = std::vector<bool>;
-using IntMap             = std::map<std::string,int>;
+using IntMap             = std::map<std::string, int>;
 using IntVector          = std::vector<int>;
 
 #endif

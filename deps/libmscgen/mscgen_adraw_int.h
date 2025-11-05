@@ -31,11 +31,11 @@
 
 /* Define macro to suppress unused parameter warnings */
 #ifndef UNUSED
-# ifdef __GNUC__
-#  define UNUSED __attribute__((unused))
-# else
-#  define UNUSED
-# endif
+#ifdef __GNUC__
+#define UNUSED __attribute__((unused))
+#else
+#define UNUSED
+#endif
 #endif
 
 /***************************************************************************

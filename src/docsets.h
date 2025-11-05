@@ -43,31 +43,27 @@ class DocSets : public IndexIntf
     void finalize();
     void incContentsDepth();
     void decContentsDepth();
-    void addContentsItem(bool isDir,
-                         const QCString &name,
-                         const QCString &ref,
-                         const QCString &file,
-                         const QCString &anchor,
-                         bool separateIndex,
-                         bool addToNavIndex,
+    void addContentsItem(bool              isDir,
+                         const QCString   &name,
+                         const QCString   &ref,
+                         const QCString   &file,
+                         const QCString   &anchor,
+                         bool              separateIndex,
+                         bool              addToNavIndex,
                          const Definition *def,
-                         const QCString &nameAsHtml
-                        );
-    void addIndexItem(const Definition *context,const MemberDef *md,
-                      const QCString &sectionAnchor,const QCString &title);
+                         const QCString   &nameAsHtml);
+    void addIndexItem(const Definition *context, const MemberDef *md,
+                      const QCString &sectionAnchor, const QCString &title);
     void addIndexFile(const QCString &name);
     void addImageFile(const QCString &) {}
     void addStyleSheetFile(const QCString &) {}
-
   private:
     void writeToken(TextStream &t, const Definition *d,
                     const QCString &type, const QCString &lang,
-                    const QCString &scope=QCString(), const QCString &anchor=QCString(),
-                    const QCString &decl=QCString());
+                    const QCString &scope = QCString(), const QCString &anchor = QCString(),
+                    const QCString &decl = QCString());
     struct Private;
     std::unique_ptr<Private> p;
-
 };
 
 #endif /* DOCSETS_H */
-

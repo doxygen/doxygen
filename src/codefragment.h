@@ -30,14 +30,13 @@ class CodeFragmentManager
 {
   public:
     static CodeFragmentManager &instance();
-    void parseCodeFragment(OutputCodeList &codeOutList,
-                   const QCString &fileName,  // -> input
-                   const QCString &blockId,
-                   const QCString &scopeName,
-                   bool showLineNumbers,
-                   bool trimLeft,
-                   bool stripCodeComments
-                   );
+    void                        parseCodeFragment(OutputCodeList &codeOutList,
+                                                  const QCString &fileName, // -> input
+                                                  const QCString &blockId,
+                                                  const QCString &scopeName,
+                                                  bool            showLineNumbers,
+                                                  bool            trimLeft,
+                                                  bool            stripCodeComments);
   private:
     CodeFragmentManager();
     ~CodeFragmentManager();

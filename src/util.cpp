@@ -101,11 +101,12 @@ static const char *hex = "0123456789ABCDEF";
 // TextGeneratorOLImpl implementation
 //------------------------------------------------------------------------
 
-TextGeneratorOLImpl::TextGeneratorOLImpl(OutputList &ol) : m_ol(ol)
+TextGeneratorOLImpl::TextGeneratorOLImpl(OutputList &ol) :
+    m_ol(ol)
 {
 }
 
-void TextGeneratorOLImpl::writeString(std::string_view s,bool keepSpaces) const
+void TextGeneratorOLImpl::writeString(std::string_view s, bool keepSpaces) const
 {
   if (s.empty()) return;
   //printf("TextGeneratorOlImpl::writeString('%s',%d)\n",s,keepSpaces);
@@ -135,12 +136,11 @@ void TextGeneratorOLImpl::writeBreak(int indent) const
   for (int i = 0; i < indent; ++i) m_ol.writeNonBreakableSpace(3);
 }
 
-void TextGeneratorOLImpl::writeLink(const QCString &extRef,const QCString &file,
-                                    const QCString &anchor,std::string_view text
-                                   ) const
+void TextGeneratorOLImpl::writeLink(const QCString &extRef, const QCString &file,
+                                    const QCString &anchor, std::string_view text) const
 {
   //printf("TextGeneratorOlImpl::writeLink('%s')\n",text);
-  m_ol.writeObjectLink(extRef,file,anchor,text);
+  m_ol.writeObjectLink(extRef, file, anchor, text);
 }
 
 //------------------------------------------------------------------------
@@ -166,62 +166,64 @@ QCString removeAnonymousScopes(const QCString &str)
   if (str.isEmpty()) return result;
 
   // helper to check if the found delimiter starts with a colon
-  auto startsWithColon = [](const std::string &del)
-  {
-    for (size_t i=0;i<del.size();i++)
+  auto startsWithColon = [](const std::string &del) {
+    for (size_t i = 0; i < del.size(); i++)
     {
-      if (del[i]=='@') return false;
-      else if (del[i]==':') return true;
+      if (del[i] == '@')
+        return false;
+      else if (del[i] == ':')
+        return true;
     }
     return false;
   };
 
   // helper to check if the found delimiter ends with a colon
-  auto endsWithColon = [](const std::string &del)
-  {
-    for (int i=static_cast<int>(del.size())-1;i>=0;i--)
+  auto endsWithColon = [](const std::string &del) {
+    for (int i = static_cast<int>(del.size()) - 1; i >= 0; i--)
     {
-      if (del[i]=='@') return false;
-      else if (del[i]==':') return true;
+      if (del[i] == '@')
+        return false;
+      else if (del[i] == ':')
+        return true;
     }
     return false;
   };
 
   static const reg::Ex re(R"([\s:]*@\d+[\s:]*)");
-  std::string s = str.str();
-  reg::Iterator iter(s,re);
-  reg::Iterator end;
-  size_t p=0;
-  size_t sl=s.length();
-  bool needsSeparator=false;
-  for ( ; iter!=end ; ++iter)
+  std::string          s = str.str();
+  reg::Iterator        iter(s, re);
+  reg::Iterator        end;
+  size_t               p              = 0;
+  size_t               sl             = s.length();
+  bool                 needsSeparator = false;
+  for (; iter != end; ++iter)
   {
     const auto &match = *iter;
-    size_t i = match.position();
-    if (i>p) // add non-matching prefix
+    size_t      i     = match.position();
+    if (i > p) // add non-matching prefix
     {
-      if (needsSeparator) result+="::";
-      needsSeparator=false;
-      result+=s.substr(p,i-p);
+      if (needsSeparator) result += "::";
+      needsSeparator = false;
+      result += s.substr(p, i - p);
     }
     std::string delim = match.str();
-    needsSeparator = needsSeparator || (startsWithColon(delim) && endsWithColon(delim));
-    p = match.position()+match.length();
+    needsSeparator    = needsSeparator || (startsWithColon(delim) && endsWithColon(delim));
+    p                 = match.position() + match.length();
   }
-  if (p<sl) // add trailing remainder
+  if (p < sl) // add trailing remainder
   {
-    if (needsSeparator) result+="::";
-    result+=s.substr(p);
+    if (needsSeparator) result += "::";
+    result += s.substr(p);
   }
   return result;
 }
 
 // replace anonymous scopes with __anonymous__ or replacement if provided
-QCString replaceAnonymousScopes(const QCString &s,const QCString &replacement)
+QCString replaceAnonymousScopes(const QCString &s, const QCString &replacement)
 {
   if (s.isEmpty()) return s;
   static const reg::Ex marker(R"(@\d+)");
-  std::string result = reg::replace(s.str(),marker,
+  std::string          result = reg::replace(s.str(), marker,
                                     !replacement.isEmpty() ? replacement.data() : "__anonymous__");
   //printf("replaceAnonymousScopes('%s')='%s'\n",qPrint(s),qPrint(result));
   return result;
@@ -231,34 +233,34 @@ QCString replaceAnonymousScopes(const QCString &s,const QCString &replacement)
 // strip anonymous left hand side part of the scope
 QCString stripAnonymousNamespaceScope(const QCString &s)
 {
-  int i=0,p=0,l=0;
+  int      i = 0, p = 0, l = 0;
   QCString newScope;
-  int sl = static_cast<int>(s.length());
-  while ((i=getScopeFragment(s,p,&l))!=-1)
+  int      sl = static_cast<int>(s.length());
+  while ((i = getScopeFragment(s, p, &l)) != -1)
   {
     //printf("Scope fragment %s\n",qPrint(s.mid(i,l)));
-    if (Doxygen::namespaceLinkedMap->find(s.left(i+l))!=nullptr)
+    if (Doxygen::namespaceLinkedMap->find(s.left(i + l)) != nullptr)
     {
-      if (s.at(i)!='@')
+      if (s.at(i) != '@')
       {
-        if (!newScope.isEmpty()) newScope+="::";
-        newScope+=s.mid(i,l);
+        if (!newScope.isEmpty()) newScope += "::";
+        newScope += s.mid(i, l);
       }
     }
-    else if (i<sl)
+    else if (i < sl)
     {
-      if (!newScope.isEmpty()) newScope+="::";
-      newScope+=s.right(sl-i);
+      if (!newScope.isEmpty()) newScope += "::";
+      newScope += s.right(sl - i);
       goto done;
     }
-    p=i+l;
+    p = i + l;
   }
 done:
   //printf("stripAnonymousNamespaceScope('%s')='%s'\n",qPrint(s),qPrint(newScope));
   return newScope;
 }
 
-void writePageRef(OutputList &ol,const QCString &cn,const QCString &mn)
+void writePageRef(OutputList &ol, const QCString &cn, const QCString &mn)
 {
   ol.pushGeneratorState();
 
@@ -269,7 +271,7 @@ void writePageRef(OutputList &ol,const QCString &cn,const QCString &mn)
   if (Config_getBool(RTF_HYPERLINKS)) ol.disable(OutputType::RTF);
   ol.startPageRef();
   ol.docify(theTranslator->trPageAbbreviation());
-  ol.endPageRef(cn,mn);
+  ol.endPageRef(cn, mn);
 
   ol.popGeneratorState();
 }
@@ -281,8 +283,8 @@ void writePageRef(OutputList &ol,const QCString &cn,const QCString &mn)
 QCString generateMarker(int id)
 {
   const int maxMarkerStrLen = 20;
-  char result[maxMarkerStrLen];
-  qsnprintf(result,maxMarkerStrLen,"@%d",id);
+  char      result[maxMarkerStrLen];
+  qsnprintf(result, maxMarkerStrLen, "@%d", id);
   return result;
 }
 
@@ -291,29 +293,29 @@ QCString removeLongPathMarker(QCString path)
 #if defined(_WIN32)
   if (path.startsWith("//?/")) // strip leading "\\?\" part from path
   {
-    path=path.mid(4);
+    path = path.mid(4);
   }
 #endif
   return path;
 }
 
-static QCString stripFromPath(const QCString &p,const StringVector &l)
+static QCString stripFromPath(const QCString &p, const StringVector &l)
 {
   // look at all the strings in the list and strip the longest match
   QCString potential;
-  QCString path=removeLongPathMarker(p);
-  size_t length = 0;
+  QCString path   = removeLongPathMarker(p);
+  size_t   length = 0;
   for (const auto &s : l)
   {
     QCString prefix = s;
     if (prefix.length() > length &&
-        qstricmp(path.left(prefix.length()),prefix)==0) // case insensitive compare
+        qstricmp(path.left(prefix.length()), prefix) == 0) // case insensitive compare
     {
-      length = prefix.length();
-      potential = path.right(path.length()-prefix.length());
+      length    = prefix.length();
+      potential = path.right(path.length() - prefix.length());
     }
   }
-  if (length>0) return potential;
+  if (length > 0) return potential;
   return path;
 }
 
@@ -322,7 +324,7 @@ static QCString stripFromPath(const QCString &p,const StringVector &l)
  */
 QCString stripFromPath(const QCString &path)
 {
-  return stripFromPath(path,Config_getList(STRIP_FROM_PATH));
+  return stripFromPath(path, Config_getList(STRIP_FROM_PATH));
 }
 
 /*! strip part of \a path if it matches
@@ -330,7 +332,7 @@ QCString stripFromPath(const QCString &path)
  */
 QCString stripFromIncludePath(const QCString &path)
 {
-  return stripFromPath(path,Config_getList(STRIP_FROM_INC_PATH));
+  return stripFromPath(path, Config_getList(STRIP_FROM_INC_PATH));
 }
 
 /*! try to determine if \a name is a source or a header file name by looking
@@ -339,43 +341,43 @@ QCString stripFromIncludePath(const QCString &path)
  */
 EntryType guessSection(const QCString &name)
 {
-  QCString n=name.lower();
+  QCString                                     n         = name.lower();
   static const std::unordered_set<std::string> sourceExt = {
-     "c","cc","cxx","cpp","c++","cppm","ccm","cxxm","c++m",   // C/C++
-     "java",                       // Java
-     "cs",                         // C#
-     "m","mm",                     // Objective-C
-     "ii","ixx","ipp","i++","inl", // C/C++ inline
-     "xml","lex","sql"             // others
+    "c", "cc", "cxx", "cpp", "c++", "cppm", "ccm", "cxxm", "c++m", // C/C++
+    "java",                                                        // Java
+    "cs",                                                          // C#
+    "m", "mm",                                                     // Objective-C
+    "ii", "ixx", "ipp", "i++", "inl",                              // C/C++ inline
+    "xml", "lex", "sql"                                            // others
   };
   static const std::unordered_set<std::string> headerExt = {
-     "h", "hh", "hxx", "hpp", "h++", "ixx", // C/C++ header
-     "idl", "ddl", "pidl", "ice"    // IDL like
+    "h", "hh", "hxx", "hpp", "h++", "ixx", // C/C++ header
+    "idl", "ddl", "pidl", "ice"            // IDL like
   };
   int lastDot = n.findRev('.');
-  if (lastDot!=-1)
+  if (lastDot != -1)
   {
-    QCString extension = n.mid(lastDot+1); // part after the last dot
-    if (sourceExt.find(extension.str())!=sourceExt.end())
+    QCString extension = n.mid(lastDot + 1); // part after the last dot
+    if (sourceExt.find(extension.str()) != sourceExt.end())
     {
       return EntryType::makeSource();
     }
-    if (headerExt.find(extension.str())!=headerExt.end())
+    if (headerExt.find(extension.str()) != headerExt.end())
     {
       return EntryType::makeHeader();
     }
   }
   else
   {
-    if (getLanguageFromFileName(name,SrcLangExt::Unknown) == SrcLangExt::Cpp) return EntryType::makeHeader();
+    if (getLanguageFromFileName(name, SrcLangExt::Unknown) == SrcLangExt::Cpp) return EntryType::makeHeader();
   }
   return EntryType::makeEmpty();
 }
 
-QCString resolveTypeDef(const Definition *context,const QCString &qualifiedName,
+QCString resolveTypeDef(const Definition *context, const QCString &qualifiedName,
                         const Definition **typedefContext)
 {
-  AUTO_TRACE("context='{}' qualifiedName='{}'",context?context->name():"",qualifiedName);
+  AUTO_TRACE("context='{}' qualifiedName='{}'", context ? context->name() : "", qualifiedName);
   QCString result;
   if (qualifiedName.isEmpty())
   {
@@ -383,99 +385,99 @@ QCString resolveTypeDef(const Definition *context,const QCString &qualifiedName,
     return result;
   }
 
-  const Definition *mContext=context;
-  if (typedefContext) *typedefContext=context;
+  const Definition *mContext = context;
+  if (typedefContext) *typedefContext = context;
 
   // see if the qualified name has a scope part
-  if (qualifiedName.find('<')!=-1)
+  if (qualifiedName.find('<') != -1)
   {
     AUTO_TRACE_EXIT("template");
     return result;
   }
-  int scopeIndex = qualifiedName.findRev("::");
-  QCString resName=qualifiedName;
-  if (scopeIndex!=-1) // strip scope part for the name
+  int      scopeIndex = qualifiedName.findRev("::");
+  QCString resName    = qualifiedName;
+  if (scopeIndex != -1) // strip scope part for the name
   {
-    resName=qualifiedName.right(qualifiedName.length()-scopeIndex-2);
+    resName = qualifiedName.right(qualifiedName.length() - scopeIndex - 2);
     if (resName.isEmpty())
     {
       AUTO_TRACE_EXIT("invalid format");
       return result;
     }
   }
-  const MemberDef *md=nullptr;
-  while (mContext && md==nullptr)
+  const MemberDef *md = nullptr;
+  while (mContext && md == nullptr)
   {
     // step 1: get the right scope
-    const Definition *resScope=mContext;
-    if (scopeIndex!=-1)
+    const Definition *resScope = mContext;
+    if (scopeIndex != -1)
     {
       // split-off scope part
       QCString resScopeName = qualifiedName.left(scopeIndex);
       //printf("resScopeName='%s'\n",qPrint(resScopeName));
 
       // look-up scope in context
-      int is=0,ps=0,l=0;
-      while ((is=getScopeFragment(resScopeName,ps,&l))!=-1)
+      int      is = 0, ps = 0, l = 0;
+      while ((is = getScopeFragment(resScopeName, ps, &l)) != -1)
       {
-        QCString qualScopePart = resScopeName.mid(is,l);
-        QCString tmp = resolveTypeDef(mContext,qualScopePart);
-        if (!tmp.isEmpty()) qualScopePart=tmp;
+        QCString qualScopePart = resScopeName.mid(is, l);
+        QCString tmp           = resolveTypeDef(mContext, qualScopePart);
+        if (!tmp.isEmpty()) qualScopePart = tmp;
         resScope = resScope->findInnerCompound(qualScopePart);
         //printf("qualScopePart='%s' resScope=%p\n",qPrint(qualScopePart),resScope);
-        if (resScope==nullptr) break;
-        ps=is+l;
+        if (resScope == nullptr) break;
+        ps = is + l;
       }
     }
-    AUTO_TRACE_ADD("resScope='{}' resName='{}'",resScope?resScope->name():"",resName);
+    AUTO_TRACE_ADD("resScope='{}' resName='{}'", resScope ? resScope->name() : "", resName);
 
     // step 2: get the member
     if (resScope) // no scope or scope found in the current context
     {
       //printf("scope found: %s, look for typedef %s\n",
       //     qPrint(resScope->qualifiedName()),qPrint(resName));
-      MemberNameLinkedMap *mnd=nullptr;
-      bool searchRelated=false;
-      bool mustBeRelated=false;
-      if (resScope->definitionType()==Definition::TypeClass)
+      MemberNameLinkedMap *mnd           = nullptr;
+      bool                 searchRelated = false;
+      bool                 mustBeRelated = false;
+      if (resScope->definitionType() == Definition::TypeClass)
       {
-        mnd=Doxygen::memberNameLinkedMap;
+        mnd = Doxygen::memberNameLinkedMap;
       }
       else
       {
-        mnd=Doxygen::functionNameLinkedMap;
-        searchRelated=true;
+        mnd           = Doxygen::functionNameLinkedMap;
+        searchRelated = true;
       }
-      MemberName *mn=mnd->find(resName);
-      if (mn==0 && searchRelated)
+      MemberName *mn = mnd->find(resName);
+      if (mn == 0 && searchRelated)
       {
-        mn=Doxygen::memberNameLinkedMap->find(resName);
-        mustBeRelated=true;
+        mn            = Doxygen::memberNameLinkedMap->find(resName);
+        mustBeRelated = true;
       }
       if (mn)
       {
-        int minDist=-1;
+        int minDist = -1;
         for (const auto &tmd_p : *mn)
         {
           const MemberDef *tmd = tmd_p.get();
           AUTO_TRACE_ADD("found candidate member '{}' isTypeDef={}' isRelated={} mustBeRelated={}",
-              tmd->name(),tmd->isTypedef(),tmd->isRelated(),mustBeRelated);
+                         tmd->name(), tmd->isTypedef(), tmd->isRelated(), mustBeRelated);
           //printf("Found member %s resScope=%s outerScope=%s mContext=%p\n",
           //    qPrint(tmd->name()),qPrint( resScope->name()),
           //    qPrint(tmd->getOuterScope()->name()), mContext);
           if (tmd->isTypedef())
           {
-            if (resScope==Doxygen::globalScope && tmd->isRelated() && mustBeRelated)
+            if (resScope == Doxygen::globalScope && tmd->isRelated() && mustBeRelated)
             {
               md = tmd;
             }
             else
             {
               SymbolResolver resolver;
-              int dist=resolver.isAccessibleFrom(resScope,tmd);
-              if (dist!=-1 && (md==nullptr || dist<minDist))
+              int            dist = resolver.isAccessibleFrom(resScope, tmd);
+              if (dist != -1 && (md == nullptr || dist < minDist))
               {
-                md = tmd;
+                md      = tmd;
                 minDist = dist;
               }
             }
@@ -483,34 +485,34 @@ QCString resolveTypeDef(const Definition *context,const QCString &qualifiedName,
         }
       }
     }
-    mContext=mContext->getOuterScope();
+    mContext = mContext->getOuterScope();
   }
 
-  AUTO_TRACE_ADD("md='{}'",md?md->name():"");
+  AUTO_TRACE_ADD("md='{}'", md ? md->name() : "");
   // step 3: get the member's type
   if (md)
   {
     //printf(">>resolveTypeDef: Found typedef name '%s' in scope '%s' value='%s' args='%s'\n",
     //    qPrint(qualifiedName),qPrint(context->name()),qPrint(md->typeString()),qPrint(md->argsString())
     //    );
-    result=md->typeString();
+    result        = md->typeString();
     QCString args = md->argsString();
-    if (args.find(")(")!=-1) // typedef of a function/member pointer
+    if (args.find(")(") != -1) // typedef of a function/member pointer
     {
-      result+=args;
+      result += args;
     }
-    else if (args.find('[')!=-1) // typedef of an array
+    else if (args.find('[') != -1) // typedef of an array
     {
-      result+=args;
+      result += args;
     }
-    if (typedefContext) *typedefContext=md->getOuterScope();
+    if (typedefContext) *typedefContext = md->getOuterScope();
   }
   else
   {
     //printf(">>resolveTypeDef: Typedef '%s' not found in scope '%s'!\n",
     //    qPrint(qualifiedName),context ? qPrint(context->name()) : "<global>");
   }
-  AUTO_TRACE_EXIT("result='{}'",result);
+  AUTO_TRACE_EXIT("result='{}'", result);
   return result;
 }
 
@@ -526,296 +528,290 @@ static const char operatorScope[] = { 'o', 'p', 'e', 'r', 'a', 't', 'o', 'r', '?
 
 struct CharAroundSpace
 {
-  CharAroundSpace()
-  {
-    charMap[static_cast<int>('(')].before=FALSE;
-    charMap[static_cast<int>('=')].before=FALSE;
-    charMap[static_cast<int>('&')].before=FALSE;
-    charMap[static_cast<int>('*')].before=FALSE;
-    charMap[static_cast<int>('[')].before=FALSE;
-    charMap[static_cast<int>('|')].before=FALSE;
-    charMap[static_cast<int>('+')].before=FALSE;
-    charMap[static_cast<int>(';')].before=FALSE;
-    charMap[static_cast<int>(':')].before=FALSE;
-    charMap[static_cast<int>('/')].before=FALSE;
+    CharAroundSpace()
+    {
+      charMap[static_cast<int>('(')].before = FALSE;
+      charMap[static_cast<int>('=')].before = FALSE;
+      charMap[static_cast<int>('&')].before = FALSE;
+      charMap[static_cast<int>('*')].before = FALSE;
+      charMap[static_cast<int>('[')].before = FALSE;
+      charMap[static_cast<int>('|')].before = FALSE;
+      charMap[static_cast<int>('+')].before = FALSE;
+      charMap[static_cast<int>(';')].before = FALSE;
+      charMap[static_cast<int>(':')].before = FALSE;
+      charMap[static_cast<int>('/')].before = FALSE;
 
-    charMap[static_cast<int>('=')].after=FALSE;
-    charMap[static_cast<int>(' ')].after=FALSE;
-    charMap[static_cast<int>('[')].after=FALSE;
-    charMap[static_cast<int>(']')].after=FALSE;
-    charMap[static_cast<int>('\t')].after=FALSE;
-    charMap[static_cast<int>('\n')].after=FALSE;
-    charMap[static_cast<int>(')')].after=FALSE;
-    charMap[static_cast<int>(',')].after=FALSE;
-    charMap[static_cast<int>('<')].after=FALSE;
-    charMap[static_cast<int>('|')].after=FALSE;
-    charMap[static_cast<int>('+')].after=FALSE;
-    charMap[static_cast<int>('(')].after=FALSE;
-    charMap[static_cast<int>('/')].after=FALSE;
-  }
-  struct CharElem
-  {
-    CharElem() : before(TRUE), after(TRUE) {}
-    bool before;
-    bool after;
-  };
+      charMap[static_cast<int>('=')].after  = FALSE;
+      charMap[static_cast<int>(' ')].after  = FALSE;
+      charMap[static_cast<int>('[')].after  = FALSE;
+      charMap[static_cast<int>(']')].after  = FALSE;
+      charMap[static_cast<int>('\t')].after = FALSE;
+      charMap[static_cast<int>('\n')].after = FALSE;
+      charMap[static_cast<int>(')')].after  = FALSE;
+      charMap[static_cast<int>(',')].after  = FALSE;
+      charMap[static_cast<int>('<')].after  = FALSE;
+      charMap[static_cast<int>('|')].after  = FALSE;
+      charMap[static_cast<int>('+')].after  = FALSE;
+      charMap[static_cast<int>('(')].after  = FALSE;
+      charMap[static_cast<int>('/')].after  = FALSE;
+    }
+    struct CharElem
+    {
+        CharElem() :
+            before(TRUE), after(TRUE) {}
+        bool before;
+        bool after;
+    };
 
-  CharElem charMap[256];
+    CharElem charMap[256];
 };
 
 static CharAroundSpace g_charAroundSpace;
 
 // Note: this function is not reentrant due to the use of static buffer!
-QCString removeRedundantWhiteSpace(const QCString &s)
+QCString               removeRedundantWhiteSpace(const QCString &s)
 {
   bool cliSupport = Config_getBool(CPP_CLI_SUPPORT);
-  bool vhdl = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
+  bool vhdl       = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
 
   if (s.isEmpty() || vhdl) return s;
 
   // We use a static character array to
   // improve the performance of this function
   // and thread_local is needed to make it multi-thread safe
-  static THREAD_LOCAL char *growBuf = nullptr;
+  static THREAD_LOCAL char  *growBuf    = nullptr;
   static THREAD_LOCAL size_t growBufLen = 0;
-  if (s.length()*3>growBufLen) // For input character we produce at most 3 output characters,
+  if (s.length() * 3 > growBufLen) // For input character we produce at most 3 output characters,
   {
-    growBufLen = s.length()*3;
-    growBuf = static_cast<char *>(realloc(growBuf,growBufLen+1)); // add 1 for 0-terminator
+    growBufLen = s.length() * 3;
+    growBuf    = static_cast<char *>(realloc(growBuf, growBufLen + 1)); // add 1 for 0-terminator
   }
-  if (growBuf==nullptr) return s; // should not happen, only we run out of memory
+  if (growBuf == nullptr) return s; // should not happen, only we run out of memory
 
-  const char *src=s.data();
-  char *dst=growBuf;
+  const char *src  = s.data();
+  char       *dst  = growBuf;
 
-  size_t i=0;
-  size_t l=s.length();
-  size_t csp=0;
-  size_t vosp=0;
-  size_t vsp=0;
-  size_t osp=0;
-  char pc=0;
+  size_t      i    = 0;
+  size_t      l    = s.length();
+  size_t      csp  = 0;
+  size_t      vosp = 0;
+  size_t      vsp  = 0;
+  size_t      osp  = 0;
+  char        pc   = 0;
   // skip leading whitespace
-  while (i<l && isspace(static_cast<uint8_t>(src[i])))
+  while (i < l && isspace(static_cast<uint8_t>(src[i])))
   {
     i++;
   }
-  for (;i<l;i++)
+  for (; i < l; i++)
   {
-    char c=src[i];
-    char nc=i+1<l ? src[i+1] : ' ';
+    char c                = src[i];
+    char nc               = i + 1 < l ? src[i + 1] : ' ';
 
-    auto searchForKeyword = [&](const char *kw,size_t &matchLen,size_t totalLen)
-    {
-      if (matchLen<=totalLen && c==kw[matchLen] && // character matches substring kw
-          (matchLen>0 ||                           // inside search string
-           i==0  ||                                // if it is the first character
-           !isId(pc)                               // the previous may not be a digit
-          )
-         )
+    auto searchForKeyword = [&](const char *kw, size_t &matchLen, size_t totalLen) {
+      if (matchLen <= totalLen && c == kw[matchLen] && // character matches substring kw
+          (matchLen > 0 ||                             // inside search string
+           i == 0 ||                                   // if it is the first character
+           !isId(pc)                                   // the previous may not be a digit
+           ))
         matchLen++;
       else // reset counter
-        matchLen=0;
+        matchLen = 0;
     };
-    searchForKeyword(constScope,    csp,  5); // keyword: const
+    searchForKeyword(constScope, csp, 5);     // keyword: const
     searchForKeyword(volatileScope, vosp, 8); // keyword: volatile
-    searchForKeyword(virtualScope,  vsp,  7); // keyword: virtual
+    searchForKeyword(virtualScope, vsp, 7);   // keyword: virtual
 
     // search for "operator"
-    if (osp<11 && (osp>=8 || c==operatorScope[osp]) && // character matches substring "operator" followed by 3 arbitrary characters
-        (osp>0 ||                         // inside search string
-         i==0 ||                          // if it is the first character
-         !isId(pc)                        // the previous may not be a digit
-        )
-       )
+    if (osp < 11 && (osp >= 8 || c == operatorScope[osp]) && // character matches substring "operator" followed by 3 arbitrary characters
+        (osp > 0 ||                                          // inside search string
+         i == 0 ||                                           // if it is the first character
+         !isId(pc)                                           // the previous may not be a digit
+         ))
       osp++;
     else // reset counter
-      osp=0;
+      osp = 0;
 
-    switch(c)
+    switch (c)
     {
-      case '"': // quoted string
+    case '"': // quoted string
+    {
+      *dst++ = c;
+      i++;
+      for (; i < l; i++) // find end of string
+      {
+        c      = src[i];
+        *dst++ = c;
+        if (c == '\\' && i + 1 < l)
         {
-          *dst++=c;
           i++;
-          for (;i<l;i++) // find end of string
-          {
-            c = src[i];
-            *dst++=c;
-            if (c=='\\' && i+1<l)
-            {
-              i++;
-              c = src[i];
-              *dst++=c;
-            }
-            else if (c=='"')
-            {
-              break;
-            }
-          }
+          c      = src[i];
+          *dst++ = c;
         }
-        break;
-      case '<': // current char is a <
-        *dst++=c;
-        if (i+1<l &&
-            (isId(nc)) && // next char is an id char
-            (osp<8) // string in front is not "operator"
-           )
+        else if (c == '"')
         {
-          *dst++=' '; // add extra space
-        }
-        break;
-      case '>': // current char is a >
-        if (i>0 && !isspace(static_cast<uint8_t>(pc)) &&
-            (isId(pc) || pc=='*' || pc=='&' || pc=='.' || pc=='>') && // prev char is an id char or space or *&.
-            (osp<8 || (osp==8 && pc!='-')) // string in front is not "operator>" or "operator->"
-           )
-        {
-          *dst++=' '; // add extra space in front
-        }
-        *dst++=c;
-        if (i+1<l && (nc=='-' || nc=='&')) // '>-' -> '> -'
-        {
-          *dst++=' '; // add extra space after
-        }
-        break;
-      case ',': // current char is a ,
-        *dst++=c;
-        if (i>0 && !isspace(static_cast<uint8_t>(pc)) &&
-            ((i+1<l && (isId(nc) || nc=='[')) || // the [ is for attributes (see bug702170)
-             (i+2<l && nc=='$' && isId(src[i+2])) ||   // for PHP: ',$name' -> ', $name'
-             (i+3<l && nc=='&' && src[i+2]=='$' && isId(src[i+3])) // for PHP: ',&$name' -> ', &$name'
-            )
-           )
-        {
-          *dst++=' '; // add extra space after
-        }
-        break;
-      case '^':  // CLI 'Type^name' -> 'Type^ name'
-      case '%':  // CLI 'Type%name' -> 'Type% name'
-        *dst++=c;
-        if (cliSupport && i+1<l && (isId(nc) || nc=='-'))
-        {
-          *dst++=' '; // add extra space after
-        }
-        break;
-      case ')':  // current char is a )  -> ')name' -> ') name'
-        *dst++=c;
-        if (i+1<l && (isId(nc) || nc=='-'))
-        {
-          *dst++=' '; // add extra space after
-        }
-        break;
-      case '*':
-        if (i>0 && pc!=' ' && pc!='\t' && pc!=':' &&
-                   pc!='*' && pc!='&'  && pc!='(' && pc!='/' &&
-                   pc!='.' && osp<9
-           )
-          // avoid splitting &&, **, .*, operator*, operator->*
-        {
-          *dst++=' ';
-        }
-        *dst++=c;
-        break;
-      case '&':
-        if (i>0 && isId(pc) && osp<9)
-        {
-          if (nc != '=')
-          // avoid splitting operator&=
-          {
-            *dst++=' ';
-          }
-        }
-        *dst++=c;
-        break;
-      case '$':  // '$name' -> ' $name'
-                 // 'name$name' -> 'name$name'
-        if (isId(pc))
-        {
-          *dst++=c;
           break;
         }
-        // else fallthrough
-      case '@':  // '@name' -> ' @name'
-      case '\'': // ''name' -> '' name'
-        if (i>0 && i+1<l && pc!='=' && pc!=':' && !isspace(static_cast<uint8_t>(pc)) &&
-            isId(nc) && osp<8) // ")id" -> ") id"
-        {
-          *dst++=' ';
-        }
-        *dst++=c;
-        break;
-      case ':': // current char is a :
-        if (csp==6) // replace const::A by const ::A
-        {
-          *dst++=' ';
-          csp=0;
-        }
-        else if (vosp==9) // replace volatile::A by volatile ::A
-        {
-          *dst++=' ';
-          vosp=0;
-        }
-        else if (vsp==8) // replace virtual::A by virtual ::A
-        {
-          *dst++=' ';
-          vsp=0;
-        }
-        *dst++=c;
-        break;
-      case ' ':  // fallthrough
-      case '\n': // fallthrough
-      case '\t':
-        {
-          if (g_charAroundSpace.charMap[static_cast<uint8_t>(pc)].before &&
-              g_charAroundSpace.charMap[static_cast<uint8_t>(nc)].after  &&
-              !(pc==',' && nc=='.') &&
-              (osp<8 || (osp>=8 && isId(pc) && isId(nc)))
-                  // e.g.    'operator >>' -> 'operator>>',
-                  //         'operator "" _x' -> 'operator""_x',
-                  // but not 'operator int' -> 'operatorint'
-             )
-          { // keep space
-            *dst++=' ';
-          }
-          else if ((pc=='*' || pc=='&' || pc=='.') && nc=='>')
-          {
-            *dst++=' ';
-          }
-        }
-        break;
-      default:
-        *dst++=c;
-        auto correctKeywordAllowedInsideScope = [&](char cc,size_t &matchLen,size_t totalLen) {
-          if (c==cc && matchLen==totalLen)
-          {
-            if ((i+2<l && src[i+1] == ':' && src[i+2] == ':') ||                     // keyword::
-                ((i>matchLen && src[i-matchLen] == ':' && src[i-matchLen-1] == ':')) // ::keyword
-               ) matchLen = 0;
-          };
-        };
-        correctKeywordAllowedInsideScope('t',csp, 5); // keyword: const
-        correctKeywordAllowedInsideScope('e',vosp,8); // keyword: volatile
-        correctKeywordAllowedInsideScope('l',vsp, 7); // keyword: virtual
-
-        auto correctKeywordNotPartOfScope = [&](char cc,size_t &matchLen,size_t totalLen)
-        {
-          if (c==cc && matchLen==totalLen && i+1<l && // found matching keyword
-              !(isId(nc) || nc==')' || nc==',' || qisspace(nc))
-             ) // prevent keyword ::A from being converted to keyword::A
-          {
-            *dst++=' ';
-            matchLen=0;
-          }
-        };
-        correctKeywordNotPartOfScope('t',csp, 5); // keyword: const
-        correctKeywordNotPartOfScope('e',vosp,8); // keyword: volatile
-        correctKeywordNotPartOfScope('l',vsp, 7); // keyword: virtual
-        break;
+      }
     }
-    pc=c;
+    break;
+    case '<': // current char is a <
+      *dst++ = c;
+      if (i + 1 < l &&
+          (isId(nc)) && // next char is an id char
+          (osp < 8)     // string in front is not "operator"
+      )
+      {
+        *dst++ = ' '; // add extra space
+      }
+      break;
+    case '>': // current char is a >
+      if (i > 0 && !isspace(static_cast<uint8_t>(pc)) &&
+          (isId(pc) || pc == '*' || pc == '&' || pc == '.' || pc == '>') && // prev char is an id char or space or *&.
+          (osp < 8 || (osp == 8 && pc != '-'))                              // string in front is not "operator>" or "operator->"
+      )
+      {
+        *dst++ = ' '; // add extra space in front
+      }
+      *dst++ = c;
+      if (i + 1 < l && (nc == '-' || nc == '&')) // '>-' -> '> -'
+      {
+        *dst++ = ' '; // add extra space after
+      }
+      break;
+    case ',': // current char is a ,
+      *dst++ = c;
+      if (i > 0 && !isspace(static_cast<uint8_t>(pc)) &&
+          ((i + 1 < l && (isId(nc) || nc == '[')) ||                         // the [ is for attributes (see bug702170)
+           (i + 2 < l && nc == '$' && isId(src[i + 2])) ||                   // for PHP: ',$name' -> ', $name'
+           (i + 3 < l && nc == '&' && src[i + 2] == '$' && isId(src[i + 3])) // for PHP: ',&$name' -> ', &$name'
+           ))
+      {
+        *dst++ = ' '; // add extra space after
+      }
+      break;
+    case '^': // CLI 'Type^name' -> 'Type^ name'
+    case '%': // CLI 'Type%name' -> 'Type% name'
+      *dst++ = c;
+      if (cliSupport && i + 1 < l && (isId(nc) || nc == '-'))
+      {
+        *dst++ = ' '; // add extra space after
+      }
+      break;
+    case ')': // current char is a )  -> ')name' -> ') name'
+      *dst++ = c;
+      if (i + 1 < l && (isId(nc) || nc == '-'))
+      {
+        *dst++ = ' '; // add extra space after
+      }
+      break;
+    case '*':
+      if (i > 0 && pc != ' ' && pc != '\t' && pc != ':' &&
+          pc != '*' && pc != '&' && pc != '(' && pc != '/' &&
+          pc != '.' && osp < 9)
+      // avoid splitting &&, **, .*, operator*, operator->*
+      {
+        *dst++ = ' ';
+      }
+      *dst++ = c;
+      break;
+    case '&':
+      if (i > 0 && isId(pc) && osp < 9)
+      {
+        if (nc != '=')
+        // avoid splitting operator&=
+        {
+          *dst++ = ' ';
+        }
+      }
+      *dst++ = c;
+      break;
+    case '$': // '$name' -> ' $name'
+              // 'name$name' -> 'name$name'
+      if (isId(pc))
+      {
+        *dst++ = c;
+        break;
+      }
+      // else fallthrough
+    case '@':  // '@name' -> ' @name'
+    case '\'': // ''name' -> '' name'
+      if (i > 0 && i + 1 < l && pc != '=' && pc != ':' && !isspace(static_cast<uint8_t>(pc)) &&
+          isId(nc) && osp < 8) // ")id" -> ") id"
+      {
+        *dst++ = ' ';
+      }
+      *dst++ = c;
+      break;
+    case ':':       // current char is a :
+      if (csp == 6) // replace const::A by const ::A
+      {
+        *dst++ = ' ';
+        csp    = 0;
+      }
+      else if (vosp == 9) // replace volatile::A by volatile ::A
+      {
+        *dst++ = ' ';
+        vosp   = 0;
+      }
+      else if (vsp == 8) // replace virtual::A by virtual ::A
+      {
+        *dst++ = ' ';
+        vsp    = 0;
+      }
+      *dst++ = c;
+      break;
+    case ' ':  // fallthrough
+    case '\n': // fallthrough
+    case '\t':
+    {
+      if (g_charAroundSpace.charMap[static_cast<uint8_t>(pc)].before &&
+          g_charAroundSpace.charMap[static_cast<uint8_t>(nc)].after &&
+          !(pc == ',' && nc == '.') &&
+          (osp < 8 || (osp >= 8 && isId(pc) && isId(nc)))
+          // e.g.    'operator >>' -> 'operator>>',
+          //         'operator "" _x' -> 'operator""_x',
+          // but not 'operator int' -> 'operatorint'
+      )
+      { // keep space
+        *dst++ = ' ';
+      }
+      else if ((pc == '*' || pc == '&' || pc == '.') && nc == '>')
+      {
+        *dst++ = ' ';
+      }
+    }
+    break;
+    default:
+      *dst++                                = c;
+      auto correctKeywordAllowedInsideScope = [&](char cc, size_t &matchLen, size_t totalLen) {
+        if (c == cc && matchLen == totalLen)
+        {
+          if ((i + 2 < l && src[i + 1] == ':' && src[i + 2] == ':') ||                     // keyword::
+              ((i > matchLen && src[i - matchLen] == ':' && src[i - matchLen - 1] == ':')) // ::keyword
+              ) matchLen = 0;
+        };
+      };
+      correctKeywordAllowedInsideScope('t', csp, 5);  // keyword: const
+      correctKeywordAllowedInsideScope('e', vosp, 8); // keyword: volatile
+      correctKeywordAllowedInsideScope('l', vsp, 7);  // keyword: virtual
+
+      auto correctKeywordNotPartOfScope = [&](char cc, size_t &matchLen, size_t totalLen) {
+        if (c == cc && matchLen == totalLen && i + 1 < l &&        // found matching keyword
+            !(isId(nc) || nc == ')' || nc == ',' || qisspace(nc))) // prevent keyword ::A from being converted to keyword::A
+        {
+          *dst++   = ' ';
+          matchLen = 0;
+        }
+      };
+      correctKeywordNotPartOfScope('t', csp, 5);  // keyword: const
+      correctKeywordNotPartOfScope('e', vosp, 8); // keyword: volatile
+      correctKeywordNotPartOfScope('l', vsp, 7);  // keyword: virtual
+      break;
+    }
+    pc = c;
   }
-  *dst++='\0';
+  *dst++ = '\0';
   //printf("removeRedundantWhitespace(%s)->%s\n",qPrint(s),growBuf);
   return growBuf;
 }
@@ -826,23 +822,23 @@ QCString removeRedundantWhiteSpace(const QCString &s)
  */
 int findParameterList(const QCString &name)
 {
-  int pos=-1;
-  int templateDepth=0;
+  int pos           = -1;
+  int templateDepth = 0;
   do
   {
     if (templateDepth > 0)
     {
-      int nextOpenPos=name.findRev('>', pos);
-      int nextClosePos=name.findRev('<', pos);
-      if (nextOpenPos!=-1 && nextOpenPos>nextClosePos)
+      int nextOpenPos  = name.findRev('>', pos);
+      int nextClosePos = name.findRev('<', pos);
+      if (nextOpenPos != -1 && nextOpenPos > nextClosePos)
       {
         ++templateDepth;
-        pos=nextOpenPos-1;
+        pos = nextOpenPos - 1;
       }
-      else if (nextClosePos!=-1)
+      else if (nextClosePos != -1)
       {
         --templateDepth;
-        pos=nextClosePos-1;
+        pos = nextClosePos - 1;
       }
       else // more >'s than <'s, see bug701295
       {
@@ -851,179 +847,181 @@ int findParameterList(const QCString &name)
     }
     else
     {
-      int lastAnglePos=name.findRev('>', pos);
-      int bracePos=name.findRev('(', pos);
-      if (lastAnglePos!=-1 && lastAnglePos>bracePos)
+      int lastAnglePos = name.findRev('>', pos);
+      int bracePos     = name.findRev('(', pos);
+      if (lastAnglePos != -1 && lastAnglePos > bracePos)
       {
         ++templateDepth;
-        pos=lastAnglePos-1;
+        pos = lastAnglePos - 1;
       }
       else
       {
-        int bp = bracePos>0 ? name.findRev('(',bracePos-1) : -1;
+        int bp = bracePos > 0 ? name.findRev('(', bracePos - 1) : -1;
         // bp test is to allow foo(int(&)[10]), but we need to make an exception for operator()
-        return bp==-1 || (bp>=8 && name.mid(bp-8,10)=="operator()") ? bracePos : bp;
+        return bp == -1 || (bp >= 8 && name.mid(bp - 8, 10) == "operator()") ? bracePos : bp;
       }
     }
-  } while (pos!=-1);
+  } while (pos != -1);
   return -1;
 }
 
 bool rightScopeMatch(const QCString &scope, const QCString &name)
 {
-  size_t sl=scope.length();
-  size_t nl=name.length();
-  return (name==scope || // equal
-          (scope.right(nl)==name && // substring
-           sl>1+nl && scope.at(sl-nl-1)==':' && scope.at(sl-nl-2)==':' // scope
-          )
-         );
+  size_t sl = scope.length();
+  size_t nl = name.length();
+  return (name == scope ||                                                             // equal
+          (scope.right(nl) == name &&                                                  // substring
+           sl > 1 + nl && scope.at(sl - nl - 1) == ':' && scope.at(sl - nl - 2) == ':' // scope
+           ));
 }
 
 bool leftScopeMatch(const QCString &scope, const QCString &name)
 {
-  size_t sl=scope.length();
-  size_t nl=name.length();
-  return (name==scope || // equal
-          (name.left(sl)==scope && // substring
-           nl>sl+1 && name.at(sl)==':' && name.at(sl+1)==':' // scope
-          )
-         );
+  size_t sl = scope.length();
+  size_t nl = name.length();
+  return (name == scope ||                                             // equal
+          (name.left(sl) == scope &&                                   // substring
+           nl > sl + 1 && name.at(sl) == ':' && name.at(sl + 1) == ':' // scope
+           ));
 }
 
 
 void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
-    const FileDef *fileScope,const Definition *self,
-    const QCString &text, bool autoBreak,bool external,
-    bool keepSpaces,int indentLevel)
+                 const FileDef *fileScope, const Definition *self,
+                 const QCString &text, bool autoBreak, bool external,
+                 bool keepSpaces, int indentLevel)
 {
   AUTO_TRACE("scope={} fileScope={} text={} autoBreak={} external={} keepSpaces={} indentLevel={}",
-      scope?scope->name():"",fileScope?fileScope->name():"",
-      text,autoBreak,external,keepSpaces,indentLevel);
+             scope ? scope->name() : "", fileScope ? fileScope->name() : "",
+             text, autoBreak, external, keepSpaces, indentLevel);
   if (text.isEmpty()) return;
   //printf("linkify='%s'\n",qPrint(text));
-  std::string_view txtStr=text.view();
-  size_t strLen = txtStr.length();
-  if (strLen==0) return;
+  std::string_view txtStr = text.view();
+  size_t           strLen = txtStr.length();
+  if (strLen == 0) return;
 
   static const reg::Ex regExp(R"((::)?\a[\w~!\\.:$"]*)");
-  reg::Iterator it(txtStr,regExp);
-  reg::Iterator end;
+  reg::Iterator        it(txtStr, regExp);
+  reg::Iterator        end;
 
   //printf("linkifyText scope=%s fileScope=%s strtxt=%s strlen=%zu external=%d\n",
   //    scope ? qPrint(scope->name()):"<none>",
   //    fileScope ? qPrint(fileScope->name()) : "<none>",
   //    qPrint(txtStr),strLen,external);
-  size_t index=0;
-  size_t skipIndex=0;
-  size_t floatingIndex=0;
-  for (; it!=end ; ++it) // for each word from the text string
+  size_t               index         = 0;
+  size_t               skipIndex     = 0;
+  size_t               floatingIndex = 0;
+  for (; it != end; ++it) // for each word from the text string
   {
-    const auto &match = *it;
-    size_t newIndex = match.position();
-    size_t matchLen = match.length();
-    floatingIndex+=newIndex-skipIndex+matchLen;
-    if (newIndex>0 && txtStr.at(newIndex-1)=='0') // ignore hex numbers (match x00 in 0x00)
+    const auto &match    = *it;
+    size_t      newIndex = match.position();
+    size_t      matchLen = match.length();
+    floatingIndex += newIndex - skipIndex + matchLen;
+    if (newIndex > 0 && txtStr.at(newIndex - 1) == '0') // ignore hex numbers (match x00 in 0x00)
     {
-      std::string_view part = txtStr.substr(skipIndex,newIndex+matchLen-skipIndex);
-      out.writeString(part,keepSpaces);
-      skipIndex=index=newIndex+matchLen;
+      std::string_view part = txtStr.substr(skipIndex, newIndex + matchLen - skipIndex);
+      out.writeString(part, keepSpaces);
+      skipIndex = index = newIndex + matchLen;
       continue;
     }
 
     // add non-word part to the result
-    bool insideString=FALSE;
-    for (size_t i=index;i<newIndex;i++)
+    bool insideString = FALSE;
+    for (size_t i = index; i < newIndex; i++)
     {
-      if (txtStr.at(i)=='"') insideString=!insideString;
-      if (txtStr.at(i)=='\\') i++; // skip next character it is escaped
+      if (txtStr.at(i) == '"') insideString = !insideString;
+      if (txtStr.at(i) == '\\') i++; // skip next character it is escaped
     }
 
     //printf("floatingIndex=%d strlen=%d autoBreak=%d\n",floatingIndex,strLen,autoBreak);
-    if (strLen>35 && floatingIndex>30 && autoBreak) // try to insert a split point
+    if (strLen > 35 && floatingIndex > 30 && autoBreak) // try to insert a split point
     {
-      std::string_view splitText = txtStr.substr(skipIndex,newIndex-skipIndex);
-      size_t splitLength = splitText.length();
-      size_t offset=1;
-      size_t i = splitText.find(',');
-      if (i==std::string::npos) { i=splitText.find('<'); if (i!=std::string::npos) offset=0; }
-      if (i==std::string::npos) i=splitText.find('>');
-      if (i==std::string::npos) i=splitText.find(' ');
-      //printf("splitText=[%s] len=%d i=%d offset=%d\n",qPrint(splitText),splitLength,i,offset);
-      if (i!=std::string::npos) // add a link-break at i in case of Html output
+      std::string_view splitText   = txtStr.substr(skipIndex, newIndex - skipIndex);
+      size_t           splitLength = splitText.length();
+      size_t           offset      = 1;
+      size_t           i           = splitText.find(',');
+      if (i == std::string::npos)
       {
-        std::string_view part1 = splitText.substr(0,i+offset);
-        out.writeString(part1,keepSpaces);
-        out.writeBreak(indentLevel==0 ? 0 : indentLevel+1);
-        std::string_view part2 = splitText.substr(i+offset);
-        out.writeString(part2,keepSpaces);
-        floatingIndex=splitLength-i-offset+matchLen;
+        i = splitText.find('<');
+        if (i != std::string::npos) offset = 0;
+      }
+      if (i == std::string::npos) i = splitText.find('>');
+      if (i == std::string::npos) i = splitText.find(' ');
+      //printf("splitText=[%s] len=%d i=%d offset=%d\n",qPrint(splitText),splitLength,i,offset);
+      if (i != std::string::npos) // add a link-break at i in case of Html output
+      {
+        std::string_view part1 = splitText.substr(0, i + offset);
+        out.writeString(part1, keepSpaces);
+        out.writeBreak(indentLevel == 0 ? 0 : indentLevel + 1);
+        std::string_view part2 = splitText.substr(i + offset);
+        out.writeString(part2, keepSpaces);
+        floatingIndex = splitLength - i - offset + matchLen;
       }
       else
       {
-        out.writeString(splitText,keepSpaces);
+        out.writeString(splitText, keepSpaces);
       }
     }
     else
     {
       //ol.docify(txtStr.mid(skipIndex,newIndex-skipIndex));
-      std::string_view part = txtStr.substr(skipIndex,newIndex-skipIndex);
-      out.writeString(part,keepSpaces);
+      std::string_view part = txtStr.substr(skipIndex, newIndex - skipIndex);
+      out.writeString(part, keepSpaces);
     }
     // get word from string
-    std::string_view word=txtStr.substr(newIndex,matchLen);
-    QCString matchWord = substitute(substitute(word,"\\","::"),".","::");
+    std::string_view word      = txtStr.substr(newIndex, matchLen);
+    QCString         matchWord = substitute(substitute(word, "\\", "::"), ".", "::");
     //printf("linkifyText word=%s matchWord=%s scope=%s\n",
     //    qPrint(word),qPrint(matchWord),scope ? qPrint(scope->name()) : "<none>");
-    bool found=FALSE;
+    bool             found     = FALSE;
     if (!insideString)
     {
-      const ClassDef     *cd=nullptr;
-      const ConceptDef   *cnd=nullptr;
+      const ClassDef   *cd  = nullptr;
+      const ConceptDef *cnd = nullptr;
       //printf("** Match word '%s'\n",qPrint(matchWord));
 
-      SymbolResolver resolver(fileScope);
-      cd=resolver.resolveClass(scope,matchWord);
+      SymbolResolver    resolver(fileScope);
+      cd                       = resolver.resolveClass(scope, matchWord);
       const MemberDef *typeDef = resolver.getTypedef();
       if (typeDef) // First look at typedef then class, see bug 584184.
       {
         if (external ? typeDef->isLinkable() : typeDef->isLinkableInProject())
         {
-          if (typeDef->getOuterScope()!=self)
+          if (typeDef->getOuterScope() != self)
           {
             //printf("Found typedef %s word='%s'\n",qPrint(typeDef->name()),qPrint(word));
             out.writeLink(typeDef->getReference(),
-                typeDef->getOutputFileBase(),
-                typeDef->anchor(),
-                word);
-            found=TRUE;
+                          typeDef->getOutputFileBase(),
+                          typeDef->anchor(),
+                          word);
+            found = TRUE;
           }
         }
       }
       auto writeCompoundName = [&](const auto *cd_) {
         if (external ? cd_->isLinkable() : cd_->isLinkableInProject())
         {
-          if (self==nullptr || cd_->qualifiedName()!=self->qualifiedName())
+          if (self == nullptr || cd_->qualifiedName() != self->qualifiedName())
           {
             //printf("Found compound %s word='%s'\n",qPrint(cd->name()),qPrint(word));
-            out.writeLink(cd_->getReference(),cd_->getOutputFileBase(),cd_->anchor(),word);
-            found=TRUE;
+            out.writeLink(cd_->getReference(), cd_->getOutputFileBase(), cd_->anchor(), word);
+            found = TRUE;
           }
         }
       };
-      if ((cd=getClass(matchWord)))
+      if ((cd = getClass(matchWord)))
       {
         writeCompoundName(cd);
       }
-      else if ((cd=getClass(matchWord+"-p"))) // search for Obj-C protocols as well
+      else if ((cd = getClass(matchWord + "-p"))) // search for Obj-C protocols as well
       {
         writeCompoundName(cd);
       }
-      else if ((cnd=getConcept(matchWord))) // search for concepts
+      else if ((cnd = getConcept(matchWord))) // search for concepts
       {
         writeCompoundName(cnd);
       }
-      else if (const Definition *d=nullptr; cd==nullptr && !found && (d=resolver.resolveSymbol(scope,matchWord)))
+      else if (const Definition *d = nullptr; cd == nullptr && !found && (d = resolver.resolveSymbol(scope, matchWord)))
       {
         writeCompoundName(d);
       }
@@ -1032,52 +1030,47 @@ void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
         //printf("   -> nothing\n");
       }
 
-      int m = matchWord.findRev("::");
+      int      m = matchWord.findRev("::");
       QCString scopeName;
       if (scope &&
-          (scope->definitionType()==Definition::TypeClass ||
-           scope->definitionType()==Definition::TypeNamespace
-          )
-         )
+          (scope->definitionType() == Definition::TypeClass ||
+           scope->definitionType() == Definition::TypeNamespace))
       {
-        scopeName=scope->name();
+        scopeName = scope->name();
       }
-      else if (m!=-1)
+      else if (m != -1)
       {
         scopeName = matchWord.left(m);
-        matchWord = matchWord.mid(m+2);
+        matchWord = matchWord.mid(m + 2);
       }
 
       //printf("ScopeName=%s\n",qPrint(scopeName));
       //if (!found) printf("Trying to link '%s' in '%s'\n",qPrint(word),qPrint(scopeName));
       if (!found)
       {
-        GetDefInput input(scopeName,matchWord,QCString());
+        GetDefInput  input(scopeName, matchWord, QCString());
         GetDefResult result = getDefs(input);
         if (result.found && result.md &&
-            (external ? result.md->isLinkable() : result.md->isLinkableInProject())
-           )
+            (external ? result.md->isLinkable() : result.md->isLinkableInProject()))
         {
           //printf("Found ref scope=%s\n",d ? qPrint(d->name()) : "<global>");
           //ol.writeObjectLink(d->getReference(),d->getOutputFileBase(),
           //                       md->anchor(),word);
-          if (result.md!=self && (self==nullptr || result.md->name()!=self->name()))
-            // name check is needed for overloaded members, where getDefs just returns one
+          if (result.md != self && (self == nullptr || result.md->name() != self->name()))
+          // name check is needed for overloaded members, where getDefs just returns one
           {
             /* in case of Fortran scope and the variable is a non Fortran variable: don't link,
              * see also getLink in fortrancode.l
              */
             if (!(scope &&
-                 (scope->getLanguage() == SrcLangExt::Fortran) &&
-                 result.md->isVariable() &&
-                 (result.md->getLanguage() != SrcLangExt::Fortran)
-                )
-               )
+                  (scope->getLanguage() == SrcLangExt::Fortran) &&
+                  result.md->isVariable() &&
+                  (result.md->getLanguage() != SrcLangExt::Fortran)))
             {
               //printf("found symbol %s word='%s'\n",qPrint(result.md->name()),qPrint(word));
-              out.writeLink(result.md->getReference(),result.md->getOutputFileBase(),
-                  result.md->anchor(),word);
-              found=TRUE;
+              out.writeLink(result.md->getReference(), result.md->getOutputFileBase(),
+                            result.md->anchor(), word);
+              found = TRUE;
             }
           }
         }
@@ -1086,46 +1079,45 @@ void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
 
     if (!found) // add word to the result
     {
-      out.writeString(word,keepSpaces);
+      out.writeString(word, keepSpaces);
     }
     // set next start point in the string
     //printf("index=%d/%d\n",index,txtStr.length());
-    skipIndex=index=newIndex+matchLen;
+    skipIndex = index = newIndex + matchLen;
   }
   // add last part of the string to the result.
   //ol.docify(txtStr.right(txtStr.length()-skipIndex));
   std::string_view lastPart = txtStr.substr(skipIndex);
-  out.writeString(lastPart,keepSpaces);
+  out.writeString(lastPart, keepSpaces);
 }
 
-void writeMarkerList(OutputList &ol,const std::string &markerText,size_t numMarkers,
+void writeMarkerList(OutputList &ol, const std::string &markerText, size_t numMarkers,
                      std::function<void(size_t)> replaceFunc)
 {
   static const reg::Ex marker(R"(@(\d+))");
-  reg::Iterator it(markerText,marker);
-  reg::Iterator end;
-  size_t index=0;
+  reg::Iterator        it(markerText, marker);
+  reg::Iterator        end;
+  size_t               index = 0;
   // now replace all markers in inheritLine with links to the classes
-  for ( ; it!=end ; ++it)
+  for (; it != end; ++it)
   {
-    const auto &match = *it;
-    size_t newIndex = match.position();
-    size_t matchLen = match.length();
-    ol.parseText(markerText.substr(index,newIndex-index));
+    const auto &match    = *it;
+    size_t      newIndex = match.position();
+    size_t      matchLen = match.length();
+    ol.parseText(markerText.substr(index, newIndex - index));
     unsigned long entryIndex = std::stoul(match[1].str());
-    if (entryIndex<static_cast<unsigned long>(numMarkers))
+    if (entryIndex < static_cast<unsigned long>(numMarkers))
     {
       replaceFunc(entryIndex);
     }
-    index=newIndex+matchLen;
+    index = newIndex + matchLen;
   }
   ol.parseText(markerText.substr(index));
 }
 
-void writeExamples(OutputList &ol,const ExampleList &list)
+void writeExamples(OutputList &ol, const ExampleList &list)
 {
-  auto replaceFunc = [&list,&ol](size_t entryIndex)
-  {
+  auto replaceFunc = [&list, &ol](size_t entryIndex) {
     const auto &e = list[entryIndex];
     ol.pushGeneratorState();
     ol.disable(OutputType::Latex);
@@ -1133,7 +1125,7 @@ void writeExamples(OutputList &ol,const ExampleList &list)
     ol.disable(OutputType::Docbook);
     // link for Html / man
     //printf("writeObjectLink(file=%s)\n",qPrint(e->file));
-    ol.writeObjectLink(QCString(),e.file,e.anchor,e.name);
+    ol.writeObjectLink(QCString(), e.file, e.anchor, e.name);
     ol.popGeneratorState();
 
     ol.pushGeneratorState();
@@ -1141,7 +1133,7 @@ void writeExamples(OutputList &ol,const ExampleList &list)
     ol.disable(OutputType::Html);
     // link for Latex / pdf with anchor because the sources
     // are not hyperlinked (not possible with a verbatim environment).
-    ol.writeObjectLink(QCString(),e.file,QCString(),e.name);
+    ol.writeObjectLink(QCString(), e.file, QCString(), e.name);
     ol.popGeneratorState();
   };
 
@@ -1161,8 +1153,8 @@ QCString inlineArgListToDoc(const ArgumentList &al)
       if (a.hasDocumentation())
       {
         QCString docsWithoutDir = a.docs;
-        QCString direction = extractDirection(docsWithoutDir);
-        paramDocs+=" \\ilinebr @param"+direction+" "+a.name+" "+docsWithoutDir;
+        QCString direction      = extractDirection(docsWithoutDir);
+        paramDocs += " \\ilinebr @param" + direction + " " + a.name + " " + docsWithoutDir;
       }
     }
   }
@@ -1180,7 +1172,7 @@ QCString inlineTemplateArgListToDoc(const ArgumentList &al)
       {
         if (!a.name.isEmpty())
         {
-          paramDocs+=" \\ilinebr @tparam "+a.name+" "+a.docs;
+          paramDocs += " \\ilinebr @tparam " + a.name + " " + a.docs;
         }
         else if (!a.type.isEmpty())
         {
@@ -1188,7 +1180,7 @@ QCString inlineTemplateArgListToDoc(const ArgumentList &al)
           type.stripPrefix("class ");
           type.stripPrefix("typename ");
           type = type.stripWhiteSpace();
-          paramDocs+=" \\ilinebr @tparam "+type+" "+a.docs;
+          paramDocs += " \\ilinebr @tparam " + type + " " + a.docs;
         }
       }
     }
@@ -1196,96 +1188,98 @@ QCString inlineTemplateArgListToDoc(const ArgumentList &al)
   return paramDocs;
 }
 
-QCString argListToString(const ArgumentList &al,bool useCanonicalType,bool showDefVals)
+QCString argListToString(const ArgumentList &al, bool useCanonicalType, bool showDefVals)
 {
   QCString result;
   if (!al.hasParameters()) return result;
-  result+="(";
-  for (auto it = al.begin() ; it!=al.end() ;)
+  result += "(";
+  for (auto it = al.begin(); it != al.end();)
   {
-    Argument a = *it;
+    Argument a     = *it;
     QCString type1 = useCanonicalType && !a.canType.isEmpty() ? a.canType : a.type;
     QCString type2;
-    int i=type1.find(")("); // hack to deal with function pointers
-    if (i!=-1)
+    int      i = type1.find(")("); // hack to deal with function pointers
+    if (i != -1)
     {
-      type2=type1.mid(i);
-      type1=type1.left(i);
+      type2 = type1.mid(i);
+      type1 = type1.left(i);
     }
     if (!a.attrib.isEmpty())
     {
-      result+=a.attrib+" ";
+      result += a.attrib + " ";
     }
     if (!a.name.isEmpty() || !a.array.isEmpty())
     {
-      result+= type1+" "+a.name+type2+a.array;
+      result += type1 + " " + a.name + type2 + a.array;
     }
     else
     {
-      result+= type1+type2;
+      result += type1 + type2;
     }
     if (!a.defval.isEmpty() && showDefVals)
     {
-      result+="="+a.defval;
+      result += "=" + a.defval;
     }
     ++it;
-    if (it!=al.end()) result+=", ";
+    if (it != al.end()) result += ", ";
   }
-  result+=")";
-  if (al.constSpecifier()) result+=" const";
-  if (al.volatileSpecifier()) result+=" volatile";
-  if (al.refQualifier()==RefQualifierType::LValue) result+=" &";
-  else if (al.refQualifier()==RefQualifierType::RValue) result+=" &&";
-  if (!al.trailingReturnType().isEmpty()) result+=al.trailingReturnType();
-  if (al.pureSpecifier()) result+=" =0";
+  result += ")";
+  if (al.constSpecifier()) result += " const";
+  if (al.volatileSpecifier()) result += " volatile";
+  if (al.refQualifier() == RefQualifierType::LValue)
+    result += " &";
+  else if (al.refQualifier() == RefQualifierType::RValue)
+    result += " &&";
+  if (!al.trailingReturnType().isEmpty()) result += al.trailingReturnType();
+  if (al.pureSpecifier()) result += " =0";
   return removeRedundantWhiteSpace(result);
 }
 
-QCString tempArgListToString(const ArgumentList &al,SrcLangExt lang,bool includeDefault)
+QCString tempArgListToString(const ArgumentList &al, SrcLangExt lang, bool includeDefault)
 {
   QCString result;
   if (al.empty()) return result;
-  result="<";
-  bool first=true;
+  result     = "<";
+  bool first = true;
   for (const auto &a : al)
   {
     if (a.defval.isEmpty() || includeDefault)
     {
-      if (!first) result+=", ";
+      if (!first) result += ", ";
       if (!a.name.isEmpty()) // add template argument name
       {
-        if (lang==SrcLangExt::Java || lang==SrcLangExt::CSharp)
+        if (lang == SrcLangExt::Java || lang == SrcLangExt::CSharp)
         {
-          result+=a.type+" ";
+          result += a.type + " ";
         }
-        result+=a.name;
+        result += a.name;
       }
       else // extract name from type
       {
-        int i = static_cast<int>(a.type.length())-1;
-        while (i>=0 && isId(a.type.at(i))) i--;
-        if (i>0)
+        int i = static_cast<int>(a.type.length()) - 1;
+        while (i >= 0 && isId(a.type.at(i))) i--;
+        if (i > 0)
         {
-          result+=a.type.right(a.type.length()-i-1);
-          if (a.type.find("...")!=-1)
+          result += a.type.right(a.type.length() - i - 1);
+          if (a.type.find("...") != -1)
           {
-            result+="...";
+            result += "...";
           }
         }
         else // nothing found -> take whole name
         {
-          result+=a.type;
+          result += a.type;
         }
       }
-      if (!a.typeConstraint.isEmpty() && lang==SrcLangExt::Java)
+      if (!a.typeConstraint.isEmpty() && lang == SrcLangExt::Java)
       {
-        result+=" extends "; // TODO: now Java specific, C# has where...
-        result+=a.typeConstraint;
+        result += " extends "; // TODO: now Java specific, C# has where...
+        result += a.typeConstraint;
       }
-      first=false;
+      first = false;
     }
   }
-  result+=">";
+  result += ">";
   return removeRedundantWhiteSpace(result);
 }
 
@@ -1299,57 +1293,57 @@ QCString tempArgListToString(const ArgumentList &al,SrcLangExt lang,bool include
  */
 static void filterCRLF(std::string &contents)
 {
-  size_t src  = 0;    // source index
-  size_t dest = 0;   // destination index
+  size_t src  = 0; // source index
+  size_t dest = 0; // destination index
   size_t len  = contents.length();
 
-  while (src<len)
+  while (src < len)
   {
-    char c = contents[src++];  // Remember the processed character.
-    if (c == '\r')             // CR to be solved (MAC, DOS)
+    char c = contents[src++]; // Remember the processed character.
+    if (c == '\r')            // CR to be solved (MAC, DOS)
     {
-      c = '\n';                // each CR to LF
-      if (src<len && contents[src] == '\n')
+      c = '\n'; // each CR to LF
+      if (src < len && contents[src] == '\n')
       {
-        ++src;                 // skip LF just after CR (DOS)
+        ++src; // skip LF just after CR (DOS)
       }
     }
-    else if ( c == '\0' && src<len-1) // filter out internal \0 characters, as it will confuse the parser
+    else if (c == '\0' && src < len - 1) // filter out internal \0 characters, as it will confuse the parser
     {
-      c = ' ';                 // turn into a space
+      c = ' '; // turn into a space
     }
-    contents[dest++] = c;      // copy the (modified) character to dest
+    contents[dest++] = c; // copy the (modified) character to dest
   }
   contents.resize(dest);
 }
 
-static QCString getFilterFromList(const QCString &name,const StringVector &filterList,bool &found)
+static QCString getFilterFromList(const QCString &name, const StringVector &filterList, bool &found)
 {
-  found=FALSE;
+  found = FALSE;
   // compare the file name to the filter pattern list
   for (const auto &filterStr : filterList)
   {
-    QCString fs = filterStr;
-    int i_equals=fs.find('=');
-    if (i_equals!=-1)
+    QCString fs       = filterStr;
+    int      i_equals = fs.find('=');
+    if (i_equals != -1)
     {
       QCString filterPattern = fs.left(i_equals);
-      QCString input = name;
+      QCString input         = name;
       if (!Portable::fileSystemIsCaseSensitive())
       {
         filterPattern = filterPattern.lower();
-        input = input.lower();
+        input         = input.lower();
       }
-      reg::Ex re(filterPattern.str(),reg::Ex::Mode::Wildcard);
-      if (re.isValid() && reg::match(input.str(),re))
+      reg::Ex re(filterPattern.str(), reg::Ex::Mode::Wildcard);
+      if (re.isValid() && reg::match(input.str(), re))
       {
         // found a match!
-        QCString filterName = fs.mid(i_equals+1);
-        if (filterName.find(' ')!=-1)
+        QCString filterName = fs.mid(i_equals + 1);
+        if (filterName.find(' ') != -1)
         { // add quotes if the name has spaces
-          filterName="\""+filterName+"\"";
+          filterName = "\"" + filterName + "\"";
         }
-        found=TRUE;
+        found = TRUE;
         return filterName;
       }
     }
@@ -1364,23 +1358,23 @@ static QCString getFilterFromList(const QCString &name,const StringVector &filte
  *  In case \a inSourceCode is TRUE then first the source filter list is
  *  considered.
  */
-QCString getFileFilter(const QCString &name,bool isSourceCode)
+QCString getFileFilter(const QCString &name, bool isSourceCode)
 {
   // sanity check
   if (name.isEmpty()) return "";
 
-  const StringVector& filterSrcList = Config_getList(FILTER_SOURCE_PATTERNS);
-  const StringVector& filterList    = Config_getList(FILTER_PATTERNS);
+  const StringVector &filterSrcList = Config_getList(FILTER_SOURCE_PATTERNS);
+  const StringVector &filterList    = Config_getList(FILTER_PATTERNS);
 
-  QCString filterName;
-  bool found=FALSE;
+  QCString            filterName;
+  bool                found = FALSE;
   if (isSourceCode && !filterSrcList.empty())
   { // first look for source filter pattern list
-    filterName = getFilterFromList(name,filterSrcList,found);
+    filterName = getFilterFromList(name, filterSrcList, found);
   }
   if (!found && filterName.isEmpty())
   { // then look for filter pattern list
-    filterName = getFilterFromList(name,filterList,found);
+    filterName = getFilterFromList(name, filterList, found);
   }
   if (!found)
   { // then use the generic input filter
@@ -1389,9 +1383,9 @@ QCString getFileFilter(const QCString &name,bool isSourceCode)
   else
   {
     /* remove surrounding double quotes */
-    if (filterName.length()>=2 && filterName[0]=='"' && filterName[static_cast<int>(filterName.length())-1]=='"')
+    if (filterName.length() >= 2 && filterName[0] == '"' && filterName[static_cast<int>(filterName.length()) - 1] == '"')
     {
-       filterName = filterName.mid(1,filterName.length()-2);
+      filterName = filterName.mid(1, filterName.length() - 2);
     }
     return filterName;
   }
@@ -1401,32 +1395,32 @@ QCString getFileFilter(const QCString &name,bool isSourceCode)
 bool transcodeCharacterStringToUTF8(std::string &input, const char *inputEncoding)
 {
   const char *outputEncoding = "UTF-8";
-  if (inputEncoding==nullptr || qstricmp(inputEncoding,outputEncoding)==0) return true;
-  size_t inputSize=input.length();
-  size_t outputSize=inputSize*4;
+  if (inputEncoding == nullptr || qstricmp(inputEncoding, outputEncoding) == 0) return true;
+  size_t   inputSize  = input.length();
+  size_t   outputSize = inputSize * 4;
   QCString output(outputSize, QCString::ExplicitSize);
-  void *cd = portable_iconv_open(outputEncoding,inputEncoding);
-  if (cd==reinterpret_cast<void *>(-1))
+  void    *cd = portable_iconv_open(outputEncoding, inputEncoding);
+  if (cd == reinterpret_cast<void *>(-1))
   {
     return false;
   }
-  bool ok=true;
-  size_t iLeft=inputSize;
-  size_t oLeft=outputSize;
-  const char *inputPtr = input.data();
-  char *outputPtr = output.rawData();
+  bool        ok        = true;
+  size_t      iLeft     = inputSize;
+  size_t      oLeft     = outputSize;
+  const char *inputPtr  = input.data();
+  char       *outputPtr = output.rawData();
   if (!portable_iconv(cd, &inputPtr, &iLeft, &outputPtr, &oLeft))
   {
-    outputSize-=static_cast<int>(oLeft);
+    outputSize -= static_cast<int>(oLeft);
     output.resize(outputSize);
-    output.at(outputSize)='\0';
+    output.at(outputSize) = '\0';
     // replace input
-    input=output.str();
+    input                 = output.str();
     //printf("iconv: input size=%d output size=%d\n[%s]\n",size,newSize,qPrint(srcBuf));
   }
   else
   {
-    ok=false;
+    ok = false;
   }
   portable_iconv_close(cd);
   return ok;
@@ -1436,17 +1430,17 @@ bool transcodeCharacterStringToUTF8(std::string &input, const char *inputEncodin
  *  is TRUE the file will be filtered by any user specified input filter.
  *  If \a name is "-" the string will be read from standard input.
  */
-QCString fileToString(const QCString &name,bool filter,bool isSourceCode)
+QCString fileToString(const QCString &name, bool filter, bool isSourceCode)
 {
   if (name.isEmpty()) return QCString();
-  bool fileOpened=false;
-  if (name[0]=='-' && name[1]==0) // read from stdin
+  bool fileOpened = false;
+  if (name[0] == '-' && name[1] == 0) // read from stdin
   {
     std::string contents;
     std::string line;
-    while (getline(std::cin,line))
+    while (getline(std::cin, line))
     {
-      contents+=line+'\n';
+      contents += line + '\n';
     }
     return contents;
   }
@@ -1455,87 +1449,92 @@ QCString fileToString(const QCString &name,bool filter,bool isSourceCode)
     FileInfo fi(name.str());
     if (!fi.exists() || !fi.isFile())
     {
-      err("file '{}' not found\n",name);
+      err("file '{}' not found\n", name);
       return "";
     }
     std::string buf;
-    fileOpened=readInputFile(name,buf,filter,isSourceCode);
+    fileOpened = readInputFile(name, buf, filter, isSourceCode);
     if (fileOpened)
     {
-      addTerminalCharIfMissing(buf,'\n');
+      addTerminalCharIfMissing(buf, '\n');
       return buf;
     }
   }
   if (!fileOpened)
   {
-    err("cannot open file '{}' for reading\n",name);
+    err("cannot open file '{}' for reading\n", name);
   }
   return "";
 }
 
-void trimBaseClassScope(const BaseClassList &bcl,QCString &s,int level=0)
+void trimBaseClassScope(const BaseClassList &bcl, QCString &s, int level = 0)
 {
   //printf("trimBaseClassScope level=%d '%s'\n",level,qPrint(s));
   for (const auto &bcd : bcl)
   {
-    ClassDef *cd=bcd.classDef;
+    ClassDef *cd   = bcd.classDef;
     //printf("Trying class %s\n",qPrint(cd->name()));
-    int spos=s.find(cd->name()+"::");
-    if (spos!=-1)
+    int       spos = s.find(cd->name() + "::");
+    if (spos != -1)
     {
-      s = s.left(spos)+s.right(
-          s.length()-spos-cd->name().length()-2
-          );
+      s = s.left(spos) + s.right(
+                           s.length() - spos - cd->name().length() - 2);
     }
     //printf("base class '%s'\n",qPrint(cd->name()));
     if (!cd->baseClasses().empty())
     {
-      trimBaseClassScope(cd->baseClasses(),s,level+1);
+      trimBaseClassScope(cd->baseClasses(), s, level + 1);
     }
   }
 }
 
-static void stripIrrelevantString(QCString &target,const QCString &str,bool insideTemplate)
+static void stripIrrelevantString(QCString &target, const QCString &str, bool insideTemplate)
 {
-  AUTO_TRACE("target='{}' str='{}'",target,str);
-  if (target==str) { target.clear(); return; }
-  int i=0,p=0;
-  int l=static_cast<int>(str.length());
-  bool changed=false;
-  int sharpCount=0;
-  while ((i=target.find(str,p))!=-1)
+  AUTO_TRACE("target='{}' str='{}'", target, str);
+  if (target == str)
   {
-    for (int q=p;q<i;q++)
+    target.clear();
+    return;
+  }
+  int  i = 0, p = 0;
+  int  l          = static_cast<int>(str.length());
+  bool changed    = false;
+  int  sharpCount = 0;
+  while ((i = target.find(str, p)) != -1)
+  {
+    for (int q = p; q < i; q++)
     {
-      if (target[q]=='<') sharpCount++;
-      else if (target[q]=='>' && sharpCount>0) sharpCount--;
+      if (target[q] == '<')
+        sharpCount++;
+      else if (target[q] == '>' && sharpCount > 0)
+        sharpCount--;
     }
-    bool isMatch = (i==0 || !isId(target.at(i-1))) && // not a character before str
-         (i+l==static_cast<int>(target.length()) || !isId(target.at(i+l))) && // not a character after str
-         !insideTemplate && sharpCount==0; // not inside template, because e.g. <const A> is different than <A>, see issue #11663
+    bool isMatch = (i == 0 || !isId(target.at(i - 1))) &&                                     // not a character before str
+                   (i + l == static_cast<int>(target.length()) || !isId(target.at(i + l))) && // not a character after str
+                   !insideTemplate && sharpCount == 0;                                        // not inside template, because e.g. <const A> is different than <A>, see issue #11663
     if (isMatch)
     {
-      int i1=target.find('*',i+l);
-      int i2=target.find('&',i+l);
-      if (i1==-1 && i2==-1)
+      int i1 = target.find('*', i + l);
+      int i2 = target.find('&', i + l);
+      if (i1 == -1 && i2 == -1)
       {
         // strip str from target at index i
-        target=target.left(i)+target.right(target.length()-i-l);
-        changed=true;
-        i-=l;
+        target  = target.left(i) + target.right(target.length() - i - l);
+        changed = true;
+        i -= l;
       }
-      else if ((i1!=-1 && i<i1) || (i2!=-1 && i<i2)) // str before * or &
+      else if ((i1 != -1 && i < i1) || (i2 != -1 && i < i2)) // str before * or &
       {
         // move str to front
-        target=str+" "+target.left(i)+target.right(target.length()-i-l);
-        changed=true;
+        target  = str + " " + target.left(i) + target.right(target.length() - i - l);
+        changed = true;
         i++;
       }
     }
-    p = i+l;
+    p = i + l;
   }
-  if (changed) target=target.stripWhiteSpace();
-  AUTO_TRACE_EXIT("target='{}'",target,str);
+  if (changed) target = target.stripWhiteSpace();
+  AUTO_TRACE_EXIT("target='{}'", target, str);
 }
 
 /*! According to the C++ spec and Ivan Vecerina:
@@ -1555,94 +1554,94 @@ static void stripIrrelevantString(QCString &target,const QCString &str,bool insi
   const T* param    ->   const T* param   // const needed
   \endcode
  */
-void stripIrrelevantConstVolatile(QCString &s,bool insideTemplate)
+void stripIrrelevantConstVolatile(QCString &s, bool insideTemplate)
 {
   //printf("stripIrrelevantConstVolatile(%s)=",qPrint(s));
-  stripIrrelevantString(s,"const",insideTemplate);
-  stripIrrelevantString(s,"volatile",insideTemplate);
-  stripIrrelevantString(s,"final",insideTemplate);
+  stripIrrelevantString(s, "const", insideTemplate);
+  stripIrrelevantString(s, "volatile", insideTemplate);
+  stripIrrelevantString(s, "final", insideTemplate);
   //printf("%s\n",qPrint(s));
 }
 
 
 static QCString stripDeclKeywords(const QCString &s)
 {
-  int i=s.find(" class ");
-  if (i!=-1) return s.left(i)+s.mid(i+6);
-  i=s.find(" typename ");
-  if (i!=-1) return s.left(i)+s.mid(i+9);
-  i=s.find(" union ");
-  if (i!=-1) return s.left(i)+s.mid(i+6);
-  i=s.find(" struct ");
-  if (i!=-1) return s.left(i)+s.mid(i+7);
+  int i = s.find(" class ");
+  if (i != -1) return s.left(i) + s.mid(i + 6);
+  i = s.find(" typename ");
+  if (i != -1) return s.left(i) + s.mid(i + 9);
+  i = s.find(" union ");
+  if (i != -1) return s.left(i) + s.mid(i + 6);
+  i = s.find(" struct ");
+  if (i != -1) return s.left(i) + s.mid(i + 7);
   return s;
 }
 
 // forward decl for circular dependencies
-static QCString extractCanonicalType(const Definition *d,const FileDef *fs,QCString type,SrcLangExt lang,bool insideTemplate);
+static QCString extractCanonicalType(const Definition *d, const FileDef *fs, QCString type, SrcLangExt lang, bool insideTemplate);
 
-static QCString getCanonicalTemplateSpec(const Definition *d,const FileDef *fs,const QCString& spec,SrcLangExt lang)
+static QCString getCanonicalTemplateSpec(const Definition *d, const FileDef *fs, const QCString &spec, SrcLangExt lang)
 {
-  AUTO_TRACE("spec={}",spec);
+  AUTO_TRACE("spec={}", spec);
   QCString templSpec = spec.stripWhiteSpace();
   // this part had been commented out before... but it is needed to match for instance
   // std::list<std::string> against list<string> so it is now back again!
   if (!templSpec.isEmpty() && templSpec.at(0) == '<')
   {
-    templSpec = "< " + extractCanonicalType(d,fs,templSpec.right(templSpec.length()-1).stripWhiteSpace(),lang,true);
+    templSpec = "< " + extractCanonicalType(d, fs, templSpec.right(templSpec.length() - 1).stripWhiteSpace(), lang, true);
   }
-  QCString resolvedType = lang==SrcLangExt::Java ? templSpec : resolveTypeDef(d,templSpec);
+  QCString resolvedType = lang == SrcLangExt::Java ? templSpec : resolveTypeDef(d, templSpec);
   if (!resolvedType.isEmpty()) // not known as a typedef either
   {
     templSpec = resolvedType;
   }
   //printf("getCanonicalTemplateSpec(%s)=%s\n",qPrint(spec),qPrint(templSpec));
-  AUTO_TRACE_EXIT("result={}",templSpec);
+  AUTO_TRACE_EXIT("result={}", templSpec);
   return templSpec;
 }
 
 
 static QCString getCanonicalTypeForIdentifier(
-    const Definition *d,const FileDef *fs,const QCString &word,SrcLangExt lang,
-    QCString *tSpec,int count=0)
+  const Definition *d, const FileDef *fs, const QCString &word, SrcLangExt lang,
+  QCString *tSpec, int count = 0)
 {
-  if (count>10) return word; // oops recursion
+  if (count > 10) return word; // oops recursion
 
-  QCString symName,result,templSpec,tmpName;
+  QCString symName, result, templSpec, tmpName;
   if (tSpec && !tSpec->isEmpty())
-    templSpec = stripDeclKeywords(getCanonicalTemplateSpec(d,fs,*tSpec,lang));
+    templSpec = stripDeclKeywords(getCanonicalTemplateSpec(d, fs, *tSpec, lang));
 
-  AUTO_TRACE("d='{}' fs='{}' word='{}' templSpec='{}'",d?d->name():"",fs?fs->name():"",word,templSpec);
+  AUTO_TRACE("d='{}' fs='{}' word='{}' templSpec='{}'", d ? d->name() : "", fs ? fs->name() : "", word, templSpec);
 
-  if (word.findRev("::")!=-1 && !(tmpName=stripScope(word)).isEmpty())
+  if (word.findRev("::") != -1 && !(tmpName = stripScope(word)).isEmpty())
   {
-    symName=tmpName; // name without scope
+    symName = tmpName; // name without scope
   }
   else
   {
-    symName=word;
+    symName = word;
   }
 
   // lookup class / class template instance
-  SymbolResolver resolver(fs);
-  const ClassDef *cd     = resolver.resolveClass(d,word+templSpec,true,true);
-  const MemberDef *mType = resolver.getTypedef();
-  QCString ts            = resolver.getTemplateSpec();
-  QCString resolvedType  = resolver.getResolvedType();
+  SymbolResolver   resolver(fs);
+  const ClassDef  *cd           = resolver.resolveClass(d, word + templSpec, true, true);
+  const MemberDef *mType        = resolver.getTypedef();
+  QCString         ts           = resolver.getTemplateSpec();
+  QCString         resolvedType = resolver.getResolvedType();
 
-  bool isTemplInst = cd && !templSpec.isEmpty();
+  bool             isTemplInst  = cd && !templSpec.isEmpty();
   if (!cd && !templSpec.isEmpty())
   {
     // class template specialization not known, look up class template
-    cd           = resolver.resolveClass(d,word,true,true);
+    cd           = resolver.resolveClass(d, word, true, true);
     mType        = resolver.getTypedef();
     ts           = resolver.getTemplateSpec();
     resolvedType = resolver.getResolvedType();
   }
-  if (cd && cd->isUsedOnly()) cd=nullptr; // ignore types introduced by usage relations
+  if (cd && cd->isUsedOnly()) cd = nullptr; // ignore types introduced by usage relations
 
   AUTO_TRACE_ADD("cd='{}' mType='{}' ts='{}' resolvedType='{}'",
-      cd?cd->name():"",mType?mType->name():"",ts,resolvedType);
+                 cd ? cd->name() : "", mType ? mType->name() : "", ts, resolvedType);
   //printf("cd=%p mtype=%p\n",cd,mType);
   //printf("  getCanonicalTypeForIdentifier: symbol=%s word=%s cd=%s d=%s fs=%s cd->isTemplate=%d\n",
   //    qPrint(symName),
@@ -1665,24 +1664,24 @@ static QCString getCanonicalTypeForIdentifier(
 
   if (cd) // resolves to a known class type
   {
-    if (cd==d && tSpec) *tSpec="";
+    if (cd == d && tSpec) *tSpec = "";
 
     if (mType && mType->isTypedef()) // but via a typedef
     {
-      result = resolvedType+ts; // the +ts was added for bug 685125
+      result = resolvedType + ts; // the +ts was added for bug 685125
     }
     else
     {
       if (isTemplInst)
       {
         // spec is already part of class type
-        templSpec="";
-        if (tSpec) *tSpec="";
+        templSpec = "";
+        if (tSpec) *tSpec = "";
       }
       else if (!ts.isEmpty() && templSpec.isEmpty())
       {
         // use formal template args for spec
-        templSpec = stripDeclKeywords(getCanonicalTemplateSpec(d,fs,ts,lang));
+        templSpec = stripDeclKeywords(getCanonicalTemplateSpec(d, fs, ts, lang));
       }
 
       result = removeRedundantWhiteSpace(cd->qualifiedName() + templSpec);
@@ -1691,20 +1690,20 @@ static QCString getCanonicalTypeForIdentifier(
       {
         if (!templSpec.isEmpty()) // specific instance
         {
-          result=cd->name()+templSpec;
+          result = cd->name() + templSpec;
         }
         else // use template type
         {
-          result=cd->qualifiedNameWithTemplateParameters();
+          result = cd->qualifiedNameWithTemplateParameters();
         }
         // template class, so remove the template part (it is part of the class name)
-        *tSpec="";
+        *tSpec = "";
       }
       else if (ts.isEmpty() && !templSpec.isEmpty() && cd && !cd->isTemplate() && tSpec)
       {
         // obscure case, where a class is used as a template, but doxygen think it is
         // not (could happen when loading the class from a tag file).
-        *tSpec="";
+        *tSpec = "";
       }
     }
   }
@@ -1717,17 +1716,17 @@ static QCString getCanonicalTypeForIdentifier(
     //result = mType->qualifiedName(); // changed after 1.7.2
     //result = mType->typeString();
     //printf("word=%s typeString=%s\n",qPrint(word),mType->typeString());
-    if (word!=mType->typeString())
+    if (word != mType->typeString())
     {
       QCString type = mType->typeString();
       if (type.startsWith("typename "))
       {
         type.stripPrefix("typename ");
-        type = stripTemplateSpecifiersFromScope(type,FALSE);
+        type = stripTemplateSpecifiersFromScope(type, FALSE);
       }
       if (!type.isEmpty()) // see issue #11065
       {
-        result = getCanonicalTypeForIdentifier(d,fs,type,mType->getLanguage(),tSpec,count+1);
+        result = getCanonicalTypeForIdentifier(d, fs, type, mType->getLanguage(), tSpec, count + 1);
       }
       else
       {
@@ -1741,8 +1740,8 @@ static QCString getCanonicalTypeForIdentifier(
   }
   else // fallback
   {
-    resolvedType = lang==SrcLangExt::Java ? word : resolveTypeDef(d,word);
-    AUTO_TRACE_ADD("fallback resolvedType='{}'",resolvedType);
+    resolvedType = lang == SrcLangExt::Java ? word : resolveTypeDef(d, word);
+    AUTO_TRACE_ADD("fallback resolvedType='{}'", resolvedType);
     if (resolvedType.isEmpty()) // not known as a typedef either
     {
       result = word;
@@ -1752,17 +1751,17 @@ static QCString getCanonicalTypeForIdentifier(
       result = resolvedType;
     }
   }
-  AUTO_TRACE_EXIT("result='{}'",result);
+  AUTO_TRACE_EXIT("result='{}'", result);
   return result;
 }
 
-static QCString extractCanonicalType(const Definition *d,const FileDef *fs,QCString type,SrcLangExt lang,bool insideTemplate)
+static QCString extractCanonicalType(const Definition *d, const FileDef *fs, QCString type, SrcLangExt lang, bool insideTemplate)
 {
-  AUTO_TRACE("d={} fs={} type='{}'",d?d->name():"",fs?fs->name():"",type);
+  AUTO_TRACE("d={} fs={} type='{}'", d ? d->name() : "", fs ? fs->name() : "", type);
   type = type.stripWhiteSpace();
 
   // strip const and volatile keywords that are not relevant for the type
-  stripIrrelevantConstVolatile(type,insideTemplate);
+  stripIrrelevantConstVolatile(type, insideTemplate);
 
   // strip leading keywords
   type.stripPrefix("class ");
@@ -1776,22 +1775,22 @@ static QCString extractCanonicalType(const Definition *d,const FileDef *fs,QCStr
   //    d ? qPrint(d->name()) : "<null>", fs ? qPrint(fs->name()) : "<null>");
 
   QCString canType;
-  QCString templSpec,word;
-  int i=0,p=0,pp=0;
-  while ((i=extractClassNameFromType(type,p,word,templSpec))!=-1)
-    // foreach identifier in the type
+  QCString templSpec, word;
+  int      i = 0, p = 0, pp = 0;
+  while ((i = extractClassNameFromType(type, p, word, templSpec)) != -1)
+  // foreach identifier in the type
   {
     //printf("     i=%d p=%d\n",i,p);
-    if (i>pp) canType += type.mid(pp,i-pp);
+    if (i > pp) canType += type.mid(pp, i - pp);
 
-    QCString ct = getCanonicalTypeForIdentifier(d,fs,word,lang,&templSpec);
+    QCString ct = getCanonicalTypeForIdentifier(d, fs, word, lang, &templSpec);
 
     // in case the ct is empty it means that "word" represents scope "d"
     // and this does not need to be added to the canonical
     // type (it is redundant), so/ we skip it. This solves problem 589616.
-    if (ct.isEmpty() && type.mid(p,2)=="::")
+    if (ct.isEmpty() && type.mid(p, 2) == "::")
     {
-      p+=2;
+      p += 2;
     }
     else
     {
@@ -1803,56 +1802,56 @@ static QCString extractCanonicalType(const Definition *d,const FileDef *fs,QCStr
                               // (i.e. type is not a template specialization)
                               // then resolve any identifiers inside.
     {
-      std::string ts = templSpec.str();
+      std::string          ts = templSpec.str();
       static const reg::Ex re(R"(\a\w*)");
-      reg::Iterator it(ts,re);
-      reg::Iterator end;
+      reg::Iterator        it(ts, re);
+      reg::Iterator        end;
 
-      size_t tp=0;
+      size_t               tp = 0;
       // for each identifier template specifier
       //printf("adding resolved %s to %s\n",qPrint(templSpec),qPrint(canType));
-      for (; it!=end ; ++it)
+      for (; it != end; ++it)
       {
-        const auto &match = *it;
-        size_t ti = match.position();
-        size_t tl = match.length();
+        const auto &match    = *it;
+        size_t      ti       = match.position();
+        size_t      tl       = match.length();
         std::string matchStr = match.str();
-        canType += ts.substr(tp,ti-tp);
-        canType += getCanonicalTypeForIdentifier(d,fs,matchStr,lang,nullptr);
-        tp=ti+tl;
+        canType += ts.substr(tp, ti - tp);
+        canType += getCanonicalTypeForIdentifier(d, fs, matchStr, lang, nullptr);
+        tp = ti + tl;
       }
-      canType+=ts.substr(tp);
+      canType += ts.substr(tp);
     }
 
-    pp=p;
+    pp = p;
   }
-  canType += type.right(type.length()-pp);
-  AUTO_TRACE_EXIT("canType='{}'",canType);
+  canType += type.right(type.length() - pp);
+  AUTO_TRACE_EXIT("canType='{}'", canType);
 
   return removeRedundantWhiteSpace(canType);
 }
 
-static QCString extractCanonicalArgType(const Definition *d,const FileDef *fs,const Argument &arg,SrcLangExt lang)
+static QCString extractCanonicalArgType(const Definition *d, const FileDef *fs, const Argument &arg, SrcLangExt lang)
 {
   QCString type = arg.type.stripWhiteSpace();
   QCString name = arg.name;
   //printf("----- extractCanonicalArgType(type=%s,name=%s)\n",qPrint(type),qPrint(name));
-  if ((type=="const" || type=="volatile") && !name.isEmpty())
+  if ((type == "const" || type == "volatile") && !name.isEmpty())
   { // name is part of type => correct
-    type+=" ";
-    type+=name;
+    type += " ";
+    type += name;
   }
-  if (name=="const" || name=="volatile")
+  if (name == "const" || name == "volatile")
   { // name is part of type => correct
-    if (!type.isEmpty()) type+=" ";
-    type+=name;
+    if (!type.isEmpty()) type += " ";
+    type += name;
   }
   if (!arg.array.isEmpty())
   {
-    type+=arg.array;
+    type += arg.array;
   }
 
-  return extractCanonicalType(d,fs,type,lang,false);
+  return extractCanonicalType(d, fs, type, lang, false);
 }
 
 static std::mutex g_matchArgsMutex;
@@ -1862,75 +1861,74 @@ static std::mutex g_matchArgsMutex;
 //#define NOMATCH
 //#define MATCH   printf("Match at line %d\n",__LINE__);
 //#define NOMATCH printf("Nomatch at line %d\n",__LINE__);
-#define MATCH   AUTO_TRACE_EXIT("match at line {}",__LINE__);
-#define NOMATCH AUTO_TRACE_EXIT("no match at line {}",__LINE__);
+#define MATCH AUTO_TRACE_EXIT("match at line {}", __LINE__);
+#define NOMATCH AUTO_TRACE_EXIT("no match at line {}", __LINE__);
 
 static bool matchCanonicalTypes(
-    const Definition *srcScope,const FileDef *srcFileScope,const QCString &srcType,
-    const Definition *dstScope,const FileDef *dstFileScope,const QCString &dstType,
-    SrcLangExt lang)
+  const Definition *srcScope, const FileDef *srcFileScope, const QCString &srcType,
+  const Definition *dstScope, const FileDef *dstFileScope, const QCString &dstType,
+  SrcLangExt lang)
 {
-  AUTO_TRACE("srcType='{}' dstType='{}'",srcType,dstType);
-  if (srcType==dstType) return true;
+  AUTO_TRACE("srcType='{}' dstType='{}'", srcType, dstType);
+  if (srcType == dstType) return true;
 
   // check if the types are function pointers
-  int i1=srcType.find(")(");
-  if (i1==-1) return false;
-  int i2=dstType.find(")(");
-  if (i1!=i2) return false;
+  int i1 = srcType.find(")(");
+  if (i1 == -1) return false;
+  int i2 = dstType.find(")(");
+  if (i1 != i2) return false;
 
   // check if the result part of the function pointer types matches
-  int j1=srcType.find("(");
-  if (j1==-1 || j1>i1) return false;
-  int j2=dstType.find("(");
-  if (j2!=j1) return false;
-  if (srcType.left(j1)!=dstType.left(j2)) return false; // different return types
+  int j1 = srcType.find("(");
+  if (j1 == -1 || j1 > i1) return false;
+  int j2 = dstType.find("(");
+  if (j2 != j1) return false;
+  if (srcType.left(j1) != dstType.left(j2)) return false; // different return types
 
   // if srcType and dstType are both function pointers with the same return type,
   // then match against the parameter lists.
   // This way srcType='void (*fptr)(int x)' will match against `void (*fptr)(int y)' because
   // 'int x' matches 'int y'. A simple literal string match would treat these as different.
-  auto srcAl = stringToArgumentList(lang,srcType.mid(i1+1));
-  auto dstAl = stringToArgumentList(lang,dstType.mid(i2+1));
-  return matchArguments2(srcScope,srcFileScope,srcType.left(j1),srcAl.get(),
-                         dstScope,dstFileScope,dstType.left(j2),dstAl.get(),
-                         true,lang);
+  auto srcAl = stringToArgumentList(lang, srcType.mid(i1 + 1));
+  auto dstAl = stringToArgumentList(lang, dstType.mid(i2 + 1));
+  return matchArguments2(srcScope, srcFileScope, srcType.left(j1), srcAl.get(),
+                         dstScope, dstFileScope, dstType.left(j2), dstAl.get(),
+                         true, lang);
 }
 
 static bool matchArgument2(
-    const Definition *srcScope,const FileDef *srcFileScope,Argument &srcA,
-    const Definition *dstScope,const FileDef *dstFileScope,Argument &dstA,
-    SrcLangExt lang
-    )
+  const Definition *srcScope, const FileDef *srcFileScope, Argument &srcA,
+  const Definition *dstScope, const FileDef *dstFileScope, Argument &dstA,
+  SrcLangExt lang)
 {
   AUTO_TRACE("src: scope={} type={} name={} canType={}, dst: scope={} type={} name={} canType={}",
-      srcScope?srcScope->name():"",srcA.type,srcA.name,srcA.canType,
-      dstScope?dstScope->name():"",dstA.type,dstA.name,dstA.canType);
+             srcScope ? srcScope->name() : "", srcA.type, srcA.name, srcA.canType,
+             dstScope ? dstScope->name() : "", dstA.type, dstA.name, dstA.canType);
   //printf(">> match argument: %s::'%s|%s' (%s) <-> %s::'%s|%s' (%s)\n",
   //    srcScope ? qPrint(srcScope->name()) : "",
   //    qPrint(srcA.type), qPrint(srcA.name), qPrint(srcA.canType),
   //    dstScope ? qPrint(dstScope->name()) : "",
   //    qPrint(dstA.type), qPrint(dstA.name), qPrint(dstA.canType));
 
-  QCString sSrcName = " "+srcA.name;
-  QCString sDstName = " "+dstA.name;
+  QCString sSrcName = " " + srcA.name;
+  QCString sDstName = " " + dstA.name;
   QCString srcType  = srcA.type;
   QCString dstType  = dstA.type;
-  stripIrrelevantConstVolatile(srcType,false);
-  stripIrrelevantConstVolatile(dstType,false);
+  stripIrrelevantConstVolatile(srcType, false);
+  stripIrrelevantConstVolatile(dstType, false);
   //printf("'%s'<->'%s'\n",qPrint(sSrcName),qPrint(dstType.right(sSrcName.length())));
   //printf("'%s'<->'%s'\n",qPrint(sDstName),qPrint(srcType.right(sDstName.length())));
-  if (sSrcName==dstType.right(sSrcName.length()))
+  if (sSrcName == dstType.right(sSrcName.length()))
   { // case "unsigned int" <-> "unsigned int i"
-    srcA.type+=sSrcName;
-    srcA.name="";
-    srcA.canType=""; // invalidate cached type value
+    srcA.type += sSrcName;
+    srcA.name    = "";
+    srcA.canType = ""; // invalidate cached type value
   }
-  else if (sDstName==srcType.right(sDstName.length()))
+  else if (sDstName == srcType.right(sDstName.length()))
   { // case "unsigned int i" <-> "unsigned int"
-    dstA.type+=sDstName;
-    dstA.name="";
-    dstA.canType=""; // invalidate cached type value
+    dstA.type += sDstName;
+    dstA.name    = "";
+    dstA.canType = ""; // invalidate cached type value
   }
 
   {
@@ -1938,13 +1936,13 @@ static bool matchArgument2(
     if (srcA.canType.isEmpty() || dstA.canType.isEmpty())
     {
       // need to re-evaluate both see issue #8370
-      srcA.canType = extractCanonicalArgType(srcScope,srcFileScope,srcA,lang);
-      dstA.canType = extractCanonicalArgType(dstScope,dstFileScope,dstA,lang);
+      srcA.canType = extractCanonicalArgType(srcScope, srcFileScope, srcA, lang);
+      dstA.canType = extractCanonicalArgType(dstScope, dstFileScope, dstA, lang);
     }
   }
 
-  if (matchCanonicalTypes(srcScope,srcFileScope,srcA.canType,
-                          dstScope,dstFileScope,dstA.canType,
+  if (matchCanonicalTypes(srcScope, srcFileScope, srcA.canType,
+                          dstScope, dstFileScope, dstA.canType,
                           lang))
   {
     MATCH
@@ -1963,18 +1961,18 @@ static bool matchArgument2(
 
 
 // new algorithm for argument matching
-bool matchArguments2(const Definition *srcScope,const FileDef *srcFileScope,const QCString &srcReturnType,const ArgumentList *srcAl,
-                     const Definition *dstScope,const FileDef *dstFileScope,const QCString &dstReturnType,const ArgumentList *dstAl,
-                     bool checkCV,SrcLangExt lang)
+bool matchArguments2(const Definition *srcScope, const FileDef *srcFileScope, const QCString &srcReturnType, const ArgumentList *srcAl,
+                     const Definition *dstScope, const FileDef *dstFileScope, const QCString &dstReturnType, const ArgumentList *dstAl,
+                     bool checkCV, SrcLangExt lang)
 {
-  ASSERT(srcScope!=nullptr && dstScope!=nullptr);
+  ASSERT(srcScope != nullptr && dstScope != nullptr);
 
   AUTO_TRACE("srcScope='{}' dstScope='{}' srcArgs='{}' dstArgs='{}' checkCV={} lang={}",
-      srcScope->name(),dstScope->name(),srcAl?argListToString(*srcAl):"",dstAl?argListToString(*dstAl):"",checkCV,lang);
+             srcScope->name(), dstScope->name(), srcAl ? argListToString(*srcAl) : "", dstAl ? argListToString(*dstAl) : "", checkCV, lang);
 
-  if (srcAl==nullptr || dstAl==nullptr)
+  if (srcAl == nullptr || dstAl == nullptr)
   {
-    bool match = srcAl==dstAl;
+    bool match = srcAl == dstAl;
     if (match)
     {
       MATCH
@@ -1988,19 +1986,19 @@ bool matchArguments2(const Definition *srcScope,const FileDef *srcFileScope,cons
   }
 
   // handle special case with void argument
-  if ( srcAl->empty() && dstAl->size()==1 && dstAl->front().type=="void" )
+  if (srcAl->empty() && dstAl->size() == 1 && dstAl->front().type == "void")
   { // special case for finding match between func() and func(void)
     Argument a;
     a.type = "void";
-    const_cast<ArgumentList*>(srcAl)->push_back(a);
+    const_cast<ArgumentList *>(srcAl)->push_back(a);
     MATCH
     return TRUE;
   }
-  if ( dstAl->empty() && srcAl->size()==1 && srcAl->front().type=="void" )
+  if (dstAl->empty() && srcAl->size() == 1 && srcAl->front().type == "void")
   { // special case for finding match between func(void) and func()
     Argument a;
     a.type = "void";
-    const_cast<ArgumentList*>(dstAl)->push_back(a);
+    const_cast<ArgumentList *>(dstAl)->push_back(a);
     MATCH
     return TRUE;
   }
@@ -2031,7 +2029,7 @@ bool matchArguments2(const Definition *srcScope,const FileDef *srcFileScope,cons
     return FALSE; // one member is has a different ref-qualifier than the other
   }
 
-  if (srcReturnType=="auto" && dstReturnType=="auto" && srcAl->trailingReturnType()!=dstAl->trailingReturnType())
+  if (srcReturnType == "auto" && dstReturnType == "auto" && srcAl->trailingReturnType() != dstAl->trailingReturnType())
   {
     NOMATCH
     return FALSE; // one member is has a different return type than the other
@@ -2041,14 +2039,13 @@ bool matchArguments2(const Definition *srcScope,const FileDef *srcFileScope,cons
   // all arguments.
   auto srcIt = srcAl->begin();
   auto dstIt = dstAl->begin();
-  for (;srcIt!=srcAl->end() && dstIt!=dstAl->end();++srcIt,++dstIt)
+  for (; srcIt != srcAl->end() && dstIt != dstAl->end(); ++srcIt, ++dstIt)
   {
-    Argument &srcA = const_cast<Argument&>(*srcIt);
-    Argument &dstA = const_cast<Argument&>(*dstIt);
-    if (!matchArgument2(srcScope,srcFileScope,srcA,
-                        dstScope,dstFileScope,dstA,
-                        lang)
-       )
+    Argument &srcA = const_cast<Argument &>(*srcIt);
+    Argument &dstA = const_cast<Argument &>(*dstIt);
+    if (!matchArgument2(srcScope, srcFileScope, srcA,
+                        dstScope, dstFileScope, dstA,
+                        lang))
     {
       NOMATCH
       return FALSE;
@@ -2063,51 +2060,51 @@ bool matchArguments2(const Definition *srcScope,const FileDef *srcFileScope,cons
 
 // merges the initializer of two argument lists
 // pre:  the types of the arguments in the list should match.
-void mergeArguments(ArgumentList &srcAl,ArgumentList &dstAl,bool forceNameOverwrite)
+void mergeArguments(ArgumentList &srcAl, ArgumentList &dstAl, bool forceNameOverwrite)
 {
   AUTO_TRACE("srcAl='{}',dstAl='{}',forceNameOverwrite={}",
-             qPrint(argListToString(srcAl)),qPrint(argListToString(dstAl)),forceNameOverwrite);
+             qPrint(argListToString(srcAl)), qPrint(argListToString(dstAl)), forceNameOverwrite);
 
-  if (srcAl.size()!=dstAl.size())
+  if (srcAl.size() != dstAl.size())
   {
     return; // invalid argument lists -> do not merge
   }
 
-  auto srcIt=srcAl.begin();
-  auto dstIt=dstAl.begin();
-  while (srcIt!=srcAl.end() && dstIt!=dstAl.end())
+  auto srcIt = srcAl.begin();
+  auto dstIt = dstAl.begin();
+  while (srcIt != srcAl.end() && dstIt != dstAl.end())
   {
     Argument &srcA = *srcIt;
     Argument &dstA = *dstIt;
 
     AUTO_TRACE_ADD("before merge: src=[type='{}',name='{}',def='{}'] dst=[type='{}',name='{}',def='{}']",
-        srcA.type,srcA.name,srcA.defval,
-        dstA.type,dstA.name,dstA.defval);
+                   srcA.type, srcA.name, srcA.defval,
+                   dstA.type, dstA.name, dstA.defval);
     if (srcA.defval.isEmpty() && !dstA.defval.isEmpty())
     {
       //printf("Defval changing '%s'->'%s'\n",qPrint(srcA.defval),qPrint(dstA.defval));
-      srcA.defval=dstA.defval;
+      srcA.defval = dstA.defval;
     }
     else if (!srcA.defval.isEmpty() && dstA.defval.isEmpty())
     {
       //printf("Defval changing '%s'->'%s'\n",qPrint(dstA.defval),qPrint(srcA.defval));
-      dstA.defval=srcA.defval;
+      dstA.defval = srcA.defval;
     }
 
     // fix wrongly detected const or volatile specifiers before merging.
     // example: "const A *const" is detected as type="const A *" name="const"
-    if (srcA.name=="const" || srcA.name=="volatile")
+    if (srcA.name == "const" || srcA.name == "volatile")
     {
-      srcA.type+=" "+srcA.name;
+      srcA.type += " " + srcA.name;
       srcA.name.clear();
     }
-    if (dstA.name=="const" || dstA.name=="volatile")
+    if (dstA.name == "const" || dstA.name == "volatile")
     {
-      dstA.type+=" "+dstA.name;
+      dstA.type += " " + dstA.name;
       dstA.name.clear();
     }
 
-    if (srcA.type==dstA.type)
+    if (srcA.type == dstA.type)
     {
       //printf("1. merging %s:%s <-> %s:%s\n",qPrint(srcA.type),qPrint(srcA.name),qPrint(dstA.type),qPrint(dstA.name));
       if (srcA.name.isEmpty() && !dstA.name.isEmpty())
@@ -2147,17 +2144,17 @@ void mergeArguments(ArgumentList &srcAl,ArgumentList &dstAl,bool forceNameOverwr
     else
     {
       //printf("2. merging '%s':'%s' <-> '%s':'%s'\n",qPrint(srcA.type),qPrint(srcA.name),qPrint(dstA.type),qPrint(dstA.name));
-      srcA.type=srcA.type.stripWhiteSpace();
-      dstA.type=dstA.type.stripWhiteSpace();
-      if (srcA.type+" "+srcA.name==dstA.type) // "unsigned long:int" <-> "unsigned long int:bla"
+      srcA.type = srcA.type.stripWhiteSpace();
+      dstA.type = dstA.type.stripWhiteSpace();
+      if (srcA.type + " " + srcA.name == dstA.type) // "unsigned long:int" <-> "unsigned long int:bla"
       {
-        srcA.type+=" "+srcA.name;
-        srcA.name=dstA.name;
+        srcA.type += " " + srcA.name;
+        srcA.name = dstA.name;
       }
-      else if (dstA.type+" "+dstA.name==srcA.type) // "unsigned long int bla" <-> "unsigned long int"
+      else if (dstA.type + " " + dstA.name == srcA.type) // "unsigned long int bla" <-> "unsigned long int"
       {
-        dstA.type+=" "+dstA.name;
-        dstA.name=srcA.name;
+        dstA.type += " " + dstA.name;
+        dstA.name = srcA.name;
       }
       else if (srcA.name.isEmpty() && !dstA.name.isEmpty())
       {
@@ -2168,22 +2165,22 @@ void mergeArguments(ArgumentList &srcAl,ArgumentList &dstAl,bool forceNameOverwr
         dstA.name = srcA.name;
       }
     }
-    int i1=srcA.type.find("::"),
-        i2=dstA.type.find("::"),
-        j1=static_cast<int>(srcA.type.length())-i1-2,
-        j2=static_cast<int>(dstA.type.length())-i2-2;
-    if (i1!=-1 && i2==-1 && srcA.type.right(j1)==dstA.type)
+    int i1 = srcA.type.find("::"),
+        i2 = dstA.type.find("::"),
+        j1 = static_cast<int>(srcA.type.length()) - i1 - 2,
+        j2 = static_cast<int>(dstA.type.length()) - i2 - 2;
+    if (i1 != -1 && i2 == -1 && srcA.type.right(j1) == dstA.type)
     {
       //printf("type: '%s':='%s'\n",qPrint(dstA.type),qPrint(srcA.type));
       //printf("name: '%s':='%s'\n",qPrint(dstA.name),qPrint(srcA.name));
-      dstA.type = srcA.type.left(i1+2)+dstA.type;
+      dstA.type = srcA.type.left(i1 + 2) + dstA.type;
       dstA.name = srcA.name;
     }
-    else if (i1==-1 && i2!=-1 && dstA.type.right(j2)==srcA.type)
+    else if (i1 == -1 && i2 != -1 && dstA.type.right(j2) == srcA.type)
     {
       //printf("type: '%s':='%s'\n",qPrint(srcA.type),qPrint(dstA.type));
       //printf("name: '%s':='%s'\n",qPrint(dstA.name),qPrint(srcA.name));
-      srcA.type = dstA.type.left(i2+2)+srcA.type;
+      srcA.type = dstA.type.left(i2 + 2) + srcA.type;
       srcA.name = dstA.name;
     }
     if (srcA.docs.isEmpty() && !dstA.docs.isEmpty())
@@ -2200,32 +2197,31 @@ void mergeArguments(ArgumentList &srcAl,ArgumentList &dstAl,bool forceNameOverwr
     ++srcIt;
     ++dstIt;
     AUTO_TRACE_ADD("after merge: src=[type='{}',name='{}',def='{}'] dst=[type='{}',name='{}',def='{}']",
-        srcA.type,srcA.name,srcA.defval,
-        dstA.type,dstA.name,dstA.defval);
+                   srcA.type, srcA.name, srcA.defval,
+                   dstA.type, dstA.name, dstA.defval);
   }
 }
 
 //---------------------------------------------------------------------------------------
 
-bool matchTemplateArguments(const ArgumentList &srcAl,const ArgumentList &dstAl)
+bool matchTemplateArguments(const ArgumentList &srcAl, const ArgumentList &dstAl)
 {
-  AUTO_TRACE("srcAl={} dstAl={}",argListToString(srcAl),argListToString(dstAl));
-  if (srcAl.size()!=dstAl.size()) // different number of template parameters -> overload
+  AUTO_TRACE("srcAl={} dstAl={}", argListToString(srcAl), argListToString(dstAl));
+  if (srcAl.size() != dstAl.size()) // different number of template parameters -> overload
   {
     AUTO_TRACE_EXIT("different number of parameters");
     return false;
   }
-  auto isUnconstraintTemplate = [](const QCString &type)
-  {
-    return type=="typename" || type=="class" || type.startsWith("typename ") || type.startsWith("class ");
+  auto isUnconstraintTemplate = [](const QCString &type) {
+    return type == "typename" || type == "class" || type.startsWith("typename ") || type.startsWith("class ");
   };
   auto srcIt = srcAl.begin();
   auto dstIt = dstAl.begin();
-  while (srcIt!=srcAl.end() && dstIt!=dstAl.end())
+  while (srcIt != srcAl.end() && dstIt != dstAl.end())
   {
     const Argument &srcA = *srcIt;
     const Argument &dstA = *dstIt;
-    if ((!isUnconstraintTemplate(srcA.type) || !isUnconstraintTemplate(dstA.type)) && srcA.type!=dstA.type) // different constraints -> overload
+    if ((!isUnconstraintTemplate(srcA.type) || !isUnconstraintTemplate(dstA.type)) && srcA.type != dstA.type) // different constraints -> overload
     {
       AUTO_TRACE_EXIT("different constraints");
       return false;
@@ -2245,51 +2241,51 @@ GetDefResult getDefs(const GetDefInput &input)
   GetDefResult result;
   if (input.memberName.isEmpty()) return result;
   AUTO_TRACE("scopeName={},memberName={},forceEmptyScope={}",
-      input.scopeName,input.memberName,input.forceEmptyScope);
+             input.scopeName, input.memberName, input.forceEmptyScope);
 
   //printf("@@ --- getDefsNew(%s,%s)-----------\n",qPrint(scName),qPrint(mbName));
   const Definition *scope = Doxygen::globalScope;
-  SymbolResolver resolver;
+  SymbolResolver    resolver;
   if (input.currentFile) resolver.setFileScope(input.currentFile);
   if (!input.scopeName.isEmpty() && !input.forceEmptyScope)
   {
-    scope = resolver.resolveSymbol(scope,input.scopeName);
+    scope = resolver.resolveSymbol(scope, input.scopeName);
   }
-  if (scope==Doxygen::globalScope)
+  if (scope == Doxygen::globalScope)
   {
     scope = input.currentFile;
   }
   //printf("@@  -> found scope scope=%s member=%s out=%s\n",qPrint(input.scopeName),qPrint(input.memberName),qPrint(scope?scope->name():""));
   //
-  const Definition *symbol = resolver.resolveSymbol(scope,input.memberName,input.args,input.checkCV,input.insideCode,true);
+  const Definition *symbol = resolver.resolveSymbol(scope, input.memberName, input.args, input.checkCV, input.insideCode, true);
   //printf("@@  -> found symbol in=%s out=%s\n",qPrint(input.memberName),qPrint(symbol?symbol->qualifiedName():QCString()));
-  if (symbol && symbol->definitionType()==Definition::TypeMember)
+  if (symbol && symbol->definitionType() == Definition::TypeMember)
   {
     result.md = toMemberDef(symbol);
     result.cd = result.md->getClassDef();
-    if (result.cd==nullptr) result.nd = result.md->getNamespaceDef();
-    if (result.cd==nullptr && result.nd==nullptr) result.fd = result.md->getFileDef();
-    result.gd = result.md->getGroupDef();
+    if (result.cd == nullptr) result.nd = result.md->getNamespaceDef();
+    if (result.cd == nullptr && result.nd == nullptr) result.fd = result.md->getFileDef();
+    result.gd    = result.md->getGroupDef();
     result.found = true;
   }
-  else if (symbol && symbol->definitionType()==Definition::TypeClass)
+  else if (symbol && symbol->definitionType() == Definition::TypeClass)
   {
-    result.cd = toClassDef(symbol);
+    result.cd    = toClassDef(symbol);
     result.found = true;
   }
-  else if (symbol && symbol->definitionType()==Definition::TypeNamespace)
+  else if (symbol && symbol->definitionType() == Definition::TypeNamespace)
   {
-    result.nd = toNamespaceDef(symbol);
+    result.nd    = toNamespaceDef(symbol);
     result.found = true;
   }
-  else if (symbol && symbol->definitionType()==Definition::TypeConcept)
+  else if (symbol && symbol->definitionType() == Definition::TypeConcept)
   {
-    result.cnd = toConceptDef(symbol);
+    result.cnd   = toConceptDef(symbol);
     result.found = true;
   }
-  else if (symbol && symbol->definitionType()==Definition::TypeModule)
+  else if (symbol && symbol->definitionType() == Definition::TypeModule)
   {
-    result.modd = toModuleDef(symbol);
+    result.modd  = toModuleDef(symbol);
     result.found = true;
   }
   return result;
@@ -2310,64 +2306,65 @@ GetDefResult getDefs(const GetDefInput &input)
  *   - if `cd` is non zero, the scope was a class pointed to by cd.
  *   - if `nd` is non zero, the scope was a namespace pointed to by nd.
  */
-static bool getScopeDefs(const QCString &docScope,const QCString &scope,
-    ClassDef *&cd, ConceptDef *&cnd, NamespaceDef *&nd,ModuleDef *&modd)
+static bool getScopeDefs(const QCString &docScope, const QCString &scope,
+                         ClassDef *&cd, ConceptDef *&cnd, NamespaceDef *&nd, ModuleDef *&modd)
 {
-  cd=nullptr;
-  cnd=nullptr;
-  nd=nullptr;
-  modd=nullptr;
+  cd                 = nullptr;
+  cnd                = nullptr;
+  nd                 = nullptr;
+  modd               = nullptr;
 
-  QCString scopeName=scope;
+  QCString scopeName = scope;
   //printf("getScopeDefs: docScope='%s' scope='%s'\n",qPrint(docScope),qPrint(scope));
   if (scopeName.isEmpty()) return FALSE;
 
-  bool explicitGlobalScope=FALSE;
-  if (scopeName.at(0)==':' && scopeName.at(1)==':')
+  bool explicitGlobalScope = FALSE;
+  if (scopeName.at(0) == ':' && scopeName.at(1) == ':')
   {
-    scopeName=scopeName.right(scopeName.length()-2);
-    explicitGlobalScope=TRUE;
+    scopeName           = scopeName.right(scopeName.length() - 2);
+    explicitGlobalScope = TRUE;
   }
   if (scopeName.isEmpty())
   {
     return FALSE;
   }
 
-  QCString docScopeName=docScope;
-  int scopeOffset=explicitGlobalScope ? 0 : static_cast<int>(docScopeName.length());
+  QCString docScopeName = docScope;
+  int      scopeOffset  = explicitGlobalScope ? 0 : static_cast<int>(docScopeName.length());
 
   do // for each possible docScope (from largest to and including empty)
   {
-    QCString fullName=scopeName;
-    if (scopeOffset>0) fullName.prepend(docScopeName.left(scopeOffset)+"::");
+    QCString fullName = scopeName;
+    if (scopeOffset > 0) fullName.prepend(docScopeName.left(scopeOffset) + "::");
 
-    if (((cd=getClass(fullName)) ||         // normal class
-         (cd=getClass(fullName+"-p"))       // ObjC protocol
-        ) && cd->isLinkable())
+    if (((cd = getClass(fullName)) ||     // normal class
+         (cd = getClass(fullName + "-p")) // ObjC protocol
+         ) &&
+        cd->isLinkable())
     {
       return TRUE; // class link written => quit
     }
-    else if ((nd=Doxygen::namespaceLinkedMap->find(fullName)) && nd->isLinkable())
+    else if ((nd = Doxygen::namespaceLinkedMap->find(fullName)) && nd->isLinkable())
     {
       return TRUE; // namespace link written => quit
     }
-    else if ((cnd=Doxygen::conceptLinkedMap->find(fullName)) && cnd->isLinkable())
+    else if ((cnd = Doxygen::conceptLinkedMap->find(fullName)) && cnd->isLinkable())
     {
       return TRUE; // concept link written => quit
     }
-    else if ((modd=ModuleManager::instance().modules().find(fullName)) && modd->isLinkable())
+    else if ((modd = ModuleManager::instance().modules().find(fullName)) && modd->isLinkable())
     {
       return TRUE; // module link written => quit
     }
-    if (scopeOffset==0)
+    if (scopeOffset == 0)
     {
-      scopeOffset=-1;
+      scopeOffset = -1;
     }
-    else if ((scopeOffset=docScopeName.findRev("::",scopeOffset-1))==-1)
+    else if ((scopeOffset = docScopeName.findRev("::", scopeOffset - 1)) == -1)
     {
-      scopeOffset=0;
+      scopeOffset = 0;
     }
-  } while (scopeOffset>=0);
+  } while (scopeOffset >= 0);
 
   return FALSE;
 }
@@ -2375,35 +2372,35 @@ static bool getScopeDefs(const QCString &docScope,const QCString &scope,
 static bool isLowerCase(QCString &s)
 {
   if (s.isEmpty()) return true;
-  const char *p=s.data();
-  int c=0;
-  while ((c=static_cast<uint8_t>(*p++))) if (!islower(c)) return false;
+  const char *p = s.data();
+  int         c = 0;
+  while ((c = static_cast<uint8_t>(*p++)))
+    if (!islower(c)) return false;
   return true;
 }
 
 /*! Returns an object to reference to given its name and context
  *  @post return value TRUE implies *resContext!=0 or *resMember!=0
  */
-bool resolveRef(/* in */  const QCString &scName,
-    /* in */  const QCString &name,
-    /* in */  bool inSeeBlock,
-    /* out */ const Definition **resContext,
-    /* out */ const MemberDef  **resMember,
-    /* in */ SrcLangExt lang,
-    bool lookForSpecialization,
-    const FileDef *currentFile,
-    bool checkScope
-    )
+bool resolveRef(/* in */ const QCString     &scName,
+                /* in */ const QCString     &name,
+                /* in */ bool                inSeeBlock,
+                /* out */ const Definition **resContext,
+                /* out */ const MemberDef  **resMember,
+                /* in */ SrcLangExt          lang,
+                bool                         lookForSpecialization,
+                const FileDef               *currentFile,
+                bool                         checkScope)
 {
   AUTO_TRACE("scope={} name={} inSeeBlock={} lang={} lookForSpecialization={} currentFile={} checkScope={}",
-      scName,name,inSeeBlock,lang,lookForSpecialization,currentFile ? currentFile->name() : "", checkScope);
+             scName, name, inSeeBlock, lang, lookForSpecialization, currentFile ? currentFile->name() : "", checkScope);
   //printf("resolveRef(scope=%s,name=%s,inSeeBlock=%d)\n",qPrint(scName),qPrint(name),inSeeBlock);
-  QCString tsName = name;
+  QCString tsName   = name;
   //bool memberScopeFirst = tsName.find('#')!=-1;
-  QCString fullName = substitute(tsName,"#","::");
-  if (fullName.find("anonymous_namespace{")==-1)
+  QCString fullName = substitute(tsName, "#", "::");
+  if (fullName.find("anonymous_namespace{") == -1)
   {
-    fullName = removeRedundantWhiteSpace(substitute(fullName,".","::",3));
+    fullName = removeRedundantWhiteSpace(substitute(fullName, ".", "::", 3));
   }
   else
   {
@@ -2411,49 +2408,49 @@ bool resolveRef(/* in */  const QCString &scName,
   }
 
   int templStartPos;
-  if (lang==SrcLangExt::CSharp && (templStartPos=fullName.find('<'))!=-1)
+  if (lang == SrcLangExt::CSharp && (templStartPos = fullName.find('<')) != -1)
   {
     int templEndPos = fullName.findRev('>');
-    if (templEndPos!=-1)
+    if (templEndPos != -1)
     {
-      fullName = mangleCSharpGenericName(fullName.left(templEndPos+1))+fullName.mid(templEndPos+1);
-      AUTO_TRACE_ADD("C# mangled name='{}'",fullName);
+      fullName = mangleCSharpGenericName(fullName.left(templEndPos + 1)) + fullName.mid(templEndPos + 1);
+      AUTO_TRACE_ADD("C# mangled name='{}'", fullName);
     }
   }
 
-  int bracePos=findParameterList(fullName);
-  int endNamePos=bracePos!=-1 ? bracePos : static_cast<int>(fullName.length());
-  int scopePos=fullName.findRev("::",endNamePos);
-  bool explicitScope = fullName.startsWith("::") &&   // ::scope or #scope
-                       (scopePos>2 ||                 // ::N::A
-                        tsName.startsWith("::") ||    // ::foo in local scope
-                        scName==nullptr               // #foo  in global scope
+  int  bracePos      = findParameterList(fullName);
+  int  endNamePos    = bracePos != -1 ? bracePos : static_cast<int>(fullName.length());
+  int  scopePos      = fullName.findRev("::", endNamePos);
+  bool explicitScope = fullName.startsWith("::") && // ::scope or #scope
+                       (scopePos > 2 ||             // ::N::A
+                        tsName.startsWith("::") ||  // ::foo in local scope
+                        scName == nullptr           // #foo  in global scope
                        );
-  bool allowTypeOnly=false;
+  bool allowTypeOnly = false;
 
   // default result values
-  *resContext=nullptr;
-  *resMember=nullptr;
+  *resContext        = nullptr;
+  *resMember         = nullptr;
 
-  if (bracePos==-1) // simple name
+  if (bracePos == -1) // simple name
   {
     // the following if() was commented out for releases in the range
     // 1.5.2 to 1.6.1, but has been restored as a result of bug report 594787.
-    if (!inSeeBlock && scopePos==-1 && isLowerCase(tsName))
+    if (!inSeeBlock && scopePos == -1 && isLowerCase(tsName))
     { // link to lower case only name => do not try to autolink
       AUTO_TRACE_ADD("false");
       return FALSE;
     }
 
-    ClassDef *cd=nullptr;
-    NamespaceDef *nd=nullptr;
-    ConceptDef *cnd=nullptr;
-    ModuleDef *modd=nullptr;
+    ClassDef     *cd   = nullptr;
+    NamespaceDef *nd   = nullptr;
+    ConceptDef   *cnd  = nullptr;
+    ModuleDef    *modd = nullptr;
 
     //printf("scName=%s fullName=%s\n",qPrint(scName),qPrint(fullName));
 
     // check if this is a class or namespace reference
-    if (scName!=fullName && getScopeDefs(scName,fullName,cd,cnd,nd,modd))
+    if (scName != fullName && getScopeDefs(scName, fullName, cd, cnd, nd, modd))
     {
       //printf("found scopeDef\n");
       if (cd) // scope matches that of a class
@@ -2470,14 +2467,14 @@ bool resolveRef(/* in */  const QCString &scName,
       }
       else // scope matches that of a namespace
       {
-        ASSERT(nd!=nullptr);
+        ASSERT(nd != nullptr);
         *resContext = nd;
       }
       AUTO_TRACE_ADD("true");
       return TRUE;
     }
-    else if (scName==fullName || (!inSeeBlock && scopePos==-1))
-      // nothing to link => output plain text
+    else if (scName == fullName || (!inSeeBlock && scopePos == -1))
+    // nothing to link => output plain text
     {
       //printf("found scName=%s fullName=%s scName==fullName=%d "
       //    "inSeeBlock=%d scopePos=%d!\n",
@@ -2487,33 +2484,33 @@ bool resolveRef(/* in */  const QCString &scName,
       // we should also allow typedefs or enums to be linked, but not for instance member
       // functions, otherwise 'Foo' would always link to the 'Foo()' constructor instead of the
       // 'Foo' class. So we use this flag as a filter.
-      allowTypeOnly=true;
+      allowTypeOnly = true;
     }
 
     // continue search...
   }
 
   // extract userscope+name
-  QCString nameStr=fullName.left(endNamePos);
-  if (explicitScope) nameStr=nameStr.mid(2);
+  QCString nameStr = fullName.left(endNamePos);
+  if (explicitScope) nameStr = nameStr.mid(2);
 
 
   // extract arguments
   QCString argsStr;
-  if (bracePos!=-1) argsStr=fullName.right(fullName.length()-bracePos);
+  if (bracePos != -1) argsStr = fullName.right(fullName.length() - bracePos);
 
   // strip template specifier
   // TODO: match against the correct partial template instantiation
-  int templPos=nameStr.find('<');
+  int  templPos                = nameStr.find('<');
   bool tryUnspecializedVersion = FALSE;
-  if (templPos!=-1 && nameStr.find("operator")==-1)
+  if (templPos != -1 && nameStr.find("operator") == -1)
   {
-    int endTemplPos=nameStr.findRev('>');
-    if (endTemplPos!=-1)
+    int endTemplPos = nameStr.findRev('>');
+    if (endTemplPos != -1)
     {
       if (!lookForSpecialization)
       {
-        nameStr=nameStr.left(templPos)+nameStr.right(nameStr.length()-endTemplPos-1);
+        nameStr = nameStr.left(templPos) + nameStr.right(nameStr.length() - endTemplPos - 1);
       }
       else
       {
@@ -2522,37 +2519,37 @@ bool resolveRef(/* in */  const QCString &scName,
     }
   }
 
-  QCString scopeStr=scName;
-  if (!explicitScope && nameStr.length()>scopeStr.length() && leftScopeMatch(scopeStr,nameStr))
+  QCString scopeStr = scName;
+  if (!explicitScope && nameStr.length() > scopeStr.length() && leftScopeMatch(scopeStr, nameStr))
   {
-    nameStr=nameStr.mid(scopeStr.length()+2);
+    nameStr = nameStr.mid(scopeStr.length() + 2);
   }
 
-  const GroupDef     *gd = nullptr;
-  const ConceptDef   *cnd = nullptr;
-  const ModuleDef    *modd = nullptr;
+  const GroupDef   *gd   = nullptr;
+  const ConceptDef *cnd  = nullptr;
+  const ModuleDef  *modd = nullptr;
 
   // check if nameStr is a member or global.
   //printf("getDefs(scope=%s,name=%s,args=%s checkScope=%d)\n",
   //    qPrint(scopeStr), qPrint(nameStr), qPrint(argsStr),checkScope);
-  GetDefInput input(scopeStr,nameStr,argsStr);
+  GetDefInput       input(scopeStr, nameStr, argsStr);
   input.forceEmptyScope = explicitScope;
-  input.currentFile = currentFile;
-  input.checkCV = true;
-  GetDefResult result = getDefs(input);
+  input.currentFile     = currentFile;
+  input.checkCV         = true;
+  GetDefResult result   = getDefs(input);
   if (result.found)
   {
     //printf("after getDefs checkScope=%d nameStr=%s\n",checkScope,qPrint(nameStr));
-    if (checkScope && result.md && result.md->getOuterScope()==Doxygen::globalScope &&
+    if (checkScope && result.md && result.md->getOuterScope() == Doxygen::globalScope &&
         !result.md->isStrongEnumValue() &&
-        (!scopeStr.isEmpty() || nameStr.find("::")>0))
+        (!scopeStr.isEmpty() || nameStr.find("::") > 0))
     {
       // we did find a member, but it is a global one while we were explicitly
       // looking for a scoped variable. See bug 616387 for an example why this check is needed.
       // note we do need to support autolinking to "::symbol" hence the >0
       //printf("not global member!\n");
-      *resContext=nullptr;
-      *resMember=nullptr;
+      *resContext = nullptr;
+      *resMember  = nullptr;
       AUTO_TRACE_ADD("false");
       return FALSE;
     }
@@ -2561,27 +2558,34 @@ bool resolveRef(/* in */  const QCString &scName,
     {
       if (!allowTypeOnly || result.md->isTypedef() || result.md->isEnumerate())
       {
-        *resMember=result.md;
-        *resContext=result.md;
+        *resMember  = result.md;
+        *resContext = result.md;
       }
       else // md is not a type, but we explicitly expect one
       {
-        *resContext=nullptr;
-        *resMember=nullptr;
+        *resContext = nullptr;
+        *resMember  = nullptr;
         AUTO_TRACE_ADD("false");
         return FALSE;
       }
     }
-    else if (result.cd)   *resContext=result.cd;
-    else if (result.nd)   *resContext=result.nd;
-    else if (result.fd)   *resContext=result.fd;
-    else if (result.gd)   *resContext=result.gd;
-    else if (result.cnd)  *resContext=result.cnd;
-    else if (result.modd) *resContext=result.modd;
+    else if (result.cd)
+      *resContext = result.cd;
+    else if (result.nd)
+      *resContext = result.nd;
+    else if (result.fd)
+      *resContext = result.fd;
+    else if (result.gd)
+      *resContext = result.gd;
+    else if (result.cnd)
+      *resContext = result.cnd;
+    else if (result.modd)
+      *resContext = result.modd;
     else
     {
-      *resContext=nullptr; *resMember=nullptr;
-        AUTO_TRACE_ADD("false");
+      *resContext = nullptr;
+      *resMember  = nullptr;
+      AUTO_TRACE_ADD("false");
       return FALSE;
     }
     //printf("member=%s (md=%p) anchor=%s linkable()=%d context=%s\n",
@@ -2589,31 +2593,31 @@ bool resolveRef(/* in */  const QCString &scName,
     AUTO_TRACE_ADD("true");
     return TRUE;
   }
-  else if (inSeeBlock && !nameStr.isEmpty() && (gd=Doxygen::groupLinkedMap->find(nameStr)))
+  else if (inSeeBlock && !nameStr.isEmpty() && (gd = Doxygen::groupLinkedMap->find(nameStr)))
   { // group link
-    *resContext=gd;
+    *resContext = gd;
     AUTO_TRACE_ADD("true");
     return TRUE;
   }
-  else if ((cnd=Doxygen::conceptLinkedMap->find(nameStr)))
+  else if ((cnd = Doxygen::conceptLinkedMap->find(nameStr)))
   {
-    *resContext=cnd;
+    *resContext = cnd;
     AUTO_TRACE_ADD("true");
     return TRUE;
   }
-  else if ((modd=ModuleManager::instance().modules().find(nameStr)))
+  else if ((modd = ModuleManager::instance().modules().find(nameStr)))
   {
-    *resContext=modd;
+    *resContext = modd;
     AUTO_TRACE_ADD("true");
     return TRUE;
   }
-  else if (tsName.find('.')!=-1) // maybe a link to a file
+  else if (tsName.find('.') != -1) // maybe a link to a file
   {
-    bool ambig = false;
-    const FileDef *fd=findFileDef(Doxygen::inputNameLinkedMap,tsName,ambig);
+    bool           ambig = false;
+    const FileDef *fd    = findFileDef(Doxygen::inputNameLinkedMap, tsName, ambig);
     if (fd && !ambig)
     {
-      *resContext=fd;
+      *resContext = fd;
       AUTO_TRACE_ADD("true");
       return TRUE;
     }
@@ -2621,13 +2625,13 @@ bool resolveRef(/* in */  const QCString &scName,
 
   if (tryUnspecializedVersion)
   {
-    bool b = resolveRef(scName,name,inSeeBlock,resContext,resMember,lang,FALSE,nullptr,checkScope);
-    AUTO_TRACE_ADD("{}",b);
+    bool b = resolveRef(scName, name, inSeeBlock, resContext, resMember, lang, FALSE, nullptr, checkScope);
+    AUTO_TRACE_ADD("{}", b);
     return b;
   }
-  if (bracePos!=-1) // Try without parameters as well, could be a constructor invocation
+  if (bracePos != -1) // Try without parameters as well, could be a constructor invocation
   {
-    *resContext=getClass(fullName.left(bracePos));
+    *resContext = getClass(fullName.left(bracePos));
     if (*resContext)
     {
       AUTO_TRACE_ADD("true");
@@ -2640,25 +2644,25 @@ bool resolveRef(/* in */  const QCString &scName,
   return FALSE;
 }
 
-QCString linkToText(SrcLangExt lang,const QCString &link,bool isFileName)
+QCString linkToText(SrcLangExt lang, const QCString &link, bool isFileName)
 {
   //bool optimizeOutputJava = Config_getBool(OPTIMIZE_OUTPUT_JAVA);
-  QCString result=link;
+  QCString result = link;
   if (!result.isEmpty())
   {
     // replace # by ::
-    result=substitute(result,"#","::");
+    result = substitute(result, "#", "::");
     // replace . by ::
-    if (!isFileName && result.find('<')==-1) result=substitute(result,".","::",3);
+    if (!isFileName && result.find('<') == -1) result = substitute(result, ".", "::", 3);
     // strip leading :: prefix if present
-    if (result.at(0)==':' && result.at(1)==':')
+    if (result.at(0) == ':' && result.at(1) == ':')
     {
-      result=result.right(result.length()-2);
+      result = result.right(result.length() - 2);
     }
     QCString sep = getLanguageSpecificSeparator(lang);
-    if (sep!="::")
+    if (sep != "::")
     {
-      result=substitute(result,"::",sep);
+      result = substitute(result, "::", sep);
     }
   }
   //printf("linkToText(%s,lang=%d)=%s\n",qPrint(link),lang,qPrint(result));
@@ -2667,157 +2671,155 @@ QCString linkToText(SrcLangExt lang,const QCString &link,bool isFileName)
 
 
 bool resolveLink(/* in */ const QCString &scName,
-    /* in */ const QCString &lr,
-    /* in */ bool /*inSeeBlock*/,
-    /* out */ const Definition **resContext,
-    /* out */ QCString &resAnchor,
-    /* in */ SrcLangExt lang,
-    /* in */ const QCString &prefix
-    )
+                 /* in */ const QCString &lr,
+                 /* in */ bool /*inSeeBlock*/,
+                 /* out */ const Definition **resContext,
+                 /* out */ QCString          &resAnchor,
+                 /* in */ SrcLangExt          lang,
+                 /* in */ const QCString     &prefix)
 {
-  *resContext=nullptr;
+  *resContext      = nullptr;
 
-  QCString linkRef=lr;
-  if (lang==SrcLangExt::CSharp)
+  QCString linkRef = lr;
+  if (lang == SrcLangExt::CSharp)
   {
     linkRef = mangleCSharpGenericName(linkRef);
   }
-  QCString linkRefWithoutTemplates = stripTemplateSpecifiersFromScope(linkRef,FALSE);
-  AUTO_TRACE("scName='{}',ref='{}'",scName,lr);
-  const FileDef  *fd = nullptr;
-  const GroupDef *gd = nullptr;
-  const PageDef  *pd = nullptr;
-  const ClassDef *cd = nullptr;
-  const DirDef   *dir = nullptr;
-  const ConceptDef *cnd = nullptr;
-  const ModuleDef *modd = nullptr;
-  const NamespaceDef *nd = nullptr;
-  const SectionInfo *si = nullptr;
-  bool ambig = false;
+  QCString linkRefWithoutTemplates = stripTemplateSpecifiersFromScope(linkRef, FALSE);
+  AUTO_TRACE("scName='{}',ref='{}'", scName, lr);
+  const FileDef      *fd    = nullptr;
+  const GroupDef     *gd    = nullptr;
+  const PageDef      *pd    = nullptr;
+  const ClassDef     *cd    = nullptr;
+  const DirDef       *dir   = nullptr;
+  const ConceptDef   *cnd   = nullptr;
+  const ModuleDef    *modd  = nullptr;
+  const NamespaceDef *nd    = nullptr;
+  const SectionInfo  *si    = nullptr;
+  bool                ambig = false;
   if (linkRef.isEmpty()) // no reference name!
   {
     AUTO_TRACE_EXIT("no_ref");
     return FALSE;
   }
-  else if ((pd=Doxygen::pageLinkedMap->find(linkRef))) // link to a page
+  else if ((pd = Doxygen::pageLinkedMap->find(linkRef))) // link to a page
   {
     gd = pd->getGroupDef();
     if (gd)
     {
-      if (!pd->name().isEmpty()) si=SectionManager::instance().find(pd->name());
-      *resContext=gd;
+      if (!pd->name().isEmpty()) si = SectionManager::instance().find(pd->name());
+      *resContext = gd;
       if (si) resAnchor = si->label();
     }
     else
     {
-      *resContext=pd;
+      *resContext = pd;
     }
     AUTO_TRACE_EXIT("page");
     return TRUE;
   }
-  else if ((si=SectionManager::instance().find(prefix+linkRef)))
+  else if ((si = SectionManager::instance().find(prefix + linkRef)))
   {
-    *resContext=si->definition();
-    resAnchor = si->label();
+    *resContext = si->definition();
+    resAnchor   = si->label();
     AUTO_TRACE_EXIT("section");
     return TRUE;
   }
-  else if ((si=SectionManager::instance().find(linkRef)))
+  else if ((si = SectionManager::instance().find(linkRef)))
   {
-    *resContext=si->definition();
-    resAnchor = si->label();
+    *resContext = si->definition();
+    resAnchor   = si->label();
     AUTO_TRACE_EXIT("section");
     return TRUE;
   }
-  else if ((pd=Doxygen::exampleLinkedMap->find(linkRef))) // link to an example
+  else if ((pd = Doxygen::exampleLinkedMap->find(linkRef))) // link to an example
   {
-    *resContext=pd;
+    *resContext = pd;
     AUTO_TRACE_EXIT("example");
     return TRUE;
   }
-  else if ((gd=Doxygen::groupLinkedMap->find(linkRef))) // link to a group
+  else if ((gd = Doxygen::groupLinkedMap->find(linkRef))) // link to a group
   {
-    *resContext=gd;
+    *resContext = gd;
     AUTO_TRACE_EXIT("group");
     return TRUE;
   }
-  else if ((fd=findFileDef(Doxygen::inputNameLinkedMap,linkRef,ambig)) // file link
-      && fd->isLinkable())
+  else if ((fd = findFileDef(Doxygen::inputNameLinkedMap, linkRef, ambig)) // file link
+           && fd->isLinkable())
   {
-    *resContext=fd;
+    *resContext = fd;
     AUTO_TRACE_EXIT("file");
     return TRUE;
   }
-  else if ((cd=getClass(linkRef))) // class link
+  else if ((cd = getClass(linkRef))) // class link
   {
-    *resContext=cd;
-    resAnchor=cd->anchor();
+    *resContext = cd;
+    resAnchor   = cd->anchor();
     AUTO_TRACE_EXIT("class");
     return TRUE;
   }
-  else if (lang==SrcLangExt::Java &&
-           (cd=getClass(linkRefWithoutTemplates))) // Java generic class link
+  else if (lang == SrcLangExt::Java &&
+           (cd = getClass(linkRefWithoutTemplates))) // Java generic class link
   {
-    *resContext=cd;
-    resAnchor=cd->anchor();
+    *resContext = cd;
+    resAnchor   = cd->anchor();
     AUTO_TRACE_EXIT("generic");
     return TRUE;
   }
-  else if ((cd=getClass(linkRef+"-p"))) // Obj-C protocol link
+  else if ((cd = getClass(linkRef + "-p"))) // Obj-C protocol link
   {
-    *resContext=cd;
-    resAnchor=cd->anchor();
+    *resContext = cd;
+    resAnchor   = cd->anchor();
     AUTO_TRACE_EXIT("protocol");
     return TRUE;
   }
-  else if ((cnd=getConcept(linkRef))) // C++20 concept definition
+  else if ((cnd = getConcept(linkRef))) // C++20 concept definition
   {
-    *resContext=cnd;
-    resAnchor=cnd->anchor();
+    *resContext = cnd;
+    resAnchor   = cnd->anchor();
     AUTO_TRACE_EXIT("concept");
     return TRUE;
   }
-  else if ((modd=ModuleManager::instance().modules().find(linkRef)))
+  else if ((modd = ModuleManager::instance().modules().find(linkRef)))
   {
-    *resContext=modd;
-    resAnchor=modd->anchor();
+    *resContext = modd;
+    resAnchor   = modd->anchor();
     AUTO_TRACE_EXIT("module");
     return TRUE;
   }
-  else if ((nd=Doxygen::namespaceLinkedMap->find(linkRef)))
+  else if ((nd = Doxygen::namespaceLinkedMap->find(linkRef)))
   {
-    *resContext=nd;
+    *resContext = nd;
     AUTO_TRACE_EXIT("namespace");
     return TRUE;
   }
-  else if ((dir=Doxygen::dirLinkedMap->find(FileInfo(linkRef.str()).absFilePath()+"/"))
-      && dir->isLinkable()) // TODO: make this location independent like filedefs
+  else if ((dir = Doxygen::dirLinkedMap->find(FileInfo(linkRef.str()).absFilePath() + "/")) && dir->isLinkable()) // TODO: make this location independent like filedefs
   {
-    *resContext=dir;
+    *resContext = dir;
     AUTO_TRACE_EXIT("directory");
     return TRUE;
   }
   else // probably a member reference
   {
-    const MemberDef *md = nullptr;
-    bool res = resolveRef(scName,lr,TRUE,resContext,&md,lang);
-    if (md) resAnchor=md->anchor();
-    AUTO_TRACE_EXIT("member? res={}",res);
+    const MemberDef *md  = nullptr;
+    bool             res = resolveRef(scName, lr, TRUE, resContext, &md, lang);
+    if (md) resAnchor = md->anchor();
+    AUTO_TRACE_EXIT("member? res={}", res);
     return res;
   }
 }
 
 
-void generateFileRef(OutputList &ol,const QCString &name,const QCString &text)
+void generateFileRef(OutputList &ol, const QCString &name, const QCString &text)
 {
   //printf("generateFileRef(%s,%s)\n",name,text);
   QCString linkText = text.isEmpty() ? text : name;
   //FileInfo *fi;
-  bool ambig = false;
-  FileDef *fd = findFileDef(Doxygen::inputNameLinkedMap,name,ambig);
+  bool     ambig    = false;
+  FileDef *fd       = findFileDef(Doxygen::inputNameLinkedMap, name, ambig);
   if (fd && fd->isLinkable())
     // link to documented input file
-    ol.writeObjectLink(fd->getReference(),fd->getOutputFileBase(),QCString(),linkText);
+    ol.writeObjectLink(fd->getReference(), fd->getOutputFileBase(), QCString(), linkText);
   else
     ol.docify(linkText);
 }
@@ -2827,29 +2829,30 @@ void generateFileRef(OutputList &ol,const QCString &name,const QCString &text)
 /** Cache element for the file name to FileDef mapping cache. */
 struct FindFileCacheElem
 {
-  FindFileCacheElem(FileDef *fd,bool ambig) : fileDef(fd), isAmbig(ambig) {}
-  FileDef *fileDef;
-  bool isAmbig;
+    FindFileCacheElem(FileDef *fd, bool ambig) :
+        fileDef(fd), isAmbig(ambig) {}
+    FileDef *fileDef;
+    bool     isAmbig;
 };
 
-static Cache<std::string,FindFileCacheElem> g_findFileDefCache(5000);
+static Cache<std::string, FindFileCacheElem> g_findFileDefCache(5000);
 
-static std::mutex g_findFileDefMutex;
+static std::mutex                            g_findFileDefMutex;
 
-FileDef *findFileDef(const FileNameLinkedMap *fnMap,const QCString &n,bool &ambig)
+FileDef                                     *findFileDef(const FileNameLinkedMap *fnMap, const QCString &n, bool &ambig)
 {
-  ambig=FALSE;
+  ambig = FALSE;
   if (n.isEmpty()) return nullptr;
 
 
   const int maxAddrSize = 20;
-  char addr[maxAddrSize];
-  qsnprintf(addr,maxAddrSize,"%p:",reinterpret_cast<const void*>(fnMap));
+  char      addr[maxAddrSize];
+  qsnprintf(addr, maxAddrSize, "%p:", reinterpret_cast<const void *>(fnMap));
   QCString key = addr;
-  key+=n;
+  key += n;
 
   std::lock_guard<std::mutex> lock(g_findFileDefMutex);
-  FindFileCacheElem *cachedResult = g_findFileDefCache.find(key.str());
+  FindFileCacheElem          *cachedResult = g_findFileDefCache.find(key.str());
   //printf("key=%s cachedResult=%p\n",qPrint(key),cachedResult);
   if (cachedResult)
   {
@@ -2859,29 +2862,27 @@ FileDef *findFileDef(const FileNameLinkedMap *fnMap,const QCString &n,bool &ambi
   }
   else
   {
-    cachedResult = g_findFileDefCache.insert(key.str(),FindFileCacheElem(nullptr,FALSE));
+    cachedResult = g_findFileDefCache.insert(key.str(), FindFileCacheElem(nullptr, FALSE));
   }
 
-  QCString name=Dir::cleanDirPath(n.str());
+  QCString name = Dir::cleanDirPath(n.str());
   QCString path;
   if (name.isEmpty()) return nullptr;
-  int slashPos=std::max(name.findRev('/'),name.findRev('\\'));
-  if (slashPos!=-1)
+  int slashPos = std::max(name.findRev('/'), name.findRev('\\'));
+  if (slashPos != -1)
   {
-    path=removeLongPathMarker(name.left(slashPos+1));
-    name=name.right(name.length()-slashPos-1);
+    path = removeLongPathMarker(name.left(slashPos + 1));
+    name = name.right(name.length() - slashPos - 1);
   }
   if (name.isEmpty()) return nullptr;
   const FileName *fn = fnMap->find(name);
   if (fn)
   {
     //printf("fn->size()=%zu\n",fn->size());
-    if (fn->size()==1)
+    if (fn->size() == 1)
     {
-      const std::unique_ptr<FileDef> &fd = fn->front();
-      bool isSamePath = Portable::fileSystemIsCaseSensitive() ?
-                 fd->getPath().right(path.length())==path :
-                 fd->getPath().right(path.length()).lower()==path.lower();
+      const std::unique_ptr<FileDef> &fd         = fn->front();
+      bool                            isSamePath = Portable::fileSystemIsCaseSensitive() ? fd->getPath().right(path.length()) == path : fd->getPath().right(path.length()).lower() == path.lower();
       if (path.isEmpty() || isSamePath)
       {
         cachedResult->fileDef = fd.get();
@@ -2890,23 +2891,23 @@ FileDef *findFileDef(const FileNameLinkedMap *fnMap,const QCString &n,bool &ambi
     }
     else // file name alone is ambiguous
     {
-      int count=0;
-      FileDef *lastMatch=nullptr;
+      int      count        = 0;
+      FileDef *lastMatch    = nullptr;
       QCString pathStripped = stripFromIncludePath(path);
       for (const auto &fd_p : *fn)
       {
-        FileDef *fd = fd_p.get();
+        FileDef *fd          = fd_p.get();
         QCString fdStripPath = stripFromIncludePath(fd->getPath());
         if (path.isEmpty() ||
             (!pathStripped.isEmpty() && fdStripPath.endsWith(pathStripped)) ||
             (pathStripped.isEmpty() && fdStripPath.isEmpty()))
         {
           count++;
-          lastMatch=fd;
+          lastMatch = fd;
         }
       }
 
-      ambig=(count>1);
+      ambig                 = (count > 1);
       cachedResult->isAmbig = ambig;
       cachedResult->fileDef = lastMatch;
       return lastMatch;
@@ -2921,18 +2922,18 @@ FileDef *findFileDef(const FileNameLinkedMap *fnMap,const QCString &n,bool &ambi
 
 //----------------------------------------------------------------------
 
-QCString findFilePath(const QCString &file,bool &ambig)
+QCString findFilePath(const QCString &file, bool &ambig)
 {
-  ambig=false;
+  ambig = false;
   QCString result;
-  bool found=false;
+  bool     found = false;
   if (!found)
   {
     FileInfo fi(file.str());
     if (fi.exists())
     {
-      result=fi.absFilePath();
-      found=true;
+      result = fi.absFilePath();
+      found  = true;
     }
   }
   if (!found)
@@ -2940,12 +2941,12 @@ QCString findFilePath(const QCString &file,bool &ambig)
     const StringVector &examplePathList = Config_getList(EXAMPLE_PATH);
     for (const auto &s : examplePathList)
     {
-      std::string absFileName = s+(Portable::pathSeparator()+file).str();
-      FileInfo fi(absFileName);
+      std::string absFileName = s + (Portable::pathSeparator() + file).str();
+      FileInfo    fi(absFileName);
       if (fi.exists())
       {
-        result=fi.absFilePath();
-        found=true;
+        result = fi.absFilePath();
+        found  = true;
       }
     }
   }
@@ -2953,10 +2954,10 @@ QCString findFilePath(const QCString &file,bool &ambig)
   if (!found)
   {
     // as a fallback we also look in the exampleNameDict
-    FileDef *fd = findFileDef(Doxygen::exampleNameLinkedMap,file,ambig);
+    FileDef *fd = findFileDef(Doxygen::exampleNameLinkedMap, file, ambig);
     if (fd && !ambig)
     {
-      result=fd->absFilePath();
+      result = fd->absFilePath();
     }
   }
   return result;
@@ -2964,28 +2965,30 @@ QCString findFilePath(const QCString &file,bool &ambig)
 
 //----------------------------------------------------------------------
 
-QCString showFileDefMatches(const FileNameLinkedMap *fnMap,const QCString &n)
+QCString showFileDefMatches(const FileNameLinkedMap *fnMap, const QCString &n)
 {
   QCString result;
-  QCString name=n;
+  QCString name = n;
   QCString path;
-  int slashPos=std::max(name.findRev('/'),name.findRev('\\'));
-  if (slashPos!=-1)
+  int      slashPos = std::max(name.findRev('/'), name.findRev('\\'));
+  if (slashPos != -1)
   {
-    path=name.left(slashPos+1);
-    name=name.right(name.length()-slashPos-1);
+    path = name.left(slashPos + 1);
+    name = name.right(name.length() - slashPos - 1);
   }
-  const FileName *fn=fnMap->find(name);
+  const FileName *fn = fnMap->find(name);
   if (fn)
   {
     bool first = true;
     for (const auto &fd : *fn)
     {
-      if (path.isEmpty() || fd->getPath().right(path.length())==path)
+      if (path.isEmpty() || fd->getPath().right(path.length()) == path)
       {
-        if (!first) result += "\n";
-        else first = false;
-        result+="  "+fd->absFilePath();
+        if (!first)
+          result += "\n";
+        else
+          first = false;
+        result += "  " + fd->absFilePath();
       }
     }
   }
@@ -2994,62 +2997,62 @@ QCString showFileDefMatches(const FileNameLinkedMap *fnMap,const QCString &n)
 
 //----------------------------------------------------------------------
 
-QCString substituteKeywords(const QCString &file, const QCString &s,const KeywordSubstitutionList &keywords)
+QCString substituteKeywords(const QCString &file, const QCString &s, const KeywordSubstitutionList &keywords)
 {
   std::string substRes;
-  int line = 1;
-  const char *p = s.data();
+  int         line = 1;
+  const char *p    = s.data();
   if (p)
   {
     // reserve some room for expansion
-    substRes.reserve(s.length()+1024);
+    substRes.reserve(s.length() + 1024);
     char c = 0;
-    while ((c=*p))
+    while ((c = *p))
     {
       bool found = false;
-      if (c=='$')
+      if (c == '$')
       {
         for (const auto &kw : keywords)
         {
           size_t keyLen = qstrlen(kw.keyword);
-          if (qstrncmp(p,kw.keyword,keyLen)==0)
+          if (qstrncmp(p, kw.keyword, keyLen) == 0)
           {
-            const char *startArg = p+keyLen;
-            bool expectParam = std::holds_alternative<KeywordSubstitution::GetValueWithParam>(kw.getValueVariant);
+            const char *startArg    = p + keyLen;
+            bool        expectParam = std::holds_alternative<KeywordSubstitution::GetValueWithParam>(kw.getValueVariant);
             //printf("%s: expectParam=%d *startArg=%c\n",kw.keyword,expectParam,*startArg);
-            if (expectParam && *startArg=='(') // $key(value)
+            if (expectParam && *startArg == '(') // $key(value)
             {
-              size_t j=1;
+              size_t      j      = 1;
               const char *endArg = nullptr;
-              while ((c=*(startArg+j)) && c!=')' && c!='\n' && c!=0) j++;
-              if (c==')') endArg=startArg+j;
+              while ((c = *(startArg + j)) && c != ')' && c != '\n' && c != 0) j++;
+              if (c == ')') endArg = startArg + j;
               if (endArg)
               {
-                QCString value = QCString(startArg+1).left(endArg-startArg-1);
-                auto &&getValue = std::get<KeywordSubstitution::GetValueWithParam>(kw.getValueVariant);
-                substRes+=getValue(value).str();
-                p=endArg+1;
+                QCString value    = QCString(startArg + 1).left(endArg - startArg - 1);
+                auto   &&getValue = std::get<KeywordSubstitution::GetValueWithParam>(kw.getValueVariant);
+                substRes += getValue(value).str();
+                p = endArg + 1;
                 //printf("found '%s'->'%s'\n",kw.keyword,qPrint(getValue(value)));
               }
               else
               {
                 //printf("missing argument\n");
-                warn(file,line,"Missing argument for '{}'",kw.keyword);
-                p+=keyLen;
+                warn(file, line, "Missing argument for '{}'", kw.keyword);
+                p += keyLen;
               }
             }
             else if (!expectParam) // $key
             {
               auto &&getValue = std::get<KeywordSubstitution::GetValue>(kw.getValueVariant);
-              substRes+=getValue().str();
+              substRes += getValue().str();
               //printf("found '%s'->'%s'\n",kw.keyword,qPrint(getValue()));
-              p+=keyLen;
+              p += keyLen;
             }
             else
             {
               //printf("%s %d Expected arguments, none specified '%s'\n",qPrint(file), line, qPrint(kw.keyword));
-              warn(file,line,"Expected arguments for '{}' but none were specified",kw.keyword);
-              p+=keyLen;
+              warn(file, line, "Expected arguments for '{}' but none were specified", kw.keyword);
+              p += keyLen;
             }
             found = true;
             break;
@@ -3058,8 +3061,8 @@ QCString substituteKeywords(const QCString &file, const QCString &s,const Keywor
       }
       if (!found) // copy
       {
-        if (c=='\n') line++;
-        substRes+=c;
+        if (c == '\n') line++;
+        substRes += c;
         p++;
       }
     }
@@ -3069,15 +3072,15 @@ QCString substituteKeywords(const QCString &file, const QCString &s,const Keywor
 
 static QCString showDate(const QCString &fmt)
 {
-   // get the current date and time
-  std::tm dat{};
-  int specFormat=0;
-  QCString specDate = "";
-  QCString err = dateTimeFromString(specDate,dat,specFormat);
+  // get the current date and time
+  std::tm  dat{};
+  int      specFormat = 0;
+  QCString specDate   = "";
+  QCString err        = dateTimeFromString(specDate, dat, specFormat);
 
   // do the conversion
-  int usedFormat=0;
-  return formatDateTime(fmt,dat,usedFormat);
+  int      usedFormat = 0;
+  return formatDateTime(fmt, dat, usedFormat);
 }
 
 QCString projectLogoFile()
@@ -3087,12 +3090,12 @@ QCString projectLogoFile()
   {
     // check for optional width= and height= specifier
     int wi = projectLogo.find(" width=");
-    if (wi!=-1) // and strip them
+    if (wi != -1) // and strip them
     {
       projectLogo = projectLogo.left(wi);
     }
     int hi = projectLogo.find(" height=");
-    if (hi!=-1)
+    if (hi != -1)
     {
       projectLogo = projectLogo.left(hi);
     }
@@ -3107,12 +3110,11 @@ static QCString projectLogoSize()
   QCString projectLogo = Config_getString(PROJECT_LOGO);
   if (!projectLogo.isEmpty())
   {
-    auto extractDimension = [&projectLogo](const char *startMarker,size_t startPos,size_t endPos) -> QCString
-    {
-      QCString result = projectLogo.mid(startPos,endPos-startPos).stripWhiteSpace().quoted();
-      if (result.length()>=2 && result.at(0)!='"' && result.at(result.length()-1)!='"')
+    auto extractDimension = [&projectLogo](const char *startMarker, size_t startPos, size_t endPos) -> QCString {
+      QCString result = projectLogo.mid(startPos, endPos - startPos).stripWhiteSpace().quoted();
+      if (result.length() >= 2 && result.at(0) != '"' && result.at(result.length() - 1) != '"')
       {
-        result="\""+result+"\"";
+        result = "\"" + result + "\"";
       }
       result.prepend(startMarker);
       return result;
@@ -3120,49 +3122,45 @@ static QCString projectLogoSize()
     // check for optional width= and height= specifier
     int wi = projectLogo.find(" width=");
     int hi = projectLogo.find(" height=");
-    if (wi!=-1 && hi!=-1)
+    if (wi != -1 && hi != -1)
     {
-      if (wi<hi) // "... width=x height=y..."
+      if (wi < hi) // "... width=x height=y..."
       {
-        sizeVal = extractDimension(" width=",  wi+7, hi) + " "
-                + extractDimension(" height=", hi+8, projectLogo.length());
+        sizeVal = extractDimension(" width=", wi + 7, hi) + " " + extractDimension(" height=", hi + 8, projectLogo.length());
       }
       else // "... height=y width=x..."
       {
-        sizeVal = extractDimension(" height=", hi+8, wi) + " "
-                + extractDimension(" width=",  wi+7, projectLogo.length());
+        sizeVal = extractDimension(" height=", hi + 8, wi) + " " + extractDimension(" width=", wi + 7, projectLogo.length());
       }
     }
-    else if (wi!=-1) // ... width=x..."
+    else if (wi != -1) // ... width=x..."
     {
-      sizeVal = extractDimension(" width=", wi+7, projectLogo.length());
+      sizeVal = extractDimension(" width=", wi + 7, projectLogo.length());
     }
-    else if (hi!=-1) // ... height=x..."
+    else if (hi != -1) // ... height=x..."
     {
-      sizeVal = extractDimension(" height=", hi+8, projectLogo.length());
+      sizeVal = extractDimension(" height=", hi + 8, projectLogo.length());
     }
   }
   //printf("projectsize='%s'\n",qPrint(sizeVal));
   return sizeVal;
 }
 
-QCString substituteKeywords(const QCString &file,const QCString &s,const QCString &title,
-         const QCString &projName,const QCString &projNum,const QCString &projBrief)
+QCString substituteKeywords(const QCString &file, const QCString &s, const QCString &title,
+                            const QCString &projName, const QCString &projNum, const QCString &projBrief)
 {
-  return substituteKeywords(file,s,
-  {
-    // keyword          value getter
-    { "$title",           [&]() { return !title.isEmpty() ? title : projName;       } },
-    { "$doxygenversion",  [&]() { return getDoxygenVersion();                       } },
-    { "$projectname",     [&]() { return projName;                                  } },
-    { "$projectnumber",   [&]() { return projNum;                                   } },
-    { "$projectbrief",    [&]() { return projBrief;                                 } },
-    { "$projectlogo",     [&]() { return stripPath(projectLogoFile());              } },
-    { "$logosize",        [&]() { return projectLogoSize();                         } },
-    { "$projecticon",     [&]() { return stripPath(Config_getString(PROJECT_ICON)); } },
-    { "$langISO",         [&]() { return theTranslator->trISOLang();                } },
-    { "$showdate",        [&](const QCString &fmt) { return showDate(fmt);          } }
-  });
+  return substituteKeywords(file, s,
+                            { // keyword          value getter
+                              { "$title", [&]() { return !title.isEmpty() ? title : projName; } },
+                              { "$doxygenversion", [&]() { return getDoxygenVersion(); } },
+                              { "$projectname", [&]() { return projName; } },
+                              { "$projectnumber", [&]() { return projNum; } },
+                              { "$projectbrief", [&]() { return projBrief; } },
+                              { "$projectlogo", [&]() { return stripPath(projectLogoFile()); } },
+                              { "$logosize", [&]() { return projectLogoSize(); } },
+                              { "$projecticon", [&]() { return stripPath(Config_getString(PROJECT_ICON)); } },
+                              { "$langISO", [&]() { return theTranslator->trISOLang(); } },
+                              { "$showdate", [&](const QCString &fmt) { return showDate(fmt); } } });
 }
 
 //----------------------------------------------------------------------
@@ -3177,16 +3175,16 @@ int getPrefixIndex(const QCString &name)
   const StringVector &sl = Config_getList(IGNORE_PREFIX);
   for (const auto &s : sl)
   {
-    const char *ps=s.c_str();
-    const char *pd=name.data();
-    int i=0;
-    while (*ps!=0 && *pd!=0 && *ps==*pd)
+    const char *ps = s.c_str();
+    const char *pd = name.data();
+    int         i  = 0;
+    while (*ps != 0 && *pd != 0 && *ps == *pd)
     {
       ps++;
       pd++;
       i++;
     }
-    if (*ps==0 && *pd!=0)
+    if (*ps == 0 && *pd != 0)
     {
       return i;
     }
@@ -3264,92 +3262,105 @@ bool getCaseSenseNames()
 {
   auto caseSenseNames = Config_getEnum(CASE_SENSE_NAMES);
 
-  if (caseSenseNames == CASE_SENSE_NAMES_t::YES) return true;
-  else if (caseSenseNames == CASE_SENSE_NAMES_t::NO) return false;
-  else return Portable::fileSystemIsCaseSensitive();
+  if (caseSenseNames == CASE_SENSE_NAMES_t::YES)
+    return true;
+  else if (caseSenseNames == CASE_SENSE_NAMES_t::NO)
+    return false;
+  else
+    return Portable::fileSystemIsCaseSensitive();
 }
 
-QCString escapeCharsInString(const QCString &name,bool allowDots,bool allowUnderscore)
+QCString escapeCharsInString(const QCString &name, bool allowDots, bool allowUnderscore)
 {
   if (name.isEmpty()) return name;
-  bool caseSenseNames = getCaseSenseNames();
-  bool allowUnicodeNames = Config_getBool(ALLOW_UNICODE_NAMES);
-  GrowBuf growBuf;
+  bool        caseSenseNames    = getCaseSenseNames();
+  bool        allowUnicodeNames = Config_getBool(ALLOW_UNICODE_NAMES);
+  GrowBuf     growBuf;
   signed char c = 0;
-  const char *p=name.data();
-  while ((c=*p++)!=0)
+  const char *p = name.data();
+  while ((c = *p++) != 0)
   {
-    switch(c)
+    switch (c)
     {
-      case '_': if (allowUnderscore) growBuf.addChar('_'); else growBuf.addStr("__"); break;
-      case '-': growBuf.addChar('-');  break;
-      case ':': growBuf.addStr("_1"); break;
-      case '/': growBuf.addStr("_2"); break;
-      case '<': growBuf.addStr("_3"); break;
-      case '>': growBuf.addStr("_4"); break;
-      case '*': growBuf.addStr("_5"); break;
-      case '&': growBuf.addStr("_6"); break;
-      case '|': growBuf.addStr("_7"); break;
-      case '.': if (allowDots) growBuf.addChar('.'); else growBuf.addStr("_8"); break;
-      case '!': growBuf.addStr("_9"); break;
-      case ',': growBuf.addStr("_00"); break;
-      case ' ': growBuf.addStr("_01"); break;
-      case '{': growBuf.addStr("_02"); break;
-      case '}': growBuf.addStr("_03"); break;
-      case '?': growBuf.addStr("_04"); break;
-      case '^': growBuf.addStr("_05"); break;
-      case '%': growBuf.addStr("_06"); break;
-      case '(': growBuf.addStr("_07"); break;
-      case ')': growBuf.addStr("_08"); break;
-      case '+': growBuf.addStr("_09"); break;
-      case '=': growBuf.addStr("_0a"); break;
-      case '$': growBuf.addStr("_0b"); break;
-      case '\\': growBuf.addStr("_0c"); break;
-      case '@': growBuf.addStr("_0d"); break;
-      case ']': growBuf.addStr("_0e"); break;
-      case '[': growBuf.addStr("_0f"); break;
-      case '#': growBuf.addStr("_0g"); break;
-      case '"': growBuf.addStr("_0h"); break;
-      case '~': growBuf.addStr("_0i"); break;
-      case '\'': growBuf.addStr("_0j"); break;
-      case ';': growBuf.addStr("_0k"); break;
-      case '`': growBuf.addStr("_0l"); break;
-      default:
-                if (c<0)
-                {
-                  bool doEscape = true;
-                  if (allowUnicodeNames)
-                  {
-                    int charLen = getUTF8CharNumBytes(c);
-                    if (charLen>0)
-                    {
-                      growBuf.addStr(p-1,charLen);
-                      p+=charLen;
-                      doEscape = false;
-                    }
-                  }
-                  if (doEscape) // not a valid unicode char or escaping needed
-                  {
-                    char ids[5];
-                    unsigned char id = static_cast<unsigned char>(c);
-                    ids[0]='_';
-                    ids[1]='x';
-                    ids[2]=hex[id>>4];
-                    ids[3]=hex[id&0xF];
-                    ids[4]=0;
-                    growBuf.addStr(ids);
-                  }
-                }
-                else if (caseSenseNames || !isupper(c))
-                {
-                  growBuf.addChar(c);
-                }
-                else
-                {
-                  growBuf.addChar('_');
-                  growBuf.addChar(static_cast<char>(tolower(c)));
-                }
-                break;
+    case '_':
+      if (allowUnderscore)
+        growBuf.addChar('_');
+      else
+        growBuf.addStr("__");
+      break;
+    case '-': growBuf.addChar('-'); break;
+    case ':': growBuf.addStr("_1"); break;
+    case '/': growBuf.addStr("_2"); break;
+    case '<': growBuf.addStr("_3"); break;
+    case '>': growBuf.addStr("_4"); break;
+    case '*': growBuf.addStr("_5"); break;
+    case '&': growBuf.addStr("_6"); break;
+    case '|': growBuf.addStr("_7"); break;
+    case '.':
+      if (allowDots)
+        growBuf.addChar('.');
+      else
+        growBuf.addStr("_8");
+      break;
+    case '!': growBuf.addStr("_9"); break;
+    case ',': growBuf.addStr("_00"); break;
+    case ' ': growBuf.addStr("_01"); break;
+    case '{': growBuf.addStr("_02"); break;
+    case '}': growBuf.addStr("_03"); break;
+    case '?': growBuf.addStr("_04"); break;
+    case '^': growBuf.addStr("_05"); break;
+    case '%': growBuf.addStr("_06"); break;
+    case '(': growBuf.addStr("_07"); break;
+    case ')': growBuf.addStr("_08"); break;
+    case '+': growBuf.addStr("_09"); break;
+    case '=': growBuf.addStr("_0a"); break;
+    case '$': growBuf.addStr("_0b"); break;
+    case '\\': growBuf.addStr("_0c"); break;
+    case '@': growBuf.addStr("_0d"); break;
+    case ']': growBuf.addStr("_0e"); break;
+    case '[': growBuf.addStr("_0f"); break;
+    case '#': growBuf.addStr("_0g"); break;
+    case '"': growBuf.addStr("_0h"); break;
+    case '~': growBuf.addStr("_0i"); break;
+    case '\'': growBuf.addStr("_0j"); break;
+    case ';': growBuf.addStr("_0k"); break;
+    case '`': growBuf.addStr("_0l"); break;
+    default:
+      if (c < 0)
+      {
+        bool doEscape = true;
+        if (allowUnicodeNames)
+        {
+          int charLen = getUTF8CharNumBytes(c);
+          if (charLen > 0)
+          {
+            growBuf.addStr(p - 1, charLen);
+            p += charLen;
+            doEscape = false;
+          }
+        }
+        if (doEscape) // not a valid unicode char or escaping needed
+        {
+          char          ids[5];
+          unsigned char id = static_cast<unsigned char>(c);
+          ids[0]           = '_';
+          ids[1]           = 'x';
+          ids[2]           = hex[id >> 4];
+          ids[3]           = hex[id & 0xF];
+          ids[4]           = 0;
+          growBuf.addStr(ids);
+        }
+      }
+      else if (caseSenseNames || !isupper(c))
+      {
+        growBuf.addChar(c);
+      }
+      else
+      {
+        growBuf.addChar('_');
+        growBuf.addChar(static_cast<char>(tolower(c)));
+      }
+      break;
     }
   }
   growBuf.addChar(0);
@@ -3359,162 +3370,257 @@ QCString escapeCharsInString(const QCString &name,bool allowDots,bool allowUnder
 QCString unescapeCharsInString(const QCString &s)
 {
   if (s.isEmpty()) return s;
-  bool caseSenseNames = getCaseSenseNames();
-  QCString result;
+  bool        caseSenseNames = getCaseSenseNames();
+  QCString    result;
   const char *p = s.data();
   if (p)
   {
     char c = 0;
-    while ((c=*p++))
+    while ((c = *p++))
     {
-      if (c=='_') // 2 or 3 character escape
+      if (c == '_') // 2 or 3 character escape
       {
         switch (*p)
         {
-          case '_': result+=c;   p++; break; // __ -> '_'
-          case '1': result+=':'; p++; break; // _1 -> ':'
-          case '2': result+='/'; p++; break; // _2 -> '/'
-          case '3': result+='<'; p++; break; // _3 -> '<'
-          case '4': result+='>'; p++; break; // _4 -> '>'
-          case '5': result+='*'; p++; break; // _5 -> '*'
-          case '6': result+='&'; p++; break; // _6 -> '&'
-          case '7': result+='|'; p++; break; // _7 -> '|'
-          case '8': result+='.'; p++; break; // _8 -> '.'
-          case '9': result+='!'; p++; break; // _9 -> '!'
-          case '0': // 3 character escape
-             switch (*(p+1))
-             {
-               case '0': result+=','; p+=2; break; // _00 -> ','
-               case '1': result+=' '; p+=2; break; // _01 -> ' '
-               case '2': result+='{'; p+=2; break; // _02 -> '{'
-               case '3': result+='}'; p+=2; break; // _03 -> '}'
-               case '4': result+='?'; p+=2; break; // _04 -> '?'
-               case '5': result+='^'; p+=2; break; // _05 -> '^'
-               case '6': result+='%'; p+=2; break; // _06 -> '%'
-               case '7': result+='('; p+=2; break; // _07 -> '('
-               case '8': result+=')'; p+=2; break; // _08 -> ')'
-               case '9': result+='+'; p+=2; break; // _09 -> '+'
-               case 'a': result+='='; p+=2; break; // _0a -> '='
-               case 'b': result+='$'; p+=2; break; // _0b -> '$'
-               case 'c': result+='\\'; p+=2; break;// _0c -> '\'
-               case 'd': result+='@'; p+=2; break; // _0d -> '@'
-               case 'e': result+=']'; p+=2; break; // _0e -> ']'
-               case 'f': result+='['; p+=2; break; // _0f -> '['
-               case 'g': result+='#'; p+=2; break; // _0g -> '#'
-               case 'h': result+='"'; p+=2; break; // _0h -> '"'
-               case 'i': result+='~'; p+=2; break; // _0i -> '~'
-               case 'j': result+='\''; p+=2; break;// _0j -> '\'
-               case 'k': result+=';'; p+=2; break; // _0k -> ';'
-               case 'l': result+='`'; p+=2; break; // _0l -> '`'
-               default: // unknown escape, just pass underscore character as-is
-                 result+=c;
-                 break;
-             }
-             break;
-          default:
-            if (!caseSenseNames && c>='a' && c<='z') // lower to upper case escape, _a -> 'A'
-            {
-              result+=static_cast<char>(toupper(*p));
-              p++;
-            }
-            else // unknown escape, pass underscore character as-is
-            {
-              result+=c;
-            }
+        case '_':
+          result += c;
+          p++;
+          break; // __ -> '_'
+        case '1':
+          result += ':';
+          p++;
+          break; // _1 -> ':'
+        case '2':
+          result += '/';
+          p++;
+          break; // _2 -> '/'
+        case '3':
+          result += '<';
+          p++;
+          break; // _3 -> '<'
+        case '4':
+          result += '>';
+          p++;
+          break; // _4 -> '>'
+        case '5':
+          result += '*';
+          p++;
+          break; // _5 -> '*'
+        case '6':
+          result += '&';
+          p++;
+          break; // _6 -> '&'
+        case '7':
+          result += '|';
+          p++;
+          break; // _7 -> '|'
+        case '8':
+          result += '.';
+          p++;
+          break; // _8 -> '.'
+        case '9':
+          result += '!';
+          p++;
+          break;  // _9 -> '!'
+        case '0': // 3 character escape
+          switch (*(p + 1))
+          {
+          case '0':
+            result += ',';
+            p += 2;
+            break; // _00 -> ','
+          case '1':
+            result += ' ';
+            p += 2;
+            break; // _01 -> ' '
+          case '2':
+            result += '{';
+            p += 2;
+            break; // _02 -> '{'
+          case '3':
+            result += '}';
+            p += 2;
+            break; // _03 -> '}'
+          case '4':
+            result += '?';
+            p += 2;
+            break; // _04 -> '?'
+          case '5':
+            result += '^';
+            p += 2;
+            break; // _05 -> '^'
+          case '6':
+            result += '%';
+            p += 2;
+            break; // _06 -> '%'
+          case '7':
+            result += '(';
+            p += 2;
+            break; // _07 -> '('
+          case '8':
+            result += ')';
+            p += 2;
+            break; // _08 -> ')'
+          case '9':
+            result += '+';
+            p += 2;
+            break; // _09 -> '+'
+          case 'a':
+            result += '=';
+            p += 2;
+            break; // _0a -> '='
+          case 'b':
+            result += '$';
+            p += 2;
+            break; // _0b -> '$'
+          case 'c':
+            result += '\\';
+            p += 2;
+            break; // _0c -> '\'
+          case 'd':
+            result += '@';
+            p += 2;
+            break; // _0d -> '@'
+          case 'e':
+            result += ']';
+            p += 2;
+            break; // _0e -> ']'
+          case 'f':
+            result += '[';
+            p += 2;
+            break; // _0f -> '['
+          case 'g':
+            result += '#';
+            p += 2;
+            break; // _0g -> '#'
+          case 'h':
+            result += '"';
+            p += 2;
+            break; // _0h -> '"'
+          case 'i':
+            result += '~';
+            p += 2;
+            break; // _0i -> '~'
+          case 'j':
+            result += '\'';
+            p += 2;
+            break; // _0j -> '\'
+          case 'k':
+            result += ';';
+            p += 2;
+            break; // _0k -> ';'
+          case 'l':
+            result += '`';
+            p += 2;
+            break; // _0l -> '`'
+          default: // unknown escape, just pass underscore character as-is
+            result += c;
             break;
+          }
+          break;
+        default:
+          if (!caseSenseNames && c >= 'a' && c <= 'z') // lower to upper case escape, _a -> 'A'
+          {
+            result += static_cast<char>(toupper(*p));
+            p++;
+          }
+          else // unknown escape, pass underscore character as-is
+          {
+            result += c;
+          }
+          break;
         }
       }
       else // normal character; pass as is
       {
-        result+=c;
+        result += c;
       }
     }
   }
   return result;
 }
 
-static std::unordered_map<std::string,int> g_usedNames;
-static std::mutex g_usedNamesMutex;
-static int g_usedNamesCount=1;
-
+static std::unordered_map<std::string, int> g_usedNames;
+static std::mutex                           g_usedNamesMutex;
+static int                                  g_usedNamesCount = 1;
 
 
 /*! This function determines the file name on disk of an item
  *  given its name, which could be a class name with template
  *  arguments, so special characters need to be escaped.
  */
-QCString convertNameToFile(const QCString &name,bool allowDots,bool allowUnderscore)
+QCString                                    convertNameToFile(const QCString &name, bool allowDots, bool allowUnderscore)
 {
   if (name.isEmpty()) return name;
-  bool shortNames = Config_getBool(SHORT_NAMES);
-  bool createSubdirs = Config_getBool(CREATE_SUBDIRS);
+  bool     shortNames    = Config_getBool(SHORT_NAMES);
+  bool     createSubdirs = Config_getBool(CREATE_SUBDIRS);
   QCString result;
   if (shortNames) // use short names only
   {
     std::lock_guard<std::mutex> lock(g_usedNamesMutex);
-    auto kv = g_usedNames.find(name.str());
-    uint32_t num=0;
-    if (kv!=g_usedNames.end())
+    auto                        kv  = g_usedNames.find(name.str());
+    uint32_t                    num = 0;
+    if (kv != g_usedNames.end())
     {
       num = kv->second;
     }
     else
     {
       num = g_usedNamesCount;
-      g_usedNames.emplace(name.str(),g_usedNamesCount++);
+      g_usedNames.emplace(name.str(), g_usedNamesCount++);
     }
-    result.sprintf("a%05d",num);
+    result.sprintf("a%05d", num);
   }
   else // long names
   {
-    result=escapeCharsInString(name,allowDots,allowUnderscore);
+    result           = escapeCharsInString(name, allowDots, allowUnderscore);
     size_t resultLen = result.length();
-    if (resultLen>=128) // prevent names that cannot be created!
+    if (resultLen >= 128) // prevent names that cannot be created!
     {
       // third algorithm based on MD5 hash
       uint8_t md5_sig[16];
-      char sigStr[33];
-      MD5Buffer(result.data(),static_cast<unsigned int>(resultLen),md5_sig);
-      MD5SigToString(md5_sig,sigStr);
-      result=result.left(128-32)+sigStr;
+      char    sigStr[33];
+      MD5Buffer(result.data(), static_cast<unsigned int>(resultLen), md5_sig);
+      MD5SigToString(md5_sig, sigStr);
+      result = result.left(128 - 32) + sigStr;
     }
   }
   if (createSubdirs)
   {
-    int l1Dir=0,l2Dir=0;
-    int createSubdirsLevel = Config_getInt(CREATE_SUBDIRS_LEVEL);
-    int createSubdirsBitmaskL2 = (1<<createSubdirsLevel)-1;
+    int     l1Dir = 0, l2Dir = 0;
+    int     createSubdirsLevel     = Config_getInt(CREATE_SUBDIRS_LEVEL);
+    int     createSubdirsBitmaskL2 = (1 << createSubdirsLevel) - 1;
 
     // compute md5 hash to determine sub directory to use
     uint8_t md5_sig[16];
-    MD5Buffer(result.data(),static_cast<unsigned int>(result.length()),md5_sig);
+    MD5Buffer(result.data(), static_cast<unsigned int>(result.length()), md5_sig);
     l1Dir = md5_sig[14] & 0xf;
     l2Dir = md5_sig[15] & createSubdirsBitmaskL2;
 
-    result.prepend(QCString().sprintf("d%x/d%02x/",l1Dir,l2Dir));
+    result.prepend(QCString().sprintf("d%x/d%02x/", l1Dir, l2Dir));
   }
   //printf("*** convertNameToFile(%s)->%s\n",qPrint(name),qPrint(result));
   return result;
 }
 
-QCString generateAnonymousAnchor(const QCString &fileName,int count)
+QCString generateAnonymousAnchor(const QCString &fileName, int count)
 {
-  QCString fn = stripFromPath(fileName)+":"+QCString().setNum(count);
-  const int sig_size=16;
-  uint8_t md5_sig[sig_size];
-  MD5Buffer(fn.data(),static_cast<unsigned int>(fn.length()),md5_sig);
-  char result[sig_size*3+2];
+  QCString  fn       = stripFromPath(fileName) + ":" + QCString().setNum(count);
+  const int sig_size = 16;
+  uint8_t   md5_sig[sig_size];
+  MD5Buffer(fn.data(), static_cast<unsigned int>(fn.length()), md5_sig);
+  char  result[sig_size * 3 + 2];
   char *p = result;
-  *p++='@';
-  for (int i=0;i<sig_size;i++)
+  *p++    = '@';
+  for (int i = 0; i < sig_size; i++)
   {
-    static const char oct[]="01234567";
-    uint8_t byte = md5_sig[i];
-    *p++=oct[(byte>>6)&7];
-    *p++=oct[(byte>>3)&7];
-    *p++=oct[(byte>>0)&7];
+    static const char oct[] = "01234567";
+    uint8_t           byte  = md5_sig[i];
+    *p++                    = oct[(byte >> 6) & 7];
+    *p++                    = oct[(byte >> 3) & 7];
+    *p++                    = oct[(byte >> 0) & 7];
   }
-  *p='\0';
+  *p = '\0';
   return result;
 }
 
@@ -3530,27 +3636,27 @@ QCString relativePathToRoot(const QCString &name)
     else
     {
       int i = name.findRev('/');
-      if (i!=-1)
+      if (i != -1)
       {
-        result=REL_PATH_TO_ROOT;
+        result = REL_PATH_TO_ROOT;
       }
     }
   }
   return result;
 }
 
-QCString determineAbsoluteIncludeName(const QCString &curFile,const QCString &incFileName)
+QCString determineAbsoluteIncludeName(const QCString &curFile, const QCString &incFileName)
 {
-  bool searchIncludes = Config_getBool(SEARCH_INCLUDES);
+  bool     searchIncludes = Config_getBool(SEARCH_INCLUDES);
   QCString absIncFileName = incFileName;
   FileInfo fi(curFile.str());
   if (fi.exists())
   {
-    QCString absName = fi.dirPath(TRUE)+"/"+incFileName;
+    QCString absName = fi.dirPath(TRUE) + "/" + incFileName;
     FileInfo fi2(absName.str());
     if (fi2.exists())
     {
-      absIncFileName=fi2.absFilePath();
+      absIncFileName = fi2.absFilePath();
     }
     else if (searchIncludes) // search in INCLUDE_PATH as well
     {
@@ -3560,12 +3666,12 @@ QCString determineAbsoluteIncludeName(const QCString &curFile,const QCString &in
         FileInfo fi3(incPath);
         if (fi3.exists() && fi3.isDir())
         {
-          absName = fi3.absFilePath()+"/"+incFileName;
+          absName = fi3.absFilePath() + "/" + incFileName;
           //printf("trying absName=%s\n",qPrint(absName));
           FileInfo fi4(absName.str());
           if (fi4.exists())
           {
-            absIncFileName=fi4.absFilePath();
+            absIncFileName = fi4.absFilePath();
             break;
           }
           //printf( "absIncFileName = %s\n", qPrint(absIncFileName) );
@@ -3578,28 +3684,27 @@ QCString determineAbsoluteIncludeName(const QCString &curFile,const QCString &in
 }
 
 
-
 void createSubDirs(const Dir &d)
 {
   if (Config_getBool(CREATE_SUBDIRS))
   {
     // create up to 4096 subdirectories
     int createSubdirsLevelPow2 = 1 << Config_getInt(CREATE_SUBDIRS_LEVEL);
-    for (int l1=0; l1<16; l1++)
+    for (int l1 = 0; l1 < 16; l1++)
     {
       QCString subdir;
-      subdir.sprintf("d%x",l1);
+      subdir.sprintf("d%x", l1);
       if (!d.exists(subdir.str()) && !d.mkdir(subdir.str()))
       {
-        term("Failed to create output directory '{}'\n",subdir);
+        term("Failed to create output directory '{}'\n", subdir);
       }
-      for (int l2=0; l2<createSubdirsLevelPow2; l2++)
+      for (int l2 = 0; l2 < createSubdirsLevelPow2; l2++)
       {
         QCString subsubdir;
-        subsubdir.sprintf("d%x/d%02x",l1,l2);
+        subsubdir.sprintf("d%x/d%02x", l1, l2);
         if (!d.exists(subsubdir.str()) && !d.mkdir(subsubdir.str()))
         {
-          term("Failed to create output directory '{}'\n",subsubdir);
+          term("Failed to create output directory '{}'\n", subsubdir);
         }
       }
     }
@@ -3612,14 +3717,14 @@ void clearSubDirs(const Dir &d)
   {
     // remove empty subdirectories
     int createSubdirsLevelPow2 = 1 << Config_getInt(CREATE_SUBDIRS_LEVEL);
-    for (int l1=0;l1<16;l1++)
+    for (int l1 = 0; l1 < 16; l1++)
     {
       QCString subdir;
-      subdir.sprintf("d%x",l1);
-      for (int l2=0; l2 < createSubdirsLevelPow2; l2++)
+      subdir.sprintf("d%x", l1);
+      for (int l2 = 0; l2 < createSubdirsLevelPow2; l2++)
       {
         QCString subsubdir;
-        subsubdir.sprintf("d%x/d%02x",l1,l2);
+        subsubdir.sprintf("d%x/d%02x", l1, l2);
         if (d.exists(subsubdir.str()) && d.isEmpty(subsubdir.str()))
         {
           d.rmdir(subsubdir.str());
@@ -3637,76 +3742,75 @@ void clearSubDirs(const Dir &d)
  *  namespace part (as large as possible) and a classname part.
  */
 void extractNamespaceName(const QCString &scopeName,
-    QCString &className,QCString &namespaceName,
-    bool allowEmptyClass)
+                          QCString &className, QCString &namespaceName,
+                          bool allowEmptyClass)
 {
-  int i=0, p=0;
-  QCString clName=scopeName;
-  NamespaceDef *nd = nullptr;
-  if (!clName.isEmpty() && (nd=getResolvedNamespace(clName)) && getClass(clName)==nullptr)
+  int           i = 0, p = 0;
+  QCString      clName = scopeName;
+  NamespaceDef *nd     = nullptr;
+  if (!clName.isEmpty() && (nd = getResolvedNamespace(clName)) && getClass(clName) == nullptr)
   { // the whole name is a namespace (and not a class)
-    namespaceName=nd->name();
+    namespaceName = nd->name();
     className.clear();
     goto done;
   }
-  p=static_cast<int>(clName.length())-2;
-  while (p>=0 && (i=clName.findRev("::",p))!=-1)
-    // see if the first part is a namespace (and not a class)
+  p = static_cast<int>(clName.length()) - 2;
+  while (p >= 0 && (i = clName.findRev("::", p)) != -1)
+  // see if the first part is a namespace (and not a class)
   {
     //printf("Trying %s\n",qPrint(clName.left(i)));
-    if (i>0 && (nd=getResolvedNamespace(clName.left(i))) && getClass(clName.left(i))==nullptr)
+    if (i > 0 && (nd = getResolvedNamespace(clName.left(i))) && getClass(clName.left(i)) == nullptr)
     {
       //printf("found!\n");
-      namespaceName=nd->name();
-      className=clName.right(clName.length()-i-2);
+      namespaceName = nd->name();
+      className     = clName.right(clName.length() - i - 2);
       goto done;
     }
-    p=i-2; // try a smaller piece of the scope
+    p = i - 2; // try a smaller piece of the scope
   }
   //printf("not found!\n");
 
   // not found, so we just have to guess.
-  className=scopeName;
+  className = scopeName;
   namespaceName.clear();
 
 done:
   if (className.isEmpty() && !namespaceName.isEmpty() && !allowEmptyClass)
   {
     // class and namespace with the same name, correct to return the class.
-    className=namespaceName;
+    className = namespaceName;
     namespaceName.clear();
   }
   //printf("extractNamespace '%s' => '%s|%s'\n",qPrint(scopeName),
   //       qPrint(className),qPrint(namespaceName));
   if (className.endsWith("-p"))
   {
-    className = className.left(className.length()-2);
+    className = className.left(className.length() - 2);
   }
   return;
 }
 
-QCString insertTemplateSpecifierInScope(const QCString &scope,const QCString &templ)
+QCString insertTemplateSpecifierInScope(const QCString &scope, const QCString &templ)
 {
-  QCString result=scope;
-  if (!templ.isEmpty() && scope.find('<')==-1)
+  QCString result = scope;
+  if (!templ.isEmpty() && scope.find('<') == -1)
   {
-    int si=0, pi=0;
-    ClassDef *cd=nullptr;
+    int       si = 0, pi = 0;
+    ClassDef *cd = nullptr;
     while (
-        (si=scope.find("::",pi))!=-1 && !getClass(scope.left(si)+templ) &&
-        ((cd=getClass(scope.left(si)))==nullptr || cd->templateArguments().empty())
-        )
+      (si = scope.find("::", pi)) != -1 && !getClass(scope.left(si) + templ) &&
+      ((cd = getClass(scope.left(si))) == nullptr || cd->templateArguments().empty()))
     {
       //printf("Tried '%s'\n",qPrint((scope.left(si)+templ)));
-      pi=si+2;
+      pi = si + 2;
     }
-    if (si==-1) // not nested => append template specifier
+    if (si == -1) // not nested => append template specifier
     {
-      result+=templ;
+      result += templ;
     }
     else // nested => insert template specifier before after first class name
     {
-      result=scope.left(si) + templ + scope.right(scope.length()-si);
+      result = scope.left(si) + templ + scope.right(scope.length() - si);
     }
   }
   //printf("insertTemplateSpecifierInScope('%s','%s')=%s\n",
@@ -3720,92 +3824,91 @@ QCString insertTemplateSpecifierInScope(const QCString &scope,const QCString &te
  */
 QCString stripScope(const QCString &name)
 {
-  QCString result = name;
-  int l = static_cast<int>(result.length());
-  int p = 0;
-  bool done = FALSE;
-  bool skipBracket=FALSE; // if brackets do not match properly, ignore them altogether
-  int count=0;
-  int round=0;
+  QCString result      = name;
+  int      l           = static_cast<int>(result.length());
+  int      p           = 0;
+  bool     done        = FALSE;
+  bool     skipBracket = FALSE; // if brackets do not match properly, ignore them altogether
+  int      count       = 0;
+  int      round       = 0;
 
   do
   {
-    p=l-1; // start at the end of the string
-    while (p>=0 && count>=0)
+    p = l - 1; // start at the end of the string
+    while (p >= 0 && count >= 0)
     {
-      char c=result.at(p);
+      char c = result.at(p);
       switch (c)
       {
-        case ':':
-          // only exit in the case of ::
-          //printf("stripScope(%s)=%s\n",name,qPrint(result.right(l-p-1)));
-          if (p>0 && result.at(p-1)==':' && (count==0 || skipBracket))
-          {
-            return result.right(l-p-1);
-          }
+      case ':':
+        // only exit in the case of ::
+        //printf("stripScope(%s)=%s\n",name,qPrint(result.right(l-p-1)));
+        if (p > 0 && result.at(p - 1) == ':' && (count == 0 || skipBracket))
+        {
+          return result.right(l - p - 1);
+        }
+        p--;
+        break;
+      case '>':
+        if (skipBracket) // we don't care about brackets
+        {
           p--;
-          break;
-        case '>':
-          if (skipBracket) // we don't care about brackets
+        }
+        else // count open/close brackets
+        {
+          if (p > 0 && result.at(p - 1) == '>') // skip >> operator
           {
-            p--;
+            p -= 2;
+            break;
           }
-          else // count open/close brackets
+          count = 1;
+          //printf("pos < = %d\n",p);
+          p--;
+          bool foundMatch = false;
+          while (p >= 0 && !foundMatch)
           {
-            if (p>0 && result.at(p-1)=='>') // skip >> operator
+            c = result.at(p--);
+            switch (c)
             {
-              p-=2;
+            case ')':
+              round++;
+              break;
+            case '(':
+              round--;
+              break;
+            case '>': // ignore > inside (...) to support e.g. (sizeof(T)>0) inside template parameters
+              if (round == 0) count++;
+              break;
+            case '<':
+              if (round == 0)
+              {
+                if (p > 0)
+                {
+                  if (result.at(p - 1) == '<') // skip << operator
+                  {
+                    p--;
+                    break;
+                  }
+                }
+                count--;
+                foundMatch = count == 0;
+              }
+              break;
+            default:
+              //printf("c=%c count=%d\n",c,count);
               break;
             }
-            count=1;
-            //printf("pos < = %d\n",p);
-            p--;
-            bool foundMatch=false;
-            while (p>=0 && !foundMatch)
-            {
-              c=result.at(p--);
-              switch (c)
-              {
-                case ')':
-                  round++;
-                  break;
-                case '(':
-                  round--;
-                  break;
-                case '>': // ignore > inside (...) to support e.g. (sizeof(T)>0) inside template parameters
-                  if (round==0) count++;
-                  break;
-                case '<':
-                  if (round==0)
-                  {
-                    if (p>0)
-                    {
-                      if (result.at(p-1) == '<') // skip << operator
-                      {
-                        p--;
-                        break;
-                      }
-                    }
-                    count--;
-                    foundMatch = count==0;
-                  }
-                  break;
-                default:
-                  //printf("c=%c count=%d\n",c,count);
-                  break;
-              }
-            }
           }
-          //printf("pos > = %d\n",p+1);
-          break;
-        default:
-          p--;
+        }
+        //printf("pos > = %d\n",p+1);
+        break;
+      default:
+        p--;
       }
     }
-    done = count==0 || skipBracket; // reparse if brackets do not match
-    skipBracket=TRUE;
-  }
-  while (!done); // if < > unbalanced repeat ignoring them
+    done        = count == 0 || skipBracket; // reparse if brackets do not match
+    skipBracket = TRUE;
+  } while (!done); // if < > unbalanced repeat ignoring them
   //printf("stripScope(%s)=%s\n",name,name);
   return name;
 }
@@ -3814,27 +3917,27 @@ QCString stripScope(const QCString &name)
 QCString convertToId(const QCString &s)
 {
   if (s.isEmpty()) return s;
-  GrowBuf growBuf;
-  const char *p = s.data();
-  char c        = 0;
-  bool first    = true;
-  while ((c=*p++))
+  GrowBuf     growBuf;
+  const char *p     = s.data();
+  char        c     = 0;
+  bool        first = true;
+  while ((c = *p++))
   {
     char encChar[4];
-    if ((c>='0' && c<='9') || (c>='a' && c<='z') || (c>='A' && c<='Z') || c=='-')
-    { // any permissive character except _
-      if (first && c>='0' && c<='9') growBuf.addChar('a'); // don't start with a digit
+    if ((c >= '0' && c <= '9') || (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '-')
+    {                                                          // any permissive character except _
+      if (first && c >= '0' && c <= '9') growBuf.addChar('a'); // don't start with a digit
       growBuf.addChar(c);
     }
     else
     {
-      encChar[0]='_';
-      encChar[1]=hex[static_cast<unsigned char>(c)>>4];
-      encChar[2]=hex[static_cast<unsigned char>(c)&0xF];
-      encChar[3]=0;
+      encChar[0] = '_';
+      encChar[1] = hex[static_cast<unsigned char>(c) >> 4];
+      encChar[2] = hex[static_cast<unsigned char>(c) & 0xF];
+      encChar[3] = 0;
       growBuf.addStr(encChar);
     }
-    first=FALSE;
+    first = FALSE;
   }
   growBuf.addChar(0);
   return growBuf.get();
@@ -3854,47 +3957,73 @@ QCString correctId(const QCString &s)
 QCString convertToXML(const QCString &s, bool keepEntities)
 {
   if (s.isEmpty()) return s;
-  GrowBuf growBuf;
+  GrowBuf     growBuf;
   const char *p = s.data();
-  char c = 0;
-  while ((c=*p++))
+  char        c = 0;
+  while ((c = *p++))
   {
     switch (c)
     {
-      case '<':  growBuf.addStr("&lt;");   break;
-      case '>':  growBuf.addStr("&gt;");   break;
-      case '&':  if (keepEntities)
-                 {
-                   const char *e=p;
-                   char ce = 0;
-                   while ((ce=*e++))
-                   {
-                     if (ce==';' || (!(isId(ce) || ce=='#'))) break;
-                   }
-                   if (ce==';') // found end of an entity
-                   {
-                     // copy entry verbatim
-                     growBuf.addChar(c);
-                     while (p<e) growBuf.addChar(*p++);
-                   }
-                   else
-                   {
-                     growBuf.addStr("&amp;");
-                   }
-                 }
-                 else
-                 {
-                   growBuf.addStr("&amp;");
-                 }
-                 break;
-      case '\'': growBuf.addStr("&apos;"); break;
-      case '"':  growBuf.addStr("&quot;"); break;
-      case  1: case  2: case  3: case  4: case  5: case  6: case  7: case  8:
-      case 11: case 12: case 13: case 14: case 15: case 16: case 17: case 18:
-      case 19: case 20: case 21: case 22: case 23: case 24: case 25: case 26:
-      case 27: case 28: case 29: case 30: case 31:
-        break; // skip invalid XML characters (see http://www.w3.org/TR/2000/REC-xml-20001006#NT-Char)
-      default:   growBuf.addChar(c);       break;
+    case '<': growBuf.addStr("&lt;"); break;
+    case '>': growBuf.addStr("&gt;"); break;
+    case '&':
+      if (keepEntities)
+      {
+        const char *e  = p;
+        char        ce = 0;
+        while ((ce = *e++))
+        {
+          if (ce == ';' || (!(isId(ce) || ce == '#'))) break;
+        }
+        if (ce == ';') // found end of an entity
+        {
+          // copy entry verbatim
+          growBuf.addChar(c);
+          while (p < e) growBuf.addChar(*p++);
+        }
+        else
+        {
+          growBuf.addStr("&amp;");
+        }
+      }
+      else
+      {
+        growBuf.addStr("&amp;");
+      }
+      break;
+    case '\'': growBuf.addStr("&apos;"); break;
+    case '"': growBuf.addStr("&quot;"); break;
+    case 1:
+    case 2:
+    case 3:
+    case 4:
+    case 5:
+    case 6:
+    case 7:
+    case 8:
+    case 11:
+    case 12:
+    case 13:
+    case 14:
+    case 15:
+    case 16:
+    case 17:
+    case 18:
+    case 19:
+    case 20:
+    case 21:
+    case 22:
+    case 23:
+    case 24:
+    case 25:
+    case 26:
+    case 27:
+    case 28:
+    case 29:
+    case 30:
+    case 31:
+      break; // skip invalid XML characters (see http://www.w3.org/TR/2000/REC-xml-20001006#NT-Char)
+    default: growBuf.addChar(c); break;
     }
   }
   growBuf.addChar(0);
@@ -3902,84 +4031,96 @@ QCString convertToXML(const QCString &s, bool keepEntities)
 }
 
 /*! Converts a string to a HTML-encoded string */
-QCString convertToHtml(const QCString &s,bool keepEntities)
+QCString convertToHtml(const QCString &s, bool keepEntities)
 {
   if (s.isEmpty()) return s;
-  GrowBuf growBuf;
-  const char *p=s.data();
-  char c = 0;
-  while ((c=*p++))
+  GrowBuf     growBuf;
+  const char *p = s.data();
+  char        c = 0;
+  while ((c = *p++))
   {
     switch (c)
     {
-      case '<':  growBuf.addStr("&lt;");   break;
-      case '>':  growBuf.addStr("&gt;");   break;
-      case '&':  if (keepEntities)
-                 {
-                   const char *e=p;
-                   char ce = 0;
-                   while ((ce=*e++))
-                   {
-                     if (ce==';' || (!(isId(ce) || ce=='#'))) break;
-                   }
-                   if (ce==';') // found end of an entity
-                   {
-                     // copy entry verbatim
-                     growBuf.addChar(c);
-                     while (p<e) growBuf.addChar(*p++);
-                   }
-                   else
-                   {
-                     growBuf.addStr("&amp;");
-                   }
-                 }
-                 else
-                 {
-                   growBuf.addStr("&amp;");
-                 }
-                 break;
-      case '\'': growBuf.addStr("&#39;");  break;
-      case '"':  growBuf.addStr("&quot;"); break;
-      default:
+    case '<': growBuf.addStr("&lt;"); break;
+    case '>': growBuf.addStr("&gt;"); break;
+    case '&':
+      if (keepEntities)
+      {
+        const char *e  = p;
+        char        ce = 0;
+        while ((ce = *e++))
         {
-          uint8_t uc = static_cast<uint8_t>(c);
-          if (uc<32 && !isspace(c))
-          {
-            growBuf.addStr("&#x24");
-            growBuf.addChar(hex[uc>>4]);
-            growBuf.addChar(hex[uc&0xF]);
-            growBuf.addChar(';');
-          }
-          else
-          {
-            growBuf.addChar(c);
-          }
+          if (ce == ';' || (!(isId(ce) || ce == '#'))) break;
         }
-        break;
+        if (ce == ';') // found end of an entity
+        {
+          // copy entry verbatim
+          growBuf.addChar(c);
+          while (p < e) growBuf.addChar(*p++);
+        }
+        else
+        {
+          growBuf.addStr("&amp;");
+        }
+      }
+      else
+      {
+        growBuf.addStr("&amp;");
+      }
+      break;
+    case '\'': growBuf.addStr("&#39;"); break;
+    case '"': growBuf.addStr("&quot;"); break;
+    default:
+    {
+      uint8_t uc = static_cast<uint8_t>(c);
+      if (uc < 32 && !isspace(c))
+      {
+        growBuf.addStr("&#x24");
+        growBuf.addChar(hex[uc >> 4]);
+        growBuf.addChar(hex[uc & 0xF]);
+        growBuf.addChar(';');
+      }
+      else
+      {
+        growBuf.addChar(c);
+      }
+    }
+    break;
     }
   }
   growBuf.addChar(0);
   return growBuf.get();
 }
 
-QCString convertToJSString(const QCString &s,bool keepEntities,bool singleQuotes)
+QCString convertToJSString(const QCString &s, bool keepEntities, bool singleQuotes)
 {
   if (s.isEmpty()) return s;
-  GrowBuf growBuf;
-  const char *p=s.data();
-  char c = 0;
-  while ((c=*p++))
+  GrowBuf     growBuf;
+  const char *p = s.data();
+  char        c = 0;
+  while ((c = *p++))
   {
     switch (c)
     {
-      case '"':  if (!singleQuotes) growBuf.addStr("\\\""); else growBuf.addChar(c);
-                 break;
-      case '\'': if (singleQuotes) growBuf.addStr("\\\'"); else growBuf.addChar(c);
-                 break;
-      case '\\': if (*p=='u' && *(p+1)=='{') growBuf.addStr("\\"); // keep \u{..} unicode escapes
-                 else growBuf.addStr("\\\\");
-                 break;
-      default:   growBuf.addChar(c);   break;
+    case '"':
+      if (!singleQuotes)
+        growBuf.addStr("\\\"");
+      else
+        growBuf.addChar(c);
+      break;
+    case '\'':
+      if (singleQuotes)
+        growBuf.addStr("\\\'");
+      else
+        growBuf.addChar(c);
+      break;
+    case '\\':
+      if (*p == 'u' && *(p + 1) == '{')
+        growBuf.addStr("\\"); // keep \u{..} unicode escapes
+      else
+        growBuf.addStr("\\\\");
+      break;
+    default: growBuf.addChar(c); break;
     }
   }
   growBuf.addChar(0);
@@ -3990,26 +4131,26 @@ QCString convertCharEntitiesToUTF8(const QCString &str)
 {
   if (str.isEmpty()) return QCString();
 
-  std::string s = str.data();
+  std::string          s = str.data();
   static const reg::Ex re(R"(&\a\w*;)");
-  reg::Iterator it(s,re);
-  reg::Iterator end;
+  reg::Iterator        it(s, re);
+  reg::Iterator        end;
 
-  GrowBuf growBuf;
-  size_t p=0, i=0, l=0;
-  for (; it!=end ; ++it)
+  GrowBuf              growBuf;
+  size_t               p = 0, i = 0, l = 0;
+  for (; it != end; ++it)
   {
     const auto &match = *it;
-    p = match.position();
-    l = match.length();
-    if (p>i)
+    p                 = match.position();
+    l                 = match.length();
+    if (p > i)
     {
-      growBuf.addStr(s.substr(i,p-i));
+      growBuf.addStr(s.substr(i, p - i));
     }
-    QCString entity(match.str());
+    QCString                  entity(match.str());
     HtmlEntityMapper::SymType symType = HtmlEntityMapper::instance().name2sym(entity);
-    const char *code=nullptr;
-    if (symType!=HtmlEntityMapper::Sym_Unknown && (code=HtmlEntityMapper::instance().utf8(symType)))
+    const char               *code    = nullptr;
+    if (symType != HtmlEntityMapper::Sym_Unknown && (code = HtmlEntityMapper::instance().utf8(symType)))
     {
       growBuf.addStr(code);
     }
@@ -4017,7 +4158,7 @@ QCString convertCharEntitiesToUTF8(const QCString &str)
     {
       growBuf.addStr(entity);
     }
-    i=p+l;
+    i = p + l;
   }
   growBuf.addStr(s.substr(i));
   growBuf.addChar(0);
@@ -4036,21 +4177,21 @@ QCString getOverloadDocs()
   //       "function only in what argument(s) it accepts.";
 }
 
-void addMembersToMemberGroup(MemberList *ml,
-    MemberGroupList *pMemberGroups,
-    const Definition *context)
+void addMembersToMemberGroup(MemberList       *ml,
+                             MemberGroupList  *pMemberGroups,
+                             const Definition *context)
 {
-  ASSERT(context!=nullptr);
+  ASSERT(context != nullptr);
   //printf("addMemberToMemberGroup() context=%s\n",qPrint(context->name()));
-  if (ml==nullptr) return;
+  if (ml == nullptr) return;
 
   struct MoveMemberInfo
   {
-    MoveMemberInfo(MemberDef *md,MemberGroup *mg,const RefItemVector &rv)
-      : memberDef(md), memberGroup(mg), sli(rv) {}
-    MemberDef *memberDef;
-    MemberGroup *memberGroup;
-    RefItemVector sli;
+      MoveMemberInfo(MemberDef *md, MemberGroup *mg, const RefItemVector &rv) :
+          memberDef(md), memberGroup(mg), sli(rv) {}
+      MemberDef    *memberDef;
+      MemberGroup  *memberGroup;
+      RefItemVector sli;
   };
   std::vector<MoveMemberInfo> movedMembers;
 
@@ -4060,29 +4201,27 @@ void addMembersToMemberGroup(MemberList *ml,
     {
       for (const auto &fmd : md->enumFieldList())
       {
-        int groupId=fmd->getMemberGroupId();
-        if (groupId!=-1)
+        int groupId = fmd->getMemberGroupId();
+        if (groupId != -1)
         {
           auto it = Doxygen::memberGroupInfoMap.find(groupId);
-          if (it!=Doxygen::memberGroupInfoMap.end())
+          if (it != Doxygen::memberGroupInfoMap.end())
           {
-            const auto &info = it->second;
-            auto mg_it = std::find_if(pMemberGroups->begin(),
-                                      pMemberGroups->end(),
-                                      [&groupId](const auto &g)
-                                      { return g->groupId()==groupId; }
-                                     );
+            const auto  &info   = it->second;
+            auto         mg_it  = std::find_if(pMemberGroups->begin(),
+                                               pMemberGroups->end(),
+                                               [&groupId](const auto &g) { return g->groupId() == groupId; });
             MemberGroup *mg_ptr = nullptr;
-            if (mg_it==pMemberGroups->end())
+            if (mg_it == pMemberGroups->end())
             {
               auto mg = std::make_unique<MemberGroup>(
-                        context,
-                        groupId,
-                        info->header,
-                        info->doc,
-                        info->docFile,
-                        info->docLine,
-                        ml->container());
+                context,
+                groupId,
+                info->header,
+                info->doc,
+                info->docFile,
+                info->docLine,
+                ml->container());
               mg_ptr = mg.get();
               pMemberGroups->push_back(std::move(mg));
             }
@@ -4100,29 +4239,27 @@ void addMembersToMemberGroup(MemberList *ml,
         }
       }
     }
-    int groupId=md->getMemberGroupId();
-    if (groupId!=-1)
+    int groupId = md->getMemberGroupId();
+    if (groupId != -1)
     {
       auto it = Doxygen::memberGroupInfoMap.find(groupId);
-      if (it!=Doxygen::memberGroupInfoMap.end())
+      if (it != Doxygen::memberGroupInfoMap.end())
       {
-        const auto &info = it->second;
-        auto mg_it = std::find_if(pMemberGroups->begin(),
-                                  pMemberGroups->end(),
-                                  [&groupId](const auto &g)
-                                  { return g->groupId()==groupId; }
-                                 );
+        const auto  &info   = it->second;
+        auto         mg_it  = std::find_if(pMemberGroups->begin(),
+                                           pMemberGroups->end(),
+                                           [&groupId](const auto &g) { return g->groupId() == groupId; });
         MemberGroup *mg_ptr = nullptr;
-        if (mg_it==pMemberGroups->end())
+        if (mg_it == pMemberGroups->end())
         {
           auto mg = std::make_unique<MemberGroup>(
-                    context,
-                    groupId,
-                    info->header,
-                    info->doc,
-                    info->docFile,
-                    info->docLine,
-                    ml->container());
+            context,
+            groupId,
+            info->header,
+            info->doc,
+            info->docFile,
+            info->docLine,
+            ml->container());
           mg_ptr = mg.get();
           pMemberGroups->push_back(std::move(mg));
         }
@@ -4130,7 +4267,7 @@ void addMembersToMemberGroup(MemberList *ml,
         {
           mg_ptr = (*mg_it).get();
         }
-        movedMembers.emplace_back(md,mg_ptr,info->m_sli);
+        movedMembers.emplace_back(md, mg_ptr, info->m_sli);
       }
     }
   }
@@ -4138,7 +4275,7 @@ void addMembersToMemberGroup(MemberList *ml,
   // move the members to their group
   for (const auto &mmi : movedMembers)
   {
-    ml->remove(mmi.memberDef); // remove from member list
+    ml->remove(mmi.memberDef);                                    // remove from member list
     mmi.memberGroup->insertMember(mmi.memberDef->resolveAlias()); // insert in member group
     mmi.memberGroup->setRefItems(mmi.sli);
     MemberDefMutable *rmdm = toMemberDefMutable(mmi.memberDef);
@@ -4154,12 +4291,12 @@ void addMembersToMemberGroup(MemberList *ml,
  *  class \a name and a template argument list \a templSpec. If -1 is returned
  *  there are no more matches.
  */
-int extractClassNameFromType(const QCString &type,int &pos,QCString &name,QCString &templSpec,SrcLangExt lang)
+int extractClassNameFromType(const QCString &type, int &pos, QCString &name, QCString &templSpec, SrcLangExt lang)
 {
-  AUTO_TRACE("type='{}' name='{}' lang={}",type,name,lang);
+  AUTO_TRACE("type='{}' name='{}' lang={}", type, name, lang);
   static const reg::Ex re_norm(R"(\a[\w:]*)");
   static const reg::Ex re_fortran(R"(\a[\w:()=]*)");
-  const reg::Ex *re = &re_norm;
+  const reg::Ex       *re = &re_norm;
 
   name.clear();
   templSpec.clear();
@@ -4168,12 +4305,12 @@ int extractClassNameFromType(const QCString &type,int &pos,QCString &name,QCStri
     AUTO_TRACE_EXIT("empty type");
     return -1;
   }
-  size_t typeLen=type.length();
-  if (typeLen>0)
+  size_t typeLen = type.length();
+  if (typeLen > 0)
   {
     if (lang == SrcLangExt::Fortran)
     {
-      if (type[pos]==',')
+      if (type[pos] == ',')
       {
         AUTO_TRACE_EXIT("comma");
         return -1;
@@ -4183,52 +4320,62 @@ int extractClassNameFromType(const QCString &type,int &pos,QCString &name,QCStri
         re = &re_fortran;
       }
     }
-    std::string s = type.str();
-    reg::Iterator it(s,*re,static_cast<int>(pos));
+    std::string   s = type.str();
+    reg::Iterator it(s, *re, static_cast<int>(pos));
     reg::Iterator end;
 
-    if (it!=end)
+    if (it != end)
     {
       const auto &match = *it;
-      size_t i = match.position();
-      size_t l = match.length();
-      size_t ts = i+l;
-      size_t te = ts;
-      size_t tl = 0;
+      size_t      i     = match.position();
+      size_t      l     = match.length();
+      size_t      ts    = i + l;
+      size_t      te    = ts;
+      size_t      tl    = 0;
 
-      while (ts<typeLen && type[static_cast<uint32_t>(ts)]==' ') { ts++; tl++; } // skip any whitespace
-      if (ts<typeLen && type[static_cast<uint32_t>(ts)]=='<') // assume template instance
+      while (ts < typeLen && type[static_cast<uint32_t>(ts)] == ' ')
+      {
+        ts++;
+        tl++;
+      }                                                           // skip any whitespace
+      if (ts < typeLen && type[static_cast<uint32_t>(ts)] == '<') // assume template instance
       {
         // locate end of template
-        te=ts+1;
-        int brCount=1;
-        while (te<typeLen && brCount!=0)
+        te          = ts + 1;
+        int brCount = 1;
+        while (te < typeLen && brCount != 0)
         {
-          if (type[static_cast<uint32_t>(te)]=='<')
+          if (type[static_cast<uint32_t>(te)] == '<')
           {
-            if (te<typeLen-1 && type[static_cast<uint32_t>(te)+1]=='<') te++; else brCount++;
+            if (te < typeLen - 1 && type[static_cast<uint32_t>(te) + 1] == '<')
+              te++;
+            else
+              brCount++;
           }
-          if (type[static_cast<uint32_t>(te)]=='>')
+          if (type[static_cast<uint32_t>(te)] == '>')
           {
-            if (te<typeLen-1 && type[static_cast<uint32_t>(te)+1]=='>') te++; else brCount--;
+            if (te < typeLen - 1 && type[static_cast<uint32_t>(te) + 1] == '>')
+              te++;
+            else
+              brCount--;
           }
           te++;
         }
       }
       name = match.str();
-      if (te>ts)
+      if (te > ts)
       {
-        templSpec = QCString(type).mid(ts,te-ts);
-        tl+=te-ts;
-        pos=static_cast<int>(i+l+tl);
+        templSpec = QCString(type).mid(ts, te - ts);
+        tl += te - ts;
+        pos = static_cast<int>(i + l + tl);
       }
       else // no template part
       {
-        pos=static_cast<int>(i+l);
+        pos = static_cast<int>(i + l);
       }
       //printf("extractClassNameFromType([in] type=%s,[out] pos=%d,[out] name=%s,[out] templ=%s)=TRUE i=%d\n",
       //    qPrint(type),pos,qPrint(name),qPrint(templSpec),i);
-      AUTO_TRACE_EXIT("pos={} templSpec='{}' return={}",pos,templSpec,i);
+      AUTO_TRACE_EXIT("pos={} templSpec='{}' return={}", pos, templSpec, i);
       return static_cast<int>(i);
     }
   }
@@ -4240,59 +4387,59 @@ int extractClassNameFromType(const QCString &type,int &pos,QCString &name,QCStri
 }
 
 QCString normalizeNonTemplateArgumentsInString(
-       const QCString &name,
-       const Definition *context,
-       const ArgumentList &formalArgs)
+  const QCString     &name,
+  const Definition   *context,
+  const ArgumentList &formalArgs)
 {
   // skip until <
-  int p=name.find('<');
-  if (p==-1) return name;
+  int p = name.find('<');
+  if (p == -1) return name;
   p++;
-  QCString result = name.left(p);
+  QCString             result = name.left(p);
 
-  std::string s = name.mid(p).str();
+  std::string          s      = name.mid(p).str();
   static const reg::Ex re(R"([\a:][\w:]*)");
-  reg::Iterator it(s,re);
-  reg::Iterator end;
-  size_t pi=0;
+  reg::Iterator        it(s, re);
+  reg::Iterator        end;
+  size_t               pi = 0;
   // for each identifier in the template part (e.g. B<T> -> T)
-  for (; it!=end ; ++it)
+  for (; it != end; ++it)
   {
     const auto &match = *it;
-    size_t i = match.position();
-    size_t l = match.length();
-    result += s.substr(pi,i-pi);
+    size_t      i     = match.position();
+    size_t      l     = match.length();
+    result += s.substr(pi, i - pi);
     QCString n(match.str());
-    bool found=FALSE;
+    bool     found = FALSE;
     for (const Argument &formArg : formalArgs)
     {
       if (formArg.name == n)
       {
-        found=TRUE;
+        found = TRUE;
         break;
       }
     }
     if (!found)
     {
       // try to resolve the type
-      SymbolResolver resolver;
-      const ClassDef *cd = resolver.resolveClass(context,n);
+      SymbolResolver  resolver;
+      const ClassDef *cd = resolver.resolveClass(context, n);
       if (cd)
       {
-        result+=cd->name();
+        result += cd->name();
       }
       else
       {
-        result+=n;
+        result += n;
       }
     }
     else
     {
-      result+=n;
+      result += n;
     }
-    pi=i+l;
+    pi = i + l;
   }
-  result+=s.substr(pi);
+  result += s.substr(pi);
   //printf("normalizeNonTemplateArgumentInString(%s)=%s\n",qPrint(name),qPrint(result));
   return removeRedundantWhiteSpace(result);
 }
@@ -4305,27 +4452,27 @@ QCString normalizeNonTemplateArgumentsInString(
  *  prevent recursive substitution.
  */
 QCString substituteTemplateArgumentsInString(
-    const QCString &nm,
-    const ArgumentList &formalArgs,
-    const ArgumentList *actualArgs)
+  const QCString     &nm,
+  const ArgumentList &formalArgs,
+  const ArgumentList *actualArgs)
 {
-  AUTO_TRACE("name={} formalArgs={} actualArgs={}",nm,argListToString(formalArgs),actualArgs ? argListToString(*actualArgs) : QCString());
+  AUTO_TRACE("name={} formalArgs={} actualArgs={}", nm, argListToString(formalArgs), actualArgs ? argListToString(*actualArgs) : QCString());
   if (formalArgs.empty()) return nm;
-  QCString result;
+  QCString             result;
 
   static const reg::Ex re(R"(\a\w*)");
-  std::string name = nm.str();
-  reg::Iterator it(name,re);
-  reg::Iterator end;
-  size_t p=0;
+  std::string          name = nm.str();
+  reg::Iterator        it(name, re);
+  reg::Iterator        end;
+  size_t               p = 0;
 
-  for (; it!=end ; ++it)
+  for (; it != end; ++it)
   {
     const auto &match = *it;
-    size_t i = match.position();
-    size_t l = match.length();
-    if (i>p) result += name.substr(p,i-p);
-    QCString n(match.str());
+    size_t      i     = match.position();
+    size_t      l     = match.length();
+    if (i > p) result += name.substr(p, i - p);
+    QCString                     n(match.str());
     ArgumentList::const_iterator actIt;
     if (actualArgs)
     {
@@ -4335,15 +4482,14 @@ QCString substituteTemplateArgumentsInString(
 
     // if n is a template argument, then we substitute it
     // for its template instance argument.
-    bool found=FALSE;
+    bool found = FALSE;
     for (auto formIt = formalArgs.begin();
-        formIt!=formalArgs.end() && !found;
-        ++formIt
-        )
+         formIt != formalArgs.end() && !found;
+         ++formIt)
     {
       Argument formArg = *formIt;
       Argument actArg;
-      if (actualArgs && actIt!=actualArgs->end())
+      if (actualArgs && actIt != actualArgs->end())
       {
         actArg = *actIt;
       }
@@ -4360,88 +4506,87 @@ QCString substituteTemplateArgumentsInString(
       else if (formArg.type.startsWith("class...")) // match 'class... name' to 'name...'
       {
         formArg.name += "...";
-        formArg.type = formArg.type.left(5)+formArg.type.mid(8);
+        formArg.type = formArg.type.left(5) + formArg.type.mid(8);
       }
       else if (formArg.type.startsWith("typename...")) // match 'typename... name' to 'name...'
       {
         formArg.name += "...";
-        formArg.type = formArg.type.left(8)+formArg.type.mid(11);
+        formArg.type = formArg.type.left(8) + formArg.type.mid(11);
       }
       //printf(": n=%s formArg->type='%s' formArg->name='%s' formArg->defval='%s' actArg->type='%s' actArg->name='%s' \n",
       //  qPrint(n),qPrint(formArg.type),qPrint(formArg.name),qPrint(formArg.defval),qPrint(actArg.type),qPrint(actArg.name));
-      if (formArg.type=="class" || formArg.type=="typename" || formArg.type.startsWith("template"))
+      if (formArg.type == "class" || formArg.type == "typename" || formArg.type.startsWith("template"))
       {
-        if (formArg.name==n && actualArgs && actIt!=actualArgs->end() && !actArg.type.isEmpty()) // base class is a template argument
+        if (formArg.name == n && actualArgs && actIt != actualArgs->end() && !actArg.type.isEmpty()) // base class is a template argument
         {
-          static constexpr auto hasRecursion = [](const QCString &prefix,const QCString &nameArg,const QCString &subst) -> bool
-          {
-            int ii=0;
-            int pp=0;
+          static constexpr auto hasRecursion = [](const QCString &prefix, const QCString &nameArg, const QCString &subst) -> bool {
+            int ii = 0;
+            int pp = 0;
 
-            ii = subst.find('<');
+            ii     = subst.find('<');
             //printf("prefix='%s' subst='%s'\n",qPrint(prefix.mid(prefix.length()-ii-2,ii+1)),qPrint(subst.left(ii+1)));
-            if (ii!=-1 && static_cast<int>(prefix.length())>=ii+2 && prefix.mid(prefix.length()-ii-2,ii+1)==subst.left(ii+1))
+            if (ii != -1 && static_cast<int>(prefix.length()) >= ii + 2 && prefix.mid(prefix.length() - ii - 2, ii + 1) == subst.left(ii + 1))
             {
               return true; // don't replace 'A< ' with 'A< A<...', see issue #10951
             }
 
-            while ((ii=subst.find(nameArg,pp))!=-1)
+            while ((ii = subst.find(nameArg, pp)) != -1)
             {
-              bool beforeNonWord = ii==0 || !isId(subst.at(ii-1));
-              bool afterNonWord  = subst.length()==ii+nameArg.length() || !isId(subst.at(ii+nameArg.length()));
+              bool beforeNonWord = ii == 0 || !isId(subst.at(ii - 1));
+              bool afterNonWord  = subst.length() == ii + nameArg.length() || !isId(subst.at(ii + nameArg.length()));
               if (beforeNonWord && afterNonWord)
               {
                 return true; // if nameArg=='A' then subst=='A::Z' or 'S<A>' or 'Z::A' should return true, but 'AA::ZZ' or 'BAH' should not match
               }
-              pp=ii+static_cast<int>(nameArg.length());
+              pp = ii + static_cast<int>(nameArg.length());
             }
             return false;
           };
           // replace formal argument with the actual argument of the instance
-          AUTO_TRACE_ADD("result={} n={} type={} hasRecursion={}",result,n,actArg.type,hasRecursion(result,n,actArg.type));
-          if (!hasRecursion(result,n,actArg.type))
-            // the scope guard is to prevent recursive lockup for
-            // template<class A> class C : public<A::T>,
-            // where A::T would become A::T::T here,
-            // since n==A and actArg->type==A::T
-            // see bug595833 for an example
-            //
-            // Also prevent recursive substitution if n is part of actArg.type, i.e.
-            // n='A' in argType='S< A >' would produce 'S< S< A > >'
+          AUTO_TRACE_ADD("result={} n={} type={} hasRecursion={}", result, n, actArg.type, hasRecursion(result, n, actArg.type));
+          if (!hasRecursion(result, n, actArg.type))
+          // the scope guard is to prevent recursive lockup for
+          // template<class A> class C : public<A::T>,
+          // where A::T would become A::T::T here,
+          // since n==A and actArg->type==A::T
+          // see bug595833 for an example
+          //
+          // Also prevent recursive substitution if n is part of actArg.type, i.e.
+          // n='A' in argType='S< A >' would produce 'S< S< A > >'
           {
             if (actArg.name.isEmpty())
             {
               result += actArg.type;
             }
             else
-              // for case where the actual arg is something like "unsigned int"
-              // the "int" part is in actArg->name.
+            // for case where the actual arg is something like "unsigned int"
+            // the "int" part is in actArg->name.
             {
-              result += actArg.type+" "+actArg.name;
+              result += actArg.type + " " + actArg.name;
             }
-            found=TRUE;
+            found = TRUE;
           }
         }
-        else if (formArg.name==n &&
-                 (actualArgs==nullptr || actIt==actualArgs->end()) &&
+        else if (formArg.name == n &&
+                 (actualArgs == nullptr || actIt == actualArgs->end()) &&
                  !formArg.defval.isEmpty() &&
-                 formArg.defval!=nm /* to prevent recursion */
-            )
+                 formArg.defval != nm /* to prevent recursion */
+        )
         {
-          result += substituteTemplateArgumentsInString(formArg.defval,formalArgs,actualArgs);
-          found=TRUE;
+          result += substituteTemplateArgumentsInString(formArg.defval, formalArgs, actualArgs);
+          found = TRUE;
         }
       }
-      else if (formArg.name==n &&
-               (actualArgs==nullptr || actIt==actualArgs->end()) &&
+      else if (formArg.name == n &&
+               (actualArgs == nullptr || actIt == actualArgs->end()) &&
                !formArg.defval.isEmpty() &&
-               formArg.defval!=nm /* to prevent recursion */
-              )
+               formArg.defval != nm /* to prevent recursion */
+      )
       {
-        result += substituteTemplateArgumentsInString(formArg.defval,formalArgs,actualArgs);
-        found=TRUE;
+        result += substituteTemplateArgumentsInString(formArg.defval, formalArgs, actualArgs);
+        found = TRUE;
       }
-      if (actualArgs && actIt!=actualArgs->end())
+      if (actualArgs && actIt != actualArgs->end())
       {
         actIt++;
       }
@@ -4450,11 +4595,11 @@ QCString substituteTemplateArgumentsInString(
     {
       result += n;
     }
-    p=i+l;
+    p = i + l;
   }
-  result+=name.substr(p);
-  result=result.simplifyWhiteSpace();
-  AUTO_TRACE_EXIT("result={}",result);
+  result += name.substr(p);
+  result = result.simplifyWhiteSpace();
+  AUTO_TRACE_EXIT("result={}", result);
   return result.stripWhiteSpace();
 }
 
@@ -4467,58 +4612,64 @@ QCString substituteTemplateArgumentsInString(
  *  strip both unless `A<T>` or `B<S>` are specialized template classes.
  */
 QCString stripTemplateSpecifiersFromScope(const QCString &fullName,
-    bool parentOnly,
-    QCString *pLastScopeStripped,
-    QCString scopeName,
-    bool allowArtificial)
+                                          bool            parentOnly,
+                                          QCString       *pLastScopeStripped,
+                                          QCString        scopeName,
+                                          bool            allowArtificial)
 {
   //printf("stripTemplateSpecifiersFromScope(name=%s,scopeName=%s)\n",qPrint(fullName),qPrint(scopeName));
-  int i=fullName.find('<');
-  if (i==-1) return fullName;
+  int i = fullName.find('<');
+  if (i == -1) return fullName;
   QCString result;
-  int p=0;
-  int l=static_cast<int>(fullName.length());
-  while (i!=-1)
+  int      p = 0;
+  int      l = static_cast<int>(fullName.length());
+  while (i != -1)
   {
     //printf("1:result+=%s\n",qPrint(fullName.mid(p,i-p)));
-    int e=i+1;
-    int count=1;
-    int round=0;
-    while (e<l && count>0)
+    int e     = i + 1;
+    int count = 1;
+    int round = 0;
+    while (e < l && count > 0)
     {
-      char c=fullName.at(e++);
+      char c = fullName.at(e++);
       switch (c)
       {
-        case '(': round++; break;
-        case ')': if (round>0) round--; break;
-        case '<': if (round==0) count++; break;
-        case '>': if (round==0) count--; break;
-        default:
-          break;
+      case '(': round++; break;
+      case ')':
+        if (round > 0) round--;
+        break;
+      case '<':
+        if (round == 0) count++;
+        break;
+      case '>':
+        if (round == 0) count--;
+        break;
+      default:
+        break;
       }
     }
-    int si= fullName.find("::",e);
+    int si = fullName.find("::", e);
 
-    if (parentOnly && si==-1) break;
+    if (parentOnly && si == -1) break;
     // we only do the parent scope, so we stop here if needed
 
-    result+=fullName.mid(p,i-p);
+    result += fullName.mid(p, i - p);
     //printf("  trying %s\n",qPrint(mergeScopes(scopeName,result+fullName.mid(i,e-i))));
-    ClassDef *cd = getClass(mergeScopes(scopeName,result+fullName.mid(i,e-i)));
-    if (cd!=nullptr && (allowArtificial || !cd->isArtificial()))
+    ClassDef *cd = getClass(mergeScopes(scopeName, result + fullName.mid(i, e - i)));
+    if (cd != nullptr && (allowArtificial || !cd->isArtificial()))
     {
-      result+=fullName.mid(i,e-i);
+      result += fullName.mid(i, e - i);
       //printf("  2:result+=%s\n",qPrint(fullName.mid(i,e-i-1)));
     }
     else if (pLastScopeStripped)
     {
       //printf("  last stripped scope '%s'\n",qPrint(fullName.mid(i,e-i)));
-      *pLastScopeStripped=fullName.mid(i,e-i);
+      *pLastScopeStripped = fullName.mid(i, e - i);
     }
-    p=e;
-    i=fullName.find('<',p);
+    p = e;
+    i = fullName.find('<', p);
   }
-  result+=fullName.right(l-p);
+  result += fullName.right(l - p);
   //printf("3:result+=%s\n",qPrint(fullName.right(l-p)));
   //printf("end result=%s\n",qPrint(result));
   return result;
@@ -4533,41 +4684,41 @@ QCString stripTemplateSpecifiersFromScope(const QCString &fullName,
  *  @param rightScope the right hand part of the scope.
  *  @returns the merged scope.
  */
-QCString mergeScopes(const QCString &leftScope,const QCString &rightScope)
+QCString mergeScopes(const QCString &leftScope, const QCString &rightScope)
 {
-  AUTO_TRACE("leftScope='{}' rightScope='{}'",leftScope,rightScope);
+  AUTO_TRACE("leftScope='{}' rightScope='{}'", leftScope, rightScope);
   // case leftScope=="A" rightScope=="A::B" => result = "A::B"
-  if (leftScopeMatch(leftScope,rightScope))
+  if (leftScopeMatch(leftScope, rightScope))
   {
-    AUTO_TRACE_EXIT("case1={}",rightScope);
+    AUTO_TRACE_EXIT("case1={}", rightScope);
     return rightScope;
   }
   QCString result;
-  int i=0,p=static_cast<int>(leftScope.length());
+  int      i = 0, p = static_cast<int>(leftScope.length());
 
   // case leftScope=="A::B" rightScope=="B::C" => result = "A::B::C"
   // case leftScope=="A::B" rightScope=="B" => result = "A::B"
-  bool found=FALSE;
-  while ((i=leftScope.findRev("::",p))>0)
+  bool     found = FALSE;
+  while ((i = leftScope.findRev("::", p)) > 0)
   {
-    if (leftScopeMatch(rightScope,leftScope.right(leftScope.length()-i-2)))
+    if (leftScopeMatch(rightScope, leftScope.right(leftScope.length() - i - 2)))
     {
-      result = leftScope.left(i+2)+rightScope;
-      found=TRUE;
+      result = leftScope.left(i + 2) + rightScope;
+      found  = TRUE;
     }
-    p=i-1;
+    p = i - 1;
   }
   if (found)
   {
-    AUTO_TRACE_EXIT("case2={}",result);
+    AUTO_TRACE_EXIT("case2={}", result);
     return result;
   }
 
   // case leftScope=="A" rightScope=="B" => result = "A::B"
-  result=leftScope;
-  if (!result.isEmpty() && !rightScope.isEmpty()) result+="::";
-  result+=rightScope;
-  AUTO_TRACE_EXIT("case3={}",result);
+  result = leftScope;
+  if (!result.isEmpty() && !rightScope.isEmpty()) result += "::";
+  result += rightScope;
+  AUTO_TRACE_EXIT("case3={}", result);
   return result;
 }
 
@@ -4578,17 +4729,17 @@ QCString mergeScopes(const QCString &leftScope,const QCString &rightScope)
  *  @param l the resulting length of the fragment.
  *  @returns the location of the fragment, or -1 if non is found.
  */
-int getScopeFragment(const QCString &s,int p,int *l)
+int getScopeFragment(const QCString &s, int p, int *l)
 {
-  int sl=static_cast<int>(s.length());
-  int sp=p;
-  int count=0;
-  bool done=false;
-  if (sp>=sl) return -1;
-  while (sp<sl)
+  int  sl    = static_cast<int>(s.length());
+  int  sp    = p;
+  int  count = 0;
+  bool done  = false;
+  if (sp >= sl) return -1;
+  while (sp < sl)
   {
-    char c=s.at(sp);
-    if (c==':')
+    char c = s.at(sp);
+    if (c == ':')
     {
       sp++;
       p++;
@@ -4598,65 +4749,68 @@ int getScopeFragment(const QCString &s,int p,int *l)
       break;
     }
   }
-  while (sp<sl)
+  while (sp < sl)
   {
-    char c=s.at(sp);
+    char c = s.at(sp);
     switch (c)
     {
-      case ':': // found next part
-        goto found;
-      case '<': // skip template specifier
-        count=1;sp++;
-        done=false;
-        while (sp<sl && !done)
+    case ':': // found next part
+      goto found;
+    case '<': // skip template specifier
+      count = 1;
+      sp++;
+      done = false;
+      while (sp < sl && !done)
+      {
+        // TODO: deal with << and >> operators!
+        c = s.at(sp++);
+        switch (c)
         {
-          // TODO: deal with << and >> operators!
-          c=s.at(sp++);
-          switch(c)
-          {
-            case '<': count++; break;
-            case '>': count--; if (count==0) done=true; break;
-            default: break;
-          }
+        case '<': count++; break;
+        case '>':
+          count--;
+          if (count == 0) done = true;
+          break;
+        default: break;
         }
-        break;
-      default:
-        sp++;
-        break;
+      }
+      break;
+    default:
+      sp++;
+      break;
     }
   }
 found:
-  *l=sp-p;
+  *l = sp - p;
   //printf("getScopeFragment(%s,%d)=%s\n",qPrint(s),p,qPrint(s.mid(p,*l)));
   return p;
 }
 
 //----------------------------------------------------------------------------
 
-PageDef *addRelatedPage(const QCString &name,const QCString &ptitle,
-    const QCString &doc,
-    const QCString &fileName,
-    int docLine,
-    int startLine,
-    const RefItemVector &sli,
-    GroupDef *gd,
-    const TagInfo *tagInfo,
-    bool xref,
-    SrcLangExt lang
-    )
+PageDef *addRelatedPage(const QCString &name, const QCString &ptitle,
+                        const QCString      &doc,
+                        const QCString      &fileName,
+                        int                  docLine,
+                        int                  startLine,
+                        const RefItemVector &sli,
+                        GroupDef            *gd,
+                        const TagInfo       *tagInfo,
+                        bool                 xref,
+                        SrcLangExt           lang)
 {
-  PageDef *pd=nullptr;
+  PageDef *pd      = nullptr;
   //printf("addRelatedPage(name=%s gd=%p)\n",qPrint(name),gd);
-  QCString title=ptitle.stripWhiteSpace();
-  bool newPage = true;
-  if ((pd=Doxygen::pageLinkedMap->find(name)) && !pd->isReference())
+  QCString title   = ptitle.stripWhiteSpace();
+  bool     newPage = true;
+  if ((pd = Doxygen::pageLinkedMap->find(name)) && !pd->isReference())
   {
-    if (!xref && !title.isEmpty() && pd->title()!=pd->name() && pd->title()!=title)
+    if (!xref && !title.isEmpty() && pd->title() != pd->name() && pd->title() != title)
     {
-      warn(fileName,startLine,"multiple use of page label '{}' with different titles, (other occurrence: {}, line: {})",
-         name,pd->docFile(),pd->getStartBodyLine());
+      warn(fileName, startLine, "multiple use of page label '{}' with different titles, (other occurrence: {}, line: {})",
+           name, pd->docFile(), pd->getStartBodyLine());
     }
-    if (!title.isEmpty() && pd->title()==pd->name()) // pd has no real title yet
+    if (!title.isEmpty() && pd->title() == pd->name()) // pd has no real title yet
     {
       pd->setTitle(title);
       SectionInfo *si = SectionManager::instance().find(pd->name());
@@ -4666,7 +4820,7 @@ PageDef *addRelatedPage(const QCString &name,const QCString &ptitle,
       }
     }
     // append documentation block to the page.
-    pd->setDocumentation(doc,fileName,docLine);
+    pd->setDocumentation(doc, fileName, docLine);
     //printf("Adding page docs '%s' pi=%p name=%s\n",qPrint(doc),pd,name);
     // append (x)refitems to the page.
     pd->setRefItems(sli);
@@ -4675,17 +4829,17 @@ PageDef *addRelatedPage(const QCString &name,const QCString &ptitle,
 
   if (newPage) // new page
   {
-    QCString baseName=name;
+    QCString baseName = name;
     if (baseName.endsWith(".tex"))
-      baseName=baseName.left(baseName.length()-4);
-    else if (baseName.right(Doxygen::htmlFileExtension.length())==Doxygen::htmlFileExtension)
-      baseName=baseName.left(baseName.length()-Doxygen::htmlFileExtension.length());
+      baseName = baseName.left(baseName.length() - 4);
+    else if (baseName.right(Doxygen::htmlFileExtension.length()) == Doxygen::htmlFileExtension)
+      baseName = baseName.left(baseName.length() - Doxygen::htmlFileExtension.length());
 
     //printf("Appending page '%s'\n",qPrint(baseName));
     if (pd) // replace existing page
     {
-      pd->setDocumentation(doc,fileName,docLine);
-      pd->setFileName(::convertNameToFile(baseName,FALSE,TRUE));
+      pd->setDocumentation(doc, fileName, docLine);
+      pd->setFileName(::convertNameToFile(baseName, FALSE, TRUE));
       pd->setShowLineNo(FALSE);
       pd->setNestingLevel(0);
       pd->setPageScope(nullptr);
@@ -4695,9 +4849,9 @@ PageDef *addRelatedPage(const QCString &name,const QCString &ptitle,
     else // newPage
     {
       pd = Doxygen::pageLinkedMap->add(baseName,
-             createPageDef(fileName,docLine,baseName,doc,title));
+                                       createPageDef(fileName, docLine, baseName, doc, title));
     }
-    pd->setBodySegment(startLine,startLine,-1);
+    pd->setBodySegment(startLine, startLine, -1);
 
     pd->setRefItems(sli);
     pd->setLanguage(lang);
@@ -4717,17 +4871,17 @@ PageDef *addRelatedPage(const QCString &name,const QCString &ptitle,
       // a page name is a label as well!
       QCString file;
       QCString orgFile;
-      int line  = -1;
+      int      line = -1;
       if (gd)
       {
-        file=gd->getOutputFileBase();
-        orgFile=gd->getOutputFileBase();
+        file    = gd->getOutputFileBase();
+        orgFile = gd->getOutputFileBase();
       }
       else
       {
-        file=pd->getOutputFileBase();
-        orgFile=pd->docFile();
-        line = pd->getStartBodyLine();
+        file    = pd->getOutputFileBase();
+        orgFile = pd->docFile();
+        line    = pd->getStartBodyLine();
       }
       const SectionInfo *si = SectionManager::instance().find(pd->name());
       if (si)
@@ -4735,21 +4889,21 @@ PageDef *addRelatedPage(const QCString &name,const QCString &ptitle,
         if (!si->ref().isEmpty()) // we are from a tag file
         {
           SectionManager::instance().replace(pd->name(),
-              file,-1,pd->title(),SectionType::Page,0,pd->getReference());
+                                             file, -1, pd->title(), SectionType::Page, 0, pd->getReference());
         }
         else if (si->lineNr() != -1)
         {
-          warn(orgFile,line,"multiple use of section label '{}', (first occurrence: {}, line {})",pd->name(),si->fileName(),si->lineNr());
+          warn(orgFile, line, "multiple use of section label '{}', (first occurrence: {}, line {})", pd->name(), si->fileName(), si->lineNr());
         }
         else
         {
-          warn(orgFile,line,"multiple use of section label '{}', (first occurrence: {})",pd->name(),si->fileName());
+          warn(orgFile, line, "multiple use of section label '{}', (first occurrence: {})", pd->name(), si->fileName());
         }
       }
       else
       {
         SectionManager::instance().add(pd->name(),
-            file,-1,pd->title(),SectionType::Page,0,pd->getReference());
+                                       file, -1, pd->title(), SectionType::Page, 0, pd->getReference());
         //printf("si->label='%s' si->definition=%s si->fileName='%s'\n",
         //      qPrint(si->label),si->definition?si->definition->name().data():"<none>",
         //      qPrint(si->fileName));
@@ -4764,20 +4918,20 @@ PageDef *addRelatedPage(const QCString &name,const QCString &ptitle,
 //----------------------------------------------------------------------------
 
 void addRefItem(const RefItemVector &sli,
-    const QCString &key, const QCString &prefix, const QCString &name,
-    const QCString &title, const QCString &args, const Definition *scope)
+                const QCString &key, const QCString &prefix, const QCString &name,
+                const QCString &title, const QCString &args, const Definition *scope)
 {
   //printf("addRefItem(sli=%d,key=%s,prefix=%s,name=%s,title=%s,args=%s)\n",(int)sli.size(),key,prefix,name,title,args);
-  if (!key.isEmpty() && key[0]!='@') // check for @ to skip anonymous stuff (see bug427012)
+  if (!key.isEmpty() && key[0] != '@') // check for @ to skip anonymous stuff (see bug427012)
   {
     for (RefItem *item : sli)
     {
-        item->setPrefix(prefix);
-        item->setScope(scope);
-        item->setName(name);
-        item->setTitle(title);
-        item->setArgs(args);
-        item->setGroup(key);
+      item->setPrefix(prefix);
+      item->setScope(scope);
+      item->setName(name);
+      item->setTitle(title);
+      item->setArgs(args);
+      item->setGroup(key);
     }
   }
 }
@@ -4785,12 +4939,12 @@ void addRefItem(const RefItemVector &sli,
 static ModuleDef *findModuleDef(const Definition *d)
 {
   ModuleDef *mod = nullptr;
-  if (d->definitionType()==Definition::TypeFile)
+  if (d->definitionType() == Definition::TypeFile)
   {
     const FileDef *fd = toFileDef(d);
     if (fd) mod = fd->getModuleDef();
   }
-  else if (d->definitionType()==Definition::TypeClass)
+  else if (d->definitionType() == Definition::TypeClass)
   {
     const ClassDef *cd = toClassDef(d);
     if (cd)
@@ -4799,7 +4953,7 @@ static ModuleDef *findModuleDef(const Definition *d)
       if (fd) mod = fd->getModuleDef();
     }
   }
-  else if (d->definitionType()==Definition::TypeConcept)
+  else if (d->definitionType() == Definition::TypeConcept)
   {
     const ConceptDef *cd = toConceptDef(d);
     if (cd)
@@ -4811,10 +4965,10 @@ static ModuleDef *findModuleDef(const Definition *d)
   return mod;
 }
 
-static bool recursivelyAddGroupListToTitle(OutputList &ol,const Definition *d,bool root)
+static bool recursivelyAddGroupListToTitle(OutputList &ol, const Definition *d, bool root)
 {
   ModuleDef *mod = root ? findModuleDef(d) : nullptr;
-  if (!d->partOfGroups().empty() || mod!=nullptr) // write list of group to which this definition belongs
+  if (!d->partOfGroups().empty() || mod != nullptr) // write list of group to which this definition belongs
   {
     if (root)
     {
@@ -4822,24 +4976,34 @@ static bool recursivelyAddGroupListToTitle(OutputList &ol,const Definition *d,bo
       ol.disableAllBut(OutputType::Html);
       ol.writeString("<div class=\"ingroups\">");
     }
-    bool first=true;
+    bool first = true;
     for (const auto &gd : d->partOfGroups())
     {
-      if (!first) { ol.writeString(" &#124; "); } else first=false;
+      if (!first)
+      {
+        ol.writeString(" &#124; ");
+      }
+      else
+        first = false;
       if (recursivelyAddGroupListToTitle(ol, gd, FALSE))
       {
         ol.writeString(" &raquo; ");
       }
-      ol.writeObjectLink(gd->getReference(),gd->getOutputFileBase(),QCString(),gd->groupTitle());
+      ol.writeObjectLink(gd->getReference(), gd->getOutputFileBase(), QCString(), gd->groupTitle());
     }
     if (root)
     {
       // add module as a group to the file as well
       if (mod)
       {
-        if (!first) { ol.writeString(" &#124; "); } else first=false;
-        ol.writeString(theTranslator->trModule(false,true)+" ");
-        ol.writeObjectLink(mod->getReference(),mod->getOutputFileBase(),QCString(),
+        if (!first)
+        {
+          ol.writeString(" &#124; ");
+        }
+        else
+          first = false;
+        ol.writeString(theTranslator->trModule(false, true) + " ");
+        ol.writeObjectLink(mod->getReference(), mod->getOutputFileBase(), QCString(),
                            mod->displayName());
       }
       ol.writeString("</div>");
@@ -4850,14 +5014,14 @@ static bool recursivelyAddGroupListToTitle(OutputList &ol,const Definition *d,bo
   return false;
 }
 
-void addGroupListToTitle(OutputList &ol,const Definition *d)
+void addGroupListToTitle(OutputList &ol, const Definition *d)
 {
-  recursivelyAddGroupListToTitle(ol,d,TRUE);
+  recursivelyAddGroupListToTitle(ol, d, TRUE);
 }
 
 bool checkExtension(const QCString &fName, const QCString &ext)
 {
-  return fName.right(ext.length())==ext;
+  return fName.right(ext.length()) == ext;
 }
 
 void addHtmlExtensionIfMissing(QCString &fName)
@@ -4865,19 +5029,19 @@ void addHtmlExtensionIfMissing(QCString &fName)
   if (fName.isEmpty()) return;
   int i_fs = fName.findRev('/');
   int i_bs = fName.findRev('\\');
-  int i    = fName.find('.',std::max({ i_fs, i_bs ,0})); // search for . after path part
-  if (i==-1)
+  int i    = fName.find('.', std::max({ i_fs, i_bs, 0 })); // search for . after path part
+  if (i == -1)
   {
-    fName+=Doxygen::htmlFileExtension;
+    fName += Doxygen::htmlFileExtension;
   }
 }
 
 QCString stripExtensionGeneral(const QCString &fName, const QCString &ext)
 {
-  QCString result=fName;
-  if (result.right(ext.length())==ext)
+  QCString result = fName;
+  if (result.right(ext.length()) == ext)
   {
-    result=result.left(result.length()-ext.length());
+    result = result.left(result.length() - ext.length());
   }
   return result;
 }
@@ -4889,29 +5053,29 @@ QCString stripExtension(const QCString &fName)
 
 QCString stripPath(const QCString &s)
 {
-  QCString result=s;
-  int i=result.findRev('/');
-  if (i!=-1)
+  QCString result = s;
+  int      i      = result.findRev('/');
+  if (i != -1)
   {
-    result=result.mid(i+1);
+    result = result.mid(i + 1);
   }
-  i=result.findRev('\\');
-  if (i!=-1)
+  i = result.findRev('\\');
+  if (i != -1)
   {
-    result=result.mid(i+1);
+    result = result.mid(i + 1);
   }
   return result;
 }
 
 /** returns \c TRUE iff string \a s contains word \a w */
-bool containsWord(const QCString &str,const char *word)
+bool containsWord(const QCString &str, const char *word)
 {
-  if (str.isEmpty() || word==nullptr) return false;
+  if (str.isEmpty() || word == nullptr) return false;
   static const reg::Ex re(R"(\a+)");
-  std::string s = str.str();
-  for (reg::Iterator it(s,re) ; it!=reg::Iterator() ; ++it)
+  std::string          s = str.str();
+  for (reg::Iterator it(s, re); it != reg::Iterator(); ++it)
   {
-    if (it->str()==word) return true;
+    if (it->str() == word) return true;
   }
   return false;
 }
@@ -4920,37 +5084,37 @@ bool containsWord(const QCString &str,const char *word)
  *  while keeps internal spaces and reducing multiple sequences of spaces.
  *  Example: sentence=` cat+ catfish cat cat concat cat`, word=`cat` returns: `+ catfish concat`
  */
-bool findAndRemoveWord(QCString &sentence,const char *word)
+bool findAndRemoveWord(QCString &sentence, const char *word)
 {
   static reg::Ex re(R"(\s*(\<\a+\>)\s*)");
-  std::string s = sentence.str();
-  reg::Iterator it(s,re);
-  reg::Iterator end;
-  std::string result;
-  bool found=false;
-  size_t p=0;
-  for ( ; it!=end ; ++it)
+  std::string    s = sentence.str();
+  reg::Iterator  it(s, re);
+  reg::Iterator  end;
+  std::string    result;
+  bool           found = false;
+  size_t         p     = 0;
+  for (; it != end; ++it)
   {
-    const auto match = *it;
-    std::string part = match[1].str();
-    if (part!=word)
+    const auto  match = *it;
+    std::string part  = match[1].str();
+    if (part != word)
     {
       size_t i = match.position();
       size_t l = match.length();
-      result+=s.substr(p,i-p);
-      result+=match.str();
-      p=i+l;
+      result += s.substr(p, i - p);
+      result += match.str();
+      p = i + l;
     }
     else
     {
-      found=true;
+      found    = true;
       size_t i = match[1].position();
       size_t l = match[1].length();
-      result+=s.substr(p,i-p);
-      p=i+l;
+      result += s.substr(p, i - p);
+      p = i + l;
     }
   }
-  result+=s.substr(p);
+  result += s.substr(p);
   sentence = QCString(result).simplifyWhiteSpace();
   return found;
 }
@@ -4963,105 +5127,140 @@ bool findAndRemoveWord(QCString &sentence,const char *word)
  *         from the start.
  *  @returns The stripped string.
  */
-QCString stripLeadingAndTrailingEmptyLines(const QCString &s,int &docLine)
+QCString stripLeadingAndTrailingEmptyLines(const QCString &s, int &docLine)
 {
   if (s.isEmpty()) return QCString();
   const char *p = s.data();
 
   // search for leading empty lines
-  int i=0,li=-1,l=static_cast<int>(s.length());
-  char c = 0;
-  while ((c=*p))
+  int         i = 0, li = -1, l = static_cast<int>(s.length());
+  char        c = 0;
+  while ((c = *p))
   {
-    if (c==' ' || c=='\t' || c=='\r') { i++; p++; }
-    else if (c=='\\' && literal_at(p,"\\ilinebr")) { i+=8; li=i; p+=8; }
-    else if (c=='\n') { i++; li=i; docLine++; p++; }
-    else break;
+    if (c == ' ' || c == '\t' || c == '\r')
+    {
+      i++;
+      p++;
+    }
+    else if (c == '\\' && literal_at(p, "\\ilinebr"))
+    {
+      i += 8;
+      li = i;
+      p += 8;
+    }
+    else if (c == '\n')
+    {
+      i++;
+      li = i;
+      docLine++;
+      p++;
+    }
+    else
+      break;
   }
 
   // search for trailing empty lines
-  int b=l-1,bi=-1;
-  p=s.data()+b;
-  while (b>=0)
+  int b = l - 1, bi = -1;
+  p = s.data() + b;
+  while (b >= 0)
   {
-    c=*p;
-    if (c==' ' || c=='\t' || c=='\r') { b--; p--; }
-    else if (c=='r' && b>=7 && literal_at(p-7,"\\ilinebr")) { bi=b-7; b-=8; p-=8; }
-    else if (c=='>' && b>=11 && literal_at(p-11,"\\ilinebr<br>")) { bi=b-11; b-=12; p-=12; }
-    else if (c=='\n') { bi=b; b--; p--; }
-    else break;
+    c = *p;
+    if (c == ' ' || c == '\t' || c == '\r')
+    {
+      b--;
+      p--;
+    }
+    else if (c == 'r' && b >= 7 && literal_at(p - 7, "\\ilinebr"))
+    {
+      bi = b - 7;
+      b -= 8;
+      p -= 8;
+    }
+    else if (c == '>' && b >= 11 && literal_at(p - 11, "\\ilinebr<br>"))
+    {
+      bi = b - 11;
+      b -= 12;
+      p -= 12;
+    }
+    else if (c == '\n')
+    {
+      bi = b;
+      b--;
+      p--;
+    }
+    else
+      break;
   }
 
   // return whole string if no leading or trailing lines where found
-  if (li==-1 && bi==-1) return s;
+  if (li == -1 && bi == -1) return s;
 
   // return substring
-  if (bi==-1) bi=l;
-  if (li==-1) li=0;
-  if (bi<=li) return QCString(); // only empty lines
+  if (bi == -1) bi = l;
+  if (li == -1) li = 0;
+  if (bi <= li) return QCString(); // only empty lines
   //printf("docLine='%s' len=%d li=%d bi=%d\n",qPrint(s),s.length(),li,bi);
-  return s.mid(li,bi-li);
+  return s.mid(li, bi - li);
 }
 
 //--------------------------------------------------------------------------
 
-static std::unordered_map<std::string,SrcLangExt> g_extLookup;
+static std::unordered_map<std::string, SrcLangExt> g_extLookup;
 
 struct Lang2ExtMap
 {
-  const char *langName;
-  const char *parserName;
-  SrcLangExt parserId;
-  const char *defExt;
+    const char *langName;
+    const char *parserName;
+    SrcLangExt  parserId;
+    const char *defExt;
 };
 
-static std::vector<Lang2ExtMap> g_lang2extMap =
-{
-//  language       parser           parser option
-  { "idl",         "c",             SrcLangExt::IDL,      ".idl" },
-  { "java",        "c",             SrcLangExt::Java,     ".java"},
-  { "javascript",  "c",             SrcLangExt::JS,       ".js"  },
-  { "csharp",      "c",             SrcLangExt::CSharp,   ".cs"  },
-  { "d",           "c",             SrcLangExt::D,        ".d"   },
-  { "php",         "c",             SrcLangExt::PHP,      ".php" },
-  { "objective-c", "c",             SrcLangExt::ObjC,     ".m"   },
-  { "c",           "c",             SrcLangExt::Cpp,      ".c"   },
-  { "c++",         "c",             SrcLangExt::Cpp,      ".cpp" },
-  { "slice",       "c",             SrcLangExt::Slice,    ".ice" },
-  { "python",      "python",        SrcLangExt::Python,   ".py"  },
-  { "fortran",     "fortran",       SrcLangExt::Fortran,  ".f"   },
-  { "fortranfree", "fortranfree",   SrcLangExt::Fortran,  ".f90" },
-  { "fortranfixed", "fortranfixed", SrcLangExt::Fortran,  ".f"   },
-  { "vhdl",        "vhdl",          SrcLangExt::VHDL,     ".vhdl"},
-  { "xml",         "xml",           SrcLangExt::XML,      ".xml" },
-  { "sql",         "sql",           SrcLangExt::SQL,      ".sql" },
-  { "md",          "md",            SrcLangExt::Markdown, ".md"  },
-  { "lex",         "lex",           SrcLangExt::Lex,      ".l"   },
+static std::vector<Lang2ExtMap> g_lang2extMap = {
+  //  language       parser           parser option
+  { "idl", "c", SrcLangExt::IDL, ".idl" },
+  { "java", "c", SrcLangExt::Java, ".java" },
+  { "javascript", "c", SrcLangExt::JS, ".js" },
+  { "csharp", "c", SrcLangExt::CSharp, ".cs" },
+  { "d", "c", SrcLangExt::D, ".d" },
+  { "php", "c", SrcLangExt::PHP, ".php" },
+  { "objective-c", "c", SrcLangExt::ObjC, ".m" },
+  { "c", "c", SrcLangExt::Cpp, ".c" },
+  { "c++", "c", SrcLangExt::Cpp, ".cpp" },
+  { "slice", "c", SrcLangExt::Slice, ".ice" },
+  { "python", "python", SrcLangExt::Python, ".py" },
+  { "fortran", "fortran", SrcLangExt::Fortran, ".f" },
+  { "fortranfree", "fortranfree", SrcLangExt::Fortran, ".f90" },
+  { "fortranfixed", "fortranfixed", SrcLangExt::Fortran, ".f" },
+  { "vhdl", "vhdl", SrcLangExt::VHDL, ".vhdl" },
+  { "xml", "xml", SrcLangExt::XML, ".xml" },
+  { "sql", "sql", SrcLangExt::SQL, ".sql" },
+  { "md", "md", SrcLangExt::Markdown, ".md" },
+  { "lex", "lex", SrcLangExt::Lex, ".l" },
 };
 
-bool updateLanguageMapping(const QCString &extension,const QCString &language)
+bool updateLanguageMapping(const QCString &extension, const QCString &language)
 {
   QCString langName = language.lower();
-  auto it1 = std::find_if(g_lang2extMap.begin(),g_lang2extMap.end(),
-                        [&langName](const auto &info) { return info.langName==langName; });
+  auto     it1      = std::find_if(g_lang2extMap.begin(), g_lang2extMap.end(),
+                                   [&langName](const auto &info) { return info.langName == langName; });
   if (it1 == g_lang2extMap.end()) return false;
 
   // found the language
   SrcLangExt parserId = it1->parserId;
-  QCString extName = extension.lower();
+  QCString   extName  = extension.lower();
   if (extName.isEmpty()) return FALSE;
-  if (extName.at(0)!='.') extName.prepend(".");
+  if (extName.at(0) != '.') extName.prepend(".");
   auto it2 = g_extLookup.find(extName.str());
-  if (it2!=g_extLookup.end())
+  if (it2 != g_extLookup.end())
   {
     g_extLookup.erase(it2); // language was already register for this ext
   }
   //printf("registering extension %s\n",qPrint(extName));
-  g_extLookup.emplace(extName.str(),parserId);
-  if (!Doxygen::parserManager->registerExtension(extName,it1->parserName))
+  g_extLookup.emplace(extName.str(), parserId);
+  if (!Doxygen::parserManager->registerExtension(extName, it1->parserName))
   {
     err("Failed to assign extension {} to parser {} for language {}\n",
-        extName.data(),it1->parserName,language);
+        extName.data(), it1->parserName, language);
   }
   else
   {
@@ -5075,84 +5274,84 @@ void initDefaultExtensionMapping()
 {
   // NOTE: when adding an extension, also add the extension in config.xml
   //                  extension      parser id
-  updateLanguageMapping(".dox",      "c");
-  updateLanguageMapping(".txt",      "c"); // see bug 760836
-  updateLanguageMapping(".doc",      "c");
-  updateLanguageMapping(".c",        "c");
-  updateLanguageMapping(".C",        "c");
-  updateLanguageMapping(".cc",       "c");
-  updateLanguageMapping(".CC",       "c");
-  updateLanguageMapping(".cxx",      "c");
-  updateLanguageMapping(".cpp",      "c");
-  updateLanguageMapping(".c++",      "c");
-  updateLanguageMapping(".cxxm",     "c"); // C++20 modules
-  updateLanguageMapping(".cppm",     "c"); // C++20 modules
-  updateLanguageMapping(".ccm",      "c"); // C++20 modules
-  updateLanguageMapping(".c++m",     "c"); // C++20 modules
-  updateLanguageMapping(".ii",       "c");
-  updateLanguageMapping(".ixx",      "c");
-  updateLanguageMapping(".ipp",      "c");
-  updateLanguageMapping(".i++",      "c");
-  updateLanguageMapping(".inl",      "c");
-  updateLanguageMapping(".h",        "c");
-  updateLanguageMapping(".H",        "c");
-  updateLanguageMapping(".hh",       "c");
-  updateLanguageMapping(".HH",       "c");
-  updateLanguageMapping(".hxx",      "c");
-  updateLanguageMapping(".hpp",      "c");
-  updateLanguageMapping(".h++",      "c");
-  updateLanguageMapping(".idl",      "idl");
-  updateLanguageMapping(".ddl",      "idl");
-  updateLanguageMapping(".odl",      "idl");
-  updateLanguageMapping(".java",     "java");
+  updateLanguageMapping(".dox", "c");
+  updateLanguageMapping(".txt", "c"); // see bug 760836
+  updateLanguageMapping(".doc", "c");
+  updateLanguageMapping(".c", "c");
+  updateLanguageMapping(".C", "c");
+  updateLanguageMapping(".cc", "c");
+  updateLanguageMapping(".CC", "c");
+  updateLanguageMapping(".cxx", "c");
+  updateLanguageMapping(".cpp", "c");
+  updateLanguageMapping(".c++", "c");
+  updateLanguageMapping(".cxxm", "c"); // C++20 modules
+  updateLanguageMapping(".cppm", "c"); // C++20 modules
+  updateLanguageMapping(".ccm", "c");  // C++20 modules
+  updateLanguageMapping(".c++m", "c"); // C++20 modules
+  updateLanguageMapping(".ii", "c");
+  updateLanguageMapping(".ixx", "c");
+  updateLanguageMapping(".ipp", "c");
+  updateLanguageMapping(".i++", "c");
+  updateLanguageMapping(".inl", "c");
+  updateLanguageMapping(".h", "c");
+  updateLanguageMapping(".H", "c");
+  updateLanguageMapping(".hh", "c");
+  updateLanguageMapping(".HH", "c");
+  updateLanguageMapping(".hxx", "c");
+  updateLanguageMapping(".hpp", "c");
+  updateLanguageMapping(".h++", "c");
+  updateLanguageMapping(".idl", "idl");
+  updateLanguageMapping(".ddl", "idl");
+  updateLanguageMapping(".odl", "idl");
+  updateLanguageMapping(".java", "java");
   //updateLanguageMapping(".as",       "javascript"); // not officially supported
   //updateLanguageMapping(".js",       "javascript"); // not officially supported
-  updateLanguageMapping(".cs",       "csharp");
-  updateLanguageMapping(".d",        "d");
-  updateLanguageMapping(".php",      "php");
-  updateLanguageMapping(".php4",     "php");
-  updateLanguageMapping(".php5",     "php");
-  updateLanguageMapping(".inc",      "php");
-  updateLanguageMapping(".phtml",    "php");
-  updateLanguageMapping(".m",        "objective-c");
-  updateLanguageMapping(".M",        "objective-c");
-  updateLanguageMapping(".mm",       "c");  // see bug746361
-  updateLanguageMapping(".py",       "python");
-  updateLanguageMapping(".pyw",      "python");
-  updateLanguageMapping(".f",        "fortran");
-  updateLanguageMapping(".for",      "fortran");
-  updateLanguageMapping(".f90",      "fortran");
-  updateLanguageMapping(".f95",      "fortran");
-  updateLanguageMapping(".f03",      "fortran");
-  updateLanguageMapping(".f08",      "fortran");
-  updateLanguageMapping(".f18",      "fortran");
-  updateLanguageMapping(".vhd",      "vhdl");
-  updateLanguageMapping(".vhdl",     "vhdl");
-  updateLanguageMapping(".ucf",      "vhdl");
-  updateLanguageMapping(".qsf",      "vhdl");
-  updateLanguageMapping(".md",       "md");
+  updateLanguageMapping(".cs", "csharp");
+  updateLanguageMapping(".d", "d");
+  updateLanguageMapping(".php", "php");
+  updateLanguageMapping(".php4", "php");
+  updateLanguageMapping(".php5", "php");
+  updateLanguageMapping(".inc", "php");
+  updateLanguageMapping(".phtml", "php");
+  updateLanguageMapping(".m", "objective-c");
+  updateLanguageMapping(".M", "objective-c");
+  updateLanguageMapping(".mm", "c"); // see bug746361
+  updateLanguageMapping(".py", "python");
+  updateLanguageMapping(".pyw", "python");
+  updateLanguageMapping(".f", "fortran");
+  updateLanguageMapping(".for", "fortran");
+  updateLanguageMapping(".f90", "fortran");
+  updateLanguageMapping(".f95", "fortran");
+  updateLanguageMapping(".f03", "fortran");
+  updateLanguageMapping(".f08", "fortran");
+  updateLanguageMapping(".f18", "fortran");
+  updateLanguageMapping(".vhd", "vhdl");
+  updateLanguageMapping(".vhdl", "vhdl");
+  updateLanguageMapping(".ucf", "vhdl");
+  updateLanguageMapping(".qsf", "vhdl");
+  updateLanguageMapping(".md", "md");
   updateLanguageMapping(".markdown", "md");
-  updateLanguageMapping(".ice",      "slice");
-  updateLanguageMapping(".l",        "lex");
+  updateLanguageMapping(".ice", "slice");
+  updateLanguageMapping(".l", "lex");
   updateLanguageMapping(".doxygen_lex_c", "c"); // this is a placeholder so we can map initializations
                                                 // in the lex scanning to cpp
 }
 
 void addCodeOnlyMappings()
 {
-  updateLanguageMapping(".xml",   "xml");
-  updateLanguageMapping(".sql",   "sql");
+  updateLanguageMapping(".xml", "xml");
+  updateLanguageMapping(".sql", "sql");
 }
 
-SrcLangExt getLanguageFromFileName(const QCString& fileName, SrcLangExt defLang)
+SrcLangExt getLanguageFromFileName(const QCString &fileName, SrcLangExt defLang)
 {
   FileInfo fi(fileName.str());
   // we need only the part after the last ".", newer implementations of FileInfo have 'suffix()' for this.
   QCString extName = QCString(fi.extension(FALSE)).lower();
-  if (extName.isEmpty()) extName=".no_extension";
-  if (extName.at(0)!='.') extName.prepend(".");
+  if (extName.isEmpty()) extName = ".no_extension";
+  if (extName.at(0) != '.') extName.prepend(".");
   auto it = g_extLookup.find(extName.str());
-  if (it!=g_extLookup.end()) // listed extension
+  if (it != g_extLookup.end()) // listed extension
   {
     //printf("getLanguageFromFileName(%s)=%x\n",qPrint(fi.extension()),*pVal);
     return it->second;
@@ -5170,9 +5369,9 @@ SrcLangExt getLanguageFromCodeLang(QCString &fileName)
   {
     // try the language names
     QCString langName = fileName.lower();
-    if (langName.at(0)=='.') langName = langName.mid(1);
-    auto it = std::find_if(g_lang2extMap.begin(),g_lang2extMap.end(),
-                        [&langName](const auto &info) { return info.langName==langName; });
+    if (langName.at(0) == '.') langName = langName.mid(1);
+    auto it = std::find_if(g_lang2extMap.begin(), g_lang2extMap.end(),
+                           [&langName](const auto &info) { return info.langName == langName; });
     if (it != g_lang2extMap.end())
     {
       lang     = it->parserId;
@@ -5190,22 +5389,20 @@ QCString getFileNameExtension(const QCString &fn)
 {
   if (fn.isEmpty()) return "";
   int lastDot = fn.findRev('.');
-  if (lastDot!=-1) return fn.mid(lastDot);
+  if (lastDot != -1) return fn.mid(lastDot);
   return "";
 }
 
 //--------------------------------------------------------------------------
 
-static MemberDef *getMemberFromSymbol(const Definition *scope,const FileDef *fileScope,
-                                const QCString &n)
+static MemberDef *getMemberFromSymbol(const Definition *scope, const FileDef *fileScope,
+                                      const QCString &n)
 {
-  if (scope==nullptr ||
-      (scope->definitionType()!=Definition::TypeClass &&
-       scope->definitionType()!=Definition::TypeNamespace
-      )
-     )
+  if (scope == nullptr ||
+      (scope->definitionType() != Definition::TypeClass &&
+       scope->definitionType() != Definition::TypeNamespace))
   {
-    scope=Doxygen::globalScope;
+    scope = Doxygen::globalScope;
   }
 
   QCString name = n;
@@ -5218,28 +5415,28 @@ static MemberDef *getMemberFromSymbol(const Definition *scope,const FileDef *fil
 
   // mostly copied from getResolvedClassRec()
   QCString explicitScopePart;
-  int qualifierIndex = computeQualifiedIndex(name);
-  if (qualifierIndex!=-1)
+  int      qualifierIndex = computeQualifiedIndex(name);
+  if (qualifierIndex != -1)
   {
     explicitScopePart = name.left(qualifierIndex);
     replaceNamespaceAliases(explicitScopePart);
-    name = name.mid(qualifierIndex+2);
+    name = name.mid(qualifierIndex + 2);
   }
   //printf("explicitScopePart=%s\n",qPrint(explicitScopePart));
 
-  int minDistance = 10000;
-  MemberDef *bestMatch = nullptr;
+  int        minDistance = 10000;
+  MemberDef *bestMatch   = nullptr;
 
   for (Definition *d : range)
   {
-    if (d->definitionType()==Definition::TypeMember)
+    if (d->definitionType() == Definition::TypeMember)
     {
       SymbolResolver resolver(fileScope);
-      int distance = resolver.isAccessibleFromWithExpScope(scope,d,explicitScopePart);
-      if (distance!=-1 && distance<minDistance)
+      int            distance = resolver.isAccessibleFromWithExpScope(scope, d, explicitScopePart);
+      if (distance != -1 && distance < minDistance)
       {
         minDistance = distance;
-        bestMatch = toMemberDef(d);
+        bestMatch   = toMemberDef(d);
         //printf("new best match %s distance=%d\n",qPrint(bestMatch->qualifiedName()),distance);
       }
     }
@@ -5248,9 +5445,9 @@ static MemberDef *getMemberFromSymbol(const Definition *scope,const FileDef *fil
 }
 
 /*! Returns true iff the given name string appears to be a typedef in scope. */
-bool checkIfTypedef(const Definition *scope,const FileDef *fileScope,const QCString &n)
+bool checkIfTypedef(const Definition *scope, const FileDef *fileScope, const QCString &n)
 {
-  MemberDef *bestMatch = getMemberFromSymbol(scope,fileScope,n);
+  MemberDef *bestMatch = getMemberFromSymbol(scope, fileScope, n);
 
   if (bestMatch && bestMatch->isTypedef())
     return TRUE; // closest matching symbol is a typedef
@@ -5258,21 +5455,21 @@ bool checkIfTypedef(const Definition *scope,const FileDef *fileScope,const QCStr
     return FALSE;
 }
 
-static int nextUTF8CharPosition(const QCString &utf8Str,uint32_t len,uint32_t startPos)
+static int nextUTF8CharPosition(const QCString &utf8Str, uint32_t len, uint32_t startPos)
 {
-  if (startPos>=len) return len;
-  uint8_t c = static_cast<uint8_t>(utf8Str[startPos]);
-  int bytes=getUTF8CharNumBytes(c);
-  if (c=='&') // skip over character entities
+  if (startPos >= len) return len;
+  uint8_t c     = static_cast<uint8_t>(utf8Str[startPos]);
+  int     bytes = getUTF8CharNumBytes(c);
+  if (c == '&') // skip over character entities
   {
-    bytes=1;
+    bytes               = 1;
     int (*matcher)(int) = nullptr;
-    c = static_cast<uint8_t>(utf8Str[startPos+bytes]);
-    if (c=='#') // numerical entity?
+    c                   = static_cast<uint8_t>(utf8Str[startPos + bytes]);
+    if (c == '#') // numerical entity?
     {
       bytes++;
-      c = static_cast<uint8_t>(utf8Str[startPos+bytes]);
-      if (c=='x') // hexadecimal entity?
+      c = static_cast<uint8_t>(utf8Str[startPos + bytes]);
+      if (c == 'x') // hexadecimal entity?
       {
         bytes++;
         matcher = std::isxdigit;
@@ -5289,95 +5486,94 @@ static int nextUTF8CharPosition(const QCString &utf8Str,uint32_t len,uint32_t st
     }
     if (matcher)
     {
-      while ((c = static_cast<uint8_t>(utf8Str[startPos+bytes]))!=0 && matcher(c))
+      while ((c = static_cast<uint8_t>(utf8Str[startPos + bytes])) != 0 && matcher(c))
       {
         bytes++;
       }
     }
-    if (c!=';')
+    if (c != ';')
     {
-      bytes=1; // not a valid entity, reset bytes counter
+      bytes = 1; // not a valid entity, reset bytes counter
     }
   }
-  return startPos+bytes;
+  return startPos + bytes;
 }
 
-QCString parseCommentAsText(const Definition *scope,const MemberDef *md,
-    const QCString &doc,const QCString &fileName,int lineNr)
+QCString parseCommentAsText(const Definition *scope, const MemberDef *md,
+                            const QCString &doc, const QCString &fileName, int lineNr)
 {
   if (doc.isEmpty()) return "";
   //printf("parseCommentAsText(%s)\n",qPrint(doc));
   TextStream t;
-  auto parser { createDocParser() };
-  auto ast    { validatingParseDoc(*parser.get(),
-                                   fileName,
-                                   lineNr,
-                                   scope,
-                                   md,
-                                   doc,
-                                   DocOptions()
-                                   .setAutolinkSupport(false))
-              };
-  auto astImpl = dynamic_cast<const DocNodeAST*>(ast.get());
+  auto       parser{ createDocParser() };
+  auto       ast{ validatingParseDoc(*parser.get(),
+                                     fileName,
+                                     lineNr,
+                                     scope,
+                                     md,
+                                     doc,
+                                     DocOptions()
+                                       .setAutolinkSupport(false)) };
+  auto       astImpl = dynamic_cast<const DocNodeAST *>(ast.get());
   if (astImpl)
   {
     TextDocVisitor visitor(t);
-    std::visit(visitor,astImpl->root);
+    std::visit(visitor, astImpl->root);
   }
-  QCString result = convertCharEntitiesToUTF8(t.str()).stripWhiteSpace();
-  int i=0;
-  int charCnt=0;
-  int l=static_cast<int>(result.length());
-  while ((i=nextUTF8CharPosition(result,l,i))<l)
+  QCString result  = convertCharEntitiesToUTF8(t.str()).stripWhiteSpace();
+  int      i       = 0;
+  int      charCnt = 0;
+  int      l       = static_cast<int>(result.length());
+  while ((i = nextUTF8CharPosition(result, l, i)) < l)
   {
     charCnt++;
-    if (charCnt>=80) break;
+    if (charCnt >= 80) break;
   }
-  if (charCnt>=80) // try to truncate the string
+  if (charCnt >= 80) // try to truncate the string
   {
-    while ((i=nextUTF8CharPosition(result,l,i))<l && charCnt<100)
+    while ((i = nextUTF8CharPosition(result, l, i)) < l && charCnt < 100)
     {
       charCnt++;
-      if (result.at(i)==',' ||
-          result.at(i)=='.' ||
-          result.at(i)=='!' ||
-          result.at(i)=='?' ||
-          result.at(i)=='}')    // good for UTF-16 characters and } otherwise also a good point to stop the string
+      if (result.at(i) == ',' ||
+          result.at(i) == '.' ||
+          result.at(i) == '!' ||
+          result.at(i) == '?' ||
+          result.at(i) == '}') // good for UTF-16 characters and } otherwise also a good point to stop the string
       {
         i++; // we want to be "behind" last inspected character
         break;
       }
     }
   }
-  if ( i < l) result=result.left(i)+"...";
+  if (i < l) result = result.left(i) + "...";
   return result.data();
 }
 
 //--------------------------------------------------------------------------------------
 
-static std::mutex                               g_docCacheMutex;
-static std::unordered_map<std::string,QCString> g_docCache;
+static std::mutex                                g_docCacheMutex;
+static std::unordered_map<std::string, QCString> g_docCache;
 
-QCString parseCommentAsHtml(const Definition *scope,const MemberDef *member,const QCString &doc,const QCString &fileName,int lineNr)
+QCString                                         parseCommentAsHtml(const Definition *scope, const MemberDef *member, const QCString &doc, const QCString &fileName, int lineNr)
 {
   std::lock_guard lock(g_docCacheMutex);
-  auto it = g_docCache.find(doc.str());
+  auto            it = g_docCache.find(doc.str());
   if (it != g_docCache.end())
   {
     //printf("Cache: [%s]->[%s]\n",qPrint(doc),qPrint(it->second));
     return it->second;
   }
-  auto parser { createDocParser() };
-  auto ast    { validatingParseTitle(*parser.get(),fileName,lineNr,doc) };
-  auto astImpl = dynamic_cast<const DocNodeAST*>(ast.get());
+  auto     parser{ createDocParser() };
+  auto     ast{ validatingParseTitle(*parser.get(), fileName, lineNr, doc) };
+  auto     astImpl = dynamic_cast<const DocNodeAST *>(ast.get());
   QCString result;
   if (astImpl)
   {
-    TextStream t;
+    TextStream     t;
     OutputCodeList codeList;
     codeList.add<HtmlCodeGenerator>(&t);
-    HtmlDocVisitor visitor(t,codeList,scope,fileName);
-    std::visit(visitor,astImpl->root);
+    HtmlDocVisitor visitor(t, codeList, scope, fileName);
+    std::visit(visitor, astImpl->root);
     result = t.str();
   }
   else // fallback, should not happen
@@ -5385,14 +5581,14 @@ QCString parseCommentAsHtml(const Definition *scope,const MemberDef *member,cons
     result = filterTitle(doc);
   }
   //printf("Conversion: [%s]->[%s]\n",qPrint(doc),qPrint(result));
-  g_docCache.insert(std::make_pair(doc.str(),result));
+  g_docCache.insert(std::make_pair(doc.str(), result));
   return result;
 }
 
 
 //--------------------------------------------------------------------------------------
 
-void writeTypeConstraints(OutputList &ol,const Definition *d,const ArgumentList &al)
+void writeTypeConstraints(OutputList &ol, const Definition *d, const ArgumentList &al)
 {
   if (al.empty()) return;
   ol.startConstraintList(theTranslator->trTypeConstraints());
@@ -5402,7 +5598,7 @@ void writeTypeConstraints(OutputList &ol,const Definition *d,const ArgumentList 
     ol.parseText(a.name);
     ol.endConstraintParam();
     ol.startConstraintType();
-    linkifyText(TextGeneratorOLImpl(ol),d,nullptr,nullptr,a.type);
+    linkifyText(TextGeneratorOLImpl(ol), d, nullptr, nullptr, a.type);
     ol.endConstraintType();
     ol.startConstraintDocs();
     ol.generateDoc(d->docFile(),
@@ -5411,7 +5607,7 @@ void writeTypeConstraints(OutputList &ol,const Definition *d,const ArgumentList 
                    nullptr,
                    a.docs,
                    DocOptions()
-                   .setIndexWords(true));
+                     .setIndexWords(true));
     ol.endConstraintDocs();
   }
   ol.endConstraintList();
@@ -5422,17 +5618,17 @@ void writeTypeConstraints(OutputList &ol,const Definition *d,const ArgumentList 
 void stackTrace()
 {
 #ifdef TRACINGSUPPORT
-  void *backtraceFrames[128];
-  int frameCount = backtrace(backtraceFrames, 128);
-  const size_t cmdLen = 40960;
-  static char cmd[cmdLen];
-  char *p = cmd;
-  p += qsnprintf(p,cmdLen,"/usr/bin/atos -p %d ", (int)getpid());
+  void        *backtraceFrames[128];
+  int          frameCount = backtrace(backtraceFrames, 128);
+  const size_t cmdLen     = 40960;
+  static char  cmd[cmdLen];
+  char        *p = cmd;
+  p += qsnprintf(p, cmdLen, "/usr/bin/atos -p %d ", (int)getpid());
   for (int x = 0; x < frameCount; x++)
   {
-    p += qsnprintf(p,cmdLen,"%p ", backtraceFrames[x]);
+    p += qsnprintf(p, cmdLen, "%p ", backtraceFrames[x]);
   }
-  fprintf(stderr,"========== STACKTRACE START ==============\n");
+  fprintf(stderr, "========== STACKTRACE START ==============\n");
   if (FILE *fp = Portable::popen(cmd, "r"))
   {
     char resBuf[512];
@@ -5442,120 +5638,119 @@ void stackTrace()
     }
     Portable::pclose(fp);
   }
-  fprintf(stderr,"============ STACKTRACE END ==============\n");
+  fprintf(stderr, "============ STACKTRACE END ==============\n");
   //fprintf(stderr,"%s\n", frameStrings[x]);
 #endif
 }
 
-static void transcodeCharacterBuffer(const QCString &fileName,std::string &contents,
-           const QCString &inputEncoding,const QCString &outputEncoding)
+static void transcodeCharacterBuffer(const QCString &fileName, std::string &contents,
+                                     const QCString &inputEncoding, const QCString &outputEncoding)
 {
   if (inputEncoding.isEmpty() || outputEncoding.isEmpty()) return; // no encoding specified
-  if (qstricmp(inputEncoding,outputEncoding)==0) return;           // input encoding same as output encoding
-  void *cd = portable_iconv_open(outputEncoding.data(),inputEncoding.data());
-  if (cd==reinterpret_cast<void *>(-1))
+  if (qstricmp(inputEncoding, outputEncoding) == 0) return;        // input encoding same as output encoding
+  void *cd = portable_iconv_open(outputEncoding.data(), inputEncoding.data());
+  if (cd == reinterpret_cast<void *>(-1))
   {
     term("unsupported character conversion: '{}'->'{}': {}\n"
-        "Check the INPUT_ENCODING setting in the config file!\n",
-        inputEncoding,outputEncoding,strerror(errno));
+         "Check the INPUT_ENCODING setting in the config file!\n",
+         inputEncoding, outputEncoding, strerror(errno));
   }
   size_t      iLeft      = contents.size();
   const char *srcPtr     = contents.data();
-  size_t      tmpBufSize = contents.size()*4+1;
+  size_t      tmpBufSize = contents.size() * 4 + 1;
   size_t      oLeft      = tmpBufSize;
   std::string tmpBuf;
   tmpBuf.resize(tmpBufSize);
-  char *dstPtr           = tmpBuf.data();
-  size_t newSize=0;
+  char  *dstPtr  = tmpBuf.data();
+  size_t newSize = 0;
   if (!portable_iconv(cd, &srcPtr, &iLeft, &dstPtr, &oLeft))
   {
-    newSize = tmpBufSize-oLeft;
+    newSize = tmpBufSize - oLeft;
     tmpBuf.resize(newSize);
-    std::swap(contents,tmpBuf);
+    std::swap(contents, tmpBuf);
     //printf("iconv: input size=%d output size=%d\n[%s]\n",size,newSize,qPrint(srcBuf));
   }
   else
   {
     term("{}: failed to translate characters from {} to {}: check INPUT_ENCODING\n",
-        fileName,inputEncoding,outputEncoding);
+         fileName, inputEncoding, outputEncoding);
   }
   portable_iconv_close(cd);
 }
 
 //! read a file name \a fileName and optionally filter and transcode it
-bool readInputFile(const QCString &fileName,std::string &contents,bool filter,bool isSourceCode)
+bool readInputFile(const QCString &fileName, std::string &contents, bool filter, bool isSourceCode)
 {
   // try to open file
   FileInfo fi(fileName.str());
   if (!fi.exists()) return FALSE;
-  QCString filterName = getFileFilter(fileName,isSourceCode);
+  QCString filterName = getFileFilter(fileName, isSourceCode);
   if (filterName.isEmpty() || !filter)
   {
-    std::ifstream f = Portable::openInputStream(fileName,true);
+    std::ifstream f = Portable::openInputStream(fileName, true);
     if (!f.is_open())
     {
-      err("could not open file {}\n",fileName);
+      err("could not open file {}\n", fileName);
       return FALSE;
     }
     // read the file
     auto fileSize = fi.size();
     contents.resize(fileSize);
-    f.read(contents.data(),fileSize);
+    f.read(contents.data(), fileSize);
     if (f.fail())
     {
-      err("problems while reading file {}\n",fileName);
+      err("problems while reading file {}\n", fileName);
       return FALSE;
     }
   }
   else
   {
-    QCString cmd=filterName+" \""+fileName+"\"";
-    Debug::print(Debug::ExtCmd,0,"Executing popen(`{}`)\n",cmd);
-    FILE *f=Portable::popen(cmd,"r");
+    QCString cmd = filterName + " \"" + fileName + "\"";
+    Debug::print(Debug::ExtCmd, 0, "Executing popen(`{}`)\n", cmd);
+    FILE *f = Portable::popen(cmd, "r");
     if (!f)
     {
-      err("could not execute filter {}\n",filterName);
+      err("could not execute filter {}\n", filterName);
       return FALSE;
     }
-    const int bufSize=4096;
-    char buf[bufSize];
-    int numRead = 0;
-    while ((numRead=static_cast<int>(fread(buf,1,bufSize,f)))>0)
+    const int bufSize = 4096;
+    char      buf[bufSize];
+    int       numRead = 0;
+    while ((numRead = static_cast<int>(fread(buf, 1, bufSize, f))) > 0)
     {
       //printf(">>>>>>>>Reading %d bytes\n",numRead);
-      contents.append(buf,numRead);
+      contents.append(buf, numRead);
     }
     Portable::pclose(f);
     Debug::print(Debug::FilterOutput, 0, "Filter output\n");
-    Debug::print(Debug::FilterOutput,0,"-------------\n{}\n-------------\n",contents);
+    Debug::print(Debug::FilterOutput, 0, "-------------\n{}\n-------------\n", contents);
   }
 
-  if (contents.size()>=2 &&
-      static_cast<uint8_t>(contents[0])==0xFF &&
-      static_cast<uint8_t>(contents[1])==0xFE // Little endian BOM
-     ) // UCS-2LE encoded file
+  if (contents.size() >= 2 &&
+      static_cast<uint8_t>(contents[0]) == 0xFF &&
+      static_cast<uint8_t>(contents[1]) == 0xFE // Little endian BOM
+      )                                         // UCS-2LE encoded file
   {
-    transcodeCharacterBuffer(fileName,contents,"UCS-2LE","UTF-8");
+    transcodeCharacterBuffer(fileName, contents, "UCS-2LE", "UTF-8");
   }
-  else if (contents.size()>=2 &&
-           static_cast<uint8_t>(contents[0])==0xFE &&
-           static_cast<uint8_t>(contents[1])==0xFF // big endian BOM
-         ) // UCS-2BE encoded file
+  else if (contents.size() >= 2 &&
+           static_cast<uint8_t>(contents[0]) == 0xFE &&
+           static_cast<uint8_t>(contents[1]) == 0xFF // big endian BOM
+           )                                         // UCS-2BE encoded file
   {
-    transcodeCharacterBuffer(fileName,contents,"UCS-2BE","UTF-8");
+    transcodeCharacterBuffer(fileName, contents, "UCS-2BE", "UTF-8");
   }
-  else if (contents.size()>=3 &&
-           static_cast<uint8_t>(contents[0])==0xEF &&
-           static_cast<uint8_t>(contents[1])==0xBB &&
-           static_cast<uint8_t>(contents[2])==0xBF
-     ) // UTF-8 encoded file
+  else if (contents.size() >= 3 &&
+           static_cast<uint8_t>(contents[0]) == 0xEF &&
+           static_cast<uint8_t>(contents[1]) == 0xBB &&
+           static_cast<uint8_t>(contents[2]) == 0xBF) // UTF-8 encoded file
   {
-    contents.erase(0,3); // remove UTF-8 BOM: no translation needed
+    contents.erase(0, 3); // remove UTF-8 BOM: no translation needed
   }
   else // transcode according to the INPUT_ENCODING setting
   {
     // do character transcoding if needed.
-    transcodeCharacterBuffer(fileName,contents,getEncoding(fi),"UTF-8");
+    transcodeCharacterBuffer(fileName, contents, getEncoding(fi), "UTF-8");
   }
 
   filterCRLF(contents);
@@ -5565,49 +5760,49 @@ bool readInputFile(const QCString &fileName,std::string &contents,bool filter,bo
 // Replace %word by word in title
 QCString filterTitle(const QCString &title)
 {
-  std::string tf;
-  std::string t = title.str();
+  std::string          tf;
+  std::string          t = title.str();
   static const reg::Ex re(R"(%[a-z_A-Z]+)");
-  reg::Iterator it(t,re);
-  reg::Iterator end;
-  size_t p = 0;
-  for (; it!=end ; ++it)
+  reg::Iterator        it(t, re);
+  reg::Iterator        end;
+  size_t               p = 0;
+  for (; it != end; ++it)
   {
     const auto &match = *it;
-    size_t i = match.position();
-    size_t l = match.length();
-    if (i>p) tf+=t.substr(p,i-p);
-    tf+=match.str().substr(1); // skip %
-    p=i+l;
+    size_t      i     = match.position();
+    size_t      l     = match.length();
+    if (i > p) tf += t.substr(p, i - p);
+    tf += match.str().substr(1); // skip %
+    p = i + l;
   }
-  tf+=t.substr(p);
+  tf += t.substr(p);
   return tf;
 }
 
 //---------------------------------------------------------------------------------------------------
 
-template<class PatternList, class PatternElem, typename PatternGet = QCString(*)(const PatternElem &)>
-bool genericPatternMatch(const FileInfo &fi,
+template <class PatternList, class PatternElem, typename PatternGet = QCString (*)(const PatternElem &)>
+bool genericPatternMatch(const FileInfo    &fi,
                          const PatternList &patList,
-                         PatternElem &elem,
-                         PatternGet getter)
+                         PatternElem       &elem,
+                         PatternGet         getter)
 {
   bool caseSenseNames = getCaseSenseNames();
-  bool found = FALSE;
+  bool found          = FALSE;
 
   if (!patList.empty())
   {
-    std::string fn = fi.fileName();
-    std::string fp = fi.filePath();
-    std::string afp= fi.absFilePath();
+    std::string fn  = fi.fileName();
+    std::string fp  = fi.filePath();
+    std::string afp = fi.absFilePath();
 
     for (const auto &li : patList)
     {
       std::string pattern = getter(li).str();
       if (!pattern.empty())
       {
-        size_t i=pattern.find('=');
-        if (i!=std::string::npos) pattern=pattern.substr(0,i); // strip of the extension specific filter name
+        size_t i = pattern.find('=');
+        if (i != std::string::npos) pattern = pattern.substr(0, i); // strip of the extension specific filter name
 
         if (!caseSenseNames)
         {
@@ -5616,10 +5811,10 @@ bool genericPatternMatch(const FileInfo &fi,
           fp      = QCString(fp).lower().str();
           afp     = QCString(afp).lower().str();
         }
-        reg::Ex re(pattern,reg::Ex::Mode::Wildcard);
-        found = re.isValid() && (reg::match(fn,re) ||
-                                 (fn!=fp && reg::match(fp,re)) ||
-                                 (fn!=afp && fp!=afp && reg::match(afp,re)));
+        reg::Ex re(pattern, reg::Ex::Mode::Wildcard);
+        found = re.isValid() && (reg::match(fn, re) ||
+                                 (fn != fp && reg::match(fp, re)) ||
+                                 (fn != afp && fp != afp && reg::match(afp, re)));
         if (found)
         {
           elem = li;
@@ -5637,18 +5832,18 @@ bool genericPatternMatch(const FileInfo &fi,
 // returns TRUE if the name of the file represented by 'fi' matches
 // one of the file patterns in the 'patList' list.
 
-bool patternMatch(const FileInfo &fi,const StringVector &patList)
+bool patternMatch(const FileInfo &fi, const StringVector &patList)
 {
   std::string elem;
-  auto getter = [](std::string s) -> QCString { return s; };
-  return genericPatternMatch(fi,patList,elem,getter);
+  auto        getter = [](std::string s) -> QCString { return s; };
+  return genericPatternMatch(fi, patList, elem, getter);
 }
 
 QCString getEncoding(const FileInfo &fi)
 {
   InputFileEncoding elem;
-  auto getter = [](const InputFileEncoding &e) -> QCString { return e.pattern; };
-  if (genericPatternMatch(fi,Doxygen::inputFileEncodingList,elem,getter)) // check for file specific encoding
+  auto              getter = [](const InputFileEncoding &e) -> QCString { return e.pattern; };
+  if (genericPatternMatch(fi, Doxygen::inputFileEncodingList, elem, getter)) // check for file specific encoding
   {
     return elem.encoding;
   }
@@ -5671,15 +5866,15 @@ QCString externalLinkTarget(const bool parent)
 
 QCString createHtmlUrl(const QCString &relPath,
                        const QCString &ref,
-                       bool href,
-                       bool isLocalFile,
+                       bool            href,
+                       bool            isLocalFile,
                        const QCString &targetFileName,
                        const QCString &anchor)
 {
   QCString url;
   if (!ref.isEmpty())
   {
-    url = externalRef(relPath,ref,href);
+    url = externalRef(relPath, ref, href);
   }
   if (!targetFileName.isEmpty())
   {
@@ -5688,36 +5883,36 @@ QCString createHtmlUrl(const QCString &relPath,
     {
       if (!anchor.isEmpty() && isLocalFile)
       {
-        fn=""; // omit file name for local links
+        fn = ""; // omit file name for local links
       }
       else
       {
         url = relPath;
       }
     }
-    url+=fn;
+    url += fn;
   }
-  if (!anchor.isEmpty()) url+="#"+anchor;
+  if (!anchor.isEmpty()) url += "#" + anchor;
   //printf("createHtmlUrl(relPath=%s,local=%d,target=%s,anchor=%s)=%s\n",qPrint(relPath),isLocalFile,qPrint(targetFileName),qPrint(anchor),qPrint(url));
   return url;
 }
 
-QCString externalRef(const QCString &relPath,const QCString &ref,bool href)
+QCString externalRef(const QCString &relPath, const QCString &ref, bool href)
 {
   QCString result;
   if (!ref.isEmpty())
   {
     auto it = Doxygen::tagDestinationMap.find(ref.str());
-    if (it!=Doxygen::tagDestinationMap.end())
+    if (it != Doxygen::tagDestinationMap.end())
     {
-      result = it->second;
+      result   = it->second;
       size_t l = result.length();
-      if (!relPath.isEmpty() && l>0 && result.at(0)=='.')
+      if (!relPath.isEmpty() && l > 0 && result.at(0) == '.')
       { // relative path -> prepend relPath.
         result.prepend(relPath);
-        l+=relPath.length();
+        l += relPath.length();
       }
-      if (l>0 && result.at(l-1)!='/') result+='/';
+      if (l > 0 && result.at(l - 1) != '/') result += '/';
       if (!href) result.append("\" ");
     }
   }
@@ -5731,19 +5926,19 @@ QCString externalRef(const QCString &relPath,const QCString &ref,bool href)
 /** Writes the intensity only bitmap represented by \a data as an image to
  *  directory \a dir using the colors defined by HTML_COLORSTYLE_*.
  */
-void writeColoredImgData(const QCString &dir,ColoredImgDataItem data[])
+void writeColoredImgData(const QCString &dir, ColoredImgDataItem data[])
 {
   int hue   = Config_getInt(HTML_COLORSTYLE_HUE);
   int sat   = Config_getInt(HTML_COLORSTYLE_SAT);
   int gamma = Config_getInt(HTML_COLORSTYLE_GAMMA);
   while (data->name)
   {
-    QCString fileName = dir+"/"+data->name;
-    ColoredImage img(data->width,data->height,data->content,data->alpha,
-                     sat,hue,gamma);
+    QCString     fileName = dir + "/" + data->name;
+    ColoredImage img(data->width, data->height, data->content, data->alpha,
+                     sat, hue, gamma);
     if (!img.save(fileName))
     {
-      fprintf(stderr,"Warning: Cannot open file %s for writing\n",data->name);
+      fprintf(stderr, "Warning: Cannot open file %s for writing\n", data->name);
     }
     Doxygen::indexList->addImageFile(data->name);
     data++;
@@ -5758,59 +5953,59 @@ void writeColoredImgData(const QCString &dir,ColoredImgDataItem data[])
 QCString replaceColorMarkers(const QCString &str)
 {
   if (str.isEmpty()) return QCString();
-  std::string result;
-  std::string s=str.str();
+  std::string          result;
+  std::string          s = str.str();
   static const reg::Ex re(R"(##[0-9A-Fa-f][0-9A-Fa-f])");
-  reg::Iterator it(s,re);
-  reg::Iterator end;
-  int hue   = Config_getInt(HTML_COLORSTYLE_HUE);
-  int sat   = Config_getInt(HTML_COLORSTYLE_SAT);
-  int gamma = Config_getInt(HTML_COLORSTYLE_GAMMA);
-  size_t sl=s.length();
-  size_t p=0;
-  for (; it!=end ; ++it)
+  reg::Iterator        it(s, re);
+  reg::Iterator        end;
+  int                  hue   = Config_getInt(HTML_COLORSTYLE_HUE);
+  int                  sat   = Config_getInt(HTML_COLORSTYLE_SAT);
+  int                  gamma = Config_getInt(HTML_COLORSTYLE_GAMMA);
+  size_t               sl    = s.length();
+  size_t               p     = 0;
+  for (; it != end; ++it)
   {
     const auto &match = *it;
-    size_t i = match.position();
-    size_t l = match.length();
-    if (i>p) result+=s.substr(p,i-p);
+    size_t      i     = match.position();
+    size_t      l     = match.length();
+    if (i > p) result += s.substr(p, i - p);
     std::string lumStr = match.str().substr(2);
-#define HEXTONUM(x) (((x)>='0' && (x)<='9') ? ((x)-'0') :       \
-                     ((x)>='a' && (x)<='f') ? ((x)-'a'+10) :    \
-                     ((x)>='A' && (x)<='F') ? ((x)-'A'+10) : 0)
+#define HEXTONUM(x) (((x) >= '0' && (x) <= '9') ? ((x) - '0') : ((x) >= 'a' && (x) <= 'f') ? ((x) - 'a' + 10) \
+                                                              : ((x) >= 'A' && (x) <= 'F') ? ((x) - 'A' + 10) \
+                                                                                           : 0)
 
-    double r = 0,g = 0,b = 0;
-    int level = HEXTONUM(lumStr[0])*16+HEXTONUM(lumStr[1]);
-    ColoredImage::hsl2rgb(hue/360.0,sat/255.0,
-                          pow(level/255.0,gamma/100.0),&r,&g,&b);
-    int red   = static_cast<int>(r*255.0);
-    int green = static_cast<int>(g*255.0);
-    int blue  = static_cast<int>(b*255.0);
+    double r = 0, g = 0, b = 0;
+    int    level = HEXTONUM(lumStr[0]) * 16 + HEXTONUM(lumStr[1]);
+    ColoredImage::hsl2rgb(hue / 360.0, sat / 255.0,
+                          pow(level / 255.0, gamma / 100.0), &r, &g, &b);
+    int  red   = static_cast<int>(r * 255.0);
+    int  green = static_cast<int>(g * 255.0);
+    int  blue  = static_cast<int>(b * 255.0);
     char colStr[8];
-    colStr[0]='#';
-    colStr[1]=hex[red>>4];
-    colStr[2]=hex[red&0xf];
-    colStr[3]=hex[green>>4];
-    colStr[4]=hex[green&0xf];
-    colStr[5]=hex[blue>>4];
-    colStr[6]=hex[blue&0xf];
-    colStr[7]=0;
+    colStr[0] = '#';
+    colStr[1] = hex[red >> 4];
+    colStr[2] = hex[red & 0xf];
+    colStr[3] = hex[green >> 4];
+    colStr[4] = hex[green & 0xf];
+    colStr[5] = hex[blue >> 4];
+    colStr[6] = hex[blue & 0xf];
+    colStr[7] = 0;
     //printf("replacing %s->%s (level=%d)\n",qPrint(lumStr),colStr,level);
-    result+=colStr;
-    p=i+l;
+    result += colStr;
+    p = i + l;
   }
-  if (p<sl) result+=s.substr(p);
+  if (p < sl) result += s.substr(p);
   return result;
 }
 
 /** Copies the contents of file with name \a src to the newly created
  *  file with name \a dest. Returns TRUE if successful.
  */
-bool copyFile(const QCString &src,const QCString &dest)
+bool copyFile(const QCString &src, const QCString &dest)
 {
-  if (!Dir().copy(src.str(),dest.str()))
+  if (!Dir().copy(src.str(), dest.str()))
   {
-    err("could not copy file {} to {}\n",src,dest);
+    err("could not copy file {} to {}\n", src, dest);
     return false;
   }
   return true;
@@ -5819,21 +6014,21 @@ bool copyFile(const QCString &src,const QCString &dest)
 /** Returns the line number of the line following the line with the marker.
  *  \sa routine extractBlock
  */
-int lineBlock(const QCString &text,const QCString &marker)
+int lineBlock(const QCString &text, const QCString &marker)
 {
   int result = 1;
 
   // find the character positions of the first marker
-  int m1 = text.find(marker);
-  if (m1==-1) return result;
+  int m1     = text.find(marker);
+  if (m1 == -1) return result;
 
   // find start line positions for the markers
-  bool found=false;
-  int p=0, i=0;
-  while (!found && (i=text.find('\n',p))!=-1)
+  bool found = false;
+  int  p = 0, i = 0;
+  while (!found && (i = text.find('\n', p)) != -1)
   {
-    found = (p<=m1 && m1<i); // found the line with the start marker
-    p=i+1;
+    found = (p <= m1 && m1 < i); // found the line with the start marker
+    p     = i + 1;
     result++;
   }
   return result;
@@ -5846,13 +6041,13 @@ QCString langToString(SrcLangExt lang)
 }
 
 /** Returns the scope separator to use given the programming language \a lang */
-QCString getLanguageSpecificSeparator(SrcLangExt lang,bool classScope)
+QCString getLanguageSpecificSeparator(SrcLangExt lang, bool classScope)
 {
-  if (lang==SrcLangExt::Java || lang==SrcLangExt::CSharp || lang==SrcLangExt::VHDL || lang==SrcLangExt::Python)
+  if (lang == SrcLangExt::Java || lang == SrcLangExt::CSharp || lang == SrcLangExt::VHDL || lang == SrcLangExt::Python)
   {
     return ".";
   }
-  else if (lang==SrcLangExt::PHP && !classScope)
+  else if (lang == SrcLangExt::PHP && !classScope)
   {
     return "\\";
   }
@@ -5867,14 +6062,14 @@ bool isURL(const QCString &url)
   static const std::unordered_set<std::string> schemes = {
     "http", "https", "ftp", "ftps", "sftp", "file", "news", "irc", "ircs"
   };
-  QCString loc_url = url.stripWhiteSpace();
-  int colonPos = loc_url.find(':');
-  return colonPos!=-1 && schemes.find(loc_url.left(colonPos).str())!=schemes.end();
+  QCString loc_url  = url.stripWhiteSpace();
+  int      colonPos = loc_url.find(':');
+  return colonPos != -1 && schemes.find(loc_url.left(colonPos).str()) != schemes.end();
 }
 /** Corrects URL \a url according to the relative path \a relPath.
  *  Returns the corrected URL. For absolute URLs no correction will be done.
  */
-QCString correctURL(const QCString &url,const QCString &relPath)
+QCString correctURL(const QCString &url, const QCString &relPath)
 {
   QCString result = url;
   if (!relPath.isEmpty() && !isURL(url))
@@ -5891,88 +6086,100 @@ bool protectionLevelVisible(Protection prot)
   bool extractPrivate = Config_getBool(EXTRACT_PRIVATE);
   bool extractPackage = Config_getBool(EXTRACT_PACKAGE);
 
-  return (prot!=Protection::Private && prot!=Protection::Package)  ||
-         (prot==Protection::Private && extractPrivate) ||
-         (prot==Protection::Package && extractPackage);
+  return (prot != Protection::Private && prot != Protection::Package) ||
+         (prot == Protection::Private && extractPrivate) ||
+         (prot == Protection::Package && extractPackage);
 }
 
 //---------------------------------------------------------------------------
 
-QCString stripIndentation(const QCString &s,bool skipFirstLine)
+QCString stripIndentation(const QCString &s, bool skipFirstLine)
 {
   if (s.isEmpty()) return s; // empty string -> we're done
 
   //printf("stripIndentation:\n%s\n------\n",qPrint(s));
   // compute minimum indentation over all lines
-  const char *p=s.data();
-  char c=0;
-  int indent=0;
-  int minIndent=1000000; // "infinite"
-  bool searchIndent=true;
-  int tabSize=Config_getInt(TAB_SIZE);
-  bool skipFirst = skipFirstLine;
-  while ((c=*p++))
+  const char *p            = s.data();
+  char        c            = 0;
+  int         indent       = 0;
+  int         minIndent    = 1000000; // "infinite"
+  bool        searchIndent = true;
+  int         tabSize      = Config_getInt(TAB_SIZE);
+  bool        skipFirst    = skipFirstLine;
+  while ((c = *p++))
   {
-    if      (c=='\t') { indent+=tabSize - (indent%tabSize); }
-    else if (c=='\n') { indent=0; searchIndent=true; skipFirst=false; }
-    else if (c==' ')  { indent++; }
+    if (c == '\t')
+    {
+      indent += tabSize - (indent % tabSize);
+    }
+    else if (c == '\n')
+    {
+      indent       = 0;
+      searchIndent = true;
+      skipFirst    = false;
+    }
+    else if (c == ' ')
+    {
+      indent++;
+    }
     else if (searchIndent && !skipFirst)
     {
-      searchIndent=false;
-      if (indent<minIndent) minIndent=indent;
+      searchIndent = false;
+      if (indent < minIndent) minIndent = indent;
     }
   }
 
   // no indent to remove -> we're done
-  if (minIndent==0) return substitute(s,"@ilinebr","\\ilinebr");
+  if (minIndent == 0) return substitute(s, "@ilinebr", "\\ilinebr");
 
   // remove minimum indentation for each line
   TextStream result;
-  p=s.data();
-  indent=0;
-  skipFirst=skipFirstLine;
-  while ((c=*p++))
+  p         = s.data();
+  indent    = 0;
+  skipFirst = skipFirstLine;
+  while ((c = *p++))
   {
-    if (c=='\n') // start of new line
+    if (c == '\n') // start of new line
     {
-      indent=0;
+      indent = 0;
       result << c;
-      skipFirst=false;
+      skipFirst = false;
     }
-    else if (indent<minIndent && !skipFirst) // skip until we reach minIndent
+    else if (indent < minIndent && !skipFirst) // skip until we reach minIndent
     {
-      if (c=='\t')
+      if (c == '\t')
       {
-        int newIndent = indent+tabSize-(indent%tabSize);
-        int i=newIndent;
-        while (i>minIndent) // if a tab crosses the minIndent boundary fill the rest with spaces
+        int newIndent = indent + tabSize - (indent % tabSize);
+        int i         = newIndent;
+        while (i > minIndent) // if a tab crosses the minIndent boundary fill the rest with spaces
         {
           result << ' ';
           i--;
         }
-        indent=newIndent;
+        indent = newIndent;
       }
       else // space
       {
         indent++;
       }
     }
-    else if (c=='\\' && literal_at(p,"ilinebr "))
-      // we also need to remove the indentation after a \ilinebr command at the end of a line
+    else if (c == '\\' && literal_at(p, "ilinebr "))
+    // we also need to remove the indentation after a \ilinebr command at the end of a line
     {
       result << "\\ilinebr ";
-      p+=8;
-      int skipAmount=0;
-      for (int j=0;j<minIndent;j++) if (*(p+j)==' ') skipAmount++; // test to see if we have the indent
-      if (skipAmount==minIndent)
+      p += 8;
+      int skipAmount = 0;
+      for (int j = 0; j < minIndent; j++)
+        if (*(p + j) == ' ') skipAmount++; // test to see if we have the indent
+      if (skipAmount == minIndent)
       {
-        p+=skipAmount; // remove the indent
+        p += skipAmount; // remove the indent
       }
     }
-    else if (c=='@' && literal_at(p,"ilinebr"))
+    else if (c == '@' && literal_at(p, "ilinebr"))
     {
       result << "\\ilinebr";
-      p+=7;
+      p += 7;
     }
     else // copy anything until the end of the line
     {
@@ -5986,66 +6193,64 @@ QCString stripIndentation(const QCString &s,bool skipFirstLine)
 }
 
 // strip up to \a indentationLevel spaces from each line in \a doc (excluding the first line)
-void stripIndentationVerbatim(QCString &doc,const int indentationLevel)
+void stripIndentationVerbatim(QCString &doc, const int indentationLevel)
 {
   //printf("stripIndentationVerbatim(level=%d):\n%s\n------\n",indentationLevel,qPrint(doc));
   if (indentationLevel <= 0 || doc.isEmpty()) return; // nothing to strip
 
   // by stripping content the string will only become shorter so we write the results
   // back into the input string and then resize it at the end.
-  char c = 0;
-  const char *src = doc.data();
-  char *dst = doc.rawData();
-  bool insideIndent = false; // skip the initial line from stripping
-  int cnt = 0;
-  while ((c=*src++))
+  char        c            = 0;
+  const char *src          = doc.data();
+  char       *dst          = doc.rawData();
+  bool        insideIndent = false; // skip the initial line from stripping
+  int         cnt          = 0;
+  while ((c = *src++))
   {
     // invariant: dst<=src
-    switch(c)
+    switch (c)
     {
-      case '\n':
-        *dst++ = c;
-        insideIndent = true;
-        cnt = indentationLevel;
-        break;
-      case ' ':
-        if (insideIndent)
+    case '\n':
+      *dst++       = c;
+      insideIndent = true;
+      cnt          = indentationLevel;
+      break;
+    case ' ':
+      if (insideIndent)
+      {
+        if (cnt > 0) // count down the spacing until the end of the indent
         {
-          if (cnt>0) // count down the spacing until the end of the indent
-          {
-            cnt--;
-          }
-          else // reached the end of the indent, start of the part of the line to keep
-          {
-            insideIndent = false;
-            *dst++ = c;
-          }
+          cnt--;
         }
-        else // part after indent, copy to the output
+        else // reached the end of the indent, start of the part of the line to keep
         {
-          *dst++ = c;
+          insideIndent = false;
+          *dst++       = c;
         }
-        break;
-      default:
-        insideIndent = false;
+      }
+      else // part after indent, copy to the output
+      {
         *dst++ = c;
-        break;
+      }
+      break;
+    default:
+      insideIndent = false;
+      *dst++       = c;
+      break;
     }
   }
-  doc.resize(static_cast<uint32_t>(dst-doc.data()));
+  doc.resize(static_cast<uint32_t>(dst - doc.data()));
   //printf("stripIndentationVerbatim: result=\n%s\n------\n",qPrint(doc));
 }
 
-bool fileVisibleInIndex(const FileDef *fd,bool &genSourceFile)
+bool fileVisibleInIndex(const FileDef *fd, bool &genSourceFile)
 {
   bool allExternals = Config_getBool(ALLEXTERNALS);
-  bool isDocFile = fd->isDocumentationFile();
-  genSourceFile = !isDocFile && fd->generateSourceFile();
-  return ( ((allExternals && fd->isLinkable()) ||
-            fd->isLinkableInProject()
-           ) &&
-           !isDocFile
-         );
+  bool isDocFile    = fd->isDocumentationFile();
+  genSourceFile     = !isDocFile && fd->generateSourceFile();
+  return (((allExternals && fd->isLinkable()) ||
+           fd->isLinkableInProject()) &&
+          !isDocFile);
 }
 
 //--------------------------------------------------------------------------------------
@@ -6118,7 +6323,6 @@ uint32_t getUtf8CodeToUpper( const QCString& s, int idx )
 #endif
 
 
-
 //----------------------------------------------------------------------------
 
 /** Strip the direction part from docs and return it as a string in canonical form
@@ -6127,34 +6331,45 @@ uint32_t getUtf8CodeToUpper( const QCString& s, int idx )
  */
 QCString extractDirection(QCString &docs)
 {
-  std::string s = docs.str();
+  std::string          s = docs.str();
   static const reg::Ex re(R"(\[([ inout,]+)\])");
-  reg::Iterator it(s,re);
-  reg::Iterator end;
-  if (it!=end)
+  reg::Iterator        it(s, re);
+  reg::Iterator        end;
+  if (it != end)
   {
     const auto &match = *it;
-    size_t p = match.position();
-    size_t l = match.length();
-    if (p==0 && l>2)
+    size_t      p     = match.position();
+    size_t      l     = match.length();
+    if (p == 0 && l > 2)
     {
       // make dir the part inside [...] without separators
       std::string dir = match[1].str();
       // strip , and ' ' from dir
-      dir.erase(std::remove_if(dir.begin(),dir.end(),
-                               [](const char c) { return c==' ' || c==','; }
-                              ),dir.end());
-      unsigned char ioMask=0;
-      size_t inIndex  = dir.find( "in");
-      if ( inIndex!=std::string::npos) { dir.erase( inIndex,2); ioMask|=(1<<0); }
+      dir.erase(std::remove_if(dir.begin(), dir.end(),
+                               [](const char c) { return c == ' ' || c == ','; }),
+                dir.end());
+      unsigned char ioMask  = 0;
+      size_t        inIndex = dir.find("in");
+      if (inIndex != std::string::npos)
+      {
+        dir.erase(inIndex, 2);
+        ioMask |= (1 << 0);
+      }
       size_t outIndex = dir.find("out");
-      if (outIndex!=std::string::npos) { dir.erase(outIndex,3); ioMask|=(1<<1); }
-      if (dir.empty() && ioMask!=0) // only in and/or out attributes found
+      if (outIndex != std::string::npos)
+      {
+        dir.erase(outIndex, 3);
+        ioMask |= (1 << 1);
+      }
+      if (dir.empty() && ioMask != 0) // only in and/or out attributes found
       {
         docs = s.substr(l); // strip attributes
-        if (ioMask==((1<<0)|(1<<1))) return "[in,out]";
-        else if (ioMask==(1<<0))     return "[in]";
-        else if (ioMask==(1<<1))     return "[out]";
+        if (ioMask == ((1 << 0) | (1 << 1)))
+          return "[in,out]";
+        else if (ioMask == (1 << 0))
+          return "[in]";
+        else if (ioMask == (1 << 1))
+          return "[out]";
       }
     }
   }
@@ -6177,52 +6392,51 @@ QCString extractDirection(QCString &docs)
  *  base class should be joined in the private member section.
  */
 void convertProtectionLevel(
-                   MemberListType inListType,
-                   Protection inProt,
-                   MemberListType *outListType1,
-                   MemberListType *outListType2
-                  )
+  MemberListType  inListType,
+  Protection      inProt,
+  MemberListType *outListType1,
+  MemberListType *outListType2)
 {
   bool extractPrivate = Config_getBool(EXTRACT_PRIVATE);
 
   // default representing 1-1 mapping
-  *outListType1=inListType;
-  *outListType2=MemberListType::Invalid();
+  *outListType1       = inListType;
+  *outListType2       = MemberListType::Invalid();
 
-  if (inProt==Protection::Public)
+  if (inProt == Protection::Public)
   {
     if (inListType.isPrivate())
     {
-      *outListType1=MemberListType::Invalid();
+      *outListType1 = MemberListType::Invalid();
     }
   }
-  else if (inProt==Protection::Protected)
+  else if (inProt == Protection::Protected)
   {
     if (inListType.isPrivate() || inListType.isPublic())
     {
-      *outListType1=MemberListType::Invalid();
+      *outListType1 = MemberListType::Invalid();
     }
     else if (inListType.isProtected())
     {
-      *outListType2=inListType.toPublic();
+      *outListType2 = inListType.toPublic();
     }
   }
-  else if (inProt==Protection::Private)
+  else if (inProt == Protection::Private)
   {
     if (inListType.isPublic() || inListType.isProtected())
     {
-      *outListType1=MemberListType::Invalid();
+      *outListType1 = MemberListType::Invalid();
     }
     else if (inListType.isPrivate())
     {
       if (extractPrivate)
       {
-        *outListType1=inListType.toPublic();
-        *outListType2=inListType.toProtected();
+        *outListType1 = inListType.toPublic();
+        *outListType2 = inListType.toProtected();
       }
       else
       {
-        *outListType1=MemberListType::Invalid();
+        *outListType1 = MemberListType::Invalid();
       }
     }
   }
@@ -6233,21 +6447,21 @@ void convertProtectionLevel(
 
 bool mainPageHasTitle()
 {
-  return Doxygen::mainPage!=nullptr && Doxygen::mainPage->hasTitle();
+  return Doxygen::mainPage != nullptr && Doxygen::mainPage->hasTitle();
 }
 
 QCString getDotImageExtension()
 {
   QCString imgExt = Config_getEnumAsString(DOT_IMAGE_FORMAT);
-  int i= imgExt.find(':'); // strip renderer part when using e.g. 'png:cairo:gd' as format
-  return i==-1 ? imgExt : imgExt.left(i);
+  int      i      = imgExt.find(':'); // strip renderer part when using e.g. 'png:cairo:gd' as format
+  return i == -1 ? imgExt : imgExt.left(i);
 }
 
-bool openOutputFile(const QCString &outFile,std::ofstream &f)
+bool openOutputFile(const QCString &outFile, std::ofstream &f)
 {
   assert(!f.is_open());
-  bool fileOpened=FALSE;
-  bool writeToStdout=outFile=="-";
+  bool fileOpened    = FALSE;
+  bool writeToStdout = outFile == "-";
   if (writeToStdout) // write to stdout
   {
     f.basic_ios<char>::rdbuf(std::cout.rdbuf());
@@ -6258,13 +6472,13 @@ bool openOutputFile(const QCString &outFile,std::ofstream &f)
     FileInfo fi(outFile.str());
     if (fi.exists()) // create a backup
     {
-      Dir dir;
-      FileInfo backup(fi.filePath()+".bak");
+      Dir      dir;
+      FileInfo backup(fi.filePath() + ".bak");
       if (backup.exists()) // remove existing backup
         dir.remove(backup.filePath());
-      dir.rename(fi.filePath(),fi.filePath()+".bak");
+      dir.rename(fi.filePath(), fi.filePath() + ".bak");
     }
-    f = Portable::openOutputStream(outFile);
+    f          = Portable::openOutputStream(outFile);
     fileOpened = f.is_open();
   }
   return fileOpened;
@@ -6281,8 +6495,12 @@ static bool keyWordsFortranC(const char *contents)
   if (*contents != 'c' && *contents != 'C') return false;
 
   const char *c = contents;
-  QCString keyword;
-  while (*c && *c != ' ') {keyword += *c; c++;}
+  QCString    keyword;
+  while (*c && *c != ' ')
+  {
+    keyword += *c;
+    c++;
+  }
   keyword = keyword.lower();
 
   return (fortran_C_keywords.find(keyword.str()) != fortran_C_keywords.end());
@@ -6292,52 +6510,52 @@ static bool keyWordsFortranC(const char *contents)
 // simplified way to know if this is fixed form
 bool recognizeFixedForm(const QCString &contents, FortranFormat format)
 {
-  int column=0;
-  bool skipLine=FALSE;
+  int  column   = 0;
+  bool skipLine = FALSE;
 
   if (format == FortranFormat::Fixed) return TRUE;
-  if (format == FortranFormat::Free)  return FALSE;
+  if (format == FortranFormat::Free) return FALSE;
 
-  int tabSize=Config_getInt(TAB_SIZE);
+  int    tabSize = Config_getInt(TAB_SIZE);
   size_t sizCont = contents.length();
-  for (size_t i=0;i<sizCont;i++)
+  for (size_t i = 0; i < sizCont; i++)
   {
     column++;
 
-    switch(contents.at(i))
+    switch (contents.at(i))
     {
-      case '\n':
-        column=0;
-        skipLine=FALSE;
-        break;
-      case '\t':
-        column += tabSize-1;
-        break;
-      case ' ':
-        break;
-      case '\000':
-        return FALSE;
-      case '#':
-        skipLine=TRUE;
-        break;
-      case 'C':
-      case 'c':
-        if (column==1)
-        {
-          return !keyWordsFortranC(contents.data()+i);
-        }
-        // fallthrough
-      case '*':
-        if (column==1) return TRUE;
-        if (skipLine) break;
-        return FALSE;
-      case '!':
-        if (column!=6) skipLine=TRUE;
-        break;
-      default:
-        if (skipLine) break;
-        if (column>=7) return TRUE;
-        return FALSE;
+    case '\n':
+      column   = 0;
+      skipLine = FALSE;
+      break;
+    case '\t':
+      column += tabSize - 1;
+      break;
+    case ' ':
+      break;
+    case '\000':
+      return FALSE;
+    case '#':
+      skipLine = TRUE;
+      break;
+    case 'C':
+    case 'c':
+      if (column == 1)
+      {
+        return !keyWordsFortranC(contents.data() + i);
+      }
+      // fallthrough
+    case '*':
+      if (column == 1) return TRUE;
+      if (skipLine) break;
+      return FALSE;
+    case '!':
+      if (column != 6) skipLine = TRUE;
+      break;
+    default:
+      if (skipLine) break;
+      if (column >= 7) return TRUE;
+      return FALSE;
     }
   }
   return FALSE;
@@ -6345,38 +6563,39 @@ bool recognizeFixedForm(const QCString &contents, FortranFormat format)
 
 FortranFormat convertFileNameFortranParserCode(QCString fn)
 {
-  QCString ext = getFileNameExtension(fn);
+  QCString ext        = getFileNameExtension(fn);
   QCString parserName = Doxygen::parserManager->getParserName(ext);
 
-  if (parserName == "fortranfixed") return FortranFormat::Fixed;
-  else if (parserName == "fortranfree") return FortranFormat::Free;
+  if (parserName == "fortranfixed")
+    return FortranFormat::Fixed;
+  else if (parserName == "fortranfree")
+    return FortranFormat::Free;
 
   return FortranFormat::Unknown;
 }
 //------------------------------------------------------------------------
 
 //! remove disabled blocks and all block markers from \a s and return the result as a string
-QCString selectBlocks(const QCString &s,const SelectionBlockList &blockList,const SelectionMarkerInfo &markerInfo)
+QCString selectBlocks(const QCString &s, const SelectionBlockList &blockList, const SelectionMarkerInfo &markerInfo)
 {
   if (s.isEmpty()) return s;
 
   // helper to find the end of a block
-  auto skipBlock = [&markerInfo](const char *p,const SelectionBlock &blk)
-  {
+  auto skipBlock = [&markerInfo](const char *p, const SelectionBlock &blk) {
     char c = 0;
-    while ((c=*p))
+    while ((c = *p))
     {
-      if (c==markerInfo.markerChar && qstrncmp(p,markerInfo.endStr,markerInfo.endLen)==0) // end marker
+      if (c == markerInfo.markerChar && qstrncmp(p, markerInfo.endStr, markerInfo.endLen) == 0) // end marker
       {
-        size_t len = markerInfo.endLen;
-        bool negate = *(p+markerInfo.endLen)=='!';
+        size_t len    = markerInfo.endLen;
+        bool   negate = *(p + markerInfo.endLen) == '!';
         if (negate) len++;
         size_t blkNameLen = qstrlen(blk.name);
-        if (qstrncmp(p+len,blk.name,blkNameLen)==0 &&                                // matching marker name
-            qstrncmp(p+len+blkNameLen,markerInfo.closeStr,markerInfo.closeLen)==0) // matching marker closing
+        if (qstrncmp(p + len, blk.name, blkNameLen) == 0 &&                                // matching marker name
+            qstrncmp(p + len + blkNameLen, markerInfo.closeStr, markerInfo.closeLen) == 0) // matching marker closing
         {
           //printf("Found end marker %s enabled=%d negate=%d\n",blk.name,blk.enabled,negate);
-          return p+len+blkNameLen+markerInfo.closeLen;
+          return p + len + blkNameLen + markerInfo.closeLen;
         }
         else // not the right marker id
         {
@@ -6394,74 +6613,74 @@ QCString selectBlocks(const QCString &s,const SelectionBlockList &blockList,cons
   QCString result;
   result.reserve(s.length());
   const char *p = s.data();
-  char c = 0;
-  while ((c=*p))
+  char        c = 0;
+  while ((c = *p))
   {
-    if (c==markerInfo.markerChar) // potential start of marker
+    if (c == markerInfo.markerChar) // potential start of marker
     {
-      if (qstrncmp(p,markerInfo.beginStr,markerInfo.beginLen)==0) // start of begin marker
+      if (qstrncmp(p, markerInfo.beginStr, markerInfo.beginLen) == 0) // start of begin marker
       {
-        bool found = false;
-        size_t len = markerInfo.beginLen;
-        bool negate = *(p+len)=='!';
+        bool   found  = false;
+        size_t len    = markerInfo.beginLen;
+        bool   negate = *(p + len) == '!';
         if (negate) len++;
         for (const auto &blk : blockList)
         {
           size_t blkNameLen = qstrlen(blk.name);
-          if (qstrncmp(p+len,blk.name,blkNameLen)==0 &&                                // matching marker name
-              qstrncmp(p+len+blkNameLen,markerInfo.closeStr,markerInfo.closeLen)==0) // matching marker closing
+          if (qstrncmp(p + len, blk.name, blkNameLen) == 0 &&                                // matching marker name
+              qstrncmp(p + len + blkNameLen, markerInfo.closeStr, markerInfo.closeLen) == 0) // matching marker closing
           {
-            bool blockEnabled = blk.enabled!=negate;
+            bool blockEnabled = blk.enabled != negate;
             //printf("Found start marker %s enabled=%d negate=%d\n",blk.name,blk.enabled,negate);
-            p+=len+blkNameLen+markerInfo.closeLen;
+            p += len + blkNameLen + markerInfo.closeLen;
             if (!blockEnabled) // skip until the end of the block
             {
               //printf("skipping block\n");
-              p=skipBlock(p,blk);
+              p = skipBlock(p, blk);
             }
-            found=true;
+            found = true;
             break;
           }
         }
         if (!found) // unknown marker id
         {
-          result+=c;
+          result += c;
           p++;
         }
       }
-      else if (qstrncmp(p,markerInfo.endStr,markerInfo.endLen)==0) // start of end marker
+      else if (qstrncmp(p, markerInfo.endStr, markerInfo.endLen) == 0) // start of end marker
       {
-        bool found = false;
-        size_t len = markerInfo.endLen;
-        bool negate = *(p+len)=='!';
+        bool   found  = false;
+        size_t len    = markerInfo.endLen;
+        bool   negate = *(p + len) == '!';
         if (negate) len++;
         for (const auto &blk : blockList)
         {
           size_t blkNameLen = qstrlen(blk.name);
-          if (qstrncmp(p+len,blk.name,blkNameLen)==0 &&                                // matching marker name
-              qstrncmp(p+len+blkNameLen,markerInfo.closeStr,markerInfo.closeLen)==0) // matching marker closing
+          if (qstrncmp(p + len, blk.name, blkNameLen) == 0 &&                                // matching marker name
+              qstrncmp(p + len + blkNameLen, markerInfo.closeStr, markerInfo.closeLen) == 0) // matching marker closing
           {
             //printf("Found end marker %s enabled=%d negate=%d\n",blk.name,blk.enabled,negate);
-            p+=len+blkNameLen+markerInfo.closeLen;
-            found=true;
+            p += len + blkNameLen + markerInfo.closeLen;
+            found = true;
             break;
           }
         }
         if (!found) // unknown marker id
         {
-          result+=c;
+          result += c;
           p++;
         }
       }
       else // not a start or end marker
       {
-        result+=c;
+        result += c;
         p++;
       }
     }
     else // not a marker character
     {
-      result+=c;
+      result += c;
       p++;
     }
   }
@@ -6469,58 +6688,58 @@ QCString selectBlocks(const QCString &s,const SelectionBlockList &blockList,cons
   return result;
 }
 
-void checkBlocks(const QCString &s, const QCString fileName,const SelectionMarkerInfo &markerInfo)
+void checkBlocks(const QCString &s, const QCString fileName, const SelectionMarkerInfo &markerInfo)
 {
   if (s.isEmpty()) return;
 
   const char *p = s.data();
-  char c = 0;
-  while ((c=*p))
+  char        c = 0;
+  while ((c = *p))
   {
-    if (c==markerInfo.markerChar) // potential start of marker
+    if (c == markerInfo.markerChar) // potential start of marker
     {
-      if (qstrncmp(p,markerInfo.beginStr,markerInfo.beginLen)==0) // start of begin marker
+      if (qstrncmp(p, markerInfo.beginStr, markerInfo.beginLen) == 0) // start of begin marker
       {
-        size_t len = markerInfo.beginLen;
-        bool negate = *(p+len)=='!';
+        size_t len    = markerInfo.beginLen;
+        bool   negate = *(p + len) == '!';
         if (negate) len++;
         p += len;
         QCString marker;
         while (*p)
         {
-          if (markerInfo.closeLen==0 && *p=='\n') // matching end of line
+          if (markerInfo.closeLen == 0 && *p == '\n') // matching end of line
           {
-            warn(fileName,-1,"Remaining begin replacement with marker '{}'",marker);
+            warn(fileName, -1, "Remaining begin replacement with marker '{}'", marker);
             break;
           }
-          else if (markerInfo.closeLen!= 0 && qstrncmp(p,markerInfo.closeStr,markerInfo.closeLen)==0) // matching marker closing
+          else if (markerInfo.closeLen != 0 && qstrncmp(p, markerInfo.closeStr, markerInfo.closeLen) == 0) // matching marker closing
           {
             p += markerInfo.closeLen;
-            warn(fileName,-1,"Remaining begin replacement with marker '{}'",marker);
+            warn(fileName, -1, "Remaining begin replacement with marker '{}'", marker);
             break;
           }
           marker += *p;
           p++;
         }
       }
-      else if (qstrncmp(p,markerInfo.endStr,markerInfo.endLen)==0) // start of end marker
+      else if (qstrncmp(p, markerInfo.endStr, markerInfo.endLen) == 0) // start of end marker
       {
-        size_t len = markerInfo.endLen;
-        bool negate = *(p+len)=='!';
+        size_t len    = markerInfo.endLen;
+        bool   negate = *(p + len) == '!';
         if (negate) len++;
         p += len;
         QCString marker;
         while (*p)
         {
-          if (markerInfo.closeLen==0 && *p=='\n') // matching end of line
+          if (markerInfo.closeLen == 0 && *p == '\n') // matching end of line
           {
-            warn(fileName,-1,"Remaining end replacement with marker '{}'",marker);
+            warn(fileName, -1, "Remaining end replacement with marker '{}'", marker);
             break;
           }
-          else if (markerInfo.closeLen!= 0 && qstrncmp(p,markerInfo.closeStr,markerInfo.closeLen)==0) // matching marker closing
+          else if (markerInfo.closeLen != 0 && qstrncmp(p, markerInfo.closeStr, markerInfo.closeLen) == 0) // matching marker closing
           {
             p += markerInfo.closeLen;
-            warn(fileName,-1,"Remaining end replacement with marker '{}'",marker);
+            warn(fileName, -1, "Remaining end replacement with marker '{}'", marker);
             break;
           }
           marker += *p;
@@ -6537,25 +6756,26 @@ QCString removeEmptyLines(const QCString &s)
 {
   std::string out;
   out.reserve(s.length());
-  const char *p=s.data();
+  const char *p = s.data();
   if (p)
   {
     char c = 0;
-    while ((c=*p++))
+    while ((c = *p++))
     {
-      if (c=='\n')
+      if (c == '\n')
       {
         const char *e = p;
-        while (*e==' ' || *e=='\t') e++;
-        if (*e=='\n')
+        while (*e == ' ' || *e == '\t') e++;
+        if (*e == '\n')
         {
-          p=e;
+          p = e;
         }
-        else out+=c;
+        else
+          out += c;
       }
       else
       {
-        out+=c;
+        out += c;
       }
     }
   }
@@ -6565,66 +6785,65 @@ QCString removeEmptyLines(const QCString &s)
 
 /// split input string \a s by string delimiter \a delimiter.
 /// returns a vector of non-empty strings that are between the delimiters
-StringVector split(const std::string &s,const std::string &delimiter)
+StringVector split(const std::string &s, const std::string &delimiter)
 {
   StringVector result;
-  size_t prev = 0, pos = 0, len = s.length();
+  size_t       prev = 0, pos = 0, len = s.length();
   do
   {
     pos = s.find(delimiter, prev);
     if (pos == std::string::npos) pos = len;
-    if (pos>prev) result.push_back(s.substr(prev,pos-prev));
+    if (pos > prev) result.push_back(s.substr(prev, pos - prev));
     prev = pos + delimiter.length();
-  }
-  while (pos<len && prev<len);
+  } while (pos < len && prev < len);
   return result;
 }
 
 /// split input string \a s by regular expression delimiter \a delimiter.
 /// returns a vector of non-empty strings that are between the delimiters
-StringVector split(const std::string &s,const reg::Ex &delimiter)
+StringVector split(const std::string &s, const reg::Ex &delimiter)
 {
-  StringVector result;
+  StringVector  result;
   reg::Iterator iter(s, delimiter);
   reg::Iterator end;
-  size_t p=0;
-  for ( ; iter != end; ++iter)
+  size_t        p = 0;
+  for (; iter != end; ++iter)
   {
     const auto &match = *iter;
-    size_t i=match.position();
-    size_t l=match.length();
-    if (i>p) result.push_back(s.substr(p,i-p));
-    p=i+l;
+    size_t      i     = match.position();
+    size_t      l     = match.length();
+    if (i > p) result.push_back(s.substr(p, i - p));
+    p = i + l;
   }
-  if (p<s.length()) result.push_back(s.substr(p));
+  if (p < s.length()) result.push_back(s.substr(p));
   return result;
 }
 
 /// find the index of a string in a vector of strings, returns -1 if the string could not be found
-int findIndex(const StringVector &sv,const std::string &s)
+int findIndex(const StringVector &sv, const std::string &s)
 {
-  auto it = std::find(sv.begin(),sv.end(),s);
-  return it!=sv.end() ? static_cast<int>(it-sv.begin()) : -1;
+  auto it = std::find(sv.begin(), sv.end(), s);
+  return it != sv.end() ? static_cast<int>(it - sv.begin()) : -1;
 }
 
 /// find the index of the first occurrence of pattern \a re in a string \a s
 /// returns -1 if the pattern could not be found
-int findIndex(const std::string &s,const reg::Ex &re)
+int findIndex(const std::string &s, const reg::Ex &re)
 {
   reg::Match match;
-  return reg::search(s,match,re) ? static_cast<int>(match.position()) : -1;
+  return reg::search(s, match, re) ? static_cast<int>(match.position()) : -1;
 }
 
 /// create a string where the string in the vector are joined by the given delimiter
-std::string join(const StringVector &sv,const std::string &delimiter)
+std::string join(const StringVector &sv, const std::string &delimiter)
 {
   std::string result;
-  bool first=true;
+  bool        first = true;
   for (const auto &s : sv)
   {
-    if (!first) result+=delimiter;
-    first=false;
-    result+=s;
+    if (!first) result += delimiter;
+    first = false;
+    result += s;
   }
   return result;
 }
@@ -6632,28 +6851,28 @@ std::string join(const StringVector &sv,const std::string &delimiter)
 QCString integerToAlpha(int n, bool upper)
 {
   QCString result;
-  int residual = n;
+  int      residual = n;
 
-  char modVal[2];
+  char     modVal[2];
   modVal[1] = 0;
   while (residual > 0)
   {
-    modVal[0] = (upper ? 'A': 'a') + (residual-1)%26;
-    result = modVal + result;
-    residual = (residual-1) / 26;
+    modVal[0] = (upper ? 'A' : 'a') + (residual - 1) % 26;
+    result    = modVal + result;
+    residual  = (residual - 1) / 26;
   }
   return result;
 }
 
 QCString integerToRoman(int n, bool upper)
 {
-  static const char *str_romans_upper[] = {  "M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I" };
-  static const char *str_romans_lower[] = {  "m", "cm", "d", "cd", "c", "xc", "l", "xl", "x", "ix", "v", "iv", "i" };
-  static const int values[]             = { 1000,  900, 500,  400, 100,   90,  50,   40,  10,    9,   5,    4,   1 };
-  static const char **str_romans = upper ? str_romans_upper : str_romans_lower;
+  static const char  *str_romans_upper[] = { "M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I" };
+  static const char  *str_romans_lower[] = { "m", "cm", "d", "cd", "c", "xc", "l", "xl", "x", "ix", "v", "iv", "i" };
+  static const int    values[]           = { 1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1 };
+  static const char **str_romans         = upper ? str_romans_upper : str_romans_lower;
 
-  QCString result;
-  int residual = n;
+  QCString            result;
+  int                 residual = n;
 
   for (int i = 0; i < 13; ++i)
   {
@@ -6667,92 +6886,95 @@ QCString integerToRoman(int n, bool upper)
   return result;
 }
 
-QCString detab(const QCString &s,size_t &refIndent)
+QCString detab(const QCString &s, size_t &refIndent)
 {
-  int tabSize = Config_getInt(TAB_SIZE);
-  size_t size = s.length();
-  GrowBuf out(size);
-  const char *data = s.data();
-  size_t i=0;
-  int col=0;
-  constexpr auto doxy_nbsp = "&_doxy_nbsp;";  // doxygen escape command for UTF-8 nbsp
-  const int maxIndent=1000000; // value representing infinity
-  int minIndent=maxIndent;
-  bool skip = false;
-  while (i<size)
+  int            tabSize = Config_getInt(TAB_SIZE);
+  size_t         size    = s.length();
+  GrowBuf        out(size);
+  const char    *data      = s.data();
+  size_t         i         = 0;
+  int            col       = 0;
+  constexpr auto doxy_nbsp = "&_doxy_nbsp;"; // doxygen escape command for UTF-8 nbsp
+  const int      maxIndent = 1000000;        // value representing infinity
+  int            minIndent = maxIndent;
+  bool           skip      = false;
+  while (i < size)
   {
     char c = data[i++];
-    switch(c)
+    switch (c)
     {
-      case '\t': // expand tab
-        {
-          int stop = tabSize - (col%tabSize);
-          //printf("expand at %d stop=%d\n",col,stop);
-          col+=stop;
-          while (stop--) out.addChar(' ');
-        }
-        break;
-      case '\\':
-        if (data[i] == '\\') // escaped command -> ignore
-        {
-          out.addChar(c);
-          out.addChar(data[i++]);
-          col+=2;
-        }
-        else if (i+5<size && literal_at(data+i,"iskip")) // \iskip command
-        {
-          i+=5;
-          skip = true;
-        }
-        else if (i+8<size && literal_at(data+i,"endiskip")) // \endiskip command
-        {
-          i+=8;
-          skip = false;
-        }
-        else // some other command
-        {
-          out.addChar(c);
-          col++;
-        }
-        break;
-      case '\n': // reset column counter
+    case '\t': // expand tab
+    {
+      int stop = tabSize - (col % tabSize);
+      //printf("expand at %d stop=%d\n",col,stop);
+      col += stop;
+      while (stop--) out.addChar(' ');
+    }
+    break;
+    case '\\':
+      if (data[i] == '\\') // escaped command -> ignore
+      {
         out.addChar(c);
-        col=0;
-        break;
-      case ' ': // increment column counter
+        out.addChar(data[i++]);
+        col += 2;
+      }
+      else if (i + 5 < size && literal_at(data + i, "iskip")) // \iskip command
+      {
+        i += 5;
+        skip = true;
+      }
+      else if (i + 8 < size && literal_at(data + i, "endiskip")) // \endiskip command
+      {
+        i += 8;
+        skip = false;
+      }
+      else // some other command
+      {
         out.addChar(c);
         col++;
-        break;
-      default: // non-whitespace => update minIndent
-        if (c<0 && i<size) // multibyte sequence
+      }
+      break;
+    case '\n': // reset column counter
+      out.addChar(c);
+      col = 0;
+      break;
+    case ' ': // increment column counter
+      out.addChar(c);
+      col++;
+      break;
+    default:                 // non-whitespace => update minIndent
+      if (c < 0 && i < size) // multibyte sequence
+      {
+        // special handling of the UTF-8 nbsp character 0xC2 0xA0
+        int nb = isUTF8NonBreakableSpace(data);
+        if (nb > 0)
         {
-          // special handling of the UTF-8 nbsp character 0xC2 0xA0
-          int nb = isUTF8NonBreakableSpace(data);
-          if (nb>0)
-          {
-            out.addStr(doxy_nbsp);
-            i+=nb-1;
-          }
-          else
-          {
-            int bytes = getUTF8CharNumBytes(c);
-            for (int j=0;j<bytes-1 && c;j++)
-            {
-              out.addChar(c);
-              c = data[i++];
-            }
-            out.addChar(c);
-          }
+          out.addStr(doxy_nbsp);
+          i += nb - 1;
         }
         else
         {
+          int bytes = getUTF8CharNumBytes(c);
+          for (int j = 0; j < bytes - 1 && c; j++)
+          {
+            out.addChar(c);
+            c = data[i++];
+          }
           out.addChar(c);
         }
-        if (!skip && col<minIndent) minIndent=col;
-        col++;
+      }
+      else
+      {
+        out.addChar(c);
+      }
+      if (!skip && col < minIndent) minIndent = col;
+      col++;
     }
   }
-  if (minIndent!=maxIndent) refIndent=minIndent; else refIndent=0;
+  if (minIndent != maxIndent)
+    refIndent = minIndent;
+  else
+    refIndent = 0;
   out.addChar(0);
   //printf("detab(\n%s\n)=[\n%s\n]\n",qPrint(s),qPrint(out.get()));
   return out.get();
@@ -6763,93 +6985,101 @@ QCString getProjectId()
   QCString projectCookie = Config_getString(HTML_PROJECT_COOKIE);
   if (projectCookie.isEmpty()) return QCString();
   uint8_t md5_sig[16];
-  char sigStr[34];
-  MD5Buffer(projectCookie.data(),static_cast<unsigned int>(projectCookie.length()),md5_sig);
-  MD5SigToString(md5_sig,sigStr);
-  sigStr[32]='_'; sigStr[33]=0;
+  char    sigStr[34];
+  MD5Buffer(projectCookie.data(), static_cast<unsigned int>(projectCookie.length()), md5_sig);
+  MD5SigToString(md5_sig, sigStr);
+  sigStr[32] = '_';
+  sigStr[33] = 0;
   return sigStr;
 }
 
 //! Return the index of the last :: in the string \a name that is still before the first <
 int computeQualifiedIndex(const QCString &name)
 {
-  int l = static_cast<int>(name.length());
-  int lastSepPos = -1;
-  const char *p = name.data();
-  int i=l-2;
-  int sharpCount=0;
+  int         l          = static_cast<int>(name.length());
+  int         lastSepPos = -1;
+  const char *p          = name.data();
+  int         i          = l - 2;
+  int         sharpCount = 0;
   // --- begin optimized version of ts=name.findRev(">::");
-  int ts = -1;
-  while (i>=0)
+  int         ts         = -1;
+  while (i >= 0)
   {
-    if (p[i]=='>')
+    if (p[i] == '>')
     {
-      if (sharpCount==0 && p[i+1]==':' && p[i+2]==':')
+      if (sharpCount == 0 && p[i + 1] == ':' && p[i + 2] == ':')
       {
-        ts=i;
+        ts = i;
         break;
       }
       sharpCount++;
     }
-    else if (p[i]=='<')
+    else if (p[i] == '<')
     {
       sharpCount--;
     }
     i--;
   }
   // --- end optimized version
-  if (ts==-1) ts=0; else p+=++ts;
-  for (i=ts;i<l-1;i++)
+  if (ts == -1)
+    ts = 0;
+  else
+    p += ++ts;
+  for (i = ts; i < l - 1; i++)
   {
-    char c=*p++;
-    if (c==':' && *p==':') lastSepPos=i;
-    if (c=='<') break;
+    char c = *p++;
+    if (c == ':' && *p == ':') lastSepPos = i;
+    if (c == '<') break;
   }
   return lastSepPos;
 }
 
-void mergeMemberOverrideOptions(MemberDefMutable *md1,MemberDefMutable *md2)
+void mergeMemberOverrideOptions(MemberDefMutable *md1, MemberDefMutable *md2)
 {
-  if (Config_getBool(CALL_GRAPH)  !=md1->hasCallGraph())   md2->overrideCallGraph(md1->hasCallGraph());
-  if (Config_getBool(CALLER_GRAPH)!=md1->hasCallerGraph()) md2->overrideCallerGraph(md1->hasCallerGraph());
-  if (Config_getBool(CALL_GRAPH)  !=md2->hasCallGraph())   md1->overrideCallGraph( md2->hasCallGraph());
-  if (Config_getBool(CALLER_GRAPH)!=md2->hasCallerGraph()) md1->overrideCallerGraph(md2->hasCallerGraph());
+  if (Config_getBool(CALL_GRAPH) != md1->hasCallGraph()) md2->overrideCallGraph(md1->hasCallGraph());
+  if (Config_getBool(CALLER_GRAPH) != md1->hasCallerGraph()) md2->overrideCallerGraph(md1->hasCallerGraph());
+  if (Config_getBool(CALL_GRAPH) != md2->hasCallGraph()) md1->overrideCallGraph(md2->hasCallGraph());
+  if (Config_getBool(CALLER_GRAPH) != md2->hasCallerGraph()) md1->overrideCallerGraph(md2->hasCallerGraph());
 
-  if (Config_getBool(SHOW_ENUM_VALUES)  !=md1->hasEnumValues())   md2->overrideEnumValues(md1->hasEnumValues());
-  if (Config_getBool(SHOW_ENUM_VALUES)  !=md2->hasEnumValues())   md1->overrideEnumValues( md2->hasEnumValues());
+  if (Config_getBool(SHOW_ENUM_VALUES) != md1->hasEnumValues()) md2->overrideEnumValues(md1->hasEnumValues());
+  if (Config_getBool(SHOW_ENUM_VALUES) != md2->hasEnumValues()) md1->overrideEnumValues(md2->hasEnumValues());
 
-  if (Config_getBool(REFERENCED_BY_RELATION)!=md1->hasReferencedByRelation()) md2->overrideReferencedByRelation(md1->hasReferencedByRelation());
-  if (Config_getBool(REFERENCES_RELATION)   !=md1->hasReferencesRelation())   md2->overrideReferencesRelation(md1->hasReferencesRelation());
-  if (Config_getBool(REFERENCED_BY_RELATION)!=md2->hasReferencedByRelation()) md1->overrideReferencedByRelation(md2->hasReferencedByRelation());
-  if (Config_getBool(REFERENCES_RELATION)   !=md2->hasReferencesRelation())   md1->overrideReferencesRelation(md2->hasReferencesRelation());
+  if (Config_getBool(REFERENCED_BY_RELATION) != md1->hasReferencedByRelation()) md2->overrideReferencedByRelation(md1->hasReferencedByRelation());
+  if (Config_getBool(REFERENCES_RELATION) != md1->hasReferencesRelation()) md2->overrideReferencesRelation(md1->hasReferencesRelation());
+  if (Config_getBool(REFERENCED_BY_RELATION) != md2->hasReferencedByRelation()) md1->overrideReferencedByRelation(md2->hasReferencedByRelation());
+  if (Config_getBool(REFERENCES_RELATION) != md2->hasReferencesRelation()) md1->overrideReferencesRelation(md2->hasReferencesRelation());
 
-  if (Config_getBool(INLINE_SOURCES)!=md1->hasInlineSource()) md2->overrideInlineSource(md1->hasInlineSource());
-  if (Config_getBool(INLINE_SOURCES)!=md2->hasInlineSource()) md1->overrideInlineSource(md2->hasInlineSource());
+  if (Config_getBool(INLINE_SOURCES) != md1->hasInlineSource()) md2->overrideInlineSource(md1->hasInlineSource());
+  if (Config_getBool(INLINE_SOURCES) != md2->hasInlineSource()) md1->overrideInlineSource(md2->hasInlineSource());
 }
 
-size_t updateColumnCount(const char *s,size_t col)
+size_t updateColumnCount(const char *s, size_t col)
 {
   if (s)
   {
     const int tabSize = Config_getInt(TAB_SIZE);
-    char c;
-    while ((c=*s++))
+    char      c;
+    while ((c = *s++))
     {
-      switch(c)
+      switch (c)
       {
-        case '\t': col+=tabSize - (col%tabSize);
-                   break;
-        case '\n': col=0;
-                   break;
-        default:
-                   col++;
-                   if (c<0) // multi-byte character
-                   {
-                     int numBytes = getUTF8CharNumBytes(c);
-                     for (int i=0;i<numBytes-1 && (c=*s++);i++) {} // skip over extra chars
-                     if (c==0) return col; // end of string half way a multibyte char
-                   }
-                   break;
+      case '\t':
+        col += tabSize - (col % tabSize);
+        break;
+      case '\n':
+        col = 0;
+        break;
+      default:
+        col++;
+        if (c < 0) // multi-byte character
+        {
+          int numBytes = getUTF8CharNumBytes(c);
+          for (int i = 0; i < numBytes - 1 && (c = *s++); i++)
+          {
+          }                       // skip over extra chars
+          if (c == 0) return col; // end of string half way a multibyte char
+        }
+        break;
       }
     }
   }
@@ -6863,36 +7093,34 @@ size_t updateColumnCount(const char *s,size_t col)
 QCString mangleCSharpGenericName(const QCString &name)
 {
   int idx = name.find('<');
-  if (idx!=-1)
+  if (idx != -1)
   {
-    return name.left(idx)+"-"+QCString().setNum(name.contains(",")+1)+"-g";
+    return name.left(idx) + "-" + QCString().setNum(name.contains(",") + 1) + "-g";
   }
   return name;
 }
 
-QCString demangleCSharpGenericName(const QCString &name,const QCString &templArgs)
+QCString demangleCSharpGenericName(const QCString &name, const QCString &templArgs)
 {
-  QCString result=name;
+  QCString result = name;
   if (result.endsWith("-g"))
   {
     int idx = result.find('-');
-    result = result.left(idx)+templArgs;
+    result  = result.left(idx) + templArgs;
   }
   return result;
 }
 
 QCString extractBeginRawStringDelimiter(const char *rawStart)
 {
-  QCString text=rawStart;
-  int i = text.find('"');
-  assert(i!=-1);
-  return text.mid(i+1,text.length()-i-2); // text=...R"xyz( -> delimiter=xyz
+  QCString text = rawStart;
+  int      i    = text.find('"');
+  assert(i != -1);
+  return text.mid(i + 1, text.length() - i - 2); // text=...R"xyz( -> delimiter=xyz
 }
 
 QCString extractEndRawStringDelimiter(const char *rawEnd)
 {
-  QCString text=rawEnd;
-  return text.mid(1,text.length()-2); // text=)xyz" -> delimiter=xyz
+  QCString text = rawEnd;
+  return text.mid(1, text.length() - 2); // text=)xyz" -> delimiter=xyz
 }
-
-

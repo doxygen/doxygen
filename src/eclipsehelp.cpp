@@ -22,41 +22,42 @@
 
 struct EclipseHelp::Private
 {
-  int depth = 0;
-  bool endtag = false;
-  int openTags = 0;
+    int           depth    = 0;
+    bool          endtag   = false;
+    int           openTags = 0;
 
-  std::ofstream tocstream;
-  QCString pathprefix;
+    std::ofstream tocstream;
+    QCString      pathprefix;
 
-  /* -- formatting helpers */
-  void indent()
-  {
-    for (int i=0; i<depth; i++)
+    /* -- formatting helpers */
+    void          indent()
     {
-      tocstream << "  ";
+      for (int i = 0; i < depth; i++)
+      {
+        tocstream << "  ";
+      }
     }
-  }
-  void closedTag()
-  {
-    if (endtag)
+    void closedTag()
     {
-      tocstream << "/>\n";
-      endtag = FALSE;
+      if (endtag)
+      {
+        tocstream << "/>\n";
+        endtag = FALSE;
+      }
     }
-  }
-  void openedTag()
-  {
-    if (endtag)
+    void openedTag()
     {
-      tocstream << ">\n";
-      endtag = FALSE;
-      ++openTags;
+      if (endtag)
+      {
+        tocstream << ">\n";
+        endtag = FALSE;
+        ++openTags;
+      }
     }
-  }
 };
 
-EclipseHelp::EclipseHelp() : p(std::make_unique<Private>()) {}
+EclipseHelp::EclipseHelp() :
+    p(std::make_unique<Private>()) {}
 EclipseHelp::~EclipseHelp() = default;
 
 /*!
@@ -69,7 +70,7 @@ void EclipseHelp::initialize()
 {
   // -- open the contents file
   QCString name = Config_getString(HTML_OUTPUT) + "/toc.xml";
-  p->tocstream = Portable::openOutputStream(name);
+  p->tocstream  = Portable::openOutputStream(name);
   if (!p->tocstream.is_open())
   {
     term("Could not open file {} for writing\n", name);
@@ -82,9 +83,9 @@ void EclipseHelp::initialize()
     title = "Doxygen generated documentation";
   }
   p->tocstream << "<toc label=\"" << convertToXML(title)
-              << "\" topic=\"" << convertToXML(p->pathprefix)
-              << "index" << Doxygen::htmlFileExtension << "\">\n";
-  ++ p->depth;
+               << "\" topic=\"" << convertToXML(p->pathprefix)
+               << "index" << Doxygen::htmlFileExtension << "\">\n";
+  ++p->depth;
 }
 
 /*!
@@ -104,12 +105,12 @@ void EclipseHelp::finalize()
   // -- close the content file
   p->tocstream.close();
 
-  QCString name = Config_getString(HTML_OUTPUT) + "/plugin.xml";
-  std::ofstream t = Portable::openOutputStream(name);
+  QCString      name = Config_getString(HTML_OUTPUT) + "/plugin.xml";
+  std::ofstream t    = Portable::openOutputStream(name);
   if (t.is_open())
   {
     QCString docId = Config_getString(ECLIPSE_DOC_ID);
-    t << "<plugin name=\""  << docId << "\" id=\"" << docId << "\"\n";
+    t << "<plugin name=\"" << docId << "\" id=\"" << docId << "\"\n";
     t << "        version=\"1.0.0\" provider-name=\"Doxygen\">\n";
     t << "  <extension point=\"org.eclipse.help.toc\">\n";
     t << "    <toc file=\"toc.xml\" primary=\"true\" />\n";
@@ -138,7 +139,7 @@ void EclipseHelp::decContentsDepth()
   p->closedTag();
   --p->depth;
 
-  if (p->openTags==p->depth)
+  if (p->openTags == p->depth)
   {
     --p->openTags;
     p->indent();
@@ -160,15 +161,15 @@ void EclipseHelp::decContentsDepth()
  * @param nameAsHtml name parameter in HTML format
  */
 void EclipseHelp::addContentsItem(
-    bool /* isDir */,
-    const QCString &name,
-    const QCString & /* ref */,
-    const QCString &file,
-    const QCString &anchor,
-    bool /* separateIndex */,
-    bool /* addToNavIndex */,
-    const Definition * /*def*/,
-    const QCString & /* nameAsHtml */)
+  bool /* isDir */,
+  const QCString &name,
+  const QCString & /* ref */,
+  const QCString &file,
+  const QCString &anchor,
+  bool /* separateIndex */,
+  bool /* addToNavIndex */,
+  const Definition * /*def*/,
+  const QCString & /* nameAsHtml */)
 {
   // -- write the topic tag
   p->closedTag();
@@ -178,28 +179,28 @@ void EclipseHelp::addContentsItem(
     addHtmlExtensionIfMissing(fn);
     switch (file[0]) // check for special markers (user defined URLs)
     {
-      case '^':
-        // URL not supported by eclipse toc.xml
-	break;
+    case '^':
+      // URL not supported by eclipse toc.xml
+      break;
 
-      case '!':
-        p->indent();
-        p->tocstream << "<topic label=\"" << convertToXML(name) << "\"";
-        p->tocstream << " href=\"" << convertToXML(p->pathprefix) << &file[1] << "\"";
-        p->endtag = TRUE;
-	break;
+    case '!':
+      p->indent();
+      p->tocstream << "<topic label=\"" << convertToXML(name) << "\"";
+      p->tocstream << " href=\"" << convertToXML(p->pathprefix) << &file[1] << "\"";
+      p->endtag = TRUE;
+      break;
 
-      default:
-        p->indent();
-        p->tocstream << "<topic label=\"" << convertToXML(name) << "\"";
-        p->tocstream << " href=\"" << convertToXML(p->pathprefix) << fn;
-        if (!anchor.isEmpty())
-        {
-          p->tocstream << "#" << anchor;
-        }
-        p->tocstream << "\"";
-        p->endtag = TRUE;
-	break;
+    default:
+      p->indent();
+      p->tocstream << "<topic label=\"" << convertToXML(name) << "\"";
+      p->tocstream << " href=\"" << convertToXML(p->pathprefix) << fn;
+      if (!anchor.isEmpty())
+      {
+        p->tocstream << "#" << anchor;
+      }
+      p->tocstream << "\"";
+      p->endtag = TRUE;
+      break;
     }
   }
   else
@@ -211,10 +212,10 @@ void EclipseHelp::addContentsItem(
 }
 
 void EclipseHelp::addIndexItem(
-    const Definition * /* context */,
-    const MemberDef * /* md */,
-    const QCString & /* sectionAnchor */,
-    const QCString & /* title */)
+  const Definition * /* context */,
+  const MemberDef * /* md */,
+  const QCString & /* sectionAnchor */,
+  const QCString & /* title */)
 {
 }
 
@@ -229,4 +230,3 @@ void EclipseHelp::addImageFile(const QCString & /* name */)
 void EclipseHelp::addStyleSheetFile(const QCString & /* name */)
 {
 }
-

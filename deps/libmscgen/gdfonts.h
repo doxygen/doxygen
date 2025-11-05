@@ -6,7 +6,7 @@ extern "C"
 {
 #endif
 
-/*
+  /*
 	This is a header file for gd font, generated using
 	bdftogd version 0.5 by Jan Pazdziora, adelton@fi.muni.cz
 	from bdf font
@@ -17,8 +17,9 @@ extern "C"
 
 #include "gd.h"
 
-extern BGD_EXPORT_DATA_PROT gdFontPtr gdFontSmall;
-BGD_DECLARE(gdFontPtr) gdFontGetSmall(void);
+  extern BGD_EXPORT_DATA_PROT gdFontPtr gdFontSmall;
+  BGD_DECLARE(gdFontPtr)
+  gdFontGetSmall(void);
 
 #ifdef __cplusplus
 }

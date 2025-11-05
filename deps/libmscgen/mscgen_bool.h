@@ -25,10 +25,9 @@
 
 typedef enum
 {
-    FALSE = 0,
-    TRUE
-}
-Boolean;
+  FALSE = 0,
+  TRUE
+} Boolean;
 
 
 #endif /* MSCGEN_BOOL_H */

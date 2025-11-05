@@ -33,12 +33,11 @@
  */
 typedef enum MscOptTypeTag
 {
-    MSC_OPT_HSCALE,
-    MSC_OPT_WIDTH,
-    MSC_OPT_ARCGRADIENT,
-    MSC_OPT_WORDWRAPARCS
-}
-MscOptType;
+  MSC_OPT_HSCALE,
+  MSC_OPT_WIDTH,
+  MSC_OPT_ARCGRADIENT,
+  MSC_OPT_WORDWRAPARCS
+} MscOptType;
 
 
 /** Arc attributes.
@@ -48,43 +47,41 @@ MscOptType;
  */
 typedef enum MscAttribTypeTag
 {
-    MSC_ATTR_LABEL,
-    MSC_ATTR_ID,
-    MSC_ATTR_URL,
-    MSC_ATTR_IDURL,
-    MSC_ATTR_LINE_COLOUR,
-    MSC_ATTR_TEXT_COLOUR,
-    MSC_ATTR_TEXT_BGCOLOUR,
-    MSC_ATTR_ARC_LINE_COLOUR,
-    MSC_ATTR_ARC_TEXT_COLOUR,
-    MSC_ATTR_ARC_TEXT_BGCOLOUR,
-    MSC_ATTR_NO_ARROWS,
-    MSC_ATTR_BI_ARROWS,
-    MSC_ATTR_ARC_SKIP
-}
-MscAttribType;
+  MSC_ATTR_LABEL,
+  MSC_ATTR_ID,
+  MSC_ATTR_URL,
+  MSC_ATTR_IDURL,
+  MSC_ATTR_LINE_COLOUR,
+  MSC_ATTR_TEXT_COLOUR,
+  MSC_ATTR_TEXT_BGCOLOUR,
+  MSC_ATTR_ARC_LINE_COLOUR,
+  MSC_ATTR_ARC_TEXT_COLOUR,
+  MSC_ATTR_ARC_TEXT_BGCOLOUR,
+  MSC_ATTR_NO_ARROWS,
+  MSC_ATTR_BI_ARROWS,
+  MSC_ATTR_ARC_SKIP
+} MscAttribType;
 
 
 typedef enum
 {
-    MSC_ARC_METHOD,
-    MSC_ARC_RETVAL,
-    MSC_ARC_SIGNAL,
-    MSC_ARC_CALLBACK,
-    MSC_ARC_DOUBLE,
-    MSC_ARC_DISCO,      /* ... Discontinuity in time line */
-    MSC_ARC_DIVIDER,    /* --- Divider */
-    MSC_ARC_SPACE,      /* ||| */
-    MSC_ARC_PARALLEL,   /* Comma instead of semicolon */
-    MSC_ARC_BOX,
-    MSC_ARC_ABOX,
-    MSC_ARC_RBOX,
-    MSC_ARC_NOTE,
-    MSC_ARC_LOSS,       /* -x or x- */
+  MSC_ARC_METHOD,
+  MSC_ARC_RETVAL,
+  MSC_ARC_SIGNAL,
+  MSC_ARC_CALLBACK,
+  MSC_ARC_DOUBLE,
+  MSC_ARC_DISCO,    /* ... Discontinuity in time line */
+  MSC_ARC_DIVIDER,  /* --- Divider */
+  MSC_ARC_SPACE,    /* ||| */
+  MSC_ARC_PARALLEL, /* Comma instead of semicolon */
+  MSC_ARC_BOX,
+  MSC_ARC_ABOX,
+  MSC_ARC_RBOX,
+  MSC_ARC_NOTE,
+  MSC_ARC_LOSS, /* -x or x- */
 
-    MSC_INVALID_ARC_TYPE
-}
-MscArcType;
+  MSC_INVALID_ARC_TYPE
+} MscArcType;
 
 
 /***************************************************************************
@@ -117,78 +114,79 @@ typedef struct MscAttribTag     *MscAttrib;
  *               parse error occurred.
  */
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
-Msc           MscParse(FILE *in);
+  Msc           MscParse(FILE *in);
 
-MscEntity     MscAllocEntity(char *entityName);
+  MscEntity     MscAllocEntity(char *entityName);
 
-MscEntityList MscLinkEntity(MscEntityList list, MscEntity elem);
+  MscEntityList MscLinkEntity(MscEntityList list, MscEntity elem);
 
-void          MscPrintEntityList(MscEntityList list);
+  void          MscPrintEntityList(MscEntityList list);
 
-MscOpt        MscAllocOpt(MscOptType  type,
-                          char       *value);
+  MscOpt        MscAllocOpt(MscOptType type,
+                            char      *value);
 
-MscOpt        MscLinkOpt(MscOpt head,
-                         MscOpt newHead);
+  MscOpt        MscLinkOpt(MscOpt head,
+                           MscOpt newHead);
 
-MscArc        MscAllocArc(char        *srcEntity,
-                          char        *dstEntity,
-                          MscArcType   type,
-                          unsigned int inputLine);
+  MscArc        MscAllocArc(char        *srcEntity,
+                            char        *dstEntity,
+                            MscArcType   type,
+                            unsigned int inputLine);
 
-MscArcList    MscLinkArc (MscArcList list,
-                          MscArc     elem);
+  MscArcList    MscLinkArc(MscArcList list,
+                           MscArc     elem);
 
-void          MscPrintArcList(struct MscArcListTag *list);
+  void          MscPrintArcList(struct MscArcListTag *list);
 
-MscAttrib     MscAllocAttrib(MscAttribType  type,
-                             char          *value);
+  MscAttrib     MscAllocAttrib(MscAttribType type,
+                               char         *value);
 
-MscAttrib     MscLinkAttrib(MscAttrib head,
-                            MscAttrib newHead);
+  MscAttrib     MscLinkAttrib(MscAttrib head,
+                              MscAttrib newHead);
 
-void          MscArcLinkAttrib(MscArc    arc,
-                               MscAttrib att);
+  void          MscArcLinkAttrib(MscArc    arc,
+                                 MscAttrib att);
 
-void          MscEntityLinkAttrib(MscEntity ent,
-                                  MscAttrib att);
+  void          MscEntityLinkAttrib(MscEntity ent,
+                                    MscAttrib att);
 
-void          MscPrintAttrib(const struct MscAttribTag *att);
+  void          MscPrintAttrib(const struct MscAttribTag *att);
 
-const char   *MscPrettyAttribType(MscAttribType t);
+  const char   *MscPrettyAttribType(MscAttribType t);
 
-Msc           MscAlloc(MscOpt        optList,
-                       MscEntityList entityList,
-                       MscArcList    arcList);
+  Msc           MscAlloc(MscOpt        optList,
+                         MscEntityList entityList,
+                         MscArcList    arcList);
 
-void          MscFree(struct MscTag *m);
+  void          MscFree(struct MscTag *m);
 
-/** Print the passed msc in textual form to stdout.
+  /** Print the passed msc in textual form to stdout.
  * This prints a human readable format of the parsed msc to stdout.  This
  * is primarily of use in debugging the parser.
  */
-void          MscPrint(Msc m);
+  void          MscPrint(Msc m);
 
-unsigned int  MscGetNumEntities(Msc m);
+  unsigned int  MscGetNumEntities(Msc m);
 
-unsigned int  MscGetNumArcs(Msc m);
+  unsigned int  MscGetNumArcs(Msc m);
 
-unsigned int  MscGetNumParallelArcs(Msc m);
+  unsigned int  MscGetNumParallelArcs(Msc m);
 
-unsigned int  MscGetNumOpts(Msc m);
+  unsigned int  MscGetNumOpts(Msc m);
 
-/** Get an MSC option, returning the value as a float.
+  /** Get an MSC option, returning the value as a float.
  *
  * \param[in]     m      The MSC to analyse.
  * \param[in]     type   The option type to retrieve.
  * \param[in,out] f      Pointer to be filled with parsed value.
  * \retval TRUE  If the option was found and parsed successfully.
  */
-Boolean       MscGetOptAsFloat(struct MscTag *m, MscOptType type, float *const f);
+  Boolean       MscGetOptAsFloat(struct MscTag *m, MscOptType type, float *const f);
 
-/** Get an MSC option, returning the value as a Boolean.
+  /** Get an MSC option, returning the value as a Boolean.
  *
  * \param[in]     m      The MSC to analyse.
  * \param[in]     type   The option type to retrieve.
@@ -197,9 +195,9 @@ Boolean       MscGetOptAsFloat(struct MscTag *m, MscOptType type, float *const f
  *                otherwise FALSE in which case *b is unmodified.
  *
  */
-Boolean      MscGetOptAsBoolean(struct MscTag *m, MscOptType type, Boolean *const b);
+  Boolean       MscGetOptAsBoolean(struct MscTag *m, MscOptType type, Boolean *const b);
 
-/** Get the index of some entity.
+  /** Get the index of some entity.
  * This returns the column index for the entity identified by the passed
  * label.
  *
@@ -207,87 +205,87 @@ Boolean      MscGetOptAsBoolean(struct MscTag *m, MscOptType type, Boolean *cons
  * \param  label  The label to find.
  * \retval -1     If the label was not found, otherwise the column index.
  */
-int           MscGetEntityIndex(struct MscTag *m, const char *label);
+  int           MscGetEntityIndex(struct MscTag *m, const char *label);
 
-/***************************************************************************
+  /***************************************************************************
  * Entity processing functions
  ***************************************************************************/
 
-/** \defgroup EntityFuncs  Entity handling functions
+  /** \defgroup EntityFuncs  Entity handling functions
  * @{
  */
 
-/** Reset the entity iterator.
+  /** Reset the entity iterator.
  * This moves the pointer to the current entity to the head of the list.
  */
-void          MscResetEntityIterator(Msc m);
+  void          MscResetEntityIterator(Msc m);
 
-/** Move to the next entity in the MSC.
+  /** Move to the next entity in the MSC.
  * \retval TRUE if there is another entity, otherwise FALSE if the end of the
  *          list has been reached.
  */
-Boolean       MscNextEntity(struct MscTag *m);
+  Boolean       MscNextEntity(struct MscTag *m);
 
-/** Get the value of some attribute for the current entity.
+  /** Get the value of some attribute for the current entity.
  * \retval The attribute string, or NULL if unset.
  */
-const char   *MscGetCurrentEntAttrib(Msc m, MscAttribType a);
+  const char   *MscGetCurrentEntAttrib(Msc m, MscAttribType a);
 
-/** Get an attribute associated with some entity.
+  /** Get an attribute associated with some entity.
  * \param[in] entIdx  The index of the entity.
  * \retval The attribute string, or NULL if unset.
  */
-const char   *MscGetEntAttrib(Msc m, unsigned int entIdx, MscAttribType a);
+  const char   *MscGetEntAttrib(Msc m, unsigned int entIdx, MscAttribType a);
 
-/** @} */
+  /** @} */
 
-/***************************************************************************
+  /***************************************************************************
  * Arc processing functions
  ***************************************************************************/
 
-/** \defgroup ArcFuncs  Arc handling functions
+  /** \defgroup ArcFuncs  Arc handling functions
  * @{
  */
 
-/** Reset the arc iterator.
+  /** Reset the arc iterator.
  * This moves the pointer to the current arc to the head of the list.
  */
-void          MscResetArcIterator   (Msc m);
+  void          MscResetArcIterator(Msc m);
 
-/** Move to the next arc in the MSC.
+  /** Move to the next arc in the MSC.
  * \retval TRUE if there is another arc, otherwise FALSE if the end of the
  *          list has been reached.
  */
-Boolean       MscNextArc(struct MscTag *m);
+  Boolean       MscNextArc(struct MscTag *m);
 
 
-/** Get the name of the entity from which the current arc originates.
+  /** Get the name of the entity from which the current arc originates.
  * \retval The label for the entity from which the current arc starts.
  *          The returned string must not be modified.
  */
-const char   *MscGetCurrentArcSource(Msc m);
+  const char   *MscGetCurrentArcSource(Msc m);
 
 
-/** Get the name of the entity at which the current arc terminates.
+  /** Get the name of the entity at which the current arc terminates.
  * \retval The label for the entity at which the current arc stops.
  *          The returned string must not be modified.
  */
-const char   *MscGetCurrentArcDest(Msc m);
+  const char   *MscGetCurrentArcDest(Msc m);
 
-/** Get the type for some arc.
+  /** Get the type for some arc.
  *
  */
-MscArcType    MscGetCurrentArcType(struct MscTag *m);
+  MscArcType    MscGetCurrentArcType(struct MscTag *m);
 
-/** Get the value of some attribute for the current arc.
+  /** Get the value of some attribute for the current arc.
  * \retval The attribute string, or NULL if unset.
  */
-const char   *MscGetCurrentArcAttrib(Msc m, MscAttribType a);
+  const char   *MscGetCurrentArcAttrib(Msc m, MscAttribType a);
 
-/** Get the line of the input file at which the current arc was defined.
+  /** Get the line of the input file at which the current arc was defined.
  * \retval The line number of the input file.
  */
-unsigned int  MscGetCurrentArcInputLine(Msc m);
+  unsigned int  MscGetCurrentArcInputLine(Msc m);
 
 /** @} */
 #ifdef __cplusplus

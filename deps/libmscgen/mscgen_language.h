@@ -35,64 +35,65 @@
 
 /* Tokens.  */
 #ifndef YYTOKENTYPE
-# define YYTOKENTYPE
-   /* Put the tokens into the symbol table, so that GDB and other debuggers
+#define YYTOKENTYPE
+/* Put the tokens into the symbol table, so that GDB and other debuggers
       know about them.  */
-   enum yytokentype {
-     TOK_STRING = 258,
-     TOK_QSTRING = 259,
-     TOK_EQUAL = 260,
-     TOK_COMMA = 261,
-     TOK_SEMICOLON = 262,
-     TOK_OCBRACKET = 263,
-     TOK_CCBRACKET = 264,
-     TOK_OSBRACKET = 265,
-     TOK_CSBRACKET = 266,
-     TOK_MSC = 267,
-     TOK_ATTR_LABEL = 268,
-     TOK_ATTR_URL = 269,
-     TOK_ATTR_ID = 270,
-     TOK_ATTR_IDURL = 271,
-     TOK_ATTR_LINE_COLOUR = 272,
-     TOK_ATTR_TEXT_COLOUR = 273,
-     TOK_ATTR_TEXT_BGCOLOUR = 274,
-     TOK_ATTR_ARC_LINE_COLOUR = 275,
-     TOK_ATTR_ARC_TEXT_COLOUR = 276,
-     TOK_ATTR_ARC_TEXT_BGCOLOUR = 277,
-     TOK_REL_LOSS_TO = 278,
-     TOK_REL_LOSS_FROM = 279,
-     TOK_REL_SIG_BI = 280,
-     TOK_REL_SIG_TO = 281,
-     TOK_REL_SIG_FROM = 282,
-     TOK_REL_METHOD_BI = 283,
-     TOK_REL_METHOD_TO = 284,
-     TOK_REL_METHOD_FROM = 285,
-     TOK_REL_RETVAL_BI = 286,
-     TOK_REL_RETVAL_TO = 287,
-     TOK_REL_RETVAL_FROM = 288,
-     TOK_REL_DOUBLE_BI = 289,
-     TOK_REL_DOUBLE_TO = 290,
-     TOK_REL_DOUBLE_FROM = 291,
-     TOK_REL_CALLBACK_BI = 292,
-     TOK_REL_CALLBACK_TO = 293,
-     TOK_REL_CALLBACK_FROM = 294,
-     TOK_REL_BOX = 295,
-     TOK_REL_ABOX = 296,
-     TOK_REL_RBOX = 297,
-     TOK_REL_NOTE = 298,
-     TOK_SPECIAL_ARC = 299,
-     TOK_OPT_HSCALE = 300,
-     TOK_OPT_WIDTH = 301,
-     TOK_OPT_ARCGRADIENT = 302,
-     TOK_OPT_WORDWRAPARCS = 303,
-     TOK_ASTERISK = 304,
-     TOK_UNKNOWN = 305,
-     TOK_REL_SIG = 306,
-     TOK_REL_METHOD = 307,
-     TOK_REL_RETVAL = 308,
-     TOK_REL_DOUBLE = 309,
-     TOK_ATTR_ARC_SKIP = 310
-   };
+enum yytokentype
+{
+  TOK_STRING                 = 258,
+  TOK_QSTRING                = 259,
+  TOK_EQUAL                  = 260,
+  TOK_COMMA                  = 261,
+  TOK_SEMICOLON              = 262,
+  TOK_OCBRACKET              = 263,
+  TOK_CCBRACKET              = 264,
+  TOK_OSBRACKET              = 265,
+  TOK_CSBRACKET              = 266,
+  TOK_MSC                    = 267,
+  TOK_ATTR_LABEL             = 268,
+  TOK_ATTR_URL               = 269,
+  TOK_ATTR_ID                = 270,
+  TOK_ATTR_IDURL             = 271,
+  TOK_ATTR_LINE_COLOUR       = 272,
+  TOK_ATTR_TEXT_COLOUR       = 273,
+  TOK_ATTR_TEXT_BGCOLOUR     = 274,
+  TOK_ATTR_ARC_LINE_COLOUR   = 275,
+  TOK_ATTR_ARC_TEXT_COLOUR   = 276,
+  TOK_ATTR_ARC_TEXT_BGCOLOUR = 277,
+  TOK_REL_LOSS_TO            = 278,
+  TOK_REL_LOSS_FROM          = 279,
+  TOK_REL_SIG_BI             = 280,
+  TOK_REL_SIG_TO             = 281,
+  TOK_REL_SIG_FROM           = 282,
+  TOK_REL_METHOD_BI          = 283,
+  TOK_REL_METHOD_TO          = 284,
+  TOK_REL_METHOD_FROM        = 285,
+  TOK_REL_RETVAL_BI          = 286,
+  TOK_REL_RETVAL_TO          = 287,
+  TOK_REL_RETVAL_FROM        = 288,
+  TOK_REL_DOUBLE_BI          = 289,
+  TOK_REL_DOUBLE_TO          = 290,
+  TOK_REL_DOUBLE_FROM        = 291,
+  TOK_REL_CALLBACK_BI        = 292,
+  TOK_REL_CALLBACK_TO        = 293,
+  TOK_REL_CALLBACK_FROM      = 294,
+  TOK_REL_BOX                = 295,
+  TOK_REL_ABOX               = 296,
+  TOK_REL_RBOX               = 297,
+  TOK_REL_NOTE               = 298,
+  TOK_SPECIAL_ARC            = 299,
+  TOK_OPT_HSCALE             = 300,
+  TOK_OPT_WIDTH              = 301,
+  TOK_OPT_ARCGRADIENT        = 302,
+  TOK_OPT_WORDWRAPARCS       = 303,
+  TOK_ASTERISK               = 304,
+  TOK_UNKNOWN                = 305,
+  TOK_REL_SIG                = 306,
+  TOK_REL_METHOD             = 307,
+  TOK_REL_RETVAL             = 308,
+  TOK_REL_DOUBLE             = 309,
+  TOK_ATTR_ARC_SKIP          = 310
+};
 #endif
 /* Tokens.  */
 #define TOK_STRING 258
@@ -150,9 +151,7 @@
 #define TOK_ATTR_ARC_SKIP 310
 
 
-
-
-#if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
+#if !defined YYSTYPE && !defined YYSTYPE_IS_DECLARED
 typedef union YYSTYPE
 {
 
@@ -172,15 +171,12 @@ typedef union YYSTYPE
     MscAttribType attribType;
 
 
-
 /* Line 1676 of yacc.c  */
 #line 178 "language.h"
 } YYSTYPE;
-# define YYSTYPE_IS_TRIVIAL 1
-# define yystype YYSTYPE /* obsolescent; will be withdrawn */
-# define YYSTYPE_IS_DECLARED 1
+#define YYSTYPE_IS_TRIVIAL 1
+#define yystype YYSTYPE /* obsolescent; will be withdrawn */
+#define YYSTYPE_IS_DECLARED 1
 #endif
 
 extern YYSTYPE yylval;
-
-

@@ -38,67 +38,66 @@ class TextStream;
 class ConfigOption
 {
     friend class ConfigImpl;
-
   public:
     ABSTRACT_BASE_CLASS(ConfigOption)
 
     /*! The type of option */
     enum OptionType
     {
-      O_Info,      //!< A section header
-      O_List,      //!< A list of items
-      O_Enum,      //!< A fixed set of items
-      O_String,    //!< A single item
-      O_Int,       //!< An integer value
-      O_Bool,      //!< A boolean value
-      O_Obsolete,  //!< An obsolete option
-      O_Disabled   //!< Disabled compile time option
+      O_Info,     //!< A section header
+      O_List,     //!< A list of items
+      O_Enum,     //!< A fixed set of items
+      O_String,   //!< A single item
+      O_Int,      //!< An integer value
+      O_Bool,     //!< A boolean value
+      O_Obsolete, //!< An obsolete option
+      O_Disabled  //!< Disabled compile time option
     };
     enum
     {
-     /*! Maximum length of an option in the config file. Used for
+      /*! Maximum length of an option in the config file. Used for
       *  alignment purposes.
       */
       MAX_OPTION_LENGTH = 23
     };
-    ConfigOption(OptionType t) : m_kind(t)
+    ConfigOption(OptionType t) :
+        m_kind(t)
     {
-      m_spaces.fill(' ',40);
+      m_spaces.fill(' ', 40);
     }
 
     /*! returns the kind of option this is. */
     OptionType kind() const { return m_kind; }
-    QCString name() const { return m_name; }
-    QCString docs() const { return m_doc; }
+    QCString   name() const { return m_name; }
+    QCString   docs() const { return m_doc; }
 
-    QCString dependsOn() const { return m_dependency; }
-    void addDependency(const char *dep) { m_dependency = dep; }
-    void setEncoding(const QCString &e) { m_encoding = e; }
-    void setUserComment(const QCString &u) { m_userComment += u; }
-
+    QCString   dependsOn() const { return m_dependency; }
+    void       addDependency(const char *dep) { m_dependency = dep; }
+    void       setEncoding(const QCString &e) { m_encoding = e; }
+    void       setUserComment(const QCString &u) { m_userComment += u; }
   protected:
-    virtual void writeTemplate(TextStream &t,bool sl,bool upd) = 0;
-    virtual void compareDoxyfile(TextStream &t,Config::CompareMode compareMode) = 0;
-    virtual void writeXMLDoxyfile(TextStream &t) = 0;
-    virtual void writeXSDDoxyfile(TextStream &t) = 0;
+    virtual void writeTemplate(TextStream &t, bool sl, bool upd)                 = 0;
+    virtual void compareDoxyfile(TextStream &t, Config::CompareMode compareMode) = 0;
+    virtual void writeXMLDoxyfile(TextStream &t)                                 = 0;
+    virtual void writeXSDDoxyfile(TextStream &t)                                 = 0;
     virtual void convertStrToVal(Config::CompareMode) {}
     virtual void emptyValueToDefault() {}
     virtual void substEnvVars() = 0;
     virtual void init() {}
     virtual bool isDefault() { return true; }
 
-    void writeBoolValue(TextStream &t,bool v,bool initSpace = true);
-    void writeIntValue(TextStream &t,int i,bool initSpace = true);
-    void writeStringValue(TextStream &t,const QCString &s,bool initSpace = true,bool wasQuoted = false);
-    void writeStringList(TextStream &t,const StringVector &l);
+    void         writeBoolValue(TextStream &t, bool v, bool initSpace = true);
+    void         writeIntValue(TextStream &t, int i, bool initSpace = true);
+    void         writeStringValue(TextStream &t, const QCString &s, bool initSpace = true, bool wasQuoted = false);
+    void         writeStringList(TextStream &t, const StringVector &l);
 
-    QCString m_spaces;
-    QCString m_name;
-    QCString m_doc;
-    QCString m_dependency;
-    QCString m_encoding;
-    QCString m_userComment;
-    OptionType m_kind;
+    QCString     m_spaces;
+    QCString     m_name;
+    QCString     m_doc;
+    QCString     m_dependency;
+    QCString     m_encoding;
+    QCString     m_userComment;
+    OptionType   m_kind;
 };
 
 /** Section marker for grouping the configuration options.
@@ -106,14 +105,14 @@ class ConfigOption
 class ConfigInfo : public ConfigOption
 {
   public:
-    ConfigInfo(const char *name,const char *doc)
-      : ConfigOption(O_Info)
+    ConfigInfo(const char *name, const char *doc) :
+        ConfigOption(O_Info)
     {
       m_name = name;
-      m_doc = doc;
+      m_doc  = doc;
     }
-    void writeTemplate(TextStream &t, bool sl,bool) override;
-    void compareDoxyfile(TextStream &,Config::CompareMode) override {}
+    void writeTemplate(TextStream &t, bool sl, bool) override;
+    void compareDoxyfile(TextStream &, Config::CompareMode) override {}
     void writeXMLDoxyfile(TextStream &) override {}
     void writeXSDDoxyfile(TextStream &t) override {}
     void substEnvVars() override {}
@@ -124,22 +123,31 @@ class ConfigInfo : public ConfigOption
 class ConfigList : public ConfigOption
 {
   public:
-    enum WidgetType { String, File, Dir, FileAndDir };
-    ConfigList(const char *name,const char *doc)
-      : ConfigOption(O_List)
+    enum WidgetType
     {
-      m_name = name;
-      m_doc = doc;
+      String,
+      File,
+      Dir,
+      FileAndDir
+    };
+    ConfigList(const char *name, const char *doc) :
+        ConfigOption(O_List)
+    {
+      m_name       = name;
+      m_doc        = doc;
       m_widgetType = String;
     }
-    void addValue(const char *v) { m_defaultValue.emplace_back(v); }
-    void setWidgetType(WidgetType w) { m_widgetType = w; }
-    WidgetType widgetType() const { return m_widgetType; }
+    void          addValue(const char *v) { m_defaultValue.emplace_back(v); }
+    void          setWidgetType(WidgetType w) { m_widgetType = w; }
+    WidgetType    widgetType() const { return m_widgetType; }
     StringVector *valueRef() { return &m_value; }
-    StringVector getDefault() { return m_defaultValue; }
-    void emptyValueToDefault() override { if (m_value.empty() && !m_defaultValue.empty()) m_value=m_defaultValue; }
-    void writeTemplate(TextStream &t,bool sl,bool) override;
-    void compareDoxyfile(TextStream &t,Config::CompareMode compareMode) override;
+    StringVector  getDefault() { return m_defaultValue; }
+    void          emptyValueToDefault() override
+    {
+      if (m_value.empty() && !m_defaultValue.empty()) m_value = m_defaultValue;
+    }
+    void writeTemplate(TextStream &t, bool sl, bool) override;
+    void compareDoxyfile(TextStream &t, Config::CompareMode compareMode) override;
     void writeXMLDoxyfile(TextStream &t) override;
     void writeXSDDoxyfile(TextStream &t) override;
     void substEnvVars() override;
@@ -148,7 +156,7 @@ class ConfigList : public ConfigOption
   private:
     StringVector m_value;
     StringVector m_defaultValue;
-    WidgetType m_widgetType;
+    WidgetType   m_widgetType;
 };
 
 /** Class representing an enum type option.
@@ -156,30 +164,29 @@ class ConfigList : public ConfigOption
 class ConfigEnum : public ConfigOption
 {
   public:
-    ConfigEnum(const char *name,const char *doc,const char *defVal)
-      : ConfigOption(O_Enum)
+    ConfigEnum(const char *name, const char *doc, const char *defVal) :
+        ConfigOption(O_Enum)
     {
-      m_name = name;
-      m_doc = doc;
-      m_value = defVal;
+      m_name     = name;
+      m_doc      = doc;
+      m_value    = defVal;
       m_defValue = defVal;
     }
-    void addValue(const char *v) { m_valueRange.emplace_back(v); }
+    void                         addValue(const char *v) { m_valueRange.emplace_back(v); }
     const std::vector<QCString> &values() const { return m_valueRange; }
-    QCString *valueRef() { return &m_value; }
-    void substEnvVars() override;
-    void writeTemplate(TextStream &t,bool sl,bool) override;
-    void convertStrToVal(Config::CompareMode compareMode) override;
-    void compareDoxyfile(TextStream &t,Config::CompareMode compareMode) override;
-    void writeXMLDoxyfile(TextStream &t) override;
-    void writeXSDDoxyfile(TextStream &t) override;
-    void init() override { m_value = m_defValue; }
-    bool isDefault() override { return m_value == m_defValue; }
-
+    QCString                    *valueRef() { return &m_value; }
+    void                         substEnvVars() override;
+    void                         writeTemplate(TextStream &t, bool sl, bool) override;
+    void                         convertStrToVal(Config::CompareMode compareMode) override;
+    void                         compareDoxyfile(TextStream &t, Config::CompareMode compareMode) override;
+    void                         writeXMLDoxyfile(TextStream &t) override;
+    void                         writeXSDDoxyfile(TextStream &t) override;
+    void                         init() override { m_value = m_defValue; }
+    bool                         isDefault() override { return m_value == m_defValue; }
   private:
     std::vector<QCString> m_valueRange;
-    QCString m_value;
-    QCString m_defValue;
+    QCString              m_value;
+    QCString              m_defValue;
 };
 
 /** Class representing a string type option.
@@ -187,30 +194,39 @@ class ConfigEnum : public ConfigOption
 class ConfigString : public ConfigOption
 {
   public:
-    enum WidgetType { String, File, Dir, Image, FileAndDir };
-    ConfigString(const char *name,const char *doc)
-      : ConfigOption(O_String)
+    enum WidgetType
     {
-      m_name = name;
-      m_doc = doc;
+      String,
+      File,
+      Dir,
+      Image,
+      FileAndDir
+    };
+    ConfigString(const char *name, const char *doc) :
+        ConfigOption(O_String)
+    {
+      m_name       = name;
+      m_doc        = doc;
       m_widgetType = String;
     }
-    void setWidgetType(WidgetType w) { m_widgetType = w; }
+    void       setWidgetType(WidgetType w) { m_widgetType = w; }
     WidgetType widgetType() const { return m_widgetType; }
-    void setDefaultValue(const char *v) { m_defValue = v; }
-    QCString *valueRef() { return &m_value; }
-    void writeTemplate(TextStream &t,bool sl,bool) override;
-    void compareDoxyfile(TextStream &t,Config::CompareMode compareMode) override;
-    void writeXMLDoxyfile(TextStream &t) override;
-    void writeXSDDoxyfile(TextStream &t) override;
-    void substEnvVars() override;
-    void init() override { m_value = m_defValue; }
-    void emptyValueToDefault() override { if (m_value.isEmpty()) m_value=m_defValue; }
+    void       setDefaultValue(const char *v) { m_defValue = v; }
+    QCString  *valueRef() { return &m_value; }
+    void       writeTemplate(TextStream &t, bool sl, bool) override;
+    void       compareDoxyfile(TextStream &t, Config::CompareMode compareMode) override;
+    void       writeXMLDoxyfile(TextStream &t) override;
+    void       writeXSDDoxyfile(TextStream &t) override;
+    void       substEnvVars() override;
+    void       init() override { m_value = m_defValue; }
+    void       emptyValueToDefault() override
+    {
+      if (m_value.isEmpty()) m_value = m_defValue;
+    }
     bool isDefault() override { return m_value.stripWhiteSpace() == m_defValue.stripWhiteSpace(); }
-
   private:
-    QCString m_value;
-    QCString m_defValue;
+    QCString   m_value;
+    QCString   m_defValue;
     WidgetType m_widgetType;
 };
 
@@ -219,33 +235,33 @@ class ConfigString : public ConfigOption
 class ConfigInt : public ConfigOption
 {
   public:
-    ConfigInt(const char *name,const char *doc,int minVal,int maxVal,int defVal)
-      : ConfigOption(O_Int)
+    ConfigInt(const char *name, const char *doc, int minVal, int maxVal, int defVal) :
+        ConfigOption(O_Int)
     {
-      m_name = name;
-      m_doc = doc;
-      m_value = defVal;
+      m_name     = name;
+      m_doc      = doc;
+      m_value    = defVal;
       m_defValue = defVal;
-      m_minVal = minVal;
-      m_maxVal = maxVal;
+      m_minVal   = minVal;
+      m_maxVal   = maxVal;
     }
     QCString *valueStringRef() { return &m_valueString; }
-    int *valueRef() { return &m_value; }
-    int minVal() const { return m_minVal; }
-    int maxVal() const { return m_maxVal; }
-    void convertStrToVal(Config::CompareMode compareMode) override;
-    void substEnvVars() override;
-    void writeTemplate(TextStream &t,bool sl,bool upd) override;
-    void compareDoxyfile(TextStream &t,Config::CompareMode compareMode) override;
-    void writeXMLDoxyfile(TextStream &t) override;
-    void writeXSDDoxyfile(TextStream &t) override;
-    void init() override { m_value = m_defValue; }
-    bool isDefault() override { return m_value == m_defValue; }
+    int      *valueRef() { return &m_value; }
+    int       minVal() const { return m_minVal; }
+    int       maxVal() const { return m_maxVal; }
+    void      convertStrToVal(Config::CompareMode compareMode) override;
+    void      substEnvVars() override;
+    void      writeTemplate(TextStream &t, bool sl, bool upd) override;
+    void      compareDoxyfile(TextStream &t, Config::CompareMode compareMode) override;
+    void      writeXMLDoxyfile(TextStream &t) override;
+    void      writeXSDDoxyfile(TextStream &t) override;
+    void      init() override { m_value = m_defValue; }
+    bool      isDefault() override { return m_value == m_defValue; }
   private:
-    int m_value;
-    int m_defValue;
-    int m_minVal;
-    int m_maxVal;
+    int      m_value;
+    int      m_defValue;
+    int      m_minVal;
+    int      m_maxVal;
     QCString m_valueString;
 };
 
@@ -254,28 +270,28 @@ class ConfigInt : public ConfigOption
 class ConfigBool : public ConfigOption
 {
   public:
-    ConfigBool(const char *name,const char *doc,bool defVal)
-      : ConfigOption(O_Bool)
+    ConfigBool(const char *name, const char *doc, bool defVal) :
+        ConfigOption(O_Bool)
     {
-      m_name = name;
-      m_doc = doc;
-      m_value = defVal;
+      m_name     = name;
+      m_doc      = doc;
+      m_value    = defVal;
       m_defValue = defVal;
     }
     QCString *valueStringRef() { return &m_valueString; }
-    bool *valueRef() { return &m_value; }
-    void convertStrToVal(Config::CompareMode compareMode) override;
-    void substEnvVars() override;
-    void setValueString(const QCString &v) { m_valueString = v; }
-    void writeTemplate(TextStream &t,bool sl,bool upd) override;
-    void compareDoxyfile(TextStream &t,Config::CompareMode compareMode) override;
-    void writeXMLDoxyfile(TextStream &t) override;
-    void writeXSDDoxyfile(TextStream &t) override;
-    void init() override { m_value = m_defValue; }
-    bool isDefault() override { return m_value == m_defValue; }
+    bool     *valueRef() { return &m_value; }
+    void      convertStrToVal(Config::CompareMode compareMode) override;
+    void      substEnvVars() override;
+    void      setValueString(const QCString &v) { m_valueString = v; }
+    void      writeTemplate(TextStream &t, bool sl, bool upd) override;
+    void      compareDoxyfile(TextStream &t, Config::CompareMode compareMode) override;
+    void      writeXMLDoxyfile(TextStream &t) override;
+    void      writeXSDDoxyfile(TextStream &t) override;
+    void      init() override { m_value = m_defValue; }
+    bool      isDefault() override { return m_value == m_defValue; }
   private:
-    bool m_value;
-    bool m_defValue;
+    bool     m_value;
+    bool     m_defValue;
     QCString m_valueString;
 };
 
@@ -284,23 +300,26 @@ class ConfigBool : public ConfigOption
 class ConfigObsolete : public ConfigOption
 {
   public:
-    ConfigObsolete(const char *name,OptionType orgType) : ConfigOption(O_Obsolete), m_orgType(orgType)
-    { m_name = name; }
-    void writeTemplate(TextStream &,bool,bool) override;
-    void compareDoxyfile(TextStream &,Config::CompareMode) override {}
-    void writeXMLDoxyfile(TextStream &) override {}
-    void writeXSDDoxyfile(TextStream &) override {}
-    void substEnvVars() override {}
-    OptionType orgType() const { return m_orgType; }
+    ConfigObsolete(const char *name, OptionType orgType) :
+        ConfigOption(O_Obsolete), m_orgType(orgType)
+    {
+      m_name = name;
+    }
+    void          writeTemplate(TextStream &, bool, bool) override;
+    void          compareDoxyfile(TextStream &, Config::CompareMode) override {}
+    void          writeXMLDoxyfile(TextStream &) override {}
+    void          writeXSDDoxyfile(TextStream &) override {}
+    void          substEnvVars() override {}
+    OptionType    orgType() const { return m_orgType; }
     StringVector *valueListRef() { return &m_listvalue; }
-    QCString *valueStringRef() { return &m_valueString; }
-    void markAsPresent() { m_present = true; }
-    bool isPresent() const { return m_present; }
+    QCString     *valueStringRef() { return &m_valueString; }
+    void          markAsPresent() { m_present = true; }
+    bool          isPresent() const { return m_present; }
   private:
-    OptionType m_orgType;
+    OptionType   m_orgType;
     StringVector m_listvalue;
-    QCString m_valueString;
-    bool m_present = false;
+    QCString     m_valueString;
+    bool         m_present = false;
 };
 
 /** Section marker for compile time optional options
@@ -308,25 +327,28 @@ class ConfigObsolete : public ConfigOption
 class ConfigDisabled : public ConfigOption
 {
   public:
-    ConfigDisabled(const char *name) : ConfigOption(O_Disabled)
-    { m_name = name; }
-    void writeTemplate(TextStream &,bool,bool) override;
-    void compareDoxyfile(TextStream &,Config::CompareMode) override {}
+    ConfigDisabled(const char *name) :
+        ConfigOption(O_Disabled)
+    {
+      m_name = name;
+    }
+    void writeTemplate(TextStream &, bool, bool) override;
+    void compareDoxyfile(TextStream &, Config::CompareMode) override {}
     void writeXMLDoxyfile(TextStream &) override {}
     void writeXSDDoxyfile(TextStream &) override;
     void substEnvVars() override {}
 };
 
 // some convenience macros for access the config options
-#define ConfigImpl_getString(val)  ConfigImpl::instance()->getString(__FILE__,__LINE__,val)
-#define ConfigImpl_getInt(val)     ConfigImpl::instance()->getInt(__FILE__,__LINE__,val)
-#define ConfigImpl_getList(val)    ConfigImpl::instance()->getList(__FILE__,__LINE__,val)
-#define ConfigImpl_getEnum(val)    ConfigImpl::instance()->getEnum(__FILE__,__LINE__,val)
-#define ConfigImpl_getBool(val)    ConfigImpl::instance()->getBool(__FILE__,__LINE__,val)
+#define ConfigImpl_getString(val) ConfigImpl::instance()->getString(__FILE__, __LINE__, val)
+#define ConfigImpl_getInt(val) ConfigImpl::instance()->getInt(__FILE__, __LINE__, val)
+#define ConfigImpl_getList(val) ConfigImpl::instance()->getList(__FILE__, __LINE__, val)
+#define ConfigImpl_getEnum(val) ConfigImpl::instance()->getEnum(__FILE__, __LINE__, val)
+#define ConfigImpl_getBool(val) ConfigImpl::instance()->getBool(__FILE__, __LINE__, val)
 
 
-using ConfigOptionList = std::vector< std::unique_ptr<ConfigOption> >;
-using ConfigOptionMap  = std::unordered_map< std::string, ConfigOption* >;
+using ConfigOptionList = std::vector<std::unique_ptr<ConfigOption>>;
+using ConfigOptionMap  = std::unordered_map<std::string, ConfigOption *>;
 
 /** Singleton for configuration variables.
  *
@@ -368,31 +390,31 @@ class ConfigImpl
      *  The arguments \a num and \a fileName are for debugging purposes only.
      *  There is a convenience function Config_getString() for this.
      */
-    QCString &getString(const char *fileName,int num,const char *name) const;
+    QCString     &getString(const char *fileName, int num, const char *name) const;
 
     /*! Returns the value of the list option with name \a name.
      *  The arguments \a num and \a fileName are for debugging purposes only.
      *  There is a convenience function Config_getList() for this.
      */
-    StringVector &getList(const char *fileName,int num,const char *name) const;
+    StringVector &getList(const char *fileName, int num, const char *name) const;
 
     /*! Returns the value of the enum option with name \a name.
      *  The arguments \a num and \a fileName are for debugging purposes only.
      *  There is a convenience function Config_getEnum() for this.
      */
-    QCString &getEnum(const char *fileName,int num,const char *name) const;
+    QCString     &getEnum(const char *fileName, int num, const char *name) const;
 
     /*! Returns the value of the integer option with name \a name.
      *  The arguments \a num and \a fileName are for debugging purposes only.
      *  There is a convenience function Config_getInt() for this.
      */
-    int      &getInt(const char *fileName,int num,const char *name) const;
+    int          &getInt(const char *fileName, int num, const char *name) const;
 
     /*! Returns the value of the boolean option with name \a name.
      *  The arguments \a num and \a fileName are for debugging purposes only.
      *  There is a convenience function Config_getBool() for this.
      */
-    bool     &getBool(const char *fileName,int num,const char *name) const;
+    bool         &getBool(const char *fileName, int num, const char *name) const;
 
     /*! Returns the ConfigOption corresponding with \a name or 0 if
      *  the option is not supported.
@@ -400,7 +422,7 @@ class ConfigImpl
     ConfigOption *get(const QCString &name) const
     {
       auto it = m_dict.find(name.str());
-      return it!=m_dict.end() ? it->second : nullptr;
+      return it != m_dict.end() ? it->second : nullptr;
     }
     /* @} */
 
@@ -412,9 +434,9 @@ class ConfigImpl
     /*! Starts a new configuration section with \a name and description \a doc.
      *  \returns An object representing the option.
      */
-    ConfigInfo   *addInfo(const char *name,const char *doc)
+    ConfigInfo *addInfo(const char *name, const char *doc)
     {
-      ConfigInfo *result = new ConfigInfo(name,doc);
+      ConfigInfo *result = new ConfigInfo(name, doc);
       m_options.push_back(std::unique_ptr<ConfigOption>(result));
       return result;
     }
@@ -425,9 +447,9 @@ class ConfigImpl
     ConfigString *addString(const char *name,
                             const char *doc)
     {
-      ConfigString *result = new ConfigString(name,doc);
+      ConfigString *result = new ConfigString(name, doc);
       m_options.push_back(std::unique_ptr<ConfigOption>(result));
-      m_dict.emplace(name,result);
+      m_dict.emplace(name, result);
       return result;
     }
 
@@ -435,25 +457,25 @@ class ConfigImpl
      *  and initial value \a defVal.
      *  \returns An object representing the option.
      */
-    ConfigEnum   *addEnum(const char *name,
-                          const char *doc,
-                          const char *defVal)
+    ConfigEnum *addEnum(const char *name,
+                        const char *doc,
+                        const char *defVal)
     {
-      ConfigEnum *result = new ConfigEnum(name,doc,defVal);
+      ConfigEnum *result = new ConfigEnum(name, doc, defVal);
       m_options.push_back(std::unique_ptr<ConfigOption>(result));
-      m_dict.emplace(name,result);
+      m_dict.emplace(name, result);
       return result;
     }
 
     /*! Adds a new string option with \a name and documentation \a doc.
      *  \returns An object representing the option.
      */
-    ConfigList   *addList(const char *name,
-                          const char *doc)
+    ConfigList *addList(const char *name,
+                        const char *doc)
     {
-      ConfigList *result = new ConfigList(name,doc);
+      ConfigList *result = new ConfigList(name, doc);
       m_options.push_back(std::unique_ptr<ConfigOption>(result));
-      m_dict.emplace(name,result);
+      m_dict.emplace(name, result);
       return result;
     }
 
@@ -462,13 +484,13 @@ class ConfigImpl
      *  default value of \a defVal.
      *  \returns An object representing the option.
      */
-    ConfigInt    *addInt(const char *name,
-                         const char *doc,
-                         int minVal,int maxVal,int defVal)
+    ConfigInt *addInt(const char *name,
+                      const char *doc,
+                      int minVal, int maxVal, int defVal)
     {
-      ConfigInt *result = new ConfigInt(name,doc,minVal,maxVal,defVal);
+      ConfigInt *result = new ConfigInt(name, doc, minVal, maxVal, defVal);
       m_options.push_back(std::unique_ptr<ConfigOption>(result));
-      m_dict.emplace(name,result);
+      m_dict.emplace(name, result);
       return result;
     }
 
@@ -476,22 +498,22 @@ class ConfigImpl
      *  The boolean has a default value of \a defVal.
      *  \returns An object representing the option.
      */
-    ConfigBool   *addBool(const char *name,
-                          const char *doc,
-                          bool defVal)
+    ConfigBool *addBool(const char *name,
+                        const char *doc,
+                        bool        defVal)
     {
-      ConfigBool *result = new ConfigBool(name,doc,defVal);
+      ConfigBool *result = new ConfigBool(name, doc, defVal);
       m_options.push_back(std::unique_ptr<ConfigOption>(result));
-      m_dict.emplace(name,result);
+      m_dict.emplace(name, result);
       return result;
     }
 
     /*! Adds an option that has become obsolete. */
-    ConfigOption *addObsolete(const char *name,ConfigOption::OptionType orgType)
+    ConfigOption *addObsolete(const char *name, ConfigOption::OptionType orgType)
     {
-      ConfigObsolete *result = new ConfigObsolete(name,orgType);
+      ConfigObsolete *result = new ConfigObsolete(name, orgType);
       m_obsolete.push_back(std::unique_ptr<ConfigOption>(result));
-      m_dict.emplace(name,result);
+      m_dict.emplace(name, result);
       return result;
     }
 
@@ -500,7 +522,7 @@ class ConfigImpl
     {
       ConfigDisabled *result = new ConfigDisabled(name);
       m_disabled.push_back(std::unique_ptr<ConfigOption>(result));
-      m_dict.emplace(name,result);
+      m_dict.emplace(name, result);
       return result;
     }
     /*! @} */
@@ -509,12 +531,12 @@ class ConfigImpl
      *  is \c TRUE the description of each configuration option will
      *  be omitted.
      */
-    void writeTemplate(TextStream &t,bool shortIndex,bool updateOnly);
+    void writeTemplate(TextStream &t, bool shortIndex, bool updateOnly);
 
     /*! Writes a the differences between the current configuration and the
      *  template configuration to stream \a t.
      */
-    void compareDoxyfile(TextStream &t,Config::CompareMode compareMode);
+    void compareDoxyfile(TextStream &t, Config::CompareMode compareMode);
 
     /*! Writes a the used settings of the current configuration as XML format
      *  to stream \a t.
@@ -553,13 +575,13 @@ class ConfigImpl
      *  \returns TRUE if successful, or FALSE if the string could not be
      *  parsed.
      */
-    bool parseString(const QCString &fn,const QCString &str,bool upd = FALSE);
+    bool parseString(const QCString &fn, const QCString &str, bool upd = FALSE);
 
     /*! Parse a configuration file with name \a fn.
      *  \returns TRUE if successful, FALSE if the file could not be
      *  opened or read.
      */
-    bool parse(const QCString &fn,bool upd = FALSE);
+    bool parse(const QCString &fn, bool upd = FALSE);
 
     /*! Append user start comment
      */
@@ -584,61 +606,60 @@ class ConfigImpl
      */
     QCString takeStartComment()
     {
-      QCString result=m_startComment;
+      QCString result = m_startComment;
       m_startComment.clear();
-      return substitute(result,"\r","");
+      return substitute(result, "\r", "");
     }
     /*! Take the user comment and reset it internally
      *  \returns user comment
      */
     QCString takeUserComment()
     {
-      QCString result=m_userComment;
+      QCString result = m_userComment;
       m_userComment.clear();
-      return substitute(result,"\r","");
+      return substitute(result, "\r", "");
     }
     /*! Take the replacement string
      *  \returns the replacement string
      */
     QCString takeStoreRepl()
     {
-      QCString result=m_storeRepl;
+      QCString result = m_storeRepl;
       m_storeRepl.clear();
-      return substitute(result,"\r","");
+      return substitute(result, "\r", "");
     }
 
-    static void config_err_ (fmt::string_view fmt, fmt::format_args args);
+    static void config_err_(fmt::string_view fmt, fmt::format_args args);
     static void config_term_(fmt::string_view fmt, fmt::format_args args);
     static void config_warn_(fmt::string_view fmt, fmt::format_args args);
 
-    template<typename ...Args>
-    static void config_err(fmt::format_string<Args...> fmt, Args&&... args)
+    template <typename... Args>
+    static void config_err(fmt::format_string<Args...> fmt, Args &&...args)
     {
-      config_err_(fmt,fmt::make_format_args(args...));
+      config_err_(fmt, fmt::make_format_args(args...));
     }
 
-    template<typename ...Args>
-    static void config_term(fmt::format_string<Args...> fmt, Args&&... args)
+    template <typename... Args>
+    static void config_term(fmt::format_string<Args...> fmt, Args &&...args)
     {
-      config_term_(fmt,fmt::make_format_args(args...));
+      config_term_(fmt, fmt::make_format_args(args...));
     }
 
-    template<typename ...Args>
-    static void config_warn(fmt::format_string<Args...> fmt, Args&&... args)
+    template <typename... Args>
+    static void config_warn(fmt::format_string<Args...> fmt, Args &&...args)
     {
-      config_warn_(fmt,fmt::make_format_args(args...));
+      config_warn_(fmt, fmt::make_format_args(args...));
     }
-
   private:
-    ConfigOptionList m_options;
-    ConfigOptionList m_obsolete;
-    ConfigOptionList m_disabled;
-    ConfigOptionMap  m_dict;
+    ConfigOptionList                   m_options;
+    ConfigOptionList                   m_obsolete;
+    ConfigOptionList                   m_disabled;
+    ConfigOptionMap                    m_dict;
     static std::unique_ptr<ConfigImpl> m_instance;
-    QCString m_startComment;
-    QCString m_userComment;
-    QCString m_storeRepl;
-    QCString m_header;
+    QCString                           m_startComment;
+    QCString                           m_userComment;
+    QCString                           m_storeRepl;
+    QCString                           m_header;
 };
 
 #endif

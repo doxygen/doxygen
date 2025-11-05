@@ -48,16 +48,16 @@ class FTVHelp : public IndexIntf
     void finalize();
     void incContentsDepth();
     void decContentsDepth();
-    void addContentsItem(bool isDir,
-                         const QCString &name,
-                         const QCString &ref,
-                         const QCString &file,
-                         const QCString &anchor,
-                         bool separateIndex,
-                         bool addToNavIndex,
+    void addContentsItem(bool              isDir,
+                         const QCString   &name,
+                         const QCString   &ref,
+                         const QCString   &file,
+                         const QCString   &anchor,
+                         bool              separateIndex,
+                         bool              addToNavIndex,
                          const Definition *def,
-                         const QCString &nameAsHtml=QCString());
-    void addIndexItem(const Definition *,const MemberDef *,const QCString &,const QCString &) {}
+                         const QCString   &nameAsHtml = QCString());
+    void addIndexItem(const Definition *, const MemberDef *, const QCString &, const QCString &) {}
     void addIndexFile(const QCString &) {}
     void addImageFile(const QCString &) {}
     void addStyleSheetFile(const QCString &) {}
@@ -96,4 +96,3 @@ constexpr auto JAVASCRIPT_LICENSE_TEXT = R"LIC(/*
 )LIC";
 
 #endif /* FTVHELP_H */
-

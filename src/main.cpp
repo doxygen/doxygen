@@ -28,14 +28,13 @@
  *  is to make it possible to write your own main, with a different
  *  generateOutput() function for instance.
  */
-int main(int argc,char **argv)
+int main(int argc, char **argv)
 {
   initDoxygen();
-  readConfiguration(argc,argv);
+  readConfiguration(argc, argv);
   checkConfiguration();
   adjustConfiguration();
   parseInput();
   generateOutput();
   return 0;
 }
-

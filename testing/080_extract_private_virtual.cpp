@@ -3,7 +3,8 @@
 // config: EXTRACT_PRIV_VIRTUAL = YES
 
 /** @brief An interface */
-class Interface {
+class Interface
+{
   public:
     /**
      * @brief Load things.
@@ -11,7 +12,6 @@ class Interface {
      * Calls @ref doLoad().
      */
     void load();
-
   private:
     /**
      * @brief Pure virtual implementation for @ref load()
@@ -31,5 +31,5 @@ class Interface {
     virtual void doSomethingUndocumented();
 
     /** @brief A non-virtual private function, not extracted */
-    void someUtility();
+    void         someUtility();
 };

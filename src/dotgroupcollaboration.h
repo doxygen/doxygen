@@ -27,24 +27,22 @@ class TextStream;
 /** Representation of a group collaboration graph */
 class DotGroupCollaboration : public DotGraph
 {
-  public :
-    DotGroupCollaboration(const GroupDef* gd);
-   ~DotGroupCollaboration() override;
+  public:
+    DotGroupCollaboration(const GroupDef *gd);
+    ~DotGroupCollaboration() override;
     NON_COPYABLE(DotGroupCollaboration)
 
-    QCString writeGraph(TextStream &t, GraphOutputFormat gf,EmbeddedOutputFormat ef,
-                        const QCString &path,const QCString &fileName,const QCString &relPath,
-                        bool writeImageMap=TRUE,int graphId=-1);
-    bool isTrivial() const;
-    bool isTooBig() const;
-    int numNodes() const;
-
+    QCString writeGraph(TextStream &t, GraphOutputFormat gf, EmbeddedOutputFormat ef,
+                        const QCString &path, const QCString &fileName, const QCString &relPath,
+                        bool writeImageMap = TRUE, int graphId = -1);
+    bool     isTrivial() const;
+    bool     isTooBig() const;
+    int      numNodes() const;
   protected:
     QCString getBaseName() const override;
     QCString getMapLabel() const override;
-    void computeTheGraph() override;
-
-  private :
+    void     computeTheGraph() override;
+  private:
     enum EdgeType
     {
       tmember = 0,
@@ -58,35 +56,36 @@ class DotGroupCollaboration : public DotGraph
 
     struct Link
     {
-      Link(const QCString &lab,const QCString &u) : label(lab), url(u) {}
-      QCString label;
-      QCString url;
+        Link(const QCString &lab, const QCString &u) :
+            label(lab), url(u) {}
+        QCString label;
+        QCString url;
     };
 
     struct Edge
     {
-      Edge(DotNode *start,DotNode *end,EdgeType type)
-        : pNStart(start), pNEnd(end), eType(type) {}
+        Edge(DotNode *start, DotNode *end, EdgeType type) :
+            pNStart(start), pNEnd(end), eType(type) {}
 
-      DotNode* pNStart;
-      DotNode* pNEnd;
-      EdgeType eType;
+        DotNode          *pNStart;
+        DotNode          *pNEnd;
+        EdgeType          eType;
 
-      std::vector<Link> links;
-      void write( TextStream &t ) const;
+        std::vector<Link> links;
+        void              write(TextStream &t) const;
     };
 
-    void buildGraph(const GroupDef* gd);
-    void addCollaborationMember(const Definition* def, QCString& url, EdgeType eType );
-    void addMemberList( class MemberList* ml );
-    void writeGraphHeader(TextStream &t,const QCString &title) const;
-    Edge* addEdge( DotNode* _pNStart, DotNode* _pNEnd, EdgeType _eType,
-        const QCString& _label, const QCString& _url );
+    void                               buildGraph(const GroupDef *gd);
+    void                               addCollaborationMember(const Definition *def, QCString &url, EdgeType eType);
+    void                               addMemberList(class MemberList *ml);
+    void                               writeGraphHeader(TextStream &t, const QCString &title) const;
+    Edge                              *addEdge(DotNode *_pNStart, DotNode *_pNEnd, EdgeType _eType,
+                                               const QCString &_label, const QCString &_url);
 
-    DotNode        *m_rootNode;
-    DotNodeMap      m_usedNodes;
-    QCString        m_diskName;
-    std::vector< std::unique_ptr<Edge> >     m_edges;
+    DotNode                           *m_rootNode;
+    DotNodeMap                         m_usedNodes;
+    QCString                           m_diskName;
+    std::vector<std::unique_ptr<Edge>> m_edges;
 };
 
 using DotGroupCollaborationPtr = std::shared_ptr<DotGroupCollaboration>;

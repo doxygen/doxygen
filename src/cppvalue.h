@@ -23,35 +23,41 @@
 class CPPValue
 {
   public:
-    enum class Type { Int, Float };
+    enum class Type
+    {
+      Int,
+      Float
+    };
 
-    explicit constexpr CPPValue(char c)     noexcept : m_type(Type::Int),   m_d(0.0), m_l(c)   {}
-    explicit constexpr CPPValue(long val=0) noexcept : m_type(Type::Int),   m_d(0.0), m_l(val) {}
-    explicit constexpr CPPValue(double val) noexcept : m_type(Type::Float), m_d(val), m_l(0)   {}
+    explicit constexpr CPPValue(char c) noexcept :
+        m_type(Type::Int), m_d(0.0), m_l(c) {}
+    explicit constexpr CPPValue(long val = 0) noexcept :
+        m_type(Type::Int), m_d(0.0), m_l(val) {}
+    explicit constexpr CPPValue(double val) noexcept :
+        m_type(Type::Float), m_d(val), m_l(0) {}
 
-    constexpr operator double () const noexcept { return m_type==Type::Int ? static_cast<double>(m_l) : m_d; }
-    constexpr operator long ()   const noexcept { return m_type==Type::Int ? m_l : static_cast<long>(m_d);   }
+    constexpr      operator double() const noexcept { return m_type == Type::Int ? static_cast<double>(m_l) : m_d; }
+    constexpr      operator long() const noexcept { return m_type == Type::Int ? m_l : static_cast<long>(m_d); }
 
     constexpr Type type() const noexcept { return m_type; }
 
-    void print() const
+    void           print() const
     {
-      if (m_type==Type::Int)
-        printf("(%ld)\n",m_l);
+      if (m_type == Type::Int)
+        printf("(%ld)\n", m_l);
       else
-        printf("(%f)\n",m_d);
+        printf("(%f)\n", m_d);
     }
-    static CPPValue parseOctal      (const std::string &token);
-    static CPPValue parseDecimal    (const std::string &token);
+    static CPPValue parseOctal(const std::string &token);
+    static CPPValue parseDecimal(const std::string &token);
     static CPPValue parseHexadecimal(const std::string &token);
-    static CPPValue parseBinary     (const std::string &token);
-    static CPPValue parseCharacter  (const std::string &token);
-    static CPPValue parseFloat      (const std::string &token);
-
+    static CPPValue parseBinary(const std::string &token);
+    static CPPValue parseCharacter(const std::string &token);
+    static CPPValue parseFloat(const std::string &token);
   private:
-    Type m_type;
+    Type   m_type;
     double m_d;
-    long m_l;
+    long   m_l;
 };
 
 

@@ -30,7 +30,7 @@
          Second paragraph of the param description.
          @endparblock
  */
-void function(int client,int *resource,int parblock,int *test,int p);
+void function(int client, int *resource, int parblock, int *test, int p);
 /**
  call by target-specific code to manage resources required by the client.
 
@@ -58,4 +58,4 @@ void function(int client,int *resource,int parblock,int *test,int p);
                        Second paragraph of the param description.
  @endparblock
  */
-void function_2(int client,int *resource,int parblock,int *test,int p);
+void function_2(int client, int *resource, int parblock, int *test, int p);

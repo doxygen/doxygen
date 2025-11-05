@@ -34,21 +34,20 @@
  */
 typedef enum
 {
-    /** Null output format.
+  /** Null output format.
      * This allows all the graphics commands to be called, but does nothing.
      */
-    ADRAW_FMT_NULL = 0,
+  ADRAW_FMT_NULL = 0,
 
-    /** Generate a PNG. */
-    ADRAW_FMT_PNG,
+  /** Generate a PNG. */
+  ADRAW_FMT_PNG,
 
-    /** Generate Encapsulated Postscript. */
-    ADRAW_FMT_EPS,
+  /** Generate Encapsulated Postscript. */
+  ADRAW_FMT_EPS,
 
-    /** Scalable Vector Graphics. */
-    ADRAW_FMT_SVG
-}
-ADrawOutputType;
+  /** Scalable Vector Graphics. */
+  ADRAW_FMT_SVG
+} ADrawOutputType;
 
 
 /** Supported colours.
@@ -59,29 +58,28 @@ ADrawOutputType;
  */
 typedef enum
 {
-    ADRAW_COL_WHITE   = 0x00ffffff,
-    ADRAW_COL_BLACK   = 0x00000000,
-    ADRAW_COL_RED     = 0x00ff0000,
-    ADRAW_COL_ORANGE  = 0x00ffb000,
-    ADRAW_COL_YELLOW  = 0x00ffff00,
-    ADRAW_COL_GREEN   = 0x0000ff00,
-    ADRAW_COL_BLUE    = 0x000000ff,
-    ADRAW_COL_INDIGO  = 0x00440088,
-    ADRAW_COL_VIOLET  = 0x00d02090,
-    ADRAW_COL_SILVER  = 0x00C0C0C0,
-    ADRAW_COL_LIME    = 0x0000FF00,
-    ADRAW_COL_GRAY    = 0x00808080,
-    ADRAW_COL_OLIVE   = 0x00808000,
-    ADRAW_COL_MAROON  = 0x00800000,
-    ADRAW_COL_NAVY    = 0x00000080,
-    ADRAW_COL_PURPLE  = 0x00800080,
-    ADRAW_COL_TEAL    = 0x00008080,
-    ADRAW_COL_FUCHSIA = 0x00FF00FF,
-    ADRAW_COL_AQUA    = 0x0000FFFF,
+  ADRAW_COL_WHITE   = 0x00ffffff,
+  ADRAW_COL_BLACK   = 0x00000000,
+  ADRAW_COL_RED     = 0x00ff0000,
+  ADRAW_COL_ORANGE  = 0x00ffb000,
+  ADRAW_COL_YELLOW  = 0x00ffff00,
+  ADRAW_COL_GREEN   = 0x0000ff00,
+  ADRAW_COL_BLUE    = 0x000000ff,
+  ADRAW_COL_INDIGO  = 0x00440088,
+  ADRAW_COL_VIOLET  = 0x00d02090,
+  ADRAW_COL_SILVER  = 0x00C0C0C0,
+  ADRAW_COL_LIME    = 0x0000FF00,
+  ADRAW_COL_GRAY    = 0x00808080,
+  ADRAW_COL_OLIVE   = 0x00808000,
+  ADRAW_COL_MAROON  = 0x00800000,
+  ADRAW_COL_NAVY    = 0x00000080,
+  ADRAW_COL_PURPLE  = 0x00800080,
+  ADRAW_COL_TEAL    = 0x00008080,
+  ADRAW_COL_FUCHSIA = 0x00FF00FF,
+  ADRAW_COL_AQUA    = 0x0000FFFF,
 
-    ADRAW_COL_INVALID = 0xff000000,
-}
-ADrawColour;
+  ADRAW_COL_INVALID = 0xff000000,
+} ADrawColour;
 
 
 /** Basic font sizes.
@@ -89,10 +87,9 @@ ADrawColour;
  */
 typedef enum
 {
-    ADRAW_FONT_TINY = 0,
-    ADRAW_FONT_SMALL
-}
-ADrawFontSize;
+  ADRAW_FONT_TINY = 0,
+  ADRAW_FONT_SMALL
+} ADrawFontSize;
 
 
 /** An ADraw context.
@@ -114,11 +111,11 @@ typedef struct ADrawTag
      * \param x2     The second x co-ordinate,
      * \param y2     The second y co-ordinate,
      */
-    void         (*line)          (struct ADrawTag *ctx,
-                                   unsigned int x1,
-                                   unsigned int y1,
-                                   unsigned int x2,
-                                   unsigned int y2);
+    void (*line)(struct ADrawTag *ctx,
+                 unsigned int     x1,
+                 unsigned int     y1,
+                 unsigned int     x2,
+                 unsigned int     y2);
 
     /** Draw a dotted line.
      * Draw a dotted straight line between two points.
@@ -128,11 +125,11 @@ typedef struct ADrawTag
      * \param x2     The second x co-ordinate,
      * \param y2     The second y co-ordinate,
      */
-    void         (*dottedLine)    (struct ADrawTag *ctx,
-                                   unsigned int x1,
-                                   unsigned int y1,
-                                   unsigned int x2,
-                                   unsigned int y2);
+    void (*dottedLine)(struct ADrawTag *ctx,
+                       unsigned int     x1,
+                       unsigned int     y1,
+                       unsigned int     x2,
+                       unsigned int     y2);
 
     /** Left aligned text.
      * Write a single line of text that will end at some co-ordinates.
@@ -141,10 +138,10 @@ typedef struct ADrawTag
      * \param y      The position above which the text will lie.
      * \param string The string to write.
      */
-    void         (*textL)         (struct ADrawTag *ctx,
-                                   unsigned int x,
-                                   unsigned int y,
-                                   const char *string);
+    void (*textL)(struct ADrawTag *ctx,
+                  unsigned int     x,
+                  unsigned int     y,
+                  const char      *string);
 
     /** Center aligned text.
      * Write a single line of text that will center on some co-ordinates.
@@ -153,10 +150,10 @@ typedef struct ADrawTag
      * \param y      The position above which the text will lie.
      * \param string The string to write.
      */
-    void         (*textC)         (struct ADrawTag *ctx,
-                                   unsigned int x,
-                                   unsigned int y,
-                                   const char *string);
+    void (*textC)(struct ADrawTag *ctx,
+                  unsigned int     x,
+                  unsigned int     y,
+                  const char      *string);
 
     /** Right aligned text.
      * Write a single line of text that will start at some co-ordinates.
@@ -165,10 +162,10 @@ typedef struct ADrawTag
      * \param y      The position above which the text will lie.
      * \param string The string to write.
      */
-    void         (*textR)         (struct ADrawTag *ctx,
-                                   unsigned int x,
-                                   unsigned int y,
-                                   const char *string);
+    void (*textR)(struct ADrawTag *ctx,
+                  unsigned int     x,
+                  unsigned int     y,
+                  const char      *string);
 
     /** Determine the width of some string.
      * \param ctx    The drawing context.
@@ -176,33 +173,33 @@ typedef struct ADrawTag
      * \returns      The width of the passed string as it would be rendered
      *                by the current drawing context.
      */
-    unsigned int (*textWidth)     (struct ADrawTag *ctx,
-                                   const char *string);
+    unsigned int (*textWidth)(struct ADrawTag *ctx,
+                              const char      *string);
 
     /** Determine the height of text in the current font.
      * \param ctx    The drawing context.
      *
      */
-    int          (*textHeight)    (struct ADrawTag *ctx);
+    int (*textHeight)(struct ADrawTag *ctx);
 
-    void         (*filledRectangle)(struct ADrawTag *ctx,
-                                    unsigned int x1,
-                                    unsigned int y1,
-                                    unsigned int x2,
-                                    unsigned int y2);
+    void (*filledRectangle)(struct ADrawTag *ctx,
+                            unsigned int     x1,
+                            unsigned int     y1,
+                            unsigned int     x2,
+                            unsigned int     y2);
 
-    void         (*filledTriangle)(struct ADrawTag *ctx,
-                                   unsigned int x1,
-                                   unsigned int y1,
-                                   unsigned int x2,
-                                   unsigned int y2,
-                                   unsigned int x3,
-                                   unsigned int y3);
+    void (*filledTriangle)(struct ADrawTag *ctx,
+                           unsigned int     x1,
+                           unsigned int     y1,
+                           unsigned int     x2,
+                           unsigned int     y2,
+                           unsigned int     x3,
+                           unsigned int     y3);
 
-    void           (*filledCircle)(struct ADrawTag *ctx,
-                                   unsigned int x,
-                                   unsigned int y,
-                                   unsigned int r);
+    void (*filledCircle)(struct ADrawTag *ctx,
+                         unsigned int     x,
+                         unsigned int     y,
+                         unsigned int     r);
 
     /** Draw an arc.
      * This draws an arc centred at (cx,cy) which fits in a box of \a w by \a h.
@@ -210,37 +207,36 @@ typedef struct ADrawTag
      * \note 0 degrees points east on the page and 90 degrees is south.
      *
      */
-    void         (*arc)           (struct ADrawTag *ctx,
-                                   unsigned int cx,
-                                   unsigned int cy,
-                                   unsigned int w,
-                                   unsigned int h,
-                                   unsigned int s,
-                                   unsigned int e);
+    void (*arc)(struct ADrawTag *ctx,
+                unsigned int     cx,
+                unsigned int     cy,
+                unsigned int     w,
+                unsigned int     h,
+                unsigned int     s,
+                unsigned int     e);
 
-    void         (*dottedArc)     (struct ADrawTag *ctx,
-                                   unsigned int cx,
-                                   unsigned int cy,
-                                   unsigned int w,
-                                   unsigned int h,
-                                   unsigned int s,
-                                   unsigned int e);
+    void (*dottedArc)(struct ADrawTag *ctx,
+                      unsigned int     cx,
+                      unsigned int     cy,
+                      unsigned int     w,
+                      unsigned int     h,
+                      unsigned int     s,
+                      unsigned int     e);
 
-    void         (*setPen)        (struct ADrawTag *ctx,
-                                   ADrawColour col);
+    void (*setPen)(struct ADrawTag *ctx,
+                   ADrawColour      col);
 
-    void         (*setBgPen)      (struct ADrawTag *ctx,
-                                   ADrawColour col);
+    void (*setBgPen)(struct ADrawTag *ctx,
+                     ADrawColour      col);
 
-    void         (*setFontSize)   (struct ADrawTag *ctx,
-                                   ADrawFontSize size);
+    void (*setFontSize)(struct ADrawTag *ctx,
+                        ADrawFontSize    size);
 
-    Boolean      (*close)         (struct ADrawTag *context);
+    Boolean (*close)(struct ADrawTag *context);
 
     /* Internal context, not accessible by the user */
     void *internal;
-}
-ADraw;
+} ADraw;
 
 /***************************************************************************
  * Functions
@@ -261,12 +257,12 @@ ADraw;
  *                              with values.
  * \retval Boolean             On error, #FALSE will be returned.
  */
-Boolean ADrawOpen(unsigned int     w,
-                  unsigned int     h,
-                  const char      *file,
-                  const char      *fontName,
-                  ADrawOutputType  type,
-                  struct ADrawTag *outContext);
+Boolean     ADrawOpen(unsigned int     w,
+                      unsigned int     h,
+                      const char      *file,
+                      const char      *fontName,
+                      ADrawOutputType  type,
+                      struct ADrawTag *outContext);
 
 /** Given a string name for a colour, return the corresponding ADrawColour.
  *
@@ -287,13 +283,13 @@ ADrawColour ADrawGetColour(const char *colour);
  * \param[in,out] x     Pointer to fill with x coordinate.
  * \param[in,out] y     Pointer to fill with y coordinate.
  */
-void ADrawComputeArcPoint(float cx,
-                          float cy,
-                          float w,
-                          float h,
-                          float degrees,
-                          unsigned int *x,
-                          unsigned int *y);
+void        ADrawComputeArcPoint(float         cx,
+                                 float         cy,
+                                 float         w,
+                                 float         h,
+                                 float         degrees,
+                                 unsigned int *x,
+                                 unsigned int *y);
 
 #endif /* MSCGEN_ADRAW_H */
 

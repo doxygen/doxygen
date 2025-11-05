@@ -33,7 +33,7 @@ class TextStream;
 class ManDocVisitor : public DocVisitor
 {
   public:
-    ManDocVisitor(TextStream &t,OutputCodeList &ci,const QCString &langExt);
+    ManDocVisitor(TextStream &t, OutputCodeList &ci, const QCString &langExt);
 
     //--------------------------------------
     // visitor functions for leaf nodes
@@ -102,9 +102,8 @@ class ManDocVisitor : public DocVisitor
     void operator()(const DocHtmlBlockQuote &);
     void operator()(const DocVhdlFlow &);
     void operator()(const DocParBlock &);
-
   private:
-    template<class T>
+    template <class T>
     void visitChildren(const T &t)
     {
       for (const auto &child : t.children())
@@ -117,28 +116,28 @@ class ManDocVisitor : public DocVisitor
     // helper functions
     //--------------------------------------
 
-    void filter(const QCString &str, const bool retainNewline = false);
+    void            filter(const QCString &str, const bool retainNewline = false);
 
     //--------------------------------------
     // state variables
     //--------------------------------------
 
-    TextStream &m_t;
+    TextStream     &m_t;
     OutputCodeList &m_ci;
-    bool m_insidePre;
-    bool m_hide;
-    bool m_firstCol;
-    int  m_indent;
-    QCString m_langExt;
+    bool            m_insidePre;
+    bool            m_hide;
+    bool            m_firstCol;
+    int             m_indent;
+    QCString        m_langExt;
 
     struct ManListItemInfo
     {
-      int number;
-      char type;
+        int  number;
+        char type;
     };
-    static const int maxIndentLevels = 13;
+    static const int                             maxIndentLevels = 13;
 
-    std::array<ManListItemInfo,maxIndentLevels> m_listItemInfo;
+    std::array<ManListItemInfo, maxIndentLevels> m_listItemInfo;
 };
 
 #endif

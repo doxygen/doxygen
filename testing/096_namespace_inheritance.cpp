@@ -10,33 +10,33 @@
 
 namespace m1
 {
-  struct t1
-  {
-  };
+struct t1
+{
+};
 
-  struct t2: public t1
-  {
-  };
+struct t2 : public t1
+{
+};
 
-  struct t3: public t2
-  {
-  };
-}
+struct t3 : public t2
+{
+};
+} // namespace m1
 
 namespace m2
 {
-  using namespace m1;
+using namespace m1;
 
-  struct t3: public t2
-  {
-  };
-}
+struct t3 : public t2
+{
+};
+} // namespace m2
 
 namespace m3
 {
-  using m2::t1;
+using m2::t1;
 
-  struct t4: public t1
-  {
-  };
-}
+struct t4 : public t1
+{
+};
+} // namespace m3

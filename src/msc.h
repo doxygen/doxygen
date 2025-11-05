@@ -19,22 +19,25 @@
 class QCString;
 class TextStream;
 
-enum class MscOutputFormat { BITMAP, EPS, SVG };
+enum class MscOutputFormat
+{
+  BITMAP,
+  EPS,
+  SVG
+};
 
-void writeMscGraphFromFile(const QCString &inFile,const QCString &outDir,
-                           const QCString &outFile,MscOutputFormat format,
-                           const QCString &srcFile,int srcLine);
+void     writeMscGraphFromFile(const QCString &inFile, const QCString &outDir,
+                               const QCString &outFile, MscOutputFormat format,
+                               const QCString &srcFile, int srcLine);
 
 QCString getMscImageMapFromFile(const QCString &inFile, const QCString &outDir,
-                                const QCString &relPath,const QCString &context,
-                                const QCString &srcFile,int srcLine);
+                                const QCString &relPath, const QCString &context,
+                                const QCString &srcFile, int srcLine);
 
-void writeMscImageMapFromFile(TextStream &t,const QCString &inFile,
-                              const QCString &outDir, const QCString &relPath,
-                              const QCString &baseName, const QCString &context,
-			      MscOutputFormat format,
-                              const QCString &srcFile,int srcLine
- 			    );
+void     writeMscImageMapFromFile(TextStream &t, const QCString &inFile,
+                                  const QCString &outDir, const QCString &relPath,
+                                  const QCString &baseName, const QCString &context,
+                                  MscOutputFormat format,
+                                  const QCString &srcFile, int srcLine);
 
 #endif
-

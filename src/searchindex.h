@@ -44,19 +44,19 @@ void finalizeSearchIndexer();
 
 struct SIData_CurrentDoc
 {
-  SIData_CurrentDoc(const Definition *d,const QCString &a,bool b)
-    : ctx(d), anchor(a), isSourceFile(b) {}
-  const Definition *ctx = nullptr;
-  QCString anchor;
-  bool isSourceFile;
+    SIData_CurrentDoc(const Definition *d, const QCString &a, bool b) :
+        ctx(d), anchor(a), isSourceFile(b) {}
+    const Definition *ctx = nullptr;
+    QCString          anchor;
+    bool              isSourceFile;
 };
 
 struct SIData_Word
 {
-  SIData_Word(const QCString &w,bool b)
-    : word(w), hiPrio(b) {}
-  QCString word;
-  bool hiPrio;
+    SIData_Word(const QCString &w, bool b) :
+        word(w), hiPrio(b) {}
+    QCString word;
+    bool     hiPrio;
 };
 
 //-----------------------------
@@ -66,45 +66,46 @@ class SearchIndex
 {
     struct URL
     {
-      URL(const QCString &n,const QCString &u) : name(n), url(u) {}
-      QCString name;
-      QCString url;
+        URL(const QCString &n, const QCString &u) :
+            name(n), url(u) {}
+        QCString name;
+        QCString url;
     };
 
     struct URLInfo
     {
-      URLInfo(int idx,int f) : urlIdx(idx), freq(f) {}
-      int urlIdx;
-      int freq;
+        URLInfo(int idx, int f) :
+            urlIdx(idx), freq(f) {}
+        int urlIdx;
+        int freq;
     };
 
     class IndexWord
     {
       public:
-        using URLInfoMap = std::unordered_map<int,URLInfo>;
-        IndexWord(const QCString &word) : m_word(word) {}
-        void addUrlIndex(int,bool);
+        using URLInfoMap = std::unordered_map<int, URLInfo>;
+        IndexWord(const QCString &word) :
+            m_word(word) {}
+        void       addUrlIndex(int, bool);
         URLInfoMap urls() const { return m_urls; }
-        QCString word() const { return m_word; }
-
+        QCString   word() const { return m_word; }
       private:
-        QCString    m_word;
-        URLInfoMap  m_urls;
+        QCString   m_word;
+        URLInfoMap m_urls;
     };
-
   public:
     SearchIndex();
-    void setCurrentDoc(const Definition *ctx,const QCString &anchor,bool isSourceFile);
-    void addWord(const QCString &word,bool hiPriority);
+    void setCurrentDoc(const Definition *ctx, const QCString &anchor, bool isSourceFile);
+    void addWord(const QCString &word, bool hiPriority);
     void write(const QCString &file);
   private:
-    void addWordRec(const QCString &word,bool hiPrio,bool recurse);
-    std::unordered_map<std::string,int> m_words;
-    std::vector< std::vector< IndexWord> > m_index;
-    std::unordered_map<std::string,int> m_url2IdMap;
-    std::map<int,URL> m_urls;
-    int m_urlIndex = -1;
-    int m_urlMaxIndex = 0;
+    void                                 addWordRec(const QCString &word, bool hiPrio, bool recurse);
+    std::unordered_map<std::string, int> m_words;
+    std::vector<std::vector<IndexWord>>  m_index;
+    std::unordered_map<std::string, int> m_url2IdMap;
+    std::map<int, URL>                   m_urls;
+    int                                  m_urlIndex    = -1;
+    int                                  m_urlMaxIndex = 0;
 };
 
 /** Writes search index that should be used with an externally provided search engine,
@@ -114,23 +115,22 @@ class SearchIndexExternal
 {
     struct SearchDocEntry
     {
-      QCString type;
-      QCString name;
-      QCString args;
-      QCString extId;
-      QCString url;
-      GrowBuf  importantText;
-      GrowBuf  normalText;
+        QCString type;
+        QCString name;
+        QCString args;
+        QCString extId;
+        QCString url;
+        GrowBuf  importantText;
+        GrowBuf  normalText;
     };
-
   public:
     SearchIndexExternal();
-    void setCurrentDoc(const Definition *ctx,const QCString &anchor,bool isSourceFile);
-    void addWord(const QCString &word,bool hiPriority);
+    void setCurrentDoc(const Definition *ctx, const QCString &anchor, bool isSourceFile);
+    void addWord(const QCString &word, bool hiPriority);
     void write(const QCString &file);
   private:
-    std::map<std::string,SearchDocEntry> m_docEntries;
-    SearchDocEntry *m_current = nullptr;
+    std::map<std::string, SearchDocEntry> m_docEntries;
+    SearchDocEntry                       *m_current = nullptr;
 };
 
 /** Abstract proxy interface for non-javascript based search indices.
@@ -140,31 +140,37 @@ class SearchIndexExternal
 class SearchIndexIntf
 {
   public:
-    using SearchIndexVariant = std::variant<std::monostate,SearchIndex,SearchIndexExternal>;
-    enum Kind { Disabled, Internal, External };
-    SearchIndexIntf() : m_kind(Disabled) {}
-    bool enabled() const { return m_kind!=Disabled; }
+    using SearchIndexVariant = std::variant<std::monostate, SearchIndex, SearchIndexExternal>;
+    enum Kind
+    {
+      Disabled,
+      Internal,
+      External
+    };
+    SearchIndexIntf() :
+        m_kind(Disabled) {}
+    bool enabled() const { return m_kind != Disabled; }
 
-    void setCurrentDoc(const Definition *ctx,const QCString &anchor,bool isSourceFile)
+    void setCurrentDoc(const Definition *ctx, const QCString &anchor, bool isSourceFile)
     {
       if (std::holds_alternative<SearchIndex>(m_variant))
       {
-        std::get<SearchIndex>(m_variant).setCurrentDoc(ctx,anchor,isSourceFile);
+        std::get<SearchIndex>(m_variant).setCurrentDoc(ctx, anchor, isSourceFile);
       }
       else if (std::holds_alternative<SearchIndexExternal>(m_variant))
       {
-        std::get<SearchIndexExternal>(m_variant).setCurrentDoc(ctx,anchor,isSourceFile);
+        std::get<SearchIndexExternal>(m_variant).setCurrentDoc(ctx, anchor, isSourceFile);
       }
     }
-    void addWord(const QCString &word,bool hiPriority)
+    void addWord(const QCString &word, bool hiPriority)
     {
       if (std::holds_alternative<SearchIndex>(m_variant))
       {
-        std::get<SearchIndex>(m_variant).addWord(word,hiPriority);
+        std::get<SearchIndex>(m_variant).addWord(word, hiPriority);
       }
       else if (std::holds_alternative<SearchIndexExternal>(m_variant))
       {
-        std::get<SearchIndexExternal>(m_variant).addWord(word,hiPriority);
+        std::get<SearchIndexExternal>(m_variant).addWord(word, hiPriority);
       }
     }
     void write(const QCString &file)
@@ -178,18 +184,19 @@ class SearchIndexIntf
         std::get<SearchIndexExternal>(m_variant).write(file);
       }
     }
-    void setKind(Kind k) {
-      m_kind=k;
+    void setKind(Kind k)
+    {
+      m_kind = k;
       switch (m_kind)
       {
-        case Disabled: m_variant = std::monostate();      break;
-        case Internal: m_variant = SearchIndex();         break;
-        case External: m_variant = SearchIndexExternal(); break;
+      case Disabled: m_variant = std::monostate(); break;
+      case Internal: m_variant = SearchIndex(); break;
+      case External: m_variant = SearchIndexExternal(); break;
       }
     }
     Kind kind() const { return m_kind; }
   private:
-    Kind m_kind;
+    Kind               m_kind;
     SearchIndexVariant m_variant;
 };
 

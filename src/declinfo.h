@@ -22,13 +22,12 @@
 #include "qcstring.h"
 #include "types.h"
 
-extern void parseFuncDecl(const QCString &decl,
+extern void parseFuncDecl(const QCString  &decl,
                           const SrcLangExt lang,
-                          QCString &clName,
-                          QCString &type,
-                          QCString &name,
-                          QCString &args,
-                          QCString &funcTempList,
-                          QCString &exceptions
-                         );
+                          QCString        &clName,
+                          QCString        &type,
+                          QCString        &name,
+                          QCString        &args,
+                          QCString        &funcTempList,
+                          QCString        &exceptions);
 #endif

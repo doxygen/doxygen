@@ -1,10 +1,10 @@
 class Fn_Test
 {
   public:
-    const char *member(char,int) throw(std::out_of_range);
+    const char *member(char, int) throw(std::out_of_range);
 };
 
-const char *Fn_Test::member(char c,int n) throw(std::out_of_range) {}
+const char *Fn_Test::member(char c, int n) throw(std::out_of_range) {}
 
 /*! \class Fn_Test
  * \brief Fn_Test class.

@@ -31,24 +31,23 @@ class AnchorGenerator
     /** generates an anchor for a section with \a title.
      *  Returns the anchor.
      */
-    std::string generate(const std::string &title);
+    std::string             generate(const std::string &title);
 
     /** Returns true iff \a anchor is one of the generated anchors */
-    bool isGenerated(const std::string &anchor) const;
+    bool                    isGenerated(const std::string &anchor) const;
 
     /** Reserves a non-generated anchor */
-    int reserve(const std::string &anchor);
+    int                     reserve(const std::string &anchor);
 
     /** Returns true if \a anchor is a potentially generated anchor.
      *  Note this is a much weaker check than isGenerated() and may not always work.
      */
-    static bool looksGenerated(const std::string &anchor);
+    static bool             looksGenerated(const std::string &anchor);
 
-    static std::string addPrefixIfNeeded(const std::string &anchor);
-
+    static std::string      addPrefixIfNeeded(const std::string &anchor);
   private:
     AnchorGenerator();
-   ~AnchorGenerator();
+    ~AnchorGenerator();
     NON_COPYABLE(AnchorGenerator)
     struct Private;
     std::unique_ptr<Private> p;

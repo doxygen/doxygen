@@ -5,7 +5,8 @@
  *  More details about this class.
  *  @tparam T A template parameter.
  */
-template<class T> class Test
+template <class T>
+class Test
 {
   public:
     /** An example member function.
@@ -16,6 +17,5 @@ template<class T> class Test
      *  \retval -1 if p1 is smaller than p2
      *  \retval  1 if p1 is bigger than p2
      */
-    int example(int p1,int p2) throw(std::out_of_range);
+    int example(int p1, int p2) throw(std::out_of_range);
 };
-

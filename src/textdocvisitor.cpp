@@ -34,7 +34,7 @@ void TextDocVisitor::operator()(const DocSymbol &s)
   }
   else
   {
-    err("text: non supported HTML-entity found: {}\n",HtmlEntityMapper::instance().html(s.symbol(),TRUE));
+    err("text: non supported HTML-entity found: {}\n", HtmlEntityMapper::instance().html(s.symbol(), TRUE));
   }
 }
 
@@ -47,19 +47,20 @@ void TextDocVisitor::operator()(const DocEmoji &s)
     const char *p = res;
     while (*p)
     {
-      switch(*p)
+      switch (*p)
       {
-        case '&': case '#':
-          break;
-        case 'x':
-          m_t << "\\u{";
-          break;
-        case ';':
-          m_t << "}";
-          break;
-        default:
-          m_t << *p;
-          break;
+      case '&':
+      case '#':
+        break;
+      case 'x':
+        m_t << "\\u{";
+        break;
+      case ';':
+        m_t << "}";
+        break;
+      default:
+        m_t << *p;
+        break;
       }
       p++;
     }
@@ -74,9 +75,9 @@ void TextDocVisitor::operator()(const DocCite &cite)
 {
   if (!cite.file().isEmpty())
   {
-    QCString anchor = cite.anchor();
+    QCString anchor       = cite.anchor();
     QCString anchorPrefix = CitationManager::instance().anchorPrefix();
-    anchor = anchor.mid(anchorPrefix.length()); // strip prefix
+    anchor                = anchor.mid(anchorPrefix.length()); // strip prefix
     m_t << anchor;
   }
   else
@@ -89,12 +90,13 @@ void TextDocVisitor::filter(const QCString &str)
 {
   if (str.isEmpty()) return;
   //printf("TextDocVisitor::filter(%s)\n",str);
-  const char *p=str.data();
+  const char *p = str.data();
   while (*p)
   {
     char c = *p++;
-    if (c=='\n') c=' ';
-    else m_t << c;
+    if (c == '\n')
+      c = ' ';
+    else
+      m_t << c;
   }
 }
-

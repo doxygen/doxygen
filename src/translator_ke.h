@@ -32,7 +32,9 @@ class TranslatorKoreanEn : public TranslatorEnglish
 {
   public:
     QCString idLanguage() override
-    { return "korean-en"; }
+    {
+      return "korean-en";
+    }
     QCString latexLanguageSupportCommand() override
     {
       return "\\usepackage{kotex}\n";

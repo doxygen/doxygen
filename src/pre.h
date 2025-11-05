@@ -28,14 +28,14 @@ class Preprocessor
 {
   public:
     Preprocessor();
-   ~Preprocessor();
+    ~Preprocessor();
     NON_COPYABLE(Preprocessor)
 
-    void processFile(const QCString &fileName,const std::string &input,std::string &output);
+    void processFile(const QCString &fileName, const std::string &input, std::string &output);
     void addSearchDir(const QCString &dir);
- private:
-   struct Private;
-   std::unique_ptr<Private> p;
+  private:
+    struct Private;
+    std::unique_ptr<Private> p;
 };
 
 #endif

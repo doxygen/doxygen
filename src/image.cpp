@@ -20,55 +20,53 @@
 #include "lodepng.h"
 #include "config.h"
 
-typedef unsigned char  Byte;
+typedef unsigned char Byte;
 
 /** Helper struct representing a RGBA color */
 struct Color
 {
-  Byte red;
-  Byte green;
-  Byte blue;
-  Byte alpha;
+    Byte red;
+    Byte green;
+    Byte blue;
+    Byte alpha;
 };
 
-const int charSetWidth=80;
-const int charHeight=12;
-const int numChars=96;
+const int            charSetWidth      = 80;
+const int            charHeight        = 12;
+const int            numChars          = 96;
 
-const unsigned short charPos[numChars]    =
-  {
-      0,  5,  8, 13, 20, 27, 38, 47,
-     50, 54, 58, 65, 72, 76, 83, 87,
-     91, 98,105,112,119,126,133,140,
-    147,154,161,164,167,174,181,188,
-    195,207,216,224,233,242,250,258,
-    267,276,279,286,294,301,312,321,
-    331,339,349,357,365,372,380,389,
-    400,409,418,427,430,434,437,443,
-    450,453,460,467,474,481,488,492,
-    499,506,509,512,518,521,530,537,
-    544,551,557,562,568,571,578,585,
-    594,600,607,613,617,620,624,631
-  };
+const unsigned short charPos[numChars] = {
+  0, 5, 8, 13, 20, 27, 38, 47,
+  50, 54, 58, 65, 72, 76, 83, 87,
+  91, 98, 105, 112, 119, 126, 133, 140,
+  147, 154, 161, 164, 167, 174, 181, 188,
+  195, 207, 216, 224, 233, 242, 250, 258,
+  267, 276, 279, 286, 294, 301, 312, 321,
+  331, 339, 349, 357, 365, 372, 380, 389,
+  400, 409, 418, 427, 430, 434, 437, 443,
+  450, 453, 460, 467, 474, 481, 488, 492,
+  499, 506, 509, 512, 518, 521, 530, 537,
+  544, 551, 557, 562, 568, 571, 578, 585,
+  594, 600, 607, 613, 617, 620, 624, 631
+};
 
-const unsigned char charWidth[numChars] =
-  {
-     5, 3, 5, 7, 7,11, 9, 3,
-     4, 4, 7, 7, 4, 7, 4, 4,
+const unsigned char charWidth[numChars] = {
+  5, 3, 5, 7, 7, 11, 9, 3,
+  4, 4, 7, 7, 4, 7, 4, 4,
 
-     7, 7, 7, 7, 7, 7, 7, 7,
-     7, 7, 3, 3, 7, 7, 7, 7,
-    12, 9, 8, 9, 9, 8, 8, 9,
-     9, 3, 7, 8, 7,11, 9,10,
-     8,10, 8, 8, 7, 8, 9,11,
-     9, 9, 9, 3, 4, 3, 6, 7,
-     3, 7, 7, 7, 7, 7, 4, 7,
-     7, 3, 3, 6, 3, 9, 7, 7,
-     7, 6, 5, 6, 3, 7, 7, 9,
-     6, 7, 6, 4, 3, 4, 7, 5
-  };
+  7, 7, 7, 7, 7, 7, 7, 7,
+  7, 7, 3, 3, 7, 7, 7, 7,
+  12, 9, 8, 9, 9, 8, 8, 9,
+  9, 3, 7, 8, 7, 11, 9, 10,
+  8, 10, 8, 8, 7, 8, 9, 11,
+  9, 9, 9, 3, 4, 3, 6, 7,
+  3, 7, 7, 7, 7, 7, 4, 7,
+  7, 3, 3, 6, 3, 9, 7, 7,
+  7, 6, 5, 6, 3, 7, 7, 9,
+  6, 7, 6, 4, 3, 4, 7, 5
+};
 
-const unsigned char fontRaw[charSetWidth*charHeight] = {
+const unsigned char fontRaw[charSetWidth * charHeight] = {
   0x02, 0x50, 0x01, 0x06, 0x20, 0x60, 0xc6, 0x04, 0x00, 0x00, 0x00, 0x27,
   0x04, 0x1c, 0x38, 0x11, 0xf1, 0xc7, 0xc7, 0x0e, 0x00, 0x00, 0x00, 0x03,
   0x81, 0xf0, 0x10, 0x7c, 0x1e, 0x3e, 0x1f, 0x9f, 0x87, 0x88, 0x24, 0x09,
@@ -154,205 +152,203 @@ const unsigned char fontRaw[charSetWidth*charHeight] = {
 
 struct Image::Private
 {
-  uint32_t width;
-  uint32_t height;
-  std::vector<uint8_t> data;
-  std::vector<Color> palette =
-  {
-    { 0xff, 0xff, 0xff, 0x00 },
-    { 0x00, 0x00, 0x00, 0xff },
-    { 0xff, 0xff, 0xc0, 0xff },
-    { 0x9f, 0x9f, 0x60, 0xff },
-    { 0xa7, 0x38, 0x30, 0xff },
-    { 0x29, 0x70, 0x18, 0xff },
-    { 0x97, 0xCC, 0xE8, 0xff },
-    { 0xe0, 0xe0, 0xe0, 0xff },
-    { 0xff, 0xff, 0xff, 0xff }
-  };
+    uint32_t             width;
+    uint32_t             height;
+    std::vector<uint8_t> data;
+    std::vector<Color>   palette = {
+        { 0xff, 0xff, 0xff, 0x00 },
+        { 0x00, 0x00, 0x00, 0xff },
+        { 0xff, 0xff, 0xc0, 0xff },
+        { 0x9f, 0x9f, 0x60, 0xff },
+        { 0xa7, 0x38, 0x30, 0xff },
+        { 0x29, 0x70, 0x18, 0xff },
+        { 0x97, 0xCC, 0xE8, 0xff },
+        { 0xe0, 0xe0, 0xe0, 0xff },
+        { 0xff, 0xff, 0xff, 0xff }
+    };
 };
 
-Image::Image(uint32_t w,uint32_t h) : p(std::make_unique<Private>())
+Image::Image(uint32_t w, uint32_t h) :
+    p(std::make_unique<Private>())
 {
-  int hue   = Config_getInt(HTML_COLORSTYLE_HUE);
-  int sat   = Config_getInt(HTML_COLORSTYLE_SAT);
-  int gamma = Config_getInt(HTML_COLORSTYLE_GAMMA);
+  int    hue   = Config_getInt(HTML_COLORSTYLE_HUE);
+  int    sat   = Config_getInt(HTML_COLORSTYLE_SAT);
+  int    gamma = Config_getInt(HTML_COLORSTYLE_GAMMA);
 
-  double red1=0.0 ,green1=0.0 ,blue1=0.0;
-  double red2=0.0, green2=0.0, blue2=0.0;
+  double red1 = 0.0, green1 = 0.0, blue1 = 0.0;
+  double red2 = 0.0, green2 = 0.0, blue2 = 0.0;
 
-  ColoredImage::hsl2rgb(hue/360.0,                  // hue
-                        sat/255.0,                  // saturation
-                        pow(235/255.0,gamma/100.0), // luma (gamma corrected)
-                        &red1,&green1,&blue1
-                       );
+  ColoredImage::hsl2rgb(hue / 360.0,                     // hue
+                        sat / 255.0,                     // saturation
+                        pow(235 / 255.0, gamma / 100.0), // luma (gamma corrected)
+                        &red1, &green1, &blue1);
 
-  ColoredImage::hsl2rgb(hue/360.0,                  // hue
-                        sat/255.0,                  // saturation
-                        pow(138/255.0,gamma/100.0), // luma (gamma corrected)
-                        &red2,&green2,&blue2
-                       );
+  ColoredImage::hsl2rgb(hue / 360.0,                     // hue
+                        sat / 255.0,                     // saturation
+                        pow(138 / 255.0, gamma / 100.0), // luma (gamma corrected)
+                        &red2, &green2, &blue2);
 
-  p->palette[2].red   = static_cast<Byte>(red1   * 255.0);
+  p->palette[2].red   = static_cast<Byte>(red1 * 255.0);
   p->palette[2].green = static_cast<Byte>(green1 * 255.0);
-  p->palette[2].blue  = static_cast<Byte>(blue1  * 255.0);
+  p->palette[2].blue  = static_cast<Byte>(blue1 * 255.0);
 
-  p->palette[3].red   = static_cast<Byte>(red2   * 255.0);
+  p->palette[3].red   = static_cast<Byte>(red2 * 255.0);
   p->palette[3].green = static_cast<Byte>(green2 * 255.0);
-  p->palette[3].blue  = static_cast<Byte>(blue2  * 255.0);
+  p->palette[3].blue  = static_cast<Byte>(blue2 * 255.0);
 
-  p->data.resize(w*h);
-  p->width = w;
+  p->data.resize(w * h);
+  p->width  = w;
   p->height = h;
 }
 
-uint32_t Image::width() const  { return p->width; }
+uint32_t Image::width() const { return p->width; }
 uint32_t Image::height() const { return p->height; }
 
 Image::~Image() = default;
 
-void Image::setPixel(uint32_t x,uint32_t y,uint8_t val)
+void Image::setPixel(uint32_t x, uint32_t y, uint8_t val)
 {
-  if (x<p->width && y<p->height) p->data[y*p->width+x] = val;
+  if (x < p->width && y < p->height) p->data[y * p->width + x] = val;
 }
 
-uint8_t Image::getPixel(uint32_t x,uint32_t y) const
+uint8_t Image::getPixel(uint32_t x, uint32_t y) const
 {
-  return (x<p->width && y<p->height) ? p->data[y*p->width+x] : 0;
+  return (x < p->width && y < p->height) ? p->data[y * p->width + x] : 0;
 }
 
-void Image::writeChar(uint32_t x,uint32_t y,char c,uint8_t fg)
+void Image::writeChar(uint32_t x, uint32_t y, char c, uint8_t fg)
 {
-  if (c>=' ')
+  if (c >= ' ')
   {
-    uint32_t ci=c-' ';
-    uint32_t rowOffset=0;
-    uint32_t cw = charWidth[ci];
-    uint32_t cp = charPos[ci];
-    for (uint32_t yf=0;yf<charHeight;yf++)
+    uint32_t ci        = c - ' ';
+    uint32_t rowOffset = 0;
+    uint32_t cw        = charWidth[ci];
+    uint32_t cp        = charPos[ci];
+    for (uint32_t yf = 0; yf < charHeight; yf++)
     {
-      unsigned short bitPattern=0;
-      uint32_t bitsLeft=cw;
-      uint32_t byteOffset = rowOffset+(cp>>3);
-      uint32_t bitOffset  = cp&7;
+      unsigned short bitPattern = 0;
+      uint32_t       bitsLeft   = cw;
+      uint32_t       byteOffset = rowOffset + (cp >> 3);
+      uint32_t       bitOffset  = cp & 7;
       // get the bit pattern for row yf of the character from the font data
-      while (bitsLeft>0)
+      while (bitsLeft > 0)
       {
-        uint32_t bits=8-bitOffset;
-        if (bits>bitsLeft) bits=bitsLeft;
-        bitPattern<<=bits;
-        bitPattern|=((fontRaw[byteOffset]<<bitOffset)&0xff)>>(8-bits);
-        bitsLeft-=bits;
-        bitOffset=0;
+        uint32_t bits = 8 - bitOffset;
+        if (bits > bitsLeft) bits = bitsLeft;
+        bitPattern <<= bits;
+        bitPattern |= ((fontRaw[byteOffset] << bitOffset) & 0xff) >> (8 - bits);
+        bitsLeft -= bits;
+        bitOffset = 0;
         byteOffset++;
       }
-      if (cw>0 && cw<32)
+      if (cw > 0 && cw < 32)
       {
-        uint32_t mask=(uint32_t)1<<(cw-1);
+        uint32_t mask = (uint32_t)1 << (cw - 1);
         // draw character row yf
-        for (uint32_t xf=0;xf<cw;xf++)
+        for (uint32_t xf = 0; xf < cw; xf++)
         {
-          setPixel(x+xf,y+yf,(bitPattern&mask) ? fg : getPixel(x+xf,y+yf));
-          mask>>=1;
+          setPixel(x + xf, y + yf, (bitPattern & mask) ? fg : getPixel(x + xf, y + yf));
+          mask >>= 1;
         }
-        rowOffset+=charSetWidth;
+        rowOffset += charSetWidth;
       }
     }
   }
 }
 
-void Image::writeString(uint32_t x,uint32_t y,const QCString &s,uint8_t fg)
+void Image::writeString(uint32_t x, uint32_t y, const QCString &s, uint8_t fg)
 {
   if (!s.isEmpty())
   {
     const char *ps = s.data();
-    char c = 0;
-    while ((c=*ps++))
+    char        c  = 0;
+    while ((c = *ps++))
     {
-      writeChar(x,y,c,fg);
-      x+=charWidth[c-' '];
+      writeChar(x, y, c, fg);
+      x += charWidth[c - ' '];
     }
   }
 }
 
 uint32_t Image::stringLength(const QCString &s)
 {
-  uint32_t w=0;
+  uint32_t w = 0;
   if (!s.isEmpty())
   {
     const char *ps = s.data();
-    char c = 0;
-    while ((c=*ps++)) w+=charWidth[c-' '];
+    char        c  = 0;
+    while ((c = *ps++)) w += charWidth[c - ' '];
   }
   return w;
 }
 
-void Image::drawHorzLine(uint32_t y,uint32_t xs,uint32_t xe,uint8_t colIndex,uint32_t mask)
+void Image::drawHorzLine(uint32_t y, uint32_t xs, uint32_t xe, uint8_t colIndex, uint32_t mask)
 {
-  uint32_t i=0,j=0;
-  for (uint32_t x=xs;x<=xe;x++,j++)
+  uint32_t i = 0, j = 0;
+  for (uint32_t x = xs; x <= xe; x++, j++)
   {
-    if (j&1) i++;
-    if (mask&(1<<(i&0x1f))) setPixel(x,y,colIndex);
+    if (j & 1) i++;
+    if (mask & (1 << (i & 0x1f))) setPixel(x, y, colIndex);
   }
 }
 
-void Image::drawHorzArrow(uint32_t y,uint32_t xs,uint32_t xe,uint8_t colIndex,uint32_t mask)
+void Image::drawHorzArrow(uint32_t y, uint32_t xs, uint32_t xe, uint8_t colIndex, uint32_t mask)
 {
-  drawHorzLine(y,xs,xe,colIndex,mask);
-  for (uint32_t i=0;i<6;i++)
+  drawHorzLine(y, xs, xe, colIndex, mask);
+  for (uint32_t i = 0; i < 6; i++)
   {
-    uint32_t h=i>>1;
-    drawVertLine(xe-i,y-h,y+h,colIndex,0xffffffff);
+    uint32_t h = i >> 1;
+    drawVertLine(xe - i, y - h, y + h, colIndex, 0xffffffff);
   }
 }
 
-void Image::drawVertLine(uint32_t x,uint32_t ys,uint32_t ye,uint8_t colIndex,uint32_t mask)
+void Image::drawVertLine(uint32_t x, uint32_t ys, uint32_t ye, uint8_t colIndex, uint32_t mask)
 {
-  uint32_t i=0;
-  for (uint32_t y=ys;y<=ye;y++,i++)
+  uint32_t i = 0;
+  for (uint32_t y = ys; y <= ye; y++, i++)
   {
-    if (mask&(1<<(i&0x1f))) setPixel(x,y,colIndex);
+    if (mask & (1 << (i & 0x1f))) setPixel(x, y, colIndex);
   }
 }
 
-void Image::drawVertArrow(uint32_t x,uint32_t ys,uint32_t ye,uint8_t colIndex,uint32_t mask)
+void Image::drawVertArrow(uint32_t x, uint32_t ys, uint32_t ye, uint8_t colIndex, uint32_t mask)
 {
-  drawVertLine(x,ys,ye,colIndex,mask);
-  for (uint32_t i=0;i<6;i++)
+  drawVertLine(x, ys, ye, colIndex, mask);
+  for (uint32_t i = 0; i < 6; i++)
   {
-    uint32_t h=i>>1;
-    drawHorzLine(ys+i,x-h,x+h,colIndex,0xffffffff);
+    uint32_t h = i >> 1;
+    drawHorzLine(ys + i, x - h, x + h, colIndex, 0xffffffff);
   }
 }
 
-void Image::drawRect(uint32_t x,uint32_t y,uint32_t w,uint32_t h,uint8_t colIndex,uint32_t mask)
+void Image::drawRect(uint32_t x, uint32_t y, uint32_t w, uint32_t h, uint8_t colIndex, uint32_t mask)
 {
-  drawHorzLine(y,x,x+w-1,colIndex,mask);
-  drawHorzLine(y+h-1,x,x+w-1,colIndex,mask);
-  drawVertLine(x,y,y+h-1,colIndex,mask);
-  drawVertLine(x+w-1,y,y+h-1,colIndex,mask);
+  drawHorzLine(y, x, x + w - 1, colIndex, mask);
+  drawHorzLine(y + h - 1, x, x + w - 1, colIndex, mask);
+  drawVertLine(x, y, y + h - 1, colIndex, mask);
+  drawVertLine(x + w - 1, y, y + h - 1, colIndex, mask);
 }
 
-void Image::fillRect(uint32_t x,uint32_t y,uint32_t width,uint32_t height,uint8_t colIndex,uint32_t mask)
+void Image::fillRect(uint32_t x, uint32_t y, uint32_t width, uint32_t height, uint8_t colIndex, uint32_t mask)
 {
-  for (uint32_t yp=y,yi=0;yp<y+height;yp++,yi++)
-    for (uint32_t xp=x,xi=0;xp<x+width;xp++,xi++)
-      if (mask&(1<<((xi+yi)&0x1f)))
-        setPixel(xp,yp,colIndex);
+  for (uint32_t yp = y, yi = 0; yp < y + height; yp++, yi++)
+    for (uint32_t xp = x, xi = 0; xp < x + width; xp++, xi++)
+      if (mask & (1 << ((xi + yi) & 0x1f)))
+        setPixel(xp, yp, colIndex);
       else
-        setPixel(xp,yp,8);
+        setPixel(xp, yp, 8);
 }
 
 bool Image::save(const QCString &fileName)
 {
-  uint8_t* buffer = nullptr;
-  size_t bufferSize = 0;
+  uint8_t        *buffer     = nullptr;
+  size_t          bufferSize = 0;
   LodePNG_Encoder encoder;
   LodePNG_Encoder_init(&encoder);
   for (const auto &col : p->palette)
   {
     LodePNG_InfoColor_addPalette(&encoder.infoPng.color,
-                                 col.red,col.green,col.blue,col.alpha);
+                                 col.red, col.green, col.blue, col.alpha);
   }
   encoder.infoPng.color.colorType = 3;
   encoder.infoRaw.color.colorType = 3;
@@ -365,55 +361,55 @@ bool Image::save(const QCString &fileName)
 
 //----------------------------------------------------------------
 
-void ColoredImage::hsl2rgb(double h,double s,double l,
-                         double *pRed,double *pGreen,double *pBlue)
+void ColoredImage::hsl2rgb(double h, double s, double l,
+                           double *pRed, double *pGreen, double *pBlue)
 {
-  double r = l;   // default to gray
+  double r = l; // default to gray
   double g = l;
   double b = l;
   double v = (l <= 0.5) ? (l * (1.0 + s)) : (l + s - l * s);
   if (v > 0)
   {
-    double m       = l + l - v;
-    double sv      = ( v - m ) / v;
-    h      *= 6.0;
-    int sextant = static_cast<int>(h);
+    double m  = l + l - v;
+    double sv = (v - m) / v;
+    h *= 6.0;
+    int    sextant = static_cast<int>(h);
     double fract   = h - sextant;
     double vsf     = v * sv * fract;
     double mid1    = m + vsf;
     double mid2    = v - vsf;
     switch (sextant)
     {
-      case 0:
-        r = v;
-        g = mid1;
-        b = m;
-        break;
-      case 1:
-        r = mid2;
-        g = v;
-        b = m;
-        break;
-      case 2:
-        r = m;
-        g = v;
-        b = mid1;
-        break;
-      case 3:
-        r = m;
-        g = mid2;
-        b = v;
-        break;
-      case 4:
-        r = mid1;
-        g = m;
-        b = v;
-        break;
-      case 5:
-        r = v;
-        g = m;
-        b = mid2;
-        break;
+    case 0:
+      r = v;
+      g = mid1;
+      b = m;
+      break;
+    case 1:
+      r = mid2;
+      g = v;
+      b = m;
+      break;
+    case 2:
+      r = m;
+      g = v;
+      b = mid1;
+      break;
+    case 3:
+      r = m;
+      g = mid2;
+      b = v;
+      break;
+    case 4:
+      r = mid1;
+      g = m;
+      b = v;
+      break;
+    case 5:
+      r = v;
+      g = m;
+      b = mid2;
+      break;
     }
   }
   *pRed   = r;
@@ -423,35 +419,36 @@ void ColoredImage::hsl2rgb(double h,double s,double l,
 
 struct ColoredImage::Private
 {
-  uint32_t width;
-  uint32_t height;
-  std::vector<uint8_t> data;
-  bool hasAlpha;
+    uint32_t             width;
+    uint32_t             height;
+    std::vector<uint8_t> data;
+    bool                 hasAlpha;
 };
 
-ColoredImage::ColoredImage(uint32_t width,uint32_t height,
-           const uint8_t *greyLevels,const uint8_t *alphaLevels,
-           int saturation,int hue,int gamma) : p(std::make_unique<Private>())
+ColoredImage::ColoredImage(uint32_t width, uint32_t height,
+                           const uint8_t *greyLevels, const uint8_t *alphaLevels,
+                           int saturation, int hue, int gamma) :
+    p(std::make_unique<Private>())
 {
-  p->hasAlpha = alphaLevels!=nullptr;
+  p->hasAlpha = alphaLevels != nullptr;
   p->width    = width;
   p->height   = height;
-  p->data.resize(width*height*4);
-  for (uint32_t i=0;i<width*height;i++)
+  p->data.resize(width * height * 4);
+  for (uint32_t i = 0; i < width * height; i++)
   {
-    double red=0.0, green=0.0, blue=0.0;
-    hsl2rgb(hue/360.0,                            // hue
-            saturation/255.0,                     // saturation
-            pow(greyLevels[i]/255.0,gamma/100.0), // luma (gamma corrected)
-            &red,&green,&blue);
-    Byte r = static_cast<Byte>(red  *255.0);
-    Byte g = static_cast<Byte>(green*255.0);
-    Byte b = static_cast<Byte>(blue *255.0);
-    Byte a = alphaLevels ? alphaLevels[i] : 255;
-    p->data[i*4+0]=r;
-    p->data[i*4+1]=g;
-    p->data[i*4+2]=b;
-    p->data[i*4+3]=a;
+    double red = 0.0, green = 0.0, blue = 0.0;
+    hsl2rgb(hue / 360.0,                               // hue
+            saturation / 255.0,                        // saturation
+            pow(greyLevels[i] / 255.0, gamma / 100.0), // luma (gamma corrected)
+            &red, &green, &blue);
+    Byte r             = static_cast<Byte>(red * 255.0);
+    Byte g             = static_cast<Byte>(green * 255.0);
+    Byte b             = static_cast<Byte>(blue * 255.0);
+    Byte a             = alphaLevels ? alphaLevels[i] : 255;
+    p->data[i * 4 + 0] = r;
+    p->data[i * 4 + 1] = g;
+    p->data[i * 4 + 2] = b;
+    p->data[i * 4 + 3] = a;
   }
 }
 
@@ -459,17 +456,15 @@ ColoredImage::~ColoredImage() = default;
 
 bool ColoredImage::save(const QCString &fileName)
 {
-  uint8_t *buffer = nullptr;
-  size_t bufferSize = 0;
+  uint8_t        *buffer     = nullptr;
+  size_t          bufferSize = 0;
   LodePNG_Encoder encoder;
   LodePNG_Encoder_init(&encoder);
   encoder.infoPng.color.colorType = p->hasAlpha ? 6 : 2; // 2=RGB 24 bit, 6=RGBA 32 bit
-  encoder.infoRaw.color.colorType = 6; // 6=RGBA 32 bit
+  encoder.infoRaw.color.colorType = 6;                   // 6=RGBA 32 bit
   LodePNG_encode(&encoder, &buffer, &bufferSize, &p->data[0], p->width, p->height);
   LodePNG_saveFile(buffer, bufferSize, fileName.data());
   LodePNG_Encoder_cleanup(&encoder);
   free(buffer);
   return TRUE;
 }
-
-

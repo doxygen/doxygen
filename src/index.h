@@ -57,7 +57,7 @@ enum class IndexSection
 
 enum class HighlightedItem
 {
-  None=0,
+  None = 0,
   Main,
   Modules,
   Namespaces,
@@ -99,121 +99,120 @@ enum class HighlightedItem
 
 namespace ClassMemberHighlight
 {
-  enum Enum : int
-  {
-    All = 0,
-    Functions,
-    Variables,
-    Typedefs,
-    Enums,
-    EnumValues,
-    Properties,
-    Events,
-    Related,
-    Total
-  };
+enum Enum : int
+{
+  All = 0,
+  Functions,
+  Variables,
+  Typedefs,
+  Enums,
+  EnumValues,
+  Properties,
+  Events,
+  Related,
+  Total
+};
 } // namespace ClassMemberHighlight
 
 namespace FileMemberHighlight
 {
-  enum Enum : int
-  {
-    All = 0,
-    Functions,
-    Variables,
-    Typedefs,
-    Sequences,
-    Dictionaries,
-    Enums,
-    EnumValues,
-    Defines,
-    Total
-  };
+enum Enum : int
+{
+  All = 0,
+  Functions,
+  Variables,
+  Typedefs,
+  Sequences,
+  Dictionaries,
+  Enums,
+  EnumValues,
+  Defines,
+  Total
+};
 } // namespace FileMemberHighlight
 
 namespace NamespaceMemberHighlight
 {
-  enum Enum : int
-  {
-    All = 0,
-    Functions,
-    Variables,
-    Typedefs,
-    Sequences,
-    Dictionaries,
-    Enums,
-    EnumValues,
-    Total
-  };
+enum Enum : int
+{
+  All = 0,
+  Functions,
+  Variables,
+  Typedefs,
+  Sequences,
+  Dictionaries,
+  Enums,
+  EnumValues,
+  Total
+};
 } // namespace NamespaceMemberHighlight
 
 namespace ModuleMemberHighlight
 {
-  enum Enum : int
-  {
-    All = 0,
-    Functions,
-    Variables,
-    Typedefs,
-    Enums,
-    EnumValues,
-    Total
-  };
+enum Enum : int
+{
+  All = 0,
+  Functions,
+  Variables,
+  Typedefs,
+  Enums,
+  EnumValues,
+  Total
+};
 } // namespace ModuleMemberHighlight
 
 class Index
 {
   public:
     using MemberIndexList = std::vector<const MemberDef *>;
-    using MemberIndexMap = std::map<std::string,MemberIndexList>;
+    using MemberIndexMap  = std::map<std::string, MemberIndexList>;
 
-    static Index &instance();
+    static Index  &instance();
 
-    void countDataStructures();
-    void addClassMemberNameToIndex(const MemberDef *md);
-    void addFileMemberNameToIndex(const MemberDef *md);
-    void addNamespaceMemberNameToIndex(const MemberDef *md);
-    void addModuleMemberNameToIndex(const MemberDef *md);
-    void sortMemberIndexLists();
+    void           countDataStructures();
+    void           addClassMemberNameToIndex(const MemberDef *md);
+    void           addFileMemberNameToIndex(const MemberDef *md);
+    void           addNamespaceMemberNameToIndex(const MemberDef *md);
+    void           addModuleMemberNameToIndex(const MemberDef *md);
+    void           sortMemberIndexLists();
 
     // ---- getters
-    int numAnnotatedClasses() const;
-    int numAnnotatedClassesPrinted() const;
-    int numHierarchyClasses() const;
-    int numAnnotatedInterfaces() const;
-    int numAnnotatedInterfacesPrinted() const;
-    int numHierarchyInterfaces() const;
-    int numAnnotatedStructs() const;
-    int numAnnotatedStructsPrinted() const;
-    int numAnnotatedExceptions() const;
-    int numAnnotatedExceptionsPrinted() const;
-    int numHierarchyExceptions() const;
-    int numDocumentedGroups() const;
-    int numDocumentedNamespaces() const;
-    int numDocumentedConcepts() const;
-    int numDocumentedModules() const;
-    int numIndexedPages() const;
-    int numDocumentedFiles() const;
-    int numDocumentedPages() const;
-    int numDocumentedDirs() const;
-    int numDocumentedClassMembers(ClassMemberHighlight::Enum e) const;
-    int numDocumentedFileMembers(FileMemberHighlight::Enum e) const;
-    int numDocumentedNamespaceMembers(NamespaceMemberHighlight::Enum e) const;
-    int numDocumentedModuleMembers(ModuleMemberHighlight::Enum e) const;
+    int            numAnnotatedClasses() const;
+    int            numAnnotatedClassesPrinted() const;
+    int            numHierarchyClasses() const;
+    int            numAnnotatedInterfaces() const;
+    int            numAnnotatedInterfacesPrinted() const;
+    int            numHierarchyInterfaces() const;
+    int            numAnnotatedStructs() const;
+    int            numAnnotatedStructsPrinted() const;
+    int            numAnnotatedExceptions() const;
+    int            numAnnotatedExceptionsPrinted() const;
+    int            numHierarchyExceptions() const;
+    int            numDocumentedGroups() const;
+    int            numDocumentedNamespaces() const;
+    int            numDocumentedConcepts() const;
+    int            numDocumentedModules() const;
+    int            numIndexedPages() const;
+    int            numDocumentedFiles() const;
+    int            numDocumentedPages() const;
+    int            numDocumentedDirs() const;
+    int            numDocumentedClassMembers(ClassMemberHighlight::Enum e) const;
+    int            numDocumentedFileMembers(FileMemberHighlight::Enum e) const;
+    int            numDocumentedNamespaceMembers(NamespaceMemberHighlight::Enum e) const;
+    int            numDocumentedModuleMembers(ModuleMemberHighlight::Enum e) const;
     MemberIndexMap isClassIndexLetterUsed(ClassMemberHighlight::Enum e) const;
     MemberIndexMap isFileIndexLetterUsed(FileMemberHighlight::Enum e) const;
     MemberIndexMap isNamespaceIndexLetterUsed(NamespaceMemberHighlight::Enum e) const;
     MemberIndexMap isModuleIndexLetterUsed(ModuleMemberHighlight::Enum e) const;
-
   private:
     void resetDocumentedClassMembers(int i);
     void resetDocumentedFileMembers(int i);
     void resetDocumentedNamespaceMembers(int i);
     void resetDocumentedModuleMembers(int i);
-    void incrementDocumentedClassMembers(int i,const std::string &letter,const MemberDef *md);
-    void incrementDocumentedFileMembers(int i,const std::string &letter,const MemberDef *md);
-    void incrementDocumentedNamespaceMembers(int i,const std::string &letter,const MemberDef *md);
-    void incrementDocumentedModuleMembers(int i,const std::string &letter,const MemberDef *md);
+    void incrementDocumentedClassMembers(int i, const std::string &letter, const MemberDef *md);
+    void incrementDocumentedFileMembers(int i, const std::string &letter, const MemberDef *md);
+    void incrementDocumentedNamespaceMembers(int i, const std::string &letter, const MemberDef *md);
+    void incrementDocumentedModuleMembers(int i, const std::string &letter, const MemberDef *md);
     Index();
     ~Index();
     NON_COPYABLE(Index)
@@ -223,14 +222,14 @@ class Index
 
 void writeGraphInfo(OutputList &ol);
 void writeIndexHierarchy(OutputList &ol);
-void startTitle(OutputList &ol,const QCString &fileName,const DefinitionMutable *def=nullptr);
-void endTitle(OutputList &ol,const QCString &fileName,const QCString &name);
-void startFile(OutputList &ol,const QCString &name,bool isSource,const QCString &manName,
-               const QCString &title,HighlightedItem hli=HighlightedItem::None,
-               bool additionalIndices=false,const QCString &altSidebarName=QCString(), int hierarchyLevel=0,
-               const QCString &allMembersFile=QCString());
-void endFile(OutputList &ol,bool skipNavIndex=FALSE,bool skipEndContents=FALSE,
-             const QCString &navPath=QCString());
-void endFileWithNavPath(OutputList &ol,const DefinitionMutable *d,bool showPageNavigation=true);
+void startTitle(OutputList &ol, const QCString &fileName, const DefinitionMutable *def = nullptr);
+void endTitle(OutputList &ol, const QCString &fileName, const QCString &name);
+void startFile(OutputList &ol, const QCString &name, bool isSource, const QCString &manName,
+               const QCString &title, HighlightedItem hli = HighlightedItem::None,
+               bool additionalIndices = false, const QCString &altSidebarName = QCString(), int hierarchyLevel = 0,
+               const QCString &allMembersFile = QCString());
+void endFile(OutputList &ol, bool skipNavIndex = FALSE, bool skipEndContents = FALSE,
+             const QCString &navPath = QCString());
+void endFileWithNavPath(OutputList &ol, const DefinitionMutable *d, bool showPageNavigation = true);
 
 #endif

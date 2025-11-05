@@ -35,27 +35,26 @@ class DotManager
 {
   public:
     static DotManager *instance();
-    DotRunner*      createRunner(const QCString& absDotName, const QCString& md5Hash);
-    DotFilePatcher *createFilePatcher(const QCString &fileName);
-    bool run();
-
+    DotRunner         *createRunner(const QCString &absDotName, const QCString &md5Hash);
+    DotFilePatcher    *createFilePatcher(const QCString &fileName);
+    bool               run();
   private:
     DotManager();
     virtual ~DotManager();
     NON_COPYABLE(DotManager)
 
-    std::map<std::string, std::unique_ptr<DotRunner> > m_runners;
-    std::map<std::string, DotFilePatcher>              m_filePatchers;
-    ThreadPool                                         m_workers;
+    std::map<std::string, std::unique_ptr<DotRunner>> m_runners;
+    std::map<std::string, DotFilePatcher>             m_filePatchers;
+    ThreadPool                                        m_workers;
 };
 
-void writeDotGraphFromFile(const QCString &inFile,const QCString &outDir,
-                           const QCString &outFile,GraphOutputFormat format,
-                           const QCString &srcFile,int srcLine);
-void writeDotImageMapFromFile(TextStream &t,
-                              const QCString &inFile, const QCString& outDir,
-                              const QCString &relPath,const QCString& baseName,
-                              const QCString &context,int graphId,
-                              const QCString &srcFile,int srcLine);
+void writeDotGraphFromFile(const QCString &inFile, const QCString &outDir,
+                           const QCString &outFile, GraphOutputFormat format,
+                           const QCString &srcFile, int srcLine);
+void writeDotImageMapFromFile(TextStream     &t,
+                              const QCString &inFile, const QCString &outDir,
+                              const QCString &relPath, const QCString &baseName,
+                              const QCString &context, int graphId,
+                              const QCString &srcFile, int srcLine);
 
 #endif

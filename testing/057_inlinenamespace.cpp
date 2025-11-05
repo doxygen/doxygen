@@ -6,32 +6,38 @@
 /// the main namespace
 namespace library
 {
-    /// the first namespace
-    namespace v1
-    {
-        /// the class
-        class foo {
-          public:
-            /// member of the class
-            void member();
-        };
-        /// a method
-        void func();
-        /// a namespace
-        namespace NS {}
-    }
-    /// the inline namespace
-    inline namespace v2
-    {
-        /// the class
-        class foo {
-          public:
-            /// member of the class
-            void member();
-        };
-        /// a method
-        void func();
-        /// a namespace
-        namespace NS {}
-    }
+/// the first namespace
+namespace v1
+{
+/// the class
+class foo
+{
+  public:
+    /// member of the class
+    void member();
+};
+/// a method
+void func();
+/// a namespace
+namespace NS
+{
 }
+} // namespace v1
+/// the inline namespace
+inline namespace v2
+{
+/// the class
+class foo
+{
+  public:
+    /// member of the class
+    void member();
+};
+/// a method
+void func();
+/// a namespace
+namespace NS
+{
+}
+} // namespace v2
+} // namespace library

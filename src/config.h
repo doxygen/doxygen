@@ -30,19 +30,19 @@
 //#define Config_getList(val)   (ConfigValues::instance().*((ConfigValues::InfoList*)ConfigValues::instance().get(#val))->item)
 //#else // direct access
 #define Config_getString(name) (ConfigValues::instance().name())
-#define Config_getBool(name)   (ConfigValues::instance().name())
-#define Config_getInt(name)    (ConfigValues::instance().name())
-#define Config_getEnum(name)   (ConfigValues::instance().name())
-#define Config_getEnumAsString(name)   (ConfigValues::instance().name##_str())
-#define Config_getStringAsEnum(name,value)   (name##_str2enum(value))
-#define Config_getList(name)   (ConfigValues::instance().name())
-#define Config_updateString(name,value) (ConfigValues::instance().update_##name(value));
-#define Config_updateBool(name,value)   (ConfigValues::instance().update_##name(value));
-#define Config_updateInt(name,value)    (ConfigValues::instance().update_##name(value));
-#define Config_updateEnum(name,value)   (ConfigValues::instance().update_##name(value));
-#define Config_updateList(name,...)   (ConfigValues::instance().update_##name(__VA_ARGS__));
+#define Config_getBool(name) (ConfigValues::instance().name())
+#define Config_getInt(name) (ConfigValues::instance().name())
+#define Config_getEnum(name) (ConfigValues::instance().name())
+#define Config_getEnumAsString(name) (ConfigValues::instance().name##_str())
+#define Config_getStringAsEnum(name, value) (name##_str2enum(value))
+#define Config_getList(name) (ConfigValues::instance().name())
+#define Config_updateString(name, value) (ConfigValues::instance().update_##name(value));
+#define Config_updateBool(name, value) (ConfigValues::instance().update_##name(value));
+#define Config_updateInt(name, value) (ConfigValues::instance().update_##name(value));
+#define Config_updateEnum(name, value) (ConfigValues::instance().update_##name(value));
+#define Config_updateList(name, ...) (ConfigValues::instance().update_##name(__VA_ARGS__));
 
-#define Config_isAvailableEnum(name,value)   (ConfigValues::instance().isAvailable_##name(value))
+#define Config_isAvailableEnum(name, value) (ConfigValues::instance().isAvailable_##name(value))
 //#endif
 //! @}
 
@@ -51,57 +51,62 @@ class TextStream;
 /** \brief Public function to deal with the configuration file. */
 namespace Config
 {
-  enum class CompareMode { Full, Compressed, CompressedNoEnv };
+enum class CompareMode
+{
+  Full,
+  Compressed,
+  CompressedNoEnv
+};
 
-  /*! Initialize configuration variables to their default value */
-  void init();
+/*! Initialize configuration variables to their default value */
+void init();
 
-  /*! Writes a template configuration to stream \a t. If \a shortList
+/*! Writes a template configuration to stream \a t. If \a shortList
    *  is \c TRUE the description of each configuration option will
    *  be omitted.
    */
-  void writeTemplate(TextStream &t,bool shortList,bool updateOnly=FALSE);
+void writeTemplate(TextStream &t, bool shortList, bool updateOnly = FALSE);
 
-  /*! Writes a the differences between the current configuration and the
+/*! Writes a the differences between the current configuration and the
    *  template configuration to stream \a t.
    */
-  void compareDoxyfile(TextStream &t, CompareMode compareMode);
+void compareDoxyfile(TextStream &t, CompareMode compareMode);
 
-  /*! Writes a the used settings of the current configuration as XML format
+/*! Writes a the used settings of the current configuration as XML format
    *  to stream \a t.
    */
-  void writeXMLDoxyfile(TextStream &t);
+void writeXMLDoxyfile(TextStream &t);
 
-  /*! Writes all possible setting ids to an XSD file for validation 
+/*! Writes all possible setting ids to an XSD file for validation 
    *  through the stream \a t.
    */
-  void writeXSDDoxyfile(TextStream &t);
+void writeXSDDoxyfile(TextStream &t);
 
-  /*! Parses a configuration file with name \a fn.
+/*! Parses a configuration file with name \a fn.
    *  \returns TRUE if successful, FALSE if the file could not be
    *  opened or read.
    */
-  bool parse(const QCString &fileName,bool update=FALSE, CompareMode compareMode = CompareMode::Full);
+bool parse(const QCString &fileName, bool update = FALSE, CompareMode compareMode = CompareMode::Full);
 
-  /*! Post processed the parsed data. Replaces raw string values by the actual values.
+/*! Post processed the parsed data. Replaces raw string values by the actual values.
    *  and replaces environment variables.
    *  \param clearHeaderAndFooter set to TRUE when writing header and footer templates.
    *  \param compareMode signals if we in Doxyfile compare (`-x` or `-x_noenv`) mode are or not.
    *   Influences setting of the default value and replacement of environment variables and CMake type replacement variables.
    */
-  void postProcess(bool clearHeaderAndFooter, CompareMode compareMode = CompareMode::Full);
+void postProcess(bool clearHeaderAndFooter, CompareMode compareMode = CompareMode::Full);
 
-  /*! Check the validity of the parsed options and correct or warn the user where needed.
+/*! Check the validity of the parsed options and correct or warn the user where needed.
    * \param quiet setting for the QUIET option (can have been overruled by means of a command line option)
    * \param check check  HTML / LaTeX header file etc. on existence (and terminate when not present)
    */
-  void checkAndCorrect(bool quiet, const bool check);
+void checkAndCorrect(bool quiet, const bool check);
 
-  /*! Adjust any configuration values based on the value of obsolete options. */
-  void updateObsolete();
+/*! Adjust any configuration values based on the value of obsolete options. */
+void updateObsolete();
 
-  /*! Clean up any data */
-  void deinit();
-}
+/*! Clean up any data */
+void deinit();
+} // namespace Config
 
 #endif

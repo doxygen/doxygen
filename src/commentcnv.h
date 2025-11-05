@@ -34,8 +34,7 @@
  *  - conditional sections are processed.
  *  - aliases are expanded.
  */
-void convertCppComments(const std::string &inBuf,std::string &outBuf,
+void convertCppComments(const std::string &inBuf, std::string &outBuf,
                         const std::string &fn);
 
 #endif
-

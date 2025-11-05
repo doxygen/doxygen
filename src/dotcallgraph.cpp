@@ -23,14 +23,14 @@
 static QCString getUniqueId(const MemberDef *md)
 {
   const MemberDef *def = md->memberDefinition();
-  if (def==nullptr) def = md;
-  QCString result = def->getReference()+"$"+
-         def->getOutputFileBase()+"#"+
-         def->anchor();
+  if (def == nullptr) def = md;
+  QCString result = def->getReference() + "$" +
+                    def->getOutputFileBase() + "#" +
+                    def->anchor();
   return result;
 }
 
-void DotCallGraph::buildGraph(DotNode *n,const MemberDef *md,int distance)
+void DotCallGraph::buildGraph(DotNode *n, const MemberDef *md, int distance)
 {
   auto refs = m_inverse ? md->getReferencedByMembers() : md->getReferencesMembers();
   for (const auto &rmd : refs)
@@ -38,11 +38,11 @@ void DotCallGraph::buildGraph(DotNode *n,const MemberDef *md,int distance)
     if (rmd->isCallable())
     {
       QCString uniqueId = getUniqueId(rmd);
-      auto it = m_usedNodes.find(uniqueId.str());
-      if (it!=m_usedNodes.end()) // file is already a node in the graph
+      auto     it       = m_usedNodes.find(uniqueId.str());
+      if (it != m_usedNodes.end()) // file is already a node in the graph
       {
         DotNode *bn = it->second;
-        n->addChild(bn,EdgeInfo::Blue,EdgeInfo::Solid);
+        n->addChild(bn, EdgeInfo::Blue, EdgeInfo::Solid);
         bn->addParent(n);
         bn->setDistance(distance);
       }
@@ -51,27 +51,26 @@ void DotCallGraph::buildGraph(DotNode *n,const MemberDef *md,int distance)
         QCString name;
         if (Config_getBool(HIDE_SCOPE_NAMES))
         {
-          name  = rmd->getOuterScope()==m_scope ?
-            rmd->name() : rmd->qualifiedName();
+          name = rmd->getOuterScope() == m_scope ? rmd->name() : rmd->qualifiedName();
         }
         else
         {
           name = rmd->qualifiedName();
         }
         QCString tooltip = rmd->briefDescriptionAsTooltip();
-        DotNode *bn = new DotNode(
-            this,
-            linkToText(rmd->getLanguage(),name,FALSE),
-            tooltip,
-            uniqueId,
-            0 //distance
-            );
-        n->addChild(bn,EdgeInfo::Blue,EdgeInfo::Solid);
+        DotNode *bn      = new DotNode(
+               this,
+               linkToText(rmd->getLanguage(), name, FALSE),
+               tooltip,
+               uniqueId,
+               0 //distance
+             );
+        n->addChild(bn, EdgeInfo::Blue, EdgeInfo::Solid);
         bn->addParent(n);
         bn->setDistance(distance);
-        m_usedNodes.emplace(uniqueId.str(),bn);
+        m_usedNodes.emplace(uniqueId.str(), bn);
 
-        buildGraph(bn,rmd,distance+1);
+        buildGraph(bn, rmd, distance + 1);
       }
     }
   }
@@ -79,11 +78,11 @@ void DotCallGraph::buildGraph(DotNode *n,const MemberDef *md,int distance)
 
 void DotCallGraph::determineVisibleNodes(DotNodeDeque &queue, int &maxNodes)
 {
-  while (!queue.empty() && maxNodes>0)
+  while (!queue.empty() && maxNodes > 0)
   {
     DotNode *n = queue.front();
     queue.pop_front();
-    if (!n->isVisible() && n->distance()<=Config_getInt(MAX_DOT_GRAPH_DEPTH)) // not yet processed
+    if (!n->isVisible() && n->distance() <= Config_getInt(MAX_DOT_GRAPH_DEPTH)) // not yet processed
     {
       n->markAsVisible();
       maxNodes--;
@@ -102,7 +101,7 @@ void DotCallGraph::determineTruncatedNodes(DotNodeDeque &queue)
   {
     DotNode *n = queue.front();
     queue.pop_front();
-    if (n->isVisible() && n->isTruncated()==DotNode::Unknown)
+    if (n->isVisible() && n->isTruncated() == DotNode::Unknown)
     {
       bool truncated = FALSE;
       for (const auto &dn : n->children())
@@ -117,11 +116,11 @@ void DotCallGraph::determineTruncatedNodes(DotNodeDeque &queue)
   }
 }
 
-DotCallGraph::DotCallGraph(const MemberDef *md,bool inverse)
+DotCallGraph::DotCallGraph(const MemberDef *md, bool inverse)
 {
-  m_inverse = inverse;
-  m_diskName = md->getOutputFileBase()+"_"+md->anchor();
-  m_scope    = md->getOuterScope();
+  m_inverse         = inverse;
+  m_diskName        = md->getOutputFileBase() + "_" + md->anchor();
+  m_scope           = md->getOuterScope();
   QCString uniqueId = getUniqueId(md);
   QCString name;
   if (Config_getBool(HIDE_SCOPE_NAMES))
@@ -133,20 +132,20 @@ DotCallGraph::DotCallGraph(const MemberDef *md,bool inverse)
     name = md->qualifiedName();
   }
   QCString tooltip = md->briefDescriptionAsTooltip();
-  m_startNode = new DotNode(this,
-    linkToText(md->getLanguage(),name,FALSE),
-    tooltip,
-    uniqueId,
-    TRUE     // root node
-  );
+  m_startNode      = new DotNode(this,
+                                 linkToText(md->getLanguage(), name, FALSE),
+                                 tooltip,
+                                 uniqueId,
+                                 TRUE // root node
+       );
   m_startNode->setDistance(0);
-  m_usedNodes.emplace(uniqueId.str(),m_startNode);
-  buildGraph(m_startNode,md,1);
+  m_usedNodes.emplace(uniqueId.str(), m_startNode);
+  buildGraph(m_startNode, md, 1);
 
-  int maxNodes = Config_getInt(DOT_GRAPH_MAX_NODES);
+  int          maxNodes = Config_getInt(DOT_GRAPH_MAX_NODES);
   DotNodeDeque openNodeQueue;
   openNodeQueue.push_back(m_startNode);
-  determineVisibleNodes(openNodeQueue,maxNodes);
+  determineVisibleNodes(openNodeQueue, maxNodes);
   openNodeQueue.clear();
   openNodeQueue.push_back(m_startNode);
   determineTruncatedNodes(openNodeQueue);
@@ -181,15 +180,15 @@ QCString DotCallGraph::getMapLabel() const
 }
 
 QCString DotCallGraph::writeGraph(
-        TextStream &out,
-        GraphOutputFormat graphFormat,
-        EmbeddedOutputFormat textFormat,
-        const QCString &path,
-        const QCString &fileName,
-        const QCString &relPath,bool generateImageMap,
-        int graphId)
+  TextStream          &out,
+  GraphOutputFormat    graphFormat,
+  EmbeddedOutputFormat textFormat,
+  const QCString      &path,
+  const QCString      &fileName,
+  const QCString &relPath, bool generateImageMap,
+  int graphId)
 {
-  m_doNotAddImageToIndex = textFormat!=EmbeddedOutputFormat::Html;
+  m_doNotAddImageToIndex = textFormat != EmbeddedOutputFormat::Html;
 
   return DotGraph::writeGraph(out, graphFormat, textFormat, path, fileName, relPath, generateImageMap, graphId);
 }
@@ -201,7 +200,7 @@ bool DotCallGraph::isTrivial() const
 
 bool DotCallGraph::isTooBig() const
 {
-  return numNodes()>=Config_getInt(DOT_GRAPH_MAX_NODES);
+  return numNodes() >= Config_getInt(DOT_GRAPH_MAX_NODES);
 }
 
 int DotCallGraph::numNodes() const
@@ -209,7 +208,7 @@ int DotCallGraph::numNodes() const
   return static_cast<int>(m_startNode->children().size());
 }
 
-bool DotCallGraph::isTrivial(const MemberDef *md,bool inverse)
+bool DotCallGraph::isTrivial(const MemberDef *md, bool inverse)
 {
   auto refs = inverse ? md->getReferencedByMembers() : md->getReferencesMembers();
   for (const auto &rmd : refs)
@@ -221,4 +220,3 @@ bool DotCallGraph::isTrivial(const MemberDef *md,bool inverse)
   }
   return TRUE;
 }
-

@@ -8,15 +8,15 @@
 FILE *unit = NULL;
 
 /** a general open macro */
-#define FOPEN_MACRO(fn ,mod)           \
+#define FOPEN_MACRO(fn, mod) \
   if ((unit = fopen(fn, mod)) == NULL) \
-  {                                    \
-    msg(OPEN_ERR,strerror(errno));     \
+  { \
+    msg(OPEN_ERR, strerror(errno)); \
   }
 
 /** a general close macro */
-#define FCLOSE_MACRO                   \
-  if (fclose(unit) != 0)               \
-  {                                    \
-    msg(CLOSE_ERR,strerror(errno));    \
+#define FCLOSE_MACRO \
+  if (fclose(unit) != 0) \
+  { \
+    msg(CLOSE_ERR, strerror(errno)); \
   }

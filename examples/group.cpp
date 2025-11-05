@@ -4,10 +4,14 @@
  */
 
 /** @brief class C1 in group 1 */
-class C1 {};
+class C1
+{
+};
 
 /** @brief class C2 in group 1 */
-class C2 {};
+class C2
+{
+};
 
 /** function in group 1 */
 void func() {}
@@ -32,17 +36,23 @@ void func() {}
  *  @ingroup group2
  *  @brief class C3 in group 2
  */
-class C3 {};
+class C3
+{
+};
 
 /** @ingroup group2
  *  @brief class C4 in group 2
  */
-class C4 {};
+class C4
+{
+};
 
 /** @ingroup group3
  *  @brief class C5 in @link group3 the third group@endlink.
  */
-class C5 {};
+class C5
+{
+};
 
 /** @ingroup group1 group2 group3 group4
  *  namespace N1 is in four groups
@@ -50,7 +60,9 @@ class C5 {};
  *
  *  Also see @ref mypage2
  */
-namespace N1 {};
+namespace N1
+{
+};
 
 /** @file
  *  @ingroup group3
@@ -85,4 +97,3 @@ void func2() {}
 void func3() {}
 
 /** @} */ // end of group1
-

@@ -37,28 +37,28 @@ class ModuleDef;
 
 struct ImportInfo
 {
-  ImportInfo(ModuleDef *def,const QCString &name,int l,const QCString &pName,bool isExported=false)
-    : moduleDef(def), importName(name), line(l), partitionName(pName), exported(isExported) {}
+    ImportInfo(ModuleDef *def, const QCString &name, int l, const QCString &pName, bool isExported = false) :
+        moduleDef(def), importName(name), line(l), partitionName(pName), exported(isExported) {}
 
-  ModuleDef     *moduleDef;
-  QCString       importName;
-  int            line;
-  QCString       partitionName;
-  bool           exported;
-  QCString qualifiedName() const
-  {
-    QCString result=importName;
-    if (!partitionName.isEmpty())
+    ModuleDef *moduleDef;
+    QCString   importName;
+    int        line;
+    QCString   partitionName;
+    bool       exported;
+    QCString   qualifiedName() const
     {
-      result+=":"+partitionName;
+      QCString result = importName;
+      if (!partitionName.isEmpty())
+      {
+        result += ":" + partitionName;
+      }
+      return result;
     }
-    return result;
-  }
 };
 
 using ImportInfoList = std::vector<ImportInfo>;
-using ModuleMap = std::unordered_map<std::string,ModuleDef *>;
-using ImportInfoMap = std::unordered_map<std::string,ImportInfoList>;
+using ModuleMap      = std::unordered_map<std::string, ModuleDef *>;
+using ImportInfoMap  = std::unordered_map<std::string, ImportInfoList>;
 
 
 class ModuleDef : public DefinitionMutable, public Definition
@@ -71,26 +71,26 @@ class ModuleDef : public DefinitionMutable, public Definition
       Interface,
       Implementation
     };
-    virtual Type moduleType() const = 0;
-    virtual QCString partitionName() const = 0;
-    virtual void writeDocumentation(OutputList &ol) = 0;
-    virtual bool isPrimaryInterface() const = 0;
-    virtual MemberList *getMemberList(MemberListType lt) const = 0;
-    virtual const MemberLists &getMemberLists() const = 0;
-    virtual const MemberGroupList &getMemberGroups() const = 0;
-    virtual int countVisibleMembers() const = 0;
-    virtual const ClassLinkedRefMap &getClasses()  const = 0;
-    virtual const ConceptLinkedRefMap &getConcepts() const  = 0;
-    virtual FileDef *getFileDef() const = 0;
-    virtual const ImportInfoMap &getImports() const = 0;
-    virtual const ImportInfoMap &getExports() const = 0;
-    virtual const ModuleMap &partitions() const = 0;
-    virtual void writeTagFile(TextStream &tagFile) const = 0;
-    virtual FileList getUsedFiles() const = 0;
+    virtual Type                       moduleType() const                      = 0;
+    virtual QCString                   partitionName() const                   = 0;
+    virtual void                       writeDocumentation(OutputList &ol)      = 0;
+    virtual bool                       isPrimaryInterface() const              = 0;
+    virtual MemberList                *getMemberList(MemberListType lt) const  = 0;
+    virtual const MemberLists         &getMemberLists() const                  = 0;
+    virtual const MemberGroupList     &getMemberGroups() const                 = 0;
+    virtual int                        countVisibleMembers() const             = 0;
+    virtual const ClassLinkedRefMap   &getClasses() const                      = 0;
+    virtual const ConceptLinkedRefMap &getConcepts() const                     = 0;
+    virtual FileDef                   *getFileDef() const                      = 0;
+    virtual const ImportInfoMap       &getImports() const                      = 0;
+    virtual const ImportInfoMap       &getExports() const                      = 0;
+    virtual const ModuleMap           &partitions() const                      = 0;
+    virtual void                       writeTagFile(TextStream &tagFile) const = 0;
+    virtual FileList                   getUsedFiles() const                    = 0;
 };
 
-ModuleDef            *toModuleDef(Definition *d);
-const ModuleDef      *toModuleDef(const Definition *d);
+ModuleDef       *toModuleDef(Definition *d);
+const ModuleDef *toModuleDef(const Definition *d);
 
 class ModuleLinkedMap : public LinkedMap<ModuleDef>
 {
@@ -100,7 +100,7 @@ class ModuleLinkedRefMap : public LinkedRefMap<ModuleDef>
 {
   public:
     bool declVisible() const;
-    void writeDeclaration(OutputList &ol,const QCString &header,bool localNames) const;
+    void writeDeclaration(OutputList &ol, const QCString &header, bool localNames) const;
 };
 
 class ModuleList : public std::vector<ModuleDef *>
@@ -110,42 +110,40 @@ class ModuleList : public std::vector<ModuleDef *>
 class ModuleManager
 {
   public:
-    static ModuleManager &instance();
-    void createModuleDef(const QCString &fileName, int line, int column, bool exported,
-                         const QCString &moduleName, const QCString &partitionName=QCString());
-    void clear();
-    void addHeader(const QCString &moduleFile,int line,const QCString &headerName,bool isSystem);
-    void addImport(const QCString &moduleFile,int line,const QCString &importName,bool isExported,const QCString &partitionName=QCString());
-    void addClassToModule    (const Entry *root,ClassDef *cd);
-    void addConceptToModule  (const Entry *root,ConceptDef *cd);
-    void addMemberToModule   (const Entry *root,MemberDef *md);
-    void addDocs(const Entry *root);
-    void addTagInfo(const QCString &moduleFile,const QCString &tagName,const QCString &clangId);
-    void addListReferences();
-    void addMembersToMemberGroup();
-    void distributeMemberGroupDocumentation();
-    void findSectionsInDocumentation();
-    void sortMemberLists();
+    static ModuleManager  &instance();
+    void                   createModuleDef(const QCString &fileName, int line, int column, bool exported,
+                                           const QCString &moduleName, const QCString &partitionName = QCString());
+    void                   clear();
+    void                   addHeader(const QCString &moduleFile, int line, const QCString &headerName, bool isSystem);
+    void                   addImport(const QCString &moduleFile, int line, const QCString &importName, bool isExported, const QCString &partitionName = QCString());
+    void                   addClassToModule(const Entry *root, ClassDef *cd);
+    void                   addConceptToModule(const Entry *root, ConceptDef *cd);
+    void                   addMemberToModule(const Entry *root, MemberDef *md);
+    void                   addDocs(const Entry *root);
+    void                   addTagInfo(const QCString &moduleFile, const QCString &tagName, const QCString &clangId);
+    void                   addListReferences();
+    void                   addMembersToMemberGroup();
+    void                   distributeMemberGroupDocumentation();
+    void                   findSectionsInDocumentation();
+    void                   sortMemberLists();
 
-    void resolvePartitions();
-    void resolveImports();
-    void collectExportedSymbols();
-    void countMembers();
-    void writeDocumentation(OutputList &ol);
-    int numDocumentedModules() const;
-    ModuleLinkedMap &modules();
+    void                   resolvePartitions();
+    void                   resolveImports();
+    void                   collectExportedSymbols();
+    void                   countMembers();
+    void                   writeDocumentation(OutputList &ol);
+    int                    numDocumentedModules() const;
+    ModuleLinkedMap       &modules();
     const ModuleLinkedMap &modules() const;
-    ModuleDef *getPrimaryInterface(const QCString &moduleName) const;
-
+    ModuleDef             *getPrimaryInterface(const QCString &moduleName) const;
   private:
     ModuleManager();
-   ~ModuleManager() = default;
+    ~ModuleManager() = default;
     NON_COPYABLE(ModuleManager)
     void resolvePartitionsRecursively(ModuleDef *intfMod, ModuleDef *mod);
     void collectExportedSymbolsRecursively(ModuleDef *intfMod, ModuleDef *mod);
     struct Private;
     std::unique_ptr<Private> p;
-
 };
 
 #endif

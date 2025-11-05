@@ -16,5 +16,7 @@
  *
  * More normal text. 
  */
-  
-class Par_Test {};
+
+class Par_Test
+{
+};

@@ -17,4 +17,3 @@ int func2();
  *  \returns A integer.
  */
 int func3();
-

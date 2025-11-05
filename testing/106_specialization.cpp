@@ -4,24 +4,37 @@
 // check: indexpage.xml
 // check: class_container_3_01_elem5_01_4.xml
 // check: struct_container_3_01_elem5_01_4_1_1_nested.xml
-template<class T> class Container { };
-class Elem1 {};
-class Elem2 {};
-class Elem3 {};
-class Elem4 {};
-class Elem5 {};
+template <class T>
+class Container
+{
+};
+class Elem1
+{
+};
+class Elem2
+{
+};
+class Elem3
+{
+};
+class Elem4
+{
+};
+class Elem5
+{
+};
 
 class Derived : public Container<Elem1>
 {
   public:
     typedef Container<Elem2> Type;
-    void func(const Container<Elem3> &c);
-    Container<Elem4> var;
+    void                     func(const Container<Elem3> &c);
+    Container<Elem4>         var;
 };
 
 void Derived::func(const Container<Elem3> &c) {}
 
-template<>
+template <>
 class Container<Elem5>
 {
   public:
@@ -29,7 +42,9 @@ class Container<Elem5>
     {
       int a;
     }
-    struct Nested {};
+    struct Nested
+    {
+    };
 };
 
 /** @mainpage

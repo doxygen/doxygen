@@ -37,76 +37,78 @@ inline QCString compileOptions(const QCString &def)
   return def;
 }
 
-inline QCString compileOptions(const QCString &def,SrcLangExt langId1,const QCString &value1)
+inline QCString compileOptions(const QCString &def, SrcLangExt langId1, const QCString &value1)
 {
-  return compileOptions(def)+"|"+QCString().setNum(static_cast<long>(langId1))+"="+value1;
+  return compileOptions(def) + "|" + QCString().setNum(static_cast<long>(langId1)) + "=" + value1;
 }
 
-inline QCString compileOptions(const QCString &def,SrcLangExt langId1,const QCString &value1,
-                                                   SrcLangExt langId2,const QCString &value2)
+inline QCString compileOptions(const QCString &def, SrcLangExt langId1, const QCString &value1,
+                               SrcLangExt langId2, const QCString &value2)
 {
-  return compileOptions(def,langId1,value1)+
-         "|"+QCString().setNum(static_cast<long>(langId2))+"="+value2;
+  return compileOptions(def, langId1, value1) +
+         "|" + QCString().setNum(static_cast<long>(langId2)) + "=" + value2;
 }
 
-inline QCString compileOptions(const QCString &def,SrcLangExt langId1,const QCString &value1,
-                                                   SrcLangExt langId2,const QCString &value2,
-                                                   SrcLangExt langId3,const QCString &value3)
+inline QCString compileOptions(const QCString &def, SrcLangExt langId1, const QCString &value1,
+                               SrcLangExt langId2, const QCString &value2,
+                               SrcLangExt langId3, const QCString &value3)
 {
-  return compileOptions(def,langId1,value1,langId2,value2)+
-         "|"+QCString().setNum(static_cast<long>(langId3))+"="+value3;
+  return compileOptions(def, langId1, value1, langId2, value2) +
+         "|" + QCString().setNum(static_cast<long>(langId3)) + "=" + value3;
 }
 
-inline QCString compileOptions(const QCString &def,SrcLangExt langId1,const QCString &value1,
-                                                   SrcLangExt langId2,const QCString &value2,
-                                                   SrcLangExt langId3,const QCString &value3,
-                                                   SrcLangExt langId4,const QCString &value4)
+inline QCString compileOptions(const QCString &def, SrcLangExt langId1, const QCString &value1,
+                               SrcLangExt langId2, const QCString &value2,
+                               SrcLangExt langId3, const QCString &value3,
+                               SrcLangExt langId4, const QCString &value4)
 {
-  return compileOptions(def,langId1,value1,langId2,value2,langId3,value3)+
-         "|"+QCString().setNum(static_cast<long>(langId4))+"="+value4;
+  return compileOptions(def, langId1, value1, langId2, value2, langId3, value3) +
+         "|" + QCString().setNum(static_cast<long>(langId4)) + "=" + value4;
 }
 
-inline QCString compileOptions(const QCString &def,SrcLangExt langId1,const QCString &value1,
-                                                   SrcLangExt langId2,const QCString &value2,
-                                                   SrcLangExt langId3,const QCString &value3,
-                                                   SrcLangExt langId4,const QCString &value4,
-                                                   SrcLangExt langId5,const QCString &value5)
+inline QCString compileOptions(const QCString &def, SrcLangExt langId1, const QCString &value1,
+                               SrcLangExt langId2, const QCString &value2,
+                               SrcLangExt langId3, const QCString &value3,
+                               SrcLangExt langId4, const QCString &value4,
+                               SrcLangExt langId5, const QCString &value5)
 {
-  return compileOptions(def,langId1,value1,langId2,value2,langId3,value3,langId4,value4)+
-         "|"+QCString().setNum(static_cast<long>(langId5))+"="+value5;
+  return compileOptions(def, langId1, value1, langId2, value2, langId3, value3, langId4, value4) +
+         "|" + QCString().setNum(static_cast<long>(langId5)) + "=" + value5;
 }
 
-static bool elemIsVisible(const XMLHandlers::Attributes &attrib,bool defVal=TRUE)
+static bool elemIsVisible(const XMLHandlers::Attributes &attrib, bool defVal = TRUE)
 {
-  QCString visible = XMLHandlers::value(attrib,"visible");
+  QCString visible = XMLHandlers::value(attrib, "visible");
   //printf("visible_attribute=%s\n",qPrint(visible));
   if (visible.isEmpty()) return defVal;
-  if (visible.at(0)=='$' && visible.length()>1)
+  if (visible.at(0) == '$' && visible.length() > 1)
   {
-    QCString id = visible.mid(1);
+    QCString                  id  = visible.mid(1);
     const ConfigValues::Info *opt = ConfigValues::instance().get(id);
-    if (opt && opt->type==ConfigValues::Info::Bool)
+    if (opt && opt->type == ConfigValues::Info::Bool)
     {
       return ConfigValues::instance().*(opt->value.b);
     }
-    else if (opt && opt->type==ConfigValues::Info::String)
+    else if (opt && opt->type == ConfigValues::Info::String)
     {
       return opt->getBooleanRepresentation();
     }
     else if (!opt)
     {
       err("found unsupported value '{}' for visible attribute in layout file, reverting to '{}'\n",
-          visible,(defVal?"yes":"no"));
+          visible, (defVal ? "yes" : "no"));
       return defVal;
     }
   }
   QCString visibleLow = visible.lower();
-  if (visibleLow=="no" || visibleLow=="false" || visibleLow=="0") return FALSE;
-  else if (visibleLow=="yes" || visibleLow=="true" || visibleLow=="1") return TRUE;
+  if (visibleLow == "no" || visibleLow == "false" || visibleLow == "0")
+    return FALSE;
+  else if (visibleLow == "yes" || visibleLow == "true" || visibleLow == "1")
+    return TRUE;
   else
   {
     err("found unsupported value '{}' for visible attribute in layout file, reverting to '{}'\n",
-        visible,(defVal?"yes":"no"));
+        visible, (defVal ? "yes" : "no"));
     return defVal;
   }
 }
@@ -115,7 +117,7 @@ static bool elemIsVisible(const XMLHandlers::Attributes &attrib,bool defVal=TRUE
 
 void LayoutNavEntry::updateVisibility(LayoutNavEntry *parent)
 {
-  m_visible = m_visible && (parent==nullptr || parent->visible());
+  m_visible = m_visible && (parent == nullptr || parent->visible());
 }
 
 void LayoutNavEntry::appendChild(std::unique_ptr<LayoutNavEntry> &&e)
@@ -124,23 +126,23 @@ void LayoutNavEntry::appendChild(std::unique_ptr<LayoutNavEntry> &&e)
   m_children.push_back(std::move(e));
 }
 
-void LayoutNavEntry::insertChild(size_t pos,std::unique_ptr<LayoutNavEntry> &&e)
+void LayoutNavEntry::insertChild(size_t pos, std::unique_ptr<LayoutNavEntry> &&e)
 {
   e->updateVisibility(this);
-  m_children.insert(m_children.begin()+pos,std::move(e));
+  m_children.insert(m_children.begin() + pos, std::move(e));
 }
 
 LayoutNavEntry *LayoutNavEntry::find(LayoutNavEntry::Kind kind,
-    const QCString &file) const
+                                     const QCString      &file) const
 {
-  LayoutNavEntry *result=nullptr;
+  LayoutNavEntry *result = nullptr;
   for (const auto &entry : m_children)
   {
     // depth first search, needed to find the entry furthest from the
     // root in case an entry is in the tree twice
-    result = entry->find(kind,file);
+    result = entry->find(kind, file);
     if (result) return result;
-    if (entry->kind()==kind && (file==QCString() || entry->baseFile()==file))
+    if (entry->kind() == kind && (file == QCString() || entry->baseFile() == file))
     {
       return entry.get();
     }
@@ -151,24 +153,24 @@ LayoutNavEntry *LayoutNavEntry::find(LayoutNavEntry::Kind kind,
 QCString LayoutNavEntry::url() const
 {
   QCString url = baseFile().stripWhiteSpace();
-  if ((kind()!=LayoutNavEntry::User && kind()!=LayoutNavEntry::UserGroup) ||
-      (kind()==LayoutNavEntry::UserGroup && url.startsWith("usergroup")))
+  if ((kind() != LayoutNavEntry::User && kind() != LayoutNavEntry::UserGroup) ||
+      (kind() == LayoutNavEntry::UserGroup && url.startsWith("usergroup")))
   {
     addHtmlExtensionIfMissing(url);
   }
   else if (url.startsWith("@ref ") || url.startsWith("\\ref "))
   {
-    bool found=false;
-    QCString relPath = "";
-    QCString context = QCString();
-    auto parser { createDocParser() };
-    auto dfAst  { createRef( *parser.get(), url.mid(5).stripWhiteSpace(), context ) };
-    auto dfAstImpl = dynamic_cast<const DocNodeAST*>(dfAst.get());
-    const DocRef *df = std::get_if<DocRef>(&dfAstImpl->root);
+    bool          found   = false;
+    QCString      relPath = "";
+    QCString      context = QCString();
+    auto          parser{ createDocParser() };
+    auto          dfAst{ createRef(*parser.get(), url.mid(5).stripWhiteSpace(), context) };
+    auto          dfAstImpl = dynamic_cast<const DocNodeAST *>(dfAst.get());
+    const DocRef *df        = std::get_if<DocRef>(&dfAstImpl->root);
     if (!df->file().isEmpty() || !df->anchor().isEmpty())
     {
       found = true;
-      url=externalRef(relPath,df->ref(),TRUE);
+      url   = externalRef(relPath, df->ref(), TRUE);
       if (!df->file().isEmpty())
       {
         QCString fn = df->file();
@@ -182,7 +184,7 @@ QCString LayoutNavEntry::url() const
     }
     if (!found)
     {
-      msg("explicit link request to '{}' in layout file '{}' could not be resolved\n",url.mid(5),Config_getString(LAYOUT_FILE));
+      msg("explicit link request to '{}' in layout file '{}' could not be resolved\n", url.mid(5), Config_getString(LAYOUT_FILE));
     }
   }
   //printf("LayoutNavEntry::url()=%s\n",qPrint(url));
@@ -194,82 +196,83 @@ QCString LayoutNavEntry::url() const
 class LayoutParser
 {
   public:
-    LayoutParser(LayoutDocManager &manager) : m_layoutDocManager(manager) {}
+    LayoutParser(LayoutDocManager &manager) :
+        m_layoutDocManager(manager) {}
 
     // =========== XMLHandler events
     void setDocumentLocator(const XMLLocator *locator)
     {
       m_locator = locator;
     }
-    void error( const std::string &fileName,int lineNr,const std::string &msg)
+    void error(const std::string &fileName, int lineNr, const std::string &msg)
     {
-      warn_layout(fileName,lineNr,"{}",msg);
+      warn_layout(fileName, lineNr, "{}", msg);
     }
-    void startElement( const std::string &name, const XMLHandlers::Attributes& attrib );
-    void endElement( const std::string &name );
+    void startElement(const std::string &name, const XMLHandlers::Attributes &attrib);
+    void endElement(const std::string &name);
 
-    void startSimpleEntry(LayoutDocEntry::Kind k,const std::string &id,const XMLHandlers::Attributes &attrib)
+    void startSimpleEntry(LayoutDocEntry::Kind k, const std::string &id, const XMLHandlers::Attributes &attrib)
     {
       bool isVisible = m_visible && elemIsVisible(attrib);
-      if (m_part!=LayoutDocManager::Undefined)
+      if (m_part != LayoutDocManager::Undefined)
       {
-        auto elem = std::make_unique<LayoutDocEntrySimple>(k,id,isVisible);
+        auto elem = std::make_unique<LayoutDocEntrySimple>(k, id, isVisible);
         //printf("startSimpleEntry(%s) isVisible=%d visible=%d\n",qPrint(elem->entryToString()),isVisible,elem->visible());
-        m_layoutDocManager.addEntry(m_part,std::move(elem));
+        m_layoutDocManager.addEntry(m_part, std::move(elem));
       }
     }
 
     // ============ Specific callbacks
 
-    void startSectionEntry(LayoutDocEntry::Kind k,const std::string &id,const XMLHandlers::Attributes &attrib,
+    void startSectionEntry(LayoutDocEntry::Kind k, const std::string &id, const XMLHandlers::Attributes &attrib,
                            const QCString &title)
     {
-      bool isVisible = m_visible && elemIsVisible(attrib);
-      QCString userTitle = XMLHandlers::value(attrib,"title");
+      bool     isVisible = m_visible && elemIsVisible(attrib);
+      QCString userTitle = XMLHandlers::value(attrib, "title");
       //printf("startSectionEntry: title='%s' userTitle='%s'\n",
       //    qPrint(title),qPrint(userTitle));
-      if (userTitle.isEmpty())  userTitle = title;
-      if (m_part!=LayoutDocManager::Undefined)
+      if (userTitle.isEmpty()) userTitle = title;
+      if (m_part != LayoutDocManager::Undefined)
       {
-        m_layoutDocManager.addEntry(m_part,std::make_unique<LayoutDocEntrySection>(k,id,userTitle,isVisible));
+        m_layoutDocManager.addEntry(m_part, std::make_unique<LayoutDocEntrySection>(k, id, userTitle, isVisible));
       }
     }
 
 
-    void startMemberDeclEntry(const std::string &id,const XMLHandlers::Attributes &attrib,MemberListType type,
-                              const QCString &title,const QCString &subscript)
+    void startMemberDeclEntry(const std::string &id, const XMLHandlers::Attributes &attrib, MemberListType type,
+                              const QCString &title, const QCString &subscript)
     {
-      QCString userTitle     = XMLHandlers::value(attrib,"title");
-      QCString userSubscript = XMLHandlers::value(attrib,"subtitle");
-      if (userTitle.isEmpty())     userTitle     = title;
+      QCString userTitle     = XMLHandlers::value(attrib, "title");
+      QCString userSubscript = XMLHandlers::value(attrib, "subtitle");
+      if (userTitle.isEmpty()) userTitle = title;
       if (userSubscript.isEmpty()) userSubscript = subscript;
       bool isVisible = m_visible && elemIsVisible(attrib);
-      if (m_part!=LayoutDocManager::Undefined)
+      if (m_part != LayoutDocManager::Undefined)
       {
-        m_layoutDocManager.addEntry(m_part,std::make_unique<LayoutDocEntryMemberDecl>(type,id,userTitle,userSubscript,isVisible));
+        m_layoutDocManager.addEntry(m_part, std::make_unique<LayoutDocEntryMemberDecl>(type, id, userTitle, userSubscript, isVisible));
       }
     }
 
-    void startMemberDefEntry(const std::string &id,const XMLHandlers::Attributes &attrib,MemberListType type,
-                             const QCString &title,const QCString &)
+    void startMemberDefEntry(const std::string &id, const XMLHandlers::Attributes &attrib, MemberListType type,
+                             const QCString &title, const QCString &)
     {
-      QCString userTitle = XMLHandlers::value(attrib,"title");
+      QCString userTitle = XMLHandlers::value(attrib, "title");
       if (userTitle.isEmpty()) userTitle = title;
       //printf("memberdef: %s\n",qPrint(userTitle));
       bool isVisible = m_visible && elemIsVisible(attrib);
-      if (m_part!=LayoutDocManager::Undefined)
+      if (m_part != LayoutDocManager::Undefined)
       {
-        m_layoutDocManager.addEntry(m_part,std::make_unique<LayoutDocEntryMemberDef>(type,id,userTitle,isVisible));
+        m_layoutDocManager.addEntry(m_part, std::make_unique<LayoutDocEntryMemberDef>(type, id, userTitle, isVisible));
       }
     }
 
-    void startLayout(const std::string &,const XMLHandlers::Attributes &attrib)
+    void startLayout(const std::string &, const XMLHandlers::Attributes &attrib)
     {
       // extract and store version number
-      QCString version = XMLHandlers::value(attrib,"version");
+      QCString             version = XMLHandlers::value(attrib, "version");
       static const reg::Ex re(R"((\d+)\.(\d+))");
-      reg::Match match;
-      if (reg::match(version.view(),match,re))
+      reg::Match           match;
+      if (reg::match(version.view(), match, re))
       {
         m_majorVersion = atoi(match[1].str().c_str());
         m_minorVersion = atoi(match[2].str().c_str());
@@ -277,321 +280,299 @@ class LayoutParser
       }
     }
 
-    void startNavIndex(const std::string &,const XMLHandlers::Attributes &)
+    void startNavIndex(const std::string &, const XMLHandlers::Attributes &)
     {
-      m_scope="navindex/";
+      m_scope   = "navindex/";
       m_rootNav = m_layoutDocManager.rootNavEntry();
     }
 
     void endNavIndex(const std::string &)
     {
-      m_scope="";
+      m_scope = "";
       if (m_rootNav && !m_rootNav->find(LayoutNavEntry::MainPage))
       {
         // no MainPage node... add one as the first item of the root node...
-        m_rootNav->insertChild(0,std::make_unique<LayoutNavEntry>(m_rootNav,LayoutNavEntry::MainPage, TRUE,
-                                                   "index",theTranslator->trMainPage(),""));
+        m_rootNav->insertChild(0, std::make_unique<LayoutNavEntry>(m_rootNav, LayoutNavEntry::MainPage, TRUE,
+                                                                   "index", theTranslator->trMainPage(), ""));
       }
     }
 
-    void startNavEntry(const std::string &,const XMLHandlers::Attributes &attrib)
+    void startNavEntry(const std::string &, const XMLHandlers::Attributes &attrib)
     {
-      bool javaOpt    = Config_getBool(OPTIMIZE_OUTPUT_JAVA);
-      bool fortranOpt = Config_getBool(OPTIMIZE_FOR_FORTRAN);
-      bool vhdlOpt    = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
-      bool sliceOpt   = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
+      bool javaOpt               = Config_getBool(OPTIMIZE_OUTPUT_JAVA);
+      bool fortranOpt            = Config_getBool(OPTIMIZE_FOR_FORTRAN);
+      bool vhdlOpt               = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
+      bool sliceOpt              = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
       bool hasGraphicalHierarchy = Config_getBool(HAVE_DOT) &&
-                                          Config_getBool(GRAPHICAL_HIERARCHY);
+                                   Config_getBool(GRAPHICAL_HIERARCHY);
       bool extractAll = Config_getBool(EXTRACT_ALL);
       static struct NavEntryMap
       {
-        const char *typeStr;       // type attribute name in the XML file
-        LayoutNavEntry::Kind kind; // corresponding enum name
-        QCString mainName;         // default title for an item if it has children
-        QCString subName;          // optional name for an item if it is rendered as a child
-        QCString intro;            // introduction text to be put on the index page
-        QCString baseFile;         // base name of the file containing the index page
-      } mapping[] =
-      {
+          const char          *typeStr;  // type attribute name in the XML file
+          LayoutNavEntry::Kind kind;     // corresponding enum name
+          QCString             mainName; // default title for an item if it has children
+          QCString             subName;  // optional name for an item if it is rendered as a child
+          QCString             intro;    // introduction text to be put on the index page
+          QCString             baseFile; // base name of the file containing the index page
+      } mapping[] = {
         { "mainpage",
           LayoutNavEntry::MainPage,
           theTranslator->trMainPage(),
           QCString(),
           QCString(),
-          "index"
-        },
+          "index" },
         { "pages",
           LayoutNavEntry::Pages,
           theTranslator->trRelatedPages(),
           QCString(),
           theTranslator->trRelatedPagesDescription(),
-          "pages"
-        },
+          "pages" },
         { "topics",
           LayoutNavEntry::Topics,
           theTranslator->trTopics(),
           QCString(),
           theTranslator->trTopicListDescription(),
-          "topics"
-        },
+          "topics" },
         { "modules",
           LayoutNavEntry::Modules,
           theTranslator->trModules(),
           theTranslator->trModulesList(),
           theTranslator->trModulesDescription(),
-          "modules"
-        },
+          "modules" },
         { "modulelist",
           LayoutNavEntry::ModuleList,
           theTranslator->trModulesList(),
           QCString(),
           theTranslator->trModulesListDescription(extractAll),
-          "modules"
-        },
+          "modules" },
         { "modulemembers",
           LayoutNavEntry::ModuleMembers,
           theTranslator->trModulesMembers(),
           QCString(),
           theTranslator->trModulesMemberDescription(extractAll),
-          "modulemembers"
-        },
+          "modulemembers" },
         { "namespaces",
           LayoutNavEntry::Namespaces,
-          javaOpt || vhdlOpt   ? theTranslator->trPackages() : fortranOpt || sliceOpt ? theTranslator->trModules() : theTranslator->trNamespaces(),
-          javaOpt || vhdlOpt   ? theTranslator->trPackageList() : fortranOpt || sliceOpt ? theTranslator->trModulesList() : theTranslator->trNamespaceList(),
-          javaOpt || vhdlOpt   ? theTranslator->trPackageListDescription() : fortranOpt || sliceOpt ? theTranslator->trModulesListDescription(extractAll) : theTranslator->trNamespaceListDescription(extractAll),
-          "namespaces"
-        },
+          javaOpt || vhdlOpt ? theTranslator->trPackages() : fortranOpt || sliceOpt ? theTranslator->trModules()
+                                                                                    : theTranslator->trNamespaces(),
+          javaOpt || vhdlOpt ? theTranslator->trPackageList() : fortranOpt || sliceOpt ? theTranslator->trModulesList()
+                                                                                       : theTranslator->trNamespaceList(),
+          javaOpt || vhdlOpt ? theTranslator->trPackageListDescription() : fortranOpt || sliceOpt ? theTranslator->trModulesListDescription(extractAll)
+                                                                                                  : theTranslator->trNamespaceListDescription(extractAll),
+          "namespaces" },
         { "namespacelist",
           LayoutNavEntry::NamespaceList,
-          javaOpt || vhdlOpt   ? theTranslator->trPackageList() : fortranOpt || sliceOpt ? theTranslator->trModulesList() : theTranslator->trNamespaceList(),
+          javaOpt || vhdlOpt ? theTranslator->trPackageList() : fortranOpt || sliceOpt ? theTranslator->trModulesList()
+                                                                                       : theTranslator->trNamespaceList(),
           QCString(),
-          javaOpt || vhdlOpt   ? theTranslator->trPackageListDescription() : fortranOpt || sliceOpt ? theTranslator->trModulesListDescription(extractAll) : theTranslator->trNamespaceListDescription(extractAll),
-          "namespaces"
-        },
+          javaOpt || vhdlOpt ? theTranslator->trPackageListDescription() : fortranOpt || sliceOpt ? theTranslator->trModulesListDescription(extractAll)
+                                                                                                  : theTranslator->trNamespaceListDescription(extractAll),
+          "namespaces" },
         { "namespacemembers",
           LayoutNavEntry::NamespaceMembers,
-          javaOpt || vhdlOpt   ? theTranslator->trPackageMembers() : fortranOpt || sliceOpt ? theTranslator->trModulesMembers() : theTranslator->trNamespaceMembers(),
+          javaOpt || vhdlOpt ? theTranslator->trPackageMembers() : fortranOpt || sliceOpt ? theTranslator->trModulesMembers()
+                                                                                          : theTranslator->trNamespaceMembers(),
           QCString(),
           fortranOpt || sliceOpt ? theTranslator->trModulesMemberDescription(extractAll) : theTranslator->trNamespaceMemberDescription(extractAll),
-          "namespacemembers"
-        },
+          "namespacemembers" },
         { "concepts",
           LayoutNavEntry::Concepts,
-          theTranslator->trConcept(true,false),
+          theTranslator->trConcept(true, false),
           theTranslator->trConceptList(),
           theTranslator->trConceptListDescription(extractAll),
-          "concepts"
-        },
+          "concepts" },
         { "classindex",
           LayoutNavEntry::ClassIndex,
-          fortranOpt ? theTranslator->trCompoundIndexFortran() : vhdlOpt ? theTranslator->trDesignUnitIndex() : theTranslator->trCompoundIndex(),
+          fortranOpt ? theTranslator->trCompoundIndexFortran() : vhdlOpt ? theTranslator->trDesignUnitIndex()
+                                                                         : theTranslator->trCompoundIndex(),
           QCString(),
           QCString(),
-          "classes"
-        },
+          "classes" },
         { "classes",
           LayoutNavEntry::Classes,
-          fortranOpt ? theTranslator->trDataTypes() : vhdlOpt ? theTranslator->trDesignUnits() : theTranslator->trClasses(),
+          fortranOpt ? theTranslator->trDataTypes() : vhdlOpt ? theTranslator->trDesignUnits()
+                                                              : theTranslator->trClasses(),
           theTranslator->trCompoundList(),
-          fortranOpt ? theTranslator->trCompoundListDescriptionFortran() : vhdlOpt ? theTranslator->trDesignUnitListDescription() : theTranslator->trCompoundListDescription(),
-          "annotated"
-        },
+          fortranOpt ? theTranslator->trCompoundListDescriptionFortran() : vhdlOpt ? theTranslator->trDesignUnitListDescription()
+                                                                                   : theTranslator->trCompoundListDescription(),
+          "annotated" },
         { "classlist",
           LayoutNavEntry::ClassList,
-          fortranOpt ? theTranslator->trCompoundListFortran() : vhdlOpt ? theTranslator->trDesignUnitList() : theTranslator->trCompoundList(),
+          fortranOpt ? theTranslator->trCompoundListFortran() : vhdlOpt ? theTranslator->trDesignUnitList()
+                                                                        : theTranslator->trCompoundList(),
           QCString(),
-          fortranOpt ? theTranslator->trCompoundListDescriptionFortran() : vhdlOpt ? theTranslator->trDesignUnitListDescription() : theTranslator->trCompoundListDescription(),
-          "annotated"
-        },
+          fortranOpt ? theTranslator->trCompoundListDescriptionFortran() : vhdlOpt ? theTranslator->trDesignUnitListDescription()
+                                                                                   : theTranslator->trCompoundListDescription(),
+          "annotated" },
         { "hierarchy",
           LayoutNavEntry::ClassHierarchy,
-          vhdlOpt    ? theTranslator->trDesignUnitHierarchy() : theTranslator->trClassHierarchy(),
+          vhdlOpt ? theTranslator->trDesignUnitHierarchy() : theTranslator->trClassHierarchy(),
           QCString(),
           theTranslator->trClassHierarchyDescription(),
-          hasGraphicalHierarchy ? "inherits" : "hierarchy"
-        },
+          hasGraphicalHierarchy ? "inherits" : "hierarchy" },
         { "classmembers",
           LayoutNavEntry::ClassMembers,
-          fortranOpt ? theTranslator->trCompoundMembersFortran() : vhdlOpt ? theTranslator->trDesignUnitMembers() : theTranslator->trCompoundMembers(),
+          fortranOpt ? theTranslator->trCompoundMembersFortran() : vhdlOpt ? theTranslator->trDesignUnitMembers()
+                                                                           : theTranslator->trCompoundMembers(),
           QCString(),
           fortranOpt ? theTranslator->trCompoundMembersDescriptionFortran(extractAll) : theTranslator->trCompoundMembersDescription(extractAll),
-          "functions"
-        },
+          "functions" },
         { "interfaceindex",
           LayoutNavEntry::InterfaceIndex,
           theTranslator->trInterfaceIndex(),
           QCString(),
           QCString(),
-          "interfaces"
-        },
+          "interfaces" },
         { "interfaces",
           LayoutNavEntry::Interfaces,
           theTranslator->trSliceInterfaces(),
           theTranslator->trInterfaceList(),
           theTranslator->trInterfaceListDescription(),
-          "annotatedinterfaces"
-        },
+          "annotatedinterfaces" },
         { "interfacelist",
           LayoutNavEntry::InterfaceList,
           theTranslator->trInterfaceList(),
           QCString(),
           theTranslator->trInterfaceListDescription(),
-          "annotatedinterfaces"
-        },
+          "annotatedinterfaces" },
         { "interfacehierarchy",
           LayoutNavEntry::InterfaceHierarchy,
           theTranslator->trInterfaceHierarchy(),
           QCString(),
           theTranslator->trInterfaceHierarchyDescription(),
-          hasGraphicalHierarchy ? "interfaceinherits" : "interfacehierarchy"
-        },
+          hasGraphicalHierarchy ? "interfaceinherits" : "interfacehierarchy" },
         { "structindex",
           LayoutNavEntry::StructIndex,
           theTranslator->trStructIndex(),
           QCString(),
           QCString(),
-          "structs"
-        },
+          "structs" },
         { "structs",
           LayoutNavEntry::Structs,
           theTranslator->trStructs(),
           theTranslator->trStructList(),
           theTranslator->trStructListDescription(),
-          "annotatedstructs"
-        },
+          "annotatedstructs" },
         { "structlist",
           LayoutNavEntry::StructList,
           theTranslator->trStructList(),
           QCString(),
           theTranslator->trStructListDescription(),
-          "annotatedstructs"
-        },
+          "annotatedstructs" },
         { "exceptionindex",
           LayoutNavEntry::ExceptionIndex,
           theTranslator->trExceptionIndex(),
           QCString(),
           QCString(),
-          "exceptions"
-        },
+          "exceptions" },
         { "exceptions",
           LayoutNavEntry::Exceptions,
           theTranslator->trExceptions(),
           theTranslator->trExceptionList(),
           theTranslator->trExceptionListDescription(),
-          "annotatedexceptions"
-        },
+          "annotatedexceptions" },
         { "exceptionlist",
           LayoutNavEntry::ExceptionList,
           theTranslator->trExceptionList(),
           QCString(),
           theTranslator->trExceptionListDescription(),
-          "annotatedexceptions"
-        },
+          "annotatedexceptions" },
         { "exceptionhierarchy",
           LayoutNavEntry::ExceptionHierarchy,
           theTranslator->trExceptionHierarchy(),
           QCString(),
           theTranslator->trExceptionHierarchyDescription(),
-          hasGraphicalHierarchy ? "exceptioninherits" : "exceptionhierarchy"
-        },
+          hasGraphicalHierarchy ? "exceptioninherits" : "exceptionhierarchy" },
         { "files",
           LayoutNavEntry::Files,
-          theTranslator->trFile(TRUE,FALSE),
+          theTranslator->trFile(TRUE, FALSE),
           theTranslator->trFileList(),
           theTranslator->trFileListDescription(extractAll),
-          "files"
-        },
+          "files" },
         { "filelist",
           LayoutNavEntry::FileList,
           theTranslator->trFileList(),
           QCString(),
           theTranslator->trFileListDescription(extractAll),
-          "files"
-        },
+          "files" },
         { "globals",
           LayoutNavEntry::FileGlobals,
           theTranslator->trFileMembers(),
           QCString(),
           theTranslator->trFileMembersDescription(extractAll),
-          "globals"
-        },
+          "globals" },
         { "examples",
           LayoutNavEntry::Examples,
           theTranslator->trExamples(),
           QCString(),
           theTranslator->trExamplesDescription(),
-          "examples"
-        },
+          "examples" },
         { "user",
           LayoutNavEntry::User,
           QCString(),
           QCString(),
           QCString(),
-          "user"
-        },
+          "user" },
         { "usergroup",
           LayoutNavEntry::UserGroup,
           QCString(),
           QCString(),
           QCString(),
-          "usergroup"
-        },
+          "usergroup" },
         { nullptr, // end of list
           static_cast<LayoutNavEntry::Kind>(0),
           QCString(),
           QCString(),
           QCString(),
-          QCString()
-        }
+          QCString() }
       };
       // find type in the table
-      int i=0;
-      QCString type = XMLHandlers::value(attrib,"type");
+      int      i    = 0;
+      QCString type = XMLHandlers::value(attrib, "type");
       while (mapping[i].typeStr)
       {
-        if (mapping[i].typeStr==type)
+        if (mapping[i].typeStr == type)
           break;
         i++;
       }
-      if (mapping[i].typeStr==nullptr)
+      if (mapping[i].typeStr == nullptr)
       {
         QCString fileName = m_locator->fileName();
         if (type.isEmpty())
         {
-          warn_layout(fileName,m_locator->lineNr(),"an entry tag within a navindex has no type attribute! Check your layout file!");
+          warn_layout(fileName, m_locator->lineNr(), "an entry tag within a navindex has no type attribute! Check your layout file!");
         }
         else
         {
-          warn_layout(fileName,m_locator->lineNr(),"the type '{}' is not supported for the entry tag within a navindex! Check your layout file!",type);
+          warn_layout(fileName, m_locator->lineNr(), "the type '{}' is not supported for the entry tag within a navindex! Check your layout file!", type);
         }
-        m_invalidEntry=TRUE;
+        m_invalidEntry = TRUE;
         return;
       }
-      LayoutNavEntry::Kind kind = mapping[i].kind;
-      QCString baseFile = mapping[i].baseFile;
-      QCString title = XMLHandlers::value(attrib,"title");
-      bool isVisible = m_visible && elemIsVisible(attrib);
+      LayoutNavEntry::Kind kind      = mapping[i].kind;
+      QCString             baseFile  = mapping[i].baseFile;
+      QCString             title     = XMLHandlers::value(attrib, "title");
+      bool                 isVisible = m_visible && elemIsVisible(attrib);
       if (title.isEmpty()) // use default title
       {
         title = mapping[i].mainName; // use title for main row
-        if (m_rootNav!=m_layoutDocManager.rootNavEntry() && !mapping[i].subName.isEmpty())
+        if (m_rootNav != m_layoutDocManager.rootNavEntry() && !mapping[i].subName.isEmpty())
         {
           title = mapping[i].subName; // if this is a child of another row, use the subName if available
                                       // this is mainly done to get compatible naming with older versions.
         }
       }
-      QCString intro = XMLHandlers::value(attrib,"intro");
+      QCString intro = XMLHandlers::value(attrib, "intro");
       if (intro.isEmpty()) // use default intro text
       {
         intro = mapping[i].intro;
       }
-      QCString url = XMLHandlers::value(attrib,"url");
-      if (mapping[i].kind==LayoutNavEntry::User && !url.isEmpty())
+      QCString url = XMLHandlers::value(attrib, "url");
+      if (mapping[i].kind == LayoutNavEntry::User && !url.isEmpty())
       {
-        baseFile=url;
+        baseFile = url;
       }
-      else if (kind==LayoutNavEntry::UserGroup)
+      else if (kind == LayoutNavEntry::UserGroup)
       {
         if (!url.isEmpty())
         {
@@ -601,190 +582,185 @@ class LayoutParser
           }
           else
           {
-            baseFile=url;
+            baseFile = url;
           }
         }
         else
         {
-          baseFile+=QCString().sprintf("%d",m_userGroupCount++);
+          baseFile += QCString().sprintf("%d", m_userGroupCount++);
         }
       }
       // create new item and make it the new root
-      m_rootNav = m_layoutDocManager.createChildNavEntry(m_rootNav,kind,isVisible,baseFile,title,intro);
+      m_rootNav = m_layoutDocManager.createChildNavEntry(m_rootNav, kind, isVisible, baseFile, title, intro);
     }
 
     void endNavEntry(const std::string &)
     {
       // set the root back to the parent
       if (m_rootNav && !m_invalidEntry) m_rootNav = m_rootNav->parent();
-      m_invalidEntry=FALSE;
+      m_invalidEntry = FALSE;
     }
 
-    void startTop(const std::string &,const XMLHandlers::Attributes &attrib,LayoutDocManager::LayoutPart part,
+    void startTop(const std::string &, const XMLHandlers::Attributes &attrib, LayoutDocManager::LayoutPart part,
                   const QCString &scope, LayoutNavEntry::Kind nav)
     {
       //printf("startTop(scope=%s)\n",qPrint(scope));
-      m_scope = scope;
-      m_part = part;
+      m_scope   = scope;
+      m_part    = part;
       m_visible = elemIsVisible(attrib);
     }
 
     void endTop(const std::string &)
     {
-      m_scope="";
-      m_part = LayoutDocManager::Undefined;
+      m_scope = "";
+      m_part  = LayoutDocManager::Undefined;
     }
 
-    void startMemberDef(const std::string &id,const XMLHandlers::Attributes &attrib)
+    void startMemberDef(const std::string &id, const XMLHandlers::Attributes &attrib)
     {
-      m_scope+="memberdef/";
+      m_scope += "memberdef/";
       bool isVisible = m_visible && elemIsVisible(attrib);
-      if (m_part!=LayoutDocManager::Undefined)
+      if (m_part != LayoutDocManager::Undefined)
       {
-        m_layoutDocManager.addEntry(m_part,std::make_unique<LayoutDocEntrySimple>(LayoutDocEntry::MemberDefStart,id,isVisible));
+        m_layoutDocManager.addEntry(m_part, std::make_unique<LayoutDocEntrySimple>(LayoutDocEntry::MemberDefStart, id, isVisible));
       }
     }
 
     void endMemberDef(const std::string &id)
     {
       QCString scopeOrg = m_scope;
-      int i=m_scope.findRev("memberdef/");
-      if (i!=-1)
+      int      i        = m_scope.findRev("memberdef/");
+      if (i != -1)
       {
-        m_scope=m_scope.left(i);
+        m_scope        = m_scope.left(i);
         bool isVisible = true;
         for (const auto &lde : m_layoutDocManager.docEntries(m_part))
         {
           if (lde->kind() == LayoutDocEntry::MemberDefStart)
           {
-             isVisible = static_cast<const LayoutDocEntrySimple*>(lde.get())->visible();
-             break;
+            isVisible = static_cast<const LayoutDocEntrySimple *>(lde.get())->visible();
+            break;
           }
         }
-        if (m_part!=LayoutDocManager::Undefined)
+        if (m_part != LayoutDocManager::Undefined)
         {
-          m_layoutDocManager.addEntry(m_part,std::make_unique<LayoutDocEntrySimple>(LayoutDocEntry::MemberDefEnd,id,isVisible));
+          m_layoutDocManager.addEntry(m_part, std::make_unique<LayoutDocEntrySimple>(LayoutDocEntry::MemberDefEnd, id, isVisible));
         }
       }
     }
 
-    void startMemberDecl(const std::string &id,const XMLHandlers::Attributes &attrib)
+    void startMemberDecl(const std::string &id, const XMLHandlers::Attributes &attrib)
     {
-      m_scope+="memberdecl/";
+      m_scope += "memberdecl/";
       bool isVisible = m_visible && elemIsVisible(attrib);
-      if (m_part!=LayoutDocManager::Undefined)
+      if (m_part != LayoutDocManager::Undefined)
       {
-        m_layoutDocManager.addEntry(m_part,std::make_unique<LayoutDocEntrySimple>(LayoutDocEntry::MemberDeclStart,id,isVisible));
+        m_layoutDocManager.addEntry(m_part, std::make_unique<LayoutDocEntrySimple>(LayoutDocEntry::MemberDeclStart, id, isVisible));
       }
     }
 
     void endMemberDecl(const std::string &id)
     {
-      int i=m_scope.findRev("memberdecl/");
-      if (i!=-1)
+      int i = m_scope.findRev("memberdecl/");
+      if (i != -1)
       {
-        m_scope=m_scope.left(i);
+        m_scope        = m_scope.left(i);
         bool isVisible = true;
         for (const auto &lde : m_layoutDocManager.docEntries(m_part))
         {
           if (lde->kind() == LayoutDocEntry::MemberDeclStart)
           {
-             isVisible = static_cast<const LayoutDocEntrySimple*>(lde.get())->visible();
-             break;
+            isVisible = static_cast<const LayoutDocEntrySimple *>(lde.get())->visible();
+            break;
           }
         }
-        if (m_part!=LayoutDocManager::Undefined)
+        if (m_part != LayoutDocManager::Undefined)
         {
-          m_layoutDocManager.addEntry(m_part,std::make_unique<LayoutDocEntrySimple>(LayoutDocEntry::MemberDeclEnd,id,isVisible));
+          m_layoutDocManager.addEntry(m_part, std::make_unique<LayoutDocEntrySimple>(LayoutDocEntry::MemberDeclEnd, id, isVisible));
         }
       }
     }
 
     int majorVersion() const { return m_majorVersion; }
     int minorVersion() const { return m_minorVersion; }
-
   private:
-    QCString m_scope;
-    LayoutDocManager &m_layoutDocManager;
-    LayoutDocManager::LayoutPart m_part = LayoutDocManager::Undefined;
-    LayoutNavEntry *m_rootNav = nullptr;
-    bool m_invalidEntry = false;
-    bool m_visible = true;
-    static int m_userGroupCount;
-    const XMLLocator *m_locator = nullptr;
-    int m_majorVersion = 1;
-    int m_minorVersion = 0;
+    QCString                     m_scope;
+    LayoutDocManager            &m_layoutDocManager;
+    LayoutDocManager::LayoutPart m_part         = LayoutDocManager::Undefined;
+    LayoutNavEntry              *m_rootNav      = nullptr;
+    bool                         m_invalidEntry = false;
+    bool                         m_visible      = true;
+    static int                   m_userGroupCount;
+    const XMLLocator            *m_locator      = nullptr;
+    int                          m_majorVersion = 1;
+    int                          m_minorVersion = 0;
 };
 
 //---------------------------------------------------------------------------------
 
-namespace {
+namespace
+{
 
 struct ElementCallbacks
 {
-  using StartCallback = std::function<void(LayoutParser&,const std::string &,const XMLHandlers::Attributes&)>;
-  using EndCallback   = std::function<void(LayoutParser&,const std::string &)>;
+    using StartCallback = std::function<void(LayoutParser &, const std::string &, const XMLHandlers::Attributes &)>;
+    using EndCallback   = std::function<void(LayoutParser &, const std::string &)>;
 
-  StartCallback startCb;
-  EndCallback   endCb = [](LayoutParser &,const std::string &){};
+    StartCallback startCb;
+    EndCallback   endCb = [](LayoutParser &, const std::string &) {};
 };
 
-template<class...Args>
+template <class... Args>
 static auto startCb(void (LayoutParser::*fn)(Args...))
 {
-  return [=](LayoutParser &parser,const std::string &id,const XMLHandlers::Attributes &attr) { (parser.*fn)(id,attr); };
+  return [=](LayoutParser &parser, const std::string &id, const XMLHandlers::Attributes &attr) { (parser.*fn)(id, attr); };
 }
 
-template<class...Args>
+template <class... Args>
 static auto startCb(void (LayoutParser::*fn)(Args...),
-                    LayoutDocEntry::Kind kind
-                   )
+                    LayoutDocEntry::Kind kind)
 {
-  return [=](LayoutParser &parser,const std::string &id,const XMLHandlers::Attributes &attr) { (parser.*fn)(kind,id,attr); };
+  return [=](LayoutParser &parser, const std::string &id, const XMLHandlers::Attributes &attr) { (parser.*fn)(kind, id, attr); };
 }
 
-template<class...Args>
+template <class... Args>
 static auto startCb(void (LayoutParser::*fn)(Args...),
-                    LayoutDocEntry::Kind kind,
-                    const std::function<QCString()> &title
-                   )
+                    LayoutDocEntry::Kind             kind,
+                    const std::function<QCString()> &title)
 {
-  return [=](LayoutParser &parser,const std::string &id,const XMLHandlers::Attributes &attr) { (parser.*fn)(kind,id,attr,title()); };
+  return [=](LayoutParser &parser, const std::string &id, const XMLHandlers::Attributes &attr) { (parser.*fn)(kind, id, attr, title()); };
 }
 
-template<class...Args>
+template <class... Args>
 static auto startCb(void (LayoutParser::*fn)(Args...),
-                    MemberListType type,
-                    const std::function<QCString()> &title
-                   )
+                    MemberListType                   type,
+                    const std::function<QCString()> &title)
 {
-  return [=](LayoutParser &parser,const std::string &id,const XMLHandlers::Attributes &attr) { (parser.*fn)(id,attr,type,title(),QCString()); };
+  return [=](LayoutParser &parser, const std::string &id, const XMLHandlers::Attributes &attr) { (parser.*fn)(id, attr, type, title(), QCString()); };
 }
 
-template<class...Args>
+template <class... Args>
 static auto startCb(void (LayoutParser::*fn)(Args...),
-                    MemberListType type,
+                    MemberListType                   type,
                     const std::function<QCString()> &title,
-                    const std::function<QCString()> &subtitle
-                   )
+                    const std::function<QCString()> &subtitle)
 {
-  return [=](LayoutParser &parser,const std::string &id,const XMLHandlers::Attributes &attr) { (parser.*fn)(id,attr,type,title(),subtitle()); };
+  return [=](LayoutParser &parser, const std::string &id, const XMLHandlers::Attributes &attr) { (parser.*fn)(id, attr, type, title(), subtitle()); };
 }
 
-template<class...Args>
+template <class... Args>
 static auto startCb(void (LayoutParser::*fn)(Args...),
                     LayoutDocManager::LayoutPart part,
-                    const QCString &scope,
-                    LayoutNavEntry::Kind nav
-                   )
+                    const QCString              &scope,
+                    LayoutNavEntry::Kind         nav)
 {
-  return [=](LayoutParser &parser,const std::string &id,const XMLHandlers::Attributes &attr) { (parser.*fn)(id,attr,part,scope,nav); };
+  return [=](LayoutParser &parser, const std::string &id, const XMLHandlers::Attributes &attr) { (parser.*fn)(id, attr, part, scope, nav); };
 }
 
-template<class...Args>
+template <class... Args>
 static auto endCb(void (LayoutParser::*fn)(Args...))
 {
-  return [=](LayoutParser &parser,const std::string &id) { (parser.*fn)(id); };
+  return [=](LayoutParser &parser, const std::string &id) { (parser.*fn)(id); };
 }
 
 // clang-format off
@@ -1356,57 +1332,58 @@ static const std::map< std::string, ElementCallbacks > g_elementHandlers =
 
 } // namespace
 
-void LayoutParser::startElement( const std::string &name, const XMLHandlers::Attributes& attrib )
+void LayoutParser::startElement(const std::string &name, const XMLHandlers::Attributes &attrib)
 {
   //printf("startElement [%s]::[%s]\n",qPrint(m_scope),qPrint(name));
-  auto it = g_elementHandlers.find(m_scope.str()+name);
-  if (it!=g_elementHandlers.end())
+  auto it = g_elementHandlers.find(m_scope.str() + name);
+  if (it != g_elementHandlers.end())
   {
-    it->second.startCb(*this,it->first,attrib);
+    it->second.startCb(*this, it->first, attrib);
   }
   else
   {
     QCString fileName = m_locator->fileName();
-    warn_layout(fileName,m_locator->lineNr(),"Unexpected start tag '{}' found in scope='{}'!",
-        name,m_scope);
+    warn_layout(fileName, m_locator->lineNr(), "Unexpected start tag '{}' found in scope='{}'!",
+                name, m_scope);
   }
 }
 
-void LayoutParser::endElement( const std::string &name )
+void LayoutParser::endElement(const std::string &name)
 {
   //printf("endElement [%s]::[%s]\n",qPrint(m_scope),qPrint(name));
-  auto it=g_elementHandlers.end();
+  auto it = g_elementHandlers.end();
 
-  if (!m_scope.isEmpty() && m_scope.right(name.length()+1)==name+"/")
+  if (!m_scope.isEmpty() && m_scope.right(name.length() + 1) == name + "/")
   { // element ends current scope
-    it = g_elementHandlers.find(m_scope.left(m_scope.length()-1).str());
+    it = g_elementHandlers.find(m_scope.left(m_scope.length() - 1).str());
   }
   else // continue with current scope
   {
-    it = g_elementHandlers.find(m_scope.str()+name);
+    it = g_elementHandlers.find(m_scope.str() + name);
   }
-  if (it!=g_elementHandlers.end())
+  if (it != g_elementHandlers.end())
   {
-    it->second.endCb(*this,it->first+" end"); // added end to id to make it unique
+    it->second.endCb(*this, it->first + " end"); // added end to id to make it unique
   }
 }
 
 //---------------------------------------------------------------------------------
 
-int LayoutParser::m_userGroupCount=0;
+int LayoutParser::m_userGroupCount = 0;
 
 //---------------------------------------------------------------------------------
 
 class LayoutDocManager::Private
 {
   public:
-    std::array<LayoutDocEntryList,LayoutDocManager::NrParts> docEntries;
-    LayoutNavEntry rootNav;
-    int majorVersion;
-    int minorVersion;
+    std::array<LayoutDocEntryList, LayoutDocManager::NrParts> docEntries;
+    LayoutNavEntry                                            rootNav;
+    int                                                       majorVersion;
+    int                                                       minorVersion;
 };
 
-LayoutDocManager::LayoutDocManager() : d(std::make_unique<Private>())
+LayoutDocManager::LayoutDocManager() :
+    d(std::make_unique<Private>())
 {
 }
 
@@ -1417,24 +1394,24 @@ LayoutDocManager::~LayoutDocManager()
 void LayoutDocManager::init()
 {
   LayoutParser layoutParser(LayoutDocManager::instance());
-  XMLHandlers handlers;
-  handlers.startElement = [&layoutParser](const std::string &name,const XMLHandlers::Attributes &attrs) { layoutParser.startElement(name,attrs); };
+  XMLHandlers  handlers;
+  handlers.startElement = [&layoutParser](const std::string &name, const XMLHandlers::Attributes &attrs) { layoutParser.startElement(name, attrs); };
   handlers.endElement   = [&layoutParser](const std::string &name) { layoutParser.endElement(name); };
-  handlers.error        = [&layoutParser](const std::string &fileName,int lineNr,const std::string &msg) { layoutParser.error(fileName,lineNr,msg); };
+  handlers.error        = [&layoutParser](const std::string &fileName, int lineNr, const std::string &msg) { layoutParser.error(fileName, lineNr, msg); };
   XMLParser parser(handlers);
   layoutParser.setDocumentLocator(&parser);
-  constexpr auto layoutFile = "layout_default.xml";
-  QCString layout_default = ResourceMgr::instance().getAsString(layoutFile);
-  parser.parse(layoutFile,layout_default.data(),Debug::isFlagSet(Debug::Lex_xml),
-               [&]() { DebugLex::print(Debug::Lex_xml,"Entering","libxml/xml.l",layoutFile); },
-               [&]() { DebugLex::print(Debug::Lex_xml,"Finished", "libxml/xml.l",layoutFile); }
-              );
+  constexpr auto layoutFile     = "layout_default.xml";
+  QCString       layout_default = ResourceMgr::instance().getAsString(layoutFile);
+  parser.parse(
+    layoutFile, layout_default.data(), Debug::isFlagSet(Debug::Lex_xml),
+    [&]() { DebugLex::print(Debug::Lex_xml, "Entering", "libxml/xml.l", layoutFile); },
+    [&]() { DebugLex::print(Debug::Lex_xml, "Finished", "libxml/xml.l", layoutFile); });
   removeInvisibleDocEntries();
   d->majorVersion = layoutParser.majorVersion();
   d->minorVersion = layoutParser.minorVersion();
 }
 
-LayoutDocManager & LayoutDocManager::instance()
+LayoutDocManager &LayoutDocManager::instance()
 {
   static LayoutDocManager theInstance;
   return theInstance;
@@ -1445,23 +1422,23 @@ const LayoutDocEntryList &LayoutDocManager::docEntries(LayoutDocManager::LayoutP
   return d->docEntries[static_cast<int>(part)];
 }
 
-LayoutNavEntry* LayoutDocManager::rootNavEntry() const
+LayoutNavEntry *LayoutDocManager::rootNavEntry() const
 {
   return &d->rootNav;
 }
 
-LayoutNavEntry *LayoutDocManager::createChildNavEntry(LayoutNavEntry *parent,
-                                                      LayoutNavEntry::Kind k,bool vs,const QCString &bf,
-                                                      const QCString &tl,const QCString &intro)
+LayoutNavEntry *LayoutDocManager::createChildNavEntry(LayoutNavEntry      *parent,
+                                                      LayoutNavEntry::Kind k, bool vs, const QCString &bf,
+                                                      const QCString &tl, const QCString &intro)
 {
-  if (parent==nullptr) parent = &d->rootNav;
-  auto ptr = std::make_unique<LayoutNavEntry>(parent,k,vs,bf,tl,intro);
+  if (parent == nullptr) parent = &d->rootNav;
+  auto ptr   = std::make_unique<LayoutNavEntry>(parent, k, vs, bf, tl, intro);
   auto child = ptr.get();
   parent->appendChild(std::move(ptr));
   return child;
 }
 
-void LayoutDocManager::addEntry(LayoutDocManager::LayoutPart p,LayoutDocEntryPtr &&e)
+void LayoutDocManager::addEntry(LayoutDocManager::LayoutPart p, LayoutDocEntryPtr &&e)
 {
   auto &docEntry = d->docEntries[static_cast<int>(p)];
   docEntry.push_back(std::move(e)); // add
@@ -1471,20 +1448,20 @@ void LayoutDocManager::parse(const QCString &fileName, const char *data)
 {
   //printf("============ LayoutDocManager::parse(%s)\n",qPrint(fileName));
   LayoutDocManager layoutDocManager;
-  LayoutParser layoutParser(layoutDocManager);
-  XMLHandlers handlers;
-  handlers.startElement = [&layoutParser](const std::string &name,const XMLHandlers::Attributes &attrs) { layoutParser.startElement(name,attrs); };
+  LayoutParser     layoutParser(layoutDocManager);
+  XMLHandlers      handlers;
+  handlers.startElement = [&layoutParser](const std::string &name, const XMLHandlers::Attributes &attrs) { layoutParser.startElement(name, attrs); };
   handlers.endElement   = [&layoutParser](const std::string &name) { layoutParser.endElement(name); };
-  handlers.error        = [&layoutParser](const std::string &fn,int lineNr,const std::string &msg) { layoutParser.error(fn,lineNr,msg); };
+  handlers.error        = [&layoutParser](const std::string &fn, int lineNr, const std::string &msg) { layoutParser.error(fn, lineNr, msg); };
   XMLParser parser(handlers);
   layoutParser.setDocumentLocator(&parser);
-  parser.parse(fileName.data(),
-               data ? data : fileToString(fileName).data(),
-               Debug::isFlagSet(Debug::Lex_xml),
-               [&]() { DebugLex::print(Debug::Lex_xml,"Entering","libxml/xml.l",qPrint(fileName)); },
-               [&]() { DebugLex::print(Debug::Lex_xml,"Finished", "libxml/xml.l",qPrint(fileName)); },
-               transcodeCharacterStringToUTF8
-              );
+  parser.parse(
+    fileName.data(),
+    data ? data : fileToString(fileName).data(),
+    Debug::isFlagSet(Debug::Lex_xml),
+    [&]() { DebugLex::print(Debug::Lex_xml, "Entering", "libxml/xml.l", qPrint(fileName)); },
+    [&]() { DebugLex::print(Debug::Lex_xml, "Finished", "libxml/xml.l", qPrint(fileName)); },
+    transcodeCharacterStringToUTF8);
 
   // version in the user defined layout overrides default one
   d->majorVersion = layoutParser.majorVersion();
@@ -1496,9 +1473,9 @@ void LayoutDocManager::parse(const QCString &fileName, const char *data)
   //mergeNavEntries(layoutDocManager);
 
   // for compatibility reasons we only merge defaults when the user defined layout has at least version 2.0 or higher
-  if (d->majorVersion>=2)
+  if (d->majorVersion >= 2)
   {
-    mergeDocEntries(fileName,layoutDocManager);
+    mergeDocEntries(fileName, layoutDocManager);
   }
 
   layoutDocManager.removeInvisibleDocEntries();
@@ -1514,9 +1491,9 @@ void LayoutDocManager::removeInvisibleDocEntries()
   for (auto &list : d->docEntries)
   {
     auto it = list.begin();
-    while (it!=list.end())
+    while (it != list.end())
     {
-      if (*it==nullptr || !(*it)->visible())
+      if (*it == nullptr || !(*it)->visible())
       {
         it = list.erase(it);
       }
@@ -1543,10 +1520,10 @@ static LayoutNavEntry *findNavEntryRec(LayoutNavEntry *root, const std::string &
 {
   if (root)
   {
-    if (root->id()==id) return root;
+    if (root->id() == id) return root;
     for (auto &child : root->children())
     {
-      LayoutNavEntry *childNavEntry = findNavEntryRec(child.get(),id);
+      LayoutNavEntry *childNavEntry = findNavEntryRec(child.get(), id);
       if (childNavEntry) return childNavEntry;
     }
   }
@@ -1554,10 +1531,10 @@ static LayoutNavEntry *findNavEntryRec(LayoutNavEntry *root, const std::string &
 }
 
 // merge the missing nodes
-static void mergeNavTreeNodesRec(LayoutNavEntry *targetTree,LayoutNavEntry *sourceTree)
+static void mergeNavTreeNodesRec(LayoutNavEntry *targetTree, LayoutNavEntry *sourceTree)
 {
-  using IdSet = std::unordered_set<std::string>;
-  using IdMap = std::unordered_map<std::string,size_t>;
+  using IdSet     = std::unordered_set<std::string>;
+  using IdMap     = std::unordered_map<std::string, size_t>;
 
   auto prepareSet = [](const LayoutNavEntry *tree, IdSet &set) {
     for (const auto &e : tree->children())
@@ -1567,42 +1544,42 @@ static void mergeNavTreeNodesRec(LayoutNavEntry *targetTree,LayoutNavEntry *sour
   };
 
   auto prepareMap = [](const LayoutNavEntry *tree, const IdSet &set, IdMap &map) {
-    for (size_t i=0; i<tree->children().size(); i++)
+    for (size_t i = 0; i < tree->children().size(); i++)
     {
       std::string id = tree->children()[i]->id();
-      auto it = set.find(id);
+      auto        it = set.find(id);
       if (it != set.end())
       {
-        map[id]=i;
+        map[id] = i;
       }
     }
   };
 
   IdSet sourceSet, targetSet;
-  prepareSet(sourceTree,sourceSet);
-  prepareSet(targetTree,targetSet);
+  prepareSet(sourceTree, sourceSet);
+  prepareSet(targetTree, targetSet);
 
   IdMap sourceMap, targetMap;
-  prepareMap(targetTree,sourceSet,targetMap);
-  prepareMap(sourceTree,targetSet,sourceMap);
+  prepareMap(targetTree, sourceSet, targetMap);
+  prepareMap(sourceTree, targetSet, sourceMap);
 
   // calculate list of insertion positions in the target list for each id in the source list
   std::vector<size_t> insertionList;
-  for (size_t i=0; i<sourceTree->children().size(); i++)
+  for (size_t i = 0; i < sourceTree->children().size(); i++)
   {
-    std::string id = sourceTree->children()[i]->id();
+    std::string id     = sourceTree->children()[i]->id();
     // If an id in the source list appears before a set of shared ids we want it also to
     // appear before these id in the target list. To do this find the lowest target index of all shared
     // ids that come after position i in the source list
-    size_t minIdx = targetTree->children().size();
+    size_t      minIdx = targetTree->children().size();
     for (const auto &kv : sourceMap) // iterator over shared ids
     {
       if (i < kv.second) // i appears before this shared id
       {
         size_t idx = targetMap[kv.first]; // get the corresponding index in the target list
-        if (idx<minIdx) // update minimum
+        if (idx < minIdx)                 // update minimum
         {
-          minIdx=idx;
+          minIdx = idx;
         }
       }
     }
@@ -1611,11 +1588,11 @@ static void mergeNavTreeNodesRec(LayoutNavEntry *targetTree,LayoutNavEntry *sour
 
   // Insert the missing elements of the source list into the target list.
   // Work backwards so the calculated insertion points don't change due to insertions.
-  size_t idx = sourceTree->children().size()-1;
-  for (auto it=insertionList.rbegin(); it!=insertionList.rend(); ++it, idx--)
+  size_t idx = sourceTree->children().size() - 1;
+  for (auto it = insertionList.rbegin(); it != insertionList.rend(); ++it, idx--)
   {
     std::string id = sourceTree->children()[idx]->id();
-    if (targetSet.find(id)==targetSet.end()) // need to add id
+    if (targetSet.find(id) == targetSet.end()) // need to add id
     {
       // for efficiency we move the elements from the source list to the target list, thus modifying the source list!
       targetTree->insertChild(*it, std::move(sourceTree->children()[idx]));
@@ -1624,23 +1601,23 @@ static void mergeNavTreeNodesRec(LayoutNavEntry *targetTree,LayoutNavEntry *sour
 
   for (auto &targetChild : targetTree->children())
   {
-    auto *node = findNavEntryRec(sourceTree,targetChild->id());
+    auto *node = findNavEntryRec(sourceTree, targetChild->id());
     if (node)
     {
-      mergeNavTreeNodesRec(targetChild.get(),node);
+      mergeNavTreeNodesRec(targetChild.get(), node);
     }
   }
 }
 
 void LayoutDocManager::mergeNavEntries(LayoutDocManager &other)
 {
-  mergeNavTreeNodesRec(other.rootNavEntry(),rootNavEntry());
+  mergeNavTreeNodesRec(other.rootNavEntry(), rootNavEntry());
 }
 
-static void mergeDocEntryLists(const QCString &fileName,LayoutDocEntryList &targetList,LayoutDocEntryList &sourceList)
+static void mergeDocEntryLists(const QCString &fileName, LayoutDocEntryList &targetList, LayoutDocEntryList &sourceList)
 {
-  using IdSet = std::unordered_set<std::string>;
-  using IdMap = std::unordered_map<std::string,size_t>;
+  using IdSet     = std::unordered_set<std::string>;
+  using IdMap     = std::unordered_map<std::string, size_t>;
 
   auto prepareSet = [](const LayoutDocEntryList &list, IdSet &set) {
     //size_t idx=0;
@@ -1653,48 +1630,48 @@ static void mergeDocEntryLists(const QCString &fileName,LayoutDocEntryList &targ
   };
 
   auto prepareMap = [](const LayoutDocEntryList &list, const IdSet &set, IdMap &map) {
-    for (size_t i=0; i<list.size(); i++)
+    for (size_t i = 0; i < list.size(); i++)
     {
       std::string id = list[i]->id();
-      auto it = set.find(id);
+      auto        it = set.find(id);
       if (it != set.end())
       {
         //printf("map %s->%zu\n",qPrint(id),i);
-        map[id]=i;
+        map[id] = i;
       }
     }
   };
 
   IdSet sourceSet, targetSet;
   //printf("---- sourceSet\n");
-  prepareSet(sourceList,sourceSet);
+  prepareSet(sourceList, sourceSet);
   //printf("---- targetSet\n");
-  prepareSet(targetList,targetSet);
+  prepareSet(targetList, targetSet);
 
   IdMap sourceMap, targetMap;
   //printf("---- targetMap\n");
-  prepareMap(targetList,sourceSet,targetMap);
+  prepareMap(targetList, sourceSet, targetMap);
   //printf("---- sourceMap\n");
-  prepareMap(sourceList,targetSet,sourceMap);
+  prepareMap(sourceList, targetSet, sourceMap);
 
   // calculate list of insertion positions in the target list for each id in the source list
   std::vector<size_t> insertionList;
-  for (size_t i=0; i<sourceList.size(); i++)
+  for (size_t i = 0; i < sourceList.size(); i++)
   {
-    std::string id = sourceList[i]->id();
+    std::string id     = sourceList[i]->id();
     // If an id in the source list appears before a set of shared ids we want it also to
     // appear before these id in the target list. To do this find the lowest target index of all shared
     // ids that come after position i in the source list
-    size_t minIdx = targetList.size();
+    size_t      minIdx = targetList.size();
     for (const auto &kv : sourceMap) // iterator over shared ids
     {
       if (i < kv.second) // i appears before this shared id
       {
         size_t idx = targetMap[kv.first]; // get the corresponding index in the target list
         //printf("  evaluating %s->%zu min=%zu\n",qPrint(kv.first),idx,minIdx);
-        if (idx<minIdx) // update minimum
+        if (idx < minIdx) // update minimum
         {
-          minIdx=idx;
+          minIdx = idx;
         }
       }
     }
@@ -1704,29 +1681,28 @@ static void mergeDocEntryLists(const QCString &fileName,LayoutDocEntryList &targ
 
   // Insert the missing elements of the source list into the target list.
   // Work backwards so the calculated insertion points don't change due to insertions.
-  size_t idx = sourceList.size()-1;
-  for (auto it=insertionList.rbegin(); it!=insertionList.rend(); ++it, idx--)
+  size_t idx = sourceList.size() - 1;
+  for (auto it = insertionList.rbegin(); it != insertionList.rend(); ++it, idx--)
   {
     std::string id = sourceList[idx]->id();
     //printf("idx=%zu entry %s\n",idx,qPrint(id));
-    if (targetSet.find(id)==targetSet.end()) // need to add id
+    if (targetSet.find(id) == targetSet.end()) // need to add id
     {
       // for efficiency we move the elements from the source list to the target list, thus modifying the source list!
       //printf("--> insert at %zu before %s\n",*it,qPrint(*it<targetList.size()?targetList[*it]->id():"none"));
-      warn_layout(fileName,1,"User defined layout misses entry '{}'. Using default value.",id);
-      targetList.insert(targetList.begin()+*it, std::move(sourceList[idx]));
+      warn_layout(fileName, 1, "User defined layout misses entry '{}'. Using default value.", id);
+      targetList.insert(targetList.begin() + *it, std::move(sourceList[idx]));
     }
   }
-
 }
 
-void LayoutDocManager::mergeDocEntries(const QCString &fileName,LayoutDocManager &other)
+void LayoutDocManager::mergeDocEntries(const QCString &fileName, LayoutDocManager &other)
 {
-   for (size_t i=0; i<d->docEntries.size(); i++)
-   {
-     //printf("========= part %zu\n",i);
-     mergeDocEntryLists(fileName,other.d->docEntries[i],d->docEntries[i]);
-   }
+  for (size_t i = 0; i < d->docEntries.size(); i++)
+  {
+    //printf("========= part %zu\n",i);
+    mergeDocEntryLists(fileName, other.d->docEntries[i], d->docEntries[i]);
+  }
 }
 
 //---------------------------------------------------------------------------------
@@ -1734,15 +1710,15 @@ void LayoutDocManager::mergeDocEntries(const QCString &fileName,LayoutDocManager
 void writeDefaultLayoutFile(const QCString &fileName)
 {
   std::ofstream f;
-  if (openOutputFile(fileName,f))
+  if (openOutputFile(fileName, f))
   {
     TextStream t(&f);
-    QCString layout_default = ResourceMgr::instance().getAsString("layout_default.xml");
-    t << substitute(layout_default,"$doxygenversion",getDoxygenVersion());
+    QCString   layout_default = ResourceMgr::instance().getAsString("layout_default.xml");
+    t << substitute(layout_default, "$doxygenversion", getDoxygenVersion());
   }
   else
   {
-    err("Failed to open file {} for writing!\n",fileName);
+    err("Failed to open file {} for writing!\n", fileName);
     return;
   }
   f.close();
@@ -1755,22 +1731,22 @@ void writeDefaultLayoutFile(const QCString &fileName)
 // titles for some programming languages they can take the following form:
 // "A title|16=Another title|8=Yet Another title"
 // where the number is a value of SrcLangExt in decimal notation (i.e. 16=Java, 8=IDL).
-QCString extractLanguageSpecificTitle(const QCString &input,SrcLangExt lang)
+QCString extractLanguageSpecificTitle(const QCString &input, SrcLangExt lang)
 {
-  int s=0,e=input.find('|');
-  if (e==-1) return input; // simple title case
-  int e1=e;
-  while (e!=-1) // look for 'number=title' pattern separated by '|'
+  int s = 0, e = input.find('|');
+  if (e == -1) return input; // simple title case
+  int e1 = e;
+  while (e != -1) // look for 'number=title' pattern separated by '|'
   {
-    s=e+1;
-    e=input.find('|',s);
-    int i=input.find('=',s);
-    assert(i>s);
-    SrcLangExt key= static_cast<SrcLangExt>(input.mid(s,i-s).toUInt());
-    if (key==lang) // found matching key
+    s     = e + 1;
+    e     = input.find('|', s);
+    int i = input.find('=', s);
+    assert(i > s);
+    SrcLangExt key = static_cast<SrcLangExt>(input.mid(s, i - s).toUInt());
+    if (key == lang) // found matching key
     {
-      if (e==-1) e=static_cast<int>(input.length());
-      return input.mid(i+1,e-i-1);
+      if (e == -1) e = static_cast<int>(input.length());
+      return input.mid(i + 1, e - i - 1);
     }
   }
   return input.left(e1); // fallback, no explicit language key found
@@ -1780,88 +1756,85 @@ QCString extractLanguageSpecificTitle(const QCString &input,SrcLangExt lang)
 
 QCString LayoutDocEntrySection::title(SrcLangExt lang) const
 {
-  return extractLanguageSpecificTitle(m_title,lang);
+  return extractLanguageSpecificTitle(m_title, lang);
 }
 
 //----------------------------------------------------------------------------------
 
 QCString LayoutDocEntryMemberDecl::title(SrcLangExt lang) const
 {
-  return extractLanguageSpecificTitle(m_title,lang);
+  return extractLanguageSpecificTitle(m_title, lang);
 }
 
 QCString LayoutDocEntryMemberDecl::subtitle(SrcLangExt lang) const
 {
-  return extractLanguageSpecificTitle(m_subscript,lang);
+  return extractLanguageSpecificTitle(m_subscript, lang);
 }
 
 //----------------------------------------------------------------------------------
 
 QCString LayoutDocEntryMemberDef::title(SrcLangExt lang) const
 {
-  return extractLanguageSpecificTitle(m_title,lang);
+  return extractLanguageSpecificTitle(m_title, lang);
 }
 
 //----------------------------------------------------------------------------------
 
-static void printNavLayout(LayoutNavEntry *root,int indent)
+static void printNavLayout(LayoutNavEntry *root, int indent)
 {
   if (Debug::isFlagSet(Debug::Layout))
   {
     QCString indentStr;
-    indentStr.fill(' ',indent);
-    Debug::print(Debug::Layout,0,"{}kind={} visible={} title='{}'\n",
-        indentStr, root->navToString(), root->visible(), root->title());
+    indentStr.fill(' ', indent);
+    Debug::print(Debug::Layout, 0, "{}kind={} visible={} title='{}'\n",
+                 indentStr, root->navToString(), root->visible(), root->title());
     for (const auto &e : root->children())
     {
-      printNavLayout(e.get(),indent+2);
+      printNavLayout(e.get(), indent + 2);
     }
   }
 }
 
 void printLayout()
 {
-  bool extraIndent = false;
+  bool  extraIndent = false;
 
-  auto &mgr = LayoutDocManager::instance();
-  Debug::print(Debug::Layout,0,"Layout version {}.{}\n",mgr.majorVersion(),mgr.minorVersion());
+  auto &mgr         = LayoutDocManager::instance();
+  Debug::print(Debug::Layout, 0, "Layout version {}.{}\n", mgr.majorVersion(), mgr.minorVersion());
 
-  Debug::print(Debug::Layout,0,"Part: Navigation index\n");
+  Debug::print(Debug::Layout, 0, "Part: Navigation index\n");
   for (const auto &e : mgr.rootNavEntry()->children())
   {
-    printNavLayout(e.get(),2);
+    printNavLayout(e.get(), 2);
   }
 
   for (int i = 0; i < LayoutDocManager::NrParts; i++)
   {
-     Debug::print(Debug::Layout,0,"\nPart: {}\n", LayoutDocManager::partToString(i));
-     for (const auto &lde : mgr.docEntries(static_cast<LayoutDocManager::LayoutPart>(i)))
-     {
-       if (const LayoutDocEntrySimple *ldes = dynamic_cast<const LayoutDocEntrySimple*>(lde.get()))
-       {
-         if (lde->kind() == LayoutDocEntry::MemberDeclEnd || lde->kind() == LayoutDocEntry::MemberDefEnd) extraIndent = false;
-         Debug::print(Debug::Layout,0,"  {}kind: {}, visible={}\n",
-           extraIndent? "  " : "",lde->entryToString(), ldes->visible());
-         if (lde->kind() == LayoutDocEntry::MemberDeclStart || lde->kind() == LayoutDocEntry::MemberDefStart) extraIndent = true;
-       }
-       else if (const LayoutDocEntryMemberDecl *lmdecl = dynamic_cast<const LayoutDocEntryMemberDecl*>(lde.get()))
-       {
-         Debug::print(Debug::Layout,0,"  {}complex kind: {}, visible={}, type: {}\n",
-           extraIndent? "  " : "",lde->entryToString(),lmdecl->visible(),lmdecl->type.to_string());
-       }
-       else if (const LayoutDocEntryMemberDef *lmdef = dynamic_cast<const LayoutDocEntryMemberDef*>(lde.get()))
-       {
-         Debug::print(Debug::Layout,0,"  {}complex kind: {}, visible={}, type: {}\n",
-           extraIndent? "  " : "",lde->entryToString(),lmdef->visible(),lmdef->type.to_string());
-       }
-       else
-       {
-         // should not happen
-         Debug::print(Debug::Layout,0,"  {}not handled kind: {}\n",extraIndent? "  " : "",lde->entryToString());
-       }
-     }
+    Debug::print(Debug::Layout, 0, "\nPart: {}\n", LayoutDocManager::partToString(i));
+    for (const auto &lde : mgr.docEntries(static_cast<LayoutDocManager::LayoutPart>(i)))
+    {
+      if (const LayoutDocEntrySimple *ldes = dynamic_cast<const LayoutDocEntrySimple *>(lde.get()))
+      {
+        if (lde->kind() == LayoutDocEntry::MemberDeclEnd || lde->kind() == LayoutDocEntry::MemberDefEnd) extraIndent = false;
+        Debug::print(Debug::Layout, 0, "  {}kind: {}, visible={}\n",
+                     extraIndent ? "  " : "", lde->entryToString(), ldes->visible());
+        if (lde->kind() == LayoutDocEntry::MemberDeclStart || lde->kind() == LayoutDocEntry::MemberDefStart) extraIndent = true;
+      }
+      else if (const LayoutDocEntryMemberDecl *lmdecl = dynamic_cast<const LayoutDocEntryMemberDecl *>(lde.get()))
+      {
+        Debug::print(Debug::Layout, 0, "  {}complex kind: {}, visible={}, type: {}\n",
+                     extraIndent ? "  " : "", lde->entryToString(), lmdecl->visible(), lmdecl->type.to_string());
+      }
+      else if (const LayoutDocEntryMemberDef *lmdef = dynamic_cast<const LayoutDocEntryMemberDef *>(lde.get()))
+      {
+        Debug::print(Debug::Layout, 0, "  {}complex kind: {}, visible={}, type: {}\n",
+                     extraIndent ? "  " : "", lde->entryToString(), lmdef->visible(), lmdef->type.to_string());
+      }
+      else
+      {
+        // should not happen
+        Debug::print(Debug::Layout, 0, "  {}not handled kind: {}\n", extraIndent ? "  " : "", lde->entryToString());
+      }
+    }
   }
 }
-
-
-

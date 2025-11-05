@@ -31,7 +31,7 @@ class TextStream;
 class RTFDocVisitor : public DocVisitor
 {
   public:
-    RTFDocVisitor(TextStream &t,OutputCodeList &ci,const QCString &langExt, int hierarchyLevel = 0);
+    RTFDocVisitor(TextStream &t, OutputCodeList &ci, const QCString &langExt, int hierarchyLevel = 0);
 
     //--------------------------------------
     // visitor functions for leaf nodes
@@ -100,9 +100,8 @@ class RTFDocVisitor : public DocVisitor
     void operator()(const DocHtmlBlockQuote &);
     void operator()(const DocVhdlFlow &);
     void operator()(const DocParBlock &);
-
   private:
-    template<class T>
+    template <class T>
     void visitChildren(const T &t)
     {
       for (const auto &child : t.children())
@@ -115,46 +114,46 @@ class RTFDocVisitor : public DocVisitor
     // helper functions
     //--------------------------------------
 
-    void filter(const QCString &str,bool verbatim=FALSE);
-    void startLink(const QCString &ref,const QCString &file,
-                   const QCString &anchor);
-    void endLink(const QCString &ref);
-    QCString getStyle(const QCString &name);
-    QCString getListTable(const int id);
+    void             filter(const QCString &str, bool verbatim = FALSE);
+    void             startLink(const QCString &ref, const QCString &file,
+                               const QCString &anchor);
+    void             endLink(const QCString &ref);
+    QCString         getStyle(const QCString &name);
+    QCString         getListTable(const int id);
 
-    int indentLevel() const;
-    void incIndentLevel();
-    void decIndentLevel();
+    int              indentLevel() const;
+    void             incIndentLevel();
+    void             decIndentLevel();
 
-    void includePicturePreRTF(const QCString &name, bool isTypeRTF, bool hasCaption, bool inlineImage = FALSE);
-    void includePicturePostRTF(bool isTypeRTF, bool hasCaption, bool inlineImage = FALSE);
-    void writeDotFile(const QCString &fileName, bool hasCaption,const QCString &srcFile,int srcLine);
-    void writeDotFile(const DocDotFile &);
-    void writeMscFile(const QCString &fileName, bool hasCaption,const QCString &srcFile,int srcLine);
-    void writeMscFile(const DocMscFile &);
-    void writeDiaFile(const DocDiaFile &);
-    void writePlantUMLFile(const QCString &fileName, bool hasCaption);
+    void             includePicturePreRTF(const QCString &name, bool isTypeRTF, bool hasCaption, bool inlineImage = FALSE);
+    void             includePicturePostRTF(bool isTypeRTF, bool hasCaption, bool inlineImage = FALSE);
+    void             writeDotFile(const QCString &fileName, bool hasCaption, const QCString &srcFile, int srcLine);
+    void             writeDotFile(const DocDotFile &);
+    void             writeMscFile(const QCString &fileName, bool hasCaption, const QCString &srcFile, int srcLine);
+    void             writeMscFile(const DocMscFile &);
+    void             writeDiaFile(const DocDiaFile &);
+    void             writePlantUMLFile(const QCString &fileName, bool hasCaption);
 
     //--------------------------------------
     // state variables
     //--------------------------------------
 
-    TextStream &m_t;
-    OutputCodeList &m_ci;
-    bool m_insidePre = false;
-    bool m_hide = false;
-    bool m_lastIsPara = false;
-    QCString m_langExt;
+    TextStream      &m_t;
+    OutputCodeList  &m_ci;
+    bool             m_insidePre  = false;
+    bool             m_hide       = false;
+    bool             m_lastIsPara = false;
+    QCString         m_langExt;
 
-    static const int maxIndentLevels = 13;
-    int m_indentLevel = 0;
-    int m_hierarchyLevel = 0;
+    static const int maxIndentLevels  = 13;
+    int              m_indentLevel    = 0;
+    int              m_hierarchyLevel = 0;
     struct RTFListItemInfo
     {
-      bool isEnum = false;
-      bool isCheck = false;
-      int number = 1;
-      char type = '1';
+        bool isEnum  = false;
+        bool isCheck = false;
+        int  number  = 1;
+        char type    = '1';
     };
     RTFListItemInfo m_listItemInfo[maxIndentLevels];
 };

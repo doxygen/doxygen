@@ -34,25 +34,24 @@ class PythonCodeParser : public CodeParserInterface
 {
   public:
     PythonCodeParser();
-   ~PythonCodeParser() override;
+    ~PythonCodeParser() override;
     NON_COPYABLE(PythonCodeParser)
 
-    void parseCode(OutputCodeList &codeOutIntf,
-                   const QCString &scopeName,
-                   const QCString &input,
-                   SrcLangExt lang,
-                   bool stripCodeComments,
-                   bool isExampleBlock,
-                   const QCString &exampleName=QCString(),
-                   const FileDef *fileDef=nullptr,
-                   int startLine=-1,
-                   int endLine=-1,
-                   bool inlineFragment=FALSE,
-                   const MemberDef *memberDef=nullptr,
-                   bool showLineNumbers=TRUE,
-                   const Definition *searchCtx=nullptr,
-                   bool collectXrefs=TRUE
-                  ) override;
+    void parseCode(OutputCodeList   &codeOutIntf,
+                   const QCString   &scopeName,
+                   const QCString   &input,
+                   SrcLangExt        lang,
+                   bool              stripCodeComments,
+                   bool              isExampleBlock,
+                   const QCString   &exampleName     = QCString(),
+                   const FileDef    *fileDef         = nullptr,
+                   int               startLine       = -1,
+                   int               endLine         = -1,
+                   bool              inlineFragment  = FALSE,
+                   const MemberDef  *memberDef       = nullptr,
+                   bool              showLineNumbers = TRUE,
+                   const Definition *searchCtx       = nullptr,
+                   bool              collectXrefs    = TRUE) override;
     void resetCodeParserState() override;
   private:
     struct Private;

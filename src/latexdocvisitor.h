@@ -28,16 +28,16 @@ class TextStream;
 
 enum class TexOrPdf
 {
-   NO,  //!< not called through texorpdf
-   TEX, //!< called through texorpdf as TeX (first) part
-   PDF, //!< called through texorpdf as PDF (second) part
+  NO,  //!< not called through texorpdf
+  TEX, //!< called through texorpdf as TeX (first) part
+  PDF, //!< called through texorpdf as PDF (second) part
 };
 
 /*! @brief Concrete visitor implementation for LaTeX output. */
 class LatexDocVisitor : public DocVisitor
 {
   public:
-    LatexDocVisitor(TextStream &t,OutputCodeList &ci,LatexCodeGenerator &lcg,
+    LatexDocVisitor(TextStream &t, OutputCodeList &ci, LatexCodeGenerator &lcg,
                     const QCString &langExt, int hierarchyLevel = 0);
 
     //--------------------------------------
@@ -107,9 +107,8 @@ class LatexDocVisitor : public DocVisitor
     void operator()(const DocHtmlBlockQuote &);
     void operator()(const DocVhdlFlow &);
     void operator()(const DocParBlock &);
-
   private:
-    template<class T>
+    template <class T>
     void visitChildren(const T &t)
     {
       for (const auto &child : t.children())
@@ -120,12 +119,12 @@ class LatexDocVisitor : public DocVisitor
 
     struct ActiveRowSpan
     {
-      ActiveRowSpan(const DocHtmlCell &c,size_t rs,size_t cs,size_t col)
-        : cell(c), rowSpan(rs), colSpan(cs), column(col) {}
-      const DocHtmlCell &cell;
-      size_t rowSpan;
-      size_t colSpan;
-      size_t column;
+        ActiveRowSpan(const DocHtmlCell &c, size_t rs, size_t cs, size_t col) :
+            cell(c), rowSpan(rs), colSpan(cs), column(col) {}
+        const DocHtmlCell &cell;
+        size_t             rowSpan;
+        size_t             colSpan;
+        size_t             column;
     };
 
     typedef std::vector<ActiveRowSpan> RowSpanList;
@@ -134,73 +133,73 @@ class LatexDocVisitor : public DocVisitor
     // helper functions
     //--------------------------------------
 
-    void filter(const QCString &str, const bool retainNewLine = false);
-    void startLink(const QCString &ref,const QCString &file,
-                   const QCString &anchor,bool refToTable=false,bool refToSection=false);
-    void endLink(const QCString &ref,const QCString &file,
-                 const QCString &anchor,bool refToTable=false,bool refToSection=false, SectionType sectionType = SectionType::Anchor);
-    void startDotFile(const QCString &fileName,const QCString &width,
-                      const QCString &height, bool hasCaption,
-                      const QCString &srcFile,int srcLine);
-    void endDotFile(bool hasCaption);
+    void                               filter(const QCString &str, const bool retainNewLine = false);
+    void                               startLink(const QCString &ref, const QCString &file,
+                                                 const QCString &anchor, bool refToTable = false, bool refToSection = false);
+    void                               endLink(const QCString &ref, const QCString &file,
+                                               const QCString &anchor, bool refToTable = false, bool refToSection = false, SectionType sectionType = SectionType::Anchor);
+    void                               startDotFile(const QCString &fileName, const QCString &width,
+                                                    const QCString &height, bool hasCaption,
+                                                    const QCString &srcFile, int srcLine);
+    void                               endDotFile(bool hasCaption);
 
-    void startMscFile(const QCString &fileName,const QCString &width,
-                      const QCString &height, bool hasCaption,
-                      const QCString &srcFile,int srcLine);
-    void endMscFile(bool hasCaption);
-    void writeMscFile(const QCString &fileName, const DocVerbatim &s);
+    void                               startMscFile(const QCString &fileName, const QCString &width,
+                                                    const QCString &height, bool hasCaption,
+                                                    const QCString &srcFile, int srcLine);
+    void                               endMscFile(bool hasCaption);
+    void                               writeMscFile(const QCString &fileName, const DocVerbatim &s);
 
-    void startDiaFile(const QCString &fileName,const QCString &width,
-                      const QCString &height, bool hasCaption,
-                      const QCString &srcFile,int srcLine);
-    void endDiaFile(bool hasCaption);
-    void writePlantUMLFile(const QCString &fileName, const DocVerbatim &s);
-    void startPlantUmlFile(const QCString &fileName,const QCString &width,
-                      const QCString &height, bool hasCaption,
-                      const QCString &srcFile,int srcLine);
-    void endPlantUmlFile(bool hasCaption);
+    void                               startDiaFile(const QCString &fileName, const QCString &width,
+                                                    const QCString &height, bool hasCaption,
+                                                    const QCString &srcFile, int srcLine);
+    void                               endDiaFile(bool hasCaption);
+    void                               writePlantUMLFile(const QCString &fileName, const DocVerbatim &s);
+    void                               startPlantUmlFile(const QCString &fileName, const QCString &width,
+                                                         const QCString &height, bool hasCaption,
+                                                         const QCString &srcFile, int srcLine);
+    void                               endPlantUmlFile(bool hasCaption);
 
-    void visitCaption(const DocNodeList &children);
+    void                               visitCaption(const DocNodeList &children);
 
-    void incIndentLevel();
-    void decIndentLevel();
-    int indentLevel() const;
-    const char *getSectionName(int level) const;
+    void                               incIndentLevel();
+    void                               decIndentLevel();
+    int                                indentLevel() const;
+    const char                        *getSectionName(int level) const;
 
     //--------------------------------------
     // state variables
     //--------------------------------------
 
-    TextStream &m_t;
-    OutputCodeList &m_ci;
-    LatexCodeGenerator &m_lcg;
-    bool m_insidePre;
-    bool m_insideItem;
-    bool m_hide;
-    QCString m_langExt;
-    int m_hierarchyLevel;
-    TexOrPdf m_texOrPdf = TexOrPdf::NO;
+    TextStream                        &m_t;
+    OutputCodeList                    &m_ci;
+    LatexCodeGenerator                &m_lcg;
+    bool                               m_insidePre;
+    bool                               m_insideItem;
+    bool                               m_hide;
+    QCString                           m_langExt;
+    int                                m_hierarchyLevel;
+    TexOrPdf                           m_texOrPdf = TexOrPdf::NO;
 
     struct TableState
     {
-      RowSpanList rowSpans;
-      size_t numCols = 0;
-      size_t currentColumn = 0;
+        RowSpanList rowSpans;
+        size_t      numCols       = 0;
+        size_t      currentColumn = 0;
     };
     std::stack<TableState> m_tableStateStack; // needed for nested tables
-    RowSpanList m_emptyRowSpanList;
+    RowSpanList            m_emptyRowSpanList;
 
-    static const int maxIndentLevels = 13;
-    int m_indentLevel = 0;
+    static const int       maxIndentLevels = 13;
+    int                    m_indentLevel   = 0;
 
     struct LatexListItemInfo
     {
-      bool isEnum = false;
+        bool isEnum = false;
     };
 
     LatexListItemInfo m_listItemInfo[maxIndentLevels];
 
-    void pushTableState()
+    void              pushTableState()
     {
       m_tableStateStack.emplace();
     }
@@ -234,8 +233,7 @@ class LatexDocVisitor : public DocVisitor
     }
 
     bool isTableNested(const DocNodeVariant *n) const;
-    void writeStartTableCommand(const DocNodeVariant *n,size_t cols);
+    void writeStartTableCommand(const DocNodeVariant *n, size_t cols);
     void writeEndTableCommand(const DocNodeVariant *n);
-
 };
 #endif

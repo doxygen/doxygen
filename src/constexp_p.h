@@ -29,22 +29,22 @@
 #define YY_TYPEDEF_YY_SCANNER_T
 
 struct yyguts_t;
-typedef yyguts_t* yyscan_t;
+typedef yyguts_t *yyscan_t;
 struct constexpYY_state
 {
-  std::string  strToken;
-  CPPValue     resultValue;
-  int          constExpLineNr;
-  std::string  constExpFileName;
+    std::string strToken;
+    CPPValue    resultValue;
+    int         constExpLineNr;
+    std::string constExpFileName;
 
-  std::string orgString;
-  std::string inputString;
-  int         inputPosition;
+    std::string orgString;
+    std::string inputString;
+    int         inputPosition;
 };
-constexpYY_state* constexpYYget_extra(yyscan_t yyscanner );
+constexpYY_state *constexpYYget_extra(yyscan_t yyscanner);
 
-int constexpYYlex(YYSTYPE *lvalp, yyscan_t);
-int constexpYYparse(yyscan_t);
+int               constexpYYlex(YYSTYPE *lvalp, yyscan_t);
+int               constexpYYparse(yyscan_t);
 
 
 #endif

@@ -31,18 +31,17 @@ QCString markdownFileNameToId(const QCString &fileName);
 class Markdown
 {
   public:
-    Markdown(const QCString &fileName,int lineNr,int indentLevel=0);
-   ~Markdown();
+    Markdown(const QCString &fileName, int lineNr, int indentLevel = 0);
+    ~Markdown();
     NON_COPYABLE(Markdown)
     QCString process(const QCString &input, int &startNewlines, bool fromParseInput = false);
     QCString extractPageTitle(QCString &docs, QCString &id, int &prepend, bool &isIdGenerated);
-    void setIndentLevel(int level);
-
+    void     setIndentLevel(int level);
   private:
     struct Private;
     std::unique_ptr<Private> prv;
-    using Action_t      = std::function<int(Private&,std::string_view,size_t)>;
-    using ActionTable_t = std::array<Action_t,256>;
+    using Action_t      = std::function<int(Private &, std::string_view, size_t)>;
+    using ActionTable_t = std::array<Action_t, 256>;
     static ActionTable_t fill_table();
     static ActionTable_t actions;
 };
@@ -51,12 +50,12 @@ class MarkdownOutlineParser : public OutlineParserInterface
 {
   public:
     MarkdownOutlineParser();
-   ~MarkdownOutlineParser() override;
+    ~MarkdownOutlineParser() override;
     NON_COPYABLE(MarkdownOutlineParser)
-    void parseInput(const QCString &fileName,
-                    const char *fileBuf,
+    void parseInput(const QCString               &fileName,
+                    const char                   *fileBuf,
                     const std::shared_ptr<Entry> &root,
-                    ClangTUParser *clangParser) override;
+                    ClangTUParser                *clangParser) override;
     bool needsPreprocessing(const QCString &) const override { return FALSE; }
     void parsePrototype(const QCString &text) override;
   private:

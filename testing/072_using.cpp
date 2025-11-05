@@ -4,4 +4,5 @@
 /** \file */
 #include <vector>
 /** @brief A vector */
-template<class T> using Vec = std::vector<T>;
+template <class T>
+using Vec = std::vector<T>;

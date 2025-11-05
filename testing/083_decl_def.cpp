@@ -8,11 +8,11 @@ namespace N
 {
 
 /** Detailed docs. */
-int var;
+int  var;
 
 /** Detailed docs. */
 void foo(int param)
 {
 }
 
-}
+} // namespace N

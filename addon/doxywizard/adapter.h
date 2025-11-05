@@ -32,15 +32,15 @@ class TextCodecAdapter
     TextCodecAdapter(const QByteArray &name)
     {
       m_codec = QTextCodec::codecForName(name);
-      if (m_codec==nullptr) // fallback: use UTF-8
+      if (m_codec == nullptr) // fallback: use UTF-8
       {
         m_codec = QTextCodec::codecForName("UTF-8");
       }
     }
-    QByteArray encode(const QString    &input) { return m_codec ? m_codec->fromUnicode(input) : input.toLatin1(); }
-    QString    decode(const QByteArray &input) { return m_codec ? m_codec->toUnicode(input)   : QString::fromLatin1(input); }
-    void applyToStream(QTextStream &t) { t.setCodec(m_codec); }
-    bool isValid() const { return m_codec!=nullptr; }
+    QByteArray encode(const QString &input) { return m_codec ? m_codec->fromUnicode(input) : input.toLatin1(); }
+    QString    decode(const QByteArray &input) { return m_codec ? m_codec->toUnicode(input) : QString::fromLatin1(input); }
+    void       applyToStream(QTextStream &t) { t.setCodec(m_codec); }
+    bool       isValid() const { return m_codec != nullptr; }
   private:
     QTextCodec *m_codec = nullptr; // object is owned by Qt
 };
@@ -62,14 +62,13 @@ class TextCodecAdapter
       m_decoder = std::make_unique<QStringDecoder>(m_encoding);
     }
     QByteArray encode(const QString &input) { return m_encoder ? m_encoder->encode(input) : input.toLatin1(); }
-    QString decode(const QByteArray &input) { return m_decoder ? m_decoder->decode(input) : QString::fromLatin1(input); }
-    void applyToStream(QTextStream &t) { t.setEncoding(m_encoding); }
-    bool isValid() const { return m_decoder!=0; }
+    QString    decode(const QByteArray &input) { return m_decoder ? m_decoder->decode(input) : QString::fromLatin1(input); }
+    void       applyToStream(QTextStream &t) { t.setEncoding(m_encoding); }
+    bool       isValid() const { return m_decoder != 0; }
   private:
     std::unique_ptr<QStringEncoder> m_encoder;
     std::unique_ptr<QStringDecoder> m_decoder;
-    QStringConverter::Encoding m_encoding = QStringConverter::Utf8;
-
+    QStringConverter::Encoding      m_encoding = QStringConverter::Utf8;
 };
 #endif
 

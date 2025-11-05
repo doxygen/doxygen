@@ -1,9 +1,10 @@
 namespace NS
 {
-  enum ED {
-    ED1,
-    ED2
-  };
+enum ED
+{
+  ED1,
+  ED2
+};
 }
 
 /**
@@ -39,4 +40,4 @@ namespace NS
  *
  * Enumerator ED2.
  */
-}
+} // namespace NS

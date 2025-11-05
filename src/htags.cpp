@@ -26,36 +26,35 @@
 #include "fileinfo.h"
 #include "dir.h"
 
-bool Htags::useHtags = FALSE;
+bool                                                Htags::useHtags = FALSE;
 
-static Dir g_inputDir;
-static std::unordered_map<std::string,std::string> g_symbolMap;
+static Dir                                          g_inputDir;
+static std::unordered_map<std::string, std::string> g_symbolMap;
 
 /*! constructs command line of htags(1) and executes it.
  *  \retval TRUE success
  *  \retval FALSE an error has occurred.
  */
-bool Htags::execute(const QCString &htmldir)
+bool                                                Htags::execute(const QCString &htmldir)
 {
-  const StringVector &inputSource = Config_getList(INPUT);
-  bool quiet = Config_getBool(QUIET);
-  bool warnings = Config_getBool(WARNINGS);
-  QCString htagsOptions = ""; //Config_getString(HTAGS_OPTIONS);
-  QCString projectName = Config_getString(PROJECT_NAME);
-  QCString projectNumber = Config_getString(PROJECT_NUMBER);
+  const StringVector &inputSource   = Config_getList(INPUT);
+  bool                quiet         = Config_getBool(QUIET);
+  bool                warnings      = Config_getBool(WARNINGS);
+  QCString            htagsOptions  = ""; //Config_getString(HTAGS_OPTIONS);
+  QCString            projectName   = Config_getString(PROJECT_NAME);
+  QCString            projectNumber = Config_getString(PROJECT_NUMBER);
 
   if (inputSource.empty())
   {
     g_inputDir.setPath(Dir::currentDirPath());
   }
-  else if (inputSource.size()==1)
+  else if (inputSource.size() == 1)
   {
     g_inputDir.setPath(inputSource.back());
     if (!g_inputDir.exists())
       err("Cannot find directory {}. "
           "Check the value of the INPUT tag in the configuration file.\n",
-          inputSource.back()
-         );
+          inputSource.back());
   }
   else
   {
@@ -67,7 +66,7 @@ bool Htags::execute(const QCString &htmldir)
    * Construct command line for htags(1).
    */
   QCString commandLine = " -g -s -a -n ";
-  if (!quiet)   commandLine += "-v ";
+  if (!quiet) commandLine += "-v ";
   if (warnings) commandLine += "-w ";
   if (!htagsOptions.isEmpty())
   {
@@ -89,7 +88,7 @@ bool Htags::execute(const QCString &htmldir)
   std::string oldDir = Dir::currentDirPath();
   Dir::setCurrent(g_inputDir.absPath());
   //printf("CommandLine=[%s]\n",qPrint(commandLine));
-  bool result=Portable::system("htags",commandLine,FALSE)==0;
+  bool result = Portable::system("htags", commandLine, FALSE) == 0;
   if (!result)
   {
     err("Problems running htags. Check your installation\n");
@@ -106,7 +105,7 @@ bool Htags::execute(const QCString &htmldir)
  */
 bool Htags::loadFilemap(const QCString &htmlDir)
 {
-  QCString fileMapName = htmlDir+"/HTML/FILEMAP";
+  QCString fileMapName = htmlDir + "/HTML/FILEMAP";
   FileInfo fi(fileMapName.str());
   /*
    * Construct FILEMAP dictionary.
@@ -125,18 +124,18 @@ bool Htags::loadFilemap(const QCString &htmlDir)
     if (f.is_open())
     {
       std::string lineStr;
-      while (getline(f,lineStr))
+      while (getline(f, lineStr))
       {
         QCString line(lineStr);
         //printf("Read line: %s",qPrint(line));
-        int sep = line.find('\t');
-        if (sep!=-1)
+        int      sep = line.find('\t');
+        if (sep != -1)
         {
           QCString key   = line.left(sep).stripWhiteSpace();
-          QCString value = line.mid(sep+1).stripWhiteSpace();
-          int ext=value.findRev('.');
-          if (ext!=-1) value=value.left(ext); // strip extension
-          g_symbolMap.emplace(key.str(),value.str());
+          QCString value = line.mid(sep + 1).stripWhiteSpace();
+          int      ext   = value.findRev('.');
+          if (ext != -1) value = value.left(ext); // strip extension
+          g_symbolMap.emplace(key.str(), value.str());
           //printf("Key/Value=(%s,%s)\n",qPrint(key),qPrint(value));
         }
       }
@@ -144,7 +143,7 @@ bool Htags::loadFilemap(const QCString &htmlDir)
     }
     else
     {
-      err("file {} cannot be opened\n",fileMapName);
+      err("file {} cannot be opened\n", fileMapName);
     }
   }
   return false;
@@ -156,22 +155,21 @@ bool Htags::loadFilemap(const QCString &htmlDir)
  */
 QCString Htags::path2URL(const QCString &path)
 {
-  QCString url,symName=path;
+  QCString url, symName = path;
   QCString dir = g_inputDir.absPath();
-  size_t dl=dir.length();
-  if (symName.length()>dl+1)
+  size_t   dl  = dir.length();
+  if (symName.length() > dl + 1)
   {
-    symName = symName.mid(dl+1);
+    symName = symName.mid(dl + 1);
   }
   if (!symName.isEmpty())
   {
     auto it = g_symbolMap.find(symName.str());
     //printf("path2URL=%s symName=%s result=%p\n",qPrint(path),qPrint(symName),result);
-    if (it!=g_symbolMap.end())
+    if (it != g_symbolMap.end())
     {
-      url = QCString("HTML/"+it->second);
+      url = QCString("HTML/" + it->second);
     }
   }
   return url;
 }
-

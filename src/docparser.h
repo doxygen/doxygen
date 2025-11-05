@@ -71,34 +71,34 @@ using IDocNodeASTPtr = std::unique_ptr<IDocNodeAST>;
  *                   pointer is handed over to the caller.
  */
 IDocNodeASTPtr validatingParseDoc(
-    IDocParser &parserIntf,
-    const QCString &fileName,
-    int startLine,
-    const Definition *ctx,
-    const MemberDef *md,
-    const QCString &input,
-    const DocOptions &options);
+  IDocParser       &parserIntf,
+  const QCString   &fileName,
+  int               startLine,
+  const Definition *ctx,
+  const MemberDef  *md,
+  const QCString   &input,
+  const DocOptions &options);
 
 /*! Main entry point for parsing simple text fragments. These
  *  fragments are limited to words, whitespace and symbols.
  */
-IDocNodeASTPtr validatingParseText(IDocParser &parser,const QCString &input);
+IDocNodeASTPtr validatingParseText(IDocParser &parser, const QCString &input);
 
 
 /*! Main entry point for parsing titles. These allow limited markup commands */
-IDocNodeASTPtr validatingParseTitle(IDocParser &parserIntf,const QCString &fileName,int lineNr,
+IDocNodeASTPtr validatingParseTitle(IDocParser &parserIntf, const QCString &fileName, int lineNr,
                                     const QCString &input);
 
 
-IDocNodeASTPtr createRef(IDocParser &parser,const QCString &target,const QCString &context, const QCString &srcFile = "", int srcLine = -1);
+IDocNodeASTPtr createRef(IDocParser &parser, const QCString &target, const QCString &context, const QCString &srcFile = "", int srcLine = -1);
 
 //--------------------------------------------------------------------------------
 
 /*! Searches for section and anchor commands in the input
  *  Sections found will be added to the SectionManager.
  */
-void docFindSections(const QCString &input,
-                     const Definition *d,
-                     const QCString &fileName);
+void           docFindSections(const QCString   &input,
+                               const Definition *d,
+                               const QCString   &fileName);
 
 #endif

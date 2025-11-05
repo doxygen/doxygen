@@ -22,28 +22,27 @@ class QSpinBox;
 
 class InputInt : public QObject, public Input
 {
-  Q_OBJECT
-
+    Q_OBJECT
   public:
-    InputInt( QGridLayout *layout,int &row,
-              const QString &id, int defVal,
-              int minVal, int maxVal,
-              const QString &docs );
+    InputInt(QGridLayout *layout, int &row,
+             const QString &id, int defVal,
+             int minVal, int maxVal,
+             const QString &docs);
     ~InputInt() = default;
 
     // Input
     QVariant &value();
-    void update();
-    Kind kind() const { return Int; }
-    QString docs() const { return m_docs; }
-    QString id() const { return m_id; }
-    QString templateDocs() const { return m_tdocs; }
-    void addDependency(Input *) { Q_ASSERT(false); }
-    void setEnabled(bool);
-    void updateDependencies() {}
-    bool isDefault();
-    void writeValue(QTextStream &t,TextCodecAdapter *codec,bool convert);
-    void setTemplateDocs(const QString &docs) { m_tdocs = docs; }
+    void      update();
+    Kind      kind() const { return Int; }
+    QString   docs() const { return m_docs; }
+    QString   id() const { return m_id; }
+    QString   templateDocs() const { return m_tdocs; }
+    void      addDependency(Input *) { Q_ASSERT(false); }
+    void      setEnabled(bool);
+    void      updateDependencies() {}
+    bool      isDefault();
+    void      writeValue(QTextStream &t, TextCodecAdapter *codec, bool convert);
+    void      setTemplateDocs(const QString &docs) { m_tdocs = docs; }
 
   public slots:
     void reset();
@@ -55,9 +54,8 @@ class InputInt : public QObject, public Input
   signals:
     void changed();
     void showHelp(Input *);
-
   private:
-    void updateDefault();
+    void      updateDefault();
     QLabel   *m_lab;
     QSpinBox *m_sp;
     int       m_val;

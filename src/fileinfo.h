@@ -22,16 +22,17 @@
 class FileInfo
 {
   public:
-    explicit FileInfo(const std::string &name) : m_name(name) {}
-    bool exists() const;
-    size_t size() const;
-    bool isWritable() const;
-    bool isReadable() const;
-    bool isExecutable() const;
-    bool isRelative() const;
-    bool isFile() const;
-    bool isDir() const;
-    bool isSymLink() const;
+    explicit FileInfo(const std::string &name) :
+        m_name(name) {}
+    bool        exists() const;
+    size_t      size() const;
+    bool        isWritable() const;
+    bool        isReadable() const;
+    bool        isExecutable() const;
+    bool        isRelative() const;
+    bool        isFile() const;
+    bool        isDir() const;
+    bool        isSymLink() const;
     std::string readLink() const;
     std::string filePath() const;
     std::string absFilePath() const;

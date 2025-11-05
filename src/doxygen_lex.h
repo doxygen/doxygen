@@ -18,39 +18,39 @@
 
 #ifndef LEX_NO_REENTRANT
 #ifndef LEX_NO_INPUT_FILENAME
-#define YY_FATAL_ERROR(msg)                                          \
-{                                                                    \
-  QCString msg1 = msg;                                               \
-  msg1 += "\n    lexical analyzer: ";                                \
-  msg1 += getLexerFILE();                                            \
-  if (!static_cast<yyguts_t*>(yyscanner)->yyextra_r->fileName.isEmpty()) \
-  {                                                                  \
-    msg1 += " (for: ";                                               \
-    msg1 += static_cast<yyguts_t*>(yyscanner)->yyextra_r->fileName;  \
-    msg1 += ")";                                                     \
-  }                                                                  \
-  msg1 += "\n";                                                      \
-  yy_fatal_error( qPrint(msg1) , yyscanner);                         \
-}
+#define YY_FATAL_ERROR(msg) \
+  { \
+    QCString msg1 = msg; \
+    msg1 += "\n    lexical analyzer: "; \
+    msg1 += getLexerFILE(); \
+    if (!static_cast<yyguts_t *>(yyscanner)->yyextra_r->fileName.isEmpty()) \
+    { \
+      msg1 += " (for: "; \
+      msg1 += static_cast<yyguts_t *>(yyscanner)->yyextra_r->fileName; \
+      msg1 += ")"; \
+    } \
+    msg1 += "\n"; \
+    yy_fatal_error(qPrint(msg1), yyscanner); \
+  }
 #else
-#define YY_FATAL_ERROR(msg)                                          \
-{                                                                    \
-  QCString msg1 = msg;                                               \
-  msg1 += "\n    lexical analyzer: ";                                \
-  msg1 += getLexerFILE();                                            \
-  msg1 += "\n";                                                      \
-  yy_fatal_error( qPrint(msg1) , yyscanner);                         \
-}
+#define YY_FATAL_ERROR(msg) \
+  { \
+    QCString msg1 = msg; \
+    msg1 += "\n    lexical analyzer: "; \
+    msg1 += getLexerFILE(); \
+    msg1 += "\n"; \
+    yy_fatal_error(qPrint(msg1), yyscanner); \
+  }
 #endif
 #else
-#define YY_FATAL_ERROR(msg)                                          \
-{                                                                    \
-  QCString msg1 = msg;                                               \
-  msg1 += "\n    lexical analyzer: ";                                \
-  msg1 += getLexerFILE();                                            \
-  msg1 += "\n";                                                      \
-  yy_fatal_error( qPrint(msg1));                                     \
-}
+#define YY_FATAL_ERROR(msg) \
+  { \
+    QCString msg1 = msg; \
+    msg1 += "\n    lexical analyzer: "; \
+    msg1 += getLexerFILE(); \
+    msg1 += "\n"; \
+    yy_fatal_error(qPrint(msg1)); \
+  }
 #endif
 
 #endif

@@ -34,78 +34,79 @@ class NoWheelComboBox : public QComboBox
 };
 
 
-InputString::InputString( QGridLayout *layout,int &row,
-                          const QString & id, const QString &s,
-                          StringMode m, const QString &docs,
-                          const QString &absPath )
-  : m_default(s), m_sm(m), m_index(0), m_docs(docs), m_id(id),
-    m_absPath(absPath==QString::fromLatin1("1"))
+InputString::InputString(QGridLayout *layout, int &row,
+                         const QString &id, const QString &s,
+                         StringMode m, const QString &docs,
+                         const QString &absPath) :
+    m_default(s),
+    m_sm(m), m_index(0), m_docs(docs), m_id(id),
+    m_absPath(absPath == QString::fromLatin1("1"))
 {
-  m_lab = new HelpLabel(id);
+  m_lab    = new HelpLabel(id);
   m_brFile = nullptr;
-  m_brDir = nullptr;
-  if (m==StringFixed)
+  m_brDir  = nullptr;
+  if (m == StringFixed)
   {
-    layout->addWidget( m_lab, row, 0 );
+    layout->addWidget(m_lab, row, 0);
     m_com = new NoWheelComboBox;
-    layout->addWidget( m_com, row, 1, 1, 3, Qt::AlignLeft );
-    m_le=nullptr;
-    m_br=nullptr;
-    m_im=nullptr;
+    layout->addWidget(m_com, row, 1, 1, 3, Qt::AlignLeft);
+    m_le = nullptr;
+    m_br = nullptr;
+    m_im = nullptr;
     row++;
   }
   else
   {
-    layout->addWidget( m_lab, row, 0 );
+    layout->addWidget(m_lab, row, 0);
     m_le = new QLineEdit;
-    m_le->setText( s );
+    m_le->setText(s);
     m_im = nullptr;
     //layout->setColumnMinimumWidth(2,150);
-    if (m==StringFile || m==StringDir || m==StringImage || m==StringFileDir)
+    if (m == StringFile || m == StringDir || m == StringImage || m == StringFileDir)
     {
       QHBoxLayout *rowLayout = new QHBoxLayout;
-      rowLayout->addWidget( m_le);
+      rowLayout->addWidget(m_le);
       m_br = new QToolBar;
-      m_br->setIconSize(QSize(24,24));
-      if (m==StringFile || m==StringImage || m==StringFileDir)
+      m_br->setIconSize(QSize(24, 24));
+      if (m == StringFile || m == StringImage || m == StringFileDir)
       {
-        m_brFile = m_br->addAction(QIcon(QString::fromLatin1(":/images/file.svg")),QString(),this,SLOT(browseFile()));
+        m_brFile = m_br->addAction(QIcon(QString::fromLatin1(":/images/file.svg")), QString(), this, SLOT(browseFile()));
         m_brFile->setToolTip(tr("Browse to a file"));
-        if (m==StringImage)
+        if (m == StringImage)
         {
           m_im = new QLabel;
-          m_im->setMinimumSize(1,55);
-          m_im->setAlignment(Qt::AlignLeft|Qt::AlignTop);
+          m_im->setMinimumSize(1, 55);
+          m_im->setAlignment(Qt::AlignLeft | Qt::AlignTop);
           row++;
-          layout->addWidget( m_im,row,1 );
+          layout->addWidget(m_im, row, 1);
         }
       }
-      if (m==StringDir || m==StringFileDir)
+      if (m == StringDir || m == StringFileDir)
       {
-        m_brDir = m_br->addAction(QIcon(QString::fromLatin1(":/images/folder.svg")),QString(),this,SLOT(browseDir()));
+        m_brDir = m_br->addAction(QIcon(QString::fromLatin1(":/images/folder.svg")), QString(), this, SLOT(browseDir()));
         m_brDir->setToolTip(tr("Browse to a folder"));
       }
-      rowLayout->addWidget( m_br);
-      layout->addLayout( rowLayout, m==StringImage?row-1:row, 1, 1, 2 );
+      rowLayout->addWidget(m_br);
+      layout->addLayout(rowLayout, m == StringImage ? row - 1 : row, 1, 1, 2);
     }
     else
     {
-      layout->addWidget( m_le, row, 1, 1, 2 );
-      m_br=nullptr;
-      m_im=nullptr;
+      layout->addWidget(m_le, row, 1, 1, 2);
+      m_br = nullptr;
+      m_im = nullptr;
     }
-    m_com=nullptr;
+    m_com = nullptr;
     row++;
   }
 
-  if (m_le)  connect( m_le,   SIGNAL(textChanged(const QString&)),
-                      this,   SLOT(setValue(const QString&)) );
-  if (m_com) connect( m_com,  SIGNAL(textActivated(const QString &)),
-                      this,   SLOT(setValue(const QString &)) );
-  m_str = s+QChar::fromLatin1('!'); // force update
+  if (m_le) connect(m_le, SIGNAL(textChanged(const QString &)),
+                    this, SLOT(setValue(const QString &)));
+  if (m_com) connect(m_com, SIGNAL(textActivated(const QString &)),
+                     this, SLOT(setValue(const QString &)));
+  m_str = s + QChar::fromLatin1('!'); // force update
   setValue(s);
-  connect( m_lab, SIGNAL(enter()), SLOT(help()) );
-  connect( m_lab, SIGNAL(reset()), SLOT(reset()) );
+  connect(m_lab, SIGNAL(enter()), SLOT(help()));
+  connect(m_lab, SIGNAL(reset()), SLOT(reset()));
 }
 
 void InputString::help()
@@ -121,9 +122,9 @@ InputString::~InputString()
 
 void InputString::setValue(const QString &s)
 {
-  if (m_str!=s)
+  if (m_str != s)
   {
-    m_str = s;
+    m_str   = s;
     m_value = m_str;
     updateDefault();
   }
@@ -131,13 +132,13 @@ void InputString::setValue(const QString &s)
 void InputString::updateDefault()
 {
   {
-    if (m_str==m_default || !m_lab->isEnabled())
+    if (m_str == m_default || !m_lab->isEnabled())
     {
-      m_lab->setText(QString::fromLatin1("<qt>")+m_id+QString::fromLatin1("</qt>"));
+      m_lab->setText(QString::fromLatin1("<qt>") + m_id + QString::fromLatin1("</qt>"));
     }
     else
     {
-      m_lab->setText(QString::fromLatin1("<qt><font color='red'>")+m_id+QString::fromLatin1("</font></qt>"));
+      m_lab->setText(QString::fromLatin1("<qt><font color='red'>") + m_id + QString::fromLatin1("</font></qt>"));
     }
     if (m_im)
     {
@@ -148,25 +149,25 @@ void InputString::updateDefault()
       else
       {
         QFile Fout(m_str);
-        if(!Fout.exists())
+        if (!Fout.exists())
         {
-          m_im->setText(tr("Sorry, cannot find file(")+m_str+QString::fromLatin1(");"));
+          m_im->setText(tr("Sorry, cannot find file(") + m_str + QString::fromLatin1(");"));
         }
         else
         {
           QPixmap pm(m_str);
           if (!pm.isNull())
           {
-            m_im->setPixmap(pm.scaledToHeight(55,Qt::SmoothTransformation));
+            m_im->setPixmap(pm.scaledToHeight(55, Qt::SmoothTransformation));
           }
           else
           {
-            m_im->setText(tr("Sorry, no preview available (")+m_str+QString::fromLatin1(");"));
+            m_im->setText(tr("Sorry, no preview available (") + m_str + QString::fromLatin1(");"));
           }
         }
       }
     }
-    if (m_le && m_le->text()!=m_str) m_le->setText( m_str );
+    if (m_le && m_le->text() != m_str) m_le->setText(m_str);
     emit changed();
   }
 }
@@ -174,20 +175,20 @@ void InputString::updateDefault()
 void InputString::setEnabled(bool state)
 {
   m_lab->setEnabled(state);
-  if (m_le)  m_le->setEnabled(state);
-  if (m_im)  m_im->setEnabled(state);
-  if (m_br)  m_br->setEnabled(state);
-  if (m_brFile)  m_brFile->setEnabled(state);
-  if (m_brDir)  m_brDir->setEnabled(state);
+  if (m_le) m_le->setEnabled(state);
+  if (m_im) m_im->setEnabled(state);
+  if (m_br) m_br->setEnabled(state);
+  if (m_brFile) m_brFile->setEnabled(state);
+  if (m_brDir) m_brDir->setEnabled(state);
   if (m_com) m_com->setEnabled(state);
   updateDefault();
 }
 
 void InputString::browseFile()
 {
-  QString path = QFileInfo(MainWindow::instance().configFileName()).path();
+  QString path     = QFileInfo(MainWindow::instance().configFileName()).path();
   QString fileName = QFileDialog::getOpenFileName(&MainWindow::instance(),
-      tr("Select file"),path);
+                                                  tr("Select file"), path);
   if (!fileName.isNull())
   {
     QDir dir(path);
@@ -203,7 +204,7 @@ void InputString::browseDir()
   QString path = QFileInfo(MainWindow::instance().configFileName()).path();
   {
     QString dirName = QFileDialog::getExistingDirectory(&MainWindow::instance(),
-        tr("Select directory"),path);
+                                                        tr("Select directory"), path);
     if (!dirName.isNull())
     {
       QDir dir(path);
@@ -223,7 +224,7 @@ void InputString::clear()
 
 void InputString::addValue(QString s)
 {
-  if (m_sm==StringFixed)
+  if (m_sm == StringFixed)
   {
     m_values.append(s);
     m_com->addItem(s);
@@ -233,7 +234,7 @@ void InputString::addValue(QString s)
 void InputString::setDefault()
 {
   int index = m_values.indexOf(m_str);
-  if (index!=-1 && m_com) m_com->setCurrentIndex(index);
+  if (index != -1 && m_com) m_com->setCurrentIndex(index);
 }
 
 QVariant &InputString::value()
@@ -253,9 +254,9 @@ void InputString::reset()
   setDefault();
 }
 
-void InputString::writeValue(QTextStream &t,TextCodecAdapter *codec,bool convert)
+void InputString::writeValue(QTextStream &t, TextCodecAdapter *codec, bool convert)
 {
-  writeStringValue(t,codec,m_str,convert);
+  writeStringValue(t, codec, m_str, convert);
 }
 
 bool InputString::isDefault()
@@ -265,15 +266,16 @@ bool InputString::isDefault()
 
 QString InputString::checkEnumVal(const QString &value)
 {
-  QString val = value.trimmed().toLower();
+  QString               val = value.trimmed().toLower();
   QStringList::Iterator it;
-  for ( it= m_values.begin(); it != m_values.end(); ++it )
+  for (it = m_values.begin(); it != m_values.end(); ++it)
   {
     QString enumVal = *it;
     if (enumVal.toLower() == val) return enumVal;
   }
 
   config_warn("argument '%s' for option %s is not a valid enum value."
-              " Using the default: %s!",qPrintable(value),qPrintable(m_id),qPrintable(m_default));
+              " Using the default: %s!",
+              qPrintable(value), qPrintable(m_id), qPrintable(m_default));
   return m_default;
 }

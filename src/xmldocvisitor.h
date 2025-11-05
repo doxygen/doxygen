@@ -33,7 +33,7 @@ class QCString;
 class XmlDocVisitor : public DocVisitor
 {
   public:
-    XmlDocVisitor(TextStream &t,OutputCodeList &ci,const QCString &langExt);
+    XmlDocVisitor(TextStream &t, OutputCodeList &ci, const QCString &langExt);
 
     //--------------------------------------
     // visitor functions for leaf nodes
@@ -64,7 +64,7 @@ class XmlDocVisitor : public DocVisitor
 
     void operator()(const DocAutoList &);
     void operator()(const DocAutoListItem &);
-    void operator()(const DocPara &) ;
+    void operator()(const DocPara &);
     void operator()(const DocRoot &);
     void operator()(const DocSimpleSect &);
     void operator()(const DocTitle &);
@@ -102,9 +102,8 @@ class XmlDocVisitor : public DocVisitor
     void operator()(const DocHtmlBlockQuote &);
     void operator()(const DocVhdlFlow &);
     void operator()(const DocParBlock &);
-
   private:
-    template<class T>
+    template <class T>
     void visitChildren(const T &t)
     {
       for (const auto &child : t.children())
@@ -117,21 +116,21 @@ class XmlDocVisitor : public DocVisitor
     // helper functions
     //--------------------------------------
 
-    void filter(const QCString &str);
-    void startLink(const QCString &ref,const QCString &file,
-                   const QCString &anchor);
-    void endLink();
+    void            filter(const QCString &str);
+    void            startLink(const QCString &ref, const QCString &file,
+                              const QCString &anchor);
+    void            endLink();
 
     //--------------------------------------
     // state variables
     //--------------------------------------
 
-    TextStream &m_t;
+    TextStream     &m_t;
     OutputCodeList &m_ci;
-    bool m_insidePre = false;
-    bool m_hide = false;
-    QCString m_langExt;
-    int m_sectionLevel;
+    bool            m_insidePre = false;
+    bool            m_hide      = false;
+    QCString        m_langExt;
+    int             m_sectionLevel;
 };
 
 #endif

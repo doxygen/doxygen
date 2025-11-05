@@ -5,53 +5,57 @@
 //! namespace itpp
 namespace itpp
 {
-  //! Vector
-  template<class Num_T>
-  class Vec {
+//! Vector
+template <class Num_T>
+class Vec
+{
     //! Set the vector equal to the values in the \c str string
     bool set(const char *str);
-  };
+};
 
-  //! Fixed complex data type
-  class CFix {};
+//! Fixed complex data type
+class CFix
+{
+};
 
-  //! Typedef for complex fixed-point vector type
-  typedef Vec<CFix> cfixvec;
+//! Typedef for complex fixed-point vector type
+typedef Vec<CFix> cfixvec;
 
-  //! setter
-  template<>
-  bool cfixvec::set(const char *values)
-  {
-    return true;
-  }
+//! setter
+template <>
+bool cfixvec::set(const char *values)
+{
+  return true;
+}
 
 } // namespace itpp
 
 //! namespace aa
 namespace aa
 {
-  /**
+/**
    * @brief Struct1
    */
-  struct Struct1
-  {
+struct Struct1
+{
     int struct1_0; //!< field 1_0
     int struct1_1; //!< field 1_1
-  };
+};
 
-  /**
+/**
    * @brief Struct2
    */
-  struct Struct2
-  {
+struct Struct2
+{
     int struct2_0; //!< field 2_0
     int struct2_1; //!< field 2_1
-  };
+};
 
 } // namespace aa
 
 //! namespace bb
-namespace bb {
+namespace bb
+{
 
 /**
  * @brief TemplateStruct
@@ -59,30 +63,30 @@ namespace bb {
 template <typename T>
 struct TemplateStruct
 {
-    T data;             //!< data
+    T data; //!< data
 };
 
 /**
  * @brief alias of Structt1 in bb
  */
- using Struct1 = aa::Struct1;
+using Struct1     = aa::Struct1;
 
- /**
+/**
  * @brief alias of Structt2 in bb
  */
- using Struct2 = aa::Struct2;
+using Struct2     = aa::Struct2;
 
- /**
+/**
   * @brief Struct1Type
   */
- using Struct1Type = TemplateStruct<aa::Struct1>;
+using Struct1Type = TemplateStruct<aa::Struct1>;
 
- /**
+/**
   * @brief Struct2Type
   */
- using Struct2Type = TemplateStruct<aa::Struct2>;
+using Struct2Type = TemplateStruct<aa::Struct2>;
 
- /**
+/**
     * @brief   FunctionExample (overload 1)
     *
     * @param[out] arg1 Struct1Type argument
@@ -103,4 +107,3 @@ int FunctionExample(Struct1Type arg1, int arg2);
 int FunctionExample(Struct2Type arg1, int arg2);
 
 } // namespace bb
-

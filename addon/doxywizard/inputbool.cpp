@@ -18,21 +18,22 @@
 #include <QTextStream>
 #include <QGridLayout>
 
-InputBool::InputBool( QGridLayout *layout, int &row,
-                      const QString &id, bool checked,
-                      const QString &docs )
-  : m_default(checked), m_docs(docs), m_id(id)
+InputBool::InputBool(QGridLayout *layout, int &row,
+                     const QString &id, bool checked,
+                     const QString &docs) :
+    m_default(checked),
+    m_docs(docs), m_id(id)
 {
   m_lab = new HelpLabel(id);
-  m_cb = new QCheckBox;
-  layout->addWidget(m_lab,row, 0);
-  layout->addWidget(m_cb,row, 1);
+  m_cb  = new QCheckBox;
+  layout->addWidget(m_lab, row, 0);
+  layout->addWidget(m_cb, row, 1);
   m_enabled = true;
-  m_state=!checked; // force update
+  m_state   = !checked; // force update
   setValue(checked);
-  connect( m_cb, SIGNAL(toggled(bool)), SLOT(setValue(bool)) );
-  connect( m_lab, SIGNAL(enter()), SLOT(help()) );
-  connect( m_lab, SIGNAL(reset()), SLOT(reset()) );
+  connect(m_cb, SIGNAL(toggled(bool)), SLOT(setValue(bool)));
+  connect(m_lab, SIGNAL(enter()), SLOT(help()));
+  connect(m_lab, SIGNAL(reset()), SLOT(reset()));
   row++;
 }
 
@@ -52,20 +53,20 @@ void InputBool::setEnabled(bool b)
 
 void InputBool::updateDependencies()
 {
-  for (int i=0;i<m_dependencies.count();i++)
+  for (int i = 0; i < m_dependencies.count(); i++)
   {
     m_dependencies[i]->setEnabled(m_enabled && m_state);
   }
 }
 
-void InputBool::setValue( bool s )
+void InputBool::setValue(bool s)
 {
-  if (m_state!=s)
+  if (m_state != s)
   {
-    m_state=s;
+    m_state = s;
     updateDefault();
     updateDependencies();
-    m_cb->setChecked( s );
+    m_cb->setChecked(s);
     m_value = m_state;
     emit changed();
   }
@@ -73,13 +74,13 @@ void InputBool::setValue( bool s )
 
 void InputBool::updateDefault()
 {
-  if (m_state==m_default || !m_lab->isEnabled())
+  if (m_state == m_default || !m_lab->isEnabled())
   {
-    m_lab->setText(QString::fromLatin1("<qt>")+m_id+QString::fromLatin1("</qt>"));
+    m_lab->setText(QString::fromLatin1("<qt>") + m_id + QString::fromLatin1("</qt>"));
   }
   else
   {
-    m_lab->setText(QString::fromLatin1("<qt><font color='red'>")+m_id+QString::fromLatin1("</font></qt>"));
+    m_lab->setText(QString::fromLatin1("<qt><font color='red'>") + m_id + QString::fromLatin1("</font></qt>"));
   }
 }
 
@@ -88,17 +89,17 @@ QVariant &InputBool::value()
   return m_value;
 }
 
-bool InputBool::convertToBool(const QVariant &value,bool &isValid)
+bool InputBool::convertToBool(const QVariant &value, bool &isValid)
 {
   QString v = value.toString().toLower();
-  if (v==QString::fromLatin1("yes") || v==QString::fromLatin1("true") ||
-      v==QString::fromLatin1("1")   || v==QString::fromLatin1("all"))
+  if (v == QString::fromLatin1("yes") || v == QString::fromLatin1("true") ||
+      v == QString::fromLatin1("1") || v == QString::fromLatin1("all"))
   {
     isValid = true;
     return true;
   }
-  else if (v==QString::fromLatin1("no") || v==QString::fromLatin1("false") ||
-           v==QString::fromLatin1("0")  || v==QString::fromLatin1("none"))
+  else if (v == QString::fromLatin1("no") || v == QString::fromLatin1("false") ||
+           v == QString::fromLatin1("0") || v == QString::fromLatin1("none"))
   {
     isValid = true;
     return false;
@@ -112,8 +113,8 @@ bool InputBool::convertToBool(const QVariant &value,bool &isValid)
 
 void InputBool::update()
 {
-  bool isValid=false;
-  bool b = convertToBool(m_value,isValid);
+  bool isValid = false;
+  bool b       = convertToBool(m_value, isValid);
   if (isValid)
   {
     m_state = b;
@@ -121,10 +122,11 @@ void InputBool::update()
   else
   {
     config_warn("argument '%s' for option %s is not a valid boolean value."
-                " Using the default: %s!",qPrintable(m_value.toString()),qPrintable(m_id),m_default?"YES":"NO");
+                " Using the default: %s!",
+                qPrintable(m_value.toString()), qPrintable(m_id), m_default ? "YES" : "NO");
     m_state = m_default;
   }
-  m_cb->setChecked( m_state );
+  m_cb->setChecked(m_state);
   updateDefault();
   updateDependencies();
 }
@@ -134,7 +136,7 @@ void InputBool::reset()
   setValue(m_default);
 }
 
-void InputBool::writeValue(QTextStream &t,TextCodecAdapter *codec,bool)
+void InputBool::writeValue(QTextStream &t, TextCodecAdapter *codec, bool)
 {
   if (m_state)
     t << codec->encode(QString::fromLatin1("YES"));
@@ -146,4 +148,3 @@ bool InputBool::isDefault()
 {
   return m_state == m_default;
 }
-
