@@ -71,8 +71,6 @@ endif()
 
 set(clang    "0" CACHE INTERNAL "used in settings.h")
 
-if (NOT DEFINED MACOS_VERSION_MIN) # to allow overruling with -DMACOS_VERSION_MIN
-set(MACOS_VERSION_MIN 10.14)
 if(use_libclang)
   set(clang    "1" CACHE INTERNAL "used in settings.h")
   find_package(LLVM CONFIG REQUIRED)
@@ -87,12 +85,15 @@ endif()
 if(use_sys_sqlite3)
   find_package(SQLite3 REQUIRED)
 endif()
-if(build_search AND CMAKE_SYSTEM MATCHES "Darwin")
-  set(MACOS_VERSION_MIN 10.15) # needs std::filesystem
-endif()
-if(build_wizard AND CMAKE_SYSTEM MATCHES "Darwin")
-  set(MACOS_VERSION_MIN 11.0) # needs Qt
-endif()
+
+if(NOT DEFINED MACOS_VERSION_MIN) # to allow overruling with -DMACOS_VERSION_MIN
+  set(MACOS_VERSION_MIN 10.14)
+  if(build_search AND CMAKE_SYSTEM MATCHES "Darwin")
+    set(MACOS_VERSION_MIN 10.15) # needs std::filesystem
+  endif()
+  if(build_wizard AND CMAKE_SYSTEM MATCHES "Darwin")
+    set(MACOS_VERSION_MIN 11.0) # needs Qt
+  endif()
 endif()
 
 # use C++17 standard for compiling (unless very new Clang is present)
@@ -122,9 +123,9 @@ endif()
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 if(CMAKE_SYSTEM MATCHES "Darwin")
-  set(CMAKE_OSX_DEPLOYMENT_TARGET "${MACOS_VERSION_MIN}" CACHE STRING "Minimum OS X deployment version" FORCE)
-  set(CMAKE_CXX_FLAGS "-Wno-deprecated-register -mmacosx-version-min=${MACOS_VERSION_MIN} ${CMAKE_CXX_FLAGS}")
-  set(CMAKE_C_FLAGS "-Wno-deprecated-register -mmacosx-version-min=${MACOS_VERSION_MIN} ${CMAKE_C_FLAGS}")
+  set(CMAKE_OSX_DEPLOYMENT_TARGET "${MACOS_VERSION_MIN}" CACHE STRING "Minimum OS X deployment version")
+  set(CMAKE_CXX_FLAGS "-Wno-deprecated-register ${CMAKE_CXX_FLAGS}")
+  set(CMAKE_C_FLAGS "-Wno-deprecated-register ${CMAKE_C_FLAGS}")
   find_library(CORESERVICES_LIB CoreServices)
   set(EXTRA_LIBS ${CORESERVICES_LIB})
 endif()
