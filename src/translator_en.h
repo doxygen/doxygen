@@ -2614,7 +2614,7 @@ class TranslatorEnglish : public Translator
     }
 
 //////////////////////////////////////////////////////////////////////////
-// new since 1.15.0
+// new since 1.16.0
 //////////////////////////////////////////////////////////////////////////
 
     /*! Used for the requirements traceability feature */
@@ -2681,18 +2681,6 @@ class TranslatorEnglish : public Translator
     QCString trTraceabilityDescription() override
     {
       return "Here is traceability information for all requirements:";
-    }
-
-    /*! Used in traceability page statistics - singular */
-    QCString trRequirement() override
-    {
-      return "requirement";
-    }
-
-    /*! Used in traceability page statistics - plural */
-    QCString trRequirementsLC() override
-    {
-      return "requirements";
     }
 
     /*! Used in traceability statistics */

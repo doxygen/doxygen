@@ -3916,7 +3916,7 @@ void writeRequirementsIndex(OutputList &ol)
   QCString title = lne ? lne->title() : QCString("Requirements");
   bool addToIndex = lne==nullptr || lne->visible();
 
-  startFile(ol,"requirements",QCString(),title,HighlightedItem::Requirements);
+  startFile(ol,"requirements",false,QCString(),title,HighlightedItem::Requirements);
 
   startTitle(ol,QCString());
   ol.parseText(title);
@@ -4027,7 +4027,7 @@ void writeTraceabilityIndex(OutputList &ol)
   QCString title = lne ? lne->title() : QCString("Traceability");
   bool addToIndex = lne==nullptr || lne->visible();
 
-  startFile(ol,"traceability",QCString(),title,HighlightedItem::Traceability);
+  startFile(ol,"traceability",false,QCString(),title,HighlightedItem::Traceability);
 
   startTitle(ol,QCString());
   ol.parseText(title);
