@@ -53,14 +53,13 @@ class EclipseHelp : public IndexIntf
     virtual void incContentsDepth();
     virtual void decContentsDepth();
     virtual void addContentsItem(bool isDir, const QCString &name, const QCString &ref,
-                                 const QCString &file, const QCString &anchor,bool separateIndex,bool addToNavIndex,
+                                 const QCString &file, const QCString &anchor, bool separateIndex, bool addToNavIndex,
                                  const Definition *def, const QCString &nameAsHtml);
-    virtual void addIndexItem(const Definition *context,const MemberDef *md,
-                              const QCString &sectionAnchor,const QCString &title);
+    virtual void addIndexItem(const Definition *context, const MemberDef *md,
+                              const QCString &sectionAnchor, const QCString &title);
     virtual void addIndexFile(const QCString &name);
     virtual void addImageFile(const QCString &name);
     virtual void addStyleSheetFile(const QCString &name);
-
   private:
     struct Private;
     std::unique_ptr<Private> p;

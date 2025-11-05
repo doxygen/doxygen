@@ -42,42 +42,42 @@ void func(int p);
 /** A variadic template function overload
  */
 template <typename... Args>
-void func(int p, Args&... args);
+void func(int p, Args &...args);
 
 /** A variadic template function overload
  */
 template <typename... Args>
-void func(int p, Args&&... args);
+void func(int p, Args &&...args);
 
 /** A variadic template function overload
  */
 template <typename... Args>
-void func(int p, const Args&... args);
+void func(int p, const Args &...args);
 
 /** A variadic template function overload
  */
 template <typename... Args>
-void func(int p, const Args&&... args);
+void func(int p, const Args &&...args);
 
 /** A variadic template function overload
  */
 template <typename... Args>
-void func(int p, Args*... args);
+void func(int p, Args *...args);
 
 /** A variadic template function overload
  */
 template <typename... Args>
-void func(int p, Args**... args);
+void func(int p, Args **...args);
 
 /** A variadic template function overload
  */
 template <typename... Args>
-void func(int p, const Args*... args);
+void func(int p, const Args *...args);
 
 /** A variadic template function overload
  */
 template <typename... Args>
-void func(int p, const Args**... args);
+void func(int p, const Args **...args);
 
 /** A variadic template function overload
  */
@@ -87,9 +87,9 @@ void func(int p, Args... args);
 /** A test */
 class Test
 {
- public:
-  /** A variadic template method
+  public:
+    /** A variadic template method
    */
-  template <typename... Args>
-  void func(int p, Args... args) const;
+    template <typename... Args>
+    void func(int p, Args... args) const;
 };

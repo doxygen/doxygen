@@ -28,41 +28,39 @@ class TextStream;
 class DotClassGraph : public DotGraph
 {
   public:
-    DotClassGraph(const ClassDef *cd,GraphType t);
-   ~DotClassGraph() override;
+    DotClassGraph(const ClassDef *cd, GraphType t);
+    ~DotClassGraph() override;
     NON_COPYABLE(DotClassGraph)
 
-    bool isTrivial() const;
-    bool isTooBig() const;
-    int numNodes() const;
-    QCString writeGraph(TextStream &t,GraphOutputFormat gf,EmbeddedOutputFormat ef,
-        const QCString &path, const QCString &fileName, const QCString &relPath,
-        bool TBRank=TRUE,bool imageMap=TRUE,int graphId=-1);
+    bool     isTrivial() const;
+    bool     isTooBig() const;
+    int      numNodes() const;
+    QCString writeGraph(TextStream &t, GraphOutputFormat gf, EmbeddedOutputFormat ef,
+                        const QCString &path, const QCString &fileName, const QCString &relPath,
+                        bool TBRank = TRUE, bool imageMap = TRUE, int graphId = -1);
 
-    void writeXML(TextStream &t);
-    void writeDocbook(TextStream &t);
-    void writeDEF(TextStream &t);
-
+    void     writeXML(TextStream &t);
+    void     writeDocbook(TextStream &t);
+    void     writeDEF(TextStream &t);
   protected:
     QCString getBaseName() const override;
     QCString getMapLabel() const override;
-    void computeTheGraph() override;
+    void     computeTheGraph() override;
     QCString getImgAltText() const override;
-
   private:
-    void buildGraph(const ClassDef *cd,DotNode *n,bool base,int distance);
-    bool determineVisibleNodes(DotNode *rootNode,int maxNodes,bool includeParents);
-    void determineTruncatedNodes(DotNodeDeque &queue,bool includeParents);
-    void addClass(const ClassDef *cd,DotNode *n,EdgeInfo::Colors color,const QCString &label,
-        const QCString &usedName,const QCString &templSpec,
-        bool base,int distance);
+    void       buildGraph(const ClassDef *cd, DotNode *n, bool base, int distance);
+    bool       determineVisibleNodes(DotNode *rootNode, int maxNodes, bool includeParents);
+    void       determineTruncatedNodes(DotNodeDeque &queue, bool includeParents);
+    void       addClass(const ClassDef *cd, DotNode *n, EdgeInfo::Colors color, const QCString &label,
+                        const QCString &usedName, const QCString &templSpec,
+                        bool base, int distance);
 
-    DotNode        *   m_startNode;
-    DotNodeMap         m_usedNodes;
-    GraphType          m_graphType;
-    QCString           m_collabFileName;
-    QCString           m_inheritFileName;
-    bool               m_lrRank;
+    DotNode   *m_startNode;
+    DotNodeMap m_usedNodes;
+    GraphType  m_graphType;
+    QCString   m_collabFileName;
+    QCString   m_inheritFileName;
+    bool       m_lrRank;
 };
 
 using DotClassGraphPtr = std::shared_ptr<DotClassGraph>;

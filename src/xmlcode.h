@@ -31,27 +31,25 @@ class XMLCodeParser : public CodeParserInterface
 {
   public:
     XMLCodeParser();
-   ~XMLCodeParser() override;
+    ~XMLCodeParser() override;
     NON_COPYABLE(XMLCodeParser)
 
     void parseCode(OutputCodeList &codeOutIntf,
                    const QCString &scopeName,
                    const QCString &input,
                    SrcLangExt,
-                   bool stripCodeComments,
-                   bool isExampleBlock,
-                   const QCString &exampleName=QCString(),
-                   const FileDef *fileDef=nullptr,
-                   int startLine=-1,
-                   int endLine=-1,
-                   bool inlineFragment=FALSE,
-                   const MemberDef *memberDef=nullptr,
-                   bool showLineNumbers=TRUE,
-                   const Definition *searchCtx=nullptr,
-                   bool collectXRefs=TRUE
-                  ) override;
+                   bool              stripCodeComments,
+                   bool              isExampleBlock,
+                   const QCString   &exampleName     = QCString(),
+                   const FileDef    *fileDef         = nullptr,
+                   int               startLine       = -1,
+                   int               endLine         = -1,
+                   bool              inlineFragment  = FALSE,
+                   const MemberDef  *memberDef       = nullptr,
+                   bool              showLineNumbers = TRUE,
+                   const Definition *searchCtx       = nullptr,
+                   bool              collectXRefs    = TRUE) override;
     void resetCodeParserState() override;
-
   private:
     struct Private;
     std::unique_ptr<Private> p;

@@ -5,6 +5,6 @@ namespace N
 extern int var;
 
 /** @brief function declaration */
-void foo(int param);
+void       foo(int param);
 
-}
+} // namespace N

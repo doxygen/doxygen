@@ -26,7 +26,7 @@ class TooltipManager
 {
   public:
     TooltipManager();
-   ~TooltipManager();
+    ~TooltipManager();
     NON_COPYABLE(TooltipManager)
 
     /** add a tooltip for a given symbol definition */
@@ -34,7 +34,6 @@ class TooltipManager
 
     /** write the list of all collected tooltip to the given outputs */
     void writeTooltips(OutputCodeList &ol);
-
   private:
     class Private;
     std::unique_ptr<Private> p;

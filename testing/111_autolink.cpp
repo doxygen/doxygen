@@ -27,7 +27,7 @@ typedef struct
  */
 typedef enum
 {
-    ENUM_A ///< A
+  ENUM_A ///< A
 } my_enum_t;
 
 /**

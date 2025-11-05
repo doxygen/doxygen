@@ -4,9 +4,13 @@
 // config: DOTFILE_DIRS = $INPUTDIR
 
 /*! class B */
-class B {};
+class B
+{
+};
 /*! class C */
-class C {};
+class C
+{
+};
 
 /*! \mainpage
 Class relations expressed via an inline dot graph:
@@ -19,4 +23,3 @@ digraph example {
 }
 \enddot
 */
-

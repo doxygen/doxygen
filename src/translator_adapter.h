@@ -18,14 +18,10 @@ class TranslatorAdapterBase : public Translator
     /*! An auxiliary inline method used by the updateNeededMessage()
      *  for building a warning message.
      */
-    inline QCString createUpdateNeededMessage(const QCString & languageName,
-                                              const QCString & versionString)
+    inline QCString   createUpdateNeededMessage(const QCString &languageName,
+                                                const QCString &versionString)
     {
-      return QCString("The selected output language \"")
-             + languageName
-             + "\" has not been updated\nsince "
-             + versionString
-             + ".  As a result some sentences may appear in English.\n\n";
+      return QCString("The selected output language \"") + languageName + "\" has not been updated\nsince " + versionString + ".  As a result some sentences may appear in English.\n\n";
     }
   public:
     /*! This method is used to generate a warning message to signal
@@ -42,63 +38,96 @@ class TranslatorAdapter_1_11_0 : public TranslatorAdapterBase
 {
   public:
     QCString updateNeededMessage() override
-    { return createUpdateNeededMessage(idLanguage(),"release 1.11.0"); }
+    {
+      return createUpdateNeededMessage(idLanguage(), "release 1.11.0");
+    }
     QCString trImportant() override
-    { return english.trImportant(); }
+    {
+      return english.trImportant();
+    }
 };
 
 class TranslatorAdapter_1_10_0 : public TranslatorAdapter_1_11_0
 {
   public:
     QCString updateNeededMessage() override
-    { return createUpdateNeededMessage(idLanguage(),"release 1.10.0"); }
+    {
+      return createUpdateNeededMessage(idLanguage(), "release 1.10.0");
+    }
     QCString trCopyToClipboard() override
-    { return english.trCopyToClipboard(); }
+    {
+      return english.trCopyToClipboard();
+    }
 };
 
 class TranslatorAdapter_1_9_8 : public TranslatorAdapter_1_10_0
 {
   public:
     QCString updateNeededMessage() override
-    { return createUpdateNeededMessage(idLanguage(),"release 1.9.8"); }
+    {
+      return createUpdateNeededMessage(idLanguage(), "release 1.9.8");
+    }
 
     QCString trTopics() override
-    { return english.trTopics(); }
+    {
+      return english.trTopics();
+    }
     QCString trTopicDocumentation() override
-    { return english.trTopicDocumentation(); }
+    {
+      return english.trTopicDocumentation();
+    }
     QCString trTopicList() override
-    { return english.trTopicList(); }
+    {
+      return english.trTopicList();
+    }
     QCString trTopicIndex() override
-    { return english.trTopicIndex(); }
+    {
+      return english.trTopicIndex();
+    }
     QCString trTopicListDescription() override
-    { return english.trTopicListDescription(); }
+    {
+      return english.trTopicListDescription();
+    }
     QCString trModuleMembersDescriptionTotal(ModuleMemberHighlight::Enum hl) override
-    { return english.trModuleMembersDescriptionTotal(hl); }
+    {
+      return english.trModuleMembersDescriptionTotal(hl);
+    }
     QCString trExportedModules() override
-    { return english.trExportedModules(); }
-
+    {
+      return english.trExportedModules();
+    }
 };
 
 class TranslatorAdapter_1_9_6 : public TranslatorAdapter_1_9_8
 {
   public:
     QCString updateNeededMessage() override
-    { return createUpdateNeededMessage(idLanguage(),"release 1.9.6"); }
+    {
+      return createUpdateNeededMessage(idLanguage(), "release 1.9.6");
+    }
 
     /*! Small trick to use the original functions as the wording has been changed */
     QCString trRelatedSymbols() override
-    { return trRelatedFunctions(); }
+    {
+      return trRelatedFunctions();
+    }
     QCString trRelatedSymbolsSubscript() override
-    { return trRelatedSubscript(); }
+    {
+      return trRelatedSubscript();
+    }
     QCString trRelatedSymbolDocumentation() override
-    { return trRelatedFunctionDocumentation(); }
+    {
+      return trRelatedFunctionDocumentation();
+    }
 
     QCString trCompoundType(ClassDef::CompoundType compType, SrcLangExt lang) override
-    { return english.trCompoundType(compType, lang); }
+    {
+      return english.trCompoundType(compType, lang);
+    }
 
     QCString trFileMembersDescriptionTotal(FileMemberHighlight::Enum hl) override
     {
-      if (hl==FileMemberHighlight::All)
+      if (hl == FileMemberHighlight::All)
       {
         return trFileMembersDescription(Config_getBool(EXTRACT_ALL));
       }
@@ -111,7 +140,7 @@ class TranslatorAdapter_1_9_6 : public TranslatorAdapter_1_9_8
     }
     QCString trCompoundMembersDescriptionTotal(ClassMemberHighlight::Enum hl) override
     {
-      if (hl==ClassMemberHighlight::All)
+      if (hl == ClassMemberHighlight::All)
       {
         return trCompoundMembersDescription(Config_getBool(EXTRACT_ALL));
       }
@@ -124,7 +153,7 @@ class TranslatorAdapter_1_9_6 : public TranslatorAdapter_1_9_8
     }
     QCString trNamespaceMembersDescriptionTotal(NamespaceMemberHighlight::Enum hl) override
     {
-      if (hl==NamespaceMemberHighlight::All)
+      if (hl == NamespaceMemberHighlight::All)
       {
         return trNamespaceMemberDescription(Config_getBool(EXTRACT_ALL));
       }
@@ -137,244 +166,386 @@ class TranslatorAdapter_1_9_6 : public TranslatorAdapter_1_9_8
     }
 
     QCString trDefinition() override
-    { return english.trDefinition(); }
+    {
+      return english.trDefinition();
+    }
     QCString trDeclaration() override
-    { return english.trDeclaration(); }
+    {
+      return english.trDeclaration();
+    }
 };
 
 class TranslatorAdapter_1_9_5 : public TranslatorAdapter_1_9_6
 {
   public:
     QCString updateNeededMessage() override
-    { return createUpdateNeededMessage(idLanguage(),"release 1.9.5"); }
+    {
+      return createUpdateNeededMessage(idLanguage(), "release 1.9.5");
+    }
 
     QCString trFlowchart() override
-    { return english.trFlowchart(); }
+    {
+      return english.trFlowchart();
+    }
 };
 
 class TranslatorAdapter_1_9_4 : public TranslatorAdapter_1_9_5
 {
   public:
     QCString updateNeededMessage() override
-    { return createUpdateNeededMessage(idLanguage(),"release 1.9.4"); }
+    {
+      return createUpdateNeededMessage(idLanguage(), "release 1.9.4");
+    }
 
     QCString trPackageList() override
-    { return english.trPackageList(); }
+    {
+      return english.trPackageList();
+    }
 };
 
 class TranslatorAdapter_1_9_2 : public TranslatorAdapter_1_9_4
 {
   public:
     QCString updateNeededMessage() override
-    { return createUpdateNeededMessage(idLanguage(),"release 1.9.2"); }
+    {
+      return createUpdateNeededMessage(idLanguage(), "release 1.9.2");
+    }
 
-    QCString trConcept(bool first_capital,bool singular) override
-    { return english.trConcept(first_capital,singular); }
+    QCString trConcept(bool first_capital, bool singular) override
+    {
+      return english.trConcept(first_capital, singular);
+    }
 
     QCString trConceptReference(const QCString &conceptName) override
-    { return english.trConceptReference(conceptName); }
+    {
+      return english.trConceptReference(conceptName);
+    }
 
     QCString trConceptList() override
-    { return english.trConceptList(); }
+    {
+      return english.trConceptList();
+    }
 
     QCString trConceptIndex() override
-    { return english.trConceptIndex(); }
+    {
+      return english.trConceptIndex();
+    }
 
     QCString trConceptDocumentation() override
-    { return english.trConceptDocumentation(); }
+    {
+      return english.trConceptDocumentation();
+    }
 
     QCString trConceptListDescription(bool extractAll) override
-    { return english.trConceptListDescription(extractAll); }
+    {
+      return english.trConceptListDescription(extractAll);
+    }
 
     QCString trConceptDefinition() override
-    { return english.trConceptDefinition(); }
+    {
+      return english.trConceptDefinition();
+    }
 };
 
 class TranslatorAdapter_1_8_19 : public TranslatorAdapter_1_9_2
 {
   public:
     QCString updateNeededMessage() override
-    { return createUpdateNeededMessage(idLanguage(),"release 1.8.19"); }
+    {
+      return createUpdateNeededMessage(idLanguage(), "release 1.8.19");
+    }
 
     QCString trDesignUnitDocumentation() override
-    { return english.trDesignUnitDocumentation(); }
+    {
+      return english.trDesignUnitDocumentation();
+    }
 };
 
 class TranslatorAdapter_1_8_15 : public TranslatorAdapter_1_8_19
 {
   public:
     QCString updateNeededMessage() override
-    { return createUpdateNeededMessage(idLanguage(),"release 1.8.15"); }
+    {
+      return createUpdateNeededMessage(idLanguage(), "release 1.8.15");
+    }
 
     QCString trDesignUnitHierarchy() override
-    { return english.trDesignUnitHierarchy(); }
+    {
+      return english.trDesignUnitHierarchy();
+    }
 
     QCString trDesignUnitList() override
-    { return english.trDesignUnitList(); }
+    {
+      return english.trDesignUnitList();
+    }
 
     QCString trDesignUnitMembers() override
-    { return english.trDesignUnitMembers(); }
+    {
+      return english.trDesignUnitMembers();
+    }
 
     QCString trDesignUnitListDescription() override
-    { return english.trDesignUnitListDescription(); }
+    {
+      return english.trDesignUnitListDescription();
+    }
 
     QCString trDesignUnitIndex() override
-    { return english.trDesignUnitIndex(); }
+    {
+      return english.trDesignUnitIndex();
+    }
 
     QCString trDesignUnits() override
-    { return english.trDesignUnits(); }
+    {
+      return english.trDesignUnits();
+    }
 
     QCString trFunctionAndProc() override
-    { return english.trFunctionAndProc(); }
+    {
+      return english.trFunctionAndProc();
+    }
 
-    QCString trVhdlType(VhdlSpecifier type,bool single) override
-    { return english.trVhdlType(type,single); }
+    QCString trVhdlType(VhdlSpecifier type, bool single) override
+    {
+      return english.trVhdlType(type, single);
+    }
 
     QCString trCustomReference(const QCString &name) override
-    { return english.trCustomReference(name); }
+    {
+      return english.trCustomReference(name);
+    }
 
     QCString trConstants() override
-    { return english.trConstants(); }
+    {
+      return english.trConstants();
+    }
 
     QCString trConstantDocumentation() override
-    { return english.trConstantDocumentation(); }
+    {
+      return english.trConstantDocumentation();
+    }
 
     QCString trSequences() override
-    { return english.trSequences(); }
+    {
+      return english.trSequences();
+    }
 
     QCString trSequenceDocumentation() override
-    { return english.trSequenceDocumentation(); }
+    {
+      return english.trSequenceDocumentation();
+    }
 
     QCString trDictionaries() override
-    { return english.trDictionaries(); }
+    {
+      return english.trDictionaries();
+    }
 
     QCString trDictionaryDocumentation() override
-    { return english.trDictionaryDocumentation(); }
+    {
+      return english.trDictionaryDocumentation();
+    }
 
     QCString trSliceInterfaces() override
-    { return english.trSliceInterfaces(); }
+    {
+      return english.trSliceInterfaces();
+    }
 
     QCString trInterfaceIndex() override
-    { return english.trInterfaceIndex(); }
+    {
+      return english.trInterfaceIndex();
+    }
 
     QCString trInterfaceList() override
-    { return english.trInterfaceList(); }
+    {
+      return english.trInterfaceList();
+    }
 
     QCString trInterfaceListDescription() override
-    { return english.trInterfaceListDescription(); }
+    {
+      return english.trInterfaceListDescription();
+    }
 
     QCString trInterfaceHierarchy() override
-    { return english.trInterfaceHierarchy(); }
+    {
+      return english.trInterfaceHierarchy();
+    }
 
     QCString trInterfaceHierarchyDescription() override
-    { return english.trInterfaceHierarchyDescription(); }
+    {
+      return english.trInterfaceHierarchyDescription();
+    }
 
     QCString trInterfaceDocumentation() override
-    { return english.trInterfaceDocumentation(); }
+    {
+      return english.trInterfaceDocumentation();
+    }
 
     QCString trStructs() override
-    { return english.trStructs(); }
+    {
+      return english.trStructs();
+    }
 
     QCString trStructIndex() override
-    { return english.trStructIndex(); }
+    {
+      return english.trStructIndex();
+    }
 
     QCString trStructList() override
-    { return english.trStructList(); }
+    {
+      return english.trStructList();
+    }
 
     QCString trStructListDescription() override
-    { return english.trStructListDescription(); }
+    {
+      return english.trStructListDescription();
+    }
 
     QCString trStructDocumentation() override
-    { return english.trStructDocumentation(); }
+    {
+      return english.trStructDocumentation();
+    }
 
     QCString trExceptionIndex() override
-    { return english.trExceptionIndex(); }
+    {
+      return english.trExceptionIndex();
+    }
 
     QCString trExceptionList() override
-    { return english.trExceptionList(); }
+    {
+      return english.trExceptionList();
+    }
 
     QCString trExceptionListDescription() override
-    { return english.trExceptionListDescription(); }
+    {
+      return english.trExceptionListDescription();
+    }
 
     QCString trExceptionHierarchy() override
-    { return english.trExceptionHierarchy(); }
+    {
+      return english.trExceptionHierarchy();
+    }
 
     QCString trExceptionHierarchyDescription() override
-    { return english.trExceptionHierarchyDescription(); }
+    {
+      return english.trExceptionHierarchyDescription();
+    }
 
     QCString trExceptionDocumentation() override
-    { return english.trExceptionDocumentation(); }
+    {
+      return english.trExceptionDocumentation();
+    }
 
     QCString trCompoundReferenceSlice(const QCString &clName, ClassDef::CompoundType compType, bool isLocal) override
-    { return english.trCompoundReferenceSlice(clName,compType,isLocal); }
+    {
+      return english.trCompoundReferenceSlice(clName, compType, isLocal);
+    }
 
     QCString trOperations() override
-    { return english.trOperations(); }
+    {
+      return english.trOperations();
+    }
 
     QCString trOperationDocumentation() override
-    { return english.trOperationDocumentation(); }
+    {
+      return english.trOperationDocumentation();
+    }
 
     QCString trDataMembers() override
-    { return english.trDataMembers(); }
+    {
+      return english.trDataMembers();
+    }
 
     QCString trDataMemberDocumentation() override
-    { return english.trDataMemberDocumentation(); }
+    {
+      return english.trDataMemberDocumentation();
+    }
 };
 
 class TranslatorAdapter_1_8_4 : public TranslatorAdapter_1_8_15
 {
   public:
     QCString updateNeededMessage() override
-    { return createUpdateNeededMessage(idLanguage(),"release 1.8.4"); }
+    {
+      return createUpdateNeededMessage(idLanguage(), "release 1.8.4");
+    }
 
     QCString trInterfaces() override
-    { return english.trInterfaces(); }
+    {
+      return english.trInterfaces();
+    }
 
     QCString trServices() override
-    { return english.trServices(); }
+    {
+      return english.trServices();
+    }
 
     QCString trConstantGroups() override
-    { return english.trConstantGroups(); }
+    {
+      return english.trConstantGroups();
+    }
 
     QCString trConstantGroupReference(const QCString &namespaceName) override
-    { return english.trConstantGroupReference(namespaceName); }
+    {
+      return english.trConstantGroupReference(namespaceName);
+    }
 
     QCString trServiceReference(const QCString &sName) override
-    { return english.trServiceReference(sName); }
+    {
+      return english.trServiceReference(sName);
+    }
 
     QCString trSingletonReference(const QCString &sName) override
-    { return english.trSingletonReference(sName); }
+    {
+      return english.trSingletonReference(sName);
+    }
 
     QCString trServiceGeneratedFromFiles(bool single) override
-    { return english.trServiceGeneratedFromFiles(single); }
+    {
+      return english.trServiceGeneratedFromFiles(single);
+    }
 
     QCString trSingletonGeneratedFromFiles(bool single) override
-    { return english.trSingletonGeneratedFromFiles(single); }
+    {
+      return english.trSingletonGeneratedFromFiles(single);
+    }
 };
 
 class TranslatorAdapter_1_8_2 : public TranslatorAdapter_1_8_4
 {
   public:
     QCString updateNeededMessage() override
-    { return createUpdateNeededMessage(idLanguage(),"release 1.8.2"); }
+    {
+      return createUpdateNeededMessage(idLanguage(), "release 1.8.2");
+    }
 
     QCString trPanelSynchronisationTooltip(bool enable) override
-    { return english.trPanelSynchronisationTooltip(enable); }
+    {
+      return english.trPanelSynchronisationTooltip(enable);
+    }
 
     QCString trProvidedByCategory() override
-    { return english.trProvidedByCategory(); }
+    {
+      return english.trProvidedByCategory();
+    }
 
     QCString trExtendsClass() override
-    { return english.trExtendsClass(); }
+    {
+      return english.trExtendsClass();
+    }
 
     QCString trClassMethods() override
-    { return english.trClassMethods(); }
+    {
+      return english.trClassMethods();
+    }
 
     QCString trInstanceMethods() override
-    { return english.trInstanceMethods(); }
+    {
+      return english.trInstanceMethods();
+    }
 
     QCString trMethodDocumentation() override
-    { return english.trMethodDocumentation(); }
+    {
+      return english.trMethodDocumentation();
+    }
 };
 
 
@@ -385,29 +556,44 @@ class TranslatorAdapter_1_8_0 : public TranslatorAdapter_1_8_2
 {
   public:
     QCString updateNeededMessage() override
-    { return createUpdateNeededMessage(idLanguage(),"release 1.8.0"); }
+    {
+      return createUpdateNeededMessage(idLanguage(), "release 1.8.0");
+    }
 
     QCString trDetailLevel() override
-    { return english.trDetailLevel(); }
+    {
+      return english.trDetailLevel();
+    }
 
     QCString trTemplateParameters() override
-    { return english.trTemplateParameters(); }
+    {
+      return english.trTemplateParameters();
+    }
 
     QCString trAndMore(const QCString &number) override
-    { return english.trAndMore(number); }
+    {
+      return english.trAndMore(number);
+    }
 
     QCString trEnumGeneratedFromFiles(bool single) override
-    { return english.trEnumGeneratedFromFiles(single); }
+    {
+      return english.trEnumGeneratedFromFiles(single);
+    }
 
     QCString trEnumReference(const QCString &name) override
-    { return english.trEnumReference(name); }
+    {
+      return english.trEnumReference(name);
+    }
 
-    QCString trInheritedFrom(const QCString &members,const QCString &what) override
-    { return english.trInheritedFrom(members,what); }
+    QCString trInheritedFrom(const QCString &members, const QCString &what) override
+    {
+      return english.trInheritedFrom(members, what);
+    }
 
     QCString trAdditionalInheritedMembers() override
-    { return english.trAdditionalInheritedMembers(); }
-
+    {
+      return english.trAdditionalInheritedMembers();
+    }
 };
 
 /** Adapter class for languages that only contain translations up to
@@ -417,28 +603,43 @@ class TranslatorAdapter_1_7_5 : public TranslatorAdapter_1_8_0
 {
   public:
     QCString updateNeededMessage() override
-    { return createUpdateNeededMessage(idLanguage(),"release 1.7.5"); }
+    {
+      return createUpdateNeededMessage(idLanguage(), "release 1.7.5");
+    }
 
     QCString trCiteReferences() override
-    { return english.trCiteReferences(); }
+    {
+      return english.trCiteReferences();
+    }
 
     QCString trCopyright() override
-    { return english.trCopyright(); }
+    {
+      return english.trCopyright();
+    }
 
     QCString trDirDepGraph(const QCString &name) override
-    { return english.trDirDepGraph(name); }
+    {
+      return english.trDirDepGraph(name);
+    }
 
     QCString trFileIn(const QCString &name) override
-    { return english.trFileIn(name); }
+    {
+      return english.trFileIn(name);
+    }
     QCString trIncludesFileIn(const QCString &name) override
-    { return english.trIncludesFileIn(name); }
-    QCString trDateTime(int year,int month,int day,int dayOfWeek,
-                                int hour,int minutes,int seconds,
-                                DateTimeType includeTime) override
-    { return english.trDateTime(year,month,day,dayOfWeek,hour,minutes,seconds,includeTime); }
+    {
+      return english.trIncludesFileIn(name);
+    }
+    QCString trDateTime(int year, int month, int day, int dayOfWeek,
+                        int hour, int minutes, int seconds,
+                        DateTimeType includeTime) override
+    {
+      return english.trDateTime(year, month, day, dayOfWeek, hour, minutes, seconds, includeTime);
+    }
     QCString trDayPeriod(bool period) override
-    { return english.trDayPeriod(period); }
-
+    {
+      return english.trDayPeriod(period);
+    }
 };
 
 /** Adapter class for languages that only contain translations up to
@@ -448,91 +649,147 @@ class TranslatorAdapter_1_6_0 : public TranslatorAdapter_1_7_5
 {
   public:
     QCString updateNeededMessage() override
-    { return createUpdateNeededMessage(idLanguage(),"release 1.6.0"); }
+    {
+      return createUpdateNeededMessage(idLanguage(), "release 1.6.0");
+    }
 
     QCString trDirRelation(const QCString &name) override
-    { return english.trDirRelation(name); }
+    {
+      return english.trDirRelation(name);
+    }
 
     QCString trLoading() override
-    { return english.trLoading(); }
+    {
+      return english.trLoading();
+    }
 
     QCString trGlobalNamespace() override
-    { return english.trGlobalNamespace(); }
+    {
+      return english.trGlobalNamespace();
+    }
 
     QCString trSearching() override
-    { return english.trSearching(); }
+    {
+      return english.trSearching();
+    }
 
     QCString trNoMatches() override
-    { return english.trNoMatches(); }
+    {
+      return english.trNoMatches();
+    }
 
     QCString trMemberFunctionDocumentationFortran() override
-    { return english.trMemberFunctionDocumentationFortran(); }
+    {
+      return english.trMemberFunctionDocumentationFortran();
+    }
 
     QCString trCompoundListFortran() override
-    { return english.trCompoundListFortran(); }
+    {
+      return english.trCompoundListFortran();
+    }
 
     QCString trCompoundMembersFortran() override
-    { return english.trCompoundMembersFortran(); }
+    {
+      return english.trCompoundMembersFortran();
+    }
 
     QCString trCompoundListDescriptionFortran() override
-    { return english.trCompoundListDescriptionFortran(); }
+    {
+      return english.trCompoundListDescriptionFortran();
+    }
 
     QCString trCompoundMembersDescriptionFortran(bool extractAll) override
-    { return english.trCompoundMembersDescriptionFortran(extractAll); }
+    {
+      return english.trCompoundMembersDescriptionFortran(extractAll);
+    }
 
     QCString trCompoundIndexFortran() override
-    { return english.trCompoundIndexFortran(); }
+    {
+      return english.trCompoundIndexFortran();
+    }
 
     QCString trTypeDocumentation() override
-    { return english.trTypeDocumentation(); }
+    {
+      return english.trTypeDocumentation();
+    }
 
     QCString trSubprograms() override
-    { return english.trSubprograms(); }
+    {
+      return english.trSubprograms();
+    }
 
     QCString trSubprogramDocumentation() override
-    { return english.trSubprogramDocumentation(); }
+    {
+      return english.trSubprogramDocumentation();
+    }
 
     QCString trDataTypes() override
-    { return english.trDataTypes(); }
+    {
+      return english.trDataTypes();
+    }
 
     QCString trModulesList() override
-    { return english.trModulesList(); }
+    {
+      return english.trModulesList();
+    }
 
     QCString trModulesListDescription(bool extractAll) override
-    { return english.trModulesListDescription(extractAll); }
+    {
+      return english.trModulesListDescription(extractAll);
+    }
 
-    QCString trCompoundReferenceFortran(const QCString &clName,
-                                 ClassDef::CompoundType compType,
-                                 bool isTemplate) override
-    { return english.trCompoundReferenceFortran(clName,compType,isTemplate); }
+    QCString trCompoundReferenceFortran(const QCString        &clName,
+                                        ClassDef::CompoundType compType,
+                                        bool                   isTemplate) override
+    {
+      return english.trCompoundReferenceFortran(clName, compType, isTemplate);
+    }
 
     QCString trModuleReference(const QCString &namespaceName) override
-    { return english.trModuleReference(namespaceName); }
+    {
+      return english.trModuleReference(namespaceName);
+    }
 
     QCString trModulesMembers() override
-    { return english.trModulesMembers(); }
+    {
+      return english.trModulesMembers();
+    }
 
     QCString trModulesMemberDescription(bool extractAll) override
-    { return english.trModulesMemberDescription(extractAll); }
+    {
+      return english.trModulesMemberDescription(extractAll);
+    }
 
     QCString trModulesIndex() override
-    { return english.trModulesIndex(); }
+    {
+      return english.trModulesIndex();
+    }
 
     QCString trModule(bool first_capital, bool singular) override
-    { return english.trModule(first_capital,singular); }
+    {
+      return english.trModule(first_capital, singular);
+    }
 
     QCString trGeneratedFromFilesFortran(ClassDef::CompoundType compType,
-                     bool single) override
-    { return english.trGeneratedFromFilesFortran(compType,single); }
+                                         bool                   single) override
+    {
+      return english.trGeneratedFromFilesFortran(compType, single);
+    }
 
     QCString trType(bool first_capital, bool singular) override
-    { return english.trType(first_capital,singular); }
+    {
+      return english.trType(first_capital, singular);
+    }
 
     QCString trSubprogram(bool first_capital, bool singular) override
-    { return english.trSubprogram(first_capital,singular); }
+    {
+      return english.trSubprogram(first_capital, singular);
+    }
 
     QCString trTypeConstraints() override
-    { return english.trTypeConstraints(); }
+    {
+      return english.trTypeConstraints();
+    }
 };
 
 /** Adapter class for languages that only contain translations up to
@@ -542,11 +799,17 @@ class TranslatorAdapter_1_4_6 : public TranslatorAdapter_1_6_0
 {
   public:
     QCString updateNeededMessage() override
-    { return createUpdateNeededMessage(idLanguage(),"release 1.4.6"); }
+    {
+      return createUpdateNeededMessage(idLanguage(), "release 1.4.6");
+    }
     QCString trCallerGraph() override
-    { return english.trCallerGraph(); }
+    {
+      return english.trCallerGraph();
+    }
     QCString trEnumerationValueDocumentation() override
-    { return english.trEnumerationValueDocumentation(); }
+    {
+      return english.trEnumerationValueDocumentation();
+    }
 };
 
 #endif

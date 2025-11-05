@@ -18,27 +18,27 @@
 class InputObsolete : public Input
 {
   public:
-    InputObsolete(const QString &id, Kind orgKind) : m_id(id), m_orgKind(orgKind) {}
-    QVariant &value()            { return m_value; }
-    void update()                {}
-    Kind kind() const            { return Obsolete; }
-    QString docs() const         { return QString(); }
-    QString id() const           { return m_id; }
-    QString templateDocs() const { return QString(); }
-    void addDependency(Input *)  {}
-    void setEnabled(bool)        {}
-    void updateDependencies()    {}
-    void reset()                 {}
-    bool isDefault()             { return false; }
-    void writeValue(QTextStream &,TextCodecAdapter *,bool) {}
-    void setTemplateDocs(const QString &) {}
-    bool isEmpty()               { return false; };
-    Kind orgKind() const         { return m_orgKind; }
+    InputObsolete(const QString &id, Kind orgKind) :
+        m_id(id), m_orgKind(orgKind) {}
+    QVariant &value() { return m_value; }
+    void      update() {}
+    Kind      kind() const { return Obsolete; }
+    QString   docs() const { return QString(); }
+    QString   id() const { return m_id; }
+    QString   templateDocs() const { return QString(); }
+    void      addDependency(Input *) {}
+    void      setEnabled(bool) {}
+    void      updateDependencies() {}
+    void      reset() {}
+    bool      isDefault() { return false; }
+    void      writeValue(QTextStream &, TextCodecAdapter *, bool) {}
+    void      setTemplateDocs(const QString &) {}
+    bool      isEmpty() { return false; };
+    Kind      orgKind() const { return m_orgKind; }
   private:
-    QString   m_id;
-    Kind      m_orgKind;
-    QVariant  m_value;
+    QString  m_id;
+    Kind     m_orgKind;
+    QVariant m_value;
 };
 
 #endif
-

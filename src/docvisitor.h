@@ -34,10 +34,9 @@ class DocVisitor
     virtual ~DocVisitor();
     NON_COPYABLE(DocVisitor)
     CodeParserInterface &getCodeParser(const QCString &langExt);
-    void pushHidden(bool hide);
-    bool popHidden();
+    void                 pushHidden(bool hide);
+    bool                 popHidden();
 };
-
 
 
 #endif

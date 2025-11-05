@@ -8,11 +8,10 @@ class Afterdoc_Test
      */
     enum EnumType
     {
-      int EVal1,     /**< enum value 1 */
-      int EVal2      /**< enum value 2 */
+      int EVal1, /**< enum value 1 */
+      int EVal2  /**< enum value 2 */
     };
-    void member();   //!< a member function.
-    
+    void member(); //!< a member function.
   protected:
-    int value;       /*!< an integer value */
+    int value; /*!< an integer value */
 };

@@ -22,16 +22,15 @@ class Input;
 class QTextStream;
 
 bool parseConfig(
-      const QString &fileName,
-      const QHash<QString,Input *> &options
-    );
+  const QString                 &fileName,
+  const QHash<QString, Input *> &options);
 
-void writeStringValue(QTextStream &t,TextCodecAdapter *codec,const QString &s,bool convert);
+void writeStringValue(QTextStream &t, TextCodecAdapter *codec, const QString &s, bool convert);
 
 // directly copied from ../../src/config.h to be consistent
 enum
 {
- /*! Maximum length of an option in the config file. Used for
+  /*! Maximum length of an option in the config file. Used for
   *  alignment purposes.
   */
   MAX_OPTION_LENGTH = 23

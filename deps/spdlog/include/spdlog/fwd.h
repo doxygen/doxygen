@@ -3,16 +3,19 @@
 
 #pragma once
 
-namespace spdlog {
+namespace spdlog
+{
 class logger;
 class formatter;
 
-namespace sinks {
+namespace sinks
+{
 class sink;
 }
 
-namespace level {
+namespace level
+{
 enum level_enum : int;
 }
 
-}  // namespace spdlog
+} // namespace spdlog

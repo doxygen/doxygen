@@ -43,7 +43,6 @@
 class TranslatorCatalan : public TranslatorAdapter_1_8_0
 {
   public:
-
     // --- Language control methods -------------------
 
     /*! Used for identification of the language. The identification
@@ -53,7 +52,9 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
      * the identification used in language.cpp.
      */
     QCString idLanguage() override
-    { return "catalan"; }
+    {
+      return "catalan";
+    }
 
     /*! Used to get the LaTeX command(s) for the language support.
      *  This method should return string with commands that switch
@@ -88,31 +89,45 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
 
     /*! used in the compound documentation before a list of related functions. */
     QCString trRelatedFunctions() override
-    { return "Funcions Associades"; }
+    {
+      return "Funcions Associades";
+    }
 
     /*! subscript for the related functions. */
     QCString trRelatedSubscript() override
-    { return "(Remarcar que aquestes funcions no són funcions membre.)"; }
+    {
+      return "(Remarcar que aquestes funcions no són funcions membre.)";
+    }
 
     /*! header that is put before the detailed description of files, classes and namespaces. */
     QCString trDetailedDescription() override
-    { return "Descripció Detallada"; }
+    {
+      return "Descripció Detallada";
+    }
 
     /*! header that is used when the summary tag is missing inside the details tag */
     QCString trDetails() override
-    { return "Detalls"; }
+    {
+      return "Detalls";
+    }
 
     /*! header that is put before the list of typedefs. */
     QCString trMemberTypedefDocumentation() override
-    { return "Documentació de les Definicions de Tipus Membre"; }
+    {
+      return "Documentació de les Definicions de Tipus Membre";
+    }
 
     /*! header that is put before the list of enumerations. */
     QCString trMemberEnumerationDocumentation() override
-    { return "Documentació de les Enumeracions Membre"; }
+    {
+      return "Documentació de les Enumeracions Membre";
+    }
 
     /*! header that is put before the list of member functions. */
     QCString trMemberFunctionDocumentation() override
-    { return "Documentació de les Funcions Membre"; }
+    {
+      return "Documentació de les Funcions Membre";
+    }
 
     /*! header that is put before the list of member attributes. */
     QCString trMemberDataDocumentation() override
@@ -129,45 +144,62 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
 
     /*! this is the text of a link put after brief descriptions. */
     QCString trMore() override
-    { return "Més..."; }
+    {
+      return "Més...";
+    }
 
     /*! put in the class documentation */
     QCString trListOfAllMembers() override
-    { return "Llista de tots els membres"; }
+    {
+      return "Llista de tots els membres";
+    }
 
     /*! used as the title of the "list of all members" page of a class */
     QCString trMemberList() override
-    { return "Llista dels Membres"; }
+    {
+      return "Llista dels Membres";
+    }
 
     /*! this is the first part of a sentence that is followed by a class name */
     QCString trThisIsTheListOfAllMembers() override
-    { return "Aquesta és la llista complerta dels membres de"; }
+    {
+      return "Aquesta és la llista complerta dels membres de";
+    }
 
     /*! this is the remainder of the sentence after the class name */
     QCString trIncludingInheritedMembers() override
-    { return ", incloent tots els membres heretats."; }
+    {
+      return ", incloent tots els membres heretats.";
+    }
 
     /*! this is put at the author sections at the bottom of man pages.
      *  parameter s is name of the project name.
      */
     QCString trGeneratedAutomatically(const QCString &s) override
-    { QCString result="Generat automàticament per Doxygen";
-      if (!s.isEmpty()) result+=" per a "+s;
-      result+=" a partir del codi font.";
+    {
+      QCString result = "Generat automàticament per Doxygen";
+      if (!s.isEmpty()) result += " per a " + s;
+      result += " a partir del codi font.";
       return result;
     }
 
     /*! put after an enum name in the list of all members */
     QCString trEnumName() override
-    { return "nom de la enum"; }
+    {
+      return "nom de la enum";
+    }
 
     /*! put after an enum value in the list of all members */
     QCString trEnumValue() override
-    { return "valors de la enum"; }
+    {
+      return "valors de la enum";
+    }
 
     /*! put after an undocumented member in the list of all members */
     QCString trDefinedIn() override
-    { return "definit a"; }
+    {
+      return "definit a";
+    }
 
     // quick reference sections
 
@@ -175,11 +207,15 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
      *  compounds or files (see the \\group command).
      */
     QCString trModules() override
-    { return "Mòduls"; }
+    {
+      return "Mòduls";
+    }
 
     /*! This is put above each page as a link to the class hierarchy */
     QCString trClassHierarchy() override
-    { return "Jerarquia de Classes"; }
+    {
+      return "Jerarquia de Classes";
+    }
 
     /*! This is put above each page as a link to the list of annotated classes */
     QCString trCompoundList() override
@@ -196,7 +232,9 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
 
     /*! This is put above each page as a link to the list of documented files */
     QCString trFileList() override
-    { return "Llista dels Fitxers"; }
+    {
+      return "Llista dels Fitxers";
+    }
 
     /*! This is put above each page as a link to all members of compounds. */
     QCString trCompoundMembers() override
@@ -226,28 +264,35 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
 
     /*! This is put above each page as a link to all related pages. */
     QCString trRelatedPages() override
-    { return "Pàgines Relacionades"; }
+    {
+      return "Pàgines Relacionades";
+    }
 
     /*! This is put above each page as a link to all examples. */
     QCString trExamples() override
-    { return "Exemples"; }
+    {
+      return "Exemples";
+    }
 
     /*! This is put above each page as a link to the search engine. */
     QCString trSearch() override
-    { return "Cerca"; }
+    {
+      return "Cerca";
+    }
 
     /*! This is an introduction to the class hierarchy. */
     QCString trClassHierarchyDescription() override
-    { return "Aquesta llista d'herència està ordenada toscament, "
+    {
+      return "Aquesta llista d'herència està ordenada toscament, "
              "però no completa, de forma alfabètica:";
     }
 
     /*! This is an introduction to the list with all files. */
     QCString trFileListDescription(bool extractAll) override
     {
-      QCString result="Aquesta és la llista de tots els fitxers ";
-      if (!extractAll) result+="documentats ";
-      result+="acompanyats amb breus descripcions:";
+      QCString result = "Aquesta és la llista de tots els fitxers ";
+      if (!extractAll) result += "documentats ";
+      result += "acompanyats amb breus descripcions:";
       return result;
     }
 
@@ -273,40 +318,40 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
     /*! This is an introduction to the page with all class members. */
     QCString trCompoundMembersDescription(bool extractAll) override
     {
-      QCString result="Aquesta és la llista de tots els ";
+      QCString result = "Aquesta és la llista de tots els ";
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
-        result+="camps d'estructures i unions";
+        result += "camps d'estructures i unions";
       }
       else
       {
-        result+="membres de classe";
+        result += "membres de classe";
       }
       if (!extractAll)
       {
-        result+=" documentats";
+        result += " documentats";
       }
-      result+=" amb enllaços a ";
+      result += " amb enllaços a ";
       if (!extractAll)
       {
         if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
         {
-          result+="la documentació de l'estructura/unió per a cada camp:";
+          result += "la documentació de l'estructura/unió per a cada camp:";
         }
         else
         {
-          result+="la documentació de la classe per a cada membre:";
+          result += "la documentació de la classe per a cada membre:";
         }
       }
       else
       {
         if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
         {
-          result+="les estructures/unions a que pertanyen:";
+          result += "les estructures/unions a que pertanyen:";
         }
         else
         {
-          result+="les classes a que pertanyen:";
+          result += "les classes a que pertanyen:";
         }
       }
       return result;
@@ -314,55 +359,67 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
     /*! This is an introduction to the page with all file members. */
     QCString trFileMembersDescription(bool extractAll) override
     {
-      QCString result="Aquesta és la llista de ";
+      QCString result = "Aquesta és la llista de ";
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
-        result+="totes les funcions, variables, definicions, enumeracions, i definicions de tipus";
-        if (!extractAll) result+=" documentades";
+        result += "totes les funcions, variables, definicions, enumeracions, i definicions de tipus";
+        if (!extractAll) result += " documentades";
       }
       else
       {
-        result+="tots els membres de fitxers";
-        if (!extractAll) result+=" documentats";
+        result += "tots els membres de fitxers";
+        if (!extractAll) result += " documentats";
       }
-      result+=" amb enllaços ";
+      result += " amb enllaços ";
       if (extractAll)
-        result+="als fitxers als quals corresponen:";
+        result += "als fitxers als quals corresponen:";
       else
-        result+="a la documentació:";
+        result += "a la documentació:";
       return result;
     }
 
     /*! This is an introduction to the page with the list of all examples */
     QCString trExamplesDescription() override
-    { return "Aquesta és la llista de tots els exemples:"; }
+    {
+      return "Aquesta és la llista de tots els exemples:";
+    }
 
     /*! This is an introduction to the page with the list of related pages */
     QCString trRelatedPagesDescription() override
-    { return "Aquesta és la llista de totes les pàgines de documentació associades:"; }
+    {
+      return "Aquesta és la llista de totes les pàgines de documentació associades:";
+    }
 
     /*! This is an introduction to the page with the list of class/file groups */
     QCString trModulesDescription() override
-    { return "Aquesta és la llista de mòduls:"; }
+    {
+      return "Aquesta és la llista de mòduls:";
+    }
 
     // index titles (the project name is prepended for these)
 
 
     /*! This is used in HTML as the title of index.html. */
     QCString trDocumentation(const QCString &projName) override
-    { return (!projName.isEmpty()?projName + " " : "") + ": Documentació"; }
+    {
+      return (!projName.isEmpty() ? projName + " " : "") + ": Documentació";
+    }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * index of all groups.
      */
     QCString trModuleIndex() override
-    { return "Índex de Mòduls"; }
+    {
+      return "Índex de Mòduls";
+    }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * class hierarchy.
      */
     QCString trHierarchicalIndex() override
-    { return "Índex Jeràrquic"; }
+    {
+      return "Índex Jeràrquic";
+    }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * annotated compound index.
@@ -383,13 +440,17 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
      * list of all files.
      */
     QCString trFileIndex() override
-    { return "Índex de Fitxers"; }
+    {
+      return "Índex de Fitxers";
+    }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all groups.
      */
     QCString trModuleDocumentation() override
-    { return "Documentació dels Mòduls"; }
+    {
+      return "Documentació dels Mòduls";
+    }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all classes, structs and unions.
@@ -402,7 +463,7 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
       }
       else if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
       {
-          return trDesignUnitDocumentation();
+        return trDesignUnitDocumentation();
       }
       else
       {
@@ -414,77 +475,103 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
      *  the documentation of all files.
      */
     QCString trFileDocumentation() override
-    { return "Documentació dels Fitxers"; }
+    {
+      return "Documentació dels Fitxers";
+    }
 
     /*! This is used in LaTeX as the title of the document */
     QCString trReferenceManual() override
-    { return "Manual de Referència"; }
+    {
+      return "Manual de Referència";
+    }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of defines
      */
     QCString trDefines() override
-    { return "Definicions"; }
+    {
+      return "Definicions";
+    }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of typedefs
      */
     QCString trTypedefs() override
-    { return "Definicions de Tipus"; }
+    {
+      return "Definicions de Tipus";
+    }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of enumerations
      */
     QCString trEnumerations() override
-    { return "Enumeracions"; }
+    {
+      return "Enumeracions";
+    }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of (global) functions
      */
     QCString trFunctions() override
-    { return "Funcions"; }
+    {
+      return "Funcions";
+    }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of (global) variables
      */
     QCString trVariables() override
-    { return "Variables"; }
+    {
+      return "Variables";
+    }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of (global) variables
      */
     QCString trEnumerationValues() override
-    { return "Valors de les Enumeracions"; }
+    {
+      return "Valors de les Enumeracions";
+    }
 
     /*! This is used in the documentation of a file before the list of
      *  documentation blocks for defines
      */
     QCString trDefineDocumentation() override
-    { return "Documentació de les Definicions"; }
+    {
+      return "Documentació de les Definicions";
+    }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for typedefs
      */
     QCString trTypedefDocumentation() override
-    { return "Documentació de les Definicions de Tipus"; }
+    {
+      return "Documentació de les Definicions de Tipus";
+    }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for enumeration types
      */
     QCString trEnumerationTypeDocumentation() override
-    { return "Documentació dels Tipus de les Enumeracions"; }
+    {
+      return "Documentació dels Tipus de les Enumeracions";
+    }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for functions
      */
     QCString trFunctionDocumentation() override
-    { return "Documentació de les Funcions"; }
+    {
+      return "Documentació de les Funcions";
+    }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for variables
      */
     QCString trVariableDocumentation() override
-    { return "Documentació de les Variables"; }
+    {
+      return "Documentació de les Variables";
+    }
 
     /*! This is used in the documentation of a file/namespace/group before
      *  the list of links to documented compounds
@@ -504,66 +591,84 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
     /*! This is used in the standard footer of each page and indicates when
      *  the page was generated
      */
-    QCString trGeneratedAt(const QCString &date,const QCString &projName) override
+    QCString trGeneratedAt(const QCString &date, const QCString &projName) override
     {
-      QCString result="Generat a "+date;
-      if (!projName.isEmpty()) result+=" per a "+projName;
-      result+=" per";
+      QCString result = "Generat a " + date;
+      if (!projName.isEmpty()) result += " per a " + projName;
+      result += " per";
       return result;
     }
 
     /*! this text is put before a class diagram */
     QCString trClassDiagram(const QCString &clName) override
     {
-      return "Diagrama d'Herència per a "+clName+":";
+      return "Diagrama d'Herència per a " + clName + ":";
     }
 
     /*! this text is generated when the \\warning command is used. */
     QCString trWarning() override
-    { return "Atenció"; }
+    {
+      return "Atenció";
+    }
 
     /*! this text is generated when the \\version command is used. */
     QCString trVersion() override
-    { return "Versió"; }
+    {
+      return "Versió";
+    }
 
     /*! this text is generated when the \\date command is used. */
     QCString trDate() override
-    { return "Data"; }
+    {
+      return "Data";
+    }
 
     /*! this text is generated when the \\return command is used. */
     QCString trReturns() override
-    { return "Retorna"; }
+    {
+      return "Retorna";
+    }
 
     /*! this text is generated when the \\sa command is used. */
     QCString trSeeAlso() override
-    { return "Mireu també"; }
+    {
+      return "Mireu també";
+    }
 
     /*! this text is generated when the \\param command is used. */
     QCString trParameters() override
-    { return "Paràmetres"; }
+    {
+      return "Paràmetres";
+    }
 
     /*! this text is generated when the \\exception command is used. */
     QCString trExceptions() override
-    { return "Excepcions"; }
+    {
+      return "Excepcions";
+    }
 
     /*! this text is used in the title page of a LaTeX document. */
     QCString trGeneratedBy() override
-    { return "Generat per"; }
+    {
+      return "Generat per";
+    }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 0.49-990307
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 0.49-990307
+    //////////////////////////////////////////////////////////////////////////
 
     /*! used as the title of page containing all the index of all namespaces. */
     QCString trNamespaceList() override
-    { return "Llista dels Espais de Noms"; }
+    {
+      return "Llista dels Espais de Noms";
+    }
 
     /*! used as an introduction to the namespace list */
     QCString trNamespaceListDescription(bool extractAll) override
     {
-      QCString result="Aquests són tots els espais de noms ";
-      if (!extractAll) result+="documentats ";
-      result+="amb breus descripcions:";
+      QCString result = "Aquests són tots els espais de noms ";
+      if (!extractAll) result += "documentats ";
+      result += "amb breus descripcions:";
       return result;
     }
 
@@ -571,80 +676,104 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
      *  friends of a class
      */
     QCString trFriends() override
-    { return "Classes Amigues"; }
+    {
+      return "Classes Amigues";
+    }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 0.49-990405
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 0.49-990405
+    //////////////////////////////////////////////////////////////////////////
 
     /*! used in the class documentation as a header before the list of all
      * related classes
      */
     QCString trRelatedFunctionDocumentation() override
-    { return "Documentació de funcions amigues i relacionades"; }
+    {
+      return "Documentació de funcions amigues i relacionades";
+    }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 0.49-990425
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 0.49-990425
+    //////////////////////////////////////////////////////////////////////////
 
     /*! used as the title of the HTML page of a class/struct/union */
-    QCString trCompoundReference(const QCString &clName,
-                                    ClassDef::CompoundType compType,
-                                    bool isTemplate) override
+    QCString trCompoundReference(const QCString        &clName,
+                                 ClassDef::CompoundType compType,
+                                 bool                   isTemplate) override
     {
-      QCString result="Referència de";
-      switch(compType)
+      QCString result = "Referència de";
+      switch (compType)
       {
-        case ClassDef::Class:      result+=" la Classe "; break;
-        case ClassDef::Struct:     result+=" l'Estructura "; break;
-        case ClassDef::Union:      result+=" la Unió "; break;
-        case ClassDef::Interface:  result+=" la Interfície "; break;
-        case ClassDef::Protocol:   result+="l Protocol "; break;
-        case ClassDef::Category:   result+=" la Categoria "; break;
-        case ClassDef::Exception:  result+=" l'Excepció "; break;
-        default: break;
+      case ClassDef::Class: result += " la Classe "; break;
+      case ClassDef::Struct: result += " l'Estructura "; break;
+      case ClassDef::Union: result += " la Unió "; break;
+      case ClassDef::Interface: result += " la Interfície "; break;
+      case ClassDef::Protocol: result += "l Protocol "; break;
+      case ClassDef::Category: result += " la Categoria "; break;
+      case ClassDef::Exception: result += " l'Excepció "; break;
+      default: break;
       }
-      if (isTemplate) result+="Template ";
-      result+=clName;
+      if (isTemplate) result += "Template ";
+      result += clName;
       return result;
     }
 
     /*! used as the title of the HTML page of a file */
     QCString trFileReference(const QCString &fileName) override
     {
-      QCString result="Referència del Fitxer ";
-      result+=fileName;
+      QCString result = "Referència del Fitxer ";
+      result += fileName;
       return result;
     }
 
     /*! used as the title of the HTML page of a namespace */
     QCString trNamespaceReference(const QCString &namespaceName) override
     {
-      QCString result="Referència de l'Espai de Noms ";
-      result+=namespaceName;
+      QCString result = "Referència de l'Espai de Noms ";
+      result += namespaceName;
       return result;
     }
 
     QCString trPublicMembers() override
-    { return "Mètodes públics"; }
+    {
+      return "Mètodes públics";
+    }
     QCString trPublicSlots() override
-    { return "Slots públics"; }
+    {
+      return "Slots públics";
+    }
     QCString trSignals() override
-    { return "Senyals"; }
+    {
+      return "Senyals";
+    }
     QCString trStaticPublicMembers() override
-    { return "Mètodes Públics Estàtics"; }
+    {
+      return "Mètodes Públics Estàtics";
+    }
     QCString trProtectedMembers() override
-    { return "Mètodes Protegits"; }
+    {
+      return "Mètodes Protegits";
+    }
     QCString trProtectedSlots() override
-    { return "Slots Protegits"; }
+    {
+      return "Slots Protegits";
+    }
     QCString trStaticProtectedMembers() override
-    { return "Mètodes Protegits Estàtics"; }
+    {
+      return "Mètodes Protegits Estàtics";
+    }
     QCString trPrivateMembers() override
-    { return "Mètodes Privats"; }
+    {
+      return "Mètodes Privats";
+    }
     QCString trPrivateSlots() override
-    { return "Slots Privats"; }
+    {
+      return "Slots Privats";
+    }
     QCString trStaticPrivateMembers() override
-    { return "Mètodes Privats Estàtics"; }
+    {
+      return "Mètodes Privats Estàtics";
+    }
 
     /*! this function is used to produce a comma-separated list of items.
      *  use generateMarker(i) to indicate where item i should be put.
@@ -653,18 +782,18 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
     {
       QCString result;
       // the inherits list contain `numEntries' classes
-      for (int i=0;i<numEntries;i++)
+      for (int i = 0; i < numEntries; i++)
       {
         // use generateMarker to generate placeholders for the class links!
-        result+=generateMarker(i); // generate marker for entry i in the list
-                                   // (order is left to right)
+        result += generateMarker(i); // generate marker for entry i in the list
+                                     // (order is left to right)
 
-        if (i!=numEntries-1)  // not the last entry, so we need a separator
+        if (i != numEntries - 1) // not the last entry, so we need a separator
         {
-          if (i<numEntries-2) // not the fore last entry
-            result+=", ";
-          else                // the fore last entry
-            result+=" i ";
+          if (i < numEntries - 2) // not the fore last entry
+            result += ", ";
+          else // the fore last entry
+            result += " i ";
         }
       }
       return result;
@@ -675,7 +804,7 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
      */
     QCString trInheritsList(int numEntries) override
     {
-      return "Hereta de "+trWriteList(numEntries)+".";
+      return "Hereta de " + trWriteList(numEntries) + ".";
     }
 
     /*! used in class documentation to produce a list of super classes,
@@ -683,7 +812,7 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
      */
     QCString trInheritedByList(int numEntries) override
     {
-      return "Heretat per "+trWriteList(numEntries)+".";
+      return "Heretat per " + trWriteList(numEntries) + ".";
     }
 
     /*! used in member documentation blocks to produce a list of
@@ -691,7 +820,7 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
      */
     QCString trReimplementedFromList(int numEntries) override
     {
-      return "Reimplementat de "+trWriteList(numEntries)+".";
+      return "Reimplementat de " + trWriteList(numEntries) + ".";
     }
 
     /*! used in member documentation blocks to produce a list of
@@ -699,101 +828,118 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
      */
     QCString trReimplementedInList(int numEntries) override
     {
-      return "Reimplementat a "+trWriteList(numEntries)+".";
+      return "Reimplementat a " + trWriteList(numEntries) + ".";
     }
 
     /*! This is put above each page as a link to all members of namespaces. */
     QCString trNamespaceMembers() override
-    { return "Membres de l'Espai de Noms"; }
+    {
+      return "Membres de l'Espai de Noms";
+    }
 
     /*! This is an introduction to the page with all namespace members */
     QCString trNamespaceMemberDescription(bool extractAll) override
     {
-      QCString result="Aquesta és la llista de tots els membres de l'espai de noms ";
-      if (!extractAll) result+="documentats ";
-      result+="amb enllaços a ";
+      QCString result = "Aquesta és la llista de tots els membres de l'espai de noms ";
+      if (!extractAll) result += "documentats ";
+      result += "amb enllaços a ";
       if (extractAll)
-        result+="la documentació de l'espai de noms de cada membre:";
+        result += "la documentació de l'espai de noms de cada membre:";
       else
-        result+="l'espai de noms al qual corresponen:";
+        result += "l'espai de noms al qual corresponen:";
       return result;
     }
     /*! This is used in LaTeX as the title of the chapter with the
      *  index of all namespaces.
      */
     QCString trNamespaceIndex() override
-    { return "Índex d'Espais de Noms"; }
+    {
+      return "Índex d'Espais de Noms";
+    }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all namespaces.
      */
     QCString trNamespaceDocumentation() override
-    { return "Documentació de l'Espai de Noms"; }
+    {
+      return "Documentació de l'Espai de Noms";
+    }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 0.49-990522
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 0.49-990522
+    //////////////////////////////////////////////////////////////////////////
 
     /*! This is used in the documentation before the list of all
      *  namespaces in a file.
      */
     QCString trNamespaces() override
-    { return "Espais de Noms"; }
+    {
+      return "Espais de Noms";
+    }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 0.49-990728
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 0.49-990728
+    //////////////////////////////////////////////////////////////////////////
 
     /*! This is put at the bottom of a class documentation page and is
      *  followed by a list of files that were used to generate the page.
      */
     QCString trGeneratedFromFiles(ClassDef::CompoundType compType,
-        bool single) override
+                                  bool                   single) override
     { // here s is one of " Class", " Struct" or " Union"
       // single is true implies a single file
-      QCString result="La documentació d'aquest";
-      switch(compType)
+      QCString result = "La documentació d'aquest";
+      switch (compType)
       {
-        case ClassDef::Class:      result+="a classe"; break;
-        case ClassDef::Struct:     result+="a estructura"; break;
-        case ClassDef::Union:      result+="a unió"; break;
-        case ClassDef::Interface:  result+="a interfície"; break;
-        case ClassDef::Protocol:   result+=" protocol"; break;
-        case ClassDef::Category:   result+="a categoria"; break;
-        case ClassDef::Exception:  result+="a excepció"; break;
-        default: break;
+      case ClassDef::Class: result += "a classe"; break;
+      case ClassDef::Struct: result += "a estructura"; break;
+      case ClassDef::Union: result += "a unió"; break;
+      case ClassDef::Interface: result += "a interfície"; break;
+      case ClassDef::Protocol: result += " protocol"; break;
+      case ClassDef::Category: result += "a categoria"; break;
+      case ClassDef::Exception: result += "a excepció"; break;
+      default: break;
       }
-      result+=" es va generar a partir del";
-      if (!single) result+="s";
-      result+=" següent";
-      if (!single) result+="s";
-      result+=" fitxer";
-      if (!single) result+="s:"; else result+=":";
+      result += " es va generar a partir del";
+      if (!single) result += "s";
+      result += " següent";
+      if (!single) result += "s";
+      result += " fitxer";
+      if (!single)
+        result += "s:";
+      else
+        result += ":";
       return result;
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 0.49-990901
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 0.49-990901
+    //////////////////////////////////////////////////////////////////////////
 
     /*! This is used as the heading text for the retval command. */
     QCString trReturnValues() override
-    { return "Valors de retorn"; }
+    {
+      return "Valors de retorn";
+    }
 
     /*! This is in the (quick) index as a link to the main page (index.html)
      */
     QCString trMainPage() override
-    { return "Pàgina principal"; }
+    {
+      return "Pàgina principal";
+    }
 
     /*! This is used in references to page that are put in the LaTeX
      *  documentation. It should be an abbreviation of the word page.
      */
     QCString trPageAbbreviation() override
-    { return "p."; }
+    {
+      return "p.";
+    }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 0.49-991003
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 0.49-991003
+    //////////////////////////////////////////////////////////////////////////
 
     QCString trDefinedAtLineInSourceFile() override
     {
@@ -804,28 +950,28 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
       return "Definició al fitxer @0.";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 0.49-991205
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 0.49-991205
+    //////////////////////////////////////////////////////////////////////////
 
     QCString trDeprecated() override
     {
       return "Antiquat";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.0.0
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.0.0
+    //////////////////////////////////////////////////////////////////////////
 
     /*! this text is put before a collaboration diagram */
     QCString trCollaborationDiagram(const QCString &clName) override
     {
-      return "Diagrama de col·laboració per a "+clName+":";
+      return "Diagrama de col·laboració per a " + clName + ":";
     }
     /*! this text is put before an include dependency graph */
     QCString trInclDepGraph(const QCString &fName) override
     {
-      return "Inclou el graf de dependències per a "+fName+":";
+      return "Inclou el graf de dependències per a " + fName + ":";
     }
     /*! header that is put before the list of constructor/destructors. */
     QCString trConstructorDocumentation() override
@@ -884,9 +1030,9 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
       return "Índex de Pàgines";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.1.0
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.1.0
+    //////////////////////////////////////////////////////////////////////////
 
     QCString trNote() override
     {
@@ -936,9 +1082,9 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
       return "Atributs Privats Estàtics";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.1.3
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.1.3
+    //////////////////////////////////////////////////////////////////////////
 
     /*! Used as a marker that is put before a \\todo item */
     QCString trTodo() override
@@ -951,9 +1097,9 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
       return "Llista de coses per fer";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.1.4
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.1.4
+    //////////////////////////////////////////////////////////////////////////
 
     QCString trReferencedBy() override
     {
@@ -977,9 +1123,9 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
       return "Des de";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.1.5
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.1.5
+    //////////////////////////////////////////////////////////////////////////
 
     /*! title of the graph legend page */
     QCString trLegendTitle() override
@@ -991,58 +1137,58 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
      */
     QCString trLegendDocs() override
     {
-      return
-        "Aquesta pàgina explica com s'interpreten els gràfics generats per doxygen.<p>\n"
-        "Considera aquest exemple:\n"
-        "\\code\n"
-        "/*! Classe invisible per culpa del retall */\n"
-        "class Invisible { };\n\n"
-        "/*! Classe truncada, l'herència està amagada */\n"
-        "class Truncated : public Invisible { };\n\n"
-        "/* Classe no documentada amb comentaris doxygen */\n"
-        "class Undocumented { };\n\n"
-        "/*! Classe heredada amb herència pública */\n"
-        "class PublicBase : public Truncated { };\n\n"
-        "/*! Una classe Template */\n"
-        "template<class T> class Templ { };\n\n"
-        "/*! Classe heredada utilitzant herència protegida */\n"
-        "class ProtectedBase { };\n\n"
-        "/*! Classe heredada utiltzant herència privada */\n"
-        "class PrivateBase { };\n\n"
-        "/*! Classe usada per la classe heretada */\n"
-        "class Used { };\n\n"
-        "/*! Super classe que hereda una quantitat de classes */\n"
-        "class Inherited : public PublicBase,\n"
-        "                  protected ProtectedBase,\n"
-        "                  private PrivateBase,\n"
-        "                  public Undocumented,\n"
-        "                  public Templ<int>\n"
-        "{\n"
-        "  private:\n"
-        "    Used *m_usedClass;\n"
-        "};\n"
-        "\\endcode\n"
-        "Resultarà el gràfic següent:"
-        "<p><center><img alt=\"\" src=\"graph_legend."+getDotImageExtension()+"\"></center>\n"
-        "<p>\n"
-        "Les caixes del gràfic superior tenen aquesta interpretació:\n"
-        "<ul>\n"
-        "<li>Una caixa negra plena represent l'estructura o classe per la qual el gràfic s'ha generat.\n"
-        "<li>Una caixa de vora negra representa una estructura o classe documentada.\n"
-        "<li>Una caixa de vora verda representa una estructura o classe indocumentada.\n"
-        "<li>Una caixa de vora vermalla representa una estructura o classe documentada de la qual "
-        "no es mostren totes les relacions d'herència/inclusió. Un gràfic és truncat si no s'ajusta als límits.\n"
-        "</ul>\n"
-        "Les sagetes tenen aquest significat:\n"
-        "<ul>\n"
-        "<li>Una sageta blau fosc remarca una relació d'herència de tipus pública entre dues classes.\n"
-        "<li>Una sageta verd fosc remarca una relació d'herència de tipus protegida entre dues classes.\n"
-        "<li>Una sageta roig fosc remarca una relació d'herència de tipus privada entre dues classes.\n"
-        "<li>Una sageta puntejada de color porpra indica que una classe és continguda o usada per una altra classe."
-        " La sageta s'etiqueta amb la variable o variables a través de les quals la classe o estructura apuntada és accessible.\n"
-        "<li>Una sageta puntejada de color groc indica la relació entre una instància template i la classe template de què ha set instanciada."
-        " La sageta s'etiqueta amb els paràmetres template de la instància.\n"
-        "</ul>\n";
+      return "Aquesta pàgina explica com s'interpreten els gràfics generats per doxygen.<p>\n"
+             "Considera aquest exemple:\n"
+             "\\code\n"
+             "/*! Classe invisible per culpa del retall */\n"
+             "class Invisible { };\n\n"
+             "/*! Classe truncada, l'herència està amagada */\n"
+             "class Truncated : public Invisible { };\n\n"
+             "/* Classe no documentada amb comentaris doxygen */\n"
+             "class Undocumented { };\n\n"
+             "/*! Classe heredada amb herència pública */\n"
+             "class PublicBase : public Truncated { };\n\n"
+             "/*! Una classe Template */\n"
+             "template<class T> class Templ { };\n\n"
+             "/*! Classe heredada utilitzant herència protegida */\n"
+             "class ProtectedBase { };\n\n"
+             "/*! Classe heredada utiltzant herència privada */\n"
+             "class PrivateBase { };\n\n"
+             "/*! Classe usada per la classe heretada */\n"
+             "class Used { };\n\n"
+             "/*! Super classe que hereda una quantitat de classes */\n"
+             "class Inherited : public PublicBase,\n"
+             "                  protected ProtectedBase,\n"
+             "                  private PrivateBase,\n"
+             "                  public Undocumented,\n"
+             "                  public Templ<int>\n"
+             "{\n"
+             "  private:\n"
+             "    Used *m_usedClass;\n"
+             "};\n"
+             "\\endcode\n"
+             "Resultarà el gràfic següent:"
+             "<p><center><img alt=\"\" src=\"graph_legend." +
+             getDotImageExtension() + "\"></center>\n"
+                                      "<p>\n"
+                                      "Les caixes del gràfic superior tenen aquesta interpretació:\n"
+                                      "<ul>\n"
+                                      "<li>Una caixa negra plena represent l'estructura o classe per la qual el gràfic s'ha generat.\n"
+                                      "<li>Una caixa de vora negra representa una estructura o classe documentada.\n"
+                                      "<li>Una caixa de vora verda representa una estructura o classe indocumentada.\n"
+                                      "<li>Una caixa de vora vermalla representa una estructura o classe documentada de la qual "
+                                      "no es mostren totes les relacions d'herència/inclusió. Un gràfic és truncat si no s'ajusta als límits.\n"
+                                      "</ul>\n"
+                                      "Les sagetes tenen aquest significat:\n"
+                                      "<ul>\n"
+                                      "<li>Una sageta blau fosc remarca una relació d'herència de tipus pública entre dues classes.\n"
+                                      "<li>Una sageta verd fosc remarca una relació d'herència de tipus protegida entre dues classes.\n"
+                                      "<li>Una sageta roig fosc remarca una relació d'herència de tipus privada entre dues classes.\n"
+                                      "<li>Una sageta puntejada de color porpra indica que una classe és continguda o usada per una altra classe."
+                                      " La sageta s'etiqueta amb la variable o variables a través de les quals la classe o estructura apuntada és accessible.\n"
+                                      "<li>Una sageta puntejada de color groc indica la relació entre una instància template i la classe template de què ha set instanciada."
+                                      " La sageta s'etiqueta amb els paràmetres template de la instància.\n"
+                                      "</ul>\n";
     }
     /*! text for the link to the legend page */
     QCString trLegend() override
@@ -1050,9 +1196,9 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
       return "llegenda";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.2.0
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.2.0
+    //////////////////////////////////////////////////////////////////////////
 
     /*! Used as a marker that is put before a test item */
     QCString trTest() override
@@ -1065,9 +1211,9 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
       return "Llista de proves";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.2.2
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.2.2
+    //////////////////////////////////////////////////////////////////////////
 
     /*! Used as a section header for IDL properties */
     QCString trProperties() override
@@ -1080,9 +1226,9 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
       return "Documentació de les Propietats";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.2.4
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.2.4
+    //////////////////////////////////////////////////////////////////////////
 
     /*! Used for Java classes in the summary section of Java packages */
     QCString trClasses() override
@@ -1099,7 +1245,7 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
     /*! Used as the title of a Java package */
     QCString trPackage(const QCString &name) override
     {
-      return "Paquet "+name;
+      return "Paquet " + name;
     }
     /*! The description of the package index page */
     QCString trPackageListDescription() override
@@ -1117,9 +1263,9 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
       return "Valor:";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.2.5
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.2.5
+    //////////////////////////////////////////////////////////////////////////
 
     /*! Used as a marker that is put before a \\bug item */
     QCString trBug() override
@@ -1132,9 +1278,9 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
       return "Llista d'Errors";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.2.6
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.2.6
+    //////////////////////////////////////////////////////////////////////////
 
     /*! Used as ansicpg for RTF file
      *
@@ -1244,9 +1390,9 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
       return createNoun(first_capital, singular, "global", "s");
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.2.7
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.2.7
+    //////////////////////////////////////////////////////////////////////////
 
     /*! This text is generated when the \\author command is used and
      *  for the author section in man pages. */
@@ -1255,9 +1401,9 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
       return createNoun(first_capital, singular, "autor", "s");
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.2.11
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.2.11
+    //////////////////////////////////////////////////////////////////////////
 
     /*! This text is put before the list of members referenced by a member
      */
@@ -1266,16 +1412,16 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
       return "Referències";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.2.13
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.2.13
+    //////////////////////////////////////////////////////////////////////////
 
     /*! used in member documentation blocks to produce a list of
      *  members that are implemented by this one.
      */
     QCString trImplementedFromList(int numEntries) override
     {
-      return "Implementa "+trWriteList(numEntries)+".";
+      return "Implementa " + trWriteList(numEntries) + ".";
     }
 
     /*! used in member documentation blocks to produce a list of
@@ -1283,12 +1429,12 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
      */
     QCString trImplementedInList(int numEntries) override
     {
-      return "Implementat a "+trWriteList(numEntries)+".";
+      return "Implementat a " + trWriteList(numEntries) + ".";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.2.16
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.2.16
+    //////////////////////////////////////////////////////////////////////////
 
     /*! used in RTF documentation as a heading for the Table
      *  of Contents.
@@ -1298,9 +1444,9 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
       return "Taula de Continguts";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.2.17
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.2.17
+    //////////////////////////////////////////////////////////////////////////
 
     /*! Used as the header of the list of item that have been
      *  flagged deprecated
@@ -1310,9 +1456,9 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
       return "Llista d'Antiquats";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.2.18
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.2.18
+    //////////////////////////////////////////////////////////////////////////
 
     /*! Used as a header for declaration section of the events found in
      * a C# program
@@ -1327,9 +1473,9 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
       return "Documentació dels Esdeveniments";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.3
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.3
+    //////////////////////////////////////////////////////////////////////////
 
     /*! Used as a heading for a list of Java class types with package scope.
      */
@@ -1370,9 +1516,9 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
       return "Atributs Estàtics de Paquet";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.3.1
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.3.1
+    //////////////////////////////////////////////////////////////////////////
 
     /*! Used in the quick index of a class/file/namespace member list page
      *  to link to the unfiltered list of all members.
@@ -1387,9 +1533,9 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
       return "Gràfic de crides d'aquesta funció:";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.3.3
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.3.3
+    //////////////////////////////////////////////////////////////////////////
 
     /*! This string is used as the title for the page listing the search
      *  results.
@@ -1408,11 +1554,11 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
      */
     QCString trSearchResults(int numDocuments) override
     {
-      if (numDocuments==0)
+      if (numDocuments == 0)
       {
         return "No s'ha trobat cap document.";
       }
-      else if (numDocuments==1)
+      else if (numDocuments == 1)
       {
         return "Trobat <b>1</b> document.";
       }
@@ -1430,44 +1576,54 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
       return "Resultats:";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.3.8
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.3.8
+    //////////////////////////////////////////////////////////////////////////
 
     /*! This is used in HTML as the title of page with source code for file filename
      */
-    QCString trSourceFile(const QCString& filename) override
+    QCString trSourceFile(const QCString &filename) override
     {
       return "Fitxer de Codi " + filename;
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.3.9
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.3.9
+    //////////////////////////////////////////////////////////////////////////
 
     /*! This is used as the name of the chapter containing the directory
      *  hierarchy.
      */
     QCString trDirIndex() override
-    { return "Jerarquia de Directoris"; }
+    {
+      return "Jerarquia de Directoris";
+    }
 
     /*! This is used as the name of the chapter containing the documentation
      *  of the directories.
      */
     QCString trDirDocumentation() override
-    { return "Documentació dels Directoris"; }
+    {
+      return "Documentació dels Directoris";
+    }
 
     /*! This is used as the title of the directory index and also in the
      *  Quick links of a HTML page, to link to the directory hierarchy.
      */
     QCString trDirectories() override
-    { return "Directoris"; }
+    {
+      return "Directoris";
+    }
 
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.
      */
     QCString trDirReference(const QCString &dirName) override
-    { QCString result="Referència del Directori "; result+=dirName; return result; }
+    {
+      QCString result = "Referència del Directori ";
+      result += dirName;
+      return result;
+    }
 
     /*! This returns the word directory with or without starting capital
      *  (\a first_capital) and in sigular or plural form (\a singular).
@@ -1477,23 +1633,23 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
       return createNoun(first_capital, singular, "directori", "s");
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.4.1
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.4.1
+    //////////////////////////////////////////////////////////////////////////
 
     /*! This text is added to the documentation when the \\overload command
      *  is used for a overloaded function.
      */
     QCString trOverloadText() override
     {
-       return "Aquesta és una funció membre sobrecarregada, "
-              "proveïda per conveniència. Es diferencia de la funció "
-              "anterior només en els arguments que accepta.";
+      return "Aquesta és una funció membre sobrecarregada, "
+             "proveïda per conveniència. Es diferencia de la funció "
+             "anterior només en els arguments que accepta.";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.4.6
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.4.6
+    //////////////////////////////////////////////////////////////////////////
 
     /*! This is used to introduce a caller (or called-by) graph */
     QCString trCallerGraph() override
@@ -1505,44 +1661,54 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
      *  of documentation blocks for enumeration values
      */
     QCString trEnumerationValueDocumentation() override
-    { return "Documentació de les Enumeracions"; }
+    {
+      return "Documentació de les Enumeracions";
+    }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.5.4 (mainly for Fortran)
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.5.4 (mainly for Fortran)
+    //////////////////////////////////////////////////////////////////////////
 
     /*! header that is put before the list of member subprograms (Fortran). */
     QCString trMemberFunctionDocumentationFortran() override
-    { return "Documentació de les Funcions/Subrutines Membre"; }
+    {
+      return "Documentació de les Funcions/Subrutines Membre";
+    }
 
     /*! This is put above each page as a link to the list of annotated data types (Fortran). */
     QCString trCompoundListFortran() override
-    { return "Llista de Tipus de Dades"; }
+    {
+      return "Llista de Tipus de Dades";
+    }
 
     /*! This is put above each page as a link to all members of compounds (Fortran). */
     QCString trCompoundMembersFortran() override
-    { return "Camps de Dades"; }
+    {
+      return "Camps de Dades";
+    }
 
     /*! This is an introduction to the annotated compound list (Fortran). */
     QCString trCompoundListDescriptionFortran() override
-    { return "Aquests són els tipus de dades acompanyats amb breus descripcions:"; }
+    {
+      return "Aquests són els tipus de dades acompanyats amb breus descripcions:";
+    }
 
     /*! This is an introduction to the page with all data types (Fortran). */
     QCString trCompoundMembersDescriptionFortran(bool extractAll) override
     {
-      QCString result="Aquesta és la llista de tots els membres de tipus de dades";
+      QCString result = "Aquesta és la llista de tots els membres de tipus de dades";
       if (!extractAll)
       {
-        result+=" documentats";
+        result += " documentats";
       }
-      result+=" amb enllaços a ";
+      result += " amb enllaços a ";
       if (!extractAll)
       {
-        result+="la documentació del tipus de dades per a cada membre:";
+        result += "la documentació del tipus de dades per a cada membre:";
       }
       else
       {
-        result+="els tipus de dades a que pertanyen:";
+        result += "els tipus de dades a que pertanyen:";
       }
       return result;
     }
@@ -1551,95 +1717,109 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
      * annotated compound index (Fortran).
      */
     QCString trCompoundIndexFortran() override
-    { return "Índex de Tipus de Dades"; }
+    {
+      return "Índex de Tipus de Dades";
+    }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all data types (Fortran).
      */
     QCString trTypeDocumentation() override
-    { return "Documentació dels Tipus de Dades"; }
+    {
+      return "Documentació dels Tipus de Dades";
+    }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of (global) subprograms (Fortran).
      */
     QCString trSubprograms() override
-    { return "Funcions/Subrutines"; }
+    {
+      return "Funcions/Subrutines";
+    }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for subprograms (Fortran)
      */
     QCString trSubprogramDocumentation() override
-    { return "Documentació de les Funcions/Subrutines"; }
+    {
+      return "Documentació de les Funcions/Subrutines";
+    }
 
     /*! This is used in the documentation of a file/namespace/group before
      *  the list of links to documented compounds (Fortran)
      */
-     QCString trDataTypes() override
-    { return "Tipus de Dades"; }
+    QCString trDataTypes() override
+    {
+      return "Tipus de Dades";
+    }
 
     /*! used as the title of page containing all the index of all modules (Fortran). */
     QCString trModulesList() override
-    { return "Llista de Mòduls"; }
+    {
+      return "Llista de Mòduls";
+    }
 
     /*! used as an introduction to the modules list (Fortran) */
     QCString trModulesListDescription(bool extractAll) override
     {
-      QCString result="Aquesta és la llista de tots els mòduls ";
-      if (!extractAll) result+="documentats ";
-      result+="amb breus descripcions:";
+      QCString result = "Aquesta és la llista de tots els mòduls ";
+      if (!extractAll) result += "documentats ";
+      result += "amb breus descripcions:";
       return result;
     }
 
     /*! used as the title of the HTML page of a module/type (Fortran) */
-    QCString trCompoundReferenceFortran(const QCString &clName,
-                                    ClassDef::CompoundType compType,
-                                    bool isTemplate) override
+    QCString trCompoundReferenceFortran(const QCString        &clName,
+                                        ClassDef::CompoundType compType,
+                                        bool                   isTemplate) override
     {
-      QCString result="Referència de";
-      switch(compType)
+      QCString result = "Referència de";
+      switch (compType)
       {
-        case ClassDef::Class:      result+=" el Mòdul "; break;
-        case ClassDef::Struct:     result+=" el Tipus "; break;
-        case ClassDef::Union:      result+=" la Unió "; break;
-        case ClassDef::Interface:  result+=" la Interfície "; break;
-        case ClassDef::Protocol:   result+="l Protocol "; break;
-        case ClassDef::Category:   result+=" la Categoria "; break;
-        case ClassDef::Exception:  result+=" l'Excepció "; break;
-        default: break;
+      case ClassDef::Class: result += " el Mòdul "; break;
+      case ClassDef::Struct: result += " el Tipus "; break;
+      case ClassDef::Union: result += " la Unió "; break;
+      case ClassDef::Interface: result += " la Interfície "; break;
+      case ClassDef::Protocol: result += "l Protocol "; break;
+      case ClassDef::Category: result += " la Categoria "; break;
+      case ClassDef::Exception: result += " l'Excepció "; break;
+      default: break;
       }
-      if (isTemplate) result+="Template ";
-      result+=clName;
+      if (isTemplate) result += "Template ";
+      result += clName;
       return result;
     }
 
     /*! used as the title of the HTML page of a module (Fortran) */
     QCString trModuleReference(const QCString &namespaceName) override
     {
-      QCString result="Referència del Mòdul ";
-      result+=namespaceName;
+      QCString result = "Referència del Mòdul ";
+      result += namespaceName;
       return result;
     }
 
     /*! This is put above each page as a link to all members of modules. (Fortran) */
     QCString trModulesMembers() override
-    { return "Membres del Mòdul"; }
+    {
+      return "Membres del Mòdul";
+    }
 
     /*! This is an introduction to the page with all modules members (Fortran) */
     QCString trModulesMemberDescription(bool extractAll) override
     {
-      QCString result="Aquesta és la llista de tots els membres del mòdul";
+      QCString result = "Aquesta és la llista de tots els membres del mòdul";
       if (!extractAll)
       {
-        result+=" documentats";
+        result += " documentats";
       }
-      result+=" amb enllaços a ";
+      result += " amb enllaços a ";
       if (!extractAll)
       {
-        result+="la documentació del mòdul per a cada membre:";
+        result += "la documentació del mòdul per a cada membre:";
       }
       else
       {
-        result+="els mòduls a que pertanyen:";
+        result += "els mòduls a que pertanyen:";
       }
       return result;
     }
@@ -1648,7 +1828,9 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
      *  index of all modules (Fortran).
      */
     QCString trModulesIndex() override
-    { return "Índex de Mòduls"; }
+    {
+      return "Índex de Mòduls";
+    }
 
     /*! This is used for translation of the word that will possibly
      *  be followed by a single name or by a list of names
@@ -1662,27 +1844,30 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
      *  followed by a list of files that were used to generate the page.
      */
     QCString trGeneratedFromFilesFortran(ClassDef::CompoundType compType,
-        bool single) override
+                                         bool                   single) override
     { // here s is one of " Module", " Struct" or " Union"
       // single is true implies a single file
-      QCString result="La documentació d'aquest";
-      switch(compType)
+      QCString result = "La documentació d'aquest";
+      switch (compType)
       {
-        case ClassDef::Class:      result+=" mòdul"; break;
-        case ClassDef::Struct:     result+=" tipus"; break;
-        case ClassDef::Union:      result+="a unió"; break;
-        case ClassDef::Interface:  result+="a interfície"; break;
-        case ClassDef::Protocol:   result+=" protocol"; break;
-        case ClassDef::Category:   result+="a categoria"; break;
-        case ClassDef::Exception:  result+="a excepció"; break;
-        default: break;
+      case ClassDef::Class: result += " mòdul"; break;
+      case ClassDef::Struct: result += " tipus"; break;
+      case ClassDef::Union: result += "a unió"; break;
+      case ClassDef::Interface: result += "a interfície"; break;
+      case ClassDef::Protocol: result += " protocol"; break;
+      case ClassDef::Category: result += "a categoria"; break;
+      case ClassDef::Exception: result += "a excepció"; break;
+      default: break;
       }
-      result+=" es va generar a partir del";
-      if (!single) result+="s";
-      result+=" següent";
-      if (!single) result+="s";
-      result+=" fitxer";
-      if (!single) result+="s:"; else result+=":";
+      result += " es va generar a partir del";
+      if (!single) result += "s";
+      result += " següent";
+      if (!single) result += "s";
+      result += " fitxer";
+      if (!single)
+        result += "s:";
+      else
+        result += ":";
       return result;
     }
 
@@ -1709,14 +1894,14 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
       return "Restriccions de Tipus";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.6.0 (mainly for the new search engine)
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.6.0 (mainly for the new search engine)
+    //////////////////////////////////////////////////////////////////////////
 
     /*! directory relation for \a name */
     QCString trDirRelation(const QCString &name) override
     {
-      return QCString(name)+" Relació";
+      return QCString(name) + " Relació";
     }
 
     /*! Loading message shown when loading search results */
@@ -1743,9 +1928,9 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
       return "Cap coincidència";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.6.3 (missing items for the directory pages)
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.6.3 (missing items for the directory pages)
+    //////////////////////////////////////////////////////////////////////////
 
     /*! when clicking a directory dependency label, a page with a
      *  table is shown. The heading for the first column mentions the
@@ -1753,7 +1938,7 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
      */
     QCString trFileIn(const QCString &name) override
     {
-      return "Fitxer a "+name;
+      return "Fitxer a " + name;
     }
 
     /*! when clicking a directory dependency label, a page with a
@@ -1762,7 +1947,7 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
      */
     QCString trIncludesFileIn(const QCString &name) override
     {
-      return "Inclou fitxer a "+name;
+      return "Inclou fitxer a " + name;
     }
 
     /** Compiles a date string.
@@ -1775,65 +1960,73 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
      *  @param seconds Seconds within the minute: 0..59
      *  @param includeTime Include time in the result string?
      */
-    QCString trDateTime(int year,int month,int day,int dayOfWeek,
-                                int hour,int minutes,int seconds,
-                                DateTimeType includeTime) override
+    QCString trDateTime(int year, int month, int day, int dayOfWeek,
+                        int hour, int minutes, int seconds,
+                        DateTimeType includeTime) override
     {
-      static const char *days[]   = { "Dl","Dt","Dc","Dj","Dv","Ds","Dg" };
-      static const char *months[] = { "Gen","Feb","Mar","Abr","Mai","Jun","Jul","Ago","Sep","Oct","Nov","Dec" };
-      QCString sdate;
+      static const char *days[]   = { "Dl", "Dt", "Dc", "Dj", "Dv", "Ds", "Dg" };
+      static const char *months[] = { "Gen", "Feb", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dec" };
+      QCString           sdate;
       if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Date)
       {
-        sdate.sprintf("%s %s %d %d",days[dayOfWeek-1],months[month-1],day,year);
+        sdate.sprintf("%s %s %d %d", days[dayOfWeek - 1], months[month - 1], day, year);
       }
       if (includeTime == DateTimeType::DateTime) sdate += " ";
       if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Time)
       {
         QCString stime;
-        stime.sprintf("%.2d:%.2d:%.2d",hour,minutes,seconds);
-        sdate+=stime;
+        stime.sprintf("%.2d:%.2d:%.2d", hour, minutes, seconds);
+        sdate += stime;
       }
       return sdate;
     }
     QCString trDayOfWeek(int dayOfWeek, bool first_capital, bool full) override
     {
-      static const char *days_short[]   = { "dl.", "dt.", "dc.", "dj.", "dv.", "ds.", "dg." };
-      static const char *days_full[]    = { "dilluns", "dimarts", "dimecres", "dijous", "divendres", "dissabte", "diumenge" };
-      QCString text  = full? days_full[dayOfWeek-1] : days_short[dayOfWeek-1];
-      if (first_capital) return text.mid(0,1).upper()+text.mid(1);
-      else return text;
+      static const char *days_short[] = { "dl.", "dt.", "dc.", "dj.", "dv.", "ds.", "dg." };
+      static const char *days_full[]  = { "dilluns", "dimarts", "dimecres", "dijous", "divendres", "dissabte", "diumenge" };
+      QCString           text         = full ? days_full[dayOfWeek - 1] : days_short[dayOfWeek - 1];
+      if (first_capital)
+        return text.mid(0, 1).upper() + text.mid(1);
+      else
+        return text;
     }
     QCString trMonth(int month, bool first_capital, bool full) override
     {
       static const char *months_short[] = { "gen.", "febr.", "març", "abr.", "maig", "juny", "jul.", "ag.", "set.", "oct.", "nov.", "des." };
       static const char *months_full[]  = { "gener", "febrer", "març", "abril", "maig", "juny", "juliol", "agost", "setembre", "octubre", "novembre", "desembre" };
-      QCString text  = full? months_full[month-1] : months_short[month-1];
-      if (first_capital) return text.mid(0,1).upper()+text.mid(1);
-      else return text;
+      QCString           text           = full ? months_full[month - 1] : months_short[month - 1];
+      if (first_capital)
+        return text.mid(0, 1).upper() + text.mid(1);
+      else
+        return text;
     }
     QCString trDayPeriod(bool period) override
     {
       static const char *dayPeriod[] = { "a.m.", "p.m." };
-      return dayPeriod[period?1:0];
+      return dayPeriod[period ? 1 : 0];
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.7.5
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.7.5
+    //////////////////////////////////////////////////////////////////////////
 
     /*! Header for the page with bibliographic citations */
     QCString trCiteReferences() override
-    { return "Referències Bibliogràfiques"; }
+    {
+      return "Referències Bibliogràfiques";
+    }
 
     /*! Text for copyright paragraph */
     QCString trCopyright() override
-    { return "Copyright"; }
+    {
+      return "Copyright";
+    }
 
     /*! Header for the graph showing the directory dependencies */
     QCString trDirDepGraph(const QCString &name) override
-    { return QCString("Graf de dependència de directoris per a ")+name+":"; }
-
-
+    {
+      return QCString("Graf de dependència de directoris per a ") + name + ":";
+    }
 };
 
 #endif

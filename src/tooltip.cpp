@@ -28,17 +28,18 @@
 #include "doxygen.h"
 #include "config.h"
 
-static std::mutex                                                g_tooltipsFileMutex;
-static std::mutex                                                g_tooltipsTipMutex;
-static std::unordered_map<int, std::unordered_set<std::string> > g_tooltipsWrittenPerFile;
+static std::mutex                                               g_tooltipsFileMutex;
+static std::mutex                                               g_tooltipsTipMutex;
+static std::unordered_map<int, std::unordered_set<std::string>> g_tooltipsWrittenPerFile;
 
 class TooltipManager::Private
 {
   public:
-    std::map<std::string,const Definition*> tooltipInfo;
+    std::map<std::string, const Definition *> tooltipInfo;
 };
 
-TooltipManager::TooltipManager() : p(std::make_unique<Private>())
+TooltipManager::TooltipManager() :
+    p(std::make_unique<Private>())
 {
 }
 
@@ -48,8 +49,9 @@ TooltipManager::~TooltipManager()
 
 static QCString escapeId(const QCString &s)
 {
-  QCString res=s;
-  for (size_t i=0;i<res.length();i++) if (!isId(res[i])) res[i]='_';
+  QCString res = s;
+  for (size_t i = 0; i < res.length(); i++)
+    if (!isId(res[i])) res[i] = '_';
   return res;
 }
 
@@ -59,10 +61,10 @@ void TooltipManager::addTooltip(const Definition *d)
   if (!sourceTooltips) return;
 
   QCString id = d->getOutputFileBase();
-  int i=id.findRev('/');
-  if (i!=-1)
+  int      i  = id.findRev('/');
+  if (i != -1)
   {
-    id = id.right(id.length()-i-1); // strip path (for CREATE_SUBDIRS=YES)
+    id = id.right(id.length() - i - 1); // strip path (for CREATE_SUBDIRS=YES)
   }
   // In case an extension is present translate this extension to something understood by the tooltip handler
   // otherwise extend t with a translated htmlFileExtension.
@@ -73,42 +75,42 @@ void TooltipManager::addTooltip(const Definition *d)
   }
   else
   {
-    id = stripExtensionGeneral(id,currentExtension) + escapeId(currentExtension);
+    id = stripExtensionGeneral(id, currentExtension) + escapeId(currentExtension);
   }
 
   QCString anc = d->anchor();
   if (!anc.isEmpty())
   {
-    id+="_"+anc;
+    id += "_" + anc;
   }
   id = "a" + id;
-  p->tooltipInfo.emplace(id.str(),d);
+  p->tooltipInfo.emplace(id.str(), d);
   //printf("%p: addTooltip(%s)\n",this,id.data());
 }
 
 void TooltipManager::writeTooltips(OutputCodeList &ol)
 {
-  std::unordered_map<int, std::unordered_set<std::string> >::iterator it;
+  std::unordered_map<int, std::unordered_set<std::string>>::iterator it;
   // critical section
   {
     std::lock_guard<std::mutex> lock(g_tooltipsFileMutex);
 
-    int id = ol.id();
-    it = g_tooltipsWrittenPerFile.find(id);
-    if (it==g_tooltipsWrittenPerFile.end()) // new file
+    int                         id = ol.id();
+    it                             = g_tooltipsWrittenPerFile.find(id);
+    if (it == g_tooltipsWrittenPerFile.end()) // new file
     {
-      it = g_tooltipsWrittenPerFile.emplace(id,std::unordered_set<std::string>()).first;
+      it = g_tooltipsWrittenPerFile.emplace(id, std::unordered_set<std::string>()).first;
     }
   }
 
-  for (const auto &[name,d] : p->tooltipInfo)
+  for (const auto &[name, d] : p->tooltipInfo)
   {
     bool written = false;
 
     // critical section
     {
       std::lock_guard<std::mutex> lock(g_tooltipsTipMutex);
-      written = it->second.find(name)!=it->second.end();
+      written = it->second.find(name) != it->second.end();
       if (!written) // only write tooltips once
       {
         it->second.insert(name); // remember we wrote this tooltip for the given file id
@@ -124,16 +126,16 @@ void TooltipManager::writeTooltips(OutputCodeList &ol)
       docInfo.url    = d->getOutputFileBase();
       docInfo.anchor = d->anchor();
       SourceLinkInfo defInfo;
-      if (d->getBodyDef() && d->getStartBodyLine()!=-1)
+      if (d->getBodyDef() && d->getStartBodyLine() != -1)
       {
-        defInfo.file    = d->getBodyDef()->name();
-        defInfo.line    = d->getStartBodyLine();
-        defInfo.url     = d->getSourceFileBase();
-        defInfo.anchor  = d->getSourceAnchor();
+        defInfo.file   = d->getBodyDef()->name();
+        defInfo.line   = d->getStartBodyLine();
+        defInfo.url    = d->getSourceFileBase();
+        defInfo.anchor = d->getSourceAnchor();
       }
       SourceLinkInfo declInfo; // TODO: fill in...
-      QCString decl;
-      if (d->definitionType()==Definition::TypeMember)
+      QCString       decl;
+      if (d->definitionType() == Definition::TypeMember)
       {
         const MemberDef *md = toMemberDef(d);
         if (!md->isAnonymous())
@@ -141,14 +143,12 @@ void TooltipManager::writeTooltips(OutputCodeList &ol)
           decl = md->declaration();
         }
       }
-      ol.writeTooltip(name,                // id
-          docInfo,                         // symName
-          decl,                            // decl
-          d->briefDescriptionAsTooltip(),  // desc
-          defInfo,
-          declInfo
-          );
+      ol.writeTooltip(name,                           // id
+                      docInfo,                        // symName
+                      decl,                           // decl
+                      d->briefDescriptionAsTooltip(), // desc
+                      defInfo,
+                      declInfo);
     }
   }
 }
-

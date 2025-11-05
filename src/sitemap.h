@@ -27,25 +27,24 @@ class Sitemap : public IndexIntf
 {
   public:
     Sitemap();
-   ~Sitemap();
+    ~Sitemap();
     NON_COPYABLE(Sitemap)
 
-    void initialize();
-    void finalize();
-    void incContentsDepth(){}
-    void decContentsDepth(){}
-    void addContentsItem(bool isDir, const QCString &name, const QCString &ref,
-                         const QCString &file, const QCString &anchor,
-                         bool separateIndex, bool addToNavIndex,
-                         const Definition *def, const QCString &nameAsHtml) {}
-    void addIndexItem(const Definition *context, const MemberDef *md,
-                      const QCString &sectionAnchor, const QCString &title) {}
-    void addIndexFile(const QCString & name);
-    void addImageFile(const QCString & name) {}
-    void addStyleSheetFile(const QCString & name) {}
+    void                         initialize();
+    void                         finalize();
+    void                         incContentsDepth() {}
+    void                         decContentsDepth() {}
+    void                         addContentsItem(bool isDir, const QCString &name, const QCString &ref,
+                                                 const QCString &file, const QCString &anchor,
+                                                 bool separateIndex, bool addToNavIndex,
+                                                 const Definition *def, const QCString &nameAsHtml) {}
+    void                         addIndexItem(const Definition *context, const MemberDef *md,
+                                              const QCString &sectionAnchor, const QCString &title) {}
+    void                         addIndexFile(const QCString &name);
+    void                         addImageFile(const QCString &name) {}
+    void                         addStyleSheetFile(const QCString &name) {}
 
     static inline const QCString sitemapFileName = "sitemap.xml";
-
   private:
     class Private;
     std::unique_ptr<Private> p;
@@ -55,25 +54,24 @@ class Crawlmap : public IndexIntf
 {
   public:
     Crawlmap();
-   ~Crawlmap();
+    ~Crawlmap();
     NON_COPYABLE(Crawlmap)
 
-    void initialize();
-    void finalize();
-    void incContentsDepth(){}
-    void decContentsDepth(){}
-    void addContentsItem(bool isDir, const QCString & name, const QCString & ref,
-                         const QCString & file, const QCString & anchor,
-                         bool separateIndex,bool addToNavIndex,
-                         const Definition *def, const QCString &nameAsHtml);
-    void addIndexItem(const Definition *context, const MemberDef *md,
-                      const QCString &sectionAnchor, const QCString &title);
-    void addIndexFile(const QCString & name);
-    void addImageFile(const QCString & name){}
-    void addStyleSheetFile(const QCString & name){}
+    void                         initialize();
+    void                         finalize();
+    void                         incContentsDepth() {}
+    void                         decContentsDepth() {}
+    void                         addContentsItem(bool isDir, const QCString &name, const QCString &ref,
+                                                 const QCString &file, const QCString &anchor,
+                                                 bool separateIndex, bool addToNavIndex,
+                                                 const Definition *def, const QCString &nameAsHtml);
+    void                         addIndexItem(const Definition *context, const MemberDef *md,
+                                              const QCString &sectionAnchor, const QCString &title);
+    void                         addIndexFile(const QCString &name);
+    void                         addImageFile(const QCString &name) {}
+    void                         addStyleSheetFile(const QCString &name) {}
 
     static inline const QCString crawlFileName = "doxygen_crawl";
-
   private:
     class Private;
     std::unique_ptr<Private> p;
@@ -81,4 +79,3 @@ class Crawlmap : public IndexIntf
 
 
 #endif // SITEMAP_H
-

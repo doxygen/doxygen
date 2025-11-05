@@ -27,21 +27,22 @@
  *  When the maximum capacity has reached, the least recently used value is removed from the cache
  *  (LRU strategy).
  */
-template<typename K,typename V>
+template <typename K, typename V>
 class Cache
 {
   public:
-    using kv_pair        = std::pair<K,V>;
+    using kv_pair        = std::pair<K, V>;
     using iterator       = typename std::list<kv_pair>::iterator;
     using const_iterator = typename std::list<kv_pair>::const_iterator;
 
     //! creates a cache that can hold \a capacity elements
-    Cache(size_t capacity) : m_capacity(capacity)
+    Cache(size_t capacity) :
+        m_capacity(capacity)
     {
     }
 
     //! Inserts \a value under \a key in the cache
-    [[maybe_unused]] V *insert(const K &key,V &&value)
+    [[maybe_unused]] V *insert(const K &key, V &&value)
     {
       // reuse item if it already exists
       auto it = m_cacheItemMap.find(key);
@@ -51,12 +52,12 @@ class Cache
         m_cacheItemList.splice(m_cacheItemList.begin(),
                                m_cacheItemList,
                                it->second);
-        std::exchange(it->second->second,value);
+        std::exchange(it->second->second, value);
         return &it->second->second;
       }
       // create new item
-      m_cacheItemList.push_front(kv_pair(key,std::move(value)));
-      V *result = &m_cacheItemList.front().second;
+      m_cacheItemList.push_front(kv_pair(key, std::move(value)));
+      V *result           = &m_cacheItemList.front().second;
       m_cacheItemMap[key] = m_cacheItemList.begin();
       // remove least recently used item if cache is full
       resize();
@@ -64,7 +65,7 @@ class Cache
     }
 
     //! Inserts \a value under \a key in the cache
-    [[maybe_unused]] V *insert(const K &key,const V &value)
+    [[maybe_unused]] V *insert(const K &key, const V &value)
     {
       // reuse item if it already exists
       auto it = m_cacheItemMap.find(key);
@@ -78,8 +79,8 @@ class Cache
         return &it->second->second;
       }
       // store new item
-      m_cacheItemList.push_front(kv_pair(key,value));
-      V *result = &m_cacheItemList.front().second;
+      m_cacheItemList.push_front(kv_pair(key, value));
+      V *result           = &m_cacheItemList.front().second;
       m_cacheItemMap[key] = m_cacheItemList.begin();
       // remove least recently used item if cache is full
       resize();
@@ -153,11 +154,10 @@ class Cache
       m_cacheItemList.clear();
     }
 
-    iterator begin()             { return m_cacheItemList.begin();  }
-    iterator end()               { return m_cacheItemList.end();    }
+    iterator       begin() { return m_cacheItemList.begin(); }
+    iterator       end() { return m_cacheItemList.end(); }
     const_iterator begin() const { return m_cacheItemList.cbegin(); }
-    const_iterator end() const   { return m_cacheItemList.cend();   }
-
+    const_iterator end() const { return m_cacheItemList.cend(); }
   private:
     // remove least recently used item if cache is full
     void resize()
@@ -171,13 +171,13 @@ class Cache
       }
     }
 
-    size_t m_capacity;
+    size_t                          m_capacity;
     // list of items in the cache, sorted by most to least recently used.
-    std::list<kv_pair> m_cacheItemList;
+    std::list<kv_pair>              m_cacheItemList;
     // mapping for each key to a place in the list where item is found
-    std::unordered_map<K,iterator> m_cacheItemMap;
-    uint64_t m_hits=0;
-    uint64_t m_misses=0;
+    std::unordered_map<K, iterator> m_cacheItemMap;
+    uint64_t                        m_hits   = 0;
+    uint64_t                        m_misses = 0;
 };
 
 #endif

@@ -4,25 +4,24 @@
 /** A struct */
 struct S
 {
-  /** \publicsection */
+    /** \publicsection */
 
-  /** public field */
-  int pub1;
-  /** another public field */
-  int pub2;
+    /** public field */
+    int pub1;
+    /** another public field */
+    int pub2;
 
-  /** \protectedsection */
+    /** \protectedsection */
 
-  /** protected field */
-  int pro1;
-  /** another protected field */
-  int pro2;
+    /** protected field */
+    int pro1;
+    /** another protected field */
+    int pro2;
 
-  /** \privatesection */
+    /** \privatesection */
 
-  /** private field */
-  int pri1;
-  /** another private field */
-  int pri2;
+    /** private field */
+    int pri1;
+    /** another private field */
+    int pri2;
 };
-

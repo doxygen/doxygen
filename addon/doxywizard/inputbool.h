@@ -22,26 +22,25 @@ class QLabel;
 
 class InputBool : public QObject, public Input
 {
-  Q_OBJECT
-
+    Q_OBJECT
   public:
-    InputBool(QGridLayout *layout,int &row,const QString &id,
-              bool enabled, const QString &docs );
+    InputBool(QGridLayout *layout, int &row, const QString &id,
+              bool enabled, const QString &docs);
 
     // Input
-    QVariant &value();
-    void update();
-    Kind kind() const { return Bool; }
-    QString docs() const { return m_docs; }
-    QString id() const { return m_id; }
-    QString templateDocs() const { return m_tdocs; }
-    void addDependency(Input *option) { m_dependencies+=option; }
-    void setEnabled(bool);
-    void updateDependencies();
-    bool isDefault();
-    void writeValue(QTextStream &t,TextCodecAdapter *codec,bool convert);
-    void setTemplateDocs(const QString &docs) { m_tdocs = docs; }
-    static bool convertToBool(const QVariant &v,bool &isValid);
+    QVariant   &value();
+    void        update();
+    Kind        kind() const { return Bool; }
+    QString     docs() const { return m_docs; }
+    QString     id() const { return m_id; }
+    QString     templateDocs() const { return m_tdocs; }
+    void        addDependency(Input *option) { m_dependencies += option; }
+    void        setEnabled(bool);
+    void        updateDependencies();
+    bool        isDefault();
+    void        writeValue(QTextStream &t, TextCodecAdapter *codec, bool convert);
+    void        setTemplateDocs(const QString &docs) { m_tdocs = docs; }
+    static bool convertToBool(const QVariant &v, bool &isValid);
 
   public slots:
     void reset();
@@ -49,24 +48,23 @@ class InputBool : public QObject, public Input
 
   signals:
     void changed();
-    void toggle(QString,bool);
+    void toggle(QString, bool);
     void showHelp(Input *);
 
   private slots:
     void help();
-
   private:
-    void updateDefault();
-    bool m_state;
-    bool m_default;
-    bool m_enabled;
-    QVariant m_value;
-    QCheckBox *m_cb;
-    QString m_docs;
-    QList<Input*> m_dependencies;
-    QString m_id;
-    QLabel *m_lab;
-    QString m_tdocs;
+    void           updateDefault();
+    bool           m_state;
+    bool           m_default;
+    bool           m_enabled;
+    QVariant       m_value;
+    QCheckBox     *m_cb;
+    QString        m_docs;
+    QList<Input *> m_dependencies;
+    QString        m_id;
+    QLabel        *m_lab;
+    QString        m_tdocs;
 };
 
 #endif

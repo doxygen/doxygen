@@ -57,40 +57,41 @@
 class Autolink_Test
 {
   public:
-    Autolink_Test();               //!< constructor 
-   ~Autolink_Test();               //!< destructor 
-    void member(int);     /**< A member function. Details. */
-    void member(int,int); /**< An overloaded member function. Details */
+    Autolink_Test();       //!< constructor
+    ~Autolink_Test();      //!< destructor
+    void member(int);      /**< A member function. Details. */
+    void member(int, int); /**< An overloaded member function. Details */
 
     /** An enum type. More details */
-    enum EType { 
-      Val1,               /**< enum value 1 */ 
-      Val2                /**< enum value 2 */ 
-    };                
-
+    enum EType
+    {
+      Val1, /**< enum value 1 */
+      Val2  /**< enum value 2 */
+    };
   protected:
-    int var;              /**< A member variable */
+    int var; /**< A member variable */
 };
 
 /*! details. */
-Autolink_Test::Autolink_Test() { }
+Autolink_Test::Autolink_Test() {}
 
 /*! details. */
-Autolink_Test::~Autolink_Test() { }
+Autolink_Test::~Autolink_Test() {}
 
 /*! A global variable. */
 int globVar;
 
 /*! A global enum. */
-enum GlobEnum { 
-                GVal1,    /*!< global enum value 1 */ 
-                GVal2     /*!< global enum value 2 */ 
-              };
+enum GlobEnum
+{
+  GVal1, /*!< global enum value 1 */
+  GVal2  /*!< global enum value 2 */
+};
 
 /*!
  *  A macro definition.
- */ 
-#define ABS(x) (((x)>0)?(x):-(x))
+ */
+#define ABS(x) (((x) > 0) ? (x) : -(x))
 
 typedef Autolink_Test B;
 

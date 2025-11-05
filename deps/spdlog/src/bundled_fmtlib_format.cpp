@@ -3,24 +3,25 @@
 // All rights reserved.
 
 #ifndef SPDLOG_COMPILED_LIB
-    #error Please define SPDLOG_COMPILED_LIB to compile this file.
+#error Please define SPDLOG_COMPILED_LIB to compile this file.
 #endif
 
 #if !defined(SPDLOG_FMT_EXTERNAL) && !defined(SPDLOG_USE_STD_FORMAT)
 
-    #include <spdlog/fmt/bundled/format-inl.h>
+#include <spdlog/fmt/bundled/format-inl.h>
 
 FMT_BEGIN_NAMESPACE
-namespace detail {
+namespace detail
+{
 
 template FMT_API auto dragonbox::to_decimal(float x) noexcept -> dragonbox::decimal_fp<float>;
 template FMT_API auto dragonbox::to_decimal(double x) noexcept -> dragonbox::decimal_fp<double>;
 
-    #if FMT_USE_LOCALE
+#if FMT_USE_LOCALE
 // DEPRECATED! locale_ref in the detail namespace
-template FMT_API locale_ref::locale_ref(const std::locale& loc);
+template FMT_API      locale_ref::locale_ref(const std::locale &loc);
 template FMT_API auto locale_ref::get<std::locale>() const -> std::locale;
-    #endif
+#endif
 
 // Explicit instantiations for char.
 
@@ -28,10 +29,10 @@ template FMT_API auto thousands_sep_impl(locale_ref) -> thousands_sep_result<cha
 template FMT_API auto decimal_point_impl(locale_ref) -> char;
 
 // DEPRECATED!
-template FMT_API void buffer<char>::append(const char*, const char*);
+template FMT_API void buffer<char>::append(const char *, const char *);
 
 // DEPRECATED!
-template FMT_API void vformat_to(buffer<char>&,
+template FMT_API void vformat_to(buffer<char> &,
                                  string_view,
                                  typename vformat_args<>::type,
                                  locale_ref);
@@ -41,9 +42,9 @@ template FMT_API void vformat_to(buffer<char>&,
 template FMT_API auto thousands_sep_impl(locale_ref) -> thousands_sep_result<wchar_t>;
 template FMT_API auto decimal_point_impl(locale_ref) -> wchar_t;
 
-template FMT_API void buffer<wchar_t>::append(const wchar_t*, const wchar_t*);
+template FMT_API void buffer<wchar_t>::append(const wchar_t *, const wchar_t *);
 
-}  // namespace detail
+} // namespace detail
 FMT_END_NAMESPACE
 
-#endif  // !SPDLOG_FMT_EXTERNAL
+#endif // !SPDLOG_FMT_EXTERNAL

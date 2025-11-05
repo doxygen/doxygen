@@ -29,28 +29,26 @@ class Definition;
 class FortranCodeParser : public CodeParserInterface
 {
   public:
-    FortranCodeParser(FortranFormat format=FortranFormat::Unknown);
-   ~FortranCodeParser() override;
+    FortranCodeParser(FortranFormat format = FortranFormat::Unknown);
+    ~FortranCodeParser() override;
     NON_COPYABLE(FortranCodeParser)
 
-    void parseCode(OutputCodeList &codeOutIntf,
-                   const QCString &scopeName,
-                   const QCString &input,
-                   SrcLangExt lang,
-                   bool stripCodeComments,
-                   bool isExampleBlock,
-                   const QCString &exampleName=QCString(),
-                   const FileDef *fileDef=nullptr,
-                   int startLine=-1,
-                   int endLine=-1,
-                   bool inlineFragment=FALSE,
-                   const MemberDef *memberDef=nullptr,
-                   bool showLineNumbers=TRUE,
-                   const Definition *searchCtx=nullptr,
-                   bool collectXRefs=TRUE
-                  ) override;
+    void parseCode(OutputCodeList   &codeOutIntf,
+                   const QCString   &scopeName,
+                   const QCString   &input,
+                   SrcLangExt        lang,
+                   bool              stripCodeComments,
+                   bool              isExampleBlock,
+                   const QCString   &exampleName     = QCString(),
+                   const FileDef    *fileDef         = nullptr,
+                   int               startLine       = -1,
+                   int               endLine         = -1,
+                   bool              inlineFragment  = FALSE,
+                   const MemberDef  *memberDef       = nullptr,
+                   bool              showLineNumbers = TRUE,
+                   const Definition *searchCtx       = nullptr,
+                   bool              collectXRefs    = TRUE) override;
     void resetCodeParserState() override;
-
   private:
     struct Private;
     std::unique_ptr<Private> p;
@@ -59,13 +57,15 @@ class FortranCodeParser : public CodeParserInterface
 class FortranCodeParserFree : public FortranCodeParser
 {
   public:
-    FortranCodeParserFree() : FortranCodeParser(FortranFormat::Free) { }
+    FortranCodeParserFree() :
+        FortranCodeParser(FortranFormat::Free) {}
 };
 
 class FortranCodeParserFixed : public FortranCodeParser
 {
   public:
-    FortranCodeParserFixed() : FortranCodeParser(FortranFormat::Fixed) { }
+    FortranCodeParserFixed() :
+        FortranCodeParser(FortranFormat::Fixed) {}
 };
 
 #endif

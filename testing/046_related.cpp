@@ -7,7 +7,7 @@
 /** A test class 
  *  @see Test::method()
  */
-class Test 
+class Test
 {
   public:
     /** A method */

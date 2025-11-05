@@ -29,27 +29,25 @@ class DotDirDeps : public DotGraph
     ~DotDirDeps() override;
     NON_COPYABLE(DotDirDeps)
 
-    bool isTrivial() const;
-    QCString writeGraph(TextStream &out,
-                        GraphOutputFormat gf,
+    bool     isTrivial() const;
+    QCString writeGraph(TextStream          &out,
+                        GraphOutputFormat    gf,
                         EmbeddedOutputFormat ef,
-                        const QCString &path,
-                        const QCString &fileName,
-                        const QCString &relPath,
-                        bool writeImageMap=TRUE,
-                        int graphId=-1,
-                        bool linkRelations=TRUE);
-
+                        const QCString      &path,
+                        const QCString      &fileName,
+                        const QCString      &relPath,
+                        bool                 writeImageMap = TRUE,
+                        int                  graphId       = -1,
+                        bool                 linkRelations = TRUE);
   protected:
     QCString getBaseName() const override;
     QCString getMapLabel() const override;
-    void computeTheGraph() override;
+    void     computeTheGraph() override;
     QCString getImgAltText() const override;
-
   private:
-    const DirDef *m_dir = nullptr;
+    const DirDef *m_dir           = nullptr;
 
-    bool m_linkRelations = false;
+    bool          m_linkRelations = false;
 };
 
 using DotDirDepsPtr = std::shared_ptr<DotDirDeps>;

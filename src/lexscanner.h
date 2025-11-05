@@ -28,15 +28,14 @@ class LexOutlineParser : public OutlineParserInterface
 {
   public:
     LexOutlineParser();
-   ~LexOutlineParser() override;
+    ~LexOutlineParser() override;
     NON_COPYABLE(LexOutlineParser)
-    void parseInput(const QCString &fileName,
-                    const char *fileBuf,
+    void parseInput(const QCString               &fileName,
+                    const char                   *fileBuf,
                     const std::shared_ptr<Entry> &root,
-                    ClangTUParser *clangParser) override;
-    bool needsPreprocessing(const QCString &/* extension */) const override { return TRUE; }
-    void parsePrototype(const QCString &/* text */) override {}
-
+                    ClangTUParser                *clangParser) override;
+    bool needsPreprocessing(const QCString & /* extension */) const override { return TRUE; }
+    void parsePrototype(const QCString & /* text */) override {}
   private:
     struct Private;
     std::unique_ptr<Private> p;

@@ -19,24 +19,24 @@
 
 std::shared_ptr<spdlog::logger> g_tracer;
 
-void initTracing(const QCString &logFile, bool timing)
+void                            initTracing(const QCString &logFile, bool timing)
 {
   if (!logFile.isEmpty())
   {
     std::vector<spdlog::sink_ptr> sinks;
-    if (logFile=="stdout")
+    if (logFile == "stdout")
     {
       sinks.push_back(std::make_shared<spdlog::sinks::stdout_sink_mt>());
     }
-    else if (logFile=="stderr")
+    else if (logFile == "stderr")
     {
       sinks.push_back(std::make_shared<spdlog::sinks::stderr_sink_mt>());
     }
     else // normal file
     {
-      sinks.push_back(std::make_shared<spdlog::sinks::basic_file_sink_mt>(logFile.str(),true));
+      sinks.push_back(std::make_shared<spdlog::sinks::basic_file_sink_mt>(logFile.str(), true));
     }
-    g_tracer = std::make_shared<spdlog::logger>("tracing", sinks.begin(),sinks.end());
+    g_tracer = std::make_shared<spdlog::logger>("tracing", sinks.begin(), sinks.end());
     g_tracer->set_level(spdlog::level::trace);
     if (timing)
     {
@@ -56,4 +56,3 @@ void exitTracing()
     spdlog::shutdown();
   }
 }
-

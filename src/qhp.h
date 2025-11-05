@@ -30,23 +30,22 @@ class Qhp : public IndexIntf
     ~Qhp();
     NON_COPYABLE(Qhp)
 
-    void initialize();
-    void finalize();
-    void incContentsDepth();
-    void decContentsDepth();
-    void addContentsItem(bool isDir, const QCString & name, const QCString & ref,
-                         const QCString & file, const QCString & anchor,
-                         bool separateIndex, bool addToNavIndex,
-                         const Definition *def, const QCString &);
-    void addIndexItem(const Definition *context, const MemberDef *md,
-                      const QCString &sectionAnchor, const QCString &title);
-    void addIndexFile(const QCString & name);
-    void addImageFile(const QCString & name);
-    void addStyleSheetFile(const QCString & name);
+    void                         initialize();
+    void                         finalize();
+    void                         incContentsDepth();
+    void                         decContentsDepth();
+    void                         addContentsItem(bool isDir, const QCString &name, const QCString &ref,
+                                                 const QCString &file, const QCString &anchor,
+                                                 bool separateIndex, bool addToNavIndex,
+                                                 const Definition *def, const QCString &);
+    void                         addIndexItem(const Definition *context, const MemberDef *md,
+                                              const QCString &sectionAnchor, const QCString &title);
+    void                         addIndexFile(const QCString &name);
+    void                         addImageFile(const QCString &name);
+    void                         addStyleSheetFile(const QCString &name);
 
     static inline const QCString qhpFileName = "index.qhp";
-    static QCString getQchFileName();
-
+    static QCString              getQchFileName();
   private:
     void addFile(const QCString &);
     class Private;
@@ -54,4 +53,3 @@ class Qhp : public IndexIntf
 };
 
 #endif // QHP_H
-

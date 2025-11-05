@@ -26,9 +26,9 @@ class ConstExpressionParser
 {
   public:
     ConstExpressionParser();
-   ~ConstExpressionParser();
+    ~ConstExpressionParser();
     NON_COPYABLE(ConstExpressionParser)
-    bool parse(const char *fileName,int line,const std::string &expression,const std::string &orgExpression);
+    bool parse(const char *fileName, int line, const std::string &expression, const std::string &orgExpression);
   private:
     struct Private;
     std::unique_ptr<Private> p;

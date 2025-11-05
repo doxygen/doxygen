@@ -22,6 +22,6 @@
 #include "configvalues.h"
 
 extern Translator *theTranslator;
-extern void setTranslator(OUTPUT_LANGUAGE_t languageName);
+extern void        setTranslator(OUTPUT_LANGUAGE_t languageName);
 
 #endif

@@ -31,20 +31,20 @@ class Input
       Obsolete
     };
     virtual ~Input() {}
-    virtual QVariant &value() = 0;
-    virtual void update() = 0;
-    virtual Kind kind() const = 0;
-    virtual QString docs() const = 0;
-    virtual QString id() const = 0;
-    virtual QString templateDocs() const = 0;
-    virtual void addDependency(Input *option) = 0;
-    virtual void setEnabled(bool) = 0;
-    virtual void updateDependencies() = 0;
-    virtual void reset() = 0;
-    virtual bool isDefault() = 0;
-    virtual void writeValue(QTextStream &t,TextCodecAdapter *codec,bool convert) = 0;
-    virtual void setTemplateDocs(const QString &docs) = 0;
-    virtual bool isEmpty() { return false; };
+    virtual QVariant &value()                                                           = 0;
+    virtual void      update()                                                          = 0;
+    virtual Kind      kind() const                                                      = 0;
+    virtual QString   docs() const                                                      = 0;
+    virtual QString   id() const                                                        = 0;
+    virtual QString   templateDocs() const                                              = 0;
+    virtual void      addDependency(Input *option)                                      = 0;
+    virtual void      setEnabled(bool)                                                  = 0;
+    virtual void      updateDependencies()                                              = 0;
+    virtual void      reset()                                                           = 0;
+    virtual bool      isDefault()                                                       = 0;
+    virtual void      writeValue(QTextStream &t, TextCodecAdapter *codec, bool convert) = 0;
+    virtual void      setTemplateDocs(const QString &docs)                              = 0;
+    virtual bool      isEmpty() { return false; };
 };
 
 

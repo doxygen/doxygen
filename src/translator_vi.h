@@ -50,7 +50,6 @@
 class TranslatorVietnamese : public TranslatorAdapter_1_6_0
 {
   public:
-
     // --- Language control methods -------------------
 
     /*! Used for identification of the language. The identification
@@ -60,7 +59,9 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
      * the identification used in language.cpp.
      */
     QCString idLanguage() override
-    { return "vietnamese"; }
+    {
+      return "vietnamese";
+    }
 
     /*! Used to get the LaTeX command(s) for the language support.
      *  This method should return string with commands that switch
@@ -78,8 +79,7 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
      */
     QCString latexLanguageSupportCommand() override
     {
-      return
-        "\\usepackage[vietnamese]{babel}\n";
+      return "\\usepackage[vietnamese]{babel}\n";
     }
     QCString latexFontenc() override
     {
@@ -101,31 +101,45 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
 
     /*! used in the compound documentation before a list of related functions. */
     QCString trRelatedFunctions() override
-    { return "Những hàm liên quan"; }
+    {
+      return "Những hàm liên quan";
+    }
 
     /*! subscript for the related functions. */
     QCString trRelatedSubscript() override
-    { return "(Chú ý những hàm này không phải là hàm thành viên.)"; }
+    {
+      return "(Chú ý những hàm này không phải là hàm thành viên.)";
+    }
 
     /*! header that is put before the detailed description of files, classes and namespaces. */
     QCString trDetailedDescription() override
-    { return "Mô tả chi tiết"; }
+    {
+      return "Mô tả chi tiết";
+    }
 
     /*! header that is used when the summary tag is missing inside the details tag */
     QCString trDetails() override
-    { return "Chi tiết"; }
+    {
+      return "Chi tiết";
+    }
 
     /*! header that is put before the list of typedefs. */
     QCString trMemberTypedefDocumentation() override
-    { return "Thông tin về Member Typedef"; }
+    {
+      return "Thông tin về Member Typedef";
+    }
 
     /*! header that is put before the list of enumerations. */
     QCString trMemberEnumerationDocumentation() override
-    { return "Thông tin về Member Enumeration"; }
+    {
+      return "Thông tin về Member Enumeration";
+    }
 
     /*! header that is put before the list of member functions. */
     QCString trMemberFunctionDocumentation() override
-    { return "Thông tin về hàm thành viên"; }
+    {
+      return "Thông tin về hàm thành viên";
+    }
 
     /*! header that is put before the list of member attributes. */
     QCString trMemberDataDocumentation() override
@@ -142,45 +156,62 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
 
     /*! this is the text of a link put after brief descriptions. */
     QCString trMore() override
-    { return "Tiếp..."; }
+    {
+      return "Tiếp...";
+    }
 
     /*! put in the class documentation */
     QCString trListOfAllMembers() override
-    { return "Liệt kê tất cả các thành viên"; }
+    {
+      return "Liệt kê tất cả các thành viên";
+    }
 
     /*! used as the title of the "list of all members" page of a class */
     QCString trMemberList() override
-    { return "Danh sách thành viên"; }
+    {
+      return "Danh sách thành viên";
+    }
 
     /*! this is the first part of a sentence that is followed by a class name */
     QCString trThisIsTheListOfAllMembers() override
-    { return "Danh sách các thành viên đầy đủ cho"; }
+    {
+      return "Danh sách các thành viên đầy đủ cho";
+    }
 
     /*! this is the remainder of the sentence after the class name */
     QCString trIncludingInheritedMembers() override
-    { return ", cùng với tất cả các thành viên kế thừa."; }
+    {
+      return ", cùng với tất cả các thành viên kế thừa.";
+    }
 
     /*! this is put at the author sections at the bottom of man pages.
      *  parameter s is name of the project name.
      */
     QCString trGeneratedAutomatically(const QCString &s) override
-    { QCString result="Được tạo ra bởi Doxygen";
-      if (!s.isEmpty()) result+=" cho "+s;
-      result+=" từ mã nguồn.";
+    {
+      QCString result = "Được tạo ra bởi Doxygen";
+      if (!s.isEmpty()) result += " cho " + s;
+      result += " từ mã nguồn.";
       return result;
     }
 
     /*! put after an enum name in the list of all members */
     QCString trEnumName() override
-    { return "tên enum"; }
+    {
+      return "tên enum";
+    }
 
     /*! put after an enum value in the list of all members */
     QCString trEnumValue() override
-    { return "giá trị enum"; }
+    {
+      return "giá trị enum";
+    }
 
     /*! put after an undocumented member in the list of all members */
     QCString trDefinedIn() override
-    { return "được định nghĩa trong"; }
+    {
+      return "được định nghĩa trong";
+    }
 
     // quick reference sections
 
@@ -188,11 +219,15 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
      *  compounds or files (see the \\group command).
      */
     QCString trModules() override
-    { return "Các Modules"; }
+    {
+      return "Các Modules";
+    }
 
     /*! This is put above each page as a link to the class hierarchy */
     QCString trClassHierarchy() override
-    { return "Kiến trúc Class"; }
+    {
+      return "Kiến trúc Class";
+    }
 
     /*! This is put above each page as a link to the list of annotated classes */
     QCString trCompoundList() override
@@ -209,7 +244,9 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
 
     /*! This is put above each page as a link to the list of documented files */
     QCString trFileList() override
-    { return "Danh mục File"; }
+    {
+      return "Danh mục File";
+    }
 
     /*! This is put above each page as a link to all members of compounds. */
     QCString trCompoundMembers() override
@@ -239,28 +276,35 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
 
     /*! This is put above each page as a link to all related pages. */
     QCString trRelatedPages() override
-    { return "Các trang liên quan"; }
+    {
+      return "Các trang liên quan";
+    }
 
     /*! This is put above each page as a link to all examples. */
     QCString trExamples() override
-    { return "Các ví dụ"; }
+    {
+      return "Các ví dụ";
+    }
 
     /*! This is put above each page as a link to the search engine. */
     QCString trSearch() override
-    { return "Tìm kiếm"; }
+    {
+      return "Tìm kiếm";
+    }
 
     /*! This is an introduction to the class hierarchy. */
     QCString trClassHierarchyDescription() override
-    { return "Danh sách kế thừa đã được sắp xếp theo ABC, "
+    {
+      return "Danh sách kế thừa đã được sắp xếp theo ABC, "
              "nhưng chưa đầy đủ:";
     }
 
     /*! This is an introduction to the list with all files. */
     QCString trFileListDescription(bool extractAll) override
     {
-      QCString result="Danh mục đầy đủ tất cả các ";
-      if (!extractAll) result+="(đã được biên soạn) ";
-      result+="files cùng với các mô tả tóm tắt:";
+      QCString result = "Danh mục đầy đủ tất cả các ";
+      if (!extractAll) result += "(đã được biên soạn) ";
+      result += "files cùng với các mô tả tóm tắt:";
       return result;
     }
 
@@ -286,40 +330,40 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
     /*! This is an introduction to the page with all class members. */
     QCString trCompoundMembersDescription(bool extractAll) override
     {
-      QCString result="Danh mục tất cả các ";
+      QCString result = "Danh mục tất cả các ";
       if (!extractAll)
       {
-        result+="(đã được mô tả) ";
+        result += "(đã được mô tả) ";
       }
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
-        result+="struct và union fields";
+        result += "struct và union fields";
       }
       else
       {
-        result+="class members";
+        result += "class members";
       }
-      result+=" cùng với các các liên kết đến ";
+      result += " cùng với các các liên kết đến ";
       if (!extractAll)
       {
         if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
         {
-          result+="Thông tin về struct/union cho từng trường:";
+          result += "Thông tin về struct/union cho từng trường:";
         }
         else
         {
-          result+="Thông tin về class cho từng thành viên:";
+          result += "Thông tin về class cho từng thành viên:";
         }
       }
       else
       {
         if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
         {
-          result+="các structures/unions thuộc:";
+          result += "các structures/unions thuộc:";
         }
         else
         {
-          result+="các lớp thuộc:";
+          result += "các lớp thuộc:";
         }
       }
       return result;
@@ -328,54 +372,66 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
     /*! This is an introduction to the page with all file members. */
     QCString trFileMembersDescription(bool extractAll) override
     {
-      QCString result="Danh sách tất cả các ";
-      if (!extractAll) result+="(đã được mô tat) ";
+      QCString result = "Danh sách tất cả các ";
+      if (!extractAll) result += "(đã được mô tat) ";
 
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
-        result+="functions, variables, defines, enums, và typedefs";
+        result += "functions, variables, defines, enums, và typedefs";
       }
       else
       {
-        result+="các file thành viên";
+        result += "các file thành viên";
       }
-      result+=" cùng với links tới ";
+      result += " cùng với links tới ";
       if (extractAll)
-        result+="các files thuộc:";
+        result += "các files thuộc:";
       else
-        result+="tài liệu:";
+        result += "tài liệu:";
       return result;
     }
 
     /*! This is an introduction to the page with the list of all examples */
     QCString trExamplesDescription() override
-    { return "Danh sách tất cả các ví dụ:"; }
+    {
+      return "Danh sách tất cả các ví dụ:";
+    }
 
     /*! This is an introduction to the page with the list of related pages */
     QCString trRelatedPagesDescription() override
-    { return "Danh sách tất cả các trang Thông tin có liên quan:"; }
+    {
+      return "Danh sách tất cả các trang Thông tin có liên quan:";
+    }
 
     /*! This is an introduction to the page with the list of class/file groups */
     QCString trModulesDescription() override
-    { return "Danh sách tất cả các thành viên:"; }
+    {
+      return "Danh sách tất cả các thành viên:";
+    }
 
     // index titles (the project name is prepended for these)
 
     /*! This is used in HTML as the title of index.html. */
     QCString trDocumentation(const QCString &projName) override
-    { return (!projName.isEmpty()?projName + " " : "") + "Thông tin"; }
+    {
+      return (!projName.isEmpty() ? projName + " " : "") + "Thông tin";
+    }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * index of all groups.
      */
     QCString trModuleIndex() override
-    { return "Chỉ mục (Index) Module"; }
+    {
+      return "Chỉ mục (Index) Module";
+    }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * class hierarchy.
      */
     QCString trHierarchicalIndex() override
-    { return "Hierarchical Index"; }
+    {
+      return "Hierarchical Index";
+    }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * annotated compound index.
@@ -396,13 +452,17 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
      * list of all files.
      */
     QCString trFileIndex() override
-    { return "File Index"; }
+    {
+      return "File Index";
+    }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all groups.
      */
     QCString trModuleDocumentation() override
-    { return "Thông tin về các Module"; }
+    {
+      return "Thông tin về các Module";
+    }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all classes, structs and unions.
@@ -415,7 +475,7 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
       }
       else if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
       {
-          return trDesignUnitDocumentation();
+        return trDesignUnitDocumentation();
       }
       else
       {
@@ -427,77 +487,103 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
      *  the documentation of all files.
      */
     QCString trFileDocumentation() override
-    { return "Thông tin về File"; }
+    {
+      return "Thông tin về File";
+    }
 
     /*! This is used in LaTeX as the title of the document */
     QCString trReferenceManual() override
-    { return "Thông tin tham chiếu"; }
+    {
+      return "Thông tin tham chiếu";
+    }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of defines
      */
     QCString trDefines() override
-    { return "Định nghĩa"; }
+    {
+      return "Định nghĩa";
+    }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of typedefs
      */
     QCString trTypedefs() override
-    { return "Typedefs"; }
+    {
+      return "Typedefs";
+    }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of enumerations
      */
     QCString trEnumerations() override
-    { return "Enumerations"; }
+    {
+      return "Enumerations";
+    }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of (global) functions
      */
     QCString trFunctions() override
-    { return "Các hàm"; }
+    {
+      return "Các hàm";
+    }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of (global) variables
      */
     QCString trVariables() override
-    { return "Các biến"; }
+    {
+      return "Các biến";
+    }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of (global) variables
      */
     QCString trEnumerationValues() override
-    { return "Enumerator"; }
+    {
+      return "Enumerator";
+    }
 
     /*! This is used in the documentation of a file before the list of
      *  documentation blocks for defines
      */
     QCString trDefineDocumentation() override
-    { return "Thông tin về định nghĩa"; }
+    {
+      return "Thông tin về định nghĩa";
+    }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for typedefs
      */
     QCString trTypedefDocumentation() override
-    { return "Thông tin về Typedef"; }
+    {
+      return "Thông tin về Typedef";
+    }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for enumeration types
      */
     QCString trEnumerationTypeDocumentation() override
-    { return "Thông tin về Enumeration Type"; }
+    {
+      return "Thông tin về Enumeration Type";
+    }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for functions
      */
     QCString trFunctionDocumentation() override
-    { return "Thông tin về hàm"; }
+    {
+      return "Thông tin về hàm";
+    }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for variables
      */
     QCString trVariableDocumentation() override
-    { return "Thông tin về các biến"; }
+    {
+      return "Thông tin về các biến";
+    }
 
     /*! This is used in the documentation of a file/namespace/group before
      *  the list of links to documented compounds
@@ -517,66 +603,84 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
     /*! This is used in the standard footer of each page and indicates when
      *  the page was generated
      */
-    QCString trGeneratedAt(const QCString &date,const QCString &projName) override
+    QCString trGeneratedAt(const QCString &date, const QCString &projName) override
     {
-      QCString result="Được biên soạn vào "+date;
-      if (!projName.isEmpty()) result+=" cho mã nguồn dự án "+projName;
-      result+=" bởi";
+      QCString result = "Được biên soạn vào " + date;
+      if (!projName.isEmpty()) result += " cho mã nguồn dự án " + projName;
+      result += " bởi";
       return result;
     }
 
     /*! this text is put before a class diagram */
     QCString trClassDiagram(const QCString &clName) override
     {
-      return "Sơ đồ kế thừa cho "+clName+":";
+      return "Sơ đồ kế thừa cho " + clName + ":";
     }
 
     /*! this text is generated when the \\warning command is used. */
     QCString trWarning() override
-    { return "Lưu ý"; }
+    {
+      return "Lưu ý";
+    }
 
     /*! this text is generated when the \\version command is used. */
     QCString trVersion() override
-    { return "Phiên bản"; }
+    {
+      return "Phiên bản";
+    }
 
     /*! this text is generated when the \\date command is used. */
     QCString trDate() override
-    { return "Ngày"; }
+    {
+      return "Ngày";
+    }
 
     /*! this text is generated when the \\return command is used. */
     QCString trReturns() override
-    { return "Giá trị trả về"; }
+    {
+      return "Giá trị trả về";
+    }
 
     /*! this text is generated when the \\sa command is used. */
     QCString trSeeAlso() override
-    { return "Xem thêm"; }
+    {
+      return "Xem thêm";
+    }
 
     /*! this text is generated when the \\param command is used. */
     QCString trParameters() override
-    { return "Các tham số"; }
+    {
+      return "Các tham số";
+    }
 
     /*! this text is generated when the \\exception command is used. */
     QCString trExceptions() override
-    { return "Exceptions"; }
+    {
+      return "Exceptions";
+    }
 
     /*! this text is used in the title page of a LaTeX document. */
     QCString trGeneratedBy() override
-    { return "Được biên soạn bởi"; }
+    {
+      return "Được biên soạn bởi";
+    }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 0.49-990307
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 0.49-990307
+    //////////////////////////////////////////////////////////////////////////
 
     /*! used as the title of page containing all the index of all namespaces. */
     QCString trNamespaceList() override
-    { return "Danh sách Namespace"; }
+    {
+      return "Danh sách Namespace";
+    }
 
     /*! used as an introduction to the namespace list */
     QCString trNamespaceListDescription(bool extractAll) override
     {
-      QCString result="Danh sách tất cả các ";
-      if (!extractAll) result+="(đã được biên tập) ";
-      result+="namespaces với mô tả tóm tắt:";
+      QCString result = "Danh sách tất cả các ";
+      if (!extractAll) result += "(đã được biên tập) ";
+      result += "namespaces với mô tả tóm tắt:";
       return result;
     }
 
@@ -584,80 +688,104 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
      *  friends of a class
      */
     QCString trFriends() override
-    { return "Friends"; }
+    {
+      return "Friends";
+    }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 0.49-990405
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 0.49-990405
+    //////////////////////////////////////////////////////////////////////////
 
     /*! used in the class documentation as a header before the list of all
      * related classes
      */
     QCString trRelatedFunctionDocumentation() override
-    { return "Thông tin về Friends và các hàm liên quan"; }
+    {
+      return "Thông tin về Friends và các hàm liên quan";
+    }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 0.49-990425
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 0.49-990425
+    //////////////////////////////////////////////////////////////////////////
 
     /*! used as the title of the HTML page of a class/struct/union */
-    QCString trCompoundReference(const QCString &clName,
-                                    ClassDef::CompoundType compType,
-                                    bool isTemplate) override
+    QCString trCompoundReference(const QCString        &clName,
+                                 ClassDef::CompoundType compType,
+                                 bool                   isTemplate) override
     {
-      QCString result=clName;
-      switch(compType)
+      QCString result = clName;
+      switch (compType)
       {
-        case ClassDef::Class:      result+=" Class"; break;
-        case ClassDef::Struct:     result+=" Struct"; break;
-        case ClassDef::Union:      result+=" Union"; break;
-        case ClassDef::Interface:  result+=" Interface"; break;
-        case ClassDef::Protocol:   result+=" Protocol"; break;
-        case ClassDef::Category:   result+=" Category"; break;
-        case ClassDef::Exception:  result+=" Exception"; break;
-        default: break;
+      case ClassDef::Class: result += " Class"; break;
+      case ClassDef::Struct: result += " Struct"; break;
+      case ClassDef::Union: result += " Union"; break;
+      case ClassDef::Interface: result += " Interface"; break;
+      case ClassDef::Protocol: result += " Protocol"; break;
+      case ClassDef::Category: result += " Category"; break;
+      case ClassDef::Exception: result += " Exception"; break;
+      default: break;
       }
-      if (isTemplate) result+=" Template";
-      result+=" Tham chiếu";
+      if (isTemplate) result += " Template";
+      result += " Tham chiếu";
       return result;
     }
 
     /*! used as the title of the HTML page of a file */
     QCString trFileReference(const QCString &fileName) override
     {
-      QCString result=fileName;
-      result+=" File Tham chiếu";
+      QCString result = fileName;
+      result += " File Tham chiếu";
       return result;
     }
 
     /*! used as the title of the HTML page of a namespace */
     QCString trNamespaceReference(const QCString &namespaceName) override
     {
-      QCString result=namespaceName;
-      result+=" Namespace Tham chiếu";
+      QCString result = namespaceName;
+      result += " Namespace Tham chiếu";
       return result;
     }
 
     QCString trPublicMembers() override
-    { return "Các hàm thành viên Public"; }
+    {
+      return "Các hàm thành viên Public";
+    }
     QCString trPublicSlots() override
-    { return "Public Slots"; }
+    {
+      return "Public Slots";
+    }
     QCString trSignals() override
-    { return "Signals"; }
+    {
+      return "Signals";
+    }
     QCString trStaticPublicMembers() override
-    { return "Các hàm Static Public"; }
+    {
+      return "Các hàm Static Public";
+    }
     QCString trProtectedMembers() override
-    { return "Các hàm thành viên Protected"; }
+    {
+      return "Các hàm thành viên Protected";
+    }
     QCString trProtectedSlots() override
-    { return "Protected Slots"; }
+    {
+      return "Protected Slots";
+    }
     QCString trStaticProtectedMembers() override
-    { return "Các hàm thành viên Static Protected"; }
+    {
+      return "Các hàm thành viên Static Protected";
+    }
     QCString trPrivateMembers() override
-    { return "Các hàm thành viên Private"; }
+    {
+      return "Các hàm thành viên Private";
+    }
     QCString trPrivateSlots() override
-    { return "Private Slots"; }
+    {
+      return "Private Slots";
+    }
     QCString trStaticPrivateMembers() override
-    { return "Các hàm thành viên Static Private"; }
+    {
+      return "Các hàm thành viên Static Private";
+    }
 
     /*! this function is used to produce a comma-separated list of items.
      *  use generateMarker(i) to indicate where item i should be put.
@@ -666,18 +794,18 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
     {
       QCString result;
       // the inherits list contain `numEntries' classes
-      for (int i=0;i<numEntries;i++)
+      for (int i = 0; i < numEntries; i++)
       {
         // use generateMarker to generate placeholders for the class links!
-        result+=generateMarker(i); // generate marker for entry i in the list
-                                   // (order is left to right)
+        result += generateMarker(i); // generate marker for entry i in the list
+                                     // (order is left to right)
 
-        if (i!=numEntries-1)  // not the last entry, so we need a separator
+        if (i != numEntries - 1) // not the last entry, so we need a separator
         {
-          if (i<numEntries-2) // not the fore last entry
-            result+=", ";
-          else                // the fore last entry
-            result+=", và ";
+          if (i < numEntries - 2) // not the fore last entry
+            result += ", ";
+          else // the fore last entry
+            result += ", và ";
         }
       }
       return result;
@@ -688,7 +816,7 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
      */
     QCString trInheritsList(int numEntries) override
     {
-      return "Kế thừa "+trWriteList(numEntries)+".";
+      return "Kế thừa " + trWriteList(numEntries) + ".";
     }
 
     /*! used in class documentation to produce a list of super classes,
@@ -696,7 +824,7 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
      */
     QCString trInheritedByList(int numEntries) override
     {
-      return "Được kế thừa bởi "+trWriteList(numEntries)+".";
+      return "Được kế thừa bởi " + trWriteList(numEntries) + ".";
     }
 
     /*! used in member documentation blocks to produce a list of
@@ -704,7 +832,7 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
      */
     QCString trReimplementedFromList(int numEntries) override
     {
-      return "Được thực thi lại từ "+trWriteList(numEntries)+".";
+      return "Được thực thi lại từ " + trWriteList(numEntries) + ".";
     }
 
     /*! used in member documentation blocks to produce a list of
@@ -712,96 +840,110 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
      */
     QCString trReimplementedInList(int numEntries) override
     {
-      return "Được thực thi lại trong "+trWriteList(numEntries)+".";
+      return "Được thực thi lại trong " + trWriteList(numEntries) + ".";
     }
 
     /*! This is put above each page as a link to all members of namespaces. */
     QCString trNamespaceMembers() override
-    { return "Thành viên Namespace"; }
+    {
+      return "Thành viên Namespace";
+    }
 
     /*! This is an introduction to the page with all namespace members */
     QCString trNamespaceMemberDescription(bool extractAll) override
     {
-      QCString result="Danh sách tất cả các ";
-      if (!extractAll) result+="(đã được biên soạn) ";
-      result+="các thành viên namespace cùng với link tới ";
+      QCString result = "Danh sách tất cả các ";
+      if (!extractAll) result += "(đã được biên soạn) ";
+      result += "các thành viên namespace cùng với link tới ";
       if (extractAll)
-        result+="Thông tin namespace cho từng thành viên:";
+        result += "Thông tin namespace cho từng thành viên:";
       else
-        result+=" namespaces mà phụ thuộc bởi:";
+        result += " namespaces mà phụ thuộc bởi:";
       return result;
     }
     /*! This is used in LaTeX as the title of the chapter with the
      *  index of all namespaces.
      */
     QCString trNamespaceIndex() override
-    { return "Namespace Index"; }
+    {
+      return "Namespace Index";
+    }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all namespaces.
      */
     QCString trNamespaceDocumentation() override
-    { return "Thông tin về Namespace"; }
+    {
+      return "Thông tin về Namespace";
+    }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 0.49-990522
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 0.49-990522
+    //////////////////////////////////////////////////////////////////////////
 
     /*! This is used in the documentation before the list of all
      *  namespaces in a file.
      */
     QCString trNamespaces() override
-    { return "Namespaces"; }
+    {
+      return "Namespaces";
+    }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 0.49-990728
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 0.49-990728
+    //////////////////////////////////////////////////////////////////////////
 
     /*! This is put at the bottom of a class documentation page and is
      *  followed by a list of files that were used to generate the page.
      */
-    QCString trGeneratedFromFiles(ClassDef::CompoundType compType,bool) override
+    QCString trGeneratedFromFiles(ClassDef::CompoundType compType, bool) override
     { // here s is one of " Class", " Struct" or " Union"
       // single is true implies a single file
-      QCString result="Thông tin cho ";
-      switch(compType)
+      QCString result = "Thông tin cho ";
+      switch (compType)
       {
-        case ClassDef::Class:      result+="class"; break;
-        case ClassDef::Struct:     result+="struct"; break;
-        case ClassDef::Union:      result+="union"; break;
-        case ClassDef::Interface:  result+="interface"; break;
-        case ClassDef::Protocol:   result+="protocol"; break;
-        case ClassDef::Category:   result+="category"; break;
-        case ClassDef::Exception:  result+="exception"; break;
-        default: break;
+      case ClassDef::Class: result += "class"; break;
+      case ClassDef::Struct: result += "struct"; break;
+      case ClassDef::Union: result += "union"; break;
+      case ClassDef::Interface: result += "interface"; break;
+      case ClassDef::Protocol: result += "protocol"; break;
+      case ClassDef::Category: result += "category"; break;
+      case ClassDef::Exception: result += "exception"; break;
+      default: break;
       }
-      result+=" được biên soạn từ các file sau đây";
-      result+=":";
+      result += " được biên soạn từ các file sau đây";
+      result += ":";
       return result;
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 0.49-990901
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 0.49-990901
+    //////////////////////////////////////////////////////////////////////////
 
     /*! This is used as the heading text for the retval command. */
     QCString trReturnValues() override
-    { return "Các giá trị trả về"; }
+    {
+      return "Các giá trị trả về";
+    }
 
     /*! This is in the (quick) index as a link to the main page (index.html)
      */
     QCString trMainPage() override
-    { return "Tranh chính"; }
+    {
+      return "Tranh chính";
+    }
 
     /*! This is used in references to page that are put in the LaTeX
      *  documentation. It should be an abbreviation of the word page.
      */
     QCString trPageAbbreviation() override
-    { return "tr."; }
+    {
+      return "tr.";
+    }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 0.49-991003
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 0.49-991003
+    //////////////////////////////////////////////////////////////////////////
 
     QCString trDefinedAtLineInSourceFile() override
     {
@@ -812,28 +954,28 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
       return "Định nghĩa trong file @0.";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 0.49-991205
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 0.49-991205
+    //////////////////////////////////////////////////////////////////////////
 
     QCString trDeprecated() override
     {
       return "Không tán thành";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.0.0
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.0.0
+    //////////////////////////////////////////////////////////////////////////
 
     /*! this text is put before a collaboration diagram */
     QCString trCollaborationDiagram(const QCString &clName) override
     {
-      return "Sơ đồ liên kết cho "+clName+":";
+      return "Sơ đồ liên kết cho " + clName + ":";
     }
     /*! this text is put before an include dependency graph */
     QCString trInclDepGraph(const QCString &fName) override
     {
-      return "Kèm theo graph phụ thuộc cho "+fName+":";
+      return "Kèm theo graph phụ thuộc cho " + fName + ":";
     }
     /*! header that is put before the list of constructor/destructors. */
     QCString trConstructorDocumentation() override
@@ -892,9 +1034,9 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
       return "Chỉ mục trang";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.1.0
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.1.0
+    //////////////////////////////////////////////////////////////////////////
 
     QCString trNote() override
     {
@@ -944,9 +1086,9 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
       return "Các thuộc tính Static Private";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.1.3
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.1.3
+    //////////////////////////////////////////////////////////////////////////
 
     /*! Used as a marker that is put before a \\todo item */
     QCString trTodo() override
@@ -959,9 +1101,9 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
       return "Danh sách hàng mục cần thực hiện";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.1.4
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.1.4
+    //////////////////////////////////////////////////////////////////////////
 
     QCString trReferencedBy() override
     {
@@ -985,9 +1127,9 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
       return "Từ";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.1.5
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.1.5
+    //////////////////////////////////////////////////////////////////////////
 
     /*! title of the graph legend page */
     QCString trLegendTitle() override
@@ -999,64 +1141,64 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
      */
     QCString trLegendDocs() override
     {
-      return
-        "Trang này giải nghĩa các biểu đồ được biên soạn bởi "
-        " doxygen.<p>\n"
-        "Hãy xem xét các ví dụ sau:\n"
-        "\\code\n"
-        "/*! Các lướp không thấy được bởi sự cắt ngắn */\n"
-        "Lớp không nhìn thấy class { };\n\n"
-        "/*! class bị cắt, quan hệ kế thừa bị ẩn */\n"
-        "class bị cắt : bị ẩn toàn cục { };\n\n"
-        "/* Class không được mô tả với các chú giải doxygen */\n"
-        "class không được mô tả { };\n\n"
-        "/*! Class được kế thừa sử dụng các kế thừa public */\n"
-        "class PublicBase : public Truncated { };\n\n"
-        "/*!  template class */\n"
-        "template<class T> class Templ { };\n\n"
-        "/*! Class được kế thừa sử dụng kế thừa protected */\n"
-        "class ProtectedBase { };\n\n"
-        "/*! Class được kế thừa sử dụng kế thừa protected private */\n"
-        "class PrivateBase { };\n\n"
-        "/*! Class được sử dụng bởi các class kế thừa */\n"
-        "class được sử dụng { };\n\n"
-        "/*! Super class kế thừa một số các class khác */\n"
-        "class được kế thừa : public PublicBase,\n"
-        "                  protected ProtectedBase,\n"
-        "                  private PrivateBase,\n"
-        "                  public Undocumented,\n"
-        "                  public Templ<int>\n"
-        "{\n"
-        "  private:\n"
-        "    Used *m_usedClass;\n"
-        "};\n"
-        "\\endcode\n"
-        "Kết quả trong biểu đồ sau đây:"
-        "<p><center><img alt=\"\" src=\"graph_legend."+getDotImageExtension()+"\"></center>\n"
-        "<p>\n"
-        "Các hộp trong biểu đồ trên có ý nghĩa như sau:\n"
-        "<ul>\n"
-        "<li>%Hộp màu xám biểu thị cấu trúc clas cho "
-        "biểu đồ được thể hiện.\n"
-        "<li>%Hộp có khung mầu đen biểu thị struct hoặc class được mô tả.\n"
-        "<li>%Hộp có khung mầu xám biểu thị struct hoặc class chưa được mô tả.\n"
-        "<li>%Hộp có khung mầu đỏ biểu thị struct hoặc class được mổ tả "
-        "khi mà không phải tất cả các quan hệ kế thừa/containment được biển diễn.. %Biểu đồ bị "
-        "cắt nếu nó không nằm trọn trong các biên được cho trước..\n"
-        "</ul>\n"
-        "Các mũi tên có ý nghĩa như sau::\n"
-        "<ul>\n"
-        "<li>%Mũi tên mầu xanh đậm biểu thị các quan hệ kế thừa công khai "
-        "giữa 2 class.\n"
-        "<li>%Mũi tên màu xanh lá cây đậm biểu thị kế thừa được bảo về (protected).\n"
-        "<li>%Mũi tên đỏ đậm biểu thị kế thừa dạng private.\n"
-        "<li>%Mũi tên màu hồng đứt quảng biểu thị class được sử dụng "
-        "bởi class khác. Mũi tên được gán nhãn với các giá trị "
-        "mà các calsss hoặc struct được truy cập tới.\n"
-        "<li>%Mũi tên vàng đắt quãng được thị quan hệ giữa template instance và "
-        "template class được dẫn xuất từ đó. Mũi tên được gán nhãn với "
-        "tham số của template.\n"
-        "</ul>\n";
+      return "Trang này giải nghĩa các biểu đồ được biên soạn bởi "
+             " doxygen.<p>\n"
+             "Hãy xem xét các ví dụ sau:\n"
+             "\\code\n"
+             "/*! Các lướp không thấy được bởi sự cắt ngắn */\n"
+             "Lớp không nhìn thấy class { };\n\n"
+             "/*! class bị cắt, quan hệ kế thừa bị ẩn */\n"
+             "class bị cắt : bị ẩn toàn cục { };\n\n"
+             "/* Class không được mô tả với các chú giải doxygen */\n"
+             "class không được mô tả { };\n\n"
+             "/*! Class được kế thừa sử dụng các kế thừa public */\n"
+             "class PublicBase : public Truncated { };\n\n"
+             "/*!  template class */\n"
+             "template<class T> class Templ { };\n\n"
+             "/*! Class được kế thừa sử dụng kế thừa protected */\n"
+             "class ProtectedBase { };\n\n"
+             "/*! Class được kế thừa sử dụng kế thừa protected private */\n"
+             "class PrivateBase { };\n\n"
+             "/*! Class được sử dụng bởi các class kế thừa */\n"
+             "class được sử dụng { };\n\n"
+             "/*! Super class kế thừa một số các class khác */\n"
+             "class được kế thừa : public PublicBase,\n"
+             "                  protected ProtectedBase,\n"
+             "                  private PrivateBase,\n"
+             "                  public Undocumented,\n"
+             "                  public Templ<int>\n"
+             "{\n"
+             "  private:\n"
+             "    Used *m_usedClass;\n"
+             "};\n"
+             "\\endcode\n"
+             "Kết quả trong biểu đồ sau đây:"
+             "<p><center><img alt=\"\" src=\"graph_legend." +
+             getDotImageExtension() + "\"></center>\n"
+                                      "<p>\n"
+                                      "Các hộp trong biểu đồ trên có ý nghĩa như sau:\n"
+                                      "<ul>\n"
+                                      "<li>%Hộp màu xám biểu thị cấu trúc clas cho "
+                                      "biểu đồ được thể hiện.\n"
+                                      "<li>%Hộp có khung mầu đen biểu thị struct hoặc class được mô tả.\n"
+                                      "<li>%Hộp có khung mầu xám biểu thị struct hoặc class chưa được mô tả.\n"
+                                      "<li>%Hộp có khung mầu đỏ biểu thị struct hoặc class được mổ tả "
+                                      "khi mà không phải tất cả các quan hệ kế thừa/containment được biển diễn.. %Biểu đồ bị "
+                                      "cắt nếu nó không nằm trọn trong các biên được cho trước..\n"
+                                      "</ul>\n"
+                                      "Các mũi tên có ý nghĩa như sau::\n"
+                                      "<ul>\n"
+                                      "<li>%Mũi tên mầu xanh đậm biểu thị các quan hệ kế thừa công khai "
+                                      "giữa 2 class.\n"
+                                      "<li>%Mũi tên màu xanh lá cây đậm biểu thị kế thừa được bảo về (protected).\n"
+                                      "<li>%Mũi tên đỏ đậm biểu thị kế thừa dạng private.\n"
+                                      "<li>%Mũi tên màu hồng đứt quảng biểu thị class được sử dụng "
+                                      "bởi class khác. Mũi tên được gán nhãn với các giá trị "
+                                      "mà các calsss hoặc struct được truy cập tới.\n"
+                                      "<li>%Mũi tên vàng đắt quãng được thị quan hệ giữa template instance và "
+                                      "template class được dẫn xuất từ đó. Mũi tên được gán nhãn với "
+                                      "tham số của template.\n"
+                                      "</ul>\n";
     }
     /*! text for the link to the legend page */
     QCString trLegend() override
@@ -1064,9 +1206,9 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
       return "Chú giải";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.2.0
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.2.0
+    //////////////////////////////////////////////////////////////////////////
 
     /*! Used as a marker that is put before a test item */
     QCString trTest() override
@@ -1079,9 +1221,9 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
       return "Danh sách Test";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.2.2
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.2.2
+    //////////////////////////////////////////////////////////////////////////
 
     /*! Used as a section header for IDL properties */
     QCString trProperties() override
@@ -1094,9 +1236,9 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
       return "Thông tin thuộc tính (Property)";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.2.4
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.2.4
+    //////////////////////////////////////////////////////////////////////////
 
     /*! Used for Java classes in the summary section of Java packages */
     QCString trClasses() override
@@ -1113,7 +1255,7 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
     /*! Used as the title of a Java package */
     QCString trPackage(const QCString &name) override
     {
-      return "Gói "+name;
+      return "Gói " + name;
     }
     /*! The description of the package index page */
     QCString trPackageListDescription() override
@@ -1131,9 +1273,9 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
       return "Giá trị:";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.2.5
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.2.5
+    //////////////////////////////////////////////////////////////////////////
 
     /*! Used as a marker that is put before a \\bug item */
     QCString trBug() override
@@ -1146,9 +1288,9 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
       return "Danh sách lỗi";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.2.6
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.2.6
+    //////////////////////////////////////////////////////////////////////////
 
     /*! Used as ansicpg for RTF file
      *
@@ -1258,9 +1400,9 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
       return createNoun(first_capital, singular, "global", "s");
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.2.7
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.2.7
+    //////////////////////////////////////////////////////////////////////////
 
     /*! This text is generated when the \\author command is used and
      *  for the author section in man pages. */
@@ -1269,9 +1411,9 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
       return createNoun(first_capital, singular, "tác giả", "");
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.2.11
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.2.11
+    //////////////////////////////////////////////////////////////////////////
 
     /*! This text is put before the list of members referenced by a member
      */
@@ -1280,16 +1422,16 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
       return "Tham chiếu";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.2.13
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.2.13
+    //////////////////////////////////////////////////////////////////////////
 
     /*! used in member documentation blocks to produce a list of
      *  members that are implemented by this one.
      */
     QCString trImplementedFromList(int numEntries) override
     {
-      return "Thực hiện "+trWriteList(numEntries)+".";
+      return "Thực hiện " + trWriteList(numEntries) + ".";
     }
 
     /*! used in member documentation blocks to produce a list of
@@ -1297,12 +1439,12 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
      */
     QCString trImplementedInList(int numEntries) override
     {
-      return "Được thực hiện trong "+trWriteList(numEntries)+".";
+      return "Được thực hiện trong " + trWriteList(numEntries) + ".";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.2.16
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.2.16
+    //////////////////////////////////////////////////////////////////////////
 
     /*! used in RTF documentation as a heading for the Table
      *  of Contents.
@@ -1312,9 +1454,9 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
       return "Mục lục";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.2.17
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.2.17
+    //////////////////////////////////////////////////////////////////////////
 
     /*! Used as the header of the list of item that have been
      *  flagged deprecated
@@ -1324,9 +1466,9 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
       return "Danh sách Deprecated";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.2.18
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.2.18
+    //////////////////////////////////////////////////////////////////////////
 
     /*! Used as a header for declaration section of the events found in
      * a C# program
@@ -1341,9 +1483,9 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
       return "Thông tin về sự kiện";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.3
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.3
+    //////////////////////////////////////////////////////////////////////////
 
     /*! Used as a heading for a list of Java class types with package scope.
      */
@@ -1384,9 +1526,9 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
       return "Các thuộc tính Static Package";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.3.1
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.3.1
+    //////////////////////////////////////////////////////////////////////////
 
     /*! Used in the quick index of a class/file/namespace member list page
      *  to link to the unfiltered list of all members.
@@ -1401,9 +1543,9 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
       return "Biểu đồ các lời gọi cho hàm này:";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.3.3
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.3.3
+    //////////////////////////////////////////////////////////////////////////
 
     /*! This string is used as the title for the page listing the search
      *  results.
@@ -1422,11 +1564,11 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
      */
     QCString trSearchResults(int numDocuments) override
     {
-      if (numDocuments==0)
+      if (numDocuments == 0)
       {
         return "Không có tài liệu nào thỏa mãn các truy vấn của bạn.";
       }
-      else if (numDocuments==1)
+      else if (numDocuments == 1)
       {
         return "Tìm thấy <b>1</b> tài liệu thỏa mã truy vấn của bạn.";
       }
@@ -1444,44 +1586,54 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
       return "Các kết quả thỏa mãn đk:";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.3.8
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.3.8
+    //////////////////////////////////////////////////////////////////////////
 
     /*! This is used in HTML as the title of page with source code for file filename
      */
-    QCString trSourceFile(const QCString& filename) override
+    QCString trSourceFile(const QCString &filename) override
     {
       return filename + " File nguồn";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.3.9
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.3.9
+    //////////////////////////////////////////////////////////////////////////
 
     /*! This is used as the name of the chapter containing the directory
      *  hierarchy.
      */
     QCString trDirIndex() override
-    { return "Cấu trúc thư mục"; }
+    {
+      return "Cấu trúc thư mục";
+    }
 
     /*! This is used as the name of the chapter containing the documentation
      *  of the directories.
      */
     QCString trDirDocumentation() override
-    { return "Thông tin về thư mục"; }
+    {
+      return "Thông tin về thư mục";
+    }
 
     /*! This is used as the title of the directory index and also in the
      *  Quick links of an HTML page, to link to the directory hierarchy.
      */
     QCString trDirectories() override
-    { return "Các thư mục"; }
+    {
+      return "Các thư mục";
+    }
 
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.
      */
     QCString trDirReference(const QCString &dirName) override
-    { QCString result=dirName; result+=" Tham chiếu thư mục"; return result; }
+    {
+      QCString result = dirName;
+      result += " Tham chiếu thư mục";
+      return result;
+    }
 
     /*! This returns the word directory with or without starting capital
      *  (\a first_capital) and in sigular or plural form (\a singular).
@@ -1491,23 +1643,23 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
       return createNoun(first_capital, false, "thư mục", "");
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.4.1
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.4.1
+    //////////////////////////////////////////////////////////////////////////
 
     /*! This text is added to the documentation when the \\overload command
      *  is used for a overloaded function.
      */
     QCString trOverloadText() override
     {
-       return "Hàm thành viên dạng overloaded, "
-              "được chỉ ra cho việc tra cứu dễ dàng. Nó khác với hàm ở trên"
-              "chỉ ở chỗ những tham số nào nó chấp nhận.";
+      return "Hàm thành viên dạng overloaded, "
+             "được chỉ ra cho việc tra cứu dễ dàng. Nó khác với hàm ở trên"
+             "chỉ ở chỗ những tham số nào nó chấp nhận.";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.4.6
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.4.6
+    //////////////////////////////////////////////////////////////////////////
 
     /*! This is used to introduce a caller (or called-by) graph */
     QCString trCallerGraph() override
@@ -1519,45 +1671,55 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
      *  of documentation blocks for enumeration values
      */
     QCString trEnumerationValueDocumentation() override
-    { return "Thông tin Enumerator"; }
+    {
+      return "Thông tin Enumerator";
+    }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.5.4 (mainly for Fortran)
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.5.4 (mainly for Fortran)
+    //////////////////////////////////////////////////////////////////////////
 
     /*! header that is put before the list of member subprograms (Fortran). */
     QCString trMemberFunctionDocumentationFortran() override
-    { return "Thông tin về các hàm và các thủ tục thành viên"; }
+    {
+      return "Thông tin về các hàm và các thủ tục thành viên";
+    }
 
     /*! This is put above each page as a link to the list of annotated data types (Fortran). */
     QCString trCompoundListFortran() override
-    { return "Danh sách kiêu dữ liệu"; }
+    {
+      return "Danh sách kiêu dữ liệu";
+    }
 
     /*! This is put above each page as a link to all members of compounds (Fortran). */
     QCString trCompoundMembersFortran() override
-    { return "Trường dữ liệu"; }
+    {
+      return "Trường dữ liệu";
+    }
 
     /*! This is an introduction to the annotated compound list (Fortran). */
     QCString trCompoundListDescriptionFortran() override
-    { return "Kiểu dữ liệu với các mô tả tóm tắt:"; }
+    {
+      return "Kiểu dữ liệu với các mô tả tóm tắt:";
+    }
 
     /*! This is an introduction to the page with all data types (Fortran). */
     QCString trCompoundMembersDescriptionFortran(bool extractAll) override
     {
-      QCString result="Danh sách tất cả ";
+      QCString result = "Danh sách tất cả ";
       if (!extractAll)
       {
-        result+="(đã được mô tả) ";
+        result += "(đã được mô tả) ";
       }
-      result+="các kiểu dữ liệu thành viên";
-      result+=" cùng với liên kết với ";
+      result += "các kiểu dữ liệu thành viên";
+      result += " cùng với liên kết với ";
       if (!extractAll)
       {
-         result+="Thông tin cấu trúc dữ liệu cho từng thành viên";
+        result += "Thông tin cấu trúc dữ liệu cho từng thành viên";
       }
       else
       {
-         result+=" các kiểu dữ liệu thuộc:";
+        result += " các kiểu dữ liệu thuộc:";
       }
       return result;
     }
@@ -1566,91 +1728,105 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
      * annotated compound index (Fortran).
      */
     QCString trCompoundIndexFortran() override
-    { return "Chỉ mục kiểu dữ liệu"; }
+    {
+      return "Chỉ mục kiểu dữ liệu";
+    }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all data types (Fortran).
      */
     QCString trTypeDocumentation() override
-    { return "Thông tin về kiểu dữ liệu"; }
+    {
+      return "Thông tin về kiểu dữ liệu";
+    }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of (global) subprograms (Fortran).
      */
     QCString trSubprograms() override
-    { return "Functions/Subroutines"; }
+    {
+      return "Functions/Subroutines";
+    }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for subprograms (Fortran)
      */
     QCString trSubprogramDocumentation() override
-    { return "Thông tin về Function/Subroutine"; }
+    {
+      return "Thông tin về Function/Subroutine";
+    }
 
     /*! This is used in the documentation of a file/namespace/group before
      *  the list of links to documented compounds (Fortran)
      */
-     QCString trDataTypes() override
-    { return "Kiểu dữ liệu"; }
+    QCString trDataTypes() override
+    {
+      return "Kiểu dữ liệu";
+    }
 
     /*! used as the title of page containing all the index of all modules (Fortran). */
     QCString trModulesList() override
-    { return "Danh sách Modules"; }
+    {
+      return "Danh sách Modules";
+    }
 
     /*! used as an introduction to the modules list (Fortran) */
     QCString trModulesListDescription(bool extractAll) override
     {
-      QCString result="Danh sách tất cả ";
-      if (!extractAll) result+="(đã được mô tả) ";
-      result+="các module với mô tả tóm tắt:";
+      QCString result = "Danh sách tất cả ";
+      if (!extractAll) result += "(đã được mô tả) ";
+      result += "các module với mô tả tóm tắt:";
       return result;
     }
 
     /*! used as the title of the HTML page of a module/type (Fortran) */
-    QCString trCompoundReferenceFortran(const QCString &clName,
-                                    ClassDef::CompoundType compType,
-                                    bool isTemplate) override
+    QCString trCompoundReferenceFortran(const QCString        &clName,
+                                        ClassDef::CompoundType compType,
+                                        bool                   isTemplate) override
     {
-      QCString result=clName;
-      switch(compType)
+      QCString result = clName;
+      switch (compType)
       {
-        case ClassDef::Class:      result+=" Module"; break;
-        case ClassDef::Struct:     result+=" Type"; break;
-        case ClassDef::Union:      result+=" Union"; break;
-        case ClassDef::Interface:  result+=" Interface"; break;
-        case ClassDef::Protocol:   result+=" Protocol"; break;
-        case ClassDef::Category:   result+=" Category"; break;
-        case ClassDef::Exception:  result+=" Exception"; break;
-        default: break;
+      case ClassDef::Class: result += " Module"; break;
+      case ClassDef::Struct: result += " Type"; break;
+      case ClassDef::Union: result += " Union"; break;
+      case ClassDef::Interface: result += " Interface"; break;
+      case ClassDef::Protocol: result += " Protocol"; break;
+      case ClassDef::Category: result += " Category"; break;
+      case ClassDef::Exception: result += " Exception"; break;
+      default: break;
       }
-      if (isTemplate) result+=" Template";
-      result+=" Tham chiếu";
+      if (isTemplate) result += " Template";
+      result += " Tham chiếu";
       return result;
     }
     /*! used as the title of the HTML page of a module (Fortran) */
     QCString trModuleReference(const QCString &namespaceName) override
     {
-      QCString result=namespaceName;
-      result+=" Tham chiếu Module";
+      QCString result = namespaceName;
+      result += " Tham chiếu Module";
       return result;
     }
 
     /*! This is put above each page as a link to all members of modules. (Fortran) */
     QCString trModulesMembers() override
-    { return "Thành viên Module"; }
+    {
+      return "Thành viên Module";
+    }
 
     /*! This is an introduction to the page with all modules members (Fortran) */
     QCString trModulesMemberDescription(bool extractAll) override
     {
-      QCString result="Danh sách tất cả ";
-      if (!extractAll) result+="(đã được mô tả) ";
-      result+="các module thành viên cùng với liên kết tới ";
+      QCString result = "Danh sách tất cả ";
+      if (!extractAll) result += "(đã được mô tả) ";
+      result += "các module thành viên cùng với liên kết tới ";
       if (extractAll)
       {
-        result+="Thông tin module cho từng thành viên:";
+        result += "Thông tin module cho từng thành viên:";
       }
       else
       {
-        result+="các module thuộc:";
+        result += "các module thuộc:";
       }
       return result;
     }
@@ -1659,7 +1835,9 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
      *  index of all modules (Fortran).
      */
     QCString trModulesIndex() override
-    { return "Chỉ mục các Module"; }
+    {
+      return "Chỉ mục các Module";
+    }
 
     /*! This is used for translation of the word that will possibly
      *  be followed by a single name or by a list of names
@@ -1673,23 +1851,26 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
      *  followed by a list of files that were used to generate the page.
      */
     QCString trGeneratedFromFilesFortran(ClassDef::CompoundType compType,
-        bool single) override
+                                         bool                   single) override
     { // here s is one of " Module", " Struct" or " Union"
       // single is true implies a single file
-      QCString result="Thông tin cho ";
-      switch(compType)
+      QCString result = "Thông tin cho ";
+      switch (compType)
       {
-        case ClassDef::Class:      result+="module"; break;
-        case ClassDef::Struct:     result+="type"; break;
-        case ClassDef::Union:      result+="union"; break;
-        case ClassDef::Interface:  result+="interface"; break;
-        case ClassDef::Protocol:   result+="protocol"; break;
-        case ClassDef::Category:   result+="category"; break;
-        case ClassDef::Exception:  result+="exception"; break;
-        default: break;
+      case ClassDef::Class: result += "module"; break;
+      case ClassDef::Struct: result += "type"; break;
+      case ClassDef::Union: result += "union"; break;
+      case ClassDef::Interface: result += "interface"; break;
+      case ClassDef::Protocol: result += "protocol"; break;
+      case ClassDef::Category: result += "category"; break;
+      case ClassDef::Exception: result += "exception"; break;
+      default: break;
       }
-      result+=" được biên soạn từ các file sau đây";
-      if (single) result+=":"; else result+="s:";
+      result += " được biên soạn từ các file sau đây";
+      if (single)
+        result += ":";
+      else
+        result += "s:";
       return result;
     }
     /*! This is used for translation of the word that will possibly
@@ -1717,22 +1898,22 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
 
     QCString trDayOfWeek(int dayOfWeek, bool, bool full) override
     {
-      static const char *days_short[]   = { "T2", "T3", "T4", "T5", "T6", "T7", "CN" };
-      static const char *days_full[]    = { "Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "Thứ Sáu", "Thứ Bảy", "Chủ Nhật" };
-      QCString text  = full? days_full[dayOfWeek-1] : days_short[dayOfWeek-1];
+      static const char *days_short[] = { "T2", "T3", "T4", "T5", "T6", "T7", "CN" };
+      static const char *days_full[]  = { "Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "Thứ Sáu", "Thứ Bảy", "Chủ Nhật" };
+      QCString           text         = full ? days_full[dayOfWeek - 1] : days_short[dayOfWeek - 1];
       return text;
     }
     QCString trMonth(int month, bool, bool full) override
     {
       static const char *months_short[] = { "Thg1", "Thg2", "Thg3", "Thg4", "Thg5", "Thg6", "Thg7", "Thg8", "Thg9", "Thg10", "Thg11", "Thg12" };
       static const char *months_full[]  = { "Tháng Giêng", "Tháng Hai", "Tháng Ba", "Tháng Tư", "Tháng Năm", "Tháng Sáu", "Tháng Bảy", "Tháng Tám", "Tháng Chín", "Tháng Mười", "Tháng Mười Một", "Tháng Mười Hai" };
-      QCString text  = full? months_full[month-1] : months_short[month-1];
+      QCString           text           = full ? months_full[month - 1] : months_short[month - 1];
       return text;
     }
     QCString trDayPeriod(bool period) override
     {
       static const char *dayPeriod[] = { "SA", "CH" };
-      return dayPeriod[period?1:0];
+      return dayPeriod[period ? 1 : 0];
     }
 };
 

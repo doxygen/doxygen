@@ -31,32 +31,30 @@ class ClassLinkedMap;
 class DotGfxHierarchyTable : public DotGraph
 {
   public:
-    DotGfxHierarchyTable(const QCString &prefix="",ClassDef::CompoundType ct=ClassDef::Class);
-   ~DotGfxHierarchyTable() override = default;
+    DotGfxHierarchyTable(const QCString &prefix = "", ClassDef::CompoundType ct = ClassDef::Class);
+    ~DotGfxHierarchyTable() override = default;
     NON_COPYABLE(DotGfxHierarchyTable)
 
-    void createGraph(DotNode *rootNode,TextStream &t,const QCString &path,
-                     const QCString &fileName,int id);
-    void writeGraph(TextStream &t,const QCString &path, const QCString &fileName);
-    const std::vector<DotNode*> subGraphs() const { return m_rootSubgraphs; }
-
+    void                         createGraph(DotNode *rootNode, TextStream &t, const QCString &path,
+                                             const QCString &fileName, int id);
+    void                         writeGraph(TextStream &t, const QCString &path, const QCString &fileName);
+    const std::vector<DotNode *> subGraphs() const { return m_rootSubgraphs; }
   protected:
     QCString getBaseName() const override;
     QCString getMapLabel() const override;
-    void computeTheGraph() override;
-
+    void     computeTheGraph() override;
   private:
-    void addHierarchy(DotNode *n,const ClassDef *cd,ClassDefSet &visited);
-    void addClassList(const ClassLinkedMap &cl,ClassDefSet &visited);
+    void addHierarchy(DotNode *n, const ClassDef *cd, ClassDefSet &visited);
+    void addClassList(const ClassLinkedMap &cl, ClassDefSet &visited);
 
-    using DotNodeMap = std::unordered_multimap< std::string, std::unique_ptr<DotNode> >;
+    using DotNodeMap = std::unordered_multimap<std::string, std::unique_ptr<DotNode>>;
     int                    m_graphId;
     QCString               m_prefix;
     ClassDef::CompoundType m_classType;
-    std::vector<DotNode*>  m_rootNodes;
+    std::vector<DotNode *> m_rootNodes;
     DotNodeMap             m_usedNodes;
-    std::vector<DotNode*>  m_rootSubgraphs;
-    DotNode *              m_rootSubgraphNode;
+    std::vector<DotNode *> m_rootSubgraphs;
+    DotNode               *m_rootSubgraphNode;
 };
 
 using DotGfxHierarchyTablePtr = std::shared_ptr<DotGfxHierarchyTable>;

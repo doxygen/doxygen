@@ -22,18 +22,18 @@
 #include "containers.h"
 #include "qcstring.h"
 
-#define DIVIDE_COUNT            4
-#define MIN_PLANTUML_COUNT      8
+#define DIVIDE_COUNT 4
+#define MIN_PLANTUML_COUNT 8
 
 class QCString;
 struct PlantumlContent
 {
-  PlantumlContent(const QCString &content_, const QCString &outDir_, const QCString &srcFile_, int srcLine_)
-     : content(content_), outDir(outDir_), srcFile(srcFile_), srcLine(srcLine_) {}
-  QCString content;
-  QCString outDir;
-  QCString srcFile;
-  int srcLine;
+    PlantumlContent(const QCString &content_, const QCString &outDir_, const QCString &srcFile_, int srcLine_) :
+        content(content_), outDir(outDir_), srcFile(srcFile_), srcLine(srcLine_) {}
+    QCString content;
+    QCString outDir;
+    QCString srcFile;
+    int      srcLine;
 };
 
 /** Singleton that manages plantuml relation actions */
@@ -41,12 +41,17 @@ class PlantumlManager
 {
   public:
     /** Plant UML output image formats */
-    enum OutputFormat { PUML_BITMAP, PUML_EPS, PUML_SVG };
+    enum OutputFormat
+    {
+      PUML_BITMAP,
+      PUML_EPS,
+      PUML_SVG
+    };
 
     static PlantumlManager &instance();
 
     /** Run plant UML tool for all images */
-    void run();
+    void                    run();
 
     /** Write a PlantUML compatible file.
      *  @param[in] outDirArg   the output directory to write the file to.
@@ -60,39 +65,38 @@ class PlantumlManager
      *   from the `\planumlfile` command (`false`)
      *  @returns The names of the generated files.
      */
-    StringVector writePlantUMLSource(const QCString &outDirArg,const QCString &fileName,
-                                     const QCString &content, OutputFormat format,
-                                     const QCString &engine,const QCString &srcFile,
-                                     int srcLine,bool inlineCode);
+    StringVector            writePlantUMLSource(const QCString &outDirArg, const QCString &fileName,
+                                                const QCString &content, OutputFormat format,
+                                                const QCString &engine, const QCString &srcFile,
+                                                int srcLine, bool inlineCode);
 
     /** Convert a PlantUML file to an image.
      *  @param[in] baseName the name of the generated file (as returned by writePlantUMLSource())
      *  @param[in] outDir   the directory to write the resulting image into.
      *  @param[in] format   the image format to generate.
      */
-    void generatePlantUMLOutput(const QCString &baseName,const QCString &outDir,OutputFormat format);
+    void                    generatePlantUMLOutput(const QCString &baseName, const QCString &outDir, OutputFormat format);
 
-    using FilesMap   = std::map< std::string, StringVector    >;
-    using ContentMap = std::map< std::string, PlantumlContent >;
+    using FilesMap   = std::map<std::string, StringVector>;
+    using ContentMap = std::map<std::string, PlantumlContent>;
   private:
     PlantumlManager();
-    void insert(const std::string &key,
-                const std::string &value,
-                const QCString &outDir,
-                OutputFormat format,
-                const QCString &puContent,
-                const QCString &srcFile,
-                int srcLine);
-    void generatePlantUmlFileNames(const QCString &fileName,OutputFormat format,const QCString &outDir,
-                                                    QCString &baseName,QCString &puName,QCString &imgName);
+    void       insert(const std::string &key,
+                      const std::string &value,
+                      const QCString    &outDir,
+                      OutputFormat       format,
+                      const QCString    &puContent,
+                      const QCString    &srcFile,
+                      int                srcLine);
+    void       generatePlantUmlFileNames(const QCString &fileName, OutputFormat format, const QCString &outDir,
+                                         QCString &baseName, QCString &puName, QCString &imgName);
 
     FilesMap   m_pngPlantumlFiles;
     FilesMap   m_svgPlantumlFiles;
     FilesMap   m_epsPlantumlFiles;
-    ContentMap m_pngPlantumlContent;               // use circular queue for using multi-processor (multi threading)
+    ContentMap m_pngPlantumlContent; // use circular queue for using multi-processor (multi threading)
     ContentMap m_svgPlantumlContent;
     ContentMap m_epsPlantumlContent;
 };
 
 #endif
-

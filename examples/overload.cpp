@@ -1,11 +1,11 @@
-class Overload_Test 
+class Overload_Test
 {
   public:
-    void drawRect(int,int,int,int);
+    void drawRect(int, int, int, int);
     void drawRect(const Rect &r);
 };
 
-void Overload_Test::drawRect(int x,int y,int w,int h) {}
+void Overload_Test::drawRect(int x, int y, int w, int h) {}
 void Overload_Test::drawRect(const Rect &r) {}
 
 /*! \class Overload_Test
@@ -22,4 +22,3 @@ void Overload_Test::drawRect(const Rect &r) {}
 /*!
  * \overload void Overload_Test::drawRect(const Rect &r)
  */
-

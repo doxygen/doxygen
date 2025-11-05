@@ -24,12 +24,16 @@
 /** @brief Compiled resource */
 struct Resource
 {
-  enum Type { Verbatim, SVG };
-  const char *category;
-  const char *name;
-  const unsigned char *data;
-  int size;
-  Type type;
+    enum Type
+    {
+      Verbatim,
+      SVG
+    };
+    const char          *category;
+    const char          *name;
+    const unsigned char *data;
+    int                  size;
+    Type                 type;
 };
 
 /** @brief Singleton for managing resources compiled into an executable */
@@ -40,26 +44,25 @@ class ResourceMgr
     static ResourceMgr &instance();
 
     /** Registers an array of resources */
-    void registerResources(std::initializer_list<Resource> resources);
+    void                registerResources(std::initializer_list<Resource> resources);
 
     /** Writes all resource belonging to a given category to a given target directory */
-    bool writeCategory(const QCString &categoryName,const QCString &targetDir) const;
+    bool                writeCategory(const QCString &categoryName, const QCString &targetDir) const;
 
     /** Copies a registered resource to a given target directory */
-    bool copyResource(const QCString &name,const QCString &targetDir) const;
+    bool                copyResource(const QCString &name, const QCString &targetDir) const;
 
     /** Copies a registered resource to a given target directory under a given target name */
-    bool copyResourceAs(const QCString &name,const QCString &targetDir,const QCString &targetName, bool append=false) const;
+    bool                copyResourceAs(const QCString &name, const QCString &targetDir, const QCString &targetName, bool append = false) const;
 
     /** Gets the resource data as a C string */
-    QCString getAsString(const QCString &name) const;
-
+    QCString            getAsString(const QCString &name) const;
   private:
     /** Returns a pointer to the resource object with the given name. */
     const Resource *get(const QCString &name) const;
 
     ResourceMgr();
-   ~ResourceMgr();
+    ~ResourceMgr();
     NON_COPYABLE(ResourceMgr)
 
     class Private;

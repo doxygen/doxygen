@@ -27,14 +27,14 @@
 // Since some modules produce a huge amount of tracing we disable those traces by default.
 // Set of or more of the following to 1 to enable the relevant tracing
 #define ENABLE_SYMBOLRESOLVER_TRACING 0
-#define ENABLE_MARKDOWN_TRACING       0
-#define ENABLE_DOCPARSER_TRACING      0
+#define ENABLE_MARKDOWN_TRACING 0
+#define ENABLE_DOCPARSER_TRACING 0
 
 
 #if ENABLE_TRACING
 #define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_TRACE // debug build
 #else
-#define SPELOG_ACTIVE_LEVEL SPDLOG_LEVEL_INFO  // release build (hide trace/debug levels)
+#define SPELOG_ACTIVE_LEVEL SPDLOG_LEVEL_INFO // release build (hide trace/debug levels)
 #endif
 
 #pragma push_macro("warn")
@@ -48,31 +48,45 @@
 
 extern std::shared_ptr<spdlog::logger> g_tracer;
 
-void initTracing(const QCString &logFile, bool timing);
-void exitTracing();
+void                                   initTracing(const QCString &logFile, bool timing);
+void                                   exitTracing();
 
 namespace Trace
 {
-  inline QCString trunc(const QCString &s,size_t numChars=15)
+inline QCString trunc(const QCString &s, size_t numChars = 15)
+{
+  QCString result;
+  size_t   i = 0;
+  for (; i < numChars && i < s.length(); i++)
   {
-    QCString result;
-    size_t i=0;
-    for (; i<numChars && i<s.length(); i++)
+    char c = s.at(i);
+    if (c == '\n')
     {
-      char c=s.at(i);
-      if      (c=='\n') { result+="\\n"; }
-      else if (c=='\t') { result+="\\t"; }
-      else if (c=='\r') { result+="\\r"; }
-      else if (c=='\\') { result+="\\\\"; }
-      else result+=c;
+      result += "\\n";
     }
-    if (i<s.length()) result+="...";
-    return result;
+    else if (c == '\t')
+    {
+      result += "\\t";
+    }
+    else if (c == '\r')
+    {
+      result += "\\r";
+    }
+    else if (c == '\\')
+    {
+      result += "\\\\";
+    }
+    else
+      result += c;
   }
+  if (i < s.length()) result += "...";
+  return result;
 }
+} // namespace Trace
 
 #if ENABLE_TRACING
-#define TRACE(...) if (g_tracer) SPDLOG_LOGGER_TRACE(g_tracer,__VA_ARGS__)
+#define TRACE(...) \
+  if (g_tracer) SPDLOG_LOGGER_TRACE(g_tracer, __VA_ARGS__)
 #else
 #define TRACE(...) (void)0
 #endif
@@ -81,73 +95,76 @@ namespace Trace
 class AutoTrace
 {
   public:
-    explicit AutoTrace(spdlog::source_loc loc) : m_loc(loc)
+    explicit AutoTrace(spdlog::source_loc loc) :
+        m_loc(loc)
     {
       if (g_tracer)
       {
-        g_tracer->log(m_loc,spdlog::level::trace,">");
+        g_tracer->log(m_loc, spdlog::level::trace, ">");
       }
     }
-    template<typename... Args>
+    template <typename... Args>
     explicit AutoTrace(spdlog::source_loc loc,
-                       const std::string &fmt, Args&&...args) : m_loc(loc)
+                       const std::string &fmt, Args &&...args) :
+        m_loc(loc)
     {
       if (g_tracer)
       {
         if (fmt.empty())
         {
-          g_tracer->log(m_loc,spdlog::level::trace,">");
+          g_tracer->log(m_loc, spdlog::level::trace, ">");
         }
         else
         {
-          g_tracer->log(m_loc,spdlog::level::trace,fmt::runtime("> "+fmt),std::forward<Args>(args)...);
+          g_tracer->log(m_loc, spdlog::level::trace, fmt::runtime("> " + fmt), std::forward<Args>(args)...);
         }
       }
     }
-   ~AutoTrace()
+    ~AutoTrace()
     {
       if (g_tracer)
       {
         if (m_exitMessage.empty())
         {
-          g_tracer->log(m_loc,spdlog::level::trace,"<");
+          g_tracer->log(m_loc, spdlog::level::trace, "<");
         }
         else
         {
-          g_tracer->log(m_loc,spdlog::level::trace,"< "+m_exitMessage);
+          g_tracer->log(m_loc, spdlog::level::trace, "< " + m_exitMessage);
         }
       }
     }
     NON_COPYABLE(AutoTrace)
 
-    template<typename... Args>
+    template <typename... Args>
     void add(spdlog::source_loc loc,
-             const std::string &fmt, Args&&...args)
+             const std::string &fmt, Args &&...args)
     {
       if (g_tracer)
       {
-        g_tracer->log(loc,spdlog::level::trace,fmt::runtime(": "+fmt),std::forward<Args>(args)...);
+        g_tracer->log(loc, spdlog::level::trace, fmt::runtime(": " + fmt), std::forward<Args>(args)...);
       }
     }
-    template<typename... Args>
+    template <typename... Args>
     void setExit(spdlog::source_loc loc,
-                 const std::string &msg,Args&&...args)
+                 const std::string &msg, Args &&...args)
     {
-      m_loc = loc;
-      m_exitMessage = fmt::format(fmt::runtime(msg),std::forward<Args>(args)...);
+      m_loc         = loc;
+      m_exitMessage = fmt::format(fmt::runtime(msg), std::forward<Args>(args)...);
     }
   private:
-   spdlog::source_loc m_loc;
-   std::string m_exitMessage;
+    spdlog::source_loc m_loc;
+    std::string        m_exitMessage;
 };
 
 #if ENABLE_TRACING
-#define AUTO_TRACE(...)      AutoTrace trace_{spdlog::source_loc{__FILE__,__LINE__,SPDLOG_FUNCTION},__VA_ARGS__}
-#define AUTO_TRACE_ADD(...)  trace_.add(spdlog::source_loc{__FILE__,__LINE__,SPDLOG_FUNCTION},__VA_ARGS__)
-#define AUTO_TRACE_EXIT(...) trace_.setExit(spdlog::source_loc{__FILE__,__LINE__,SPDLOG_FUNCTION},__VA_ARGS__)
+#define AUTO_TRACE(...) \
+  AutoTrace trace_ { spdlog::source_loc{ __FILE__, __LINE__, SPDLOG_FUNCTION }, __VA_ARGS__ }
+#define AUTO_TRACE_ADD(...) trace_.add(spdlog::source_loc{ __FILE__, __LINE__, SPDLOG_FUNCTION }, __VA_ARGS__)
+#define AUTO_TRACE_EXIT(...) trace_.setExit(spdlog::source_loc{ __FILE__, __LINE__, SPDLOG_FUNCTION }, __VA_ARGS__)
 #else
-#define AUTO_TRACE(...)      (void)0
-#define AUTO_TRACE_ADD(...)  (void)0
+#define AUTO_TRACE(...) (void)0
+#define AUTO_TRACE_ADD(...) (void)0
 #define AUTO_TRACE_EXIT(...) (void)0
 #endif
 

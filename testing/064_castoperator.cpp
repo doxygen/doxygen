@@ -17,9 +17,10 @@
  * - @ref Foo::operator int() const
  * - @ref Foo::operator int() const "title"
  */
-struct Foo {
-  /** @brief Conversion to int */
-  operator int();
-  /** @brief Conversion to int const */
-  operator int() const;
+struct Foo
+{
+    /** @brief Conversion to int */
+    operator int();
+    /** @brief Conversion to int const */
+    operator int() const;
 };

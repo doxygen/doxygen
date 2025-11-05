@@ -3,7 +3,8 @@
 // check: namespace_root_1_1_sub.xml
 // check: struct_root_1_1_sub_1_1_struct.xml
 
-namespace Root {
+namespace Root
+{
 
 /** @brief A typedef */
 typedef int Int;
@@ -11,29 +12,31 @@ typedef int Int;
 /* Documentation comes later */
 using Float = float;
 
-namespace Sub {
-  /* Documentation comes later */
-  typedef double Double;
+namespace Sub
+{
+/* Documentation comes later */
+typedef double Double;
 
-  /** @brief A struct */
-  struct Struct {
+/** @brief A struct */
+struct Struct
+{
     /** @brief A typedef that doesn't get merged with the one in Sub */
     typedef double Double;
-  };
+};
 
-  /** @relatedalso Struct
+/** @relatedalso Struct
    * @brief A typedef in Sub that doesn't get merged with the one in Root
    */
-  typedef int Int;
+typedef int Int;
 
-  /** @relatedalso Struct
+/** @relatedalso Struct
    * @brief A using declaration in Sub doesn't get merged with the one in Root
    */
-  using Float = float;
+using Float = float;
 
-  /** @brief Another typedef in Sub, not related to @ref Struct */
-  typedef double Double;
-}
+/** @brief Another typedef in Sub, not related to @ref Struct */
+typedef double Double;
+} // namespace Sub
 
 /** @brief A using declaration */
 using Float = float;
@@ -42,11 +45,13 @@ using Float = float;
 typedef bool BoolShouldNotBecomeFunction;
 
 /** @brief Another struct */
-struct AnotherStruct {};
+struct AnotherStruct
+{
+};
 
 /** @relatedalso AnotherStruct
  * @brief A typedef that shouldn't become a function
  */
 typedef bool BoolShouldNotBecomeFunction;
 
-}
+} // namespace Root

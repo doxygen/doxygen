@@ -25,13 +25,14 @@
 
 struct AnchorGenerator::Private
 {
-  StringUnorderedSet anchorsUsed;
-  int anchorCount=0;
-  std::mutex mutex;
-  std::unordered_map<std::string,int> idCount;
+    StringUnorderedSet                   anchorsUsed;
+    int                                  anchorCount = 0;
+    std::mutex                           mutex;
+    std::unordered_map<std::string, int> idCount;
 };
 
-AnchorGenerator::AnchorGenerator() : p(std::make_unique<Private>()) {}
+AnchorGenerator::AnchorGenerator() :
+    p(std::make_unique<Private>()) {}
 
 AnchorGenerator::~AnchorGenerator() = default;
 
@@ -43,48 +44,47 @@ AnchorGenerator &AnchorGenerator::instance()
 
 constexpr auto prefix = "autotoc_md";
 
-std::string AnchorGenerator::addPrefixIfNeeded(const std::string &anchor)
+std::string    AnchorGenerator::addPrefixIfNeeded(const std::string &anchor)
 {
   return (Config_getEnum(MARKDOWN_ID_STYLE) == MARKDOWN_ID_STYLE_t::GITHUB &&
-         (anchor.empty() || anchor.front() == '-' || std::isdigit(anchor.front())))
-    ? prefix + anchor : anchor;
+          (anchor.empty() || anchor.front() == '-' || std::isdigit(anchor.front())))
+           ? prefix + anchor
+           : anchor;
 }
 
 std::string AnchorGenerator::generate(const std::string &label)
 {
   std::lock_guard lock(p->mutex);
 
-  std::string result;
+  std::string     result;
 
-  auto createDoxygenStyleAnchor = [&]()
-  {
+  auto            createDoxygenStyleAnchor = [&]() {
     // overwrite result with the doxygen style anchor
-    result = prefix+std::to_string(p->anchorCount++);
+    result = prefix + std::to_string(p->anchorCount++);
   };
 
-  auto createGitHubStyleAnchor = [&]()
-  {
+  auto createGitHubStyleAnchor = [&]() {
     result.clear();
-    size_t pos=0;
-    while (pos<label.length())
+    size_t pos = 0;
+    while (pos < label.length())
     {
-      uint8_t bytes       = getUTF8CharNumBytes(label[pos]);
-      std::string charStr = getUTF8CharAt(label,pos);
-      uint32_t cUnicode   = getUnicodeForUTF8CharAt(label,pos);
-      char c = charStr[0];
-      if (qisspace(c) || c=='-')
+      uint8_t     bytes    = getUTF8CharNumBytes(label[pos]);
+      std::string charStr  = getUTF8CharAt(label, pos);
+      uint32_t    cUnicode = getUnicodeForUTF8CharAt(label, pos);
+      char        c        = charStr[0];
+      if (qisspace(c) || c == '-')
       {
-        result+='-';
+        result += '-';
       }
-      else if (c!='_' && isUTF8PunctuationCharacter(cUnicode))
+      else if (c != '_' && isUTF8PunctuationCharacter(cUnicode))
       {
         // skip punctuation characters
       }
       else // normal UTF8 character
       {
-        result+=convertUTF8ToLower(charStr);
+        result += convertUTF8ToLower(charStr);
       }
-      pos+=bytes;
+      pos += bytes;
     }
     //printf("label='%s' result='%s'\n",qPrint(label),qPrint(result));
     if (result.empty()) // fallback use doxygen style anchor
@@ -93,12 +93,12 @@ std::string AnchorGenerator::generate(const std::string &label)
     }
     else
     {
-      result = addPrefixIfNeeded(result);
+      result     = addPrefixIfNeeded(result);
       int &count = p->idCount[result];
       // Add end digits if an identical header already exists
-      if (count>0)
+      if (count > 0)
       {
-        result+="-"+std::to_string(count);
+        result += "-" + std::to_string(count);
       }
       count++;
     }
@@ -106,12 +106,12 @@ std::string AnchorGenerator::generate(const std::string &label)
 
   switch (Config_getEnum(MARKDOWN_ID_STYLE))
   {
-    case MARKDOWN_ID_STYLE_t::DOXYGEN:
-      createDoxygenStyleAnchor();
-      break;
-    case MARKDOWN_ID_STYLE_t::GITHUB:
-      createGitHubStyleAnchor();
-      break;
+  case MARKDOWN_ID_STYLE_t::DOXYGEN:
+    createDoxygenStyleAnchor();
+    break;
+  case MARKDOWN_ID_STYLE_t::GITHUB:
+    createGitHubStyleAnchor();
+    break;
   }
 
   p->anchorsUsed.insert(result);
@@ -122,7 +122,7 @@ std::string AnchorGenerator::generate(const std::string &label)
 bool AnchorGenerator::isGenerated(const std::string &anchor) const
 {
   std::lock_guard lock(p->mutex);
-  return p->anchorsUsed.find(anchor)!=p->anchorsUsed.end();
+  return p->anchorsUsed.find(anchor) != p->anchorsUsed.end();
 }
 
 int AnchorGenerator::reserve(const std::string &anchor)
@@ -133,6 +133,6 @@ int AnchorGenerator::reserve(const std::string &anchor)
 
 bool AnchorGenerator::looksGenerated(const std::string &anchor)
 {
-  return Config_getEnum(MARKDOWN_ID_STYLE)==MARKDOWN_ID_STYLE_t::DOXYGEN &&
+  return Config_getEnum(MARKDOWN_ID_STYLE) == MARKDOWN_ID_STYLE_t::DOXYGEN &&
          QCString(anchor).startsWith(prefix);
 }

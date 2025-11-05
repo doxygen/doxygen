@@ -13,7 +13,9 @@
  * </details>
  * After details.
  */
-class DetailsSummaryAtTop {};
+class DetailsSummaryAtTop
+{
+};
 
 /**
  * Before details.
@@ -22,7 +24,9 @@ class DetailsSummaryAtTop {};
  * </details>
  * After details.
  */
-class DetailsWithoutSummary {};
+class DetailsWithoutSummary
+{
+};
 
 /**
  * Before details.
@@ -32,13 +36,17 @@ class DetailsWithoutSummary {};
  * </details>
  * After details.
  */
-class DetailsSummaryAtBottom {};
+class DetailsSummaryAtBottom
+{
+};
 
 /**
  * <summary>Summary C# style</summary>
  * Details below
  */
-class DetailsCSStyle {};
+class DetailsCSStyle
+{
+};
 
 /**
  * Nested details
@@ -51,7 +59,9 @@ class DetailsCSStyle {};
  *   </details>
  * </details>
  */
-class DetailsNested {};
+class DetailsNested
+{
+};
 
 /**
  * Multiple summary sections
@@ -64,5 +74,6 @@ class DetailsNested {};
  * Last part.
  * </details>
  */
-class DetailsMultiSummary {};
-
+class DetailsMultiSummary
+{
+};

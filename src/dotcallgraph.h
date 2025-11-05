@@ -26,33 +26,31 @@
 class DotCallGraph : public DotGraph
 {
   public:
-    DotCallGraph(const MemberDef *md,bool inverse);
+    DotCallGraph(const MemberDef *md, bool inverse);
     ~DotCallGraph() override;
     NON_COPYABLE(DotCallGraph)
 
-    bool isTrivial() const;
-    bool isTooBig() const;
-    int numNodes() const;
-    QCString writeGraph(TextStream &t, GraphOutputFormat gf, EmbeddedOutputFormat ef,
-                        const QCString &path,const QCString &fileName,
-                        const QCString &relPath,bool writeImageMap=TRUE,
-                        int graphId=-1);
-    static bool isTrivial(const MemberDef *md,bool inverse);
-
+    bool        isTrivial() const;
+    bool        isTooBig() const;
+    int         numNodes() const;
+    QCString    writeGraph(TextStream &t, GraphOutputFormat gf, EmbeddedOutputFormat ef,
+                           const QCString &path, const QCString &fileName,
+                           const QCString &relPath, bool writeImageMap = TRUE,
+                           int graphId = -1);
+    static bool isTrivial(const MemberDef *md, bool inverse);
   protected:
     QCString getBaseName() const override;
     QCString getMapLabel() const override;
-    void computeTheGraph() override;
-
+    void     computeTheGraph() override;
   private:
-    void buildGraph(DotNode *n,const MemberDef *md,int distance);
-    void determineVisibleNodes(DotNodeDeque &queue, int &maxNodes);
-    void determineTruncatedNodes(DotNodeDeque &queue);
-    DotNode        *m_startNode;
-    DotNodeMap      m_usedNodes;
-    bool            m_inverse;
-    QCString        m_diskName;
-    const Definition * m_scope;
+    void              buildGraph(DotNode *n, const MemberDef *md, int distance);
+    void              determineVisibleNodes(DotNodeDeque &queue, int &maxNodes);
+    void              determineTruncatedNodes(DotNodeDeque &queue);
+    DotNode          *m_startNode;
+    DotNodeMap        m_usedNodes;
+    bool              m_inverse;
+    QCString          m_diskName;
+    const Definition *m_scope;
 };
 
 using DotCallGraphPtr = std::shared_ptr<DotCallGraph>;

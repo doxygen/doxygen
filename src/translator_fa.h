@@ -34,33 +34,31 @@
 #ifndef TRANSLATOR_FA_H
 #define TRANSLATOR_FA_H
 
-#define HtmlRightToLeft     QCString("<div dir=\"rtl\">")
-#define HtmlLeftToRight     QCString("<div dir=\"ltr\">")
-#define HtmlDivEnd          QCString("</div>")
+#define HtmlRightToLeft QCString("<div dir=\"rtl\">")
+#define HtmlLeftToRight QCString("<div dir=\"ltr\">")
+#define HtmlDivEnd QCString("</div>")
 
 
 class TranslatorPersian : public TranslatorAdapter_1_7_5
 {
   private:
-  	/** Converts english digits of an input string to persian equivalents.
+    /** Converts english digits of an input string to persian equivalents.
 	 */
-	QCString convertDigitsToFarsi(QCString str)
-	{
-		QCString output;
-		const char * PersianDigits[] = { "۰", "۱", "۲", "۳", "۴", "۵", "۶", "۷", "۸", "۹" };
-		for(unsigned i=0; i<str.length(); i++)
-		{
-			if (str.at(i) >= '0' && str.at(i) <= '9')
-				output += PersianDigits[ str.at(i) - '0' ];
-			else
-				output += str.at(i);
-		}
+    QCString convertDigitsToFarsi(QCString str)
+    {
+      QCString    output;
+      const char *PersianDigits[] = { "۰", "۱", "۲", "۳", "۴", "۵", "۶", "۷", "۸", "۹" };
+      for (unsigned i = 0; i < str.length(); i++)
+      {
+        if (str.at(i) >= '0' && str.at(i) <= '9')
+          output += PersianDigits[str.at(i) - '0'];
+        else
+          output += str.at(i);
+      }
 
-		return output;
-	}
-
+      return output;
+    }
   public:
-
     // --- Language control methods -------------------
 
     /*! Used for identification of the language. The identification
@@ -70,7 +68,9 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
      * the identification used in language.cpp.
      */
     QCString idLanguage() override
-    { return "persian"; }
+    {
+      return "persian";
+    }
 
     /*! Used to get the LaTeX command(s) for the language support.
      *  This method should return string with commands that switch
@@ -109,31 +109,45 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
 
     /*! used in the compound documentation before a list of related functions. */
     QCString trRelatedFunctions() override
-    { return "توابع مربوط"; }
+    {
+      return "توابع مربوط";
+    }
 
     /*! subscript for the related functions. */
     QCString trRelatedSubscript() override
-    { return "(لازم به ذکر است که اينها توابع عضو نيستند)"; }
+    {
+      return "(لازم به ذکر است که اينها توابع عضو نيستند)";
+    }
 
     /*! header that is put before the detailed description of files, classes and namespaces. */
     QCString trDetailedDescription() override
-    { return "توضيحات جزئی"; }
+    {
+      return "توضيحات جزئی";
+    }
 
     /*! header that is used when the summary tag is missing inside the details tag */
     QCString trDetails() override
-    { return "جزئیات"; }
+    {
+      return "جزئیات";
+    }
 
     /*! header that is put before the list of typedefs. */
     QCString trMemberTypedefDocumentation() override
-    { return "مستندات تعریف گونه ها"; }
+    {
+      return "مستندات تعریف گونه ها";
+    }
 
     /*! header that is put before the list of enumerations. */
     QCString trMemberEnumerationDocumentation() override
-    { return "های عضو Enumeration مستندات"; }
+    {
+      return "های عضو Enumeration مستندات";
+    }
 
     /*! header that is put before the list of member functions. */
     QCString trMemberFunctionDocumentation() override
-    { return "توضيحات توابع عضو"; }
+    {
+      return "توضيحات توابع عضو";
+    }
 
     /*! header that is put before the list of member attributes. */
     QCString trMemberDataDocumentation() override
@@ -150,45 +164,62 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
 
     /*! this is the text of a link put after brief descriptions. */
     QCString trMore() override
-    { return "بيشتر..."; }
+    {
+      return "بيشتر...";
+    }
 
     /*! put in the class documentation */
     QCString trListOfAllMembers() override
-    { return "ليست تمام اعضاء "; }
+    {
+      return "ليست تمام اعضاء ";
+    }
 
     /*! used as the title of the "list of all members" page of a class */
     QCString trMemberList() override
-    { return "ليست اعضاء"; }
+    {
+      return "ليست اعضاء";
+    }
 
     /*! this is the first part of a sentence that is followed by a class name */
     QCString trThisIsTheListOfAllMembers() override
-    { return "اين ليستی کامل از همه اعضای"; }
+    {
+      return "اين ليستی کامل از همه اعضای";
+    }
 
     /*! this is the remainder of the sentence after the class name */
     QCString trIncludingInheritedMembers() override
-    { return "شامل همه ی اعضای به ارث برده شده می باشد."; }
+    {
+      return "شامل همه ی اعضای به ارث برده شده می باشد.";
+    }
 
     /*! this is put at the author sections at the bottom of man pages.
      *  parameter s is name of the project name.
      */
     QCString trGeneratedAutomatically(const QCString &s) override
-    { QCString result="تولید شده توسط نرم افزار دی اکسیژن ";
-      if (!s.isEmpty()) result+=" برای "+s;
-      result+=" از کد برنامه ";
+    {
+      QCString result = "تولید شده توسط نرم افزار دی اکسیژن ";
+      if (!s.isEmpty()) result += " برای " + s;
+      result += " از کد برنامه ";
       return result;
     }
 
     /*! put after an enum name in the list of all members */
     QCString trEnumName() override
-    { return "enum نام"; }
+    {
+      return "enum نام";
+    }
 
     /*! put after an enum value in the list of all members */
     QCString trEnumValue() override
-    { return "enum مقدار"; }
+    {
+      return "enum مقدار";
+    }
 
     /*! put after an undocumented member in the list of all members */
     QCString trDefinedIn() override
-    { return "تعریف شده در"; }
+    {
+      return "تعریف شده در";
+    }
 
     // quick reference sections
 
@@ -196,11 +227,15 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
      *  compounds or files (see the \\group command).
      */
     QCString trModules() override
-    { return "Modules"; }
+    {
+      return "Modules";
+    }
 
     /*! This is put above each page as a link to the class hierarchy */
     QCString trClassHierarchy() override
-    { return "سلسله مراتب کلاس ها"; }
+    {
+      return "سلسله مراتب کلاس ها";
+    }
 
     /*! This is put above each page as a link to the list of annotated classes */
     QCString trCompoundList() override
@@ -217,7 +252,9 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
 
     /*! This is put above each page as a link to the list of documented files */
     QCString trFileList() override
-    { return "ليست فايل ها"; }
+    {
+      return "ليست فايل ها";
+    }
 
     /*! This is put above each page as a link to all members of compounds. */
     QCString trCompoundMembers() override
@@ -247,27 +284,34 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
 
     /*! This is put above each page as a link to all related pages. */
     QCString trRelatedPages() override
-    { return "صفحات مربوط"; }
+    {
+      return "صفحات مربوط";
+    }
 
     /*! This is put above each page as a link to all examples. */
     QCString trExamples() override
-    { return "مثال ها"; }
+    {
+      return "مثال ها";
+    }
 
     /*! This is put above each page as a link to the search engine. */
     QCString trSearch() override
-    { return "جستجو"; }
+    {
+      return "جستجو";
+    }
 
     /*! This is an introduction to the class hierarchy. */
     QCString trClassHierarchyDescription() override
-    { return "ليست و سلسله مراتب درختی کلاس ها به صورت مرتب شده :";
+    {
+      return "ليست و سلسله مراتب درختی کلاس ها به صورت مرتب شده :";
     }
 
     /*! This is an introduction to the list with all files. */
     QCString trFileListDescription(bool extractAll) override
     {
-      QCString result="ليست همه ي پرونده های ";
-      if (!extractAll) result+="(مستند شده) ";
-      result+=" :";
+      QCString result = "ليست همه ي پرونده های ";
+      if (!extractAll) result += "(مستند شده) ";
+      result += " :";
       return result;
     }
 
@@ -288,78 +332,90 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
     /*! This is an introduction to the page with all class members. */
     QCString trCompoundMembersDescription(bool extractAll) override
     {
-      QCString result=" در ذيل ليست  ";
+      QCString result = " در ذيل ليست  ";
       if (!extractAll)
       {
-        result+="آن اعضايي که مستند شده اند ";
+        result += "آن اعضايي که مستند شده اند ";
       }
       else
       {
-        result+="همه ی اعضاء ";
+        result += "همه ی اعضاء ";
       }
-      result+=" به همراه ارتباطشان با ";
+      result += " به همراه ارتباطشان با ";
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
-        result+="ساختارهای داده ";
+        result += "ساختارهای داده ";
       }
       else
       {
-        result+="كلاس ها ";
+        result += "كلاس ها ";
       }
 
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
-          result+="و مستندات ساختار داده برای هر عضو ";
+        result += "و مستندات ساختار داده برای هر عضو ";
       }
-        else
+      else
       {
-          result+="و مستندات کلاس برای هر عضو ";
+        result += "و مستندات کلاس برای هر عضو ";
       }
-      result+="را مشاهده ميکنيد :";
+      result += "را مشاهده ميکنيد :";
       return result;
     }
 
     /*! This is an introduction to the page with all file members. */
     QCString trFileMembersDescription(bool extractAll) override
     {
-      QCString result="ليست همه ی توابع ، متغيير ها، تعاريف و ... ";
-      if (!extractAll) result+="(مستند شده) ";
+      QCString result = "ليست همه ی توابع ، متغيير ها، تعاريف و ... ";
+      if (!extractAll) result += "(مستند شده) ";
 
-      result+=" به همراه ارتباط آنها ";
-      result+="با پرونده هايی که به آن مربوط اند :";
+      result += " به همراه ارتباط آنها ";
+      result += "با پرونده هايی که به آن مربوط اند :";
       return result;
     }
 
     /*! This is an introduction to the page with the list of all examples */
     QCString trExamplesDescription() override
-    { return "ليست همه ی مثال ها :"; }
+    {
+      return "ليست همه ی مثال ها :";
+    }
 
     /*! This is an introduction to the page with the list of related pages */
     QCString trRelatedPagesDescription() override
-    { return "لیست تمام صفحات و مستندات مربوطه :"; }
+    {
+      return "لیست تمام صفحات و مستندات مربوطه :";
+    }
 
     /*! This is an introduction to the page with the list of class/file groups */
     QCString trModulesDescription() override
-    { return "لیست تمام ماژول ها:"; }
+    {
+      return "لیست تمام ماژول ها:";
+    }
 
     // index titles (the project name is prepended for these)
 
 
     /*! This is used in HTML as the title of index.html. */
     QCString trDocumentation(const QCString &projName) override
-    { return "مستندات" + (!projName.isEmpty()?" " + projName : ""); }
+    {
+      return "مستندات" + (!projName.isEmpty() ? " " + projName : "");
+    }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * index of all groups.
      */
     QCString trModuleIndex() override
-    { return "فهرست ماژول ها"; }
+    {
+      return "فهرست ماژول ها";
+    }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * class hierarchy.
      */
     QCString trHierarchicalIndex() override
-    { return "فهرست سلسله مراتب"; }
+    {
+      return "فهرست سلسله مراتب";
+    }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * annotated compound index.
@@ -380,13 +436,17 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
      * list of all files.
      */
     QCString trFileIndex() override
-    { return "فهرست پرونده ها"; }
+    {
+      return "فهرست پرونده ها";
+    }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all groups.
      */
     QCString trModuleDocumentation() override
-    { return "مستندات ماژول"; }
+    {
+      return "مستندات ماژول";
+    }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all classes, structs and unions.
@@ -399,7 +459,7 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
       }
       else if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
       {
-          return trDesignUnitDocumentation();
+        return trDesignUnitDocumentation();
       }
       else
       {
@@ -411,83 +471,111 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
      *  the documentation of all files.
      */
     QCString trFileDocumentation() override
-    { return "مستندات فایل"; }
+    {
+      return "مستندات فایل";
+    }
 
     /*! This is used in LaTeX as the title of the document */
     QCString trReferenceManual() override
-    { return "راهنمای مرجع"; }
+    {
+      return "راهنمای مرجع";
+    }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of defines
      */
     QCString trDefines() override
-    { return "تعاريف"; }
+    {
+      return "تعاريف";
+    }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of typedefs
      */
     QCString trTypedefs() override
-    { return "تعریف گونه ها"; }
+    {
+      return "تعریف گونه ها";
+    }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of enumerations
      */
     QCString trEnumerations() override
-    { return "تعاريف"; }
+    {
+      return "تعاريف";
+    }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of (global) functions
      */
     QCString trFunctions() override
-    { return "توابع"; }
+    {
+      return "توابع";
+    }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of (global) variables
      */
     QCString trVariables() override
-    { return "متغيير ها"; }
+    {
+      return "متغيير ها";
+    }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of (global) variables
      */
     QCString trEnumerationValues() override
-    { return "معرف ها"; }
+    {
+      return "معرف ها";
+    }
 
     /*! This is used in the documentation of a file before the list of
      *  documentation blocks for defines
      */
     QCString trDefineDocumentation() override
-    { return "Define Documentation"; }
+    {
+      return "Define Documentation";
+    }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for typedefs
      */
     QCString trTypedefDocumentation() override
-    { return "Typedef"; }
+    {
+      return "Typedef";
+    }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for enumeration types
      */
     QCString trEnumerationTypeDocumentation() override
-    { return "مستندات تعريف"; }
+    {
+      return "مستندات تعريف";
+    }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for enumeration values
      */
     QCString trEnumerationValueDocumentation() override
-    { return "مستندات معرف"; }
+    {
+      return "مستندات معرف";
+    }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for functions
      */
     QCString trFunctionDocumentation() override
-    { return "توضيح تابع"; }
+    {
+      return "توضيح تابع";
+    }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for variables
      */
     QCString trVariableDocumentation() override
-    { return "توضيح متغير"; }
+    {
+      return "توضيح متغير";
+    }
 
     /*! This is used in the documentation of a file/namespace/group before
      *  the list of links to documented compounds
@@ -507,66 +595,84 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
     /*! This is used in the standard footer of each page and indicates when
      *  the page was generated
      */
-    QCString trGeneratedAt(const QCString &date,const QCString &projName) override
+    QCString trGeneratedAt(const QCString &date, const QCString &projName) override
     {
-      QCString result = HtmlDivEnd + HtmlRightToLeft + QCString("توليد شده در ") +date ;
-      if (!projName.isEmpty()) result+=" برای "+projName;
-      result+=" توسط";
+      QCString result = HtmlDivEnd + HtmlRightToLeft + QCString("توليد شده در ") + date;
+      if (!projName.isEmpty()) result += " برای " + projName;
+      result += " توسط";
       return result;
     }
 
     /*! this text is put before a class diagram */
     QCString trClassDiagram(const QCString &clName) override
     {
-      return ""+clName+" نمودار وراثت برای  :";
+      return "" + clName + " نمودار وراثت برای  :";
     }
 
     /*! this text is generated when the \\warning command is used. */
     QCString trWarning() override
-    { return "اخطار"; }
+    {
+      return "اخطار";
+    }
 
     /*! this text is generated when the \\version command is used. */
     QCString trVersion() override
-    { return "نسخه"; }
+    {
+      return "نسخه";
+    }
 
     /*! this text is generated when the \\date command is used. */
     QCString trDate() override
-    { return "تاريخ"; }
+    {
+      return "تاريخ";
+    }
 
     /*! this text is generated when the \\return command is used. */
     QCString trReturns() override
-    { return "خروجی"; }
+    {
+      return "خروجی";
+    }
 
     /*! this text is generated when the \\sa command is used. */
     QCString trSeeAlso() override
-    { return "See also"; }
+    {
+      return "See also";
+    }
 
     /*! this text is generated when the \\param command is used. */
     QCString trParameters() override
-    { return "پارامترها"; }
+    {
+      return "پارامترها";
+    }
 
     /*! this text is generated when the \\exception command is used. */
     QCString trExceptions() override
-    { return "استثناء ها"; }
+    {
+      return "استثناء ها";
+    }
 
     /*! this text is used in the title page of a LaTeX document. */
     QCString trGeneratedBy() override
-    { return "توليد شده توسط"; }
+    {
+      return "توليد شده توسط";
+    }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 0.49-990307
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 0.49-990307
+    //////////////////////////////////////////////////////////////////////////
 
     /*! used as the title of page containing all the index of all namespaces. */
     QCString trNamespaceList() override
-    { return "ليست فضاهای نام"; }
+    {
+      return "ليست فضاهای نام";
+    }
 
     /*! used as an introduction to the namespace list */
     QCString trNamespaceListDescription(bool extractAll) override
     {
-      QCString result="در ذيل ليستی از همه ی فضاهای نام  ";
-      if (!extractAll) result+="(مستند سازی شده) ";
-      result+="به همراه توضيح کوتاه آنها مشاهده می کنيد :";
+      QCString result = "در ذيل ليستی از همه ی فضاهای نام  ";
+      if (!extractAll) result += "(مستند سازی شده) ";
+      result += "به همراه توضيح کوتاه آنها مشاهده می کنيد :";
       return result;
     }
 
@@ -574,80 +680,104 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
      *  friends of a class
      */
     QCString trFriends() override
-    { return "کلاس های دوست"; }
+    {
+      return "کلاس های دوست";
+    }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 0.49-990405
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 0.49-990405
+    //////////////////////////////////////////////////////////////////////////
 
     /*! used in the class documentation as a header before the list of all
      * related classes
      */
     QCString trRelatedFunctionDocumentation() override
-    { return "مستندات توابع مربوط و دوست"; }
+    {
+      return "مستندات توابع مربوط و دوست";
+    }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 0.49-990425
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 0.49-990425
+    //////////////////////////////////////////////////////////////////////////
 
     /*! used as the title of the HTML page of a class/struct/union */
-    QCString trCompoundReference(const QCString &clName,
-                                    ClassDef::CompoundType compType,
-                                    bool isTemplate) override
+    QCString trCompoundReference(const QCString        &clName,
+                                 ClassDef::CompoundType compType,
+                                 bool                   isTemplate) override
     {
       QCString result;
-      switch(compType)
+      switch (compType)
       {
-        case ClassDef::Class:      result=" کلاس"; break;
-        case ClassDef::Struct:     result=" ساختار داده"; break;
-        case ClassDef::Union:      result=" Union"; break;
-        case ClassDef::Interface:  result=" Interface"; break;
-        case ClassDef::Protocol:   result=" Protocol"; break;
-        case ClassDef::Category:   result=" Category"; break;
-        case ClassDef::Exception:  result=" استثناء"; break;
-        default: break;
+      case ClassDef::Class: result = " کلاس"; break;
+      case ClassDef::Struct: result = " ساختار داده"; break;
+      case ClassDef::Union: result = " Union"; break;
+      case ClassDef::Interface: result = " Interface"; break;
+      case ClassDef::Protocol: result = " Protocol"; break;
+      case ClassDef::Category: result = " Category"; break;
+      case ClassDef::Exception: result = " استثناء"; break;
+      default: break;
       }
-      if (isTemplate) result+=" قالب";
-      result=QCString(clName) + " مرجع" +result ;
+      if (isTemplate) result += " قالب";
+      result = QCString(clName) + " مرجع" + result;
       return result;
     }
 
     /*! used as the title of the HTML page of a file */
     QCString trFileReference(const QCString &fileName) override
     {
-      QCString result=fileName;
-      result+=" مرجع پرونده";
+      QCString result = fileName;
+      result += " مرجع پرونده";
       return result;
     }
 
     /*! used as the title of the HTML page of a namespace */
     QCString trNamespaceReference(const QCString &namespaceName) override
     {
-      QCString result=namespaceName;
-      result+=" مرجع فضای نام";
+      QCString result = namespaceName;
+      result += " مرجع فضای نام";
       return result;
     }
 
     QCString trPublicMembers() override
-    { return "توابع عمومی عضو کلاس"; }
+    {
+      return "توابع عمومی عضو کلاس";
+    }
     QCString trPublicSlots() override
-    { return "های عمومی Slot"; }
+    {
+      return "های عمومی Slot";
+    }
     QCString trSignals() override
-    { return "سيگنال ها"; }
+    {
+      return "سيگنال ها";
+    }
     QCString trStaticPublicMembers() override
-    { return "توابع ثابت عمومی عضو کلاس"; }
+    {
+      return "توابع ثابت عمومی عضو کلاس";
+    }
     QCString trProtectedMembers() override
-    { return "توابع خصوصی عضو کلاس"; }
+    {
+      return "توابع خصوصی عضو کلاس";
+    }
     QCString trProtectedSlots() override
-    { return "های محافظت شده Slot"; }
+    {
+      return "های محافظت شده Slot";
+    }
     QCString trStaticProtectedMembers() override
-    { return "توابع ثابت محافظت شده عضو کلاس"; }
+    {
+      return "توابع ثابت محافظت شده عضو کلاس";
+    }
     QCString trPrivateMembers() override
-    { return "توابع خصوصی عضو کلاس"; }
+    {
+      return "توابع خصوصی عضو کلاس";
+    }
     QCString trPrivateSlots() override
-    { return "های خصوصی Slot"; }
+    {
+      return "های خصوصی Slot";
+    }
     QCString trStaticPrivateMembers() override
-    { return "توابع خصوصی ثابت عضو کلاس"; }
+    {
+      return "توابع خصوصی ثابت عضو کلاس";
+    }
 
     /*! this function is used to produce a comma-separated list of items.
      *  use generateMarker(i) to indicate where item i should be put.
@@ -656,18 +786,18 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
     {
       QCString result;
       // the inherits list contain `numEntries' classes
-      for (int i=0;i<numEntries;i++)
+      for (int i = 0; i < numEntries; i++)
       {
         // use generateMarker to generate placeholders for the class links!
-        result+=generateMarker(i); // generate marker for entry i in the list
-                                   // (order is left to right)
+        result += generateMarker(i); // generate marker for entry i in the list
+                                     // (order is left to right)
 
-        if (i!=numEntries-1)  // not the last entry, so we need a separator
+        if (i != numEntries - 1) // not the last entry, so we need a separator
         {
-          if (i<numEntries-2) // not the fore last entry
-            result+=", ";
-          else                // the fore last entry
-            result+=" و ";
+          if (i < numEntries - 2) // not the fore last entry
+            result += ", ";
+          else // the fore last entry
+            result += " و ";
         }
       }
       return result;
@@ -678,7 +808,7 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
      */
     QCString trInheritsList(int numEntries) override
     {
-      return ".را به ارث می برد "+trWriteList(numEntries)+".";
+      return ".را به ارث می برد " + trWriteList(numEntries) + ".";
     }
 
     /*! used in class documentation to produce a list of super classes,
@@ -686,7 +816,7 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
      */
     QCString trInheritedByList(int numEntries) override
     {
-      return ".اين کلاس را به ارث برده است "+trWriteList(numEntries)+".";
+      return ".اين کلاس را به ارث برده است " + trWriteList(numEntries) + ".";
     }
 
     /*! used in member documentation blocks to produce a list of
@@ -694,7 +824,7 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
      */
     QCString trReimplementedFromList(int numEntries) override
     {
-      return "Reimplemented from "+trWriteList(numEntries)+".";
+      return "Reimplemented from " + trWriteList(numEntries) + ".";
     }
 
     /*! used in member documentation blocks to produce a list of
@@ -702,95 +832,112 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
      */
     QCString trReimplementedInList(int numEntries) override
     {
-      return "تعریف شده است "+trWriteList(numEntries)+"دوباره در ";
+      return "تعریف شده است " + trWriteList(numEntries) + "دوباره در ";
     }
 
     /*! This is put above each page as a link to all members of namespaces. */
     QCString trNamespaceMembers() override
-    { return "اعضای فضاهای نام"; }
+    {
+      return "اعضای فضاهای نام";
+    }
 
     /*! This is an introduction to the page with all namespace members */
     QCString trNamespaceMemberDescription(bool extractAll) override
     {
-      QCString result="ليست همه اعضای فضای نام  ";
-      if (!extractAll) result+="(مستند شده) ";
-      result+=" با ارتباطشان با";
-      result+="فضاهای نامی که به آن مربوط اند را مشاهده ميکنيد :";
+      QCString result = "ليست همه اعضای فضای نام  ";
+      if (!extractAll) result += "(مستند شده) ";
+      result += " با ارتباطشان با";
+      result += "فضاهای نامی که به آن مربوط اند را مشاهده ميکنيد :";
       return result;
     }
     /*! This is used in LaTeX as the title of the chapter with the
      *  index of all namespaces.
      */
     QCString trNamespaceIndex() override
-    { return "فهرست فضاهای نام"; }
+    {
+      return "فهرست فضاهای نام";
+    }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all namespaces.
      */
     QCString trNamespaceDocumentation() override
-    { return "توضيحات فضای نام"; }
+    {
+      return "توضيحات فضای نام";
+    }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 0.49-990522
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 0.49-990522
+    //////////////////////////////////////////////////////////////////////////
 
     /*! This is used in the documentation before the list of all
      *  namespaces in a file.
      */
     QCString trNamespaces() override
-    { return "فضاهای نام"; }
+    {
+      return "فضاهای نام";
+    }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 0.49-990728
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 0.49-990728
+    //////////////////////////////////////////////////////////////////////////
 
     /*! This is put at the bottom of a class documentation page and is
      *  followed by a list of files that were used to generate the page.
      */
     QCString trGeneratedFromFiles(ClassDef::CompoundType compType,
-        bool single) override
+                                  bool                   single) override
     { // here s is one of " Class", " Struct" or " Union"
       // single is true implies a single file
-      QCString result="مستندات اين  ";
-      switch(compType)
+      QCString result = "مستندات اين  ";
+      switch (compType)
       {
-        case ClassDef::Class:      result+="کلاس"; break;
-        case ClassDef::Struct:     result+="ساختار داده"; break;
-        case ClassDef::Union:      result+="union"; break;
-        case ClassDef::Interface:  result+="interface"; break;
-        case ClassDef::Protocol:   result+="protocol"; break;
-        case ClassDef::Category:   result+="category"; break;
-        case ClassDef::Exception:  result+="exception"; break;
-        default: break;
+      case ClassDef::Class: result += "کلاس"; break;
+      case ClassDef::Struct: result += "ساختار داده"; break;
+      case ClassDef::Union: result += "union"; break;
+      case ClassDef::Interface: result += "interface"; break;
+      case ClassDef::Protocol: result += "protocol"; break;
+      case ClassDef::Category: result += "category"; break;
+      case ClassDef::Exception: result += "exception"; break;
+      default: break;
       }
-      result+=" از روی پرونده ";
-      if (single) result+=""; else result+="های ";
-      result+="زير توليد شده است :";
+      result += " از روی پرونده ";
+      if (single)
+        result += "";
+      else
+        result += "های ";
+      result += "زير توليد شده است :";
       return result;
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 0.49-990901
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 0.49-990901
+    //////////////////////////////////////////////////////////////////////////
 
     /*! This is used as the heading text for the retval command. */
     QCString trReturnValues() override
-    { return "مقادير بازگشتی"; }
+    {
+      return "مقادير بازگشتی";
+    }
 
     /*! This is in the (quick) index as a link to the main page (index.html)
      */
     QCString trMainPage() override
-    { return "صفحه ی اصلی"; }
+    {
+      return "صفحه ی اصلی";
+    }
 
     /*! This is used in references to page that are put in the LaTeX
      *  documentation. It should be an abbreviation of the word page.
      */
     QCString trPageAbbreviation() override
-    { return "ص."; }
+    {
+      return "ص.";
+    }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 0.49-991003
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 0.49-991003
+    //////////////////////////////////////////////////////////////////////////
     QCString trDefinedAtLineInSourceFile() override
     {
       return ".در خط @0 از پرونده @1 تعريف شده است";
@@ -800,28 +947,28 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
       return ".در فايل @0 تعريف شده است";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 0.49-991205
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 0.49-991205
+    //////////////////////////////////////////////////////////////////////////
 
     QCString trDeprecated() override
     {
       return "منسوخ شده";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.0.0
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.0.0
+    //////////////////////////////////////////////////////////////////////////
 
     /*! this text is put before a collaboration diagram */
     QCString trCollaborationDiagram(const QCString &clName) override
     {
-      return "Collaboration diagram for "+clName+":";
+      return "Collaboration diagram for " + clName + ":";
     }
     /*! this text is put before an include dependency graph */
     QCString trInclDepGraph(const QCString &fName) override
     {
-      return "نمودار شامل شدن ها برای "+fName+":";
+      return "نمودار شامل شدن ها برای " + fName + ":";
     }
     /*! header that is put before the list of constructor/destructors. */
     QCString trConstructorDocumentation() override
@@ -880,9 +1027,9 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
       return "فهرست صفحات";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.1.0
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.1.0
+    //////////////////////////////////////////////////////////////////////////
 
     QCString trNote() override
     {
@@ -932,9 +1079,9 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
       return "خواص (متغييرهای) خصوصی ثابت";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.1.3
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.1.3
+    //////////////////////////////////////////////////////////////////////////
 
     /*! Used as a marker that is put before a \\todo item */
     QCString trTodo() override
@@ -947,9 +1094,9 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
       return "ليست کارهاي آينده";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.1.4
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.1.4
+    //////////////////////////////////////////////////////////////////////////
 
     QCString trReferencedBy() override
     {
@@ -972,9 +1119,9 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
       return "از";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.1.5
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.1.5
+    //////////////////////////////////////////////////////////////////////////
 
     /*! title of the graph legend page */
     QCString trLegendTitle() override
@@ -986,65 +1133,65 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
      */
     QCString trLegendDocs() override
     {
-      return
-        "This page explains how to interpret the graphs that are generated "
-        "by doxygen.<p>\n"
-        "Consider the following example:\n"
-        "\\code\n"
-        "/*! Invisible class because of truncation */\n"
-        "class Invisible { };\n\n"
-        "/*! Truncated class, inheritance relation is hidden */\n"
-        "class Truncated : public Invisible { };\n\n"
-        "/* Class not documented with doxygen comments */\n"
-        "class Undocumented { };\n\n"
-        "/*! Class that is inherited using public inheritance */\n"
-        "class PublicBase : public Truncated { };\n\n"
-        "/*! A template class */\n"
-        "template<class T> class Templ { };\n\n"
-        "/*! Class that is inherited using protected inheritance */\n"
-        "class ProtectedBase { };\n\n"
-        "/*! Class that is inherited using private inheritance */\n"
-        "class PrivateBase { };\n\n"
-        "/*! Class that is used by the Inherited class */\n"
-        "class Used { };\n\n"
-        "/*! Super class that inherits a number of other classes */\n"
-        "class Inherited : public PublicBase,\n"
-        "                  protected ProtectedBase,\n"
-        "                  private PrivateBase,\n"
-        "                  public Undocumented\n"
-        "                  public Templ<int>\n"
-        "{\n"
-        "  private:\n"
-        "    Used *m_usedClass;\n"
-        "};\n"
-        "\\endcode\n"
-        "If the \\c MAX_DOT_GRAPH_HEIGHT tag in the configuration file "
-        "is set to 240 this will result in the following graph:"
-        "<p><center><img alt=\"\" src=\"graph_legend."+getDotImageExtension()+"\"></center>\n"
-        "<p>\n"
-        "The boxes in the above graph have the following meaning:\n"
-        "<ul>\n"
-        "<li>%A filled black box represents the struct or class for which the "
-        "graph is generated.\n"
-        "<li>%A box with a black border denotes a documented struct or class.\n"
-        "<li>%A box with a gray border denotes an undocumented struct or class.\n"
-        "<li>%A box with a red border denotes a documented struct or class for"
-        "which not all inheritance/containment relations are shown. %A graph is "
-        "truncated if it does not fit within the specified boundaries.\n"
-        "</ul>\n"
-        "The arrows have the following meaning:\n"
-        "<ul>\n"
-        "<li>%A dark blue arrow is used to visualize a public inheritance "
-        "relation between two classes.\n"
-        "<li>%A dark green arrow is used for protected inheritance.\n"
-        "<li>%A dark red arrow is used for private inheritance.\n"
-        "<li>%A purple dashed arrow is used if a class is contained or used "
-        "by another class. The arrow is labeled with the variable(s) "
-        "through which the pointed class or struct is accessible.\n"
-        "<li>%A yellow dashed arrow denotes a relation between a template instance and "
-        "the template class it was instantiated from. The arrow is labeled with "
-        "the template parameters of the instance.\n"
-        "</ul>\n";
+      return "This page explains how to interpret the graphs that are generated "
+             "by doxygen.<p>\n"
+             "Consider the following example:\n"
+             "\\code\n"
+             "/*! Invisible class because of truncation */\n"
+             "class Invisible { };\n\n"
+             "/*! Truncated class, inheritance relation is hidden */\n"
+             "class Truncated : public Invisible { };\n\n"
+             "/* Class not documented with doxygen comments */\n"
+             "class Undocumented { };\n\n"
+             "/*! Class that is inherited using public inheritance */\n"
+             "class PublicBase : public Truncated { };\n\n"
+             "/*! A template class */\n"
+             "template<class T> class Templ { };\n\n"
+             "/*! Class that is inherited using protected inheritance */\n"
+             "class ProtectedBase { };\n\n"
+             "/*! Class that is inherited using private inheritance */\n"
+             "class PrivateBase { };\n\n"
+             "/*! Class that is used by the Inherited class */\n"
+             "class Used { };\n\n"
+             "/*! Super class that inherits a number of other classes */\n"
+             "class Inherited : public PublicBase,\n"
+             "                  protected ProtectedBase,\n"
+             "                  private PrivateBase,\n"
+             "                  public Undocumented\n"
+             "                  public Templ<int>\n"
+             "{\n"
+             "  private:\n"
+             "    Used *m_usedClass;\n"
+             "};\n"
+             "\\endcode\n"
+             "If the \\c MAX_DOT_GRAPH_HEIGHT tag in the configuration file "
+             "is set to 240 this will result in the following graph:"
+             "<p><center><img alt=\"\" src=\"graph_legend." +
+             getDotImageExtension() + "\"></center>\n"
+                                      "<p>\n"
+                                      "The boxes in the above graph have the following meaning:\n"
+                                      "<ul>\n"
+                                      "<li>%A filled black box represents the struct or class for which the "
+                                      "graph is generated.\n"
+                                      "<li>%A box with a black border denotes a documented struct or class.\n"
+                                      "<li>%A box with a gray border denotes an undocumented struct or class.\n"
+                                      "<li>%A box with a red border denotes a documented struct or class for"
+                                      "which not all inheritance/containment relations are shown. %A graph is "
+                                      "truncated if it does not fit within the specified boundaries.\n"
+                                      "</ul>\n"
+                                      "The arrows have the following meaning:\n"
+                                      "<ul>\n"
+                                      "<li>%A dark blue arrow is used to visualize a public inheritance "
+                                      "relation between two classes.\n"
+                                      "<li>%A dark green arrow is used for protected inheritance.\n"
+                                      "<li>%A dark red arrow is used for private inheritance.\n"
+                                      "<li>%A purple dashed arrow is used if a class is contained or used "
+                                      "by another class. The arrow is labeled with the variable(s) "
+                                      "through which the pointed class or struct is accessible.\n"
+                                      "<li>%A yellow dashed arrow denotes a relation between a template instance and "
+                                      "the template class it was instantiated from. The arrow is labeled with "
+                                      "the template parameters of the instance.\n"
+                                      "</ul>\n";
     }
     /*! text for the link to the legend page */
     QCString trLegend() override
@@ -1052,9 +1199,9 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
       return "راهنما";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.2.0
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.2.0
+    //////////////////////////////////////////////////////////////////////////
 
     /*! Used as a marker that is put before a test item */
     QCString trTest() override
@@ -1067,9 +1214,9 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
       return "Test List";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.2.2
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.2.2
+    //////////////////////////////////////////////////////////////////////////
 
     /*! Used as a section header for IDL properties */
     QCString trProperties() override
@@ -1082,9 +1229,9 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
       return "مستندات خاصیت";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.2.4
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.2.4
+    //////////////////////////////////////////////////////////////////////////
 
     /*! Used for Java classes in the summary section of Java packages */
     QCString trClasses() override
@@ -1101,7 +1248,7 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
     /*! Used as the title of a Java package */
     QCString trPackage(const QCString &name) override
     {
-      return "Package "+name;
+      return "Package " + name;
     }
     /*! The description of the package index page */
     QCString trPackageListDescription() override
@@ -1119,9 +1266,9 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
       return "مقدار:";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.2.5
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.2.5
+    //////////////////////////////////////////////////////////////////////////
 
     /*! Used as a marker that is put before a \\bug item */
     QCString trBug() override
@@ -1134,9 +1281,9 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
       return "ليست اشکالات";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.2.6
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.2.6
+    //////////////////////////////////////////////////////////////////////////
 
     /*! Used as ansicpg for RTF file
      *
@@ -1190,7 +1337,7 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
     QCString trClass(bool first_capital, bool singular) override
     {
       QCString result((first_capital ? "کلاس" : "کلاس"));
-      if (!singular)  result+="ها";
+      if (!singular) result += "ها";
       return result;
     }
 
@@ -1201,7 +1348,7 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
     QCString trFile(bool /*first_capital*/, bool singular) override
     {
       QCString result("پرونده");
-      if (!singular) result=result+" ها";
+      if (!singular) result = result + " ها";
       return result;
     }
 
@@ -1212,7 +1359,7 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
     QCString trNamespace(bool first_capital, bool singular) override
     {
       QCString result((first_capital ? "فضای نام " : "فضای نام "));
-      if (!singular)  result+="ها";
+      if (!singular) result += "ها";
       return result;
     }
 
@@ -1223,7 +1370,7 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
     QCString trGroup(bool first_capital, bool singular) override
     {
       QCString result((first_capital ? "Group" : "group"));
-      if (!singular)  result+="s";
+      if (!singular) result += "s";
       return result;
     }
 
@@ -1234,7 +1381,7 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
     QCString trPage(bool first_capital, bool singular) override
     {
       QCString result((first_capital ? "صفحه" : "صفحه"));
-      if (!singular)  result+=" ها ";
+      if (!singular) result += " ها ";
       return result;
     }
 
@@ -1245,7 +1392,7 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
     QCString trMember(bool first_capital, bool singular) override
     {
       QCString result((first_capital ? "عضو" : "عضو"));
-      if (!singular)  result+="ها";
+      if (!singular) result += "ها";
       return result;
     }
 
@@ -1256,26 +1403,26 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
     QCString trGlobal(bool first_capital, bool singular) override
     {
       QCString result((first_capital ? "Global" : "global"));
-      if (!singular)  result+="s";
+      if (!singular) result += "s";
       return result;
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.2.7
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.2.7
+    //////////////////////////////////////////////////////////////////////////
 
     /*! This text is generated when the \\author command is used and
      *  for the author section in man pages. */
     QCString trAuthor(bool first_capital, bool singular) override
     {
       QCString result((first_capital ? "Author" : "author"));
-      if (!singular)  result+="s";
+      if (!singular) result += "s";
       return result;
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.2.11
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.2.11
+    //////////////////////////////////////////////////////////////////////////
 
     /*! This text is put before the list of members referenced by a member
      */
@@ -1284,16 +1431,16 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
       return "را استفاده ميکند ";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.2.13
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.2.13
+    //////////////////////////////////////////////////////////////////////////
 
     /*! used in member documentation blocks to produce a list of
      *  members that are implemented by this one.
      */
     QCString trImplementedFromList(int numEntries) override
     {
-      return "را تکميل می کند "+trWriteList(numEntries)+".";
+      return "را تکميل می کند " + trWriteList(numEntries) + ".";
     }
 
     /*! used in member documentation blocks to produce a list of
@@ -1301,12 +1448,12 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
      */
     QCString trImplementedInList(int numEntries) override
     {
-      return ".تکميل شده است "+trWriteList(numEntries)+" در";
+      return ".تکميل شده است " + trWriteList(numEntries) + " در";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.2.16
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.2.16
+    //////////////////////////////////////////////////////////////////////////
 
     /*! used in RTF documentation as a heading for the Table
      *  of Contents.
@@ -1316,9 +1463,9 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
       return "فهرست";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.2.17
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.2.17
+    //////////////////////////////////////////////////////////////////////////
 
     /*! Used as the header of the list of item that have been
      *  flagged deprecated
@@ -1328,9 +1475,9 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
       return "لیست آیتم های از رده خارج";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.2.18
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.2.18
+    //////////////////////////////////////////////////////////////////////////
 
     /*! Used as a header for declaration section of the events found in
      * a C# program
@@ -1345,9 +1492,9 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
       return "مستندات رویداد";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.3
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.3
+    //////////////////////////////////////////////////////////////////////////
 
     /*! Used as a heading for a list of Java class types with package scope.
      */
@@ -1388,9 +1535,9 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
       return "Static Package Attributes";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.3.1
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.3.1
+    //////////////////////////////////////////////////////////////////////////
 
     /*! Used in the quick index of a class/file/namespace member list page
      *  to link to the unfiltered list of all members.
@@ -1405,9 +1552,9 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
       return "نمودار صدا زدن برای این تابع :";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.3.3
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.3.3
+    //////////////////////////////////////////////////////////////////////////
 
     /*! This string is used as the title for the page listing the search
      *  results.
@@ -1426,11 +1573,11 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
      */
     QCString trSearchResults(int numDocuments) override
     {
-      if (numDocuments==0)
+      if (numDocuments == 0)
       {
         return "متاسفانه هیچ صفحه ای برای جستجو ی شما یافت نشد.";
       }
-      else if (numDocuments==1)
+      else if (numDocuments == 1)
       {
         return "یک سند برای این مورد یافت شد.";
       }
@@ -1448,44 +1595,54 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
       return "Matches:";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.3.8
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.3.8
+    //////////////////////////////////////////////////////////////////////////
 
     /*! This is used in HTML as the title of page with source code for file filename
      */
-    QCString trSourceFile(const QCString& filename) override
+    QCString trSourceFile(const QCString &filename) override
     {
       return filename + " کد و پرونده منبع";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.3.9
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.3.9
+    //////////////////////////////////////////////////////////////////////////
 
     /*! This is used as the name of the chapter containing the directory
      *  hierarchy.
      */
     QCString trDirIndex() override
-    { return "ساختار و سلسله مراتب شاخه ها"; }
+    {
+      return "ساختار و سلسله مراتب شاخه ها";
+    }
 
     /*! This is used as the name of the chapter containing the documentation
      *  of the directories.
      */
     QCString trDirDocumentation() override
-    { return "مستندات دايرکتوری"; }
+    {
+      return "مستندات دايرکتوری";
+    }
 
     /*! This is used as the title of the directory index and also in the
      *  Quick links of an HTML page, to link to the directory hierarchy.
      */
     QCString trDirectories() override
-    { return "شاخه ها"; }
+    {
+      return "شاخه ها";
+    }
 
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.
      */
     QCString trDirReference(const QCString &dirName) override
-    { QCString result=dirName; result+=" مرجع شاخه ی"; return result; }
+    {
+      QCString result = dirName;
+      result += " مرجع شاخه ی";
+      return result;
+    }
 
     /*! This returns the word directory with or without starting capital
      *  (\a first_capital) and in sigular or plural form (\a singular).
@@ -1493,52 +1650,60 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
     QCString trDir(bool /*first_capital*/, bool singular) override
     {
       QCString result("شاخه");
-      if (singular) result+=" ها "+result;
+      if (singular) result += " ها " + result;
       return result;
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.4.1
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.4.1
+    //////////////////////////////////////////////////////////////////////////
 
     /*! This text is added to the documentation when the \\overload command
      *  is used for a overloaded function.
      */
     QCString trOverloadText() override
     {
-       return "This is an overloaded member function, "
-              "provided for convenience. It differs from the above "
-              "function only in what argument(s) it accepts.";
+      return "This is an overloaded member function, "
+             "provided for convenience. It differs from the above "
+             "function only in what argument(s) it accepts.";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.4.6
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.4.6
+    //////////////////////////////////////////////////////////////////////////
 
     /*! This is used to introduce a caller (or called-by) graph */
     QCString trCallerGraph() override
     {
       return "نمودار صدا زننده های این تابع:";
     }
-//////////////////////////////////////////////////////////////////////////
-// new since 1.5.4 (mainly for Fortran)
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.5.4 (mainly for Fortran)
+    //////////////////////////////////////////////////////////////////////////
 
     /*! header that is put before the list of member subprograms (Fortran). */
     QCString trMemberFunctionDocumentationFortran() override
-    { return "مستندات توابع عضو"; }
+    {
+      return "مستندات توابع عضو";
+    }
 
     /*! This is put above each page as a link to the list of annotated data types (Fortran). */
     QCString trCompoundListFortran() override
-    { return "لیست ساختار های داده"; }
+    {
+      return "لیست ساختار های داده";
+    }
 
     /*! This is put above each page as a link to all members of compounds (Fortran). */
     QCString trCompoundMembersFortran() override
-    { return "فیلدهای اطلاعات"; }
+    {
+      return "فیلدهای اطلاعات";
+    }
 
     /*! This is an introduction to the annotated compound list (Fortran). */
     QCString trCompoundListDescriptionFortran() override
-    { return "ساختارهای داده به همراه توضیح کوتاه :"; }
+    {
+      return "ساختارهای داده به همراه توضیح کوتاه :";
+    }
 
     /*! This is an introduction to the page with all data types (Fortran). */
     QCString trCompoundMembersDescriptionFortran(bool) override
@@ -1550,80 +1715,94 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
      * annotated compound index (Fortran).
      */
     QCString trCompoundIndexFortran() override
-    { return "Data Type Index"; }
+    {
+      return "Data Type Index";
+    }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all data types (Fortran).
      */
     QCString trTypeDocumentation() override
-    { return "Data Type Documentation"; }
+    {
+      return "Data Type Documentation";
+    }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of (global) subprograms (Fortran).
      */
     QCString trSubprograms() override
-    { return "توابع و زیربرنامه ها"; }
+    {
+      return "توابع و زیربرنامه ها";
+    }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for subprograms (Fortran)
      */
     QCString trSubprogramDocumentation() override
-    { return "مستندات توابع و زیربرنامه ها"; }
+    {
+      return "مستندات توابع و زیربرنامه ها";
+    }
 
     /*! This is used in the documentation of a file/namespace/group before
      *  the list of links to documented compounds (Fortran)
      */
-     QCString trDataTypes() override
-    { return "ساختار های داده"; }
+    QCString trDataTypes() override
+    {
+      return "ساختار های داده";
+    }
 
     /*! used as the title of page containing all the index of all modules (Fortran). */
     QCString trModulesList() override
-    { return "لیست ماژول ها"; }
+    {
+      return "لیست ماژول ها";
+    }
 
     /*! used as an introduction to the modules list (Fortran) */
     QCString trModulesListDescription(bool) override
     {
-      QCString result="لیست ماژول ها به همراه توضیحات کوتاه";
+      QCString result = "لیست ماژول ها به همراه توضیحات کوتاه";
       return result;
     }
 
     /*! used as the title of the HTML page of a module/type (Fortran) */
-    QCString trCompoundReferenceFortran(const QCString &clName,
-                                    ClassDef::CompoundType compType,
-                                    bool isTemplate) override
+    QCString trCompoundReferenceFortran(const QCString        &clName,
+                                        ClassDef::CompoundType compType,
+                                        bool                   isTemplate) override
     {
-      QCString result=clName;
-      switch(compType)
+      QCString result = clName;
+      switch (compType)
       {
-        case ClassDef::Class:      result+=" Module"; break;
-        case ClassDef::Struct:     result+=" Type"; break;
-        case ClassDef::Union:      result+=" Union"; break;
-        case ClassDef::Interface:  result+=" Interface"; break;
-        case ClassDef::Protocol:   result+=" Protocol"; break;
-        case ClassDef::Category:   result+=" Category"; break;
-        case ClassDef::Exception:  result+=" Exception"; break;
-        default: break;
+      case ClassDef::Class: result += " Module"; break;
+      case ClassDef::Struct: result += " Type"; break;
+      case ClassDef::Union: result += " Union"; break;
+      case ClassDef::Interface: result += " Interface"; break;
+      case ClassDef::Protocol: result += " Protocol"; break;
+      case ClassDef::Category: result += " Category"; break;
+      case ClassDef::Exception: result += " Exception"; break;
+      default: break;
       }
-      if (isTemplate) result+=" Template";
-      result+=" Reference";
+      if (isTemplate) result += " Template";
+      result += " Reference";
       return result;
     }
     /*! used as the title of the HTML page of a module (Fortran) */
     QCString trModuleReference(const QCString &namespaceName) override
     {
-      QCString result=namespaceName;
-      result+=" Module Reference";
+      QCString result = namespaceName;
+      result += " Module Reference";
       return result;
     }
 
     /*! This is put above each page as a link to all members of modules. (Fortran) */
     QCString trModulesMembers() override
-    { return "اعضاء ماژول"; }
+    {
+      return "اعضاء ماژول";
+    }
 
     /*! This is an introduction to the page with all modules members (Fortran) */
     QCString trModulesMemberDescription(bool) override
     {
-      QCString result="لیست اعضاء ماژول ها به همراه مستندات ماژول مربوطه";
+      QCString result = "لیست اعضاء ماژول ها به همراه مستندات ماژول مربوطه";
       return result;
     }
 
@@ -1631,7 +1810,9 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
      *  index of all modules (Fortran).
      */
     QCString trModulesIndex() override
-    { return "Modules Index"; }
+    {
+      return "Modules Index";
+    }
 
     /*! This is used for translation of the word that will possibly
      *  be followed by a single name or by a list of names
@@ -1640,30 +1821,33 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
     QCString trModule(bool, bool singular) override
     {
       QCString result("ماژول");
-      if (!singular)  result+=" ها";
+      if (!singular) result += " ها";
       return result;
     }
     /*! This is put at the bottom of a module documentation page and is
      *  followed by a list of files that were used to generate the page.
      */
     QCString trGeneratedFromFilesFortran(ClassDef::CompoundType compType,
-        bool single) override
+                                         bool                   single) override
     { // here s is one of " Module", " Struct" or " Union"
       // single is true implies a single file
-      QCString result="The documentation for this ";
-      switch(compType)
+      QCString result = "The documentation for this ";
+      switch (compType)
       {
-        case ClassDef::Class:      result+="module"; break;
-        case ClassDef::Struct:     result+="type"; break;
-        case ClassDef::Union:      result+="union"; break;
-        case ClassDef::Interface:  result+="interface"; break;
-        case ClassDef::Protocol:   result+="protocol"; break;
-        case ClassDef::Category:   result+="category"; break;
-        case ClassDef::Exception:  result+="exception"; break;
-        default: break;
+      case ClassDef::Class: result += "module"; break;
+      case ClassDef::Struct: result += "type"; break;
+      case ClassDef::Union: result += "union"; break;
+      case ClassDef::Interface: result += "interface"; break;
+      case ClassDef::Protocol: result += "protocol"; break;
+      case ClassDef::Category: result += "category"; break;
+      case ClassDef::Exception: result += "exception"; break;
+      default: break;
       }
-      result+=" was generated from the following file";
-      if (single) result+=":"; else result+="s:";
+      result += " was generated from the following file";
+      if (single)
+        result += ":";
+      else
+        result += "s:";
       return result;
     }
     /*! This is used for translation of the word that will possibly
@@ -1681,7 +1865,7 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
     QCString trSubprogram(bool, bool singular) override
     {
       QCString result("زیربرنامه");
-      if (!singular)  result+=" ها ";
+      if (!singular) result += " ها ";
       return result;
     }
 
@@ -1691,9 +1875,9 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
       return "Type Constraints";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.6.0 (mainly for the new search engine)
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.6.0 (mainly for the new search engine)
+    //////////////////////////////////////////////////////////////////////////
 
     /*! directory relation for \a name */
     QCString trDirRelation(const QCString &name) override
@@ -1725,9 +1909,9 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
       return "یافت نشد";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.6.3 (missing items for the directory pages)
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.6.3 (missing items for the directory pages)
+    //////////////////////////////////////////////////////////////////////////
 
     /*! when clicking a directory dependency label, a page with a
      *  table is shown. The heading for the first column mentions the
@@ -1735,7 +1919,7 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
      */
     QCString trFileIn(const QCString &name) override
     {
-      return "پرونده ای در "+name;
+      return "پرونده ای در " + name;
     }
 
     /*! when clicking a directory dependency label, a page with a
@@ -1744,7 +1928,7 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
      */
     QCString trIncludesFileIn(const QCString &name) override
     {
-      return "Includes file in "+name;
+      return "Includes file in " + name;
     }
 
     /** Compiles a date string.
@@ -1757,46 +1941,45 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
      *  @param seconds Seconds within the minute: 0..59
      *  @param includeTime Include time in the result string?
      */
-    QCString trDateTime(int year,int month,int day,int dayOfWeek,
-                                int hour,int minutes,int seconds,
-                                DateTimeType includeTime) override
+    QCString trDateTime(int year, int month, int day, int dayOfWeek,
+                        int hour, int minutes, int seconds,
+                        DateTimeType includeTime) override
     {
-      static const char *days[]   = { "دوشنبه","سه‌شنبه","چهارشنبه","پنجشنبه","جمعه","شنبه","یکشنبه" };
-      static const char *months[] = { "ژانویه","فوریه","مارس","آوریل","می","جون","جولای","آگوست","سپتامبر","اکتبر","نوامبر","دسامبر" };
-      QCString sdate;
+      static const char *days[]   = { "دوشنبه", "سه‌شنبه", "چهارشنبه", "پنجشنبه", "جمعه", "شنبه", "یکشنبه" };
+      static const char *months[] = { "ژانویه", "فوریه", "مارس", "آوریل", "می", "جون", "جولای", "آگوست", "سپتامبر", "اکتبر", "نوامبر", "دسامبر" };
+      QCString           sdate;
       if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Date)
       {
-        sdate.sprintf("%s %d %s %d",days[dayOfWeek-1],day,months[month-1],year);
+        sdate.sprintf("%s %d %s %d", days[dayOfWeek - 1], day, months[month - 1], year);
       }
       if (includeTime == DateTimeType::DateTime) sdate += " ";
       if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Time)
       {
         QCString stime;
-        stime.sprintf("%.2d:%.2d:%.2d",hour,minutes,seconds);
-        sdate+=stime;
+        stime.sprintf("%.2d:%.2d:%.2d", hour, minutes, seconds);
+        sdate += stime;
       }
       return convertDigitsToFarsi(sdate);
     }
     QCString trDayOfWeek(int dayOfWeek, bool, bool full) override
     {
-      static const char *days_short[]   = { "دوشنبه", "سه شنبه", "چهارشنبه", "پنجشنبه", "جمعه", "شنبه", "يكشنبه" };
-      static const char *days_full[]    = { "دوشنبه", "سه شنبه", "چهارشنبه", "پنجشنبه", "جمعه", "شنبه", "يكشنبه" };
-      QCString text  = full? days_full[dayOfWeek-1] : days_short[dayOfWeek-1];
+      static const char *days_short[] = { "دوشنبه", "سه شنبه", "چهارشنبه", "پنجشنبه", "جمعه", "شنبه", "يكشنبه" };
+      static const char *days_full[]  = { "دوشنبه", "سه شنبه", "چهارشنبه", "پنجشنبه", "جمعه", "شنبه", "يكشنبه" };
+      QCString           text         = full ? days_full[dayOfWeek - 1] : days_short[dayOfWeek - 1];
       return text;
     }
     QCString trMonth(int month, bool, bool full) override
     {
       static const char *months_short[] = { "ژانويه", "فوريه", "مارس", "آوريل", "مه", "ژوئن", "ژوئيه", "اوت", "سپتامبر", "اُكتبر", "نوامبر", "دسامبر" };
       static const char *months_full[]  = { "ژانويه", "فوريه", "مارس", "آوريل", "مه", "ژوئن", "ژوئيه", "اوت", "سپتامبر", "اُكتبر", "نوامبر", "دسامبر" };
-      QCString text  = full? months_full[month-1] : months_short[month-1];
+      QCString           text           = full ? months_full[month - 1] : months_short[month - 1];
       return text;
     }
     QCString trDayPeriod(bool period) override
     {
       static const char *dayPeriod[] = { "قبل‌ازظهر", "بعدازظهر" };
-      return dayPeriod[period?1:0];
+      return dayPeriod[period ? 1 : 0];
     }
-
 };
 
 #endif

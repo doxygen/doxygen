@@ -31,41 +31,40 @@ class DotRunner
 {
     struct DotJob
     {
-      DotJob(const QCString &f, const QCString &o, const QCString &a,
-             const QCString &s,int l)
-        : format(f), output(o), args(a), srcFile(s), srcLine(l) {}
-      QCString format;
-      QCString output;
-      QCString args;
-      QCString srcFile;
-      int srcLine;
+        DotJob(const QCString &f, const QCString &o, const QCString &a,
+               const QCString &s, int l) :
+            format(f),
+            output(o), args(a), srcFile(s), srcLine(l) {}
+        QCString format;
+        QCString output;
+        QCString args;
+        QCString srcFile;
+        int      srcLine;
     };
-
   public:
     /** Creates a runner for a dot \a file. */
-    DotRunner(const QCString & absDotName, const QCString& md5Hash = QCString());
+    DotRunner(const QCString &absDotName, const QCString &md5Hash = QCString());
 
     /** Adds an additional job to the run.
      *  Performing multiple jobs one file can be faster.
      */
-    void addJob(const QCString &format,const QCString &output,const QCString &srcFile,int srcLine);
+    void        addJob(const QCString &format, const QCString &output, const QCString &srcFile, int srcLine);
 
     /** Prevent cleanup of the dot file (for user provided dot files) */
-    void preventCleanUp() { m_cleanUp = false; }
+    void        preventCleanUp() { m_cleanUp = false; }
 
     /** Runs dot for all jobs added. */
-    bool run();
+    bool        run();
 
-    QCString getMd5Hash() { return m_md5Hash; }
+    QCString    getMd5Hash() { return m_md5Hash; }
 
-    static bool readBoundingBox(const QCString &fileName, int* width, int* height, bool isEps);
-
+    static bool readBoundingBox(const QCString &fileName, int *width, int *height, bool isEps);
   private:
-    QCString m_file;
-    QCString m_md5Hash;
-    QCString m_dotExe;
-    bool     m_cleanUp;
-    std::vector<DotJob>  m_jobs;
+    QCString            m_file;
+    QCString            m_md5Hash;
+    QCString            m_dotExe;
+    bool                m_cleanUp;
+    std::vector<DotJob> m_jobs;
 };
 
 #endif

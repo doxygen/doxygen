@@ -26,10 +26,11 @@
 
 class CondParser
 {
-  // public functions
+    // public functions
   public:
-    CondParser() : m_e(nullptr), m_tokenType(NOTHING) {}
-    bool parse(const QCString &fileName,int lineNr,const QCString &expr);
+    CondParser() :
+        m_e(nullptr), m_tokenType(NOTHING) {}
+    bool parse(const QCString &fileName, int lineNr, const QCString &expr);
 
     // enumerations
   private:
@@ -43,20 +44,19 @@ class CondParser
     enum OPERATOR_ID
     {
       UNKNOWN_OP = -1,
-      AND = 1,
+      AND        = 1,
       OR,
       NOT
     };
 
     // data
   private:
+    QCString    m_err;  //!< error state
+    QCString    m_expr; //!< holds the expression
+    const char *m_e;    //!< points to a character in expr
 
-    QCString m_err;                 //!< error state
-    QCString m_expr;                //!< holds the expression
-    const char *m_e;                //!< points to a character in expr
-
-    QCString m_token;               //!< holds the token
-    TOKENTYPE m_tokenType;          //!< type of the token
+    QCString    m_token;     //!< holds the token
+    TOKENTYPE   m_tokenType; //!< type of the token
 
     // private functions
   private:
@@ -69,8 +69,7 @@ class CondParser
 
     bool evalOperator(const int opId, bool lhs, bool rhs);
     bool evalVariable(const QCString &varName);
-    int getOperatorId(const QCString &opName);
+    int  getOperatorId(const QCString &opName);
 };
 
 #endif
-

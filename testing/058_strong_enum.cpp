@@ -8,7 +8,8 @@
  * \brief Main file
  */
 
-namespace ns {
+namespace ns
+{
 
 /**
  * \namespace ns
@@ -17,14 +18,16 @@ namespace ns {
 
 class Class
 {
-public:
-	enum class Enum1 {
-		Flag,
-	};
+  public:
+    enum class Enum1
+    {
+      Flag,
+    };
 
-	enum class Enum2 {
-		Flag,
-	};
+    enum class Enum2
+    {
+      Flag,
+    };
 };
 
 /**
@@ -50,7 +53,8 @@ public:
 
 } /* namespace ns */
 
-namespace ns2 {
+namespace ns2
+{
 
 /**
  * \namespace ns2
@@ -58,14 +62,16 @@ namespace ns2 {
  */
 class Class
 {
-public:
-	enum class Enum1 {
-		Flag,
-	};
+  public:
+    enum class Enum1
+    {
+      Flag,
+    };
 
-	enum class Enum2 {
-		Flag,
-	};
+    enum class Enum2
+    {
+      Flag,
+    };
 };
 
 /**
@@ -94,14 +100,16 @@ public:
 
 class Class
 {
-public:
-	enum class Enum1 {
-		Flag,
-	};
+  public:
+    enum class Enum1
+    {
+      Flag,
+    };
 
-	enum class Enum2 {
-		Flag,
-	};
+    enum class Enum2
+    {
+      Flag,
+    };
 };
 
 /**

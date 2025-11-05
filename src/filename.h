@@ -26,14 +26,14 @@
 class FileDef;
 
 /** Class representing all files with a certain base name */
-class FileName : public std::vector< std::unique_ptr<FileDef> >
+class FileName : public std::vector<std::unique_ptr<FileDef>>
 {
   public:
-    FileName(const QCString &nm,const QCString &fn) : m_name(nm), m_fName(fn), m_pathName("tmp") {}
+    FileName(const QCString &nm, const QCString &fn) :
+        m_name(nm), m_fName(fn), m_pathName("tmp") {}
     QCString fileName() const { return m_name; }
     QCString fullName() const { return m_fName; }
     QCString path() const { return m_pathName; }
-
   private:
     QCString m_name;
     QCString m_fName;
@@ -46,12 +46,12 @@ class FileNameFn
 {
   public:
     //! used as hash function
-    std::size_t operator()(const std::string& input) const noexcept
+    std::size_t operator()(const std::string &input) const noexcept
     {
       return std::hash<std::string>()(searchKey(input));
     }
     //! used as equal operator
-    bool operator() (const std::string &t1, const std::string &t2) const
+    bool operator()(const std::string &t1, const std::string &t2) const
     {
       return searchKey(t1) == searchKey(t2);
     }
@@ -68,8 +68,8 @@ class FileNameFn
 };
 
 /** Ordered dictionary of FileName objects. */
-class FileNameLinkedMap : public LinkedMap<FileName,FileNameFn,FileNameFn,
-                                           std::unordered_multimap<std::string,FileName*,FileNameFn,FileNameFn> >
+class FileNameLinkedMap : public LinkedMap<FileName, FileNameFn, FileNameFn,
+                                           std::unordered_multimap<std::string, FileName *, FileNameFn, FileNameFn>>
 {
 };
 

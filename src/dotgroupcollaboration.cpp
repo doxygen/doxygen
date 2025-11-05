@@ -22,40 +22,40 @@
 #include "config.h"
 #include "textstream.h"
 
-DotGroupCollaboration::DotGroupCollaboration(const GroupDef* gd)
+DotGroupCollaboration::DotGroupCollaboration(const GroupDef *gd)
 {
-  QCString tmp_url = gd->getReference()+"$"+gd->getOutputFileBase();
+  QCString tmp_url = gd->getReference() + "$" + gd->getOutputFileBase();
   QCString tooltip = gd->briefDescriptionAsTooltip();
-  m_rootNode = new DotNode(this, gd->groupTitle(), tooltip, tmp_url, TRUE );
+  m_rootNode       = new DotNode(this, gd->groupTitle(), tooltip, tmp_url, TRUE);
   m_rootNode->markAsVisible();
   m_usedNodes.emplace(gd->name().str(), m_rootNode);
 
   m_diskName = gd->getOutputFileBase();
 
-  buildGraph( gd );
+  buildGraph(gd);
 }
 
 DotGroupCollaboration::~DotGroupCollaboration()
 {
   // delete all created Nodes saved in m_usedNodes map
-  for (const auto &[name,node] : m_usedNodes)
+  for (const auto &[name, node] : m_usedNodes)
   {
     delete node;
   }
 }
 
-static void makeURL(const Definition *def,QCString &url)
+static void makeURL(const Definition *def, QCString &url)
 {
   QCString fn = def->getOutputFileBase();
   addHtmlExtensionIfMissing(fn);
-  url = def->getReference()+"$"+fn;
+  url = def->getReference() + "$" + fn;
   if (!def->anchor().isEmpty())
   {
-    url+="#"+def->anchor();
+    url += "#" + def->anchor();
   }
 }
 
-void DotGroupCollaboration::buildGraph(const GroupDef* gd)
+void DotGroupCollaboration::buildGraph(const GroupDef *gd)
 {
   QCString url;
   //===========================
@@ -65,12 +65,12 @@ void DotGroupCollaboration::buildGraph(const GroupDef* gd)
   for (const auto &d : gd->partOfGroups())
   {
     DotNode *nnode = nullptr;
-    auto it = m_usedNodes.find(d->name().str());
-    if ( it==m_usedNodes.end())
+    auto     it    = m_usedNodes.find(d->name().str());
+    if (it == m_usedNodes.end())
     { // add node
-      makeURL(d,url);
+      makeURL(d, url);
       QCString tooltip = d->briefDescriptionAsTooltip();
-      nnode = new DotNode(this, d->groupTitle(), tooltip, url );
+      nnode            = new DotNode(this, d->groupTitle(), tooltip, url);
       nnode->markAsVisible();
       m_usedNodes.emplace(d->name().str(), nnode);
     }
@@ -79,19 +79,19 @@ void DotGroupCollaboration::buildGraph(const GroupDef* gd)
       nnode = it->second;
     }
     url = "";
-    addEdge( nnode, m_rootNode, DotGroupCollaboration::thierarchy, url, url );
+    addEdge(nnode, m_rootNode, DotGroupCollaboration::thierarchy, url, url);
   }
 
   // Add subgroups
   for (const auto &def : gd->getSubGroups())
   {
     DotNode *nnode = nullptr;
-    auto it = m_usedNodes.find(def->name().str());
-    if ( it==m_usedNodes.end())
+    auto     it    = m_usedNodes.find(def->name().str());
+    if (it == m_usedNodes.end())
     { // add node
-      makeURL(def,url);
+      makeURL(def, url);
       QCString tooltip = def->briefDescriptionAsTooltip();
-      nnode = new DotNode(this, def->groupTitle(), tooltip, url );
+      nnode            = new DotNode(this, def->groupTitle(), tooltip, url);
       nnode->markAsVisible();
       m_usedNodes.emplace(def->name().str(), nnode);
     }
@@ -100,83 +100,82 @@ void DotGroupCollaboration::buildGraph(const GroupDef* gd)
       nnode = it->second;
     }
     url = "";
-    addEdge( m_rootNode, nnode, DotGroupCollaboration::thierarchy, url, url );
+    addEdge(m_rootNode, nnode, DotGroupCollaboration::thierarchy, url, url);
   }
 
   //=======================
   // Write collaboration
 
   // Add members
-  addMemberList( gd->getMemberList(MemberListType::AllMembersList()) );
+  addMemberList(gd->getMemberList(MemberListType::AllMembersList()));
 
   // Add classes
   for (const auto &def : gd->getClasses())
   {
-    makeURL(def,url);
-    addCollaborationMember( def, url, DotGroupCollaboration::tclass );
+    makeURL(def, url);
+    addCollaborationMember(def, url, DotGroupCollaboration::tclass);
   }
 
   // Add namespaces
   for (const auto &def : gd->getNamespaces())
   {
-    makeURL(def,url);
-    addCollaborationMember( def, url, DotGroupCollaboration::tnamespace );
+    makeURL(def, url);
+    addCollaborationMember(def, url, DotGroupCollaboration::tnamespace);
   }
 
   // Add files
   for (const auto &def : gd->getFiles())
   {
-    makeURL(def,url);
-    addCollaborationMember( def, url, DotGroupCollaboration::tfile );
+    makeURL(def, url);
+    addCollaborationMember(def, url, DotGroupCollaboration::tfile);
   }
 
   // Add pages
   for (const auto &def : gd->getPages())
   {
-    makeURL(def,url);
-    addCollaborationMember( def, url, DotGroupCollaboration::tpages );
+    makeURL(def, url);
+    addCollaborationMember(def, url, DotGroupCollaboration::tpages);
   }
 
   // Add directories
-  if ( !gd->getDirs().empty() )
+  if (!gd->getDirs().empty())
   {
-    for(const auto def : gd->getDirs())
+    for (const auto def : gd->getDirs())
     {
-      makeURL(def,url);
-      addCollaborationMember( def, url, DotGroupCollaboration::tdir );
+      makeURL(def, url);
+      addCollaborationMember(def, url, DotGroupCollaboration::tdir);
     }
   }
 }
 
-void DotGroupCollaboration::addMemberList( MemberList* ml )
+void DotGroupCollaboration::addMemberList(MemberList *ml)
 {
   QCString url;
-  if ( ml==nullptr || ml->empty() ) return;
+  if (ml == nullptr || ml->empty()) return;
   for (const auto &def : *ml)
   {
-    makeURL(def,url);
-    addCollaborationMember( def, url, DotGroupCollaboration::tmember );
+    makeURL(def, url);
+    addCollaborationMember(def, url, DotGroupCollaboration::tmember);
   }
 }
 
-DotGroupCollaboration::Edge* DotGroupCollaboration::addEdge(
-  DotNode* _pNStart, DotNode* _pNEnd, EdgeType _eType,
-  const QCString& _label, const QCString& _url )
+DotGroupCollaboration::Edge *DotGroupCollaboration::addEdge(
+  DotNode *_pNStart, DotNode *_pNEnd, EdgeType _eType,
+  const QCString &_label, const QCString &_url)
 {
   // search a existing link.
-  auto it = std::find_if(m_edges.begin(),m_edges.end(),
-      [&_pNStart,&_pNEnd,&_eType](const auto &edge)
-      { return edge->pNStart==_pNStart && edge->pNEnd==_pNEnd && edge->eType==_eType; });
+  auto it = std::find_if(m_edges.begin(), m_edges.end(),
+                         [&_pNStart, &_pNEnd, &_eType](const auto &edge) { return edge->pNStart == _pNStart && edge->pNEnd == _pNEnd && edge->eType == _eType; });
 
-  if (it==m_edges.end()) // new link
+  if (it == m_edges.end()) // new link
   {
-    m_edges.emplace_back(std::make_unique<Edge>(_pNStart,_pNEnd,_eType));
-    it = m_edges.end()-1;
+    m_edges.emplace_back(std::make_unique<Edge>(_pNStart, _pNEnd, _eType));
+    it = m_edges.end() - 1;
   }
 
   if (!_label.isEmpty()) // add label
   {
-    (*it)->links.emplace_back(_label,_url);
+    (*it)->links.emplace_back(_label, _url);
   }
 
   // return found or added edge
@@ -184,26 +183,26 @@ DotGroupCollaboration::Edge* DotGroupCollaboration::addEdge(
 }
 
 void DotGroupCollaboration::addCollaborationMember(
-  const Definition* def, QCString& url, EdgeType eType )
+  const Definition *def, QCString &url, EdgeType eType)
 {
   // Create group nodes
   QCString tmp_str;
   for (const auto &d : def->partOfGroups())
   {
-    auto it = m_usedNodes.find(d->name().str());
-    DotNode* nnode = it!=m_usedNodes.end() ? it->second : nullptr;
-    if ( nnode != m_rootNode )
+    auto     it    = m_usedNodes.find(d->name().str());
+    DotNode *nnode = it != m_usedNodes.end() ? it->second : nullptr;
+    if (nnode != m_rootNode)
     {
-      if ( nnode==nullptr )
+      if (nnode == nullptr)
       { // add node
-        tmp_str = d->getReference()+"$"+d->getOutputFileBase();
+        tmp_str          = d->getReference() + "$" + d->getOutputFileBase();
         QCString tooltip = d->briefDescriptionAsTooltip();
-        nnode = new DotNode(this, d->groupTitle(), tooltip, tmp_str );
+        nnode            = new DotNode(this, d->groupTitle(), tooltip, tmp_str);
         nnode->markAsVisible();
         m_usedNodes.emplace(d->name().str(), nnode);
       }
       tmp_str = def->qualifiedName();
-      addEdge( m_rootNode, nnode, eType, tmp_str, url );
+      addEdge(m_rootNode, nnode, eType, tmp_str, url);
     }
   }
 }
@@ -216,24 +215,24 @@ QCString DotGroupCollaboration::getBaseName() const
 void DotGroupCollaboration::computeTheGraph()
 {
   TextStream md5stream;
-  writeGraphHeader(md5stream,m_rootNode->label());
+  writeGraphHeader(md5stream, m_rootNode->label());
 
   // clean write flags
-  for (const auto &[name,node] : m_usedNodes)
+  for (const auto &[name, node] : m_usedNodes)
   {
     node->clearWriteFlag();
   }
 
   // write other nodes.
-  for (const auto &[name,node] : m_usedNodes)
+  for (const auto &[name, node] : m_usedNodes)
   {
-    node->write(md5stream,GraphType::Inheritance,m_graphFormat,TRUE,FALSE,FALSE);
+    node->write(md5stream, GraphType::Inheritance, m_graphFormat, TRUE, FALSE, FALSE);
   }
 
   // write edges
   for (const auto &edge : m_edges)
   {
-    edge->write( md5stream );
+    edge->write(md5stream);
   }
 
   writeGraphFooter(md5stream);
@@ -246,26 +245,20 @@ QCString DotGroupCollaboration::getMapLabel() const
   return escapeCharsInString(m_baseName, FALSE);
 }
 
-QCString DotGroupCollaboration::writeGraph( TextStream &t,
-  GraphOutputFormat graphFormat, EmbeddedOutputFormat textFormat,
-  const QCString &path, const QCString &fileName, const QCString &relPath,
-  bool generateImageMap,int graphId)
+QCString DotGroupCollaboration::writeGraph(TextStream       &t,
+                                           GraphOutputFormat graphFormat, EmbeddedOutputFormat textFormat,
+                                           const QCString &path, const QCString &fileName, const QCString &relPath,
+                                           bool generateImageMap, int graphId)
 {
-  m_doNotAddImageToIndex = textFormat!=EmbeddedOutputFormat::Html;
+  m_doNotAddImageToIndex = textFormat != EmbeddedOutputFormat::Html;
 
   return DotGraph::writeGraph(t, graphFormat, textFormat, path, fileName, relPath, generateImageMap, graphId);
 }
 
-void DotGroupCollaboration::Edge::write( TextStream &t ) const
+void DotGroupCollaboration::Edge::write(TextStream &t) const
 {
-  const char* linkTypeColor[] = {
-    "darkorchid3"
-    ,"orange"
-    ,"blueviolet"
-    ,"darkgreen"
-    ,"firebrick4"
-    ,"grey75"
-    ,"midnightblue"
+  const char *linkTypeColor[] = {
+    "darkorchid3", "orange", "blueviolet", "darkgreen", "firebrick4", "grey75", "midnightblue"
   };
   QCString arrowStyle = "dir=\"none\", style=\"dashed\"";
   t << "  Node" << pNStart->number();
@@ -290,27 +283,29 @@ void DotGroupCollaboration::Edge::write( TextStream &t ) const
     //t << "</TABLE>>";
 
     t << "label=\"";
-    bool first=TRUE;
-    int count=0;
+    bool      first     = TRUE;
+    int       count     = 0;
     const int maxLabels = 10;
     for (const auto &link : links)
     {
-      if (first) first=FALSE; else t << "\\n";
+      if (first)
+        first = FALSE;
+      else
+        t << "\\n";
       t << DotNode::convertLabel(link.label);
       count++;
     }
-    if (count==maxLabels) t << "\\n...";
+    if (count == maxLabels) t << "\\n...";
     t << "\"";
-
   }
-  switch( eType )
+  switch (eType)
   {
-    case thierarchy:
-      arrowStyle = "dir=\"back\", style=\"solid\"";
-      break;
-    default:
-      t << ", color=\"" << linkTypeColor[static_cast<int>(eType)] << "\"";
-      break;
+  case thierarchy:
+    arrowStyle = "dir=\"back\", style=\"solid\"";
+    break;
+  default:
+    t << ", color=\"" << linkTypeColor[static_cast<int>(eType)] << "\"";
+    break;
   }
   t << ", " << arrowStyle;
   t << "];\n";
@@ -323,7 +318,7 @@ bool DotGroupCollaboration::isTrivial() const
 
 bool DotGroupCollaboration::isTooBig() const
 {
-  return numNodes()>=Config_getInt(DOT_GRAPH_MAX_NODES);
+  return numNodes() >= Config_getInt(DOT_GRAPH_MAX_NODES);
 }
 
 int DotGroupCollaboration::numNodes() const
@@ -331,7 +326,7 @@ int DotGroupCollaboration::numNodes() const
   return static_cast<int>(m_usedNodes.size());
 }
 
-void DotGroupCollaboration::writeGraphHeader(TextStream &t,const QCString &title) const
+void DotGroupCollaboration::writeGraphHeader(TextStream &t, const QCString &title) const
 {
   DotGraph::writeGraphHeader(t, title);
   t << "  rankdir=LR;\n";

@@ -27,7 +27,9 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
   public:
     /*! Used for identification of the language. */
     QCString idLanguage() override
-    { return "armenian"; }
+    {
+      return "armenian";
+    }
 
     /* Used to get the command(s) for the language support. */
     QCString latexLanguageSupportCommand() override
@@ -36,7 +38,9 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
              "\\usepackage[armscii8]{inputenc}\n";
     }
     QCString trISOLang() override
-    { return "hy"; }
+    {
+      return "hy";
+    }
     QCString getLanguageString() override
     {
       return "0x42b Armenian";
@@ -46,31 +50,45 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
 
     /*! used in the compound documentation before a list of related functions. */
     QCString trRelatedFunctions() override
-    { return "Դասին վերաբերվող ֆունկցիաներ"; }
+    {
+      return "Դասին վերաբերվող ֆունկցիաներ";
+    }
 
     /*! subscript for the related functions. */
     QCString trRelatedSubscript() override
-    { return "(Հաշվի առեք, որ սրանք անդամ ֆունկցիաներ չեն)"; }
+    {
+      return "(Հաշվի առեք, որ սրանք անդամ ֆունկցիաներ չեն)";
+    }
 
     /*! header that is put before the detailed description of files, classes and namespaces. */
     QCString trDetailedDescription() override
-    { return "Մանրամասն նկարագրություն"; }
+    {
+      return "Մանրամասն նկարագրություն";
+    }
 
     /*! header that is used when the summary tag is missing inside the details tag */
     QCString trDetails() override
-    { return "Մանրամասներ"; }
+    {
+      return "Մանրամասներ";
+    }
 
     /*! header that is put before the list of typedefs. */
     QCString trMemberTypedefDocumentation() override
-    { return "Անդամ տիպի սահմանումներ (typedef)"; }
+    {
+      return "Անդամ տիպի սահմանումներ (typedef)";
+    }
 
     /*! header that is put before the list of enumerations. */
     QCString trMemberEnumerationDocumentation() override
-    { return "Անդամ hամարակալումներ"; }
+    {
+      return "Անդամ hամարակալումներ";
+    }
 
     /*! header that is put before the list of member functions. */
     QCString trMemberFunctionDocumentation() override
-    { return "Անդամ ֆունկցիաներ"; }
+    {
+      return "Անդամ ֆունկցիաներ";
+    }
 
     /*! header that is put before the list of member attributes. */
     QCString trMemberDataDocumentation() override
@@ -87,7 +105,9 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
 
     /*! this is the text of a link put after brief descriptions. */
     QCString trMore() override
-    { return "Մանրամասն..."; }
+    {
+      return "Մանրամասն...";
+    }
 
     /*! put in the class documentation */
     /* Isn't used when optimization for C is on. */
@@ -106,33 +126,44 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
     /*! this is the first part of a sentence that is followed by a class name */
     /* Isn't used when optimization for C is on. */
     QCString trThisIsTheListOfAllMembers() override
-    { return "Սա դասի անդամների ամբողջական ցուցակն է"; }
+    {
+      return "Սա դասի անդամների ամբողջական ցուցակն է";
+    }
 
     /*! this is the remainder of the sentence after the class name */
     /* Isn't used when optimization for C is on. */
     QCString trIncludingInheritedMembers() override
-    { return ", ներառյալ բոլոր ժառանգված անդամները"; }
+    {
+      return ", ներառյալ բոլոր ժառանգված անդամները";
+    }
 
     /*! this is put at the author sections at the bottom of man pages.
      *  parameter s is name of the project name.
      */
     QCString trGeneratedAutomatically(const QCString &s) override
-    { QCString result="Ավտոմատ ստեղծված է ելքային կոդից, Doxygen-ի միջոցով, ";
-      if (!s.isEmpty()) result+=s+" համար:";
+    {
+      QCString result = "Ավտոմատ ստեղծված է ելքային կոդից, Doxygen-ի միջոցով, ";
+      if (!s.isEmpty()) result += s + " համար:";
       return result;
     }
 
     /*! put after an enum name in the list of all members */
     QCString trEnumName() override
-    { return "համարակալման անուն"; }
+    {
+      return "համարակալման անուն";
+    }
 
     /*! put after an enum value in the list of all members */
     QCString trEnumValue() override
-    { return "համարակալման արժեք"; }
+    {
+      return "համարակալման արժեք";
+    }
 
     /*! put after an undocumented member in the list of all members */
     QCString trDefinedIn() override
-    { return "սահմանված"; }
+    {
+      return "սահմանված";
+    }
 
     // quick reference sections
 
@@ -140,11 +171,15 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
      *  compounds or files (see the \\group command).
      */
     QCString trModules() override
-    { return "Մոդուլներ"; }
+    {
+      return "Մոդուլներ";
+    }
 
     /*! This is put above each page as a link to the class hierarchy */
     QCString trClassHierarchy() override
-    { return "Դասերի հիերարխա"; }
+    {
+      return "Դասերի հիերարխա";
+    }
 
     /*! This is put above each page as a link to the list of annotated classes */
     QCString trCompoundList() override
@@ -161,7 +196,9 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
 
     /*! This is put above each page as a link to the list of documented files */
     QCString trFileList() override
-    { return "Ֆայլերի ցուցակ"; }
+    {
+      return "Ֆայլերի ցուցակ";
+    }
 
     /*! This is put above each page as a link to all members of compounds. */
     QCString trCompoundMembers() override
@@ -192,28 +229,35 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
 
     /*! This is put above each page as a link to all related pages. */
     QCString trRelatedPages() override
-    { return "Նմանատիպ էջեր"; }
+    {
+      return "Նմանատիպ էջեր";
+    }
 
     /*! This is put above each page as a link to all examples. */
     QCString trExamples() override
-    { return "Օրինակներ"; }
+    {
+      return "Օրինակներ";
+    }
 
     /*! This is put above each page as a link to the search engine. */
     QCString trSearch() override
-    { return "Որոնում"; }
+    {
+      return "Որոնում";
+    }
 
     /*! This is an introduction to the class hierarchy. */
     QCString trClassHierarchyDescription() override
-    { return "Այս ժառանգման ցուցակը կոպտորեն է տեսակավորված, "
+    {
+      return "Այս ժառանգման ցուցակը կոպտորեն է տեսակավորված, "
              "բայց ոչ ամբողջապես, այբբենական կարգով.";
-	}
+    }
 
     /*! This is an introduction to the list with all files. */
     QCString trFileListDescription(bool extractAll) override
     {
-      QCString result="Բոլոր ";
-      if (!extractAll) result+="փաստագրված ";
-      result+="ֆայլերի մի ցուցակ` կարճ բացատրություններով:";
+      QCString result = "Բոլոր ";
+      if (!extractAll) result += "փաստագրված ";
+      result += "ֆայլերի մի ցուցակ` կարճ բացատրություններով:";
       return result;
     }
 
@@ -227,92 +271,104 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
       else
       {
         return "Դասերը, կառուցվածքները, միավորումները "
-				"և ինտերֆեյսները` կարճ բացատրություններով.";
+               "և ինտերֆեյսները` կարճ բացատրություններով.";
       }
     }
 
     /*! This is an introduction to the page with all class members. */
     QCString trCompoundMembersDescription(bool extractAll) override
     {
-        QCString result="Բոլոր ";
-        if(!extractAll) result+="փաստագրված ";
+      QCString result = "Բոլոր ";
+      if (!extractAll) result += "փաստագրված ";
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+        result += "կառուցվածքների և միավորումների դաշտերի ";
+      else
+        result += "դասի անդամների ";
+      result += "ցուցակը`";
+      result += " հղումներով դեպի ";
+      if (!extractAll)
+      {
         if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
-          result+="կառուցվածքների և միավորումների դաշտերի ";
+          result += "կառուցվածք/միավորում փաստագրությունները բոլոր անդամների համար.";
         else
-          result+="դասի անդամների ";
-		result+="ցուցակը`";
-		result+=" հղումներով դեպի ";
-        if(!extractAll)
-        {
-          if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
-            result+="կառուցվածք/միավորում փաստագրությունները բոլոր անդամների համար.";
-          else
-            result+="դասի փաստագրությունը բոլոր անդամների համար.";
-        }
+          result += "դասի փաստագրությունը բոլոր անդամների համար.";
+      }
+      else
+      {
+        if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+          result += "կառուցվածքները/միավորումները, որոնց նրանք պատկանում են.";
         else
-        {
-          if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
-            result += "կառուցվածքները/միավորումները, որոնց նրանք պատկանում են.";
-          else
-            result += "դասերը, որոնց նրանք պատկանում են.";
-        }
-        return result;
+          result += "դասերը, որոնց նրանք պատկանում են.";
+      }
+      return result;
     }
 
     /*! This is an introduction to the page with all file members. */
     QCString trFileMembersDescription(bool extractAll) override
     {
-      QCString result="Բոլոր ";
-      if (!extractAll) result+="փաստագրված ";
+      QCString result = "Բոլոր ";
+      if (!extractAll) result += "փաստագրված ";
 
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
-        result+="ֆունկցիաների, փոփոխականների, մակրո-հայտարարությունների, "
-                "համարակալումների և տիպի սահմանումների (typedef)";
+        result += "ֆունկցիաների, փոփոխականների, մակրո-հայտարարությունների, "
+                  "համարակալումների և տիպի սահմանումների (typedef)";
       }
       else
       {
-        result+="ֆայլի անդամների ";
+        result += "ֆայլի անդամների ";
       }
-	  result+="ցուցակը`";
-      result+=" հղումներով դեպի ";
+      result += "ցուցակը`";
+      result += " հղումներով դեպի ";
       if (extractAll)
-        result+="ֆայլերը, որոնց նրանք պատկանում են.";
+        result += "ֆայլերը, որոնց նրանք պատկանում են.";
       else
-        result+="փաստագրությունը.";
+        result += "փաստագրությունը.";
       return result;
     }
 
     /*! This is an introduction to the page with the list of all examples */
     QCString trExamplesDescription() override
-    { return "Բոլոր օրինակների ցուցակը."; }
+    {
+      return "Բոլոր օրինակների ցուցակը.";
+    }
 
     /*! This is an introduction to the page with the list of related pages */
     QCString trRelatedPagesDescription() override
-    { return "Բոլոր նմանատիպ փաստագրության էջերի ցուցակը."; }
+    {
+      return "Բոլոր նմանատիպ փաստագրության էջերի ցուցակը.";
+    }
 
     /*! This is an introduction to the page with the list of class/file groups */
     QCString trModulesDescription() override
-    { return "Բոլոր մոդուլների ցուցակը."; }
+    {
+      return "Բոլոր մոդուլների ցուցակը.";
+    }
 
     // index titles (the project name is prepended for these)
 
 
     /*! This is used in HTML as the title of index.html. */
     QCString trDocumentation(const QCString &projName) override
-    { return (!projName.isEmpty()?projName + " " : "") + " - Փաստագրություն"; }
+    {
+      return (!projName.isEmpty() ? projName + " " : "") + " - Փաստագրություն";
+    }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * index of all groups.
      */
     QCString trModuleIndex() override
-    { return "Մոդուլներ"; }
+    {
+      return "Մոդուլներ";
+    }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * class hierarchy.
      */
     QCString trHierarchicalIndex() override
-    { return "Դասակարգումներ"; }
+    {
+      return "Դասակարգումներ";
+    }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * annotated compound index.
@@ -333,13 +389,17 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
      * list of all files.
      */
     QCString trFileIndex() override
-    { return "Ֆայլեր"; }
+    {
+      return "Ֆայլեր";
+    }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all groups.
      */
     QCString trModuleDocumentation() override
-    { return "Մոդուլներ"; }
+    {
+      return "Մոդուլներ";
+    }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all classes, structs and unions.
@@ -352,7 +412,7 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
       }
       else if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
       {
-          return trDesignUnitDocumentation();
+        return trDesignUnitDocumentation();
       }
       else
       {
@@ -364,77 +424,103 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
      *  the documentation of all files.
      */
     QCString trFileDocumentation() override
-    { return "Ֆայլեր"; }
+    {
+      return "Ֆայլեր";
+    }
 
     /*! This is used in LaTeX as the title of the document */
     QCString trReferenceManual() override
-    { return "Հղումների ձեռնարկ"; }
+    {
+      return "Հղումների ձեռնարկ";
+    }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of defines
      */
     QCString trDefines() override
-    { return "Մակրոսներ"; }
+    {
+      return "Մակրոսներ";
+    }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of typedefs
      */
     QCString trTypedefs() override
-    { return "Տիպի սահմանումներ (typedef)"; }
+    {
+      return "Տիպի սահմանումներ (typedef)";
+    }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of enumerations
      */
     QCString trEnumerations() override
-    { return "Համարակալումներ"; }
+    {
+      return "Համարակալումներ";
+    }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of (global) functions
      */
     QCString trFunctions() override
-    { return "Ֆունկցիաներ"; }
+    {
+      return "Ֆունկցիաներ";
+    }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of (global) variables
      */
     QCString trVariables() override
-    { return "Փոփոխականներ"; }
+    {
+      return "Փոփոխականներ";
+    }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of (global) variables
      */
     QCString trEnumerationValues() override
-    { return "Հաշվիչ"; }
+    {
+      return "Հաշվիչ";
+    }
 
     /*! This is used in the documentation of a file before the list of
      *  documentation blocks for defines
      */
     QCString trDefineDocumentation() override
-    { return "Մակրոսներ"; }
+    {
+      return "Մակրոսներ";
+    }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for typedefs
      */
     QCString trTypedefDocumentation() override
-    { return "Տիպի սահմանումներ (typedef)"; }
+    {
+      return "Տիպի սահմանումներ (typedef)";
+    }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for enumeration types
      */
     QCString trEnumerationTypeDocumentation() override
-    { return "Համարակալման տիպեր"; }
+    {
+      return "Համարակալման տիպեր";
+    }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for functions
      */
     QCString trFunctionDocumentation() override
-    { return "Ֆունկցիաներ"; }
+    {
+      return "Ֆունկցիաներ";
+    }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for variables
      */
     QCString trVariableDocumentation() override
-    { return "Փոփոխականներ"; }
+    {
+      return "Փոփոխականներ";
+    }
 
     /*! This is used in the documentation of a file/namespace/group before
      *  the list of links to documented compounds
@@ -457,66 +543,84 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
     /*! This is used in the standard footer of each page and indicates when
      *  the page was generated
      */
-    QCString trGeneratedAt(const QCString &date,const QCString &projName) override
+    QCString trGeneratedAt(const QCString &date, const QCString &projName) override
     {
-      QCString result=QCString("Ստեղծվել է ")+date;
-      if (!projName.isEmpty()) result+=projName+" -ի համար,";
-      result+=" հետևյալ համակարգով.";
+      QCString result = QCString("Ստեղծվել է ") + date;
+      if (!projName.isEmpty()) result += projName + " -ի համար,";
+      result += " հետևյալ համակարգով.";
       return result;
     }
 
     /*! this text is put before a class diagram */
     QCString trClassDiagram(const QCString &clName) override
     {
-      return clName+QCString(" -ի ժառանգման գծագիրը.");
+      return clName + QCString(" -ի ժառանգման գծագիրը.");
     }
 
     /*! this text is generated when the \\warning command is used. */
     QCString trWarning() override
-    { return "Զգուշացում"; }
+    {
+      return "Զգուշացում";
+    }
 
     /*! this text is generated when the \\version command is used. */
     QCString trVersion() override
-    { return "Տարբերակ"; }
+    {
+      return "Տարբերակ";
+    }
 
     /*! this text is generated when the \\date command is used. */
     QCString trDate() override
-    { return "Տարեթիվ"; }
+    {
+      return "Տարեթիվ";
+    }
 
     /*! this text is generated when the \\return command is used. */
     QCString trReturns() override
-    { return "Վերադարձնում է"; }
+    {
+      return "Վերադարձնում է";
+    }
 
     /*! this text is generated when the \\sa command is used. */
     QCString trSeeAlso() override
-    { return "Տեսեք նաև"; }
+    {
+      return "Տեսեք նաև";
+    }
 
     /*! this text is generated when the \\param command is used. */
     QCString trParameters() override
-    { return "Պարամետրեր"; }
+    {
+      return "Պարամետրեր";
+    }
 
     /*! this text is generated when the \\exception command is used. */
     QCString trExceptions() override
-    { return "Բացառություններ"; }
+    {
+      return "Բացառություններ";
+    }
 
     /*! this text is used in the title page of a LaTeX document. */
     QCString trGeneratedBy() override
-    { return "Ստեղծված է հետևյալ համակարգի կողմից"; }
+    {
+      return "Ստեղծված է հետևյալ համակարգի կողմից";
+    }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 0.49-990307
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 0.49-990307
+    //////////////////////////////////////////////////////////////////////////
 
     /*! used as the title of page containing all the index of all namespaces. */
     QCString trNamespaceList() override
-    { return "Անունների տարածությունների ցուցակ"; }
+    {
+      return "Անունների տարածությունների ցուցակ";
+    }
 
     /*! used as an introduction to the namespace list */
     QCString trNamespaceListDescription(bool extractAll) override
     {
-      QCString result="Բոլոր ";
-      if (!extractAll) result+="փաստագրված ";
-      result+="անունների տարածությունների ցուցակը` կարճ բացատրություններով.";
+      QCString result = "Բոլոր ";
+      if (!extractAll) result += "փաստագրված ";
+      result += "անունների տարածությունների ցուցակը` կարճ բացատրություններով.";
       return result;
     }
 
@@ -524,55 +628,59 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
      *  friends of a class
      */
     QCString trFriends() override
-    { return "Ընկերներ"; }
+    {
+      return "Ընկերներ";
+    }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 0.49-990405
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 0.49-990405
+    //////////////////////////////////////////////////////////////////////////
 
     /*! used in the class documentation as a header before the list of all
      * related classes
      */
     QCString trRelatedFunctionDocumentation() override
-    { return "Դասի ընկերներ և կապված ֆունկցիաներ"; }
+    {
+      return "Դասի ընկերներ և կապված ֆունկցիաներ";
+    }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 0.49-990425
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 0.49-990425
+    //////////////////////////////////////////////////////////////////////////
 
     /*! used as the title of the HTML page of a class/struct/union */
-    QCString trCompoundReference(const QCString &clName,
+    QCString trCompoundReference(const QCString        &clName,
                                  ClassDef::CompoundType compType,
-                                 bool isTemplate) override
+                                 bool                   isTemplate) override
     {
-      QCString result=clName;
+      QCString result = clName;
       if (isTemplate)
       {
-        switch(compType)
+        switch (compType)
         {
-          case ClassDef::Class:      result+=" Դասի"; break;
-          case ClassDef::Struct:     result+=" Կառուցվածքի"; break;
-          case ClassDef::Union:      result+=" Միավորման"; break;
-          case ClassDef::Interface:  result+=" Ինտերֆեյսի"; break;
-          case ClassDef::Protocol:   result+=" Արձանագրության"; break;
-          case ClassDef::Category:   result+=" Դասակարգման"; break;
-          case ClassDef::Exception:  result+=" Բացառության"; break;
-          default: break;
+        case ClassDef::Class: result += " Դասի"; break;
+        case ClassDef::Struct: result += " Կառուցվածքի"; break;
+        case ClassDef::Union: result += " Միավորման"; break;
+        case ClassDef::Interface: result += " Ինտերֆեյսի"; break;
+        case ClassDef::Protocol: result += " Արձանագրության"; break;
+        case ClassDef::Category: result += " Դասակարգման"; break;
+        case ClassDef::Exception: result += " Բացառության"; break;
+        default: break;
         }
-        result+=" Ձևանմուշներ";
+        result += " Ձևանմուշներ";
       }
       else
       {
-        switch(compType)
+        switch (compType)
         {
-          case ClassDef::Class:      result+=" Դաս"; break;
-          case ClassDef::Struct:     result+=" Կառուցվածք"; break;
-          case ClassDef::Union:      result+=" Միավորում"; break;
-          case ClassDef::Interface:  result+=" Ինտերֆեյս"; break;
-          case ClassDef::Protocol:   result+=" Արձանագրություն"; break;
-          case ClassDef::Category:   result+=" Դասակարգում"; break;
-          case ClassDef::Exception:  result+=" Բացառություն"; break;
-          default: break;
+        case ClassDef::Class: result += " Դաս"; break;
+        case ClassDef::Struct: result += " Կառուցվածք"; break;
+        case ClassDef::Union: result += " Միավորում"; break;
+        case ClassDef::Interface: result += " Ինտերֆեյս"; break;
+        case ClassDef::Protocol: result += " Արձանագրություն"; break;
+        case ClassDef::Category: result += " Դասակարգում"; break;
+        case ClassDef::Exception: result += " Բացառություն"; break;
+        default: break;
         }
       }
       return result;
@@ -581,37 +689,57 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
     /*! used as the title of the HTML page of a file */
     QCString trFileReference(const QCString &fileName) override
     {
-      return fileName+QCString(" ֆայլեր");
+      return fileName + QCString(" ֆայլեր");
     }
 
     /*! used as the title of the HTML page of a namespace */
     QCString trNamespaceReference(const QCString &namespaceName) override
     {
-      QCString result=namespaceName;
-      result+=" անունների տարածություններ";
+      QCString result = namespaceName;
+      result += " անունների տարածություններ";
       return result;
     }
 
     QCString trPublicMembers() override
-    { return "Բաց անդամ ֆունկցիաներ"; }
+    {
+      return "Բաց անդամ ֆունկցիաներ";
+    }
     QCString trPublicSlots() override
-    { return "Բաց սլոթեր"; }
+    {
+      return "Բաց սլոթեր";
+    }
     QCString trSignals() override
-    { return "Ազդանշաններ"; }
+    {
+      return "Ազդանշաններ";
+    }
     QCString trStaticPublicMembers() override
-    { return "Բաց ստատիկ անդամ ֆունկցիաներ"; }
+    {
+      return "Բաց ստատիկ անդամ ֆունկցիաներ";
+    }
     QCString trProtectedMembers() override
-    { return "Պաշտպանված անդամ ֆունկցիաներ"; }
+    {
+      return "Պաշտպանված անդամ ֆունկցիաներ";
+    }
     QCString trProtectedSlots() override
-    { return "Պաշտպանված սլոթեր"; }
+    {
+      return "Պաշտպանված սլոթեր";
+    }
     QCString trStaticProtectedMembers() override
-    { return "Պաշտպանված ստատիկ անդամ ֆունկցիաներ"; }
+    {
+      return "Պաշտպանված ստատիկ անդամ ֆունկցիաներ";
+    }
     QCString trPrivateMembers() override
-    { return "Փակ ֆունկցիաներ"; }
+    {
+      return "Փակ ֆունկցիաներ";
+    }
     QCString trPrivateSlots() override
-    { return "Փակ սլոթեր"; }
+    {
+      return "Փակ սլոթեր";
+    }
     QCString trStaticPrivateMembers() override
-    { return "Փակ ստատիկ անդամ ֆունկցիաներ"; }
+    {
+      return "Փակ ստատիկ անդամ ֆունկցիաներ";
+    }
 
     /*! this function is used to produce a comma-separated list of items.
      *  use generateMarker(i) to indicate where item i should be put.
@@ -620,18 +748,18 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
     {
       QCString result;
       // the inherits list contain `numEntries' classes
-      for (int i=0;i<numEntries;i++)
+      for (int i = 0; i < numEntries; i++)
       {
         // use generateMarker to generate placeholders for the class links!
-        result+=generateMarker(i); // generate marker for entry i in the list
-                                   // (order is left to right)
+        result += generateMarker(i); // generate marker for entry i in the list
+                                     // (order is left to right)
 
-        if (i!=numEntries-1)  // not the last entry, so we need a separator
+        if (i != numEntries - 1) // not the last entry, so we need a separator
         {
-          if (i<numEntries-2) // not the fore last entry
-            result+=", ";
-          else                // the fore last entry
-            result+=" և ";
+          if (i < numEntries - 2) // not the fore last entry
+            result += ", ";
+          else // the fore last entry
+            result += " և ";
         }
       }
       return result;
@@ -642,7 +770,7 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
      */
     QCString trInheritsList(int numEntries) override
     {
-      return "Հենքային դասեր - "+trWriteList(numEntries)+":";
+      return "Հենքային դասեր - " + trWriteList(numEntries) + ":";
     }
 
     /*! used in class documentation to produce a list of super classes,
@@ -650,7 +778,7 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
      */
     QCString trInheritedByList(int numEntries) override
     {
-      return "Ժառանգորդ դասեր - "+trWriteList(numEntries)+":";
+      return "Ժառանգորդ դասեր - " + trWriteList(numEntries) + ":";
     }
 
     /*! used in member documentation blocks to produce a list of
@@ -658,7 +786,7 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
      */
     QCString trReimplementedFromList(int numEntries) override
     {
-      return "Վերասահմանված ֆունկցիաներ - "+trWriteList(numEntries)+":";
+      return "Վերասահմանված ֆունկցիաներ - " + trWriteList(numEntries) + ":";
     }
 
     /*! used in member documentation blocks to produce a list of
@@ -666,24 +794,26 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
      */
     QCString trReimplementedInList(int numEntries) override
     {
-      return "Վերասահմանված է "+trWriteList(numEntries)+" ում:";
+      return "Վերասահմանված է " + trWriteList(numEntries) + " ում:";
     }
 
     /*! This is put above each page as a link to all members of namespaces. */
     QCString trNamespaceMembers() override
-    { return "Անունների տարածության անդամներ"; }
+    {
+      return "Անունների տարածության անդամներ";
+    }
 
     /*! This is an introduction to the page with all namespace members */
     QCString trNamespaceMemberDescription(bool extractAll) override
     {
-      QCString result="Բոլոր ";
-      if (!extractAll) result+="փաստագրված ";
-      result+="անունների տարածության անդամների ցուցակը` "
-			"հղումներով դեպի ";
+      QCString result = "Բոլոր ";
+      if (!extractAll) result += "փաստագրված ";
+      result += "անունների տարածության անդամների ցուցակը` "
+                "հղումներով դեպի ";
       if (extractAll)
-        result+="բոլոր անդամների անունների տարածության փաստագրությունը.";
+        result += "բոլոր անդամների անունների տարածության փաստագրությունը.";
       else
-        result+="անունների տարածությունը, որին նրանք պատկանում են.";
+        result += "անունների տարածությունը, որին նրանք պատկանում են.";
       return result;
     }
 
@@ -691,73 +821,88 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
      *  index of all namespaces.
      */
     QCString trNamespaceIndex() override
-    { return "Անունների տարածություններ"; }
+    {
+      return "Անունների տարածություններ";
+    }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all namespaces.
      */
     QCString trNamespaceDocumentation() override
-    { return "Անունների տարածություն"; }
+    {
+      return "Անունների տարածություն";
+    }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 0.49-990522
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 0.49-990522
+    //////////////////////////////////////////////////////////////////////////
 
     /*! This is used in the documentation before the list of all
      *  namespaces in a file.
      */
     QCString trNamespaces() override
-    { return "Անունների տարածություններ"; }
+    {
+      return "Անունների տարածություններ";
+    }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 0.49-990728
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 0.49-990728
+    //////////////////////////////////////////////////////////////////////////
 
     /*! This is put at the bottom of a class documentation page and is
      *  followed by a list of files that were used to generate the page.
      */
     QCString trGeneratedFromFiles(ClassDef::CompoundType compType,
-        bool single) override
+                                  bool                   single) override
     {
       QCString result = "Այս ";
-      switch(compType)
+      switch (compType)
       {
-        case ClassDef::Class:      result+="դասի"; break;
-        case ClassDef::Struct:     result+="կառուցվածքի"; break;
-        case ClassDef::Union:      result+="միավորման"; break;
-        case ClassDef::Interface:  result+="ինտերֆեյսի"; break;
-        case ClassDef::Protocol:   result+="արձանագրության"; break;
-        case ClassDef::Category:   result+="դասակարգման"; break;
-        case ClassDef::Exception:  result+="բացառության"; break;
-        default: break;
+      case ClassDef::Class: result += "դասի"; break;
+      case ClassDef::Struct: result += "կառուցվածքի"; break;
+      case ClassDef::Union: result += "միավորման"; break;
+      case ClassDef::Interface: result += "ինտերֆեյսի"; break;
+      case ClassDef::Protocol: result += "արձանագրության"; break;
+      case ClassDef::Category: result += "դասակարգման"; break;
+      case ClassDef::Exception: result += "բացառության"; break;
+      default: break;
       }
-      result+=" փաստագրությունը ստեղծվել է հետևյալ ֆայլ";
-      if (single) result+="ից."; else result+="երից.";
+      result += " փաստագրությունը ստեղծվել է հետևյալ ֆայլ";
+      if (single)
+        result += "ից.";
+      else
+        result += "երից.";
       return result;
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 0.49-990901
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 0.49-990901
+    //////////////////////////////////////////////////////////////////////////
 
     /*! This is used as the heading text for the retval command. */
     QCString trReturnValues() override
-    { return "Վերադարձվող արժեքներ"; }
+    {
+      return "Վերադարձվող արժեքներ";
+    }
 
     /*! This is in the (quick) index as a link to the main page (index.html)
      */
     QCString trMainPage() override
-    { return "Գլխավոր էջ"; }
+    {
+      return "Գլխավոր էջ";
+    }
 
     /*! This is used in references to page that are put in the LaTeX
      *  documentation. It should be an abbreviation of the word page.
      */
     QCString trPageAbbreviation() override
-    { return "էջ:"; }
+    {
+      return "էջ:";
+    }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 0.49-991106
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 0.49-991106
+    //////////////////////////////////////////////////////////////////////////
 
     QCString trDefinedAtLineInSourceFile() override
     {
@@ -768,28 +913,28 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
       return "Սահմանումը @0 ֆայլում է:";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 0.49-991205
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 0.49-991205
+    //////////////////////////////////////////////////////////////////////////
 
     QCString trDeprecated() override
     {
       return "Հնացած է";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.0.0
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.0.0
+    //////////////////////////////////////////////////////////////////////////
 
     /*! this text is put before a collaboration diagram */
     QCString trCollaborationDiagram(const QCString &clName) override
     {
-      return clName+"-ի համագործակցությունների գծագիր.";
+      return clName + "-ի համագործակցությունների գծագիր.";
     }
     /*! this text is put before an include dependency graph */
     QCString trInclDepGraph(const QCString &fName) override
     {
-      return fName+"-ի ներառումների կախվածությունների գծագիր.";
+      return fName + "-ի ներառումների կախվածությունների գծագիր.";
     }
     /*! header that is put before the list of constructor/destructors. */
     QCString trConstructorDocumentation() override
@@ -848,9 +993,9 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
       return "էջեր";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.1.0
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.1.0
+    //////////////////////////////////////////////////////////////////////////
 
     QCString trNote() override
     {
@@ -901,9 +1046,9 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
     }
 
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.1.3
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.1.3
+    //////////////////////////////////////////////////////////////////////////
 
     /*! Used as a marker that is put before a todo item */
     QCString trTodo() override
@@ -918,9 +1063,9 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
       return "Խնդիրների ցուցակ";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.1.4
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.1.4
+    //////////////////////////////////////////////////////////////////////////
 
     QCString trReferencedBy() override
     {
@@ -937,7 +1082,7 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
     QCString trInclByDepGraph() override
     {
       return "Այս գրաֆը ցույց է տալիս, թե որ ֆայլերն են "
-			"ուղղակի կամ անուղղակի ներառում տվյալ ֆայլը.";
+             "ուղղակի կամ անուղղակի ներառում տվյալ ֆայլը.";
     }
     QCString trSince() override
     /*??*/
@@ -945,9 +1090,9 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
       return "Սկսած";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.1.5
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.1.5
+    //////////////////////////////////////////////////////////////////////////
 
     /*! title of the graph legend page */
     QCString trLegendTitle() override
@@ -959,62 +1104,62 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
      */
     QCString trLegendDocs() override
     {
-      return
-		"Այս էջը նկարագրում է, թե ինչպես մեկնաբանել doxygen-ի ստեղծած գրաֆները:<p>\n"
-        "Դիտարկենք հետևյալ օրինակը.\n"
-        "\\code\n"
-        "/*! Կրճատման հետևանքով անտեսանելի դաս */\n"
-        "class Invisible { };\n\n"
-        "/*! Կրճատված դաս, ժառանգությունների հարաբերությունը փակ է */\n"
-        "class Truncated : public Invisible { };\n\n"
-        "/* Չփաստագրված դաս */\n"
-        "class Undocumented { };\n\n"
-        "/*! Բաց ժառանգում */\n"
-        "class PublicBase : public Truncated { };\n\n"
-        "/*! Դասի ձևաչափ */\n"
-        "template<class T> class Templ {};\n\n"
-        "/*! Պաշտպանված ժառանգում */\n"
-        "class ProtectedBase { };\n\n"
-        "/*! Փակ ժառանգում */\n"
-        "class PrivateBase { };\n\n"
-        "/*! Դաս, որը օգտագործվում է Inherited դասի կողմից */\n"
-        "class Used { };\n\n"
-        "/*! Դաս, որը ժառանգում է մի շարք այլ դասերից */\n"
-        "class Inherited : public PublicBase,\n"
-        "                  protected ProtectedBase,\n"
-        "                  private PrivateBase,\n"
-        "                  public Undocumented,\n"
-        "                  public Templ<int>\n"
-        "{\n"
-        "  private:\n"
-        "    Used *m_usedClass;\n"
-        "};\n"
-        "\\endcode\n"
-        "Սրանով կստանանք հետևյալ գրաֆը."
-        "<p><center><img src=\"graph_legend."+getDotImageExtension()+"\"></center>\n"
-        "<p>\n"
-        "Այս գրաֆի ուղղանկյունները ունեն հետևյալ իմաստը.\n"
-        "<ul>\n"
-        "<li>%A լցոնվաց մոխրագույն ուղղանկյունը ներկայացնում է այն դասը կամ կառուցվածքը, "
-		"որի համար ստեղծվել է տվյալ գրաֆը:</li>\n"
-		"<li>%A սև եզրերով ուղղանկյունը նշանակում է փաստագրված դաս կամ կարուցվածք:</li>\n"
-		"<li>%A մոխրագույն եզրերով ուղղանկյունը նշանակում է չփաստագրված դաս կամ կառուցվածք:</li>\n"
-        "<li>%A կարմիր եզրերով ուղղանկյունը նշանակում է դաս կամ կառուցվածք, որի համար\n"
-		" ոչ բոլոր ժառանգում/պարունակում կապերն են ցուցադրված: Գրաֆը կրճատված է, "
-		"եթե այն չի տեղավորվում նշված սահմաններում:</li>\n"
-        "</ul>\n"
-        "Սլաքները ունեն հետևյալ իմաստը.\n"
-        "<ul>\n"
-		"<li>%A մուգ կապույտ սլաքը օգտագործվում է երկու դասերի միջև բաց ժառանգում "
-		"կապը ցուցադրելու համար:</li>\n"
-		"<li>%A մուգ կանաչ սլաքը օգտագործվում է պաշտպանված ժառանգման համար:</li>\n"
-        "<li>%A մուգ կարմիր սլաքը օգտագործվում է փակ ժառանգման համար:</li>\n"
-        "<li>%A մանուշակագույն կետագիծ սլաքը օգտագորշվում է, եթե դասը պարունակվում է"
-		"այլ դասում կամ օգտագորշվում է այլ դասի կողմից: Սլաքը պիտակավորվաշ է"
-		"փոփոխական(ներ)ով, որի միջոցով մատնանշված դասը կամ կառուցվածքը հասանելի է:</li>\n"
-        "<li>Դեզին կետագիծ սլաքը ցույց է տալիս ձևանմուշի օրինակի կապը այն ձևանմուշի հետ, "
-		"որից այն իրականցվել է. Սլաքը պիտակավորված է օրինակի ձևանմուշային պարամետրերով:</li>\n"
-        "</ul>\n";
+      return "Այս էջը նկարագրում է, թե ինչպես մեկնաբանել doxygen-ի ստեղծած գրաֆները:<p>\n"
+             "Դիտարկենք հետևյալ օրինակը.\n"
+             "\\code\n"
+             "/*! Կրճատման հետևանքով անտեսանելի դաս */\n"
+             "class Invisible { };\n\n"
+             "/*! Կրճատված դաս, ժառանգությունների հարաբերությունը փակ է */\n"
+             "class Truncated : public Invisible { };\n\n"
+             "/* Չփաստագրված դաս */\n"
+             "class Undocumented { };\n\n"
+             "/*! Բաց ժառանգում */\n"
+             "class PublicBase : public Truncated { };\n\n"
+             "/*! Դասի ձևաչափ */\n"
+             "template<class T> class Templ {};\n\n"
+             "/*! Պաշտպանված ժառանգում */\n"
+             "class ProtectedBase { };\n\n"
+             "/*! Փակ ժառանգում */\n"
+             "class PrivateBase { };\n\n"
+             "/*! Դաս, որը օգտագործվում է Inherited դասի կողմից */\n"
+             "class Used { };\n\n"
+             "/*! Դաս, որը ժառանգում է մի շարք այլ դասերից */\n"
+             "class Inherited : public PublicBase,\n"
+             "                  protected ProtectedBase,\n"
+             "                  private PrivateBase,\n"
+             "                  public Undocumented,\n"
+             "                  public Templ<int>\n"
+             "{\n"
+             "  private:\n"
+             "    Used *m_usedClass;\n"
+             "};\n"
+             "\\endcode\n"
+             "Սրանով կստանանք հետևյալ գրաֆը."
+             "<p><center><img src=\"graph_legend." +
+             getDotImageExtension() + "\"></center>\n"
+                                      "<p>\n"
+                                      "Այս գրաֆի ուղղանկյունները ունեն հետևյալ իմաստը.\n"
+                                      "<ul>\n"
+                                      "<li>%A լցոնվաց մոխրագույն ուղղանկյունը ներկայացնում է այն դասը կամ կառուցվածքը, "
+                                      "որի համար ստեղծվել է տվյալ գրաֆը:</li>\n"
+                                      "<li>%A սև եզրերով ուղղանկյունը նշանակում է փաստագրված դաս կամ կարուցվածք:</li>\n"
+                                      "<li>%A մոխրագույն եզրերով ուղղանկյունը նշանակում է չփաստագրված դաս կամ կառուցվածք:</li>\n"
+                                      "<li>%A կարմիր եզրերով ուղղանկյունը նշանակում է դաս կամ կառուցվածք, որի համար\n"
+                                      " ոչ բոլոր ժառանգում/պարունակում կապերն են ցուցադրված: Գրաֆը կրճատված է, "
+                                      "եթե այն չի տեղավորվում նշված սահմաններում:</li>\n"
+                                      "</ul>\n"
+                                      "Սլաքները ունեն հետևյալ իմաստը.\n"
+                                      "<ul>\n"
+                                      "<li>%A մուգ կապույտ սլաքը օգտագործվում է երկու դասերի միջև բաց ժառանգում "
+                                      "կապը ցուցադրելու համար:</li>\n"
+                                      "<li>%A մուգ կանաչ սլաքը օգտագործվում է պաշտպանված ժառանգման համար:</li>\n"
+                                      "<li>%A մուգ կարմիր սլաքը օգտագործվում է փակ ժառանգման համար:</li>\n"
+                                      "<li>%A մանուշակագույն կետագիծ սլաքը օգտագորշվում է, եթե դասը պարունակվում է"
+                                      "այլ դասում կամ օգտագորշվում է այլ դասի կողմից: Սլաքը պիտակավորվաշ է"
+                                      "փոփոխական(ներ)ով, որի միջոցով մատնանշված դասը կամ կառուցվածքը հասանելի է:</li>\n"
+                                      "<li>Դեզին կետագիծ սլաքը ցույց է տալիս ձևանմուշի օրինակի կապը այն ձևանմուշի հետ, "
+                                      "որից այն իրականցվել է. Սլաքը պիտակավորված է օրինակի ձևանմուշային պարամետրերով:</li>\n"
+                                      "</ul>\n";
     }
     /*! text for the link to the legend page */
     QCString trLegend() override
@@ -1022,9 +1167,9 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
       return "լեգենդ";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.2.0
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.2.0
+    //////////////////////////////////////////////////////////////////////////
 
     /*! Used as a marker that is put before a test item */
     QCString trTest() override
@@ -1037,9 +1182,9 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
       return "Թեստերի ցուցակ";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.2.2
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.2.2
+    //////////////////////////////////////////////////////////////////////////
 
     /*! Used as a section header for IDL properties */
     QCString trProperties() override
@@ -1052,9 +1197,9 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
       return "Հատկություններ";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.2.4
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.2.4
+    //////////////////////////////////////////////////////////////////////////
 
     /*! Used for Java classes in the summary section of Java packages */
     QCString trClasses() override
@@ -1071,7 +1216,7 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
     /*! Used as the title of a Java package */
     QCString trPackage(const QCString &name) override
     {
-      return "Փաթեթ "+name;
+      return "Փաթեթ " + name;
     }
     /*! The description of the package index page */
     QCString trPackageListDescription() override
@@ -1089,9 +1234,9 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
       return "Արժեքներ";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.2.5
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.2.5
+    //////////////////////////////////////////////////////////////////////////
 
     /*! Used as a marker that is put before a \\bug item */
     QCString trBug() override
@@ -1104,9 +1249,9 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
       return "Սխալների ցուցակ";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.2.6
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.2.6
+    //////////////////////////////////////////////////////////////////////////
     /*! Used as ansicpg for RTF file */
     QCString trRTFansicp() override
     {
@@ -1137,7 +1282,7 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
       else
       {
         QCString result((first_capital ? "Դաս" : "դաս"));
-        if(!singular) result+="եր";
+        if (!singular) result += "եր";
         return result;
       }
     }
@@ -1149,7 +1294,7 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
     QCString trFile(bool first_capital, bool singular) override
     {
       QCString result((first_capital ? "Ֆայլ" : "ֆայլ"));
-      if (!singular)  result+="եր";
+      if (!singular) result += "եր";
       return result;
     }
 
@@ -1160,7 +1305,7 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
     QCString trNamespace(bool first_capital, bool singular) override
     {
       QCString result((first_capital ? "Անունների տարածություն" : "անունների տարածություն"));
-      if (!singular)  result+="ներ";
+      if (!singular) result += "ներ";
       return result;
     }
 
@@ -1171,7 +1316,7 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
     QCString trGroup(bool first_capital, bool singular) override
     {
       QCString result((first_capital ? "Խ" : "խ"));
-      result+=(singular ? "ումբ" : "մբեր");
+      result += (singular ? "ումբ" : "մբեր");
       return result;
     }
 
@@ -1182,7 +1327,7 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
     QCString trPage(bool first_capital, bool singular) override
     {
       QCString result((first_capital ? "Էջ" : "էջ"));
-      if (!singular)  result+="եր";
+      if (!singular) result += "եր";
       return result;
     }
 
@@ -1193,7 +1338,7 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
     QCString trMember(bool first_capital, bool singular) override
     {
       QCString result((first_capital ? "Անդամ" : "անդամ"));
-      if (!singular)  result+="ներ";
+      if (!singular) result += "ներ";
       return result;
     }
 
@@ -1204,26 +1349,26 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
     QCString trGlobal(bool first_capital, bool singular) override
     {
       QCString result((first_capital ? "Գլոբալ" : "գլոբալ"));
-      if (!singular)  result+="ներ";
+      if (!singular) result += "ներ";
       return result;
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.2.7
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.2.7
+    //////////////////////////////////////////////////////////////////////////
 
     /*! This text is generated when the \\author command is used and
      *  for the author section in man pages. */
     QCString trAuthor(bool first_capital, bool singular) override
     {
       QCString result((first_capital ? "Հեղինակ" : "հեղինակ"));
-      if (!singular) result+="ներ";
+      if (!singular) result += "ներ";
       return result;
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.2.11
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.2.11
+    //////////////////////////////////////////////////////////////////////////
 
     /*! This text is put before the list of members referenced by a member
      */
@@ -1232,16 +1377,16 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
       return "Հղումներ - ";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.2.13
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.2.13
+    //////////////////////////////////////////////////////////////////////////
 
     /*! used in member documentation blocks to produce a list of
      *  members that are implemented by this one.
      */
     QCString trImplementedFromList(int numEntries) override
     {
-      return "Իրագործում է հետևյալ դաս(եր)ի ֆունկցիաները - "+trWriteList(numEntries)+":";
+      return "Իրագործում է հետևյալ դաս(եր)ի ֆունկցիաները - " + trWriteList(numEntries) + ":";
     }
 
     /*! used in member documentation blocks to produce a list of
@@ -1249,12 +1394,12 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
      */
     QCString trImplementedInList(int numEntries) override
     {
-      return "Իրագործվում է հետևյալում - "+trWriteList(numEntries)+":";
+      return "Իրագործվում է հետևյալում - " + trWriteList(numEntries) + ":";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.2.16
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.2.16
+    //////////////////////////////////////////////////////////////////////////
 
     /*! used in RTF documentation as a heading for the Table
      *  of Contents.
@@ -1264,9 +1409,9 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
       return "Բովանդակություն";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.2.17
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.2.17
+    //////////////////////////////////////////////////////////////////////////
 
     /*! Used as the header of the list of item that have been
      *  flagged deprecated
@@ -1276,9 +1421,9 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
       return "Հնացած սահմանումների ցուցակը";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.2.18
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.2.18
+    //////////////////////////////////////////////////////////////////////////
 
     /*! Used as a header for declaration section of the events found in
      * a C# program
@@ -1293,9 +1438,9 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
       return "Պատահարների ցուցակը";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.3
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.3
+    //////////////////////////////////////////////////////////////////////////
 
     /*! Used as a heading for a list of Java class types with package scope.
      */
@@ -1336,9 +1481,9 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
       return "Փաթեթի ստատիկ ատրիբուտներ";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.3.1
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.3.1
+    //////////////////////////////////////////////////////////////////////////
 
     /*! Used in the quick index of a class/file/namespace member list page
      *  to link to the unfiltered list of all members.
@@ -1353,9 +1498,9 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
       return "Այս ֆունկցիայի կանչերի գրաֆը.";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.3.3
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.3.3
+    //////////////////////////////////////////////////////////////////////////
 
     /*! This string is used as the title for the page listing the search
      *  results.
@@ -1374,18 +1519,18 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
      */
     QCString trSearchResults(int numDocuments) override
     {
-      if (numDocuments==0)
+      if (numDocuments == 0)
       {
         return "Ներեցեք, բայց Ձեր որոնումը արդյունք չտվեց:";
       }
-      else if( numDocuments == 1 )
+      else if (numDocuments == 1)
       {
         return "Հայտնաբերվել է 1 փաստաթուղթ:";
       }
       else
       {
         return "Հայտնաբերվել է <b>$num</b> փաստաթուղթ:"
-          "Փաստաթղթերը դասակարգված են ըստ համապասխանության";
+               "Փաստաթղթերը դասակարգված են ըստ համապասխանության";
       }
     }
     /*! This string is put before the list of matched words, for each search
@@ -1396,44 +1541,54 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
       return "Որոնման արդյունքներ:";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.3.8
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.3.8
+    //////////////////////////////////////////////////////////////////////////
 
     /*! This is used in HTML as the title of page with source code for file filename
      */
-    QCString trSourceFile(const QCString& filename) override
+    QCString trSourceFile(const QCString &filename) override
     {
       return "Ելակետային ֆայլ " + filename;
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.3.9
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.3.9
+    //////////////////////////////////////////////////////////////////////////
 
     /*! This is used as the name of the chapter containing the directory
      *  hierarchy.
      */
     QCString trDirIndex() override
-    { return "Ֆայլադարանների հիերարխիա"; }
+    {
+      return "Ֆայլադարանների հիերարխիա";
+    }
 
     /*! This is used as the name of the chapter containing the documentation
      *  of the directories.
      */
     QCString trDirDocumentation() override
-    { return "Ֆայլադարաններ"; }
+    {
+      return "Ֆայլադարաններ";
+    }
 
     /*! This is used as the title of the directory index and also in the
      *  Quick links of a HTML page, to link to the directory hierarchy.
      */
     QCString trDirectories() override
-    { return "Ֆայլադրաններ"; }
+    {
+      return "Ֆայլադրաններ";
+    }
 
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.
      */
     QCString trDirReference(const QCString &dirName) override
-    { QCString result=dirName; result+=" Ֆայլադարան"; return result; }
+    {
+      QCString result = dirName;
+      result += " Ֆայլադարան";
+      return result;
+    }
 
     /*! This returns the word directory with or without starting capital
      *  (\a first_capital) and in sigular or plural form (\a singular).
@@ -1441,26 +1596,26 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
     QCString trDir(bool first_capital, bool singular) override
     {
       QCString result((first_capital ? "Ֆայլադարան" : "ֆայլադարան"));
-      if (!singular) result+="ներ";
+      if (!singular) result += "ներ";
       return result;
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.4.1
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.4.1
+    //////////////////////////////////////////////////////////////////////////
 
     /*! This text is added to the documentation when the \\overload command
      *  is used for a overloaded function.
      */
     QCString trOverloadText() override
     {
-       return "Սա վերաբեռնված ֆունկցիա է` տրամադրված հարմարության համար: "
-			  "Այն տարբերվում է նախնականից միայն արգումնետներով:";
+      return "Սա վերաբեռնված ֆունկցիա է` տրամադրված հարմարության համար: "
+             "Այն տարբերվում է նախնականից միայն արգումնետներով:";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.4.6
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.4.6
+    //////////////////////////////////////////////////////////////////////////
 
     /*! This is used to introduce a caller (or called-by) graph */
     QCString trCallerGraph() override
@@ -1472,44 +1627,54 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
      *  of documentation blocks for enumeration values
      */
     QCString trEnumerationValueDocumentation() override
-    { return "Համարակալումներ"; }
+    {
+      return "Համարակալումներ";
+    }
 
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.5.4 (mainly for Fortran)
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.5.4 (mainly for Fortran)
+    //////////////////////////////////////////////////////////////////////////
     /*! header that is put before the list of member subprograms (Fortran). */
     QCString trMemberFunctionDocumentationFortran() override
-    { return "Անդամ ֆունցիաներ/ենթածրագրեր"; }
+    {
+      return "Անդամ ֆունցիաներ/ենթածրագրեր";
+    }
 
     /*! This is put above each page as a link to the list of annotated data types (Fortran). */
     QCString trCompoundListFortran() override
-    { return "Տվյալների տիպերի ցուցակը"; }
+    {
+      return "Տվյալների տիպերի ցուցակը";
+    }
 
     /*! This is put above each page as a link to all members of compounds (Fortran). */
     QCString trCompoundMembersFortran() override
-    { return "Տվյալների դաշտեր"; }
+    {
+      return "Տվյալների դաշտեր";
+    }
 
     /*! This is an introduction to the annotated compound list (Fortran). */
     QCString trCompoundListDescriptionFortran() override
-    { return "Տվյալների տիպերը` կարճ բացատրություններով."; }
+    {
+      return "Տվյալների տիպերը` կարճ բացատրություններով.";
+    }
 
     /*! This is an introduction to the page with all data types (Fortran). */
     QCString trCompoundMembersDescriptionFortran(bool extractAll) override
     {
-      QCString result="Բոլոր ";
+      QCString result = "Բոլոր ";
       if (!extractAll)
       {
-        result+="փաստագրված ";
+        result += "փաստագրված ";
       }
-      result+="տվյալների տիպերի անդամների ցուցակը` հղումներով դեպի ";
+      result += "տվյալների տիպերի անդամների ցուցակը` հղումներով դեպի ";
       if (!extractAll)
       {
-		result+="բոլոր անդամների տվյալների կառուցվածքի փաստագրությունը";
+        result += "բոլոր անդամների տվյալների կառուցվածքի փաստագրությունը";
       }
       else
       {
-        result+="տվյալների տիպերը, որոնց նրանք պատկանում են";
+        result += "տվյալների տիպերը, որոնց նրանք պատկանում են";
       }
       return result;
     }
@@ -1518,79 +1683,91 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
      * annotated compound index (Fortran).
      */
     QCString trCompoundIndexFortran() override
-    { return "Տվյալների տիպեր"; }
+    {
+      return "Տվյալների տիպեր";
+    }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all data types (Fortran).
      */
     QCString trTypeDocumentation() override
-    { return "Տվյալների տիպեր"; }
+    {
+      return "Տվյալների տիպեր";
+    }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of (global) subprograms (Fortran).
      */
     QCString trSubprograms() override
-    { return "Ֆունկցիաներ/ենթածրագրեր"; }
+    {
+      return "Ֆունկցիաներ/ենթածրագրեր";
+    }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for subprograms (Fortran)
      */
     QCString trSubprogramDocumentation() override
-    { return "Ֆունկցիաներ/ենթածրագրեր"; }
+    {
+      return "Ֆունկցիաներ/ենթածրագրեր";
+    }
 
     /*! This is used in the documentation of a file/namespace/group before
      *  the list of links to documented compounds (Fortran)
      */
-     QCString trDataTypes() override
-    { return "Տվյալների տիպեր"; }
+    QCString trDataTypes() override
+    {
+      return "Տվյալների տիպեր";
+    }
 
     /*! used as the title of page containing all the index of all modules (Fortran). */
     QCString trModulesList() override
-    { return "Մոդուլների ցուցակ"; }
+    {
+      return "Մոդուլների ցուցակ";
+    }
 
     /*! used as an introduction to the modules list (Fortran) */
     QCString trModulesListDescription(bool extractAll) override
     {
-      QCString result="Բոլոր";
-      if (!extractAll) result+="փաստագրված ";
-      result+="մոդուլների ցուցակը` կարճ բացատրություններով.";
+      QCString result = "Բոլոր";
+      if (!extractAll) result += "փաստագրված ";
+      result += "մոդուլների ցուցակը` կարճ բացատրություններով.";
       return result;
     }
 
     /*! used as the title of the HTML page of a module/type (Fortran) */
-    QCString trCompoundReferenceFortran(const QCString &clName,
-                                    ClassDef::CompoundType compType,
-                                    bool isTemplate) override
+    QCString trCompoundReferenceFortran(const QCString        &clName,
+                                        ClassDef::CompoundType compType,
+                                        bool                   isTemplate) override
     {
-      QCString result=clName;
+      QCString result = clName;
       if (!isTemplate)
       {
-        switch(compType)
+        switch (compType)
         {
-          case ClassDef::Class:      result+=" Մոդուլ"; break;
-          case ClassDef::Struct:     result+=" Տիպ"; break;
-          case ClassDef::Union:      result+=" Միավորում"; break;
-          case ClassDef::Interface:  result+=" Ինտերֆեյս"; break;
-          case ClassDef::Protocol:   result+=" Արձանագրություն"; break;
-          case ClassDef::Category:   result+=" Դասակարգում"; break;
-          case ClassDef::Exception:  result+=" Բացառություն"; break;
-          default: break;
+        case ClassDef::Class: result += " Մոդուլ"; break;
+        case ClassDef::Struct: result += " Տիպ"; break;
+        case ClassDef::Union: result += " Միավորում"; break;
+        case ClassDef::Interface: result += " Ինտերֆեյս"; break;
+        case ClassDef::Protocol: result += " Արձանագրություն"; break;
+        case ClassDef::Category: result += " Դասակարգում"; break;
+        case ClassDef::Exception: result += " Բացառություն"; break;
+        default: break;
         }
       }
       else
       {
-        switch(compType)
+        switch (compType)
         {
-          case ClassDef::Class:      result+=" Մոդուլի"; break;
-          case ClassDef::Struct:     result+=" Տիպի"; break;
-          case ClassDef::Union:      result+=" Միավորման"; break;
-          case ClassDef::Interface:  result+=" Ինտերֆեյսի"; break;
-          case ClassDef::Protocol:   result+=" Արձանագրության"; break;
-          case ClassDef::Category:   result+=" Դասակարգման"; break;
-          case ClassDef::Exception:  result+=" Բացառության"; break;
-          default: break;
+        case ClassDef::Class: result += " Մոդուլի"; break;
+        case ClassDef::Struct: result += " Տիպի"; break;
+        case ClassDef::Union: result += " Միավորման"; break;
+        case ClassDef::Interface: result += " Ինտերֆեյսի"; break;
+        case ClassDef::Protocol: result += " Արձանագրության"; break;
+        case ClassDef::Category: result += " Դասակարգման"; break;
+        case ClassDef::Exception: result += " Բացառության"; break;
+        default: break;
         }
-        result+=" Ձևանմուշ";
+        result += " Ձևանմուշ";
       }
       return result;
     }
@@ -1602,21 +1779,23 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
 
     /*! This is put above each page as a link to all members of modules. (Fortran) */
     QCString trModulesMembers() override
-    { return "Մոդուլի անդամներ"; }
+    {
+      return "Մոդուլի անդամներ";
+    }
 
     /*! This is an introduction to the page with all modules members (Fortran) */
     QCString trModulesMemberDescription(bool extractAll) override
     {
-      QCString result="Մոդուլի բոլոր ";
-      if (!extractAll) result+="փաստագրված ";
-      result+="անդամների ցուցակը` հղումներով դեպի ";
+      QCString result = "Մոդուլի բոլոր ";
+      if (!extractAll) result += "փաստագրված ";
+      result += "անդամների ցուցակը` հղումներով դեպի ";
       if (extractAll)
       {
-        result+="բոլոր անդամների փաստագրությունները.";
+        result += "բոլոր անդամների փաստագրությունները.";
       }
       else
       {
-        result+="մոդուլները, որոնց նրանք պատկանում են.";
+        result += "մոդուլները, որոնց նրանք պատկանում են.";
       }
       return result;
     }
@@ -1625,7 +1804,9 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
      *  index of all modules (Fortran).
      */
     QCString trModulesIndex() override
-    { return "Մոդուլներ"; }
+    {
+      return "Մոդուլներ";
+    }
 
     /*! This is used for translation of the word that will possibly
      *  be followed by a single name or by a list of names
@@ -1634,30 +1815,33 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
     QCString trModule(bool first_capital, bool singular) override
     {
       QCString result((first_capital ? "Մոդուլ" : "մոդուլ"));
-      if (!singular)  result+="ներ";
+      if (!singular) result += "ներ";
       return result;
     }
     /*! This is put at the bottom of a module documentation page and is
      *  followed by a list of files that were used to generate the page.
      */
     QCString trGeneratedFromFilesFortran(ClassDef::CompoundType compType,
-        bool single) override
+                                         bool                   single) override
     { // here s is one of " Module", " Struct" or " Union"
       // single is true implies a single file
-      QCString result="Այս ";
-      switch(compType)
+      QCString result = "Այս ";
+      switch (compType)
       {
-        case ClassDef::Class:      result+="մոդուլի"; break;
-        case ClassDef::Struct:     result+="տիպի"; break;
-        case ClassDef::Union:      result+="միավորման"; break;
-        case ClassDef::Interface:  result+="ինտերֆեյսի"; break;
-        case ClassDef::Protocol:   result+="արձանագրության"; break;
-        case ClassDef::Category:   result+="դասակարգման"; break;
-        case ClassDef::Exception:  result+="բացառության"; break;
-        default: break;
+      case ClassDef::Class: result += "մոդուլի"; break;
+      case ClassDef::Struct: result += "տիպի"; break;
+      case ClassDef::Union: result += "միավորման"; break;
+      case ClassDef::Interface: result += "ինտերֆեյսի"; break;
+      case ClassDef::Protocol: result += "արձանագրության"; break;
+      case ClassDef::Category: result += "դասակարգման"; break;
+      case ClassDef::Exception: result += "բացառության"; break;
+      default: break;
       }
-      result+=" փաստագրությունը ստեղծվել է հետևալ ֆայլ";
-      if (single) result+="ից."; else result+="երից.";
+      result += " փաստագրությունը ստեղծվել է հետևալ ֆայլ";
+      if (single)
+        result += "ից.";
+      else
+        result += "երից.";
       return result;
     }
     /*! This is used for translation of the word that will possibly
@@ -1667,7 +1851,7 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
     QCString trType(bool first_capital, bool singular) override
     {
       QCString result((first_capital ? "Տիպ" : "տիպ"));
-      if (!singular)  result+="եր";
+      if (!singular) result += "եր";
       return result;
     }
     /*! This is used for translation of the word that will possibly
@@ -1677,7 +1861,10 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
     QCString trSubprogram(bool first_capital, bool singular) override
     {
       QCString result((first_capital ? "Ե" : "ե"));
-      if (singular)  result+="նթածրագիր"; else result+="նթածրագրեր";
+      if (singular)
+        result += "նթածրագիր";
+      else
+        result += "նթածրագրեր";
       return result;
     }
 
@@ -1686,14 +1873,14 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
     {
       return "Տիպերի Սահմանափակումներ";
     }
-//////////////////////////////////////////////////////////////////////////
-// new since 1.6.0 (mainly for the new search engine)
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.6.0 (mainly for the new search engine)
+    //////////////////////////////////////////////////////////////////////////
 
     /*! directory relation for \a name */
     QCString trDirRelation(const QCString &name) override
     {
-      return QCString(name)+" Կապ";
+      return QCString(name) + " Կապ";
     }
 
     /*! Loading message shown when loading search results */
@@ -1720,9 +1907,9 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
       return "Անարդյունք";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.6.3 (missing items for the directory pages)
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.6.3 (missing items for the directory pages)
+    //////////////////////////////////////////////////////////////////////////
 
     /*! when clicking a directory dependency label, a page with a
      *  table is shown. The heading for the first column mentions the
@@ -1752,61 +1939,66 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
      *  @param seconds Seconds within the minute: 0..59
      *  @param includeTime Include time in the result string?
      */
-    QCString trDateTime(int year,int month,int day,int dayOfWeek,
-                                int hour,int minutes,int seconds,
-                                DateTimeType includeTime) override
+    QCString trDateTime(int year, int month, int day, int dayOfWeek,
+                        int hour, int minutes, int seconds,
+                        DateTimeType includeTime) override
     {
-      static const char *days[]   = { "Երկուշաբթի,","Երեքշաբթի,","Չորեքշաբթի,","Հինգշաբթի,",
-								"Ուրբաթ,","Շաբաթ,","Կիրակի," };
-      static const char *months[] = { "Հունիսի","Փետրվարի","Մարտի","Ապրրիլի","Մայիսի","Հունիսի",
-								"Հուլիսի","Օգոստոսի","Սեպտեմբերի","Հոկտեբմերի","Նոյեմբերի","Դեկտեմբերի" };
-      QCString sdate;
+      static const char *days[]   = { "Երկուշաբթի,", "Երեքշաբթի,", "Չորեքշաբթի,", "Հինգշաբթի,",
+                                      "Ուրբաթ,", "Շաբաթ,", "Կիրակի," };
+      static const char *months[] = { "Հունիսի", "Փետրվարի", "Մարտի", "Ապրրիլի", "Մայիսի", "Հունիսի",
+                                      "Հուլիսի", "Օգոստոսի", "Սեպտեմբերի", "Հոկտեբմերի", "Նոյեմբերի", "Դեկտեմբերի" };
+      QCString           sdate;
       if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Date)
       {
-        sdate.sprintf("%s %d %s %d",days[dayOfWeek-1],day,months[month-1],year);
+        sdate.sprintf("%s %d %s %d", days[dayOfWeek - 1], day, months[month - 1], year);
       }
       if (includeTime == DateTimeType::DateTime) sdate += " ";
       if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Time)
       {
         QCString stime;
-        stime.sprintf("%.2d:%.2d:%.2d ",hour,minutes,seconds);
-        sdate+=stime;
+        stime.sprintf("%.2d:%.2d:%.2d ", hour, minutes, seconds);
+        sdate += stime;
       }
       return sdate;
     }
     QCString trDayOfWeek(int dayOfWeek, bool, bool full) override
     {
-      static const char *days_short[]   = { "Երկ", "Երք", "Չրք", "Հնգ", "Ուր", "Շբթ", "Կիր" };
-      static const char *days_full[]    = { "Երկուշաբթի", "Երեքշաբթի", "Չորեքշաբթի", "Հինգշաբթի", "Ուրբաթ", "Շաբաթ", "Կիրակի" };
-      return full? days_full[dayOfWeek-1] : days_short[dayOfWeek-1];
+      static const char *days_short[] = { "Երկ", "Երք", "Չրք", "Հնգ", "Ուր", "Շբթ", "Կիր" };
+      static const char *days_full[]  = { "Երկուշաբթի", "Երեքշաբթի", "Չորեքշաբթի", "Հինգշաբթի", "Ուրբաթ", "Շաբաթ", "Կիրակի" };
+      return full ? days_full[dayOfWeek - 1] : days_short[dayOfWeek - 1];
     }
     QCString trMonth(int month, bool, bool full) override
     {
       static const char *months_short[] = { "Հնվ", "Փտվ", "Մրտ", "Ապր", "Մյս", "Հնս", "Հլս", "Օգս", "Սպտ", "Հկտ", "Նյմ", "Դկտ" };
       static const char *months_full[]  = { "Հունվար", "Փետրվար", "Մարտ", "Ապրիլ", "Մայիս", "Հունիս", "Հուլիս", "Օգոստոս", "Սեպտեմբեր", "Հոկտեմբեր", "Նոյեմբեր", "Դեկտեմբեր" };
-      return full? months_full[month-1] : months_short[month-1];
+      return full ? months_full[month - 1] : months_short[month - 1];
     }
     QCString trDayPeriod(bool period) override
     {
       static const char *dayPeriod[] = { "AM", "PM" };
-      return dayPeriod[period?1:0];
+      return dayPeriod[period ? 1 : 0];
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.7.5
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.7.5
+    //////////////////////////////////////////////////////////////////////////
 
     /*! Header for the page with bibliographic citations */
     QCString trCiteReferences() override
-    { return "Գրականություն"; }
+    {
+      return "Գրականություն";
+    }
 
     /*! Text for copyright paragraph */
     QCString trCopyright() override
-    { return "Հեղինակային իրավունք"; }
+    {
+      return "Հեղինակային իրավունք";
+    }
 
     /*! Header for the graph showing the directory dependencies */
     QCString trDirDepGraph(const QCString &name) override
-    { return name + QCString("-ի ֆայլադարանների կախվածությունների գծագիր:"); }
-
+    {
+      return name + QCString("-ի ֆայլադարանների կախվածությունների գծագիր:");
+    }
 };
 #endif

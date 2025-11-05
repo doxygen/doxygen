@@ -29,11 +29,9 @@ void DotLegendGraph::writeGraph(const QCString &path)
   TextStream ts;
   DotGraph::writeGraph(ts, GraphOutputFormat::BITMAP, EmbeddedOutputFormat::Html, path, "", "", FALSE, 0);
 
-  if (getDotImageExtension()=="svg")
+  if (getDotImageExtension() == "svg")
   {
-    DotManager::instance()->
-      createFilePatcher(absBaseName()+Config_getString(HTML_FILE_EXTENSION))->
-      addSVGObject("graph_legend", absImgName(),QCString());
+    DotManager::instance()->createFilePatcher(absBaseName() + Config_getString(HTML_FILE_EXTENSION))->addSVGObject("graph_legend", absImgName(), QCString());
   }
 }
 
@@ -45,19 +43,19 @@ QCString DotLegendGraph::getBaseName() const
 void DotLegendGraph::computeTheGraph()
 {
   TextStream md5stream;
-  writeGraphHeader(md5stream,theTranslator->trLegendTitle());
+  writeGraphHeader(md5stream, theTranslator->trLegendTitle());
 
-  DotNode{this,"Inherited", "", "", TRUE}.setNodeId(9).writeBox(md5stream, GraphType::CallGraph, GraphOutputFormat::BITMAP, false);
+  DotNode{ this, "Inherited", "", "", TRUE }.setNodeId(9).writeBox(md5stream, GraphType::CallGraph, GraphOutputFormat::BITMAP, false);
   md5stream << "  Node10 -> Node9 [dir=\"back\",color=\"steelblue1\",style=\"solid\" tooltip=\" \"];\n";
-  DotNode{this,"PublicBase", "", DotNode::placeholderUrl}.setNodeId(10).markHasDocumentation().writeBox(md5stream, GraphType::CallGraph, GraphOutputFormat::BITMAP, false);
+  DotNode{ this, "PublicBase", "", DotNode::placeholderUrl }.setNodeId(10).markHasDocumentation().writeBox(md5stream, GraphType::CallGraph, GraphOutputFormat::BITMAP, false);
   md5stream << "  Node11 -> Node10 [dir=\"back\",color=\"steelblue1\",style=\"solid\" tooltip=\" \"];\n";
-  DotNode{this,"Truncated", "", DotNode::placeholderUrl}.setNodeId(11).markAsTruncated().markHasDocumentation().writeBox(md5stream, GraphType::CallGraph, GraphOutputFormat::BITMAP, true);
+  DotNode{ this, "Truncated", "", DotNode::placeholderUrl }.setNodeId(11).markAsTruncated().markHasDocumentation().writeBox(md5stream, GraphType::CallGraph, GraphOutputFormat::BITMAP, true);
   md5stream << "  Node13 -> Node9 [dir=\"back\",color=\"darkgreen\",style=\"solid\" tooltip=\" \"];\n";
   md5stream << "  Node13 [label=\"ProtectedBase\",color=\"gray40\",fillcolor=\"white\",style=\"filled\" tooltip=\" \"];\n";
   md5stream << "  Node14 -> Node9 [dir=\"back\",color=\"firebrick4\",style=\"solid\" tooltip=\" \"];\n";
   md5stream << "  Node14 [label=\"PrivateBase\",color=\"gray40\",fillcolor=\"white\",style=\"filled\" tooltip=\" \"];\n";
   md5stream << "  Node15 -> Node9 [dir=\"back\",color=\"steelblue1\",style=\"solid\" tooltip=\" \"];\n";
-  DotNode{this,"Undocumented", "", ""}.setNodeId(15).writeBox(md5stream, GraphType::CallGraph, GraphOutputFormat::BITMAP, false);
+  DotNode{ this, "Undocumented", "", "" }.setNodeId(15).writeBox(md5stream, GraphType::CallGraph, GraphOutputFormat::BITMAP, false);
   md5stream << "  Node16 -> Node9 [dir=\"back\",color=\"steelblue1\",style=\"solid\" tooltip=\" \"];\n";
   md5stream << "  Node16 [label=\"Templ\\< int \\>\",color=\"gray40\",fillcolor=\"white\",style=\"filled\" tooltip=\" \"];\n";
   md5stream << "  Node17 -> Node16 [dir=\"back\",color=\"orange\",style=\"dashed\",label=\"< int >\",fontcolor=\"grey\" tooltip=\" \"];\n";
@@ -72,4 +70,3 @@ QCString DotLegendGraph::getMapLabel() const
 {
   return "";
 }
-

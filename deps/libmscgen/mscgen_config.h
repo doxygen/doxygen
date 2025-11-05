@@ -10,12 +10,12 @@
 #endif
 
 #ifndef M_PI
-# define M_PI 3.14159265358979323846
+#define M_PI 3.14159265358979323846
 #endif
 #ifdef _MSC_VER
-#  ifndef strcasecmp
-#    define strcasecmp _stricmp
-#  endif 
+#ifndef strcasecmp
+#define strcasecmp _stricmp
+#endif
 #endif
 
 /* Define to 1 if you have the <limits.h> header file. */

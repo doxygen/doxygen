@@ -27,29 +27,32 @@ namespace fs = ghc::filesystem;
 
 struct DirEntry::Private
 {
-  fs::directory_entry entry;
+    fs::directory_entry entry;
 };
 
-DirEntry::DirEntry() : p(std::make_unique<Private>())
+DirEntry::DirEntry() :
+    p(std::make_unique<Private>())
 {
 }
 
-DirEntry::DirEntry(const DirEntry &de) : p(std::make_unique<Private>())
+DirEntry::DirEntry(const DirEntry &de) :
+    p(std::make_unique<Private>())
 {
   p->entry = de.p->entry;
 }
 
 DirEntry &DirEntry::operator=(const DirEntry &de)
 {
-  if (this!=&de)
+  if (this != &de)
   {
-    p = std::make_unique<Private>();
+    p        = std::make_unique<Private>();
     p->entry = de.p->entry;
   }
   return *this;
 }
 
-DirEntry::DirEntry(DirEntry &&de) : p(std::make_unique<Private>())
+DirEntry::DirEntry(DirEntry &&de) :
+    p(std::make_unique<Private>())
 {
   p = std::move(de.p);
 }
@@ -86,51 +89,57 @@ std::string DirEntry::path() const
 
 struct DirIterator::Private
 {
-  Private() : it() {}
-  Private(const std::string &path) : it(path,ec) {}
-  fs::directory_iterator it;
-  std::error_code ec;
-  DirEntry current;
+    Private() :
+        it() {}
+    Private(const std::string &path) :
+        it(path, ec) {}
+    fs::directory_iterator it;
+    std::error_code        ec;
+    DirEntry               current;
 };
 
-DirIterator::DirIterator() : p(std::make_unique<Private>())
+DirIterator::DirIterator() :
+    p(std::make_unique<Private>())
 {
 }
 
-DirIterator::DirIterator(const std::string &path) : p(std::make_unique<Private>(path))
+DirIterator::DirIterator(const std::string &path) :
+    p(std::make_unique<Private>(path))
 {
 }
 
-DirIterator::DirIterator(const DirIterator &it) : p(std::make_unique<Private>())
+DirIterator::DirIterator(const DirIterator &it) :
+    p(std::make_unique<Private>())
 {
-  p->it = it.p->it;
-  p->ec = it.p->ec;
+  p->it      = it.p->it;
+  p->ec      = it.p->ec;
   p->current = it.p->current;
 }
 
 DirIterator &DirIterator::operator=(const DirIterator &it)
 {
-  if (&it!=this)
+  if (&it != this)
   {
-    p->it = it.p->it;
-    p->ec = it.p->ec;
+    p->it      = it.p->it;
+    p->ec      = it.p->ec;
     p->current = it.p->current;
   }
   return *this;
 }
 
-DirIterator::DirIterator(DirIterator &&it) : p(std::make_unique<Private>())
+DirIterator::DirIterator(DirIterator &&it) :
+    p(std::make_unique<Private>())
 {
-  std::exchange(p->it,it.p->it);
-  std::exchange(p->ec,it.p->ec);
-  std::exchange(p->current,it.p->current);
+  std::exchange(p->it, it.p->it);
+  std::exchange(p->ec, it.p->ec);
+  std::exchange(p->current, it.p->current);
 }
 
 DirIterator &DirIterator::operator=(DirIterator &&it)
 {
-  std::exchange(p->it,it.p->it);
-  std::exchange(p->ec,it.p->ec);
-  std::exchange(p->current,it.p->current);
+  std::exchange(p->it, it.p->it);
+  std::exchange(p->ec, it.p->ec);
+  std::exchange(p->current, it.p->current);
   return *this;
 }
 
@@ -157,14 +166,14 @@ const DirIterator::value_type *DirIterator::operator->() const
   return &p->current;
 }
 
-bool operator==(const DirIterator &it1,const DirIterator &it2)
+bool operator==(const DirIterator &it1, const DirIterator &it2)
 {
   return it1.p->it == it2.p->it;
 }
 
-bool operator!=(const DirIterator &it1,const DirIterator &it2)
+bool operator!=(const DirIterator &it1, const DirIterator &it2)
 {
-  return it1.p->it!=it2.p->it;
+  return it1.p->it != it2.p->it;
 }
 
 DirIterator begin(DirIterator it) noexcept
@@ -183,41 +192,45 @@ DirIterator end(const DirIterator &) noexcept
 
 struct Dir::Private
 {
-  fs::path path;
+    fs::path path;
 };
 
-Dir::Dir() : p(std::make_unique<Private>())
+Dir::Dir() :
+    p(std::make_unique<Private>())
 {
   std::error_code ec;
   p->path = fs::current_path(ec);
 }
 
-Dir::Dir(const Dir &d) : p(std::make_unique<Private>())
+Dir::Dir(const Dir &d) :
+    p(std::make_unique<Private>())
 {
   p->path = d.p->path;
 }
 
 Dir &Dir::operator=(const Dir &d)
 {
-  if (&d!=this)
+  if (&d != this)
   {
     p->path = d.p->path;
   }
   return *this;
 }
 
-Dir::Dir(Dir &&d) : p(std::make_unique<Private>())
+Dir::Dir(Dir &&d) :
+    p(std::make_unique<Private>())
 {
-  std::exchange(p->path,d.p->path);
+  std::exchange(p->path, d.p->path);
 }
 
 Dir &Dir::operator=(Dir &&d)
 {
-  std::exchange(p->path,d.p->path);
+  std::exchange(p->path, d.p->path);
   return *this;
 }
 
-Dir::Dir(const std::string &path) : p(std::make_unique<Private>())
+Dir::Dir(const std::string &path) :
+    p(std::make_unique<Private>())
 {
   setPath(path);
 }
@@ -243,14 +256,14 @@ DirIterator Dir::iterator() const
 
 static void correctPath(std::string &s)
 {
-  std::replace( s.begin(), s.end(), '\\', '/' );
+  std::replace(s.begin(), s.end(), '\\', '/');
 }
 
-bool Dir::exists(const std::string &path,bool acceptsAbsPath) const
+bool Dir::exists(const std::string &path, bool acceptsAbsPath) const
 {
-  std::string result = filePath(path,acceptsAbsPath);
+  std::string     result = filePath(path, acceptsAbsPath);
   std::error_code ec;
-  bool exist = fs::exists(fs::path(result),ec);
+  bool            exist = fs::exists(fs::path(result), ec);
   return !ec && exist;
 }
 
@@ -277,7 +290,7 @@ bool Dir::isRelativePath(const std::string &path)
   return fs::path(path).is_relative();
 }
 
-std::string Dir::filePath(const std::string &path,bool acceptsAbsPath) const
+std::string Dir::filePath(const std::string &path, bool acceptsAbsPath) const
 {
   std::string result;
   if (acceptsAbsPath && !isRelativePath(path))
@@ -292,48 +305,48 @@ std::string Dir::filePath(const std::string &path,bool acceptsAbsPath) const
   return result;
 }
 
-bool Dir::mkdir(const std::string &path,bool acceptsAbsPath) const
+bool Dir::mkdir(const std::string &path, bool acceptsAbsPath) const
 {
   std::error_code ec;
-  std::string result = filePath(path,acceptsAbsPath);
-  if (exists(path,acceptsAbsPath))
+  std::string     result = filePath(path, acceptsAbsPath);
+  if (exists(path, acceptsAbsPath))
   {
     return true;
   }
   else
   {
-    return fs::create_directory(result,ec);
+    return fs::create_directory(result, ec);
   }
 }
 
-bool Dir::rmdir(const std::string &path,bool acceptsAbsPath) const
+bool Dir::rmdir(const std::string &path, bool acceptsAbsPath) const
 {
-  return remove(path,acceptsAbsPath);
+  return remove(path, acceptsAbsPath);
 }
 
-bool Dir::remove(const std::string &path,bool acceptsAbsPath) const
+bool Dir::remove(const std::string &path, bool acceptsAbsPath) const
 {
   std::error_code ec;
-  std::string result = filePath(path,acceptsAbsPath);
-  return fs::remove(result,ec);
+  std::string     result = filePath(path, acceptsAbsPath);
+  return fs::remove(result, ec);
 }
 
-bool Dir::rename(const std::string &orgName,const std::string &newName,bool acceptsAbsPath) const
+bool Dir::rename(const std::string &orgName, const std::string &newName, bool acceptsAbsPath) const
 {
   std::error_code ec;
-  std::string fn1 = filePath(orgName,acceptsAbsPath);
-  std::string fn2 = filePath(newName,acceptsAbsPath);
-  fs::rename(fn1,fn2,ec);
+  std::string     fn1 = filePath(orgName, acceptsAbsPath);
+  std::string     fn2 = filePath(newName, acceptsAbsPath);
+  fs::rename(fn1, fn2, ec);
   return !ec;
 }
 
-bool Dir::copy(const std::string &srcName,const std::string &dstName,bool acceptsAbsPath) const
+bool Dir::copy(const std::string &srcName, const std::string &dstName, bool acceptsAbsPath) const
 {
-  const auto copyOptions = fs::copy_options::overwrite_existing;
+  const auto      copyOptions = fs::copy_options::overwrite_existing;
   std::error_code ec, ec_perm;
-  std::string sn = filePath(srcName,acceptsAbsPath);
-  std::string dn = filePath(dstName,acceptsAbsPath);
-  fs::copy(sn,dn,copyOptions,ec);
+  std::string     sn = filePath(srcName, acceptsAbsPath);
+  std::string     dn = filePath(dstName, acceptsAbsPath);
+  fs::copy(sn, dn, copyOptions, ec);
   // make sure the destination is writable for the owner (see issue #11600)
   fs::permissions(dn, fs::perms::owner_write, fs::perm_options::add, ec_perm);
   return !ec;
@@ -342,7 +355,7 @@ bool Dir::copy(const std::string &srcName,const std::string &dstName,bool accept
 std::string Dir::currentDirPath()
 {
   std::error_code ec;
-  std::string result = fs::current_path(ec).string();
+  std::string     result = fs::current_path(ec).string();
   correctPath(result);
   return result;
 }
@@ -350,7 +363,7 @@ std::string Dir::currentDirPath()
 bool Dir::setCurrent(const std::string &path)
 {
   std::error_code ec;
-  fs::current_path(path,ec);
+  fs::current_path(path, ec);
   return !ec;
 }
 
@@ -364,8 +377,7 @@ std::string Dir::cleanDirPath(const std::string &path)
 std::string Dir::absPath() const
 {
   std::error_code ec;
-  std::string result = fs::absolute(p->path,ec).string();
+  std::string     result = fs::absolute(p->path, ec).string();
   correctPath(result);
   return result;
 }
-

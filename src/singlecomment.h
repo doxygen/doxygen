@@ -19,6 +19,6 @@
 #include <string>
 
 /** Helper for implemented the -c option of doxygen, which produces HTML output for a given doxygen formatted string */
-void generateHtmlForComment(const std::string &fileName,const std::string &text);
+void generateHtmlForComment(const std::string &fileName, const std::string &text);
 
 #endif // SINGLECOMMENT_H

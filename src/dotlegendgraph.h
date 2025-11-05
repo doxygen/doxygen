@@ -23,13 +23,10 @@ class DotLegendGraph : public DotGraph
 {
   public:
     void writeGraph(const QCString &path);
-
   private:
     QCString getBaseName() const override;
-    void computeTheGraph() override;
+    void     computeTheGraph() override;
     QCString getMapLabel() const override;
-
 };
 
 #endif
-

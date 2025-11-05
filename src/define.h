@@ -34,19 +34,19 @@ class Define
     QCString definition;
     QCString fileName;
     QCString args;
-    FileDef *fileDef = nullptr;
-    int lineNr = 1;
-    int columnNr = 1;
-    int nargs = -1;
-    bool undef = FALSE;
-    bool varArgs = FALSE;
-    bool isPredefined = FALSE;
-    bool nonRecursive = FALSE;
-    bool expandAsDefined = FALSE;
+    FileDef *fileDef         = nullptr;
+    int      lineNr          = 1;
+    int      columnNr        = 1;
+    int      nargs           = -1;
+    bool     undef           = FALSE;
+    bool     varArgs         = FALSE;
+    bool     isPredefined    = FALSE;
+    bool     nonRecursive    = FALSE;
+    bool     expandAsDefined = FALSE;
 };
 
 /** List of all macro definitions */
-using DefineList = std::vector<Define>;
-using DefinesPerFileList = std::unordered_map< std::string, DefineList >;
+using DefineList         = std::vector<Define>;
+using DefinesPerFileList = std::unordered_map<std::string, DefineList>;
 
 #endif

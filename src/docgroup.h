@@ -25,29 +25,27 @@ class DocGroup
 {
   public:
     DocGroup() {}
-
   public:
-    void enterFile(const QCString &fileName,int);
-    void leaveFile(const QCString &fileName,int line);
-    void enterCompound(const QCString &fileName,int line,const QCString &name);
-    void leaveCompound(const QCString &,int,const QCString & /*name*/);
-    void open(Entry *e,const QCString &,int,bool implicit=false);
-    void close(Entry *e,const QCString &fileName,int line,bool foundInline,bool implicit=false);
+    void enterFile(const QCString &fileName, int);
+    void leaveFile(const QCString &fileName, int line);
+    void enterCompound(const QCString &fileName, int line, const QCString &name);
+    void leaveCompound(const QCString &, int, const QCString & /*name*/);
+    void open(Entry *e, const QCString &, int, bool implicit = false);
+    void close(Entry *e, const QCString &fileName, int line, bool foundInline, bool implicit = false);
     void initGroupInfo(Entry *e);
     bool isEmpty() const;
     void clearHeader();
     void appendHeader(const char);
     void addDocs(Entry *e);
-
   private:
-    int findExistingGroup(const MemberGroupInfo *info);
-    int              m_openCount = 0;
-    QCString         m_memberGroupHeader;
-    int              m_memberGroupId = 0;
-    QCString         m_memberGroupRelates;
-    QCString         m_memberGroupDocs;
+    int                   findExistingGroup(const MemberGroupInfo *info);
+    int                   m_openCount = 0;
+    QCString              m_memberGroupHeader;
+    int                   m_memberGroupId = 0;
+    QCString              m_memberGroupRelates;
+    QCString              m_memberGroupDocs;
     std::vector<Grouping> m_autoGroupStack;
-    QCString         m_compoundName;
+    QCString              m_compoundName;
 };
 
 #endif

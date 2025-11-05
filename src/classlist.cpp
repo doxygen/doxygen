@@ -28,20 +28,17 @@
 
 bool ClassLinkedRefMap::declVisible(const ClassDef::CompoundType *filter) const
 {
-  bool hideUndocClasses = Config_getBool(HIDE_UNDOC_CLASSES);
+  bool hideUndocClasses    = Config_getBool(HIDE_UNDOC_CLASSES);
   bool extractLocalClasses = Config_getBool(EXTRACT_LOCAL_CLASSES);
   for (const auto &cd : *this)
   {
     if (!cd->isAnonymous() &&
-        (filter==nullptr || *filter==cd->compoundType())
-       )
+        (filter == nullptr || *filter == cd->compoundType()))
     {
       bool isLink = cd->isLinkable();
       if (isLink ||
           (!hideUndocClasses &&
-           (!cd->isLocal() || extractLocalClasses)
-          )
-         )
+           (!cd->isLocal() || extractLocalClasses)))
       {
         return true;
       }
@@ -50,36 +47,35 @@ bool ClassLinkedRefMap::declVisible(const ClassDef::CompoundType *filter) const
   return false;
 }
 
-void ClassLinkedRefMap::writeDeclaration(OutputList &ol,const ClassDef::CompoundType *filter,
-                                      const QCString &header,bool localNames) const
+void ClassLinkedRefMap::writeDeclaration(OutputList &ol, const ClassDef::CompoundType *filter,
+                                         const QCString &header, bool localNames) const
 {
   bool extractPrivate = Config_getBool(EXTRACT_PRIVATE);
-  bool found=FALSE;
+  bool found          = FALSE;
   for (const auto &cd : *this)
   {
     //printf("  ClassLinkedRefMap::writeDeclaration for %s\n",cd->name().data());
     if (!cd->isAnonymous() &&
         !cd->isExtension() &&
-        (cd->protection()!=Protection::Private || extractPrivate) &&
-        (filter==nullptr || *filter==cd->compoundType())
-       )
+        (cd->protection() != Protection::Private || extractPrivate) &&
+        (filter == nullptr || *filter == cd->compoundType()))
     {
       //printf("writeDeclarationLink()\n");
-      cd->writeDeclarationLink(ol,found,header,localNames);
+      cd->writeDeclarationLink(ol, found, header, localNames);
     }
   }
   if (found) ol.endMemberList();
 }
 
-void ClassLinkedRefMap::writeDocumentation(OutputList &ol,const Definition * container) const
+void ClassLinkedRefMap::writeDocumentation(OutputList &ol, const Definition *container) const
 {
-  bool fortranOpt = Config_getBool(OPTIMIZE_FOR_FORTRAN);
+  bool fortranOpt           = Config_getBool(OPTIMIZE_FOR_FORTRAN);
 
   bool inlineGroupedClasses = Config_getBool(INLINE_GROUPED_CLASSES);
-  bool inlineSimpleClasses = Config_getBool(INLINE_SIMPLE_STRUCTS);
+  bool inlineSimpleClasses  = Config_getBool(INLINE_SIMPLE_STRUCTS);
   if (!inlineGroupedClasses && !inlineSimpleClasses) return;
 
-  bool found=FALSE;
+  bool found = FALSE;
 
   for (const auto &cd : *this)
   {
@@ -91,22 +87,19 @@ void ClassLinkedRefMap::writeDocumentation(OutputList &ol,const Definition * con
         cd->isLinkableInProject() &&
         cd->isEmbeddedInOuterScope() &&
         !cd->isAlias() &&
-        (container==nullptr || cd->partOfGroups().empty()) // if container==nullptr -> show as part of the group docs, otherwise only show if not part of a group
-       )
+        (container == nullptr || cd->partOfGroups().empty()) // if container==nullptr -> show as part of the group docs, otherwise only show if not part of a group
+    )
     {
       //printf("  showing class %s\n",cd->name().data());
       if (!found)
       {
         ol.writeRuler();
         ol.startGroupHeader("inline_classes");
-        ol.parseText(fortranOpt?theTranslator->trTypeDocumentation():
-            theTranslator->trClassDocumentation());
+        ol.parseText(fortranOpt ? theTranslator->trTypeDocumentation() : theTranslator->trClassDocumentation());
         ol.endGroupHeader();
-        found=TRUE;
+        found = TRUE;
       }
       cd->writeInlineDocumentation(ol);
     }
   }
 }
-
-

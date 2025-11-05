@@ -27,7 +27,6 @@
 class TranslatorIndonesian : public TranslatorAdapter_1_8_0
 {
   public:
-
     // --- Language control methods -------------------
 
     /*! Used for identification of the language. The identification
@@ -37,7 +36,9 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
      * the identification used in language.cpp.
      */
     QCString idLanguage() override
-    { return "indonesian"; }
+    {
+      return "indonesian";
+    }
 
     /*! Used to get the LaTeX command(s) for the language support.
      *  This method should return string with commands that switch
@@ -71,31 +72,45 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
 
     /*! used in the compound documentation before a list of related functions. */
     QCString trRelatedFunctions() override
-    { return "Fungsi-fungsi Terkait"; }
+    {
+      return "Fungsi-fungsi Terkait";
+    }
 
     /*! subscript for the related functions. */
     QCString trRelatedSubscript() override
-    { return "(Perhatikan bahwa fungsi-fungsi tersebut bukan fungsi anggota.)"; }
+    {
+      return "(Perhatikan bahwa fungsi-fungsi tersebut bukan fungsi anggota.)";
+    }
 
     /*! header that is put before the detailed description of files, classes and namespaces. */
     QCString trDetailedDescription() override
-    { return "Keterangan Lengkap"; }
+    {
+      return "Keterangan Lengkap";
+    }
 
     /*! header that is used when the summary tag is missing inside the details tag */
     QCString trDetails() override
-    { return "Detail"; }
+    {
+      return "Detail";
+    }
 
     /*! header that is put before the list of typedefs. */
     QCString trMemberTypedefDocumentation() override
-    { return "Dokumentasi Anggota: Tipe"; }
+    {
+      return "Dokumentasi Anggota: Tipe";
+    }
 
     /*! header that is put before the list of enumerations. */
     QCString trMemberEnumerationDocumentation() override
-    { return "Dokumentasi Anggota: Enumerasi"; }
+    {
+      return "Dokumentasi Anggota: Enumerasi";
+    }
 
     /*! header that is put before the list of member functions. */
     QCString trMemberFunctionDocumentation() override
-    { return "Dokumentasi Anggota: Fungsi"; }
+    {
+      return "Dokumentasi Anggota: Fungsi";
+    }
 
     /*! header that is put before the list of member attributes. */
     QCString trMemberDataDocumentation() override
@@ -112,45 +127,62 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
 
     /*! this is the text of a link put after brief descriptions. */
     QCString trMore() override
-    { return "Selengkapnya..."; }
+    {
+      return "Selengkapnya...";
+    }
 
     /*! put in the class documentation */
     QCString trListOfAllMembers() override
-    { return "Daftar semua anggota"; }
+    {
+      return "Daftar semua anggota";
+    }
 
     /*! used as the title of the "list of all members" page of a class */
     QCString trMemberList() override
-    { return "Daftar anggota"; }
+    {
+      return "Daftar anggota";
+    }
 
     /*! this is the first part of a sentence that is followed by a class name */
     QCString trThisIsTheListOfAllMembers() override
-    { return "Berikut ini daftar lengkap anggota untuk"; }
+    {
+      return "Berikut ini daftar lengkap anggota untuk";
+    }
 
     /*! this is the remainder of the sentence after the class name */
     QCString trIncludingInheritedMembers() override
-    { return ", termasuk semua anggota yang diwariskan."; }
+    {
+      return ", termasuk semua anggota yang diwariskan.";
+    }
 
     /*! this is put at the author sections at the bottom of man pages.
      *  parameter s is name of the project name.
      */
     QCString trGeneratedAutomatically(const QCString &s) override
-    { QCString result="Dibangkitkan secara otomatis oleh Doxygen";
-      if (!s.isEmpty()) result+=" untuk "+s;
-      result+=" dari kode sumber.";
+    {
+      QCString result = "Dibangkitkan secara otomatis oleh Doxygen";
+      if (!s.isEmpty()) result += " untuk " + s;
+      result += " dari kode sumber.";
       return result;
     }
 
     /*! put after an enum name in the list of all members */
     QCString trEnumName() override
-    { return "nama enumerasi"; }
+    {
+      return "nama enumerasi";
+    }
 
     /*! put after an enum value in the list of all members */
     QCString trEnumValue() override
-    { return "nilai enumerasi"; }
+    {
+      return "nilai enumerasi";
+    }
 
     /*! put after an undocumented member in the list of all members */
     QCString trDefinedIn() override
-    { return "didefinisikan di"; }
+    {
+      return "didefinisikan di";
+    }
 
     // quick reference sections
 
@@ -158,11 +190,15 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
      *  compounds or files (see the \\group command).
      */
     QCString trModules() override
-    { return "Modul"; }
+    {
+      return "Modul";
+    }
 
     /*! This is put above each page as a link to the class hierarchy */
     QCString trClassHierarchy() override
-    { return "Hierarki Kelas"; }
+    {
+      return "Hierarki Kelas";
+    }
 
     /*! This is put above each page as a link to the list of annotated classes */
     QCString trCompoundList() override
@@ -179,7 +215,9 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
 
     /*! This is put above each page as a link to the list of documented files */
     QCString trFileList() override
-    { return "Daftar File"; }
+    {
+      return "Daftar File";
+    }
 
     /*! This is put above each page as a link to all members of compounds. */
     QCString trCompoundMembers() override
@@ -209,27 +247,34 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
 
     /*! This is put above each page as a link to all related pages. */
     QCString trRelatedPages() override
-    { return "Halaman Terkait"; }
+    {
+      return "Halaman Terkait";
+    }
 
     /*! This is put above each page as a link to all examples. */
     QCString trExamples() override
-    { return "Contoh"; }
+    {
+      return "Contoh";
+    }
 
     /*! This is put above each page as a link to the search engine. */
     QCString trSearch() override
-    { return "Cari"; }
+    {
+      return "Cari";
+    }
 
     /*! This is an introduction to the class hierarchy. */
     QCString trClassHierarchyDescription() override
-    { return "Hierarki kelas ini diurutkan kurang-lebih"
-	" berdasarkan abjad:";
+    {
+      return "Hierarki kelas ini diurutkan kurang-lebih"
+             " berdasarkan abjad:";
     }
 
     /*! This is an introduction to the list with all files. */
     QCString trFileListDescription(bool extractAll) override
     {
-      QCString result="Berikut ini daftar seluruh file";
-      if (!extractAll) result+=" yang didokumentasikan";
+      QCString result = "Berikut ini daftar seluruh file";
+      if (!extractAll) result += " yang didokumentasikan";
       result += ", dengan penjelasan singkat:";
       return result;
     }
@@ -255,40 +300,40 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
     /*! This is an introduction to the page with all class members. */
     QCString trCompoundMembersDescription(bool extractAll) override
     {
-      QCString result="Berikut ini daftar seluruh ";
+      QCString result = "Berikut ini daftar seluruh ";
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
-        result+="variabel anggota struct dan union";
+        result += "variabel anggota struct dan union";
       }
       else
       {
-        result+="kelas";
+        result += "kelas";
       }
       if (!extractAll)
       {
-        result+=" yang didokumentasikan";
+        result += " yang didokumentasikan";
       }
-      result+=", dengan tautan ke ";
+      result += ", dengan tautan ke ";
       if (!extractAll)
       {
         if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
         {
-          result+="dokumentasi struct/union untuk setiap variabel:";
+          result += "dokumentasi struct/union untuk setiap variabel:";
         }
         else
         {
-          result+="dokumentasi kelas untuk setiap anggota:";
+          result += "dokumentasi kelas untuk setiap anggota:";
         }
       }
       else
       {
         if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
         {
-          result+="struct/union yang memuatnya:";
+          result += "struct/union yang memuatnya:";
         }
         else
         {
-          result+="kelas yang memuatnya:";
+          result += "kelas yang memuatnya:";
         }
       }
       return result;
@@ -297,54 +342,66 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
     /*! This is an introduction to the page with all file members. */
     QCString trFileMembersDescription(bool extractAll) override
     {
-      QCString result="Berikut ini daftar ";
+      QCString result = "Berikut ini daftar ";
 
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
-        result+="fungsi, variabel, makro definisi, enumerasi, dan tipe";
+        result += "fungsi, variabel, makro definisi, enumerasi, dan tipe";
       }
       else
       {
-        result+="file";
+        result += "file";
       }
-      if (!extractAll) result+=" yang didokumentasikan";
-      result+=", dengan tautan ke ";
+      if (!extractAll) result += " yang didokumentasikan";
+      result += ", dengan tautan ke ";
       if (extractAll)
-        result+="file yang memuatnya:";
+        result += "file yang memuatnya:";
       else
-        result+="dokumentasinya:";
+        result += "dokumentasinya:";
       return result;
     }
 
     /*! This is an introduction to the page with the list of all examples */
     QCString trExamplesDescription() override
-    { return "Berikut ini daftar semua contoh:"; }
+    {
+      return "Berikut ini daftar semua contoh:";
+    }
 
     /*! This is an introduction to the page with the list of related pages */
     QCString trRelatedPagesDescription() override
-    { return "Berikut ini daftar semua halaman dokumentasi yang terkait:"; }
+    {
+      return "Berikut ini daftar semua halaman dokumentasi yang terkait:";
+    }
 
     /*! This is an introduction to the page with the list of class/file groups */
     QCString trModulesDescription() override
-    { return "Berikut ini daftar semua modul:"; }
+    {
+      return "Berikut ini daftar semua modul:";
+    }
 
     // index titles (the project name is prepended for these)
 
     /*! This is used in HTML as the title of index.html. */
     QCString trDocumentation(const QCString &projName) override
-    { return (!projName.isEmpty()?projName + " " : "") + "Dokumentasi"; }
+    {
+      return (!projName.isEmpty() ? projName + " " : "") + "Dokumentasi";
+    }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * index of all groups.
      */
     QCString trModuleIndex() override
-    { return "Indeks Modul"; }
+    {
+      return "Indeks Modul";
+    }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * class hierarchy.
      */
     QCString trHierarchicalIndex() override
-    { return "Indeks Hierarki Kelas"; }
+    {
+      return "Indeks Hierarki Kelas";
+    }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * annotated compound index.
@@ -365,13 +422,17 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
      * list of all files.
      */
     QCString trFileIndex() override
-    { return "Indeks File"; }
+    {
+      return "Indeks File";
+    }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all groups.
      */
     QCString trModuleDocumentation() override
-    { return "Dokumentasi Modul"; }
+    {
+      return "Dokumentasi Modul";
+    }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all classes, structs and unions.
@@ -384,7 +445,7 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
       }
       else if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
       {
-          return trDesignUnitDocumentation();
+        return trDesignUnitDocumentation();
       }
       else
       {
@@ -396,77 +457,103 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
      *  the documentation of all files.
      */
     QCString trFileDocumentation() override
-    { return "Dokumentasi File"; }
+    {
+      return "Dokumentasi File";
+    }
 
     /*! This is used in LaTeX as the title of the document */
     QCString trReferenceManual() override
-    { return "Dokumen Referensi"; }
+    {
+      return "Dokumen Referensi";
+    }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of defines
      */
     QCString trDefines() override
-    { return "Makro Definisi"; }
+    {
+      return "Makro Definisi";
+    }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of typedefs
      */
     QCString trTypedefs() override
-    { return "Definisi Tipe"; }
+    {
+      return "Definisi Tipe";
+    }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of enumerations
      */
     QCString trEnumerations() override
-    { return "Enumerasi"; }
+    {
+      return "Enumerasi";
+    }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of (global) functions
      */
     QCString trFunctions() override
-    { return "Fungsi"; }
+    {
+      return "Fungsi";
+    }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of (global) variables
      */
     QCString trVariables() override
-    { return "Variabel"; }
+    {
+      return "Variabel";
+    }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of (global) variables
      */
     QCString trEnumerationValues() override
-    { return "Nilai enumerasi"; }
+    {
+      return "Nilai enumerasi";
+    }
 
     /*! This is used in the documentation of a file before the list of
      *  documentation blocks for defines
      */
     QCString trDefineDocumentation() override
-    { return "Dokumentasi Makro Definisi"; }
+    {
+      return "Dokumentasi Makro Definisi";
+    }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for typedefs
      */
     QCString trTypedefDocumentation() override
-    { return "Dokumentasi Definisi Tipe"; }
+    {
+      return "Dokumentasi Definisi Tipe";
+    }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for enumeration types
      */
     QCString trEnumerationTypeDocumentation() override
-    { return "Dokumentasi Tipe Enumerasi"; }
+    {
+      return "Dokumentasi Tipe Enumerasi";
+    }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for functions
      */
     QCString trFunctionDocumentation() override
-    { return "Dokumentasi Fungsi"; }
+    {
+      return "Dokumentasi Fungsi";
+    }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for variables
      */
     QCString trVariableDocumentation() override
-    { return "Dokumentasi Variabel"; }
+    {
+      return "Dokumentasi Variabel";
+    }
 
     /*! This is used in the documentation of a file/namespace/group before
      *  the list of links to documented compounds
@@ -486,66 +573,84 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
     /*! This is used in the standard footer of each page and indicates when
      *  the page was generated
      */
-    QCString trGeneratedAt(const QCString &date,const QCString &projName) override
+    QCString trGeneratedAt(const QCString &date, const QCString &projName) override
     {
-      QCString result="Dibangkitkan pada tanggal "+date;
-      if (!projName.isEmpty()) result+=" untuk "+projName;
-      result+=" oleh";
+      QCString result = "Dibangkitkan pada tanggal " + date;
+      if (!projName.isEmpty()) result += " untuk " + projName;
+      result += " oleh";
       return result;
     }
 
     /*! this text is put before a class diagram */
     QCString trClassDiagram(const QCString &clName) override
     {
-      return "Diagram hierarki kelas untuk "+clName+":";
+      return "Diagram hierarki kelas untuk " + clName + ":";
     }
 
     /*! this text is generated when the \\warning command is used. */
     QCString trWarning() override
-    { return "Peringatan"; }
+    {
+      return "Peringatan";
+    }
 
     /*! this text is generated when the \\version command is used. */
     QCString trVersion() override
-    { return "Versi"; }
+    {
+      return "Versi";
+    }
 
     /*! this text is generated when the \\date command is used. */
     QCString trDate() override
-    { return "Tanggal"; }
+    {
+      return "Tanggal";
+    }
 
     /*! this text is generated when the \\return command is used. */
     QCString trReturns() override
-    { return "Mengembalikan"; }
+    {
+      return "Mengembalikan";
+    }
 
     /*! this text is generated when the \\sa command is used. */
     QCString trSeeAlso() override
-    { return "Lihat juga"; }
+    {
+      return "Lihat juga";
+    }
 
     /*! this text is generated when the \\param command is used. */
     QCString trParameters() override
-    { return "Parameter"; }
+    {
+      return "Parameter";
+    }
 
     /*! this text is generated when the \\exception command is used. */
     QCString trExceptions() override
-    { return "Eksepsi"; }
+    {
+      return "Eksepsi";
+    }
 
     /*! this text is used in the title page of a LaTeX document. */
     QCString trGeneratedBy() override
-    { return "Dibangkitkan oleh"; }
+    {
+      return "Dibangkitkan oleh";
+    }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 0.49-990307
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 0.49-990307
+    //////////////////////////////////////////////////////////////////////////
 
     /*! used as the title of page containing all the index of all namespaces. */
     QCString trNamespaceList() override
-    { return "Daftar Namespace"; }
+    {
+      return "Daftar Namespace";
+    }
 
     /*! used as an introduction to the namespace list */
     QCString trNamespaceListDescription(bool extractAll) override
     {
-      QCString result="Berikut ini daftar namespace";
-      if (!extractAll) result+=" yang didokumentasikan";
-      result+=", dengan keterangan singkat:";
+      QCString result = "Berikut ini daftar namespace";
+      if (!extractAll) result += " yang didokumentasikan";
+      result += ", dengan keterangan singkat:";
       return result;
     }
 
@@ -553,80 +658,104 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
      *  friends of a class
      */
     QCString trFriends() override
-    { return "Friend"; }
+    {
+      return "Friend";
+    }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 0.49-990405
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 0.49-990405
+    //////////////////////////////////////////////////////////////////////////
 
     /*! used in the class documentation as a header before the list of all
      * related classes
      */
     QCString trRelatedFunctionDocumentation() override
-    { return "Dokumentasi Friend Dan Fungsi Terkait"; }
+    {
+      return "Dokumentasi Friend Dan Fungsi Terkait";
+    }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 0.49-990425
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 0.49-990425
+    //////////////////////////////////////////////////////////////////////////
 
     /*! used as the title of the HTML page of a class/struct/union */
-    QCString trCompoundReference(const QCString &clName,
-        ClassDef::CompoundType compType,
-        bool isTemplate) override
+    QCString trCompoundReference(const QCString        &clName,
+                                 ClassDef::CompoundType compType,
+                                 bool                   isTemplate) override
     {
-      QCString result="Referensi";
-      switch(compType)
+      QCString result = "Referensi";
+      switch (compType)
       {
-        case ClassDef::Class:      result+=" Kelas "; break;
-        case ClassDef::Struct:     result+=" Struct "; break;
-        case ClassDef::Union:      result+=" Union "; break;
-        case ClassDef::Interface:  result+=" Interface "; break;
-        case ClassDef::Protocol:   result+=" Protokol "; break;
-        case ClassDef::Category:   result+=" Kategori "; break;
-        case ClassDef::Exception:  result+=" Eksepsi "; break;
-        default: break;
+      case ClassDef::Class: result += " Kelas "; break;
+      case ClassDef::Struct: result += " Struct "; break;
+      case ClassDef::Union: result += " Union "; break;
+      case ClassDef::Interface: result += " Interface "; break;
+      case ClassDef::Protocol: result += " Protokol "; break;
+      case ClassDef::Category: result += " Kategori "; break;
+      case ClassDef::Exception: result += " Eksepsi "; break;
+      default: break;
       }
-      if (isTemplate) result+=" Template ";
-      result+=clName;
+      if (isTemplate) result += " Template ";
+      result += clName;
       return result;
     }
 
     /*! used as the title of the HTML page of a file */
     QCString trFileReference(const QCString &fileName) override
     {
-      QCString result="Referensi File ";
-      result+=fileName;
+      QCString result = "Referensi File ";
+      result += fileName;
       return result;
     }
 
     /*! used as the title of the HTML page of a namespace */
     QCString trNamespaceReference(const QCString &namespaceName) override
     {
-      QCString result="Referensi Namespace ";
-      result+=namespaceName;
+      QCString result = "Referensi Namespace ";
+      result += namespaceName;
       return result;
     }
 
     QCString trPublicMembers() override
-    { return "Fungsi Anggota Publik"; }
+    {
+      return "Fungsi Anggota Publik";
+    }
     QCString trPublicSlots() override
-    { return "Slot Publik"; }
+    {
+      return "Slot Publik";
+    }
     QCString trSignals() override
-    { return "Signal"; }
+    {
+      return "Signal";
+    }
     QCString trStaticPublicMembers() override
-    { return "Fungsi Anggota Publik Statis"; }
+    {
+      return "Fungsi Anggota Publik Statis";
+    }
     QCString trProtectedMembers() override
-    { return "Fungsi Anggota Diproteksi"; }
+    {
+      return "Fungsi Anggota Diproteksi";
+    }
     QCString trProtectedSlots() override
-    { return "Slot Diproteksi"; }
+    {
+      return "Slot Diproteksi";
+    }
     QCString trStaticProtectedMembers() override
-    { return "Fungsi Anggota Diproteksi Statis"; }
+    {
+      return "Fungsi Anggota Diproteksi Statis";
+    }
     QCString trPrivateMembers() override
-    { return "Fungsi Anggota Privat"; }
+    {
+      return "Fungsi Anggota Privat";
+    }
     QCString trPrivateSlots() override
-    { return "Slot Privat"; }
+    {
+      return "Slot Privat";
+    }
     QCString trStaticPrivateMembers() override
-    { return "Fungsi Anggota Privat Statis"; }
+    {
+      return "Fungsi Anggota Privat Statis";
+    }
 
     /*! this function is used to produce a comma-separated list of items.
      *  use generateMarker(i) to indicate where item i should be put.
@@ -635,18 +764,18 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
     {
       QCString result;
       // the inherits list contain `numEntries' classes
-      for (int i=0;i<numEntries;i++)
+      for (int i = 0; i < numEntries; i++)
       {
         // use generateMarker to generate placeholders for the class links!
-        result+=generateMarker(i); // generate marker for entry i in the list
+        result += generateMarker(i); // generate marker for entry i in the list
         // (order is left to right)
 
-        if (i!=numEntries-1)  // not the last entry, so we need a separator
+        if (i != numEntries - 1) // not the last entry, so we need a separator
         {
-          if (i<numEntries-2) // not the fore last entry
-            result+=", ";
-          else                // the fore last entry
-            result+=", dan ";
+          if (i < numEntries - 2) // not the fore last entry
+            result += ", ";
+          else // the fore last entry
+            result += ", dan ";
         }
       }
       return result;
@@ -657,7 +786,7 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
      */
     QCString trInheritsList(int numEntries) override
     {
-      return "Mewarisi "+trWriteList(numEntries)+".";
+      return "Mewarisi " + trWriteList(numEntries) + ".";
     }
 
     /*! used in class documentation to produce a list of super classes,
@@ -665,7 +794,7 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
      */
     QCString trInheritedByList(int numEntries) override
     {
-      return "Diwariskan ke "+trWriteList(numEntries)+".";
+      return "Diwariskan ke " + trWriteList(numEntries) + ".";
     }
 
     /*! used in member documentation blocks to produce a list of
@@ -673,7 +802,7 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
      */
     QCString trReimplementedFromList(int numEntries) override
     {
-      return "Di-reimplementasikan dari "+trWriteList(numEntries)+".";
+      return "Di-reimplementasikan dari " + trWriteList(numEntries) + ".";
     }
 
     /*! used in member documentation blocks to produce a list of
@@ -681,98 +810,112 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
      */
     QCString trReimplementedInList(int numEntries) override
     {
-      return "Diimplementasikan ulang di "+trWriteList(numEntries)+".";
+      return "Diimplementasikan ulang di " + trWriteList(numEntries) + ".";
     }
 
     /*! This is put above each page as a link to all members of namespaces. */
     QCString trNamespaceMembers() override
-    { return "Anggota Namespace"; }
+    {
+      return "Anggota Namespace";
+    }
 
     /*! This is an introduction to the page with all namespace members */
     QCString trNamespaceMemberDescription(bool extractAll) override
     {
-      QCString result="Berikut ini daftar anggota namespace";
-      if (!extractAll) result+=" yang didokumentasikan";
-      result+=", dengan tautan ke ";
+      QCString result = "Berikut ini daftar anggota namespace";
+      if (!extractAll) result += " yang didokumentasikan";
+      result += ", dengan tautan ke ";
       if (extractAll)
-        result+="dokumentasi namespace untuk setiap anggota:";
+        result += "dokumentasi namespace untuk setiap anggota:";
       else
-        result+="namespace yang memuatnya:";
+        result += "namespace yang memuatnya:";
       return result;
     }
     /*! This is used in LaTeX as the title of the chapter with the
      *  index of all namespaces.
      */
     QCString trNamespaceIndex() override
-    { return "Indeks Namespace"; }
+    {
+      return "Indeks Namespace";
+    }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all namespaces.
      */
     QCString trNamespaceDocumentation() override
-    { return "Dokumentasi Namespace"; }
+    {
+      return "Dokumentasi Namespace";
+    }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 0.49-990522
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 0.49-990522
+    //////////////////////////////////////////////////////////////////////////
 
     /*! This is used in the documentation before the list of all
      *  namespaces in a file.
      */
     QCString trNamespaces() override
-    { return "Daftar Namespace"; }
+    {
+      return "Daftar Namespace";
+    }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 0.49-990728
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 0.49-990728
+    //////////////////////////////////////////////////////////////////////////
 
     /*! This is put at the bottom of a class documentation page and is
      *  followed by a list of files that were used to generate the page.
      */
     QCString trGeneratedFromFiles(ClassDef::CompoundType compType,
-        bool single) override
+                                  bool                   single) override
     { // here s is one of " Class", " Struct" or " Union"
       // single is true implies a single file
-      QCString result="Dokumentasi untuk ";
-      switch(compType)
+      QCString result = "Dokumentasi untuk ";
+      switch (compType)
       {
-        case ClassDef::Class:      result+="kelas"; break;
-        case ClassDef::Struct:     result+="struct"; break;
-        case ClassDef::Union:      result+="union"; break;
-        case ClassDef::Interface:  result+="interface"; break;
-        case ClassDef::Protocol:   result+="protokol"; break;
-        case ClassDef::Category:   result+="kategori"; break;
-        case ClassDef::Exception:  result+="eksepsi"; break;
-        default: break;
+      case ClassDef::Class: result += "kelas"; break;
+      case ClassDef::Struct: result += "struct"; break;
+      case ClassDef::Union: result += "union"; break;
+      case ClassDef::Interface: result += "interface"; break;
+      case ClassDef::Protocol: result += "protokol"; break;
+      case ClassDef::Category: result += "kategori"; break;
+      case ClassDef::Exception: result += "eksepsi"; break;
+      default: break;
       }
-      result+=" ini dibangkitkan dari file";
-      result+=single ? "" : "-file";
-      result+=" berikut:";
+      result += " ini dibangkitkan dari file";
+      result += single ? "" : "-file";
+      result += " berikut:";
       return result;
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 0.49-990901
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 0.49-990901
+    //////////////////////////////////////////////////////////////////////////
 
     /*! This is used as the heading text for the retval command. */
     QCString trReturnValues() override
-    { return "Nilai kembali"; }
+    {
+      return "Nilai kembali";
+    }
 
     /*! This is in the (quick) index as a link to the main page (index.html)
      */
     QCString trMainPage() override
-    { return "Halaman Utama"; }
+    {
+      return "Halaman Utama";
+    }
 
     /*! This is used in references to page that are put in the LaTeX
      *  documentation. It should be an abbreviation of the word page.
      */
     QCString trPageAbbreviation() override
-    { return "hal."; }
+    {
+      return "hal.";
+    }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 0.49-991003
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 0.49-991003
+    //////////////////////////////////////////////////////////////////////////
 
     QCString trDefinedAtLineInSourceFile() override
     {
@@ -783,28 +926,28 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
       return "Definisi dalam file @0.";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 0.49-991205
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 0.49-991205
+    //////////////////////////////////////////////////////////////////////////
 
     QCString trDeprecated() override
     {
       return "Kadaluarsa";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.0.0
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.0.0
+    //////////////////////////////////////////////////////////////////////////
 
     /*! this text is put before a collaboration diagram */
     QCString trCollaborationDiagram(const QCString &clName) override
     {
-      return "Diagram kolaborasi untuk "+clName+":";
+      return "Diagram kolaborasi untuk " + clName + ":";
     }
     /*! this text is put before an include dependency graph */
     QCString trInclDepGraph(const QCString &fName) override
     {
-      return "Bagan kebergantungan pemuatan untuk "+fName+":";
+      return "Bagan kebergantungan pemuatan untuk " + fName + ":";
     }
     /*! header that is put before the list of constructor/destructors. */
     QCString trConstructorDocumentation() override
@@ -863,9 +1006,9 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
       return "Indeks Halaman";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.1.0
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.1.0
+    //////////////////////////////////////////////////////////////////////////
 
     QCString trNote() override
     {
@@ -915,9 +1058,9 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
       return "Atribut Privat Statis";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.1.3
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.1.3
+    //////////////////////////////////////////////////////////////////////////
 
     /*! Used as a marker that is put before a \\todo item */
     QCString trTodo() override
@@ -930,9 +1073,9 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
       return "Daftar Tugas";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.1.4
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.1.4
+    //////////////////////////////////////////////////////////////////////////
 
     QCString trReferencedBy() override
     {
@@ -949,17 +1092,17 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
     QCString trInclByDepGraph() override
     {
       return "Bagan ini menunjukkan file-file yang memuat"
-	" atau menggunakan file ini baik secara langsung maupun"
-	" tidak langsung:";
+             " atau menggunakan file ini baik secara langsung maupun"
+             " tidak langsung:";
     }
     QCString trSince() override
     {
       return "Sejak";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.1.5
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.1.5
+    //////////////////////////////////////////////////////////////////////////
 
     /*! title of the graph legend page */
     QCString trLegendTitle() override
@@ -971,62 +1114,62 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
      */
     QCString trLegendDocs() override
     {
-      return
-        "Halaman ini berisi keterangan cara membaca bagan yang dibangkitkan "
-        "oleh doxygen.<p>\n"
-        "Contoh:\n"
-        "\\code\n"
-        "/*! Invisible class because of truncation */\n"
-        "class Invisible { };\n\n"
-        "/*! Truncated class, inheritance relation is hidden */\n"
-        "class Truncated : public Invisible { };\n\n"
-        "/* Class not documented with doxygen comments */\n"
-        "class Undocumented { };\n\n"
-        "/*! Class that is inherited using public inheritance */\n"
-        "class PublicBase : public Truncated { };\n\n"
-        "/*! A template class */\n"
-        "template<class T> class Templ { };\n\n"
-        "/*! Class that is inherited using protected inheritance */\n"
-        "class ProtectedBase { };\n\n"
-        "/*! Class that is inherited using private inheritance */\n"
-        "class PrivateBase { };\n\n"
-        "/*! Class that is used by the Inherited class */\n"
-        "class Used { };\n\n"
-        "/*! Super class that inherits a number of other classes */\n"
-        "class Inherited : public PublicBase,\n"
-        "                  protected ProtectedBase,\n"
-        "                  private PrivateBase,\n"
-        "                  public Undocumented,\n"
-        "                  public Templ<int>\n"
-        "{\n"
-        "  private:\n"
-        "    Used *m_usedClass;\n"
-        "};\n"
-        "\\endcode\n"
-        "Apabila tag \\c MAX_DOT_GRAPH_HEIGHT di file konfigurasi "
-        "diset ke 240 kode di atas akan menghasilkan bagan berikut:"
-        "<p><center><img alt=\"\" src=\"graph_legend."+getDotImageExtension()+"\"></center>\n"
-        "<p>\n"
-        "Kotak-kotak pada bagan di atas mempunyai arti sebagai berikut:\n"
-        "<ul>\n"
-        "<li>%Kotak hitam merupakan struct atau kelas yang bersangkutan.\n"
-        "<li>%Kotak berbingkai hitam adalah struct atau kelas yang mempunyai dokumentasi.\n"
-        "<li>%Kotak dengan bingkai abu-abu adalah struct atau kelas tanpa dokumentasi.\n"
-        "<li>%Kotak dengan bingkai merah merupakan struct atau kelas yang didokumentasikan tetapi"
-        "tidak semua relasinya ditampilkan. %Sebuah bagan "
-        "akan terpotong apabila lebih besar daripada ukuran yang ditentukan.\n"
-        "</ul>\n"
-        "Arti dari tanda-tanda panah adalah sebagai berikut:\n"
-        "<ul>\n"
-        "<li>%Panah biru tua menandakan pewarisan publik.\n"
-        "<li>%Panah hijau tua untuk pewarisan diproteksi.\n"
-        "<li>%Panah merah tua untuk pewarisan privat.\n"
-        "<li>%Panah ungu putus-putus menandakan kelas tersebut berhubungan dengan kelas lain. "
-        "Panah tersebut diberi judul sesuai dengan kelas atau struct tujuan.\n"
-        "<li>%Panah kuning putus-putus menandakan hubungan antara sebuah template kelas dan "
-        "instance dari template tersebut. Panah tersebut diberi judul sesuai dengan "
-        "parameter template yang digunakan.\n"
-        "</ul>\n";
+      return "Halaman ini berisi keterangan cara membaca bagan yang dibangkitkan "
+             "oleh doxygen.<p>\n"
+             "Contoh:\n"
+             "\\code\n"
+             "/*! Invisible class because of truncation */\n"
+             "class Invisible { };\n\n"
+             "/*! Truncated class, inheritance relation is hidden */\n"
+             "class Truncated : public Invisible { };\n\n"
+             "/* Class not documented with doxygen comments */\n"
+             "class Undocumented { };\n\n"
+             "/*! Class that is inherited using public inheritance */\n"
+             "class PublicBase : public Truncated { };\n\n"
+             "/*! A template class */\n"
+             "template<class T> class Templ { };\n\n"
+             "/*! Class that is inherited using protected inheritance */\n"
+             "class ProtectedBase { };\n\n"
+             "/*! Class that is inherited using private inheritance */\n"
+             "class PrivateBase { };\n\n"
+             "/*! Class that is used by the Inherited class */\n"
+             "class Used { };\n\n"
+             "/*! Super class that inherits a number of other classes */\n"
+             "class Inherited : public PublicBase,\n"
+             "                  protected ProtectedBase,\n"
+             "                  private PrivateBase,\n"
+             "                  public Undocumented,\n"
+             "                  public Templ<int>\n"
+             "{\n"
+             "  private:\n"
+             "    Used *m_usedClass;\n"
+             "};\n"
+             "\\endcode\n"
+             "Apabila tag \\c MAX_DOT_GRAPH_HEIGHT di file konfigurasi "
+             "diset ke 240 kode di atas akan menghasilkan bagan berikut:"
+             "<p><center><img alt=\"\" src=\"graph_legend." +
+             getDotImageExtension() + "\"></center>\n"
+                                      "<p>\n"
+                                      "Kotak-kotak pada bagan di atas mempunyai arti sebagai berikut:\n"
+                                      "<ul>\n"
+                                      "<li>%Kotak hitam merupakan struct atau kelas yang bersangkutan.\n"
+                                      "<li>%Kotak berbingkai hitam adalah struct atau kelas yang mempunyai dokumentasi.\n"
+                                      "<li>%Kotak dengan bingkai abu-abu adalah struct atau kelas tanpa dokumentasi.\n"
+                                      "<li>%Kotak dengan bingkai merah merupakan struct atau kelas yang didokumentasikan tetapi"
+                                      "tidak semua relasinya ditampilkan. %Sebuah bagan "
+                                      "akan terpotong apabila lebih besar daripada ukuran yang ditentukan.\n"
+                                      "</ul>\n"
+                                      "Arti dari tanda-tanda panah adalah sebagai berikut:\n"
+                                      "<ul>\n"
+                                      "<li>%Panah biru tua menandakan pewarisan publik.\n"
+                                      "<li>%Panah hijau tua untuk pewarisan diproteksi.\n"
+                                      "<li>%Panah merah tua untuk pewarisan privat.\n"
+                                      "<li>%Panah ungu putus-putus menandakan kelas tersebut berhubungan dengan kelas lain. "
+                                      "Panah tersebut diberi judul sesuai dengan kelas atau struct tujuan.\n"
+                                      "<li>%Panah kuning putus-putus menandakan hubungan antara sebuah template kelas dan "
+                                      "instance dari template tersebut. Panah tersebut diberi judul sesuai dengan "
+                                      "parameter template yang digunakan.\n"
+                                      "</ul>\n";
     }
     /*! text for the link to the legend page */
     QCString trLegend() override
@@ -1034,9 +1177,9 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
       return "keterangan";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.2.0
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.2.0
+    //////////////////////////////////////////////////////////////////////////
 
     /*! Used as a marker that is put before a test item */
     QCString trTest() override
@@ -1049,9 +1192,9 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
       return "Daftar Tes";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.2.2
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.2.2
+    //////////////////////////////////////////////////////////////////////////
 
     /*! Used as a section header for IDL properties */
     QCString trProperties() override
@@ -1064,9 +1207,9 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
       return "Dokumentasi Property";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.2.4
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.2.4
+    //////////////////////////////////////////////////////////////////////////
 
     /*! Used for Java classes in the summary section of Java packages */
     QCString trClasses() override
@@ -1083,7 +1226,7 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
     /*! Used as the title of a Java package */
     QCString trPackage(const QCString &name) override
     {
-      return "Paket "+name;
+      return "Paket " + name;
     }
     /*! The description of the package index page */
     QCString trPackageListDescription() override
@@ -1101,9 +1244,9 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
       return "Nilai:";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.2.5
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.2.5
+    //////////////////////////////////////////////////////////////////////////
 
     /*! Used as a marker that is put before a \\bug item */
     QCString trBug() override
@@ -1116,9 +1259,9 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
       return "Daftar Bug";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.2.6
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.2.6
+    //////////////////////////////////////////////////////////////////////////
 
     /*! Used as ansicpg for RTF file
      *
@@ -1226,12 +1369,12 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
     QCString trGlobal(bool first_capital, bool singular) override
     {
       return createNoun(first_capital, singular, "definisi", "-definisi") +
-                " global";
+             " global";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.2.7
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.2.7
+    //////////////////////////////////////////////////////////////////////////
 
     /*! This text is generated when the \\author command is used and
      *  for the author section in man pages. */
@@ -1240,9 +1383,9 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
       return createNoun(first_capital, false, "penulis", "");
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.2.11
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.2.11
+    //////////////////////////////////////////////////////////////////////////
 
     /*! This text is put before the list of members referenced by a member
      */
@@ -1251,16 +1394,16 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
       return "Referensi";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.2.13
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.2.13
+    //////////////////////////////////////////////////////////////////////////
 
     /*! used in member documentation blocks to produce a list of
      *  members that are implemented by this one.
      */
     QCString trImplementedFromList(int numEntries) override
     {
-      return "Mengimplementasikan "+trWriteList(numEntries)+".";
+      return "Mengimplementasikan " + trWriteList(numEntries) + ".";
     }
 
     /*! used in member documentation blocks to produce a list of
@@ -1268,12 +1411,12 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
      */
     QCString trImplementedInList(int numEntries) override
     {
-      return "Diimplementasikan di "+trWriteList(numEntries)+".";
+      return "Diimplementasikan di " + trWriteList(numEntries) + ".";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.2.16
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.2.16
+    //////////////////////////////////////////////////////////////////////////
 
     /*! used in RTF documentation as a heading for the Table
      *  of Contents.
@@ -1283,9 +1426,9 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
       return "Daftar Isi";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.2.17
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.2.17
+    //////////////////////////////////////////////////////////////////////////
 
     /*! Used as the header of the list of item that have been
      *  flagged deprecated
@@ -1295,9 +1438,9 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
       return "Daftar Kadaluarsa";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.2.18
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.2.18
+    //////////////////////////////////////////////////////////////////////////
 
     /*! Used as a header for declaration section of the events found in
      * a C# program
@@ -1312,9 +1455,9 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
       return "Dokumentasi Event";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.3
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.3
+    //////////////////////////////////////////////////////////////////////////
 
     /*! Used as a heading for a list of Java class types with package scope.
      */
@@ -1355,9 +1498,9 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
       return "Daftar Atribut Statis Paket";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.3.1
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.3.1
+    //////////////////////////////////////////////////////////////////////////
 
     /*! Used in the quick index of a class/file/namespace member list page
      *  to link to the unfiltered list of all members.
@@ -1372,9 +1515,9 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
       return "Berikut ini bagan fungsi-terpanggil untuk fungsi ini:";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.3.3
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.3.3
+    //////////////////////////////////////////////////////////////////////////
 
     /*! This string is used as the title for the page listing the search
      *  results.
@@ -1393,11 +1536,11 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
      */
     QCString trSearchResults(int numDocuments) override
     {
-      if (numDocuments==0)
+      if (numDocuments == 0)
       {
         return "Maaf, tidak ada dokumen yang cocok.";
       }
-      else if (numDocuments==1)
+      else if (numDocuments == 1)
       {
         return "Ditemukan <b>1</b> dokumen yang cocok.";
       }
@@ -1415,44 +1558,54 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
       return "Kecocokan:";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.3.8
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.3.8
+    //////////////////////////////////////////////////////////////////////////
 
     /*! This is used in HTML as the title of page with source code for file filename
      */
-    QCString trSourceFile(const QCString& filename) override
+    QCString trSourceFile(const QCString &filename) override
     {
       return "Kode Sumber:" + filename;
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.3.9
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.3.9
+    //////////////////////////////////////////////////////////////////////////
 
     /*! This is used as the name of the chapter containing the directory
      *  hierarchy.
      */
     QCString trDirIndex() override
-    { return "Hierarki Direktori"; }
+    {
+      return "Hierarki Direktori";
+    }
 
     /*! This is used as the name of the chapter containing the documentation
      *  of the directories.
      */
     QCString trDirDocumentation() override
-    { return "Dokumentasi Direktori"; }
+    {
+      return "Dokumentasi Direktori";
+    }
 
     /*! This is used as the title of the directory index and also in the
      *  Quick links of an HTML page, to link to the directory hierarchy.
      */
     QCString trDirectories() override
-    { return "Daftar Direktori"; }
+    {
+      return "Daftar Direktori";
+    }
 
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.
      */
     QCString trDirReference(const QCString &dirName) override
-    { QCString result="Referensi Direktori "; result+=dirName; return result; }
+    {
+      QCString result = "Referensi Direktori ";
+      result += dirName;
+      return result;
+    }
 
     /*! This returns the word directory with or without starting capital
      *  (\a first_capital) and in sigular or plural form (\a singular).
@@ -1462,9 +1615,9 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
       return createNoun(first_capital, false, "direktori", "");
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.4.1
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.4.1
+    //////////////////////////////////////////////////////////////////////////
 
     /*! This text is added to the documentation when the \\overload command
      *  is used for a overloaded function.
@@ -1472,13 +1625,13 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
     QCString trOverloadText() override
     {
       return "Ini adalah fungsi anggota yang di-overload"
-	" untuk kemudahan. Perbedaannya dengan fungsi di atas"
-	" hanya pada parameter-parameter yang diterima.";
+             " untuk kemudahan. Perbedaannya dengan fungsi di atas"
+             " hanya pada parameter-parameter yang diterima.";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.4.6
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.4.6
+    //////////////////////////////////////////////////////////////////////////
 
     /*! This is used to introduce a caller (or called-by) graph */
     QCString trCallerGraph() override
@@ -1490,44 +1643,54 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
      *  of documentation blocks for enumeration values
      */
     QCString trEnumerationValueDocumentation() override
-    { return "Dokumentasi Nilai Enumerasi"; }
+    {
+      return "Dokumentasi Nilai Enumerasi";
+    }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.5.4 (mainly for Fortran)
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.5.4 (mainly for Fortran)
+    //////////////////////////////////////////////////////////////////////////
 
     /*! header that is put before the list of member subprograms (Fortran). */
     QCString trMemberFunctionDocumentationFortran() override
-    { return "Dokumentasi Fungsi/Subrutin Anggota"; }
+    {
+      return "Dokumentasi Fungsi/Subrutin Anggota";
+    }
 
     /*! This is put above each page as a link to the list of annotated data types (Fortran). */
     QCString trCompoundListFortran() override
-    { return "Daftar Tipe Data"; }
+    {
+      return "Daftar Tipe Data";
+    }
 
     /*! This is put above each page as a link to all members of compounds (Fortran). */
     QCString trCompoundMembersFortran() override
-    { return "Variabel Data"; }
+    {
+      return "Variabel Data";
+    }
 
     /*! This is an introduction to the annotated compound list (Fortran). */
     QCString trCompoundListDescriptionFortran() override
-    { return "Berikut daftar tipe data, dengan penjelasan singkat:"; }
+    {
+      return "Berikut daftar tipe data, dengan penjelasan singkat:";
+    }
 
     /*! This is an introduction to the page with all data types (Fortran). */
     QCString trCompoundMembersDescriptionFortran(bool extractAll) override
     {
-      QCString result="Berikut daftar semua anggota tipe data ";
+      QCString result = "Berikut daftar semua anggota tipe data ";
       if (!extractAll)
       {
-        result+="terdokumentasi ";
+        result += "terdokumentasi ";
       }
-      result+=" dengan tautan ke ";
+      result += " dengan tautan ke ";
       if (!extractAll)
       {
-         result+="dokumentasi struktur data untuk setiap anggota:";
+        result += "dokumentasi struktur data untuk setiap anggota:";
       }
       else
       {
-         result+="tipe data yang memuatnya:";
+        result += "tipe data yang memuatnya:";
       }
       return result;
     }
@@ -1536,91 +1699,105 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
      * annotated compound index (Fortran).
      */
     QCString trCompoundIndexFortran() override
-    { return "Indeks Tipe Data"; }
+    {
+      return "Indeks Tipe Data";
+    }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all data types (Fortran).
      */
     QCString trTypeDocumentation() override
-    { return "Dokumentasi Tipe Data"; }
+    {
+      return "Dokumentasi Tipe Data";
+    }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of (global) subprograms (Fortran).
      */
     QCString trSubprograms() override
-    { return "Fungsi/Subrutin"; }
+    {
+      return "Fungsi/Subrutin";
+    }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for subprograms (Fortran)
      */
     QCString trSubprogramDocumentation() override
-    { return "Dokumentasi Fungsi/Subrutin"; }
+    {
+      return "Dokumentasi Fungsi/Subrutin";
+    }
 
     /*! This is used in the documentation of a file/namespace/group before
      *  the list of links to documented compounds (Fortran)
      */
-     QCString trDataTypes() override
-    { return "Tipe Data"; }
+    QCString trDataTypes() override
+    {
+      return "Tipe Data";
+    }
 
     /*! used as the title of page containing all the index of all modules (Fortran). */
     QCString trModulesList() override
-    { return "Modules List"; }
+    {
+      return "Modules List";
+    }
 
     /*! used as an introduction to the modules list (Fortran) */
     QCString trModulesListDescription(bool extractAll) override
     {
-      QCString result="Berikut daftar semua modul";
-      if (!extractAll) result+=" terdokumentasi";
-      result+=", dengan penjelasan singkat:";
+      QCString result = "Berikut daftar semua modul";
+      if (!extractAll) result += " terdokumentasi";
+      result += ", dengan penjelasan singkat:";
       return result;
     }
 
     /*! used as the title of the HTML page of a module/type (Fortran) */
-    QCString trCompoundReferenceFortran(const QCString &clName,
-                                    ClassDef::CompoundType compType,
-                                    bool isTemplate) override
+    QCString trCompoundReferenceFortran(const QCString        &clName,
+                                        ClassDef::CompoundType compType,
+                                        bool                   isTemplate) override
     {
-      QCString result="Referensi ";
-      if (isTemplate) result+="Template ";
-      switch(compType)
+      QCString result = "Referensi ";
+      if (isTemplate) result += "Template ";
+      switch (compType)
       {
-        case ClassDef::Class:      result+="Modul "; break;
-        case ClassDef::Struct:     result+="Tipe "; break;
-        case ClassDef::Union:      result+="Union "; break;
-        case ClassDef::Interface:  result+="Antarmuka "; break;
-        case ClassDef::Protocol:   result+="Protokol "; break;
-        case ClassDef::Category:   result+="Kategori "; break;
-        case ClassDef::Exception:  result+="Eksepsi "; break;
-        default: break;
+      case ClassDef::Class: result += "Modul "; break;
+      case ClassDef::Struct: result += "Tipe "; break;
+      case ClassDef::Union: result += "Union "; break;
+      case ClassDef::Interface: result += "Antarmuka "; break;
+      case ClassDef::Protocol: result += "Protokol "; break;
+      case ClassDef::Category: result += "Kategori "; break;
+      case ClassDef::Exception: result += "Eksepsi "; break;
+      default: break;
       }
-      result+=clName;
+      result += clName;
       return result;
     }
     /*! used as the title of the HTML page of a module (Fortran) */
     QCString trModuleReference(const QCString &namespaceName) override
     {
-      QCString result="Referensi Modul ";
-      result+=namespaceName;
+      QCString result = "Referensi Modul ";
+      result += namespaceName;
       return result;
     }
 
     /*! This is put above each page as a link to all members of modules. (Fortran) */
     QCString trModulesMembers() override
-    { return "Anggota Modul"; }
+    {
+      return "Anggota Modul";
+    }
 
     /*! This is an introduction to the page with all modules members (Fortran) */
     QCString trModulesMemberDescription(bool extractAll) override
     {
-      QCString result="Berikut daftar semua anggota modul ";
-      if (!extractAll) result+="terdokumentasi ";
-      result+="dengan tautan ke ";
+      QCString result = "Berikut daftar semua anggota modul ";
+      if (!extractAll) result += "terdokumentasi ";
+      result += "dengan tautan ke ";
       if (extractAll)
       {
-        result+="dokumentasi modul untuk setiap anggota:";
+        result += "dokumentasi modul untuk setiap anggota:";
       }
       else
       {
-        result+="modul yang memuatnya:";
+        result += "modul yang memuatnya:";
       }
       return result;
     }
@@ -1629,7 +1806,9 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
      *  index of all modules (Fortran).
      */
     QCString trModulesIndex() override
-    { return "Indeks Modul"; }
+    {
+      return "Indeks Modul";
+    }
 
     /*! This is used for translation of the word that will possibly
      *  be followed by a single name or by a list of names
@@ -1643,24 +1822,24 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
      *  followed by a list of files that were used to generate the page.
      */
     QCString trGeneratedFromFilesFortran(ClassDef::CompoundType compType,
-        bool single) override
+                                         bool                   single) override
     { // here s is one of " Module", " Struct" or " Union"
       // single is true implies a single file
-      QCString result="Dokumentasi untuk ";
-      switch(compType)
+      QCString result = "Dokumentasi untuk ";
+      switch (compType)
       {
-        case ClassDef::Class:      result+="module"; break;
-        case ClassDef::Struct:     result+="type"; break;
-        case ClassDef::Union:      result+="union"; break;
-        case ClassDef::Interface:  result+="interface"; break;
-        case ClassDef::Protocol:   result+="protocol"; break;
-        case ClassDef::Category:   result+="category"; break;
-        case ClassDef::Exception:  result+="exception"; break;
-        default: break;
+      case ClassDef::Class: result += "module"; break;
+      case ClassDef::Struct: result += "type"; break;
+      case ClassDef::Union: result += "union"; break;
+      case ClassDef::Interface: result += "interface"; break;
+      case ClassDef::Protocol: result += "protocol"; break;
+      case ClassDef::Category: result += "category"; break;
+      case ClassDef::Exception: result += "exception"; break;
+      default: break;
       }
-      result+=" ini dibangkitkan dari file";
-      if (!single) result+="-file ";
-	  result+="berikut:";
+      result += " ini dibangkitkan dari file";
+      if (!single) result += "-file ";
+      result += "berikut:";
       return result;
     }
     /*! This is used for translation of the word that will possibly
@@ -1686,14 +1865,14 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
       return "Batasan Tipe";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.6.0 (mainly for the new search engine)
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.6.0 (mainly for the new search engine)
+    //////////////////////////////////////////////////////////////////////////
 
     /*! directory relation for \a name */
     QCString trDirRelation(const QCString &name) override
     {
-      return "Relasi "+QCString(name);
+      return "Relasi " + QCString(name);
     }
 
     /*! Loading message shown when loading search results */
@@ -1720,9 +1899,9 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
       return "Tidak Ditemukan";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.6.3 (missing items for the directory pages)
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.6.3 (missing items for the directory pages)
+    //////////////////////////////////////////////////////////////////////////
 
     /*! when clicking a directory dependency label, a page with a
      *  table is shown. The heading for the first column mentions the
@@ -1730,7 +1909,7 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
      */
     QCString trFileIn(const QCString &name) override
     {
-      return "File dimuat dalam "+name;
+      return "File dimuat dalam " + name;
     }
 
     /*! when clicking a directory dependency label, a page with a
@@ -1739,7 +1918,7 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
      */
     QCString trIncludesFileIn(const QCString &name) override
     {
-      return "Memuat file dalam "+name;
+      return "Memuat file dalam " + name;
     }
 
     /** Compiles a date string.
@@ -1752,60 +1931,65 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
      *  @param seconds Seconds within the minute: 0..59
      *  @param includeTime Include time in the result string?
      */
-    QCString trDateTime(int year,int month,int day,int dayOfWeek,
-                                int hour,int minutes,int seconds,
-                                DateTimeType includeTime) override
+    QCString trDateTime(int year, int month, int day, int dayOfWeek,
+                        int hour, int minutes, int seconds,
+                        DateTimeType includeTime) override
     {
-      static const char *days[]   = { "Senin","Selasa","Rabu","Kamis","Jumat","Sabtu","Minggu" };
-      static const char *months[] = { "Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember" };
-      QCString sdate;
+      static const char *days[]   = { "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu" };
+      static const char *months[] = { "Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember" };
+      QCString           sdate;
       if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Date)
       {
-        sdate.sprintf("%s %d %s %d",days[dayOfWeek-1],day,months[month-1],year);
+        sdate.sprintf("%s %d %s %d", days[dayOfWeek - 1], day, months[month - 1], year);
       }
       if (includeTime == DateTimeType::DateTime) sdate += " ";
       if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Time)
       {
         QCString stime;
-        stime.sprintf("%.2d:%.2d:%.2d",hour,minutes,seconds);
-        sdate+=stime;
+        stime.sprintf("%.2d:%.2d:%.2d", hour, minutes, seconds);
+        sdate += stime;
       }
       return sdate;
     }
     QCString trDayOfWeek(int dayOfWeek, bool, bool full) override
     {
-      static const char *days_short[]   = { "Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min" };
-      static const char *days_full[]    = { "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu" };
-      return full? days_full[dayOfWeek-1] : days_short[dayOfWeek-1];
+      static const char *days_short[] = { "Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min" };
+      static const char *days_full[]  = { "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu" };
+      return full ? days_full[dayOfWeek - 1] : days_short[dayOfWeek - 1];
     }
     QCString trMonth(int month, bool, bool full) override
     {
       static const char *months_short[] = { "Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des" };
       static const char *months_full[]  = { "Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember" };
-      return full? months_full[month-1] : months_short[month-1];
+      return full ? months_full[month - 1] : months_short[month - 1];
     }
     QCString trDayPeriod(bool period) override
     {
       static const char *dayPeriod[] = { "AM", "PM" };
-      return dayPeriod[period?1:0];
+      return dayPeriod[period ? 1 : 0];
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.7.5
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.7.5
+    //////////////////////////////////////////////////////////////////////////
 
     /*! Header for the page with bibliographic citations */
     QCString trCiteReferences() override
-    { return "Daftar Pustaka"; }
+    {
+      return "Daftar Pustaka";
+    }
 
     /*! Text for copyright paragraph */
     QCString trCopyright() override
-    { return "Hak Cipta"; }
+    {
+      return "Hak Cipta";
+    }
 
     /*! Header for the graph showing the directory dependencies */
     QCString trDirDepGraph(const QCString &name) override
-    { return QCString("Bagan dependensi directori untuk ")+name+":"; }
-
+    {
+      return QCString("Bagan dependensi directori untuk ") + name + ":";
+    }
 };
 
 #endif

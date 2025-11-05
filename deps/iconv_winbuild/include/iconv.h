@@ -21,7 +21,7 @@
 #ifndef _LIBICONV_H
 #define _LIBICONV_H
 
-#define _LIBICONV_VERSION 0x0109    /* version number: (major<<8) + minor */
+#define _LIBICONV_VERSION 0x0109 /* version number: (major<<8) + minor */
 
 #ifdef LIBICONV_STATIC
 #define LIBICONV_DLL_EXPORTED
@@ -31,8 +31,8 @@
 #else
 #define LIBICONV_DLL_EXPORTED __declspec(dllimport)
 #endif
-#endif /* LIBICONV_STATIC */ 
-extern LIBICONV_DLL_EXPORTED int _libiconv_version;       /* Likewise */
+#endif                                              /* LIBICONV_STATIC */
+extern LIBICONV_DLL_EXPORTED int _libiconv_version; /* Likewise */
 
 /* We would like to #include any system header file which could define
    iconv_t, 1. in order to eliminate the risk that the user gets compilation
@@ -54,7 +54,7 @@ extern LIBICONV_DLL_EXPORTED int _libiconv_version;       /* Likewise */
 /* Define iconv_t ourselves. */
 #undef iconv_t
 #define iconv_t libiconv_t
-typedef void* iconv_t;
+typedef void *iconv_t;
 
 /* Get size_t declaration. */
 #include <stddef.h>
@@ -65,12 +65,13 @@ typedef void* iconv_t;
    have EILSEQ in a different header.  On these systems, define EILSEQ
    ourselves. */
 #ifndef EILSEQ
-#define EILSEQ 
+#define EILSEQ
 #endif
 
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
 
@@ -79,7 +80,7 @@ extern "C" {
 #ifndef LIBICONV_PLUG
 #define iconv_open libiconv_open
 #endif
-extern LIBICONV_DLL_EXPORTED iconv_t iconv_open (const char* tocode, const char* fromcode);
+  extern LIBICONV_DLL_EXPORTED iconv_t iconv_open(const char *tocode, const char *fromcode);
 
 /* Converts, using conversion descriptor `cd', at most `*inbytesleft' bytes
    starting at `*inbuf', writing at most `*outbytesleft' bytes starting at
@@ -89,13 +90,13 @@ extern LIBICONV_DLL_EXPORTED iconv_t iconv_open (const char* tocode, const char*
 #ifndef LIBICONV_PLUG
 #define iconv libiconv
 #endif
-extern LIBICONV_DLL_EXPORTED size_t iconv (iconv_t cd, const char* * inbuf, size_t *inbytesleft, char* * outbuf, size_t *outbytesleft);
+  extern LIBICONV_DLL_EXPORTED size_t iconv(iconv_t cd, const char **inbuf, size_t *inbytesleft, char **outbuf, size_t *outbytesleft);
 
 /* Frees resources allocated for conversion descriptor `cd'. */
 #ifndef LIBICONV_PLUG
 #define iconv_close libiconv_close
 #endif
-extern LIBICONV_DLL_EXPORTED int iconv_close (iconv_t cd);
+  extern LIBICONV_DLL_EXPORTED int iconv_close(iconv_t cd);
 
 
 #ifndef LIBICONV_PLUG
@@ -104,31 +105,31 @@ extern LIBICONV_DLL_EXPORTED int iconv_close (iconv_t cd);
 
 /* Control of attributes. */
 #define iconvctl libiconvctl
-extern LIBICONV_DLL_EXPORTED int iconvctl (iconv_t cd, int request, void* argument);
+  extern LIBICONV_DLL_EXPORTED int iconvctl(iconv_t cd, int request, void *argument);
 
 /* Requests for iconvctl. */
-#define ICONV_TRIVIALP            0  /* int *argument */
-#define ICONV_GET_TRANSLITERATE   1  /* int *argument */
-#define ICONV_SET_TRANSLITERATE   2  /* const int *argument */
-#define ICONV_GET_DISCARD_ILSEQ   3  /* int *argument */
-#define ICONV_SET_DISCARD_ILSEQ   4  /* const int *argument */
+#define ICONV_TRIVIALP 0          /* int *argument */
+#define ICONV_GET_TRANSLITERATE 1 /* int *argument */
+#define ICONV_SET_TRANSLITERATE 2 /* const int *argument */
+#define ICONV_GET_DISCARD_ILSEQ 3 /* int *argument */
+#define ICONV_SET_DISCARD_ILSEQ 4 /* const int *argument */
 
 /* Listing of locale independent encodings. */
 #define iconvlist libiconvlist
-extern LIBICONV_DLL_EXPORTED void iconvlist (int (*do_one) (unsigned int namescount,
-                                      const char * const * names,
-                                      void* data),
-                       void* data);
+  extern LIBICONV_DLL_EXPORTED void iconvlist(int (*do_one)(unsigned int       namescount,
+                                                            const char *const *names,
+                                                            void              *data),
+                                              void *data);
 
-/* Support for relocatable packages.  */
+  /* Support for relocatable packages.  */
 
-/* Sets the original and the current installation prefix of the package.
+  /* Sets the original and the current installation prefix of the package.
    Relocation simply replaces a pathname starting with the original prefix
    by the corresponding pathname with the current prefix instead.  Both
    prefixes should be directory names without trailing slash (i.e. use ""
    instead of "/").  */
-extern LIBICONV_DLL_EXPORTED void libiconv_set_relocation_prefix (const char *orig_prefix,
-					    const char *curr_prefix);
+  extern LIBICONV_DLL_EXPORTED void libiconv_set_relocation_prefix(const char *orig_prefix,
+                                                                   const char *curr_prefix);
 
 #endif
 

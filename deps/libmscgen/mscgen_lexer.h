@@ -46,17 +46,18 @@
  *****************************************************************************/
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
-Boolean        lex_getutf8(void);
+  Boolean lex_getutf8(void);
 #ifdef __cplusplus
 }
 #endif
 
-unsigned long  lex_getlinenum(void);
-char          *lex_getline(void);
-void           lex_destroy(void);
-void           lex_resetparser(void);
+unsigned long lex_getlinenum(void);
+char         *lex_getline(void);
+void          lex_destroy(void);
+void          lex_resetparser(void);
 
 #endif /* MSCGEN_LEXER_H */
 

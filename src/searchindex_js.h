@@ -41,34 +41,36 @@ QCString searchName(const Definition *d);
 //! Searchable term
 struct SearchTerm
 {
-  using LinkInfo = std::variant<std::monostate,const Definition *,const SectionInfo *>;
-  SearchTerm(const QCString &w,const Definition *d)  : word(w.str()), info(d)  { makeTitle(); }
-  SearchTerm(const QCString &w,const SectionInfo *s) : word(w.str()), info(s)  { makeTitle(); }
-  QCString word;                 //!< lower case word that is indexed (e.g. name of a symbol, or word from a title)
-  QCString title;                //!< title to show in the output for this search result
-  LinkInfo info;                 //!< definition to link to
-  QCString termEncoded() const;  //!< encoded version of the search term
-private:
-  void makeTitle();
+    using LinkInfo = std::variant<std::monostate, const Definition *, const SectionInfo *>;
+    SearchTerm(const QCString &w, const Definition *d) :
+        word(w.str()), info(d) { makeTitle(); }
+    SearchTerm(const QCString &w, const SectionInfo *s) :
+        word(w.str()), info(s) { makeTitle(); }
+    QCString word;                //!< lower case word that is indexed (e.g. name of a symbol, or word from a title)
+    QCString title;               //!< title to show in the output for this search result
+    LinkInfo info;                //!< definition to link to
+    QCString termEncoded() const; //!< encoded version of the search term
+  private:
+    void makeTitle();
 };
 
 //! List of search terms
 using SearchIndexList = std::vector<SearchTerm>;
 
 //! Map of search terms for a given starting letter
-using SearchIndexMap  = std::map<std::string,SearchIndexList>; // key is starting letter of a term (UTF-8).
+using SearchIndexMap  = std::map<std::string, SearchIndexList>; // key is starting letter of a term (UTF-8).
 
 //! Table entry to allow filtering the search results per category
 struct SearchIndexInfo
 {
-  void add(const SearchTerm &term);
-  QCString name;
-  std::function<QCString()> getText;
-  SearchIndexMap symbolMap;
+    void                      add(const SearchTerm &term);
+    QCString                  name;
+    std::function<QCString()> getText;
+    SearchIndexMap            symbolMap;
 };
 
-void createJavaScriptSearchIndex();
-void writeJavaScriptSearchIndex();
-const std::array<SearchIndexInfo,NUM_SEARCH_INDICES> &getSearchIndices();
+void                                                   createJavaScriptSearchIndex();
+void                                                   writeJavaScriptSearchIndex();
+const std::array<SearchIndexInfo, NUM_SEARCH_INDICES> &getSearchIndices();
 
 #endif

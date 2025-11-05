@@ -2,21 +2,21 @@
 // check: class_test.xml
 class Rect;
 class Point;
-class Test 
+class Test
 {
   public:
-    void drawRect(int,int,int,int);
+    void drawRect(int, int, int, int);
     void drawRect(const Rect &r);
-    void drawRect(const Point &topLeft,const Point &bottomRight);
+    void drawRect(const Point &topLeft, const Point &bottomRight);
 };
 
-void Test::drawRect(int x,int y,int w,int h) {}
+void Test::drawRect(int x, int y, int w, int h) {}
 void Test::drawRect(const Rect &r) {}
 /*! \overload 
  *
  *  More text.
  */
-void Test::drawRect(const Point &topLeft,const Point &bottomRight) {}
+void Test::drawRect(const Point &topLeft, const Point &bottomRight) {}
 
 /*! \class Test
  *  \brief A short description.

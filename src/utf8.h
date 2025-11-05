@@ -41,35 +41,35 @@ std::string convertUTF8ToUpper(const std::string &input);
 /** Returns the UTF8 character found at byte position pos in the input string.
  *  The resulting string can be a multi byte sequence.
  */
-std::string getUTF8CharAt(const std::string &input,size_t pos);
+std::string getUTF8CharAt(const std::string &input, size_t pos);
 
 /** Returns the 32bit Unicode value matching character at byte position pos in
  *  the UTF8 encoded input.
  */
-uint32_t getUnicodeForUTF8CharAt(const std::string &input,size_t pos);
+uint32_t    getUnicodeForUTF8CharAt(const std::string &input, size_t pos);
 
 /** Returns the number of bytes making up a single UTF8 character given the first byte
  *  in the sequence.
  */
-uint8_t getUTF8CharNumBytes(char firstByte);
+uint8_t     getUTF8CharNumBytes(char firstByte);
 
 /** Writes the UTF8 character pointed to by s to stream t and returns a pointer
  *  to the next character.
  */
-const char *writeUTF8Char(TextStream &t,const char *s);
+const char *writeUTF8Char(TextStream &t, const char *s);
 
 /** Returns true iff the last character in input is a multibyte character. */
-bool lastUTF8CharIsMultibyte(const std::string &input);
+bool        lastUTF8CharIsMultibyte(const std::string &input);
 
 /** Returns true iff the input string at byte position pos holds an upper case character. */
-bool isUTF8CharUpperCase(const std::string &input,size_t pos);
+bool        isUTF8CharUpperCase(const std::string &input, size_t pos);
 
 /** Check if the first character pointed at by input is a non-breakable whitespace character.
  *  Returns the byte size of the character if there is match or 0 if not.
  */
-int isUTF8NonBreakableSpace(const char *input);
+int         isUTF8NonBreakableSpace(const char *input);
 
 /** Check if the given Unicode character represents a punctuation character */
-bool isUTF8PunctuationCharacter(uint32_t unicode);
+bool        isUTF8PunctuationCharacter(uint32_t unicode);
 
 #endif

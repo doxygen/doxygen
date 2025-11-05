@@ -15,4 +15,3 @@ In the following the word tag has the style as indicated before it.
 - This is a deleted <del>tag</del>.
 - This is a typewriter <tt>tag</tt>.
 */
-

@@ -33,18 +33,18 @@
  * - On error, an error message is returned.
  * - On success, the result of the expression is either "1" or "0".
  */
-bool CondParser::parse(const QCString &fileName,int lineNr,const QCString &expr)
+bool CondParser::parse(const QCString &fileName, int lineNr, const QCString &expr)
 {
   if (expr.isEmpty()) return false;
   m_expr      = expr;
   m_tokenType = NOTHING;
 
   // initialize all variables
-  m_e = m_expr.data();    // let m_e point to the start of the expression
+  m_e         = m_expr.data(); // let m_e point to the start of the expression
 
-  bool answer=false;
+  bool answer = false;
   getToken();
-  if (m_tokenType==DELIMITER && m_token.isEmpty())
+  if (m_tokenType == DELIMITER && m_token.isEmpty())
   {
     // empty expression: answer==FALSE
   }
@@ -54,7 +54,7 @@ bool CondParser::parse(const QCString &fileName,int lineNr,const QCString &expr)
   }
   if (!m_err.isEmpty())
   {
-    warn(fileName,lineNr,"problem evaluating expression '{}': {}", expr, m_err);
+    warn(fileName, lineNr, "problem evaluating expression '{}': {}", expr, m_err);
   }
   //printf("expr='%s' answer=%d\n",expr,answer);
   return answer;
@@ -67,7 +67,7 @@ bool CondParser::parse(const QCString &fileName,int lineNr,const QCString &expr)
  */
 static bool isDelimiter(const char c)
 {
-  return c=='&' || c=='|' || c=='!';
+  return c == '&' || c == '|' || c == '!';
 }
 
 /**
@@ -75,12 +75,12 @@ static bool isDelimiter(const char c)
  */
 static bool isAlpha(const char c)
 {
-  return (c>='A' && c<='Z') || (c>='a' && c<='z') || c=='_';
+  return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || c == '_';
 }
 
 static bool isAlphaNumSpec(const char c)
 {
-  return isAlpha(c) || (c>='0' && c<='9') || c=='-' || c=='.' || (static_cast<unsigned char>(c)>=0x80);
+  return isAlpha(c) || (c >= '0' && c <= '9') || c == '-' || c == '.' || (static_cast<unsigned char>(c) >= 0x80);
 }
 
 /**
@@ -90,11 +90,20 @@ static bool isAlphaNumSpec(const char c)
 int CondParser::getOperatorId(const QCString &opName)
 {
   // level 2
-  if (opName=="&&") { return AND; }
-  if (opName=="||") { return OR;  }
+  if (opName == "&&")
+  {
+    return AND;
+  }
+  if (opName == "||")
+  {
+    return OR;
+  }
 
   // not operator
-  if (opName=="!")  { return NOT; }
+  if (opName == "!")
+  {
+    return NOT;
+  }
 
   return UNKNOWN_OP;
 }
@@ -112,13 +121,13 @@ void CondParser::getToken()
   //printf("\tgetToken e:{%c}, ascii=%i, col=%i\n", *e, *e, e-expr);
 
   // skip over whitespaces
-  while (*m_e == ' ' || *m_e == '\t' || *m_e == '\n')     // space or tab or newline
+  while (*m_e == ' ' || *m_e == '\t' || *m_e == '\n') // space or tab or newline
   {
     m_e++;
   }
 
   // check for end of expression
-  if (*m_e=='\0')
+  if (*m_e == '\0')
   {
     // token is still empty
     m_tokenType = DELIMITER;
@@ -161,7 +170,7 @@ void CondParser::getToken()
   {
     m_token += *m_e++;
   }
-  m_err = QCString("Syntax error in part '")+m_token+"'";
+  m_err = QCString("Syntax error in part '") + m_token + "'";
   return;
 }
 
@@ -171,13 +180,13 @@ void CondParser::getToken()
  */
 bool CondParser::parseLevel1()
 {
-  bool ans = parseLevel2();
-  int opId = getOperatorId(m_token);
+  bool ans  = parseLevel2();
+  int  opId = getOperatorId(m_token);
 
-  while (opId==AND || opId==OR)
+  while (opId == AND || opId == OR)
   {
     getToken();
-    ans = evalOperator(opId, ans, parseLevel2());
+    ans  = evalOperator(opId, ans, parseLevel2());
     opId = getOperatorId(m_token);
   }
 
@@ -210,13 +219,13 @@ bool CondParser::parseLevel3()
   // check if it is a parenthesized expression
   if (m_tokenType == DELIMITER)
   {
-    if (m_token=="(")
+    if (m_token == "(")
     {
       getToken();
       bool ans = parseLevel1();
-      if (m_tokenType!=DELIMITER || m_token!=")")
+      if (m_tokenType != DELIMITER || m_token != ")")
       {
-        m_err="Parenthesis ) missing";
+        m_err = "Parenthesis ) missing";
         return FALSE;
       }
       getToken();
@@ -234,25 +243,25 @@ bool CondParser::parseVar()
   bool ans = false;
   switch (m_tokenType)
   {
-    case VARIABLE:
-      // this is a variable
-      ans = evalVariable(m_token);
-      getToken();
-      break;
+  case VARIABLE:
+    // this is a variable
+    ans = evalVariable(m_token);
+    getToken();
+    break;
 
-    default:
-      // syntax error or unexpected end of expression
-      if (m_token.isEmpty())
-      {
-        m_err="Unexpected end of expression";
-        return FALSE;
-      }
-      else
-      {
-        m_err="Value expected";
-        return FALSE;
-      }
-      break;
+  default:
+    // syntax error or unexpected end of expression
+    if (m_token.isEmpty())
+    {
+      m_err = "Unexpected end of expression";
+      return FALSE;
+    }
+    else
+    {
+      m_err = "Value expected";
+      return FALSE;
+    }
+    break;
   }
   return ans;
 }
@@ -264,12 +273,12 @@ bool CondParser::evalOperator(int opId, bool lhs, bool rhs)
 {
   switch (opId)
   {
-    // level 2
-    case AND: return lhs && rhs;
-    case OR:  return lhs || rhs;
+  // level 2
+  case AND: return lhs && rhs;
+  case OR: return lhs || rhs;
   }
 
-  m_err = "Internal error unknown operator: id="+QCString().setNum(opId);
+  m_err = "Internal error unknown operator: id=" + QCString().setNum(opId);
   return FALSE;
 }
 
@@ -279,6 +288,5 @@ bool CondParser::evalOperator(int opId, bool lhs, bool rhs)
 bool CondParser::evalVariable(const QCString &varName)
 {
   const StringVector &list = Config_getList(ENABLED_SECTIONS);
-  return std::find(list.begin(),list.end(),varName.str())!=list.end();
+  return std::find(list.begin(), list.end(), varName.str()) != list.end();
 }
-

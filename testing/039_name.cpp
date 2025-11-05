@@ -22,4 +22,3 @@ class Test
     /** ungrouped function */
     void ungrouped();
 };
-

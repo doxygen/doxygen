@@ -21,7 +21,7 @@
  */
 bool ArgumentList::hasDocumentation() const
 {
-  return std::any_of(begin(),end(),[](const Argument &a){ return a.hasDocumentation(); });
+  return std::any_of(begin(), end(), [](const Argument &a) { return a.hasDocumentation(); });
 }
 
 /*! the template argument list is documented if one of its
@@ -29,7 +29,7 @@ bool ArgumentList::hasDocumentation() const
  */
 bool ArgumentList::hasTemplateDocumentation() const
 {
-  return std::any_of(begin(),end(),[](const Argument &a){ return a.hasTemplateDocumentation(); });
+  return std::any_of(begin(), end(), [](const Argument &a) { return a.hasTemplateDocumentation(); });
 }
 
 /*! Sets the trailing return type for a method */
@@ -47,6 +47,6 @@ void ArgumentList::finishTrailingReturnType()
 {
   if (!m_trailingReturnType.isEmpty())
   {
-    m_trailingReturnType = " "+removeRedundantWhiteSpace(m_trailingReturnType);
+    m_trailingReturnType = " " + removeRedundantWhiteSpace(m_trailingReturnType);
   }
 }

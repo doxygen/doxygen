@@ -40,14 +40,15 @@ class SectionType
     static constexpr int Anchor          = 7;
     static constexpr int Table           = 8;
 
-    constexpr SectionType() : m_level(0) {}
-    constexpr SectionType(int lvl) : m_level(lvl) {}
-    constexpr int level() const { return m_level; }
+    constexpr SectionType() :
+        m_level(0) {}
+    constexpr SectionType(int lvl) :
+        m_level(lvl) {}
+    constexpr int  level() const { return m_level; }
     constexpr bool isSection() const
     {
-      return m_level>=SectionType::MinLevel && m_level<=SectionType::MaxLevel;
+      return m_level >= SectionType::MinLevel && m_level <= SectionType::MaxLevel;
     }
-
   private:
     int m_level;
 };
@@ -57,34 +58,34 @@ class SectionInfo
 {
   public:
     SectionInfo(const QCString &label, const QCString &fileName, int lineNr,
-                const QCString &title, SectionType type, int level,const QCString &ref) :
-        m_label(label), m_title(title), m_type(type), m_ref(ref),
+                const QCString &title, SectionType type, int level, const QCString &ref) :
+        m_label(label),
+        m_title(title), m_type(type), m_ref(ref),
         m_lineNr(lineNr), m_fileName(fileName), m_level(level)
     {
       //printf("SectionInfo(%p) fileName=%s\n",(void*)this,qPrint(fileName));
     }
 
     // getters
-    QCString    label()      const { return m_label;      }
-    QCString    title()      const { return m_title;      }
-    SectionType type()       const { return m_type;       }
-    QCString    ref()        const { return m_ref;        }
-    int         lineNr()     const { return m_lineNr;     }
-    QCString    fileName()   const { return m_fileName;   }
-    bool        generated()  const { return m_generated;  }
-    int         level()      const { return m_level;      }
+    QCString    label() const { return m_label; }
+    QCString    title() const { return m_title; }
+    SectionType type() const { return m_type; }
+    QCString    ref() const { return m_ref; }
+    int         lineNr() const { return m_lineNr; }
+    QCString    fileName() const { return m_fileName; }
+    bool        generated() const { return m_generated; }
+    int         level() const { return m_level; }
     Definition *definition() const { return m_definition; }
 
     // setters
-    void setFileName(const QCString &fn) { m_fileName   = fn; }
-    void setType(SectionType t)          { m_type       = t;  }
-    void setGenerated(bool b)            { m_generated  = b;  }
-    void setDefinition(Definition *d)    { m_definition = d;  }
-    void setTitle(const QCString &t)     { m_title      = t;  }
-    void setLevel(int l)                 { m_level      = l;  }
-    void setReference(const QCString &r) { m_ref        = r;  }
-    void setLineNr(int l)                { m_lineNr     = l;  }
-
+    void        setFileName(const QCString &fn) { m_fileName = fn; }
+    void        setType(SectionType t) { m_type = t; }
+    void        setGenerated(bool b) { m_generated = b; }
+    void        setDefinition(Definition *d) { m_definition = d; }
+    void        setTitle(const QCString &t) { m_title = t; }
+    void        setLevel(int l) { m_level = l; }
+    void        setReference(const QCString &r) { m_ref = r; }
+    void        setLineNr(int l) { m_lineNr = l; }
   private:
     QCString    m_label;
     QCString    m_title;
@@ -100,7 +101,7 @@ class SectionInfo
 //! class that represents a list of constant references to sections.
 class SectionRefs
 {
-    using SectionInfoVec = std::vector<const SectionInfo*>;
+    using SectionInfoVec = std::vector<const SectionInfo *>;
   public:
     using const_iterator = SectionInfoVec::const_iterator;
 
@@ -109,24 +110,23 @@ class SectionRefs
     const SectionInfo *find(const QCString &label) const
     {
       auto it = m_lookup.find(label.str());
-      return it!=m_lookup.end() ? it->second : nullptr;
+      return it != m_lookup.end() ? it->second : nullptr;
     }
 
     //! Adds a non-owning section reference.
     void add(const SectionInfo *si)
     {
-      m_lookup.emplace(toStdString(si->label()),si);
+      m_lookup.emplace(toStdString(si->label()), si);
       m_entries.push_back(si);
     }
 
     const_iterator begin() const { return m_entries.cbegin(); }
-    const_iterator end()   const { return m_entries.cend(); }
-    bool empty() const { return m_entries.empty(); }
-    size_t size() const { return m_entries.size(); }
-
+    const_iterator end() const { return m_entries.cend(); }
+    bool           empty() const { return m_entries.empty(); }
+    size_t         size() const { return m_entries.size(); }
   private:
-    SectionInfoVec m_entries;
-    std::unordered_map< std::string, const SectionInfo* > m_lookup;
+    SectionInfoVec                                       m_entries;
+    std::unordered_map<std::string, const SectionInfo *> m_lookup;
 };
 
 //! singleton class that owns the list of all sections
@@ -138,23 +138,23 @@ class SectionManager : public LinkedMap<SectionInfo>
     SectionInfo *add(const SectionInfo &si)
     {
       //printf("SectionManager::add(%s,%s,%d,%s)\n",qPrint(si.label()),qPrint(si.fileName()),si.lineNr(),qPrint(si.title()));
-      return LinkedMap<SectionInfo>::add(si.label(),si.fileName(),
-                      si.lineNr(),si.title(),si.type(),si.level(),si.ref());
+      return LinkedMap<SectionInfo>::add(si.label(), si.fileName(),
+                                         si.lineNr(), si.title(), si.type(), si.level(), si.ref());
     }
 
     //! Add a new section
     //! Return a non-owning pointer to the newly added section
     SectionInfo *add(const QCString &label, const QCString &fileName, int lineNr,
-                     const QCString &title, SectionType type, int level,const QCString &ref=QCString())
+                     const QCString &title, SectionType type, int level, const QCString &ref = QCString())
     {
       //printf("SectionManager::add(%s,%s,%d,%s)\n",qPrint(label),qPrint(fileName),lineNr,qPrint(title));
-      return LinkedMap<SectionInfo>::add(label.data(),fileName,lineNr,title,type,level,ref);
+      return LinkedMap<SectionInfo>::add(label.data(), fileName, lineNr, title, type, level, ref);
     }
 
     //! Replace an existing section with a new one
     //! Return a non-owning pointer to the newly added section
     SectionInfo *replace(const QCString &label, const QCString &fileName, int lineNr,
-                         const QCString &title, SectionType type, int level,const QCString &ref=QCString())
+                         const QCString &title, SectionType type, int level, const QCString &ref = QCString())
     {
       //printf("SectionManager::replace(%s,%s,%d,%s)\n",qPrint(label),qPrint(fileName),lineNr,qPrint(title));
       SectionInfo *si = LinkedMap<SectionInfo>::find(label.data());
@@ -170,7 +170,7 @@ class SectionManager : public LinkedMap<SectionInfo>
       }
       else
       {
-        return LinkedMap<SectionInfo>::add(label.data(),fileName,lineNr,title,type,level,ref);
+        return LinkedMap<SectionInfo>::add(label.data(), fileName, lineNr, title, type, level, ref);
       }
     }
 
@@ -180,10 +180,9 @@ class SectionManager : public LinkedMap<SectionInfo>
       static SectionManager sm;
       return sm;
     }
-
   private:
-    SectionManager() = default;
-   ~SectionManager() = default;
+    SectionManager()  = default;
+    ~SectionManager() = default;
     NON_COPYABLE(SectionManager)
 };
 

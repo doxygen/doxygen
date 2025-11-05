@@ -30,15 +30,15 @@ class COutlineParser : public OutlineParserInterface
 {
   public:
     COutlineParser();
-    COutlineParser(const COutlineParser &) = delete;
-    COutlineParser &operator=(COutlineParser &) = delete;
-    COutlineParser(COutlineParser &&) = delete;
+    COutlineParser(const COutlineParser &)       = delete;
+    COutlineParser &operator=(COutlineParser &)  = delete;
+    COutlineParser(COutlineParser &&)            = delete;
     COutlineParser &operator=(COutlineParser &&) = delete;
-   ~COutlineParser() override;
-    void parseInput(const QCString &fileName,
-                    const char *fileBuf,
+    ~COutlineParser() override;
+    void parseInput(const QCString               &fileName,
+                    const char                   *fileBuf,
                     const std::shared_ptr<Entry> &root,
-                    ClangTUParser *clangParser) override;
+                    ClangTUParser                *clangParser) override;
     bool needsPreprocessing(const QCString &extension) const override;
     void parsePrototype(const QCString &text) override;
   private:

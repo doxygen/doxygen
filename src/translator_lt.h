@@ -33,7 +33,6 @@
 class TranslatorLithuanian : public TranslatorAdapter_1_4_6
 {
   public:
-
     // --- Language control methods -------------------
 
     /*! Used for identification of the language. The identification
@@ -43,7 +42,9 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
      * the identification used in language.cpp.
      */
     QCString idLanguage() override
-    { return "lithuanian"; }
+    {
+      return "lithuanian";
+    }
 
     /*! Used to get the LaTeX command(s) for the language support.
      *  This method should return string with commands that switch
@@ -78,31 +79,45 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
 
     /*! used in the compound documentation before a list of related functions. */
     QCString trRelatedFunctions() override
-    { return "Susiję Funkcijos"; }
+    {
+      return "Susiję Funkcijos";
+    }
 
     /*! subscript for the related functions. */
     QCString trRelatedSubscript() override
-    { return "Atkreipkite dėmesį, čią ne metodai"; }
+    {
+      return "Atkreipkite dėmesį, čią ne metodai";
+    }
 
     /*! header that is put before the detailed description of files, classes and namespaces. */
     QCString trDetailedDescription() override
-    { return "Smulkus aprašymas"; }
+    {
+      return "Smulkus aprašymas";
+    }
 
     /*! header that is used when the summary tag is missing inside the details tag */
     QCString trDetails() override
-    { return "Išsamiau"; }
+    {
+      return "Išsamiau";
+    }
 
     /*! header that is put before the list of typedefs. */
     QCString trMemberTypedefDocumentation() override
-    { return "Tipo Aprašymo Dokumentacija"; }
+    {
+      return "Tipo Aprašymo Dokumentacija";
+    }
 
     /*! header that is put before the list of enumerations. */
     QCString trMemberEnumerationDocumentation() override
-    { return "Išvardinimo Dokumentacija"; }
+    {
+      return "Išvardinimo Dokumentacija";
+    }
 
     /*! header that is put before the list of member functions. */
     QCString trMemberFunctionDocumentation() override
-    { return "Metodų Dokumentacija"; }
+    {
+      return "Metodų Dokumentacija";
+    }
 
     /*! header that is put before the list of member attributes. */
     QCString trMemberDataDocumentation() override
@@ -119,45 +134,62 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
 
     /*! this is the text of a link put after brief descriptions. */
     QCString trMore() override
-    { return "Daugiau..."; }
+    {
+      return "Daugiau...";
+    }
 
     /*! put in the class documentation */
     QCString trListOfAllMembers() override
-    { return "Visų narių sąrašas"; }
+    {
+      return "Visų narių sąrašas";
+    }
 
     /*! used as the title of the "list of all members" page of a class */
     QCString trMemberList() override
-    { return "Narių sąrašas"; }
+    {
+      return "Narių sąrašas";
+    }
 
     /*! this is the first part of a sentence that is followed by a class name */
     QCString trThisIsTheListOfAllMembers() override
-    { return "Tai galutinis narių sąrašas"; }
+    {
+      return "Tai galutinis narių sąrašas";
+    }
 
     /*! this is the remainder of the sentence after the class name */
     QCString trIncludingInheritedMembers() override
-    { return ", įtraukiant visus paveldėtus narius."; }
+    {
+      return ", įtraukiant visus paveldėtus narius.";
+    }
 
     /*! this is put at the author sections at the bottom of man pages.
      *  parameter s is name of the project name.
      */
     QCString trGeneratedAutomatically(const QCString &s) override
-    { QCString result="Automatiškai sugeneruota Doxygen įrankiu";
-      if (!s.isEmpty()) result+=" "+s;
-      result+=" iš programos kodo.";
+    {
+      QCString result = "Automatiškai sugeneruota Doxygen įrankiu";
+      if (!s.isEmpty()) result += " " + s;
+      result += " iš programos kodo.";
       return result;
     }
 
     /*! put after an enum name in the list of all members */
     QCString trEnumName() override
-    { return "išvardinimo vardas"; }
+    {
+      return "išvardinimo vardas";
+    }
 
     /*! put after an enum value in the list of all members */
     QCString trEnumValue() override
-    { return "išvardinimo reikšmė"; }
+    {
+      return "išvardinimo reikšmė";
+    }
 
     /*! put after an undocumented member in the list of all members */
     QCString trDefinedIn() override
-    { return "apibrėžta"; }
+    {
+      return "apibrėžta";
+    }
 
     // quick reference sections
 
@@ -165,11 +197,15 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
      *  compounds or files (see the \\group command).
      */
     QCString trModules() override
-    { return "Moduliai"; }
+    {
+      return "Moduliai";
+    }
 
     /*! This is put above each page as a link to the class hierarchy */
     QCString trClassHierarchy() override
-    { return "Klasių hierarchija"; }
+    {
+      return "Klasių hierarchija";
+    }
 
     /*! This is put above each page as a link to the list of annotated classes */
     QCString trCompoundList() override
@@ -186,7 +222,9 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
 
     /*! This is put above each page as a link to the list of documented files */
     QCString trFileList() override
-    { return "Failai"; }
+    {
+      return "Failai";
+    }
 
     /*! This is put above each page as a link to all members of compounds. */
     QCString trCompoundMembers() override
@@ -216,28 +254,35 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
 
     /*! This is put above each page as a link to all related pages. */
     QCString trRelatedPages() override
-    { return "Susiję Puslapiai"; }
+    {
+      return "Susiję Puslapiai";
+    }
 
     /*! This is put above each page as a link to all examples. */
     QCString trExamples() override
-    { return "Pavyzdžiai"; }
+    {
+      return "Pavyzdžiai";
+    }
 
     /*! This is put above each page as a link to the search engine. */
     QCString trSearch() override
-    { return "Paieška"; }
+    {
+      return "Paieška";
+    }
 
     /*! This is an introduction to the class hierarchy. */
     QCString trClassHierarchyDescription() override
-    { return "Šis paveldėjimo sąrašas yra beveik surikiuotas "
+    {
+      return "Šis paveldėjimo sąrašas yra beveik surikiuotas "
              "abėcėlės tvarka:";
     }
 
     /*! This is an introduction to the list with all files. */
     QCString trFileListDescription(bool extractAll) override
     {
-      QCString result="Visų ";
-      if (!extractAll) result+="dokumentuotų ";
-      result+="failų sąrašas su trumpais aprašymais:";
+      QCString result = "Visų ";
+      if (!extractAll) result += "dokumentuotų ";
+      result += "failų sąrašas su trumpais aprašymais:";
       return result;
     }
 
@@ -263,40 +308,40 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
     /*! This is an introduction to the page with all class members. */
     QCString trCompoundMembersDescription(bool extractAll) override
     {
-      QCString result="Visų ";
+      QCString result = "Visų ";
       if (!extractAll)
       {
-        result+="dokumentuotų ";
+        result += "dokumentuotų ";
       }
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
-        result+="struktūrų ir sąjungų laukų sąrašas";
+        result += "struktūrų ir sąjungų laukų sąrašas";
       }
       else
       {
-        result+="klasių nariai";
+        result += "klasių nariai";
       }
-      result+=" su ryšiais į ";
+      result += " su ryšiais į ";
       if (!extractAll)
       {
         if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
         {
-          result+="struktūrų/sąjungų kiekvieno lauko dokumentaciją:";
+          result += "struktūrų/sąjungų kiekvieno lauko dokumentaciją:";
         }
         else
         {
-          result+="klasės dokumentacija kiekvienam nariui:";
+          result += "klasės dokumentacija kiekvienam nariui:";
         }
       }
       else
       {
         if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
         {
-          result+="struktūros/sąjungos, kurios priklauso:";
+          result += "struktūros/sąjungos, kurios priklauso:";
         }
         else
         {
-          result+="klasės, kurios priklauso:";
+          result += "klasės, kurios priklauso:";
         }
       }
       return result;
@@ -305,54 +350,66 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
     /*! This is an introduction to the page with all file members. */
     QCString trFileMembersDescription(bool extractAll) override
     {
-      QCString result="Sąrašas visų ";
-      if (!extractAll) result+="dokumentuotų ";
+      QCString result = "Sąrašas visų ";
+      if (!extractAll) result += "dokumentuotų ";
 
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
-        result+="funkcijų, kintamųjų, apibrėžimų, išvardinimų, ir tipų apibrėžimų";
+        result += "funkcijų, kintamųjų, apibrėžimų, išvardinimų, ir tipų apibrėžimų";
       }
       else
       {
-        result+="globalių narių";
+        result += "globalių narių";
       }
-      result+=" su ryšiais į ";
+      result += " su ryšiais į ";
       if (extractAll)
-        result+="failus, kuriems jie priklauso:";
+        result += "failus, kuriems jie priklauso:";
       else
-        result+="dokumentacija:";
+        result += "dokumentacija:";
       return result;
     }
 
     /*! This is an introduction to the page with the list of all examples */
     QCString trExamplesDescription() override
-    { return "Visų pavyzdžių sąrašas:"; }
+    {
+      return "Visų pavyzdžių sąrašas:";
+    }
 
     /*! This is an introduction to the page with the list of related pages */
     QCString trRelatedPagesDescription() override
-    { return "Visų susijusių dokumentacijos puslapių sąrašas:"; }
+    {
+      return "Visų susijusių dokumentacijos puslapių sąrašas:";
+    }
 
     /*! This is an introduction to the page with the list of class/file groups */
     QCString trModulesDescription() override
-    { return "Visų modulių sąrašas:"; }
+    {
+      return "Visų modulių sąrašas:";
+    }
 
     // index titles (the project name is prepended for these)
 
     /*! This is used in HTML as the title of index.html. */
     QCString trDocumentation(const QCString &projName) override
-    { return (!projName.isEmpty()?projName + " " : "") + "Dokumentacija"; }
+    {
+      return (!projName.isEmpty() ? projName + " " : "") + "Dokumentacija";
+    }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * index of all groups.
      */
     QCString trModuleIndex() override
-    { return "Modulio Indeksas"; }
+    {
+      return "Modulio Indeksas";
+    }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * class hierarchy.
      */
     QCString trHierarchicalIndex() override
-    { return "Hierarchijos Indeksas"; }
+    {
+      return "Hierarchijos Indeksas";
+    }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * annotated compound index.
@@ -373,13 +430,17 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
      * list of all files.
      */
     QCString trFileIndex() override
-    { return "Failo Indeksas"; }
+    {
+      return "Failo Indeksas";
+    }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all groups.
      */
     QCString trModuleDocumentation() override
-    { return "Modulio Dokumentacija"; }
+    {
+      return "Modulio Dokumentacija";
+    }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all classes, structs and unions.
@@ -392,7 +453,7 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
       }
       else if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
       {
-          return trDesignUnitDocumentation();
+        return trDesignUnitDocumentation();
       }
       else
       {
@@ -404,77 +465,103 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
      *  the documentation of all files.
      */
     QCString trFileDocumentation() override
-    { return "Failo Dokumentacija"; }
+    {
+      return "Failo Dokumentacija";
+    }
 
     /*! This is used in LaTeX as the title of the document */
     QCString trReferenceManual() override
-    { return "Informacinis Vadovas"; }
+    {
+      return "Informacinis Vadovas";
+    }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of defines
      */
     QCString trDefines() override
-    { return "Apibrėžimai"; }
+    {
+      return "Apibrėžimai";
+    }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of typedefs
      */
     QCString trTypedefs() override
-    { return "Tipų apibrėžimai"; }
+    {
+      return "Tipų apibrėžimai";
+    }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of enumerations
      */
     QCString trEnumerations() override
-    { return "Išvardinimai"; }
+    {
+      return "Išvardinimai";
+    }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of (global) functions
      */
     QCString trFunctions() override
-    { return "Funkcijos"; }
+    {
+      return "Funkcijos";
+    }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of (global) variables
      */
     QCString trVariables() override
-    { return "Kintamieji"; }
+    {
+      return "Kintamieji";
+    }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of (global) variables
      */
     QCString trEnumerationValues() override
-    { return "Išvardinimų reikšmės"; }
+    {
+      return "Išvardinimų reikšmės";
+    }
 
     /*! This is used in the documentation of a file before the list of
      *  documentation blocks for defines
      */
     QCString trDefineDocumentation() override
-    { return "Apibrėžimų Dokumentacija"; }
+    {
+      return "Apibrėžimų Dokumentacija";
+    }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for typedefs
      */
     QCString trTypedefDocumentation() override
-    { return "Tipų apibrėžimų Dokumentacija"; }
+    {
+      return "Tipų apibrėžimų Dokumentacija";
+    }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for enumeration types
      */
     QCString trEnumerationTypeDocumentation() override
-    { return "Išvardinimo Tipo Dokumentacija"; }
+    {
+      return "Išvardinimo Tipo Dokumentacija";
+    }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for functions
      */
     QCString trFunctionDocumentation() override
-    { return "Funkcijos Dokumentacija"; }
+    {
+      return "Funkcijos Dokumentacija";
+    }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for variables
      */
     QCString trVariableDocumentation() override
-    { return "Kintamojo Dokumentacija"; }
+    {
+      return "Kintamojo Dokumentacija";
+    }
 
     /*! This is used in the documentation of a file/namespace/group before
      *  the list of links to documented compounds
@@ -494,66 +581,84 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
     /*! This is used in the standard footer of each page and indicates when
      *  the page was generated
      */
-    QCString trGeneratedAt(const QCString &date,const QCString &projName) override
+    QCString trGeneratedAt(const QCString &date, const QCString &projName) override
     {
-      QCString result="Sugeneruota "+date;/*FIXME*/
-      if (!projName.isEmpty()) result+=" "+projName;/*FIXME*/
-      result+=" ";/*FIXME*/
+      QCString result = "Sugeneruota " + date;           /*FIXME*/
+      if (!projName.isEmpty()) result += " " + projName; /*FIXME*/
+      result += " ";                                     /*FIXME*/
       return result;
     }
 
     /*! this text is put before a class diagram */
     QCString trClassDiagram(const QCString &clName) override
     {
-      return "Paveldimumo diagrama "+clName+":"; /*FIXME*/
+      return "Paveldimumo diagrama " + clName + ":"; /*FIXME*/
     }
 
     /*! this text is generated when the \\warning command is used. */
     QCString trWarning() override
-    { return "Įspėjimas"; }
+    {
+      return "Įspėjimas";
+    }
 
     /*! this text is generated when the \\version command is used. */
     QCString trVersion() override
-    { return "Versija"; }
+    {
+      return "Versija";
+    }
 
     /*! this text is generated when the \\date command is used. */
     QCString trDate() override
-    { return "Data"; }
+    {
+      return "Data";
+    }
 
     /*! this text is generated when the \\return command is used. */
     QCString trReturns() override
-    { return "Gražina"; }
+    {
+      return "Gražina";
+    }
 
     /*! this text is generated when the \\sa command is used. */
     QCString trSeeAlso() override
-    { return "Taip pat žiūrėti"; }
+    {
+      return "Taip pat žiūrėti";
+    }
 
     /*! this text is generated when the \\param command is used. */
     QCString trParameters() override
-    { return "Parametrai"; }
+    {
+      return "Parametrai";
+    }
 
     /*! this text is generated when the \\exception command is used. */
     QCString trExceptions() override
-    { return "Išimtys"; }
+    {
+      return "Išimtys";
+    }
 
     /*! this text is used in the title page of a LaTeX document. */
     QCString trGeneratedBy() override
-    { return "Sugeneruota"; }
+    {
+      return "Sugeneruota";
+    }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 0.49-990307
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 0.49-990307
+    //////////////////////////////////////////////////////////////////////////
 
     /*! used as the title of page containing all the index of all namespaces. */
     QCString trNamespaceList() override
-    { return "Varų Srities Sąrašas"; }
+    {
+      return "Varų Srities Sąrašas";
+    }
 
     /*! used as an introduction to the namespace list */
     QCString trNamespaceListDescription(bool extractAll) override
     {
-      QCString result="Sąrašas visų ";
-      if (!extractAll) result+="dokumentuotų ";
-      result+="vardų sričių su trumpais aprašymais:";
+      QCString result = "Sąrašas visų ";
+      if (!extractAll) result += "dokumentuotų ";
+      result += "vardų sričių su trumpais aprašymais:";
       return result;
     }
 
@@ -561,79 +666,103 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
      *  friends of a class
      */
     QCString trFriends() override
-    { return "Draugai"; }
+    {
+      return "Draugai";
+    }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 0.49-990405
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 0.49-990405
+    //////////////////////////////////////////////////////////////////////////
 
     /*! used in the class documentation as a header before the list of all
      * related classes
      */
     QCString trRelatedFunctionDocumentation() override
-    { return "Draugiškų Ir Susijusių Funkcijų Dokumentacija"; }
+    {
+      return "Draugiškų Ir Susijusių Funkcijų Dokumentacija";
+    }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 0.49-990425
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 0.49-990425
+    //////////////////////////////////////////////////////////////////////////
 
     /*! used as the title of the HTML page of a class/struct/union */
-    QCString trCompoundReference(const QCString &clName,
-                                    ClassDef::CompoundType compType,
-                                    bool isTemplate) override
+    QCString trCompoundReference(const QCString        &clName,
+                                 ClassDef::CompoundType compType,
+                                 bool                   isTemplate) override
     {
-      QCString result=clName;
-      switch(compType)
+      QCString result = clName;
+      switch (compType)
       {
-        case ClassDef::Class:      result+=" Klasė"; break;
-        case ClassDef::Struct:     result+=" Struktūra"; break;
-        case ClassDef::Union:      result+=" Sąjunga"; break;
-        case ClassDef::Interface:  result+=" Sąsaja"; break;
-        case ClassDef::Protocol:   result+=" Protokolas"; break;
-        case ClassDef::Category:   result+=" Kategorija"; break;
-        case ClassDef::Exception:  result+=" Išimtis"; break;
-        default: break;
+      case ClassDef::Class: result += " Klasė"; break;
+      case ClassDef::Struct: result += " Struktūra"; break;
+      case ClassDef::Union: result += " Sąjunga"; break;
+      case ClassDef::Interface: result += " Sąsaja"; break;
+      case ClassDef::Protocol: result += " Protokolas"; break;
+      case ClassDef::Category: result += " Kategorija"; break;
+      case ClassDef::Exception: result += " Išimtis"; break;
+      default: break;
       }
-      if (isTemplate) result+=" Šablonas";
+      if (isTemplate) result += " Šablonas";
       return result;
     }
 
     /*! used as the title of the HTML page of a file */
     QCString trFileReference(const QCString &fileName) override
     {
-      QCString result=fileName;
-      result+=" Failo Nuoroda";
+      QCString result = fileName;
+      result += " Failo Nuoroda";
       return result;
     }
 
     /*! used as the title of the HTML page of a namespace */
     QCString trNamespaceReference(const QCString &namespaceName) override
     {
-      QCString result=namespaceName;
-      result+=" Vardų Srities Nuoroda";
+      QCString result = namespaceName;
+      result += " Vardų Srities Nuoroda";
       return result;
     }
 
     QCString trPublicMembers() override
-    { return "Vieši Metodai"; }
+    {
+      return "Vieši Metodai";
+    }
     QCString trPublicSlots() override
-    { return "Vieši Slotai"; } /*FIXME*/
+    {
+      return "Vieši Slotai";
+    } /*FIXME*/
     QCString trSignals() override
-    { return "Signalai"; }
+    {
+      return "Signalai";
+    }
     QCString trStaticPublicMembers() override
-    { return "Statiniai Vieši Metodai"; }
+    {
+      return "Statiniai Vieši Metodai";
+    }
     QCString trProtectedMembers() override
-    { return "Apsaugoti Metodai"; }
+    {
+      return "Apsaugoti Metodai";
+    }
     QCString trProtectedSlots() override
-    { return "Apsaugoti Slotai"; }/*FIXME*/
+    {
+      return "Apsaugoti Slotai";
+    } /*FIXME*/
     QCString trStaticProtectedMembers() override
-    { return "Statiniai Apsaugoti Metodai"; }
+    {
+      return "Statiniai Apsaugoti Metodai";
+    }
     QCString trPrivateMembers() override
-    { return "Privatatūs Metodai"; }
+    {
+      return "Privatatūs Metodai";
+    }
     QCString trPrivateSlots() override
-    { return "Privatūs Slotai"; }/*FIXME*/
+    {
+      return "Privatūs Slotai";
+    } /*FIXME*/
     QCString trStaticPrivateMembers() override
-    { return "Statiniai Privatūs Metodai"; }
+    {
+      return "Statiniai Privatūs Metodai";
+    }
 
     /*! this function is used to produce a comma-separated list of items.
      *  use generateMarker(i) to indicate where item i should be put.
@@ -642,18 +771,18 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
     {
       QCString result;
       // the inherits list contain `numEntries' classes
-      for (int i=0;i<numEntries;i++)
+      for (int i = 0; i < numEntries; i++)
       {
         // use generateMarker to generate placeholders for the class links!
-        result+=generateMarker(i); // generate marker for entry i in the list
-                                   // (order is left to right)
+        result += generateMarker(i); // generate marker for entry i in the list
+                                     // (order is left to right)
 
-        if (i!=numEntries-1)  // not the last entry, so we need a separator
+        if (i != numEntries - 1) // not the last entry, so we need a separator
         {
-          if (i<numEntries-2) // not the fore last entry
-            result+=", ";
-          else                // the fore last entry
-            result+=", ir ";
+          if (i < numEntries - 2) // not the fore last entry
+            result += ", ";
+          else // the fore last entry
+            result += ", ir ";
         }
       }
       return result;
@@ -664,7 +793,7 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
      */
     QCString trInheritsList(int numEntries) override
     {
-      return "Paveldi "+trWriteList(numEntries)+".";
+      return "Paveldi " + trWriteList(numEntries) + ".";
     }
 
     /*! used in class documentation to produce a list of super classes,
@@ -672,7 +801,7 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
      */
     QCString trInheritedByList(int numEntries) override
     {
-      return "Paveldėta "+trWriteList(numEntries)+".";
+      return "Paveldėta " + trWriteList(numEntries) + ".";
     }
 
     /*! used in member documentation blocks to produce a list of
@@ -680,7 +809,7 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
      */
     QCString trReimplementedFromList(int numEntries) override
     {
-      return "Perkrauna metodą iš "+trWriteList(numEntries)+".";
+      return "Perkrauna metodą iš " + trWriteList(numEntries) + ".";
     }
 
     /*! used in member documentation blocks to produce a list of
@@ -688,97 +817,114 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
      */
     QCString trReimplementedInList(int numEntries) override
     {
-      return "Metodas perkraunamas "+trWriteList(numEntries)+".";
+      return "Metodas perkraunamas " + trWriteList(numEntries) + ".";
     }
 
     /*! This is put above each page as a link to all members of namespaces. */
     QCString trNamespaceMembers() override
-    { return "Vardų Srities Nariai"; }
+    {
+      return "Vardų Srities Nariai";
+    }
 
     /*! This is an introduction to the page with all namespace members */
     QCString trNamespaceMemberDescription(bool extractAll) override
     {
-      QCString result="Sąrašas visų ";
-      if (!extractAll) result+="dokumentuotų ";
-      result+="vardų srities narių su nuorodomis į ";
+      QCString result = "Sąrašas visų ";
+      if (!extractAll) result += "dokumentuotų ";
+      result += "vardų srities narių su nuorodomis į ";
       if (extractAll)
-        result+="vardų srities dokumentaciją kiekvienam nariui:";
+        result += "vardų srities dokumentaciją kiekvienam nariui:";
       else
-        result+="vardų sritis, kurioms jos priklauso:";
+        result += "vardų sritis, kurioms jos priklauso:";
       return result;
     }
     /*! This is used in LaTeX as the title of the chapter with the
      *  index of all namespaces.
      */
     QCString trNamespaceIndex() override
-    { return "Vardų Srities Indeksas"; }
+    {
+      return "Vardų Srities Indeksas";
+    }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all namespaces.
      */
     QCString trNamespaceDocumentation() override
-    { return "Vardų Srities Dokumentacija"; }
+    {
+      return "Vardų Srities Dokumentacija";
+    }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 0.49-990522
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 0.49-990522
+    //////////////////////////////////////////////////////////////////////////
 
     /*! This is used in the documentation before the list of all
      *  namespaces in a file.
      */
     QCString trNamespaces() override
-    { return "Vardų Sritys"; }
+    {
+      return "Vardų Sritys";
+    }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 0.49-990728
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 0.49-990728
+    //////////////////////////////////////////////////////////////////////////
 
     /*! This is put at the bottom of a class documentation page and is
      *  followed by a list of files that were used to generate the page.
      */
     QCString trGeneratedFromFiles(ClassDef::CompoundType compType,
-        bool single) override
+                                  bool                   single) override
     { // here s is one of " Class", " Struct" or " Union"
       // single is true implies a single file
-      QCString result="Dokumentacija ";
-      switch(compType)
+      QCString result = "Dokumentacija ";
+      switch (compType)
       {
-        case ClassDef::Class:      result+="šiai klasei"; break;
-        case ClassDef::Struct:     result+="šiai struktūrai"; break;
-        case ClassDef::Union:      result+="šiai sąjungai"; break;
-        case ClassDef::Interface:  result+="šiai sąsajai"; break;
-        case ClassDef::Protocol:   result+="šiam protocolui"; break;
-        case ClassDef::Category:   result+="šiai kategorijai"; break;
-        case ClassDef::Exception:  result+="šiai išimčiai"; break;
-        default: break;
+      case ClassDef::Class: result += "šiai klasei"; break;
+      case ClassDef::Struct: result += "šiai struktūrai"; break;
+      case ClassDef::Union: result += "šiai sąjungai"; break;
+      case ClassDef::Interface: result += "šiai sąsajai"; break;
+      case ClassDef::Protocol: result += "šiam protocolui"; break;
+      case ClassDef::Category: result += "šiai kategorijai"; break;
+      case ClassDef::Exception: result += "šiai išimčiai"; break;
+      default: break;
       }
-      result+=" sugeneruota iš ";
-      if (single) result+="šio failo:"; else result+="šių failų:";
+      result += " sugeneruota iš ";
+      if (single)
+        result += "šio failo:";
+      else
+        result += "šių failų:";
       return result;
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 0.49-990901
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 0.49-990901
+    //////////////////////////////////////////////////////////////////////////
 
     /*! This is used as the heading text for the retval command. */
     QCString trReturnValues() override
-    { return "Gražinamos reikšmės"; }
+    {
+      return "Gražinamos reikšmės";
+    }
 
     /*! This is in the (quick) index as a link to the main page (index.html)
      */
     QCString trMainPage() override
-    { return "Pagrindinis Puslapis"; }
+    {
+      return "Pagrindinis Puslapis";
+    }
 
     /*! This is used in references to page that are put in the LaTeX
      *  documentation. It should be an abbreviation of the word page.
      */
     QCString trPageAbbreviation() override
-    { return "psl."; }
+    {
+      return "psl.";
+    }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 0.49-991003
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 0.49-991003
+    //////////////////////////////////////////////////////////////////////////
 
     QCString trDefinedAtLineInSourceFile() override
     {
@@ -789,28 +935,28 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
       return "Apibrėžimas faile @0.";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 0.49-991205
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 0.49-991205
+    //////////////////////////////////////////////////////////////////////////
 
     QCString trDeprecated() override
     {
       return "Smerktina";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.0.0
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.0.0
+    //////////////////////////////////////////////////////////////////////////
 
     /*! this text is put before a collaboration diagram */
     QCString trCollaborationDiagram(const QCString &clName) override
     {
-      return "Bendradarbiavimo diagrama "+clName+":";/*FIXME*/
+      return "Bendradarbiavimo diagrama " + clName + ":"; /*FIXME*/
     }
     /*! this text is put before an include dependency graph */
     QCString trInclDepGraph(const QCString &fName) override
     {
-      return "Įtraukimo priklausomybių diagrama "+fName+":";/*FIXME*/
+      return "Įtraukimo priklausomybių diagrama " + fName + ":"; /*FIXME*/
     }
     /*! header that is put before the list of constructor/destructors. */
     QCString trConstructorDocumentation() override
@@ -835,7 +981,7 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
     /*! Text for the \\post command */
     QCString trPostcondition() override
     {
-      return "Postcondition";/*FIXME*/
+      return "Postcondition"; /*FIXME*/
     }
     /*! Text for the \\invariant command */
     QCString trInvariant() override
@@ -850,7 +996,7 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
     /*! Text used the source code in the file index */
     QCString trCode() override
     {
-      return "tekstas";/*FIXME*/
+      return "tekstas"; /*FIXME*/
     }
     QCString trGraphicalHierarchy() override
     {
@@ -869,9 +1015,9 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
       return "Puslapio Indeksas";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.1.0
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.1.0
+    //////////////////////////////////////////////////////////////////////////
 
     QCString trNote() override
     {
@@ -921,9 +1067,9 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
       return "Statiniai Privatūs Atributai";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.1.3
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.1.3
+    //////////////////////////////////////////////////////////////////////////
 
     /*! Used as a marker that is put before a \\todo item */
     QCString trTodo() override
@@ -936,9 +1082,9 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
       return "Tolimesni Darbai";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.1.4
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.1.4
+    //////////////////////////////////////////////////////////////////////////
 
     QCString trReferencedBy() override
     {
@@ -962,9 +1108,9 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
       return "Nuo";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.1.5
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.1.5
+    //////////////////////////////////////////////////////////////////////////
 
     /*! title of the graph legend page */
     QCString trLegendTitle() override
@@ -976,65 +1122,65 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
      */
     QCString trLegendDocs() override
     {
-      return
-        "Šis puslapis paaiškina, kaip interpretuoti sugeneruotus grafus "
-        "su Doxygen įrankiu.<p>\n"
-        "Panagrinėkite pavyzdį:\n"
-        "\\kodo pradžia\n"
-        "/*! Invisible class because of truncation */\n"
-        "class Invisible { };\n\n"
-        "/*! Truncated class, inheritance relation is hidden */\n"
-        "class Truncated : public Invisible { };\n\n"
-        "/* Class not documented with doxygen comments */\n"
-        "class Undocumented { };\n\n"
-        "/*! Class that is inherited using public inheritance */\n"
-        "class PublicBase : public Truncated { };\n\n"
-        "/*! A template class */\n"
-        "template<class T> class Templ { };\n\n"
-        "/*! Class that is inherited using protected inheritance */\n"
-        "class ProtectedBase { };\n\n"
-        "/*! Class that is inherited using private inheritance */\n"
-        "class PrivateBase { };\n\n"
-        "/*! Class that is used by the Inherited class */\n"
-        "class Used { };\n\n"
-        "/*! Super class that inherits a number of other classes */\n"
-        "class Inherited : public PublicBase,\n"
-        "                  protected ProtectedBase,\n"
-        "                  private PrivateBase,\n"
-        "                  public Undocumented,\n"
-        "                  public Templ<int>\n"
-        "{\n"
-        "  private:\n"
-        "    Used *m_usedClass;\n"
-        "};\n"
-        "\\endcode\n"
-        "If the \\c MAX_DOT_GRAPH_HEIGHT tag in the configuration file "
-        "is set to 240 this will result in the following graph:"
-        "<p><center><img alt=\"\" src=\"graph_legend."+getDotImageExtension()+"\"></center>\n"
-        "<p>\n"
-        "The boxes in the above graph have the following meaning:\n"
-        "<ul>\n"
-        "<li>%A filled black box represents the struct or class for which the "
-        "graph is generated.\n"
-        "<li>%A box with a black border denotes a documented struct or class.\n"
-        "<li>%A box with a gray border denotes an undocumented struct or class.\n"
-        "<li>%A box with a red border denotes a documented struct or class for"
-        "which not all inheritance/containment relations are shown. %A graph is "
-        "truncated if it does not fit within the specified boundaries.\n"
-        "</ul>\n"
-        "The arrows have the following meaning:\n"
-        "<ul>\n"
-        "<li>%A dark blue arrow is used to visualize a public inheritance "
-        "relation between two classes.\n"
-        "<li>%A dark green arrow is used for protected inheritance.\n"
-        "<li>%A dark red arrow is used for private inheritance.\n"
-        "<li>%A purple dashed arrow is used if a class is contained or used "
-        "by another class. The arrow is labeled with the variable(s) "
-        "through which the pointed class or struct is accessible.\n"
-        "<li>%A yellow dashed arrow denotes a relation between a template instance and "
-        "the template class it was instantiated from. The arrow is labeled with "
-        "the template parameters of the instance.\n"
-        "</ul>\n";
+      return "Šis puslapis paaiškina, kaip interpretuoti sugeneruotus grafus "
+             "su Doxygen įrankiu.<p>\n"
+             "Panagrinėkite pavyzdį:\n"
+             "\\kodo pradžia\n"
+             "/*! Invisible class because of truncation */\n"
+             "class Invisible { };\n\n"
+             "/*! Truncated class, inheritance relation is hidden */\n"
+             "class Truncated : public Invisible { };\n\n"
+             "/* Class not documented with doxygen comments */\n"
+             "class Undocumented { };\n\n"
+             "/*! Class that is inherited using public inheritance */\n"
+             "class PublicBase : public Truncated { };\n\n"
+             "/*! A template class */\n"
+             "template<class T> class Templ { };\n\n"
+             "/*! Class that is inherited using protected inheritance */\n"
+             "class ProtectedBase { };\n\n"
+             "/*! Class that is inherited using private inheritance */\n"
+             "class PrivateBase { };\n\n"
+             "/*! Class that is used by the Inherited class */\n"
+             "class Used { };\n\n"
+             "/*! Super class that inherits a number of other classes */\n"
+             "class Inherited : public PublicBase,\n"
+             "                  protected ProtectedBase,\n"
+             "                  private PrivateBase,\n"
+             "                  public Undocumented,\n"
+             "                  public Templ<int>\n"
+             "{\n"
+             "  private:\n"
+             "    Used *m_usedClass;\n"
+             "};\n"
+             "\\endcode\n"
+             "If the \\c MAX_DOT_GRAPH_HEIGHT tag in the configuration file "
+             "is set to 240 this will result in the following graph:"
+             "<p><center><img alt=\"\" src=\"graph_legend." +
+             getDotImageExtension() + "\"></center>\n"
+                                      "<p>\n"
+                                      "The boxes in the above graph have the following meaning:\n"
+                                      "<ul>\n"
+                                      "<li>%A filled black box represents the struct or class for which the "
+                                      "graph is generated.\n"
+                                      "<li>%A box with a black border denotes a documented struct or class.\n"
+                                      "<li>%A box with a gray border denotes an undocumented struct or class.\n"
+                                      "<li>%A box with a red border denotes a documented struct or class for"
+                                      "which not all inheritance/containment relations are shown. %A graph is "
+                                      "truncated if it does not fit within the specified boundaries.\n"
+                                      "</ul>\n"
+                                      "The arrows have the following meaning:\n"
+                                      "<ul>\n"
+                                      "<li>%A dark blue arrow is used to visualize a public inheritance "
+                                      "relation between two classes.\n"
+                                      "<li>%A dark green arrow is used for protected inheritance.\n"
+                                      "<li>%A dark red arrow is used for private inheritance.\n"
+                                      "<li>%A purple dashed arrow is used if a class is contained or used "
+                                      "by another class. The arrow is labeled with the variable(s) "
+                                      "through which the pointed class or struct is accessible.\n"
+                                      "<li>%A yellow dashed arrow denotes a relation between a template instance and "
+                                      "the template class it was instantiated from. The arrow is labeled with "
+                                      "the template parameters of the instance.\n"
+                                      "</ul>\n";
     }
     /*! text for the link to the legend page */
     QCString trLegend() override
@@ -1042,9 +1188,9 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
       return "legenda";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.2.0
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.2.0
+    //////////////////////////////////////////////////////////////////////////
 
     /*! Used as a marker that is put before a test item */
     QCString trTest() override
@@ -1057,9 +1203,9 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
       return "Testo Sąrašas";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.2.2
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.2.2
+    //////////////////////////////////////////////////////////////////////////
 
     /*! Used as a section header for IDL properties */
     QCString trProperties() override
@@ -1072,9 +1218,9 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
       return "Savybės Dokumentacija";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.2.4
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.2.4
+    //////////////////////////////////////////////////////////////////////////
 
     /*! Used for Java classes in the summary section of Java packages */
     QCString trClasses() override
@@ -1091,7 +1237,7 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
     /*! Used as the title of a Java package */
     QCString trPackage(const QCString &name) override
     {
-      return "Paketas "+name;
+      return "Paketas " + name;
     }
     /*! The description of the package index page */
     QCString trPackageListDescription() override
@@ -1109,9 +1255,9 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
       return "Reikšmė:";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.2.5
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.2.5
+    //////////////////////////////////////////////////////////////////////////
 
     /*! Used as a marker that is put before a \\bug item */
     QCString trBug() override
@@ -1124,9 +1270,9 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
       return "Klaidų Sąrašas";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.2.6
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.2.6
+    //////////////////////////////////////////////////////////////////////////
 
     /*! Used as ansicpg for RTF file
      *
@@ -1236,9 +1382,9 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
       return createNoun(first_capital, singular, "global", "ūs", "us");
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.2.7
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.2.7
+    //////////////////////////////////////////////////////////////////////////
 
     /*! This text is generated when the \\author command is used and
      *  for the author section in man pages. */
@@ -1247,9 +1393,9 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
       return createNoun(first_capital, singular, "autori", "ai", "us");
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.2.11
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.2.11
+    //////////////////////////////////////////////////////////////////////////
 
     /*! This text is put before the list of members referenced by a member
      */
@@ -1258,16 +1404,16 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
       return "Ryšiai";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.2.13
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.2.13
+    //////////////////////////////////////////////////////////////////////////
 
     /*! used in member documentation blocks to produce a list of
      *  members that are implemented by this one.
      */
     QCString trImplementedFromList(int numEntries) override
     {
-      return "Realizuoja "+trWriteList(numEntries)+".";
+      return "Realizuoja " + trWriteList(numEntries) + ".";
     }
 
     /*! used in member documentation blocks to produce a list of
@@ -1275,12 +1421,12 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
      */
     QCString trImplementedInList(int numEntries) override
     {
-      return "Realizuota "+trWriteList(numEntries)+".";
+      return "Realizuota " + trWriteList(numEntries) + ".";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.2.16
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.2.16
+    //////////////////////////////////////////////////////////////////////////
 
     /*! used in RTF documentation as a heading for the Table
      *  of Contents.
@@ -1290,9 +1436,9 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
       return "Turinys";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.2.17
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.2.17
+    //////////////////////////////////////////////////////////////////////////
 
     /*! Used as the header of the list of item that have been
      *  flagged deprecated
@@ -1302,9 +1448,9 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
       return "Smerktinumų Sąrašas";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.2.18
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.2.18
+    //////////////////////////////////////////////////////////////////////////
 
     /*! Used as a header for declaration section of the events found in
      * a C# program
@@ -1319,9 +1465,9 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
       return "Įvykio Dokumentacija";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.3
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.3
+    //////////////////////////////////////////////////////////////////////////
 
     /*! Used as a heading for a list of Java class types with package scope.
      */
@@ -1362,9 +1508,9 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
       return "Statiniai Paketo Atributai";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.3.1
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.3.1
+    //////////////////////////////////////////////////////////////////////////
 
     /*! Used in the quick index of a class/file/namespace member list page
      *  to link to the unfiltered list of all members.
@@ -1379,9 +1525,9 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
       return "Funkcijos kvietimo grafas:";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.3.3
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.3.3
+    //////////////////////////////////////////////////////////////////////////
 
     /*! This string is used as the title for the page listing the search
      *  results.
@@ -1400,11 +1546,11 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
      */
     QCString trSearchResults(int numDocuments) override
     {
-      if (numDocuments==0)
+      if (numDocuments == 0)
       {
         return "Atsiprašome, jokių dokumentų nerasta pagal Jūsų užklausą.";
       }
-      else if (numDocuments==1)
+      else if (numDocuments == 1)
       {
         return "Surasta <b>1</b> dokumentas, atitinkantis Jūsų užklausą.";
       }
@@ -1421,44 +1567,54 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
     {
       return "Atitikmenys:";
     }
-//////////////////////////////////////////////////////////////////////////
-// new since 1.3.8
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.3.8
+    //////////////////////////////////////////////////////////////////////////
 
     /*! This is used in HTML as the title of page with source code for file filename
      */
-    QCString trSourceFile(const QCString& filename) override
+    QCString trSourceFile(const QCString &filename) override
     {
       return filename + " išeities tekstas";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.3.9
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.3.9
+    //////////////////////////////////////////////////////////////////////////
 
     /*! This is used as the name of the chapter containing the directory
      *  hierarchy.
      */
     QCString trDirIndex() override
-    { return "Direktorijų hierarchija"; }
+    {
+      return "Direktorijų hierarchija";
+    }
 
     /*! This is used as the name of the chapter containing the documentation
      *  of the directories.
      */
     QCString trDirDocumentation() override
-    { return "Direktorijų dokumentacija"; }
+    {
+      return "Direktorijų dokumentacija";
+    }
 
     /*! This is used as the title of the directory index and also in the
      *  Quick links of a HTML page, to link to the directory hierarchy.
      */
     QCString trDirectories() override
-    { return "Direktorijos"; }
+    {
+      return "Direktorijos";
+    }
 
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.
      */
     QCString trDirReference(const QCString &dirName) override
-    { QCString result=dirName; result+=" Directorijos aprašas"; return result; }
+    {
+      QCString result = dirName;
+      result += " Directorijos aprašas";
+      return result;
+    }
 
     /*! This returns the word directory with or without starting capital
      *  (\a first_capital) and in sigular or plural form (\a singular).
@@ -1468,40 +1624,44 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
       return createNoun(first_capital, singular, "direktorij", "os", "a");
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.4.1
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.4.1
+    //////////////////////////////////////////////////////////////////////////
 
     /*! This text is added to the documentation when the \\overload command
      *  is used for a overloaded function.
      */
     QCString trOverloadText() override
     {
-       return "Perkraunamas metodas sukurtas patogumui. "
-              "Jis skiriasi nuo aukščiau minėto tik argumetais.";
+      return "Perkraunamas metodas sukurtas patogumui. "
+             "Jis skiriasi nuo aukščiau minėto tik argumetais.";
     }
 
 
     QCString trDayOfWeek(int dayOfWeek, bool first_capital, bool full) override
     {
-      static const char *days_short[]   = { "pr", "an", "tr", "kt", "pn", "št", "sk" };
-      static const char *days_full[]    = { "pirmadienis", "antradienis", "trečiadienis", "ketvirtadienis", "penktadienis", "šeštadienis", "sekmadienis" };
-      QCString text  = full? days_full[dayOfWeek-1] : days_short[dayOfWeek-1];
-      if (first_capital) return text.mid(0,1).upper()+text.mid(1);
-      else return text;
+      static const char *days_short[] = { "pr", "an", "tr", "kt", "pn", "št", "sk" };
+      static const char *days_full[]  = { "pirmadienis", "antradienis", "trečiadienis", "ketvirtadienis", "penktadienis", "šeštadienis", "sekmadienis" };
+      QCString           text         = full ? days_full[dayOfWeek - 1] : days_short[dayOfWeek - 1];
+      if (first_capital)
+        return text.mid(0, 1).upper() + text.mid(1);
+      else
+        return text;
     }
     QCString trMonth(int month, bool first_capital, bool full) override
     {
       static const char *months_short[] = { "saus.", "vas.", "kov.", "bal.", "geg.", "birž.", "liep.", "rugp.", "rugs.", "spal.", "lapkr.", "gruod." };
       static const char *months_full[]  = { "sausis", "vasaris", "kovas", "balandis", "gegužė", "birželis", "liepa", "rugpjūtis", "rugsėjis", "spalis", "lapkritis", "gruodis" };
-      QCString text  = full? months_full[month-1] : months_short[month-1];
-      if (first_capital) return text.mid(0,1).upper()+text.mid(1);
-      else return text;
+      QCString           text           = full ? months_full[month - 1] : months_short[month - 1];
+      if (first_capital)
+        return text.mid(0, 1).upper() + text.mid(1);
+      else
+        return text;
     }
     QCString trDayPeriod(bool period) override
     {
       static const char *dayPeriod[] = { "priešpiet", "popiet" };
-      return dayPeriod[period?1:0];
+      return dayPeriod[period ? 1 : 0];
     }
 };
 

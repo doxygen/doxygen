@@ -10,4 +10,6 @@
  *  \warning   Improper use can crash your application
  *  \copyright GNU Public License.
  */
-class SomeNiceClass {};
+class SomeNiceClass
+{
+};

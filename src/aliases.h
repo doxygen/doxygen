@@ -20,7 +20,7 @@
 #include <string_view>
 
 std::string resolveAliasCmd(std::string_view aliasCmd);
-bool isAliasCmd(std::string_view aliasCmd);
-void readAliases();
+bool        isAliasCmd(std::string_view aliasCmd);
+void        readAliases();
 
 #endif

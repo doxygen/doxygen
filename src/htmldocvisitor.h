@@ -29,7 +29,7 @@ class TextStream;
 class HtmlDocVisitor : public DocVisitor
 {
   public:
-    HtmlDocVisitor(TextStream &t,OutputCodeList &ci,const Definition *ctx,const QCString &fn = QCString());
+    HtmlDocVisitor(TextStream &t, OutputCodeList &ci, const Definition *ctx, const QCString &fn = QCString());
 
     //--------------------------------------
     // visitor functions for leaf nodes
@@ -60,7 +60,7 @@ class HtmlDocVisitor : public DocVisitor
 
     void operator()(const DocAutoList &);
     void operator()(const DocAutoListItem &);
-    void operator()(const DocPara &) ;
+    void operator()(const DocPara &);
     void operator()(const DocRoot &);
     void operator()(const DocSimpleSect &);
     void operator()(const DocTitle &);
@@ -98,10 +98,8 @@ class HtmlDocVisitor : public DocVisitor
     void operator()(const DocHtmlBlockQuote &);
     void operator()(const DocVhdlFlow &);
     void operator()(const DocParBlock &);
-
   private:
-
-    template<class T>
+    template <class T>
     void visitChildren(const T &t)
     {
       for (const auto &child : t.children())
@@ -109,46 +107,46 @@ class HtmlDocVisitor : public DocVisitor
         std::visit(*this, child);
       }
     }
-    template<class T>
-    void visitCaption(TextStream &t,const T &n);
+    template <class T>
+    void     visitCaption(TextStream &t, const T &n);
 
     //--------------------------------------
     // helper functions
     //--------------------------------------
 
-    void writeObfuscatedMailAddress(const QCString &url);
-    void filter(const QCString &str, const bool retainNewline = false);
+    void     writeObfuscatedMailAddress(const QCString &url);
+    void     filter(const QCString &str, const bool retainNewline = false);
     QCString filterQuotedCdataAttr(const QCString &str);
-    void startLink(const QCString &ref,const QCString &file,
-                   const QCString &relPath,const QCString &anchor,
-                   const QCString &tooltip = "");
-    void endLink();
-    void writeDotFile(const QCString &fileName,const QCString &relPath,const QCString &context,
-                      const QCString &srcFile,int srcLine);
-    void writeMscFile(const QCString &fileName,const QCString &relPath,const QCString &context,
-                      const QCString &srcFile,int srcLine);
-    void writeDiaFile(const QCString &fileName,const QCString &relPath,const QCString &context,
-                      const QCString &srcFile,int srcLine);
-    void writePlantUMLFile(const QCString &fileName,const QCString &relPath,const QCString &context,
-                           const QCString &srcFile,int srcLine);
+    void     startLink(const QCString &ref, const QCString &file,
+                       const QCString &relPath, const QCString &anchor,
+                       const QCString &tooltip = "");
+    void     endLink();
+    void     writeDotFile(const QCString &fileName, const QCString &relPath, const QCString &context,
+                          const QCString &srcFile, int srcLine);
+    void     writeMscFile(const QCString &fileName, const QCString &relPath, const QCString &context,
+                          const QCString &srcFile, int srcLine);
+    void     writeDiaFile(const QCString &fileName, const QCString &relPath, const QCString &context,
+                          const QCString &srcFile, int srcLine);
+    void     writePlantUMLFile(const QCString &fileName, const QCString &relPath, const QCString &context,
+                               const QCString &srcFile, int srcLine);
 
-    template<class DocNode>
+    template <class DocNode>
     void forceEndParagraph(const DocNode &n);
-    template<class DocNode>
-    void forceStartParagraph(const DocNode &n);
+    template <class DocNode>
+    void              forceStartParagraph(const DocNode &n);
 
     //--------------------------------------
     // state variables
     //--------------------------------------
 
-    TextStream &m_t;
-    OutputCodeList &m_ci;
-    bool m_insidePre = false;
-    bool m_hide = false;
-    bool m_insideTitle = false;
+    TextStream       &m_t;
+    OutputCodeList   &m_ci;
+    bool              m_insidePre   = false;
+    bool              m_hide        = false;
+    bool              m_insideTitle = false;
     const Definition *m_ctx;
-    QCString m_fileName;
-    QCString m_langExt;
+    QCString          m_fileName;
+    QCString          m_langExt;
 };
 
 #endif

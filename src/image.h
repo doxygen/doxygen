@@ -26,26 +26,25 @@
 class Image
 {
   public:
-    Image(uint32_t w,uint32_t h);
-   ~Image();
+    Image(uint32_t w, uint32_t h);
+    ~Image();
     NON_COPYABLE(Image)
 
-    void setPixel(uint32_t x,uint32_t y,uint8_t val);
-    uint8_t getPixel(uint32_t x,uint32_t y) const;
-    void writeChar(uint32_t x,uint32_t y,char c,uint8_t fg);
-    void writeString(uint32_t x,uint32_t y,const QCString &s,uint8_t fg);
-    void drawHorzLine(uint32_t y,uint32_t xs,uint32_t xe,uint8_t colIndex,uint32_t mask);
-    void drawHorzArrow(uint32_t y,uint32_t xs,uint32_t xe,uint8_t colIndex,uint32_t mask);
-    void drawVertLine(uint32_t x,uint32_t ys,uint32_t ye,uint8_t colIndex,uint32_t mask);
-    void drawVertArrow(uint32_t x,uint32_t ys,uint32_t ye,uint8_t colIndex,uint32_t mask);
-    void drawRect(uint32_t x,uint32_t y,uint32_t width,uint32_t height,uint8_t colIndex,uint32_t mask);
-    void fillRect(uint32_t x,uint32_t y,uint32_t width,uint32_t height,uint8_t colIndex,uint32_t mask);
-    bool save(const QCString &fileName);
+    void            setPixel(uint32_t x, uint32_t y, uint8_t val);
+    uint8_t         getPixel(uint32_t x, uint32_t y) const;
+    void            writeChar(uint32_t x, uint32_t y, char c, uint8_t fg);
+    void            writeString(uint32_t x, uint32_t y, const QCString &s, uint8_t fg);
+    void            drawHorzLine(uint32_t y, uint32_t xs, uint32_t xe, uint8_t colIndex, uint32_t mask);
+    void            drawHorzArrow(uint32_t y, uint32_t xs, uint32_t xe, uint8_t colIndex, uint32_t mask);
+    void            drawVertLine(uint32_t x, uint32_t ys, uint32_t ye, uint8_t colIndex, uint32_t mask);
+    void            drawVertArrow(uint32_t x, uint32_t ys, uint32_t ye, uint8_t colIndex, uint32_t mask);
+    void            drawRect(uint32_t x, uint32_t y, uint32_t width, uint32_t height, uint8_t colIndex, uint32_t mask);
+    void            fillRect(uint32_t x, uint32_t y, uint32_t width, uint32_t height, uint8_t colIndex, uint32_t mask);
+    bool            save(const QCString &fileName);
     friend uint32_t stringLength(const QCString &s);
-    uint32_t width() const;
-    uint32_t height() const;
+    uint32_t        width() const;
+    uint32_t        height() const;
     static uint32_t stringLength(const QCString &s);
-
   private:
     struct Private;
     std::unique_ptr<Private> p;
@@ -55,15 +54,15 @@ class Image
 class ColoredImage
 {
   public:
-    ColoredImage(uint32_t width,uint32_t height,
-           const uint8_t *greyLevels,const uint8_t *alphaLevels,
-           int saturation,int hue,int gamma);
-   ~ColoredImage();
+    ColoredImage(uint32_t width, uint32_t height,
+                 const uint8_t *greyLevels, const uint8_t *alphaLevels,
+                 int saturation, int hue, int gamma);
+    ~ColoredImage();
     NON_COPYABLE(ColoredImage)
 
-    bool save(const QCString &fileName);
-    static void hsl2rgb(double h,double s,double l,
-                        double *pRed,double *pGreen,double *pBlue);
+    bool        save(const QCString &fileName);
+    static void hsl2rgb(double h, double s, double l,
+                        double *pRed, double *pGreen, double *pBlue);
   private:
     struct Private;
     std::unique_ptr<Private> p;

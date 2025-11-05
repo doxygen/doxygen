@@ -31,9 +31,9 @@ class TextStream;
 class DocbookDocVisitor : public DocVisitor
 {
   public:
-    DocbookDocVisitor(TextStream &t,OutputCodeList &ci,const QCString &langExt);
+    DocbookDocVisitor(TextStream &t, OutputCodeList &ci, const QCString &langExt);
     //-----------------------------------------
-    template<class T>
+    template <class T>
     void visitChildren(const T &t)
     {
       for (const auto &child : t.children())
@@ -67,7 +67,7 @@ class DocbookDocVisitor : public DocVisitor
     //--------------------------------------
     void operator()(const DocAutoList &);
     void operator()(const DocAutoListItem &);
-    void operator()(const DocPara &) ;
+    void operator()(const DocPara &);
     void operator()(const DocRoot &);
     void operator()(const DocSimpleSect &);
     void operator()(const DocTitle &);
@@ -105,55 +105,54 @@ class DocbookDocVisitor : public DocVisitor
     void operator()(const DocHtmlBlockQuote &);
     void operator()(const DocVhdlFlow &);
     void operator()(const DocParBlock &);
-
   private:
     //--------------------------------------
     // helper functions
     //--------------------------------------
-    void filter(const QCString &str, const bool retainNewLine = false);
-    void startLink(const QCString &file,
-    const QCString &anchor);
-    void endLink();
-    void startMscFile(const QCString &fileName,const QCString &relPath, const QCString &width,
-                      const QCString &height, bool hasCaption,const DocNodeList &children,
-                      const QCString &srcFile, int srcLine);
-    void endMscFile(bool hasCaption);
-    void writeMscFile(const QCString &fileName, const DocVerbatim &s);
-    void startDiaFile(const QCString &fileName,const QCString &relPath, const QCString &width,
-                      const QCString &height, bool hasCaption,const DocNodeList &children,
-                      const QCString &srcFile, int srcLine);
-    void endDiaFile(bool hasCaption);
-    void writeDiaFile(const QCString &fileName, const DocVerbatim &s);
-    void startDotFile(const QCString &fileName,const QCString &relPath, const QCString &width,
-                      const QCString &height, bool hasCaption,const DocNodeList &children,
-                      const QCString &srcFile, int srcLine);
-    void endDotFile(bool hasCaption);
-    void writeDotFile(const QCString &fileName, const DocVerbatim &s);
-    void writePlantUMLFile(const QCString &fileName, const DocVerbatim &s);
-    void startPlantUmlFile(const QCString &fileName,const QCString &relPath, const QCString &width,
-                      const QCString &height, bool hasCaption,const DocNodeList &children,
-                      const QCString &srcFile, int srcLine);
-    void endPlantUmlFile(bool hasCaption);
-    void visitPreStart(TextStream &t,
-                   const DocNodeList &children,
-                   bool hasCaption,
-                   const QCString &name,
-                   const QCString &width,
-                   const QCString &height,
-                   bool inlineImage = FALSE);
-    void visitPostEnd(TextStream &t, bool hasCaption, bool inlineImage = FALSE);
-    void visitCaption(const DocNodeList &children);
+    void            filter(const QCString &str, const bool retainNewLine = false);
+    void            startLink(const QCString &file,
+                              const QCString &anchor);
+    void            endLink();
+    void            startMscFile(const QCString &fileName, const QCString &relPath, const QCString &width,
+                                 const QCString &height, bool hasCaption, const DocNodeList &children,
+                                 const QCString &srcFile, int srcLine);
+    void            endMscFile(bool hasCaption);
+    void            writeMscFile(const QCString &fileName, const DocVerbatim &s);
+    void            startDiaFile(const QCString &fileName, const QCString &relPath, const QCString &width,
+                                 const QCString &height, bool hasCaption, const DocNodeList &children,
+                                 const QCString &srcFile, int srcLine);
+    void            endDiaFile(bool hasCaption);
+    void            writeDiaFile(const QCString &fileName, const DocVerbatim &s);
+    void            startDotFile(const QCString &fileName, const QCString &relPath, const QCString &width,
+                                 const QCString &height, bool hasCaption, const DocNodeList &children,
+                                 const QCString &srcFile, int srcLine);
+    void            endDotFile(bool hasCaption);
+    void            writeDotFile(const QCString &fileName, const DocVerbatim &s);
+    void            writePlantUMLFile(const QCString &fileName, const DocVerbatim &s);
+    void            startPlantUmlFile(const QCString &fileName, const QCString &relPath, const QCString &width,
+                                      const QCString &height, bool hasCaption, const DocNodeList &children,
+                                      const QCString &srcFile, int srcLine);
+    void            endPlantUmlFile(bool hasCaption);
+    void            visitPreStart(TextStream        &t,
+                                  const DocNodeList &children,
+                                  bool               hasCaption,
+                                  const QCString    &name,
+                                  const QCString    &width,
+                                  const QCString    &height,
+                                  bool               inlineImage = FALSE);
+    void            visitPostEnd(TextStream &t, bool hasCaption, bool inlineImage = FALSE);
+    void            visitCaption(const DocNodeList &children);
     //--------------------------------------
     // state variables
     //--------------------------------------
-    TextStream &m_t;
+    TextStream     &m_t;
     OutputCodeList &m_ci;
-    bool m_insidePre = false;
-    bool m_hide = false;
-    BoolStack m_enabled;
-    QCString m_langExt;
-    int m_colCnt = 0;
-    BoolStack m_bodySet; // it is possible to have tables without a header, needs to be an array as we can have tables in tables
+    bool            m_insidePre = false;
+    bool            m_hide      = false;
+    BoolStack       m_enabled;
+    QCString        m_langExt;
+    int             m_colCnt = 0;
+    BoolStack       m_bodySet; // it is possible to have tables without a header, needs to be an array as we can have tables in tables
 };
 
 #endif

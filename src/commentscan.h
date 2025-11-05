@@ -28,8 +28,8 @@ class OutlineParserInterface;
 class GuardedSection
 {
   public:
-    GuardedSection(bool parentVisible)
-      : m_parentVisible(parentVisible) {}
+    GuardedSection(bool parentVisible) :
+        m_parentVisible(parentVisible) {}
     void setEnabled(bool enabled) { m_enabled = enabled; }
     bool isEnabled() const { return m_enabled; }
     void setEnabledFound() { m_enabledFound = true; }
@@ -37,12 +37,11 @@ class GuardedSection
     bool parentVisible() const { return m_parentVisible; }
     void setElse() { m_hasElse = true; }
     bool hasElse() const { return m_hasElse; }
-
   private:
     bool m_parentVisible;
     bool m_enabledFound = false;
-    bool m_enabled = false;
-    bool m_hasElse = false;
+    bool m_enabled      = false;
+    bool m_hasElse      = false;
 };
 
 using GuardedSectionStack = std::stack<GuardedSection>;
@@ -54,7 +53,7 @@ class CommentScanner
 {
   public:
     CommentScanner();
-   ~CommentScanner();
+    ~CommentScanner();
     NON_COPYABLE(CommentScanner)
 
     /** Invokes the comment block parser with the request to parse a
@@ -95,26 +94,25 @@ class CommentScanner
      *         needed.
      */
     bool parseCommentBlock(OutlineParserInterface *parser,
-                           Entry *curEntry,
-                           const QCString &comment,
-                           const QCString &fileName,
-                           int  &lineNr,
-                           bool isBrief,
-                           bool isJavadocStyle,
-                           bool isInbody,
-                           Protection &prot,
-                           int &position,
-                           bool &newEntryNeeded,
-                           bool markdownEnabled,
-                           GuardedSectionStack *guards
-                          );
+                           Entry                  *curEntry,
+                           const QCString         &comment,
+                           const QCString         &fileName,
+                           int                    &lineNr,
+                           bool                    isBrief,
+                           bool                    isJavadocStyle,
+                           bool                    isInbody,
+                           Protection             &prot,
+                           int                    &position,
+                           bool                   &newEntryNeeded,
+                           bool                    markdownEnabled,
+                           GuardedSectionStack    *guards);
     void initGroupInfo(Entry *entry);
-    void enterFile(const QCString &fileName,int lineNr);
-    void leaveFile(const QCString &fileName,int lineNr);
-    void enterCompound(const QCString &fileName,int line,const QCString &name);
-    void leaveCompound(const QCString &fileName,int line,const QCString &name);
-    void open(Entry *e,const QCString &fileName,int line,bool implicit=false);
-    void close(Entry *e,const QCString &fileName,int line,bool foundInline,bool implicit=false);
+    void enterFile(const QCString &fileName, int lineNr);
+    void leaveFile(const QCString &fileName, int lineNr);
+    void enterCompound(const QCString &fileName, int line, const QCString &name);
+    void leaveCompound(const QCString &fileName, int line, const QCString &name);
+    void open(Entry *e, const QCString &fileName, int line, bool implicit = false);
+    void close(Entry *e, const QCString &fileName, int line, bool foundInline, bool implicit = false);
   private:
     struct Private;
     std::unique_ptr<Private> p;

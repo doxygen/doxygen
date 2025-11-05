@@ -6,19 +6,22 @@
 #include "JavaCC.h"
 
 
-namespace vhdl {
-namespace parser {
+namespace vhdl
+{
+namespace parser
+{
 
-enum LexerErrors {
+enum LexerErrors
+{
   /**
    * Lexical error occurred.
    */
-  LEXICAL_ERROR = 0,
+  LEXICAL_ERROR         = 0,
 
   /**
    * An attempt was made to create a second instance of a  token manager.
    */
-  STATIC_LEXER_ERROR = 1,
+  STATIC_LEXER_ERROR    = 1,
 
   /**
    * Tried to change to an invalid lexical state.
@@ -28,22 +31,23 @@ enum LexerErrors {
   /**
    * Detected (and bailed out of) an infinite loop in the token manager.
    */
-  LOOP_DETECTED = 3,
+  LOOP_DETECTED         = 3,
 };
 
-class TokenMgrError {
-public:
-  /*
+class TokenMgrError
+{
+  public:
+    /*
    * Ordinals for various reasons why an Error of this type can be thrown.
    */
 
-  /**
+    /**
    * Indicates the reason why the exception is thrown. It will have
    * one of the above 4 values.
    */
-  int errorCode = -1;
+    int      errorCode = -1;
 
-  /**
+    /**
    * Returns a detailed message for the Error when it is thrown by the
    * token manager to indicate a lexical error.
    * Parameters :
@@ -55,12 +59,11 @@ public:
    *    curchar     : the offending character
    * Note: You can customize the lexical error message by modifying this method.
    */
-    JJString LexicalError(bool EOFSeen, int lexState, int errorLine, int errorColumn, const JJString& errorAfter, JJChar curChar);
+    JJString LexicalError(bool EOFSeen, int lexState, int errorLine, int errorColumn, const JJString &errorAfter, JJChar curChar);
+  private:
+    JJString message;
 
-private:
-   JJString message;
-
-  /**
+    /**
    * You can also modify the body of this method to customize your error messages.
    * For example, cases like LOOP_DETECTED and INVALID_LEXICAL_STATE are not
    * of end-users concern, so you can return something like :
@@ -69,25 +72,25 @@ private:
    *
    * from this method for such cases in the release version of your parser.
    */
-public:
-  JJString getMessage() ;
+  public:
+    JJString getMessage();
 
-  /*
+    /*
    * Constructors of various flavors follow.
    */
 
-  /** No arg constructor. */
-  TokenMgrError() ;
+    /** No arg constructor. */
+    TokenMgrError();
 
-  /** Constructor with message and reason. */
-  TokenMgrError(const JJString& message, int reason) ;
+    /** Constructor with message and reason. */
+    TokenMgrError(const JJString &message, int reason);
 
-  /** Full Constructor. */
-  TokenMgrError(bool EOFSeen, int lexState, int errorLine, int errorColumn, const JJString& errorAfter, JJChar curChar, int reason) ;
+    /** Full Constructor. */
+    TokenMgrError(bool EOFSeen, int lexState, int errorLine, int errorColumn, const JJString &errorAfter, JJChar curChar, int reason);
 };
 
-}
-}
+} // namespace parser
+} // namespace vhdl
 
 #endif
 /* JavaCC - OriginalChecksum=1d70bcaf73c58a19d4427d29908696e5 (do not edit this line) */

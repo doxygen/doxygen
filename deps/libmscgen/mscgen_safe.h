@@ -44,13 +44,14 @@
  *****************************************************************************/
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
-void *realloc_s(void *ptr, size_t size);
-void *malloc_s(size_t size);
-void *zalloc_s(size_t size);
-char *strdup_s(const char *s);
-const char *mscgen_getenv_s(const char *name);
+  void       *realloc_s(void *ptr, size_t size);
+  void       *malloc_s(size_t size);
+  void       *zalloc_s(size_t size);
+  char       *strdup_s(const char *s);
+  const char *mscgen_getenv_s(const char *name);
 #ifdef __cplusplus
 }
 #endif

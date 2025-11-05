@@ -20,10 +20,12 @@ class HelpLabel : public QLabel
 {
     Q_OBJECT
   public:
-    HelpLabel(const QString &text) : QLabel(text)
-    { setContextMenuPolicy(Qt::CustomContextMenu);
-      connect(this,SIGNAL(customContextMenuRequested(const QPoint&)),
-              this,SLOT(showMenu(const QPoint&)));
+    HelpLabel(const QString &text) :
+        QLabel(text)
+    {
+      setContextMenuPolicy(Qt::CustomContextMenu);
+      connect(this, SIGNAL(customContextMenuRequested(const QPoint &)),
+              this, SLOT(showMenu(const QPoint &)));
     }
   signals:
     void enter();
@@ -31,9 +33,9 @@ class HelpLabel : public QLabel
   private slots:
     void showMenu(const QPoint &p)
     {
-      QMenu menu(this);
+      QMenu    menu(this);
       QAction *a = menu.addAction(tr("Reset to default"));
-      if (menu.exec(mapToGlobal(p))==a)
+      if (menu.exec(mapToGlobal(p)) == a)
       {
         reset();
       }
@@ -41,11 +43,15 @@ class HelpLabel : public QLabel
   protected:
     void enterEvent(
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-        QEvent * event
+      QEvent *event
 #else
-        QEnterEvent * event
+      QEnterEvent *event
 #endif
-    ) { enter(); QLabel::enterEvent(event); }
+    )
+    {
+      enter();
+      QLabel::enterEvent(event);
+    }
 };
 
 #endif

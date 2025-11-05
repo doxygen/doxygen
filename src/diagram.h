@@ -31,16 +31,15 @@ class ClassDiagram
 {
   public:
     ClassDiagram(const ClassDef *root);
-   ~ClassDiagram();
+    ~ClassDiagram();
     NON_COPYABLE(ClassDiagram)
-    void writeFigure(TextStream &t,const QCString &path,
+    void writeFigure(TextStream &t, const QCString &path,
                      const QCString &file) const;
-    void writeImage(TextStream &t,const QCString &path,const QCString &relPath,
-                     const QCString &file,bool generateMap=true) const;
+    void writeImage(TextStream &t, const QCString &path, const QCString &relPath,
+                    const QCString &file, bool generateMap = true) const;
   private:
     struct Private;
     std::unique_ptr<Private> p;
 };
 
 #endif
-
