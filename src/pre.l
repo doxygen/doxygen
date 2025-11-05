@@ -3052,7 +3052,8 @@ static bool expandExpression(yyscan_t yyscanner,QCString &expr,QCString *rest,in
           // expr='( something __VA_OPT__(value) )' or '( something __VA_OPT__(value) something_else )'
           static const reg::Ex re(R"(__VA_OPT__\((.*)\)(.*)\))");
           reg::Match m;
-          if (reg::search(expr.mid(p).str(),m,re))
+          std::string s = expr.mid(p).str();
+          if (reg::search(s,m,re))
           {
             assert(m.size()==3);
             std::string value     = m[1].str();

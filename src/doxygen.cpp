@@ -10180,7 +10180,7 @@ static void runQHelpGenerator()
       static const reg::Ex versionReg(R"(Qt (\d+)\.(\d+)\.(\d+))");
       reg::Match match;
       std::string s = inBuf;
-      if (reg::search(inBuf,match,versionReg))
+      if (reg::search(s,match,versionReg))
       {
         qtVersion = 10000*QCString(match[1].str()).toInt() +
                       100*QCString(match[2].str()).toInt() +
