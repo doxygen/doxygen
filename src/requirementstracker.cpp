@@ -16,6 +16,7 @@
 #include "config.h"
 #include "debug.h"
 #include "doxygen.h"
+#include "entry.h"
 #include "filedef.h"
 #include "filename.h"
 #include "fileinfo.h"
@@ -32,6 +33,9 @@
 #include "htmlgen.h"
 #include "latexgen.h"
 #include "rtfgen.h"
+#include "trace.h"
+#include "classdef.h"
+#include "namespacedef.h"
 
 namespace {
 // Context structure for XML parsing
@@ -189,12 +193,107 @@ bool RequirementsTracker::hasRequirements() const {
 void RequirementsTracker::reset() {
   m_initialized = false;
   m_collections.clear();
+  m_entryRequirements.clear();
 }
 
-// Extract prefix from requirement ID (e.g., "A024_SRS_123" -> "A024_SRS_")
+void RequirementsTracker::addDocumentationSections() {
+  AUTO_TRACE();
+
+  // For each entry that has requirements annotations, find its Definition
+  // and add documentation sections
+  for (const auto &info : m_entryRequirements) {
+    if (!info.entry) continue;
+
+    // Try to find the Definition for this Entry
+    // This is tricky because we only have the Entry, not the Definition
+    // We can use the qualified name to try to look it up
+    QCString qualName = getQualifiedNameForEntry(info.entry.get());
+
+    if (qualName.isEmpty()) continue;
+
+    // Try to find the definition in various places
+    Definition *def = nullptr;
+
+    // Try as a class
+    const ClassDef *cd = getClass(qualName);
+    if (cd) {
+      def = const_cast<ClassDef*>(cd);
+    } else {
+      // Try as a namespace
+      const NamespaceDef *nd = Doxygen::namespaceLinkedMap->find(qualName);
+      if (nd) {
+        def = const_cast<NamespaceDef*>(nd);
+      } else {
+        // Try as a member - need to split into scope and member name
+        int i = qualName.findRev("::");
+        if (i != -1) {
+          QCString scope = qualName.left(i);
+          QCString member = qualName.mid(i+2);
+
+          // Try to find the scope first
+          cd = getClass(scope);
+          if (cd) {
+            // Look for the member in the class
+            const MemberDef *md = cd->getMemberByName(member);
+            if (md) {
+              def = const_cast<MemberDef*>(md);
+            }
+          }
+        }
+      }
+    }
+
+    if (!def) continue;  // Couldn't find the definition
+
+    // Build the documentation sections
+    QCString docSection;
+
+    if (!info.satisfies.empty()) {
+      docSection += "\n\n@par Satisfies\n";
+      for (const auto &reqId : info.satisfies) {
+        // Find the URL for this requirement
+        RequirementsCollection *collection = findCollectionByPrefix(reqId);
+        if (collection) {
+          auto it = collection->requirements.find(reqId);
+          if (it != collection->requirements.end() && !it->second.url.isEmpty()) {
+            docSection += "- [" + reqId + "](" + it->second.url + ")\n";
+          } else {
+            docSection += "- " + reqId + "\n";
+          }
+        }
+      }
+    }
+
+    if (!info.verifies.empty()) {
+      docSection += "\n\n@par Verifies\n";
+      for (const auto &reqId : info.verifies) {
+        // Find the URL for this requirement
+        RequirementsCollection *collection = findCollectionByPrefix(reqId);
+        if (collection) {
+          auto it = collection->requirements.find(reqId);
+          if (it != collection->requirements.end() && !it->second.url.isEmpty()) {
+            docSection += "- [" + reqId + "](" + it->second.url + ")\n";
+          } else {
+            docSection += "- " + reqId + "\n";
+          }
+        }
+      }
+    }
+
+    // Add the documentation section to the Definition
+    if (!docSection.isEmpty()) {
+      DefinitionMutable *defm = toDefinitionMutable(def);
+      if (defm) {
+        defm->setInbodyDocumentation(docSection, info.entry->docFile, info.entry->docLine);
+      }
+    }
+  }
+}
+
+// Extract prefix from requirement ID (e.g., "SRS_123" -> "SRS_")
 QCString RequirementsTracker::extractPrefix(const QCString &requirementId) const {
   // Match pattern: (PREFIX)(NUMBER) where PREFIX can be zero or more characters
-  // Examples: SRS_123 -> "A0123_SRS_", REQ123 -> "REQ", ABC-456 -> "ABC-", "123" -> ""
+  // Examples: SRS_123 -> "SRS_", REQ123 -> "REQ", ABC-456 -> "ABC-", "123" -> ""
   // Use non-greedy match (.*?) to get minimal prefix followed by digits at the end (\\d+$)
   std::regex pattern("^(.*?)(\\d+)$");
   std::string id_str = requirementId.str();
@@ -373,7 +472,7 @@ void RequirementsTracker::parseRequirementsTagFile(RequirementsCollection &colle
   // Store the page filename from the tag file
   collection.pageFilename = context.pageFilename;
 
-  // Create page name like "traceability_srs_a024_017322"
+  // Create page name like "traceability_srs_123456"
   QCString pageName = "traceability_" + collection.displayTitle.lower();
   // Sanitize: replace spaces and problematic characters with underscores
   pageName = substitute(pageName, ' ', '_');
@@ -414,7 +513,7 @@ void RequirementsTracker::parseRequirementsFile(RequirementsCollection &collecti
   QCString pageFileName = "md_" + baseName;
 
   // Pattern to match @anchor followed by requirement ID
-  // Examples: @anchor A024_SRS_123, @anchor REQ_456
+  // Examples: @anchor SRS_123, @anchor REQ_456
   std::regex anchorPattern(R"(@anchor\s+([A-Za-z0-9_-]+))");
 
   // Extract the page title from markdown content
@@ -663,6 +762,186 @@ void RequirementsTracker::processGeneratedDoxFiles() {
 
   // Don't clear m_generatedDoxFiles here - they will be cleaned up in finalize()
   m_generatedPageNames.clear();
+}
+
+// Helper function to build a qualified name from an Entry by walking up the tree
+QCString RequirementsTracker::getQualifiedNameForEntry(const Entry *entry) const {
+  if (!entry) return QCString();
+
+  QCString result;
+
+  // If entry has an 'inside' field, it provides the containing scope (namespace or class)
+  // The 'name' field then contains the member name, possibly with immediate parent class
+  if (!entry->inside.isEmpty()) {
+    // inside gives us the enclosing scope (e.g., "outer::inner::")
+    // name might be "ClassName::memberName" or just "memberName"
+    // However, for CLASS entries, name can be fully qualified (e.g., "outer::inner::ClassName")
+    // which duplicates the inside prefix. Strip it if present.
+    result = entry->inside;
+    QCString nameToAdd = entry->name;
+
+    // Strip the inside prefix from name if name starts with it
+    QCString insidePrefix = entry->inside;
+    if (insidePrefix.endsWith("::")) {
+      insidePrefix = insidePrefix.left(insidePrefix.length() - 2);
+    }
+    if (nameToAdd.startsWith(insidePrefix + "::")) {
+      nameToAdd = nameToAdd.mid(insidePrefix.length() + 2);
+    }
+
+    if (!result.endsWith("::")) {
+      result += "::";
+    }
+    result += nameToAdd;
+    return result;
+  }
+
+  // No 'inside' field - build qualified name by walking up to find the enclosing scope
+  // Note: Doxygen may store nested namespace declarations with qualified names
+  // (e.g., "namespace outer::inner" creates an Entry with name="outer::inner")
+  // In such cases, we should use that name directly and stop, as it already contains
+  // the full scope path. This works across languages (C++ uses ::, Java/C# use ., etc.)
+
+  QCString scopeName;
+  const Entry *current = entry->parent();
+
+  // Look for the first parent that is a scope (class or namespace)
+  while (current) {
+    if (!current->name.isEmpty() &&
+        (current->section.isClass() ||
+         current->section.isNamespace())) {
+      // Found the enclosing scope - use its name
+      // If it contains a scope separator (:: or .), it's already a full path
+      scopeName = current->name;
+      break;
+    }
+    current = current->parent();
+  }
+
+  // Build the result from the scope name
+  if (!scopeName.isEmpty()) {
+    result = scopeName;
+    // Don't add separator here - it will be added later when appending entry->name
+  }
+
+  // Finally add the entry's own name if it has one and we built a scope
+  if (!entry->name.isEmpty() &&
+      (entry->section.isFunction() ||
+       entry->section.isVariable() ||
+       entry->section.isTypedef() ||
+       entry->section.isEnum())) {
+    if (!result.isEmpty() && !result.endsWith("::") && !result.endsWith(".")) {
+      result += "::";  // Default to :: for C++
+    }
+    result += entry->name;
+  } else if (!entry->name.isEmpty() && result.isEmpty()) {
+    // If no scope was built but entry has a name, use it
+    result = entry->name;
+  }
+
+
+  return result;
+}
+
+void RequirementsTracker::collectFromEntries(const std::shared_ptr<Entry> &root) {
+  AUTO_TRACE();
+
+  if (!root) return;
+
+  // Check if this entry has requirements annotations
+  bool hasSatisfies = !root->satisfies.empty();
+  bool hasVerifies = !root->verifies.empty();
+
+  // Only process entries that represent documentable entities
+  // (not intermediate nodes or statements)
+  bool isDocumentable = !root->name.isEmpty() &&
+                         (root->section.isClass() ||
+                          root->section.isNamespace() ||
+                          root->section.isFunction() ||
+                          root->section.isVariable() ||
+                          root->section.isTypedef() ||
+                          root->section.isEnum() ||
+                          root->section.isConcept());
+
+  if ((hasSatisfies || hasVerifies) && isDocumentable) {
+    // Add documentation sections to the Entry so they appear in the generated docs
+    QCString docSection;
+
+    if (hasSatisfies) {
+      docSection += "\n\n@par Satisfies\n";
+      for (const auto &reqId : root->satisfies) {
+        // Use Doxygen's \ref command to create cross-references to requirement anchors
+        // This works across all output formats (HTML, LaTeX, RTF, etc.)
+        docSection += "- \\ref " + reqId + "\n";
+      }
+    }
+
+    if (hasVerifies) {
+      docSection += "\n\n@par Verifies\n";
+      for (const auto &reqId : root->verifies) {
+        // Use Doxygen's \ref command to create cross-references to requirement anchors
+        docSection += "- \\ref " + reqId + "\n";
+      }
+    }
+
+    // Add the documentation section to the Entry
+    if (!docSection.isEmpty()) {
+      root->doc += docSection;
+    }
+  }
+
+  // Process satisfies and verifies from this entry for the traceability table
+  for (const auto &reqId : root->satisfies) {
+    if (!reqId.isEmpty()) {
+      // Find which collection this requirement belongs to
+      RequirementsCollection* collection = findCollectionByPrefix(reqId);
+      if (collection) {
+        // Create a reference string for this code element using qualified name
+        QCString reference = getQualifiedNameForEntry(root.get());
+
+        // Fallback if we couldn't build a qualified name
+        if (reference.isEmpty()) {
+          if (!root->name.isEmpty()) {
+            reference = root->name;
+          } else if (!root->brief.isEmpty()) {
+            reference = root->brief.left(50); // Truncate long briefs
+          } else {
+            reference = root->fileName + ":" + QCString().setNum(root->startLine);
+          }
+        }
+
+        addSatisfiedBy(reqId, reference);
+      }
+    }
+  }
+
+  for (const auto &reqId : root->verifies) {
+    if (!reqId.isEmpty()) {
+      RequirementsCollection* collection = findCollectionByPrefix(reqId);
+      if (collection) {
+        // Create a reference string for this code element using qualified name
+        QCString reference = getQualifiedNameForEntry(root.get());
+
+        // Fallback if we couldn't build a qualified name
+        if (reference.isEmpty()) {
+          if (!root->name.isEmpty()) {
+            reference = root->name;
+          } else if (!root->brief.isEmpty()) {
+            reference = root->brief.left(50);
+          } else {
+            reference = root->fileName + ":" + QCString().setNum(root->startLine);
+          }
+        }
+
+        addVerifiedBy(reqId, reference);
+      }
+    }
+  }
+
+  // Recursively process all child entries
+  for (const auto &child : root->children()) {
+    collectFromEntries(child);
+  }
 }
 
 void RequirementsTracker::finalize() {

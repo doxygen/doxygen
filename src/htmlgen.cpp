@@ -48,6 +48,7 @@
 #include "resourcemgr.h"
 #include "tooltip.h"
 #include "growbuf.h"
+#include "requirementstracker.h"
 #include "fileinfo.h"
 #include "dir.h"
 #include "utf8.h"
@@ -2826,6 +2827,8 @@ static bool quickLinkVisible(LayoutNavEntry::Kind kind)
     case LayoutNavEntry::ExceptionList:      return index.numAnnotatedExceptions()>0;
     case LayoutNavEntry::ExceptionIndex:     return index.numAnnotatedExceptions()>0;
     case LayoutNavEntry::ExceptionHierarchy: return index.numHierarchyExceptions()>0;
+    case LayoutNavEntry::Requirements:       return RequirementsTracker::instance().hasRequirements();
+    case LayoutNavEntry::Traceability:       return RequirementsTracker::instance().hasRequirements();
     case LayoutNavEntry::None:             // should never happen, means not properly initialized
       assert(kind != LayoutNavEntry::None);
       return FALSE;
@@ -3001,6 +3004,8 @@ static void writeDefaultQuickLinks(TextStream &t,
                                                highlightParent = true; break;
     case HighlightedItem::FileVisible:         kind = LayoutNavEntry::FileList;         altKind = LayoutNavEntry::Files;
                                                highlightParent = true; break;
+    case HighlightedItem::Requirements:        kind = LayoutNavEntry::Requirements;     break;
+    case HighlightedItem::Traceability:        kind = LayoutNavEntry::Traceability;     break;
     case HighlightedItem::None:   break;
     case HighlightedItem::Search: break;
   }

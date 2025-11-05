@@ -233,6 +233,8 @@ class Entry
     QCString    metaData;     //!< Slice metadata
     QCString    req;          //!< C++20 requires clause
     std::vector<std::string> qualifiers;  //!< qualifiers specified with the qualifier command
+    std::vector<QCString> satisfies; //!< list of requirement IDs this code satisfies
+    std::vector<QCString> verifies;  //!< list of requirement IDs this code verifies
 
     /// return the command name used to define GROUPDOC_SEC
     const char *groupDocCmd() const

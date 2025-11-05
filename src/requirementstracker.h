@@ -14,10 +14,12 @@
 #include "qcstring.h"
 
 #include <map>
+#include <memory>
 #include <unordered_map>
 #include <vector>
 
 class Definition;
+class Entry;
 class MemberDef;
 
 class RequirementsTracker {
@@ -42,9 +44,18 @@ public:
     std::map<QCString, Requirement> requirements; //!< Map of requirement ID -> Requirement (for quick lookup)
   };
 
+  // Stores information about an Entry that has satisfies/verifies annotations
+  struct EntryRequirementInfo {
+    std::shared_ptr<Entry> entry;     //!< The entry with requirements
+    std::vector<QCString> satisfies;  //!< Requirements it satisfies
+    std::vector<QCString> verifies;   //!< Requirements it verifies
+  };
+
   static RequirementsTracker &instance();
 
   void initialize();
+  void collectFromEntries(const std::shared_ptr<Entry> &root);
+  void addDocumentationSections();  // Add sections to Definition objects
   void generateTraceabilityPages();
   void processGeneratedDoxFiles();
   void finalize();
@@ -71,11 +82,13 @@ private:
   void parseRequirementsFile(RequirementsCollection &collection, const QCString &absFilePath, const QCString &originalPath);
   QCString extractPrefix(const QCString &requirementId) const;
   void generateTraceabilityPage(const RequirementsCollection &collection);
+  QCString getQualifiedNameForEntry(const Entry *entry) const;
 
   bool m_initialized = false;
   std::vector<RequirementsCollection> m_collections; //!< All requirement collections
   std::vector<std::string> m_generatedDoxFiles; //!< Generated .dox files to be processed
   std::vector<std::string> m_generatedPageNames; //!< Names of generated pages to process
+  std::vector<EntryRequirementInfo> m_entryRequirements; //!< Entries with requirement annotations
 };
 
 #endif

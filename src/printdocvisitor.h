@@ -370,6 +370,8 @@ class PrintDocVisitor
 	case DocSimpleSect::Important: printf("important"); break;
 	case DocSimpleSect::User: printf("user"); break;
 	case DocSimpleSect::Rcs: printf("rcs"); break;
+	case DocSimpleSect::Satisfies: printf("satisfies"); break;
+	case DocSimpleSect::Verifies: printf("verifies"); break;
 	case DocSimpleSect::Unknown: printf("unknown"); break;
       }
       printf(">\n");

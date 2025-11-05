@@ -12795,6 +12795,13 @@ void parseInput()
   buildFileList(root.get());
   g_s.end();
 
+  // Collect requirements traceability BEFORE any documentation is processed.
+  // This allows us to add sections to Entry->doc which will then be transferred to Definitions.
+  // This must be before buildClassList() transfers Entry->doc to ClassDef.
+  g_s.begin("Collecting requirements traceability information...\n");
+  RequirementsTracker::instance().collectFromEntries(root);
+  g_s.end();
+
   g_s.begin("Building class list...\n");
   buildClassList(root.get());
   g_s.end();
