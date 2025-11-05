@@ -81,7 +81,7 @@ static bool elemIsVisible(const XMLHandlers::Attributes &attrib,bool defVal=TRUE
   QCString visible = XMLHandlers::value(attrib,"visible");
   //printf("visible_attribute=%s\n",qPrint(visible));
   if (visible.isEmpty()) return defVal;
-  if (visible.at(0)=='$' && visible.length()>1)
+  if ((visible.length() > 1) && (visible.at(0) == '$'))
   {
     QCString id = visible.mid(1);
     const ConfigValues::Info *opt = ConfigValues::instance().get(id);
