@@ -2634,6 +2634,38 @@ static void skipCommentMacroName(yyscan_t yyscanner, const QCString &expr, QCStr
   } while (changed);
 }
 
+// Expand C++20's __VA_OPT__(x) to either x if hasOptionalArgs==true or to the empty string if false
+static QCString expandVAOpt(const QCString &vaStr,bool hasOptionalArgs)
+{
+  QCString result;
+  int vo=0, vp=0;
+  result.clear();
+  int vl = static_cast<int>(vaStr.length());
+  while ((vo = vaStr.find("__VA_OPT__(",vp))!=-1)
+  {
+    result+=vaStr.left(vo);
+    int ve=vo+11; // skip over '__VA_OPT__(' part
+    int bc=1;
+    while (bc>0 && ve<vl)
+    {
+      if (vaStr[ve]==')') bc--;
+      else if (vaStr[ve]=='(') bc++;
+      ve++;
+    }
+    // ve points to end of __VA_OPT__(....)
+    if (bc==0 && hasOptionalArgs)
+    {
+      QCString voStr = vaStr.mid(vo+11,ve-vo-12);
+      //printf("vo=%d ve=%d voStr=%s\n",vo,ve,qPrint(voStr));
+      result+=voStr; // take 'x' from __VA_OPT__(x)
+    }
+    vp=ve;
+  }
+  result+=vaStr.mid(vp);
+  //printf("vaStr='%s'\n   -> '%s'\n",qPrint(vaStr),qPrint(result));
+  return result;
+}
+
 /*! replaces the function macro \a def whose argument list starts at
  * \a pos in expression \a expr.
  * Notice that this routine may scan beyond the \a expr string if needed.
@@ -2643,6 +2675,7 @@ static void skipCommentMacroName(yyscan_t yyscanner, const QCString &expr, QCStr
  */
 static bool replaceFunctionMacro(yyscan_t yyscanner,const QCString &expr,QCString *rest,int pos,int &len,const Define *def,QCString &result,int level)
 {
+  //YY_EXTRA_TYPE state = preYYget_extra(yyscanner);
   //printf(">replaceFunctionMacro(expr='%s',rest='%s',pos=%d,def='%s') level=%zu\n",qPrint(expr),rest ? qPrint(*rest) : 0,pos,qPrint(def->name),state->levelGuard.size());
   uint32_t j=pos;
   len=0;
@@ -2678,7 +2711,7 @@ static bool replaceFunctionMacro(yyscan_t yyscanner,const QCString &expr,QCStrin
   else
   {
     while (!done && (argCount<def->nargs || def->varArgs) &&
-        ((cc=getNextChar(yyscanner,expr,rest,j))!=EOF && cc!=0)
+           ((cc=getNextChar(yyscanner,expr,rest,j))!=EOF && cc!=0)
           )
     {
       char c=(char)cc;
@@ -2708,7 +2741,9 @@ static bool replaceFunctionMacro(yyscan_t yyscanner,const QCString &expr,QCStrin
             arg+=c;
           }
           else
+          {
             arg+=c;
+          }
         }
       }
       else if (c==')' || c==',') // last or next argument found
@@ -2796,7 +2831,8 @@ static bool replaceFunctionMacro(yyscan_t yyscanner,const QCString &expr,QCStrin
     uint32_t k=0;
     // substitution of all formal arguments
     QCString resExpr;
-    const QCString d=def->definition.stripWhiteSpace();
+    QCString d=def->definition.stripWhiteSpace();
+    if (def->varArgs) d = expandVAOpt(d,argCount!=def->nargs-1);
     //printf("Macro definition: '%s'\n",qPrint(d));
     bool inString=FALSE;
     while (k<d.length())
@@ -3047,29 +3083,6 @@ static bool expandExpression(yyscan_t yyscanner,QCString &expr,QCString *rest,in
           //printf(" <<<< call replaceFunctionMacro: replaced=%d\n",replaced);
           len+=l;
         }
-        else if (macroName=="__VA_OPT__")
-        {
-          // expr='( something __VA_OPT__(value) )' or '( something __VA_OPT__(value) something_else )'
-          static const reg::Ex re(R"(__VA_OPT__\((.*)\)(.*)\))");
-          reg::Match m;
-          std::string s = expr.mid(p).str();
-          if (reg::search(s,m,re))
-          {
-            assert(m.size()==3);
-            std::string value     = m[1].str();
-            std::string remainder = m[2].str();
-            //printf("value='%s' remainder='%s'\n",qPrint(value),qPrint(remainder));
-            expMacro = stripWhiteSpace(remainder).empty() ? std::string() : value;
-            expanded=true;
-            replaced=true;
-            len+=l+2+m[1].str().length();
-          }
-          else
-          {
-            //printf("no match for '%s'\n",qPrint(expr));
-          }
-        }
-        //printf(" macroName='%s' expMacro='%s' replaced=%d expanded=%d\n",qPrint(macroName),qPrint(expMacro),replaced,expanded);
 
         if (replaced) // expand the macro and rescan the expression
         {
