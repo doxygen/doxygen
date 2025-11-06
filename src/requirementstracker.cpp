@@ -36,6 +36,7 @@
 #include "trace.h"
 #include "classdef.h"
 #include "namespacedef.h"
+#include "language.h"
 
 namespace {
 // Context structure for XML parsing
@@ -140,10 +141,6 @@ void RequirementsTracker::initialize() {
 
       QCString spec(entry.c_str());
 
-      // Only process tag files that contain "requirements" in their name
-      if (!spec.contains("requirements")) {
-        continue;
-      }
       if (!processedPaths.insert(entry).second) {
         continue; // avoid parsing the same specification twice
       }
@@ -249,7 +246,7 @@ void RequirementsTracker::addDocumentationSections() {
     QCString docSection;
 
     if (!info.satisfies.empty()) {
-      docSection += "\n\n@par Satisfies\n";
+      docSection += "\n\n@par " + theTranslator->trSatisfies() + "\n";
       for (const auto &reqId : info.satisfies) {
         // Find the URL for this requirement
         RequirementsCollection *collection = findCollectionByPrefix(reqId);
@@ -265,7 +262,7 @@ void RequirementsTracker::addDocumentationSections() {
     }
 
     if (!info.verifies.empty()) {
-      docSection += "\n\n@par Verifies\n";
+      docSection += "\n\n@par " + theTranslator->trVerifies() + "\n";
       for (const auto &reqId : info.verifies) {
         // Find the URL for this requirement
         RequirementsCollection *collection = findCollectionByPrefix(reqId);
@@ -509,12 +506,22 @@ void RequirementsTracker::parseRequirementsFile(RequirementsCollection &collecti
   // Apply the same escaping that Doxygen uses (allowDots=false, allowUnderscore=false)
   QCString baseName = escapeCharsInString(baseFn, false, false);
 
-  // Generate page filename with "md_" prefix
-  QCString pageFileName = "md_" + baseName;
+  // Generate page filename based on file extension
+  // Only markdown files (.md, .markdown) get the "md_" prefix
+  // Other Doxygen document formats (.dox, .txt, .doc) use the base name directly
+  QCString pageFileName;
+  QCString extension = originalPath.lower();
+  if (extension.endsWith(".md") || extension.endsWith(".markdown")) {
+    pageFileName = "md_" + baseName;
+  } else {
+    // For .dox, .txt, .doc and other formats, no prefix is added
+    pageFileName = baseName;
+  }
 
-  // Pattern to match @anchor followed by requirement ID
-  // Examples: @anchor SRS_123, @anchor REQ_456
-  std::regex anchorPattern(R"(@anchor\s+([A-Za-z0-9_-]+))");
+  // Pattern to match @anchor or \anchor followed by requirement ID
+  // Examples: @anchor SRS_123, \anchor REQ_456
+  // Doxygen supports both @ (Javadoc style) and \ (Qt style) command prefixes
+  std::regex anchorPattern(R"([@\\]anchor\s+([A-Za-z0-9_-]+))");
 
   // Extract the page title from markdown content
   // Look for either ATX-style (# Title) or Setext-style (Title\n===)
@@ -634,16 +641,13 @@ void RequirementsTracker::generateTraceabilityPages() {
 
 void RequirementsTracker::generateTraceabilityPage(const RequirementsCollection &collection) {
   // Generate page name based on collection
-  QCString fileName = "traceability_" + collection.displayTitle.lower();
-  fileName = substitute(fileName, " ", "_");
-  fileName = substitute(fileName, "-", "_");
+  QCString pageName = "traceability_" + collection.displayTitle.lower();
+  pageName = substitute(pageName, " ", "_");
+  pageName = substitute(pageName, "-", "_");
 
-  // Create .dox file in current directory where Doxygen can find it
-  QCString doxPath = fileName + ".dox";
-
-  std::ofstream doxFile(doxPath.str());
-  if (!doxFile.is_open()) {
-    printf("ERROR: Could not create .dox file: %s\n", qPrint(doxPath));
+  // Check if page already exists
+  if (Doxygen::pageLinkedMap->find(pageName)) {
+    msg("Traceability page '{}' already exists, skipping.\n", pageName);
     return;
   }
 
@@ -655,113 +659,86 @@ void RequirementsTracker::generateTraceabilityPage(const RequirementsCollection 
     if (!req.verifiedBy.empty()) withVerifiedBy++;
   }
 
-  // Write Doxygen document syntax
-  doxFile << "/**\n";
-  doxFile << " * \\page " << fileName << " Traceability: " << collection.displayTitle << "\n";
-  doxFile << " *\n";
+  // Build documentation string in memory using HTML table syntax
+  // Doxygen will convert this properly to all output formats (HTML, LaTeX, RTF, etc.)
+  QCString docContent;
 
-  // Write summary statistics
-  doxFile << " * " << collection.requirements.size() << " requirements<br/>\n";
-  doxFile << " * " << withSatisfiedBy << " Satisfied (";
-  doxFile << std::fixed << std::setprecision(1)
-          << (100.0 * withSatisfiedBy / collection.requirements.size()) << "%)<br/>\n";
-  doxFile << " * " << withVerifiedBy << " Verified (";
-  doxFile << std::fixed << std::setprecision(1)
-          << (100.0 * withVerifiedBy / collection.requirements.size()) << "%)\n";
-  doxFile << " *\n";
+  // Write summary statistics using translators for internationalization
+  size_t totalReqs = collection.requirements.size();
+  docContent += QCString().setNum((int)totalReqs) + " " + theTranslator->trRequirements() + "\n\n";
 
-  // Create table using Doxygen markdown syntax
-  doxFile << " * | Requirement ID | Satisfied By | Verified By |\n";
-  doxFile << " * |----------------|--------------|-------------|\n";
+  double satisfiedPct = 100.0 * withSatisfiedBy / (double)totalReqs;
+  char satisfiedBuf[32];
+  snprintf(satisfiedBuf, sizeof(satisfiedBuf), "%.1f", satisfiedPct);
+  docContent += QCString().setNum(withSatisfiedBy) + " " + theTranslator->trSatisfied() +
+                " (" + satisfiedBuf + "%)\n\n";
+
+  double verifiedPct = 100.0 * withVerifiedBy / (double)totalReqs;
+  char verifiedBuf[32];
+  snprintf(verifiedBuf, sizeof(verifiedBuf), "%.1f", verifiedPct);
+  docContent += QCString().setNum(withVerifiedBy) + " " + theTranslator->trVerified() +
+                " (" + verifiedBuf + "%)\n\n";
+
+  // Create table using HTML syntax (Doxygen converts this to all output formats)
+  docContent += "<table>\n";
+  docContent += "<caption>" + theTranslator->trTraceabilityFor(collection.displayTitle) + "</caption>\n";
+  docContent += "<tr><th>" + theTranslator->trRequirementID() + "</th><th>" +
+                theTranslator->trSatisfiedBy() + "</th><th>" +
+                theTranslator->trVerifiedBy() + "</th></tr>\n";
 
   // Write each requirement row
   for (const auto &[reqId, req] : collection.requirements) {
-    doxFile << " * | ";
+    docContent += "<tr><td>";
 
     // Requirement ID with link to external documentation
     if (!req.url.isEmpty()) {
-      QCString url = req.url;
-      doxFile << "[" << reqId << "](" << url << ")";
+      docContent += "<a href=\"" + req.url + "\">" + reqId + "</a>";
     } else {
-      doxFile << reqId;
+      docContent += reqId;
     }
-    doxFile << " | ";
+    docContent += "</td><td>";
 
-    // Satisfied By column with \\ref links
+    // Satisfied By column with \ref links
     if (!req.satisfiedBy.empty()) {
       for (size_t i = 0; i < req.satisfiedBy.size(); ++i) {
-        if (i > 0) doxFile << "<br/>";
-        doxFile << "\\ref " << req.satisfiedBy[i];
+        if (i > 0) docContent += "\n\n";  // Double newline creates separate paragraphs
+        docContent += "\\ref " + req.satisfiedBy[i];
       }
     }
-    doxFile << " | ";
+    docContent += "</td><td>";
 
-    // Verified By column with \\ref links
+    // Verified By column with \ref links
     if (!req.verifiedBy.empty()) {
       for (size_t i = 0; i < req.verifiedBy.size(); ++i) {
-        if (i > 0) doxFile << "<br/>";
-        doxFile << "\\ref " << req.verifiedBy[i];
+        if (i > 0) docContent += "\n\n";  // Double newline creates separate paragraphs
+        docContent += "\\ref " + req.verifiedBy[i];
       }
     }
-    doxFile << " |\n";
+    docContent += "</td></tr>\n";
   }
 
-  doxFile << " */\n";
-  doxFile.close();
+  docContent += "</table>\n";
 
-  // Store the .dox file path and page name to be processed later
-  m_generatedDoxFiles.push_back(doxPath.str());
-  m_generatedPageNames.push_back(fileName.str());
-}
+  // Create page title using translator
+  QCString pageTitle = theTranslator->trTraceabilityFor(collection.displayTitle);
 
-void RequirementsTracker::processGeneratedDoxFiles() {
-  if (m_generatedDoxFiles.empty()) {
-    return;
-  }
+  // Create PageDef directly in memory
+  // Parameters: fileName, lineNumber, pageName, documentation, title
+  auto pd = createPageDef(
+    "<generated>",           // fileName - use placeholder since it's generated
+    1,                       // lineNumber
+    pageName,                // page name (used as ID)
+    docContent,              // documentation content
+    pageTitle                // page title
+  );
 
-  for (const auto& doxFile : m_generatedDoxFiles) {
-    // Create a FileDef for the .dox file
-    QCString doxPath(doxFile.c_str());
-    bool ambig = false;
-    FileDef *fd = findFileDef(Doxygen::inputNameLinkedMap, doxPath, ambig);
-    if (!fd) {
-      // Create a new FileDef
-      auto fdPtr = createFileDef("", doxPath, "", doxPath);
-      fd = fdPtr.get();
-      if (!fd) {
-        continue;
-      }
-    }
+  // Set additional properties
+  pd->setLanguage(SrcLangExt::Cpp);
 
-    // Get the parser for .dox files using the public wrapper
-    auto parser = getParserForFileExt(doxPath);
-    if (!parser) {
-      continue;
-    }
+  // Add the page to Doxygen's page collection
+  Doxygen::pageLinkedMap->add(pageName, std::move(pd));
 
-    // Parse the .dox file using the same mechanism as normal file processing
-    auto fileRoot = parseFileWithParser(*parser.get(), fd, doxPath, nullptr, true);
-    if (fileRoot) {
-      // Call buildPageList to integrate the parsed pages into Doxygen's page list
-      buildPageListFromEntry(fileRoot.get());
-    }
-  }
-
-  // Now generate documentation for the newly added pages
-  std::vector<PageDef*> newPages;
-  for (const auto& pageName : m_generatedPageNames) {
-    PageDef *pd = Doxygen::pageLinkedMap->find(QCString(pageName.c_str()));
-    if (pd) {
-      newPages.push_back(pd);
-    }
-  }
-
-  if (!newPages.empty()) {
-    generateDocsForPages(newPages);
-  }
-
-  // Don't clear m_generatedDoxFiles here - they will be cleaned up in finalize()
-  m_generatedPageNames.clear();
+  msg("Generated traceability page: {}\n", pageName);
 }
 
 // Helper function to build a qualified name from an Entry by walking up the tree
@@ -868,7 +845,7 @@ void RequirementsTracker::collectFromEntries(const std::shared_ptr<Entry> &root)
     QCString docSection;
 
     if (hasSatisfies) {
-      docSection += "\n\n@par Satisfies\n";
+      docSection += "\n\n@par " + theTranslator->trSatisfies() + "\n";
       for (const auto &reqId : root->satisfies) {
         // Use Doxygen's \ref command to create cross-references to requirement anchors
         // This works across all output formats (HTML, LaTeX, RTF, etc.)
@@ -877,7 +854,7 @@ void RequirementsTracker::collectFromEntries(const std::shared_ptr<Entry> &root)
     }
 
     if (hasVerifies) {
-      docSection += "\n\n@par Verifies\n";
+      docSection += "\n\n@par " + theTranslator->trVerifies() + "\n";
       for (const auto &reqId : root->verifies) {
         // Use Doxygen's \ref command to create cross-references to requirement anchors
         docSection += "- \\ref " + reqId + "\n";
@@ -945,10 +922,6 @@ void RequirementsTracker::collectFromEntries(const std::shared_ptr<Entry> &root)
 }
 
 void RequirementsTracker::finalize() {
-  // Clean up temporary .dox files before doxygen exits
-  for (const auto& doxFile : m_generatedDoxFiles) {
-    std::remove(doxFile.c_str());
-  }
-  m_generatedDoxFiles.clear();
-  m_generatedPageNames.clear();
+  // Nothing to clean up - pages are now created directly in memory
+  // and managed by Doxygen's page collection
 }

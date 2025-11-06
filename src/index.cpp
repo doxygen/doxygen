@@ -4054,16 +4054,34 @@ void writeTraceabilityIndex(OutputList &ol)
       continue;
     }
 
+    // Count requirements with references
+    int withSatisfiedBy = 0;
+    int withVerifiedBy = 0;
+    for (const auto &[reqId, req] : collection.requirements) {
+      if (!req.satisfiedBy.empty()) withSatisfiedBy++;
+      if (!req.verifiedBy.empty()) withVerifiedBy++;
+    }
+
     ol.startItemListItem();
     QCString displayTitle = collection.displayTitle;
     QCString pageBase = collection.pageName;
 
     ol.writeObjectLink(QCString(),pageBase,QCString(),displayTitle);
 
-    QCString metaText = " &mdash; ";
-    metaText += QCString().setNum(static_cast<int>(collection.requirements.size()));
-    metaText += collection.requirements.size()==1 ? " requirement" : " requirements";
-  ol.writeString(metaText.data());
+    // Build summary: "— 434 Requirements (100.0% Satisfied, 4.4% Verified)"
+    size_t totalReqs = collection.requirements.size();
+    double satisfiedPct = 100.0 * withSatisfiedBy / (double)totalReqs;
+    double verifiedPct = 100.0 * withVerifiedBy / (double)totalReqs;
+    
+    QCString metaText;
+    metaText.sprintf(" &mdash; %d %s (%.1f%% %s, %.1f%% %s)",
+                     (int)totalReqs,
+                     qPrint(theTranslator->trRequirements()),
+                     satisfiedPct,
+                     qPrint(theTranslator->trSatisfied()),
+                     verifiedPct,
+                     qPrint(theTranslator->trVerified()));
+    ol.writeString(metaText.data());
 
     if (addToIndex)
     {

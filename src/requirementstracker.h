@@ -57,7 +57,6 @@ public:
   void collectFromEntries(const std::shared_ptr<Entry> &root);
   void addDocumentationSections();  // Add sections to Definition objects
   void generateTraceabilityPages();
-  void processGeneratedDoxFiles();
   void finalize();
   void reset();
 
@@ -86,8 +85,6 @@ private:
 
   bool m_initialized = false;
   std::vector<RequirementsCollection> m_collections; //!< All requirement collections
-  std::vector<std::string> m_generatedDoxFiles; //!< Generated .dox files to be processed
-  std::vector<std::string> m_generatedPageNames; //!< Names of generated pages to process
   std::vector<EntryRequirementInfo> m_entryRequirements; //!< Entries with requirement annotations
 };
 

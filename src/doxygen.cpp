@@ -12717,6 +12717,14 @@ void parseInput()
       readTagFile(root,s.c_str());
     }
 
+    // Read REQUIREMENTS_TAGFILES as regular tag files so anchors are available for \ref
+    msg("Reading and parsing requirements tag files\n");
+    const StringVector &requirementsTagFileList = Config_getList(REQUIREMENTS_TAGFILES);
+    for (const auto &s : requirementsTagFileList)
+    {
+      readTagFile(root,s.c_str());
+    }
+
 
   /**************************************************************************
    *             Handle Requirements Tag Files                              *
@@ -13339,16 +13347,6 @@ void generateOutput()
 
   g_s.begin("Generating namespace documentation...\n");
   generateNamespaceDocs();
-  g_s.end();
-
-  // Generate traceability pages after namespaces but before page output
-  g_s.begin("Generating traceability pages...\n");
-  RequirementsTracker::instance().generateTraceabilityPages();
-  g_s.end();
-
-  // Process any generated .dox files
-  g_s.begin("Processing generated .dox files...\n");
-  RequirementsTracker::instance().processGeneratedDoxFiles();
   g_s.end();
 
   if (Config_getBool(GENERATE_LEGEND))
