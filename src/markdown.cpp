@@ -1324,20 +1324,28 @@ int Markdown::Private::processLink(const std::string_view data,size_t offset)
     if (i<size && data[i]=='<') { i++; uriFormat=true; }
     size_t linkStart=i;
     int braceCount=1;
+    int nlConsec = 0;
     while (i<size && data[i]!='\'' && data[i]!='"' && braceCount>0)
     {
       if (data[i]=='\n') // unexpected EOL
       {
         nl++;
-        if (nl>1) { return 0; }
+        nlConsec++;
+        if (nlConsec>1) { return 0; }
       }
       else if (data[i]=='(')
       {
         braceCount++;
+        nlConsec = 0;
       }
       else if (data[i]==')')
       {
         braceCount--;
+        nlConsec = 0;
+      }
+      else if (data[i]!=' ')
+      {
+        nlConsec = 0;
       }
       if (braceCount>0)
       {

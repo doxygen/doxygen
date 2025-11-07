@@ -1494,7 +1494,12 @@ QCString convertToDocBook(const QCString &s, const bool retainNewline)
   {
     switch (c)
     {
-      case '\n': if (retainNewline) growBuf.addStr("<literallayout>&#160;&#xa;</literallayout>"); growBuf.addChar(c);   break;
+      case '\n': if (retainNewline)
+                 {
+                   growBuf.addStr("<literallayout>&#160;&#xa;</literallayout>");
+                   growBuf.addChar(c);
+                 }
+                 break;
       case '<':  growBuf.addStr("&lt;");   break;
       case '>':  growBuf.addStr("&gt;");   break;
       case '&':  // possibility to have a special symbol
