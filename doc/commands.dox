@@ -235,6 +235,7 @@ documentation:
 \refitem cmdthrows \\throws
 \refitem cmdtodo \\todo
 \refitem cmdtparam \\tparam
+\refitem cmdtrivial \\trivial
 \refitem cmdtypedef \\typedef
 \refitem cmdplantumlfile \\plantumlfile
 \refitem cmdunion \\union
@@ -1509,6 +1510,15 @@ Description
 \endverbatim
 
   \sa section \ref cmdfn "\\fn", \ref cmdproperty "\\property", and \ref cmdtypedef "\\typedef".
+
+<hr>
+\section cmdtrivial \\trivial
+
+  \addindex \\trivial
+  Indicates that the entity doesn't need documentation as it is "trivial", but that it should be 
+  show in the documentation anyway.
+
+  \sa \ref cfg_extract_all "EXTRACT_ALL"
 
 <hr>
 \section cmdvhdlflow \\vhdlflow [(title for the flow chart)]

@@ -207,6 +207,7 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
     QCString displayName(bool includeScope=TRUE) const override;
     CompoundType compoundType() const override;
     QCString compoundTypeString() const override;
+    bool isTrivial() const override;
     const BaseClassList &baseClasses() const override;
     void updateBaseClasses(const BaseClassList &bcd) override;
     const BaseClassList &subClasses() const override;
@@ -293,6 +294,7 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
     void addUsedClass(ClassDef *cd,const QCString &accessName,Protection prot) override;
     void addUsedByClass(ClassDef *cd,const QCString &accessName,Protection prot) override;
     void setIsStatic(bool b) override;
+    void setIsTrivial(bool b) override;
     void setCompoundType(CompoundType t) override;
     void setClassName(const QCString &name) override;
     void setClassSpecifier(TypeSpecifier spec) override;
@@ -510,6 +512,9 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
     /*! Is the class part of an unnamed namespace? */
     bool m_isStatic = false;
 
+    /*! Is the class trivial without class documentation? */
+    bool m_isTrivial = false;
+
     /*! TRUE if classes members are merged with those of the base classes. */
     bool m_membersMerged = false;
 
@@ -612,6 +617,8 @@ class ClassDefAliasImpl : public DefinitionAliasMixin<ClassDef>
     { return getCdAlias()->compoundType(); }
     QCString compoundTypeString() const override
     { return getCdAlias()->compoundTypeString(); }
+    bool isTrivial() const override
+    { return getCdAlias()->isTrivial(); }
     const BaseClassList &baseClasses() const override
     { return getCdAlias()->baseClasses(); }
     const BaseClassList &subClasses() const override
@@ -825,6 +832,7 @@ ClassDefImpl::ClassDefImpl(
   m_templateMaster =nullptr;
   m_isAbstract = FALSE;
   m_isStatic = FALSE;
+  m_isTrivial = FALSE;
   m_isTemplArg = FALSE;
   m_membersMerged = FALSE;
   m_categoryOf = nullptr;
@@ -901,6 +909,7 @@ std::unique_ptr<ClassDef> ClassDefImpl::deepCopy(const QCString &name) const
   result->m_categoryOf = m_categoryOf;
   result->m_isAbstract = m_isAbstract;
   result->m_isStatic = m_isStatic;
+  result->m_isTrivial = m_isTrivial;
   result->m_membersMerged = m_membersMerged;
   result->m_isLocal = m_isLocal;
   result->m_isTemplArg = m_isTemplArg;
@@ -3665,7 +3674,7 @@ bool ClassDefImpl::isVisibleInHierarchy() const
 
 bool ClassDefImpl::hasDocumentation() const
 {
-  return DefinitionMixin::hasDocumentation();
+  return m_isTrivial || DefinitionMixin::hasDocumentation();
 }
 
 //----------------------------------------------------------------------
@@ -5171,6 +5180,16 @@ void ClassDefImpl::setProtection(Protection p)
 void ClassDefImpl::setIsStatic(bool b)
 {
   m_isStatic=b;
+}
+
+void ClassDefImpl::setIsTrivial(bool b)
+{
+  m_isTrivial=b;
+}
+
+bool ClassDefImpl::isTrivial() const
+{
+  return m_isTrivial;
 }
 
 void ClassDefImpl::setCompoundType(CompoundType t)

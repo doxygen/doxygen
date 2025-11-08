@@ -147,6 +147,9 @@ class ClassDef : public Definition
     /** Returns the type of compound as a string */
     virtual QCString compoundTypeString() const = 0;
 
+    /** Returns whether or not the class is trivial */
+    virtual bool isTrivial() const = 0;
+
     /** Returns the list of base classes from which this class directly
      *  inherits.
      */
@@ -385,6 +388,7 @@ class ClassDefMutable : public DefinitionMutable, public ClassDef
     virtual void setProtection(Protection p) = 0;
     virtual void setGroupDefForAllMembers(GroupDef *g,Grouping::GroupPri_t pri,const QCString &fileName,int startLine,bool hasDocs) = 0;
     virtual void setIsStatic(bool b) = 0;
+    virtual void setIsTrivial(bool b) = 0;
     virtual void setCompoundType(CompoundType t) = 0;
     virtual void setClassName(const QCString &name) = 0;
     virtual void setClassSpecifier(TypeSpecifier spec) = 0;

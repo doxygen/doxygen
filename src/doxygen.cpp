@@ -1084,6 +1084,7 @@ static void addClassToContext(const Entry *root)
       cd->setRequiresClause(root->req);
       cd->setProtection(root->protection);
       cd->setIsStatic(root->isStatic);
+      cd->setIsTrivial(root->isTrivial);
 
       // file definition containing the class cd
       cd->setBodySegment(root->startLine,root->bodyLine,root->endBodyLine);
@@ -1529,7 +1530,7 @@ static ClassDefMutable *createTagLessInstance(const ClassDef *rootCd,const Class
         //printf("    Member %s type=%s\n",qPrint(md->name()),md->typeString());
         auto newMd = createMemberDef(md->getDefFileName(),md->getDefLine(),md->getDefColumn(),
             md->typeString(),md->name(),md->argsString(),md->excpString(),
-            md->protection(),md->virtualness(),md->isStatic(),Relationship::Member,
+            md->protection(),md->virtualness(),md->isStatic(),md->isTrivial(),Relationship::Member,
             md->memberType(),
             ArgumentList(),ArgumentList(),"");
         MemberDefMutable *imd = toMemberDefMutable(newMd.get());
@@ -1744,7 +1745,7 @@ static void buildNamespaceList(const Entry *root)
             Doxygen::namespaceLinkedMap->add(fullName,
               createNamespaceDef(tagInfo?tagName:root->fileName,root->startLine,
                 root->startColumn,fullName,tagName,tagFileName,
-                root->type,root->spec.isPublished())));
+                root->type,root->isTrivial,root->spec.isPublished())));
         if (nd)
         {
           nd->setDocumentation(root->doc,root->docFile,root->docLine); // copy docs to definition
@@ -2117,7 +2118,7 @@ static void createUsingMemberImportForClass(const Entry *root,ClassDefMutable *c
       fileName,root->startLine,root->startColumn,
       md->typeString(),memName,md->argsString(),
       md->excpString(),root->protection,root->virt,
-      md->isStatic(),Relationship::Member,md->memberType(),
+      md->isStatic(),md->isTrivial(),Relationship::Member,md->memberType(),
       templAl,al,root->metaData
       );
   auto newMmd = toMemberDefMutable(newMd.get());
@@ -2267,7 +2268,7 @@ static void findUsingDeclImports(const Entry *root)
             fileName,root->startLine,root->startColumn,
             md->typeString(),memName,md->argsString(),
             md->excpString(),root->protection,root->virt,
-            md->isStatic(),Relationship::Member,md->memberType(),
+            md->isStatic(),md->isTrivial(),Relationship::Member,md->memberType(),
             templAl,al,root->metaData
             );
         auto newMmd = toMemberDefMutable(newMd.get());
@@ -2528,7 +2529,7 @@ static MemberDef *addVariableToClass(
   auto md = createMemberDef(
       fileName,root->startLine,root->startColumn,
       type,name,args,root->exception,
-      prot,Specifier::Normal,root->isStatic,related,
+      prot,Specifier::Normal,root->isStatic,root->isTrivial,related,
       mtype,!root->tArgLists.empty() ? root->tArgLists.back() : ArgumentList(),
       ArgumentList(), root->metaData);
   auto mmd = toMemberDefMutable(md.get());
@@ -2756,7 +2757,7 @@ static MemberDef *addVariableToFile(
   auto md =  createMemberDef(
       fileName,root->startLine,root->startColumn,
       type,name,args,QCString(),
-      root->protection, Specifier::Normal,root->isStatic,Relationship::Member,
+      root->protection, Specifier::Normal,root->isStatic,root->isTrivial,Relationship::Member,
       mtype,!root->tArgLists.empty() ? root->tArgLists.back() : ArgumentList(),
       root->argList, root->metaData);
   auto mmd = toMemberDefMutable(md.get());
@@ -3532,7 +3533,7 @@ static void addInterfaceOrServiceToServiceOrSingleton(
   }
   auto md = createMemberDef(
       fileName, root->startLine, root->startColumn, root->type, rname,
-      "", "", root->protection, root->virt, root->isStatic, Relationship::Member,
+      "", "", root->protection, root->virt, root->isStatic, root->isTrivial,Relationship::Member,
       type, ArgumentList(), root->argList, root->metaData);
   auto mmd = toMemberDefMutable(md.get());
   mmd->setTagInfo(root->tagInfo());
@@ -3635,7 +3636,7 @@ static void buildInterfaceAndServiceList(const Entry *root)
 static void addMethodToClass(const Entry *root,ClassDefMutable *cd,
                   const QCString &rtype,const QCString &rname,const QCString &rargs,
                   bool isFriend,
-                  Protection protection,bool stat,Specifier virt,TypeSpecifier spec,
+                  Protection protection,bool stat,bool triv,Specifier virt,TypeSpecifier spec,
                   const QCString &relates
                   )
 {
@@ -3685,6 +3686,7 @@ static void addMethodToClass(const Entry *root,ClassDefMutable *cd,
       type,name,args,root->exception,
       protection,virt,
       stat && root->relatesType!=RelatesType::MemberOf,
+      triv,
       relationship,
       mtype,!root->tArgLists.empty() ? root->tArgLists.back() : ArgumentList(),
       root->argList, root->metaData);
@@ -3776,7 +3778,7 @@ static void addGlobalFunction(const Entry *root,const QCString &rname,const QCSt
   auto md = createMemberDef(
       root->fileName,root->startLine,root->startColumn,
       root->type,name,root->args,root->exception,
-      root->protection,root->virt,root->isStatic,Relationship::Member,
+      root->protection,root->virt,root->isStatic,root->isTrivial,Relationship::Member,
       MemberType::Function,
       !root->tArgLists.empty() ? root->tArgLists.back() : ArgumentList(),
       root->argList,root->metaData);
@@ -3956,7 +3958,7 @@ static void buildFunctionList(const Entry *root)
       {
         AUTO_TRACE_ADD("member '{}' of class '{}'", rname,cd->name());
         addMethodToClass(root,cd,root->type,rname,root->args,isFriend,
-                         root->protection,root->isStatic,root->virt,root->spec,root->relates);
+                         root->protection,root->isStatic,root->isTrivial,root->virt,root->spec,root->relates);
       }
       else if (root->parent()->section.isObjcImpl() && cd)
       {
@@ -5306,6 +5308,109 @@ static void warnUndocumentedNamespaces()
   }
 }
 
+static void checkTrivialDocumented()
+{
+  AUTO_TRACE();
+  for (const auto &nd : *Doxygen::namespaceLinkedMap)
+  {
+    if (nd->isTrivial())
+    {
+      NamespaceDefMutable *ndm = getResolvedNamespaceMutable(nd->qualifiedName());
+      if (!nd->briefDescription().isEmpty())
+      {
+        warn(nd->getDefFileName(),nd->getDefLine(),
+             "namespace {} contains '\\trivial' and brief documentation, ignoring `\\trivial`",
+             nd->qualifiedName()
+            );
+        if (ndm) ndm->setIsTrivial(false);
+      }
+      else if (!nd->documentation().isEmpty())
+      {
+        warn(nd->getDefFileName(),nd->getDefLine(),
+             "namespace {} contains '\\trivial' and detailed documentation, ignoring `\\trivial`",
+             nd->qualifiedName()
+            );
+        if (ndm) ndm->setIsTrivial(false);
+      }
+      else if (!nd->inbodyDocumentation().isEmpty())
+      {
+        warn(nd->getDefFileName(),nd->getDefLine(),
+             "namespace {} contains '\\trivial' and inbody documentation, ignoring `\\trivial`",
+             nd->qualifiedName()
+            );
+        if (ndm) ndm->setIsTrivial(false);
+      }
+    }
+  }
+
+  for (const auto &cd : *Doxygen::classLinkedMap)
+  {
+    if (cd->isTrivial())
+    {
+      ClassDefMutable *cdm = getClassMutable(cd->qualifiedName());
+      if (!cd->briefDescription().isEmpty())
+      {
+        warn(cd->getDefFileName(),cd->getDefLine(),
+             "{} {} contains '\\trivial' and brief documentation, ignoring `\\trivial`",
+             cd->compoundTypeString(), cd->qualifiedName()
+            );
+        if (cdm) cdm->setIsTrivial(false);
+      }
+      else if (!cd->documentation().isEmpty())
+      {
+        warn(cd->getDefFileName(),cd->getDefLine(),
+             "{} {} contains '\\trivial' and detailed documentation, ignoring `\\trivial`",
+             cd->compoundTypeString(), cd->qualifiedName()
+            );
+        if (cdm) cdm->setIsTrivial(false);
+      }
+      else if (!cd->inbodyDocumentation().isEmpty())
+      {
+        warn(cd->getDefFileName(),cd->getDefLine(),
+             "{} {} contains '\\trivial' and inbody documentation, ignoring `\\trivial`",
+             cd->compoundTypeString(), cd->qualifiedName()
+            );
+        if (cdm) cdm->setIsTrivial(false);
+      }
+    }
+  }
+
+  for (const auto &mn : *Doxygen::functionNameLinkedMap)
+  {
+    for (const auto &imd : *mn)
+    {
+      MemberDefMutable *md = toMemberDefMutable(imd.get());
+      if (md && md->isTrivial())
+      {
+        if (!md->briefDescription().isEmpty())
+        {
+          warn(md->getDefFileName(),md->getDefLine(),
+               "member {} ({}) contains '\\trivial' and brief documentation, ignoring `\\trivial`",
+               md->qualifiedName(),md->memberTypeName()
+              );
+          md->setIsTrivial(false);
+        }
+        else if (!md->documentation().isEmpty())
+        {
+          warn(md->getDefFileName(),md->getDefLine(),
+               "member {} ({}) contains '\\trivial' and detailed documentation, ignoring `\\trivial`",
+               md->qualifiedName(),md->memberTypeName()
+              );
+          md->setIsTrivial(false);
+        }
+        else if (!md->inbodyDocumentation().isEmpty())
+        {
+          warn(md->getDefFileName(),md->getDefLine(),
+               "member {} ({}) contains '\\trivial' and inbody documentation, ignoring `\\trivial`",
+               md->qualifiedName(),md->memberTypeName()
+              );
+          md->setIsTrivial(false);
+        }
+      }
+    }
+  }
+}
+
 static void computeClassRelations()
 {
   AUTO_TRACE();
@@ -6086,7 +6191,7 @@ static void addLocalObjCMethod(const Entry *root,
     auto md = createMemberDef(
         root->fileName,root->startLine,root->startColumn,
         funcType,funcName,funcArgs,exceptions,
-        root->protection,root->virt,root->isStatic,Relationship::Member,
+        root->protection,root->virt,root->isStatic,root->isTrivial,Relationship::Member,
         MemberType::Function,ArgumentList(),root->argList,root->metaData);
     auto mmd = toMemberDefMutable(md.get());
     mmd->setTagInfo(root->tagInfo());
@@ -6329,7 +6434,7 @@ static void addMemberFunction(const Entry *root,
             // even though the member arguments do not match.
 
             addMethodToClass(root,cd,type,md->name(),args,isFriend,
-                md->protection(),md->isStatic(),md->virtualness(),spec,relates);
+                md->protection(),md->isStatic(),md->isTrivial(),md->virtualness(),spec,relates);
             return;
           }
         }
@@ -6374,7 +6479,7 @@ static void addMemberFunction(const Entry *root,
         {
           AUTO_TRACE_ADD("add template specialization");
           addMethodToClass(root,ccd,type,md->name(),args,isFriend,
-              root->protection,root->isStatic,root->virt,spec,relates);
+              root->protection,root->isStatic,root->isTrivial,root->virt,spec,relates);
           return;
         }
         if (argListToString(md->argumentList(),FALSE,FALSE) ==
@@ -6509,7 +6614,7 @@ static void addMemberSpecialization(const Entry *root,
       root->fileName,root->startLine,root->startColumn,
       funcType,funcName,funcArgs,exceptions,
       declMd ? declMd->protection() : root->protection,
-      root->virt,root->isStatic,Relationship::Member,
+      root->virt,root->isStatic,root->isTrivial,Relationship::Member,
       mtype,tArgList,root->argList,root->metaData);
   auto mmd = toMemberDefMutable(md.get());
   //printf("new specialized member %s args='%s'\n",qPrint(md->name()),qPrint(funcArgs));
@@ -6575,7 +6680,7 @@ static void addOverloaded(const Entry *root,MemberName *mn,
     auto md = createMemberDef(
         root->fileName,root->startLine,root->startColumn,
         funcType,funcName,funcArgs,exceptions,
-        root->protection,root->virt,root->isStatic,Relationship::Related,
+        root->protection,root->virt,root->isStatic,root->isTrivial,Relationship::Related,
         mtype,tArgList ? *tArgList : ArgumentList(),root->argList,root->metaData);
     auto mmd = toMemberDefMutable(md.get());
     mmd->setTagInfo(root->tagInfo());
@@ -7127,7 +7232,7 @@ static void findMember(const Entry *root,
                 root->fileName,root->startLine,root->startColumn,
                 funcType,funcName,funcArgs,exceptions,
                 root->protection,root->virt,
-                root->isStatic,
+                root->isStatic,root->isTrivial,
                 isMemberOf ? Relationship::Foreign : Relationship::Related,
                 mtype,
                 (!root->tArgLists.empty() ? root->tArgLists.back() : ArgumentList()),
@@ -7563,7 +7668,7 @@ static void findEnums(const Entry *root)
       auto md = createMemberDef(
           root->fileName,root->startLine,root->startColumn,
           QCString(),name,QCString(),QCString(),
-          root->protection,Specifier::Normal,FALSE,
+          root->protection,Specifier::Normal,FALSE,root->isTrivial,
           isMemberOf ? Relationship::Foreign : isRelated ? Relationship::Related : Relationship::Member,
           MemberType::Enumeration,
           ArgumentList(),ArgumentList(),root->metaData);
@@ -7791,7 +7896,7 @@ static void addEnumValuesToEnums(const Entry *root)
                   auto fmd = createMemberDef(
                       fileName,e->startLine,e->startColumn,
                       e->type,e->name,e->args,QCString(),
-                      e->protection, Specifier::Normal,e->isStatic,Relationship::Member,
+                      e->protection, Specifier::Normal,e->isStatic,e->isTrivial,Relationship::Member,
                       MemberType::EnumValue,ArgumentList(),ArgumentList(),e->metaData);
                   auto fmmd = toMemberDefMutable(fmd.get());
                   NamespaceDef *mnd = md->getNamespaceDef();
@@ -8830,7 +8935,7 @@ static void buildDefineList()
         auto md = createMemberDef(
             def.fileName,def.lineNr,def.columnNr,
             "#define",def.name,def.args,QCString(),
-            Protection::Public,Specifier::Normal,FALSE,Relationship::Member,MemberType::Define,
+            Protection::Public,Specifier::Normal,FALSE,FALSE,Relationship::Member,MemberType::Define,
             ArgumentList(),ArgumentList(),"");
         auto mmd = toMemberDefMutable(md.get());
 
@@ -9493,6 +9598,7 @@ static void addDefineDoc(const Entry *root, MemberDefMutable *md)
     md->setBodySegment(root->startLine,root->bodyLine,root->endBodyLine);
     md->setBodyDef(root->fileDef());
   }
+  md->setIsTrivial(root->isTrivial);
   md->addSectionsToDefinition(root->anchors);
   md->setMaxInitLines(root->initLines);
   applyMemberOverrideOptions(root,md);
@@ -9516,7 +9622,7 @@ static void findDefineDocumentation(Entry *root)
     {
       auto md = createMemberDef(root->tagInfo()->tagName,1,1,
                     "#define",root->name,root->args,QCString(),
-                    Protection::Public,Specifier::Normal,FALSE,Relationship::Member,MemberType::Define,
+                    Protection::Public,Specifier::Normal,FALSE,FALSE,Relationship::Member,MemberType::Define,
                     ArgumentList(),ArgumentList(),"");
       auto mmd = toMemberDefMutable(md.get());
       mmd->setTagInfo(root->tagInfo());
@@ -13055,6 +13161,8 @@ void parseInput()
       gd->sortSubGroups();
     }
   }
+
+  checkTrivialDocumented();
 
   printNavTree(root.get(),0);
   printSectionsTree();

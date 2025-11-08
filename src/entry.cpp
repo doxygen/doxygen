@@ -58,6 +58,7 @@ Entry::Entry(const Entry &e) : section(e.section)
   vhdlSpec    = e.vhdlSpec;
   initLines   = e.initLines;
   isStatic    = e.isStatic;
+  isTrivial   = e.isTrivial;
   localToc    = e.localToc;
   explicitExternal = e.explicitExternal;
   proto       = e.proto;
@@ -216,6 +217,7 @@ void Entry::reset()
   mtype   = MethodTypes::Method;
   virt    = Specifier::Normal;
   isStatic = false;
+  isTrivial = false;
   proto   = false;
   explicitExternal = false;
   spec.reset();

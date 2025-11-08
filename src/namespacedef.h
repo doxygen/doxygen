@@ -65,6 +65,7 @@ class NamespaceDef : public Definition
     virtual bool isLibrary() const = 0;
     virtual bool isInline() const = 0;
     virtual bool isVisibleInHierarchy() const = 0;
+    virtual bool isTrivial() const = 0;
     virtual bool hasDetailedDescription() const = 0;
     virtual bool subGrouping() const = 0;
     virtual MemberList *getMemberList(MemberListType lt) const = 0;
@@ -104,6 +105,7 @@ class NamespaceDefMutable : public DefinitionMutable, public NamespaceDef
 
     // --- setters/actions
     virtual void setMetaData(const QCString &m) = 0;
+    virtual void setIsTrivial(bool b) = 0;
     virtual void insertUsedFile(FileDef *fd) = 0;
     virtual void writeDocumentation(OutputList &ol) = 0;
     virtual void writeMemberPages(OutputList &ol) = 0;
@@ -130,7 +132,7 @@ class NamespaceDefMutable : public DefinitionMutable, public NamespaceDef
 std::unique_ptr<NamespaceDef> createNamespaceDef(const QCString &defFileName,int defLine,int defColumn,
                  const QCString &name,const QCString &ref=QCString(),
                  const QCString &refFile=QCString(),const QCString &type=QCString(),
-                 bool isPublished=false);
+                 bool isTrivial = false, bool isPublished=false);
 
 /** Factory method to create an alias of an existing namespace. Used for inline namespaces. */
 std::unique_ptr<NamespaceDef> createNamespaceDefAlias(const Definition *newScope,const NamespaceDef *nd);

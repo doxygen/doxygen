@@ -125,6 +125,7 @@ class MemberDef : public Definition
     virtual bool isRelated() const = 0;
     virtual bool isForeign() const = 0;
     virtual bool isStatic() const = 0;
+    virtual bool isTrivial() const = 0;
     virtual bool isInline() const = 0;
     virtual bool isExplicit() const = 0;
     virtual bool isMutable() const = 0;
@@ -310,6 +311,7 @@ class MemberDefMutable : public DefinitionMutable, public MemberDef
     //-----------------------------------------------------------------------------------
 
     // set functions
+    virtual void setIsTrivial(bool b) = 0;
     virtual void setMemberType(MemberType t) = 0;
     virtual void setDefinition(const QCString &d) = 0;
     virtual void setFileDef(FileDef *fd) = 0;
@@ -452,7 +454,7 @@ MemberDefMutable     *toMemberDefMutable(Definition *d);
 /** Factory method to create a new instance of a MemberDef */
 std::unique_ptr<MemberDef> createMemberDef(const QCString &defFileName,int defLine,int defColumn,
               const QCString &type,const QCString &name,const QCString &args,
-              const QCString &excp,Protection prot,Specifier virt,bool stat,
+              const QCString &excp,Protection prot,Specifier virt,bool stat,bool triv,
               Relationship related,MemberType t,const ArgumentList &tal,
               const ArgumentList &al,const QCString &metaData);
 

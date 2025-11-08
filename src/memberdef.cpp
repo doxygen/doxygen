@@ -56,7 +56,7 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     MemberDefImpl(const QCString &defFileName,int defLine,int defColumn,
               const QCString &type,const QCString &name,const QCString &args,
               const QCString &excp,Protection prot,Specifier virt,bool stat,
-              Relationship related,MemberType t,const ArgumentList &tal,
+              bool triv,Relationship related,MemberType t,const ArgumentList &tal,
               const ArgumentList &al,const QCString &metaData);
    ~MemberDefImpl() override = default;
     NON_COPYABLE(MemberDefImpl)
@@ -123,6 +123,7 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     bool isRelated() const override;
     bool isForeign() const override;
     bool isStatic() const override;
+    bool isTrivial() const override;
     bool isInline() const override;
     bool isExplicit() const override;
     bool isMutable() const override;
@@ -256,6 +257,7 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     QCString getDeclFileName() const override;
     int getDeclLine() const override;
     int getDeclColumn() const override;
+    void setIsTrivial(bool b) override;
     void setMemberType(MemberType t) override;
     void setDefinition(const QCString &d) override;
     void setFileDef(FileDef *fd) override;
@@ -385,7 +387,7 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
 
 
     void init(Definition *def,const QCString &t,const QCString &a,const QCString &e,
-              Protection p,Specifier v,bool s,Relationship r,
+              Protection p,Specifier v,bool s,bool triv,Relationship r,
               MemberType mt,const ArgumentList &tal,
               const ArgumentList &al,const QCString &meta
              );
@@ -489,6 +491,7 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     bool m_isDMember = false;
     Relationship m_related = Relationship::Member;    // relationship of this to the class
     bool m_stat = false;                // is it a static function?
+    bool m_trivial = false;             // is it a trivial function? so no documentation required
     bool m_proto = false;               // is it a prototype?
     bool m_docEnumValues = false;       // is an enum with documented enum values.
 
@@ -520,11 +523,11 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
 std::unique_ptr<MemberDef> createMemberDef(const QCString &defFileName,int defLine,int defColumn,
               const QCString &type,const QCString &name,const QCString &args,
               const QCString &excp,Protection prot,Specifier virt,bool stat,
-              Relationship related,MemberType t,const ArgumentList &tal,
+              bool triv,Relationship related,MemberType t,const ArgumentList &tal,
               const ArgumentList &al,const QCString &metaData)
 {
   return std::make_unique<MemberDefImpl>(defFileName,defLine,defColumn,type,name,args,excp,prot,virt,
-                           stat,related,t,tal,al,metaData);
+                           stat,triv,related,t,tal,al,metaData);
 }
 
 //-----------------------------------------------------------------------------
@@ -670,6 +673,8 @@ class MemberDefAliasImpl : public DefinitionAliasMixin<MemberDef>
     { return getMdAlias()->isForeign(); }
     bool isStatic() const override
     { return getMdAlias()->isStatic(); }
+    bool isTrivial() const override
+    { return getMdAlias()->isTrivial(); }
     bool isInline() const override
     { return getMdAlias()->isInline(); }
     bool isExplicit() const override
@@ -1325,7 +1330,7 @@ static void writeExceptionList(OutputList &ol, const ClassDef *cd, const MemberD
 
 void MemberDefImpl::init(Definition *d,
                      const QCString &t,const QCString &a,const QCString &e,
-                     Protection p,Specifier v,bool s,Relationship r,
+                     Protection p,Specifier v,bool s,bool triv,Relationship r,
                      MemberType mt,const ArgumentList &tal,
                      const ArgumentList &al,const QCString &meta
                     )
@@ -1365,6 +1370,7 @@ void MemberDefImpl::init(Definition *d,
   m_prot=p;
   m_related=r;
   m_stat=s;
+  m_trivial=triv;
   m_mtype=mt;
   m_exception=e;
   m_proto=FALSE;
@@ -1424,6 +1430,7 @@ void MemberDefImpl::init(Definition *d,
  * \param v  The degree of 'virtualness' of the member, possible values are:
  *           \c Normal, \c Virtual, \c Pure.
  * \param s  A boolean that is true iff the member is static.
+ * \param triv A boolean that is true iff the member has no documentation and is marked as trivial
  * \param r  The relationship between the class and the member.
  * \param mt The kind of member. See #MemberType for a list of
  *           all types.
@@ -1435,12 +1442,12 @@ void MemberDefImpl::init(Definition *d,
 
 MemberDefImpl::MemberDefImpl(const QCString &df,int dl,int dc,
                      const QCString &t,const QCString &na,const QCString &a,const QCString &e,
-                     Protection p,Specifier v,bool s,Relationship r,MemberType mt,
+                     Protection p,Specifier v,bool s,bool triv,Relationship r,MemberType mt,
                      const ArgumentList &tal,const ArgumentList &al,const QCString &meta
                     ) : DefinitionMixin(df,dl,dc,removeRedundantWhiteSpace(na))
 {
   //printf("MemberDefImpl::MemberDef(%s)\n",qPrint(na));
-  init(this,t,a,e,p,v,s,r,mt,tal,al,meta);
+  init(this,t,a,e,p,v,s,triv,r,mt,tal,al,meta);
   m_isLinkableCached    = 0;
   m_isConstructorCached = 0;
   m_isDestructorCached  = 0;
@@ -1450,7 +1457,7 @@ std::unique_ptr<MemberDef> MemberDefImpl::deepCopy() const
 {
   std::unique_ptr<MemberDefImpl> result(new MemberDefImpl(
         getDefFileName(),getDefLine(),getDefColumn(),m_type,localName(),m_args,m_exception,
-        m_prot,m_virt,m_stat,m_related,m_mtype,m_tArgList,m_defArgList,m_metaData));
+        m_prot,m_virt,m_stat,m_trivial,m_related,m_mtype,m_tArgList,m_defArgList,m_metaData));
   // first copy base members
   result->DefinitionMixin<MemberDefMutable>::operator=(*this);
   // then copy other members
@@ -4162,7 +4169,7 @@ void MemberDefImpl::warnIfUndocumented() const
   //printf("%s:warnIfUndoc: hasUserDocs=%d isFriendClass=%d protection=%d isRef=%d isDel=%d\n",
   //    qPrint(name()),
   //    hasUserDocumentation(),isFriendClass(),protectionLevelVisible(m_prot),isReference(),isDeleted());
-  if ((!hasUserDocumentation() && !extractAll) &&
+  if ((!hasUserDocumentation() && !extractAll && !isTrivial()) &&
       !isFriendClass() &&
       name().find('@')==-1 && d && d->name().find('@')==-1 &&
       !_isAnonymousBitField() &&
@@ -4496,7 +4503,7 @@ std::unique_ptr<MemberDef> MemberDefImpl::createTemplateInstanceMember(
                        methodName,
                        substituteTemplateArgumentsInString(m_args,formalArgs,actualArgs.get()),
                        m_exception, m_prot,
-                       m_virt, m_stat, m_related, m_mtype,
+                       m_virt, m_stat, m_trivial, m_related, m_mtype,
                        ArgumentList(), ArgumentList(), ""
                    );
   auto mmd = toMemberDefMutable(imd.get());
@@ -5292,6 +5299,11 @@ bool MemberDefImpl::isStatic() const
   return m_stat;
 }
 
+bool MemberDefImpl::isTrivial() const
+{
+  return m_trivial;
+}
+
 bool MemberDefImpl::isInline() const
 {
   return m_memSpec.isInline();
@@ -5828,6 +5840,11 @@ int MemberDefImpl::getDeclColumn() const
 
 
 //----------------------------------------------
+
+void MemberDefImpl::setIsTrivial(bool b)
+{
+  m_trivial=b;
+}
 
 void MemberDefImpl::setMemberType(MemberType t)
 {

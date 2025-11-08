@@ -183,6 +183,7 @@ class Entry
     VhdlSpecifier vhdlSpec;   //!< VHDL specifiers
     int  initLines;           //!< define/variable initializer lines to show
     bool isStatic;            //!< static ?
+    bool isTrivial;           //!< trivial doesn't need explicit documentation
     bool explicitExternal;    //!< explicitly defined as external?
     bool proto;               //!< prototype ?
     bool subGrouping;         //!< automatically group class members?

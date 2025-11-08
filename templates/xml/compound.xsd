@@ -49,6 +49,7 @@
     </xsd:sequence>
     <xsd:attribute name="id" type="xsd:string" />
     <xsd:attribute name="kind" type="DoxCompoundKind" />
+    <xsd:attribute name="trivial" type="DoxBool" use="optional"/>
     <xsd:attribute name="language" type="DoxLanguage" use="optional"/>
     <xsd:attribute name="prot" type="DoxProtectionKind" />
     <xsd:attribute name="final" type="DoxBool" use="optional"/>
@@ -213,6 +214,7 @@
     <xsd:attribute name="prot" type="DoxProtectionKind" />
     <xsd:attribute name="static" type="DoxBool" />
     <xsd:attribute name="extern" type="DoxBool" use="optional" />
+    <xsd:attribute name="trivial" type="DoxBool" use="optional" />
     <xsd:attribute name="strong" type="DoxBool" use="optional"/>
     <xsd:attribute name="const" type="DoxBool" use="optional"/>
     <xsd:attribute name="explicit" type="DoxBool" use="optional"/>

@@ -2243,6 +2243,7 @@ ferr:
       Protection::Public,
       Specifier::Normal,
       cur->isStatic,
+      cur->isTrivial,
       Relationship::Member,
       MemberType::Variable,
       ArgumentList(),
