@@ -1871,6 +1871,10 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
 <RemoveCPPComment>{CPPC}
 <RemoveCPPComment>[^\x06\n]+
 <RemoveCPPComment>.
+<DefineText>"#"/"__VA_OPT__"            {
+                                          yyextra->defText+=yytext;
+                                          yyextra->defLitText+=yytext;
+                                        }
 <DefineText>"#"/{IDSTART}               {
                                           outputChar(yyscanner,' ');
                                           yyextra->quoteArg=TRUE;
@@ -2637,13 +2641,23 @@ static void skipCommentMacroName(yyscan_t yyscanner, const QCString &expr, QCStr
 // Expand C++20's __VA_OPT__(x) to either x if hasOptionalArgs==true or to the empty string if false
 static QCString expandVAOpt(const QCString &vaStr,bool hasOptionalArgs)
 {
+  //printf("expandVAOpt(vaStr=%s,hasOptionalArgs=%d)\n",qPrint(vaStr),hasOptionalArgs);
   QCString result;
   int vo=0, vp=0;
   result.clear();
   int vl = static_cast<int>(vaStr.length());
   while ((vo = vaStr.find("__VA_OPT__(",vp))!=-1)
   {
-    result+=vaStr.left(vo);
+    bool hasHash = vo>0 && vaStr.at(vo-1)=='#';
+    if (hasHash)
+    {
+      result+=vaStr.mid(vp,vo-vp-1); // don't copy #
+      result+="\"";
+    }
+    else
+    {
+      result+=vaStr.mid(vp,vo-vp);
+    }
     int ve=vo+11; // skip over '__VA_OPT__(' part
     int bc=1;
     while (bc>0 && ve<vl)
@@ -2658,6 +2672,10 @@ static QCString expandVAOpt(const QCString &vaStr,bool hasOptionalArgs)
       QCString voStr = vaStr.mid(vo+11,ve-vo-12);
       //printf("vo=%d ve=%d voStr=%s\n",vo,ve,qPrint(voStr));
       result+=voStr; // take 'x' from __VA_OPT__(x)
+    }
+    if (hasHash)
+    {
+      result+="\"";
     }
     vp=ve;
   }
@@ -2675,8 +2693,7 @@ static QCString expandVAOpt(const QCString &vaStr,bool hasOptionalArgs)
  */
 static bool replaceFunctionMacro(yyscan_t yyscanner,const QCString &expr,QCString *rest,int pos,int &len,const Define *def,QCString &result,int level)
 {
-  //YY_EXTRA_TYPE state = preYYget_extra(yyscanner);
-  //printf(">replaceFunctionMacro(expr='%s',rest='%s',pos=%d,def='%s') level=%zu\n",qPrint(expr),rest ? qPrint(*rest) : 0,pos,qPrint(def->name),state->levelGuard.size());
+  //printf(">replaceFunctionMacro(expr='%s',rest='%s',pos=%d,def='%s') level=%zu\n",qPrint(expr),rest ? qPrint(*rest) : 0,pos,qPrint(def->name),preYYget_extra(yyscanner)->levelGuard.size());
   uint32_t j=pos;
   len=0;
   result.clear();
@@ -2697,6 +2714,7 @@ static bool replaceFunctionMacro(yyscan_t yyscanner,const QCString &expr,QCStrin
   std::map<std::string,std::string> argTable;  // list of arguments
   QCString arg;
   int argCount=0;
+  int argCountNonEmpty=0;
   bool done=FALSE;
 
   // PHASE 1: read the macro arguments
@@ -2750,14 +2768,17 @@ static bool replaceFunctionMacro(yyscan_t yyscanner,const QCString &expr,QCStrin
       {
         if (c==',' && argCount==def->nargs-1 && def->varArgs)
         {
+          expandExpression(yyscanner,arg,nullptr,0,level+1);
           arg=arg.stripWhiteSpace();
           arg+=',';
         }
         else
         {
+          expandExpression(yyscanner,arg,nullptr,0,level+1);
+          arg=arg.stripWhiteSpace();
           QCString argKey;
           argKey.sprintf("@%d",argCount++); // key name
-          arg=arg.stripWhiteSpace();
+          if (c==',' || !arg.isEmpty()) argCountNonEmpty++;
           // add argument to the lookup table
           argTable.emplace(toStdString(argKey), toStdString(arg));
           arg.clear();
@@ -2832,7 +2853,8 @@ static bool replaceFunctionMacro(yyscan_t yyscanner,const QCString &expr,QCStrin
     // substitution of all formal arguments
     QCString resExpr;
     QCString d=def->definition.stripWhiteSpace();
-    if (def->varArgs) d = expandVAOpt(d,argCount!=def->nargs-1);
+    //printf("varArgs=%d argCount=%d def->nargs=%d d=%s\n",def->varArgs,argCount,def->nargs,qPrint(d));
+    if (def->varArgs) d = expandVAOpt(d,argCountNonEmpty!=def->nargs-1);
     //printf("Macro definition: '%s'\n",qPrint(d));
     bool inString=FALSE;
     while (k<d.length())
@@ -2915,10 +2937,10 @@ static bool replaceFunctionMacro(yyscan_t yyscanner,const QCString &expr,QCStrin
     }
     len=j-pos;
     result=resExpr;
-    //printf("<replaceFunctionMacro(expr='%s',rest='%s',pos=%d,def='%s',result='%s') level=%zu return=TRUE\n",qPrint(expr),rest ? qPrint(*rest) : 0,pos,qPrint(def->name),qPrint(result),state->levelGuard.size());
+    //printf("<replaceFunctionMacro(expr='%s',rest='%s',pos=%d,def='%s',result='%s') level=%zu return=TRUE\n",qPrint(expr),rest ? qPrint(*rest) : 0,pos,qPrint(def->name),qPrint(result),preYYget_extra(yyscanner)->levelGuard.size());
     return TRUE;
   }
-  //printf("<replaceFunctionMacro(expr='%s',rest='%s',pos=%d,def='%s',result='%s') level=%zu return=FALSE\n",qPrint(expr),rest ? qPrint(*rest) : 0,pos,qPrint(def->name),qPrint(result),state->levelGuard.size());
+  //printf("<replaceFunctionMacro(expr='%s',rest='%s',pos=%d,def='%s',result='%s') level=%zu return=FALSE\n",qPrint(expr),rest ? qPrint(*rest) : 0,pos,qPrint(def->name),qPrint(result),preYYget_extra(yyscanner)->levelGuard.size());
   return FALSE;
 }
 
