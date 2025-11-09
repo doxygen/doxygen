@@ -493,7 +493,7 @@ void SearchIndexExternal::addWord(const QCString &word,bool hiPriority)
 {
   std::lock_guard<std::mutex> lock(g_searchIndexMutex);
   if (word.isEmpty() || !isId(word[0]) || m_current==nullptr) return;
-  QCString &tText = hiPriority ? m_current->importantText : m_current->normalText;
+  QCString &text = hiPriority ? m_current->importantText : m_current->normalText;
   if (!text.isEmpty()) text+=' ';
   text+=word;
   //printf("addWord %s\n",word);
