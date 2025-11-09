@@ -973,6 +973,7 @@ static void addClassToContext(const Entry *root)
 
     cd->setDocumentation(root->doc,root->docFile,root->docLine);
     cd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
+    cd->setIsTrivial(root->isTrivial || cd->isTrivial());
     root->commandOverrides.apply_collaborationGraph([&](bool b          ) { cd->overrideCollaborationGraph(b); });
     root->commandOverrides.apply_inheritanceGraph  ([&](CLASS_GRAPH_t gt) { cd->overrideInheritanceGraph(gt); });
 
@@ -1067,6 +1068,7 @@ static void addClassToContext(const Entry *root)
               fmt::ptr(tagInfo),root->hidden,root->artificial);
       cd->setDocumentation(root->doc,root->docFile,root->docLine); // copy docs to definition
       cd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
+      cd->setIsTrivial(root->isTrivial || cd->isTrivial());
       cd->setLanguage(root->lang);
       cd->setId(root->id);
       cd->setHidden(root->hidden);
@@ -1496,6 +1498,7 @@ static ClassDefMutable *createTagLessInstance(const ClassDef *rootCd,const Class
   {
     cd->setDocumentation(templ->documentation(),templ->docFile(),templ->docLine()); // copy docs to definition
     cd->setBriefDescription(templ->briefDescription(),templ->briefFile(),templ->briefLine());
+    cd->setIsTrivial(templ->isTrivial() || cd->isTrivial());
     cd->setLanguage(templ->getLanguage());
     cd->setBodySegment(templ->getDefLine(),templ->getStartBodyLine(),templ->getEndBodyLine());
     cd->setBodyDef(templ->getBodyDef());
@@ -1537,6 +1540,7 @@ static ClassDefMutable *createTagLessInstance(const ClassDef *rootCd,const Class
         imd->setMemberClass(cd);
         imd->setDocumentation(md->documentation(),md->docFile(),md->docLine());
         imd->setBriefDescription(md->briefDescription(),md->briefFile(),md->briefLine());
+        imd->setIsTrivial(imd->isTrivial() || md->isTrivial());
         imd->setInbodyDocumentation(md->inbodyDocumentation(),md->inbodyFile(),md->inbodyLine());
         imd->setMemberSpecifiers(md->getMemberSpecifiers());
         imd->setVhdlSpecifiers(md->getVhdlSpecifiers());
@@ -1702,6 +1706,7 @@ static void buildNamespaceList(const Entry *root)
           nd->setName(fullName); // change name to match docs
           nd->addSectionsToDefinition(root->anchors);
           nd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
+          nd->setIsTrivial(root->isTrivial || nd->isTrivial());
           if (nd->getLanguage()==SrcLangExt::Unknown)
           {
             nd->setLanguage(root->lang);
@@ -1750,6 +1755,7 @@ static void buildNamespaceList(const Entry *root)
         {
           nd->setDocumentation(root->doc,root->docFile,root->docLine); // copy docs to definition
           nd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
+          nd->setIsTrivial(root->isTrivial || nd->isTrivial());
           nd->addSectionsToDefinition(root->anchors);
           nd->setHidden(root->hidden);
           nd->setArtificial(root->artificial);
@@ -1769,6 +1775,7 @@ static void buildNamespaceList(const Entry *root)
 
           // the empty string test is needed for extract all case
           nd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
+          nd->setIsTrivial(root->isTrivial || nd->isTrivial());
           nd->insertUsedFile(fd);
           nd->setBodySegment(root->startLine,root->bodyLine,root->endBodyLine);
           nd->setBodyDef(fd);
@@ -1955,6 +1962,7 @@ static void findUsingDirectives(const Entry *root)
         {
           nd->setDocumentation(root->doc,root->docFile,root->docLine); // copy docs to definition
           nd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
+          nd->setIsTrivial(root->isTrivial || nd->isTrivial());
           nd->addSectionsToDefinition(root->anchors);
           nd->setHidden(root->hidden);
           nd->setArtificial(TRUE);
@@ -1980,6 +1988,7 @@ static void findUsingDirectives(const Entry *root)
 
           // the empty string test is needed for extract all case
           nd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
+          nd->setIsTrivial(root->isTrivial || nd->isTrivial());
           nd->insertUsedFile(fd);
           nd->setRefItems(root->sli);
         }
@@ -2128,12 +2137,14 @@ static void createUsingMemberImportForClass(const Entry *root,ClassDefMutable *c
   {
     newMmd->setDocumentation(root->doc,root->docFile,root->docLine);
     newMmd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
+    newMmd->setIsTrivial(root->isTrivial || newMmd->isTrivial());
     newMmd->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
   }
   else
   {
     newMmd->setDocumentation(md->documentation(),md->docFile(),md->docLine());
     newMmd->setBriefDescription(md->briefDescription(),md->briefFile(),md->briefLine());
+    newMmd->setIsTrivial(md->isTrivial() || newMmd->isTrivial());
     newMmd->setInbodyDocumentation(md->inbodyDocumentation(),md->inbodyFile(),md->inbodyLine());
   }
   newMmd->setDefinition(md->definition());
@@ -2354,11 +2365,13 @@ static void findUsingDeclImports(const Entry *root)
             {
               ncdm->setDocumentation(root->doc,root->docFile,root->docLine);
               ncdm->setBriefDescription(root->brief,root->briefFile,root->briefLine);
+              ncdm->setIsTrivial(root->isTrivial || ncdm->isTrivial());
             }
             else // use docs from used class
             {
               ncdm->setDocumentation(cd->documentation(),cd->docFile(),cd->docLine());
               ncdm->setBriefDescription(cd->briefDescription(),cd->briefFile(),cd->briefLine());
+              ncdm->setIsTrivial(cd->isTrivial() || ncdm->isTrivial());
             }
             if (nd)
             {
@@ -2537,6 +2550,7 @@ static MemberDef *addVariableToClass(
   mmd->setMemberClass(cd); // also sets outer scope (i.e. getOuterScope())
   mmd->setDocumentation(root->doc,root->docFile,root->docLine);
   mmd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
+  mmd->setIsTrivial(root->isTrivial || mmd->isTrivial());
   mmd->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
   mmd->setDefinition(def);
   mmd->setBitfields(root->bitfields);
@@ -2620,6 +2634,7 @@ static MemberDef *addVariableToFile(
           cd->setClassName(name);
           cd->setDocumentation(root->doc,root->docFile,root->docLine);
           cd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
+          cd->setIsTrivial(root->isTrivial || cd->isTrivial());
           return nullptr;
         }
       }
@@ -2766,6 +2781,7 @@ static MemberDef *addVariableToFile(
   mmd->setVhdlSpecifiers(root->vhdlSpec);
   mmd->setDocumentation(root->doc,root->docFile,root->docLine);
   mmd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
+  mmd->setIsTrivial(root->isTrivial || mmd->isTrivial());
   mmd->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
   mmd->addSectionsToDefinition(root->anchors);
   mmd->setFromAnonymousScope(fromAnnScope);
@@ -3404,6 +3420,7 @@ static void buildTypedefList(const Entry *root)
             md->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
             md->setDocsForDefinition(!root->proto);
             md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
+            md->setIsTrivial(root->isTrivial || md->isTrivial());
             md->addSectionsToDefinition(root->anchors);
             md->setRefItems(root->sli);
             md->addQualifiers(root->qualifiers);
@@ -3541,6 +3558,7 @@ static void addInterfaceOrServiceToServiceOrSingleton(
   mmd->setDocumentation(root->doc,root->docFile,root->docLine);
   mmd->setDocsForDefinition(false);
   mmd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
+  mmd->setIsTrivial(root->isTrivial || mmd->isTrivial());
   mmd->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
   mmd->setBodySegment(root->startLine,root->bodyLine,root->endBodyLine);
   mmd->setMemberSpecifiers(root->spec);
@@ -3696,6 +3714,7 @@ static void addMethodToClass(const Entry *root,ClassDefMutable *cd,
   mmd->setDocumentation(root->doc,root->docFile,root->docLine);
   mmd->setDocsForDefinition(!root->proto);
   mmd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
+  mmd->setIsTrivial(root->isTrivial || mmd->isTrivial());
   mmd->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
   mmd->setBodySegment(root->startLine,root->bodyLine,root->endBodyLine);
   mmd->setMemberSpecifiers(spec);
@@ -3788,6 +3807,7 @@ static void addGlobalFunction(const Entry *root,const QCString &rname,const QCSt
   mmd->setId(root->id);
   mmd->setDocumentation(root->doc,root->docFile,root->docLine);
   mmd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
+  mmd->setIsTrivial(root->isTrivial || mmd->isTrivial());
   mmd->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
   mmd->setPrototype(root->proto,root->fileName,root->startLine,root->startColumn);
   mmd->setDocsForDefinition(!root->proto);
@@ -4105,6 +4125,7 @@ static void buildFunctionList(const Entry *root)
                     md->setArgsString(root->args);
                   }
                   md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
+                  md->setIsTrivial(root->isTrivial || md->isTrivial());
 
                   md->addSectionsToDefinition(root->anchors);
 
@@ -4237,10 +4258,12 @@ static void findFriends()
             if (mmd->briefDescription().isEmpty() && !fmd->briefDescription().isEmpty())
             {
               mmd->setBriefDescription(fmd->briefDescription(),fmd->briefFile(),fmd->briefLine());
+              mmd->setIsTrivial(fmd->isTrivial() || mmd->isTrivial());
             }
             else if (!mmd->briefDescription().isEmpty() && !fmd->briefDescription().isEmpty())
             {
               fmd->setBriefDescription(mmd->briefDescription(),mmd->briefFile(),mmd->briefLine());
+              fmd->setIsTrivial(fmd->isTrivial() || mmd->isTrivial());
             }
             if (!fmd->inbodyDocumentation().isEmpty())
             {
@@ -5697,6 +5720,7 @@ static void addMemberDocs(const Entry *root,
 
     //printf("overwrite!\n");
     md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
+    md->setIsTrivial(root->isTrivial || md->isTrivial());
 
     if (
         (md->inbodyDocumentation().isEmpty() ||
@@ -6204,6 +6228,7 @@ static void addLocalObjCMethod(const Entry *root,
     mmd->addQualifiers(root->qualifiers);
     mmd->setDocumentation(root->doc,root->docFile,root->docLine);
     mmd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
+    mmd->setIsTrivial(root->isTrivial || mmd->isTrivial());
     mmd->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
     mmd->setDocsForDefinition(!root->proto);
     mmd->setPrototype(root->proto,root->fileName,root->startLine,root->startColumn);
@@ -6629,6 +6654,7 @@ static void addMemberSpecialization(const Entry *root,
   mmd->addQualifiers(root->qualifiers);
   mmd->setDocumentation(root->doc,root->docFile,root->docLine);
   mmd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
+  mmd->setIsTrivial(root->isTrivial || mmd->isTrivial());
   mmd->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
   mmd->setDocsForDefinition(!root->proto);
   mmd->setPrototype(root->proto,root->fileName,root->startLine,root->startColumn);
@@ -6696,6 +6722,7 @@ static void addOverloaded(const Entry *root,MemberName *mn,
     doc+=root->doc;
     mmd->setDocumentation(doc,root->docFile,root->docLine);
     mmd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
+    mmd->setIsTrivial(root->isTrivial || mmd->isTrivial());
     mmd->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
     mmd->setDocsForDefinition(!root->proto);
     mmd->setPrototype(root->proto,root->fileName,root->startLine,root->startColumn);
@@ -7318,6 +7345,7 @@ static void findMember(const Entry *root,
             mmd->setDocsForDefinition(!root->proto);
             mmd->setPrototype(root->proto,root->fileName,root->startLine,root->startColumn);
             mmd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
+            mmd->setIsTrivial(root->isTrivial || mmd->isTrivial());
             mmd->addSectionsToDefinition(root->anchors);
             mmd->setMemberGroupId(root->mGrpId);
             mmd->setLanguage(root->lang);
@@ -7747,6 +7775,7 @@ static void findEnums(const Entry *root)
       mmd->setDocumentation(root->doc,root->docFile,root->docLine);
       mmd->setDocsForDefinition(!root->proto);
       mmd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
+      mmd->setIsTrivial(root->isTrivial || mmd->isTrivial());
       mmd->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
 
       //printf("Adding member=%s\n",qPrint(md->name()));
@@ -7914,6 +7943,7 @@ static void addEnumValuesToEnums(const Entry *root)
                   fmmd->setId(e->id);
                   fmmd->setDocumentation(e->doc,e->docFile,e->docLine);
                   fmmd->setBriefDescription(e->brief,e->briefFile,e->briefLine);
+                  fmmd->setIsTrivial(e->isTrivial || fmmd->isTrivial());
                   fmmd->addSectionsToDefinition(e->anchors);
                   fmmd->setInitializer(e->initializer.str());
                   fmmd->setMaxInitLines(e->initLines);
@@ -8028,6 +8058,7 @@ static void addEnumDocs(const Entry *root,MemberDefMutable *md)
   {
     md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
   }
+  md->setIsTrivial(root->isTrivial || md->isTrivial());
 
   if (md->inbodyDocumentation().isEmpty() || !root->parent()->name.isEmpty())
   {
@@ -9290,6 +9321,7 @@ static void inheritDocumentation()
           md->setDocumentation(bmd->documentation(),bmd->docFile(),bmd->docLine());
           md->setDocsForDefinition(bmd->isDocsForDefinition());
           md->setBriefDescription(bmd->briefDescription(),bmd->briefFile(),bmd->briefLine());
+          md->setIsTrivial(bmd->isTrivial() || md->isTrivial());
           md->copyArgumentNames(bmd);
           md->setInbodyDocumentation(bmd->inbodyDocumentation(),bmd->inbodyFile(),bmd->inbodyLine());
         }
@@ -9589,6 +9621,7 @@ static void addDefineDoc(const Entry *root, MemberDefMutable *md)
   md->setDocumentation(root->doc,root->docFile,root->docLine);
   md->setDocsForDefinition(!root->proto);
   md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
+  md->setIsTrivial(root->isTrivial || md->isTrivial());
   if (md->inbodyDocumentation().isEmpty())
   {
     md->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);

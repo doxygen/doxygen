@@ -874,6 +874,7 @@ std::unique_ptr<ClassDef> ClassDefImpl::deepCopy(const QCString &name) const
         getDefFileName(),getDefLine(),getDefColumn(),name,compoundType(),
         std::string(),std::string(),true,m_isJavaEnum);
   result->setBriefDescription(briefDescription(),briefFile(),briefLine());
+  result->setIsTrivial(isTrivial());
   result->setDocumentation(documentation(),docFile(),docLine());
   result->setInbodyDocumentation(inbodyDocumentation(),inbodyFile(),inbodyLine());
   result->setBodySegment(getStartDefLine(),getStartBodyLine(),getEndBodyLine());
@@ -4436,6 +4437,7 @@ void ClassDefImpl::addMemberToTemplateInstance(const MemberDef *md,
   mmd->setTemplateMaster(md);
   mmd->setDocumentation(md->documentation(),md->docFile(),md->docLine());
   mmd->setBriefDescription(md->briefDescription(),md->briefFile(),md->briefLine());
+  mmd->setIsTrivial(mmd->isTrivial() || md->isTrivial());
   mmd->setInbodyDocumentation(md->inbodyDocumentation(),md->inbodyFile(),md->inbodyLine());
   mmd->setMemberSpecifiers(md->getMemberSpecifiers());
   mmd->setMemberGroupId(md->getMemberGroupId());

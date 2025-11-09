@@ -2265,6 +2265,7 @@ ferr:
   mmd->setLanguage(SrcLangExt::VHDL);
   mmd->setVhdlSpecifiers(VhdlSpecifier::INSTANTIATION);
   mmd->setBriefDescription(cur->brief,cur->briefFile,cur->briefLine);
+  mmd->setIsTrivial(cur->isTrivial || mmd->isTrivial());
   mmd->setBodySegment(cur->startLine,cur->startLine,-1) ;
   mmd->setDocumentation(cur->doc,cur->docFile,cur->docLine);
   FileDef *fd=ar->getFileDef();

@@ -6261,6 +6261,8 @@ void combineDeclarationAndDefinition(MemberDefMutable *mdec,MemberDefMutable *md
       {
         mdec->setBriefDescription(mdef->briefDescription(),mdef->briefFile(),mdef->briefLine());
       }
+      mdef->setIsTrivial(mdec->isTrivial() || mdef->isTrivial());
+      mdec->setIsTrivial(mdef->isTrivial());
       if (!mdef->documentation().isEmpty())
       {
         //printf("transferring docs mdef->mdec (%s->%s)\n",mdef->argsString(),mdec->argsString());
