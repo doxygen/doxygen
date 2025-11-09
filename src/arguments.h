@@ -102,8 +102,10 @@ class ArgumentList
     void push_back(const Argument &a)     { m_args.push_back(a); }
     Argument &back()                      { return m_args.back(); }
     const Argument &back() const          { return m_args.back(); }
+    Argument &front()                     { return m_args.front(); }
     const Argument &front() const         { return m_args.front(); }
     Argument &at(size_t i)                { return m_args.at(i); }
+    const Argument &at(size_t i) const    { return m_args.at(i); }
 
     // getters for list wide attributes
     bool constSpecifier() const           { return m_constSpecifier; }
