@@ -1871,6 +1871,13 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
 <RemoveCPPComment>{CPPC}
 <RemoveCPPComment>[^\x06\n]+
 <RemoveCPPComment>.
+<DefineText>"__VA_OPT__("{B}*"##"       {
+                                          warn(yyextra->fileName,yyextra->yyLineNr,
+                                               "'##' may not appear at the beginning of a __VA_OPT__()",
+                                               yyextra->defName,yyextra->defLitText.stripWhiteSpace());
+                                          yyextra->defText+="__VA_OPT__(";
+                                          yyextra->defLitText+="__VA_OPT__(";
+                                        }
 <DefineText>"#"/"__VA_OPT__"            {
                                           yyextra->defText+=yytext;
                                           yyextra->defLitText+=yytext;
