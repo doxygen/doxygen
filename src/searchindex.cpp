@@ -27,7 +27,6 @@
 #include "doxygen.h"
 #include "language.h"
 #include "pagedef.h"
-#include "growbuf.h"
 #include "message.h"
 #include "groupdef.h"
 #include "filedef.h"
@@ -494,9 +493,9 @@ void SearchIndexExternal::addWord(const QCString &word,bool hiPriority)
 {
   std::lock_guard<std::mutex> lock(g_searchIndexMutex);
   if (word.isEmpty() || !isId(word[0]) || m_current==nullptr) return;
-  GrowBuf *pText = hiPriority ? &m_current->importantText : &m_current->normalText;
-  if (pText->getPos()>0) pText->addChar(' ');
-  pText->addStr(word);
+  QCString &tText = hiPriority ? m_current->importantText : m_current->normalText;
+  if (!text.isEmpty()) text+=' ';
+  text+=word;
   //printf("addWord %s\n",word);
 }
 
@@ -509,8 +508,6 @@ void SearchIndexExternal::write(const QCString &fileName)
     t << "<add>\n";
     for (auto &[name,doc] : m_docEntries)
     {
-      doc.normalText.addChar(0);    // make sure buffer ends with a 0 terminator
-      doc.importantText.addChar(0); // make sure buffer ends with a 0 terminator
       t << "  <doc>\n";
       t << "    <field name=\"type\">"     << doc.type << "</field>\n";
       t << "    <field name=\"name\">"     << convertToXML(doc.name) << "</field>\n";
@@ -523,8 +520,8 @@ void SearchIndexExternal::write(const QCString &fileName)
         t << "    <field name=\"tag\">"      << convertToXML(doc.extId)  << "</field>\n";
       }
       t << "    <field name=\"url\">"      << convertToXML(doc.url)  << "</field>\n";
-      t << "    <field name=\"keywords\">" << convertToXML(doc.importantText.get())  << "</field>\n";
-      t << "    <field name=\"text\">"     << convertToXML(doc.normalText.get())     << "</field>\n";
+      t << "    <field name=\"keywords\">" << convertToXML(doc.importantText)  << "</field>\n";
+      t << "    <field name=\"text\">"     << convertToXML(doc.normalText)     << "</field>\n";
       t << "  </doc>\n";
     }
     t << "</add>\n";

@@ -31,7 +31,6 @@
 #include "htmlentity.h"
 #include "emoji.h"
 #include "plantuml.h"
-#include "growbuf.h"
 #include "fileinfo.h"
 #include "portable.h"
 #include "codefragment.h"
@@ -52,20 +51,19 @@
 static QCString filterId(const QCString &s)
 {
   if (s.isEmpty()) return s;
-  GrowBuf growBuf;
-  growBuf.clear();
+  QCString result;
+  result.reserve(s.length()+8);
   const char *p=s.data();
   char c=0;
   while ((c=*p++))
   {
     switch (c)
     {
-      case ':':  growBuf.addStr("_1");   break;
-      default:   growBuf.addChar(c);       break;
+      case ':':  result+="_1"; break;
+      default:   result+=c;    break;
     }
   }
-  growBuf.addChar(0);
-  return growBuf.get();
+  return result;
 }
 
 static bool supportedHtmlAttribute(const QCString &name)

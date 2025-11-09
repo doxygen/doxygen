@@ -24,7 +24,6 @@
 #include "debug.h"
 #include "fileinfo.h"
 #include "dir.h"
-#include "growbuf.h"
 #include "entry.h"
 #include "commentscan.h"
 #include "linkedmap.h"
@@ -232,17 +231,17 @@ void CitationManager::insertCrossReferencesForBibFile(const QCString &bibFile)
   }
 }
 
-const std::string g_formulaMarker = "CITE_FORMULA_";
+static const std::string g_formulaMarker = "CITE_FORMULA_";
 
 QCString CitationManager::getFormulas(const QCString &s)
 {
   if (s.isEmpty()) return s;
-  GrowBuf growBuf;
-  GrowBuf formulaBuf;
+  QCString result;
+  result.reserve(s.length()+32);
+  QCString formula;
+  formula.reserve(256);
   bool insideFormula = false;
   int citeFormulaCnt = 1;
-  const size_t tmpLen = 30;
-  char tmp[tmpLen];
   const char *ps=s.data();
   char c = 0;
   while ((c=*ps++))
@@ -252,32 +251,34 @@ QCString CitationManager::getFormulas(const QCString &s)
       switch (c)
       {
         case '\\':
-          formulaBuf.addChar(c);
+          formula+=c;
           c = *ps++;
-          formulaBuf.addChar(c);
+          formula+=c;
           break;
         case '\n':
-          formulaBuf.addChar(c);
-          formulaBuf.addChar(0);
-          growBuf.addChar('$');
-          growBuf.addStr(formulaBuf.get());
+          formula+=c;
+          result+='$';
+          result+=formula;
           insideFormula = false;
-          formulaBuf.clear();
+          formula.clear();
           break;
         case '$':
-          qsnprintf(tmp,tmpLen,"%s%06d",g_formulaMarker.c_str(),citeFormulaCnt);
-          formulaBuf.addChar(0);
-          p->formulaCite.emplace(citeFormulaCnt,std::string("\\f$") + formulaBuf.get() + "\\f$");
-          citeFormulaCnt++;
-          // need { and } due to the capitalization rules of bibtex.
-          growBuf.addChar('{');
-          growBuf.addStr(tmp);
-          growBuf.addChar('}');
-          insideFormula = false;
-          formulaBuf.clear();
+          {
+            const size_t idLen = 30;
+            char id[idLen];
+            qsnprintf(id,idLen,"%s%06d",g_formulaMarker.c_str(),citeFormulaCnt);
+            p->formulaCite.emplace(citeFormulaCnt,std::string("\\f$") + formula.str() + "\\f$");
+            citeFormulaCnt++;
+            // need { and } due to the capitalization rules of bibtex.
+            result+='{';
+            result+=id;
+            result+='}';
+            insideFormula = false;
+            formula.clear();
+          }
           break;
         default:
-          formulaBuf.addChar(c);
+          formula+=c;
           break;
       }
     }
@@ -286,27 +287,25 @@ QCString CitationManager::getFormulas(const QCString &s)
       switch (c)
       {
         case '\\':
-          growBuf.addChar(c);
+          result+=c;
           c = *ps++;
-          growBuf.addChar(c);
+          result+=c;
           break;
         case '$':
           insideFormula = true;
           break;
         default:
-          growBuf.addChar(c);
+          result+=c;
           break;
       }
     }
   }
   if (insideFormula)
   {
-    formulaBuf.addChar(0);
-    growBuf.addStr(formulaBuf.get());
-    formulaBuf.clear();
+    result+=formula;
+    formula.clear();
   }
-  growBuf.addChar(0);
-  return growBuf.get();
+  return result;
 }
 
 QCString CitationManager::replaceFormulas(const QCString &s)
