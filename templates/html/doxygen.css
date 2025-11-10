@@ -79,6 +79,11 @@ p.startli, p.startdd {
 	margin-top: 2px;
 }
 
+p.startlisingle {
+	margin-top: 0px;
+	margin-bottom: 0px;
+}
+
 th p.starttd, th p.intertd, th p.endtd {
 	font-size: 100%;
 	font-weight: 700;

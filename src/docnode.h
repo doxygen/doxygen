@@ -580,6 +580,7 @@ class DocAutoList : public DocCompoundNode
     bool isEnumList() const    { return m_isEnumList; }
     int  indent() const        { return m_indent; }
     bool isCheckedList() const { return m_isCheckedList; }
+    bool isSingleParagraph() const { return m_singleParagraph; }
     int depth() const          { return m_depth; }
     Token parse();
 
@@ -587,6 +588,7 @@ class DocAutoList : public DocCompoundNode
     int      m_indent = 0;
     bool     m_isEnumList = false;
     bool     m_isCheckedList = false;
+    bool     m_singleParagraph = true;
     int      m_depth = 0;
 };
 

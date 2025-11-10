@@ -53,7 +53,8 @@ enum class contexts_t
     ENDTD,     // 6
     INTERLI,   // 7
     INTERDD,   // 8
-    INTERTD    // 9
+    INTERTD,   // 9
+    STARTLISINGLE   // 10
 };
 
 static constexpr const char *contexts(contexts_t type)
@@ -62,6 +63,7 @@ static constexpr const char *contexts(contexts_t type)
   {
     case contexts_t::NONE:    return nullptr;
     case contexts_t::STARTLI: return "startli";
+    case contexts_t::STARTLISINGLE: return "startlisingle";
     case contexts_t::STARTDD: return "startdd";
     case contexts_t::ENDLI:   return "endli";
     case contexts_t::ENDDD:   return "enddd";
@@ -1171,7 +1173,14 @@ static contexts_t getParagraphContext(const DocPara &p,bool &isFirst,bool &isLas
     {
       isFirst=isFirstChildNode(docAutoListItem,p);
       isLast =isLastChildNode (docAutoListItem,p);
-      t=contexts_t::STARTLI; // not used
+      if (std::get_if<DocAutoList>(docAutoListItem->parent())->isSingleParagraph())
+      {
+        t=contexts_t::STARTLISINGLE; // not used
+      }
+      else
+      {
+        t=contexts_t::STARTLI; // not used
+      }
       return t;
     }
     const auto docSimpleListItem = std::get_if<DocSimpleListItem>(p.parent());
@@ -1327,7 +1336,7 @@ void HtmlDocVisitor::operator()(const DocPara &p)
   bool isLast  = false;
   contexts_t t = getParagraphContext(p,isFirst,isLast);
   //printf("startPara first=%d last=%d\n",isFirst,isLast);
-  if (isFirst && isLast) needsTagBefore=FALSE;
+  if (!std::holds_alternative<DocAutoListItem>(*p.parent()) && isFirst && isLast) needsTagBefore=FALSE;
 
   //printf("  needsTagBefore=%d\n",needsTagBefore);
   // write the paragraph tag (if needed)
@@ -1372,7 +1381,7 @@ void HtmlDocVisitor::operator()(const DocPara &p)
   }
 
   //printf("endPara first=%d last=%d\n",isFirst,isLast);
-  if (isFirst && isLast) needsTagAfter=FALSE;
+  if (!std::holds_alternative<DocAutoListItem>(*p.parent()) && isFirst && isLast) needsTagAfter=FALSE;
 
   //printf("  needsTagAfter=%d\n",needsTagAfter);
   if (needsTagAfter) m_t << "</p>\n";
@@ -2368,7 +2377,7 @@ void HtmlDocVisitor::forceEndParagraph(const Node &n)
     bool isLast = false;
     getParagraphContext(*para,isFirst,isLast);
     //printf("forceEnd first=%d last=%d styleOutsideParagraph=%d\n",isFirst,isLast,styleOutsideParagraph);
-    if (isFirst && isLast) return;
+    if (!std::holds_alternative<DocAutoListItem>(*para->parent()) && isFirst && isLast) return;
     if (styleOutsideParagraph) return;
 
     //printf("adding </p>\n");
@@ -2417,7 +2426,7 @@ void HtmlDocVisitor::forceStartParagraph(const Node &n)
     bool isFirst = false;
     bool isLast = false;
     getParagraphContext(*para,isFirst,isLast);
-    if (isFirst && isLast) needsTag = false;
+    if (!std::holds_alternative<DocAutoListItem>(*para->parent()) && isFirst && isLast)  needsTag = false;
     //printf("forceStart first=%d last=%d needsTag=%d\n",isFirst,isLast,needsTag);
 
     if (needsTag) m_t << "<p>";
