@@ -53,7 +53,6 @@ struct TagInfo;
 class PageDef;
 class SectionInfo;
 class Definition;
-class BufStr;
 class FileInfo;
 class Dir;
 

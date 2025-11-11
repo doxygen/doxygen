@@ -36,7 +36,6 @@
 #include "formula.h"
 #include "fileinfo.h"
 #include "indexlist.h"
-#include "growbuf.h"
 #include "portable.h"
 #include "codefragment.h"
 #include "cite.h"
@@ -2150,27 +2149,28 @@ void HtmlDocVisitor::filter(const QCString &str, const bool retainNewline)
 /// assume that the outer quoting will be using the double quote &quot;
 QCString HtmlDocVisitor::filterQuotedCdataAttr(const QCString &str)
 {
-  GrowBuf growBuf;
   if (str.isEmpty()) return str;
+  QCString result;
+  result.reserve(str.length()+8);
   const char *p=str.data();
   while (*p)
   {
     char c=*p++;
     switch(c)
     {
-      case '&':  growBuf.addStr("&amp;"); break;
-      case '"':  growBuf.addStr("&quot;"); break;
-      case '<':  growBuf.addStr("&lt;"); break;
-      case '>':  growBuf.addStr("&gt;"); break;
+      case '&':  result+="&amp;"; break;
+      case '"':  result+="&quot;"; break;
+      case '<':  result+="&lt;"; break;
+      case '>':  result+="&gt;"; break;
       case '\\':
         if ((*p == '(') || (*p == ')') || (*p == '[') || (*p == ']'))
         {
-          growBuf.addStr("\\&zwj;");
-          growBuf.addChar(*p++);
+          result+="\\&zwj;";
+          result+=*p++;
         }
         else
         {
-          growBuf.addChar(c);
+          result+=c;
         }
         break;
       default:
@@ -2178,21 +2178,20 @@ QCString HtmlDocVisitor::filterQuotedCdataAttr(const QCString &str)
           uint8_t uc = static_cast<uint8_t>(c);
           if (uc<32 && !isspace(c)) // non-printable control characters
           {
-            growBuf.addStr("&#x24");
-            growBuf.addChar(hex[uc>>4]);
-            growBuf.addChar(hex[uc&0xF]);
-            growBuf.addStr(";");
+            result+="&#x24";
+            result+=hex[uc>>4];
+            result+=hex[uc&0xF];
+            result+=";";
           }
           else
           {
-            growBuf.addChar(c);
+            result+=c;
           }
         }
         break;
     }
   }
-  growBuf.addChar(0);
-  return growBuf.get();
+  return result;
 }
 
 void HtmlDocVisitor::startLink(const QCString &ref,const QCString &file,

@@ -222,7 +222,6 @@ struct LayoutNavEntry
     LayoutNavEntryList &children()   { return m_children; }
     void setVisible(bool v)          { m_visible = v; }
     bool visible() const             { return m_visible; }
-    void clear()                     { m_children.clear(); }
     void insertChild(size_t pos,std::unique_ptr<LayoutNavEntry> &&e);
     void appendChild(std::unique_ptr<LayoutNavEntry> &&e);
     void updateVisibility(LayoutNavEntry *parent);

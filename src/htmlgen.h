@@ -113,7 +113,6 @@ class HtmlGenerator : public OutputGenerator, public OutputGenIntf
     static void writeExternalSearchPage();
     static QCString writeLogoAsString(const QCString &path);
     static QCString writeSplitBarAsString(const QCString &name,const QCString &relpath,const QCString &allMembersFile);
-    static QCString getMathJaxMacros();
     static QCString getNavTreeCss();
     void clearBuffer();
 
