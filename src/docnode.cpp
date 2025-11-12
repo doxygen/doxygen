@@ -3017,7 +3017,6 @@ Token DocAutoList::parse()
 
     children().append<DocAutoListItem>(parser(),thisVariant(),m_indent,num++);
     retval = children().get_last<DocAutoListItem>()->parse();
-    m_singleParagraph = m_singleParagraph &&  children().get_last<DocAutoListItem>()->children().size()<=1 ;
     //printf("DocAutoList::parse(): retval=0x%x parser()->context.token->indent=%d m_indent=%d "
     //       "m_isEnumList=%d parser()->context.token->isEnumList=%d parser()->context.token->name=%s\n",
     //       retval,parser()->context.token->indent,m_indent,m_isEnumList,parser()->context.token->isEnumList,

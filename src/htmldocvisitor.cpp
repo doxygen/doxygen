@@ -53,8 +53,7 @@ enum class contexts_t
     ENDTD,     // 6
     INTERLI,   // 7
     INTERDD,   // 8
-    INTERTD,   // 9
-    STARTLISINGLE   // 10
+    INTERTD    // 9
 };
 
 static constexpr const char *contexts(contexts_t type)
@@ -63,7 +62,6 @@ static constexpr const char *contexts(contexts_t type)
   {
     case contexts_t::NONE:    return nullptr;
     case contexts_t::STARTLI: return "startli";
-    case contexts_t::STARTLISINGLE: return "startlisingle";
     case contexts_t::STARTDD: return "startdd";
     case contexts_t::ENDLI:   return "endli";
     case contexts_t::ENDDD:   return "enddd";
@@ -1173,14 +1171,7 @@ static contexts_t getParagraphContext(const DocPara &p,bool &isFirst,bool &isLas
     {
       isFirst=isFirstChildNode(docAutoListItem,p);
       isLast =isLastChildNode (docAutoListItem,p);
-      if (std::get_if<DocAutoList>(docAutoListItem->parent())->isSingleParagraph())
-      {
-        t=contexts_t::STARTLISINGLE; // not used
-      }
-      else
-      {
-        t=contexts_t::STARTLI; // not used
-      }
+      t=contexts_t::STARTLI; // not used
       return t;
     }
     const auto docSimpleListItem = std::get_if<DocSimpleListItem>(p.parent());
