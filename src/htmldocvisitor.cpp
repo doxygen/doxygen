@@ -1327,7 +1327,7 @@ void HtmlDocVisitor::operator()(const DocPara &p)
   bool isLast  = false;
   contexts_t t = getParagraphContext(p,isFirst,isLast);
   //printf("startPara first=%d last=%d\n",isFirst,isLast);
-  if (isFirst && isLast) needsTagBefore=FALSE;
+  if (!std::holds_alternative<DocAutoListItem>(*p.parent()) && isFirst && isLast) needsTagBefore=FALSE;
 
   //printf("  needsTagBefore=%d\n",needsTagBefore);
   // write the paragraph tag (if needed)
@@ -1372,7 +1372,7 @@ void HtmlDocVisitor::operator()(const DocPara &p)
   }
 
   //printf("endPara first=%d last=%d\n",isFirst,isLast);
-  if (isFirst && isLast) needsTagAfter=FALSE;
+  if (!std::holds_alternative<DocAutoListItem>(*p.parent()) && isFirst && isLast) needsTagAfter=FALSE;
 
   //printf("  needsTagAfter=%d\n",needsTagAfter);
   if (needsTagAfter) m_t << "</p>\n";
@@ -2368,7 +2368,7 @@ void HtmlDocVisitor::forceEndParagraph(const Node &n)
     bool isLast = false;
     getParagraphContext(*para,isFirst,isLast);
     //printf("forceEnd first=%d last=%d styleOutsideParagraph=%d\n",isFirst,isLast,styleOutsideParagraph);
-    if (isFirst && isLast) return;
+    if (!std::holds_alternative<DocAutoListItem>(*para->parent()) && isFirst && isLast) return;
     if (styleOutsideParagraph) return;
 
     //printf("adding </p>\n");
@@ -2417,7 +2417,7 @@ void HtmlDocVisitor::forceStartParagraph(const Node &n)
     bool isFirst = false;
     bool isLast = false;
     getParagraphContext(*para,isFirst,isLast);
-    if (isFirst && isLast) needsTag = false;
+    if (!std::holds_alternative<DocAutoListItem>(*para->parent()) && isFirst && isLast)  needsTag = false;
     //printf("forceStart first=%d last=%d needsTag=%d\n",isFirst,isLast,needsTag);
 
     if (needsTag) m_t << "<p>";
