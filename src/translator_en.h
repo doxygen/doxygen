@@ -2659,13 +2659,13 @@ class TranslatorEnglish : public Translator
       return "Verified By";
     }
 
-    /*! Used in @satisfies/@verifies section documentation */
+    /*! Used in \@satisfies/\@verifies section documentation */
     QCString trSatisfies() override
     {
       return "Satisfies";
     }
 
-    /*! Used in @satisfies/@verifies section documentation */
+    /*! Used in \@satisfies/\@verifies section documentation */
     QCString trVerifies() override
     {
       return "Verifies";
