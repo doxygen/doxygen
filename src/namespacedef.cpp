@@ -1560,9 +1560,9 @@ bool NamespaceDefImpl::isLinkableInProject() const
   if (i==-1) i=0; else i+=2;
   bool extractAnonNs = Config_getBool(EXTRACT_ANON_NSPACES);
   bool hideUndoc     = Config_getBool(HIDE_UNDOC_NAMESPACES);
-  if (extractAnonNs &&                             // extract anonymous ns
-      name().mid(i,20)=="anonymous_namespace{"     // correct prefix
-     )                                             // not disabled by config
+  if (extractAnonNs &&                                // extract anonymous ns
+      name().mid(i).startsWith("anonymous_namespace{") // correct prefix
+     )                                                // not disabled by config
   {
     return TRUE;
   }
