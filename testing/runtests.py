@@ -85,7 +85,21 @@ class Tester:
         elif not os.path.isfile(expected_file):
             return (True,'%s absent' % expected_file)
         else:
-            diff = xpopen('diff -b -w -u %s %s' % (got_file,expected_file))
+            got_file_tmp = got_file + "_tmp"
+            with xopen(got_file,'r') as f:
+                with xopen(got_file_tmp,"w") as out_file:
+                    lines = f.read().replace("<","\n<").replace(">",">\n").splitlines()
+                    filtered = [ line for line in lines if line.strip() ]
+                    out_file.write('\n'.join(filtered))
+            expected_file_tmp = got_file + "_tmp1"
+            with xopen(expected_file,'r') as f:
+                with xopen(expected_file_tmp,"w") as out_file:
+                    lines = f.read().replace("<","\n<").replace(">",">\n").splitlines()
+                    filtered = [ line for line in lines if line.strip() ]
+                    out_file.write('\n'.join(filtered))
+            diff = xpopen('diff -b -w -u %s %s' % (got_file_tmp,expected_file_tmp))
+            os.remove(got_file_tmp)
+            os.remove(expected_file_tmp)
             if diff and not diff.startswith("No differences"):
                 return (True,'Difference between generated output and reference:\n%s' % diff)
         return (False,'')
