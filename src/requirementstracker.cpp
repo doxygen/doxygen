@@ -525,8 +525,8 @@ void RequirementsTracker::parseRequirementsFile(RequirementsCollection &collecti
 
   // Extract the page title from markdown content
   // Look for either ATX-style (# Title) or Setext-style (Title\n===)
-  std::regex atxTitlePattern(R"(^\s*#\s+(.+)$)", std::regex::multiline);
-  std::regex setextTitlePattern(R"(^(.+)\n=+\s*$)", std::regex::multiline);
+  std::regex atxTitlePattern(R"(^\s*#\s+(.+)$)");
+  std::regex setextTitlePattern(R"(^(.+)\n=+\s*$)");
 
   QCString pageTitle;
   std::string content = raw.str();
