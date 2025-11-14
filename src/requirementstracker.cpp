@@ -8,7 +8,6 @@
 
 #include <algorithm>
 #include <cctype>
-#include <regex>
 #include <fstream>
 #include <iomanip>
 #include <cerrno>
@@ -37,6 +36,7 @@
 #include "classdef.h"
 #include "namespacedef.h"
 #include "language.h"
+#include "regex.h"
 
 namespace {
 // Context structure for XML parsing
@@ -291,16 +291,14 @@ void RequirementsTracker::addDocumentationSections() {
 QCString RequirementsTracker::extractPrefix(const QCString &requirementId) const {
   // Match pattern: (PREFIX)(NUMBER) where PREFIX can be zero or more characters
   // Examples: SRS_123 -> "SRS_", REQ123 -> "REQ", ABC-456 -> "ABC-", "123" -> ""
-  // Use non-greedy match (.*?) to get minimal prefix followed by digits at the end (\\d+$)
-  std::regex pattern("^(.*?)(\\d+)$");
-  std::string id_str = requirementId.str();
-  std::smatch match;
-
-  if (std::regex_match(id_str, match, pattern)) {
-    return QCString(match[1].str().c_str());
+  static const reg::Ex pattern(R"(^(.*[^\d])(\d+)$)");
+  reg::Match match;
+  QCString prefix;
+  if (reg::match(requirementId.str(), match, pattern)) {
+    prefix = match[1].str();
   }
 
-  return QCString();
+  return prefix;
 }
 
 // Find collection by requirement prefix
@@ -504,57 +502,51 @@ void RequirementsTracker::parseRequirementsFile(RequirementsCollection &collecti
   }
 
   // Apply the same escaping that Doxygen uses (allowDots=false, allowUnderscore=false)
-  QCString baseName = escapeCharsInString(baseFn, false, false);
+  QCString pageFileName = escapeCharsInString(baseFn, false, false);
 
   // Generate page filename based on file extension
   // Only markdown files (.md, .markdown) get the "md_" prefix
   // Other Doxygen document formats (.dox, .txt, .doc) use the base name directly
-  QCString pageFileName;
   QCString extension = originalPath.lower();
   if (extension.endsWith(".md") || extension.endsWith(".markdown")) {
-    pageFileName = "md_" + baseName;
-  } else {
-    // For .dox, .txt, .doc and other formats, no prefix is added
-    pageFileName = baseName;
+    pageFileName = "md_" + pageFileName;
   }
 
   // Pattern to match @anchor or \anchor followed by requirement ID
   // Examples: @anchor SRS_123, \anchor REQ_456
   // Doxygen supports both @ (Javadoc style) and \ (Qt style) command prefixes
-  std::regex anchorPattern(R"([@\\]anchor\s+([A-Za-z0-9_-]+))");
-
+  static const reg::Ex anchorPattern(R"([@\\]anchor\s+([A-Za-z0-9_-]+))");
   // Extract the page title from markdown content
   // Look for either ATX-style (# Title) or Setext-style (Title\n===)
-  std::regex atxTitlePattern(R"(^\s*#\s+(.+)$)");
-  std::regex setextTitlePattern(R"(^(.+)\n=+\s*$)");
+  static const reg::Ex atxTitlePattern(R"(^\s*#\s+(.+)$)");
+  static const reg::Ex setextTitlePattern(R"(^(.+)\r?\n=+\s*$)");
 
   QCString pageTitle;
-  std::string content = raw.str();
 
+  reg::Match titleMatch;
   // Try Setext-style first (Title\n===) as it's used in the requirements file
-  std::smatch titleMatch;
-  if (std::regex_search(content, titleMatch, setextTitlePattern)) {
-    pageTitle = QCString(titleMatch[1].str().c_str()).stripWhiteSpace();
+  if (reg::match(raw.str(), titleMatch, setextTitlePattern)) {
+    pageTitle = QCString(titleMatch[1].str()).stripWhiteSpace();
   }
-  // Fallback to ATX-style (# Title)
-  else if (std::regex_search(content, titleMatch, atxTitlePattern)) {
-    pageTitle = QCString(titleMatch[1].str().c_str()).stripWhiteSpace();
+  else if (reg::match(raw.str(), titleMatch, atxTitlePattern)) {
+    // Fallback to ATX-style (# Title)
+    pageTitle = QCString(titleMatch[1].str()).stripWhiteSpace();
   }
 
   // Strip Doxygen {#labelid} Header Id Attributes from the title
   if (!pageTitle.isEmpty()) {
-    std::regex idTagPattern(R"(\s*\{#[^}]+\})");
+    static const reg::Ex idTagPattern(R"(\s*\{#[^}]+\})");
     std::string titleStr = pageTitle.str();
-    titleStr = std::regex_replace(titleStr, idTagPattern, "");
+    titleStr = reg::replace(titleStr, idTagPattern, "");
     pageTitle = QCString(titleStr.c_str()).stripWhiteSpace();
   }
 
-  std::sregex_iterator it(content.begin(), content.end(), anchorPattern);
-  std::sregex_iterator end;
+  reg::Iterator it(raw.str(), anchorPattern);
+  reg::Iterator end;
 
   for (; it != end; ++it) {
-    std::smatch match = *it;
-    QCString reqId = QCString(match[1].str().c_str());
+    const auto &match = *it;
+    QCString reqId = QCString(match[1].str());
 
     // If this is the first requirement, establish the collection prefix
     if (collection.prefix.isEmpty()) {
