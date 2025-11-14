@@ -1181,12 +1181,18 @@ bool DefinitionImpl::hasSourceRefs() const
 
 bool DefinitionImpl::hasDocumentation() const
 {
+  bool triv = false;
+  MemberDef *md = nullptr;
+  NamespaceDef *nd = nullptr;
+  if (p->def && (md = toMemberDef(p->def)) && md->isTrivial()) triv = true;
+  if (p->def && (nd = toNamespaceDef(p->def)) && nd->isTrivial()) triv = true;
   bool extractAll    = Config_getBool(EXTRACT_ALL);
   //bool sourceBrowser = Config_getBool(SOURCE_BROWSER);
   bool hasDocs =
          (p->details    && !p->details->doc.isEmpty())    || // has detailed docs
          (p->brief      && !p->brief->doc.isEmpty())      || // has brief description
          (p->inbodyDocs && !p->inbodyDocs->doc.isEmpty()) || // has inbody docs
+         triv || // trivial, no documentation required
          extractAll //||                   // extract everything
   //       (sourceBrowser && p->body &&
   //        p->body->startLine!=-1 && p->body->fileDef)

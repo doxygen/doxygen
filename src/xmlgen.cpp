@@ -819,6 +819,11 @@ static void generateXMLForMember(const MemberDef *md,TextStream &ti,TextStream &
     t << " extern=\"yes\"";
   }
 
+  if (md->isTrivial())
+  {
+    t << " trivial=\"yes\"";
+  }
+
   if (isFunc)
   {
     const ArgumentList &al = md->argumentList();
@@ -1532,6 +1537,7 @@ static void generateXMLForClass(const ClassDef *cd,TextStream &ti)
   if (cd->isFinal()) t << "\" final=\"yes";
   if (cd->isSealed()) t << "\" sealed=\"yes";
   if (cd->isAbstract()) t << "\" abstract=\"yes";
+  if (cd->isTrivial()) t << "\" trivial=\"yes";
   t << "\">\n";
   t << "    <compoundname>";
   QCString nameStr = cd->name();
@@ -1782,6 +1788,7 @@ static void generateXMLForNamespace(const NamespaceDef *nd,TextStream &ti)
   t << "  <compounddef id=\"" << nd->getOutputFileBase()
     << "\" kind=\"namespace\" "
     << (nd->isInline()?"inline=\"yes\" ":"")
+    << (nd->isTrivial() ? " trivial=\"yes\" " : "")
     << "language=\""
     << langToString(nd->getLanguage()) << "\">\n";
   t << "    <compoundname>";
