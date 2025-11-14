@@ -657,9 +657,21 @@
   \end{list}%
 }
 
+\newsavebox{\doxymboxbox}
+\newlength{\doxymboxlength}
+\newcommand{\doxymbox}[1]{%
+  \sbox{\doxymboxbox}{#1}%
+  \setlength{\doxymboxlength}{\wd\doxymboxbox}%
+  \ifthenelse{\doxymboxlength>\linewidth}{%
+    #1%
+  }{%
+    \mbox{#1}%
+  }%
+}
+
 % Used when hyperlinks are turned on
 \newcommand{\doxylink}[2]{%
-  \mbox{\hyperlink{#1}{#2}}%
+  \doxymbox{\hyperlink{#1}{#2}}%
 }
 
 % Used for the cite command
@@ -697,7 +709,7 @@
 % Third argument is the SectionType, see the doxygen internal
 % documentation for the values (relevant: Page ... Subsubsection).
 \newcommand{\doxysectlink}[3]{%
-  \mbox{\hyperlink{#1}{#2}}%
+  \doxymbox{\hyperlink{#1}{#2}}%
 }
 % Used when hyperlinks are turned off
 \newcommand{\doxyref}[3]{%

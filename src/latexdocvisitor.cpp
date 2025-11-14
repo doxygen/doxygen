@@ -122,7 +122,7 @@ static void visitPreStart(TextStream &t, bool hasCaption, QCString name,  QCStri
       else
       {
         t << "\n\\begin{DoxyImageNoCaption}%\n"
-               "  \\mbox{";
+               "  \\doxymbox{";
       }
     }
 
@@ -194,7 +194,7 @@ static void visitPostEnd(TextStream &t, bool hasCaption, bool inlineImage = FALS
     }
     else
     {
-      t << "}%\n"; // end mbox or caption
+      t << "}%\n"; // end doxymbox or caption
       if (hasCaption)
       {
         t << "\\end{DoxyImage}\n";
@@ -1737,7 +1737,7 @@ void LatexDocVisitor::operator()(const DocParamList &pl)
   {
     if (pl.direction()!=DocParamSect::Unspecified)
     {
-      m_t << "\\mbox{\\texttt{";
+      m_t << "\\doxymbox{\\texttt{";
       if (pl.direction()==DocParamSect::In)
       {
         m_t << "in";
@@ -1804,7 +1804,7 @@ void LatexDocVisitor::operator()(const DocXRefItem &x)
   m_t << "\\item[";
   if (pdfHyperlinks && !anonymousEnum)
   {
-    m_t << "\\mbox{\\hyperlink{" << stripPath(x.file()) << "_" << x.anchor() << "}{";
+    m_t << "\\doxymbox{\\hyperlink{" << stripPath(x.file()) << "_" << x.anchor() << "}{";
   }
   else
   {
