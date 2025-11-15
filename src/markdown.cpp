@@ -2327,7 +2327,8 @@ static bool isEndOfList(std::string_view data)
 }
 
 static bool isFencedCodeBlock(std::string_view data,size_t refIndent,
-                             QCString &lang,size_t &start,size_t &end,size_t &offset)
+                             QCString &lang,size_t &start,size_t &end,size_t &offset,
+                             QCString &fileName,int lineNr)
 {
   AUTO_TRACE("data='{}' refIndent={}",Trace::trunc(data),refIndent);
   const char dot = '.';
@@ -2419,6 +2420,7 @@ static bool isFencedCodeBlock(std::string_view data,size_t refIndent,
     }
     i++;
   }
+  warn(fileName, lineNr, "Ending Inside a fenced code block. Maybe the end marker for the block is missing?");
   AUTO_TRACE_EXIT("result=false: no end marker found lang={}'",lang);
   return false;
 }
@@ -3277,7 +3279,7 @@ QCString Markdown::Private::processQuotations(std::string_view data,size_t refIn
     if (pi!=std::string::npos)
     {
       size_t blockStart=0, blockEnd=0, blockOffset=0;
-      if (isFencedCodeBlock(data.substr(pi),currentIndent,lang,blockStart,blockEnd,blockOffset))
+      if (isFencedCodeBlock(data.substr(pi),currentIndent,lang,blockStart,blockEnd,blockOffset,fileName,lineNr))
       {
         auto addSpecialCommand = [&](const QCString &startCmd,const QCString &endCmd)
         {
@@ -3368,6 +3370,10 @@ QCString Markdown::Private::processQuotations(std::string_view data,size_t refIn
     }
     else
     {
+      if (QCString(data.substr(pi)).startsWith("```") || QCString(data.substr(pi)).startsWith("~~~"))
+      {
+        warn(fileName, lineNr, "Ending inside a fenced code block. Maybe the end marker for the block is missing?");
+      }
       out+=data.substr(pi);
     }
   }
@@ -3532,7 +3538,7 @@ QCString Markdown::Private::processBlocks(std::string_view data,const size_t ind
         i=ref+pi;
         end=i+1;
       }
-      else if (isFencedCodeBlock(data.substr(pi),currentIndent,lang,blockStart,blockEnd,blockOffset))
+      else if (isFencedCodeBlock(data.substr(pi),currentIndent,lang,blockStart,blockEnd,blockOffset,fileName,lineNr))
       {
         //printf("Found FencedCodeBlock lang='%s' start=%d end=%d code={%s}\n",
         //       qPrint(lang),blockStart,blockEnd,QCString(data+pi+blockStart).left(blockEnd-blockStart).data());
