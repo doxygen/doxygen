@@ -26,6 +26,8 @@
  * VERSION HISTORY
  * ---------------
  * History:
+ * 20251031:
+ * - Updated to 1.16.0;
  * 20240204:
  *  - Updated to 1.11.0:
  * 20231107:
@@ -81,7 +83,7 @@
 
 #include "translator_br.h"
 
-class TranslatorPortuguese : public Translator
+class TranslatorPortuguese : public TranslatorAdapter_1_16_0
 {
   public:
 

@@ -174,6 +174,8 @@ static bool handleIFile(yyscan_t yyscanner,const QCString &, const StringVector 
 static bool handleILine(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleIRaise(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleIPrefix(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleSatisfies(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleVerifies(yyscan_t yyscanner,const QCString &, const StringVector &);
 
 [[maybe_unused]] static const char *stateToString(int state);
 
@@ -339,6 +341,7 @@ static const std::map< std::string, DocCmdMap > docCmdMap =
   { "rtfinclude",             { nullptr,                         CommandSpacing::Inline,    SectionHandling::Break   }},
   { "rtfonly",                { &handleFormatBlock,              CommandSpacing::Invisible, SectionHandling::Break   }},
   { "sa",                     { nullptr,                         CommandSpacing::Block,     SectionHandling::Break   }},
+  { "satisfies",              { &handleSatisfies,                CommandSpacing::Inline,    SectionHandling::Replace }},
   { "section",                { &handleSection,                  CommandSpacing::Block,     SectionHandling::Break   }},
   { "see",                    { nullptr,                         CommandSpacing::Block,     SectionHandling::Break   }},
   { "short",                  { &handleBrief,                    CommandSpacing::Invisible, SectionHandling::Break   }},
@@ -371,6 +374,7 @@ static const std::map< std::string, DocCmdMap > docCmdMap =
   { "verbatim",               { &handleFormatBlock,              CommandSpacing::Block,     SectionHandling::Break   }},
   { "iverbatim",              { &handleFormatBlock,              CommandSpacing::Block,     SectionHandling::Break   }},
   { "verbinclude",            { nullptr,                         CommandSpacing::Inline,    SectionHandling::Break   }},
+  { "verifies",               { &handleVerifies,                 CommandSpacing::Inline,    SectionHandling::Replace }},
   { "version",                { nullptr,                         CommandSpacing::Block,     SectionHandling::Break   }},
   { "warning",                { nullptr,                         CommandSpacing::Block,     SectionHandling::Break   }},
   { "weakgroup",              { &handleWeakGroup,                CommandSpacing::Invisible, SectionHandling::Escape  }},
@@ -696,6 +700,8 @@ STopt  [^\n@\\]*
 %x      ILineSection
 %x      IRaise
 %x      IRaisePrefix
+%x      SatisfiesLabel
+%x      VerifiesLabel
 
 %%
 
@@ -2299,6 +2305,48 @@ STopt  [^\n@\\]*
                                         }
 
 
+<SatisfiesLabel>{LABELID}               { // found requirement ID for @satisfies
+                                          QCString reqId = yytext;
+                                          yyextra->current->satisfies.push_back(reqId);
+                                          BEGIN(Comment);
+                                        }
+<SatisfiesLabel>{DOCNL}                 { // missing argument for @satisfies
+                                          warn(yyextra->fileName,yyextra->lineNr,
+                                              "@satisfies command has no requirement ID"
+                                              );
+                                          if (*yytext=='\n') yyextra->lineNr++;
+                                          addOutput(yyscanner,'\n');
+                                          BEGIN(Comment);
+                                        }
+<SatisfiesLabel>.                       { // invalid character for requirement ID
+                                          warn(yyextra->fileName,yyextra->lineNr,
+                                              "Invalid or missing requirement ID for @satisfies"
+                                              );
+                                          addOutput(yyscanner,yytext);
+                                          BEGIN(Comment);
+                                        }
+
+<VerifiesLabel>{LABELID}                { // found requirement ID for @verifies
+                                          QCString reqId = yytext;
+                                          yyextra->current->verifies.push_back(reqId);
+                                          BEGIN(Comment);
+                                        }
+<VerifiesLabel>{DOCNL}                  { // missing argument for @verifies
+                                          warn(yyextra->fileName,yyextra->lineNr,
+                                              "@verifies command has no requirement ID"
+                                              );
+                                          if (*yytext=='\n') yyextra->lineNr++;
+                                          addOutput(yyscanner,'\n');
+                                          BEGIN(Comment);
+                                        }
+<VerifiesLabel>.                        { // invalid character for requirement ID
+                                          warn(yyextra->fileName,yyextra->lineNr,
+                                              "Invalid or missing requirement ID for @verifies"
+                                              );
+                                          addOutput(yyscanner,yytext);
+                                          BEGIN(Comment);
+                                        }
+
   /* ----- handle arguments of the preformatted block commands ------- */
 
 <FormatBlock>{CMD}("endverbatim"|"endiverbatim"|"endiliteral"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endrtfonly"|"endmanonly"|"enddot"|"endcode"|"endicode"|"endmsc")/{NW} { // possible ends
@@ -3618,6 +3666,20 @@ static bool handleIPrefix(yyscan_t yyscanner,const QCString &, const StringVecto
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   addOutput(yyscanner,"@iprefix ");
   BEGIN(IRaisePrefix);
+  return FALSE;
+}
+
+static bool handleSatisfies(yyscan_t yyscanner,const QCString &, const StringVector &optList)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  BEGIN(SatisfiesLabel);
+  return FALSE;
+}
+
+static bool handleVerifies(yyscan_t yyscanner,const QCString &, const StringVector &optList)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  BEGIN(VerifiesLabel);
   return FALSE;
 }
 
