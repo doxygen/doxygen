@@ -286,7 +286,7 @@ void Ex::Private::compile()
           prevTokenPos = tokenPos;
           addToken(PToken(PToken::Kind::BeginCapture));
           size_t id = ++nextCaptureId; // groups start at 1, 0 is whole match
-          data.back().setValue(id);
+          data.back().setValue(static_cast<uint16_t>(id));
           captureStack.push_back(id);
         }
         break;
@@ -301,7 +301,7 @@ void Ex::Private::compile()
           size_t id = captureStack.back();
           captureStack.pop_back();
           addToken(PToken(PToken::Kind::EndCapture));
-          data.back().setValue(id);
+          data.back().setValue(static_cast<uint16_t>(id));
         }
         break;
       case '[': // character class

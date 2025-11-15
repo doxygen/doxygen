@@ -1755,7 +1755,7 @@ int Markdown::Private::processCodeSpan(std::string_view data,size_t offset)
     if (nb>=3) // found ``` that is not at the start of the line, keep it as-is.
     {
       out+=data.substr(0,nb);
-      return nb;
+      return static_cast<int>(nb);
     }
     return 0;  // no matching delimiter
   }
