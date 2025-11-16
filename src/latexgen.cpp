@@ -2520,7 +2520,7 @@ void filterLatexString(TextStream &t,const QCString &str,
         default:
                    //if (!insideTabbing && forceBreaks && c!=' ' && *p!=' ')
                    if (!insideTabbing &&
-                       ((c>='A' && c<='Z' && pc!=' ' && !(pc>='A' && pc <= 'Z') && pc!='\0' && *p) || (c==':' && pc!=':') || (pc=='.' && isId(c)))
+                       ((c>='A' && c<='Z' && pc!=' ' && !(pc>='A' && pc <= 'Z') && pc!='\0' && *p) || (pc=='.' && isId(c)))
                       )
                    {
                      t << "\\+";
@@ -2532,6 +2532,10 @@ void filterLatexString(TextStream &t,const QCString &str,
                    else
                    {
                      t << static_cast<char>(c);
+                   }
+                   if (!insideTabbing && ((c==':' && *p!=':') || c=='/'))
+                   {
+                     t << "\\+";
                    }
       }
     }
