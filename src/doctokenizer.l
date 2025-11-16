@@ -1350,6 +1350,11 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                        }
 <St_File>{FILEMASK}    {
                          yyextra->token.name = yytext;
+                         if (yyextra->token.name.endsWith("\\ilinebr") ||yyextra->token.name.endsWith("@ilinebr"))
+                         {
+                           unput_string("\\ilinebr",8);
+                           yyextra->token.name = yyextra->token.name.left(yyleng-8);
+                         }
                          return Token::make_TK_WORD();
                        }
 <St_File>"\""[^\n\"]+"\"" {
