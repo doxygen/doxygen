@@ -92,7 +92,7 @@ if(NOT DEFINED MACOS_VERSION_MIN) # to allow overruling with -DMACOS_VERSION_MIN
     set(MACOS_VERSION_MIN 10.15) # needs std::filesystem
   endif()
   if(build_wizard AND CMAKE_SYSTEM MATCHES "Darwin")
-    set(MACOS_VERSION_MIN 11.0) # needs Qt
+    set(MACOS_VERSION_MIN 13.0) # needs Qt6
   endif()
 endif()
 
