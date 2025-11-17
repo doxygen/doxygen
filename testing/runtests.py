@@ -79,30 +79,39 @@ class Tester:
             self.test_out = self.args.outputdir+'/test_output_'+self.test_id
         self.prepare_test()
 
-    def compare_ok(self,got_file,expected_file,name):
+    # Compares 'got_file' against 'expected_file'.
+    # Returns (True,Msg) if there is a difference or one of the files does not exist and (False,'') otherwise
+    def compare_ok(self, got_file, expected_file):
         if not os.path.isfile(got_file):
-            return (True,'%s absent' % got_file)
-        elif not os.path.isfile(expected_file):
-            return (True,'%s absent' % expected_file)
-        else:
-            got_file_tmp = got_file + "_tmp"
-            with xopen(got_file,'r') as f:
-                with xopen(got_file_tmp,"w") as out_file:
-                    lines = f.read().replace("<","\n<").replace(">",">\n").splitlines()
-                    filtered = [ line for line in lines if line.strip() ]
-                    out_file.write('\n'.join(filtered))
-            expected_file_tmp = got_file + "_tmp1"
-            with xopen(expected_file,'r') as f:
-                with xopen(expected_file_tmp,"w") as out_file:
-                    lines = f.read().replace("<","\n<").replace(">",">\n").splitlines()
-                    filtered = [ line for line in lines if line.strip() ]
-                    out_file.write('\n'.join(filtered))
-            diff = xpopen('diff -b -w -u %s %s' % (got_file_tmp,expected_file_tmp))
-            os.remove(got_file_tmp)
-            os.remove(expected_file_tmp)
+            return (True, f'{got_file} absent')
+        if not os.path.isfile(expected_file):
+            return (True, f'{expected_file} absent')
+
+        def _write_filtered_tmp(src_path, tmp_path):
+            # Read, split on tags to add newlines, drop empty lines, and write to tmp
+            with xopen(src_path, 'r') as f, xopen(tmp_path, 'w') as out_file:
+                filtered = [line for line in f.read().
+                            replace("<", "\n<").replace(">", ">\n").splitlines() if line.strip()]
+                out_file.write('\n'.join(filtered)+'\n')
+
+        got_file_tmp      = got_file + "_got"
+        expected_file_tmp = got_file + "_ref"
+
+        try:
+            for src, tmp in ((got_file, got_file_tmp), (expected_file, expected_file_tmp)):
+                _write_filtered_tmp(src, tmp)
+
+            diff = xpopen(f'diff -b -w -u {got_file_tmp} {expected_file_tmp}')
             if diff and not diff.startswith("No differences"):
-                return (True,'Difference between generated output and reference:\n%s' % diff)
-        return (False,'')
+                return (True, f'Difference between generated output and reference:\n{diff}')
+            return (False, '')
+        finally:
+            # Ensure cleanup even if diff or write fails
+            for tmp in (got_file_tmp, expected_file_tmp):
+                try:
+                    os.remove(tmp)
+                except OSError:
+                    pass
 
     def cleanup_xmllint(self,errmsg):
         msg = errmsg.split('\n')
@@ -342,7 +351,7 @@ class Tester:
                     with xopen(out_file,'w') as f:
                         print(data,file=f)
                     ref_file='%s/%s/%s' % (self.args.inputdir,self.test_id,check)
-                    (failed_xml,xml_msg) = self.compare_ok(out_file,ref_file,self.test_name)
+                    (failed_xml,xml_msg) = self.compare_ok(out_file,ref_file)
                     if failed_xml:
                         msg+= (xml_msg,)
                         break
