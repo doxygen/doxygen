@@ -2437,7 +2437,7 @@ void filterLatexString(TextStream &t,const QCString &str,
           else
             t << static_cast<char>(c);
           break;
-        case '#':  t << "\\#";           break;
+        case '#':  t << "\\+\\#";        break;
         case '$':  t << "\\$";           break;
         case '%':  t << "\\%";           break;
         case '^':  processEntity(t,pdfHyperlinks,"$^\\wedge$","\\string^");    break;
