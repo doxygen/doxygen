@@ -214,6 +214,8 @@ struct scannerYY_state
 
   int              anonCount = 0;
   int              anonNSCount = 0;
+
+  bool             keepComment = false;
 };
 
 [[maybe_unused]] static const char *stateToString(int state);
@@ -429,9 +431,11 @@ NONLopt [^\n]*
 %x      CopyRound
 %x      CopySharp
 %x      CopyCurly
+%x      CopyComment
 %x      GCopyRound
 %x      GCopySquare
 %x      GCopyCurly
+%x      GCopyComment
 %x      SkipUnionSwitch
 %x      Specialization
 %x      SpecializationSingleQuote
@@ -1852,6 +1856,7 @@ NONLopt [^\n]*
                                           yyextra->current->startColumn = yyextra->yyColNr;
                                           yyextra->current->bodyLine  = yyextra->yyLineNr;
                                           yyextra->current->bodyColumn = yyextra->yyColNr;
+                                          yyextra->keepComment = true;
                                           lineCount(yyscanner) ;
                                           BEGIN( ConceptName ) ;
                                         }
@@ -3604,6 +3609,7 @@ NONLopt [^\n]*
                                           *yyextra->pCopyCurlyString += *yytext;
                                           yyextra->pCopyQuotedString=yyextra->pCopyCurlyString;
                                           yyextra->lastStringContext=YY_START;
+                                          yyextra->keepComment=false;
                                           BEGIN(CopyString);
                                         }
 <CopyCurly>\'                           {
@@ -3612,6 +3618,7 @@ NONLopt [^\n]*
                                           {
                                             yyextra->pCopyQuotedString=yyextra->pCopyCurlyString;
                                             yyextra->lastStringContext=YY_START;
+                                            yyextra->keepComment=false;
                                             BEGIN(CopyPHPString);
                                           }
                                         }
@@ -3622,7 +3629,10 @@ NONLopt [^\n]*
 <CopyCurly>"}"                          {
                                           *yyextra->pCopyCurlyString += *yytext;
                                           if (--yyextra->curlyCount<0)
+                                          {
+                                            yyextra->keepComment=false;
                                             BEGIN(yyextra->lastCurlyContext);
+                                          }
                                         }
 <CopyCurly>{CHARLIT}                    { if (yyextra->insidePHP)
                                           {
@@ -3644,6 +3654,43 @@ NONLopt [^\n]*
 <CopyCurly>.                            {
                                           *yyextra->pCopyCurlyString += *yytext;
                                         }
+<CopyCurly>{CPPC}[^\n]*                 {
+                                          if (yyextra->keepComment)
+                                          {
+                                            *yyextra->pCopyCurlyString += yytext;
+                                          }
+                                          else
+                                          {
+                                            REJECT;
+                                          }
+                                        }
+<CopyCurly>{CCS}                        {
+                                          if (yyextra->keepComment)
+                                          {
+                                            *yyextra->pCopyCurlyString += yytext;
+                                            BEGIN(CopyComment);
+                                          }
+                                          else
+                                          {
+                                            REJECT;
+                                          }
+                                        }
+<CopyComment>{CCE}                      {
+                                          *yyextra->pCopyCurlyString += yytext;
+                                          BEGIN(CopyCurly);
+                                        }
+<CopyComment>\n                         {
+                                          lineCount(yyscanner);
+                                          *yyextra->pCopyCurlyString += *yytext;
+                                        }
+<CopyComment>.                          {
+                                          *yyextra->pCopyCurlyString += *yytext;
+                                        }
+<CopyComment><<EOF>>                    {
+                                          warn(yyextra->fileName,yyextra->yyLineNr,
+                                              "reached end of file while inside a C style comment block!");
+                                          yyterminate();
+                                        }
 
   /* generic curly bracket list copy rules for growable strings */
 <GCopyCurly>^"#"{B}+[0-9]+{B}+"\""[^\"\n]+"\""{B}+"1"{B}*\n? { // start of included file marker
@@ -3663,6 +3710,7 @@ NONLopt [^\n]*
                                           *yyextra->pCopyCurlyGString << *yytext;
                                           yyextra->pCopyQuotedGString=yyextra->pCopyCurlyGString;
                                           yyextra->lastStringContext=YY_START;
+                                          yyextra->keepComment = false;
                                           BEGIN(CopyGString);
                                         }
 <GCopyCurly>\'                          {
@@ -3671,6 +3719,7 @@ NONLopt [^\n]*
                                           {
                                             yyextra->pCopyQuotedGString=yyextra->pCopyCurlyGString;
                                             yyextra->lastStringContext=YY_START;
+                                            yyextra->keepComment = false;
                                             BEGIN(CopyPHPGString);
                                           }
                                         }
@@ -3683,6 +3732,7 @@ NONLopt [^\n]*
                                           if (--yyextra->curlyCount<0)
                                           {
                                             yyextra->current->endBodyLine = yyextra->yyLineNr;
+                                            yyextra->keepComment = false;
                                             BEGIN(yyextra->lastCurlyContext);
                                           }
                                         }
@@ -3708,6 +3758,43 @@ NONLopt [^\n]*
                                         }
 <GCopyCurly>.                           {
                                           *yyextra->pCopyCurlyGString << *yytext;
+                                        }
+<GCopyCurly>{CPPC}[^\n]*                {
+                                          if (yyextra->keepComment)
+                                          {
+                                            *yyextra->pCopyCurlyGString << yytext;
+                                          }
+                                          else
+                                          {
+                                            REJECT;
+                                          }
+                                        }
+<GCopyCurly>{CCS}                       {
+                                          if (yyextra->keepComment)
+                                          {
+                                            *yyextra->pCopyCurlyGString << yytext;
+                                            BEGIN(GCopyComment);
+                                          }
+                                          else
+                                          {
+                                            REJECT;
+                                          }
+                                        }
+<GCopyComment>{CCE}                     {
+                                          *yyextra->pCopyCurlyGString << yytext;
+                                          BEGIN(GCopyCurly);
+                                        }
+<GCopyComment>\n                        {
+                                          lineCount(yyscanner);
+                                          *yyextra->pCopyCurlyGString << *yytext;
+                                        }
+<GCopyComment>.                         {
+                                          *yyextra->pCopyCurlyGString << *yytext;
+                                        }
+<GCopyComment><<EOF>>                   {
+                                          warn(yyextra->fileName,yyextra->yyLineNr,
+                                              "reached end of file while inside a C style comment block!");
+                                          yyterminate();
                                         }
 
   /* ---------------------- */
@@ -7578,11 +7665,11 @@ NONLopt [^\n]*
 <*>"}"                                  { yyextra->exported=false; }
 <*>.
 <SkipComment>{CPPC}|{CCS}
-<*>{CCS}                                 { yyextra->lastCContext = YY_START ;
+<*>{CCS}                                { yyextra->lastCContext = YY_START ;
                                           BEGIN( SkipComment ) ;
                                         }
-<SkipComment>{B}*{CCE}                   { BEGIN( yyextra->lastCContext ) ; }
-<*>{CPPC}                                 {
+<SkipComment>{B}*{CCE}                  { BEGIN( yyextra->lastCContext ) ; }
+<*>{CPPC}                               {
                                           yyextra->lastCContext = YY_START ;
                                           BEGIN( SkipCxxComment ) ;
                                         }

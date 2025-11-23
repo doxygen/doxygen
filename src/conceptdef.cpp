@@ -444,10 +444,22 @@ void ConceptDefImpl::writeDefinition(OutputList &ol,const QCString &title) const
     codeOL.startCodeFragment("DoxyCode");
     QCString scopeName;
     if (getOuterScope()!=Doxygen::globalScope) scopeName=getOuterScope()->name();
-    TextStream conceptDef;
-    conceptDef << m_initializer;
-    intf->parseCode(codeOL,scopeName,conceptDef.str(),SrcLangExt::Cpp,Config_getBool(STRIP_CODE_COMMENTS),false,QCString(),
-                    m_fileDef, -1,-1,true,nullptr,false,this);
+    //printf("concept=[%s]\n",qPrint(m_initializer));
+    intf->parseCode(codeOL,
+                    scopeName,
+                    m_initializer,
+                    SrcLangExt::Cpp,
+                    false,      // stripCodeComments
+                    false,      // isExampleBlock
+                    QCString(), // exampleName
+                    m_fileDef,  // fileDef
+                    -1,         // startLine
+                    -1,         // endLine
+                    true,       // inlineFragment
+                    nullptr,    // memberDef
+                    false,      // showLineNumbers
+                    this        // searchCtx
+                   );
     codeOL.endCodeFragment("DoxyCode");
 }
 
