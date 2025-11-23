@@ -9344,7 +9344,7 @@ class docInternalS5Type(GeneratedsSuper):
     __hash__ = GeneratedsSuper.__hash__
     subclass = None
     superclass = None
-    def __init__(self, para=None, sect5=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
+    def __init__(self, para=None, sect6=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
         self.gds_collector_ = gds_collector_
         self.gds_elementtree_node_ = None
         self.original_tagname_ = None
@@ -9355,11 +9355,11 @@ class docInternalS5Type(GeneratedsSuper):
         else:
             self.para = para
         self.para_nsprefix_ = None
-        if sect5 is None:
-            self.sect5 = []
+        if sect6 is None:
+            self.sect6 = []
         else:
-            self.sect5 = sect5
-        self.sect5_nsprefix_ = None
+            self.sect6 = sect6
+        self.sect6_nsprefix_ = None
         self.valueOf_ = valueOf_
         if mixedclass_ is None:
             self.mixedclass_ = MixedContainer
@@ -9395,22 +9395,22 @@ class docInternalS5Type(GeneratedsSuper):
         self.para.insert(index, value)
     def replace_para_at(self, index, value):
         self.para[index] = value
-    def get_sect5(self):
-        return self.sect5
-    def set_sect5(self, sect5):
-        self.sect5 = sect5
-    def add_sect5(self, value):
-        self.sect5.append(value)
-    def insert_sect5_at(self, index, value):
-        self.sect5.insert(index, value)
-    def replace_sect5_at(self, index, value):
-        self.sect5[index] = value
+    def get_sect6(self):
+        return self.sect6
+    def set_sect6(self, sect6):
+        self.sect6 = sect6
+    def add_sect6(self, value):
+        self.sect6.append(value)
+    def insert_sect6_at(self, index, value):
+        self.sect6.insert(index, value)
+    def replace_sect6_at(self, index, value):
+        self.sect6[index] = value
     def get_valueOf_(self): return self.valueOf_
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
     def hasContent_(self):
         if (
             self.para or
-            self.sect5 or
+            self.sect6 or
             (1 if type(self.valueOf_) in [int,float] else self.valueOf_) or
             self.content_
         ):
@@ -9453,9 +9453,9 @@ class docInternalS5Type(GeneratedsSuper):
         for para_ in self.para:
             namespaceprefix_ = self.para_nsprefix_ + ':' if (UseCapturedNS_ and self.para_nsprefix_) else ''
             para_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='para', pretty_print=pretty_print)
-        for sect5_ in self.sect5:
-            namespaceprefix_ = self.sect5_nsprefix_ + ':' if (UseCapturedNS_ and self.sect5_nsprefix_) else ''
-            sect5_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='sect5', pretty_print=pretty_print)
+        for sect6_ in self.sect6:
+            namespaceprefix_ = self.sect6_nsprefix_ + ':' if (UseCapturedNS_ and self.sect6_nsprefix_) else ''
+            sect6_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='sect6', pretty_print=pretty_print)
     def build(self, node, gds_collector_=None):
         self.gds_collector_ = gds_collector_
         if SaveElementTreeNode:
@@ -9485,16 +9485,16 @@ class docInternalS5Type(GeneratedsSuper):
                 self.add_para(obj_.value)
             elif hasattr(self, 'set_para'):
                 self.set_para(obj_.value)
-        elif nodeName_ == 'sect5':
+        elif nodeName_ == 'sect6':
             obj_ = docSect6Type.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
             obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
-                MixedContainer.TypeNone, 'sect5', obj_)
+                MixedContainer.TypeNone, 'sect6', obj_)
             self.content_.append(obj_)
-            if hasattr(self, 'add_sect5'):
-                self.add_sect5(obj_.value)
-            elif hasattr(self, 'set_sect5'):
-                self.set_sect5(obj_.value)
+            if hasattr(self, 'add_sect6'):
+                self.add_sect6(obj_.value)
+            elif hasattr(self, 'set_sect6'):
+                self.set_sect6(obj_.value)
         if not fromsubclass_ and child_.tail is not None:
             obj_ = self.mixedclass_(MixedContainer.CategoryText,
                 MixedContainer.TypeNone, '', child_.tail)

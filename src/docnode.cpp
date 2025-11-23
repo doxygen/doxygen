@@ -3031,6 +3031,7 @@ Token DocAutoList::parse()
         );
 
   parser()->tokenizer.endAutoList();
+
   AUTO_TRACE_EXIT("retval={}",retval.to_string());
   return retval;
 }

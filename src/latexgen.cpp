@@ -204,7 +204,7 @@ void LatexCodeGenerator::writeCodeLink(CodeSymbolType,
   size_t l = name.length();
   if (ref.isEmpty() && usePDFLatex && pdfHyperlinks)
   {
-    *m_t << "\\mbox{\\hyperlink{";
+    *m_t << "\\doxymbox{\\hyperlink{";
     if (!f.isEmpty()) *m_t << stripPath(f);
     if (!f.isEmpty() && !anchor.isEmpty()) *m_t << "_";
     if (!anchor.isEmpty()) *m_t << anchor;
@@ -1381,7 +1381,7 @@ void LatexGenerator::startTextLink(const QCString &f,const QCString &anchor)
   bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
   if (!m_disableLinks && pdfHyperlinks)
   {
-    m_t << "\\mbox{\\hyperlink{";
+    m_t << "\\doxymbox{\\hyperlink{";
     if (!f.isEmpty()) m_t << stripPath(f);
     if (!anchor.isEmpty()) m_t << "_" << anchor;
     m_t << "}{";
@@ -1410,7 +1410,7 @@ static QCString objectLinkToString(const QCString &ref, const QCString &f,
   QCString result;
   if (!disableLinks && ref.isEmpty() && pdfHyperlinks)
   {
-    result += "\\mbox{\\hyperlink{";
+    result += "\\doxymbox{\\hyperlink{";
     if (!f.isEmpty()) result += stripPath(f);
     if (!f.isEmpty() && !anchor.isEmpty()) result += "_";
     if (!anchor.isEmpty()) result += anchor;
@@ -1632,7 +1632,7 @@ void LatexGenerator::startDoxyAnchor(const QCString &fName,const QCString &,
 {
   bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
   bool usePDFLatex   = Config_getBool(USE_PDFLATEX);
-  if (m_insideTableEnv) m_t << "\\mbox{"; // see issue #6093
+  if (m_insideTableEnv) m_t << "\\doxymbox{"; // see issue #6093
   if (usePDFLatex && pdfHyperlinks)
   {
     m_t << "\\Hypertarget{";
@@ -2437,7 +2437,7 @@ void filterLatexString(TextStream &t,const QCString &str,
           else
             t << static_cast<char>(c);
           break;
-        case '#':  t << "\\#";           break;
+        case '#':  t << "\\+\\#";        break;
         case '$':  t << "\\$";           break;
         case '%':  t << "\\%";           break;
         case '^':  processEntity(t,pdfHyperlinks,"$^\\wedge$","\\string^");    break;
@@ -2484,13 +2484,13 @@ void filterLatexString(TextStream &t,const QCString &str,
         case '|':  processEntity(t,pdfHyperlinks,"$\\vert$","|");    break;
         case '~':  processEntity(t,pdfHyperlinks,"$\\sim$","\\string~");    break;
         case '[':  if (Config_getBool(PDF_HYPERLINKS) || insideItem)
-                     t << "\\mbox{[}";
+                     t << "\\+[";
                    else
                      t << "[";
                    break;
         case ']':  if (pc=='[') t << "$\\,$";
                      if (Config_getBool(PDF_HYPERLINKS) || insideItem)
-                       t << "\\mbox{]}";
+                       t << "]\\+";
                      else
                        t << "]";
                    break;
@@ -2520,7 +2520,7 @@ void filterLatexString(TextStream &t,const QCString &str,
         default:
                    //if (!insideTabbing && forceBreaks && c!=' ' && *p!=' ')
                    if (!insideTabbing &&
-                       ((c>='A' && c<='Z' && pc!=' ' && !(pc>='A' && pc <= 'Z') && pc!='\0' && *p) || (c==':' && pc!=':') || (pc=='.' && isId(c)))
+                       ((c>='A' && c<='Z' && pc!=' ' && !(pc>='A' && pc <= 'Z') && pc!='\0' && *p) || (pc=='.' && isId(c)))
                       )
                    {
                      t << "\\+";
@@ -2532,6 +2532,10 @@ void filterLatexString(TextStream &t,const QCString &str,
                    else
                    {
                      t << static_cast<char>(c);
+                   }
+                   if (!insideTabbing && ((c==':' && *p!=':') || c=='/'))
+                   {
+                     t << "\\+";
                    }
       }
     }

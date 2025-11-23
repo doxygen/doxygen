@@ -50,7 +50,6 @@
 #include "dirdef.h"
 #include "section.h"
 #include "dir.h"
-#include "growbuf.h"
 #include "outputlist.h"
 #include "moduledef.h"
 
@@ -1485,7 +1484,8 @@ static constexpr auto hex="0123456789ABCDEF";
 QCString convertToDocBook(const QCString &s, const bool retainNewline)
 {
   if (s.isEmpty()) return s;
-  GrowBuf growBuf;
+  QCString result;
+  result.reserve(s.length()+32);
   const char *p = s.data();
   const char *q = nullptr;
   int cnt = 0;
@@ -1494,14 +1494,15 @@ QCString convertToDocBook(const QCString &s, const bool retainNewline)
   {
     switch (c)
     {
-      case '\n': if (retainNewline)
-                 {
-                   growBuf.addStr("<literallayout>&#160;&#xa;</literallayout>");
-                   growBuf.addChar(c);
-                 }
-                 break;
-      case '<':  growBuf.addStr("&lt;");   break;
-      case '>':  growBuf.addStr("&gt;");   break;
+      case '\n':
+        if (retainNewline) 
+        {
+          result+="<literallayout>&#160;&#xa;</literallayout>";
+          result+=c;
+        }
+        break;
+      case '<':  result+="&lt;";   break;
+      case '>':  result+="&gt;";   break;
       case '&':  // possibility to have a special symbol
         q = p;
         cnt = 2; // we have to count & and ; as well
@@ -1517,37 +1518,36 @@ QCString convertToDocBook(const QCString &s, const bool retainNewline)
            if (res == HtmlEntityMapper::Sym_Unknown)
            {
              p++;
-             growBuf.addStr("&amp;");
+             result+="&amp;";
            }
            else
            {
-             growBuf.addStr(HtmlEntityMapper::instance().docbook(res));
+             result+=HtmlEntityMapper::instance().docbook(res);
              q++;
              p = q;
            }
         }
         else
         {
-          growBuf.addStr("&amp;");
+          result+="&amp;";
         }
         break;
-      case '\'': growBuf.addStr("&apos;"); break;
-      case '"':  growBuf.addStr("&quot;"); break;
+      case '\'': result+="&apos;"; break;
+      case '"':  result+="&quot;"; break;
       case  1: case  2: case  3: case  4: case  5: case  6: case 7:  case  8:
       case 11: case 12: case 14: case 15: case 16: case 17: case 18:
       case 19: case 20: case 21: case 22: case 23: case 24: case 25: case 26:
       case 27: case 28: case 29: case 30: case 31:
-        growBuf.addStr("&#x24");
-        growBuf.addChar(hex[static_cast<uint8_t>(c)>>4]);
-        growBuf.addChar(hex[static_cast<uint8_t>(c)&0xF]);
-        growBuf.addChar(';');
+        result+="&#x24";
+        result+=hex[static_cast<uint8_t>(c)>>4];
+        result+=hex[static_cast<uint8_t>(c)&0xF];
+        result+=';';
         break;
       default:
-        growBuf.addChar(c);
+        result+=c;
         break;
     }
   }
-  growBuf.addChar(0);
-  return growBuf.get();
+  return result;
 }
 

@@ -497,7 +497,7 @@
   <xsd:complexType name="docInternalS5Type" mixed="true">
     <xsd:sequence>
       <xsd:element name="para"  type="docParaType"  minOccurs="0" maxOccurs="unbounded" />
-      <xsd:element name="sect5" type="docSect6Type" minOccurs="0" maxOccurs="unbounded" />
+      <xsd:element name="sect6" type="docSect6Type" minOccurs="0" maxOccurs="unbounded" />
     </xsd:sequence>
   </xsd:complexType>
 

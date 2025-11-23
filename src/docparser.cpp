@@ -1815,7 +1815,8 @@ static size_t skipToEndMarker(const char *data,size_t i,size_t len,const QCStrin
 QCString DocParser::processCopyDoc(const char *data,size_t &len)
 {
   AUTO_TRACE("data={} len={}",Trace::trunc(data),len);
-  GrowBuf buf;
+  QCString result;
+  result.reserve(len+32);
   size_t i=0;
   int lineNr = tokenizer.getLineNr();
   while (i<len)
@@ -1851,10 +1852,10 @@ QCString DocParser::processCopyDoc(const char *data,size_t &len)
             context.copyStack.push_back(def);
             auto addDocs = [&](const QCString &file_,int line_,const QCString &doc_)
             {
-              buf.addStr(" \\ifile \""+file_+"\" ");
-              buf.addStr("\\iline "+QCString().setNum(line_)+" \\ilinebr ");
+              result+=" \\ifile \""+file_+"\" ";
+              result+="\\iline "+QCString().setNum(line_)+" \\ilinebr ";
               size_t len_ = doc_.length();
-              buf.addStr(processCopyDoc(doc_.data(),len_));
+              result+=processCopyDoc(doc_.data(),len_);
             };
             if (isBrief)
             {
@@ -1869,12 +1870,12 @@ QCString DocParser::processCopyDoc(const char *data,size_t &len)
                 const ArgumentList &docArgList = md->templateMaster() ?
                     md->templateMaster()->argumentList() :
                     md->argumentList();
-                buf.addStr(inlineArgListToDoc(docArgList));
+                result+=inlineArgListToDoc(docArgList);
               }
             }
             context.copyStack.pop_back();
-            buf.addStr(" \\ilinebr \\ifile \""+context.fileName+"\" ");
-            buf.addStr("\\iline "+QCString().setNum(lineNr)+" ");
+            result+=" \\ilinebr \\ifile \""+context.fileName+"\" ";
+            result+="\\iline "+QCString().setNum(lineNr)+" ";
           }
           else
           {
@@ -1899,27 +1900,26 @@ QCString DocParser::processCopyDoc(const char *data,size_t &len)
         {
           size_t orgPos = i;
           i=skipToEndMarker(data,k,len,endMarker);
-          buf.addStr(data+orgPos,i-orgPos);
+          result+=QCString(data+orgPos,i-orgPos);
           // TODO: adjust lineNr
         }
         else
         {
-          buf.addChar(c);
+          result+=c;
           i++;
         }
       }
     }
     else // not a command, just copy
     {
-      buf.addChar(c);
+      result+=c;
       i++;
       lineNr += (c=='\n') ? 1 : 0;
     }
   }
-  len = buf.getPos();
-  buf.addChar(0);
-  AUTO_TRACE_EXIT("result={}",Trace::trunc(buf.get()));
-  return buf.get();
+  len = result.length();
+  AUTO_TRACE_EXIT("result={}",Trace::trunc(result));
+  return result;
 }
 
 

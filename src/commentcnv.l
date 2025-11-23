@@ -1624,7 +1624,7 @@ static void replaceCommentMarker(yyscan_t yyscanner,std::string_view s)
   }
   // copy comment line to output
   yyextra->outBuf+=s.substr(p);
-  yyextra->col+=s.substr(p).length();
+  yyextra->col+=static_cast<int>(s.substr(p).length());
 }
 
 static inline int computeIndent(const char *s)
@@ -1849,7 +1849,7 @@ static void insertCommentStart(yyscan_t yyscanner)
   if (static_cast<int>(marker.length())<=markerSpace && !yyextra->firstIncludeLine)
   {
     copyToOutput(yyscanner,marker);
-    i+=marker.length();
+    i+=static_cast<int>(marker.length());
   }
   for (;i<contentCol;i++)
   {
