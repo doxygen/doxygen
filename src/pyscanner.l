@@ -122,6 +122,7 @@ struct pyscannerYY_state
   int                     decoratorRound = 0;
   bool                    checkDupEntry = false;
   bool                    firstPass = true;
+  int                     bracketDepth = 0;
 };
 
 //-----------------------------------------------------------------------------
@@ -1232,6 +1233,7 @@ ID        [a-z_A-Z%]+{IDSYM}*
                           yyextra->docBlockInBody    = FALSE;
                           yyextra->docBlockJavaStyle = FALSE;
                           yyextra->docBlock.clear();
+                          yyextra->bracketDepth = 0;
 
                           BEGIN(ClassInheritance);
                         }
@@ -1239,7 +1241,13 @@ ID        [a-z_A-Z%]+{IDSYM}*
 <ClassInheritance>{
    ({BB}|[\(,\)])      { // syntactic sugar for the list
                        }
-
+   "["                 {
+                         yyextra->bracketDepth++;
+                       }
+   "]"                 {
+                         if (yyextra->bracketDepth > 0)
+                           yyextra->bracketDepth--;
+                       }
     ":"                { // begin of the class definition
                          yyextra->specialBlock = TRUE; // expecting a docstring
                          yyextra->current->bodyLine  = yyextra->yyLineNr;
@@ -1248,9 +1256,12 @@ ID        [a-z_A-Z%]+{IDSYM}*
                        }
 
     {SCOPE}            {
-                         yyextra->current->extends.emplace_back(
-                                              substitute(yytext,".","::"),Protection::Public,Specifier::Normal
+                         if (yyextra->bracketDepth == 0)
+                         {
+                           yyextra->current->extends.emplace_back(
+                                                substitute(yytext,".","::"),Protection::Public,Specifier::Normal
                                             );
+                         }
                          //Has base class-do stuff
                        }
     "'"                { // start of a single quoted string
