@@ -759,6 +759,8 @@ tr:not(:first-child) > td.ititle {
 	border-bottom: 1px solid var(--memdecl-border-color);
 	padding-left: 10px;
 	transition: none;
+	vertical-align: top;
+	text-align: right;
 }
 
 .memItemRight {
@@ -767,6 +769,7 @@ tr:not(:first-child) > td.ititle {
 	border-bottom: 1px solid var(--memdecl-border-color);
 	padding-right: 10px;
 	transition: none;
+	vertical-align: bottom;
 }
 
 tr.heading        + tr[class^='memitem'] td.memItemLeft,

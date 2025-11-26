@@ -88,7 +88,7 @@ static constexpr bool extraChar(char c)
   return c=='-' || c=='+' || c=='!' || c=='?' || c=='$' || c=='@'  ||
          c=='&' || c=='*' || c=='_' || c=='%' || c=='[' || c=='('  ||
          c=='.' || c=='>' || c==':' || c==',' || c==';' || c=='\'' ||
-         c=='"' || c=='`';
+         c=='"' || c=='`' || c=='\\';
 }
 
 // is character c allowed before an emphasis section
@@ -1823,7 +1823,7 @@ int Markdown::Private::processSpecialCommand(std::string_view data, size_t offse
     out+=data.substr(0,endPos);
     return static_cast<int>(endPos);
   }
-  if (size>1 && data[0]=='\\') // escaped characters
+  if (size>1 && (data[0]=='\\' || data[0]=='@')) // escaped characters
   {
     char c=data[1];
     if (c=='[' || c==']' || c=='*' || c=='(' || c==')' || c=='`' || c=='_')
@@ -1849,16 +1849,6 @@ int Markdown::Private::processSpecialCommand(std::string_view data, size_t offse
       out+=data.substr(1,2);
       AUTO_TRACE_EXIT("3");
       return 3;
-    }
-  }
-  else if (size>1 && data[0]=='@') // escaped characters
-  {
-    char c=data[1];
-    if (c=='\\' || c=='@')
-    {
-      out+=data.substr(0,2);
-      AUTO_TRACE_EXIT("2");
-      return 2;
     }
   }
   return 0;
