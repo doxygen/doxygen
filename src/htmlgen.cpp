@@ -2183,7 +2183,7 @@ void HtmlGenerator::insertMemberAlignLeft(MemberItemType type, bool initTag)
   {
     case MemberItemType::Normal:         m_t << "<td class=\"memItemLeft\">"; break;
     case MemberItemType::AnonymousStart: m_t << "<td class=\"memItemLeft anon\">"; break;
-    case MemberItemType::AnonymousEnd:   m_t << "<td class=\"memItemLeft anonEnd\" valign=\"top\">"; break;
+    case MemberItemType::AnonymousEnd:   m_t << "<td class=\"memItemLeft anonEnd\">"; break;
     case MemberItemType::Templated:      m_t << "<td class=\"memTemplParams\" colspan=\"2\">"; break;
   }
 }
