@@ -1495,8 +1495,11 @@ QCString convertToDocBook(const QCString &s, const bool retainNewline)
     switch (c)
     {
       case '\n':
-        if (retainNewline) result+="<literallayout>&#160;&#xa;</literallayout>";
-        result+=c;
+        if (retainNewline) 
+        {
+          result+="<literallayout>&#160;&#xa;</literallayout>";
+          result+=c;
+        }
         break;
       case '<':  result+="&lt;";   break;
       case '>':  result+="&gt;";   break;
