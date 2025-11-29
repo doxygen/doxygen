@@ -57,7 +57,7 @@ class NamespaceDefImpl : public DefinitionMixin<NamespaceDefMutable>
     NamespaceDefImpl(const QCString &defFileName,int defLine,int defColumn,
                  const QCString &name,const QCString &ref=QCString(),
                  const QCString &refFile=QCString(),const QCString &type=QCString(),
-                 bool isPublished=false);
+                 bool isTrivial=false, bool isPublished=false);
    ~NamespaceDefImpl() override;
     NON_COPYABLE(NamespaceDefImpl)
 
@@ -85,6 +85,7 @@ class NamespaceDefImpl : public DefinitionMixin<NamespaceDefMutable>
     void combineUsingRelations(NamespaceDefSet &visitedNamespace) override;
     QCString displayName(bool=TRUE) const override;
     void setInline(bool isInline) override { m_inline = isInline; }
+    void setIsTrivial(bool b) override { m_isTrivial = b;}
     bool isConstantGroup() const override { return CONSTANT_GROUP == m_type; }
     bool isModule()        const override { return NAMESPACE == m_type || MODULE == m_type; }
     bool isLibrary() const override { return LIBRARY == m_type; }
@@ -92,6 +93,7 @@ class NamespaceDefImpl : public DefinitionMixin<NamespaceDefMutable>
     bool isLinkableInProject() const override;
     bool isLinkable() const override;
     bool isVisibleInHierarchy() const override;
+    bool isTrivial() const override { return m_isTrivial; }
     bool hasDetailedDescription() const override;
     void addMembersToMemberGroup() override;
     void distributeMemberGroupDocumentation() override;
@@ -164,7 +166,8 @@ class NamespaceDefImpl : public DefinitionMixin<NamespaceDefMutable>
     NamespaceLinkedRefMap m_namespaces;
     bool                  m_subGrouping = false;
     enum { NAMESPACE, MODULE, CONSTANT_GROUP, LIBRARY } m_type;
-    bool m_isPublished = false;
+    bool                  m_isTrivial = false;
+    bool                  m_isPublished = false;
     QCString              metaData;
     bool                  m_inline = false;
 };
@@ -172,10 +175,10 @@ class NamespaceDefImpl : public DefinitionMixin<NamespaceDefMutable>
 std::unique_ptr<NamespaceDef> createNamespaceDef(const QCString &defFileName,int defLine,int defColumn,
                  const QCString &name,const QCString &ref,
                  const QCString &refFile,const QCString &type,
-                 bool isPublished)
+                 bool isTrivial, bool isPublished)
 {
   //printf("createNamespaceDef(%s)\n",qPrint(name));
-  return std::make_unique<NamespaceDefImpl>(defFileName,defLine,defColumn,name,ref,refFile,type,isPublished);
+  return std::make_unique<NamespaceDefImpl>(defFileName,defLine,defColumn,name,ref,refFile,type,isTrivial,isPublished);
 }
 
 //------------------------------------------------------------------
@@ -223,6 +226,8 @@ class NamespaceDefAliasImpl : public DefinitionAliasMixin<NamespaceDef>
     { return getNSAlias()->isLinkable(); }
     bool isVisibleInHierarchy() const override
     { return getNSAlias()->isVisibleInHierarchy(); }
+    bool isTrivial() const override
+    { return getNSAlias()->isTrivial(); }
     bool hasDetailedDescription() const override
     { return getNSAlias()->hasDetailedDescription(); }
     const Definition *findInnerCompound(const QCString &name) const override
@@ -271,8 +276,9 @@ std::unique_ptr<NamespaceDef> createNamespaceDefAlias(const Definition *newScope
 NamespaceDefImpl::NamespaceDefImpl(const QCString &df,int dl,int dc,
                            const QCString &name,const QCString &lref,
                            const QCString &fName, const QCString &type,
-                           bool isPublished) :
+                           bool isTrivial ,bool isPublished) :
    DefinitionMixin(df,dl,dc,name)
+  ,m_isTrivial(isTrivial)
   ,m_isPublished(isPublished)
 {
   if (!fName.isEmpty())
