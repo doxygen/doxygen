@@ -413,7 +413,7 @@ void MemberList::writePlainDeclarations(OutputList &ol, bool inGroup,
                 auto ast    { validatingParseDoc(*parser.get(),
                                                  md->briefFile(),
                                                  md->briefLine(),
-                                                 cd,
+                                                 cd ? cd : md->getOuterScope(),
                                                  md,
                                                  md->briefDescription(),
                                                  DocOptions()
