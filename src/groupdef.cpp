@@ -151,6 +151,7 @@ class GroupDefImpl : public DefinitionMixin<GroupDef>
     void setGroupTitleLocal( const QCString &title);
 
     QCString             m_title;               // title of the group
+    QCString             m_titleAsText;         // title of the group in plain text
     bool                 m_titleSet;            // true if title is not the same as the name
     QCString             m_fileName;            // base name of the generated file
     FileList             m_fileList;            // list of files in the group
@@ -210,12 +211,14 @@ void GroupDefImpl::setGroupTitleLocal( const QCString &t )
   if ( !t.isEmpty())
   {
     m_title = t;
+    m_titleAsText = parseCommentAsText(this,nullptr,t,docFile(),docLine());
     m_titleSet = TRUE;
   }
   else
   {
     m_title = name();
     m_title[0]=static_cast<char>(toupper(m_title[0]));
+    m_titleAsText = m_title;
     m_titleSet = FALSE;
   }
 }
@@ -651,7 +654,7 @@ void GroupDefImpl::writeTagFile(TextStream &tagFile)
   addHtmlExtensionIfMissing(fn);
   tagFile << "  <compound kind=\"group\">\n";
   tagFile << "    <name>" << convertToXML(name()) << "</name>\n";
-  tagFile << "    <title>" << convertToXML(m_title) << "</title>\n";
+  tagFile << "    <title>" << convertToXML(m_titleAsText) << "</title>\n";
   tagFile << "    <filename>" << fn << "</filename>\n";
   for (const auto &lde : LayoutDocManager::instance().docEntries(LayoutDocManager::Group))
   {
@@ -991,7 +994,6 @@ void GroupDefImpl::writeNestedGroups(OutputList &ol,const QCString &title)
         if (anc.isEmpty()) anc=gd->name(); else anc.prepend(gd->name()+"_");
         ol.startMemberItem(anc,OutputGenerator::MemberItemType::Normal);
         ol.insertMemberAlign();
-        ol.startIndexItem(gd->getReference(),gd->getOutputFileBase());
         ol.generateDoc(gd->getDefFileName(),
                        gd->getDefLine(),
                        gd,
@@ -1000,7 +1002,6 @@ void GroupDefImpl::writeNestedGroups(OutputList &ol,const QCString &title)
                        DocOptions()
                        .setSingleLine(true)
                        .setAutolinkSupport(false));
-        ol.endIndexItem(gd->getReference(),gd->getOutputFileBase());
         ol.endMemberItem(OutputGenerator::MemberItemType::Normal);
         if (!gd->briefDescription().isEmpty() && Config_getBool(BRIEF_MEMBER_DESC))
         {
@@ -1234,7 +1235,7 @@ void GroupDefImpl::writeDocumentation(OutputList &ol)
     ++hierarchyLevel;
   }
 
-  startFile(ol,getOutputFileBase(),false,name(),m_title,HighlightedItem::Topics,
+  startFile(ol,getOutputFileBase(),false,name(),m_titleAsText,HighlightedItem::Topics,
             FALSE /* additionalIndices*/, QCString() /*altSidebarName*/, hierarchyLevel);
 
   ol.startHeaderSection();
@@ -1259,17 +1260,17 @@ void GroupDefImpl::writeDocumentation(OutputList &ol)
   //2.{
   ol.pushGeneratorState();
   ol.disable(OutputType::Man);
-  ol.endTitleHead(getOutputFileBase(),m_title);
+  ol.endTitleHead(getOutputFileBase(),m_titleAsText);
   ol.popGeneratorState();
   //2.}
   //3.{
   ol.pushGeneratorState();
   ol.disableAllBut(OutputType::Man);
   ol.endTitleHead(getOutputFileBase(),name());
-  if (!m_title.isEmpty())
+  if (!m_titleAsText.isEmpty())
   {
     ol.writeString(" - ");
-    ol.parseText(m_title);
+    ol.parseText(m_titleAsText);
   }
   ol.popGeneratorState();
   //3.}

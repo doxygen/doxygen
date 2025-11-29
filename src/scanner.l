@@ -204,7 +204,9 @@ struct scannerYY_state
 
   size_t           fencedSize = 0;
   int              nestedComment = 0;
-  std::vector< std::pair<Entry*,std::shared_ptr<Entry> > > outerScopeEntries;
+  using EntryRelation  = std::pair< Entry*, std::shared_ptr<Entry> >;
+  using EntryRelations = std::vector<EntryRelation>;
+  EntryRelations   outerScopeEntries;
   QCString         programStr;
 
   ClangTUParser   *clangParser = nullptr;
@@ -4234,7 +4236,7 @@ NONLopt [^\n]*
                                                 // same for C++11 style enums (enum class Name {})
                                             {
                                               // add to the scope surrounding the enum (copy!)
-                                              // we cannot during it directly as that would invalidate the iterator in parseCompounds.
+                                              // we cannot add it directly as that would invalidate the iterator in parseCompounds.
                                               //printf("*** adding outer scope entry for %s\n",qPrint(yyextra->current->name));
                                               yyextra->outerScopeEntries.emplace_back(yyextra->current_root->parent(), std::make_shared<Entry>(*yyextra->current));
                                             }
