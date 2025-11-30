@@ -569,15 +569,10 @@ void HtmlDocVisitor::operator()(const DocVerbatim &s)
                                         s.text(),
                                         langExt,
                                         Config_getBool(STRIP_CODE_COMMENTS),
-                                        s.isExample(),
-                                        s.exampleFile(),
-                                        nullptr, // fileDef
-                                        -1,      // startLine
-                                        -1,      // endLine
-                                        true,    // inlineFragment
-                                        nullptr, // memberDef
-                                        true,    // show line numbers
-                                        m_ctx    // search context
+                                        CodeParserOptions()
+                                        .setExample(s.isExample(), s.exampleFile())
+                                        .setInlineFragment(true)
+                                        .setSearchCtx(m_ctx)
                                        );
       m_ci.endCodeFragment("DoxyCode");
       forceStartParagraph(s);
@@ -725,15 +720,11 @@ void HtmlDocVisitor::operator()(const DocInclude &inc)
                                         inc.text(),
                                         langExt,
                                         inc.stripCodeComments(),
-                                        inc.isExample(),
-                                        inc.exampleFile(),
-                                        nullptr,     // fileDef
-                                        -1,    // startLine
-                                        -1,    // endLine
-                                        TRUE,  // inlineFragment
-                                        nullptr,     // memberDef
-                                        FALSE, // show line numbers
-                                        m_ctx  // search context
+                                        CodeParserOptions()
+                                        .setExample(inc.isExample(), inc.exampleFile())
+                                        .setInlineFragment(true)
+                                        .setShowLineNumbers(false)
+                                        .setSearchCtx(m_ctx)
                                        );
       m_ci.endCodeFragment("DoxyCode");
       forceStartParagraph(inc);
@@ -749,15 +740,11 @@ void HtmlDocVisitor::operator()(const DocInclude &inc)
                                            inc.text(),
                                            langExt,
                                            inc.stripCodeComments(),
-                                           inc.isExample(),
-                                           inc.exampleFile(),
-                                           fd.get(),   // fileDef,
-                                           -1,         // start line
-                                           -1,         // end line
-                                           true,       // inline fragment
-                                           nullptr,    // memberDef
-                                           true,       // show line numbers
-                                           m_ctx       // search context
+                                           CodeParserOptions()
+                                           .setExample(inc.isExample(), inc.exampleFile())
+                                           .setFileDef(fd.get())
+                                           .setInlineFragment(true)
+                                           .setSearchCtx(m_ctx)
                                            );
          m_ci.endCodeFragment("DoxyCode");
          forceStartParagraph(inc);
@@ -834,15 +821,12 @@ void HtmlDocVisitor::operator()(const DocIncOperator &op)
                                 op.text(),
                                 langExt,
                                 op.stripCodeComments(),
-                                op.isExample(),
-                                op.exampleFile(),
-                                fd.get(),     // fileDef
-                                op.line(),    // startLine
-                                -1,           // endLine
-                                true,         // inline fragment
-                                nullptr,      // memberDef
-                                op.showLineNo(),  // show line numbers
-                                m_ctx         // search context
+                                CodeParserOptions()
+                                .setExample(op.isExample(), op.exampleFile())
+                                .setFileDef(fd.get())
+                                .setStartLine(op.line())
+                                .setShowLineNumbers(op.showLineNo())
+                                .setSearchCtx(m_ctx)
                                );
     }
     pushHidden(m_hide);

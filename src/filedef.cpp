@@ -1239,7 +1239,8 @@ void FileDefImpl::writeSourceBody(OutputList &ol,[[maybe_unused]] ClangTUParser 
                        fileToString(absFilePath(),TRUE,TRUE),
                        getLanguage(),
                        Config_getBool(STRIP_CODE_COMMENTS),
-                       FALSE,QCString(),this
+                       CodeParserOptions()
+                       .setFileDef(this)
                       );
     }
     size_t indent = 0;
@@ -1247,16 +1248,9 @@ void FileDefImpl::writeSourceBody(OutputList &ol,[[maybe_unused]] ClangTUParser 
         detab(fileToString(absFilePath(),filterSourceFiles,TRUE),indent),
         getLanguage(),      // lang
         Config_getBool(STRIP_CODE_COMMENTS),
-        FALSE,              // isExampleBlock
-        QCString(),         // exampleName
-        this,               // fileDef
-        -1,                 // startLine
-        -1,                 // endLine
-        FALSE,              // inlineFragment
-        nullptr,                  // memberDef
-        TRUE,               // showLineNumbers
-        nullptr,                  // searchCtx
-        !needs2PassParsing  // collectXRefs
+        CodeParserOptions()
+        .setFileDef(this)
+        .setCollectXRefs(!needs2PassParsing)
         );
     codeOL.endCodeFragment("DoxyCode");
   }
@@ -1292,7 +1286,8 @@ void FileDefImpl::parseSource([[maybe_unused]] ClangTUParser *clangParser)
             detab(fileToString(absFilePath(),filterSourceFiles,TRUE),indent),
             getLanguage(),
             Config_getBool(STRIP_CODE_COMMENTS),
-            FALSE,QCString(),this
+            CodeParserOptions()
+            .setFileDef(this)
            );
   }
 }

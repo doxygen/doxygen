@@ -288,8 +288,7 @@ void CodeFragmentManager::parseCodeFragment(OutputCodeList & codeOutList,
                       codeFragment->fileContents,
                       langExt,
                       stripCodeComments, // actually not important here
-                      false,
-                      QCString()
+                      CodeParserOptions()
                       );
     }
     codeFragment->findBlockMarkers();
@@ -300,16 +299,10 @@ void CodeFragmentManager::parseCodeFragment(OutputCodeList & codeOutList,
           codeFragment->fileContents,
           langExt,            // lang
           false,              // strip code comments (overruled before replaying)
-          false,              // isExampleBlock
-          QCString(),         // exampleName
-          fd.get(),           // fileDef
-          -1,                 // startLine
-          -1,                 // endLine
-          true,               // inlineFragment
-          nullptr,            // memberDef
-          true,               // showLineNumbers
-          nullptr,            // searchCtx
-          false               // collectXRefs
+          CodeParserOptions()
+          .setFileDef(fd.get())
+          .setInlineFragment(true)
+          .setCollectXRefs(false)
           );
     }
   }

@@ -480,19 +480,13 @@ void writeXMLCodeBlock(TextStream &t,FileDef *fd)
   xmlList.add<XMLCodeGenerator>(&t);
   xmlList.startCodeFragment("DoxyCode");
   intf->parseCode(xmlList,    // codeOutList
-                QCString(),   // scopeName
-                fileToString(fd->absFilePath(),Config_getBool(FILTER_SOURCE_FILES)),
-                langExt,     // lang
-                Config_getBool(STRIP_CODE_COMMENTS),
-                FALSE,       // isExampleBlock
-                QCString(),  // exampleName
-                fd,          // fileDef
-                -1,          // startLine
-                -1,          // endLine
-                FALSE,       // inlineFragment
-                nullptr,           // memberDef
-                TRUE         // showLineNumbers
-                );
+                  QCString(),   // scopeName
+                  fileToString(fd->absFilePath(),
+                  Config_getBool(FILTER_SOURCE_FILES)),
+                  langExt,     // lang
+                  Config_getBool(STRIP_CODE_COMMENTS),
+                  CodeParserOptions().setFileDef(fd)
+                 );
   xmlList.endCodeFragment("DoxyCode");
 }
 

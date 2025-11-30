@@ -1058,14 +1058,12 @@ void DefinitionImpl::writeInlineCode(OutputList &ol,const QCString &scopeName) c
                       detab(codeFragment,indent), // input
                       p->lang,     // lang
                       Config_getBool(STRIP_CODE_COMMENTS),
-                      FALSE,            // isExample
-                      QCString(),       // exampleName
-                      p->body->fileDef,  // fileDef
-                      actualStart,      // startLine
-                      actualEnd,        // endLine
-                      TRUE,             // inlineFragment
-                      thisMd,           // memberDef
-                      TRUE              // show line numbers
+                      CodeParserOptions()
+                      .setFileDef(p->body->fileDef)
+                      .setStartLine(actualStart)
+                      .setEndLine(actualEnd)
+                      .setInlineFragment(true)
+                      .setMemberDef(thisMd)
                      );
       codeOL.endCodeFragment("DoxyCode");
     }

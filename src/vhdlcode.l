@@ -1653,58 +1653,41 @@ void VHDLCodeParser::parseCode(OutputCodeList &od,
                                const QCString &s,
                                SrcLangExt,
                                bool stripCodeComments,
-                               bool exBlock,
-                               const QCString &exName,
-                               const FileDef *fd,
-                               int startLine,
-                               int endLine,
-                               bool inlineFragment,
-                               const MemberDef *memberDef,
-                               bool,
-                               const Definition *searchCtx,
-                               bool /* collectXRefs */)
+                               const CodeParserOptions &options
+                               )
 {
   yyscan_t yyscanner = p->yyscanner;
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   //printf("***parseCode() exBlock=%d exName=%s fd=%p\n",exBlock,exName,fd);
   if (s.isEmpty()) return;
-  DebugLex debugLex(Debug::Lex_vhdlcode, __FILE__, fd ? qPrint(fd->fileName()): nullptr);
-  yyextra->fileName      = fd ? fd->fileName():"";
-  if (memberDef)
+  DebugLex debugLex(Debug::Lex_vhdlcode, __FILE__, options.fileDef() ? qPrint(options.fileDef()->fileName()): nullptr);
+  yyextra->fileName      = options.fileDef() ? options.fileDef()->fileName():"";
+  if (options.memberDef())
   {
-    const ClassDef *dd=memberDef->getClassDef();
-    if (dd) yyextra->currClass=dd->name();
+    const ClassDef *dd=options.memberDef()->getClassDef();
+    if (dd) yyextra->currClass = dd->name();
   }
   od.stripCodeComments(stripCodeComments);
   resetCodeParserState();
-  yyextra->code = &od;
-  yyextra->inputString   = s.data();
-  yyextra->inputPosition = 0;
-  yyextra->currentFontClass = nullptr;
-  yyextra->insideCodeLine = false;
-  yyextra->searchCtx = searchCtx;
-  yyextra->foldStack.clear();
+  yyextra->code                 = &od;
+  yyextra->inputString          = s.data();
+  yyextra->inputPosition        = 0;
+  yyextra->currentFontClass     = nullptr;
+  yyextra->insideCodeLine       = false;
+  yyextra->searchCtx            = options.searchCtx();
   yyextra->insideSpecialComment = false;
-
-  if (startLine!=-1)
-    yyextra->yyLineNr    = startLine;
-  else
-    yyextra->yyLineNr    = 1;
-
-  if (endLine!=-1)
-    yyextra->inputLines  = endLine+1;
-  else
-    yyextra->inputLines  = yyextra->yyLineNr + countLines(yyscanner) - 1;
-
+  yyextra->yyLineNr             = options.startLine()!=-1 ? options.startLine() : 1;
+  yyextra->inputLines           = options.endLine()!=-1   ? options.endLine()+1 : yyextra->yyLineNr + countLines(yyscanner) - 1;
+  yyextra->foldStack.clear();
 
   // yyextra->theCallContext.clear();
-  yyextra->exampleBlock  = exBlock;
-  yyextra->exampleName   = exName;
-  yyextra->sourceFileDef = fd;
-  if (exBlock && fd==nullptr)
+  yyextra->exampleBlock         = options.isExample();
+  yyextra->exampleName          = options.exampleName();
+  yyextra->sourceFileDef        = options.fileDef();
+  if (options.isExample() && options.fileDef()==nullptr)
   {
     // create a dummy filedef for the example
-    yyextra->exampleFileDef = createFileDef("",exName);
+    yyextra->exampleFileDef = createFileDef("",options.exampleName());
     yyextra->sourceFileDef = yyextra->exampleFileDef.get();
   }
   if (yyextra->sourceFileDef)
@@ -1718,7 +1701,7 @@ void VHDLCodeParser::parseCode(OutputCodeList &od,
   {
     yyextra->exampleFile = convertNameToFile(yyextra->exampleName+"-example");
   }
-  yyextra->includeCodeFragment = inlineFragment;
+  yyextra->includeCodeFragment = options.inlineFragment();
   startCodeLine(yyscanner);
   if (!yyextra->lexInit)
   {

@@ -450,15 +450,11 @@ void ConceptDefImpl::writeDefinition(OutputList &ol,const QCString &title) const
                     m_initializer,
                     SrcLangExt::Cpp,
                     false,      // stripCodeComments
-                    false,      // isExampleBlock
-                    QCString(), // exampleName
-                    m_fileDef,  // fileDef
-                    -1,         // startLine
-                    -1,         // endLine
-                    true,       // inlineFragment
-                    nullptr,    // memberDef
-                    false,      // showLineNumbers
-                    this        // searchCtx
+                    CodeParserOptions()
+                    .setFileDef(m_fileDef)
+                    .setInlineFragment(true)
+                    .setShowLineNumbers(false)
+                    .setSearchCtx(this)
                    );
     codeOL.endCodeFragment("DoxyCode");
 }

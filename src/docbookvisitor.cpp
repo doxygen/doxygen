@@ -345,8 +345,9 @@ DB_VIS_C
                                          s.text(),
                                          langExt,
                                          Config_getBool(STRIP_CODE_COMMENTS),
-                                         s.isExample(),
-                                         s.exampleFile());
+                                         CodeParserOptions()
+                                         .setExample(s.isExample(),s.exampleFile())
+                                        );
       m_t << "</computeroutput></literallayout>";
       break;
     case DocVerbatim::Verbatim:
@@ -468,8 +469,10 @@ DB_VIS_C
                                                   inc.text(),
                                                   langExt,
                                                   inc.stripCodeComments(),
-                                                  inc.isExample(),
-                                                  inc.exampleFile(), fd.get());
+                                                  CodeParserOptions()
+                                                  .setExample(inc.isExample(),inc.exampleFile())
+                                                  .setFileDef(fd.get())
+                                                 );
         m_t << "</computeroutput></literallayout>";
       }
       break;
@@ -479,8 +482,9 @@ DB_VIS_C
                                                 inc.text(),
                                                 langExt,
                                                 inc.stripCodeComments(),
-                                                inc.isExample(),
-                                                inc.exampleFile());
+                                                CodeParserOptions()
+                                                .setExample(inc.isExample(),inc.exampleFile())
+                                               );
       m_t << "</computeroutput></literallayout>";
       break;
     case DocInclude::DontInclude:
@@ -545,14 +549,11 @@ DB_VIS_C
       getCodeParser(locLangExt).parseCode(m_ci,op.context(),
                                         op.text(),langExt,
                                         op.stripCodeComments(),
-                                        op.isExample(),
-                                        op.exampleFile(),
-                                        fd.get(),     // fileDef
-                                        op.line(),    // startLine
-                                        -1,    // endLine
-                                        FALSE, // inline fragment
-                                        nullptr,     // memberDef
-                                        op.showLineNo()  // show line numbers
+                                        CodeParserOptions()
+                                        .setExample(op.isExample(), op.exampleFile())
+                                        .setFileDef(fd.get())
+                                        .setStartLine(op.line())
+                                        .setShowLineNumbers(op.showLineNo())
                                        );
     }
     pushHidden(m_hide);
