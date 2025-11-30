@@ -165,7 +165,7 @@ class GroupDefImpl : public DefinitionMixin<GroupDef>
     DirList              m_dirList;             // list of directories in the group
     MemberList           m_allMemberList;
     MemberNameInfoLinkedMap m_allMemberNameInfoLinkedMap;
-    Definition *         m_groupScope;
+    Definition *         m_groupScope = nullptr;
     MemberLists          m_memberLists;
     MemberGroupList      m_memberGroups;
     bool                 m_subGrouping;
