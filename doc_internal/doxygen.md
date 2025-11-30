@@ -188,6 +188,20 @@ following values (each option has to be preceded by `-d`):
   - `lex:lexer`<br>
     Enables output for a specific lexer only, where `lexer` should be replaced by the name of the specific lexer.
 
+
+Producing Requirements Traceability
+===================================
+
+In order to produce 2 way requirements traceability tables between requirements and code follow the following workflow:
+  - Create Requirements by either:
+    - Importing external requirements using the REQUIREMENTS_TAGFILES configuration option (see TAGFILES for expected usage)
+    - Create requirements files by specifying them in the REQUIREMENTS_FILES configuration option.
+    Requirements will be extracted from anchors in the files or tagfiles where the anchor name match (PREFIX)(NUMBER) where PREFIX can be zero or more characters. Regex ("^(.*?)(\\d+)$"),
+    It is expected that the prefix is unique for a processed requirements file to facilitate the traceability.
+  - In the code specify which classes or methods satisfies a requirement using the @satisfies keyword with the requirement as the parameter. e.g. @satisfies REQ_1234
+  - In the code specify which test verifies a requirement using the @satisfies keyword with the requirement as the parameter. e.g. @verifies REQ_1234
+
+
 Producing output
 ================
 
