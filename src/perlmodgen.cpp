@@ -840,6 +840,8 @@ void PerlModDocVisitor::operator()(const DocSimpleSect &s)
   case DocSimpleSect::Important:	type = "important"; break;
   case DocSimpleSect::User:		type = "par"; break;
   case DocSimpleSect::Rcs:		type = "rcs"; break;
+  case DocSimpleSect::Satisfies:	type = "satisfies"; break;
+  case DocSimpleSect::Verifies:		type = "verifies"; break;
   case DocSimpleSect::Unknown:
     err("unknown simple section found\n");
     break;

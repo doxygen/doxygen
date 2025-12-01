@@ -855,6 +855,18 @@ DB_VIS_C
         m_t << "<important><title>" << convertToDocBook(theTranslator->trImportant()) << "</title>\n";
       }
       break;
+    case DocSimpleSect::Satisfies:
+      if (s.hasTitle())
+        m_t << "<formalpara><title>" << convertToDocBook(theTranslator->trSatisfies()) << "</title>\n";
+      else
+        m_t << "<para>\n";
+      break;
+    case DocSimpleSect::Verifies:
+      if (s.hasTitle())
+        m_t << "<formalpara><title>" << convertToDocBook(theTranslator->trVerifies()) << "</title>\n";
+      else
+        m_t << "<para>\n";
+      break;
     case DocSimpleSect::User:
     case DocSimpleSect::Rcs:
     case DocSimpleSect::Unknown:
@@ -889,6 +901,13 @@ DB_VIS_C
       break;
     case DocSimpleSect::Important:
       m_t << "</important>\n";
+      break;
+    case DocSimpleSect::Satisfies:
+    case DocSimpleSect::Verifies:
+      if (s.hasTitle())
+        m_t << "</formalpara>\n";
+      else
+        m_t << "</para>\n";
       break;
     case DocSimpleSect::Warning:
       m_t << "</warning>\n";

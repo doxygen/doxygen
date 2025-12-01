@@ -47,6 +47,9 @@ class NamespaceLinkedMap;
 class NamespaceDef;
 class DirRelationLinkedMap;
 class IndexList;
+class Entry;
+class OutlineParserInterface;
+class ClangTUParser;
 class Preprocessor;
 struct MemberGroupInfo;
 class NamespaceDefMutable;
@@ -161,5 +164,14 @@ void readFileOrDirectory(const QCString &s,
                         StringUnorderedSet *killSet = nullptr,
                         StringUnorderedSet *paths = nullptr
                        );
+
+// Functions for processing generated files
+std::unique_ptr<OutlineParserInterface> getParserForFileExt(const QCString &fn);
+std::shared_ptr<Entry> parseFileWithParser(OutlineParserInterface &parser,
+                      FileDef *fd,const QCString &fn,
+                      ClangTUParser *clangParser,bool newTU);
+void buildPageListFromEntry(Entry *root);
+OutputList* getGlobalOutputList();
+void generateDocsForPages(const std::vector<PageDef*> &pages);
 
 #endif

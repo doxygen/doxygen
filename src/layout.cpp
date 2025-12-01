@@ -523,6 +523,20 @@ class LayoutParser
           theTranslator->trExamplesDescription(),
           "examples"
         },
+        { "requirements",
+          LayoutNavEntry::Requirements,
+          theTranslator->trRequirements(),
+          QCString(),
+          theTranslator->trRequirementsDescription(),
+          "requirements"
+        },
+        { "traceability",
+          LayoutNavEntry::Traceability,
+          theTranslator->trTraceability(),
+          QCString(),
+          theTranslator->trTraceabilityDescription(),
+          "traceability"
+        },
         { "user",
           LayoutNavEntry::User,
           QCString(),
