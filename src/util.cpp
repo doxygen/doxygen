@@ -979,6 +979,7 @@ void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
     {
       const ClassDef     *cd=nullptr;
       const ConceptDef   *cnd=nullptr;
+      const Definition   *d=nullptr;
       //printf("** Match word '%s'\n",qPrint(matchWord));
 
       SymbolResolver resolver(fileScope);
@@ -1010,7 +1011,12 @@ void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
           }
         }
       };
-      if ((cd=getClass(matchWord)))
+
+      if (found)
+      {
+        //printf("   -> skip\n");
+      }
+      else if ((cd=getClass(matchWord)))
       {
         writeCompoundName(cd);
       }
@@ -1022,7 +1028,7 @@ void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
       {
         writeCompoundName(cnd);
       }
-      else if (const Definition *d=nullptr; cd==nullptr && !found && (d=resolver.resolveSymbol(scope,matchWord)))
+      else if ((d=resolver.resolveSymbol(scope,matchWord)))
       {
         writeCompoundName(d);
       }
