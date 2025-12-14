@@ -4548,30 +4548,7 @@ void MemberDefImpl::setInitializer(const QCString &initializer)
   while (p>=0 && isspace(static_cast<uint8_t>(m_initializer.at(p)))) p--;
   m_initializer=m_initializer.left(p+1);
   m_initLines=m_initializer.contains('\n');
-  QCString s(m_initializer);
-  const char *data = s.data();
-  size_t i = 0;
-  size_t col = 0;
-  size_t size = s.length();
-  m_initializer.clear();
-  while (i<size)
-  {
-    char c = data[i++];
-    switch(c)
-    {
-      case '\n':
-        m_initializer+=c;
-        col=0;
-        break;
-      case ' ':
-        if (col < indent) col++;
-        else m_initializer+=c;
-        break;
-      default:
-        m_initializer+=c;
-        break;
-    }
-  }
+  stripIndentationVerbatim(m_initializer,indent, false);
 
   //printf("%s::setInitializer(%s)\n",qPrint(name()),qPrint(m_initializer));
 }
