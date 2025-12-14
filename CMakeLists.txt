@@ -38,7 +38,7 @@ option(enable_tracing  "Enable tracing option in release builds [development]" O
 option(enable_lex_debug "Enable debugging info for lexical scanners in release builds [development]" OFF)
 
 if(CMAKE_BUILD_TYPE STREQUAL "Release")
-  if (CYGWIN OR MINGW)
+  if (CYGWIN OR MINGW OR NOT "${CMAKE_TOOLCHAIN_FILE}" STREQUAL "")
     set(CMAKE_INTERPROCEDURAL_OPTIMIZATION FALSE)
   else()
     set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
