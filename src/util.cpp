@@ -2972,27 +2972,33 @@ QCString findFilePath(const QCString &file,bool &ambig)
 QCString showFileDefMatches(const FileNameLinkedMap *fnMap,const QCString &n)
 {
   QCString result;
-  QCString name=n;
+  QCString name=Dir::cleanDirPath(n.str());
   QCString path;
   int slashPos=std::max(name.findRev('/'),name.findRev('\\'));
   if (slashPos!=-1)
   {
-    path=name.left(slashPos+1);
+    path=removeLongPathMarker(name.left(slashPos+1));
     name=name.right(name.length()-slashPos-1);
   }
   const FileName *fn=fnMap->find(name);
   if (fn)
   {
     bool first = true;
-    for (const auto &fd : *fn)
+    QCString pathStripped = stripFromIncludePath(path);
+    for (const auto &fd_p : *fn)
     {
-      if (path.isEmpty() || fd->getPath().right(path.length())==path)
+      FileDef *fd = fd_p.get();
+      QCString fdStripPath = stripFromIncludePath(fd->getPath());
+      if (path.isEmpty() ||
+          (!pathStripped.isEmpty() && fdStripPath.endsWith(pathStripped)) ||
+          (pathStripped.isEmpty() && fdStripPath.isEmpty()))
       {
         if (!first) result += "\n";
         else first = false;
         result+="  "+fd->absFilePath();
       }
     }
+
   }
   return result;
 }
