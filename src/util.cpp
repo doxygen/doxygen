@@ -5991,8 +5991,9 @@ QCString stripIndentation(const QCString &s,bool skipFirstLine)
   return result.str();
 }
 
-// strip up to \a indentationLevel spaces from each line in \a doc (excluding the first line)
-void stripIndentationVerbatim(QCString &doc,const int indentationLevel)
+// strip up to \a indentationLevel spaces from each line in \a doc (excluding the first line
+//  when skipFirstLine is set to true)
+void stripIndentationVerbatim(QCString &doc,const int indentationLevel, bool skipFirstLine)
 {
   //printf("stripIndentationVerbatim(level=%d):\n%s\n------\n",indentationLevel,qPrint(doc));
   if (indentationLevel <= 0 || doc.isEmpty()) return; // nothing to strip
@@ -6002,8 +6003,9 @@ void stripIndentationVerbatim(QCString &doc,const int indentationLevel)
   char c = 0;
   const char *src = doc.data();
   char *dst = doc.rawData();
-  bool insideIndent = false; // skip the initial line from stripping
+  bool insideIndent = !skipFirstLine; // skip the initial line from stripping
   int cnt = 0;
+  if (!skipFirstLine) cnt = indentationLevel;
   while ((c=*src++))
   {
     // invariant: dst<=src
