@@ -1378,7 +1378,7 @@ class compounddefType(GeneratedsSuper):
     __hash__ = GeneratedsSuper.__hash__
     subclass = None
     superclass = None
-    def __init__(self, id=None, kind=None, language=None, prot=None, final=None, inline=None, sealed=None, abstract=None, compoundname=None, title=None, basecompoundref=None, derivedcompoundref=None, includes=None, includedby=None, incdepgraph=None, invincdepgraph=None, innermodule=None, innerdir=None, innerfile=None, innerclass=None, innerconcept=None, innernamespace=None, innerpage=None, innergroup=None, qualifier=None, templateparamlist=None, sectiondef=None, tableofcontents=None, requiresclause=None, initializer=None, briefdescription=None, detaileddescription=None, exports=None, inheritancegraph=None, collaborationgraph=None, programlisting=None, location=None, listofallmembers=None, gds_collector_=None, **kwargs_):
+    def __init__(self, id=None, kind=None, trivial=None, language=None, prot=None, final=None, inline=None, sealed=None, abstract=None, compoundname=None, title=None, basecompoundref=None, derivedcompoundref=None, includes=None, includedby=None, incdepgraph=None, invincdepgraph=None, innermodule=None, innerdir=None, innerfile=None, innerclass=None, innerconcept=None, innernamespace=None, innerpage=None, innergroup=None, qualifier=None, templateparamlist=None, sectiondef=None, tableofcontents=None, requiresclause=None, initializer=None, briefdescription=None, detaileddescription=None, exports=None, inheritancegraph=None, collaborationgraph=None, programlisting=None, location=None, listofallmembers=None, gds_collector_=None, **kwargs_):
         self.gds_collector_ = gds_collector_
         self.gds_elementtree_node_ = None
         self.original_tagname_ = None
@@ -1388,6 +1388,8 @@ class compounddefType(GeneratedsSuper):
         self.id_nsprefix_ = None
         self.kind = _cast(None, kind)
         self.kind_nsprefix_ = None
+        self.trivial = _cast(None, trivial)
+        self.trivial_nsprefix_ = None
         self.language = _cast(None, language)
         self.language_nsprefix_ = None
         self.prot = _cast(None, prot)
@@ -1729,6 +1731,10 @@ class compounddefType(GeneratedsSuper):
         return self.kind
     def set_kind(self, kind):
         self.kind = kind
+    def get_trivial(self):
+        return self.trivial
+    def set_trivial(self, trivial):
+        self.trivial = trivial
     def get_language(self):
         return self.language
     def set_language(self, language):
@@ -1766,6 +1772,19 @@ class compounddefType(GeneratedsSuper):
                 lineno = self.gds_get_node_lineno_()
                 self.gds_collector_.add_message('Value "%(value)s"%(lineno)s does not match xsd enumeration restriction on DoxCompoundKind' % {"value" : encode_str_2_3(value), "lineno": lineno} )
                 result = False
+    def validate_DoxBool(self, value):
+        # Validate type DoxBool, a restriction on xsd:string.
+        if value is not None and Validate_simpletypes_ and self.gds_collector_ is not None:
+            if not isinstance(value, str):
+                lineno = self.gds_get_node_lineno_()
+                self.gds_collector_.add_message('Value "%(value)s"%(lineno)s is not of the correct base simple type (str)' % {"value": value, "lineno": lineno, })
+                return False
+            value = value
+            enumerations = ['yes', 'no']
+            if value not in enumerations:
+                lineno = self.gds_get_node_lineno_()
+                self.gds_collector_.add_message('Value "%(value)s"%(lineno)s does not match xsd enumeration restriction on DoxBool' % {"value" : encode_str_2_3(value), "lineno": lineno} )
+                result = False
     def validate_DoxLanguage(self, value):
         # Validate type DoxLanguage, a restriction on xsd:string.
         if value is not None and Validate_simpletypes_ and self.gds_collector_ is not None:
@@ -1791,19 +1810,6 @@ class compounddefType(GeneratedsSuper):
             if value not in enumerations:
                 lineno = self.gds_get_node_lineno_()
                 self.gds_collector_.add_message('Value "%(value)s"%(lineno)s does not match xsd enumeration restriction on DoxProtectionKind' % {"value" : encode_str_2_3(value), "lineno": lineno} )
-                result = False
-    def validate_DoxBool(self, value):
-        # Validate type DoxBool, a restriction on xsd:string.
-        if value is not None and Validate_simpletypes_ and self.gds_collector_ is not None:
-            if not isinstance(value, str):
-                lineno = self.gds_get_node_lineno_()
-                self.gds_collector_.add_message('Value "%(value)s"%(lineno)s is not of the correct base simple type (str)' % {"value": value, "lineno": lineno, })
-                return False
-            value = value
-            enumerations = ['yes', 'no']
-            if value not in enumerations:
-                lineno = self.gds_get_node_lineno_()
-                self.gds_collector_.add_message('Value "%(value)s"%(lineno)s does not match xsd enumeration restriction on DoxBool' % {"value" : encode_str_2_3(value), "lineno": lineno} )
                 result = False
     def hasContent_(self):
         if (
@@ -1871,6 +1877,9 @@ class compounddefType(GeneratedsSuper):
         if self.kind is not None and 'kind' not in already_processed:
             already_processed.add('kind')
             outfile.write(' kind=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.kind), input_name='kind')), ))
+        if self.trivial is not None and 'trivial' not in already_processed:
+            already_processed.add('trivial')
+            outfile.write(' trivial=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.trivial), input_name='trivial')), ))
         if self.language is not None and 'language' not in already_processed:
             already_processed.add('language')
             outfile.write(' language=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.language), input_name='language')), ))
@@ -2008,6 +2017,11 @@ class compounddefType(GeneratedsSuper):
             already_processed.add('kind')
             self.kind = value
             self.validate_DoxCompoundKind(self.kind)    # validate type DoxCompoundKind
+        value = find_attr_value_('trivial', node)
+        if value is not None and 'trivial' not in already_processed:
+            already_processed.add('trivial')
+            self.trivial = value
+            self.validate_DoxBool(self.trivial)    # validate type DoxBool
         value = find_attr_value_('language', node)
         if value is not None and 'language' not in already_processed:
             already_processed.add('language')
@@ -3741,7 +3755,7 @@ class memberdefType(GeneratedsSuper):
     __hash__ = GeneratedsSuper.__hash__
     subclass = None
     superclass = None
-    def __init__(self, kind=None, id=None, prot=None, static=None, extern=None, strong=None, const=None, explicit=None, inline=None, refqual=None, virt=None, volatile=None, mutable=None, thread_local=None, noexcept=None, noexceptexpression=None, nodiscard=None, constexpr=None, consteval=None, constinit=None, readable=None, writable=None, initonly=None, settable=None, privatesettable=None, protectedsettable=None, gettable=None, privategettable=None, protectedgettable=None, final=None, sealed=None, new=None, add=None, remove=None, raise_=None, optional=None, required=None, accessor=None, attribute=None, property=None, readonly=None, bound=None, removable=None, constrained=None, transient=None, maybevoid=None, maybedefault=None, maybeambiguous=None, templateparamlist=None, type_=None, definition=None, argsstring=None, name=None, qualifiedname=None, read=None, write=None, bitfield=None, reimplements=None, reimplementedby=None, qualifier=None, param=None, enumvalue=None, requiresclause=None, initializer=None, exceptions=None, briefdescription=None, detaileddescription=None, inbodydescription=None, location=None, references=None, referencedby=None, gds_collector_=None, **kwargs_):
+    def __init__(self, kind=None, id=None, prot=None, static=None, extern=None, trivial=None, strong=None, const=None, explicit=None, inline=None, refqual=None, virt=None, volatile=None, mutable=None, thread_local=None, noexcept=None, noexceptexpression=None, nodiscard=None, constexpr=None, consteval=None, constinit=None, readable=None, writable=None, initonly=None, settable=None, privatesettable=None, protectedsettable=None, gettable=None, privategettable=None, protectedgettable=None, final=None, sealed=None, new=None, add=None, remove=None, raise_=None, optional=None, required=None, accessor=None, attribute=None, property=None, readonly=None, bound=None, removable=None, constrained=None, transient=None, maybevoid=None, maybedefault=None, maybeambiguous=None, templateparamlist=None, type_=None, definition=None, argsstring=None, name=None, qualifiedname=None, read=None, write=None, bitfield=None, reimplements=None, reimplementedby=None, qualifier=None, param=None, enumvalue=None, requiresclause=None, initializer=None, exceptions=None, briefdescription=None, detaileddescription=None, inbodydescription=None, location=None, references=None, referencedby=None, gds_collector_=None, **kwargs_):
         self.gds_collector_ = gds_collector_
         self.gds_elementtree_node_ = None
         self.original_tagname_ = None
@@ -3757,6 +3771,8 @@ class memberdefType(GeneratedsSuper):
         self.static_nsprefix_ = None
         self.extern = _cast(None, extern)
         self.extern_nsprefix_ = None
+        self.trivial = _cast(None, trivial)
+        self.trivial_nsprefix_ = None
         self.strong = _cast(None, strong)
         self.strong_nsprefix_ = None
         self.const = _cast(None, const)
@@ -4079,6 +4095,10 @@ class memberdefType(GeneratedsSuper):
         return self.extern
     def set_extern(self, extern):
         self.extern = extern
+    def get_trivial(self):
+        return self.trivial
+    def set_trivial(self, trivial):
+        self.trivial = trivial
     def get_strong(self):
         return self.strong
     def set_strong(self, strong):
@@ -4397,6 +4417,9 @@ class memberdefType(GeneratedsSuper):
         if self.extern is not None and 'extern' not in already_processed:
             already_processed.add('extern')
             outfile.write(' extern=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.extern), input_name='extern')), ))
+        if self.trivial is not None and 'trivial' not in already_processed:
+            already_processed.add('trivial')
+            outfile.write(' trivial=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.trivial), input_name='trivial')), ))
         if self.strong is not None and 'strong' not in already_processed:
             already_processed.add('strong')
             outfile.write(' strong=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.strong), input_name='strong')), ))
@@ -4644,6 +4667,11 @@ class memberdefType(GeneratedsSuper):
             already_processed.add('extern')
             self.extern = value
             self.validate_DoxBool(self.extern)    # validate type DoxBool
+        value = find_attr_value_('trivial', node)
+        if value is not None and 'trivial' not in already_processed:
+            already_processed.add('trivial')
+            self.trivial = value
+            self.validate_DoxBool(self.trivial)    # validate type DoxBool
         value = find_attr_value_('strong', node)
         if value is not None and 'strong' not in already_processed:
             already_processed.add('strong')
