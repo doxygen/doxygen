@@ -1520,8 +1520,8 @@ void PerlModGenerator::generatePerlModForMember(const MemberDef *md,const Defini
     .addFieldQuotedString("protection", getProtectionName(md->protection()))
     .addFieldBoolean("static", md->isStatic());
 
-  addPerlModDocBlock(m_output,"brief",md->getDefFileName(),md->briefLine(),md->getOuterScope(),md,md->briefDescription());
-  addPerlModDocBlock(m_output,"detailed",md->getDefFileName(),md->docLine(),md->getOuterScope(),md,md->documentation());
+  addPerlModDocBlock(m_output,"brief",md->briefFile(),md->briefLine(),md->getOuterScope(),md,md->briefDescription());
+  addPerlModDocBlock(m_output,"detailed",md->docFile(),md->docLine(),md->getOuterScope(),md,md->documentation());
   if (md->memberType()!=MemberType::Define &&
       md->memberType()!=MemberType::Enumeration)
     m_output.addFieldQuotedString("type", md->typeString());
@@ -1610,9 +1610,9 @@ void PerlModGenerator::generatePerlModForMember(const MemberDef *md,const Defini
 	if (!emd->initializer().isEmpty())
 	  m_output.addFieldQuotedString("initializer", emd->initializer());
 
-	addPerlModDocBlock(m_output,"brief",emd->getDefFileName(),emd->briefLine(),emd->getOuterScope(),emd,emd->briefDescription());
+	addPerlModDocBlock(m_output,"brief",emd->briefFile(),emd->briefLine(),emd->getOuterScope(),emd,emd->briefDescription());
 
-	addPerlModDocBlock(m_output,"detailed",emd->getDefFileName(),emd->docLine(),emd->getOuterScope(),emd,emd->documentation());
+	addPerlModDocBlock(m_output,"detailed",emd->docFile(),emd->docLine(),emd->getOuterScope(),emd,emd->documentation());
 
 	m_output.closeHash();
       }
@@ -1829,8 +1829,8 @@ void PerlModGenerator::generatePerlModForClass(const ClassDef *cd)
   generatePerlModSection(cd,cd->getMemberList(MemberListType::Friends()),"friend_methods");
   generatePerlModSection(cd,cd->getMemberList(MemberListType::Related()),"related_methods");
 
-  addPerlModDocBlock(m_output,"brief",cd->getDefFileName(),cd->briefLine(),cd,nullptr,cd->briefDescription());
-  addPerlModDocBlock(m_output,"detailed",cd->getDefFileName(),cd->docLine(),cd,nullptr,cd->documentation());
+  addPerlModDocBlock(m_output,"brief",cd->briefFile(),cd->briefLine(),cd,nullptr,cd->briefDescription());
+  addPerlModDocBlock(m_output,"detailed",cd->docFile(),cd->docLine(),cd,nullptr,cd->documentation());
 
 #if 0
   DotClassGraph inheritanceGraph(cd,DotClassGraph::Inheritance);
@@ -1871,8 +1871,8 @@ void PerlModGenerator::generatePerlModForConcept(const ConceptDef *cd)
   addIncludeInfo(cd->includeInfo());
   addTemplateList(cd,m_output);
   m_output.addFieldQuotedString("initializer", cd->initializer());
-  addPerlModDocBlock(m_output,"brief",cd->getDefFileName(),cd->briefLine(),nullptr,nullptr,cd->briefDescription());
-  addPerlModDocBlock(m_output,"detailed",cd->getDefFileName(),cd->docLine(),nullptr,nullptr,cd->documentation());
+  addPerlModDocBlock(m_output,"brief",cd->briefFile(),cd->briefLine(),nullptr,nullptr,cd->briefDescription());
+  addPerlModDocBlock(m_output,"detailed",cd->docFile(),cd->docLine(),nullptr,nullptr,cd->documentation());
 
   m_output.closeHash();
 }
@@ -1921,8 +1921,8 @@ void PerlModGenerator::generatePerlModForModule(const ModuleDef *mod)
   generatePerlModSection(mod,mod->getMemberList(MemberListType::DecFuncMembers()),"functions");
   generatePerlModSection(mod,mod->getMemberList(MemberListType::DecVarMembers()),"variables");
 
-  addPerlModDocBlock(m_output,"brief",mod->getDefFileName(),mod->briefLine(),nullptr,nullptr,mod->briefDescription());
-  addPerlModDocBlock(m_output,"detailed",mod->getDefFileName(),mod->docLine(),nullptr,nullptr,mod->documentation());
+  addPerlModDocBlock(m_output,"brief",mod->briefFile(),mod->briefLine(),nullptr,nullptr,mod->briefDescription());
+  addPerlModDocBlock(m_output,"detailed",mod->docFile(),mod->docLine(),nullptr,nullptr,mod->documentation());
 
   if (!mod->getUsedFiles().empty())
   {
@@ -1982,8 +1982,8 @@ void PerlModGenerator::generatePerlModForNamespace(const NamespaceDef *nd)
   generatePerlModSection(nd,nd->getMemberList(MemberListType::DecFuncMembers()),"functions");
   generatePerlModSection(nd,nd->getMemberList(MemberListType::DecVarMembers()),"variables");
 
-  addPerlModDocBlock(m_output,"brief",nd->getDefFileName(),nd->briefLine(),nullptr,nullptr,nd->briefDescription());
-  addPerlModDocBlock(m_output,"detailed",nd->getDefFileName(),nd->docLine(),nullptr,nullptr,nd->documentation());
+  addPerlModDocBlock(m_output,"brief",nd->briefFile(),nd->briefLine(),nullptr,nullptr,nd->briefDescription());
+  addPerlModDocBlock(m_output,"detailed",nd->docFile(),nd->docLine(),nullptr,nullptr,nd->documentation());
 
   m_output.closeHash();
 }
@@ -2044,8 +2044,8 @@ void PerlModGenerator::generatePerlModForFile(const FileDef *fd)
   generatePerlModSection(fd,fd->getMemberList(MemberListType::DecFuncMembers()),"functions");
   generatePerlModSection(fd,fd->getMemberList(MemberListType::DecVarMembers()),"variables");
 
-  addPerlModDocBlock(m_output,"brief",fd->getDefFileName(),fd->briefLine(),nullptr,nullptr,fd->briefDescription());
-  addPerlModDocBlock(m_output,"detailed",fd->getDefFileName(),fd->docLine(),nullptr,nullptr,fd->documentation());
+  addPerlModDocBlock(m_output,"brief",fd->briefFile(),fd->briefLine(),nullptr,nullptr,fd->briefDescription());
+  addPerlModDocBlock(m_output,"detailed",fd->docFile(),fd->docLine(),nullptr,nullptr,fd->documentation());
 
   m_output.closeHash();
 }
@@ -2149,8 +2149,8 @@ void PerlModGenerator::generatePerlModForGroup(const GroupDef *gd)
   generatePerlModSection(gd,gd->getMemberList(MemberListType::DecFuncMembers()),"functions");
   generatePerlModSection(gd,gd->getMemberList(MemberListType::DecVarMembers()),"variables");
 
-  addPerlModDocBlock(m_output,"brief",gd->getDefFileName(),gd->briefLine(),nullptr,nullptr,gd->briefDescription());
-  addPerlModDocBlock(m_output,"detailed",gd->getDefFileName(),gd->docLine(),nullptr,nullptr,gd->documentation());
+  addPerlModDocBlock(m_output,"brief",gd->briefFile(),gd->briefLine(),nullptr,nullptr,gd->briefDescription());
+  addPerlModDocBlock(m_output,"detailed",gd->docFile(),gd->docLine(),nullptr,nullptr,gd->documentation());
 
   m_output.closeHash();
 }
