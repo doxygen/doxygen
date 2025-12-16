@@ -1992,13 +1992,10 @@ void GroupDefImpl::removeMemberFromList(MemberListType lt,MemberDef *md)
 
 void GroupDefImpl::sortSubGroups()
 {
-  if (Config_getBool(SORT_BRIEF_DOCS))
-  {
-    std::stable_sort(m_groups.begin(),
-              m_groups.end(),
-              [](const auto &g1,const auto &g2)
-              { return g1->groupTitle() < g2->groupTitle(); });
-  }
+  std::stable_sort(m_groups.begin(),
+            m_groups.end(),
+            [](const auto &g1,const auto &g2)
+            { return g1->groupTitle() < g2->groupTitle(); });
 }
 
 static bool hasNonReferenceNestedGroupRec(const GroupDef *gd,int level)
