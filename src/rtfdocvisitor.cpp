@@ -42,6 +42,11 @@
 //#define DBG_RTF(x) m_t << x
 #define DBG_RTF(x) do {} while(0)
 
+static int dotindex = 1;
+static std::mutex dotindex_mutex;
+static int mscindex = 1;
+static std::mutex mscindex_mutex;
+
 static QCString align(const DocHtmlCell &cell)
 {
   for (const auto &attr : cell.attribs())
@@ -368,14 +373,16 @@ void RTFDocVisitor::operator()(const DocVerbatim &s)
       break;
     case DocVerbatim::Dot:
       {
-        static int dotindex = 1;
         QCString fileName(4096, QCString::ExplicitSize);
 
-        fileName.sprintf("%s%d%s",
+        {
+          std::lock_guard<std::mutex> lock(dotindex_mutex);
+          fileName.sprintf("%s%d%s",
             qPrint(Config_getString(RTF_OUTPUT)+"/inline_dotgraph_"),
             dotindex++,
             ".dot"
            );
+        }
         std::ofstream file = Portable::openOutputStream(fileName);
         if (!file.is_open())
         {
@@ -397,14 +404,16 @@ void RTFDocVisitor::operator()(const DocVerbatim &s)
       break;
     case DocVerbatim::Msc:
       {
-        static int mscindex = 1;
         QCString baseName(4096, QCString::ExplicitSize);
 
-        baseName.sprintf("%s%d%s",
+        {
+          std::lock_guard<std::mutex> lock(mscindex_mutex);
+          baseName.sprintf("%s%d%s",
             qPrint(Config_getString(RTF_OUTPUT)+"/inline_mscgraph_"),
             mscindex++,
             ".msc"
            );
+        }
         std::ofstream file = Portable::openOutputStream(baseName);
         if (!file.is_open())
         {

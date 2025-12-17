@@ -48,6 +48,11 @@
 #define DB_VIS_C2a(x,y)
 #endif
 
+static int dotindex = 1;
+static std::mutex dotindex_mutex;
+static int mscindex = 1;
+static std::mutex mscindex_mutex;
+
 static QCString filterId(const QCString &s)
 {
   if (s.isEmpty()) return s;
@@ -378,16 +383,18 @@ DB_VIS_C
       break;
     case DocVerbatim::Dot:
       {
-        static int dotindex = 1;
         QCString baseName(4096, QCString::ExplicitSize);
         QCString name;
         QCString stext = s.text();
         m_t << "<para>\n";
-        name.sprintf("%s%d", "dot_inline_dotgraph_", dotindex);
-        baseName.sprintf("%s%d",
+        {
+          std::lock_guard<std::mutex> lock(dotindex_mutex);
+          name.sprintf("%s%d", "dot_inline_dotgraph_", dotindex);
+          baseName.sprintf("%s%d",
             qPrint(Config_getString(DOCBOOK_OUTPUT)+"/inline_dotgraph_"),
             dotindex++
             );
+        }
         QCString fileName = baseName+".dot";
         std::ofstream file = Portable::openOutputStream(fileName);
         if (!file.is_open())
@@ -403,16 +410,18 @@ DB_VIS_C
       break;
     case DocVerbatim::Msc:
       {
-        static int mscindex = 1;
         QCString baseName(4096, QCString::ExplicitSize);
         QCString name;
         QCString stext = s.text();
         m_t << "<para>\n";
-        name.sprintf("%s%d", "msc_inline_mscgraph_", mscindex);
-        baseName.sprintf("%s%d",
+        {
+          std::lock_guard<std::mutex> lock(mscindex_mutex);
+          name.sprintf("%s%d", "msc_inline_mscgraph_", mscindex);
+          baseName.sprintf("%s%d",
             (Config_getString(DOCBOOK_OUTPUT)+"/inline_mscgraph_").data(),
             mscindex++
             );
+        }
         QCString fileName = baseName+".msc";
         std::ofstream file = Portable::openOutputStream(fileName);
         if (!file.is_open())

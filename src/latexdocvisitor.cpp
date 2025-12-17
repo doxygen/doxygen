@@ -42,6 +42,11 @@
 #include "codefragment.h"
 #include "cite.h"
 
+static int dotindex = 1;
+static std::mutex dotindex_mutex;
+static int mscindex = 1;
+static std::mutex mscindex_mutex;
+
 static const int g_maxLevels = 7;
 static const std::array<const char *,g_maxLevels> g_secLabels =
 { "doxysection",
@@ -480,14 +485,16 @@ void LatexDocVisitor::operator()(const DocVerbatim &s)
       break;
     case DocVerbatim::Dot:
       {
-        static int dotindex = 1;
         QCString fileName(4096, QCString::ExplicitSize);
 
-        fileName.sprintf("%s%d%s",
+        {
+          std::lock_guard<std::mutex> lock(dotindex_mutex);
+          fileName.sprintf("%s%d%s",
             qPrint(Config_getString(LATEX_OUTPUT)+"/inline_dotgraph_"),
             dotindex++,
             ".dot"
            );
+        }
         std::ofstream file = Portable::openOutputStream(fileName);
         if (!file.is_open())
         {
@@ -508,13 +515,15 @@ void LatexDocVisitor::operator()(const DocVerbatim &s)
       break;
     case DocVerbatim::Msc:
       {
-        static int mscindex = 1;
         QCString baseName(4096, QCString::ExplicitSize);
 
-        baseName.sprintf("%s%d",
+        {
+          std::lock_guard<std::mutex> lock(mscindex_mutex);
+          baseName.sprintf("%s%d",
             qPrint(Config_getString(LATEX_OUTPUT)+"/inline_mscgraph_"),
             mscindex++
            );
+        }
         QCString fileName = baseName+".msc";
         std::ofstream file = Portable::openOutputStream(fileName);
         if (!file.is_open())
