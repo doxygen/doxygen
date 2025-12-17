@@ -40,6 +40,11 @@
 #include "codefragment.h"
 #include "cite.h"
 
+static int dotindex = 1;
+static std::mutex dotindex_mutex;
+static int mscindex = 1;
+static std::mutex mscindex_mutex;
+
 static const int NUM_HTML_LIST_TYPES = 4;
 static const char g_types[][NUM_HTML_LIST_TYPES] = {"1", "a", "i", "A"};
 enum class contexts_t
@@ -609,15 +614,17 @@ void HtmlDocVisitor::operator()(const DocVerbatim &s)
 
     case DocVerbatim::Dot:
       {
-        static int dotindex = 1;
         QCString fileName(4096, QCString::ExplicitSize);
 
         forceEndParagraph(s);
-        fileName.sprintf("%s%d%s",
+        {
+          std::lock_guard<std::mutex> lock(dotindex_mutex);
+          fileName.sprintf("%s%d%s",
             qPrint(Config_getString(HTML_OUTPUT)+"/inline_dotgraph_"),
             dotindex++,
             ".dot"
            );
+        }
         std::ofstream file = Portable::openOutputStream(fileName);
         if (!file.is_open())
         {
@@ -643,13 +650,15 @@ void HtmlDocVisitor::operator()(const DocVerbatim &s)
       {
         forceEndParagraph(s);
 
-        static int mscindex = 1;
         QCString baseName(4096, QCString::ExplicitSize);
 
-        baseName.sprintf("%s%d",
+        {
+          std::lock_guard<std::mutex> lock(mscindex_mutex);
+          baseName.sprintf("%s%d",
             qPrint(Config_getString(HTML_OUTPUT)+"/inline_mscgraph_"),
             mscindex++
             );
+        }
         std::ofstream file = Portable::openOutputStream(baseName.str()+".msc");
         if (!file.is_open())
         {
