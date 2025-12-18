@@ -279,6 +279,7 @@ void writeDotGraphFromFile(const QCString &inFile,const QCString &outDir,
  *  \param graphId a unique id for this graph, use for dynamic sections
  *  \param srcFile the source file
  *  \param srcLine the line number in the source file
+ *  \param newFile signal whether or not the file has been generated before (value `false`) or not.
  */
 void writeDotImageMapFromFile(TextStream &t,
                             const QCString &inFile, const QCString &outDir,
