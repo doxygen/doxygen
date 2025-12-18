@@ -41,11 +41,12 @@
 #include "portable.h"
 #include "codefragment.h"
 #include "cite.h"
+#include "md5.h"
 
-static int dotindex = 1;
-static std::mutex dotindex_mutex;
-static int mscindex = 1;
-static std::mutex mscindex_mutex;
+static StringVector  dotindex;
+static std::mutex    dotindex_mutex;
+static StringVector  mscindex;
+static std::mutex    mscindex_mutex;
 
 static const int g_maxLevels = 7;
 static const std::array<const char *,g_maxLevels> g_secLabels =
@@ -485,27 +486,38 @@ void LatexDocVisitor::operator()(const DocVerbatim &s)
       break;
     case DocVerbatim::Dot:
       {
+        QCString stext = s.text();
         QCString fileName(4096, QCString::ExplicitSize);
 
-        {
-          std::lock_guard<std::mutex> lock(dotindex_mutex);
-          fileName.sprintf("%s%d%s",
-            qPrint(Config_getString(LATEX_OUTPUT)+"/inline_dotgraph_"),
-            dotindex++,
-            ".dot"
-           );
-        }
-        std::ofstream file = Portable::openOutputStream(fileName);
-        if (!file.is_open())
-        {
-          err("Could not open file {} for writing\n",fileName);
-        }
-        else
-        {
-          file.write( s.text().data(), s.text().length() );
-          file.close();
+        uint8_t md5_sig[16];
+        char sigStr[33];
+        MD5Buffer(stext.data(),static_cast<unsigned int>(stext.length()),md5_sig);
+        MD5SigToString(md5_sig,sigStr);
 
-          startDotFile(fileName,s.width(),s.height(),s.hasCaption(),s.srcFile(),s.srcLine());
+        fileName = Config_getString(LATEX_OUTPUT) + "/inline_dotgraph_" + sigStr + ".dot";
+        bool newFile = false;
+        bool openError = false;
+
+        std::lock_guard<std::mutex> lock(dotindex_mutex);
+        if (std::find(dotindex.begin(), dotindex.end(), sigStr) == dotindex.end())
+        {
+          newFile = true;
+          dotindex.emplace_back(sigStr);
+          std::ofstream file = Portable::openOutputStream(fileName);
+          if (!file.is_open())
+          {
+            err("Could not open file {} for writing\n",fileName);
+            openError = true;
+          }
+          else
+          {
+            file.write( s.text().data(), s.text().length() );
+            file.close();
+          }
+        }
+        if (!openError)
+        {
+          startDotFile(fileName,s.width(),s.height(),s.hasCaption(),s.srcFile(),s.srcLine(),newFile);
           visitChildren(s);
           endDotFile(s.hasCaption());
 
@@ -515,30 +527,42 @@ void LatexDocVisitor::operator()(const DocVerbatim &s)
       break;
     case DocVerbatim::Msc:
       {
+        QCString stext = s.text();
         QCString baseName(4096, QCString::ExplicitSize);
 
-        {
-          std::lock_guard<std::mutex> lock(mscindex_mutex);
-          baseName.sprintf("%s%d",
-            qPrint(Config_getString(LATEX_OUTPUT)+"/inline_mscgraph_"),
-            mscindex++
-           );
-        }
-        QCString fileName = baseName+".msc";
-        std::ofstream file = Portable::openOutputStream(fileName);
-        if (!file.is_open())
-        {
-          err("Could not open file {} for writing\n",fileName);
-        }
-        else
-        {
-          QCString text = "msc {";
-          text+=s.text();
-          text+="}";
-          file.write( text.data(), text.length() );
-          file.close();
+        uint8_t md5_sig[16];
+        char sigStr[33];
+        MD5Buffer(stext.data(),static_cast<unsigned int>(stext.length()),md5_sig);
+        MD5SigToString(md5_sig,sigStr);
 
-          writeMscFile(baseName, s);
+        baseName = Config_getString(LATEX_OUTPUT) + "/inline_mscgraph_" + sigStr;
+        QCString fileName = baseName+".msc";
+        bool newFile = false;
+        bool openError = false;
+        std::lock_guard<std::mutex> lock(mscindex_mutex);
+        if (std::find(mscindex.begin(), mscindex.end(), sigStr) == mscindex.end())
+        {
+          newFile = true;
+          mscindex.emplace_back(sigStr);
+          std::ofstream file = Portable::openOutputStream(fileName);
+          if (!file.is_open())
+          {
+            err("Could not open file {} for writing\n",fileName);
+            openError = true;
+          }
+          else
+          {
+            QCString text = "msc {";
+            text+=s.text();
+            text+="}";
+            file.write( text.data(), text.length() );
+            file.close();
+          }
+        }
+
+        if (!openError)
+        {
+          writeMscFile(baseName, s, newFile);
 
           if (Config_getBool(DOT_CLEANUP)) Dir().remove(fileName.str());
         }
@@ -1947,14 +1971,14 @@ void LatexDocVisitor::startDotFile(const QCString &fileName,
                                    const QCString &height,
                                    bool hasCaption,
                                    const QCString &srcFile,
-                                   int srcLine
+                                   int srcLine, bool newFile
                                   )
 {
   QCString baseName=makeBaseName(fileName);
   baseName.prepend("dot_");
   QCString outDir = Config_getString(LATEX_OUTPUT);
   QCString name = fileName;
-  writeDotGraphFromFile(name,outDir,baseName,GraphOutputFormat::EPS,srcFile,srcLine);
+  if (newFile) writeDotGraphFromFile(name,outDir,baseName,GraphOutputFormat::EPS,srcFile,srcLine);
   visitPreStart(m_t,hasCaption, baseName, width, height);
 }
 
@@ -1987,11 +2011,11 @@ void LatexDocVisitor::endMscFile(bool hasCaption)
 }
 
 
-void LatexDocVisitor::writeMscFile(const QCString &baseName, const DocVerbatim &s)
+void LatexDocVisitor::writeMscFile(const QCString &baseName, const DocVerbatim &s, bool newFile)
 {
   QCString shortName = makeShortName(baseName);
   QCString outDir = Config_getString(LATEX_OUTPUT);
-  writeMscGraphFromFile(baseName+".msc",outDir,shortName,MscOutputFormat::EPS,s.srcFile(),s.srcLine());
+  if (newFile) writeMscGraphFromFile(baseName+".msc",outDir,shortName,MscOutputFormat::EPS,s.srcFile(),s.srcLine());
   visitPreStart(m_t, s.hasCaption(), shortName, s.width(),s.height());
   visitCaption(s.children());
   visitPostEnd(m_t, s.hasCaption());
