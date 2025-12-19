@@ -333,6 +333,9 @@ class HtmlGenerator : public OutputGenerator, public OutputGenIntf
     void startPlainFile(const QCString &name) override { OutputGenerator::startPlainFile(name); }
     void endPlainFile() override { OutputGenerator::endPlainFile(); }
 
+    void startEmbeddedDoc(int) override;
+    void endEmbeddedDoc() override;
+
   private:
     void startTitle() { m_t << "<div class=\"title\">"; }
     void endTitle() { m_t << "</div>"; }

@@ -1229,6 +1229,8 @@ static void addConceptToContext(const Entry *root)
       // file definition containing the class cd
       cd->setBodySegment(root->startLine,root->bodyLine,root->endBodyLine);
       cd->setBodyDef(fd);
+      cd->addSectionsToDefinition(root->anchors);
+      cd->setRefItems(root->sli);
       addIncludeFile(cd,fd,root);
 
       // also add namespace to the correct structural context
@@ -1242,6 +1244,30 @@ static void addConceptToContext(const Entry *root)
         }
         cd->setOuterScope(d);
       }
+      for (const auto &ce : root->children())
+      {
+        //printf("Concept %s has child %s\n",qPrint(root->name),qPrint(ce->section.to_string()));
+        if (ce->section.isConceptDocPart())
+        {
+          cd->addSectionsToDefinition(ce->anchors);
+          cd->setRefItems(ce->sli);
+          if (!ce->brief.isEmpty())
+          {
+            cd->addDocPart(ce->brief,ce->startLine,ce->startColumn);
+            //printf("  brief=[[\n%s\n]] line=%d,col=%d\n",qPrint(ce->brief),ce->startLine,ce->startColumn);
+          }
+          if (!ce->doc.isEmpty())
+          {
+            cd->addDocPart(ce->doc,ce->startLine,ce->startColumn);
+            //printf("  doc=[[\n%s\n]] line=%d,col=%d\n",qPrint(ce->doc),ce->startLine,ce->startColumn);
+          }
+        }
+        else if (ce->section.isConceptCodePart())
+        {
+          cd->addCodePart(ce->initializer.str(),ce->startLine,ce->startColumn);
+          //printf("  code=[[\n%s\n]] line=%d,col=%d\n",qPrint(ce->initializer.str()),ce->startLine,ce->startColumn);
+        }
+      }
     }
     else
     {
@@ -1252,6 +1278,13 @@ static void addConceptToContext(const Entry *root)
   if (cd)
   {
     cd->addSectionsToDefinition(root->anchors);
+    for (const auto &ce : root->children())
+    {
+      if (ce->section.isConceptDocPart())
+      {
+        cd->addSectionsToDefinition(ce->anchors);
+      }
+    }
     if (fd)
     {
       AUTO_TRACE_ADD("Inserting concept '{}' in file '{}' (root->fileName='{}')", cd->name(), fd->name(), root->fileName);
@@ -5440,6 +5473,15 @@ static void addListReferences()
   for (const auto &cd : *Doxygen::classLinkedMap)
   {
     ClassDefMutable *cdm = toClassDefMutable(cd.get());
+    if (cdm)
+    {
+      cdm->addListReferences();
+    }
+  }
+
+  for (const auto &cd : *Doxygen::conceptLinkedMap)
+  {
+    ConceptDefMutable *cdm = toConceptDefMutable(cd.get());
     if (cdm)
     {
       cdm->addListReferences();

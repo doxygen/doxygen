@@ -273,6 +273,16 @@ a.code.hl_event { /* style for links to event names in code snippets */ }
 a.code.hl_sequence { /* style for links to sequence names in code snippets */ }
 a.code.hl_dictionary { /* style for links to dictionary names in code snippets */ }
 
+:root {
+--indent-chars: 0;
+}
+
+div.embeddoc {
+	font-family: var(--font-family-monospace);
+	margin-left: calc(var(--indent-chars)*1ch);
+	padding-left: 10px;
+}
+
 /* @end */
 
 dl.el {

@@ -195,7 +195,6 @@ struct scannerYY_state
   QCString         idlProp;
   bool             odlProp = false;
 
-  bool             lexInit = false;
   bool             externLinkage = false;
 
   QCString         delimiter;
@@ -348,6 +347,9 @@ NONLopt [^\n]*
 %x      FindMembersPHP
 %x      FindMemberName
 %x      FindFields
+%x      FindConceptParts
+%x      FindConceptDocs
+%x      FindConceptCxxDocs
 %x      SFunction
 %x      FuncRound
 %x      ExcpRound
@@ -1858,6 +1860,7 @@ NONLopt [^\n]*
                                           yyextra->current->startColumn = yyextra->yyColNr;
                                           yyextra->current->bodyLine  = yyextra->yyLineNr;
                                           yyextra->current->bodyColumn = yyextra->yyColNr;
+                                          yyextra->current->args = yyextra->fullArgString;
                                           yyextra->keepComment = true;
                                           lineCount(yyscanner) ;
                                           BEGIN( ConceptName ) ;
@@ -2746,6 +2749,124 @@ NONLopt [^\n]*
                                           yyextra->insideCppQuote=FALSE;
                                           BEGIN(FindMembers);
                                         }
+<FindConceptParts>[^\/\n]*              {
+                                          yyextra->current->initializer << yytext;
+                                        }
+<FindConceptParts>.                     {
+                                          yyextra->current->initializer << yytext;
+                                        }
+<FindConceptParts>\n                    {
+                                          yyextra->current->initializer << yytext;
+                                          yyextra->yyLineNr++;
+                                        }
+<FindConceptParts>{CCS}                 {
+                                          yyextra->current->initializer << yytext;
+                                        }
+<FindConceptParts>{CPPC}                {
+                                          yyextra->current->initializer << yytext;
+                                        }
+<FindConceptParts>^[ \t]*{CCS}[!*]      { // start of a special comment inside Concept definition
+                                          QCString text(yytext);
+                                          int indent = text.find('/');
+                                          //printf("## startLine=%d startColumn=%d\n",yyextra->current->startLine,indent);
+                                          if (!yyextra->current->initializer.empty())
+                                          {
+                                            yyextra->current_root->moveToSubEntryAndRefresh(yyextra->current);
+                                            initEntry(yyscanner);
+                                          }
+                                          yyextra->current->section = EntryType::makeConceptDocPart();
+                                          yyextra->current->startLine = yyextra->yyLineNr;
+                                          yyextra->current->startColumn = indent;
+                                          yyextra->current->initializer.clear();
+                                          BEGIN(FindConceptDocs);
+                                        }
+<FindConceptParts>^[ \t]*{CPPC}[!/].*\n {
+                                          if (!yyextra->current->initializer.empty())
+                                          {
+                                            yyextra->current_root->moveToSubEntryAndRefresh(yyextra->current);
+                                            initEntry(yyscanner);
+                                          }
+                                          QCString line(yytext);
+                                          int indent = line.find('/');
+                                          yyextra->current->section = EntryType::makeConceptDocPart();
+                                          yyextra->current->startLine = yyextra->yyLineNr;
+                                          yyextra->current->startColumn = indent;
+                                          yyextra->current->initializer.clear();
+                                          yyextra->current->initializer << line.mid(indent+3);
+                                          yyextra->yyLineNr++;
+                                          BEGIN(FindConceptCxxDocs);
+                                        }
+<FindConceptCxxDocs>^[ \t]*{CPPC}.*\n   {
+                                          QCString line(yytext);
+                                          int p = line.find('/');
+                                          if (line.at(p+2)=='!' || line.at(p+2)=='/') p++;
+                                          yyextra->current->initializer << line.mid(p+2);
+                                          yyextra->yyLineNr++;
+                                        }
+<FindConceptCxxDocs>{CCS}|{CCE}|{CPPC}  {
+                                          yyextra->current->initializer << yytext;
+                                        }
+<FindConceptCxxDocs>.                   {
+                                          if (!yyextra->current->initializer.empty())
+                                          {
+                                            //printf("*** doc=[[%s]\n",qPrint(yyextra->current->initializer.str()));
+                                            handleCommentBlock(yyscanner,yyextra->current->initializer.str(),false);
+                                            yyextra->current_root->moveToSubEntryAndRefresh(yyextra->current);
+                                            initEntry(yyscanner);
+                                          }
+                                          unput(*yytext);
+                                          yyextra->current->section = EntryType::makeConceptCodePart();
+                                          yyextra->current->startLine = yyextra->yyLineNr;
+                                          BEGIN(FindConceptParts);
+                                        }
+<FindConceptDocs>^[ \t]*"*"+/[^/]       { // skip leading indentation
+                                        }
+<FindConceptDocs>[^\*\n]+               {
+                                          yyextra->current->initializer << yytext;
+                                        }
+<FindConceptDocs>\n                     {
+                                          yyextra->current->initializer << yytext;
+                                          yyextra->yyLineNr++;
+                                        }
+<FindConceptDocs>"*"*{CCE}[ t]*\n?      {
+                                          if (!yyextra->current->initializer.empty())
+                                          {
+                                            //printf("*** doc=[[%s]\n",qPrint(yyextra->current->initializer.str()));
+                                            handleCommentBlock(yyscanner,yyextra->current->initializer.str(),false);
+                                            yyextra->current->section = EntryType::makeConceptDocPart();
+                                            yyextra->current_root->moveToSubEntryAndRefresh(yyextra->current);
+                                            initEntry(yyscanner);
+                                          }
+                                          lineCount(yyscanner);
+                                          yyextra->current->section = EntryType::makeConceptCodePart();
+                                          yyextra->current->startLine = yyextra->yyLineNr;
+                                          BEGIN(FindConceptParts);
+                                        }
+<FindConceptDocs>"*"*{CCE}              {
+                                          if (!yyextra->current->initializer.empty())
+                                          {
+                                            //printf("*** doc=[[%s]\n",qPrint(yyextra->current->initializer.str()));
+                                            handleCommentBlock(yyscanner,yyextra->current->initializer.str(),false);
+                                            yyextra->current->section = EntryType::makeConceptDocPart();
+                                            yyextra->current_root->moveToSubEntryAndRefresh(yyextra->current);
+                                            initEntry(yyscanner);
+                                          }
+                                          yyextra->current->section = EntryType::makeConceptCodePart();
+                                          yyextra->current->startLine = yyextra->yyLineNr;
+                                          BEGIN(FindConceptParts);
+                                        }
+<FindConceptParts><<EOF>>               {
+                                          if (!yyextra->current->initializer.empty())
+                                          {
+                                            if (!yyextra->current->section.isConceptCodePart())
+                                            {
+                                              yyextra->current->section = EntryType::makeConceptDocPart();
+                                            }
+                                            yyextra->current_root->moveToSubEntryAndRefresh(yyextra->current);
+                                            initEntry(yyscanner);
+                                          }
+                                          yyterminate();
+                                        }
 <FindMembers,FindFields>{B}*"#"         { if (yyextra->insidePHP)
                                             REJECT;
                                           yyextra->lastCPPContext = YY_START;
@@ -3156,6 +3277,16 @@ NONLopt [^\n]*
                                             yyextra->pCopyRawGString = &yyextra->current->initializer;
                                             BEGIN(RawGString);
                                             //printf("RawGString delimiter='%s'\n",qPrint(delimiter));
+                                          }
+                                        }
+<ReadInitializer>{CPPC}|{CCS}           {
+                                          if (yyextra->keepComment)
+                                          {
+                                            yyextra->current->initializer << yytext;
+                                          }
+                                          else
+                                          {
+                                            REJECT;
                                           }
                                         }
 <RawGString>{RAWEND}                    {
@@ -8286,7 +8417,6 @@ static void parseCompounds(yyscan_t yyscanner,const std::shared_ptr<Entry> &rt)
       AUTO_TRACE_ADD("compound name='{}' program='{}'",Trace::trunc(ce->name),Trace::trunc(ce->program.str()));
       // init scanner state
       yyextra->padCount=0;
-      //depthIf = 0;
       yyextra->column=0;
       yyextra->programStr = ce->program.str();
       yyextra->inputString = yyextra->programStr.data();
@@ -8375,7 +8505,6 @@ static void parseCompounds(yyscan_t yyscanner,const std::shared_ptr<Entry> &rt)
       yyextra->commentScanner.enterCompound(yyextra->fileName,yyextra->yyLineNr,name);
 
       scannerYYlex(yyscanner);
-      yyextra->lexInit=TRUE;
       //forceEndGroup();
 
       yyextra->commentScanner.leaveCompound(yyextra->fileName,yyextra->yyLineNr,name);
@@ -8390,6 +8519,52 @@ static void parseCompounds(yyscan_t yyscanner,const std::shared_ptr<Entry> &rt)
       //}
     }
     parseCompounds(yyscanner,ce);
+  }
+}
+
+static void parseConcepts(yyscan_t yyscanner,const std::shared_ptr<Entry> &rt)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  for (const auto &ce : rt->children())
+  {
+    if (ce->section.isConcept())
+    {
+      //printf("*** found concept '%s' value=[[\n%s\n]] line=%d,col=%d\n",
+      //    qPrint(ce->name),qPrint(ce->initializer.str()),ce->startLine,ce->startColumn);
+      yyextra->commentScanner.enterCompound(yyextra->fileName,yyextra->yyLineNr,ce->name);
+      // init scanner state
+      yyextra->padCount      =0;
+      yyextra->column        =0;
+      yyextra->programStr    = ce->initializer.str();
+      yyextra->inputString   = yyextra->programStr.data();
+      yyextra->inputPosition = 0;
+      yyextra->current_root  = ce;
+      yyextra->fileName      = ce->fileName;
+      yyextra->yyLineNr      = ce->bodyLine;
+      yyextra->yyColNr       = ce->bodyColumn;
+      yyextra->insideObjC    = false;
+      yyextra->current       = std::make_shared<Entry>();
+
+      // hack to reconstruct what was in the code before the concept expression
+      QCString indent;
+      indent.fill(' ',std::max(0,ce->startColumn-1));
+      QCString templArgs;
+      if (!ce->args.isEmpty())
+      {
+        templArgs=indent+"template"+ce->args+"\n";
+      }
+      yyextra->current->initializer.str(QCString(templArgs+indent+"concept "+ce->name+ " =").str());
+
+      yyextra->isStatic      = FALSE;
+      initEntry(yyscanner);
+      yyextra->current->section = EntryType::makeConceptCodePart();
+      yyextra->current->startLine = yyextra->yyLineNr;
+      BEGIN( FindConceptParts );
+      scannerYYlex(yyscanner);
+      yyextra->commentScanner.leaveCompound(yyextra->fileName,yyextra->yyLineNr,ce->name);
+
+    }
+    parseConcepts(yyscanner,ce);
   }
 }
 
@@ -8461,7 +8636,6 @@ static void parseMain(yyscan_t yyscanner,
   }
 
   scannerYYlex(yyscanner);
-  yyextra->lexInit=TRUE;
 
   if (YY_START==Comment)
   {
@@ -8475,6 +8649,7 @@ static void parseMain(yyscan_t yyscanner,
   rt->program.str(std::string());
 
   parseCompounds(yyscanner,rt);
+  parseConcepts(yyscanner,rt);
 
   yyextra->anonNSCount++;
 
@@ -8521,7 +8696,6 @@ static void parsePrototype(yyscan_t yyscanner,const QCString &text)
   scannerYYrestart(nullptr, yyscanner);
   BEGIN(Prototype);
   scannerYYlex(yyscanner);
-  yyextra->lexInit=TRUE;
 
   yyextra->current->name = yyextra->current->name.stripWhiteSpace();
   if (yyextra->current->section.isMemberDoc() && yyextra->current->args.isEmpty())

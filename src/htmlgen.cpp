@@ -3507,6 +3507,18 @@ void HtmlGenerator::endInlineMemberDoc()
   m_t << "</td></tr>\n";
 }
 
+void HtmlGenerator::startEmbeddedDoc(int indent)
+{
+  DBG_HTML(m_t << "<!-- startEmbeddedDoc -->\n";)
+  m_t << "<div class=\"embeddoc\" style=\"--indent-chars:" << indent << ";\">";
+}
+
+void HtmlGenerator::endEmbeddedDoc()
+{
+  DBG_HTML(m_t << "<!-- endEmbeddedDoc -->\n";)
+  m_t << "</div>";
+}
+
 void HtmlGenerator::startLabels()
 {
   DBG_HTML(m_t << "<!-- startLabels -->\n";)

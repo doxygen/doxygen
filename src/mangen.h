@@ -289,6 +289,9 @@ class ManGenerator : public OutputGenerator, public OutputGenIntf
     void startPlainFile(const QCString &name) override { OutputGenerator::startPlainFile(name); }
     void endPlainFile() override { OutputGenerator::endPlainFile(); }
 
+    void startEmbeddedDoc(int) override {}
+    void endEmbeddedDoc() override {}
+
   private:
     bool m_firstCol = true;
     int  m_col = 0;

@@ -28,6 +28,17 @@ class ConceptDef : public Definition
   public:
     ABSTRACT_BASE_CLASS(ConceptDef)
 
+    enum class PartType { Code, Doc };
+    struct Part
+    {
+      Part(PartType t,const QCString &s,int ln,int col) : type(t), content(s), lineNr(ln), colNr(col) {}
+      PartType type;
+      QCString content;
+      int lineNr;
+      int colNr;
+    };
+    using Parts = std::vector<Part>;
+
     virtual bool hasDetailedDescription() const = 0;
     virtual const IncludeInfo *includeInfo() const = 0;
     virtual ArgumentList getTemplateParameterList() const = 0;
@@ -39,6 +50,7 @@ class ConceptDef : public Definition
     virtual const ModuleDef *getModuleDef() const = 0;
     virtual QCString title() const = 0;
     virtual int groupId() const = 0;
+    virtual Parts conceptParts() const = 0;
 };
 
 class ConceptDefMutable : public DefinitionMutable, public ConceptDef
@@ -56,6 +68,9 @@ class ConceptDefMutable : public DefinitionMutable, public ConceptDef
     virtual void findSectionsInDocumentation() = 0;
     virtual void setGroupId(int id) = 0;
     virtual void setModuleDef(ModuleDef *mod) = 0;
+    virtual void addListReferences() = 0;
+    virtual void addDocPart(const QCString &doc,int lineNr,int colNr) = 0;
+    virtual void addCodePart(const QCString &code,int lineNr,int colNr) = 0;
 };
 
 std::unique_ptr<ConceptDef> createConceptDef(

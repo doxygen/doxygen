@@ -1378,7 +1378,7 @@ class compounddefType(GeneratedsSuper):
     __hash__ = GeneratedsSuper.__hash__
     subclass = None
     superclass = None
-    def __init__(self, id=None, kind=None, language=None, prot=None, final=None, inline=None, sealed=None, abstract=None, compoundname=None, title=None, basecompoundref=None, derivedcompoundref=None, includes=None, includedby=None, incdepgraph=None, invincdepgraph=None, innermodule=None, innerdir=None, innerfile=None, innerclass=None, innerconcept=None, innernamespace=None, innerpage=None, innergroup=None, qualifier=None, templateparamlist=None, sectiondef=None, tableofcontents=None, requiresclause=None, initializer=None, briefdescription=None, detaileddescription=None, exports=None, inheritancegraph=None, collaborationgraph=None, programlisting=None, location=None, listofallmembers=None, gds_collector_=None, **kwargs_):
+    def __init__(self, id=None, kind=None, language=None, prot=None, final=None, inline=None, sealed=None, abstract=None, compoundname=None, title=None, basecompoundref=None, derivedcompoundref=None, includes=None, includedby=None, incdepgraph=None, invincdepgraph=None, innermodule=None, innerdir=None, innerfile=None, innerclass=None, innerconcept=None, innernamespace=None, innerpage=None, innergroup=None, qualifier=None, templateparamlist=None, sectiondef=None, tableofcontents=None, requiresclause=None, initializer=None, conceptparts=None, briefdescription=None, detaileddescription=None, exports=None, inheritancegraph=None, collaborationgraph=None, programlisting=None, location=None, listofallmembers=None, gds_collector_=None, **kwargs_):
         self.gds_collector_ = gds_collector_
         self.gds_elementtree_node_ = None
         self.original_tagname_ = None
@@ -1486,6 +1486,8 @@ class compounddefType(GeneratedsSuper):
         self.requiresclause_nsprefix_ = None
         self.initializer = initializer
         self.initializer_nsprefix_ = None
+        self.conceptparts = conceptparts
+        self.conceptparts_nsprefix_ = None
         self.briefdescription = briefdescription
         self.briefdescription_nsprefix_ = None
         self.detaileddescription = detaileddescription
@@ -1689,6 +1691,10 @@ class compounddefType(GeneratedsSuper):
         return self.initializer
     def set_initializer(self, initializer):
         self.initializer = initializer
+    def get_conceptparts(self):
+        return self.conceptparts
+    def set_conceptparts(self, conceptparts):
+        self.conceptparts = conceptparts
     def get_briefdescription(self):
         return self.briefdescription
     def set_briefdescription(self, briefdescription):
@@ -1829,6 +1835,7 @@ class compounddefType(GeneratedsSuper):
             self.tableofcontents is not None or
             self.requiresclause is not None or
             self.initializer is not None or
+            self.conceptparts is not None or
             self.briefdescription is not None or
             self.detaileddescription is not None or
             self.exports is not None or
@@ -1963,6 +1970,9 @@ class compounddefType(GeneratedsSuper):
         if self.initializer is not None:
             namespaceprefix_ = self.initializer_nsprefix_ + ':' if (UseCapturedNS_ and self.initializer_nsprefix_) else ''
             self.initializer.export(outfile, level, namespaceprefix_, namespacedef_='', name_='initializer', pretty_print=pretty_print)
+        if self.conceptparts is not None:
+            namespaceprefix_ = self.conceptparts_nsprefix_ + ':' if (UseCapturedNS_ and self.conceptparts_nsprefix_) else ''
+            self.conceptparts.export(outfile, level, namespaceprefix_, namespacedef_='', name_='conceptparts', pretty_print=pretty_print)
         if self.briefdescription is not None:
             namespaceprefix_ = self.briefdescription_nsprefix_ + ':' if (UseCapturedNS_ and self.briefdescription_nsprefix_) else ''
             self.briefdescription.export(outfile, level, namespaceprefix_, namespacedef_='', name_='briefdescription', pretty_print=pretty_print)
@@ -2152,13 +2162,20 @@ class compounddefType(GeneratedsSuper):
             obj_.build(child_, gds_collector_=gds_collector_)
             self.initializer = obj_
             obj_.original_tagname_ = 'initializer'
+        elif nodeName_ == 'conceptparts':
+            obj_ = conceptParts.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            self.conceptparts = obj_
+            obj_.original_tagname_ = 'conceptparts'
         elif nodeName_ == 'briefdescription':
-            obj_ = descriptionType.factory(parent_object_=self)
+            class_obj_ = self.get_class_obj_(child_, descriptionType)
+            obj_ = class_obj_.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
             self.briefdescription = obj_
             obj_.original_tagname_ = 'briefdescription'
         elif nodeName_ == 'detaileddescription':
-            obj_ = descriptionType.factory(parent_object_=self)
+            class_obj_ = self.get_class_obj_(child_, descriptionType)
+            obj_ = class_obj_.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
             self.detaileddescription = obj_
             obj_.original_tagname_ = 'detaileddescription'
@@ -3720,7 +3737,8 @@ class sectiondefType(GeneratedsSuper):
             self.header = value_
             self.header_nsprefix_ = child_.prefix
         elif nodeName_ == 'description':
-            obj_ = descriptionType.factory(parent_object_=self)
+            class_obj_ = self.get_class_obj_(child_, descriptionType)
+            obj_ = class_obj_.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
             self.description = obj_
             obj_.original_tagname_ = 'description'
@@ -4953,17 +4971,20 @@ class memberdefType(GeneratedsSuper):
             self.exceptions = obj_
             obj_.original_tagname_ = 'exceptions'
         elif nodeName_ == 'briefdescription':
-            obj_ = descriptionType.factory(parent_object_=self)
+            class_obj_ = self.get_class_obj_(child_, descriptionType)
+            obj_ = class_obj_.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
             self.briefdescription = obj_
             obj_.original_tagname_ = 'briefdescription'
         elif nodeName_ == 'detaileddescription':
-            obj_ = descriptionType.factory(parent_object_=self)
+            class_obj_ = self.get_class_obj_(child_, descriptionType)
+            obj_ = class_obj_.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
             self.detaileddescription = obj_
             obj_.original_tagname_ = 'detaileddescription'
         elif nodeName_ == 'inbodydescription':
-            obj_ = descriptionType.factory(parent_object_=self)
+            class_obj_ = self.get_class_obj_(child_, descriptionType)
+            obj_ = class_obj_.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
             self.inbodydescription = obj_
             obj_.original_tagname_ = 'inbodydescription'
@@ -4989,7 +5010,7 @@ class descriptionType(GeneratedsSuper):
     __hash__ = GeneratedsSuper.__hash__
     subclass = None
     superclass = None
-    def __init__(self, title=None, para=None, internal=None, sect1=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
+    def __init__(self, title=None, para=None, internal=None, sect1=None, valueOf_=None, mixedclass_=None, content_=None, extensiontype_=None, gds_collector_=None, **kwargs_):
         self.gds_collector_ = gds_collector_
         self.gds_elementtree_node_ = None
         self.original_tagname_ = None
@@ -5013,6 +5034,7 @@ class descriptionType(GeneratedsSuper):
             self.sect1 = sect1
         self.sect1_nsprefix_ = None
         self.valueOf_ = valueOf_
+        self.extensiontype_ = extensiontype_
         if mixedclass_ is None:
             self.mixedclass_ = MixedContainer
         else:
@@ -5073,6 +5095,8 @@ class descriptionType(GeneratedsSuper):
         self.sect1[index] = value
     def get_valueOf_(self): return self.valueOf_
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
+    def get_extensiontype_(self): return self.extensiontype_
+    def set_extensiontype_(self, extensiontype_): self.extensiontype_ = extensiontype_
     def hasContent_(self):
         if (
             self.title is not None or
@@ -5109,6 +5133,14 @@ class descriptionType(GeneratedsSuper):
         else:
             outfile.write('/>%s' % (eol_, ))
     def exportAttributes(self, outfile, level, already_processed, namespaceprefix_='', name_='descriptionType'):
+        if self.extensiontype_ is not None and 'xsi:type' not in already_processed:
+            already_processed.add('xsi:type')
+            outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+            if ":" not in self.extensiontype_:
+                imported_ns_type_prefix_ = GenerateDSNamespaceTypePrefixes_.get(self.extensiontype_, '')
+                outfile.write(' xsi:type="%s%s"' % (imported_ns_type_prefix_, self.extensiontype_))
+            else:
+                outfile.write(' xsi:type="%s"' % self.extensiontype_)
         pass
     def exportChildren(self, outfile, level, namespaceprefix_='', namespacedef_='', name_='descriptionType', fromsubclass_=False, pretty_print=True):
         if not fromsubclass_:
@@ -5148,7 +5180,10 @@ class descriptionType(GeneratedsSuper):
             self.buildChildren(child, node, nodeName_, gds_collector_=gds_collector_)
         return self
     def buildAttributes(self, node, attrs, already_processed):
-        pass
+        value = find_attr_value_('xsi:type', node)
+        if value is not None and 'xsi:type' not in already_processed:
+            already_processed.add('xsi:type')
+            self.extensiontype_ = value
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False, gds_collector_=None):
         if nodeName_ == 'title' and child_.text is not None:
             valuestr_ = child_.text
@@ -5361,12 +5396,14 @@ class enumvalueType(GeneratedsSuper):
             self.initializer = obj_
             obj_.original_tagname_ = 'initializer'
         elif nodeName_ == 'briefdescription':
-            obj_ = descriptionType.factory(parent_object_=self)
+            class_obj_ = self.get_class_obj_(child_, descriptionType)
+            obj_ = class_obj_.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
             self.briefdescription = obj_
             obj_.original_tagname_ = 'briefdescription'
         elif nodeName_ == 'detaileddescription':
-            obj_ = descriptionType.factory(parent_object_=self)
+            class_obj_ = self.get_class_obj_(child_, descriptionType)
+            obj_ = class_obj_.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
             self.detaileddescription = obj_
             obj_.original_tagname_ = 'detaileddescription'
@@ -5473,6 +5510,364 @@ class templateparamlistType(GeneratedsSuper):
             self.param.append(obj_)
             obj_.original_tagname_ = 'param'
 # end class templateparamlistType
+
+
+class conceptParts(GeneratedsSuper):
+    __hash__ = GeneratedsSuper.__hash__
+    subclass = None
+    superclass = None
+    def __init__(self, codepart=None, docpart=None, gds_collector_=None, **kwargs_):
+        self.gds_collector_ = gds_collector_
+        self.gds_elementtree_node_ = None
+        self.original_tagname_ = None
+        self.parent_object_ = kwargs_.get('parent_object_')
+        self.ns_prefix_ = None
+        if codepart is None:
+            self.codepart = []
+        else:
+            self.codepart = codepart
+        self.codepart_nsprefix_ = None
+        if docpart is None:
+            self.docpart = []
+        else:
+            self.docpart = docpart
+        self.docpart_nsprefix_ = None
+    def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, conceptParts)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
+        if conceptParts.subclass:
+            return conceptParts.subclass(*args_, **kwargs_)
+        else:
+            return conceptParts(*args_, **kwargs_)
+    factory = staticmethod(factory)
+    def get_ns_prefix_(self):
+        return self.ns_prefix_
+    def set_ns_prefix_(self, ns_prefix):
+        self.ns_prefix_ = ns_prefix
+    def get_codepart(self):
+        return self.codepart
+    def set_codepart(self, codepart):
+        self.codepart = codepart
+    def add_codepart(self, value):
+        self.codepart.append(value)
+    def insert_codepart_at(self, index, value):
+        self.codepart.insert(index, value)
+    def replace_codepart_at(self, index, value):
+        self.codepart[index] = value
+    def get_docpart(self):
+        return self.docpart
+    def set_docpart(self, docpart):
+        self.docpart = docpart
+    def add_docpart(self, value):
+        self.docpart.append(value)
+    def insert_docpart_at(self, index, value):
+        self.docpart.insert(index, value)
+    def replace_docpart_at(self, index, value):
+        self.docpart[index] = value
+    def hasContent_(self):
+        if (
+            self.codepart or
+            self.docpart
+        ):
+            return True
+        else:
+            return False
+    def export(self, outfile, level, namespaceprefix_='', namespacedef_='', name_='conceptParts', pretty_print=True):
+        imported_ns_def_ = GenerateDSNamespaceDefs_.get('conceptParts')
+        if imported_ns_def_ is not None:
+            namespacedef_ = imported_ns_def_
+        if pretty_print:
+            eol_ = '\n'
+        else:
+            eol_ = ''
+        if self.original_tagname_ is not None and name_ == 'conceptParts':
+            name_ = self.original_tagname_
+        if UseCapturedNS_ and self.ns_prefix_:
+            namespaceprefix_ = self.ns_prefix_ + ':'
+        showIndent(outfile, level, pretty_print)
+        outfile.write('<%s%s%s' % (namespaceprefix_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
+        already_processed = set()
+        self.exportAttributes(outfile, level, already_processed, namespaceprefix_, name_='conceptParts')
+        if self.hasContent_():
+            outfile.write('>%s' % (eol_, ))
+            self.exportChildren(outfile, level + 1, namespaceprefix_, namespacedef_, name_='conceptParts', pretty_print=pretty_print)
+            showIndent(outfile, level, pretty_print)
+            outfile.write('</%s%s>%s' % (namespaceprefix_, name_, eol_))
+        else:
+            outfile.write('/>%s' % (eol_, ))
+    def exportAttributes(self, outfile, level, already_processed, namespaceprefix_='', name_='conceptParts'):
+        pass
+    def exportChildren(self, outfile, level, namespaceprefix_='', namespacedef_='', name_='conceptParts', fromsubclass_=False, pretty_print=True):
+        if pretty_print:
+            eol_ = '\n'
+        else:
+            eol_ = ''
+        for codepart_ in self.codepart:
+            namespaceprefix_ = self.codepart_nsprefix_ + ':' if (UseCapturedNS_ and self.codepart_nsprefix_) else ''
+            codepart_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='codepart', pretty_print=pretty_print)
+        for docpart_ in self.docpart:
+            namespaceprefix_ = self.docpart_nsprefix_ + ':' if (UseCapturedNS_ and self.docpart_nsprefix_) else ''
+            docpart_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='docpart', pretty_print=pretty_print)
+    def build(self, node, gds_collector_=None):
+        self.gds_collector_ = gds_collector_
+        if SaveElementTreeNode:
+            self.gds_elementtree_node_ = node
+        already_processed = set()
+        self.ns_prefix_ = node.prefix
+        self.buildAttributes(node, node.attrib, already_processed)
+        for child in node:
+            nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
+            self.buildChildren(child, node, nodeName_, gds_collector_=gds_collector_)
+        return self
+    def buildAttributes(self, node, attrs, already_processed):
+        pass
+    def buildChildren(self, child_, node, nodeName_, fromsubclass_=False, gds_collector_=None):
+        if nodeName_ == 'codepart':
+            obj_ = conceptCodePart.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            self.codepart.append(obj_)
+            obj_.original_tagname_ = 'codepart'
+        elif nodeName_ == 'docpart':
+            obj_ = conceptDocPart.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            self.docpart.append(obj_)
+            obj_.original_tagname_ = 'docpart'
+# end class conceptParts
+
+
+class conceptCodePart(GeneratedsSuper):
+    __hash__ = GeneratedsSuper.__hash__
+    subclass = None
+    superclass = None
+    def __init__(self, line=None, programlisting=None, gds_collector_=None, **kwargs_):
+        self.gds_collector_ = gds_collector_
+        self.gds_elementtree_node_ = None
+        self.original_tagname_ = None
+        self.parent_object_ = kwargs_.get('parent_object_')
+        self.ns_prefix_ = None
+        self.line = _cast(int, line)
+        self.line_nsprefix_ = None
+        self.programlisting = programlisting
+        self.programlisting_nsprefix_ = None
+    def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, conceptCodePart)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
+        if conceptCodePart.subclass:
+            return conceptCodePart.subclass(*args_, **kwargs_)
+        else:
+            return conceptCodePart(*args_, **kwargs_)
+    factory = staticmethod(factory)
+    def get_ns_prefix_(self):
+        return self.ns_prefix_
+    def set_ns_prefix_(self, ns_prefix):
+        self.ns_prefix_ = ns_prefix
+    def get_programlisting(self):
+        return self.programlisting
+    def set_programlisting(self, programlisting):
+        self.programlisting = programlisting
+    def get_line(self):
+        return self.line
+    def set_line(self, line):
+        self.line = line
+    def hasContent_(self):
+        if (
+            self.programlisting is not None
+        ):
+            return True
+        else:
+            return False
+    def export(self, outfile, level, namespaceprefix_='', namespacedef_='', name_='conceptCodePart', pretty_print=True):
+        imported_ns_def_ = GenerateDSNamespaceDefs_.get('conceptCodePart')
+        if imported_ns_def_ is not None:
+            namespacedef_ = imported_ns_def_
+        if pretty_print:
+            eol_ = '\n'
+        else:
+            eol_ = ''
+        if self.original_tagname_ is not None and name_ == 'conceptCodePart':
+            name_ = self.original_tagname_
+        if UseCapturedNS_ and self.ns_prefix_:
+            namespaceprefix_ = self.ns_prefix_ + ':'
+        showIndent(outfile, level, pretty_print)
+        outfile.write('<%s%s%s' % (namespaceprefix_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
+        already_processed = set()
+        self.exportAttributes(outfile, level, already_processed, namespaceprefix_, name_='conceptCodePart')
+        if self.hasContent_():
+            outfile.write('>%s' % (eol_, ))
+            self.exportChildren(outfile, level + 1, namespaceprefix_, namespacedef_, name_='conceptCodePart', pretty_print=pretty_print)
+            showIndent(outfile, level, pretty_print)
+            outfile.write('</%s%s>%s' % (namespaceprefix_, name_, eol_))
+        else:
+            outfile.write('/>%s' % (eol_, ))
+    def exportAttributes(self, outfile, level, already_processed, namespaceprefix_='', name_='conceptCodePart'):
+        if self.line is not None and 'line' not in already_processed:
+            already_processed.add('line')
+            outfile.write(' line="%s"' % self.gds_format_integer(self.line, input_name='line'))
+    def exportChildren(self, outfile, level, namespaceprefix_='', namespacedef_='', name_='conceptCodePart', fromsubclass_=False, pretty_print=True):
+        if pretty_print:
+            eol_ = '\n'
+        else:
+            eol_ = ''
+        if self.programlisting is not None:
+            namespaceprefix_ = self.programlisting_nsprefix_ + ':' if (UseCapturedNS_ and self.programlisting_nsprefix_) else ''
+            self.programlisting.export(outfile, level, namespaceprefix_, namespacedef_='', name_='programlisting', pretty_print=pretty_print)
+    def build(self, node, gds_collector_=None):
+        self.gds_collector_ = gds_collector_
+        if SaveElementTreeNode:
+            self.gds_elementtree_node_ = node
+        already_processed = set()
+        self.ns_prefix_ = node.prefix
+        self.buildAttributes(node, node.attrib, already_processed)
+        for child in node:
+            nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
+            self.buildChildren(child, node, nodeName_, gds_collector_=gds_collector_)
+        return self
+    def buildAttributes(self, node, attrs, already_processed):
+        value = find_attr_value_('line', node)
+        if value is not None and 'line' not in already_processed:
+            already_processed.add('line')
+            self.line = self.gds_parse_integer(value, node, 'line')
+    def buildChildren(self, child_, node, nodeName_, fromsubclass_=False, gds_collector_=None):
+        if nodeName_ == 'programlisting':
+            obj_ = listingType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            self.programlisting = obj_
+            obj_.original_tagname_ = 'programlisting'
+# end class conceptCodePart
+
+
+class conceptDocPart(descriptionType):
+    __hash__ = GeneratedsSuper.__hash__
+    subclass = None
+    superclass = descriptionType
+    def __init__(self, title=None, para=None, internal=None, sect1=None, line=None, col=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
+        self.gds_collector_ = gds_collector_
+        self.gds_elementtree_node_ = None
+        self.original_tagname_ = None
+        self.parent_object_ = kwargs_.get('parent_object_')
+        self.ns_prefix_ = None
+        super(globals().get("conceptDocPart"), self).__init__(title, para, internal, sect1, valueOf_, mixedclass_, content_,  **kwargs_)
+        self.line = _cast(int, line)
+        self.line_nsprefix_ = None
+        self.col = _cast(int, col)
+        self.col_nsprefix_ = None
+        self.valueOf_ = valueOf_
+        if mixedclass_ is None:
+            self.mixedclass_ = MixedContainer
+        else:
+            self.mixedclass_ = mixedclass_
+        if content_ is None:
+            self.content_ = []
+        else:
+            self.content_ = content_
+        self.valueOf_ = valueOf_
+    def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, conceptDocPart)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
+        if conceptDocPart.subclass:
+            return conceptDocPart.subclass(*args_, **kwargs_)
+        else:
+            return conceptDocPart(*args_, **kwargs_)
+    factory = staticmethod(factory)
+    def get_ns_prefix_(self):
+        return self.ns_prefix_
+    def set_ns_prefix_(self, ns_prefix):
+        self.ns_prefix_ = ns_prefix
+    def get_line(self):
+        return self.line
+    def set_line(self, line):
+        self.line = line
+    def get_col(self):
+        return self.col
+    def set_col(self, col):
+        self.col = col
+    def get_valueOf_(self): return self.valueOf_
+    def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
+    def hasContent_(self):
+        if (
+            (1 if type(self.valueOf_) in [int,float] else self.valueOf_) or
+            self.content_ or
+            super(conceptDocPart, self).hasContent_()
+        ):
+            return True
+        else:
+            return False
+    def export(self, outfile, level, namespaceprefix_='', namespacedef_='', name_='conceptDocPart', pretty_print=True):
+        imported_ns_def_ = GenerateDSNamespaceDefs_.get('conceptDocPart')
+        if imported_ns_def_ is not None:
+            namespacedef_ = imported_ns_def_
+        if pretty_print:
+            eol_ = '\n'
+        else:
+            eol_ = ''
+        if self.original_tagname_ is not None and name_ == 'conceptDocPart':
+            name_ = self.original_tagname_
+        if UseCapturedNS_ and self.ns_prefix_:
+            namespaceprefix_ = self.ns_prefix_ + ':'
+        showIndent(outfile, level, pretty_print)
+        outfile.write('<%s%s%s' % (namespaceprefix_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
+        already_processed = set()
+        self.exportAttributes(outfile, level, already_processed, namespaceprefix_, name_='conceptDocPart')
+        if self.hasContent_():
+            outfile.write('>%s' % (eol_, ))
+            self.exportChildren(outfile, level + 1, namespaceprefix_, namespacedef_, name_='conceptDocPart', pretty_print=pretty_print)
+            showIndent(outfile, level, pretty_print)
+            outfile.write('</%s%s>%s' % (namespaceprefix_, name_, eol_))
+        else:
+            outfile.write('/>%s' % (eol_, ))
+    def exportAttributes(self, outfile, level, already_processed, namespaceprefix_='', name_='conceptDocPart'):
+        super(conceptDocPart, self).exportAttributes(outfile, level, already_processed, namespaceprefix_, name_='conceptDocPart')
+        if self.line is not None and 'line' not in already_processed:
+            already_processed.add('line')
+            outfile.write(' line="%s"' % self.gds_format_integer(self.line, input_name='line'))
+        if self.col is not None and 'col' not in already_processed:
+            already_processed.add('col')
+            outfile.write(' col="%s"' % self.gds_format_integer(self.col, input_name='col'))
+    def exportChildren(self, outfile, level, namespaceprefix_='', namespacedef_='', name_='conceptDocPart', fromsubclass_=False, pretty_print=True):
+        super(conceptDocPart, self).exportChildren(outfile, level, namespaceprefix_, namespacedef_, name_, True, pretty_print=pretty_print)
+    def build(self, node, gds_collector_=None):
+        self.gds_collector_ = gds_collector_
+        if SaveElementTreeNode:
+            self.gds_elementtree_node_ = node
+        already_processed = set()
+        self.ns_prefix_ = node.prefix
+        self.buildAttributes(node, node.attrib, already_processed)
+        self.valueOf_ = get_all_text_(node)
+        if node.text is not None:
+            obj_ = self.mixedclass_(MixedContainer.CategoryText,
+                MixedContainer.TypeNone, '', node.text)
+            self.content_.append(obj_)
+        for child in node:
+            nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
+            self.buildChildren(child, node, nodeName_, gds_collector_=gds_collector_)
+        return self
+    def buildAttributes(self, node, attrs, already_processed):
+        value = find_attr_value_('line', node)
+        if value is not None and 'line' not in already_processed:
+            already_processed.add('line')
+            self.line = self.gds_parse_integer(value, node, 'line')
+        value = find_attr_value_('col', node)
+        if value is not None and 'col' not in already_processed:
+            already_processed.add('col')
+            self.col = self.gds_parse_integer(value, node, 'col')
+        super(conceptDocPart, self).buildAttributes(node, attrs, already_processed)
+    def buildChildren(self, child_, node, nodeName_, fromsubclass_=False, gds_collector_=None):
+        if not fromsubclass_ and child_.tail is not None:
+            obj_ = self.mixedclass_(MixedContainer.CategoryText,
+                MixedContainer.TypeNone, '', child_.tail)
+            self.content_.append(obj_)
+        super(conceptDocPart, self).buildChildren(child_, node, nodeName_, True)
+        pass
+# end class conceptDocPart
 
 
 class paramType(GeneratedsSuper):
@@ -5674,7 +6069,8 @@ class paramType(GeneratedsSuper):
             self.typeconstraint = obj_
             obj_.original_tagname_ = 'typeconstraint'
         elif nodeName_ == 'briefdescription':
-            obj_ = descriptionType.factory(parent_object_=self)
+            class_obj_ = self.get_class_obj_(child_, descriptionType)
+            obj_ = class_obj_.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
             self.briefdescription = obj_
             obj_.original_tagname_ = 'briefdescription'
@@ -25697,7 +26093,8 @@ class docParamListItem(GeneratedsSuper):
             self.parameternamelist.append(obj_)
             obj_.original_tagname_ = 'parameternamelist'
         elif nodeName_ == 'parameterdescription':
-            obj_ = descriptionType.factory(parent_object_=self)
+            class_obj_ = self.get_class_obj_(child_, descriptionType)
+            obj_ = class_obj_.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
             self.parameterdescription = obj_
             obj_.original_tagname_ = 'parameterdescription'
@@ -26226,7 +26623,8 @@ class docXRefSectType(GeneratedsSuper):
             self.xreftitle.append(value_)
             self.xreftitle_nsprefix_ = child_.prefix
         elif nodeName_ == 'xrefdescription':
-            obj_ = descriptionType.factory(parent_object_=self)
+            class_obj_ = self.get_class_obj_(child_, descriptionType)
+            obj_ = class_obj_.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
             self.xrefdescription = obj_
             obj_.original_tagname_ = 'xrefdescription'
@@ -27464,6 +27862,9 @@ __all__ = [
     "codelineType",
     "compoundRefType",
     "compounddefType",
+    "conceptCodePart",
+    "conceptDocPart",
+    "conceptParts",
     "descriptionType",
     "docAnchorType",
     "docBlockQuoteType",

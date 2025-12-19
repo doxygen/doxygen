@@ -765,6 +765,8 @@ enum class VhdlSpecifier
  ETYPE(Class,              Compound|Scope)  \
  ETYPE(Namespace,          Scope)           \
  ETYPE(Concept,            None)            \
+ ETYPE(ConceptCodePart,    None)            \
+ ETYPE(ConceptDocPart,     None)            \
  ETYPE(ClassDoc,           CompoundDoc|Doc) \
  ETYPE(StructDoc,          CompoundDoc|Doc) \
  ETYPE(UnionDoc,           CompoundDoc|Doc) \

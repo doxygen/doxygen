@@ -164,6 +164,11 @@ class Definition
     /*! Returns the line number at which the brief description was found. */
     virtual int briefLine() const = 0;
 
+    /*! Returns the file in which the brief description was found.
+     *  This can differ from getDefFileName().
+     */
+    virtual QCString briefFile() const = 0;
+
     /*! Returns the documentation found inside the body of a member */
     virtual QCString inbodyDocumentation() const = 0;
 
@@ -173,11 +178,6 @@ class Definition
     /*! Returns the line at which the first in body documentation
         part was found */
     virtual int inbodyLine() const = 0;
-
-    /*! Returns the file in which the brief description was found.
-     *  This can differ from getDefFileName().
-     */
-    virtual QCString briefFile() const = 0;
 
     /*! returns the file in which this definition was found */
     virtual QCString getDefFileName() const = 0;

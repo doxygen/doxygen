@@ -38,6 +38,7 @@
       <xsd:element name="tableofcontents" type="tableofcontentsType" minOccurs="0" maxOccurs="1" />
       <xsd:element name="requiresclause" type="linkedTextType" minOccurs="0" />
       <xsd:element name="initializer" type="linkedTextType" minOccurs="0" />
+      <xsd:element name="conceptparts" type="conceptParts" minOccurs="0" />
       <xsd:element name="briefdescription" type="descriptionType" minOccurs="0" />
       <xsd:element name="detaileddescription" type="descriptionType" minOccurs="0" />
       <xsd:element name="exports" type="exportsType" minOccurs="0" maxOccurs="1"/>
@@ -291,6 +292,31 @@
     <xsd:sequence>
       <xsd:element name="param" type="paramType" minOccurs="0" maxOccurs="unbounded" />
     </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="conceptParts">
+    <xsd:sequence>
+      <xsd:choice minOccurs="0" maxOccurs="unbounded">
+        <xsd:element name="codepart" type="conceptCodePart"/>
+        <xsd:element name="docpart" type="conceptDocPart"/>
+      </xsd:choice>
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="conceptCodePart">
+    <xsd:sequence>
+      <xsd:element name="programlisting" type="listingType"/>
+    </xsd:sequence>
+    <xsd:attribute name="line" type="xsd:integer"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="conceptDocPart">
+    <xsd:complexContent>
+      <xsd:extension base="descriptionType">
+        <xsd:attribute name="line" type="xsd:integer"/>
+        <xsd:attribute name="col" type="xsd:integer"/>
+      </xsd:extension>
+    </xsd:complexContent>
   </xsd:complexType>
 
   <xsd:complexType name="paramType">

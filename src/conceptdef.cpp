@@ -55,6 +55,7 @@ class ConceptDefImpl : public DefinitionMixin<ConceptDefMutable>
     const ModuleDef *getModuleDef() const override;
     QCString title() const override;
     int groupId() const override;
+    Parts conceptParts() const override { return m_parts; }
 
     //---------- ConceptDefMutable
     void setIncludeFile(FileDef *fd,const QCString &incName,bool local,bool force) override;
@@ -67,6 +68,9 @@ class ConceptDefImpl : public DefinitionMixin<ConceptDefMutable>
     void setInitializer(const QCString &init) override;
     void findSectionsInDocumentation() override;
     void setGroupId(int id) override;
+    void addDocPart(const QCString &doc,int lineNr,int colNr) override;
+    void addCodePart(const QCString &code,int lineNr,int colNr) override;
+    void addListReferences() override;
 
     //---------- Helpers
     void writeBriefDescription(OutputList &) const;
@@ -85,6 +89,7 @@ class ConceptDefImpl : public DefinitionMixin<ConceptDefMutable>
     ArgumentList                 m_tArgList;
     QCString                     m_initializer;
     int                          m_groupId = -1;
+    Parts                        m_parts;
 };
 
 std::unique_ptr<ConceptDef> createConceptDef(
@@ -144,6 +149,8 @@ class ConceptDefAliasImpl : public DefinitionAliasMixin<ConceptDef>
     { getCdAlias()->writeDeclarationLink(ol,found,header,localNames); }
     int groupId() const override
     { return getCdAlias()->groupId(); }
+    Parts conceptParts() const override
+    { return getCdAlias()->conceptParts(); }
 };
 
 std::unique_ptr<ConceptDef> createConceptDefAlias(const Definition *newScope,const ConceptDef *cd)
@@ -305,6 +312,19 @@ void ConceptDefImpl::setGroupId(int id)
   m_groupId = id;
 }
 
+void ConceptDefImpl::addListReferences()
+{
+  const RefItemVector &xrefItems = xrefListItems();
+  addRefItem(xrefItems,
+           qualifiedName(),
+           theTranslator->trConcept(true,true),
+           getOutputFileBase(),
+           displayName(),
+           QCString(),
+           this
+          );
+}
+
 void ConceptDefImpl::writeTagFile(TextStream &tagFile)
 {
   tagFile << "  <compound kind=\"concept\">\n";
@@ -441,22 +461,40 @@ void ConceptDefImpl::writeDefinition(OutputList &ol,const QCString &title) const
     auto intf = Doxygen::parserManager->getCodeParser(".cpp");
     intf->resetCodeParserState();
     auto &codeOL = ol.codeGenerators();
-    codeOL.startCodeFragment("DoxyCode");
-    QCString scopeName;
-    if (getOuterScope()!=Doxygen::globalScope) scopeName=getOuterScope()->name();
-    //printf("concept=[%s]\n",qPrint(m_initializer));
-    intf->parseCode(codeOL,
-                    scopeName,
-                    m_initializer,
-                    SrcLangExt::Cpp,
-                    false,      // stripCodeComments
-                    CodeParserOptions()
-                    .setFileDef(m_fileDef)
-                    .setInlineFragment(true)
-                    .setShowLineNumbers(false)
-                    .setSearchCtx(this)
-                   );
-    codeOL.endCodeFragment("DoxyCode");
+    for (const auto &part : m_parts)
+    {
+      if (part.type==PartType::Code)
+      {
+        codeOL.startCodeFragment("DoxyCode");
+        QCString scopeName;
+        if (getOuterScope()!=Doxygen::globalScope) scopeName=getOuterScope()->name();
+        //printf("concept=[%s]\n",qPrint(m_initializer));
+        intf->parseCode(codeOL,
+            scopeName,
+            part.content,
+            SrcLangExt::Cpp,
+            false,      // stripCodeComments
+            CodeParserOptions()
+            .setFileDef(m_fileDef)
+            .setInlineFragment(true)
+            .setShowLineNumbers(false)
+            .setSearchCtx(this)
+            );
+        codeOL.endCodeFragment("DoxyCode");
+      }
+      else if (part.type==PartType::Doc)
+      {
+        //printf("rendering part [[%s]] at %d\n",qPrint(part.content),part.lineNr);
+        ol.startEmbeddedDoc(part.colNr);
+        ol.generateDoc(getDefFileName(),
+                       part.lineNr,
+                       this,
+                       nullptr,
+                       part.content,
+                       DocOptions());
+        ol.endEmbeddedDoc();
+      }
+    }
 }
 
 void ConceptDefImpl::writeDetailedDescription(OutputList &ol,const QCString &title) const
@@ -730,6 +768,16 @@ void ConceptDefImpl::findSectionsInDocumentation()
   docFindSections(briefDescription(),this,docFile());
   docFindSections(documentation(),this,docFile());
   docFindSections(inbodyDocumentation(),this,docFile());
+}
+
+void ConceptDefImpl::addDocPart(const QCString &doc,int lineNr,int colNr)
+{
+  m_parts.emplace_back(PartType::Doc,doc,lineNr,colNr);
+}
+
+void ConceptDefImpl::addCodePart(const QCString &code,int lineNr,int colNr)
+{
+  m_parts.emplace_back(PartType::Code,code,lineNr,colNr);
 }
 
 //------------------------------------------------------------------------------------

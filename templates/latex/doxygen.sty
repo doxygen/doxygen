@@ -192,6 +192,21 @@
   \settoheight{\CodeHeightChar}{?}%
 }
 
+\newlength{\ttcharwidth}%
+
+\newenvironment{DoxyEmbeddedDoc}[1][4]{%
+  \begingroup%
+  \scriptsize%
+  \settowidth{\ttcharwidth}{\scriptsize\texttt{M}}%
+  \setlength{\leftskip}{#1\ttcharwidth}%
+  \setlength{\@totalleftmargin}{#1\ttcharwidth}%
+  \addtolength{\linewidth}{-#1\ttcharwidth}%
+  \parshape 0 %
+  \noindent\ignorespaces%
+}{%
+  \par\endgroup
+}
+
 % Redefining not defined characters, i.e. "Replacement Character" in tex output.
 \def\ucr{\adjustbox{width=\CodeWidthChar,height=\CodeHeightChar}{\stackinset{c}{}{c}{-.2pt}{%
    \textcolor{white}{\sffamily\bfseries\small ?}}{%

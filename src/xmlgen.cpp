@@ -1673,7 +1673,37 @@ static void generateXMLForConcept(const ConceptDef *cd,TextStream &ti)
   writeTemplateList(cd,t);
   t << "    <initializer>";
   linkifyText(TextGeneratorXMLImpl(t),cd,cd->getFileDef(),nullptr,cd->initializer());
-  t << "    </initializer>\n";
+  t << "</initializer>\n";
+  auto intf=Doxygen::parserManager->getCodeParser(".cpp");
+  intf->resetCodeParserState();
+  OutputCodeList xmlList;
+  xmlList.add<XMLCodeGenerator>(&t);
+  t << "    <conceptparts>\n";
+  for (const auto &part : cd->conceptParts())
+  {
+    switch (part.type)
+    {
+      case ConceptDef::PartType::Doc:
+        t << "      <docpart line=\"" << part.lineNr << "\" col=\"" << part.colNr << "\">\n";
+        writeXMLDocBlock(t,cd->getDefFileName(),part.lineNr,cd,nullptr,part.content);
+        t << "      </docpart>\n";
+        break;
+      case ConceptDef::PartType::Code:
+        t << "      <codepart line=\"" << part.lineNr << "\">";
+        xmlList.startCodeFragment("DoxyCode");
+        intf->parseCode(xmlList,         // codeOutList
+                        nameStr,         // scopeName
+                        part.content,    // code
+                        SrcLangExt::Cpp, // lang
+                        false,           // stripCodeComments
+                        CodeParserOptions()
+                       );
+        xmlList.endCodeFragment("DoxyCode");
+        t << "</codepart>\n";
+        break;
+    }
+  }
+  t << "    </conceptparts>\n";
   t << "    <briefdescription>\n";
   writeXMLDocBlock(t,cd->briefFile(),cd->briefLine(),cd,nullptr,cd->briefDescription());
   t << "    </briefdescription>\n";

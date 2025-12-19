@@ -2310,6 +2310,16 @@ void LatexGenerator::startLocalToc(int level)
   m_t << "\\localtableofcontents\n";
 }
 
+void LatexGenerator::startEmbeddedDoc(int indent)
+{
+  m_t << "\\begin{DoxyEmbeddedDoc}[" << indent << "]\n";
+}
+
+void LatexGenerator::endEmbeddedDoc()
+{
+  m_t << "\\end{DoxyEmbeddedDoc}\n";
+}
+
 //--------------------------------------------------------------------------------------------------
 
 void writeExtraLatexPackages(TextStream &t)
