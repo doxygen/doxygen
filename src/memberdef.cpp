@@ -4395,12 +4395,11 @@ void MemberDefImpl::setAnchor()
   if (!m_args.isEmpty()) memAnchor+=m_args;
   if (m_memSpec.isAlias()) // this is for backward compatibility
   {
-    memAnchor.prepend(" = "+m_initializer);
+    memAnchor.prepend(" =  "+m_initializer);
   }
   memAnchor.prepend(definition()); // actually the method name is now included
             // twice, which is silly, but we keep it this way for backward
             // compatibility.
-
 
   // include number of template arguments as well,
   // to distinguish between two template
@@ -4549,6 +4548,8 @@ void MemberDefImpl::setInitializer(const QCString &initializer)
   while (p>=0 && isspace(static_cast<uint8_t>(m_initializer.at(p)))) p--;
   m_initializer=m_initializer.left(p+1);
   m_initLines=m_initializer.contains('\n');
+  stripIndentationVerbatim(m_initializer,indent, false);
+
   //printf("%s::setInitializer(%s)\n",qPrint(name()),qPrint(m_initializer));
 }
 

@@ -3195,7 +3195,10 @@ NONLopt [^\n]*
 <FindMembers>"="                        { // in PHP code this could also be due to "<?="
                                           yyextra->current->bodyLine = yyextra->yyLineNr;
                                           yyextra->current->bodyColumn = yyextra->yyColNr;
-                                          yyextra->current->initializer.str(yytext);
+                                          yyextra->current->initializer.str(" ");
+                                          for (int ii = 2 ; ii <  yyextra->yyColNr; ii++)
+                                            yyextra->current->initializer << " ";
+                                          yyextra->current->initializer << "=";
                                           yyextra->lastInitializerContext = YY_START;
                                           yyextra->sharpCount=0;
                                           yyextra->initBracketCount=0;

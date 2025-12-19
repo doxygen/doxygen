@@ -2972,27 +2972,33 @@ QCString findFilePath(const QCString &file,bool &ambig)
 QCString showFileDefMatches(const FileNameLinkedMap *fnMap,const QCString &n)
 {
   QCString result;
-  QCString name=n;
+  QCString name=Dir::cleanDirPath(n.str());
   QCString path;
   int slashPos=std::max(name.findRev('/'),name.findRev('\\'));
   if (slashPos!=-1)
   {
-    path=name.left(slashPos+1);
+    path=removeLongPathMarker(name.left(slashPos+1));
     name=name.right(name.length()-slashPos-1);
   }
   const FileName *fn=fnMap->find(name);
   if (fn)
   {
     bool first = true;
-    for (const auto &fd : *fn)
+    QCString pathStripped = stripFromIncludePath(path);
+    for (const auto &fd_p : *fn)
     {
-      if (path.isEmpty() || fd->getPath().right(path.length())==path)
+      FileDef *fd = fd_p.get();
+      QCString fdStripPath = stripFromIncludePath(fd->getPath());
+      if (path.isEmpty() ||
+          (!pathStripped.isEmpty() && fdStripPath.endsWith(pathStripped)) ||
+          (pathStripped.isEmpty() && fdStripPath.isEmpty()))
       {
         if (!first) result += "\n";
         else first = false;
         result+="  "+fd->absFilePath();
       }
     }
+
   }
   return result;
 }
@@ -5991,8 +5997,9 @@ QCString stripIndentation(const QCString &s,bool skipFirstLine)
   return result.str();
 }
 
-// strip up to \a indentationLevel spaces from each line in \a doc (excluding the first line)
-void stripIndentationVerbatim(QCString &doc,const int indentationLevel)
+// strip up to \a indentationLevel spaces from each line in \a doc (excluding the first line
+//  when skipFirstLine is set to true)
+void stripIndentationVerbatim(QCString &doc,const int indentationLevel, bool skipFirstLine)
 {
   //printf("stripIndentationVerbatim(level=%d):\n%s\n------\n",indentationLevel,qPrint(doc));
   if (indentationLevel <= 0 || doc.isEmpty()) return; // nothing to strip
@@ -6002,8 +6009,9 @@ void stripIndentationVerbatim(QCString &doc,const int indentationLevel)
   char c = 0;
   const char *src = doc.data();
   char *dst = doc.rawData();
-  bool insideIndent = false; // skip the initial line from stripping
+  bool insideIndent = !skipFirstLine; // skip the initial line from stripping
   int cnt = 0;
+  if (!skipFirstLine) cnt = indentationLevel;
   while ((c=*src++))
   {
     // invariant: dst<=src
