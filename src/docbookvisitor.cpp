@@ -49,11 +49,6 @@
 #define DB_VIS_C2a(x,y)
 #endif
 
-static StringVector  dotindex;
-static std::mutex    dotindex_mutex;
-static StringVector  mscindex;
-static std::mutex    mscindex_mutex;
-
 static QCString filterId(const QCString &s)
 {
   if (s.isEmpty()) return s;
@@ -362,40 +357,14 @@ DB_VIS_C
     case DocVerbatim::Dot:
       {
         m_t << "<para>\n";
-        QCString stext = s.text();
-        QCString baseName(4096, QCString::ExplicitSize);
-        QCString fileName;
-
-        uint8_t md5_sig[16];
-        char sigStr[33];
-        MD5Buffer(stext.data(),static_cast<unsigned int>(stext.length()),md5_sig);
-        MD5SigToString(md5_sig,sigStr);
-
-        baseName = Config_getString(DOCBOOK_OUTPUT) + "/inline_dotgraph_" + sigStr;
-        fileName = baseName+".dot";
-        bool newFile = false;
-        bool openError = false;
-        std::lock_guard<std::mutex> lock(dotindex_mutex);
-        if (std::find(dotindex.begin(), dotindex.end(), sigStr) == dotindex.end())
+        bool exists = false;
+        auto fileName = writeFileContents(Config_getString(DOCBOOK_OUTPUT)+"/inline_dotgraph_", // baseName
+                                          ".dot",                                               // extension
+                                          s.text(),                                             // contents
+                                          exists);
+        if (!fileName.isEmpty())
         {
-          newFile = true;
-          dotindex.emplace_back(sigStr);
-
-          std::ofstream file = Portable::openOutputStream(fileName);
-          if (!file.is_open())
-          {
-            err("Could not open file {} for writing\n",fileName);
-            openError = true;
-          }
-          else
-          {
-            file.write( stext.data(), stext.length() );
-            file.close();
-          }
-        }  
-        if (!openError)
-        {
-          writeDotFile(baseName, s, newFile);
+          writeDotFile(fileName, s, !exists);
           if (Config_getBool(DOT_CLEANUP)) Dir().remove(fileName.str());
         }
         m_t << "</para>\n";
@@ -403,44 +372,15 @@ DB_VIS_C
       break;
     case DocVerbatim::Msc:
       {
-        QCString stext = s.text();
-        QCString baseName(4096, QCString::ExplicitSize);
-        QCString fileName;
         m_t << "<para>\n";
-
-        uint8_t md5_sig[16];
-        char sigStr[33];
-        MD5Buffer(stext.data(),static_cast<unsigned int>(stext.length()),md5_sig);
-        MD5SigToString(md5_sig,sigStr);
-
-        baseName = Config_getString(DOCBOOK_OUTPUT) + "/inline_mscgraph_" + sigStr;
-        fileName = baseName+".msc";
-        bool newFile = false;
-        bool openError = false;
-        std::lock_guard<std::mutex> lock(mscindex_mutex);
-        if (std::find(mscindex.begin(), mscindex.end(), sigStr) == mscindex.end())
+        bool exists = false;
+        auto fileName = writeFileContents(Config_getString(DOCBOOK_OUTPUT)+"/inline_mscgraph_", // baseName
+                                          ".msc",                                               // extension
+                                          "msc {"+s.text()+"}",                                 // contents
+                                          exists);
+        if (!fileName.isEmpty())
         {
-          newFile = true;
-          mscindex.emplace_back(sigStr);
-
-          std::ofstream file = Portable::openOutputStream(fileName);
-          if (!file.is_open())
-          {
-            err("Could not open file {} for writing\n",fileName);
-            openError = true;
-          }
-          else
-          {
-            QCString text = "msc {";
-            text+=stext;
-            text+="}";
-            file.write( text.data(), text.length() );
-            file.close();
-          }
-        }
-        if (!openError)
-        {
-          writeMscFile(baseName,s,newFile);
+          writeMscFile(fileName,s,!exists);
           if (Config_getBool(DOT_CLEANUP)) Dir().remove(fileName.str());
         }
         m_t << "</para>\n";
@@ -1560,12 +1500,12 @@ DB_VIS_C
   m_t << "</link>";
 }
 
-void DocbookDocVisitor::writeMscFile(const QCString &baseName, const DocVerbatim &s, bool newFile)
+void DocbookDocVisitor::writeMscFile(const QCString &fileName, const DocVerbatim &s, bool newFile)
 {
 DB_VIS_C
-  QCString shortName = stripPath(baseName);
+  QCString shortName = makeBaseName(fileName,".msc");
   QCString outDir = Config_getString(DOCBOOK_OUTPUT);
-  if (newFile) writeMscGraphFromFile(baseName+".msc",outDir,shortName,MscOutputFormat::BITMAP,s.srcFile(),s.srcLine());
+  if (newFile) writeMscGraphFromFile(fileName,outDir,shortName,MscOutputFormat::BITMAP,s.srcFile(),s.srcLine());
   visitPreStart(m_t, s.children(), s.hasCaption(), s.relPath() + shortName + ".png", s.width(), s.height());
   visitCaption(s.children());
   visitPostEnd(m_t, s.hasCaption());
@@ -1581,6 +1521,7 @@ DB_VIS_C
   visitCaption(s.children());
   visitPostEnd(m_t, s.hasCaption());
 }
+
 void DocbookDocVisitor::startPlantUmlFile(const QCString &fileName,
     const QCString &relPath,
     const QCString &width,
@@ -1683,12 +1624,12 @@ DB_VIS_C
   m_t << "</para>\n";
 }
 
-void DocbookDocVisitor::writeDotFile(const QCString &baseName, const DocVerbatim &s, bool newFile)
+void DocbookDocVisitor::writeDotFile(const QCString &fileName, const DocVerbatim &s, bool newFile)
 {
 DB_VIS_C
-  QCString shortName = stripPath(baseName);
+  QCString shortName = makeBaseName(fileName,".dot");
   QCString outDir = Config_getString(DOCBOOK_OUTPUT);
-  if (newFile) writeDotGraphFromFile(baseName+".dot",outDir,shortName,GraphOutputFormat::BITMAP,s.srcFile(),s.srcLine());
+  if (newFile) writeDotGraphFromFile(fileName,outDir,shortName,GraphOutputFormat::BITMAP,s.srcFile(),s.srcLine());
   visitPreStart(m_t, s.children(), s.hasCaption(), s.relPath() + shortName + "." + getDotImageExtension(), s.width(),s.height());
   visitCaption(s.children());
   visitPostEnd(m_t, s.hasCaption());

@@ -43,11 +43,6 @@
 //#define DBG_RTF(x) m_t << x
 #define DBG_RTF(x) do {} while(0)
 
-static StringVector  dotindex;
-static std::mutex    dotindex_mutex;
-static StringVector  mscindex;
-static std::mutex    mscindex_mutex;
-
 static QCString align(const DocHtmlCell &cell)
 {
   for (const auto &attr : cell.attribs())
@@ -363,39 +358,14 @@ void RTFDocVisitor::operator()(const DocVerbatim &s)
       break;
     case DocVerbatim::Dot:
       {
-        QCString stext = s.text();
-        QCString fileName(4096, QCString::ExplicitSize);
-
-        uint8_t md5_sig[16];
-        char sigStr[33];
-        MD5Buffer(stext.data(),static_cast<unsigned int>(stext.length()),md5_sig);
-        MD5SigToString(md5_sig,sigStr);
-
-        fileName = Config_getString(RTF_OUTPUT) + "/inline_dotgraph_" + sigStr + ".dot";
-        bool newFile = false;
-        bool openError = false;
-
-        std::lock_guard<std::mutex> lock(dotindex_mutex);
-        if (std::find(dotindex.begin(), dotindex.end(), sigStr) == dotindex.end())
+        bool exists = false;
+        auto fileName = writeFileContents(Config_getString(RTF_OUTPUT)+"/inline_dotgraph_", // baseName
+                                          ".dot",                                           // extension
+                                          s.text(),                                         // contents
+                                          exists);
+        if (!fileName.isEmpty())
         {
-          newFile = true;
-          dotindex.emplace_back(sigStr);
-          std::ofstream file = Portable::openOutputStream(fileName);
-          if (!file.is_open())
-          {
-            err("Could not open file {} for writing\n",qPrint(fileName));
-            openError = true;
-          }
-          else
-          {
-            file.write( stext.data(), stext.length() );
-            file.close();
-          }
-        }
-
-        if (!openError)
-        {
-          writeDotFile(fileName, s.hasCaption(), s.srcFile(), s.srcLine(), newFile);
+          writeDotFile(fileName, s.hasCaption(), s.srcFile(), s.srcLine(), !exists);
           visitChildren(s);
           includePicturePostRTF(true, s.hasCaption());
 
@@ -405,46 +375,18 @@ void RTFDocVisitor::operator()(const DocVerbatim &s)
       break;
     case DocVerbatim::Msc:
       {
-        QCString stext = s.text();
-        QCString baseName(4096, QCString::ExplicitSize);
-
-        uint8_t md5_sig[16];
-        char sigStr[33];
-        MD5Buffer(stext.data(),static_cast<unsigned int>(stext.length()),md5_sig);
-        MD5SigToString(md5_sig,sigStr);
-
-        baseName = Config_getString(RTF_OUTPUT) + "/inline_mscgraph_" + sigStr + ".msc";
-        bool newFile = false;
-        bool openError = false;
-        std::lock_guard<std::mutex> lock(mscindex_mutex);
-        if (std::find(mscindex.begin(), mscindex.end(), sigStr) == mscindex.end())
+        bool exists = false;
+        auto fileName = writeFileContents(Config_getString(RTF_OUTPUT)+"/inline_mscgraph_", // baseName
+                                          ".msc",                                           // extension
+                                          "msc {"+s.text()+"}",                             // contents
+                                          exists);
+        if (!fileName.isEmpty())
         {
-          newFile = true;
-          mscindex.emplace_back(sigStr);
-
-          std::ofstream file = Portable::openOutputStream(baseName);
-          if (!file.is_open())
-          {
-            err("Could not open file {} for writing\n",qPrint(baseName));
-            openError = true;
-          }
-          else
-          {
-            QCString text = "msc {";
-            text+=s.text();
-            text+="}";
-            file.write( text.data(), text.length() );
-            file.close();
-          }
-        }
-
-        if (!openError)
-        {
-          writeMscFile(baseName, s.hasCaption(), s.srcFile(), s.srcLine(), newFile);
+          writeMscFile(fileName, s.hasCaption(), s.srcFile(), s.srcLine(), !exists);
           visitChildren(s);
           includePicturePostRTF(true, s.hasCaption());
 
-          if (Config_getBool(DOT_CLEANUP)) Dir().remove(baseName.str());
+          if (Config_getBool(DOT_CLEANUP)) Dir().remove(fileName.str());
         }
       }
       break;

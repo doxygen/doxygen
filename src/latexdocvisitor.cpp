@@ -463,38 +463,14 @@ void LatexDocVisitor::operator()(const DocVerbatim &s)
       break;
     case DocVerbatim::Dot:
       {
-        QCString stext = s.text();
-        QCString fileName(4096, QCString::ExplicitSize);
-
-        uint8_t md5_sig[16];
-        char sigStr[33];
-        MD5Buffer(stext.data(),static_cast<unsigned int>(stext.length()),md5_sig);
-        MD5SigToString(md5_sig,sigStr);
-
-        fileName = Config_getString(LATEX_OUTPUT) + "/inline_dotgraph_" + sigStr + ".dot";
-        bool newFile = false;
-        bool openError = false;
-
-        std::lock_guard<std::mutex> lock(dotindex_mutex);
-        if (std::find(dotindex.begin(), dotindex.end(), sigStr) == dotindex.end())
+        bool exists = false;
+        auto fileName = writeFileContents(Config_getString(LATEX_OUTPUT)+"/inline_dotgraph_", // baseName
+                                          ".dot",                                             // extension
+                                          s.text(),                                           // contents
+                                          exists);
+        if (!fileName.isEmpty())
         {
-          newFile = true;
-          dotindex.emplace_back(sigStr);
-          std::ofstream file = Portable::openOutputStream(fileName);
-          if (!file.is_open())
-          {
-            err("Could not open file {} for writing\n",fileName);
-            openError = true;
-          }
-          else
-          {
-            file.write( s.text().data(), s.text().length() );
-            file.close();
-          }
-        }
-        if (!openError)
-        {
-          startDotFile(fileName,s.width(),s.height(),s.hasCaption(),s.srcFile(),s.srcLine(),newFile);
+          startDotFile(fileName,s.width(),s.height(),s.hasCaption(),s.srcFile(),s.srcLine(),!exists);
           visitChildren(s);
           endDotFile(s.hasCaption());
 
@@ -504,42 +480,14 @@ void LatexDocVisitor::operator()(const DocVerbatim &s)
       break;
     case DocVerbatim::Msc:
       {
-        QCString stext = s.text();
-        QCString baseName(4096, QCString::ExplicitSize);
-
-        uint8_t md5_sig[16];
-        char sigStr[33];
-        MD5Buffer(stext.data(),static_cast<unsigned int>(stext.length()),md5_sig);
-        MD5SigToString(md5_sig,sigStr);
-
-        baseName = Config_getString(LATEX_OUTPUT) + "/inline_mscgraph_" + sigStr;
-        QCString fileName = baseName+".msc";
-        bool newFile = false;
-        bool openError = false;
-        std::lock_guard<std::mutex> lock(mscindex_mutex);
-        if (std::find(mscindex.begin(), mscindex.end(), sigStr) == mscindex.end())
+        bool exists = false;
+        auto fileName = writeFileContents(Config_getString(LATEX_OUTPUT)+"/inline_mscgraph_", // baseName
+                                          ".msc",                                             // extension
+                                          "msc {"+s.text()+"}",                               // contents
+                                          exists);
+        if (!fileName.isEmpty())
         {
-          newFile = true;
-          mscindex.emplace_back(sigStr);
-          std::ofstream file = Portable::openOutputStream(fileName);
-          if (!file.is_open())
-          {
-            err("Could not open file {} for writing\n",fileName);
-            openError = true;
-          }
-          else
-          {
-            QCString text = "msc {";
-            text+=s.text();
-            text+="}";
-            file.write( text.data(), text.length() );
-            file.close();
-          }
-        }
-
-        if (!openError)
-        {
-          writeMscFile(baseName, s, newFile);
+          writeMscFile(fileName, s, !exists);
 
           if (Config_getBool(DOT_CLEANUP)) Dir().remove(fileName.str());
         }
@@ -1954,8 +1902,7 @@ void LatexDocVisitor::startDotFile(const QCString &fileName,
   QCString baseName=makeBaseName(fileName,".dot");
   baseName.prepend("dot_");
   QCString outDir = Config_getString(LATEX_OUTPUT);
-  QCString name = fileName;
-  if (newFile) writeDotGraphFromFile(name,outDir,baseName,GraphOutputFormat::EPS,srcFile,srcLine);
+  if (newFile) writeDotGraphFromFile(fileName,outDir,baseName,GraphOutputFormat::EPS,srcFile,srcLine);
   visitPreStart(m_t,hasCaption, baseName, width, height);
 }
 
@@ -1988,16 +1935,15 @@ void LatexDocVisitor::endMscFile(bool hasCaption)
 }
 
 
-void LatexDocVisitor::writeMscFile(const QCString &baseName, const DocVerbatim &s, bool newFile)
+void LatexDocVisitor::writeMscFile(const QCString &fileName, const DocVerbatim &s, bool newFile)
 {
-  QCString shortName = stripPath(baseName);
+  QCString shortName=makeBaseName(fileName,".msc");
   QCString outDir = Config_getString(LATEX_OUTPUT);
-  if (newFile) writeMscGraphFromFile(baseName+".msc",outDir,shortName,MscOutputFormat::EPS,s.srcFile(),s.srcLine());
+  if (newFile) writeMscGraphFromFile(fileName,outDir,shortName,MscOutputFormat::EPS,s.srcFile(),s.srcLine());
   visitPreStart(m_t, s.hasCaption(), shortName, s.width(),s.height());
   visitCaption(s.children());
   visitPostEnd(m_t, s.hasCaption());
 }
-
 
 void LatexDocVisitor::startDiaFile(const QCString &fileName,
                                    const QCString &width,
