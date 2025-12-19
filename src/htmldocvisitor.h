@@ -124,9 +124,9 @@ class HtmlDocVisitor : public DocVisitor
                    const QCString &tooltip = "");
     void endLink();
     void writeDotFile(const QCString &fileName,const QCString &relPath,const QCString &context,
-                      const QCString &srcFile,int srcLine);
+                      const QCString &srcFile,int srcLine, bool newFile = true);
     void writeMscFile(const QCString &fileName,const QCString &relPath,const QCString &context,
-                      const QCString &srcFile,int srcLine);
+                      const QCString &srcFile,int srcLine, bool newFile = true);
     void writeDiaFile(const QCString &fileName,const QCString &relPath,const QCString &context,
                       const QCString &srcFile,int srcLine);
     void writePlantUMLFile(const QCString &fileName,const QCString &relPath,const QCString &context,

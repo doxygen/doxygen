@@ -38,6 +38,7 @@
 #include "portable.h"
 #include "codefragment.h"
 #include "cite.h"
+#include "md5.h"
 
 //#define DBG_RTF(x) m_t << x
 #define DBG_RTF(x) do {} while(0)
@@ -357,59 +358,36 @@ void RTFDocVisitor::operator()(const DocVerbatim &s)
       break;
     case DocVerbatim::Dot:
       {
-        static int dotindex = 1;
-        QCString fileName(4096, QCString::ExplicitSize);
-
-        fileName.sprintf("%s%d%s",
-            qPrint(Config_getString(RTF_OUTPUT)+"/inline_dotgraph_"),
-            dotindex++,
-            ".dot"
-           );
-        std::ofstream file = Portable::openOutputStream(fileName);
-        if (!file.is_open())
+        bool exists = false;
+        auto fileName = writeFileContents(Config_getString(RTF_OUTPUT)+"/inline_dotgraph_", // baseName
+                                          ".dot",                                           // extension
+                                          s.text(),                                         // contents
+                                          exists);
+        if (!fileName.isEmpty())
         {
-          err("Could not open file {} for writing\n",qPrint(fileName));
-        }
-        else
-        {
-          QCString stext = s.text();
-          file.write( stext.data(), stext.length() );
-          file.close();
-        }
+          writeDotFile(fileName, s.hasCaption(), s.srcFile(), s.srcLine(), !exists);
+          visitChildren(s);
+          includePicturePostRTF(true, s.hasCaption());
 
-        writeDotFile(fileName, s.hasCaption(), s.srcFile(), s.srcLine());
-        visitChildren(s);
-        includePicturePostRTF(true, s.hasCaption());
-
-        if (Config_getBool(DOT_CLEANUP)) Dir().remove(fileName.str());
+          if (Config_getBool(DOT_CLEANUP)) Dir().remove(fileName.str());
+        }
       }
       break;
     case DocVerbatim::Msc:
       {
-        static int mscindex = 1;
-        QCString baseName(4096, QCString::ExplicitSize);
-
-        baseName.sprintf("%s%d%s",
-            qPrint(Config_getString(RTF_OUTPUT)+"/inline_mscgraph_"),
-            mscindex++,
-            ".msc"
-           );
-        std::ofstream file = Portable::openOutputStream(baseName);
-        if (!file.is_open())
+        bool exists = false;
+        auto fileName = writeFileContents(Config_getString(RTF_OUTPUT)+"/inline_mscgraph_", // baseName
+                                          ".msc",                                           // extension
+                                          "msc {"+s.text()+"}",                             // contents
+                                          exists);
+        if (!fileName.isEmpty())
         {
-          err("Could not open file {} for writing\n",qPrint(baseName));
+          writeMscFile(fileName, s.hasCaption(), s.srcFile(), s.srcLine(), !exists);
+          visitChildren(s);
+          includePicturePostRTF(true, s.hasCaption());
+
+          if (Config_getBool(DOT_CLEANUP)) Dir().remove(fileName.str());
         }
-        QCString text = "msc {";
-        text+=s.text();
-        text+="}";
-        file.write( text.data(), text.length() );
-        file.close();
-
-        writeMscFile(baseName, s.hasCaption(), s.srcFile(), s.srcLine());
-        visitChildren(s);
-        includePicturePostRTF(true, s.hasCaption());
-
-        if (Config_getBool(DOT_CLEANUP)) Dir().remove(baseName.str());
       }
       break;
     case DocVerbatim::PlantUML:
@@ -1730,11 +1708,11 @@ void RTFDocVisitor::writeDotFile(const DocDotFile &df)
   writeDotFile(df.file(), df.hasCaption(), df.srcFile(), df.srcLine());
 }
 void RTFDocVisitor::writeDotFile(const QCString &filename, bool hasCaption,
-                                 const QCString &srcFile, int srcLine)
+                                 const QCString &srcFile, int srcLine, bool newFile)
 {
   QCString baseName=makeBaseName(filename,".dot");
   QCString outDir = Config_getString(RTF_OUTPUT);
-  writeDotGraphFromFile(filename,outDir,baseName,GraphOutputFormat::BITMAP,srcFile,srcLine);
+  if (newFile) writeDotGraphFromFile(filename,outDir,baseName,GraphOutputFormat::BITMAP,srcFile,srcLine);
   QCString imgExt = getDotImageExtension();
   includePicturePreRTF(baseName + "." + imgExt, true, hasCaption);
 }
@@ -1744,11 +1722,11 @@ void RTFDocVisitor::writeMscFile(const DocMscFile &df)
   writeMscFile(df.file(), df.hasCaption(), df.srcFile(), df.srcLine());
 }
 void RTFDocVisitor::writeMscFile(const QCString &fileName, bool hasCaption,
-                                 const QCString &srcFile, int srcLine)
+                                 const QCString &srcFile, int srcLine, bool newFile)
 {
   QCString baseName=makeBaseName(fileName,".msc");
   QCString outDir = Config_getString(RTF_OUTPUT);
-  writeMscGraphFromFile(fileName,outDir,baseName,MscOutputFormat::BITMAP,srcFile,srcLine);
+  if (newFile) writeMscGraphFromFile(fileName,outDir,baseName,MscOutputFormat::BITMAP,srcFile,srcLine);
   includePicturePreRTF(baseName + ".png", true, hasCaption);
 }
 

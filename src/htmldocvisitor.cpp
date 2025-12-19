@@ -39,6 +39,7 @@
 #include "portable.h"
 #include "codefragment.h"
 #include "cite.h"
+#include "md5.h"
 
 static const int NUM_HTML_LIST_TYPES = 4;
 static const char g_types[][NUM_HTML_LIST_TYPES] = {"1", "a", "i", "A"};
@@ -586,33 +587,23 @@ void HtmlDocVisitor::operator()(const DocVerbatim &s)
 
     case DocVerbatim::Dot:
       {
-        static int dotindex = 1;
-        QCString fileName(4096, QCString::ExplicitSize);
-
         forceEndParagraph(s);
-        fileName.sprintf("%s%d%s",
-            qPrint(Config_getString(HTML_OUTPUT)+"/inline_dotgraph_"),
-            dotindex++,
-            ".dot"
-           );
-        std::ofstream file = Portable::openOutputStream(fileName);
-        if (!file.is_open())
-        {
-          err("Could not open file {} for writing\n",fileName);
-        }
-        else
-        {
-          QCString stext = s.text();
-          file.write( stext.data(), stext.length() );
-          file.close();
 
+        bool exists = false;
+        auto fileName = writeFileContents(Config_getString(HTML_OUTPUT)+"/inline_dotgraph_", // baseName
+                                          ".dot",                                            // extension
+                                          s.text(),                                          // contents
+                                          exists);
+        if (!fileName.isEmpty())
+        {
           m_t << "<div class=\"dotgraph\">\n";
-          writeDotFile(fileName,s.relPath(),s.context(),s.srcFile(),s.srcLine());
+          writeDotFile(fileName,s.relPath(),s.context(),s.srcFile(),s.srcLine(),!exists);
           visitCaption(m_t, s);
           m_t << "</div>\n";
 
           if (Config_getBool(DOT_CLEANUP)) Dir().remove(fileName.str());
         }
+
         forceStartParagraph(s);
       }
       break;
@@ -620,34 +611,21 @@ void HtmlDocVisitor::operator()(const DocVerbatim &s)
       {
         forceEndParagraph(s);
 
-        static int mscindex = 1;
-        QCString baseName(4096, QCString::ExplicitSize);
-
-        baseName.sprintf("%s%d",
-            qPrint(Config_getString(HTML_OUTPUT)+"/inline_mscgraph_"),
-            mscindex++
-            );
-        std::ofstream file = Portable::openOutputStream(baseName.str()+".msc");
-        if (!file.is_open())
+        bool exists = false;
+        auto fileName = writeFileContents(Config_getString(HTML_OUTPUT)+"/inline_mscgraph_", // baseName
+                                          ".msc",                                            // extension
+                                          "msc {"+s.text()+"}",                              // contents
+                                          exists);
+        if (!fileName.isEmpty())
         {
-          err("Could not open file {}.msc for writing\n",baseName);
-        }
-        else
-        {
-          QCString text = "msc {";
-          text+=s.text();
-          text+="}";
-
-          file.write( text.data(), text.length() );
-          file.close();
-
           m_t << "<div class=\"mscgraph\">\n";
-          writeMscFile(baseName+".msc",s.relPath(),s.context(),s.srcFile(),s.srcLine());
+          writeMscFile(fileName,s.relPath(),s.context(),s.srcFile(),s.srcLine(),!exists);
           visitCaption(m_t, s);
           m_t << "</div>\n";
 
-          if (Config_getBool(DOT_CLEANUP)) Dir().remove(baseName.str()+".msc");
+          if (Config_getBool(DOT_CLEANUP)) Dir().remove(fileName.str());
         }
+
         forceStartParagraph(s);
       }
       break;
@@ -2182,27 +2160,25 @@ void HtmlDocVisitor::endLink()
   m_t << "</a>";
 }
 
-void HtmlDocVisitor::writeDotFile(const QCString &fn,const QCString &relPath,
-                                  const QCString &context,const QCString &srcFile,int srcLine)
+void HtmlDocVisitor::writeDotFile(const QCString &fileName,const QCString &relPath,
+                                  const QCString &context,const QCString &srcFile,int srcLine,bool newFile)
 {
-  QCString baseName=makeBaseName(fn,".dot");
+  QCString baseName=makeBaseName(fileName,".dot");
   baseName.prepend("dot_");
   QCString outDir = Config_getString(HTML_OUTPUT);
-  writeDotGraphFromFile(fn,outDir,baseName,GraphOutputFormat::BITMAP,srcFile,srcLine);
-  writeDotImageMapFromFile(m_t,fn,outDir,relPath,baseName,context,-1,srcFile,srcLine);
+  if (newFile) writeDotGraphFromFile(fileName,outDir,baseName,GraphOutputFormat::BITMAP,srcFile,srcLine);
+  writeDotImageMapFromFile(m_t,fileName,outDir,relPath,baseName,context,-1,srcFile,srcLine,newFile);
 }
 
 void HtmlDocVisitor::writeMscFile(const QCString &fileName,const QCString &relPath,
-                                  const QCString &context,const QCString &srcFile,int srcLine)
+                                  const QCString &context,const QCString &srcFile,int srcLine, bool newFile)
 {
   QCString baseName=makeBaseName(fileName,".msc");
   baseName.prepend("msc_");
   QCString outDir = Config_getString(HTML_OUTPUT);
   QCString imgExt = getDotImageExtension();
-  MscOutputFormat mscFormat = MscOutputFormat::BITMAP;
-  if ("svg" == imgExt)
-    mscFormat = MscOutputFormat::SVG;
-  writeMscGraphFromFile(fileName,outDir,baseName,mscFormat,srcFile,srcLine);
+  MscOutputFormat mscFormat = imgExt=="svg" ? MscOutputFormat::SVG : MscOutputFormat::BITMAP;
+  if (newFile) writeMscGraphFromFile(fileName,outDir,baseName,mscFormat,srcFile,srcLine);
   writeMscImageMapFromFile(m_t,fileName,outDir,relPath,baseName,context,mscFormat,srcFile,srcLine);
 }
 

@@ -6914,4 +6914,44 @@ QCString extractEndRawStringDelimiter(const char *rawEnd)
   return text.mid(1,text.length()-2); // text=)xyz" -> delimiter=xyz
 }
 
+static std::mutex         writeFileContents_lock;
+static StringUnorderedSet writeFileContents_set;
+
+/** Thread-safe function to write a string to a file.
+ *  The contents will be used to create a hash that will be used to make the name unique.
+ *  @param[in] baseName the base name of the file to write including path.
+ *  @param[in] extension the file extension to use.
+ *  @param[out] exists is set to true if the file was already written before.
+ *  @returns the name of the file written or an empty string in case of an error.
+ */
+QCString writeFileContents(const QCString &baseName,const QCString &extension,const QCString &content,bool &exists)
+{
+  uint8_t md5_sig[16];
+  char sigStr[33];
+  MD5Buffer(content.data(),static_cast<unsigned int>(content.length()),md5_sig);
+  MD5SigToString(md5_sig,sigStr);
+
+  QCString fileName = baseName + sigStr + extension;
+  { // ==== start atomic section
+    std::lock_guard lock(writeFileContents_lock);
+    auto it=writeFileContents_set.find(fileName.str());
+    exists = it!=writeFileContents_set.end();
+    if (!exists)
+    {
+      writeFileContents_set.insert(fileName.str());
+      if (auto file = Portable::openOutputStream(fileName); file.is_open())
+      {
+        file.write( content.data(), content.length() );
+        file.close();
+      }
+      else
+      {
+        err("Could not open file {} for writing\n",fileName);
+        return QCString();
+      }
+    }
+  } // ==== end atomic section
+  return fileName;
+}
+
 
