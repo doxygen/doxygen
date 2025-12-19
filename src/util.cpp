@@ -4915,6 +4915,11 @@ QCString stripPath(const QCString &s)
   return result;
 }
 
+QCString makeBaseName(const QCString &name, const QCString &ext)
+{
+  return stripExtensionGeneral(stripPath(name), ext);
+}
+
 /** returns \c TRUE iff string \a s contains word \a w */
 bool containsWord(const QCString &str,const char *word)
 {

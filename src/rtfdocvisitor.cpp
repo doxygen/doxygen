@@ -56,17 +56,6 @@ static QCString align(const DocHtmlCell &cell)
   return "";
 }
 
-static QCString makeBaseName(const QCString &name)
-{
-  QCString baseName = name;
-  int i = baseName.findRev('/');
-  if (i!=-1)
-  {
-    baseName=baseName.mid(i+1);
-  }
-  return baseName;
-}
-
 RTFDocVisitor::RTFDocVisitor(TextStream &t,OutputCodeList &ci,
                              const QCString &langExt, int hierarchyLevel)
   : m_t(t), m_ci(ci), m_langExt(langExt), m_hierarchyLevel(hierarchyLevel)
@@ -1743,7 +1732,7 @@ void RTFDocVisitor::writeDotFile(const DocDotFile &df)
 void RTFDocVisitor::writeDotFile(const QCString &filename, bool hasCaption,
                                  const QCString &srcFile, int srcLine)
 {
-  QCString baseName=makeBaseName(filename);
+  QCString baseName=makeBaseName(filename,".dot");
   QCString outDir = Config_getString(RTF_OUTPUT);
   writeDotGraphFromFile(filename,outDir,baseName,GraphOutputFormat::BITMAP,srcFile,srcLine);
   QCString imgExt = getDotImageExtension();
@@ -1757,7 +1746,7 @@ void RTFDocVisitor::writeMscFile(const DocMscFile &df)
 void RTFDocVisitor::writeMscFile(const QCString &fileName, bool hasCaption,
                                  const QCString &srcFile, int srcLine)
 {
-  QCString baseName=makeBaseName(fileName);
+  QCString baseName=makeBaseName(fileName,".msc");
   QCString outDir = Config_getString(RTF_OUTPUT);
   writeMscGraphFromFile(fileName,outDir,baseName,MscOutputFormat::BITMAP,srcFile,srcLine);
   includePicturePreRTF(baseName + ".png", true, hasCaption);
@@ -1765,7 +1754,7 @@ void RTFDocVisitor::writeMscFile(const QCString &fileName, bool hasCaption,
 
 void RTFDocVisitor::writeDiaFile(const DocDiaFile &df)
 {
-  QCString baseName=makeBaseName(df.file());
+  QCString baseName=makeBaseName(df.file(),".dia");
   QCString outDir = Config_getString(RTF_OUTPUT);
   writeDiaGraphFromFile(df.file(),outDir,baseName,DiaOutputFormat::BITMAP,df.srcFile(),df.srcLine());
   includePicturePreRTF(baseName + ".png", true, df.hasCaption());
@@ -1773,7 +1762,7 @@ void RTFDocVisitor::writeDiaFile(const DocDiaFile &df)
 
 void RTFDocVisitor::writePlantUMLFile(const QCString &fileName, bool hasCaption)
 {
-  QCString baseName=makeBaseName(fileName);
+  QCString baseName=makeBaseName(fileName,".pu");
   QCString outDir = Config_getString(RTF_OUTPUT);
   PlantumlManager::instance().generatePlantUMLOutput(fileName,outDir,PlantumlManager::PUML_BITMAP);
   includePicturePreRTF(baseName + ".png", true, hasCaption);
