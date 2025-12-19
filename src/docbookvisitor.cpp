@@ -35,6 +35,7 @@
 #include "portable.h"
 #include "codefragment.h"
 #include "cite.h"
+#include "md5.h"
 
 #if 0
 #define DB_VIS_C DB_VIS_C1(m_t)
@@ -47,6 +48,11 @@
 #define DB_VIS_C2(y)
 #define DB_VIS_C2a(x,y)
 #endif
+
+static StringVector  dotindex;
+static std::mutex    dotindex_mutex;
+static StringVector  mscindex;
+static std::mutex    mscindex_mutex;
 
 static QCString filterId(const QCString &s)
 {
@@ -355,55 +361,89 @@ DB_VIS_C
       break;
     case DocVerbatim::Dot:
       {
-        static int dotindex = 1;
-        QCString baseName(4096, QCString::ExplicitSize);
-        QCString name;
-        QCString stext = s.text();
         m_t << "<para>\n";
-        name.sprintf("%s%d", "dot_inline_dotgraph_", dotindex);
-        baseName.sprintf("%s%d",
-            qPrint(Config_getString(DOCBOOK_OUTPUT)+"/inline_dotgraph_"),
-            dotindex++
-            );
-        QCString fileName = baseName+".dot";
-        std::ofstream file = Portable::openOutputStream(fileName);
-        if (!file.is_open())
+        QCString stext = s.text();
+        QCString baseName(4096, QCString::ExplicitSize);
+        QCString fileName;
+
+        uint8_t md5_sig[16];
+        char sigStr[33];
+        MD5Buffer(stext.data(),static_cast<unsigned int>(stext.length()),md5_sig);
+        MD5SigToString(md5_sig,sigStr);
+
+        baseName = Config_getString(DOCBOOK_OUTPUT) + "/inline_dotgraph_" + sigStr;
+        fileName = baseName+".dot";
+        bool newFile = false;
+        bool openError = false;
+        std::lock_guard<std::mutex> lock(dotindex_mutex);
+        if (std::find(dotindex.begin(), dotindex.end(), sigStr) == dotindex.end())
         {
-          err("Could not open file {} for writing\n",fileName);
+          newFile = true;
+          dotindex.emplace_back(sigStr);
+
+          std::ofstream file = Portable::openOutputStream(fileName);
+          if (!file.is_open())
+          {
+            err("Could not open file {} for writing\n",fileName);
+            openError = true;
+          }
+          else
+          {
+            file.write( stext.data(), stext.length() );
+            file.close();
+          }
+        }  
+        if (!openError)
+        {
+          writeDotFile(baseName, s, newFile);
+          if (Config_getBool(DOT_CLEANUP)) Dir().remove(fileName.str());
         }
-        file.write( stext.data(), stext.length() );
-        file.close();
-        writeDotFile(baseName, s);
         m_t << "</para>\n";
-        if (Config_getBool(DOT_CLEANUP)) Dir().remove(fileName.str());
       }
       break;
     case DocVerbatim::Msc:
       {
-        static int mscindex = 1;
-        QCString baseName(4096, QCString::ExplicitSize);
-        QCString name;
         QCString stext = s.text();
+        QCString baseName(4096, QCString::ExplicitSize);
+        QCString fileName;
         m_t << "<para>\n";
-        name.sprintf("%s%d", "msc_inline_mscgraph_", mscindex);
-        baseName.sprintf("%s%d",
-            (Config_getString(DOCBOOK_OUTPUT)+"/inline_mscgraph_").data(),
-            mscindex++
-            );
-        QCString fileName = baseName+".msc";
-        std::ofstream file = Portable::openOutputStream(fileName);
-        if (!file.is_open())
+
+        uint8_t md5_sig[16];
+        char sigStr[33];
+        MD5Buffer(stext.data(),static_cast<unsigned int>(stext.length()),md5_sig);
+        MD5SigToString(md5_sig,sigStr);
+
+        baseName = Config_getString(DOCBOOK_OUTPUT) + "/inline_mscgraph_" + sigStr;
+        fileName = baseName+".msc";
+        bool newFile = false;
+        bool openError = false;
+        std::lock_guard<std::mutex> lock(mscindex_mutex);
+        if (std::find(mscindex.begin(), mscindex.end(), sigStr) == mscindex.end())
         {
-          err("Could not open file {} for writing\n",fileName);
+          newFile = true;
+          mscindex.emplace_back(sigStr);
+
+          std::ofstream file = Portable::openOutputStream(fileName);
+          if (!file.is_open())
+          {
+            err("Could not open file {} for writing\n",fileName);
+            openError = true;
+          }
+          else
+          {
+            QCString text = "msc {";
+            text+=stext;
+            text+="}";
+            file.write( text.data(), text.length() );
+            file.close();
+          }
         }
-        QCString text = "msc {";
-        text+=stext;
-        text+="}";
-        file.write( text.data(), text.length() );
-        file.close();
-        writeMscFile(baseName,s);
+        if (!openError)
+        {
+          writeMscFile(baseName,s,newFile);
+          if (Config_getBool(DOT_CLEANUP)) Dir().remove(fileName.str());
+        }
         m_t << "</para>\n";
-        if (Config_getBool(DOT_CLEANUP)) Dir().remove(fileName.str());
       }
       break;
     case DocVerbatim::PlantUML:
@@ -1520,12 +1560,12 @@ DB_VIS_C
   m_t << "</link>";
 }
 
-void DocbookDocVisitor::writeMscFile(const QCString &baseName, const DocVerbatim &s)
+void DocbookDocVisitor::writeMscFile(const QCString &baseName, const DocVerbatim &s, bool newFile)
 {
 DB_VIS_C
   QCString shortName = stripPath(baseName);
   QCString outDir = Config_getString(DOCBOOK_OUTPUT);
-  writeMscGraphFromFile(baseName+".msc",outDir,shortName,MscOutputFormat::BITMAP,s.srcFile(),s.srcLine());
+  if (newFile) writeMscGraphFromFile(baseName+".msc",outDir,shortName,MscOutputFormat::BITMAP,s.srcFile(),s.srcLine());
   visitPreStart(m_t, s.children(), s.hasCaption(), s.relPath() + shortName + ".png", s.width(), s.height());
   visitCaption(s.children());
   visitPostEnd(m_t, s.hasCaption());
@@ -1643,12 +1683,12 @@ DB_VIS_C
   m_t << "</para>\n";
 }
 
-void DocbookDocVisitor::writeDotFile(const QCString &baseName, const DocVerbatim &s)
+void DocbookDocVisitor::writeDotFile(const QCString &baseName, const DocVerbatim &s, bool newFile)
 {
 DB_VIS_C
   QCString shortName = stripPath(baseName);
   QCString outDir = Config_getString(DOCBOOK_OUTPUT);
-  writeDotGraphFromFile(baseName+".dot",outDir,shortName,GraphOutputFormat::BITMAP,s.srcFile(),s.srcLine());
+  if (newFile) writeDotGraphFromFile(baseName+".dot",outDir,shortName,GraphOutputFormat::BITMAP,s.srcFile(),s.srcLine());
   visitPreStart(m_t, s.children(), s.hasCaption(), s.relPath() + shortName + "." + getDotImageExtension(), s.width(),s.height());
   visitCaption(s.children());
   visitPostEnd(m_t, s.hasCaption());

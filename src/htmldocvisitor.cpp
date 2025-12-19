@@ -39,6 +39,12 @@
 #include "portable.h"
 #include "codefragment.h"
 #include "cite.h"
+#include "md5.h"
+
+static StringVector  dotindex;
+static std::mutex    dotindex_mutex;
+static StringVector  mscindex;
+static std::mutex    mscindex_mutex;
 
 static const int NUM_HTML_LIST_TYPES = 4;
 static const char g_types[][NUM_HTML_LIST_TYPES] = {"1", "a", "i", "A"};
@@ -586,28 +592,40 @@ void HtmlDocVisitor::operator()(const DocVerbatim &s)
 
     case DocVerbatim::Dot:
       {
-        static int dotindex = 1;
+        forceEndParagraph(s);
+
+        QCString stext = s.text();
         QCString fileName(4096, QCString::ExplicitSize);
 
-        forceEndParagraph(s);
-        fileName.sprintf("%s%d%s",
-            qPrint(Config_getString(HTML_OUTPUT)+"/inline_dotgraph_"),
-            dotindex++,
-            ".dot"
-           );
-        std::ofstream file = Portable::openOutputStream(fileName);
-        if (!file.is_open())
-        {
-          err("Could not open file {} for writing\n",fileName);
-        }
-        else
-        {
-          QCString stext = s.text();
-          file.write( stext.data(), stext.length() );
-          file.close();
+        uint8_t md5_sig[16];
+        char sigStr[33];
+        MD5Buffer(stext.data(),static_cast<unsigned int>(stext.length()),md5_sig);
+        MD5SigToString(md5_sig,sigStr);
 
+        fileName = Config_getString(HTML_OUTPUT) + "/inline_dotgraph_" + sigStr + ".dot";
+        bool newFile = false;
+        bool openError = false;
+        std::lock_guard<std::mutex> lock(dotindex_mutex);
+        if (std::find(dotindex.begin(), dotindex.end(), sigStr) == dotindex.end())
+        {
+          newFile = true;
+          dotindex.emplace_back(sigStr);
+          std::ofstream file = Portable::openOutputStream(fileName);
+          if (!file.is_open())
+          {
+            err("Could not open file {} for writing\n",fileName);
+            openError = true;
+          }
+          else
+          {
+            file.write( stext.data(), stext.length() );
+            file.close();
+          }
+        }
+        if (!openError)
+        {
           m_t << "<div class=\"dotgraph\">\n";
-          writeDotFile(fileName,s.relPath(),s.context(),s.srcFile(),s.srcLine());
+          writeDotFile(fileName,s.relPath(),s.context(),s.srcFile(),s.srcLine(),newFile);
           visitCaption(m_t, s);
           m_t << "</div>\n";
 
@@ -620,29 +638,42 @@ void HtmlDocVisitor::operator()(const DocVerbatim &s)
       {
         forceEndParagraph(s);
 
-        static int mscindex = 1;
+        QCString stext = s.text();
         QCString baseName(4096, QCString::ExplicitSize);
 
-        baseName.sprintf("%s%d",
-            qPrint(Config_getString(HTML_OUTPUT)+"/inline_mscgraph_"),
-            mscindex++
-            );
-        std::ofstream file = Portable::openOutputStream(baseName.str()+".msc");
-        if (!file.is_open())
+        uint8_t md5_sig[16];
+        char sigStr[33];
+        MD5Buffer(stext.data(),static_cast<unsigned int>(stext.length()),md5_sig);
+        MD5SigToString(md5_sig,sigStr);
+
+        baseName = Config_getString(HTML_OUTPUT) + "/inline_mscgraph_" + sigStr;
+        bool newFile = false;
+        bool openError = false;
+        std::lock_guard<std::mutex> lock(mscindex_mutex);
+        if (std::find(mscindex.begin(), mscindex.end(), sigStr) == mscindex.end())
         {
-          err("Could not open file {}.msc for writing\n",baseName);
+          newFile = true;
+          mscindex.emplace_back(sigStr);
+          std::ofstream file = Portable::openOutputStream(baseName.str()+".msc");
+          if (!file.is_open())
+          {
+            err("Could not open file {}.msc for writing\n",baseName);
+            openError = true;
+          }
+          else
+          {
+            QCString text = "msc {";
+            text+=s.text();
+            text+="}";
+
+            file.write( text.data(), text.length() );
+            file.close();
+          }
         }
-        else
+        if (!openError)
         {
-          QCString text = "msc {";
-          text+=s.text();
-          text+="}";
-
-          file.write( text.data(), text.length() );
-          file.close();
-
           m_t << "<div class=\"mscgraph\">\n";
-          writeMscFile(baseName+".msc",s.relPath(),s.context(),s.srcFile(),s.srcLine());
+          writeMscFile(baseName+".msc",s.relPath(),s.context(),s.srcFile(),s.srcLine(),newFile);
           visitCaption(m_t, s);
           m_t << "</div>\n";
 
@@ -2183,17 +2214,17 @@ void HtmlDocVisitor::endLink()
 }
 
 void HtmlDocVisitor::writeDotFile(const QCString &fn,const QCString &relPath,
-                                  const QCString &context,const QCString &srcFile,int srcLine)
+                                  const QCString &context,const QCString &srcFile,int srcLine,bool newFile)
 {
   QCString baseName=makeBaseName(fn,".dot");
   baseName.prepend("dot_");
   QCString outDir = Config_getString(HTML_OUTPUT);
-  writeDotGraphFromFile(fn,outDir,baseName,GraphOutputFormat::BITMAP,srcFile,srcLine);
-  writeDotImageMapFromFile(m_t,fn,outDir,relPath,baseName,context,-1,srcFile,srcLine);
+  if (newFile) writeDotGraphFromFile(fn,outDir,baseName,GraphOutputFormat::BITMAP,srcFile,srcLine);
+  writeDotImageMapFromFile(m_t,fn,outDir,relPath,baseName,context,-1,srcFile,srcLine,newFile);
 }
 
 void HtmlDocVisitor::writeMscFile(const QCString &fileName,const QCString &relPath,
-                                  const QCString &context,const QCString &srcFile,int srcLine)
+                                  const QCString &context,const QCString &srcFile,int srcLine, bool newFile)
 {
   QCString baseName=makeBaseName(fileName,".msc");
   baseName.prepend("msc_");
@@ -2202,7 +2233,7 @@ void HtmlDocVisitor::writeMscFile(const QCString &fileName,const QCString &relPa
   MscOutputFormat mscFormat = MscOutputFormat::BITMAP;
   if ("svg" == imgExt)
     mscFormat = MscOutputFormat::SVG;
-  writeMscGraphFromFile(fileName,outDir,baseName,mscFormat,srcFile,srcLine);
+  if (newFile) writeMscGraphFromFile(fileName,outDir,baseName,mscFormat,srcFile,srcLine);
   writeMscImageMapFromFile(m_t,fileName,outDir,relPath,baseName,context,mscFormat,srcFile,srcLine);
 }
 
