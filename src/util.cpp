@@ -6921,6 +6921,7 @@ static StringUnorderedSet writeFileContents_set;
  *  The contents will be used to create a hash that will be used to make the name unique.
  *  @param[in] baseName the base name of the file to write including path.
  *  @param[in] extension the file extension to use.
+ *  @param[in] content the data to write to the file
  *  @param[out] exists is set to true if the file was already written before.
  *  @returns the name of the file written or an empty string in case of an error.
  */
