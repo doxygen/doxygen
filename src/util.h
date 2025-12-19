@@ -348,6 +348,8 @@ QCString stripExtensionGeneral(const QCString &fName, const QCString &ext);
 
 QCString stripExtension(const QCString &fName);
 
+QCString makeBaseName(const QCString &name, const QCString &ext);
+
 int computeQualifiedIndex(const QCString &name);
 
 void addDirPrefix(QCString &fileName);

@@ -206,29 +206,6 @@ static void visitPostEnd(TextStream &t, bool hasCaption, bool inlineImage = FALS
     }
 }
 
-static QCString makeShortName(const QCString &name)
-{
-  QCString shortName = name;
-  int i = shortName.findRev('/');
-  if (i!=-1)
-  {
-    shortName=shortName.mid(i+1);
-  }
-  return shortName;
-}
-
-static QCString makeBaseName(const QCString &name)
-{
-  QCString baseName = makeShortName(name);
-  int i=baseName.find('.');
-  if (i!=-1)
-  {
-    baseName=baseName.left(i);
-  }
-  return baseName;
-}
-
-
 void LatexDocVisitor::visitCaption(const DocNodeList &children)
 {
   for (const auto &n : children)
@@ -1941,7 +1918,7 @@ void LatexDocVisitor::startDotFile(const QCString &fileName,
                                    int srcLine
                                   )
 {
-  QCString baseName=makeBaseName(fileName);
+  QCString baseName=makeBaseName(fileName,".dot");
   baseName.prepend("dot_");
   QCString outDir = Config_getString(LATEX_OUTPUT);
   QCString name = fileName;
@@ -1963,7 +1940,7 @@ void LatexDocVisitor::startMscFile(const QCString &fileName,
                                    int srcLine
                                   )
 {
-  QCString baseName=makeBaseName(fileName);
+  QCString baseName=makeBaseName(fileName,".msc");
   baseName.prepend("msc_");
 
   QCString outDir = Config_getString(LATEX_OUTPUT);
@@ -1980,7 +1957,7 @@ void LatexDocVisitor::endMscFile(bool hasCaption)
 
 void LatexDocVisitor::writeMscFile(const QCString &baseName, const DocVerbatim &s)
 {
-  QCString shortName = makeShortName(baseName);
+  QCString shortName = stripPath(baseName);
   QCString outDir = Config_getString(LATEX_OUTPUT);
   writeMscGraphFromFile(baseName+".msc",outDir,shortName,MscOutputFormat::EPS,s.srcFile(),s.srcLine());
   visitPreStart(m_t, s.hasCaption(), shortName, s.width(),s.height());
@@ -1997,7 +1974,7 @@ void LatexDocVisitor::startDiaFile(const QCString &fileName,
                                    int srcLine
                                   )
 {
-  QCString baseName=makeBaseName(fileName);
+  QCString baseName=makeBaseName(fileName,".dia");
   baseName.prepend("dia_");
 
   QCString outDir = Config_getString(LATEX_OUTPUT);
@@ -2013,7 +1990,7 @@ void LatexDocVisitor::endDiaFile(bool hasCaption)
 
 void LatexDocVisitor::writePlantUMLFile(const QCString &baseName, const DocVerbatim &s)
 {
-  QCString shortName = makeShortName(baseName);
+  QCString shortName = stripPath(baseName);
   if (s.useBitmap())
   {
     if (shortName.find('.')==-1) shortName += ".png";
@@ -2046,8 +2023,8 @@ void LatexDocVisitor::startPlantUmlFile(const QCString &fileName,
   bool first = true;
   for (const auto &bName: baseNameVector)
   {
-    QCString baseName = makeBaseName(bName);
-    QCString shortName = makeShortName(baseName);
+    QCString baseName = makeBaseName(bName,".pu");
+    QCString shortName = stripPath(baseName);
     if (useBitmap)
     {
       if (shortName.find('.')==-1) shortName += ".png";
