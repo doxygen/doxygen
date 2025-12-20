@@ -885,7 +885,7 @@ void FileDefImpl::writeDocumentation(OutputList &ol)
   QCString versionTitle;
   if (!m_fileVersion.isEmpty())
   {
-    versionTitle=("("+m_fileVersion+")");
+    versionTitle=" ("+m_fileVersion+")";
   }
   QCString title = m_docname+versionTitle;
   QCString pageTitle;
@@ -1158,7 +1158,7 @@ void FileDefImpl::writeSourceHeader(OutputList &ol)
   QCString title = m_docname;
   if (!m_fileVersion.isEmpty())
   {
-    title+=(" ("+m_fileVersion+")");
+    title+=" ("+m_fileVersion+")";
   }
   QCString pageTitle = theTranslator->trSourceFile(title);
   ol.disable(OutputType::Man);
