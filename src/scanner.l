@@ -2465,7 +2465,7 @@ NONLopt [^\n]*
                                           yyextra->current->req=yyextra->current->req.simplifyWhiteSpace();
                                           BEGIN(yyextra->requiresContext);
                                         }
-<FindMembers,FindMemberName>{SCOPENAME} {          
+<FindMembers,FindMemberName>{SCOPENAME} {
                                           storeClangId(yyscanner,yytext);
                                           yyextra->yyBegColNr=yyextra->yyColNr;
                                           yyextra->yyBegLineNr=yyextra->yyLineNr;
@@ -5035,6 +5035,7 @@ NONLopt [^\n]*
                                             yyextra->current->bodyLine = yyextra->yyLineNr;
                                             yyextra->current->bodyColumn = yyextra->yyColNr;
                                             yyextra->currentArgumentContext = FuncQual;
+                                            yyextra->current->req.clear(); // see issue #11895
                                             yyextra->fullArgString=yyextra->current->args;
                                             yyextra->copyArgString=&yyextra->current->args;
                                             BEGIN( ReadFuncArgType ) ;
