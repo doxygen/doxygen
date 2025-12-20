@@ -368,8 +368,6 @@ void RTFDocVisitor::operator()(const DocVerbatim &s)
           writeDotFile(fileName, s.hasCaption(), s.srcFile(), s.srcLine(), !exists);
           visitChildren(s);
           includePicturePostRTF(true, s.hasCaption());
-
-          if (Config_getBool(DOT_CLEANUP)) Dir().remove(fileName.str());
         }
       }
       break;
@@ -385,8 +383,6 @@ void RTFDocVisitor::operator()(const DocVerbatim &s)
           writeMscFile(fileName, s.hasCaption(), s.srcFile(), s.srcLine(), !exists);
           visitChildren(s);
           includePicturePostRTF(true, s.hasCaption());
-
-          if (Config_getBool(DOT_CLEANUP)) Dir().remove(fileName.str());
         }
       }
       break;

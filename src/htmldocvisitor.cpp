@@ -600,8 +600,6 @@ void HtmlDocVisitor::operator()(const DocVerbatim &s)
           writeDotFile(fileName,s.relPath(),s.context(),s.srcFile(),s.srcLine(),!exists);
           visitCaption(m_t, s);
           m_t << "</div>\n";
-
-          if (Config_getBool(DOT_CLEANUP)) Dir().remove(fileName.str());
         }
 
         forceStartParagraph(s);
@@ -622,8 +620,6 @@ void HtmlDocVisitor::operator()(const DocVerbatim &s)
           writeMscFile(fileName,s.relPath(),s.context(),s.srcFile(),s.srcLine(),!exists);
           visitCaption(m_t, s);
           m_t << "</div>\n";
-
-          if (Config_getBool(DOT_CLEANUP)) Dir().remove(fileName.str());
         }
 
         forceStartParagraph(s);

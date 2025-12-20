@@ -13403,6 +13403,7 @@ void generateOutput()
   }
 
   g_outputList->cleanup();
+  cleanupInlineGraph();
 
   msg("type lookup cache used {}/{} hits={} misses={}\n",
       Doxygen::typeLookupCache->size(),
