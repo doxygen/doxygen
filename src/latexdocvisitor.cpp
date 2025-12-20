@@ -43,11 +43,6 @@
 #include "cite.h"
 #include "md5.h"
 
-static StringVector  dotindex;
-static std::mutex    dotindex_mutex;
-static StringVector  mscindex;
-static std::mutex    mscindex_mutex;
-
 static const int g_maxLevels = 7;
 static const std::array<const char *,g_maxLevels> g_secLabels =
 { "doxysection",
