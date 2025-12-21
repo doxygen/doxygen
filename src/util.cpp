@@ -6956,3 +6956,13 @@ QCString writeFileContents(const QCString &baseName,const QCString &extension,co
 }
 
 
+void cleanupInlineGraph()
+{
+  if (Config_getBool(DOT_CLEANUP))
+  {
+    for (const auto& fileName: writeFileContents_set)
+    {
+      Dir().remove(qPrint(fileName));
+    }
+  }
+}

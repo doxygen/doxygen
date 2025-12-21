@@ -486,5 +486,6 @@ QCString extractBeginRawStringDelimiter(const char *rawStart);
 QCString extractEndRawStringDelimiter(const char *rawEnd);
 
 QCString writeFileContents(const QCString &baseName,const QCString &extension,const QCString &content,bool &exists);
+void cleanupInlineGraph();
 
 #endif

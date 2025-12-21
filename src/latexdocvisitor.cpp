@@ -43,11 +43,6 @@
 #include "cite.h"
 #include "md5.h"
 
-static StringVector  dotindex;
-static std::mutex    dotindex_mutex;
-static StringVector  mscindex;
-static std::mutex    mscindex_mutex;
-
 static const int g_maxLevels = 7;
 static const std::array<const char *,g_maxLevels> g_secLabels =
 { "doxysection",
@@ -473,8 +468,6 @@ void LatexDocVisitor::operator()(const DocVerbatim &s)
           startDotFile(fileName,s.width(),s.height(),s.hasCaption(),s.srcFile(),s.srcLine(),!exists);
           visitChildren(s);
           endDotFile(s.hasCaption());
-
-          if (Config_getBool(DOT_CLEANUP)) Dir().remove(fileName.str());
         }
       }
       break;
@@ -488,8 +481,6 @@ void LatexDocVisitor::operator()(const DocVerbatim &s)
         if (!fileName.isEmpty())
         {
           writeMscFile(fileName, s, !exists);
-
-          if (Config_getBool(DOT_CLEANUP)) Dir().remove(fileName.str());
         }
       }
       break;

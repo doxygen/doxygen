@@ -365,7 +365,6 @@ DB_VIS_C
         if (!fileName.isEmpty())
         {
           writeDotFile(fileName, s, !exists);
-          if (Config_getBool(DOT_CLEANUP)) Dir().remove(fileName.str());
         }
         m_t << "</para>\n";
       }
@@ -381,7 +380,6 @@ DB_VIS_C
         if (!fileName.isEmpty())
         {
           writeMscFile(fileName,s,!exists);
-          if (Config_getBool(DOT_CLEANUP)) Dir().remove(fileName.str());
         }
         m_t << "</para>\n";
       }
