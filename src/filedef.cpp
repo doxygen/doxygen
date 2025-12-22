@@ -201,6 +201,7 @@ class FileDefImpl : public DefinitionMixin<FileDef>
     void findSectionsInDocumentation() override;
     void addIncludedUsingDirectives(FileDefSet &visitedFiles) override;
     void addListReferences() override;
+    void addRequirementReferences() override;
 
     bool hasIncludeGraph() const override;
     bool hasIncludedByGraph() const override;
@@ -367,7 +368,8 @@ bool FileDefImpl::hasDetailedDescription() const
   bool sourceBrowser = Config_getBool(SOURCE_BROWSER);
   return ((!briefDescription().isEmpty() && repeatBrief) ||
           !documentation().stripWhiteSpace().isEmpty() || // avail empty section
-          (sourceBrowser && getStartBodyLine()!=-1 && getBodyDef())
+          (sourceBrowser && getStartBodyLine()!=-1 && getBodyDef()) ||
+          hasRequirementRefs()
          );
 }
 
@@ -536,6 +538,7 @@ void FileDefImpl::writeDetailedDescription(OutputList &ol,const QCString &title)
       }
       ol.endParagraph();
     }
+    if (hasRequirementRefs()) writeRequirementRefs(ol);
     ol.endTextBlock();
   }
 }
@@ -1617,16 +1620,13 @@ bool FileDefImpl::generateSourceFile() const
 
 void FileDefImpl::addListReferences()
 {
-  {
-    const RefItemVector &xrefItems = xrefListItems();
-    addRefItem(xrefItems,
-               getOutputFileBase(),
-               theTranslator->trFile(TRUE,TRUE),
-               getOutputFileBase(),name(),
-               QCString(),
-               nullptr
-              );
-  }
+  addRefItem(xrefListItems(),
+             getOutputFileBase(),
+             theTranslator->trFile(TRUE,TRUE),
+             getOutputFileBase(),name(),
+             QCString(),
+             nullptr
+            );
   for (const auto &mg : m_memberGroups)
   {
     mg->addListReferences(this);
@@ -1636,6 +1636,22 @@ void FileDefImpl::addListReferences()
     if (ml->listType().isDocumentation())
     {
       ml->addListReferences(this);
+    }
+  }
+}
+
+void FileDefImpl::addRequirementReferences()
+{
+  RequirementManager::instance().addRequirementRefsForSymbol(this);
+  for (const auto &mg : m_memberGroups)
+  {
+    mg->addRequirementReferences(this);
+  }
+  for (auto &ml : m_memberLists)
+  {
+    if (ml->listType().isDocumentation())
+    {
+      ml->addRequirementReferences(this);
     }
   }
 }

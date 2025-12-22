@@ -98,6 +98,7 @@ Entry::Entry(const Entry &e) : section(e.section)
   startLine   = e.startLine;
   startColumn = e.startColumn;
   sli         = e.sli;
+  rqli        = e.rqli;
   lang        = e.lang;
   hidden      = e.hidden;
   artificial  = e.artificial;
@@ -236,6 +237,7 @@ void Entry::reset()
   tArgLists.clear();
   typeConstr.reset();
   sli.clear();
+  rqli.clear();
   req.clear();
   m_fileDef = nullptr;
   qualifiers.clear();

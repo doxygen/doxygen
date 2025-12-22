@@ -1,7 +1,7 @@
-/// objective: test multi-line alias expansion in different comment styles
-/// config: HAVE_DOT = YES
-/// config: ALIASES += "long_note{1}=@note @parblock \1 @endparblock"
-/// check: 112__aliases_8cpp.xml
+// objective: test multi-line alias expansion in different comment styles
+// config: HAVE_DOT = YES
+// config: ALIASES += "long_note{1}=@note @parblock \1 @endparblock"
+// check: 112__aliases_8cpp.xml
 /// @file
 
     /// Embedded list

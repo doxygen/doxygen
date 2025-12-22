@@ -68,6 +68,7 @@ class DefinitionImpl::Private
     std::unordered_map<std::string,MemberDef *> sourceRefByDict;
     std::unordered_map<std::string,MemberDef *> sourceRefsDict;
     RefItemVector xrefListItems;
+    RequirementRefs requirementRefs;
     GroupList partOfGroups;
 
     std::optional<DocInfo>   details;    // not exported
@@ -137,6 +138,7 @@ void DefinitionImpl::Private::init(const QCString &df, const QCString &n)
   inbodyDocs.reset();
   sourceRefByDict.clear();
   sourceRefsDict.clear();
+  requirementRefs.clear();
   outerScope      = Doxygen::globalScope;
   hidden          = FALSE;
   isArtificial    = FALSE;
@@ -1167,6 +1169,41 @@ void DefinitionImpl::writeSourceRefs(OutputList &ol,const QCString &scopeName) c
   _writeSourceRefList(ol,scopeName,theTranslator->trReferences(),p->sourceRefsDict,TRUE);
 }
 
+void DefinitionImpl::writeRequirementRefs(OutputList &ol) const
+{
+  // copy combined references into type specific vectors
+  RequirementRefs satisfiesRefs;
+  RequirementRefs verifiesRefs;
+
+  std::partition_copy(
+      p->requirementRefs.begin(),
+      p->requirementRefs.end(),
+      std::back_inserter(satisfiesRefs),
+      std::back_inserter(verifiesRefs),
+      [](const auto &ref) { return ref.type()==RequirementRefType::Satisfies; }
+     );
+
+  auto writeRefsForType = [&ol](const RequirementRefs &refs,const char *parType,const QCString &text,RequirementRefType filter)
+  {
+    size_t num = refs.size();
+    if (num>0)
+    {
+      ol.startParagraph(parType);
+      ol.parseText(text);
+      ol.docify(" ");
+      writeMarkerList(ol,
+                      theTranslator->trWriteList(static_cast<int>(num)).str(), num,
+                      [&refs,&ol](size_t entryIndex) { RequirementManager::instance().writeRef(ol,refs[entryIndex]); }
+                     );
+      ol.writeString(".");
+      ol.endParagraph();
+    }
+  };
+
+  writeRefsForType(satisfiesRefs,"satisfies",theTranslator->trSatisfies(satisfiesRefs.size()==1),RequirementRefType::Satisfies);
+  writeRefsForType(verifiesRefs, "verifies", theTranslator->trVerifies(verifiesRefs.size()==1),  RequirementRefType::Verifies);
+}
+
 bool DefinitionImpl::hasSourceReffedBy() const
 {
   return !p->sourceRefByDict.empty();
@@ -1175,6 +1212,11 @@ bool DefinitionImpl::hasSourceReffedBy() const
 bool DefinitionImpl::hasSourceRefs() const
 {
   return !p->sourceRefsDict.empty();
+}
+
+bool DefinitionImpl::hasRequirementRefs() const
+{
+  return !p->requirementRefs.empty();
 }
 
 bool DefinitionImpl::hasDocumentation() const
@@ -1301,6 +1343,11 @@ void DefinitionImpl::setRefItems(const RefItemVector &sli)
   p->xrefListItems.insert(p->xrefListItems.end(), sli.cbegin(), sli.cend());
 }
 
+void DefinitionImpl::setRequirementReferences(const RequirementRefs &rqli)
+{
+  p->requirementRefs.insert(p->requirementRefs.end(), rqli.cbegin(), rqli.cend());
+}
+
 void DefinitionImpl::mergeRefItems(Definition *d)
 {
   auto otherXrefList = d->xrefListItems();
@@ -1342,6 +1389,11 @@ int DefinitionImpl::_getXRefListId(const QCString &listName) const
 const RefItemVector &DefinitionImpl::xrefListItems() const
 {
   return p->xrefListItems;
+}
+
+const RequirementRefs &DefinitionImpl::requirementReferences() const
+{
+  return p->requirementRefs;
 }
 
 QCString DefinitionImpl::pathFragment() const

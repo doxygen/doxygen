@@ -69,6 +69,7 @@ class ConceptDefMutable : public DefinitionMutable, public ConceptDef
     virtual void setGroupId(int id) = 0;
     virtual void setModuleDef(ModuleDef *mod) = 0;
     virtual void addListReferences() = 0;
+    virtual void addRequirementReferences() = 0;
     virtual void addDocPart(const QCString &doc,int lineNr,int colNr) = 0;
     virtual void addCodePart(const QCString &code,int lineNr,int colNr) = 0;
 };

@@ -66,6 +66,8 @@ class PageDefImpl : public DefinitionMixin<PageDef>
     void writePageDocumentation(OutputList &ol) const override;
     void addSectionsToIndex() override;
     void writePageNavigation(OutputList &ol) const override;
+    void addListReferences() override;
+    void addRequirementReferences() override;
 
   private:
     QCString m_fileName;
@@ -199,6 +201,23 @@ void PageDefImpl::addSectionsToIndex()
   }
 }
 
+void PageDefImpl::addListReferences()
+{
+  QCString name = getOutputFileBase();
+  if (getGroupDef())
+  {
+    name = getGroupDef()->getOutputFileBase();
+  }
+  addRefItem(xrefListItems(),name,
+             theTranslator->trPage(TRUE,TRUE),
+             name,title(),QCString(),nullptr);
+}
+
+void PageDefImpl::addRequirementReferences()
+{
+  RequirementManager::instance().addRequirementRefsForSymbol(this);
+}
+
 bool PageDefImpl::hasParentPage() const
 {
   return getOuterScope() &&
@@ -207,7 +226,7 @@ bool PageDefImpl::hasParentPage() const
 
 void PageDefImpl::writeTagFile(TextStream &tagFile)
 {
-  bool found = name()=="citelist";
+  bool found = name()=="citelist" || name()=="requirements";
   for (RefListManager::Ptr &rl : RefListManager::instance())
   {
     if (rl->listName()==name())
@@ -417,6 +436,8 @@ void PageDefImpl::writePageDocumentation(OutputList &ol) const
 
     ol.popGeneratorState();
   }
+
+  if (hasRequirementRefs()) writeRequirementRefs(ol);
 }
 
 void PageDefImpl::writePageNavigation(OutputList &ol) const

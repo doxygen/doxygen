@@ -95,6 +95,7 @@ class GroupDefImpl : public DefinitionMixin<GroupDef>
     void findSectionsInDocumentation() override;
 
     void addListReferences() override;
+    void addRequirementReferences() override;
     void sortMemberLists() override;
     bool subGrouping() const override { return m_subGrouping; }
 
@@ -784,9 +785,7 @@ void GroupDefImpl::writeTagFile(TextStream &tagFile)
 
 void GroupDefImpl::writeDetailedDescription(OutputList &ol,const QCString &title)
 {
-  if ((!briefDescription().isEmpty() && Config_getBool(REPEAT_BRIEF))
-      || !documentation().isEmpty() || !inbodyDocumentation().isEmpty()
-     )
+  if (hasDetailedDescription())
   {
     ol.pushGeneratorState();
     if (m_pages.size()!=numDocMembers()) // not only pages -> classical layout
@@ -810,6 +809,7 @@ void GroupDefImpl::writeDetailedDescription(OutputList &ol,const QCString &title
     ol.popGeneratorState();
 
     // repeat brief description
+    ol.startTextBlock();
     if (!briefDescription().isEmpty() && Config_getBool(REPEAT_BRIEF))
     {
       ol.generateDoc(briefFile(),
@@ -856,6 +856,8 @@ void GroupDefImpl::writeDetailedDescription(OutputList &ol,const QCString &title
                      DocOptions()
                      .setIndexWords(true));
     }
+    if (hasRequirementRefs()) writeRequirementRefs(ol);
+    ol.endTextBlock();
   }
 }
 
@@ -1806,16 +1808,13 @@ QCString GroupDefImpl::getOutputFileBase() const
 
 void GroupDefImpl::addListReferences()
 {
-  {
-    const RefItemVector &xrefItems = xrefListItems();
-    addRefItem(xrefItems,
+  addRefItem(xrefListItems(),
              getOutputFileBase(),
              theTranslator->trGroup(TRUE,TRUE),
              getOutputFileBase(),name(),
              QCString(),
              nullptr
             );
-  }
   for (const auto &mg : m_memberGroups)
   {
     mg->addListReferences(this);
@@ -1825,6 +1824,22 @@ void GroupDefImpl::addListReferences()
     if (ml->listType().isDocumentation())
     {
       ml->addListReferences(this);
+    }
+  }
+}
+
+void GroupDefImpl::addRequirementReferences()
+{
+  RequirementManager::instance().addRequirementRefsForSymbol(this);
+  for (const auto &mg : m_memberGroups)
+  {
+    mg->addRequirementReferences(this);
+  }
+  for (auto &ml : m_memberLists)
+  {
+    if (ml->listType().isDocumentation())
+    {
+      ml->addRequirementReferences(this);
     }
   }
 }
@@ -2052,7 +2067,8 @@ bool GroupDefImpl::hasDetailedDescription() const
   bool repeatBrief = Config_getBool(REPEAT_BRIEF);
   return ((!briefDescription().isEmpty() && repeatBrief) ||
          !documentation().isEmpty() ||
-         !inbodyDocumentation().isEmpty()) &&
+         !inbodyDocumentation().isEmpty() ||
+         hasRequirementRefs()) &&
          (m_pages.size()!=numDocMembers());
 }
 

@@ -1822,7 +1822,7 @@ void HtmlDocVisitor::operator()(const DocRef &ref)
   {
     // when ref.isSubPage()==TRUE we use ref.file() for HTML and
     // ref.anchor() for LaTeX/RTF
-    startLink(ref.ref(),ref.file(),ref.relPath(),ref.isSubPage() ? QCString() : ref.anchor());
+    startLink(ref.ref(),ref.file(),ref.relPath(),ref.isSubPage() ? QCString() : ref.anchor(), ref.targetTitle());
   }
   if (!ref.hasLinkText()) filter(ref.targetTitle());
   visitChildren(ref);

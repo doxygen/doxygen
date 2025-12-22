@@ -790,6 +790,7 @@ enum class VhdlSpecifier
  ETYPE(FileDoc,            Doc)             \
  ETYPE(DefineDoc,          Doc)             \
  ETYPE(GroupDoc,           Doc)             \
+ ETYPE(RequirementDoc,     Doc)             \
  ETYPE(MainpageDoc,        Doc)             \
  ETYPE(MemberGrp,          Doc)             \
  ETYPE(PackageDoc,         Doc)             \

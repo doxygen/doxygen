@@ -777,8 +777,8 @@ class DocLink : public DocCompoundNode
 class DocRef : public DocCompoundNode
 {
   public:
-    DocRef(DocParser *parser,DocNodeVariant *parent,const QCString &target,const QCString &context);
-    void parse();
+    DocRef(DocParser *parser,DocNodeVariant *parent,const QCString &target,const QCString &context);    
+    void parse(char cmdChar,const QCString &cmdName);
     QCString file() const         { return m_file; }
     QCString relPath() const      { return m_relPath; }
     QCString ref() const          { return m_ref; }
@@ -1104,8 +1104,6 @@ class DocPara : public DocCompoundNode
     void handleSection(char cmdChar,const QCString &cmdName);
     void handleInheritDoc();
     void handleVhdlFlow();
-    void handleILine(char cmdChar,const QCString &cmdName);
-    void handleIFile(char cmdChar,const QCString &cmdName);
     void handleShowDate(char cmdChar,const QCString &cmdName);
     Token handleStartCode();
     Token handleHtmlHeader(const HtmlAttribList &tagHtmlAttribs,int level);

@@ -66,8 +66,9 @@ void DocParser::pushContext()
   tokenizer.pushContext();
   contextStack.emplace();
   auto &ctx = contextStack.top();
-  ctx = context;
-  ctx.lineNo = tokenizer.getLineNr();
+  ctx           = context;
+  ctx.fileName  = tokenizer.getFileName();
+  ctx.lineNo    = tokenizer.getLineNr();
   context.token = tokenizer.token();
 }
 
@@ -75,6 +76,7 @@ void DocParser::popContext()
 {
   auto &ctx = contextStack.top();
   context = ctx;
+  tokenizer.setFileName(ctx.fileName);
   tokenizer.setLineNr(ctx.lineNo);
   contextStack.pop();
   tokenizer.popContext();
@@ -888,6 +890,16 @@ void DocParser::handleLinkedWord(DocNodeVariant *parent,DocNodeList &children,bo
           cd->anchor(),
           cd->briefDescriptionAsTooltip());
   }
+  else if (const RequirementIntf *req = RequirementManager::instance().find(name); req!=nullptr) // link to requirement
+  {
+    children.append<DocLinkedWord>(
+         this,parent,name,
+         QCString(), // link to local requirements overview also for external references
+         req->getOutputFileBase(),
+         req->id(),
+         req->title()
+        );
+  }
   else // normal non-linkable word
   {
     AUTO_TRACE_ADD("non-linkable");
@@ -1199,6 +1211,42 @@ void DocParser::handleImage(DocNodeVariant *parent, DocNodeList &children)
   children.get_last<DocImage>()->parse();
 }
 
+void DocParser::handleIFile(char cmdChar,const QCString &cmdName)
+{
+  AUTO_TRACE();
+  Token tok=tokenizer.lex();
+  if (!tok.is(TokenRetval::TK_WHITESPACE))
+  {
+    warn_doc_error(context.fileName,tokenizer.getLineNr(),"expected whitespace after '{:c}{}' command",
+      cmdChar,cmdName);
+    return;
+  }
+  tokenizer.setStateFile();
+  tok=tokenizer.lex();
+  tokenizer.setStatePara();
+  if (!tok.is(TokenRetval::TK_WORD))
+  {
+    warn_doc_error(context.fileName,tokenizer.getLineNr(),"unexpected token {} as the argument of '{:c}{}'",
+      tok.to_string(),cmdChar,cmdName);
+    return;
+  }
+  context.fileName = context.token->name;
+  tokenizer.setStatePara();
+}
+
+void DocParser::handleILine(char cmdChar,const QCString &cmdName)
+{
+  AUTO_TRACE();
+  tokenizer.setStateILine();
+  Token tok = tokenizer.lex();
+  if (!tok.is(TokenRetval::TK_WORD))
+  {
+    warn_doc_error(context.fileName,tokenizer.getLineNr(),"invalid argument for command '{:c}{}'",
+      cmdChar,cmdName);
+    return;
+  }
+  tokenizer.setStatePara();
+}
 
 /* Helper function that deals with the most common tokens allowed in
  * title like sections.
@@ -1435,16 +1483,10 @@ reparsetoken:
           handleImage(parent,children);
           break;
         case CommandType::CMD_ILINE:
-          tokenizer.pushState();
-          tokenizer.setStateILine();
-          (void)tokenizer.lex();
-          tokenizer.popState();
+          handleILine(tok.command_to_char(),tokenName);
           break;
         case CommandType::CMD_IFILE:
-          tokenizer.pushState();
-          tokenizer.setStateIFile();
-          (void)tokenizer.lex();
-          tokenizer.popState();
+          handleIFile(tok.command_to_char(),tokenName);
           break;
         default:
           return FALSE;
@@ -2020,6 +2062,7 @@ IDocNodeASTPtr validatingParseDoc(IDocParser &parserIntf,
   parser->context.autolinkSupport = options.autolinkSupport();
 
   //printf("Starting comment block at %s:%d\n",qPrint(parser->context.fileName),startLine);
+  parser->tokenizer.setFileName(fileName);
   parser->tokenizer.setLineNr(startLine);
   size_t ioLen = input.length();
   QCString inpStr = parser->processCopyDoc(input.data(),ioLen);
@@ -2176,6 +2219,7 @@ IDocNodeASTPtr createRef(IDocParser &parserIntf,const QCString &target,const QCS
   if (!srcFile.isEmpty())
   {
     parser->context.fileName = srcFile;
+    parser->tokenizer.setFileName(srcFile);
     parser->tokenizer.setLineNr(srcLine);
   }
   return std::make_unique<DocNodeAST>(DocRef(parser,nullptr,target,context));

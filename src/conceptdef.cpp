@@ -71,6 +71,7 @@ class ConceptDefImpl : public DefinitionMixin<ConceptDefMutable>
     void addDocPart(const QCString &doc,int lineNr,int colNr) override;
     void addCodePart(const QCString &code,int lineNr,int colNr) override;
     void addListReferences() override;
+    void addRequirementReferences() override;
 
     //---------- Helpers
     void writeBriefDescription(OutputList &) const;
@@ -201,7 +202,8 @@ bool ConceptDefImpl::hasDetailedDescription() const
   bool sourceBrowser = Config_getBool(SOURCE_BROWSER);
   return ((!briefDescription().isEmpty() && repeatBrief) ||
           !documentation().isEmpty() ||
-          (sourceBrowser && getStartBodyLine()!=-1 && getBodyDef()));
+          (sourceBrowser && getStartBodyLine()!=-1 && getBodyDef())) ||
+          hasRequirementRefs();
 }
 
 QCString ConceptDefImpl::anchor() const
@@ -314,15 +316,19 @@ void ConceptDefImpl::setGroupId(int id)
 
 void ConceptDefImpl::addListReferences()
 {
-  const RefItemVector &xrefItems = xrefListItems();
-  addRefItem(xrefItems,
-           qualifiedName(),
-           theTranslator->trConcept(true,true),
-           getOutputFileBase(),
-           displayName(),
-           QCString(),
-           this
-          );
+  addRefItem(xrefListItems(),
+             qualifiedName(),
+             theTranslator->trConcept(true,true),
+             getOutputFileBase(),
+             displayName(),
+             QCString(),
+             this
+            );
+}
+
+void ConceptDefImpl::addRequirementReferences()
+{
+  RequirementManager::instance().addRequirementRefsForSymbol(this);
 }
 
 void ConceptDefImpl::writeTagFile(TextStream &tagFile)
@@ -549,6 +555,7 @@ void ConceptDefImpl::writeDetailedDescription(OutputList &ol,const QCString &tit
     }
 
     writeSourceDef(ol);
+    if (hasRequirementRefs()) writeRequirementRefs(ol);
     ol.endTextBlock();
   }
 }

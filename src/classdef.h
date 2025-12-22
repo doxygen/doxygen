@@ -433,6 +433,7 @@ class ClassDefMutable : public DefinitionMutable, public ClassDef
     virtual void findSectionsInDocumentation() = 0;
     virtual void addMembersToMemberGroup() = 0;
     virtual void addListReferences() = 0;
+    virtual void addRequirementReferences() = 0;
     virtual void addTypeConstraints() = 0;
     virtual void computeAnchors() = 0;
     virtual void mergeMembers() = 0;

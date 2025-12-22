@@ -74,6 +74,8 @@ class DirDefImpl : public DefinitionMixin<DirDef>
                                    const FileDef *dstFd,bool srcDirect, bool dstDirect) override;
     void computeDependencies() override;
     void findSectionsInDocumentation() override;
+    void addListReferences() override;
+    void addRequirementReferences() override;
 
     bool hasDirectoryGraph() const override;
     void overrideDirectoryGraph(bool e) override;
@@ -231,8 +233,7 @@ QCString DirDefImpl::getOutputFileBase() const
 void DirDefImpl::writeDetailedDescription(OutputList &ol,const QCString &title)
 {
   AUTO_TRACE();
-  if ((!briefDescription().isEmpty() && Config_getBool(REPEAT_BRIEF)) ||
-      !documentation().isEmpty())
+  if (hasDetailedDescription())
   {
     ol.pushGeneratorState();
       ol.disable(OutputType::Html);
@@ -247,6 +248,7 @@ void DirDefImpl::writeDetailedDescription(OutputList &ol,const QCString &title)
     ol.endGroupHeader();
 
     // repeat brief description
+    ol.startTextBlock();
     if (!briefDescription().isEmpty() && Config_getBool(REPEAT_BRIEF))
     {
       ol.generateDoc(briefFile(),
@@ -281,6 +283,8 @@ void DirDefImpl::writeDetailedDescription(OutputList &ol,const QCString &title)
                      DocOptions()
                      .setIndexWords(true));
     }
+    if (hasRequirementRefs()) writeRequirementRefs(ol);
+    ol.endTextBlock();
   }
 }
 
@@ -525,7 +529,7 @@ QCString DirDefImpl::shortTitle() const
 bool DirDefImpl::hasDetailedDescription() const
 {
   bool repeatBrief = Config_getBool(REPEAT_BRIEF);
-  return (!briefDescription().isEmpty() && repeatBrief) || !documentation().isEmpty();
+  return (!briefDescription().isEmpty() && repeatBrief) || !documentation().isEmpty() || hasRequirementRefs();
 }
 
 void DirDefImpl::writeTagFile(TextStream &tagFile)
@@ -783,6 +787,19 @@ void DirDefImpl::findSectionsInDocumentation()
 {
   docFindSections(briefDescription(),this,docFile());
   docFindSections(documentation(),this,docFile());
+}
+
+void DirDefImpl::addListReferences()
+{
+  QCString name = getOutputFileBase();
+  addRefItem(xrefListItems(), name,
+             theTranslator->trDir(TRUE,TRUE),
+             name,displayName(),QCString(),nullptr);
+}
+
+void DirDefImpl::addRequirementReferences()
+{
+  RequirementManager::instance().addRequirementRefsForSymbol(this);
 }
 
 /** Computes the dependencies between directories

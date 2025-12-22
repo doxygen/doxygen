@@ -1,5 +1,5 @@
-/// objective: test C++20 concept with embedded doxygen style comments
-/// check: concept_hashable.xml
+// objective: test C++20 concept with embedded doxygen style comments
+// check: concept_hashable.xml
 
 /// Declaration of the concept "Hashable", which is satisfied by any type `T`
 template<typename T>

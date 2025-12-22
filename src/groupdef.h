@@ -83,6 +83,7 @@ class GroupDef : public DefinitionMutable, public Definition
     virtual void findSectionsInDocumentation() = 0;
 
     virtual void addListReferences() = 0;
+    virtual void addRequirementReferences() = 0;
     virtual void sortMemberLists() = 0;
     virtual bool subGrouping() const = 0;
 

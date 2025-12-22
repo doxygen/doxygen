@@ -26,90 +26,91 @@
 #include <clocale>
 #include <locale>
 
-#include "version.h"
-#include "doxygen.h"
-#include "scanner.h"
-#include "entry.h"
-#include "index.h"
-#include "indexlist.h"
-#include "message.h"
-#include "config.h"
-#include "util.h"
-#include "pre.h"
-#include "tagreader.h"
-#include "dot.h"
-#include "msc.h"
-#include "docparser.h"
-#include "dirdef.h"
-#include "outputlist.h"
-#include "declinfo.h"
-#include "htmlgen.h"
-#include "latexgen.h"
-#include "mangen.h"
-#include "language.h"
-#include "debug.h"
-#include "htmlhelp.h"
-#include "qhp.h"
-#include "sitemap.h"
-#include "ftvhelp.h"
-#include "defargs.h"
-#include "rtfgen.h"
-#include "sqlite3gen.h"
-#include "xmlgen.h"
-#include "docbookgen.h"
-#include "defgen.h"
-#include "perlmodgen.h"
-#include "reflist.h"
-#include "pagedef.h"
-#include "commentcnv.h"
+#include "aliases.h"
+#include "arguments.h"
+#include "cite.h"
+#include "clangparser.h"
+#include "classlist.h"
 #include "cmdmapper.h"
-#include "searchindex_js.h"
-#include "parserintf.h"
-#include "htags.h"
-#include "pycode.h"
-#include "pyscanner.h"
+#include "code.h"
+#include "commentcnv.h"
+#include "conceptdef.h"
+#include "config.h"
+#include "debug.h"
+#include "declinfo.h"
+#include "defargs.h"
+#include "defgen.h"
+#include "dir.h"
+#include "dirdef.h"
+#include "docbookgen.h"
+#include "docparser.h"
+#include "docsets.h"
+#include "dot.h"
+#include "doxygen.h"
+#include "eclipsehelp.h"
+#include "emoji.h"
+#include "entry.h"
+#include "fileinfo.h"
+#include "filename.h"
+#include "fileparser.h"
+#include "formula.h"
 #include "fortrancode.h"
 #include "fortranscanner.h"
-#include "xmlcode.h"
-#include "sqlcode.h"
+#include "ftvhelp.h"
+#include "groupdef.h"
+#include "htags.h"
+#include "htmlgen.h"
+#include "htmlhelp.h"
+#include "index.h"
+#include "indexlist.h"
+#include "language.h"
+#include "latexgen.h"
+#include "layout.h"
 #include "lexcode.h"
 #include "lexscanner.h"
-#include "code.h"
-#include "portable.h"
-#include "vhdljjparser.h"
-#include "vhdldocgen.h"
-#include "vhdlcode.h"
-#include "eclipsehelp.h"
-#include "cite.h"
+#include "mangen.h"
 #include "markdown.h"
-#include "arguments.h"
-#include "memberlist.h"
-#include "layout.h"
-#include "groupdef.h"
-#include "classlist.h"
-#include "namespacedef.h"
-#include "filename.h"
-#include "membername.h"
 #include "membergroup.h"
-#include "docsets.h"
-#include "formula.h"
-#include "settings.h"
-#include "fileparser.h"
-#include "emoji.h"
-#include "plantuml.h"
-#include "stlsupport.h"
-#include "threadpool.h"
-#include "clangparser.h"
-#include "symbolresolver.h"
-#include "regex.h"
-#include "aliases.h"
-#include "fileinfo.h"
-#include "dir.h"
-#include "conceptdef.h"
-#include "trace.h"
+#include "memberlist.h"
+#include "membername.h"
+#include "message.h"
 #include "moduledef.h"
-#include "stringutil.h"
+#include "msc.h"
+#include "namespacedef.h"
+#include "outputlist.h"
+#include "pagedef.h"
+#include "parserintf.h"
+#include "perlmodgen.h"
+#include "plantuml.h"
+#include "portable.h"
+#include "pre.h"
+#include "pycode.h"
+#include "pyscanner.h"
+#include "qhp.h"
+#include "reflist.h"
+#include "regex.h"
+#include "requirement.h"
+#include "rtfgen.h"
+#include "scanner.h"
+#include "searchindex_js.h"
+#include "settings.h"
 #include "singlecomment.h"
+#include "sitemap.h"
+#include "sqlcode.h"
+#include "sqlite3gen.h"
+#include "stlsupport.h"
+#include "stringutil.h"
+#include "symbolresolver.h"
+#include "tagreader.h"
+#include "threadpool.h"
+#include "trace.h"
+#include "util.h"
+#include "version.h"
+#include "vhdlcode.h"
+#include "vhdldocgen.h"
+#include "vhdljjparser.h"
+#include "xmlcode.h"
+#include "xmlgen.h"
 
 #include <sqlite3.h>
 
@@ -335,15 +336,18 @@ static void addRelatedPage(Entry *root)
   //printf("---> addRelatedPage() %s gd=%p\n",qPrint(root->name),gd);
   QCString doc=root->doc+root->inbodyDocs;
 
-  PageDef *pd = addRelatedPage(root->name,root->args,doc,
-      root->docFile,
-      root->docLine,
-      root->startLine,
-      root->sli,
-      gd,root->tagInfo(),
-      FALSE,
-      root->lang
-     );
+  PageDef *pd = addRelatedPage(root->name,               // name
+                               root->args,               // ptitle
+                               doc,                      // doc
+                               root->docFile,            // fileName
+                               root->docLine,            // docLine
+                               root->startLine,          // startLine
+                               root->sli,                // sli
+                               gd,                       // gd
+                               root->tagInfo(),          // tagInfo
+                               FALSE,                    // xref
+                               root->lang                // lang
+                              );
   if (pd)
   {
     pd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
@@ -384,6 +388,7 @@ static void buildGroupListFiltered(const Entry *root,bool additional, bool inclu
         gd->setInbodyDocumentation( root->inbodyDocs, root->inbodyFile, root->inbodyLine );
         gd->addSectionsToDefinition(root->anchors);
         gd->setRefItems(root->sli);
+        gd->setRequirementReferences(root->rqli);
         gd->setLanguage(root->lang);
         if (root->groupDocType==Entry::GROUPDOC_NORMAL)
         {
@@ -411,6 +416,7 @@ static void buildGroupListFiltered(const Entry *root,bool additional, bool inclu
         gd->setInbodyDocumentation( root->inbodyDocs, root->inbodyFile, root->inbodyLine );
         gd->addSectionsToDefinition(root->anchors);
         gd->setRefItems(root->sli);
+        gd->setRequirementReferences(root->rqli);
         gd->setLanguage(root->lang);
         if (root->groupDocType==Entry::GROUPDOC_NORMAL)
         {
@@ -530,6 +536,7 @@ static void buildFileList(const Entry *root)
       fd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
       fd->addSectionsToDefinition(root->anchors);
       fd->setRefItems(root->sli);
+      fd->setRequirementReferences(root->rqli);
       root->commandOverrides.apply_includeGraph   ([&](bool b) { fd->overrideIncludeGraph(b);    });
       root->commandOverrides.apply_includedByGraph([&](bool b) { fd->overrideIncludedByGraph(b); });
       for (const Grouping &g : root->groups)
@@ -1119,6 +1126,7 @@ static void addClassToContext(const Entry *root)
     addClassToGroups(root,cd);
     ModuleManager::instance().addClassToModule(root,cd);
     cd->setRefItems(root->sli);
+    cd->setRequirementReferences(root->rqli);
   }
 }
 
@@ -1231,6 +1239,7 @@ static void addConceptToContext(const Entry *root)
       cd->setBodyDef(fd);
       cd->addSectionsToDefinition(root->anchors);
       cd->setRefItems(root->sli);
+      cd->setRequirementReferences(root->rqli);
       addIncludeFile(cd,fd,root);
 
       // also add namespace to the correct structural context
@@ -1251,6 +1260,7 @@ static void addConceptToContext(const Entry *root)
         {
           cd->addSectionsToDefinition(ce->anchors);
           cd->setRefItems(ce->sli);
+          cd->setRequirementReferences(ce->rqli);
           if (!ce->brief.isEmpty())
           {
             cd->addDocPart(ce->brief,ce->startLine,ce->startColumn);
@@ -1294,6 +1304,7 @@ static void addConceptToContext(const Entry *root)
     addConceptToGroups(root,cd);
     ModuleManager::instance().addConceptToModule(root,cd);
     cd->setRefItems(root->sli);
+    cd->setRequirementReferences(root->rqli);
   }
 }
 
@@ -1759,6 +1770,7 @@ static void buildNamespaceList(const Entry *root)
           if (fd) fd->insertNamespace(nd);
           addNamespaceToGroups(root,nd);
           nd->setRefItems(root->sli);
+          nd->setRequirementReferences(root->rqli);
         }
       }
       else // fresh namespace
@@ -1793,6 +1805,7 @@ static void buildNamespaceList(const Entry *root)
 
           addNamespaceToGroups(root,nd);
           nd->setRefItems(root->sli);
+          nd->setRequirementReferences(root->rqli);
 
           // file definition containing the namespace nd
           FileDef *fd=root->fileDef();
@@ -2014,6 +2027,7 @@ static void findUsingDirectives(const Entry *root)
           nd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
           nd->insertUsedFile(fd);
           nd->setRefItems(root->sli);
+          nd->setRequirementReferences(root->rqli);
         }
       }
     }
@@ -2597,6 +2611,7 @@ static MemberDef *addVariableToClass(
   AUTO_TRACE_ADD("Adding new member to class '{}'",cd->name());
   cd->insertMember(md.get());
   mmd->setRefItems(root->sli);
+  mmd->setRequirementReferences(root->rqli);
 
   cd->insertUsedFile(root->fileDef());
   root->markAsProcessed();
@@ -2759,6 +2774,7 @@ static MemberDef *addVariableToFile(
           AUTO_TRACE_ADD("variable already found: scope='{}'",md->getOuterScope()->name());
           addMemberDocs(root,md,def,nullptr,FALSE,root->spec);
           md->setRefItems(root->sli);
+          md->setRequirementReferences(root->rqli);
           // if md is a variable forward declaration and root is the definition that
           // turn md into the definition
           if (!root->explicitExternal && md->isExternal())
@@ -2821,6 +2837,7 @@ static MemberDef *addVariableToFile(
   ModuleManager::instance().addMemberToModule(root,md.get());
 
   mmd->setRefItems(root->sli);
+  mmd->setRequirementReferences(root->rqli);
   if (nd && !nd->isAnonymous())
   {
     mmd->setNamespace(nd);
@@ -3438,6 +3455,7 @@ static void buildTypedefList(const Entry *root)
             md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
             md->addSectionsToDefinition(root->anchors);
             md->setRefItems(root->sli);
+            md->setRequirementReferences(root->rqli);
             md->addQualifiers(root->qualifiers);
 
             // merge ingroup specifiers
@@ -3607,6 +3625,7 @@ static void addInterfaceOrServiceToServiceOrSingleton(
   ModuleManager::instance().addMemberToModule(root,md.get());
   root->markAsProcessed();
   mmd->setRefItems(root->sli);
+  mmd->setRequirementReferences(root->rqli);
 
   // add member to the global list of all members
   MemberName *mn = Doxygen::memberNameLinkedMap->add(rname);
@@ -3791,6 +3810,7 @@ static void addMethodToClass(const Entry *root,ClassDefMutable *cd,
   ModuleManager::instance().addMemberToModule(root,md.get());
   root->markAsProcessed();
   mmd->setRefItems(root->sli);
+  mmd->setRequirementReferences(root->rqli);
 
   // add member to the global list of all members
   //printf("Adding member=%s class=%s\n",qPrint(md->name()),qPrint(cd->name()));
@@ -3879,6 +3899,7 @@ static void addGlobalFunction(const Entry *root,const QCString &rname,const QCSt
   mmd->addQualifiers(root->qualifiers);
 
   mmd->setRefItems(root->sli);
+  mmd->setRequirementReferences(root->rqli);
   if (nd && !nd->name().isEmpty() && nd->name().at(0)!='@')
   {
     // add member to namespace
@@ -5467,15 +5488,16 @@ static void computeMemberReferences()
 
 //----------------------------------------------------------------------
 
-static void addListReferences()
+
+template<typename Func>
+static void applyToAllDefinitions(Func func)
 {
-  AUTO_TRACE();
   for (const auto &cd : *Doxygen::classLinkedMap)
   {
     ClassDefMutable *cdm = toClassDefMutable(cd.get());
     if (cdm)
     {
-      cdm->addListReferences();
+      func(cdm);
     }
   }
 
@@ -5484,7 +5506,7 @@ static void addListReferences()
     ConceptDefMutable *cdm = toConceptDefMutable(cd.get());
     if (cdm)
     {
-      cdm->addListReferences();
+      func(cdm);
     }
   }
 
@@ -5492,7 +5514,7 @@ static void addListReferences()
   {
     for (const auto &fd : *fn)
     {
-      fd->addListReferences();
+      func(fd.get());
     }
   }
 
@@ -5501,47 +5523,44 @@ static void addListReferences()
     NamespaceDefMutable *ndm = toNamespaceDefMutable(nd.get());
     if (ndm)
     {
-      ndm->addListReferences();
+      func(ndm);
     }
   }
 
   for (const auto &gd : *Doxygen::groupLinkedMap)
   {
-    gd->addListReferences();
+    func(gd.get());
   }
 
   for (const auto &pd : *Doxygen::pageLinkedMap)
   {
-    QCString name = pd->getOutputFileBase();
-    if (pd->getGroupDef())
-    {
-      name = pd->getGroupDef()->getOutputFileBase();
-    }
-    {
-      const RefItemVector &xrefItems = pd->xrefListItems();
-      addRefItem(xrefItems,
-          name,
-          theTranslator->trPage(TRUE,TRUE),
-          name,pd->title(),QCString(),nullptr);
-    }
+    func(pd.get());
   }
 
   for (const auto &dd : *Doxygen::dirLinkedMap)
   {
-    QCString name = dd->getOutputFileBase();
-    //if (dd->getGroupDef())
-    //{
-    //  name = dd->getGroupDef()->getOutputFileBase();
-    //}
-    const RefItemVector &xrefItems = dd->xrefListItems();
-    addRefItem(xrefItems,
-        name,
-        theTranslator->trDir(TRUE,TRUE),
-        name,dd->displayName(),QCString(),nullptr);
+    func(dd.get());
   }
 
-  ModuleManager::instance().addListReferences();
+  func(&ModuleManager::instance());
 }
+
+//----------------------------------------------------------------------
+
+static void addRequirementReferences()
+{
+  AUTO_TRACE();
+  applyToAllDefinitions([](auto* obj) { obj->addRequirementReferences(); });
+}
+
+//----------------------------------------------------------------------
+
+static void addListReferences()
+{
+  AUTO_TRACE();
+  applyToAllDefinitions([](auto* obj) { obj->addListReferences(); });
+}
+
 
 //----------------------------------------------------------------------
 
@@ -5673,6 +5692,7 @@ static void addMemberDocs(const Entry *root,
     }
 
     md->setRefItems(root->sli);
+    md->setRequirementReferences(root->rqli);
   }
 
   applyMemberOverrideOptions(root,md);
@@ -6154,6 +6174,7 @@ static void addLocalObjCMethod(const Entry *root,
     cd->insertMember(md.get());
     cd->insertUsedFile(fd);
     mmd->setRefItems(root->sli);
+    mmd->setRequirementReferences(root->rqli);
 
     MemberName *mn = Doxygen::memberNameLinkedMap->add(root->name);
     mn->push_back(std::move(md));
@@ -6578,6 +6599,7 @@ static void addMemberSpecialization(const Entry *root,
   mmd->setMemberGroupId(root->mGrpId);
   cd->insertMember(md.get());
   mmd->setRefItems(root->sli);
+  mmd->setRequirementReferences(root->rqli);
 
   mn->push_back(std::move(md));
 }
@@ -6646,6 +6668,7 @@ static void addOverloaded(const Entry *root,MemberName *mn,
     cd->insertMember(md.get());
     cd->insertUsedFile(fd);
     mmd->setRefItems(root->sli);
+    mmd->setRequirementReferences(root->rqli);
 
     mn->push_back(std::move(md));
   }
@@ -7263,6 +7286,7 @@ static void findMember(const Entry *root,
             cd->insertMember(md.get());
             cd->insertUsedFile(fd);
             mmd->setRefItems(root->sli);
+            mmd->setRequirementReferences(root->rqli);
             if (root->relatesType==RelatesType::Duplicate) mmd->setRelatedAlso(cd);
             addMemberToGroups(root,md.get());
             ModuleManager::instance().addMemberToModule(root,md.get());
@@ -7627,6 +7651,7 @@ static void findEnums(const Entry *root)
       mmd->addQualifiers(root->qualifiers);
       //printf("%s::setRefItems(%zu)\n",qPrint(md->name()),root->sli.size());
       mmd->setRefItems(root->sli);
+      mmd->setRequirementReferences(root->rqli);
       //printf("found enum %s nd=%p\n",qPrint(md->name()),nd);
       bool defSet=FALSE;
 
@@ -7857,6 +7882,7 @@ static void addEnumValuesToEnums(const Entry *root)
                   fmmd->setMemberGroupId(e->mGrpId);
                   fmmd->setExplicitExternal(e->explicitExternal,fileName,e->startLine,e->startColumn);
                   fmmd->setRefItems(e->sli);
+                  fmmd->setRequirementReferences(e->rqli);
                   fmmd->setAnchor();
                   md->insertEnumField(fmd.get());
                   fmmd->setEnumScope(md,TRUE);
@@ -7978,6 +8004,7 @@ static void addEnumDocs(const Entry *root,MemberDefMutable *md)
 
   md->addSectionsToDefinition(root->anchors);
   md->setRefItems(root->sli);
+  md->setRequirementReferences(root->rqli);
 
   const GroupDef *gd=md->getGroupDef();
   if (gd==nullptr && !root->groups.empty()) // member not grouped but out-of-line documentation is
@@ -9539,6 +9566,7 @@ static void addDefineDoc(const Entry *root, MemberDefMutable *md)
   md->setMaxInitLines(root->initLines);
   applyMemberOverrideOptions(root,md);
   md->setRefItems(root->sli);
+  md->setRequirementReferences(root->rqli);
   md->addQualifiers(root->qualifiers);
   if (root->mGrpId!=-1) md->setMemberGroupId(root->mGrpId);
   addMemberToGroups(root,md);
@@ -9681,6 +9709,7 @@ static void findDirDocumentation(const Entry *root)
       matchingDir->setBriefDescription(root->brief,root->briefFile,root->briefLine);
       matchingDir->setDocumentation(root->doc,root->docFile,root->docLine);
       matchingDir->setRefItems(root->sli);
+      matchingDir->setRequirementReferences(root->rqli);
       matchingDir->addSectionsToDefinition(root->anchors);
       root->commandOverrides.apply_directoryGraph([&](bool b) { matchingDir->overrideDirectoryGraph(b); });
       addDirToGroups(root,matchingDir);
@@ -9693,6 +9722,15 @@ static void findDirDocumentation(const Entry *root)
   for (const auto &e : root->children()) findDirDocumentation(e.get());
 }
 
+//----------------------------------------------------------------------------
+static void buildRequirementsList(Entry *root)
+{
+  if (root->section.isRequirementDoc())
+  {
+    RequirementManager::instance().addRequirement(root);
+  }
+  for (const auto &e : root->children()) buildRequirementsList(e.get());
+}
 
 //----------------------------------------------------------------------------
 // create a (sorted) list of separate documentation pages
@@ -9714,7 +9752,7 @@ static void buildPageList(Entry *root)
     QCString name = "index";
     addRefItem(root->sli,
                name,
-               "page",
+               theTranslator->trPage(TRUE,TRUE),
                name,
                title,
                QCString(),nullptr
@@ -12151,6 +12189,8 @@ static void writeTagFile()
   {
     if (pd->isLinkableInProject()) pd->writeTagFile(tagFile);
   }
+  // for requirements
+  RequirementManager::instance().writeTagFile(tagFile);
   // for each directory
   for (const auto &dd : *Doxygen::dirLinkedMap)
   {
@@ -12908,6 +12948,10 @@ void parseInput()
   buildPageList(root.get());
   g_s.end();
 
+  g_s.begin("Building requirements list...\n");
+  buildRequirementsList(root.get());
+  g_s.end();
+
   g_s.begin("Search for main page...\n");
   findMainPage(root.get());
   findMainPageTagFiles(root.get());
@@ -13029,6 +13073,11 @@ void parseInput()
   g_s.begin("Adding xrefitems...\n");
   addListReferences();
   generateXRefPages();
+  g_s.end();
+
+  g_s.begin("Adding requirements...\n");
+  addRequirementReferences();
+  RequirementManager::instance().generatePage();
   g_s.end();
 
   g_s.begin("Sorting member lists...\n");

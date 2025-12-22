@@ -38,7 +38,34 @@ class TranslatorAdapterBase : public Translator
     virtual QCString updateNeededMessage() override = 0;
 };
 
-class TranslatorAdapter_1_11_0 : public TranslatorAdapterBase
+class TranslatorAdapter_1_16_0 : public TranslatorAdapterBase
+{
+  public:
+    QCString updateNeededMessage() override
+    { return createUpdateNeededMessage(idLanguage(),"release 1.16.0"); }
+    QCString trRequirements() override
+    { return english.trRequirements(); }
+    QCString trRequirementID() override
+    { return english.trRequirementID(); }
+    QCString trSatisfies(bool singular) override
+    { return english.trSatisfies(singular); }
+    QCString trSatisfiedBy(const QCString &list) override
+    { return english.trSatisfiedBy(list); }
+    QCString trUnsatisfiedRequirements() override
+    { return english.trUnsatisfiedRequirements(); }
+    QCString trUnsatisfiedRequirementsText(bool singular,const QCString &list) override
+    { return english.trUnsatisfiedRequirementsText(singular,list); }
+    QCString trVerifies(bool singular) override
+    { return english.trVerifies(singular); }
+    QCString trVerifiedBy(const QCString &list) override
+    { return english.trVerifiedBy(list); }
+    QCString trUnverifiedRequirements() override
+    { return english.trUnverifiedRequirements(); }
+    QCString trUnverifiedRequirementsText(bool singular,const QCString &list) override
+    { return english.trUnverifiedRequirementsText(singular,list); }
+};
+
+class TranslatorAdapter_1_11_0 : public TranslatorAdapter_1_16_0
 {
   public:
     QCString updateNeededMessage() override

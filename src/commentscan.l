@@ -76,6 +76,9 @@ static bool handleEnum(yyscan_t yyscanner,const QCString &, const StringVector &
 static bool handleDefGroup(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleAddToGroup(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleWeakGroup(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleRequirement(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleSatisfies(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleVerifies(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleNamespace(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handlePackage(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleConcept(yyscan_t yyscanner,const QCString &, const StringVector &);
@@ -207,13 +210,12 @@ struct DocCmdMap
 };
 
 // map of command to handler function
-static const std::map< std::string, DocCmdMap > docCmdMap =
+static const std::unordered_map< std::string, DocCmdMap > docCmdMap =
 {
   // command name             handler function                   command spacing            section handling
   { "addindex",               { &handleAddIndex,                 CommandSpacing::Invisible, SectionHandling::Allowed }},
   { "addtogroup",             { &handleAddToGroup,               CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "anchor",                 { &handleAnchor,                   CommandSpacing::Invisible, SectionHandling::Replace }},
-  { "ianchor",                { &handleAnchor,                   CommandSpacing::Invisible, SectionHandling::Replace }},
   { "arg",                    { nullptr,                         CommandSpacing::Block,     SectionHandling::Break   }},
   { "attention",              { nullptr,                         CommandSpacing::Block,     SectionHandling::Break   }},
   { "author",                 { nullptr,                         CommandSpacing::Block,     SectionHandling::Break   }},
@@ -226,14 +228,12 @@ static const std::map< std::string, DocCmdMap > docCmdMap =
   { "cite",                   { &handleCite,                     CommandSpacing::Inline,    SectionHandling::Replace }},
   { "class",                  { &handleClass,                    CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "code",                   { &handleFormatBlock,              CommandSpacing::Block,     SectionHandling::Break   }},
-  { "icode",                  { &handleFormatBlock,              CommandSpacing::Block,     SectionHandling::Break   }},
   { "collaborationgraph",     { &handleCollaborationgraph,       CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "concept",                { &handleConcept,                  CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "copybrief",              { &handleCopyBrief,                CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "copydetails",            { &handleCopyDetails,              CommandSpacing::Block,     SectionHandling::Escape  }},
   { "copydoc",                { &handleCopyDoc,                  CommandSpacing::Block,     SectionHandling::Escape  }},
   { "copyright",              { nullptr,                         CommandSpacing::Block,     SectionHandling::Break   }},
-  { "showdate",               { nullptr,                         CommandSpacing::Inline,    SectionHandling::Allowed }},
   { "date",                   { nullptr,                         CommandSpacing::Block,     SectionHandling::Break   }},
   { "def",                    { &handleDef,                      CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "defgroup",               { &handleDefGroup,                 CommandSpacing::Invisible, SectionHandling::Escape  }},
@@ -244,17 +244,33 @@ static const std::map< std::string, DocCmdMap > docCmdMap =
   { "directorygraph",         { &handleDirectoryGraph,           CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "docbookinclude",         { nullptr,                         CommandSpacing::Inline,    SectionHandling::Break   }},
   { "docbookonly",            { &handleFormatBlock,              CommandSpacing::Invisible, SectionHandling::Break   }},
+  { "dontinclude",            { nullptr,                         CommandSpacing::Invisible, SectionHandling::Break   }},
   { "dot",                    { &handleFormatBlock,              CommandSpacing::Block,     SectionHandling::Break   }},
   { "dotfile",                { nullptr,                         CommandSpacing::Block,     SectionHandling::Break   }},
   { "else",                   { &handleElse,                     CommandSpacing::Inline,    SectionHandling::Escape  }},
   { "elseif",                 { &handleElseIf,                   CommandSpacing::Inline,    SectionHandling::Escape  }},
+  { "endcode",                { nullptr,                         CommandSpacing::Invisible, SectionHandling::Escape  }},
+  { "enddocbookonly",         { nullptr,                         CommandSpacing::Invisible, SectionHandling::Escape  }},
+  { "enddot",                 { nullptr,                         CommandSpacing::Invisible, SectionHandling::Escape  }},
+  { "endhtmlonly",            { nullptr,                         CommandSpacing::Invisible, SectionHandling::Escape  }},
+  { "endicode",               { nullptr,                         CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "endif",                  { &handleEndIf,                    CommandSpacing::Inline,    SectionHandling::Escape  }},
+  { "endlatexonly",           { nullptr,                         CommandSpacing::Invisible, SectionHandling::Escape  }},
+  { "endlink",                { nullptr,                         CommandSpacing::Invisible, SectionHandling::Escape  }},
+  { "endmanonly",             { nullptr,                         CommandSpacing::Invisible, SectionHandling::Escape  }},
+  { "endmsc",                 { nullptr,                         CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "endparblock",            { &handleEndParBlock,              CommandSpacing::Block,     SectionHandling::Escape  }},
+  { "endrtfonly",             { nullptr,                         CommandSpacing::Invisible, SectionHandling::Escape  }},
+  { "endsecreflist",          { nullptr,                         CommandSpacing::Invisible, SectionHandling::Escape  }},
+  { "enduml",                 { nullptr,                         CommandSpacing::Invisible, SectionHandling::Escape  }},
+  { "endverbatim",            { nullptr,                         CommandSpacing::Invisible, SectionHandling::Escape  }},
+  { "endxmlonly",             { nullptr,                         CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "enum",                   { &handleEnum,                     CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "example",                { &handleExample,                  CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "exception",              { nullptr,                         CommandSpacing::Block,     SectionHandling::Break   }},
   { "extends",                { &handleExtends,                  CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "file",                   { &handleFile,                     CommandSpacing::Invisible, SectionHandling::Escape  }},
+  { "fileinfo",               { &handleFileInfo,                 CommandSpacing::Inline,    SectionHandling::Replace }},
   { "fn",                     { &handleFn,                       CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "groupgraph",             { &handleGroupgraph,               CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "headerfile",             { &handleHeaderFile,               CommandSpacing::Invisible, SectionHandling::Escape  }},
@@ -273,9 +289,14 @@ static const std::map< std::string, DocCmdMap > docCmdMap =
   { "hiderefs",               { &handleHideReferencesRelation,   CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "htmlinclude",            { nullptr,                         CommandSpacing::Inline,    SectionHandling::Break   }},
   { "htmlonly",               { &handleFormatBlock,              CommandSpacing::Invisible, SectionHandling::Break   }},
+  { "ianchor",                { &handleAnchor,                   CommandSpacing::Invisible, SectionHandling::Replace }},
+  { "icode",                  { &handleFormatBlock,              CommandSpacing::Block,     SectionHandling::Break   }},
   { "idlexcept",              { &handleIdlException,             CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "if",                     { &handleIf,                       CommandSpacing::Inline,    SectionHandling::Break   }},
+  { "ifile",                  { &handleIFile,                    CommandSpacing::Invisible, SectionHandling::Replace }},
   { "ifnot",                  { &handleIfNot,                    CommandSpacing::Inline,    SectionHandling::Break   }},
+  { "iline",                  { &handleILine,                    CommandSpacing::Invisible, SectionHandling::Replace }},
+  { "iliteral",               { &handleFormatBlock,              CommandSpacing::Inline,    SectionHandling::Break   }},
   { "image",                  { &handleImage,                    CommandSpacing::Block,     SectionHandling::Break   }},
   { "implements",             { &handleExtends,                  CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "important",              { nullptr,                         CommandSpacing::Block,     SectionHandling::Break   }},
@@ -289,10 +310,16 @@ static const std::map< std::string, DocCmdMap > docCmdMap =
   { "interface",              { &handleInterface,                CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "internal",               { &handleInternal,                 CommandSpacing::Block,     SectionHandling::Break   }},
   { "invariant",              { nullptr,                         CommandSpacing::Block,     SectionHandling::Break   }},
+  { "iprefix",                { &handleIPrefix,                  CommandSpacing::Invisible, SectionHandling::Replace }},
+  { "iraise",                 { &handleIRaise,                   CommandSpacing::Invisible, SectionHandling::Replace }},
+  { "iverbatim",              { &handleFormatBlock,              CommandSpacing::Block,     SectionHandling::Break   }},
   { "latexinclude",           { nullptr,                         CommandSpacing::Inline,    SectionHandling::Break   }},
   { "latexonly",              { &handleFormatBlock,              CommandSpacing::Invisible, SectionHandling::Break   }},
   { "li",                     { nullptr,                         CommandSpacing::Block,     SectionHandling::Break   }},
   { "line",                   { nullptr,                         CommandSpacing::Invisible, SectionHandling::Escape  }},
+  { "line",                   { nullptr,                         CommandSpacing::Invisible, SectionHandling::Escape  }},
+  { "lineinfo",               { &handleLineInfo,                 CommandSpacing::Inline,    SectionHandling::Replace }},
+  { "link",                   { nullptr,                         CommandSpacing::Invisible, SectionHandling::Replace }},
   { "mainpage",               { &handleMainpage,                 CommandSpacing::Invisible, SectionHandling::Break   }},
   { "maninclude",             { nullptr,                         CommandSpacing::Inline,    SectionHandling::Break   }},
   { "manonly",                { &handleFormatBlock,              CommandSpacing::Invisible, SectionHandling::Break   }},
@@ -312,6 +339,7 @@ static const std::map< std::string, DocCmdMap > docCmdMap =
   { "paragraph",              { &handleSection,                  CommandSpacing::Block,     SectionHandling::Break   }},
   { "param",                  { &handleParam,                    CommandSpacing::Block,     SectionHandling::Break   }},
   { "parblock",               { &handleParBlock,                 CommandSpacing::Block,     SectionHandling::Break   }},
+  { "plantumlfile",           { nullptr,                         CommandSpacing::Block,     SectionHandling::Break   }},
   { "post",                   { nullptr,                         CommandSpacing::Block,     SectionHandling::Break   }},
   { "pre",                    { nullptr,                         CommandSpacing::Block,     SectionHandling::Break   }},
   { "private",                { &handlePrivate,                  CommandSpacing::Invisible, SectionHandling::Escape  }},
@@ -332,6 +360,7 @@ static const std::map< std::string, DocCmdMap > docCmdMap =
   { "relatesalso",            { &handleRelatedAlso,              CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "remark",                 { nullptr,                         CommandSpacing::Block,     SectionHandling::Break   }},
   { "remarks",                { nullptr,                         CommandSpacing::Block,     SectionHandling::Break   }},
+  { "requirement",            { &handleRequirement,              CommandSpacing::Block,     SectionHandling::Break   }},
   { "result",                 { nullptr,                         CommandSpacing::Block,     SectionHandling::Break   }},
   { "return",                 { nullptr,                         CommandSpacing::Block,     SectionHandling::Break   }},
   { "returns",                { nullptr,                         CommandSpacing::Block,     SectionHandling::Break   }},
@@ -339,15 +368,20 @@ static const std::map< std::string, DocCmdMap > docCmdMap =
   { "rtfinclude",             { nullptr,                         CommandSpacing::Inline,    SectionHandling::Break   }},
   { "rtfonly",                { &handleFormatBlock,              CommandSpacing::Invisible, SectionHandling::Break   }},
   { "sa",                     { nullptr,                         CommandSpacing::Block,     SectionHandling::Break   }},
+  { "satisfies",              { &handleSatisfies,                CommandSpacing::Inline,    SectionHandling::Break   }},
+  { "secreflist",             { nullptr,                         CommandSpacing::Invisible, SectionHandling::Break   }},
   { "section",                { &handleSection,                  CommandSpacing::Block,     SectionHandling::Break   }},
   { "see",                    { nullptr,                         CommandSpacing::Block,     SectionHandling::Break   }},
   { "short",                  { &handleBrief,                    CommandSpacing::Invisible, SectionHandling::Break   }},
+  { "showdate",               { nullptr,                         CommandSpacing::Inline,    SectionHandling::Allowed }},
   { "showenumvalues",         { &handleShowEnumValues,           CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "showinitializer",        { &handleShowInitializer,          CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "showinlinesource",       { &handleShowInlineSource,         CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "showrefby",              { &handleReferencedByRelation,     CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "showrefs",               { &handleReferencesRelation,       CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "since",                  { nullptr,                         CommandSpacing::Block,     SectionHandling::Break   }},
+  { "skip",                   { nullptr,                         CommandSpacing::Invisible, SectionHandling::Escape  }},
+  { "skipline",               { nullptr,                         CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "snippet",                { nullptr,                         CommandSpacing::Block,     SectionHandling::Break   }},
   { "snippetlineno",          { nullptr,                         CommandSpacing::Block,     SectionHandling::Break   }},
   { "startuml",               { &handleFormatBlock,              CommandSpacing::Block,     SectionHandling::Break   }},
@@ -355,8 +389,8 @@ static const std::map< std::string, DocCmdMap > docCmdMap =
   { "struct",                 { &handleStruct,                   CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "subpage",                { &handleSubpage,                  CommandSpacing::Inline,    SectionHandling::Allowed }},
   { "subparagraph",           { &handleSection,                  CommandSpacing::Block,     SectionHandling::Break   }},
-  { "subsubparagraph",        { &handleSection,                  CommandSpacing::Block,     SectionHandling::Break   }},
   { "subsection",             { &handleSection,                  CommandSpacing::Block,     SectionHandling::Break   }},
+  { "subsubparagraph",        { &handleSection,                  CommandSpacing::Block,     SectionHandling::Break   }},
   { "subsubsection",          { &handleSection,                  CommandSpacing::Block,     SectionHandling::Break   }},
   { "tableofcontents",        { &handleToc,                      CommandSpacing::Invisible, SectionHandling::Break   }},
   { "test",                   { &handleTest,                     CommandSpacing::XRef,      SectionHandling::Break   }},
@@ -367,46 +401,18 @@ static const std::map< std::string, DocCmdMap > docCmdMap =
   { "typedef",                { &handleFn,                       CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "union",                  { &handleUnion,                    CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "until",                  { nullptr,                         CommandSpacing::Block,     SectionHandling::Escape  }},
+  { "until",                  { nullptr,                         CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "var",                    { &handleFn,                       CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "verbatim",               { &handleFormatBlock,              CommandSpacing::Block,     SectionHandling::Break   }},
-  { "iverbatim",              { &handleFormatBlock,              CommandSpacing::Block,     SectionHandling::Break   }},
   { "verbinclude",            { nullptr,                         CommandSpacing::Inline,    SectionHandling::Break   }},
+  { "verifies",               { &handleVerifies,                 CommandSpacing::Inline,    SectionHandling::Break   }},
   { "version",                { nullptr,                         CommandSpacing::Block,     SectionHandling::Break   }},
+  { "vhdlflow",               { nullptr,                         CommandSpacing::Block,     SectionHandling::Break   }},
   { "warning",                { nullptr,                         CommandSpacing::Block,     SectionHandling::Break   }},
   { "weakgroup",              { &handleWeakGroup,                CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "xmlinclude",             { nullptr,                         CommandSpacing::Inline,    SectionHandling::Break   }},
   { "xmlonly",                { &handleFormatBlock,              CommandSpacing::Invisible, SectionHandling::Break   }},
-  { "xrefitem",               { &handleXRefItem,                 CommandSpacing::XRef,      SectionHandling::Break   }},
-  { "iliteral",               { &handleFormatBlock,              CommandSpacing::Inline,    SectionHandling::Break   }},
-  { "fileinfo",               { &handleFileInfo,                 CommandSpacing::Inline,    SectionHandling::Replace }},
-  { "lineinfo",               { &handleLineInfo,                 CommandSpacing::Inline,    SectionHandling::Replace }},
-  { "secreflist",             { nullptr,                         CommandSpacing::Invisible, SectionHandling::Break   }},
-  { "endsecreflist",          { nullptr,                         CommandSpacing::Invisible, SectionHandling::Escape  }},
-  { "dontinclude",            { nullptr,                         CommandSpacing::Invisible, SectionHandling::Break   }},
-  { "line",                   { nullptr,                         CommandSpacing::Invisible, SectionHandling::Escape  }},
-  { "skip",                   { nullptr,                         CommandSpacing::Invisible, SectionHandling::Escape  }},
-  { "skipline",               { nullptr,                         CommandSpacing::Invisible, SectionHandling::Escape  }},
-  { "until",                  { nullptr,                         CommandSpacing::Invisible, SectionHandling::Escape  }},
-  { "vhdlflow",               { nullptr,                         CommandSpacing::Block,     SectionHandling::Break   }},
-  { "enddot",                 { nullptr,                         CommandSpacing::Invisible, SectionHandling::Escape  }},
-  { "endmsc",                 { nullptr,                         CommandSpacing::Invisible, SectionHandling::Escape  }},
-  { "enduml",                 { nullptr,                         CommandSpacing::Invisible, SectionHandling::Escape  }},
-  { "endicode",               { nullptr,                         CommandSpacing::Invisible, SectionHandling::Escape  }},
-  { "endcode",                { nullptr,                         CommandSpacing::Invisible, SectionHandling::Escape  }},
-  { "endverbatim",            { nullptr,                         CommandSpacing::Invisible, SectionHandling::Escape  }},
-  { "enddocbookonly",         { nullptr,                         CommandSpacing::Invisible, SectionHandling::Escape  }},
-  { "endhtmlonly",            { nullptr,                         CommandSpacing::Invisible, SectionHandling::Escape  }},
-  { "endlatexonly",           { nullptr,                         CommandSpacing::Invisible, SectionHandling::Escape  }},
-  { "endmanonly",             { nullptr,                         CommandSpacing::Invisible, SectionHandling::Escape  }},
-  { "endrtfonly",             { nullptr,                         CommandSpacing::Invisible, SectionHandling::Escape  }},
-  { "endxmlonly",             { nullptr,                         CommandSpacing::Invisible, SectionHandling::Escape  }},
-  { "link",                   { nullptr,                         CommandSpacing::Invisible, SectionHandling::Replace }},
-  { "endlink",                { nullptr,                         CommandSpacing::Invisible, SectionHandling::Escape  }},
-  { "ifile",                  { &handleIFile,                    CommandSpacing::Invisible, SectionHandling::Replace }},
-  { "iline",                  { &handleILine,                    CommandSpacing::Invisible, SectionHandling::Replace }},
-  { "iraise",                 { &handleIRaise,                   CommandSpacing::Invisible, SectionHandling::Replace }},
-  { "iprefix",                { &handleIPrefix,                  CommandSpacing::Invisible, SectionHandling::Replace }},
-  { "plantumlfile",           { nullptr,                         CommandSpacing::Block,     SectionHandling::Break   }}
+  { "xrefitem",               { &handleXRefItem,                 CommandSpacing::XRef,      SectionHandling::Break   }}
 };
 
 #define YY_NO_INPUT 1
@@ -539,6 +545,7 @@ static void initParser(yyscan_t yyscanner);
 static bool checkStructuralIndicator(yyscan_t yyscanner);
 [[maybe_unused]] static bool makeStructuralIndicator(yyscan_t yyscanner,MakeEntryType maker);
 static void lineCount(yyscan_t yyscanner);
+static void addRequirementId(yyscan_t yyscanner);
 static void addXRefItem(yyscan_t yyscanner,
                         const QCString &listName,const QCString &itemTitle,
                         const QCString &listTitle,bool append);
@@ -609,6 +616,7 @@ FILEECHAR [a-z_A-Z0-9\x80-\xFF\-\+=@&#~]
 FILE      ({FILESCHAR}*{FILEECHAR}+("."{FILESCHAR}*{FILEECHAR}+)*)|("\""[^\n\"]*"\"")
 ID        [$a-z_A-Z\x80-\xFF][$a-z_A-Z0-9\x80-\xFF]*
 LABELID   [a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF\-]*
+REQID     [a-z_A-Z0-9\x80-\xFF\-]+
 CITESCHAR [a-z_A-Z0-9\x80-\xFF\-\?]
 CITEECHAR [a-z_A-Z0-9\x80-\xFF\-\+:\/\?]*
 CITEID    {CITESCHAR}{CITEECHAR}*("."{CITESCHAR}{CITEECHAR}*)*|"\""{CITESCHAR}{CITEECHAR}*("."{CITESCHAR}{CITEECHAR}*)*"\""
@@ -658,6 +666,12 @@ STopt  [^\n@\\]*
 %x      SectionTitle
 %x      SubpageLabel
 %x      SubpageTitle
+%x      SatisfiesLabel
+%x      SatisfiesTitle
+%x      VerifiesLabel
+%x      VerifiesTitle
+%x      RequirementLabel
+%x      RequirementTitle
 %x      FormatBlock
 %x      LineParam
 %x      GuardParam
@@ -2298,6 +2312,74 @@ STopt  [^\n@\\]*
                                           }
                                         }
 
+  /* ----- handle arguments of the anchor command ------- */
+
+<RequirementLabel>{REQID}               { // found argument
+                                          yyextra->current->name = yytext;
+                                          yyextra->current->type.clear();
+                                          BEGIN( RequirementTitle );
+                                        }
+<SatisfiesLabel>{REQID}                 { // found argument
+                                          yyextra->current->name = yytext;
+                                          yyextra->current->type.clear();
+                                          BEGIN( SatisfiesTitle );
+                                        }
+<VerifiesLabel>{REQID}                  { // found argument
+                                          yyextra->current->name = yytext;
+                                          yyextra->current->type.clear();
+                                          BEGIN( VerifiesTitle );
+                                        }
+<RequirementLabel,SatisfiesLabel,VerifiesLabel>"\\"{B}*"\n"  { // line continuation
+                                          yyextra->lineNr++;
+                                          addOutput(yyscanner,'\n');
+                                        }
+<RequirementLabel,SatisfiesLabel,VerifiesLabel>{DOCNL}       { // missing argument
+                                          warn(yyextra->fileName,yyextra->lineNr,
+                                               "missing requirement ID after \\requirement command"
+                                              );
+                                          unput_string(yytext,yyleng);
+                                          BEGIN( Comment );
+                                        }
+<RequirementLabel,SatisfiesLabel,VerifiesLabel>.  { // invalid character for requirement label
+                                        }
+
+<RequirementTitle,SatisfiesTitle,VerifiesTitle>"\\"{B}*"\n"          { // line continuation
+                                          yyextra->lineNr++;
+                                          addOutput(yyscanner,'\n');
+                                        }
+<RequirementTitle,SatisfiesTitle,VerifiesTitle>[^\n\\]+              { // title (stored in type)
+                                          yyextra->current->type += yytext;
+                                        }
+<RequirementTitle>{DOCNL}+              {
+                                          yyextra->current->type = yyextra->current->type.stripWhiteSpace();
+                                          unput_string(yytext,yyleng);
+                                          addRequirementId(yyscanner);
+                                          BEGIN( Comment );
+                                        }
+<SatisfiesTitle>{DOCNL}+                {
+                                          yyextra->current->type = yyextra->current->type.stripWhiteSpace();
+                                          unput_string(yytext,yyleng);
+                                          yyextra->current->rqli.emplace_back(RequirementRefType::Satisfies,
+                                                                              yyextra->current->name,
+                                                                              yyextra->current->type,
+                                                                              yyextra->fileName,
+                                                                              yyextra->lineNr);
+                                          BEGIN( Comment );
+                                        }
+<VerifiesTitle>{DOCNL}+                 {
+                                          yyextra->current->type = yyextra->current->type.stripWhiteSpace();
+                                          unput_string(yytext,yyleng);
+                                          yyextra->current->rqli.emplace_back(RequirementRefType::Verifies,
+                                                                              yyextra->current->name,
+                                                                              yyextra->current->type,
+                                                                              yyextra->fileName,
+                                                                              yyextra->lineNr);
+                                          BEGIN( Comment );
+                                        }
+<RequirementTitle,SatisfiesTitle,VerifiesTitle>. { // title (stored in type)
+                                          yyextra->current->type += yytext;
+                                        }
+
 
   /* ----- handle arguments of the preformatted block commands ------- */
 
@@ -3387,6 +3469,28 @@ static bool handleSection(yyscan_t yyscanner,const QCString &s, const StringVect
   return FALSE;
 }
 
+static bool handleRequirement(yyscan_t yyscanner,const QCString &s,const StringVector &)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  bool stop=makeStructuralIndicator(yyscanner,EntryType::makeRequirementDoc);
+  BEGIN( RequirementLabel );
+  return stop;
+}
+
+static bool handleSatisfies(yyscan_t yyscanner,const QCString &,const StringVector &)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  BEGIN( SatisfiesLabel );
+  return false;
+}
+
+static bool handleVerifies(yyscan_t yyscanner,const QCString &,const StringVector &)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  BEGIN( VerifiesLabel );
+  return false;
+}
+
 static bool handleSubpage(yyscan_t yyscanner,const QCString &s, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
@@ -4266,6 +4370,30 @@ static QCString stripQuotes(const char *s)
 
 //-----------------------------------------------------------------
 
+static void addRequirementId(yyscan_t yyscanner)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  std::unique_lock<std::mutex> lock(g_sectionMutex);
+
+  QCString reqId = yyextra->current->name;
+  SectionManager &sm = SectionManager::instance();
+  const SectionInfo *si = sm.find(reqId);
+  if (si==nullptr)
+  {
+    si = sm.add(reqId,"requirements",yyextra->lineNr,
+               yyextra->current->type,SectionType::Anchor,1);
+  }
+  else // duplicate requirement
+  {
+    warn(yyextra->fileName,yyextra->lineNr,"duplicate requirement ID '{}' found at {} line {}, (first occurrence: {}, line {})",
+         reqId,
+         yyextra->fileName,yyextra->lineNr,
+         si->fileName(),si->lineNr());
+  }
+}
+
+//-----------------------------------------------------------------
+
 static void addXRefItem(yyscan_t yyscanner,
                         const QCString &listName,const QCString &itemTitle,
                         const QCString &listTitle,bool append)
@@ -4506,9 +4634,9 @@ static inline void setOutput(yyscan_t yyscanner,OutputContext ctx)
   // determine append flag for the next item (i.e. the end of this item)
   yyextra->xrefAppendFlag = !yyextra->inBody &&
                    yyextra->inContext==OutputXRef && ctx==OutputXRef && // two consecutive xref items
-                   yyextra->newXRefKind==yyextra->xrefKind &&                    // of the same kind
+                   yyextra->newXRefKind==yyextra->xrefKind &&           // of the same kind
                    (yyextra->xrefKind!=XRef_Item ||
-                    yyextra->newXRefItemKey==yyextra->xrefItemKey);              // with the same key if \xrefitem
+                    yyextra->newXRefItemKey==yyextra->xrefItemKey);     // with the same key if \xrefitem
   //printf("%d && %d && %d && (%d || %d)\n",
   //                 yyextra->inContext==OutputXRef,
   //                 ctx==OutputXRef,

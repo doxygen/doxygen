@@ -1323,7 +1323,6 @@ table.fieldtable {
 	text-align: right;
 }
 
-
 .fieldtable td.fielddoc {
 	border-bottom: 1px solid var(--memdef-border-color);
 }
@@ -1351,6 +1350,29 @@ table.fieldtable {
 	border-top-left-radius: 4px;
 	border-top-right-radius: 4px;
 	border-bottom: 1px solid var(--memdef-border-color);
+}
+
+/* style requirements page */
+
+div.req_title {
+        text-decoration-line: underline;
+        text-decoration-style: solid;
+        text-decoration-color: var(--table-cell-border-color);
+        text-decoration-thickness: 1px;
+        font-weight: bold;
+}
+
+table.reqlist tr > td:first-child {
+        text-align: right;
+        font-weight: bold;
+}
+
+div.missing_req {
+        border-left: 8px solid var(--warning-color-hl);
+        padding: 10px;
+        margin: 10px 0px;
+        overflow: hidden;
+        margin-left: 0;
 }
 
 /* ----------- navigation breadcrumb styling ----------- */

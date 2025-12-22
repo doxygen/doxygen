@@ -22,6 +22,7 @@
 
 #include "types.h"
 #include "reflist.h"
+#include "requirement.h"
 
 #define DOX_NOGROUP -1
 
@@ -81,8 +82,10 @@ class MemberGroup
     const Definition *memberContainer() const;
 
     int countInheritableMembers(const ClassDef *inheritedFrom) const;
-    void addListReferences(Definition *d);
+    void addListReferences(const Definition *def);
+    void addRequirementReferences(const Definition *def);
     void setRefItems(const RefItemVector &sli);
+    void setRequirementReferences(const RequirementRefs &rqli);
     const MemberList &members() const { return *memberList.get(); }
 
     QCString docFile() const { return m_docFile; }
@@ -100,6 +103,7 @@ class MemberGroup
     QCString m_docFile;
     int m_docLine;
     RefItemVector m_xrefListItems;
+    RequirementRefs m_requirementRefs;
 };
 
 class MemberGroupRefList : public std::vector<MemberGroup *>
@@ -114,12 +118,14 @@ class MemberGroupList : public std::vector< std::unique_ptr<MemberGroup> >
 struct MemberGroupInfo
 {
   void setRefItems(const RefItemVector &sli);
+  void setRequirementReferences(const RequirementRefs &rqli);
   QCString header;
   QCString doc;
   QCString docFile;
   int docLine = -1;
   QCString compoundName;
   RefItemVector m_sli;
+  RequirementRefs m_rqli;
 };
 
 using MemberGroupInfoMap = std::unordered_map< int,std::unique_ptr<MemberGroupInfo> >;

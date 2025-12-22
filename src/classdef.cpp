@@ -312,6 +312,7 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
     void findSectionsInDocumentation() override;
     void addMembersToMemberGroup() override;
     void addListReferences() override;
+    void addRequirementReferences() override;
     void addTypeConstraints() override;
     void computeAnchors() override;
     void mergeMembers() override;
@@ -1646,6 +1647,7 @@ void ClassDefImpl::writeDetailedDocumentationBody(OutputList &ol) const
     ol.endExamples();
   }
   writeSourceDef(ol);
+  if (hasRequirementRefs()) writeRequirementRefs(ol);
   ol.endTextBlock();
 }
 
@@ -1655,7 +1657,8 @@ bool ClassDefImpl::hasDetailedDescription() const
   bool sourceBrowser = Config_getBool(SOURCE_BROWSER);
   return ((!briefDescription().isEmpty() && repeatBrief) ||
           (!documentation().isEmpty() || m_tempArgs.hasTemplateDocumentation()) ||
-          (sourceBrowser && getStartBodyLine()!=-1 && getBodyDef()));
+          (sourceBrowser && getStartBodyLine()!=-1 && getBodyDef()) ||
+          hasRequirementRefs());
 }
 
 // write the detailed description for this class
@@ -4531,12 +4534,9 @@ void ClassDefImpl::setClassName(const QCString &name)
 
 void ClassDefImpl::addListReferences()
 {
-  SrcLangExt lang = getLanguage();
   if (!isLinkableInProject()) return;
-  //printf("ClassDef(%s)::addListReferences()\n",qPrint(name()));
-  {
-    const RefItemVector &xrefItems = xrefListItems();
-    addRefItem(xrefItems,
+  SrcLangExt lang = getLanguage();
+  addRefItem(xrefListItems(),
              qualifiedName(),
              theTranslator->trCompoundType(compoundType(), lang),
              getOutputFileBase(),
@@ -4544,7 +4544,6 @@ void ClassDefImpl::addListReferences()
              QCString(),
              this
             );
-  }
   for (const auto &mg : m_memberGroups)
   {
     mg->addListReferences(this);
@@ -4554,6 +4553,23 @@ void ClassDefImpl::addListReferences()
     if (ml->listType().isDetailed())
     {
       ml->addListReferences(this);
+    }
+  }
+}
+
+void ClassDefImpl::addRequirementReferences()
+{
+  if (!isLinkableInProject()) return;
+  RequirementManager::instance().addRequirementRefsForSymbol(this);
+  for (const auto &mg : m_memberGroups)
+  {
+    mg->addRequirementReferences(this);
+  }
+  for (auto &ml : m_memberLists)
+  {
+    if (ml->listType().isDetailed())
+    {
+      ml->addRequirementReferences(this);
     }
   }
 }

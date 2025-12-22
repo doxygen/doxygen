@@ -81,7 +81,7 @@
 
 #include "translator_br.h"
 
-class TranslatorPortuguese : public Translator
+class TranslatorPortuguese : public TranslatorAdapter_1_16_0
 {
   public:
 

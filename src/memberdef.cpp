@@ -312,7 +312,8 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     void overrideInlineSource(bool e) override;
     void setTemplateMaster(const MemberDef *mt) override;
     void setFormalTemplateArguments(const ArgumentList &al) override;
-    void addListReference(Definition *d) override;
+    void addListReference(const Definition *) override;
+    void addRequirementReferences(const Definition *) override;
     void setDocsForDefinition(bool b) override;
     void setGroupAlias(const MemberDef *md) override;
     void cacheTypedefVal(const ClassDef *val,const QCString &templSpec,const QCString &resolvedType) override;
@@ -2746,7 +2747,9 @@ bool MemberDefImpl::hasDetailedDescription() const
            // call graph
            _hasVisibleCallGraph() ||
            // caller graph
-           _hasVisibleCallerGraph();
+           _hasVisibleCallerGraph() ||
+           // requirement references
+           hasRequirementRefs();
 
     if (!hideUndocMembers) // if HIDE_UNDOC_MEMBERS is NO we also show the detailed section
                            // if there is only some generated info
@@ -3954,6 +3957,7 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
   if (hasReferencedByRelation()) writeSourceReffedBy(ol,scopeStr);
   _writeCallGraph(ol);
   _writeCallerGraph(ol);
+  if (hasRequirementRefs()) writeRequirementRefs(ol);
 
   ol.endIndent();
 
@@ -4553,7 +4557,7 @@ void MemberDefImpl::setInitializer(const QCString &initializer)
   //printf("%s::setInitializer(%s)\n",qPrint(name()),qPrint(m_initializer));
 }
 
-void MemberDefImpl::addListReference(Definition *)
+void MemberDefImpl::addListReference(const Definition *)
 {
   bool optimizeOutputForC = Config_getBool(OPTIMIZE_OUTPUT_FOR_C);
   SrcLangExt lang = getLanguage();
@@ -4598,6 +4602,11 @@ void MemberDefImpl::addListReference(Definition *)
         qualifiedName()+argsString(), // argsString is needed for overloaded functions (see bug 609624)
         memLabel,
         getOutputFileBase()+"#"+anchor(),memName,memArgs,pd);
+}
+
+void MemberDefImpl::addRequirementReferences(const Definition *)
+{
+  RequirementManager::instance().addRequirementRefsForSymbol(this);
 }
 
 const MemberList *MemberDefImpl::getSectionList(const Definition *container) const

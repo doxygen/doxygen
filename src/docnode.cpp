@@ -38,6 +38,7 @@
 #include "trace.h"
 #include "anchor.h"
 #include "aliases.h"
+#include "requirement.h"
 
 #if !ENABLE_DOCPARSER_TRACING
 #undef  AUTO_TRACE
@@ -874,10 +875,11 @@ static void flattenParagraphs(DocNodeVariant *root,DocNodeList &children)
   }
 }
 
-void DocRef::parse()
+void DocRef::parse(char cmdChar,const QCString &cmdName)
 {
   AUTO_TRACE();
   auto ns = AutoNodeStack(parser(),thisVariant());
+  char cmdCharStr[2] = { cmdChar, 0 };
 
   Token tok = parser()->tokenizer.lex();
   while (!tok.is_any_of(TokenRetval::TK_NONE, TokenRetval::TK_EOF))
@@ -889,7 +891,7 @@ void DocRef::parse()
         case TokenRetval::TK_HTMLTAG:
           break;
         default:
-          parser()->errorHandleDefaultToken(thisVariant(),tok,children(),"\\ref");
+          parser()->errorHandleDefaultToken(thisVariant(),tok,children(),cmdCharStr+cmdName);
           break;
       }
     }
@@ -904,7 +906,7 @@ void DocRef::parse()
       // we already in a link/title only output anchor
       text = m_anchor;
       warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),
-          "Potential recursion while resolving \\ref command!");
+          "Potential recursion while resolving {:c}{} command!",cmdChar,cmdName);
     }
     parser()->context.insideHtmlLink=TRUE;
     parser()->pushContext();
@@ -2278,6 +2280,12 @@ getrow:
       {
         retval = Token::make_RetVal_EndTable();
       }
+      else if (retval.is(TokenRetval::TK_HTMLTAG)) // some other HTML tag
+      {
+        warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"expected <tr> or </table> tag but "
+            "found <{}> instead!",parser()->context.token->name);
+        parser()->tokenizer.pushBackHtmlTag(parser()->context.token->name);
+      }
       else // found some other tag
       {
         warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"expected <tr> or </table> tag but "
@@ -2444,7 +2452,7 @@ Token DocHtmlDescTitle::parse()
                     else
                     {
                       children().append<DocRef>(parser(),thisVariant(),parser()->context.token->name,parser()->context.context);
-                      children().get_last<DocRef>()->parse();
+                      children().get_last<DocRef>()->parse(tok.command_to_char(),cmdName);
                     }
                     parser()->tokenizer.setStatePara();
                   }
@@ -2557,6 +2565,7 @@ endtitle:
   parser()->handlePendingStyleCommands(thisVariant(),children());
   return retval;
 }
+
 
 //---------------------------------------------------------------------------
 
@@ -3722,6 +3731,7 @@ Token DocPara::handleXRefItem()
   return retval;
 }
 
+
 void DocPara::handleShowDate(char cmdChar,const QCString &cmdName)
 {
   AUTO_TRACE();
@@ -3791,44 +3801,6 @@ void DocPara::handleShowDate(char cmdChar,const QCString &cmdName)
   }
   parser()->tokenizer.setStatePara();
 }
-
-void DocPara::handleILine(char cmdChar,const QCString &cmdName)
-{
-  AUTO_TRACE();
-  parser()->tokenizer.setStateILine();
-  Token tok = parser()->tokenizer.lex();
-  if (!tok.is(TokenRetval::TK_WORD))
-  {
-    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"invalid argument for command '{:c}{}'",
-      cmdChar,cmdName);
-    return;
-  }
-  parser()->tokenizer.setStatePara();
-}
-
-void DocPara::handleIFile(char cmdChar,const QCString &cmdName)
-{
-  AUTO_TRACE();
-  Token tok=parser()->tokenizer.lex();
-  if (!tok.is(TokenRetval::TK_WHITESPACE))
-  {
-    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"expected whitespace after '{:c}{}' command",
-      cmdChar,cmdName);
-    return;
-  }
-  parser()->tokenizer.setStateFile();
-  tok=parser()->tokenizer.lex();
-  parser()->tokenizer.setStatePara();
-  if (!tok.is(TokenRetval::TK_WORD))
-  {
-    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"unexpected token {} as the argument of '{:c}{}'",
-      tok.to_string(),cmdChar,cmdName);
-    return;
-  }
-  parser()->context.fileName = parser()->context.token->name;
-  parser()->tokenizer.setStatePara();
-}
-
 
 void DocPara::handleIncludeOperator(const QCString &cmdName,DocIncOperator::Type t)
 {
@@ -3981,20 +3953,29 @@ void DocPara::handleRef(char cmdChar,const QCString &cmdName)
       cmdChar,qPrint(saveCmdName));
     return;
   }
-  parser()->tokenizer.setStateRef();
+  // RAII helper to set and restore state
+  class AutoRestoreState
+  {
+    public:
+      AutoRestoreState(DocParser *parser) : m_parser(parser) { m_parser->tokenizer.setStateRef(); }
+     ~AutoRestoreState() { m_parser->tokenizer.setStatePara(); }
+    private:
+      DocParser *m_parser;
+  };
+  AutoRestoreState rs(parser());
   tok=parser()->tokenizer.lex(); // get the reference id
   if (!tok.is(TokenRetval::TK_WORD))
   {
     warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"unexpected token {} as the argument of '{:c}{}'",
         tok.to_string(),cmdChar,saveCmdName);
-    goto endref;
+    return;
   }
-  children().append<DocRef>(parser(),thisVariant(),
-                            parser()->context.token->name,
-                            parser()->context.context);
-  children().get_last<DocRef>()->parse();
-endref:
-  parser()->tokenizer.setStatePara();
+  {
+    children().append<DocRef>(parser(),thisVariant(),
+                              parser()->context.token->name,
+                              parser()->context.context);
+  }
+  children().get_last<DocRef>()->parse(cmdChar,cmdName);
 }
 
 void DocPara::handleInclude(const QCString &cmdName,DocInclude::Type t)
@@ -4891,7 +4872,8 @@ Token DocPara::handleCommand(char cmdChar, const QCString &cmdName)
     case CommandType::CMD_DOXYCONFIG:
       handleDoxyConfig(cmdChar,cmdName);
       break;
-    case CommandType::CMD_REF: // fall through
+    case CommandType::CMD_REF:
+      // fall through
     case CommandType::CMD_SUBPAGE:
       handleRef(cmdChar,cmdName);
       break;
@@ -4929,10 +4911,10 @@ Token DocPara::handleCommand(char cmdChar, const QCString &cmdName)
       handleShowDate(cmdChar,cmdName);
       break;
     case CommandType::CMD_ILINE:
-      handleILine(cmdChar,cmdName);
+      parser()->handleILine(cmdChar,cmdName);
       break;
     case CommandType::CMD_IFILE:
-      handleIFile(cmdChar,cmdName);
+      parser()->handleIFile(cmdChar,cmdName);
       break;
     case CommandType::CMD_SETSCOPE:
       {
@@ -5340,9 +5322,6 @@ Token DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &
           }
           else // <see cref="...">...</see> style
           {
-            //DocRef *ref = new DocRef(this,cref);
-            //children().append(ref);
-            //ref->parse();
             parser()->tokenizer.setStatePara();
             children().append<DocLink>(parser(),thisVariant(),cref);
             DocLink *lnk  = children().get_last<DocLink>();

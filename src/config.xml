@@ -910,6 +910,25 @@ Go to the <a href="commands.html">next</a> section or return to the
       <value name="DATETIME" />
       <value name="DATE" />
     </option>
+    <option type='enum' id='REQ_TRACEABILITY_INFO' defval='YES'>
+      <docs>
+<![CDATA[
+ The \c REQ_TRACEABILITY_INFO tag controls if traceability information
+ is shown on the requirements page (only relevant when using
+ \ref cmdrequirement "\\requirement" comment blocks).
+ The setting \c NO will disable the traceablility information altogether.
+ The setting \c SATISFIES_ONLY will show a list of requirements that are missing
+ a satisfies relation.
+ Similarly the setting \c VERIFIES_ONLY will show a list of requirements that
+ are missing a verifies relation.
+ Setting the tag to \c YES (the default) will show both lists if applicable.
+]]>
+      </docs>
+      <value name="YES" />
+      <value name="NO" />
+      <value name="SATISFIES_ONLY" />
+      <value name="VERIFIES_ONLY" />
+    </option>
   </group>
   <group name='Build' docs='Build related configuration options'>
     <option type='bool' id='EXTRACT_ALL' defval='0'>

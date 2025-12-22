@@ -1110,7 +1110,6 @@ void writeMarkerList(OutputList &ol,const std::string &markerText,size_t numMark
   reg::Iterator it(markerText,marker);
   reg::Iterator end;
   size_t index=0;
-  // now replace all markers in inheritLine with links to the classes
   for ( ; it!=end ; ++it)
   {
     const auto &match = *it;
@@ -1125,6 +1124,34 @@ void writeMarkerList(OutputList &ol,const std::string &markerText,size_t numMark
     index=newIndex+matchLen;
   }
   ol.parseText(markerText.substr(index));
+}
+
+QCString writeMarkerList(const std::string &markerText,size_t numMarkers,
+                         std::function<QCString(size_t)> replaceFunc)
+{
+  QCString result;
+  static const reg::Ex marker(R"(@(\d+))");
+  reg::Iterator it(markerText,marker);
+  reg::Iterator end;
+  size_t index=0;
+  for ( ; it!=end ; ++it)
+  {
+    const auto &match = *it;
+    size_t newIndex = match.position();
+    size_t matchLen = match.length();
+    result += markerText.substr(index,newIndex-index);
+    unsigned long entryIndex = std::stoul(match[1].str());
+    if (entryIndex<static_cast<unsigned long>(numMarkers))
+    {
+      result+=replaceFunc(entryIndex);
+    }
+    index=newIndex+matchLen;
+  }
+  if (index<markerText.size())
+  {
+    result += markerText.substr(index);
+  }
+  return result;
 }
 
 void writeExamples(OutputList &ol,const ExampleList &list)
@@ -2724,14 +2751,14 @@ bool resolveLink(/* in */ const QCString &scName,
   {
     *resContext=si->definition();
     resAnchor = si->label();
-    AUTO_TRACE_EXIT("section");
+    AUTO_TRACE_EXIT("section anchor={} def={}",resAnchor,si->definition()?si->definition()->name():"<none>");
     return TRUE;
   }
-  else if ((si=SectionManager::instance().find(linkRef)))
+  else if (!prefix.isEmpty() && (si=SectionManager::instance().find(linkRef)))
   {
     *resContext=si->definition();
     resAnchor = si->label();
-    AUTO_TRACE_EXIT("section");
+    AUTO_TRACE_EXIT("section anchor={} def={}",resAnchor,si->definition()?si->definition()->name():"<none>");
     return TRUE;
   }
   else if ((pd=Doxygen::exampleLinkedMap->find(linkRef))) // link to an example
@@ -5714,7 +5741,11 @@ QCString createHtmlUrl(const QCString &relPath,
     }
     url+=fn;
   }
-  if (!anchor.isEmpty()) url+="#"+anchor;
+  if (!anchor.isEmpty())
+  {
+    if (!url.endsWith("=")) url+="#";
+    url+=anchor;
+  }
   //printf("createHtmlUrl(relPath=%s,local=%d,target=%s,anchor=%s)=%s\n",qPrint(relPath),isLocalFile,qPrint(targetFileName),qPrint(anchor),qPrint(url));
   return url;
 }

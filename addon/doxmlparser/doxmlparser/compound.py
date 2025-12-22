@@ -1013,6 +1013,7 @@ class DoxCompoundKind(str, Enum):
     EXAMPLE='example'
     DIR='dir'
     CONCEPT='concept'
+    REQUIREMENT='requirement'
 
 
 class DoxGraphRelation(str, Enum):
@@ -1767,7 +1768,7 @@ class compounddefType(GeneratedsSuper):
                 self.gds_collector_.add_message('Value "%(value)s"%(lineno)s is not of the correct base simple type (str)' % {"value": value, "lineno": lineno, })
                 return False
             value = value
-            enumerations = ['class', 'struct', 'union', 'interface', 'protocol', 'category', 'exception', 'service', 'singleton', 'module', 'type', 'file', 'namespace', 'group', 'page', 'example', 'dir', 'concept']
+            enumerations = ['class', 'struct', 'union', 'interface', 'protocol', 'category', 'exception', 'service', 'singleton', 'module', 'type', 'file', 'namespace', 'group', 'page', 'example', 'dir', 'concept', 'requirement']
             if value not in enumerations:
                 lineno = self.gds_get_node_lineno_()
                 self.gds_collector_.add_message('Value "%(value)s"%(lineno)s does not match xsd enumeration restriction on DoxCompoundKind' % {"value" : encode_str_2_3(value), "lineno": lineno} )

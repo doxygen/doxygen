@@ -409,6 +409,8 @@ int nextUtf8CharPosition(const QCString &utf8Str,uint32_t len,uint32_t startPos)
 
 void writeMarkerList(OutputList &ol,const std::string &markerText,size_t numMarkers,
                      std::function<void(size_t)> replaceFunc);
+QCString writeMarkerList(const std::string &markerText,size_t numMarkers,
+                     std::function<QCString(size_t)> replaceFunc);
 
 /** Data associated with a HSV colored image. */
 struct ColoredImgDataItem
