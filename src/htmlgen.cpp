@@ -3510,7 +3510,7 @@ void HtmlGenerator::endInlineMemberDoc()
 void HtmlGenerator::startEmbeddedDoc(int indent)
 {
   DBG_HTML(m_t << "<!-- startEmbeddedDoc -->\n";)
-  m_t << "<div class=\"embeddoc\" style=\"--indent-chars:" << indent << ";\">";
+  m_t << "<div class=\"embeddoc\" style=\"margin-left:" << indent << "ch;\">";
 }
 
 void HtmlGenerator::endEmbeddedDoc()
