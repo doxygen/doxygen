@@ -2612,6 +2612,88 @@ class TranslatorEnglish : public Translator
     {
       return "Important";
     }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.16.0
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used for the requirements traceability feature */
+    QCString trRequirements() override
+    {
+      return "Requirements";
+    }
+
+    /*! Used for the traceability index page title */
+    QCString trTraceability() override
+    {
+      return "Traceability";
+    }
+
+    /*! Used for traceability page title prefix */
+    QCString trTraceabilityFor(const QCString &name) override
+    {
+      return "Traceability: " + name;
+    }
+
+    /*! Used in traceability table header */
+    QCString trRequirementID() override
+    {
+      return "Requirement ID";
+    }
+
+    /*! Used in requirements index page */
+    QCString trExternalRequirementSpecifications() override
+    {
+      return "External requirements specifications.";
+    }
+
+    /*! Used in traceability table header */
+    QCString trSatisfiedBy() override
+    {
+      return "Satisfied By";
+    }
+
+    /*! Used in traceability table header */
+    QCString trVerifiedBy() override
+    {
+      return "Verified By";
+    }
+
+    /*! Used in \@satisfies/\@verifies section documentation */
+    QCString trSatisfies() override
+    {
+      return "Satisfies";
+    }
+
+    /*! Used in \@satisfies/\@verifies section documentation */
+    QCString trVerifies() override
+    {
+      return "Verifies";
+    }
+
+    /*! Used in requirements index */
+    QCString trRequirementsDescription() override
+    {
+      return "Here is a list of all requirements with brief descriptions:";
+    }
+
+    /*! Used in traceability index */
+    QCString trTraceabilityDescription() override
+    {
+      return "Here is traceability information for all requirements:";
+    }
+
+    /*! Used in traceability statistics */
+    QCString trSatisfied() override
+    {
+      return "Satisfied";
+    }
+
+    /*! Used in traceability statistics */
+    QCString trVerified() override
+    {
+      return "Verified";
+    }
 };
 
 #endif

@@ -3806,6 +3806,64 @@ where `loc1` and `loc2` can be relative or absolute paths or URLs.
 ]]>
       </docs>
     </option>
+ <option type='list' id='REQUIREMENTS_TAGFILES' format='file'>
+      <docs>
+<![CDATA[
+ The \c REQUIREMENTS_TAGFILES tag can be used to specify one or more tag files
+ which contain requirement specifications to be traced using the \c \satisfies and \c \verifies commands.
+
+For each requirements tag file the location of the external documentation should be added.
+Doxygen will generate a traceability matrix for each requirements specification that shows:
+ - Requirements from the tag file (first column)
+ - Code that satisfies each requirement (second column "Satisfied by")
+ - Code that verifies each requirement (third column "Verified by")
+
+The format of a tag file without this location is as follows:
+\verbatim
+  REQUIREMENTS_TAGFILES = file1 file2 ...
+\endverbatim
+Adding location for the requirements tag files is done as follows:
+\verbatim
+  REQUIREMENTS_TAGFILES = file1=loc1 "file2 = loc2" ...
+\endverbatim
+where `loc1` and `loc2` can be relative or absolute paths or URLs.
+ See the section \ref external for more information about the use of tag files.
+
+ \note
+  Each requirements tag file must have a unique name
+  (where the name does \e NOT include the path).
+  If a requierments tag file is not located in the directory in which Doxygen
+  is run, you must also specify the path to the tagfile here.
+]]>
+      </docs>
+    </option>
+ <option type='list' id='REQUIREMENTS_FILES' format='file'>
+      <docs>
+<![CDATA[
+ The \c REQUIREMENTS_FILES tag can be used to specify one or more files
+ (markdown, doxygen, C++, etc.) that contain requirement specifications to be traced
+ using the \c \satisfies and \c \verifies commands.
+
+Unlike \c REQUIREMENTS_TAGFILES, these files are parsed directly by Doxygen.
+Any \c \@anchor directives in these files that match the requirement ID pattern
+(e.g., A024_SRS_123) will be automatically recognized as requirements.
+
+The format is:
+\verbatim
+  REQUIREMENTS_FILES = file1 file2 ...
+\endverbatim
+
+These files will be processed during documentation generation, and requirements will
+be extracted from anchors matching your project's requirement naming pattern.
+The files should use standard Doxygen documentation formats (markdown, etc.).
+
+ \note
+  Requirement anchors should follow your project's naming convention.
+  Doxygen will extract the prefix pattern (e.g., A024_SRS_) from the first
+  matching anchor it finds.
+]]>
+      </docs>
+    </option>
   </group>
   <group name='Dot' docs='Configuration options related to diagram generator tools'>
     <option type='bool' id='HIDE_UNDOC_RELATIONS' defval='1'>

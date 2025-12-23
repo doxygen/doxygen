@@ -48,7 +48,7 @@
  *  Last Doxygen version covered   : 1.8.2
  */
 
-class TranslatorLatvian : public Translator
+class TranslatorLatvian : public TranslatorAdapter_1_16_0
 {
   public:
 
