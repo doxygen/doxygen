@@ -79,11 +79,6 @@ p.startli, p.startdd {
 	margin-top: 2px;
 }
 
-li:only-child > p.startli {
-	margin-top: 0px;
-	margin-bottom: 0px;
-}
-
 th p.starttd, th p.intertd, th p.endtd {
 	font-size: 100%;
 	font-weight: 700;
