@@ -2063,8 +2063,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           codifyLines(yyscanner,yytext);
                                           endFontClass(yyscanner,true);
                                         }
-<*>{CPPC}[!/][^\n]*                       { // strip special one-line comment
-                                          if (YY_START==SkipComment || YY_START==SkipString) REJECT;
+<SkipStringS,SkipVerbString,SkipCPP,SkipCxxComment,Body,BodyVar,FuncCall,MemberCall,MemberCall2,SkipInits,ClassName,AlignAs,AlignAsEnd,PackageName,ClassVar,CppCliTypeModifierFollowup,Bases,SkipSharp,ReadInclude,TemplDecl,TemplCast,CallEnd,ObjCMethod,ObjCParams,ObjCParamType,ObjCCall,ObjCMName,ObjCSkipStr,ObjCCallComment,OldStyleArgs,ConceptName,UsingName,RawString,InlineInit,ModuleName,ModuleImport>{CPPC}[!/][^\n]*                       { // strip special one-line comment, all states with the exception of SkipComment and SkipString which are handled separately
                                           startFontClass(yyscanner,"comment",true);
                                           codifyLines(yyscanner,yytext);
                                           endFontClass(yyscanner,true);
