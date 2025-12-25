@@ -79,6 +79,11 @@ p.startli, p.startdd {
 	margin-top: 2px;
 }
 
+li:only-child > p.startli {
+	margin-top: 0px;
+	margin-bottom: 0px;
+}
+
 th p.starttd, th p.intertd, th p.endtd {
 	font-size: 100%;
 	font-weight: 700;
@@ -281,14 +286,18 @@ dl.el {
 
 ul.check {
 	list-style:none;
-	text-indent: -16px;
-	padding-left: 38px;
 }
-li.unchecked:before {
-	content: "\2610\A0";
+
+ul.check li > p.startli {
+        margin-top: 10px;
 }
-li.checked:before {
-	content: "\2611\A0";
+
+ul.unchecked  {
+       list-style-type: "\2610\A0";
+}
+
+ul.checked  {
+       list-style-type: "\2611\A0";
 }
 
 ol {
