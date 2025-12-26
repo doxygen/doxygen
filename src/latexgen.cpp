@@ -1492,11 +1492,7 @@ void LatexGenerator::endTitleHead(const QCString &fileName,const QCString &name)
   }
   if (!name.isEmpty())
   {
-    m_t << "\\index{";
-    m_t << latexEscapeLabelName(name);
-    m_t << "@{";
-    m_t << latexEscapeIndexChars(name);
-    m_t << "}}\n";
+    latexWriteIndexItem(m_t,name);
   }
 }
 
@@ -1557,33 +1553,8 @@ void LatexGenerator::startMemberDoc(const QCString &clname,
 {
   if (!memname.isEmpty() && memname[0]!='@')
   {
-    m_t << "\\index{";
-    if (!clname.isEmpty())
-    {
-      m_t << latexEscapeLabelName(clname);
-      m_t << "@{";
-      m_t << latexEscapeIndexChars(clname);
-      m_t << "}!";
-    }
-    m_t << latexEscapeLabelName(memname);
-    m_t << "@{";
-    m_t << latexEscapeIndexChars(memname);
-    m_t << "}}\n";
-
-    m_t << "\\index{";
-    m_t << latexEscapeLabelName(memname);
-    m_t << "@{";
-    m_t << latexEscapeIndexChars(memname);
-    m_t << "}";
-    if (!clname.isEmpty())
-    {
-      m_t << "!";
-      m_t << latexEscapeLabelName(clname);
-      m_t << "@{";
-      m_t << latexEscapeIndexChars(clname);
-      m_t << "}";
-    }
-    m_t << "}\n";
+    latexWriteIndexItem(m_t,clname,memname);
+    latexWriteIndexItem(m_t,memname,clname);
   }
   bool compactLatex = Config_getBool(COMPACT_LATEX);
   bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
@@ -1684,20 +1655,7 @@ void LatexGenerator::addIndexItem(const QCString &s1,const QCString &s2)
 {
   if (!s1.isEmpty())
   {
-    m_t << "\\index{";
-    m_t << latexEscapeLabelName(s1);
-    m_t << "@{";
-    m_t << latexEscapeIndexChars(s1);
-    m_t << "}";
-    if (!s2.isEmpty())
-    {
-      m_t << "!";
-      m_t << latexEscapeLabelName(s2);
-      m_t << "@{";
-      m_t << latexEscapeIndexChars(s2);
-      m_t << "}";
-    }
-    m_t << "}";
+    latexWriteIndexItem(m_t,s1,s2);
   }
 }
 
@@ -2708,6 +2666,27 @@ QCString latexFilterURL(const QCString &s)
     }
   }
   return t.str();
+}
+
+void latexWriteIndexItem(TextStream &m_t,const QCString &s1,const QCString &s2)
+{
+  if (!s1.isEmpty())
+  {
+    m_t << "\\index{";
+    m_t << latexEscapeLabelName(s1);
+    m_t << "@{";
+    m_t << latexEscapeIndexChars(s1);
+    m_t << "}";
+    if (!s2.isEmpty())
+    {
+      m_t << "!";
+      m_t << latexEscapeLabelName(s2);
+      m_t << "@{";
+      m_t << latexEscapeIndexChars(s2);
+      m_t << "}";
+    }
+    m_t << "}\n";
+  }
 }
 
 

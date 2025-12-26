@@ -662,11 +662,7 @@ void LatexDocVisitor::operator()(const DocFormula &f)
 void LatexDocVisitor::operator()(const DocIndexEntry &i)
 {
   if (m_hide) return;
-  m_t << "\\index{";
-  m_t << latexEscapeLabelName(i.entry());
-  m_t << "@{";
-  m_t << latexEscapeIndexChars(i.entry());
-  m_t << "}}";
+  latexWriteIndexItem(m_t,i.entry());
 }
 
 void LatexDocVisitor::operator()(const DocSimpleSectSep &)
