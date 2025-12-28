@@ -1482,28 +1482,61 @@ void LatexDocVisitor::operator()(const DocImage &img)
 void LatexDocVisitor::operator()(const DocDotFile &df)
 {
   if (m_hide) return;
-  if (!Config_getBool(DOT_CLEANUP)) copyFile(df.file(),Config_getString(LATEX_OUTPUT)+"/"+stripPath(df.file()));
-  startDotFile(df.file(),df.width(),df.height(),df.hasCaption(),df.srcFile(),df.srcLine());
-  visitChildren(df);
-  endDotFile(df.hasCaption());
+  bool exists = false;
+  std::string inBuf;
+  if (readInputFile(df.file(),inBuf))
+  {
+    auto fileName = writeFileContents(Config_getString(LATEX_OUTPUT)+"/"+stripPath(df.file())+"_", // baseName
+                                      ".dot",                                                      // extension
+                                      inBuf,                                                       // contents
+                                      exists);
+    if (!fileName.isEmpty())
+    {
+      startDotFile(fileName,df.width(),df.height(),df.hasCaption(),df.srcFile(),df.srcLine(),!exists);
+      visitChildren(df);
+      endDotFile(df.hasCaption());
+    }
+  }
 }
 
 void LatexDocVisitor::operator()(const DocMscFile &df)
 {
   if (m_hide) return;
-  if (!Config_getBool(DOT_CLEANUP)) copyFile(df.file(),Config_getString(LATEX_OUTPUT)+"/"+stripPath(df.file()));
-  startMscFile(df.file(),df.width(),df.height(),df.hasCaption(),df.srcFile(),df.srcLine());
-  visitChildren(df);
-  endMscFile(df.hasCaption());
+  bool exists = false;
+  std::string inBuf;
+  if (readInputFile(df.file(),inBuf))
+  {
+    auto fileName = writeFileContents(Config_getString(LATEX_OUTPUT)+"/"+stripPath(df.file())+"_", // baseName
+                                      ".msc",                                                      // extension
+                                      inBuf,                                                      // contents
+                                      exists);
+    if (!fileName.isEmpty())
+    {
+      startMscFile(fileName,df.width(),df.height(),df.hasCaption(),df.srcFile(),df.srcLine(),!exists);
+      visitChildren(df);
+      endMscFile(df.hasCaption());
+    }
+  }
 }
 
 void LatexDocVisitor::operator()(const DocDiaFile &df)
 {
   if (m_hide) return;
-  if (!Config_getBool(DOT_CLEANUP)) copyFile(df.file(),Config_getString(LATEX_OUTPUT)+"/"+stripPath(df.file()));
-  startDiaFile(df.file(),df.width(),df.height(),df.hasCaption(),df.srcFile(),df.srcLine());
-  visitChildren(df);
-  endDiaFile(df.hasCaption());
+  bool exists = false;
+  std::string inBuf;
+  if (readInputFile(df.file(),inBuf))
+  {
+    auto fileName = writeFileContents(Config_getString(LATEX_OUTPUT)+"/"+stripPath(df.file())+"_", // baseName
+                                      ".dia",                                                      // extension
+                                      inBuf,                                                      // contents
+                                      exists);
+    if (!fileName.isEmpty())
+    {
+      startDiaFile(fileName,df.width(),df.height(),df.hasCaption(),df.srcFile(),df.srcLine(),!exists);
+      visitChildren(df);
+      endDiaFile(df.hasCaption());
+    }
+  }
 }
 
 void LatexDocVisitor::operator()(const DocPlantUmlFile &df)
@@ -1908,14 +1941,14 @@ void LatexDocVisitor::startMscFile(const QCString &fileName,
                                    const QCString &height,
                                    bool hasCaption,
                                    const QCString &srcFile,
-                                   int srcLine
+                                   int srcLine, bool newFile
                                   )
 {
   QCString baseName=makeBaseName(fileName,".msc");
   baseName.prepend("msc_");
 
   QCString outDir = Config_getString(LATEX_OUTPUT);
-  writeMscGraphFromFile(fileName,outDir,baseName,MscOutputFormat::EPS,srcFile,srcLine);
+  if (newFile) writeMscGraphFromFile(fileName,outDir,baseName,MscOutputFormat::EPS,srcFile,srcLine);
   visitPreStart(m_t,hasCaption, baseName, width, height);
 }
 
@@ -1941,14 +1974,14 @@ void LatexDocVisitor::startDiaFile(const QCString &fileName,
                                    const QCString &height,
                                    bool hasCaption,
                                    const QCString &srcFile,
-                                   int srcLine
+                                   int srcLine, bool newFile
                                   )
 {
   QCString baseName=makeBaseName(fileName,".dia");
   baseName.prepend("dia_");
 
   QCString outDir = Config_getString(LATEX_OUTPUT);
-  writeDiaGraphFromFile(fileName,outDir,baseName,DiaOutputFormat::EPS,srcFile,srcLine);
+  if (newFile) writeDiaGraphFromFile(fileName,outDir,baseName,DiaOutputFormat::EPS,srcFile,srcLine);
   visitPreStart(m_t,hasCaption, baseName, width, height);
 }
 
