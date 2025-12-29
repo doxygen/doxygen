@@ -347,6 +347,7 @@ QCString latexEscapeLabelName(const QCString &s);
 QCString latexEscapeIndexChars(const QCString &s);
 QCString latexEscapePDFString(const QCString &s);
 QCString latexFilterURL(const QCString &s);
+void latexWriteIndexItem(TextStream &t,const QCString &r1,const QCString &s2 = "");
 
 
 #endif
