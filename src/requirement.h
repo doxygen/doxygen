@@ -17,6 +17,8 @@
 #define REQUIREMENT_H
 
 #include <memory>
+#include <vector>
+
 #include "construct.h"
 #include "qcstring.h"
 
