@@ -1246,27 +1246,60 @@ void RTFDocVisitor::operator()(const DocImage &img)
 void RTFDocVisitor::operator()(const DocDotFile &df)
 {
   DBG_RTF("{\\comment RTFDocVisitor::operator()(const DocDotFile &)}\n");
-  if (!Config_getBool(DOT_CLEANUP)) copyFile(df.file(),Config_getString(RTF_OUTPUT)+"/"+stripPath(df.file()));
-  writeDotFile(df);
-  visitChildren(df);
-  includePicturePostRTF(true, df.hasCaption());
+  bool exists = false;
+  std::string inBuf;
+  if (readInputFile(df.file(),inBuf))
+  {
+    auto fileName = writeFileContents(Config_getString(RTF_OUTPUT)+"/"+stripPath(df.file())+"_", // baseName
+                                      ".dot",                                                    // extension
+                                      inBuf,                                                     // contents
+                                      exists);
+    if (!fileName.isEmpty())
+    {
+      writeDotFile(fileName, df.hasCaption(), df.srcFile(), df.srcLine(), !exists);
+      visitChildren(df);
+      includePicturePostRTF(true, df.hasCaption());
+    }
+  }
 }
 void RTFDocVisitor::operator()(const DocMscFile &df)
 {
   DBG_RTF("{\\comment RTFDocVisitor::operator()(const DocMscFile &)}\n");
-  if (!Config_getBool(DOT_CLEANUP)) copyFile(df.file(),Config_getString(RTF_OUTPUT)+"/"+stripPath(df.file()));
-  writeMscFile(df);
-  visitChildren(df);
-  includePicturePostRTF(true, df.hasCaption());
+  bool exists = false;
+  std::string inBuf;
+  if (readInputFile(df.file(),inBuf))
+  {
+    auto fileName = writeFileContents(Config_getString(RTF_OUTPUT)+"/"+stripPath(df.file())+"_", // baseName
+                                      ".msc",                                                    // extension
+                                      inBuf,                                                     // contents
+                                      exists);
+    if (!fileName.isEmpty())
+    {
+      writeMscFile(fileName, df.hasCaption(), df.srcFile(), df.srcLine(), !exists);
+      visitChildren(df);
+      includePicturePostRTF(true, df.hasCaption());
+    }
+  }
 }
 
 void RTFDocVisitor::operator()(const DocDiaFile &df)
 {
   DBG_RTF("{\\comment RTFDocVisitor::operator()(const DocDiaFile &)}\n");
-  if (!Config_getBool(DOT_CLEANUP)) copyFile(df.file(),Config_getString(RTF_OUTPUT)+"/"+stripPath(df.file()));
-  writeDiaFile(df);
-  visitChildren(df);
-  includePicturePostRTF(true, df.hasCaption());
+  bool exists = false;
+  std::string inBuf;
+  if (readInputFile(df.file(),inBuf))
+  {
+    auto fileName = writeFileContents(Config_getString(RTF_OUTPUT)+"/"+stripPath(df.file())+"_", // baseName
+                                      ".dia",                                                    // extension
+                                      inBuf,                                                     // contents
+                                      exists);
+    if (!fileName.isEmpty())
+    {
+      writeDiaFile(fileName, df.hasCaption(), df.srcFile(), df.srcLine(), !exists);
+      visitChildren(df);
+      includePicturePostRTF(true, df.hasCaption());
+    }
+  }
 }
 
 void RTFDocVisitor::operator()(const DocPlantUmlFile &df)
@@ -1699,10 +1732,6 @@ void RTFDocVisitor::endLink(const QCString &ref)
   m_lastIsPara=FALSE;
 }
 
-void RTFDocVisitor::writeDotFile(const DocDotFile &df)
-{
-  writeDotFile(df.file(), df.hasCaption(), df.srcFile(), df.srcLine());
-}
 void RTFDocVisitor::writeDotFile(const QCString &filename, bool hasCaption,
                                  const QCString &srcFile, int srcLine, bool newFile)
 {
@@ -1713,10 +1742,6 @@ void RTFDocVisitor::writeDotFile(const QCString &filename, bool hasCaption,
   includePicturePreRTF(baseName + "." + imgExt, true, hasCaption);
 }
 
-void RTFDocVisitor::writeMscFile(const DocMscFile &df)
-{
-  writeMscFile(df.file(), df.hasCaption(), df.srcFile(), df.srcLine());
-}
 void RTFDocVisitor::writeMscFile(const QCString &fileName, bool hasCaption,
                                  const QCString &srcFile, int srcLine, bool newFile)
 {
@@ -1726,12 +1751,13 @@ void RTFDocVisitor::writeMscFile(const QCString &fileName, bool hasCaption,
   includePicturePreRTF(baseName + ".png", true, hasCaption);
 }
 
-void RTFDocVisitor::writeDiaFile(const DocDiaFile &df)
+void RTFDocVisitor::writeDiaFile(const QCString &fileName, bool hasCaption,
+                                 const QCString &srcFile, int srcLine, bool newFile)
 {
-  QCString baseName=makeBaseName(df.file(),".dia");
+  QCString baseName=makeBaseName(fileName,".dia");
   QCString outDir = Config_getString(RTF_OUTPUT);
-  writeDiaGraphFromFile(df.file(),outDir,baseName,DiaOutputFormat::BITMAP,df.srcFile(),df.srcLine());
-  includePicturePreRTF(baseName + ".png", true, df.hasCaption());
+  if (newFile) writeDiaGraphFromFile(fileName,outDir,baseName,DiaOutputFormat::BITMAP,srcFile,srcLine);
+  includePicturePreRTF(baseName + ".png", true, hasCaption);
 }
 
 void RTFDocVisitor::writePlantUMLFile(const QCString &fileName, bool hasCaption)

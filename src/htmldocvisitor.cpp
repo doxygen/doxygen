@@ -1715,60 +1715,93 @@ void HtmlDocVisitor::operator()(const DocImage &img)
 void HtmlDocVisitor::operator()(const DocDotFile &df)
 {
   if (m_hide) return;
-  if (!Config_getBool(DOT_CLEANUP)) copyFile(df.file(),Config_getString(HTML_OUTPUT)+"/"+stripPath(df.file()));
   forceEndParagraph(df);
-  m_t << "<div class=\"dotgraph\">\n";
-  writeDotFile(df.file(),df.relPath(),df.context(),df.srcFile(),df.srcLine());
-  if (df.hasCaption())
+  bool exists = false;
+  std::string inBuf;
+  if (readInputFile(df.file(),inBuf))
   {
-    m_t << "<div class=\"caption\">\n";
+    auto fileName = writeFileContents(Config_getString(HTML_OUTPUT)+"/"+stripPath(df.file())+"_", // baseName
+                                      ".dot",                                                     // extension
+                                      inBuf,                                                      // contents
+                                      exists);
+    if (!fileName.isEmpty())
+    {
+      m_t << "<div class=\"dotgraph\">\n";
+      writeDotFile(fileName,df.relPath(),df.context(),df.srcFile(),df.srcLine(),!exists);
+      if (df.hasCaption())
+      {
+        m_t << "<div class=\"caption\">\n";
+      }
+      visitChildren(df);
+      if (df.hasCaption())
+      {
+        m_t << "</div>\n";
+      }
+      m_t << "</div>\n";
   }
-  visitChildren(df);
-  if (df.hasCaption())
-  {
-    m_t << "</div>\n";
   }
-  m_t << "</div>\n";
   forceStartParagraph(df);
 }
 
 void HtmlDocVisitor::operator()(const DocMscFile &df)
 {
   if (m_hide) return;
-  if (!Config_getBool(DOT_CLEANUP)) copyFile(df.file(),Config_getString(HTML_OUTPUT)+"/"+stripPath(df.file()));
   forceEndParagraph(df);
-  m_t << "<div class=\"mscgraph\">\n";
-  writeMscFile(df.file(),df.relPath(),df.context(),df.srcFile(),df.srcLine());
-  if (df.hasCaption())
+  bool exists = false;
+  std::string inBuf;
+  if (readInputFile(df.file(),inBuf))
   {
-    m_t << "<div class=\"caption\">\n";
+    auto fileName = writeFileContents(Config_getString(HTML_OUTPUT)+"/"+stripPath(df.file())+"_", // baseName
+                                      ".msc",                                                     // extension
+                                      inBuf,                                                      // contents
+                                      exists);
+    if (!fileName.isEmpty())
+    {
+      m_t << "<div class=\"mscgraph\">\n";
+      writeMscFile(fileName,df.relPath(),df.context(),df.srcFile(),df.srcLine(),!exists);
+      if (df.hasCaption())
+      {
+        m_t << "<div class=\"caption\">\n";
+      }
+      visitChildren(df);
+      if (df.hasCaption())
+      {
+        m_t << "</div>\n";
+      }
+      m_t << "</div>\n";
+    }
   }
-  visitChildren(df);
-  if (df.hasCaption())
-  {
-    m_t << "</div>\n";
-  }
-  m_t << "</div>\n";
   forceStartParagraph(df);
 }
 
 void HtmlDocVisitor::operator()(const DocDiaFile &df)
 {
   if (m_hide) return;
-  if (!Config_getBool(DOT_CLEANUP)) copyFile(df.file(),Config_getString(HTML_OUTPUT)+"/"+stripPath(df.file()));
   forceEndParagraph(df);
-  m_t << "<div class=\"diagraph\">\n";
-  writeDiaFile(df.file(),df.relPath(),df.context(),df.srcFile(),df.srcLine());
-  if (df.hasCaption())
+  bool exists = false;
+  std::string inBuf;
+  if (readInputFile(df.file(),inBuf))
   {
-    m_t << "<div class=\"caption\">\n";
+    auto fileName = writeFileContents(Config_getString(HTML_OUTPUT)+"/"+stripPath(df.file())+"_", // baseName
+                                      ".dia",                                                     // extension
+                                      inBuf,                                                      // contents
+                                      exists);
+    if (!fileName.isEmpty())
+    {
+      m_t << "<div class=\"diagraph\">\n";
+      writeDiaFile(fileName,df.relPath(),df.context(),df.srcFile(),df.srcLine(),!exists);
+      if (df.hasCaption())
+      {
+        m_t << "<div class=\"caption\">\n";
+      }
+      visitChildren(df);
+      if (df.hasCaption())
+      {
+        m_t << "</div>\n";
+      }
+      m_t << "</div>\n";
+    }
   }
-  visitChildren(df);
-  if (df.hasCaption())
-  {
-    m_t << "</div>\n";
-  }
-  m_t << "</div>\n";
   forceStartParagraph(df);
 }
 
@@ -2179,12 +2212,12 @@ void HtmlDocVisitor::writeMscFile(const QCString &fileName,const QCString &relPa
 }
 
 void HtmlDocVisitor::writeDiaFile(const QCString &fileName, const QCString &relPath,
-                                  const QCString &,const QCString &srcFile,int srcLine)
+                                  const QCString &,const QCString &srcFile,int srcLine, bool newFile)
 {
   QCString baseName=makeBaseName(fileName,".dia");
   baseName.prepend("dia_");
   QCString outDir = Config_getString(HTML_OUTPUT);
-  writeDiaGraphFromFile(fileName,outDir,baseName,DiaOutputFormat::BITMAP,srcFile,srcLine);
+  if (newFile) writeDiaGraphFromFile(fileName,outDir,baseName,DiaOutputFormat::BITMAP,srcFile,srcLine);
 
   m_t << "<img src=\"" << relPath << baseName << ".png" << "\" />\n";
 }

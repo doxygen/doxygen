@@ -1220,30 +1220,63 @@ void DocbookDocVisitor::operator()(const DocDotFile &df)
 {
 DB_VIS_C
   if (m_hide) return;
-  if (!Config_getBool(DOT_CLEANUP)) copyFile(df.file(),Config_getString(DOCBOOK_OUTPUT)+"/"+stripPath(df.file()));
-  startDotFile(df.file(),df.relPath(),df.width(),df.height(),df.hasCaption(),df.children(),df.srcFile(),df.srcLine());
-  visitChildren(df);
-  endDotFile(df.hasCaption());
+  bool exists = false;
+  std::string inBuf;
+  if (readInputFile(df.file(),inBuf))
+  {
+    auto fileName = writeFileContents(Config_getString(DOCBOOK_OUTPUT)+"/"+stripPath(df.file())+"_", // baseName
+                                      ".dot",                                                        // extension
+                                      inBuf,                                                         // contents
+                                      exists);
+    if (!fileName.isEmpty())
+    {
+      startDotFile(fileName,df.relPath(),df.width(),df.height(),df.hasCaption(),df.children(),df.srcFile(),df.srcLine(),!exists);
+      visitChildren(df);
+      endDotFile(df.hasCaption());
+    }
+  }
 }
 
 void DocbookDocVisitor::operator()(const DocMscFile &df)
 {
 DB_VIS_C
   if (m_hide) return;
-  if (!Config_getBool(DOT_CLEANUP)) copyFile(df.file(),Config_getString(DOCBOOK_OUTPUT)+"/"+stripPath(df.file()));
-  startMscFile(df.file(),df.relPath(),df.width(),df.height(),df.hasCaption(),df.children(),df.srcFile(),df.srcLine());
-  visitChildren(df);
-  endMscFile(df.hasCaption());
+  bool exists = false;
+  std::string inBuf;
+  if (readInputFile(df.file(),inBuf))
+  {
+    auto fileName = writeFileContents(Config_getString(DOCBOOK_OUTPUT)+"/"+stripPath(df.file())+"_", // baseName
+                                      ".msc",                                                        // extension
+                                      inBuf,                                                         // contents
+                                      exists);
+    if (!fileName.isEmpty())
+    {
+      startMscFile(fileName,df.relPath(),df.width(),df.height(),df.hasCaption(),df.children(),df.srcFile(),df.srcLine(),!exists);
+      visitChildren(df);
+      endMscFile(df.hasCaption());
+    }
+  }
 }
 
 void DocbookDocVisitor::operator()(const DocDiaFile &df)
 {
 DB_VIS_C
   if (m_hide) return;
-  if (!Config_getBool(DOT_CLEANUP)) copyFile(df.file(),Config_getString(DOCBOOK_OUTPUT)+"/"+stripPath(df.file()));
-  startDiaFile(df.file(),df.relPath(),df.width(),df.height(),df.hasCaption(),df.children(),df.srcFile(),df.srcLine());
-  visitChildren(df);
-  endDiaFile(df.hasCaption());
+  bool exists = false;
+  std::string inBuf;
+  if (readInputFile(df.file(),inBuf))
+  {
+    auto fileName = writeFileContents(Config_getString(DOCBOOK_OUTPUT)+"/"+stripPath(df.file())+"_", // baseName
+                                      ".dia",                                                        // extension
+                                      inBuf,                                                         // contents
+                                      exists);
+    if (!fileName.isEmpty())
+    {
+      startDiaFile(fileName,df.relPath(),df.width(),df.height(),df.hasCaption(),df.children(),df.srcFile(),df.srcLine(),!exists);
+      visitChildren(df);
+      endDiaFile(df.hasCaption());
+    }
+  }
 }
 
 void DocbookDocVisitor::operator()(const DocPlantUmlFile &df)
@@ -1564,14 +1597,14 @@ void DocbookDocVisitor::startMscFile(const QCString &fileName,
     bool hasCaption,
     const DocNodeList &children,
     const QCString &srcFile,
-    int srcLine
+    int srcLine, bool newFile
     )
 {
 DB_VIS_C
   QCString baseName=makeBaseName(fileName,".msc");
   baseName.prepend("msc_");
   QCString outDir = Config_getString(DOCBOOK_OUTPUT);
-  writeMscGraphFromFile(fileName,outDir,baseName,MscOutputFormat::BITMAP,srcFile,srcLine);
+  if (newFile) writeMscGraphFromFile(fileName,outDir,baseName,MscOutputFormat::BITMAP,srcFile,srcLine);
   m_t << "<para>\n";
   visitPreStart(m_t, children, hasCaption, relPath + baseName + ".png",  width,  height);
 }
@@ -1602,14 +1635,14 @@ void DocbookDocVisitor::startDiaFile(const QCString &fileName,
     bool hasCaption,
     const DocNodeList &children,
     const QCString &srcFile,
-    int srcLine
+    int srcLine, bool newFile
     )
 {
 DB_VIS_C
   QCString baseName=makeBaseName(fileName,".dia");
   baseName.prepend("dia_");
   QCString outDir = Config_getString(DOCBOOK_OUTPUT);
-  writeDiaGraphFromFile(fileName,outDir,baseName,DiaOutputFormat::BITMAP,srcFile,srcLine);
+  if (newFile) writeDiaGraphFromFile(fileName,outDir,baseName,DiaOutputFormat::BITMAP,srcFile,srcLine);
   m_t << "<para>\n";
   visitPreStart(m_t, children, hasCaption, relPath + baseName + ".png",  width,  height);
 }
@@ -1640,7 +1673,7 @@ void DocbookDocVisitor::startDotFile(const QCString &fileName,
     bool hasCaption,
     const DocNodeList &children,
     const QCString &srcFile,
-    int srcLine
+    int srcLine, bool newFile
     )
 {
 DB_VIS_C
@@ -1648,7 +1681,7 @@ DB_VIS_C
   baseName.prepend("dot_");
   QCString outDir = Config_getString(DOCBOOK_OUTPUT);
   QCString imgExt = getDotImageExtension();
-  writeDotGraphFromFile(fileName,outDir,baseName,GraphOutputFormat::BITMAP,srcFile,srcLine);
+  if (newFile) writeDotGraphFromFile(fileName,outDir,baseName,GraphOutputFormat::BITMAP,srcFile,srcLine);
   m_t << "<para>\n";
   visitPreStart(m_t, children, hasCaption, relPath + baseName + "." + imgExt,  width,  height);
 }
