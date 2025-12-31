@@ -3,7 +3,7 @@
 Doxygen allows you to document the requirements for your project.
 
 To document a requirement, use the \ref cmdrequirement "\\requirement" command.
-Each requirement should have a unique ID and a short title. Addtional details can
+Each requirement should have a unique ID and a short title. Additional details can
 be provided after the title.  Here is an example.
 
 \verbatim

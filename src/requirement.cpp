@@ -11,7 +11,7 @@
  * Documents produced by Doxygen are derivative works derived from the
  * input used in their production; they are not affected by this license.
  *
- * The implementation of the requirements feature is loosly based on
+ * The implementation of the requirements feature is loosely  based on
  * https://github.com/doxygen/doxygen/pull/11839 provided by
  * Rob Mellor (https://github.com/dropbearrob)
  */
