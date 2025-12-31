@@ -2644,8 +2644,8 @@ class TranslatorEnglish : public Translator
     QCString trUnsatisfiedRequirementsText(bool singular,const QCString &list) override
     {
       return singular ?
-        "The requirement "+list+" does not have a 'satisties' relation." :
-        "The requirements "+list+" do not have a 'satisties' relation.";
+        "The requirement "+list+" does not have a 'satisfies' relation." :
+        "The requirements "+list+" do not have a 'satisfies' relation.";
     }
     // indicates a symbol verifies (tests) a requirement
     QCString trVerifies(bool singular) override
