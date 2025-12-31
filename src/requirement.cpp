@@ -103,13 +103,6 @@ RequirementManager &RequirementManager::instance()
 
 RequirementManager::RequirementManager() : p(std::make_unique<Private>())
 {
-  p->reqPageDef = addRelatedPage("requirements",                      // name
-                                 theTranslator->trRequirements(),     // ptitle
-                                 QCString(),                          // doc
-                                 "requirements",                      // fileName
-                                 1,                                   // docLine
-                                 1                                    // startLine
-                                 );
 }
 
 const PageDef *RequirementManager::requirementsPage() const
@@ -119,6 +112,16 @@ const PageDef *RequirementManager::requirementsPage() const
 
 void RequirementManager::addRequirement(Entry *e)
 {
+  if (p->reqPageDef==nullptr)
+  {
+    p->reqPageDef = addRelatedPage("requirements",                      // name
+                                   theTranslator->trRequirements(),     // ptitle
+                                   QCString(),                          // doc
+                                   "requirements",                      // fileName
+                                   1,                                   // docLine
+                                   1                                    // startLine
+                                   );
+  }
   //printf("requirement ID=%s title='%s' file=%s line=%d brief='%s' doc='%s'\n",
   //    qPrint(e->name), qPrint(e->type), qPrint(e->fileName), e->startLine, qPrint(e->brief), qPrint(e->doc));
   QCString tagFile;
