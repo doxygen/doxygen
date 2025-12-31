@@ -918,9 +918,9 @@ Go to the <a href="commands.html">next</a> section or return to the
  \ref cmdrequirement "\\requirement" comment blocks).
  The setting \c NO will disable the traceablility information altogether.
  The setting \c SATISFIES_ONLY will show a list of requirements that are missing
- a satisfies relation.
+ a satisfies relation (through the command: \ref cmdsatisfies "\\satisfies").
  Similarly the setting \c VERIFIES_ONLY will show a list of requirements that
- are missing a verifies relation.
+ are missing a verifies relation (through the command: \ref cmdverifies "\\verifies").
  Setting the tag to \c YES (the default) will show both lists if applicable.
 ]]>
       </docs>
