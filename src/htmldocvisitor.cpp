@@ -975,11 +975,7 @@ void HtmlDocVisitor::operator()(const DocAutoList &l)
   }
   else
   {
-    if (l.isCheckedList())
-    {
-      m_t << "<ul class=\"check\">";
-    }
-    else
+    if (!l.isCheckedList())
     {
       m_t << "<ul>";
     }
@@ -992,7 +988,10 @@ void HtmlDocVisitor::operator()(const DocAutoList &l)
   }
   else
   {
-    m_t << "</ul>";
+    if (!l.isCheckedList())
+    {
+      m_t << "</ul>";
+    }
   }
   if (!l.isPreformatted()) m_t << "\n";
   forceStartParagraph(l);
@@ -1001,21 +1000,29 @@ void HtmlDocVisitor::operator()(const DocAutoList &l)
 void HtmlDocVisitor::operator()(const DocAutoListItem &li)
 {
   if (m_hide) return;
-  switch (li.itemNumber())
+  const auto docAutoList= std::get_if<DocAutoList>(li.parent());
+
+  if (docAutoList && docAutoList->isCheckedList())
   {
-    case DocAutoList::Unchecked: // unchecked
-      m_t << "<li class=\"unchecked\">";
-      break;
-    case DocAutoList::Checked_x: // checked with x
-    case DocAutoList::Checked_X: // checked with X
-      m_t << "<li class=\"checked\">";
-      break;
-    default:
-      m_t << "<li>";
-      break;
+    switch (li.itemNumber())
+    {
+      case DocAutoList::Unchecked: // unchecked
+        m_t << "<ul class=\"check unchecked\">";
+        break;
+      case DocAutoList::Checked_x: // checked with x
+      case DocAutoList::Checked_X: // checked with X
+        m_t << "<ul class=\"check checked\">";
+        break;
+    }
   }
+
+  m_t << "<li>";
   visitChildren(li);
   m_t << "</li>";
+  if (docAutoList && docAutoList->isCheckedList())
+  {
+    m_t << "</ul>";
+  }
   if (!li.isPreformatted()) m_t << "\n";
 }
 
@@ -1262,7 +1269,7 @@ void HtmlDocVisitor::operator()(const DocPara &p)
   bool isLast  = false;
   contexts_t t = getParagraphContext(p,isFirst,isLast);
   //printf("startPara first=%d last=%d\n",isFirst,isLast);
-  if (isFirst && isLast) needsTagBefore=FALSE;
+  if (!std::holds_alternative<DocAutoListItem>(*p.parent()) && isFirst && isLast) needsTagBefore=FALSE;
 
   //printf("  needsTagBefore=%d\n",needsTagBefore);
   // write the paragraph tag (if needed)
@@ -1307,7 +1314,7 @@ void HtmlDocVisitor::operator()(const DocPara &p)
   }
 
   //printf("endPara first=%d last=%d\n",isFirst,isLast);
-  if (isFirst && isLast) needsTagAfter=FALSE;
+  if (!std::holds_alternative<DocAutoListItem>(*p.parent()) && isFirst && isLast) needsTagAfter=FALSE;
 
   //printf("  needsTagAfter=%d\n",needsTagAfter);
   if (needsTagAfter) m_t << "</p>\n";
@@ -2301,7 +2308,7 @@ void HtmlDocVisitor::forceEndParagraph(const Node &n)
     bool isLast = false;
     getParagraphContext(*para,isFirst,isLast);
     //printf("forceEnd first=%d last=%d styleOutsideParagraph=%d\n",isFirst,isLast,styleOutsideParagraph);
-    if (isFirst && isLast) return;
+    if (!std::holds_alternative<DocAutoListItem>(*para->parent()) && isFirst && isLast) return;
     if (styleOutsideParagraph) return;
 
     //printf("adding </p>\n");
@@ -2350,7 +2357,7 @@ void HtmlDocVisitor::forceStartParagraph(const Node &n)
     bool isFirst = false;
     bool isLast = false;
     getParagraphContext(*para,isFirst,isLast);
-    if (isFirst && isLast)  needsTag = false;
+    if (!std::holds_alternative<DocAutoListItem>(*para->parent()) && isFirst && isLast)  needsTag = false;
     //printf("forceStart first=%d last=%d needsTag=%d\n",isFirst,isLast,needsTag);
 
     if (needsTag) m_t << "<p>";
