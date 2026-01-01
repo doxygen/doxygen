@@ -99,6 +99,7 @@ struct scannerYY_state
   int              sharpCount   = 0 ;
   int              roundCount   = 0 ;
   int              curlyCount   = 0 ;
+  int              strCurlyCount = 0 ;
   int              squareCount  = 0 ;
   int              padCount     = 0 ;
   std::shared_ptr<Entry> current;
@@ -4400,34 +4401,58 @@ NONLopt [^\n]*
                                           yyextra->current->program << yytext ;
                                           yyextra->pSkipInterpString = &yyextra->current->program;
                                           yyextra->lastSkipInterpStringContext=YY_START;
+                                          yyextra->strCurlyCount = 0;
                                           BEGIN( SkipInterpString );
                                         }
 <SkipInterpString>([^"\\{}\x000D\x000A\x0085\x2028\x2029]|"{{"|"}}"|"\\'"|"\\\""|"\\\\"|"\\0"|"\\a"|"\\b"|"\\f"|"\\n"|"\\r"|"\\t"|"\\v"|"\\x"{HEXDIGIT}{HEXDIGIT}?{HEXDIGIT}?{HEXDIGIT}?|"\\"[uU]{HEXDIGIT}{HEXDIGIT}{HEXDIGIT}{HEXDIGIT}{HEXDIGIT}{HEXDIGIT}{HEXDIGIT}{HEXDIGIT})* {
                                           *yyextra->pSkipInterpString << yytext;
                                         }
+<SkipInterpString>"{"                   {
+                                          *yyextra->pSkipInterpString << *yytext;
+                                          yyextra->strCurlyCount++;
+                                        }
+<SkipInterpString>"}"                   {
+                                          *yyextra->pSkipInterpString << *yytext;
+                                          yyextra->strCurlyCount--;
+                                        }
 <SkipInterpString>\"                    {
                                           *yyextra->pSkipInterpString << *yytext;
-                                          BEGIN( yyextra->lastSkipInterpStringContext );
+                                          if (yyextra->strCurlyCount==0)
+                                          {
+                                            BEGIN( yyextra->lastSkipInterpStringContext );
+                                          }
+                                        }
+<SkipInterpString>.                     {
+                                          *yyextra->pSkipInterpString << *yytext;
                                         }
   /* Verbatim Interpolated string C# */
 <SkipCurly,ReadBody,ReadNSBody,ReadBodyIntf,FindMembers,FindMemberName>$@\"   { if (!yyextra->insideCS) REJECT
                                           yyextra->current->program << yytext ;
                                           yyextra->pSkipInterpVerbString = &yyextra->current->program;
                                           yyextra->lastSkipInterpVerbStringContext=YY_START;
+                                          yyextra->strCurlyCount = 0;
                                           BEGIN( SkipInterpVerbString );
                                         }
 <SkipInterpVerbString>([^\"{}]|"{{"|"}}"|"\"\"")* {
                                           *yyextra->pSkipInterpVerbString << yytext;
                                         }
-<SkipInterpString>"{"[^}]*"}"           {
-                                          *yyextra->pSkipInterpString << yytext;
+<SkipInterpVerbString>"{"               {
+                                          *yyextra->pSkipInterpVerbString << *yytext;
+                                          yyextra->strCurlyCount++;
                                         }
-<SkipInterpVerbString>"{"[^}]*"}"       {
-                                          *yyextra->pSkipInterpVerbString << yytext;
+<SkipInterpVerbString>"}"               {
+                                          *yyextra->pSkipInterpVerbString << *yytext;
+                                          yyextra->strCurlyCount--;
                                         }
 <SkipInterpVerbString>\"                {
                                           *yyextra->pSkipInterpVerbString << *yytext;
-                                          BEGIN( yyextra->lastSkipInterpVerbStringContext );
+                                          if (yyextra->strCurlyCount==0)
+                                          {
+                                            BEGIN( yyextra->lastSkipInterpVerbStringContext );
+                                          }
+                                        }
+<SkipInterpVerbString>.                 {
+                                          *yyextra->pSkipInterpVerbString << *yytext;
                                         }
 <ReadBody,ReadNSBody,ReadBodyIntf>"\$"  { yyextra->current->program << yytext ; }
 <ReadBody,ReadNSBody,ReadBodyIntf>@\"   { yyextra->current->program << yytext ;
