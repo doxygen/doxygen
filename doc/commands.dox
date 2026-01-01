@@ -1442,9 +1442,9 @@ Structural indicators
 
   \addindex \\requirement
   Indicates that a comment block contains documentation for a requirement.
-  In the HTML and \LaTeX output, all requirements are collected on a single page.
+  In the output, all requirements are collected on a single page.
 
-  A requirement can be referred to by its \b id using the normal linking commands like \ref cmdref "\\ref".
+  A requirement can be referred to by its \<id\> using the normal linking commands like \ref cmdref "\\ref".
   There are two special commands to refer to a requirement.
   - \ref cmdsatisfies "\\satisfies" can be placed in the comment for a function or class (or any other symbol) that contributes to the
     \e implementation of the requirement.
@@ -1454,6 +1454,8 @@ Structural indicators
   to show where in the code a requirement has been implemented and/or tested.
 
   Requirements can be imported via tag files as well.
+
+  \sa sections \ref cmdsatisfies "\\satisfies" and \ref cmdverifies "\\verifies"
 
 <hr>
 \section cmdshowinitializer \\showinitializer
@@ -2588,6 +2590,8 @@ Commands to create links
   of a single requirement, in which case the satisfies command should be mentioned in the
   documentation of each contributing party.
 
+  \sa sections \ref cmdverifies "\\verifies" and \ref cmdrequirement "\\requirement"
+
 <hr>
 \section cmdverifies \\verifies <req-id> [(short description)]
   \addindex \\verifies
@@ -2598,6 +2602,8 @@ Commands to create links
   different requirements. There can also be multiple contributors to test/verify
   a single requirement, in which case the verifies command should be mentioned in the
   documentation of each contributing party.
+
+  \sa sections \ref cmdsatisfies "\\satisfies" and \ref cmdrequirement "\\requirement"
 
 <hr>
 \section cmdsecreflist \\secreflist

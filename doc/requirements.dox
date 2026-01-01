@@ -51,7 +51,7 @@ If the implementation is split across multiple functions or classes you can add 
 commands to each function or class.
 
 Doxygen will produce a page listing all requirements and cross-reference the symbols that 
-link to each requirement via \@satisfies and \@verifies commands.
+link to each requirement via \ref cmdsatisfies "\\satisfies" and \ref cmdverifies "\\verifies" commands.
 
 
 @section external_req External Requirements
@@ -84,7 +84,8 @@ https://polarion.your-company.com/polarion/#/project/0010/workitem?id=0010-1234
 \endverbatim
 
 Note that this also works if you define the requirements inside one Doxygen project,
-then export the tag file (via `GENERATE_TAGFILE`) and import it into another project (via `TAGFILES`) as shown above.
+then export the tag file (via \ref cfg_generate_tagfile "GENERATE_TAGFILE") and import it
+into another project (via \ref cfg_tagfiles "TAGFILES") as shown above.
 
 @section traceability Requirement traceability
 
