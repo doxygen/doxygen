@@ -1780,6 +1780,17 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                             BEGIN( SkipInits );
                                           }
                                         }
+<CallEnd>"=>"                           { // C# Expression Body
+                                          if (yyextra->lang!=SrcLangExt::CSharp || yyextra->insideBody)
+                                          {
+                                            REJECT;
+                                          }
+                                          else
+                                          {
+                                            yyextra->code->codify("=>");
+                                            BEGIN( Body );
+                                          }
+                                        }
 <CallEnd>{ENDQopt}/{BN}*(";"|"="|"throw"{BN}*"(") {
                                           startFontClass(yyscanner,"keyword");
                                           codifyLines(yyscanner,yytext);

@@ -784,7 +784,7 @@ bool readCodeFragment(const QCString &fileName,bool isMacro,
     while (*p && !found)
     {
       int pc=0;
-      while ((c=*p++)!='{' && c!=':' && c!=0)
+      while ((c=*p++)!='{' && c!=':' && c!='=' && c!=0)
       {
         //printf("parsing char '%c'\n",c);
         if (c=='\n')
@@ -828,6 +828,14 @@ bool readCodeFragment(const QCString &fileName,bool isMacro,
         cn=*p++;
         if (cn!=':') found=TRUE;
       }
+      else if (c=='=')
+      {
+        cn=*p++;
+        if (cn=='>') // C# Expression body
+        {
+          found=TRUE;
+        }
+      }
       else if (c=='{')
       {
         found=TRUE;
@@ -852,7 +860,7 @@ bool readCodeFragment(const QCString &fileName,bool isMacro,
       // copy until end of line
       if (c) result+=c;
       startLine=lineNr;
-      if (c==':')
+      if (c==':' || c=='=')
       {
         result+=cn;
         if (cn=='\n') lineNr++;

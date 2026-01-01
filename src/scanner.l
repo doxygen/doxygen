@@ -362,6 +362,7 @@ NONLopt [^\n]*
 %x      ReadBody
 %x      ReadNSBody
 %x      ReadBodyIntf
+%x      ReadExpressionBody
 %x      Using
 %x      UsingAlias
 %x      UsingDirective
@@ -4397,7 +4398,7 @@ NONLopt [^\n]*
                                           yyextra->current->program << yytext ;
                                         }
   /* Interpolated string C# */
-<SkipCurly,ReadBody,ReadNSBody,ReadBodyIntf,FindMembers,FindMemberName>$\"   { if (!yyextra->insideCS) REJECT
+<SkipCurly,ReadBody,ReadNSBody,ReadBodyIntf,ReadExpressionBody,FindMembers,FindMemberName>$\"   { if (!yyextra->insideCS) REJECT
                                           yyextra->current->program << yytext ;
                                           yyextra->pSkipInterpString = &yyextra->current->program;
                                           yyextra->lastSkipInterpStringContext=YY_START;
@@ -4426,7 +4427,7 @@ NONLopt [^\n]*
                                           *yyextra->pSkipInterpString << *yytext;
                                         }
   /* Verbatim Interpolated string C# */
-<SkipCurly,ReadBody,ReadNSBody,ReadBodyIntf,FindMembers,FindMemberName>$@\"   { if (!yyextra->insideCS) REJECT
+<SkipCurly,ReadBody,ReadNSBody,ReadBodyIntf,ReadExpressionBody,FindMembers,FindMemberName>$@\"   { if (!yyextra->insideCS) REJECT
                                           yyextra->current->program << yytext ;
                                           yyextra->pSkipInterpVerbString = &yyextra->current->program;
                                           yyextra->lastSkipInterpVerbStringContext=YY_START;
@@ -5598,6 +5599,13 @@ NONLopt [^\n]*
                                           yyextra->lastCPPContext = YY_START;
                                           BEGIN(SkipCPP);
                                         }
+<FuncQual>"=>"                          {
+                                          if (!yyextra->insideCS)
+                                            REJECT;
+                                          // Expression body function
+                                          unput('=');
+                                          BEGIN(SFunction);
+                                        }
 <FuncQual>"="                           {
                                           if (yyextra->insideCli && yyextra->current_root->section.isCompound())
                                           {
@@ -5612,6 +5620,15 @@ NONLopt [^\n]*
                                             yyextra->current->initializer.str(yytext);
                                             BEGIN(ReadInitializer);
                                           }
+                                        }
+<ReadExpressionBody>";"                 {
+                                          if (!yyextra->current->sli.empty() && yyextra->previous) // copy special list items
+                                          {
+                                            yyextra->previous->sli = yyextra->current->sli;
+                                            yyextra->current->sli.clear();
+                                          }
+                                          if (yyextra->previous) yyextra->previous->endBodyLine=yyextra->yyLineNr;
+                                          BEGIN(FindMembers);
                                         }
 <CliOverride>{ID}                       {
                                         }
@@ -5754,7 +5771,7 @@ NONLopt [^\n]*
 <SFunction>":"                           {
                                           if (!yyextra->insidePHP) BEGIN(SkipInits);
                                         }
-<SFunction>[;{,]                         {
+<SFunction>[=;{,]                       {
                                           yyextra->current->name=removeRedundantWhiteSpace(yyextra->current->name);
                                           yyextra->current->type=removeRedundantWhiteSpace(yyextra->current->type);
                                           yyextra->current->args=removeRedundantWhiteSpace(yyextra->current->args);
@@ -5878,9 +5895,14 @@ NONLopt [^\n]*
                                               {
                                                 yyextra->previous->spec.setInline(true);
                                               }
-                                              //addToBody(yytext);
                                               yyextra->curlyCount=0;
                                               BEGIN( SkipCurly ) ;
+                                            }
+                                            else if ( *yytext == '=' ) // C# Expression Body
+                                            {
+                                              yyextra->previous->spec.setInline(true);
+                                              yyextra->curlyCount=0;
+                                              BEGIN( ReadExpressionBody );
                                             }
                                             else
                                             {
@@ -5996,9 +6018,9 @@ NONLopt [^\n]*
                                           }
                                           BEGIN( yyextra->lastCurlyContext );
                                         }
-<SkipCurly>\"                           {
+<SkipCurly,ReadExpressionBody>\"        {
                                           //addToBody(yytext);
-                                          yyextra->lastStringContext=SkipCurly;
+                                          yyextra->lastStringContext=YY_START;
                                           BEGIN( SkipString );
                                         }
 <SkipCurly>^{B}*"#"                     {
@@ -6007,7 +6029,7 @@ NONLopt [^\n]*
                                           //addToBody(yytext);
                                           BEGIN( SkipCurlyCpp );
                                         }
-<SkipCurly,SkipC11Inits,SkipInits,SkipC11Attribute>\n   {
+<SkipCurly,SkipC11Inits,SkipInits,SkipC11Attribute,ReadExpressionBody>\n   {
                                           lineCount(yyscanner);
                                           //addToBody(yytext);
                                         }
@@ -6045,12 +6067,12 @@ NONLopt [^\n]*
                                           //addToBody(yytext);
                                           lineCount(yyscanner);
                                         }
-<SkipInits,SkipC11Inits,SkipCurly,SkipCurlyCpp,SkipC11Attribute>{CCS}    {
+<SkipInits,SkipC11Inits,SkipCurly,SkipCurlyCpp,SkipC11Attribute,ReadExpressionBody>{CCS}    {
                                           //addToBody(yytext);
                                           yyextra->lastCContext = YY_START;
                                           BEGIN(SkipComment);
                                         }
-<SkipInits,SkipC11Inits,SkipCurly,SkipCurlyCpp,SkipC11Attribute>{CPPC}  {
+<SkipInits,SkipC11Inits,SkipCurly,SkipCurlyCpp,SkipC11Attribute,ReadExpressionBody>{CPPC}  {
                                           //addToBody(yytext);
                                           yyextra->lastCContext = YY_START;
                                           BEGIN(SkipCxxComment);
@@ -6078,7 +6100,7 @@ NONLopt [^\n]*
                                           yyextra->lastCContext = YY_START;
                                           BEGIN(SkipCxxComment);
                                         }
-<SkipInits,SkipCurly,SkipCurlyCpp>@\"   {
+<SkipInits,SkipCurly,SkipCurlyCpp,ReadExpressionBody>@\"   {
                                           if (!yyextra->insideCS) REJECT;
                                           // C# verbatim string
                                           // we want to discard the string, due to reuse of states we need a dummy stream
@@ -6087,7 +6109,7 @@ NONLopt [^\n]*
                                           yyextra->dummyTextStream.clear(); // remove old data so it won't grow too much
                                           BEGIN(SkipVerbString);
                                         }
-<SkipInits,SkipCurly,SkipCurlyCpp>{CHARLIT}     {
+<SkipInits,SkipCurly,SkipCurlyCpp,ReadExpressionBody>{CHARLIT}     {
                                           if (yyextra->insidePHP) REJECT;
                                         }
 <SkipInits,SkipCurly,SkipCurlyCpp>\'    {
@@ -6103,7 +6125,7 @@ NONLopt [^\n]*
                                             yyextra->current->spec.setNoDiscard(true);
                                           }
                                         }
-<SkipInits,SkipC11Inits,SkipCurly,SkipCurlyCpp,SkipC11Attribute>.       { }
+<SkipInits,SkipC11Inits,SkipCurly,SkipCurlyCpp,SkipC11Attribute,ReadExpressionBody>.       { }
 <SkipString,SkipPHPString>\\.           { }
 <SkipString>\"                          {
                                           BEGIN( yyextra->lastStringContext );
@@ -6991,7 +7013,7 @@ NONLopt [^\n]*
                                         }
 <Comment>.                              { yyextra->current->program << *yytext ; }
 
-<FindMembers,FindFields,MemberSpec,FuncQual,SkipCurly,Operator,ClassVar,SkipInits,SkipC11Inits,SkipC11Attribute,Bases,OldStyleArgs>({CPPC}{B}*)?{CCS}"!" {
+<FindMembers,FindFields,MemberSpec,FuncQual,SkipCurly,Operator,ClassVar,SkipInits,SkipC11Inits,SkipC11Attribute,ReadExpressionBody,Bases,OldStyleArgs>({CPPC}{B}*)?{CCS}"!" {
                                           //printf("Start doc block at %d\n",yyextra->yyLineNr);
                                           if (!yyextra->current->doc.isEmpty())
                                           {
@@ -7009,7 +7031,7 @@ NONLopt [^\n]*
                                             yyextra->current->inside = yyextra->current_root->name+"::";
                                           }
                                           yyextra->docBlockContext   = YY_START;
-                                          yyextra->docBlockInBody    = YY_START==SkipCurly;
+                                          yyextra->docBlockInBody    = YY_START==SkipCurly || YY_START==ReadExpressionBody;
                                           yyextra->docBlockAutoBrief = Config_getBool(QT_AUTOBRIEF);
 
                                           QCString indent;
@@ -7024,7 +7046,7 @@ NONLopt [^\n]*
                                           startCommentBlock(yyscanner,FALSE);
                                           BEGIN( DocBlock );
                                         }
-<FindMembers,FindFields,MemberSpec,FuncQual,SkipCurly,Operator,ClassVar,SkipInits,Bases,OldStyleArgs>{CCS}"*"[*]+{BL} {
+<FindMembers,FindFields,MemberSpec,FuncQual,SkipCurly,Operator,ClassVar,SkipInits,ReadExpressionBody,Bases,OldStyleArgs>{CCS}"*"[*]+{BL} {
                                           bool javadocBanner = Config_getBool(JAVADOC_BANNER);
                                           lineCount(yyscanner);
 
@@ -7040,7 +7062,7 @@ NONLopt [^\n]*
                                             yyextra->current->docLine = yyextra->yyLineNr;
                                             yyextra->current->docFile = yyextra->fileName;
                                             yyextra->docBlockContext = YY_START;
-                                            yyextra->docBlockInBody  = YY_START==SkipCurly;
+                                            yyextra->docBlockInBody  = YY_START==SkipCurly || YY_START==ReadExpressionBody;
                                             bool javadocAutoBrief = Config_getBool(JAVADOC_AUTOBRIEF);
                                             yyextra->docBlockAutoBrief = javadocAutoBrief;
 
@@ -7064,12 +7086,12 @@ NONLopt [^\n]*
                                             BEGIN( Comment ) ;
                                           }
                                         }
-<FindMembers,FindFields,MemberSpec,FuncQual,SkipCurly,Operator,ClassVar,SkipInits,Bases,OldStyleArgs>^{B}+({CPPC}{B}*)?{CCS}"*"/{NCOMM} {
+<FindMembers,FindFields,MemberSpec,FuncQual,SkipCurly,Operator,ClassVar,ReadExpressionBody,SkipInits,Bases,OldStyleArgs>^{B}+({CPPC}{B}*)?{CCS}"*"/{NCOMM} {
                                           lineCount(yyscanner);
                                           yyextra->yyColNr=1;
                                           REJECT;
                                         }
-<FindMembers,FindFields,MemberSpec,FuncQual,SkipCurly,Operator,ClassVar,SkipInits,Bases,OldStyleArgs>({CPPC}{B}*)?{CCS}"*"/{NCOMM} {
+<FindMembers,FindFields,MemberSpec,FuncQual,SkipCurly,ReadExpressionBody,Operator,ClassVar,SkipInits,Bases,OldStyleArgs>({CPPC}{B}*)?{CCS}"*"/{NCOMM} {
                                           yyextra->lastDocContext = YY_START;
 
                                           //printf("Found comment block at %s:%d\n",yyextra->fileName,yyextra->yyLineNr);
@@ -7080,7 +7102,7 @@ NONLopt [^\n]*
                                           yyextra->current->docLine = yyextra->yyLineNr;
                                           yyextra->current->docFile = yyextra->fileName;
                                           yyextra->docBlockContext = YY_START;
-                                          yyextra->docBlockInBody  = YY_START==SkipCurly;
+                                          yyextra->docBlockInBody  = YY_START==SkipCurly || YY_START==ReadExpressionBody;
                                           bool javadocAutoBrief = Config_getBool(JAVADOC_AUTOBRIEF);
                                           yyextra->docBlockAutoBrief = javadocAutoBrief;
 
@@ -7096,14 +7118,14 @@ NONLopt [^\n]*
                                           startCommentBlock(yyscanner,FALSE);
                                           BEGIN( DocBlock );
                                         }
-<FindMembers,FindFields,MemberSpec,SkipCurly,FuncQual,Operator,ClassVar,Bases,OldStyleArgs>{CPPC}"!" {
+<FindMembers,FindFields,MemberSpec,SkipCurly,ReadExpressionBody,FuncQual,Operator,ClassVar,Bases,OldStyleArgs>{CPPC}"!" {
                                           yyextra->lastDocContext = YY_START;
                                           if (yyextra->current_root->section.isScope())
                                           {
                                             yyextra->current->inside = yyextra->current_root->name+"::";
                                           }
                                           yyextra->docBlockContext   = YY_START;
-                                          yyextra->docBlockInBody    = YY_START==SkipCurly;
+                                          yyextra->docBlockInBody    = YY_START==SkipCurly || YY_START==ReadExpressionBody;
                                           yyextra->docBlockAutoBrief = FALSE;
 
                                           QCString indent;
@@ -7113,14 +7135,14 @@ NONLopt [^\n]*
                                           startCommentBlock(yyscanner,yyextra->current->brief.isEmpty());
                                           BEGIN( DocLine );
                                         }
-<FindMembers,FindFields,MemberSpec,SkipCurly,FuncQual,Operator,ClassVar,Bases,OldStyleArgs>{CPPC}"/"/[^/] {
+<FindMembers,FindFields,MemberSpec,SkipCurly,ReadExpressionBody,FuncQual,Operator,ClassVar,Bases,OldStyleArgs>{CPPC}"/"/[^/] {
                                           yyextra->lastDocContext = YY_START;
                                           if (yyextra->current_root->section.isScope())
                                           {
                                             yyextra->current->inside = yyextra->current_root->name+"::";
                                           }
                                           yyextra->docBlockContext   = YY_START;
-                                          yyextra->docBlockInBody    = YY_START==SkipCurly;
+                                          yyextra->docBlockInBody    = YY_START==SkipCurly || YY_START==ReadExpressionBody;
                                           yyextra->docBlockAutoBrief = FALSE;
                                           QCString indent;
                                           indent.fill(' ',computeIndent(yytext,yyextra->column));
