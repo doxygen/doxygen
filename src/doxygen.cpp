@@ -1079,6 +1079,10 @@ static void addClassToContext(const Entry *root)
       cd->setHidden(root->hidden);
       cd->setArtificial(root->artificial);
       cd->setClassSpecifier(root->spec);
+      if (root->lang==SrcLangExt::CSharp && !root->args.isEmpty())
+      {
+        cd->setPrimaryConstructorParams(*stringToArgumentList(root->lang,root->args));
+      }
       cd->addQualifiers(root->qualifiers);
       cd->setTypeConstraints(root->typeConstr);
       root->commandOverrides.apply_collaborationGraph([&](bool b          ) { cd->overrideCollaborationGraph(b); });

@@ -444,6 +444,7 @@ class ClassDefMutable : public DefinitionMutable, public ClassDef
     virtual void setAnonymousEnumType() = 0;
     virtual void countMembers() = 0;
     virtual void sortAllMembersList() = 0;
+    virtual void setPrimaryConstructorParams(const ArgumentList &list) = 0;
 
 
 };

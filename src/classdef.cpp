@@ -349,6 +349,7 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
                  bool showInline=FALSE,const ClassDef *inheritedFrom=nullptr,
                  MemberListType lt2=MemberListType::Invalid(),bool invert=FALSE,bool showAlways=FALSE) const override;
     void setRequiresClause(const QCString &req) override;
+    void setPrimaryConstructorParams(const ArgumentList &list) override;
 
     // inheritance graph related members
     CLASS_GRAPH_t hasInheritanceGraph() const override;
@@ -555,6 +556,8 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
     CLASS_GRAPH_t m_typeInheritanceGraph = CLASS_GRAPH_t::NO;
 
     bool m_implicitTemplateInstance = false;
+
+    ArgumentList m_primaryConstructorParams;
 };
 
 std::unique_ptr<ClassDef> createClassDef(
@@ -2934,6 +2937,14 @@ QCString ClassDefImpl::title() const
       return theTranslator->trCustomReference(VhdlDocGen::getClassTitle(this));
     });
   }
+  else if (lang==SrcLangExt::CSharp && !m_primaryConstructorParams.empty())
+  {
+    pageTitle = getReferenceTitle([this](){
+      return theTranslator->trCompoundReference(displayName()+argListToString(m_primaryConstructorParams),
+              m_compType,
+              !m_tempArgs.empty());
+    });
+  }
   else if (isJavaEnum())
   {
     pageTitle = getReferenceTitle([this](){
@@ -3546,6 +3557,11 @@ QCString ClassDefImpl::requiresClause() const
 void ClassDefImpl::setRequiresClause(const QCString &req)
 {
   m_requiresClause = req;
+}
+
+void ClassDefImpl::setPrimaryConstructorParams(const ArgumentList &list)
+{
+  m_primaryConstructorParams = list;
 }
 
 /*! called from MemberDef::writeDeclaration() to (recursively) write the

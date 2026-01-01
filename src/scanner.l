@@ -6484,11 +6484,16 @@ NONLopt [^\n]*
                                           if (yyextra->insideObjC && *yytext=='(') // class category
                                           {
                                             yyextra->current->name+='(';
-                                            //if (yyextra->current->section!=Entry::OBJCIMPL_SEC)
-                                            //{
-                                              yyextra->current->spec.setCategory(true);
-                                            //}
+                                            yyextra->current->spec.setCategory(true);
                                             BEGIN( ClassCategory );
+                                          }
+                                          else if (yyextra->insideCS && *yytext=='(') // C# 12 primary constructor
+                                          {
+                                            yyextra->current->args=yytext;
+                                            yyextra->currentArgumentContext = ClassVar;
+                                            yyextra->fullArgString = yyextra->current->args;
+                                            yyextra->copyArgString = &yyextra->current->args;
+                                            BEGIN( ReadFuncArgType ) ;
                                           }
                                           else
                                           {
