@@ -283,7 +283,7 @@ CHARLIT   (("'"\\x[0-9a-fA-F]{1,2}"'")|("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\
 PHPKW     ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 PHPUSEKW  ("public"|"private"|"protected")
 IDLATTR   ("["[^\]]*"]"){BN}*
-TYPEDEFPREFIX ((("volatile"|"const"){BN}+)?)
+TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 RAWBEGIN  (u|U|L|u8)?R\"[^ \t\(\)\\]{0,16}"("
 RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 ARITHOP   "+"|"-"|"/"|"*"|"%"|"--"|"++"
@@ -2661,7 +2661,7 @@ NONLopt [^\n]*
                                                 }
                                                 yyextra->current->name=yyextra->current->name.mid(9);
                                               }
-                                              else if (yyextra->current->name.startsWith("typedef"))
+                                              else if (yyextra->current->name.startsWith("typedef "))
                                               {
                                                 if (yyextra->current->type.isEmpty())
                                                 {
@@ -6310,7 +6310,7 @@ NONLopt [^\n]*
                                               yyextra->language = yyextra->current->lang = SrcLangExt::Cpp;
                                               yyextra->insideObjC = FALSE;
                                               }
-                                            if (yyextra->isTypedef && !yyextra->current->type.startsWith("typedef")) // typedef of a class, put typedef keyword back
+                                            if (yyextra->isTypedef) // typedef of a class, put typedef keyword back
                                             {
                                               yyextra->current->type.prepend("typedef");
                                             }
@@ -6405,7 +6405,7 @@ NONLopt [^\n]*
                                           }
                                         }
 <ClassVar>","                           {
-                                          if (yyextra->isTypedef && !yyextra->current->type.startsWith("typedef"))
+                                          if (yyextra->isTypedef)
                                           {
                                             // multiple types in one typedef
                                             unput(',');
@@ -6644,7 +6644,7 @@ NONLopt [^\n]*
                                           }
                                         }
 <ClassVar>[;=*&]                        {
-                                          if (yyextra->isTypedef && !yyextra->current->type.startsWith("typedef")) // typedef of a class, put typedef keyword back
+                                          if (yyextra->isTypedef) // typedef of a class, put typedef keyword back
                                           {
                                             yyextra->current->type.prepend("typedef");
                                           }

@@ -2340,7 +2340,6 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
       int ir=i+l;
       //printf("<<<<<<<<<<<<<<\n");
       ol.startAnonTypeScope(indentLevel);
-      if (ltype.startsWith("typedef")) ol.docify("typedef ");
       annoClassDef->writeDeclaration(ol,m_annMemb,inGroup,indentLevel+1,inheritedFrom,inheritId);
       //printf(">>>>>>>>>>>>>> startMemberItem(2)\n");
       anonType = OutputGenerator::MemberItemType::AnonymousEnd;
