@@ -4658,7 +4658,7 @@ void ClassDefImpl::sortMemberLists()
   {
     if (ml->needsSorting()) { ml->sort(); ml->setNeedsSorting(FALSE); }
   }
-  if (Config_getBool(SORT_BRIEF_DOCS))
+  if (Config_getBool(SORT_NAVIGATION_LISTS))
   {
     std::stable_sort(m_innerClasses.begin(),
               m_innerClasses.end(),

@@ -1788,7 +1788,7 @@ void FileDefImpl::sortMemberLists()
   std::stable_sort(m_includedByList.begin(),m_includedByList.end(),
       [](const auto &fi1,const auto &fi2) { return fi1.includeName < fi2.includeName; });
 
-  if (Config_getBool(SORT_BRIEF_DOCS))
+  if (Config_getBool(SORT_NAVIGATION_LISTS))
   {
     auto classComp = [](const ClassLinkedRefMap::Ptr &c1,const ClassLinkedRefMap::Ptr &c2)
     {
