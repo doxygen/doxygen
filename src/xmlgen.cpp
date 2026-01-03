@@ -514,33 +514,6 @@ static void writeMemberReference(TextStream &t,const Definition *def,const Membe
 
 }
 
-// removes anonymous markers like '@1' from s.
-// examples '@3::A' -> '::A', 'A::@2::B' -> 'A::B', '@A' -> '@A'
-static void stripAnonymousMarkers(QCString &s)
-{
-  auto isDigit = [](char c) { return c>='0' && c<='9'; };
-  int len = static_cast<int>(s.length());
-  int i=0,j=0;
-  if (len>0)
-  {
-    while (i<len)
-    {
-      if (i<len-1 && s[i]=='@' && isDigit(s[i+1])) // found pattern '@\d+'
-      {
-        if (j>=2 && i>=2 && s[i-2]==':' && s[i-1]==':') j-=2; // found pattern '::@\d+'
-        i+=2;                               // skip over @ and first digit
-        while (i<len && isDigit(s[i])) i++; // skip additional digits
-      }
-      else // copy characters
-      {
-        s[j++]=s[i++];
-      }
-    }
-    // resize resulting string
-    s.resize(j);
-  }
-}
-
 static void stripQualifiers(QCString &typeStr)
 {
   bool done=false;
@@ -721,7 +694,6 @@ static void generateXMLForMember(const MemberDef *md,TextStream &ti,TextStream &
   defStr.stripPrefix("constexpr ");
   defStr.stripPrefix("consteval ");
   defStr.stripPrefix("constinit ");
-  stripAnonymousMarkers(typeStr);
   stripQualifiers(typeStr);
   if (typeStr=="auto")
   {
@@ -759,7 +731,6 @@ static void generateXMLForMember(const MemberDef *md,TextStream &ti,TextStream &
   }
   QCString noExceptExpr = extractNoExcept(argsStr);
 
-  stripAnonymousMarkers(nameStr);
   ti << "    <member refid=\"" << memberOutputFileBase(md)
      << "_1" << md->anchor() << "\" kind=\"" << memType << "\"><name>"
      << convertToXML(nameStr) << "</name></member>\n";
@@ -1021,7 +992,6 @@ static void generateXMLForMember(const MemberDef *md,TextStream &ti,TextStream &
     {
       defStr+=" = "+md->initializer();
     }
-    stripAnonymousMarkers(defStr);
     t << "        <definition>" << convertToXML(defStr) << "</definition>\n";
     t << "        <argsstring>" << convertToXML(argsStr) << "</argsstring>\n";
   }
@@ -1034,7 +1004,6 @@ static void generateXMLForMember(const MemberDef *md,TextStream &ti,TextStream &
   }
 
   QCString qualifiedNameStr = md->qualifiedName();
-  stripAnonymousMarkers(qualifiedNameStr);
   t << "        <name>" << convertToXML(nameStr) << "</name>\n";
   if (nameStr!=qualifiedNameStr)
   {
@@ -1530,7 +1499,6 @@ static void generateXMLForClass(const ClassDef *cd,TextStream &ti)
   t << "\">\n";
   t << "    <compoundname>";
   QCString nameStr = cd->name();
-  stripAnonymousMarkers(nameStr);
   writeXMLString(t,nameStr);
   t << "</compoundname>\n";
   for (const auto &bcd : cd->baseClasses())
@@ -1667,7 +1635,6 @@ static void generateXMLForConcept(const ConceptDef *cd,TextStream &ti)
     << "\" kind=\"concept\">\n";
   t << "    <compoundname>";
   QCString nameStr = cd->name();
-  stripAnonymousMarkers(nameStr);
   writeXMLString(t,nameStr);
   t << "</compoundname>\n";
   writeIncludeInfo(cd->includeInfo(),t);
@@ -1811,7 +1778,6 @@ static void generateXMLForNamespace(const NamespaceDef *nd,TextStream &ti)
     << langToString(nd->getLanguage()) << "\">\n";
   t << "    <compoundname>";
   QCString nameStr = nd->name();
-  stripAnonymousMarkers(nameStr);
   writeXMLString(t,nameStr);
   t << "</compoundname>\n";
 
