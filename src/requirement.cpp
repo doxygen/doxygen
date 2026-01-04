@@ -398,3 +398,40 @@ void RequirementManager::writeTagFile(TextStream &tagFile)
   }
 }
 
+void splitRequirementRefs(const RequirementRefs &inputReqRefs,RequirementRefs &satisfiesRefs,RequirementRefs &verifiesRefs)
+{
+  auto makeUnique = [](RequirementRefs &uniqueRefs)
+  {
+    // sort results on itemId
+    std::stable_sort(uniqueRefs.begin(),uniqueRefs.end(),
+        [](const auto &left,const auto &right)
+        { return  left.reqId()< right.reqId() ||
+        (left.reqId()==right.reqId() &&
+         qstricmp(left.title(),right.title())<0);
+        });
+
+    // filter out duplicates
+    auto last = std::unique(uniqueRefs.begin(),uniqueRefs.end(),
+        [](const auto &left,const auto &right)
+        { return left.reqId()==right.reqId() &&
+        qstricmp(left.title(),right.title())==0;
+        });
+
+    // remove unused part
+    uniqueRefs.erase(last, uniqueRefs.end());
+  };
+
+  // split into satisfied and verifies references
+  std::partition_copy(
+      inputReqRefs.begin(),
+      inputReqRefs.end(),
+      std::back_inserter(satisfiesRefs),
+      std::back_inserter(verifiesRefs),
+      [](const auto &ref) { return ref.type()==RequirementRefType::Satisfies; }
+     );
+
+  // remove duplicates
+  makeUnique(satisfiesRefs);
+  makeUnique(verifiesRefs);
+}
+

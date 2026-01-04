@@ -8,6 +8,6 @@
       <para>The authentication system must meet the following criteria:<itemizedlist><listitem><para>Support username and password authentication</para></listitem><listitem><para>Implement password hashing using industry-standard algorithms (e.g., bcrypt, Argon2)</para></listitem><listitem><para>Lock accounts after 5 consecutive failed login attempts</para></listitem><listitem><para>Require passwords to be at least 8 characters long with mixed case, numbers, and special characters</para></listitem><listitem><para>Provide a secure password reset mechanism via email verification </para></listitem></itemizedlist>
 </para>
     </detaileddescription>
-    <location file="115_requirements.cpp" line="4"/>
+    <location file="115_requirements.cpp" line="6"/>
   </compounddef>
 </doxygen>

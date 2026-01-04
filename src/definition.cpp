@@ -1180,44 +1180,7 @@ void DefinitionImpl::writeSourceRefs(OutputList &ol,const QCString &scopeName) c
 void DefinitionImpl::writeRequirementRefs(OutputList &ol) const
 {
   if (!Config_getBool(GENERATE_REQUIREMENTS)) return;
-  auto makeUnique = [](RequirementRefs &uniqueRefs)
-  {
-    // sort results on itemId
-    std::stable_sort(uniqueRefs.begin(),uniqueRefs.end(),
-        [](const auto &left,const auto &right)
-        { return  left.reqId()< right.reqId() ||
-        (left.reqId()==right.reqId() &&
-         qstricmp(left.title(),right.title())<0);
-        });
-
-    // filter out duplicates
-    auto last = std::unique(uniqueRefs.begin(),uniqueRefs.end(),
-        [](const auto &left,const auto &right)
-        { return left.reqId()==right.reqId() &&
-        qstricmp(left.title(),right.title())==0;
-        });
-
-    // remove unused part
-    uniqueRefs.erase(last, uniqueRefs.end());
-  };
-
-  // copy combined references into type specific vectors
-  RequirementRefs satisfiesRefs;
-  RequirementRefs verifiesRefs;
-
-  std::partition_copy(
-      p->requirementRefs.begin(),
-      p->requirementRefs.end(),
-      std::back_inserter(satisfiesRefs),
-      std::back_inserter(verifiesRefs),
-      [](const auto &ref) { return ref.type()==RequirementRefType::Satisfies; }
-     );
-
-  // remove duplicates
-  makeUnique(satisfiesRefs);
-  makeUnique(verifiesRefs);
-
-  auto writeRefsForType = [&ol](const RequirementRefs &refs,const char *parType,const QCString &text,RequirementRefType filter)
+  auto writeRefsForType = [&ol](const RequirementRefs &refs,const char *parType,const QCString &text)
   {
     size_t num = refs.size();
     if (num>0)
@@ -1234,8 +1197,11 @@ void DefinitionImpl::writeRequirementRefs(OutputList &ol) const
     }
   };
 
-  writeRefsForType(satisfiesRefs,"satisfies",theTranslator->trSatisfies(satisfiesRefs.size()==1),RequirementRefType::Satisfies);
-  writeRefsForType(verifiesRefs, "verifies", theTranslator->trVerifies(verifiesRefs.size()==1),  RequirementRefType::Verifies);
+  RequirementRefs satisfiesRefs;
+  RequirementRefs verifiesRefs;
+  splitRequirementRefs(p->requirementRefs,satisfiesRefs,verifiesRefs);
+  writeRefsForType(satisfiesRefs,"satisfies",theTranslator->trSatisfies(satisfiesRefs.size()==1));
+  writeRefsForType(verifiesRefs, "verifies", theTranslator->trVerifies(verifiesRefs.size()==1));
 }
 
 bool DefinitionImpl::hasSourceReffedBy() const

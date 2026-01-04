@@ -55,6 +55,8 @@ class RequirementRef
 /// List of requirement references
 using RequirementRefs = std::vector<RequirementRef>;
 
+void splitRequirementRefs(const RequirementRefs &input,RequirementRefs &satisfiesRefs,RequirementRefs &verifiesRefs);
+
 class RequirementIntf
 {
   public:

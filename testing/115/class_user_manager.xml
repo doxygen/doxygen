@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="class_user_manager" kind="class" language="C++" prot="public">
+    <compoundname>UserManager</compoundname>
+    <briefdescription>
+      <para>Manages user authentication and session management. </para>
+    </briefdescription>
+    <detaileddescription>
+      <para>This class handles all aspects of user authentication including password verification, account locking, and session creation. </para>
+    </detaileddescription>
+    <satisfies>
+      <requirement refid="REQ-001">Implements the core authentication mechanism</requirement>
+    </satisfies>
+    <location file="115_requirements.cpp" line="25" column="1" bodyfile="115_requirements.cpp" bodystart="25" bodyend="25"/>
+    <listofallmembers>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

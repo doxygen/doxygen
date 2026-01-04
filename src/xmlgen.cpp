@@ -1311,6 +1311,28 @@ static void writeListOfAllMembers(const ClassDef *cd,TextStream &t)
   t << "    </listofallmembers>\n";
 }
 
+static void writeRequirementRefs(const Definition *d,TextStream &t)
+{
+  auto writeRefsForType = [&t](const RequirementRefs &refs,const char *tagName)
+  {
+    if (!refs.empty())
+    {
+      t << "    <" << tagName << ">\n";
+      for (const auto &ref : refs)
+      {
+        t << "      <requirement refid=\"" << convertToXML(ref.reqId()) << "\">"
+          << convertToXML(ref.title()) << "</requirement>\n";
+      }
+      t << "    </" << tagName << ">\n";
+    }
+  };
+  RequirementRefs satisfiesRefs;
+  RequirementRefs verifiesRefs;
+  splitRequirementRefs(d->requirementReferences(),satisfiesRefs,verifiesRefs);
+  writeRefsForType(satisfiesRefs,"satisfies");
+  writeRefsForType(verifiesRefs,"verifies");
+}
+
 static void writeInnerClasses(const ClassLinkedRefMap &cl,TextStream &t)
 {
   for (const auto &cd : cl)
@@ -1591,6 +1613,7 @@ static void generateXMLForClass(const ClassDef *cd,TextStream &ti)
     collaborationGraph.writeXML(t);
     t << "    </collaborationgraph>\n";
   }
+  writeRequirementRefs(cd,t);
   t << "    <location file=\""
     << convertToXML(stripFromPath(cd->getDefFileName())) << "\" line=\""
     << cd->getDefLine() << "\"" << " column=\""
@@ -1678,6 +1701,7 @@ static void generateXMLForConcept(const ConceptDef *cd,TextStream &ti)
   t << "    <detaileddescription>\n";
   writeXMLDocBlock(t,cd->docFile(),cd->docLine(),cd,nullptr,cd->documentation());
   t << "    </detaileddescription>\n";
+  writeRequirementRefs(cd,t);
   t << "    <location file=\""
     << convertToXML(stripFromPath(cd->getDefFileName())) << "\" line=\""
     << cd->getDefLine() << "\"" << " column=\""
@@ -1732,6 +1756,7 @@ static void generateXMLForModule(const ModuleDef *mod,TextStream &ti)
   writeXMLDocBlock(t,mod->docFile(),mod->docLine(),mod,nullptr,mod->documentation());
   t << "    </detaileddescription>\n";
   writeExports(mod->getExports(),t);
+  writeRequirementRefs(mod,t);
   t << "    <location file=\""
     << convertToXML(stripFromPath(mod->getDefFileName())) << "\" line=\""
     << mod->getDefLine() << "\"" << " column=\""
@@ -1805,6 +1830,7 @@ static void generateXMLForNamespace(const NamespaceDef *nd,TextStream &ti)
   t << "    <detaileddescription>\n";
   writeXMLDocBlock(t,nd->docFile(),nd->docLine(),nd,nullptr,nd->documentation());
   t << "    </detaileddescription>\n";
+  writeRequirementRefs(nd,t);
   t << "    <location file=\""
     << convertToXML(stripFromPath(nd->getDefFileName())) << "\" line=\""
     << nd->getDefLine() << "\"" << " column=\""
@@ -1923,6 +1949,7 @@ static void generateXMLForFile(FileDef *fd,TextStream &ti)
   {
     writeXMLCodeBlock(t,fd);
   }
+  writeRequirementRefs(fd,t);
   t << "    <location file=\"" << convertToXML(stripFromPath(fd->getDefFileName())) << "\"/>\n";
   t << "  </compounddef>\n";
   t << "</doxygen>\n";
@@ -1993,6 +2020,7 @@ static void generateXMLForGroup(const GroupDef *gd,TextStream &ti)
   t << "    <detaileddescription>\n";
   writeXMLDocBlock(t,gd->docFile(),gd->docLine(),gd,nullptr,gd->documentation());
   t << "    </detaileddescription>\n";
+  writeRequirementRefs(gd,t);
   t << "  </compounddef>\n";
   t << "</doxygen>\n";
 
@@ -2030,6 +2058,7 @@ static void generateXMLForDir(DirDef *dd,TextStream &ti)
   t << "    <detaileddescription>\n";
   writeXMLDocBlock(t,dd->docFile(),dd->docLine(),dd,nullptr,dd->documentation());
   t << "    </detaileddescription>\n";
+  writeRequirementRefs(dd,t);
   t << "    <location file=\"" << convertToXML(stripFromPath(dd->name())) << "\"/>\n";
   t << "  </compounddef>\n";
   t << "</doxygen>\n";
@@ -2193,6 +2222,7 @@ static void generateXMLForPage(PageDef *pd,TextStream &ti,bool isExample)
         pd->documentation());
   }
   t << "    </detaileddescription>\n";
+  writeRequirementRefs(pd,t);
 
   t << "    <location file=\"" << convertToXML(stripFromPath(pd->getDefFileName())) << "\"/>\n";
 
