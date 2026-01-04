@@ -892,13 +892,20 @@ void DocParser::handleLinkedWord(DocNodeVariant *parent,DocNodeList &children,bo
   }
   else if (const RequirementIntf *req = RequirementManager::instance().find(name); req!=nullptr) // link to requirement
   {
-    children.append<DocLinkedWord>(
-         this,parent,name,
-         QCString(), // link to local requirements overview also for external references
-         req->getOutputFileBase(),
-         req->id(),
-         req->title()
-        );
+    if (Config_getBool(GENERATE_REQUIREMENTS))
+    {
+      children.append<DocLinkedWord>(
+           this,parent,name,
+           QCString(), // link to local requirements overview also for external references
+           req->getOutputFileBase(),
+           req->id(),
+           req->title()
+          );
+    }
+    else // cannot link to a page that does not exist
+    {
+      children.append<DocWord>(this,parent,name);
+    }
   }
   else // normal non-linkable word
   {

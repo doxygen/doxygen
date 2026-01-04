@@ -588,6 +588,9 @@ void DocSecRefItem::parse()
         case SectionType::Table:
           m_refType = Table;
           break;
+        case SectionType::Requirement:
+          m_refType = Requirement;
+          break;
         default:
           break;
       }
@@ -741,6 +744,14 @@ DocRef::DocRef(DocParser *parser,DocNodeVariant *parent,const QCString &target,c
     else if (secLevel==SectionType::Table)
     {
       m_refType = Table;
+    }
+    else if (secLevel==SectionType::Requirement)
+    {
+      m_refType = Requirement;
+      if (!Config_getBool(GENERATE_REQUIREMENTS))
+      {
+        m_file.clear(); // prevent link when there is no requirements page
+      }
     }
     else
     {

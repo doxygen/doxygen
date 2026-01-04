@@ -528,6 +528,8 @@ struct commentscanYY_state
   QCString         htmlAnchorStr;
   bool             htmlAnchor = false;
   bool             CScode = false;
+  QCString         reqId;
+  QCString         reqTitle;
 };
 
 
@@ -2320,13 +2322,13 @@ STopt  [^\n@\\]*
                                           BEGIN( RequirementTitle );
                                         }
 <SatisfiesLabel>{REQID}                 { // found argument
-                                          yyextra->current->name = yytext;
-                                          yyextra->current->type.clear();
+                                          yyextra->reqId = yytext;
+                                          yyextra->reqTitle.clear();
                                           BEGIN( SatisfiesTitle );
                                         }
 <VerifiesLabel>{REQID}                  { // found argument
-                                          yyextra->current->name = yytext;
-                                          yyextra->current->type.clear();
+                                          yyextra->reqId = yytext;
+                                          yyextra->reqTitle.clear();
                                           BEGIN( VerifiesTitle );
                                         }
 <RequirementLabel,SatisfiesLabel,VerifiesLabel>"\\"{B}*"\n"  { // line continuation
@@ -2347,37 +2349,61 @@ STopt  [^\n@\\]*
                                           yyextra->lineNr++;
                                           addOutput(yyscanner,'\n');
                                         }
-<RequirementTitle,SatisfiesTitle,VerifiesTitle>[^\n\\]+              { // title (stored in type)
+<RequirementTitle>[^\n\\]+              { // title (stored in type)
                                           yyextra->current->type += yytext;
                                         }
-<RequirementTitle>{DOCNL}+              {
+<SatisfiesTitle,VerifiesTitle>[^\n\\@]+ { // title (stored in type)
+                                          yyextra->reqTitle += yytext;
+                                        }
+<RequirementTitle>({CMD}("verifies"|"satisfies"|"requirement"){B}+)|{DOCNL}+              {
                                           yyextra->current->type = yyextra->current->type.stripWhiteSpace();
                                           unput_string(yytext,yyleng);
                                           addRequirementId(yyscanner);
                                           BEGIN( Comment );
                                         }
-<SatisfiesTitle>{DOCNL}+                {
-                                          yyextra->current->type = yyextra->current->type.stripWhiteSpace();
+<SatisfiesTitle>({CMD}("verifies"|"satisfies"|"requirement"){B}+)|{DOCNL}+              {
+                                          yyextra->reqTitle = yyextra->reqTitle.stripWhiteSpace();
                                           unput_string(yytext,yyleng);
-                                          yyextra->current->rqli.emplace_back(RequirementRefType::Satisfies,
-                                                                              yyextra->current->name,
-                                                                              yyextra->current->type,
-                                                                              yyextra->fileName,
-                                                                              yyextra->lineNr);
+                                          if (yyextra->current->section.isRequirementDoc())
+                                          {
+                                            warn(yyextra->fileName,yyextra->lineNr,
+                                                 "@satisfies command is not allowed in documentation of a requirement. Put in at the place where the requirement is implemented."
+                                                );
+                                          }
+                                          else
+                                          {
+                                            yyextra->current->rqli.emplace_back(RequirementRefType::Satisfies,
+                                                yyextra->reqId,
+                                                yyextra->reqTitle,
+                                                yyextra->fileName,
+                                                yyextra->lineNr);
+                                          }
                                           BEGIN( Comment );
                                         }
-<VerifiesTitle>{DOCNL}+                 {
-                                          yyextra->current->type = yyextra->current->type.stripWhiteSpace();
+<VerifiesTitle>({CMD}("verifies"|"satisfies"|"requirement"){B}+)|{DOCNL}+              {
+                                          yyextra->reqTitle = yyextra->reqTitle.stripWhiteSpace();
                                           unput_string(yytext,yyleng);
-                                          yyextra->current->rqli.emplace_back(RequirementRefType::Verifies,
-                                                                              yyextra->current->name,
-                                                                              yyextra->current->type,
-                                                                              yyextra->fileName,
-                                                                              yyextra->lineNr);
+                                          if (yyextra->current->section.isRequirementDoc())
+                                          {
+                                            warn(yyextra->fileName,yyextra->lineNr,
+                                                 "@verifies command is not allowed in documentation of a requirement. Put in at the place where the requirement is tested."
+                                                );
+                                          }
+                                          else
+                                          {
+                                            yyextra->current->rqli.emplace_back(RequirementRefType::Verifies,
+                                                yyextra->reqId,
+                                                yyextra->reqTitle,
+                                                yyextra->fileName,
+                                                yyextra->lineNr);
+                                          }
                                           BEGIN( Comment );
                                         }
-<RequirementTitle,SatisfiesTitle,VerifiesTitle>. { // title (stored in type)
+<RequirementTitle>.                     { // title (stored in type)
                                           yyextra->current->type += yytext;
+                                        }
+<SatisfiesTitle,VerifiesTitle>.         { // title (stored in reqTitle)
+                                          yyextra->reqTitle += yytext;
                                         }
 
 
@@ -4376,12 +4402,13 @@ static void addRequirementId(yyscan_t yyscanner)
   std::unique_lock<std::mutex> lock(g_sectionMutex);
 
   QCString reqId = yyextra->current->name;
+  //printf("### add reqId='%s' reqTitle='%s'\n",qPrint(reqId),qPrint(yyextra->current->type));
   SectionManager &sm = SectionManager::instance();
   const SectionInfo *si = sm.find(reqId);
   if (si==nullptr)
   {
     si = sm.add(reqId,"requirements",yyextra->lineNr,
-               yyextra->current->type,SectionType::Anchor,1);
+               yyextra->current->type,SectionType::Requirement,1);
   }
   else // duplicate requirement
   {

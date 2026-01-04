@@ -677,6 +677,7 @@ size_t Markdown::Private::isSpecialCommand(std::string_view data,size_t offset)
     { "relatedalso",    endOfLabel },
     { "relates",        endOfLabel },
     { "relatesalso",    endOfLabel },
+    { "requirement",    endOfLabel },
     { "retval",         endOfRetVal},
     { "rtfinclude",     endOfLine  },
     { "section",        endOfLabel },
@@ -686,6 +687,7 @@ size_t Markdown::Private::isSpecialCommand(std::string_view data,size_t offset)
     { "snippetdoc",     endOfLine  },
     { "snippetlineno",  endOfLine  },
     { "struct",         endOfLine  },
+    { "satisfies",      endOfLabel },
     { "subpage",        endOfLabel },
     { "subparagraph",   endOfLabel },
     { "subsubparagraph",endOfLabel },
@@ -700,6 +702,7 @@ size_t Markdown::Private::isSpecialCommand(std::string_view data,size_t offset)
     { "until",          endOfLine  },
     { "var",            endOfLine  },
     { "verbinclude",    endOfLine  },
+    { "verifies",       endOfLabel },
     { "weakgroup",      endOfLabel },
     { "xmlinclude",     endOfLine  },
     { "xrefitem",       endOfLabel }

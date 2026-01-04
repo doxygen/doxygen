@@ -29,6 +29,7 @@
 #include "pagedef.h"
 #include "config.h"
 #include "util.h"
+#include "trace.h"
 
 struct Requirement : RequirementIntf
 {
@@ -112,39 +113,56 @@ const PageDef *RequirementManager::requirementsPage() const
 
 void RequirementManager::addRequirement(Entry *e)
 {
-  if (p->reqPageDef==nullptr)
-  {
-    p->reqPageDef = addRelatedPage("requirements",                      // name
-                                   theTranslator->trRequirements(),     // ptitle
-                                   QCString(),                          // doc
-                                   "requirements",                      // fileName
-                                   1,                                   // docLine
-                                   1                                    // startLine
-                                   );
-  }
-  //printf("requirement ID=%s title='%s' file=%s line=%d brief='%s' doc='%s'\n",
-  //    qPrint(e->name), qPrint(e->type), qPrint(e->fileName), e->startLine, qPrint(e->brief), qPrint(e->doc));
   QCString tagFile;
   QCString extPage;
-  QCString title = parseCommentAsText(p->reqPageDef,nullptr,e->type,e->fileName,e->startLine);
-  QCString doc = e->doc;
-  if (e->tagInfo())
+  if (!Config_getBool(GENERATE_REQUIREMENTS)) // still record the requirement, so we can refer to it.
   {
-    //printf("External requirement %s title=%s fileName=%s tagName=%s anchor=%s\n",
-    //    qPrint(e->name),qPrint(e->type),qPrint(e->tagInfo()->fileName),qPrint(e->tagInfo()->tagName),qPrint(e->tagInfo()->anchor));
-    tagFile = e->tagInfo()->tagName;
-    extPage = e->tagInfo()->fileName;
-    // register requirement id as anchor; for non-external links this is
-    // done in commentscan.l in the comment block containing the @requirement command
-    SectionManager::instance().add(e->name,"requirements",1,title,SectionType::Anchor,1);
+    if (e->tagInfo())
+    {
+      //printf("External requirement %s title=%s fileName=%s tagName=%s anchor=%s\n",
+      //    qPrint(e->name),qPrint(e->type),qPrint(e->tagInfo()->fileName),qPrint(e->tagInfo()->tagName),qPrint(e->tagInfo()->anchor));
+      tagFile = e->tagInfo()->tagName;
+      extPage = e->tagInfo()->fileName;
+      // register requirement id as anchor; for non-external links this is
+      // done in commentscan.l in the comment block containing the @requirement command
+      SectionManager::instance().add(e->name,"requirements",1,e->type,SectionType::Requirement,1);
+    }
+    p->requirements.add(e->name, e->fileName, e->startLine, e->type, e->doc, tagFile, extPage);
   }
-  if (!e->brief.isEmpty())
+  else
   {
-    doc.prepend(e->brief+"\n<p>");
-  }
-  p->requirements.add(e->name, e->fileName, e->startLine, title, doc, tagFile, extPage);
+    if (p->reqPageDef==nullptr)
+    {
+      p->reqPageDef = addRelatedPage("requirements",                      // name
+          theTranslator->trRequirements(),     // ptitle
+          QCString(),                          // doc
+          "requirements",                      // fileName
+          1,                                   // docLine
+          1                                    // startLine
+          );
+    }
+    //printf("requirement ID=%s title='%s' file=%s line=%d brief='%s' doc='%s'\n",
+    //    qPrint(e->name), qPrint(e->type), qPrint(e->fileName), e->startLine, qPrint(e->brief), qPrint(e->doc));
+    QCString title = parseCommentAsText(p->reqPageDef,nullptr,e->type,e->fileName,e->startLine);
+    QCString doc = e->doc;
+    if (e->tagInfo())
+    {
+      //printf("External requirement %s title=%s fileName=%s tagName=%s anchor=%s\n",
+      //    qPrint(e->name),qPrint(e->type),qPrint(e->tagInfo()->fileName),qPrint(e->tagInfo()->tagName),qPrint(e->tagInfo()->anchor));
+      tagFile = e->tagInfo()->tagName;
+      extPage = e->tagInfo()->fileName;
+      // register requirement id as anchor; for non-external links this is
+      // done in commentscan.l in the comment block containing the @requirement command
+      SectionManager::instance().add(e->name,"requirements",1,title,SectionType::Anchor,1);
+    }
+    if (!e->brief.isEmpty())
+    {
+      doc.prepend(e->brief+"\n<p>");
+    }
+    p->requirements.add(e->name, e->fileName, e->startLine, title, doc, tagFile, extPage);
 
-  p->reqPageDef->setRefItems(e->sli);
+    p->reqPageDef->setRefItems(e->sli);
+  }
 }
 
 RequirementIntfList RequirementManager::requirements() const
@@ -159,7 +177,8 @@ RequirementIntfList RequirementManager::requirements() const
 
 void RequirementManager::generatePage()
 {
-  if (p->requirements.empty()) return;
+  AUTO_TRACE("#requirements={}",p->requirements.size());
+  if (!Config_getBool(GENERATE_REQUIREMENTS) || p->requirements.empty()) return;
   std::vector<const SectionInfo*> anchors;
   std::stable_sort(p->requirements.begin(),p->requirements.end(),
                    [](const auto &left,const auto &right) { return qstricmp(left->id(),right->id()) < 0; });
@@ -242,7 +261,7 @@ void RequirementManager::generatePage()
     {
       missingVerifiedRef.push_back(req.get());
     }
-    doc += "</div></td></tr>\n";
+    doc += "\n</div></td></tr>\n";
   }
   doc += "</table>\n";
 
@@ -257,7 +276,9 @@ void RequirementManager::generatePage()
       SectionManager &sm = SectionManager::instance();
       const SectionInfo *si = sm.add(QCString("missing_")+label,"requirements",1,section,SectionType::Section,1);
       anchors.push_back(si);
-      doc += "\\htmlonly <div class=\"missing_req\">\\endhtmlonly\n";
+      doc += "\\htmlonly <div class=\"missing_";
+      doc += label;
+      doc += "\">\\endhtmlonly\n";
       doc += QCString("@section missing_")+label+" "+section+"\n"+text+"\n";
       doc += "\\htmlonly </div>\\endhtmlonly\n";
     }
@@ -266,7 +287,7 @@ void RequirementManager::generatePage()
   // write list of requirements that do not have a satisfies relation
   auto traceInfo = Config_getEnum(REQ_TRACEABILITY_INFO);
   int numMissingSatisfied = static_cast<int>(missingSatisfiedRef.size());
-  if ((traceInfo==REQ_TRACEABILITY_INFO_t::YES || traceInfo==REQ_TRACEABILITY_INFO_t::SATISFIES_ONLY) && numMissingSatisfied>0)
+  if ((traceInfo==REQ_TRACEABILITY_INFO_t::YES || traceInfo==REQ_TRACEABILITY_INFO_t::UNSATISFIES_ONLY) && numMissingSatisfied>0)
   {
     writeMissingRef(missingSatisfiedRef,
                     "satisfies",
@@ -282,7 +303,7 @@ void RequirementManager::generatePage()
 
   // write list of requirements that do not have a verifies relation
   int numMissingVerified = static_cast<int>(missingVerifiedRef.size());
-  if ((traceInfo==REQ_TRACEABILITY_INFO_t::YES || traceInfo==REQ_TRACEABILITY_INFO_t::VERIFIES_ONLY) && numMissingVerified>0)
+  if ((traceInfo==REQ_TRACEABILITY_INFO_t::YES || traceInfo==REQ_TRACEABILITY_INFO_t::UNVERIFIES_ONLY) && numMissingVerified>0)
   {
     writeMissingRef(missingVerifiedRef,
                     "verifies",
@@ -296,7 +317,7 @@ void RequirementManager::generatePage()
                        })));
   }
 
-  //printf("doc=[[\n%s\n]]\n",qPrint(doc));
+  AUTO_TRACE_ADD("doc=[[\n{}\n]]\n",doc);
   p->reqPageDef->setDocumentation(doc,"requirements",1,false);
   p->reqPageDef->addSectionsToDefinition(anchors);
 }
@@ -331,6 +352,7 @@ void RequirementManager::addRequirementRefsForSymbol(const Definition *symbol)
 
 void RequirementManager::writeRef(OutputList &ol,const RequirementRef &ref)
 {
+  if (!Config_getBool(GENERATE_REQUIREMENTS)) return;
   if (const RequirementIntf *req = RequirementManager::instance().find(ref.reqId()); req!=nullptr)
   {
     QCString title = ref.reqId();
@@ -360,6 +382,7 @@ void RequirementManager::writeRef(OutputList &ol,const RequirementRef &ref)
 
 void RequirementManager::writeTagFile(TextStream &tagFile)
 {
+  if (!Config_getBool(GENERATE_REQUIREMENTS)) return;
   if (!p->requirements.empty())
   {
     for (const auto &req : p->requirements)

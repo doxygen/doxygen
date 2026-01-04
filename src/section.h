@@ -39,6 +39,7 @@ class SectionType
     static constexpr int MaxLevel        = 6;
     static constexpr int Anchor          = 7;
     static constexpr int Table           = 8;
+    static constexpr int Requirement     = 9;
 
     constexpr SectionType() : m_level(0) {}
     constexpr SectionType(int lvl) : m_level(lvl) {}

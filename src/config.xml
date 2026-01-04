@@ -917,17 +917,17 @@ Go to the <a href="commands.html">next</a> section or return to the
  is shown on the requirements page (only relevant when using
  \ref cmdrequirement "\\requirement" comment blocks).
  The setting \c NO will disable the traceablility information altogether.
- The setting \c SATISFIES_ONLY will show a list of requirements that are missing
+ The setting \c UNSATISFIES_ONLY will show a list of requirements that are missing
  a satisfies relation (through the command: \ref cmdsatisfies "\\satisfies").
- Similarly the setting \c VERIFIES_ONLY will show a list of requirements that
+ Similarly the setting \c UNVERIFIES_ONLY will show a list of requirements that
  are missing a verifies relation (through the command: \ref cmdverifies "\\verifies").
  Setting the tag to \c YES (the default) will show both lists if applicable.
 ]]>
       </docs>
       <value name="YES" />
       <value name="NO" />
-      <value name="SATISFIES_ONLY" />
-      <value name="VERIFIES_ONLY" />
+      <value name="UNSATISFIES_ONLY" />
+      <value name="UNVERIFIES_ONLY" />
     </option>
   </group>
   <group name='Build' docs='Build related configuration options'>
@@ -1269,6 +1269,16 @@ Go to the <a href="commands.html">next</a> section or return to the
  disable (\c NO) the deprecated list. This list is created by
  putting \ref cmddeprecated "\\deprecated"
  commands in the documentation.
+]]>
+      </docs>
+    </option>
+    <option type='bool' id='GENERATE_REQUIREMENTS' defval='1'>
+      <docs>
+<![CDATA[
+ The \c GENERATE_REQUIREMENTS tag can be used to enable (\c YES) or
+ disable (\c NO) the requirements page. When enabled, this page is
+ automatically created when at least one comment block with
+ a \ref cmdrequirement "\\requirement" command appears in the input.
 ]]>
       </docs>
     </option>

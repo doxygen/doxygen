@@ -1438,7 +1438,7 @@ Structural indicators
   Equivalent to \ref cmdrelatesalso "\\relatesalso"
 
 <hr>
-\section cmdrequirement \\requirement \<id\> (title)
+\section cmdrequirement \\requirement \<id\> [(title)]
 
   \addindex \\requirement
   Indicates that a comment block contains documentation for a requirement.

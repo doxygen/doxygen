@@ -107,7 +107,7 @@ class DocNode
   protected:
     /*! Sets whether or not this item is inside a preformatted section */
     void setInsidePreformatted(bool p) { m_insidePre = p; }
-    enum RefType { Unknown, Anchor, Section, Table };
+    enum RefType { Unknown, Anchor, Section, Table, Requirement };
   private:
     bool m_insidePre = false;
     DocParser *m_parser;
@@ -777,7 +777,7 @@ class DocLink : public DocCompoundNode
 class DocRef : public DocCompoundNode
 {
   public:
-    DocRef(DocParser *parser,DocNodeVariant *parent,const QCString &target,const QCString &context);    
+    DocRef(DocParser *parser,DocNodeVariant *parent,const QCString &target,const QCString &context);
     void parse(char cmdChar,const QCString &cmdName);
     QCString file() const         { return m_file; }
     QCString relPath() const      { return m_relPath; }

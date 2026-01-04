@@ -1388,8 +1388,20 @@ table.reqlist tr > td:first-child {
         font-weight: bold;
 }
 
-div.missing_req {
-        border-left: 8px solid var(--warning-color-hl);
+div.missing_satisfies {
+        border-left: 8px solid var(--satisfies-color-hl);
+	border-radius: 4px;
+	background: var(--satisfies-color-bg);
+        padding: 10px;
+        margin: 10px 0px;
+        overflow: hidden;
+        margin-left: 0;
+}
+
+div.missing_verifies {
+        border-left: 8px solid var(--verifies-color-hl);
+	border-radius: 4px;
+	background: var(--verifies-color-bg);
         padding: 10px;
         margin: 10px 0px;
         overflow: hidden;

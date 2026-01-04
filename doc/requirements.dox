@@ -53,6 +53,8 @@ commands to each function or class.
 Doxygen will produce a page listing all requirements and cross-reference the symbols that 
 link to each requirement via \ref cmdsatisfies "\\satisfies" and \ref cmdverifies "\\verifies" commands.
 
+The requirements page can also be hidden
+by setting \ref cfg_generate_requirements "GENERATE_REQUIREMENTS" to \c NO.
 
 @section external_req External Requirements
 
