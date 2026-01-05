@@ -13,7 +13,7 @@
  * Documents produced by Doxygen are derivative works derived from the
  * input used in their production; they are not affected by this license.
  *
- * Reviewed, and extented by
+ * Reviewed, and extended by
  *   Jens Kallup (kallup-dev@web.de)
  * The translation into German was provided by
  *   Jens Seidel (jensseidel@users.sf.net)
@@ -1611,7 +1611,7 @@ class TranslatorGerman : public Translator
     { QCString result=dirName; result+="-Verzeichnisreferenz"; return result; }
 
     /*! This returns the word directory with or without starting capital
-     *  (\a first_capital) and in sigular or plural form (\a singular).
+     *  (\a first_capital) and in singular or plural form (\a singular).
      */
     QCString trDir(bool, bool singular) override
     {

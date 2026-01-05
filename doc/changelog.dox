@@ -3790,7 +3790,7 @@ and [<a href="https://github.com/doxygen/doxygen/commit/c9284a1aae6e876e0399c475
 <li>Correction warning message [<a href="https://github.com/doxygen/doxygen/commit/3c3efc26e6b258ef2c3916f7e1b2c07254039ad4">view</a>], [<a href="https://github.com/doxygen/doxygen/commit/962b9c9a85384f358258725767d5ae5a2784a0e8">view</a>]</li>
 <li>Count user comment lines [<a href="https://github.com/doxygen/doxygen/commit/3d8e32e6fbc8bb038a5a88b13c7098f53212568a">view</a>]</li>
 <li>Crash in case of usage of \line without \include [<a href="https://github.com/doxygen/doxygen/commit/e148ac40cb0c5dee845f0a43c4c644dac1efc6a1">view</a>]</li>
-<li>Create option to enable CLANG_ASISTED_PARSING in test suite [<a href="https://github.com/doxygen/doxygen/commit/c9858b5115d1526d752031f232ea652e5a0de28d">view</a>]</li>
+<li>Create option to enable CLANG_ASSISTED_PARSING in test suite [<a href="https://github.com/doxygen/doxygen/commit/c9858b5115d1526d752031f232ea652e5a0de28d">view</a>]</li>
 <li>Cygwin should by default also have <tt>CASE_SENS_NAMES=NO</tt> [<a href="https://github.com/doxygen/doxygen/commit/3a9964f4e096a030a2aac0a4a3688ba996715a27">view</a>]</li>
 <li>Disabled &quot;inheritance by dominance&quot; warning [<a href="https://github.com/doxygen/doxygen/commit/2fbe43d6f87d4e0a6bba18f4a15c5f28e3055f7a">view</a>],
 [<a href="https://github.com/doxygen/doxygen/commit/d4243bc66fc911012c8222514d5b33a222993ae5">view</a>]</li>
@@ -9672,7 +9672,7 @@ make sure you add the following:
 <li>   Applied a patch by Ferdinand Wess for better handling of #import
        statements in Obj-C code.</li>
 <li>   Applied a patch by Adam Treat to add read and write accessors
-       of a Q_PROPERY to the XML output.</li>
+       of a Q_PROPERTY to the XML output.</li>
 <li>   Arnaud Bercegeay has added platform support for the Atari MiNT OS. </li>
 <li>   Included patch by James Ahlborn which improves the way nested numbered
        lists are layouted in the HTML output.</li>
