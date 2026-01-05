@@ -3790,7 +3790,7 @@ class memberdefType(GeneratedsSuper):
     __hash__ = GeneratedsSuper.__hash__
     subclass = None
     superclass = None
-    def __init__(self, kind=None, id=None, prot=None, static=None, extern=None, strong=None, const=None, explicit=None, inline=None, refqual=None, virt=None, volatile=None, mutable=None, thread_local=None, noexcept=None, noexceptexpression=None, nodiscard=None, constexpr=None, consteval=None, constinit=None, readable=None, writable=None, initonly=None, settable=None, privatesettable=None, protectedsettable=None, gettable=None, privategettable=None, protectedgettable=None, final=None, sealed=None, new=None, add=None, remove=None, raise_=None, optional=None, required=None, accessor=None, attribute=None, property=None, readonly=None, bound=None, removable=None, constrained=None, transient=None, maybevoid=None, maybedefault=None, maybeambiguous=None, templateparamlist=None, type_=None, definition=None, argsstring=None, name=None, qualifiedname=None, read=None, write=None, bitfield=None, reimplements=None, reimplementedby=None, qualifier=None, param=None, enumvalue=None, requiresclause=None, initializer=None, exceptions=None, briefdescription=None, detaileddescription=None, inbodydescription=None, location=None, references=None, referencedby=None, gds_collector_=None, **kwargs_):
+    def __init__(self, kind=None, id=None, prot=None, static=None, extern=None, strong=None, const=None, explicit=None, inline=None, refqual=None, virt=None, volatile=None, mutable=None, thread_local=None, noexcept=None, noexceptexpression=None, nodiscard=None, constexpr=None, consteval=None, constinit=None, readable=None, writable=None, initonly=None, settable=None, privatesettable=None, protectedsettable=None, gettable=None, privategettable=None, protectedgettable=None, final=None, sealed=None, new=None, add=None, remove=None, raise_=None, optional=None, required=None, accessor=None, attribute=None, property=None, readonly=None, bound=None, removable=None, constrained=None, transient=None, maybevoid=None, maybedefault=None, maybeambiguous=None, templateparamlist=None, type_=None, definition=None, argsstring=None, name=None, qualifiedname=None, read=None, write=None, bitfield=None, reimplements=None, reimplementedby=None, qualifier=None, param=None, enumvalue=None, requiresclause=None, initializer=None, exceptions=None, satisfies=None, verifies=None, briefdescription=None, detaileddescription=None, inbodydescription=None, location=None, references=None, referencedby=None, gds_collector_=None, **kwargs_):
         self.gds_collector_ = gds_collector_
         self.gds_elementtree_node_ = None
         self.original_tagname_ = None
@@ -3941,6 +3941,10 @@ class memberdefType(GeneratedsSuper):
         self.initializer_nsprefix_ = None
         self.exceptions = exceptions
         self.exceptions_nsprefix_ = None
+        self.satisfies = satisfies
+        self.satisfies_nsprefix_ = None
+        self.verifies = verifies
+        self.verifies_nsprefix_ = None
         self.briefdescription = briefdescription
         self.briefdescription_nsprefix_ = None
         self.detaileddescription = detaileddescription
@@ -4072,6 +4076,14 @@ class memberdefType(GeneratedsSuper):
         return self.exceptions
     def set_exceptions(self, exceptions):
         self.exceptions = exceptions
+    def get_satisfies(self):
+        return self.satisfies
+    def set_satisfies(self, satisfies):
+        self.satisfies = satisfies
+    def get_verifies(self):
+        return self.verifies
+    def set_verifies(self, verifies):
+        self.verifies = verifies
     def get_briefdescription(self):
         return self.briefdescription
     def set_briefdescription(self, briefdescription):
@@ -4397,6 +4409,8 @@ class memberdefType(GeneratedsSuper):
             self.requiresclause is not None or
             self.initializer is not None or
             self.exceptions is not None or
+            self.satisfies is not None or
+            self.verifies is not None or
             self.briefdescription is not None or
             self.detaileddescription is not None or
             self.inbodydescription is not None or
@@ -4639,6 +4653,12 @@ class memberdefType(GeneratedsSuper):
         if self.exceptions is not None:
             namespaceprefix_ = self.exceptions_nsprefix_ + ':' if (UseCapturedNS_ and self.exceptions_nsprefix_) else ''
             self.exceptions.export(outfile, level, namespaceprefix_, namespacedef_='', name_='exceptions', pretty_print=pretty_print)
+        if self.satisfies is not None:
+            namespaceprefix_ = self.satisfies_nsprefix_ + ':' if (UseCapturedNS_ and self.satisfies_nsprefix_) else ''
+            self.satisfies.export(outfile, level, namespaceprefix_, namespacedef_='', name_='satisfies', pretty_print=pretty_print)
+        if self.verifies is not None:
+            namespaceprefix_ = self.verifies_nsprefix_ + ':' if (UseCapturedNS_ and self.verifies_nsprefix_) else ''
+            self.verifies.export(outfile, level, namespaceprefix_, namespacedef_='', name_='verifies', pretty_print=pretty_print)
         if self.briefdescription is not None:
             namespaceprefix_ = self.briefdescription_nsprefix_ + ':' if (UseCapturedNS_ and self.briefdescription_nsprefix_) else ''
             self.briefdescription.export(outfile, level, namespaceprefix_, namespacedef_='', name_='briefdescription', pretty_print=pretty_print)
@@ -5001,6 +5021,16 @@ class memberdefType(GeneratedsSuper):
             obj_.build(child_, gds_collector_=gds_collector_)
             self.exceptions = obj_
             obj_.original_tagname_ = 'exceptions'
+        elif nodeName_ == 'satisfies':
+            obj_ = requirementRefsType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            self.satisfies = obj_
+            obj_.original_tagname_ = 'satisfies'
+        elif nodeName_ == 'verifies':
+            obj_ = requirementRefsType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            self.verifies = obj_
+            obj_.original_tagname_ = 'verifies'
         elif nodeName_ == 'briefdescription':
             class_obj_ = self.get_class_obj_(child_, descriptionType)
             obj_ = class_obj_.factory(parent_object_=self)

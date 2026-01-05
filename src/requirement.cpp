@@ -287,7 +287,7 @@ void RequirementManager::generatePage()
   // write list of requirements that do not have a satisfies relation
   auto traceInfo = Config_getEnum(REQ_TRACEABILITY_INFO);
   int numMissingSatisfied = static_cast<int>(missingSatisfiedRef.size());
-  if ((traceInfo==REQ_TRACEABILITY_INFO_t::YES || traceInfo==REQ_TRACEABILITY_INFO_t::UNSATISFIES_ONLY) && numMissingSatisfied>0)
+  if ((traceInfo==REQ_TRACEABILITY_INFO_t::YES || traceInfo==REQ_TRACEABILITY_INFO_t::UNSATISFIED_ONLY) && numMissingSatisfied>0)
   {
     writeMissingRef(missingSatisfiedRef,
                     "satisfies",
@@ -303,7 +303,7 @@ void RequirementManager::generatePage()
 
   // write list of requirements that do not have a verifies relation
   int numMissingVerified = static_cast<int>(missingVerifiedRef.size());
-  if ((traceInfo==REQ_TRACEABILITY_INFO_t::YES || traceInfo==REQ_TRACEABILITY_INFO_t::UNVERIFIES_ONLY) && numMissingVerified>0)
+  if ((traceInfo==REQ_TRACEABILITY_INFO_t::YES || traceInfo==REQ_TRACEABILITY_INFO_t::UNVERIFIED_ONLY) && numMissingVerified>0)
   {
     writeMissingRef(missingVerifiedRef,
                     "verifies",

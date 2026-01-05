@@ -22,7 +22,14 @@
  *
  * @satisfies REQ-001 Implements the core authentication mechanism
  */
-class UserManager {};
+class UserManager
+{
+  public:
+    /** Check access
+     *  @satisfies REQ-001 User access check.
+     */
+    void check_access(std::string &user_id);
+};
 
 /**
  * @brief Test suite for user authentication functionality.

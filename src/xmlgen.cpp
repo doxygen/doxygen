@@ -73,6 +73,11 @@ inline void writeXMLString(TextStream &t,const QCString &s)
   t << convertToXML(s);
 }
 
+inline QCString xmlRequirementId(const QCString &reqId)
+{
+  return convertNameToFile("requirement_"+reqId,false,true);
+}
+
 inline void writeXMLCodeString(bool hide,TextStream &t,const QCString &str, size_t &col, size_t stripIndentAmount)
 {
   if (str.isEmpty()) return;
@@ -640,6 +645,28 @@ static QCString extractNoExcept(QCString &argsStr)
   return expr;
 }
 
+static void writeRequirementRefs(const Definition *d,TextStream &t,const char *prefix="")
+{
+  auto writeRefsForType = [&t,&prefix](const RequirementRefs &refs,const char *tagName)
+  {
+    if (!refs.empty())
+    {
+      t << prefix << "    <" << tagName << ">\n";
+      for (const auto &ref : refs)
+      {
+        t << prefix << "      <requirement refid=\"" << xmlRequirementId(ref.reqId()) << "\">"
+          << convertToXML(ref.title()) << "</requirement>\n";
+      }
+      t << prefix << "    </" << tagName << ">\n";
+    }
+  };
+  RequirementRefs satisfiesRefs;
+  RequirementRefs verifiesRefs;
+  splitRequirementRefs(d->requirementReferences(),satisfiesRefs,verifiesRefs);
+  writeRefsForType(satisfiesRefs,"satisfies");
+  writeRefsForType(verifiesRefs,"verifies");
+}
+
 
 static void generateXMLForMember(const MemberDef *md,TextStream &ti,TextStream &t,const Definition *def)
 {
@@ -1159,6 +1186,7 @@ static void generateXMLForMember(const MemberDef *md,TextStream &ti,TextStream &
     linkifyText(TextGeneratorXMLImpl(t),def,md->getBodyDef(),md,md->excpString());
     t << "</exceptions>\n";
   }
+  writeRequirementRefs(md,t,"    ");
 
   if (md->memberType()==MemberType::Enumeration) // enum
   {
@@ -1309,28 +1337,6 @@ static void writeListOfAllMembers(const ClassDef *cd,TextStream &t)
     }
   }
   t << "    </listofallmembers>\n";
-}
-
-static void writeRequirementRefs(const Definition *d,TextStream &t)
-{
-  auto writeRefsForType = [&t](const RequirementRefs &refs,const char *tagName)
-  {
-    if (!refs.empty())
-    {
-      t << "    <" << tagName << ">\n";
-      for (const auto &ref : refs)
-      {
-        t << "      <requirement refid=\"" << convertToXML(ref.reqId()) << "\">"
-          << convertToXML(ref.title()) << "</requirement>\n";
-      }
-      t << "    </" << tagName << ">\n";
-    }
-  };
-  RequirementRefs satisfiesRefs;
-  RequirementRefs verifiesRefs;
-  splitRequirementRefs(d->requirementReferences(),satisfiesRefs,verifiesRefs);
-  writeRefsForType(satisfiesRefs,"satisfies");
-  writeRefsForType(verifiesRefs,"verifies");
 }
 
 static void writeInnerClasses(const ClassLinkedRefMap &cl,TextStream &t)
@@ -2234,7 +2240,7 @@ static void generateXMLForPage(PageDef *pd,TextStream &ti,bool isExample)
 
 static void generateXMLForRequirement(const RequirementIntf *req,TextStream &ti)
 {
-  QCString pageName = convertNameToFile("requirement_"+req->id(),false,true);
+  QCString pageName = xmlRequirementId(req->id());
   ti << "  <compound refid=\"" << pageName << "\" kind=\"requirement\"><name>" << convertToXML(req->id()) << "</name>\n";
 
   QCString outputDirectory = Config_getString(XML_OUTPUT);

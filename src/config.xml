@@ -910,25 +910,6 @@ Go to the <a href="commands.html">next</a> section or return to the
       <value name="DATETIME" />
       <value name="DATE" />
     </option>
-    <option type='enum' id='REQ_TRACEABILITY_INFO' defval='YES'>
-      <docs>
-<![CDATA[
- The \c REQ_TRACEABILITY_INFO tag controls if traceability information
- is shown on the requirements page (only relevant when using
- \ref cmdrequirement "\\requirement" comment blocks).
- The setting \c NO will disable the traceablility information altogether.
- The setting \c UNSATISFIES_ONLY will show a list of requirements that are missing
- a satisfies relation (through the command: \ref cmdsatisfies "\\satisfies").
- Similarly the setting \c UNVERIFIES_ONLY will show a list of requirements that
- are missing a verifies relation (through the command: \ref cmdverifies "\\verifies").
- Setting the tag to \c YES (the default) will show both lists if applicable.
-]]>
-      </docs>
-      <value name="YES" />
-      <value name="NO" />
-      <value name="UNSATISFIES_ONLY" />
-      <value name="UNVERIFIES_ONLY" />
-    </option>
   </group>
   <group name='Build' docs='Build related configuration options'>
     <option type='bool' id='EXTRACT_ALL' defval='0'>
@@ -1281,6 +1262,25 @@ Go to the <a href="commands.html">next</a> section or return to the
  a \ref cmdrequirement "\\requirement" command appears in the input.
 ]]>
       </docs>
+    </option>
+    <option type='enum' id='REQ_TRACEABILITY_INFO' defval='YES' depends='GENERATE_REQUIREMENTS'>
+      <docs>
+<![CDATA[
+ The \c REQ_TRACEABILITY_INFO tag controls if traceability information
+ is shown on the requirements page (only relevant when using
+ \ref cmdrequirement "\\requirement" comment blocks).
+ The setting \c NO will disable the traceablility information altogether.
+ The setting \c UNSATISFIED_ONLY will show a list of requirements that are missing
+ a satisfies relation (through the command: \ref cmdsatisfies "\\satisfies").
+ Similarly the setting \c UNVERIFIED_ONLY will show a list of requirements that
+ are missing a verifies relation (through the command: \ref cmdverifies "\\verifies").
+ Setting the tag to \c YES (the default) will show both lists if applicable.
+]]>
+      </docs>
+      <value name="YES" />
+      <value name="NO" />
+      <value name="UNSATISFIED_ONLY" />
+      <value name="UNVERIFIED_ONLY" />
     </option>
     <option type='list' id='ENABLED_SECTIONS' format='string'>
       <docs>
