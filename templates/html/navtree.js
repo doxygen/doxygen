@@ -31,20 +31,8 @@ function initNavTree(toroot,relpath,allMembersFile) {
   const fullSidebar = typeof page_layout!=='undefined' && page_layout==1;
 
   // Helper functions to replace jQuery
-  const $ = function(selector) {
-    if (typeof selector === 'string') {
-      return document.querySelector(selector);
-    } else if (selector === window || selector === document || selector === location) {
-      return selector;
-    } else if (selector && selector.nodeType) {
-      return selector;
-    }
-    return null;
-  };
-
-  const $$ = function(selector) {
-    return Array.from(document.querySelectorAll(selector));
-  };
+  const $  = (selector) => document.querySelector(selector);
+  const $$ = (selector) => Array.from(document.querySelectorAll(selector));
 
   const addClass = function(el, className) {
     if (el) el.classList.add(className);
@@ -54,9 +42,7 @@ function initNavTree(toroot,relpath,allMembersFile) {
     if (el) el.classList.remove(className);
   };
 
-  const hasClass = function(el, className) {
-    return el ? el.classList.contains(className) : false;
-  };
+  const hasClass = (el, className) => el ? el.classList.contains(className) : false;
 
   const setAttr = function(el, name, value) {
     if (el) el.setAttribute(name, value);
@@ -66,15 +52,13 @@ function initNavTree(toroot,relpath,allMembersFile) {
     if (el) el.removeAttribute(name);
   };
 
-  const getAttr = function(el, name) {
-    return el ? el.getAttribute(name) : null;
-  };
+  const getAttr = (el, name) => el ? el.getAttribute(name) : null;
 
   const css = function(el, styles) {
     if (!el) return;
     for (let prop in styles) {
-      el.style[prop] = typeof styles[prop] === 'number' && prop !== 'zIndex' 
-        ? styles[prop] + 'px' 
+      el.style[prop] = typeof styles[prop] === 'number' && prop !== 'zIndex'
+        ? styles[prop] + 'px'
         : styles[prop];
     }
   };
@@ -132,11 +116,11 @@ function initNavTree(toroot,relpath,allMembersFile) {
         startValues[prop] = el.scrollTop;
       }
     }
-    
+
     const tick = (now) => {
       const elapsed = now - start;
       const progress = Math.min(elapsed / duration, 1);
-      
+
       for (let prop in props) {
         if (prop === 'scrollTop') {
           const startVal = startValues[prop];
@@ -144,14 +128,14 @@ function initNavTree(toroot,relpath,allMembersFile) {
           el.scrollTop = startVal + (endVal - startVal) * progress;
         }
       }
-      
+
       if (progress < 1) {
         requestAnimationFrame(tick);
       } else if (callback) {
         callback();
       }
     };
-    
+
     requestAnimationFrame(tick);
   };
 
@@ -159,11 +143,11 @@ function initNavTree(toroot,relpath,allMembersFile) {
     const outer = document.createElement('div');
     css(outer, {visibility: 'hidden', width: '100px', overflow: 'scroll', scrollbarWidth: 'thin'});
     document.body.appendChild(outer);
-    
+
     const inner = document.createElement('div');
     css(inner, {width: '100%'});
     outer.appendChild(inner);
-    
+
     const widthWithScroll = inner.offsetWidth;
     document.body.removeChild(outer);
     return 100 - widthWithScroll;
@@ -186,9 +170,7 @@ function initNavTree(toroot,relpath,allMembersFile) {
     return window[e];
   }
 
-  const stripPath = function(uri) {
-    return uri.substring(uri.lastIndexOf('/')+1);
-  }
+  const stripPath = (uri) => uri.substring(uri.lastIndexOf('/')+1);
 
   const stripPath2 = function(uri) {
     const i = uri.lastIndexOf('/');
@@ -197,17 +179,9 @@ function initNavTree(toroot,relpath,allMembersFile) {
     return m ? uri.substring(i-6) : s;
   }
 
-  const hashValue = function() {
-    return location.hash.substring(1).replace(/[^\w-]/g,'');
-  }
-
-  const hashUrl = function() {
-    return '#'+hashValue();
-  }
-
-  const pathName = function() {
-    return location.pathname.replace(/[^-A-Za-z0-9+&@#/%?=~_|!:,.;()]/g, '');
-  }
+  const hashValue = () => location.hash.substring(1).replace(/[^\w-]/g,'');
+  const hashUrl = () => '#'+hashValue();
+  const pathName = () => location.pathname.replace(/[^-A-Za-z0-9+&@#/%?=~_|!:,.;()]/g, '');
 
   const storeLink = function(link) {
     const navSync = $("#nav-sync");
@@ -220,9 +194,7 @@ function initNavTree(toroot,relpath,allMembersFile) {
     Cookie.eraseSetting(NAVPATH_COOKIE_NAME);
   }
 
-  const cachedLink = function() {
-    return Cookie.readSetting(NAVPATH_COOKIE_NAME,'');
-  }
+  const cachedLink = () => Cookie.readSetting(NAVPATH_COOKIE_NAME,'');
 
   const getScript = function(scriptName,func) {
     const head = document.getElementsByTagName("head")[0];
@@ -273,10 +245,10 @@ function initNavTree(toroot,relpath,allMembersFile) {
     if (!anchor) return;
     let pos, docContent = $('#doc-content');
     if (!docContent) return;
-    
+
     const anchorParent = anchor.parentElement;
     if (!anchorParent) return;
-    
+
     const parentClass = anchorParent.className;
     if (hasClass(anchorParent, 'memItemLeft') || hasClass(anchorParent, 'memtitle') ||
         hasClass(anchorParent, 'fieldname') || hasClass(anchorParent, 'fieldtype') ||
@@ -784,81 +756,45 @@ function initNavTree(toroot,relpath,allMembersFile) {
     if (document.getElementById('main-nav')) {
       mainnav = $("#main-nav");
     }
-    navtree = $("#nav-tree");
+    navtree   = $("#nav-tree");
     pagenav   = $("#page-nav");
     container = $("#container");
-    
+
     // Note: .resizable() is from jQuery UI and would require significant reimplementation
     // For now, we keep minimal jQuery usage for this plugin-dependent functionality
-    const sideNavResizable = document.querySelector(".side-nav-resizable");
-    if (sideNavResizable && typeof jQuery !== 'undefined' && jQuery.fn.resizable) {
-      jQuery(sideNavResizable).resizable({resize: function(e, ui) { resizeWidth(true); } });
-      jQuery(sidenav).resizable({ minWidth: 0 });
-    }
-    
+    jQuery(".side-nav-resizable").resizable({resize: function(e, ui) { resizeWidth(true); } });
+    jQuery(sidenav).resizable({ minWidth: 0 });
     if (pagenav) {
-      const pagehandle = $("#page-nav-resize-handle");
-      if (pagehandle) {
-        pagehandle.addEventListener('mousedown', function(e) { 
-          addClass(document.body, 'resizing');
-          addClass(pagehandle, 'dragging');
-          
-          const mouseMoveHandler = function(e) {
-            const clientX = e.clientX || (e.touches && e.touches[0].clientX);
-            let pagenavWidth = container.offsetWidth - clientX + barWidth/2;
-            const sidenavWidth = sidenav.clientWidth;
-            const widths = constrainPanelWidths(sidenavWidth,pagenavWidth,false);
-            css(container, {gridTemplateColumns:'auto '+parseFloat(widths.rightPanelWidth)+'px'});
-            css(pagenav, {width:parseFloat(widths.rightPanelWidth-1)+'px'});
-            css(content, {marginLeft:parseFloat(widths.leftPanelWidth)+'px'});
-            Cookie.writeSetting(PAGENAV_COOKIE_NAME,pagenavWidth);
-          };
-          
-          const mouseUpHandler = function(e) {
-            removeClass(document.body, 'resizing');
-            removeClass(pagehandle, 'dragging');
-            document.removeEventListener('mousemove', mouseMoveHandler);
-            document.removeEventListener('mouseup', mouseUpHandler);
-            document.removeEventListener('touchmove', mouseMoveHandler);
-            document.removeEventListener('touchend', mouseUpHandler);
-          };
-          
-          document.addEventListener('mousemove', mouseMoveHandler);
-          document.addEventListener('touchmove', mouseMoveHandler);
-          document.addEventListener('mouseup', mouseUpHandler);
-          document.addEventListener('touchend', mouseUpHandler);
-        });
-        pagehandle.addEventListener('touchstart', function(e) {
-          e.preventDefault();
-          addClass(document.body, 'resizing');
-          addClass(pagehandle, 'dragging');
-          
-          const mouseMoveHandler = function(e) {
-            const clientX = e.clientX || (e.touches && e.touches[0].clientX);
-            let pagenavWidth = container.offsetWidth - clientX + barWidth/2;
-            const sidenavWidth = sidenav.clientWidth;
-            const widths = constrainPanelWidths(sidenavWidth,pagenavWidth,false);
-            css(container, {gridTemplateColumns:'auto '+parseFloat(widths.rightPanelWidth)+'px'});
-            css(pagenav, {width:parseFloat(widths.rightPanelWidth-1)+'px'});
-            css(content, {marginLeft:parseFloat(widths.leftPanelWidth)+'px'});
-            Cookie.writeSetting(PAGENAV_COOKIE_NAME,pagenavWidth);
-          };
-          
-          const mouseUpHandler = function(e) {
-            removeClass(document.body, 'resizing');
-            removeClass(pagehandle, 'dragging');
-            document.removeEventListener('mousemove', mouseMoveHandler);
-            document.removeEventListener('mouseup', mouseUpHandler);
-            document.removeEventListener('touchmove', mouseMoveHandler);
-            document.removeEventListener('touchend', mouseUpHandler);
-          };
-          
-          document.addEventListener('mousemove', mouseMoveHandler);
-          document.addEventListener('touchmove', mouseMoveHandler);
-          document.addEventListener('mouseup', mouseUpHandler);
-          document.addEventListener('touchend', mouseUpHandler);
-        });
-      }
+      const pagehandle = jQuery("#page-nav-resize-handle");
+      pagehandle.on('mousedown touchmove', function(e) {
+        addClass(document.body, 'resizing');
+        pagehandle.addClass('dragging');
+
+        const mouseMoveHandler = function(e) {
+          const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+          let pagenavWidth = container.offsetWidth - clientX + barWidth/2;
+          const sidenavWidth = sidenav.clientWidth;
+          const widths = constrainPanelWidths(sidenavWidth,pagenavWidth,false);
+          css(container, {gridTemplateColumns:'auto '+parseFloat(widths.rightPanelWidth)+'px'});
+          css(pagenav, {width:parseFloat(widths.rightPanelWidth-1)+'px'});
+          css(content, {marginLeft:parseFloat(widths.leftPanelWidth)+'px'});
+          Cookie.writeSetting(PAGENAV_COOKIE_NAME,pagenavWidth);
+        };
+
+        const mouseUpHandler = function(e) {
+          removeClass(document.body, 'resizing');
+          pagehandle.removeClass('dragging');
+          document.removeEventListener('mousemove', mouseMoveHandler);
+          document.removeEventListener('mouseup',   mouseUpHandler);
+          document.removeEventListener('touchmove', mouseMoveHandler);
+          document.removeEventListener('touchend',  mouseUpHandler);
+        };
+
+        document.addEventListener('mousemove', mouseMoveHandler);
+        document.addEventListener('touchmove', mouseMoveHandler);
+        document.addEventListener('mouseup',   mouseUpHandler);
+        document.addEventListener('touchend',  mouseUpHandler);
+      });
     } else {
       css(container, {gridTemplateColumns:'auto'});
     }
@@ -874,31 +810,28 @@ function initNavTree(toroot,relpath,allMembersFile) {
       splitbar.addEventListener("dragstart", _preventDefault);
       splitbar.addEventListener("selectstart", _preventDefault);
     }
-    
-    window.addEventListener('DOMContentLoaded', function() {
-      let lastWidth = -1;
-      let lastHeight = -1;
-      window.addEventListener('resize', function() {
-          const newWidth = window.innerWidth;
-          const newHeight = window.innerHeight;
-          if (newWidth!=lastWidth || newHeight!=lastHeight) {
-            resizeHeight();
-            navtree_trampoline.updateContentTop();
-            lastWidth = newWidth;
-            lastHeight = newHeight;
-          }
-      });
-      resizeHeight();
-      lastWidth = window.innerWidth;
-      lastHeight = window.innerHeight;
-      if (content) {
-        content.addEventListener('scroll', function() {
-          navtree_trampoline.updateContentTop();
-        });
-      }
-    });
-  }
 
+    let lastWidth = -1;
+    let lastHeight = -1;
+    window.addEventListener('resize', function() {
+        const newWidth = window.innerWidth;
+        const newHeight = window.innerHeight;
+        if (newWidth!=lastWidth || newHeight!=lastHeight) {
+          resizeHeight();
+          navtree_trampoline.updateContentTop();
+          lastWidth = newWidth;
+          lastHeight = newHeight;
+        }
+    });
+    resizeHeight();
+    lastWidth = window.innerWidth;
+    lastHeight = window.innerHeight;
+    if (content) {
+      content.addEventListener('scroll', function() {
+        navtree_trampoline.updateContentTop();
+      });
+    }
+  }
 
   function initPageToc() {
     const topMapping = [];
@@ -1202,14 +1135,14 @@ function initNavTree(toroot,relpath,allMembersFile) {
       navtree_trampoline.updateContentTop();
     },200);
   }
-  
+
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function() { 
-      initPageToc(); 
-      initResizable(); 
+    document.addEventListener('DOMContentLoaded', function() {
+      initPageToc();
+      initResizable();
     });
   } else {
-    initPageToc(); 
+    initPageToc();
     initResizable();
   }
 
