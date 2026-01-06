@@ -54,7 +54,7 @@ def transformDocs(doc):
     doc = doc.replace("\\#undef ", "#undef ")
     doc = doc.replace("-# ", "\n - ")
     doc = doc.replace(" - ", "\n - ")
-    doc = doc.replace("\\sa", "\nSee also: ")
+    doc = doc.replace("\\sa ", "\nSee also: ")
     doc = doc.replace("\\par", "\n")
     doc = doc.replace("@note", "\nNote:")
     doc = doc.replace("\\note", "\nNote:")
