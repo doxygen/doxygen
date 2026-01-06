@@ -1436,7 +1436,7 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
     { QCString result=dirName; result+=" Ֆայլադարան"; return result; }
 
     /*! This returns the word directory with or without starting capital
-     *  (\a first_capital) and in sigular or plural form (\a singular).
+     *  (\a first_capital) and in singular or plural form (\a singular).
      */
     QCString trDir(bool first_capital, bool singular) override
     {

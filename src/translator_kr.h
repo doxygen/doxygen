@@ -1485,7 +1485,7 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
     { QCString result=dirName; result+=" 디렉토리 참조"; return result; }
 
     /*! This returns the word directory with or without starting capital
-     *  (\a first_capital) and in sigular or plural form (\a singular).
+     *  (\a first_capital) and in singular or plural form (\a singular).
      */
     QCString trDir(bool, bool singular) override
     {

@@ -1488,7 +1488,7 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
     { QCString result=dirName; result+=" مرجع شاخه ی"; return result; }
 
     /*! This returns the word directory with or without starting capital
-     *  (\a first_capital) and in sigular or plural form (\a singular).
+     *  (\a first_capital) and in singular or plural form (\a singular).
      */
     QCString trDir(bool /*first_capital*/, bool singular) override
     {

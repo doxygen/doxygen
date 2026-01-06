@@ -2113,8 +2113,8 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
     QCString trDesignUnitMembers() override
     { return "Designenhetsmedlemmar"; }
     /** VHDL design unit list description
-     * Orginal: Here is a list of all design unit members with links to
-     *          the Entities they belong to:
+     * Original: Here is a list of all design unit members with links to
+     *           the Entities they belong to:
      */
     QCString trDesignUnitListDescription() override
     {
@@ -2252,7 +2252,7 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
     {
         return "Gränssnittslist";
     }
-    /** Orginal: Here are the interfaces with brief descriptions: */
+    /** Original: Here are the interfaces with brief descriptions: */
     QCString trInterfaceListDescription() override
     {
         return "Här är gränssnitten med en kort beskrivning";
@@ -2261,7 +2261,7 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
     {
         return "Gränssnittshirarkin";
     }
-    /** Orginal: This inheritance list is sorted roughly, but not completely, alphabetically: */
+    /** Original: This inheritance list is sorted roughly, but not completely, alphabetically: */
     QCString trInterfaceHierarchyDescription() override
     {
         return "Denna arvslista är grovt sorterad, men inte helt, i alfabetisk ordning:";
@@ -2282,7 +2282,7 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
     {
         return "Strukturlist";
     }
-    /** Orginal: Here are the structs with brief descriptions: */
+    /** Original: Here are the structs with brief descriptions: */
     QCString trStructListDescription() override
     {
         return "Här är strukturerna med en kort beskrivning:";
@@ -2299,7 +2299,7 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
     {
         return "Undantagslista";
     }
-    /** Orginal: Here are the exceptions with brief descriptions: */
+    /** Original: Here are the exceptions with brief descriptions: */
     QCString trExceptionListDescription() override
     {
         return "Här är undantagen med en kort beskrivning:";
@@ -2308,7 +2308,7 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
     {
         return "Undantagshirarki";
     }
-    /** Orginal:  This inheritance list is sorted roughly, but not completely, alphabetically: */
+    /** Original:  This inheritance list is sorted roughly, but not completely, alphabetically: */
     QCString trExceptionHierarchyDescription() override
     {
         return "Denna arvslista är grovt sorterad, men inte helt, i alfabetisk ordning:";
