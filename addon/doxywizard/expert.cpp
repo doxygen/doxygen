@@ -469,7 +469,7 @@ static QString getDocsForNode(const QDomElement &child)
   docs.replace(SA("\\endverbatim"),SA("</pre>"));
   // \sa -> <br>See also:
   // \par -> <br>
-  docs.replace(SA("\\sa"),SA("<br>See also:"));
+  docs.replace(SA("\\sa "),SA("<br>See also: "));
   docs.replace(SA("\\par"),SA("<br>"));
   // 2xbackslash -> backslash
   // \@ -> @
