@@ -996,6 +996,7 @@ void GroupDefImpl::writeNestedGroups(OutputList &ol,const QCString &title)
         if (anc.isEmpty()) anc=gd->name(); else anc.prepend(gd->name()+"_");
         ol.startMemberItem(anc,OutputGenerator::MemberItemType::Normal);
         ol.insertMemberAlign();
+        ol.startIndexItem(gd->getReference(),gd->getOutputFileBase());
         ol.generateDoc(gd->getDefFileName(),
                        gd->getDefLine(),
                        gd,
@@ -1004,6 +1005,7 @@ void GroupDefImpl::writeNestedGroups(OutputList &ol,const QCString &title)
                        DocOptions()
                        .setSingleLine(true)
                        .setAutolinkSupport(false));
+        ol.endIndexItem(gd->getReference(),gd->getOutputFileBase());
         ol.endMemberItem(OutputGenerator::MemberItemType::Normal);
         if (!gd->briefDescription().isEmpty() && Config_getBool(BRIEF_MEMBER_DESC))
         {
