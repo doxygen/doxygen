@@ -379,13 +379,8 @@ function initNavTree(toroot,relpath,allMembersFile) {
     const windowHeight = window.innerHeight - headerHeight - footerHeight;
     (function retry() { // retry until we can scroll to the selected item
       try {
-        const navtree = $('#nav-tree');
-        const selected = document.getElementById('selected');
-        if (navtree && selected) {
-          const selectedOffset = offset(selected).top;
-          const navtreeOffset = offset(navtree).top;
-          navtree.scrollTop = selectedOffset - navtreeOffset - windowHeight/2;
-        }
+        const navtree = jQuery('#nav-tree');
+        navtree.scrollTo('#selected',100,{offset:-windowHeight/2});
       } catch (err) {
         setTimeout(retry, 0);
       }
