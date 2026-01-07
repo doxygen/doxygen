@@ -33,44 +33,8 @@ function initNavTree(toroot,relpath,allMembersFile) {
   // Helper functions to replace jQuery
   const $  = (selector) => document.querySelector(selector);
   const $$ = (selector) => Array.from(document.querySelectorAll(selector));
-
-  const addClass = function(el, className) {
-    if (el) el.classList.add(className);
-  };
-
-  const removeClass = function(el, className) {
-    if (el) el.classList.remove(className);
-  };
-
   const hasClass = (el, className) => el ? el.classList.contains(className) : false;
-
-  const setAttr = function(el, name, value) {
-    if (el) el.setAttribute(name, value);
-  };
-
-  const removeAttr = function(el, name) {
-    if (el) el.removeAttribute(name);
-  };
-
-  const getAttr = (el, name) => el ? el.getAttribute(name) : null;
-
-  const css = function(el, styles) {
-    if (!el) return;
-    for (let prop in styles) {
-      el.style[prop] = typeof styles[prop] === 'number' && prop !== 'zIndex'
-        ? styles[prop] + 'px'
-        : styles[prop];
-    }
-  };
-
-  const offset = function(el) {
-    if (!el) return { top: 0, left: 0 };
-    const rect = el.getBoundingClientRect();
-    return {
-      top: rect.top + window.pageYOffset,
-      left: rect.left + window.pageXOffset
-    };
-  };
+  const offsetTop = (el) => el ? (el.getBoundingClientRect().top + window.pageYOffset) : 0;
 
   const slideUp = function(el, duration, callback) {
     if (!el) return;
@@ -107,27 +71,15 @@ function initNavTree(toroot,relpath,allMembersFile) {
     }, 10);
   };
 
-  const animate = function(el, props, duration, callback) {
+  const animateScrolling = function(el, targetPos, duration, callback) {
     if (!el) return;
     const start = performance.now();
-    const startValues = {};
-    for (let prop in props) {
-      if (prop === 'scrollTop') {
-        startValues[prop] = el.scrollTop;
-      }
-    }
-
+    const startVal = el.scrollTop;
     const tick = (now) => {
-      const elapsed = now - start;
+      const elapsed  = now - start;
       const progress = Math.min(elapsed / duration, 1);
-
-      for (let prop in props) {
-        if (prop === 'scrollTop') {
-          const startVal = startValues[prop];
-          const endVal = props[prop];
-          el.scrollTop = startVal + (endVal - startVal) * progress;
-        }
-      }
+      const endVal   = targetPos;
+      el.scrollTop   = startVal + (endVal - startVal) * progress;
 
       if (progress < 1) {
         requestAnimationFrame(tick);
@@ -135,17 +87,19 @@ function initNavTree(toroot,relpath,allMembersFile) {
         callback();
       }
     };
-
     requestAnimationFrame(tick);
   };
 
   function getScrollBarWidth () {
     const outer = document.createElement('div');
-    css(outer, {visibility: 'hidden', width: '100px', overflow: 'scroll', scrollbarWidth: 'thin'});
+    outer.style.visibility='hidden';
+    outer.style.width='100px';
+    outer.style.overflow='scroll';
+    outer.style.scrollbarWidth='thin';
     document.body.appendChild(outer);
 
     const inner = document.createElement('div');
-    css(inner, {width: '100%'});
+    inner.style.width='100%';
     outer.appendChild(inner);
 
     const widthWithScroll = inner.offsetWidth;
@@ -159,7 +113,7 @@ function initNavTree(toroot,relpath,allMembersFile) {
       const nt = document.getElementById("nav-tree");
       const hasVerticalScrollbar = nt.scrollHeight > nt.clientHeight;
       const navSync = $("#nav-sync");
-      css(navSync, {right: (hasVerticalScrollbar ? scrollbarWidth : 0) + 'px'});
+      navSync.style.right = (hasVerticalScrollbar ? scrollbarWidth : 0) + 'px';
     }
   }
 
@@ -221,8 +175,11 @@ function initNavTree(toroot,relpath,allMembersFile) {
       node.expandToggle.onclick = function() {
         if (node.expanded) {
           slideUp(node.getChildrenUL(), 200, adjustSyncIconPosition);
-          removeClass(node.plus_img.childNodes[0], 'opened');
-          addClass(node.plus_img.childNodes[0], 'closed');
+          const child0 = node.plus_img.childNodes[0]
+          if (child0) {
+            child0.classList.remove('opened');
+            child0.classList.add('closed');
+          }
           node.expanded = false;
         } else {
           expandNode(o, node, false, true);
@@ -233,7 +190,7 @@ function initNavTree(toroot,relpath,allMembersFile) {
     } else {
       let span = document.createElement("span");
       span.className = 'arrow';
-      span.style.width   = 16*(level+1)+'px';
+      span.style.width = 16*(level+1)+'px';
       span.innerHTML = '&#160;';
       domNode.appendChild(span);
     }
@@ -251,22 +208,20 @@ function initNavTree(toroot,relpath,allMembersFile) {
 
     const parentClass = anchorParent.className;
     if (hasClass(anchorParent, 'memItemLeft') || hasClass(anchorParent, 'memtitle') ||
-        hasClass(anchorParent, 'fieldname') || hasClass(anchorParent, 'fieldtype') ||
+        hasClass(anchorParent, 'fieldname')   || hasClass(anchorParent, 'fieldtype') ||
         anchorParent.tagName.match(/^H[1-6]$/)) {
-      pos = offset(anchorParent).top;
+      pos = offsetTop(anchorParent); // goto anchor's parent
     } else {
-      pos = offset(anchor).top;
+      pos = offsetTop(anchor); // goto anchor
     }
     if (pos) {
-      const dcOffset    = offset(docContent).top;
+      const dcOffset    = offsetTop(docContent);
       const dcHeight    = docContent.clientHeight;
       const dcScrHeight = docContent.scrollHeight;
       const dcScrTop    = docContent.scrollTop;
       let dist = Math.abs(Math.min(pos-dcOffset,dcScrHeight-dcHeight-dcScrTop));
       animationInProgress = true;
-      animate(docContent, {
-        scrollTop: pos + dcScrTop - dcOffset
-      }, Math.max(50,Math.min(500,dist)), function() {
+      animateScrolling(docContent, pos+dcScrTop-dcOffset, Math.max(50,Math.min(500,dist)), function() {
         animationInProgress=false;
         if (parentClass=='memItemLeft') {
           const rows = $$('.memberdecls tr[class$="'+hashValue()+'"]');
@@ -350,11 +305,11 @@ function initNavTree(toroot,relpath,allMembersFile) {
           const aPPar = a.parentElement.parentElement;
           if (!hasClass(aPPar, 'selected')) {
             $$('.item').forEach(item => {
-              removeClass(item, 'selected');
-              removeAttr(item, 'id');
+              item.classList.remove('selected');
+              item.removeAttribute('id');
             });
-            addClass(aPPar, 'selected');
-            setAttr(aPPar, 'id', 'selected');
+            aPPar.classList.add('selected');
+            aPPar.setAttribute('id', 'selected');
           }
           const anchor = document.querySelector(aname);
           gotoAnchor(anchor,aname);
@@ -400,8 +355,11 @@ function initNavTree(toroot,relpath,allMembersFile) {
           getNode(o, node);
         }
         slideDown(node.getChildrenUL(), 200, adjustSyncIconPosition);
-        addClass(node.plus_img.childNodes[0], 'opened');
-        removeClass(node.plus_img.childNodes[0], 'closed');
+        const child0 = node.plus_img.childNodes[0]
+        if (child0) {
+            child0.classList.add('opened');
+            child0.classList.remove('closed');
+        }
         node.expanded = true;
         if (setFocus) {
           node.expandToggle.focus();
@@ -412,9 +370,9 @@ function initNavTree(toroot,relpath,allMembersFile) {
 
   const glowEffect = function(n, duration) {
     if (!n) return;
-    addClass(n, 'glow');
+    n.classList.add('glow');
     setTimeout(() => {
-      removeClass(n, 'glow');
+      n.classList.remove('glow');
     }, duration);
   }
 
@@ -432,12 +390,14 @@ function initNavTree(toroot,relpath,allMembersFile) {
     }
     if (a) {
       const parent = a.parentElement.parentElement;
-      addClass(parent, 'selected');
-      setAttr(parent, 'id', 'selected');
+      if (parent) {
+        parent.classList.add('selected');
+        parent.setAttribute('id', 'selected');
+      }
       highlightAnchor();
-    } else if (n) {
-      addClass(n.itemDiv, 'selected');
-      setAttr(n.itemDiv, 'id', 'selected');
+    } else if (n && n.itemDiv) {
+      n.itemDiv.classList.add('selected');
+      n.itemDiv.setAttribute('id', 'selected');
     }
     let topOffset=5;
     const firstItem = document.querySelector('#nav-tree-contents .item:first-child');
@@ -459,9 +419,15 @@ function initNavTree(toroot,relpath,allMembersFile) {
         if (!node.childrenVisited) {
           getNode(o, node);
         }
-        css(node.getChildrenUL(), {'display':'block'});
-        removeClass(node.plus_img.childNodes[0], 'closed');
-        addClass(node.plus_img.childNodes[0], 'opened');
+        const childUL = node.getChildrenUL();
+        if (childUL) {
+          childUL.style.display='block';
+        }
+        const child0 = node.plus_img.childNodes[0];
+        if (child0) {
+          child0.classList.remove('closed');
+          child0.classList.add('opened');
+        }
         node.expanded = true;
         const n = node.children[o.breadcrumbs[index]];
         if (index+1<o.breadcrumbs.length) {
@@ -504,8 +470,8 @@ function initNavTree(toroot,relpath,allMembersFile) {
       if (!o.breadcrumbs && root!=NAVTREE[0][1]) { // fallback: show index
         navTo(o,NAVTREE[0][1],"",relpath);
         $$('.item').forEach(item => {
-          removeClass(item, 'selected');
-          removeAttr(item, 'id');
+          item.classList.remove('selected');
+          item.removeAttribute('id');
         });
       }
       if (o.breadcrumbs) {
@@ -579,7 +545,7 @@ function initNavTree(toroot,relpath,allMembersFile) {
   const navSync = $('#nav-sync');
   if (cachedLink()) {
     showSyncOff(navSync,relpath);
-    removeClass(navSync, 'sync');
+    navSync.classList.remove('sync');
   } else {
     showSyncOn(navSync,relpath);
   }
@@ -588,11 +554,11 @@ function initNavTree(toroot,relpath,allMembersFile) {
     navSync.addEventListener('click', () => {
       const navSync = $('#nav-sync');
       if (hasClass(navSync, 'sync')) {
-        removeClass(navSync, 'sync');
+        navSync.classList.remove('sync');
         showSyncOff(navSync,relpath);
         storeLink(stripPath2(pathName())+hashUrl());
       } else {
-        addClass(navSync, 'sync');
+        navSync.classList.add('sync');
         showSyncOn(navSync,relpath);
         deleteLink();
       }
@@ -612,18 +578,18 @@ function initNavTree(toroot,relpath,allMembersFile) {
         }
         if (a==null || !hasClass(a.parentElement.parentElement, 'selected')) {
           $$('.item').forEach(item => {
-            removeClass(item, 'selected');
-            removeAttr(item, 'id');
+            item.classList.remove('selected');
+            item.removeAttribute('id');
           });
         }
         const link=stripPath2(pathName());
         navTo(o,link,hashUrl(),relpath);
-        } else {
+      } else {
         const docContent = $('#doc-content');
         if (docContent) docContent.scrollTop = 0;
         $$('.item').forEach(item => {
-          removeClass(item, 'selected');
-          removeAttr(item, 'id');
+          item.classList.remove('selected');
+          item.removeAttribute('id');
         });
         navTo(o,toroot,hashUrl(),relpath);
       }
@@ -676,7 +642,7 @@ function initNavTree(toroot,relpath,allMembersFile) {
       } else {
         rightPanelWidth = pagenav ? Math.max(minPanelWidth,rightPanelWidth) : 0;
         leftPanelWidth = Math.max(minPanelWidth,leftPanelWidth);
-        }
+      }
       return { leftPanelWidth, rightPanelWidth }
     }
 
@@ -684,18 +650,18 @@ function initNavTree(toroot,relpath,allMembersFile) {
     {
       const widths = constrainPanelWidths(sidenavWidth,pagenavWidth,dragLeft);
       const widthStr = parseFloat(widths.leftPanelWidth)+"px";
-      css(content, {marginLeft:widthStr});
+      content.style.marginLeft = widthStr;
       if (fullSidebar) {
-        css(footer, {marginLeft:widthStr});
+        footer.style.marginLeft = widthStr;
         if (mainnav) {
-          css(mainnav, {marginLeft:widthStr});
+          mainnav.style.marginLeft = widthStr;
         }
       }
-      css(sidenav, {width:widthStr});
+      sidenav.style.width = widthStr;
       if (pagenav) {
-        css(container, {gridTemplateColumns:'auto '+parseFloat(widths.rightPanelWidth)+'px'});
+        container.style.gridTemplateColumns = 'auto '+parseFloat(widths.rightPanelWidth)+'px';
         if (!dragLeft) {
-          css(pagenav, {width:parseFloat(widths.rightPanelWidth-1)+'px'});
+          pagenav.style.width = parseFloat(widths.rightPanelWidth-1)+'px';
         }
       }
       return widths;
@@ -734,9 +700,9 @@ function initNavTree(toroot,relpath,allMembersFile) {
           contentHeight -= mainnav.offsetHeight;
         }
       }
-      css(navtree, {height:navtreeHeight + "px"});
-      css(sidenav, {height:sideNavHeight + "px"});
-      css(content, {height:contentHeight + "px"});
+      navtree.style.height = navtreeHeight + "px";
+      sidenav.style.height = sideNavHeight + "px";
+      content.style.height = contentHeight + "px";
       resizeWidth(false);
       showHideNavBar();
       if (location.hash.slice(1)) {
@@ -762,7 +728,7 @@ function initNavTree(toroot,relpath,allMembersFile) {
     if (pagenav) {
       const pagehandle = jQuery("#page-nav-resize-handle");
       pagehandle.on('mousedown touchmove', function(e) {
-        addClass(document.body, 'resizing');
+        document.body.classList.add('resizing');
         pagehandle.addClass('dragging');
 
         const mouseMoveHandler = function(e) {
@@ -770,14 +736,14 @@ function initNavTree(toroot,relpath,allMembersFile) {
           let pagenavWidth = container.offsetWidth - clientX + barWidth/2;
           const sidenavWidth = sidenav.clientWidth;
           const widths = constrainPanelWidths(sidenavWidth,pagenavWidth,false);
-          css(container, {gridTemplateColumns:'auto '+parseFloat(widths.rightPanelWidth)+'px'});
-          css(pagenav, {width:parseFloat(widths.rightPanelWidth-1)+'px'});
-          css(content, {marginLeft:parseFloat(widths.leftPanelWidth)+'px'});
+          container.style.gridTemplateColumns = 'auto '+parseFloat(widths.rightPanelWidth)+'px';
+          pagenav.style.width = parseFloat(widths.rightPanelWidth-1)+'px';
+          content.style.marginLeft = parseFloat(widths.leftPanelWidth)+'px';
           Cookie.writeSetting(PAGENAV_COOKIE_NAME,pagenavWidth);
         };
 
         const mouseUpHandler = function(e) {
-          removeClass(document.body, 'resizing');
+          document.body.classList.remove('resizing');
           pagehandle.removeClass('dragging');
           document.removeEventListener('mousemove', mouseMoveHandler);
           document.removeEventListener('mouseup',   mouseUpHandler);
@@ -791,7 +757,7 @@ function initNavTree(toroot,relpath,allMembersFile) {
         document.addEventListener('touchend',  mouseUpHandler);
       });
     } else {
-      css(container, {gridTemplateColumns:'auto'});
+      container.style.gridTemplateColumns = 'auto';
     }
     const width = parseInt(Cookie.readSetting(RESIZE_COOKIE_NAME,$TREEVIEW_WIDTH));
     const pagenavWidth = parseInt(Cookie.readSetting(PAGENAV_COOKIE_NAME,$TREEVIEW_WIDTH));
@@ -863,7 +829,7 @@ function initNavTree(toroot,relpath,allMembersFile) {
     });
     groupSections.forEach(function(item){
       const title = item.groupHeader.textContent.trim();
-      let id = getAttr(item.groupHeader, 'id');
+      let id = item.groupHeader.getAttribute('id');
       let table = item.groupHeader.closest('table.memberdecls');
       let rows = [];
       if (table) {
@@ -875,20 +841,19 @@ function initNavTree(toroot,relpath,allMembersFile) {
         });
       }
       const li = document.createElement('li');
-      setAttr(li, 'id', 'nav-'+id);
+      li.setAttribute('id', 'nav-'+id);
       const div = document.createElement('div');
-      addClass(div, 'item');
+      div.classList.add('item');
       const span = document.createElement('span');
-      addClass(span, 'arrow');
-      css(span, { paddingLeft:'0' });
+      span.classList.add('arrow');
+      span.style.paddingLeft='0px';
       if (hasSubItems()) {
         const arrowSpan = document.createElement('span');
-        addClass(arrowSpan, 'arrowhead');
-        addClass(arrowSpan, 'opened');
+        arrowSpan.classList.add('arrowhead', 'opened');
         span.appendChild(arrowSpan);
       }
       const ahref = document.createElement('a');
-      setAttr(ahref, 'href', '#'+id);
+      ahref.setAttribute('href', '#'+id);
       ahref.textContent = title;
       div.appendChild(span);
       div.appendChild(ahref);
@@ -901,14 +866,14 @@ function initNavTree(toroot,relpath,allMembersFile) {
         let last_id = undefined;
         let inMemberGroup = false;
         // declaration sections have rows for items
-        rows.forEach(function(td){
+        rows.forEach(function(td) {
           let tr = td.parentElement;
           const firstChild = td.childNodes[0];
           const is_anon_enum = firstChild && firstChild.textContent.trim()=='{';
           if (hasClass(tr, 'template')) {
             tr = tr.previousElementSibling;
           }
-          id = getAttr(tr, 'id');
+          id = tr.getAttribute('id');
           let text = is_anon_enum ? 'anonymous enum' : (td.querySelector(':first-child') ? td.querySelector(':first-child').textContent : '');
           let isMemberGroupHeader = hasClass(tr, 'groupHeader');
           if (tr.offsetParent !== null && last_id!=id && id!==undefined) {
@@ -917,14 +882,14 @@ function initNavTree(toroot,relpath,allMembersFile) {
               inMemberGroup=false;
             }
             const li2 = document.createElement('li');
-            setAttr(li2, 'id', 'nav-'+id);
+            li2.setAttribute('id', 'nav-'+id);
             const div2 = document.createElement('div');
-            addClass(div2, 'item');
+            div2.classList.add('item');
             const span2 = document.createElement('span');
-            addClass(span2, 'arrow');
-            css(span2, { paddingLeft:parseInt(ulStack.length*16)+'px' });
+            span2.classList.add('arrow');
+            span2.style.paddingLeft = parseInt(ulStack.length*16)+'px';
             const ahref = document.createElement('a');
-            setAttr(ahref, 'href', '#'+id);
+            ahref.setAttribute('href', '#'+id);
             ahref.textContent = escapeHtml(text);
             div2.appendChild(span2);
             div2.appendChild(ahref);
@@ -932,8 +897,7 @@ function initNavTree(toroot,relpath,allMembersFile) {
             topMapping.push(id);
             if (isMemberGroupHeader) {
               const arrowSpan = document.createElement('span');
-              addClass(arrowSpan, 'arrowhead');
-              addClass(arrowSpan, 'opened');
+              arrowSpan.classList.add('arrowhead','opened');
               span2.appendChild(arrowSpan);
               ulStack[ulStack.length-1].appendChild(li2);
               const ul2 = document.createElement('ul');
@@ -958,17 +922,17 @@ function initNavTree(toroot,relpath,allMembersFile) {
           });
           const name = text.replace(/\(\)(\s*\[\d+\/\d+\])?$/, '') // func() [2/8] -> func
           const permalinkAnchor = data.querySelector('span.permalink a');
-          id = permalinkAnchor ? getAttr(permalinkAnchor, 'href') : undefined;
+          id = permalinkAnchor ? permalinkAnchor.getAttribute('href') : undefined;
           if (id!==undefined && name!==undefined) {
             const li2 = document.createElement('li');
-            setAttr(li2, 'id', 'nav-'+id.substring(1));
+            li2.setAttribute('id', 'nav-'+id.substring(1));
             const div2 = document.createElement('div');
-            addClass(div2, 'item');
+            div2.classList.add('item');
             const span2 = document.createElement('span');
-            addClass(span2, 'arrow');
-            css(span2, {paddingLeft:parseInt(ulStack.length*16)+'px'});
+            span2.classList.add('arrow');
+            span2.style.paddingLeft = parseInt(ulStack.length*16)+'px';
             const ahref = document.createElement('a');
-            setAttr(ahref, 'href', id);
+            ahref.setAttribute('href', id);
             ahref.textContent = escapeHtml(name);
             div2.appendChild(span2);
             div2.appendChild(ahref);
@@ -990,13 +954,13 @@ function initNavTree(toroot,relpath,allMembersFile) {
       const pageName = url.split('/').pop().split('#')[0].replace(/(\.[^/.]+)$/, '-members$1');
       const li = document.createElement('li');
       const div = document.createElement('div');
-      addClass(div, 'item');
+      div.classList.add('item');
       const span = document.createElement('span');
-      addClass(span, 'arrow');
-      css(span, { paddingLeft:'0' });
+      span.classList.add('arrow');
+      span.style.paddingLeft='0px';
       const ahref = document.createElement('a');
-      setAttr(ahref, 'href', srcBaseUrl+dstBaseUrl+pageName);
-      addClass(ahref, 'noscroll');
+      ahref.setAttribute('href', srcBaseUrl+dstBaseUrl+pageName);
+      ahref.classList.add('noscroll');
       ahref.textContent = LISTOFALLMEMBERS;
       div.appendChild(span);
       div.appendChild(ahref);
@@ -1010,7 +974,7 @@ function initNavTree(toroot,relpath,allMembersFile) {
       $$('h1.doxsection, h2.doxsection, h3.doxsection, h4.doxsection, h5.doxsection, h6.doxsection').forEach(function(element){
         const level = parseInt(element.tagName[1]);
         const anchorEl = element.querySelector('a.anchor');
-        const anchor = anchorEl ? getAttr(anchorEl, 'id') : null;
+        const anchor = anchorEl ? anchorEl.getAttribute('id') : null;
         // Note: innerHTML is used here to preserve HTML formatting in section headings
         // This content is generated by doxygen, not from user input
         const node = { text: element.innerHTML, id: anchor, children: [] };
@@ -1022,20 +986,19 @@ function initNavTree(toroot,relpath,allMembersFile) {
         function render(nodes, level=0) {
           nodes.map(n => {
             const li = document.createElement('li');
-            setAttr(li, 'id', 'nav-'+n.id);
+            li.setAttribute('id', 'nav-'+n.id);
             const div = document.createElement('div');
-            addClass(div, 'item');
+            div.classList.add('item');
             const span = document.createElement('span');
-            addClass(span, 'arrow');
-            setAttr(span, 'style', 'padding-left:'+parseInt(level*16)+'px;');
-            if (n.children.length > 0) { 
+            span.classList.add('arrow');
+            span.setAttribute('style', 'padding-left:'+parseInt(level*16)+'px;');
+            if (n.children.length > 0) {
               const arrowSpan = document.createElement('span');
-              addClass(arrowSpan, 'arrowhead');
-              addClass(arrowSpan, 'opened');
+              arrowSpan.classList.add('arrowhead','opened');
               span.appendChild(arrowSpan);
             }
             const url = document.createElement('a');
-            setAttr(url, 'href', '#'+n.id);
+            url.setAttribute('href', '#'+n.id);
             // innerHTML used to preserve HTML formatting from doxygen-generated content
             url.innerHTML = n.text;
             div.appendChild(span);
@@ -1057,7 +1020,7 @@ function initNavTree(toroot,relpath,allMembersFile) {
     $$(".page-outline a[href]:not(.noscroll)").forEach(function(anchor) {
       anchor.addEventListener('click', function(e) {
         e.preventDefault();
-        const aname = getAttr(this, "href");
+        const aname = this.getAttribute("href");
         gotoAnchor(document.querySelector(aname), aname);
       });
     });
@@ -1071,15 +1034,15 @@ function initNavTree(toroot,relpath,allMembersFile) {
       if (pagenavcontents) {
         const content = $("#doc-content");
         const height = content ? content.clientHeight : 0;
-        const navy = pagenavcontents ? offset(pagenavcontents).top : 0;
-        const yc = content ? offset(content).top : 0;
+        const navy = pagenavcontents ? offsetTop(pagenavcontents) : 0;
+        const yc = content ? offsetTop(content) : 0;
         let offsets = []
         for (let i=0;i<topMapping.length;i++) {
           const heading = document.getElementById(topMapping[i]);
           if (heading && heading.parentElement && hasClass(heading.parentElement, 'doxsection')) {
-            offsets.push({id:topMapping[i],y:offset(heading.parentElement).top-yc});
+            offsets.push({id:topMapping[i],y:offsetTop(heading.parentElement)-yc});
           } else if (heading) {
-            offsets.push({id:topMapping[i],y:offset(heading).top-yc});
+            offsets.push({id:topMapping[i],y:offsetTop(heading)-yc});
           }
         }
         offsets.push({id:'',y:1e10});
@@ -1092,21 +1055,21 @@ function initNavTree(toroot,relpath,allMembersFile) {
           const margin = 10; // #pixels before content show as visible
           if ((ys>margin || ye>margin) && (ys<height-margin || ye<height-margin)) {
             if (!scrollTarget) scrollTarget=nav;
-            if (nav) addClass(nav, 'vis'); // mark navigation entry as visible within content area
+            if (nav) nav.classList.add('vis'); // mark navigation entry as visible within content area
             numItems+=1;
           } else {
-            if (nav) removeClass(nav, 'vis');
+            if (nav) nav.classList.remove('vis');
           }
         }
         const contentsDiv = document.querySelector('div.contents');
-        const contentScrollOffset = contentsDiv ? offset(contentsDiv).top : 0;
-        if (scrollTarget && lastScrollTargetId!=getAttr(scrollTarget, 'id')) { // new item to scroll to
+        const contentScrollOffset = contentsDiv ? offsetTop(contentsDiv) : 0;
+        if (scrollTarget && lastScrollTargetId!=scrollTarget.getAttribute('id')) { // new item to scroll to
           const scrollDown = contentScrollOffset<lastScrollSourceOffset;
           const range = 22*numItems;
           const my = range/2-height/2;
           const pageOutline = document.querySelector('ul.page-outline');
-          const ulOffset = pageOutline ? offset(pageOutline).top-navy : 0;
-          const targetPos = offset(scrollTarget).top-navy-ulOffset;
+          const ulOffset = pageOutline ? offsetTop(pageOutline)-navy : 0;
+          const targetPos = offsetTop(scrollTarget)-navy-ulOffset;
           const targetOffset=targetPos+my;
           if ( (scrollDown && targetOffset>lastScrollTargetOffset) ||
               (!scrollDown && targetOffset<lastScrollTargetOffset)) 
@@ -1120,7 +1083,7 @@ function initNavTree(toroot,relpath,allMembersFile) {
             }
             lastScrollTargetOffset = targetOffset;
           }
-          lastScrollTargetId = getAttr(scrollTarget, 'id');
+          lastScrollTargetId = scrollTarget.getAttribute('id');
         }
         lastScrollSourceOffset = contentScrollOffset;
       }
