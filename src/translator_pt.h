@@ -1876,7 +1876,7 @@ class TranslatorPortuguese : public TranslatorAdapter_1_16_0
     /*! Text for copyright paragraph */
     QCString trCopyright() override
     {
-      // Note: I will left it as is because "Direitos de autor" may not fit
+      // Note: I will leave it as is because "Direitos de autor" may not fit
       // in the text.
       return "Copyright";
     }

@@ -21,7 +21,7 @@
 //  - Better handling of ISO-8859-2/ WIN 1250 stuff based on (actually stolen from :-)) Czech translations
 //    implemented by Petr Prikryl (prikrylp@skil.cz).
 //    As opposed to Czech translation this one assumes that Doxygen strings are written in Linux ( it's true,
-//    I don't have QT pro licence ) , and uses ISOToWin function when built in WIN32
+//    I don't have QT pro license ), and use ISOToWin function when built in WIN32
 //
 // 2000/09/18
 // - Added strings from 1.2.1
