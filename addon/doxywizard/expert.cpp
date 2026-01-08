@@ -431,6 +431,8 @@ static QString getDocsForNode(const QDomElement &child)
   regexp.setPattern(SA("`([^`]+)`"));
   docs.replace(regexp,SA("<code>\\1</code>"));
   // \ref key "desc" -> <code>desc</code>
+  regexp.setPattern(SA("\\\\ref[ ]+[^ ]+[ ]+\"\\\\\\\\ref\""));
+  docs.replace(regexp,SA("\\\\REF"));
   regexp.setPattern(SA("\\\\ref[ ]+[^ ]+[ ]+\"([^\"]+)\""));
   docs.replace(regexp,SA("<code>\\1</code> "));
   //\ref specials
@@ -445,6 +447,7 @@ static QString getDocsForNode(const QDomElement &child)
   docs.replace(regexp,SA("\"Including formulas\""));
   // fallback for not handled
   docs.replace(SA("\\\\ref"),SA(""));
+  docs.replace(SA("\\\\REF"),SA("\\\\ref"));
   // \b word -> <b>word<\b>
   regexp.setPattern(SA("\\\\b[ ]+([^ ]+) "));
   docs.replace(regexp,SA("<b>\\1</b> "));
@@ -453,8 +456,8 @@ static QString getDocsForNode(const QDomElement &child)
   docs.replace(regexp,SA("<em>\\1</em> "));
   // \note -> <br>Note:
   // @note -> <br>Note:
-  docs.replace(SA("\\note"),SA("<br>Note:"));
-  docs.replace(SA("@note"),SA("<br>Note:"));
+  docs.replace(SA("\\note "),SA("<br>Note: "));
+  docs.replace(SA("@note "),SA("<br>Note: "));
   // \#include -> #include
   // \#undef -> #undef
   docs.replace(SA("\\#include"),SA("#include"));
@@ -462,6 +465,7 @@ static QString getDocsForNode(const QDomElement &child)
   // -# -> <br>-
   // " - " -> <br>-
   docs.replace(SA("-#"),SA("<br>-"));
+  docs.replace(SA("\\# "),SA("# "));
   docs.replace(SA(" - "),SA("<br>-"));
   // \verbatim -> <pre>
   // \endverbatim -> </pre>
@@ -470,7 +474,7 @@ static QString getDocsForNode(const QDomElement &child)
   // \sa -> <br>See also:
   // \par -> <br>
   docs.replace(SA("\\sa "),SA("<br>See also: "));
-  docs.replace(SA("\\par"),SA("<br>"));
+  docs.replace(SA("\\par "),SA("<br>"));
   // 2xbackslash -> backslash
   // \@ -> @
   docs.replace(SA("\\\\"),SA("\\"));
