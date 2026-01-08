@@ -63,6 +63,7 @@ class GroupDefImpl : public DefinitionMixin<GroupDef>
     QCString anchor() const override { return QCString(); }
     QCString displayName(bool=TRUE) const override { return hasGroupTitle() ? m_title : DefinitionMixin::name(); }
     QCString groupTitle() const override { return m_title; }
+    QCString groupTitleAsText() const override { return m_titleAsText; }
     void setGroupTitle( const QCString &newtitle ) override;
     bool hasGroupTitle( ) const override { return m_titleSet; }
     void addFile(FileDef *def) override;
@@ -889,7 +890,7 @@ void GroupDefImpl::writeBriefDescription(OutputList &ol)
       ol.writeString(" \n");
       ol.enable(OutputType::RTF);
 
-      if (hasDetailedDescription())
+      if (hasDetailedDescription() && m_pages.size()!=numDocMembers()) // group with non-page members
       {
         ol.disableAllBut(OutputType::Html);
         ol.startTextLink(QCString(),"details");
@@ -997,14 +998,7 @@ void GroupDefImpl::writeNestedGroups(OutputList &ol,const QCString &title)
         ol.startMemberItem(anc,OutputGenerator::MemberItemType::Normal);
         ol.insertMemberAlign();
         ol.startIndexItem(gd->getReference(),gd->getOutputFileBase());
-        ol.generateDoc(gd->getDefFileName(),
-                       gd->getDefLine(),
-                       gd,
-                       nullptr,
-                       gd->groupTitle(),
-                       DocOptions()
-                       .setSingleLine(true)
-                       .setAutolinkSupport(false));
+        ol.docify(gd->groupTitleAsText());
         ol.endIndexItem(gd->getReference(),gd->getOutputFileBase());
         ol.endMemberItem(OutputGenerator::MemberItemType::Normal);
         if (!gd->briefDescription().isEmpty() && Config_getBool(BRIEF_MEMBER_DESC))
@@ -2070,8 +2064,7 @@ bool GroupDefImpl::hasDetailedDescription() const
   return ((!briefDescription().isEmpty() && repeatBrief) ||
          !documentation().isEmpty() ||
          !inbodyDocumentation().isEmpty() ||
-         hasRequirementRefs()) &&
-         (m_pages.size()!=numDocMembers());
+         hasRequirementRefs());
 }
 
 void GroupDefImpl::overrideGroupGraph(bool e)

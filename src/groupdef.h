@@ -54,6 +54,7 @@ class GroupDef : public DefinitionMutable, public Definition
     ABSTRACT_BASE_CLASS(GroupDef)
 
     virtual QCString groupTitle() const = 0;
+    virtual QCString groupTitleAsText() const = 0;
     virtual void setGroupTitle( const QCString &newtitle ) = 0;
     virtual bool hasGroupTitle( ) const = 0;
     virtual void addFile(FileDef *def) = 0;
