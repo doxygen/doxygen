@@ -34,7 +34,9 @@
 \int_new:N \g__doxy_nohyper_int
 \AtBeginDocument
   {
-    \renewenvironment{tblrNoHyper}
+    \IfPackageAtLeastTF{tabularray}{2024-02-16}
+    {
+      \renewenvironment{tblrNoHyper}
       {
         \int_compare:nNnT {\g__doxy_nohyper_int} = {0} {\begin{NoHyper}}
         \int_gincr:N \g__doxy_nohyper_int
@@ -43,6 +45,10 @@
         \int_gdecr:N \g__doxy_nohyper_int
         \int_compare:nNnT {\g__doxy_nohyper_int} = {0} {\end{NoHyper}}
       }
+    }
+    {
+      %older version, doesn't provide tblrNoHyper
+    }
   }
 \ExplSyntaxOff
 
