@@ -1,6 +1,25 @@
 /** \page changelog Changelog
 \tableofcontents{html,latex}
 \section log_1_16 1.16 Series
+\subsection log_1_16_1 Release 1.16.1
+\htmlonly
+<b>(release date 11-01-2026)</b>
+</p>
+
+<h3>Bug fixes</h3>
+<ul>
+<li>issue <a href="https://github.com/doxygen/doxygen/issues/11927">#11927</a> [BUG] Regression - Topics are no longer navigable [<a href="https://github.com/doxygen/doxygen/commit/1c2846652d18fdc159b4bf153ece5ee0d0958947">view</a>], [<a href="https://github.com/doxygen/doxygen/commit/faecd64dd65b05bc355497e846e1ebc53f3f0483">view</a>]</li>
+<li>issue <a href="https://github.com/doxygen/doxygen/issues/11932">#11932</a> Documentation for sub group is not generated [<a href="https://github.com/doxygen/doxygen/commit/78368416157728da6dc61a4e8239571356f9c8fe">view</a>]</li>
+<li>issue <a href="https://github.com/doxygen/doxygen/issues/11934">#11934</a> Damaged Doxyfile doc comments [<a href="https://github.com/doxygen/doxygen/commit/ed65dc423d34a0be230c798a74c917a6a4fe9384">view</a>]</li>
+<li>issue <a href="https://github.com/doxygen/doxygen/issues/11936">#11936</a> [BUG] Regression - The group name is replaced with the group title inside the @retval command [<a href="https://github.com/doxygen/doxygen/commit/89eb019dce3125bf30bf16cb665fb0025b540a87">view</a>]</li>
+<li>issue <a href="https://github.com/doxygen/doxygen/issues/11938">#11938</a> 1.16 Windows x64 bin release named incorrectly</li>
+<li>Problem with `\satisfies` documentation in Doxyfile and doxywizard [<a href="https://github.com/doxygen/doxygen/commit/6a5b1da0fa0014ba6287cd82cb3c97eaeb2f6ad9">view</a>]</li>
+<li>Fix for creating the manual with older versions of LaTeX [<a href="https://github.com/doxygen/doxygen/commit/59622608cca4069bb12d1a1c803d6f0adee1bbb2">view</a>]</li>
+</ul>
+
+<p>
+\endhtmlonly
+
 \subsection log_1_16_0 Release 1.16.0
 \htmlonly
 <b>(release date 05-01-2026)</b>
