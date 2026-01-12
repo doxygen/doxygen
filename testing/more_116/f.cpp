@@ -9,6 +9,14 @@
  */
 
 /**
+ * @file s/h.h
+ *
+ * @ingroup Group
+ *
+ * s/h.h description (in more_116/f.cpp).
+ */
+
+/**
  * @file t/s/h.h
  *
  * @ingroup Group

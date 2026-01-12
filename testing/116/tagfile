@@ -74,6 +74,11 @@
   </compound>
   <compound kind="file">
     <name>h.h</name>
+    <path>more_116/include/s/</path>
+    <filename>s_2h_8h.xhtml</filename>
+  </compound>
+  <compound kind="file">
+    <name>h.h</name>
     <path>more_116/include/t/s/</path>
     <filename>t_2s_2h_8h.xhtml</filename>
   </compound>
@@ -130,6 +135,7 @@
     <file path="more_116/">f.cpp</file>
     <file path="more_116/a/">116_tagfile.cpp</file>
     <file path="more_116/b/">116_tagfile.cpp</file>
+    <file path="more_116/include/s/">h.h</file>
     <file path="more_116/include/t/s/">h.h</file>
     <namespace>Namespace</namespace>
     <class kind="struct">Struct</class>

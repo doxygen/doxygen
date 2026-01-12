@@ -2929,6 +2929,13 @@ FileDef *findFileDef(const FileNameLinkedMap *fnMap,const QCString &n,bool &ambi
       {
         FileDef *fd = fd_p.get();
         QCString fdStripPath = stripFromIncludePath(fd->getPath());
+        if (fdStripPath == pathStripped)
+        {
+          // if the stripped paths are equal, we have a perfect match
+          count = 1;
+          lastMatch=fd;
+          break;
+        }
         if (path.isEmpty() ||
             (!pathStripped.isEmpty() && fdStripPath.endsWith(pathStripped)) ||
             (pathStripped.isEmpty() && fdStripPath.isEmpty()))

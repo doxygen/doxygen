@@ -7,6 +7,7 @@
     <innerfile refid="f_8cpp">f.cpp</innerfile>
     <innerfile refid="more__116_2a_2116__tagfile_8cpp">116_tagfile.cpp</innerfile>
     <innerfile refid="more__116_2b_2116__tagfile_8cpp">116_tagfile.cpp</innerfile>
+    <innerfile refid="s_2h_8h">h.h</innerfile>
     <innerfile refid="t_2s_2h_8h">h.h</innerfile>
     <innerclass refid="struct_struct" prot="public">Struct</innerclass>
     <innerclass refid="union_union" prot="public">Union</innerclass>

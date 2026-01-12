@@ -3,8 +3,11 @@
   <compounddef id="s_2h_8h" kind="file" language="C++">
     <compoundname>h.h</compoundname>
     <briefdescription>
+      <para><ref refid="s_2h_8h" kindref="compound">s/h.h</ref> brief (in <ref refid="s_2h_8h" kindref="compound">s/h.h</ref>). </para>
     </briefdescription>
     <detaileddescription>
+      <para><ref refid="s_2h_8h" kindref="compound">s/h.h</ref> description (in <ref refid="f_8cpp" kindref="compound">more_116/f.cpp</ref>).</para>
+      <para><ref refid="s_2h_8h" kindref="compound">s/h.h</ref> description (in <ref refid="s_2h_8h" kindref="compound">s/h.h</ref>). </para>
     </detaileddescription>
     <location file="more_116/include/s/h.h"/>
   </compounddef>
