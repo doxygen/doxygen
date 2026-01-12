@@ -943,11 +943,11 @@ void GroupDefImpl::writeFiles(OutputList &ol,const QCString &title)
       if (!fd->hasDocumentation()) continue;
       ol.startMemberDeclaration();
       QCString anc = fd->anchor();
-      if (anc.isEmpty()) anc=fd->displayName(); else anc.prepend(fd->displayName()+"_");
+      if (anc.isEmpty()) anc=fd->docName(); else anc.prepend(fd->docName()+"_");
       ol.startMemberItem(anc,OutputGenerator::MemberItemType::Normal);
       ol.docify(theTranslator->trFile(FALSE,TRUE)+" ");
       ol.insertMemberAlign();
-      ol.writeObjectLink(fd->getReference(),fd->getOutputFileBase(),QCString(),fd->displayName());
+      ol.writeObjectLink(fd->getReference(),fd->getOutputFileBase(),QCString(),fd->docName());
       ol.endMemberItem(OutputGenerator::MemberItemType::Normal);
       if (!fd->briefDescription().isEmpty() && Config_getBool(BRIEF_MEMBER_DESC))
       {
