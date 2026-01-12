@@ -716,7 +716,9 @@ void GroupDefImpl::writeTagFile(TextStream &tagFile)
           {
             if (fd->isLinkableInProject())
             {
-              tagFile << "    <file>" << convertToXML(fd->name()) << "</file>\n";
+              tagFile << "    <file path=\""
+                << convertToXML(stripFromPath(fd->getPath())) << "\">"
+                << convertToXML(fd->name()) << "</file>\n";
             }
           }
         }

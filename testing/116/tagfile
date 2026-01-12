@@ -126,11 +126,11 @@
     <name>Group</name>
     <title>Group</title>
     <filename>group___group.xhtml</filename>
-    <file>116_tagfile.cpp</file>
-    <file>f.cpp</file>
-    <file>116_tagfile.cpp</file>
-    <file>116_tagfile.cpp</file>
-    <file>h.h</file>
+    <file path="">116_tagfile.cpp</file>
+    <file path="more_116/">f.cpp</file>
+    <file path="more_116/a/">116_tagfile.cpp</file>
+    <file path="more_116/b/">116_tagfile.cpp</file>
+    <file path="more_116/include/t/s/">h.h</file>
     <namespace>Namespace</namespace>
     <class kind="struct">Struct</class>
     <class kind="union">Union</class>
