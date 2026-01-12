@@ -343,6 +343,7 @@ class Tester:
                     data = xpopen('%s --format --noblanks --nowarning %s' % (self.args.xmllint,check_file))
                     if data:
                         # strip version
+                        data = re.sub(r'tagfile doxygen_version="[^"]+" doxygen_gitid="[^"]+"','tagfile doxygen_version="" doxygen_gitid=""',data)
                         data = re.sub(r'xsd" version="[0-9.-]+"','xsd" version=""',data).rstrip('\n')
                     else:
                         msg += ('Failed to run %s on the doxygen output file %s' % (self.args.xmllint,self.test_out),)

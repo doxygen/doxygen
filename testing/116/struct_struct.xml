@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="struct_struct" kind="struct" language="C++" prot="public">
+    <compoundname>Struct</compoundname>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="struct_struct_1a077c7aa3a29e27af8dd56791844d3099" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int Struct::StructMember</definition>
+        <argsstring/>
+        <name>StructMember</name>
+        <qualifiedname>Struct::StructMember</qualifiedname>
+        <briefdescription>
+          <para>StructMember brief (in 116_tagfile.cpp). </para>
+        </briefdescription>
+        <detaileddescription>
+          <para>StructMember description (in 116_tagfile.cpp). </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="116_tagfile.cpp" line="95" column="7" bodyfile="116_tagfile.cpp" bodystart="95" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+      <para><ref refid="struct_struct" kindref="compound">Struct</ref> brief (in 116_tagfile.cpp). </para>
+    </briefdescription>
+    <detaileddescription>
+      <para><ref refid="struct_struct" kindref="compound">Struct</ref> description (in 116_tagfile.cpp). </para>
+    </detaileddescription>
+    <location file="116_tagfile.cpp" line="89" column="1" bodyfile="116_tagfile.cpp" bodystart="89" bodyend="96"/>
+    <listofallmembers>
+      <member refid="struct_struct_1a077c7aa3a29e27af8dd56791844d3099" prot="public" virt="non-virtual">
+        <scope>Struct</scope>
+        <name>StructMember</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

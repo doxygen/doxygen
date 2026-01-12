@@ -1,0 +1,260 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="group___group" kind="group">
+    <compoundname>Group</compoundname>
+    <title>Group</title>
+    <innerfile refid="116__tagfile_8cpp">116_tagfile.cpp</innerfile>
+    <innerfile refid="f_8cpp">f.cpp</innerfile>
+    <innerfile refid="more__116_2a_2116__tagfile_8cpp">116_tagfile.cpp</innerfile>
+    <innerfile refid="more__116_2b_2116__tagfile_8cpp">116_tagfile.cpp</innerfile>
+    <innerfile refid="t_2s_2h_8h">h.h</innerfile>
+    <innerclass refid="struct_struct" prot="public">Struct</innerclass>
+    <innerclass refid="union_union" prot="public">Union</innerclass>
+    <innernamespace refid="namespace_namespace">Namespace</innernamespace>
+    <sectiondef kind="enum">
+      <memberdef kind="enum" id="group___group_1ga8150b7776c2a1749101acf22e868d091" prot="public" static="no" strong="no">
+        <type/>
+        <name>Enum</name>
+        <enumvalue id="group___group_1gga8150b7776c2a1749101acf22e868d091aecdc2953d9df684d8dc2bc9b0237113a" prot="public">
+          <name>EnumVal</name>
+          <briefdescription>
+            <para>EnumVal brief (in 116_tagfile.cpp). </para>
+          </briefdescription>
+          <detaileddescription>
+            <para>EnumVal description (in 116_tagfile.cpp). </para>
+          </detaileddescription>
+        </enumvalue>
+        <briefdescription>
+          <para><ref refid="group___group_1ga8150b7776c2a1749101acf22e868d091" kindref="member">Enum</ref> brief (in 116_tagfile.cpp). </para>
+        </briefdescription>
+        <detaileddescription>
+          <para><ref refid="group___group_1ga8150b7776c2a1749101acf22e868d091" kindref="member">Enum</ref> description (in 116_tagfile.cpp). </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="116_tagfile.cpp" line="68" column="1" bodyfile="116_tagfile.cpp" bodystart="68" bodyend="75"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="typedef">
+      <memberdef kind="typedef" id="group___group_1ga5cf05ddc8cf20a9eb9ce35b43c750790" prot="public" static="no">
+        <type>
+          <ref refid="group___group_1ga8150b7776c2a1749101acf22e868d091" kindref="member">Enum</ref>
+        </type>
+        <definition>typedef Enum EnumTypedef</definition>
+        <argsstring/>
+        <name>EnumTypedef</name>
+        <briefdescription>
+          <para><ref refid="group___group_1ga5cf05ddc8cf20a9eb9ce35b43c750790" kindref="member">EnumTypedef</ref> brief (in 116_tagfile.cpp). </para>
+        </briefdescription>
+        <detaileddescription>
+          <para><ref refid="group___group_1ga5cf05ddc8cf20a9eb9ce35b43c750790" kindref="member">EnumTypedef</ref> description (in 116_tagfile.cpp). </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="116_tagfile.cpp" line="82" column="14" bodyfile="116_tagfile.cpp" bodystart="82" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="var">
+      <memberdef kind="variable" id="group___group_1ga83237bee02feeff4fc8a0dfcb9d53878" prot="public" static="no" extern="yes" mutable="no">
+        <type>int</type>
+        <definition>int Object</definition>
+        <argsstring/>
+        <name>Object</name>
+        <briefdescription>
+          <para>Object brief (in 116_tagfile.cpp). </para>
+        </briefdescription>
+        <detaileddescription>
+          <para>Object description (in 116_tagfile.cpp). </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="116_tagfile.cpp" line="61" column="12" declfile="116_tagfile.cpp" declline="61" declcolumn="12"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="func">
+      <memberdef kind="function" id="group___group_1ga054c88794f4fcaae438dfb7aa8b8d9f7" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void Function</definition>
+        <argsstring>(int a, const int *b, int *c, int *d)</argsstring>
+        <name>Function</name>
+        <param>
+          <type>int</type>
+          <declname>a</declname>
+        </param>
+        <param>
+          <type>const int *</type>
+          <declname>b</declname>
+        </param>
+        <param>
+          <type>int *</type>
+          <declname>c</declname>
+        </param>
+        <param>
+          <type>int *</type>
+          <declname>d</declname>
+        </param>
+        <briefdescription>
+          <para>Function brief (in 116_tagfile.cpp). </para>
+        </briefdescription>
+        <detaileddescription>
+          <para>Function description (in 116_tagfile.cpp).</para>
+          <para>
+            <parameterlist kind="param">
+              <parameteritem>
+                <parameternamelist>
+                  <parametername>a</parametername>
+                </parameternamelist>
+                <parameterdescription>
+                  <para>is the parameter.</para>
+                </parameterdescription>
+              </parameteritem>
+              <parameteritem>
+                <parameternamelist>
+                  <parametername direction="in">b</parametername>
+                </parameternamelist>
+                <parameterdescription>
+                  <para>is the in parameter.</para>
+                </parameterdescription>
+              </parameteritem>
+              <parameteritem>
+                <parameternamelist>
+                  <parametername direction="out">c</parametername>
+                </parameternamelist>
+                <parameterdescription>
+                  <para>is the out parameter.</para>
+                </parameterdescription>
+              </parameteritem>
+              <parameteritem>
+                <parameternamelist>
+                  <parametername direction="inout">d</parametername>
+                </parameternamelist>
+                <parameterdescription>
+                  <para>is the in/out parameter. </para>
+                </parameterdescription>
+              </parameteritem>
+            </parameterlist>
+          </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="116_tagfile.cpp" line="125" column="6" declfile="116_tagfile.cpp" declline="125" declcolumn="6"/>
+      </memberdef>
+      <memberdef kind="function" id="group___group_1ga78afe45b73c401f184443bb2e2f80275" prot="public" static="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>static void InlineFunction</definition>
+        <argsstring>(int a, const int *b, int *c, int *d)</argsstring>
+        <name>InlineFunction</name>
+        <param>
+          <type>int</type>
+          <declname>a</declname>
+        </param>
+        <param>
+          <type>const int *</type>
+          <declname>b</declname>
+        </param>
+        <param>
+          <type>int *</type>
+          <declname>c</declname>
+        </param>
+        <param>
+          <type>int *</type>
+          <declname>d</declname>
+        </param>
+        <briefdescription>
+          <para>InlineFunction brief (in 116_tagfile.cpp). </para>
+        </briefdescription>
+        <detaileddescription>
+          <para>InlineFunction description (in 116_tagfile.cpp).</para>
+          <para>
+            <parameterlist kind="param">
+              <parameteritem>
+                <parameternamelist>
+                  <parametername>a</parametername>
+                </parameternamelist>
+                <parameterdescription>
+                  <para>is the parameter.</para>
+                </parameterdescription>
+              </parameteritem>
+              <parameteritem>
+                <parameternamelist>
+                  <parametername direction="in">b</parametername>
+                </parameternamelist>
+                <parameterdescription>
+                  <para>is the in parameter.</para>
+                </parameterdescription>
+              </parameteritem>
+              <parameteritem>
+                <parameternamelist>
+                  <parametername direction="out">c</parametername>
+                </parameternamelist>
+                <parameterdescription>
+                  <para>is the out parameter.</para>
+                </parameterdescription>
+              </parameteritem>
+              <parameteritem>
+                <parameternamelist>
+                  <parametername direction="inout">d</parametername>
+                </parameternamelist>
+                <parameterdescription>
+                  <para>is the in/out parameter. </para>
+                </parameterdescription>
+              </parameteritem>
+            </parameterlist>
+          </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="116_tagfile.cpp" line="140" column="20" bodyfile="116_tagfile.cpp" bodystart="140" bodyend="144"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="define">
+      <memberdef kind="define" id="group___group_1gab0a66d73c921ab6fb0ba9f550fd77c23" prot="public" static="no">
+        <name>Define</name>
+        <initializer>123</initializer>
+        <briefdescription>
+          <para>Define brief (in 116_tagfile.cpp). </para>
+        </briefdescription>
+        <detaileddescription>
+          <para>Define description (in 116_tagfile.cpp). </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="116_tagfile.cpp" line="45" column="9" bodyfile="116_tagfile.cpp" bodystart="45" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="define" id="group___group_1ga4ab59fbc11caf0f38d699ef980a378c8" prot="public" static="no">
+        <name>Macro</name>
+        <param>
+          <defname>x</defname>
+        </param>
+        <initializer>((x) * 456)</initializer>
+        <briefdescription>
+          <para>Macro brief (in 116_tagfile.cpp). </para>
+        </briefdescription>
+        <detaileddescription>
+          <para>Macro description (in 116_tagfile.cpp).</para>
+          <para>
+            <parameterlist kind="param">
+              <parameteritem>
+                <parameternamelist>
+                  <parametername>x</parametername>
+                </parameternamelist>
+                <parameterdescription>
+                  <para>is the parameter. </para>
+                </parameterdescription>
+              </parameteritem>
+            </parameterlist>
+          </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="116_tagfile.cpp" line="54" column="9" bodyfile="116_tagfile.cpp" bodystart="54" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+      <para>Group brief (in 116_tagfile.cpp). </para>
+    </briefdescription>
+    <detaileddescription>
+      <para>Group description (in 116_tagfile.cpp). </para>
+    </detaileddescription>
+  </compounddef>
+</doxygen>

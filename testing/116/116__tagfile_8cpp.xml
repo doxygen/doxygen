@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="116__tagfile_8cpp" kind="file" language="C++">
+    <compoundname>116_tagfile.cpp</compoundname>
+    <innerclass refid="struct_struct" prot="public">Struct</innerclass>
+    <innerclass refid="union_union" prot="public">Union</innerclass>
+    <innerclass refid="class_namespace_1_1_class" prot="public">Namespace::Class</innerclass>
+    <innernamespace refid="namespace_namespace">Namespace</innernamespace>
+    <sectiondef kind="define">
+      <member refid="group___group_1gab0a66d73c921ab6fb0ba9f550fd77c23" kind="define">
+        <name>Define</name>
+      </member>
+      <member refid="group___group_1ga4ab59fbc11caf0f38d699ef980a378c8" kind="define">
+        <name>Macro</name>
+      </member>
+    </sectiondef>
+    <sectiondef kind="enum">
+      <member refid="group___group_1ga8150b7776c2a1749101acf22e868d091" kind="enum">
+        <name>Enum</name>
+      </member>
+    </sectiondef>
+    <sectiondef kind="typedef">
+      <member refid="group___group_1ga5cf05ddc8cf20a9eb9ce35b43c750790" kind="typedef">
+        <name>EnumTypedef</name>
+      </member>
+    </sectiondef>
+    <sectiondef kind="var">
+      <member refid="group___group_1ga83237bee02feeff4fc8a0dfcb9d53878" kind="variable">
+        <name>Object</name>
+      </member>
+    </sectiondef>
+    <sectiondef kind="func">
+      <member refid="group___group_1ga054c88794f4fcaae438dfb7aa8b8d9f7" kind="function">
+        <name>Function</name>
+      </member>
+      <member refid="group___group_1ga78afe45b73c401f184443bb2e2f80275" kind="function">
+        <name>InlineFunction</name>
+      </member>
+    </sectiondef>
+    <briefdescription>
+      <para>116_tagfile.cpp brief (in 116_tagfile.cpp) </para>
+    </briefdescription>
+    <detaileddescription>
+      <para>116_tagfile.cpp description (in 116_tagfile.cpp). </para>
+    </detaileddescription>
+    <location file="116_tagfile.cpp"/>
+  </compounddef>
+</doxygen>

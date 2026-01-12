@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<tagfile doxygen_version="" doxygen_gitid="">
+  <compound kind="file">
+    <name>116_tagfile.cpp</name>
+    <path/>
+    <filename>116__tagfile_8cpp.xhtml</filename>
+    <class kind="struct">Struct</class>
+    <class kind="union">Union</class>
+    <class kind="class">Namespace::Class</class>
+    <namespace>Namespace</namespace>
+    <member kind="define">
+      <type>#define</type>
+      <name>Define</name>
+      <anchorfile>group___group.xhtml</anchorfile>
+      <anchor>gab0a66d73c921ab6fb0ba9f550fd77c23</anchor>
+      <arglist/>
+    </member>
+    <member kind="define">
+      <type>#define</type>
+      <name>Macro</name>
+      <anchorfile>group___group.xhtml</anchorfile>
+      <anchor>ga4ab59fbc11caf0f38d699ef980a378c8</anchor>
+      <arglist>(x)</arglist>
+    </member>
+    <member kind="typedef">
+      <type>Enum</type>
+      <name>EnumTypedef</name>
+      <anchorfile>group___group.xhtml</anchorfile>
+      <anchor>ga5cf05ddc8cf20a9eb9ce35b43c750790</anchor>
+      <arglist/>
+    </member>
+    <member kind="enumeration">
+      <type/>
+      <name>Enum</name>
+      <anchorfile>group___group.xhtml</anchorfile>
+      <anchor>ga8150b7776c2a1749101acf22e868d091</anchor>
+      <arglist/>
+    </member>
+    <member kind="enumvalue">
+      <name>EnumVal</name>
+      <anchorfile>group___group.xhtml</anchorfile>
+      <anchor>gga8150b7776c2a1749101acf22e868d091aecdc2953d9df684d8dc2bc9b0237113a</anchor>
+      <arglist/>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>Function</name>
+      <anchorfile>group___group.xhtml</anchorfile>
+      <anchor>ga054c88794f4fcaae438dfb7aa8b8d9f7</anchor>
+      <arglist>(int a, const int *b, int *c, int *d)</arglist>
+    </member>
+    <member kind="variable">
+      <type>int</type>
+      <name>Object</name>
+      <anchorfile>group___group.xhtml</anchorfile>
+      <anchor>ga83237bee02feeff4fc8a0dfcb9d53878</anchor>
+      <arglist/>
+    </member>
+  </compound>
+  <compound kind="file">
+    <name>116_tagfile.cpp</name>
+    <path>more_116/a/</path>
+    <filename>more__116_2a_2116__tagfile_8cpp.xhtml</filename>
+  </compound>
+  <compound kind="file">
+    <name>116_tagfile.cpp</name>
+    <path>more_116/b/</path>
+    <filename>more__116_2b_2116__tagfile_8cpp.xhtml</filename>
+  </compound>
+  <compound kind="file">
+    <name>f.cpp</name>
+    <path>more_116/</path>
+    <filename>f_8cpp.xhtml</filename>
+  </compound>
+  <compound kind="file">
+    <name>h.h</name>
+    <path>more_116/include/t/s/</path>
+    <filename>t_2s_2h_8h.xhtml</filename>
+  </compound>
+  <compound kind="class">
+    <name>Namespace::Class</name>
+    <filename>class_namespace_1_1_class.xhtml</filename>
+    <member kind="function">
+      <type/>
+      <name>Class</name>
+      <anchorfile>class_namespace_1_1_class.xhtml</anchorfile>
+      <anchor>a3728462d9de1e54c409d273c99bfe5a8</anchor>
+      <arglist>()</arglist>
+    </member>
+    <member kind="variable">
+      <type>int</type>
+      <name>ClassMember</name>
+      <anchorfile>class_namespace_1_1_class.xhtml</anchorfile>
+      <anchor>ae278721b28b01a4c01b09de072ac98d6</anchor>
+      <arglist/>
+    </member>
+  </compound>
+  <compound kind="struct">
+    <name>Struct</name>
+    <filename>struct_struct.xhtml</filename>
+    <member kind="variable">
+      <type>int</type>
+      <name>StructMember</name>
+      <anchorfile>struct_struct.xhtml</anchorfile>
+      <anchor>a077c7aa3a29e27af8dd56791844d3099</anchor>
+      <arglist/>
+    </member>
+  </compound>
+  <compound kind="union">
+    <name>Union</name>
+    <filename>union_union.xhtml</filename>
+    <member kind="variable">
+      <type>int</type>
+      <name>UnionMember</name>
+      <anchorfile>union_union.xhtml</anchorfile>
+      <anchor>a24db4074bb5266a3bbc852c77f67aac3</anchor>
+      <arglist/>
+    </member>
+  </compound>
+  <compound kind="namespace">
+    <name>Namespace</name>
+    <filename>namespace_namespace.xhtml</filename>
+    <class kind="class">Namespace::Class</class>
+  </compound>
+  <compound kind="group">
+    <name>Group</name>
+    <title>Group</title>
+    <filename>group___group.xhtml</filename>
+    <file>116_tagfile.cpp</file>
+    <file>f.cpp</file>
+    <file>116_tagfile.cpp</file>
+    <file>116_tagfile.cpp</file>
+    <file>h.h</file>
+    <namespace>Namespace</namespace>
+    <class kind="struct">Struct</class>
+    <class kind="union">Union</class>
+    <member kind="define">
+      <type>#define</type>
+      <name>Define</name>
+      <anchorfile>group___group.xhtml</anchorfile>
+      <anchor>gab0a66d73c921ab6fb0ba9f550fd77c23</anchor>
+      <arglist/>
+    </member>
+    <member kind="define">
+      <type>#define</type>
+      <name>Macro</name>
+      <anchorfile>group___group.xhtml</anchorfile>
+      <anchor>ga4ab59fbc11caf0f38d699ef980a378c8</anchor>
+      <arglist>(x)</arglist>
+    </member>
+    <member kind="typedef">
+      <type>Enum</type>
+      <name>EnumTypedef</name>
+      <anchorfile>group___group.xhtml</anchorfile>
+      <anchor>ga5cf05ddc8cf20a9eb9ce35b43c750790</anchor>
+      <arglist/>
+    </member>
+    <member kind="enumeration">
+      <type/>
+      <name>Enum</name>
+      <anchorfile>group___group.xhtml</anchorfile>
+      <anchor>ga8150b7776c2a1749101acf22e868d091</anchor>
+      <arglist/>
+    </member>
+    <member kind="enumvalue">
+      <name>EnumVal</name>
+      <anchorfile>group___group.xhtml</anchorfile>
+      <anchor>gga8150b7776c2a1749101acf22e868d091aecdc2953d9df684d8dc2bc9b0237113a</anchor>
+      <arglist/>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>Function</name>
+      <anchorfile>group___group.xhtml</anchorfile>
+      <anchor>ga054c88794f4fcaae438dfb7aa8b8d9f7</anchor>
+      <arglist>(int a, const int *b, int *c, int *d)</arglist>
+    </member>
+    <member kind="variable">
+      <type>int</type>
+      <name>Object</name>
+      <anchorfile>group___group.xhtml</anchorfile>
+      <anchor>ga83237bee02feeff4fc8a0dfcb9d53878</anchor>
+      <arglist/>
+    </member>
+  </compound>
+</tagfile>

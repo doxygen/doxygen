@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="union_union" kind="union" language="C++" prot="public">
+    <compoundname>Union</compoundname>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="union_union_1a24db4074bb5266a3bbc852c77f67aac3" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int Union::UnionMember</definition>
+        <argsstring/>
+        <name>UnionMember</name>
+        <qualifiedname>Union::UnionMember</qualifiedname>
+        <briefdescription>
+          <para>UnionMember brief (in 116_tagfile.cpp). </para>
+        </briefdescription>
+        <detaileddescription>
+          <para>UnionMember description (in 116_tagfile.cpp). </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="116_tagfile.cpp" line="109" column="7" bodyfile="116_tagfile.cpp" bodystart="109" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+      <para><ref refid="union_union" kindref="compound">Union</ref> brief (in 116_tagfile.cpp). </para>
+    </briefdescription>
+    <detaileddescription>
+      <para><ref refid="union_union" kindref="compound">Union</ref> description (in 116_tagfile.cpp). </para>
+    </detaileddescription>
+    <location file="116_tagfile.cpp" line="103" column="1" bodyfile="116_tagfile.cpp" bodystart="103" bodyend="110"/>
+    <listofallmembers>
+      <member refid="union_union_1a24db4074bb5266a3bbc852c77f67aac3" prot="public" virt="non-virtual">
+        <scope>Union</scope>
+        <name>UnionMember</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>
