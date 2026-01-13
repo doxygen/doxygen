@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 1997-2022 by Dimitri van Heesch.
+ * Copyright (C) 1997-2026 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -26,6 +26,8 @@
  * VERSION HISTORY
  * ---------------
  * History:
+ * 20260112:
+ *  - Updated to 1.16.0;
  * 20240204:
  *  - Updated to 1.11.0:
  * 20231107:
@@ -81,7 +83,7 @@
 
 #include "translator_br.h"
 
-class TranslatorPortuguese : public TranslatorAdapter_1_16_0
+class TranslatorPortuguese : public Translator
 {
   public:
 
@@ -2695,6 +2697,65 @@ class TranslatorPortuguese : public TranslatorAdapter_1_16_0
     QCString trImportant() override
     {
       return "Importante";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.16.0
+//////////////////////////////////////////////////////////////////////////
+
+    // the title of the requirements overview page
+    QCString trRequirements() override
+    {
+      return "Requisitos";
+    }
+    // table header for the column with the requirements IDs
+    QCString trRequirementID() override
+    {
+      return "ID";
+    }
+    // indicates a symbol implements (satisfies) a requirement
+    QCString trSatisfies(bool singular) override
+    {
+      // createNoun() cannot be used because the article must match the noum
+      QCString result = "Satisfaz o";
+      return result + (singular ? " requisito" : "s requisitos");
+    }
+    // indicates a requirement is satisfied (implemented) by one or more symbols
+    QCString trSatisfiedBy(const QCString &list) override
+    {
+      return "Satisfeito por "+list+".";
+    }
+    QCString trUnsatisfiedRequirements() override
+    {
+      return "Requisitos não satisfeitos";
+    }
+    QCString trUnsatisfiedRequirementsText(bool singular,const QCString &list) override
+    {
+      return singular ?
+        "O requisito "+list+" não possui a relação 'satisfaz'." :
+        "Os requisitos "+list+" não possuem a relação 'satisfaz'.";
+    }
+    // indicates a symbol verifies (tests) a requirement
+    QCString trVerifies(bool singular) override
+    {
+      // createNoun() cannot be used because the article must match the noum
+      QCString result = "Verifica o";
+      return result + (singular ? " requisito" : "s requisitos");
+    }
+    // indicates a requirement is verified (tested) by one or more symbols
+    QCString trVerifiedBy(const QCString &list) override
+    {
+      return "Verificado por "+list+".";
+    }
+    QCString trUnverifiedRequirements() override
+    {
+      return "Requisitos não verificados";
+    }
+    QCString trUnverifiedRequirementsText(bool singular,const QCString &list) override
+    {
+      return singular ?
+        "O requisito "+list+" não possui a relação 'verificado por'." :
+        "Os requisitos "+list+" não possuem a relação 'verificado por'.";
     }
 };
 
