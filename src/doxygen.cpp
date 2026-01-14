@@ -11368,7 +11368,7 @@ static void usage(const QCString &name,const QCString &versionString)
       "    If - is used for layoutFileName Doxygen will write to standard output.\n\n"
       "5) Use Doxygen to generate a template style sheet file for RTF, HTML or Latex.\n"
       "    RTF:        {1} -w rtf styleSheetFile\n"
-      "    HTML:       {1}-w html headerFile footerFile styleSheetFile [configFile]\n"
+      "    HTML:       {1} -w html headerFile footerFile styleSheetFile [configFile]\n"
       "    LaTeX:      {1} -w latex headerFile footerFile styleSheetFile [configFile]\n\n"
       "6) Use Doxygen to generate a rtf extensions file\n"
       "    {1} -e rtf extensionsFile\n\n"
