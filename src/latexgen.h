@@ -344,7 +344,7 @@ void filterLatexString(TextStream &t,const QCString &str,
                        const bool retainNewline = false);
 
 QCString latexEscapeLabelName(const QCString &s);
-QCString latexEscapeIndexChars(const QCString &s);
+QCString latexEscapeIndexChars(const QCString &s, bool escapeUnderscore = true);
 QCString latexEscapePDFString(const QCString &s);
 QCString latexFilterURL(const QCString &s);
 void latexWriteIndexItem(TextStream &t,const QCString &r1,const QCString &s2 = "");

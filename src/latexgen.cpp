@@ -2563,7 +2563,7 @@ QCString latexEscapeLabelName(const QCString &s)
   return t.str();
 }
 
-QCString latexEscapeIndexChars(const QCString &s)
+QCString latexEscapeIndexChars(const QCString &s, bool escapeUnderscore)
 {
   //printf("latexEscapeIndexChars(%s)\n",qPrint(s));
   if (s.isEmpty()) return s;
@@ -2583,6 +2583,7 @@ QCString latexEscapeIndexChars(const QCString &s)
       case ']': t << "]"; break;
       case '{': t << "\\lcurly{}"; break;
       case '}': t << "\\rcurly{}"; break;
+      case '_': if (!escapeUnderscore) {t << "_"; break;}
       // NOTE: adding a case here, means adding it to while below as well!
       default:
         {
@@ -2591,12 +2592,13 @@ QCString latexEscapeIndexChars(const QCString &s)
           tmp[i++]=c;
           while ((c=*p) && c!='"' && c!='@' && c!='[' && c!=']' && c!='!' && c!='{' && c!='}' && c!='|')
           {
+            if (c=='_' && !escapeUnderscore) break;
             tmp[i++]=c;
             p++;
           }
           tmp[i]=0;
           filterLatexString(t,tmp,
-                            true,   // insideTabbing
+                            !escapeUnderscore,   // "insideTabbing"
                             false,  // insidePre
                             false,  // insideItem
                             false,  // insideTable
@@ -2674,16 +2676,16 @@ void latexWriteIndexItem(TextStream &m_t,const QCString &s1,const QCString &s2)
   {
     m_t << "\\index{";
     m_t << latexEscapeLabelName(s1);
-    m_t << "@{";
-    m_t << latexEscapeIndexChars(s1);
-    m_t << "}";
+    m_t << "@{\\doxyIndexDescription{";
+    m_t << latexEscapeIndexChars(s1,false);
+    m_t << "}}";
     if (!s2.isEmpty())
     {
       m_t << "!";
       m_t << latexEscapeLabelName(s2);
-      m_t << "@{";
-      m_t << latexEscapeIndexChars(s2);
-      m_t << "}";
+      m_t << "@{\\doxyIndexDescription{";
+      m_t << latexEscapeIndexChars(s2,false);
+      m_t << "}}";
     }
     m_t << "}\n";
   }
