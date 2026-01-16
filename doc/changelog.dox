@@ -3899,7 +3899,7 @@ and [<a href="https://github.com/doxygen/doxygen/commit/c9284a1aae6e876e0399c475
 <li>Portuguese translators updated to Doxygen 1.8.16. [<a href="https://github.com/doxygen/doxygen/commit/6b4fd5000c6f6787155743dc93d67a249ca2b881">view</a>]</li>
 <li>Possibility to show converted fixed form [<a href="https://github.com/doxygen/doxygen/commit/1659f94a4c8acff1c2564226db21afbd2bc04736">view</a>]</li>
 <li>Problem with just an asterisks on a <tt>\code</tt> line [<a href="https://github.com/doxygen/doxygen/commit/3088ae34eda1fbeab287e2271a7f1804de2c784f">view</a>]</li>
-<li>Problem with with comment recognition for group open and closing commands [<a href="https://github.com/doxygen/doxygen/commit/ef5af7618fbec3ac240e7a1099607d9ff2b3cc4f">view</a>]</li>
+<li>Problem with comment recognition for group open and closing commands [<a href="https://github.com/doxygen/doxygen/commit/ef5af7618fbec3ac240e7a1099607d9ff2b3cc4f">view</a>]</li>
 <li>Properly handle empty TOC in XML output. [<a href="https://github.com/doxygen/doxygen/commit/cfe381e3ee55b8291faeea55fe3b67bb9e545d60">view</a>]</li>
 <li>Reduce code duplication when printing version string [<a href="https://github.com/doxygen/doxygen/commit/40f507bedff94e269f9c32c941f65ed82fc25a67">view</a>]</li>
 <li>Refactored Definition and derived classes such that they are abstract interfaces [<a href="https://github.com/doxygen/doxygen/commit/960bae7191faf07f142b1ae5b0038905d33e2b1f">view</a>]</li>
@@ -9481,7 +9481,7 @@ make sure you add the following:
 <li>   Some minor tweaks to the style sheet.</li>
 <li>   @relates can now not only be used for functions, but also for
        other members (i.e. enums, types and variables).</li>
-<li>   Static members do have have explicit "static" in the declaration
+<li>   Static members do have explicit "static" in the declaration
        part of the documentation. This is useful for grouping where it
        is otherwise not obvious that a member is static.</li>
 <li>   typedefs and enumeration are no longer shown in the "referenced by"
