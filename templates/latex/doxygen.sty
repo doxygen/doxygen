@@ -896,3 +896,9 @@
 \makeatother
 \AddEnumerateCounter{\enumalphalphcnt}{\@enumalphalphcnt}{aa}
 \AddEnumerateCounter{\enumAlphAlphcnt}{\@enumAlphAlphcnt}{AA}
+
+\usepackage{xurl}
+\newcommand{\doxyIndexDescription}[1]{%
+  \begin{NoHyper}\url{#1}\end{NoHyper}%
+}
+

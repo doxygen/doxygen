@@ -2405,7 +2405,9 @@ void filterLatexString(TextStream &t,const QCString &str,
           else
             t << static_cast<char>(c);
           break;
-        case '#':  t << "\\+\\#";        break;
+        case '#':  if (!insideTabbing) t << "\\+";
+                   t << "\\#";
+                   break;
         case '$':  t << "\\$";           break;
         case '%':  t << "\\%";           break;
         case '^':  processEntity(t,pdfHyperlinks,"$^\\wedge$","\\string^");    break;
@@ -2567,6 +2569,7 @@ QCString latexEscapeIndexChars(const QCString &s, bool escapeUnderscore)
 {
   //printf("latexEscapeIndexChars(%s)\n",qPrint(s));
   if (s.isEmpty()) return s;
+  bool usePDFHyperLinks   = Config_getBool(PDF_HYPERLINKS);
   QCString tmp(s.length(), QCString::ExplicitSize);
   TextStream t;
   const char *p=s.data();
@@ -2577,22 +2580,57 @@ QCString latexEscapeIndexChars(const QCString &s, bool escapeUnderscore)
     {
       case '!': t << "\"!"; break;
       case '"': t << "\"\""; break;
+      case '\'': if (!escapeUnderscore) t << "\"'";
+                else t << "\\textquotesingle{}";
+                break;
       case '@': t << "\"@"; break;
-      case '|': t << "\\texttt{\"|}"; break;
+      case '|': if (!escapeUnderscore)
+                {
+                  if (usePDFHyperLinks) t << "\"|";
+                  else                  t << "||";
+                }
+                else t << "\\texttt{\"|}";
+                break;
       case '[': t << "["; break;
       case ']': t << "]"; break;
-      case '{': t << "\\lcurly{}"; break;
-      case '}': t << "\\rcurly{}"; break;
+      //case '{': t << "\\lcurly{}"; break;
+      //case '}': t << "\\rcurly{}"; break;
       case '_': if (!escapeUnderscore) {t << "_"; break;}
+      case '<': if (!escapeUnderscore && c=='<') {t << "<"; break;} // due to fall through
+      case '>': if (!escapeUnderscore && c=='>') {t << ">"; break;} // due to fall through
+      case '$': if (!escapeUnderscore && c=='$') {t << "$"; break;} // due to fall through
+      case '{': if (!escapeUnderscore && c=='{') {t << "\\texttt{\\{}"; break;} // due to fall through
+      case '}': if (!escapeUnderscore && c=='}') {t << "\\texttt{\\}}"; break;} // due to fall through
+      case '~': if (!escapeUnderscore && c=='~') {t << "~"; break;} // due to fall through
+      case '-': if (!escapeUnderscore && c=='-') {t << "-"; break;} // due to fall through
+      case '#': if (!escapeUnderscore && c=='#') // due to fall through
+                {
+                  t << (usePDFHyperLinks? "\\#": "#");
+                  break;
+                }
+      case '\\': if (!escapeUnderscore && c=='\\') // due to fall through
+                 {
+                    t << (usePDFHyperLinks? "\\\\": "\\");
+                    break;
+                 }
       // NOTE: adding a case here, means adding it to while below as well!
       default:
         {
           int i=0;
           // collect as long string as possible, before handing it to docify
           tmp[i++]=c;
-          while ((c=*p) && c!='"' && c!='@' && c!='[' && c!=']' && c!='!' && c!='{' && c!='}' && c!='|')
+          while ((c=*p) && c!='"' && c!='@' && c!='[' && c!=']' && c!='!' && c!='{' && c!='}' && c!='|' && c!='\'')
           {
             if (c=='_' && !escapeUnderscore) break;
+            if (c=='<' && !escapeUnderscore) break;
+            if (c=='>' && !escapeUnderscore) break;
+            if (c=='$' && !escapeUnderscore) break;
+            if (c=='~' && !escapeUnderscore) break;
+            if (c=='{' && !escapeUnderscore) break;
+            if (c=='}' && !escapeUnderscore) break;
+            if (c=='-' && !escapeUnderscore) break;
+            if (c=='#' && !escapeUnderscore) break;
+            if (c=='\\' && !escapeUnderscore) break;
             tmp[i++]=c;
             p++;
           }
