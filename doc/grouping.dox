@@ -130,9 +130,9 @@ The priorities of grouping definitions are (from highest to lowest):
 \ref cmdaddtogroup "\\addtogroup", \ref cmdweakgroup "\\weakgroup".
 The \ref cmdweakgroup "\\weakgroup" command is exactly like \ref cmdaddtogroup "\\addtogroup"
 with a lower priority. It was added to allow "lazy" grouping
-definitions: you can use commands with a higher priority in your .h
+definitions: you can use commands with a higher priority in your `.h`
 files to define the hierarchy and \ref cmdweakgroup "\\weakgroup"
-in .c files without having to duplicate the hierarchy exactly.
+in `.c` files without having to duplicate the hierarchy exactly.
 
 \par Example:
 \include group.cpp

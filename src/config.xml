@@ -2866,7 +2866,7 @@ obfuscate email addresses.
  HTML output directory using the \c MATHJAX_RELPATH option. For Mathjax version 2 the destination
  directory should contain the `MathJax.js` script. For instance, if the \c mathjax
  directory is located at the same level as the HTML output directory, then
- \c MATHJAX_RELPATH should be <code>../mathjax</code>.s
+ \c MATHJAX_RELPATH should be <code>../mathjax</code>.
  For Mathjax versions 3 and 4 the destination directory should contain the
  `tex-<format>.js` script (where `<format>` is either `chtml` or `svg`).
  The default value points to
@@ -3516,7 +3516,7 @@ The following block name is set based on whether or not a feature is used in the
 <![CDATA[
  The \c MAN_SUBDIR tag determines the name of the directory created within \c MAN_OUTPUT
  in which the man pages are placed. If defaults to man followed by \c MAN_EXTENSION
- with the initial . removed.
+ with the initial `.` removed.
 ]]>
       </docs>
     </option>
