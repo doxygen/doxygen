@@ -46,6 +46,23 @@ let dynsection = {
     });
   },
 
+  slide : function(element, fromHeight, toHeight, duration=200) {
+    element.style.overflow = 'hidden';
+    element.style.transition = `height ${duration}ms ease-out`;
+    element.style.height = fromHeight;
+    setTimeout(() => {
+      element.style.height = toHeight;
+      setTimeout(() => {
+        element.style.height = '';
+        element.style.transition = '';
+        element.style.overflow = '';
+        if (toHeight === '0px') {
+          element.style.display = 'none';
+        }
+      }, duration);
+    }, 0);
+  },
+
   toggleVisibility : function(linkObj) {
     const base = linkObj.getAttribute('id');
     const summary = document.getElementById(base+'-summary');
@@ -53,20 +70,8 @@ let dynsection = {
     const trigger = document.getElementById(base+'-trigger');
     const src = trigger ? trigger.getAttribute('src') : null;
     if (content.offsetParent !== null) { // checks if element is visible
-      // slideUp animation
-      content.style.overflow = 'hidden';
-      content.style.transition = 'height 0.2s ease-out';
       const height = content.offsetHeight;
-      content.style.height = height + 'px';
-      setTimeout(() => {
-        content.style.height = '0px';
-        setTimeout(() => {
-          content.style.display = 'none';
-          content.style.height = '';
-          content.style.transition = '';
-          content.style.overflow = '';
-        }, 200);
-      }, 0);
+      this.slide(content, height + 'px', '0px');
       if (summary) summary.style.display = '';
       linkObj.querySelectorAll('.arrowhead').forEach(el => {
         el.classList.add('closed');
@@ -75,18 +80,8 @@ let dynsection = {
     } else {
       // slideDown animation
       content.style.display = 'block';
-      content.style.overflow = 'hidden';
-      content.style.height = '0px';
-      content.style.transition = 'height 0.2s ease-out';
       const height = content.scrollHeight;
-      setTimeout(() => {
-        content.style.height = height + 'px';
-        setTimeout(() => {
-          content.style.height = '';
-          content.style.transition = '';
-          content.style.overflow = '';
-        }, 200);
-      }, 0);
+      this.slide(content, '0px', height + 'px');
       if (summary) summary.style.display = 'none';
       linkObj.querySelectorAll('.arrowhead').forEach(el => {
         el.classList.remove('closed');
@@ -221,26 +216,31 @@ let dynsection = {
 let codefold = {
   opened : true,
 
+  show_plus : function(el) {
+    if (el) {
+      el.classList.remove('minus');
+      el.classList.add('plus');
+    }
+  },
+
+  show_minus : function(el) {
+    if (el) {
+      el.classList.add('minus');
+      el.classList.remove('plus');
+    }
+  },
+
   // toggle all folding blocks
   toggle_all : function() {
     if (this.opened) {
       const foldAll = document.getElementById('fold_all');
-      if (foldAll) {
-        foldAll.classList.add('plus');
-        foldAll.classList.remove('minus');
-      }
+      this.show_plus(foldAll);
       document.querySelectorAll('div[id^=foldopen]').forEach(el => el.style.display = 'none');
       document.querySelectorAll('div[id^=foldclosed]').forEach(el => el.style.display = '');
-      document.querySelectorAll('div[id^=foldclosed] span.fold').forEach(el => {
-        el.classList.remove('minus');
-        el.classList.add('plus');
-      });
+      document.querySelectorAll('div[id^=foldclosed] span.fold').forEach(el => this.show_plus(el));
     } else {
       const foldAll = document.getElementById('fold_all');
-      if (foldAll) {
-        foldAll.classList.add('minus');
-        foldAll.classList.remove('plus');
-      }
+      this.show_minus(foldAll);
       document.querySelectorAll('div[id^=foldopen]').forEach(el => el.style.display = '');
       document.querySelectorAll('div[id^=foldclosed]').forEach(el => el.style.display = 'none');
     }
@@ -253,23 +253,18 @@ let codefold = {
     const closedEl = document.getElementById('foldclosed'+id);
     if (openEl) {
       openEl.style.display = openEl.style.display === 'none' ? '' : 'none';
+      const nextEl = openEl.nextElementSibling;
+      if (nextEl) {
+        nextEl.querySelectorAll('span.fold').forEach(el => this.show_plus(el));
+      }
     }
     if (closedEl) {
       closedEl.style.display = closedEl.style.display === 'none' ? '' : 'none';
     }
-    if (openEl) {
-      const nextEl = openEl.nextElementSibling;
-      if (nextEl) {
-        nextEl.querySelectorAll('span.fold').forEach(el => {
-          el.classList.add('plus');
-          el.classList.remove('minus');
-        });
-      }
-    }
   },
 
   init : function() {
-    document.querySelectorAll('span[class=lineno]').forEach(el => {
+    document.querySelectorAll('span.lineno').forEach(el => {
       el.style.paddingRight = '4px';
       el.style.marginRight = '2px';
       el.style.display = 'inline-block';
@@ -277,16 +272,16 @@ let codefold = {
       el.style.background = 'linear-gradient(var(--fold-line-color),var(--fold-line-color)) no-repeat 46px/2px 100%';
     });
     // add global toggle to first line
-    const firstLineno = document.querySelector('span[class=lineno]');
+    const firstLineno = document.querySelector('span.lineno');
     if (firstLineno) {
       const span = document.createElement('span');
       span.className = 'fold minus';
       span.id = 'fold_all';
-      span.onclick = function() { codefold.toggle_all(); };
+      span.onclick = () => this.toggle_all();
       firstLineno.appendChild(span);
     }
     // add vertical lines to other rows
-    const allLinenos = document.querySelectorAll('span[class=lineno]');
+    const allLinenos = document.querySelectorAll('span.lineno');
     allLinenos.forEach((el, index) => {
       if (index !== 0) {
         const span = document.createElement('span');
@@ -295,18 +290,18 @@ let codefold = {
       }
     });
     // add toggle controls to lines with fold divs
-    document.querySelectorAll('div[class=foldopen]').forEach(el => {
+    document.querySelectorAll('div.foldopen').forEach(el => {
       // extract specific id to use
       const id = el.getAttribute('id').replace('foldopen','');
       // extract start and end foldable fragment attributes
       const start = el.getAttribute('data-start');
       const end = el.getAttribute('data-end');
       // replace normal fold span with controls for the first line of a foldable fragment
-      const firstFold = el.querySelector('span[class=fold]');
+      const firstFold = el.querySelector('span.fold');
       if (firstFold) {
         const newSpan = document.createElement('span');
         newSpan.className = 'fold minus';
-        newSpan.onclick = function() { codefold.toggle(id); };
+        newSpan.onclick = () => this.toggle(id);
         firstFold.replaceWith(newSpan);
       }
       // append div for folded (closed) representation
@@ -325,9 +320,10 @@ let codefold = {
           line.innerHTML = line.innerHTML.replace(new RegExp('\\s*'+start+'\\s*$','g'),'');
         }
         // replace minus with plus symbol
-        line.querySelectorAll('span[class=fold]').forEach(span => {
-          span.classList.add('plus');
-          span.classList.remove('minus');
+        line.querySelectorAll('span.fold').forEach(span => {
+          codefold.show_plus(span);
+          // re-apply click handler as it is not copied with cloneNode
+          span.onclick = () => codefold.toggle(id);
         });
         // append ellipsis
         const ellipsisLink = document.createElement('a');
