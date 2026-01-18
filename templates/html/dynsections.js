@@ -3,7 +3,7 @@
 
  The MIT License (MIT)
 
- Copyright (C) 1997-2020 by Dimitri van Heesch
+ Copyright (C) 1997-2026 by Dimitri van Heesch
 
  Permission is hereby granted, free of charge, to any person obtaining a copy of this software
  and associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -141,6 +141,13 @@ let dynsection = {
 
     if (childRows.length === 0) return;
 
+    function replaceClass(el,fromClass,toClass) {
+      if (el.classList.contains(fromClass)) {
+        el.classList.remove(fromClass);
+        el.classList.add(toClass);
+      }
+    }
+
     // first row is visible we are HIDING
     if (childRows[0].offsetParent !== null) { // checks if element is visible
       // replace down arrow by right arrow for current row
@@ -149,10 +156,7 @@ let dynsection = {
         if (span.classList.contains('iconfolder')) {
           span.querySelectorAll('.folder-icon').forEach(el => el.classList.remove("open"));
         }
-        if (span.classList.contains('opened')) {
-          span.classList.remove("opened");
-          span.classList.add("closed");
-        }
+        replaceClass(span,'opened','closed');
       });
       rows.forEach(row => {
         if (row.id.startsWith('row_'+id)) {
@@ -166,10 +170,7 @@ let dynsection = {
         if (span.classList.contains('iconfolder')) {
           span.querySelectorAll('.folder-icon').forEach(el => el.classList.add("open"));
         }
-        if (span.classList.contains('closed')) {
-          span.classList.remove("closed");
-          span.classList.add("opened");
-        }
+        replaceClass(span,'closed','opened');
       });
       // replace down arrows by right arrows for child rows
       childRows.forEach(row => {
@@ -178,10 +179,7 @@ let dynsection = {
           if (span.classList.contains('iconfolder')) {
             span.querySelectorAll('.folder-icon').forEach(el => el.classList.remove("open"));
           }
-          if (span.classList.contains('opened')) {
-            span.classList.remove("opened");
-            span.classList.add("closed");
-          }
+          replaceClass(span,'opened','closed');
         });
         row.style.display = ''; //show all children
       });
@@ -264,30 +262,22 @@ let codefold = {
   },
 
   init : function() {
-    document.querySelectorAll('span.lineno').forEach(el => {
+    // add code folding line and global control
+    document.querySelectorAll('span.lineno').forEach((el, index) => {
       el.style.paddingRight = '4px';
       el.style.marginRight = '2px';
       el.style.display = 'inline-block';
       el.style.width = '54px';
       el.style.background = 'linear-gradient(var(--fold-line-color),var(--fold-line-color)) no-repeat 46px/2px 100%';
-    });
-    // add global toggle to first line
-    const firstLineno = document.querySelector('span.lineno');
-    if (firstLineno) {
       const span = document.createElement('span');
-      span.className = 'fold minus';
-      span.id = 'fold_all';
-      span.onclick = () => this.toggle_all();
-      firstLineno.appendChild(span);
-    }
-    // add vertical lines to other rows
-    const allLinenos = document.querySelectorAll('span.lineno');
-    allLinenos.forEach((el, index) => {
-      if (index !== 0) {
-        const span = document.createElement('span');
-        span.className = 'fold';
-        el.appendChild(span);
+      if (index === 0) { // add global toggle to first line
+        span.className = 'fold minus';
+        span.id = 'fold_all';
+        span.onclick = () => this.toggle_all();
+      } else {  // add vertical lines to other rows
+        span.className = 'fold'
       }
+      el.appendChild(span);
     });
     // add toggle controls to lines with fold divs
     document.querySelectorAll('div.foldopen').forEach(el => {
@@ -299,10 +289,10 @@ let codefold = {
       // replace normal fold span with controls for the first line of a foldable fragment
       const firstFold = el.querySelector('span.fold');
       if (firstFold) {
-        const newSpan = document.createElement('span');
-        newSpan.className = 'fold minus';
-        newSpan.onclick = () => this.toggle(id);
-        firstFold.replaceWith(newSpan);
+        const span = document.createElement('span');
+        span.className = 'fold minus';
+        span.onclick = () => this.toggle(id);
+        firstFold.replaceWith(span);
       }
       // append div for folded (closed) representation
       const closedDiv = document.createElement('div');
