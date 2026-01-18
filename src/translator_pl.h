@@ -24,7 +24,7 @@
 #ifndef TRANSLATOR_PL_H
 #define TRANSLATOR_PL_H
 
-class TranslatorPolish : public Translator
+class TranslatorPolish : public TranslatorAdapter_1_16_0
 {
   public:
 
@@ -1434,7 +1434,7 @@ class TranslatorPolish : public Translator
     { QCString result="Dokumentacja katalogu "; result+=dirName; return result; }
 
     /*! This returns the word directory with or without starting capital
-     *  (\a first_capital) and in sigular or plural form (\a singular).
+     *  (\a first_capital) and in singular or plural form (\a singular).
      */
     QCString trDir(bool first_capital, bool singular) override
     {

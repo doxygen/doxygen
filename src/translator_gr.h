@@ -50,7 +50,7 @@
 #ifndef TRANSLATOR_GR_H
 #define TRANSLATOR_GR_H
 
-class TranslatorGreek : public Translator
+class TranslatorGreek : public TranslatorAdapter_1_16_0
 {
   public:
 
@@ -1474,7 +1474,7 @@ class TranslatorGreek : public Translator
     { QCString result=QCString("Αναφορά του Καταλόγου ") + dirName; return result; }
 
     /*! This returns the word directory with or without starting capital
-     *  (\a first_capital) and in sigular or plural form (\a singular).
+     *  (\a first_capital) and in singular or plural form (\a singular).
      */
     QCString trDir(bool first_capital, bool singular) override
     {

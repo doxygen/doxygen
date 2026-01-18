@@ -57,7 +57,6 @@
 #include "portable.h"
 #include "parserintf.h"
 #include "image.h"
-#include "growbuf.h"
 #include "entry.h"
 #include "arguments.h"
 #include "memberlist.h"
@@ -980,6 +979,7 @@ void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
     {
       const ClassDef     *cd=nullptr;
       const ConceptDef   *cnd=nullptr;
+      const Definition   *d=nullptr;
       //printf("** Match word '%s'\n",qPrint(matchWord));
 
       SymbolResolver resolver(fileScope);
@@ -1011,7 +1011,12 @@ void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
           }
         }
       };
-      if ((cd=getClass(matchWord)))
+
+      if (found)
+      {
+        //printf("   -> skip\n");
+      }
+      else if ((cd=getClass(matchWord)))
       {
         writeCompoundName(cd);
       }
@@ -1023,7 +1028,7 @@ void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
       {
         writeCompoundName(cnd);
       }
-      else if (const Definition *d=nullptr; cd==nullptr && !found && (d=resolver.resolveSymbol(scope,matchWord)))
+      else if ((d=resolver.resolveSymbol(scope,matchWord)))
       {
         writeCompoundName(d);
       }
@@ -1105,7 +1110,6 @@ void writeMarkerList(OutputList &ol,const std::string &markerText,size_t numMark
   reg::Iterator it(markerText,marker);
   reg::Iterator end;
   size_t index=0;
-  // now replace all markers in inheritLine with links to the classes
   for ( ; it!=end ; ++it)
   {
     const auto &match = *it;
@@ -1120,6 +1124,34 @@ void writeMarkerList(OutputList &ol,const std::string &markerText,size_t numMark
     index=newIndex+matchLen;
   }
   ol.parseText(markerText.substr(index));
+}
+
+QCString writeMarkerList(const std::string &markerText,size_t numMarkers,
+                         std::function<QCString(size_t)> replaceFunc)
+{
+  QCString result;
+  static const reg::Ex marker(R"(@(\d+))");
+  reg::Iterator it(markerText,marker);
+  reg::Iterator end;
+  size_t index=0;
+  for ( ; it!=end ; ++it)
+  {
+    const auto &match = *it;
+    size_t newIndex = match.position();
+    size_t matchLen = match.length();
+    result += markerText.substr(index,newIndex-index);
+    unsigned long entryIndex = std::stoul(match[1].str());
+    if (entryIndex<static_cast<unsigned long>(numMarkers))
+    {
+      result+=replaceFunc(entryIndex);
+    }
+    index=newIndex+matchLen;
+  }
+  if (index<markerText.size())
+  {
+    result += markerText.substr(index);
+  }
+  return result;
 }
 
 void writeExamples(OutputList &ol,const ExampleList &list)
@@ -2719,14 +2751,14 @@ bool resolveLink(/* in */ const QCString &scName,
   {
     *resContext=si->definition();
     resAnchor = si->label();
-    AUTO_TRACE_EXIT("section");
+    AUTO_TRACE_EXIT("section anchor={} def={}",resAnchor,si->definition()?si->definition()->name():"<none>");
     return TRUE;
   }
-  else if ((si=SectionManager::instance().find(linkRef)))
+  else if (!prefix.isEmpty() && (si=SectionManager::instance().find(linkRef)))
   {
     *resContext=si->definition();
     resAnchor = si->label();
-    AUTO_TRACE_EXIT("section");
+    AUTO_TRACE_EXIT("section anchor={} def={}",resAnchor,si->definition()?si->definition()->name():"<none>");
     return TRUE;
   }
   else if ((pd=Doxygen::exampleLinkedMap->find(linkRef))) // link to an example
@@ -2967,27 +2999,33 @@ QCString findFilePath(const QCString &file,bool &ambig)
 QCString showFileDefMatches(const FileNameLinkedMap *fnMap,const QCString &n)
 {
   QCString result;
-  QCString name=n;
+  QCString name=Dir::cleanDirPath(n.str());
   QCString path;
   int slashPos=std::max(name.findRev('/'),name.findRev('\\'));
   if (slashPos!=-1)
   {
-    path=name.left(slashPos+1);
+    path=removeLongPathMarker(name.left(slashPos+1));
     name=name.right(name.length()-slashPos-1);
   }
   const FileName *fn=fnMap->find(name);
   if (fn)
   {
     bool first = true;
-    for (const auto &fd : *fn)
+    QCString pathStripped = stripFromIncludePath(path);
+    for (const auto &fd_p : *fn)
     {
-      if (path.isEmpty() || fd->getPath().right(path.length())==path)
+      FileDef *fd = fd_p.get();
+      QCString fdStripPath = stripFromIncludePath(fd->getPath());
+      if (path.isEmpty() ||
+          (!pathStripped.isEmpty() && fdStripPath.endsWith(pathStripped)) ||
+          (pathStripped.isEmpty() && fdStripPath.isEmpty()))
       {
         if (!first) result += "\n";
         else first = false;
         result+="  "+fd->absFilePath();
       }
     }
+
   }
   return result;
 }
@@ -3274,46 +3312,47 @@ QCString escapeCharsInString(const QCString &name,bool allowDots,bool allowUnder
   if (name.isEmpty()) return name;
   bool caseSenseNames = getCaseSenseNames();
   bool allowUnicodeNames = Config_getBool(ALLOW_UNICODE_NAMES);
-  GrowBuf growBuf;
+  QCString result;
+  result.reserve(name.length()+8);
   signed char c = 0;
   const char *p=name.data();
   while ((c=*p++)!=0)
   {
     switch(c)
     {
-      case '_': if (allowUnderscore) growBuf.addChar('_'); else growBuf.addStr("__"); break;
-      case '-': growBuf.addChar('-');  break;
-      case ':': growBuf.addStr("_1"); break;
-      case '/': growBuf.addStr("_2"); break;
-      case '<': growBuf.addStr("_3"); break;
-      case '>': growBuf.addStr("_4"); break;
-      case '*': growBuf.addStr("_5"); break;
-      case '&': growBuf.addStr("_6"); break;
-      case '|': growBuf.addStr("_7"); break;
-      case '.': if (allowDots) growBuf.addChar('.'); else growBuf.addStr("_8"); break;
-      case '!': growBuf.addStr("_9"); break;
-      case ',': growBuf.addStr("_00"); break;
-      case ' ': growBuf.addStr("_01"); break;
-      case '{': growBuf.addStr("_02"); break;
-      case '}': growBuf.addStr("_03"); break;
-      case '?': growBuf.addStr("_04"); break;
-      case '^': growBuf.addStr("_05"); break;
-      case '%': growBuf.addStr("_06"); break;
-      case '(': growBuf.addStr("_07"); break;
-      case ')': growBuf.addStr("_08"); break;
-      case '+': growBuf.addStr("_09"); break;
-      case '=': growBuf.addStr("_0a"); break;
-      case '$': growBuf.addStr("_0b"); break;
-      case '\\': growBuf.addStr("_0c"); break;
-      case '@': growBuf.addStr("_0d"); break;
-      case ']': growBuf.addStr("_0e"); break;
-      case '[': growBuf.addStr("_0f"); break;
-      case '#': growBuf.addStr("_0g"); break;
-      case '"': growBuf.addStr("_0h"); break;
-      case '~': growBuf.addStr("_0i"); break;
-      case '\'': growBuf.addStr("_0j"); break;
-      case ';': growBuf.addStr("_0k"); break;
-      case '`': growBuf.addStr("_0l"); break;
+      case '_': if (allowUnderscore) result+='_'; else result+="__"; break;
+      case '-': result+='-';  break;
+      case ':': result+="_1"; break;
+      case '/': result+="_2"; break;
+      case '<': result+="_3"; break;
+      case '>': result+="_4"; break;
+      case '*': result+="_5"; break;
+      case '&': result+="_6"; break;
+      case '|': result+="_7"; break;
+      case '.': if (allowDots) result+='.'; else result+="_8"; break;
+      case '!': result+="_9"; break;
+      case ',': result+="_00"; break;
+      case ' ': result+="_01"; break;
+      case '{': result+="_02"; break;
+      case '}': result+="_03"; break;
+      case '?': result+="_04"; break;
+      case '^': result+="_05"; break;
+      case '%': result+="_06"; break;
+      case '(': result+="_07"; break;
+      case ')': result+="_08"; break;
+      case '+': result+="_09"; break;
+      case '=': result+="_0a"; break;
+      case '$': result+="_0b"; break;
+      case '\\': result+="_0c"; break;
+      case '@': result+="_0d"; break;
+      case ']': result+="_0e"; break;
+      case '[': result+="_0f"; break;
+      case '#': result+="_0g"; break;
+      case '"': result+="_0h"; break;
+      case '~': result+="_0i"; break;
+      case '\'': result+="_0j"; break;
+      case ';': result+="_0k"; break;
+      case '`': result+="_0l"; break;
       default:
                 if (c<0)
                 {
@@ -3323,7 +3362,7 @@ QCString escapeCharsInString(const QCString &name,bool allowDots,bool allowUnder
                     int charLen = getUTF8CharNumBytes(c);
                     if (charLen>0)
                     {
-                      growBuf.addStr(p-1,charLen);
+                      result+=QCString(p-1,charLen);
                       p+=charLen;
                       doEscape = false;
                     }
@@ -3337,23 +3376,22 @@ QCString escapeCharsInString(const QCString &name,bool allowDots,bool allowUnder
                     ids[2]=hex[id>>4];
                     ids[3]=hex[id&0xF];
                     ids[4]=0;
-                    growBuf.addStr(ids);
+                    result+=ids;
                   }
                 }
                 else if (caseSenseNames || !isupper(c))
                 {
-                  growBuf.addChar(c);
+                  result+=c;
                 }
                 else
                 {
-                  growBuf.addChar('_');
-                  growBuf.addChar(static_cast<char>(tolower(c)));
+                  result+='_';
+                  result+=static_cast<char>(tolower(c));
                 }
                 break;
     }
   }
-  growBuf.addChar(0);
-  return growBuf.get();
+  return result;
 }
 
 QCString unescapeCharsInString(const QCString &s)
@@ -3361,6 +3399,7 @@ QCString unescapeCharsInString(const QCString &s)
   if (s.isEmpty()) return s;
   bool caseSenseNames = getCaseSenseNames();
   QCString result;
+  result.reserve(s.length());
   const char *p = s.data();
   if (p)
   {
@@ -3814,7 +3853,8 @@ QCString stripScope(const QCString &name)
 QCString convertToId(const QCString &s)
 {
   if (s.isEmpty()) return s;
-  GrowBuf growBuf;
+  QCString result;
+  result.reserve(s.length()+8);
   const char *p = s.data();
   char c        = 0;
   bool first    = true;
@@ -3823,8 +3863,8 @@ QCString convertToId(const QCString &s)
     char encChar[4];
     if ((c>='0' && c<='9') || (c>='a' && c<='z') || (c>='A' && c<='Z') || c=='-')
     { // any permissive character except _
-      if (first && c>='0' && c<='9') growBuf.addChar('a'); // don't start with a digit
-      growBuf.addChar(c);
+      if (first && c>='0' && c<='9') result+='a'; // don't start with a digit
+      result+=c;
     }
     else
     {
@@ -3832,12 +3872,11 @@ QCString convertToId(const QCString &s)
       encChar[1]=hex[static_cast<unsigned char>(c)>>4];
       encChar[2]=hex[static_cast<unsigned char>(c)&0xF];
       encChar[3]=0;
-      growBuf.addStr(encChar);
+      result+=encChar;
     }
-    first=FALSE;
+    first=false;
   }
-  growBuf.addChar(0);
-  return growBuf.get();
+  return result;
 }
 
 /*! Some strings have been corrected but the requirement regarding the fact
@@ -3854,15 +3893,16 @@ QCString correctId(const QCString &s)
 QCString convertToXML(const QCString &s, bool keepEntities)
 {
   if (s.isEmpty()) return s;
-  GrowBuf growBuf;
+  QCString result;
+  result.reserve(s.length()+32);
   const char *p = s.data();
   char c = 0;
   while ((c=*p++))
   {
     switch (c)
     {
-      case '<':  growBuf.addStr("&lt;");   break;
-      case '>':  growBuf.addStr("&gt;");   break;
+      case '<':  result+="&lt;";   break;
+      case '>':  result+="&gt;";   break;
       case '&':  if (keepEntities)
                  {
                    const char *e=p;
@@ -3874,46 +3914,46 @@ QCString convertToXML(const QCString &s, bool keepEntities)
                    if (ce==';') // found end of an entity
                    {
                      // copy entry verbatim
-                     growBuf.addChar(c);
-                     while (p<e) growBuf.addChar(*p++);
+                     result+=c;
+                     while (p<e) result+=*p++;
                    }
                    else
                    {
-                     growBuf.addStr("&amp;");
+                     result+="&amp;";
                    }
                  }
                  else
                  {
-                   growBuf.addStr("&amp;");
+                   result+="&amp;";
                  }
                  break;
-      case '\'': growBuf.addStr("&apos;"); break;
-      case '"':  growBuf.addStr("&quot;"); break;
+      case '\'': result+="&apos;"; break;
+      case '"':  result+="&quot;"; break;
       case  1: case  2: case  3: case  4: case  5: case  6: case  7: case  8:
       case 11: case 12: case 13: case 14: case 15: case 16: case 17: case 18:
       case 19: case 20: case 21: case 22: case 23: case 24: case 25: case 26:
       case 27: case 28: case 29: case 30: case 31:
         break; // skip invalid XML characters (see http://www.w3.org/TR/2000/REC-xml-20001006#NT-Char)
-      default:   growBuf.addChar(c);       break;
+      default:   result+=c;       break;
     }
   }
-  growBuf.addChar(0);
-  return growBuf.get();
+  return result;
 }
 
 /*! Converts a string to a HTML-encoded string */
 QCString convertToHtml(const QCString &s,bool keepEntities)
 {
   if (s.isEmpty()) return s;
-  GrowBuf growBuf;
+  QCString result;
+  result.reserve(s.length()+32);
   const char *p=s.data();
   char c = 0;
   while ((c=*p++))
   {
     switch (c)
     {
-      case '<':  growBuf.addStr("&lt;");   break;
-      case '>':  growBuf.addStr("&gt;");   break;
+      case '<':  result+="&lt;";   break;
+      case '>':  result+="&gt;";   break;
       case '&':  if (keepEntities)
                  {
                    const char *e=p;
@@ -3925,65 +3965,64 @@ QCString convertToHtml(const QCString &s,bool keepEntities)
                    if (ce==';') // found end of an entity
                    {
                      // copy entry verbatim
-                     growBuf.addChar(c);
-                     while (p<e) growBuf.addChar(*p++);
+                     result+=c;
+                     while (p<e) result+=*p++;
                    }
                    else
                    {
-                     growBuf.addStr("&amp;");
+                     result+="&amp;";
                    }
                  }
                  else
                  {
-                   growBuf.addStr("&amp;");
+                   result+="&amp;";
                  }
                  break;
-      case '\'': growBuf.addStr("&#39;");  break;
-      case '"':  growBuf.addStr("&quot;"); break;
+      case '\'': result+="&#39;";  break;
+      case '"':  result+="&quot;"; break;
       default:
         {
           uint8_t uc = static_cast<uint8_t>(c);
           if (uc<32 && !isspace(c))
           {
-            growBuf.addStr("&#x24");
-            growBuf.addChar(hex[uc>>4]);
-            growBuf.addChar(hex[uc&0xF]);
-            growBuf.addChar(';');
+            result+="&#x24";
+            result+=hex[uc>>4];
+            result+=hex[uc&0xF];
+            result+=';';
           }
           else
           {
-            growBuf.addChar(c);
+            result+=c;
           }
         }
         break;
     }
   }
-  growBuf.addChar(0);
-  return growBuf.get();
+  return result;
 }
 
 QCString convertToJSString(const QCString &s,bool keepEntities,bool singleQuotes)
 {
   if (s.isEmpty()) return s;
-  GrowBuf growBuf;
+  QCString result;
+  result.reserve(s.length()+32);
   const char *p=s.data();
   char c = 0;
   while ((c=*p++))
   {
     switch (c)
     {
-      case '"':  if (!singleQuotes) growBuf.addStr("\\\""); else growBuf.addChar(c);
+      case '"':  if (!singleQuotes) result+="\\\""; else result+=c;
                  break;
-      case '\'': if (singleQuotes) growBuf.addStr("\\\'"); else growBuf.addChar(c);
+      case '\'': if (singleQuotes) result+="\\\'"; else result+=c;
                  break;
-      case '\\': if (*p=='u' && *(p+1)=='{') growBuf.addStr("\\"); // keep \u{..} unicode escapes
-                 else growBuf.addStr("\\\\");
+      case '\\': if (*p=='u' && *(p+1)=='{') result+="\\"; // keep \u{..} unicode escapes
+                 else result+="\\\\";
                  break;
-      default:   growBuf.addChar(c);   break;
+      default:   result+=c;   break;
     }
   }
-  growBuf.addChar(0);
-  return keepEntities ? growBuf.get() : convertCharEntitiesToUTF8(growBuf.get());
+  return keepEntities ? result : convertCharEntitiesToUTF8(result);
 }
 
 QCString convertCharEntitiesToUTF8(const QCString &str)
@@ -3995,7 +4034,8 @@ QCString convertCharEntitiesToUTF8(const QCString &str)
   reg::Iterator it(s,re);
   reg::Iterator end;
 
-  GrowBuf growBuf;
+  QCString result;
+  result.reserve(str.length()+32);
   size_t p=0, i=0, l=0;
   for (; it!=end ; ++it)
   {
@@ -4004,25 +4044,24 @@ QCString convertCharEntitiesToUTF8(const QCString &str)
     l = match.length();
     if (p>i)
     {
-      growBuf.addStr(s.substr(i,p-i));
+      result+=s.substr(i,p-i);
     }
     QCString entity(match.str());
     HtmlEntityMapper::SymType symType = HtmlEntityMapper::instance().name2sym(entity);
     const char *code=nullptr;
     if (symType!=HtmlEntityMapper::Sym_Unknown && (code=HtmlEntityMapper::instance().utf8(symType)))
     {
-      growBuf.addStr(code);
+      result+=code;
     }
     else
     {
-      growBuf.addStr(entity);
+      result+=entity;
     }
     i=p+l;
   }
-  growBuf.addStr(s.substr(i));
-  growBuf.addChar(0);
-  //printf("convertCharEntitiesToUTF8(%s)->%s\n",qPrint(s),growBuf.get());
-  return growBuf.get();
+  result+=s.substr(i);
+  //printf("convertCharEntitiesToUTF8(%s)->%s\n",qPrint(s),qPrint(result));
+  return result;
 }
 
 /*! Returns the standard string that is generated when the \\overload
@@ -4903,6 +4942,11 @@ QCString stripPath(const QCString &s)
   return result;
 }
 
+QCString makeBaseName(const QCString &name, const QCString &ext)
+{
+  return stripExtensionGeneral(stripPath(name), ext);
+}
+
 /** returns \c TRUE iff string \a s contains word \a w */
 bool containsWord(const QCString &str,const char *word)
 {
@@ -5697,7 +5741,11 @@ QCString createHtmlUrl(const QCString &relPath,
     }
     url+=fn;
   }
-  if (!anchor.isEmpty()) url+="#"+anchor;
+  if (!anchor.isEmpty())
+  {
+    if (!url.endsWith("=")) url+="#";
+    url+=anchor;
+  }
   //printf("createHtmlUrl(relPath=%s,local=%d,target=%s,anchor=%s)=%s\n",qPrint(relPath),isLocalFile,qPrint(targetFileName),qPrint(anchor),qPrint(url));
   return url;
 }
@@ -5985,8 +6033,9 @@ QCString stripIndentation(const QCString &s,bool skipFirstLine)
   return result.str();
 }
 
-// strip up to \a indentationLevel spaces from each line in \a doc (excluding the first line)
-void stripIndentationVerbatim(QCString &doc,const int indentationLevel)
+// strip up to \a indentationLevel spaces from each line in \a doc (excluding the first line
+//  when skipFirstLine is set to true)
+void stripIndentationVerbatim(QCString &doc,const int indentationLevel, bool skipFirstLine)
 {
   //printf("stripIndentationVerbatim(level=%d):\n%s\n------\n",indentationLevel,qPrint(doc));
   if (indentationLevel <= 0 || doc.isEmpty()) return; // nothing to strip
@@ -5996,8 +6045,9 @@ void stripIndentationVerbatim(QCString &doc,const int indentationLevel)
   char c = 0;
   const char *src = doc.data();
   char *dst = doc.rawData();
-  bool insideIndent = false; // skip the initial line from stripping
+  bool insideIndent = !skipFirstLine; // skip the initial line from stripping
   int cnt = 0;
+  if (!skipFirstLine) cnt = indentationLevel;
   while ((c=*src++))
   {
     // invariant: dst<=src
@@ -6671,7 +6721,8 @@ QCString detab(const QCString &s,size_t &refIndent)
 {
   int tabSize = Config_getInt(TAB_SIZE);
   size_t size = s.length();
-  GrowBuf out(size);
+  QCString result;
+  result.reserve(size+256);
   const char *data = s.data();
   size_t i=0;
   int col=0;
@@ -6689,14 +6740,14 @@ QCString detab(const QCString &s,size_t &refIndent)
           int stop = tabSize - (col%tabSize);
           //printf("expand at %d stop=%d\n",col,stop);
           col+=stop;
-          while (stop--) out.addChar(' ');
+          while (stop--) result+=' ';
         }
         break;
       case '\\':
         if (data[i] == '\\') // escaped command -> ignore
         {
-          out.addChar(c);
-          out.addChar(data[i++]);
+          result+=c;
+          result+=data[i++];
           col+=2;
         }
         else if (i+5<size && literal_at(data+i,"iskip")) // \iskip command
@@ -6711,16 +6762,16 @@ QCString detab(const QCString &s,size_t &refIndent)
         }
         else // some other command
         {
-          out.addChar(c);
+          result+=c;
           col++;
         }
         break;
       case '\n': // reset column counter
-        out.addChar(c);
+        result+=c;
         col=0;
         break;
       case ' ': // increment column counter
-        out.addChar(c);
+        result+=c;
         col++;
         break;
       default: // non-whitespace => update minIndent
@@ -6730,7 +6781,7 @@ QCString detab(const QCString &s,size_t &refIndent)
           int nb = isUTF8NonBreakableSpace(data);
           if (nb>0)
           {
-            out.addStr(doxy_nbsp);
+            result+=doxy_nbsp;
             i+=nb-1;
           }
           else
@@ -6738,24 +6789,23 @@ QCString detab(const QCString &s,size_t &refIndent)
             int bytes = getUTF8CharNumBytes(c);
             for (int j=0;j<bytes-1 && c;j++)
             {
-              out.addChar(c);
+              result+=c;
               c = data[i++];
             }
-            out.addChar(c);
+            result+=c;
           }
         }
         else
         {
-          out.addChar(c);
+          result+=c;
         }
         if (!skip && col<minIndent) minIndent=col;
         col++;
     }
   }
   if (minIndent!=maxIndent) refIndent=minIndent; else refIndent=0;
-  out.addChar(0);
   //printf("detab(\n%s\n)=[\n%s\n]\n",qPrint(s),qPrint(out.get()));
-  return out.get();
+  return result;
 }
 
 QCString getProjectId()
@@ -6895,4 +6945,55 @@ QCString extractEndRawStringDelimiter(const char *rawEnd)
   return text.mid(1,text.length()-2); // text=)xyz" -> delimiter=xyz
 }
 
+static std::mutex         writeFileContents_lock;
+static StringUnorderedSet writeFileContents_set;
 
+/** Thread-safe function to write a string to a file.
+ *  The contents will be used to create a hash that will be used to make the name unique.
+ *  @param[in] baseName the base name of the file to write including path.
+ *  @param[in] extension the file extension to use.
+ *  @param[in] content the data to write to the file
+ *  @param[out] exists is set to true if the file was already written before.
+ *  @returns the name of the file written or an empty string in case of an error.
+ */
+QCString writeFileContents(const QCString &baseName,const QCString &extension,const QCString &content,bool &exists)
+{
+  uint8_t md5_sig[16];
+  char sigStr[33];
+  MD5Buffer(content.data(),static_cast<unsigned int>(content.length()),md5_sig);
+  MD5SigToString(md5_sig,sigStr);
+
+  QCString fileName = baseName + sigStr + extension;
+  { // ==== start atomic section
+    std::lock_guard lock(writeFileContents_lock);
+    auto it=writeFileContents_set.find(fileName.str());
+    exists = it!=writeFileContents_set.end();
+    if (!exists)
+    {
+      writeFileContents_set.insert(fileName.str());
+      if (auto file = Portable::openOutputStream(fileName); file.is_open())
+      {
+        file.write( content.data(), content.length() );
+        file.close();
+      }
+      else
+      {
+        err("Could not open file {} for writing\n",fileName);
+        return QCString();
+      }
+    }
+  } // ==== end atomic section
+  return fileName;
+}
+
+
+void cleanupInlineGraph()
+{
+  if (Config_getBool(DOT_CLEANUP))
+  {
+    for (const auto& fileName: writeFileContents_set)
+    {
+      Dir().remove(qPrint(fileName));
+    }
+  }
+}

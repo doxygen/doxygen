@@ -413,56 +413,37 @@ void XMLCodeParser::resetCodeParserState()
 }
 
 void XMLCodeParser::parseCode(OutputCodeList &codeOutIntf,
-               const QCString &/* scopeName */,
-               const QCString &input,
-               SrcLangExt,
-               bool stripCodeComments,
-               bool isExampleBlock,
-               const QCString &exampleName,
-               const FileDef *fileDef,
-               int startLine,
-               int endLine,
-               bool inlineFragment,
-               const MemberDef * /* memberDef */,
-               bool /* showLineNumbers */,
-               const Definition *searchCtx,
-               bool/* collectXRefs */ 
-              )
+                              const QCString &/* scopeName */,
+                              const QCString &input,
+                              SrcLangExt,
+                              bool stripCodeComments,
+                              const CodeParserOptions &options
+                             )
 {
   yyscan_t yyscanner = p->yyscanner;
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
 
   if (input.isEmpty()) return;
 
-  DebugLex debugLex(Debug::Lex_xmlcode, __FILE__, fileDef ? qPrint(fileDef->fileName()): nullptr);
-  yyextra->fileName      = fileDef ? fileDef->fileName():"";
-
-  yyextra->code = &codeOutIntf;
-  yyextra->inputString   = input.data();
-  yyextra->inputPosition = 0;
-  yyextra->currentFontClass = nullptr;
-  yyextra->insideCodeLine = false;
-  yyextra->searchCtx = searchCtx;
-
-  if (startLine!=-1)
-    yyextra->yyLineNr    = startLine;
-  else
-    yyextra->yyLineNr    = 1;
-
-  if (endLine!=-1)
-    yyextra->inputLines  = endLine+1;
-  else
-    yyextra->inputLines  = yyextra->yyLineNr + countLines(yyscanner) - 1;
-
+  DebugLex debugLex(Debug::Lex_xmlcode, __FILE__, options.fileDef() ? qPrint(options.fileDef()->fileName()): nullptr);
+  yyextra->fileName          = options.fileDef() ? options.fileDef()->fileName():"";
+  yyextra->code              = &codeOutIntf;
+  yyextra->inputString       = input.data();
+  yyextra->inputPosition     = 0;
+  yyextra->currentFontClass  = nullptr;
+  yyextra->insideCodeLine    = false;
+  yyextra->searchCtx         = options.searchCtx();
+  yyextra->yyLineNr          = options.startLine()!=-1 ? options.startLine() : 1;
+  yyextra->inputLines        = options.endLine()!=-1   ? options.endLine()+1 : yyextra->yyLineNr + countLines(yyscanner) - 1;
   yyextra->stripCodeComments = stripCodeComments;
-  yyextra->exampleBlock  = isExampleBlock;
-  yyextra->exampleName   = exampleName;
-  yyextra->sourceFileDef = fileDef;
+  yyextra->exampleBlock      = options.isExample();
+  yyextra->exampleName       = options.exampleName();
+  yyextra->sourceFileDef     = options.fileDef();
 
-  if (isExampleBlock && fileDef==0)
+  if (options.isExample() && options.fileDef()==nullptr)
   {
     // create a dummy filedef for the example
-    yyextra->exampleFileDef = createFileDef("",(!exampleName.isEmpty()?exampleName:QCString("generated")));
+    yyextra->exampleFileDef = createFileDef("",(!options.exampleName().isEmpty()?options.exampleName():QCString("generated")));
     yyextra->sourceFileDef = yyextra->exampleFileDef.get();
   }
 
@@ -471,7 +452,7 @@ void XMLCodeParser::parseCode(OutputCodeList &codeOutIntf,
     setCurrentDoc(yyscanner,"l00001");
   }
 
-  yyextra->includeCodeFragment = inlineFragment;
+  yyextra->includeCodeFragment = options.inlineFragment();
   // Starts line 1 on the output
   startCodeLine(yyscanner);
 

@@ -113,7 +113,6 @@ class HtmlGenerator : public OutputGenerator, public OutputGenIntf
     static void writeExternalSearchPage();
     static QCString writeLogoAsString(const QCString &path);
     static QCString writeSplitBarAsString(const QCString &name,const QCString &relpath,const QCString &allMembersFile);
-    static QCString getMathJaxMacros();
     static QCString getNavTreeCss();
     void clearBuffer();
 
@@ -333,6 +332,9 @@ class HtmlGenerator : public OutputGenerator, public OutputGenIntf
 
     void startPlainFile(const QCString &name) override { OutputGenerator::startPlainFile(name); }
     void endPlainFile() override { OutputGenerator::endPlainFile(); }
+
+    void startEmbeddedDoc(int) override;
+    void endEmbeddedDoc() override;
 
   private:
     void startTitle() { m_t << "<div class=\"title\">"; }

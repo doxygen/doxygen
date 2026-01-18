@@ -72,13 +72,13 @@ jobs:
           }
         - {
             name: "macOS Latest Release (Intel)",
-            os: macos-14,
+            os: macos-15-intel,
             build_type: "Release", cc: "clang", cxx: "clang++",
             build_gen: "Unix Makefiles"
           }
         - {
             name: "macOS Latest Debug (Intel)",
-            os: macos-14,
+            os: macos-15-intel,
             build_type: "Debug", cc: "clang", cxx: "clang++",
             build_gen: "Unix Makefiles"
           }
@@ -108,7 +108,7 @@ jobs:
           }
     steps:
     - name: Checkout doxygen
-      uses: actions/checkout@v5
+      uses: actions/checkout@v6
       with:
         fetch-depth: 0
 
@@ -368,7 +368,7 @@ jobs:
         endif()
 
     - name: Archive build artifacts
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@v6
       with:
         name: "${{ matrix.config.name }} build artifacts"
         path: build/bin/
@@ -417,14 +417,14 @@ jobs:
         endif()
 
     - name: Archive html documentation artifacts
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@v6
       with:
         name: "Html documentation artifacts"
         path: build/html/
       if: matrix.config.name == 'Ubuntu Latest GCC Release (Intel)'
 
     - name: Archive Latex documentation artifacts
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@v6
       with:
         name: "Latex documentation artifacts"
         path: build/latex/doxygen_manual.pdf

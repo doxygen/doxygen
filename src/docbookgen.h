@@ -320,6 +320,9 @@ class DocbookGenerator : public OutputGenerator, public OutputGenIntf
     void startPlainFile(const QCString &name) override { OutputGenerator::startPlainFile(name); }
     void endPlainFile() override { OutputGenerator::endPlainFile(); }
 
+    void startEmbeddedDoc(int) override {}
+    void endEmbeddedDoc() override {}
+
 private:
     void openSection(const QCString &attr=QCString());
     void closeSection();

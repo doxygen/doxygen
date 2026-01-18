@@ -182,6 +182,7 @@ BLANK     [ \t\r]
 BLANKopt  {BLANK}*
 ID        [$a-z_A-Z\x80-\xFF][$a-z_A-Z0-9\x80-\xFF]*
 LABELID   [a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF\-]*
+REQID     [a-z_A-Z0-9\x80-\xFF\-]+
 CODEID    [a-zA-Z][a-zA-Z0-9+]*
 PHPTYPE   [?]?[\\:a-z_A-Z0-9\x80-\xFF\-]+
 CITESCHAR [a-z_A-Z0-9\x80-\xFF\-\?]
@@ -244,6 +245,7 @@ LNKWORDN  ("::"|"#")?{SCOPEMSKN}
 CVSPEC    {BLANK}*("const"|"volatile")
 LNKWORD2  (({SCOPEPRE}*"operator"{OPMASK})|({SCOPEPRE}"operator"{OPMASKOPT})|(("::"|"#"){SCOPEPRE}*"operator"{OPMASKOPT})){CVSPEC}?
 LNKWORD3  ([0-9a-z_A-Z\-]+("/"|"\\"))*[0-9a-z_A-Z\-]+("."[0-9a-z_A-Z]+)+
+LNKWORD4  "#"{LABELID}
 CHARWORDQ [^ \t\n\r\\@<>()\[\]:;\?{}&%$#,."=']
 ESCWORD   ("%"{ID}(("::"|"."){ID})*)|("%'")
 CHARWORDQ1 [^ \-+0-9\t\n\r\\@<>()\[\]:;\?{}&%$#,."=']
@@ -263,8 +265,8 @@ REFWORD2_NOCV  {REFWORD2_PRE}("("{FUNCPART}")")?
 REFWORD3       ({ID}":")*{ID}":"?
 REFWORD4_NOCV  (({SCOPEPRE}*"operator"{OPMASKOP2})|(("::"|"#"){SCOPEPRE}*"operator"{OPMASKOP2}))
 REFWORD4       {REFWORD4_NOCV}{CVSPEC}?
-REFWORD        {FILEMASK}|{LABELID}|{REFWORD2}|{REFWORD3}|{REFWORD4}
-REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
+REFWORD        {FILEMASK}|{REQID}|{LABELID}|{REFWORD2}|{REFWORD3}|{REFWORD4}
+REFWORD_NOCV   {FILEMASK}|{REQID}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
 RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revision"|"Source"|"State")":"[^:\n$][^\n$]*"$"
 LINENR {BLANK}*([1-9][0-9]*|"0"|"-1")
 
@@ -651,7 +653,8 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
 <St_Para>{LNKWORD1}                   |
 <St_Para>{LNKWORD1}{FUNCARG}          |
 <St_Para>{LNKWORD2}                   |
-<St_Para>{LNKWORD3}    {
+<St_Para>{LNKWORD3}                   |
+<St_Para>{LNKWORD4}    {
                          yyextra->token.name = yytext;
                          return Token::make_TK_LNKWORD();
                        }
@@ -1053,7 +1056,7 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          return Token::make_TK_NONE();
                        }
 
-<St_Anchor>{LABELID}{WS}? { // anchor
+<St_Anchor>({REQID}|{LABELID}){WS}? { // anchor
                          lineCount(yytext,yyleng);
                          yyextra->token.name = QCString(yytext).stripWhiteSpace();
                          return Token::make_TK_WORD();
@@ -1350,6 +1353,11 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                        }
 <St_File>{FILEMASK}    {
                          yyextra->token.name = yytext;
+                         if (yyextra->token.name.endsWith("\\ilinebr") ||yyextra->token.name.endsWith("@ilinebr"))
+                         {
+                           unput_string("\\ilinebr",8);
+                           yyextra->token.name = yyextra->token.name.left(yyleng-8);
+                         }
                          return Token::make_TK_WORD();
                        }
 <St_File>"\""[^\n\"]+"\"" {
@@ -1522,14 +1530,14 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
 <St_SecSkip>(\n|"\\ilinebr")
 <St_Sections>.
 <St_Sections>(\n|"\\ilinebr")
-<St_SecLabel1>{LABELID} {
+<St_SecLabel1>({REQID}|{LABELID}) {
                          lineCount(yytext,yyleng);
                          yyextra->secLabel = yytext;
                          processSection(yyscanner);
                          BEGIN(St_Sections);
                        }
-<St_SecLabel2>{LABELID}{BLANK}+ |
-<St_SecLabel2>{LABELID}         {
+<St_SecLabel2>({REQID}|{LABELID}){BLANK}+ |
+<St_SecLabel2>({REQID}|{LABELID})         {
                          yyextra->secLabel = yytext;
                          yyextra->secLabel = yyextra->secLabel.stripWhiteSpace();
                          BEGIN(St_SecTitle);
@@ -2197,6 +2205,20 @@ void DocTokenizer::endAutoList()
   yyextra->autoListLevel--;
 }
 
+void DocTokenizer::setFileName(const QCString &fileName)
+{
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->fileName = fileName;
+}
+
+QCString DocTokenizer::getFileName() const
+{
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  return yyextra->fileName;
+}
+
 void DocTokenizer::setLineNr(int lineno)
 {
   yyscan_t yyscanner = p->yyscanner;
@@ -2204,7 +2226,7 @@ void DocTokenizer::setLineNr(int lineno)
   yyextra->yyLineNr = lineno;
 }
 
-int DocTokenizer::getLineNr(void)
+int DocTokenizer::getLineNr() const
 {
   yyscan_t yyscanner = p->yyscanner;
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;

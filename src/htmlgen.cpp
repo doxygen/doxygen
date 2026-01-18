@@ -47,7 +47,6 @@
 #include "ftvhelp.h"
 #include "resourcemgr.h"
 #include "tooltip.h"
-#include "growbuf.h"
 #include "fileinfo.h"
 #include "dir.h"
 #include "utf8.h"
@@ -154,7 +153,8 @@ static QCString getConvertLatexMacro()
   QCString s = fileToString(macrofile);
   macrofile = FileInfo(macrofile.str()).absFilePath();
   size_t size = s.length();
-  GrowBuf out(size);
+  QCString result;
+  result.reserve(size+8);
   const char *data = s.data();
   int line = 1;
   int cnt = 0;
@@ -204,22 +204,21 @@ static QCString getConvertLatexMacro()
     }
     i++;
     // run till }, i.e. cmd
-    out.addStr("    ");
-    while (i < size && (data[i] != '}')) out.addChar(data[i++]);
+    result+="    ";
+    while (i < size && (data[i] != '}')) result+=data[i++];
     if (i >= size)
     {
       warn(macrofile,line, "file contains non valid code, no closing '}}' for command");
       return "";
     }
-    out.addChar(':');
-    out.addChar(' ');
+    result+=": ";
     i++;
 
     if (data[i] == '[')
     {
       // handle [nr]
       // run till ]
-      out.addChar('[');
+      result+='[';
       i++;
       while (i < size && (data[i] != ']')) nr += data[i++];
       if (i >= size)
@@ -241,8 +240,7 @@ static QCString getConvertLatexMacro()
       warn(macrofile,line, "file contains non valid code, expected '{{' got '{:c}'",data[i]);
       return "";
     }
-    out.addChar('"');
-    out.addChar('{');
+    result+="\"{";
     i++;
     // run till }
     cnt = 1;
@@ -251,36 +249,34 @@ static QCString getConvertLatexMacro()
       switch(data[i])
       {
         case '\\':
-          out.addChar('\\'); // need to escape it for MathJax js code
-          out.addChar('\\');
+          result+="\\\\"; // need to escape it for MathJax js code
           i++;
           if (data[i] == '\\') // we have an escaped backslash
           {
-            out.addChar('\\');
-            out.addChar('\\');
+            result+="\\\\";
             i++;
           }
-          else if (data[i] != '"') out.addChar(data[i++]); // double quote handled separately
+          else if (data[i] != '"') result+=data[i++]; // double quote handled separately
           break;
         case '{':
           cnt++;
-          out.addChar(data[i++]);
+          result+=data[i++];
           break;
         case '}':
           cnt--;
-          if (cnt) out.addChar(data[i]);
+          if (cnt) result+=data[i];
           i++;
           break;
         case '"':
-          out.addChar('\\'); // need to escape it for MathJax js code
-          out.addChar(data[i++]);
+          result+='\\'; // need to escape it for MathJax js code
+          result+=data[i++];
           break;
         case '\n':
           line++;
-          out.addChar(data[i++]);
+          result+=data[i++];
           break;
         default:
-          out.addChar(data[i++]);
+          result+=data[i++];
           break;
       }
     }
@@ -289,22 +285,16 @@ static QCString getConvertLatexMacro()
       warn(macrofile,line, "file contains non valid code, no closing '}}' for replacement");
       return "";
     }
-    out.addChar('}');
-    out.addChar('"');
+    result+="}\"";
     if (!nr.isEmpty())
     {
-      out.addChar(',');
-      out.addStr(nr);
+      result+=',';
+      result+=nr;
+      result+=']';
     }
-    if (!nr.isEmpty())
-    {
-      out.addChar(']');
-    }
-    out.addChar(',');
-    out.addChar('\n');
+    result+=",\n";
   }
-  out.addChar(0);
-  return out.get();
+  return result;
 }
 
 static QCString getSearchBox(bool serverSide, QCString relPath, bool highlightSearch)
@@ -707,11 +697,12 @@ static QCString replaceVariables(const QCString &input)
 {
   auto doReplacements = [&input](const StringUnorderedMap &mapping) -> QCString
   {
-    GrowBuf output;
+    QCString result;
+    result.reserve(input.length());
     int p=0,i=0;
     while ((i=input.find("var(",p))!=-1)
     {
-      output.addStr(input.data()+p,i-p);
+      result+=input.mid(p,i-p);
       int j=input.find(")",i+4);
       assert(j!=-1);
       auto it = mapping.find(input.mid(i+4,j-i-4).str()); // find variable
@@ -722,13 +713,12 @@ static QCString replaceVariables(const QCString &input)
       else
       {
         //printf("replace '%s' by '%s'\n",qPrint(input.mid(i+4,j-i-4)),qPrint(it->second));
-        output.addStr(it->second);                          // add it value
+        result+=it->second;                          // add it value
       }
       p=j+1;
     }
-    output.addStr(input.data()+p,input.length()-p);
-    output.addChar(0);
-    return output.get();
+    result+=input.mid(p,input.length()-p);
+    return result;
   };
 
   auto colorStyle = Config_getEnum(HTML_COLORSTYLE);
@@ -2167,7 +2157,7 @@ void HtmlGenerator::endMemberTemplateParams(const QCString &anchor,const QCStrin
   {
     m_t << " inherit " << inheritId;
   }
-  m_t << " template\"><td class=\"memItemLeft\" align=\"right\" valign=\"top\">";
+  m_t << " template\"><td class=\"memItemLeft\">";
 }
 
 void HtmlGenerator::startCompoundTemplateParams()
@@ -2183,7 +2173,7 @@ void HtmlGenerator::endCompoundTemplateParams()
 void HtmlGenerator::insertMemberAlign(bool)
 {
   DBG_HTML(m_t << "<!-- insertMemberAlign -->\n")
-  m_t << "&#160;</td><td class=\"memItemRight\" valign=\"bottom\">";
+  m_t << "&#160;</td><td class=\"memItemRight\">";
 }
 
 void HtmlGenerator::insertMemberAlignLeft(MemberItemType type, bool initTag)
@@ -2191,9 +2181,9 @@ void HtmlGenerator::insertMemberAlignLeft(MemberItemType type, bool initTag)
   if (!initTag) m_t << "&#160;</td>";
   switch (type)
   {
-    case MemberItemType::Normal:         m_t << "<td class=\"memItemLeft\" align=\"right\" valign=\"top\">"; break;
+    case MemberItemType::Normal:         m_t << "<td class=\"memItemLeft\">"; break;
     case MemberItemType::AnonymousStart: m_t << "<td class=\"memItemLeft anon\">"; break;
-    case MemberItemType::AnonymousEnd:   m_t << "<td class=\"memItemLeft anonEnd\" valign=\"top\">"; break;
+    case MemberItemType::AnonymousEnd:   m_t << "<td class=\"memItemLeft anonEnd\">"; break;
     case MemberItemType::Templated:      m_t << "<td class=\"memTemplParams\" colspan=\"2\">"; break;
   }
 }
@@ -3517,6 +3507,18 @@ void HtmlGenerator::endInlineMemberDoc()
   m_t << "</td></tr>\n";
 }
 
+void HtmlGenerator::startEmbeddedDoc(int indent)
+{
+  DBG_HTML(m_t << "<!-- startEmbeddedDoc -->\n";)
+  m_t << "<div class=\"embeddoc\" style=\"margin-left:" << indent << "ch;\">";
+}
+
+void HtmlGenerator::endEmbeddedDoc()
+{
+  DBG_HTML(m_t << "<!-- endEmbeddedDoc -->\n";)
+  m_t << "</div>";
+}
+
 void HtmlGenerator::startLabels()
 {
   DBG_HTML(m_t << "<!-- startLabels -->\n";)
@@ -3640,11 +3642,6 @@ void HtmlGenerator::writePageOutline()
 
 void HtmlGenerator::endMemberDeclaration(const QCString &anchor,const QCString &inheritId)
 {
-}
-
-QCString HtmlGenerator::getMathJaxMacros()
-{
-  return getConvertLatexMacro();
 }
 
 QCString HtmlGenerator::getNavTreeCss()

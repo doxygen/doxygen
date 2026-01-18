@@ -21,6 +21,7 @@
 #include "types.h"
 #include "reflist.h"
 #include "construct.h"
+#include "requirement.h"
 
 #ifdef _MSC_VER
 // To disable 'inherits via dominance' warnings with MSVC.
@@ -164,6 +165,11 @@ class Definition
     /*! Returns the line number at which the brief description was found. */
     virtual int briefLine() const = 0;
 
+    /*! Returns the file in which the brief description was found.
+     *  This can differ from getDefFileName().
+     */
+    virtual QCString briefFile() const = 0;
+
     /*! Returns the documentation found inside the body of a member */
     virtual QCString inbodyDocumentation() const = 0;
 
@@ -173,11 +179,6 @@ class Definition
     /*! Returns the line at which the first in body documentation
         part was found */
     virtual int inbodyLine() const = 0;
-
-    /*! Returns the file in which the brief description was found.
-     *  This can differ from getDefFileName().
-     */
-    virtual QCString briefFile() const = 0;
 
     /*! returns the file in which this definition was found */
     virtual QCString getDefFileName() const = 0;
@@ -268,6 +269,8 @@ class Definition
 
     virtual const RefItemVector &xrefListItems() const = 0;
 
+    virtual const RequirementRefs &requirementReferences() const = 0;
+
     virtual const Definition *findInnerCompound(const QCString &name) const = 0;
     virtual Definition *getOuterScope() const = 0;
 
@@ -342,6 +345,7 @@ class DefinitionMutable
     virtual void setBodyDef(const FileDef *fd) = 0;
 
     virtual void setRefItems(const RefItemVector &sli) = 0;
+    virtual void setRequirementReferences(const RequirementRefs &rqli) = 0;
     virtual void setOuterScope(Definition *d) = 0;
 
     virtual void setHidden(bool b) = 0;
@@ -378,6 +382,8 @@ class DefinitionMutable
     virtual bool hasSourceReffedBy() const = 0;
     virtual void writeSourceRefs(OutputList &ol,const QCString &scopeName) const = 0;
     virtual void writeSourceReffedBy(OutputList &ol,const QCString &scopeName) const = 0;
+    virtual bool hasRequirementRefs() const = 0;
+    virtual void writeRequirementRefs(OutputList &ol) const = 0;
     virtual void writeNavigationPath(OutputList &ol) const = 0;
     virtual void writeQuickMemberLinks(OutputList &,const MemberDef *) const = 0;
     virtual void writeSummaryLinks(OutputList &) const = 0;

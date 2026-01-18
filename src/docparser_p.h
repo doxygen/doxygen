@@ -137,6 +137,8 @@ class DocParser : public IDocParser
     void handlePrefix(DocNodeVariant *parent,DocNodeList &children);
     void handleImage(DocNodeVariant *parent, DocNodeList &children);
     void handleRef(DocNodeVariant *parent, DocNodeList &children, char cmdChar, const QCString &cmdName);
+    void handleIFile(char cmdChar,const QCString &cmdName);
+    void handleILine(char cmdChar,const QCString &cmdName);
     void readTextFileByName(const QCString &file,QCString &text);
 
     std::stack< DocParserContext > contextStack;

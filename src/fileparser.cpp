@@ -22,30 +22,21 @@ void FileCodeParser::parseCode(OutputCodeList &codeOutIntf,
                const QCString &     input,
                SrcLangExt,          // lang
                bool,                // stripCodeComments
-               bool,                // isExampleBlock
-               const QCString &,    // exampleName
-               const FileDef *      fileDef,
-               int                  startLine,
-               int                  endLine,
-               bool                 inlineFragment,
-               const MemberDef *,   // memberDef
-               bool                 showLineNumbers,
-               const Definition *,  // searchCtx,
-               bool                 // collectXRefs
+               const CodeParserOptions &options
               )
 {
-  int lineNr = startLine!=-1 ? startLine : 1;
+  int lineNr = options.startLine()!=-1 ? options.startLine() : 1;
   size_t length = input.length();
   size_t i=0;
-  while (i<length && (endLine==-1 || lineNr<=endLine))
+  while (i<length && (options.endLine()==-1 || lineNr<=options.endLine()))
   {
     size_t j=i;
     while (j<length && input[j]!='\n') j++;
     QCString lineStr = input.mid(i,j-i);
     codeOutIntf.startCodeLine(lineNr);
-    if (fileDef != nullptr && showLineNumbers)
+    if (options.fileDef() && options.showLineNumbers())
     {
-      codeOutIntf.writeLineNumber(QCString(),QCString(),QCString(),lineNr,!inlineFragment);
+      codeOutIntf.writeLineNumber(QCString(),QCString(),QCString(),lineNr,!options.inlineFragment());
     }
     if (!lineStr.isEmpty()) codeOutIntf.codify(lineStr.data());
     codeOutIntf.endCodeLine();

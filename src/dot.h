@@ -56,6 +56,6 @@ void writeDotImageMapFromFile(TextStream &t,
                               const QCString &inFile, const QCString& outDir,
                               const QCString &relPath,const QCString& baseName,
                               const QCString &context,int graphId,
-                              const QCString &srcFile,int srcLine);
+                              const QCString &srcFile,int srcLine,bool newFile);
 
 #endif

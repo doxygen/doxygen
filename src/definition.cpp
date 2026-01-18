@@ -68,6 +68,7 @@ class DefinitionImpl::Private
     std::unordered_map<std::string,MemberDef *> sourceRefByDict;
     std::unordered_map<std::string,MemberDef *> sourceRefsDict;
     RefItemVector xrefListItems;
+    RequirementRefs requirementRefs;
     GroupList partOfGroups;
 
     std::optional<DocInfo>   details;    // not exported
@@ -137,6 +138,7 @@ void DefinitionImpl::Private::init(const QCString &df, const QCString &n)
   inbodyDocs.reset();
   sourceRefByDict.clear();
   sourceRefsDict.clear();
+  requirementRefs.clear();
   outerScope      = Doxygen::globalScope;
   hidden          = FALSE;
   isArtificial    = FALSE;
@@ -782,7 +784,7 @@ bool readCodeFragment(const QCString &fileName,bool isMacro,
     while (*p && !found)
     {
       int pc=0;
-      while ((c=*p++)!='{' && c!=':' && c!=0)
+      while ((c=*p++)!='{' && c!=':' && c!='=' && c!=0)
       {
         //printf("parsing char '%c'\n",c);
         if (c=='\n')
@@ -826,6 +828,14 @@ bool readCodeFragment(const QCString &fileName,bool isMacro,
         cn=*p++;
         if (cn!=':') found=TRUE;
       }
+      else if (c=='=')
+      {
+        cn=*p++;
+        if (cn=='>') // C# Expression body
+        {
+          found=TRUE;
+        }
+      }
       else if (c=='{')
       {
         found=TRUE;
@@ -850,7 +860,7 @@ bool readCodeFragment(const QCString &fileName,bool isMacro,
       // copy until end of line
       if (c) result+=c;
       startLine=lineNr;
-      if (c==':')
+      if (c==':' || c=='=')
       {
         result+=cn;
         if (cn=='\n') lineNr++;
@@ -1058,14 +1068,12 @@ void DefinitionImpl::writeInlineCode(OutputList &ol,const QCString &scopeName) c
                       detab(codeFragment,indent), // input
                       p->lang,     // lang
                       Config_getBool(STRIP_CODE_COMMENTS),
-                      FALSE,            // isExample
-                      QCString(),       // exampleName
-                      p->body->fileDef,  // fileDef
-                      actualStart,      // startLine
-                      actualEnd,        // endLine
-                      TRUE,             // inlineFragment
-                      thisMd,           // memberDef
-                      TRUE              // show line numbers
+                      CodeParserOptions()
+                      .setFileDef(p->body->fileDef)
+                      .setStartLine(actualStart)
+                      .setEndLine(actualEnd)
+                      .setInlineFragment(true)
+                      .setMemberDef(thisMd)
                      );
       codeOL.endCodeFragment("DoxyCode");
     }
@@ -1169,6 +1177,33 @@ void DefinitionImpl::writeSourceRefs(OutputList &ol,const QCString &scopeName) c
   _writeSourceRefList(ol,scopeName,theTranslator->trReferences(),p->sourceRefsDict,TRUE);
 }
 
+void DefinitionImpl::writeRequirementRefs(OutputList &ol) const
+{
+  if (!Config_getBool(GENERATE_REQUIREMENTS)) return;
+  auto writeRefsForType = [&ol](const RequirementRefs &refs,const char *parType,const QCString &text)
+  {
+    size_t num = refs.size();
+    if (num>0)
+    {
+      ol.startParagraph(parType);
+      ol.parseText(text);
+      ol.docify(" ");
+      writeMarkerList(ol,
+                      theTranslator->trWriteList(static_cast<int>(num)).str(), num,
+                      [&refs,&ol](size_t entryIndex) { RequirementManager::instance().writeRef(ol,refs[entryIndex]); }
+                     );
+      ol.writeString(".");
+      ol.endParagraph();
+    }
+  };
+
+  RequirementRefs satisfiesRefs;
+  RequirementRefs verifiesRefs;
+  splitRequirementRefs(p->requirementRefs,satisfiesRefs,verifiesRefs);
+  writeRefsForType(satisfiesRefs,"satisfies",theTranslator->trSatisfies(satisfiesRefs.size()==1));
+  writeRefsForType(verifiesRefs, "verifies", theTranslator->trVerifies(verifiesRefs.size()==1));
+}
+
 bool DefinitionImpl::hasSourceReffedBy() const
 {
   return !p->sourceRefByDict.empty();
@@ -1177,6 +1212,11 @@ bool DefinitionImpl::hasSourceReffedBy() const
 bool DefinitionImpl::hasSourceRefs() const
 {
   return !p->sourceRefsDict.empty();
+}
+
+bool DefinitionImpl::hasRequirementRefs() const
+{
+  return !p->requirementRefs.empty();
 }
 
 bool DefinitionImpl::hasDocumentation() const
@@ -1303,6 +1343,11 @@ void DefinitionImpl::setRefItems(const RefItemVector &sli)
   p->xrefListItems.insert(p->xrefListItems.end(), sli.cbegin(), sli.cend());
 }
 
+void DefinitionImpl::setRequirementReferences(const RequirementRefs &rqli)
+{
+  p->requirementRefs.insert(p->requirementRefs.end(), rqli.cbegin(), rqli.cend());
+}
+
 void DefinitionImpl::mergeRefItems(Definition *d)
 {
   auto otherXrefList = d->xrefListItems();
@@ -1344,6 +1389,11 @@ int DefinitionImpl::_getXRefListId(const QCString &listName) const
 const RefItemVector &DefinitionImpl::xrefListItems() const
 {
   return p->xrefListItems;
+}
+
+const RequirementRefs &DefinitionImpl::requirementReferences() const
+{
+  return p->requirementRefs;
 }
 
 QCString DefinitionImpl::pathFragment() const

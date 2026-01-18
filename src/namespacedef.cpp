@@ -100,6 +100,7 @@ class NamespaceDefImpl : public DefinitionMixin<NamespaceDefMutable>
     const Definition *findInnerCompound(const QCString &name) const override;
     void addInnerCompound(Definition *d) override;
     void addListReferences() override;
+    void addRequirementReferences() override;
     void setFileName(const QCString &fn) override;
     bool subGrouping() const override { return m_subGrouping; }
     MemberList *getMemberList(MemberListType lt) const override;
@@ -725,6 +726,7 @@ void NamespaceDefImpl::writeDetailedDescription(OutputList &ol,const QCString &t
                      DocOptions()
                      .setIndexWords(true));
     }
+    if (hasRequirementRefs()) writeRequirementRefs(ol);
     ol.endTextBlock();
   }
 }
@@ -1265,19 +1267,15 @@ const Definition *NamespaceDefImpl::findInnerCompound(const QCString &n) const
 
 void NamespaceDefImpl::addListReferences()
 {
-  //bool fortranOpt = Config_getBool(OPTIMIZE_FOR_FORTRAN);
-  {
-    const RefItemVector &xrefItems = xrefListItems();
-    addRefItem(xrefItems,
-        qualifiedName(),
-        getLanguage()==SrcLangExt::Fortran ?
-          theTranslator->trModule(TRUE,TRUE) :
-          theTranslator->trNamespace(TRUE,TRUE),
-        getOutputFileBase(),displayName(),
-        QCString(),
-        this
-        );
-  }
+  addRefItem(xrefListItems(),
+             qualifiedName(),
+             getLanguage()==SrcLangExt::Fortran ?
+               theTranslator->trModule(TRUE,TRUE) :
+               theTranslator->trNamespace(TRUE,TRUE),
+             getOutputFileBase(),displayName(),
+             QCString(),
+             this
+            );
   for (const auto &mg : m_memberGroups)
   {
     mg->addListReferences(this);
@@ -1287,6 +1285,22 @@ void NamespaceDefImpl::addListReferences()
     if (ml->listType().isDocumentation())
     {
       ml->addListReferences(this);
+    }
+  }
+}
+
+void NamespaceDefImpl::addRequirementReferences()
+{
+  RequirementManager::instance().addRequirementRefsForSymbol(this);
+  for (const auto &mg : m_memberGroups)
+  {
+    mg->addRequirementReferences(this);
+  }
+  for (auto &ml : m_memberLists)
+  {
+    if (ml->listType().isDocumentation())
+    {
+      ml->addRequirementReferences(this);
     }
   }
 }

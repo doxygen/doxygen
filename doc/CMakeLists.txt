@@ -11,7 +11,7 @@
 # Documents produced by Doxygen are derivative works derived from the
 # input used in their production; they are not affected by this license.
 
-include (${TOP}/cmake/version.cmake)
+include (${PROJECT_SOURCE_DIR}/cmake/version.cmake)
 string(TIMESTAMP DATE "%d-%m-%Y")
 string(TIMESTAMP YEAR "%Y")
 
@@ -120,6 +120,7 @@ set(DOC_FILES
         layout_noindex_and_treeview.png
         layout_noindex_and_sidebar.png
         lists.dox
+        requirements.dox
         markdown.dox
         output.dox
         perlmod.dox
@@ -155,7 +156,7 @@ if (build_doc_chm)
 )
 endif ()
 
-file(GLOB LANG_FILES CONFIGURE_DEPENDS "${TOP}/src//translator_??.h")
+file(GLOB LANG_FILES CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/src//translator_??.h")
 
 file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/src
                     ${PROJECT_BINARY_DIR}/doc
@@ -209,8 +210,8 @@ set_source_files_properties(language.dox PROPERTIES GENERATED 1)
 
 # doc/config.dox (see tag Doxyfile:INPUT)
 add_custom_command(
-        COMMAND ${Python_EXECUTABLE}  ${TOP}/src/configgen.py -doc ${TOP}/src/config.xml > config.dox
-        DEPENDS ${TOP}/src/config.xml ${TOP}/src/configgen.py
+        COMMAND ${Python_EXECUTABLE}  ${PROJECT_SOURCE_DIR}/src/configgen.py -doc ${PROJECT_SOURCE_DIR}/src/config.xml > config.dox
+        DEPENDS ${PROJECT_SOURCE_DIR}/src/config.xml ${PROJECT_SOURCE_DIR}/src/configgen.py
         OUTPUT config.dox
         WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/doc/
 )

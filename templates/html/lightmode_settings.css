@@ -184,3 +184,8 @@
 --invariant-color-bg: #d8f1e3;
 --invariant-color-hl: #44b86f;
 --invariant-color-text: #265532;
+--satisfies-color-hl: #b61825;
+--satisfies-color-bg: #f8d1cc;
+--verifies-color-hl: #b61825;
+--verifies-color-bg: #f8d1cc;
+

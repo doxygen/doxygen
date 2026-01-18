@@ -1244,7 +1244,7 @@ class TranslatorDutch : public Translator
     { QCString result=dirName; result+=" Folder Referentie"; return result; }
 
     /*! This returns the word directory with or without starting capital
-     *  (\a first_capital) and in sigular or plural form (\a singular).
+     *  (\a first_capital) and in singular or plural form (\a singular).
      */
     QCString trDir(bool first_capital, bool singular) override
     {
@@ -1451,7 +1451,7 @@ class TranslatorDutch : public Translator
       return createNoun(first_capital, singular, "subprogramma", "s");
     }
 
-    /*! C# Type Contraint list */
+    /*! C# Type Constraint list */
     QCString trTypeConstraints() override
     {
       return "Type Beperkingen";
@@ -2294,6 +2294,62 @@ class TranslatorDutch : public Translator
     {
       return "Belangrijk";
     }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.16.0
+//////////////////////////////////////////////////////////////////////////
+
+    // the title of the requirements overview page
+    QCString trRequirements() override
+    {
+      return "Vereisten";
+    }
+    // table header for the column with the requirements IDs
+    QCString trRequirementID() override
+    {
+      return "ID";
+    }
+    // indicates a symbol implements (satisfies) a requirement
+    QCString trSatisfies(bool singular) override
+    {
+      return createNoun(true, singular, "Voldoet aan vereiste", "n");
+    }
+    // indicates a requirement is satisfied (implemented) by one or more symbols
+    QCString trSatisfiedBy(const QCString &list) override
+    {
+      return "Wordt aan voldaan door "+list+".";
+    }
+    QCString trUnsatisfiedRequirements() override
+    {
+      return "Onvoldane Vereisten";
+    }
+    QCString trUnsatisfiedRequirementsText(bool singular,const QCString &list) override
+    {
+      return singular ?
+        "De vereiste "+list+" mist de 'voldaan' relatie." :
+        "De vereisten "+list+" missen de 'voldaan' relatie.";
+    }
+    // indicates a symbol verifies (tests) a requirement
+    QCString trVerifies(bool singular) override
+    {
+      return createNoun(true, singular, "Verifieert vereiste", "n");
+    }
+    // indicates a requirement is verified (tested) by one or more symbols
+    QCString trVerifiedBy(const QCString &list) override
+    {
+      return "Wordt geverifieerd door "+list+".";
+    }
+    QCString trUnverifiedRequirements() override
+    {
+      return "Ongeverifieerde vereisten";
+    }
+    QCString trUnverifiedRequirementsText(bool singular,const QCString &list) override
+    {
+      return singular ?
+        "De vereiste "+list+" mist de 'verifieer' relatie." :
+        "De vereisten "+list+" missen de 'verifieer' relatie.";
+    }
+
 };
 
 #endif

@@ -1780,6 +1780,17 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                             BEGIN( SkipInits );
                                           }
                                         }
+<CallEnd>"=>"                           { // C# Expression Body
+                                          if (yyextra->lang!=SrcLangExt::CSharp || yyextra->insideBody)
+                                          {
+                                            REJECT;
+                                          }
+                                          else
+                                          {
+                                            yyextra->code->codify("=>");
+                                            BEGIN( Body );
+                                          }
+                                        }
 <CallEnd>{ENDQopt}/{BN}*(";"|"="|"throw"{BN}*"(") {
                                           startFontClass(yyscanner,"keyword");
                                           codifyLines(yyscanner,yytext);
@@ -4078,47 +4089,37 @@ bool CCodeParser::insideCodeLine() const
 }
 
 void CCodeParser::parseCode(OutputCodeList &od,const QCString &scopeName,const QCString &s,
-                SrcLangExt lang,bool stripCodeComments,bool exBlock,const QCString &exName,const FileDef *fd,
-                int startLine,int endLine,bool inlineFragment,
-                const MemberDef *memberDef,bool showLineNumbers,const Definition *searchCtx,
-                bool collectXRefs)
+                SrcLangExt lang,bool stripCodeComments,const CodeParserOptions &options)
 {
   yyscan_t yyscanner = p->yyscanner;
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   DBG_CTX((stderr,"***parseCode() exBlock=%d exName=%s fd=%p scopeName=%s searchCtx=%s\n",
-           exBlock,qPrint(exName),(void*)fd,qPrint(scopeName),searchCtx?qPrint(searchCtx->name()):"<none>"));
+           options.isExample(),qPrint(options.exampleName()),(void*)options.fileDef(),
+           qPrint(scopeName),options.searchCtx()?qPrint(options.searchCtx()->name()):"<none>"));
 
   if (s.isEmpty()) return;
 
-  DebugLex debugLex(Debug::Lex_code, __FILE__, fd ? qPrint(fd->fileName()): !exName.isEmpty() ? qPrint(exName) : nullptr);
+  DebugLex debugLex(Debug::Lex_code, __FILE__, options.fileDef() ? qPrint(options.fileDef()->fileName()) :
+                 !options.exampleName().isEmpty() ? qPrint(options.exampleName()) : nullptr);
 
   od.stripCodeComments(stripCodeComments);
   yyextra->code = &od;
   yyextra->inputString   = s.data();
-  yyextra->fileName      = fd ? fd->fileName():"";
-  yyextra->absFileName   = fd ? fd->absFilePath():"";
+  yyextra->fileName      = options.fileDef() ? options.fileDef()->fileName():"";
+  yyextra->absFileName   = options.fileDef() ? options.fileDef()->absFilePath():"";
   yyextra->inputPosition = 0;
   codeYYrestart(nullptr,yyscanner);
   yyextra->currentFontClass = nullptr;
-  yyextra->searchCtx = searchCtx;
-  yyextra->collectXRefs = collectXRefs;
+  yyextra->searchCtx = options.searchCtx();
+  yyextra->collectXRefs = options.collectXRefs();
   yyextra->inFunctionTryBlock = FALSE;
-  yyextra->symbolResolver.setFileScope(fd);
+  yyextra->symbolResolver.setFileScope(options.fileDef());
   yyextra->foldStack.clear();
   yyextra->insideSpecialComment = false;
-
-  if (startLine!=-1)
-    yyextra->yyLineNr    = startLine;
-  else
-    yyextra->yyLineNr    = 1;
-
-  if (endLine!=-1)
-    yyextra->inputLines  = endLine+1;
-  else
-    yyextra->inputLines  = yyextra->yyLineNr + countLines(yyscanner) - 1;
-
+  yyextra->yyLineNr    = options.startLine()!=-1 ? options.startLine() : 1;
+  yyextra->inputLines  = options.endLine()!=-1   ? options.endLine()+1 : yyextra->yyLineNr + countLines(yyscanner) - 1;
   yyextra->curlyCount    = 0;
-  yyextra->bodyCurlyCount    = 0;
+  yyextra->bodyCurlyCount = 0;
   yyextra->bracketCount  = 0;
   yyextra->sharpCount    = 0;
   yyextra->insideTemplate = FALSE;
@@ -4126,14 +4127,14 @@ void CCodeParser::parseCode(OutputCodeList &od,const QCString &scopeName,const Q
   while (!yyextra->scopeStack.empty()) yyextra->scopeStack.pop();
   yyextra->scopeName     = scopeName;
   DBG_CTX((stderr,"parseCCode %s\n",qPrint(scopeName)));
-  yyextra->exampleBlock  = exBlock;
-  yyextra->exampleName   = exName;
-  yyextra->sourceFileDef = fd;
-  yyextra->lineNumbers   = fd && showLineNumbers;
-  if (fd==nullptr)
+  yyextra->exampleBlock  = options.isExample();
+  yyextra->exampleName   = options.exampleName();
+  yyextra->sourceFileDef = options.fileDef();
+  yyextra->lineNumbers   = options.fileDef() && options.showLineNumbers();
+  if (options.fileDef()==nullptr)
   {
     // create a dummy filedef for the example
-    yyextra->exampleFileDef = createFileDef(QCString(),(!exName.isEmpty()?exName:"generated"));
+    yyextra->exampleFileDef = createFileDef(QCString(),(!options.exampleName().isEmpty()?options.exampleName():"generated"));
     yyextra->sourceFileDef  = yyextra->exampleFileDef.get();
   }
   yyextra->lang        = lang;
@@ -4142,9 +4143,9 @@ void CCodeParser::parseCode(OutputCodeList &od,const QCString &scopeName,const Q
   {
     setCurrentDoc(yyscanner,"l00001");
   }
-  yyextra->currentDefinition = searchCtx ? searchCtx : getResolvedNamespace(scopeName);
+  yyextra->currentDefinition = options.searchCtx() ? options.searchCtx() : getResolvedNamespace(scopeName);
   yyextra->currentMemberDef = nullptr;
-  yyextra->searchingForBody = exBlock;
+  yyextra->searchingForBody = options.isExample();
   yyextra->insideBody = FALSE;
   yyextra->bracketCount = 0;
   if (!yyextra->exampleName.isEmpty())
@@ -4152,8 +4153,8 @@ void CCodeParser::parseCode(OutputCodeList &od,const QCString &scopeName,const Q
     yyextra->exampleFile = convertNameToFile(yyextra->exampleName+"-example",FALSE,TRUE);
     DBG_CTX((stderr,"yyextra->exampleFile=%s\n",qPrint(yyextra->exampleFile)));
   }
-  yyextra->includeCodeFragment = inlineFragment;
-  DBG_CTX((stderr,"** exBlock=%d exName=%s include=%d\n",exBlock,qPrint(exName),inlineFragment));
+  yyextra->includeCodeFragment = options.inlineFragment();
+  DBG_CTX((stderr,"** exBlock=%d exName=%s include=%d\n",options.isExample(),qPrint(options.exampleName()),options.inlineFragment()));
   if (!yyextra->insideCodeLine)
   {
     startCodeLine(yyscanner);
@@ -4163,7 +4164,7 @@ void CCodeParser::parseCode(OutputCodeList &od,const QCString &scopeName,const Q
   yyextra->args.clear();
   yyextra->parmName.clear();
   yyextra->parmType.clear();
-  if (memberDef) setParameterList(yyscanner,memberDef);
+  if (options.memberDef()) setParameterList(yyscanner,options.memberDef());
   BEGIN( Body );
   codeYYlex(yyscanner);
   yyextra->lexInit=TRUE;

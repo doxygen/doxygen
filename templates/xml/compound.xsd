@@ -38,12 +38,15 @@
       <xsd:element name="tableofcontents" type="tableofcontentsType" minOccurs="0" maxOccurs="1" />
       <xsd:element name="requiresclause" type="linkedTextType" minOccurs="0" />
       <xsd:element name="initializer" type="linkedTextType" minOccurs="0" />
+      <xsd:element name="conceptparts" type="conceptParts" minOccurs="0" />
       <xsd:element name="briefdescription" type="descriptionType" minOccurs="0" />
       <xsd:element name="detaileddescription" type="descriptionType" minOccurs="0" />
       <xsd:element name="exports" type="exportsType" minOccurs="0" maxOccurs="1"/>
       <xsd:element name="inheritancegraph" type="graphType" minOccurs="0" />
       <xsd:element name="collaborationgraph" type="graphType" minOccurs="0" />
       <xsd:element name="programlisting" type="listingType" minOccurs="0" />
+      <xsd:element name="satisfies" type="requirementRefsType" minOccurs="0" maxOccurs="1" />
+      <xsd:element name="verifies" type="requirementRefsType" minOccurs="0" maxOccurs="1" />
       <xsd:element name="location" type="locationType" minOccurs="0" />
       <xsd:element name="listofallmembers" type="listofallmembersType" minOccurs="0" />
     </xsd:sequence>
@@ -201,6 +204,8 @@
       <xsd:element name="requiresclause" type="linkedTextType" minOccurs="0" />
       <xsd:element name="initializer" type="linkedTextType" minOccurs="0" />
       <xsd:element name="exceptions" type="linkedTextType" minOccurs="0" />
+      <xsd:element name="satisfies" type="requirementRefsType" minOccurs="0" maxOccurs="1" />
+      <xsd:element name="verifies" type="requirementRefsType" minOccurs="0" maxOccurs="1" />
       <xsd:element name="briefdescription" type="descriptionType" minOccurs="0" />
       <xsd:element name="detaileddescription" type="descriptionType" minOccurs="0" />
       <xsd:element name="inbodydescription" type="descriptionType" minOccurs="0" />
@@ -291,6 +296,31 @@
     <xsd:sequence>
       <xsd:element name="param" type="paramType" minOccurs="0" maxOccurs="unbounded" />
     </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="conceptParts">
+    <xsd:sequence>
+      <xsd:choice minOccurs="0" maxOccurs="unbounded">
+        <xsd:element name="codepart" type="conceptCodePart"/>
+        <xsd:element name="docpart" type="conceptDocPart"/>
+      </xsd:choice>
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="conceptCodePart">
+    <xsd:sequence>
+      <xsd:element name="programlisting" type="listingType"/>
+    </xsd:sequence>
+    <xsd:attribute name="line" type="xsd:integer"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="conceptDocPart">
+    <xsd:complexContent>
+      <xsd:extension base="descriptionType">
+        <xsd:attribute name="line" type="xsd:integer"/>
+        <xsd:attribute name="col" type="xsd:integer"/>
+      </xsd:extension>
+    </xsd:complexContent>
   </xsd:complexType>
 
   <xsd:complexType name="paramType">
@@ -497,7 +527,7 @@
   <xsd:complexType name="docInternalS5Type" mixed="true">
     <xsd:sequence>
       <xsd:element name="para"  type="docParaType"  minOccurs="0" maxOccurs="unbounded" />
-      <xsd:element name="sect5" type="docSect6Type" minOccurs="0" maxOccurs="unbounded" />
+      <xsd:element name="sect6" type="docSect6Type" minOccurs="0" maxOccurs="unbounded" />
     </xsd:sequence>
   </xsd:complexType>
 
@@ -900,6 +930,20 @@
     <xsd:attribute name="unicode" type="xsd:string"/>
   </xsd:complexType>
 
+  <xsd:complexType name="requirementRefsType">
+    <xsd:sequence>
+      <xsd:element name="requirement" type="requirementRefType" minOccurs="1" maxOccurs="unbounded"/>
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="requirementRefType">
+    <xsd:simpleContent>
+      <xsd:extension base="xsd:string">
+        <xsd:attribute name="refid" type="xsd:string" use="required"/>
+      </xsd:extension>
+    </xsd:simpleContent>
+  </xsd:complexType>
+
   <!-- Simple types -->
 
   <xsd:simpleType name="DoxBool">
@@ -1013,6 +1057,7 @@
       <xsd:enumeration value="example" />
       <xsd:enumeration value="dir" />
       <xsd:enumeration value="concept" />
+      <xsd:enumeration value="requirement" />
     </xsd:restriction>
   </xsd:simpleType>
 

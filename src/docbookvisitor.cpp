@@ -31,11 +31,11 @@
 #include "htmlentity.h"
 #include "emoji.h"
 #include "plantuml.h"
-#include "growbuf.h"
 #include "fileinfo.h"
 #include "portable.h"
 #include "codefragment.h"
 #include "cite.h"
+#include "md5.h"
 
 #if 0
 #define DB_VIS_C DB_VIS_C1(m_t)
@@ -52,20 +52,19 @@
 static QCString filterId(const QCString &s)
 {
   if (s.isEmpty()) return s;
-  GrowBuf growBuf;
-  growBuf.clear();
+  QCString result;
+  result.reserve(s.length()+8);
   const char *p=s.data();
   char c=0;
   while ((c=*p++))
   {
     switch (c)
     {
-      case ':':  growBuf.addStr("_1");   break;
-      default:   growBuf.addChar(c);       break;
+      case ':':  result+="_1"; break;
+      default:   result+=c;    break;
     }
   }
-  growBuf.addChar(0);
-  return growBuf.get();
+  return result;
 }
 
 static bool supportedHtmlAttribute(const QCString &name)
@@ -83,29 +82,6 @@ static bool supportedHtmlAttribute(const QCString &name)
           name=="tabstyle" ||
           name=="title");
 }
-
-static QCString makeShortName(const QCString &baseName)
-{
-  QCString result = baseName;
-  int i = result.findRev('/');
-  if (i!=-1)
-  {
-    result=result.mid(i+1);
-  }
-  return result;
-}
-
-static QCString makeBaseName(const QCString &name)
-{
-  QCString result = makeShortName(name);
-  int i = result.find('.');
-  if (i!=-1)
-  {
-    result=result.left(i);
-  }
-  return result;
-}
-
 
 void DocbookDocVisitor::visitCaption(const DocNodeList &children)
 {
@@ -347,8 +323,9 @@ DB_VIS_C
                                          s.text(),
                                          langExt,
                                          Config_getBool(STRIP_CODE_COMMENTS),
-                                         s.isExample(),
-                                         s.exampleFile());
+                                         CodeParserOptions()
+                                         .setExample(s.isExample(),s.exampleFile())
+                                        );
       m_t << "</computeroutput></literallayout>";
       break;
     case DocVerbatim::Verbatim:
@@ -379,55 +356,32 @@ DB_VIS_C
       break;
     case DocVerbatim::Dot:
       {
-        static int dotindex = 1;
-        QCString baseName(4096, QCString::ExplicitSize);
-        QCString name;
-        QCString stext = s.text();
         m_t << "<para>\n";
-        name.sprintf("%s%d", "dot_inline_dotgraph_", dotindex);
-        baseName.sprintf("%s%d",
-            qPrint(Config_getString(DOCBOOK_OUTPUT)+"/inline_dotgraph_"),
-            dotindex++
-            );
-        QCString fileName = baseName+".dot";
-        std::ofstream file = Portable::openOutputStream(fileName);
-        if (!file.is_open())
+        bool exists = false;
+        auto fileName = writeFileContents(Config_getString(DOCBOOK_OUTPUT)+"/inline_dotgraph_", // baseName
+                                          ".dot",                                               // extension
+                                          s.text(),                                             // contents
+                                          exists);
+        if (!fileName.isEmpty())
         {
-          err("Could not open file {} for writing\n",fileName);
+          writeDotFile(fileName, s, !exists);
         }
-        file.write( stext.data(), stext.length() );
-        file.close();
-        writeDotFile(baseName, s);
         m_t << "</para>\n";
-        if (Config_getBool(DOT_CLEANUP)) Dir().remove(fileName.str());
       }
       break;
     case DocVerbatim::Msc:
       {
-        static int mscindex = 1;
-        QCString baseName(4096, QCString::ExplicitSize);
-        QCString name;
-        QCString stext = s.text();
         m_t << "<para>\n";
-        name.sprintf("%s%d", "msc_inline_mscgraph_", mscindex);
-        baseName.sprintf("%s%d",
-            (Config_getString(DOCBOOK_OUTPUT)+"/inline_mscgraph_").data(),
-            mscindex++
-            );
-        QCString fileName = baseName+".msc";
-        std::ofstream file = Portable::openOutputStream(fileName);
-        if (!file.is_open())
+        bool exists = false;
+        auto fileName = writeFileContents(Config_getString(DOCBOOK_OUTPUT)+"/inline_mscgraph_", // baseName
+                                          ".msc",                                               // extension
+                                          "msc {"+s.text()+"}",                                 // contents
+                                          exists);
+        if (!fileName.isEmpty())
         {
-          err("Could not open file {} for writing\n",fileName);
+          writeMscFile(fileName,s,!exists);
         }
-        QCString text = "msc {";
-        text+=stext;
-        text+="}";
-        file.write( text.data(), text.length() );
-        file.close();
-        writeMscFile(baseName,s);
         m_t << "</para>\n";
-        if (Config_getBool(DOT_CLEANUP)) Dir().remove(fileName.str());
       }
       break;
     case DocVerbatim::PlantUML:
@@ -470,8 +424,10 @@ DB_VIS_C
                                                   inc.text(),
                                                   langExt,
                                                   inc.stripCodeComments(),
-                                                  inc.isExample(),
-                                                  inc.exampleFile(), fd.get());
+                                                  CodeParserOptions()
+                                                  .setExample(inc.isExample(),inc.exampleFile())
+                                                  .setFileDef(fd.get())
+                                                 );
         m_t << "</computeroutput></literallayout>";
       }
       break;
@@ -481,8 +437,9 @@ DB_VIS_C
                                                 inc.text(),
                                                 langExt,
                                                 inc.stripCodeComments(),
-                                                inc.isExample(),
-                                                inc.exampleFile());
+                                                CodeParserOptions()
+                                                .setExample(inc.isExample(),inc.exampleFile())
+                                               );
       m_t << "</computeroutput></literallayout>";
       break;
     case DocInclude::DontInclude:
@@ -547,14 +504,11 @@ DB_VIS_C
       getCodeParser(locLangExt).parseCode(m_ci,op.context(),
                                         op.text(),langExt,
                                         op.stripCodeComments(),
-                                        op.isExample(),
-                                        op.exampleFile(),
-                                        fd.get(),     // fileDef
-                                        op.line(),    // startLine
-                                        -1,    // endLine
-                                        FALSE, // inline fragment
-                                        nullptr,     // memberDef
-                                        op.showLineNo()  // show line numbers
+                                        CodeParserOptions()
+                                        .setExample(op.isExample(), op.exampleFile())
+                                        .setFileDef(fd.get())
+                                        .setStartLine(op.line())
+                                        .setShowLineNumbers(op.showLineNo())
                                        );
     }
     pushHidden(m_hide);
@@ -1244,7 +1198,7 @@ DB_VIS_C
   {
     if (m_hide) return;
     m_t << "\n";
-    QCString baseName=makeShortName(img.name());
+    QCString baseName=stripPath(img.name());
     visitPreStart(m_t, img.children(), img.hasCaption(), img.relPath() + baseName, img.width(), img.height(), img.isInlineImage());
     visitChildren(img);
     visitPostEnd(m_t, img.hasCaption(),img.isInlineImage());
@@ -1266,30 +1220,63 @@ void DocbookDocVisitor::operator()(const DocDotFile &df)
 {
 DB_VIS_C
   if (m_hide) return;
-  if (!Config_getBool(DOT_CLEANUP)) copyFile(df.file(),Config_getString(DOCBOOK_OUTPUT)+"/"+stripPath(df.file()));
-  startDotFile(df.file(),df.relPath(),df.width(),df.height(),df.hasCaption(),df.children(),df.srcFile(),df.srcLine());
-  visitChildren(df);
-  endDotFile(df.hasCaption());
+  bool exists = false;
+  std::string inBuf;
+  if (readInputFile(df.file(),inBuf))
+  {
+    auto fileName = writeFileContents(Config_getString(DOCBOOK_OUTPUT)+"/"+stripPath(df.file())+"_", // baseName
+                                      ".dot",                                                        // extension
+                                      inBuf,                                                         // contents
+                                      exists);
+    if (!fileName.isEmpty())
+    {
+      startDotFile(fileName,df.relPath(),df.width(),df.height(),df.hasCaption(),df.children(),df.srcFile(),df.srcLine(),!exists);
+      visitChildren(df);
+      endDotFile(df.hasCaption());
+    }
+  }
 }
 
 void DocbookDocVisitor::operator()(const DocMscFile &df)
 {
 DB_VIS_C
   if (m_hide) return;
-  if (!Config_getBool(DOT_CLEANUP)) copyFile(df.file(),Config_getString(DOCBOOK_OUTPUT)+"/"+stripPath(df.file()));
-  startMscFile(df.file(),df.relPath(),df.width(),df.height(),df.hasCaption(),df.children(),df.srcFile(),df.srcLine());
-  visitChildren(df);
-  endMscFile(df.hasCaption());
+  bool exists = false;
+  std::string inBuf;
+  if (readInputFile(df.file(),inBuf))
+  {
+    auto fileName = writeFileContents(Config_getString(DOCBOOK_OUTPUT)+"/"+stripPath(df.file())+"_", // baseName
+                                      ".msc",                                                        // extension
+                                      inBuf,                                                         // contents
+                                      exists);
+    if (!fileName.isEmpty())
+    {
+      startMscFile(fileName,df.relPath(),df.width(),df.height(),df.hasCaption(),df.children(),df.srcFile(),df.srcLine(),!exists);
+      visitChildren(df);
+      endMscFile(df.hasCaption());
+    }
+  }
 }
 
 void DocbookDocVisitor::operator()(const DocDiaFile &df)
 {
 DB_VIS_C
   if (m_hide) return;
-  if (!Config_getBool(DOT_CLEANUP)) copyFile(df.file(),Config_getString(DOCBOOK_OUTPUT)+"/"+stripPath(df.file()));
-  startDiaFile(df.file(),df.relPath(),df.width(),df.height(),df.hasCaption(),df.children(),df.srcFile(),df.srcLine());
-  visitChildren(df);
-  endDiaFile(df.hasCaption());
+  bool exists = false;
+  std::string inBuf;
+  if (readInputFile(df.file(),inBuf))
+  {
+    auto fileName = writeFileContents(Config_getString(DOCBOOK_OUTPUT)+"/"+stripPath(df.file())+"_", // baseName
+                                      ".dia",                                                        // extension
+                                      inBuf,                                                         // contents
+                                      exists);
+    if (!fileName.isEmpty())
+    {
+      startDiaFile(fileName,df.relPath(),df.width(),df.height(),df.hasCaption(),df.children(),df.srcFile(),df.srcLine(),!exists);
+      visitChildren(df);
+      endDiaFile(df.hasCaption());
+    }
+  }
 }
 
 void DocbookDocVisitor::operator()(const DocPlantUmlFile &df)
@@ -1544,12 +1531,12 @@ DB_VIS_C
   m_t << "</link>";
 }
 
-void DocbookDocVisitor::writeMscFile(const QCString &baseName, const DocVerbatim &s)
+void DocbookDocVisitor::writeMscFile(const QCString &fileName, const DocVerbatim &s, bool newFile)
 {
 DB_VIS_C
-  QCString shortName = makeShortName(baseName);
+  QCString shortName = makeBaseName(fileName,".msc");
   QCString outDir = Config_getString(DOCBOOK_OUTPUT);
-  writeMscGraphFromFile(baseName+".msc",outDir,shortName,MscOutputFormat::BITMAP,s.srcFile(),s.srcLine());
+  if (newFile) writeMscGraphFromFile(fileName,outDir,shortName,MscOutputFormat::BITMAP,s.srcFile(),s.srcLine());
   visitPreStart(m_t, s.children(), s.hasCaption(), s.relPath() + shortName + ".png", s.width(), s.height());
   visitCaption(s.children());
   visitPostEnd(m_t, s.hasCaption());
@@ -1558,13 +1545,14 @@ DB_VIS_C
 void DocbookDocVisitor::writePlantUMLFile(const QCString &baseName, const DocVerbatim &s)
 {
 DB_VIS_C
-  QCString shortName = makeShortName(baseName);
+  QCString shortName = stripPath(baseName);
   QCString outDir = Config_getString(DOCBOOK_OUTPUT);
   PlantumlManager::instance().generatePlantUMLOutput(baseName,outDir,PlantumlManager::PUML_BITMAP);
   visitPreStart(m_t, s.children(), s.hasCaption(), s.relPath() + shortName + ".png", s.width(),s.height());
   visitCaption(s.children());
   visitPostEnd(m_t, s.hasCaption());
 }
+
 void DocbookDocVisitor::startPlantUmlFile(const QCString &fileName,
     const QCString &relPath,
     const QCString &width,
@@ -1584,7 +1572,7 @@ DB_VIS_C
   bool first = true;
   for (const auto &bName: baseNameVector)
   {
-    QCString baseName=makeBaseName(bName);
+    QCString baseName=makeBaseName(bName,".pu");
     PlantumlManager::instance().generatePlantUMLOutput(baseName,outDir,PlantumlManager::PUML_BITMAP);
     if (!first) endPlantUmlFile(hasCaption);
     first = false;
@@ -1609,14 +1597,14 @@ void DocbookDocVisitor::startMscFile(const QCString &fileName,
     bool hasCaption,
     const DocNodeList &children,
     const QCString &srcFile,
-    int srcLine
+    int srcLine, bool newFile
     )
 {
 DB_VIS_C
-  QCString baseName=makeBaseName(fileName);
+  QCString baseName=makeBaseName(fileName,".msc");
   baseName.prepend("msc_");
   QCString outDir = Config_getString(DOCBOOK_OUTPUT);
-  writeMscGraphFromFile(fileName,outDir,baseName,MscOutputFormat::BITMAP,srcFile,srcLine);
+  if (newFile) writeMscGraphFromFile(fileName,outDir,baseName,MscOutputFormat::BITMAP,srcFile,srcLine);
   m_t << "<para>\n";
   visitPreStart(m_t, children, hasCaption, relPath + baseName + ".png",  width,  height);
 }
@@ -1632,7 +1620,7 @@ DB_VIS_C
 void DocbookDocVisitor::writeDiaFile(const QCString &baseName, const DocVerbatim &s)
 {
 DB_VIS_C
-  QCString shortName = makeShortName(baseName);
+  QCString shortName = stripPath(baseName);
   QCString outDir = Config_getString(DOCBOOK_OUTPUT);
   writeDiaGraphFromFile(baseName+".dia",outDir,shortName,DiaOutputFormat::BITMAP,s.srcFile(),s.srcLine());
   visitPreStart(m_t, s.children(), s.hasCaption(), shortName, s.width(),s.height());
@@ -1647,14 +1635,14 @@ void DocbookDocVisitor::startDiaFile(const QCString &fileName,
     bool hasCaption,
     const DocNodeList &children,
     const QCString &srcFile,
-    int srcLine
+    int srcLine, bool newFile
     )
 {
 DB_VIS_C
-  QCString baseName=makeBaseName(fileName);
+  QCString baseName=makeBaseName(fileName,".dia");
   baseName.prepend("dia_");
   QCString outDir = Config_getString(DOCBOOK_OUTPUT);
-  writeDiaGraphFromFile(fileName,outDir,baseName,DiaOutputFormat::BITMAP,srcFile,srcLine);
+  if (newFile) writeDiaGraphFromFile(fileName,outDir,baseName,DiaOutputFormat::BITMAP,srcFile,srcLine);
   m_t << "<para>\n";
   visitPreStart(m_t, children, hasCaption, relPath + baseName + ".png",  width,  height);
 }
@@ -1667,12 +1655,12 @@ DB_VIS_C
   m_t << "</para>\n";
 }
 
-void DocbookDocVisitor::writeDotFile(const QCString &baseName, const DocVerbatim &s)
+void DocbookDocVisitor::writeDotFile(const QCString &fileName, const DocVerbatim &s, bool newFile)
 {
 DB_VIS_C
-  QCString shortName = makeShortName(baseName);
+  QCString shortName = makeBaseName(fileName,".dot");
   QCString outDir = Config_getString(DOCBOOK_OUTPUT);
-  writeDotGraphFromFile(baseName+".dot",outDir,shortName,GraphOutputFormat::BITMAP,s.srcFile(),s.srcLine());
+  if (newFile) writeDotGraphFromFile(fileName,outDir,shortName,GraphOutputFormat::BITMAP,s.srcFile(),s.srcLine());
   visitPreStart(m_t, s.children(), s.hasCaption(), s.relPath() + shortName + "." + getDotImageExtension(), s.width(),s.height());
   visitCaption(s.children());
   visitPostEnd(m_t, s.hasCaption());
@@ -1685,15 +1673,15 @@ void DocbookDocVisitor::startDotFile(const QCString &fileName,
     bool hasCaption,
     const DocNodeList &children,
     const QCString &srcFile,
-    int srcLine
+    int srcLine, bool newFile
     )
 {
 DB_VIS_C
-  QCString baseName=makeBaseName(fileName);
+  QCString baseName=makeBaseName(fileName,".dot");
   baseName.prepend("dot_");
   QCString outDir = Config_getString(DOCBOOK_OUTPUT);
   QCString imgExt = getDotImageExtension();
-  writeDotGraphFromFile(fileName,outDir,baseName,GraphOutputFormat::BITMAP,srcFile,srcLine);
+  if (newFile) writeDotGraphFromFile(fileName,outDir,baseName,GraphOutputFormat::BITMAP,srcFile,srcLine);
   m_t << "<para>\n";
   visitPreStart(m_t, children, hasCaption, relPath + baseName + "." + imgExt,  width,  height);
 }

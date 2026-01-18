@@ -162,7 +162,8 @@ enum class CommandType
   CMD_IPREFIX      = 130,
   CMD_PLANTUMLFILE = 131,
   CMD_EXCLAMATION  = 132,
-  CMD_QUESTION     = 133
+  CMD_QUESTION     = 133,
+  CMD_REQUIREMENT  = 134 | SIMPLESECT_BIT
 };
 
 enum class HtmlTagType

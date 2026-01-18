@@ -119,6 +119,7 @@ class NamespaceDefMutable : public DefinitionMutable, public NamespaceDef
     virtual void findSectionsInDocumentation() = 0;
     virtual void sortMemberLists() = 0;
     virtual void addListReferences() = 0;
+    virtual void addRequirementReferences() = 0;
     virtual void setFileName(const QCString &fn) = 0;
     virtual void combineUsingRelations(NamespaceDefSet &visitedNamespace) = 0;
     virtual void addUsingDirective(NamespaceDef *nd) = 0;

@@ -387,7 +387,8 @@ class MemberDefMutable : public DefinitionMutable, public MemberDef
 
     virtual void setTemplateMaster(const MemberDef *mt) = 0;
     virtual void setFormalTemplateArguments(const ArgumentList &al) = 0;
-    virtual void addListReference(Definition *d) = 0;
+    virtual void addListReference(const Definition *) = 0;
+    virtual void addRequirementReferences(const Definition *) = 0;
     virtual void setDocsForDefinition(bool b) = 0;
     virtual void setGroupAlias(const MemberDef *md) = 0;
 

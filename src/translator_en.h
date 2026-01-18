@@ -2612,6 +2612,62 @@ class TranslatorEnglish : public Translator
     {
       return "Important";
     }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.16.0
+//////////////////////////////////////////////////////////////////////////
+
+    // the title of the requirements overview page
+    QCString trRequirements() override
+    {
+      return "Requirements";
+    }
+    // table header for the column with the requirements IDs
+    QCString trRequirementID() override
+    {
+      return "ID";
+    }
+    // indicates a symbol implements (satisfies) a requirement
+    QCString trSatisfies(bool singular) override
+    {
+      return createNoun(true, singular, "Satisfies requirement", "s");
+    }
+    // indicates a requirement is satisfied (implemented) by one or more symbols
+    QCString trSatisfiedBy(const QCString &list) override
+    {
+      return "Satisfied by "+list+".";
+    }
+    QCString trUnsatisfiedRequirements() override
+    {
+      return "Unsatisfied Requirements";
+    }
+    QCString trUnsatisfiedRequirementsText(bool singular,const QCString &list) override
+    {
+      return singular ?
+        "The requirement "+list+" does not have a 'satisfies' relation." :
+        "The requirements "+list+" do not have a 'satisfies' relation.";
+    }
+    // indicates a symbol verifies (tests) a requirement
+    QCString trVerifies(bool singular) override
+    {
+      return createNoun(true, singular, "Verifies requirement", "s");
+    }
+    // indicates a requirement is verified (tested) by one or more symbols
+    QCString trVerifiedBy(const QCString &list) override
+    {
+      return "Verified by "+list+".";
+    }
+    QCString trUnverifiedRequirements() override
+    {
+      return "Unverified Requirements";
+    }
+    QCString trUnverifiedRequirementsText(bool singular,const QCString &list) override
+    {
+      return singular ?
+        "The requirement "+list+" does not have a 'verifies' relation." :
+        "The requirements "+list+" do not have a 'verifies' relation.";
+    }
+
 };
 
 #endif

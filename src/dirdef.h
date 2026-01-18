@@ -140,6 +140,8 @@ class DirDef : public DefinitionMutable, public Definition
                                    const FileDef *dstFd,bool srcDirect, bool dstDirect) = 0;
     virtual void computeDependencies() = 0;
     virtual void findSectionsInDocumentation() = 0;
+    virtual void addListReferences() = 0;
+    virtual void addRequirementReferences() = 0;
 
     // directory graph related members
     virtual bool hasDirectoryGraph() const = 0;

@@ -264,9 +264,14 @@ int MemberGroup::numDocEnumValues() const
   return memberList->numDocEnumValues();
 }
 
-void MemberGroup::addListReferences(Definition *def)
+void MemberGroup::addListReferences(const Definition *def)
 {
   memberList->addListReferences(def);
+}
+
+void MemberGroup::addRequirementReferences(const Definition *def)
+{
+  memberList->addRequirementReferences(def);
 }
 
 void MemberGroup::findSectionsInDocumentation(const Definition *d)
@@ -280,6 +285,11 @@ void MemberGroup::setRefItems(const RefItemVector &sli)
   m_xrefListItems.insert(m_xrefListItems.end(), sli.cbegin(), sli.cend());
 }
 
+void MemberGroup::setRequirementReferences(const RequirementRefs &rqli)
+{
+  m_requirementRefs.insert(m_requirementRefs.end(), rqli.cbegin(), rqli.cend());
+}
+
 void MemberGroup::writeTagFile(TextStream &tagFile,bool qualifiedName)
 {
   memberList->writeTagFile(tagFile,qualifiedName);
@@ -291,3 +301,10 @@ void MemberGroupInfo::setRefItems(const RefItemVector &sli)
 {
   m_sli.insert(m_sli.end(), sli.cbegin(), sli.cend());
 }
+
+void MemberGroupInfo::setRequirementReferences(const RequirementRefs &rqli)
+{
+  m_rqli.insert(m_rqli.end(), rqli.cbegin(), rqli.cend());
+}
+
+

@@ -312,7 +312,8 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     void overrideInlineSource(bool e) override;
     void setTemplateMaster(const MemberDef *mt) override;
     void setFormalTemplateArguments(const ArgumentList &al) override;
-    void addListReference(Definition *d) override;
+    void addListReference(const Definition *) override;
+    void addRequirementReferences(const Definition *) override;
     void setDocsForDefinition(bool b) override;
     void setGroupAlias(const MemberDef *md) override;
     void cacheTypedefVal(const ClassDef *val,const QCString &templSpec,const QCString &resolvedType) override;
@@ -2745,7 +2746,9 @@ bool MemberDefImpl::hasDetailedDescription() const
            // call graph
            _hasVisibleCallGraph() ||
            // caller graph
-           _hasVisibleCallerGraph();
+           _hasVisibleCallerGraph() ||
+           // requirement references
+           hasRequirementRefs();
 
     if (!hideUndocMembers) // if HIDE_UNDOC_MEMBERS is NO we also show the detailed section
                            // if there is only some generated info
@@ -3453,8 +3456,14 @@ void MemberDefImpl::_writeMultiLineInitializer(OutputList &ol,const QCString &sc
     intf->resetCodeParserState();
     auto &codeOL = ol.codeGenerators();
     codeOL.startCodeFragment("DoxyCode");
-    intf->parseCode(codeOL,scopeName,m_initializer,srcLangExt,Config_getBool(STRIP_CODE_COMMENTS),FALSE,QCString(),getFileDef(),
-                     -1,-1,TRUE,this,FALSE,this);
+    intf->parseCode(codeOL,scopeName,m_initializer,srcLangExt,Config_getBool(STRIP_CODE_COMMENTS),
+                    CodeParserOptions()
+                    .setFileDef(getFileDef())
+                    .setInlineFragment(true)
+                    .setMemberDef(this)
+                    .setShowLineNumbers(false)
+                    .setSearchCtx(this)
+                   );
     codeOL.endCodeFragment("DoxyCode");
 }
 
@@ -3947,6 +3956,7 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
   if (hasReferencedByRelation()) writeSourceReffedBy(ol,scopeStr);
   _writeCallGraph(ol);
   _writeCallerGraph(ol);
+  if (hasRequirementRefs()) writeRequirementRefs(ol);
 
   ol.endIndent();
 
@@ -4388,12 +4398,11 @@ void MemberDefImpl::setAnchor()
   if (!m_args.isEmpty()) memAnchor+=m_args;
   if (m_memSpec.isAlias()) // this is for backward compatibility
   {
-    memAnchor.prepend(" = "+m_initializer);
+    memAnchor.prepend(" =  "+m_initializer);
   }
   memAnchor.prepend(definition()); // actually the method name is now included
             // twice, which is silly, but we keep it this way for backward
             // compatibility.
-
 
   // include number of template arguments as well,
   // to distinguish between two template
@@ -4542,10 +4551,12 @@ void MemberDefImpl::setInitializer(const QCString &initializer)
   while (p>=0 && isspace(static_cast<uint8_t>(m_initializer.at(p)))) p--;
   m_initializer=m_initializer.left(p+1);
   m_initLines=m_initializer.contains('\n');
+  stripIndentationVerbatim(m_initializer,indent, false);
+
   //printf("%s::setInitializer(%s)\n",qPrint(name()),qPrint(m_initializer));
 }
 
-void MemberDefImpl::addListReference(Definition *)
+void MemberDefImpl::addListReference(const Definition *)
 {
   bool optimizeOutputForC = Config_getBool(OPTIMIZE_OUTPUT_FOR_C);
   SrcLangExt lang = getLanguage();
@@ -4590,6 +4601,11 @@ void MemberDefImpl::addListReference(Definition *)
         qualifiedName()+argsString(), // argsString is needed for overloaded functions (see bug 609624)
         memLabel,
         getOutputFileBase()+"#"+anchor(),memName,memArgs,pd);
+}
+
+void MemberDefImpl::addRequirementReferences(const Definition *)
+{
+  RequirementManager::instance().addRequirementRefsForSymbol(this);
 }
 
 const MemberList *MemberDefImpl::getSectionList(const Definition *container) const

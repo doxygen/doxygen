@@ -24,7 +24,7 @@
 */
 #define CN_SPC " "
 
-class TranslatorChinese : public Translator
+class TranslatorChinese : public TranslatorAdapter_1_16_0
 {
   public:
     /*! Used for identification of the language. The identification
@@ -1526,7 +1526,7 @@ class TranslatorChinese : public Translator
     }
 
     /*! This returns the word directory with or without starting capital
-     *  (\a first_capital) and in sigular or plural form (\a singular).
+     *  (\a first_capital) and in singular or plural form (\a singular).
      */
     QCString trDir(bool /*first_capital*/, bool /*singular*/) override
     {

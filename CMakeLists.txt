@@ -38,7 +38,7 @@ option(enable_tracing  "Enable tracing option in release builds [development]" O
 option(enable_lex_debug "Enable debugging info for lexical scanners in release builds [development]" OFF)
 
 if(CMAKE_BUILD_TYPE STREQUAL "Release")
-  if (CYGWIN OR MINGW)
+  if (CYGWIN OR MINGW OR NOT "${CMAKE_TOOLCHAIN_FILE}" STREQUAL "")
     set(CMAKE_INTERPROCEDURAL_OPTIMIZATION FALSE)
   else()
     set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
@@ -60,7 +60,6 @@ endif()
 
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/Sanitizers")
-set(TOP "${PROJECT_SOURCE_DIR}")
 include(version)
 
 message(STATUS "Using Cmake version ${CMAKE_VERSION}")
@@ -72,7 +71,6 @@ endif()
 
 set(clang    "0" CACHE INTERNAL "used in settings.h")
 
-set(MACOS_VERSION_MIN 10.14)
 if(use_libclang)
   set(clang    "1" CACHE INTERNAL "used in settings.h")
   find_package(LLVM CONFIG REQUIRED)
@@ -87,11 +85,15 @@ endif()
 if(use_sys_sqlite3)
   find_package(SQLite3 REQUIRED)
 endif()
-if(build_search AND CMAKE_SYSTEM MATCHES "Darwin")
-  set(MACOS_VERSION_MIN 10.15)
-endif()
-if(build_wizard AND CMAKE_SYSTEM MATCHES "Darwin")
-  set(MACOS_VERSION_MIN 11.0)
+
+if(NOT DEFINED MACOS_VERSION_MIN) # to allow overruling with -DMACOS_VERSION_MIN
+  set(MACOS_VERSION_MIN 10.14)
+  if(build_search AND CMAKE_SYSTEM MATCHES "Darwin")
+    set(MACOS_VERSION_MIN 10.15) # needs std::filesystem
+  endif()
+  if(build_wizard AND CMAKE_SYSTEM MATCHES "Darwin")
+    set(MACOS_VERSION_MIN 13.0) # needs Qt6
+  endif()
 endif()
 
 # use C++17 standard for compiling (unless very new Clang is present)
@@ -121,9 +123,9 @@ endif()
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 if(CMAKE_SYSTEM MATCHES "Darwin")
-  set(CMAKE_OSX_DEPLOYMENT_TARGET "${MACOS_VERSION_MIN}" CACHE STRING "Minimum OS X deployment version" FORCE)
-  set(CMAKE_CXX_FLAGS "-Wno-deprecated-register -mmacosx-version-min=${MACOS_VERSION_MIN} ${CMAKE_CXX_FLAGS}")
-  set(CMAKE_C_FLAGS "-Wno-deprecated-register -mmacosx-version-min=${MACOS_VERSION_MIN} ${CMAKE_C_FLAGS}")
+  set(CMAKE_OSX_DEPLOYMENT_TARGET "${MACOS_VERSION_MIN}" CACHE STRING "Minimum OS X deployment version")
+  set(CMAKE_CXX_FLAGS "-Wno-deprecated-register ${CMAKE_CXX_FLAGS}")
+  set(CMAKE_C_FLAGS "-Wno-deprecated-register ${CMAKE_C_FLAGS}")
   find_library(CORESERVICES_LIB CoreServices)
   set(EXTRA_LIBS ${CORESERVICES_LIB})
 endif()

@@ -413,7 +413,7 @@ void MemberList::writePlainDeclarations(OutputList &ol, bool inGroup,
                 auto ast    { validatingParseDoc(*parser.get(),
                                                  md->briefFile(),
                                                  md->briefLine(),
-                                                 cd,
+                                                 cd ? cd : md->getOuterScope(),
                                                  md,
                                                  md->briefDescription(),
                                                  DocOptions()
@@ -798,7 +798,7 @@ void MemberList::addMemberGroup(MemberGroup *mg)
   m_memberGroupRefList.push_back(mg);
 }
 
-void MemberList::addListReferences(Definition *def)
+void MemberList::addListReferences(const Definition *def)
 {
   for (const auto &imd : m_members)
   {
@@ -825,6 +825,36 @@ void MemberList::addListReferences(Definition *def)
   for (const auto &mg : m_memberGroupRefList)
   {
     mg->addListReferences(def);
+  }
+}
+
+void MemberList::addRequirementReferences(const Definition *def)
+{
+  for (const auto &imd : m_members)
+  {
+    MemberDefMutable *md = toMemberDefMutable(imd);
+    if (md && !md->isAlias() && (md->getGroupDef()==nullptr || def->definitionType()==Definition::TypeGroup))
+    {
+      md->addRequirementReferences(def);
+      const MemberVector &enumFields = md->enumFieldList();
+      if (md->memberType()==MemberType::Enumeration && !enumFields.empty())
+      {
+        //printf("  Adding enum values!\n");
+        for (const auto &vmd : enumFields)
+        {
+          MemberDefMutable *vmdm = toMemberDefMutable(vmd);
+          if (vmdm)
+          {
+            //printf("   adding %s\n",qPrint(vmd->name()));
+            vmdm->addRequirementReferences(def);
+          }
+        }
+      }
+    }
+  }
+  for (const auto &mg : m_memberGroupRefList)
+  {
+    mg->addRequirementReferences(def);
   }
 }
 

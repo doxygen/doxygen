@@ -198,6 +198,7 @@ documentation:
 \refitem cmdrelatesalso \\relatesalso
 \refitem cmdremark \\remark
 \refitem cmdremarks \\remarks
+\refitem cmdrequirement \\requirement
 \refitem cmdresult \\result
 \refitem cmdreturn \\return
 \refitem cmdreturns \\returns
@@ -205,6 +206,7 @@ documentation:
 \refitem cmdrtfinclude \\rtfinclude
 \refitem cmdrtfonly \\rtfonly
 \refitem cmdsa \\sa
+\refitem cmdsatisfies \\satisfies
 \refitem cmdsecreflist \\secreflist
 \refitem cmdsection \\section
 \refitem cmdsee \\see
@@ -242,6 +244,7 @@ documentation:
 \refitem cmdvar \\var
 \refitem cmdverbatim \\verbatim
 \refitem cmdverbinclude \\verbinclude
+\refitem cmdverifies \\verifies
 \refitem cmdversion \\version
 \refitem cmdvhdlflow \\vhdlflow
 \refitem cmdwarning \\warning
@@ -1435,6 +1438,26 @@ Structural indicators
   Equivalent to \ref cmdrelatesalso "\\relatesalso"
 
 <hr>
+\section cmdrequirement \\requirement \<id\> [(title)]
+
+  \addindex \\requirement
+  Indicates that a comment block contains documentation for a requirement.
+  In the output, all requirements are collected on a single page.
+
+  A requirement can be referred to by its \<id\> using the normal linking commands like \ref cmdref "\\ref".
+  There are two special commands to refer to a requirement.
+  - \ref cmdsatisfies "\\satisfies" can be placed in the comment for a function or class (or any other symbol) that contributes to the
+    \e implementation of the requirement.
+  - \ref cmdverifies "\\verifies" can be placed at the function or class that \e tests the requirement.
+
+  Together the \ref cmdsatisfies "\\satisfies" and \ref cmdverifies "\\verifies" commands help to provide traceability information
+  to show where in the code a requirement has been implemented and/or tested.
+
+  Requirements can be imported via tag files as well.
+
+  \sa sections \ref cmdsatisfies "\\satisfies" and \ref cmdverifies "\\verifies"
+
+<hr>
 \section cmdshowinitializer \\showinitializer
 
   \addindex \\showinitializer
@@ -2555,6 +2578,32 @@ Commands to create links
   and ends with \ref cmdendsecreflist "\\endsecreflist".
   An example of such a list can be seen
   \ref showsecreflist "at the top of the page".
+
+<hr>
+\section cmdsatisfies \\satisfies <req-id> [(short description)]
+  \addindex \\satisfies
+  Creates a reference to a requirement with an optional short description for the link text.
+  The function, class, or other symbol that contain such reference is considered to
+  contribute to the implementation of the requirement. A comment can contain multiple
+  satisfies references pointing to different requirements.
+  There can also be multiple contributors to the implementation
+  of a single requirement, in which case the satisfies command should be mentioned in the
+  documentation of each contributing party.
+
+  \sa sections \ref cmdverifies "\\verifies" and \ref cmdrequirement "\\requirement"
+
+<hr>
+\section cmdverifies \\verifies <req-id> [(short description)]
+  \addindex \\verifies
+  Creates a reference to a requirement with an optional short description for the link text.
+  The function, class, or other symbol
+  that contain such reference is considered to contribute to testing/verifying
+  the requirement. A comment can contain multiple verifies references pointing to
+  different requirements. There can also be multiple contributors to test/verify
+  a single requirement, in which case the verifies command should be mentioned in the
+  documentation of each contributing party.
+
+  \sa sections \ref cmdsatisfies "\\satisfies" and \ref cmdrequirement "\\requirement"
 
 <hr>
 \section cmdsecreflist \\secreflist

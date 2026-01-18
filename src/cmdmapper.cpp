@@ -76,6 +76,7 @@ static const CommandMap<CommandType> g_cmdMap =
   { "refitem",       CommandType::CMD_SECREFITEM },
   { "remark",        CommandType::CMD_REMARK },
   { "remarks",       CommandType::CMD_REMARK },
+  { "requirement",   CommandType::CMD_REQUIREMENT },
   { "result",        CommandType::CMD_RETURN },
   { "return",        CommandType::CMD_RETURN },
   { "returns",       CommandType::CMD_RETURN },

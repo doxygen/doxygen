@@ -66,8 +66,9 @@ void DocParser::pushContext()
   tokenizer.pushContext();
   contextStack.emplace();
   auto &ctx = contextStack.top();
-  ctx = context;
-  ctx.lineNo = tokenizer.getLineNr();
+  ctx           = context;
+  ctx.fileName  = tokenizer.getFileName();
+  ctx.lineNo    = tokenizer.getLineNr();
   context.token = tokenizer.token();
 }
 
@@ -75,6 +76,7 @@ void DocParser::popContext()
 {
   auto &ctx = contextStack.top();
   context = ctx;
+  tokenizer.setFileName(ctx.fileName);
   tokenizer.setLineNr(ctx.lineNo);
   contextStack.pop();
   tokenizer.popContext();
@@ -888,6 +890,23 @@ void DocParser::handleLinkedWord(DocNodeVariant *parent,DocNodeList &children,bo
           cd->anchor(),
           cd->briefDescriptionAsTooltip());
   }
+  else if (const RequirementIntf *req = RequirementManager::instance().find(name); req!=nullptr) // link to requirement
+  {
+    if (Config_getBool(GENERATE_REQUIREMENTS))
+    {
+      children.append<DocLinkedWord>(
+           this,parent,name,
+           QCString(), // link to local requirements overview also for external references
+           req->getOutputFileBase(),
+           req->id(),
+           req->title()
+          );
+    }
+    else // cannot link to a page that does not exist
+    {
+      children.append<DocWord>(this,parent,name);
+    }
+  }
   else // normal non-linkable word
   {
     AUTO_TRACE_ADD("non-linkable");
@@ -1222,12 +1241,47 @@ void DocParser::handleRef(DocNodeVariant *parent, DocNodeList &children, char cm
   children.append<DocRef>(this,parent,
                             context.token->name,
                             context.context);
-  children.get_last<DocRef>()->parse();
+  children.get_last<DocRef>()->parse(cmdChar,saveCmdName);
 endref:
   tokenizer.popState();
 }
 
+void DocParser::handleIFile(char cmdChar,const QCString &cmdName)
+{
+  AUTO_TRACE();
+  Token tok=tokenizer.lex();
+  if (!tok.is(TokenRetval::TK_WHITESPACE))
+  {
+    warn_doc_error(context.fileName,tokenizer.getLineNr(),"expected whitespace after '{:c}{}' command",
+      cmdChar,cmdName);
+    return;
+  }
+  tokenizer.setStateFile();
+  tok=tokenizer.lex();
+  tokenizer.setStatePara();
+  if (!tok.is(TokenRetval::TK_WORD))
+  {
+    warn_doc_error(context.fileName,tokenizer.getLineNr(),"unexpected token {} as the argument of '{:c}{}'",
+      tok.to_string(),cmdChar,cmdName);
+    return;
+  }
+  context.fileName = context.token->name;
+  tokenizer.setStatePara();
+}
 
+void DocParser::handleILine(char cmdChar,const QCString &cmdName)
+{
+  AUTO_TRACE();
+  tokenizer.setStateILine();
+  Token tok = tokenizer.lex();
+  if (!tok.is(TokenRetval::TK_WORD))
+  {
+    warn_doc_error(context.fileName,tokenizer.getLineNr(),"invalid argument for command '{:c}{}'",
+      cmdChar,cmdName);
+    return;
+  }
+  tokenizer.setStatePara();
+}
 
 /* Helper function that deals with the most common tokens allowed in
  * title like sections.
@@ -1464,16 +1518,10 @@ reparsetoken:
           handleImage(parent,children);
           break;
         case CommandType::CMD_ILINE:
-          tokenizer.pushState();
-          tokenizer.setStateILine();
-          (void)tokenizer.lex();
-          tokenizer.popState();
+          handleILine(tok.command_to_char(),tokenName);
           break;
         case CommandType::CMD_IFILE:
-          tokenizer.pushState();
-          tokenizer.setStateIFile();
-          (void)tokenizer.lex();
-          tokenizer.popState();
+          handleIFile(tok.command_to_char(),tokenName);
           break;
         default:
           return FALSE;
@@ -1844,7 +1892,8 @@ static size_t skipToEndMarker(const char *data,size_t i,size_t len,const QCStrin
 QCString DocParser::processCopyDoc(const char *data,size_t &len)
 {
   AUTO_TRACE("data={} len={}",Trace::trunc(data),len);
-  GrowBuf buf;
+  QCString result;
+  result.reserve(len+32);
   size_t i=0;
   int lineNr = tokenizer.getLineNr();
   while (i<len)
@@ -1880,10 +1929,10 @@ QCString DocParser::processCopyDoc(const char *data,size_t &len)
             context.copyStack.push_back(def);
             auto addDocs = [&](const QCString &file_,int line_,const QCString &doc_)
             {
-              buf.addStr(" \\ifile \""+file_+"\" ");
-              buf.addStr("\\iline "+QCString().setNum(line_)+" \\ilinebr ");
+              result+=" \\ifile \""+file_+"\" ";
+              result+="\\iline "+QCString().setNum(line_)+" \\ilinebr ";
               size_t len_ = doc_.length();
-              buf.addStr(processCopyDoc(doc_.data(),len_));
+              result+=processCopyDoc(doc_.data(),len_);
             };
             if (isBrief)
             {
@@ -1898,12 +1947,12 @@ QCString DocParser::processCopyDoc(const char *data,size_t &len)
                 const ArgumentList &docArgList = md->templateMaster() ?
                     md->templateMaster()->argumentList() :
                     md->argumentList();
-                buf.addStr(inlineArgListToDoc(docArgList));
+                result+=inlineArgListToDoc(docArgList);
               }
             }
             context.copyStack.pop_back();
-            buf.addStr(" \\ilinebr \\ifile \""+context.fileName+"\" ");
-            buf.addStr("\\iline "+QCString().setNum(lineNr)+" ");
+            result+=" \\ilinebr \\ifile \""+context.fileName+"\" ";
+            result+="\\iline "+QCString().setNum(lineNr)+" ";
           }
           else
           {
@@ -1928,27 +1977,26 @@ QCString DocParser::processCopyDoc(const char *data,size_t &len)
         {
           size_t orgPos = i;
           i=skipToEndMarker(data,k,len,endMarker);
-          buf.addStr(data+orgPos,i-orgPos);
+          result+=QCString(data+orgPos,i-orgPos);
           // TODO: adjust lineNr
         }
         else
         {
-          buf.addChar(c);
+          result+=c;
           i++;
         }
       }
     }
     else // not a command, just copy
     {
-      buf.addChar(c);
+      result+=c;
       i++;
       lineNr += (c=='\n') ? 1 : 0;
     }
   }
-  len = buf.getPos();
-  buf.addChar(0);
-  AUTO_TRACE_EXIT("result={}",Trace::trunc(buf.get()));
-  return buf.get();
+  len = result.length();
+  AUTO_TRACE_EXIT("result={}",Trace::trunc(result));
+  return result;
 }
 
 
@@ -2049,6 +2097,7 @@ IDocNodeASTPtr validatingParseDoc(IDocParser &parserIntf,
   parser->context.autolinkSupport = options.autolinkSupport();
 
   //printf("Starting comment block at %s:%d\n",qPrint(parser->context.fileName),startLine);
+  parser->tokenizer.setFileName(fileName);
   parser->tokenizer.setLineNr(startLine);
   size_t ioLen = input.length();
   QCString inpStr = parser->processCopyDoc(input.data(),ioLen);
@@ -2205,6 +2254,7 @@ IDocNodeASTPtr createRef(IDocParser &parserIntf,const QCString &target,const QCS
   if (!srcFile.isEmpty())
   {
     parser->context.fileName = srcFile;
+    parser->tokenizer.setFileName(srcFile);
     parser->tokenizer.setLineNr(srcLine);
   }
   return std::make_unique<DocNodeAST>(DocRef(parser,nullptr,target,context));

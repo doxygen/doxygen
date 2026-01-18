@@ -18,7 +18,6 @@
 #include "doxygen.h"
 #include "util.h"
 #include "config.h"
-#include "growbuf.h"
 #include "membername.h"
 #include "filename.h"
 #include "tooltip.h"
