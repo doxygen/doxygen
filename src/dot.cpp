@@ -222,6 +222,10 @@ bool DotManager::run()
       i++;
     }
   }
+  if (Config_getBool(GENERATE_HTML) && Config_getString(DOT_IMAGE_FORMAT) == DOT_IMAGE_FORMAT_t::svg)
+  {
+    DotFilePatcher::makeStdSVG(Config_getString(HTML_OUTPUT) + "/graph_legend.svg");
+  }
   return TRUE;
 }
 
