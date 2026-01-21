@@ -1457,6 +1457,12 @@ void DocHtmlSummary::parse()
     {
       break;
     }
+    else if (tok.is_any_of(TokenRetval::TK_COMMAND_AT, TokenRetval::TK_COMMAND_BS) &&
+             (Mappers::cmdMapper->map(parser()->context.token->name)== CommandType::CMD_REF))
+    {
+      parser()->handleRef(thisVariant(),children(),
+                          tok.command_to_char(),parser()->context.token->name);
+    }
     else if (!parser()->defaultHandleToken(thisVariant(),tok,children()))
     {
       parser()->errorHandleDefaultToken(thisVariant(),tok,children(),"summary section");
@@ -1991,7 +1997,7 @@ static Token skipSpacesForTable(DocParser *parser)
         break;
       }
     }
-    else if (tok.is(TokenRetval::TK_COMMAND_AT) || tok.is(TokenRetval::TK_COMMAND_BS))
+    else if (tok.is_any_of(TokenRetval::TK_COMMAND_AT, TokenRetval::TK_COMMAND_BS))
     {
       QCString cmdName=parser->context.token->name;
       AUTO_TRACE_ADD("command={}",cmdName);
@@ -3954,42 +3960,6 @@ void DocPara::handleLink(const QCString &cmdName,bool isJavaLink)
   }
 }
 
-void DocPara::handleRef(char cmdChar,const QCString &cmdName)
-{
-  AUTO_TRACE("cmdName={}",cmdName);
-  QCString saveCmdName = cmdName;
-  Token tok=parser()->tokenizer.lex();
-  if (!tok.is(TokenRetval::TK_WHITESPACE))
-  {
-    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"expected whitespace after '{:c}{}' command",
-      cmdChar,qPrint(saveCmdName));
-    return;
-  }
-  // RAII helper to set and restore state
-  class AutoRestoreState
-  {
-    public:
-      AutoRestoreState(DocParser *parser) : m_parser(parser) { m_parser->tokenizer.setStateRef(); }
-     ~AutoRestoreState() { m_parser->tokenizer.setStatePara(); }
-    private:
-      DocParser *m_parser;
-  };
-  AutoRestoreState rs(parser());
-  tok=parser()->tokenizer.lex(); // get the reference id
-  if (!tok.is(TokenRetval::TK_WORD))
-  {
-    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"unexpected token {} as the argument of '{:c}{}'",
-        tok.to_string(),cmdChar,saveCmdName);
-    return;
-  }
-  {
-    children().append<DocRef>(parser(),thisVariant(),
-                              parser()->context.token->name,
-                              parser()->context.context);
-  }
-  children().get_last<DocRef>()->parse(cmdChar,cmdName);
-}
-
 void DocPara::handleInclude(const QCString &cmdName,DocInclude::Type t)
 {
   AUTO_TRACE("cmdName={}",cmdName);
@@ -4887,7 +4857,7 @@ Token DocPara::handleCommand(char cmdChar, const QCString &cmdName)
     case CommandType::CMD_REF:
       // fall through
     case CommandType::CMD_SUBPAGE:
-      handleRef(cmdChar,cmdName);
+      parser()->handleRef(thisVariant(),children(),cmdChar,cmdName);
       break;
     case CommandType::CMD_SECREFLIST:
       {
