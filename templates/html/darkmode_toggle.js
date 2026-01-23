@@ -110,7 +110,7 @@ class DarkModeToggle extends HTMLElement {
             document.addEventListener('focusin', () => inFocus = true);
             document.addEventListener('focusout', () => inFocus = false);
             document.addEventListener('keyup', function(e) {
-                if (e.keyCode==27 && !inFocus) { // escape key maps to keycode `27`
+                if (e.key === 'Escape' && !inFocus) {
                    e.stopPropagation();
                    DarkModeToggle.userPreference = !DarkModeToggle.userPreference
                }
@@ -122,7 +122,7 @@ class DarkModeToggle extends HTMLElement {
     constructor() {
         super();
         this.onclick=this.toggleDarkMode
-        this.onkeypress=function(e){if (e.keyCode==13) { this.toggleDarkMode(); }};
+        this.onkeypress=function(e){if (e.key === 'Enter') { this.toggleDarkMode(); }};
     }
 
     /**
