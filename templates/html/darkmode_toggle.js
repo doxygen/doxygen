@@ -56,7 +56,7 @@ class DarkModeToggle extends HTMLElement {
     }()
 
     static init() {
-        document.addEventListener('DOMContentLoaded', function() {
+        const onReady = function() {
             const toggleButton = document.createElement('dark-mode-toggle')
             toggleButton.title = DarkModeToggle.title
             toggleButton.innerHTML = DarkModeToggle.icon
@@ -116,7 +116,15 @@ class DarkModeToggle extends HTMLElement {
                }
             })
             DarkModeToggle.setDarkModeVisibility(DarkModeToggle.darkModeEnabled)
-        })
+        };
+        
+        // Mimic jQuery's ready() behavior: execute immediately if DOM is already loaded,
+        // otherwise wait for DOMContentLoaded
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', onReady);
+        } else {
+            onReady();
+        }
     }
 
     constructor() {
