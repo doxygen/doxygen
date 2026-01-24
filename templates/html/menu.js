@@ -22,7 +22,9 @@
 
  @licend  The above is the entire license notice for the JavaScript code in this file
  */
+/* eslint-disable no-unused-vars */
 function initMenu(relPath,searchEnabled,serverSide,searchPage,search,treeview) {
+/* eslint-enable no-unused-vars */
   function makeTree(data,relPath) {
     let result='';
     if ('children' in data) {
@@ -43,6 +45,65 @@ function initMenu(relPath,searchEnabled,serverSide,searchPage,search,treeview) {
     }
     return result;
   }
+
+  // Helper function to slide down element
+  function slideDown(element, duration, callback) {
+    element.style.removeProperty('display');
+    let display = window.getComputedStyle(element).display;
+    if (display === 'none') display = 'block';
+    element.style.display = display;
+    let height = element.offsetHeight;
+    element.style.overflow = 'hidden';
+    element.style.height = 0;
+    element.style.paddingTop = 0;
+    element.style.paddingBottom = 0;
+    element.style.marginTop = 0;
+    element.style.marginBottom = 0;
+    element.offsetHeight; // force reflow
+    element.style.boxSizing = 'border-box';
+    element.style.transitionProperty = "height, margin, padding";
+    element.style.transitionDuration = duration + 'ms';
+    element.style.height = height + 'px';
+    element.style.removeProperty('padding-top');
+    element.style.removeProperty('padding-bottom');
+    element.style.removeProperty('margin-top');
+    element.style.removeProperty('margin-bottom');
+    window.setTimeout(() => {
+      element.style.removeProperty('height');
+      element.style.removeProperty('overflow');
+      element.style.removeProperty('transition-duration');
+      element.style.removeProperty('transition-property');
+      if (callback) callback();
+    }, duration);
+  }
+
+  // Helper function to slide up element
+  function slideUp(element, duration, callback) {
+    element.style.transitionProperty = 'height, margin, padding';
+    element.style.transitionDuration = duration + 'ms';
+    element.style.boxSizing = 'border-box';
+    element.style.height = element.offsetHeight + 'px';
+    element.offsetHeight; // force reflow
+    element.style.overflow = 'hidden';
+    element.style.height = 0;
+    element.style.paddingTop = 0;
+    element.style.paddingBottom = 0;
+    element.style.marginTop = 0;
+    element.style.marginBottom = 0;
+    window.setTimeout(() => {
+      element.style.display = 'none';
+      element.style.removeProperty('height');
+      element.style.removeProperty('padding-top');
+      element.style.removeProperty('padding-bottom');
+      element.style.removeProperty('margin-top');
+      element.style.removeProperty('margin-bottom');
+      element.style.removeProperty('overflow');
+      element.style.removeProperty('transition-duration');
+      element.style.removeProperty('transition-property');
+      if (callback) callback();
+    }, duration);
+  }
+
   let searchBoxHtml;
   if (searchEnabled) {
     if (serverSide) {
@@ -75,57 +136,183 @@ function initMenu(relPath,searchEnabled,serverSide,searchPage,search,treeview) {
     }
   }
 
-  $('#main-nav').before('<div class="sm sm-dox"><input id="main-menu-state" type="checkbox"/>'+
-                        '<label class="main-menu-btn" for="main-menu-state">'+
-                        '<span class="main-menu-btn-icon"></span> '+
-                        'Toggle main menu visibility</label>'+
-                        '<span id="searchBoxPos1" style="position:absolute;right:8px;top:8px;height:36px;"></span>'+
-                        '</div>');
-  $('#main-nav').append(makeTree(menudata,relPath));
-  $('#main-nav').children(':first').addClass('sm sm-dox').attr('id','main-menu');
-  $('#main-menu').append('<li id="searchBoxPos2" style="float:right"></li>');
-  const $mainMenuState = $('#main-menu-state');
+  const mainNav = document.getElementById('main-nav');
+  const wrapper = document.createElement('div');
+  wrapper.className = 'sm sm-dox';
+  wrapper.innerHTML = '<input id="main-menu-state" type="checkbox"/>'+
+                      '<label class="main-menu-btn" for="main-menu-state">'+
+                      '<span class="main-menu-btn-icon"></span> '+
+                      'Toggle main menu visibility</label>'+
+                      '<span id="searchBoxPos1" style="position:absolute;right:8px;top:8px;height:36px;"></span>';
+  mainNav.parentNode.insertBefore(wrapper, mainNav);
+  
+  mainNav.insertAdjacentHTML('beforeend', makeTree(menudata,relPath)); // eslint-disable-line no-undef
+  const firstChild = mainNav.children[0];
+  firstChild.classList.add('sm', 'sm-dox');
+  firstChild.id = 'main-menu';
+  firstChild.insertAdjacentHTML('beforeend', '<li id="searchBoxPos2" style="float:right"></li>');
+
+  const mainMenuState = document.getElementById('main-menu-state');
   let prevWidth = 0;
-  if ($mainMenuState.length) {
+  if (mainMenuState) {
     const initResizableIfExists = function() {
-      if (typeof initResizable==='function') initResizable(treeview);
+      if (typeof initResizable==='function') initResizable(treeview); // eslint-disable-line no-undef
     }
+    
     // animate mobile menu
-    $mainMenuState.change(function() {
-      const $menu = $('#main-menu');
-      let options = { duration: 250, step: initResizableIfExists };
+    mainMenuState.addEventListener('change', function() {
+      const menu = document.getElementById('main-menu');
       if (this.checked) {
-        options['complete'] = () => $menu.css('display', 'block');
-        $menu.hide().slideDown(options);
+        slideDown(menu, 250, () => {
+          initResizableIfExists();
+        });
       } else {
-        options['complete'] = () => $menu.css('display', 'none');
-        $menu.show().slideUp(options);
+        slideUp(menu, 250, () => {
+          initResizableIfExists();
+        });
       }
     });
+    
     // set default menu visibility
     const resetState = function() {
-      const $menu = $('#main-menu');
-      const newWidth = $(window).outerWidth();
-      if (newWidth!=prevWidth) {
-        if ($(window).outerWidth()<768) {
-          $mainMenuState.prop('checked',false); $menu.hide();
-          $('#searchBoxPos1').html(searchBoxHtml);
-          $('#searchBoxPos2').hide();
+      const menu = document.getElementById('main-menu');
+      const newWidth = window.innerWidth;
+      if (newWidth !== prevWidth) {
+        if (window.innerWidth < 768) {
+          mainMenuState.checked = false;
+          menu.style.display = 'none';
+          document.getElementById('searchBoxPos1').innerHTML = searchBoxHtml;
+          document.getElementById('searchBoxPos2').style.display = 'none';
         } else {
-          $menu.show();
-          $('#searchBoxPos1').empty();
-          $('#searchBoxPos2').html(searchBoxHtml);
-          $('#searchBoxPos2').show();
+          menu.style.display = 'block';
+          document.getElementById('searchBoxPos1').innerHTML = '';
+          const pos2 = document.getElementById('searchBoxPos2');
+          pos2.innerHTML = searchBoxHtml;
+          pos2.style.display = 'block';
         }
-        if (typeof searchBox!=='undefined') {
-          searchBox.CloseResultsWindow();
+        if (typeof searchBox !== 'undefined') {
+          searchBox.CloseResultsWindow(); // eslint-disable-line no-undef
         }
         prevWidth = newWidth;
       }
     }
-    $(window).ready(function() { resetState(); initResizableIfExists(); });
-    $(window).resize(resetState);
+    
+    window.addEventListener('load', function() {
+      resetState();
+      initResizableIfExists();
+    });
+    window.addEventListener('resize', resetState);
   }
-  $('#main-menu').smartmenus();
+  
+  // Initialize smartmenu-like dropdown behavior
+  initSmartMenus();
+}
+
+function initSmartMenus() {
+  const mainMenu = document.getElementById('main-menu');
+  if (!mainMenu) return;
+
+  // Get all menu items with submenus
+  const menuItems = mainMenu.querySelectorAll('li');
+  
+  menuItems.forEach(function(item) {
+    const submenu = item.querySelector('ul');
+    if (submenu) {
+      const link = item.querySelector('a');
+      
+      // Add submenu indicator
+      if (link && !link.querySelector('.sub-arrow')) {
+        const arrow = document.createElement('span');
+        arrow.className = 'sub-arrow';
+        link.appendChild(arrow);
+      }
+      
+      // Add has-submenu class to the link
+      if (link) {
+        link.classList.add('has-submenu');
+      }
+      
+      // Desktop: Show submenu on hover
+      item.addEventListener('mouseenter', function() {
+        if (window.innerWidth >= 768) {
+          submenu.style.display = 'block';
+        }
+      });
+      
+      item.addEventListener('mouseleave', function() {
+        if (window.innerWidth >= 768) {
+          submenu.style.display = 'none';
+        }
+      });
+      
+      // Mobile: Toggle on click
+      if (link) {
+        link.addEventListener('click', function(e) {
+          if (window.innerWidth < 768 && submenu) {
+            e.preventDefault();
+            const isVisible = submenu.style.display === 'block';
+            submenu.style.display = isVisible ? 'none' : 'block';
+          }
+        });
+      }
+    }
+  });
+  
+  // Handle keyboard navigation
+  mainMenu.addEventListener('keydown', function(e) {
+    const target = e.target;
+    if (target.tagName !== 'A') return;
+    
+    const item = target.parentElement;
+    const submenu = item.querySelector('ul');
+    
+    // Arrow right: open submenu
+    if (e.key === 'ArrowRight' && submenu) {
+      e.preventDefault();
+      submenu.style.display = 'block';
+      const firstLink = submenu.querySelector('a');
+      if (firstLink) firstLink.focus();
+    }
+    
+    // Arrow left: close submenu and go back
+    if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      const parentItem = item.parentElement.closest('li');
+      if (parentItem) {
+        const parentSubmenu = item.parentElement;
+        parentSubmenu.style.display = 'none';
+        const parentLink = parentItem.querySelector('a');
+        if (parentLink) parentLink.focus();
+      }
+    }
+    
+    // Arrow down: next item
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      const nextItem = item.nextElementSibling;
+      if (nextItem) {
+        const nextLink = nextItem.querySelector('a');
+        if (nextLink) nextLink.focus();
+      }
+    }
+    
+    // Arrow up: previous item
+    if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      const prevItem = item.previousElementSibling;
+      if (prevItem) {
+        const prevLink = prevItem.querySelector('a');
+        if (prevLink) prevLink.focus();
+      }
+    }
+    
+    // Escape: close all submenus
+    if (e.key === 'Escape') {
+      const openSubmenus = mainMenu.querySelectorAll('ul[style*="display: block"]');
+      openSubmenus.forEach(function(submenu) {
+        submenu.style.display = 'none';
+      });
+    }
+  });
 }
 /* @license-end */
