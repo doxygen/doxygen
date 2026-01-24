@@ -440,7 +440,7 @@ jobs:
         if (NOT result EQUAL 0)
           message(FATAL_ERROR "Building internal documentation failed")
         endif()
-      if: matrix.config.name == 'Ubuntu Latest GCC Release (Intel)'
+      if: github.ref_name == 'master' && github.event_name == 'push' && matrix.config.name == 'Ubuntu Latest GCC Release (Intel)'
 
     - name: Publish Internal documentation to Github pages
       uses: peaceiris/actions-gh-pages@v4
@@ -449,6 +449,6 @@ jobs:
          external_repository: doxygen/doxygen-docs
          publish_dir: build/doxygen_docs/html
          force_orphan: true
-      if: ${{ github.event_name == 'push' && matrix.config.name == 'Ubuntu Latest GCC Release (Intel)' }}
+      if: github.ref_name == 'master' && github.event_name == 'push' && matrix.config.name == 'Ubuntu Latest GCC Release (Intel)'
 
 
