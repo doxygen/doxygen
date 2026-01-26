@@ -23,12 +23,14 @@
  @licend  The above is the entire license notice for the JavaScript code in this file
  */
 /* eslint-disable no-unused-vars */
-function initMenu(relPath,searchEnabled,serverSide,searchPage,search,treeview) {
+function initMenu(relPath,treeview) {
 /* eslint-enable no-unused-vars */
-  function makeTree(data,relPath) {
+  function makeTree(data,relPath,topLevel=false) {
     let result='';
     if ('children' in data) {
-      result+='<ul>';
+      if (!topLevel) {
+        result+='<ul>';
+      }
       for (let i in data.children) {
         let url;
         const link = data.children[i].url;
@@ -41,7 +43,9 @@ function initMenu(relPath,searchEnabled,serverSide,searchPage,search,treeview) {
                                 data.children[i].text+'</a>'+
                                 makeTree(data.children[i],relPath)+'</li>';
       }
-      result+='</ul>';
+      if (!topLevel) {
+        result+='</ul>';
+      }
     }
     return result;
   }
@@ -104,60 +108,19 @@ function initMenu(relPath,searchEnabled,serverSide,searchPage,search,treeview) {
     }, duration);
   }
 
-  let searchBoxHtml;
-  if (searchEnabled) {
-    if (serverSide) {
-      searchBoxHtml='<div id="MSearchBox" class="MSearchBoxInactive">'+
-                 '<div class="left">'+
-                  '<form id="FSearchBox" action="'+relPath+searchPage+
-                    '" method="get"><span id="MSearchSelectExt" class="search-icon"></span>'+
-                  '<input type="text" id="MSearchField" name="query" value="" placeholder="'+search+
-                    '" size="20" accesskey="S" onfocus="searchBox.OnSearchFieldFocus(true)"'+
-                    ' onblur="searchBox.OnSearchFieldFocus(false)"/>'+
-                  '</form>'+
-                 '</div>'+
-                 '<div class="right"></div>'+
-                '</div>';
-    } else {
-      searchBoxHtml='<div id="MSearchBox" class="MSearchBoxInactive">'+
-                 '<span class="left">'+
-                  '<span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()"'+
-                     ' onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>'+
-                  '<input type="text" id="MSearchField" value="" placeholder="'+search+
-                    '" accesskey="S" onfocus="searchBox.OnSearchFieldFocus(true)" '+
-                    'onblur="searchBox.OnSearchFieldFocus(false)" '+
-                    'onkeyup="searchBox.OnSearchFieldChange(event)"/>'+
-                 '</span>'+
-                 '<span class="right"><a id="MSearchClose" '+
-                  'href="javascript:searchBox.CloseResultsWindow()">'+
-                  '<div id="MSearchCloseImg" class="close-icon"></div></a>'+
-                 '</span>'+
-                '</div>';
-    }
-  }
-
   const mainNav = document.getElementById('main-nav');
-  const wrapper = document.createElement('div');
-  wrapper.className = 'sm sm-dox';
-  wrapper.innerHTML = '<input id="main-menu-state" type="checkbox"/>'+
-                      '<label class="main-menu-btn" for="main-menu-state">'+
-                      '<span class="main-menu-btn-icon"></span> '+
-                      'Toggle main menu visibility</label>'+
-                      '<span id="searchBoxPos1" style="position:absolute;right:8px;top:8px;height:36px;"></span>';
-  mainNav.parentNode.insertBefore(wrapper, mainNav);
-  
-  mainNav.insertAdjacentHTML('beforeend', makeTree(menudata,relPath)); // eslint-disable-line no-undef
   const firstChild = mainNav.children[0];
-  firstChild.classList.add('sm', 'sm-dox');
-  firstChild.id = 'main-menu';
-  firstChild.insertAdjacentHTML('beforeend', '<li id="searchBoxPos2" style="float:right"></li>');
-
+  firstChild.insertAdjacentHTML('afterbegin', makeTree(menudata,relPath,true)); // eslint-disable-line no-undef
+  
+  const searchBoxPos2 = document.getElementById('searchBoxPos2');
+  const searchBoxContents = searchBoxPos2 ? searchBoxPos2.innerHTML : '';
+  
   const mainMenuState = document.getElementById('main-menu-state');
   let prevWidth = 0;
+  const initResizableIfExists = function() {
+    if (typeof initResizableFunc==='function') initResizableFunc(treeview); // eslint-disable-line no-undef
+  }
   if (mainMenuState) {
-    const initResizableIfExists = function() {
-      if (typeof initResizable==='function') initResizable(treeview); // eslint-disable-line no-undef
-    }
     
     // animate mobile menu
     mainMenuState.addEventListener('change', function() {
@@ -178,17 +141,21 @@ function initMenu(relPath,searchEnabled,serverSide,searchPage,search,treeview) {
       const menu = document.getElementById('main-menu');
       const newWidth = window.innerWidth;
       if (newWidth !== prevWidth) {
+        const searchBoxPos1 = document.getElementById('searchBoxPos1');
+        const searchBoxPos2 = document.getElementById('searchBoxPos2');
         if (window.innerWidth < 768) {
           mainMenuState.checked = false;
           menu.style.display = 'none';
-          document.getElementById('searchBoxPos1').innerHTML = searchBoxHtml;
-          document.getElementById('searchBoxPos2').style.display = 'none';
+          searchBoxPos2.innerHTML = '';
+          searchBoxPos2.style.display = 'none';
+          searchBoxPos1.innerHTML = searchBoxContents;
+          searchBoxPos1.style.display = 'block';
         } else {
           menu.style.display = 'block';
-          document.getElementById('searchBoxPos1').innerHTML = '';
-          const pos2 = document.getElementById('searchBoxPos2');
-          pos2.innerHTML = searchBoxHtml;
-          pos2.style.display = 'block';
+          searchBoxPos1.innerHTML = '';
+          searchBoxPos1.style.display = 'none';
+          searchBoxPos2.innerHTML = searchBoxContents;
+          searchBoxPos2.style.display = 'block';
         }
         if (typeof searchBox !== 'undefined') {
           searchBox.CloseResultsWindow(); // eslint-disable-line no-undef
@@ -202,6 +169,8 @@ function initMenu(relPath,searchEnabled,serverSide,searchPage,search,treeview) {
       initResizableIfExists();
     });
     window.addEventListener('resize', resetState);
+  } else {
+    initResizableIfExists();
   }
   
   // Initialize smartmenu-like dropdown behavior
