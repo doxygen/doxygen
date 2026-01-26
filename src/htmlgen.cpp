@@ -3010,13 +3010,7 @@ static void writeDefaultQuickLinks(TextStream &t,
     t << "<script type=\"text/javascript\" src=\"" << relPath << "menu.js\"></script>\n";
     t << "<script type=\"text/javascript\">\n";
     t << "$(function() {\n";
-    t << "  initMenu('" << relPath << "',"
-      << (searchEngine && !(generateTreeView && fullSidebar)?"true":"false") << ","
-      << (serverBasedSearch?"true":"false") << ",'"
-      << searchPage << "','"
-      << theTranslator->trSearch() << "',"
-      << (generateTreeView?"true":"false")
-      << ");\n";
+    t << "  initMenu('" << relPath << "'," << (generateTreeView?"true":"false") << ");\n";
     if (searchEngine)
     {
       if (!serverBasedSearch)
@@ -3035,7 +3029,27 @@ static void writeDefaultQuickLinks(TextStream &t,
     }
     t << "});\n";
     t << "</script>\n";
-    t << "<div id=\"main-nav\"></div>\n";
+    t << "<div id=\"main-nav-mobile\">\n";
+    if (searchEngine && !fullSidebar)
+    {
+      t <<   "<div class=\"sm sm-dox\"><input id=\"main-menu-state\" type=\"checkbox\"/>\n";
+      t <<     "<label class=\"main-menu-btn\" for=\"main-menu-state\">\n";
+      t <<     "<span class=\"main-menu-btn-icon\"></span> Toggle main menu visibility</label>\n";
+      t <<     "<span id=\"searchBoxPos1\" style=\"position:absolute;right:8px;top:8px;height:36px;\">";
+      t <<     "</span>\n";
+      t <<   "</div>\n";
+    }
+    t << "</div><!-- main-nav-mobile -->\n";
+    t << "<div id=\"main-nav\">\n";
+    t << "  <ul class=\"sm sm-dox\" id=\"main-menu\">\n";
+    t << "    <li id=\"searchBoxPos2\" style=\"float:right\">\n";
+    if (searchEngine && !(generateTreeView && fullSidebar))
+    {
+      t << getSearchBox(serverBasedSearch,relPath,false);
+    }
+    t << "    </li>\n";
+    t << "  </ul>\n";
+    t << "</div><!-- main-nav -->\n";
   }
   else if (!disableIndex) // && !Config_getBool(HTML_DYNAMIC_MENUS)
   {

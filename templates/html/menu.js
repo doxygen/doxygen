@@ -22,11 +22,13 @@
 
  @licend  The above is the entire license notice for the JavaScript code in this file
  */
-function initMenu(relPath,searchEnabled,serverSide,searchPage,search,treeview) {
-  function makeTree(data,relPath) {
+function initMenu(relPath,treeview) {
+  function makeTree(data,relPath,topLevel=false) {
     let result='';
     if ('children' in data) {
-      result+='<ul>';
+      if (!topLevel) {
+        result+='<ul>';
+      }
       for (let i in data.children) {
         let url;
         const link = data.children[i].url;
@@ -39,57 +41,21 @@ function initMenu(relPath,searchEnabled,serverSide,searchPage,search,treeview) {
                                 data.children[i].text+'</a>'+
                                 makeTree(data.children[i],relPath)+'</li>';
       }
-      result+='</ul>';
+      if (!topLevel) {
+        result+='</ul>';
+      }
     }
     return result;
   }
-  let searchBoxHtml;
-  if (searchEnabled) {
-    if (serverSide) {
-      searchBoxHtml='<div id="MSearchBox" class="MSearchBoxInactive">'+
-                 '<div class="left">'+
-                  '<form id="FSearchBox" action="'+relPath+searchPage+
-                    '" method="get"><span id="MSearchSelectExt" class="search-icon"></span>'+
-                  '<input type="text" id="MSearchField" name="query" value="" placeholder="'+search+
-                    '" size="20" accesskey="S" onfocus="searchBox.OnSearchFieldFocus(true)"'+
-                    ' onblur="searchBox.OnSearchFieldFocus(false)"/>'+
-                  '</form>'+
-                 '</div>'+
-                 '<div class="right"></div>'+
-                '</div>';
-    } else {
-      searchBoxHtml='<div id="MSearchBox" class="MSearchBoxInactive">'+
-                 '<span class="left">'+
-                  '<span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()"'+
-                     ' onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>'+
-                  '<input type="text" id="MSearchField" value="" placeholder="'+search+
-                    '" accesskey="S" onfocus="searchBox.OnSearchFieldFocus(true)" '+
-                    'onblur="searchBox.OnSearchFieldFocus(false)" '+
-                    'onkeyup="searchBox.OnSearchFieldChange(event)"/>'+
-                 '</span>'+
-                 '<span class="right"><a id="MSearchClose" '+
-                  'href="javascript:searchBox.CloseResultsWindow()">'+
-                  '<div id="MSearchCloseImg" class="close-icon"></div></a>'+
-                 '</span>'+
-                '</div>';
-    }
-  }
 
-  $('#main-nav').before('<div class="sm sm-dox"><input id="main-menu-state" type="checkbox"/>'+
-                        '<label class="main-menu-btn" for="main-menu-state">'+
-                        '<span class="main-menu-btn-icon"></span> '+
-                        'Toggle main menu visibility</label>'+
-                        '<span id="searchBoxPos1" style="position:absolute;right:8px;top:8px;height:36px;"></span>'+
-                        '</div>');
-  $('#main-nav').append(makeTree(menudata,relPath));
-  $('#main-nav').children(':first').addClass('sm sm-dox').attr('id','main-menu');
-  $('#main-menu').append('<li id="searchBoxPos2" style="float:right"></li>');
+  $('#main-nav').children().first().prepend(makeTree(menudata,relPath,true));
+  searchBoxContents = $('#searchBoxPos2').html();
   const $mainMenuState = $('#main-menu-state');
   let prevWidth = 0;
+  const initResizableIfExists = function() {
+    if (typeof initResizableFunc==='function') initResizableFunc(treeview);
+  }
   if ($mainMenuState.length) {
-    const initResizableIfExists = function() {
-      if (typeof initResizable==='function') initResizable(treeview);
-    }
     // animate mobile menu
     $mainMenuState.change(function() {
       const $menu = $('#main-menu');
@@ -109,12 +75,15 @@ function initMenu(relPath,searchEnabled,serverSide,searchPage,search,treeview) {
       if (newWidth!=prevWidth) {
         if ($(window).outerWidth()<768) {
           $mainMenuState.prop('checked',false); $menu.hide();
-          $('#searchBoxPos1').html(searchBoxHtml);
+          $('#searchBoxPos2').empty();
           $('#searchBoxPos2').hide();
+          $('#searchBoxPos1').html(searchBoxContents);
+          $('#searchBoxPos1').show();
         } else {
           $menu.show();
           $('#searchBoxPos1').empty();
-          $('#searchBoxPos2').html(searchBoxHtml);
+          $('#searchBoxPos1').hide();
+          $('#searchBoxPos2').html(searchBoxContents);
           $('#searchBoxPos2').show();
         }
         if (typeof searchBox!=='undefined') {
@@ -125,6 +94,8 @@ function initMenu(relPath,searchEnabled,serverSide,searchPage,search,treeview) {
     }
     $(window).ready(function() { resetState(); initResizableIfExists(); });
     $(window).resize(resetState);
+  } else {
+    initResizableIfExists();
   }
   $('#main-menu').smartmenus();
 }

@@ -23,6 +23,8 @@
  @licend  The above is the entire license notice for the JavaScript code in this file
  */
 
+let initResizableFunc;
+
 function initNavTree(toroot,relpath,allMembersFile) {
   let navTreeSubIndices = [];
   const ARROW_DOWN = '<span class="arrowhead opened"></span>';
@@ -1103,6 +1105,8 @@ function initNavTree(toroot,relpath,allMembersFile) {
     initPageToc();
     initResizable();
   }
+
+  initResizableFunc = initResizable;
 
 }
 /* @license-end */
