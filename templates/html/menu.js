@@ -48,55 +48,218 @@ function initMenu(relPath,treeview) {
     return result;
   }
 
-  $('#main-nav').children().first().prepend(makeTree(menudata,relPath,true));
-  searchBoxContents = $('#searchBoxPos2').html();
-  const $mainMenuState = $('#main-menu-state');
-  let prevWidth = 0;
-  const initResizableIfExists = function() {
-    if (typeof initResizableFunc==='function') initResizableFunc(treeview);
+  // Helper function for slideDown animation
+  function slideDown(element, duration, callback) {
+    element.style.removeProperty('display');
+    let display = window.getComputedStyle(element).display;
+    if (display === 'none') display = 'block';
+    element.style.display = display;
+    const height = element.offsetHeight;
+    element.style.overflow = 'hidden';
+    element.style.height = 0;
+    element.style.paddingTop = 0;
+    element.style.paddingBottom = 0;
+    element.style.marginTop = 0;
+    element.style.marginBottom = 0;
+    element.offsetHeight; // force reflow
+    element.style.boxSizing = 'border-box';
+    element.style.transitionProperty = 'height, margin, padding';
+    element.style.transitionDuration = duration + 'ms';
+    element.style.height = height + 'px';
+    element.style.removeProperty('padding-top');
+    element.style.removeProperty('padding-bottom');
+    element.style.removeProperty('margin-top');
+    element.style.removeProperty('margin-bottom');
+    window.setTimeout(() => {
+      element.style.removeProperty('height');
+      element.style.removeProperty('overflow');
+      element.style.removeProperty('transition-duration');
+      element.style.removeProperty('transition-property');
+      if (callback) callback();
+    }, duration);
   }
-  if ($mainMenuState.length) {
+
+  // Helper function for slideUp animation
+  function slideUp(element, duration, callback) {
+    element.style.transitionProperty = 'height, margin, padding';
+    element.style.transitionDuration = duration + 'ms';
+    element.style.boxSizing = 'border-box';
+    element.style.height = element.offsetHeight + 'px';
+    element.offsetHeight; // force reflow
+    element.style.overflow = 'hidden';
+    element.style.height = 0;
+    element.style.paddingTop = 0;
+    element.style.paddingBottom = 0;
+    element.style.marginTop = 0;
+    element.style.marginBottom = 0;
+    window.setTimeout(() => {
+      element.style.display = 'none';
+      element.style.removeProperty('height');
+      element.style.removeProperty('padding-top');
+      element.style.removeProperty('padding-bottom');
+      element.style.removeProperty('margin-top');
+      element.style.removeProperty('margin-bottom');
+      element.style.removeProperty('overflow');
+      element.style.removeProperty('transition-duration');
+      element.style.removeProperty('transition-property');
+      if (callback) callback();
+    }, duration);
+  }
+
+  const mainNav = document.getElementById('main-nav');
+  if (mainNav && mainNav.children.length > 0) {
+    const firstChild = mainNav.children[0];
+    firstChild.insertAdjacentHTML('afterbegin', makeTree(menudata, relPath, true));
+  }
+
+  const searchBoxPos2 = document.getElementById('searchBoxPos2');
+  let searchBoxContents = searchBoxPos2 ? searchBoxPos2.innerHTML : '';
+  const mainMenuState = document.getElementById('main-menu-state');
+  let prevWidth = 0;
+  
+  const initResizableIfExists = function() {
+    if (typeof initResizableFunc === 'function') initResizableFunc(treeview);
+  }
+
+  if (mainMenuState) {
+    const mainMenu = document.getElementById('main-menu');
+    const searchBoxPos1 = document.getElementById('searchBoxPos1');
+
     // animate mobile menu
-    $mainMenuState.change(function() {
-      const $menu = $('#main-menu');
-      let options = { duration: 250, step: initResizableIfExists };
+    mainMenuState.addEventListener('change', function() {
       if (this.checked) {
-        options['complete'] = () => $menu.css('display', 'block');
-        $menu.hide().slideDown(options);
+        slideDown(mainMenu, 250, () => {
+          mainMenu.style.display = 'block';
+          initResizableIfExists();
+        });
       } else {
-        options['complete'] = () => $menu.css('display', 'none');
-        $menu.show().slideUp(options);
+        slideUp(mainMenu, 250, () => {
+          mainMenu.style.display = 'none';
+        });
       }
     });
+
     // set default menu visibility
     const resetState = function() {
-      const $menu = $('#main-menu');
-      const newWidth = $(window).outerWidth();
-      if (newWidth!=prevWidth) {
-        if ($(window).outerWidth()<768) {
-          $mainMenuState.prop('checked',false); $menu.hide();
-          $('#searchBoxPos2').empty();
-          $('#searchBoxPos2').hide();
-          $('#searchBoxPos1').html(searchBoxContents);
-          $('#searchBoxPos1').show();
+      const newWidth = window.innerWidth;
+      if (newWidth !== prevWidth) {
+        if (newWidth < 768) {
+          mainMenuState.checked = false;
+          mainMenu.style.display = 'none';
+          if (searchBoxPos2) {
+            searchBoxPos2.innerHTML = '';
+            searchBoxPos2.style.display = 'none';
+          }
+          if (searchBoxPos1) {
+            searchBoxPos1.innerHTML = searchBoxContents;
+            searchBoxPos1.style.display = '';
+          }
         } else {
-          $menu.show();
-          $('#searchBoxPos1').empty();
-          $('#searchBoxPos1').hide();
-          $('#searchBoxPos2').html(searchBoxContents);
-          $('#searchBoxPos2').show();
+          mainMenu.style.display = '';
+          if (searchBoxPos1) {
+            searchBoxPos1.innerHTML = '';
+            searchBoxPos1.style.display = 'none';
+          }
+          if (searchBoxPos2) {
+            searchBoxPos2.innerHTML = searchBoxContents;
+            searchBoxPos2.style.display = '';
+          }
         }
-        if (typeof searchBox!=='undefined') {
+        if (typeof searchBox !== 'undefined') {
           searchBox.CloseResultsWindow();
         }
         prevWidth = newWidth;
       }
     }
-    $(window).ready(function() { resetState(); initResizableIfExists(); });
-    $(window).resize(resetState);
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', function() {
+        resetState();
+        initResizableIfExists();
+      });
+    } else {
+      resetState();
+      initResizableIfExists();
+    }
+    window.addEventListener('resize', resetState);
   } else {
     initResizableIfExists();
   }
-  $('#main-menu').smartmenus();
+
+  // Initialize dropdown menu behavior (replaces smartmenus)
+  initDropdownMenu();
+}
+
+// Dropdown menu functionality to replace smartmenus
+function initDropdownMenu() {
+  const mainMenu = document.getElementById('main-menu');
+  if (!mainMenu) return;
+
+  const menuItems = mainMenu.querySelectorAll('li');
+  
+  menuItems.forEach(item => {
+    const submenu = item.querySelector('ul');
+    if (submenu) {
+      const link = item.querySelector('a');
+      if (link) {
+        // Add ARIA attributes for accessibility
+        link.setAttribute('aria-haspopup', 'true');
+        link.setAttribute('aria-expanded', 'false');
+        
+        // Desktop: show on hover
+        item.addEventListener('mouseenter', function() {
+          if (window.innerWidth >= 768) {
+            submenu.style.display = 'block';
+            link.setAttribute('aria-expanded', 'true');
+          }
+        });
+        
+        item.addEventListener('mouseleave', function() {
+          if (window.innerWidth >= 768) {
+            submenu.style.display = 'none';
+            link.setAttribute('aria-expanded', 'false');
+          }
+        });
+
+        // Mobile: toggle on click
+        link.addEventListener('click', function(e) {
+          if (window.innerWidth < 768 && submenu) {
+            e.preventDefault();
+            const isExpanded = link.getAttribute('aria-expanded') === 'true';
+            if (isExpanded) {
+              submenu.style.display = 'none';
+              link.setAttribute('aria-expanded', 'false');
+            } else {
+              submenu.style.display = 'block';
+              link.setAttribute('aria-expanded', 'true');
+            }
+          }
+        });
+
+        // Keyboard navigation
+        link.addEventListener('keydown', function(e) {
+          if (e.key === 'Enter' || e.key === ' ') {
+            if (submenu && window.innerWidth < 768) {
+              e.preventDefault();
+              const isExpanded = link.getAttribute('aria-expanded') === 'true';
+              if (isExpanded) {
+                submenu.style.display = 'none';
+                link.setAttribute('aria-expanded', 'false');
+              } else {
+                submenu.style.display = 'block';
+                link.setAttribute('aria-expanded', 'true');
+              }
+            }
+          } else if (e.key === 'Escape') {
+            if (submenu) {
+              submenu.style.display = 'none';
+              link.setAttribute('aria-expanded', 'false');
+              link.focus();
+            }
+          }
+        });
+      }
+    }
+  });
 }
 /* @license-end */
