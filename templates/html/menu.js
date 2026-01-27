@@ -209,7 +209,8 @@ function initDropdownMenu() {
     if (submenu) {
       const link = item.querySelector('a');
       if (link) {
-        // Add ARIA attributes for accessibility
+        // Add class and ARIA attributes for accessibility
+        link.classList.add('has-submenu');
         link.setAttribute('aria-haspopup', 'true');
         link.setAttribute('aria-expanded', 'false');
         
