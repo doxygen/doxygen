@@ -50,6 +50,9 @@ function initMenu(relPath,treeview) {
 
   // Helper function for slideDown animation
   function slideDown(element, duration, callback) {
+    if (element.dataset.animating) return;
+    element.dataset.animating = 'true';
+    
     element.style.removeProperty('display');
     let display = window.getComputedStyle(element).display;
     if (display === 'none') display = 'block';
@@ -62,7 +65,6 @@ function initMenu(relPath,treeview) {
     element.style.marginTop = 0;
     element.style.marginBottom = 0;
     element.offsetHeight; // force reflow
-    element.style.boxSizing = 'border-box';
     element.style.transitionProperty = 'height, margin, padding';
     element.style.transitionDuration = duration + 'ms';
     element.style.height = height + 'px';
@@ -75,15 +77,18 @@ function initMenu(relPath,treeview) {
       element.style.removeProperty('overflow');
       element.style.removeProperty('transition-duration');
       element.style.removeProperty('transition-property');
+      delete element.dataset.animating;
       if (callback) callback();
     }, duration);
   }
 
   // Helper function for slideUp animation
   function slideUp(element, duration, callback) {
+    if (element.dataset.animating) return;
+    element.dataset.animating = 'true';
+    
     element.style.transitionProperty = 'height, margin, padding';
     element.style.transitionDuration = duration + 'ms';
-    element.style.boxSizing = 'border-box';
     element.style.height = element.offsetHeight + 'px';
     element.offsetHeight; // force reflow
     element.style.overflow = 'hidden';
@@ -102,6 +107,7 @@ function initMenu(relPath,treeview) {
       element.style.removeProperty('overflow');
       element.style.removeProperty('transition-duration');
       element.style.removeProperty('transition-property');
+      delete element.dataset.animating;
       if (callback) callback();
     }, duration);
   }
@@ -196,6 +202,7 @@ function initDropdownMenu() {
   if (!mainMenu) return;
 
   const menuItems = mainMenu.querySelectorAll('li');
+  let isMobile = () => window.innerWidth < 768;
   
   menuItems.forEach(item => {
     const submenu = item.querySelector('ul');
@@ -208,22 +215,22 @@ function initDropdownMenu() {
         
         // Desktop: show on hover
         item.addEventListener('mouseenter', function() {
-          if (window.innerWidth >= 768) {
+          if (!isMobile()) {
             submenu.style.display = 'block';
             link.setAttribute('aria-expanded', 'true');
           }
         });
         
         item.addEventListener('mouseleave', function() {
-          if (window.innerWidth >= 768) {
+          if (!isMobile()) {
             submenu.style.display = 'none';
             link.setAttribute('aria-expanded', 'false');
           }
         });
 
-        // Mobile: toggle on click
+        // Mobile/Touch: toggle on click
         link.addEventListener('click', function(e) {
-          if (window.innerWidth < 768 && submenu) {
+          if (isMobile()) {
             e.preventDefault();
             const isExpanded = link.getAttribute('aria-expanded') === 'true';
             if (isExpanded) {
@@ -237,9 +244,25 @@ function initDropdownMenu() {
         });
 
         // Keyboard navigation
+        // On desktop: Enter/Space follows link, Escape closes dropdown
+        // On mobile: Enter/Space toggles dropdown, Escape closes it
         link.addEventListener('keydown', function(e) {
           if (e.key === 'Enter' || e.key === ' ') {
-            if (submenu && window.innerWidth < 768) {
+            if (isMobile()) {
+              // Mobile: toggle dropdown
+              e.preventDefault();
+              const isExpanded = link.getAttribute('aria-expanded') === 'true';
+              if (isExpanded) {
+                submenu.style.display = 'none';
+                link.setAttribute('aria-expanded', 'false');
+              } else {
+                submenu.style.display = 'block';
+                link.setAttribute('aria-expanded', 'true');
+              }
+            }
+            // Desktop: let the link navigate normally, but show submenu on focus
+            else if (e.key === ' ') {
+              // Space bar: toggle dropdown without following link
               e.preventDefault();
               const isExpanded = link.getAttribute('aria-expanded') === 'true';
               if (isExpanded) {
@@ -251,11 +274,9 @@ function initDropdownMenu() {
               }
             }
           } else if (e.key === 'Escape') {
-            if (submenu) {
-              submenu.style.display = 'none';
-              link.setAttribute('aria-expanded', 'false');
-              link.focus();
-            }
+            submenu.style.display = 'none';
+            link.setAttribute('aria-expanded', 'false');
+            link.focus();
           }
         });
       }
