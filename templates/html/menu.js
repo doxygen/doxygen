@@ -214,6 +214,11 @@ function initDropdownMenu() {
         link.setAttribute('aria-haspopup', 'true');
         link.setAttribute('aria-expanded', 'false');
         
+        // Add sub-arrow indicator
+        const span = document.createElement('span');
+        span.classList.add('sub-arrow');
+        link.append(span);
+        
         // Desktop: show on hover
         item.addEventListener('mouseenter', function() {
           if (!isMobile()) {
