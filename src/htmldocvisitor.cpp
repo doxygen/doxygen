@@ -234,6 +234,7 @@ HtmlDocVisitor::HtmlDocVisitor(TextStream &t,OutputCodeList &ci,
   : m_t(t), m_ci(ci), m_ctx(ctx), m_fileName(fn)
 {
   if (ctx) m_langExt=ctx->getDefFileExtension();
+  m_anchorHtml = Config_getString(HTML_HEADING_ANCHOR);
 }
 
 template<class T>
@@ -1410,9 +1411,22 @@ void HtmlDocVisitor::operator()(const DocSection &s)
 {
   if (m_hide) return;
   forceEndParagraph(s);
+
   m_t << "<h" << s.level() << " class=\"doxsection\">";
-  m_t << "<a class=\"anchor\" id=\"" << s.anchor();
-  m_t << "\"></a>\n";
+
+  if( m_anchorHtml.length() )
+  {
+    m_t << "<span class=\"permalink\">";
+    m_t << "<a class=\"anchor\" id=\"" << s.anchor() << "\" ";
+    m_t <<    "href=\"#" << s.anchor() << "\" ";
+    m_t << ">" << m_anchorHtml.data() << "</a></span>";
+  }
+  else
+  {
+    m_t << "<a class=\"anchor\" id=\"" << s.anchor();
+    m_t << "\"></a>\n";
+  }
+
   if (s.title())
   {
     std::visit(*this,*s.title());
