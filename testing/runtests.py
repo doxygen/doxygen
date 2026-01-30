@@ -64,6 +64,11 @@ def clean_header(errmsg):
 
 class Tester:
     def __init__(self,args,test):
+        test_id = test.split('_')[0]
+        if args.updateref:
+            self.test_out = args.inputdir+'/'+test_id
+        else:
+            self.test_out = args.outputdir+'/test_output_'+test_id
         self.args      = args
         self.test      = test
         self.update    = args.updateref
@@ -72,11 +77,7 @@ class Tester:
             print("Test %s is missing the objective." % self.test)
             sys.exit(1)
         self.test_name = '[%s]: %s' % (self.test,self.config['objective'][0])
-        self.test_id   = self.test.split('_')[0]
-        if self.update:
-            self.test_out = self.args.inputdir+'/'+self.test_id
-        else:
-            self.test_out = self.args.outputdir+'/test_output_'+self.test_id
+        self.test_id   = test_id
         self.prepare_test()
 
     # Compares 'got_file' against 'expected_file'.
@@ -158,6 +159,7 @@ class Tester:
                     value = m.group('value')
                     if (key=='config'):
                         value = value.replace('$INPUTDIR',self.args.inputdir)
+                        value = value.replace('$TESTOUTDIR',self.test_out)
                     # print('key=%s value=%s' % (key,value))
                     config.setdefault(key, []).append(value)
         return config
@@ -341,6 +343,7 @@ class Tester:
                     data = xpopen('%s --format --noblanks --nowarning %s' % (self.args.xmllint,check_file))
                     if data:
                         # strip version
+                        data = re.sub(r'tagfile doxygen_version="[^"]+" doxygen_gitid="[^"]+"','tagfile doxygen_version="" doxygen_gitid=""',data)
                         data = re.sub(r'xsd" version="[0-9.-]+"','xsd" version=""',data).rstrip('\n')
                     else:
                         msg += ('Failed to run %s on the doxygen output file %s' % (self.args.xmllint,self.test_out),)
