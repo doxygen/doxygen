@@ -227,31 +227,15 @@ function initDropdownMenu() {
     
     if (!fitsAbove || !fitsBelow) {
       // Submenu doesn't fit - try to adjust position
-      if (!fitsBelow && fitsAbove) {
-        // Overflows bottom, try to shift up
-        const overflow = submenuBottom - viewport.height;
-        const newTop = Math.max(0, -overflow);
-        submenu.style.top = newTop + 'px';
+      // Overflows bottom, try to shift up
+      const overflow = submenuBottom - viewport.height;
+      const newTop = Math.max(0, submenuTop-overflow)-submenuTop;
+      submenu.style.top = newTop + 'px';
         
-        // Re-check after adjustment
-        const adjustedRect = submenu.getBoundingClientRect();
-        if (adjustedRect.height > viewport.height) {
-          // Still doesn't fit - enable scrolling
-          enableSubmenuScrolling(submenu, link);
-        }
-      } else if (!fitsAbove && fitsBelow) {
-        // Overflows top, shift down
-        const overflow = -submenuTop;
-        submenu.style.top = overflow + 'px';
-        
-        // Re-check after adjustment
-        const adjustedRect = submenu.getBoundingClientRect();
-        if (adjustedRect.height > viewport.height) {
-          // Still doesn't fit - enable scrolling
-          enableSubmenuScrolling(submenu, link);
-        }
-      } else {
-        // Doesn't fit either way - enable scrolling
+      // Re-check after adjustment
+      const adjustedRect = submenu.getBoundingClientRect();
+      if (adjustedRect.height > viewport.height) {
+        // Still doesn't fit - enable scrolling
         enableSubmenuScrolling(submenu, link);
       }
     }
@@ -280,18 +264,18 @@ function initDropdownMenu() {
     // Create scroll arrows
     const scrollUpArrow = document.createElement('div');
     scrollUpArrow.className = 'submenu-scroll-arrow submenu-scroll-up';
-    scrollUpArrow.innerHTML = '<span>▲</span>';
-    scrollUpArrow.style.cssText = 'position:absolute;top:0;left:0;right:0;height:30px;background:linear-gradient(to bottom,#444,transparent);text-align:center;line-height:30px;color:#fff;cursor:pointer;z-index:1000;display:none;';
+    scrollUpArrow.innerHTML = '<span class="scroll-up-arrow"></span>';//'<span>▲</span>';
+    scrollUpArrow.style.cssText = 'position:absolute;top:0;left:0;right:0;height:30px;background:transparent;text-align:center;line-height:30px;color:#fff;cursor:pointer;z-index:1000;display:none;';
     
     const scrollDownArrow = document.createElement('div');
     scrollDownArrow.className = 'submenu-scroll-arrow submenu-scroll-down';
-    scrollDownArrow.innerHTML = '<span>▼</span>';
-    scrollDownArrow.style.cssText = 'position:absolute;bottom:0;left:0;right:0;height:30px;background:linear-gradient(to top,#444,transparent);text-align:center;line-height:30px;color:#fff;cursor:pointer;z-index:1000;';
+    scrollDownArrow.innerHTML = '<span class="scroll-down-arrow"></span>';
+    scrollDownArrow.style.cssText = 'position:absolute;bottom:0;left:0;right:0;height:30px;background:transparent;text-align:center;line-height:30px;color:#fff;cursor:pointer;z-index:1000;';
     
     // Create wrapper for submenu content
     const scrollWrapper = document.createElement('div');
     scrollWrapper.className = 'submenu-scroll-wrapper';
-    scrollWrapper.style.cssText = 'height:100%;overflow:hidden;position:relative;';
+    scrollWrapper.style.cssText = 'height:100vh;overflow:hidden;position:relative;';
     
     // Move submenu children to wrapper
     while (submenu.firstChild) {
@@ -307,7 +291,7 @@ function initDropdownMenu() {
     let scrollInterval = null;
     
     function updateScrollArrows() {
-      const maxScroll = scrollWrapper.scrollHeight - scrollWrapper.clientHeight;
+      const maxScroll = scrollWrapper.scrollHeight - availableHeight;
       scrollUpArrow.style.display = scrollPosition > 0 ? 'block' : 'none';
       scrollDownArrow.style.display = scrollPosition < maxScroll ? 'block' : 'none';
     }
@@ -316,7 +300,7 @@ function initDropdownMenu() {
       if (scrollInterval) return;
       
       scrollInterval = setInterval(() => {
-        const maxScroll = scrollWrapper.scrollHeight - scrollWrapper.clientHeight;
+        const maxScroll = scrollWrapper.scrollHeight - availableHeight;
         
         if (direction === 'up') {
           scrollPosition = Math.max(0, scrollPosition - scrollStep);
