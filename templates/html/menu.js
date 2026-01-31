@@ -330,6 +330,37 @@ function initDropdownMenu() {
     scrollDownArrow.addEventListener('mouseenter', () => startScrolling('down'));
     scrollDownArrow.addEventListener('mouseleave', stopScrolling);
     
+    // Add mouse wheel scrolling support
+    scrollWrapper.addEventListener('wheel', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      const maxScroll = scrollWrapper.scrollHeight - availableHeight;
+      const wheelDelta = e.deltaY;
+      const scrollAmount = wheelDelta > 0 ? 30 : -30; // Scroll 30px per wheel tick
+      
+      scrollPosition = Math.max(0, Math.min(maxScroll, scrollPosition + scrollAmount));
+      scrollWrapper.scrollTop = scrollPosition;
+      updateScrollArrows();
+    });
+    
+    // Also add wheel event to submenu itself to catch events
+    submenu.addEventListener('wheel', function(e) {
+      // Only handle if scrolling is enabled
+      if (submenu.dataset.scrollEnabled) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        const maxScroll = scrollWrapper.scrollHeight - availableHeight;
+        const wheelDelta = e.deltaY;
+        const scrollAmount = wheelDelta > 0 ? 30 : -30;
+        
+        scrollPosition = Math.max(0, Math.min(maxScroll, scrollPosition + scrollAmount));
+        scrollWrapper.scrollTop = scrollPosition;
+        updateScrollArrows();
+      }
+    });
+    
     // Initial arrow state
     updateScrollArrows();
   }
