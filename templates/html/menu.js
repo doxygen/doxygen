@@ -48,55 +48,456 @@ function initMenu(relPath,treeview) {
     return result;
   }
 
-  $('#main-nav').children().first().prepend(makeTree(menudata,relPath,true));
-  searchBoxContents = $('#searchBoxPos2').html();
-  const $mainMenuState = $('#main-menu-state');
-  let prevWidth = 0;
-  const initResizableIfExists = function() {
-    if (typeof initResizableFunc==='function') initResizableFunc(treeview);
+  // Helper function for slideDown animation
+  function slideDown(element, duration, callback) {
+    if (element.dataset.animating) return;
+    element.dataset.animating = 'true';
+    
+    element.style.removeProperty('display');
+    let display = window.getComputedStyle(element).display;
+    if (display === 'none') display = 'block';
+    element.style.display = display;
+    const height = element.offsetHeight;
+    element.style.overflow = 'hidden';
+    element.style.height = 0;
+    element.style.paddingTop = 0;
+    element.style.paddingBottom = 0;
+    element.style.marginTop = 0;
+    element.style.marginBottom = 0;
+    element.offsetHeight; // force reflow
+    element.style.transitionProperty = 'height, margin, padding';
+    element.style.transitionDuration = duration + 'ms';
+    element.style.height = height + 'px';
+    element.style.removeProperty('padding-top');
+    element.style.removeProperty('padding-bottom');
+    element.style.removeProperty('margin-top');
+    element.style.removeProperty('margin-bottom');
+    window.setTimeout(() => {
+      element.style.removeProperty('height');
+      element.style.removeProperty('overflow');
+      element.style.removeProperty('transition-duration');
+      element.style.removeProperty('transition-property');
+      delete element.dataset.animating;
+      if (callback) callback();
+    }, duration);
   }
-  if ($mainMenuState.length) {
+
+  // Helper function for slideUp animation
+  function slideUp(element, duration, callback) {
+    if (element.dataset.animating) return;
+    element.dataset.animating = 'true';
+    
+    element.style.transitionProperty = 'height, margin, padding';
+    element.style.transitionDuration = duration + 'ms';
+    element.style.height = element.offsetHeight + 'px';
+    element.offsetHeight; // force reflow
+    element.style.overflow = 'hidden';
+    element.style.height = 0;
+    element.style.paddingTop = 0;
+    element.style.paddingBottom = 0;
+    element.style.marginTop = 0;
+    element.style.marginBottom = 0;
+    window.setTimeout(() => {
+      element.style.display = 'none';
+      element.style.removeProperty('height');
+      element.style.removeProperty('padding-top');
+      element.style.removeProperty('padding-bottom');
+      element.style.removeProperty('margin-top');
+      element.style.removeProperty('margin-bottom');
+      element.style.removeProperty('overflow');
+      element.style.removeProperty('transition-duration');
+      element.style.removeProperty('transition-property');
+      delete element.dataset.animating;
+      if (callback) callback();
+    }, duration);
+  }
+
+  const mainNav = document.getElementById('main-nav');
+  if (mainNav && mainNav.children.length > 0) {
+    const firstChild = mainNav.children[0];
+    firstChild.insertAdjacentHTML('afterbegin', makeTree(menudata, relPath, true));
+  }
+
+  const searchBoxPos2 = document.getElementById('searchBoxPos2');
+  let searchBoxContents = searchBoxPos2 ? searchBoxPos2.innerHTML : '';
+  const mainMenuState = document.getElementById('main-menu-state');
+  let prevWidth = 0;
+  
+  const initResizableIfExists = function() {
+    if (typeof initResizableFunc === 'function') initResizableFunc(treeview);
+  }
+
+  if (mainMenuState) {
+    const mainMenu = document.getElementById('main-menu');
+    const searchBoxPos1 = document.getElementById('searchBoxPos1');
+
     // animate mobile menu
-    $mainMenuState.change(function() {
-      const $menu = $('#main-menu');
-      let options = { duration: 250, step: initResizableIfExists };
+    mainMenuState.addEventListener('change', function() {
       if (this.checked) {
-        options['complete'] = () => $menu.css('display', 'block');
-        $menu.hide().slideDown(options);
+        slideDown(mainMenu, 250, () => {
+          mainMenu.style.display = 'block';
+          initResizableIfExists();
+        });
       } else {
-        options['complete'] = () => $menu.css('display', 'none');
-        $menu.show().slideUp(options);
+        slideUp(mainMenu, 250, () => {
+          mainMenu.style.display = 'none';
+        });
       }
     });
+
     // set default menu visibility
     const resetState = function() {
-      const $menu = $('#main-menu');
-      const newWidth = $(window).outerWidth();
-      if (newWidth!=prevWidth) {
-        if ($(window).outerWidth()<768) {
-          $mainMenuState.prop('checked',false); $menu.hide();
-          $('#searchBoxPos2').empty();
-          $('#searchBoxPos2').hide();
-          $('#searchBoxPos1').html(searchBoxContents);
-          $('#searchBoxPos1').show();
+      const newWidth = window.innerWidth;
+      if (newWidth !== prevWidth) {
+        if (newWidth < 768) {
+          mainMenuState.checked = false;
+          mainMenu.style.display = 'none';
+          if (searchBoxPos2) {
+            searchBoxPos2.innerHTML = '';
+            searchBoxPos2.style.display = 'none';
+          }
+          if (searchBoxPos1) {
+            searchBoxPos1.innerHTML = searchBoxContents;
+            searchBoxPos1.style.display = '';
+          }
         } else {
-          $menu.show();
-          $('#searchBoxPos1').empty();
-          $('#searchBoxPos1').hide();
-          $('#searchBoxPos2').html(searchBoxContents);
-          $('#searchBoxPos2').show();
+          mainMenu.style.display = '';
+          if (searchBoxPos1) {
+            searchBoxPos1.innerHTML = '';
+            searchBoxPos1.style.display = 'none';
+          }
+          if (searchBoxPos2) {
+            searchBoxPos2.innerHTML = searchBoxContents;
+            searchBoxPos2.style.display = '';
+          }
         }
-        if (typeof searchBox!=='undefined') {
+        if (typeof searchBox !== 'undefined') {
           searchBox.CloseResultsWindow();
         }
         prevWidth = newWidth;
       }
     }
-    $(window).ready(function() { resetState(); initResizableIfExists(); });
-    $(window).resize(resetState);
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', function() {
+        resetState();
+        initResizableIfExists();
+      });
+    } else {
+      resetState();
+      initResizableIfExists();
+    }
+    window.addEventListener('resize', resetState);
   } else {
     initResizableIfExists();
   }
-  $('#main-menu').smartmenus();
+
+  // Initialize dropdown menu behavior (replaces smartmenus)
+  initDropdownMenu();
+}
+
+// Dropdown menu functionality to replace smartmenus
+function initDropdownMenu() {
+  const mainMenu = document.getElementById('main-menu');
+  if (!mainMenu) return;
+
+  const menuItems = mainMenu.querySelectorAll('li');
+  let isMobile = () => window.innerWidth < 768;
+  
+  // Helper function to position nested submenu with viewport checking
+  function positionNestedSubmenu(submenu, link) {
+    const viewport = {
+      height: window.innerHeight,
+      scrollY: window.scrollY
+    };
+    
+    // Set initial position - top aligned with parent (next to arrow)
+    submenu.style.top = '0';
+    submenu.style.marginLeft = link.offsetWidth + 'px';
+    
+    // Get submenu dimensions and position
+    const submenuRect = submenu.getBoundingClientRect();
+    const submenuHeight = submenuRect.height;
+    const submenuTop = submenuRect.top;
+    const submenuBottom = submenuRect.bottom;
+    
+    // Check if submenu fits in viewport
+    const fitsAbove = submenuTop >= 0;
+    const fitsBelow = submenuBottom <= viewport.height;
+    
+    if (!fitsAbove || !fitsBelow) {
+      // Submenu doesn't fit - try to adjust position
+      // Overflows bottom, try to shift up
+      const overflow = submenuBottom - viewport.height;
+      const newTop = Math.max(0, submenuTop-overflow)-submenuTop;
+      submenu.style.top = newTop + 'px';
+        
+      // Re-check after adjustment
+      const adjustedRect = submenu.getBoundingClientRect();
+      if (adjustedRect.height > viewport.height) {
+        // Still doesn't fit - enable scrolling
+        enableSubmenuScrolling(submenu, link);
+      }
+    }
+  }
+  
+  // Helper function to enable scrolling for tall submenus
+  function enableSubmenuScrolling(submenu, link) {
+    // Check if scroll arrows already exist
+    if (submenu.dataset.scrollEnabled) return;
+    
+    submenu.dataset.scrollEnabled = 'true';
+    
+    const viewport = {
+      height: window.innerHeight,
+      scrollY: window.scrollY
+    };
+    
+    // Position submenu to fill available viewport space
+    const parentRect = link.getBoundingClientRect();
+    const availableHeight = viewport.height - 40; // Leave some margin
+    
+    submenu.style.maxHeight = availableHeight + 'px';
+    submenu.style.overflow = 'hidden';
+    submenu.style.position = 'absolute';
+    
+    // Create scroll arrows
+    const scrollUpArrow = document.createElement('div');
+    scrollUpArrow.className = 'submenu-scroll-arrow submenu-scroll-up';
+    scrollUpArrow.innerHTML = '<span class="scroll-up-arrow"></span>';//'<span>▲</span>';
+    scrollUpArrow.style.cssText = 'position:absolute;top:0;left:0;right:0;height:30px;background:transparent;text-align:center;line-height:30px;color:#fff;cursor:pointer;z-index:1000;display:none;';
+    
+    const scrollDownArrow = document.createElement('div');
+    scrollDownArrow.className = 'submenu-scroll-arrow submenu-scroll-down';
+    scrollDownArrow.innerHTML = '<span class="scroll-down-arrow"></span>';
+    scrollDownArrow.style.cssText = 'position:absolute;bottom:0;left:0;right:0;height:30px;background:transparent;text-align:center;line-height:30px;color:#fff;cursor:pointer;z-index:1000;';
+    
+    // Create wrapper for submenu content
+    const scrollWrapper = document.createElement('div');
+    scrollWrapper.className = 'submenu-scroll-wrapper';
+    scrollWrapper.style.cssText = 'height:100vh;overflow:hidden;position:relative;';
+    
+    // Move submenu children to wrapper
+    while (submenu.firstChild) {
+      scrollWrapper.appendChild(submenu.firstChild);
+    }
+    
+    submenu.appendChild(scrollUpArrow);
+    submenu.appendChild(scrollWrapper);
+    submenu.appendChild(scrollDownArrow);
+    
+    let scrollPosition = 0;
+    const scrollStep = 5;
+    let scrollInterval = null;
+    
+    function updateScrollArrows() {
+      const maxScroll = scrollWrapper.scrollHeight - availableHeight;
+      scrollUpArrow.style.display = scrollPosition > 0 ? 'block' : 'none';
+      scrollDownArrow.style.display = scrollPosition < maxScroll ? 'block' : 'none';
+    }
+    
+    function startScrolling(direction) {
+      if (scrollInterval) return;
+      
+      scrollInterval = setInterval(() => {
+        const maxScroll = scrollWrapper.scrollHeight - availableHeight;
+        
+        if (direction === 'up') {
+          scrollPosition = Math.max(0, scrollPosition - scrollStep);
+        } else {
+          scrollPosition = Math.min(maxScroll, scrollPosition + scrollStep);
+        }
+        
+        scrollWrapper.scrollTop = scrollPosition;
+        updateScrollArrows();
+        
+        if ((direction === 'up' && scrollPosition === 0) || 
+            (direction === 'down' && scrollPosition === maxScroll)) {
+          stopScrolling();
+        }
+      }, 20);
+    }
+    
+    function stopScrolling() {
+      if (scrollInterval) {
+        clearInterval(scrollInterval);
+        scrollInterval = null;
+      }
+    }
+    
+    scrollUpArrow.addEventListener('mouseenter', () => startScrolling('up'));
+    scrollUpArrow.addEventListener('mouseleave', stopScrolling);
+    scrollDownArrow.addEventListener('mouseenter', () => startScrolling('down'));
+    scrollDownArrow.addEventListener('mouseleave', stopScrolling);
+    
+    // Add mouse wheel scrolling support
+    scrollWrapper.addEventListener('wheel', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      const maxScroll = scrollWrapper.scrollHeight - availableHeight;
+      const wheelDelta = e.deltaY;
+      const scrollAmount = wheelDelta > 0 ? 30 : -30; // Scroll 30px per wheel tick
+      
+      scrollPosition = Math.max(0, Math.min(maxScroll, scrollPosition + scrollAmount));
+      scrollWrapper.scrollTop = scrollPosition;
+      updateScrollArrows();
+    });
+    
+    // Also add wheel event to submenu itself to catch events
+    submenu.addEventListener('wheel', function(e) {
+      // Only handle if scrolling is enabled
+      if (submenu.dataset.scrollEnabled) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        const maxScroll = scrollWrapper.scrollHeight - availableHeight;
+        const wheelDelta = e.deltaY;
+        const scrollAmount = wheelDelta > 0 ? 30 : -30;
+        
+        scrollPosition = Math.max(0, Math.min(maxScroll, scrollPosition + scrollAmount));
+        scrollWrapper.scrollTop = scrollPosition;
+        updateScrollArrows();
+      }
+    });
+    
+    // Initial arrow state
+    updateScrollArrows();
+  }
+  
+  // Helper function to clean up scroll arrows
+  function disableSubmenuScrolling(submenu) {
+    if (!submenu.dataset.scrollEnabled) return;
+    
+    delete submenu.dataset.scrollEnabled;
+    
+    // Find and remove scroll elements
+    const scrollArrows = submenu.querySelectorAll('.submenu-scroll-arrow');
+    const scrollWrapper = submenu.querySelector('.submenu-scroll-wrapper');
+    
+    if (scrollWrapper) {
+      // Move children back to submenu
+      while (scrollWrapper.firstChild) {
+        submenu.appendChild(scrollWrapper.firstChild);
+      }
+      scrollWrapper.remove();
+    }
+    
+    scrollArrows.forEach(arrow => arrow.remove());
+    
+    // Reset styles
+    submenu.style.maxHeight = '';
+    submenu.style.overflow = '';
+  }
+  
+  menuItems.forEach(item => {
+    const submenu = item.querySelector('ul');
+    if (submenu) {
+      const link = item.querySelector('a');
+      if (link) {
+        // Add class and ARIA attributes for accessibility
+        link.classList.add('has-submenu');
+        link.setAttribute('aria-haspopup', 'true');
+        link.setAttribute('aria-expanded', 'false');
+        
+        // Add sub-arrow indicator
+        const span = document.createElement('span');
+        span.classList.add('sub-arrow');
+        link.append(span);
+        
+        // Check if this is a level 2+ submenu (nested within another dropdown)
+        const isNestedSubmenu = item.parentElement && item.parentElement.id !== 'main-menu';
+        
+        // Desktop: show on hover
+        item.addEventListener('mouseenter', function() {
+          if (!isMobile()) {
+            submenu.style.display = 'block';
+            // Only apply positioning for nested submenus (level 2+)
+            if (isNestedSubmenu) {
+              positionNestedSubmenu(submenu, link);
+            }
+            link.setAttribute('aria-expanded', 'true');
+          }
+        });
+        
+        item.addEventListener('mouseleave', function() {
+          if (!isMobile()) {
+            submenu.style.display = 'none';
+            link.setAttribute('aria-expanded', 'false');
+            // Clean up scrolling if enabled
+            disableSubmenuScrolling(submenu);
+          }
+        });
+
+        // Mobile/Touch: toggle on click
+        link.addEventListener('click', function(e) {
+          if (isMobile()) {
+            e.preventDefault();
+            const isExpanded = link.getAttribute('aria-expanded') === 'true';
+            if (isExpanded) {
+              submenu.style.display = 'none';
+              link.setAttribute('aria-expanded', 'false');
+              disableSubmenuScrolling(submenu);
+            } else {
+              submenu.style.display = 'block';
+              // Only apply positioning for nested submenus (level 2+)
+              if (isNestedSubmenu) {
+                positionNestedSubmenu(submenu, link);
+              }
+              link.setAttribute('aria-expanded', 'true');
+            }
+          }
+        });
+
+        // Keyboard navigation
+        // On desktop: Enter/Space follows link, Escape closes dropdown
+        // On mobile: Enter/Space toggles dropdown, Escape closes it
+        link.addEventListener('keydown', function(e) {
+          if (e.key === 'Enter' || e.key === ' ') {
+            if (isMobile()) {
+              // Mobile: toggle dropdown
+              e.preventDefault();
+              const isExpanded = link.getAttribute('aria-expanded') === 'true';
+              if (isExpanded) {
+                submenu.style.display = 'none';
+                link.setAttribute('aria-expanded', 'false');
+                disableSubmenuScrolling(submenu);
+              } else {
+                submenu.style.display = 'block';
+                // Only apply positioning for nested submenus (level 2+)
+                if (isNestedSubmenu) {
+                  positionNestedSubmenu(submenu, link);
+                }
+                link.setAttribute('aria-expanded', 'true');
+              }
+            }
+            // Desktop: let the link navigate normally, but show submenu on focus
+            else if (e.key === ' ') {
+              // Space bar: toggle dropdown without following link
+              e.preventDefault();
+              const isExpanded = link.getAttribute('aria-expanded') === 'true';
+              if (isExpanded) {
+                submenu.style.display = 'none';
+                link.setAttribute('aria-expanded', 'false');
+                disableSubmenuScrolling(submenu);
+              } else {
+                submenu.style.display = 'block';
+                // Only apply positioning for nested submenus (level 2+)
+                if (isNestedSubmenu) {
+                  positionNestedSubmenu(submenu, link);
+                }
+                link.setAttribute('aria-expanded', 'true');
+              }
+            }
+          } else if (e.key === 'Escape') {
+            submenu.style.display = 'none';
+            link.setAttribute('aria-expanded', 'false');
+            disableSubmenuScrolling(submenu);
+            link.focus();
+          }
+        });
+      }
+    }
+  });
 }
 /* @license-end */
