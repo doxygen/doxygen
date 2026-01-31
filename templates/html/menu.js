@@ -219,11 +219,17 @@ function initDropdownMenu() {
         span.classList.add('sub-arrow');
         link.append(span);
         
+        // Check if this is a level 2+ submenu (nested within another dropdown)
+        const isNestedSubmenu = item.parentElement && item.parentElement.id !== 'main-menu';
+        
         // Desktop: show on hover
         item.addEventListener('mouseenter', function() {
           if (!isMobile()) {
             submenu.style.display = 'block';
-            submenu.style.marginLeft = link.offsetWidth + 'px';
+            // Only apply marginLeft for nested submenus (level 2+)
+            if (isNestedSubmenu) {
+              submenu.style.marginLeft = link.offsetWidth + 'px';
+            }
             link.setAttribute('aria-expanded', 'true');
           }
         });
@@ -245,7 +251,10 @@ function initDropdownMenu() {
               link.setAttribute('aria-expanded', 'false');
             } else {
               submenu.style.display = 'block';
-              submenu.style.marginLeft = link.offsetWidth + 'px';
+              // Only apply marginLeft for nested submenus (level 2+)
+              if (isNestedSubmenu) {
+                submenu.style.marginLeft = link.offsetWidth + 'px';
+              }
               link.setAttribute('aria-expanded', 'true');
             }
           }
@@ -265,7 +274,10 @@ function initDropdownMenu() {
                 link.setAttribute('aria-expanded', 'false');
               } else {
                 submenu.style.display = 'block';
-                submenu.style.marginLeft = link.offsetWidth + 'px';
+                // Only apply marginLeft for nested submenus (level 2+)
+                if (isNestedSubmenu) {
+                  submenu.style.marginLeft = link.offsetWidth + 'px';
+                }
                 link.setAttribute('aria-expanded', 'true');
               }
             }
@@ -279,7 +291,10 @@ function initDropdownMenu() {
                 link.setAttribute('aria-expanded', 'false');
               } else {
                 submenu.style.display = 'block';
-                submenu.style.marginLeft = link.offsetWidth + 'px';
+                // Only apply marginLeft for nested submenus (level 2+)
+                if (isNestedSubmenu) {
+                  submenu.style.marginLeft = link.offsetWidth + 'px';
+                }
                 link.setAttribute('aria-expanded', 'true');
               }
             }
