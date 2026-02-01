@@ -408,24 +408,50 @@ function initDropdownMenu() {
         // Check if this is a level 2+ submenu (nested within another dropdown)
         const isNestedSubmenu = item.parentElement && item.parentElement.id !== 'main-menu';
 
+        // Timeout management for smooth menu navigation
+        let showTimeout = null;
+        let hideTimeout = null;
+        const SHOW_DELAY = 250;  // 250ms delay before showing
+        const HIDE_DELAY = 500;  // 500ms delay before hiding
+
         // Desktop: show on hover
         item.addEventListener('mouseenter', function() {
           if (!isMobile()) {
-            submenu.style.display = 'block';
-            // Only apply positioning for nested submenus (level 2+)
-            if (isNestedSubmenu) {
-              positionNestedSubmenu(submenu, link);
+            // Clear any pending hide timeout
+            if (hideTimeout) {
+              clearTimeout(hideTimeout);
+              hideTimeout = null;
             }
-            link.setAttribute('aria-expanded', 'true');
+            
+            // Set show timeout
+            showTimeout = setTimeout(() => {
+              submenu.style.display = 'block';
+              // Only apply positioning for nested submenus (level 2+)
+              if (isNestedSubmenu) {
+                positionNestedSubmenu(submenu, link);
+              }
+              link.setAttribute('aria-expanded', 'true');
+              showTimeout = null;
+            }, SHOW_DELAY);
           }
         });
 
         item.addEventListener('mouseleave', function() {
           if (!isMobile()) {
-            submenu.style.display = 'none';
-            link.setAttribute('aria-expanded', 'false');
-            // Clean up scrolling if enabled
-            disableSubmenuScrolling(submenu);
+            // Clear any pending show timeout
+            if (showTimeout) {
+              clearTimeout(showTimeout);
+              showTimeout = null;
+            }
+            
+            // Set hide timeout
+            hideTimeout = setTimeout(() => {
+              submenu.style.display = 'none';
+              link.setAttribute('aria-expanded', 'false');
+              // Clean up scrolling if enabled
+              disableSubmenuScrolling(submenu);
+              hideTimeout = null;
+            }, HIDE_DELAY);
           }
         });
 
