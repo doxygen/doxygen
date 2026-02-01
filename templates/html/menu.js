@@ -23,6 +23,56 @@
  @licend  The above is the entire license notice for the JavaScript code in this file
  */
 function initMenu(relPath,treeview) {
+
+  // Helper function for slideDown animation
+  function slideDown(element, duration, callback) {
+    if (element.dataset.animating) return;
+    element.dataset.animating = 'true';
+
+    element.style.removeProperty('display');
+    let display = window.getComputedStyle(element).display;
+    if (display === 'none') display = 'block';
+    element.style.display = display;
+    const height = element.offsetHeight;
+    element.style.overflow = 'hidden';
+    element.style.height = 0;
+    element.offsetHeight; // force reflow
+    element.style.transitionProperty = 'height';
+    element.style.transitionDuration = duration + 'ms';
+    element.style.height = height + 'px';
+    window.setTimeout(() => {
+      element.style.removeProperty('height');
+      element.style.removeProperty('overflow');
+      element.style.removeProperty('transition-duration');
+      element.style.removeProperty('transition-property');
+      delete element.dataset.animating;
+      if (callback) callback();
+    }, duration);
+  }
+
+  // Helper function for slideUp animation
+  function slideUp(element, duration, callback) {
+    if (element.dataset.animating) return;
+    element.dataset.animating = 'true';
+
+    element.style.transitionProperty = 'height';
+    element.style.transitionDuration = duration + 'ms';
+    element.style.height = element.offsetHeight + 'px';
+    element.offsetHeight; // force reflow
+    element.style.overflow = 'hidden';
+    element.style.height = 0;
+    window.setTimeout(() => {
+      element.style.display = 'none';
+      element.style.removeProperty('height');
+      element.style.removeProperty('overflow');
+      element.style.removeProperty('transition-duration');
+      element.style.removeProperty('transition-property');
+      delete element.dataset.animating;
+      if (callback) callback();
+    }, duration);
+  }
+
+  // Helper to create the menu tree structure
   function makeTree(data,relPath,topLevel=false) {
     let result='';
     if ('children' in data) {
@@ -48,70 +98,6 @@ function initMenu(relPath,treeview) {
     return result;
   }
 
-  // Helper function for slideDown animation
-  function slideDown(element, duration, callback) {
-    if (element.dataset.animating) return;
-    element.dataset.animating = 'true';
-
-    element.style.removeProperty('display');
-    let display = window.getComputedStyle(element).display;
-    if (display === 'none') display = 'block';
-    element.style.display = display;
-    const height = element.offsetHeight;
-    element.style.overflow = 'hidden';
-    element.style.height = 0;
-    element.style.paddingTop = 0;
-    element.style.paddingBottom = 0;
-    element.style.marginTop = 0;
-    element.style.marginBottom = 0;
-    element.offsetHeight; // force reflow
-    element.style.transitionProperty = 'height, margin, padding';
-    element.style.transitionDuration = duration + 'ms';
-    element.style.height = height + 'px';
-    element.style.removeProperty('padding-top');
-    element.style.removeProperty('padding-bottom');
-    element.style.removeProperty('margin-top');
-    element.style.removeProperty('margin-bottom');
-    window.setTimeout(() => {
-      element.style.removeProperty('height');
-      element.style.removeProperty('overflow');
-      element.style.removeProperty('transition-duration');
-      element.style.removeProperty('transition-property');
-      delete element.dataset.animating;
-      if (callback) callback();
-    }, duration);
-  }
-
-  // Helper function for slideUp animation
-  function slideUp(element, duration, callback) {
-    if (element.dataset.animating) return;
-    element.dataset.animating = 'true';
-
-    element.style.transitionProperty = 'height, margin, padding';
-    element.style.transitionDuration = duration + 'ms';
-    element.style.height = element.offsetHeight + 'px';
-    element.offsetHeight; // force reflow
-    element.style.overflow = 'hidden';
-    element.style.height = 0;
-    element.style.paddingTop = 0;
-    element.style.paddingBottom = 0;
-    element.style.marginTop = 0;
-    element.style.marginBottom = 0;
-    window.setTimeout(() => {
-      element.style.display = 'none';
-      element.style.removeProperty('height');
-      element.style.removeProperty('padding-top');
-      element.style.removeProperty('padding-bottom');
-      element.style.removeProperty('margin-top');
-      element.style.removeProperty('margin-bottom');
-      element.style.removeProperty('overflow');
-      element.style.removeProperty('transition-duration');
-      element.style.removeProperty('transition-property');
-      delete element.dataset.animating;
-      if (callback) callback();
-    }, duration);
-  }
-
   const mainNav = document.getElementById('main-nav');
   if (mainNav && mainNav.children.length > 0) {
     const firstChild = mainNav.children[0];
@@ -131,7 +117,7 @@ function initMenu(relPath,treeview) {
     const mainMenu = document.getElementById('main-menu');
     const searchBoxPos1 = document.getElementById('searchBoxPos1');
 
-    // animate mobile menu
+    // animate mobile main menu
     mainMenuState.addEventListener('change', function() {
       if (this.checked) {
         slideDown(mainMenu, 250, () => {
@@ -192,370 +178,346 @@ function initMenu(relPath,treeview) {
     initResizableIfExists();
   }
 
-  // Initialize dropdown menu behavior (replaces smartmenus)
-  initDropdownMenu();
-}
+  // Dropdown menu functionality to replace smartmenus
+  function initDropdownMenu() {
+    const mainMenu = document.getElementById('main-menu');
+    if (!mainMenu) return;
 
-// Dropdown menu functionality to replace smartmenus
-function initDropdownMenu() {
-  const mainMenu = document.getElementById('main-menu');
-  if (!mainMenu) return;
+    const menuItems = mainMenu.querySelectorAll('li');
+    let isMobile = () => window.innerWidth < 768;
 
-  const menuItems = mainMenu.querySelectorAll('li');
-  let isMobile = () => window.innerWidth < 768;
+    // Helper function to position nested submenu with viewport checking
+    function positionNestedSubmenu(submenu, link) {
+      const viewport = {
+        height: window.innerHeight,
+        scrollY: window.scrollY
+      };
 
-  // Helper function to position nested submenu with viewport checking
-  function positionNestedSubmenu(submenu, link) {
-    const viewport = {
-      height: window.innerHeight,
-      scrollY: window.scrollY
-    };
+      // Set initial position - top aligned with parent (next to arrow)
+      submenu.style.top = '0';
+      if (isMobile()) {
+        submenu.style.marginLeft = 0;
+      } else {
+        submenu.style.marginLeft = link.offsetWidth + 'px';
+      }
 
-    // Set initial position - top aligned with parent (next to arrow)
-    submenu.style.top = '0';
-    submenu.style.marginLeft = link.offsetWidth + 'px';
+      // Get submenu dimensions and position
+      const submenuRect = submenu.getBoundingClientRect();
+      const submenuHeight = submenuRect.height;
+      const submenuTop = submenuRect.top;
+      const submenuBottom = submenuRect.bottom+1; // add space for border
 
-    // Get submenu dimensions and position
-    const submenuRect = submenu.getBoundingClientRect();
-    const submenuHeight = submenuRect.height;
-    const submenuTop = submenuRect.top;
-    const submenuBottom = submenuRect.bottom+1; // add space for border
+      // Check if submenu fits in viewport
+      const fitsAbove = submenuTop >= 0;
+      const fitsBelow = submenuBottom <= viewport.height;
 
-    // Check if submenu fits in viewport
-    const fitsAbove = submenuTop >= 0;
-    const fitsBelow = submenuBottom <= viewport.height;
+      if (!fitsAbove || !fitsBelow) {
+        // Submenu doesn't fit - try to adjust position
+        // Overflows bottom, try to shift up
+        const overflow = submenuBottom - viewport.height;
+        const newTop = Math.max(0, submenuTop-overflow)-submenuTop;
+        submenu.style.top = newTop + 'px';
 
-    if (!fitsAbove || !fitsBelow) {
-      // Submenu doesn't fit - try to adjust position
-      // Overflows bottom, try to shift up
-      const overflow = submenuBottom - viewport.height;
-      const newTop = Math.max(0, submenuTop-overflow)-submenuTop;
-      submenu.style.top = newTop + 'px';
-
-      // Re-check after adjustment
-      const adjustedRect = submenu.getBoundingClientRect();
-      if (adjustedRect.height > viewport.height) {
-        // Still doesn't fit - enable scrolling
-        enableSubmenuScrolling(submenu, link);
+        // Re-check after adjustment
+        const adjustedRect = submenu.getBoundingClientRect();
+        if (adjustedRect.height > viewport.height) {
+          // Still doesn't fit - enable scrolling
+          enableSubmenuScrolling(submenu, link);
+        }
       }
     }
-  }
 
-  // Helper function to enable scrolling for tall submenus
-  function enableSubmenuScrolling(submenu, link) {
-    // Check if scroll arrows already exist
-    if (submenu.dataset.scrollEnabled) return;
+    // Helper function to enable scrolling for tall submenus
+    function enableSubmenuScrolling(submenu, link) {
+      // Check if scroll arrows already exist
+      if (submenu.dataset.scrollEnabled) return;
 
-    submenu.dataset.scrollEnabled = 'true';
+      submenu.dataset.scrollEnabled = 'true';
 
-    const viewport = {
-      height: window.innerHeight,
-      scrollY: window.scrollY
-    };
+      const viewport = {
+        height: window.innerHeight,
+        scrollY: window.scrollY
+      };
 
-    // Position submenu to fill available viewport space
-    const parentRect = link.getBoundingClientRect();
-    const availableHeight = viewport.height - 40; // Leave some margin
+      // Position submenu to fill available viewport space
+      const parentRect = link.getBoundingClientRect();
+      const availableHeight = viewport.height - 2; // Leave some margin
 
-    submenu.style.maxHeight = availableHeight + 'px';
-    submenu.style.overflow = 'hidden';
-    submenu.style.position = 'absolute';
+      submenu.style.maxHeight = availableHeight + 'px';
+      submenu.style.overflow = 'hidden';
+      submenu.style.position = 'absolute';
 
-    // Create scroll arrows
-    const scrollUpArrow = document.createElement('div');
-    scrollUpArrow.className = 'submenu-scroll-arrow submenu-scroll-up';
-    scrollUpArrow.innerHTML = '<span class="scroll-up-arrow"></span>';//'<span>▲</span>';
-    scrollUpArrow.style.cssText = 'position:absolute;top:0;left:0;right:0;height:30px;background:transparent;text-align:center;line-height:30px;color:#fff;cursor:pointer;z-index:1000;display:none;';
+      // Create scroll arrows
+      const scrollUpArrow = document.createElement('div');
+      scrollUpArrow.className = 'submenu-scroll-arrow submenu-scroll-up';
+      scrollUpArrow.innerHTML = '<span class="scroll-up-arrow"></span>';//'<span>▲</span>';
+      scrollUpArrow.style.cssText = 'position:absolute;top:0;left:0;right:0;height:30px;background:transparent;text-align:center;line-height:30px;color:#fff;cursor:pointer;z-index:1000;display:none;';
 
-    const scrollDownArrow = document.createElement('div');
-    scrollDownArrow.className = 'submenu-scroll-arrow submenu-scroll-down';
-    scrollDownArrow.innerHTML = '<span class="scroll-down-arrow"></span>';
-    scrollDownArrow.style.cssText = 'position:absolute;bottom:0;left:0;right:0;height:30px;background:transparent;text-align:center;line-height:30px;color:#fff;cursor:pointer;z-index:1000;';
+      const scrollDownArrow = document.createElement('div');
+      scrollDownArrow.className = 'submenu-scroll-arrow submenu-scroll-down';
+      scrollDownArrow.innerHTML = '<span class="scroll-down-arrow"></span>';
+      scrollDownArrow.style.cssText = 'position:absolute;bottom:0;left:0;right:0;height:30px;background:transparent;text-align:center;line-height:30px;color:#fff;cursor:pointer;z-index:1000;';
 
-    // Create wrapper for submenu content
-    const scrollWrapper = document.createElement('div');
-    scrollWrapper.className = 'submenu-scroll-wrapper';
-    scrollWrapper.style.cssText = 'height:100vh;overflow:hidden;position:relative;';
+      // Create wrapper for submenu content
+      const scrollWrapper = document.createElement('div');
+      scrollWrapper.className = 'submenu-scroll-wrapper';
+      scrollWrapper.style.cssText = 'height:100vh;overflow:hidden;position:relative;';
 
-    // Move submenu children to wrapper
-    while (submenu.firstChild) {
-      scrollWrapper.appendChild(submenu.firstChild);
-    }
+      // Move submenu children to wrapper
+      while (submenu.firstChild) {
+        scrollWrapper.appendChild(submenu.firstChild);
+      }
 
-    submenu.appendChild(scrollUpArrow);
-    submenu.appendChild(scrollWrapper);
-    submenu.appendChild(scrollDownArrow);
+      submenu.appendChild(scrollUpArrow);
+      submenu.appendChild(scrollWrapper);
+      submenu.appendChild(scrollDownArrow);
 
-    let scrollPosition = 0;
-    const scrollStep = 5;
-    let scrollInterval = null;
+      let scrollPosition = 0;
+      const scrollStep = 5;
+      let scrollInterval = null;
 
-    function updateScrollArrows() {
-      const maxScroll = scrollWrapper.scrollHeight - availableHeight;
-      scrollUpArrow.style.display = scrollPosition > 0 ? 'block' : 'none';
-      scrollDownArrow.style.display = scrollPosition < maxScroll ? 'block' : 'none';
-    }
-
-    function startScrolling(direction) {
-      if (scrollInterval) return;
-
-      scrollInterval = setInterval(() => {
+      function updateScrollArrows() {
         const maxScroll = scrollWrapper.scrollHeight - availableHeight;
-
-        if (direction === 'up') {
-          scrollPosition = Math.max(0, scrollPosition - scrollStep);
-        } else {
-          scrollPosition = Math.min(maxScroll, scrollPosition + scrollStep);
-        }
-
-        scrollWrapper.scrollTop = scrollPosition;
-        updateScrollArrows();
-
-        if ((direction === 'up' && scrollPosition === 0) ||
-            (direction === 'down' && scrollPosition === maxScroll)) {
-          stopScrolling();
-        }
-      }, 20);
-    }
-
-    function stopScrolling() {
-      if (scrollInterval) {
-        clearInterval(scrollInterval);
-        scrollInterval = null;
+        scrollUpArrow.style.display = scrollPosition > 0 ? 'block' : 'none';
+        scrollDownArrow.style.display = scrollPosition < maxScroll ? 'block' : 'none';
       }
-    }
 
-    scrollUpArrow.addEventListener('mouseenter', () => startScrolling('up'));
-    scrollUpArrow.addEventListener('mouseleave', stopScrolling);
-    scrollDownArrow.addEventListener('mouseenter', () => startScrolling('down'));
-    scrollDownArrow.addEventListener('mouseleave', stopScrolling);
+      function startScrolling(direction) {
+        if (scrollInterval) return;
 
-    // Add mouse wheel scrolling support
-    scrollWrapper.addEventListener('wheel', function(e) {
-      e.preventDefault();
-      e.stopPropagation();
+        scrollInterval = setInterval(() => {
+          const maxScroll = scrollWrapper.scrollHeight - availableHeight;
 
-      const maxScroll = scrollWrapper.scrollHeight - availableHeight;
-      const wheelDelta = e.deltaY;
-      const scrollAmount = wheelDelta > 0 ? 30 : -30; // Scroll 30px per wheel tick
+          if (direction === 'up') {
+            scrollPosition = Math.max(0, scrollPosition - scrollStep);
+          } else {
+            scrollPosition = Math.min(maxScroll, scrollPosition + scrollStep);
+          }
 
-      scrollPosition = Math.max(0, Math.min(maxScroll, scrollPosition + scrollAmount));
-      scrollWrapper.scrollTop = scrollPosition;
-      updateScrollArrows();
-    });
+          scrollWrapper.scrollTop = scrollPosition;
+          updateScrollArrows();
 
-    // Also add wheel event to submenu itself to catch events
-    submenu.addEventListener('wheel', function(e) {
-      // Only handle if scrolling is enabled
-      if (submenu.dataset.scrollEnabled) {
+          if ((direction === 'up' && scrollPosition === 0) ||
+              (direction === 'down' && scrollPosition === maxScroll)) {
+            stopScrolling();
+          }
+        }, 20);
+      }
+
+      function stopScrolling() {
+        if (scrollInterval) {
+          clearInterval(scrollInterval);
+          scrollInterval = null;
+        }
+      }
+
+      scrollUpArrow.addEventListener('mouseenter', () => startScrolling('up'));
+      scrollUpArrow.addEventListener('mouseleave', stopScrolling);
+      scrollDownArrow.addEventListener('mouseenter', () => startScrolling('down'));
+      scrollDownArrow.addEventListener('mouseleave', stopScrolling);
+
+      // Add mouse wheel scrolling support
+      scrollWrapper.addEventListener('wheel', function(e) {
         e.preventDefault();
         e.stopPropagation();
 
         const maxScroll = scrollWrapper.scrollHeight - availableHeight;
         const wheelDelta = e.deltaY;
-        const scrollAmount = wheelDelta > 0 ? 30 : -30;
+        const scrollAmount = wheelDelta > 0 ? 30 : -30; // Scroll 30px per wheel tick
 
         scrollPosition = Math.max(0, Math.min(maxScroll, scrollPosition + scrollAmount));
         scrollWrapper.scrollTop = scrollPosition;
         updateScrollArrows();
-      }
-    });
+      });
 
-    // Initial arrow state
-    updateScrollArrows();
-  }
+      // Also add wheel event to submenu itself to catch events
+      submenu.addEventListener('wheel', function(e) {
+        // Only handle if scrolling is enabled
+        if (submenu.dataset.scrollEnabled) {
+          e.preventDefault();
+          e.stopPropagation();
 
-  // Helper function to clean up scroll arrows
-  function disableSubmenuScrolling(submenu) {
-    if (!submenu.dataset.scrollEnabled) return;
+          const maxScroll = scrollWrapper.scrollHeight - availableHeight;
+          const wheelDelta = e.deltaY;
+          const scrollAmount = wheelDelta > 0 ? 30 : -30;
 
-    delete submenu.dataset.scrollEnabled;
+          scrollPosition = Math.max(0, Math.min(maxScroll, scrollPosition + scrollAmount));
+          scrollWrapper.scrollTop = scrollPosition;
+          updateScrollArrows();
+        }
+      });
 
-    // Find and remove scroll elements
-    const scrollArrows = submenu.querySelectorAll('.submenu-scroll-arrow');
-    const scrollWrapper = submenu.querySelector('.submenu-scroll-wrapper');
-
-    if (scrollWrapper) {
-      // Move children back to submenu
-      while (scrollWrapper.firstChild) {
-        submenu.appendChild(scrollWrapper.firstChild);
-      }
-      scrollWrapper.remove();
+      // Initial arrow state
+      updateScrollArrows();
     }
 
-    scrollArrows.forEach(arrow => arrow.remove());
+    // Helper function to clean up scroll arrows
+    function disableSubmenuScrolling(submenu) {
+      if (!submenu.dataset.scrollEnabled) return;
 
-    // Reset styles
-    submenu.style.maxHeight = '';
-    submenu.style.overflow = '';
-  }
+      delete submenu.dataset.scrollEnabled;
 
-  menuItems.forEach(item => {
-    const submenu = item.querySelector('ul');
-    if (submenu) {
-      const link = item.querySelector('a');
-      if (link) {
-        // Add class and ARIA attributes for accessibility
-        link.classList.add('has-submenu');
-        link.setAttribute('aria-haspopup', 'true');
-        link.setAttribute('aria-expanded', 'false');
+      // Find and remove scroll elements
+      const scrollArrows = submenu.querySelectorAll('.submenu-scroll-arrow');
+      const scrollWrapper = submenu.querySelector('.submenu-scroll-wrapper');
 
-        // Add sub-arrow indicator
-        const span = document.createElement('span');
-        span.classList.add('sub-arrow');
-        link.append(span);
-
-        // Calculate nesting level for z-index
-        // Root menu (main-menu) is level 0, first submenus are level 1, etc.
-        let nestingLevel = 0;
-        let currentElement = item.parentElement;
-        while (currentElement && currentElement.id !== 'main-menu') {
-          if (currentElement.tagName === 'UL') {
-            nestingLevel++;
-          }
-          currentElement = currentElement.parentElement;
+      if (scrollWrapper) {
+        // Move children back to submenu
+        while (scrollWrapper.firstChild) {
+          submenu.appendChild(scrollWrapper.firstChild);
         }
-        
-        // Apply z-index based on nesting level
-        // This ensures child menus with shadows appear above parent menus
-        submenu.style.zIndex = nestingLevel + 1;
+        scrollWrapper.remove();
+      }
 
-        // Check if this is a level 2+ submenu (nested within another dropdown)
-        const isNestedSubmenu = item.parentElement && item.parentElement.id !== 'main-menu';
+      scrollArrows.forEach(arrow => arrow.remove());
 
-        // Timeout management for smooth menu navigation
-        let showTimeout = null;
-        let hideTimeout = null;
-        const SHOW_DELAY = 250;  // 250ms delay before showing
-        const HIDE_DELAY = 500;  // 500ms delay before hiding
+      // Reset styles
+      submenu.style.maxHeight = '';
+      submenu.style.overflow = '';
+    }
 
-        // Desktop: show on hover
-        item.addEventListener('mouseenter', function() {
-          if (!isMobile()) {
-            // Clear any pending hide timeout
-            if (hideTimeout) {
-              clearTimeout(hideTimeout);
-              hideTimeout = null;
+    menuItems.forEach(item => {
+      const submenu = item.querySelector('ul');
+      if (submenu) {
+        const link = item.querySelector('a');
+        if (link) {
+          // Add class and ARIA attributes for accessibility
+          link.classList.add('has-submenu');
+          link.setAttribute('aria-haspopup', 'true');
+          link.setAttribute('aria-expanded', 'false');
+
+          // Add sub-arrow indicator
+          const span = document.createElement('span');
+          span.classList.add('sub-arrow');
+          link.append(span);
+
+          // Calculate nesting level for z-index
+          // Root menu (main-menu) is level 0, first submenus are level 1, etc.
+          let nestingLevel = 0;
+          let currentElement = item.parentElement;
+          while (currentElement && currentElement.id !== 'main-menu') {
+            if (currentElement.tagName === 'UL') {
+              nestingLevel++;
             }
-            
-            // Set show timeout
-            showTimeout = setTimeout(() => {
-              // Hide all sibling menus at the same level before showing this one
-              const parentElement = item.parentElement;
-              if (parentElement) {
-                const siblings = parentElement.querySelectorAll(':scope > li');
-                siblings.forEach(sibling => {
-                  if (sibling !== item) {
-                    const siblingSubmenu = sibling.querySelector('ul');
-                    const siblingLink = sibling.querySelector('a');
-                    if (siblingSubmenu && siblingLink) {
-                      siblingSubmenu.style.display = 'none';
-                      siblingLink.setAttribute('aria-expanded', 'false');
-                      disableSubmenuScrolling(siblingSubmenu);
+            currentElement = currentElement.parentElement;
+          }
+
+          // Apply z-index based on nesting level
+          // This ensures child menus with shadows appear above parent menus
+          submenu.style.zIndex = nestingLevel + 1;
+
+          // Check if this is a level 2+ submenu (nested within another dropdown)
+          const isNestedSubmenu = item.parentElement && item.parentElement.id !== 'main-menu';
+
+          // Timeout management for smooth menu navigation
+          let showTimeout = null;
+          let hideTimeout = null;
+          const SHOW_DELAY = 250;  // 250ms delay before showing
+          const HIDE_DELAY = 500;  // 500ms delay before hiding
+
+          // Desktop: show on hover
+          item.addEventListener('mouseenter', function() {
+            if (!isMobile()) {
+              // Clear any pending hide timeout
+              if (hideTimeout) {
+                clearTimeout(hideTimeout);
+                hideTimeout = null;
+              }
+
+              // Set show timeout
+              showTimeout = setTimeout(() => {
+                // Hide all sibling menus at the same level before showing this one
+                const parentElement = item.parentElement;
+                if (parentElement) {
+                  const siblings = parentElement.querySelectorAll(':scope > li');
+                  siblings.forEach(sibling => {
+                    if (sibling !== item) {
+                      const siblingSubmenu = sibling.querySelector('ul');
+                      const siblingLink = sibling.querySelector('a');
+                      if (siblingSubmenu && siblingLink) {
+                        siblingSubmenu.style.display = 'none';
+                        siblingLink.setAttribute('aria-expanded', 'false');
+                        disableSubmenuScrolling(siblingSubmenu);
+                      }
                     }
-                  }
-                });
-              }
-              
-              submenu.style.display = 'block';
-              // Only apply positioning for nested submenus (level 2+)
-              if (isNestedSubmenu) {
-                positionNestedSubmenu(submenu, link);
-              }
-              link.setAttribute('aria-expanded', 'true');
-              showTimeout = null;
-            }, SHOW_DELAY);
-          }
-        });
+                  });
+                }
 
-        item.addEventListener('mouseleave', function() {
-          if (!isMobile()) {
-            // Clear any pending show timeout
-            if (showTimeout) {
-              clearTimeout(showTimeout);
-              showTimeout = null;
+                submenu.style.display = 'block';
+                // Only apply positioning for nested submenus (level 2+)
+                if (isNestedSubmenu) {
+                  positionNestedSubmenu(submenu, link);
+                }
+                link.setAttribute('aria-expanded', 'true');
+                showTimeout = null;
+              }, SHOW_DELAY);
             }
+          });
 
-            // Set hide timeout
-            hideTimeout = setTimeout(() => {
-              submenu.style.display = 'none';
-              link.setAttribute('aria-expanded', 'false');
-              // Clean up scrolling if enabled
-              disableSubmenuScrolling(submenu);
-              hideTimeout = null;
-            }, HIDE_DELAY);
-          }
-        });
+          item.addEventListener('mouseleave', function() {
+            if (!isMobile()) {
+              // Clear any pending show timeout
+              if (showTimeout) {
+                clearTimeout(showTimeout);
+                showTimeout = null;
+              }
 
-        // Mobile/Touch: toggle on click
-        link.addEventListener('click', function(e) {
-          if (isMobile()) {
-            e.preventDefault();
+              // Set hide timeout
+              hideTimeout = setTimeout(() => {
+                submenu.style.display = 'none';
+                link.setAttribute('aria-expanded', 'false');
+                // Clean up scrolling if enabled
+                disableSubmenuScrolling(submenu);
+                hideTimeout = null;
+              }, HIDE_DELAY);
+            }
+          });
+
+          function toggleMenu() {
             const isExpanded = link.getAttribute('aria-expanded') === 'true';
             if (isExpanded) {
+                slideUp(submenu, 250, () => {
+              submenu.style.display = 'none';
+              link.setAttribute('aria-expanded', 'false');
+              link.classList.remove('highlighted')
+              disableSubmenuScrolling(submenu);
+                });
+            } else {
+                slideDown(submenu, 250, () => {
+              submenu.style.display = 'block';
+              link.classList.add('highlighted')
+              link.setAttribute('aria-expanded', 'true');
+                });
+            }
+          }
+
+          // Mobile/Touch: toggle on click
+          link.addEventListener('click', function(e) {
+            if (isMobile()) {
+              e.preventDefault();
+              toggleMenu();
+            }
+          });
+
+          // Keyboard navigation
+          link.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              toggleMenu();
+            } else if (e.key === 'Escape') {
               submenu.style.display = 'none';
               link.setAttribute('aria-expanded', 'false');
               disableSubmenuScrolling(submenu);
-            } else {
-              submenu.style.display = 'block';
-              // Only apply positioning for nested submenus (level 2+)
-              if (isNestedSubmenu) {
-                positionNestedSubmenu(submenu, link);
-              }
-              link.setAttribute('aria-expanded', 'true');
+              link.focus();
             }
-          }
-        });
-
-        // Keyboard navigation
-        // On desktop: Enter/Space follows link, Escape closes dropdown
-        // On mobile: Enter/Space toggles dropdown, Escape closes it
-        link.addEventListener('keydown', function(e) {
-          if (e.key === 'Enter' || e.key === ' ') {
-            if (isMobile()) {
-              // Mobile: toggle dropdown
-              e.preventDefault();
-              const isExpanded = link.getAttribute('aria-expanded') === 'true';
-              if (isExpanded) {
-                submenu.style.display = 'none';
-                link.setAttribute('aria-expanded', 'false');
-                disableSubmenuScrolling(submenu);
-              } else {
-                submenu.style.display = 'block';
-                // Only apply positioning for nested submenus (level 2+)
-                if (isNestedSubmenu) {
-                  positionNestedSubmenu(submenu, link);
-                }
-                link.setAttribute('aria-expanded', 'true');
-              }
-            }
-            // Desktop: let the link navigate normally, but show submenu on focus
-            else if (e.key === ' ') {
-              // Space bar: toggle dropdown without following link
-              e.preventDefault();
-              const isExpanded = link.getAttribute('aria-expanded') === 'true';
-              if (isExpanded) {
-                submenu.style.display = 'none';
-                link.setAttribute('aria-expanded', 'false');
-                disableSubmenuScrolling(submenu);
-              } else {
-                submenu.style.display = 'block';
-                // Only apply positioning for nested submenus (level 2+)
-                if (isNestedSubmenu) {
-                  positionNestedSubmenu(submenu, link);
-                }
-                link.setAttribute('aria-expanded', 'true');
-              }
-            }
-          } else if (e.key === 'Escape') {
-            submenu.style.display = 'none';
-            link.setAttribute('aria-expanded', 'false');
-            disableSubmenuScrolling(submenu);
-            link.focus();
-          }
-        });
+          });
+        }
       }
-    }
-  });
+    });
+  }
+
+  // Initialize dropdown menu behavior
+  initDropdownMenu();
 }
+
 /* @license-end */
