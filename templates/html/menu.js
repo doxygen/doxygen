@@ -425,6 +425,23 @@ function initDropdownMenu() {
             
             // Set show timeout
             showTimeout = setTimeout(() => {
+              // Hide all sibling menus at the same level before showing this one
+              const parentElement = item.parentElement;
+              if (parentElement) {
+                const siblings = parentElement.querySelectorAll(':scope > li');
+                siblings.forEach(sibling => {
+                  if (sibling !== item) {
+                    const siblingSubmenu = sibling.querySelector('ul');
+                    const siblingLink = sibling.querySelector('a');
+                    if (siblingSubmenu && siblingLink) {
+                      siblingSubmenu.style.display = 'none';
+                      siblingLink.setAttribute('aria-expanded', 'false');
+                      disableSubmenuScrolling(siblingSubmenu);
+                    }
+                  }
+                });
+              }
+              
               submenu.style.display = 'block';
               // Only apply positioning for nested submenus (level 2+)
               if (isNestedSubmenu) {
