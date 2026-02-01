@@ -405,6 +405,21 @@ function initDropdownMenu() {
         span.classList.add('sub-arrow');
         link.append(span);
 
+        // Calculate nesting level for z-index
+        // Root menu (main-menu) is level 0, first submenus are level 1, etc.
+        let nestingLevel = 0;
+        let currentElement = item.parentElement;
+        while (currentElement && currentElement.id !== 'main-menu') {
+          if (currentElement.tagName === 'UL') {
+            nestingLevel++;
+          }
+          currentElement = currentElement.parentElement;
+        }
+        
+        // Apply z-index based on nesting level
+        // This ensures child menus with shadows appear above parent menus
+        submenu.style.zIndex = nestingLevel + 1;
+
         // Check if this is a level 2+ submenu (nested within another dropdown)
         const isNestedSubmenu = item.parentElement && item.parentElement.id !== 'main-menu';
 
