@@ -135,6 +135,11 @@ function initMenu(relPath,treeview) {
     const resetState = function() {
       const newWidth = window.innerWidth;
       if (newWidth !== prevWidth) {
+        // Close all open dropdown menus when switching between mobile/desktop modes
+        if (closeAllDropdowns) {
+          closeAllDropdowns();
+        }
+        
         if (newWidth < 768) {
           mainMenuState.checked = false;
           mainMenu.style.display = 'none';
@@ -179,12 +184,28 @@ function initMenu(relPath,treeview) {
   }
 
   // Dropdown menu functionality to replace smartmenus
+  let closeAllDropdowns = null; // Will be set by initDropdownMenu
+  
   function initDropdownMenu() {
     const mainMenu = document.getElementById('main-menu');
     if (!mainMenu) return;
 
     const menuItems = mainMenu.querySelectorAll('li');
     let isMobile = () => window.innerWidth < 768;
+
+    // Helper function to close all open dropdown menus
+    closeAllDropdowns = function() {
+      menuItems.forEach(item => {
+        const submenu = item.querySelector('ul');
+        const link = item.querySelector('a.has-submenu');
+        if (submenu && link) {
+          submenu.style.display = 'none';
+          link.setAttribute('aria-expanded', 'false');
+          link.classList.remove('highlighted');
+          disableSubmenuScrolling(submenu);
+        }
+      });
+    };
 
     // Helper function to position nested submenu with viewport checking
     function positionNestedSubmenu(submenu, link) {
@@ -518,6 +539,13 @@ function initMenu(relPath,treeview) {
 
   // Initialize dropdown menu behavior
   initDropdownMenu();
+  
+  // Close all open menus when browser back button is pressed
+  window.addEventListener('popstate', function() {
+    if (closeAllDropdowns) {
+      closeAllDropdowns();
+    }
+  });
 }
 
 /* @license-end */
