@@ -219,7 +219,7 @@ function initDropdownMenu() {
     const submenuRect = submenu.getBoundingClientRect();
     const submenuHeight = submenuRect.height;
     const submenuTop = submenuRect.top;
-    const submenuBottom = submenuRect.bottom;
+    const submenuBottom = submenuRect.bottom+1; // add space for border
 
     // Check if submenu fits in viewport
     const fitsAbove = submenuTop >= 0;
@@ -443,7 +443,7 @@ function initDropdownMenu() {
               clearTimeout(showTimeout);
               showTimeout = null;
             }
-            
+
             // Set hide timeout
             hideTimeout = setTimeout(() => {
               submenu.style.display = 'none';
