@@ -1583,8 +1583,11 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
 <SkipCComment>{LITERAL_BLOCK}           { // normal block command
                                           outputArray(yyscanner,yytext,yyleng);
                                           yyextra->yyLineNr+=QCString(yytext).contains('\n');
-                                          determineBlockName(yyscanner);
-                                          BEGIN(SkipVerbatim);
+                                          if (yyextra->isSpecialComment)
+                                          {
+                                            determineBlockName(yyscanner);
+                                            BEGIN(SkipVerbatim);
+                                          }
                                         }
 <SkipCond>{CMD}{CMD}"cond"[ \t]+        {}// escaped cond command
 <SkipCond>{CMD}"cond"/\n                |  
