@@ -24,6 +24,13 @@
  */
 function initMenu(relPath,treeview) {
 
+  const SHOW_DELAY = 250;  // 250ms delay before showing
+  const HIDE_DELAY = 500;  // 500ms delay before hiding
+  const SLIDE_DELAY = 250; // 250ms slide up/down delay
+  const WHEEL_STEP = 30;   // 30 pixel per mouse wheel tick
+  const ARROW_STEP = 5;    // 5 pixel when hovering arrow up/down
+  const ARROW_POLL_INTERVAL = 20; // 20ms per arrow up/down check
+
   // Helper function for slideDown animation
   function slideDown(element, duration, callback) {
     if (element.dataset.animating) return;
@@ -113,6 +120,9 @@ function initMenu(relPath,treeview) {
     if (typeof initResizableFunc === 'function') initResizableFunc(treeview);
   }
 
+  // Dropdown menu functionality to replace smartmenus
+  let closeAllDropdowns = null; // Will be set by initDropdownMenu
+
   if (mainMenuState) {
     const mainMenu = document.getElementById('main-menu');
     const searchBoxPos1 = document.getElementById('searchBoxPos1');
@@ -120,12 +130,12 @@ function initMenu(relPath,treeview) {
     // animate mobile main menu
     mainMenuState.addEventListener('change', function() {
       if (this.checked) {
-        slideDown(mainMenu, 250, () => {
+        slideDown(mainMenu, SLIDE_DELAY, () => {
           mainMenu.style.display = 'block';
           initResizableIfExists();
         });
       } else {
-        slideUp(mainMenu, 250, () => {
+        slideUp(mainMenu, SLIDE_DELAY, () => {
           mainMenu.style.display = 'none';
         });
       }
@@ -139,7 +149,7 @@ function initMenu(relPath,treeview) {
         if (closeAllDropdowns) {
           closeAllDropdowns();
         }
-        
+
         if (newWidth < 768) {
           mainMenuState.checked = false;
           mainMenu.style.display = 'none';
@@ -183,29 +193,12 @@ function initMenu(relPath,treeview) {
     initResizableIfExists();
   }
 
-  // Dropdown menu functionality to replace smartmenus
-  let closeAllDropdowns = null; // Will be set by initDropdownMenu
-  
   function initDropdownMenu() {
     const mainMenu = document.getElementById('main-menu');
     if (!mainMenu) return;
 
     const menuItems = mainMenu.querySelectorAll('li');
     let isMobile = () => window.innerWidth < 768;
-
-    // Helper function to close all open dropdown menus
-    closeAllDropdowns = function() {
-      menuItems.forEach(item => {
-        const submenu = item.querySelector('ul');
-        const link = item.querySelector('a.has-submenu');
-        if (submenu && link) {
-          submenu.style.display = 'none';
-          link.setAttribute('aria-expanded', 'false');
-          link.classList.remove('highlighted');
-          disableSubmenuScrolling(submenu);
-        }
-      });
-    };
 
     // Helper function to position nested submenu with viewport checking
     function positionNestedSubmenu(submenu, link) {
@@ -294,7 +287,6 @@ function initMenu(relPath,treeview) {
       submenu.appendChild(scrollDownArrow);
 
       let scrollPosition = 0;
-      const scrollStep = 5;
       let scrollInterval = null;
 
       function updateScrollArrows() {
@@ -310,9 +302,9 @@ function initMenu(relPath,treeview) {
           const maxScroll = scrollWrapper.scrollHeight - availableHeight;
 
           if (direction === 'up') {
-            scrollPosition = Math.max(0, scrollPosition - scrollStep);
+            scrollPosition = Math.max(0, scrollPosition - ARROW_STEP);
           } else {
-            scrollPosition = Math.min(maxScroll, scrollPosition + scrollStep);
+            scrollPosition = Math.min(maxScroll, scrollPosition + ARROW_STEP);
           }
 
           scrollWrapper.scrollTop = scrollPosition;
@@ -322,7 +314,7 @@ function initMenu(relPath,treeview) {
               (direction === 'down' && scrollPosition === maxScroll)) {
             stopScrolling();
           }
-        }, 20);
+        }, ARROW_POLL_INTERVAL);
       }
 
       function stopScrolling() {
@@ -337,34 +329,27 @@ function initMenu(relPath,treeview) {
       scrollDownArrow.addEventListener('mouseenter', () => startScrolling('down'));
       scrollDownArrow.addEventListener('mouseleave', stopScrolling);
 
-      // Add mouse wheel scrolling support
-      scrollWrapper.addEventListener('wheel', function(e) {
+      function wheelEvent(e) {
         e.preventDefault();
         e.stopPropagation();
 
         const maxScroll = scrollWrapper.scrollHeight - availableHeight;
         const wheelDelta = e.deltaY;
-        const scrollAmount = wheelDelta > 0 ? 30 : -30; // Scroll 30px per wheel tick
+        const scrollAmount = wheelDelta > 0 ? WHEEL_STEP : -WHEEL_STEP; // Scroll 30px per wheel tick
 
         scrollPosition = Math.max(0, Math.min(maxScroll, scrollPosition + scrollAmount));
         scrollWrapper.scrollTop = scrollPosition;
         updateScrollArrows();
-      });
+      }
+
+      // Add mouse wheel scrolling support
+      scrollWrapper.addEventListener('wheel', (e) => wheelEvent(e));
 
       // Also add wheel event to submenu itself to catch events
       submenu.addEventListener('wheel', function(e) {
         // Only handle if scrolling is enabled
         if (submenu.dataset.scrollEnabled) {
-          e.preventDefault();
-          e.stopPropagation();
-
-          const maxScroll = scrollWrapper.scrollHeight - availableHeight;
-          const wheelDelta = e.deltaY;
-          const scrollAmount = wheelDelta > 0 ? 30 : -30;
-
-          scrollPosition = Math.max(0, Math.min(maxScroll, scrollPosition + scrollAmount));
-          scrollWrapper.scrollTop = scrollPosition;
-          updateScrollArrows();
+          wheelEvent(e);
         }
       });
 
@@ -433,8 +418,6 @@ function initMenu(relPath,treeview) {
           // Timeout management for smooth menu navigation
           let showTimeout = null;
           let hideTimeout = null;
-          const SHOW_DELAY = 250;  // 250ms delay before showing
-          const HIDE_DELAY = 500;  // 500ms delay before hiding
 
           // Desktop: show on hover
           item.addEventListener('mouseenter', function() {
@@ -497,18 +480,18 @@ function initMenu(relPath,treeview) {
           function toggleMenu() {
             const isExpanded = link.getAttribute('aria-expanded') === 'true';
             if (isExpanded) {
-                slideUp(submenu, 250, () => {
-              submenu.style.display = 'none';
-              link.setAttribute('aria-expanded', 'false');
-              link.classList.remove('highlighted')
-              disableSubmenuScrolling(submenu);
-                });
+              slideUp(submenu, SLIDE_DELAY, () => {
+                submenu.style.display = 'none';
+                link.setAttribute('aria-expanded', 'false');
+                link.classList.remove('highlighted')
+                disableSubmenuScrolling(submenu);
+              });
             } else {
-                slideDown(submenu, 250, () => {
-              submenu.style.display = 'block';
-              link.classList.add('highlighted')
-              link.setAttribute('aria-expanded', 'true');
-                });
+              slideDown(submenu, SLIDE_DELAY, () => {
+                submenu.style.display = 'block';
+                link.classList.add('highlighted')
+                link.setAttribute('aria-expanded', 'true');
+              });
             }
           }
 
@@ -535,17 +518,26 @@ function initMenu(relPath,treeview) {
         }
       }
     });
+
+    // Helper function to close all open dropdown menus
+    closeAllDropdowns = function() {
+      menuItems.forEach(item => {
+        const submenu = item.querySelector('ul');
+        const link = item.querySelector('a.has-submenu');
+        if (submenu && link) {
+          disableSubmenuScrolling(submenu);
+          submenu.style.display = 'none';
+          link.setAttribute('aria-expanded', 'false');
+          link.classList.remove('highlighted');
+        }
+      });
+    };
+
+    document.addEventListener('focusout',closeAllDropdowns);
   }
 
   // Initialize dropdown menu behavior
   initDropdownMenu();
-  
-  // Close all open menus when browser back button is pressed
-  window.addEventListener('popstate', function() {
-    if (closeAllDropdowns) {
-      closeAllDropdowns();
-    }
-  });
 }
 
 /* @license-end */
