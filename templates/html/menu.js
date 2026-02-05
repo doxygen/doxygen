@@ -537,8 +537,6 @@ function initMenu(relPath,treeview) {
       });
     };
 
-    document.addEventListener('focusout',closeAllDropdowns);
-
     // Close all dropdown menus when clicking a link (navigation to new page or anchor)
     const allLinks = mainMenu.querySelectorAll('a');
     allLinks.forEach(link => {
