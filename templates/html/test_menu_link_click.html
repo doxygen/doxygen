@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Menu.js Test - Link Click Closes Dropdowns</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    .test-indicator { 
+      background: #e7f3ff; 
+      border-left: 4px solid #2196F3; 
+      padding: 15px; 
+      margin: 20px 0;
+    }
+    .highlight-green { background: #4CAF50 !important; }
+    .highlight-red { background: #f44336 !important; }
+    
+    /* Menu styles */
+    #main-nav { background: #333; }
+    #main-menu { list-style: none; margin: 0; padding: 0; }
+    #main-menu > li { display: inline-block; position: relative; }
+    #main-menu a { 
+      display: block; 
+      padding: 15px 20px; 
+      color: white; 
+      text-decoration: none; 
+      background: #4a4a4a;
+    }
+    #main-menu a:hover { background: #555; }
+    #main-menu a.has-submenu { background: #4CAF50; }
+    
+    #main-menu ul {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      min-width: 200px;
+      background: white;
+      border: 2px solid #4CAF50;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    #main-menu ul a { color: #333; background: white; }
+    #main-menu ul a:hover { background: #f0f0f0; }
+    
+    .sub-arrow::after { content: " ▼"; font-size: 0.8em; }
+    
+    #target-anchor { 
+      margin-top: 400px; 
+      padding: 20px; 
+      background: #ffffcc; 
+      border: 2px dashed #ff9800;
+    }
+  </style>
+</head>
+<body>
+  <h1>Menu.js Test - Link Click Closes Dropdowns</h1>
+  
+  <div class="test-indicator">
+    <strong>Visual Indicator:</strong> Menu items with submenus have a 
+    <span style="background: #4CAF50; color: white; padding: 2px 8px;">green background</span> 
+    to show the class is applied correctly. Dropdowns have green borders.
+  </div>
+
+  <div class="test-indicator">
+    <strong>Test Instructions:</strong>
+    <ol>
+      <li>Hover over "Documentation" to open its dropdown menu</li>
+      <li>Click on "Getting Started" link - dropdown should close and page should navigate</li>
+      <li>Hover over "Documentation" again</li>
+      <li>Click on "Anchor Test Link" - dropdown should close and page should jump to anchor</li>
+      <li>Scroll back up, hover over "About" > "Team" (nested menu)</li>
+      <li>Click on any link in the nested menu - all dropdowns should close</li>
+    </ol>
+  </div>
+
+  <nav id="main-nav">
+    <ul id="main-menu">
+      <li><a href="#home">Home</a></li>
+      <li>
+        <a href="#documentation">Documentation</a>
+        <ul>
+          <li><a href="page1.html">Getting Started</a></li>
+          <li><a href="#target">Anchor Test Link</a></li>
+          <li><a href="page2.html">API Reference</a></li>
+        </ul>
+      </li>
+      <li>
+        <a href="#about">About</a>
+        <ul>
+          <li><a href="about.html">Company</a></li>
+          <li>
+            <a href="#team">Team</a>
+            <ul>
+              <li><a href="team-page.html">Meet the Team</a></li>
+              <li><a href="#team-anchor">Team Anchor</a></li>
+              <li><a href="careers.html">Careers</a></li>
+            </ul>
+          </li>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+      </li>
+    </ul>
+  </nav>
+
+  <div style="margin-top: 50px;">
+    <h2>Test Content</h2>
+    <p>Hover over menu items to see dropdowns. Click links to test that dropdowns close.</p>
+    <p>The page will try to navigate but fail (404) for external links, which is expected.</p>
+    <p>For anchor links, the page should jump to the anchor section below.</p>
+  </div>
+
+  <div id="target-anchor">
+    <h3 id="target">Target Anchor Section</h3>
+    <p>If you clicked the "Anchor Test Link", the page should have scrolled here and the dropdown menu should be closed.</p>
+    <p><a href="#top">Back to top</a> (this link should also close any open dropdowns)</p>
+  </div>
+
+  <div id="team-anchor" style="margin-top: 400px; padding: 20px; background: #e1f5fe; border: 2px dashed #03a9f4;">
+    <h3>Team Anchor Section</h3>
+    <p>If you clicked the "Team Anchor" from the nested menu, you should be here with all menus closed.</p>
+  </div>
+
+  <script>
+    // Minimal menudata for testing
+    var menudata = { children: [] };
+  </script>
+  <script src="menu.js"></script>
+  <script>
+    // Initialize menu
+    initMenu('', false);
+    
+    // Add visual feedback when links are clicked
+    document.querySelectorAll('#main-menu a').forEach(link => {
+      link.addEventListener('click', function(e) {
+        console.log('Link clicked:', this.textContent, 'href:', this.getAttribute('href'));
+      });
+    });
+  </script>
+</body>
+</html>

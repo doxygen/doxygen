@@ -538,10 +538,30 @@ function initMenu(relPath,treeview) {
     };
 
     document.addEventListener('focusout',closeAllDropdowns);
+
+    // Close all dropdown menus when clicking a link (navigation to new page or anchor)
+    const allLinks = mainMenu.querySelectorAll('a');
+    allLinks.forEach(link => {
+      link.addEventListener('click', function() {
+        // Close dropdowns when navigating (unless it's a has-submenu link in mobile mode)
+        if (!link.classList.contains('has-submenu') || !isMobile()) {
+          if (closeAllDropdowns) {
+            closeAllDropdowns();
+          }
+        }
+      });
+    });
   }
 
   // Initialize dropdown menu behavior
   initDropdownMenu();
+
+  // Close all open menus when browser back button is pressed
+  window.addEventListener('popstate', function() {
+    if (closeAllDropdowns) {
+      closeAllDropdowns();
+    }
+  });
 }
 
 /* @license-end */
