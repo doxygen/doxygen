@@ -477,6 +477,10 @@ function initMenu(relPath,treeview) {
             }
           });
 
+          if (isMobile() && isNestedSubmenu) {
+            positionNestedSubmenu(submenu, link);
+          }
+
           function toggleMenu() {
             const isExpanded = link.getAttribute('aria-expanded') === 'true';
             if (isExpanded) {
