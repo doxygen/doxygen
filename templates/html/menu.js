@@ -30,6 +30,7 @@ function initMenu(relPath,treeview) {
   const WHEEL_STEP = 30;   // 30 pixel per mouse wheel tick
   const ARROW_STEP = 5;    // 5 pixel when hovering arrow up/down
   const ARROW_POLL_INTERVAL = 20; // 20ms per arrow up/down check
+  const MOBILE_WIDTH = 768; // switch point for mobile/desktop mode
 
   // Helper function for slideDown animation
   function slideDown(element, duration, callback) {
@@ -123,6 +124,8 @@ function initMenu(relPath,treeview) {
   // Dropdown menu functionality to replace smartmenus
   let closeAllDropdowns = null; // Will be set by initDropdownMenu
 
+  const isMobile = () => window.innerWidth < MOBILE_WIDTH;
+
   if (mainMenuState) {
     const mainMenu = document.getElementById('main-menu');
     const searchBoxPos1 = document.getElementById('searchBoxPos1');
@@ -150,7 +153,7 @@ function initMenu(relPath,treeview) {
           closeAllDropdowns();
         }
 
-        if (newWidth < 768) {
+        if (newWidth < MOBILE_WIDTH) {
           mainMenuState.checked = false;
           mainMenu.style.display = 'none';
           if (searchBoxPos2) {
@@ -198,7 +201,6 @@ function initMenu(relPath,treeview) {
     if (!mainMenu) return;
 
     const menuItems = mainMenu.querySelectorAll('li');
-    let isMobile = () => window.innerWidth < 768;
 
     // Helper function to position nested submenu with viewport checking
     function positionNestedSubmenu(submenu, link) {
@@ -398,8 +400,9 @@ function initMenu(relPath,treeview) {
           link.append(span);
 
           // Calculate nesting level for z-index
-          // Root menu (main-menu) is level 0, first submenus are level 1, etc.
-          let nestingLevel = 0;
+          // Root menu (main-menu) is level 200 (above the search box at 102),
+          // first submenus are level 201, etc.
+          let nestingLevel = 200;
           let currentElement = item.parentElement;
           while (currentElement && currentElement.id !== 'main-menu') {
             if (currentElement.tagName === 'UL') {
@@ -531,6 +534,7 @@ function initMenu(relPath,treeview) {
         if (submenu && link) {
           disableSubmenuScrolling(submenu);
           submenu.style.display = 'none';
+          submenu.style.marginLeft = 0;
           link.setAttribute('aria-expanded', 'false');
           link.classList.remove('highlighted');
         }
