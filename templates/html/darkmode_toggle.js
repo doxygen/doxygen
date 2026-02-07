@@ -72,11 +72,8 @@ class DarkModeToggle extends HTMLElement {
                 const menuStyle = window.getComputedStyle(mainMenu);
                 mainMenuVisible = menuStyle.display!=='none'
               }
+              document.querySelectorAll('dark-mode-toggle').forEach(el => el.remove());
               const searchBoxPos1 = document.getElementById("searchBoxPos1");
-              const buttonLi = document.getElementById('toggle-dark-mode');
-              if (buttonLi) {
-                buttonLi.parentNode.removeChild(buttonLi);
-              }
               if (searchBox) { // (1) search box visible
                 searchBox.parentNode.appendChild(toggleButton)
               } else if (navRow1) { // (2) no search box, static menu bar
