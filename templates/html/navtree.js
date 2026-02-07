@@ -336,8 +336,13 @@ function initNavTree(toroot,relpath,allMembersFile) {
     const windowHeight = window.innerHeight - headerHeight - footerHeight;
     (function retry() { // retry until we can scroll to the selected item
       try {
-        const navtree = jQuery('#nav-tree');
-        navtree.scrollTo('#selected',100,{offset:-windowHeight/2});
+        const navtree = $('#nav-tree');
+        const selected = navtree.querySelector('#selected');
+        if (selected && navtree) {
+          const offset = -windowHeight/2;
+          const targetPos = selected.offsetTop + offset;
+          animateScrolling(navtree, Math.max(0, targetPos), 100);
+        }
       } catch (err) {
         setTimeout(retry, 0);
       }
@@ -723,41 +728,78 @@ function initNavTree(toroot,relpath,allMembersFile) {
     pagenav   = $("#page-nav");
     container = $("#container");
 
-    // Note: .resizable() is from jQuery UI and would require significant reimplementation
-    // For now, we keep minimal jQuery usage for this plugin-dependent functionality
-    jQuery(".side-nav-resizable").resizable({resize: function(e, ui) { resizeWidth(true); } });
-    jQuery(sidenav).resizable({ minWidth: 0 });
-    if (pagenav) {
-      const pagehandle = jQuery("#page-nav-resize-handle");
-      pagehandle.on('mousedown touchmove', function(e) {
+    // Native JavaScript implementation for resizable side navigation
+    const splitbar = $("#splitbar");
+    if (splitbar) {
+      let isResizing = false;
+      let startX = 0;
+      let startWidth = 0;
+
+      const startResize = function(e) {
+        isResizing = true;
+        startX = e.clientX || (e.touches && e.touches[0].clientX);
+        startWidth = sidenav.offsetWidth;
         document.body.classList.add('resizing');
-        pagehandle.addClass('dragging');
+        e.preventDefault();
+      };
 
-        const mouseMoveHandler = function(e) {
-          const clientX = e.clientX || (e.touches && e.touches[0].clientX);
-          let pagenavWidth = container.offsetWidth - clientX + barWidth/2;
-          const sidenavWidth = sidenav.clientWidth;
-          const widths = constrainPanelWidths(sidenavWidth,pagenavWidth,false);
-          container.style.gridTemplateColumns = 'auto '+parseFloat(widths.rightPanelWidth)+'px';
-          pagenav.style.width = parseFloat(widths.rightPanelWidth-1)+'px';
-          content.style.marginLeft = parseFloat(widths.leftPanelWidth)+'px';
-          Cookie.writeSetting(PAGENAV_COOKIE_NAME,pagenavWidth);
-        };
+      const doResize = function(e) {
+        if (!isResizing) return;
+        const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+        const delta = clientX - startX;
+        const newWidth = startWidth + delta;
+        sidenav.style.width = newWidth + 'px';
+        resizeWidth(true);
+      };
 
-        const mouseUpHandler = function(e) {
+      const stopResize = function() {
+        if (isResizing) {
+          isResizing = false;
           document.body.classList.remove('resizing');
-          pagehandle.removeClass('dragging');
-          document.removeEventListener('mousemove', mouseMoveHandler);
-          document.removeEventListener('mouseup',   mouseUpHandler);
-          document.removeEventListener('touchmove', mouseMoveHandler);
-          document.removeEventListener('touchend',  mouseUpHandler);
-        };
+        }
+      };
 
-        document.addEventListener('mousemove', mouseMoveHandler);
-        document.addEventListener('touchmove', mouseMoveHandler);
-        document.addEventListener('mouseup',   mouseUpHandler);
-        document.addEventListener('touchend',  mouseUpHandler);
-      });
+      splitbar.addEventListener('mousedown', startResize);
+      splitbar.addEventListener('touchstart', startResize);
+      document.addEventListener('mousemove', doResize);
+      document.addEventListener('touchmove', doResize);
+      document.addEventListener('mouseup', stopResize);
+      document.addEventListener('touchend', stopResize);
+    }
+
+    if (pagenav) {
+      const pagehandle = $("#page-nav-resize-handle");
+      if (pagehandle) {
+        pagehandle.addEventListener('mousedown', function(e) {
+          document.body.classList.add('resizing');
+          pagehandle.classList.add('dragging');
+
+          const mouseMoveHandler = function(e) {
+            const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+            let pagenavWidth = container.offsetWidth - clientX + barWidth/2;
+            const sidenavWidth = sidenav.clientWidth;
+            const widths = constrainPanelWidths(sidenavWidth,pagenavWidth,false);
+            container.style.gridTemplateColumns = 'auto '+parseFloat(widths.rightPanelWidth)+'px';
+            pagenav.style.width = parseFloat(widths.rightPanelWidth-1)+'px';
+            content.style.marginLeft = parseFloat(widths.leftPanelWidth)+'px';
+            Cookie.writeSetting(PAGENAV_COOKIE_NAME,pagenavWidth);
+          };
+
+          const mouseUpHandler = function(e) {
+            document.body.classList.remove('resizing');
+            pagehandle.classList.remove('dragging');
+            document.removeEventListener('mousemove', mouseMoveHandler);
+            document.removeEventListener('mouseup',   mouseUpHandler);
+            document.removeEventListener('touchmove', mouseMoveHandler);
+            document.removeEventListener('touchend',  mouseUpHandler);
+          };
+
+          document.addEventListener('mousemove', mouseMoveHandler);
+          document.addEventListener('touchmove', mouseMoveHandler);
+          document.addEventListener('mouseup',   mouseUpHandler);
+          document.addEventListener('touchend',  mouseUpHandler);
+        });
+      }
     } else {
       container.style.gridTemplateColumns = 'auto';
     }
@@ -768,7 +810,6 @@ function initNavTree(toroot,relpath,allMembersFile) {
     const i=url.indexOf("#");
     if (i>=0) window.location.hash=url.substr(i);
     const _preventDefault = function(evt) { evt.preventDefault(); };
-    const splitbar = $("#splitbar");
     if (splitbar) {
       splitbar.addEventListener("dragstart", _preventDefault);
       splitbar.addEventListener("selectstart", _preventDefault);
