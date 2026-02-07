@@ -739,7 +739,7 @@ function initNavTree(toroot,relpath,allMembersFile) {
 
       const startResize = (e) => {
         isResizing = true;
-        startX = e.clientX ?? (e.touches && e.touches[0].clientX);
+        startX = e.clientX ?? e.touches?.[0]?.clientX;
         startWidth = sidenav.offsetWidth;
         document.body.classList.add('resizing');
         e.preventDefault();
@@ -747,7 +747,8 @@ function initNavTree(toroot,relpath,allMembersFile) {
 
       const doResize = (e) => {
         if (!isResizing) return;
-        const clientX = e.clientX ?? (e.touches && e.touches[0].clientX);
+        const clientX = e.clientX ?? e.touches?.[0]?.clientX;
+        if (clientX === undefined) return;
         const delta = clientX - startX;
         const newWidth = startWidth + delta;
         sidenav.style.width = newWidth + 'px';
@@ -762,7 +763,7 @@ function initNavTree(toroot,relpath,allMembersFile) {
       };
 
       splitbar.addEventListener('mousedown', startResize);
-      splitbar.addEventListener('touchstart', startResize);
+      splitbar.addEventListener('touchstart', startResize, { passive: false });
       document.addEventListener('mousemove', doResize);
       document.addEventListener('touchmove', doResize);
       document.addEventListener('mouseup', stopResize);
@@ -780,7 +781,8 @@ function initNavTree(toroot,relpath,allMembersFile) {
           pagehandle.classList.add('dragging');
 
           const mouseMoveHandler = (e) => {
-            const clientX = e.clientX ?? (e.touches && e.touches[0].clientX);
+            const clientX = e.clientX ?? e.touches?.[0]?.clientX;
+            if (clientX === undefined) return;
             let pagenavWidth = container.offsetWidth - clientX + barWidth/2;
             const sidenavWidth = sidenav.clientWidth;
             const widths = constrainPanelWidths(sidenavWidth,pagenavWidth,false);
@@ -806,7 +808,7 @@ function initNavTree(toroot,relpath,allMembersFile) {
         };
 
         pagehandle.addEventListener('mousedown', startDrag);
-        pagehandle.addEventListener('touchstart', startDrag);
+        pagehandle.addEventListener('touchstart', startDrag, { passive: false });
       }
     } else {
       container.style.gridTemplateColumns = 'auto';
