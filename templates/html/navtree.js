@@ -337,11 +337,13 @@ function initNavTree(toroot,relpath,allMembersFile) {
     (function retry() { // retry until we can scroll to the selected item
       try {
         const navtree = $('#nav-tree');
-        const selected = navtree.querySelector('#selected');
-        if (selected && navtree) {
-          const offset = -windowHeight/2;
-          const targetPos = selected.offsetTop + offset;
-          animateScrolling(navtree, Math.max(0, targetPos), 100);
+        if (navtree) {
+          const selected = navtree.querySelector('#selected');
+          if (selected) {
+            const offset = -windowHeight/2;
+            const targetPos = selected.offsetTop + offset;
+            animateScrolling(navtree, Math.max(0, targetPos), 100);
+          }
         }
       } catch (err) {
         setTimeout(retry, 0);
@@ -735,7 +737,7 @@ function initNavTree(toroot,relpath,allMembersFile) {
       let startX = 0;
       let startWidth = 0;
 
-      const startResize = function(e) {
+      const startResize = (e) => {
         isResizing = true;
         startX = e.clientX || (e.touches && e.touches[0].clientX);
         startWidth = sidenav.offsetWidth;
@@ -743,7 +745,7 @@ function initNavTree(toroot,relpath,allMembersFile) {
         e.preventDefault();
       };
 
-      const doResize = function(e) {
+      const doResize = (e) => {
         if (!isResizing) return;
         const clientX = e.clientX || (e.touches && e.touches[0].clientX);
         const delta = clientX - startX;
@@ -752,7 +754,7 @@ function initNavTree(toroot,relpath,allMembersFile) {
         resizeWidth(true);
       };
 
-      const stopResize = function() {
+      const stopResize = () => {
         if (isResizing) {
           isResizing = false;
           document.body.classList.remove('resizing');
@@ -770,11 +772,11 @@ function initNavTree(toroot,relpath,allMembersFile) {
     if (pagenav) {
       const pagehandle = $("#page-nav-resize-handle");
       if (pagehandle) {
-        const startDrag = function(e) {
+        const startDrag = (e) => {
           document.body.classList.add('resizing');
           pagehandle.classList.add('dragging');
 
-          const mouseMoveHandler = function(e) {
+          const mouseMoveHandler = (e) => {
             const clientX = e.clientX || (e.touches && e.touches[0].clientX);
             let pagenavWidth = container.offsetWidth - clientX + barWidth/2;
             const sidenavWidth = sidenav.clientWidth;
@@ -785,7 +787,7 @@ function initNavTree(toroot,relpath,allMembersFile) {
             Cookie.writeSetting(PAGENAV_COOKIE_NAME,pagenavWidth);
           };
 
-          const mouseUpHandler = function(e) {
+          const mouseUpHandler = (e) => {
             document.body.classList.remove('resizing');
             pagehandle.classList.remove('dragging');
             document.removeEventListener('mousemove', mouseMoveHandler);
