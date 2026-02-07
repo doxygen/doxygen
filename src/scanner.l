@@ -2089,6 +2089,13 @@ NONLopt [^\n]*
                                           init.stripPrefix("class ");
                                           init.stripPrefix("struct ");
                                           init = init.stripWhiteSpace();
+
+                                          // Use same alias system early on for C#
+                                          if (yyextra->insideCS)
+                                          {
+                                            init = substitute(init,".","::");
+                                          }
+
                                           yyextra->current->type = "typedef "+init;
                                           yyextra->current->args.clear();
                                           yyextra->current->spec.setAlias(true);
