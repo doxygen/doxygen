@@ -770,7 +770,7 @@ function initNavTree(toroot,relpath,allMembersFile) {
     if (pagenav) {
       const pagehandle = $("#page-nav-resize-handle");
       if (pagehandle) {
-        pagehandle.addEventListener('mousedown', function(e) {
+        const startDrag = function(e) {
           document.body.classList.add('resizing');
           pagehandle.classList.add('dragging');
 
@@ -798,7 +798,10 @@ function initNavTree(toroot,relpath,allMembersFile) {
           document.addEventListener('touchmove', mouseMoveHandler);
           document.addEventListener('mouseup',   mouseUpHandler);
           document.addEventListener('touchend',  mouseUpHandler);
-        });
+        };
+        
+        pagehandle.addEventListener('mousedown', startDrag);
+        pagehandle.addEventListener('touchstart', startDrag);
       }
     } else {
       container.style.gridTemplateColumns = 'auto';
