@@ -733,6 +733,11 @@ function initNavTree(toroot,relpath,allMembersFile) {
     // Native JavaScript implementation for resizable side navigation
     const splitbar = $("#splitbar");
     if (splitbar) {
+      // Add the ui-resizable-e class to make the splitbar visible and styled correctly
+      splitbar.classList.add('ui-resizable-e');
+      // Ensure the splitbar has absolute positioning (overrides CSS if needed)
+      splitbar.style.position = 'absolute';
+
       let isResizing = false;
       let startX = 0;
       let startWidth = 0;
