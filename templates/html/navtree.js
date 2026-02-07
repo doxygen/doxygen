@@ -767,6 +767,9 @@ function initNavTree(toroot,relpath,allMembersFile) {
       document.addEventListener('touchmove', doResize);
       document.addEventListener('mouseup', stopResize);
       document.addEventListener('touchend', stopResize);
+
+      splitbar.addEventListener("dragstart", (evt) => evt.preventDefault());
+      splitbar.addEventListener("selectstart", (evt) => evt.preventDefault());
     }
 
     if (pagenav) {
@@ -814,11 +817,7 @@ function initNavTree(toroot,relpath,allMembersFile) {
     const url = location.href;
     const i=url.indexOf("#");
     if (i>=0) window.location.hash=url.substr(i);
-    const _preventDefault = function(evt) { evt.preventDefault(); };
-    if (splitbar) {
-      splitbar.addEventListener("dragstart", _preventDefault);
-      splitbar.addEventListener("selectstart", _preventDefault);
-    }
+
 
     let lastWidth = -1;
     let lastHeight = -1;
