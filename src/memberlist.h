@@ -159,7 +159,8 @@ class MemberList : public MemberVector
     void writeTagFile(TextStream &,bool useQualifiedName=false,bool showNamespaceMembers=true);
     bool declVisible() const;
     void addMemberGroup(MemberGroup *mg);
-    void addListReferences(Definition *def);
+    void addListReferences(const Definition *def);
+    void addRequirementReferences(const Definition *def);
     void findSectionsInDocumentation(const Definition *d);
     void setNeedsSorting(bool b);
     const MemberGroupRefList &getMemberGroupList() const { return m_memberGroupRefList; }

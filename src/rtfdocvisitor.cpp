@@ -38,6 +38,7 @@
 #include "portable.h"
 #include "codefragment.h"
 #include "cite.h"
+#include "md5.h"
 
 //#define DBG_RTF(x) m_t << x
 #define DBG_RTF(x) do {} while(0)
@@ -54,17 +55,6 @@ static QCString align(const DocHtmlCell &cell)
     }
   }
   return "";
-}
-
-static QCString makeBaseName(const QCString &name)
-{
-  QCString baseName = name;
-  int i = baseName.findRev('/');
-  if (i!=-1)
-  {
-    baseName=baseName.mid(i+1);
-  }
-  return baseName;
 }
 
 RTFDocVisitor::RTFDocVisitor(TextStream &t,OutputCodeList &ci,
@@ -334,7 +324,7 @@ void RTFDocVisitor::operator()(const DocVerbatim &s)
       m_t << rtf_Style_Reset << getStyle("CodeExample");
       getCodeParser(lang).parseCode(m_ci,s.context(),s.text(),langExt,
                                     Config_getBool(STRIP_CODE_COMMENTS),
-                                    s.isExample(),s.exampleFile());
+                                    CodeParserOptions().setExample(s.isExample(),s.exampleFile()));
       //m_t << "\\par\n";
       m_t << "}\n";
       break;
@@ -368,59 +358,32 @@ void RTFDocVisitor::operator()(const DocVerbatim &s)
       break;
     case DocVerbatim::Dot:
       {
-        static int dotindex = 1;
-        QCString fileName(4096, QCString::ExplicitSize);
-
-        fileName.sprintf("%s%d%s",
-            qPrint(Config_getString(RTF_OUTPUT)+"/inline_dotgraph_"),
-            dotindex++,
-            ".dot"
-           );
-        std::ofstream file = Portable::openOutputStream(fileName);
-        if (!file.is_open())
+        bool exists = false;
+        auto fileName = writeFileContents(Config_getString(RTF_OUTPUT)+"/inline_dotgraph_", // baseName
+                                          ".dot",                                           // extension
+                                          s.text(),                                         // contents
+                                          exists);
+        if (!fileName.isEmpty())
         {
-          err("Could not open file {} for writing\n",qPrint(fileName));
+          writeDotFile(fileName, s.hasCaption(), s.srcFile(), s.srcLine(), !exists);
+          visitChildren(s);
+          includePicturePostRTF(true, s.hasCaption());
         }
-        else
-        {
-          QCString stext = s.text();
-          file.write( stext.data(), stext.length() );
-          file.close();
-        }
-
-        writeDotFile(fileName, s.hasCaption(), s.srcFile(), s.srcLine());
-        visitChildren(s);
-        includePicturePostRTF(true, s.hasCaption());
-
-        if (Config_getBool(DOT_CLEANUP)) Dir().remove(fileName.str());
       }
       break;
     case DocVerbatim::Msc:
       {
-        static int mscindex = 1;
-        QCString baseName(4096, QCString::ExplicitSize);
-
-        baseName.sprintf("%s%d%s",
-            qPrint(Config_getString(RTF_OUTPUT)+"/inline_mscgraph_"),
-            mscindex++,
-            ".msc"
-           );
-        std::ofstream file = Portable::openOutputStream(baseName);
-        if (!file.is_open())
+        bool exists = false;
+        auto fileName = writeFileContents(Config_getString(RTF_OUTPUT)+"/inline_mscgraph_", // baseName
+                                          ".msc",                                           // extension
+                                          "msc {"+s.text()+"}",                             // contents
+                                          exists);
+        if (!fileName.isEmpty())
         {
-          err("Could not open file {} for writing\n",qPrint(baseName));
+          writeMscFile(fileName, s.hasCaption(), s.srcFile(), s.srcLine(), !exists);
+          visitChildren(s);
+          includePicturePostRTF(true, s.hasCaption());
         }
-        QCString text = "msc {";
-        text+=s.text();
-        text+="}";
-        file.write( text.data(), text.length() );
-        file.close();
-
-        writeMscFile(baseName, s.hasCaption(), s.srcFile(), s.srcLine());
-        visitChildren(s);
-        includePicturePostRTF(true, s.hasCaption());
-
-        if (Config_getBool(DOT_CLEANUP)) Dir().remove(baseName.str());
       }
       break;
     case DocVerbatim::PlantUML:
@@ -479,18 +442,14 @@ void RTFDocVisitor::operator()(const DocInclude &inc)
          FileInfo cfi( inc.file().str() );
          auto fd = createFileDef( cfi.dirPath(), cfi.fileName() );
          getCodeParser(inc.extension()).parseCode(m_ci,inc.context(),
-                                           inc.text(),
-                                           langExt,
-                                           inc.stripCodeComments(),
-                                           inc.isExample(),
-                                           inc.exampleFile(),
-                                           fd.get(),   // fileDef,
-                                           -1,    // start line
-                                           -1,    // end line
-                                           FALSE, // inline fragment
-                                           nullptr,     // memberDef
-                                           TRUE   // show line numbers
-					   );
+                                                  inc.text(),
+                                                  langExt,
+                                                  inc.stripCodeComments(),
+                                                  CodeParserOptions()
+                                                  .setExample(inc.isExample(),inc.exampleFile())
+                                                  .setFileDef(fd.get())
+                                                  .setInlineFragment(true)
+                                                 );
          m_t << "\\par";
          m_t << "}\n";
       }
@@ -500,17 +459,13 @@ void RTFDocVisitor::operator()(const DocInclude &inc)
       m_t << "\\par\n";
       m_t << rtf_Style_Reset << getStyle("CodeExample");
       getCodeParser(inc.extension()).parseCode(m_ci,inc.context(),
-                                        inc.text(),langExt,
-                                        inc.stripCodeComments(),
-                                        inc.isExample(),
-                                        inc.exampleFile(),
-                                        nullptr,     // fileDef
-                                        -1,    // startLine
-                                        -1,    // endLine
-                                        TRUE,  // inlineFragment
-                                        nullptr,     // memberDef
-                                        FALSE  // show line numbers
-				       );
+                                               inc.text(),langExt,
+                                               inc.stripCodeComments(),
+                                               CodeParserOptions()
+                                               .setExample(inc.isExample(),inc.exampleFile())
+                                               .setInlineFragment(true)
+                                               .setShowLineNumbers(false)
+                                              );
       m_t << "\\par";
       m_t << "}\n";
       break;
@@ -539,13 +494,13 @@ void RTFDocVisitor::operator()(const DocInclude &inc)
       if (!m_lastIsPara) m_t << "\\par\n";
       m_t << rtf_Style_Reset << getStyle("CodeExample");
       CodeFragmentManager::instance().parseCodeFragment(m_ci,
-                                         inc.file(),
-                                         inc.blockId(),
-                                         inc.context(),
-                                         inc.type()==DocInclude::SnippetWithLines,
-                                         inc.trimLeft(),
-                                         inc.stripCodeComments()
-                                        );
+                                                        inc.file(),
+                                                        inc.blockId(),
+                                                        inc.context(),
+                                                        inc.type()==DocInclude::SnippetWithLines,
+                                                        inc.trimLeft(),
+                                                        inc.stripCodeComments()
+                                                       );
       m_t << "}";
       break;
   }
@@ -584,15 +539,13 @@ void RTFDocVisitor::operator()(const DocIncOperator &op)
       }
 
       getCodeParser(locLangExt).parseCode(m_ci,op.context(),op.text(),langExt,
-                                        op.stripCodeComments(),
-                                        op.isExample(),op.exampleFile(),
-                                        fd.get(),     // fileDef
-                                        op.line(),    // startLine
-                                        -1,    // endLine
-                                        FALSE, // inline fragment
-                                        nullptr,     // memberDef
-                                        op.showLineNo()  // show line numbers
-                                       );
+                                          op.stripCodeComments(),
+                                          CodeParserOptions()
+                                          .setExample(op.isExample(),op.exampleFile())
+                                          .setFileDef(fd.get())
+                                          .setStartLine(op.line())
+                                          .setShowLineNumbers(op.showLineNo())
+                                         );
     }
     pushHidden(m_hide);
     m_hide=TRUE;
@@ -1293,27 +1246,60 @@ void RTFDocVisitor::operator()(const DocImage &img)
 void RTFDocVisitor::operator()(const DocDotFile &df)
 {
   DBG_RTF("{\\comment RTFDocVisitor::operator()(const DocDotFile &)}\n");
-  if (!Config_getBool(DOT_CLEANUP)) copyFile(df.file(),Config_getString(RTF_OUTPUT)+"/"+stripPath(df.file()));
-  writeDotFile(df);
-  visitChildren(df);
-  includePicturePostRTF(true, df.hasCaption());
+  bool exists = false;
+  std::string inBuf;
+  if (readInputFile(df.file(),inBuf))
+  {
+    auto fileName = writeFileContents(Config_getString(RTF_OUTPUT)+"/"+stripPath(df.file())+"_", // baseName
+                                      ".dot",                                                    // extension
+                                      inBuf,                                                     // contents
+                                      exists);
+    if (!fileName.isEmpty())
+    {
+      writeDotFile(fileName, df.hasCaption(), df.srcFile(), df.srcLine(), !exists);
+      visitChildren(df);
+      includePicturePostRTF(true, df.hasCaption());
+    }
+  }
 }
 void RTFDocVisitor::operator()(const DocMscFile &df)
 {
   DBG_RTF("{\\comment RTFDocVisitor::operator()(const DocMscFile &)}\n");
-  if (!Config_getBool(DOT_CLEANUP)) copyFile(df.file(),Config_getString(RTF_OUTPUT)+"/"+stripPath(df.file()));
-  writeMscFile(df);
-  visitChildren(df);
-  includePicturePostRTF(true, df.hasCaption());
+  bool exists = false;
+  std::string inBuf;
+  if (readInputFile(df.file(),inBuf))
+  {
+    auto fileName = writeFileContents(Config_getString(RTF_OUTPUT)+"/"+stripPath(df.file())+"_", // baseName
+                                      ".msc",                                                    // extension
+                                      inBuf,                                                     // contents
+                                      exists);
+    if (!fileName.isEmpty())
+    {
+      writeMscFile(fileName, df.hasCaption(), df.srcFile(), df.srcLine(), !exists);
+      visitChildren(df);
+      includePicturePostRTF(true, df.hasCaption());
+    }
+  }
 }
 
 void RTFDocVisitor::operator()(const DocDiaFile &df)
 {
   DBG_RTF("{\\comment RTFDocVisitor::operator()(const DocDiaFile &)}\n");
-  if (!Config_getBool(DOT_CLEANUP)) copyFile(df.file(),Config_getString(RTF_OUTPUT)+"/"+stripPath(df.file()));
-  writeDiaFile(df);
-  visitChildren(df);
-  includePicturePostRTF(true, df.hasCaption());
+  bool exists = false;
+  std::string inBuf;
+  if (readInputFile(df.file(),inBuf))
+  {
+    auto fileName = writeFileContents(Config_getString(RTF_OUTPUT)+"/"+stripPath(df.file())+"_", // baseName
+                                      ".dia",                                                    // extension
+                                      inBuf,                                                     // contents
+                                      exists);
+    if (!fileName.isEmpty())
+    {
+      writeDiaFile(fileName, df.hasCaption(), df.srcFile(), df.srcLine(), !exists);
+      visitChildren(df);
+      includePicturePostRTF(true, df.hasCaption());
+    }
+  }
 }
 
 void RTFDocVisitor::operator()(const DocPlantUmlFile &df)
@@ -1746,44 +1732,37 @@ void RTFDocVisitor::endLink(const QCString &ref)
   m_lastIsPara=FALSE;
 }
 
-void RTFDocVisitor::writeDotFile(const DocDotFile &df)
-{
-  writeDotFile(df.file(), df.hasCaption(), df.srcFile(), df.srcLine());
-}
 void RTFDocVisitor::writeDotFile(const QCString &filename, bool hasCaption,
-                                 const QCString &srcFile, int srcLine)
+                                 const QCString &srcFile, int srcLine, bool newFile)
 {
-  QCString baseName=makeBaseName(filename);
+  QCString baseName=makeBaseName(filename,".dot");
   QCString outDir = Config_getString(RTF_OUTPUT);
-  writeDotGraphFromFile(filename,outDir,baseName,GraphOutputFormat::BITMAP,srcFile,srcLine);
+  if (newFile) writeDotGraphFromFile(filename,outDir,baseName,GraphOutputFormat::BITMAP,srcFile,srcLine);
   QCString imgExt = getDotImageExtension();
   includePicturePreRTF(baseName + "." + imgExt, true, hasCaption);
 }
 
-void RTFDocVisitor::writeMscFile(const DocMscFile &df)
-{
-  writeMscFile(df.file(), df.hasCaption(), df.srcFile(), df.srcLine());
-}
 void RTFDocVisitor::writeMscFile(const QCString &fileName, bool hasCaption,
-                                 const QCString &srcFile, int srcLine)
+                                 const QCString &srcFile, int srcLine, bool newFile)
 {
-  QCString baseName=makeBaseName(fileName);
+  QCString baseName=makeBaseName(fileName,".msc");
   QCString outDir = Config_getString(RTF_OUTPUT);
-  writeMscGraphFromFile(fileName,outDir,baseName,MscOutputFormat::BITMAP,srcFile,srcLine);
+  if (newFile) writeMscGraphFromFile(fileName,outDir,baseName,MscOutputFormat::BITMAP,srcFile,srcLine);
   includePicturePreRTF(baseName + ".png", true, hasCaption);
 }
 
-void RTFDocVisitor::writeDiaFile(const DocDiaFile &df)
+void RTFDocVisitor::writeDiaFile(const QCString &fileName, bool hasCaption,
+                                 const QCString &srcFile, int srcLine, bool newFile)
 {
-  QCString baseName=makeBaseName(df.file());
+  QCString baseName=makeBaseName(fileName,".dia");
   QCString outDir = Config_getString(RTF_OUTPUT);
-  writeDiaGraphFromFile(df.file(),outDir,baseName,DiaOutputFormat::BITMAP,df.srcFile(),df.srcLine());
-  includePicturePreRTF(baseName + ".png", true, df.hasCaption());
+  if (newFile) writeDiaGraphFromFile(fileName,outDir,baseName,DiaOutputFormat::BITMAP,srcFile,srcLine);
+  includePicturePreRTF(baseName + ".png", true, hasCaption);
 }
 
 void RTFDocVisitor::writePlantUMLFile(const QCString &fileName, bool hasCaption)
 {
-  QCString baseName=makeBaseName(fileName);
+  QCString baseName=makeBaseName(fileName,".pu");
   QCString outDir = Config_getString(RTF_OUTPUT);
   PlantumlManager::instance().generatePlantUMLOutput(fileName,outDir,PlantumlManager::PUML_BITMAP);
   includePicturePreRTF(baseName + ".png", true, hasCaption);

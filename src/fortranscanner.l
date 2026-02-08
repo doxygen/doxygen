@@ -466,7 +466,7 @@ FILEMASK  {VFILEMASK}|{HFILEMASK}
 
  /*------ ignore simple comment (not documentation yyextra->comments) */
 
-<*>"!"/[^<>\n]                         {  if (YY_START == String || YY_START == DocCopyBlock)
+<*>"!"/([^<>\n]|"<ff>"|"<FF>")          {  if (YY_START == String || YY_START == DocCopyBlock)
                                           { yyextra->colNr -= (int)yyleng;
                                             REJECT;
                                           } // "!" is ignored in strings
@@ -920,7 +920,7 @@ private                                 {
                                           }
                                         }
 {ID}                                    {
-                                          if (YY_START == Start)
+                                          if (YY_START == Start && QCString(yytext).stripWhiteSpace().lower()!="include")
                                           {
                                             addModule(yyscanner);
                                             yy_push_state(ModuleBody,yyscanner); //anon program

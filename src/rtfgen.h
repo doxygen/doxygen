@@ -306,6 +306,9 @@ class RTFGenerator : public OutputGenerator, public OutputGenIntf
     void startPlainFile(const QCString &name) override { OutputGenerator::startPlainFile(name); }
     void endPlainFile() override { OutputGenerator::endPlainFile(); }
 
+    void startEmbeddedDoc(int) override {}
+    void endEmbeddedDoc() override {}
+
   private:
     QCString rtf_BList_DepthStyle();
     QCString rtf_CList_DepthStyle();

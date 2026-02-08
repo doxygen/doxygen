@@ -41,6 +41,7 @@
 #include "portable.h"
 #include "codefragment.h"
 #include "cite.h"
+#include "md5.h"
 
 static const int g_maxLevels = 7;
 static const std::array<const char *,g_maxLevels> g_secLabels =
@@ -122,7 +123,7 @@ static void visitPreStart(TextStream &t, bool hasCaption, QCString name,  QCStri
       else
       {
         t << "\n\\begin{DoxyImageNoCaption}%\n"
-               "  \\mbox{";
+               "  \\doxymbox{";
       }
     }
 
@@ -194,7 +195,7 @@ static void visitPostEnd(TextStream &t, bool hasCaption, bool inlineImage = FALS
     }
     else
     {
-      t << "}%\n"; // end mbox or caption
+      t << "}%\n"; // end doxymbox or caption
       if (hasCaption)
       {
         t << "\\end{DoxyImage}\n";
@@ -205,29 +206,6 @@ static void visitPostEnd(TextStream &t, bool hasCaption, bool inlineImage = FALS
       }
     }
 }
-
-static QCString makeShortName(const QCString &name)
-{
-  QCString shortName = name;
-  int i = shortName.findRev('/');
-  if (i!=-1)
-  {
-    shortName=shortName.mid(i+1);
-  }
-  return shortName;
-}
-
-static QCString makeBaseName(const QCString &name)
-{
-  QCString baseName = makeShortName(name);
-  int i=baseName.find('.');
-  if (i!=-1)
-  {
-    baseName=baseName.left(i);
-  }
-  return baseName;
-}
-
 
 void LatexDocVisitor::visitCaption(const DocNodeList &children)
 {
@@ -442,7 +420,7 @@ void LatexDocVisitor::operator()(const DocVerbatim &s)
         m_ci.startCodeFragment("DoxyCode");
         getCodeParser(lang).parseCode(m_ci,s.context(),s.text(),langExt,
                                       Config_getBool(STRIP_CODE_COMMENTS),
-                                      s.isExample(),s.exampleFile());
+                                      CodeParserOptions().setExample(s.isExample(),s.exampleFile()));
         m_ci.endCodeFragment("DoxyCode");
       }
       break;
@@ -480,58 +458,29 @@ void LatexDocVisitor::operator()(const DocVerbatim &s)
       break;
     case DocVerbatim::Dot:
       {
-        static int dotindex = 1;
-        QCString fileName(4096, QCString::ExplicitSize);
-
-        fileName.sprintf("%s%d%s",
-            qPrint(Config_getString(LATEX_OUTPUT)+"/inline_dotgraph_"),
-            dotindex++,
-            ".dot"
-           );
-        std::ofstream file = Portable::openOutputStream(fileName);
-        if (!file.is_open())
+        bool exists = false;
+        auto fileName = writeFileContents(Config_getString(LATEX_OUTPUT)+"/inline_dotgraph_", // baseName
+                                          ".dot",                                             // extension
+                                          s.text(),                                           // contents
+                                          exists);
+        if (!fileName.isEmpty())
         {
-          err("Could not open file {} for writing\n",fileName);
-        }
-        else
-        {
-          file.write( s.text().data(), s.text().length() );
-          file.close();
-
-          startDotFile(fileName,s.width(),s.height(),s.hasCaption(),s.srcFile(),s.srcLine());
+          startDotFile(fileName,s.width(),s.height(),s.hasCaption(),s.srcFile(),s.srcLine(),!exists);
           visitChildren(s);
           endDotFile(s.hasCaption());
-
-          if (Config_getBool(DOT_CLEANUP)) Dir().remove(fileName.str());
         }
       }
       break;
     case DocVerbatim::Msc:
       {
-        static int mscindex = 1;
-        QCString baseName(4096, QCString::ExplicitSize);
-
-        baseName.sprintf("%s%d",
-            qPrint(Config_getString(LATEX_OUTPUT)+"/inline_mscgraph_"),
-            mscindex++
-           );
-        QCString fileName = baseName+".msc";
-        std::ofstream file = Portable::openOutputStream(fileName);
-        if (!file.is_open())
+        bool exists = false;
+        auto fileName = writeFileContents(Config_getString(LATEX_OUTPUT)+"/inline_mscgraph_", // baseName
+                                          ".msc",                                             // extension
+                                          "msc {"+s.text()+"}",                               // contents
+                                          exists);
+        if (!fileName.isEmpty())
         {
-          err("Could not open file {} for writing\n",fileName);
-        }
-        else
-        {
-          QCString text = "msc {";
-          text+=s.text();
-          text+="}";
-          file.write( text.data(), text.length() );
-          file.close();
-
-          writeMscFile(baseName, s);
-
-          if (Config_getBool(DOT_CLEANUP)) Dir().remove(fileName.str());
+          writeMscFile(fileName, s, !exists);
         }
       }
       break;
@@ -578,14 +527,10 @@ void LatexDocVisitor::operator()(const DocInclude &inc)
                                                   inc.text(),
                                                   langExt,
                                                   inc.stripCodeComments(),
-                                                  inc.isExample(),
-                                                  inc.exampleFile(),
-                                                  fd.get(),    // fileDef,
-                                                  -1,    // start line
-                                                  -1,    // end line
-                                                  FALSE, // inline fragment
-                                                  nullptr,     // memberDef
-                                                  TRUE   // show line numbers
+                                                  CodeParserOptions()
+                                                  .setExample(inc.isExample(), inc.exampleFile())
+                                                  .setFileDef(fd.get())
+                                                  .setInlineFragment(true)
        				                 );
         m_ci.endCodeFragment("DoxyCodeInclude");
       }
@@ -596,14 +541,10 @@ void LatexDocVisitor::operator()(const DocInclude &inc)
         getCodeParser(inc.extension()).parseCode(m_ci,inc.context(),
                                                   inc.text(),langExt,
                                                   inc.stripCodeComments(),
-                                                  inc.isExample(),
-                                                  inc.exampleFile(),
-                                                  nullptr,     // fileDef
-                                                  -1,    // startLine
-                                                  -1,    // endLine
-                                                  TRUE,  // inlineFragment
-                                                  nullptr,     // memberDef
-                                                  FALSE
+                                                  CodeParserOptions()
+                                                  .setExample(inc.isExample(), inc.exampleFile())
+                                                  .setInlineFragment(true)
+                                                  .setShowLineNumbers(false)
                                                  );
         m_ci.endCodeFragment("DoxyCodeInclude");
       }
@@ -678,13 +619,11 @@ void LatexDocVisitor::operator()(const DocIncOperator &op)
 
       getCodeParser(locLangExt).parseCode(m_ci,op.context(),op.text(),langExt,
                                           op.stripCodeComments(),
-                                          op.isExample(),op.exampleFile(),
-                                          fd.get(),     // fileDef
-                                          op.line(),    // startLine
-                                          -1,    // endLine
-                                          FALSE, // inline fragment
-                                          nullptr,     // memberDef
-                                          op.showLineNo()  // show line numbers
+                                          CodeParserOptions()
+                                          .setExample(op.isExample(),op.exampleFile())
+                                          .setFileDef(fd.get())
+                                          .setStartLine(op.line())
+                                          .setShowLineNumbers(op.showLineNo())
                                          );
     }
     pushHidden(m_hide);
@@ -723,11 +662,7 @@ void LatexDocVisitor::operator()(const DocFormula &f)
 void LatexDocVisitor::operator()(const DocIndexEntry &i)
 {
   if (m_hide) return;
-  m_t << "\\index{";
-  m_t << latexEscapeLabelName(i.entry());
-  m_t << "@{";
-  m_t << latexEscapeIndexChars(i.entry());
-  m_t << "}}";
+  latexWriteIndexItem(m_t,i.entry());
 }
 
 void LatexDocVisitor::operator()(const DocSimpleSectSep &)
@@ -1543,28 +1478,61 @@ void LatexDocVisitor::operator()(const DocImage &img)
 void LatexDocVisitor::operator()(const DocDotFile &df)
 {
   if (m_hide) return;
-  if (!Config_getBool(DOT_CLEANUP)) copyFile(df.file(),Config_getString(LATEX_OUTPUT)+"/"+stripPath(df.file()));
-  startDotFile(df.file(),df.width(),df.height(),df.hasCaption(),df.srcFile(),df.srcLine());
-  visitChildren(df);
-  endDotFile(df.hasCaption());
+  bool exists = false;
+  std::string inBuf;
+  if (readInputFile(df.file(),inBuf))
+  {
+    auto fileName = writeFileContents(Config_getString(LATEX_OUTPUT)+"/"+stripPath(df.file())+"_", // baseName
+                                      ".dot",                                                      // extension
+                                      inBuf,                                                       // contents
+                                      exists);
+    if (!fileName.isEmpty())
+    {
+      startDotFile(fileName,df.width(),df.height(),df.hasCaption(),df.srcFile(),df.srcLine(),!exists);
+      visitChildren(df);
+      endDotFile(df.hasCaption());
+    }
+  }
 }
 
 void LatexDocVisitor::operator()(const DocMscFile &df)
 {
   if (m_hide) return;
-  if (!Config_getBool(DOT_CLEANUP)) copyFile(df.file(),Config_getString(LATEX_OUTPUT)+"/"+stripPath(df.file()));
-  startMscFile(df.file(),df.width(),df.height(),df.hasCaption(),df.srcFile(),df.srcLine());
-  visitChildren(df);
-  endMscFile(df.hasCaption());
+  bool exists = false;
+  std::string inBuf;
+  if (readInputFile(df.file(),inBuf))
+  {
+    auto fileName = writeFileContents(Config_getString(LATEX_OUTPUT)+"/"+stripPath(df.file())+"_", // baseName
+                                      ".msc",                                                      // extension
+                                      inBuf,                                                      // contents
+                                      exists);
+    if (!fileName.isEmpty())
+    {
+      startMscFile(fileName,df.width(),df.height(),df.hasCaption(),df.srcFile(),df.srcLine(),!exists);
+      visitChildren(df);
+      endMscFile(df.hasCaption());
+    }
+  }
 }
 
 void LatexDocVisitor::operator()(const DocDiaFile &df)
 {
   if (m_hide) return;
-  if (!Config_getBool(DOT_CLEANUP)) copyFile(df.file(),Config_getString(LATEX_OUTPUT)+"/"+stripPath(df.file()));
-  startDiaFile(df.file(),df.width(),df.height(),df.hasCaption(),df.srcFile(),df.srcLine());
-  visitChildren(df);
-  endDiaFile(df.hasCaption());
+  bool exists = false;
+  std::string inBuf;
+  if (readInputFile(df.file(),inBuf))
+  {
+    auto fileName = writeFileContents(Config_getString(LATEX_OUTPUT)+"/"+stripPath(df.file())+"_", // baseName
+                                      ".dia",                                                      // extension
+                                      inBuf,                                                      // contents
+                                      exists);
+    if (!fileName.isEmpty())
+    {
+      startDiaFile(fileName,df.width(),df.height(),df.hasCaption(),df.srcFile(),df.srcLine(),!exists);
+      visitChildren(df);
+      endDiaFile(df.hasCaption());
+    }
+  }
 }
 
 void LatexDocVisitor::operator()(const DocPlantUmlFile &df)
@@ -1737,7 +1705,7 @@ void LatexDocVisitor::operator()(const DocParamList &pl)
   {
     if (pl.direction()!=DocParamSect::Unspecified)
     {
-      m_t << "\\mbox{\\texttt{";
+      m_t << "\\doxymbox{\\texttt{";
       if (pl.direction()==DocParamSect::In)
       {
         m_t << "in";
@@ -1804,7 +1772,7 @@ void LatexDocVisitor::operator()(const DocXRefItem &x)
   m_t << "\\item[";
   if (pdfHyperlinks && !anonymousEnum)
   {
-    m_t << "\\mbox{\\hyperlink{" << stripPath(x.file()) << "_" << x.anchor() << "}{";
+    m_t << "\\doxymbox{\\hyperlink{" << stripPath(x.file()) << "_" << x.anchor() << "}{";
   }
   else
   {
@@ -1948,14 +1916,13 @@ void LatexDocVisitor::startDotFile(const QCString &fileName,
                                    const QCString &height,
                                    bool hasCaption,
                                    const QCString &srcFile,
-                                   int srcLine
+                                   int srcLine, bool newFile
                                   )
 {
-  QCString baseName=makeBaseName(fileName);
+  QCString baseName=makeBaseName(fileName,".dot");
   baseName.prepend("dot_");
   QCString outDir = Config_getString(LATEX_OUTPUT);
-  QCString name = fileName;
-  writeDotGraphFromFile(name,outDir,baseName,GraphOutputFormat::EPS,srcFile,srcLine);
+  if (newFile) writeDotGraphFromFile(fileName,outDir,baseName,GraphOutputFormat::EPS,srcFile,srcLine);
   visitPreStart(m_t,hasCaption, baseName, width, height);
 }
 
@@ -1970,14 +1937,14 @@ void LatexDocVisitor::startMscFile(const QCString &fileName,
                                    const QCString &height,
                                    bool hasCaption,
                                    const QCString &srcFile,
-                                   int srcLine
+                                   int srcLine, bool newFile
                                   )
 {
-  QCString baseName=makeBaseName(fileName);
+  QCString baseName=makeBaseName(fileName,".msc");
   baseName.prepend("msc_");
 
   QCString outDir = Config_getString(LATEX_OUTPUT);
-  writeMscGraphFromFile(fileName,outDir,baseName,MscOutputFormat::EPS,srcFile,srcLine);
+  if (newFile) writeMscGraphFromFile(fileName,outDir,baseName,MscOutputFormat::EPS,srcFile,srcLine);
   visitPreStart(m_t,hasCaption, baseName, width, height);
 }
 
@@ -1988,30 +1955,29 @@ void LatexDocVisitor::endMscFile(bool hasCaption)
 }
 
 
-void LatexDocVisitor::writeMscFile(const QCString &baseName, const DocVerbatim &s)
+void LatexDocVisitor::writeMscFile(const QCString &fileName, const DocVerbatim &s, bool newFile)
 {
-  QCString shortName = makeShortName(baseName);
+  QCString shortName=makeBaseName(fileName,".msc");
   QCString outDir = Config_getString(LATEX_OUTPUT);
-  writeMscGraphFromFile(baseName+".msc",outDir,shortName,MscOutputFormat::EPS,s.srcFile(),s.srcLine());
+  if (newFile) writeMscGraphFromFile(fileName,outDir,shortName,MscOutputFormat::EPS,s.srcFile(),s.srcLine());
   visitPreStart(m_t, s.hasCaption(), shortName, s.width(),s.height());
   visitCaption(s.children());
   visitPostEnd(m_t, s.hasCaption());
 }
-
 
 void LatexDocVisitor::startDiaFile(const QCString &fileName,
                                    const QCString &width,
                                    const QCString &height,
                                    bool hasCaption,
                                    const QCString &srcFile,
-                                   int srcLine
+                                   int srcLine, bool newFile
                                   )
 {
-  QCString baseName=makeBaseName(fileName);
+  QCString baseName=makeBaseName(fileName,".dia");
   baseName.prepend("dia_");
 
   QCString outDir = Config_getString(LATEX_OUTPUT);
-  writeDiaGraphFromFile(fileName,outDir,baseName,DiaOutputFormat::EPS,srcFile,srcLine);
+  if (newFile) writeDiaGraphFromFile(fileName,outDir,baseName,DiaOutputFormat::EPS,srcFile,srcLine);
   visitPreStart(m_t,hasCaption, baseName, width, height);
 }
 
@@ -2023,7 +1989,7 @@ void LatexDocVisitor::endDiaFile(bool hasCaption)
 
 void LatexDocVisitor::writePlantUMLFile(const QCString &baseName, const DocVerbatim &s)
 {
-  QCString shortName = makeShortName(baseName);
+  QCString shortName = stripPath(baseName);
   if (s.useBitmap())
   {
     if (shortName.find('.')==-1) shortName += ".png";
@@ -2056,8 +2022,8 @@ void LatexDocVisitor::startPlantUmlFile(const QCString &fileName,
   bool first = true;
   for (const auto &bName: baseNameVector)
   {
-    QCString baseName = makeBaseName(bName);
-    QCString shortName = makeShortName(baseName);
+    QCString baseName = makeBaseName(bName,".pu");
+    QCString shortName = stripPath(baseName);
     if (useBitmap)
     {
       if (shortName.find('.')==-1) shortName += ".png";

@@ -38,7 +38,7 @@ option(enable_tracing  "Enable tracing option in release builds [development]" O
 option(enable_lex_debug "Enable debugging info for lexical scanners in release builds [development]" OFF)
 
 if(CMAKE_BUILD_TYPE STREQUAL "Release")
-  if (CYGWIN OR MINGW)
+  if (CYGWIN OR MINGW OR NOT "${CMAKE_TOOLCHAIN_FILE}" STREQUAL "")
     set(CMAKE_INTERPROCEDURAL_OPTIMIZATION FALSE)
   else()
     set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
@@ -92,7 +92,7 @@ if(NOT DEFINED MACOS_VERSION_MIN) # to allow overruling with -DMACOS_VERSION_MIN
     set(MACOS_VERSION_MIN 10.15) # needs std::filesystem
   endif()
   if(build_wizard AND CMAKE_SYSTEM MATCHES "Darwin")
-    set(MACOS_VERSION_MIN 11.0) # needs Qt
+    set(MACOS_VERSION_MIN 13.0) # needs Qt6
   endif()
 endif()
 

@@ -1877,20 +1877,18 @@ void VhdlDocGen::writeSource(const MemberDef* mdef,OutputList& ol,const QCString
   ol.pushGeneratorState();
   auto &codeOL = ol.codeGenerators();
   codeOL.startCodeFragment("DoxyCode");
-  intf->parseCode(     codeOL,           // codeOutIntf
-                       QCString(),       // scope
-                       codeFragment,     // input
-                       SrcLangExt::VHDL,  // lang
-                       Config_getBool(STRIP_CODE_COMMENTS),
-                       FALSE,            // isExample
-                       QCString(),       // exampleName
-                       mdef->getFileDef(), // fileDef
-                       mdef->getStartBodyLine(),      // startLine
-                       mdef->getEndBodyLine(),        // endLine
-                       TRUE,             // inlineFragment
-                       mdef,             // memberDef
-                       TRUE              // show line numbers
-                      );
+  intf->parseCode(codeOL,           // codeOutIntf
+                  QCString(),       // scope
+                  codeFragment,     // input
+                  SrcLangExt::VHDL,  // lang
+                  Config_getBool(STRIP_CODE_COMMENTS),
+                  CodeParserOptions()
+                  .setFileDef(mdef->getFileDef())
+                  .setStartLine(mdef->getStartBodyLine())
+                  .setEndLine(mdef->getEndBodyLine())
+                  .setInlineFragment(true)
+                  .setMemberDef(mdef)
+                 );
 
   codeOL.endCodeFragment("DoxyCode");
   ol.popGeneratorState();

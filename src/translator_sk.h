@@ -1434,7 +1434,7 @@ class TranslatorSlovak : public TranslatorAdapter_1_8_15
     }
 
     /*! This returns the word directory with or without starting capital
-     *  (\a first_capital) and in sigular or plural form (\a singular).
+     *  (\a first_capital) and in singular or plural form (\a singular).
      */
     QCString trDir(bool first_capital, bool singular) override
     {
@@ -1661,7 +1661,7 @@ class TranslatorSlovak : public TranslatorAdapter_1_8_15
       return createNoun(first_capital, singular, "podprogram", "y");
     }
 
-    /*! C# Type Contraint list */
+    /*! C# Type Constraint list */
     QCString trTypeConstraints() override
     {
       return "Obmedzenie typov (Type Constraints)";

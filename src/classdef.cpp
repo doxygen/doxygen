@@ -314,6 +314,7 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
     void findSectionsInDocumentation() override;
     void addMembersToMemberGroup() override;
     void addListReferences() override;
+    void addRequirementReferences() override;
     void addTypeConstraints() override;
     void computeAnchors() override;
     void mergeMembers() override;
@@ -350,6 +351,7 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
                  bool showInline=FALSE,const ClassDef *inheritedFrom=nullptr,
                  MemberListType lt2=MemberListType::Invalid(),bool invert=FALSE,bool showAlways=FALSE) const override;
     void setRequiresClause(const QCString &req) override;
+    void setPrimaryConstructorParams(const ArgumentList &list) override;
 
     // inheritance graph related members
     CLASS_GRAPH_t hasInheritanceGraph() const override;
@@ -559,6 +561,8 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
     CLASS_GRAPH_t m_typeInheritanceGraph = CLASS_GRAPH_t::NO;
 
     bool m_implicitTemplateInstance = false;
+
+    ArgumentList m_primaryConstructorParams;
 };
 
 std::unique_ptr<ClassDef> createClassDef(
@@ -1656,6 +1660,7 @@ void ClassDefImpl::writeDetailedDocumentationBody(OutputList &ol) const
     ol.endExamples();
   }
   writeSourceDef(ol);
+  if (hasRequirementRefs()) writeRequirementRefs(ol);
   ol.endTextBlock();
 }
 
@@ -1665,7 +1670,8 @@ bool ClassDefImpl::hasDetailedDescription() const
   bool sourceBrowser = Config_getBool(SOURCE_BROWSER);
   return ((!briefDescription().isEmpty() && repeatBrief) ||
           (!documentation().isEmpty() || m_tempArgs.hasTemplateDocumentation()) ||
-          (sourceBrowser && getStartBodyLine()!=-1 && getBodyDef()));
+          (sourceBrowser && getStartBodyLine()!=-1 && getBodyDef()) ||
+          hasRequirementRefs());
 }
 
 // write the detailed description for this class
@@ -2941,6 +2947,14 @@ QCString ClassDefImpl::title() const
       return theTranslator->trCustomReference(VhdlDocGen::getClassTitle(this));
     });
   }
+  else if (lang==SrcLangExt::CSharp && !m_primaryConstructorParams.empty())
+  {
+    pageTitle = getReferenceTitle([this](){
+      return theTranslator->trCompoundReference(displayName()+argListToString(m_primaryConstructorParams),
+              m_compType,
+              !m_tempArgs.empty());
+    });
+  }
   else if (isJavaEnum())
   {
     pageTitle = getReferenceTitle([this](){
@@ -3553,6 +3567,11 @@ QCString ClassDefImpl::requiresClause() const
 void ClassDefImpl::setRequiresClause(const QCString &req)
 {
   m_requiresClause = req;
+}
+
+void ClassDefImpl::setPrimaryConstructorParams(const ArgumentList &list)
+{
+  m_primaryConstructorParams = list;
 }
 
 /*! called from MemberDef::writeDeclaration() to (recursively) write the
@@ -4542,12 +4561,9 @@ void ClassDefImpl::setClassName(const QCString &name)
 
 void ClassDefImpl::addListReferences()
 {
-  SrcLangExt lang = getLanguage();
   if (!isLinkableInProject()) return;
-  //printf("ClassDef(%s)::addListReferences()\n",qPrint(name()));
-  {
-    const RefItemVector &xrefItems = xrefListItems();
-    addRefItem(xrefItems,
+  SrcLangExt lang = getLanguage();
+  addRefItem(xrefListItems(),
              qualifiedName(),
              theTranslator->trCompoundType(compoundType(), lang),
              getOutputFileBase(),
@@ -4555,7 +4571,6 @@ void ClassDefImpl::addListReferences()
              QCString(),
              this
             );
-  }
   for (const auto &mg : m_memberGroups)
   {
     mg->addListReferences(this);
@@ -4565,6 +4580,23 @@ void ClassDefImpl::addListReferences()
     if (ml->listType().isDetailed())
     {
       ml->addListReferences(this);
+    }
+  }
+}
+
+void ClassDefImpl::addRequirementReferences()
+{
+  if (!isLinkableInProject()) return;
+  RequirementManager::instance().addRequirementRefsForSymbol(this);
+  for (const auto &mg : m_memberGroups)
+  {
+    mg->addRequirementReferences(this);
+  }
+  for (auto &ml : m_memberLists)
+  {
+    if (ml->listType().isDetailed())
+    {
+      ml->addRequirementReferences(this);
     }
   }
 }

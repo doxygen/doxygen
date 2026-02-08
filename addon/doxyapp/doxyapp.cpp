@@ -138,9 +138,8 @@ static void findXRefSymbols(FileDef *fd)
                 fileToString(fd->absFilePath()),
                 lang,
                 FALSE,
-                FALSE,
-                QCString(),
-                fd);
+                CodeParserOptions()
+                .setFileDef(fd));
 }
 
 static void listSymbol(Definition *d)

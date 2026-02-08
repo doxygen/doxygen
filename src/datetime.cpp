@@ -25,7 +25,6 @@
 #include "portable.h"
 #include "language.h"
 #include "message.h"
-#include "growbuf.h"
 
 std::tm getCurrentDateTime()
 {
@@ -179,7 +178,13 @@ QCString formatDateTime(const QCString &format,const std::tm &dt,int &formatUsed
   auto getMonth     = [](const std::tm &dat) { return dat.tm_mon+1;        };
   auto getDay       = [](const std::tm &dat) { return dat.tm_mday;         };
   auto getDayOfWeek = [](const std::tm &dat) { return (dat.tm_wday+6)%7+1; };
-  GrowBuf growBuf;
+  QCString result;
+  result.reserve(256);
+  auto addInt = [&result](const char *fmt,int value) {
+    char tmp[50];
+    qsnprintf(tmp,50,fmt,value);
+    result+=tmp;
+  };
   char c = 0;
   const char *p            = format.data();
   const char *fmt_zero     = "%02d";
@@ -196,36 +201,35 @@ QCString formatDateTime(const QCString &format,const std::tm &dt,int &formatUsed
         if (nc=='-') nc=*++p; // skip over -
         switch (nc)
         {
-          case '%': growBuf.addChar('%');                                                                              break;
-          case 'y': growBuf.addInt(fmt_selected,getYear(dt)%100);                              formatUsed|=SF_Date;    break;
-          case 'Y': growBuf.addInt("%d",getYear(dt));                                          formatUsed|=SF_Date;    break;
-          case 'm': growBuf.addInt(fmt_selected,getMonth(dt));                                 formatUsed|=SF_Date;    break;
-          case 'b': growBuf.addStr(theTranslator->trMonth(getMonth(dt),false,false));          formatUsed|=SF_Date;    break;
-          case 'B': growBuf.addStr(theTranslator->trMonth(getMonth(dt),false,true));           formatUsed|=SF_Date;    break;
-          case 'd': growBuf.addInt(fmt_selected,getDay(dt));                                   formatUsed|=SF_Date;    break;
-          case 'u': growBuf.addInt("%d",getDayOfWeek(dt));   /* Monday = 1 ... Sunday = 7 */   formatUsed|=SF_Date;    break;
-          case 'w': growBuf.addInt("%d",getDayOfWeek(dt)%7); /* Sunday = 0 ... Saturday = 6 */ formatUsed|=SF_Date;    break;
-          case 'a': growBuf.addStr(theTranslator->trDayOfWeek(getDayOfWeek(dt),false,false));  formatUsed|=SF_Date;    break;
-          case 'A': growBuf.addStr(theTranslator->trDayOfWeek(getDayOfWeek(dt),false,true));   formatUsed|=SF_Date;    break;
-          case 'H': growBuf.addInt(fmt_selected,dt.tm_hour);                                   formatUsed|=SF_Time;    break;
-          case 'I': growBuf.addInt(fmt_selected,dt.tm_hour%12);                                formatUsed|=SF_Time;    break;
-          case 'p': growBuf.addStr(theTranslator->trDayPeriod(dt.tm_hour>=12));                formatUsed|=SF_Time;    break;
-          case 'M': growBuf.addInt(fmt_selected,dt.tm_min);                                    formatUsed|=SF_Time;    break;
-          case 'S': growBuf.addInt(fmt_selected,dt.tm_sec);                                    formatUsed|=SF_Seconds; break;
+          case '%': result+='%';                                                                                       break;
+          case 'y': addInt(fmt_selected,getYear(dt)%100);                              formatUsed|=SF_Date;    break;
+          case 'Y': addInt("%d",getYear(dt));                                          formatUsed|=SF_Date;    break;
+          case 'm': addInt(fmt_selected,getMonth(dt));                                 formatUsed|=SF_Date;    break;
+          case 'b': result+=theTranslator->trMonth(getMonth(dt),false,false);          formatUsed|=SF_Date;    break;
+          case 'B': result+=theTranslator->trMonth(getMonth(dt),false,true);           formatUsed|=SF_Date;    break;
+          case 'd': addInt(fmt_selected,getDay(dt));                                   formatUsed|=SF_Date;    break;
+          case 'u': addInt("%d",getDayOfWeek(dt));   /* Monday = 1 ... Sunday = 7 */   formatUsed|=SF_Date;    break;
+          case 'w': addInt("%d",getDayOfWeek(dt)%7); /* Sunday = 0 ... Saturday = 6 */ formatUsed|=SF_Date;    break;
+          case 'a': result+=theTranslator->trDayOfWeek(getDayOfWeek(dt),false,false);  formatUsed|=SF_Date;    break;
+          case 'A': result+=theTranslator->trDayOfWeek(getDayOfWeek(dt),false,true);   formatUsed|=SF_Date;    break;
+          case 'H': addInt(fmt_selected,dt.tm_hour);                                   formatUsed|=SF_Time;    break;
+          case 'I': addInt(fmt_selected,dt.tm_hour%12);                                formatUsed|=SF_Time;    break;
+          case 'p': result+=theTranslator->trDayPeriod(dt.tm_hour>=12);                formatUsed|=SF_Time;    break;
+          case 'M': addInt(fmt_selected,dt.tm_min);                                    formatUsed|=SF_Time;    break;
+          case 'S': addInt(fmt_selected,dt.tm_sec);                                    formatUsed|=SF_Seconds; break;
           default:
-            growBuf.addChar(c);
-            if (*(p-1)=='-') growBuf.addChar('-');
-            growBuf.addChar(nc);
+            result+=c;
+            if (*(p-1)=='-') result+='-';
+            result+=nc;
             break;
         }
         p++;
         break;
       default:
-        growBuf.addChar(c);
+        result+=c;
         break;
     }
   }
-  growBuf.addChar(0);
-  return growBuf.get();
+  return result;
 }
 

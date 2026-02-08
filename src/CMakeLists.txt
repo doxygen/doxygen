@@ -298,6 +298,7 @@ add_library(doxymain STATIC
     qhp.cpp
     reflist.cpp
     regex.cpp
+    requirement.cpp
     resourcemgr.cpp
     rtfdocvisitor.cpp
     rtfgen.cpp
@@ -364,7 +365,11 @@ if (use_libclang)
     include_directories(${LLVM_INCLUDE_DIRS})
     add_definitions(${LLVM_DEFINITIONS})
     if (static_libclang)
-        set(CLANG_LIBS libclang clangTooling)
+        if (MSVC OR (CMAKE_CXX_COMPILER_ID STREQUAL "Clang"))
+          set(CLANG_LIBS libclang clangTooling)
+        else()
+          set(CLANG_LIBS libclang_static clangTooling)
+        endif()
         add_definitions(-DCINDEX_NO_EXPORTS)
     else() # dynamically linked version of clang
         llvm_config(doxymain USE_SHARED support)

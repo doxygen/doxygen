@@ -437,6 +437,7 @@ class ClassDefMutable : public DefinitionMutable, public ClassDef
     virtual void findSectionsInDocumentation() = 0;
     virtual void addMembersToMemberGroup() = 0;
     virtual void addListReferences() = 0;
+    virtual void addRequirementReferences() = 0;
     virtual void addTypeConstraints() = 0;
     virtual void computeAnchors() = 0;
     virtual void mergeMembers() = 0;
@@ -447,6 +448,7 @@ class ClassDefMutable : public DefinitionMutable, public ClassDef
     virtual void setAnonymousEnumType() = 0;
     virtual void countMembers() = 0;
     virtual void sortAllMembersList() = 0;
+    virtual void setPrimaryConstructorParams(const ArgumentList &list) = 0;
 
 
 };

@@ -27,7 +27,6 @@
 #include "outputlist.h"
 #include "arguments.h"
 #include "types.h"
-#include "growbuf.h"
 #include "markdown.h"
 #include "VhdlParserTokenManager.h"
 #include "VhdlParserErrorHandler.hpp"
@@ -864,13 +863,14 @@ void VHDLOutlineParser::error_skipto(int kind)
 QCString filter2008VhdlComment(const QCString &s)
 {
   if (s.length()<4) return s;
-  GrowBuf growBuf;
+  QCString result;
+  result.reserve(s.length());
   const char *p=s.data()+3; // skip /*!
   char c='\0';
   while (*p == ' ' || *p == '\t') p++;
   while ((c=*p++))
   {
-    growBuf.addChar(c);
+    result+=c;
     if (c == '\n')
     {
       // special handling of space followed by * at beginning of line
@@ -881,14 +881,13 @@ QCString filter2008VhdlComment(const QCString &s)
     }
   }
   // special attention in case */ at end of last line
-  size_t len = growBuf.getPos();
-  if (len>=2 && growBuf.at(len-1) == '/' && growBuf.at(len-2) == '*')
+  size_t len = result.length();
+  if (len>=2 && result[len-1]=='/' && result[len-2]=='*')
   {
     len -= 2;
-    while (len>0 && growBuf.at(len-1) == '*') len--;
-    while (len>0 && ((c = growBuf.at(len-1)) == ' ' || c == '\t')) len--;
-    growBuf.setPos(len);
+    while (len>0 && result[len-1] == '*') len--;
+    while (len>0 && ((c = result[len-1]) == ' ' || c == '\t')) len--;
+    result.resize(len);
   }
-  growBuf.addChar(0);
-  return growBuf.get();
+  return result;
 }

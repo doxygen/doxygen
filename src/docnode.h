@@ -107,7 +107,7 @@ class DocNode
   protected:
     /*! Sets whether or not this item is inside a preformatted section */
     void setInsidePreformatted(bool p) { m_insidePre = p; }
-    enum RefType { Unknown, Anchor, Section, Table };
+    enum RefType { Unknown, Anchor, Section, Table, Requirement };
   private:
     bool m_insidePre = false;
     DocParser *m_parser;
@@ -778,7 +778,7 @@ class DocRef : public DocCompoundNode
 {
   public:
     DocRef(DocParser *parser,DocNodeVariant *parent,const QCString &target,const QCString &context);
-    void parse();
+    void parse(char cmdChar,const QCString &cmdName);
     QCString file() const         { return m_file; }
     QCString relPath() const      { return m_relPath; }
     QCString ref() const          { return m_ref; }
@@ -1100,12 +1100,9 @@ class DocPara : public DocCompoundNode
     void handleCite(char cmdChar,const QCString &cmdName);
     void handleDoxyConfig(char cmdChar,const QCString &cmdName);
     void handleEmoji(char cmdChar,const QCString &cmdName);
-    void handleRef(char cmdChar,const QCString &cmdName);
     void handleSection(char cmdChar,const QCString &cmdName);
     void handleInheritDoc();
     void handleVhdlFlow();
-    void handleILine(char cmdChar,const QCString &cmdName);
-    void handleIFile(char cmdChar,const QCString &cmdName);
     void handleShowDate(char cmdChar,const QCString &cmdName);
     Token handleStartCode();
     Token handleHtmlHeader(const HtmlAttribList &tagHtmlAttribs,int level);

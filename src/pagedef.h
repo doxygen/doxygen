@@ -53,6 +53,8 @@ class PageDef : public DefinitionMutable, public Definition
     virtual void setNestingLevel(int) = 0;
     virtual void writePageDocumentation(OutputList &) const = 0;
     virtual void addSectionsToIndex() = 0;
+    virtual void addListReferences() = 0;
+    virtual void addRequirementReferences() = 0;
 
 };
 

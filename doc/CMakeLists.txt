@@ -120,6 +120,7 @@ set(DOC_FILES
         layout_noindex_and_treeview.png
         layout_noindex_and_sidebar.png
         lists.dox
+        requirements.dox
         markdown.dox
         output.dox
         perlmod.dox

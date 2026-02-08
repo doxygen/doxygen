@@ -316,6 +316,8 @@ class LatexGenerator : public OutputGenerator, public OutputGenIntf
     void startPlainFile(const QCString &name) override { OutputGenerator::startPlainFile(name); }
     void endPlainFile() override { OutputGenerator::endPlainFile(); }
 
+    void startEmbeddedDoc(int) override;
+    void endEmbeddedDoc() override;
 
   private:
     bool m_firstDescItem = true;
@@ -345,6 +347,7 @@ QCString latexEscapeLabelName(const QCString &s);
 QCString latexEscapeIndexChars(const QCString &s);
 QCString latexEscapePDFString(const QCString &s);
 QCString latexFilterURL(const QCString &s);
+void latexWriteIndexItem(TextStream &t,const QCString &r1,const QCString &s2 = "");
 
 
 #endif

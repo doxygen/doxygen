@@ -88,7 +88,7 @@ static constexpr bool extraChar(char c)
   return c=='-' || c=='+' || c=='!' || c=='?' || c=='$' || c=='@'  ||
          c=='&' || c=='*' || c=='_' || c=='%' || c=='[' || c=='('  ||
          c=='.' || c=='>' || c==':' || c==',' || c==';' || c=='\'' ||
-         c=='"' || c=='`';
+         c=='"' || c=='`' || c=='\\';
 }
 
 // is character c allowed before an emphasis section
@@ -677,6 +677,7 @@ size_t Markdown::Private::isSpecialCommand(std::string_view data,size_t offset)
     { "relatedalso",    endOfLabel },
     { "relates",        endOfLabel },
     { "relatesalso",    endOfLabel },
+    { "requirement",    endOfLabel },
     { "retval",         endOfRetVal},
     { "rtfinclude",     endOfLine  },
     { "section",        endOfLabel },
@@ -686,6 +687,7 @@ size_t Markdown::Private::isSpecialCommand(std::string_view data,size_t offset)
     { "snippetdoc",     endOfLine  },
     { "snippetlineno",  endOfLine  },
     { "struct",         endOfLine  },
+    { "satisfies",      endOfLabel },
     { "subpage",        endOfLabel },
     { "subparagraph",   endOfLabel },
     { "subsubparagraph",endOfLabel },
@@ -700,6 +702,7 @@ size_t Markdown::Private::isSpecialCommand(std::string_view data,size_t offset)
     { "until",          endOfLine  },
     { "var",            endOfLine  },
     { "verbinclude",    endOfLine  },
+    { "verifies",       endOfLabel },
     { "weakgroup",      endOfLabel },
     { "xmlinclude",     endOfLine  },
     { "xrefitem",       endOfLabel }
@@ -1324,20 +1327,28 @@ int Markdown::Private::processLink(const std::string_view data,size_t offset)
     if (i<size && data[i]=='<') { i++; uriFormat=true; }
     size_t linkStart=i;
     int braceCount=1;
+    int nlConsec = 0;
     while (i<size && data[i]!='\'' && data[i]!='"' && braceCount>0)
     {
       if (data[i]=='\n') // unexpected EOL
       {
         nl++;
-        if (nl>1) { return 0; }
+        nlConsec++;
+        if (nlConsec>1) { return 0; }
       }
       else if (data[i]=='(')
       {
         braceCount++;
+        nlConsec = 0;
       }
       else if (data[i]==')')
       {
         braceCount--;
+        nlConsec = 0;
+      }
+      else if (data[i]!=' ')
+      {
+        nlConsec = 0;
       }
       if (braceCount>0)
       {
@@ -1755,7 +1766,7 @@ int Markdown::Private::processCodeSpan(std::string_view data,size_t offset)
     if (nb>=3) // found ``` that is not at the start of the line, keep it as-is.
     {
       out+=data.substr(0,nb);
-      return nb;
+      return static_cast<int>(nb);
     }
     return 0;  // no matching delimiter
   }
@@ -1823,7 +1834,7 @@ int Markdown::Private::processSpecialCommand(std::string_view data, size_t offse
     out+=data.substr(0,endPos);
     return static_cast<int>(endPos);
   }
-  if (size>1 && data[0]=='\\') // escaped characters
+  if (size>1 && (data[0]=='\\' || data[0]=='@')) // escaped characters
   {
     char c=data[1];
     if (c=='[' || c==']' || c=='*' || c=='(' || c==')' || c=='`' || c=='_')
@@ -1849,16 +1860,6 @@ int Markdown::Private::processSpecialCommand(std::string_view data, size_t offse
       out+=data.substr(1,2);
       AUTO_TRACE_EXIT("3");
       return 3;
-    }
-  }
-  else if (size>1 && data[0]=='@') // escaped characters
-  {
-    char c=data[1];
-    if (c=='\\' || c=='@')
-    {
-      out+=data.substr(0,2);
-      AUTO_TRACE_EXIT("2");
-      return 2;
     }
   }
   return 0;
@@ -2327,7 +2328,8 @@ static bool isEndOfList(std::string_view data)
 }
 
 static bool isFencedCodeBlock(std::string_view data,size_t refIndent,
-                             QCString &lang,size_t &start,size_t &end,size_t &offset)
+                             QCString &lang,size_t &start,size_t &end,size_t &offset,
+                             QCString &fileName,int lineNr)
 {
   AUTO_TRACE("data='{}' refIndent={}",Trace::trunc(data),refIndent);
   const char dot = '.';
@@ -2419,6 +2421,7 @@ static bool isFencedCodeBlock(std::string_view data,size_t refIndent,
     }
     i++;
   }
+  warn(fileName, lineNr, "Ending Inside a fenced code block. Maybe the end marker for the block is missing?");
   AUTO_TRACE_EXIT("result=false: no end marker found lang={}'",lang);
   return false;
 }
@@ -3277,7 +3280,7 @@ QCString Markdown::Private::processQuotations(std::string_view data,size_t refIn
     if (pi!=std::string::npos)
     {
       size_t blockStart=0, blockEnd=0, blockOffset=0;
-      if (isFencedCodeBlock(data.substr(pi),currentIndent,lang,blockStart,blockEnd,blockOffset))
+      if (isFencedCodeBlock(data.substr(pi),currentIndent,lang,blockStart,blockEnd,blockOffset,fileName,lineNr))
       {
         auto addSpecialCommand = [&](const QCString &startCmd,const QCString &endCmd)
         {
@@ -3368,6 +3371,10 @@ QCString Markdown::Private::processQuotations(std::string_view data,size_t refIn
     }
     else
     {
+      if (QCString(data.substr(pi)).startsWith("```") || QCString(data.substr(pi)).startsWith("~~~"))
+      {
+        warn(fileName, lineNr, "Ending inside a fenced code block. Maybe the end marker for the block is missing?");
+      }
       out+=data.substr(pi);
     }
   }
@@ -3532,7 +3539,7 @@ QCString Markdown::Private::processBlocks(std::string_view data,const size_t ind
         i=ref+pi;
         end=i+1;
       }
-      else if (isFencedCodeBlock(data.substr(pi),currentIndent,lang,blockStart,blockEnd,blockOffset))
+      else if (isFencedCodeBlock(data.substr(pi),currentIndent,lang,blockStart,blockEnd,blockOffset,fileName,lineNr))
       {
         //printf("Found FencedCodeBlock lang='%s' start=%d end=%d code={%s}\n",
         //       qPrint(lang),blockStart,blockEnd,QCString(data+pi+blockStart).left(blockEnd-blockStart).data());

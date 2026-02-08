@@ -1583,8 +1583,11 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
 <SkipCComment>{LITERAL_BLOCK}           { // normal block command
                                           outputArray(yyscanner,yytext,yyleng);
                                           yyextra->yyLineNr+=QCString(yytext).contains('\n');
-                                          determineBlockName(yyscanner);
-                                          BEGIN(SkipVerbatim);
+                                          if (yyextra->isSpecialComment)
+                                          {
+                                            determineBlockName(yyscanner);
+                                            BEGIN(SkipVerbatim);
+                                          }
                                         }
 <SkipCond>{CMD}{CMD}"cond"[ \t]+        {}// escaped cond command
 <SkipCond>{CMD}"cond"/\n                |  
@@ -1871,6 +1874,13 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
 <RemoveCPPComment>{CPPC}
 <RemoveCPPComment>[^\x06\n]+
 <RemoveCPPComment>.
+<DefineText>"__VA_OPT__("{B}*"##"       {
+                                          warn(yyextra->fileName,yyextra->yyLineNr,
+                                               "'##' may not appear at the beginning of a __VA_OPT__()",
+                                               yyextra->defName,yyextra->defLitText.stripWhiteSpace());
+                                          yyextra->defText+="__VA_OPT__(";
+                                          yyextra->defLitText+="__VA_OPT__(";
+                                        }
 <DefineText>"#"/"__VA_OPT__"            {
                                           yyextra->defText+=yytext;
                                           yyextra->defLitText+=yytext;

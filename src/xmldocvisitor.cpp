@@ -322,7 +322,7 @@ void XmlDocVisitor::operator()(const DocVerbatim &s)
           m_t << ">";
       getCodeParser(lang).parseCode(m_ci,s.context(),s.text(),langExt,
                                     Config_getBool(STRIP_CODE_COMMENTS),
-                                    s.isExample(),s.exampleFile());
+                                    CodeParserOptions().setExample(s.isExample(),s.exampleFile()));
       m_t << "</programlisting>";
       break;
     case DocVerbatim::JavaDocLiteral:
@@ -415,14 +415,10 @@ void XmlDocVisitor::operator()(const DocInclude &inc)
                                            inc.text(),
                                            langExt,
                                            inc.stripCodeComments(),
-                                           inc.isExample(),
-                                           inc.exampleFile(),
-                                           fd.get(), // fileDef,
-                                           -1,    // start line
-                                           -1,    // end line
-                                           FALSE, // inline fragment
-                                           nullptr,     // memberDef
-                                           TRUE   // show line numbers
+                                           CodeParserOptions()
+                                           .setExample(inc.isExample(),inc.exampleFile())
+                                           .setFileDef(fd.get())
+                                           .setInlineFragment(true)
 					   );
          m_t << "</programlisting>";
       }
@@ -433,14 +429,10 @@ void XmlDocVisitor::operator()(const DocInclude &inc)
                                         inc.text(),
                                         langExt,
                                         inc.stripCodeComments(),
-                                        inc.isExample(),
-                                        inc.exampleFile(),
-                                        nullptr,     // fileDef
-                                        -1,    // startLine
-                                        -1,    // endLine
-                                        TRUE,  // inlineFragment
-                                        nullptr,     // memberDef
-                                        FALSE  // show line numbers
+                                        CodeParserOptions()
+                                        .setExample(inc.isExample(),inc.exampleFile())
+                                        .setInlineFragment(true)
+                                        .setShowLineNumbers(false)
 				       );
       m_t << "</programlisting>";
       break;
@@ -534,14 +526,11 @@ void XmlDocVisitor::operator()(const DocIncOperator &op)
       getCodeParser(locLangExt).parseCode(m_ci,op.context(),
                                           op.text(),langExt,
                                           op.stripCodeComments(),
-                                          op.isExample(),
-                                          op.exampleFile(),
-                                          fd.get(),     // fileDef
-                                          op.line(),    // startLine
-                                          -1,    // endLine
-                                          FALSE, // inline fragment
-                                          nullptr,     // memberDef
-                                          op.showLineNo()  // show line numbers
+                                          CodeParserOptions()
+                                          .setExample(op.isExample(), op.exampleFile())
+                                          .setFileDef(fd.get())
+                                          .setStartLine(op.line())
+                                          .setShowLineNumbers(op.showLineNo())
                                          );
     }
     pushHidden(m_hide);

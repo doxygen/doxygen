@@ -34,7 +34,6 @@ class RefList;
 class PageLinkedMap;
 class PageDef;
 class ParserManager;
-class BufStr;
 class MemberDef;
 class GroupDef;
 class GroupLinkedMap;

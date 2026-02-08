@@ -115,12 +115,12 @@ class ModuleDefImpl : public DefinitionMixin<ModuleDef>
     void addMemberToList(MemberListType lt,MemberDef *md);
     void addExportedModule(const QCString &moduleName,const ImportInfo &info);
     void addListReferences();
+    void addRequirementReferences();
     void addMembersToMemberGroup();
     void distributeMemberGroupDocumentation();
     void findSectionsInDocumentation();
     void sortMemberLists();
 
-    //ModuleMap &partitions() { return m_partitions; }
     void mergeSymbolsFrom(ModuleDefImpl *other);
     bool hasDetailedDescription() const;
     void countMembers();
@@ -686,16 +686,15 @@ void ModuleDefImpl::countMembers()
 
 void ModuleDefImpl::addListReferences()
 {
-  const RefItemVector &xrefItems = xrefListItems();
-  addRefItem(xrefItems,
-      qualifiedName(),
-      getLanguage()==SrcLangExt::Fortran ?
-      theTranslator->trModule(TRUE,TRUE) :
-      theTranslator->trNamespace(TRUE,TRUE),
-      getOutputFileBase(),displayName(),
-      QCString(),
-      this
-      );
+  addRefItem(xrefListItems(),
+             qualifiedName(),
+             getLanguage()==SrcLangExt::Fortran ?
+             theTranslator->trModule(TRUE,TRUE) :
+             theTranslator->trNamespace(TRUE,TRUE),
+             getOutputFileBase(),displayName(),
+             QCString(),
+             this
+            );
   for (const auto &mg : m_memberGroups)
   {
     mg->addListReferences(this);
@@ -705,6 +704,22 @@ void ModuleDefImpl::addListReferences()
     if (ml->listType().isDocumentation())
     {
       ml->addListReferences(this);
+    }
+  }
+}
+
+void ModuleDefImpl::addRequirementReferences()
+{
+  RequirementManager::instance().addRequirementRefsForSymbol(this);
+  for (const auto &mg : m_memberGroups)
+  {
+    mg->addRequirementReferences(this);
+  }
+  for (auto &ml : m_memberLists)
+  {
+    if (ml->listType().isDocumentation())
+    {
+      ml->addRequirementReferences(this);
     }
   }
 }
@@ -1601,6 +1616,7 @@ void ModuleManager::addDocs(const Entry *root)
         mod->setHidden(root->hidden);
         mod->setBodySegment(root->startLine,root->bodyLine,root->endBodyLine);
         mod->setRefItems(root->sli);
+        mod->setRequirementReferences(root->rqli);
         //mod->addSectionsToDefinition(root->anchors);
         addModuleToGroups(root,mod);
       }
@@ -1637,6 +1653,14 @@ void ModuleManager::addListReferences()
   for (const auto &mod : p->moduleFileMap) // foreach module
   {
     if (mod->isPrimaryInterface()) toModuleDefImpl(mod)->addListReferences();
+  }
+}
+
+void ModuleManager::addRequirementReferences()
+{
+  for (const auto &mod : p->moduleFileMap) // foreach module
+  {
+    if (mod->isPrimaryInterface()) toModuleDefImpl(mod)->addRequirementReferences();
   }
 }
 

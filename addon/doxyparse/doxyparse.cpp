@@ -111,7 +111,7 @@ static void findXRefSymbols(FileDef *fd)
 
   // parse the source code
   intf->parseCode(parseList, QCString(), fileToString(fd->absFilePath()), lang,
-                  FALSE, FALSE, QCString(), fd);
+                  FALSE, CodeParserOptions().setFileDef(fd));
 }
 
 static bool ignoreStaticExternalCall(const MemberDef *context, const MemberDef *md) {

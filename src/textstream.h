@@ -78,19 +78,6 @@ class TextStream final
       m_f = f;
     }
 
-    /** Returns the attached std::ostream object.
-     *  @see setStream()
-     */
-    std::ostream *stream() const
-    {
-      return m_s;
-    }
-
-    FILE *file() const
-    {
-      return m_f;
-    }
-
     /** Adds a character to the stream */
     TextStream &operator<<( char c)
     {

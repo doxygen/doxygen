@@ -28,7 +28,6 @@
 #include "indexlist.h"
 #include "classlist.h"
 #include "textstream.h"
-#include "growbuf.h"
 #include "dir.h"
 
 //-----------------------------------------------------------------------------
@@ -193,20 +192,20 @@ static uint32_t virtToMask(Specifier p)
 static QCString convertToPSString(const QCString &s)
 {
   if (s.isEmpty()) return s;
-  GrowBuf growBuf;
+  QCString result;
+  result.reserve(s.length()+8);
   const char *p=s.data();
   char c=0;
   while ((c=*p++))
   {
     switch (c)
     {
-      case '(':  growBuf.addStr("\\("); break;
-      case ')': growBuf.addStr("\\)"); break;
-      default:   growBuf.addChar(c);   break;
+      case '(':  result+="\\("; break;
+      case ')':  result+="\\)"; break;
+      default:   result+=c;     break;
     }
   }
-  growBuf.addChar(0);
-  return growBuf.get();
+  return result;
 }
 
 // pre: dil is not empty

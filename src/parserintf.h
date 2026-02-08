@@ -73,6 +73,65 @@ class OutlineParserInterface
 
 };
 
+/** Options to configure the code parser */
+struct CodeParserOptions
+{
+  public:
+    // === getters for optional params
+    bool isExample()              const { return m_isExample;       }
+    QCString exampleName()        const { return m_exampleName;     }
+    const FileDef * fileDef()     const { return m_fileDef;         }
+    int startLine()               const { return m_startLine;       }
+    int endLine()                 const { return m_endLine;         }
+    bool inlineFragment()         const { return m_inlineFragment;  }
+    const MemberDef * memberDef() const { return m_memberDef;       }
+    bool showLineNumbers()        const { return m_showLineNumbers; }
+    const Definition *searchCtx() const { return m_searchCtx;       }
+    bool collectXRefs()           const { return m_collectXRefs;    }
+
+    // === setters for optional params
+
+    /// Associate this comment block with a given example
+    CodeParserOptions &setExample(bool isExample,const QCString &name)
+    { m_isExample=isExample; m_exampleName = name; return *this; }
+
+    CodeParserOptions &setFileDef(const FileDef *fd)
+    { m_fileDef = fd; return *this; }
+
+    CodeParserOptions &setStartLine(int lineNr)
+    { m_startLine = lineNr; return *this; }
+
+    CodeParserOptions &setEndLine(int lineNr)
+    { m_endLine = lineNr; return *this; }
+
+    CodeParserOptions &setInlineFragment(bool enable)
+    { m_inlineFragment = enable; return *this; }
+
+    CodeParserOptions &setMemberDef(const MemberDef * md)
+    { m_memberDef = md; return *this; }
+
+    CodeParserOptions &setShowLineNumbers(bool enable)
+    { m_showLineNumbers = enable; return *this; }
+
+    CodeParserOptions &setSearchCtx(const Definition *d)
+    { m_searchCtx = d; return *this; }
+
+    CodeParserOptions &setCollectXRefs(bool enable)
+    { m_collectXRefs = enable; return *this; }
+
+  private:
+    bool              m_isExample       = false;
+    QCString          m_exampleName;
+    const FileDef *   m_fileDef         = nullptr;
+    int               m_startLine       = -1;
+    int               m_endLine         = -1;
+    bool              m_inlineFragment  = false;
+    const MemberDef * m_memberDef       = nullptr;
+    bool              m_showLineNumbers = true;
+    const Definition *m_searchCtx       = nullptr;
+    bool              m_collectXRefs    = true;
+};
+
 /** \brief Abstract interface for code parsers.
  *
  *  By implementing the methods of this interface one can add
@@ -91,37 +150,14 @@ class CodeParserInterface
      *  @param[in] input Actual code in the form of a string
      *  @param[in] lang The programming language of the code fragment.
      *  @param[in] stripCodeComments signals whether or not for the code block the doxygen comments should be stripped.
-     *  @param[in] isExampleBlock TRUE iff the code is part of an example.
-     *  @param[in] exampleName Name of the example.
-     *  @param[in] fileDef File definition to which the code
-     *             is associated.
-     *  @param[in] startLine Starting line in case of a code fragment.
-     *  @param[in] endLine Ending line of the code fragment.
-     *  @param[in] inlineFragment Code fragment that is to be shown inline
-     *             as part of the documentation.
-     *  @param[in] memberDef Member definition to which the code
-     *             is associated (non null in case of an inline fragment
-     *             for a member).
-     *  @param[in] showLineNumbers if set to TRUE and also fileDef is not 0,
-     *             line numbers will be added to the source fragment
-     *  @param[in] searchCtx context under which search data has to be stored.
-     *  @param[in] collectXRefs collect cross-reference relations.
+     *  @param[in] options Additional options to configure the parser.
      */
     virtual void parseCode(OutputCodeList &codeOutList,
                            const QCString &scopeName,
                            const QCString &input,
                            SrcLangExt lang,
                            bool stripCodeComments,
-                           bool isExampleBlock,
-                           const QCString &exampleName=QCString(),
-                           const FileDef *fileDef=nullptr,
-                           int startLine=-1,
-                           int endLine=-1,
-                           bool inlineFragment=FALSE,
-                           const MemberDef *memberDef=nullptr,
-                           bool showLineNumbers=TRUE,
-                           const Definition *searchCtx=nullptr,
-                           bool collectXRefs=TRUE
+                           const CodeParserOptions &options
                           ) = 0;
 
     /** Resets the state of the code parser.

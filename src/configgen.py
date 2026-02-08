@@ -52,12 +52,13 @@ def transformDocs(doc):
     doc = doc.replace("\\$", "$")
     doc = doc.replace("\\#include ", "#include ")
     doc = doc.replace("\\#undef ", "#undef ")
+    doc = doc.replace("\\# ", "# ")
     doc = doc.replace("-# ", "\n - ")
     doc = doc.replace(" - ", "\n - ")
-    doc = doc.replace("\\sa", "\nSee also: ")
-    doc = doc.replace("\\par", "\n")
-    doc = doc.replace("@note", "\nNote:")
-    doc = doc.replace("\\note", "\nNote:")
+    doc = doc.replace("\\sa ", "\nSee also: ")
+    doc = doc.replace("\\par ", "\n")
+    doc = doc.replace("@note ", "\nNote: ")
+    doc = doc.replace("\\note ", "\nNote: ")
     doc = doc.replace("\\verbatim", "\n")
     doc = doc.replace("\\endverbatim", "\n")
     doc = doc.replace("<code>", "")
@@ -68,6 +69,7 @@ def transformDocs(doc):
     doc = doc.replace("\\@", "@")
     doc = doc.replace("\\\\", "\\")
     # \ref name "description" -> description
+    doc = re.sub('\\\\ref +[^ ]* +"\\\\ref"', '\\\\REF', doc)
     doc = re.sub('\\\\ref +[^ ]* +"([^"]*)"', '\\1', doc)
     # \ref specials
     # \ref <key> -> description
@@ -81,7 +83,8 @@ def transformDocs(doc):
                  doc)
     doc = re.sub('\\\\ref +formulas', '"Including formulas"', doc)
     # fallback for not handled
-    doc = re.sub('\\\\ref', '', doc)
+    doc = re.sub('\\\\ref ', ' ', doc)
+    doc = re.sub('\\\\REF', '\\\\ref', doc)
     #<a href="address">description</a> -> description (see: address)
     doc = re.sub('<a +href="([^"]*)" *>([^<]*)</a>', '\\2 (see: \n\\1)', doc)
     # LaTeX name as formula -> LaTeX

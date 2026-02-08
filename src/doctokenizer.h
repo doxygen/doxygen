@@ -189,8 +189,10 @@ class DocTokenizer
     TokenInfo *token();
     [[maybe_unused]] TokenInfo *resetToken();
 
+    void setFileName(const QCString &fileName);
+    QCString getFileName() const;
     void setLineNr(int lineno);
-    int getLineNr(void);
+    int getLineNr() const;
     void pushState();
     void popState();
 

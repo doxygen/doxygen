@@ -272,7 +272,7 @@ QCString private_incomplete_type_definition();
 QCString parameter_map_aspect();
 QCString procedure_call();
 QCString procedure_call_statement();
-QCString procedure_specifiction();
+QCString procedure_specification();
 QCString process_declarative_item();
 QCString process_declarative_part();
 void process_statement();

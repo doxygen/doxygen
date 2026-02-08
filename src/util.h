@@ -53,7 +53,6 @@ struct TagInfo;
 class PageDef;
 class SectionInfo;
 class Definition;
-class BufStr;
 class FileInfo;
 class Dir;
 
@@ -349,6 +348,8 @@ QCString stripExtensionGeneral(const QCString &fName, const QCString &ext);
 
 QCString stripExtension(const QCString &fName);
 
+QCString makeBaseName(const QCString &name, const QCString &ext);
+
 int computeQualifiedIndex(const QCString &name);
 
 void addDirPrefix(QCString &fileName);
@@ -408,6 +409,8 @@ int nextUtf8CharPosition(const QCString &utf8Str,uint32_t len,uint32_t startPos)
 
 void writeMarkerList(OutputList &ol,const std::string &markerText,size_t numMarkers,
                      std::function<void(size_t)> replaceFunc);
+QCString writeMarkerList(const std::string &markerText,size_t numMarkers,
+                     std::function<QCString(size_t)> replaceFunc);
 
 /** Data associated with a HSV colored image. */
 struct ColoredImgDataItem
@@ -435,7 +438,7 @@ QCString processMarkup(const QCString &s);
 bool protectionLevelVisible(Protection prot);
 
 QCString stripIndentation(const QCString &s,bool skipFirstLine=false);
-void stripIndentationVerbatim(QCString &doc,const int indentationLevel);
+void stripIndentationVerbatim(QCString &doc,const int indentationLevel, bool skipFirstLine=true);
 
 QCString getDotImageExtension();
 
@@ -483,5 +486,8 @@ QCString demangleCSharpGenericName(const QCString &name,const QCString &templArg
 
 QCString extractBeginRawStringDelimiter(const char *rawStart);
 QCString extractEndRawStringDelimiter(const char *rawEnd);
+
+QCString writeFileContents(const QCString &baseName,const QCString &extension,const QCString &content,bool &exists);
+void cleanupInlineGraph();
 
 #endif

@@ -200,6 +200,7 @@ class FileDef : public DefinitionMutable, public Definition
     virtual void addIncludedUsingDirectives(FileDefSet &visitedFiles) = 0;
 
     virtual void addListReferences() = 0;
+    virtual void addRequirementReferences() = 0;
 
     // include graph related members
     virtual bool hasIncludeGraph() const = 0;

@@ -56,75 +56,78 @@ class DarkModeToggle extends HTMLElement {
     }()
 
     static init() {
-        $(function() {
-            $(document).ready(function() {
-                const toggleButton = document.createElement('dark-mode-toggle')
-                toggleButton.title = DarkModeToggle.title
-                toggleButton.innerHTML = DarkModeToggle.icon
-                toggleButton.tabIndex = 0;
+        const onReady = function() {
+            const toggleButton = document.createElement('dark-mode-toggle')
+            toggleButton.title = DarkModeToggle.title
+            toggleButton.innerHTML = DarkModeToggle.icon
+            toggleButton.tabIndex = 0;
 
-                function addButton() {
-                  const titleArea = document.getElementById("titlearea");
-                  const searchBox = document.getElementById("MSearchBox");
-                  const mainMenu  = document.getElementById("main-menu");
-                  const navRow1   = document.getElementById("navrow1");
-                  let mainMenuVisible = false;
-                  if (mainMenu) {
-                    const menuStyle = window.getComputedStyle(mainMenu);
-                    mainMenuVisible = menuStyle.display!=='none'
-                  }
-                  const searchBoxPos1 = document.getElementById("searchBoxPos1");
-                  const buttonLi = document.getElementById('toggle-dark-mode');
-                  if (buttonLi) {
-                    buttonLi.parentNode.removeChild(buttonLi);
-                  }
-                  if (searchBox) { // (1) search box visible
-                    searchBox.parentNode.appendChild(toggleButton)
-                  } else if (navRow1) { // (2) no search box, static menu bar
-                    const li = document.createElement('li');
-                    li.id = 'toggle-dark-mode';
-                    li.style = 'float: right;'
-                    li.appendChild(toggleButton);
-                    toggleButton.style = 'width: 24px; height: 25px; padding-top: 11px; float: right;';
-                    const row = document.querySelector('#navrow1 > ul:first-of-type');
-                    row.appendChild(li)
-                  } else if (mainMenu && mainMenuVisible) { // (3) no search box + dynamic menu bar expanded
-                    const li = document.createElement('li');
-                    li.id = 'toggle-dark-mode';
-                    li.style = 'float: right;'
-                    li.appendChild(toggleButton);
-                    toggleButton.style = 'width: 14px; height: 36px; padding-top: 10px; float: right;';
-                    mainMenu.appendChild(li)
-                  } else if (searchBoxPos1) { // (4) no search box + dynamic menu bar collapsed
-                    toggleButton.style = 'width: 24px; height: 36px; padding-top: 10px; float: right;';
-                    searchBoxPos1.style = 'top: 0px;'
-                    searchBoxPos1.appendChild(toggleButton);
-                  } else if (titleArea) { // (5) no search box and no navigation tabs
-                    toggleButton.style = 'width: 24px; height: 24px; position: absolute; right: 0px; top: 34px;';
-                    titleArea.append(toggleButton);
-                  }
-                }
+            function addButton() {
+              const titleArea = document.getElementById("titlearea");
+              const searchBox = document.getElementById("MSearchBox");
+              const mainMenu  = document.getElementById("main-menu");
+              const navRow1   = document.getElementById("navrow1");
+              let mainMenuVisible = false;
+              if (mainMenu) {
+                const menuStyle = window.getComputedStyle(mainMenu);
+                mainMenuVisible = menuStyle.display!=='none'
+              }
+              document.querySelectorAll('dark-mode-toggle').forEach(el => el.remove());
+              const searchBoxPos1 = document.getElementById("searchBoxPos1");
+              if (searchBox) { // (1) search box visible
+                searchBox.parentNode.appendChild(toggleButton)
+              } else if (navRow1) { // (2) no search box, static menu bar
+                const li = document.createElement('li');
+                li.id = 'toggle-dark-mode';
+                li.style = 'float: right;'
+                li.appendChild(toggleButton);
+                toggleButton.style = 'width: 24px; height: 25px; padding-top: 11px; float: right;';
+                const row = document.querySelector('#navrow1 > ul:first-of-type');
+                row.appendChild(li)
+              } else if (mainMenu && mainMenuVisible) { // (3) no search box + dynamic menu bar expanded
+                const li = document.createElement('li');
+                li.id = 'toggle-dark-mode';
+                li.style = 'float: right;'
+                li.appendChild(toggleButton);
+                toggleButton.style = 'width: 14px; height: 36px; padding-top: 10px; float: right;';
+                mainMenu.appendChild(li)
+              } else if (searchBoxPos1) { // (4) no search box + dynamic menu bar collapsed
+                toggleButton.style = 'width: 24px; height: 36px; padding-top: 10px; float: right;';
+                searchBoxPos1.style = 'top: 0px;'
+                searchBoxPos1.appendChild(toggleButton);
+              } else if (titleArea) { // (5) no search box and no navigation tabs
+                toggleButton.style = 'width: 24px; height: 24px; position: absolute; right: 0px; top: 34px;';
+                titleArea.append(toggleButton);
+              }
+            }
 
-                $(document).ready(() => addButton());
-                $(window).resize(() => addButton());
-                let inFocus = false;
-                $(document).focusin(() => inFocus = true);
-                $(document).focusout(() => inFocus = false);
-                $(document).keyup(function(e) {
-                    if (e.keyCode==27 && !inFocus) { // escape key maps to keycode `27`
-                       e.stopPropagation();
-                       DarkModeToggle.userPreference = !DarkModeToggle.userPreference
-                   }
-                })
-                DarkModeToggle.setDarkModeVisibility(DarkModeToggle.darkModeEnabled)
+            addButton();
+            window.addEventListener('resize', () => addButton());
+            let inFocus = false;
+            document.addEventListener('focusin', () => inFocus = true);
+            document.addEventListener('focusout', () => inFocus = false);
+            document.addEventListener('keyup', function(e) {
+                if (e.key === 'Escape' && !inFocus) {
+                   e.stopPropagation();
+                   DarkModeToggle.userPreference = !DarkModeToggle.userPreference
+               }
             })
-        })
+            DarkModeToggle.setDarkModeVisibility(DarkModeToggle.darkModeEnabled)
+        };
+        
+        // Mimic jQuery's ready() behavior: execute immediately if DOM is already loaded,
+        // otherwise wait for DOMContentLoaded
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', onReady);
+        } else {
+            onReady();
+        }
     }
 
     constructor() {
         super();
         this.onclick=this.toggleDarkMode
-        this.onkeypress=function(e){if (e.keyCode==13) { this.toggleDarkMode(); }};
+        this.onkeypress=function(e){if (e.key === 'Enter') { this.toggleDarkMode(); }};
     }
 
     /**

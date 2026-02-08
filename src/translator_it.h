@@ -52,9 +52,9 @@
  *           translated new items used since version 1.2.11
  *  2001/08: corrected the translation fixing the issues reported by the translator.pl script
  *           translated new items used since version 1.2.7
- *  2001/05: adopted new translation mechanism (trough adapters),
+ *  2001/05: adopted new translation mechanism (through adapters),
  *           translated new items used since version 1.2.5 and 1.2.6,
- *           revised those function returning strings in OPTIMIZE_OTPUT_FOR_C case,
+ *           revised those function returning strings in OPTIMIZE_OUTPUT_FOR_C case,
  *           corrections regarding the plurals of some english terms maintained in the translation,
  *           changed some terms to better suit the sense
  *  2001/02: translated new items used since version 1.2.4
@@ -67,7 +67,7 @@
  *           commented translator.h for the english language
  *  1999/09: corrected some small typos in the "new since 0.49-990425" section
  *           added the "new since 0.49-990728" section
- *  1999/06: revised and completed by Alessandro Falappa (current mantainer)
+ *  1999/06: revised and completed by Alessandro Falappa (current maintainer)
  *  1999/??: initial italian translation by Ahmed Aldo Faisal
  */
 
@@ -1455,7 +1455,7 @@ class TranslatorItalian : public TranslatorAdapter_1_8_15
     { QCString result="Riferimenti per la directory "; result+=dirName; return result; }
 
     /*! This returns the word directory with or without starting capital
-     *  (\a first_capital) and in sigular or plural form (\a singular).
+     *  (\a first_capital) and in singular or plural form (\a singular).
      */
     QCString trDir(bool first_capital, bool) override
     {
@@ -1680,7 +1680,7 @@ class TranslatorItalian : public TranslatorAdapter_1_8_15
       return createNoun(first_capital, singular, "sottoprogramm", "i", "a");
     }
 
-    /*! C# Type Contraint list */
+    /*! C# Type Constraint list */
     QCString trTypeConstraints() override
     {
       return "Vincoli dei tipi";

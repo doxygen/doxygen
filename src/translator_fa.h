@@ -26,7 +26,7 @@
  *
  *   Fri 04 Jun 2010 04:05:24 PM IRDT <nadalizadeh at gmail dot com>
  *   >> Implement missing new methods since 1.6.0.
- *   >> Add English to Persian digit convertor. (for date/time digits)
+ *   >> Add English to Persian digit converter. (for date/time digits)
  *
  * Translation feedbacks are really appreciated.
  */
@@ -1488,7 +1488,7 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
     { QCString result=dirName; result+=" مرجع شاخه ی"; return result; }
 
     /*! This returns the word directory with or without starting capital
-     *  (\a first_capital) and in sigular or plural form (\a singular).
+     *  (\a first_capital) and in singular or plural form (\a singular).
      */
     QCString trDir(bool /*first_capital*/, bool singular) override
     {

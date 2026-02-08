@@ -9581,7 +9581,7 @@ assert(false);
 }
 
 
-QCString VhdlParser::procedure_specifiction() {QCString s,s1;
+QCString VhdlParser::procedure_specification() {QCString s,s1;
     if (!hasError) {
     jj_consume_token(PROCEDURE_T);
     }

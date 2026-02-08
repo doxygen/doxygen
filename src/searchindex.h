@@ -31,7 +31,6 @@
 #include <variant>
 
 #include "qcstring.h"
-#include "growbuf.h"
 
 class Definition;
 
@@ -119,8 +118,8 @@ class SearchIndexExternal
       QCString args;
       QCString extId;
       QCString url;
-      GrowBuf  importantText;
-      GrowBuf  normalText;
+      QCString importantText;
+      QCString normalText;
     };
 
   public:

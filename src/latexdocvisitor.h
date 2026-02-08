@@ -141,18 +141,18 @@ class LatexDocVisitor : public DocVisitor
                  const QCString &anchor,bool refToTable=false,bool refToSection=false, SectionType sectionType = SectionType::Anchor);
     void startDotFile(const QCString &fileName,const QCString &width,
                       const QCString &height, bool hasCaption,
-                      const QCString &srcFile,int srcLine);
+                      const QCString &srcFile,int srcLine, bool newFile = true);
     void endDotFile(bool hasCaption);
 
     void startMscFile(const QCString &fileName,const QCString &width,
                       const QCString &height, bool hasCaption,
-                      const QCString &srcFile,int srcLine);
+                      const QCString &srcFile,int srcLine,bool newFile = true);
     void endMscFile(bool hasCaption);
-    void writeMscFile(const QCString &fileName, const DocVerbatim &s);
+    void writeMscFile(const QCString &fileName, const DocVerbatim &s, bool newFile = true);
 
     void startDiaFile(const QCString &fileName,const QCString &width,
                       const QCString &height, bool hasCaption,
-                      const QCString &srcFile,int srcLine);
+                      const QCString &srcFile,int srcLine,bool newFile = true);
     void endDiaFile(bool hasCaption);
     void writePlantUMLFile(const QCString &fileName, const DocVerbatim &s);
     void startPlantUmlFile(const QCString &fileName,const QCString &width,

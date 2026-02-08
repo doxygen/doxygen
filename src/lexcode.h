@@ -38,16 +38,7 @@ class LexCodeParser : public CodeParserInterface
                    const QCString &input,
                    SrcLangExt,
                    bool stripCodeComments,
-                   bool isExampleBlock,
-                   const QCString &exampleName=QCString(),
-                   const FileDef *fileDef=nullptr,
-                   int startLine=-1,
-                   int endLine=-1,
-                   bool inlineFragment=FALSE,
-                   const MemberDef *memberDef=nullptr,
-                   bool showLineNumbers=TRUE,
-                   const Definition *searchCtx=nullptr,
-                   bool collectXRefs=TRUE
+                   const CodeParserOptions &options
                   ) override;
     void resetCodeParserState() override;
   private:

@@ -201,6 +201,7 @@ class FileDefImpl : public DefinitionMixin<FileDef>
     void findSectionsInDocumentation() override;
     void addIncludedUsingDirectives(FileDefSet &visitedFiles) override;
     void addListReferences() override;
+    void addRequirementReferences() override;
 
     bool hasIncludeGraph() const override;
     bool hasIncludedByGraph() const override;
@@ -367,7 +368,8 @@ bool FileDefImpl::hasDetailedDescription() const
   bool sourceBrowser = Config_getBool(SOURCE_BROWSER);
   return ((!briefDescription().isEmpty() && repeatBrief) ||
           !documentation().stripWhiteSpace().isEmpty() || // avail empty section
-          (sourceBrowser && getStartBodyLine()!=-1 && getBodyDef())
+          (sourceBrowser && getStartBodyLine()!=-1 && getBodyDef()) ||
+          hasRequirementRefs()
          );
 }
 
@@ -536,6 +538,7 @@ void FileDefImpl::writeDetailedDescription(OutputList &ol,const QCString &title)
       }
       ol.endParagraph();
     }
+    if (hasRequirementRefs()) writeRequirementRefs(ol);
     ol.endTextBlock();
   }
 }
@@ -885,7 +888,7 @@ void FileDefImpl::writeDocumentation(OutputList &ol)
   QCString versionTitle;
   if (!m_fileVersion.isEmpty())
   {
-    versionTitle=("("+m_fileVersion+")");
+    versionTitle=" ("+m_fileVersion+")";
   }
   QCString title = m_docname+versionTitle;
   QCString pageTitle;
@@ -1158,7 +1161,7 @@ void FileDefImpl::writeSourceHeader(OutputList &ol)
   QCString title = m_docname;
   if (!m_fileVersion.isEmpty())
   {
-    title+=(" ("+m_fileVersion+")");
+    title+=" ("+m_fileVersion+")";
   }
   QCString pageTitle = theTranslator->trSourceFile(title);
   ol.disable(OutputType::Man);
@@ -1239,7 +1242,8 @@ void FileDefImpl::writeSourceBody(OutputList &ol,[[maybe_unused]] ClangTUParser 
                        fileToString(absFilePath(),TRUE,TRUE),
                        getLanguage(),
                        Config_getBool(STRIP_CODE_COMMENTS),
-                       FALSE,QCString(),this
+                       CodeParserOptions()
+                       .setFileDef(this)
                       );
     }
     size_t indent = 0;
@@ -1247,16 +1251,9 @@ void FileDefImpl::writeSourceBody(OutputList &ol,[[maybe_unused]] ClangTUParser 
         detab(fileToString(absFilePath(),filterSourceFiles,TRUE),indent),
         getLanguage(),      // lang
         Config_getBool(STRIP_CODE_COMMENTS),
-        FALSE,              // isExampleBlock
-        QCString(),         // exampleName
-        this,               // fileDef
-        -1,                 // startLine
-        -1,                 // endLine
-        FALSE,              // inlineFragment
-        nullptr,                  // memberDef
-        TRUE,               // showLineNumbers
-        nullptr,                  // searchCtx
-        !needs2PassParsing  // collectXRefs
+        CodeParserOptions()
+        .setFileDef(this)
+        .setCollectXRefs(!needs2PassParsing)
         );
     codeOL.endCodeFragment("DoxyCode");
   }
@@ -1292,7 +1289,8 @@ void FileDefImpl::parseSource([[maybe_unused]] ClangTUParser *clangParser)
             detab(fileToString(absFilePath(),filterSourceFiles,TRUE),indent),
             getLanguage(),
             Config_getBool(STRIP_CODE_COMMENTS),
-            FALSE,QCString(),this
+            CodeParserOptions()
+            .setFileDef(this)
            );
   }
 }
@@ -1622,16 +1620,13 @@ bool FileDefImpl::generateSourceFile() const
 
 void FileDefImpl::addListReferences()
 {
-  {
-    const RefItemVector &xrefItems = xrefListItems();
-    addRefItem(xrefItems,
-               getOutputFileBase(),
-               theTranslator->trFile(TRUE,TRUE),
-               getOutputFileBase(),name(),
-               QCString(),
-               nullptr
-              );
-  }
+  addRefItem(xrefListItems(),
+             getOutputFileBase(),
+             theTranslator->trFile(TRUE,TRUE),
+             getOutputFileBase(),name(),
+             QCString(),
+             nullptr
+            );
   for (const auto &mg : m_memberGroups)
   {
     mg->addListReferences(this);
@@ -1641,6 +1636,22 @@ void FileDefImpl::addListReferences()
     if (ml->listType().isDocumentation())
     {
       ml->addListReferences(this);
+    }
+  }
+}
+
+void FileDefImpl::addRequirementReferences()
+{
+  RequirementManager::instance().addRequirementRefsForSymbol(this);
+  for (const auto &mg : m_memberGroups)
+  {
+    mg->addRequirementReferences(this);
+  }
+  for (auto &ml : m_memberLists)
+  {
+    if (ml->listType().isDocumentation())
+    {
+      ml->addRequirementReferences(this);
     }
   }
 }
