@@ -236,6 +236,7 @@ void MemberGroup::distributeMemberGroupDocumentation()
       {
         //printf("Copying documentation to member %s\n",qPrint(omd->name()));
         omd->setBriefDescription(md->briefDescription(),md->briefFile(),md->briefLine());
+        omd->setIsTrivial(md->isTrivial() || omd->isTrivial());
         omd->setDocumentation(md->documentation(),md->docFile(),md->docLine());
         omd->setInbodyDocumentation(md->inbodyDocumentation(),md->inbodyFile(),md->inbodyLine());
       }

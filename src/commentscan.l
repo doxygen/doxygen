@@ -150,6 +150,7 @@ static bool handleGroupgraph(yyscan_t yyscanner,const QCString &, const StringVe
 static bool handleHideGroupgraph(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleInternal(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleStatic(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleTrivial(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handlePure(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handlePrivate(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handlePrivateSection(yyscan_t yyscanner,const QCString &, const StringVector &);
@@ -398,6 +399,7 @@ static const std::unordered_map< std::string, DocCmdMap > docCmdMap =
   { "throws",                 { nullptr,                         CommandSpacing::Block,     SectionHandling::Break   }},
   { "todo",                   { &handleTodo,                     CommandSpacing::XRef,      SectionHandling::Break   }},
   { "tparam",                 { nullptr,                         CommandSpacing::Block,     SectionHandling::Break   }},
+  { "trivial",                { &handleTrivial,                  CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "typedef",                { &handleFn,                       CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "union",                  { &handleUnion,                    CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "until",                  { nullptr,                         CommandSpacing::Block,     SectionHandling::Escape  }},
@@ -4147,6 +4149,13 @@ static bool handleStatic(yyscan_t yyscanner,const QCString &, const StringVector
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   yyextra->current->isStatic = TRUE;
+  return FALSE;
+}
+
+static bool handleTrivial(yyscan_t yyscanner,const QCString &, const StringVector &)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->current->isTrivial = true;
   return FALSE;
 }
 
