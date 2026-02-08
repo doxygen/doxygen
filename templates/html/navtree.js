@@ -336,8 +336,15 @@ function initNavTree(toroot,relpath,allMembersFile) {
     const windowHeight = window.innerHeight - headerHeight - footerHeight;
     (function retry() { // retry until we can scroll to the selected item
       try {
-        const navtree = jQuery('#nav-tree');
-        navtree.scrollTo('#selected',100,{offset:-windowHeight/2});
+        const navtree = $('#nav-tree');
+        if (navtree) {
+          const selected = navtree.querySelector('#selected');
+          if (selected) {
+            const offset = -windowHeight/2;
+            const targetPos = selected.offsetTop + offset;
+            animateScrolling(navtree, Math.max(0, targetPos), 100);
+          }
+        }
       } catch (err) {
         setTimeout(retry, 0);
       }
@@ -723,41 +730,88 @@ function initNavTree(toroot,relpath,allMembersFile) {
     pagenav   = $("#page-nav");
     container = $("#container");
 
-    // Note: .resizable() is from jQuery UI and would require significant reimplementation
-    // For now, we keep minimal jQuery usage for this plugin-dependent functionality
-    jQuery(".side-nav-resizable").resizable({resize: function(e, ui) { resizeWidth(true); } });
-    jQuery(sidenav).resizable({ minWidth: 0 });
-    if (pagenav) {
-      const pagehandle = jQuery("#page-nav-resize-handle");
-      pagehandle.on('mousedown touchmove', function(e) {
+    // Native JavaScript implementation for resizable side navigation
+    const splitbar = $("#splitbar");
+    if (splitbar) {
+      // Add the ui-resizable-e class to make the splitbar visible and styled correctly
+      splitbar.classList.add('ui-resizable-e');
+      splitbar.style.zIndex = 90;
+
+      let isResizing = false;
+      let startX = 0;
+      let startWidth = 0;
+
+      const startResize = (e) => {
+        startX = e.clientX ?? e.touches?.[0]?.clientX;
+        startWidth = sidenav.offsetWidth - barWidth;
         document.body.classList.add('resizing');
-        pagehandle.addClass('dragging');
+        document.body.style.cursor = 'col-resize';
 
-        const mouseMoveHandler = function(e) {
-          const clientX = e.clientX || (e.touches && e.touches[0].clientX);
-          let pagenavWidth = container.offsetWidth - clientX + barWidth/2;
-          const sidenavWidth = sidenav.clientWidth;
-          const widths = constrainPanelWidths(sidenavWidth,pagenavWidth,false);
-          container.style.gridTemplateColumns = 'auto '+parseFloat(widths.rightPanelWidth)+'px';
-          pagenav.style.width = parseFloat(widths.rightPanelWidth-1)+'px';
-          content.style.marginLeft = parseFloat(widths.leftPanelWidth)+'px';
-          Cookie.writeSetting(PAGENAV_COOKIE_NAME,pagenavWidth);
+        const doResize = (e) => {
+          const clientX = e.clientX ?? e.touches?.[0]?.clientX;
+          if (clientX === undefined) return;
+          const delta = clientX - startX;
+          const newWidth = startWidth + delta;
+          sidenav.style.width = newWidth + 'px';
+          resizeWidth(true);
         };
 
-        const mouseUpHandler = function(e) {
+        const stopResize = () => {
           document.body.classList.remove('resizing');
-          pagehandle.removeClass('dragging');
-          document.removeEventListener('mousemove', mouseMoveHandler);
-          document.removeEventListener('mouseup',   mouseUpHandler);
-          document.removeEventListener('touchmove', mouseMoveHandler);
-          document.removeEventListener('touchend',  mouseUpHandler);
+          document.body.style.cursor = 'auto';
+          document.removeEventListener('mousemove', doResize);
+          document.removeEventListener('touchmove', doResize);
+          document.removeEventListener('mouseup',   stopResize);
+          document.removeEventListener('touchend',  stopResize);
         };
 
-        document.addEventListener('mousemove', mouseMoveHandler);
-        document.addEventListener('touchmove', mouseMoveHandler);
-        document.addEventListener('mouseup',   mouseUpHandler);
-        document.addEventListener('touchend',  mouseUpHandler);
-      });
+        document.addEventListener('mousemove', doResize);
+        document.addEventListener('touchmove', doResize);
+        document.addEventListener('mouseup', stopResize);
+        document.addEventListener('touchend', stopResize);
+      };
+
+      splitbar.addEventListener('mousedown', startResize);
+      splitbar.addEventListener('touchstart', startResize, { passive: false });
+    }
+
+    if (pagenav) {
+      const pagehandle = $("#page-nav-resize-handle");
+      if (pagehandle) {
+        const startDrag = (e) => {
+          document.body.classList.add('resizing');
+          pagehandle.classList.add('dragging');
+
+          const mouseMoveHandler = (e) => {
+            const clientX = e.clientX ?? e.touches?.[0]?.clientX;
+            if (clientX === undefined) return;
+            let pagenavWidth = container.offsetWidth - clientX + barWidth/2;
+            const sidenavWidth = sidenav.clientWidth;
+            const widths = constrainPanelWidths(sidenavWidth,pagenavWidth,false);
+            container.style.gridTemplateColumns = 'auto '+parseFloat(widths.rightPanelWidth)+'px';
+            pagenav.style.width = parseFloat(widths.rightPanelWidth-1)+'px';
+            content.style.marginLeft = parseFloat(widths.leftPanelWidth - barWidth)+'px';
+            Cookie.writeSetting(PAGENAV_COOKIE_NAME,pagenavWidth);
+          };
+
+          const mouseUpHandler = (e) => {
+            document.body.classList.remove('resizing');
+            pagehandle.classList.remove('dragging');
+            document.removeEventListener('mousemove', mouseMoveHandler);
+            document.removeEventListener('mouseup',   mouseUpHandler);
+            document.removeEventListener('touchmove', mouseMoveHandler);
+            document.removeEventListener('touchend',  mouseUpHandler);
+          };
+
+          document.addEventListener('mousemove', mouseMoveHandler);
+          document.addEventListener('touchmove', mouseMoveHandler);
+          document.addEventListener('mouseup',   mouseUpHandler);
+          document.addEventListener('touchend',  mouseUpHandler);
+        };
+
+        pagehandle.addEventListener('mousedown', startDrag);
+        pagehandle.addEventListener('touchstart', startDrag, { passive: false });
+      }
     } else {
       container.style.gridTemplateColumns = 'auto';
     }
@@ -767,12 +821,7 @@ function initNavTree(toroot,relpath,allMembersFile) {
     const url = location.href;
     const i=url.indexOf("#");
     if (i>=0) window.location.hash=url.substr(i);
-    const _preventDefault = function(evt) { evt.preventDefault(); };
-    const splitbar = $("#splitbar");
-    if (splitbar) {
-      splitbar.addEventListener("dragstart", _preventDefault);
-      splitbar.addEventListener("selectstart", _preventDefault);
-    }
+
 
     let lastWidth = -1;
     let lastHeight = -1;
