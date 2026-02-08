@@ -735,47 +735,44 @@ function initNavTree(toroot,relpath,allMembersFile) {
     if (splitbar) {
       // Add the ui-resizable-e class to make the splitbar visible and styled correctly
       splitbar.classList.add('ui-resizable-e');
-      // Ensure the splitbar has absolute positioning (overrides CSS if needed)
-      splitbar.style.position = 'absolute';
+      splitbar.style.zIndex = 90;
 
       let isResizing = false;
       let startX = 0;
       let startWidth = 0;
 
       const startResize = (e) => {
-        isResizing = true;
         startX = e.clientX ?? e.touches?.[0]?.clientX;
-        startWidth = sidenav.offsetWidth;
+        startWidth = sidenav.offsetWidth - barWidth;
         document.body.classList.add('resizing');
-        e.preventDefault();
-      };
+        document.body.style.cursor = 'col-resize';
 
-      const doResize = (e) => {
-        if (!isResizing) return;
-        const clientX = e.clientX ?? e.touches?.[0]?.clientX;
-        if (clientX === undefined) return;
-        const delta = clientX - startX;
-        const newWidth = startWidth + delta;
-        sidenav.style.width = newWidth + 'px';
-        resizeWidth(true);
-      };
+        const doResize = (e) => {
+          const clientX = e.clientX ?? e.touches?.[0]?.clientX;
+          if (clientX === undefined) return;
+          const delta = clientX - startX;
+          const newWidth = startWidth + delta;
+          sidenav.style.width = newWidth + 'px';
+          resizeWidth(true);
+        };
 
-      const stopResize = () => {
-        if (isResizing) {
-          isResizing = false;
+        const stopResize = () => {
           document.body.classList.remove('resizing');
-        }
+          document.body.style.cursor = 'auto';
+          document.removeEventListener('mousemove', doResize);
+          document.removeEventListener('touchmove', doResize);
+          document.removeEventListener('mouseup',   stopResize);
+          document.removeEventListener('touchend',  stopResize);
+        };
+
+        document.addEventListener('mousemove', doResize);
+        document.addEventListener('touchmove', doResize);
+        document.addEventListener('mouseup', stopResize);
+        document.addEventListener('touchend', stopResize);
       };
 
       splitbar.addEventListener('mousedown', startResize);
       splitbar.addEventListener('touchstart', startResize, { passive: false });
-      document.addEventListener('mousemove', doResize);
-      document.addEventListener('touchmove', doResize);
-      document.addEventListener('mouseup', stopResize);
-      document.addEventListener('touchend', stopResize);
-
-      splitbar.addEventListener("dragstart", (evt) => evt.preventDefault());
-      splitbar.addEventListener("selectstart", (evt) => evt.preventDefault());
     }
 
     if (pagenav) {
@@ -793,7 +790,7 @@ function initNavTree(toroot,relpath,allMembersFile) {
             const widths = constrainPanelWidths(sidenavWidth,pagenavWidth,false);
             container.style.gridTemplateColumns = 'auto '+parseFloat(widths.rightPanelWidth)+'px';
             pagenav.style.width = parseFloat(widths.rightPanelWidth-1)+'px';
-            content.style.marginLeft = parseFloat(widths.leftPanelWidth)+'px';
+            content.style.marginLeft = parseFloat(widths.leftPanelWidth - barWidth)+'px';
             Cookie.writeSetting(PAGENAV_COOKIE_NAME,pagenavWidth);
           };
 
