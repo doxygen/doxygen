@@ -623,20 +623,23 @@ SLASHopt [/]*
                                    }
 <CComment,ReadLine,IncludeFile>{CMD}("dot"|"code"|"msc"|"startuml")/[^a-z_A-Z0-9] { /* start of a verbatim block */
                                      copyToOutput(yyscanner,yytext,yyleng);
-				     yyextra->lastCommentContext = YY_START;
-				     yyextra->javaBlock=0;
-                                     if (qstrcmp(&yytext[1],"startuml")==0)
+                                     if (yyextra->inSpecialComment || yyextra->specialComment || yyextra->lang==SrcLangExt::Markdown)
                                      {
-                                       yyextra->blockName="enduml";
+                                       yyextra->lastCommentContext = YY_START;
+                                       yyextra->javaBlock=0;
+                                       if (qstrcmp(&yytext[1],"startuml")==0)
+                                       {
+                                         yyextra->blockName="enduml";
+                                       }
+                                       else
+                                       {
+                                         yyextra->blockName=QCString("end")+&yytext[1];
+                                       }
+                                       yyextra->inVerbatim=true;
+                                       yyextra->verbatimLine=yyextra->lineNr;
+                                       BEGIN(VerbatimCode);
                                      }
-                                     else
-                                     {
-				       yyextra->blockName=QCString("end")+&yytext[1];
-                                     }
-                                     yyextra->inVerbatim=true;
-                                     yyextra->verbatimLine=yyextra->lineNr;
-                                     BEGIN(VerbatimCode);
-  				   }
+                                   }
 <CComment,ReadLine,IncludeFile>"\\`" {
                                      copyToOutput(yyscanner,yytext,yyleng);
                                    }
@@ -649,33 +652,39 @@ SLASHopt [/]*
                                        REJECT;
                                      }
                                      copyToOutput(yyscanner,yytext,yyleng);
-                                     yyextra->lastCommentContext = YY_START;
-                                     yyextra->javaBlock=0;
-                                     yyextra->blockName=yytext;
-                                     yyextra->inVerbatim=true;
-                                     yyextra->verbatimLine=yyextra->lineNr;
-                                     BEGIN(VerbatimCode);
+                                     if (yyextra->inSpecialComment || yyextra->specialComment || yyextra->lang==SrcLangExt::Markdown)
+                                     {
+                                       yyextra->lastCommentContext = YY_START;
+                                       yyextra->javaBlock=0;
+                                       yyextra->blockName=yytext;
+                                       yyextra->inVerbatim=true;
+                                       yyextra->verbatimLine=yyextra->lineNr;
+                                       BEGIN(VerbatimCode);
+                                     }
                                    }
 <CComment,ReadLine,IncludeFile>{CMD}("f$"|"f["|"f{"|"f(") {
                                      copyToOutput(yyscanner,yytext,yyleng);
-				     yyextra->blockName=&yytext[1];
-				     if (yyextra->blockName.at(1)=='[')
-				     {
-				       yyextra->blockName.at(1)=']';
-				     }
-				     else if (yyextra->blockName.at(1)=='{')
-				     {
-				       yyextra->blockName.at(1)='}';
-				     }
-				     else if (yyextra->blockName.at(1)=='(')
-				     {
-				       yyextra->blockName.at(1)=')';
-				     }
-				     yyextra->lastCommentContext = YY_START;
-                                     yyextra->inVerbatim=true;
-                                     yyextra->verbatimLine=yyextra->lineNr;
-				     BEGIN(Verbatim);
-  			           }
+                                     if (yyextra->inSpecialComment || yyextra->specialComment || yyextra->lang==SrcLangExt::Markdown)
+                                     {
+                                       yyextra->blockName=&yytext[1];
+                                       if (yyextra->blockName.at(1)=='[')
+                                       {
+                                         yyextra->blockName.at(1)=']';
+                                       }
+                                       else if (yyextra->blockName.at(1)=='{')
+                                       {
+                                         yyextra->blockName.at(1)='}';
+                                       }
+                                       else if (yyextra->blockName.at(1)=='(')
+                                       {
+                                         yyextra->blockName.at(1)=')';
+                                       }
+                                       yyextra->lastCommentContext = YY_START;
+                                       yyextra->inVerbatim=true;
+                                       yyextra->verbatimLine=yyextra->lineNr;
+                                       BEGIN(Verbatim);
+                                     }
+                                   }
 <CComment,ReadLine,IncludeFile>"<!--!" { /* HTML comment doxygen command*/
                                      if (yyextra->inVerbatim) REJECT;
                                      //copyToOutput(yyscanner,"     ",5);
@@ -693,19 +702,25 @@ SLASHopt [/]*
                                    }
 <CComment,ReadLine,IncludeFile>"<!--" { /* HTML comment */
                                      copyToOutput(yyscanner,yytext,yyleng);
-				     yyextra->blockName="-->";
-				     yyextra->lastCommentContext = YY_START;
-                                     yyextra->inVerbatim=true;
-                                     yyextra->verbatimLine=yyextra->lineNr;
-                                     BEGIN(Verbatim);
+                                     if (yyextra->inSpecialComment || yyextra->specialComment || yyextra->lang==SrcLangExt::Markdown)
+                                     {
+                                       yyextra->blockName="-->";
+                                       yyextra->lastCommentContext = YY_START;
+                                       yyextra->inVerbatim=true;
+                                       yyextra->verbatimLine=yyextra->lineNr;
+                                       BEGIN(Verbatim);
+                                     }
                                    }
 <CComment,ReadLine,IncludeFile>{CMD}("verbatim"|"iliteral"|"latexonly"|"htmlonly"|"xmlonly"|"docbookonly"|"rtfonly"|"manonly")/[^a-z_A-Z0-9] { /* start of a verbatim block */
                                      copyToOutput(yyscanner,yytext,yyleng);
-				     yyextra->blockName=QCString("end")+&yytext[1];
-				     yyextra->lastCommentContext = YY_START;
-                                     yyextra->inVerbatim=true;
-                                     yyextra->verbatimLine=yyextra->lineNr;
-                                     BEGIN(Verbatim);
+                                     if (yyextra->inSpecialComment || yyextra->specialComment || yyextra->lang==SrcLangExt::Markdown)
+                                     {
+                                       yyextra->blockName=QCString("end")+&yytext[1];
+                                       yyextra->lastCommentContext = YY_START;
+                                       yyextra->inVerbatim=true;
+                                       yyextra->verbatimLine=yyextra->lineNr;
+                                       BEGIN(Verbatim);
+                                     }
                                    }
 <Scan>"\\\""                       { /* escaped double quote */
                                      copyToOutput(yyscanner,yytext,yyleng);
@@ -718,11 +733,11 @@ SLASHopt [/]*
                                    }
 <Verbatim>{CMD}("endverbatim"|"endiliteral"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endrtfonly"|"endmanonly"|"f$"|"f]"|"f}"|"f)") { /* end of verbatim block */
                                      copyToOutput(yyscanner,yytext,yyleng);
-				     if (&yytext[1]==yyextra->blockName) // end of command or formula
-				     {
+                                     if (&yytext[1]==yyextra->blockName) // end of command or formula
+                                     {
                                        yyextra->inVerbatim=false;
-				       BEGIN(yyextra->lastCommentContext);
-				     }
+                                       BEGIN(yyextra->lastCommentContext);
+                                     }
                                    }
 <Verbatim>"-->"                    {
                                      copyToOutput(yyscanner,yytext,yyleng);
