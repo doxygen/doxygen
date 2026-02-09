@@ -218,7 +218,7 @@ class DocbookGenerator : public OutputGenerator, public OutputGenIntf
     void startCompoundTemplateParams() override;
     void endCompoundTemplateParams() override;
     void startMemberGroupHeader(const QCString &,bool) override;
-    void endMemberGroupHeader() override;
+    void endMemberGroupHeader(bool) override;
     void startMemberGroupDocs() override {DB_GEN_EMPTY}
     void endMemberGroupDocs() override {DB_GEN_EMPTY}
     void startMemberGroup() override;

@@ -640,7 +640,7 @@ void ManGenerator::startMemberGroupHeader(const QCString &,bool)
   m_t << "\n.PP\n.RI \"\\fB";
 }
 
-void ManGenerator::endMemberGroupHeader()
+void ManGenerator::endMemberGroupHeader(bool)
 {
   m_t << "\\fP\"\n.br\n";
   m_firstCol=TRUE;

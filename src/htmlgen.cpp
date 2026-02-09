@@ -2600,7 +2600,7 @@ void HtmlGenerator::startMemberGroupHeader(const QCString &id,bool)
   m_t << "<tr id=\"" << id << "\" class=\"groupHeader\"><td colspan=\"2\"><div class=\"groupHeader\">";
 }
 
-void HtmlGenerator::endMemberGroupHeader()
+void HtmlGenerator::endMemberGroupHeader(bool)
 {
   m_t << "</div></td></tr>\n";
 }

@@ -976,7 +976,7 @@ void DocbookGenerator::startMemberGroupHeader(const QCString &,bool)
 DB_GEN_C
   m_t << "<simplesect><title>";
 }
-void DocbookGenerator::endMemberGroupHeader()
+void DocbookGenerator::endMemberGroupHeader(bool)
 {
 DB_GEN_C
   m_t << "</title>\n";
