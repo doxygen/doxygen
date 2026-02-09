@@ -417,7 +417,7 @@ static QCString substituteHtmlKeywords(const QCString &file,
       if (disableIndex || !Config_getBool(HTML_DYNAMIC_MENUS) || Config_getBool(FULL_SIDEBAR))
       {
         searchCssJs += "<script type=\"text/javascript\">\n"
-				        "  $(function() { init_search(); });\n"
+				        "document.addEventListener('DOMContentLoaded', init_search);\n"
 					"</script>";
       }
     }
@@ -426,9 +426,9 @@ static QCString substituteHtmlKeywords(const QCString &file,
       if (disableIndex || !Config_getBool(HTML_DYNAMIC_MENUS))
       {
         searchCssJs += "<script type=\"text/javascript\">\n"
-					"  $(function() {\n"
-					"    if ($('.searchresults').length > 0) { searchBox.DOMSearchField().focus(); }\n"
-					"  });\n"
+					"document.addEventListener('DOMContentLoaded', () => {\n"
+					"  if (document.querySelector('.searchresults')) { searchBox.DOMSearchField().focus(); }\n"
+					"});\n"
 					"</script>\n";
       }
 
@@ -1271,7 +1271,6 @@ void HtmlGenerator::init()
   }
 
 
-  mgr.copyResource("jquery.js",dname);
   if (Config_getBool(INTERACTIVE_SVG))
   {
     mgr.copyResource("svg.min.js",dname);
@@ -1558,14 +1557,14 @@ void HtmlGenerator::startFile(const QCString &name,bool isSource,const QCString 
   if (searchEngine /*&& !generateTreeView*/)
   {
     m_t << "<script type=\"text/javascript\">\n";
-    m_t << "var searchBox = new SearchBox(\"searchBox\", \""
+    m_t << "let searchBox = new SearchBox(\"searchBox\", \""
         << m_relPath<< "search/\",'" << Doxygen::htmlFileExtension << "');\n";
     m_t << "</script>\n";
   }
   if (Config_getBool(HTML_CODE_FOLDING))
   {
     m_t << "<script type=\"text/javascript\">\n";
-    m_t << "$(function() { codefold.init(); });\n";
+    m_t << "document.addEventListener('DOMContentLoaded', codefold.init);\n";
     m_t << "</script>\n";
   }
   m_sectionCount=0;
@@ -1708,7 +1707,6 @@ void HtmlGenerator::writeStyleInfo(int part)
       }
     }
 
-    Doxygen::indexList->addStyleSheetFile("jquery.js");
     Doxygen::indexList->addStyleSheetFile("navtree.css");
 
     Doxygen::indexList->addStyleSheetFile("dynsections.js");
@@ -3009,7 +3007,7 @@ static void writeDefaultQuickLinks(TextStream &t,
     t << "<script type=\"text/javascript\" src=\"" << relPath << "menudata.js\"></script>\n";
     t << "<script type=\"text/javascript\" src=\"" << relPath << "menu.js\"></script>\n";
     t << "<script type=\"text/javascript\">\n";
-    t << "$(function() {\n";
+    t << "document.addEventListener('DOMContentLoaded', () => {\n";
     t << "  initMenu('" << relPath << "'," << (generateTreeView?"true":"false") << ");\n";
     if (searchEngine)
     {
@@ -3017,14 +3015,12 @@ static void writeDefaultQuickLinks(TextStream &t,
       {
         if (!disableIndex && dynamicMenus && !fullSidebar)
         {
-          t << "  $(function() { init_search(); });\n";
+          t << "  init_search();\n";
         }
       }
       else
       {
-        t << "  $(function() {\n"
-          << "    if ($('.searchresults').length > 0) { searchBox.DOMSearchField().focus(); }\n";
-        t << "  });\n";
+          t << "  if (document.querySelector('.searchresults')) { searchBox.DOMSearchField().focus(); }\n";
       }
     }
     t << "});\n";
@@ -3125,7 +3121,7 @@ QCString HtmlGenerator::writeSplitBarAsString(const QCString &name,const QCStrin
      "  </div>\n"
      "</div>\n"
      "<script type=\"text/javascript\">\n"
-     "$(function(){initNavTree('" + fn + "','" + relpath + "','" + allMembersFile + "'); });\n"
+     "document.addEventListener('DOMContentLoaded',() => { initNavTree('" + fn + "','" + relpath + "','" + allMembersFile + "'); });\n"
      "</script>\n";
      if (Config_getBool(DISABLE_INDEX) || !Config_getBool(FULL_SIDEBAR))
      {
@@ -3222,7 +3218,7 @@ void HtmlGenerator::writeSearchPage()
     t << "<!-- " << theTranslator->trGeneratedBy() << " Doxygen "
       << getDoxygenVersion() << " -->\n";
     t << "<script type=\"text/javascript\">\n";
-    t << "var searchBox = new SearchBox(\"searchBox\", \""
+    t << "let searchBox = new SearchBox(\"searchBox\", \""
       << "search/\",'" << Doxygen::htmlFileExtension << "');\n";
     t << "</script>\n";
 
@@ -3287,7 +3283,7 @@ void HtmlGenerator::writeExternalSearchPage()
     t << "<!-- " << theTranslator->trGeneratedBy() << " Doxygen "
       << getDoxygenVersion() << " -->\n";
     t << "<script type=\"text/javascript\">\n";
-    t << "var searchBox = new SearchBox(\"searchBox\", \""
+    t << "let searchBox = new SearchBox(\"searchBox\", \""
       << "search/\",'" << Doxygen::htmlFileExtension << "');\n";
     t << "</script>\n";
 
@@ -3331,12 +3327,12 @@ void HtmlGenerator::writeExternalSearchPage()
   if (f.is_open())
   {
     TextStream t(&f);
-    t << "var searchResultsText=["
+    t << "const searchResultsText=["
       << "\"" << theTranslator->trSearchResults(0) << "\","
       << "\"" << theTranslator->trSearchResults(1) << "\","
       << "\"" << theTranslator->trSearchResults(2) << "\"];\n";
-    t << "var serverUrl=\"" << Config_getString(SEARCHENGINE_URL) << "\";\n";
-    t << "var tagMap = {\n";
+    t << "const serverUrl=\"" << Config_getString(SEARCHENGINE_URL) << "\";\n";
+    t << "const tagMap = {\n";
     bool first=TRUE;
     // add search mappings
     const StringVector &extraSearchMappings = Config_getList(EXTRA_SEARCH_MAPPINGS);
@@ -3360,13 +3356,13 @@ void HtmlGenerator::writeExternalSearchPage()
     t << "};\n\n";
     t << ResourceMgr::instance().getAsString("extsearch.js");
     t << "\n";
-    t << "$(function() {\n";
-    t << "  var query = trim(getURLParameter('query'));\n";
+    t << "document.addEventListener('DOMContentLoaded',() => {\n";
+    t << "  const query = trim(getURLParameter('query'));\n";
     t << "  if (query) {\n";
     t << "    searchFor(query,0,20);\n";
     t << "  } else {\n";
-    t << "    var results = $('#results');\n";
-    t << "    results.html('<p>" << theTranslator->trSearchResults(0) << "</p>');\n";
+    t << "    const results = document.getElementById('results');\n";
+    t << "    results.innerHtml = '<p>" << theTranslator->trSearchResults(0) << "</p>';\n";
     t << "  }\n";
     t << "});\n";
   }

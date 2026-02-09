@@ -273,7 +273,7 @@ let codefold = {
       if (index === 0) { // add global toggle to first line
         span.className = 'fold minus';
         span.id = 'fold_all';
-        span.onclick = () => this.toggle_all();
+        span.onclick = () => codefold.toggle_all();
       } else {  // add vertical lines to other rows
         span.className = 'fold'
       }
@@ -291,7 +291,7 @@ let codefold = {
       if (firstFold) {
         const span = document.createElement('span');
         span.className = 'fold minus';
-        span.onclick = () => this.toggle(id);
+        span.onclick = () => codefold.toggle(id);
         firstFold.replaceWith(span);
       }
       // append div for folded (closed) representation
