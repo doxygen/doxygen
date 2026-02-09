@@ -504,8 +504,8 @@ class OutputList
     { foreach(&OutputGenIntf::endCompoundTemplateParams); }
     void startMemberGroupHeader(const QCString &id,bool b)
     { foreach(&OutputGenIntf::startMemberGroupHeader,id,b); }
-    void endMemberGroupHeader()
-    { foreach(&OutputGenIntf::endMemberGroupHeader); }
+    void endMemberGroupHeader(bool b)
+    { foreach(&OutputGenIntf::endMemberGroupHeader,b); }
     void startMemberGroupDocs()
     { foreach(&OutputGenIntf::startMemberGroupDocs); }
     void endMemberGroupDocs()

@@ -182,7 +182,7 @@ class LatexGenerator : public OutputGenerator, public OutputGenIntf
     void endCompoundTemplateParams() override { m_t << "}\n"; }
 
     void startMemberGroupHeader(const QCString &,bool) override;
-    void endMemberGroupHeader() override;
+    void endMemberGroupHeader(bool) override;
     void startMemberGroupDocs() override;
     void endMemberGroupDocs() override;
     void startMemberGroup() override;

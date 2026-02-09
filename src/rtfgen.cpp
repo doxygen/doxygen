@@ -2531,7 +2531,7 @@ void RTFGenerator::startMemberGroupHeader(const QCString &,bool hasHeader)
   m_t << rtf_Style_Reset << rtf_Style["GroupHeader"].reference();
 }
 
-void RTFGenerator::endMemberGroupHeader()
+void RTFGenerator::endMemberGroupHeader(bool)
 {
   DBG_RTF(m_t << "{\\comment endMemberGroupHeader}\n")
   newParagraph();

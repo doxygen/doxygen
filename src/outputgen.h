@@ -195,7 +195,7 @@ class OutputGenIntf
     virtual void startCompoundTemplateParams() = 0;
     virtual void endCompoundTemplateParams() = 0;
     virtual void startMemberGroupHeader(const QCString &id,bool b) = 0;
-    virtual void endMemberGroupHeader() = 0;
+    virtual void endMemberGroupHeader(bool b) = 0;
     virtual void startMemberGroupDocs() = 0;
     virtual void endMemberGroupDocs() = 0;
     virtual void startMemberGroup() = 0;

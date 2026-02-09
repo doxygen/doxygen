@@ -1786,7 +1786,7 @@ void VhdlDocGen::writeVHDLDeclarations(const MemberList* ml,OutputList &ol,
       {
         ol.parseText(mg->header());
       }
-      ol.endMemberGroupHeader();
+      ol.endMemberGroupHeader(hasHeader);
       if (!mg->documentation().isEmpty())
       {
         //printf("Member group has docs!\n");
