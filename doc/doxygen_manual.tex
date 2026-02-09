@@ -103,7 +103,6 @@
 \newcommand{\+}{\discretionary{\mbox{\scriptsize$\hookleftarrow$}}{}{}}
 \lstset{language=C++,inputencoding=utf8,basicstyle=\footnotesize,breaklines=true,breakatwhitespace=true,tabsize=8,numbers=left }
 \makeindex
-\setcounter{tocdepth}{3}
 \renewcommand{\footrulewidth}{0.4pt}
 \renewcommand{\familydefault}{\sfdefault}
 \renewcommand{\cftsecindent}{0 em}
@@ -131,6 +130,11 @@
 \etocsetlevel{subsubsubsubsubsubsection}{7}
 \etocsetlevel{paragraph}{8}
 \etocsetlevel{subparagraph}{9}
+\newcommand{\AppendixChapter}[1]%
+{%
+  \chapter{#1}%
+  \localtableofcontentswithrelativedepth{+3}%
+}
 \begin{document}
 \raggedbottom
 \pagenumbering{alph}
@@ -148,6 +152,7 @@ Written by Dimitri van Heesch\\[2ex]
 \tableofcontents
 \clearemptydoublepage
 \pagenumbering{arabic}
+\setcounter{tocdepth}{3}
 \part{User Manual}
 \input{index}
 \input{install}
@@ -185,25 +190,27 @@ Written by Dimitri van Heesch\\[2ex]
 \input{arch}
 \renewcommand{\thepart}{}
 \renewcommand{\partname}{}
+\setcounter{tocdepth}{0}
+\addtocontents{toc}{\protect\setcounter{tocdepth}{0}}
 \part{Appendices}
 \appendix
 %mean that subinputfrom requires a / at the end of the path
-\chapter{Autolink Example}\label{autolink_example}\hypertarget{autolink_example}{}
+\AppendixChapter{Autolink Example}\label{autolink_example}\hypertarget{autolink_example}{}
 \subinputfrom{examples/autolink/latex/}{refman_doc}
-\chapter{Resolving Typedef Example}\label{restypedef_example}\hypertarget{restypedef_example}{}
+\AppendixChapter{Resolving Typedef Example}\label{restypedef_example}\hypertarget{restypedef_example}{}
 \subinputfrom{examples/restypedef/latex/}{refman_doc}
 
 \IfFileExists{examples/diagrams/latex/refman_doc.tex}
 {
-  \chapter{Diagrams Example}\label{diagrams_example}\hypertarget{diagrams_example}{}
+  \AppendixChapter{Diagrams Example}\label{diagrams_example}\hypertarget{diagrams_example}{}
   \subinputfrom{examples/diagrams/latex/}{refman_doc}
 }{}
 
-\chapter{Grouping Example}\label{modules_example}\hypertarget{grouping_example}{}
+\AppendixChapter{Grouping Example}\label{modules_example}\hypertarget{grouping_example}{}
 \subinputfrom{examples/group/latex/}{refman_doc}
-\chapter{Member Groups Example}\label{memgrp_example}\hypertarget{memgrp_example}{}
+\AppendixChapter{Member Groups Example}\label{memgrp_example}\hypertarget{memgrp_example}{}
 \subinputfrom{examples/memgrp/latex/}{refman_doc}
-\chapter{Style Examples}
+\AppendixChapter{Style Examples}
   \doxysection{After Block Example}\label{afterdoc_example}\hypertarget{afterdoc_example}{}
   \begin{DoxygenSubAppendix}
     \subinputfrom{examples/afterdoc/latex/}{refman_doc}
@@ -220,9 +227,9 @@ Written by Dimitri van Heesch\\[2ex]
   \begin{DoxygenSubAppendix}
     \subinputfrom{examples/javadoc-banner/latex/}{refman_doc}
   \end{DoxygenSubAppendix}
-\chapter{Structural Commands Example}\label{structcmd_example}\hypertarget{structcmd_example}{}
+\AppendixChapter{Structural Commands Example}\label{structcmd_example}\hypertarget{structcmd_example}{}
 \subinputfrom{examples/structcmd/latex/}{refman_doc}
-\chapter{Language Examples}
+\AppendixChapter{Language Examples}
   \doxysection{Python Docstring Example}\label{python_example}\hypertarget{python_example}{}
   \begin{DoxygenSubAppendix}
     \subinputfrom{examples/docstring/latex/}{refman_doc}
@@ -236,31 +243,31 @@ Written by Dimitri van Heesch\\[2ex]
     \subinputfrom{examples/mux/latex/}{refman_doc}
   \end{DoxygenSubAppendix}
 
-\chapter{Class Example}\label{class_example}\hypertarget{class_example}{}
+\AppendixChapter{Class Example}\label{class_example}\hypertarget{class_example}{}
 \subinputfrom{examples/class/latex/}{refman_doc}
-\chapter{Define Example}\label{define_example}\hypertarget{define_example}{}
+\AppendixChapter{Define Example}\label{define_example}\hypertarget{define_example}{}
 \subinputfrom{examples/define/latex/}{refman_doc}
-\chapter{Enum Example}\label{enum_example}\hypertarget{enum_example}{}
+\AppendixChapter{Enum Example}\label{enum_example}\hypertarget{enum_example}{}
 \subinputfrom{examples/enum/latex/}{refman_doc}
-\chapter{Example Example}\label{example_example}\hypertarget{example_example}{}
+\AppendixChapter{Example Example}\label{example_example}\hypertarget{example_example}{}
 \subinputfrom{examples/example/latex/}{refman_doc}
-\chapter{Extends/Implements Example}\label{extends_example}\hypertarget{extends_example}{}
+\AppendixChapter{Extends/Implements Example}\label{extends_example}\hypertarget{extends_example}{}
 \subinputfrom{examples/manual/latex/}{refman_doc}
-\chapter{File Example}\label{file_example}\hypertarget{file_example}{}
+\AppendixChapter{File Example}\label{file_example}\hypertarget{file_example}{}
 \subinputfrom{examples/file/latex/}{refman_doc}
-\chapter{Fn Example}\label{fn_example}\hypertarget{fn_example}{}
+\AppendixChapter{Fn Example}\label{fn_example}\hypertarget{fn_example}{}
 \subinputfrom{examples/func/latex/}{refman_doc}
-\chapter{Overload Example}\label{overload_example}\hypertarget{overload_example}{}
+\AppendixChapter{Overload Example}\label{overload_example}\hypertarget{overload_example}{}
 \subinputfrom{examples/overload/latex/}{refman_doc}
-\chapter{Page Example}\label{page_example}\hypertarget{page_example}{}
+\AppendixChapter{Page Example}\label{page_example}\hypertarget{page_example}{}
 \subinputfrom{examples/page/latex/}{refman_doc}
-\chapter{Relates Example}\label{relates_example}\hypertarget{relates_example}{}
+\AppendixChapter{Relates Example}\label{relates_example}\hypertarget{relates_example}{}
 \subinputfrom{examples/relates/latex/}{refman_doc}
-\chapter{Author Example}\label{author_example}\hypertarget{author_example}{}
+\AppendixChapter{Author Example}\label{author_example}\hypertarget{author_example}{}
 \subinputfrom{examples/author/latex/}{refman_doc}
-\chapter{Par Example}\label{par_example}\hypertarget{par_example}{}
+\AppendixChapter{Par Example}\label{par_example}\hypertarget{par_example}{}
 \subinputfrom{examples/par/latex/}{refman_doc}
-\chapter{Include Example}\label{include_example}\hypertarget{include_example}{}
+\AppendixChapter{Include Example}\label{include_example}\hypertarget{include_example}{}
 \subinputfrom{examples/include/latex/}{refman_doc}
 
 
