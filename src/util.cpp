@@ -982,8 +982,30 @@ void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
       const Definition   *d=nullptr;
       //printf("** Match word '%s'\n",qPrint(matchWord));
 
+      // Use templateArity context for languages that need it (C#)
+      int templateArity=-1;
+      if (fileScope && fileScope->getLanguage()==SrcLangExt::CSharp) {
+        int level = 0;
+
+        for(size_t i=newIndex+matchLen; i<strLen; i++) {
+          char c = txtStr.at(i);
+
+          if (c=='<') {
+            if (level==0) templateArity=1;
+            level++;
+          }
+          else if (c==',' && level==1) {
+            templateArity++;
+          }
+          else if (c=='>') {
+            level--;
+            if (level==0) break;
+          }
+        }
+      }
+
       SymbolResolver resolver(fileScope);
-      cd=resolver.resolveClass(scope,matchWord);
+      cd=resolver.resolveClass(scope,matchWord,false,false,templateArity);
       const MemberDef *typeDef = resolver.getTypedef();
       if (typeDef) // First look at typedef then class, see bug 584184.
       {
@@ -1015,6 +1037,11 @@ void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
       if (found)
       {
         //printf("   -> skip\n");
+      }
+       // C# generics, cd must have not been reassigned from resolver.resolveClass
+      else if (cd && fileScope->getLanguage()==SrcLangExt::CSharp && templateArity != -1)
+      {
+        writeCompoundName(cd);
       }
       else if ((cd=getClass(matchWord)))
       {

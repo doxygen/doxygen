@@ -4833,10 +4833,28 @@ static void resolveTemplateInstanceInType(const Entry *root,const Definition *sc
   int ti=ttype.find('<');
   if (ti!=-1)
   {
+    int templateArity=-1;
     QCString templateClassName = ttype.left(ti);
+    if (root->lang==SrcLangExt::CSharp)
+    {
+       templateArity=1;
+       int level=0;
+       const char *p = ttype.data() + ti + 1;
+       char c;
+       while ((c=*p++))
+       {
+         if (c=='<') level++;
+         else if (c=='>')
+         {
+           if (level==0) break;
+           level--;
+         }
+         else if (c==',' && level==0) templateArity++;
+       }
+    }
     SymbolResolver resolver(root->fileDef());
     ClassDefMutable *baseClass = resolver.resolveClassMutable(scope ? scope : Doxygen::globalScope,
-                                           templateClassName, true, true);
+                                           templateClassName, true, true, templateArity);
     AUTO_TRACE_ADD("templateClassName={} baseClass={}",templateClassName,baseClass?baseClass->name():"<none>");
     if (baseClass)
     {
