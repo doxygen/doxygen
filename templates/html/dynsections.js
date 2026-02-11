@@ -199,7 +199,7 @@ let dynsection = {
         });
       }
     } else {
-      rows.forEach(row => row.style.display = '');
+      rows.forEach(row => row.style.display = 'table-row');
       if (header) {
         header.querySelectorAll('.arrowhead').forEach(el => {
           el.classList.remove('closed');
