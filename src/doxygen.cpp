@@ -2504,7 +2504,14 @@ static MemberDef *addVariableToClass(
     {
       if (root->spec.isAlias()) // turn 'typedef B A' into 'using A'
       {
-        def="using "+name;
+        if (lang==SrcLangExt::Python)
+        {
+          def="type "+name+args;
+        }
+        else
+        {
+          def="using "+name;
+        }
       }
       else
       {
@@ -2515,7 +2522,14 @@ static MemberDef *addVariableToClass(
     {
       if (root->spec.isAlias()) // turn 'typedef B C::A' into 'using C::A'
       {
-        def="using "+qualScope+scopeSeparator+name;
+        if (lang==SrcLangExt::Python)
+        {
+          def="type "+qualScope+scopeSeparator+name+args;
+        }
+        else
+        {
+          def="using "+qualScope+scopeSeparator+name;
+        }
       }
       else
       {
@@ -2699,7 +2713,14 @@ static MemberDef *addVariableToFile(
     {
       if (root->spec.isAlias()) // turn 'typedef B NS::A' into 'using NS::A'
       {
-        def="using "+nd->name()+sep+name;
+        if (lang==SrcLangExt::Python)
+        {
+          def="type "+nd->name()+sep+name+args;
+        }
+        else
+        {
+          def="using "+nd->name()+sep+name;
+        }
       }
       else // normal member
       {
@@ -2723,7 +2744,14 @@ static MemberDef *addVariableToFile(
       {
         if (root->spec.isAlias()) // turn 'typedef B A' into 'using A'
         {
-          def="using "+root->name;
+          if (root->lang==SrcLangExt::Python)
+          {
+            def="type "+root->name+args;
+          }
+          else
+          {
+            def="using "+root->name;
+          }
         }
         else // normal member
         {
@@ -3228,6 +3256,7 @@ static void addVariable(const Entry *root,int isFuncPtr=-1)
     }
   }
 
+  QCString type_s = type;
   type=type.stripWhiteSpace();
   ClassDefMutable *cd=nullptr;
   bool isRelated=FALSE;
@@ -3301,9 +3330,9 @@ static void addVariable(const Entry *root,int isFuncPtr=-1)
   MemberType mtype = MemberType::Variable;
   if (type=="@")
     mtype=MemberType::EnumValue;
-  else if (type.startsWith("typedef "))
+  else if (type_s.startsWith("typedef "))
     mtype=MemberType::Typedef;
-  else if (type.startsWith("friend "))
+  else if (type_s.startsWith("friend "))
     mtype=MemberType::Friend;
   else if (root->mtype==MethodTypes::Property)
     mtype=MemberType::Property;
@@ -3885,7 +3914,7 @@ static void addGlobalFunction(const Entry *root,const QCString &rname,const QCSt
     scope+=sep;
   }
 
-  if (Config_getBool(HIDE_SCOPE_NAMES)) scope = "";
+  if (Config_getBool(HIDE_SCOPE_NAMES) || root->lang==SrcLangExt::Python) scope = "";
   QCString def;
   //QCString optArgs = root->argList.empty() ? QCString() : root->args;
   if (!root->type.isEmpty())
@@ -6940,7 +6969,7 @@ static void findMember(const Entry *root,
 
   //printf("scopeName='%s' className='%s'\n",qPrint(scopeName),qPrint(className));
   // rebuild the function declaration (needed to get the scope right).
-  if (!scopeName.isEmpty() && !isRelated && !isFriend && !Config_getBool(HIDE_SCOPE_NAMES))
+  if (!scopeName.isEmpty() && !isRelated && !isFriend && !Config_getBool(HIDE_SCOPE_NAMES) && root->lang!=SrcLangExt::Python)
   {
     if (!funcType.isEmpty())
     {
@@ -7667,7 +7696,7 @@ static void findEnums(const Entry *root)
 
       if (nd)
       {
-        if (isRelated || Config_getBool(HIDE_SCOPE_NAMES))
+        if (isRelated || Config_getBool(HIDE_SCOPE_NAMES) || root->lang==SrcLangExt::Python)
         {
           mmd->setDefinition(name+baseType);
         }
@@ -7699,7 +7728,7 @@ static void findEnums(const Entry *root)
       }
       else if (cd)
       {
-        if (isRelated || Config_getBool(HIDE_SCOPE_NAMES))
+        if (isRelated || Config_getBool(HIDE_SCOPE_NAMES) || root->lang==SrcLangExt::Python)
         {
           mmd->setDefinition(name+baseType);
         }
