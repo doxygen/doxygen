@@ -200,7 +200,8 @@ static QCString readTextFileByName(const QCString &file)
     FileInfo fi(file.str());
     if (fi.exists())
     {
-      return fileToString(file,Config_getBool(FILTER_SOURCE_FILES));
+      size_t indent=0;
+      return detab(fileToString(file,Config_getBool(FILTER_SOURCE_FILES)),indent);
     }
   }
   const StringVector &examplePathList = Config_getList(EXAMPLE_PATH);
