@@ -1742,7 +1742,8 @@ void DocParser::readTextFileByName(const QCString &file,QCString &text)
   QCString filePath = findFilePath(file,ambig);
   if (!filePath.isEmpty())
   {
-    text = fileToString(filePath,Config_getBool(FILTER_SOURCE_FILES));
+    size_t indent = 0;
+    text = detab(fileToString(filePath,Config_getBool(FILTER_SOURCE_FILES)),indent);
     if (ambig)
     {
       warn_doc_error(context.fileName,tokenizer.getLineNr(),"included file name '{}' is ambiguous"
