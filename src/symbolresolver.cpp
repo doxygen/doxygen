@@ -1666,7 +1666,7 @@ const ClassDef *SymbolResolver::resolveClass(const Definition *scope,
     QCString lookupName = lang==SrcLangExt::CSharp ? mangleCSharpGenericName(name) : name;
     
     // In C#, templates (generics) depend on arity, thus lookup name needs to be adjusted to include arity information
-    if (lang==SrcLangExt::CSharp && templateArity!=-1)
+    if (lang==SrcLangExt::CSharp && templateArity>0)
     {
       lookupName = name + "-" + QCString().setNum(templateArity) + "-g";
     }
