@@ -1171,6 +1171,7 @@ int SymbolResolver::Private::isAccessibleFromWithExpScope(
       if (accessibleViaUsingNamespace(visitedKeys,locVisitedNamespaceKeys,nscope->getUsedNamespaces(),item,explicitScopePart))
       {
         AUTO_TRACE_ADD("found in used class");
+        result=1;
         goto done;
       }
     }
@@ -1182,6 +1183,7 @@ int SymbolResolver::Private::isAccessibleFromWithExpScope(
         if (accessibleViaUsingNamespace(visitedKeys,locVisitedNamespaceKeys,m_fileScope->getUsedNamespaces(),item,explicitScopePart))
         {
           AUTO_TRACE_ADD("found in used namespace");
+          result=1;
           goto done;
         }
       }
@@ -1483,6 +1485,7 @@ int SymbolResolver::Private::isAccessibleFrom(VisitedKeys &visitedKeys,
       if (accessibleViaUsingNamespace(visitedKeys,visitedNamespaceKeys,m_fileScope->getUsedNamespaces(),item))
       {
         AUTO_TRACE_ADD("found via used namespace");
+        result=1;
         goto done;
       }
     }
@@ -1504,6 +1507,7 @@ int SymbolResolver::Private::isAccessibleFrom(VisitedKeys &visitedKeys,
       if (accessibleViaUsingNamespace(visitedKeys,visitedNamespaceKeys,nscope->getUsedNamespaces(),item,QCString()))
       {
         AUTO_TRACE_ADD("found via used namespace");
+        result=1;
         goto done;
       }
     }
@@ -1519,6 +1523,7 @@ int SymbolResolver::Private::isAccessibleFrom(VisitedKeys &visitedKeys,
       if (accessibleViaUsingNamespace(visitedKeys,visitedNamespaceKeys,nfile->getUsedNamespaces(),item,QCString()))
       {
         AUTO_TRACE_ADD("found via used namespace");
+        result=1;
         goto done;
       }
     }

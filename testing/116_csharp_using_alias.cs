@@ -13,6 +13,10 @@ namespace N {
   }
 }
 
+namespace M {
+  public class A {}
+}
+
 using Foo = N.A;
 using Bar = N.Collections.Dictionary<string, N.Collections.List<N.A>>;
 
@@ -51,3 +55,8 @@ namespace TestApp
         public GlobalFoo globalFooMethod(GlobalBar b) { return null; }
     }
 }
+
+using N;
+using A = M.A;
+
+interface I : A {}
