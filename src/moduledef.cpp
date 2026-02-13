@@ -778,7 +778,7 @@ void ModuleDefImpl::sortMemberLists()
     if (ml->needsSorting()) { ml->sort(); ml->setNeedsSorting(FALSE); }
   }
 
-  if (Config_getBool(SORT_BRIEF_DOCS))
+  if (Config_getBool(SORT_NAVIGATION_LISTS))
   {
     auto classComp = [](const ClassLinkedRefMap::Ptr &c1,const ClassLinkedRefMap::Ptr &c2)
     {
