@@ -2143,7 +2143,14 @@ QCString MemberDefImpl::getDeclType() const
   }
   if (isTypeAlias())
   {
-    ltype="using";
+    if (lang==SrcLangExt::Python)
+    {
+      ltype="type";
+    }
+    else
+    {
+      ltype="using";
+    }
   }
   // strip 'friend' keyword from ltype
   ltype.stripPrefix("friend ");
@@ -2314,13 +2321,21 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
 
   // *** write type
   QCString ltype(m_type);
-  if (isTypedef() && getLanguage() != SrcLangExt::Slice)
+  auto lang = getLanguage();
+  if (isTypedef() && lang != SrcLangExt::Slice)
   {
     ltype.prepend("typedef ");
   }
   if (isTypeAlias())
   {
-    ltype="using";
+    if (lang==SrcLangExt::Python)
+    {
+      ltype="type";
+    }
+    else
+    {
+      ltype="using";
+    }
   }
   // strip 'friend' keyword from ltype
   ltype.stripPrefix("friend ");

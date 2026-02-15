@@ -1597,7 +1597,7 @@ void ClassDefImpl::writeDetailedDocumentationBody(OutputList &ol) const
 
   if (getLanguage()==SrcLangExt::Cpp)
   {
-    writeTemplateSpec(ol,this,compoundTypeString(),getLanguage());
+    writeTemplateSpec(ol,this,compoundTypeString(),SrcLangExt::Cpp);
   }
 
   // repeat brief description

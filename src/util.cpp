@@ -707,7 +707,7 @@ QCString removeRedundantWhiteSpace(const QCString &s)
         break;
       case '*':
         if (i>0 && pc!=' ' && pc!='\t' && pc!=':' &&
-                   pc!='*' && pc!='&'  && pc!='(' && pc!='/' &&
+                   pc!='*' && pc!='&'  && pc!='(' && pc!='/' && pc!='[' &&
                    pc!='.' && osp<9
            )
           // avoid splitting &&, **, .*, operator*, operator->*
