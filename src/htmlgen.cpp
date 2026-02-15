@@ -329,6 +329,7 @@ static QCString substituteHtmlKeywords(const QCString &file,
 
   QCString projectName = Config_getString(PROJECT_NAME);
   bool treeView = Config_getBool(GENERATE_TREEVIEW);
+  bool htmlHelp = Config_getBool(GENERATE_HTMLHELP);
   bool searchEngine = Config_getBool(SEARCHENGINE);
   bool serverBasedSearch = Config_getBool(SERVER_BASED_SEARCH);
   bool mathJax = Config_getBool(USE_MATHJAX);
@@ -646,6 +647,7 @@ static QCString substituteHtmlKeywords(const QCString &file,
     { "PROJECT_LOGO",      hasProjectLogo   },
     { "PROJECT_ICON",      hasProjectIcon   },
     { "COPY_CLIPBOARD",    hasCopyClipboard },
+    { "GENERATE_HTMLHELP", htmlHelp         },
   },htmlMarkerInfo);
 
   result = removeEmptyLines(result);
