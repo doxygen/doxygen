@@ -1477,6 +1477,9 @@ ID        [a-z_A-Z%]+{IDSYM}*
    {IDENTIFIER}       {
                         yyextra->current->initializer << yytext;
                       }
+   {POUNDCOMMENT}     { // normal comment
+                        yyextra->current->initializer << yytext;
+                      }
    .                  {
                         yyextra->current->initializer << *yytext;
                       }
