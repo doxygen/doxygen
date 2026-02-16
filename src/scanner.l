@@ -3284,7 +3284,10 @@ NONLopt [^\n]*
                                             //printf("RawGString delimiter='%s'\n",qPrint(delimiter));
                                           }
                                         }
-<ReadInitializer>{CPPC}|{CCS}           {
+<ReadInitializer>{CPPC}.*               {
+                                          if (!yyextra->keepComment) REJECT;
+                                        }
+<ReadInitializer>{CCS}                  {
                                           if (yyextra->keepComment)
                                           {
                                             yyextra->current->initializer << yytext;
