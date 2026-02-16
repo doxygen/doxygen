@@ -259,10 +259,11 @@ static QCString generateIndentLabel(const FTVNodePtr &n,int level)
 
 static void generateIndent(TextStream &t, const FTVNodePtr &n,bool opened)
 {
+  bool dynamicSections = Config_getBool(HTML_DYNAMIC_SECTIONS);
   int indent=0;
   auto parent = n->parent.lock();
   while (parent) { indent++; parent=parent->parent.lock(); }
-  if (n->isDir)
+  if (n->isDir && dynamicSections)
   {
     const char *ARROW_DOWN = "<span class=\"arrowhead opened\"></span>";
     const char *ARROW_RIGHT = "<span class=\"arrowhead closed\"></span>";
@@ -378,6 +379,7 @@ static char compoundIcon(const ClassDef *cd)
 
 void FTVHelp::Private::generateTree(TextStream &t, const FTVNodes &nl,int level,int maxLevel,int &index)
 {
+  bool dynamicSections = Config_getBool(HTML_DYNAMIC_SECTIONS);
   for (const auto &n : nl)
   {
     t << "<tr id=\"row_" << generateIndentLabel(n,0) << "\"";
@@ -385,7 +387,7 @@ void FTVHelp::Private::generateTree(TextStream &t, const FTVNodes &nl,int level,
       t << " class=\"even\"";
     else
       t << " class=\"odd\"";
-    if (level>=maxLevel) // item invisible by default
+    if (level>=maxLevel && dynamicSections) // item invisible by default
       t << " style=\"display:none;\"";
     else // item visible by default
       index++;
@@ -426,7 +428,7 @@ void FTVHelp::Private::generateTree(TextStream &t, const FTVNodes &nl,int level,
         char icon=compoundIcon(toClassDef(n->def));
         t << "<span class=\"icona\"><span class=\"icon\">" << icon << "</span></span>";
       }
-      else
+      else if (dynamicSections)
       {
         t << "<span id=\"img_" << generateIndentLabel(n,0) << "\" class=\"iconfolder"
           << "\" onclick=\"dynsection.toggleFolder('" << generateIndentLabel(n,0)
@@ -878,6 +880,7 @@ void FTVHelp::generateTreeViewScripts()
 // write tree inside page
 void FTVHelp::generateTreeViewInline(TextStream &t)
 {
+  bool dynamicSections = Config_getBool(HTML_DYNAMIC_SECTIONS);
   int preferredNumEntries = Config_getInt(HTML_INDEX_NUM_ENTRIES);
   t << "<div class=\"directory\">\n";
   int d=1, depth=1;
@@ -893,14 +896,17 @@ void FTVHelp::generateTreeViewInline(TextStream &t)
   // write level selector
   if (depth>1)
   {
-    t << "<div class=\"levels\">[";
-    t << theTranslator->trDetailLevel();
-    t << " ";
-    for (int i=1;i<=depth;i++)
+    if (dynamicSections)
     {
-      t << "<span onclick=\"javascript:dynsection.toggleLevel(" << i << ");\">" << i << "</span>";
+      t << "<div class=\"levels\">[";
+      t << theTranslator->trDetailLevel();
+      t << " ";
+      for (int i=1;i<=depth;i++)
+      {
+        t << "<span onclick=\"javascript:dynsection.toggleLevel(" << i << ");\">" << i << "</span>";
+      }
+      t << "]</div>";
     }
-    t << "]</div>";
 
     if (preferredNumEntries>0)
     {
