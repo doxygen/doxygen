@@ -51,6 +51,7 @@
 #define TRANSLATOR_GR_H
 
 class TranslatorGreek : public Translator
+{
   public:
 
     // --- Language control methods -------------------
