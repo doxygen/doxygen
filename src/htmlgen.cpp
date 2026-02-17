@@ -1322,7 +1322,7 @@ void HtmlGenerator::init()
     }
   }
 
-  if (Config_getBool(HTML_DYNAMIC_MENUS) || Config_getBool(HTML_CODE_FOLDING))
+  if (Config_getBool(HTML_DYNAMIC_SECTIONS))
   {
     std::ofstream f = Portable::openOutputStream(dname+"/dynsections.js");
     if (f.is_open())
@@ -1333,6 +1333,15 @@ void HtmlGenerator::init()
       {
         t << replaceVariables(mgr.getAsString("dynsections_tooltips.js"));
       }
+    }
+  }
+  if (Config_getBool(HTML_CODE_FOLDING))
+  {
+    std::ofstream f = Portable::openOutputStream(dname+"/codefolding.js");
+    if (f.is_open())
+    {
+      TextStream t(&f);
+      t << replaceVariables(mgr.getAsString("codefolding.js"));
     }
   }
 }
@@ -1714,9 +1723,13 @@ void HtmlGenerator::writeStyleInfo(int part)
 
     Doxygen::indexList->addStyleSheetFile("navtree.css");
 
-    if (Config_getBool(HTML_DYNAMIC_MENUS) || Config_getBool(HTML_CODE_FOLDING))
+    if (Config_getBool(HTML_DYNAMIC_SECTIONS))
     {
       Doxygen::indexList->addStyleSheetFile("dynsections.js");
+    }
+    if (Config_getBool(HTML_CODE_FOLDING))
+    {
+      Doxygen::indexList->addStyleSheetFile("codefolding.js");
     }
 
     if (Config_getEnum(HTML_COLORSTYLE)==HTML_COLORSTYLE_t::TOGGLE)
@@ -3624,7 +3637,7 @@ void HtmlGenerator::writeInheritedSectionTitle(
   if (dynamicSections) 
   {
     m_t << "<td colspan=\"2\" onclick=\"javascript:dynsection.toggleInherit('" << id << "')\">";
-    m_t << "<span class=\"dynarrow\"><span class=\"arrowhead closed\"></dynamicSections></span>";
+    m_t << "<span class=\"dynarrow\"><span class=\"arrowhead closed\"></span></span>";
   }
   else
   {
