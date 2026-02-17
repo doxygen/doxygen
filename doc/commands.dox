@@ -257,6 +257,7 @@ documentation:
 \refitem cmdbackslash \\\\
 \refitem cmdamp \\\&
 \refitem cmdtilde \\~
+\refitem cmdtildeother \\~!
 \refitem cmdlt \\\<
 \refitem cmdeq \\=
 \refitem cmdgt \\\>
@@ -4246,6 +4247,23 @@ class Receiver
  */
 \endverbatim
 
+  \sa \ref cmdtilde "\\~!'{'LanguageId [,LanguageId]*'}'"
+
+<hr>
+\section cmdtildeother \\~!'{'LanguageId [,LanguageId]*'}'
+  \addindex \\~!
+  This command enables/disables a language specific filter.
+  Use \c \\~!{LanguageId's} to enable output for all languages except for the ones specified in the options list.
+
+  Example:
+\verbatim
+/*! \~english This is English \~dutch Dit is Nederlands \~german Dies ist
+    Deutsch. \~!{english, dutch, german} output for all languages but English, Dutch and German
+    \~ output for all languages.
+ */
+\endverbatim
+
+  \sa \ref cmdtilde "\\~[LanguageId]"
 
 <hr>
 \section cmdamp \\\&
