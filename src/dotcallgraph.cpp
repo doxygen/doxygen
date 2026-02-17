@@ -164,11 +164,16 @@ QCString DotCallGraph::getBaseName() const
 
 void DotCallGraph::computeTheGraph()
 {
+  QCString rankdir = Config_getString(DOT_RANKDIR_CALL);
+  if (rankdir.size() >= 2 && m_inverse)
+  {
+    std::swap(rankdir[0], rankdir[1]);
+  }
   computeGraph(
     m_startNode,
     GraphType::CallGraph,
     m_graphFormat,
-    m_inverse ? "RL" : "LR",
+    rankdir,
     FALSE,
     m_inverse,
     m_startNode->label(),

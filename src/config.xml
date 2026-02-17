@@ -3868,6 +3868,130 @@ where `loc1` and `loc2` can be relative or absolute paths or URLs.
 ]]>
       </docs>
     </option>
+    <option type='list' id='DOT_GRAPH_ATTR' format='string' depends='HAVE_DOT'
+      defval='bgcolor=\"transparent\"'>
+      <docs>
+<![CDATA[
+ \c DOT_GRAPH_ATTR is common attributes for graphs.
+ For details please see
+ <a href="https://graphviz.org/doc/info/attrs.html">Node, Edge and Graph Attributes specification</a>.
+ <br>The default value is:<br>
+]]>
+      </docs>
+      <value name='bgcolor=\"transparent\"'/>
+    </option>
+    <option type='string' id='DOT_RANKDIR_CALL' format='string' depends='HAVE_DOT' defval='LR'>
+      <docs>
+<![CDATA[
+ \c DOT_RANKDIR_CALL specifies the rankdir used by dot for call graphs.
+ For details see <a href="https://graphviz.org/docs/attrs/rankdir/">rankdir attribute</a>
+ and <a href="https://graphviz.org/docs/attr-types/rankdir/">rankdir values</a>.
+ An empty string will use the rankdir specified in \c DOT_GRAPH_ATTR or graphviz's
+ default if no rankdir was specified.
+]]>
+      </docs>
+      <value name=''/>
+      <value name='TB'/>
+      <value name='LR'/>
+      <value name='BT'/>
+      <value name='RL'/>
+    </option>
+    <option type='string' id='DOT_RANKDIR_CLASS' format='string' depends='HAVE_DOT' defval=''>
+      <docs>
+<![CDATA[
+ \c DOT_RANKDIR_CLASS specifies the rankdir used by dot for class inheritance and dependency graphs.
+ For details see <a href="https://graphviz.org/docs/attrs/rankdir/">rankdir attribute</a>
+ and <a href="https://graphviz.org/docs/attr-types/rankdir/">rankdir values</a>.
+ An empty string will use the rankdir specified in \c DOT_GRAPH_ATTR or graphviz's
+ default if no rankdir was specified.
+]]>
+      </docs>
+      <value name=''/>
+      <value name='TB'/>
+      <value name='LR'/>
+      <value name='BT'/>
+      <value name='RL'/>
+    </option>
+    <option type='string' id='DOT_RANKDIR_DIR_DEP' format='string' depends='HAVE_DOT' defval=''>
+      <docs>
+<![CDATA[
+ \c DOT_RANKDIR_DIR_DEP specifies the rankdir used by dot for directory dependency graphs.
+ For details see <a href="https://graphviz.org/docs/attrs/rankdir/">rankdir attribute</a>
+ and <a href="https://graphviz.org/docs/attr-types/rankdir/">rankdir values</a>.
+ An empty string will use the rankdir specified in \c DOT_GRAPH_ATTR or graphviz's
+ default if no rankdir was specified.
+]]>
+      </docs>
+      <value name=''/>
+      <value name='TB'/>
+      <value name='LR'/>
+      <value name='BT'/>
+      <value name='RL'/>
+    </option>
+    <option type='string' id='DOT_RANKDIR_HIERARCHY' format='string' depends='HAVE_DOT' defval='LR'>
+      <docs>
+<![CDATA[
+ \c DOT_RANKDIR_HIERARCHY specifies the rankdir used by dot for graphical class hierarchy graphs.
+ For details see <a href="https://graphviz.org/docs/attrs/rankdir/">rankdir attribute</a>
+ and <a href="https://graphviz.org/docs/attr-types/rankdir/">rankdir values</a>.
+ An empty string will use the rankdir specified in \c DOT_GRAPH_ATTR or graphviz's
+ default if no rankdir was specified.
+]]>
+      </docs>
+      <value name=''/>
+      <value name='TB'/>
+      <value name='LR'/>
+      <value name='BT'/>
+      <value name='RL'/>
+    </option>
+    <option type='string' id='DOT_RANKDIR_GROUP_COL' format='string' depends='HAVE_DOT' defval='LR'>
+      <docs>
+<![CDATA[
+ \c DOT_RANKDIR_GROUP_COL specifies the rankdir used by dot for group collaboration graphs.
+ For details see <a href="https://graphviz.org/docs/attrs/rankdir/">rankdir attribute</a>
+ and <a href="https://graphviz.org/docs/attr-types/rankdir/">rankdir values</a>.
+ An empty string will use the rankdir specified in \c DOT_GRAPH_ATTR or graphviz's
+ default if no rankdir was specified.
+]]>
+      </docs>
+      <value name=''/>
+      <value name='TB'/>
+      <value name='LR'/>
+      <value name='BT'/>
+      <value name='RL'/>
+    </option>
+    <option type='string' id='DOT_RANKDIR_INCLUDE' format='string' depends='HAVE_DOT' defval=''>
+      <docs>
+<![CDATA[
+ \c DOT_RANKDIR_INCLUDE specifies the rankdir used by dot for include dependency graphs.
+ For details see <a href="https://graphviz.org/docs/attrs/rankdir/">rankdir attribute</a>
+ and <a href="https://graphviz.org/docs/attr-types/rankdir/">rankdir values</a>.
+ An empty string will use the rankdir specified in \c DOT_GRAPH_ATTR or graphviz's
+ default if no rankdir was specified.
+]]>
+      </docs>
+      <value name=''/>
+      <value name='TB'/>
+      <value name='LR'/>
+      <value name='BT'/>
+      <value name='RL'/>
+    </option>
+    <option type='string' id='DOT_RANKDIR_VHDL' format='string' depends='HAVE_DOT' defval='TB'>
+      <docs>
+<![CDATA[
+ \c DOT_RANKDIR_VHDL specifies the rankdir used by dot for VHDL flow charts.
+ For details see <a href="https://graphviz.org/docs/attrs/rankdir/">rankdir attribute</a>
+ and <a href="https://graphviz.org/docs/attr-types/rankdir/">rankdir values</a>.
+ An empty string will use the rankdir specified in \c DOT_GRAPH_ATTR or graphviz's
+ default if no rankdir was specified.
+]]>
+      </docs>
+      <value name=''/>
+      <value name='TB'/>
+      <value name='LR'/>
+      <value name='BT'/>
+      <value name='RL'/>
+    </option>
     <option type='string' id='DOT_COMMON_ATTR' format='string' depends='HAVE_DOT'
       defval='fontname=Helvetica,fontsize=10'>
       <docs>
