@@ -2581,6 +2581,62 @@ class TranslatorPolish : public TranslatorAdapter_1_16_0
     {
       return "Ważne";
     }
+
+    
+//////////////////////////////////////////////////////////////////////////
+// new since 1.16.0
+//////////////////////////////////////////////////////////////////////////
+
+    // the title of the requirements overview page
+    QCString trRequirements() override
+    {
+      return "Wymagania";
+    }
+    // table header for the column with the requirements IDs
+    QCString trRequirementID() override
+    {
+      return "ID";
+    }
+    // indicates a symbol implements (satisfies) a requirement
+    QCString trSatisfies(bool singular) override
+    {
+      return createNoun(true, singular, "Spełnia wym", "ogi", "óg");
+    }
+    // indicates a requirement is satisfied (implemented) by one or more symbols
+    QCString trSatisfiedBy(const QCString &list) override
+    {
+      return "Spełniony przez "+list+".";
+    }
+    QCString trUnsatisfiedRequirements() override
+    {
+      return "Niespełnione Wymagania";
+    }
+    QCString trUnsatisfiedRequirementsText(bool singular,const QCString &list) override
+    {
+      return singular ?
+        "Wymóg "+list+" nie ma relacji 'satisfies'." :
+        "Wymogi "+list+" nie ma relacji 'satisfies'.";
+    }
+    // indicates a symbol verifies (tests) a requirement
+    QCString trVerifies(bool singular) override
+    {
+      return createNoun(true, singular, "Weryfikuje wym", "ogi", "óg");
+    }
+    // indicates a requirement is verified (tested) by one or more symbols
+    QCString trVerifiedBy(const QCString &list) override
+    {
+      return "Zweryfikowany przez "+list+".";
+    }
+    QCString trUnverifiedRequirements() override
+    {
+      return "Niezweryfikowane Wymagania";
+    }
+    QCString trUnverifiedRequirementsText(bool singular,const QCString &list) override
+    {
+      return singular ?
+        "Wymóg "+list+" nie posiada relacji 'verifies'." :
+        "Wymogi "+list+" nie posiadają relacji 'verifies'.";
+    }
 };
 
 #endif
