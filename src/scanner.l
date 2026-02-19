@@ -415,6 +415,7 @@ NONLopt [^\n]*
 %x      QtPropWrite
 %x      ReadInitializer
 %x      ReadInitializerPtr
+%x      InitCopyComment
 %x      UNOIDLAttributeBlock
 %x      GetCallType
 %x      CppQuote
@@ -3285,9 +3286,6 @@ NONLopt [^\n]*
                                           }
                                         }
 <ReadInitializer>{CPPC}.*               {
-                                          if (!yyextra->keepComment) REJECT;
-                                        }
-<ReadInitializer>{CCS}                  {
                                           if (yyextra->keepComment)
                                           {
                                             yyextra->current->initializer << yytext;
@@ -3296,6 +3294,33 @@ NONLopt [^\n]*
                                           {
                                             REJECT;
                                           }
+                                        }
+<ReadInitializer>{CCS}                  {
+                                          if (yyextra->keepComment)
+                                          {
+                                            yyextra->current->initializer << yytext;
+                                            BEGIN(InitCopyComment);
+                                          }
+                                          else
+                                          {
+                                            REJECT;
+                                          }
+                                        }
+<InitCopyComment>{CCE}                  {
+                                          yyextra->current->initializer << yytext;
+                                          BEGIN(ReadInitializer);
+                                        }
+<InitCopyComment>\n                     {
+                                          lineCount(yyscanner);
+                                          yyextra->current->initializer << yytext;
+                                        }
+<InitCopyComment>.                      {
+                                          yyextra->current->initializer << yytext;
+                                        }
+<InitCopyComment><<EOF>>                {
+                                          warn(yyextra->fileName,yyextra->yyLineNr,
+                                              "reached end of file while inside a C style comment block!");
+                                          yyterminate();
                                         }
 <RawGString>{RAWEND}                    {
                                           if (extractEndRawStringDelimiter(yytext)==yyextra->delimiter)
