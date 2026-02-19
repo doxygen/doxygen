@@ -3290,7 +3290,8 @@ NONLopt [^\n]*
 <ReadInitializer>{CCS}                  {
                                           if (yyextra->keepComment)
                                           {
-                                            yyextra->current->initializer << yytext;
+                                            yyextra->lastCContext = YY_START ;
+                                            BEGIN( SkipComment ) ;
                                           }
                                           else
                                           {
