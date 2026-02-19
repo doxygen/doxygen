@@ -329,7 +329,8 @@ static QCString substituteHtmlKeywords(const QCString &file,
 
   QCString projectName = Config_getString(PROJECT_NAME);
   bool treeView = Config_getBool(GENERATE_TREEVIEW);
-  bool htmlHelp = Config_getBool(GENERATE_HTMLHELP);
+  bool dynamicSections = Config_getBool(HTML_DYNAMIC_SECTIONS);
+  bool codeFolding = Config_getBool(HTML_CODE_FOLDING);
   bool searchEngine = Config_getBool(SEARCHENGINE);
   bool serverBasedSearch = Config_getBool(SERVER_BASED_SEARCH);
   bool mathJax = Config_getBool(USE_MATHJAX);
@@ -647,7 +648,8 @@ static QCString substituteHtmlKeywords(const QCString &file,
     { "PROJECT_LOGO",      hasProjectLogo   },
     { "PROJECT_ICON",      hasProjectIcon   },
     { "COPY_CLIPBOARD",    hasCopyClipboard },
-    { "GENERATE_HTMLHELP", htmlHelp         },
+    { "HTML_CODE_FOLDING", codeFolding      },
+    { "HTML_DYNAMIC_SECTIONS", dynamicSections},
   },htmlMarkerInfo);
 
   result = removeEmptyLines(result);
@@ -1320,6 +1322,7 @@ void HtmlGenerator::init()
     }
   }
 
+  if (Config_getBool(HTML_DYNAMIC_SECTIONS))
   {
     std::ofstream f = Portable::openOutputStream(dname+"/dynsections.js");
     if (f.is_open())
@@ -1330,6 +1333,15 @@ void HtmlGenerator::init()
       {
         t << replaceVariables(mgr.getAsString("dynsections_tooltips.js"));
       }
+    }
+  }
+  if (Config_getBool(HTML_CODE_FOLDING))
+  {
+    std::ofstream f = Portable::openOutputStream(dname+"/codefolding.js");
+    if (f.is_open())
+    {
+      TextStream t(&f);
+      t << replaceVariables(mgr.getAsString("codefolding.js"));
     }
   }
 }
@@ -1711,7 +1723,14 @@ void HtmlGenerator::writeStyleInfo(int part)
 
     Doxygen::indexList->addStyleSheetFile("navtree.css");
 
-    Doxygen::indexList->addStyleSheetFile("dynsections.js");
+    if (Config_getBool(HTML_DYNAMIC_SECTIONS))
+    {
+      Doxygen::indexList->addStyleSheetFile("dynsections.js");
+    }
+    if (Config_getBool(HTML_CODE_FOLDING))
+    {
+      Doxygen::indexList->addStyleSheetFile("codefolding.js");
+    }
 
     if (Config_getEnum(HTML_COLORSTYLE)==HTML_COLORSTYLE_t::TOGGLE)
     {
@@ -2117,6 +2136,7 @@ void HtmlGenerator::endMemberList()
 void HtmlGenerator::startMemberItem(const QCString &anchor,MemberItemType type,const QCString &inheritId)
 {
   DBG_HTML(m_t << "<!-- startMemberItem() -->\n")
+  bool dynamicSections = Config_getBool(HTML_DYNAMIC_SECTIONS);
   if (m_emptySection)
   {
     m_t << "<table class=\"memberdecls\">\n";
@@ -2125,7 +2145,8 @@ void HtmlGenerator::startMemberItem(const QCString &anchor,MemberItemType type,c
   m_t << "<tr class=\"memitem:" << convertToId(anchor);
   if (!inheritId.isEmpty())
   {
-    m_t << " inherit " << inheritId;
+    if (dynamicSections) m_t << " inherit";
+    m_t << " " << inheritId;
   }
   m_t << "\"";
   if (!anchor.isEmpty())
@@ -2151,11 +2172,13 @@ void HtmlGenerator::startMemberTemplateParams()
 
 void HtmlGenerator::endMemberTemplateParams(const QCString &anchor,const QCString &inheritId)
 {
+  bool dynamicSections = Config_getBool(HTML_DYNAMIC_SECTIONS);
   m_t << "</td></tr>\n";
   m_t << "<tr class=\"memitem:" << convertToId(anchor);
   if (!inheritId.isEmpty())
   {
-    m_t << " inherit " << inheritId;
+    if (dynamicSections) m_t << " inherit";
+    m_t << " " << inheritId;
   }
   m_t << " template\"><td class=\"memItemLeft\">";
 }
@@ -2191,6 +2214,7 @@ void HtmlGenerator::insertMemberAlignLeft(MemberItemType type, bool initTag)
 void HtmlGenerator::startMemberDescription(const QCString &anchor,const QCString &inheritId, bool typ)
 {
   DBG_HTML(m_t << "<!-- startMemberDescription -->\n")
+  bool dynamicSections = Config_getBool(HTML_DYNAMIC_SECTIONS);
   if (m_emptySection)
   {
     m_t << "<table class=\"memberdecls\">\n";
@@ -2199,7 +2223,8 @@ void HtmlGenerator::startMemberDescription(const QCString &anchor,const QCString
   m_t << "<tr class=\"memdesc:" << anchor;
   if (!inheritId.isEmpty())
   {
-    m_t << " inherit " << inheritId;
+    if (dynamicSections) m_t << " inherit";
+    m_t << " " << inheritId;
   }
   m_t << "\">";
   m_t << "<td class=\"mdescLeft\">&#160;</td>";
@@ -3589,6 +3614,7 @@ void HtmlGenerator::writeInheritedSectionTitle(
                   const QCString &title, const QCString &name)
 {
   DBG_HTML(m_t << "<!-- writeInheritedSectionTitle -->\n";)
+  bool dynamicSections = Config_getBool(HTML_DYNAMIC_SECTIONS);
   QCString a = anchor;
   if (!a.isEmpty()) a.prepend("#");
   QCString classLink = QCString("<a class=\"el\" ");
@@ -3607,10 +3633,17 @@ void HtmlGenerator::writeInheritedSectionTitle(
   addHtmlExtensionIfMissing(fn);
   classLink=classLink+fn+a;
   classLink+=QCString("\">")+convertToHtml(name,FALSE)+"</a>";
-  m_t << "<tr class=\"inherit_header " << id << "\">"
-    << "<td colspan=\"2\" onclick=\"javascript:dynsection.toggleInherit('" << id << "')\">"
-    << "<span class=\"dynarrow\"><span class=\"arrowhead closed\"></span></span>"
-    << theTranslator->trInheritedFrom(convertToHtml(title,FALSE),classLink)
+  m_t << "<tr class=\"inherit_header " << id << "\">";
+  if (dynamicSections) 
+  {
+    m_t << "<td colspan=\"2\" onclick=\"javascript:dynsection.toggleInherit('" << id << "')\">";
+    m_t << "<span class=\"dynarrow\"><span class=\"arrowhead closed\"></span></span>";
+  }
+  else
+  {
+    m_t << "<td colspan=\"2\">";
+  }
+  m_t << theTranslator->trInheritedFrom(convertToHtml(title,FALSE),classLink)
     << "</td></tr>\n";
 }
 
