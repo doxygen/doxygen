@@ -894,7 +894,7 @@ bool leftScopeMatch(const QCString &scope, const QCString &name)
 void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
     const FileDef *fileScope,const Definition *self,
     const QCString &text, bool autoBreak,bool external,
-    bool keepSpaces,int indentLevel)
+    bool keepSpaces,int indentLevel,size_t breakThreshold)
 {
   AUTO_TRACE("scope={} fileScope={} text={} autoBreak={} external={} keepSpaces={} indentLevel={}",
       scope?scope->name():"",fileScope?fileScope->name():"",
@@ -939,13 +939,16 @@ void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
     }
 
     //printf("floatingIndex=%d strlen=%d autoBreak=%d\n",floatingIndex,strLen,autoBreak);
-    if (strLen>35 && floatingIndex>30 && autoBreak) // try to insert a split point
+    if (strLen>breakThreshold+5 && floatingIndex>breakThreshold && autoBreak) // try to insert a split point
     {
       std::string_view splitText = txtStr.substr(skipIndex,newIndex-skipIndex);
       size_t splitLength = splitText.length();
       size_t offset=1;
       size_t i = splitText.find(',');
       if (i==std::string::npos) { i=splitText.find('<'); if (i!=std::string::npos) offset=0; }
+      if (i==std::string::npos) { i=splitText.find("||"); if (i!=std::string::npos) offset=2; }
+      if (i==std::string::npos) { i=splitText.find("&&"); if (i!=std::string::npos) offset=2; }
+      if (i==std::string::npos) { i=splitText.find(">>"); if (i!=std::string::npos) offset=2; }
       if (i==std::string::npos) i=splitText.find('>');
       if (i==std::string::npos) i=splitText.find(' ');
       //printf("splitText=[%s] len=%d i=%d offset=%d\n",qPrint(splitText),splitLength,i,offset);

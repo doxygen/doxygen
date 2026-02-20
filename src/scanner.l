@@ -5110,20 +5110,12 @@ NONLopt [^\n]*
                                             yyextra->current->bodyLine = yyextra->yyLineNr;
                                             yyextra->current->bodyColumn = yyextra->yyColNr;
                                             yyextra->currentArgumentContext = FuncQual;
-                                            yyextra->current->req.clear(); // see issue #11895
                                             yyextra->fullArgString=yyextra->current->args;
                                             yyextra->copyArgString=&yyextra->current->args;
                                             BEGIN( ReadFuncArgType ) ;
                                             //printf(">>> Read function arguments yyextra->current->argList.size()=%d\n",yyextra->current->argList.size());
                                           }
                                         }
-  /*
-<FindMembers>"("{BN}*("void"{BN}*)?")"  {
-                                          lineCount(yyscanner);
-                                          yyextra->current->args = "()";
-                                          BEGIN( FuncQual );
-                                        }
-  */
 
   /*- Function argument reading rules ---------------------------------------*/
 
@@ -5695,7 +5687,10 @@ NONLopt [^\n]*
                                           {
                                             // c++20 trailing requires clause
                                             yyextra->requiresContext = YY_START;
-                                            yyextra->current->req+=' ';
+                                            if (!yyextra->current->req.isEmpty())
+                                            {
+                                              yyextra->current->req+=" && ";
+                                            }
                                             BEGIN(RequiresClause);
                                           }
                                           else if (yyextra->insideCS && qstrcmp(yytext,"where")==0)

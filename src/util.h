@@ -100,7 +100,8 @@ void linkifyText(const TextGeneratorIntf &ol,
                  bool autoBreak=FALSE,
                  bool external=TRUE,
                  bool keepSpaces=FALSE,
-                 int indentLevel=0
+                 int indentLevel=0,
+                 size_t breakThreshold=30
                 );
 
 QCString fileToString(const QCString &name,bool filter=FALSE,bool isSourceCode=FALSE);

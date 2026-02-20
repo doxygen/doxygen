@@ -2205,8 +2205,12 @@ void MemberDefImpl::_writeTemplatePrefix(OutputList &ol, const Definition *def,
         def,                     // scope
         getFileDef(),            // fileScope
         this,                    // self
-        m_requiresClause,  // text
-        FALSE                    // autoBreak
+        m_requiresClause,        // text
+        TRUE,                    // autoBreak
+        TRUE,                    // external
+        FALSE,                   // keepSpaces
+        0,                       // indentLevel
+        120                      // breakThreshold
         );
   }
 }
