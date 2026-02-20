@@ -3035,94 +3035,115 @@ NONLopt [^\n]*
                                           addType(yyscanner);
                                         }
 <FindMembers,MemberSpec,SFunction,NextSemi,EnumBaseType,BitFields,ReadInitializer,ReadInitializerPtr,OldStyleArgs,DefinePHPEnd>";"{BN}*{DCOMM}"<" {
-                                          if (yyextra->current->bodyLine==-1)
+                                          if (YY_START==ReadInitializer && yyextra->keepComment)
                                           {
-                                            yyextra->current->bodyLine=yyextra->yyLineNr;
-                                            yyextra->current->bodyColumn = yyextra->yyColNr;
-                                          }
-                                          yyextra->docBlockContext   = YY_START;
-                                          yyextra->docBlockInBody    = FALSE;
-                                          yyextra->docBlockAutoBrief = ( yytext[yyleng-2]=='*' && Config_getBool(JAVADOC_AUTOBRIEF) ) ||
-                                                              ( yytext[yyleng-2]=='!' && Config_getBool(QT_AUTOBRIEF) );
-
-                                          QCString indent;
-                                          indent.fill(' ',computeIndent(yytext,yyextra->column));
-                                          yyextra->docBlock.str(indent.str());
-                                          //printf("indent=%d\n",computeIndent(yytext+1,yyextra->column));
-                                          lineCount(yyscanner);
-
-                                          yyextra->docBlockTerm = ';';
-                                          if (YY_START==EnumBaseType && yyextra->current->section.isEnum())
-                                          {
-                                            yyextra->current->bitfields = ":"+yyextra->current->args;
-                                            yyextra->current->args.clear();
-                                            yyextra->current->section = EntryType::makeVariable();
-                                          }
-                                          if (yytext[yyleng-3]=='/')
-                                          {
-                                            startCommentBlock(yyscanner,TRUE);
-                                            BEGIN( DocLine );
+                                            REJECT;
                                           }
                                           else
                                           {
-                                            startCommentBlock(yyscanner,FALSE);
-                                            BEGIN( DocBlock );
+                                            if (yyextra->current->bodyLine==-1)
+                                            {
+                                              yyextra->current->bodyLine=yyextra->yyLineNr;
+                                              yyextra->current->bodyColumn = yyextra->yyColNr;
+                                            }
+                                            yyextra->docBlockContext   = YY_START;
+                                            yyextra->docBlockInBody    = FALSE;
+                                            yyextra->docBlockAutoBrief = ( yytext[yyleng-2]=='*' && Config_getBool(JAVADOC_AUTOBRIEF) ) ||
+                                                                ( yytext[yyleng-2]=='!' && Config_getBool(QT_AUTOBRIEF) );
+
+                                            QCString indent;
+                                            indent.fill(' ',computeIndent(yytext,yyextra->column));
+                                            yyextra->docBlock.str(indent.str());
+                                            //printf("indent=%d\n",computeIndent(yytext+1,yyextra->column));
+                                            lineCount(yyscanner);
+
+                                            yyextra->docBlockTerm = ';';
+                                            if (YY_START==EnumBaseType && yyextra->current->section.isEnum())
+                                            {
+                                              yyextra->current->bitfields = ":"+yyextra->current->args;
+                                              yyextra->current->args.clear();
+                                              yyextra->current->section = EntryType::makeVariable();
+                                            }
+                                            if (yytext[yyleng-3]=='/')
+                                            {
+                                              startCommentBlock(yyscanner,TRUE);
+                                              BEGIN( DocLine );
+                                            }
+                                            else
+                                            {
+                                              startCommentBlock(yyscanner,FALSE);
+                                              BEGIN( DocBlock );
+                                            }
                                           }
                                         }
 <MemberSpec,FindFields,FindMembers,NextSemi,EnumBaseType,BitFields,ReadInitializer,ReadInitializerPtr,OldStyleArgs>","{BN}*{DCOMM}"<" {
-                                          yyextra->docBlockContext   = YY_START;
-                                          yyextra->docBlockInBody    = FALSE;
-                                          yyextra->docBlockAutoBrief = ( yytext[yyleng-2]=='*' && Config_getBool(JAVADOC_AUTOBRIEF) ) ||
-                                                              ( yytext[yyleng-2]=='!' && Config_getBool(QT_AUTOBRIEF) );
-
-                                          QCString indent;
-                                          indent.fill(' ',computeIndent(yytext,yyextra->column));
-                                          yyextra->docBlock.str(indent.str());
-                                          lineCount(yyscanner);
-
-                                          yyextra->docBlockTerm = ',';
-                                          if (YY_START==EnumBaseType && yyextra->current->section.isEnum())
+                                          if (YY_START==ReadInitializer && yyextra->keepComment)
                                           {
-                                            yyextra->current->bitfields = ":"+yyextra->current->args;
-                                            yyextra->current->args.clear();
-                                            yyextra->current->section = EntryType::makeVariable();
-                                          }
-                                          if (yytext[yyleng-3]=='/')
-                                          {
-                                            startCommentBlock(yyscanner,TRUE);
-                                            BEGIN( DocLine );
+                                            REJECT;
                                           }
                                           else
                                           {
-                                            startCommentBlock(yyscanner,FALSE);
-                                            BEGIN( DocBlock );
+                                            yyextra->docBlockContext   = YY_START;
+                                            yyextra->docBlockInBody    = FALSE;
+                                            yyextra->docBlockAutoBrief = ( yytext[yyleng-2]=='*' && Config_getBool(JAVADOC_AUTOBRIEF) ) ||
+                                                                ( yytext[yyleng-2]=='!' && Config_getBool(QT_AUTOBRIEF) );
+
+                                            QCString indent;
+                                            indent.fill(' ',computeIndent(yytext,yyextra->column));
+                                            yyextra->docBlock.str(indent.str());
+                                            lineCount(yyscanner);
+
+                                            yyextra->docBlockTerm = ',';
+                                            if (YY_START==EnumBaseType && yyextra->current->section.isEnum())
+                                            {
+                                              yyextra->current->bitfields = ":"+yyextra->current->args;
+                                              yyextra->current->args.clear();
+                                              yyextra->current->section = EntryType::makeVariable();
+                                            }
+                                            if (yytext[yyleng-3]=='/')
+                                            {
+                                              startCommentBlock(yyscanner,TRUE);
+                                              BEGIN( DocLine );
+                                            }
+                                            else
+                                            {
+                                              startCommentBlock(yyscanner,FALSE);
+                                              BEGIN( DocBlock );
+                                            }
                                           }
                                         }
 <DefineEnd,FindFields,ReadInitializer,ReadInitializerPtr,OldStyleArgs>{BN}*{DCOMM}"<" {
-                                          if (yyextra->current->bodyLine==-1)
+                                          if (YY_START==ReadInitializer && yyextra->keepComment)
                                           {
-                                            yyextra->current->bodyLine=yyextra->yyLineNr;
-                                            yyextra->current->bodyColumn = yyextra->yyColNr;
-                                          }
-                                          yyextra->docBlockContext   = YY_START;
-                                          yyextra->docBlockInBody    = FALSE;
-                                          yyextra->docBlockAutoBrief = ( yytext[yyleng-2]=='*' && Config_getBool(JAVADOC_AUTOBRIEF) ) ||
-                                                              ( yytext[yyleng-2]=='!' && Config_getBool(QT_AUTOBRIEF) );
-                                          QCString indent;
-                                          indent.fill(' ',computeIndent(yytext,yyextra->column));
-                                          yyextra->docBlock.str(indent.str());
-                                          lineCount(yyscanner);
-
-                                          yyextra->docBlockTerm = 0;
-                                          if (yytext[yyleng-3]=='/')
-                                          {
-                                            startCommentBlock(yyscanner,TRUE);
-                                            BEGIN( DocLine );
+                                            REJECT;
                                           }
                                           else
                                           {
-                                            startCommentBlock(yyscanner,FALSE);
-                                            BEGIN( DocBlock );
+                                            if (yyextra->current->bodyLine==-1)
+                                            {
+                                              yyextra->current->bodyLine=yyextra->yyLineNr;
+                                              yyextra->current->bodyColumn = yyextra->yyColNr;
+                                            }
+                                            yyextra->docBlockContext   = YY_START;
+                                            yyextra->docBlockInBody    = FALSE;
+                                            yyextra->docBlockAutoBrief = ( yytext[yyleng-2]=='*' && Config_getBool(JAVADOC_AUTOBRIEF) ) ||
+                                                                         ( yytext[yyleng-2]=='!' && Config_getBool(QT_AUTOBRIEF) );
+                                            QCString indent;
+                                            indent.fill(' ',computeIndent(yytext,yyextra->column));
+                                            yyextra->docBlock.str(indent.str());
+                                            lineCount(yyscanner);
+
+                                            yyextra->docBlockTerm = 0;
+                                            if (yytext[yyleng-3]=='/')
+                                            {
+                                              startCommentBlock(yyscanner,TRUE);
+                                              BEGIN( DocLine );
+                                            }
+                                            else
+                                            {
+                                              startCommentBlock(yyscanner,FALSE);
+                                              BEGIN( DocBlock );
+                                            }
                                           }
                                         }
 
