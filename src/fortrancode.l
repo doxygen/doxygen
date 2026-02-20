@@ -158,6 +158,7 @@ struct fortrancodeYY_state
 
   std::unique_ptr<FileDef> exampleFileDef;
   const FileDef *    sourceFileDef = nullptr;
+  bool          lineNumbers = FALSE;
   const Definition * currentDefinition = nullptr;
   const MemberDef *  currentMemberDef = nullptr;
   bool          includeCodeFragment = false;
@@ -953,7 +954,7 @@ static void codeFolding(yyscan_t yyscanner,const Definition *d)
 static void startCodeLine(yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  if (yyextra->sourceFileDef)
+  if (yyextra->sourceFileDef && yyextra->lineNumbers)
   {
     //QCString lineNumber,lineAnchor;
     //lineNumber.sprintf("%05d",yyextra->yyLineNr);
@@ -1509,6 +1510,7 @@ void FortranCodeParser::parseCode(OutputCodeList & codeOutIntf,
   yyextra->exampleBlock       = options.isExample();
   yyextra->exampleName        = options.exampleName();
   yyextra->sourceFileDef      = options.fileDef();
+  yyextra->lineNumbers        = options.fileDef() && options.showLineNumbers();
   yyextra->foldStack.clear();
   yyextra->insideSpecialComment = false;
   if (options.isExample() && options.fileDef()==nullptr)

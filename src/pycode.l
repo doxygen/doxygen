@@ -85,6 +85,7 @@ struct pycodeYY_state
   int           yyLineNr = 0;        //!< current line number
   std::unique_ptr<FileDef> exampleFileDef;
   const FileDef *    sourceFileDef = nullptr;
+  bool          lineNumbers = false;
   const Definition * currentDefinition = nullptr;
   const MemberDef *  currentMemberDef = nullptr;
   bool          includeCodeFragment = FALSE;
@@ -949,7 +950,7 @@ static void startCodeLine(yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   //if (yyextra->currentFontClass) { yyextra->code->endFontClass(yyscanner); }
-  if (yyextra->sourceFileDef)
+  if (yyextra->sourceFileDef && yyextra->lineNumbers)
   {
     //QCString lineNumber,lineAnchor;
     //lineNumber.sprintf("%05d",yyextra->yyLineNr);
@@ -1551,6 +1552,7 @@ void PythonCodeParser::parseCode(OutputCodeList &codeOutIntf,
   yyextra->exampleBlock  = options.isExample();
   yyextra->exampleName   = options.exampleName();
   yyextra->sourceFileDef = options.fileDef();
+  yyextra->lineNumbers   = options.fileDef() && options.showLineNumbers();
   yyextra->symbolResolver.setFileScope(options.fileDef());
   yyextra->foldStack.clear();
   yyextra->insideSpecialComment = false;

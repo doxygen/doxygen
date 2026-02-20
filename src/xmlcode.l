@@ -82,6 +82,7 @@ struct xmlcodeYY_state
 
   std::unique_ptr<FileDef> exampleFileDef;
   const FileDef *     sourceFileDef = nullptr;
+  bool          lineNumbers = FALSE;
   const Definition *  currentDefinition = nullptr;
   const MemberDef *   currentMemberDef = nullptr;
   bool          includeCodeFragment = false;
@@ -252,7 +253,7 @@ static void setCurrentDoc(yyscan_t yyscanner,const QCString &anchor)
 static void startCodeLine(yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  if (yyextra->sourceFileDef)
+  if (yyextra->sourceFileDef && yyextra->lineNumbers)
   {
     const Definition *d = yyextra->sourceFileDef->getSourceDefinition(yyextra->yyLineNr);
 
@@ -439,6 +440,7 @@ void XMLCodeParser::parseCode(OutputCodeList &codeOutIntf,
   yyextra->exampleBlock      = options.isExample();
   yyextra->exampleName       = options.exampleName();
   yyextra->sourceFileDef     = options.fileDef();
+  yyextra->lineNumbers       = options.fileDef() && options.showLineNumbers();
 
   if (options.isExample() && options.fileDef()==nullptr)
   {
