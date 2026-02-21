@@ -2001,6 +2001,7 @@ void Config::checkAndCorrect(bool quiet, const bool check)
     adjustBoolSetting(  depOption, "HTML_DYNAMIC_SECTIONS",false  );
     adjustBoolSetting(  depOption, "HTML_COPY_CLIPBOARD",  false  );
     adjustBoolSetting(  depOption, "HTML_CODE_FOLDING",    false  );
+    adjustBoolSetting(  depOption, "INTERACTIVE_SVG",      false  );
     adjustStringSetting(depOption, "HTML_FILE_EXTENSION", ".html");
     adjustColorStyleSetting(depOption);
     const StringVector &tagFileList = Config_getList(TAGFILES);
