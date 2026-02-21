@@ -5954,7 +5954,7 @@ static bool findGlobalMember(const Entry *root,
         {
           //printf("Comparing return types '%s'<->'%s'\n",
           //    md->typeString(),type);
-          printf("%s: Comparing '%s'<=>'%s'\n",qPrint(md->name()),qPrint(md->requiresClause()),qPrint(root->req));
+          //printf("%s: Comparing '%s'<=>'%s'\n",qPrint(md->name()),qPrint(md->requiresClause()),qPrint(root->req));
           if (md->templateArguments().size()!=root->tArgLists.back().size() ||
               md->typeString()!=type ||
               md->requiresClause()!=root->req)
