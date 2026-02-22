@@ -60,6 +60,7 @@ void splitRequirementRefs(const RequirementRefs &input,RequirementRefs &satisfie
 class RequirementIntf
 {
   public:
+    using DefinitionVector = std::vector<const Definition *>;
     ABSTRACT_BASE_CLASS(RequirementIntf)
     virtual QCString id()                const = 0;
     virtual QCString file()              const = 0;
@@ -69,6 +70,8 @@ class RequirementIntf
     virtual QCString getTagFile()        const = 0;
     virtual QCString getExtPage()        const = 0;
     virtual QCString getOutputFileBase() const = 0;
+    virtual const DefinitionVector &satisfiedBy() const = 0;
+    virtual const DefinitionVector &verifiedBy()  const = 0;
 };
 
 using RequirementIntfList = std::vector<const RequirementIntf *>;
@@ -83,6 +86,7 @@ class RequirementManager
     void addRequirementRefsForSymbol(const Definition *symbol);
     const RequirementIntf *find(const QCString &reqId) const;
     void writeRef(OutputList &ol,const RequirementRef &ref);
+    bool hasRequirements() const;
     RequirementIntfList requirements() const;
     const PageDef *requirementsPage() const;
   private:

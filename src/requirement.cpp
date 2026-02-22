@@ -44,10 +44,8 @@ struct Requirement : RequirementIntf
     QCString getTagFile()        const override { return m_tagFile;  }
     QCString getExtPage()        const override { return m_extPage;  }
     QCString getOutputFileBase() const override { return ::convertNameToFile("requirements",false,true); }
-
-    using DefinitionVector = std::vector<const Definition *>;
-    const DefinitionVector &satisfiedBy() const { return m_satisfiedBy; }
-    const DefinitionVector &verifiedBy()  const { return m_verifiedBy;  }
+    const DefinitionVector &satisfiedBy() const override { return m_satisfiedBy; }
+    const DefinitionVector &verifiedBy()  const override { return m_verifiedBy;  }
 
     void sortReferences()
     {
@@ -163,6 +161,11 @@ void RequirementManager::addRequirement(Entry *e)
 
     p->reqPageDef->setRefItems(e->sli);
   }
+}
+
+bool RequirementManager::hasRequirements() const
+{
+  return !p->requirements.empty();
 }
 
 RequirementIntfList RequirementManager::requirements() const

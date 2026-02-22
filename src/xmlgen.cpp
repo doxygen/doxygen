@@ -2072,6 +2072,61 @@ static void generateXMLForDir(DirDef *dd,TextStream &ti)
   ti << "  </compound>\n";
 }
 
+void generateXMLForRequirements(PageDef *pd,TextStream &ti)
+{
+  ti << "  <compound refid=\"requirements\" kind=\"requirements\"><name>" << convertToXML(pd->name()) << "</name>\n";
+  QCString outputDirectory = Config_getString(XML_OUTPUT);
+  QCString fileName = outputDirectory+"/requirements.xml";
+  std::ofstream f = Portable::openOutputStream(fileName);
+  if (!f.is_open())
+  {
+    err("Cannot open file {} for writing!\n",fileName);
+    return;
+  }
+  TextStream t(&f);
+
+  auto writeDefsForReq = [&t](const std::vector<const Definition *> &defs,const char *tagName)
+  {
+    for (const auto &def : defs)
+    {
+      t << "        <" << tagName << " refid=\"";
+      t << def->getOutputFileBase();
+      if (def->definitionType()==Definition::TypeMember)
+      {
+        t << "_1" << def->anchor();
+      }
+      t << "\">";
+      t << convertToXML(def->name());
+      t << "</" << tagName<< ">\n";
+    }
+  };
+
+  writeXMLHeader(t);
+  t << "  <compounddef id=\"requirements\" kind=\"requirements\">\n";
+  t << "    <compoundname>" << convertToXML(pd->name()) << "</compoundname>\n";
+  t << "    <requirementslist>\n";
+  auto reqs = RequirementManager::instance().requirements();
+  for (const auto &req : reqs)
+  {
+      t << "      <requirement refid=\"" << req->id();
+      if (auto tagFile = req->getTagFile(); !tagFile.isEmpty())
+      {
+        t << "\" tagfile=\"" << convertToXML(stripFromPath(tagFile)) << "\" page=\"" << convertToXML(req->getExtPage());
+      }
+      t << "\">\n";
+      t << "        <title>" << convertToXML(filterTitle(convertCharEntitiesToUTF8(req->title()))) << "</title>\n";
+      t << "        <location file=\"" << convertToXML(stripFromPath(req->file())) << "\" line=\"" << req->line() << "\"/>\n" ;
+      writeDefsForReq(req->satisfiedBy(),"satisfiedby");
+      writeDefsForReq(req->verifiedBy(),"verifiedby");
+      t << "      </requirement>\n";
+  }
+  t << "    </requirementslist>\n";
+  t << "  </compounddef>\n";
+  t << "</doxygen>\n";
+
+  ti << "  </compound>\n";
+}
+
 static void generateXMLForPage(PageDef *pd,TextStream &ti,bool isExample)
 {
   // + name
@@ -2094,6 +2149,7 @@ static void generateXMLForPage(PageDef *pd,TextStream &ti,bool isExample)
   }
   else if (pageName=="requirements")
   {
+    generateXMLForRequirements(pd,ti);
     return; // requirements are listed separately
   }
 

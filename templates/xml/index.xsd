@@ -48,6 +48,7 @@
       <xsd:enumeration value="concept"/>
       <xsd:enumeration value="module"/>
       <xsd:enumeration value="requirement"/>
+      <xsd:enumeration value="requirements"/>
     </xsd:restriction>
   </xsd:simpleType>
 

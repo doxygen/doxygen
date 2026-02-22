@@ -1014,6 +1014,7 @@ class DoxCompoundKind(str, Enum):
     DIR='dir'
     CONCEPT='concept'
     REQUIREMENT='requirement'
+    REQUIREMENTS='requirements'
 
 
 class DoxGraphRelation(str, Enum):
@@ -1379,7 +1380,7 @@ class compounddefType(GeneratedsSuper):
     __hash__ = GeneratedsSuper.__hash__
     subclass = None
     superclass = None
-    def __init__(self, id=None, kind=None, language=None, prot=None, final=None, inline=None, sealed=None, abstract=None, compoundname=None, title=None, basecompoundref=None, derivedcompoundref=None, includes=None, includedby=None, incdepgraph=None, invincdepgraph=None, innermodule=None, innerdir=None, innerfile=None, innerclass=None, innerconcept=None, innernamespace=None, innerpage=None, innergroup=None, qualifier=None, templateparamlist=None, sectiondef=None, tableofcontents=None, requiresclause=None, initializer=None, conceptparts=None, briefdescription=None, detaileddescription=None, exports=None, inheritancegraph=None, collaborationgraph=None, programlisting=None, satisfies=None, verifies=None, location=None, listofallmembers=None, gds_collector_=None, **kwargs_):
+    def __init__(self, id=None, kind=None, language=None, prot=None, final=None, inline=None, sealed=None, abstract=None, compoundname=None, title=None, basecompoundref=None, derivedcompoundref=None, includes=None, includedby=None, incdepgraph=None, invincdepgraph=None, innermodule=None, innerdir=None, innerfile=None, innerclass=None, innerconcept=None, innernamespace=None, innerpage=None, innergroup=None, qualifier=None, templateparamlist=None, sectiondef=None, tableofcontents=None, requiresclause=None, initializer=None, conceptparts=None, briefdescription=None, detaileddescription=None, exports=None, inheritancegraph=None, collaborationgraph=None, programlisting=None, satisfies=None, verifies=None, location=None, listofallmembers=None, requirementslist=None, gds_collector_=None, **kwargs_):
         self.gds_collector_ = gds_collector_
         self.gds_elementtree_node_ = None
         self.original_tagname_ = None
@@ -1509,6 +1510,8 @@ class compounddefType(GeneratedsSuper):
         self.location_nsprefix_ = None
         self.listofallmembers = listofallmembers
         self.listofallmembers_nsprefix_ = None
+        self.requirementslist = requirementslist
+        self.requirementslist_nsprefix_ = None
     def factory(*args_, **kwargs_):
         if CurrentSubclassModule_ is not None:
             subclass = getSubclassFromModule_(
@@ -1740,6 +1743,10 @@ class compounddefType(GeneratedsSuper):
         return self.listofallmembers
     def set_listofallmembers(self, listofallmembers):
         self.listofallmembers = listofallmembers
+    def get_requirementslist(self):
+        return self.requirementslist
+    def set_requirementslist(self, requirementslist):
+        self.requirementslist = requirementslist
     def get_id(self):
         return self.id
     def set_id(self, id):
@@ -1780,7 +1787,7 @@ class compounddefType(GeneratedsSuper):
                 self.gds_collector_.add_message('Value "%(value)s"%(lineno)s is not of the correct base simple type (str)' % {"value": value, "lineno": lineno, })
                 return False
             value = value
-            enumerations = ['class', 'struct', 'union', 'interface', 'protocol', 'category', 'exception', 'service', 'singleton', 'module', 'type', 'file', 'namespace', 'group', 'page', 'example', 'dir', 'concept', 'requirement']
+            enumerations = ['class', 'struct', 'union', 'interface', 'protocol', 'category', 'exception', 'service', 'singleton', 'module', 'type', 'file', 'namespace', 'group', 'page', 'example', 'dir', 'concept', 'requirement', 'requirements']
             if value not in enumerations:
                 lineno = self.gds_get_node_lineno_()
                 self.gds_collector_.add_message('Value "%(value)s"%(lineno)s does not match xsd enumeration restriction on DoxCompoundKind' % {"value" : encode_str_2_3(value), "lineno": lineno} )
@@ -1858,7 +1865,8 @@ class compounddefType(GeneratedsSuper):
             self.satisfies is not None or
             self.verifies is not None or
             self.location is not None or
-            self.listofallmembers is not None
+            self.listofallmembers is not None or
+            self.requirementslist is not None
         ):
             return True
         else:
@@ -2018,6 +2026,9 @@ class compounddefType(GeneratedsSuper):
         if self.listofallmembers is not None:
             namespaceprefix_ = self.listofallmembers_nsprefix_ + ':' if (UseCapturedNS_ and self.listofallmembers_nsprefix_) else ''
             self.listofallmembers.export(outfile, level, namespaceprefix_, namespacedef_='', name_='listofallmembers', pretty_print=pretty_print)
+        if self.requirementslist is not None:
+            namespaceprefix_ = self.requirementslist_nsprefix_ + ':' if (UseCapturedNS_ and self.requirementslist_nsprefix_) else ''
+            self.requirementslist.export(outfile, level, namespaceprefix_, namespacedef_='', name_='requirementslist', pretty_print=pretty_print)
     def build(self, node, gds_collector_=None):
         self.gds_collector_ = gds_collector_
         if SaveElementTreeNode:
@@ -2240,6 +2251,11 @@ class compounddefType(GeneratedsSuper):
             obj_.build(child_, gds_collector_=gds_collector_)
             self.listofallmembers = obj_
             obj_.original_tagname_ = 'listofallmembers'
+        elif nodeName_ == 'requirementslist':
+            obj_ = requirementslistType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            self.requirementslist = obj_
+            obj_.original_tagname_ = 'requirementslist'
 # end class compounddefType
 
 
@@ -2343,6 +2359,301 @@ class listofallmembersType(GeneratedsSuper):
             self.member.append(obj_)
             obj_.original_tagname_ = 'member'
 # end class listofallmembersType
+
+
+class requirementslistType(GeneratedsSuper):
+    __hash__ = GeneratedsSuper.__hash__
+    subclass = None
+    superclass = None
+    def __init__(self, requirement=None, gds_collector_=None, **kwargs_):
+        self.gds_collector_ = gds_collector_
+        self.gds_elementtree_node_ = None
+        self.original_tagname_ = None
+        self.parent_object_ = kwargs_.get('parent_object_')
+        self.ns_prefix_ = None
+        if requirement is None:
+            self.requirement = []
+        else:
+            self.requirement = requirement
+        self.requirement_nsprefix_ = None
+    def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, requirementslistType)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
+        if requirementslistType.subclass:
+            return requirementslistType.subclass(*args_, **kwargs_)
+        else:
+            return requirementslistType(*args_, **kwargs_)
+    factory = staticmethod(factory)
+    def get_ns_prefix_(self):
+        return self.ns_prefix_
+    def set_ns_prefix_(self, ns_prefix):
+        self.ns_prefix_ = ns_prefix
+    def get_requirement(self):
+        return self.requirement
+    def set_requirement(self, requirement):
+        self.requirement = requirement
+    def add_requirement(self, value):
+        self.requirement.append(value)
+    def insert_requirement_at(self, index, value):
+        self.requirement.insert(index, value)
+    def replace_requirement_at(self, index, value):
+        self.requirement[index] = value
+    def hasContent_(self):
+        if (
+            self.requirement
+        ):
+            return True
+        else:
+            return False
+    def export(self, outfile, level, namespaceprefix_='', namespacedef_='', name_='requirementslistType', pretty_print=True):
+        imported_ns_def_ = GenerateDSNamespaceDefs_.get('requirementslistType')
+        if imported_ns_def_ is not None:
+            namespacedef_ = imported_ns_def_
+        if pretty_print:
+            eol_ = '\n'
+        else:
+            eol_ = ''
+        if self.original_tagname_ is not None and name_ == 'requirementslistType':
+            name_ = self.original_tagname_
+        if UseCapturedNS_ and self.ns_prefix_:
+            namespaceprefix_ = self.ns_prefix_ + ':'
+        showIndent(outfile, level, pretty_print)
+        outfile.write('<%s%s%s' % (namespaceprefix_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
+        already_processed = set()
+        self.exportAttributes(outfile, level, already_processed, namespaceprefix_, name_='requirementslistType')
+        if self.hasContent_():
+            outfile.write('>%s' % (eol_, ))
+            self.exportChildren(outfile, level + 1, namespaceprefix_, namespacedef_, name_='requirementslistType', pretty_print=pretty_print)
+            showIndent(outfile, level, pretty_print)
+            outfile.write('</%s%s>%s' % (namespaceprefix_, name_, eol_))
+        else:
+            outfile.write('/>%s' % (eol_, ))
+    def exportAttributes(self, outfile, level, already_processed, namespaceprefix_='', name_='requirementslistType'):
+        pass
+    def exportChildren(self, outfile, level, namespaceprefix_='', namespacedef_='', name_='requirementslistType', fromsubclass_=False, pretty_print=True):
+        if pretty_print:
+            eol_ = '\n'
+        else:
+            eol_ = ''
+        for requirement_ in self.requirement:
+            namespaceprefix_ = self.requirement_nsprefix_ + ':' if (UseCapturedNS_ and self.requirement_nsprefix_) else ''
+            requirement_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='requirement', pretty_print=pretty_print)
+    def build(self, node, gds_collector_=None):
+        self.gds_collector_ = gds_collector_
+        if SaveElementTreeNode:
+            self.gds_elementtree_node_ = node
+        already_processed = set()
+        self.ns_prefix_ = node.prefix
+        self.buildAttributes(node, node.attrib, already_processed)
+        for child in node:
+            nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
+            self.buildChildren(child, node, nodeName_, gds_collector_=gds_collector_)
+        return self
+    def buildAttributes(self, node, attrs, already_processed):
+        pass
+    def buildChildren(self, child_, node, nodeName_, fromsubclass_=False, gds_collector_=None):
+        if nodeName_ == 'requirement':
+            obj_ = requirementType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            self.requirement.append(obj_)
+            obj_.original_tagname_ = 'requirement'
+# end class requirementslistType
+
+
+class requirementType(GeneratedsSuper):
+    __hash__ = GeneratedsSuper.__hash__
+    subclass = None
+    superclass = None
+    def __init__(self, refid=None, tagfile=None, page=None, title=None, location=None, satisfiedby=None, verifiedby=None, gds_collector_=None, **kwargs_):
+        self.gds_collector_ = gds_collector_
+        self.gds_elementtree_node_ = None
+        self.original_tagname_ = None
+        self.parent_object_ = kwargs_.get('parent_object_')
+        self.ns_prefix_ = None
+        self.refid = _cast(None, refid)
+        self.refid_nsprefix_ = None
+        self.tagfile = _cast(None, tagfile)
+        self.tagfile_nsprefix_ = None
+        self.page = _cast(None, page)
+        self.page_nsprefix_ = None
+        self.title = title
+        self.title_nsprefix_ = None
+        self.location = location
+        self.location_nsprefix_ = None
+        if satisfiedby is None:
+            self.satisfiedby = []
+        else:
+            self.satisfiedby = satisfiedby
+        self.satisfiedby_nsprefix_ = None
+        if verifiedby is None:
+            self.verifiedby = []
+        else:
+            self.verifiedby = verifiedby
+        self.verifiedby_nsprefix_ = None
+    def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, requirementType)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
+        if requirementType.subclass:
+            return requirementType.subclass(*args_, **kwargs_)
+        else:
+            return requirementType(*args_, **kwargs_)
+    factory = staticmethod(factory)
+    def get_ns_prefix_(self):
+        return self.ns_prefix_
+    def set_ns_prefix_(self, ns_prefix):
+        self.ns_prefix_ = ns_prefix
+    def get_title(self):
+        return self.title
+    def set_title(self, title):
+        self.title = title
+    def get_location(self):
+        return self.location
+    def set_location(self, location):
+        self.location = location
+    def get_satisfiedby(self):
+        return self.satisfiedby
+    def set_satisfiedby(self, satisfiedby):
+        self.satisfiedby = satisfiedby
+    def add_satisfiedby(self, value):
+        self.satisfiedby.append(value)
+    def insert_satisfiedby_at(self, index, value):
+        self.satisfiedby.insert(index, value)
+    def replace_satisfiedby_at(self, index, value):
+        self.satisfiedby[index] = value
+    def get_verifiedby(self):
+        return self.verifiedby
+    def set_verifiedby(self, verifiedby):
+        self.verifiedby = verifiedby
+    def add_verifiedby(self, value):
+        self.verifiedby.append(value)
+    def insert_verifiedby_at(self, index, value):
+        self.verifiedby.insert(index, value)
+    def replace_verifiedby_at(self, index, value):
+        self.verifiedby[index] = value
+    def get_refid(self):
+        return self.refid
+    def set_refid(self, refid):
+        self.refid = refid
+    def get_tagfile(self):
+        return self.tagfile
+    def set_tagfile(self, tagfile):
+        self.tagfile = tagfile
+    def get_page(self):
+        return self.page
+    def set_page(self, page):
+        self.page = page
+    def hasContent_(self):
+        if (
+            self.title is not None or
+            self.location is not None or
+            self.satisfiedby or
+            self.verifiedby
+        ):
+            return True
+        else:
+            return False
+    def export(self, outfile, level, namespaceprefix_='', namespacedef_='', name_='requirementType', pretty_print=True):
+        imported_ns_def_ = GenerateDSNamespaceDefs_.get('requirementType')
+        if imported_ns_def_ is not None:
+            namespacedef_ = imported_ns_def_
+        if pretty_print:
+            eol_ = '\n'
+        else:
+            eol_ = ''
+        if self.original_tagname_ is not None and name_ == 'requirementType':
+            name_ = self.original_tagname_
+        if UseCapturedNS_ and self.ns_prefix_:
+            namespaceprefix_ = self.ns_prefix_ + ':'
+        showIndent(outfile, level, pretty_print)
+        outfile.write('<%s%s%s' % (namespaceprefix_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
+        already_processed = set()
+        self.exportAttributes(outfile, level, already_processed, namespaceprefix_, name_='requirementType')
+        if self.hasContent_():
+            outfile.write('>%s' % (eol_, ))
+            self.exportChildren(outfile, level + 1, namespaceprefix_, namespacedef_, name_='requirementType', pretty_print=pretty_print)
+            showIndent(outfile, level, pretty_print)
+            outfile.write('</%s%s>%s' % (namespaceprefix_, name_, eol_))
+        else:
+            outfile.write('/>%s' % (eol_, ))
+    def exportAttributes(self, outfile, level, already_processed, namespaceprefix_='', name_='requirementType'):
+        if self.refid is not None and 'refid' not in already_processed:
+            already_processed.add('refid')
+            outfile.write(' refid=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.refid), input_name='refid')), ))
+        if self.tagfile is not None and 'tagfile' not in already_processed:
+            already_processed.add('tagfile')
+            outfile.write(' tagfile=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.tagfile), input_name='tagfile')), ))
+        if self.page is not None and 'page' not in already_processed:
+            already_processed.add('page')
+            outfile.write(' page=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.page), input_name='page')), ))
+    def exportChildren(self, outfile, level, namespaceprefix_='', namespacedef_='', name_='requirementType', fromsubclass_=False, pretty_print=True):
+        if pretty_print:
+            eol_ = '\n'
+        else:
+            eol_ = ''
+        if self.title is not None:
+            namespaceprefix_ = self.title_nsprefix_ + ':' if (UseCapturedNS_ and self.title_nsprefix_) else ''
+            self.title.export(outfile, level, namespaceprefix_, namespacedef_='', name_='title', pretty_print=pretty_print)
+        if self.location is not None:
+            namespaceprefix_ = self.location_nsprefix_ + ':' if (UseCapturedNS_ and self.location_nsprefix_) else ''
+            self.location.export(outfile, level, namespaceprefix_, namespacedef_='', name_='location', pretty_print=pretty_print)
+        for satisfiedby_ in self.satisfiedby:
+            namespaceprefix_ = self.satisfiedby_nsprefix_ + ':' if (UseCapturedNS_ and self.satisfiedby_nsprefix_) else ''
+            satisfiedby_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='satisfiedby', pretty_print=pretty_print)
+        for verifiedby_ in self.verifiedby:
+            namespaceprefix_ = self.verifiedby_nsprefix_ + ':' if (UseCapturedNS_ and self.verifiedby_nsprefix_) else ''
+            verifiedby_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='verifiedby', pretty_print=pretty_print)
+    def build(self, node, gds_collector_=None):
+        self.gds_collector_ = gds_collector_
+        if SaveElementTreeNode:
+            self.gds_elementtree_node_ = node
+        already_processed = set()
+        self.ns_prefix_ = node.prefix
+        self.buildAttributes(node, node.attrib, already_processed)
+        for child in node:
+            nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
+            self.buildChildren(child, node, nodeName_, gds_collector_=gds_collector_)
+        return self
+    def buildAttributes(self, node, attrs, already_processed):
+        value = find_attr_value_('refid', node)
+        if value is not None and 'refid' not in already_processed:
+            already_processed.add('refid')
+            self.refid = value
+        value = find_attr_value_('tagfile', node)
+        if value is not None and 'tagfile' not in already_processed:
+            already_processed.add('tagfile')
+            self.tagfile = value
+        value = find_attr_value_('page', node)
+        if value is not None and 'page' not in already_processed:
+            already_processed.add('page')
+            self.page = value
+    def buildChildren(self, child_, node, nodeName_, fromsubclass_=False, gds_collector_=None):
+        if nodeName_ == 'title':
+            obj_ = docTitleType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            self.title = obj_
+            obj_.original_tagname_ = 'title'
+        elif nodeName_ == 'location':
+            obj_ = locationType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            self.location = obj_
+            obj_.original_tagname_ = 'location'
+        elif nodeName_ == 'satisfiedby':
+            obj_ = compoundRefType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            self.satisfiedby.append(obj_)
+            obj_.original_tagname_ = 'satisfiedby'
+        elif nodeName_ == 'verifiedby':
+            obj_ = compoundRefType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            self.verifiedby.append(obj_)
+            obj_.original_tagname_ = 'verifiedby'
+# end class requirementType
 
 
 class memberRefType(GeneratedsSuper):
@@ -28194,6 +28505,8 @@ __all__ = [
     "reimplementType",
     "requirementRefType",
     "requirementRefsType",
+    "requirementType",
+    "requirementslistType",
     "sectiondefType",
     "spType",
     "tableofcontentsKindType",
