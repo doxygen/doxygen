@@ -7010,9 +7010,12 @@ NONLopt [^\n]*
                                           yyextra->current->bodyColumn = yyextra->yyColNr;
                                           yyextra->current->name = removeRedundantWhiteSpace(yyextra->current->name);
                                           if (!yyextra->baseName.isEmpty())
+                                          {
                                             yyextra->current->extends.emplace_back(
                                                yyextra->baseName,yyextra->baseProt,yyextra->baseVirt
                                             );
+                                            yyextra->baseName.clear();
+                                          }
                                           yyextra->curlyCount=0;
                                           if (yyextra->insideObjC)
                                           {
