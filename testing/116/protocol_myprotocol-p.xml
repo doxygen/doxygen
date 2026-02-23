@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="protocol_myprotocol-p" kind="protocol" language="Objective-C" prot="public">
+    <compoundname>Myprotocol-p</compoundname>
+    <basecompoundref prot="public" virt="non-virtual">&lt;NSCopying&gt;</basecompoundref>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="1">
+        <label>&lt;Myprotocol&gt;</label>
+        <link refid="protocol_myprotocol-p"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="2">
+        <label>&lt;NSCopying&gt;</label>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="1">
+        <label>&lt;Myprotocol&gt;</label>
+        <link refid="protocol_myprotocol-p"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="2">
+        <label>&lt;NSCopying&gt;</label>
+      </node>
+    </collaborationgraph>
+    <location file="116_objc_interface_protocol.h" line="11" column="11" bodyfile="116_objc_interface_protocol.h" bodystart="11" bodyend="-1"/>
+    <listofallmembers>
+    </listofallmembers>
+  </compounddef>
+</doxygen>
