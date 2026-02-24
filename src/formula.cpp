@@ -29,7 +29,6 @@
 #include "regex.h"
 #include "linkedmap.h"
 #include "threadpool.h"
-#include "portable.h"
 #include "latexgen.h"
 #include "debug.h"
 

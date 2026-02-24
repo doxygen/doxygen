@@ -44,7 +44,6 @@
 #include "fileinfo.h"
 #include "utf8.h"
 #include "datetime.h"
-#include "portable.h"
 #include "outputlist.h"
 #include "moduledef.h"
 

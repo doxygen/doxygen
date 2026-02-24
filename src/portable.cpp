@@ -22,7 +22,6 @@ extern char **environ;
 
 #include <assert.h>
 #include <ctype.h>
-#include <map>
 #include <string>
 
 #include "fileinfo.h"
