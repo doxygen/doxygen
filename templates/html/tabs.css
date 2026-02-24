@@ -356,12 +356,14 @@
 }
 
 .sm-dox ul a span.sub-arrow {
-    transform: rotate(-45deg)
+    transform: rotate(-45deg);
+    top: 3px;
 }
 
 .sm-dox ul a,.sm-dox ul a.highlighted,.sm-dox ul a:active,.sm-dox ul a:focus,.sm-dox ul a:hover {
     color: var(--nav-menu-foreground-color);
     background-image: none;
+    line-height: normal;
     border: 0!important
 }
 
