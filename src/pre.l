@@ -3078,7 +3078,13 @@ static bool expandExpression(yyscan_t yyscanner,QCString &expr,QCString *rest,in
     bool replaced=FALSE;
     macroName=expr.mid(p,l);
     //printf(" p=%d macroName=%s\n",p,qPrint(macroName));
-    if (p<2 || !(expr.at(p-2)=='@' && expr.at(p-1)=='-')) // no-rescan marker?
+    if (macroName == "__LINE__")
+    {
+      QCString resultExpr = QCString().setNum(yyextra->yyLineNr);
+      QCString restExpr=expr.right(expr.length()-8-p);
+      expr=expr.left(p)+resultExpr+restExpr;
+    }
+    else if (p<2 || !(expr.at(p-2)=='@' && expr.at(p-1)=='-')) // no-rescan marker?
     {
       if (state->expandedDict.find(macroName.str())==state->expandedDict.end()) // expand macro
       {
