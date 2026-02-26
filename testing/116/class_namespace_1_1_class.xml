@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="class_namespace_1_1_class" kind="class" language="C++" prot="public">
+    <compoundname>Namespace::Class</compoundname>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="class_namespace_1_1_class_1ae278721b28b01a4c01b09de072ac98d6" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int Namespace::Class::ClassMember</definition>
+        <argsstring/>
+        <name>ClassMember</name>
+        <qualifiedname>Namespace::Class::ClassMember</qualifiedname>
+        <briefdescription>
+          <para>ClassMember brief (in 116_tagfile.cpp). </para>
+        </briefdescription>
+        <detaileddescription>
+          <para>ClassMember description (in 116_tagfile.cpp). </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="116_tagfile.cpp" line="171" column="11" bodyfile="116_tagfile.cpp" bodystart="171" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="class_namespace_1_1_class_1a3728462d9de1e54c409d273c99bfe5a8" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type/>
+        <definition>Namespace::Class::Class</definition>
+        <argsstring>()</argsstring>
+        <name>Class</name>
+        <qualifiedname>Namespace::Class::Class</qualifiedname>
+        <briefdescription>
+          <para><ref refid="class_namespace_1_1_class" kindref="compound">Class</ref> constructor brief (in 116_tagfile.cpp). </para>
+        </briefdescription>
+        <detaileddescription>
+          <para><ref refid="class_namespace_1_1_class" kindref="compound">Class</ref> constructor description (in 116_tagfile.cpp). </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="116_tagfile.cpp" line="164" column="7" bodyfile="116_tagfile.cpp" bodystart="164" bodyend="164"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+      <para><ref refid="class_namespace_1_1_class" kindref="compound">Class</ref> brief (in 116_tagfile.cpp). </para>
+    </briefdescription>
+    <detaileddescription>
+      <para><ref refid="class_namespace_1_1_class" kindref="compound">Class</ref> description (in 116_tagfile.cpp). </para>
+    </detaileddescription>
+    <location file="116_tagfile.cpp" line="157" column="3" bodyfile="116_tagfile.cpp" bodystart="157" bodyend="172"/>
+    <listofallmembers>
+      <member refid="class_namespace_1_1_class_1a3728462d9de1e54c409d273c99bfe5a8" prot="public" virt="non-virtual">
+        <scope>Namespace::Class</scope>
+        <name>Class</name>
+      </member>
+      <member refid="class_namespace_1_1_class_1ae278721b28b01a4c01b09de072ac98d6" prot="public" virt="non-virtual">
+        <scope>Namespace::Class</scope>
+        <name>ClassMember</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>
