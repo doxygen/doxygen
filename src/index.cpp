@@ -3125,7 +3125,6 @@ static void writeMemberIndex(OutputList &ol,
     alphaLinks += "<a class=\"qindex\" href=\"" + anchor +
                   li + "\">" +
                   letter + "</a>";
-    first=FALSE;
   }
   alphaLinks += "</div>\n";
   ol.writeString(alphaLinks);
