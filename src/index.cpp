@@ -3277,7 +3277,7 @@ static void writeClassMemberIndexFiltered(OutputList &ol, ClassMemberHighlight::
     ol.startTextBlock();
     ol.parseText(hl == ClassMemberHighlight::All && lne ? lne->intro() : theTranslator->trCompoundMembersDescriptionTotal(hl));
     ol.endTextBlock();
-    if (dynamicMenus)
+    if (dynamicMenus || disableIndex)
     {
       writeMemberIndex(ol,index.isClassIndexLetterUsed(hl),getCmhlInfo(hl)->fname,multiPageIndex);
     }
@@ -3467,7 +3467,7 @@ static void writeFileMemberIndexFiltered(OutputList &ol, FileMemberHighlight::En
     ol.startTextBlock();
     ol.parseText(hl == FileMemberHighlight::All && lne ? lne->intro() : theTranslator->trFileMembersDescriptionTotal(hl));
     ol.endTextBlock();
-    if (dynamicMenus)
+    if (dynamicMenus || disableIndex)
     {
       writeMemberIndex(ol,index.isFileIndexLetterUsed(hl),getCmhlInfo(hl)->fname,multiPageIndex);
     }
@@ -3832,7 +3832,7 @@ static void writeModuleMemberIndexFiltered(OutputList &ol,
     ol.startTextBlock();
     ol.parseText(hl == ModuleMemberHighlight::All && lne ? lne->intro() : theTranslator->trModuleMembersDescriptionTotal(hl));
     ol.endTextBlock();
-    if (dynamicMenus)
+    if (dynamicMenus || disableIndex)
     {
       writeMemberIndex(ol,index.isModuleIndexLetterUsed(hl),getCmhlInfo(hl)->fname,multiPageIndex);
     }
