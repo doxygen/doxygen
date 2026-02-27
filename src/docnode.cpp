@@ -5554,7 +5554,7 @@ Token DocPara::handleHtmlEndTag(const QCString &tagName)
       warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Unexpected tag </caption> found");
       break;
     case HtmlTagType::HTML_BR:
-      warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Illegal </br> tag found");
+      //warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Illegal </br> tag found");
       break;
     case HtmlTagType::HTML_H1:
       warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Unexpected tag </h1> found");
@@ -5577,7 +5577,7 @@ Token DocPara::handleHtmlEndTag(const QCString &tagName)
     case HtmlTagType::HTML_IMG:
       break;
     case HtmlTagType::HTML_HR:
-      warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Illegal </hr> tag found");
+      // warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Illegal </hr> tag found");
       break;
     case HtmlTagType::HTML_A:
       //warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Unexpected tag </a> found");
