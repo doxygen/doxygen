@@ -3100,6 +3100,36 @@ static void writeQuickMemberIndex(OutputList &ol,
   endQuickIndexList(ol);
 }
 
+static void writeMemberIndex(OutputList &ol,
+    const Index::MemberIndexMap &map, QCString fullName,bool multiPage)
+{
+  bool first=true;
+  ol.writeString("<br/>\n");
+  QCString alphaLinks = "<div class=\"qindex\">";
+  for (const auto &[letter,list] : map)
+  {
+    QCString ci(letter);
+    QCString is = letterToLabel(ci);
+    QCString anchor;
+    QCString extension=Doxygen::htmlFileExtension;
+    if (!multiPage)
+      anchor="#index_";
+    else if (first)
+      anchor=fullName+extension+"#index_";
+    else
+      anchor=fullName+"_"+is+extension+"#index_";
+
+    if (!first) alphaLinks += "&#160;|&#160;";
+    first=false;
+    QCString li = letterToLabel(letter);
+    alphaLinks += "<a class=\"qindex\" href=\"" + anchor +
+                  li + "\">" +
+                  letter + "</a>";
+  }
+  alphaLinks += "</div>\n";
+  ol.writeString(alphaLinks);
+}
+
 //----------------------------------------------------------------------------
 
 /** Helper class representing a class member in the navigation menu. */
@@ -3247,6 +3277,10 @@ static void writeClassMemberIndexFiltered(OutputList &ol, ClassMemberHighlight::
     ol.startTextBlock();
     ol.parseText(hl == ClassMemberHighlight::All && lne ? lne->intro() : theTranslator->trCompoundMembersDescriptionTotal(hl));
     ol.endTextBlock();
+    if (dynamicMenus || disableIndex)
+    {
+      writeMemberIndex(ol,index.isClassIndexLetterUsed(hl),getCmhlInfo(hl)->fname,multiPageIndex);
+    }
 
     writeMemberList(ol,quickIndex,
         multiPageIndex ? letter : std::string(),
@@ -3433,6 +3467,10 @@ static void writeFileMemberIndexFiltered(OutputList &ol, FileMemberHighlight::En
     ol.startTextBlock();
     ol.parseText(hl == FileMemberHighlight::All && lne ? lne->intro() : theTranslator->trFileMembersDescriptionTotal(hl));
     ol.endTextBlock();
+    if (dynamicMenus || disableIndex)
+    {
+      writeMemberIndex(ol,index.isFileIndexLetterUsed(hl),getCmhlInfo(hl)->fname,multiPageIndex);
+    }
 
     writeMemberList(ol,quickIndex,
         multiPageIndex ? letter : std::string(),
@@ -3794,6 +3832,10 @@ static void writeModuleMemberIndexFiltered(OutputList &ol,
     ol.startTextBlock();
     ol.parseText(hl == ModuleMemberHighlight::All && lne ? lne->intro() : theTranslator->trModuleMembersDescriptionTotal(hl));
     ol.endTextBlock();
+    if (dynamicMenus || disableIndex)
+    {
+      writeMemberIndex(ol,index.isModuleIndexLetterUsed(hl),getCmhlInfo(hl)->fname,multiPageIndex);
+    }
 
     writeMemberList(ol,quickIndex,
         multiPageIndex ? letter : std::string(),
