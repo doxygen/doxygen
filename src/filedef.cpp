@@ -48,7 +48,6 @@
 #include "settings.h"
 #include "definitionimpl.h"
 #include "conceptdef.h"
-#include "outputlist.h"
 #include "moduledef.h"
 
 //---------------------------------------------------------------------------

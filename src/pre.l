@@ -38,7 +38,6 @@ typedef yyguts_t *yyscan_t;
 #include <utility>
 #include <mutex>
 #include <thread>
-#include <algorithm>
 #include <cstdio>
 #include <cassert>
 #include <cctype>
@@ -62,7 +61,6 @@ typedef yyguts_t *yyscan_t;
 #include "regex.h"
 #include "fileinfo.h"
 #include "trace.h"
-#include "debug.h"
 #include "stringutil.h"
 
 #define YY_NO_UNISTD_H 1
