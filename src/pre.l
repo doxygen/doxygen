@@ -327,6 +327,7 @@ static inline void outputSpaces(yyscan_t yyscanner,char *s);
 static inline void  outputSpace(yyscan_t yyscanner,char c);
 static inline void extraSpacing(yyscan_t yyscanner);
 static QCString     expandMacro(yyscan_t yyscanner,const QCString &name);
+static QCString expandStandardMacro(yyscan_t yyscanner,const QCString &name);
 static void     readIncludeFile(yyscan_t yyscanner,const QCString &inc);
 static void           incrLevel(yyscan_t yyscanner);
 static void           decrLevel(yyscan_t yyscanner);
@@ -704,6 +705,7 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
                                             //printf("Found it! #args=%d\n",def->nargs);
                                             yyextra->roundCount=0;
                                             yyextra->defArgsStr=yytext;
+                                            QCString resultExpr;
                                             if (def->nargs==-1) // no function macro
                                             {
                                               QCString result = def->isPredefined && !def->expandAsDefined ?
@@ -851,6 +853,7 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
   /* end lex rule handling */
 <CopyLine,LexCopyLine>{ID}              {
                                           Define *def=nullptr;
+                                          QCString result;
                                           if ((yyextra->includeStack.empty() || yyextra->curlyCount>0) &&
                                               yyextra->macroExpansion &&
                                               (def=isDefined(yyscanner,yytext)) &&
@@ -858,10 +861,14 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
                                               (!yyextra->expandOnlyPredef || def->isPredefined)
                                              )
                                           {
-                                            QCString result=def->isPredefined && !def->expandAsDefined ?
+                                            result=def->isPredefined && !def->expandAsDefined ?
                                               def->definition :
                                               expandMacro(yyscanner,yytext);
                                             outputString(yyscanner,result);
+                                          }
+                                          else if (!(result = expandStandardMacro(yyscanner,yytext)).isEmpty())
+                                          {
+                                             outputString(yyscanner,result);
                                           }
                                           else
                                           {
@@ -3076,11 +3083,11 @@ static bool expandExpression(yyscan_t yyscanner,QCString &expr,QCString *rest,in
   while ((p=getNextId(expr,i,&l))!=-1) // search for an macro name
   {
     bool replaced=FALSE;
+    QCString resultExpr;
     macroName=expr.mid(p,l);
     //printf(" p=%d macroName=%s\n",p,qPrint(macroName));
-    if (macroName == "__LINE__")
+    if (!(resultExpr = expandStandardMacro(yyscanner,macroName)).isEmpty())
     {
-      QCString resultExpr = QCString().setNum(yyextra->yyLineNr);
       QCString restExpr=expr.right(expr.length()-8-p);
       expr=expr.left(p)+resultExpr+restExpr;
     }
@@ -3125,7 +3132,7 @@ static bool expandExpression(yyscan_t yyscanner,QCString &expr,QCString *rest,in
         if (replaced) // expand the macro and rescan the expression
         {
           //printf(" replacing '%s'->'%s'\n",qPrint(expr.mid(p,len)),qPrint(expMacro));
-          QCString resultExpr=expMacro;
+          resultExpr=expMacro;
           QCString restExpr=expr.right(expr.length()-len-p);
           addSeparatorsIfNeeded(yyscanner,expr,resultExpr,restExpr,p);
           processConcatOperators(resultExpr);
@@ -3530,6 +3537,35 @@ static QCString expandMacro(yyscan_t yyscanner,const QCString &name)
   state->prevChar=0;
   //printf("expandMacro '%s'->'%s'\n",qPrint(name),qPrint(n));
   return n;
+}
+
+static QCString expandStandardMacro(yyscan_t yyscanner,const QCString &name)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  QCString resultExpr;
+  if (name == "__LINE__")
+  {
+    return QCString().setNum(yyextra->yyLineNr);
+  }
+  else if (name == "__FILE__")
+  {
+    resultExpr = "\"";
+    resultExpr += yyextra->fileName;
+    resultExpr += "\"";
+  }
+  else if (name == "__DATE__")
+  {
+    resultExpr = "\"";
+    resultExpr += __DATE__;
+    resultExpr += "\"";
+  }
+  else if (name == "__TIME__")
+  {
+    resultExpr = "\"";
+    resultExpr += __TIME__;
+    resultExpr += "\"";
+  }
+  return resultExpr;
 }
 
 static void addDefine(yyscan_t yyscanner)
