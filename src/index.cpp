@@ -3098,6 +3098,32 @@ static void writeQuickMemberIndex(OutputList &ol,
     first=FALSE;
   }
   endQuickIndexList(ol);
+  ol.writeString(R"js(
+<script type="text/javascript">
+function updateNavHighlight() {
+  var currentHash = window.location.hash;
+  var navItems = document.querySelectorAll('#navrow4 .tablist li');
+
+  for (var i = 0; i < navItems.length; i++) {
+    var item = navItems[i];
+    var link = item.querySelector('a');
+    item.classList.remove('current');
+    if (link && link.getAttribute('href') === currentHash) {
+      item.classList.add('current');
+    }
+  }
+
+  if (currentHash) {
+    var target = document.querySelector(currentHash);
+    if (target) {
+      target.scrollIntoView();
+    }
+  }
+}
+updateNavHighlight();
+window.addEventListener('hashchange', updateNavHighlight);
+</script>
+  )js");
 }
 
 static void writeMemberIndex(OutputList &ol,
