@@ -55,6 +55,8 @@
 #define MAX_ITEMS_BEFORE_MULTIPAGE_INDEX 200
 #define MAX_ITEMS_BEFORE_QUICK_INDEX 30
 
+constexpr auto alphaSepar = "<div class=\"alphasepar\"></div>";
+
 // helpers
 static int  countClassHierarchy(ClassDef::CompoundType ct);
 static void countFiles(int &htmlFiles,int &files);
@@ -2312,7 +2314,7 @@ static void writeAlphabeticalClassList(OutputList &ol, ClassDef::CompoundType ct
   bool first=true;
   for (const auto &letter : indexLettersUsed)
   {
-    if (!first) alphaLinks += "&#160;|&#160;";
+    if (!first) alphaLinks += alphaSepar;
     first=false;
     QCString li = letterToLabel(letter);
     alphaLinks += "<a class=\"qindex\" href=\"#letter_" +
@@ -3145,7 +3147,7 @@ static void writeMemberIndex(OutputList &ol,
     else
       anchor=fullName+"_"+is+extension+"#index_";
 
-    if (!first) alphaLinks += "&#160;|&#160;";
+    if (!first) alphaLinks += alphaSepar;
     first=false;
     QCString li = letterToLabel(letter);
     alphaLinks += "<a class=\"qindex\" href=\"" + anchor +
