@@ -3495,7 +3495,7 @@ static void writeFileMemberIndexFiltered(OutputList &ol, FileMemberHighlight::En
     ol.endTextBlock();
     if (dynamicMenus || disableIndex)
     {
-      writeMemberIndex(ol,index.isFileIndexLetterUsed(hl),getCmhlInfo(hl)->fname,multiPageIndex);
+      writeMemberIndex(ol,index.isFileIndexLetterUsed(hl),getFmhlInfo(hl)->fname,multiPageIndex);
     }
 
     writeMemberList(ol,quickIndex,
@@ -3860,7 +3860,7 @@ static void writeModuleMemberIndexFiltered(OutputList &ol,
     ol.endTextBlock();
     if (dynamicMenus || disableIndex)
     {
-      writeMemberIndex(ol,index.isModuleIndexLetterUsed(hl),getCmhlInfo(hl)->fname,multiPageIndex);
+      writeMemberIndex(ol,index.isModuleIndexLetterUsed(hl),getMmhlInfo(hl)->fname,multiPageIndex);
     }
 
     writeMemberList(ol,quickIndex,
