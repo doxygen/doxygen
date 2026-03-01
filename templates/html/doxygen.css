@@ -150,6 +150,19 @@ td.navtabHL {
 	background-color: var(--nav-menu-active-bg);
 }
 
+div.alphasepar:before{
+  content: " | " ;
+  width: 14px;
+  display: inline-block;
+  text-align: center;
+  line-height: 140%;
+  font-size: 130%;
+}
+
+div.alphasepar{
+  display: inline-block;
+}
+
 div.qindex{
 	text-align: center;
 	width: 100%;
