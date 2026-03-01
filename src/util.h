@@ -237,6 +237,8 @@ bool rightScopeMatch(const QCString &scope, const QCString &name);
 
 bool leftScopeMatch(const QCString &scope, const QCString &name);
 
+int resolveTemplateArity(const QCString &s);
+
 struct KeywordSubstitution
 {
   const char *keyword;

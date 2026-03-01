@@ -4863,9 +4863,11 @@ static void resolveTemplateInstanceInType(const Entry *root,const Definition *sc
   if (ti!=-1)
   {
     QCString templateClassName = ttype.left(ti);
+
+    int templateArity=(root->lang==SrcLangExt::CSharp) ? resolveTemplateArity(ttype) : 0;
     SymbolResolver resolver(root->fileDef());
     ClassDefMutable *baseClass = resolver.resolveClassMutable(scope ? scope : Doxygen::globalScope,
-                                           templateClassName, true, true);
+                                           templateClassName, true, true, templateArity);
     AUTO_TRACE_ADD("templateClassName={} baseClass={}",templateClassName,baseClass?baseClass->name():"<none>");
     if (baseClass)
     {
