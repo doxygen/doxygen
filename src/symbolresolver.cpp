@@ -35,11 +35,20 @@
 #define AUTO_TRACE_EXIT(...) (void)0
 #endif
 
-static std::mutex g_cacheMutex;
+//static std::mutex g_cacheMutex;
 static std::recursive_mutex g_cacheTypedefMutex;
 
-static std::mutex g_substMapMutex;
-static std::unordered_map<std::string, std::pair<QCString,const MemberDef *> > g_substMap;
+static Cache<std::string,LookupInfo> &getTypeLookupCache()
+{
+  int cacheSize = Config_getInt(LOOKUP_CACHE_SIZE);
+  if (cacheSize<0) cacheSize=0;
+  if (cacheSize>9) cacheSize=9;
+  static THREAD_LOCAL Cache<std::string,LookupInfo> s_cache(65536u << cacheSize);
+  return s_cache;
+}
+
+//static std::mutex g_substMapMutex;
+THREAD_LOCAL std::unordered_map<std::string, std::pair<QCString,const MemberDef *> > g_substMap;
 
 //--------------------------------------------------------------------------------------
 
@@ -131,6 +140,7 @@ struct SymbolResolver::Private
     QCString          templateSpec;
 
     const ClassDef *getResolvedTypeRec(
+                           Cache<std::string,LookupInfo> &cache, // in
                            VisitedKeys &visitedKeys, // in
                            const Definition *scope,     // in
                            const QCString &n,           // in
@@ -139,6 +149,7 @@ struct SymbolResolver::Private
                            QCString *pResolvedType);    // out
 
     const Definition *getResolvedSymbolRec(
+                           Cache<std::string,LookupInfo> &cache, // in
                            VisitedKeys &visitedKeys, // in
                            const Definition *scope,     // in
                            const QCString &n,           // in
@@ -164,7 +175,8 @@ struct SymbolResolver::Private
                            const QCString &explicitScopePart);
 
   private:
-    void getResolvedType(  VisitedKeys &visitedKeys,
+    void getResolvedType(  Cache<std::string,LookupInfo> &cache,
+                           VisitedKeys &visitedKeys,
                            const Definition *scope,                             // in
                            const Definition *d,                                 // in
                            const QCString &explicitScopePart,                   // in
@@ -193,6 +205,7 @@ struct SymbolResolver::Private
                           );
 
     const ClassDef *newResolveTypedef(
+                           Cache<std::string,LookupInfo> &cache,               // in
                            VisitedKeys &visitedKeys,                            // in
                            const Definition *scope,                             // in
                            const MemberDef *md,                                 // in
@@ -229,6 +242,7 @@ struct SymbolResolver::Private
 
 
 const ClassDef *SymbolResolver::Private::getResolvedTypeRec(
+           Cache<std::string,LookupInfo> &cache,
            VisitedKeys &visitedKeys,
            const Definition *scope,
            const QCString &n,
@@ -324,11 +338,7 @@ const ClassDef *SymbolResolver::Private::getResolvedTypeRec(
     // remember the key
     visitedKeys.push_back(key.str());
 
-    LookupInfo *pval = nullptr;
-    {
-      std::lock_guard lock(g_cacheMutex);
-      pval = Doxygen::typeLookupCache->find(key.str());
-    }
+    LookupInfo *pval = cache.find(key.str());
     AUTO_TRACE_ADD("key={} found={}",key,pval!=nullptr);
     if (pval)
     {
@@ -353,7 +363,7 @@ const ClassDef *SymbolResolver::Private::getResolvedTypeRec(
     {
       if (isCodeSymbol(d->definitionType()))
       {
-        getResolvedType(visitedKeys,scope,d,explicitScopePart,actTemplParams.get(),
+        getResolvedType(cache,visitedKeys,scope,d,explicitScopePart,actTemplParams.get(),
             minDistance,bestMatch,bestTypedef,bestTemplSpec,bestResolvedType);
       }
       if  (minDistance==0) break; // we can stop reaching if we already reached distance 0
@@ -372,11 +382,7 @@ const ClassDef *SymbolResolver::Private::getResolvedTypeRec(
       *pResolvedType = bestResolvedType;
     }
 
-    {
-      std::lock_guard lock(g_cacheMutex);
-      Doxygen::typeLookupCache->insert(key.str(),
-                            LookupInfo(bestMatch,bestTypedef,bestTemplSpec,bestResolvedType));
-    }
+    cache.insert(key.str(),LookupInfo(bestMatch,bestTypedef,bestTemplSpec,bestResolvedType));
     visitedKeys.erase(std::remove(visitedKeys.begin(), visitedKeys.end(), key.str()), visitedKeys.end());
 
     AUTO_TRACE_EXIT("found name={} templSpec={} typeDef={} resolvedTypedef={}",
@@ -389,6 +395,7 @@ const ClassDef *SymbolResolver::Private::getResolvedTypeRec(
 }
 
 const Definition *SymbolResolver::Private::getResolvedSymbolRec(
+           Cache<std::string,LookupInfo> &cache,
            VisitedKeys &visitedKeys,
            const Definition *scope,
            const QCString &n,
@@ -500,11 +507,7 @@ const Definition *SymbolResolver::Private::getResolvedSymbolRec(
     }
     // remember the key
     visitedKeys.push_back(key);
-    LookupInfo *pval = nullptr;
-    {
-      std::lock_guard lock(g_cacheMutex);
-      pval = Doxygen::symbolLookupCache->find(key);
-    }
+    LookupInfo *pval = cache.find(key);
     AUTO_TRACE_ADD("key={} found={}",key,pval!=nullptr);
     if (pval)
     {
@@ -579,12 +582,7 @@ const Definition *SymbolResolver::Private::getResolvedSymbolRec(
       *pResolvedType = bestResolvedType;
     }
 
-    {
-      LookupInfo lookupInfo(bestMatch,bestTypedef,bestTemplSpec,bestResolvedType);
-      std::lock_guard lock(g_cacheMutex);
-      // we need to insert the item in the cache again, as it could be removed in the meantime
-      Doxygen::symbolLookupCache->insert(key,std::move(lookupInfo));
-    }
+    cache.insert(key,LookupInfo(bestMatch,bestTypedef,bestTemplSpec,bestResolvedType));
     visitedKeys.erase(std::remove(visitedKeys.begin(),visitedKeys.end(),key),visitedKeys.end());
 
     AUTO_TRACE_EXIT("found name={} templSpec={} typeDef={} resolvedTypedef={}",
@@ -597,6 +595,7 @@ const Definition *SymbolResolver::Private::getResolvedSymbolRec(
 }
 
 void SymbolResolver::Private::getResolvedType(
+                         Cache<std::string,LookupInfo> &cache,
                          VisitedKeys &visitedKeys,                            // in
                          const Definition *scope,                             // in
                          const Definition *d,                                 // in
@@ -693,7 +692,7 @@ void SymbolResolver::Private::getResolvedType(
               QCString type;
               minDistance=distance;
               const MemberDef *enumType = nullptr;
-              const ClassDef *cd = newResolveTypedef(visitedKeys,scope,md,&enumType,&spec,&type,actTemplParams);
+              const ClassDef *cd = newResolveTypedef(cache,visitedKeys,scope,md,&enumType,&spec,&type,actTemplParams);
               if (cd)  // type resolves to a class
               {
                 AUTO_TRACE_ADD("found symbol={} at distance={} minDistance={}",cd->name(),distance,minDistance);
@@ -899,6 +898,7 @@ void SymbolResolver::Private::getResolvedSymbol(
 
 
 const ClassDef *SymbolResolver::Private::newResolveTypedef(
+                  Cache<std::string,LookupInfo> &cache,               // in
                   VisitedKeys &visitedKeys,                            // in
                   const Definition * /* scope */,                      // in
                   const MemberDef *md,                                 // in
@@ -955,13 +955,13 @@ const ClassDef *SymbolResolver::Private::newResolveTypedef(
   tl=static_cast<int>(type.length()); // length may have been changed
   while (sp<tl && type.at(sp)==' ') sp++;
   const MemberDef *memTypeDef = nullptr;
-  const ClassDef *result = getResolvedTypeRec(visitedKeys,md->getOuterScope(),type,
+  const ClassDef *result = getResolvedTypeRec(cache,visitedKeys,md->getOuterScope(),type,
                                                 &memTypeDef,nullptr,pResolvedType);
   // if type is a typedef then return what it resolves to.
   if (memTypeDef && memTypeDef->isTypedef())
   {
     AUTO_TRACE_ADD("resolving typedef");
-    result=newResolveTypedef(visitedKeys,m_fileScope,memTypeDef,pMemType,pTemplSpec,nullptr);
+    result=newResolveTypedef(cache,visitedKeys,m_fileScope,memTypeDef,pMemType,pTemplSpec,nullptr);
     goto done;
   }
   else if (memTypeDef && memTypeDef->isEnumerate() && pMemType)
@@ -977,7 +977,7 @@ const ClassDef *SymbolResolver::Private::newResolveTypedef(
     if (si==-1 && i!=-1) // typedef of a template => try the unspecialized version
     {
       if (pTemplSpec) *pTemplSpec = type.mid(i);
-      result = getResolvedTypeRec(visitedKeys,md->getOuterScope(),type.left(i),nullptr,nullptr,pResolvedType);
+      result = getResolvedTypeRec(cache,visitedKeys,md->getOuterScope(),type.left(i),nullptr,nullptr,pResolvedType);
     }
     else if (si!=-1) // A::B
     {
@@ -990,7 +990,7 @@ const ClassDef *SymbolResolver::Private::newResolveTypedef(
       {
         if (pTemplSpec) *pTemplSpec = type.mid(i);
       }
-      result = getResolvedTypeRec(visitedKeys,md->getOuterScope(),
+      result = getResolvedTypeRec(cache,visitedKeys,md->getOuterScope(),
            stripTemplateSpecifiersFromScope(type.left(i),FALSE),nullptr,nullptr,pResolvedType);
     }
   }
@@ -1218,7 +1218,7 @@ const Definition *SymbolResolver::Private::followPath(VisitedKeys &visitedKeys,
     const Definition *next = nullptr;
     if (memTypeDef)
     {
-      const ClassDef *type = newResolveTypedef(visitedKeys,m_fileScope,memTypeDef,nullptr,nullptr,nullptr);
+      const ClassDef *type = newResolveTypedef(SymbolResolver::typeLookupCache(),visitedKeys,m_fileScope,memTypeDef,nullptr,nullptr,nullptr);
       if (type)
       {
         AUTO_TRACE_EXIT("type={}",type->name());
@@ -1569,7 +1569,7 @@ QCString SymbolResolver::Private::substTypedef(
   key+=ptr_str;
   key+=name.str();
   {
-    std::lock_guard lock(g_substMapMutex);
+    //std::lock_guard lock(g_substMapMutex);
     auto it = g_substMap.find(key);
     if (it!=g_substMap.end())
     {
@@ -1610,7 +1610,7 @@ QCString SymbolResolver::Private::substTypedef(
   // cache the result of the computation to give a faster answers next time, especially relevant
   // if `range` has many arguments (i.e. there are many symbols with the same name in different contexts)
   {
-    std::lock_guard lock(g_substMapMutex);
+    //std::lock_guard lock(g_substMapMutex);
     g_substMap.emplace(key,std::make_pair(result,bestMatch));
   }
 
@@ -1628,6 +1628,11 @@ SymbolResolver::SymbolResolver(const FileDef *fileScope)
 
 SymbolResolver::~SymbolResolver()
 {
+}
+
+Cache<std::string,LookupInfo> &SymbolResolver::typeLookupCache()
+{
+  return getTypeLookupCache();
 }
 
 
@@ -1664,7 +1669,7 @@ const ClassDef *SymbolResolver::resolveClass(const Definition *scope,
     VisitedKeys visitedKeys;
     QCString lookupName = lang==SrcLangExt::CSharp ? mangleCSharpGenericName(name) : name;
     AUTO_TRACE_ADD("lookup={}",lookupName);
-    result = p->getResolvedTypeRec(visitedKeys,scope,lookupName,&p->typeDef,&p->templateSpec,&p->resolvedType);
+    result = p->getResolvedTypeRec(SymbolResolver::typeLookupCache(),visitedKeys,scope,lookupName,&p->typeDef,&p->templateSpec,&p->resolvedType);
     if (result==nullptr) // for nested classes imported via tag files, the scope may not
                    // present, so we check the class name directly as well.
                    // See also bug701314
@@ -1693,10 +1698,14 @@ const Definition *SymbolResolver::resolveSymbol(const Definition *scope,
 {
   AUTO_TRACE("scope={} name={} args={} checkCV={} insideCode={}",
              scope?scope->name():QCString(), name, args, checkCV, insideCode);
+  int cacheSize = Config_getInt(LOOKUP_CACHE_SIZE);
+  if (cacheSize<0) cacheSize=0;
+  if (cacheSize>9) cacheSize=9;
+  static THREAD_LOCAL Cache<std::string,LookupInfo> s_symbolLookupCache(65536u << cacheSize);
   p->reset();
   if (scope==nullptr) scope=Doxygen::globalScope;
   VisitedKeys visitedKeys;
-  const Definition *result = p->getResolvedSymbolRec(visitedKeys,scope,name,args,checkCV,insideCode,onlyLinkable,&p->typeDef,&p->templateSpec,&p->resolvedType);
+  const Definition *result = p->getResolvedSymbolRec(s_symbolLookupCache,visitedKeys,scope,name,args,checkCV,insideCode,onlyLinkable,&p->typeDef,&p->templateSpec,&p->resolvedType);
   AUTO_TRACE_EXIT("result={}{}", qPrint(result?result->qualifiedName():QCString()),
                                  qPrint(result && result->definitionType()==Definition::TypeMember ? toMemberDef(result)->argsString() : QCString()));
   return result;

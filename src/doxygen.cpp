@@ -164,8 +164,6 @@ bool                  Doxygen::parseSourcesNeeded = FALSE;
 SearchIndexIntf       Doxygen::searchIndex;
 SymbolMap<Definition>*Doxygen::symbolMap;
 ClangUsrMap          *Doxygen::clangUsrMap = nullptr;
-Cache<std::string,LookupInfo> *Doxygen::typeLookupCache;
-Cache<std::string,LookupInfo> *Doxygen::symbolLookupCache;
 DirLinkedMap         *Doxygen::dirLinkedMap;
 DirRelationLinkedMap  Doxygen::dirRelations;
 ParserManager        *Doxygen::parserManager = nullptr;
@@ -9465,7 +9463,7 @@ static void flushCachedTemplateRelations()
   // to this class. Optimization: only remove those classes that
   // have inheritance instances as direct or indirect sub classes.
   StringVector elementsToRemove;
-  for (const auto &ci : *Doxygen::typeLookupCache)
+  for (const auto &ci : SymbolResolver::typeLookupCache())
   {
     const LookupInfo &li = ci.second;
     if (li.definition)
@@ -9475,7 +9473,7 @@ static void flushCachedTemplateRelations()
   }
   for (const auto &k : elementsToRemove)
   {
-    Doxygen::typeLookupCache->remove(k);
+    SymbolResolver::typeLookupCache().remove(k);
   }
 
   // remove all cached typedef resolutions whose target is a
@@ -9525,7 +9523,7 @@ static void flushUnresolvedRelations()
   // class C : public B::I {};
 
   StringVector elementsToRemove;
-  for (const auto &ci : *Doxygen::typeLookupCache)
+  for (const auto &ci : SymbolResolver::typeLookupCache())
   {
     const LookupInfo &li = ci.second;
     if (li.definition==nullptr && li.typeDef==nullptr)
@@ -9535,7 +9533,7 @@ static void flushUnresolvedRelations()
   }
   for (const auto &k : elementsToRemove)
   {
-    Doxygen::typeLookupCache->remove(k);
+    SymbolResolver::typeLookupCache().remove(k);
   }
 
   // for each global function name
@@ -12556,14 +12554,6 @@ void parseInput()
    *            Initialize global lists and dictionaries
    **************************************************************************/
 
-  // also scale lookup cache with SYMBOL_CACHE_SIZE
-  int cacheSize = Config_getInt(LOOKUP_CACHE_SIZE);
-  if (cacheSize<0) cacheSize=0;
-  if (cacheSize>9) cacheSize=9;
-  uint32_t lookupSize = 65536 << cacheSize;
-  Doxygen::typeLookupCache = new Cache<std::string,LookupInfo>(lookupSize);
-  Doxygen::symbolLookupCache = new Cache<std::string,LookupInfo>(lookupSize);
-
 #ifdef HAS_SIGNALS
   signal(SIGINT, stopDoxygen);
 #endif
@@ -12848,7 +12838,7 @@ void parseInput()
   // calling buildClassList may result in cached relations that
   // become invalid after resolveClassNestingRelations(), that's why
   // we need to clear the cache here
-  Doxygen::typeLookupCache->clear();
+  SymbolResolver::typeLookupCache().clear();
   // we don't need the list of using declaration anymore
   g_usingDeclarations.clear();
 
@@ -13489,18 +13479,11 @@ void generateOutput()
   cleanupInlineGraph();
 
   msg("type lookup cache used {}/{} hits={} misses={}\n",
-      Doxygen::typeLookupCache->size(),
-      Doxygen::typeLookupCache->capacity(),
-      Doxygen::typeLookupCache->hits(),
-      Doxygen::typeLookupCache->misses());
-  msg("symbol lookup cache used {}/{} hits={} misses={}\n",
-      Doxygen::symbolLookupCache->size(),
-      Doxygen::symbolLookupCache->capacity(),
-      Doxygen::symbolLookupCache->hits(),
-      Doxygen::symbolLookupCache->misses());
-  int typeCacheParam   = computeIdealCacheParam(static_cast<size_t>(Doxygen::typeLookupCache->misses()*2/3)); // part of the cache is flushed, hence the 2/3 correction factor
-  int symbolCacheParam = computeIdealCacheParam(static_cast<size_t>(Doxygen::symbolLookupCache->misses()));
-  int cacheParam = std::max(typeCacheParam,symbolCacheParam);
+      SymbolResolver::typeLookupCache().size(),
+      SymbolResolver::typeLookupCache().capacity(),
+      SymbolResolver::typeLookupCache().hits(),
+      SymbolResolver::typeLookupCache().misses());
+  int cacheParam = computeIdealCacheParam(static_cast<size_t>(SymbolResolver::typeLookupCache().misses()*2/3)); // part of the cache is flushed, hence the 2/3 correction factor
   if (cacheParam>Config_getInt(LOOKUP_CACHE_SIZE))
   {
     msg("Note: based on cache misses the ideal setting for LOOKUP_CACHE_SIZE is {} at the cost of higher memory usage.\n",cacheParam);

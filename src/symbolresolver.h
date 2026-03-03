@@ -21,6 +21,8 @@
 #include "qcstring.h"
 #include "classdef.h"
 #include "construct.h"
+#include "cache.h"
+#include "doxygen.h"
 
 class Definition;
 class FileDef;
@@ -97,6 +99,9 @@ class SymbolResolver
 
     /** Sets or updates the file scope using when resolving symbols. */
     void setFileScope(const FileDef *fd);
+
+    /** Returns the per-thread type lookup cache. */
+    static Cache<std::string,LookupInfo> &typeLookupCache();
 
     // getters
 
