@@ -18,7 +18,6 @@
 
 #include <map>
 
-#include "threadpool.h"
 #include "qcstring.h"
 #include "dotgraph.h" // only for GraphOutputFormat
 #include "dotfilepatcher.h"
@@ -46,7 +45,6 @@ class DotManager
 
     std::map<std::string, std::unique_ptr<DotRunner> > m_runners;
     std::map<std::string, DotFilePatcher>              m_filePatchers;
-    ThreadPool                                         m_workers;
 };
 
 void writeDotGraphFromFile(const QCString &inFile,const QCString &outDir,

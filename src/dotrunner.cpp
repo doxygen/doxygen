@@ -53,6 +53,21 @@
 #include "dir.h"
 #include "doxygen.h"
 
+#ifdef HAVE_LIBGVC
+#include <gvc.h>
+#include <cgraph.h>
+
+// One GVC_t; created on first use.
+static GVC_t *tl_gvc = nullptr;
+
+static GVC_t *getGvcContext()
+{
+  if (!tl_gvc)
+    tl_gvc = gvContext();
+  return tl_gvc;
+}
+#endif
+
 // the graphicx LaTeX has a limitation of maximum size of 16384
 // To be on the save side we take it a little bit smaller i.e. 150 inch * 72 dpi
 // It is anyway hard to view these size of images
@@ -297,6 +312,37 @@ bool DotRunner::run()
   int srcLine=-1;
 
   // create output
+#ifdef HAVE_LIBGVC
+  {
+    // --- in-process rendering via libgvc ---
+    GVC_t *gvc     = getGvcContext();
+    FILE  *dotFile = Portable::fopen(m_file, "r");
+    if (!dotFile) goto error;
+    Agraph_t *g = agread(dotFile, nullptr);
+    fclose(dotFile);
+    if (!g) goto error;
+
+    if (gvLayout(gvc, g, "dot") != 0)
+    {
+      agclose(g);
+      goto error;
+    }
+
+    for (auto &s : m_jobs)
+    {
+      srcFile = s.srcFile;
+      srcLine = s.srcLine;
+      if (gvRenderFilename(gvc, g, s.format.data(), s.output.data()) != 0)
+      {
+        gvFreeLayout(gvc, g);
+        agclose(g);
+        goto error;
+      }
+    }
+    gvFreeLayout(gvc, g);
+    agclose(g);
+  }
+#else
   if (Config_getBool(DOT_MULTI_TARGETS))
   {
     dotArgs=QCString("\"")+m_file+"\"";
@@ -322,6 +368,7 @@ bool DotRunner::run()
       if ((exitCode=Portable::system(m_dotExe,dotArgs,FALSE))!=0) goto error;
     }
   }
+#endif
 
   // check output
   // As there should be only one pdf file be generated, we don't need code for regenerating multiple pdf files in one call

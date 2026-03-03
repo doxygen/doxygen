@@ -81,7 +81,8 @@ DotManager *DotManager::instance()
   return &theInstance;
 }
 
-DotManager::DotManager() : m_runners(), m_filePatchers(), m_workers(static_cast<size_t>(Config_getInt(DOT_NUM_THREADS)))
+DotManager::DotManager() :
+    m_runners(), m_filePatchers()
 {
 }
 
@@ -131,14 +132,7 @@ bool DotManager::run()
   size_t numFilePatchers = m_filePatchers.size();
   if (numDotRuns+numFilePatchers>1)
   {
-    if (Config_getInt(DOT_NUM_THREADS)<=1)
-    {
-      msg("Generating dot graphs in single threaded mode...\n");
-    }
-    else
-    {
-      msg("Generating dot graphs using {:d} parallel threads...\n",Config_getInt(DOT_NUM_THREADS));
-    }
+    msg("Generating dot graphs...\n");
   }
   size_t i=1;
 
@@ -163,35 +157,12 @@ bool DotManager::run()
     setDotFontPath(Config_getString(DOCBOOK_OUTPUT));
     setPath=TRUE;
   }
-  // fill work queue with dot operations
   size_t prev=1;
-  if (Config_getInt(DOT_NUM_THREADS)<=1) // no threads to work with
+  for (auto &dr : m_runners)
   {
-    for (auto & dr : m_runners)
-    {
-      msg("Running dot for graph {}/{}\n",prev,numDotRuns);
-      dr.second->run();
-      prev++;
-    }
-  }
-  else // use multiple threads to run instances of dot in parallel
-  {
-    std::vector< std::future<void> > results;
-    for (auto & dr: m_runners)
-    {
-      DotRunner *runner = dr.second.get();
-      auto process = [runner]()
-      {
-        runner->run();
-      };
-      results.emplace_back(m_workers.queue(process));
-    }
-    for (auto &f : results)
-    {
-      f.get();
-      msg("Running dot for graph {}/{}\n",prev,numDotRuns);
-      prev++;
-    }
+    msg("Running dot for graph {}/{}\n", prev, numDotRuns);
+    dr.second->run();
+    prev++;
   }
   if (setPath)
   {

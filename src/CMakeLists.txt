@@ -400,7 +400,18 @@ target_link_libraries(doxygen PRIVATE
     ${CLANG_LIBS}
     ${COVERAGE_LINKER_FLAGS}
     ${DOXYGEN_EXTRA_LINK_OPTIONS}
+    $<$<BOOL:${LIBGVC_FOUND}>:${LIBGVC_LIBRARIES}>
 )
+
+if(LIBGVC_FOUND)
+    include_directories(PRIVATE ${LIBGVC_INCLUDE_DIRS})
+    target_compile_definitions(doxycfg PRIVATE HAVE_LIBGVC=1)
+    target_compile_definitions(doxymain PRIVATE HAVE_LIBGVC=1)
+    target_compile_definitions(doxygen PRIVATE HAVE_LIBGVC=1)
+    target_link_directories(doxycfg PRIVATE ${LIBGVC_LIBRARY_DIRS})
+    target_link_directories(doxymain PRIVATE ${LIBGVC_LIBRARY_DIRS})
+    target_link_directories(doxygen PRIVATE ${LIBGVC_LIBRARY_DIRS})
+endif()
 
 set_project_warnings(doxycfg)
 set_project_warnings(doxymain)

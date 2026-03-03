@@ -441,6 +441,8 @@ The following table gives an overview of the doxygen configuration settings and 
 <dt></dt>              <dd>SQLITE3_RECREATE_DB</dd>
 <dt>New in 1.8.20</dt>
 <dt></dt>              <dd>PYTHON_DOCSTRING</dd>
+<dt>Obsolete in 1.16.1</dt>
+<dt></dt>              <dd>DOT_NUM_THREADS</dd>
 <!-- PLACEHOLDER -->
 </dl>
 

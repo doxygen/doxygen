@@ -2037,14 +2037,6 @@ void Config::checkAndCorrect(bool quiet, const bool check)
   }
 
   //------------------------
-  int dotNumThreads = Config_getInt(DOT_NUM_THREADS);
-  if (dotNumThreads<=0)
-  {
-    dotNumThreads=std::max(2u,std::thread::hardware_concurrency()+1);
-    Config_updateInt(DOT_NUM_THREADS,dotNumThreads);
-  }
-
-  //------------------------
   // check plantuml path
   QCString plantumlJarPath = Config_getString(PLANTUML_JAR_PATH);
   if (!plantumlJarPath.isEmpty())
