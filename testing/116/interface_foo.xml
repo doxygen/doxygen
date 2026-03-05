@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="interface_foo" kind="class" language="Objective-C" prot="public">
+    <compoundname>Foo</compoundname>
+    <basecompoundref prot="public" virt="non-virtual">&lt;T&gt;</basecompoundref>
+    <basecompoundref prot="public" virt="non-virtual">NSObject</basecompoundref>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="interface_foo_1a08106d196367689cb2708045694bc227" prot="public" static="no" const="no" explicit="no" inline="no" virt="virtual">
+        <type>void</type>
+        <definition>void Foo::addItem:</definition>
+        <argsstring>(T item)</argsstring>
+        <name>addItem:</name>
+        <qualifiedname>-[Foo addItem:]</qualifiedname>
+        <param>
+          <type>T</type>
+          <declname>item</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>add an item </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="116_objc_multiline_interface.m" line="12" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="interface_foo_1a114084d9f2b22afab4b9376a44f3c036" prot="public" static="no" const="no" explicit="no" inline="no" virt="virtual">
+        <type>void</type>
+        <definition>void Foo::removeItem:</definition>
+        <argsstring>(T item)</argsstring>
+        <name>removeItem:</name>
+        <qualifiedname>-[Foo removeItem:]</qualifiedname>
+        <param>
+          <type>T</type>
+          <declname>item</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>remove an item </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="116_objc_multiline_interface.m" line="14" column="1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+      <para>A generic container. </para>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="2">
+        <label>&lt;T&gt;</label>
+      </node>
+      <node id="1">
+        <label>Foo</label>
+        <link refid="interface_foo"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+        <childnode refid="3" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="3">
+        <label>NSObject</label>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="2">
+        <label>&lt;T&gt;</label>
+      </node>
+      <node id="1">
+        <label>Foo</label>
+        <link refid="interface_foo"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+        <childnode refid="3" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="3">
+        <label>NSObject</label>
+      </node>
+    </collaborationgraph>
+    <location file="116_objc_multiline_interface.m" line="8" column="12" bodyfile="116_objc_multiline_interface.m" bodystart="10" bodyend="-1"/>
+    <listofallmembers>
+      <member refid="interface_foo_1a08106d196367689cb2708045694bc227" prot="public" virt="virtual">
+        <scope>Foo</scope>
+        <name>addItem:</name>
+      </member>
+      <member refid="interface_foo_1a114084d9f2b22afab4b9376a44f3c036" prot="public" virt="virtual">
+        <scope>Foo</scope>
+        <name>removeItem:</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>
