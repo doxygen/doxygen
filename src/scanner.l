@@ -6987,7 +6987,14 @@ NONLopt [^\n]*
                                             yyextra->insideProtocolList=FALSE;
                                             if (yyleng==1)
                                             {
-                                              BEGIN(ClassVar); // allow parsing of ':' for base class
+                                              if (yyextra->insideObjC && !yyextra->current->spec.isProtocol())
+                                              {
+                                                BEGIN(ClassVar); // allow parsing of ':' for base class
+                                              }
+                                              else
+                                              {
+                                                unput('{'); // dummy start body
+                                              }
                                             }
                                             else
                                             {

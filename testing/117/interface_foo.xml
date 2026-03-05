@@ -22,7 +22,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="116_objc_multiline_interface.m" line="12" column="1"/>
+        <location file="117_objc_multiline_interface.m" line="12" column="1"/>
       </memberdef>
       <memberdef kind="function" id="interface_foo_1a114084d9f2b22afab4b9376a44f3c036" prot="public" static="no" const="no" explicit="no" inline="no" virt="virtual">
         <type>void</type>
@@ -41,7 +41,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="116_objc_multiline_interface.m" line="14" column="1"/>
+        <location file="117_objc_multiline_interface.m" line="14" column="1"/>
       </memberdef>
     </sectiondef>
     <briefdescription>
@@ -81,7 +81,7 @@
         <label>NSObject</label>
       </node>
     </collaborationgraph>
-    <location file="116_objc_multiline_interface.m" line="8" column="12" bodyfile="116_objc_multiline_interface.m" bodystart="10" bodyend="-1"/>
+    <location file="117_objc_multiline_interface.m" line="8" column="12" bodyfile="117_objc_multiline_interface.m" bodystart="10" bodyend="-1"/>
     <listofallmembers>
       <member refid="interface_foo_1a08106d196367689cb2708045694bc227" prot="public" virt="virtual">
         <scope>Foo</scope>
