@@ -50,7 +50,6 @@
 #include "pagedef.h"
 #include "debug.h"
 #include "searchindex.h"
-#include "doxygen.h"
 #include "textdocvisitor.h"
 #include "latexdocvisitor.h"
 #include "htmldocvisitor.h"

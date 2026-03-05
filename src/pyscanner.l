@@ -1978,7 +1978,7 @@ static void newVariable(yyscan_t yyscanner)
 static void newTypeAlias(yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  printf("*** newTypeAlias %s\n",qPrint(yyextra->current->name));
+  //printf("*** newTypeAlias %s\n",qPrint(yyextra->current->name));
   newEntry(yyscanner);
 }
 

@@ -46,7 +46,6 @@
 #include "namespacedef.h"
 #include "filedef.h"
 #include "dirdef.h"
-#include "pagedef.h"
 #include "reflist.h"
 #include "utf8.h"
 #include "indexlist.h"

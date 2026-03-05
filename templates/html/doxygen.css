@@ -150,6 +150,19 @@ td.navtabHL {
 	background-color: var(--nav-menu-active-bg);
 }
 
+div.alphasepar:before{
+  content: " | " ;
+  width: 14px;
+  display: inline-block;
+  text-align: center;
+  line-height: 140%;
+  font-size: 130%;
+}
+
+div.alphasepar{
+  display: inline-block;
+}
+
 div.qindex{
 	text-align: center;
 	width: 100%;
@@ -2116,14 +2129,17 @@ details > summary::-webkit-details-marker {
 }
 
 details>summary::before {
-	content: "\25ba";
-	padding-right:4px;
-	font-size: 80%;
+        content: "\25bc";
+        padding-right:4px;
+        font-size: 80%;
+        display: inline-block;
+        transform: rotate(-90deg);
 }
 
 details[open]>summary::before {
-	content: "\25bc";
-	padding-right:4px;
-	font-size: 80%;
+        content: "\25bc";
+        padding-right:4px;
+        font-size: 80%;
+        display: inline-block;
+        transform: rotate(0deg);
 }
-

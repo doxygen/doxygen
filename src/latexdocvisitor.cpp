@@ -40,7 +40,6 @@
 #include "regex.h"
 #include "portable.h"
 #include "codefragment.h"
-#include "cite.h"
 #include "md5.h"
 
 static const int g_maxLevels = 7;

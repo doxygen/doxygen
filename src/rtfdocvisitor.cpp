@@ -27,7 +27,6 @@
 #include "rtfgen.h"
 #include "message.h"
 #include "parserintf.h"
-#include "msc.h"
 #include "dia.h"
 #include "filedef.h"
 #include "config.h"

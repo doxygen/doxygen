@@ -62,9 +62,7 @@ typedef yyguts_t *yyscan_t;
 #include "section.h"
 #include "regex.h"
 #include "util.h"
-#include "reflist.h"
 #include "trace.h"
-#include "debug.h"
 #include "stringutil.h"
 
 // forward declarations

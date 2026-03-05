@@ -28,7 +28,6 @@
 #include "section.h"
 #include "pagedef.h"
 #include "config.h"
-#include "util.h"
 #include "trace.h"
 
 struct Requirement : RequirementIntf
