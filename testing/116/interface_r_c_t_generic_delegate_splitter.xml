@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="interface_r_c_t_generic_delegate_splitter" kind="class" language="Objective-C" prot="public">
+    <compoundname>RCTGenericDelegateSplitter</compoundname>
+    <basecompoundref prot="public" virt="non-virtual">&lt;DelegateT&gt;</basecompoundref>
+    <basecompoundref prot="public" virt="non-virtual">NSObject</basecompoundref>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="interface_r_c_t_generic_delegate_splitter_1a23549928300ad18094a08472b1c5a5da" prot="public" static="no" const="no" explicit="no" inline="no" virt="virtual">
+        <type>void</type>
+        <definition>void RCTGenericDelegateSplitter::addDelegate:</definition>
+        <argsstring>(DelegateT delegate)</argsstring>
+        <name>addDelegate:</name>
+        <qualifiedname>-[RCTGenericDelegateSplitter addDelegate:]</qualifiedname>
+        <param>
+          <type>DelegateT</type>
+          <declname>delegate</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>add a delegate </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="116_objc_multiline_interface.m" line="12" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="interface_r_c_t_generic_delegate_splitter_1ab8336f3bfb00621622e648a9659d1d83" prot="public" static="no" const="no" explicit="no" inline="no" virt="virtual">
+        <type>void</type>
+        <definition>void RCTGenericDelegateSplitter::removeDelegate:</definition>
+        <argsstring>(DelegateT delegate)</argsstring>
+        <name>removeDelegate:</name>
+        <qualifiedname>-[RCTGenericDelegateSplitter removeDelegate:]</qualifiedname>
+        <param>
+          <type>DelegateT</type>
+          <declname>delegate</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>remove a delegate </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="116_objc_multiline_interface.m" line="14" column="1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+      <para>A generic delegate splitter. </para>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="2">
+        <label>&lt;DelegateT&gt;</label>
+      </node>
+      <node id="3">
+        <label>NSObject</label>
+      </node>
+      <node id="1">
+        <label>RCTGenericDelegateSplitter</label>
+        <link refid="interface_r_c_t_generic_delegate_splitter"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+        <childnode refid="3" relation="public-inheritance">
+        </childnode>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="2">
+        <label>&lt;DelegateT&gt;</label>
+      </node>
+      <node id="3">
+        <label>NSObject</label>
+      </node>
+      <node id="1">
+        <label>RCTGenericDelegateSplitter</label>
+        <link refid="interface_r_c_t_generic_delegate_splitter"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+        <childnode refid="3" relation="public-inheritance">
+        </childnode>
+      </node>
+    </collaborationgraph>
+    <location file="116_objc_multiline_interface.m" line="8" column="12" bodyfile="116_objc_multiline_interface.m" bodystart="10" bodyend="-1"/>
+    <listofallmembers>
+      <member refid="interface_r_c_t_generic_delegate_splitter_1a23549928300ad18094a08472b1c5a5da" prot="public" virt="virtual">
+        <scope>RCTGenericDelegateSplitter</scope>
+        <name>addDelegate:</name>
+      </member>
+      <member refid="interface_r_c_t_generic_delegate_splitter_1ab8336f3bfb00621622e648a9659d1d83" prot="public" virt="virtual">
+        <scope>RCTGenericDelegateSplitter</scope>
+        <name>removeDelegate:</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

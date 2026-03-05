@@ -6840,7 +6840,7 @@ NONLopt [^\n]*
                                           yyextra->current->args += ' ';
                                           yyextra->current->args += name;
                                         }
-<ClassVar,Bases>\n/{BN}*[^{, \t\n]      {
+<ClassVar,Bases>\n/{BN}*[^{, \t\n:]    {
                                           if (!yyextra->insideObjC)
                                           {
                                             REJECT;
@@ -6987,7 +6987,7 @@ NONLopt [^\n]*
                                             yyextra->insideProtocolList=FALSE;
                                             if (yyleng==1)
                                             {
-                                              unput('{'); // dummy start body
+                                              BEGIN(ClassVar); // allow parsing of ':' for base class
                                             }
                                             else
                                             {
