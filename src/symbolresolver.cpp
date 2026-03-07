@@ -16,6 +16,7 @@
 #include <unordered_map>
 #include <string>
 #include <vector>
+#include <algorithm>
 #include <cassert>
 
 #include "symbolresolver.h"
@@ -35,19 +36,66 @@
 #define AUTO_TRACE_EXIT(...) (void)0
 #endif
 
-//static std::mutex g_cacheMutex;
 static std::recursive_mutex g_cacheTypedefMutex;
 
-static Cache<std::string,LookupInfo> &getTypeLookupCache()
+struct CacheStatistics
+{
+  std::mutex mutex;
+  size_t     size     = 0;
+  size_t     capacity = 0;
+  uint64_t   hits     = 0;
+  uint64_t   misses   = 0;
+};
+
+static CacheStatistics g_typeCacheStatistics;
+static CacheStatistics g_symbolCacheStatistics;
+
+using LookupCache = Cache<std::string,LookupInfo>;
+
+static void mergeStatistics(CacheStatistics &stats,LookupCache &cache)
+{
+  std::lock_guard lock(stats.mutex);
+  stats.size     = std::max(stats.size,     cache.size());
+  stats.capacity = std::max(stats.capacity, cache.capacity());
+  stats.hits     = std::max(stats.hits,     cache.hits());
+  stats.misses   = std::max(stats.misses,   cache.misses());
+}
+
+struct CacheStatsWrapper
+{
+  public:
+    CacheStatsWrapper(CacheStatistics &stats,size_t capacity) : m_statistics(stats), m_cache(capacity) {}
+    ~CacheStatsWrapper()
+    {
+      // merge the cache statistics at the end of a worker thread's life
+      mergeStatistics(m_statistics,m_cache);
+    }
+    LookupCache &cache() { return m_cache; }
+  private:
+    CacheStatistics              &m_statistics;
+    Cache<std::string,LookupInfo> m_cache;
+};
+
+static size_t getCacheSize()
 {
   int cacheSize = Config_getInt(LOOKUP_CACHE_SIZE);
   if (cacheSize<0) cacheSize=0;
   if (cacheSize>9) cacheSize=9;
-  static THREAD_LOCAL Cache<std::string,LookupInfo> s_cache(65536u << cacheSize);
-  return s_cache;
+  return 65536u << cacheSize;
 }
 
-//static std::mutex g_substMapMutex;
+static LookupCache &getTypeLookupCache()
+{
+  static THREAD_LOCAL CacheStatsWrapper wrapper(g_typeCacheStatistics, getCacheSize());
+  return wrapper.cache();
+}
+
+static LookupCache &getSymbolLookupCache()
+{
+  static THREAD_LOCAL CacheStatsWrapper wrapper(g_symbolCacheStatistics,getCacheSize());
+  return wrapper.cache();
+}
+
 THREAD_LOCAL std::unordered_map<std::string, std::pair<QCString,const MemberDef *> > g_substMap;
 
 //--------------------------------------------------------------------------------------
@@ -140,8 +188,8 @@ struct SymbolResolver::Private
     QCString          templateSpec;
 
     const ClassDef *getResolvedTypeRec(
-                           Cache<std::string,LookupInfo> &cache, // in
-                           VisitedKeys &visitedKeys, // in
+                           LookupCache &cache,          // inout
+                           VisitedKeys &visitedKeys,    // in
                            const Definition *scope,     // in
                            const QCString &n,           // in
                            const MemberDef **pTypeDef,  // out
@@ -149,8 +197,8 @@ struct SymbolResolver::Private
                            QCString *pResolvedType);    // out
 
     const Definition *getResolvedSymbolRec(
-                           Cache<std::string,LookupInfo> &cache, // in
-                           VisitedKeys &visitedKeys, // in
+                           LookupCache &cache,          // inout
+                           VisitedKeys &visitedKeys,    // in
                            const Definition *scope,     // in
                            const QCString &n,           // in
                            const QCString &args,        // in
@@ -175,7 +223,7 @@ struct SymbolResolver::Private
                            const QCString &explicitScopePart);
 
   private:
-    void getResolvedType(  Cache<std::string,LookupInfo> &cache,
+    void getResolvedType(  LookupCache &cache,                                  // inout
                            VisitedKeys &visitedKeys,
                            const Definition *scope,                             // in
                            const Definition *d,                                 // in
@@ -205,7 +253,7 @@ struct SymbolResolver::Private
                           );
 
     const ClassDef *newResolveTypedef(
-                           Cache<std::string,LookupInfo> &cache,               // in
+                           LookupCache &cache,                                  // in
                            VisitedKeys &visitedKeys,                            // in
                            const Definition *scope,                             // in
                            const MemberDef *md,                                 // in
@@ -242,7 +290,7 @@ struct SymbolResolver::Private
 
 
 const ClassDef *SymbolResolver::Private::getResolvedTypeRec(
-           Cache<std::string,LookupInfo> &cache,
+           LookupCache &cache,
            VisitedKeys &visitedKeys,
            const Definition *scope,
            const QCString &n,
@@ -395,7 +443,7 @@ const ClassDef *SymbolResolver::Private::getResolvedTypeRec(
 }
 
 const Definition *SymbolResolver::Private::getResolvedSymbolRec(
-           Cache<std::string,LookupInfo> &cache,
+           LookupCache &cache,
            VisitedKeys &visitedKeys,
            const Definition *scope,
            const QCString &n,
@@ -595,7 +643,7 @@ const Definition *SymbolResolver::Private::getResolvedSymbolRec(
 }
 
 void SymbolResolver::Private::getResolvedType(
-                         Cache<std::string,LookupInfo> &cache,
+                         LookupCache &cache,                                  // inout
                          VisitedKeys &visitedKeys,                            // in
                          const Definition *scope,                             // in
                          const Definition *d,                                 // in
@@ -898,7 +946,7 @@ void SymbolResolver::Private::getResolvedSymbol(
 
 
 const ClassDef *SymbolResolver::Private::newResolveTypedef(
-                  Cache<std::string,LookupInfo> &cache,               // in
+                  LookupCache &cache,                                  // inout
                   VisitedKeys &visitedKeys,                            // in
                   const Definition * /* scope */,                      // in
                   const MemberDef *md,                                 // in
@@ -908,7 +956,7 @@ const ClassDef *SymbolResolver::Private::newResolveTypedef(
                   const ArgumentList *actTemplParams)                  // in
 {
   AUTO_TRACE("md={}",md->qualifiedName());
-  std::lock_guard<std::recursive_mutex> lock(g_cacheTypedefMutex);
+  std::lock_guard lock(g_cacheTypedefMutex);
   bool isCached = md->isTypedefValCached(); // value already cached
   if (isCached)
   {
@@ -1035,15 +1083,6 @@ done:
       );
   return result;
 }
-
-#if 0
-static bool isParentScope(const Definition *parent,const Definition *item)
-{
-  if (parent==item || item==0 || item==Doxygen::globalScope) return false;
-  if (parent==0 || parent==Doxygen::globalScope)             return true;
-  return isParentScope(parent->getOuterScope(),item);
-}
-#endif
 
 int SymbolResolver::Private::isAccessibleFromWithExpScope(
                                      VisitedKeys &visitedKeys,
@@ -1218,7 +1257,7 @@ const Definition *SymbolResolver::Private::followPath(VisitedKeys &visitedKeys,
     const Definition *next = nullptr;
     if (memTypeDef)
     {
-      const ClassDef *type = newResolveTypedef(SymbolResolver::typeLookupCache(),visitedKeys,m_fileScope,memTypeDef,nullptr,nullptr,nullptr);
+      const ClassDef *type = newResolveTypedef(getTypeLookupCache(),visitedKeys,m_fileScope,memTypeDef,nullptr,nullptr,nullptr);
       if (type)
       {
         AUTO_TRACE_EXIT("type={}",type->name());
@@ -1569,7 +1608,6 @@ QCString SymbolResolver::Private::substTypedef(
   key+=ptr_str;
   key+=name.str();
   {
-    //std::lock_guard lock(g_substMapMutex);
     auto it = g_substMap.find(key);
     if (it!=g_substMap.end())
     {
@@ -1610,7 +1648,6 @@ QCString SymbolResolver::Private::substTypedef(
   // cache the result of the computation to give a faster answers next time, especially relevant
   // if `range` has many arguments (i.e. there are many symbols with the same name in different contexts)
   {
-    //std::lock_guard lock(g_substMapMutex);
     g_substMap.emplace(key,std::make_pair(result,bestMatch));
   }
 
@@ -1628,11 +1665,6 @@ SymbolResolver::SymbolResolver(const FileDef *fileScope)
 
 SymbolResolver::~SymbolResolver()
 {
-}
-
-Cache<std::string,LookupInfo> &SymbolResolver::typeLookupCache()
-{
-  return getTypeLookupCache();
 }
 
 
@@ -1669,7 +1701,7 @@ const ClassDef *SymbolResolver::resolveClass(const Definition *scope,
     VisitedKeys visitedKeys;
     QCString lookupName = lang==SrcLangExt::CSharp ? mangleCSharpGenericName(name) : name;
     AUTO_TRACE_ADD("lookup={}",lookupName);
-    result = p->getResolvedTypeRec(SymbolResolver::typeLookupCache(),visitedKeys,scope,lookupName,&p->typeDef,&p->templateSpec,&p->resolvedType);
+    result = p->getResolvedTypeRec(getTypeLookupCache(),visitedKeys,scope,lookupName,&p->typeDef,&p->templateSpec,&p->resolvedType);
     if (result==nullptr) // for nested classes imported via tag files, the scope may not
                    // present, so we check the class name directly as well.
                    // See also bug701314
@@ -1698,14 +1730,10 @@ const Definition *SymbolResolver::resolveSymbol(const Definition *scope,
 {
   AUTO_TRACE("scope={} name={} args={} checkCV={} insideCode={}",
              scope?scope->name():QCString(), name, args, checkCV, insideCode);
-  int cacheSize = Config_getInt(LOOKUP_CACHE_SIZE);
-  if (cacheSize<0) cacheSize=0;
-  if (cacheSize>9) cacheSize=9;
-  static THREAD_LOCAL Cache<std::string,LookupInfo> s_symbolLookupCache(65536u << cacheSize);
   p->reset();
   if (scope==nullptr) scope=Doxygen::globalScope;
   VisitedKeys visitedKeys;
-  const Definition *result = p->getResolvedSymbolRec(s_symbolLookupCache,visitedKeys,scope,name,args,checkCV,insideCode,onlyLinkable,&p->typeDef,&p->templateSpec,&p->resolvedType);
+  const Definition *result = p->getResolvedSymbolRec(getSymbolLookupCache(),visitedKeys,scope,name,args,checkCV,insideCode,onlyLinkable,&p->typeDef,&p->templateSpec,&p->resolvedType);
   AUTO_TRACE_EXIT("result={}{}", qPrint(result?result->qualifiedName():QCString()),
                                  qPrint(result && result->definitionType()==Definition::TypeMember ? toMemberDef(result)->argsString() : QCString()));
   return result;
@@ -1755,5 +1783,91 @@ QCString SymbolResolver::getTemplateSpec() const
 QCString SymbolResolver::getResolvedType() const
 {
   return p->resolvedType;
+}
+
+void SymbolResolver::clearTypeLookupCache(SymbolResolver::ClearScope scope)
+{
+  auto &cache = getTypeLookupCache();
+  switch (scope)
+  {
+    case ClearScope::All:
+      cache.clear();
+      break;
+    case ClearScope::Unresolved:
+      {
+        StringVector elementsToRemove;
+        for (const auto &ci : cache)
+        {
+          const LookupInfo &li = ci.second;
+          if (li.definition==nullptr && li.typeDef==nullptr)
+          {
+            elementsToRemove.push_back(ci.first);
+          }
+        }
+        for (const auto &k : elementsToRemove)
+        {
+          cache.remove(k);
+        }
+      }
+      break;
+    case ClearScope::Classes:
+      {
+        StringVector elementsToRemove;
+        for (const auto &ci : cache)
+        {
+          const LookupInfo &li = ci.second;
+          if (li.definition)
+          {
+            elementsToRemove.push_back(ci.first);
+          }
+        }
+        for (const auto &k : elementsToRemove)
+        {
+          cache.remove(k);
+        }
+      }
+      break;
+  }
+}
+
+static int computeIdealCacheParam(size_t v)
+{
+  //printf("computeIdealCacheParam(v=%u)\n",v);
+
+  int r=0;
+  while (v!=0)
+  {
+    v >>= 1;
+    r++;
+  }
+  // r = log2(v)
+
+  // convert to a valid cache size value
+  return std::max(0,std::min(r-16,9));
+}
+
+void SymbolResolver::showCacheUsage()
+{
+  // merge the stats of the main thread
+  mergeStatistics(g_typeCacheStatistics,getTypeLookupCache());
+  mergeStatistics(g_symbolCacheStatistics,getSymbolLookupCache());
+
+  msg("type lookup cache used {}/{} hits={} misses={}\n",
+      g_typeCacheStatistics.size,
+      g_typeCacheStatistics.capacity,
+      g_typeCacheStatistics.hits,
+      g_typeCacheStatistics.misses);
+  msg("symbol lookup cache used {}/{} hits={} misses={}\n",
+      g_symbolCacheStatistics.size,
+      g_symbolCacheStatistics.capacity,
+      g_symbolCacheStatistics.hits,
+      g_symbolCacheStatistics.misses);
+  int typeCacheParam   = computeIdealCacheParam(static_cast<size_t>(g_typeCacheStatistics.misses*2/3)); // part of the cache is flushed, hence the 2/3 correction factor
+  int symbolCacheParam = computeIdealCacheParam(static_cast<size_t>(g_symbolCacheStatistics.misses*2/3)); // part of the cache is flushed, hence the 2/3 correction factor
+  int cacheParam = std::max(typeCacheParam,symbolCacheParam);
+  if (cacheParam>Config_getInt(LOOKUP_CACHE_SIZE))
+  {
+    msg("Note: based on cache misses the ideal setting for LOOKUP_CACHE_SIZE is {} at the cost of higher memory usage.\n",cacheParam);
+  }
 }
 
