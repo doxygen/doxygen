@@ -45,6 +45,7 @@
 #endif
 
 #include "dotrunner.h"
+#include "dotprocess.h"
 #include "util.h"
 #include "portable.h"
 #include "dot.h"
@@ -52,6 +53,9 @@
 #include "config.h"
 #include "dir.h"
 #include "doxygen.h"
+
+#include <fstream>
+#include <sstream>
 
 // the graphicx LaTeX has a limitation of maximum size of 16384
 // To be on the save side we take it a little bit smaller i.e. 150 inch * 72 dpi
@@ -296,30 +300,67 @@ bool DotRunner::run()
   QCString srcFile;
   int srcLine=-1;
 
-  // create output
-  if (Config_getBool(DOT_MULTI_TARGETS))
+  // Read dot file content once so we can pass it to persistent processes
+  std::string dotContent;
   {
-    dotArgs=QCString("\"")+m_file+"\"";
-    for (auto& s: m_jobs)
+    std::ifstream fi = Portable::openInputStream(m_file, /*binary=*/false);
+    if (fi.is_open())
     {
-      dotArgs+=' ';
-      dotArgs+=s.args;
+      std::ostringstream ss;
+      ss << fi.rdbuf();
+      dotContent = ss.str();
     }
-    if (!m_jobs.empty())
-    {
-      srcFile = m_jobs.front().srcFile;
-      srcLine = m_jobs.front().srcLine;
-    }
-    if ((exitCode=Portable::system(m_dotExe,dotArgs,FALSE))!=0) goto error;
   }
-  else
+
+  // create output — try persistent per-thread dot process first, fall back to subprocess
   {
+    // Collect jobs that need the subprocess fallback
+    bool anySubprocess = false;
+    QCString multiArgs = QCString("\"") + m_file + "\"";
+
     for (auto& s : m_jobs)
     {
       srcFile = s.srcFile;
       srcLine = s.srcLine;
-      dotArgs=QCString("\"")+m_file+"\" "+s.args;
-      if ((exitCode=Portable::system(m_dotExe,dotArgs,FALSE))!=0) goto error;
+
+      bool usedPersistent = false;
+      if (!dotContent.empty() && isPersistentFormat(s.format))
+      {
+        DotProcess *proc = getDotProcess(m_dotExe, s.format);
+        if (proc)
+        {
+          if (proc->render(dotContent, s.output))
+          {
+            usedPersistent = true;
+          }
+          // On failure, fall through to subprocess
+        }
+      }
+
+      if (!usedPersistent)
+      {
+        if (Config_getBool(DOT_MULTI_TARGETS))
+        {
+          anySubprocess = true;
+          multiArgs += ' ';
+          multiArgs += s.args;
+        }
+        else
+        {
+          dotArgs = QCString("\"") + m_file + "\" " + s.args;
+          if ((exitCode = Portable::system(m_dotExe, dotArgs, FALSE)) != 0) goto error;
+        }
+      }
+    }
+
+    if (anySubprocess && Config_getBool(DOT_MULTI_TARGETS))
+    {
+      if (!m_jobs.empty())
+      {
+        srcFile = m_jobs.front().srcFile;
+        srcLine = m_jobs.front().srcLine;
+      }
+      if ((exitCode = Portable::system(m_dotExe, multiArgs, FALSE)) != 0) goto error;
     }
   }
 
