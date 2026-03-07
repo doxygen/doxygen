@@ -164,8 +164,6 @@ bool                  Doxygen::parseSourcesNeeded = FALSE;
 SearchIndexIntf       Doxygen::searchIndex;
 SymbolMap<Definition>*Doxygen::symbolMap;
 ClangUsrMap          *Doxygen::clangUsrMap = nullptr;
-Cache<std::string,LookupInfo> *Doxygen::typeLookupCache;
-Cache<std::string,LookupInfo> *Doxygen::symbolLookupCache;
 DirLinkedMap         *Doxygen::dirLinkedMap;
 DirRelationLinkedMap  Doxygen::dirRelations;
 ParserManager        *Doxygen::parserManager = nullptr;
@@ -9464,19 +9462,7 @@ static void flushCachedTemplateRelations()
   // as there can be new template instances in the inheritance path
   // to this class. Optimization: only remove those classes that
   // have inheritance instances as direct or indirect sub classes.
-  StringVector elementsToRemove;
-  for (const auto &ci : *Doxygen::typeLookupCache)
-  {
-    const LookupInfo &li = ci.second;
-    if (li.definition)
-    {
-      elementsToRemove.push_back(ci.first);
-    }
-  }
-  for (const auto &k : elementsToRemove)
-  {
-    Doxygen::typeLookupCache->remove(k);
-  }
+  SymbolResolver::clearTypeLookupCache(SymbolResolver::ClearScope::Classes);
 
   // remove all cached typedef resolutions whose target is a
   // template class as this may now be a template instance
@@ -9523,34 +9509,8 @@ static void flushUnresolvedRelations()
   // class A { class I {} };
   // class B : public A {};
   // class C : public B::I {};
+  SymbolResolver::clearTypeLookupCache(SymbolResolver::ClearScope::Unresolved);
 
-  StringVector elementsToRemove;
-  for (const auto &ci : *Doxygen::typeLookupCache)
-  {
-    const LookupInfo &li = ci.second;
-    if (li.definition==nullptr && li.typeDef==nullptr)
-    {
-      elementsToRemove.push_back(ci.first);
-    }
-  }
-  for (const auto &k : elementsToRemove)
-  {
-    Doxygen::typeLookupCache->remove(k);
-  }
-
-  // for each global function name
-  for (const auto &fn : *Doxygen::functionNameLinkedMap)
-  {
-    // for each function with that name
-    for (const auto &ifmd : *fn)
-    {
-      MemberDefMutable *fmd = toMemberDefMutable(ifmd.get());
-      if (fmd)
-      {
-        fmd->invalidateCachedArgumentTypes();
-      }
-    }
-  }
   // for each class method name
   for (const auto &nm : *Doxygen::memberNameLinkedMap)
   {
@@ -11552,22 +11512,6 @@ void cleanUpDoxygen()
   delete Doxygen::symbolMap;
 }
 
-static int computeIdealCacheParam(size_t v)
-{
-  //printf("computeIdealCacheParam(v=%u)\n",v);
-
-  int r=0;
-  while (v!=0)
-  {
-    v >>= 1;
-    r++;
-  }
-  // r = log2(v)
-
-  // convert to a valid cache size value
-  return std::max(0,std::min(r-16,9));
-}
-
 void readConfiguration(int argc, char **argv)
 {
   QCString versionString = getFullVersion();
@@ -12556,14 +12500,6 @@ void parseInput()
    *            Initialize global lists and dictionaries
    **************************************************************************/
 
-  // also scale lookup cache with SYMBOL_CACHE_SIZE
-  int cacheSize = Config_getInt(LOOKUP_CACHE_SIZE);
-  if (cacheSize<0) cacheSize=0;
-  if (cacheSize>9) cacheSize=9;
-  uint32_t lookupSize = 65536 << cacheSize;
-  Doxygen::typeLookupCache = new Cache<std::string,LookupInfo>(lookupSize);
-  Doxygen::symbolLookupCache = new Cache<std::string,LookupInfo>(lookupSize);
-
 #ifdef HAS_SIGNALS
   signal(SIGINT, stopDoxygen);
 #endif
@@ -12848,7 +12784,7 @@ void parseInput()
   // calling buildClassList may result in cached relations that
   // become invalid after resolveClassNestingRelations(), that's why
   // we need to clear the cache here
-  Doxygen::typeLookupCache->clear();
+  SymbolResolver::clearTypeLookupCache(SymbolResolver::ClearScope::All);
   // we don't need the list of using declaration anymore
   g_usingDeclarations.clear();
 
@@ -13488,23 +13424,7 @@ void generateOutput()
   g_outputList->cleanup();
   cleanupInlineGraph();
 
-  msg("type lookup cache used {}/{} hits={} misses={}\n",
-      Doxygen::typeLookupCache->size(),
-      Doxygen::typeLookupCache->capacity(),
-      Doxygen::typeLookupCache->hits(),
-      Doxygen::typeLookupCache->misses());
-  msg("symbol lookup cache used {}/{} hits={} misses={}\n",
-      Doxygen::symbolLookupCache->size(),
-      Doxygen::symbolLookupCache->capacity(),
-      Doxygen::symbolLookupCache->hits(),
-      Doxygen::symbolLookupCache->misses());
-  int typeCacheParam   = computeIdealCacheParam(static_cast<size_t>(Doxygen::typeLookupCache->misses()*2/3)); // part of the cache is flushed, hence the 2/3 correction factor
-  int symbolCacheParam = computeIdealCacheParam(static_cast<size_t>(Doxygen::symbolLookupCache->misses()));
-  int cacheParam = std::max(typeCacheParam,symbolCacheParam);
-  if (cacheParam>Config_getInt(LOOKUP_CACHE_SIZE))
-  {
-    msg("Note: based on cache misses the ideal setting for LOOKUP_CACHE_SIZE is {} at the cost of higher memory usage.\n",cacheParam);
-  }
+  SymbolResolver::showCacheUsage();
 
   if (Debug::isFlagSet(Debug::Time))
   {

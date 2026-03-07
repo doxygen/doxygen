@@ -98,6 +98,13 @@ class SymbolResolver
     /** Sets or updates the file scope using when resolving symbols. */
     void setFileScope(const FileDef *fd);
 
+    /** Clear the type lookup cache for the current thread */
+    enum class ClearScope { All, Classes, Unresolved };
+    static void clearTypeLookupCache(ClearScope scope);
+
+    /** Show usage of the type lookup cache */
+    static void showCacheUsage();
+
     // getters
 
     /** In case a call to resolveClass() resolves to a type member (e.g. an enum)
