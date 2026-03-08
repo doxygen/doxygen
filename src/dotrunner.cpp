@@ -287,75 +287,95 @@ void DotRunner::addJob(const QCString &dotFile, const QCString &format,
   m_jobs.emplace_back(format, dotFile, md5Hash, srcFile, srcLine, cleanUp);
 }
 
+static QCString dotFileDir(const QCString &dotFile)
+{
+  int sep = dotFile.findRev('/');
+  return sep >= 0 ? dotFile.left(sep) : QCString(".");
+}
+
+static QCString dotFileBasename(const QCString &dotFile)
+{
+  int sep = dotFile.findRev('/');
+  return sep >= 0 ? dotFile.mid(sep + 1) : dotFile;
+}
+
 bool DotRunner::run()
 {
   if (m_jobs.empty()) return TRUE;
 
-  // Group jobs by format
-  std::map<std::string, std::vector<const DotJob*>> byFormat;
+  // Group jobs by format, then by directory so we can cd once per group
+  std::map<std::string, std::map<std::string, std::vector<const DotJob*>>> byFormatAndDir;
   for (const auto &job : m_jobs)
-    byFormat[job.format.str()].push_back(&job);
+    byFormatAndDir[job.format.str()][dotFileDir(job.dotFile).str()].push_back(&job);
 
   bool ok = true;
+  std::string savedDir = Dir::currentDirPath();
 
-  for (auto &[fmtStr, jobs] : byFormat)
+  for (auto &[fmtStr, byDir] : byFormatAndDir)
   {
     QCString format = QCString(fmtStr);
-    const DotJob *firstJob = jobs.front();
 
-    // Build: -Tformat -O "file1.dot" "file2.dot" ...
-    QCString dotArgs = QCString("-T") + format + " -O";
-    for (const auto *job : jobs)
-      dotArgs += QCString(" \"") + job->dotFile + "\"";
-
-    int exitCode;
-    if ((exitCode = Portable::system(m_dotExe, dotArgs, FALSE)) != 0)
+    for (auto &[dir, jobs] : byDir)
     {
-      err_full(firstJob->srcFile, firstJob->srcLine,
-               "Problems running dot: exit code={}, command='{}', arguments='{}'",
-               exitCode, m_dotExe, dotArgs);
-      ok = false;
-      continue;
-    }
+      Dir::setCurrent(dir);
+      const DotJob *firstJob = jobs.front();
 
-    // Post-process each output file
-    for (const auto *job : jobs)
-    {
-      QCString base   = getBaseNameOfOutput(job->dotFile);
-      QCString output = base + "." + format;
+      // Build: -Tformat -O basename1.dot basename2.dot ...
+      QCString dotArgs = QCString("-T") + format + " -O";
+      for (const auto *job : jobs)
+        dotArgs += QCString(" \"") + dotFileBasename(job->dotFile) + "\"";
 
-      if (format.startsWith("pdf"))
+      int exitCode;
+      if ((exitCode = Portable::system(m_dotExe, dotArgs, FALSE)) != 0)
       {
-        int width=0, height=0;
-        if (!readBoundingBox(output, &width, &height, FALSE))
+        err_full(firstJob->srcFile, firstJob->srcLine,
+                 "Problems running dot: exit code={}, command='{}', arguments='{}'",
+                 exitCode, m_dotExe, dotArgs);
+        ok = false;
+        continue;
+      }
+
+      // Post-process each output file (relative paths, we're in the right dir)
+      for (const auto *job : jobs)
+      {
+        QCString base   = getBaseNameOfOutput(dotFileBasename(job->dotFile));
+        QCString output = base + "." + format;
+
+        if (format.startsWith("pdf"))
         {
-          ok = false;
-          continue;
-        }
-        if ((width > MAX_LATEX_GRAPH_SIZE) || (height > MAX_LATEX_GRAPH_SIZE))
-        {
-          if (!resetPDFSize(width, height, base))
+          int width=0, height=0;
+          if (!readBoundingBox(output, &width, &height, FALSE))
           {
             ok = false;
             continue;
           }
-          // Re-run dot for just this one file
-          QCString rerunArgs = QCString("-T") + format + " -O \"" + job->dotFile + "\"";
-          if ((exitCode = Portable::system(m_dotExe, rerunArgs, FALSE)) != 0)
+          if ((width > MAX_LATEX_GRAPH_SIZE) || (height > MAX_LATEX_GRAPH_SIZE))
           {
-            err_full(job->srcFile, job->srcLine,
-                     "Problems running dot: exit code={}, command='{}', arguments='{}'",
-                     exitCode, m_dotExe, rerunArgs);
-            ok = false;
+            if (!resetPDFSize(width, height, base))
+            {
+              ok = false;
+              continue;
+            }
+            // Re-run dot for just this one file (still in the same dir)
+            QCString rerunArgs = QCString("-T") + format + " -O \"" + dotFileBasename(job->dotFile) + "\"";
+            if ((exitCode = Portable::system(m_dotExe, rerunArgs, FALSE)) != 0)
+            {
+              err_full(job->srcFile, job->srcLine,
+                       "Problems running dot: exit code={}, command='{}', arguments='{}'",
+                       exitCode, m_dotExe, rerunArgs);
+              ok = false;
+            }
           }
         }
-      }
-      else if (format.startsWith("png"))
-      {
-        checkPngResult(output);
+        else if (format.startsWith("png"))
+        {
+          checkPngResult(output);
+        }
       }
     }
   }
+
+  Dir::setCurrent(savedDir);
 
   // Write .md5 files and clean up .dot files (once per unique dotFile)
   std::set<std::string> processed;
