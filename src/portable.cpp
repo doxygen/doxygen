@@ -135,12 +135,6 @@ int Portable::system(const QCString &command,const QCString &args,bool commandHa
   // on Solaris fork() duplicates the memory usage
   // so we use vfork instead
 
-  // prepend cd to the command since we cannot call chdir() after vfork()
-  if (!dir.isEmpty())
-  {
-    fullCmd = QCString("cd \"") + dir + "\" && " + fullCmd;
-  }
-
   // spawn shell
   if ((pid=vfork())<0)
   {
@@ -148,6 +142,7 @@ int Portable::system(const QCString &command,const QCString &args,bool commandHa
   }
   else if (pid==0)
   {
+     if (!dir.isEmpty()) { chdir(dir.data()); }
      execl("/bin/sh","sh","-c",fullCmd.data(),(char*)0);
      _exit(127);
   }
