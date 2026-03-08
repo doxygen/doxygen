@@ -102,7 +102,7 @@ double Portable::getSysElapsedTime()
 //---------------------------------------------------------------------------------------------------------
 
 
-int Portable::system(const QCString &command,const QCString &args,bool commandHasConsole)
+int Portable::system(const QCString &command,const QCString &args,bool commandHasConsole,const QCString &dir)
 {
   if (command.isEmpty()) return 1;
   AutoTimeKeeper timeKeeper;
@@ -134,6 +134,12 @@ int Portable::system(const QCString &command,const QCString &args,bool commandHa
 
   // on Solaris fork() duplicates the memory usage
   // so we use vfork instead
+
+  // prepend cd to the command since we cannot call chdir() after vfork()
+  if (!dir.isEmpty())
+  {
+    fullCmd = QCString("cd \"") + dir + "\" && " + fullCmd;
+  }
 
   // spawn shell
   if ((pid=vfork())<0)
@@ -168,6 +174,7 @@ int Portable::system(const QCString &command,const QCString &args,bool commandHa
   }
   if (pid==0)
   {
+    if (!dir.isEmpty()) { chdir(dir.data()); }
     const char * const argv[4] = { "sh", "-c", fullCmd.data(), 0 };
     execve("/bin/sh",const_cast<char * const*>(argv),environ);
     exit(127);
@@ -195,12 +202,20 @@ int Portable::system(const QCString &command,const QCString &args,bool commandHa
 #else // Win32 specific
   if (commandHasConsole)
   {
+    if (!dir.isEmpty())
+    {
+      // cd /d changes drive letter too on Windows
+      fullCmd = QCString("cd /d \"") + dir + "\" && " + fullCmd;
+    }
     return ::system(fullCmd.data());
   }
   else
   {
     uint16_t* fullCmdW = nullptr;
     recodeUtf8StringToW(fullCmd, &fullCmdW);
+
+    uint16_t* dirW = nullptr;
+    if (!dir.isEmpty()) recodeUtf8StringToW(dir, &dirW);
 
     STARTUPINFOW sStartupInfo;
     std::memset(&sStartupInfo, 0, sizeof(sStartupInfo));
@@ -219,12 +234,13 @@ int Portable::system(const QCString &command,const QCString &args,bool commandHa
       FALSE, // Set handle inheritance to FALSE
       CREATE_NO_WINDOW,
       nullptr, // Use parent's environment block
-      nullptr, // Use parent's starting directory
+      reinterpret_cast<wchar_t*>(dirW), // Working directory (nullptr = inherit from parent)
       &sStartupInfo,
       &sProcessInfo
     ))
     {
       delete[] fullCmdW;
+      delete[] dirW;
       return -1;
     }
     else if (sProcessInfo.hProcess)      /* executable was launched, wait for it to finish */
@@ -236,6 +252,7 @@ int Portable::system(const QCString &command,const QCString &args,bool commandHa
       CloseHandle(sProcessInfo.hProcess);
       CloseHandle(sProcessInfo.hThread);
       delete[] fullCmdW;
+      delete[] dirW;
       if (!retval) return -1;
       return exitCode;
     }

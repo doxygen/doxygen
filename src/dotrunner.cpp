@@ -309,15 +309,14 @@ bool DotRunner::run()
     byFormatAndDir[job.format.str()][dotFileDir(job.dotFile).str()].push_back(&job);
 
   bool ok = true;
-  std::string savedDir = Dir::currentDirPath();
 
   for (auto &[fmtStr, byDir] : byFormatAndDir)
   {
     QCString format = QCString(fmtStr);
 
-    for (auto &[dir, jobs] : byDir)
+    for (auto &[dirStr, jobs] : byDir)
     {
-      Dir::setCurrent(dir);
+      QCString dir = QCString(dirStr);
       const DotJob *firstJob = jobs.front();
 
       // Build: -Tformat -O basename1.dot basename2.dot ...
@@ -326,7 +325,7 @@ bool DotRunner::run()
         dotArgs += QCString(" \"") + dotFileBasename(job->dotFile) + "\"";
 
       int exitCode;
-      if ((exitCode = Portable::system(m_dotExe, dotArgs, FALSE)) != 0)
+      if ((exitCode = Portable::system(m_dotExe, dotArgs, FALSE, dir)) != 0)
       {
         err_full(firstJob->srcFile, firstJob->srcLine,
                  "Problems running dot: exit code={}, command='{}', arguments='{}'",
@@ -335,10 +334,10 @@ bool DotRunner::run()
         continue;
       }
 
-      // Post-process each output file (relative paths, we're in the right dir)
+      // Post-process each output file using absolute paths
       for (const auto *job : jobs)
       {
-        QCString base   = getBaseNameOfOutput(dotFileBasename(job->dotFile));
+        QCString base   = getBaseNameOfOutput(job->dotFile);
         QCString output = base + "." + format;
 
         if (format.startsWith("pdf"))
@@ -356,9 +355,9 @@ bool DotRunner::run()
               ok = false;
               continue;
             }
-            // Re-run dot for just this one file (still in the same dir)
+            // Re-run dot for just this one file
             QCString rerunArgs = QCString("-T") + format + " -O \"" + dotFileBasename(job->dotFile) + "\"";
-            if ((exitCode = Portable::system(m_dotExe, rerunArgs, FALSE)) != 0)
+            if ((exitCode = Portable::system(m_dotExe, rerunArgs, FALSE, dir)) != 0)
             {
               err_full(job->srcFile, job->srcLine,
                        "Problems running dot: exit code={}, command='{}', arguments='{}'",
@@ -374,8 +373,6 @@ bool DotRunner::run()
       }
     }
   }
-
-  Dir::setCurrent(savedDir);
 
   // Write .md5 files and clean up .dot files (once per unique dotFile)
   std::set<std::string> processed;
