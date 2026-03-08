@@ -202,11 +202,7 @@ int Portable::system(const QCString &command,const QCString &args,bool commandHa
 #else // Win32 specific
   if (commandHasConsole)
   {
-    if (!dir.isEmpty())
-    {
-      // cd /d changes drive letter too on Windows
-      fullCmd = QCString("cd /d \"") + dir + "\" && " + fullCmd;
-    }
+    assert(dir.isEmpty()); // console mode is incompatible with a working directory override
     return ::system(fullCmd.data());
   }
   else
