@@ -15,6 +15,9 @@
 
 #include <cassert>
 #include <cmath>
+#include <map>
+#include <set>
+#include <string>
 
 #ifdef _MSC_VER
 #pragma warning( push )
@@ -256,118 +259,126 @@ bool DotRunner::readBoundingBox(const QCString &fileName,int *width,int *height,
 
 //---------------------------------------------------------------------------------
 
-DotRunner::DotRunner(const QCString& absDotName, const QCString& md5Hash)
-  : m_file(absDotName)
-  , m_md5Hash(md5Hash)
-  , m_dotExe(Doxygen::verifiedDotPath)
-  , m_cleanUp(Config_getBool(DOT_CLEANUP))
-{
-}
-
-
-void DotRunner::addJob(const QCString &format, const QCString &output,
-                      const QCString &srcFile,int srcLine)
-{
-
-  for (auto& s: m_jobs)
-  {
-    if (s.format != format) continue;
-    if (s.output != output) continue;
-    // we have this job already
-    return;
-  }
-  auto args = QCString("-T") + format + " -o \"" + output + "\"";
-  m_jobs.emplace_back(format, output, args, srcFile, srcLine);
-}
-
-QCString getBaseNameOfOutput(const QCString &output)
+static QCString getBaseNameOfOutput(const QCString &output)
 {
   int index = output.findRev('.');
   if (index < 0) return output;
   return output.left(index);
 }
 
+DotRunner::DotRunner()
+  : m_dotExe(Doxygen::verifiedDotPath)
+{
+}
+
+void DotRunner::addJob(const QCString &dotFile, const QCString &format,
+                       const QCString &md5Hash,
+                       const QCString &srcFile, int srcLine, bool cleanUp)
+{
+  for (const auto &job : m_jobs)
+  {
+    if (job.dotFile == dotFile && job.format == format) return; // already queued
+    if (job.dotFile == dotFile && job.md5Hash != md5Hash)
+    {
+      err("md5 hash does not match for two different runs of {} !\n", dotFile);
+      return;
+    }
+  }
+  m_jobs.emplace_back(format, dotFile, md5Hash, srcFile, srcLine, cleanUp);
+}
+
 bool DotRunner::run()
 {
-  int exitCode=0;
+  if (m_jobs.empty()) return TRUE;
 
-  QCString dotArgs;
+  // Group jobs by format
+  std::map<std::string, std::vector<const DotJob*>> byFormat;
+  for (const auto &job : m_jobs)
+    byFormat[job.format.str()].push_back(&job);
 
-  QCString srcFile;
-  int srcLine=-1;
+  bool ok = true;
 
-  // create output
-  if (Config_getBool(DOT_MULTI_TARGETS))
+  for (auto &[fmtStr, jobs] : byFormat)
   {
-    dotArgs=QCString("\"")+m_file+"\"";
-    for (auto& s: m_jobs)
-    {
-      dotArgs+=' ';
-      dotArgs+=s.args;
-    }
-    if (!m_jobs.empty())
-    {
-      srcFile = m_jobs.front().srcFile;
-      srcLine = m_jobs.front().srcLine;
-    }
-    if ((exitCode=Portable::system(m_dotExe,dotArgs,FALSE))!=0) goto error;
-  }
-  else
-  {
-    for (auto& s : m_jobs)
-    {
-      srcFile = s.srcFile;
-      srcLine = s.srcLine;
-      dotArgs=QCString("\"")+m_file+"\" "+s.args;
-      if ((exitCode=Portable::system(m_dotExe,dotArgs,FALSE))!=0) goto error;
-    }
-  }
+    QCString format = QCString(fmtStr);
+    const DotJob *firstJob = jobs.front();
 
-  // check output
-  // As there should be only one pdf file be generated, we don't need code for regenerating multiple pdf files in one call
-  for (auto& s : m_jobs)
-  {
-    if (s.format.startsWith("pdf"))
+    // Build: -Tformat -O "file1.dot" "file2.dot" ...
+    QCString dotArgs = QCString("-T") + format + " -O";
+    for (const auto *job : jobs)
+      dotArgs += QCString(" \"") + job->dotFile + "\"";
+
+    int exitCode;
+    if ((exitCode = Portable::system(m_dotExe, dotArgs, FALSE)) != 0)
     {
-      int width=0,height=0;
-      if (!readBoundingBox(s.output,&width,&height,FALSE)) goto error;
-      if ((width > MAX_LATEX_GRAPH_SIZE) || (height > MAX_LATEX_GRAPH_SIZE))
+      err_full(firstJob->srcFile, firstJob->srcLine,
+               "Problems running dot: exit code={}, command='{}', arguments='{}'",
+               exitCode, m_dotExe, dotArgs);
+      ok = false;
+      continue;
+    }
+
+    // Post-process each output file
+    for (const auto *job : jobs)
+    {
+      QCString base   = getBaseNameOfOutput(job->dotFile);
+      QCString output = base + "." + format;
+
+      if (format.startsWith("pdf"))
       {
-        if (!resetPDFSize(width,height,getBaseNameOfOutput(s.output))) goto error;
-        dotArgs=QCString("\"")+m_file+"\" "+s.args;
-        if ((exitCode=Portable::system(m_dotExe,dotArgs,FALSE))!=0) goto error;
+        int width=0, height=0;
+        if (!readBoundingBox(output, &width, &height, FALSE))
+        {
+          ok = false;
+          continue;
+        }
+        if ((width > MAX_LATEX_GRAPH_SIZE) || (height > MAX_LATEX_GRAPH_SIZE))
+        {
+          if (!resetPDFSize(width, height, base))
+          {
+            ok = false;
+            continue;
+          }
+          // Re-run dot for just this one file
+          QCString rerunArgs = QCString("-T") + format + " -O \"" + job->dotFile + "\"";
+          if ((exitCode = Portable::system(m_dotExe, rerunArgs, FALSE)) != 0)
+          {
+            err_full(job->srcFile, job->srcLine,
+                     "Problems running dot: exit code={}, command='{}', arguments='{}'",
+                     exitCode, m_dotExe, rerunArgs);
+            ok = false;
+          }
+        }
+      }
+      else if (format.startsWith("png"))
+      {
+        checkPngResult(output);
+      }
+    }
+  }
+
+  // Write .md5 files and clean up .dot files (once per unique dotFile)
+  std::set<std::string> processed;
+  for (const auto &job : m_jobs)
+  {
+    if (!processed.insert(job.dotFile.str()).second) continue;
+
+    if (!job.md5Hash.isEmpty())
+    {
+      QCString md5Name = getBaseNameOfOutput(job.dotFile) + ".md5";
+      FILE *f = Portable::fopen(md5Name, "w");
+      if (f)
+      {
+        fwrite(job.md5Hash.data(), 1, 32, f);
+        fclose(f);
       }
     }
 
-    if (s.format.startsWith("png"))
+    if (job.cleanUp)
     {
-      checkPngResult(s.output);
+      Portable::unlink(job.dotFile);
     }
   }
 
-  // remove .dot files
-  if (m_cleanUp)
-  {
-    //printf("removing dot file %s\n",qPrint(m_file));
-    Portable::unlink(m_file);
-  }
-
-  // create checksum file
-  if (!m_md5Hash.isEmpty())
-  {
-    QCString md5Name = getBaseNameOfOutput(m_file) + ".md5";
-    FILE *f = Portable::fopen(md5Name,"w");
-    if (f)
-    {
-      fwrite(m_md5Hash.data(),1,32,f);
-      fclose(f);
-    }
-  }
-  return TRUE;
-error:
-  err_full(srcFile,srcLine,"Problems running dot: exit code={}, command='{}', arguments='{}'",
-    exitCode,m_dotExe,dotArgs);
-  return FALSE;
+  return ok;
 }
-
-
