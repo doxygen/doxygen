@@ -301,6 +301,7 @@ static QCString dotFileBasename(const QCString &dotFile)
 
 // Maximum command-line length passed to dot, leaving room for the exe path.
 // Windows CreateProcess limit is 32767; Linux ARG_MAX is typically >= 2MB.
+// But Linux kernel also cannot allocate more than 32 pages per argument.
 #if defined(_WIN32) && !defined(__CYGWIN__)
 static constexpr size_t MAX_CMD_LEN = 32767 - 1024;
 #else
@@ -359,6 +360,24 @@ bool DotRunner::run()
         batchStart = batchEnd;
       }
 
+      // Rename file.dot.format -> file.format if dot didn't strip the .dot
+      // extension when generating the output name (behavior varies by version).
+      for (const auto *job : jobs)
+      {
+        QCString dotOutput = job->dotFile + "." + format;
+        QCString expected  = getBaseNameOfOutput(job->dotFile) + "." + format;
+        FileInfo fi(dotOutput.str());
+        if (fi.exists())
+        {
+          Dir d;
+          if (!d.rename(dotOutput.str(), expected.str()))
+          {
+            err("Failed to rename {} to {}!\n", dotOutput, expected);
+            ok = false;
+          }
+        }
+      }
+
       // Post-process each output file using absolute paths
       for (const auto *job : jobs)
       {
@@ -389,6 +408,20 @@ bool DotRunner::run()
                        "Problems running dot: exit code={}, command='{}', dir='{}', arguments='{}'",
                        exitCode, m_dotExe, dir, rerunArgs);
               ok = false;
+            }
+            else
+            {
+              QCString dotOutput = job->dotFile + "." + format;
+              FileInfo fi(dotOutput.str());
+              if (fi.exists())
+              {
+                Dir d;
+                if (!d.rename(dotOutput.str(), output.str()))
+                {
+                  err("Failed to rename {} to {}!\n", dotOutput, output);
+                  ok = false;
+                }
+              }
             }
           }
         }
