@@ -302,9 +302,9 @@ static QCString dotFileBasename(const QCString &dotFile)
 // Maximum command-line length passed to dot, leaving room for the exe path.
 // Windows CreateProcess limit is 32767; Linux ARG_MAX is typically >= 2MB.
 #if defined(_WIN32) && !defined(__CYGWIN__)
-static constexpr size_t MAX_CMD_LEN = 32767;
+static constexpr size_t MAX_CMD_LEN = 32767 - 1024;
 #else
-static constexpr size_t MAX_CMD_LEN = 1024*1024;
+static constexpr size_t MAX_CMD_LEN = 1024*1024 - 1024;
 #endif
 
 bool DotRunner::run()
