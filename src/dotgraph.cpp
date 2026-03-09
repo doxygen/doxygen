@@ -262,11 +262,11 @@ void DotGraph::generateCode(TextStream &t)
   }
   else if (m_graphFormat==GraphOutputFormat::EPS) // produce tex to include the .eps image
   {
-    if (m_regenerate || !DotFilePatcher::writeVecGfxFigure(t,m_baseName,absBaseName()))
+    if (m_regenerate || !DotFilePatcher::writeVecGfxFigure(t,m_baseName,absDotName()))
     {
       int figId = DotManager::instance()->
                   createFilePatcher(m_fileName)->
-                  addFigure(m_baseName,absBaseName(),FALSE /*TRUE*/);
+                  addFigure(m_baseName,absDotName(),FALSE /*TRUE*/);
       t << "\n% FIG " << figId << "\n";
     }
   }
