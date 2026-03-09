@@ -107,7 +107,7 @@ static bool insertMapFile(TextStream &out,const QCString &mapFile,
 QCString DotGraph::imgName() const
 {
   return m_baseName + ((m_graphFormat == GraphOutputFormat::BITMAP) ?
-                      ("." + getDotImageExtension()) : (Config_getBool(USE_PDFLATEX) ? ".pdf" : ".eps"));
+                      (".dot." + getDotImageExtension()) : (Config_getBool(USE_PDFLATEX) ? ".dot.pdf" : ".dot.eps"));
 }
 
 std::mutex g_dotIndexListMutex;

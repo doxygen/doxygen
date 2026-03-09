@@ -69,7 +69,7 @@ class DotGraph
                             );
 
     virtual QCString getBaseName() const = 0;
-    virtual QCString absMapName()  const { return m_absPath + m_baseName + ".cmapx"; }
+    virtual QCString absMapName()  const { return m_absPath + m_baseName + ".dot.cmapx"; }
     virtual QCString getMapLabel() const = 0;
     virtual QCString getImgAltText() const { return ""; }
 

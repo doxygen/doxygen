@@ -190,27 +190,28 @@ void writeDotGraphFromFile(const QCString &inFile,const QCString &outDir,
   QCString imgExt = getDotImageExtension();
   QCString imgName = outFile+"."+imgExt;
   QCString absImgName = d.absPath()+"/"+imgName;
+  QCString absOutFile = d.absPath()+"/"+outFile;
 
-  DotRunner dotRun;
+  QCString dotArgs;
   if (format==GraphOutputFormat::BITMAP)
   {
-    dotRun.addJob(inFile, Config_getEnumAsString(DOT_IMAGE_FORMAT), QCString(), srcFile, srcLine, /*cleanUp=*/false);
+    dotArgs = QCString("-T") + Config_getEnumAsString(DOT_IMAGE_FORMAT) + " -o \"" + absImgName + "\" \"" + inFile + "\"";
   }
   else // format==GraphOutputFormat::EPS
   {
     if (Config_getBool(USE_PDFLATEX))
     {
-      dotRun.addJob(inFile, "pdf", QCString(), srcFile, srcLine, /*cleanUp=*/false);
+      dotArgs = QCString("-Tpdf -o \"") + absOutFile + ".pdf\" \"" + inFile + "\"";
     }
     else
     {
-      dotRun.addJob(inFile, "ps", QCString(), srcFile, srcLine, /*cleanUp=*/false);
+      dotArgs = QCString("-Tps -o \"") + absOutFile + ".eps\" \"" + inFile + "\"";
     }
   }
 
-  if (!dotRun.run())
+  if (Portable::system(Doxygen::verifiedDotPath, dotArgs, FALSE) != 0)
   {
-     return;
+    return;
   }
 
   Doxygen::indexList->addImageFile(imgName);
@@ -247,9 +248,8 @@ void writeDotImageMapFromFile(TextStream &t,
   QCString imgName = baseName+"."+imgExt;
   QCString absOutFile = d.absPath()+"/"+mapName;
 
-  DotRunner dotRun;
-  dotRun.addJob(inFile, MAP_CMD, QCString(), srcFile, srcLine, /*cleanUp=*/false);
-  if (!dotRun.run())
+  QCString dotArgs = QCString("-T" MAP_CMD " -o \"") + absOutFile + "\" \"" + inFile + "\"";
+  if (Portable::system(Doxygen::verifiedDotPath, dotArgs, FALSE) != 0)
   {
     return;
   }

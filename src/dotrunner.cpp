@@ -360,25 +360,12 @@ bool DotRunner::run()
         batchStart = batchEnd;
       }
 
-      // dot -O appends the format suffix to the full input filename, producing
-      // file.dot.format; rename to the expected file.format.
-      for (const auto *job : jobs)
-      {
-        QCString dotOutput = job->dotFile + "." + format;
-        QCString expected  = getBaseNameOfOutput(job->dotFile) + "." + format;
-        Dir d;
-        if (!d.rename(dotOutput.str(), expected.str()))
-        {
-          err("Failed to rename {} to {}!\n", dotOutput, expected);
-          ok = false;
-        }
-      }
-
-      // Post-process each output file using absolute paths
+      // Post-process each output file. dot -O appends the format suffix to the
+      // full input filename, so the output is job->dotFile + "." + format.
       for (const auto *job : jobs)
       {
         QCString base   = getBaseNameOfOutput(job->dotFile);
-        QCString output = base + "." + format;
+        QCString output = job->dotFile + "." + format;
 
         if (format.startsWith("pdf"))
         {
@@ -404,16 +391,6 @@ bool DotRunner::run()
                        "Problems running dot: exit code={}, command='{}', dir='{}', arguments='{}'",
                        exitCode, m_dotExe, dir, rerunArgs);
               ok = false;
-            }
-            else
-            {
-              QCString dotOutput = job->dotFile + "." + format;
-              Dir d;
-              if (!d.rename(dotOutput.str(), output.str()))
-              {
-                err("Failed to rename {} to {}!\n", dotOutput, output);
-                ok = false;
-              }
             }
           }
         }
