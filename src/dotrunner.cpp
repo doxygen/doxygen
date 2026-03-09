@@ -304,7 +304,10 @@ static QCString dotFileBasename(const QCString &dotFile)
 #if defined(_WIN32) && !defined(__CYGWIN__)
 static constexpr size_t MAX_CMD_LEN = 32767 - 1024;
 #else
-static constexpr size_t MAX_CMD_LEN = 1024*1024 - 1024;
+#ifndef MAX_ARG_STRLEN
+#define MAX_ARG_STRLEN 131072
+#endif
+static constexpr size_t MAX_CMD_LEN = MAX_ARG_STRLEN - 1024;
 #endif
 
 bool DotRunner::run()
