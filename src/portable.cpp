@@ -169,9 +169,10 @@ int Portable::system(const QCString &command,const QCString &args,bool commandHa
   }
   if (pid==0)
   {
-    if (!dir.isEmpty() && chdir(dir.data())!=0) { _exit(127); }
+    if (!dir.isEmpty() && chdir(dir.data())!=0) { perror("chdir error"); _exit(127); }
     const char * const argv[4] = { "sh", "-c", fullCmd.data(), 0 };
     execve("/bin/sh",const_cast<char * const*>(argv),environ);
+    perror("execve error");
     _exit(127);
   }
   for (;;)
