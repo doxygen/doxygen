@@ -360,21 +360,17 @@ bool DotRunner::run()
         batchStart = batchEnd;
       }
 
-      // Rename file.dot.format -> file.format if dot didn't strip the .dot
-      // extension when generating the output name (behavior varies by version).
+      // dot -O appends the format suffix to the full input filename, producing
+      // file.dot.format; rename to the expected file.format.
       for (const auto *job : jobs)
       {
         QCString dotOutput = job->dotFile + "." + format;
         QCString expected  = getBaseNameOfOutput(job->dotFile) + "." + format;
-        FileInfo fi(dotOutput.str());
-        if (fi.exists())
+        Dir d;
+        if (!d.rename(dotOutput.str(), expected.str()))
         {
-          Dir d;
-          if (!d.rename(dotOutput.str(), expected.str()))
-          {
-            err("Failed to rename {} to {}!\n", dotOutput, expected);
-            ok = false;
-          }
+          err("Failed to rename {} to {}!\n", dotOutput, expected);
+          ok = false;
         }
       }
 
@@ -412,15 +408,11 @@ bool DotRunner::run()
             else
             {
               QCString dotOutput = job->dotFile + "." + format;
-              FileInfo fi(dotOutput.str());
-              if (fi.exists())
+              Dir d;
+              if (!d.rename(dotOutput.str(), output.str()))
               {
-                Dir d;
-                if (!d.rename(dotOutput.str(), output.str()))
-                {
-                  err("Failed to rename {} to {}!\n", dotOutput, output);
-                  ok = false;
-                }
+                err("Failed to rename {} to {}!\n", dotOutput, output);
+                ok = false;
               }
             }
           }
