@@ -299,6 +299,14 @@ static QCString dotFileBasename(const QCString &dotFile)
   return sep >= 0 ? dotFile.mid(sep + 1) : dotFile;
 }
 
+// Maximum command-line length passed to dot, leaving room for the exe path.
+// Windows CreateProcess limit is 32767; Linux ARG_MAX is typically >= 2MB.
+#if defined(_WIN32) && !defined(__CYGWIN__)
+static constexpr size_t MAX_CMD_LEN = 32767;
+#else
+static constexpr size_t MAX_CMD_LEN = 1024*1024;
+#endif
+
 bool DotRunner::run()
 {
   if (m_jobs.empty()) return TRUE;
@@ -317,21 +325,35 @@ bool DotRunner::run()
     for (auto &[dirStr, jobs] : byDir)
     {
       QCString dir = QCString(dirStr);
-      const DotJob *firstJob = jobs.front();
 
-      // Build: -Tformat -O basename1.dot basename2.dot ...
-      QCString dotArgs = QCString("-T") + format + " -O";
-      for (const auto *job : jobs)
-        dotArgs += QCString(" \"") + dotFileBasename(job->dotFile) + "\"";
-
-      int exitCode;
-      if ((exitCode = Portable::system(m_dotExe, dotArgs, FALSE, dir)) != 0)
+      // Run dot in batches to stay within command-line length limits.
+      // Each batch: -Tformat -O basename1.dot basename2.dot ...
+      QCString baseArgs = QCString("-T") + format + " -O";
+      size_t exeLen = m_dotExe.length() + 1; // "exe " prefix
+      size_t batchStart = 0;
+      while (batchStart < jobs.size())
       {
-        err_full(firstJob->srcFile, firstJob->srcLine,
-                 "Problems running dot: exit code={}, command='{}', arguments='{}'",
-                 exitCode, m_dotExe, dotArgs);
-        ok = false;
-        continue;
+        QCString dotArgs = baseArgs;
+        size_t cmdLen = exeLen + baseArgs.length();
+        size_t batchEnd = batchStart;
+        while (batchEnd < jobs.size())
+        {
+          QCString fileArg = QCString(" \"") + dotFileBasename(jobs[batchEnd]->dotFile) + "\"";
+          if (batchEnd > batchStart && cmdLen + fileArg.length() > MAX_CMD_LEN) break;
+          dotArgs += fileArg;
+          cmdLen += fileArg.length();
+          batchEnd++;
+        }
+
+        int exitCode;
+        if ((exitCode = Portable::system(m_dotExe, dotArgs, FALSE, dir)) != 0)
+        {
+          err_full(jobs[batchStart]->srcFile, jobs[batchStart]->srcLine,
+                   "Problems running dot: exit code={}, command='{}', dir='{}', arguments='{}'",
+                   exitCode, m_dotExe, dir, dotArgs);
+          ok = false;
+        }
+        batchStart = batchEnd;
       }
 
       // Post-process each output file using absolute paths
@@ -357,11 +379,12 @@ bool DotRunner::run()
             }
             // Re-run dot for just this one file
             QCString rerunArgs = QCString("-T") + format + " -O \"" + dotFileBasename(job->dotFile) + "\"";
+            int exitCode;
             if ((exitCode = Portable::system(m_dotExe, rerunArgs, FALSE, dir)) != 0)
             {
               err_full(job->srcFile, job->srcLine,
-                       "Problems running dot: exit code={}, command='{}', arguments='{}'",
-                       exitCode, m_dotExe, rerunArgs);
+                       "Problems running dot: exit code={}, command='{}', dir='{}', arguments='{}'",
+                       exitCode, m_dotExe, dir, rerunArgs);
               ok = false;
             }
           }
