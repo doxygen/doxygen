@@ -1188,7 +1188,7 @@ static bool writeDefArgumentList(OutputList &ol,const Definition *scope,const Me
         n=addTemplateNames(n,scope->name(),cName);
       }
       ol.startParameterDefVal(" = ");
-      linkifyText(TextGeneratorOLImpl(ol),scope,md->getBodyDef(),md,n,FALSE,TRUE,TRUE);
+      linkifyText(TextGeneratorOLImpl(ol),scope,md->getBodyDef(),md,n,nullptr,FALSE,TRUE,TRUE);
       ol.endParameterDefVal();
     }
     ++alIt;
@@ -1251,6 +1251,7 @@ static bool writeDefArgumentList(OutputList &ol,const Definition *scope,const Me
                 md->getBodyDef(),        // fileScope
                 md,                      // self
                 defArgList.trailingReturnType(), // text
+                nullptr,
                 FALSE                    // autoBreak
                );
 
@@ -2181,6 +2182,7 @@ void MemberDefImpl::_writeTemplatePrefix(OutputList &ol, const Definition *def,
         getFileDef(),            // fileScope
         this,                    // self
         a.type,                  // text
+        nullptr,
         FALSE                    // autoBreak
         );
     if (!a.name.isEmpty())
