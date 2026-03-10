@@ -3134,7 +3134,12 @@ static void writeMemberIndex(OutputList &ol,
   bool first=true;
   ol.writeString("<br/>\n");
   QCString alphaLinks = "<div class=\"qindex\">";
+  StringMap usedLetters;
   for (const auto &[letter,list] : map)
+  {
+    usedLetters.emplace(convertUTF8ToUpper(letter),letter);
+  }
+  for (const auto &[letterUC,letter] : usedLetters)
   {
     QCString ci(letter);
     QCString is = letterToLabel(ci);
@@ -3152,7 +3157,7 @@ static void writeMemberIndex(OutputList &ol,
     QCString li = letterToLabel(letter);
     alphaLinks += "<a class=\"qindex\" href=\"" + anchor +
                   li + "\">" +
-                  letter + "</a>";
+                  letterUC + "</a>";
   }
   alphaLinks += "</div>\n";
   ol.writeString(alphaLinks);
