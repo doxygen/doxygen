@@ -107,7 +107,7 @@ static bool insertMapFile(TextStream &out,const QCString &mapFile,
 QCString DotGraph::imgName() const
 {
   return m_baseName + ((m_graphFormat == GraphOutputFormat::BITMAP) ?
-                      ("." + getDotImageExtension()) : (Config_getBool(USE_PDFLATEX) ? ".pdf" : ".eps"));
+                      (".dot." + getDotImageExtension()) : (Config_getBool(USE_PDFLATEX) ? ".dot.pdf" : ".dot.eps"));
 }
 
 std::mutex g_dotIndexListMutex;
@@ -186,24 +186,23 @@ bool DotGraph::prepareDotFile()
   f << m_theGraph;
   f.close();
 
+  bool cleanUp = Config_getBool(DOT_CLEANUP);
   if (m_graphFormat == GraphOutputFormat::BITMAP)
   {
     // run dot to create a bitmap image
-    DotRunner * dotRun = DotManager::instance()->createRunner(absDotName(), sigStr);
-    dotRun->addJob(Config_getEnumAsString(DOT_IMAGE_FORMAT), absImgName(), absDotName(), 1);
-    if (m_generateImageMap) dotRun->addJob(MAP_CMD, absMapName(), absDotName(), 1);
+    DotManager::instance()->addJob(absDotName(), Config_getEnumAsString(DOT_IMAGE_FORMAT), sigStr, cleanUp, absDotName(), 1);
+    if (m_generateImageMap) DotManager::instance()->addJob(absDotName(), MAP_CMD, sigStr, cleanUp, absDotName(), 1);
   }
   else if (m_graphFormat == GraphOutputFormat::EPS)
   {
     // run dot to create a .eps image
-    DotRunner *dotRun = DotManager::instance()->createRunner(absDotName(), sigStr);
     if (Config_getBool(USE_PDFLATEX))
     {
-      dotRun->addJob("pdf",absImgName(),absDotName(),1);
+      DotManager::instance()->addJob(absDotName(), "pdf", sigStr, cleanUp, absDotName(), 1);
     }
     else
     {
-      dotRun->addJob("ps",absImgName(),absDotName(),1);
+      DotManager::instance()->addJob(absDotName(), "ps", sigStr, cleanUp, absDotName(), 1);
     }
   }
   return TRUE;
@@ -263,11 +262,11 @@ void DotGraph::generateCode(TextStream &t)
   }
   else if (m_graphFormat==GraphOutputFormat::EPS) // produce tex to include the .eps image
   {
-    if (m_regenerate || !DotFilePatcher::writeVecGfxFigure(t,m_baseName,absBaseName()))
+    if (m_regenerate || !DotFilePatcher::writeVecGfxFigure(t,m_baseName,absDotName()))
     {
       int figId = DotManager::instance()->
                   createFilePatcher(m_fileName)->
-                  addFigure(m_baseName,absBaseName(),FALSE /*TRUE*/);
+                  addFigure(m_baseName,absDotName(),FALSE /*TRUE*/);
       t << "\n% FIG " << figId << "\n";
     }
   }

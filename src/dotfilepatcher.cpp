@@ -662,7 +662,7 @@ bool DotFilePatcher::writeVecGfxFigure(TextStream &out,const QCString &baseName,
     out << "\\includegraphics[width=" << width << "pt]";
   }
 
-  out << "{" << baseName << "}\n"
+  out << "{" << baseName << ".dot}\n"
          "\\end{center}\n"
          "\\end{figure}\n";
 
