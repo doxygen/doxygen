@@ -1099,6 +1099,9 @@ static bool writeDefArgumentList(OutputList &ol,const Definition *scope,const Me
 
   QCString sep = getLanguageSpecificSeparator(md->getLanguage(),true);
 
+  LinkifyTextOptions options;
+  options.setScope(scope).setFileScope(md->getBodyDef()).setSelf(md);
+
   bool first=TRUE;
   bool paramTypeStarted=FALSE;
   auto alIt = defArgList.begin();
@@ -1135,8 +1138,9 @@ static bool writeDefArgumentList(OutputList &ol,const Definition *scope,const Me
         }
         funcPtrPos = atype.find("*)(");
         if (funcPtrPos!=-1) funcPtrPos++;
-        linkifyText(TextGeneratorOLImpl(ol),scope,md->getBodyDef(),md,
-                    funcPtrPos==-1 ? atype : atype.left(funcPtrPos));
+        linkifyText(TextGeneratorOLImpl(ol),
+                    funcPtrPos==-1 ? atype : atype.left(funcPtrPos),
+                    options);
       }
     }
 
@@ -1173,8 +1177,7 @@ static bool writeDefArgumentList(OutputList &ol,const Definition *scope,const Me
     ol.startParameterExtra();
     if (funcPtrPos!=-1)
     {
-      linkifyText(TextGeneratorOLImpl(ol),scope,md->getBodyDef(),md,
-                  atype.mid(funcPtrPos));
+      linkifyText(TextGeneratorOLImpl(ol),atype.mid(funcPtrPos),options);
     }
     if (!a.array.isEmpty())
     {
@@ -1188,7 +1191,7 @@ static bool writeDefArgumentList(OutputList &ol,const Definition *scope,const Me
         n=addTemplateNames(n,scope->name(),cName);
       }
       ol.startParameterDefVal(" = ");
-      linkifyText(TextGeneratorOLImpl(ol),scope,md->getBodyDef(),md,n,nullptr,FALSE,TRUE,TRUE);
+      linkifyText(TextGeneratorOLImpl(ol),n,LinkifyTextOptions(options).setKeepSpaces(true));
       ol.endParameterDefVal();
     }
     ++alIt;
@@ -1246,15 +1249,7 @@ static bool writeDefArgumentList(OutputList &ol,const Definition *scope,const Me
   }
   if (!defArgList.trailingReturnType().isEmpty())
   {
-    linkifyText(TextGeneratorOLImpl(ol), // out
-                scope,                   // scope
-                md->getBodyDef(),        // fileScope
-                md,                      // self
-                defArgList.trailingReturnType(), // text
-                nullptr,
-                FALSE                    // autoBreak
-               );
-
+    linkifyText(TextGeneratorOLImpl(ol), defArgList.trailingReturnType(), options);
   }
   return TRUE;
 }
@@ -1265,6 +1260,8 @@ static void writeExceptionListImpl(
   // this is ordinary exception spec - there must be a '('
   //printf("exception='%s'\n",qPrint(exception));
   int index = exception.find('(');
+  LinkifyTextOptions options;
+  options.setScope(cd).setFileScope(md->getBodyDef()).setSelf(md);
   if (index!=-1)
   {
     ol.exceptionEntry(exception.left(index),false);
@@ -1272,8 +1269,7 @@ static void writeExceptionListImpl(
     for (int comma = exception.find(',', index); comma!=-1; )
     {
       ++comma; // include comma
-      linkifyText(TextGeneratorOLImpl(ol),cd,md->getBodyDef(),md,
-                  exception.mid(index,comma-index));
+      linkifyText(TextGeneratorOLImpl(ol),exception.mid(index,comma-index),options);
       ol.exceptionEntry(QCString(),false);
       index=comma;
       comma = exception.find(',', index);
@@ -1282,7 +1278,7 @@ static void writeExceptionListImpl(
     if (close!=-1)
     {
       QCString type=removeRedundantWhiteSpace(exception.mid(index,close-index));
-      linkifyText(TextGeneratorOLImpl(ol),cd,md->getBodyDef(),md,type);
+      linkifyText(TextGeneratorOLImpl(ol),type,options);
       ol.exceptionEntry(QCString(),true);
     }
     else
@@ -1294,7 +1290,7 @@ static void writeExceptionListImpl(
   else // Java Exception
   {
     ol.docify(" ");
-    linkifyText(TextGeneratorOLImpl(ol),cd,md->getBodyDef(),md,exception);
+    linkifyText(TextGeneratorOLImpl(ol),exception,options);
   }
 }
 
@@ -2174,17 +2170,12 @@ void MemberDefImpl::_writeTemplatePrefix(OutputList &ol, const Definition *def,
                                          const ArgumentList &al, bool writeReqClause) const
 {
   ol.docify("template<");
+  LinkifyTextOptions options;
+  options.setScope(def).setFileScope(getFileDef()).setSelf(this);
   for (auto it = al.begin(); it!=al.end();)
   {
     Argument a = *it;
-    linkifyText(TextGeneratorOLImpl(ol), // out
-        def,                     // scope
-        getFileDef(),            // fileScope
-        this,                    // self
-        a.type,                  // text
-        nullptr,
-        FALSE                    // autoBreak
-        );
+    linkifyText(TextGeneratorOLImpl(ol),a.type,options);
     if (!a.name.isEmpty())
     {
       ol.docify(" ");
@@ -2204,17 +2195,8 @@ void MemberDefImpl::_writeTemplatePrefix(OutputList &ol, const Definition *def,
     ol.lineBreak();
     ol.docify("requires ");
     linkifyText(TextGeneratorOLImpl(ol), // out
-        def,                     // scope
-        getFileDef(),            // fileScope
-        this,                    // self
         m_requiresClause,        // text
-        nullptr,                 // arguments for names
-        TRUE,                    // autoBreak
-        TRUE,                    // external
-        FALSE,                   // keepSpaces
-        0,                       // indentLevel
-        120                      // breakThreshold
-        );
+        LinkifyTextOptions(options).setAutoBreak(true).setBreakThreshold(120));
   }
 }
 
@@ -2350,6 +2332,8 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
   reg::Match match;
   std::string stype = ltype.str();
   bool endAnonScopeNeeded=FALSE;
+  LinkifyTextOptions options;
+  options.setScope(d).setFileScope(getBodyDef()).setSelf(this);
   if (reg::search(stype,match,r)) // member has an anonymous type
   {
     int i = static_cast<int>(match.position());
@@ -2388,29 +2372,14 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
     {
       if (getAnonymousEnumType()) // type is an anonymous enum
       {
-        linkifyText(TextGeneratorOLImpl(ol), // out
-                    d,                       // scope
-                    getBodyDef(),            // fileScope
-                    this,                    // self
-                    ltype.left(i),           // text
-                    nullptr,                 // arguments for names
-                    FALSE                    // autoBreak
-                   );
+        linkifyText(TextGeneratorOLImpl(ol),ltype.left(i),options);
         getAnonymousEnumType()->writeEnumDeclaration(ol,cd,nd,fd,gd,mod);
-        //ol+=*getAnonymousEnumType()->enumDecl();
-        linkifyText(TextGeneratorOLImpl(ol),d,getFileDef(),this,ltype.right(ltype.length()-i-l),nullptr,TRUE);
+        linkifyText(TextGeneratorOLImpl(ol),ltype.right(ltype.length()-i-l),LinkifyTextOptions(options).setAutoBreak(true));
       }
       else
       {
         ltype = ltype.left(i) + " { ... } " + removeAnonymousScopes(ltype.right(ltype.length()-i-l));
-        linkifyText(TextGeneratorOLImpl(ol), // out
-                    d,                       // scope
-                    getBodyDef(),            // fileScope
-                    this,                    // self
-                    ltype,                   // text
-                    nullptr,                 // arguments for names
-                    FALSE                    // autoBreak
-                   );
+        linkifyText(TextGeneratorOLImpl(ol), ltype, options);
       }
     }
   }
@@ -2425,14 +2394,7 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
       ltype.prepend("(");
       ltype.append(")");
     }
-    linkifyText(TextGeneratorOLImpl(ol), // out
-                d,                       // scope
-                getBodyDef(),            // fileScope
-                this,                    // self
-                ltype,                   // text
-                nullptr,                 // arguments for names
-                FALSE                    // autoBreak
-               );
+    linkifyText(TextGeneratorOLImpl(ol),ltype,options);
   }
   bool htmlOn = ol.isEnabled(OutputType::Html);
   if (htmlOn && !ltype.isEmpty())
@@ -2515,26 +2477,22 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
   {
     if (!isDefine() && !isTypedef()) ol.writeString(" ");
     linkifyText(TextGeneratorOLImpl(ol), // out
-                d,                       // scope
-                getBodyDef(),            // fileScope
-                this,                    // self
                 isDefine() ?
                    substitute(argsString(),",",", ") :
                 isTypedef() ?
                    substitute(argsString(),")(",") (") :
                    combineArgsAndException(argsString(),excpString()), // text
-                &m_defArgList,
-                m_annMemb!=nullptr,      // autoBreak
-                TRUE,                    // external
-                FALSE,                   // keepSpaces
-                indentLevel
+                LinkifyTextOptions(options)
+                .setArgumentList(&m_defArgList)
+                .setAutoBreak(m_annMemb!=nullptr)
+                .setIndentLevel(indentLevel)
                );
   }
 
   // *** write bitfields
   if (!m_bitfields.isEmpty()) // add bitfields
   {
-    linkifyText(TextGeneratorOLImpl(ol),d,getBodyDef(),this,m_bitfields);
+    linkifyText(TextGeneratorOLImpl(ol),m_bitfields,options);
   }
   else if (hasOneLineInitializer()
       //!init.isEmpty() && initLines==0 && // one line initializer
@@ -2544,18 +2502,18 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
     if (isTypeAlias()) // using statement
     {
       ol.writeString(" = ");
-      linkifyText(TextGeneratorOLImpl(ol),d,getBodyDef(),this,m_initializer.simplifyWhiteSpace());
+      linkifyText(TextGeneratorOLImpl(ol),m_initializer.simplifyWhiteSpace(),options);
     }
     else if (!isDefine())
     {
       //ol.writeString(" = ");
       ol.writeString(" ");
-      linkifyText(TextGeneratorOLImpl(ol),d,getBodyDef(),this,m_initializer.simplifyWhiteSpace());
+      linkifyText(TextGeneratorOLImpl(ol),m_initializer.simplifyWhiteSpace(),options);
     }
     else
     {
       ol.writeNonBreakableSpace(3);
-      linkifyText(TextGeneratorOLImpl(ol),d,getBodyDef(),this,m_initializer);
+      linkifyText(TextGeneratorOLImpl(ol),m_initializer,options);
     }
   }
 
@@ -3612,6 +3570,8 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
   static const reg::Ex r(R"(@\d+)");
   reg::Match match;
   std::string sdef = ldef.str();
+  LinkifyTextOptions options;
+  options.setScope(scopedContainer).setFileScope(getBodyDef()).setSelf(this);
   if ((isVariable() || isTypedef()) && reg::search(sdef,match,r))
   {
     // find enum type and insert it in the definition
@@ -3625,9 +3585,9 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
         ol.addLabel(cfname, memAnchor);
         QCString prefix = match.prefix().str();
         QCString suffix = match.suffix().str();
-        linkifyText(TextGeneratorOLImpl(ol),scopedContainer,getBodyDef(),this,prefix);
+        linkifyText(TextGeneratorOLImpl(ol),prefix,options);
         vmd->writeEnumDeclaration(ol,getClassDef(),getNamespaceDef(),getFileDef(),getGroupDef(),getModuleDef());
-        linkifyText(TextGeneratorOLImpl(ol),scopedContainer,getBodyDef(),this,suffix);
+        linkifyText(TextGeneratorOLImpl(ol),suffix,options);
 
         found=true;
         break;
@@ -3650,11 +3610,11 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
         QCString suffix = match.suffix().str();
         ol.docify(prefix);
         ol.docify(" { ... } ");
-        linkifyText(TextGeneratorOLImpl(ol),scopedContainer,getBodyDef(),this,removeAnonymousScopes(suffix));
+        linkifyText(TextGeneratorOLImpl(ol),removeAnonymousScopes(suffix),options);
       }
       else
       {
-        linkifyText(TextGeneratorOLImpl(ol),scopedContainer,getBodyDef(),this,ldef);
+        linkifyText(TextGeneratorOLImpl(ol),ldef,options);
       }
     }
   }
@@ -3767,12 +3727,7 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
       if (pos<0) pos=0;
       if (pos>0)
       {
-        linkifyText(TextGeneratorOLImpl(ol),
-                    scopedContainer,
-                    getBodyDef(),
-                    this,
-                    ldef.left(pos)
-                   );
+        linkifyText(TextGeneratorOLImpl(ol),ldef.left(pos),options);
       }
       ol.docify(ldef.mid(pos));
       const Definition *scope = cd;
@@ -3781,12 +3736,7 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
     }
     else
     {
-      linkifyText(TextGeneratorOLImpl(ol),
-                  scopedContainer,
-                  getBodyDef(),
-                  this,
-                  substitute(ldef,"::",sep)
-                 );
+      linkifyText(TextGeneratorOLImpl(ol),substitute(ldef,"::",sep),options);
       const Definition *scope = cd;
       if (scope==nullptr) scope = nd;
       hasParameterList=writeDefArgumentList(ol,scope,this);
@@ -3798,18 +3748,18 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
       {
         ol.docify(" = ");
         QCString init = m_initializer.simplifyWhiteSpace();
-        linkifyText(TextGeneratorOLImpl(ol),scopedContainer,getBodyDef(),this,init);
+        linkifyText(TextGeneratorOLImpl(ol),init,options);
       }
       else if (!isDefine())
       {
         ol.docify(" ");
         QCString init = m_initializer.simplifyWhiteSpace();
-        linkifyText(TextGeneratorOLImpl(ol),scopedContainer,getBodyDef(),this,init);
+        linkifyText(TextGeneratorOLImpl(ol),init,options);
       }
       else
       {
         ol.writeNonBreakableSpace(3);
-        linkifyText(TextGeneratorOLImpl(ol),scopedContainer,getBodyDef(),this,m_initializer);
+        linkifyText(TextGeneratorOLImpl(ol),m_initializer,options);
       }
     }
     if (!excpString().isEmpty()) // add exception list
@@ -4040,6 +3990,9 @@ void MemberDefImpl::writeMemberDocSimple(OutputList &ol, const Definition *conta
   ClassDef *cd = m_accessorClass;
   //printf("===> %s::anonymous: %s\n",qPrint(name()),cd?qPrint(cd->name()):"<none>");
 
+  LinkifyTextOptions options;
+  options.setScope(scope).setFileScope(getBodyDef()).setSelf(this);
+
   if (container && container->definitionType()==Definition::TypeClass &&
       !(toClassDef(container))->isJavaEnum())
   {
@@ -4074,12 +4027,7 @@ void MemberDefImpl::writeMemberDocSimple(OutputList &ol, const Definition *conta
     }
     else // use standard auto linking
     {
-      linkifyText(TextGeneratorOLImpl(ol), // out
-          scope,                   // scope
-          getBodyDef(),            // fileScope
-          this,                    // self
-          ts                       // text
-          );
+      linkifyText(TextGeneratorOLImpl(ol),ts,options);
     }
     ol.endDoxyAnchor(cfname,memAnchor);
     ol.endInlineMemberType();
@@ -4089,16 +4037,16 @@ void MemberDefImpl::writeMemberDocSimple(OutputList &ol, const Definition *conta
   ol.docify(doxyName);
   if (isVariable() && !argsString().isEmpty() && !isObjCMethod() && !isFunctionPtr())
   {
-    linkifyText(TextGeneratorOLImpl(ol),getOuterScope(),getBodyDef(),this,argsString(),&m_defArgList);
+    linkifyText(TextGeneratorOLImpl(ol),argsString(),LinkifyTextOptions(options).setArgumentList(&m_defArgList));
   }
   if (!m_bitfields.isEmpty()) // add bitfields
   {
-    linkifyText(TextGeneratorOLImpl(ol),getOuterScope(),getBodyDef(),this,m_bitfields);
+    linkifyText(TextGeneratorOLImpl(ol),m_bitfields,options);
   }
   if (hasOneLineInitializer() && !isDefine())
   {
     ol.writeString(" ");
-    linkifyText(TextGeneratorOLImpl(ol),getOuterScope(),getBodyDef(),this,m_initializer.simplifyWhiteSpace());
+    linkifyText(TextGeneratorOLImpl(ol),m_initializer.simplifyWhiteSpace(),options);
   }
   ol.endInlineMemberName();
 

@@ -1023,6 +1023,8 @@ static void insertMemberReference(const MemberDef *src, const MemberDef *dst, co
 
 static void insertMemberFunctionParams(int memberdef_id, const MemberDef *md, const Definition *def)
 {
+  LinkifyTextOptions options;
+  options.setScope(def).setFileScope(md->getBodyDef()).setSelf(md);
   const ArgumentList &declAl = md->declArgumentList();
   const ArgumentList &defAl = md->argumentList();
   if (declAl.size()>0)
@@ -1046,7 +1048,7 @@ static void insertMemberFunctionParams(int memberdef_id, const MemberDef *md, co
       if (!a.type.isEmpty())
       {
         StringVector list;
-        linkifyText(TextGeneratorSqlite3Impl(list),def,md->getBodyDef(),md,a.type);
+        linkifyText(TextGeneratorSqlite3Impl(list),a.type,options);
 
         for (const auto &s : list)
         {
@@ -1076,7 +1078,7 @@ static void insertMemberFunctionParams(int memberdef_id, const MemberDef *md, co
       if (!a.defval.isEmpty())
       {
         StringVector list;
-        linkifyText(TextGeneratorSqlite3Impl(list),def,md->getBodyDef(),md,a.defval);
+        linkifyText(TextGeneratorSqlite3Impl(list),a.defval,options);
         bindTextParameter(param_select,":defval",a.defval);
         bindTextParameter(param_insert,":defval",a.defval);
       }
@@ -1375,7 +1377,7 @@ static void writeTemplateArgumentList(const ArgumentList &al,
   {
     if (!a.type.isEmpty())
     {
-//#warning linkifyText(TextGeneratorXMLImpl(t),scope,fileScope,0,a.type);
+//#warning linkifyText(TextGeneratorXMLImpl(t),a.type,LinkifyTextOptions().setScope(scope).setFileScope(fileScope));
       bindTextParameter(param_select,":type",a.type);
       bindTextParameter(param_insert,":type",a.type);
     }
@@ -1388,7 +1390,7 @@ static void writeTemplateArgumentList(const ArgumentList &al,
     }
     if (!a.defval.isEmpty())
     {
-//#warning linkifyText(TextGeneratorXMLImpl(t),scope,fileScope,0,a.defval);
+//#warning linkifyText(TextGeneratorXMLImpl(t),a.defval,LinkifyTextOptions().setScope(scope).setFileScope(fileScope));
       bindTextParameter(param_select,":defval",a.defval);
       bindTextParameter(param_insert,":defval",a.defval);
     }
@@ -1755,6 +1757,9 @@ static void generateSqlite3ForMember(const MemberDef *md, struct Refid scope_ref
     step(reimplements_insert,TRUE);
   }
 
+  LinkifyTextOptions options;
+  options.setScope(def).setFileScope(md->getBodyDef()).setSelf(md);
+
   // + declaration/definition arg lists
   if (md->memberType()!=MemberType::Define &&
       md->memberType()!=MemberType::Enumeration
@@ -1767,7 +1772,7 @@ static void generateSqlite3ForMember(const MemberDef *md, struct Refid scope_ref
     QCString typeStr = md->typeString();
     stripQualifiers(typeStr);
     StringVector list;
-    linkifyText(TextGeneratorSqlite3Impl(list), def, md->getBodyDef(),md,typeStr);
+    linkifyText(TextGeneratorSqlite3Impl(list),typeStr,options);
     if (!typeStr.isEmpty())
     {
       bindTextParameter(memberdef_insert,":type",typeStr);
@@ -1792,7 +1797,7 @@ static void generateSqlite3ForMember(const MemberDef *md, struct Refid scope_ref
     bindTextParameter(memberdef_insert,":initializer",md->initializer());
 
     StringVector list;
-    linkifyText(TextGeneratorSqlite3Impl(list),def,md->getBodyDef(),md,md->initializer());
+    linkifyText(TextGeneratorSqlite3Impl(list),md->initializer(),options);
     for (const auto &s : list)
     {
       if (md->getBodyDef())
