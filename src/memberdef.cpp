@@ -2523,7 +2523,7 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
                 isTypedef() ?
                    substitute(argsString(),")(",") (") :
                    combineArgsAndException(argsString(),excpString()), // text
-                &(argumentList()),
+                &m_defArgList,
                 m_annMemb!=nullptr,      // autoBreak
                 TRUE,                    // external
                 FALSE,                   // keepSpaces
@@ -4089,7 +4089,7 @@ void MemberDefImpl::writeMemberDocSimple(OutputList &ol, const Definition *conta
   ol.docify(doxyName);
   if (isVariable() && !argsString().isEmpty() && !isObjCMethod() && !isFunctionPtr())
   {
-    linkifyText(TextGeneratorOLImpl(ol),getOuterScope(),getBodyDef(),this,argsString(),&(argumentList()));
+    linkifyText(TextGeneratorOLImpl(ol),getOuterScope(),getBodyDef(),this,argsString(),&m_defArgList);
   }
   if (!m_bitfields.isEmpty()) // add bitfields
   {
