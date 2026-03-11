@@ -89,12 +89,12 @@ DotManager::~DotManager()
 {
 }
 
-void DotManager::addJob(const QCString &absDotName, const QCString &format,
+void DotManager::addJob(const QCString &absPath, const QCString &relDotName, const QCString &format,
                         const QCString &md5Hash, bool cleanUp,
                         const QCString &srcFile, int srcLine)
 {
   std::lock_guard<std::mutex> lock(g_dotManagerMutex);
-  m_runner.addJob(absDotName, format, md5Hash, srcFile, srcLine, cleanUp);
+  m_runner.addJob(absPath, relDotName, format, md5Hash, srcFile, srcLine, cleanUp);
 }
 
 DotFilePatcher *DotManager::createFilePatcher(const QCString &fileName)

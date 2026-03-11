@@ -29,11 +29,12 @@ class DotRunner
 {
     struct DotJob
     {
-      DotJob(const QCString &f, const QCString &df, const QCString &m,
+      DotJob(const QCString &f, const QCString &ap, const QCString &rdn, const QCString &m,
              const QCString &s, int l, bool c)
-        : format(f), dotFile(df), md5Hash(m), srcFile(s), srcLine(l), cleanUp(c) {}
+        : format(f), absPath(ap), relDotName(rdn), md5Hash(m), srcFile(s), srcLine(l), cleanUp(c) {}
       QCString format;
-      QCString dotFile;
+      QCString absPath;
+      QCString relDotName;
       QCString md5Hash;
       QCString srcFile;
       int srcLine;
@@ -47,7 +48,7 @@ class DotRunner
      *  Duplicate (dotFile+format) entries are silently ignored.
      *  If the same dotFile is added with a different md5Hash, an error is reported.
      */
-    void addJob(const QCString &dotFile, const QCString &format,
+    void addJob(const QCString &absPath, const QCString &relDotName, const QCString &format,
                 const QCString &md5Hash,
                 const QCString &srcFile, int srcLine, bool cleanUp = true);
 

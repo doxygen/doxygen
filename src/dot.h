@@ -32,7 +32,7 @@ class DotManager
 {
   public:
     static DotManager *instance();
-    void addJob(const QCString &absDotName, const QCString &format,
+    void addJob(const QCString &absPath, const QCString &relDotName, const QCString &format,
                 const QCString &md5Hash, bool cleanUp,
                 const QCString &srcFile, int srcLine);
     DotFilePatcher *createFilePatcher(const QCString &fileName);
