@@ -892,13 +892,16 @@ bool leftScopeMatch(const QCString &scope, const QCString &name)
 
 void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
     const FileDef *fileScope,const Definition *self,
-    const QCString &text, bool autoBreak,bool external,
+    const QCString &text,
+    const ArgumentList *al,
+    bool autoBreak,bool external,
     bool keepSpaces,int indentLevel,size_t breakThreshold)
 {
   AUTO_TRACE("scope={} fileScope={} text={} autoBreak={} external={} keepSpaces={} indentLevel={}",
       scope?scope->name():"",fileScope?fileScope->name():"",
       text,autoBreak,external,keepSpaces,indentLevel);
   if (text.isEmpty()) return;
+
   //printf("linkify='%s'\n",qPrint(text));
   std::string_view txtStr=text.view();
   size_t strLen = txtStr.length();
@@ -974,9 +977,22 @@ void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
     // get word from string
     std::string_view word=txtStr.substr(newIndex,matchLen);
     QCString matchWord = substitute(substitute(word,"\\","::"),".","::");
+    bool found=false;
+    // check for argument name
+    if (al)
+    {
+      for (auto it1 = al->begin(); it1!=al->end(); ++it1)
+      {
+        if (it1->name == matchWord)
+        {
+          out.writeString(matchWord.data(),keepSpaces);
+          found = true;
+          break;
+        }
+      }
+    }
     //printf("linkifyText word=%s matchWord=%s scope=%s\n",
     //    qPrint(word),qPrint(matchWord),scope ? qPrint(scope->name()) : "<none>");
-    bool found=FALSE;
     if (!insideString)
     {
       const ClassDef     *cd=nullptr;

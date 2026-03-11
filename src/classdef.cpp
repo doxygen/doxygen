@@ -1521,6 +1521,7 @@ void ClassDefImpl::writeTemplateSpec(OutputList &ol,const Definition *d,
           getFileDef(),            // fileScope
           this,                    // self
           a.type,                  // text
+          nullptr,
           FALSE                    // autoBreak
           );
         if (!a.name.isEmpty())
@@ -1547,6 +1548,7 @@ void ClassDefImpl::writeTemplateSpec(OutputList &ol,const Definition *d,
           getFileDef(),            // fileScope
           this,                    // self
           m_requiresClause,  // text
+          nullptr,
           FALSE                    // autoBreak
           );
       ol.lineBreak();
