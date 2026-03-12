@@ -271,32 +271,20 @@ DotRunner::DotRunner()
 {
 }
 
-void DotRunner::addJob(const QCString &dotFile, const QCString &format,
+void DotRunner::addJob(const QCString &absPath, const QCString &relDotName, const QCString &format,
                        const QCString &md5Hash,
                        const QCString &srcFile, int srcLine, bool cleanUp)
 {
   for (const auto &job : m_jobs)
   {
-    if (job.dotFile == dotFile && job.format == format) return; // already queued
-    if (job.dotFile == dotFile && job.md5Hash != md5Hash)
+    if (job.absPath == absPath && job.relDotName == relDotName && job.format == format) return; // already queued
+    if (job.absPath == absPath && job.relDotName == relDotName && job.md5Hash != md5Hash)
     {
-      err("md5 hash does not match for two different runs of {} !\n", dotFile);
+      err("md5 hash does not match for two different runs of {}{} !\n", absPath, relDotName);
       return;
     }
   }
-  m_jobs.emplace_back(format, dotFile, md5Hash, srcFile, srcLine, cleanUp);
-}
-
-static QCString dotFileDir(const QCString &dotFile)
-{
-  int sep = dotFile.findRev('/');
-  return sep >= 0 ? dotFile.left(sep) : QCString(".");
-}
-
-static QCString dotFileBasename(const QCString &dotFile)
-{
-  int sep = dotFile.findRev('/');
-  return sep >= 0 ? dotFile.mid(sep + 1) : dotFile;
+  m_jobs.emplace_back(format, absPath, relDotName, md5Hash, srcFile, srcLine, cleanUp);
 }
 
 // Maximum command-line length passed to dot, leaving room for the exe path.
@@ -318,7 +306,7 @@ bool DotRunner::run()
   // Group jobs by format, then by directory so we can cd once per group
   std::map<std::string, std::map<std::string, std::vector<const DotJob*>>> byFormatAndDir;
   for (const auto &job : m_jobs)
-    byFormatAndDir[job.format.str()][dotFileDir(job.dotFile).str()].push_back(&job);
+    byFormatAndDir[job.format.str()][job.absPath.str()].push_back(&job);
 
   bool ok = true;
 
@@ -342,7 +330,7 @@ bool DotRunner::run()
         size_t batchEnd = batchStart;
         while (batchEnd < jobs.size())
         {
-          QCString fileArg = QCString(" \"") + dotFileBasename(jobs[batchEnd]->dotFile) + "\"";
+          QCString fileArg = QCString(" \"") + jobs[batchEnd]->relDotName + "\"";
           if (batchEnd > batchStart && cmdLen + fileArg.length() > MAX_CMD_LEN) break;
           dotArgs += fileArg;
           cmdLen += fileArg.length();
@@ -361,11 +349,11 @@ bool DotRunner::run()
       }
 
       // Post-process each output file. dot -O appends the format suffix to the
-      // full input filename, so the output is job->dotFile + "." + format.
+      // full input filename, so the output is absPath + relDotName + "." + format.
       for (const auto *job : jobs)
       {
-        QCString base   = getBaseNameOfOutput(job->dotFile);
-        QCString output = job->dotFile + "." + format;
+        QCString base   = job->absPath + getBaseNameOfOutput(job->relDotName);
+        QCString output = job->absPath + job->relDotName + "." + format;
 
         if (format.startsWith("pdf"))
         {
@@ -383,7 +371,7 @@ bool DotRunner::run()
               continue;
             }
             // Re-run dot for just this one file
-            QCString rerunArgs = QCString("-T") + format + " -O \"" + dotFileBasename(job->dotFile) + "\"";
+            QCString rerunArgs = QCString("-T") + format + " -O \"" + job->relDotName + "\"";
             int exitCode;
             if ((exitCode = Portable::system(m_dotExe, rerunArgs, FALSE, dir)) != 0)
             {
@@ -406,11 +394,11 @@ bool DotRunner::run()
   std::set<std::string> processed;
   for (const auto &job : m_jobs)
   {
-    if (!processed.insert(job.dotFile.str()).second) continue;
+    if (!processed.insert((job.absPath + job.relDotName).str()).second) continue;
 
     if (!job.md5Hash.isEmpty())
     {
-      QCString md5Name = getBaseNameOfOutput(job.dotFile) + ".md5";
+      QCString md5Name = job.absPath + getBaseNameOfOutput(job.relDotName) + ".md5";
       FILE *f = Portable::fopen(md5Name, "w");
       if (f)
       {
@@ -421,7 +409,7 @@ bool DotRunner::run()
 
     if (job.cleanUp)
     {
-      Portable::unlink(job.dotFile);
+      Portable::unlink(job.absPath + job.relDotName);
     }
   }
 
