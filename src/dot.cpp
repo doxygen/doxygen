@@ -243,7 +243,7 @@ void writeDotImageMapFromFile(TextStream &t,
     term("Output dir {} does not exist!\n",outDir);
   }
 
-  QCString mapName = baseName+".cmapx";
+  QCString mapName = baseName+".map";
   QCString imgExt = getDotImageExtension();
   QCString imgName = baseName+"."+imgExt;
   QCString absOutFile = d.absPath()+"/"+mapName;

@@ -355,7 +355,8 @@ bool DotRunner::run()
       {
         QCString base   = job->absPath + getBaseNameOfOutput(job->relDotName);
         QCString dotOutput = job->absPath + job->relDotName + "." + format;
-        QCString output = base + "." + format;
+        QCString fileExt = (format == "cmapx") ? "map" : format;
+        QCString output = base + "." + fileExt;
         Dir d;
         if (!d.rename(dotOutput.str(), output.str()))
         {
