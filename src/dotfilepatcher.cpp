@@ -352,6 +352,12 @@ bool DotFilePatcher::run() const
 
   while (getline(fi,lineStr))
   {
+    // replace id="page0,1_graph0" with id="graph0" to work around graphviz page numbering bug
+    {
+      auto pos = lineStr.find("id=\"page0,1_graph0\"");
+      if (pos != std::string::npos)
+        lineStr.replace(pos, 19, "id=\"graph0\"");
+    }
     QCString line = lineStr+'\n';
     //printf("line=[%s]\n",qPrint(line.stripWhiteSpace()));
     int i = 0;
