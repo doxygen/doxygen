@@ -107,7 +107,7 @@ static bool insertMapFile(TextStream &out,const QCString &mapFile,
 QCString DotGraph::imgName() const
 {
   return m_baseName + ((m_graphFormat == GraphOutputFormat::BITMAP) ?
-                      (".dot." + getDotImageExtension()) : (Config_getBool(USE_PDFLATEX) ? ".dot.pdf" : ".dot.eps"));
+                      ("." + getDotImageExtension()) : (Config_getBool(USE_PDFLATEX) ? ".pdf" : ".eps"));
 }
 
 std::mutex g_dotIndexListMutex;
@@ -262,11 +262,11 @@ void DotGraph::generateCode(TextStream &t)
   }
   else if (m_graphFormat==GraphOutputFormat::EPS) // produce tex to include the .eps image
   {
-    if (m_regenerate || !DotFilePatcher::writeVecGfxFigure(t,m_baseName,absDotName()))
+    if (m_regenerate || !DotFilePatcher::writeVecGfxFigure(t,m_baseName,absBaseName()))
     {
       int figId = DotManager::instance()->
                   createFilePatcher(m_fileName)->
-                  addFigure(m_baseName,absDotName(),FALSE /*TRUE*/);
+                  addFigure(m_baseName,absBaseName(),FALSE /*TRUE*/);
       t << "\n% FIG " << figId << "\n";
     }
   }

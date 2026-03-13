@@ -350,10 +350,19 @@ bool DotRunner::run()
 
       // Post-process each output file. dot -O appends the format suffix to the
       // full input filename, so the output is absPath + relDotName + "." + format.
+      // Rename to remove the .dot infix, producing absPath + baseName + "." + format.
       for (const auto *job : jobs)
       {
         QCString base   = job->absPath + getBaseNameOfOutput(job->relDotName);
-        QCString output = job->absPath + job->relDotName + "." + format;
+        QCString dotOutput = job->absPath + job->relDotName + "." + format;
+        QCString output = base + "." + format;
+        Dir d;
+        if (!d.rename(dotOutput.str(), output.str()))
+        {
+          err("Failed to rename {} to {}!\n", dotOutput, output);
+          ok = false;
+          continue;
+        }
 
         if (format.startsWith("pdf"))
         {
@@ -379,6 +388,15 @@ bool DotRunner::run()
                        "Problems running dot: exit code={}, command='{}', dir='{}', arguments='{}'",
                        exitCode, m_dotExe, dir, rerunArgs);
               ok = false;
+            }
+            else
+            {
+              Dir d2;
+              if (!d2.rename(dotOutput.str(), output.str()))
+              {
+                err("Failed to rename {} to {}!\n", dotOutput, output);
+                ok = false;
+              }
             }
           }
         }
