@@ -6107,7 +6107,10 @@ void MemberDefImpl::copyArgumentNames(const MemberDef *bmd)
     {
       Argument &argDst       = *dstIt;
       const Argument &argSrc = *srcIt;
-      argDst.name = argSrc.name;
+      if (!argSrc.name.isEmpty())
+      {
+        argDst.name = argSrc.name;
+      }
       argDst.docs = argSrc.docs;
       ++srcIt;
       ++dstIt;
@@ -6124,7 +6127,10 @@ void MemberDefImpl::copyArgumentNames(const MemberDef *bmd)
     {
       Argument &argDst       = *dstIt;
       const Argument &argSrc = *srcIt;
-      argDst.name = argSrc.name;
+      if (!argSrc.name.isEmpty())
+      {
+        argDst.name = argSrc.name;
+      }
       argDst.docs = argSrc.docs;
       ++srcIt;
       ++dstIt;

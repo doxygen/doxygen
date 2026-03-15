@@ -3262,6 +3262,7 @@ Token DocParamList::parse(const QCString &cmdName)
   }
   parser()->tokenizer.setStateParam();
   tok=parser()->tokenizer.lex();
+  parser()->context.paramPosition=1;
   while (tok.is(TokenRetval::TK_WORD)) /* there is a parameter name */
   {
     if (m_type==DocParamSect::Param)

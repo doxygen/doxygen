@@ -1204,15 +1204,20 @@ void writeExamples(OutputList &ol,const ExampleList &list)
 QCString inlineArgListToDoc(const ArgumentList &al)
 {
   QCString paramDocs;
-  if (al.hasDocumentation())
+  if (al.hasDocumentation(true))
   {
     for (const Argument &a : al)
     {
-      if (a.hasDocumentation())
+      if (a.hasDocumentation(true))
       {
         QCString docsWithoutDir = a.docs;
         QCString direction = extractDirection(docsWithoutDir);
-        paramDocs+=" \\ilinebr @param"+direction+" "+a.name+" "+docsWithoutDir;
+        QCString name = a.name;
+        if (name.isEmpty())
+        {
+          name = "-";
+        }
+        paramDocs+=" \\ilinebr @param"+direction+" "+name+" "+docsWithoutDir;
       }
     }
   }

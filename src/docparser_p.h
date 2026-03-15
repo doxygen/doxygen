@@ -75,6 +75,7 @@ struct DocParserContext
   bool         hasReturnCommand = false;
   StringMultiSet retvalsFound;
   StringMultiSet paramsFound;
+  int          paramPosition = 0;
   const MemberDef *  memberDef = nullptr;
   bool         isExample = false;
   QCString     exampleName;

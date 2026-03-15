@@ -220,12 +220,14 @@ void DocParser::checkArgumentName()
   if (al.empty()) return; // no argument list
 
   static const reg::Ex re(R"(\$?\w+\.*)");
+  static const reg::Ex re_digits(R"(\d+)");
   reg::Iterator it(name,re);
   reg::Iterator end;
   for (; it!=end ; ++it)
   {
     const auto &match = *it;
     QCString aName=match.str();
+    int number = reg::match(aName.view(),re_digits) ? std::atoi(aName.data()) : 0;
     if (lang==SrcLangExt::Fortran) aName=aName.lower();
     //printf("aName='%s'\n",qPrint(aName));
     bool found=FALSE;
@@ -236,12 +238,23 @@ void DocParser::checkArgumentName()
       argName=argName.stripWhiteSpace();
       //printf("argName='%s' aName=%s\n",qPrint(argName),qPrint(aName));
       if (argName.endsWith("...")) argName=argName.left(argName.length()-3);
-      if (aName==argName)
+      bool sameName = aName==argName;
+      bool samePosition = context.paramPosition==number;
+      if (samePosition || sameName) // @param <number> or @param name
       {
+        if (!sameName) // replace positional argument with real name or -
+        {
+          context.token->name = argName.isEmpty() ? "-" : argName;
+        }
 	context.paramsFound.insert(aName.str());
-	found=TRUE;
+	found=true;
 	break;
       }
+      else if (aName==".") // replace . by - in the output
+      {
+        context.token->name = "-";
+      }
+      context.paramPosition++;
     }
     if (!found)
     {
@@ -261,11 +274,23 @@ void DocParser::checkArgumentName()
         docLine = context.memberDef->getDefLine();
       }
       QCString alStr = argListToString(al);
-      warn_doc_error(docFile,docLine,
-	  "argument '{}' of command @param "
-	  "is not found in the argument list of {}{}{}{}",
-	  aName, scope, context.memberDef->name(),
-	  alStr, inheritedFrom);
+      if (number>0)
+      {
+        warn_doc_error(docFile,docLine,
+            "positional argument '{}' of command @param "
+            "is outside of range 1..{} for {}{}{}{}",
+            number, al.size(), scope, context.memberDef->name(),
+            alStr, inheritedFrom);
+        context.token->name = "-";
+      }
+      else
+      {
+        warn_doc_error(docFile,docLine,
+            "argument '{}' of command @param "
+            "is not found in the argument list of {}{}{}{}",
+            aName, scope, context.memberDef->name(),
+            alStr, inheritedFrom);
+      }
     }
   }
 }
@@ -304,6 +329,7 @@ void DocParser::checkUnOrMultipleDocumentedParams()
     if (!al.empty())
     {
       ArgumentList undocParams;
+      int position = 1;
       for (const Argument &a: al)
       {
         QCString argName = context.memberDef->isDefine() ? a.type : a.name;
@@ -322,6 +348,10 @@ void DocParser::checkUnOrMultipleDocumentedParams()
         else if (!argName.isEmpty())
         {
           size_t count = context.paramsFound.count(argName.str());
+          if (count==0)
+          {
+            count = context.paramsFound.count(std::to_string(position));
+          }
           if (count==0 && a.docs.isEmpty())
           {
             undocParams.push_back(a);
@@ -334,6 +364,7 @@ void DocParser::checkUnOrMultipleDocumentedParams()
                            aName, context.memberDef->qualifiedName());
           }
         }
+        position++;
       }
       if (!undocParams.empty() && Config_getBool(WARN_IF_INCOMPLETE_DOC))
       {
