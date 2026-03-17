@@ -72,7 +72,7 @@ static const StringUnorderedSet g_plantumlEngine {
   "salt", "math", "latex", "gantt", "mindmap",
   "wbs", "yaml", "creole", "json", "flow",
   "board", "git", "hcl", "regex", "ebnf",
-  "files", "chen", "chronology"
+  "project", "files", "chen", "chronology"
 };
 
 //---------------------------------------------------------------------------
