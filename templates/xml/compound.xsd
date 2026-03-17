@@ -1196,6 +1196,7 @@
       <xsd:enumeration value="salt"/>
       <xsd:enumeration value="math"/>
       <xsd:enumeration value="latex"/>
+      <xsd:enumeration value="chart"/>
       <xsd:enumeration value="gantt"/>
       <xsd:enumeration value="mindmap"/>
       <xsd:enumeration value="wbs"/>
