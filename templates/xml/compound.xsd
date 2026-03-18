@@ -1213,6 +1213,7 @@
       <xsd:enumeration value="nwdiag"/>
       <xsd:enumeration value="packetdiag"/>
       <xsd:enumeration value="project"/>
+      <xsd:enumeration value="sprites"/>
     </xsd:restriction>
   </xsd:simpleType>
 
