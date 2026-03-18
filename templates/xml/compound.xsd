@@ -1209,6 +1209,11 @@
       <xsd:enumeration value="regex"/>
       <xsd:enumeration value="ebnf"/>
       <xsd:enumeration value="files"/>
+      <xsd:enumeration value="chart"/>
+      <xsd:enumeration value="nwdiag"/>
+      <xsd:enumeration value="packetdiag"/>
+      <xsd:enumeration value="project"/>
+      <xsd:enumeration value="sprites"/>
     </xsd:restriction>
   </xsd:simpleType>
 
