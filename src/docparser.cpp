@@ -216,6 +216,7 @@ void DocParser::checkArgumentName()
 	                 context.memberDef->argumentList() :
                          context.memberDef->declArgumentList();
   SrcLangExt lang      = context.memberDef->getLanguage();
+  context.numParameters = static_cast<int>(al.size());
   //printf("isDocsForDefinition()=%d\n",context.memberDef->isDocsForDefinition());
   if (al.empty()) return; // no argument list
 
@@ -231,6 +232,7 @@ void DocParser::checkArgumentName()
     if (lang==SrcLangExt::Fortran) aName=aName.lower();
     //printf("aName='%s'\n",qPrint(aName));
     bool found=FALSE;
+    int position=1;
     for (const Argument &a : al)
     {
       QCString argName = context.memberDef->isDefine() ? a.type : a.name;
@@ -239,7 +241,7 @@ void DocParser::checkArgumentName()
       //printf("argName='%s' aName=%s\n",qPrint(argName),qPrint(aName));
       if (argName.endsWith("...")) argName=argName.left(argName.length()-3);
       bool sameName = aName==argName;
-      bool samePosition = context.paramPosition==number;
+      bool samePosition = position==number;
       if (samePosition || sameName) // @param <number> or @param name
       {
         if (!sameName) // replace positional argument with real name or -
@@ -254,7 +256,7 @@ void DocParser::checkArgumentName()
       {
         context.token->name = "-";
       }
-      context.paramPosition++;
+      position++;
     }
     if (!found)
     {
@@ -278,7 +280,7 @@ void DocParser::checkArgumentName()
       {
         warn_doc_error(docFile,docLine,
             "positional argument '{}' of command @param "
-            "is outside of range 1..{} for {}{}{}{}",
+            "is larger than the number of parameters ({}) for {}{}{}{}",
             number, al.size(), scope, context.memberDef->name(),
             alStr, inheritedFrom);
         context.token->name = "-";
@@ -347,16 +349,20 @@ void DocParser::checkUnOrMultipleDocumentedParams()
         }
         else if (!argName.isEmpty())
         {
-          size_t count = context.paramsFound.count(argName.str());
-          if (count==0)
-          {
-            count = context.paramsFound.count(std::to_string(position));
-          }
-          if (count==0 && a.docs.isEmpty())
+          size_t count_named      = context.paramsFound.count(argName.str());
+          size_t count_positional = context.paramsFound.count(std::to_string(position));
+          if (count_named==0 && count_positional==0 && a.docs.isEmpty())
           {
             undocParams.push_back(a);
           }
-          else if (count>1 && Config_getBool(WARN_IF_DOC_ERROR))
+          else if (count_named==1 && count_positional==1 && Config_getBool(WARN_IF_DOC_ERROR))
+          {
+            warn_doc_error(context.memberDef->docFile(),
+                           context.memberDef->docLine(),
+                           "argument {} from the argument list of {} has both named and positional @param documentation sections",
+                           aName, context.memberDef->qualifiedName());
+          }
+          else if (count_named+count_positional>1 && Config_getBool(WARN_IF_DOC_ERROR))
           {
             warn_doc_error(context.memberDef->docFile(),
                            context.memberDef->docLine(),
@@ -385,6 +391,14 @@ void DocParser::checkUnOrMultipleDocumentedParams()
           errMsg+="  parameter '"+argName+"'";
         }
         warn_incomplete_doc(context.memberDef->docFile(), context.memberDef->docLine(), "{}", errMsg);
+      }
+
+      if (Config_getBool(WARN_IF_DOC_ERROR) && context.paramPosition-1 > context.numParameters)
+      {
+        warn_doc_error(context.memberDef->docFile(),
+                       context.memberDef->docLine(),
+                       "too many @param commands for function {}. Found {} while function has {} parameter{}",
+                       context.memberDef->qualifiedName(), context.paramPosition-1, context.numParameters, context.numParameters!=1?"s":"");
       }
     }
     else
@@ -2127,6 +2141,16 @@ IDocNodeASTPtr validatingParseDoc(IDocParser &parserIntf,
   parser->context.paramsFound.clear();
   parser->context.markdownSupport = options.markdownSupport();
   parser->context.autolinkSupport = options.autolinkSupport();
+  if (md)
+  {
+    const ArgumentList &al=md->isDocsForDefinition() ? md->argumentList() : md->declArgumentList();
+    parser->context.numParameters = static_cast<int>(al.size());
+  }
+  else
+  {
+    parser->context.numParameters = 0;
+  }
+  parser->context.paramPosition = 1;
 
   //printf("Starting comment block at %s:%d\n",qPrint(parser->context.fileName),startLine);
   parser->tokenizer.setFileName(fileName);

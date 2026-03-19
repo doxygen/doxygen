@@ -3251,29 +3251,29 @@ Token DocParamList::parse(const QCString &cmdName)
   auto ns = AutoNodeStack(parser(),thisVariant());
   DocPara *par=nullptr;
   QCString saveCmdName = cmdName;
+  DocParserContext &context = parser()->context;
+  DocTokenizer &tokenizer = parser()->tokenizer;
 
-  Token tok=parser()->tokenizer.lex();
+  Token tok=tokenizer.lex();
   if (!tok.is(TokenRetval::TK_WHITESPACE))
   {
-    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"expected whitespace after \\{} command",
+    warn_doc_error(context.fileName,tokenizer.getLineNr(),"expected whitespace after \\{} command",
         saveCmdName);
     retval = Token::make_RetVal_EndParBlock();
     goto endparamlist;
   }
-  parser()->tokenizer.setStateParam();
-  tok=parser()->tokenizer.lex();
-  parser()->context.paramPosition=1;
+  tokenizer.setStateParam();
+  tok=tokenizer.lex();
   while (tok.is(TokenRetval::TK_WORD)) /* there is a parameter name */
   {
     if (m_type==DocParamSect::Param)
     {
-      int typeSeparator = parser()->context.token->name.find('#'); // explicit type position
+      int typeSeparator = context.token->name.find('#'); // explicit type position
       if (typeSeparator!=-1)
       {
-        parser()->handleParameterType(thisVariant(),m_paramTypes,parser()->context.token->name.left(typeSeparator));
-        parser()->context.token->name = parser()->context.token->name.mid(typeSeparator+1);
-        parser()->context.hasParamCommand=TRUE;
-        parser()->checkArgumentName();
+        parser()->handleParameterType(thisVariant(),m_paramTypes,context.token->name.left(typeSeparator));
+        context.token->name = context.token->name.mid(typeSeparator+1);
+        context.hasParamCommand=TRUE;
         if (parent() && std::holds_alternative<DocParamSect>(*parent()))
         {
           std::get<DocParamSect>(*parent()).m_hasTypeSpecifier=true;
@@ -3281,24 +3281,24 @@ Token DocParamList::parse(const QCString &cmdName)
       }
       else
       {
-        parser()->context.hasParamCommand=TRUE;
-        parser()->checkArgumentName();
+        context.hasParamCommand=TRUE;
       }
+      parser()->checkArgumentName();
     }
     else if (m_type==DocParamSect::RetVal)
     {
-      parser()->context.hasReturnCommand=TRUE;
+      context.hasReturnCommand=TRUE;
       parser()->checkRetvalName();
     }
-    parser()->context.inSeeBlock=true;
+    context.inSeeBlock=true;
     parser()->handleLinkedWord(thisVariant(),m_params,true);
-    parser()->context.inSeeBlock=false;
-    tok=parser()->tokenizer.lex();
+    context.inSeeBlock=false;
+    tok=tokenizer.lex();
   }
-  parser()->tokenizer.setStatePara();
+  tokenizer.setStatePara();
   if (tok.is_any_of(TokenRetval::TK_NONE,TokenRetval::TK_EOF)) // premature end of comment
   {
-    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"unexpected end of comment block while parsing the "
+    warn_doc_error(context.fileName,tokenizer.getLineNr(),"unexpected end of comment block while parsing the "
         "argument of command {}",saveCmdName);
     retval = Token::make_RetVal_EndParBlock();
     goto endparamlist;
@@ -3307,7 +3307,7 @@ Token DocParamList::parse(const QCString &cmdName)
   {
     if (!tok.is(TokenRetval::TK_NEWPARA)) /* empty param description */
     {
-      warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"unexpected token {} in comment block while parsing the "
+      warn_doc_error(context.fileName,tokenizer.getLineNr(),"unexpected token {} in comment block while parsing the "
           "argument of command {}",tok.to_string(),saveCmdName);
     }
     retval = Token::make_RetVal_EndParBlock();
@@ -4711,6 +4711,7 @@ Token DocPara::handleCommand(char cmdChar, const QCString &cmdName)
       break;
     case CommandType::CMD_PARAM:
       retval = handleParamSection(cmdName,DocParamSect::Param,FALSE,parser()->context.token->paramDir);
+      parser()->context.paramPosition++;
       break;
     case CommandType::CMD_TPARAM:
       retval = handleParamSection(cmdName,DocParamSect::TemplateParam,FALSE,parser()->context.token->paramDir);
