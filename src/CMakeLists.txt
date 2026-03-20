@@ -258,6 +258,7 @@ add_library(doxymain STATIC
     dotincldepgraph.cpp
     dotlegendgraph.cpp
     dotnode.cpp
+    dotprocess.cpp
     dotrunner.cpp
     doxygen.cpp
     eclipsehelp.cpp
