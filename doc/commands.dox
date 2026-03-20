@@ -2168,7 +2168,7 @@ class Derived : public Base
   \endcode
 
   Alternatively, a minus sign (-) can be used as placeholder
-  for the name of an unamed parameter.
+  for the name of an unnamed parameter.
   \code
 /** Function docs.
  *  \param - First parameter
