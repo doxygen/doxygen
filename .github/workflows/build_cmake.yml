@@ -164,7 +164,7 @@ jobs:
       if: startsWith(matrix.config.os,'ubuntu-24')
 
     - name: Install MikTeX (Windows)
-      uses: nick-invision/retry@v3
+      uses: nick-invision/retry@v4
       with:
         timeout_minutes: 15
         max_attempts: 5
