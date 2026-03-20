@@ -61,6 +61,7 @@
 #include "regex.h"
 #include "textstream.h"
 #include "moduledef.h"
+#include "dotgraph.h"
 
 //#define DEBUGFLOW
 #define theTranslator_vhdlType theTranslator->trVhdlType
@@ -3082,15 +3083,14 @@ void FlowChart::createSVG()
 
 void FlowChart::startDot(TextStream &t)
 {
-  t << " digraph G { \n";
-  t << "rankdir=TB \n";
+  DotGraph::writeGraphHeader(t, "G", Config_getString(DOT_RANKDIR_VHDL));
   t << "concentrate=true\n";
   t << "stylesheet=\"doxygen.css\"\n";
 }
 
 void FlowChart::endDot(TextStream &t)
 {
-  t << " } \n";
+  DotGraph::writeGraphFooter(t);
 }
 
 void FlowChart::writeFlowChart()
