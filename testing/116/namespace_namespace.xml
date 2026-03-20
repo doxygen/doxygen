@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="namespace_namespace" kind="namespace" language="C++">
+    <compoundname>Namespace</compoundname>
+    <innerclass refid="class_namespace_1_1_class" prot="public">Namespace::Class</innerclass>
+    <briefdescription>
+      <para><ref refid="namespace_namespace" kindref="compound">Namespace</ref> brief (in 116_tagfile.cpp). </para>
+    </briefdescription>
+    <detaileddescription>
+      <para><ref refid="namespace_namespace" kindref="compound">Namespace</ref> description (in 116_tagfile.cpp). </para>
+    </detaileddescription>
+    <location file="116_tagfile.cpp" line="151" column="1"/>
+  </compounddef>
+</doxygen>
