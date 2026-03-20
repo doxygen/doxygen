@@ -57,6 +57,7 @@ struct FTVNode
       separateIndex(sepIndex), addToNavIndex(navIndex), def(df) {}
   int computeTreeDepth(int level) const;
   int numNodesAtLevel(int level,int maxLevel) const;
+  void sortChildren();
   bool isLast;
   bool isDir;
   QCString ref;
@@ -100,6 +101,18 @@ int FTVNode::numNodesAtLevel(int level,int maxLevel) const
   return num;
 }
 
+void FTVNode::sortChildren()
+{
+  std::sort(children.begin(), children.end(),
+            [](const FTVNodePtr &a, const FTVNodePtr &b) {
+              return a->name < b->name;
+            });
+  for (auto &child : children)
+  {
+    child->sortChildren();
+  }
+}
+
 //----------------------------------------------------------------------------
 
 struct FTVHelp::Private
@@ -111,7 +124,20 @@ struct FTVHelp::Private
 
   void generateTree(TextStream &t,const FTVNodes &nl,int level,int maxLevel,int &index);
   void generateLink(TextStream &t,const FTVNodePtr &n);
+  void sortTree();
 };
+
+void FTVHelp::Private::sortTree()
+{
+  std::sort(indentNodes[0].begin(), indentNodes[0].end(),
+            [](const FTVNodePtr &a, const FTVNodePtr &b) {
+              return a->name < b->name;
+            });
+  for (auto &node : indentNodes[0])
+  {
+    node->sortChildren();
+  }
+}
 
 /*! Constructs an ftv help object.
  *  The object has to be \link initialize() initialized\endlink before it can
@@ -873,6 +899,11 @@ void FTVHelp::generateTreeViewScripts()
 {
   QCString htmlOutput = Config_getString(HTML_OUTPUT);
 
+  if (Config_getBool(SORT_NAVIGATION_LISTS))
+  {
+    p->sortTree();
+  }
+
   // generate navtree.js & navtreeindex.js
   generateJSNavTree(p->indentNodes[0]);
 }
@@ -880,7 +911,13 @@ void FTVHelp::generateTreeViewScripts()
 // write tree inside page
 void FTVHelp::generateTreeViewInline(TextStream &t)
 {
+  if (Config_getBool(SORT_NAVIGATION_LISTS))
+  {
+    p->sortTree();
+  }
+
   bool dynamicSections = Config_getBool(HTML_DYNAMIC_SECTIONS);
+
   int preferredNumEntries = Config_getInt(HTML_INDEX_NUM_ENTRIES);
   t << "<div class=\"directory\">\n";
   int d=1, depth=1;
