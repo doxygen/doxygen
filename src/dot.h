@@ -18,7 +18,6 @@
 
 #include <map>
 
-#include "threadpool.h"
 #include "qcstring.h"
 #include "dotgraph.h" // only for GraphOutputFormat
 #include "dotfilepatcher.h"
@@ -26,16 +25,16 @@
 #include "doxygen.h"
 #include "construct.h"
 
-class DotRunner;
-class DotRunnerQueue;
 class TextStream;
 
-/** Singleton that manages parallel dot invocations and patching files for embedding image maps */
+/** Singleton that manages dot invocations and patching files for embedding image maps */
 class DotManager
 {
   public:
     static DotManager *instance();
-    DotRunner*      createRunner(const QCString& absDotName, const QCString& md5Hash);
+    void addJob(const QCString &absPath, const QCString &relDotName, const QCString &format,
+                const QCString &md5Hash, bool cleanUp,
+                const QCString &srcFile, int srcLine);
     DotFilePatcher *createFilePatcher(const QCString &fileName);
     bool run();
 
@@ -44,9 +43,8 @@ class DotManager
     virtual ~DotManager();
     NON_COPYABLE(DotManager)
 
-    std::map<std::string, std::unique_ptr<DotRunner> > m_runners;
+    DotRunner                                          m_runner;
     std::map<std::string, DotFilePatcher>              m_filePatchers;
-    ThreadPool                                         m_workers;
 };
 
 void writeDotGraphFromFile(const QCString &inFile,const QCString &outDir,
