@@ -228,7 +228,7 @@ void DocParser::checkArgumentName()
   {
     const auto &match = *it;
     QCString aName=match.str();
-    int number = reg::match(aName.view(),re_digits) ? std::atoi(aName.data()) : 0;
+    int number = reg::match(aName.view(),re_digits) ? std::atoi(aName.data()) : -1;
     if (lang==SrcLangExt::Fortran) aName=aName.lower();
     //printf("aName='%s'\n",qPrint(aName));
     bool found=FALSE;
@@ -276,7 +276,16 @@ void DocParser::checkArgumentName()
         docLine = context.memberDef->getDefLine();
       }
       QCString alStr = argListToString(al);
-      if (number>0)
+      if (number==0)
+      {
+        warn_doc_error(docFile,docLine,
+            "positional argument with value '0' of command @param "
+            "is invalid, first parameter has index '1' for {}{}{}{}",
+            scope, context.memberDef->name(),
+            alStr, inheritedFrom);
+        context.token->name = "-";
+      }
+      else if (number>0)
       {
         warn_doc_error(docFile,docLine,
             "positional argument '{}' of command @param "

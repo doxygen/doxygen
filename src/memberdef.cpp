@@ -6187,6 +6187,7 @@ static void transferArgumentDocumentation(ArgumentList &decAl,ArgumentList &defA
     {
       defA.docs = decA.docs;
     }
+    //printf("transferArgumentDocumentation(%s<->%s)\n",qPrint(decA.name),qPrint(defA.name));
     if (Config_getBool(RESOLVE_UNNAMED_PARAMS))
     {
       if (decA.name.isEmpty() && !defA.name.isEmpty())
@@ -6231,20 +6232,36 @@ void combineDeclarationAndDefinition(MemberDefMutable *mdec,MemberDefMutable *md
       // first merge argument documentation
       transferArgumentDocumentation(mdecAl,mdefAl);
 
-      /* copy documentation between function definition and declaration */
-      if (!mdec->briefDescription().isEmpty())
+      // copy brief description between definition and declaration
+      QCString mdefBrief     = mdef->briefDescription();
+      QCString mdecBrief     = mdec->briefDescription();
+      QCString mdefBriefFile = mdef->briefFile();
+      QCString mdecBriefFile = mdec->briefFile();
+      int mdefBriefLine      = mdef->briefLine();
+      int mdecBriefLine      = mdec->briefLine();
+      if (!mdecBrief.isEmpty())
       {
-        mdef->setBriefDescription(mdec->briefDescription(),mdec->briefFile(),mdec->briefLine());
+        mdef->setBriefDescription(mdecBrief,mdecBriefFile,mdecBriefLine);
       }
-      else if (!mdef->briefDescription().isEmpty())
+      if (!mdefBrief.isEmpty())
       {
-        mdec->setBriefDescription(mdef->briefDescription(),mdef->briefFile(),mdef->briefLine());
+        mdec->setBriefDescription(mdefBrief,mdefBriefFile,mdefBriefLine);
       }
-      if (!mdef->documentation().isEmpty())
+
+      // copy detailed description between definition and declaration
+      QCString mdefDocs   = mdef->documentation();
+      QCString mdecDocs   = mdec->documentation();
+      QCString mdefFile   = mdef->docFile();
+      QCString mdecFile   = mdec->docFile();
+      int mdefLine        = mdef->docLine();
+      int mdecLine        = mdec->docLine();
+      bool mdefDocsForDef = mdef->isDocsForDefinition();
+      bool mdecDocsForDef = mdec->isDocsForDefinition();
+      if (!mdefDocs.isEmpty())
       {
         //printf("transferring docs mdef->mdec (%s->%s)\n",mdef->argsString(),mdec->argsString());
-        mdec->setDocumentation(mdef->documentation(),mdef->docFile(),mdef->docLine());
-        mdec->setDocsForDefinition(mdef->isDocsForDefinition());
+        mdec->setDocumentation(mdefDocs,mdefFile,mdefLine);
+        mdec->setDocsForDefinition(mdefDocsForDef);
         if (mdefAl.hasParameters())
         {
           auto mdefAlComb = stringToArgumentList(mdef->getLanguage(),mdef->argsString());
@@ -6252,11 +6269,11 @@ void combineDeclarationAndDefinition(MemberDefMutable *mdec,MemberDefMutable *md
           mdec->moveArgumentList(std::move(mdefAlComb));
         }
       }
-      else if (!mdec->documentation().isEmpty())
+      if (!mdecDocs.isEmpty())
       {
         //printf("transferring docs mdec->mdef (%s->%s)\n",mdec->argsString(),mdef->argsString());
-        mdef->setDocumentation(mdec->documentation(),mdec->docFile(),mdec->docLine());
-        mdef->setDocsForDefinition(mdec->isDocsForDefinition());
+        mdef->setDocumentation(mdecDocs,mdecFile,mdecLine);
+        mdef->setDocsForDefinition(mdecDocsForDef);
         if (mdecAl.hasParameters())
         {
           auto mdecAlComb = stringToArgumentList(mdec->getLanguage(),mdec->argsString());
@@ -6264,14 +6281,23 @@ void combineDeclarationAndDefinition(MemberDefMutable *mdec,MemberDefMutable *md
           mdef->moveDeclArgumentList(std::move(mdecAlComb));
         }
       }
-      if (!mdef->inbodyDocumentation().isEmpty())
+
+      // copy inbody documentation between definition and declaration
+      QCString mdefInbodyDocs = mdef->inbodyDocumentation();
+      QCString mdecInbodyDocs = mdec->inbodyDocumentation();
+      QCString mdefInbodyFile = mdef->inbodyFile();
+      QCString mdecInbodyFile = mdec->inbodyFile();
+      int mdefInbodyLine      = mdef->inbodyLine();
+      int mdecInbodyLine      = mdec->inbodyLine();
+      if (!mdefInbodyDocs.isEmpty())
       {
-        mdec->setInbodyDocumentation(mdef->inbodyDocumentation(),mdef->inbodyFile(),mdef->inbodyLine());
+        mdec->setInbodyDocumentation(mdefInbodyDocs,mdefInbodyFile,mdefInbodyLine);
       }
-      else if (!mdec->inbodyDocumentation().isEmpty())
+      if (!mdecInbodyDocs.isEmpty())
       {
-        mdef->setInbodyDocumentation(mdec->inbodyDocumentation(),mdec->inbodyFile(),mdec->inbodyLine());
+        mdef->setInbodyDocumentation(mdecInbodyDocs,mdecInbodyFile,mdecInbodyLine);
       }
+
       if (mdec->getStartBodyLine()!=-1 && mdef->getStartBodyLine()==-1)
       {
         //printf("body mdec->mdef %d-%d\n",mdec->getStartBodyLine(),mdef->getEndBodyLine());
