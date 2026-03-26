@@ -4248,6 +4248,27 @@ to be found in the default search path.
 ]]>
       </docs>
     </option>
+    <option type='string' id='MERMAID_PATH' format='filedir' defval=''>
+      <docs>
+<![CDATA[
+ When using Mermaid diagrams with CLI rendering, the \c MERMAID_PATH tag should be used to
+ specify the directory where the \c mmdc (Mermaid CLI) executable can be found.
+ If left blank, CLI-based rendering is disabled. For HTML output, client-side rendering
+ via JavaScript is used by default and does not require \c mmdc. For LaTeX/PDF output,
+ \c mmdc is required to pre-generate images.
+ Doxygen will generate a warning when CLI rendering is needed but \c mmdc is not available.
+]]>
+      </docs>
+    </option>
+    <option type='string' id='MERMAID_CONFIG_FILE' format='file' defval=''>
+      <docs>
+<![CDATA[
+ When using Mermaid diagrams, the \c MERMAID_CONFIG_FILE tag can be used to specify a
+ JSON configuration file for the Mermaid CLI tool (\c mmdc). This file can contain theme
+ settings and other Mermaid configuration options.
+]]>
+      </docs>
+    </option>
     <option type='int' id='DOT_GRAPH_MAX_NODES' minval='0' maxval='10000' defval='50' depends='HAVE_DOT'>
       <docs>
 <![CDATA[

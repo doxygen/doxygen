@@ -49,6 +49,7 @@ static std::map< std::string, Debug::DebugMask > s_labels =
   { "sections",           Debug::Sections           },
   { "stderr",             Debug::Stderr             },
   { "layout",             Debug::Layout             },
+  { "mermaid",            Debug::Mermaid            },
   { "lex",                Debug::Lex                },
   { "lex:code",           Debug::Lex_code           },
   { "lex:commentcnv",     Debug::Lex_commentcnv     },
