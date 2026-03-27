@@ -4269,6 +4269,15 @@ to be found in the default search path.
 ]]>
       </docs>
     </option>
+    <option type='list' id='MERMAIDFILE_DIRS' format='dir'>
+      <docs>
+<![CDATA[
+ The \c MERMAIDFILE_DIRS tag can be used to specify one or more directories that
+ contain Mermaid files that are included in the documentation (see the
+ \ref cmdmermaidfile "\\mermaidfile" command).
+]]>
+      </docs>
+    </option>
     <option type='int' id='DOT_GRAPH_MAX_NODES' minval='0' maxval='10000' defval='50' depends='HAVE_DOT'>
       <docs>
 <![CDATA[

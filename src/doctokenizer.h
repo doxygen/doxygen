@@ -243,8 +243,10 @@ class DocTokenizer
     void startAutoList();
     void endAutoList();
     void setStatePlantUML();
+    void setStateMermaid();
     void setStateSetScope();
     void setStatePlantUMLOpt();
+    void setStateMermaidOpt();
     void setStateOptions();
     void setStateBlock();
     void setStateEmoji();

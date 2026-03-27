@@ -419,21 +419,22 @@ QCString Markdown::Private::isBlockCommand(std::string_view data,size_t offset)
   // table mapping a block start command to a function that can return the matching end block string
   static const std::unordered_map<std::string,EndBlockFunc> blockNames =
   {
-    { "dot",         getEndBlock   },
-    { "code",        getEndCode    },
-    { "icode",       getEndBlock   },
-    { "msc",         getEndBlock   },
-    { "verbatim",    getEndBlock   },
-    { "iverbatim",   getEndBlock   },
-    { "iliteral",    getEndBlock   },
-    { "latexonly",   getEndBlock   },
-    { "htmlonly",    getEndBlock   },
-    { "xmlonly",     getEndBlock   },
-    { "rtfonly",     getEndBlock   },
-    { "manonly",     getEndBlock   },
-    { "docbookonly", getEndBlock   },
-    { "startuml",    getEndUml     },
-    { "f",           getEndFormula }
+    { "dot",          getEndBlock   },
+    { "code",         getEndCode    },
+    { "icode",        getEndBlock   },
+    { "msc",          getEndBlock   },
+    { "verbatim",     getEndBlock   },
+    { "iverbatim",    getEndBlock   },
+    { "iliteral",     getEndBlock   },
+    { "latexonly",    getEndBlock   },
+    { "htmlonly",     getEndBlock   },
+    { "xmlonly",      getEndBlock   },
+    { "rtfonly",      getEndBlock   },
+    { "manonly",      getEndBlock   },
+    { "docbookonly",  getEndBlock   },
+    { "startuml",     getEndUml     },
+    { "startmermaid", getEndBlock   },
+    { "f",            getEndFormula }
   };
 
   const size_t size = data.size();

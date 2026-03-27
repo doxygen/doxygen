@@ -107,6 +107,7 @@ class Doxygen
     static FileNameLinkedMap        *mscFileNameLinkedMap;
     static FileNameLinkedMap        *diaFileNameLinkedMap;
     static FileNameLinkedMap        *plantUmlFileNameLinkedMap;
+    static FileNameLinkedMap        *mermaidFileNameLinkedMap;
     static MemberNameLinkedMap      *memberNameLinkedMap;
     static MemberNameLinkedMap      *functionNameLinkedMap;
     static NamespaceAliasInfoMap     namespaceAliasMap;

@@ -33,6 +33,7 @@
 #include "vhdldocgen.h"
 #include "doctokenizer.h"
 #include "plantuml.h"
+#include "mermaid.h"
 #include "language.h"
 #include "datetime.h"
 #include "trace.h"
@@ -1276,6 +1277,46 @@ bool DocPlantUmlFile::parse()
   {
     warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"included uml file '{}' is not found "
            "in any of the paths specified via PLANTUMLFILE_DIRS!",p->name);
+  }
+  return ok;
+}
+
+//---------------------------------------------------------------------------
+
+DocMermaidFile::DocMermaidFile(DocParser *parser,DocNodeVariant *parent,const QCString &name,const QCString &context,
+                       const QCString &srcFile,int srcLine) :
+  DocDiagramFileBase(parser,parent,name,context,srcFile,srcLine)
+{
+  p->relPath = parser->context.relPath;
+}
+
+bool DocMermaidFile::parse()
+{
+  bool ok = false;
+  parser()->defaultHandleTitleAndSize(CommandType::CMD_MERMAIDFILE,thisVariant(),children(),p->width,p->height);
+
+  bool ambig = false;
+  FileDef *fd = findFileDef(Doxygen::mermaidFileNameLinkedMap,p->name,ambig);
+  if (fd==nullptr && !p->name.endsWith(".mmd")) // try with .mmd extension as well
+  {
+    fd = findFileDef(Doxygen::mermaidFileNameLinkedMap,p->name+".mmd",ambig);
+  }
+  if (fd)
+  {
+    p->file = fd->absFilePath();
+    ok = true;
+    if (ambig)
+    {
+      warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"included mermaid file name '{}' is ambiguous.\n"
+           "Possible candidates:\n{}",p->name,
+           showFileDefMatches(Doxygen::mermaidFileNameLinkedMap,p->name)
+          );
+    }
+  }
+  else
+  {
+    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"included mermaid file '{}' is not found "
+           "in any of the paths specified via MERMAIDFILE_DIRS!",p->name);
   }
   return ok;
 }
@@ -4690,6 +4731,58 @@ Token DocPara::handleCommand(char cmdChar, const QCString &cmdName)
         parser()->tokenizer.setStatePara();
       }
       break;
+    case CommandType::CMD_STARTMERMAID:
+      {
+        parser()->tokenizer.setStateMermaidOpt();
+        parser()->tokenizer.lex();
+        QCString fullMatch = parser()->context.token->sectionId;
+        QCString sectionId = "";
+        int idx = fullMatch.find('{');
+        int idxEnd = fullMatch.find("}",idx+1);
+        if (idx != -1) // options present
+        {
+           sectionId = fullMatch.mid(idx+1,idxEnd-idx-1).stripWhiteSpace();
+        }
+        else
+        {
+          sectionId = parser()->context.token->sectionId;
+        }
+
+        if (sectionId.isEmpty())
+        {
+          parser()->tokenizer.setStateMermaidOpt();
+          retval = parser()->tokenizer.lex();
+          assert(retval.is(TokenRetval::RetVal_OK));
+
+          sectionId = parser()->context.token->sectionId;
+          sectionId = sectionId.stripWhiteSpace();
+        }
+
+        QCString mermaidFile(sectionId);
+        children().append<DocVerbatim>(parser(),thisVariant(),
+                                       parser()->context.context,
+                                       parser()->context.token->verb,
+                                       DocVerbatim::Mermaid,
+                                       FALSE,mermaidFile);
+        DocVerbatim *dv = children().get_last<DocVerbatim>();
+        parser()->tokenizer.setStatePara();
+        QCString width,height;
+        parser()->defaultHandleTitleAndSize(CommandType::CMD_STARTMERMAID,&children().back(),dv->children(),width,height);
+        parser()->tokenizer.setStateMermaid();
+        retval = parser()->tokenizer.lex();
+        int line = 0;
+        QCString trimmedVerb = stripLeadingAndTrailingEmptyLines(parser()->context.token->verb,line);
+        dv->setText(trimmedVerb);
+        dv->setWidth(width);
+        dv->setHeight(height);
+        dv->setLocation(parser()->context.fileName,parser()->tokenizer.getLineNr());
+        if (retval.is_any_of(TokenRetval::TK_NONE,TokenRetval::TK_EOF))
+        {
+          warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"startmermaid section ended without end marker");
+        }
+        parser()->tokenizer.setStatePara();
+      }
+      break;
     case CommandType::CMD_ENDPARBLOCK:
       retval = Token::make_RetVal_EndParBlock();
       break;
@@ -4708,6 +4801,7 @@ Token DocPara::handleCommand(char cmdChar, const QCString &cmdName)
     case CommandType::CMD_ENDDOT:
     case CommandType::CMD_ENDMSC:
     case CommandType::CMD_ENDUML:
+    case CommandType::CMD_ENDMERMAID:
       warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"unexpected command {}",parser()->context.token->name);
       break;
     case CommandType::CMD_PARAM:
@@ -4841,6 +4935,9 @@ Token DocPara::handleCommand(char cmdChar, const QCString &cmdName)
       break;
     case CommandType::CMD_PLANTUMLFILE:
       handleFile<DocPlantUmlFile>(cmdName);
+      break;
+    case CommandType::CMD_MERMAIDFILE:
+      handleFile<DocMermaidFile>(cmdName);
       break;
     case CommandType::CMD_LINK:
       handleLink(cmdName,FALSE);
