@@ -4269,6 +4269,42 @@ to be found in the default search path.
 ]]>
       </docs>
     </option>
+    <option type='enum' id='MERMAID_RENDER_MODE' defval='AUTO'>
+      <docs>
+<![CDATA[
+ The \c MERMAID_RENDER_MODE tag selects how Mermaid diagrams are rendered.
+ Possible values are: \c CLI, \c CLIENT_SIDE, and \c AUTO.
+ - \c CLI: Use the \c mmdc tool to pre-generate images (requires Node.js and
+   \c @mermaid-js/mermaid-cli). Works for all output formats.
+ - \c CLIENT_SIDE: Embed \c mermaid.js in HTML output for client-side rendering.
+   Does not require \c mmdc but only works for HTML output.
+ - \c AUTO (default): Use client-side rendering for HTML and \c mmdc for
+   LaTeX/PDF and other formats. If \c MERMAID_PATH is not set, non-HTML
+   diagrams will produce a warning.
+]]>
+      </docs>
+      <value name='AUTO'/>
+      <value name='CLI'/>
+      <value name='CLIENT_SIDE'/>
+    </option>
+    <option type='string' id='MERMAID_JS_URL' format='string'
+            defval='https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs'>
+      <docs>
+<![CDATA[
+ The \c MERMAID_JS_URL tag specifies the URL to load \c mermaid.js from when using
+ client-side rendering (\c MERMAID_RENDER_MODE is \c CLIENT_SIDE or \c AUTO).
+ The default points to the latest Mermaid v11 release on the jsDelivr CDN.
+ \par Examples:
+ - Latest v11 (default): \c 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs'
+ - Pinned version: \c 'https://cdn.jsdelivr.net/npm/mermaid@11.3.0/dist/mermaid.esm.min.mjs'
+ - Local copy: \c './mermaid.esm.min.mjs' (user must place file in HTML output directory)
+ \par
+ The default CDN URL requires internet access when viewing the generated documentation.
+ For offline use, download \c mermaid.esm.min.mjs and set this to a relative path,
+ or use \c MERMAID_RENDER_MODE=CLI to pre-generate images instead.
+]]>
+      </docs>
+    </option>
     <option type='list' id='MERMAIDFILE_DIRS' format='dir'>
       <docs>
 <![CDATA[
