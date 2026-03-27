@@ -33,6 +33,7 @@
 #include "htmlentity.h"
 #include "emoji.h"
 #include "plantuml.h"
+#include "mermaid.h"
 #include "fileinfo.h"
 #include "portable.h"
 #include "codefragment.h"
@@ -398,6 +399,17 @@ void RTFDocVisitor::operator()(const DocVerbatim &s)
           visitChildren(s);
           includePicturePostRTF(true, s.hasCaption());
         }
+      }
+      break;
+    case DocVerbatim::Mermaid:
+      {
+        QCString rtfOutput = Config_getString(RTF_OUTPUT);
+        QCString baseName = MermaidManager::instance().writeMermaidSource(
+                       rtfOutput,s.exampleFile(),s.text(),MermaidManager::MERM_BITMAP,
+                       s.srcFile(),s.srcLine());
+        writeMermaidFile(baseName, s.hasCaption());
+        visitChildren(s);
+        includePicturePostRTF(true, s.hasCaption());
       }
       break;
   }
@@ -1319,6 +1331,21 @@ void RTFDocVisitor::operator()(const DocPlantUmlFile &df)
   }
 }
 
+void RTFDocVisitor::operator()(const DocMermaidFile &df)
+{
+  DBG_RTF("{\\comment RTFDocVisitor::operator()(const DocMermaidFile &)}\n");
+  if (!Config_getBool(DOT_CLEANUP)) copyFile(df.file(),Config_getString(RTF_OUTPUT)+"/"+stripPath(df.file()));
+  QCString rtfOutput = Config_getString(RTF_OUTPUT);
+  std::string inBuf;
+  readInputFile(df.file(),inBuf);
+  QCString baseName = MermaidManager::instance().writeMermaidSource(
+                       rtfOutput,QCString(),inBuf,MermaidManager::MERM_BITMAP,
+                       df.srcFile(),df.srcLine());
+  writeMermaidFile(baseName, df.hasCaption());
+  visitChildren(df);
+  includePicturePostRTF(true, df.hasCaption());
+}
+
 void RTFDocVisitor::operator()(const DocLink &lnk)
 {
   if (m_hide) return;
@@ -1764,5 +1791,13 @@ void RTFDocVisitor::writePlantUMLFile(const QCString &fileName, bool hasCaption)
   QCString baseName=makeBaseName(fileName,".pu");
   QCString outDir = Config_getString(RTF_OUTPUT);
   PlantumlManager::instance().generatePlantUMLOutput(fileName,outDir,PlantumlManager::PUML_BITMAP);
+  includePicturePreRTF(baseName + ".png", true, hasCaption);
+}
+
+void RTFDocVisitor::writeMermaidFile(const QCString &fileName, bool hasCaption)
+{
+  QCString baseName=makeBaseName(fileName);
+  QCString outDir = Config_getString(RTF_OUTPUT);
+  MermaidManager::instance().generateMermaidOutput(fileName,outDir,MermaidManager::MERM_BITMAP);
   includePicturePreRTF(baseName + ".png", true, hasCaption);
 }

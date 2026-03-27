@@ -119,22 +119,23 @@ static QCString convertIndexWordToAnchor(const QCString &word)
 static bool mustBeOutsideParagraph(const DocNodeVariant &n)
 {
   //printf("mustBeOutsideParagraph(%s)=",docNodeName(n));
-  if (holds_one_of_alternatives< /* <ul> */         DocHtmlList,   DocSimpleList, DocAutoList,
-                                 /* <dl> */         DocSimpleSect, DocParamSect,  DocHtmlDescList, DocXRefItem,
-                                 /* <table> */      DocHtmlTable,
-                                 /* <h?> */         DocSection,    DocHtmlHeader,
-                                 /* \internal */    DocInternal,
-                                 /* <div> */        DocInclude,    DocSecRefList,
-                                 /* <hr> */         DocHorRuler,
-                                 /* <blockquote> */ DocHtmlBlockQuote,
-                                 /* \parblock */    DocParBlock,
-                                 /* \dotfile */     DocDotFile,
-                                 /* \mscfile */     DocMscFile,
-                                 /* \diafile */     DocDiaFile,
+  if (holds_one_of_alternatives< /* <ul> */          DocHtmlList,   DocSimpleList, DocAutoList,
+                                 /* <dl> */          DocSimpleSect, DocParamSect,  DocHtmlDescList, DocXRefItem,
+                                 /* <table> */       DocHtmlTable,
+                                 /* <h?> */          DocSection,    DocHtmlHeader,
+                                 /* \internal */     DocInternal,
+                                 /* <div> */         DocInclude,    DocSecRefList,
+                                 /* <hr> */          DocHorRuler,
+                                 /* <blockquote> */  DocHtmlBlockQuote,
+                                 /* \parblock */     DocParBlock,
+                                 /* \dotfile */      DocDotFile,
+                                 /* \mscfile */      DocMscFile,
+                                 /* \diafile */      DocDiaFile,
                                  /* \plantumlfile */ DocPlantUmlFile,
-                                 /* <details> */    DocHtmlDetails,
-                                 /* <summary> */    DocHtmlSummary,
-                                                    DocIncOperator >(n))
+                                 /* \mermaidfile */  DocMermaidFile,
+                                 /* <details> */     DocHtmlDetails,
+                                 /* <summary> */     DocHtmlSummary,
+                                                     DocIncOperator >(n))
   {
     return TRUE;
   }

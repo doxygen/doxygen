@@ -330,6 +330,7 @@ class PerlModDocVisitor : public DocVisitor
     void operator()(const DocMscFile &);
     void operator()(const DocDiaFile &);
     void operator()(const DocPlantUmlFile &);
+    void operator()(const DocMermaidFile &);
     void operator()(const DocLink &);
     void operator()(const DocRef &);
     void operator()(const DocSecRefItem &);
@@ -647,6 +648,7 @@ void PerlModDocVisitor::operator()(const DocVerbatim &s)
     case DocVerbatim::Dot:       type = "dot";          break;
     case DocVerbatim::Msc:       type = "msc";          break;
     case DocVerbatim::PlantUML:  type = "plantuml";     break;
+    case DocVerbatim::Mermaid:   type = "mermaid";      break;
   }
   openItem(type);
   if (s.hasCaption())
@@ -1157,6 +1159,16 @@ void PerlModDocVisitor::operator()(const DocPlantUmlFile &df)
 #endif
 }
 
+void PerlModDocVisitor::operator()(const DocMermaidFile &df)
+{
+#if 0
+  m_output.add("<mermaidfile name=\""); m_output.add(df->file()); m_output.add("\">");
+#endif
+  visitChildren(df);
+#if 0
+  m_output.add("</mermaidfile>");
+#endif
+}
 
 void PerlModDocVisitor::operator()(const DocLink &lnk)
 {

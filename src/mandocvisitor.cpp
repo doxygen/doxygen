@@ -247,6 +247,7 @@ void ManDocVisitor::operator()(const DocVerbatim &s)
     case DocVerbatim::Dot:
     case DocVerbatim::Msc:
     case DocVerbatim::PlantUML:
+    case DocVerbatim::Mermaid:
       /* nothing */
       break;
   }
@@ -831,6 +832,10 @@ void ManDocVisitor::operator()(const DocDiaFile &)
 }
 
 void ManDocVisitor::operator()(const DocPlantUmlFile &)
+{
+}
+
+void ManDocVisitor::operator()(const DocMermaidFile &)
 {
 }
 

@@ -174,6 +174,7 @@ class PrintDocVisitor
         case DocVerbatim::Dot: printf("<dot>"); break;
         case DocVerbatim::Msc: printf("<msc>"); break;
         case DocVerbatim::PlantUML: printf("<plantuml>"); break;
+        case DocVerbatim::Mermaid: printf("<mermaid>"); break;
       }
       printf("%s",qPrint(s.text()));
       switch(s.type())
@@ -191,6 +192,7 @@ class PrintDocVisitor
         case DocVerbatim::Dot: printf("</dot>"); break;
         case DocVerbatim::Msc: printf("</msc>"); break;
         case DocVerbatim::PlantUML: printf("</plantuml>"); break;
+        case DocVerbatim::Mermaid: printf("</mermaid>"); break;
       }
     }
     void operator()(const DocAnchor &a)
@@ -624,6 +626,14 @@ class PrintDocVisitor
       visitChildren(df);
       indent_post();
       printf("</plantumlfile>\n");
+    }
+    void operator()(const DocMermaidFile &df)
+    {
+      indent_pre();
+      printf("<mermaidfile src=\"%s\">\n",qPrint(df.name()));
+      visitChildren(df);
+      indent_post();
+      printf("</mermaidfile>\n");
     }
     void operator()(const DocLink &lnk)
     {
