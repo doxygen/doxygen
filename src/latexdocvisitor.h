@@ -95,6 +95,7 @@ class LatexDocVisitor : public DocVisitor
     void operator()(const DocMscFile &);
     void operator()(const DocDiaFile &);
     void operator()(const DocPlantUmlFile &);
+    void operator()(const DocMermaidFile &);
     void operator()(const DocLink &lnk);
     void operator()(const DocRef &ref);
     void operator()(const DocSecRefItem &);
@@ -159,6 +160,11 @@ class LatexDocVisitor : public DocVisitor
                       const QCString &height, bool hasCaption,
                       const QCString &srcFile,int srcLine);
     void endPlantUmlFile(bool hasCaption);
+    void writeMermaidFile(const QCString &baseName, const DocVerbatim &s);
+    void startMermaidFile(const QCString &fileName,const QCString &width,
+                      const QCString &height, bool hasCaption,
+                      const QCString &srcFile,int srcLine);
+    void endMermaidFile(bool hasCaption);
 
     void visitCaption(const DocNodeList &children);
 

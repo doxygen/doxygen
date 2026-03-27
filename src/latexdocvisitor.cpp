@@ -36,6 +36,7 @@
 #include "htmlentity.h"
 #include "emoji.h"
 #include "plantuml.h"
+#include "mermaid.h"
 #include "fileinfo.h"
 #include "regex.h"
 #include "portable.h"
@@ -495,6 +496,16 @@ void LatexDocVisitor::operator()(const DocVerbatim &s)
         {
           writePlantUMLFile(baseName, s);
         }
+      }
+      break;
+    case DocVerbatim::Mermaid:
+      {
+        QCString latexOutput = Config_getString(LATEX_OUTPUT);
+        QCString baseName = MermaidManager::instance().writeMermaidSource(
+                              latexOutput,s.exampleFile(),s.text(),
+                              MermaidManager::MERM_BITMAP,
+                              s.srcFile(),s.srcLine());
+        writeMermaidFile(baseName, s);
       }
       break;
   }
@@ -1543,6 +1554,15 @@ void LatexDocVisitor::operator()(const DocPlantUmlFile &df)
   endPlantUmlFile(df.hasCaption());
 }
 
+void LatexDocVisitor::operator()(const DocMermaidFile &df)
+{
+  if (m_hide) return;
+  if (!Config_getBool(DOT_CLEANUP)) copyFile(df.file(),Config_getString(LATEX_OUTPUT)+"/"+stripPath(df.file()));
+  startMermaidFile(df.file(),df.width(),df.height(),df.hasCaption(),df.srcFile(),df.srcLine());
+  visitChildren(df);
+  endMermaidFile(df.hasCaption());
+}
+
 void LatexDocVisitor::operator()(const DocLink &lnk)
 {
   if (m_hide) return;
@@ -2036,6 +2056,45 @@ void LatexDocVisitor::startPlantUmlFile(const QCString &fileName,
 }
 
 void LatexDocVisitor::endPlantUmlFile(bool hasCaption)
+{
+  if (m_hide) return;
+  visitPostEnd(m_t,hasCaption);
+}
+
+void LatexDocVisitor::writeMermaidFile(const QCString &baseName, const DocVerbatim &s)
+{
+  QCString shortName = makeShortName(baseName);
+  if (shortName.find('.')==-1) shortName += ".png";
+  QCString outDir = Config_getString(LATEX_OUTPUT);
+  MermaidManager::instance().generateMermaidOutput(baseName,outDir,MermaidManager::MERM_BITMAP);
+  visitPreStart(m_t, s.hasCaption(), shortName, s.width(), s.height());
+  visitCaption(s.children());
+  visitPostEnd(m_t, s.hasCaption());
+}
+
+void LatexDocVisitor::startMermaidFile(const QCString &fileName,
+                                   const QCString &width,
+                                   const QCString &height,
+                                   bool hasCaption,
+                                   const QCString &srcFile,
+                                   int srcLine
+                                  )
+{
+  QCString outDir = Config_getString(LATEX_OUTPUT);
+  std::string inBuf;
+  readInputFile(fileName,inBuf);
+
+  QCString baseName = MermaidManager::instance().writeMermaidSource(
+                              outDir,QCString(),inBuf,
+                              MermaidManager::MERM_BITMAP,
+                              srcFile,srcLine);
+  QCString shortName = makeShortName(baseName);
+  if (shortName.find('.')==-1) shortName += ".png";
+  MermaidManager::instance().generateMermaidOutput(baseName,outDir,MermaidManager::MERM_BITMAP);
+  visitPreStart(m_t,hasCaption, shortName, width, height);
+}
+
+void LatexDocVisitor::endMermaidFile(bool hasCaption)
 {
   if (m_hide) return;
   visitPostEnd(m_t,hasCaption);
