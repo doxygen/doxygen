@@ -168,7 +168,7 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
 
     /*! this is the first part of a sentence that is followed by a class name */
     QCString trThisIsTheListOfAllMembers() override
-    { return "継承メンバを含む "; }
+    { return "継承メンバを含む"; }
     /* trIncludingInheritedMembers に続くように定義すること */
 
     /*! this is the remainder of the sentence after the class name */
@@ -385,8 +385,8 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
     { return "全モジュールの一覧です。"; }
 
     /*! This is used in HTML as the title of index.html. */
-    QCString trDocumentation() override
-    { return "詳解"; }
+    QCString trDocumentation(const QCString &projName) override
+    { return (!projName.isEmpty()?projName + " " : "") + "詳解"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * index of all groups.
@@ -685,9 +685,8 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
     QCString trWriteList(int numEntries) override
     {
       QCString result;
-      int i;
       // the inherits list contain `numEntries' classes
-      for (i=0;i<numEntries;i++)
+      for (int i=0;i<numEntries;i++)
       {
         // use generateMarker to generate placeholders for the class links!
         result+=generateMarker(i); // generate marker for entry i in the list
@@ -1469,7 +1468,7 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
 
     /*! This is used in HTML as the title of page with source code for file filename
      */
-    QCString trSourceFile(QCString& filename) override
+    QCString trSourceFile(const QCString& filename) override
     {
       return filename + " ソースファイル";
     }
@@ -1503,7 +1502,7 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
     { QCString result=dirName; result+=" ディレクトリリファレンス"; return result; }
 
     /*! This returns the word directory with or without starting capital
-     *  (\a first_capital) and in sigular or plural form (\a singular).
+     *  (\a first_capital) and in singular or plural form (\a singular).
      */
     QCString trDir(bool, bool) override
     {
@@ -1830,10 +1829,10 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
       QCString text  = full? months_full[month-1] : months_short[month-1];
       return text;
     }
-    QCString trDayPeriod(int period) override
+    QCString trDayPeriod(bool period) override
     {
       static const char *dayPeriod[] = { "午前", "午後" };
-      return dayPeriod[period];
+      return dayPeriod[period?1:0];
     }
 
 //////////////////////////////////////////////////////////////////////////

@@ -56,13 +56,16 @@ struct ImportInfo
   }
 };
 
+using ImportInfoList = std::vector<ImportInfo>;
 using ModuleMap = std::unordered_map<std::string,ModuleDef *>;
-using ImportInfoMap = std::unordered_map<std::string,ImportInfo>;
+using ImportInfoMap = std::unordered_map<std::string,ImportInfoList>;
 
 
 class ModuleDef : public DefinitionMutable, public Definition
 {
   public:
+    ABSTRACT_BASE_CLASS(ModuleDef)
+
     enum class Type
     {
       Interface,
@@ -107,7 +110,6 @@ class ModuleList : public std::vector<ModuleDef *>
 class ModuleManager
 {
   public:
-    ModuleManager();
     static ModuleManager &instance();
     void createModuleDef(const QCString &fileName, int line, int column, bool exported,
                          const QCString &moduleName, const QCString &partitionName=QCString());
@@ -120,6 +122,7 @@ class ModuleManager
     void addDocs(const Entry *root);
     void addTagInfo(const QCString &moduleFile,const QCString &tagName,const QCString &clangId);
     void addListReferences();
+    void addRequirementReferences();
     void addMembersToMemberGroup();
     void distributeMemberGroupDocumentation();
     void findSectionsInDocumentation();
@@ -131,10 +134,14 @@ class ModuleManager
     void countMembers();
     void writeDocumentation(OutputList &ol);
     int numDocumentedModules() const;
+    ModuleLinkedMap &modules();
     const ModuleLinkedMap &modules() const;
     ModuleDef *getPrimaryInterface(const QCString &moduleName) const;
 
   private:
+    ModuleManager();
+   ~ModuleManager() = default;
+    NON_COPYABLE(ModuleManager)
     void resolvePartitionsRecursively(ModuleDef *intfMod, ModuleDef *mod);
     void collectExportedSymbolsRecursively(ModuleDef *intfMod, ModuleDef *mod);
     struct Private;

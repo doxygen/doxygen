@@ -201,7 +201,7 @@ class TranslatorFrench : public TranslatorAdapter_1_9_5
 
     /*! this is the first part of a sentence that is followed by a class name */
     QCString trThisIsTheListOfAllMembers() override
-    { return "Liste complète des membres de "; }
+    { return "Liste complète des membres de"; }
 
     /*! this is the remainder of the sentence after the class name */
     QCString trIncludingInheritedMembers() override
@@ -414,8 +414,8 @@ class TranslatorFrench : public TranslatorAdapter_1_9_5
     { return "Liste de tous les modules :"; }
 
     /*! This is used in HTML as the title of index.html. */
-    QCString trDocumentation() override
-    { return "Documentation"; }
+    QCString trDocumentation(const QCString &projName) override
+    { return (!projName.isEmpty()?projName + " " : "") + "Documentation"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * index of all groups.
@@ -718,9 +718,8 @@ class TranslatorFrench : public TranslatorAdapter_1_9_5
     QCString trWriteList(int numEntries) override
     {
       QCString result;
-      int i;
       // the inherits list contain `numEntries' classes
-      for (i=0;i<numEntries;i++)
+      for (int i=0;i<numEntries;i++)
       {
         // use generateMarker to generate placeholders for the class links!
         result+=generateMarker(i); // generate marker for entry i in the list
@@ -1262,9 +1261,7 @@ class TranslatorFrench : public TranslatorAdapter_1_9_5
      */
     QCString trClass(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Classe" : "classe"));
-      if (!singular)  result+="s";
-      return result;
+      return createNoun(first_capital, singular, "classe", "s");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1273,9 +1270,7 @@ class TranslatorFrench : public TranslatorAdapter_1_9_5
      */
     QCString trFile(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Fichier" : "fichier"));
-      if (!singular)  result+="s";
-      return result;
+      return createNoun(first_capital, singular, "fichier", "s");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1284,8 +1279,7 @@ class TranslatorFrench : public TranslatorAdapter_1_9_5
      */
     QCString trNamespace(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Espace" : "espace"));
-      if (!singular)  result+="s";
+      QCString result = createNoun(first_capital, singular, "espace", "s");
       result+=" de nommage";
       return result;
     }
@@ -1296,9 +1290,7 @@ class TranslatorFrench : public TranslatorAdapter_1_9_5
      */
     QCString trGroup(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Groupe" : "groupe"));
-      if (!singular)  result+="s";
-      return result;
+      return createNoun(first_capital, singular, "groupe", "s");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1307,9 +1299,7 @@ class TranslatorFrench : public TranslatorAdapter_1_9_5
      */
     QCString trPage(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Page" : "page"));
-      if (!singular)  result+="s";
-      return result;
+      return createNoun(first_capital, singular, "page", "s");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1318,9 +1308,7 @@ class TranslatorFrench : public TranslatorAdapter_1_9_5
      */
     QCString trMember(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Membre" : "membre"));
-      if (!singular)  result+="s";
-      return result;
+      return createNoun(first_capital, singular, "membre", "s");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1329,9 +1317,7 @@ class TranslatorFrench : public TranslatorAdapter_1_9_5
      */
     QCString trGlobal(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Globa" : "globa"));
-      if (!singular)  result+="ux(ales)"; else result+="l(e)";
-      return result;
+      return createNoun(first_capital, singular, "globa", "ux(ales)", "l(e)");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1342,9 +1328,7 @@ class TranslatorFrench : public TranslatorAdapter_1_9_5
      *  for the author section in man pages. */
     QCString trAuthor(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Auteur" : "auteur"));
-      if (!singular)  result+="s";
-      return result;
+      return createNoun(first_capital, singular, "auteur", "s");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1528,7 +1512,7 @@ class TranslatorFrench : public TranslatorAdapter_1_9_5
 
     /*! This is used in HTML as the title of page with source code for file filename
      */
-    QCString trSourceFile(QCString& filename) override
+    QCString trSourceFile(const QCString& filename) override
     {
       return " Fichier source de " + filename;
     }
@@ -1566,9 +1550,7 @@ class TranslatorFrench : public TranslatorAdapter_1_9_5
      */
     QCString trDir(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Répertoire" : "répertoire"));
-      if (singular) result+=""; else result+="s";
-      return result;
+      return createNoun(first_capital, singular, "répertoire", "s");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1746,9 +1728,7 @@ class TranslatorFrench : public TranslatorAdapter_1_9_5
      */
     QCString trModule(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Module" : "module"));
-      if (!singular)  result+="s";
-      return result;
+      return createNoun(first_capital, singular, "module", "s");
     }
 
     /*! This is put at the bottom of a module documentation page and is
@@ -1781,9 +1761,7 @@ class TranslatorFrench : public TranslatorAdapter_1_9_5
      */
     QCString trType(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Type" : "type"));
-      if (!singular)  result+="s";
-      return result;
+      return createNoun(first_capital, singular, "type", "s");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1792,9 +1770,7 @@ class TranslatorFrench : public TranslatorAdapter_1_9_5
      */
     QCString trSubprogram(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Sous-programme" : "sous-programme"));
-      if (!singular)  result+="s";
-      return result;
+      return createNoun(first_capital, singular, "sous-programme", "s");
     }
 
     /*! C# Type Constraint list */
@@ -1905,10 +1881,10 @@ class TranslatorFrench : public TranslatorAdapter_1_9_5
       if (first_capital) return text.mid(0,1).upper()+text.mid(1);
       else return text;
     }
-    QCString trDayPeriod(int period) override
+    QCString trDayPeriod(bool period) override
     {
       static const char *dayPeriod[] = { "AM", "PM" };
-      return dayPeriod[period];
+      return dayPeriod[period?1:0];
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -2347,9 +2323,7 @@ class TranslatorFrench : public TranslatorAdapter_1_9_5
     /** C++20 concept */
     QCString trConcept(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Concept" : "concept"));
-      if (!singular) result+="s";
-      return result;
+      return createNoun(first_capital, singular, "concept", "s");
     }
     /*! used as the title of the HTML page of a C++20 concept page */
     QCString trConceptReference(const QCString &conceptName) override

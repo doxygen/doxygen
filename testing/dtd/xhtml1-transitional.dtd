@@ -39,6 +39,16 @@
      - added placeholder to input tag
      - added allowfullscreen to iframe tag
      - added data-start and data-end to div tag (needed for code folding)
+
+
+     December 28, 2024
+     - added entity &quest; as used in doxygen
+
+     March 23, 2025
+     - added div with special elements
+
+     March 28, 2025
+     - added loading attribute with special iframe amd img
 -->
 
 <!--================ Character mnemonic entities =========================-->
@@ -215,7 +225,7 @@
 <!--=================== Text Elements ====================================-->
 
 <!ENTITY % special.extra
-   "object | applet | img | map | iframe | picture | details | summary">
+   "object | applet | img | div | map | iframe | picture | details | summary">
 	
 <!ENTITY % special.basic
 	"br | span | bdo">
@@ -421,6 +431,7 @@
   height      %Length;       #IMPLIED
   width       %Length;       #IMPLIED
   allowfullscreen (true|false)   "true"
+  loading     (eager|lazy)   #IMPLIED
   >
 
 <!-- alternate content container for non frame-based rendering -->
@@ -882,6 +893,7 @@
   border      %Length;       #IMPLIED
   hspace      %Pixels;       #IMPLIED
   vspace      %Pixels;       #IMPLIED
+  loading     (eager|lazy)   #IMPLIED
   >
 
 <!ELEMENT source EMPTY>
@@ -1247,3 +1259,5 @@ several semantically related columns together.
   height      %Length;       #IMPLIED
   >
 
+<!-- added for doxygen:  &quest; -->
+<!ENTITY quest    "&#63;"> <!-- question mark, U+3f -->

@@ -20,6 +20,8 @@
 
 #include "types.h"
 #include "reflist.h"
+#include "construct.h"
+#include "requirement.h"
 
 #ifdef _MSC_VER
 // To disable 'inherits via dominance' warnings with MSVC.
@@ -74,6 +76,8 @@ struct BodyInfo
 class Definition
 {
   public:
+    ABSTRACT_BASE_CLASS(Definition)
+
     /*! Types of derived classes */
     enum DefType
     {
@@ -161,6 +165,11 @@ class Definition
     /*! Returns the line number at which the brief description was found. */
     virtual int briefLine() const = 0;
 
+    /*! Returns the file in which the brief description was found.
+     *  This can differ from getDefFileName().
+     */
+    virtual QCString briefFile() const = 0;
+
     /*! Returns the documentation found inside the body of a member */
     virtual QCString inbodyDocumentation() const = 0;
 
@@ -170,11 +179,6 @@ class Definition
     /*! Returns the line at which the first in body documentation
         part was found */
     virtual int inbodyLine() const = 0;
-
-    /*! Returns the file in which the brief description was found.
-     *  This can differ from getDefFileName().
-     */
-    virtual QCString briefFile() const = 0;
 
     /*! returns the file in which this definition was found */
     virtual QCString getDefFileName() const = 0;
@@ -265,6 +269,8 @@ class Definition
 
     virtual const RefItemVector &xrefListItems() const = 0;
 
+    virtual const RequirementRefs &requirementReferences() const = 0;
+
     virtual const Definition *findInnerCompound(const QCString &name) const = 0;
     virtual Definition *getOuterScope() const = 0;
 
@@ -273,6 +279,7 @@ class Definition
 
     virtual bool hasSections() const = 0;
     virtual bool hasSources() const = 0;
+
 
     /** returns TRUE if this class has a brief description */
     virtual bool hasBriefDescription() const = 0;
@@ -291,13 +298,9 @@ class Definition
     virtual void _setSymbolName(const QCString &name) = 0;
     virtual QCString _symbolName() const = 0;
 
-    // ---------------------------------
-    virtual ~Definition() = default;
-
   private:
     friend class DefinitionImpl;
     friend DefinitionMutable* toDefinitionMutable(Definition *);
-    friend DefinitionMutable* toDefinitionMutable(const Definition *);
     virtual DefinitionMutable *toDefinitionMutable_() = 0;
     virtual const DefinitionImpl *toDefinitionImpl_() const = 0;
 };
@@ -305,7 +308,7 @@ class Definition
 class DefinitionMutable
 {
   public:
-
+    ABSTRACT_BASE_CLASS(DefinitionMutable)
 
     //-----------------------------------------------------------------------------------
     // ----  setters -----
@@ -342,6 +345,7 @@ class DefinitionMutable
     virtual void setBodyDef(const FileDef *fd) = 0;
 
     virtual void setRefItems(const RefItemVector &sli) = 0;
+    virtual void setRequirementReferences(const RequirementRefs &rqli) = 0;
     virtual void setOuterScope(Definition *d) = 0;
 
     virtual void setHidden(bool b) = 0;
@@ -361,11 +365,10 @@ class DefinitionMutable
      * documentation.
      */
     virtual void addSectionsToDefinition(const std::vector<const SectionInfo*> &anchorList) = 0;
-    virtual void addSourceReferencedBy(MemberDef *d) = 0;
-    virtual void addSourceReferences(MemberDef *d) = 0;
+    virtual void addSourceReferencedBy(MemberDef *d,const QCString &sourceRefName) = 0;
+    virtual void addSourceReferences(MemberDef *d,const QCString &sourceRefName) = 0;
     virtual void mergeRefItems(Definition *d) = 0;
     virtual void addInnerCompound(Definition *d) = 0;
-    virtual void addSectionsToIndex() = 0;
     virtual void mergeReferences(const Definition *other) = 0;
     virtual void mergeReferencedBy(const Definition *other) = 0;
     virtual void computeTooltip() = 0;
@@ -373,20 +376,20 @@ class DefinitionMutable
     //-----------------------------------------------------------------------------------
     // --- writing output ----
     //-----------------------------------------------------------------------------------
-    virtual void writeSourceDef(OutputList &ol,const QCString &scopeName) const = 0;
+    virtual void writeSourceDef(OutputList &ol) const = 0;
     virtual void writeInlineCode(OutputList &ol,const QCString &scopeName) const = 0;
     virtual bool hasSourceRefs() const = 0;
     virtual bool hasSourceReffedBy() const = 0;
     virtual void writeSourceRefs(OutputList &ol,const QCString &scopeName) const = 0;
     virtual void writeSourceReffedBy(OutputList &ol,const QCString &scopeName) const = 0;
+    virtual bool hasRequirementRefs() const = 0;
+    virtual void writeRequirementRefs(OutputList &ol) const = 0;
     virtual void writeNavigationPath(OutputList &ol) const = 0;
     virtual void writeQuickMemberLinks(OutputList &,const MemberDef *) const = 0;
     virtual void writeSummaryLinks(OutputList &) const = 0;
+    virtual void writePageNavigation(OutputList &) const = 0;
     virtual void writeDocAnchorsToTagFile(TextStream &) const = 0;
     virtual void writeToc(OutputList &ol, const LocalToc &lt) const = 0;
-
-    // ---------------------------------
-    virtual ~DefinitionMutable() = default;
 
   private:
     friend Definition* toDefinition(DefinitionMutable *);

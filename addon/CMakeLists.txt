@@ -1,6 +1,4 @@
-if (build_xmlparser)
-    add_subdirectory(doxmlparser)
-endif ()
+add_subdirectory(doxmlparser)
 
 if (build_app)
     add_subdirectory(doxyapp)

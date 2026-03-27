@@ -224,11 +224,11 @@ static void addSTLClass(const std::shared_ptr<Entry> &root,const STLInfo *info)
   Specifier virt = info->virtualInheritance ? Specifier::Virtual : Specifier::Normal;
   if (info->baseClass1 != nullptr)
   {
-    classEntry->extends.push_back(BaseInfo(info->baseClass1, Protection::Public, virt));
+    classEntry->extends.emplace_back(info->baseClass1, Protection::Public, virt);
   }
   if (info->baseClass2 != nullptr)
   {
-    classEntry->extends.push_back(BaseInfo(info->baseClass2, Protection::Public, virt));
+    classEntry->extends.emplace_back(info->baseClass2, Protection::Public, virt);
   }
   if (info->iterators)
   {

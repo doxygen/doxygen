@@ -149,7 +149,7 @@ class TranslatorEnglish : public Translator
 
     /*! this is the first part of a sentence that is followed by a class name */
     QCString trThisIsTheListOfAllMembers() override
-    { return "This is the complete list of members for "; }
+    { return "This is the complete list of members for"; }
 
     /*! this is the remainder of the sentence after the class name */
     QCString trIncludingInheritedMembers() override
@@ -365,8 +365,8 @@ class TranslatorEnglish : public Translator
     // index titles (the project name is prepended for these)
 
     /*! This is used in HTML as the title of index.html. */
-    QCString trDocumentation() override
-    { return "Documentation"; }
+    QCString trDocumentation(const QCString &projName) override
+    { return (!projName.isEmpty()?projName + " " : "") + "Documentation"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * index of all groups.
@@ -668,9 +668,8 @@ class TranslatorEnglish : public Translator
     QCString trWriteList(int numEntries) override
     {
       QCString result;
-      int i;
       // the inherits list contain `numEntries' classes
-      for (i=0;i<numEntries;i++)
+      for (int i=0;i<numEntries;i++)
       {
         // use generateMarker to generate placeholders for the class links!
         result+=generateMarker(i); // generate marker for entry i in the list
@@ -1059,10 +1058,10 @@ class TranslatorEnglish : public Translator
         "<li>%A dark green arrow is used for protected inheritance.</li>\n"
         "<li>%A dark red arrow is used for private inheritance.</li>\n"
         "<li>%A purple dashed arrow is used if a class is contained or used "
-        "by another class. The arrow is labelled with the variable(s) "
+        "by another class. The arrow is labeled with the variable(s) "
         "through which the pointed class or struct is accessible.</li>\n"
         "<li>%A yellow dashed arrow denotes a relation between a template instance and "
-        "the template class it was instantiated from. The arrow is labelled with "
+        "the template class it was instantiated from. The arrow is labeled with "
         "the template parameters of the instance.</li>\n"
         "</ul>\n";
     }
@@ -1209,9 +1208,7 @@ class TranslatorEnglish : public Translator
      */
     QCString trClass(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Class" : "class"));
-      if (!singular)  result+="es";
-      return result;
+      return createNoun(first_capital, singular, "class", "es");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1220,9 +1217,7 @@ class TranslatorEnglish : public Translator
      */
     QCString trFile(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "File" : "file"));
-      if (!singular)  result+="s";
-      return result;
+      return createNoun(first_capital, singular, "file", "s");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1231,9 +1226,7 @@ class TranslatorEnglish : public Translator
      */
     QCString trNamespace(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Namespace" : "namespace"));
-      if (!singular)  result+="s";
-      return result;
+      return createNoun(first_capital, singular, "namespace", "s");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1242,9 +1235,7 @@ class TranslatorEnglish : public Translator
      */
     QCString trGroup(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Module" : "module"));
-      if (!singular)  result+="s";
-      return result;
+      return createNoun(first_capital, singular, "module", "s");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1253,9 +1244,7 @@ class TranslatorEnglish : public Translator
      */
     QCString trPage(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Page" : "page"));
-      if (!singular)  result+="s";
-      return result;
+      return createNoun(first_capital, singular, "page", "s");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1264,9 +1253,7 @@ class TranslatorEnglish : public Translator
      */
     QCString trMember(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Member" : "member"));
-      if (!singular)  result+="s";
-      return result;
+      return createNoun(first_capital, singular, "member", "s");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1275,9 +1262,7 @@ class TranslatorEnglish : public Translator
      */
     QCString trGlobal(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Global" : "global"));
-      if (!singular)  result+="s";
-      return result;
+      return createNoun(first_capital, singular, "global", "s");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1288,9 +1273,7 @@ class TranslatorEnglish : public Translator
      *  for the author section in man pages. */
     QCString trAuthor(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Author" : "author"));
-      if (!singular)  result+="s";
-      return result;
+      return createNoun(first_capital, singular, "author", "s");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1474,7 +1457,7 @@ class TranslatorEnglish : public Translator
 
     /*! This is used in HTML as the title of page with source code for file filename
      */
-    QCString trSourceFile(QCString& filename) override
+    QCString trSourceFile(const QCString& filename) override
     {
       return filename + " Source File";
     }
@@ -1512,9 +1495,7 @@ class TranslatorEnglish : public Translator
      */
     QCString trDir(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Director" : "director"));
-      if (singular) result+="y"; else result+="ies";
-      return result;
+      return createNoun(first_capital, singular, "director", "ies", "y");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1693,9 +1674,7 @@ class TranslatorEnglish : public Translator
      */
     QCString trModule(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Module" : "module"));
-      if (!singular)  result+="s";
-      return result;
+      return createNoun(first_capital, singular, "module", "s");
     }
 
     /*! This is put at the bottom of a module documentation page and is
@@ -1728,9 +1707,7 @@ class TranslatorEnglish : public Translator
      */
     QCString trType(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Type" : "type"));
-      if (!singular)  result+="s";
-      return result;
+      return createNoun(first_capital, singular, "type", "s");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1739,9 +1716,7 @@ class TranslatorEnglish : public Translator
      */
     QCString trSubprogram(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Subprogram" : "subprogram"));
-      if (!singular)  result+="s";
-      return result;
+      return createNoun(first_capital, singular, "subprogram", "s");
     }
 
     /*! C# Type Constraint list */
@@ -1848,10 +1823,10 @@ class TranslatorEnglish : public Translator
       static const char *months_full[]  = { "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" };
       return full? months_full[month-1] : months_short[month-1];
     }
-    QCString trDayPeriod(int period) override
+    QCString trDayPeriod(bool period) override
     {
       static const char *dayPeriod[] = { "AM", "PM" };
-      return dayPeriod[period];
+      return dayPeriod[period?1:0];
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1919,7 +1894,7 @@ class TranslatorEnglish : public Translator
     QCString trPanelSynchronisationTooltip(bool enable) override
     {
       QCString opt = enable ? "enable" : "disable";
-      return "click to "+opt+" panel synchronisation";
+      return "click to "+opt+" panel synchronization";
     }
 
     /*! Used in a method of an Objective-C class that is declared in a
@@ -2283,9 +2258,7 @@ class TranslatorEnglish : public Translator
     /** C++20 concept */
     QCString trConcept(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Concept" : "concept"));
-      if (!singular) result+="s";
-      return result;
+      return createNoun(first_capital, singular, "concept", "s");
     }
     /*! used as the title of the HTML page of a C++20 concept page */
     QCString trConceptReference(const QCString &conceptName) override
@@ -2337,7 +2310,7 @@ class TranslatorEnglish : public Translator
      *  followed by a single name of the VHDL process flowchart.
      */
     QCString trFlowchart() override
-    { return "Flowchart: "; }
+    { return "Flowchart:"; }
 
     /*! Please translate also updated body of the method
      *  trMemberFunctionDocumentation(), now better adapted for
@@ -2632,6 +2605,69 @@ class TranslatorEnglish : public Translator
     {
       return "Copy to clipboard";
     }
+//////////////////////////////////////////////////////////////////////////
+// new since 1.11.0
+//////////////////////////////////////////////////////////////////////////
+    QCString trImportant() override
+    {
+      return "Important";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.16.0
+//////////////////////////////////////////////////////////////////////////
+
+    // the title of the requirements overview page
+    QCString trRequirements() override
+    {
+      return "Requirements";
+    }
+    // table header for the column with the requirements IDs
+    QCString trRequirementID() override
+    {
+      return "ID";
+    }
+    // indicates a symbol implements (satisfies) a requirement
+    QCString trSatisfies(bool singular) override
+    {
+      return createNoun(true, singular, "Satisfies requirement", "s");
+    }
+    // indicates a requirement is satisfied (implemented) by one or more symbols
+    QCString trSatisfiedBy(const QCString &list) override
+    {
+      return "Satisfied by "+list+".";
+    }
+    QCString trUnsatisfiedRequirements() override
+    {
+      return "Unsatisfied Requirements";
+    }
+    QCString trUnsatisfiedRequirementsText(bool singular,const QCString &list) override
+    {
+      return singular ?
+        "The requirement "+list+" does not have a 'satisfies' relation." :
+        "The requirements "+list+" do not have a 'satisfies' relation.";
+    }
+    // indicates a symbol verifies (tests) a requirement
+    QCString trVerifies(bool singular) override
+    {
+      return createNoun(true, singular, "Verifies requirement", "s");
+    }
+    // indicates a requirement is verified (tested) by one or more symbols
+    QCString trVerifiedBy(const QCString &list) override
+    {
+      return "Verified by "+list+".";
+    }
+    QCString trUnverifiedRequirements() override
+    {
+      return "Unverified Requirements";
+    }
+    QCString trUnverifiedRequirementsText(bool singular,const QCString &list) override
+    {
+      return singular ?
+        "The requirement "+list+" does not have a 'verifies' relation." :
+        "The requirements "+list+" do not have a 'verifies' relation.";
+    }
+
 };
 
 #endif

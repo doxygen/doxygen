@@ -11,15 +11,44 @@
 # Documents produced by Doxygen are derivative works derived from the
 # input used in their production; they are not affected by this license.
 
-include (${TOP}/cmake/version.cmake)
+include (${PROJECT_SOURCE_DIR}/cmake/version.cmake)
 string(TIMESTAMP DATE "%d-%m-%Y")
 string(TIMESTAMP YEAR "%Y")
+
+# Always install man pages
+file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/man)
+configure_file(${PROJECT_SOURCE_DIR}/doc/doxygen.1          ${PROJECT_BINARY_DIR}/man/doxygen.1)
+configure_file(${PROJECT_SOURCE_DIR}/doc/doxywizard.1       ${PROJECT_BINARY_DIR}/man/doxywizard.1)
+configure_file(${PROJECT_SOURCE_DIR}/doc/doxysearch.1       ${PROJECT_BINARY_DIR}/man/doxysearch.1)
+configure_file(${PROJECT_SOURCE_DIR}/doc/doxyindexer.1      ${PROJECT_BINARY_DIR}/man/doxyindexer.1)
+
+
+include(GNUInstallDirs)
+install(FILES
+    "${PROJECT_BINARY_DIR}/man/doxygen.1"
+    DESTINATION ${CMAKE_INSTALL_MANDIR}/man1)
+
+if (build_search)
+    install(FILES
+        "${PROJECT_BINARY_DIR}/man/doxyindexer.1"
+        "${PROJECT_BINARY_DIR}/man/doxysearch.1"
+        DESTINATION ${CMAKE_INSTALL_MANDIR}/man1)
+endif()
+if (build_wizard)
+    install(FILES
+        "${PROJECT_BINARY_DIR}/man/doxywizard.1"
+        DESTINATION ${CMAKE_INSTALL_MANDIR}/man1)
+endif()
+
+# The rest of this file is only for when built documentation is requested.
+if (NOT build_doc)
+    return()
+endif()
 
 find_package(Python REQUIRED)
 find_program(EPSTOPDF NAMES epstopdf )
 find_program(PDFLATEX NAMES pdflatex )
 find_program(MAKEINDEX NAMES makeindex )
-include(GNUInstallDirs)
 
 if (doxygen_BINARY_DIR)
     set(DOXYGEN_EXECUTABLE ${doxygen_BINARY_DIR}/bin/doxygen)
@@ -86,10 +115,12 @@ set(DOC_FILES
         install.dox
         layout_index_and_notreeview.png
         layout_index_and_treeview.png
+        layout_index_and_sidebar.png
         layout_noindex_and_notreeview.png
         layout_noindex_and_treeview.png
         layout_noindex_and_sidebar.png
         lists.dox
+        requirements.dox
         markdown.dox
         output.dox
         perlmod.dox
@@ -107,11 +138,16 @@ set(DOC_FILES
 )
 
 set(DOC_FILES_IMAGES
-        add.png
-        del.png
-        file.png
-        folder.png
-        refresh.png
+        add.eps
+        add.svg
+        del.eps
+        del.svg
+        file.eps
+        file.svg
+        folder.eps
+        folder.svg
+        refresh.eps
+        refresh.svg
 )
 
 if (build_doc_chm)
@@ -120,10 +156,9 @@ if (build_doc_chm)
 )
 endif ()
 
-file(GLOB LANG_FILES CONFIGURE_DEPENDS "${TOP}/src//translator_??.h")
+file(GLOB LANG_FILES CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/src//translator_??.h")
 
-file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/man
-                    ${PROJECT_BINARY_DIR}/src
+file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/src
                     ${PROJECT_BINARY_DIR}/doc
                     ${PROJECT_BINARY_DIR}/doc/images)
 
@@ -156,10 +191,6 @@ endforeach()
 
 configure_file(${PROJECT_SOURCE_DIR}/doc/manual.sty         ${PROJECT_BINARY_DIR}/doc/manual.sty COPYONLY)
 configure_file(${PROJECT_SOURCE_DIR}/doc/doxygen_manual.tex ${PROJECT_BINARY_DIR}/doc/doxygen_manual.tex COPYONLY)
-configure_file(${PROJECT_SOURCE_DIR}/doc/doxygen.1          ${PROJECT_BINARY_DIR}/man/doxygen.1)
-configure_file(${PROJECT_SOURCE_DIR}/doc/doxywizard.1       ${PROJECT_BINARY_DIR}/man/doxywizard.1)
-configure_file(${PROJECT_SOURCE_DIR}/doc/doxysearch.1       ${PROJECT_BINARY_DIR}/man/doxysearch.1)
-configure_file(${PROJECT_SOURCE_DIR}/doc/doxyindexer.1      ${PROJECT_BINARY_DIR}/man/doxyindexer.1)
 configure_file(${PROJECT_SOURCE_DIR}/templates/icon/doxygen.ico ${PROJECT_BINARY_DIR}/doc/doxygen.ico COPYONLY)
 
 # Call the main page "Introduction" in LaTeX, which is more appropriate for that format.
@@ -179,8 +210,8 @@ set_source_files_properties(language.dox PROPERTIES GENERATED 1)
 
 # doc/config.dox (see tag Doxyfile:INPUT)
 add_custom_command(
-        COMMAND ${Python_EXECUTABLE}  ${TOP}/src/configgen.py -doc ${TOP}/src/config.xml > config.dox
-        DEPENDS ${TOP}/src/config.xml ${TOP}/src/configgen.py
+        COMMAND ${Python_EXECUTABLE}  ${PROJECT_SOURCE_DIR}/src/configgen.py -doc ${PROJECT_SOURCE_DIR}/src/config.xml > config.dox
+        DEPENDS ${PROJECT_SOURCE_DIR}/src/config.xml ${PROJECT_SOURCE_DIR}/src/configgen.py
         OUTPUT config.dox
         WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/doc/
 )
@@ -204,11 +235,11 @@ add_custom_target(doxygen_pdf
         COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/doc/doxygen_logo.pdf  .
         COMMAND ${CMAKE_COMMAND} -E chdir ${PROJECT_BINARY_DIR}/latex ${Python_EXECUTABLE} ${PROJECT_SOURCE_DIR}/doc/replace_version.py "${PROJECT_BINARY_DIR}/doc/doxygen_manual.tex" "${PROJECT_BINARY_DIR}/latex/doxygen_manual.tex" "${VERSION}"
         COMMAND ${CMAKE_COMMAND} -E chdir ${PROJECT_BINARY_DIR}/latex ${Python_EXECUTABLE} ${PROJECT_SOURCE_DIR}/doc/replace_version.py "${PROJECT_BINARY_DIR}/doc/manual.sty" "${PROJECT_BINARY_DIR}/latex/manual.sty" "${VERSION}"
-        COMMAND ${PDFLATEX}  -shell-escape doxygen_manual.tex
+        COMMAND ${PDFLATEX}  -shell-escape doxygen_manual.tex || (${CMAKE_COMMAND} -E echo "See ${PROJECT_BINARY_DIR}/latex/doxygen_manual.log for error messages" && ${CMAKE_COMMAND} -E false)
         COMMAND ${MAKEINDEX} doxygen_manual.idx
-        COMMAND ${PDFLATEX}  -shell-escape doxygen_manual.tex
+        COMMAND ${PDFLATEX}  -shell-escape doxygen_manual.tex || (${CMAKE_COMMAND} -E echo "See ${PROJECT_BINARY_DIR}/latex/doxygen_manual.log for error messages" && ${CMAKE_COMMAND} -E false)
         COMMAND ${MAKEINDEX} doxygen_manual.idx
-        COMMAND ${PDFLATEX}  -shell-escape doxygen_manual.tex
+        COMMAND ${PDFLATEX}  -shell-escape doxygen_manual.tex || (${CMAKE_COMMAND} -E echo "See ${PROJECT_BINARY_DIR}/latex/doxygen_manual.log for error messages" && ${CMAKE_COMMAND} -E false)
         DEPENDS ${PROJECT_BINARY_DIR}/doc/manual.sty ${PROJECT_SOURCE_DIR}/doc/doxygen_logo.pdf
         DEPENDS run_doxygen ${PROJECT_SOURCE_DIR}/doc/replace_version.py ${PROJECT_BINARY_DIR}/doc/doxygen_manual.tex
         WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/latex
@@ -228,7 +259,7 @@ if (build_doc_chm)
 add_custom_target(docs_chm
     COMMENT "Generating CHM documentation."
     COMMAND ${CMAKE_COMMAND} -E env VERSION=${VERSION} HTML_HELP_COMPILER=${HTML_HELP_COMPILER} INDEX_DOC=index_html.dox ${DOXYGEN_EXECUTABLE} Doxyfile_chm
-    COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_BINARY_DIR}/html/examples ${PROJECT_BINARY_DIR}/chm/examples
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_BINARY_DIR}/chm/html/examples ${PROJECT_BINARY_DIR}/chm/examples
     COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_BINARY_DIR}/chm/index.hhp ${PROJECT_BINARY_DIR}/chm/doxygen_manual.hhp
     COMMAND ${CMAKE_COMMAND} -E echo "import os" > ${PROJECT_BINARY_DIR}/chm/doxygen_manual_examples_chm.py
     COMMAND ${CMAKE_COMMAND} -E echo "for root, dirs, files in os.walk('examples'):" >> ${PROJECT_BINARY_DIR}/chm/doxygen_manual_examples_chm.py
@@ -241,20 +272,12 @@ add_custom_target(docs_chm
         DEPENDS ${PROJECT_BINARY_DIR}/doc/language.dox ${PROJECT_BINARY_DIR}/doc/config.dox
         DEPENDS ${OUT_DOC_FILES}
         DEPENDS ${OUT_DOC_CHM_FILES}
-        DEPENDS examples
+        DEPENDS examples_chm
         DEPENDS doxygen
         WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/doc/
 )
 endif ()
 ################################################################################
-install(FILES
-        "${PROJECT_BINARY_DIR}/man/doxygen.1"
-        "${PROJECT_BINARY_DIR}/man/doxywizard.1"
-        "${PROJECT_BINARY_DIR}/man/doxysearch.1"
-        "${PROJECT_BINARY_DIR}/man/doxyindexer.1"
-        DESTINATION ${CMAKE_INSTALL_MANDIR}/man1
-)
-
 install(CODE "if(NOT EXISTS \"${PROJECT_BINARY_DIR}/latex/doxygen_manual.pdf\")
     message(FATAL_ERROR \"\nTerminating:\n    documentation has not been generated, \n    create documentation by using the 'docs' target followed by an 'install'\n\")
 endif()"

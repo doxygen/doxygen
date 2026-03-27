@@ -34,6 +34,7 @@
 #define Config_getInt(name)    (ConfigValues::instance().name())
 #define Config_getEnum(name)   (ConfigValues::instance().name())
 #define Config_getEnumAsString(name)   (ConfigValues::instance().name##_str())
+#define Config_getStringAsEnum(name,value)   (name##_str2enum(value))
 #define Config_getList(name)   (ConfigValues::instance().name())
 #define Config_updateString(name,value) (ConfigValues::instance().update_##name(value));
 #define Config_updateBool(name,value)   (ConfigValues::instance().update_##name(value));
@@ -70,6 +71,11 @@ namespace Config
    *  to stream \a t.
    */
   void writeXMLDoxyfile(TextStream &t);
+
+  /*! Writes all possible setting ids to an XSD file for validation 
+   *  through the stream \a t.
+   */
+  void writeXSDDoxyfile(TextStream &t);
 
   /*! Parses a configuration file with name \a fn.
    *  \returns TRUE if successful, FALSE if the file could not be

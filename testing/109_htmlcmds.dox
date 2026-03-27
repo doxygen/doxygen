@@ -1,0 +1,105 @@
+// objective: test the various HTML tags supported by doxygen
+// check: indexpage.xml
+
+/*! \mainpage
+
+This page demonstrates how various HTML tags are rendered by Doxygen.
+
+## Text Formatting
+
+<b>Bold text using &lt;b&gt;</b>  
+<strong>Bold text using &lt;strong&gt;</strong>  
+<i>Italic text using &lt;i&gt;</i>  
+<em>Emphasized text using &lt;em&gt;</em>  
+<var>Variable using &lt;var&gt;</var>  
+<cite>Citation using &lt;cite&gt;</cite>  
+<u>Underlined text using &lt;u&gt;</u>  
+<ins>Inserted text using &lt;ins&gt;</ins>  
+<s>Strikethrough using &lt;s&gt;</s>  
+<strike>Strikethrough using &lt;strike&gt;</strike>  
+<sub>Subscript using &lt;sub&gt;</sub>  
+<sup>Superscript using &lt;sup&gt;</sup>  
+<code>Code format using &lt;code&gt;</code>  
+<dfn>Typewriter format using &lt;dfn&gt;</dfn>  
+<tt>Typewriter format using &lt;tt&gt;</tt>  
+<kbd>Keyboard text using &lt;kbd&gt;</kbd>  
+
+<a href="https://www.doxygen.nl">A link to doxygen's homepage</a>
+
+<p>
+A forced line break<br>
+Continue on the next line
+</p>
+
+<a id="anchor_point_id">Anchor point with id</a>  
+<a name="anchor_point_namw">Anchor point with name</a>
+
+<blockquote>Start of quotation block</blockquote>
+
+<center>Piece of centered text</center>
+
+<hr/>
+
+<dl>
+<dt>Description title 1</dt>
+<dd>Description item 1</dd>
+<dt>Description title 2</dt>
+<dd>Description item 2</dd>
+</dl>
+
+<img src="https://www.doxygen.nl/manual/doxygen_logo.svg" width="100px">
+
+<details>
+<summary>Summary text</summary>
+Contents of the details section.
+</details>
+
+<div>Text in a div</div>
+<span>Text in a span</span>
+
+<h1>Heading level 1</h1>
+<h2>Heading level 2</h2>
+<h3>Heading level 3</h3>
+<h4>Heading level 4</h4>
+<h5>Heading level 5</h5>
+<h6>Heading level 6</h6>
+
+Table with all tags
+<table>
+  <caption>
+    Council budget (in £) 2018
+  </caption>
+  <thead>
+    <tr>
+      <th scope="col">Items</th>
+      <th scope="col">Expenditure</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th scope="row">Donuts</th>
+      <td>3,000</td>
+    </tr>
+    <tr>
+      <th scope="row">Stationery</th>
+      <td>18,000</td>
+    </tr>
+  </tbody>
+  <tfoot>
+    <tr>
+      <th scope="row">Totals</th>
+      <td>21,000</td>
+    </tr>
+  </tfoot>
+</table>
+
+Table with minimal tags
+<table>
+<caption>Council budget (in £) 2018</caption>
+<tr><th>Items<th scope="col">Expenditure
+<tr><th>Donuts<td>3,000
+<tr><th>Stationery<td>18,000
+<tr><th>Totals<td>21,000
+</table>
+
+*/

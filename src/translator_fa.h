@@ -26,7 +26,7 @@
  *
  *   Fri 04 Jun 2010 04:05:24 PM IRDT <nadalizadeh at gmail dot com>
  *   >> Implement missing new methods since 1.6.0.
- *   >> Add English to Persian digit convertor. (for date/time digits)
+ *   >> Add English to Persian digit converter. (for date/time digits)
  *
  * Translation feedbacks are really appreciated.
  */
@@ -89,6 +89,11 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
     QCString latexLanguageSupportCommand() override
     {
       return "";
+    }
+
+    QCString latexCommandName() override
+    {
+      return p_latexCommandName("xelatex");
     }
 
     QCString trISOLang() override
@@ -157,7 +162,7 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
 
     /*! this is the first part of a sentence that is followed by a class name */
     QCString trThisIsTheListOfAllMembers() override
-    { return "اين ليستی کامل از همه اعضای  "; }
+    { return "اين ليستی کامل از همه اعضای"; }
 
     /*! this is the remainder of the sentence after the class name */
     QCString trIncludingInheritedMembers() override
@@ -341,8 +346,8 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
 
 
     /*! This is used in HTML as the title of index.html. */
-    QCString trDocumentation() override
-    { return "مستندات"; }
+    QCString trDocumentation(const QCString &projName) override
+    { return "مستندات" + (!projName.isEmpty()?" " + projName : ""); }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * index of all groups.
@@ -650,9 +655,8 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
     QCString trWriteList(int numEntries) override
     {
       QCString result;
-      int i;
       // the inherits list contain `numEntries' classes
-      for (i=0;i<numEntries;i++)
+      for (int i=0;i<numEntries;i++)
       {
         // use generateMarker to generate placeholders for the class links!
         result+=generateMarker(i); // generate marker for entry i in the list
@@ -1450,7 +1454,7 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
 
     /*! This is used in HTML as the title of page with source code for file filename
      */
-    QCString trSourceFile(QCString& filename) override
+    QCString trSourceFile(const QCString& filename) override
     {
       return filename + " کد و پرونده منبع";
     }
@@ -1484,7 +1488,7 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
     { QCString result=dirName; result+=" مرجع شاخه ی"; return result; }
 
     /*! This returns the word directory with or without starting capital
-     *  (\a first_capital) and in sigular or plural form (\a singular).
+     *  (\a first_capital) and in singular or plural form (\a singular).
      */
     QCString trDir(bool /*first_capital*/, bool singular) override
     {
@@ -1668,9 +1672,7 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
      */
     QCString trType(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Type" : "type"));
-      if (!singular)  result+="s";
-      return result;
+      return createNoun(first_capital, singular, "type", "s");
     }
     /*! This is used for translation of the word that will possibly
      *  be followed by a single name or by a list of names
@@ -1789,10 +1791,10 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
       QCString text  = full? months_full[month-1] : months_short[month-1];
       return text;
     }
-    QCString trDayPeriod(int period) override
+    QCString trDayPeriod(bool period) override
     {
       static const char *dayPeriod[] = { "قبل‌ازظهر", "بعدازظهر" };
-      return dayPeriod[period];
+      return dayPeriod[period?1:0];
     }
 
 };

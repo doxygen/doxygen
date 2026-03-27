@@ -16,6 +16,7 @@
 #include <map>
 #include <memory>
 #include <unordered_map>
+#include <unordered_set>
 #include <string>
 #include <mutex>
 
@@ -27,8 +28,9 @@
 #include "doxygen.h"
 #include "config.h"
 
-static std::mutex                                      g_tooltipsMutex;
-static std::unordered_map<int, std::set<std::string> > g_tooltipsWrittenPerFile;
+static std::mutex                                                g_tooltipsFileMutex;
+static std::mutex                                                g_tooltipsTipMutex;
+static std::unordered_map<int, std::unordered_set<std::string> > g_tooltipsWrittenPerFile;
 
 class TooltipManager::Private
 {
@@ -80,28 +82,42 @@ void TooltipManager::addTooltip(const Definition *d)
     id+="_"+anc;
   }
   id = "a" + id;
-  p->tooltipInfo.insert(std::make_pair(id.str(),d));
+  p->tooltipInfo.emplace(id.str(),d);
   //printf("%p: addTooltip(%s)\n",this,id.data());
 }
 
 void TooltipManager::writeTooltips(OutputCodeList &ol)
 {
+  std::unordered_map<int, std::unordered_set<std::string> >::iterator it;
   // critical section
-  std::lock_guard<std::mutex> lock(g_tooltipsMutex);
-
-  int id = ol.id();
-  auto it = g_tooltipsWrittenPerFile.find(id);
-  if (it==g_tooltipsWrittenPerFile.end()) // new file
   {
-    it = g_tooltipsWrittenPerFile.insert(std::make_pair(id,std::set<std::string>())).first;
+    std::lock_guard<std::mutex> lock(g_tooltipsFileMutex);
+
+    int id = ol.id();
+    it = g_tooltipsWrittenPerFile.find(id);
+    if (it==g_tooltipsWrittenPerFile.end()) // new file
+    {
+      it = g_tooltipsWrittenPerFile.emplace(id,std::unordered_set<std::string>()).first;
+    }
   }
 
   for (const auto &[name,d] : p->tooltipInfo)
   {
-    bool written = it->second.find(name)!=it->second.end();
-    if (!written) // only write tooltips once
+    bool written = false;
+
+    // critical section
     {
-      //printf("%p: writeTooltips(%s) ol=%d\n",this,name.c_str(),ol.id());
+      std::lock_guard<std::mutex> lock(g_tooltipsTipMutex);
+      written = it->second.find(name)!=it->second.end();
+      if (!written) // only write tooltips once
+      {
+        it->second.insert(name); // remember we wrote this tooltip for the given file id
+      }
+    }
+
+    if (!written)
+    {
+      //printf("%p: writeTooltips(%s) ol=%d\n",this,qPrint(name),ol.id());
       DocLinkInfo docInfo;
       docInfo.name   = d->qualifiedName();
       docInfo.ref    = d->getReference();
@@ -125,14 +141,13 @@ void TooltipManager::writeTooltips(OutputCodeList &ol)
           decl = md->declaration();
         }
       }
-      ol.writeTooltip(name.c_str(),    // id
+      ol.writeTooltip(name,                // id
           docInfo,                         // symName
           decl,                            // decl
           d->briefDescriptionAsTooltip(),  // desc
           defInfo,
           declInfo
           );
-      it->second.insert(name); // remember we wrote this tooltip for the given file id
     }
   }
 }

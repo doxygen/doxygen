@@ -10,8 +10,8 @@ and to some extent D. Doxygen also supports the hardware description language VH
 
 Doxygen can help you in three ways:
 
-1. It can generate an on-line documentation browser (in HTML) and/or an
-   off-line reference manual (in LaTeX) from a set of documented source files.
+1. It can generate an online documentation browser (in HTML) and/or an
+   offline reference manual (in LaTeX) from a set of documented source files.
    There is also support for generating output in RTF (MS-Word), PostScript,
    hyperlinked PDF, compressed HTML, DocBook and Unix man pages.
    The documentation is extracted directly from the sources, which makes
@@ -22,16 +22,16 @@ Doxygen can help you in three ways:
    the various elements by means of include dependency graphs, inheritance
    diagrams, and collaboration diagrams, which are all generated automatically.
 3. You can also use doxygen for creating normal documentation (as I did for
-   the doxygen user manual and doxygen web-site).
+   the doxygen user manual and doxygen website).
 
 Download
 ---------
-The latest binaries and source of Doxygen can be downloaded from:
+The latest binaries and Doxygen source code can be downloaded from:
 * https://www.doxygen.nl/
 
 Developers
 ---------
-* Linux & Windows and MacOS Build Status: <a href="https://github.com/doxygen/doxygen/actions"><img alt="Github Actions Build Status" src="https://github.com/doxygen/doxygen/workflows/CMake%20Build%20for%20Doxygen/badge.svg"></a>
+* Linux, Windows and MacOS Build Status: <a href="https://github.com/doxygen/doxygen/actions"><img alt="Github Actions Build Status" src="https://github.com/doxygen/doxygen/workflows/CMake%20Build%20for%20Doxygen/badge.svg"></a>
 
 * Coverity Scan Build Status: <a href="https://scan.coverity.com/projects/2860"> <img alt="Coverity Scan Build Status" src="https://scan.coverity.com/projects/2860/badge.svg"/> </a>
 

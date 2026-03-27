@@ -26,6 +26,7 @@
 #include <functional>
 #include <fstream>
 #include <variant>
+#include <string_view>
 
 #include <ctype.h>
 #include "types.h"
@@ -34,6 +35,7 @@
 #include "outputgen.h"
 #include "regex.h"
 #include "conceptdef.h"
+#include "construct.h"
 
 //--------------------------------------------------------------------
 
@@ -51,7 +53,6 @@ struct TagInfo;
 class PageDef;
 class SectionInfo;
 class Definition;
-class BufStr;
 class FileInfo;
 class Dir;
 
@@ -61,11 +62,12 @@ class Dir;
 class TextGeneratorIntf
 {
   public:
-    virtual ~TextGeneratorIntf() = default;
-    virtual void writeString(const QCString &,bool) const = 0;
+    ABSTRACT_BASE_CLASS(TextGeneratorIntf)
+
+    virtual void writeString(std::string_view,bool) const = 0;
     virtual void writeBreak(int indent) const = 0;
     virtual void writeLink(const QCString &extRef,const QCString &file,
-                      const QCString &anchor,const QCString &text
+                      const QCString &anchor,std::string_view text
                      ) const = 0;
 };
 
@@ -74,11 +76,11 @@ class TextGeneratorOLImpl : public TextGeneratorIntf
 {
   public:
     TextGeneratorOLImpl(OutputList &ol);
-    void writeString(const QCString &s,bool keepSpaces) const;
-    void writeBreak(int indent) const;
+    void writeString(std::string_view s,bool keepSpaces) const override;
+    void writeBreak(int indent) const override;
     void writeLink(const QCString &extRef,const QCString &file,
-                   const QCString &anchor,const QCString &text
-                  ) const;
+                   const QCString &anchor,std::string_view text
+                  ) const override;
   private:
     OutputList &m_ol;
 };
@@ -90,15 +92,64 @@ QCString getLanguageSpecificSeparator(SrcLangExt lang,bool classScope=FALSE);
 
 //--------------------------------------------------------------------
 
+struct LinkifyTextOptions
+{
+  public:
+    // === getters for optional params
+    const Definition *scope()          const { return m_scope; }
+    const FileDef *fileScope()         const { return m_fileScope; }
+    const Definition *self()           const { return m_self; }
+    const ArgumentList *argumentList() const { return m_al; }
+    bool  autoBreak()                  const { return m_autoBreak; }
+    bool  external()                   const { return m_external; }
+    bool  keepSpaces()                 const { return m_keepSpaces; }
+    int   indentLevel()                const { return m_indentLevel; }
+    size_t breakThreshold()            const { return m_breakThreshold; }
+
+    // === setters for optional params
+    LinkifyTextOptions & setScope(const Definition *scope)
+    { m_scope = scope; return *this; }
+
+    LinkifyTextOptions & setFileScope(const FileDef *fileScope)
+    { m_fileScope = fileScope; return *this; }
+
+    LinkifyTextOptions & setSelf(const Definition *self)
+    { m_self = self;  return *this;}
+
+    LinkifyTextOptions & setArgumentList(const ArgumentList *al)
+    { m_al = al; return *this; }
+
+    LinkifyTextOptions & setAutoBreak(bool autoBreak)
+    { m_autoBreak = autoBreak; return *this; }
+
+    LinkifyTextOptions & setExternal(bool external)
+    { m_external = external; return *this; }
+
+    LinkifyTextOptions & setKeepSpaces(bool keepSpaces)
+    { m_keepSpaces = keepSpaces; return *this; }
+
+    LinkifyTextOptions & setIndentLevel(int indentLevel)
+    { m_indentLevel = indentLevel; return *this; }
+
+    LinkifyTextOptions & setBreakThreshold(size_t breakThreshold)
+    { m_breakThreshold = breakThreshold; return *this; }
+
+  private:
+    // optional params with defaults
+    const Definition *  m_scope          = nullptr;
+    const FileDef *     m_fileScope      = nullptr;
+    const Definition *  m_self           = nullptr;
+    const ArgumentList *m_al             = nullptr;
+    bool                m_autoBreak      = false;
+    bool                m_external       = true;
+    bool                m_keepSpaces     = false;
+    int                 m_indentLevel    = 0;
+    size_t              m_breakThreshold = 30;
+};
+
 void linkifyText(const TextGeneratorIntf &ol,
-                 const Definition *scope,
-                 const FileDef *fileScope,
-                 const Definition *self,
                  const QCString &text,
-                 bool autoBreak=FALSE,
-                 bool external=TRUE,
-                 bool keepSpaces=FALSE,
-                 int indentLevel=0
+                 const LinkifyTextOptions &options
                 );
 
 QCString fileToString(const QCString &name,bool filter=FALSE,bool isSourceCode=FALSE);
@@ -124,6 +175,8 @@ struct GetDefResult
   const FileDef      *fd=nullptr;
   const NamespaceDef *nd=nullptr;
   const GroupDef     *gd=nullptr;
+  const ConceptDef   *cnd=nullptr;
+  const ModuleDef    *modd=nullptr;
 };
 
 GetDefResult getDefs(const GetDefInput &input);
@@ -135,6 +188,7 @@ bool resolveRef(/* in */  const QCString &scName,
                 /* in */  bool inSeeBlock,
                 /* out */ const Definition **resContext,
                 /* out */ const MemberDef  **resMember,
+                /* in */  SrcLangExt lang,
                 /* in */  bool lookForSpecializations = TRUE,
                 /* in */  const FileDef *currentFile = nullptr,
                 /* in */  bool checkScope = FALSE
@@ -144,11 +198,10 @@ bool resolveLink(/* in */  const QCString &scName,
                  /* in */  const QCString &lr,
                  /* in */  bool inSeeBlock,
                  /* out */ const Definition **resContext,
-                 /* out */ QCString &resAnchor
+                 /* out */ QCString &resAnchor,
+                 /* in */  SrcLangExt lang,
+                 /* in */  const QCString &prefix=QCString()
                 );
-
-bool generateLink(OutputList &ol,const QCString &,
-                         const QCString &,bool inSeeBlock,const QCString &);
 
 void generateFileRef(OutputList &ol,const QCString &,
                              const QCString &linkTxt=QCString());
@@ -157,12 +210,14 @@ void writePageRef(OutputList &ol,const QCString &cn,const QCString &mn);
 
 //QCString getCanonicalTemplateSpec(const Definition *d,const FileDef *fs,const QCString& spec);
 
-bool matchArguments2(const Definition *srcScope,const FileDef *srcFileScope,const ArgumentList *srcAl,
-                     const Definition *dstScope,const FileDef *dstFileScope,const ArgumentList *dstAl,
+bool matchArguments2(const Definition *srcScope,const FileDef *srcFileScope,const QCString &srcReturnType,const ArgumentList *srcAl,
+                     const Definition *dstScope,const FileDef *dstFileScope,const QCString &dstReturnType,const ArgumentList *dstAl,
                      bool checkCV,SrcLangExt lang
                     );
 
 void mergeArguments(ArgumentList &,ArgumentList &,bool forceNameOverwrite=FALSE);
+
+bool matchTemplateArguments(const ArgumentList &srcAl,const ArgumentList &dstAl);
 
 QCString substituteClassNames(const QCString &s);
 
@@ -210,6 +265,7 @@ inline bool isIdJS(int c)
 QCString removeRedundantWhiteSpace(const QCString &s);
 
 QCString inlineArgListToDoc(const ArgumentList &al);
+QCString inlineTemplateArgListToDoc(const ArgumentList &al);
 
 QCString argListToString(const ArgumentList &al,bool useCanonicalType=FALSE,bool showDefVals=TRUE);
 
@@ -239,9 +295,9 @@ struct KeywordSubstitution
 
 using KeywordSubstitutionList = std::vector<KeywordSubstitution>;
 
-QCString substituteKeywords(const QCString &s,const KeywordSubstitutionList &keywords);
+QCString substituteKeywords(const QCString &file,const QCString &s,const KeywordSubstitutionList &keywords);
 
-QCString substituteKeywords(const QCString &s,const QCString &title,
+QCString substituteKeywords(const QCString &file,const QCString &s,const QCString &title,
          const QCString &projName,const QCString &projNum,const QCString &projBrief);
 
 int getPrefixIndex(const QCString &name);
@@ -251,6 +307,8 @@ QCString removeAnonymousScopes(const QCString &s);
 QCString replaceAnonymousScopes(const QCString &s,const QCString &replacement=QCString());
 
 QCString convertNameToFile(const QCString &name,bool allowDots=FALSE,bool allowUnderscore=FALSE);
+
+QCString generateAnonymousAnchor(const QCString &fileName,int count);
 
 void extractNamespaceName(const QCString &scopeName,
                           QCString &className,QCString &namespaceName,
@@ -263,11 +321,11 @@ QCString stripScope(const QCString &name);
 QCString convertToId(const QCString &s);
 QCString correctId(const QCString &s);
 
-QCString convertToHtml(const QCString &s,bool keepEntities=TRUE);
+QCString convertToHtml(const QCString &s,bool keepEntities=true);
 
-QCString convertToXML(const QCString &s, bool keepEntities=FALSE);
+QCString convertToXML(const QCString &s, bool keepEntities=false);
 
-QCString convertToJSString(const QCString &s);
+QCString convertToJSString(const QCString &s,bool keepEntities=false,bool singleQuotes=false);
 
 QCString getOverloadDocs();
 
@@ -286,12 +344,13 @@ QCString normalizeNonTemplateArgumentsInString(
 QCString substituteTemplateArgumentsInString(
        const QCString &name,
        const ArgumentList &formalArgs,
-       const std::unique_ptr<ArgumentList> &actualArgs);
+       const ArgumentList *actualArgs);
 
 QCString stripTemplateSpecifiersFromScope(const QCString &fullName,
                                           bool parentOnly=TRUE,
                                           QCString *lastScopeStripped=nullptr,
-                                          QCString scopeName=QCString());
+                                          QCString scopeName=QCString(),
+                                          bool allowArtificial=true);
 
 QCString resolveTypeDef(const Definition *d,const QCString &name,
                         const Definition **typedefContext=nullptr);
@@ -338,7 +397,7 @@ QCString stripExtensionGeneral(const QCString &fName, const QCString &ext);
 
 QCString stripExtension(const QCString &fName);
 
-void replaceNamespaceAliases(QCString &scope,size_t i);
+QCString makeBaseName(const QCString &name, const QCString &ext);
 
 int computeQualifiedIndex(const QCString &name);
 
@@ -369,6 +428,7 @@ void addCodeOnlyMappings();
 bool checkIfTypedef(const Definition *scope,const FileDef *fileScope,const QCString &n);
 
 QCString parseCommentAsText(const Definition *scope,const MemberDef *member,const QCString &doc,const QCString &fileName,int lineNr);
+QCString parseCommentAsHtml(const Definition *scope,const MemberDef *member,const QCString &doc,const QCString &fileName,int lineNr);
 
 bool transcodeCharacterStringToUTF8(std::string &input,const char *inputEncoding);
 
@@ -380,7 +440,7 @@ QCString convertCharEntitiesToUTF8(const QCString &s);
 
 void stackTrace();
 
-bool readInputFile(const QCString &fileName,BufStr &inBuf,
+bool readInputFile(const QCString &fileName,std::string &contents,
                    bool filter=TRUE,bool isSourceCode=FALSE);
 QCString filterTitle(const QCString &title);
 
@@ -398,6 +458,8 @@ int nextUtf8CharPosition(const QCString &utf8Str,uint32_t len,uint32_t startPos)
 
 void writeMarkerList(OutputList &ol,const std::string &markerText,size_t numMarkers,
                      std::function<void(size_t)> replaceFunc);
+QCString writeMarkerList(const std::string &markerText,size_t numMarkers,
+                     std::function<QCString(size_t)> replaceFunc);
 
 /** Data associated with a HSV colored image. */
 struct ColoredImgDataItem
@@ -424,8 +486,8 @@ QCString processMarkup(const QCString &s);
 
 bool protectionLevelVisible(Protection prot);
 
-QCString stripIndentation(const QCString &s);
-void stripIndentation(QCString &doc,const int indentationLevel);
+QCString stripIndentation(const QCString &s,bool skipFirstLine=false);
+void stripIndentationVerbatim(QCString &doc,const int indentationLevel, bool skipFirstLine=true);
 
 QCString getDotImageExtension();
 
@@ -436,8 +498,8 @@ QCString extractDirection(QCString &docs);
 void convertProtectionLevel(
                    MemberListType inListType,
                    Protection inProt,
-                   int *outListType1,
-                   int *outListType2
+                   MemberListType *outListType1,
+                   MemberListType *outListType2
                   );
 
 bool mainPageHasTitle();
@@ -463,5 +525,18 @@ QCString detab(const QCString &s,size_t &refIndent);
 
 QCString getProjectId();
 QCString projectLogoFile();
+
+void mergeMemberOverrideOptions(MemberDefMutable *md1,MemberDefMutable *md2);
+
+size_t updateColumnCount(const char *s,size_t col);
+
+QCString mangleCSharpGenericName(const QCString &name);
+QCString demangleCSharpGenericName(const QCString &name,const QCString &templArgs);
+
+QCString extractBeginRawStringDelimiter(const char *rawStart);
+QCString extractEndRawStringDelimiter(const char *rawEnd);
+
+QCString writeFileContents(const QCString &baseName,const QCString &extension,const QCString &content,bool &exists);
+void cleanupInlineGraph();
 
 #endif

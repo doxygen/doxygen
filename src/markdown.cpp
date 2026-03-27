@@ -52,6 +52,7 @@
 #include "fileinfo.h"
 #include "trace.h"
 #include "anchor.h"
+#include "stringutil.h"
 
 #if !ENABLE_MARKDOWN_TRACING
 #undef  AUTO_TRACE
@@ -66,35 +67,57 @@ enum class ExplicitPageResult
 {
   explicitPage,      /**< docs start with a page command */
   explicitMainPage,  /**< docs start with a mainpage command */
+  explicitOtherPage, /**< docs start with a dir / defgroup / addtogroup command */
   notExplicit        /**< docs doesn't start with either page or mainpage */
 };
 
 //-----------
 
 // is character c part of an identifier?
-#define isIdChar(c) \
-  ((c>='a' && c<='z') || \
-   (c>='A' && c<='Z') || \
-   (c>='0' && c<='9') || \
-   (static_cast<unsigned char>(c)>=0x80)) // unicode characters
+static constexpr bool isIdChar(char c)
+{
+  return (c>='a' && c<='z') ||
+         (c>='A' && c<='Z') ||
+         (c>='0' && c<='9') ||
+         (static_cast<unsigned char>(c)>=0x80); // unicode characters
+}
 
-#define extraChar(c) \
-  (c=='-' || c=='+' || c=='!' || \
-   c=='?' || c=='$' || c=='@' || \
-   c=='&' || c=='*' || c=='%')
+// is character allowed right at the beginning of an emphasis section
+static constexpr bool extraChar(char c)
+{
+  return c=='-' || c=='+' || c=='!' || c=='?' || c=='$' || c=='@'  ||
+         c=='&' || c=='*' || c=='_' || c=='%' || c=='[' || c=='('  ||
+         c=='.' || c=='>' || c==':' || c==',' || c==';' || c=='\'' ||
+         c=='"' || c=='`' || c=='\\';
+}
 
-// is character at position i in data allowed before an emphasis section
-#define isOpenEmphChar(c) \
-  (c=='\n' || c==' ' || c=='\'' || c=='<' || \
-   c=='>'  || c=='{' || c=='('  || c=='[' || \
-   c==','  || c==':' || c==';')
+// is character c allowed before an emphasis section
+static constexpr bool isOpenEmphChar(char c)
+{
+  return c=='\n' || c==' ' || c=='\'' || c=='<' ||
+         c=='>'  || c=='{' || c=='('  || c=='[' ||
+         c==','  || c==':' || c==';';
+}
 
-// is character at position i in data an escape that prevents ending an emphasis section
-// so for example *bla (*.txt) is cool*
-#define ignoreCloseEmphChar(c,cn) \
-  (c=='('  || c=='{' || c=='[' || (c=='<' && cn!='/') || \
-   c=='\\' || \
-   c=='@')
+// test for non breakable space (UTF-8)
+static constexpr bool isUtf8Nbsp(char c1,char c2)
+{
+  return c1==static_cast<char>(0xc2) && c2==static_cast<char>(0xa0);
+}
+
+static constexpr bool isAllowedEmphStr(const std::string_view &data,size_t offset)
+{
+  return ((offset>0 && !isOpenEmphChar(data.data()[-1])) &&
+          (offset>1 && !isUtf8Nbsp(data.data()[-2],data.data()[-1])));
+}
+
+// is character c an escape that prevents ending an emphasis section
+// so for example *bla (*.txt) is cool*, the c=='(' prevents '*' from ending the emphasis section.
+static constexpr bool ignoreCloseEmphChar(char c,char cn)
+{
+  return c=='('  || c=='{' || c=='[' || (c=='<' && cn!='/') || c=='\\' || c=='@';
+}
+
 //----------
 
 struct TableCell
@@ -106,22 +129,7 @@ struct TableCell
 
 struct Markdown::Private
 {
-  Private(const QCString &fn,int line,int indent)
-    : fileName(fn), lineNr(line), indentLevel(indent)
-  {
-    // setup callback table for special characters
-    actions[static_cast<unsigned int>('_')] = [this](std::string_view data,size_t offset) { return processEmphasis      (data,offset); };
-    actions[static_cast<unsigned int>('*')] = [this](std::string_view data,size_t offset) { return processEmphasis      (data,offset); };
-    actions[static_cast<unsigned int>('~')] = [this](std::string_view data,size_t offset) { return processEmphasis      (data,offset); };
-    actions[static_cast<unsigned int>('`')] = [this](std::string_view data,size_t offset) { return processCodeSpan      (data,offset); };
-    actions[static_cast<unsigned int>('\\')]= [this](std::string_view data,size_t offset) { return processSpecialCommand(data,offset); };
-    actions[static_cast<unsigned int>('@')] = [this](std::string_view data,size_t offset) { return processSpecialCommand(data,offset); };
-    actions[static_cast<unsigned int>('[')] = [this](std::string_view data,size_t offset) { return processLink          (data,offset); };
-    actions[static_cast<unsigned int>('!')] = [this](std::string_view data,size_t offset) { return processLink          (data,offset); };
-    actions[static_cast<unsigned int>('<')] = [this](std::string_view data,size_t offset) { return processHtmlTag       (data,offset); };
-    actions[static_cast<unsigned int>('-')] = [this](std::string_view data,size_t offset) { return processNmdash        (data,offset); };
-    actions[static_cast<unsigned int>('"')] = [this](std::string_view data,size_t offset) { return processQuoted        (data,offset); };
-  }
+  Private(const QCString &fn,int line,int indent) : fileName(fn), lineNr(line), indentLevel(indent) { }
 
   QCString processQuotations(std::string_view data,size_t refIndent);
   QCString processBlocks(std::string_view data,size_t indent);
@@ -163,15 +171,32 @@ struct Markdown::Private
     QCString link;
     QCString title;
   };
-  using Action_t = std::function<int(std::string_view,size_t)>;
 
   std::unordered_map<std::string,LinkRef> linkRefs;
   QCString       fileName;
   int            lineNr = 0;
   int            indentLevel=0;  // 0 is outside markdown, -1=page level
   QCString       out;
-  std::array<Action_t,256> actions;
 };
+
+Markdown::ActionTable_t Markdown::fill_table()
+{
+  Markdown::ActionTable_t a{};
+  a[static_cast<unsigned int>('_')] = [](Markdown::Private &obj,std::string_view data,size_t offset) { return obj.processEmphasis      (data,offset); };
+  a[static_cast<unsigned int>('*')] = [](Markdown::Private &obj,std::string_view data,size_t offset) { return obj.processEmphasis      (data,offset); };
+  a[static_cast<unsigned int>('~')] = [](Markdown::Private &obj,std::string_view data,size_t offset) { return obj.processEmphasis      (data,offset); };
+  a[static_cast<unsigned int>('`')] = [](Markdown::Private &obj,std::string_view data,size_t offset) { return obj.processCodeSpan      (data,offset); };
+  a[static_cast<unsigned int>('\\')]= [](Markdown::Private &obj,std::string_view data,size_t offset) { return obj.processSpecialCommand(data,offset); };
+  a[static_cast<unsigned int>('@')] = [](Markdown::Private &obj,std::string_view data,size_t offset) { return obj.processSpecialCommand(data,offset); };
+  a[static_cast<unsigned int>('[')] = [](Markdown::Private &obj,std::string_view data,size_t offset) { return obj.processLink          (data,offset); };
+  a[static_cast<unsigned int>('!')] = [](Markdown::Private &obj,std::string_view data,size_t offset) { return obj.processLink          (data,offset); };
+  a[static_cast<unsigned int>('<')] = [](Markdown::Private &obj,std::string_view data,size_t offset) { return obj.processHtmlTag       (data,offset); };
+  a[static_cast<unsigned int>('-')] = [](Markdown::Private &obj,std::string_view data,size_t offset) { return obj.processNmdash        (data,offset); };
+  a[static_cast<unsigned int>('"')] = [](Markdown::Private &obj,std::string_view data,size_t offset) { return obj.processQuoted        (data,offset); };
+  return a;
+}
+Markdown::ActionTable_t Markdown::actions = Markdown::fill_table();
+
 
 Markdown::Markdown(const QCString &fileName,int lineNr,int indentLevel)
   : prv(std::make_unique<Private>(fileName,lineNr,indentLevel))
@@ -184,15 +209,14 @@ Markdown::~Markdown() = default;
 
 void Markdown::setIndentLevel(int level) { prv->indentLevel = level; }
 
-
-enum Alignment { AlignNone, AlignLeft, AlignCenter, AlignRight };
+enum class Alignment { None, Left, Center, Right };
 
 
 //---------- constants -------
 //
-const char *g_utf8_nbsp = "\xc2\xa0";      // UTF-8 nbsp
-const char *g_doxy_nbsp = "&_doxy_nbsp;";  // doxygen escape command for UTF-8 nbsp
-const size_t codeBlockIndent = 4;
+static const char *g_utf8_nbsp = "\xc2\xa0";      // UTF-8 nbsp
+static const char *g_doxy_nbsp = "&_doxy_nbsp;";  // doxygen escape command for UTF-8 nbsp
+static const size_t codeBlockIndent = 4;
 
 //---------- helpers -------
 
@@ -203,7 +227,10 @@ inline size_t isNewline(std::string_view data)
   // normal newline
   if (data[0] == '\n') return 1;
   // artificial new line from ^^ in ALIASES
-  if (data[0] == '\\' && qstrncmp(data.data()+1,"ilinebr ",7)==0) return data[8]==' ' ? 9 : 8;
+  if (literal_at(data,"\\ilinebr"))
+  {
+    return (data.size()>8 && data[8]==' ') ? 9 : 8; // also count space after \ilinebr if present
+  }
   return 0;
 }
 
@@ -214,7 +241,7 @@ static QCString escapeDoubleQuotes(const QCString &s)
   if (s.isEmpty()) return s;
   QCString result;
   const char *p=s.data();
-  char c,pc='\0';
+  char c=0, pc='\0';
   while ((c=*p++))
   {
     if (c=='"' && pc!='\\') result+='\\';
@@ -233,13 +260,23 @@ static QCString escapeSpecialChars(const QCString &s)
   bool insideQuote=FALSE;
   QCString result;
   const char *p=s.data();
-  char c,pc='\0';
+  char c=0, pc='\0';
   while ((c=*p++))
   {
     switch (c)
     {
       case '"':
-        if (pc!='\\')  { insideQuote=!insideQuote; }
+        if (pc!='\\')
+        {
+          if (Config_getBool(MARKDOWN_STRICT))
+          {
+            result+='\\';
+          }
+          else // For Doxygen's markup style a quoted text is left untouched
+          {
+            insideQuote=!insideQuote;
+          }
+        }
         result+=c;
         break;
       case '<':
@@ -278,25 +315,25 @@ static QCString escapeSpecialChars(const QCString &s)
 }
 
 /** helper function to convert presence of left and/or right alignment markers
- *  to a alignment value
+ *  to an alignment value
  */
-static Alignment markersToAlignment(bool leftMarker,bool rightMarker)
+static constexpr Alignment markersToAlignment(bool leftMarker,bool rightMarker)
 {
   if (leftMarker && rightMarker)
   {
-    return AlignCenter;
+    return Alignment::Center;
   }
   else if (leftMarker)
   {
-    return AlignLeft;
+    return Alignment::Left;
   }
   else if (rightMarker)
   {
-    return AlignRight;
+    return Alignment::Right;
   }
   else
   {
-    return AlignNone;
+    return Alignment::None;
   }
 }
 
@@ -350,23 +387,24 @@ static QCString getFilteredImageAttributes(std::string_view fmt, const QCString 
 // \startuml..\enduml
 QCString Markdown::Private::isBlockCommand(std::string_view data,size_t offset)
 {
+  QCString result;
   AUTO_TRACE("data='{}' offset={}",Trace::trunc(data),offset);
 
   using EndBlockFunc = QCString (*)(const std::string &,bool,char);
 
-  static const auto getEndBlock   = [](const std::string &blockName,bool,char) -> QCString
+  static constexpr auto getEndBlock   = [](const std::string &blockName,bool,char) -> QCString
   {
     return "end"+blockName;
   };
-  static const auto getEndCode    = [](const std::string &blockName,bool openBracket,char) -> QCString
+  static constexpr auto getEndCode    = [](const std::string &blockName,bool openBracket,char) -> QCString
   {
     return openBracket ? QCString("}") : "end"+blockName;
   };
-  static const auto getEndUml     = [](const std::string &/* blockName */,bool,char) -> QCString
+  static constexpr auto getEndUml     = [](const std::string &/* blockName */,bool,char) -> QCString
   {
     return "enduml";
   };
-  static const auto getEndFormula = [](const std::string &/* blockName */,bool,char nextChar) -> QCString
+  static constexpr auto getEndFormula = [](const std::string &/* blockName */,bool,char nextChar) -> QCString
   {
     switch (nextChar)
     {
@@ -401,14 +439,13 @@ QCString Markdown::Private::isBlockCommand(std::string_view data,size_t offset)
   const size_t size = data.size();
   bool openBracket = offset>0 && data.data()[-1]=='{';
   bool isEscaped = offset>0 && (data.data()[-1]=='\\' || data.data()[-1]=='@');
-  if (isEscaped) return QCString();
+  if (isEscaped) return result;
 
   size_t end=1;
   while (end<size && (data[end]>='a' && data[end]<='z')) end++;
-  if (end==1) return QCString();
+  if (end==1) return result;
   std::string blockName(data.substr(1,end-1));
   auto it = blockNames.find(blockName);
-  QCString result;
   if (it!=blockNames.end()) // there is a function assigned
   {
     result = it->second(blockName, openBracket, end<size ? data[end] : 0);
@@ -423,11 +460,11 @@ size_t Markdown::Private::isSpecialCommand(std::string_view data,size_t offset)
 
   using EndCmdFunc = size_t (*)(std::string_view,size_t);
 
-  static const auto endOfLine = [](std::string_view data_,size_t offset_) -> size_t
+  static constexpr auto endOfLine = [](std::string_view data_,size_t offset_) -> size_t
   {
     // skip until the end of line (allowing line continuation characters)
     char lc = 0;
-    char c;
+    char c = 0;
     while (offset_<data_.size() && ((c=data_[offset_])!='\n' || lc=='\\'))
     {
       if (c=='\\')     lc='\\'; // last character was a line continuation
@@ -437,22 +474,58 @@ size_t Markdown::Private::isSpecialCommand(std::string_view data,size_t offset)
     return offset_;
   };
 
-  static const auto endOfLabel = [](std::string_view data_,size_t offset_) -> size_t
+  static constexpr auto endOfLabels = [](std::string_view data_,size_t offset_,bool multi_) -> size_t
   {
     if (offset_<data_.size() && data_[offset_]==' ') // we expect a space before the label
     {
-      char c;
+      char c = 0;
       offset_++;
-      // skip over spaces
-      while (offset_<data_.size() && data_[offset_]==' ') offset_++;
-      // skip over label
-      while (offset_<data_.size() && (c=data_[offset_])!=' ' && c!='\\' && c!='@' && c!='\n') offset_++;
+      bool done=false;
+      while (!done)
+      {
+        // skip over spaces
+        while (offset_<data_.size() && data_[offset_]==' ')
+        {
+          offset_++;
+        }
+        // skip over label
+        while (offset_<data_.size() && (c=data_[offset_])!=' ' && c!=',' && c!='\\' && c!='@' && c!='\n')
+        {
+          offset_++;
+        }
+        // optionally skip over a comma separated list of labels
+        if (multi_ && offset_<data_.size() && (data_[offset_]==',' || data_[offset_]==' '))
+        {
+          size_t off = offset_;
+          while (off<data_.size() && data_[off]==' ')
+          {
+            off++;
+          }
+          if (off<data_.size() && data_[off]==',')
+          {
+            offset_ = ++off;
+          }
+          else // no next label found
+          {
+            done=true;
+          }
+        }
+        else
+        {
+          done=true;
+        }
+      }
       return offset_;
     }
     return 0;
   };
 
-  static const auto endOfLabelOpt = [](std::string_view data_,size_t offset_) -> size_t
+  static constexpr auto endOfLabel = [](std::string_view data_,size_t offset_) -> size_t
+  {
+    return endOfLabels(data_,offset_,false);
+  };
+
+  static constexpr auto endOfLabelOpt = [](std::string_view data_,size_t offset_) -> size_t
   {
     size_t index=offset_;
     if (index<data_.size() && data_[index]==' ') // skip over optional spaces
@@ -463,7 +536,7 @@ size_t Markdown::Private::isSpecialCommand(std::string_view data,size_t offset)
     if (index<data_.size() && data_[index]=='{') // find matching '}'
     {
       index++;
-      char c;
+      char c = 0;
       while (index<data_.size() && (c=data_[index])!='}' && c!='\\' && c!='@' && c!='\n') index++;
       if (index==data_.size() || data_[index]!='}') return 0; // invalid option
       offset_=index+1; // part after {...} is the option
@@ -471,7 +544,7 @@ size_t Markdown::Private::isSpecialCommand(std::string_view data,size_t offset)
     return endOfLabel(data_,offset_);
   };
 
-  static const auto endOfParam = [](std::string_view data_,size_t offset_) -> size_t
+  static constexpr auto endOfParam = [](std::string_view data_,size_t offset_) -> size_t
   {
     size_t index=offset_;
     if (index<data_.size() && data_[index]==' ') // skip over optional spaces
@@ -482,15 +555,20 @@ size_t Markdown::Private::isSpecialCommand(std::string_view data,size_t offset)
     if (index<data_.size() && data_[index]=='[') // find matching ']'
     {
       index++;
-      char c;
+      char c = 0;
       while (index<data_.size() && (c=data_[index])!=']' && c!='\n') index++;
       if (index==data_.size() || data_[index]!=']') return 0; // invalid parameter
       offset_=index+1; // part after [...] is the parameter name
     }
-    return endOfLabel(data_,offset_);
+    return endOfLabels(data_,offset_,true);
   };
 
-  static const auto endOfFuncLike = [](std::string_view data_,size_t offset_,bool allowSpaces) -> size_t
+  static constexpr auto endOfRetVal = [](std::string_view data_,size_t offset_) -> size_t
+  {
+    return endOfLabels(data_,offset_,true);
+  };
+
+  static constexpr auto endOfFuncLike = [](std::string_view data_,size_t offset_,bool allowSpaces) -> size_t
   {
     if (offset_<data_.size() && data_[offset_]==' ') // we expect a space before the name
     {
@@ -504,6 +582,7 @@ size_t Markdown::Private::isSpecialCommand(std::string_view data,size_t offset)
       // skip over name (and optionally type)
       while (offset_<data_.size() && (c=data_[offset_])!='\n' && (allowSpaces || c!=' ') && c!='(')
       {
+        if (literal_at(data_.substr(offset_),"\\ilinebr ")) break;
         offset_++;
       }
       if (c=='(') // find the end of the function
@@ -522,12 +601,12 @@ size_t Markdown::Private::isSpecialCommand(std::string_view data,size_t offset)
     return 0;
   };
 
-  static const auto endOfFunc = [](std::string_view data_,size_t offset_) -> size_t
+  static constexpr auto endOfFunc = [](std::string_view data_,size_t offset_) -> size_t
   {
     return endOfFuncLike(data_,offset_,true);
   };
 
-  static const auto endOfGuard = [](std::string_view data_,size_t offset_) -> size_t
+  static constexpr auto endOfGuard = [](std::string_view data_,size_t offset_) -> size_t
   {
     return endOfFuncLike(data_,offset_,false);
   };
@@ -554,7 +633,6 @@ size_t Markdown::Private::isSpecialCommand(std::string_view data,size_t offset)
     { "dockbookinclude",endOfLine  },
     { "dontinclude",    endOfLine  },
     { "dotfile",        endOfLine  },
-    { "dotfile",        endOfLine  },
     { "e",              endOfLabel },
     { "elseif",         endOfGuard },
     { "em",             endOfLabel },
@@ -578,7 +656,6 @@ size_t Markdown::Private::isSpecialCommand(std::string_view data,size_t offset)
     { "includelineno",  endOfLine  },
     { "ingroup",        endOfLabel },
     { "interface",      endOfLine  },
-    { "interface",      endOfLine  },
     { "latexinclude",   endOfLine  },
     { "maninclude",     endOfLine  },
     { "memberof",       endOfLabel },
@@ -600,7 +677,8 @@ size_t Markdown::Private::isSpecialCommand(std::string_view data,size_t offset)
     { "relatedalso",    endOfLabel },
     { "relates",        endOfLabel },
     { "relatesalso",    endOfLabel },
-    { "retval",         endOfLabel },
+    { "requirement",    endOfLabel },
+    { "retval",         endOfRetVal},
     { "rtfinclude",     endOfLine  },
     { "section",        endOfLabel },
     { "skip",           endOfLine  },
@@ -609,17 +687,22 @@ size_t Markdown::Private::isSpecialCommand(std::string_view data,size_t offset)
     { "snippetdoc",     endOfLine  },
     { "snippetlineno",  endOfLine  },
     { "struct",         endOfLine  },
+    { "satisfies",      endOfLabel },
     { "subpage",        endOfLabel },
+    { "subparagraph",   endOfLabel },
+    { "subsubparagraph",endOfLabel },
     { "subsection",     endOfLabel },
     { "subsubsection",  endOfLabel },
     { "throw",          endOfLabel },
     { "throws",         endOfLabel },
     { "tparam",         endOfLabel },
     { "typedef",        endOfLine  },
+    { "plantumlfile",   endOfLine  },
     { "union",          endOfLine  },
     { "until",          endOfLine  },
     { "var",            endOfLine  },
     { "verbinclude",    endOfLine  },
+    { "verifies",       endOfLabel },
     { "weakgroup",      endOfLabel },
     { "xmlinclude",     endOfLine  },
     { "xrefitem",       endOfLabel }
@@ -655,10 +738,15 @@ size_t Markdown::Private::findEmphasisChar(std::string_view data, char c, size_t
 
   while (i<size)
   {
-    while (i<size && data[i]!=c    && data[i]!='`' &&
+    while (i<size && data[i]!=c    &&
                      data[i]!='\\' && data[i]!='@' &&
                      !(data[i]=='/' && data[i-1]=='<') && // html end tag also ends emphasis
                      data[i]!='\n') i++;
+    // avoid overflow (unclosed emph token)
+    if (i==size)
+    {
+      return 0;
+    }
     //printf("findEmphasisChar: data=[%s] i=%d c=%c\n",data,i,data[i]);
 
     // not counting escaped chars or characters that are unlikely
@@ -679,9 +767,9 @@ size_t Markdown::Private::findEmphasisChar(std::string_view data, char c, size_t
 
       if (len>0)
       {
-        if (len!=c_size || (i<size-len && isIdChar(data[i+len]))) // to prevent touching some_underscore_identifier
+        if (len!=c_size || (i+len<size && isIdChar(data[i+len]))) // to prevent touching some_underscore_identifier
         {
-          i=i+len;
+          i+=len;
           continue;
         }
         AUTO_TRACE_EXIT("result={}",i);
@@ -693,7 +781,11 @@ size_t Markdown::Private::findEmphasisChar(std::string_view data, char c, size_t
     if (data[i]=='`')
     {
       int snb=0;
-      while (i<size && data[i]=='`') snb++,i++;
+      while (i < size && data[i] == '`')
+      {
+        snb++;
+        i++;
+      }
 
       // find same pattern to end the span
       int enb=0;
@@ -711,7 +803,7 @@ size_t Markdown::Private::findEmphasisChar(std::string_view data, char c, size_t
       {
         i++;
         size_t l = endBlockName.length();
-        while (i<size-l)
+        while (i+l<size)
         {
           if ((data[i]=='\\' || data[i]=='@') && // command
               data[i-1]!='\\' && data[i-1]!='@') // not escaped
@@ -724,7 +816,7 @@ size_t Markdown::Private::findEmphasisChar(std::string_view data, char c, size_t
           i++;
         }
       }
-      else if (i<size-1 && isIdChar(data[i+1])) // @cmd, stop processing, see bug 690385
+      else if (i+1<size && isIdChar(data[i+1])) // @cmd, stop processing, see bug 690385
       {
         return 0;
       }
@@ -758,7 +850,7 @@ size_t Markdown::Private::findEmphasisChar(std::string_view data, char c, size_t
 int Markdown::Private::processEmphasis1(std::string_view data, char c)
 {
   AUTO_TRACE("data='{}' c={}",Trace::trunc(data),c);
-  size_t i = 0, len;
+  size_t i = 0;
   const size_t size = data.size();
 
   /* skipping one symbol if coming from emph3 */
@@ -766,7 +858,7 @@ int Markdown::Private::processEmphasis1(std::string_view data, char c)
 
   while (i<size)
   {
-    len = findEmphasisChar(data.substr(i), c, 1);
+    size_t len = findEmphasisChar(data.substr(i), c, 1);
     if (len==0) { return 0; }
     i+=len;
     if (i>=size) { return 0; }
@@ -792,12 +884,12 @@ int Markdown::Private::processEmphasis1(std::string_view data, char c)
 int Markdown::Private::processEmphasis2(std::string_view data, char c)
 {
   AUTO_TRACE("data='{}' c={}",Trace::trunc(data),c);
-  size_t i = 0, len;
+  size_t i = 0;
   const size_t size = data.size();
 
   while (i<size)
   {
-    len = findEmphasisChar(data.substr(i), c, 2);
+    size_t len = findEmphasisChar(data.substr(i), c, 2);
     if (len==0)
     {
       return 0;
@@ -892,23 +984,25 @@ int Markdown::Private::processNmdash(std::string_view data,size_t offset)
   int count=1;
   if (i<size && data[i]=='-') // found --
   {
-    count++,i++;
+    count++;
+    i++;
   }
   if (i<size && data[i]=='-') // found ---
   {
-    count++,i++;
+    count++;
+    i++;
   }
   if (i<size && data[i]=='-') // found ----
   {
     count++;
   }
-  if (count>=2 && offset>=2 && qstrncmp(data.data()-2,"<!",2)==0)
+  if (count>=2 && offset>=2 && literal_at(data.data()-2,"<!"))
   { AUTO_TRACE_EXIT("result={}",1-count); return 1-count; } // start HTML comment
-  if (count==2 && (data[2]=='>'))
+  if (count==2 && size > 2 && data[2]=='>')
   { return 0; } // end HTML comment
-  if (count==3 && (data[3]=='>'))
+  if (count==3 && size > 3 && data[3]=='>')
   { return 0; } // end HTML comment
-  if (count==2 && (offset<8 || qstrncmp(data.data()-8,"operator",8)!=0)) // -- => ndash
+  if (count==2 && (offset<8 || !literal_at(data.data()-8,"operator"))) // -- => ndash
   {
     out+="&ndash;";
     AUTO_TRACE_EXIT("result=2");
@@ -960,12 +1054,16 @@ int Markdown::Private::processHtmlTagWrite(std::string_view data,size_t offset,b
   size_t i=1;
   size_t l=0;
   // compute length of the tag name
-  while (i<size && isIdChar(data[i])) i++,l++;
+  while (i < size && isIdChar(data[i]))
+  {
+    i++;
+    l++;
+  }
   QCString tagName(data.substr(1,i-1));
   if (tagName.lower()=="pre") // found <pre> tag
   {
     bool insideStr=FALSE;
-    while (i<size-6)
+    while (i+6<size)
     {
       char c=data[i];
       if (!insideStr && c=='<') // potential start of html tag
@@ -995,7 +1093,7 @@ int Markdown::Private::processHtmlTagWrite(std::string_view data,size_t offset,b
   {
     if (l>0 && i<size)
     {
-      if (data[i]=='/' && i<size-1 && data[i+1]=='>') // <bla/>
+      if (data[i]=='/' && i+1<size && data[i+1]=='>') // <bla/>
       {
         //printf("Found htmlTag={%s}\n",qPrint(QCString(data).left(i+2)));
         if (doWrite) out+=data.substr(0,i+2);
@@ -1050,15 +1148,16 @@ int Markdown::Private::processEmphasis(std::string_view data,size_t offset)
   AUTO_TRACE("data='{}' offset={}",Trace::trunc(data),offset);
   const size_t size = data.size();
 
-  if ((offset>0 && !isOpenEmphChar(data.data()[-1])) || // invalid char before * or _
-      (size>1 && data[0]!=data[1] && !(isIdChar(data[1]) || extraChar(data[1]) || data[1]=='[')) || // invalid char after * or _
-      (size>2 && data[0]==data[1] && !(isIdChar(data[2]) || extraChar(data[2]) || data[2]=='[')))   // invalid char after ** or __
+  if (isAllowedEmphStr(data,offset) || // invalid char before * or _
+      (size>1 && data[0]!=data[1] && !(isIdChar(data[1]) || extraChar(data[1]))) || // invalid char after * or _
+      (size>2 && data[0]==data[1] && !(isIdChar(data[2]) || extraChar(data[2]))))   // invalid char after ** or __
   {
+    AUTO_TRACE_EXIT("invalid surrounding characters");
     return 0;
   }
 
   char c = data[0];
-  int ret;
+  int ret = 0;
   if (size>2 && c!='~' && data[1]!=c) // _bla or *bla
   {
     // whitespace cannot follow an opening emphasis
@@ -1228,20 +1327,28 @@ int Markdown::Private::processLink(const std::string_view data,size_t offset)
     if (i<size && data[i]=='<') { i++; uriFormat=true; }
     size_t linkStart=i;
     int braceCount=1;
+    int nlConsec = 0;
     while (i<size && data[i]!='\'' && data[i]!='"' && braceCount>0)
     {
       if (data[i]=='\n') // unexpected EOL
       {
         nl++;
-        if (nl>1) { return 0; }
+        nlConsec++;
+        if (nlConsec>1) { return 0; }
       }
       else if (data[i]=='(')
       {
         braceCount++;
+        nlConsec = 0;
       }
       else if (data[i]==')')
       {
         braceCount--;
+        nlConsec = 0;
+      }
+      else if (data[i]!=' ')
+      {
+        nlConsec = 0;
       }
       if (braceCount>0)
       {
@@ -1443,7 +1550,7 @@ int Markdown::Private::processLink(const std::string_view data,size_t offset)
   if (isToc) // special case for [TOC]
   {
     int toc_level = Config_getInt(TOC_INCLUDE_HEADINGS);
-    if (toc_level>0 && toc_level<=5)
+    if (toc_level>=SectionType::MinLevel && toc_level<=SectionType::MaxLevel)
     {
       out+="@tableofcontents{html:";
       out+=QCString().setNum(toc_level);
@@ -1452,7 +1559,7 @@ int Markdown::Private::processLink(const std::string_view data,size_t offset)
   }
   else if (isImageLink)
   {
-    bool ambig;
+    bool ambig = false;
     FileDef *fd=nullptr;
     if (link.find("@ref ")!=-1 || link.find("\\ref ")!=-1 ||
         (fd=findFileDef(Doxygen::imageNameLinkedMap,link,ambig)))
@@ -1527,12 +1634,12 @@ int Markdown::Private::processLink(const std::string_view data,size_t offset)
       }
       out+="\"";
     }
-    else if (link.find('/')!=-1 || link.find('.')!=-1 || link.find('#')!=-1)
+    else if ((lp=link.find('#'))!=-1 || link.find('/')!=-1 || link.find('.')!=-1)
     { // file/url link
-      if (link.at(0) == '#')
+      if (lp==0 || (lp>0 && !isURL(link) && Config_getEnum(MARKDOWN_ID_STYLE)==MARKDOWN_ID_STYLE_t::GITHUB))
       {
         out+="@ref \"";
-        out+=AnchorGenerator::addPrefixIfNeeded(link.mid(1).str());
+        out+=AnchorGenerator::addPrefixIfNeeded(link.mid(lp+1).str());
         out+="\" \"";
         out+=substitute(content.simplifyWhiteSpace(),"\"","&quot;");
         out+="\"";
@@ -1552,7 +1659,7 @@ int Markdown::Private::processLink(const std::string_view data,size_t offset)
         out+=" ";
         out+=externalLinkTarget();
         out+=">";
-        content = substitute(content.simplifyWhiteSpace(),"\"","\\\"");
+        content = content.simplifyWhiteSpace();
         processInline(std::string_view(content.str()));
         out+="</a>";
       }
@@ -1568,40 +1675,84 @@ int Markdown::Private::processLink(const std::string_view data,size_t offset)
 }
 
 /** `` ` `` parsing a code span (assuming codespan != 0) */
-int Markdown::Private::processCodeSpan(std::string_view data,size_t)
+int Markdown::Private::processCodeSpan(std::string_view data,size_t offset)
 {
-  AUTO_TRACE("data='{}'",Trace::trunc(data));
+  AUTO_TRACE("data='{}' offset={}",Trace::trunc(data),offset);
   const size_t size = data.size();
-  size_t i=0, nb=0, end, f_begin, f_end;
 
   /* counting the number of backticks in the delimiter */
+  size_t nb=0, end=0;
   while (nb<size && data[nb]=='`')
   {
     nb++;
   }
 
-  /* finding the next delimiter */
-  i = 0;
+  /* finding the next delimiter with the same amount of backticks */
+  size_t i = 0;
   char pc = '`';
-  for (end=nb; end<size && i<nb; end++)
+  bool markdownStrict = Config_getBool(MARKDOWN_STRICT);
+  for (end=nb; end<size; end++)
   {
+    //AUTO_TRACE_ADD("c={} nb={} i={} size={}",data[end],nb,i,size);
     if (data[end]=='`')
     {
       i++;
+      if (nb==1) // `...`
+      {
+        if (end+1<size && data[end+1]=='`') // skip over `` inside `...`
+        {
+          AUTO_TRACE_ADD("case1.1");
+          // skip
+          end++;
+          i=0;
+        }
+        else // normal end of `...`
+        {
+          AUTO_TRACE_ADD("case1.2");
+          break;
+        }
+      }
+      else if (i==nb) // ``...``
+      {
+        if (end+1<size && data[end+1]=='`') // do greedy match
+        {
+          // skip this quote and use the next one to terminate the sequence, e.g. ``X`Y```
+          i--;
+          AUTO_TRACE_ADD("case2.1");
+        }
+        else // normal end of ``...``
+        {
+          AUTO_TRACE_ADD("case2.2");
+          break;
+        }
+      }
     }
     else if (data[end]=='\n')
     {
       // consecutive newlines
-      if (pc == '\n') return 0;
+      if (pc == '\n')
+      {
+        AUTO_TRACE_EXIT("new paragraph");
+        return 0;
+      }
       pc = '\n';
       i = 0;
     }
-    else if (data[end]=='\'' && nb==1 && (end==size-1 || (end<size-1 && !isIdChar(data[end+1]))))
+    else if (!markdownStrict && data[end]=='\'' && nb==1 && (end+1==size || (end+1<size && data[end+1]!='\'' && !isIdChar(data[end+1]))))
     { // look for quoted strings like 'some word', but skip strings like `it's cool`
       out+="&lsquo;";
       out+=data.substr(nb,end-nb);
       out+="&rsquo;";
+      AUTO_TRACE_EXIT("quoted end={}",end+1);
       return static_cast<int>(end+1);
+    }
+    else if (!markdownStrict && data[end]=='\'' && nb==2 && end+1<size && data[end+1]=='\'')
+    { // look for '' to match a ``
+      out+="&ldquo;";
+      out+=data.substr(nb,end-nb);
+      out+="&rdquo;";
+      AUTO_TRACE_EXIT("double quoted end={}",end+1);
+      return static_cast<int>(end+2);
     }
     else
     {
@@ -1611,39 +1762,37 @@ int Markdown::Private::processCodeSpan(std::string_view data,size_t)
   }
   if (i < nb && end >= size)
   {
+    AUTO_TRACE_EXIT("no matching delimiter nb={} i={}",nb,i);
+    if (nb>=3) // found ``` that is not at the start of the line, keep it as-is.
+    {
+      out+=data.substr(0,nb);
+      return static_cast<int>(nb);
+    }
     return 0;  // no matching delimiter
   }
-
-  // trimming outside whitespaces
-  f_begin = nb;
-  while (f_begin < end && data[f_begin]==' ')
+  while (end<size && data[end]=='`') // do greedy match in case we have more end backticks.
   {
-    f_begin++;
-  }
-  f_end = end - nb;
-  while (f_end > nb && data[f_end-1]==' ')
-  {
-    f_end--;
+    end++;
   }
 
   //printf("found code span '%s'\n",qPrint(QCString(data+f_begin).left(f_end-f_begin)));
 
   /* real code span */
-  if (f_begin < f_end)
+  if (nb+nb < end)
   {
-    QCString codeFragment = data.substr(f_begin, f_end-f_begin);
+    QCString codeFragment = data.substr(nb, end-nb-nb);
     out+="<tt>";
     out+=escapeSpecialChars(codeFragment);
     out+="</tt>";
   }
-  AUTO_TRACE_EXIT("result={}",end);
+  AUTO_TRACE_EXIT("result={} nb={}",end,nb);
   return static_cast<int>(end);
 }
 
 void Markdown::Private::addStrEscapeUtf8Nbsp(std::string_view data)
 {
   AUTO_TRACE("{}",Trace::trunc(data));
-  if (Portable::strnstr(data.data(),g_doxy_nbsp,data.size())==0) // no escape needed -> fast
+  if (Portable::strnstr(data.data(),g_doxy_nbsp,data.size())==nullptr) // no escape needed -> fast
   {
     out+=data;
   }
@@ -1663,7 +1812,7 @@ int Markdown::Private::processSpecialCommand(std::string_view data, size_t offse
   {
     AUTO_TRACE_ADD("endBlockName={}",endBlockName);
     size_t l = endBlockName.length();
-    while (i<size-l)
+    while (i+l<size)
     {
       if ((data[i]=='\\' || data[i]=='@') && // command
           data[i-1]!='\\' && data[i-1]!='@') // not escaped
@@ -1685,10 +1834,10 @@ int Markdown::Private::processSpecialCommand(std::string_view data, size_t offse
     out+=data.substr(0,endPos);
     return static_cast<int>(endPos);
   }
-  if (size>1 && data[0]=='\\') // escaped characters
+  if (size>1 && (data[0]=='\\' || data[0]=='@')) // escaped characters
   {
     char c=data[1];
-    if (c=='[' || c==']' || c=='*' || c=='!' || c=='(' || c==')' || c=='`' || c=='_')
+    if (c=='[' || c==']' || c=='*' || c=='(' || c==')' || c=='`' || c=='_')
     {
       out+=data[1];
       AUTO_TRACE_EXIT("2");
@@ -1713,16 +1862,6 @@ int Markdown::Private::processSpecialCommand(std::string_view data, size_t offse
       return 3;
     }
   }
-  else if (size>1 && data[0]=='@') // escaped characters
-  {
-    char c=data[1];
-    if (c=='\\' || c=='@')
-    {
-      out+=data.substr(0,2);
-      AUTO_TRACE_EXIT("2");
-      return 2;
-    }
-  }
   return 0;
 }
 
@@ -1736,13 +1875,13 @@ void Markdown::Private::processInline(std::string_view data)
   while (i<size)
   {
     // skip over characters that do not trigger a specific action
-    while (end<size && ((action=actions[static_cast<uint8_t>(data[end])])==nullptr)) end++;
+    while (end<size && ((action=Markdown::actions[static_cast<uint8_t>(data[end])])==nullptr)) end++;
     // and add them to the output
     out+=data.substr(i,end-i);
     if (end>=size) break;
     i=end;
     // do the action matching a special character at i
-    int iend = action(data.substr(i),i);
+    int iend = action(*this,data.substr(i),i);
     if (iend<=0) // update end
     {
       end=i+1-iend;
@@ -1762,11 +1901,16 @@ int Markdown::Private::isHeaderline(std::string_view data, bool allowAdjustLevel
   size_t i=0, c=0;
   const size_t size = data.size();
   while (i<size && data[i]==' ') i++;
+  if (i==size) return 0;
 
   // test of level 1 header
   if (data[i]=='=')
   {
-    while (i<size && data[i]=='=') i++,c++;
+    while (i < size && data[i] == '=')
+    {
+      i++;
+      c++;
+    }
     while (i<size && data[i]==' ') i++;
     int level = (c>1 && (i>=size || data[i]=='\n')) ? 1 : 0;
     if (allowAdjustLevel && level==1 && indentLevel==-1)
@@ -1784,7 +1928,11 @@ int Markdown::Private::isHeaderline(std::string_view data, bool allowAdjustLevel
   // test of level 2 header
   if (data[i]=='-')
   {
-    while (i<size && data[i]=='-') i++,c++;
+    while (i < size && data[i] == '-')
+    {
+      i++;
+      c++;
+    }
     while (i<size && data[i]==' ') i++;
     return (c>1 && (i>=size || data[i]=='\n')) ? indentLevel+2 : 0;
   }
@@ -1955,13 +2103,13 @@ QCString Markdown::Private::extractTitleId(QCString &title, int level, bool *pIs
     title = title.left(match.position());
     if (AnchorGenerator::instance().reserve(id)>0)
     {
-      warn(fileName, lineNr, "An automatically generated id already has the name '%s'!", id.c_str());
+      warn(fileName, lineNr, "An automatically generated id already has the name '{}'!", id);
     }
-    //printf("found match id='%s' title=%s\n",id.c_str(),qPrint(title));
+    //printf("found match id='%s' title=%s\n",qPrint(id),qPrint(title));
     AUTO_TRACE_EXIT("id={}",id);
     return id;
   }
-  if ((level>0) && (level<=Config_getInt(TOC_INCLUDE_HEADINGS)))
+  if (((level>0) && (level<=Config_getInt(TOC_INCLUDE_HEADINGS))) || (Config_getEnum(MARKDOWN_ID_STYLE)==MARKDOWN_ID_STYLE_t::GITHUB))
   {
     QCString id = AnchorGenerator::instance().generate(ti);
     if (pIsIdGenerated) *pIsIdGenerated=true;
@@ -1978,7 +2126,7 @@ int Markdown::Private::isAtxHeader(std::string_view data,
                        QCString &header,QCString &id,bool allowAdjustLevel,bool *pIsIdGenerated)
 {
   AUTO_TRACE("data='{}' header={} id={} allowAdjustLevel={}",Trace::trunc(data),Trace::trunc(header),id,allowAdjustLevel);
-  size_t i = 0, end;
+  size_t i = 0;
   int level = 0, blanks=0;
   const size_t size = data.size();
 
@@ -1988,15 +2136,27 @@ int Markdown::Private::isAtxHeader(std::string_view data,
   {
     return 0;
   }
-  while (i<size && level<6 && data[i]=='#') i++,level++;
-  while (i<size && data[i]==' ') i++,blanks++;
+  while (i < size && data[i] == '#')
+  {
+    i++;
+    level++;
+  }
+  if (level>SectionType::MaxLevel) // too many #'s -> no section
+  {
+    return 0;
+  }
+  while (i < size && data[i] == ' ')
+  {
+    i++;
+    blanks++;
+  }
   if (level==1 && blanks==0)
   {
     return 0; // special case to prevent #someid seen as a header (see bug 671395)
   }
 
   // find end of header text
-  end=i;
+  size_t end=i;
   while (end<size && data[end]!='\n') end++;
   while (end>i && (data[end-1]=='#' || data[end-1]==' ')) end--;
 
@@ -2074,7 +2234,7 @@ static size_t computeIndentExcludingListMarkers(std::string_view data)
            (data[i]=='+' || data[i]=='-' || data[i]=='*' ||  // unordered list char
             (data[i]=='#' && i>0 && data[i-1]=='-') ||       // -# item
             (isDigit=(data[i]>='1' && data[i]<='9')) ||      // ordered list marker?
-            (isLi=(size>=3 && i<size-3 && isLiTag(i)))       // <li> tag
+            (isLi=(size>=3 && i+3<size && isLiTag(i)))       // <li> tag
            )
           )
          )
@@ -2087,7 +2247,7 @@ static size_t computeIndentExcludingListMarkers(std::string_view data)
       {
         if (data[j]=='.') // should be end of the list marker
         {
-          if (j<size-1 && data[j+1]==' ') // valid list marker
+          if (j+1<size && data[j+1]==' ') // valid list marker
           {
             listMarkerSkipped=TRUE;
             indent+=j+1-i;
@@ -2108,13 +2268,13 @@ static size_t computeIndentExcludingListMarkers(std::string_view data)
       indent+=3;
       listMarkerSkipped=TRUE;
     }
-    else if (data[i]=='-' && size>=2 && i<size-2 && data[i+1]=='#' && data[i+2]==' ')
+    else if (data[i]=='-' && size>=2 && i+2<size && data[i+1]=='#' && data[i+2]==' ')
     { // case "-# "
       listMarkerSkipped=TRUE; // only a single list marker is accepted
       i++; // skip over #
       indent++;
     }
-    else if (data[i]!=' ' && i<size-1 && data[i+1]==' ')
+    else if (data[i]!=' ' && i+1<size && data[i+1]==' ')
     { // case "- " or "+ " or "* "
       listMarkerSkipped=TRUE; // only a single list marker is accepted
     }
@@ -2122,7 +2282,8 @@ static size_t computeIndentExcludingListMarkers(std::string_view data)
     { // end of indent
       break;
     }
-    indent++,i++;
+    indent++;
+    i++;
   }
   AUTO_TRACE_EXIT("result={}",indent);
   return indent;
@@ -2167,18 +2328,25 @@ static bool isEndOfList(std::string_view data)
 }
 
 static bool isFencedCodeBlock(std::string_view data,size_t refIndent,
-                             QCString &lang,size_t &start,size_t &end,size_t &offset)
+                             QCString &lang,size_t &start,size_t &end,size_t &offset,
+                             QCString &fileName,int lineNr)
 {
   AUTO_TRACE("data='{}' refIndent={}",Trace::trunc(data),refIndent);
-  auto isWordChar = [ ](char c) { return (c>='A' && c<='Z') || (c>='a' && c<='z'); };
-  auto isLangChar = [&](char c) { return c=='.' || isWordChar(c);                  };
+  const char dot = '.';
+  auto isAlphaChar  = [ ](char c) { return (c>='A' && c<='Z') || (c>='a' && c<='z'); };
+  auto isAlphaNChar = [ ](char c) { return (c>='A' && c<='Z') || (c>='a' && c<='z') || (c>='0' && c<='9') || (c=='+'); };
+  auto isLangChar   = [&](char c) { return c==dot || isAlphaChar(c); };
   // rules: at least 3 ~~~, end of the block same amount of ~~~'s, otherwise
   // return FALSE
   size_t i=0;
   size_t indent=0;
   int startTildes=0;
   const size_t size = data.size();
-  while (i<size && data[i]==' ') indent++,i++;
+  while (i < size && data[i] == ' ')
+  {
+    indent++;
+    i++;
+  }
   if (indent>=refIndent+4)
   {
     AUTO_TRACE_EXIT("result=false: content is part of code block indent={} refIndent={}",indent,refIndent);
@@ -2186,7 +2354,11 @@ static bool isFencedCodeBlock(std::string_view data,size_t refIndent,
   } // part of code block
   char tildaChar='~';
   if (i<size && data[i]=='`') tildaChar='`';
-  while (i<size && data[i]==tildaChar) startTildes++,i++;
+  while (i < size && data[i] == tildaChar)
+  {
+    startTildes++;
+    i++;
+  }
   if (startTildes<3)
   {
     AUTO_TRACE_EXIT("result=false: no fence marker found #tildes={}",startTildes);
@@ -2195,6 +2367,7 @@ static bool isFencedCodeBlock(std::string_view data,size_t refIndent,
   if (i<size && data[i]=='{') // extract .py from ```{.py} ... ```
   {
     i++; // skip over {
+    if (data[i] == dot) i++; // skip over initial dot
     size_t startLang=i;
     while (i<size && (data[i]!='\n' && data[i]!='}')) i++; // find matching }
     if (i<size && data[i]=='}')
@@ -2210,15 +2383,20 @@ static bool isFencedCodeBlock(std::string_view data,size_t refIndent,
   }
   else if (i<size && isLangChar(data[i])) /// extract python or .py from ```python...``` or ```.py...```
   {
+    if (data[i] == dot) i++; // skip over initial dot
     size_t startLang=i;
-    i++;
-    while (i<size && isWordChar(data[i])) i++; // find end of language specifier
+    if (i<size && isAlphaChar(data[i])) //check first character of language specifier
+    {
+      i++;
+      while (i<size && isAlphaNChar(data[i])) i++; // find end of language specifier
+    }
     lang = data.substr(startLang,i-startLang);
   }
   else // no language specified
   {
     lang="";
   }
+
   start=i;
   while (i<size)
   {
@@ -2226,7 +2404,11 @@ static bool isFencedCodeBlock(std::string_view data,size_t refIndent,
     {
       end=i;
       int endTildes=0;
-      while (i<size && data[i]==tildaChar) endTildes++,i++;
+      while (i < size && data[i] == tildaChar)
+      {
+        endTildes++;
+        i++;
+      }
       while (i<size && data[i]==' ') i++;
       {
         if (endTildes==startTildes)
@@ -2239,6 +2421,7 @@ static bool isFencedCodeBlock(std::string_view data,size_t refIndent,
     }
     i++;
   }
+  warn(fileName, lineNr, "Ending Inside a fenced code block. Maybe the end marker for the block is missing?");
   AUTO_TRACE_EXIT("result=false: no end marker found lang={}'",lang);
   return false;
 }
@@ -2251,7 +2434,11 @@ static bool isCodeBlock(std::string_view data, size_t offset,size_t &indent)
   size_t i=0;
   size_t indent0=0;
   const size_t size = data.size();
-  while (i<size && data[i]==' ') indent0++,i++;
+  while (i < size && data[i] == ' ')
+  {
+    indent0++;
+    i++;
+  }
 
   if (indent0<codeBlockIndent)
   {
@@ -2341,20 +2528,27 @@ static size_t findTableColumns(std::string_view data,size_t &start,size_t &end,s
   AUTO_TRACE("data='{}'",Trace::trunc(data));
   const size_t size = data.size();
   size_t i=0,n=0;
-  size_t eol;
   // find start character of the table line
   while (i<size && data[i]==' ') i++;
-  if (i<size && data[i]=='|' && data[i]!='\n') i++,n++; // leading | does not count
+  if (i < size && data[i] == '|' && data[i] != '\n')
+  {
+    i++;
+    n++; // leading | does not count
+  }
   start = i;
 
   // find end character of the table line
   size_t j = 0;
   while (i<size && (j = isNewline(data.substr(i)))==0) i++;
-  eol=i+j;
+  size_t eol=i+j;
 
   if (j>0 && i>0) i--; // move i to point before newline
   while (i>0 && data[i]==' ') i--;
-  if (i>0 && data[i-1]!='\\' && data[i]=='|') i--,n++; // trailing or escaped | does not count
+  if (i > 0 && data[i - 1] != '\\' && data[i] == '|')
+  {
+    i--;
+    n++; // trailing or escaped | does not count
+  }
   end = i;
 
   // count columns between start and end
@@ -2381,7 +2575,7 @@ static size_t findTableColumns(std::string_view data,size_t &start,size_t &end,s
 static bool isTableBlock(std::string_view data)
 {
   AUTO_TRACE("data='{}'",Trace::trunc(data));
-  size_t cc0,start,end;
+  size_t cc0=0, start=0, end=0;
 
   // the first line should have at least two columns separated by '|'
   size_t i = findTableColumns(data,start,end,cc0);
@@ -2391,7 +2585,7 @@ static bool isTableBlock(std::string_view data)
     return FALSE;
   }
 
-  size_t cc1;
+  size_t cc1 = 0;
   size_t ret = findTableColumns(data.substr(i),start,end,cc1);
   size_t j=i+start;
   // separator line should consist of |, - and : and spaces only
@@ -2411,7 +2605,7 @@ static bool isTableBlock(std::string_view data)
   }
 
   i+=ret; // goto next line
-  size_t cc2;
+  size_t cc2 = 0;
   findTableColumns(data.substr(i),start,end,cc2);
 
   AUTO_TRACE_EXIT("result={}",cc1==cc2);
@@ -2422,22 +2616,20 @@ size_t Markdown::Private::writeTableBlock(std::string_view data)
 {
   AUTO_TRACE("data='{}'",Trace::trunc(data));
   const size_t size = data.size();
-  size_t i=0,j,k;
-  size_t columns,start,end,cc;
 
-  i = findTableColumns(data,start,end,columns);
-
+  size_t columns=0, start=0, end=0;
+  size_t i = findTableColumns(data,start,end,columns);
   size_t headerStart = start;
-  size_t headerEnd = end;
+  size_t headerEnd   = end;
 
   // read cell alignments
+  size_t cc = 0;
   size_t ret = findTableColumns(data.substr(i),start,end,cc);
-  k=0;
-  std::vector<int> columnAlignment(columns);
+  size_t k=0;
+  std::vector<Alignment> columnAlignment(columns);
 
-  bool leftMarker=FALSE,rightMarker=FALSE;
-  bool startFound=FALSE;
-  j=start+i;
+  bool leftMarker=false, rightMarker=false, startFound=false;
+  size_t j=start+i;
   while (j<=end+i)
   {
     if (!startFound)
@@ -2578,10 +2770,10 @@ size_t Markdown::Private::writeTableBlock(std::string_view data)
       // use appropriate alignment style
       switch (columnAlignment[c])
       {
-        case AlignLeft:   out+="Left\""; break;
-        case AlignRight:  out+="Right\""; break;
-        case AlignCenter: out+="Center\""; break;
-        case AlignNone:   out+="None\""; break;
+        case Alignment::Left:   out+="Left\""; break;
+        case Alignment::Right:  out+="Right\""; break;
+        case Alignment::Center: out+="Center\""; break;
+        case Alignment::None:   out+="None\""; break;
       }
 
       if (rowSpan > 1)
@@ -2594,7 +2786,7 @@ size_t Markdown::Private::writeTableBlock(std::string_view data)
       // empty strings, which would indicate the sequence "||", used
       // to signify spanning columns.
       size_t colSpan = 1;
-      while ((c < columns-1) && tableContents[row][c+1].colSpan)
+      while ((c+1 < columns) && tableContents[row][c+1].colSpan)
       {
         c++;
         colSpan++;
@@ -2642,7 +2834,7 @@ static bool hasLineBreak(std::string_view data)
 void Markdown::Private::writeOneLineHeaderOrRuler(std::string_view data)
 {
   AUTO_TRACE("data='{}'",Trace::trunc(data));
-  int level;
+  int level=0;
   QCString header;
   QCString id;
   if (isHRuler(data))
@@ -2652,18 +2844,16 @@ void Markdown::Private::writeOneLineHeaderOrRuler(std::string_view data)
   else if ((level=isAtxHeader(data,header,id,TRUE)))
   {
     QCString hTag;
-    if (level<5 && !id.isEmpty())
+    if (!id.isEmpty())
     {
-      switch(level)
+      switch (level)
       {
-        case 1:  out+="@section ";
-                 break;
-        case 2:  out+="@subsection ";
-                 break;
-        case 3:  out+="@subsubsection ";
-                 break;
-        default: out+="@paragraph ";
-                 break;
+        case SectionType::Section:         out+="@section ";         break;
+        case SectionType::Subsection:      out+="@subsection ";      break;
+        case SectionType::Subsubsection:   out+="@subsubsection ";   break;
+        case SectionType::Paragraph:       out+="@paragraph ";       break;
+        case SectionType::Subparagraph:    out+="@subparagraph ";    break;
+        case SectionType::Subsubparagraph: out+="@subsubparagraph "; break;
       }
       out+=id;
       out+=" ";
@@ -2672,10 +2862,6 @@ void Markdown::Private::writeOneLineHeaderOrRuler(std::string_view data)
     }
     else
     {
-      if (!id.isEmpty())
-      {
-        out+="\\ianchor{" + header + "} "+id+"\\ilinebr ";
-      }
       hTag.sprintf("h%d",level);
       out+="<"+hTag+">";
       out+=header;
@@ -2690,11 +2876,20 @@ void Markdown::Private::writeOneLineHeaderOrRuler(std::string_view data)
 
     if (hasLineBreak(data))
     {
-      out+="<br>";
+      out+="\\ilinebr<br>";
     }
     if (tmpSize != data.size()) out+='\n';
   }
 }
+
+static const std::unordered_map<std::string,std::string> g_quotationHeaderMap = {
+  // GitHub style   Doxygen command
+  { "[!note]",      "\\note"      },
+  { "[!warning]",   "\\warning"   },
+  { "[!tip]",       "\\remark"    },
+  { "[!caution]",   "\\attention" },
+  { "[!important]", "\\important" }
+};
 
 size_t Markdown::Private::writeBlockQuote(std::string_view data)
 {
@@ -2703,6 +2898,9 @@ size_t Markdown::Private::writeBlockQuote(std::string_view data)
   int curLevel=0;
   size_t end=0;
   const size_t size = data.size();
+  std::string startCmd;
+  int isGitHubAlert = false;
+  int isGitHubFirst = false;
   while (i<size)
   {
     // find end of this line
@@ -2718,37 +2916,89 @@ size_t Markdown::Private::writeBlockQuote(std::string_view data)
       else if (j>0 && data[j-1]=='>') indent=j+1;
       j++;
     }
-    if (j>0 && data[j-1]=='>' &&
+    if (indent>0 && j>0 && data[j-1]=='>' &&
         !(j==size || data[j]=='\n')) // disqualify last > if not followed by space
     {
       indent--;
       level--;
       j--;
     }
-    if (!level && data[j-1]!='\n') level=curLevel; // lazy
+    AUTO_TRACE_ADD("indent={} i={} j={} end={} level={} line={}",indent,i,j,end,level,Trace::trunc(&data[i]));
+    if (level==0 && j<end-1 && !isListMarker(data.substr(j)) && !isHRuler(data.substr(j)))
+    {
+      level = curLevel; // lazy
+    }
+    if (level==1)
+    {
+      QCString txt = stripWhiteSpace(data.substr(indent,end-indent));
+      auto it = g_quotationHeaderMap.find(txt.lower().str()); // TODO: in C++20 the std::string can be dropped
+      if (it != g_quotationHeaderMap.end())
+      {
+        isGitHubAlert = true;
+        isGitHubFirst = true;
+        startCmd = it->second;
+      }
+    }
     if (level>curLevel) // quote level increased => add start markers
     {
-      for (int l=curLevel;l<level-1;l++)
+      if (level!=1 || !isGitHubAlert) // normal block quote
       {
-        out+="<blockquote>";
+        for (int l=curLevel;l<level-1;l++)
+        {
+          out+="<blockquote>";
+        }
+        out += "<blockquote>&zwj;"; // empty blockquotes are also shown
       }
-      out+="<blockquote>&zwj;"; // empty blockquotes are also shown
+      else if (!startCmd.empty()) // GitHub style alert
+      {
+        out += startCmd + " ";
+      }
     }
     else if (level<curLevel) // quote level decreased => add end markers
     {
-      for (int l=level;l<curLevel;l++)
+      int decrLevel = curLevel;
+      if (level==0 && isGitHubAlert)
       {
-        out+="</blockquote>";
+        decrLevel--;
+      }
+      for (int l=level;l<decrLevel;l++)
+      {
+        out += "</blockquote>\\ilinebr ";
       }
     }
-    curLevel=level;
-    if (level==0) break; // end of quote block
+    if (level==0)
+    {
+      curLevel=0;
+      break; // end of quote block
+    }
     // copy line without quotation marks
-    out+=data.substr(indent,end-indent);
+    if (curLevel!=0 || !isGitHubAlert)
+    {
+      std::string_view txt = data.substr(indent,end-indent);
+      if (stripWhiteSpace(txt).empty() && !startCmd.empty())
+      {
+        if (!isGitHubFirst) out += "<br>";
+        out += "<br>\n";
+      }
+      else
+      {
+        out += txt;
+      }
+      isGitHubFirst = false;
+    }
+    else // GitHub alert section
+    {
+      out+= "\n";
+    }
+    curLevel=level;
     // proceed with next line
     i=end;
   }
   // end of comment within blockquote => add end markers
+  if (isGitHubAlert) // GitHub alert doesn't have a blockquote
+  {
+    curLevel--;
+  }
   for (int l=0;l<curLevel;l++)
   {
     out+="</blockquote>";
@@ -2757,22 +3007,67 @@ size_t Markdown::Private::writeBlockQuote(std::string_view data)
   return i;
 }
 
+// For code blocks that are outputted as part of an indented include or snippet command, we need to filter out
+// the location string, i.e. '\ifile "..." \iline \ilinebr'.
+bool skipOverFileAndLineCommands(std::string_view data,size_t indent,size_t &offset,std::string &location)
+{
+  size_t i = offset;
+  size_t size = data.size();
+  while (i<data.size() && data[i]==' ') i++;
+  if (literal_at(data.substr(i),"\\ifile \""))
+  {
+    size_t locStart = i;
+    if (i>offset) locStart--; // include the space before \ifile
+    i+=8;
+    bool found=false;
+    while (i+9<size && data[i]!='\n')
+    {
+      if (literal_at(data.substr(i),"\\ilinebr "))
+      {
+        found=true;
+        break;
+      }
+      i++;
+    }
+    if (found)
+    {
+      i+=9;
+      location=data.substr(locStart,i-locStart);
+      location+='\n';
+      while (indent > 0 && i < size && data[i] == ' ')
+      {
+        i++;
+        indent--;
+      }
+      if (i<size && data[i]=='\n') i++;
+      offset = i;
+      return true;
+    }
+  }
+  return false;
+}
+
 size_t Markdown::Private::writeCodeBlock(std::string_view data,size_t refIndent)
 {
   AUTO_TRACE("data='{}' refIndent={}",Trace::trunc(data),refIndent);
   const size_t size = data.size();
-  size_t i=0,end;
+  size_t i=0;
   // no need for \ilinebr here as the previous line was empty and was skipped
   out+="@iverbatim\n";
   int emptyLines=0;
+  std::string location;
   while (i<size)
   {
     // find end of this line
-    end=i+1;
+    size_t end=i+1;
     while (end<=size && data[end-1]!='\n') end++;
     size_t j=i;
     size_t indent=0;
-    while (j<end && data[j]==' ') j++,indent++;
+    while (j < end && data[j] == ' ')
+    {
+      j++;
+      indent++;
+    }
     //printf("j=%d end=%d indent=%d refIndent=%d tabSize=%d data={%s}\n",
     //    j,end,indent,refIndent,Config_getInt(TAB_SIZE),qPrint(QCString(data+i).left(end-i-1)));
     if (j==end-1) // empty line
@@ -2790,6 +3085,11 @@ size_t Markdown::Private::writeCodeBlock(std::string_view data,size_t refIndent)
       }
       // add code line minus the indent
       size_t offset = i+refIndent+codeBlockIndent;
+      std::string lineLoc;
+      if (skipOverFileAndLineCommands(data,codeBlockIndent,offset,lineLoc))
+      {
+        location = lineLoc;
+      }
       out+=data.substr(offset,end-offset);
       i=end;
     }
@@ -2798,7 +3098,15 @@ size_t Markdown::Private::writeCodeBlock(std::string_view data,size_t refIndent)
       break;
     }
   }
-  out+="@endiverbatim\\ilinebr ";
+  out+="@endiverbatim";
+  if (!location.empty())
+  {
+    out+=location;
+  }
+  else
+  {
+    out+="\\ilinebr ";
+  }
   while (emptyLines>0) // write skipped empty lines
   {
     // add empty line
@@ -2817,7 +3125,7 @@ size_t Markdown::Private::findEndOfLine(std::string_view data,size_t offset)
   // find end of the line
   const size_t size = data.size();
   size_t nb=0, end=offset+1, j=0;
-  while (end<=size && (j=isNewline(data.data()+end-1))==0)
+  while (end<=size && (j=isNewline(data.substr(end-1)))==0)
   {
     // while looking for the end of the line we might encounter a block
     // that needs to be passed unprocessed.
@@ -2830,7 +3138,7 @@ size_t Markdown::Private::findEndOfLine(std::string_view data,size_t offset)
       if (!endBlockName.isEmpty())
       {
         size_t l = endBlockName.length();
-        for (;end<size-l-1;end++) // search for end of block marker
+        for (;end+l+1<size;end++) // search for end of block marker
         {
           if ((data[end]=='\\' || data[end]=='@') &&
               data[end-1]!='\\' && data[end-1]!='@'
@@ -2847,7 +3155,7 @@ size_t Markdown::Private::findEndOfLine(std::string_view data,size_t offset)
         }
       }
     }
-    else if (nb==0 && data[end-1]=='<' && size>=6 && end<size-6 &&
+    else if (nb==0 && data[end-1]=='<' && size>=6 && end+6<size &&
              (end<=1 || (data[end-2]!='\\' && data[end-2]!='@'))
             )
     {
@@ -2855,7 +3163,7 @@ size_t Markdown::Private::findEndOfLine(std::string_view data,size_t offset)
           tolower(data[end+2])=='e' && (data[end+3]=='>' || data[end+3]==' ')) // <pre> tag
       {
         // skip part until including </pre>
-        end  = end + processHtmlTagWrite(data.substr(end-1),end-1,false) + 2;
+        end  = end + processHtmlTagWrite(data.substr(end-1),end-1,false);
         break;
       }
       else
@@ -2865,12 +3173,20 @@ size_t Markdown::Private::findEndOfLine(std::string_view data,size_t offset)
     }
     else if (nb==0 && data[end-1]=='`')
     {
-      while (end<=size && data[end-1]=='`') end++,nb++;
+      while (end <= size && data[end - 1] == '`')
+      {
+        end++;
+        nb++;
+      }
     }
     else if (nb>0 && data[end-1]=='`')
     {
       size_t enb=0;
-      while (end<=size && data[end-1]=='`') end++,enb++;
+      while (end <= size && data[end - 1] == '`')
+      {
+        end++;
+        enb++;
+      }
       if (enb==nb) nb=0;
     }
     else
@@ -2902,7 +3218,7 @@ void Markdown::Private::writeFencedCodeBlock(std::string_view data,std::string_v
     out+="{"+lang+"}";
   }
   out+=" ";
-  addStrEscapeUtf8Nbsp(data.substr(blockStart,blockEnd-blockStart));
+  addStrEscapeUtf8Nbsp(data.substr(blockStart+i,blockEnd-blockStart));
   out+="@endicode ";
 }
 
@@ -2912,7 +3228,6 @@ QCString Markdown::Private::processQuotations(std::string_view data,size_t refIn
   out.clear();
   size_t i=0,end=0;
   size_t pi=std::string::npos;
-  size_t blockStart,blockEnd,blockOffset;
   bool newBlock = false;
   bool insideList = false;
   size_t currentIndent = refIndent;
@@ -2964,7 +3279,8 @@ QCString Markdown::Private::processQuotations(std::string_view data,size_t refIn
 
     if (pi!=std::string::npos)
     {
-      if (isFencedCodeBlock(data.substr(pi),currentIndent,lang,blockStart,blockEnd,blockOffset))
+      size_t blockStart=0, blockEnd=0, blockOffset=0;
+      if (isFencedCodeBlock(data.substr(pi),currentIndent,lang,blockStart,blockEnd,blockOffset,fileName,lineNr))
       {
         auto addSpecialCommand = [&](const QCString &startCmd,const QCString &endCmd)
         {
@@ -2978,7 +3294,7 @@ QCString Markdown::Private::processQuotations(std::string_view data,size_t refIn
             if (pl[ii]=='\n') nl++;
             ii++; // skip leading whitespace
           }
-          bool addNewLines;
+          bool addNewLines = false;
           if (ii+startCmd.length()>=pl.length() || // no room for start command
               (pl[ii]!='\\' && pl[ii]!='@')     || // no @ or \ after whitespace
               qstrncmp(pl.data()+ii+1,startCmd.data(),startCmd.length())!=0) // no start command
@@ -3055,6 +3371,10 @@ QCString Markdown::Private::processQuotations(std::string_view data,size_t refIn
     }
     else
     {
+      if (QCString(data.substr(pi)).startsWith("```") || QCString(data.substr(pi)).startsWith("~~~"))
+      {
+        warn(fileName, lineNr, "Ending inside a fenced code block. Maybe the end marker for the block is missing?");
+      }
       out+=data.substr(pi);
     }
   }
@@ -3069,8 +3389,6 @@ QCString Markdown::Private::processBlocks(std::string_view data,const size_t ind
 {
   AUTO_TRACE("data='{}' indent={}",Trace::trunc(data),indent);
   out.clear();
-  size_t i=0,end=0,ref;
-  int level;
   size_t pi = std::string::npos;
   QCString id,link,title;
 
@@ -3092,12 +3410,14 @@ QCString Markdown::Private::processBlocks(std::string_view data,const size_t ind
   bool insideList = false;
   bool newBlock = false;
   // process each line
+  size_t i=0;
   while (i<data.size())
   {
-    end = findEndOfLine(data,i);
+    size_t end = findEndOfLine(data,i);
     // line is now found at [i..end)
 
     size_t lineIndent=0;
+    int level = 0;
     while (lineIndent<end && data[i+lineIndent]==' ') lineIndent++;
     //printf("** lineIndent=%d line=(%s)\n",lineIndent,qPrint(QCString(data+i).left(end-i)));
 
@@ -3140,9 +3460,10 @@ QCString Markdown::Private::processBlocks(std::string_view data,const size_t ind
 
     if (pi!=std::string::npos)
     {
-      size_t blockStart,blockEnd,blockOffset;
+      size_t blockStart=0, blockEnd=0, blockOffset=0;
       QCString lang;
       size_t blockIndent = currentIndent;
+      size_t ref = 0;
       //printf("isHeaderLine(%s)=%d\n",QCString(data+i).left(size-i).data(),level);
       QCString endBlockName;
       if (data[i]=='@' || data[i]=='\\') endBlockName = isBlockCommand(data.substr(i),i);
@@ -3151,7 +3472,7 @@ QCString Markdown::Private::processBlocks(std::string_view data,const size_t ind
         // handle previous line
         if (isLinkRef(data.substr(pi,i-pi),id,link,title))
         {
-          linkRefs.insert({id.lower().str(),LinkRef(link,title)});
+          linkRefs.emplace(id.lower().str(),LinkRef(link,title));
         }
         else
         {
@@ -3160,7 +3481,7 @@ QCString Markdown::Private::processBlocks(std::string_view data,const size_t ind
         out+=data[i];
         i++;
         size_t l = endBlockName.length();
-        while (i<data.size()-l)
+        while (i+l<data.size())
         {
           if ((data[i]=='\\' || data[i]=='@') && // command
               data[i-1]!='\\' && data[i-1]!='@') // not escaped
@@ -3214,11 +3535,11 @@ QCString Markdown::Private::processBlocks(std::string_view data,const size_t ind
       {
         //printf("found link ref: id='%s' link='%s' title='%s'\n",
         //       qPrint(id),qPrint(link),qPrint(title));
-        linkRefs.insert({id.lower().str(),LinkRef(link,title)});
+        linkRefs.emplace(id.lower().str(),LinkRef(link,title));
         i=ref+pi;
         end=i+1;
       }
-      else if (isFencedCodeBlock(data.substr(pi),currentIndent,lang,blockStart,blockEnd,blockOffset))
+      else if (isFencedCodeBlock(data.substr(pi),currentIndent,lang,blockStart,blockEnd,blockOffset,fileName,lineNr))
       {
         //printf("Found FencedCodeBlock lang='%s' start=%d end=%d code={%s}\n",
         //       qPrint(lang),blockStart,blockEnd,QCString(data+pi+blockStart).left(blockEnd-blockStart).data());
@@ -3258,7 +3579,7 @@ QCString Markdown::Private::processBlocks(std::string_view data,const size_t ind
     {
       //printf("found link ref: id='%s' link='%s' title='%s'\n",
       //    qPrint(id),qPrint(link),qPrint(title));
-      linkRefs.insert({id.lower().str(),LinkRef(link,title)});
+      linkRefs.emplace(id.lower().str(),LinkRef(link,title));
     }
     else
     {
@@ -3269,6 +3590,18 @@ QCString Markdown::Private::processBlocks(std::string_view data,const size_t ind
   return out;
 }
 
+static bool isOtherPage(std::string_view data)
+{
+#define OPC(x) if (literal_at(data,#x " ") || literal_at(data,#x "\n")) return true
+  OPC(dir);       OPC(defgroup);  OPC(addtogroup); OPC(weakgroup); OPC(ingroup);
+  OPC(fn);        OPC(property);  OPC(typedef);    OPC(var);       OPC(def);
+  OPC(enum);      OPC(namespace); OPC(class);      OPC(concept);   OPC(module);
+  OPC(protocol);  OPC(category);  OPC(union);      OPC(struct);    OPC(interface);
+  OPC(idlexcept); OPC(file);
+#undef OPC
+
+  return false;
+}
 
 static ExplicitPageResult isExplicitPage(const QCString &docs)
 {
@@ -3282,12 +3615,20 @@ static ExplicitPageResult isExplicitPage(const QCString &docs)
     {
       i++;
     }
-    if (i<size-1 &&
+    if (literal_at(data.substr(i),"<!--!")) // skip over <!--! marker
+    {
+      i+=5;
+      while (i<size && (data[i]==' ' || data[i]=='\n')) // skip over spaces after the <!--! marker
+      {
+        i++;
+      }
+    }
+    if (i+1<size &&
         (data[i]=='\\' || data[i]=='@') &&
-        (qstrncmp(&data[i+1],"page ",5)==0 || qstrncmp(&data[i+1],"mainpage",8)==0)
+        (literal_at(data.substr(i+1),"page ") || literal_at(data.substr(i+1),"mainpage"))
        )
     {
-      if (qstrncmp(&data[i+1],"page ",5)==0)
+      if (literal_at(data.substr(i+1),"page "))
       {
         AUTO_TRACE_EXIT("result=ExplicitPageResult::explicitPage");
         return ExplicitPageResult::explicitPage;
@@ -3297,6 +3638,11 @@ static ExplicitPageResult isExplicitPage(const QCString &docs)
         AUTO_TRACE_EXIT("result=ExplicitPageResult::explicitMainPage");
         return ExplicitPageResult::explicitMainPage;
       }
+    }
+    else if (i+1<size && (data[i]=='\\' || data[i]=='@') && isOtherPage(data.substr(i+1)))
+    {
+      AUTO_TRACE_EXIT("result=ExplicitPageResult::explicitOtherPage");
+      return ExplicitPageResult::explicitOtherPage;
     }
   }
   AUTO_TRACE_EXIT("result=ExplicitPageResult::notExplicit");
@@ -3359,7 +3705,7 @@ QCString Markdown::extractPageTitle(QCString &docs, QCString &id, int &prepend, 
 QCString Markdown::process(const QCString &input, int &startNewlines, bool fromParseInput)
 {
   if (input.isEmpty()) return input;
-  size_t refIndent;
+  size_t refIndent=0;
 
   // for replace tabs by spaces
   QCString s = input;
@@ -3381,11 +3727,11 @@ QCString Markdown::process(const QCString &input, int &startNewlines, bool fromP
   prv->processInline(s.view());
   if (fromParseInput)
   {
-    Debug::print(Debug::Markdown,0,"---- output -----\n%s\n=========\n",qPrint(prv->out));
+    Debug::print(Debug::Markdown,0,"---- output -----\n{}\n=========\n",qPrint(prv->out));
   }
   else
   {
-    Debug::print(Debug::Markdown,0,"======== Markdown =========\n---- input ------- \n%s\n---- output -----\n%s\n=========\n",qPrint(input),qPrint(prv->out));
+    Debug::print(Debug::Markdown,0,"======== Markdown =========\n---- input ------- \n{}\n---- output -----\n{}\n=========\n",input,prv->out);
   }
 
   // post processing
@@ -3395,7 +3741,7 @@ QCString Markdown::process(const QCString &input, int &startNewlines, bool fromP
   {
     while (*p==' ')  p++; // skip over spaces
     while (*p=='\n') {startNewlines++;p++;}; // skip over newlines
-    if (qstrncmp(p,"<br>",4)==0) p+=4; // skip over <br>
+    if (literal_at(p,"<br>")) p+=4; // skip over <br>
   }
   if (p>result.data())
   {
@@ -3410,8 +3756,8 @@ QCString Markdown::process(const QCString &input, int &startNewlines, bool fromP
 QCString markdownFileNameToId(const QCString &fileName)
 {
   AUTO_TRACE("fileName={}",fileName);
-  std::string absFileName = FileInfo(fileName.str()).absFilePath();
-  QCString baseFn  = stripFromPath(absFileName.c_str());
+  QCString absFileName = FileInfo(fileName.str()).absFilePath();
+  QCString baseFn = stripFromPath(absFileName);
   int i = baseFn.findRev('.');
   if (i!=-1) baseFn = baseFn.left(i);
   QCString baseName = escapeCharsInString(baseFn,false,false);
@@ -3447,8 +3793,9 @@ void MarkdownOutlineParser::parseInput(const QCString &fileName,
   current->fileName = fileName;
   current->docFile  = fileName;
   current->docLine  = 1;
-  QCString docs = fileBuf;
-  Debug::print(Debug::Markdown,0,"======== Markdown =========\n---- input ------- \n%s\n",qPrint(fileBuf));
+  QCString docs = stripIndentation(fileBuf);
+  if (!docs.stripWhiteSpace().size()) return;
+  Debug::print(Debug::Markdown,0,"======== Markdown =========\n---- input ------- \n{}\n",fileBuf);
   QCString id;
   Markdown markdown(fileName,1,0);
   bool isIdGenerated = false;
@@ -3461,19 +3808,20 @@ void MarkdownOutlineParser::parseInput(const QCString &fileName,
   }
   int indentLevel=title.isEmpty() ? 0 : -1;
   markdown.setIndentLevel(indentLevel);
-  QCString fn      = FileInfo(fileName.str()).fileName();
+  FileInfo fi(fileName.str());
+  QCString fn      = fi.fileName();
   QCString titleFn = stripExtensionGeneral(fn,getFileNameExtension(fn));
   QCString mdfileAsMainPage = Config_getString(USE_MDFILE_AS_MAINPAGE);
   QCString mdFileNameId = markdownFileNameToId(fileName);
   bool wasEmpty = id.isEmpty();
   if (wasEmpty) id = mdFileNameId;
+  QCString relFileName = stripFromPath(fileName);
+  bool isSubdirDocs = Config_getBool(IMPLICIT_DIR_DOCS) && relFileName.lower().endsWith("/readme.md");
   switch (isExplicitPage(docs))
   {
     case ExplicitPageResult::notExplicit:
       if (!mdfileAsMainPage.isEmpty() &&
-          (fn==mdfileAsMainPage || // name reference
-           FileInfo(fileName.str()).absFilePath()==
-           FileInfo(mdfileAsMainPage.str()).absFilePath()) // file reference with path
+          (fi.absFilePath()==FileInfo(mdfileAsMainPage.str()).absFilePath()) // file reference with path
          )
       {
         docs.prepend("@ianchor{" + title + "} " + id + "\\ilinebr ");
@@ -3485,6 +3833,14 @@ void MarkdownOutlineParser::parseInput(const QCString &fileName,
         docs.prepend("@ianchor{" + title + "} " + id + "\\ilinebr ");
         docs.prepend("@mainpage "+title+"\\ilinebr ");
       }
+      else if (isSubdirDocs)
+      {
+        if (!generatedId.isEmpty() && !title.isEmpty())
+        {
+          docs.prepend("@section " + generatedId + " " + title + "\\ilinebr ");
+        }
+        docs.prepend("@dir\\ilinebr ");
+      }
       else
       {
         if (title.isEmpty())
@@ -3494,7 +3850,7 @@ void MarkdownOutlineParser::parseInput(const QCString &fileName,
         }
         if (!wasEmpty)
         {
-          docs.prepend("@ianchor{" + title + "} " + id + "\\ilinebr @ianchor{" + stripFromPath(fileName) + "} " + mdFileNameId + "\\ilinebr ");
+          docs.prepend("@ianchor{" + title + "} " + id + "\\ilinebr @ianchor{" + relFileName + "} " + mdFileNameId + "\\ilinebr ");
         }
         else if (!generatedId.isEmpty())
         {
@@ -3512,7 +3868,7 @@ void MarkdownOutlineParser::parseInput(const QCString &fileName,
     case ExplicitPageResult::explicitPage:
       {
         // look for `@page label My Title\n` and capture `label` (match[1]) and ` My Title` (match[2])
-        static const reg::Ex re(R"([\\@]page\s+(\a[\w-]*)(\s*[^\n]*)\n)");
+        static const reg::Ex re(R"([ ]*[\\@]page\s+(\a[\w-]*)(\s*[^\n]*)\n)");
         reg::Match match;
         std::string s = docs.str();
         if (reg::search(s,match,re))
@@ -3531,6 +3887,8 @@ void MarkdownOutlineParser::parseInput(const QCString &fileName,
       break;
     case ExplicitPageResult::explicitMainPage:
       break;
+    case ExplicitPageResult::explicitOtherPage:
+      break;
   }
   int lineNr=1;
 
@@ -3538,6 +3896,7 @@ void MarkdownOutlineParser::parseInput(const QCString &fileName,
   Protection prot = Protection::Public;
   bool needsEntry = false;
   int position=0;
+  GuardedSectionStack guards;
   QCString processedDocs = markdown.process(docs,lineNr,true);
   while (p->commentScanner.parseCommentBlock(
         this,
@@ -3551,7 +3910,9 @@ void MarkdownOutlineParser::parseInput(const QCString &fileName,
         prot,      // protection
         position,
         needsEntry,
-        true))
+        true,
+        &guards
+        ))
   {
     if (needsEntry)
     {
@@ -3575,4 +3936,3 @@ void MarkdownOutlineParser::parsePrototype(const QCString &text)
 }
 
 //------------------------------------------------------------------------
-

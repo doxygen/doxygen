@@ -17,30 +17,32 @@
 #include <memory>
 
 #include "qcstring.h"
+#include "construct.h"
+#include "indexlist.h"
 
 class Definition;
 class MemberDef;
 
-class Sitemap
+class Sitemap : public IndexIntf
 {
   public:
     Sitemap();
-    ~Sitemap();
-    Sitemap(Sitemap &&);
+   ~Sitemap();
+    NON_COPYABLE(Sitemap)
 
     void initialize();
     void finalize();
     void incContentsDepth(){}
     void decContentsDepth(){}
-    void addContentsItem(bool isDir, const QCString & name, const QCString & ref,
-                         const QCString & file, const QCString & anchor,
-                         bool separateIndex,bool addToNavIndex,
-                         const Definition *def){}
+    void addContentsItem(bool isDir, const QCString &name, const QCString &ref,
+                         const QCString &file, const QCString &anchor,
+                         bool separateIndex, bool addToNavIndex,
+                         const Definition *def, const QCString &nameAsHtml) {}
     void addIndexItem(const Definition *context, const MemberDef *md,
-                      const QCString &sectionAnchor, const QCString &title){}
+                      const QCString &sectionAnchor, const QCString &title) {}
     void addIndexFile(const QCString & name);
-    void addImageFile(const QCString & name){}
-    void addStyleSheetFile(const QCString & name){}
+    void addImageFile(const QCString & name) {}
+    void addStyleSheetFile(const QCString & name) {}
 
     static inline const QCString sitemapFileName = "sitemap.xml";
 
@@ -49,12 +51,12 @@ class Sitemap
     std::unique_ptr<Private> p;
 };
 
-class Crawlmap
+class Crawlmap : public IndexIntf
 {
   public:
     Crawlmap();
-    ~Crawlmap();
-    Crawlmap(Crawlmap &&);
+   ~Crawlmap();
+    NON_COPYABLE(Crawlmap)
 
     void initialize();
     void finalize();
@@ -63,9 +65,9 @@ class Crawlmap
     void addContentsItem(bool isDir, const QCString & name, const QCString & ref,
                          const QCString & file, const QCString & anchor,
                          bool separateIndex,bool addToNavIndex,
-                         const Definition *def){}
+                         const Definition *def, const QCString &nameAsHtml);
     void addIndexItem(const Definition *context, const MemberDef *md,
-                      const QCString &sectionAnchor, const QCString &title){}
+                      const QCString &sectionAnchor, const QCString &title);
     void addIndexFile(const QCString & name);
     void addImageFile(const QCString & name){}
     void addStyleSheetFile(const QCString & name){}

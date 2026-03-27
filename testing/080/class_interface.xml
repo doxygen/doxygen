@@ -28,7 +28,7 @@
         <name>doLoad</name>
         <qualifiedname>Interface::doLoad</qualifiedname>
         <briefdescription>
-          <para>Pure virtual implementation for <ref refid="class_interface_1ab58d3008a7001cbb47f2fa5a5a1aeefa" kindref="member">load()</ref> </para>
+          <para>Pure virtual implementation for <ref refid="class_interface_1ab58d3008a7001cbb47f2fa5a5a1aeefa" kindref="member">load()</ref>. </para>
         </briefdescription>
         <detaileddescription>
           <para>Details. </para>

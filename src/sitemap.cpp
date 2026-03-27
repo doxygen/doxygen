@@ -29,6 +29,7 @@
 #include "portable.h"
 #include "language.h"
 #include "version.h"
+#include "containers.h"
 
 //-------------------------------------------------------------------------------------------
 
@@ -41,7 +42,6 @@ class Sitemap::Private
 
 Sitemap::Sitemap() : p(std::make_unique<Private>()) {}
 Sitemap::~Sitemap() = default;
-Sitemap::Sitemap(Sitemap &&) = default;
 
 void Sitemap::initialize()
 {
@@ -50,7 +50,7 @@ void Sitemap::initialize()
   p->docFile = Portable::openOutputStream(fileName);
   if (!p->docFile.is_open())
   {
-    term("Could not open file %s for writing\n", qPrint(fileName));
+    term("Could not open file {} for writing\n", fileName);
   }
   p->doc.setStream(&p->docFile);
 
@@ -72,10 +72,10 @@ void Sitemap::finalize()
 void Sitemap::addIndexFile(const QCString & fileName)
 {
   QCString fn = fileName;
-  QCString sidemapUrl = Config_getString(SITEMAP_URL);
+  QCString sitemapUrl = Config_getString(SITEMAP_URL);
   addHtmlExtensionIfMissing(fn);
   p->doc << "  <url>\n";
-  p->doc << "    <loc>" << convertToXML(sidemapUrl + fn) << "</loc>\n";
+  p->doc << "    <loc>" << convertToXML(sitemapUrl + fn) << "</loc>\n";
   p->doc << "  </url>\n";
 }
 
@@ -86,11 +86,11 @@ class Crawlmap::Private
   public:
     std::ofstream crawlFile;
     TextStream crawl;
+    StringVector crawlLinks;
 };
 
 Crawlmap::Crawlmap() : p(std::make_unique<Private>()) {}
 Crawlmap::~Crawlmap() = default;
-Crawlmap::Crawlmap(Crawlmap &&) = default;
 
 void Crawlmap::initialize()
 {
@@ -99,7 +99,7 @@ void Crawlmap::initialize()
   p->crawlFile = Portable::openOutputStream(fileName);
   if (!p->crawlFile.is_open())
   {
-    term("Could not open file %s for writing\n", qPrint(fileName));
+    term("Could not open file {} for writing\n",fileName);
   }
   p->crawl.setStream(&p->crawlFile);
   p->crawl << "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"https://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n";
@@ -117,6 +117,13 @@ void Crawlmap::initialize()
 
 void Crawlmap::finalize()
 {
+  std::sort(p->crawlLinks.begin(),p->crawlLinks.end());
+  p->crawlLinks.erase(std::unique(p->crawlLinks.begin(),p->crawlLinks.end()),p->crawlLinks.end());
+  for (auto &s : p->crawlLinks)
+  {
+    p->crawl << "<a href=\"" << s << "\"/>\n";
+  }
+
   p->crawl << "</body>\n";
   p->crawl << "</html>\n";
   p->crawl.flush();
@@ -127,6 +134,78 @@ void Crawlmap::addIndexFile(const QCString & fileName)
 {
   QCString fn = fileName;
   addHtmlExtensionIfMissing(fn);
-  p->crawl << "<a href=\"" << fn << "\"/>\n";
+  p->crawlLinks.push_back(fn.str());
 }
 
+void Crawlmap::addContentsItem(bool, const QCString &, const QCString & ref,
+                               const QCString & file, const QCString & anchor,
+                               bool ,bool ,
+                               const Definition *, const QCString &)
+{
+  if (!file.isEmpty() && ref.isEmpty())      // made file optional param and
+                                             // don't place links in crawl file imported
+                                             // by tags
+  {
+    std::string link;
+    if (file[0]=='!' || file[0]=='^') // special markers for user defined URLs
+    {
+      link+=&file[1];
+    }
+    else
+    {
+      QCString currFile = file;
+      addHtmlExtensionIfMissing(currFile);
+      QCString currAnc = anchor;
+      link += currFile.data();
+      if (!currAnc.isEmpty())
+      {
+        link += "#";
+        link += currAnc.str();
+      }
+    }
+    p->crawlLinks.push_back(link);
+  }
+}
+
+static QCString makeFileName(const QCString & withoutExtension)
+{
+  QCString result=withoutExtension;
+  if (!result.isEmpty())
+  {
+    if (result.at(0)=='!') // relative URL -> strip marker
+    {
+      result=result.mid(1);
+    }
+    else // add specified HTML extension
+    {
+      addHtmlExtensionIfMissing(result);
+    }
+  }
+  return result;
+}
+
+static QCString makeRef(const QCString & withoutExtension, const QCString & anchor)
+{
+  if (withoutExtension.isEmpty()) return QCString();
+  QCString result = makeFileName(withoutExtension);
+  if (anchor.isEmpty()) return result;
+  return result+"#"+anchor;
+}
+
+void Crawlmap::addIndexItem(const Definition *context, const MemberDef *md,
+                            const QCString &sectionAnchor, const QCString &title)
+{
+  if (context && md) // member
+  {
+    QCString cfname  = md->getOutputFileBase();
+    QCString anchor  = !sectionAnchor.isEmpty() ? sectionAnchor : md->anchor();
+    QCString ref     = makeRef(cfname, anchor);
+    p->crawlLinks.push_back(ref.str());
+  }
+  else if (context) // container
+  {
+    QCString contRef = context->getOutputFileBase();
+    QCString ref = makeRef(contRef,sectionAnchor);
+    p->crawlLinks.push_back(ref.str());
+  }
+}

@@ -62,6 +62,7 @@ class MainWindow : public QMainWindow
     void selectWorkingDir();
     void updateWorkingDir();
     void runDoxygen();
+    void runDoxygenMenu();
     void readStdout();
     void runComplete();
     void showHtmlOutput();
@@ -86,6 +87,7 @@ class MainWindow : public QMainWindow
     QLineEdit *m_runOptions;
     QPushButton *m_selWorkingDir;
     QPushButton *m_run;
+    QAction *m_runMenu;
     QPushButton *m_saveLog;
     QCheckBox   *m_showCondensedSettings;
     QPushButton *m_launchHtml;
@@ -94,6 +96,7 @@ class MainWindow : public QMainWindow
     QLabel *m_runStatus;
     Expert *m_expert;
     Wizard *m_wizard;
+    QWidget *m_runTab;
     QString m_fileName;
     QSettings m_settings;
     QMenu *m_recentMenu;

@@ -92,6 +92,7 @@ class TextDocVisitor : public DocVisitor
     void operator()(const DocDotFile &df)        { visitChildren(df); }
     void operator()(const DocMscFile &df)        { visitChildren(df); }
     void operator()(const DocDiaFile &df)        { visitChildren(df); }
+    void operator()(const DocPlantUmlFile &df)   { visitChildren(df); }
     void operator()(const DocLink &l)            { visitChildren(l);  }
     void operator()(const DocRef &r)             { visitChildren(r);  }
     void operator()(const DocSecRefItem &s)      { visitChildren(s);  }

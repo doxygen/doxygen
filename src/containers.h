@@ -18,6 +18,7 @@
 
 #include <vector>
 #include <string>
+#include <string_view>
 #include <set>
 #include <map>
 #include <unordered_set>
@@ -30,6 +31,7 @@ using StringMap          = std::map<std::string,std::string>;
 using StringSet          = std::set<std::string>;
 using StringMultiSet     = std::multiset<std::string>;
 using StringVector       = std::vector<std::string>;
+using StringViewVector   = std::vector<std::string_view>;
 using BoolStack          = std::stack<bool>;
 using BoolVector         = std::vector<bool>;
 using IntMap             = std::map<std::string,int>;

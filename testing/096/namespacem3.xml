@@ -3,6 +3,7 @@
   <compounddef id="namespacem3" kind="namespace" language="C++">
     <compoundname>m3</compoundname>
     <innerclass refid="structm3_1_1t4" prot="public">m3::t4</innerclass>
+    <innerclass refid="structm3_1_1t1" prot="public">m3::t1</innerclass>
     <briefdescription>
     </briefdescription>
     <detaileddescription>

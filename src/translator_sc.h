@@ -144,7 +144,7 @@ class TranslatorSerbianCyrillic : public TranslatorAdapter_1_6_0
 
     /*! this is the first part of a sentence that is followed by a class name */
     QCString trThisIsTheListOfAllMembers() override
-    { return "Ово је списак свих чланова од "; }
+    { return "Ово је списак свих чланова од"; }
 
     /*! this is the remainder of the sentence after the class name */
     QCString trIncludingInheritedMembers() override
@@ -352,8 +352,8 @@ class TranslatorSerbianCyrillic : public TranslatorAdapter_1_6_0
     // index titles (the project name is prepended for these)
 
     /*! This is used in HTML as the title of index.html. */
-    QCString trDocumentation() override
-    { return "Документација"; }
+    QCString trDocumentation(const QCString &projName) override
+    { return (!projName.isEmpty()?projName + " " : "") + "Документација"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * index of all groups.
@@ -672,9 +672,8 @@ class TranslatorSerbianCyrillic : public TranslatorAdapter_1_6_0
     QCString trWriteList(int numEntries) override
     {
       QCString result;
-      int i;
       // the inherits list contain `numEntries' classes
-      for (i=0;i<numEntries;i++)
+      for (int i=0;i<numEntries;i++)
       {
         // use generateMarker to generate placeholders for the class links!
         result+=generateMarker(i); // generate marker for entry i in the list
@@ -1211,9 +1210,7 @@ class TranslatorSerbianCyrillic : public TranslatorAdapter_1_6_0
      */
     QCString trClass(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Клас" : "клас"));
-      if (!singular)  result+="e"; else result+="a";
-      return result;
+      return createNoun(first_capital, singular, "клас", "e", "a");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1222,9 +1219,7 @@ class TranslatorSerbianCyrillic : public TranslatorAdapter_1_6_0
      */
     QCString trFile(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Датотек" : "датотек"));
-      if (!singular)  result+="e"; else result+="a";
-      return result;
+      return createNoun(first_capital, singular, "датотек", "e", "a");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1233,9 +1228,7 @@ class TranslatorSerbianCyrillic : public TranslatorAdapter_1_6_0
      */
     QCString trNamespace(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Простор" : "простор"));
-      if (!singular)  result+="и имена"; else result+=" имена";
-      return result;
+      return createNoun(first_capital, singular, "простор", "и имена", " имена");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1244,9 +1237,7 @@ class TranslatorSerbianCyrillic : public TranslatorAdapter_1_6_0
      */
     QCString trGroup(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Груп" : "груп"));
-      if (!singular)  result+="е"; else result+="a";
-      return result;
+      return createNoun(first_capital, singular, "груп", "е", "a");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1255,9 +1246,7 @@ class TranslatorSerbianCyrillic : public TranslatorAdapter_1_6_0
      */
     QCString trPage(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Страниц" : "страниц"));
-      if (!singular)  result+="е"; else result += "a";
-      return result;
+      return createNoun(first_capital, singular, "страниц", "е", "a");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1266,9 +1255,7 @@ class TranslatorSerbianCyrillic : public TranslatorAdapter_1_6_0
      */
     QCString trMember(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Члан" : "члан"));
-      if (!singular)  result+="ови";
-      return result;
+      return createNoun(first_capital, singular, "члан", "ови");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1277,9 +1264,7 @@ class TranslatorSerbianCyrillic : public TranslatorAdapter_1_6_0
      */
     QCString trGlobal(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Глобалн" : "глобалн"));
-      if (!singular)  result+="а"; else result+="о";
-      return result;
+      return createNoun(first_capital, singular, "глобалн", "а", "о");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1290,9 +1275,7 @@ class TranslatorSerbianCyrillic : public TranslatorAdapter_1_6_0
      *  for the author section in man pages. */
     QCString trAuthor(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Аутор" : "аутор"));
-      if (!singular)  result+="и";
-      return result;
+      return createNoun(first_capital, singular, "аутор", "и");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1488,7 +1471,7 @@ class TranslatorSerbianCyrillic : public TranslatorAdapter_1_6_0
 
     /*! This is used in HTML as the title of page with source code for file filename
      */
-    QCString trSourceFile(QCString& filename) override
+    QCString trSourceFile(const QCString& filename) override
     {
       return filename + " Изворна датотека";
     }
@@ -1522,13 +1505,11 @@ class TranslatorSerbianCyrillic : public TranslatorAdapter_1_6_0
     { QCString result=dirName; result+=" Референца директоријума"; return result; }
 
     /*! This returns the word directory with or without starting capital
-     *  (\a first_capital) and in sigular or plural form (\a singular).
+     *  (\a first_capital) and in singular or plural form (\a singular).
      */
     QCString trDir(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Директоријум" : "директоријум"));
-      if (singular) result+=""; else result+="и";
-      return result;
+      return createNoun(first_capital, singular, "директоријум", "и");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1706,9 +1687,7 @@ class TranslatorSerbianCyrillic : public TranslatorAdapter_1_6_0
      */
     QCString trModule(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Модул" : "модул"));
-      if (!singular)  result+="и";
-      return result;
+      return createNoun(first_capital, singular, "модул", "и");
     }
     /*! This is put at the bottom of a module documentation page and is
      *  followed by a list of files that were used to generate the page.
@@ -1739,9 +1718,7 @@ class TranslatorSerbianCyrillic : public TranslatorAdapter_1_6_0
      */
     QCString trType(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Тип" : "тип"));
-      if (!singular)  result+="ови";
-      return result;
+      return createNoun(first_capital, singular, "тип", "ови");
     }
     /*! This is used for translation of the word that will possibly
      *  be followed by a single name or by a list of names
@@ -1749,9 +1726,7 @@ class TranslatorSerbianCyrillic : public TranslatorAdapter_1_6_0
      */
     QCString trSubprogram(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Потпрограм" : "потпрограм"));
-      if (!singular)  result+="и";
-      return result;
+      return createNoun(first_capital, singular, "потпрограм", "и");
     }
 
     /*! C# Type Constraint list */
@@ -1774,10 +1749,10 @@ class TranslatorSerbianCyrillic : public TranslatorAdapter_1_6_0
       QCString text  = full? months_full[month-1] : months_short[month-1];
       return text;
     }
-    QCString trDayPeriod(int period) override
+    QCString trDayPeriod(bool period) override
     {
       static const char *dayPeriod[] = { "пре подне", "по подне" };
-      return dayPeriod[period];
+      return dayPeriod[period?1:0];
     }
 };
 

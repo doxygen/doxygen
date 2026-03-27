@@ -24,6 +24,7 @@
 #include "textstream.h"
 #include "util.h"
 #include "debug.h"
+#include "stringutil.h"
 
 //-----------------------------------------------------------
 
@@ -40,11 +41,11 @@ using AliasInfoMap   = std::unordered_map<std::string,AliasOverloads>;   // key 
 
 //-----------------------------------------------------------
 
-static QCString expandAliasRec(StringUnorderedSet &aliasesProcessed,
-                               const QCString &s,bool allowRecursion=FALSE);
-static int countAliasArguments(const std::string &args, const std::string &sep);
-static QCString extractAliasArgs(const QCString &args,size_t pos);
-static std::string expandAlias(const std::string &aliasName,const std::string &aliasValue);
+static std::string expandAliasRec(StringUnorderedSet &aliasesProcessed,
+                               std::string_view s,bool allowRecursion=FALSE);
+static int countAliasArguments(std::string_view args, std::string_view sep);
+static std::string extractAliasArgs(std::string_view args);
+static std::string expandAlias(std::string_view aliasName,std::string_view aliasValue);
 
 //-----------------------------------------------------------
 
@@ -52,7 +53,7 @@ static AliasInfoMap          g_aliasInfoMap;
 
 //-----------------------------------------------------------
 
-static void addValidAliasToMap(const std::string &aliasStr)
+static void addValidAliasToMap(std::string_view alias)
 {
   bool        valid = true;
   std::string aliasName;
@@ -60,79 +61,64 @@ static void addValidAliasToMap(const std::string &aliasStr)
   int         numParams = 0;
   std::string separator;
 
-  static const char *separators="!#$%&,.?|;:'+=~`/";
-  auto isValidSeparator = [](char c) -> bool
-  {
-    const char *p=separators;
-    while (*p++) { if (c==*p) return true; }
-    return false;
-  };
+  static std::string_view separators = "!#$%&,.?|;:'+=~`/";
+  auto isValidSeparator = [](char c) -> bool { return separators.find(c)!=std::string::npos; };
 
-  static const reg::Ex re1(R"(^\a[\w-]*\s*=)");
-  static const reg::Ex re2(R"(^\a[\w-]*{[^}]*}\s*=)");
-  if (reg::search(aliasStr,re1) || reg::search(aliasStr,re2)) // valid name= or name{...}= part
+  static const reg::Ex re(R"(^(\a[\w-]*)({[^}]*})?\s*=)");
+  reg::Match m;
+  if (reg::search(alias,m,re)) // valid name= or name{...}= part
   {
-    QCString alias=QCString(aliasStr);
-    int i=alias.find('=');
-    assert(i!=-1); // based on re1 and re2 there is always a =
-    QCString name = alias.left(static_cast<size_t>(i)).stripWhiteSpace();
-    aliasValue    = alias.right(alias.length()-i-1).str();
-    //printf("Alias: found name='%s' value='%s'\n",qPrint(name),qPrint(value));
-    int j=name.find('{');
-    if (j>0) // alias with parameters
+    size_t i=m.length();
+    assert(i!=std::string::npos); // based on re is always a =
+    assert(m.size()==3); // m[0]=full match including '=', m[1]=name, m[2]=optional params
+    aliasName  = m[1].str();
+    aliasValue = alias.substr(i);
+    //printf("Alias: found name='%s' value='%s'\n",qPrint(name),qPrint(aliasValue));
+    if (m[2].length()>0) // alias with parameters
     {
-      int l = static_cast<int>(name.length());
-      if (name.at(l-1)=='}')
+      separator=",";
+      size_t b = m[2].position();   // index of '{'
+      size_t e = b + m[2].length(); // index of '}'
+      size_t k=b+1;
+      while (k<e-1 && isdigit(alias[k])) k++;
+      numParams = atoi(std::string{alias.substr(b+1,k-b-1)}.c_str());
+      if (numParams>0)
       {
-        separator=",";
-        int k=j+1;
-        while (k<l-1 && isdigit(name[k])) k++;
-        numParams = atoi(name.mid(j+1,k-j-1).data());
-        if (numParams>0)
+        if (k<e-1) // we have a separator
         {
-          if (k<l-1) // we have a separator
+          size_t s=k;
+          while (s<e && isValidSeparator(alias[s])) s++;
+          if (s<e-1)
           {
-            int m=k;
-            while (isValidSeparator(name[m])) m++;
-            if (m<l-1)
-            {
-              err("Invalid alias '%s': invalid separator character '%c' (code %d), allowed characters: %s. Check your config file.\n",qPrint(alias),name[m],name[m],separators);
-              valid=false;
-            }
-            else
-            {
-              separator=name.mid(k,l-k-1).str();
-            }
-          }
-          if (valid) // valid alias with parameters
-          {
-            aliasName = name.left(j).str();
-            Debug::print(Debug::Alias,0,"Alias definition: name='%s' #param='%d' separator='%s' value='%s'\n",
-                qPrint(aliasName),numParams,qPrint(separator),qPrint(aliasValue));
+            err("Invalid alias '{}': invalid separator character '{:c}' (code {:d}), allowed characters: {}. Check your config file.\n",alias,alias[s],alias[s],separators);
+            valid=false;
           }
           else
           {
-            err("Invalid alias '%s': invalid number of parameters. Check your config file.\n",qPrint(alias));
-            valid=false;
+            separator=alias.substr(k,e-k-1);
           }
         }
-        else
+        if (valid) // valid alias with parameters
         {
-          err("Invalid alias '%s': missing closing bracket. Check your config file.\n",qPrint(alias));
-          valid=false;
+          Debug::print(Debug::Alias,0,"Alias definition: name='{}' #param='{}' separator='{}' value='{}'\n",
+              aliasName,numParams,separator,aliasValue);
         }
+      }
+      else
+      {
+        err("Invalid alias '{}': missing number of parameters. Check your config file.\n",alias);
+        valid=false;
       }
     }
     else // valid alias without parameters
     {
-      aliasName = name.str();
       numParams = 0;
-      Debug::print(Debug::Alias,0,"Alias definition: name='%s' value='%s'\n",qPrint(aliasName),qPrint(aliasValue));
+      Debug::print(Debug::Alias,0,"Alias definition: name='{}' value='{}'\n",aliasName,aliasValue);
     }
   }
   else
   {
-    err("Invalid alias '%s': invalid 'name=' or 'name{...}=' part. Check you config file.\n",qPrint(aliasStr));
+    err("Invalid alias '{}': invalid 'name=' or 'name{{...}}=' part. Check you config file.\n",alias);
     valid=false;
   }
 
@@ -142,14 +128,14 @@ static void addValidAliasToMap(const std::string &aliasStr)
     if (it==g_aliasInfoMap.end()) // insert new alias
     {
       AliasOverloads overloads { { numParams, AliasInfo(aliasValue, separator) } };
-      g_aliasInfoMap.insert(std::make_pair(aliasName,overloads));
+      g_aliasInfoMap.emplace(aliasName,overloads);
     }
     else // replace exiting alias with new definition
     {
       auto it2 = it->second.find(numParams);
       if (it2==it->second.end()) // new alias overload for the given number of parameters
       {
-        it->second.insert(std::make_pair(numParams, AliasInfo(aliasValue,separator)));
+        it->second.emplace(numParams, AliasInfo(aliasValue,separator));
       }
       else // replace alias with new definition
       {
@@ -162,43 +148,12 @@ static void addValidAliasToMap(const std::string &aliasStr)
 
 //----------------------------------------------------------------------------
 
-static std::string escapeAlias(const std::string &aliasValue)
+static std::string escapeAlias(std::string_view value)
 {
-  QCString value(aliasValue);
-  QCString newValue;
-  int in,p=0;
-  // for each \n in the alias command value
-  while ((in=value.find("\\n",p))!=-1)
-  {
-    newValue+=value.mid(p,in-p);
-    // expand \n's except if \n is part of a built-in command.
-    if (value.mid(in,5)!="\\note" &&
-        value.mid(in,5)!="\\noop" &&
-        value.mid(in,5)!="\\name" &&
-        value.mid(in,10)!="\\namespace" &&
-        value.mid(in,14)!="\\nosubgrouping"
-       )
-    {
-      newValue+="\\ilinebr ";
-    }
-    else
-    {
-      newValue+="\\n";
-    }
-    p=in+2;
-  }
-  newValue+=value.mid(p,value.length()-p);
-  p = 0;
-  newValue = "";
-  while ((in=value.find("^^",p))!=-1)
-  {
-    newValue+=value.mid(p,in-p);
-    newValue+="\\ilinebr ";
-    p=in+2;
-  }
-  newValue+=value.mid(p,value.length()-p);
-  return newValue.str();
-  //printf("Alias %s has value %s\n",name.c_str(),qPrint(newValue));
+  std::string newValue = substituteStringView(value,"^^ ","@ilinebr ");
+  newValue = substituteStringView(newValue,"^^","@ilinebr ");
+  //printf("escapeAlias('%s')='%s'\n",qPrint(std::string{value}),qPrint(newValue));
+  return newValue;
 }
 
 //----------------------------------------------------------------------------
@@ -231,10 +186,10 @@ void readAliases()
 
 struct Marker
 {
-  Marker(size_t p, int n,size_t s) : pos(p),number(n),size(s) {}
-  size_t pos; // position in the string
-  int number; // argument number
-  size_t size; // size of the marker
+  Marker(size_t p, size_t n,size_t s) : pos(p), number(n), size(s) {}
+  size_t pos;    // position in the string
+  size_t number; // argument number
+  size_t size;   // size of the marker
 };
 
 /** For a string \a s that starts with a command name, returns the character
@@ -247,20 +202,13 @@ struct Marker
  *  - s=="a{2,3} b" returns 6
  *  = s=="#"        returns 0
  */
-static size_t findEndOfCommand(const char *s)
+static size_t findEndOfCommand(std::string_view s)
 {
-  const char *p = s;
-  char c;
-  size_t i=0;
-  if (p)
+  size_t i = 0;
+  while (i < s.size() && isId(s[i])) ++i;
+  if (i < s.size() && s[i] == '{')
   {
-    while ((c=*p) && isId(c)) p++;
-    if (c=='{')
-    {
-      QCString args = extractAliasArgs(p,0);
-      i+=args.length();
-    }
-    i+=p-s;
+    i += extractAliasArgs(s.substr(i)).length() + 2; // +2 for '{' and '}'
   }
   return i;
 }
@@ -269,30 +217,32 @@ static size_t findEndOfCommand(const char *s)
  *  with the corresponding values found in the comma separated argument
  *  list \a argList and the returns the result after recursive alias expansion.
  */
-static QCString replaceAliasArguments(StringUnorderedSet &aliasesProcessed,
-                                      const std::string &aliasValue,const std::string &argList,const std::string &sep)
+static std::string replaceAliasArguments(StringUnorderedSet &aliasesProcessed,
+                                      std::string_view aliasValue,std::string_view argList,
+                                      std::string_view sep)
 {
   //printf("----- replaceAliasArguments(val=[%s],args=[%s],sep=[%s])\n",qPrint(aliasValue),qPrint(argList),qPrint(sep));
 
   // first make a list of arguments from the comma separated argument list
-  StringVector args;
-  size_t i,l=argList.length();
+  StringViewVector args;
+  size_t l=argList.length();
   size_t p=0;
-  for (i=0;i<l;i++)
+  for (size_t i=0;i<l;i++)
   {
-    char c = argList.at(i);
-    if (c==sep[0] && // start with separator character
-        (i==0 || argList.at(i-1)!='\\') && // is not escaped
-        qstrncmp(argList.c_str()+i, sep.c_str(), sep.length())==0) // whole separator matches
+    char c = argList[i];
+    if (!sep.empty() &&
+        c==sep[0] &&                         // start with separator character
+        (i==0 || argList[i-1]!='\\') &&      // is not escaped
+        argList.substr(i,sep.length())==sep) // whole separator matches
     {
       args.push_back(argList.substr(p,i-p));
-      p=i+sep.length(); // start of next argument
-      i=p-1; // compensate with -1 for loop iterator
+      p = i+sep.length(); // start of next argument
+      i = p-1; // compensate with -1 for loop iterator
     }
     else if (c=='@' || c=='\\') // command
     {
       // check if this is the start of another aliased command (see bug704172)
-      i+=findEndOfCommand(argList.c_str()+i+1);
+      i+=findEndOfCommand(argList.substr(i+1));
     }
   }
   if (l>p) args.push_back(argList.substr(p));
@@ -301,20 +251,20 @@ static QCString replaceAliasArguments(StringUnorderedSet &aliasesProcessed,
   // next we look for the positions of the markers and add them to a list
   std::vector<Marker> markerList;
   l = aliasValue.length();
-  char pc='\0';
-  bool insideMarkerId=false;
-  size_t markerStart=0;
+  char pc             = '\0';
+  bool insideMarkerId = false;
+  size_t markerStart  = 0;
   auto isDigit = [](char c) { return c>='0' && c<='9'; };
-  for (i=0;i<=l;i++)
+  for (size_t i=0;i<=l;i++)
   {
-    char c = i<l ? aliasValue.at(i) : '\0';
+    char c = i<l ? aliasValue[i] : '\0';
     if (insideMarkerId && !isDigit(c)) // found end of a markerId
     {
       insideMarkerId = false;
       size_t markerLen = i-markerStart;
-      markerList.push_back(Marker(markerStart-1,
-                                  std::stoi(aliasValue.substr(markerStart,markerLen)),
-                                  markerLen+1));
+      markerList.emplace_back(markerStart-1,
+                              static_cast<size_t>(std::stoi(std::string{aliasValue.substr(markerStart,markerLen)})),
+                              markerLen+1);
     }
     if (c=='\\' && (pc=='@' || pc=='\\')) // found escaped backslash
     {
@@ -333,18 +283,17 @@ static QCString replaceAliasArguments(StringUnorderedSet &aliasesProcessed,
   }
 
   // then we replace the markers with the corresponding arguments in one pass
-  QCString result;
-  p=0;
-  for (i=0;i<markerList.size();i++)
+  std::string result;
+  p = 0;
+  for (const Marker &m : markerList)
   {
-    const Marker &m = markerList.at(i);
     result+=aliasValue.substr(p,m.pos-p);
-    //printf("part before marker %d: '%s'\n",i,qPrint(aliasValue.mid(p,m->pos-p)));
-    if (m.number>0 && m.number<=static_cast<int>(args.size())) // valid number
+    //printf("part before marker: '%s'\n",qPrint(aliasValue.substr(p,m.pos-p)));
+    if (m.number>0 && m.number<=args.size()) // valid number
     {
-      result+=expandAliasRec(aliasesProcessed,QCString(args.at(m.number-1)),true);
-      //printf("marker index=%zu pos=%zu number=%d size=%zu replacement %s\n",i,m.pos,m.number,m.size,
-      //    qPrint(args.at(m.number-1)));
+      result+=expandAliasRec(aliasesProcessed,args[m.number-1],true);
+      //printf("marker index=%zu pos=%zu number=%zu size=%zu replacement %s\n",i,m.pos,m.number,m.size,
+      //    qPrint(args[m.number-1]));
     }
     p=m.pos+m.size; // continue after the marker
   }
@@ -352,10 +301,12 @@ static QCString replaceAliasArguments(StringUnorderedSet &aliasesProcessed,
   //printf("string after replacement of markers: '%s'\n",qPrint(result));
 
   // expand the result again
-  result = substitute(result,"\\{","{");
-  result = substitute(result,"\\}","}");
-  result = expandAliasRec(aliasesProcessed,substitute(result,QCString("\\"+sep),QCString(sep)));
+  substituteInplace(result,"\\{","{");
+  substituteInplace(result,"\\}","}");
+  substituteInplace(result,std::string{"\\"}+std::string{sep},sep);
+  result = expandAliasRec(aliasesProcessed,result);
 
+  //printf("final string '%s'\n",qPrint(result));
   return result;
 }
 
@@ -364,52 +315,52 @@ static std::string escapeSeparators(const std::string &s, const std::string &sep
   if (s.empty() || sep.empty()) return s;
   std::string result;
   result.reserve(s.length()+10);
-  size_t i,p=0,l=sep.length();
+  size_t i, p=0, l=sep.length();
   while ((i=s.find(sep,p))!=std::string::npos)
   {
-    result+=s.substr(p,i-p);
+    result += s.substr(p,i-p);
     if (i>0 && s[i-1]!='\\') // escape the separator
     {
-      result+='\\';
+      result += '\\';
     }
-    result+=s.substr(i,l);
-    p=i+l;
+    result += s.substr(i,l);
+    p = i+l;
   }
-  result+=s.substr(p);
+  result += s.substr(p);
   //printf("escapeSeparators(%s,sep='%s')=%s\n",qPrint(s),qPrint(sep),qPrint(result));
   return result;
 }
 
-static QCString expandAliasRec(StringUnorderedSet &aliasesProcessed,const QCString &s,bool allowRecursion)
+static std::string expandAliasRec(StringUnorderedSet &aliasesProcessed,std::string_view s,bool allowRecursion)
 {
-  QCString result;
+  std::string result;
   static const reg::Ex re(R"([\\@](\a[\w-]*))");
-  std::string str = s.str();
+  std::string str{s};
   reg::Match match;
   size_t p = 0;
-  while (search(str,match,re,p))
+  while (reg::search(str,match,re,p))
   {
     size_t i = match.position();
     size_t l = match.length();
-    if (i>p) result+=s.mid(p,i-p);
+    if (i>p) result+=s.substr(p,i-p);
 
-    std::string args = extractAliasArgs(s,i+l).str();
-    bool hasArgs = !args.empty();            // found directly after command
-    size_t argsLen = args.length();
-    QCString cmd = match[1].str();
+    std::string args    = extractAliasArgs(s.substr(i+l));
+    bool hasArgs        = !args.empty();            // found directly after command
+    size_t argsLen      = args.length();
+    std::string cmd     = match[1].str();
     int selectedNumArgs = -1;
     //printf("looking for alias '%s' with params '%s'\n",qPrint(cmd),qPrint(args));
-    auto it = g_aliasInfoMap.find(cmd.str());
+    auto it = g_aliasInfoMap.find(cmd);
     if (it == g_aliasInfoMap.end())
     {
       // if command has a - then also try part in without it
-      int minusPos = cmd.find('-');
-      if (minusPos!=-1)
+      size_t minusPos = cmd.find('-');
+      if (minusPos!=std::string::npos)
       {
-        it = g_aliasInfoMap.find(cmd.left(minusPos).str());
+        it = g_aliasInfoMap.find(cmd.substr(0,minusPos));
         if (it!=g_aliasInfoMap.end()) // found part before - as alias
         {
-          cmd     = cmd.left(minusPos);
+          cmd     = cmd.substr(0,minusPos);
           args    = "";
           hasArgs = false;
           argsLen = 0;
@@ -419,6 +370,7 @@ static QCString expandAliasRec(StringUnorderedSet &aliasesProcessed,const QCStri
     }
     if (it != g_aliasInfoMap.end()) // cmd is an alias
     {
+      //printf("found an alias, hasArgs=%d\n",hasArgs);
       if (hasArgs)
       {
         // Find the an alias that matches the number of arguments.
@@ -443,7 +395,7 @@ static QCString expandAliasRec(StringUnorderedSet &aliasesProcessed,const QCStri
       }
       else
       {
-        selectedNumArgs=0;
+        selectedNumArgs = 0;
       }
     }
     else
@@ -451,77 +403,78 @@ static QCString expandAliasRec(StringUnorderedSet &aliasesProcessed,const QCStri
       //printf("Alias %s not found\n",qPrint(cmd));
     }
     //printf("Found command s='%s' cmd='%s' numArgs=%d args='%s'\n", qPrint(s),qPrint(cmd),selectedNumArgs,qPrint(args));
-    std::string qualifiedName = cmd.str()+":"+std::to_string(selectedNumArgs);
+    std::string qualifiedName = cmd+":"+std::to_string(selectedNumArgs);
     if ((allowRecursion || aliasesProcessed.find(qualifiedName)==aliasesProcessed.end()) &&
         it!=g_aliasInfoMap.end() && selectedNumArgs!=-1 &&
         it->second.find(selectedNumArgs)!=it->second.end()) // expand the alias
     {
       const auto &aliasInfo = it->second.find(selectedNumArgs)->second;
-      //printf("is an alias with separator='%s' hasArgs=%d!\n",qPrint(aliasInfo.separator),hasArgs);
+      //printf("is an alias with separator='%s' selectedNumArgs=%d hasArgs=%d!\n",qPrint(aliasInfo.separator),selectedNumArgs,hasArgs);
       if (!allowRecursion) aliasesProcessed.insert(qualifiedName);
       std::string val = aliasInfo.value;
       if (hasArgs)
       {
-        val = replaceAliasArguments(aliasesProcessed,val,args,aliasInfo.separator).str();
-        //printf("replace sep='%s' val='%s' args='%s'\n",
+        //printf("before replaceAliasArguments(val='%s')\n",qPrint(val));
+        val = replaceAliasArguments(aliasesProcessed,val,args,aliasInfo.separator);
+        //printf("after replaceAliasArguments sep='%s' val='%s' args='%s'\n",
         //       qPrint(aliasInfo.separator),qPrint(val),qPrint(args));
       }
-      result+=expandAliasRec(aliasesProcessed,QCString(val));
+      result += expandAliasRec(aliasesProcessed,val);
       if (!allowRecursion) aliasesProcessed.erase(qualifiedName);
-      p=i+l;
-      if (hasArgs) p+=argsLen+2;
+      p = i+l;
+      if (hasArgs) p += argsLen+2;
     }
     else // command is not an alias
     {
       //printf("not an alias!\n");
-      result+=match.str();
-      p=i+l;
+      result += match.str();
+      p = i+l;
     }
   }
-  result+=s.right(s.length()-p);
+  result += s.substr(p);
   //printf("expandAliases \"%s\"->\"%s\"\n",qPrint(s),qPrint(result));
   return result;
 }
 
 
-static int countAliasArguments(const std::string &args, const std::string &sep)
+static int countAliasArguments(std::string_view args, std::string_view sep)
 {
-  int count=1;
+  int count = 1;
   size_t l = args.length();
-  size_t i;
-  for (i=0;i<l;i++)
+  for (size_t i=0;i<l;i++)
   {
-    char c = args.at(i);
-    if (c==sep[0] && // start with separator character
-        (i==0 || args.at(i-1)!='\\') && // is not escaped
-        qstrncmp(args.c_str()+i,sep.c_str(),sep.length())==0) // whole separator matches
+    char c = args[i];
+    if (!sep.empty() &&
+        c==sep[0] && // start with separator character
+        (i==0 || args[i-1]!='\\') && // is not escaped
+        args.substr(i,sep.length())==sep) // whole separator matches
     {
       count++;
     }
     else if (c=='@' || c=='\\')
     {
       // check if this is the start of another aliased command (see bug704172)
-      i+=findEndOfCommand(args.c_str()+i+1);
+      i += findEndOfCommand(args.substr(i+1));
     }
   }
-  //printf("countAliasArguments(%s,sep=%s)=%zu\n",qPrint(args),qPrint(sep),count);
+  //printf("countAliasArguments(%s,sep=%s)=%d\n",qPrint(args),qPrint(sep),count);
   return count;
 }
 
-static QCString extractAliasArgs(const QCString &args,size_t pos)
+static std::string extractAliasArgs(std::string_view args)
 {
-  size_t i;
-  int bc=0;
-  char prevChar=0;
-  if (args.at(pos)=='{') // alias has argument
+  int bc = 0;
+  char prevChar = 0;
+  if (!args.empty() && args[0]=='{') // alias has argument
   {
-    for (i=pos;i<args.length();i++)
+    for (size_t i=0;i<args.length();i++)
     {
-      if (prevChar!='\\')
+      char c = args[i];
+      if (prevChar!='\\') // not escaped
       {
-        if (args.at(i)=='{') bc++;
-        if (args.at(i)=='}') bc--;
-        prevChar=args.at(i);
+        if (c=='{') bc++;
+        if (c=='}') bc--;
+        prevChar=c;
       }
       else
       {
@@ -530,41 +483,39 @@ static QCString extractAliasArgs(const QCString &args,size_t pos)
 
       if (bc==0)
       {
-        //printf("extractAliasArgs('%s')->'%s'\n",qPrint(args),qPrint(args.mid(pos+1,i-pos-1)));
-        return args.mid(pos+1,i-pos-1);
+        //printf("extractAliasArgs('%s')->'%s'\n",qPrint(args),qPrint(args.substr(1,i-1)));
+        return std::string{args.substr(1,i-1)};
       }
     }
   }
-  return "";
+  return std::string{};
 }
 
-QCString resolveAliasCmd(const QCString &aliasCmd)
+std::string resolveAliasCmd(std::string_view aliasCmd)
 {
-  QCString result;
   StringUnorderedSet aliasesProcessed;
   //printf("Expanding: '%s'\n",qPrint(aliasCmd));
-  result = expandAliasRec(aliasesProcessed,aliasCmd);
+  std::string result = expandAliasRec(aliasesProcessed,aliasCmd);
   //printf("Expanding result: '%s'->'%s'\n",qPrint(aliasCmd),qPrint(result));
-  Debug::print(Debug::Alias,0,"Resolving alias: cmd='%s' result='%s'\n",qPrint(aliasCmd),qPrint(result));
+  Debug::print(Debug::Alias,0,"Resolving alias: cmd='{}' result='{}'\n",std::string{aliasCmd},result);
   return result;
 }
 
-static std::string expandAlias(const std::string &aliasName,const std::string &aliasValue)
+static std::string expandAlias(std::string_view aliasName,std::string_view aliasValue)
 {
-  QCString result;
+  std::string result;
   StringUnorderedSet aliasesProcessed;
   // avoid expanding this command recursively
-  aliasesProcessed.insert(aliasName);
+  aliasesProcessed.insert(std::string{aliasName});
   // expand embedded commands
   //printf("Expanding: '%s'->'%s'\n",qPrint(aliasName),qPrint(aliasValue));
-  result = expandAliasRec(aliasesProcessed,QCString(aliasValue));
+  result = expandAliasRec(aliasesProcessed,aliasValue);
   //printf("Expanding result: '%s'->'%s'\n",qPrint(aliasName),qPrint(result));
-  Debug::print(Debug::Alias,0,"Expanding alias: input='%s' result='%s'\n",qPrint(aliasValue),qPrint(result));
-  return result.str();
+  Debug::print(Debug::Alias,0,"Expanding alias: input='{}' result='{}'\n",std::string{aliasValue},result);
+  return result;
 }
 
-bool isAliasCmd(const QCString &aliasCmd)
+bool isAliasCmd(std::string_view aliasCmd)
 {
-  auto it    = g_aliasInfoMap.find(aliasCmd.str());
-  return it != g_aliasInfoMap.end();
+  return g_aliasInfoMap.find(std::string{aliasCmd}) != g_aliasInfoMap.end();
 }

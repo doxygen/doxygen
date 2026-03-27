@@ -3,4 +3,5 @@
 #MSearchBox {
     position: absolute;
     right: 5px;
+    margin-right: 10px;
 }

@@ -19,7 +19,7 @@
 %{
 
 /*
- *	includes
+ * includes
  */
 #include "config.h"
 #include "input.h"
@@ -46,7 +46,7 @@
 
 /* -----------------------------------------------------------------
  *
- *	static variables
+ * static variables
  */
 
 struct ConfigFileState
@@ -77,8 +77,8 @@ static const char *stateToString(int state);
 
 /* -----------------------------------------------------------------
  */
-#undef	YY_INPUT
-#define	YY_INPUT(buf,result,max_size) result=yyread(buf,max_size);
+#undef  YY_INPUT
+#define YY_INPUT(buf,result,max_size) result=yyread(buf,max_size);
 
 static int yyread(char *buf,int maxSize)
 {
@@ -236,6 +236,10 @@ static void processList()
       {
         elemStr+='"';
       }
+      else if (insideQuote && i<l-2 && s.at(i+1)=='\\' && s.at(i+2)=='"') // escaped "\" at the end of a quoted section
+      {
+        elemStr+="\\";
+      }
       else // keep other escaped characters in escaped form
       {
         elemStr+=c;
@@ -302,12 +306,12 @@ static FILE *tryPath(const QString &path,const QString &fileName)
   if (fi.exists() && fi.isFile())
   {
     FILE *f = fopen(absName.toLocal8Bit(),"r");
-    if (f==NULL)
+    if (f==nullptr)
       config_err("could not open file %s for reading\n",qPrintable(absName));
     else
       return f;
   }
-  return NULL;
+  return nullptr;
 }
 
 static FILE *findFile(const QString &fileName)
@@ -334,7 +338,7 @@ static void readIncludeFile(const QString &incName)
   if (g_includeDepth==MAX_INCLUDE_DEPTH)
   {
     config_err("maximum include depth (%d) reached, %s is not included.",
-	MAX_INCLUDE_DEPTH,qPrintable(incName));
+               MAX_INCLUDE_DEPTH,qPrintable(incName));
   }
 
   QString inc = incName;
@@ -722,7 +726,7 @@ static void upgradeConfig(const QHash<QString,Input*> &options)
         bool classGraph    = InputBool::convertToBool(v3,isValid3);
         if (isValid1 && isValid2 && isValid3 && !classDiagrams && !haveDot && classGraph)
         {
-   	  config_warn("Changing CLASS_GRAPH option to TEXT because obsolete option CLASS_DIAGRAM was found and set to NO.\n");
+          config_warn("Changing CLASS_GRAPH option to TEXT because obsolete option CLASS_DIAGRAM was found and set to NO.\n");
           optClassGraph->setValue(QString::fromLatin1("TEXT"));
         }
       }
@@ -785,7 +789,7 @@ bool parseConfig(
   return true;
 }
 
-void writeStringValue(QTextStream &t,TextCodecAdapter *codec,const QString &s)
+void writeStringValue(QTextStream &t,TextCodecAdapter *codec,const QString &s,bool convert)
 {
   QChar c;
   bool needsEscaping=false;
@@ -800,10 +804,11 @@ void writeStringValue(QTextStream &t,TextCodecAdapter *codec,const QString &s)
       while (!(c=*p++).isNull() && !needsEscaping)
       {
         needsEscaping = (c==QChar::fromLatin1(' ')  ||
-	                 c==QChar::fromLatin1(',') ||
-	                 c==QChar::fromLatin1('\n') ||
-		         c==QChar::fromLatin1('\t') ||
-		         c==QChar::fromLatin1('"'));
+                         c==QChar::fromLatin1(',')  ||
+                         c==QChar::fromLatin1('\n') ||
+                         c==QChar::fromLatin1('\t') ||
+                         c==QChar::fromLatin1('\\') ||
+                         c==QChar::fromLatin1('"'));
       }
       p=s.data();
       while (!(c=*p++).isNull() && !needsHashEscaping)
@@ -820,15 +825,42 @@ void writeStringValue(QTextStream &t,TextCodecAdapter *codec,const QString &s)
       p=s.data();
       while (!p->isNull())
       {
-	if (*p   ==QChar::fromLatin1(' ') &&
-	   *(p+1)==QChar::fromLatin1('\0')) break; // skip inserted space at the end
-	if (*p   ==QChar::fromLatin1('"')) t << "\\"; // escape quotes
-	t << *p++;
+        if (*p   ==QChar::fromLatin1(' ') &&
+           *(p+1)==QChar::fromLatin1('\0')) break; // skip inserted space at the end
+        if (*p   ==QChar::fromLatin1('"')) t << "\\"; // escape quotes
+        if (*p   ==QChar::fromLatin1('\\') && (p+1)->isNull()) t << "\\"; // escape last "\", for e.g c:\temp\ where "\" is part of the path
+        if (convert)
+        {
+          if (*p   ==QChar::fromLatin1('<')) t << "&lt;";
+          else if (*p   ==QChar::fromLatin1('>')) t << "&gt;";
+          else if (*p   ==QChar::fromLatin1('&')) t << "&amp;";
+          else t << *p;
+        }
+        else
+        {
+          t << *p;
+        }
+        p++;
       }
     }
     else
     {
-      t << s;
+      p=s.data();
+      while (!p->isNull())
+      {
+        if (convert)
+        {
+          if (*p   ==QChar::fromLatin1('<')) t << "&lt;";
+          else if (*p   ==QChar::fromLatin1('>')) t << "&gt;";
+          else if (*p   ==QChar::fromLatin1('&')) t << "&amp;";
+          else t << *p;
+        }
+        else
+        {
+          t << *p;
+        }
+        p++;
+      }
     }
     if (needsHashEscaping || needsEscaping)
     {

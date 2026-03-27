@@ -18,6 +18,8 @@
 
 #include <cstdint>
 #include "qcstring.h"
+#include "construct.h"
+#include "message.h"
 
 /** Class containing a print function for diagnostics. */
 class Debug
@@ -44,6 +46,8 @@ class Debug
                      Alias             =             0x01'0000ULL,
                      Entries           =             0x02'0000ULL,
                      Sections          =             0x04'0000ULL,
+                     Stderr            =             0x08'0000ULL,
+                     Layout            =             0x10'0000ULL,
                      Lex               = 0x0000'FFFF'FF00'0000ULL, // all scanners combined
                      Lex_code          = 0x0000'0000'0100'0000ULL,
                      Lex_commentcnv    = 0x0000'0000'0200'0000ULL,
@@ -66,7 +70,13 @@ class Debug
                      Lex_xml           = 0x0000'0400'0000'0000ULL,
                      Lex_xmlcode       = 0x0000'0800'0000'0000ULL
                    };
-    static void print(DebugMask mask,int prio,const char *fmt,...);
+    static void print_(DebugMask mask, int prio, fmt::string_view fmt, fmt::format_args args);
+
+    template<typename ...Args>
+    static void print(DebugMask mask,int prio,fmt::format_string<Args...> fmt, Args&&... args)
+    {
+      print_(mask,prio,fmt,fmt::make_format_args(args...));
+    }
 
     static bool setFlagStr(const QCString &label);
     static void setFlag(const DebugMask mask);
@@ -88,6 +98,7 @@ class DebugLex
   public:
     DebugLex(Debug::DebugMask mask,const char *lexName,const char *fileName);
    ~DebugLex();
+    NON_COPYABLE(DebugLex)
     static void print(Debug::DebugMask mask,const char *state,const char *lexName,const char *fileName);
   private:
 

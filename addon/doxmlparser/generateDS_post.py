@@ -17,7 +17,6 @@ import re
 def main():
     inputFile = open(sys.argv[1], 'r')
     outputFile = open(sys.argv[2], 'wb')
-    lineStr = ""
     for line in inputFile:
         line = line.rstrip()
         line = re.sub(r'##','# #',line)

@@ -60,7 +60,7 @@ class InputString : public QObject, public Input
     void setEnabled(bool);
     void updateDependencies() {}
     bool isDefault();
-    void writeValue(QTextStream &t,TextCodecAdapter *codec);
+    void writeValue(QTextStream &t,TextCodecAdapter *codec,bool convert);
     void setTemplateDocs(const QString &docs) { m_tdocs = docs; }
     bool isEmpty() { return m_str.isEmpty(); }
     QString checkEnumVal(const QString &value);

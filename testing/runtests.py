@@ -1,70 +1,76 @@
 #!/usr/bin/env python
 
 from __future__ import print_function
-import argparse, glob, itertools, re, shutil, os, sys
+import argparse
+import glob
+import itertools
+import re
+import shutil
+import os
+import sys
 import subprocess
 import shlex
+import io
 
 config_reg = re.compile(r'.*\/\/\s*(?P<name>\S+):\s*(?P<value>.*)$')
-bkmk_reg = re.compile(r'.*bkmkstart\s+([A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z]).*')
-hyper_reg = re.compile(r'.*HYPERLINK\s+[\\l]*\s+"([A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z])".*')
-pageref_reg = re.compile(r'.*PAGEREF\s+([A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z]).*')
+bkmk_reg = re.compile(r'.*bkmkstart\s+([A-Z]{10}).*')
+hyper_reg = re.compile(r'.*HYPERLINK\s+[\\l]*\s+"([A-Z]{10})".*')
+pageref_reg = re.compile(r'.*PAGEREF\s+([A-Z]{10}).*')
 
 
 def xopen(fname, mode='r', encoding='utf-8'):
-    '''Unified file opening for Python 2 an Python 3.
+    '''Unified file opening for Python 2 an Python 3.'''
 
-    Python 2 does not have the encoding argument. Python 3 has one.
-    '''
+    return io.open(fname, mode=mode, encoding=encoding)
 
-    if sys.version_info[0] == 2:
-        return open(fname, mode=mode) # Python 2 without encoding
-    else:
-        return open(fname, mode=mode, encoding=encoding) # Python 3 with encoding
 
-def xpopen(cmd, cmd1="",encoding='utf-8-sig', getStderr=False):
-    '''Unified file pipe opening for Python 2 an Python 3.
-
-    Python 2 does not have the encoding argument. Python 3 has one. and
-    '''
+def xpopen(cmd, cmd1="", encoding='utf-8-sig', get_stderr=False):
+    '''Unified file pipe opening for Python 2 an Python 3.'''
 
     if sys.version_info[0] == 2:
-        return os.popen(cmd).read() # Python 2 without encoding
-    else:
-        if (getStderr):
-            proc = subprocess.Popen(shlex.split(cmd1),stdout=subprocess.PIPE,stderr=subprocess.PIPE,encoding=encoding) # Python 3 with encoding
-            return proc.stderr.read()
-        else:
-            proc = subprocess.Popen(shlex.split(cmd),stdout=subprocess.PIPE,stderr=subprocess.PIPE,encoding=encoding) # Python 3 with encoding
-            return proc.stdout.read()
+        return os.popen(cmd).read()  # Python 2 without encoding
+
+    proc = subprocess.Popen(shlex.split(cmd1 if get_stderr else cmd),
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE,
+                            encoding=encoding)  # Python 3 with encoding
+    return (proc.stderr if get_stderr else proc.stdout).read()
+
 
 def clean_header(errmsg):
-    # messages (due to the usage of more) have a contents like:
-    # ::::::::::::
-    # <file name>
-    # ::::::::::::
-    # we want to skip these
-    msg = errmsg.split('\n')
-    rtnmsg = ""
-    cnt = -1
-    for o in msg:
-        if (o):
-            if (cnt == -1):
-                if o.startswith(":::::::"):
-                    cnt = 3
-            if (cnt > 0):
-                cnt-=1
-            else:
-                rtnmsg+=o
-                rtnmsg+="\n"
-    return rtnmsg
- 
+    ''' Messages (due to the usage of more) have a content like:
+            ::::::::::::
+            <file name>
+            ::::::::::::
+        This function skips such headers and returns only the main content.
+    '''
+
+    lines = errmsg.splitlines()
+    rtn_msg = ""
+    skip = 0
+    for line in lines:
+        if not line:
+            continue
+        if skip > 0:
+            skip -= 1
+            continue
+        if line.startswith(":::::::"):
+            skip = 3
+            continue
+        rtn_msg += line
+        rtn_msg += "\n"
+    return rtn_msg
+
+
 class Tester:
     def __init__(self,args,test):
         self.args      = args
         self.test      = test
         self.update    = args.updateref
         self.config    = self.get_config()
+        if 'objective' not in self.config:
+            print("Test %s is missing the objective." % self.test)
+            sys.exit(1)
         self.test_name = '[%s]: %s' % (self.test,self.config['objective'][0])
         self.test_id   = self.test.split('_')[0]
         if self.update:
@@ -73,16 +79,39 @@ class Tester:
             self.test_out = self.args.outputdir+'/test_output_'+self.test_id
         self.prepare_test()
 
-    def compare_ok(self,got_file,expected_file,name):
+    # Compares 'got_file' against 'expected_file'.
+    # Returns (True,Msg) if there is a difference or one of the files does not exist and (False,'') otherwise
+    def compare_ok(self, got_file, expected_file):
         if not os.path.isfile(got_file):
-            return (True,'%s absent' % got_file)
-        elif not os.path.isfile(expected_file):
-            return (True,'%s absent' % expected_file)
-        else:
-            diff = xpopen('diff -b -w -u %s %s' % (got_file,expected_file))
+            return (True, f'{got_file} absent')
+        if not os.path.isfile(expected_file):
+            return (True, f'{expected_file} absent')
+
+        def _write_filtered_tmp(src_path, tmp_path):
+            # Read, split on tags to add newlines, drop empty lines, and write to tmp
+            with xopen(src_path, 'r') as f, xopen(tmp_path, 'w') as out_file:
+                filtered = [line for line in f.read().
+                            replace("<", "\n<").replace(">", ">\n").splitlines() if line.strip()]
+                out_file.write('\n'.join(filtered)+'\n')
+
+        got_file_tmp      = got_file + "_got"
+        expected_file_tmp = got_file + "_ref"
+
+        try:
+            for src, tmp in ((got_file, got_file_tmp), (expected_file, expected_file_tmp)):
+                _write_filtered_tmp(src, tmp)
+
+            diff = xpopen(f'diff -b -w -u {got_file_tmp} {expected_file_tmp}')
             if diff and not diff.startswith("No differences"):
-                return (True,'Difference between generated output and reference:\n%s' % diff)
-        return (False,'')
+                return (True, f'Difference between generated output and reference:\n{diff}')
+            return (False, '')
+        finally:
+            # Ensure cleanup even if diff or write fails
+            for tmp in (got_file_tmp, expected_file_tmp):
+                try:
+                    os.remove(tmp)
+                except OSError:
+                    pass
 
     def cleanup_xmllint(self,errmsg):
         msg = errmsg.split('\n')
@@ -165,6 +194,12 @@ class Tester:
                 print('DOCBOOK_OUTPUT=%s/docbook' % self.test_out, file=f)
             else:
                 print('GENERATE_DOCBOOK=NO', file=f)
+            if (self.args.man):
+                print('GENERATE_MAN=YES', file=f)
+                print('MAN_LINKS=YES', file=f)
+                print('MAN_OUTPUT=%s/man' % self.test_out, file=f)
+            else:
+                print('GENERATE_MAN=NO', file=f)
             if (self.args.qhp):
                 print('GENERATE_QHP=YES', file=f)
             if (self.args.xhtml or self.args.qhp):
@@ -200,7 +235,7 @@ class Tester:
         if (self.args.noredir):
             redir=''
 
-        if os.system('%s %s/Doxyfile %s' % (self.args.doxygen,self.test_out,redir))!=0:
+        if os.system('%s %s %s/Doxyfile %s' % (self.args.doxygen,self.args.doxygen_dbg,self.test_out,redir))!=0:
             print('Error: failed to run %s on %s/Doxyfile' % (self.args.doxygen,self.test_out))
             sys.exit(1)
 
@@ -265,19 +300,15 @@ class Tester:
                     print(data,file=f)
         shutil.rmtree(self.test_out+'/out',ignore_errors=True)
         os.remove(self.test_out+'/Doxyfile')
+        os.remove(self.test_out+'/warnings.log')
         return True
 
     # check the relevant files of a doxygen run with the reference material
     def perform_test(self,testmgr):
         if (sys.platform == 'win32'):
-            redir=' > nul:'
             separ='&'
         else:
-            redir=' 2> /dev/null'
             separ=';'
-
-        if (self.args.noredir):
-            redir=''
 
         failed_xml=False
         failed_html=False
@@ -286,6 +317,7 @@ class Tester:
         failed_docbook=False
         failed_rtf=False
         failed_xmlxsd=False
+        failed_man=False
         msg = ()
         # look for files to check against the reference
         if self.args.xml or self.args.xmlxsd:
@@ -319,7 +351,7 @@ class Tester:
                     with xopen(out_file,'w') as f:
                         print(data,file=f)
                     ref_file='%s/%s/%s' % (self.args.inputdir,self.test_id,check)
-                    (failed_xml,xml_msg) = self.compare_ok(out_file,ref_file,self.test_name)
+                    (failed_xml,xml_msg) = self.compare_ok(out_file,ref_file)
                     if failed_xml:
                         msg+= (xml_msg,)
                         break
@@ -344,7 +376,7 @@ class Tester:
                 exe_string += ' %s' % (redirx)
                 exe_string += ' %s more "%s/temp"' % (separ,xmlxsd_output)
 
-                xmllint_out = xpopen(exe_string,exe_string1,getStderr=True)
+                xmllint_out = xpopen(exe_string,exe_string1,get_stderr=True)
                 if xmllint_out:
                     xmllint_out = re.sub(r'.*validates','',xmllint_out).rstrip('\n')
                 else:
@@ -369,7 +401,7 @@ class Tester:
                 exe_string += ' %s' % (redirx)
                 exe_string += ' %s more "%s/temp"' % (separ,xmlxsd_output)
 
-                xmllint_out = xpopen(exe_string,exe_string1,getStderr=True)
+                xmllint_out = xpopen(exe_string,exe_string1,get_stderr=True)
                 if xmllint_out:
                     xmllint_out = re.sub(r'.*validates','',xmllint_out).rstrip('\n')
                 else:
@@ -399,7 +431,7 @@ class Tester:
                 exe_string += ' %s' % (redirx)
                 exe_string += ' %s more "%s/temp"' % (separ,xmlxsd_output)
 
-                xmllint_out = xpopen(exe_string,exe_string1,getStderr=True)
+                xmllint_out = xpopen(exe_string,exe_string1,get_stderr=True)
                 if xmllint_out:
                     xmllint_out = re.sub(r'.*validates','',xmllint_out).rstrip('\n')
                 else:
@@ -440,7 +472,7 @@ class Tester:
             exe_string += ' %s more "%s/temp"' % (separ,docbook_output)
 
             failed_docbook=False
-            xmllint_out = xpopen(exe_string,exe_string1,getStderr=True)
+            xmllint_out = xpopen(exe_string,exe_string1,get_stderr=True)
             xmllint_out = self.cleanup_xmllint_docbook(xmllint_out)
             if xmllint_out:
                 xmllint_out  = clean_header(xmllint_out)
@@ -449,6 +481,10 @@ class Tester:
                 failed_docbook=True
             elif not self.args.keep:
                 shutil.rmtree(docbook_output,ignore_errors=True)
+
+        if (self.args.man):
+            # For future work
+            pass
 
         if (self.args.xhtml or self.args.qhp):
             html_output='%s/html' % self.test_out
@@ -465,7 +501,7 @@ class Tester:
             exe_string += ' %s' % (redirx)
             exe_string += ' %s more "%s/temp"' % (separ,html_output)
             failed_html=False
-            xmllint_out = xpopen(exe_string,exe_string1,getStderr=True)
+            xmllint_out = xpopen(exe_string,exe_string1,get_stderr=True)
             xmllint_out = self.cleanup_xmllint(xmllint_out)
             if xmllint_out:
                 xmllint_out  = clean_header(xmllint_out)
@@ -480,7 +516,7 @@ class Tester:
                 exe_string1 = exe_string
                 exe_string += ' %s' % (redirx)
                 exe_string += ' %s more "%s/temp"' % (separ,html_output)
-                xmllint_out = xpopen(exe_string,exe_string1,getStderr=True)
+                xmllint_out = xpopen(exe_string,exe_string1,get_stderr=True)
                 xmllint_out = self.cleanup_xmllint(xmllint_out)
                 if xmllint_out:
                     msg += (xmllint_out,)
@@ -506,8 +542,8 @@ class Tester:
             exe_string += ' %s' % (redirl)
             if outType:
                 exe_string += ' %s more temp' % (separ)
-            latex_out = xpopen(exe_string,exe_string1,getStderr=outType)
-            os.chdir(cur_directory);
+            latex_out = xpopen(exe_string,exe_string1,get_stderr=outType)
+            os.chdir(cur_directory)
             if (outType and latex_out.find("Error")!=-1):
                 msg += ("PDF generation failed\n  For a description of the problem see 'refman.log' in the latex directory of this test",)
                 failed_latex=True
@@ -528,7 +564,7 @@ class Tester:
         if failed_warn:
             msg += (warnings,)
 
-        if failed_warn or failed_xml or failed_html or failed_qhp or failed_latex or failed_docbook or failed_rtf or failed_xmlxsd:
+        if failed_warn or failed_xml or failed_html or failed_qhp or failed_latex or failed_docbook or failed_rtf or failed_xmlxsd or failed_man:
             testmgr.ok(False,self.test_name,msg)
             return False
 
@@ -619,6 +655,8 @@ def main():
         'update the reference file(s) for the given test',action="store_true")
     parser.add_argument('--doxygen',nargs='?',default='doxygen',help=
         'path/name of the doxygen executable')
+    parser.add_argument('--doxygen_dbg',nargs='?',default='',help=
+        'the doxygen debugging arguments')
     parser.add_argument('--xmllint',nargs='?',default='xmllint',help=
         'path/name of the xmllint executable')
     parser.add_argument('--id',nargs='+',dest='ids',action='append',type=int,help=
@@ -652,6 +690,8 @@ def main():
         'create qhp output and check with xmllint',action="store_true")
     parser.add_argument('--xmlxsd',help=
         'create xml output and check with xmllint against xsd',action="store_true")
+    parser.add_argument('--man',help=
+        'create man output',action="store_true")
     parser.add_argument('--pdf',help='create LaTeX output and create pdf from it',
         action="store_true")
     parser.add_argument('--subdirs',help='use the configuration parameter CREATE_SUBDIRS=YES',
@@ -670,9 +710,9 @@ def main():
     args = parser.parse_args(test_flags + sys.argv[1:])
 
     # sanity check
-    if (not args.xml) and (not args.pdf) and (not args.xhtml) and (not args.qhp) and (not args.docbook and (not args.rtf) and (not args.xmlxsd)):
+    if (not args.xml) and (not args.pdf) and (not args.xhtml) and (not args.qhp) and (not args.docbook and (not args.rtf) and (not args.xmlxsd) and (not args.man)):
         args.xml=True
-    if (not args.updateref is None) and (args.ids is None) and (args.all is None):
+    if (args.updateref is not None) and (args.ids is None) and (args.all is None):
         parser.error('--updateref requires either --id or --all')
 
     starting_directory = os.getcwd()

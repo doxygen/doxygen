@@ -27,7 +27,9 @@ class DotCallGraph : public DotGraph
 {
   public:
     DotCallGraph(const MemberDef *md,bool inverse);
-    ~DotCallGraph();
+    ~DotCallGraph() override;
+    NON_COPYABLE(DotCallGraph)
+
     bool isTrivial() const;
     bool isTooBig() const;
     int numNodes() const;
@@ -38,9 +40,9 @@ class DotCallGraph : public DotGraph
     static bool isTrivial(const MemberDef *md,bool inverse);
 
   protected:
-    virtual QCString getBaseName() const;
-    virtual QCString getMapLabel() const;
-    virtual void computeTheGraph();
+    QCString getBaseName() const override;
+    QCString getMapLabel() const override;
+    void computeTheGraph() override;
 
   private:
     void buildGraph(DotNode *n,const MemberDef *md,int distance);

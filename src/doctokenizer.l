@@ -47,11 +47,11 @@ typedef yyguts_t *yyscan_t;
 #include "cite.h"
 #include "regex.h"
 #include "debug.h"
+#include "docnode.h"
+#include "stringutil.h"
 
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
-
-#define TK_COMMAND_SEL() (yytext[0] == '@' ? TK_COMMAND_AT : TK_COMMAND_BS)
 
 //--------------------------------------------------------------------------
 
@@ -80,6 +80,7 @@ struct doctokenizerYY_state
   int sharpCount=0;
   bool markdownSupport=true;
   bool insideHtmlLink=false;
+  bool expectQuote=false;
 
   // context for section finding phase
   const Definition  *definition = nullptr;
@@ -89,6 +90,7 @@ struct doctokenizerYY_state
   QCString     endMarker;
   int          autoListLevel;
   std::stack< std::unique_ptr<DocLexerContext> > lexerStack;
+  std::stack<int> stateStack;
 
   int yyLineNr = 0;
 };
@@ -122,53 +124,6 @@ QCString extractPartAfterNewLine(const QCString &text)
 
 //--------------------------------------------------------------------------
 
-const char *DocTokenizer::tokToString(int token)
-{
-  switch (token)
-  {
-    case 0:              return "TK_EOF";
-    case TK_WORD:        return "TK_WORD";
-    case TK_LNKWORD:     return "TK_LNKWORD";
-    case TK_WHITESPACE:  return "TK_WHITESPACE";
-    case TK_LISTITEM:    return "TK_LISTITEM";
-    case TK_ENDLIST:     return "TK_ENDLIST";
-    case TK_COMMAND_AT:  return "TK_COMMAND_AT";
-    case TK_HTMLTAG:     return "TK_HTMLTAG";
-    case TK_SYMBOL:      return "TK_SYMBOL";
-    case TK_NEWPARA:     return "TK_NEWPARA";
-    case TK_RCSTAG:      return "TK_RCSTAG";
-    case TK_URL:         return "TK_URL";
-    case TK_COMMAND_BS:  return "TK_COMMAND_BS";
-  }
-  return "ERROR";
-}
-
-const char *DocTokenizer::retvalToString(int retval)
-{
-  switch (retval)
-  {
-    case RetVal_OK:            return "RetVal_OK";
-    case RetVal_SimpleSec:     return "RetVal_SimpleSec";
-    case RetVal_ListItem:      return "RetVal_ListItem";
-    case RetVal_Section:       return "RetVal_Section";
-    case RetVal_Subsection:    return "RetVal_Subsection";
-    case RetVal_Subsubsection: return "RetVal_Subsubsection";
-    case RetVal_Paragraph:     return "RetVal_Paragraph";
-    case RetVal_SubParagraph:  return "RetVal_SubParagraph";
-    case RetVal_EndList:       return "RetVal_EndList";
-    case RetVal_EndPre:        return "RetVal_EndPre";
-    case RetVal_DescData:      return "RetVal_DescData";
-    case RetVal_DescTitle :    return "RetVal_DescTitle";
-    case RetVal_EndDesc:       return "RetVal_EndDesc";
-    case RetVal_TableRow:      return "RetVal_TableRow";
-    case RetVal_TableCell:     return "RetVal_TableCell";
-    case RetVal_TableHCell:    return "RetVal_TableHCell";
-    case RetVal_EndTable:      return "RetVal_EndTable";
-    case RetVal_Internal:      return "RetVal_Internal";
-  }
-  return "ERROR";
-}
-
 static int computeIndent(const char *str,size_t length)
 {
   if (str==0 || length==std::string::npos) return 0;
@@ -185,55 +140,22 @@ static int computeIndent(const char *str,size_t length)
     {
       indent=0;
     }
+    else if (literal_at(&str[i],"\\ilinebr"))
+    {
+      indent=0;
+      i+=7;
+      if (str[i+1]==' ') i++; // also eat space after \\ilinebr if present
+    }
     else
     {
       indent++;
     }
   }
+  //printf("input('%s')=%d\n",str,indent);
   return indent;
 }
 
 //--------------------------------------------------------------------------
-
-static QCString stripEmptyLines(const QCString &s)
-{
-  if (s.isEmpty()) return QCString();
-  int end=static_cast<int>(s.length());
-  int start=0,p=0;
-  // skip leading empty lines
-  for (;;)
-  {
-    int c;
-    while ((c=s[p]) && (c==' ' || c=='\t')) p++;
-    if (s[p]=='\n')
-    {
-      start=++p;
-    }
-    else
-    {
-      break;
-    }
-  }
-  // skip trailing empty lines
-  p=end-1;
-  if (p>=start && s.at(p)=='\n') p--;
-  while (p>=start)
-  {
-    int c;
-    while ((c=s[p]) && (c==' ' || c=='\t')) p--;
-    if (s[p]=='\n')
-    {
-      end=p;
-    }
-    else
-    {
-      break;
-    }
-    p--;
-  }
-  //printf("stripEmptyLines(%d-%d)\n",start,end);
-  return s.mid(start,end-start);
-}
 
 #define unput_string(yytext,yyleng) do { for (int i=(int)yyleng-1;i>=0;i--) unput(yytext[i]); } while(0)
 //--------------------------------------------------------------------------
@@ -246,19 +168,22 @@ static inline const char *getLexerFILE() {return __FILE__;}
 #include "doxygen_lex.h"
 
 //--------------------------------------------------------------------------
-//#define REAL_YY_DECL int doctokenizerYYlex (void)
-//#define YY_DECL static int local_doctokenizer(void)
-//#define LOCAL_YY_DECL local_doctokenizer()
+#define YY_DECL static Token doctokenizerYYlex(yyscan_t yyscanner)
+//#define LOCAL_YY_DECL local_doctokenizer(yyscan_t yyscanner)
+#ifndef yyterminate
+#define yyterminate() return Token::make_TK_EOF()
+#endif
 
 %}
 
 CMD       ("\\"|"@")
 WS        [ \t\r\n]
-NONWS     [^ \t\r\n]
 BLANK     [ \t\r]
 BLANKopt  {BLANK}*
 ID        [$a-z_A-Z\x80-\xFF][$a-z_A-Z0-9\x80-\xFF]*
 LABELID   [a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF\-]*
+REQID     [a-z_A-Z0-9\x80-\xFF\-]+
+CODEID    [a-zA-Z][a-zA-Z0-9+]*
 PHPTYPE   [?]?[\\:a-z_A-Z0-9\x80-\xFF\-]+
 CITESCHAR [a-z_A-Z0-9\x80-\xFF\-\?]
 CITEECHAR [a-z_A-Z0-9\x80-\xFF\-\+:\/\?]
@@ -267,18 +192,18 @@ DOXYCFG   [A-Z][A-Z_0-9]*
 MAILADDR  ("mailto:")?[a-z_A-Z0-9\x80-\xFF.+-]+"@"[a-z_A-Z0-9\x80-\xFf-]+("."[a-z_A-Z0-9\x80-\xFf\-]+)+[a-z_A-Z0-9\x80-\xFf\-]+
 MAILWS    [\t a-z_A-Z0-9\x80-\xFF+-]
 MAILADDR2 {MAILWS}+{BLANK}+("at"|"AT"|"_at_"|"_AT_"){BLANK}+{MAILWS}+("dot"|"DOT"|"_dot_"|"_DOT_"|"point"|"POINT"|"_point_"|"_POINT_"){BLANK}+{MAILWS}+
-OPTSTARS  ("/""/"{BLANK}*)?"*"*{BLANK}*
 LISTITEM  {BLANK}*[-]("#")?{WS}
 MLISTITEM {BLANK}*[+*]{WS}
-OLISTITEM {BLANK}*[1-9][0-9]*"."{BLANK}
+OLISTITEM {BLANK}*("0"|[1-9][0-9]*)"."{BLANK}
+CLISTITEM {BLANK}*[-]{BLANK}*"\["[ xX]"\]"
 ENDLIST   {BLANK}*"."{BLANK}*(\n|"\\ilinebr")
 ATTRNAME  [a-z_A-Z\x80-\xFF][:a-z_A-Z0-9\x80-\xFF\-]*
 ATTRIB    {ATTRNAME}{WS}*("="{WS}*(("\""[^\"]*"\"")|("'"[^\']*"'")|[^ \t\r\n'"><]+))?
 URLCHAR   [a-z_A-Z0-9\!\~\,\:\;\'\$\?\@\&\%\#\.\-\+\/\=\x80-\xFF]
 URLMASK   ({URLCHAR}+([({]{URLCHAR}*[)}])?)+
 URLPROTOCOL ("http:"|"https:"|"ftp:"|"ftps:"|"sftp:"|"file:"|"news:"|"irc:"|"ircs:")
-FILEICHAR [a-z_A-Z0-9\\:\\\/\-\+=&#@]
-FILEECHAR [a-z_A-Z0-9\-\+=&#@]
+FILEICHAR [a-z_A-Z0-9\x80-\xFF\\:\\\/\-\+=&#@~]
+FILEECHAR [a-z_A-Z0-9\x80-\xFF\-\+=&#@~]
 FILECHARS {FILEICHAR}*{FILEECHAR}+
 HFILEMASK {FILEICHAR}*("."{FILEICHAR}+)+{FILECHARS}*
 VFILEMASK {FILECHARS}("."{FILECHARS})*
@@ -286,7 +211,7 @@ FILEMASK  {VFILEMASK}|{HFILEMASK}
 LINKMASK  [^ \t\n\r\\@<&${}]+("("[^\n)]*")")?({BLANK}*("const"|"volatile"){BLANK}+)?
 VERBATIM  "verbatim"{BLANK}*
 SPCMD1    {CMD}([a-z_A-Z][a-z_A-Z0-9]*|{VERBATIM}|"--"|"---")
-SPCMD2    {CMD}[\\@<>&$#%~".+=|-]
+SPCMD2    {CMD}[\\@<>&$#%~".+=|!?-]
 SPCMD3    {CMD}_form#[0-9]+
 SPCMD4    {CMD}"::"
 SPCMD5    {CMD}":"
@@ -302,8 +227,10 @@ ANONNS    "anonymous_namespace{"[^}]*"}"
 SCOPEPRE  (({ID}{TEMPLPART}?)|{ANONNS}){SCOPESEP}
 SCOPEKEYS ":"({ID}":")*
 SCOPECPP  {SCOPEPRE}*(~)?{ID}{TEMPLPART}?
+SCOPECPPN {SCOPEPRE}*(~)?{ID}
 SCOPEOBJC {SCOPEPRE}?{ID}{SCOPEKEYS}?
 SCOPEMASK {SCOPECPP}|{SCOPEOBJC}
+SCOPEMSKN {SCOPECPPN}|{SCOPEOBJC}
 FUNCARG   "("{FUNCPART}")"({BLANK}*("volatile"|"const"){BLANK})?
 FUNCARG2  "("{FUNCPART}")"({BLANK}*("volatile"|"const"))?
 OPNEW     {BLANK}+"new"({BLANK}*"[]")?
@@ -314,9 +241,11 @@ OPMASK    ({BLANK}*{OPNORM}{FUNCARG})
 OPMASKOPT ({BLANK}*{OPNORM}{FUNCARG}?)|({OPCAST}{FUNCARG})
 OPMASKOP2 ({BLANK}*{OPNORM}{FUNCARG2}?)|({OPCAST}{FUNCARG2})
 LNKWORD1  ("::"|"#")?{SCOPEMASK}
+LNKWORDN  ("::"|"#")?{SCOPEMSKN}
 CVSPEC    {BLANK}*("const"|"volatile")
 LNKWORD2  (({SCOPEPRE}*"operator"{OPMASK})|({SCOPEPRE}"operator"{OPMASKOPT})|(("::"|"#"){SCOPEPRE}*"operator"{OPMASKOPT})){CVSPEC}?
 LNKWORD3  ([0-9a-z_A-Z\-]+("/"|"\\"))*[0-9a-z_A-Z\-]+("."[0-9a-z_A-Z]+)+
+LNKWORD4  "#"{LABELID}
 CHARWORDQ [^ \t\n\r\\@<>()\[\]:;\?{}&%$#,."=']
 ESCWORD   ("%"{ID}(("::"|"."){ID})*)|("%'")
 CHARWORDQ1 [^ \-+0-9\t\n\r\\@<>()\[\]:;\?{}&%$#,."=']
@@ -329,16 +258,17 @@ HTMLTAG   "<"(("/")?){ID}({WS}+{ATTRIB})*{WS}*(("/")?)">"
 HTMLKEYL  "strong"|"center"|"table"|"caption"|"small"|"code"|"dfn"|"var"|"img"|"pre"|"sub"|"sup"|"tr"|"td"|"th"|"ol"|"ul"|"li"|"tt"|"kbd"|"em"|"hr"|"dl"|"dt"|"dd"|"br"|"i"|"a"|"b"|"p"|"strike"|"u"|"del"|"ins"|"s"
 HTMLKEYU  "STRONG"|"CENTER"|"TABLE"|"CAPTION"|"SMALL"|"CODE"|"DFN"|"VAR"|"IMG"|"PRE"|"SUB"|"SUP"|"TR"|"TD"|"TH"|"OL"|"UL"|"LI"|"TT"|"KBD"|"EM"|"HR"|"DL"|"DT"|"DD"|"BR"|"I"|"A"|"B"|"P"|"STRIKE"|"U"|"DEL"|"INS"|"S"
 HTMLKEYW  {HTMLKEYL}|{HTMLKEYU}
+HTMLTAG_STRICT  "<"(("/")?){HTMLKEYW}({WS}+{ATTRIB})*{WS}*(("/")?)">"
 REFWORD2_PRE   ("#"|"::")?((({ID}{TEMPLPART}?)|{ANONNS})("."|"#"|"::"|"-"|"/"))*({ID}{TEMPLPART}?(":")?)
 REFWORD2       {REFWORD2_PRE}{FUNCARG2}?
 REFWORD2_NOCV  {REFWORD2_PRE}("("{FUNCPART}")")?
 REFWORD3       ({ID}":")*{ID}":"?
 REFWORD4_NOCV  (({SCOPEPRE}*"operator"{OPMASKOP2})|(("::"|"#"){SCOPEPRE}*"operator"{OPMASKOP2}))
 REFWORD4       {REFWORD4_NOCV}{CVSPEC}?
-REFWORD        {FILEMASK}|{LABELID}|{REFWORD2}|{REFWORD3}|{REFWORD4}
-REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
+REFWORD        {FILEMASK}|{REQID}|{LABELID}|{REFWORD2}|{REFWORD3}|{REFWORD4}
+REFWORD_NOCV   {FILEMASK}|{REQID}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
 RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revision"|"Source"|"State")":"[^:\n$][^\n$]*"$"
-LINENR {BLANK}*[1-9][0-9]*
+LINENR {BLANK}*([1-9][0-9]*|"0"|"-1")
 
 SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[0-9]{1,2})?)?
 
@@ -375,6 +305,7 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
 %x St_XRefItem
 %x St_XRefItem2
 %x St_File
+%x St_IFile
 %x St_Pattern
 %x St_Link
 %x St_Cite
@@ -385,6 +316,7 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
 %x St_Text
 %x St_SkipTitle
 %x St_Anchor
+%x St_Prefix
 %x St_Snippet
 %x St_SetScope
 %x St_SetScopeEnd
@@ -412,9 +344,21 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          uint32_t dashPos = static_cast<uint32_t>(text.findRev('-'));
                          assert(dashPos!=static_cast<uint32_t>(-1));
                          yyextra->token.isEnumList = text.at(dashPos+1)=='#';
+                         yyextra->token.isCheckedList = false;
                          yyextra->token.id         = -1;
                          yyextra->token.indent     = computeIndent(yytext,dashPos);
-                         return TK_LISTITEM;
+                         return Token::make_TK_LISTITEM();
+                       }
+<St_Para>^{CLISTITEM}  { /* checkbox item */
+                         QCString text=yytext;
+                         int dashPos = text.findRev('-');
+                         yyextra->token.isEnumList = false;
+                         yyextra->token.isCheckedList = true;
+                         if (text.find('x') != -1) yyextra->token.id = DocAutoList::Checked_x;
+                         else if (text.find('X') != -1) yyextra->token.id = DocAutoList::Checked_X;
+                         else yyextra->token.id = DocAutoList::Unchecked;
+                         yyextra->token.indent     = computeIndent(yytext,dashPos);
+                         return Token::make_TK_LISTITEM();
                        }
 <St_Para>^{MLISTITEM}  { /* list item */
                          if (yyextra->insideHtmlLink || !yyextra->markdownSupport || yyextra->insidePre)
@@ -430,10 +374,11 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                            reg::search(text,match,re);
                            size_t listPos = match.position();
                            assert(listPos!=std::string::npos);
-                           yyextra->token.isEnumList = FALSE;
+                           yyextra->token.isEnumList = false;
+                           yyextra->token.isCheckedList = false;
                            yyextra->token.id         = -1;
                            yyextra->token.indent     = computeIndent(yytext,listPos);
-                           return TK_LISTITEM;
+                           return Token::make_TK_LISTITEM();
                          }
                        }
 <St_Para>^{OLISTITEM}  { /* numbered list item */
@@ -450,27 +395,41 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                            size_t markPos = match.position();
                            assert(markPos!=std::string::npos);
                            yyextra->token.isEnumList = true;
+                           yyextra->token.isCheckedList = false;
                            bool ok = false;
                            int id = QCString(match.str()).toInt(&ok);
                            yyextra->token.id = ok ? id : -1;
                            if (!ok)
                            {
-                             warn(yyextra->fileName,yyextra->yyLineNr,"Invalid number for list item '%s' ",match.str().c_str());
+                             warn(yyextra->fileName,yyextra->yyLineNr,"Invalid number for list item '{}' ",match.str());
                            }
                            yyextra->token.indent     = computeIndent(yytext,markPos);
-                           return TK_LISTITEM;
+                           return Token::make_TK_LISTITEM();
                          }
                        }
 <St_Para>{BLANK}*(\n|"\\ilinebr"){LISTITEM}     { /* list item on next line */
                          if (yyextra->insideHtmlLink || yyextra->insidePre) REJECT;
                          lineCount(yytext,yyleng);
-                         QCString text=extractPartAfterNewLine(QCString(yytext));
+                         QCString text=extractPartAfterNewLine(yytext);
                          uint32_t dashPos = static_cast<uint32_t>(text.findRev('-'));
                          assert(dashPos!=static_cast<uint32_t>(-1));
                          yyextra->token.isEnumList = text.at(dashPos+1)=='#';
+                         yyextra->token.isCheckedList = false;
                          yyextra->token.id         = -1;
                          yyextra->token.indent     = computeIndent(text.data(),dashPos);
-                         return TK_LISTITEM;
+                         return Token::make_TK_LISTITEM();
+                       }
+<St_Para>{BLANK}*\n{CLISTITEM}   { /* checkbox item on next line */
+                         QCString text=yytext;
+                         text=text.right(text.length()-text.find('\n')-1);
+                         int dashPos = text.findRev('-');
+                         yyextra->token.isEnumList = false;
+                         yyextra->token.isCheckedList = true;
+                         if (text.find('x') != -1) yyextra->token.id = DocAutoList::Checked_x;
+                         else if (text.find('X') != -1) yyextra->token.id = DocAutoList::Checked_X;
+                         else yyextra->token.id = DocAutoList::Unchecked;
+                         yyextra->token.indent     = computeIndent(text.data(),dashPos);
+                         return Token::make_TK_LISTITEM();
                        }
 <St_Para>{BLANK}*(\n|"\\ilinebr"){MLISTITEM}     { /* list item on next line */
                          if (yyextra->insideHtmlLink || !yyextra->markdownSupport || yyextra->insidePre)
@@ -480,16 +439,17 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          else
                          {
                            lineCount(yytext,yyleng);
-                           std::string text=extractPartAfterNewLine(QCString(yytext)).str();
+                           std::string text=extractPartAfterNewLine(yytext).str();
                            static const reg::Ex re(R"([*+][^*+]*$)"); // find last + or *
                            reg::Match match;
                            reg::search(text,match,re);
                            size_t markPos = match.position();
                            assert(markPos!=std::string::npos);
                            yyextra->token.isEnumList = FALSE;
+                           yyextra->token.isCheckedList = false;
                            yyextra->token.id         = -1;
                            yyextra->token.indent     = computeIndent(text.c_str(),markPos);
-                           return TK_LISTITEM;
+                           return Token::make_TK_LISTITEM();
                          }
                        }
 <St_Para>{BLANK}*(\n|"\\ilinebr"){OLISTITEM}     { /* list item on next line */
@@ -500,22 +460,23 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          else
                          {
                            lineCount(yytext,yyleng);
-                           std::string text=extractPartAfterNewLine(QCString(yytext)).str();
+                           std::string text=extractPartAfterNewLine(yytext).str();
                            static const reg::Ex re(R"(\d+)");
                            reg::Match match;
                            reg::search(text,match,re);
                            size_t markPos = match.position();
                            assert(markPos!=std::string::npos);
                            yyextra->token.isEnumList = true;
+                           yyextra->token.isCheckedList = false;
                            bool ok = false;
                            int id = QCString(match.str()).toInt(&ok);
                            yyextra->token.id = ok ? id : -1;
                            if (!ok)
                            {
-                             warn(yyextra->fileName,yyextra->yyLineNr,"Invalid number for list item '%s' ",match.str().c_str());
+                             warn(yyextra->fileName,yyextra->yyLineNr,"Invalid number for list item '{}' ",match.str());
                            }
                            yyextra->token.indent     = computeIndent(text.c_str(),markPos);
-                           return TK_LISTITEM;
+                           return Token::make_TK_LISTITEM();
                          }
                        }
 <St_Para>^{ENDLIST}       { /* end list */
@@ -523,27 +484,27 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          lineCount(yytext,yyleng);
                          size_t dotPos = static_cast<size_t>(QCString(yytext).findRev('.'));
                          yyextra->token.indent     = computeIndent(yytext,dotPos);
-                         return TK_ENDLIST;
+                         return Token::make_TK_ENDLIST();
                        }
 <St_Para>{BLANK}*(\n|"\\ilinebr"){ENDLIST}      { /* end list on next line */
                          if (yyextra->insideHtmlLink || yyextra->insidePre) REJECT;
                          lineCount(yytext,yyleng);
-                         QCString text=extractPartAfterNewLine(QCString(yytext));
+                         QCString text=extractPartAfterNewLine(yytext);
                          size_t dotPos = static_cast<size_t>(text.findRev('.'));
                          yyextra->token.indent = computeIndent(text.data(),dotPos);
-                         return TK_ENDLIST;
+                         return Token::make_TK_ENDLIST();
                        }
 <St_Para>"{"{BLANK}*"@linkplain"/{WS}+ {
                          yyextra->token.name = "javalinkplain";
-                         return TK_COMMAND_AT;
+                         return Token::make_TK_COMMAND_AT();
                        }
 <St_Para>"{"{BLANK}*"@link"/{WS}+ {
                          yyextra->token.name = "javalink";
-                         return TK_COMMAND_AT;
+                         return Token::make_TK_COMMAND_AT();
                        }
 <St_Para>"{"{BLANK}*"@inheritDoc"{BLANK}*"}" {
                          yyextra->token.name = "inheritdoc";
-                         return TK_COMMAND_AT;
+                         return Token::make_TK_COMMAND_AT();
                        }
 <St_Para>"@_fakenl"    { // artificial new line
                          //yyextra->yyLineNr++;
@@ -553,7 +514,7 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          bool ok;
                          yyextra->token.id = QCString(yytext).right((int)yyleng-7).toInt(&ok);
                          ASSERT(ok);
-                         return TK_COMMAND_SEL();
+                         return Token::char_to_command(yytext[0]);
                        }
 <St_Para>{CMD}"n"\n    { /* \n followed by real newline */
                          lineCount(yytext,yyleng);
@@ -561,7 +522,7 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          yyextra->token.name = yytext+1;
                          yyextra->token.name = yyextra->token.name.stripWhiteSpace();
                          yyextra->token.paramDir=TokenInfo::Unspecified;
-                         return TK_COMMAND_SEL();
+                         return Token::char_to_command(yytext[0]);
                        }
 <St_Para>"\\ilinebr"   {
                        }
@@ -572,7 +533,7 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          yyextra->token.name = yytext+1;
                          yyextra->token.name = yyextra->token.name.stripWhiteSpace();
                          yyextra->token.paramDir=TokenInfo::Unspecified;
-                         return TK_COMMAND_SEL();
+                         return Token::char_to_command(yytext[0]);
                        }
 <St_Para>{PARAMIO}     { /* param [in,out] command */
                          yyextra->token.name = "param";
@@ -598,40 +559,40 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          {
                            yyextra->token.paramDir=TokenInfo::Unspecified;
                          }
-                         return TK_COMMAND_SEL();
+                         return Token::char_to_command(yytext[0]);
                        }
 <St_Para>{URLPROTOCOL}{URLMASK}/[,\.] { // URL, or URL.
                          yyextra->token.name=yytext;
                          yyextra->token.isEMailAddr=FALSE;
-                         return TK_URL;
+                         return Token::make_TK_URL();
                        }
 <St_Para>{URLPROTOCOL}{URLMASK} { // URL
                          yyextra->token.name=yytext;
                          yyextra->token.isEMailAddr=FALSE;
-                         return TK_URL;
+                         return Token::make_TK_URL();
                        }
 <St_Para>"<"{URLPROTOCOL}{URLMASK}">" { // URL
                          yyextra->token.name=yytext;
                          yyextra->token.name = yyextra->token.name.mid(1,yyextra->token.name.length()-2);
                          yyextra->token.isEMailAddr=FALSE;
-                         return TK_URL;
+                         return Token::make_TK_URL();
                        }
 <St_Para>{MAILADDR}    { // Mail address
                          yyextra->token.name=yytext;
                          yyextra->token.name.stripPrefix("mailto:");
                          yyextra->token.isEMailAddr=TRUE;
-                         return TK_URL;
+                         return Token::make_TK_URL();
                        }
 <St_Para>"<"{MAILADDR}">" { // Mail address
                          yyextra->token.name=yytext;
                          yyextra->token.name = yyextra->token.name.mid(1,yyextra->token.name.length()-2);
                          yyextra->token.name.stripPrefix("mailto:");
                          yyextra->token.isEMailAddr=TRUE;
-                         return TK_URL;
+                         return Token::make_TK_URL();
                        }
 <St_Para>"<"{MAILADDR2}">" { // anti spam mail address
                          yyextra->token.name=yytext;
-                         return TK_WORD;
+                         return Token::make_TK_WORD();
                        }
 <St_Para>{RCSID} { /* RCS tag */
                          QCString tagName(yytext+1);
@@ -649,7 +610,7 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                            }
                          }
                          yyextra->token.text = tagName.mid(text_begin,text_end-text_begin);
-                         return TK_RCSTAG;
+                         return Token::make_TK_RCSTAG();
                        }
 <St_Para,St_HtmlOnly,St_ManOnly,St_LatexOnly,St_RtfOnly,St_XmlOnly,St_DbOnly>"$("{ID}")"   | /* environment variable */
 <St_Para,St_HtmlOnly,St_ManOnly,St_LatexOnly,St_RtfOnly,St_XmlOnly,St_DbOnly>"$("{ID}"("{ID}"))"   { /* environment variable */
@@ -658,41 +619,50 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          QCString value = Portable::getenv(name);
                          for (int i=static_cast<int>(value.length())-1;i>=0;i--) unput(value.at(i));
                        }
+<St_Para>"<blockquote>&zwj;"  {
+                         // for a markdown inserted block quote,
+                         // tell flex that after putting the last indent
+                         // back we are at the beginning of the line, see issue #11309
+                         YY_CURRENT_BUFFER->yy_at_bol=1;
+                         lineCount(yytext,yyleng);
+                         handleHtmlTag(yyscanner,yytext);
+                         return Token::make_TK_HTMLTAG();
+                       }
 <St_Para>{HTMLTAG}     { /* html tag */
                          lineCount(yytext,yyleng);
                          handleHtmlTag(yyscanner,yytext);
-                         return TK_HTMLTAG;
+                         return Token::make_TK_HTMLTAG();
                        }
 <St_Para,St_Text>"&"{ID}";" { /* special symbol */
                          yyextra->token.name = yytext;
-                         return TK_SYMBOL;
+                         return Token::make_TK_SYMBOL();
                        }
 
   /********* patterns for linkable words ******************/
 
-<St_Para>{ID}/"<"{HTMLKEYW}">" { /* this rule is to prevent opening html
+<St_Para>{ID}/"<"{HTMLKEYW}">"+ { /* this rule is to prevent opening html
                                   * tag to be recognized as a templated classes
                                   */
                          yyextra->token.name = yytext;
-                         return TK_LNKWORD;
-                        }
-<St_Para>{LNKWORD1}/"<tt>" { // prevent <tt> html tag to be parsed as template arguments
-                         yyextra->token.name = yytext;
-                         return TK_LNKWORD;
+                         return Token::make_TK_LNKWORD();
                        }
-<St_Para>{LNKWORD1}/"<br>"           | // prevent <br> html tag to be parsed as template arguments
-<St_Para>{LNKWORD1}                  |
-<St_Para>{LNKWORD1}{FUNCARG}         |
-<St_Para>{LNKWORD2}                  |
-<St_Para>{LNKWORD3}    {
+<St_Para>{LNKWORDN}/("<"{HTMLKEYW}">")+ { // prevent <br> html tag to be parsed as template arguments
                          yyextra->token.name = yytext;
-                         return TK_LNKWORD;
+                         return Token::make_TK_LNKWORD();
+                       }
+<St_Para>{LNKWORD1}                   |
+<St_Para>{LNKWORD1}{FUNCARG}          |
+<St_Para>{LNKWORD2}                   |
+<St_Para>{LNKWORD3}                   |
+<St_Para>{LNKWORD4}    {
+                         yyextra->token.name = yytext;
+                         return Token::make_TK_LNKWORD();
                        }
 <St_Para>{LNKWORD1}{FUNCARG}{CVSPEC}[^a-z_A-Z0-9] {
                          yyextra->token.name = yytext;
                          yyextra->token.name = yyextra->token.name.left(yyextra->token.name.length()-1);
                          unput(yytext[(int)yyleng-1]);
-                         return TK_LNKWORD;
+                         return Token::make_TK_LNKWORD();
                        }
   /********* patterns for normal words ******************/
 
@@ -705,16 +675,16 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                            yyextra->token.name = &yytext[1];
                          else
                            yyextra->token.name = yytext;
-                         return TK_WORD;
+                         return Token::make_TK_WORD();
                        }
 <St_Text>({ID}".")+{ID} {
                           yyextra->token.name = yytext;
-                          return TK_WORD;
+                          return Token::make_TK_WORD();
                         }
 <St_Para,St_Text>"operator"/{BLANK}*"<"[a-zA-Z_0-9]+">" { // Special case: word "operator" followed by a HTML command
                                                           // avoid interpretation as "operator <"
                            yyextra->token.name = yytext;
-                           return TK_WORD;
+                           return Token::make_TK_WORD();
                          }
 
   /*******************************************************/
@@ -723,11 +693,11 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
 <St_Para,St_Text>{BLANK}*\n{BLANK}* { /* white space */
                          lineCount(yytext,yyleng);
                          yyextra->token.chars=yytext;
-                         return TK_WHITESPACE;
+                         return Token::make_TK_WHITESPACE();
                        }
 <St_Text>[\\@<>&$#%~]  {
                          yyextra->token.name = yytext;
-                         return TK_COMMAND_SEL();
+                         return Token::char_to_command(yytext[0]);
                        }
 <St_Para>({BLANK}*\n)+{BLANK}*\n/{LISTITEM} { /* skip trailing paragraph followed by new list item */
                          if (yyextra->insidePre || yyextra->autoListLevel==0)
@@ -735,6 +705,12 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                            REJECT;
                          }
                          lineCount(yytext,yyleng);
+                       }
+<St_Para>({BLANK}*\n)+{BLANK}*\n/{CLISTITEM} { /* skip trailing paragraph followed by new checkbox item */
+                         if (yyextra->insidePre || yyextra->autoListLevel==0)
+                         {
+                           REJECT;
+                         }
                        }
 <St_Para>({BLANK}*\n)+{BLANK}*\n/{MLISTITEM} { /* skip trailing paragraph followed by new list item */
                          if (!yyextra->markdownSupport || yyextra->insidePre || yyextra->autoListLevel==0)
@@ -750,18 +726,20 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          }
                          lineCount(yytext,yyleng);
                        }
+<St_Para,St_Param>({BLANK}*(\n|"\\ilinebr"))+{BLANK}*(\n|"\\ilinebr"){BLANK}*/" \\ifile" | // we don't want to count the space before \ifile
 <St_Para,St_Param>({BLANK}*(\n|"\\ilinebr"))+{BLANK}*(\n|"\\ilinebr"){BLANK}* {
                          lineCount(yytext,yyleng);
                          if (yyextra->insidePre)
                          {
                            yyextra->token.chars=yytext;
-                           return TK_WHITESPACE;
+                           return Token::make_TK_WHITESPACE();
                          }
                          else
                          {
                            yyextra->token.indent=computeIndent(yytext,yyleng);
                            int i;
                            // put back the indentation (needed for list items)
+                           //printf("token.indent=%d\n",yyextra->token.indent);
                            for (i=0;i<yyextra->token.indent;i++)
                            {
                              unput(' ');
@@ -770,16 +748,16 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                            // back we are at the beginning of the line
                            YY_CURRENT_BUFFER->yy_at_bol=1;
                            // start of a new paragraph
-                           return TK_NEWPARA;
+                           return Token::make_TK_NEWPARA();
                          }
                        }
-<St_CodeOpt>{BLANK}*"{"(".")?{LABELID}"}" {
+<St_CodeOpt>{BLANK}*"{"(".")?{CODEID}"}" {
                          yyextra->token.name = yytext;
                          int i=yyextra->token.name.find('{'); /* } to keep vi happy */
                          yyextra->token.name = yyextra->token.name.mid(i+1,yyextra->token.name.length()-i-2);
                          BEGIN(St_Code);
                        }
-<St_iCodeOpt>{BLANK}*"{"(".")?{LABELID}"}" {
+<St_iCodeOpt>{BLANK}*"{"(".")?{CODEID}"}" {
                          yyextra->token.name = yytext;
                          int i=yyextra->token.name.find('{'); /* } to keep vi happy */
                          yyextra->token.name = yyextra->token.name.mid(i+1,yyextra->token.name.length()-i-2);
@@ -799,15 +777,15 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                        }
 <St_Code>{WS}*{CMD}"endcode" {
                          lineCount(yytext,yyleng);
-                         return RetVal_OK;
+                         return Token::make_RetVal_OK();
                        }
 <St_iCode>{WS}*{CMD}"endicode" {
                          lineCount(yytext,yyleng);
-                         return RetVal_OK;
+                         return Token::make_RetVal_OK();
                        }
 <St_XmlCode>{WS}*"</code>" {
                          lineCount(yytext,yyleng);
-                         return RetVal_OK;
+                         return Token::make_RetVal_OK();
                        }
 <St_Code,St_iCode,St_XmlCode>[^\\@\n<]+  |
 <St_Code,St_iCode,St_XmlCode>\n          |
@@ -828,7 +806,7 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          BEGIN(St_HtmlOnly);
                         }
 <St_HtmlOnly>{CMD}"endhtmlonly" {
-                         return RetVal_OK;
+                         return Token::make_RetVal_OK();
                        }
 <St_HtmlOnly>[^\\@\n$]+    |
 <St_HtmlOnly>\n            |
@@ -837,7 +815,7 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          yyextra->token.verb+=yytext;
                        }
 <St_ManOnly>{CMD}"endmanonly" {
-                         return RetVal_OK;
+                         return Token::make_RetVal_OK();
                        }
 <St_ManOnly>[^\\@\n$]+    |
 <St_ManOnly>\n            |
@@ -846,7 +824,7 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          yyextra->token.verb+=yytext;
                        }
 <St_RtfOnly>{CMD}"endrtfonly" {
-                         return RetVal_OK;
+                         return Token::make_RetVal_OK();
                        }
 <St_RtfOnly>[^\\@\n$]+    |
 <St_RtfOnly>\n            |
@@ -855,7 +833,7 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          yyextra->token.verb+=yytext;
                        }
 <St_LatexOnly>{CMD}"endlatexonly" {
-                         return RetVal_OK;
+                         return Token::make_RetVal_OK();
                        }
 <St_LatexOnly>[^\\@\n]+     |
 <St_LatexOnly>\n            |
@@ -864,7 +842,7 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          yyextra->token.verb+=yytext;
                        }
 <St_XmlOnly>{CMD}"endxmlonly" {
-                         return RetVal_OK;
+                         return Token::make_RetVal_OK();
                        }
 <St_XmlOnly>[^\\@\n]+  |
 <St_XmlOnly>\n         |
@@ -873,7 +851,7 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          yyextra->token.verb+=yytext;
                        }
 <St_DbOnly>{CMD}"enddocbookonly" {
-                         return RetVal_OK;
+                         return Token::make_RetVal_OK();
                        }
 <St_DbOnly>[^\\@\n]+  |
 <St_DbOnly>\n         |
@@ -882,17 +860,17 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          yyextra->token.verb+=yytext;
                        }
 <St_Verbatim>{CMD}"endverbatim" {
-                         yyextra->token.verb=stripEmptyLines(yyextra->token.verb);
-                         return RetVal_OK;
+                         yyextra->token.verb = yyextra->token.verb.stripLeadingAndTrailingEmptyLines();
+                         return Token::make_RetVal_OK();
                        }
 <St_ILiteral>{CMD}"endiliteral " { // note extra space as this is artificially added
                          // remove spaces that have been added
-                         yyextra->token.verb=yyextra->token.verb.mid(1,yyextra->token.verb.length()-2);
-                         return RetVal_OK;
+                         yyextra->token.verb = yyextra->token.verb.mid(1,yyextra->token.verb.length()-2);
+                         return Token::make_RetVal_OK();
                        }
 <St_iVerbatim>{CMD}"endiverbatim" {
-                         yyextra->token.verb=stripEmptyLines(yyextra->token.verb);
-                         return RetVal_OK;
+                         yyextra->token.verb = yyextra->token.verb.stripLeadingAndTrailingEmptyLines();
+                         return Token::make_RetVal_OK();
                        }
 <St_Verbatim,St_iVerbatim,St_ILiteral>[^\\@\n]+ |
 <St_Verbatim,St_iVerbatim,St_ILiteral>\n        |
@@ -902,17 +880,17 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                        }
 <St_ILiteralOpt>{BLANK}*"{"[a-zA-Z_,:0-9\. ]*"}" { // option(s) present
                          yyextra->token.verb = QCString(yytext).stripWhiteSpace();
-                         return RetVal_OK;
+                         return Token::make_RetVal_OK();
                        }
 <St_ILiteralOpt>"\\ilinebr" |
 <St_ILiteralOpt>"\n"   |
 <St_ILiteralOpt>.      {
                          yyextra->token.sectionId = "";
                          unput_string(yytext,yyleng);
-                         return RetVal_OK;
+                         return Token::make_RetVal_OK();
                        }
 <St_Dot>{CMD}"enddot"  {
-                         return RetVal_OK;
+                         return Token::make_RetVal_OK();
                        }
 <St_Dot>[^\\@\n]+      |
 <St_Dot>\n             |
@@ -921,7 +899,7 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          yyextra->token.verb+=yytext;
                        }
 <St_Msc>{CMD}("endmsc")  {
-                         return RetVal_OK;
+                         return Token::make_RetVal_OK();
                        }
 <St_Msc>[^\\@\n]+      |
 <St_Msc>\n             |
@@ -931,33 +909,33 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                        }
 <St_PlantUMLOpt>{BLANK}*"{"[a-zA-Z_,:0-9\. ]*"}" { // case 1: options present
                          yyextra->token.sectionId = QCString(yytext).stripWhiteSpace();
-                         return RetVal_OK;
+                         return Token::make_RetVal_OK();
                        }
 <St_PlantUMLOpt>{BLANK}*{FILEMASK}{BLANK}+/{ID}"=" { // case 2: plain file name specified followed by an attribute
                          yyextra->token.sectionId = QCString(yytext).stripWhiteSpace();
-                         return RetVal_OK;
+                         return Token::make_RetVal_OK();
                        }
 <St_PlantUMLOpt>{BLANK}*{FILEMASK}{BLANK}+/"\"" { // case 3: plain file name specified followed by a quoted title
                          yyextra->token.sectionId = QCString(yytext).stripWhiteSpace();
-                         return RetVal_OK;
+                         return Token::make_RetVal_OK();
                        }
 <St_PlantUMLOpt>{BLANK}*{FILEMASK}{BLANKopt}/\n { // case 4: plain file name specified without title or attributes
                          yyextra->token.sectionId = QCString(yytext).stripWhiteSpace();
-                         return RetVal_OK;
+                         return Token::make_RetVal_OK();
                        }
 <St_PlantUMLOpt>{BLANK}*{FILEMASK}{BLANKopt}/"\\ilinebr" { // case 5: plain file name specified without title or attributes
                          yyextra->token.sectionId = QCString(yytext).stripWhiteSpace();
-                         return RetVal_OK;
+                         return Token::make_RetVal_OK();
                        }
 <St_PlantUMLOpt>"\\ilinebr" |
 <St_PlantUMLOpt>"\n"   |
 <St_PlantUMLOpt>.      {
                          yyextra->token.sectionId = "";
                          unput_string(yytext,yyleng);
-                         return RetVal_OK;
+                         return Token::make_RetVal_OK();
                        }
 <St_PlantUML>{CMD}"enduml"  {
-                         return RetVal_OK;
+                         return Token::make_RetVal_OK();
                        }
 <St_PlantUML>[^\\@\n]+ |
 <St_PlantUML>\n        |
@@ -970,7 +948,7 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                        }
 <St_Title>[ \t]+       {
                          yyextra->token.chars=yytext;
-                         return TK_WHITESPACE;
+                         return Token::make_TK_WHITESPACE();
                        }
 <St_Title>.            { // non-quoted title
                          unput(*yytext);
@@ -978,41 +956,41 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                        }
 <St_Title>\n           {
                          unput(*yytext);
-                         return 0;
+                         return Token::make_TK_NONE();
                        }
 <St_Title>"\\ilinebr"  {
                          unput_string(yytext,yyleng);
-                         return 0;
+                         return Token::make_TK_NONE();
                        }
 <St_TitleN>"&"{ID}";"  { /* symbol */
                          yyextra->token.name = yytext;
-                         return TK_SYMBOL;
+                         return Token::make_TK_SYMBOL();
                        }
 <St_TitleN>{HTMLTAG}   {
                          yyextra->token.name = yytext;
                          handleHtmlTag(yyscanner,yytext);
-                         return TK_HTMLTAG;
+                         return Token::make_TK_HTMLTAG();
                        }
 <St_TitleN>\n          { /* new line => end of title */
                          unput(*yytext);
-                         return 0;
+                         return Token::make_TK_NONE();
                        }
 <St_TitleN>"\\ilinebr" { /* new line => end of title */
                          unput_string(yytext,yyleng);
-                         return 0;
+                         return Token::make_TK_NONE();
                        }
 <St_TitleN>{SPCMD1}    |
 <St_TitleN>{SPCMD2}    { /* special command */
                          yyextra->token.name = yytext+1;
                          yyextra->token.paramDir=TokenInfo::Unspecified;
-                         return TK_COMMAND_SEL();
+                         return Token::char_to_command(yytext[0]);
                        }
 <St_TitleN>{ID}"="     { /* attribute */
                          if (yytext[0]=='%') // strip % if present
                            yyextra->token.name = &yytext[1];
                          else
                            yyextra->token.name = yytext;
-                         return TK_WORD;
+                         return Token::make_TK_WORD();
                        }
 <St_TitleN>[\-+0-9]    |
 <St_TitleN>{WORD1}     |
@@ -1023,38 +1001,38 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                            yyextra->token.name = &yytext[1];
                          else
                            yyextra->token.name = yytext;
-                         return TK_WORD;
+                         return Token::make_TK_WORD();
                        }
 <St_TitleN>[ \t]+      {
                          yyextra->token.chars=yytext;
-                         return TK_WHITESPACE;
+                         return Token::make_TK_WHITESPACE();
                        }
 <St_TitleQ>"&"{ID}";"  { /* symbol */
                          yyextra->token.name = yytext;
-                         return TK_SYMBOL;
+                         return Token::make_TK_SYMBOL();
                        }
 <St_TitleQ>(\n|"\\ilinebr") { /* new line => end of title */
                          unput_string(yytext,yyleng);
-                         return 0;
+                         return Token::make_TK_NONE();
                        }
 <St_TitleQ>{SPCMD1}    |
 <St_TitleQ>{SPCMD2}    { /* special command */
                          yyextra->token.name = yytext+1;
                          yyextra->token.paramDir=TokenInfo::Unspecified;
-                         return TK_COMMAND_SEL();
+                         return Token::char_to_command(yytext[0]);
                        }
 <St_TitleQ>{WORD1NQ}   |
 <St_TitleQ>{WORD2NQ}   { /* word */
                          yyextra->token.name = yytext;
-                         return TK_WORD;
+                         return Token::make_TK_WORD();
                        }
 <St_TitleQ>[ \t]+      {
                          yyextra->token.chars=yytext;
-                         return TK_WHITESPACE;
+                         return Token::make_TK_WHITESPACE();
                        }
 <St_TitleQ>"\""        { /* closing quote => end of title */
                          BEGIN(St_TitleA);
-                         return 0;
+                         return Token::make_TK_NONE();
                        }
 <St_TitleA>{BLANK}*{ID}{BLANK}*"="{BLANK}* { // title attribute
                          yyextra->token.name = yytext;
@@ -1067,25 +1045,25 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          lineCount(yytext,yyleng);
                          yyextra->token.chars = yytext;
                          BEGIN(St_TitleN);
-                         return TK_WORD;
+                         return Token::make_TK_WORD();
                        }
 <St_TitleV,St_TitleA>. {
                          unput(*yytext);
-                         return 0;
+                         return Token::make_TK_NONE();
                        }
 <St_TitleV,St_TitleA>(\n|"\\ilinebr") {
                          unput_string(yytext,yyleng);
-                         return 0;
+                         return Token::make_TK_NONE();
                        }
 
-<St_Anchor>{LABELID}{WS}? { // anchor
+<St_Anchor>({REQID}|{LABELID}){WS}? { // anchor
                          lineCount(yytext,yyleng);
                          yyextra->token.name = QCString(yytext).stripWhiteSpace();
-                         return TK_WORD;
+                         return Token::make_TK_WORD();
                        }
 <St_Anchor>.           {
                          unput(*yytext);
-                         return 0;
+                         return Token::make_TK_NONE();
                        }
 <St_Cite>{CITEID}      { // label to cite
                          if (yytext[0] =='"')
@@ -1097,71 +1075,72 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          {
                            yyextra->token.name=yytext;
                          }
-                         return TK_WORD;
+                         return Token::make_TK_WORD();
                        }
 <St_Cite>{BLANK}       { // white space
                          unput(' ');
-                         return 0;
+                         return Token::make_TK_NONE();
                        }
 <St_Cite>(\n|"\\ilinebr")  { // new line
                          unput_string(yytext,yyleng);
-                         return 0;
+                         return Token::make_TK_NONE();
                        }
 <St_Cite>.             { // any other character
                          unput(*yytext);
-                         return 0;
+                         return Token::make_TK_NONE();
                        }
 <St_DoxyConfig>{DOXYCFG} { // config option
                          yyextra->token.name=yytext;
-                         return TK_WORD;
+                         return Token::make_TK_WORD();
                        }
 <St_DoxyConfig>{BLANK} { // white space
                          unput(' ');
-                         return 0;
+                         return Token::make_TK_NONE();
                        }
 <St_DoxyConfig>(\n|"\\ilinebr")  { // new line
                          unput_string(yytext,yyleng);
-                         return 0;
+                         return Token::make_TK_NONE();
                        }
 <St_DoxyConfig>.      { // any other character
                          unput(*yytext);
-                         return 0;
+                         return Token::make_TK_NONE();
                        }
 <St_Ref>{REFWORD_NOCV}/{BLANK}("const")[a-z_A-Z0-9] { // see bug776988
                          yyextra->token.name=yytext;
-                         return TK_WORD;
+                         return Token::make_TK_WORD();
                        }
 <St_Ref>{REFWORD_NOCV}/{BLANK}("volatile")[a-z_A-Z0-9] { // see bug776988
                          yyextra->token.name=yytext;
-                         return TK_WORD;
+                         return Token::make_TK_WORD();
                        }
 <St_Ref>{REFWORD}      { // label to refer to
                          yyextra->token.name=yytext;
-                         return TK_WORD;
+                         return Token::make_TK_WORD();
                        }
 <St_Ref>{BLANK}        { // white space
                          unput(' ');
-                         return 0;
+                         return Token::make_TK_NONE();
                        }
 <St_Ref>{WS}+"\""{WS}* { // white space following by quoted string
+                         yyextra->expectQuote=true;
                          lineCount(yytext,yyleng);
                          BEGIN(St_Ref2);
                        }
 <St_Ref>(\n|"\\ilinebr") { // new line
                          unput_string(yytext,yyleng);
-                         return 0;
+                         return Token::make_TK_NONE();
                        }
 <St_Ref>"\""[^"\n]+"\"" { // quoted first argument -> return without quotes
                          yyextra->token.name=QCString(yytext).mid(1,yyleng-2);
-                         return TK_WORD;
+                         return Token::make_TK_WORD();
                        }
 <St_Ref>.              { // any other character
                          unput(*yytext);
-                         return 0;
+                         return Token::make_TK_NONE();
                        }
 <St_IntRef>[A-Z_a-z0-9.:/#\-\+\(\)]+ {
                          yyextra->token.name = yytext;
-                         return TK_WORD;
+                         return Token::make_TK_WORD();
                        }
 <St_IntRef>{BLANK}+"\"" {
                          BEGIN(St_Ref2);
@@ -1169,7 +1148,7 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
 <St_SetScope>({SCOPEMASK}|{ANONNS}){BLANK}|{FILEMASK} {
                          yyextra->token.name = yytext;
                          yyextra->token.name = yyextra->token.name.stripWhiteSpace();
-                         return TK_WORD;
+                         return Token::make_TK_WORD();
                        }
 <St_SetScope>{SCOPEMASK}"<" {
                          yyextra->token.name = yytext;
@@ -1188,7 +1167,7 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          yyextra->sharpCount--;
                          if (yyextra->sharpCount<=0)
                          {
-                           return TK_WORD;
+                           return Token::make_TK_WORD();
                          }
                        }
 <St_SetScopeEnd>.      {
@@ -1196,32 +1175,39 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                        }
 <St_Ref2>"&"{ID}";"    { /* symbol */
                          yyextra->token.name = yytext;
-                         return TK_SYMBOL;
+                         return Token::make_TK_SYMBOL();
                        }
-<St_Ref2>"\""|\n|"\\ilinebr" { /* " or \n => end of title */
+<St_Ref2>"\""|\n|"\\ilinebr" { /* " or \n => end of title? */
                          lineCount(yytext,yyleng);
-                         return 0;
+                         if (!yyextra->expectQuote || yytext[0]=='"')
+                         {
+                           return Token::make_TK_NONE();
+                         }
+                         else
+                         {
+                           yyextra->token.name += yytext;
+                         }
                        }
-<St_Ref2>{HTMLTAG}     { /* html tag */
+<St_Ref2>{HTMLTAG_STRICT}     { /* html tag */
                          lineCount(yytext,yyleng);
                          handleHtmlTag(yyscanner,yytext);
-                         return TK_HTMLTAG;
+                         return Token::make_TK_HTMLTAG();
                        }
 <St_Ref2>{SPCMD1}      |
 <St_Ref2>{SPCMD2}      { /* special command */
                          yyextra->token.name = yytext+1;
                          yyextra->token.paramDir=TokenInfo::Unspecified;
-                         return TK_COMMAND_SEL();
+                         return Token::char_to_command(yytext[0]);
                        }
 <St_Ref2>{WORD1NQ}     |
 <St_Ref2>{WORD2NQ}     {
                          /* word */
                          yyextra->token.name = yytext;
-                         return TK_WORD;
+                         return Token::make_TK_WORD();
                        }
 <St_Ref2>[ \t]+        {
                          yyextra->token.chars=yytext;
-                         return TK_WHITESPACE;
+                         return Token::make_TK_WHITESPACE();
                        }
 <St_XRefItem>{LABELID} {
                          yyextra->token.name=yytext;
@@ -1233,7 +1219,7 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          QCString numStr(yytext);
                          numStr=numStr.left((int)yyleng-1);
                          yyextra->token.id=numStr.toInt();
-                         return RetVal_OK;
+                         return Token::make_RetVal_OK();
                        }
 <St_Para,St_Title,St_Ref2>"<!--"     { /* html style comment block */
                          yyextra->commentState = YY_START;
@@ -1242,7 +1228,7 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
 <St_Param>"\""[^\n\"]+"\"" {
                          yyextra->token.name = yytext+1;
                          yyextra->token.name = yyextra->token.name.left((int)yyleng-2);
-                         return TK_WORD;
+                         return Token::make_TK_WORD();
                        }
 <St_Param>({PHPTYPE}{BLANK}*("["{BLANK}*"]")*{BLANK}*"|"{BLANK}*)*{PHPTYPE}{BLANK}*("["{BLANK}*"]")*{WS}+("&")?"$"{LABELID} {
                          lineCount(yytext,yyleng);
@@ -1253,7 +1239,7 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          if (j<i && j>=0) i=j;
                          QCString types = params.left(i).stripWhiteSpace();
                          yyextra->token.name = types+"#"+params.mid(i);
-                         return TK_WORD;
+                         return Token::make_TK_WORD();
                        }
 <St_Param>[^ \t\n,@\\]+  {
                          yyextra->token.name = yytext;
@@ -1261,13 +1247,22 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          {
                            yyextra->token.name=yyextra->token.name.left(static_cast<uint32_t>(yyleng)-1);
                          }
-                         return TK_WORD;
+                         return Token::make_TK_WORD();
                        }
 <St_Param>{WS}*","{WS}*  /* param separator */
 <St_Param>{WS}         {
                          lineCount(yytext,yyleng);
                          yyextra->token.chars=yytext;
-                         return TK_WHITESPACE;
+                         return Token::make_TK_WHITESPACE();
+                       }
+<St_Prefix>"\""[^\n\"]*"\"" {
+                         yyextra->token.name = yytext+1;
+                         yyextra->token.name = yyextra->token.name.left((int)yyleng-2);
+                         return Token::make_TK_WORD();
+                       }
+<St_Prefix>.           {
+                         unput(*yytext);
+                         return Token::make_TK_NONE();
                        }
 <St_Options>{ID}       {
                          yyextra->token.name+=yytext;
@@ -1282,21 +1277,21 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          yyextra->token.name+=",";
                        }
 <St_Options>"}"        {
-                         return TK_WORD;
+                         return Token::make_TK_WORD();
                        }
 <St_Block>{ID}         {
                          yyextra->token.name+=yytext;
                        }
 <St_Block>"]"          {
-                         return TK_WORD;
+                         return Token::make_TK_WORD();
                        }
 <St_Emoji>[:0-9_a-z+-]+  {
                          yyextra->token.name=yytext;
-                         return TK_WORD;
+                         return Token::make_TK_WORD();
                        }
 <St_Emoji>.            {
                          unput(*yytext);
-                         return 0;
+                         return Token::make_TK_NONE();
                        }
 <St_QuotedString>"\""  {
                          yyextra->token.name="";
@@ -1304,14 +1299,14 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                        }
 <St_QuotedString>(\n|"\\ilinebr") {
                          unput_string(yytext,yyleng);
-                         return 0;
+                         return Token::make_TK_NONE();
                        }
 <St_QuotedString>.     {
                          unput(*yytext);
-                         return 0;
+                         return Token::make_TK_NONE();
                        }
 <St_QuotedContent>"\"" {
-                         return TK_WORD;
+                         return Token::make_TK_WORD();
                        }
 <St_QuotedContent>.    {
                          yyextra->token.name+=yytext;
@@ -1319,15 +1314,15 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
 <St_ShowDate>{WS}+{SHOWDATE} {
                          lineCount(yytext,yyleng);
                          yyextra->token.name=yytext;
-                         return TK_WORD;
+                         return Token::make_TK_WORD();
                        }
 <St_ShowDate>(\n|"\\ilinebr") {
                          unput_string(yytext,yyleng);
-                         return 0;
+                         return Token::make_TK_NONE();
                        }
 <St_ShowDate>.         {
                          unput(*yytext);
-                         return 0;
+                         return Token::make_TK_NONE();
                        }
 <St_ILine>{LINENR}/[\\@\n\.]  |
 <St_ILine>{LINENR}{BLANK}     {
@@ -1335,44 +1330,59 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          int nr = QCString(yytext).toInt(&ok);
                          if (!ok)
                          {
-                           warn(yyextra->fileName,yyextra->yyLineNr,"Invalid line number '%s' for iline command",yytext);
+                           warn(yyextra->fileName,yyextra->yyLineNr,"Invalid line number '{}' for iline command",yytext);
                          }
                          else
                          {
                            yyextra->yyLineNr = nr;
                          }
-                         return TK_WORD;
+                         return Token::make_TK_WORD();
                        }
 <St_ILine>.            {
-                         return 0;
+                         return Token::make_TK_NONE();
+                       }
+<St_IFile>{BLANK}*{FILEMASK} {
+                         yyextra->fileName = QCString(yytext).stripWhiteSpace();
+                         return Token::make_TK_WORD();
+                       }
+<St_IFile>{BLANK}*"\""[^\n\"]+"\"" {
+                         QCString text(yytext);
+                         text = text.stripWhiteSpace();
+                         yyextra->fileName = text.mid(1,text.length()-2);
+                         return Token::make_TK_WORD();
                        }
 <St_File>{FILEMASK}    {
                          yyextra->token.name = yytext;
-                         return TK_WORD;
+                         if (yyextra->token.name.endsWith("\\ilinebr") ||yyextra->token.name.endsWith("@ilinebr"))
+                         {
+                           unput_string("\\ilinebr",8);
+                           yyextra->token.name = yyextra->token.name.left(yyleng-8);
+                         }
+                         return Token::make_TK_WORD();
                        }
 <St_File>"\""[^\n\"]+"\"" {
                          QCString text(yytext);
                          yyextra->token.name = text.mid(1,text.length()-2);
-                         return TK_WORD;
+                         return Token::make_TK_WORD();
                        }
 <St_Pattern>[^\\\r\n]+   {
                          yyextra->token.name += yytext;
                        }
 <St_Pattern>"\\ilinebr" {
                          yyextra->token.name = yyextra->token.name.stripWhiteSpace();
-                         return TK_WORD;
+                         return Token::make_TK_WORD();
                        }
 <St_Pattern>\n         {
                          lineCount(yytext,yyleng);
                          yyextra->token.name = yyextra->token.name.stripWhiteSpace();
-                         return TK_WORD;
+                         return Token::make_TK_WORD();
                        }
 <St_Pattern>.          {
                          yyextra->token.name += yytext;
                        }
 <St_Link>{LINKMASK}|{REFWORD}    {
                          yyextra->token.name = yytext;
-                         return TK_WORD;
+                         return Token::make_TK_WORD();
                        }
 <St_Comment>"-->"      { /* end of html comment */
                          BEGIN(yyextra->commentState);
@@ -1385,7 +1395,7 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
 <St_SkipTitle>.
 <St_SkipTitle>(\n|"\\ilinebr") {
                          if (*yytext == '\n') unput('\n');
-                         return 0;
+                         return Token::make_TK_NONE();
                          }
 
      /* State for the pass used to find the anchors and sections */
@@ -1433,6 +1443,14 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                                     }
 <St_Sections>{CMD}"paragraph"{BLANK}+ {
                                       yyextra->secType = SectionType::Paragraph;
+                                      BEGIN(St_SecLabel2);
+                                    }
+<St_Sections>{CMD}"subparagraph"{BLANK}+ {
+                                      yyextra->secType = SectionType::Subparagraph;
+                                      BEGIN(St_SecLabel2);
+                                    }
+<St_Sections>{CMD}"subsubparagraph"{BLANK}+ {
+                                      yyextra->secType = SectionType::Subsubparagraph;
                                       BEGIN(St_SecLabel2);
                                     }
 <St_Sections>{CMD}"verbatim"/[^a-z_A-Z0-9]  {
@@ -1512,14 +1530,14 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
 <St_SecSkip>(\n|"\\ilinebr")
 <St_Sections>.
 <St_Sections>(\n|"\\ilinebr")
-<St_SecLabel1>{LABELID} {
+<St_SecLabel1>({REQID}|{LABELID}) {
                          lineCount(yytext,yyleng);
                          yyextra->secLabel = yytext;
                          processSection(yyscanner);
                          BEGIN(St_Sections);
                        }
-<St_SecLabel2>{LABELID}{BLANK}+ |
-<St_SecLabel2>{LABELID}         {
+<St_SecLabel2>({REQID}|{LABELID}){BLANK}+ |
+<St_SecLabel2>({REQID}|{LABELID})         {
                          yyextra->secLabel = yytext;
                          yyextra->secLabel = yyextra->secLabel.stripWhiteSpace();
                          BEGIN(St_SecTitle);
@@ -1537,7 +1555,7 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          BEGIN(St_Sections);
                        }
 <St_SecTitle,St_SecLabel1,St_SecLabel2>. {
-                         warn(yyextra->fileName,yyextra->yyLineNr,"Unexpected character '%s' while looking for section label or title",yytext);
+                         warn(yyextra->fileName,yyextra->yyLineNr,"Unexpected character '{}' while looking for section label or title",yytext);
                        }
 
 <St_Snippet>[^\\\n]+   {
@@ -1549,7 +1567,7 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
 <St_Snippet>(\n|"\\ilinebr")  {
                          unput_string(yytext,yyleng);
                          yyextra->token.name = yyextra->token.name.stripWhiteSpace();
-                         return TK_WORD;
+                         return Token::make_TK_WORD();
                        }
 
      /* Generic rules that work for all states */
@@ -1560,12 +1578,12 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
 <*>"\\ilinebr"         {
                        }
 <*>[\\@<>&$#%~"=]      { /* unescaped special character */
-                         //warn(yyextra->fileName,yyextra->yyLineNr,"Unexpected character '%s', assuming command \\%s was meant.",yytext,yytext);
+                         //warn(yyextra->fileName,yyextra->yyLineNr,"Unexpected character '{}', assuming command \\{} was meant.",yytext,yytext);
                          yyextra->token.name = yytext;
-                         return TK_COMMAND_SEL();
+                         return Token::char_to_command(yytext[0]);
                        }
 <*>.                   {
-                         warn(yyextra->fileName,yyextra->yyLineNr,"Unexpected character '%s'",yytext);
+                         warn(yyextra->fileName,yyextra->yyLineNr,"Unexpected character '{}'",yytext);
                        }
 %%
 
@@ -1584,7 +1602,7 @@ static int yyread(yyscan_t yyscanner,char *buf,int max_size)
 static void processSection(yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  //printf("%s: found section/anchor with name '%s'\n",qPrint(g_fileName),qPrint(g_secLabel));
+  //printf("%s: found section/anchor with name '%s'\n",qPrint(yyextra->fileName),qPrint(yyextra->secLabel));
   QCString file;
   if (yyextra->definition)
   {
@@ -1592,7 +1610,7 @@ static void processSection(yyscan_t yyscanner)
   }
   else
   {
-    warn(yyextra->fileName,yyextra->yyLineNr,"Found section/anchor %s without context",qPrint(yyextra->secLabel));
+    warn(yyextra->fileName,yyextra->yyLineNr,"Found section/anchor {} without context",yyextra->secLabel);
   }
   SectionInfo *si = SectionManager::instance().find(yyextra->secLabel);
   if (si)
@@ -1632,7 +1650,6 @@ static void handleHtmlTag(yyscan_t yyscanner,const char *text)
 
   // Parse the attributes. Each attribute is a name, value pair
   // The result is stored in yyextra->token.attribs.
-  int startName,endName,startAttrib,endAttrib;
   int startAttribList = i;
   while (i<(int)yyleng)
   {
@@ -1647,16 +1664,17 @@ static void handleHtmlTag(yyscan_t yyscanner,const char *text)
       yyextra->token.emptyTag = TRUE;
       break;
     }
-    startName=i;
+    int startName=i;
     // search for end of name
     while (i<(int)yyleng && !isspace((uint8_t)c) && c!='=' && c!= '>') { c=tagText.at(++i); }
-    endName=i;
-    HtmlAttrib opt;
-    opt.name  = tagText.mid(startName,endName-startName).lower();
+    int endName=i;
+    QCString optName,optValue;
+    optName  = tagText.mid(startName,endName-startName).lower();
     // skip spaces
     while (i<(int)yyleng && isspace((uint8_t)c)) { c=tagText.at(++i); }
     if (tagText.at(i)=='=') // option has value
     {
+      int startAttrib=0, endAttrib=0;
       c=tagText.at(++i);
       // skip spaces
       while (i<(int)yyleng && isspace((uint8_t)c)) { c=tagText.at(++i); }
@@ -1687,20 +1705,20 @@ static void handleHtmlTag(yyscan_t yyscanner,const char *text)
         endAttrib=i;
         if (i<(int)yyleng) { c=tagText.at(++i);}
       }
-      opt.value  = tagText.mid(startAttrib,endAttrib-startAttrib);
-      if (opt.name == "align") opt.value = opt.value.lower();
-      else if (opt.name == "valign")
+      optValue  = tagText.mid(startAttrib,endAttrib-startAttrib);
+      if (optName == "align") optValue = optValue.lower();
+      else if (optName == "valign")
       {
-        opt.value = opt.value.lower();
-        if (opt.value == "center") opt.value="middle";
+        optValue = optValue.lower();
+        if (optValue == "center") optValue="middle";
       }
     }
     else // start next option
     {
     }
     //printf("=====> Adding option name=<%s> value=<%s>\n",
-    //    qPrint(opt.name),qPrint(opt.value));
-    yyextra->token.attribs.push_back(opt);
+    //    qPrint(optName),qPrint(optValue));
+    yyextra->token.attribs.emplace_back(optName,optValue);
   }
   yyextra->token.attribsStr = tagText.mid(startAttribList,i-startAttribList);
 }
@@ -1763,7 +1781,7 @@ DocTokenizer::~DocTokenizer()
   doctokenizerYYlex_destroy(p->yyscanner);
 }
 
-int DocTokenizer::lex()
+Token DocTokenizer::lex()
 {
   return doctokenizerYYlex(p->yyscanner);
 }
@@ -2006,6 +2024,13 @@ void DocTokenizer::setStateFile()
   BEGIN(St_File);
 }
 
+void DocTokenizer::setStateIFile()
+{
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  BEGIN(St_IFile);
+}
+
 void DocTokenizer::setStatePattern()
 {
   yyscan_t yyscanner = p->yyscanner;
@@ -2039,6 +2064,7 @@ void DocTokenizer::setStateRef()
 {
   yyscan_t yyscanner = p->yyscanner;
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->expectQuote=false;
   BEGIN(St_Ref);
 }
 
@@ -2068,6 +2094,13 @@ void DocTokenizer::setStateAnchor()
   yyscan_t yyscanner = p->yyscanner;
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   BEGIN(St_Anchor);
+}
+
+void DocTokenizer::setStatePrefix()
+{
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  BEGIN(St_Prefix);
 }
 
 void DocTokenizer::setStateSnippet()
@@ -2172,6 +2205,20 @@ void DocTokenizer::endAutoList()
   yyextra->autoListLevel--;
 }
 
+void DocTokenizer::setFileName(const QCString &fileName)
+{
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->fileName = fileName;
+}
+
+QCString DocTokenizer::getFileName() const
+{
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  return yyextra->fileName;
+}
+
 void DocTokenizer::setLineNr(int lineno)
 {
   yyscan_t yyscanner = p->yyscanner;
@@ -2179,11 +2226,27 @@ void DocTokenizer::setLineNr(int lineno)
   yyextra->yyLineNr = lineno;
 }
 
-int DocTokenizer::getLineNr(void)
+int DocTokenizer::getLineNr() const
 {
   yyscan_t yyscanner = p->yyscanner;
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   return yyextra->yyLineNr;
+}
+
+void DocTokenizer::pushState()
+{
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->stateStack.push(YYSTATE);
+}
+
+void DocTokenizer::popState()
+{
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  assert(!yyextra->stateStack.empty());
+  BEGIN(yyextra->stateStack.top());
+  yyextra->stateStack.pop();
 }
 
 #include "doctokenizer.l.h"

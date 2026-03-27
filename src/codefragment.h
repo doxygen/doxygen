@@ -19,6 +19,7 @@
 #include <memory>
 
 #include "qcstring.h"
+#include "construct.h"
 
 class OutputCodeList;
 class Definition;
@@ -34,11 +35,13 @@ class CodeFragmentManager
                    const QCString &blockId,
                    const QCString &scopeName,
                    bool showLineNumbers,
-                   bool trimLeft
+                   bool trimLeft,
+                   bool stripCodeComments
                    );
   private:
     CodeFragmentManager();
     ~CodeFragmentManager();
+    NON_COPYABLE(CodeFragmentManager)
 
     struct Private;
     std::unique_ptr<Private> p;

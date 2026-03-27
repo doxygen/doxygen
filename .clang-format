@@ -1,0 +1,101 @@
+# Style tries to match doxygen's source code style (not perfect)
+
+BasedOnStyle: LLVM
+
+# Do not reflow lines or comments; keeps existing wrapping/spacing.
+ColumnLimit: 0
+ReflowComments: false
+
+# Preserve include order and grouping exactly as written.
+SortIncludes: Never
+IncludeBlocks: Preserve
+SortUsingDeclarations: false
+
+# Indentation
+UseTab: Never
+IndentWidth: 2
+ContinuationIndentWidth: 2
+NamespaceIndentation: None
+IndentPPDirectives: None
+IndentCaseLabels: false
+IndentGotoLabels: false
+IndentAccessModifiers : true
+
+# Braces: Allman style (brace on next line for functions, classes, control).
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterCaseLabel: true
+  AfterClass: true
+  AfterControlStatement: true
+  AfterEnum: true
+  AfterFunction: true
+  AfterNamespace: true
+  AfterObjCDeclaration: true
+  AfterStruct: true
+  AfterUnion: true
+  AfterExternBlock: true
+  BeforeCatch: true
+  BeforeElse: true
+  BeforeLambdaBody: false
+  BeforeWhile: false
+  IndentBraces: false
+  SplitEmptyFunction: true
+  SplitEmptyRecord: true
+  SplitEmptyNamespace: true
+
+# Access specifiers are indented like members in the file.
+AccessModifierOffset: 0
+EmptyLineBeforeAccessModifier: Never
+
+# Short things on one line are common (e.g., inline ctor bodies).
+AllowShortFunctionsOnASingleLine: All
+AllowShortIfStatementsOnASingleLine: true
+AllowShortLoopsOnASingleLine: true
+AllowShortCaseLabelsOnASingleLine: true
+AllowShortLambdasOnASingleLine: All
+AllowAllArgumentsOnNextLine: true
+AllowAllParametersOfDeclarationOnNextLine: true
+
+# Initializer lists
+BreakConstructorInitializers: AfterColon
+AllowAllConstructorInitializersOnNextLine: true
+ConstructorInitializerAllOnOneLineOrOnePerLine: false
+
+# Spacing
+SpaceBeforeParens: ControlStatements
+SpacesInParentheses: false
+SpacesInSquareBrackets: false
+SpacesInAngles: false
+SpaceBeforeSquareBrackets: false
+SpaceAfterCStyleCast: false
+
+# Pointer/reference binding matches code: `Type *name`, `Type &name`.
+DerivePointerAlignment: false
+PointerAlignment: Right
+ReferenceAlignment: Right
+
+# Keep existing alignment/columns where possible.
+AlignTrailingComments: true
+AlignOperands: true
+AlignConsecutiveAssignments: AcrossEmptyLinesAndComments
+AlignConsecutiveDeclarations: AcrossEmptyLinesAndComments
+AlignConsecutiveMacros: None
+AlignEscapedNewlines: DontAlign
+AlignAfterOpenBracket: Align
+BreakBeforeBinaryOperators: None
+
+# Keep moderate vertical spacing, don't aggressively collapse empties.
+KeepEmptyLinesAtTheStartOfBlocks: true
+MaxEmptyLinesToKeep: 2
+
+# Avoid changing braced-init formatting in ways that could churn.
+Cpp11BracedListStyle: false
+
+# Avoid messing with some macros
+WhitespaceSensitiveMacros:
+  - SRCLANGEXT
+  - ML_TYPE
+  - TSPEC0
+  - TSPEC
+  - ETYPE
+

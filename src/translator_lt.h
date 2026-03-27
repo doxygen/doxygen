@@ -131,7 +131,7 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
 
     /*! this is the first part of a sentence that is followed by a class name */
     QCString trThisIsTheListOfAllMembers() override
-    { return "Tai galutinis narių sąrašas "; }
+    { return "Tai galutinis narių sąrašas"; }
 
     /*! this is the remainder of the sentence after the class name */
     QCString trIncludingInheritedMembers() override
@@ -339,8 +339,8 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
     // index titles (the project name is prepended for these)
 
     /*! This is used in HTML as the title of index.html. */
-    QCString trDocumentation() override
-    { return "Dokumentacija"; }
+    QCString trDocumentation(const QCString &projName) override
+    { return (!projName.isEmpty()?projName + " " : "") + "Dokumentacija"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * index of all groups.
@@ -641,9 +641,8 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
     QCString trWriteList(int numEntries) override
     {
       QCString result;
-      int i;
       // the inherits list contain `numEntries' classes
-      for (i=0;i<numEntries;i++)
+      for (int i=0;i<numEntries;i++)
       {
         // use generateMarker to generate placeholders for the class links!
         result+=generateMarker(i); // generate marker for entry i in the list
@@ -1180,9 +1179,7 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
      */
     QCString trClass(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Klasė" : "klasė"));
-      if (!singular)  result+="s";
-      return result;
+      return createNoun(first_capital, singular, "klasė", "s");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1191,10 +1188,7 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
      */
     QCString trFile(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Faila" : "faila"));
-      if (!singular)  result+="i";
-      else  result+="s";
-      return result;
+      return createNoun(first_capital, singular, "faila", "i", "s");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1203,10 +1197,7 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
      */
     QCString trNamespace(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Vardų srit" : "vardų srit"));
-      if (!singular)  result+="ys";
-      else  result+="is";
-      return result;
+      return createNoun(first_capital, singular, "vardų srit", "ys", "is");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1215,9 +1206,7 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
      */
     QCString trGroup(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Grupė" : "grupė"));
-      if (!singular)  result+="s";
-      return result;
+      return createNoun(first_capital, singular, "grupė", "s");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1226,10 +1215,7 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
      */
     QCString trPage(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Puslapi" : "puslapi"));
-      if (!singular)  result+="ai";
-      else  result+="s";
-      return result;
+      return createNoun(first_capital, singular, "puslapi", "ai", "s");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1238,10 +1224,7 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
      */
     QCString trMember(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Nar" : "nar"));
-      if (!singular)  result+="iai";
-      else  result+="ys";
-      return result;
+      return createNoun(first_capital, singular, "nar", "iai", "ys");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1250,10 +1233,7 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
      */
     QCString trGlobal(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Global" : "global"));
-      if (!singular)  result+="ūs";
-      else  result+="us";
-      return result;
+      return createNoun(first_capital, singular, "global", "ūs", "us");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1264,10 +1244,7 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
      *  for the author section in man pages. */
     QCString trAuthor(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Autori" : "autori"));
-      if (!singular)  result+="ai";
-      else  result+="us";
-      return result;
+      return createNoun(first_capital, singular, "autori", "ai", "us");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1450,7 +1427,7 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
 
     /*! This is used in HTML as the title of page with source code for file filename
      */
-    QCString trSourceFile(QCString& filename) override
+    QCString trSourceFile(const QCString& filename) override
     {
       return filename + " išeities tekstas";
     }
@@ -1484,13 +1461,11 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
     { QCString result=dirName; result+=" Directorijos aprašas"; return result; }
 
     /*! This returns the word directory with or without starting capital
-     *  (\a first_capital) and in sigular or plural form (\a singular).
+     *  (\a first_capital) and in singular or plural form (\a singular).
      */
     QCString trDir(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Direktorij" : "direktorij"));
-      if (singular) result+="a"; else result+="os";
-      return result;
+      return createNoun(first_capital, singular, "direktorij", "os", "a");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1523,10 +1498,10 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
       if (first_capital) return text.mid(0,1).upper()+text.mid(1);
       else return text;
     }
-    QCString trDayPeriod(int period) override
+    QCString trDayPeriod(bool period) override
     {
       static const char *dayPeriod[] = { "priešpiet", "popiet" };
-      return dayPeriod[period];
+      return dayPeriod[period?1:0];
     }
 };
 

@@ -20,6 +20,7 @@
 
 #include "qcstring.h"
 #include "classdef.h"
+#include "construct.h"
 
 class Definition;
 class FileDef;
@@ -32,6 +33,7 @@ class SymbolResolver
   public:
     explicit SymbolResolver(const FileDef *fileScope = nullptr);
    ~SymbolResolver();
+    NON_COPYABLE(SymbolResolver)
 
     // actions
 
@@ -66,12 +68,14 @@ class SymbolResolver
      *  @param args    Argument list associated with the symbol (for functions)
      *  @param checkCV Check const/volatile qualifiers (for methods)
      *  @param insideCode Is the symbol found in a code fragment
+     *  @param onlyLinkable Only search linkable definitions
      */
     const Definition *resolveSymbol(const Definition *scope,
                                     const QCString &name,
                                     const QCString &args=QCString(),
                                     bool checkCV=false,
-                                    bool insideCode=false
+                                    bool insideCode=false,
+                                    bool onlyLinkable=false
                                    );
 
     /** Checks if symbol \a item is accessible from within \a scope.
@@ -93,6 +97,13 @@ class SymbolResolver
 
     /** Sets or updates the file scope using when resolving symbols. */
     void setFileScope(const FileDef *fd);
+
+    /** Clear the type lookup cache for the current thread */
+    enum class ClearScope { All, Classes, Unresolved };
+    static void clearTypeLookupCache(ClearScope scope);
+
+    /** Show usage of the type lookup cache */
+    static void showCacheUsage();
 
     // getters
 

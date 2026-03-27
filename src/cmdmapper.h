@@ -21,13 +21,15 @@
 #include <memory>
 #include "qcstring.h"
 
-using CommandMap = std::unordered_map< std::string, int >;
+template<typename T>
+using CommandMap = std::unordered_map< std::string, T >;
 
-const int SIMPLESECT_BIT = 0x1000;
 
-enum CommandType
+enum class CommandType
 {
-  CMD_UNKNOWN      = 0,
+  SIMPLESECT_BIT = 0x1000,
+
+  UNKNOWN          = 0,
   CMD_ADDINDEX     = 1,
   CMD_AMP          = 2,
   CMD_ANCHOR       = 3,
@@ -154,11 +156,21 @@ enum CommandType
   CMD_ENDIVERBATIM = 124,
   CMD_IANCHOR      = 125,
   CMD_DOXYCONFIG   = 126,
+  CMD_IMPORTANT    = 127 | SIMPLESECT_BIT,
+  CMD_SUBPARAGRAPH = 128,
+  CMD_SUBSUBPARAGRAPH = 129,
+  CMD_IPREFIX      = 130,
+  CMD_PLANTUMLFILE = 131,
+  CMD_EXCLAMATION  = 132,
+  CMD_QUESTION     = 133,
+  CMD_REQUIREMENT  = 134 | SIMPLESECT_BIT
 };
 
-enum HtmlTagType
+enum class HtmlTagType
 {
-  HTML_UNKNOWN   = 0,
+  SIMPLESECT_BIT = 0x1000,
+
+  UNKNOWN        = 0,
   HTML_CENTER    = 1,
   HTML_TABLE     = 2,
   HTML_CAPTION   = 3,
@@ -202,6 +214,8 @@ enum HtmlTagType
   HTML_THEAD     = 41,
   HTML_TBODY     = 42,
   HTML_TFOOT     = 43,
+  HTML_KBD       = 44,
+  HTML_TT        = 45,
 
   XML_CmdMask    = 0x100,
 
@@ -232,23 +246,49 @@ enum HtmlTagType
 
 
 /** Class representing a mapping from command names to command IDs. */
+template<typename T>
 class Mapper
 {
   public:
-    int map(const QCString &n) const;
-    QCString find(const int n) const;
-    Mapper(const CommandMap &cm,bool caseSensitive);
+    T map(const QCString &n) const
+    {
+      if (n.isEmpty()) return T::UNKNOWN;
+      QCString name = n;
+      if (!m_cs) name=name.lower();
+      auto it = m_map.find(name.str());
+      return it!=m_map.end() ? it->second : T::UNKNOWN;
+    }
+
+    QCString find(const T n) const
+    {
+      QCString result;
+      for (const auto &[name,id] : m_map)
+      {
+        T curVal = id;
+        // https://stackoverflow.com/a/15889501/1657886
+        if (curVal == n || (curVal == (static_cast<T>(static_cast<int>(n) | static_cast<int>(T::SIMPLESECT_BIT)))))
+        {
+          result = name;
+          break;
+        }
+      }
+      return result;
+    }
+
+    Mapper(const CommandMap<T> &cm,bool caseSensitive) : m_map(cm), m_cs(caseSensitive)
+    {
+    }
+
   private:
-    const CommandMap &m_map;
+    const CommandMap<T> &m_map;
     bool m_cs;
 };
 
 /** Namespace for the doxygen and HTML command mappers. */
 namespace Mappers
 {
-  extern const Mapper *cmdMapper;
-  extern const Mapper *htmlTagMapper;
+  extern const Mapper<CommandType> *cmdMapper;
+  extern const Mapper<HtmlTagType> *htmlTagMapper;
 }
-
 
 #endif

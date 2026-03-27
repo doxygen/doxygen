@@ -51,11 +51,10 @@ using FTVNodes       = std::vector<FTVNodePtr>;
 struct FTVNode
 {
   FTVNode(bool dir,const QCString &r,const QCString &f,const QCString &a,
-          const QCString &n,bool sepIndex,bool navIndex,const Definition *df)
-    : isLast(TRUE), isDir(dir), ref(r), file(f), anchor(a), name(n),
-      separateIndex(sepIndex), addToNavIndex(navIndex),
-      def(df) {}
- ~FTVNode() = default;
+          const QCString &n,bool sepIndex,bool navIndex,const Definition *df,
+          const QCString &nameAsHtml_)
+    : isLast(TRUE), isDir(dir), ref(r), file(f), anchor(a), name(n), nameAsHtml(nameAsHtml_),
+      separateIndex(sepIndex), addToNavIndex(navIndex), def(df) {}
   int computeTreeDepth(int level) const;
   int numNodesAtLevel(int level,int maxLevel) const;
   bool isLast;
@@ -64,6 +63,7 @@ struct FTVNode
   QCString file;
   QCString anchor;
   QCString name;
+  QCString nameAsHtml;
   int index = 0;
   FTVNodes children;
   FTVNodeWeakPtr parent;
@@ -119,7 +119,6 @@ struct FTVHelp::Private
  */
 FTVHelp::FTVHelp(bool TLI) : p(std::make_unique<Private>(TLI)) {}
 FTVHelp::~FTVHelp() = default;
-FTVHelp::FTVHelp(FTVHelp &&) = default;
 
 /*! This will create a folder tree view table of contents file (tree.js).
  *  \sa finalize()
@@ -176,6 +175,7 @@ void FTVHelp::decContentsDepth()
 /*! Add a list item to the contents file.
  *  \param isDir TRUE if the item is a directory, FALSE if it is a text
  *  \param name the name of the item.
+ *  \param nameAsHtml the name of the item in HTML format.
  *  \param ref  the URL of to the item.
  *  \param file the file containing the definition of the item
  *  \param anchor the anchor within the file.
@@ -190,16 +190,17 @@ void FTVHelp::addContentsItem(bool isDir,
                               const QCString &anchor,
                               bool separateIndex,
                               bool addToNavIndex,
-                              const Definition *def
+                              const Definition *def,
+                              const QCString &nameAsHtml
                               )
 {
-  //printf("%p: p->indent=%d addContentsItem(%d,%s,%s,%s,%s)\n",(void*)this,p->indent,isDir,qPrint(name),qPrint(ref),qPrint(file),qPrint(anchor));
+  //printf("%p: p->indent=%d addContentsItem(isDir=%d,name=%s,ref=%s,file=%s,anchor=%s,nameAsHtml=%s)\n",(void*)this,p->indent,isDir,qPrint(name),qPrint(ref),qPrint(file),qPrint(anchor),qPrint(nameAsHtml));
   auto &nl = p->indentNodes[p->indent];
   if (!nl.empty())
   {
     nl.back()->isLast=FALSE;
   }
-  auto newNode = std::make_shared<FTVNode>(isDir,ref,file,anchor,name,separateIndex,addToNavIndex,def);
+  auto newNode = std::make_shared<FTVNode>(isDir,ref,file,anchor,name,separateIndex,addToNavIndex,def,nameAsHtml);
   nl.push_back(newNode);
   newNode->index = static_cast<int>(nl.size()-1);
   if (p->indent>0)
@@ -258,12 +259,15 @@ static QCString generateIndentLabel(const FTVNodePtr &n,int level)
 
 static void generateIndent(TextStream &t, const FTVNodePtr &n,bool opened)
 {
+  bool dynamicSections = Config_getBool(HTML_DYNAMIC_SECTIONS);
   int indent=0;
   auto parent = n->parent.lock();
   while (parent) { indent++; parent=parent->parent.lock(); }
-  if (n->isDir)
+  if (n->isDir && dynamicSections)
   {
-    QCString dir = opened ? "&#9660;" : "&#9658;";
+    const char *ARROW_DOWN = "<span class=\"arrowhead opened\"></span>";
+    const char *ARROW_RIGHT = "<span class=\"arrowhead closed\"></span>";
+    QCString dir = opened ? ARROW_DOWN : ARROW_RIGHT;
     t << "<span style=\"width:" << (indent*16) << "px;display:inline-block;\">&#160;</span>"
       << "<span id=\"arr_" << generateIndentLabel(n,0) << "\" class=\"arrow\" ";
     t << "onclick=\"dynsection.toggleFolder('" << generateIndentLabel(n,0) << "')\"";
@@ -281,9 +285,11 @@ void FTVHelp::Private::generateLink(TextStream &t,const FTVNodePtr &n)
   //printf("FTVHelp::generateLink(ref=%s,file=%s,anchor=%s\n",
   //    qPrint(n->ref),qPrint(n->file),qPrint(n->anchor));
   bool setTarget = FALSE;
+  bool nameAsHtml = !n->nameAsHtml.isEmpty();
+  QCString text = nameAsHtml ? n->nameAsHtml : convertToHtml(n->name);
   if (n->file.isEmpty()) // no link
   {
-    t << "<b>" << convertToHtml(n->name) << "</b>";
+    t << "<b>" << text << "</b>";
   }
   else // link into other frame
   {
@@ -312,7 +318,7 @@ void FTVHelp::Private::generateLink(TextStream &t,const FTVNodePtr &n)
     {
       t << "\">";
     }
-    t << convertToHtml(n->name);
+    t << text;
     t << "</a>";
     if (!n->ref.isEmpty())
     {
@@ -329,9 +335,15 @@ static void generateBriefDoc(TextStream &t,const Definition *def)
   {
     auto parser { createDocParser() };
     auto ast    { validatingParseDoc(*parser.get(),
-                                     def->briefFile(),def->briefLine(),
-                                     def,0,brief,FALSE,FALSE,
-                                     QCString(),TRUE,TRUE,Config_getBool(MARKDOWN_SUPPORT)) };
+                                     def->briefFile(),
+                                     def->briefLine(),
+                                     def,
+                                     nullptr,
+                                     brief,
+                                     DocOptions()
+                                     .setSingleLine(true)
+                                     .setLinkFromIndex(true))
+                 };
     const DocNodeAST *astImpl = dynamic_cast<const DocNodeAST*>(ast.get());
     if (astImpl)
     {
@@ -367,6 +379,7 @@ static char compoundIcon(const ClassDef *cd)
 
 void FTVHelp::Private::generateTree(TextStream &t, const FTVNodes &nl,int level,int maxLevel,int &index)
 {
+  bool dynamicSections = Config_getBool(HTML_DYNAMIC_SECTIONS);
   for (const auto &n : nl)
   {
     t << "<tr id=\"row_" << generateIndentLabel(n,0) << "\"";
@@ -374,7 +387,7 @@ void FTVHelp::Private::generateTree(TextStream &t, const FTVNodes &nl,int level,
       t << " class=\"even\"";
     else
       t << " class=\"odd\"";
-    if (level>=maxLevel) // item invisible by default
+    if (level>=maxLevel && dynamicSections) // item invisible by default
       t << " style=\"display:none;\"";
     else // item visible by default
       index++;
@@ -415,13 +428,13 @@ void FTVHelp::Private::generateTree(TextStream &t, const FTVNodes &nl,int level,
         char icon=compoundIcon(toClassDef(n->def));
         t << "<span class=\"icona\"><span class=\"icon\">" << icon << "</span></span>";
       }
-      else
+      else if (dynamicSections)
       {
-        t << "<span id=\"img_" << generateIndentLabel(n,0)
-          << "\" class=\"iconf"
-          << (nodeOpened?"open":"closed")
+        t << "<span id=\"img_" << generateIndentLabel(n,0) << "\" class=\"iconfolder"
           << "\" onclick=\"dynsection.toggleFolder('" << generateIndentLabel(n,0)
-          << "')\">&#160;</span>";
+          << "')\"><div class=\"folder-icon"
+          << (nodeOpened ? " open" : "")
+          << "\"></div></span>";
       }
       generateLink(t,n);
       t << "</td><td class=\"desc\">";
@@ -485,11 +498,11 @@ void FTVHelp::Private::generateTree(TextStream &t, const FTVNodes &nl,int level,
       }
       else if (n->def && n->def->definitionType()==Definition::TypeDir)
       {
-        t << "<span class=\"iconfclosed\"></span>";
+        t << "<span class=\"iconfolder\"><div class=\"folder-icon\"></div></span>";
       }
       else
       {
-        t << "<span class=\"icondoc\"></span>";
+        t << "<span class=\"icondoc\"><div class=\"doc-icon\"></div></span>";
       }
       if (srcRef)
       {
@@ -542,15 +555,17 @@ static bool dupOfParent(const FTVNodePtr &n)
 
 static void generateJSLink(TextStream &t,const FTVNodePtr &n)
 {
+  bool nameAsHtml = !n->nameAsHtml.isEmpty();
+  QCString result = nameAsHtml ? n->nameAsHtml : n->name;
+  QCString link = convertToJSString(result,nameAsHtml);
   if (n->file.isEmpty()) // no link
   {
-    t << "\"" << convertToJSString(n->name) << "\", null, ";
+    t << "\"" << link << "\", null, ";
   }
   else // link into other page
   {
-    QCString result = n->name;
     if (Config_getBool(HIDE_SCOPE_NAMES)) result=stripScope(result);
-    t << "\"" << convertToJSString(result) << "\", \"";
+    t << "\"" << link << "\", \"";
     t << externalRef("",n->ref,TRUE);
     t << node2URL(n);
     t << "\", ";
@@ -625,8 +640,8 @@ static bool generateJSTree(NavIndexEntryList &navIndex,TextStream &t,
       if (n->def && n->def->definitionType()==Definition::TypeFile)
       {
         const FileDef *fd = toFileDef(n->def);
-        bool doc,src;
-        doc = fileVisibleInIndex(fd,src);
+        bool src = false;
+        bool doc = fileVisibleInIndex(fd,src);
         if (doc)
         {
           navIndex.emplace_back(node2URL(n,TRUE,FALSE),pathToNode(n,n));
@@ -780,7 +795,7 @@ static void generateJSNavTree(const FTVNodes &nodeList)
     t << "];\n\n";
 
     // write the navigation index (and sub-indices)
-    std::sort(navIndex.begin(),navIndex.end(),[](const auto &n1,const auto &n2)
+    std::stable_sort(navIndex.begin(),navIndex.end(),[](const auto &n1,const auto &n2)
         { return !n1.url.isEmpty() && (n2.url.isEmpty() || (n1.url<n2.url)); });
 
     int subIndex=0;
@@ -832,8 +847,9 @@ static void generateJSNavTree(const FTVNodes &nodeList)
       tsidx << "};\n";
       t << "\n];\n";
     }
-    t << "\nvar SYNCONMSG = '"  << theTranslator->trPanelSynchronisationTooltip(FALSE) << "';";
-    t << "\nvar SYNCOFFMSG = '" << theTranslator->trPanelSynchronisationTooltip(TRUE)  << "';";
+    t << "\nconst SYNCONMSG = '"  << theTranslator->trPanelSynchronisationTooltip(FALSE) << "';";
+    t << "\nconst SYNCOFFMSG = '" << theTranslator->trPanelSynchronisationTooltip(TRUE)  << "';";
+    t << "\nconst LISTOFALLMEMBERS = '" << theTranslator->trListOfAllMembers() << "';";
   }
 
   auto &mgr = ResourceMgr::instance();
@@ -842,27 +858,15 @@ static void generateJSNavTree(const FTVNodes &nodeList)
     if (fn.is_open())
     {
       TextStream t(&fn);
-      t << substitute(mgr.getAsString("navtree.js"),"$PROJECTID",getProjectId());
+      t << substitute(
+             substitute(mgr.getAsString("navtree.js"),
+                "$TREEVIEW_WIDTH", QCString().setNum(Config_getInt(TREEVIEW_WIDTH))),
+                "$PROJECTID",getProjectId());
     }
   }
 }
 
 //-----------------------------------------------------------
-
-// new style images
-void FTVHelp::generateTreeViewImages()
-{
-  QCString dname=Config_getString(HTML_OUTPUT);
-  const ResourceMgr &rm = ResourceMgr::instance();
-  rm.copyResource("doc.svg",dname);
-  rm.copyResource("docd.svg",dname);
-  rm.copyResource("folderopen.svg",dname);
-  rm.copyResource("folderopend.svg",dname);
-  rm.copyResource("folderclosed.svg",dname);
-  rm.copyResource("folderclosedd.svg",dname);
-  rm.copyResource("splitbar.lum",dname);
-  rm.copyResource("splitbard.lum",dname);
-}
 
 // new style scripts
 void FTVHelp::generateTreeViewScripts()
@@ -876,6 +880,7 @@ void FTVHelp::generateTreeViewScripts()
 // write tree inside page
 void FTVHelp::generateTreeViewInline(TextStream &t)
 {
+  bool dynamicSections = Config_getBool(HTML_DYNAMIC_SECTIONS);
   int preferredNumEntries = Config_getInt(HTML_INDEX_NUM_ENTRIES);
   t << "<div class=\"directory\">\n";
   int d=1, depth=1;
@@ -891,14 +896,17 @@ void FTVHelp::generateTreeViewInline(TextStream &t)
   // write level selector
   if (depth>1)
   {
-    t << "<div class=\"levels\">[";
-    t << theTranslator->trDetailLevel();
-    t << " ";
-    for (int i=1;i<=depth;i++)
+    if (dynamicSections)
     {
-      t << "<span onclick=\"javascript:dynsection.toggleLevel(" << i << ");\">" << i << "</span>";
+      t << "<div class=\"levels\">[";
+      t << theTranslator->trDetailLevel();
+      t << " ";
+      for (int i=1;i<=depth;i++)
+      {
+        t << "<span onclick=\"javascript:dynsection.toggleLevel(" << i << ");\">" << i << "</span>";
+      }
+      t << "]</div>";
     }
-    t << "]</div>";
 
     if (preferredNumEntries>0)
     {
@@ -937,6 +945,5 @@ void FTVHelp::generateTreeViewInline(TextStream &t)
 // write old style index.html and tree.html
 void FTVHelp::generateTreeView()
 {
-  generateTreeViewImages();
   generateTreeViewScripts();
 }

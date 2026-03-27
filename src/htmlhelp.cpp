@@ -44,8 +44,7 @@ class HtmlHelpRecoder
   public:
     HtmlHelpRecoder() {}
    ~HtmlHelpRecoder() { finalize(); }
-    HtmlHelpRecoder(const HtmlHelpRecoder &) = delete;
-    HtmlHelpRecoder &operator=(const HtmlHelpRecoder &) = delete;
+    NON_COPYABLE(HtmlHelpRecoder)
 
     void initialize()
     {
@@ -54,7 +53,7 @@ class HtmlHelpRecoder
       m_fromUtf8 = portable_iconv_open(str.data(),"UTF-8");
       if (m_fromUtf8==m_iconv_null)
       {
-        term("unsupported character conversion for CHM_INDEX_ENCODING: '%s'->'UTF-8'\n", qPrint(str));
+        term("unsupported character conversion for CHM_INDEX_ENCODING: '{}'->'UTF-8'\n", str);
       }
     }
     void finalize()
@@ -116,6 +115,7 @@ class HtmlHelpIndex
   public:
     HtmlHelpIndex(HtmlHelpRecoder &recoder);
    ~HtmlHelpIndex();
+    NON_COPYABLE(HtmlHelpIndex)
     void addItem(const QCString &first,const QCString &second,
                  const QCString &url, const QCString &anchor,
                  bool hasLink,bool reversed);
@@ -132,9 +132,8 @@ HtmlHelpIndex::HtmlHelpIndex(HtmlHelpRecoder &recoder) : m_recoder(recoder)
 }
 
 /*! Destroys the HtmlHelp index */
-HtmlHelpIndex::~HtmlHelpIndex()
-{
-}
+HtmlHelpIndex::~HtmlHelpIndex() = default;
+
 
 /*! Stores an item in the index if it is not already present.
  *  Items are stored in alphabetical order, by sorting on the
@@ -154,22 +153,18 @@ void HtmlHelpIndex::addItem(const QCString &level1,const QCString &level2,
                        bool reversed)
 {
   static const reg::Ex re(R"(@\d+)");
-  std::string key = level1.str();
-  if (!level2.isEmpty()) key+= std::string("?") + level2.str();
-  if (reg::search(key,re)) // skip anonymous stuff
+  QCString key = substitute(level1,"?","&quest;");
+  if (!level2.isEmpty()) key+= "?" + substitute(level2,"?","&quest;");
+  if (reg::search(key.str(),re)) // skip anonymous stuff
   {
     return;
   }
-  std::string key_anchor;
+  QCString key_anchor = key;
   if (!anchor.isEmpty())
   {
-    key_anchor = key+anchor.str();
+    key_anchor += anchor;
   }
-  else
-  {
-    key_anchor = key;
-  }
-  m_map.add(key_anchor.c_str(),key.c_str(),url,anchor,hasLink,reversed);
+  m_map.add(key_anchor,key,url,anchor,hasLink,reversed);
 }
 
 static QCString field2URL(const IndexField *f,bool checkReversed)
@@ -178,8 +173,7 @@ static QCString field2URL(const IndexField *f,bool checkReversed)
   addHtmlExtensionIfMissing(result);
   if (!f->anchor.isEmpty() && (!checkReversed || f->reversed))
   {
-    // HTML Help needs colons in link anchors to be escaped in the .hhk file.
-    result+="#"+substitute(f->anchor,":","%3A");
+    result+="#"+f->anchor;
   }
   return result;
 }
@@ -239,9 +233,9 @@ static QCString convertToHtmlAndTruncate(const QCString &s)
  */
 void HtmlHelpIndex::writeFields(std::ostream &t)
 {
-  std::sort(std::begin(m_map),
+  std::stable_sort(std::begin(m_map),
             std::end(m_map),
-            [](const auto &e1,const auto &e2) { return e1->name < e2->name; }
+            [](const auto &e1,const auto &e2) { return qstricmp_sort(e1->name,e2->name)<0; }
            );
   QCString prevLevel1;
   bool level2Started=FALSE;
@@ -249,8 +243,8 @@ void HtmlHelpIndex::writeFields(std::ostream &t)
   {
     auto &f = *it;
     QCString level1,level2;
-    int i;
-    if ((i=f->name.find('?'))!=-1)
+    int i = f->name.find('?');
+    if (i!=-1)
     {
       level1 = f->name.left(i);
       level2 = f->name.right(f->name.length()-i-1);
@@ -362,7 +356,6 @@ class HtmlHelp::Private
  */
 HtmlHelp::HtmlHelp() : p(std::make_unique<Private>()) {}
 HtmlHelp::~HtmlHelp() = default;
-HtmlHelp::HtmlHelp(HtmlHelp &&) = default;
 
 /*! This will create a contents file (index.hhc) and a index file (index.hhk)
  *  and write the header of those files.
@@ -378,7 +371,7 @@ void HtmlHelp::initialize()
   p->cts = Portable::openOutputStream(fName);
   if (!p->cts.is_open())
   {
-    term("Could not open file %s for writing\n",qPrint(fName));
+    term("Could not open file {} for writing\n",fName);
   }
   /* Write the header of the contents file */
   p->cts << "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML//EN\">\n"
@@ -393,7 +386,7 @@ void HtmlHelp::initialize()
   p->kts = Portable::openOutputStream(fName);
   if (!p->kts.is_open())
   {
-    term("Could not open file %s for writing\n",qPrint(fName));
+    term("Could not open file {} for writing\n",fName);
   }
   /* Write the header of the contents file */
   p->kts << "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML//EN\">\n"
@@ -423,6 +416,10 @@ void HtmlHelp::Private::createProjectFile()
     if (!Config_getString(CHM_FILE).isEmpty())
     {
       t << "Compiled file=" << Config_getString(CHM_FILE) << "\n";
+    }
+    else
+    {
+      t << "Compiled file=index.chm\n";
     }
     t << "Compatibility=1.1\n"
          "Full-text search=Yes\n";
@@ -463,21 +460,21 @@ void HtmlHelp::Private::createProjectFile()
     t << "[FILES]\n";
     for (auto &s : indexFiles)
     {
-      t << s.c_str() << "\n";
+      t << s << "\n";
     }
     for (auto &s : imageFiles)
     {
-      t << s.c_str() << "\n";
+      t << s << "\n";
     }
     for (auto &s : styleFiles)
     {
-      t << s.c_str() << "\n";
+      t << s << "\n";
     }
     t.close();
   }
   else
   {
-    err("Could not open file %s for writing\n",qPrint(fName));
+    err("Could not open file {} for writing\n",fName);
   }
 }
 
@@ -517,7 +514,7 @@ void HtmlHelp::finalize()
  */
 void HtmlHelp::incContentsDepth()
 {
-  int i; for (i=0;i<p->dc+1;i++) p->cts << "  ";
+  for (int i=0; i<p->dc+1; i++) p->cts << "  ";
   p->cts << "<UL>\n";
   ++p->dc;
 }
@@ -528,7 +525,7 @@ void HtmlHelp::incContentsDepth()
  */
 void HtmlHelp::decContentsDepth()
 {
-  int i; for (i=0;i<p->dc;i++) p->cts << "  ";
+  for (int i=0; i<p->dc; i++) p->cts << "  ";
   p->cts << "</UL>\n";
   --p->dc;
 }
@@ -542,18 +539,20 @@ void HtmlHelp::decContentsDepth()
  *  \param separateIndex not used.
  *  \param addToNavIndex not used.
  *  \param def not used.
+ *  \param nameAsHtml name parameter in HTML format
  */
 void HtmlHelp::addContentsItem(bool isDir,
                                const QCString &name,
-                               const QCString & /*ref*/,
+                               const QCString &ref,
                                const QCString &file,
                                const QCString &anchor,
                                bool /* separateIndex */,
                                bool /* addToNavIndex */,
-                               const Definition * /* def */)
+                               const Definition * /* def */,
+                               const QCString & /* nameAsHtml */)
 {
   p->ctsItemPresent = true;
-  int i; for (i=0;i<p->dc;i++) p->cts << "  ";
+  for (int i=0; i<p->dc; i++) p->cts << "  ";
   p->cts << "<LI><OBJECT type=\"text/sitemap\">";
   p->cts << "<param name=\"Name\" value=\"" << convertToHtml(p->recoder.recode(name),TRUE) << "\">";
   if (!file.isEmpty())      // made file optional param - KPW
@@ -572,6 +571,7 @@ void HtmlHelp::addContentsItem(bool isDir,
       addHtmlExtensionIfMissing(currFile);
       QCString currAnc = anchor;
       p->cts << "<param name=\"Local\" value=\"";
+      if (!ref.isEmpty()) p->cts << externalRef("",ref,true);
       p->cts << currFile;
       if (p->prevFile == currFile && p->prevAnc.isEmpty() && currAnc.isEmpty())
       {
@@ -600,28 +600,15 @@ void HtmlHelp::addContentsItem(bool isDir,
 void HtmlHelp::addIndexItem(const Definition *context,const MemberDef *md,
                             const QCString &sectionAnchor,const QCString &word)
 {
-  if (md)
+  if (context && md)
   {
-    bool separateMemberPages = Config_getBool(SEPARATE_MEMBER_PAGES);
-    if (context==0) // global member
-    {
-      if (md->getGroupDef())
-        context = md->getGroupDef();
-      else if (md->getFileDef())
-        context = md->getFileDef();
-    }
-    if (context==0) return; // should not happen
-
     QCString cfname  = md->getOutputFileBase();
     QCString argStr  = md->argsString();
-    QCString cfiname = context->getOutputFileBase();
     QCString level1  = context->name();
     QCString level2  = md->name() + argStr;
-    QCString contRef = separateMemberPages ? cfname : cfiname;
-    QCString memRef  = cfname;
     QCString anchor  = !sectionAnchor.isEmpty() ? sectionAnchor : md->anchor();
-    p->index.addItem(level1,level2,contRef,anchor,TRUE,FALSE);
-    p->index.addItem(level2,level1,memRef,anchor,TRUE,TRUE);
+    p->index.addItem(level1,level2,cfname,anchor,TRUE,FALSE);
+    p->index.addItem(level2,level1,cfname,anchor,TRUE,TRUE);
   }
   else if (context)
   {

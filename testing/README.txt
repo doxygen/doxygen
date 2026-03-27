@@ -40,6 +40,7 @@ optional parameters:
   --xhtml               create xhtml output and check with xmllint
   --xmlxsd              create xml output and check with xmllint against xsd
   --pdf                 create LaTeX output and create pdf from it
+  --man                 create man output
   --subdirs             use the configuration parameter CREATE_SUBDIRS=YES
   --clang               use CLANG_ASSISTED_PARSING, works only when doxygen
                         has been compiled with "use_libclang"

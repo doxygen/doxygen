@@ -23,37 +23,35 @@
 class CPPValue
 {
   public:
-    enum Type { Int, Float };
+    enum class Type { Int, Float };
 
-    explicit CPPValue(char c) : type(Int) { v.l = c; }
-    explicit CPPValue(long val=0) : type(Int) { v.l = val; }
-    explicit CPPValue(double val) : type(Float) { v.d = val; }
+    explicit constexpr CPPValue(char c)     noexcept : m_type(Type::Int),   m_d(0.0), m_l(c)   {}
+    explicit constexpr CPPValue(long val=0) noexcept : m_type(Type::Int),   m_d(0.0), m_l(val) {}
+    explicit constexpr CPPValue(double val) noexcept : m_type(Type::Float), m_d(val), m_l(0)   {}
 
-    operator double () const { return type==Int ? static_cast<double>(v.l) : v.d; }
-    operator long ()   const { return type==Int ? v.l : static_cast<long>(v.d);   }
+    constexpr operator double () const noexcept { return m_type==Type::Int ? static_cast<double>(m_l) : m_d; }
+    constexpr operator long ()   const noexcept { return m_type==Type::Int ? m_l : static_cast<long>(m_d);   }
 
-    bool isInt() const { return type == Int; }
+    constexpr Type type() const noexcept { return m_type; }
 
     void print() const
     {
-      if (type==Int)
-        printf("(%ld)\n",v.l);
+      if (m_type==Type::Int)
+        printf("(%ld)\n",m_l);
       else
-        printf("(%f)\n",v.d);
+        printf("(%f)\n",m_d);
     }
-    static CPPValue parseOctal(const std::string& token);
-    static CPPValue parseDecimal(const std::string& token);
-    static CPPValue parseHexadecimal(const std::string& token);
-    static CPPValue parseBinary(const std::string& token);
-    static CPPValue parseCharacter(const std::string& token);
-    static CPPValue parseFloat(const std::string& token);
+    static CPPValue parseOctal      (const std::string &token);
+    static CPPValue parseDecimal    (const std::string &token);
+    static CPPValue parseHexadecimal(const std::string &token);
+    static CPPValue parseBinary     (const std::string &token);
+    static CPPValue parseCharacter  (const std::string &token);
+    static CPPValue parseFloat      (const std::string &token);
 
   private:
-    Type type;
-    union {
-      double d;
-      long l;
-    } v;
+    Type m_type;
+    double m_d;
+    long m_l;
 };
 
 

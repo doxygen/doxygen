@@ -10,7 +10,7 @@
         <enumvalue id="classns2_1_1_class_1ab3fe6da2ca4a96a226618492312b1761ac5836008c1649301e29351a55db8f65c" prot="public">
           <name>Flag</name>
           <briefdescription>
-            <para>A flag of Enum1 in <ref refid="namespacens2" kindref="compound">ns2</ref>. </para>
+            <para>A flag of <ref refid="classns2_1_1_class_1ab3fe6da2ca4a96a226618492312b1761" kindref="member">Enum1</ref> in <ref refid="namespacens2" kindref="compound">ns2</ref>. </para>
           </briefdescription>
           <detaileddescription>
           </detaileddescription>
@@ -31,7 +31,7 @@
         <enumvalue id="classns2_1_1_class_1ae96c8ec290b0bdb3b718ccd891450b5dac5836008c1649301e29351a55db8f65c" prot="public">
           <name>Flag</name>
           <briefdescription>
-            <para>A flag of Enum2 in <ref refid="namespacens2" kindref="compound">ns2</ref>. </para>
+            <para>A flag of <ref refid="classns2_1_1_class_1ae96c8ec290b0bdb3b718ccd891450b5d" kindref="member">Enum2</ref> in <ref refid="namespacens2" kindref="compound">ns2</ref>. </para>
           </briefdescription>
           <detaileddescription>
           </detaileddescription>

@@ -70,6 +70,7 @@ struct declinfoYY_state
      QCString     exceptionString;
      bool         insideObjC;
      bool         insidePHP;
+     bool         insidePython;
 };
 
 [[maybe_unused]] static const char *stateToString(int state);
@@ -106,6 +107,17 @@ ID	([$a-z_A-Z\x80-\xFF][$a-z_A-Z0-9\x80-\xFF]*)|(@[0-9]+)
   				  yyextra->name += yytext;
   				  BEGIN(Operator);
   				}
+<Start>{ID}({B}*"*")?{B}*"("{B}*"^"{B}*")"{B}*"(" { // Objective-C 2.0 block return type
+  				  if (!yyextra->insideObjC) 
+				  {
+				    REJECT;
+				  }
+				  else
+				  {
+  				    addType(yyscanner);
+				    yyextra->type += yytext;
+				  }
+                                }
 <Start>{ID}{B}*"("{B}*{ID}{B}*")" { // Objective-C class categories
   				  if (!yyextra->insideObjC) 
 				  {
@@ -122,7 +134,7 @@ ID	([$a-z_A-Z\x80-\xFF][$a-z_A-Z0-9\x80-\xFF]*)|(@[0-9]+)
 				    REJECT;
 				  }
   				  addTypeName(yyscanner);
-				  yyextra->name += removeRedundantWhiteSpace(QCString(yytext));
+				  yyextra->name += removeRedundantWhiteSpace(yytext);
   				}
 <Start>"anonymous_namespace{"[^}]+"}" { // anonymous namespace
  				  if (!yyextra->scope.isEmpty())
@@ -140,7 +152,7 @@ ID	([$a-z_A-Z\x80-\xFF][$a-z_A-Z0-9\x80-\xFF]*)|(@[0-9]+)
                                         // the leading ~ is for a destructor
                                         // the leading ! is for a C++/CLI finalizer (see bug 456475 and 635198)
   				  addTypeName(yyscanner);
-				  yyextra->name += removeRedundantWhiteSpace(QCString(yytext));
+				  yyextra->name += removeRedundantWhiteSpace(yytext);
   				}
 <Start>{B}*"::"{B}*		{ // found a yyextra->scope specifier
  				  if (!yyextra->scope.isEmpty() && !yyextra->scope.endsWith("::"))
@@ -165,6 +177,7 @@ ID	([$a-z_A-Z\x80-\xFF][$a-z_A-Z0-9\x80-\xFF]*)|(@[0-9]+)
   				}
 <Start>{B}*"("({ID}"::")*{B}*[&*]({B}*("const"|"volatile"){B}+)?	{
                                   if (yyextra->insidePHP) REJECT;
+                                  if (yyextra->insidePython) REJECT;
   				  addType(yyscanner);
 				  QCString text(yytext);
 				  yyextra->type+=text.stripWhiteSpace();
@@ -331,6 +344,7 @@ void parseFuncDecl(const QCString &decl,const SrcLangExt lang,QCString &cl,QCStr
   yyextra->funcTempListFound  = FALSE;
   yyextra->insideObjC = lang==SrcLangExt::ObjC;
   yyextra->insidePHP  = lang==SrcLangExt::PHP;
+  yyextra->insidePython  = lang==SrcLangExt::Python;
   yyextra->scope.clear();
   yyextra->className.clear();
   yyextra->classTempList.clear();
@@ -356,8 +370,9 @@ void parseFuncDecl(const QCString &decl,const SrcLangExt lang,QCString &cl,QCStr
 
   cl=yyextra->scope;
   n=removeRedundantWhiteSpace(yyextra->name);
-  int il,ir;
-  if ((il=n.find('<'))!=-1 && (ir=n.findRev('>'))!=-1)
+  int il=n.find('<'), ir=n.findRev('>');
+  if (il!=-1 && ir!=-1 && n.at(il+1)!='=')
+    // prevent <=>
     // TODO: handle cases like where n="operator<< <T>" 
   {
     ftl=removeRedundantWhiteSpace(n.right(n.length()-il));
@@ -393,10 +408,10 @@ void dumpDecl(const char *s)
   QCString funcTNames;
   msg("-----------------------------------------\n");
   parseFuncDecl(s,yyextra->className,classTNames,yyextra->type,yyextra->name,yyextra->args,funcTNames);
-  msg("yyextra->type='%s' class='%s' classTempl='%s' yyextra->name='%s' "
-         "funcTemplateNames='%s' yyextra->args='%s'\n",
-	    qPrint(yyextra->type),qPrint(yyextra->className),qPrint(classTNames),
-	    qPrint(yyextra->name),qPrint(funcTNames),qPrint(yyextra->args)
+  msg("yyextra->type='{}' class='{}' classTempl='{}' yyextra->name='{}' "
+         "funcTemplateNames='{}' yyextra->args='{}'\n",
+	    yyextra->type,yyextra->className,classTNames,
+	    yyextra->name,funcTNames,yyextra->args
 	);
 }
 

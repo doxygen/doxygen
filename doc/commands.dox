@@ -123,6 +123,7 @@ documentation:
 \refitem cmdhidecallgraph \\hidecallgraph
 \refitem cmdhidecollaborationgraph \\hidecollaborationgraph
 \refitem cmdhidedirectorygraph \\hidedirectorygraph
+\refitem cmdhideenumvalues \\hideenumvalues
 \refitem cmdhidegroupgraph \\hidegroupgraph
 \refitem cmdhideincludedbygraph \\hideincludedbygraph
 \refitem cmdhideincludegraph \\hideincludegraph
@@ -138,6 +139,7 @@ documentation:
 \refitem cmdifnot \\ifnot
 \refitem cmdimage \\image
 \refitem cmdimplements \\implements
+\refitem cmdimportant \\important
 \refitem cmdinclude \\include
 \refitem cmdincludedoc \\includedoc
 \refitem cmdincludedbygraph \\includedbygraph
@@ -196,6 +198,7 @@ documentation:
 \refitem cmdrelatesalso \\relatesalso
 \refitem cmdremark \\remark
 \refitem cmdremarks \\remarks
+\refitem cmdrequirement \\requirement
 \refitem cmdresult \\result
 \refitem cmdreturn \\return
 \refitem cmdreturns \\returns
@@ -203,11 +206,13 @@ documentation:
 \refitem cmdrtfinclude \\rtfinclude
 \refitem cmdrtfonly \\rtfonly
 \refitem cmdsa \\sa
+\refitem cmdsatisfies \\satisfies
 \refitem cmdsecreflist \\secreflist
 \refitem cmdsection \\section
 \refitem cmdsee \\see
 \refitem cmdshort \\short
 \refitem cmdshowdate \\showdate
+\refitem cmdshowenumvalues \\showenumvalues
 \refitem cmdshowinitializer \\showinitializer
 \refitem cmdshowinlinesource \\showinlinesource
 \refitem cmdshowrefby \\showrefby
@@ -222,7 +227,9 @@ documentation:
 \refitem cmdstartuml \\startuml
 \refitem cmdstruct \\struct
 \refitem cmdsubpage \\subpage
+\refitem cmdsubparagraph \\subparagraph
 \refitem cmdsubsection \\subsection
+\refitem cmdsubsubparagraph \\subsubparagraph
 \refitem cmdsubsubsection \\subsubsection
 \refitem cmdtableofcontents \\tableofcontents
 \refitem cmdtest \\test
@@ -231,11 +238,13 @@ documentation:
 \refitem cmdtodo \\todo
 \refitem cmdtparam \\tparam
 \refitem cmdtypedef \\typedef
+\refitem cmdplantumlfile \\plantumlfile
 \refitem cmdunion \\union
 \refitem cmduntil \\until
 \refitem cmdvar \\var
 \refitem cmdverbatim \\verbatim
 \refitem cmdverbinclude \\verbinclude
+\refitem cmdverifies \\verifies
 \refitem cmdversion \\version
 \refitem cmdvhdlflow \\vhdlflow
 \refitem cmdwarning \\warning
@@ -255,6 +264,8 @@ documentation:
 \refitem cmdperc \\\%
 \refitem cmdquot \\\"
 \refitem cmdchardot \\\.
+\refitem cmdquest \\\?
+\refitem cmdexclam \\\!
 \refitem cmddcolon \::
 \refitem cmdpipe \\|
 \refitem cmdndash \\\--
@@ -262,7 +273,7 @@ documentation:
 \endsecreflist
 
 The following subsections provide a list of all commands that are recognized by
-doxygen. Unrecognized commands are treated as normal text.
+Doxygen. Unrecognized commands are treated as normal text.
 
 
 \htmlonly</p><center><p>\endhtmlonly
@@ -312,12 +323,12 @@ Structural indicators
 
   \addindex \\callgraph
   When this command is put in a comment block of a function or method
-  and \ref cfg_have_dot "HAVE_DOT" is set to \c YES, then doxygen will
+  and \ref cfg_have_dot "HAVE_DOT" is set to \c YES, then Doxygen will
   generate a call graph for that function (provided the implementation of the
   function or method calls other documented functions). The call graph will be
   generated regardless of the value of \ref cfg_call_graph "CALL_GRAPH".
   \note The completeness (and correctness) of the call graph depends on the
-  doxygen code parser which is not perfect.
+  Doxygen code parser which is not perfect.
 
   \sa section \ref cmdcallergraph "\\callergraph",
       section \ref cmdhidecallgraph "\\hidecallgraph",
@@ -329,11 +340,11 @@ Structural indicators
 
   \addindex \\hidecallgraph
   When this command is put in a comment block of a function or method
-  and then doxygen will not generate a call graph for that function. The
+  and then Doxygen will not generate a call graph for that function. The
   call graph will not be generated regardless of the value of
   \ref cfg_call_graph "CALL_GRAPH".
   \note The completeness (and correctness) of the call graph depends on the
-  doxygen code parser which is not perfect.
+  Doxygen code parser which is not perfect.
 
   \sa section \ref cmdcallergraph "\\callergraph",
       section \ref cmdcallgraph "\\callgraph",
@@ -345,12 +356,12 @@ Structural indicators
 
   \addindex \\callergraph
   When this command is put in a comment block of a function or method
-  and \ref cfg_have_dot "HAVE_DOT" is set to \c YES, then doxygen will
+  and \ref cfg_have_dot "HAVE_DOT" is set to \c YES, then Doxygen will
   generate a caller graph for that function (provided the implementation of the
   function or method is called by other documented functions). The caller graph will be
   generated regardless of the value of \ref cfg_caller_graph "CALLER_GRAPH".
   \note The completeness (and correctness) of the caller graph depends on the
-  doxygen code parser which is not perfect.
+  Doxygen code parser which is not perfect.
 
   \sa section \ref cmdcallgraph "\\callgraph",
       section \ref cmdhidecallgraph "\\hidecallgraph",
@@ -362,11 +373,11 @@ Structural indicators
 
   \addindex \\hidecallergraph
   When this command is put in a comment block of a function or method
-  and then doxygen will not generate a caller graph for that function. The
+  and then Doxygen will not generate a caller graph for that function. The
   caller graph will not be generated regardless of the value of
   \ref cfg_caller_graph "CALLER_GRAPH".
   \note The completeness (and correctness) of the caller graph depends on the
-  doxygen code parser which is not perfect.
+  Doxygen code parser which is not perfect.
 
   \sa section \ref cmdcallergraph "\\callergraph",
       section \ref cmdcallgraph "\\callgraph",
@@ -378,12 +389,12 @@ Structural indicators
 
   \addindex \\showrefby
   When this command is put in a comment block of a function, method or variable,
-  then doxygen will generate an overview for that function, method, variable of
+  then Doxygen will generate an overview for that function, method, variable of
   the, documented, functions and methods that call / use it.
   The overview will be generated regardless of the value of
   \ref cfg_referenced_by_relation "REFERENCED_BY_RELATION".
   \note The completeness (and correctness) of the overview depends on the
-  doxygen code parser which is not perfect.
+  Doxygen code parser which is not perfect.
 
   \sa section \ref cmdshowrefs "\\showrefs",
       section \ref cmdhiderefby "\\hiderefby",
@@ -395,12 +406,12 @@ Structural indicators
 
   \addindex \\hiderefby
   When this command is put in a comment block of a function, method or variable
-  then doxygen will not generate an overview for that function, method or
+  then Doxygen will not generate an overview for that function, method or
   variable of the functions and methods that call / use it.
   The overview will not be generated regardless of the value of
   \ref cfg_referenced_by_relation "REFERENCED_BY_RELATION".
   \note The completeness (and correctness) of the overview depends on the
-  doxygen code parser which is not perfect.
+  Doxygen code parser which is not perfect.
 
   \sa section \ref cmdshowrefs "\\showrefs",
       section \ref cmdshowrefby "\\showrefby",
@@ -412,12 +423,12 @@ Structural indicators
 
   \addindex \\showrefs
   When this command is put in a comment block of a function or method,
-  then doxygen will generate an overview for that function or method of the
+  then Doxygen will generate an overview for that function or method of the
   functions and methods that call it.
   The overview will be generated regardless of the value of
   \ref cfg_references_relation "REFERENCES_RELATION".
   \note The completeness (and correctness) of the overview depends on the
-  doxygen code parser which is not perfect.
+  Doxygen code parser which is not perfect.
 
   \sa section \ref cmdshowrefby "\\showrefby",
       section \ref cmdhiderefby "\\hiderefby",
@@ -429,12 +440,12 @@ Structural indicators
 
   \addindex \\hiderefs
   When this command is put in a comment block of a function or method
-  and then doxygen will not generate an overview for that function or method of
+  and then Doxygen will not generate an overview for that function or method of
   the functions and methods that call it.
   The overview will not be generated regardless of the value of
   \ref cfg_references_relation "REFERENCES_RELATION".
   \note The completeness (and correctness) of the overview depends on the
-  doxygen code parser which is not perfect.
+  Doxygen code parser which is not perfect.
 
   \sa section \ref cmdshowrefs "\\showrefs",
       section \ref cmdshowrefby "\\showrefby",
@@ -447,7 +458,7 @@ Structural indicators
   \addindex \\showinlinesource
   When this command is put in a comment block of a function, multi-line macro,
   enum or a list initialized variable
-  then doxygen will generate the inline source for that member. The
+  then Doxygen will generate the inline source for that member. The
   inline source will be generated regardless of the value of
   \ref cfg_inline_sources "INLINE_SOURCES".
 
@@ -460,7 +471,7 @@ Structural indicators
   \addindex \\hideinlinesource
   When this command is put in a comment block of a function, multi-line macro,
   enum or a list initialized variable
-  then doxygen will not generate the inline source for that member. The
+  then Doxygen will not generate the inline source for that member. The
   inline source will not be generated regardless of the value of
   \ref cfg_inline_sources "INLINE_SOURCES".
 
@@ -472,7 +483,7 @@ Structural indicators
 
   \addindex \\includegraph
   When this command is put in a comment block of a file
-  then doxygen will generate an include graph for that file. The
+  then Doxygen will generate an include graph for that file. The
   include graph will be generated regardless of the value of
   \ref cfg_include_graph "INCLUDE_GRAPH".
 
@@ -486,7 +497,7 @@ Structural indicators
 
   \addindex \\hideincludegraph
   When this command is put in a comment block of a file
-  then doxygen will not generate an include graph for that file. The
+  then Doxygen will not generate an include graph for that file. The
   include graph will not be generated regardless of the value of
   \ref cfg_include_graph "INCLUDE_GRAPH".
 
@@ -500,7 +511,7 @@ Structural indicators
 
   \addindex \\includedbygraph
   When this command is put in a comment block of an include file
-  then doxygen will generate an included by graph for that include file. The
+  then Doxygen will generate an included by graph for that include file. The
   included by graph will be generated regardless of the value of
   \ref cfg_included_by_graph "INCLUDED_BY_GRAPH".
 
@@ -514,7 +525,7 @@ Structural indicators
 
   \addindex \\hideincludedbygraph
   When this command is put in a comment block of an include file
-  then doxygen will not generate an included by graph for that include file. The
+  then Doxygen will not generate an included by graph for that include file. The
   included by graph will not be generated regardless of the value of
   \ref cfg_included_by_graph "INCLUDED_BY_GRAPH".
 
@@ -529,7 +540,7 @@ Structural indicators
   \addindex \\directorygraph
   When this command is put in a comment block of a directory
   (see section \ref cmddir "\\dir")
-  then doxygen will generate a directory graph for that directory. The
+  then Doxygen will generate a directory graph for that directory. The
   directory graph will be generated regardless of the value of
   \ref cfg_directory_graph "DIRECTORY_GRAPH".
 
@@ -542,7 +553,7 @@ Structural indicators
   \addindex \\hidedirectorygraph
   When this command is put in a comment block of a directory
   (see section \ref cmddir "\\dir")
-  then doxygen will not generate a directory graph for that directory. The
+  then Doxygen will not generate a directory graph for that directory. The
   directory graph will not be generated regardless of the value of
   \ref cfg_directory_graph "DIRECTORY_GRAPH".
 
@@ -554,7 +565,7 @@ Structural indicators
 
   \addindex \\collaborationgraph
   When this command is put in a comment block of a class
-  then doxygen will generate a collaboration graph for that class. The
+  then Doxygen will generate a collaboration graph for that class. The
   collaboration graph will be generated regardless of the value of
   \ref cfg_collaboration_graph "COLLABORATION_GRAPH".
 
@@ -566,7 +577,7 @@ Structural indicators
 
   \addindex \\hidecollaborationgraph
   When this command is put in a comment block of a class
-  then doxygen will not generate a collaboration graph for that class. The
+  then Doxygen will not generate a collaboration graph for that class. The
   collaboration graph will not be generated regardless of the value of
   \ref cfg_collaboration_graph "COLLABORATION_GRAPH".
 
@@ -578,7 +589,7 @@ Structural indicators
 
   \addindex \\inheritancegraph
   When this command is put in a comment block of a class
-  then doxygen will generate an inheritance graph for that class conforming the `option`.
+  then Doxygen will generate an inheritance graph for that class conforming the `option`.
   The inheritance graph will be generated, conforming the `option`, regardless of the value of
   \ref cfg_class_graph "CLASS_GRAPH".
   The possible values of `option` are the same values as can be used with \ref cfg_class_graph "CLASS_GRAPH".
@@ -592,7 +603,7 @@ Structural indicators
 
   \addindex \\hideinheritancegraph
   When this command is put in a comment block of a class
-  then doxygen will not generate an inheritance graph for that class. The
+  then Doxygen will not generate an inheritance graph for that class. The
   inheritance graph will not be generated regardless of the value of
   \ref cfg_class_graph "CLASS_GRAPH".
 
@@ -605,7 +616,7 @@ Structural indicators
   \addindex \\groupgraph
   When this command is put in a comment block of a
   \ref cmddefgroup "\\defgroup" command
-  then doxygen will generate a group dependency graph for that group. The
+  then Doxygen will generate a group dependency graph for that group. The
   group graph will be generated regardless of the value of
   \ref cfg_group_graphs "GROUP_GRAPHS".
 
@@ -618,12 +629,34 @@ Structural indicators
   \addindex \\hidegroupgraph
   When this command is put in a comment block of a
   \ref cmddefgroup "\\defgroup" command
-  then doxygen will not generate a group dependency graph for that group. The
+  then Doxygen will not generate a group dependency graph for that group. The
   group graph will not be generated regardless of the value of
   \ref cfg_group_graphs "GROUP_GRAPHS".
 
   \sa section \ref cmdgroupgraph "\\groupgraph",
       option \ref cfg_group_graphs "GROUP_GRAPHS"
+
+<hr>
+\section cmdshowenumvalues \\showenumvalues
+
+  \addindex \\showenumvalues
+  When this command is put in a comment block of an enum
+  then doxygen will show the specified enum values for that enum,
+  regardless of the value of \ref cfg_show_enum_values "SHOW_ENUM_VALUES".
+
+  \sa section \ref cmdhideenumvalues "\\hideenumvalues",
+      option \ref cfg_show_enum_values "SHOW_ENUM_VALUES"
+
+<hr>
+\section cmdhideenumvalues \\hideenumvalues
+
+  \addindex \\hideenumvalues
+  When this command is put in a comment block of an enum
+  then doxygen will not show the specified enum values for that enum,
+  regardless of the value of \ref cfg_show_enum_values "SHOW_ENUM_VALUES".
+
+  \sa section \ref cmdshowenumvalues "\\showenumvalues",
+      option \ref cfg_show_enum_values "SHOW_ENUM_VALUES"
 
 <hr>
 \section cmdqualifier \\qualifier \<label\> | "(text)"
@@ -669,11 +702,11 @@ Structural indicators
   \include class.h
   \htmlonly
   Click <a href="examples/class/html/class_test.html">here</a>
-  for the corresponding HTML documentation that is generated by doxygen.
+  for the corresponding HTML documentation that is generated by Doxygen.
   \endhtmlonly
   \latexonly
   See \hyperlink{class_example}{Class example}
-  for the corresponding \mbox{\LaTeX} documentation that is generated by doxygen.
+  for the corresponding \mbox{\LaTeX} documentation that is generated by Doxygen.
   \endlatexonly
 
 <hr>
@@ -696,11 +729,11 @@ Structural indicators
   \include define.h
   \htmlonly
   Click <a href="examples/define/html/define_8h.html">here</a>
-  for the corresponding HTML documentation that is generated by doxygen.
+  for the corresponding HTML documentation that is generated by Doxygen.
   \endhtmlonly
   \latexonly
   See \hyperlink{define_8h}{Define example}
-  for the corresponding \mbox{\LaTeX} documentation that is generated by doxygen.
+  for the corresponding \mbox{\LaTeX} documentation that is generated by Doxygen.
   \endlatexonly
 
 <hr>
@@ -748,11 +781,11 @@ Structural indicators
   \include enum.h
   \htmlonly
   Click <a href="examples/enum/html/class_enum___test.html">here</a>
-  for the corresponding HTML documentation that is generated by doxygen.
+  for the corresponding HTML documentation that is generated by Doxygen.
   \endhtmlonly
   \latexonly
   See \hyperlink{class_enum___test}{Enum example}
-  for the corresponding \mbox{\LaTeX} documentation that is generated by doxygen.
+  for the corresponding \mbox{\LaTeX} documentation that is generated by Doxygen.
   \endlatexonly
 
 <hr>
@@ -768,7 +801,7 @@ Structural indicators
   If any are found, the names are cross-referenced with the documentation.
   Source files or directories can be specified using the
   \ref cfg_example_path "EXAMPLE_PATH"
-  tag of doxygen's configuration file.
+  tag of Doxygen's configuration file.
 
   If \<file-name\> itself is not unique for the set of example files specified
   by the
@@ -784,11 +817,11 @@ Structural indicators
   \include example_test.cpp
   \htmlonly
   Click <a href="examples/example/html/examples.html">here</a>
-  for the corresponding HTML documentation that is generated by doxygen.
+  for the corresponding HTML documentation that is generated by Doxygen.
   \endhtmlonly
   \latexonly
   See \hyperlink{example_test_8cpp-example}{Example example}
-  for the corresponding \mbox{\LaTeX} documentation that is generated by doxygen.
+  for the corresponding \mbox{\LaTeX} documentation that is generated by Doxygen.
   \endlatexonly
 
   \sa section \ref cmdinclude "\\include".
@@ -815,11 +848,11 @@ Structural indicators
 
   \htmlonly
   Click <a href="examples/manual/html/struct_car.html">here</a>
-  for the corresponding HTML documentation that is generated by doxygen.
+  for the corresponding HTML documentation that is generated by Doxygen.
   \endhtmlonly
   \latexonly
   See \hyperlink{extends_example}{Extends example}
-  for the corresponding \mbox{\LaTeX} documentation that is generated by doxygen.
+  for the corresponding \mbox{\LaTeX} documentation that is generated by Doxygen.
   \endlatexonly
 
   \sa section \ref cmdimplements "\\implements" and section
@@ -835,7 +868,7 @@ Structural indicators
   (i.e. the line after \c \\file is left blank) then the documentation block that
   contains the \c \\file command will belong to the file it is located in.
 
-  \par Important:
+  \important
   The documentation of global functions, variables, typedefs, and enums will
   only be included in the output if the file they are in is documented as well
   or if \ref cfg_extract_all "EXTRACT_ALL" is set to \c YES.
@@ -844,11 +877,11 @@ Structural indicators
   \include file.h
   \htmlonly
   Click <a href="examples/file/html/file_8h.html">here</a>
-  for the corresponding HTML documentation that is generated by doxygen.
+  for the corresponding HTML documentation that is generated by Doxygen.
   \endhtmlonly
   \latexonly
   See \hyperlink{file_example}{File example}
-  for the corresponding \mbox{\LaTeX} documentation that is generated by doxygen.
+  for the corresponding \mbox{\LaTeX} documentation that is generated by Doxygen.
   \endlatexonly
 
   \note In the above example \ref cfg_javadoc_autobrief "JAVADOC_AUTOBRIEF"
@@ -910,11 +943,11 @@ Structural indicators
   \include func.h
   \htmlonly
   Click <a href="examples/func/html/class_fn___test.html">here</a>
-  for the corresponding HTML documentation that is generated by doxygen.
+  for the corresponding HTML documentation that is generated by Doxygen.
   \endhtmlonly
   \latexonly
   See \hyperlink{class_fn___test}{Fn example}
-  for the corresponding \mbox{\LaTeX} documentation that is generated by doxygen.
+  for the corresponding \mbox{\LaTeX} documentation that is generated by Doxygen.
   \endlatexonly
 
   \sa sections \ref cmdvar "\\var", \ref cmdproperty "\\property", and
@@ -996,11 +1029,11 @@ Structural indicators
 
   \htmlonly
   Click <a href="examples/manual/html/struct_car.html">here</a>
-  for the corresponding HTML documentation that is generated by doxygen.
+  for the corresponding HTML documentation that is generated by Doxygen.
   \endhtmlonly
   \latexonly
   See \hyperlink{extends_example}{Implements example}
-  for the corresponding \mbox{\LaTeX} documentation that is generated by doxygen.
+  for the corresponding \mbox{\LaTeX} documentation that is generated by Doxygen.
   \endlatexonly
 
   \sa section \ref cmdextends "\\extends" and section
@@ -1061,7 +1094,7 @@ Structural indicators
   the first chapter (in \LaTeX).
 
   The title argument is optional and replaces the default title that
-  doxygen normally generates. If you do not want any title you can
+  Doxygen normally generates. If you do not want any title you can
   specify \c notitle as the argument of \c \\mainpage.
 
   Here is an example:
@@ -1105,11 +1138,11 @@ Structural indicators
   \include manual.c
   \htmlonly
   Click <a href="examples/manual/html/struct_car.html">here</a>
-  for the corresponding HTML documentation that is generated by doxygen.
+  for the corresponding HTML documentation that is generated by Doxygen.
   \endhtmlonly
   \latexonly
   See \hyperlink{struct_car}{Car struct reference example}
-  for the corresponding \mbox{\LaTeX} documentation that is generated by doxygen.
+  for the corresponding \mbox{\LaTeX} documentation that is generated by Doxygen.
   \endlatexonly
 
   \sa sections \ref cmdextends "\\extends", \ref cmdimplements "\\implements",
@@ -1147,7 +1180,7 @@ Structural indicators
   \addindex \\nosubgrouping
   This command can be put in the documentation
   of a class. It can be used in combination with member grouping
-  to avoid that doxygen puts a member group as a subgroup of a
+  to avoid that Doxygen puts a member group as a subgroup of a
   Public/Protected/Private/... section.
 
   \sa sections \ref cmdpublicsection "\\publicsection",
@@ -1186,11 +1219,11 @@ Structural indicators
   \include overload.cpp
   \htmlonly
   Click <a href="examples/overload/html/class_overload___test.html">here</a>
-  for the corresponding HTML documentation that is generated by doxygen.
+  for the corresponding HTML documentation that is generated by Doxygen.
   \endhtmlonly
   \latexonly
   See \hyperlink{class_overload___test}{Overload example}
-  for the corresponding \mbox{\LaTeX} documentation that is generated by doxygen.
+  for the corresponding \mbox{\LaTeX} documentation that is generated by Doxygen.
   \endlatexonly
 
 <hr>
@@ -1214,11 +1247,11 @@ Structural indicators
   \include page.doc
   \htmlonly
   Click <a href="examples/page/html/page1.html">here</a>
-  for the corresponding HTML documentation that is generated by doxygen.
+  for the corresponding HTML documentation that is generated by Doxygen.
   \endhtmlonly
   \latexonly
   See \hyperlink{page_example}{Page example}
-  for the corresponding \mbox{\LaTeX} documentation that is generated by doxygen.
+  for the corresponding \mbox{\LaTeX} documentation that is generated by Doxygen.
   \endlatexonly
 
   \par Note:
@@ -1241,7 +1274,7 @@ Structural indicators
   Indicates that the member documented by the comment block is private,
   i.e., should only be accessed by other members in the same class.
 
-  Note that doxygen automatically detects the protection level of members
+  Note that Doxygen automatically detects the protection level of members
   in object-oriented languages. This command is intended for use only when
   the language does not support the concept of protection level natively
   (e.g. C, PHP 4).
@@ -1284,7 +1317,7 @@ Structural indicators
   i.e., should only be accessed by other members in the same or derived
   classes.
 
-  Note that doxygen automatically detects the protection level of members
+  Note that Doxygen automatically detects the protection level of members
   in object-oriented languages. This command is intended for use only when
   the language does not support the concept of protection level natively
   (e.g. C, PHP 4).
@@ -1325,7 +1358,7 @@ Structural indicators
   Indicates that the member documented by the comment block is public,
   i.e., can be accessed by any other class or function.
 
-  Note that doxygen automatically detects the protection level of members
+  Note that Doxygen automatically detects the protection level of members
   in object-oriented languages. This command is intended for use only when
   the language does not support the concept of protection level natively
   (e.g. C, PHP 4).
@@ -1374,11 +1407,11 @@ Structural indicators
   \include relates.cpp
   \htmlonly
   Click <a href="examples/relates/html/class_string.html">here</a>
-  for the corresponding HTML documentation that is generated by doxygen.
+  for the corresponding HTML documentation that is generated by Doxygen.
   \endhtmlonly
   \latexonly
   See \hyperlink{class_string}{Relates example}
-  for the corresponding \mbox{\LaTeX} documentation that is generated by doxygen.
+  for the corresponding \mbox{\LaTeX} documentation that is generated by Doxygen.
   \endlatexonly
 
 <hr>
@@ -1403,6 +1436,26 @@ Structural indicators
 
   \addindex \\relatedalso
   Equivalent to \ref cmdrelatesalso "\\relatesalso"
+
+<hr>
+\section cmdrequirement \\requirement \<id\> [(title)]
+
+  \addindex \\requirement
+  Indicates that a comment block contains documentation for a requirement.
+  In the output, all requirements are collected on a single page.
+
+  A requirement can be referred to by its \<id\> using the normal linking commands like \ref cmdref "\\ref".
+  There are two special commands to refer to a requirement.
+  - \ref cmdsatisfies "\\satisfies" can be placed in the comment for a function or class (or any other symbol) that contributes to the
+    \e implementation of the requirement.
+  - \ref cmdverifies "\\verifies" can be placed at the function or class that \e tests the requirement.
+
+  Together the \ref cmdsatisfies "\\satisfies" and \ref cmdverifies "\\verifies" commands help to provide traceability information
+  to show where in the code a requirement has been implemented and/or tested.
+
+  Requirements can be imported via tag files as well.
+
+  \sa sections \ref cmdsatisfies "\\satisfies" and \ref cmdverifies "\\verifies"
 
 <hr>
 \section cmdshowinitializer \\showinitializer
@@ -1537,11 +1590,11 @@ Section indicators
   \include author.cpp
   \htmlonly
   Click <a href="examples/author/html/class_some_nice_class.html">here</a>
-  for the corresponding HTML documentation that is generated by doxygen.
+  for the corresponding HTML documentation that is generated by Doxygen.
   \endhtmlonly
   \latexonly
   See \hyperlink{class_some_nice_class}{Author example}
-  for the corresponding \mbox{\LaTeX} documentation that is generated by doxygen.
+  for the corresponding \mbox{\LaTeX} documentation that is generated by Doxygen.
   \endlatexonly
 
 <hr>
@@ -1597,7 +1650,7 @@ Section indicators
   \ref cmdendcond "\\endcond" command, which is typically found in
   another comment block. The main purpose of this pair of
   commands is to (conditionally) exclude part of a file from processing
-  (in older version of doxygen this could only be achieved using C preprocessor commands).
+  (in older version of Doxygen this could only be achieved using C preprocessor commands).
 
   The section between \c \\cond and \ref cmdendcond "\\endcond" can be included by
   adding its section label to the \ref cfg_enabled_sections "ENABLED_SECTIONS"
@@ -1693,7 +1746,7 @@ contains \c TEST, or \c DEV
   for an example.
 
 <hr>
-\section cmdshowdate \\showdate "<format>" [ \<date_time\> ]
+\section cmdshowdate \\showdate \"\<format\>\" [ \<date_time\> ]
 
   \addindex \\showdate
   Shows the date and time based on the given \<format\> and \<date_time\>. Where the \<format\> is a string in which the following tokens have a special meaning:
@@ -1985,6 +2038,18 @@ ALIASES  = "english=\if english" \
                \ref cfg_enabled_sections "ENABLED_SECTIONS".
 
 <hr>
+\section cmdimportant \\important { important text }
+
+  \addindex \\important
+  Starts a paragraph where a message that needs important may be entered.
+  The paragraph will be indented.
+  The text of the paragraph has no special internal structure. All visual
+  enhancement commands may be used inside the paragraph.
+  Multiple adjacent \c \\important commands will be joined into a single paragraph.
+  The \c \\important command ends when a blank line or some other
+  sectioning command is encountered.
+
+<hr>
 \section cmdinvariant \\invariant { description of invariant }
 
   \addindex \\invariant
@@ -2033,15 +2098,15 @@ ALIASES  = "english=\if english" \
   \include par.cpp
   \htmlonly
   Click <a href="examples/par/html/class_par___test.html">here</a>
-  for the corresponding HTML documentation that is generated by doxygen.
+  for the corresponding HTML documentation that is generated by Doxygen.
   \endhtmlonly
   \latexonly
   See \hyperlink{class_par___test}{Par example}
-  for the corresponding \mbox{\LaTeX} documentation that is generated by doxygen.
+  for the corresponding \mbox{\LaTeX} documentation that is generated by Doxygen.
   \endlatexonly
 
 <hr>
-\section cmdparam \\param '['dir']' <parameter-name> { parameter description }
+\section cmdparam \\param[\<dir\>] <parameter-name> { parameter description }
 
   \addindex \\param
   Starts a parameter description for a function parameter with name
@@ -2050,18 +2115,22 @@ ALIASES  = "english=\if english" \
   the documentation of this (or any other) parameter is missing or not
   present in the function declaration or definition.
 
-  The \c \\param command has an optional attribute, `dir`, specifying the direction
-  of the parameter. Possible values are "[in]", "[in,out]", and "[out]",
-  note the [square] brackets in this description.
+  The \c \\param command has an optional attribute, \<dir\>, specifying the direction
+  of the parameter. Possible values are "[in]", "[out]", and "[in,out]"; note the [square] brackets
+  in this description.
+  For the bidirectional values, directions "in" and "out" can be specified in any order, and they can
+  either be written together (without separator), or separated with a comma (`,`) or a space.
+  That means that for example values "[outin]" or "[in out]" are also valid.
+  Note that it is also possible to put whitespace between the command and the \<dir\>.
   When a parameter is both input and output, [in,out] is used as attribute.
   Here is an example for the function \c memcpy:
-  \code
+  \code	
 /*!
  * Copies bytes from a source memory area to a destination memory area,
  * where both areas may not overlap.
- * @param[out] dest The memory area to copy to.
- * @param[in]  src  The memory area to copy from.
- * @param[in]  n    The number of bytes to copy
+ * \param[out] dest The memory area to copy to.
+ * \param[in]  src  The memory area to copy from.
+ * \param[in]  n    The number of bytes to copy
  */
 void memcpy(void *dest, const void *src, size_t n);
   \endcode
@@ -2075,14 +2144,54 @@ void memcpy(void *dest, const void *src, size_t n);
   sectioning command is encountered. See section \ref cmdfn "\\fn" for an
   example.
 
+  The parameter name is normally the name given in the function signature. 
+  For unnamed parameters, a positional index can also be used 
+  (starting with 1 for the first parameter).
+  \code
+/** Base */
+class Base
+{
+  public:
+    /** Method
+     *  \param 1 First parameter docs
+     *  \param 2 Second parameter docs
+     */
+    virtual void method(int, int) = 0;
+};
+
+/** Derived */
+class Derived : public Base
+{
+  public:
+    void method(int x, int y) override;
+};
+  \endcode
+
+  Alternatively, a minus sign (-) can be used as placeholder
+  for the name of an unnamed parameter.
+  \code
+/** Function docs.
+ *  \param - First parameter
+ *  \param - Second parameter
+ */
+void foo(int, int)
+{
+}
+  \endcode
+
+  Both ordinal position (numeric) and dash (-) parameter names are 
+  rendered as a dash in the output, unless a later definition or 
+  overriding method provides the actual parameter names, 
+  as is the case in the \c Derived class in the example above.
+
   Note that you can also document multiple parameters with a single
-  \c \\param command using a comma separated list. Here is an example:
+  \c \\param command using a comma-separated list. Here is an example:
 
 \code
 /** Sets the position.
- *  @param x,y,z Coordinates of the position in 3D space.
+ *  \param x,y,z Coordinates of the position in 3D space.
  */
-void setPosition(double x,double y,double z,double t)
+void setPosition(double x, double y, double z)
 {
 }
 \endcode
@@ -2092,7 +2201,7 @@ void setPosition(double x,double y,double z,double t)
   (as this is not part of the definition).
   The syntax is the same as for the `phpDocumentor`, i.e.
 \verbatim
-@param  datatype1|datatype2 $paramname description
+\param  datatype1|datatype2 $paramname description
 \endverbatim
 
 <hr>
@@ -2431,16 +2540,28 @@ Commands to create links
   \sa section \ref cmdref "\\ref".
 
 <hr>
-\section cmdcite \\cite \<label\>
+\section cmdcite \\cite['{'[option]'}'] \<label\>
 
   \addindex \\cite
   Adds a bibliographic reference in the text and in the list of bibliographic
   references. The \<label\> must be a valid BibTeX label that can be found
-  in one of the .bib files listed in \ref cfg_cite_bib_files "CITE_BIB_FILES".
+  in one of the `.bib` files listed in \ref cfg_cite_bib_files "CITE_BIB_FILES".
   For the \LaTeX output the formatting of the reference in the text can be
   configured with \ref cfg_latex_bib_style "LATEX_BIB_STYLE". For other
   output formats a fixed representation is used. Note that using this
   command requires the \c bibtex tool to be present in the search path.
+
+  There are a number of options possible:
+  - `number`, `shortauthor`, `year`, these options are mutually exclusive,
+    in case none of these is specified `number` is assumed.
+    - `number` create a numerical reference
+    - `shortauthor` just the surname of the first author is given, and in case
+      multiple authors are present the text "et al." is added
+    - `year`, the year of publication is mentioned (when specified in the bibtex
+      file).
+  - `nopar`, no (square) brackets are added
+  - `nocite`, no link to a citation in the bibliography is made (and the
+    reference is not added to the bibliography based on this item)
 
 <hr>
 \section cmdendlink \\endlink
@@ -2454,7 +2575,7 @@ Commands to create links
 \section cmdlink \\link <link-object>
 
   \addindex \\link
-  The links that are automatically generated by doxygen always have the
+  The links that are automatically generated by Doxygen always have the
   name of the object they point to as link-text.
 
   The \c \\link command can be used to create a link to an object (a file,
@@ -2497,6 +2618,32 @@ Commands to create links
   and ends with \ref cmdendsecreflist "\\endsecreflist".
   An example of such a list can be seen
   \ref showsecreflist "at the top of the page".
+
+<hr>
+\section cmdsatisfies \\satisfies <req-id> [(short description)]
+  \addindex \\satisfies
+  Creates a reference to a requirement with an optional short description for the link text.
+  The function, class, or other symbol that contain such reference is considered to
+  contribute to the implementation of the requirement. A comment can contain multiple
+  satisfies references pointing to different requirements.
+  There can also be multiple contributors to the implementation
+  of a single requirement, in which case the satisfies command should be mentioned in the
+  documentation of each contributing party.
+
+  \sa sections \ref cmdverifies "\\verifies" and \ref cmdrequirement "\\requirement"
+
+<hr>
+\section cmdverifies \\verifies <req-id> [(short description)]
+  \addindex \\verifies
+  Creates a reference to a requirement with an optional short description for the link text.
+  The function, class, or other symbol
+  that contain such reference is considered to contribute to testing/verifying
+  the requirement. A comment can contain multiple verifies references pointing to
+  different requirements. There can also be multiple contributors to test/verify
+  a single requirement, in which case the verifies command should be mentioned in the
+  documentation of each contributing party.
+
+  \sa sections \ref cmdsatisfies "\\satisfies" and \ref cmdrequirement "\\requirement"
 
 <hr>
 \section cmdsecreflist \\secreflist
@@ -2568,9 +2715,9 @@ Make sure you have first read \ref intro "the introduction".
   Creates a table of contents at the top of a page, listing all
   sections and subsections in the page. The `option` can be `HTML` or `LaTeX`
   or `XML` or `DocBook`. When a `level` is specified this means the maximum nesting level
-  that is shown. The value of `level` should be in the range 1..5, values outside
-  this range are considered to be 5. In case no `level` is specified `level` is
-  set to 5 (show all)
+  that is shown. The value of `level` should be in the range 1..6, values outside
+  this range are considered to be 6. In case no `level` is specified `level` is
+  set to 6 (show all)
   In case no `option`. is specified \c \\tableofcontents acts as if just the
   `option` `HTML` and `XML` was specified. In case of multiple \c \\tableofcontents
   commands in a page the `option`(s) will be used additional to the already
@@ -2641,6 +2788,30 @@ Make sure you have first read \ref intro "the introduction".
            \e not in other documentation blocks!
 
 <hr>
+\section cmdsubparagraph \\subparagraph <subparagraph-name> (subparagraph title)
+
+  \addindex \\subparagraph
+  Creates a named subparagraph with name \<subparagraph-name\>. The title of the
+  subparagraph should be specified as the second argument of the
+  \c \\subparagraph command.
+
+  \warning This command only works inside a paragraph of a
+           related page documentation block and
+           \e not in other documentation blocks!
+
+<hr>
+\section cmdsubsubparagraph \\subsubparagraph <subsubparagraph-name> (subsubparagraph title)
+
+  \addindex \\subsubparagraph
+  Creates a named subsubparagraph with name \<subsubparagraph-name\>. The title of the
+  subsubparagraph should be specified as the second argument of the
+  \c \\subsubparagraph command.
+
+  \warning This command only works inside a subparagraph of a
+           related page documentation block and
+           \e not in other documentation blocks!
+
+<hr>
 
 \htmlonly</p><center><p>\endhtmlonly
 <h2>
@@ -2660,9 +2831,14 @@ Commands for displaying examples
   add documentation between the pieces.
   Source files or directories can be specified using the
   \ref cfg_example_path "EXAMPLE_PATH"
-  tag of doxygen's configuration file.
+  tag of Doxygen's configuration file.
 
-  You can add option `lineno` to enable line numbers for the included code if desired.
+  You can add the option `lineno` to enable line numbers for the included code if desired.
+
+  You can add the option `strip` that will always hide any special comments
+  from the included code, overruling the
+  \ref cfg_strip_code_comments "STRIP_CODE_COMMENTS" setting, or add the option
+  `nostrip` to always show the special comments.
 
   The class and member declarations and definitions inside the code fragment
   are 'remembered' during the parsing of the comment block that contained
@@ -2680,11 +2856,11 @@ Commands for displaying examples
   \include include_test.cpp
   \htmlonly
   Click <a href="examples/include/html/pag_example.html">here</a>
-  for the corresponding HTML documentation that is generated by doxygen.
+  for the corresponding HTML documentation that is generated by Doxygen.
   \endhtmlonly
   \latexonly
   See \hyperlink{include_example}{Include example}
-  for the corresponding \mbox{\LaTeX} documentation that is generated by doxygen.
+  for the corresponding \mbox{\LaTeX} documentation that is generated by Doxygen.
   \endlatexonly
 
   \sa sections \ref cmdline "\\line", \ref cmdskip "\\skip",
@@ -2699,7 +2875,7 @@ Commands for displaying examples
   The command takes the name of an include file as an argument.
   Source files or directories can be specified using the
   \ref cfg_example_path "EXAMPLE_PATH"
-  tag of doxygen's configuration file.
+  tag of Doxygen's configuration file.
 
   If \<file-name\> itself is not unique for the set of example files specified
   by the \ref cfg_example_path "EXAMPLE_PATH" tag, you can include part
@@ -2729,12 +2905,27 @@ Commands for displaying examples
   The `option` can either be `lineno`, or `doc`, and additionally `local` can be specified.
   - The `option` `lineno` can be used to enable line numbers for the included code if desired.
   - The `option` `doc` can be used to treat the file as documentation rather than code.
-  - The `option` `local` can be used make doxygen interpret the code as if it was in the
+  - The `option` `local` can be used make Doxygen interpret the code as if it was in the
                class or namespace in which the include command appears, rather than the global namespace.
+  - The `option` `strip` can be used to always hide any special comments
+    from the included code, overruling the
+    \ref cfg_strip_code_comments "STRIP_CODE_COMMENTS" setting, and option
+    `nostrip` can be used to always show the special comments.
+  These options have no effect in combination with the `option` `doc`.
 
-  \note When using the `{doc}` option,
-       some commands like \ref cmdcond "\\cond" and \ref cmdif "\\if" don't work with
-       this command due to the moment of parsing.
+  When using option `doc`, there is also the option `raise` that can be specified to raise
+  all sections found in the referenced file by a certain amount. For example
+  \verbatim
+  \include{doc,raise=1} file.dox
+  \endverbatim will treat any level 1 \c \\section found in `file.dox` as a level 2 \c \\subsection, and any level 2 \c \\subsection
+  into a level 3 \c \\subsubsection, etc.
+  Similarly, for Markdown a \c \# section will be treated as a \c \#\# section.
+
+  Furthermore, there is the option `prefix` that can be used to add a prefix
+  to each label of the included sections, so that they remain unique. For example:
+  \verbatim
+  \include{doc,prefix=fn_} file.dox
+  \endverbatim will treat e.g. `\section s1` found in `file.dox` as if it was specified as `\section fn_s1`.
 
   \note The included documentation should not have comment signs in it as they will appear
        in the documentation as well.
@@ -2753,11 +2944,13 @@ Commands for displaying examples
   \sa sections \ref cmdinclude "\\include{lineno}".
 
 <hr>
-\section cmdincludedoc \\includedoc <file-name>
+\section cmdincludedoc \\includedoc['{'option'}'] <file-name>
 
   \addindex \\includedoc
   This command is obsolete and is still supported for backward compatibility reasons,
   it works the same way as \ref cmdinclude "\\include{doc}"
+
+  The `option`s are the same `option`s that can be used with the `\include` when using there the option `doc`.
 
   \sa section \ref cmdinclude "\\include{doc}".
 
@@ -2865,12 +3058,28 @@ Commands for displaying examples
  - The `option` `trimleft` can be used to remove the common spacing in front of all lines
    (also taking in account the setting of the \ref cfg_tab_size "TAB_SIZE" tag).
  - The `option` `doc` can be used to treat the file as documentation rather than code.
- - The `option` `local` can be used make doxygen interpret the code as if it was in the
+ - The `option` `local` can be used make Doxygen interpret the code as if it was in the
                class or namespace in which the include command appears, rather than the global namespace.
+ - The `option` `strip` can be used to always hide any special comments
+   from the included code, overruling the
+   \ref cfg_strip_code_comments "STRIP_CODE_COMMENTS" setting, and option
+   `nostrip` can be used to always show the special comments.
+  These options have no effect in combination with the `option` `doc`.
 
- \note When using the `{doc}` option,
-       some commands like \ref cmdcond "\\cond" and \ref cmdif "\\if" don't work with
-       this command due to the moment of parsing.
+ When using option `doc`, there is also the option `raise` that can be specified to raise
+ all sections found in the referenced file by a certain amount. For example
+ \verbatim
+ \snippet{doc,raise=1} file.dox XXX
+ \endverbatim will
+ treat any level 1 \c \\section found the snippet as a level 2 \c \\subsection, and any level 2 \c \\subsection
+ into a level 3 \c \\subsubsection, etc.
+ Similarly, for Markdown a \c \# section will be treated as a \c \#\# section.
+
+ Furthermore, there is the option `prefix` that can be used to add a prefix
+ to each label of the included sections, so that they remain unique. For example:
+ \verbatim
+ \include{doc,prefix=fn_} file.dox
+ \endverbatim will treat e.g. `\section s1` found in `file.dox` as if it was specified as `\section fn_s1`.
 
  \note The included documentation should not have comment signs in it as they will appear
        in the documentation as well.
@@ -2888,11 +3097,13 @@ Commands for displaying examples
   \sa sections \ref cmdsnippet "\\snippet{lineno}"
 
 <hr>
-\section cmdsnippetdoc \\snippetdoc <file-name> ( block_id )
+\section cmdsnippetdoc \\snippetdoc['{'option'}'] <file-name> ( block_id )
 
   \addindex \\snippetdoc
   This command is obsolete and is still supported for backward compatibility reasons,
   it works the same way as \ref cmdsnippet "\\snippet{doc}"
+
+  The `option`s are the same `option`s that can be used with the `\snippet` when using there the option `doc`.
 
   \sa section \ref cmdsnippet "\\snippet{doc}" and \ref cmdinclude "\\include{doc}".
 
@@ -2921,11 +3132,11 @@ Commands for displaying examples
   placing \ref cmdverbatim "\\verbatim" and \ref cmdendverbatim "\\endverbatim"
   commands around it.
 
-  Files or directories that doxygen should look for can be specified using the
-  \ref cfg_example_path "EXAMPLE_PATH" tag of doxygen's configuration file.
+  Files or directories that Doxygen should look for can be specified using the
+  \ref cfg_example_path "EXAMPLE_PATH" tag of Doxygen's configuration file.
 
 <hr>
-\section cmdhtmlinclude \\htmlinclude ["[block]"] <file-name>
+\section cmdhtmlinclude \\htmlinclude['[block]'] <file-name>
 
   \addindex \\htmlinclude
   This command includes the contents of the file \<file-name\> as is in the HTML documentation
@@ -2938,11 +3149,11 @@ Commands for displaying examples
   is inserted as-is. When you
   want to insert a HTML fragment that has block scope like a table or list
   which should appear outside \<p\>..\</p\>, this can lead to invalid HTML.
-  You can use `\htmlinclude[block]` to make doxygen
+  You can use `\htmlinclude[block]` to make Doxygen
   end the current paragraph and restart after the file is included.
 
-  Files or directories that doxygen should look for can be specified using the
-  \ref cfg_example_path "EXAMPLE_PATH" tag of doxygen's configuration file.
+  Files or directories that Doxygen should look for can be specified using the
+  \ref cfg_example_path "EXAMPLE_PATH" tag of Doxygen's configuration file.
 
   \sa section \ref cmdhtmlonly "\\htmlonly",
   \ref cmdlatexinclude "\\latexinclude",
@@ -2962,8 +3173,8 @@ Commands for displaying examples
   placing \ref cmdlatexonly "\\latexonly" and \ref cmdendlatexonly "\\endlatexonly"
   commands around it.
 
-  Files or directories that doxygen should look for can be specified using the
-  \ref cfg_example_path "EXAMPLE_PATH" tag of doxygen's configuration file.
+  Files or directories that Doxygen should look for can be specified using the
+  \ref cfg_example_path "EXAMPLE_PATH" tag of Doxygen's configuration file.
 
   \sa section \ref cmdlatexonly "\\latexonly",
   \ref cmdhtmlinclude "\\htmlinclude",
@@ -2983,8 +3194,8 @@ Commands for displaying examples
   placing \ref cmdrtfonly "\\rtfonly" and \ref cmdendrtfonly "\\endrtfonly"
   commands around it.
 
-  Files or directories that doxygen should look for can be specified using the
-  \ref cfg_example_path "EXAMPLE_PATH" tag of doxygen's configuration file.
+  Files or directories that Doxygen should look for can be specified using the
+  \ref cfg_example_path "EXAMPLE_PATH" tag of Doxygen's configuration file.
 
   \sa section \ref cmdrtfonly "\\rtfonly",
   \ref cmdhtmlinclude "\\htmlinclude",
@@ -3004,8 +3215,8 @@ Commands for displaying examples
   placing \ref cmdmanonly "\\manonly" and \ref cmdendmanonly "\\endmanonly"
   commands around it.
 
-  Files or directories that doxygen should look for can be specified using the
-  \ref cfg_example_path "EXAMPLE_PATH" tag of doxygen's configuration file.
+  Files or directories that Doxygen should look for can be specified using the
+  \ref cfg_example_path "EXAMPLE_PATH" tag of Doxygen's configuration file.
 
   \sa section \ref cmdmanonly "\\manonly",
   \ref cmdhtmlinclude "\\htmlinclude",
@@ -3025,8 +3236,8 @@ Commands for displaying examples
   placing \ref cmddocbookonly "\\docbookonly" and \ref cmdenddocbookonly "\\enddocbookonly"
   commands around it.
 
-  Files or directories that doxygen should look for can be specified using the
-  \ref cfg_example_path "EXAMPLE_PATH" tag of doxygen's configuration file.
+  Files or directories that Doxygen should look for can be specified using the
+  \ref cfg_example_path "EXAMPLE_PATH" tag of Doxygen's configuration file.
 
   \sa section \ref cmddocbookonly "\\docbookonly",
   \ref cmdhtmlinclude "\\htmlinclude",
@@ -3045,8 +3256,8 @@ Commands for displaying examples
   placing \ref cmdxmlonly "\\xmlonly" and \ref cmdendxmlonly "\\endxmlonly"
   commands around it.
 
-  Files or directories that doxygen should look for can be specified using the
-  \ref cfg_example_path "EXAMPLE_PATH" tag of doxygen's configuration file.
+  Files or directories that Doxygen should look for can be specified using the
+  \ref cfg_example_path "EXAMPLE_PATH" tag of Doxygen's configuration file.
 
   \sa section \ref cmdxmlonly "\\xmlonly",
   \ref cmdhtmlinclude "\\htmlinclude",
@@ -3159,7 +3370,7 @@ Commands for visual enhancements
   If it is unclear from the context which language is meant (for instance the
   comment is in a <code>.txt</code> or <code>.markdown</code> file) then you can also explicitly
   indicate the language, by putting the file extension typically
-  that doxygen associated with the language in curly brackets after the
+  that Doxygen associated with the language in curly brackets after the
   code block. Here is an example:
 
 \verbatim
@@ -3173,9 +3384,9 @@ Commands for visual enhancements
   \endcode
 \endverbatim
 
-  If the contents of the code block are in a language that doxygen cannot parse, doxygen
-  will just show the output as-is. You can make this explicit using .unparsed, or by
-  giving some other extension that doxygen doesn't support, e.g.
+  If the contents of the code block are in a language that Doxygen cannot parse, Doxygen
+  will just show the output as-is. You can make this explicit using `.unparsed`, or by
+  giving some other extension that Doxygen doesn't support, e.g.
 
 \verbatim
   \code{.unparsed}
@@ -3288,11 +3499,11 @@ only copy the detailed documentation, not the brief description.
 
   The nodes of a graph can be made clickable by using the URL attribute.
   By using the command \ref cmdref "\\ref" inside the URL value you can conveniently
-  link to an item inside doxygen. Here is an example:
+  link to an item inside Doxygen. Here is an example:
 
   \note usage of this command requires that \ref cfg_have_dot "HAVE_DOT" is set to \c YES
 
-  \note doxygen creates a temporary file that is automatically removed unless
+  \note Doxygen creates a temporary file that is automatically removed unless
   the \ref cfg_dot_cleanup "DOT_CLEANUP" tag is set to `NO`.
 
 \code
@@ -3357,8 +3568,8 @@ See also the \ref emojisup "emoji support page" for details.
   sequence chart that is
   within the <code>msc {...}</code> block (this is different from
   \ref cmdmscfile "\\mscfile").
-  \note mscgen is now built in into doxygen
-  \note doxygen creates a temporary file that is automatically removed unless
+  \note mscgen is now built in into Doxygen
+  \note Doxygen creates a temporary file that is automatically removed unless
   the \ref cfg_dot_cleanup "DOT_CLEANUP" tag is set to `NO`.
 
 Here is an example of the use of the \c \\msc command.
@@ -3413,27 +3624,28 @@ class Receiver
   \ref cfg_plantuml_jar_path "PLANTUML_JAR_PATH". The other jar files should also reside
   in this directory.
   \note The use of the `<engine>` `ditaa` is not possible in \LaTeX as PlantUML only
-  supports the `png` format and doxygen requires, temporary, `eps` output.
+  supports the `png` format and Doxygen requires, temporary, `eps` output.
 
   Not all diagrams can be created with the PlantUML `@startuml` command but need another
   PlantUML `@start...` command. This will look like `@start<engine>` where currently supported are
   the following `<engine>`s: `uml`, `bpm`, `wire`, `dot`, `ditaa`, `salt`, `math`, `latex`,
-  `gantt`, `mindmap`, `wbs`, `yaml`, `creole`, `json`, `flow`, `board`, `git`, `hcl`, `regex`, `ebnf` and `files`.
+  `gantt`, `mindmap`, `wbs`, `yaml`, `creole`, `json`, `flow`, `board`, `git`, `hcl`, `regex`, `ebnf`,
+  `chart`, `nwdiag`, `packetdiag`, `project`, `sprites`, `files`, `chen` and `chronology`.
   By default the `<engine>` is `uml`. The `<engine>` can be specified as an option.
   Also the file to write the resulting image to can be specified by means of an option, see the
   description of the first (optional) argument for details.
   Of course only one `<engine>` can be specified and also the filename can only be specified once.
 
   The first argument is optional and is for compatibility with running PlantUML as a preprocessing
-  step before running doxygen, you can also add the name of the image file after `\startuml`
+  step before running Doxygen, you can also add the name of the image file after `\startuml`
   and inside curly brackets as option, i.e.
   \verbatim
   @startuml{myimage.png} "Image Caption" width=5cm
   Alice -> Bob : Hello
   @enduml
   \endverbatim
-  When the name of the image is specified, doxygen will generate an image with that name.
-  Without the name doxygen will choose a name automatically.
+  When the name of the image is specified, Doxygen will generate an image with that name.
+  Without the name Doxygen will choose a name automatically.
 
   The second argument is optional and can be used to specify the caption
   that is displayed below the image. This argument has to be specified
@@ -3446,14 +3658,14 @@ class Receiver
   \ref image_sizeindicator "Size indication" with the
   \ref cmdimage "\\image" command.
 
-  \note doxygen does not support the Plantuml commands like `@startjson`, by design, directly but
-  the support can be accomplished, by the user, by adding to the doxygen settings file:
+  \note Doxygen does not support the Plantuml commands like `@startjson`, by design, directly but
+  the support can be accomplished, by the user, by adding to the Doxygen settings file:
   \verbatim
   ALIASES += startjson=@startuml{json}
   ALIASES += endjson=@enduml
   \endverbatim
 
-  \note doxygen creates a temporary file that is automatically removed unless
+  \note Doxygen creates a temporary file that is automatically removed unless
   the \ref cfg_dot_cleanup "DOT_CLEANUP" tag is set to `NO`.
 
 Here is an example of the use of the \c \\startuml command.
@@ -3494,7 +3706,7 @@ class Receiver
   Inserts an image generated by dot from \<file\> into the documentation.
 
   The first argument specifies the file name of the image.
-  doxygen will look for files in the paths (or files) that you specified
+  Doxygen will look for files in the paths (or files) that you specified
   after the \ref cfg_dotfile_dirs "DOTFILE_DIRS" tag.
   If the dot file is found it will be used as an input file to the dot tool.
   The resulting image will be put into the correct output directory.
@@ -3523,7 +3735,7 @@ class Receiver
   See https://www.mcternan.me.uk/mscgen/ for examples.
 
   The first argument specifies the file name of the image.
-  doxygen will look for files in the paths (or files) that you specified
+  Doxygen will look for files in the paths (or files) that you specified
   after the \ref cfg_mscfile_dirs "MSCFILE_DIRS" tag.
   If the msc file is found it will be used as an input file to the built in mscgen tool.
   The resulting image will be put into the correct output directory.
@@ -3553,7 +3765,7 @@ class Receiver
   Inserts an image made in dia from \<file\> into the documentation.
 
   The first argument specifies the file name of the image.
-  doxygen will look for files in the paths (or files) that you specified
+  Doxygen will look for files in the paths (or files) that you specified
   after the \ref cfg_diafile_dirs "DIAFILE_DIRS" tag.
   If the dia file is found it will be used as an input file dia.
   The resulting image will be put into the correct output directory.
@@ -3574,7 +3786,7 @@ class Receiver
 \section cmddoxyconfig \\doxyconfig \<config_option\>
 
   \addindex \\doxyconfig
-  Displays the value of the configuration option `<config_option>` as used in doxygen's
+  Displays the value of the configuration option `<config_option>` as used in Doxygen's
   configuration file that is in use when this command is processed.
 
   \par Example:
@@ -3653,6 +3865,30 @@ class Receiver
 
   \addindex \\enduml
   Ends a block that was started with \ref cmdstartuml "\\startuml".
+
+<hr>
+\section cmdplantumlfile \\plantumlfile \<file\> ["caption"] [\<sizeindication\>=\<size\>]
+
+  \addindex \\plantumlfile
+  Inserts an image made in PlantUml from \<file\> into the documentation.
+
+  The first argument specifies the file name of the image.
+  Doxygen will look for files in the paths (or files) that you specified
+  after the \ref cfg_plantumlfile_dirs "PLANTUMLFILE_DIRS" tag.
+  If the plantuml file is found it will be used as an input file for the plantuml program.
+  The resulting image will be put into the correct output directory.
+  If the plantuml file name contains spaces you'll have to put quotes ("...") around it.
+
+  The second argument is optional and can be used to specify the caption
+  that is displayed below the image. This argument has to be specified
+  between quotes even if it does not contain any spaces. The quotes are
+  stripped before the caption is displayed.
+
+  The third argument is also optional and can be used to specify the
+  width or height of the image.
+  For a description of the possibilities see the paragraph
+  \ref image_sizeindicator "Size indication" with the
+  \ref cmdimage "\\image" command.
 
 <hr>
 \section cmdendhtmlonly \\endhtmlonly
@@ -3766,7 +4002,7 @@ class Receiver
   \sa section \ref cmdfcurlyopen "\\f{" and section \ref formulas "formulas".
 
 <hr>
-\section cmdhtmlonly \\htmlonly ["[block]"]
+\section cmdhtmlonly \\htmlonly['[block]']
 
   \addindex \\htmlonly
   Starts a block of text that only will be verbatim included in the
@@ -3775,15 +4011,15 @@ class Receiver
   \ref cmdendhtmlonly "\\endhtmlonly" command.
 
   This command can be used to include HTML code that is too complex
-  for doxygen (i.e. applets, java-scripts, and HTML tags that
+  for Doxygen (i.e. applets, java-scripts, and HTML tags that
   require specific attributes).
 
   Normally the contents between \ref cmdhtmlonly "\\htmlonly" and
   \ref cmdendhtmlonly "\\endhtmlonly" is inserted as-is. When you
   want to insert a HTML fragment that has block scope like a table or list
   which should appear outside \<p\>..\</p\>, this can lead to invalid HTML.
-  You can use `\htmlonly[block]` to make doxygen
-  end the current paragraph and restart it after \\endhtmlonly.
+  You can use <tt>\\htmlonly[block]</tt> to make Doxygen
+  end the current paragraph and restart it after <tt>\\endhtmlonly</tt>.
 
   \note environment variables (like \$(HOME) ) are resolved inside a
   HTML-only block.
@@ -3808,12 +4044,12 @@ class Receiver
   \c html, \c latex, \c docbook, \c rtf and \c xml.
 
   The second argument specifies the file name of the image.
-  doxygen will look for files in the paths (or files) that you specified
+  Doxygen will look for files in the paths (or files) that you specified
   after the \ref cfg_image_path "IMAGE_PATH" tag.
   If the image is found it will be copied to the correct output directory.
   If the image name contains spaces you'll have to put quotes ("...") around
   the name. You can also specify an absolute URL instead of a file name, but then
-  doxygen does not copy the image nor check its existence.
+  Doxygen does not copy the image nor check its existence.
 
   The third argument is optional and can be used to specify the caption
   that is displayed below the image. This argument has to be specified
@@ -3868,7 +4104,7 @@ class Receiver
   \ref cmdendlatexonly "\\endlatexonly" command.
 
   This command can be used to include \LaTeX code that is too
-  complex for doxygen (i.e. images, formulas, special characters). You can
+  complex for Doxygen (i.e. images, formulas, special characters). You can
   use the \ref cmdhtmlonly "\\htmlonly" and \ref cmdendhtmlonly "\\endhtmlonly"
   pair to provide a proper HTML alternative.
 
@@ -3973,7 +4209,7 @@ class Receiver
   \ref cmdendrtfonly "\\endrtfonly" command.
 
   This command can be used to include RTF code that is too complex
-  for doxygen.
+  for Doxygen.
 
   \b Note:
     environment variables (like \$(HOME) ) are resolved inside a
@@ -4024,7 +4260,7 @@ class Receiver
   \addindex \\\\
   This command writes a backslash character (\c \\) to the
   output. The backslash has to be escaped in some
-  cases because doxygen uses it to detect commands.
+  cases because Doxygen uses it to detect commands.
 
 <hr>
 \section cmdat \\\@
@@ -4032,7 +4268,7 @@ class Receiver
   \addindex \\\@
   This command writes an at-sign (\c \@) to the output.
   The at-sign has to be escaped in some cases
-  because doxygen uses it to detect Javadoc commands.
+  because Doxygen uses it to detect Javadoc commands.
 
 <hr>
 \section cmdtilde \\~[LanguageId]
@@ -4109,9 +4345,26 @@ class Receiver
 
   \addindex \\\.
   This command writes a dot (`.`) to the output. This can be useful to
-  prevent ending a brief description when \ref cfg_javadoc_autobrief "JAVADOC_AUTOBRIEF" is enabled
+  prevent ending a brief description when \ref cfg_javadoc_autobrief "JAVADOC_AUTOBRIEF" 
+  or \ref cfg_qt_autobrief "QT_AUTOBRIEF" is enabled
   or to prevent starting a numbered list when the dot follows a number at
   the start of a line.
+
+<hr>
+\section cmdquest \\?
+
+  \addindex \\\?
+  This command writes a question mark (`?`) to the output. This can be useful to
+  prevent ending a brief description when \ref cfg_javadoc_autobrief "JAVADOC_AUTOBRIEF" 
+  or \ref cfg_qt_autobrief "QT_AUTOBRIEF" is enabled.
+
+<hr>
+\section cmdexclam \\!
+
+  \addindex \\\!
+  This command writes a exclamation mark (`!`) to the output. This can be useful to
+  prevent ending a brief description when \ref cfg_javadoc_autobrief "JAVADOC_AUTOBRIEF" 
+  or \ref cfg_qt_autobrief "QT_AUTOBRIEF" is enabled.
 
 <hr>
 \section cmdeq \\=

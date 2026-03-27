@@ -24,10 +24,18 @@
 #include "dot.h"
 #include "dir.h"
 #include "portable.h"
+#include "stringutil.h"
 
 // top part of the interactive SVG header
-static const char svgZoomHeader1[] = R"svg(
+static const char svgZoomHeader0[] = R"svg(
 <svg id="main" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" onload="init(evt)">
+)svg";
+
+static const char svgZoomHeader0_noinit[] = R"svg(
+<svg id="main" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve">
+)svg";
+
+static const char svgZoomHeader1[] = R"svg(
 <style type="text/css"><![CDATA[
 .node, .edge {opacity: 0.7;}
 .node.selected, .edge.selected {opacity: 1;}
@@ -120,7 +128,7 @@ static QCString replaceRef(const QCString &buf,const QCString &relPath,
   QCString href = "href";
   //bool isXLink=FALSE;
   int len = 6;
-  int indexS = buf.find("href=\""), indexE;
+  int indexS = buf.find("href=\""), indexE = 0;
   bool targetAlreadySet = buf.find("target=")!=-1;
   if (indexS>5 && buf.find("xlink:href=\"")!=-1) // XLink href (for SVG)
   {
@@ -216,9 +224,9 @@ bool DotFilePatcher::convertMapFile(TextStream &t,const QCString &mapName,
   std::ifstream f = Portable::openInputStream(mapName);
   if (!f.is_open())
   {
-    err("problems opening map file %s for inclusion in the docs!\n"
+    err("problems opening map file {} for inclusion in the docs!\n"
       "If you installed Graphviz/dot after a previous failing run, \n"
-      "try deleting the output directory and rerun doxygen.\n",qPrint(mapName));
+      "try deleting the output directory and rerun doxygen.\n",mapName);
     return FALSE;
   }
   std::string line;
@@ -237,7 +245,7 @@ bool DotFilePatcher::convertMapFile(TextStream &t,const QCString &mapName,
       }
 
       // strip id="..." from replBuf since the id's are not needed and not unique.
-      int indexS = replBuf.find("id=\""), indexE;
+      int indexS = replBuf.find("id=\""), indexE = 0;
       if (indexS>0 && (indexE=replBuf.find('"',indexS+4))!=-1)
       {
         t << replBuf.left(indexS-1) << replBuf.right(replBuf.length() - indexE - 1);
@@ -315,20 +323,20 @@ bool DotFilePatcher::run() const
   Dir thisDir;
   if (!thisDir.rename(m_patchFile.str(),tmpName.str()))
   {
-    err("Failed to rename file %s to %s!\n",qPrint(m_patchFile),qPrint(tmpName));
+    err("Failed to rename file {} to {}!\n",m_patchFile,tmpName);
     return FALSE;
   }
   std::ifstream fi = Portable::openInputStream(tmpName);
   std::ofstream fo = Portable::openOutputStream(m_patchFile);
   if (!fi.is_open())
   {
-    err("problem opening file %s for patching!\n",qPrint(tmpName));
+    err("problem opening file {} for patching!\n",tmpName);
     thisDir.rename(tmpName.str(),m_patchFile.str());
     return FALSE;
   }
   if (!fo.is_open())
   {
-    err("problem opening file %s for patching!\n",qPrint(m_patchFile));
+    err("problem opening file {} for patching!\n",m_patchFile);
     thisDir.rename(tmpName.str(),m_patchFile.str());
     return FALSE;
   }
@@ -346,15 +354,15 @@ bool DotFilePatcher::run() const
   {
     QCString line = lineStr+'\n';
     //printf("line=[%s]\n",qPrint(line.stripWhiteSpace()));
-    int i;
+    int i = 0;
     if (isSVGFile)
     {
       if (interactiveSVG)
       {
         if (line.find("<svg")!=-1 && !replacedHeader)
         {
-          int count;
-          count = sscanf(line.data(),"<svg width=\"%dpt\" height=\"%dpt\"",&width,&height);
+          int count = sscanf(line.data(),"<svg width=\"%dpt\" height=\"%dpt\"",&width,&height);
+          if (count != 2) count = sscanf(line.data(),"<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" width=\"%d\" height=\"%d\"",&width,&height);
           //printf("width=%d height=%d\n",width,height);
           useNagivation = count==2 && (width>500 || height>450);
           insideHeader = count==2;
@@ -365,6 +373,11 @@ bool DotFilePatcher::run() const
           {
             // insert special replacement header for interactive SVGs
             t << "<!--zoomable " << height << " -->\n";
+            t << svgZoomHeader0;
+          }
+          else
+          {
+            t << svgZoomHeader0_noinit;
           }
           t << svgZoomHeader1;
           if (useNagivation)
@@ -420,13 +433,13 @@ bool DotFilePatcher::run() const
         //  qPrint(m_patchFile),map.zoomable);
         if (!writeSVGFigureLink(t,map.relPath,map.label,map.mapFile))
         {
-          err("Problem extracting size from SVG file %s\n",qPrint(map.mapFile));
+          err("Problem extracting size from SVG file {}\n",map.mapFile);
         }
         if (e!=-1) t << line.mid(e+3);
       }
       else // error invalid map id!
       {
-        err("Found invalid SVG id in file %s!\n",qPrint(m_patchFile));
+        err("Found invalid SVG id in file {}!\n",m_patchFile);
         t << line.mid(i);
       }
     }
@@ -451,7 +464,7 @@ bool DotFilePatcher::run() const
       }
       else // error invalid map id!
       {
-        err("Found invalid MAP id in file %s!\n",qPrint(m_patchFile));
+        err("Found invalid MAP id in file {}!\n",m_patchFile);
         t << line.mid(i);
       }
     }
@@ -467,13 +480,13 @@ bool DotFilePatcher::run() const
         //   mapId,qPrint(m_patchFile),qPrint(map.mapFile));
         if (!writeVecGfxFigure(t,map.label,map.mapFile))
         {
-          err("problem writing FIG %d figure!\n",mapId);
+          err("problem writing FIG {} figure!\n",mapId);
           return FALSE;
         }
       }
       else // error invalid map id!
       {
-        err("Found invalid bounding FIG %d in file %s!\n",mapId,qPrint(m_patchFile));
+        err("Found invalid bounding FIG {} in file {}!\n",mapId,m_patchFile);
         t << line;
       }
     }
@@ -501,20 +514,20 @@ bool DotFilePatcher::run() const
     fo = Portable::openOutputStream(orgName);
     if (!fi.is_open())
     {
-      err("problem opening file %s for reading!\n",qPrint(tmpName));
+      err("problem opening file {} for reading!\n",tmpName);
       return FALSE;
     }
     if (!fo.is_open())
     {
-      err("problem opening file %s for writing!\n",qPrint(orgName));
+      err("problem opening file {} for writing!\n",orgName);
       return FALSE;
     }
     t.setStream(&fo);
     while (getline(fi,lineStr)) // foreach line
     {
-      std::string line = lineStr+'\n';
+      QCString line = lineStr+'\n';
       const Map &map = m_maps.front(); // there is only one 'map' for a SVG file
-      t << replaceRef(line.c_str(),map.relPath,map.urlOnly,map.context,"_top");
+      t << replaceRef(line,map.relPath,map.urlOnly,map.context,"_top");
     }
     t.flush();
     fi.close();
@@ -540,7 +553,7 @@ static bool readSVGSize(const QCString &fileName,int *width,int *height)
   std::string line;
   while (getline(f,line) && !found)
   {
-    if (qstrncmp(line.c_str(),"<!--zoomable ",13)==0)
+    if (literal_at(line.c_str(),"<!--zoomable "))
     {
       *width=-1;
       *height=-1;
@@ -548,6 +561,10 @@ static bool readSVGSize(const QCString &fileName,int *width,int *height)
       found=true;
     }
     else if (sscanf(line.c_str(),"<svg width=\"%dpt\" height=\"%dpt\"",width,height)==2)
+    {
+      found=true;
+    }
+    else if (sscanf(line.c_str(),"<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" width=\"%d\" height=\"%d\"",width,height)==2)
     {
       found=true;
     }
@@ -577,14 +594,14 @@ bool DotFilePatcher::writeSVGFigureLink(TextStream &out,const QCString &relPath,
     out << "<div class=\"zoom\">";
     //out << "<object type=\"image/svg+xml\" data=\""
     //out << "<embed type=\"image/svg+xml\" src=\""
-    out << "<iframe scrolling=\"no\" frameborder=\"0\" src=\""
+    out << "<iframe scrolling=\"no\" loading=\"lazy\" frameborder=\"0\" src=\""
         << relPath << baseName << ".svg\" width=\"100%\" height=\"" << height << "\">";
   }
   else
   {
     //out << "<object type=\"image/svg+xml\" data=\""
     //out << "<embed type=\"image/svg+xml\" src=\""
-    out << "<iframe scrolling=\"no\" frameborder=\"0\" src=\""
+    out << "<iframe scrolling=\"no\" loading=\"lazy\" frameborder=\"0\" src=\""
         << relPath << baseName << ".svg\" width=\""
         << ((width*96+48)/72) << "\" height=\""
         << ((height*96+48)/72) << "\">";

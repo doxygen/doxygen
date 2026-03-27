@@ -287,7 +287,7 @@ void gdoTextR(struct ADrawTag *ctx,
               unsigned int     y,
               const char      *string)
 {
-    GdoContext *context = getGdoCtx(ctx);
+    const GdoContext *context = getGdoCtx(ctx);
 #ifdef USE_FREETYPE
     int         rect[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
     const char *r;

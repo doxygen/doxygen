@@ -2,13 +2,20 @@
 #define MSCGEN_CONFIG_H
 
 #if defined(_WIN32) && !defined(__CYGWIN__)
-#define M_PI   3.14159265358979323846264338327950288
-#define strcasecmp _stricmp
 #define strdup _strdup
 #define fileno _fileno
 #define YY_NO_UNISTD_H 1
 #else
 #define HAVE_UNISTD_H 1
+#endif
+
+#ifndef M_PI
+# define M_PI 3.14159265358979323846
+#endif
+#ifdef _MSC_VER
+#  ifndef strcasecmp
+#    define strcasecmp _stricmp
+#  endif 
 #endif
 
 /* Define to 1 if you have the <limits.h> header file. */

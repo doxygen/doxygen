@@ -17,7 +17,10 @@ include_directories(
 if (NOT use_sys_spdlog)
     include_directories(${PROJECT_SOURCE_DIR}/deps/spdlog/include)
 endif()
-if (NOT use_sys_sqlite)
+if (NOT use_sys_fmt)
+    include_directories(${PROJECT_SOURCE_DIR}/deps/fmt/include)
+endif()
+if (NOT use_sys_sqlite3)
     include_directories(${PROJECT_SOURCE_DIR}/deps/sqlite3)
 endif()
 
@@ -69,15 +72,6 @@ add_custom_command(
 )
 set_source_files_properties(${GENERATED_SRC}/configoptions.cpp PROPERTIES GENERATED 1)
 
-
-# ce_parse.h
-add_custom_command(
-    COMMAND ${BISON_EXECUTABLE} -l -d -p ce_parsexpYY ${CMAKE_CURRENT_LIST_DIR}/constexp.y -o ce_parse.c
-    DEPENDS ${CMAKE_CURRENT_LIST_DIR}/constexp.y
-    OUTPUT ${GENERATED_SRC}/ce_parse.h
-    WORKING_DIRECTORY ${GENERATED_SRC}
-)
-set_source_files_properties(${GENERATED_SRC}/ce_parse.h PROPERTIES GENERATED 1)
 
 # all resource files
 file(GLOB RESOURCES CONFIGURE_DEPENDS ${PROJECT_SOURCE_DIR}/templates/*/*)
@@ -199,7 +193,6 @@ if(enable_coverage)
 endif()
 
 add_library(doxycfg STATIC
-    ${GENERATED_SRC}/configvalues.h
     ${GENERATED_SRC}/configimpl.cpp
     ${GENERATED_SRC}/configimpl.l.h
     ${GENERATED_SRC}/configoptions.cpp
@@ -211,6 +204,8 @@ add_library(doxycfg STATIC
     debug.cpp
     trace.cpp
 )
+add_dependencies(doxycfg generate_configvalues_header)
+
 target_link_libraries(doxycfg PRIVATE
     spdlog::spdlog
 )
@@ -223,8 +218,7 @@ add_library(doxymain STATIC
     #
     ${GENERATED_SRC}/ce_parse.cpp
     # custom generated files
-    ${GENERATED_SRC}/configvalues.h
-    ${GENERATED_SRC}/ce_parse.h
+    ${GENERATED_SRC}/ce_parse.hpp
     ${GENERATED_SRC}/resources.cpp
     #
     aliases.cpp
@@ -304,12 +298,14 @@ add_library(doxymain STATIC
     qhp.cpp
     reflist.cpp
     regex.cpp
+    requirement.cpp
     resourcemgr.cpp
     rtfdocvisitor.cpp
     rtfgen.cpp
     rtfstyle.cpp
     searchindex.cpp
     searchindex_js.cpp
+    singlecomment.cpp
     sitemap.cpp
     sqlite3gen.cpp
     stlsupport.cpp
@@ -328,6 +324,7 @@ target_link_libraries(doxymain PRIVATE
     spdlog::spdlog
 )
 add_sanitizers(doxymain)
+add_dependencies(doxymain generate_configvalues_header)
 
 # LLVM/clang headers give a lot of warnings with -Wshadow and -Wcast-align so we disable them for
 # the one file that includes them.
@@ -368,7 +365,11 @@ if (use_libclang)
     include_directories(${LLVM_INCLUDE_DIRS})
     add_definitions(${LLVM_DEFINITIONS})
     if (static_libclang)
-        set(CLANG_LIBS libclang clangTooling)
+        if (MSVC OR (CMAKE_CXX_COMPILER_ID STREQUAL "Clang"))
+          set(CLANG_LIBS libclang clangTooling)
+        else()
+          set(CLANG_LIBS libclang_static clangTooling)
+        endif()
         add_definitions(-DCINDEX_NO_EXPORTS)
     else() # dynamically linked version of clang
         llvm_config(doxymain USE_SHARED support)
@@ -393,7 +394,7 @@ target_link_libraries(doxygen PRIVATE
     xml
     doxygen_version
     vhdlparser
-    ${ICONV_LIBRARIES}
+    ${Iconv_LIBRARIES}
     ${CMAKE_THREAD_LIBS_INIT}
     ${EXTRA_LIBS}
     ${CLANG_LIBS}

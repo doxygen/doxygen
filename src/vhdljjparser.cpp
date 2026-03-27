@@ -27,7 +27,6 @@
 #include "outputlist.h"
 #include "arguments.h"
 #include "types.h"
-#include "growbuf.h"
 #include "markdown.h"
 #include "VhdlParserTokenManager.h"
 #include "VhdlParserErrorHandler.hpp"
@@ -88,8 +87,7 @@ struct VHDLOutlineParser::Private
 void VHDLOutlineParser::Private::parseVhdlfile(const QCString &fileName,
                                                const QCString &inputBuffer,bool inLine)
 {
-  QCString s =inputBuffer;
-  CharStream *stream = new CharStream(reinterpret_cast<const JJChar*>(s.data()), (int)s.size(), 1, 1);
+  CharStream *stream = new CharStream(reinterpret_cast<const JJChar*>(inputBuffer.data()), (int)inputBuffer.size(), 1, 1);
   VhdlParserTokenManager *tokenManager = new VhdlParserTokenManager(stream);
   VhdlTokenManagerErrorHandler *tokErrHandler=new VhdlTokenManagerErrorHandler(fileName.data());
   vhdlParser=new VhdlParser(tokenManager);
@@ -140,7 +138,7 @@ void VHDLOutlineParser::parseInput(const QCString &fileName,const char *fileBuf,
 
   bool inLine = fileName.isEmpty();
 
-  if (!inLine) msg("Parsing file %s...\n",qPrint(fileName));
+  if (!inLine) msg("Parsing file {}...\n",fileName);
 
   p->yyFileName=fileName;
 
@@ -161,10 +159,9 @@ void VHDLOutlineParser::parseInput(const QCString &fileName,const char *fileBuf,
   }
   p->yyLineNr=1;
   s->current_root=root;
-  s->lastCompound=0;
-  s->lastEntity=0;
-  s->lastEntity=0;
-  p->oldEntry = 0;
+  s->lastCompound=nullptr;
+  s->lastEntity=nullptr;
+  p->oldEntry = nullptr;
   s->current=std::make_shared<Entry>();
   initEntry(s->current.get());
   p->commentScanner.enterFile(fileName,p->yyLineNr);
@@ -204,7 +201,7 @@ void VHDLOutlineParser::initEntry(Entry *e)
   if (p->str_doc.pending)
   {
     p->str_doc.pending=FALSE;
-    p->oldEntry=0; // prevents endless recursion
+    p->oldEntry=nullptr; // prevents endless recursion
     p->iDocLine=p->str_doc.iDocLine;
     handleCommentBlock(p->str_doc.doc,p->str_doc.brief);
     p->iDocLine=-1;
@@ -286,8 +283,7 @@ int VHDLOutlineParser::checkInlineCode(QCString &doc)
   {
     if ((int)str.length()<pos) return -1;
     reg::Match match;
-    const std::string s = str.str();
-    if (reg::search(s,match,re,pos)) // match found
+    if (reg::search(str.str(),match,re,pos)) // match found
     {
       return (int)match.position();
     }
@@ -370,7 +366,7 @@ int VHDLOutlineParser::checkInlineCode(QCString &doc)
   else if (s->lastCompound)
     compound = s->lastCompound;
   else
-    compound = 0;
+    compound = nullptr;
 
   if (compound)
   {
@@ -434,6 +430,7 @@ void VHDLOutlineParser::handleCommentBlock(const QCString &doc1, bool brief)
 
   Markdown markdown(p->yyFileName,p->iDocLine);
   int lineNr = p->iDocLine;
+  GuardedSectionStack guards;
   QCString processedDoc = Config_getBool(MARKDOWN_SUPPORT) ? markdown.process(doc,lineNr) : doc;
 
    while (p->commentScanner.parseCommentBlock(
@@ -448,7 +445,9 @@ void VHDLOutlineParser::handleCommentBlock(const QCString &doc1, bool brief)
       protection,
       position,
       needsEntry,
-      Config_getBool(MARKDOWN_SUPPORT)))
+      Config_getBool(MARKDOWN_SUPPORT),
+      &guards
+    ))
   {
     if (needsEntry)
       newEntry();
@@ -520,15 +519,14 @@ void VHDLOutlineParser::addVhdlType(const QCString &n,int startLine,EntryType se
     VhdlSpecifier spec,const QCString &args,const QCString &type,Protection prot)
 {
   VhdlParser::SharedState *s = &p->shared;
-  QCString name(n);
   if (isFuncProcProced() || VhdlDocGen::getFlowMember())  return;
 
-  if (s->parse_sec==GEN_SEC)
+  if (s->parse_sec==VhdlSection::GEN_SEC)
   {
     spec=VhdlSpecifier::GENERIC;
   }
 
-  StringVector ql=split(name.str(),",");
+  StringVector ql=split(n.str(),",");
 
   for (size_t u=0;u<ql.size();u++)
   {
@@ -565,7 +563,7 @@ void VHDLOutlineParser::createFunction(const QCString &impure,VhdlSpecifier spec
     s->current->exception=impure;
   }
 
-  if (s->parse_sec==GEN_SEC)
+  if (s->parse_sec==VhdlSection::GEN_SEC)
   {
     s->current->vhdlSpec=VhdlSpecifier::GENERIC;
     s->current->section=EntryType::makeFunction();
@@ -634,8 +632,7 @@ void VHDLOutlineParser::addProto(const QCString &s1,const QCString &s2,const QCS
 {
   VhdlParser::SharedState *s = &p->shared;
   (void)s5; // avoid unused warning
-  QCString name=s2;
-  StringVector ql=split(name.str(),",");
+  StringVector ql=split(s2.str(),",");
 
   for (const auto &n : ql)
   {
@@ -651,12 +648,12 @@ void VHDLOutlineParser::addProto(const QCString &s1,const QCString &s2,const QCS
     {
       arg.type+=s6;
     }
-    if (s->parse_sec==GEN_SEC && s->param_sec==0)
+    if (s->parse_sec==VhdlSection::GEN_SEC && s->param_sec==VhdlSection::UNKNOWN)
     {
       arg.defval="generic";
     }
 
-    if (s->parse_sec==PARAM_SEC)
+    if (s->parse_sec==VhdlSection::PARAM_SEC)
     {
     //  assert(false);
     }
@@ -852,7 +849,7 @@ void VHDLOutlineParser::error_skipto(int kind)
   {
     p->vhdlParser->getNextToken();  // step to next token
     op=p->vhdlParser->getToken(1);  // get first token
-    if (op==0) break;
+    if (op==nullptr) break;
     //fprintf(stderr,"\n %s",qPrint(t->image));
   } while (op->kind != kind);
   p->vhdlParser->clearError();
@@ -866,13 +863,14 @@ void VHDLOutlineParser::error_skipto(int kind)
 QCString filter2008VhdlComment(const QCString &s)
 {
   if (s.length()<4) return s;
-  GrowBuf growBuf;
+  QCString result;
+  result.reserve(s.length());
   const char *p=s.data()+3; // skip /*!
   char c='\0';
   while (*p == ' ' || *p == '\t') p++;
   while ((c=*p++))
   {
-    growBuf.addChar(c);
+    result+=c;
     if (c == '\n')
     {
       // special handling of space followed by * at beginning of line
@@ -883,14 +881,13 @@ QCString filter2008VhdlComment(const QCString &s)
     }
   }
   // special attention in case */ at end of last line
-  size_t len = growBuf.getPos();
-  if (len>=2 && growBuf.at(len-1) == '/' && growBuf.at(len-2) == '*')
+  size_t len = result.length();
+  if (len>=2 && result[len-1]=='/' && result[len-2]=='*')
   {
     len -= 2;
-    while (len>0 && growBuf.at(len-1) == '*') len--;
-    while (len>0 && ((c = growBuf.at(len-1)) == ' ' || c == '\t')) len--;
-    growBuf.setPos(len);
+    while (len>0 && result[len-1] == '*') len--;
+    while (len>0 && ((c = result[len-1]) == ' ' || c == '\t')) len--;
+    result.resize(len);
   }
-  growBuf.addChar(0);
-  return growBuf.get();
+  return result;
 }

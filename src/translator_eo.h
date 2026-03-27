@@ -143,7 +143,7 @@ class TranslatorEsperanto : public TranslatorAdapter_1_8_4
 
     /*! this is the first part of a sentence that is followed by a class name */
     QCString trThisIsTheListOfAllMembers() override
-    { return "Tiu ĉi estas la kompleta membraro de "; }
+    { return "Tiu ĉi estas la kompleta membraro de"; }
 
     /*! this is the remainder of the sentence after the class name */
     QCString trIncludingInheritedMembers() override
@@ -351,8 +351,8 @@ class TranslatorEsperanto : public TranslatorAdapter_1_8_4
     // index titles (the project name is prepended for these)
 
     /*! This is used in HTML as the title of index.html. */
-    QCString trDocumentation() override
-    { return "Dokumentado"; }
+    QCString trDocumentation(const QCString &projName) override
+    { return (!projName.isEmpty()?projName + " " : "") + "Dokumentado"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * index of all groups.
@@ -654,9 +654,8 @@ class TranslatorEsperanto : public TranslatorAdapter_1_8_4
     QCString trWriteList(int numEntries) override
     {
       QCString result;
-      int i;
       // the inherits list contain `numEntries' classes
-      for (i=0;i<numEntries;i++)
+      for (int i=0;i<numEntries;i++)
       {
         // use generateMarker to generate placeholders for the class links!
         result+=generateMarker(i); // generate marker for entry i in the list
@@ -1192,9 +1191,7 @@ class TranslatorEsperanto : public TranslatorAdapter_1_8_4
      */
     QCString trClass(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Klaso" : "klaso"));
-      if (!singular)  result+="j";
-      return result;
+      return createNoun(first_capital, singular, "klaso", "j");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1203,9 +1200,7 @@ class TranslatorEsperanto : public TranslatorAdapter_1_8_4
      */
     QCString trFile(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Dosiero" : "dosiero"));
-      if (!singular)  result+="j";
-      return result;
+      return createNoun(first_capital, singular, "dosiero", "j");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1214,9 +1209,7 @@ class TranslatorEsperanto : public TranslatorAdapter_1_8_4
      */
     QCString trNamespace(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Nomspaco" : "nomspaco"));
-      if (!singular)  result+="j";
-      return result;
+      return createNoun(first_capital, singular, "nomspaco", "j");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1225,9 +1218,7 @@ class TranslatorEsperanto : public TranslatorAdapter_1_8_4
      */
     QCString trGroup(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Grupo" : "grupo"));
-      if (!singular)  result+="j";
-      return result;
+      return createNoun(first_capital, singular, "grupo", "j");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1236,9 +1227,7 @@ class TranslatorEsperanto : public TranslatorAdapter_1_8_4
      */
     QCString trPage(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Paĝo" : "paĝo"));
-      if (!singular)  result+="j";
-      return result;
+      return createNoun(first_capital, singular, "paĝo", "j");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1247,9 +1236,7 @@ class TranslatorEsperanto : public TranslatorAdapter_1_8_4
      */
     QCString trMember(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Membro" : "membro"));
-      if (!singular)  result+="j";
-      return result;
+      return createNoun(first_capital, singular, "membro", "j");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1258,9 +1245,7 @@ class TranslatorEsperanto : public TranslatorAdapter_1_8_4
      */
     QCString trGlobal(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Mallokalaĵo" : "mallokalaĵo"));
-      if (!singular)  result+="j";
-      return result;
+      return createNoun(first_capital, singular, "mallokalaĵo", "j");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1271,9 +1256,7 @@ class TranslatorEsperanto : public TranslatorAdapter_1_8_4
      *  for the author section in man pages. */
     QCString trAuthor(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Aŭtoro" : "aŭtoro"));
-      if (!singular)  result+="j";
-      return result;
+      return createNoun(first_capital, singular, "aŭtoro", "j");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1457,7 +1440,7 @@ class TranslatorEsperanto : public TranslatorAdapter_1_8_4
 
     /*! This is used in HTML as the title of page with source code for file filename
      */
-    QCString trSourceFile(QCString& filename) override
+    QCString trSourceFile(const QCString& filename) override
     {
       return filename + " Fonta Dosiero";
     }
@@ -1491,13 +1474,11 @@ class TranslatorEsperanto : public TranslatorAdapter_1_8_4
     { QCString result=dirName; result+=" Dosieruja Referenco"; return result; }
 
     /*! This returns the word directory with or without starting capital
-     *  (\a first_capital) and in sigular or plural form (\a singular).
+     *  (\a first_capital) and in singular or plural form (\a singular).
      */
     QCString trDir(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Dosierujo" : "dosierujo"));
-      if (!singular) result+="j";
-      return result;
+      return createNoun(first_capital, singular, "dosierujo", "j");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1676,9 +1657,7 @@ class TranslatorEsperanto : public TranslatorAdapter_1_8_4
      */
     QCString trModule(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Modulo" : "modulo"));
-      if (!singular)  result+="j";
-      return result;
+      return createNoun(first_capital, singular, "modulo", "j");
     }
     /*! This is put at the bottom of a module documentation page and is
      *  followed by a list of files that were used to generate the page.
@@ -1709,9 +1688,7 @@ class TranslatorEsperanto : public TranslatorAdapter_1_8_4
      */
     QCString trType(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Tipo" : "tipo"));
-      if (!singular)  result+="j";
-      return result;
+      return createNoun(first_capital, singular, "tipo", "j");
     }
     /*! This is used for translation of the word that will possibly
      *  be followed by a single name or by a list of names
@@ -1719,9 +1696,7 @@ class TranslatorEsperanto : public TranslatorAdapter_1_8_4
      */
     QCString trSubprogram(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Subprogramo" : "subprogramo"));
-      if (!singular)  result+="j";
-      return result;
+      return createNoun(first_capital, singular, "subprogramo", "j");
     }
 
     /*! C# Type Constraint list */
@@ -1840,10 +1815,10 @@ class TranslatorEsperanto : public TranslatorAdapter_1_8_4
       if (first_capital) return text.mid(0,1).upper()+text.mid(1);
       else return text;
     }
-    QCString trDayPeriod(int period) override
+    QCString trDayPeriod(bool period) override
     {
       static const char *dayPeriod[] = { "atm", "ptm" };
-      return dayPeriod[period];
+      return dayPeriod[period?1:0];
     }
 
 //////////////////////////////////////////////////////////////////////////

@@ -20,7 +20,8 @@
 
 class QCString;
 
-enum DiaOutputFormat { DIA_BITMAP , DIA_EPS };
+enum class DiaOutputFormat { BITMAP , EPS };
+
 
 void writeDiaGraphFromFile(const QCString &inFile,const QCString &outDir,
                            const QCString &outFile,DiaOutputFormat format,

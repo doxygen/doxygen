@@ -356,8 +356,8 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
 
 
     /*! This is used in HTML as the title of index.html. */
-    QCString trDocumentation() override
-    { return "說明文件"; }
+    QCString trDocumentation(const QCString &projName) override
+    { return (!projName.isEmpty()?projName + " " : "") + "說明文件"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * index of all groups.
@@ -665,9 +665,8 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
     QCString trWriteList(int numEntries) override
     {
       QCString result;
-      int i;
       // the inherits list contain `numEntries' classes
-      for (i=0;i<numEntries;i++)
+      for (int i=0;i<numEntries;i++)
       {
         // use generateMarker to generate placeholders for the class links!
         result+=generateMarker(i); // generate marker for entry i in the list
@@ -1453,7 +1452,7 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
 
     /*! This is used in HTML as the title of page with source code for file filename
      */
-    QCString trSourceFile(QCString& filename) override
+    QCString trSourceFile(const QCString& filename) override
     {
       return filename + " 原始程式檔";
     }
@@ -1487,7 +1486,7 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
     { QCString result=dirName; result+=" 目錄參考文件"; return result; }
 
     /*! This returns the word directory with or without starting capital
-     *  (\a first_capital) and in sigular or plural form (\a singular).
+     *  (\a first_capital) and in singular or plural form (\a singular).
      */
     QCString trDir(bool /*first_capital*/, bool /*singular*/) override
     {
@@ -1813,10 +1812,10 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
       QCString text  = full? months_full[month-1] : months_short[month-1];
       return text;
     }
-    QCString trDayPeriod(int period) override
+    QCString trDayPeriod(bool period) override
     {
       static const char *dayPeriod[] = { "上午", "下午" };
-      return dayPeriod[period];
+      return dayPeriod[period?1:0];
     }
 
 //////////////////////////////////////////////////////////////////////////

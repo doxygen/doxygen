@@ -83,9 +83,16 @@ inline bool qisspace(char c)
 
 int qstricmp( const char *str1, const char *str2 );
 
+inline int qstricmp_sort( const char *str1, const char *str2 )
+{
+  int result = qstricmp(str1,str2);
+  return result==0 ? qstrcmp(str1,str2) : result;
+}
+
+
 int qstrnicmp( const char *str1, const char *str2, size_t len );
 
-using JavaCCString = std::basic_string<unsigned char>;
+using JavaCCString = std::basic_string<JAVACC_CHAR_TYPE>;
 
 /** This is an alternative implementation of QCString. It provides basically
  *  the same functions but uses std::string as the underlying string type
@@ -94,19 +101,26 @@ class QCString
 {
   public:
     QCString() = default;
+    QCString(const QCString &) = default;
+    QCString &operator=(const QCString &) = default;
+    QCString(QCString &&) = default;
+    QCString &operator=(QCString &&) = default;
    ~QCString() = default;
-    QCString( const QCString &s ) = default;
-    QCString &operator=( const QCString &s ) = default;
-    QCString( QCString &&s ) = default;
-    QCString &operator=( QCString &&s ) = default;
 
-    explicit QCString( const std::string &s ) : m_rep(s) {}
+    QCString( const std::string &s ) : m_rep(s) {}
 
     QCString( std::string &&s) : m_rep(std::move(s)) {}
 
+    QCString &operator=( std::string &&s)
+    {
+      m_rep=std::move(s);
+      return *this;
+    }
+
     QCString( std::string_view sv) : m_rep(sv) {}
 
-    QCString &operator=(std::string_view sv) {
+    QCString &operator=(std::string_view sv)
+    {
       m_rep=sv;
       return *this;
     }
@@ -176,16 +190,18 @@ class QCString
      *  @note the string will be resized to contain \a len characters. The contents of the
      *  string will be lost.
      */
-    void fill( char c, int len = -1 )
+    QCString fill( char c, int len = -1 )
     {
       int l = len==-1 ? static_cast<int>(m_rep.size()) : len;
       m_rep = std::string(l,c);
+      return *this;
     }
 
     QCString &sprintf( const char *format, ... );
 
     int	find( char c, int index=0, bool cs=TRUE ) const;
     int	find( const char *str, int index=0, bool cs=TRUE ) const;
+    int	find( const std::string &str, int index=0, bool cs=TRUE ) const;
     int find( const QCString &str, int index=0, bool cs=TRUE ) const;
 
     int	findRev( char c, int index=-1, bool cs=TRUE) const;
@@ -251,6 +267,8 @@ class QCString
       while (end>start && qisspace(m_rep[end])) end--;
       return QCString(m_rep.substr(start,1+end-start));
     }
+
+    QCString stripLeadingAndTrailingEmptyLines() const;
 
     // Returns a quoted copy of this string, unless it is already quoted.
     // Note that trailing and leading whitespace is removed.
@@ -488,7 +506,12 @@ class QCString
 
     bool startsWith( const char *s ) const
     {
-      if (m_rep.empty() || s==0) return s==0;
+      if (m_rep.empty() || s==nullptr) return s==nullptr;
+      return m_rep.rfind(s,0)==0; // looking "backward" starting and ending at index 0
+    }
+
+    bool startsWith( const std::string &s) const
+    {
       return m_rep.rfind(s,0)==0; // looking "backward" starting and ending at index 0
     }
 
@@ -500,9 +523,15 @@ class QCString
 
     bool endsWith(const char *s) const
     {
-      if (m_rep.empty() || s==0) return s==0;
+      if (m_rep.empty() || s==nullptr) return s==nullptr;
       size_t l = strlen(s);
       return m_rep.length()>=l && m_rep.compare(m_rep.length()-l, l, s, l)==0;
+    }
+
+    bool endsWith(const std::string &s) const
+    {
+      size_t l = s.length();
+      return m_rep.length()>=l && m_rep.compare(m_rep.length()-l, l, s)==0;
     }
 
     bool endsWith(const QCString &s) const
@@ -677,6 +706,21 @@ inline std::string toStdString(const QCString &s)
 
 //---- overloads
 
+inline int qstrcmp( const QCString &str1, const char *str2 )
+{
+  return qstrcmp(str1.data(),str2);
+}
+
+inline int qstrcmp( const char *str1, const QCString &str2 )
+{
+  return qstrcmp(str1,str2.data());
+}
+
+inline int qstrcmp( const QCString &str1, const QCString &str2 )
+{
+  return qstrcmp(str1.data(),str2.data());
+}
+
 inline int qstricmp( const QCString &str1, const char *str2 )
 {
   return qstricmp(str1.data(),str2);
@@ -691,6 +735,22 @@ inline int qstricmp( const QCString &str1, const QCString &str2 )
 {
   return qstricmp(str1.data(),str2.data());
 }
+
+inline int qstricmp_sort( const QCString &str1, const char *str2 )
+{
+  return qstricmp_sort(str1.data(),str2);
+}
+
+inline int qstricmp_sort( const char *str1, const QCString &str2 )
+{
+  return qstricmp_sort(str1,str2.data());
+}
+
+inline int qstricmp_sort( const QCString &str1, const QCString &str2 )
+{
+  return qstricmp_sort(str1.data(),str2.data());
+}
+
 
 inline int qstrnicmp( const QCString &str1, const char *str2, size_t len )
 {

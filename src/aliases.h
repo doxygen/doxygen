@@ -16,10 +16,11 @@
 #ifndef ALIASES_H
 #define ALIASES_H
 
-#include "qcstring.h"
+#include <string>
+#include <string_view>
 
-QCString resolveAliasCmd(const QCString &aliasCmd);
-bool isAliasCmd(const QCString &aliasCmd);
+std::string resolveAliasCmd(std::string_view aliasCmd);
+bool isAliasCmd(std::string_view aliasCmd);
 void readAliases();
 
 #endif

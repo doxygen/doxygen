@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="class_user_manager" kind="class" language="C++" prot="public">
+    <compoundname>UserManager</compoundname>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="class_user_manager_1a15f2eb68a66115fe96f4fec7dcd12787" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void UserManager::check_access</definition>
+        <argsstring>(std::string &amp;user_id)</argsstring>
+        <name>check_access</name>
+        <qualifiedname>UserManager::check_access</qualifiedname>
+        <param>
+          <type>std::string &amp;</type>
+          <declname>user_id</declname>
+        </param>
+        <satisfies>
+          <requirement refid="requirement__r_e_q-001">User access check.</requirement>
+        </satisfies>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>Check access </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="115_requirements.cpp" line="31" column="10"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+      <para>Manages user authentication and session management. </para>
+    </briefdescription>
+    <detaileddescription>
+      <para>This class handles all aspects of user authentication including password verification, account locking, and session creation. </para>
+    </detaileddescription>
+    <satisfies>
+      <requirement refid="requirement__r_e_q-001">Implements the core authentication mechanism</requirement>
+    </satisfies>
+    <location file="115_requirements.cpp" line="25" column="1" bodyfile="115_requirements.cpp" bodystart="26" bodyend="32"/>
+    <listofallmembers>
+      <member refid="class_user_manager_1a15f2eb68a66115fe96f4fec7dcd12787" prot="public" virt="non-virtual">
+        <scope>UserManager</scope>
+        <name>check_access</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

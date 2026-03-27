@@ -25,22 +25,21 @@
 #include "portable.h"
 #include "language.h"
 #include "message.h"
-#include "growbuf.h"
 
 std::tm getCurrentDateTime()
 {
   QCString sourceDateEpoch = Portable::getenv("SOURCE_DATE_EPOCH");
   if (!sourceDateEpoch.isEmpty()) // see https://reproducible-builds.org/specs/source-date-epoch/
   {
-    bool ok;
+    bool ok = false;
     uint64_t epoch = sourceDateEpoch.toUInt64(&ok);
     if (!ok)
     {
       static bool warnedOnce=FALSE;
       if (!warnedOnce)
       {
-        warn_uncond("Environment variable SOURCE_DATE_EPOCH does not contain a valid number; value is '%s'\n",
-            qPrint(sourceDateEpoch));
+        warn_uncond("Environment variable SOURCE_DATE_EPOCH does not contain a valid number; value is '{}'\n",
+            sourceDateEpoch);
         warnedOnce=TRUE;
       }
     }
@@ -97,26 +96,26 @@ struct DateTimeField
   const char *name;
 };
 
-static std::array<SpecFormat,5> g_specFormats
-{{
+static std::array g_specFormats
+{
   // regular expression,                            num values, offset, format bits
-  { std::string(R"((\d+)-(\d+)-(\d+)\s*(\d+):(\d+):(\d+))"),  6,  0,  SF_Date|SF_Time|SF_Seconds }, // format 13-04-2015 12:34:56
-  { std::string(R"((\d+)-(\d+)-(\d+)\s*(\d+):(\d+))"),        5,  0,  SF_Date|SF_Time            }, // format 13-04-2015 12:34
-  { std::string(R"((\d+)-(\d+)-(\d+))"),                      3,  0,  SF_Date                    }, // format 13-04-2015
-  { std::string(R"((\d+):(\d+):(\d+))"),                      3,  3,  SF_Time|SF_Seconds         }, // format 12:34:56
-  { std::string(R"((\d+):(\d+))"),                            2,  3,  SF_Time                    }  // format 12:34
-}};
+  SpecFormat{ std::string_view(R"((\d+)-(\d+)-(\d+)\s*(\d+):(\d+):(\d+))"),  6,  0,  SF_Date|SF_Time|SF_Seconds }, // format 13-04-2015 12:34:56
+  SpecFormat{ std::string_view(R"((\d+)-(\d+)-(\d+)\s*(\d+):(\d+))"),        5,  0,  SF_Date|SF_Time            }, // format 13-04-2015 12:34
+  SpecFormat{ std::string_view(R"((\d+)-(\d+)-(\d+))"),                      3,  0,  SF_Date                    }, // format 13-04-2015
+  SpecFormat{ std::string_view(R"((\d+):(\d+):(\d+))"),                      3,  3,  SF_Time|SF_Seconds         }, // format 12:34:56
+  SpecFormat{ std::string_view(R"((\d+):(\d+))"),                            2,  3,  SF_Time                    }  // format 12:34
+};
 
-static std::array<DateTimeField,6> g_assignValues
-{{
+static std::array g_assignValues
+{
   // assigner,                                            minVal,     maxVal,    name
-  { [](std::tm &tm,int value) { tm.tm_year = value-1900; }, 1900,       9999,    "year"   },
-  { [](std::tm &tm,int value) { tm.tm_mon  = value-1;    },    1,         12,    "month"  },
-  { [](std::tm &tm,int value) { tm.tm_mday = value;      },    1,         31,    "day"    },
-  { [](std::tm &tm,int value) { tm.tm_hour = value;      },    0,         23,    "hour"   },
-  { [](std::tm &tm,int value) { tm.tm_min  = value;      },    0,         59,    "minute" },
-  { [](std::tm &tm,int value) { tm.tm_sec  = value;      },    0,         59,    "second" }
-}};
+  DateTimeField{ [](std::tm &tm,int value) { tm.tm_year = value-1900; }, 1900,       9999,    "year"   },
+  DateTimeField{ [](std::tm &tm,int value) { tm.tm_mon  = value-1;    },    1,         12,    "month"  },
+  DateTimeField{ [](std::tm &tm,int value) { tm.tm_mday = value;      },    1,         31,    "day"    },
+  DateTimeField{ [](std::tm &tm,int value) { tm.tm_hour = value;      },    0,         23,    "hour"   },
+  DateTimeField{ [](std::tm &tm,int value) { tm.tm_min  = value;      },    0,         59,    "minute" },
+  DateTimeField{ [](std::tm &tm,int value) { tm.tm_sec  = value;      },    0,         59,    "second" }
+};
 
 static void determine_weekday( std::tm& tm )
 {
@@ -142,7 +141,7 @@ QCString dateTimeFromString(const QCString &spec,std::tm &dt,int &format)
   }
 
   // find a matching pattern
-  std::string s = spec.str();
+  const std::string &s = spec.str();
   for (const auto &fmt : g_specFormats)
   {
     reg::Match m;
@@ -179,13 +178,19 @@ QCString formatDateTime(const QCString &format,const std::tm &dt,int &formatUsed
   auto getMonth     = [](const std::tm &dat) { return dat.tm_mon+1;        };
   auto getDay       = [](const std::tm &dat) { return dat.tm_mday;         };
   auto getDayOfWeek = [](const std::tm &dat) { return (dat.tm_wday+6)%7+1; };
-  GrowBuf growBuf;
-  char c;
+  QCString result;
+  result.reserve(256);
+  auto addInt = [&result](const char *fmt,int value) {
+    char tmp[50];
+    qsnprintf(tmp,50,fmt,value);
+    result+=tmp;
+  };
+  char c = 0;
   const char *p            = format.data();
   const char *fmt_zero     = "%02d";
   const char *fmt_nonzero  = "%d";
   const char *fmt_selected = nullptr;
-  if (p==0) return QCString();
+  if (p==nullptr) return QCString();
   while ((c=*p++))
   {
     char nc = *p;
@@ -196,36 +201,35 @@ QCString formatDateTime(const QCString &format,const std::tm &dt,int &formatUsed
         if (nc=='-') nc=*++p; // skip over -
         switch (nc)
         {
-          case '%': growBuf.addChar('%');                                                                              break;
-          case 'y': growBuf.addInt(fmt_selected,getYear(dt)%100);                              formatUsed|=SF_Date;    break;
-          case 'Y': growBuf.addInt("%d",getYear(dt));                                          formatUsed|=SF_Date;    break;
-          case 'm': growBuf.addInt(fmt_selected,getMonth(dt));                                 formatUsed|=SF_Date;    break;
-          case 'b': growBuf.addStr(theTranslator->trMonth(getMonth(dt),false,false));          formatUsed|=SF_Date;    break;
-          case 'B': growBuf.addStr(theTranslator->trMonth(getMonth(dt),false,true));           formatUsed|=SF_Date;    break;
-          case 'd': growBuf.addInt(fmt_selected,getDay(dt));                                   formatUsed|=SF_Date;    break;
-          case 'u': growBuf.addInt("%d",getDayOfWeek(dt));   /* Monday = 1 ... Sunday = 7 */   formatUsed|=SF_Date;    break;
-          case 'w': growBuf.addInt("%d",getDayOfWeek(dt)%7); /* Sunday = 0 ... Saturday = 6 */ formatUsed|=SF_Date;    break;
-          case 'a': growBuf.addStr(theTranslator->trDayOfWeek(getDayOfWeek(dt),false,false));  formatUsed|=SF_Date;    break;
-          case 'A': growBuf.addStr(theTranslator->trDayOfWeek(getDayOfWeek(dt),false,true));   formatUsed|=SF_Date;    break;
-          case 'H': growBuf.addInt(fmt_selected,dt.tm_hour);                                   formatUsed|=SF_Time;    break;
-          case 'I': growBuf.addInt(fmt_selected,dt.tm_hour%12);                                formatUsed|=SF_Time;    break;
-          case 'p': growBuf.addStr(theTranslator->trDayPeriod(dt.tm_hour>=12?1:0));            formatUsed|=SF_Time;    break;
-          case 'M': growBuf.addInt(fmt_selected,dt.tm_min);                                    formatUsed|=SF_Time;    break;
-          case 'S': growBuf.addInt(fmt_selected,dt.tm_sec);                                    formatUsed|=SF_Seconds; break;
+          case '%': result+='%';                                                                                       break;
+          case 'y': addInt(fmt_selected,getYear(dt)%100);                              formatUsed|=SF_Date;    break;
+          case 'Y': addInt("%d",getYear(dt));                                          formatUsed|=SF_Date;    break;
+          case 'm': addInt(fmt_selected,getMonth(dt));                                 formatUsed|=SF_Date;    break;
+          case 'b': result+=theTranslator->trMonth(getMonth(dt),false,false);          formatUsed|=SF_Date;    break;
+          case 'B': result+=theTranslator->trMonth(getMonth(dt),false,true);           formatUsed|=SF_Date;    break;
+          case 'd': addInt(fmt_selected,getDay(dt));                                   formatUsed|=SF_Date;    break;
+          case 'u': addInt("%d",getDayOfWeek(dt));   /* Monday = 1 ... Sunday = 7 */   formatUsed|=SF_Date;    break;
+          case 'w': addInt("%d",getDayOfWeek(dt)%7); /* Sunday = 0 ... Saturday = 6 */ formatUsed|=SF_Date;    break;
+          case 'a': result+=theTranslator->trDayOfWeek(getDayOfWeek(dt),false,false);  formatUsed|=SF_Date;    break;
+          case 'A': result+=theTranslator->trDayOfWeek(getDayOfWeek(dt),false,true);   formatUsed|=SF_Date;    break;
+          case 'H': addInt(fmt_selected,dt.tm_hour);                                   formatUsed|=SF_Time;    break;
+          case 'I': addInt(fmt_selected,dt.tm_hour%12);                                formatUsed|=SF_Time;    break;
+          case 'p': result+=theTranslator->trDayPeriod(dt.tm_hour>=12);                formatUsed|=SF_Time;    break;
+          case 'M': addInt(fmt_selected,dt.tm_min);                                    formatUsed|=SF_Time;    break;
+          case 'S': addInt(fmt_selected,dt.tm_sec);                                    formatUsed|=SF_Seconds; break;
           default:
-            growBuf.addChar(c);
-            if (*(p-1)=='-') growBuf.addChar('-');
-            growBuf.addChar(nc);
+            result+=c;
+            if (*(p-1)=='-') result+='-';
+            result+=nc;
             break;
         }
         p++;
         break;
       default:
-        growBuf.addChar(c);
+        result+=c;
         break;
     }
   }
-  growBuf.addChar(0);
-  return growBuf.get();
+  return result;
 }
 

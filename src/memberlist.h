@@ -18,11 +18,13 @@
 
 #include <vector>
 #include <algorithm>
+#include <utility>
 
 #include "memberdef.h"
 #include "linkedmap.h"
 #include "types.h"
 #include "membergroup.h"
+#include "construct.h"
 
 class GroupDef;
 
@@ -73,7 +75,7 @@ class MemberVector
     }
     void sort()
     {
-      std::sort(m_members.begin(),m_members.end(),lessThan);
+      std::stable_sort(m_members.begin(),m_members.end(),lessThan);
     }
     void inSort(MemberDef *md)
     {
@@ -88,15 +90,31 @@ class MemberVector
     {
       return std::find(m_members.begin(),m_members.end(),md)!=m_members.end();
     }
-    MemberDef *find(const QCString &name)
+    const MemberDef *find(const QCString &name) const
     {
       auto it = std::find_if(m_members.begin(),m_members.end(),[name=name](auto &el) { return el->name()==name; });
       if (it != m_members.end())
       {
         return *it;
       }
-
       return nullptr;
+    }
+    MemberDef *find(const QCString &name)
+    {
+      return const_cast<MemberDef *>(static_cast<const MemberVector *>(this)->find(name));
+    }
+    const MemberDef *findRev(const QCString &name) const
+    {
+      auto it = std::find_if(m_members.rbegin(),m_members.rend(),[name=name](auto &el) { return el->name()==name; });
+      if (it != m_members.rend())
+      {
+        return *it;
+      }
+      return nullptr;
+    }
+    MemberDef *findRev(const QCString &name)
+    {
+      return const_cast<MemberDef *>(static_cast<const MemberVector *>(this)->findRev(name));
     }
   protected:
     Vec m_members;
@@ -108,16 +126,20 @@ class MemberList : public MemberVector
   public:
     MemberList(MemberListType lt,MemberListContainer container);
    ~MemberList();
+    NON_COPYABLE(MemberList)
     MemberListType listType() const { return m_listType; }
-    static QCString listTypeAsString(MemberListType type);
     MemberListContainer container() const { return m_container; }
 
-    int numDecMembers() const    { ASSERT(m_numDecMembers!=-1); return m_numDecMembers; }
+    int numDecMembers(const ClassDef *inheritedFrom) const
+    { return countDecMembers(inheritedFrom).first; }
+    int numDecMembers() const
+    { ASSERT(m_numDecMembers!=-1); return m_numDecMembers; }
     int numDecEnumValues() const { return m_numDecEnumValues; }
     int numDocMembers() const    { ASSERT(m_numDocMembers!=-1); return m_numDocMembers; }
     int numDocEnumValues() const { return m_numDocEnumValues; }
     bool needsSorting() const    { return m_needsSorting; }
-    void countDecMembers();
+    void countDecMembers() const;
+    std::pair<int,int> countDecMembers(const ClassDef *inheritedFrom) const;
     void countDocMembers();
     int countInheritableMembers(const ClassDef *inheritedFrom) const;
     void writePlainDeclarations(OutputList &ol,bool inGroup,
@@ -127,9 +149,9 @@ class MemberList : public MemberVector
                const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,const ModuleDef *mod,
                const QCString &title,const QCString &subtitle,
                bool showEnumValues=FALSE,bool showInline=FALSE,
-               const ClassDef *inheritedFrom=nullptr,MemberListType lt=MemberListType_pubMethods) const;
+               const ClassDef *inheritedFrom=nullptr,MemberListType lt=MemberListType::PubMethods(),bool showSectionTitle=true) const;
     void writeDocumentation(OutputList &ol,const QCString &scopeName,
-               const Definition *container,const QCString &title,
+               const Definition *container,const QCString &title, const QCString &anchor,
                bool showEnumValues=FALSE,bool showInline=FALSE) const;
     void writeSimpleDocumentation(OutputList &ol,const Definition *container) const;
     void writeDocumentationPage(OutputList &ol,
@@ -137,7 +159,8 @@ class MemberList : public MemberVector
     void writeTagFile(TextStream &,bool useQualifiedName=false,bool showNamespaceMembers=true);
     bool declVisible() const;
     void addMemberGroup(MemberGroup *mg);
-    void addListReferences(Definition *def);
+    void addListReferences(const Definition *def);
+    void addRequirementReferences(const Definition *def);
     void findSectionsInDocumentation(const Definition *d);
     void setNeedsSorting(bool b);
     const MemberGroupRefList &getMemberGroupList() const { return m_memberGroupRefList; }
@@ -146,8 +169,8 @@ class MemberList : public MemberVector
 
   private:
     int countEnumValues(const MemberDef *md) const;
-    int m_numDecMembers; // number of members in the brief part of the memberlist
-    int m_numDecEnumValues;
+    mutable int m_numDecMembers; // number of members in the brief part of the memberlist
+    mutable int m_numDecEnumValues;
     int m_numDocMembers; // number of members in the detailed part of the memberlist
     int m_numDocEnumValues;
     MemberGroupRefList m_memberGroupRefList;
@@ -164,6 +187,7 @@ class MemberLists : public std::vector< std::unique_ptr<MemberList> >
 {
   public:
     MemberLists() = default;
+   ~MemberLists() = default;
     const std::unique_ptr<MemberList> &get(MemberListType lt,MemberListContainer con)
     {
       // find the list with the given type
@@ -175,8 +199,7 @@ class MemberLists : public std::vector< std::unique_ptr<MemberList> >
     }
 
   private:
-    MemberLists(const MemberLists &) = delete;
-    MemberLists &operator=(const MemberLists &) = delete;
+    ONLY_DEFAULT_MOVABLE(MemberLists)
 };
 
 

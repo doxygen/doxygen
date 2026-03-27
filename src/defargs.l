@@ -173,10 +173,7 @@ CPPC  "/\/"
 <ReadFuncArgDef>"'"\\."'"		{ yyextra->curArgDefValue+=yytext; }
 <ReadFuncArgDef>"'"."'"			{ yyextra->curArgDefValue+=yytext; }
 <ReadFuncArgDef>{RAWBEGIN}              { yyextra->curArgDefValue+=yytext; 
-                                          QCString text(yytext);
-                                          int i=text.find('"');
-                                          yyextra->delimiter = yytext+i+1;
-                                          yyextra->delimiter=yyextra->delimiter.left(yyextra->delimiter.length()-1);
+                                          yyextra->delimiter = extractBeginRawStringDelimiter(yytext);
                                           BEGIN( CopyRawString );
                                         }
 <ReadFuncArgDef>\"			{
@@ -365,9 +362,7 @@ CPPC  "/\/"
   					}
 <CopyRawString>{RAWEND}                 {
 					  yyextra->curArgDefValue+=yytext;
-                                          QCString delimiter(yytext+1);
-                                          delimiter=delimiter.left(delimiter.length()-1);
-                                          if (delimiter==yyextra->delimiter)
+                                          if (extractEndRawStringDelimiter(yytext)==yyextra->delimiter)
                                           {
 					    BEGIN( ReadFuncArgDef );
                                           }
@@ -507,6 +502,7 @@ CPPC  "/\/"
                                            }
                                            else
                                            {
+  					     yyextra->argSharpCount=0;
                                              yyextra->curTypeConstraint.clear();
                                              yyextra->lastExtendsContext=YY_START;
                                              BEGIN(ReadTypeConstraint);
@@ -539,8 +535,20 @@ CPPC  "/\/"
 					  *yyextra->copyArgValue += *yytext;
 					}
 <ReadTypeConstraint>[,)>]               {
-                                          unput(*yytext);
-                                          BEGIN(yyextra->lastExtendsContext);
+                                          if (yytext[0]!='>' || yyextra->argSharpCount==0)
+                                          {
+                                            unput(*yytext);
+                                            BEGIN(yyextra->lastExtendsContext);
+                                          }
+                                          else
+                                          {
+                                            yyextra->curTypeConstraint+=yytext;
+  					    yyextra->argSharpCount--;
+                                          }
+                                        }
+<ReadTypeConstraint>"<"                 {
+                                          yyextra->curTypeConstraint+=yytext;
+  					  yyextra->argSharpCount++;
                                         }
 <ReadTypeConstraint>.                   {
                                           yyextra->curTypeConstraint+=yytext;
@@ -557,10 +565,10 @@ CPPC  "/\/"
 <FuncQual>"override"                    {
                                         }
 <FuncQual>"&"		    	        {
-                                          yyextra->argList->setRefQualifier(RefQualifierLValue);
+                                          yyextra->argList->setRefQualifier(RefQualifierType::LValue);
 					}
 <FuncQual>"&&"		    	        {
-                                          yyextra->argList->setRefQualifier(RefQualifierRValue);
+                                          yyextra->argList->setRefQualifier(RefQualifierType::RValue);
 					}
 <FuncQual,TrailingReturn>"="{B}*"0"  	{
 					  yyextra->argList->setPureSpecifier(TRUE);
@@ -793,7 +801,7 @@ const char * KeywordHash::find (const char *str, size_t len)
         return s;
     }
   }
-  return 0;
+  return nullptr;
 }
 
 //--- end gperf generated code ----------------------------------------------------------
@@ -801,7 +809,7 @@ const char * KeywordHash::find (const char *str, size_t len)
 /* bug_520975 */
 static bool nameIsActuallyPartOfType(QCString &name)
 {
-  return KeywordHash::find(name.data(),name.length())!=0;
+  return KeywordHash::find(name.data(),name.length())!=nullptr;
 }
 
 /*! Converts an argument string into an ArgumentList.
@@ -823,9 +831,9 @@ std::unique_ptr<ArgumentList> stringToArgumentList(SrcLangExt lang, const QCStri
   defargsYYset_debug(Debug::isFlagSet(Debug::Lex_defargs)?1:0,yyscanner);
 #endif
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  DebugLex debugLex(Debug::Lex_defargs, __FILE__, NULL);
+  DebugLex debugLex(Debug::Lex_defargs, __FILE__, nullptr);
 
-  defargsYYrestart( 0, yyscanner );
+  defargsYYrestart( nullptr, yyscanner );
   BEGIN( Start );
   defargsYYlex(yyscanner);
   if (yyextra->argList->empty())

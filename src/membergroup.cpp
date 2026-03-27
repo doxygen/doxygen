@@ -33,7 +33,7 @@ MemberGroup::MemberGroup(const Definition *container,int id,const QCString &hdr,
                          const QCString &d,const QCString &docFile,int docLine,
                          MemberListContainer con)
   : m_container(container),
-    memberList(std::make_unique<MemberList>(MemberListType_memberGroup,con)),
+    memberList(std::make_unique<MemberList>(MemberListType::MemberGroup(),con)),
     grpId(id), grpHeader(hdr), doc(d), m_docFile(docFile), m_docLine(docLine)
 {
   //printf("New member group id=%d header=%s desc=%s\n",id,hdr,d);
@@ -41,26 +41,19 @@ MemberGroup::MemberGroup(const Definition *container,int id,const QCString &hdr,
   //printf("Member group docs='%s'\n",qPrint(doc));
 }
 
-MemberGroup::~MemberGroup()
-{
-}
-
 void MemberGroup::insertMember(MemberDef *md)
 {
-  //printf("MemberGroup::insertMember memberList=%p count=%d"
-  //       " member section list: %p: md=%p:%s\n",
-  //       memberList->first() ? memberList->first()->getSectionList() : 0,
-  //       memberList->count(),
-  //       md->getSectionList(),
-  //       md,qPrint(md->name()));
+  //printf("MemberGroup::insertMember(%s) inSameSection=%d md->getSectionList()=%s\n",qPrint(md->name()),
+  //    inSameSection,qPrint(md->getSectionList(m_container)->listType().to_string()));
 
-  const MemberDef *firstMd = memberList->empty() ? 0 : memberList->front();
+  MemberDef *firstMd = memberList->empty() ? nullptr : memberList->front();
   if (inSameSection && firstMd &&
       firstMd->getSectionList(m_container)!=md->getSectionList(m_container))
   {
+    //printf("inSameSection=FALSE\n");
     inSameSection=FALSE;
   }
-  else if (inDeclSection==0)
+  else if (inDeclSection==nullptr)
   {
     inDeclSection = const_cast<MemberList*>(md->getSectionList(m_container));
     //printf("inDeclSection=%p type=%d\n",inDeclSection,inDeclSection->listType());
@@ -68,8 +61,8 @@ void MemberGroup::insertMember(MemberDef *md)
   memberList->push_back(md);
 
   // copy the group of the first member in the memberGroup
-  GroupDef *gd;
-  if (firstMd && !firstMd->isAlias() && (gd=const_cast<GroupDef*>(firstMd->getGroupDef())))
+  GroupDef *gd = nullptr;
+  if (firstMd && !firstMd->isAlias() && (gd=firstMd->getGroupDef()))
   {
     MemberDefMutable *mdm = toMemberDefMutable(md);
     if (mdm)
@@ -111,7 +104,7 @@ void MemberGroup::writeDocumentation(OutputList &ol,const QCString &scopeName,
                const Definition *container,bool showEnumValues,bool showInline) const
 {
   //printf("MemberGroup::writeDocumentation() %s\n",qPrint(grpHeader));
-  memberList->writeDocumentation(ol,scopeName,container,QCString(),showEnumValues,showInline);
+  memberList->writeDocumentation(ol,scopeName,container,QCString(),memberList->listType().toLabel(),showEnumValues,showInline);
 }
 
 void MemberGroup::writeDocumentationPage(OutputList &ol,const QCString &scopeName,
@@ -139,7 +132,7 @@ void MemberGroup::addGroupedInheritedMembers(OutputList &ol,const ClassDef *cd,
       MemberList mml(lt,MemberListContainer::Class);
       mml.push_back(md);
       mml.countDecMembers();
-      mml.writePlainDeclarations(ol,false,cd,0,0,0,0,0,inheritedFrom,inheritId);
+      mml.writePlainDeclarations(ol,false,cd,nullptr,nullptr,nullptr,nullptr,0,inheritedFrom,inheritId);
     }
   }
 }
@@ -200,10 +193,10 @@ const Definition *MemberGroup::memberContainer() const
   {
     const MemberDef *md = memberList->front();
     ctx = md->getClassDef();
-    if (ctx==0) ctx = md->getNamespaceDef();
-    if (ctx==0) ctx = md->getFileDef();
+    if (ctx==nullptr) ctx = md->getNamespaceDef();
+    if (ctx==nullptr) ctx = md->getFileDef();
   }
-  return ctx==0 ? m_container : ctx;
+  return ctx==nullptr ? m_container : ctx;
 }
 
 int MemberGroup::countInheritableMembers(const ClassDef *inheritedFrom) const
@@ -271,9 +264,14 @@ int MemberGroup::numDocEnumValues() const
   return memberList->numDocEnumValues();
 }
 
-void MemberGroup::addListReferences(Definition *def)
+void MemberGroup::addListReferences(const Definition *def)
 {
   memberList->addListReferences(def);
+}
+
+void MemberGroup::addRequirementReferences(const Definition *def)
+{
+  memberList->addRequirementReferences(def);
 }
 
 void MemberGroup::findSectionsInDocumentation(const Definition *d)
@@ -287,6 +285,11 @@ void MemberGroup::setRefItems(const RefItemVector &sli)
   m_xrefListItems.insert(m_xrefListItems.end(), sli.cbegin(), sli.cend());
 }
 
+void MemberGroup::setRequirementReferences(const RequirementRefs &rqli)
+{
+  m_requirementRefs.insert(m_requirementRefs.end(), rqli.cbegin(), rqli.cend());
+}
+
 void MemberGroup::writeTagFile(TextStream &tagFile,bool qualifiedName)
 {
   memberList->writeTagFile(tagFile,qualifiedName);
@@ -298,3 +301,10 @@ void MemberGroupInfo::setRefItems(const RefItemVector &sli)
 {
   m_sli.insert(m_sli.end(), sli.cbegin(), sli.cend());
 }
+
+void MemberGroupInfo::setRequirementReferences(const RequirementRefs &rqli)
+{
+  m_rqli.insert(m_rqli.end(), rqli.cbegin(), rqli.cend());
+}
+
+

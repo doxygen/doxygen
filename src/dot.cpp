@@ -105,7 +105,7 @@ DotRunner* DotManager::createRunner(const QCString &absDotName, const QCString& 
     // we have a match
     if (md5Hash != runit->second->getMd5Hash())
     {
-      err("md5 hash does not match for two different runs of %s !\n", qPrint(absDotName));
+      err("md5 hash does not match for two different runs of {} !\n", absDotName);
     }
     rv = runit->second.get();
   }
@@ -120,7 +120,7 @@ DotFilePatcher *DotManager::createFilePatcher(const QCString &fileName)
 
   if (patcher != m_filePatchers.end()) return &(patcher->second);
 
-  auto rv = m_filePatchers.emplace(std::make_pair(fileName.str(), fileName));
+  auto rv = m_filePatchers.emplace(fileName.str(), fileName);
   assert(rv.second);
   return &(rv.first->second);
 }
@@ -137,7 +137,7 @@ bool DotManager::run()
     }
     else
     {
-      msg("Generating dot graphs using %d parallel threads...\n",Config_getInt(DOT_NUM_THREADS));
+      msg("Generating dot graphs using {:d} parallel threads...\n",Config_getInt(DOT_NUM_THREADS));
     }
   }
   size_t i=1;
@@ -169,7 +169,7 @@ bool DotManager::run()
   {
     for (auto & dr : m_runners)
     {
-      msg("Running dot for graph %zu/%zu\n",prev,numDotRuns);
+      msg("Running dot for graph {}/{}\n",prev,numDotRuns);
       dr.second->run();
       prev++;
     }
@@ -189,7 +189,7 @@ bool DotManager::run()
     for (auto &f : results)
     {
       f.get();
-      msg("Running dot for graph %zu/%zu\n",prev,numDotRuns);
+      msg("Running dot for graph {}/{}\n",prev,numDotRuns);
       prev++;
     }
   }
@@ -208,7 +208,7 @@ bool DotManager::run()
   {
     if (fp.second.isSVGFile())
     {
-      msg("Patching output file %zu/%zu\n",i,numFilePatchers);
+      msg("Patching output file {}/{}\n",i,numFilePatchers);
       if (!fp.second.run()) return FALSE;
       i++;
     }
@@ -217,7 +217,7 @@ bool DotManager::run()
   {
     if (!fp.second.isSVGFile())
     {
-      msg("Patching output file %zu/%zu\n",i,numFilePatchers);
+      msg("Patching output file {}/{}\n",i,numFilePatchers);
       if (!fp.second.run()) return FALSE;
       i++;
     }
@@ -234,20 +234,20 @@ void writeDotGraphFromFile(const QCString &inFile,const QCString &outDir,
   Dir d(outDir.str());
   if (!d.exists())
   {
-    term("Output dir %s does not exist!\n",qPrint(outDir));
+    term("Output dir {} does not exist!\n",outDir);
   }
 
   QCString imgExt = getDotImageExtension();
-  QCString imgName = QCString(outFile)+"."+imgExt;
-  QCString absImgName = QCString(d.absPath())+"/"+imgName;
-  QCString absOutFile = QCString(d.absPath())+"/"+outFile;
+  QCString imgName = outFile+"."+imgExt;
+  QCString absImgName = d.absPath()+"/"+imgName;
+  QCString absOutFile = d.absPath()+"/"+outFile;
 
   DotRunner dotRun(inFile);
-  if (format==GOF_BITMAP)
+  if (format==GraphOutputFormat::BITMAP)
   {
     dotRun.addJob(Config_getEnumAsString(DOT_IMAGE_FORMAT),absImgName,srcFile,srcLine);
   }
-  else // format==GOF_EPS
+  else // format==GraphOutputFormat::EPS
   {
     if (Config_getBool(USE_PDFLATEX))
     {
@@ -279,24 +279,25 @@ void writeDotGraphFromFile(const QCString &inFile,const QCString &outDir,
  *  \param graphId a unique id for this graph, use for dynamic sections
  *  \param srcFile the source file
  *  \param srcLine the line number in the source file
+ *  \param newFile signal whether or not the file has been generated before (value `false`) or not.
  */
 void writeDotImageMapFromFile(TextStream &t,
                             const QCString &inFile, const QCString &outDir,
                             const QCString &relPath, const QCString &baseName,
                             const QCString &context,int graphId,
-                            const QCString &srcFile,int srcLine)
+                            const QCString &srcFile,int srcLine, bool newFile)
 {
 
   Dir d(outDir.str());
   if (!d.exists())
   {
-    term("Output dir %s does not exist!\n",qPrint(outDir));
+    term("Output dir {} does not exist!\n",outDir);
   }
 
   QCString mapName = baseName+".map";
   QCString imgExt = getDotImageExtension();
   QCString imgName = baseName+"."+imgExt;
-  QCString absOutFile = QCString(d.absPath())+"/"+mapName;
+  QCString absOutFile = d.absPath()+"/"+mapName;
 
   DotRunner dotRun(inFile);
   dotRun.addJob(MAP_CMD,absOutFile,srcFile,srcLine);
@@ -310,9 +311,12 @@ void writeDotImageMapFromFile(TextStream &t,
   {
     QCString svgName = outDir+"/"+baseName+".svg";
     DotFilePatcher::writeSVGFigureLink(t,relPath,baseName,svgName);
-    DotFilePatcher patcher(svgName);
-    patcher.addSVGConversion("",TRUE,context,TRUE,graphId);
-    patcher.run();
+    if (newFile)
+    {
+      DotFilePatcher patcher(svgName);
+      patcher.addSVGConversion("",TRUE,context,TRUE,graphId);
+      patcher.run();
+    }
   }
   else // bitmap graphics
   {

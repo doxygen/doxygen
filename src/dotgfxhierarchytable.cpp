@@ -50,7 +50,7 @@ void DotGfxHierarchyTable::computeTheGraph()
   {
     if (node->subgraphId()==m_rootSubgraphNode->subgraphId())
     {
-      node->write(md5stream,Hierarchy,GOF_BITMAP,FALSE,TRUE,TRUE);
+      node->write(md5stream,GraphType::Hierarchy,GraphOutputFormat::BITMAP,FALSE,TRUE,TRUE);
     }
   }
   writeGraphFooter(md5stream);
@@ -69,7 +69,7 @@ void DotGfxHierarchyTable::createGraph(DotNode *n,TextStream &out,
   m_graphId = id;
   m_noDivTag = TRUE;
   m_zoomable = FALSE;
-  DotGraph::writeGraph(out, GOF_BITMAP, EOF_Html, path, fileName, "", TRUE, 0);
+  DotGraph::writeGraph(out, GraphOutputFormat::BITMAP, EmbeddedOutputFormat::Html, path, fileName, "", TRUE, 0);
 }
 
 void DotGfxHierarchyTable::writeGraph(TextStream &out,
@@ -84,15 +84,15 @@ void DotGfxHierarchyTable::writeGraph(TextStream &out,
   // store the original directory
   if (!d.exists())
   {
-    term("Output dir %s does not exist!\n",qPrint(path));
+    term("Output dir {} does not exist!\n",path);
   }
 
   // put each connected subgraph of the hierarchy in a row of the HTML output
   out << "<table border=\"0\" cellspacing=\"10\" cellpadding=\"0\">\n";
 
   int count=0;
-  std::sort(m_rootSubgraphs.begin(),m_rootSubgraphs.end(),
-            [](auto n1,auto n2) { return qstricmp(n1->label(),n2->label())<0; });
+  std::stable_sort(m_rootSubgraphs.begin(),m_rootSubgraphs.end(),
+            [](auto n1,auto n2) { return qstricmp_sort(n1->label(),n2->label())<0; });
   for (auto n : m_rootSubgraphs)
   {
     out << "<tr><td>";
@@ -164,7 +164,7 @@ void DotGfxHierarchyTable::addHierarchy(DotNode *n,const ClassDef *cd,ClassDefSe
         //   bn->parents()  ? bn->parents()->count()  : 0
         //  );
         //printf("  inserting %s (%p)\n",qPrint(bClass->name()),bn);
-        m_usedNodes.insert(std::make_pair(bClass->name().str(),std::move(bn))); // add node to the used list
+        m_usedNodes.emplace(bClass->name().str(),std::move(bn)); // add node to the used list
       }
       if (visitedClasses.find(bClass)==visitedClasses.end() && !bClass->subClasses().empty())
       {
@@ -212,7 +212,7 @@ void DotGfxHierarchyTable::addClassList(const ClassLinkedMap &cl,ClassDefSet &vi
         tmp_url);
       DotNode *root = n.get();
 
-      m_usedNodes.insert(std::make_pair(cd->name().str(),std::move(n)));
+      m_usedNodes.emplace(cd->name().str(),std::move(n));
       m_rootNodes.push_back(root);
       if (visitedClasses.find(cd.get())==visitedClasses.end() && !cd->subClasses().empty())
       {

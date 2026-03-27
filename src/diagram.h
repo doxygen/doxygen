@@ -21,6 +21,7 @@
 
 #include <memory>
 #include "qcstring.h"
+#include "construct.h"
 
 class ClassDef;
 class TextStream;
@@ -31,6 +32,7 @@ class ClassDiagram
   public:
     ClassDiagram(const ClassDef *root);
    ~ClassDiagram();
+    NON_COPYABLE(ClassDiagram)
     void writeFigure(TextStream &t,const QCString &path,
                      const QCString &file) const;
     void writeImage(TextStream &t,const QCString &path,const QCString &relPath,

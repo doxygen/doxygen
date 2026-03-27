@@ -17,7 +17,7 @@
 #include "config.h"
 #include "util.h"
 
-enum  { GEN_SEC=0x1, PARAM_SEC,CONTEXT_SEC,PROTECTED_SEC } ;
+enum  class VhdlSection { UNKNOWN = 0, GEN_SEC=0x1, PARAM_SEC,CONTEXT_SEC,PROTECTED_SEC } ;
 //void  parserVhdlfile(const char* inputBuffer);
 
 /** \brief VHDL parser using state-based lexical scanning.
@@ -28,14 +28,15 @@ class VHDLOutlineParser : public OutlineParserInterface
 {
   public:
     VHDLOutlineParser();
-    virtual ~VHDLOutlineParser();
+   ~VHDLOutlineParser() override;
+    NON_COPYABLE(VHDLOutlineParser)
     void parseInput(const QCString &fileName,
                     const char *fileBuf,
                     const std::shared_ptr<Entry> &root,
-                    ClangTUParser *clangParser);
+                    ClangTUParser *clangParser) override;
 
-    bool needsPreprocessing(const QCString &) const { return TRUE; }
-    void parsePrototype(const QCString &text);
+    bool needsPreprocessing(const QCString &) const override { return TRUE; }
+    void parsePrototype(const QCString &text) override;
 
 
     // interface for generated parser code

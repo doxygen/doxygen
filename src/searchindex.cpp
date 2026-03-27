@@ -27,7 +27,6 @@
 #include "doxygen.h"
 #include "language.h"
 #include "pagedef.h"
-#include "growbuf.h"
 #include "message.h"
 #include "groupdef.h"
 #include "filedef.h"
@@ -58,7 +57,7 @@ void SearchIndex::IndexWord::addUrlIndex(int idx,bool hiPriority)
   if (it==m_urls.end())
   {
     //printf("URLInfo::URLInfo(%d)\n",idx);
-    it = m_urls.insert(std::make_pair(idx,URLInfo(idx,0))).first;
+    it = m_urls.emplace(idx,URLInfo(idx,0)).first;
   }
   it->second.freq+=2;
   if (hiPriority) it->second.freq|=1; // mark as high priority document
@@ -73,7 +72,7 @@ SearchIndex::SearchIndex()
 
 void SearchIndex::setCurrentDoc(const Definition *ctx,const QCString &anchor,bool isSourceFile)
 {
-  if (ctx==0) return;
+  if (ctx==nullptr) return;
   std::lock_guard<std::mutex> lock(g_searchIndexMutex);
   assert(!isSourceFile || ctx->definitionType()==Definition::TypeFile);
   //printf("SearchIndex::setCurrentDoc(%s,%s,%s)\n",name,baseName,anchor);
@@ -162,13 +161,13 @@ void SearchIndex::setCurrentDoc(const Definition *ctx,const QCString &anchor,boo
   if (it == m_url2IdMap.end()) // new entry
   {
     m_urlIndex = m_urlMaxIndex++;
-    m_url2IdMap.insert(std::make_pair(baseUrl.str(),m_urlIndex));
-    m_urls.insert(std::make_pair(m_urlIndex,URL(name,url)));
+    m_url2IdMap.emplace(baseUrl.str(),m_urlIndex);
+    m_urls.emplace(m_urlIndex,URL(name,url));
   }
   else // existing entry
   {
     m_urlIndex=it->second;
-    m_urls.insert(std::make_pair(it->second,URL(name,url)));
+    m_urls.emplace(it->second,URL(name,url));
   }
 }
 
@@ -203,15 +202,14 @@ void SearchIndex::addWordRec(const QCString &word,bool hiPriority,bool recurse)
   if (it==m_words.end())
   {
     //fprintf(stderr,"addWord(%s) at index %d\n",word,idx);
-    m_index[idx].push_back(IndexWord(wStr));
-    it = m_words.insert({ wStr.str(), static_cast<int>(m_index[idx].size())-1 }).first;
+    m_index[idx].emplace_back(wStr);
+    it = m_words.emplace( wStr.str(), static_cast<int>(m_index[idx].size())-1 ).first;
   }
   m_index[idx][it->second].addUrlIndex(m_urlIndex,hiPriority);
-  int i;
   bool found=FALSE;
   if (!recurse) // the first time we check if we can strip the prefix
   {
-    i=getPrefixIndex(word);
+    int i=getPrefixIndex(word);
     if (i>0)
     {
       addWordRec(word.data()+i,hiPriority,TRUE);
@@ -220,7 +218,7 @@ void SearchIndex::addWordRec(const QCString &word,bool hiPriority,bool recurse)
   }
   if (!found) // no prefix stripped
   {
-    i=0;
+    int i=0;
     while (word[i]!=0 &&
            !((word[i]=='_' || word[i]==':' || (word[i]>='a' && word[i]<='z')) &&  // [_a-z:]
              (word[i+1]>='A' && word[i+1]<='Z')))                                 // [A-Z]
@@ -257,12 +255,11 @@ static void writeString(std::ostream &f,const QCString &s)
 
 void SearchIndex::write(const QCString &fileName)
 {
-  size_t i;
   size_t size=4; // for the header
   size+=4*numIndexEntries; // for the index
   size_t wordsOffset = size;
   // first pass: compute the size of the wordlist
-  for (i=0;i<numIndexEntries;i++)
+  for (size_t i=0;i<numIndexEntries;i++)
   {
     const auto &wlist = m_index[i];
     if (!wlist.empty())
@@ -279,7 +276,7 @@ void SearchIndex::write(const QCString &fileName)
   // second pass: compute the offsets in the index
   size_t indexOffsets[numIndexEntries];
   size_t offset=wordsOffset;
-  for (i=0;i<numIndexEntries;i++)
+  for (size_t i=0;i<numIndexEntries;i++)
   {
     const auto &wlist = m_index[i];
     if (!wlist.empty())
@@ -306,7 +303,7 @@ void SearchIndex::write(const QCString &fileName)
   int count=0;
 
   // third pass: compute offset to stats info for each word
-  for (i=0;i<numIndexEntries;i++)
+  for (size_t i=0;i<numIndexEntries;i++)
   {
     const auto &wlist = m_index[i];
     if (!wlist.empty())
@@ -334,13 +331,13 @@ void SearchIndex::write(const QCString &fileName)
     // write header
     f.put('D'); f.put('O'); f.put('X'); f.put('S');
     // write index
-    for (i=0;i<numIndexEntries;i++)
+    for (size_t i=0;i<numIndexEntries;i++)
     {
       writeInt(f,indexOffsets[i]);
     }
     // write word lists
     count=0;
-    for (i=0;i<numIndexEntries;i++)
+    for (size_t i=0;i<numIndexEntries;i++)
     {
       const auto &wlist = m_index[i];
       if (!wlist.empty())
@@ -354,9 +351,9 @@ void SearchIndex::write(const QCString &fileName)
       }
     }
     // write extra padding bytes
-    for (i=0;i<padding;i++) f.put(0);
+    for (size_t i=0;i<padding;i++) f.put(0);
     // write word statistics
-    for (i=0;i<numIndexEntries;i++)
+    for (size_t i=0;i<numIndexEntries;i++)
     {
       const auto &wlist = m_index[i];
       if (!wlist.empty())
@@ -468,9 +465,25 @@ void SearchIndexExternal::setCurrentDoc(const Definition *ctx,const QCString &an
     {
       e.args = (toMemberDef(ctx))->argsString();
     }
+    else if (ctx->definitionType()==Definition::TypeGroup)
+    {
+      const GroupDef *gd = toGroupDef(ctx);
+      if (!gd->groupTitle().isEmpty())
+      {
+        e.name = filterTitle(gd->groupTitle());
+      }
+    }
+    else if (ctx->definitionType()==Definition::TypePage)
+    {
+      const PageDef *pd = toPageDef(ctx);
+      if (pd->hasTitle())
+      {
+        e.name = filterTitle(pd->title());
+      }
+    }
     e.extId = extId;
     e.url  = url;
-    it = m_docEntries.insert({key.str(),e}).first;
+    it = m_docEntries.emplace(key.str(),e).first;
     //printf("searchIndexExt %s : %s\n",qPrint(e->name),qPrint(e->url));
   }
   m_current = &it->second;
@@ -479,10 +492,10 @@ void SearchIndexExternal::setCurrentDoc(const Definition *ctx,const QCString &an
 void SearchIndexExternal::addWord(const QCString &word,bool hiPriority)
 {
   std::lock_guard<std::mutex> lock(g_searchIndexMutex);
-  if (word.isEmpty() || !isId(word[0]) || m_current==0) return;
-  GrowBuf *pText = hiPriority ? &m_current->importantText : &m_current->normalText;
-  if (pText->getPos()>0) pText->addChar(' ');
-  pText->addStr(word);
+  if (word.isEmpty() || !isId(word[0]) || m_current==nullptr) return;
+  QCString &text = hiPriority ? m_current->importantText : m_current->normalText;
+  if (!text.isEmpty()) text+=' ';
+  text+=word;
   //printf("addWord %s\n",word);
 }
 
@@ -495,8 +508,6 @@ void SearchIndexExternal::write(const QCString &fileName)
     t << "<add>\n";
     for (auto &[name,doc] : m_docEntries)
     {
-      doc.normalText.addChar(0);    // make sure buffer ends with a 0 terminator
-      doc.importantText.addChar(0); // make sure buffer ends with a 0 terminator
       t << "  <doc>\n";
       t << "    <field name=\"type\">"     << doc.type << "</field>\n";
       t << "    <field name=\"name\">"     << convertToXML(doc.name) << "</field>\n";
@@ -509,15 +520,15 @@ void SearchIndexExternal::write(const QCString &fileName)
         t << "    <field name=\"tag\">"      << convertToXML(doc.extId)  << "</field>\n";
       }
       t << "    <field name=\"url\">"      << convertToXML(doc.url)  << "</field>\n";
-      t << "    <field name=\"keywords\">" << convertToXML(doc.importantText.get())  << "</field>\n";
-      t << "    <field name=\"text\">"     << convertToXML(doc.normalText.get())     << "</field>\n";
+      t << "    <field name=\"keywords\">" << convertToXML(doc.importantText)  << "</field>\n";
+      t << "    <field name=\"text\">"     << convertToXML(doc.normalText)     << "</field>\n";
       t << "  </doc>\n";
     }
     t << "</add>\n";
   }
   else
   {
-    err("Failed to open file %s for writing!\n",qPrint(fileName));
+    err("Failed to open file {} for writing!\n",fileName);
   }
 }
 
@@ -530,11 +541,13 @@ void initSearchIndexer()
   bool externalSearch    = Config_getBool(EXTERNAL_SEARCH);
   if (searchEngine && serverBasedSearch)
   {
-    Doxygen::searchIndex = std::make_unique<SearchIndexIntf>(externalSearch ? SearchIndexIntf::External : SearchIndexIntf::Internal);
+    Doxygen::searchIndex.setKind(externalSearch ? SearchIndexIntf::External : SearchIndexIntf::Internal);
   }
 }
 
 void finalizeSearchIndexer()
 {
-  Doxygen::searchIndex.reset();
+  Doxygen::searchIndex.setKind(SearchIndexIntf::Disabled);
 }
+
+

@@ -141,7 +141,7 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
 
     /*! this is the first part of a sentence that is followed by a class name */
     QCString trThisIsTheListOfAllMembers() override
-    { return "Dette er den fullstendige listen over medlemmer for "; }
+    { return "Dette er den fullstendige listen over medlemmer for"; }
 
     /*! this is the remainder of the sentence after the class name */
     QCString trIncludingInheritedMembers() override
@@ -349,8 +349,8 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
 
 
     /*! This is used in HTML as the title of index.html. */
-    QCString trDocumentation() override
-    { return "Dokumentasjon"; }
+    QCString trDocumentation(const QCString &projName) override
+    { return (!projName.isEmpty()?projName + " " : "") + "Dokumentasjon"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * index of all groups.
@@ -658,9 +658,8 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
     QCString trWriteList(int numEntries) override
     {
       QCString result;
-      int i;
       // the inherits list contain `numEntries' classes
-      for (i=0;i<numEntries;i++)
+      for (int i=0;i<numEntries;i++)
       {
         // use generateMarker to generate placeholders for the class links!
         result+=generateMarker(i); // generate marker for entry i in the list
@@ -1196,9 +1195,7 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
      */
     QCString trClass(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Klasse" : "klasse"));
-      if (!singular)  result+="r";
-      return result;
+      return createNoun(first_capital, singular, "klasse", "r");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1207,9 +1204,7 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
      */
     QCString trFile(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Fil" : "fil"));
-      if (!singular)  result+="er";
-      return result;
+      return createNoun(first_capital, singular, "fil", "er");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1218,9 +1213,7 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
      */
     QCString trNamespace(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Navnerom" : "navnerom"));
-      if (!singular)  result+="";
-      return result;
+      return createNoun(first_capital, false, "navnerom", "");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1229,9 +1222,7 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
      */
     QCString trGroup(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Gruppe" : "gruppe"));
-      if (!singular)  result+="r";
-      return result;
+      return createNoun(first_capital, singular, "gruppe", "r");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1240,9 +1231,7 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
      */
     QCString trPage(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Side" : "side"));
-      if (!singular)  result+="r";
-      return result;
+      return createNoun(first_capital, singular, "side", "r");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1251,9 +1240,7 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
      */
     QCString trMember(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Medlem" : "medlem"));
-      if (!singular)  result+="mer";
-      return result;
+      return createNoun(first_capital, singular, "medlem", "mer");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1262,9 +1249,7 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
      */
     QCString trGlobal(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Global" : "global"));
-      if (!singular)  result+="e";
-      return result;
+      return createNoun(first_capital, singular, "global", "e");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1275,9 +1260,7 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
      *  for the author section in man pages. */
     QCString trAuthor(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Forfatter" : "forfatter"));
-      if (!singular)  result+="e";
-      return result;
+      return createNoun(first_capital, singular, "forfatter", "e");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1461,7 +1444,7 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
 
     /*! This is used in HTML as the title of page with source code for file filename
          */
-    QCString trSourceFile(QCString& filename) override
+    QCString trSourceFile(const QCString& filename) override
     {
        	return "Kildefil " + filename;
     }
@@ -1495,13 +1478,11 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
     { QCString result=dirName; result+=" Katalog referanse"; return result; }
 
     /*! This returns the word directory with or without starting capital
-     *  (\a first_capital) and in sigular or plural form (\a singular).
+     *  (\a first_capital) and in singular or plural form (\a singular).
      */
     QCString trDir(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Katalog" : "katalog"));
-      if (!singular) result+="er";
-      return result;
+      return createNoun(first_capital, singular, "katalog", "er");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1534,10 +1515,10 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
       if (first_capital) return text.mid(0,1).upper()+text.mid(1);
       else return text;
     }
-    QCString trDayPeriod(int period) override
+    QCString trDayPeriod(bool period) override
     {
       static const char *dayPeriod[] = { "f.m.", "e.m." };
-      return dayPeriod[period];
+      return dayPeriod[period?1:0];
     }
 };
 

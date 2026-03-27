@@ -124,7 +124,7 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
 
     /*! this is the first part of a sentence that is followed by a class name */
     QCString trThisIsTheListOfAllMembers() override
-    { return "Berikut ini daftar lengkap anggota untuk "; }
+    { return "Berikut ini daftar lengkap anggota untuk"; }
 
     /*! this is the remainder of the sentence after the class name */
     QCString trIncludingInheritedMembers() override
@@ -331,8 +331,8 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
     // index titles (the project name is prepended for these)
 
     /*! This is used in HTML as the title of index.html. */
-    QCString trDocumentation() override
-    { return "Dokumentasi"; }
+    QCString trDocumentation(const QCString &projName) override
+    { return (!projName.isEmpty()?projName + " " : "") + "Dokumentasi"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * index of all groups.
@@ -634,9 +634,8 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
     QCString trWriteList(int numEntries) override
     {
       QCString result;
-      int i;
       // the inherits list contain `numEntries' classes
-      for (i=0;i<numEntries;i++)
+      for (int i=0;i<numEntries;i++)
       {
         // use generateMarker to generate placeholders for the class links!
         result+=generateMarker(i); // generate marker for entry i in the list
@@ -1172,9 +1171,7 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
      */
     QCString trClass(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Kelas" : "kelas"));
-      if (!singular) result+="-kelas";
-      return result;
+      return createNoun(first_capital, singular, "kelas", "-kelas");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1183,9 +1180,7 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
      */
     QCString trFile(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "File" : "file"));
-      if (!singular) result+="-file";
-      return result;
+      return createNoun(first_capital, singular, "file", "-file");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1194,8 +1189,7 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
      */
     QCString trNamespace(bool first_capital, bool) override
     {
-      QCString result((first_capital ? "Namespace" : "namespace"));
-      return result;
+      return createNoun(first_capital, false, "namespace", "");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1204,9 +1198,7 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
      */
     QCString trGroup(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Kelompok" : "kelompok"));
-      if (!singular) result+="-kelompok";
-      return result;
+      return createNoun(first_capital, singular, "kelompok", "-kelompok");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1215,9 +1207,7 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
      */
     QCString trPage(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Halaman" : "halaman"));
-      if (!singular) result+="-halaman";
-      return result;
+      return createNoun(first_capital, singular, "halaman", "-halaman");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1226,9 +1216,7 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
      */
     QCString trMember(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Anggota" : "anggota"));
-      if (!singular) result+="-anggota";
-      return result;
+      return createNoun(first_capital, singular, "anggota", "-anggota");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1237,10 +1225,8 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
      */
     QCString trGlobal(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Definisi" : "definisi"));
-      if (!singular)  result+="-definisi";
-      result += " global";
-      return result;
+      return createNoun(first_capital, singular, "definisi", "-definisi") +
+                " global";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1251,9 +1237,7 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
      *  for the author section in man pages. */
     QCString trAuthor(bool first_capital, bool) override
     {
-      QCString result((first_capital ? "Penulis" : "penulis"));
-      //if (!singular)  result+="s";
-      return result;
+      return createNoun(first_capital, false, "penulis", "");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1437,7 +1421,7 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
 
     /*! This is used in HTML as the title of page with source code for file filename
      */
-    QCString trSourceFile(QCString& filename) override
+    QCString trSourceFile(const QCString& filename) override
     {
       return "Kode Sumber:" + filename;
     }
@@ -1471,13 +1455,11 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
     { QCString result="Referensi Direktori "; result+=dirName; return result; }
 
     /*! This returns the word directory with or without starting capital
-     *  (\a first_capital) and in sigular or plural form (\a singular).
+     *  (\a first_capital) and in singular or plural form (\a singular).
      */
     QCString trDir(bool first_capital, bool) override
     {
-      QCString result((first_capital ? "Direktori" : "direktori"));
-      //if (singular) result+="y"; else result+="ies";
-      return result;
+      return createNoun(first_capital, false, "direktori", "");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1655,9 +1637,7 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
      */
     QCString trModule(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Modul" : "modul"));
-      if (!singular)  result+="-modul";
-      return result;
+      return createNoun(first_capital, singular, "modul", "-modul");
     }
     /*! This is put at the bottom of a module documentation page and is
      *  followed by a list of files that were used to generate the page.
@@ -1689,9 +1669,7 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
      */
     QCString trType(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Tipe" : "tipe"));
-      if (!singular)  result+="-tipe";
-      return result;
+      return createNoun(first_capital, singular, "tipe", "-tipe");
     }
     /*! This is used for translation of the word that will possibly
      *  be followed by a single name or by a list of names
@@ -1699,9 +1677,7 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
      */
     QCString trSubprogram(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Subprogram" : "subprogram"));
-      if (!singular)  result+="-subprogram";
-      return result;
+      return createNoun(first_capital, singular, "subprogram", "-subprogram");
     }
 
     /*! C# Type Constraint list */
@@ -1808,10 +1784,10 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
       static const char *months_full[]  = { "Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember" };
       return full? months_full[month-1] : months_short[month-1];
     }
-    QCString trDayPeriod(int period) override
+    QCString trDayPeriod(bool period) override
     {
       static const char *dayPeriod[] = { "AM", "PM" };
-      return dayPeriod[period];
+      return dayPeriod[period?1:0];
     }
 
 //////////////////////////////////////////////////////////////////////////

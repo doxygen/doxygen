@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="class_container_3_01_elem5_01_4" kind="class" language="C++" prot="public">
+    <compoundname>Container&lt; Elem5 &gt;</compoundname>
+    <innerclass refid="struct_container_3_01_elem5_01_4_1_1_nested" prot="public">Container&lt; Elem5 &gt;::Nested</innerclass>
+    <templateparamlist>
+    </templateparamlist>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="class_container_3_01_elem5_01_4_1af27fc554d1ab2cff4b9bbbe01cee4b37" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void Container&lt; Elem5 &gt;::specialization</definition>
+        <argsstring>()</argsstring>
+        <name>specialization</name>
+        <qualifiedname>Container&lt; Elem5 &gt;::specialization</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="106_specialization.cpp" line="28" column="10" bodyfile="106_specialization.cpp" bodystart="28" bodyend="31"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="106_specialization.cpp" line="25" column="1" bodyfile="106_specialization.cpp" bodystart="26" bodyend="33"/>
+    <listofallmembers>
+      <member refid="class_container_3_01_elem5_01_4_1af27fc554d1ab2cff4b9bbbe01cee4b37" prot="public" virt="non-virtual">
+        <scope>Container&lt; Elem5 &gt;</scope>
+        <name>specialization</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

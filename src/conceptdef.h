@@ -26,15 +26,22 @@ class ModuleDef;
 class ConceptDef : public Definition
 {
   public:
-    virtual DefType definitionType() const = 0;
-    virtual QCString getOutputFileBase() const = 0;
+    ABSTRACT_BASE_CLASS(ConceptDef)
+
+    enum class PartType { Code, Doc };
+    struct Part
+    {
+      Part(PartType t,const QCString &s,int ln,int col) : type(t), content(s), lineNr(ln), colNr(col) {}
+      PartType type;
+      QCString content;
+      int lineNr;
+      int colNr;
+    };
+    using Parts = std::vector<Part>;
+
     virtual bool hasDetailedDescription() const = 0;
-    virtual QCString displayName(bool includeScope=true) const = 0;
     virtual const IncludeInfo *includeInfo() const = 0;
     virtual ArgumentList getTemplateParameterList() const = 0;
-    virtual QCString anchor() const = 0;
-    virtual bool isLinkableInProject() const = 0;
-    virtual bool isLinkable() const = 0;
     virtual QCString initializer() const = 0;
     virtual void writeDeclarationLink(OutputList &ol,bool &found,
                               const QCString &header,bool localNames) const = 0;
@@ -43,11 +50,14 @@ class ConceptDef : public Definition
     virtual const ModuleDef *getModuleDef() const = 0;
     virtual QCString title() const = 0;
     virtual int groupId() const = 0;
+    virtual Parts conceptParts() const = 0;
 };
 
 class ConceptDefMutable : public DefinitionMutable, public ConceptDef
 {
   public:
+    ABSTRACT_BASE_CLASS(ConceptDefMutable)
+
     virtual void setIncludeFile(FileDef *fd,const QCString &incName,bool local,bool force) = 0;
     virtual void setTemplateArguments(const ArgumentList &al) = 0;
     virtual void setNamespace(NamespaceDef *nd) = 0;
@@ -58,6 +68,10 @@ class ConceptDefMutable : public DefinitionMutable, public ConceptDef
     virtual void findSectionsInDocumentation() = 0;
     virtual void setGroupId(int id) = 0;
     virtual void setModuleDef(ModuleDef *mod) = 0;
+    virtual void addListReferences() = 0;
+    virtual void addRequirementReferences() = 0;
+    virtual void addDocPart(const QCString &doc,int lineNr,int colNr) = 0;
+    virtual void addCodePart(const QCString &code,int lineNr,int colNr) = 0;
 };
 
 std::unique_ptr<ConceptDef> createConceptDef(
@@ -85,7 +99,6 @@ ConceptDef        *toConceptDef(Definition *d);
 ConceptDef        *toConceptDef(DefinitionMutable *d);
 const ConceptDef  *toConceptDef(const Definition *d);
 ConceptDefMutable *toConceptDefMutable(Definition *d);
-ConceptDefMutable *toConceptDefMutable(const Definition *d);
 
 // --- Helpers
 

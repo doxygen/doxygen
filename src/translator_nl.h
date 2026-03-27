@@ -131,7 +131,7 @@ class TranslatorDutch : public Translator
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
-        return "Glabale members";
+        return "Globale members";
       }
       else
       {
@@ -242,8 +242,8 @@ class TranslatorDutch : public Translator
     QCString trModulesDescription() override
     { return "Hieronder volgt de lijst met alle modules:"; }
 
-    QCString trDocumentation() override
-    { return "Documentatie"; }
+    QCString trDocumentation(const QCString &projName) override
+    { return (!projName.isEmpty()?projName + " " : "") + "Documentatie"; }
     QCString trModuleIndex() override
     { return "Module Index"; }
     QCString trHierarchicalIndex() override
@@ -437,9 +437,8 @@ class TranslatorDutch : public Translator
       // this function is used to produce a comma-separated list of items.
       // use generateMarker(i) to indicate where item i should be put.
       QCString result;
-      int i;
       // the inherits list contain `numEntries' classes
-      for (i=0;i<numEntries;i++)
+      for (int i=0;i<numEntries;i++)
       {
         // use generateMarker to generate placeholders for the class links!
         result+=generateMarker(i); // generate marker for entry i in the list
@@ -541,7 +540,7 @@ class TranslatorDutch : public Translator
         case ClassDef::Exception:  result+="deze exceptie"; break;
         default: break;
       }
-      result+=" is gegenereerd op grond van ";
+      result+=" is gegenereerd op basis van ";
       if (single) result+="het"; else result+="de";
       result+=" volgende bestand";
       if (single) result+=":"; else result+="en:";
@@ -968,9 +967,7 @@ class TranslatorDutch : public Translator
      */
     QCString trClass(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Klasse" : "klasse"));
-      if (!singular)  result+="n";
-      return result;
+      return createNoun(first_capital, singular, "klasse", "n");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -979,9 +976,7 @@ class TranslatorDutch : public Translator
      */
     QCString trFile(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Bestand" : "bestand"));
-      if (!singular)  result+="en";
-      return result;
+      return createNoun(first_capital, singular, "bestand", "en");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -990,9 +985,7 @@ class TranslatorDutch : public Translator
      */
     QCString trNamespace(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Namespace" : "namespace"));
-      if (!singular)  result+="s";
-      return result;
+      return createNoun(first_capital, singular, "namespace", "s");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1001,9 +994,7 @@ class TranslatorDutch : public Translator
      */
     QCString trGroup(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Groep" : "groep"));
-      if (!singular)  result+="en";
-      return result;
+      return createNoun(first_capital, singular, "groep", "en");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1012,9 +1003,7 @@ class TranslatorDutch : public Translator
      */
     QCString trPage(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Pagina" : "pagina"));
-      if (!singular)  result+="s";
-      return result;
+      return createNoun(first_capital, singular, "pagina", "s");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1023,9 +1012,7 @@ class TranslatorDutch : public Translator
      */
     QCString trMember(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Member" : "member"));
-      if (!singular)  result+="s";
-      return result;
+      return createNoun(first_capital, singular, "member", "s");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1034,9 +1021,7 @@ class TranslatorDutch : public Translator
      */
     QCString trGlobal(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Globale member" : "globale member"));
-      if (!singular)  result+="s";
-      return result;
+      return createNoun(first_capital, singular, "globale member", "s");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1047,9 +1032,7 @@ class TranslatorDutch : public Translator
      *  for the author section in man pages. */
     QCString trAuthor(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Auteur" : "auteur"));
-      if (!singular)  result+="s";
-      return result;
+      return createNoun(first_capital, singular, "auteur", "s");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1227,7 +1210,7 @@ class TranslatorDutch : public Translator
 
     /*! This is used in HTML as the title of page with source code for file filename
      */
-    QCString trSourceFile(QCString& filename) override
+    QCString trSourceFile(const QCString& filename) override
     {
       return filename + " Bron Bestand";
     }
@@ -1261,13 +1244,11 @@ class TranslatorDutch : public Translator
     { QCString result=dirName; result+=" Folder Referentie"; return result; }
 
     /*! This returns the word directory with or without starting capital
-     *  (\a first_capital) and in sigular or plural form (\a singular).
+     *  (\a first_capital) and in singular or plural form (\a singular).
      */
     QCString trDir(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Folder" : "folder"));
-      if (!singular) result+="s";
-      return result;
+      return createNoun(first_capital, singular, "folder", "s");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1426,9 +1407,7 @@ class TranslatorDutch : public Translator
      */
     QCString trModule(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Module" : "module"));
-      if (!singular)  result+="n";
-      return result;
+      return createNoun(first_capital, singular, "module", "n");
     }
     /*! This is put at the bottom of a module documentation page and is
      *  followed by a list of files that were used to generate the page.
@@ -1449,7 +1428,7 @@ class TranslatorDutch : public Translator
         case ClassDef::Exception:  result+="deze exception"; break;
         default: break;
       }
-      result+=" is gegenereerd op grond van ";
+      result+=" is gegenereerd op basis van ";
       if (single) result+="het"; else result+="de";
       result+=" volgende bestand";
       if (single) result+=":"; else result+="en:";
@@ -1461,9 +1440,7 @@ class TranslatorDutch : public Translator
      */
     QCString trType(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Type" : "type"));
-      if (!singular)  result+="s";
-      return result;
+      return createNoun(first_capital, singular, "type", "s");
     }
     /*! This is used for translation of the word that will possibly
      *  be followed by a single name or by a list of names
@@ -1471,12 +1448,10 @@ class TranslatorDutch : public Translator
      */
     QCString trSubprogram(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Subprogramma" : "subprogramma"));
-      if (!singular)  result+="s";
-      return result;
+      return createNoun(first_capital, singular, "subprogramma", "s");
     }
 
-    /*! C# Type Contraint list */
+    /*! C# Type Constraint list */
     QCString trTypeConstraints() override
     {
       return "Type Beperkingen";
@@ -1573,10 +1548,10 @@ class TranslatorDutch : public Translator
       if (first_capital) return text.mid(0,1).upper()+text.mid(1);
       else return text;
     }
-    QCString trDayPeriod(int period) override
+    QCString trDayPeriod(bool period) override
     {
       static const char *dayPeriod[] = { "a.m.", "p.m." };
-      return dayPeriod[period];
+      return dayPeriod[period?1:0];
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1613,7 +1588,7 @@ class TranslatorDutch : public Translator
 
     /*! Used file list for a Java enum */
     QCString trEnumGeneratedFromFiles(bool single) override
-    { QCString result = "De documentatie voor deze enum is gegenereerd op grond van ";
+    { QCString result = "De documentatie voor deze enum is gegenereerd op basis van ";
       if (single) result+="het"; else result+="de";
       result+=" volgende bestand";
       if (single) result+=":"; else result+="en:";
@@ -1645,7 +1620,7 @@ class TranslatorDutch : public Translator
     QCString trPanelSynchronisationTooltip(bool enable) override
     {
       QCString opt = enable ? "in" : "uit";
-      return "klik hier de paneel synchronisatie "+opt+" the schakelen";
+      return "klik hier om de paneel synchronisatie "+opt+" te schakelen";
     }
 
     /*! Used in a method of an Objective-C class that is declared in a
@@ -1728,7 +1703,7 @@ class TranslatorDutch : public Translator
     }
     /** UNO IDL service page */
     QCString trServiceGeneratedFromFiles(bool single) override
-    { QCString result = "De documentatie voor deze service is gegenereerd op grond van ";
+    { QCString result = "De documentatie voor deze service is gegenereerd op basis van ";
       if (single) result+="het"; else result+="de";
       result+=" volgende bestand";
       if (single) result+=":"; else result+="en:";
@@ -1736,7 +1711,7 @@ class TranslatorDutch : public Translator
     }
     /** UNO IDL singleton page */
     QCString trSingletonGeneratedFromFiles(bool single) override
-    { QCString result = "De documentatie voor deze singleton is gegenereerd op grond van ";
+    { QCString result = "De documentatie voor deze singleton is gegenereerd op basis van ";
       if (single) result+="het"; else result+="de";
       result+=" volgende bestand";
       if (single) result+=":"; else result+="en:";
@@ -1947,9 +1922,7 @@ class TranslatorDutch : public Translator
 //////////////////////////////////////////////////////////////////////////
     QCString trConcept(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Concept" : "concept"));
-      if (!singular) result+="en";
-      return result;
+      return createNoun(first_capital, singular, "concept", "en");
     }
 
     QCString trConceptReference(const QCString &conceptName) override
@@ -1996,7 +1969,7 @@ class TranslatorDutch : public Translator
      *  followed by a single name of the VHDL process flowchart.
      */
     QCString trFlowchart() override
-    { return "Stroomschema: "; }
+    { return "Stroomschema:"; }
 
     /*! Please translate also updated body of the method
      *  trMemberFunctionDocumentation(), now better adapted for
@@ -2312,6 +2285,71 @@ class TranslatorDutch : public Translator
     {
       return "Kopiëren naar het klembord";
     }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.11.0
+//////////////////////////////////////////////////////////////////////////
+
+    QCString trImportant() override
+    {
+      return "Belangrijk";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.16.0
+//////////////////////////////////////////////////////////////////////////
+
+    // the title of the requirements overview page
+    QCString trRequirements() override
+    {
+      return "Vereisten";
+    }
+    // table header for the column with the requirements IDs
+    QCString trRequirementID() override
+    {
+      return "ID";
+    }
+    // indicates a symbol implements (satisfies) a requirement
+    QCString trSatisfies(bool singular) override
+    {
+      return createNoun(true, singular, "Voldoet aan vereiste", "n");
+    }
+    // indicates a requirement is satisfied (implemented) by one or more symbols
+    QCString trSatisfiedBy(const QCString &list) override
+    {
+      return "Wordt aan voldaan door "+list+".";
+    }
+    QCString trUnsatisfiedRequirements() override
+    {
+      return "Onvoldane Vereisten";
+    }
+    QCString trUnsatisfiedRequirementsText(bool singular,const QCString &list) override
+    {
+      return singular ?
+        "De vereiste "+list+" mist de 'voldaan' relatie." :
+        "De vereisten "+list+" missen de 'voldaan' relatie.";
+    }
+    // indicates a symbol verifies (tests) a requirement
+    QCString trVerifies(bool singular) override
+    {
+      return createNoun(true, singular, "Verifieert vereiste", "n");
+    }
+    // indicates a requirement is verified (tested) by one or more symbols
+    QCString trVerifiedBy(const QCString &list) override
+    {
+      return "Wordt geverifieerd door "+list+".";
+    }
+    QCString trUnverifiedRequirements() override
+    {
+      return "Ongeverifieerde vereisten";
+    }
+    QCString trUnverifiedRequirementsText(bool singular,const QCString &list) override
+    {
+      return singular ?
+        "De vereiste "+list+" mist de 'verifieer' relatie." :
+        "De vereisten "+list+" missen de 'verifieer' relatie.";
+    }
+
 };
 
 #endif
