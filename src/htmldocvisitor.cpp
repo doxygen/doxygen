@@ -33,6 +33,7 @@
 #include "htmlentity.h"
 #include "emoji.h"
 #include "plantuml.h"
+#include "mermaid.h"
 #include "formula.h"
 #include "fileinfo.h"
 #include "indexlist.h"
@@ -642,6 +643,41 @@ void HtmlDocVisitor::operator()(const DocVerbatim &s)
         {
           m_t << "<div class=\"plantumlgraph\">\n";
           writePlantUMLFile(baseName,s.relPath(),s.context(),s.srcFile(),s.srcLine());
+          visitCaption(m_t, s);
+          m_t << "</div>\n";
+        }
+        forceStartParagraph(s);
+      }
+      break;
+    case DocVerbatim::Mermaid:
+      {
+        forceEndParagraph(s);
+        QCString mermaidRenderMode = Config_getEnumAsString(MERMAID_RENDER_MODE);
+        if (mermaidRenderMode=="CLI")
+        {
+          // CLI mode: pre-generate image via mmdc
+          QCString htmlOutput = Config_getString(HTML_OUTPUT);
+          QCString imgExt = getDotImageExtension();
+          MermaidManager::OutputFormat format = MermaidManager::MERM_BITMAP;
+          if (imgExt=="svg")
+          {
+            format = MermaidManager::MERM_SVG;
+          }
+          QCString baseName = MermaidManager::instance().writeMermaidSource(
+                                      htmlOutput,s.exampleFile(),
+                                      s.text(),format,s.srcFile(),s.srcLine());
+          m_t << "<div class=\"mermaidgraph\">\n";
+          writeMermaidFile(baseName,s.relPath(),s.context(),s.srcFile(),s.srcLine());
+          visitCaption(m_t, s);
+          m_t << "</div>\n";
+        }
+        else
+        {
+          // CLIENT_SIDE or AUTO mode: embed for client-side rendering
+          m_t << "<div class=\"mermaidgraph\">\n";
+          m_t << "<pre class=\"mermaid\">\n";
+          m_t << s.text();
+          m_t << "</pre>\n";
           visitCaption(m_t, s);
           m_t << "</div>\n";
         }
@@ -1840,6 +1876,61 @@ void HtmlDocVisitor::operator()(const DocPlantUmlFile &df)
   forceStartParagraph(df);
 }
 
+void HtmlDocVisitor::operator()(const DocMermaidFile &df)
+{
+  if (m_hide) return;
+  if (!Config_getBool(DOT_CLEANUP)) copyFile(df.file(),Config_getString(HTML_OUTPUT)+"/"+stripPath(df.file()));
+  forceEndParagraph(df);
+  QCString mermaidRenderMode = Config_getEnumAsString(MERMAID_RENDER_MODE);
+  if (mermaidRenderMode=="CLI")
+  {
+    QCString htmlOutput = Config_getString(HTML_OUTPUT);
+    QCString imgExt = getDotImageExtension();
+    MermaidManager::OutputFormat format = MermaidManager::MERM_BITMAP;
+    if (imgExt=="svg")
+    {
+      format = MermaidManager::MERM_SVG;
+    }
+    std::string inBuf;
+    readInputFile(df.file(),inBuf);
+    QCString baseName = MermaidManager::instance().writeMermaidSource(htmlOutput,QCString(),
+                                      inBuf,format,df.srcFile(),df.srcLine());
+    m_t << "<div class=\"mermaidgraph\">\n";
+    writeMermaidFile(baseName,df.relPath(),QCString(),df.srcFile(),df.srcLine());
+    if (df.hasCaption())
+    {
+      m_t << "<div class=\"caption\">\n";
+    }
+    visitChildren(df);
+    if (df.hasCaption())
+    {
+      m_t << "</div>\n";
+    }
+    m_t << "</div>\n";
+  }
+  else
+  {
+    // CLIENT_SIDE or AUTO: embed mermaid source for client-side rendering
+    std::string inBuf;
+    readInputFile(df.file(),inBuf);
+    m_t << "<div class=\"mermaidgraph\">\n";
+    m_t << "<pre class=\"mermaid\">\n";
+    m_t << inBuf;
+    m_t << "</pre>\n";
+    if (df.hasCaption())
+    {
+      m_t << "<div class=\"caption\">\n";
+    }
+    visitChildren(df);
+    if (df.hasCaption())
+    {
+      m_t << "</div>\n";
+    }
+    m_t << "</div>\n";
+  }
+  forceStartParagraph(df);
+}
+
 void HtmlDocVisitor::operator()(const DocLink &lnk)
 {
   if (m_hide) return;
@@ -2239,6 +2330,24 @@ void HtmlDocVisitor::writePlantUMLFile(const QCString &fileName, const QCString 
   else
   {
     PlantumlManager::instance().generatePlantUMLOutput(fileName,outDir,PlantumlManager::PUML_BITMAP);
+    m_t << "<img src=\"" << relPath << baseName << ".png" << "\" />\n";
+  }
+}
+
+void HtmlDocVisitor::writeMermaidFile(const QCString &fileName, const QCString &relPath,
+                                      const QCString &,const QCString &/* srcFile */,int /* srcLine */)
+{
+  QCString baseName=makeBaseName(fileName);
+  QCString outDir = Config_getString(HTML_OUTPUT);
+  QCString imgExt = getDotImageExtension();
+  if (imgExt=="svg")
+  {
+    MermaidManager::instance().generateMermaidOutput(fileName,outDir,MermaidManager::MERM_SVG);
+    m_t << "<object type=\"image/svg+xml\" data=\"" << relPath << baseName << ".svg\"></object>\n";
+  }
+  else
+  {
+    MermaidManager::instance().generateMermaidOutput(fileName,outDir,MermaidManager::MERM_BITMAP);
     m_t << "<img src=\"" << relPath << baseName << ".png" << "\" />\n";
   }
 }

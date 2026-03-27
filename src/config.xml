@@ -2150,6 +2150,9 @@ doxygen -w html new_header.html new_footer.html new_stylesheet.css YourConfigFil
  <dt><code>$mathjax</code><dd>will be replaced with a links to
             the JavaScript and style sheets needed for the MathJax feature
             (or an empty string when \ref cfg_use_mathjax "USE_MATHJAX" is disabled).
+ <dt><code>$mermaidjs</code><dd>will be replaced with the script tag to load
+            mermaid.js for client-side diagram rendering (or an empty string
+            when \ref cfg_mermaid_render_mode "MERMAID_RENDER_MODE" is set to \c CLI).
  <dt><code>$relpath^</code><dd>
             If \ref cfg_create_subdirs "CREATE_SUBDIRS" is enabled, the command <code>$relpath^</code> can be
             used to produce a relative path to the root of the HTML output directory,
