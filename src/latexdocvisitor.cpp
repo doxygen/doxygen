@@ -2063,7 +2063,7 @@ void LatexDocVisitor::endPlantUmlFile(bool hasCaption)
 
 void LatexDocVisitor::writeMermaidFile(const QCString &baseName, const DocVerbatim &s)
 {
-  QCString shortName = makeShortName(baseName);
+  QCString shortName = stripPath(baseName);
   if (shortName.find('.')==-1) shortName += ".png";
   QCString outDir = Config_getString(LATEX_OUTPUT);
   MermaidManager::instance().generateMermaidOutput(baseName,outDir,MermaidManager::MERM_BITMAP);
@@ -2088,7 +2088,7 @@ void LatexDocVisitor::startMermaidFile(const QCString &fileName,
                               outDir,QCString(),inBuf,
                               MermaidManager::MERM_BITMAP,
                               srcFile,srcLine);
-  QCString shortName = makeShortName(baseName);
+  QCString shortName = stripPath(baseName);
   if (shortName.find('.')==-1) shortName += ".png";
   MermaidManager::instance().generateMermaidOutput(baseName,outDir,MermaidManager::MERM_BITMAP);
   visitPreStart(m_t,hasCaption, shortName, width, height);

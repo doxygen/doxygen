@@ -2338,7 +2338,7 @@ void HtmlDocVisitor::writePlantUMLFile(const QCString &fileName, const QCString 
 void HtmlDocVisitor::writeMermaidFile(const QCString &fileName, const QCString &relPath,
                                       const QCString &,const QCString &/* srcFile */,int /* srcLine */)
 {
-  QCString baseName=makeBaseName(fileName);
+  QCString baseName=makeBaseName(fileName,".mmd");
   QCString outDir = Config_getString(HTML_OUTPUT);
   QCString imgExt = getDotImageExtension();
   if (imgExt=="svg")

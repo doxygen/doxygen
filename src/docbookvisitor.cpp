@@ -1615,7 +1615,7 @@ DB_VIS_C
 void DocbookDocVisitor::writeMermaidFile(const QCString &baseName, const DocVerbatim &s)
 {
 DB_VIS_C
-  QCString shortName = makeShortName(baseName);
+  QCString shortName = stripPath(baseName);
   QCString outDir = Config_getString(DOCBOOK_OUTPUT);
   MermaidManager::instance().generateMermaidOutput(baseName,outDir,MermaidManager::MERM_BITMAP);
   visitPreStart(m_t, s.children(), s.hasCaption(), s.relPath() + shortName + ".png", s.width(),s.height());
@@ -1639,7 +1639,7 @@ DB_VIS_C
   readInputFile(fileName,inBuf);
   QCString baseName = MermaidManager::instance().writeMermaidSource(outDir,
                            QCString(),inBuf,MermaidManager::MERM_BITMAP,srcFile,srcLine);
-  QCString shortName = makeShortName(baseName);
+  QCString shortName = stripPath(baseName);
   MermaidManager::instance().generateMermaidOutput(baseName,outDir,MermaidManager::MERM_BITMAP);
   m_t << "<para>\n";
   visitPreStart(m_t, children, hasCaption, relPath + shortName + ".png", width, height);

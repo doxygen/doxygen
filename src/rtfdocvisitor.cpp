@@ -1796,7 +1796,7 @@ void RTFDocVisitor::writePlantUMLFile(const QCString &fileName, bool hasCaption)
 
 void RTFDocVisitor::writeMermaidFile(const QCString &fileName, bool hasCaption)
 {
-  QCString baseName=makeBaseName(fileName);
+  QCString baseName=makeBaseName(fileName,".mmd");
   QCString outDir = Config_getString(RTF_OUTPUT);
   MermaidManager::instance().generateMermaidOutput(fileName,outDir,MermaidManager::MERM_BITMAP);
   includePicturePreRTF(baseName + ".png", true, hasCaption);
