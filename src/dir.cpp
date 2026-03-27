@@ -260,7 +260,7 @@ bool Dir::exists() const
   return fi.exists() && fi.isDir();
 }
 
-bool Dir::isEmpty(const std::string subdir) const
+bool Dir::isEmpty(const std::string &subdir) const
 {
   fs::path pth = path();
   pth /= subdir;
@@ -330,10 +330,12 @@ bool Dir::rename(const std::string &orgName,const std::string &newName,bool acce
 bool Dir::copy(const std::string &srcName,const std::string &dstName,bool acceptsAbsPath) const
 {
   const auto copyOptions = fs::copy_options::overwrite_existing;
-  std::error_code ec;
+  std::error_code ec, ec_perm;
   std::string sn = filePath(srcName,acceptsAbsPath);
   std::string dn = filePath(dstName,acceptsAbsPath);
   fs::copy(sn,dn,copyOptions,ec);
+  // make sure the destination is writable for the owner (see issue #11600)
+  fs::permissions(dn, fs::perms::owner_write, fs::perm_options::add, ec_perm);
   return !ec;
 }
 
@@ -354,7 +356,6 @@ bool Dir::setCurrent(const std::string &path)
 
 std::string Dir::cleanDirPath(const std::string &path)
 {
-  std::error_code ec;
   std::string result = fs::path(path).lexically_normal().string();
   correctPath(result);
   return result;

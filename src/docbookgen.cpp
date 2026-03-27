@@ -50,7 +50,6 @@
 #include "dirdef.h"
 #include "section.h"
 #include "dir.h"
-#include "growbuf.h"
 #include "outputlist.h"
 #include "moduledef.h"
 
@@ -308,8 +307,11 @@ DB_GEN_C1(*m_t)
 void DocbookCodeGenerator::endCodeFragment(const QCString &)
 {
 DB_GEN_C1(*m_t)
+  bool wasHidden = m_hide;
+  m_hide = false;
   //endCodeLine checks is there is still an open code line, if so closes it.
   endCodeLine();
+  m_hide = wasHidden;
 
   *m_t << "</programlisting>";
 }
@@ -389,7 +391,7 @@ void DocbookGenerator::cleanup()
 }
 
 
-void DocbookGenerator::startFile(const QCString &name,const QCString &,const QCString &,int,int)
+void DocbookGenerator::startFile(const QCString &name,bool,const QCString &,const QCString &,int,int)
 {
 DB_GEN_C
   QCString fileName=name;
@@ -614,7 +616,7 @@ DB_GEN_C2("IndexSection " << is)
         {
           if (dd->isLinkableInProject())
           {
-            m_t << "<    xi:include href=\"" << dd->getOutputFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>\n";
+            m_t << "    <xi:include href=\"" << dd->getOutputFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>\n";
           }
         }
       }
@@ -627,7 +629,7 @@ DB_GEN_C2("IndexSection " << is)
         {
           if (nd->isLinkableInProject() && !nd->isAlias())
           {
-            m_t << "<xi:include href=\"" << nd->getOutputFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>\n";
+            m_t << "    <xi:include href=\"" << nd->getOutputFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>\n";
           }
         }
       }
@@ -640,7 +642,7 @@ DB_GEN_C2("IndexSection " << is)
         {
           if (cd->isLinkableInProject() && !cd->isAlias())
           {
-            m_t << "<xi:include href=\"" << cd->getOutputFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>\n";
+            m_t << "    <xi:include href=\"" << cd->getOutputFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>\n";
           }
         }
       }
@@ -723,11 +725,11 @@ DB_GEN_C
     m_pageLinks += link;
 }
 
-void DocbookGenerator::writeDoc(const IDocNodeAST *ast,const Definition *ctx,const MemberDef *,int)
+void DocbookGenerator::writeDoc(const IDocNodeAST *ast,const Definition *ctx,const MemberDef *,int,int sectionLevel)
 {
 DB_GEN_C
   auto astImpl = dynamic_cast<const DocNodeAST*>(ast);
-  if (astImpl)
+  if (astImpl && sectionLevel<=m_tocState.maxLevel)
   {
     DocbookDocVisitor visitor(m_t,*m_codeList,ctx?ctx->getDefFileExtension():QCString());
     std::visit(visitor,astImpl->root);
@@ -830,7 +832,7 @@ void DocbookGenerator::endBold()
 DB_GEN_C
   m_t << "</emphasis>";
 }
-void DocbookGenerator::startGroupHeader(int extraIndentLevel)
+void DocbookGenerator::startGroupHeader(const QCString &,int extraIndentLevel)
 {
 DB_GEN_C2("m_inLevel " << m_inLevel)
 DB_GEN_C2("extraIndentLevel " << extraIndentLevel)
@@ -969,12 +971,12 @@ void DocbookGenerator::endMemberDocName()
 {
 DB_GEN_C
 }
-void DocbookGenerator::startMemberGroupHeader(bool)
+void DocbookGenerator::startMemberGroupHeader(const QCString &,bool)
 {
 DB_GEN_C
   m_t << "<simplesect><title>";
 }
-void DocbookGenerator::endMemberGroupHeader()
+void DocbookGenerator::endMemberGroupHeader(bool)
 {
 DB_GEN_C
   m_t << "</title>\n";
@@ -1412,56 +1414,65 @@ DB_GEN_C
   m_t << theTranslator->trInheritedFrom(convertToDocBook(title), objectLinkToString(ref, file, anchor, name));
 }
 
-void DocbookGenerator::writeLocalToc(const SectionRefs &sectionRefs,const LocalToc &localToc)
+void DocbookGenerator::startLocalToc(int level)
 {
-  if (localToc.isDocbookEnabled())
+  m_tocState.level=1;
+  m_tocState.maxLevel=level;
+  m_tocState.inLi = BoolVector(level+1,false);
+  m_t << "    <toc>\n";
+  m_t << "    <title>" << theTranslator->trRTFTableOfContents() << "</title>\n";
+}
+
+void DocbookGenerator::endLocalToc()
+{
+  if (m_tocState.level > m_tocState.maxLevel) m_tocState.level = m_tocState.maxLevel;
+  while (m_tocState.level>1 && m_tocState.level <= m_tocState.maxLevel)
   {
-    m_t << "    <toc>\n";
-    m_t << "    <title>" << theTranslator->trRTFTableOfContents() << "</title>\n";
-    int level=1;
-    int maxLevel = localToc.docbookLevel();
-    BoolVector inLi(maxLevel+1,false);
-    for (const SectionInfo *si : sectionRefs)
+    m_t << "</tocdiv>\n";
+    m_tocState.level--;
+  }
+  m_t << "    </toc>\n";
+}
+
+void DocbookGenerator::startTocEntry(const SectionInfo *si)
+{
+  SectionType type = si->type();
+  if (type.isSection())
+  {
+    //printf("  level=%d title=%s\n",level,qPrint(si->title));
+    int nextLevel = type.level();
+    if (nextLevel>m_tocState.level)
     {
-      SectionType type = si->type();
-      if (type.isSection())
+      for (int l=m_tocState.level;l<nextLevel;l++)
       {
-        //printf("  level=%d title=%s\n",level,qPrint(si->title));
-        int nextLevel = type.level();
-        if (nextLevel>level)
-        {
-          for (int l=level;l<nextLevel;l++)
-          {
-            if (l < maxLevel) m_t << "    <tocdiv>\n";
-          }
-        }
-        else if (nextLevel<level)
-        {
-          for (int l=level;l>nextLevel;l--)
-          {
-            inLi[l]=FALSE;
-            if (l <= maxLevel) m_t << "    </tocdiv>\n";
-          }
-        }
-        if (nextLevel <= maxLevel)
-        {
-          QCString titleDoc = convertToDocBook(si->title());
-          QCString label    = convertToDocBook(si->label());
-          if (titleDoc.isEmpty()) titleDoc = label;
-          m_t << "      <tocentry>" << titleDoc << "</tocentry>\n";
-        }
-        inLi[nextLevel]=TRUE;
-        level = nextLevel;
+        if (l < m_tocState.maxLevel) m_t << "    <tocdiv>\n";
       }
     }
-    if (level > maxLevel) level = maxLevel;
-    while (level>1 && level <= maxLevel)
+    else if (nextLevel<m_tocState.level)
     {
-      inLi[level]=FALSE;
-      m_t << "</tocdiv>\n";
-      level--;
+      for (int l=m_tocState.level;l>nextLevel;l--)
+      {
+        m_tocState.inLi[l]=false;
+        if (l <= m_tocState.maxLevel) m_t << "    </tocdiv>\n";
+      }
     }
-    m_t << "    </toc>\n";
+    if (nextLevel <= m_tocState.maxLevel)
+    {
+      QCString label = convertToDocBook(si->label());
+      m_t << "      <tocentry>";
+    }
+  }
+}
+
+void DocbookGenerator::endTocEntry(const SectionInfo *si)
+{
+  SectionType type = si->type();
+  int nextLevel = type.level();
+  if (type.isSection() && nextLevel <= m_tocState.maxLevel)
+  {
+    m_t << "</tocentry>\n";
+    m_tocState.inLi[nextLevel]=true;
+    m_tocState.level = nextLevel;
   }
 }
 
@@ -1473,7 +1484,8 @@ static constexpr auto hex="0123456789ABCDEF";
 QCString convertToDocBook(const QCString &s, const bool retainNewline)
 {
   if (s.isEmpty()) return s;
-  GrowBuf growBuf;
+  QCString result;
+  result.reserve(s.length()+32);
   const char *p = s.data();
   const char *q = nullptr;
   int cnt = 0;
@@ -1482,9 +1494,15 @@ QCString convertToDocBook(const QCString &s, const bool retainNewline)
   {
     switch (c)
     {
-      case '\n': if (retainNewline) growBuf.addStr("<literallayout>&#160;&#xa;</literallayout>"); growBuf.addChar(c);   break;
-      case '<':  growBuf.addStr("&lt;");   break;
-      case '>':  growBuf.addStr("&gt;");   break;
+      case '\n':
+        if (retainNewline) 
+        {
+          result+="<literallayout>&#160;&#xa;</literallayout>";
+          result+=c;
+        }
+        break;
+      case '<':  result+="&lt;";   break;
+      case '>':  result+="&gt;";   break;
       case '&':  // possibility to have a special symbol
         q = p;
         cnt = 2; // we have to count & and ; as well
@@ -1500,37 +1518,36 @@ QCString convertToDocBook(const QCString &s, const bool retainNewline)
            if (res == HtmlEntityMapper::Sym_Unknown)
            {
              p++;
-             growBuf.addStr("&amp;");
+             result+="&amp;";
            }
            else
            {
-             growBuf.addStr(HtmlEntityMapper::instance().docbook(res));
+             result+=HtmlEntityMapper::instance().docbook(res);
              q++;
              p = q;
            }
         }
         else
         {
-          growBuf.addStr("&amp;");
+          result+="&amp;";
         }
         break;
-      case '\'': growBuf.addStr("&apos;"); break;
-      case '"':  growBuf.addStr("&quot;"); break;
+      case '\'': result+="&apos;"; break;
+      case '"':  result+="&quot;"; break;
       case  1: case  2: case  3: case  4: case  5: case  6: case 7:  case  8:
       case 11: case 12: case 14: case 15: case 16: case 17: case 18:
       case 19: case 20: case 21: case 22: case 23: case 24: case 25: case 26:
       case 27: case 28: case 29: case 30: case 31:
-        growBuf.addStr("&#x24");
-        growBuf.addChar(hex[static_cast<uint8_t>(c)>>4]);
-        growBuf.addChar(hex[static_cast<uint8_t>(c)&0xF]);
-        growBuf.addChar(';');
+        result+="&#x24";
+        result+=hex[static_cast<uint8_t>(c)>>4];
+        result+=hex[static_cast<uint8_t>(c)&0xF];
+        result+=';';
         break;
       default:
-        growBuf.addChar(c);
+        result+=c;
         break;
     }
   }
-  growBuf.addChar(0);
-  return growBuf.get();
+  return result;
 }
 

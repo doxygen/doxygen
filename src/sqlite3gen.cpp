@@ -189,6 +189,7 @@ const char * table_schema[][2] = {
       "\tvolatile             INTEGER DEFAULT 0, -- 0:no 1:yes\n"
       "\tvirt                 INTEGER DEFAULT 0, -- 0:no 1:virtual 2:pure-virtual\n"
       "\tmutable              INTEGER DEFAULT 0, -- 0:no 1:yes\n"
+      "\tthread_local         INTEGER DEFAULT 0, -- 0:no 1:yes\n"
       "\tinitonly             INTEGER DEFAULT 0, -- 0:no 1:yes\n"
       "\tattribute            INTEGER DEFAULT 0, -- 0:no 1:yes\n"
       "\tproperty             INTEGER DEFAULT 0, -- 0:no 1:yes\n"
@@ -623,6 +624,7 @@ SqlStmt memberdef_insert={
     "volatile,"
     "virt,"
     "mutable,"
+    "thread_local,"
     "initonly,"
     "attribute,"
     "property,"
@@ -682,6 +684,7 @@ SqlStmt memberdef_insert={
     ":volatile,"
     ":virt,"
     ":mutable,"
+    ":thread_local,"
     ":initonly,"
     ":attribute,"
     ":property,"
@@ -1020,6 +1023,8 @@ static void insertMemberReference(const MemberDef *src, const MemberDef *dst, co
 
 static void insertMemberFunctionParams(int memberdef_id, const MemberDef *md, const Definition *def)
 {
+  LinkifyTextOptions options;
+  options.setScope(def).setFileScope(md->getBodyDef()).setSelf(md);
   const ArgumentList &declAl = md->declArgumentList();
   const ArgumentList &defAl = md->argumentList();
   if (declAl.size()>0)
@@ -1043,13 +1048,13 @@ static void insertMemberFunctionParams(int memberdef_id, const MemberDef *md, co
       if (!a.type.isEmpty())
       {
         StringVector list;
-        linkifyText(TextGeneratorSqlite3Impl(list),def,md->getBodyDef(),md,a.type);
+        linkifyText(TextGeneratorSqlite3Impl(list),a.type,options);
 
         for (const auto &s : list)
         {
           QCString qsrc_refid = md->getOutputFileBase() + "_1" + md->anchor();
           struct Refid src_refid = insertRefid(qsrc_refid);
-          struct Refid dst_refid = insertRefid(s.c_str());
+          struct Refid dst_refid = insertRefid(s);
           insertMemberReference(src_refid,dst_refid, "argument");
         }
         bindTextParameter(param_select,":type",a.type);
@@ -1073,7 +1078,7 @@ static void insertMemberFunctionParams(int memberdef_id, const MemberDef *md, co
       if (!a.defval.isEmpty())
       {
         StringVector list;
-        linkifyText(TextGeneratorSqlite3Impl(list),def,md->getBodyDef(),md,a.defval);
+        linkifyText(TextGeneratorSqlite3Impl(list),a.defval,options);
         bindTextParameter(param_select,":defval",a.defval);
         bindTextParameter(param_insert,":defval",a.defval);
       }
@@ -1372,7 +1377,7 @@ static void writeTemplateArgumentList(const ArgumentList &al,
   {
     if (!a.type.isEmpty())
     {
-//#warning linkifyText(TextGeneratorXMLImpl(t),scope,fileScope,0,a.type);
+//#warning linkifyText(TextGeneratorXMLImpl(t),a.type,LinkifyTextOptions().setScope(scope).setFileScope(fileScope));
       bindTextParameter(param_select,":type",a.type);
       bindTextParameter(param_insert,":type",a.type);
     }
@@ -1385,7 +1390,7 @@ static void writeTemplateArgumentList(const ArgumentList &al,
     }
     if (!a.defval.isEmpty())
     {
-//#warning linkifyText(TextGeneratorXMLImpl(t),scope,fileScope,0,a.defval);
+//#warning linkifyText(TextGeneratorXMLImpl(t),a.defval,LinkifyTextOptions().setScope(scope).setFileScope(fileScope));
       bindTextParameter(param_select,":defval",a.defval);
       bindTextParameter(param_insert,":defval",a.defval);
     }
@@ -1419,19 +1424,13 @@ QCString getSQLDocBlock(const Definition *scope,
 
   TextStream t;
   auto parser { createDocParser() };
-  auto ast    { validatingParseDoc(
-                *parser.get(),
-                fileName,
-                lineNr,
-                scope,
-                toMemberDef(def),
-                doc,
-                FALSE,
-                FALSE,
-                QCString(),
-                FALSE,
-                FALSE,
-                Config_getBool(MARKDOWN_SUPPORT))
+  auto ast    { validatingParseDoc(*parser.get(),
+                                   fileName,
+                                   lineNr,
+                                   scope,
+                                   toMemberDef(def),
+                                   doc,
+                                   DocOptions())
               };
   auto astImpl = dynamic_cast<const DocNodeAST*>(ast.get());
   if (astImpl)
@@ -1443,7 +1442,7 @@ QCString getSQLDocBlock(const Definition *scope,
         scope ? scope->getDefFileExtension() : QCString(""));
     std::visit(visitor,astImpl->root);
   }
-  return convertCharEntitiesToUTF8(t.str().c_str());
+  return convertCharEntitiesToUTF8(t.str());
 }
 
 static void getSQLDesc(SqlStmt &s,const char *col,const QCString &value,const Definition *def)
@@ -1694,6 +1693,7 @@ static void generateSqlite3ForMember(const MemberDef *md, struct Refid scope_ref
   if (md->memberType() == MemberType::Variable)
   {
     bindIntParameter(memberdef_insert,":mutable",md->isMutable());
+    bindIntParameter(memberdef_insert,":thread_local",md->isThreadLocal());
     bindIntParameter(memberdef_insert,":initonly",md->isInitonly());
     bindIntParameter(memberdef_insert,":attribute",md->isAttribute());
     bindIntParameter(memberdef_insert,":property",md->isProperty());
@@ -1757,6 +1757,9 @@ static void generateSqlite3ForMember(const MemberDef *md, struct Refid scope_ref
     step(reimplements_insert,TRUE);
   }
 
+  LinkifyTextOptions options;
+  options.setScope(def).setFileScope(md->getBodyDef()).setSelf(md);
+
   // + declaration/definition arg lists
   if (md->memberType()!=MemberType::Define &&
       md->memberType()!=MemberType::Enumeration
@@ -1769,7 +1772,7 @@ static void generateSqlite3ForMember(const MemberDef *md, struct Refid scope_ref
     QCString typeStr = md->typeString();
     stripQualifiers(typeStr);
     StringVector list;
-    linkifyText(TextGeneratorSqlite3Impl(list), def, md->getBodyDef(),md,typeStr);
+    linkifyText(TextGeneratorSqlite3Impl(list),typeStr,options);
     if (!typeStr.isEmpty())
     {
       bindTextParameter(memberdef_insert,":type",typeStr);
@@ -1794,19 +1797,19 @@ static void generateSqlite3ForMember(const MemberDef *md, struct Refid scope_ref
     bindTextParameter(memberdef_insert,":initializer",md->initializer());
 
     StringVector list;
-    linkifyText(TextGeneratorSqlite3Impl(list),def,md->getBodyDef(),md,md->initializer());
+    linkifyText(TextGeneratorSqlite3Impl(list),md->initializer(),options);
     for (const auto &s : list)
     {
       if (md->getBodyDef())
       {
         DBG_CTX(("initializer:%s %s %s %d\n",
               qPrint(md->anchor()),
-              s.c_str(),
+              qPrint(s),
               qPrint(md->getBodyDef()->getDefFileName()),
               md->getStartBodyLine()));
         QCString qsrc_refid = md->getOutputFileBase() + "_1" + md->anchor();
         struct Refid src_refid = insertRefid(qsrc_refid);
-        struct Refid dst_refid = insertRefid(s.c_str());
+        struct Refid dst_refid = insertRefid(s);
         insertMemberReference(src_refid,dst_refid, "initializer");
       }
     }

@@ -65,6 +65,9 @@ class PageDefImpl : public DefinitionMixin<PageDef>
     void setNestingLevel(int l) override;
     void writePageDocumentation(OutputList &ol) const override;
     void addSectionsToIndex() override;
+    void writePageNavigation(OutputList &ol) const override;
+    void addListReferences() override;
+    void addRequirementReferences() override;
 
   private:
     QCString m_fileName;
@@ -175,15 +178,19 @@ void PageDefImpl::addSectionsToIndex()
       QCString title = si->title();
       if (title.isEmpty()) title = si->label();
       title = parseCommentAsText(this,nullptr,title,si->fileName(),si->lineNr());
+      QCString titleAsHtml = parseCommentAsHtml(this,nullptr,si->title(),si->fileName(),si->lineNr());
       // determine if there is a next level inside this item, but be aware of the anchor and table section references.
       auto it_next = std::next(it);
       bool isDir = (it_next!=sectionRefs.end()) ?  ((*it_next)->type().isSection() && (*it_next)->type().level() > nextLevel) : false;
-      Doxygen::indexList->addContentsItem(isDir,title,
-                                         getReference(),
-                                         getOutputFileBase(),
-                                         si->label(),
-                                         false,
-                                         true);
+      Doxygen::indexList->addContentsItem(isDir,               // isDir
+                                          title,               // name
+                                          getReference(),      // ref
+                                          getOutputFileBase(), // file
+                                          si->label(),         // anchor
+                                          false,               // separateIndex
+                                          true,                // addToNavIndex
+                                          nullptr,             // def
+                                          titleAsHtml);        // nameAsHtml
       level = nextLevel;
     }
   }
@@ -194,6 +201,23 @@ void PageDefImpl::addSectionsToIndex()
   }
 }
 
+void PageDefImpl::addListReferences()
+{
+  QCString name = getOutputFileBase();
+  if (getGroupDef())
+  {
+    name = getGroupDef()->getOutputFileBase();
+  }
+  addRefItem(xrefListItems(),name,
+             theTranslator->trPage(TRUE,TRUE),
+             name,title(),QCString(),nullptr);
+}
+
+void PageDefImpl::addRequirementReferences()
+{
+  RequirementManager::instance().addRequirementRefsForSymbol(this);
+}
+
 bool PageDefImpl::hasParentPage() const
 {
   return getOuterScope() &&
@@ -202,7 +226,7 @@ bool PageDefImpl::hasParentPage() const
 
 void PageDefImpl::writeTagFile(TextStream &tagFile)
 {
-  bool found = name()=="citelist";
+  bool found = name()=="citelist" || name()=="requirements";
   for (RefListManager::Ptr &rl : RefListManager::instance())
   {
     if (rl->listName()==name())
@@ -235,9 +259,9 @@ void PageDefImpl::writeDocumentation(OutputList &ol)
   bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
   int hierarchyLevel = -1; // Pages start at the root
   PageDef *pd = this;
-  while (pd->hasParentPage())
+  while (pd && pd->hasParentPage())
   {
-    pd = (PageDef *)pd->getOuterScope();
+    pd = dynamic_cast<PageDef *>(pd->getOuterScope());
     ++hierarchyLevel;
   }
 
@@ -254,11 +278,11 @@ void PageDefImpl::writeDocumentation(OutputList &ol)
   ol.pushGeneratorState();
   //2.{
   ol.disableAllBut(OutputType::Man);
-  startFile(ol,getOutputFileBase(),manPageName,title(),HighlightedItem::Pages,!generateTreeView,
+  startFile(ol,getOutputFileBase(),false,manPageName,title(),HighlightedItem::Pages,!generateTreeView,
             QCString() /* altSidebarName */, hierarchyLevel);
   ol.enableAll();
   ol.disable(OutputType::Man);
-  startFile(ol,getOutputFileBase(),pageName,title(),HighlightedItem::Pages,!generateTreeView,
+  startFile(ol,getOutputFileBase(),false,pageName,title(),HighlightedItem::Pages,!generateTreeView,
             QCString() /* altSidebarName */, hierarchyLevel);
   ol.popGeneratorState();
   //2.}
@@ -289,8 +313,14 @@ void PageDefImpl::writeDocumentation(OutputList &ol)
 
     if (si->title() != manPageName)
     {
-      ol.generateDoc(docFile(),getStartBodyLine(),this,nullptr,si->title(),TRUE,FALSE,
-                     QCString(),TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
+      ol.generateDoc(docFile(),
+                     getStartBodyLine(),
+                     this,
+                     nullptr,
+                     si->title(),
+                     DocOptions()
+                     .setSingleLine(true)
+                     .setAutolinkSupport(false));
       ol.endSection(si->label(),si->type());
     }
   }
@@ -309,24 +339,31 @@ void PageDefImpl::writeDocumentation(OutputList &ol)
   if (!title.isEmpty() && !name().isEmpty() && si!=nullptr)
   {
     ol.startPageDoc(si->title());
-    //ol.startSection(si->label,si->title,si->type);
     ol.startHeaderSection();
     ol.startTitleHead(getOutputFileBase());
-    ol.parseText(title);
+    ol.generateDoc(docFile(),
+                   getStartBodyLine(),
+                   this,
+                   nullptr,
+                   title,
+                   DocOptions()
+                   .setIndexWords(true)
+                   .setSingleLine(true)
+                   .setAutolinkSupport(false));
     ol.endTitleHead(getOutputFileBase(),title);
     ol.endHeaderSection();
-
-    /*ol.generateDoc(docFile(),getStartBodyLine(),this,nullptr,si->title(),TRUE,FALSE,
-                   QCString(),TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT));*/
   }
   else
+  {
     ol.startPageDoc("");
+  }
   ol.popGeneratorState();
   //2.}
 
+  bool pageWithSections = hasSections();
   ol.startContents();
   if ((m_localToc.isHtmlEnabled() || m_localToc.isLatexEnabled() || m_localToc.isDocbookEnabled())
-    && hasSections())
+    && pageWithSections)
   {
     writeToc(ol, m_localToc);
   }
@@ -337,11 +374,24 @@ void PageDefImpl::writeDocumentation(OutputList &ol)
 
   if (generateTreeView && getOuterScope()!=Doxygen::globalScope && !Config_getBool(DISABLE_INDEX))
   {
-    endFileWithNavPath(ol,getOuterScope());
+    endFileWithNavPath(ol,toDefinitionMutable(const_cast<Definition*>(getOuterScope())));
   }
   else
   {
-    endFile(ol,FALSE,TRUE);
+    if (generateTreeView && Config_getBool(PAGE_OUTLINE_PANEL) && pageWithSections)
+    {
+      ol.pushGeneratorState();
+      ol.disableAllBut(OutputType::Html);
+      ol.writeString("</div><!-- doc-content -->\n");
+      writePageNavigation(ol);
+      ol.writeString("</div><!-- container -->\n");
+      ol.popGeneratorState();
+      endFile(ol,true);
+    }
+    else
+    {
+      endFile(ol,false,true);
+    }
   }
 
   ol.popGeneratorState();
@@ -359,36 +409,14 @@ void PageDefImpl::writePageDocumentation(OutputList &ol) const
     ol.writeString(" - ");
     ol.popGeneratorState();
   }
-  ol.disableAllBut(OutputType::Html);
-    ol.generateDoc(
+  ol.generateDoc(
       docFile(),           // fileName
       docLine(),           // startLine
       this,                // context
       nullptr,             // memberdef
       docStr,              // docStr
-      true,                // index words
-      false,               // not an example
-      QCString(),          // exampleName
-      false,               // singleLine
-      false,               // linkFromIndex
-      TRUE                 // markdown support
-      );
-  ol.enableAll();
-  ol.disable(OutputType::Html);
-    ol.generateDoc(
-      docFile(),           // fileName
-      docLine(),           // startLine
-      this,                // context
-      nullptr,             // memberdef
-      docStr,              // docStr
-      false,               // index words
-      false,               // not an example
-      QCString(),          // exampleName
-      false,               // singleLine
-      false,               // linkFromIndex
-      TRUE                 // markdown support
-      );
-  ol.enable(OutputType::Html);
+      DocOptions()
+      .setIndexWords(true));
   ol.endTextBlock();
 
   if (hasSubPages())
@@ -408,6 +436,13 @@ void PageDefImpl::writePageDocumentation(OutputList &ol) const
 
     ol.popGeneratorState();
   }
+
+  if (hasRequirementRefs()) writeRequirementRefs(ol);
+}
+
+void PageDefImpl::writePageNavigation(OutputList &ol) const
+{
+  ol.writePageOutline();
 }
 
 bool PageDefImpl::visibleInIndex() const
@@ -466,27 +501,11 @@ void PageDefImpl::setTitle(const QCString &title)
 
 PageDef *toPageDef(Definition *d)
 {
-  if (d==nullptr) return nullptr;
-  if (d && typeid(*d)==typeid(PageDefImpl))
-  {
-    return static_cast<PageDef*>(d);
-  }
-  else
-  {
-    return nullptr;
-  }
+  return (d && typeid(*d) == typeid(PageDefImpl)) ? static_cast<PageDef*>(d) : nullptr;
 }
 
 const PageDef *toPageDef(const Definition *d)
 {
-  if (d==nullptr) return nullptr;
-  if (d && typeid(*d)==typeid(PageDefImpl))
-  {
-    return static_cast<const PageDef*>(d);
-  }
-  else
-  {
-    return nullptr;
-  }
+  return (d && typeid(*d) == typeid(PageDefImpl)) ? static_cast<const PageDef*>(d) : nullptr;
 }
 

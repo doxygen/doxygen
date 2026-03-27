@@ -89,8 +89,7 @@ inline void init_thread_pool(size_t q_size,
 }
 
 inline void init_thread_pool(size_t q_size, size_t thread_count) {
-    init_thread_pool(
-        q_size, thread_count, [] {}, [] {});
+    init_thread_pool(q_size, thread_count, [] {}, [] {});
 }
 
 // get the global thread pool.

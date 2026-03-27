@@ -49,8 +49,6 @@ class XMLCodeGenerator : public OutputCodeIntf
     void startFold(int,const QCString &,const QCString &) override {}
     void endFold() override {}
 
-    void finish();
-
   private:
     TextStream *m_t;
     QCString m_refId;

@@ -1,10 +1,10 @@
 /******************************************************************************
  *
- * Copyright (C) 1997-2019 by Dimitri van Heesch.
+ * Copyright (C) 1997-2025 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -16,6 +16,7 @@
 #include <QSplitter>
 #include <QHash>
 #include <QDialog>
+#include <QImage>
 
 class Input;
 class QTreeWidget;
@@ -27,8 +28,8 @@ class QPushButton;
 class QRadioButton;
 class QGroupBox;
 class QButtonGroup;
+class QTabWidget;
 class Wizard;
-class QImage;
 class QLabel;
 
 class TuneColorDialog : public QDialog
@@ -43,10 +44,14 @@ class TuneColorDialog : public QDialog
 
   private slots:
     void updateImage(int hue,int sat,int val);
+    void tabChanged(int);
 
   private:
-    QImage *m_image = nullptr;
-    QLabel *m_imageLab = nullptr;
+    QImage m_imageLight;
+    QImage m_imageDark;
+    QLabel *m_imageLabLight = nullptr;
+    QLabel *m_imageLabDark = nullptr;
+    QTabWidget *m_tab = nullptr;
     int m_hue = 0;
     int m_sat = 0;
     int m_gam = 0;
@@ -102,8 +107,8 @@ class Step1 : public QWidget
     void init();
 
   private slots:
-    void selectSourceDir(); 
-    void selectDestinationDir(); 
+    void selectSourceDir();
+    void selectDestinationDir();
     void selectProjectIcon();
     void setProjectName(const QString &name);
     void setProjectBrief(const QString &desc);

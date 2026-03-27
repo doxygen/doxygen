@@ -28,7 +28,6 @@
 #include "indexlist.h"
 #include "classlist.h"
 #include "textstream.h"
-#include "growbuf.h"
 #include "dir.h"
 
 //-----------------------------------------------------------------------------
@@ -44,7 +43,6 @@ class DiagramItem
     DiagramItem(DiagramItem *p,uint32_t number,const ClassDef *cd,
                 Protection prot,Specifier virt,const QCString &ts);
     QCString label() const;
-    QCString fileName() const;
     DiagramItem *parentItem() { return m_parent; }
     DiagramItemList getChildren() { return m_children; }
     void move(int dx,int dy) { m_x=static_cast<uint32_t>(m_x+dx); m_y=static_cast<uint32_t>(m_y+dy); }
@@ -85,7 +83,6 @@ class DiagramRow
     DiagramRow(TreeDiagram *d,uint32_t l) : m_diagram(d), m_level(l) {}
     void insertClass(DiagramItem *parent,const ClassDef *cd,bool doBases,
                      Protection prot,Specifier virt,const QCString &ts);
-    uint32_t number() { return m_level; }
 
     DiagramItem *item(int index) { return m_items.at(index).get(); }
     uint32_t numItems() const { return static_cast<uint32_t>(m_items.size()); }
@@ -195,20 +192,20 @@ static uint32_t virtToMask(Specifier p)
 static QCString convertToPSString(const QCString &s)
 {
   if (s.isEmpty()) return s;
-  GrowBuf growBuf;
+  QCString result;
+  result.reserve(s.length()+8);
   const char *p=s.data();
   char c=0;
   while ((c=*p++))
   {
     switch (c)
     {
-      case '(':  growBuf.addStr("\\("); break;
-      case ')': growBuf.addStr("\\)"); break;
-      default:   growBuf.addChar(c);   break;
+      case '(':  result+="\\("; break;
+      case ')':  result+="\\)"; break;
+      default:   result+=c;     break;
     }
   }
-  growBuf.addChar(0);
-  return growBuf.get();
+  return result;
 }
 
 // pre: dil is not empty
@@ -320,11 +317,6 @@ QCString DiagramItem::label() const
   }
   if (Config_getBool(HIDE_SCOPE_NAMES)) result=stripScope(result);
   return result;
-}
-
-QCString DiagramItem::fileName() const
-{
-  return m_classDef->getOutputFileBase();
 }
 
 uint32_t DiagramItem::avgChildPos() const

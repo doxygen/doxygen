@@ -34,8 +34,8 @@ Doxygen also supports the hardware description language VHDL.
 
 Doxygen can help you in three ways:
 <ol>
-<li> It can generate an on-line documentation browser (in HTML) and/or an
-     off-line reference manual (in \LaTeX) from a set
+<li> It can generate an online documentation browser (in HTML) and/or an
+     offline reference manual (in \LaTeX) from a set
      of documented source files.
      There is also support for generating output in RTF (MS-Word),
      PostScript, hyperlinked PDF, compressed HTML, and Unix man pages.
@@ -49,7 +49,7 @@ Doxygen can help you in three ways:
      by means of include dependency graphs, inheritance diagrams,
      and collaboration diagrams, which are all generated automatically.
 <li> You can also use Doxygen for creating normal documentation (as I did
-     for the Doxygen user manual and web-site).
+     for the Doxygen user manual and website).
 </ol>
 
 Doxygen is developed under macOS and Linux, but is set-up to be highly
@@ -68,7 +68,7 @@ The first part forms a user manual:
                      documentation quickly.
 <li>Section \ref docblocks demonstrates the various ways that code can
                  be documented.
-<li>Section \ref markdown show the Markdown formatting supported by Doxygen.
+<li>Section \ref markdown shows the Markdown formatting supported by Doxygen.
 <li>Section \ref lists shows how to create lists.
 <li>Section \ref grouping shows how to group things together.
 <li>Section \ref tables shows how to insert tables in the documentation.
@@ -81,10 +81,10 @@ The first part forms a user manual:
                  supported by Doxygen.
 <li>Section \ref searching shows various ways to search in the HTML documentation.
 <li>Section \ref extsearch shows how use the external search and index tools
-<li>Section \ref additional explains how you can create non-api related documentation pages.
+<li>Section \ref additional explains how you can create non-API related documentation pages.
 <li>Section \ref customize explains how you can customize the output generated
                  by Doxygen.
-<li>Section \ref custcmd show how to define and use custom commands in your comments.
+<li>Section \ref custcmd shows how to define and use custom commands in your comments.
 <li>Section \ref external explains how to let Doxygen create links to externally generated documentation.
 <li>Section \ref faq gives answers to frequently asked questions.
 <li>Section \ref trouble tells you what to do when you have problems.
@@ -104,7 +104,7 @@ The second part forms a reference manual:
               can be used within the documentation.
 <li>Section \ref xmlcmds shows an overview of the C# style XML commands that
               can be used within the documentation.
-<li>Section \ref emojisup shows an introduction how emoji can be used within
+<li>Section \ref emojisup shows an introduction to how emoji can be used within
               the documentation.
 </ul>
 
@@ -150,7 +150,7 @@ If you know other projects, let <a href="mailto:doxygen@gmail.com?subject=New%20
 know and I'll add them.
 
 <h2>Future work</h2>
-Although Doxygen is successfully used by large number of companies and
+Although Doxygen is successfully used by a large number of companies and
 open source projects already, there is always room for improvement.
 <p>
 You can also submit enhancement requests in
@@ -177,7 +177,7 @@ Thanks go to:
 <li>Joerg Baumann, for adding conditional documentation blocks,
     PDF links, and the configuration generator.
 <li>Tim Mensch for adding the todo command.
-<li>Christian Hammond for redesigning the web-site.
+<li>Christian Hammond for redesigning the website.
 <li>Ken Wong for providing the HTML tree view code.
 <li>Talin for adding support for C# style comments with XML markup.
 <li>Petr Prikryl for coordinating the internationalization support.

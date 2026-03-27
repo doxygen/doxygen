@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright (C) 1997-2019 by Dimitri van Heesch.
+ * Copyright (C) 1997-2025 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -183,11 +183,16 @@ TuneColorDialog::TuneColorDialog(int hue,int sat,int gamma,QWidget *parent) : QD
 {
    setWindowTitle(tr("Tune the color of the HTML output"));
    QGridLayout *layout = new QGridLayout(this);
-   m_image = new QImage(QString::fromLatin1(":/images/tunecolor.png"));
-   m_imageLab = new QLabel;
+   m_imageLight        = QImage(QString::fromLatin1(":/images/tunecolor_light.png"));
+   m_imageDark         = QImage(QString::fromLatin1(":/images/tunecolor_dark.png"));
+   m_tab               = new QTabWidget;
+   m_imageLabLight     = new QLabel;
+   m_imageLabDark      = new QLabel;
+   m_tab->addTab(m_imageLabLight,QString::fromLatin1("light"));
+   m_tab->addTab(m_imageLabDark,QString::fromLatin1("dark"));
    updateImage(hue,sat,gamma);
    layout->addWidget(new QLabel(tr("Example output: use the sliders on the right to adjust the color")),0,0);
-   layout->addWidget(m_imageLab,1,0);
+   layout->addWidget(m_tab,1,0);
    QHBoxLayout *buttonsLayout = new QHBoxLayout;
 
    QPushButton *okButton = new QPushButton(tr("Ok"));
@@ -218,6 +223,7 @@ TuneColorDialog::TuneColorDialog(int hue,int sat,int gamma,QWidget *parent) : QD
    connect(huePicker,SIGNAL(newHsv(int,int,int)),this,SLOT(updateImage(int,int,int)));
    connect(satPicker,SIGNAL(newHsv(int,int,int)),this,SLOT(updateImage(int,int,int)));
    connect(gamPicker,SIGNAL(newHsv(int,int,int)),this,SLOT(updateImage(int,int,int)));
+   connect(m_tab,    SIGNAL(currentChanged(int)),this,SLOT(tabChanged(int)));
 
    buttonsLayout->addStretch();
    buttonsLayout->addWidget(okButton);
@@ -225,31 +231,24 @@ TuneColorDialog::TuneColorDialog(int hue,int sat,int gamma,QWidget *parent) : QD
    layout->addLayout(buttonsLayout,5,0,1,4);
 }
 
-void hsl2rgb(double h,double s,double l,
-             double *pRed,double *pGreen,double *pBlue)
+// convert color in HSL color space to RGB
+static constexpr void hsl2rgb(double h,double s,double l,
+                              double *pRed,double *pGreen,double *pBlue)
 {
-  double v;
-  double r,g,b;
-
-  r = l;   // default to gray
-  g = l;
-  b = l;
-  v = (l <= 0.5) ? (l * (1.0 + s)) : (l + s - l * s);
+  double r = l;   // default to gray
+  double g = l;
+  double b = l;
+  double v = (l <= 0.5) ? (l * (1.0 + s)) : (l + s - l * s);
   if (v > 0)
   {
-    double m;
-    double sv;
-    int sextant;
-    double fract, vsf, mid1, mid2;
-
-    m       = l + l - v;
-    sv      = (v - m ) / v;
-    h      *= 6.0;
-    sextant = (int)h;
-    fract   = h - sextant;
-    vsf     = v * sv * fract;
-    mid1    = m + vsf;
-    mid2    = v - vsf;
+    double m       = l + l - v;
+    double sv      = (v - m ) / v;
+    h             *= 6.0;
+    int sextant    = (int)h;
+    double fract   = h - sextant;
+    double vsf     = v * sv * fract;
+    double mid1    = m + vsf;
+    double mid2    = v - vsf;
     switch (sextant)
     {
       case 0:
@@ -290,21 +289,31 @@ void hsl2rgb(double h,double s,double l,
 }
 
 
+void TuneColorDialog::tabChanged(int current)
+{
+  // refresh image with the current settings when switching tabs
+  updateImage(m_hue,m_sat,m_gam);
+}
 
 void TuneColorDialog::updateImage(int hue,int sat,int gam)
 {
-  QImage coloredImg(m_image->width(),m_image->height(),QImage::Format_RGB32);
-  uint *srcPixel = (uint *)m_image->scanLine(0);
+  QImage *image = m_tab->currentIndex()==0 ? &m_imageLight : &m_imageDark;
+  QLabel *label = m_tab->currentIndex()==0 ? m_imageLabLight : m_imageLabDark;
+  QImage coloredImg(image->width(),image->height(),QImage::Format_RGB32);
+  uint *srcPixel = (uint *)image->scanLine(0);
   uint *dstPixel = (uint *)coloredImg.scanLine(0);
   uint nrPixels = coloredImg.width()*coloredImg.height();
+  double r,g,b;
   for (uint i=0;i<nrPixels;i++,srcPixel++,dstPixel++)
   {
     QColor c = QColor::fromRgb(*srcPixel);
-    double r,g,b;
     hsl2rgb(hue/359.0, sat/255.0, pow(c.green()/255.0,gam/100.0),&r,&g,&b);
     *dstPixel = qRgb((int)(r*255.0),(int)(g*255.0),(int)(b*255.0));
   }
-  m_imageLab->setPixmap(QPixmap::fromImage(coloredImg));
+
+  QPixmap pm = QPixmap::fromImage(coloredImg);
+  pm.setDevicePixelRatio(2.0);
+  label->setPixmap(pm);
   m_hue = hue;
   m_sat = sat;
   m_gam = gam;
@@ -533,7 +542,8 @@ Step1::Step1(Wizard *wizard,const QHash<QString,Input*> &modelData) : m_wizard(w
 
   //---------------------------------------------------
   QFrame *f = new QFrame( this );
-  f->setFrameStyle( QFrame::HLine | QFrame::Sunken );
+  f->setFrameShape(QFrame::HLine);
+  f->setFrameShadow(QFrame::Sunken);
   layout->addWidget(f);
 
   l = new QLabel(this);
@@ -559,7 +569,8 @@ Step1::Step1(Wizard *wizard,const QHash<QString,Input*> &modelData) : m_wizard(w
 
   //---------------------------------------------------
   f = new QFrame( this );
-  f->setFrameStyle( QFrame::HLine | QFrame::Sunken );
+  f->setFrameShape(QFrame::HLine);
+  f->setFrameShadow(QFrame::Sunken);
   layout->addWidget(f);
 
   l = new QLabel(this);
@@ -778,7 +789,8 @@ Step2::Step2(Wizard *wizard,const QHash<QString,Input*> &modelData)
 
   //---------------------------------------------------
   QFrame *f = new QFrame( this );
-  f->setFrameStyle( QFrame::HLine | QFrame::Sunken );
+  f->setFrameShape(QFrame::HLine);
+  f->setFrameShadow(QFrame::Sunken);
   layout->addWidget(f);
 
   m_optimizeLangGroup = new QButtonGroup(this);

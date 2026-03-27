@@ -102,8 +102,8 @@ class RTFGenerator : public OutputGenerator, public OutputGenIntf
     std::unique_ptr<OutputGenIntf> clone() override { return std::make_unique<RTFGenerator>(*this); }
     void addCodeGen(OutputCodeList &list) override;
     void cleanup() override;
-    void writeDoc(const IDocNodeAST *ast,const Definition *,const MemberDef *,int) override;
-    void startFile(const QCString &name,const QCString &manName,const QCString &title,int id,int hierarchyLevel) override;
+    void writeDoc(const IDocNodeAST *ast,const Definition *,const MemberDef *,int,int) override;
+    void startFile(const QCString &name,bool isSource,const QCString &manName,const QCString &title,int id,int hierarchyLevel) override;
     void endFile() override;
 
     void writeSearchInfo() override {}
@@ -142,7 +142,7 @@ class RTFGenerator : public OutputGenerator, public OutputGenIntf
     void endTextLink() override;
     void startTypewriter() override { m_t << "{\\f2 "; }
     void endTypewriter() override { m_t << "}";      }
-    void startGroupHeader(int) override;
+    void startGroupHeader(const QCString &,int) override;
     void endGroupHeader(int) override;
     void startItemListItem() override;
     void endItemListItem() override;
@@ -151,7 +151,7 @@ class RTFGenerator : public OutputGenerator, public OutputGenIntf
     void endMemberSections() override {}
     void startHeaderSection() override {}
     void endHeaderSection() override {}
-    void startMemberHeader(const QCString &,int) override { startGroupHeader(0); }
+    void startMemberHeader(const QCString &,int) override { startGroupHeader("",0); }
     void endMemberHeader() override { endGroupHeader(FALSE); }
     void startMemberSubtitle() override;
     void endMemberSubtitle() override;
@@ -186,7 +186,7 @@ class RTFGenerator : public OutputGenerator, public OutputGenIntf
     void endDoxyAnchor(const QCString &,const QCString &) override;
     void addLabel(const QCString &,const QCString &) override;
     void writeChar(char c) override;
-    void writeLatexSpacing() override {};//{ m_t << "\\hspace{0.3cm}"; }
+    void writeLatexSpacing() override {}//{ m_t << "\\hspace{0.3cm}"; }
     void writeStartAnnoItem(const QCString &type,const QCString &file,
                             const QCString &path,const QCString &name) override;
     void startCenter() override { m_t << "{\\qc\n"; }
@@ -216,11 +216,12 @@ class RTFGenerator : public OutputGenerator, public OutputGenIntf
     void endPageRef(const QCString &,const QCString &) override;
     void startQuickIndices() override {}
     void endQuickIndices() override {}
-    void writeSplitBar(const QCString &) override {}
+    void writeSplitBar(const QCString &,const QCString &) override {}
     void writeNavigationPath(const QCString &) override {}
     void writeLogo() override {}
-    void writeQuickLinks(HighlightedItem,const QCString &) override {}
+    void writeQuickLinks(HighlightedItem,const QCString &,bool) override {}
     void writeSummaryLink(const QCString &,const QCString &,const QCString &,bool) override {}
+    void writePageOutline() override {}
     void startContents() override {}
     void endContents() override {}
     void writeNonBreakableSpace(int) override;
@@ -248,8 +249,8 @@ class RTFGenerator : public OutputGenerator, public OutputGenIntf
     void endDirDepGraph(DotDirDeps &g) override;
     void writeGraphicalHierarchy(DotGfxHierarchyTable &) override {}
 
-    void startMemberGroupHeader(bool) override;
-    void endMemberGroupHeader() override;
+    void startMemberGroupHeader(const QCString &,bool) override;
+    void endMemberGroupHeader(bool) override;
     void startMemberGroupDocs() override;
     void endMemberGroupDocs() override;
     void startMemberGroup() override;
@@ -297,10 +298,16 @@ class RTFGenerator : public OutputGenerator, public OutputGenIntf
     void writeLabel(const QCString &l,bool isLast) override;
     void endLabels() override;
 
-    void writeLocalToc(const SectionRefs &,const LocalToc &) override {}
+    void startLocalToc(int) override {}
+    void endLocalToc() override {}
+    void startTocEntry(const SectionInfo *) override {}
+    void endTocEntry(const SectionInfo *) override {}
 
     void startPlainFile(const QCString &name) override { OutputGenerator::startPlainFile(name); }
     void endPlainFile() override { OutputGenerator::endPlainFile(); }
+
+    void startEmbeddedDoc(int) override {}
+    void endEmbeddedDoc() override {}
 
   private:
     QCString rtf_BList_DepthStyle();

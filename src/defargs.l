@@ -173,10 +173,7 @@ CPPC  "/\/"
 <ReadFuncArgDef>"'"\\."'"		{ yyextra->curArgDefValue+=yytext; }
 <ReadFuncArgDef>"'"."'"			{ yyextra->curArgDefValue+=yytext; }
 <ReadFuncArgDef>{RAWBEGIN}              { yyextra->curArgDefValue+=yytext; 
-                                          QCString text(yytext);
-                                          int i=text.find('"');
-                                          yyextra->delimiter = yytext+i+1;
-                                          yyextra->delimiter=yyextra->delimiter.left(yyextra->delimiter.length()-1);
+                                          yyextra->delimiter = extractBeginRawStringDelimiter(yytext);
                                           BEGIN( CopyRawString );
                                         }
 <ReadFuncArgDef>\"			{
@@ -365,9 +362,7 @@ CPPC  "/\/"
   					}
 <CopyRawString>{RAWEND}                 {
 					  yyextra->curArgDefValue+=yytext;
-                                          QCString delimiter(yytext+1);
-                                          delimiter=delimiter.left(delimiter.length()-1);
-                                          if (delimiter==yyextra->delimiter)
+                                          if (extractEndRawStringDelimiter(yytext)==yyextra->delimiter)
                                           {
 					    BEGIN( ReadFuncArgDef );
                                           }
@@ -507,6 +502,7 @@ CPPC  "/\/"
                                            }
                                            else
                                            {
+  					     yyextra->argSharpCount=0;
                                              yyextra->curTypeConstraint.clear();
                                              yyextra->lastExtendsContext=YY_START;
                                              BEGIN(ReadTypeConstraint);
@@ -539,8 +535,20 @@ CPPC  "/\/"
 					  *yyextra->copyArgValue += *yytext;
 					}
 <ReadTypeConstraint>[,)>]               {
-                                          unput(*yytext);
-                                          BEGIN(yyextra->lastExtendsContext);
+                                          if (yytext[0]!='>' || yyextra->argSharpCount==0)
+                                          {
+                                            unput(*yytext);
+                                            BEGIN(yyextra->lastExtendsContext);
+                                          }
+                                          else
+                                          {
+                                            yyextra->curTypeConstraint+=yytext;
+  					    yyextra->argSharpCount--;
+                                          }
+                                        }
+<ReadTypeConstraint>"<"                 {
+                                          yyextra->curTypeConstraint+=yytext;
+  					  yyextra->argSharpCount++;
                                         }
 <ReadTypeConstraint>.                   {
                                           yyextra->curTypeConstraint+=yytext;

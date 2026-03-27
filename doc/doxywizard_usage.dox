@@ -166,9 +166,11 @@ The representation of the input field depends on the type of the configuration o
     \image{inline} html expert_string_string.png
     \image{inline} latex expert_string_string.png width=12.3cm
     <br>Additionally, when the string field should contain a file or a folder name, there are the special buttons
-    \image{inline} html images/file.png height=14px \ilinebr \image{inline} latex images/file.png height=\DoxyInlineHeightChar
+    \image{inline} html images/file.svg height=14px
+    \image{inline} latex images/file.eps height=\DoxyInlineHeightChar
     and
-    \image{inline} html images/folder.png height=14px \ilinebr \image{inline} latex images/folder.png height=\DoxyInlineHeightChar
+    \image{inline} html images/folder.svg height=14px
+    \image{inline} latex images/folder.eps height=\DoxyInlineHeightChar
     that start a file / folder selection dialog.
     A typical field for a file looks like:<br>
     \image{inline} html expert_string_file.png
@@ -185,19 +187,24 @@ The representation of the input field depends on the type of the configuration o
     \image{inline} latex expert_string_image.png width=11.8cm
 <li>For options taking a list of strings, an editor field is
     shown with a non-editable list below it. The
-    \image{inline} html images/add.png height=14px \ilinebr \image{inline} latex images/add.png height=\DoxyInlineHeightChar
+    \image{inline} html images/add.svg height=14px
+    \image{inline} latex images/add.eps height=\DoxyInlineHeightChar
     button adds the string in the editor field to the list and a the
-    \image{inline} html images/del.png height=14px \ilinebr \image{inline} latex images/del.png height=\DoxyInlineHeightChar
+    \image{inline} html images/del.svg height=14px
+    \image{inline} latex images/del.eps height=\DoxyInlineHeightChar
     button removes the selected string from the list. The
-    \image{inline} html images/refresh.png height=14px \ilinebr \image{inline} latex images/refresh.png height=\DoxyInlineHeightChar
+    \image{inline} html images/refresh.svg height=14px
+    \image{inline} latex images/refresh.eps height=\DoxyInlineHeightChar
     button can be clicked to replace the selected item in the list with the string entered in the editor field.
     A typical field looks like:<br>
     \image{inline} html expert_list_string.png
     \image{inline} latex expert_list_string.png width=11.2cm
     <br>additionally when the list contains file and / or folder names, there are special buttons
-    \image{inline} html images/file.png height=14px \ilinebr \image{inline} latex images/file.png height=\DoxyInlineHeightChar
+    \image{inline} html images/file.svg height=14px
+    \image{inline} latex images/file.eps height=\DoxyInlineHeightChar
     and
-    \image{inline} html images/folder.png height=14px \ilinebr \image{inline} latex images/folder.png height=\DoxyInlineHeightChar
+    \image{inline} html images/folder.svg height=14px
+    \image{inline} latex images/folder.eps height=\DoxyInlineHeightChar
     that start a file / folder selection dialog.
     A typical field would for a file looks like:<br>
     \image{inline} html expert_list_file.png

@@ -28,9 +28,9 @@ struct Argument
   /*! return TRUE if this argument is documentation and the argument has a
    *  non empty name.
    */
-  bool hasDocumentation() const
+  bool hasDocumentation(bool allowEmptyName=false) const
   {
-    return !name.isEmpty() && !docs.isEmpty();
+    return (allowEmptyName || !name.isEmpty()) && !docs.isEmpty();
   }
 
   bool hasTemplateDocumentation() const
@@ -69,7 +69,7 @@ class ArgumentList
     using const_iterator = typename Vec::const_iterator;
 
     /*! Does any argument of this list have documentation? */
-    bool hasDocumentation() const;
+    bool hasDocumentation(bool allowEmptyNames=false) const;
     /*! Does any template argument of this list have documentation? */
     bool hasTemplateDocumentation() const;
     /*! Does this list have zero or more parameters */
@@ -119,7 +119,9 @@ class ArgumentList
     void setConstSpecifier(bool b)        { m_constSpecifier = b; }
     void setVolatileSpecifier(bool b)     { m_volatileSpecifier = b; }
     void setPureSpecifier(bool b)         { m_pureSpecifier = b; }
-    void setTrailingReturnType(const QCString &s) { m_trailingReturnType = s; }
+    void setTrailingReturnType(const QCString &s);
+    void appendTrailingReturnType(const QCString &s);
+    void finishTrailingReturnType();
     void setIsDeleted(bool b)             { m_isDeleted = b; }
     void setRefQualifier(RefQualifierType t) { m_refQualifier = t; }
     void setNoParameters(bool b)          { m_noParameters = b; }

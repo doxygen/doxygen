@@ -13,7 +13,7 @@ namespace spdlog {
 namespace sinks {
 
 template <typename Mutex>
-class null_sink : public base_sink<Mutex> {
+class null_sink final : public base_sink<Mutex> {
 protected:
     void sink_it_(const details::log_msg &) override {}
     void flush_() override {}

@@ -224,7 +224,10 @@ void RTFCodeGenerator::startCodeFragment(const QCString &)
 
 void RTFCodeGenerator::endCodeFragment(const QCString &)
 {
+  bool wasHidden = m_hide;
+  m_hide = false;
   endCodeLine();
+  m_hide = wasHidden;
 
   DBG_RTF(*m_t << "{\\comment (endCodeFragment) }\n")
   *m_t << "}\n";
@@ -698,7 +701,7 @@ void RTFGenerator::beginRTFSection()
   m_t << rtf_Style[QCString().sprintf("Heading%d", level).str()].reference() << "\n";
 }
 
-void RTFGenerator::startFile(const QCString &name,const QCString &,const QCString &,int,int hierarchyLevel)
+void RTFGenerator::startFile(const QCString &name,bool,const QCString &,const QCString &,int,int hierarchyLevel)
 {
   //setEncoding(QCString().sprintf("CP%s",theTranslator->trRTFansicp()));
   QCString fileName=name;
@@ -976,7 +979,7 @@ void RTFGenerator::endIndexSection(IndexSection is)
           if (ast)
           {
             m_t << "{\\field\\fldedit {\\*\\fldinst TITLE \\\\*MERGEFORMAT}{\\fldrslt ";
-            writeDoc(ast.get(),nullptr,nullptr,0);
+            writeDoc(ast.get(),nullptr,nullptr,0,-1);
             m_t << "}}\\par\n";
           }
         }
@@ -1637,7 +1640,7 @@ void RTFGenerator::endTitleHead(const QCString &fileName,const QCString &name)
   }
 }
 
-void RTFGenerator::startGroupHeader(int extraIndent)
+void RTFGenerator::startGroupHeader(const QCString &,int extraIndent)
 {
   DBG_RTF(m_t << "{\\comment startGroupHeader}\n")
   m_t << rtf_Style_Reset;
@@ -2265,7 +2268,7 @@ static bool preProcessFile(Dir &d,const QCString &infName, TextStream &t, bool b
   {
     line+='\n';
     if (line.find("\\comment begin body")!=std::string::npos) break;
-    if (bIncludeHeader) encodeForOutput(t,line.c_str());
+    if (bIncludeHeader) encodeForOutput(t,line);
   }
 
   std::string prevLine;
@@ -2278,14 +2281,14 @@ static bool preProcessFile(Dir &d,const QCString &infName, TextStream &t, bool b
     {
       size_t startNamePos  = prevLine.find('"',pos)+1;
       size_t endNamePos    = prevLine.find('"',startNamePos);
-      std::string fileName = prevLine.substr(startNamePos,endNamePos-startNamePos);
+      QCString fileName    = prevLine.substr(startNamePos,endNamePos-startNamePos);
       DBG_RTF(t << "{\\comment begin include " << fileName << "}\n")
-      if (!preProcessFile(d,fileName.c_str(),t,FALSE)) return FALSE;
+      if (!preProcessFile(d,fileName,t,FALSE)) return FALSE;
       DBG_RTF(t << "{\\comment end include " << fileName << "}\n")
     }
     else if (!first) // no INCLUDETEXT on this line
     {
-      encodeForOutput(t,prevLine.c_str());
+      encodeForOutput(t,prevLine);
     }
     prevLine = line;
     first=false;
@@ -2298,11 +2301,11 @@ static bool preProcessFile(Dir &d,const QCString &infName, TextStream &t, bool b
       err("Strange, the last char was not a '}}'\n");
       pos = line.length();
     }
-    encodeForOutput(t,line.substr(0,pos).c_str());
+    encodeForOutput(t,line.substr(0,pos));
   }
   else
   {
-    encodeForOutput(t,line.c_str());
+    encodeForOutput(t,line);
   }
   f.close();
   // remove temporary file
@@ -2512,7 +2515,7 @@ bool RTFGenerator::preProcessFileInplace(const QCString &path,const QCString &na
   QCString rtfOutputDir = Dir::currentDirPath();
   for (auto &s : removeSet)
   {
-    QCString s1(s.c_str());
+    QCString s1 = s;
     if (s1.startsWith(rtfOutputDir)) Portable::unlink(s1);
   }
 
@@ -2520,7 +2523,7 @@ bool RTFGenerator::preProcessFileInplace(const QCString &path,const QCString &na
   return TRUE;
 }
 
-void RTFGenerator::startMemberGroupHeader(bool hasHeader)
+void RTFGenerator::startMemberGroupHeader(const QCString &,bool hasHeader)
 {
   DBG_RTF(m_t << "{\\comment startMemberGroupHeader}\n")
   m_t << "{\n";
@@ -2528,7 +2531,7 @@ void RTFGenerator::startMemberGroupHeader(bool hasHeader)
   m_t << rtf_Style_Reset << rtf_Style["GroupHeader"].reference();
 }
 
-void RTFGenerator::endMemberGroupHeader()
+void RTFGenerator::endMemberGroupHeader(bool)
 {
   DBG_RTF(m_t << "{\\comment endMemberGroupHeader}\n")
   newParagraph();
@@ -2615,7 +2618,7 @@ void RTFGenerator::exceptionEntry(const QCString &prefix,bool closeBracket)
   m_t << " ";
 }
 
-void RTFGenerator::writeDoc(const IDocNodeAST *ast,const Definition *ctx,const MemberDef *,int)
+void RTFGenerator::writeDoc(const IDocNodeAST *ast,const Definition *ctx,const MemberDef *,int,int)
 {
   auto astImpl = dynamic_cast<const DocNodeAST*>(ast);
   if (astImpl)
@@ -2878,7 +2881,7 @@ QCString rtfFormatBmkStr(const QCString &name)
   auto it = g_tagMap.find(name.str());
   if (it!=g_tagMap.end()) // already known
   {
-    return QCString(it->second);
+    return it->second;
   }
 
   QCString tag = g_nextTag;

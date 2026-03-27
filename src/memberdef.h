@@ -128,6 +128,7 @@ class MemberDef : public Definition
     virtual bool isInline() const = 0;
     virtual bool isExplicit() const = 0;
     virtual bool isMutable() const = 0;
+    virtual bool isThreadLocal() const = 0;
     virtual bool isGettable() const = 0;
     virtual bool isPrivateGettable() const = 0;
     virtual bool isProtectedGettable() const = 0;
@@ -292,6 +293,7 @@ class MemberDef : public Definition
     virtual void warnIfUndocumented() const = 0;
     virtual void warnIfUndocumentedParams() const = 0;
     virtual bool visibleInIndex() const = 0;
+    virtual int redefineCount() const = 0;
 
     // TODO: this is not a getter, should be passed at construction
     virtual void setMemberGroup(MemberGroup *grp) = 0;
@@ -385,7 +387,8 @@ class MemberDefMutable : public DefinitionMutable, public MemberDef
 
     virtual void setTemplateMaster(const MemberDef *mt) = 0;
     virtual void setFormalTemplateArguments(const ArgumentList &al) = 0;
-    virtual void addListReference(Definition *d) = 0;
+    virtual void addListReference(const Definition *) = 0;
+    virtual void addRequirementReferences(const Definition *) = 0;
     virtual void setDocsForDefinition(bool b) = 0;
     virtual void setGroupAlias(const MemberDef *md) = 0;
 
@@ -408,6 +411,9 @@ class MemberDefMutable : public DefinitionMutable, public MemberDef
     virtual void addQualifiers(const StringVector &qualifiers) = 0;
 
     virtual void setModuleDef(ModuleDef *mod) = 0;
+
+    // macro redefinition
+    virtual void setRedefineCount(int count) = 0;
 
     //-----------------------------------------------------------------------------------
     // --- actions ----

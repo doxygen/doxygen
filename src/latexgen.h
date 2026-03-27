@@ -106,17 +106,14 @@ class LatexGenerator : public OutputGenerator, public OutputGenIntf
     static void writeFooterFile(TextStream &t);
     void clearBuffer();
 
-    void setCurrentDoc(const Definition *,const QCString &,bool) {}
-    void addWord(const QCString &,bool) {}
-
     //----------------------------------------------------------------------
 
     OutputType type() const override { return OutputType::Latex; }
     std::unique_ptr<OutputGenIntf> clone() override { return std::make_unique<LatexGenerator>(*this); }
     void addCodeGen(OutputCodeList &list) override;
     void cleanup() override;
-    void writeDoc(const IDocNodeAST *node,const Definition *ctx,const MemberDef *,int id) override;
-    void startFile(const QCString &name,const QCString &manName,const QCString &title,int id,int hierarchyLevel) override;
+    void writeDoc(const IDocNodeAST *node,const Definition *ctx,const MemberDef *,int id,int sectionLevel) override;
+    void startFile(const QCString &name,bool isSource,const QCString &manName,const QCString &title,int id,int hierarchyLevel) override;
     void endFile() override;
 
     void writeSearchInfo() override {}
@@ -156,7 +153,7 @@ class LatexGenerator : public OutputGenerator, public OutputGenIntf
     void endTextLink() override;
     void startTypewriter() override { m_t << "{\\ttfamily "; }
     void endTypewriter() override { m_t << "}";      }
-    void startGroupHeader(int) override;
+    void startGroupHeader(const QCString &,int) override;
     void endGroupHeader(int) override;
     void startItemListItem() override { m_t << "\\item \n"; }
     void endItemListItem() override {}
@@ -184,8 +181,8 @@ class LatexGenerator : public OutputGenerator, public OutputGenIntf
     void startCompoundTemplateParams() override { m_t << "\\subsubsection*{";}
     void endCompoundTemplateParams() override { m_t << "}\n"; }
 
-    void startMemberGroupHeader(bool) override;
-    void endMemberGroupHeader() override;
+    void startMemberGroupHeader(const QCString &,bool) override;
+    void endMemberGroupHeader(bool) override;
     void startMemberGroupDocs() override;
     void endMemberGroupDocs() override;
     void startMemberGroup() override;
@@ -236,11 +233,12 @@ class LatexGenerator : public OutputGenerator, public OutputGenIntf
     void endPageRef(const QCString &,const QCString &) override;
     void startQuickIndices() override {}
     void endQuickIndices() override {}
-    void writeSplitBar(const QCString &) override {}
+    void writeSplitBar(const QCString &,const QCString &) override {}
     void writeNavigationPath(const QCString &) override {}
     void writeLogo() override {}
-    void writeQuickLinks(HighlightedItem,const QCString &) override {}
+    void writeQuickLinks(HighlightedItem,const QCString &,bool) override {}
     void writeSummaryLink(const QCString &,const QCString &,const QCString &,bool) override {}
+    void writePageOutline() override {}
     void startContents() override {}
     void endContents() override {}
     void writeNonBreakableSpace(int) override;
@@ -310,15 +308,18 @@ class LatexGenerator : public OutputGenerator, public OutputGenIntf
     void writeLabel(const QCString &l,bool isLast) override;
     void endLabels() override;
 
-    void writeLocalToc(const SectionRefs &sr,const LocalToc &lt) override;
+    void startLocalToc(int level) override;
+    void endLocalToc() override {}
+    void startTocEntry(const SectionInfo *) override {}
+    void endTocEntry(const SectionInfo *) override {}
+
     void startPlainFile(const QCString &name) override { OutputGenerator::startPlainFile(name); }
     void endPlainFile() override { OutputGenerator::endPlainFile(); }
 
+    void startEmbeddedDoc(int) override;
+    void endEmbeddedDoc() override;
 
   private:
-    void startTitle();
-    void endTitle()   { m_t << "}"; }
-
     bool m_firstDescItem = true;
     bool m_disableLinks = false;
     QCString m_relPath;
@@ -346,6 +347,7 @@ QCString latexEscapeLabelName(const QCString &s);
 QCString latexEscapeIndexChars(const QCString &s);
 QCString latexEscapePDFString(const QCString &s);
 QCString latexFilterURL(const QCString &s);
+void latexWriteIndexItem(TextStream &t,const QCString &r1,const QCString &s2 = "");
 
 
 #endif

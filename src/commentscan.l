@@ -62,9 +62,7 @@ typedef yyguts_t *yyscan_t;
 #include "section.h"
 #include "regex.h"
 #include "util.h"
-#include "reflist.h"
 #include "trace.h"
-#include "debug.h"
 #include "stringutil.h"
 
 // forward declarations
@@ -76,6 +74,9 @@ static bool handleEnum(yyscan_t yyscanner,const QCString &, const StringVector &
 static bool handleDefGroup(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleAddToGroup(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleWeakGroup(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleRequirement(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleSatisfies(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleVerifies(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleNamespace(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handlePackage(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleConcept(yyscan_t yyscanner,const QCString &, const StringVector &);
@@ -177,6 +178,8 @@ static bool handleIPrefix(yyscan_t yyscanner,const QCString &, const StringVecto
 
 [[maybe_unused]] static const char *stateToString(int state);
 
+static QCString fileInfoLookup(const FileInfo &fi,const std::string &name);
+
 typedef bool (*DocCmdFunc)(yyscan_t yyscanner,const QCString &name, const StringVector &optList);
 typedef EntryType (*MakeEntryType)();
 
@@ -205,13 +208,12 @@ struct DocCmdMap
 };
 
 // map of command to handler function
-static const std::map< std::string, DocCmdMap > docCmdMap =
+static const std::unordered_map< std::string, DocCmdMap > docCmdMap =
 {
   // command name             handler function                   command spacing            section handling
   { "addindex",               { &handleAddIndex,                 CommandSpacing::Invisible, SectionHandling::Allowed }},
   { "addtogroup",             { &handleAddToGroup,               CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "anchor",                 { &handleAnchor,                   CommandSpacing::Invisible, SectionHandling::Replace }},
-  { "ianchor",                { &handleAnchor,                   CommandSpacing::Invisible, SectionHandling::Replace }},
   { "arg",                    { nullptr,                         CommandSpacing::Block,     SectionHandling::Break   }},
   { "attention",              { nullptr,                         CommandSpacing::Block,     SectionHandling::Break   }},
   { "author",                 { nullptr,                         CommandSpacing::Block,     SectionHandling::Break   }},
@@ -224,14 +226,12 @@ static const std::map< std::string, DocCmdMap > docCmdMap =
   { "cite",                   { &handleCite,                     CommandSpacing::Inline,    SectionHandling::Replace }},
   { "class",                  { &handleClass,                    CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "code",                   { &handleFormatBlock,              CommandSpacing::Block,     SectionHandling::Break   }},
-  { "icode",                  { &handleFormatBlock,              CommandSpacing::Block,     SectionHandling::Break   }},
   { "collaborationgraph",     { &handleCollaborationgraph,       CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "concept",                { &handleConcept,                  CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "copybrief",              { &handleCopyBrief,                CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "copydetails",            { &handleCopyDetails,              CommandSpacing::Block,     SectionHandling::Escape  }},
   { "copydoc",                { &handleCopyDoc,                  CommandSpacing::Block,     SectionHandling::Escape  }},
   { "copyright",              { nullptr,                         CommandSpacing::Block,     SectionHandling::Break   }},
-  { "showdate",               { nullptr,                         CommandSpacing::Inline,    SectionHandling::Allowed }},
   { "date",                   { nullptr,                         CommandSpacing::Block,     SectionHandling::Break   }},
   { "def",                    { &handleDef,                      CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "defgroup",               { &handleDefGroup,                 CommandSpacing::Invisible, SectionHandling::Escape  }},
@@ -242,17 +242,33 @@ static const std::map< std::string, DocCmdMap > docCmdMap =
   { "directorygraph",         { &handleDirectoryGraph,           CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "docbookinclude",         { nullptr,                         CommandSpacing::Inline,    SectionHandling::Break   }},
   { "docbookonly",            { &handleFormatBlock,              CommandSpacing::Invisible, SectionHandling::Break   }},
+  { "dontinclude",            { nullptr,                         CommandSpacing::Invisible, SectionHandling::Break   }},
   { "dot",                    { &handleFormatBlock,              CommandSpacing::Block,     SectionHandling::Break   }},
   { "dotfile",                { nullptr,                         CommandSpacing::Block,     SectionHandling::Break   }},
   { "else",                   { &handleElse,                     CommandSpacing::Inline,    SectionHandling::Escape  }},
   { "elseif",                 { &handleElseIf,                   CommandSpacing::Inline,    SectionHandling::Escape  }},
+  { "endcode",                { nullptr,                         CommandSpacing::Invisible, SectionHandling::Escape  }},
+  { "enddocbookonly",         { nullptr,                         CommandSpacing::Invisible, SectionHandling::Escape  }},
+  { "enddot",                 { nullptr,                         CommandSpacing::Invisible, SectionHandling::Escape  }},
+  { "endhtmlonly",            { nullptr,                         CommandSpacing::Invisible, SectionHandling::Escape  }},
+  { "endicode",               { nullptr,                         CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "endif",                  { &handleEndIf,                    CommandSpacing::Inline,    SectionHandling::Escape  }},
+  { "endlatexonly",           { nullptr,                         CommandSpacing::Invisible, SectionHandling::Escape  }},
+  { "endlink",                { nullptr,                         CommandSpacing::Invisible, SectionHandling::Escape  }},
+  { "endmanonly",             { nullptr,                         CommandSpacing::Invisible, SectionHandling::Escape  }},
+  { "endmsc",                 { nullptr,                         CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "endparblock",            { &handleEndParBlock,              CommandSpacing::Block,     SectionHandling::Escape  }},
+  { "endrtfonly",             { nullptr,                         CommandSpacing::Invisible, SectionHandling::Escape  }},
+  { "endsecreflist",          { nullptr,                         CommandSpacing::Invisible, SectionHandling::Escape  }},
+  { "enduml",                 { nullptr,                         CommandSpacing::Invisible, SectionHandling::Escape  }},
+  { "endverbatim",            { nullptr,                         CommandSpacing::Invisible, SectionHandling::Escape  }},
+  { "endxmlonly",             { nullptr,                         CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "enum",                   { &handleEnum,                     CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "example",                { &handleExample,                  CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "exception",              { nullptr,                         CommandSpacing::Block,     SectionHandling::Break   }},
   { "extends",                { &handleExtends,                  CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "file",                   { &handleFile,                     CommandSpacing::Invisible, SectionHandling::Escape  }},
+  { "fileinfo",               { &handleFileInfo,                 CommandSpacing::Inline,    SectionHandling::Replace }},
   { "fn",                     { &handleFn,                       CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "groupgraph",             { &handleGroupgraph,               CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "headerfile",             { &handleHeaderFile,               CommandSpacing::Invisible, SectionHandling::Escape  }},
@@ -271,9 +287,14 @@ static const std::map< std::string, DocCmdMap > docCmdMap =
   { "hiderefs",               { &handleHideReferencesRelation,   CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "htmlinclude",            { nullptr,                         CommandSpacing::Inline,    SectionHandling::Break   }},
   { "htmlonly",               { &handleFormatBlock,              CommandSpacing::Invisible, SectionHandling::Break   }},
+  { "ianchor",                { &handleAnchor,                   CommandSpacing::Invisible, SectionHandling::Replace }},
+  { "icode",                  { &handleFormatBlock,              CommandSpacing::Block,     SectionHandling::Break   }},
   { "idlexcept",              { &handleIdlException,             CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "if",                     { &handleIf,                       CommandSpacing::Inline,    SectionHandling::Break   }},
+  { "ifile",                  { &handleIFile,                    CommandSpacing::Invisible, SectionHandling::Replace }},
   { "ifnot",                  { &handleIfNot,                    CommandSpacing::Inline,    SectionHandling::Break   }},
+  { "iline",                  { &handleILine,                    CommandSpacing::Invisible, SectionHandling::Replace }},
+  { "iliteral",               { &handleFormatBlock,              CommandSpacing::Inline,    SectionHandling::Break   }},
   { "image",                  { &handleImage,                    CommandSpacing::Block,     SectionHandling::Break   }},
   { "implements",             { &handleExtends,                  CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "important",              { nullptr,                         CommandSpacing::Block,     SectionHandling::Break   }},
@@ -287,10 +308,16 @@ static const std::map< std::string, DocCmdMap > docCmdMap =
   { "interface",              { &handleInterface,                CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "internal",               { &handleInternal,                 CommandSpacing::Block,     SectionHandling::Break   }},
   { "invariant",              { nullptr,                         CommandSpacing::Block,     SectionHandling::Break   }},
+  { "iprefix",                { &handleIPrefix,                  CommandSpacing::Invisible, SectionHandling::Replace }},
+  { "iraise",                 { &handleIRaise,                   CommandSpacing::Invisible, SectionHandling::Replace }},
+  { "iverbatim",              { &handleFormatBlock,              CommandSpacing::Block,     SectionHandling::Break   }},
   { "latexinclude",           { nullptr,                         CommandSpacing::Inline,    SectionHandling::Break   }},
   { "latexonly",              { &handleFormatBlock,              CommandSpacing::Invisible, SectionHandling::Break   }},
   { "li",                     { nullptr,                         CommandSpacing::Block,     SectionHandling::Break   }},
   { "line",                   { nullptr,                         CommandSpacing::Invisible, SectionHandling::Escape  }},
+  { "line",                   { nullptr,                         CommandSpacing::Invisible, SectionHandling::Escape  }},
+  { "lineinfo",               { &handleLineInfo,                 CommandSpacing::Inline,    SectionHandling::Replace }},
+  { "link",                   { nullptr,                         CommandSpacing::Invisible, SectionHandling::Replace }},
   { "mainpage",               { &handleMainpage,                 CommandSpacing::Invisible, SectionHandling::Break   }},
   { "maninclude",             { nullptr,                         CommandSpacing::Inline,    SectionHandling::Break   }},
   { "manonly",                { &handleFormatBlock,              CommandSpacing::Invisible, SectionHandling::Break   }},
@@ -310,6 +337,7 @@ static const std::map< std::string, DocCmdMap > docCmdMap =
   { "paragraph",              { &handleSection,                  CommandSpacing::Block,     SectionHandling::Break   }},
   { "param",                  { &handleParam,                    CommandSpacing::Block,     SectionHandling::Break   }},
   { "parblock",               { &handleParBlock,                 CommandSpacing::Block,     SectionHandling::Break   }},
+  { "plantumlfile",           { nullptr,                         CommandSpacing::Block,     SectionHandling::Break   }},
   { "post",                   { nullptr,                         CommandSpacing::Block,     SectionHandling::Break   }},
   { "pre",                    { nullptr,                         CommandSpacing::Block,     SectionHandling::Break   }},
   { "private",                { &handlePrivate,                  CommandSpacing::Invisible, SectionHandling::Escape  }},
@@ -330,6 +358,7 @@ static const std::map< std::string, DocCmdMap > docCmdMap =
   { "relatesalso",            { &handleRelatedAlso,              CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "remark",                 { nullptr,                         CommandSpacing::Block,     SectionHandling::Break   }},
   { "remarks",                { nullptr,                         CommandSpacing::Block,     SectionHandling::Break   }},
+  { "requirement",            { &handleRequirement,              CommandSpacing::Block,     SectionHandling::Break   }},
   { "result",                 { nullptr,                         CommandSpacing::Block,     SectionHandling::Break   }},
   { "return",                 { nullptr,                         CommandSpacing::Block,     SectionHandling::Break   }},
   { "returns",                { nullptr,                         CommandSpacing::Block,     SectionHandling::Break   }},
@@ -337,15 +366,20 @@ static const std::map< std::string, DocCmdMap > docCmdMap =
   { "rtfinclude",             { nullptr,                         CommandSpacing::Inline,    SectionHandling::Break   }},
   { "rtfonly",                { &handleFormatBlock,              CommandSpacing::Invisible, SectionHandling::Break   }},
   { "sa",                     { nullptr,                         CommandSpacing::Block,     SectionHandling::Break   }},
+  { "satisfies",              { &handleSatisfies,                CommandSpacing::Inline,    SectionHandling::Break   }},
+  { "secreflist",             { nullptr,                         CommandSpacing::Invisible, SectionHandling::Break   }},
   { "section",                { &handleSection,                  CommandSpacing::Block,     SectionHandling::Break   }},
   { "see",                    { nullptr,                         CommandSpacing::Block,     SectionHandling::Break   }},
   { "short",                  { &handleBrief,                    CommandSpacing::Invisible, SectionHandling::Break   }},
+  { "showdate",               { nullptr,                         CommandSpacing::Inline,    SectionHandling::Allowed }},
   { "showenumvalues",         { &handleShowEnumValues,           CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "showinitializer",        { &handleShowInitializer,          CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "showinlinesource",       { &handleShowInlineSource,         CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "showrefby",              { &handleReferencedByRelation,     CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "showrefs",               { &handleReferencesRelation,       CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "since",                  { nullptr,                         CommandSpacing::Block,     SectionHandling::Break   }},
+  { "skip",                   { nullptr,                         CommandSpacing::Invisible, SectionHandling::Escape  }},
+  { "skipline",               { nullptr,                         CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "snippet",                { nullptr,                         CommandSpacing::Block,     SectionHandling::Break   }},
   { "snippetlineno",          { nullptr,                         CommandSpacing::Block,     SectionHandling::Break   }},
   { "startuml",               { &handleFormatBlock,              CommandSpacing::Block,     SectionHandling::Break   }},
@@ -353,8 +387,8 @@ static const std::map< std::string, DocCmdMap > docCmdMap =
   { "struct",                 { &handleStruct,                   CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "subpage",                { &handleSubpage,                  CommandSpacing::Inline,    SectionHandling::Allowed }},
   { "subparagraph",           { &handleSection,                  CommandSpacing::Block,     SectionHandling::Break   }},
-  { "subsubparagraph",        { &handleSection,                  CommandSpacing::Block,     SectionHandling::Break   }},
   { "subsection",             { &handleSection,                  CommandSpacing::Block,     SectionHandling::Break   }},
+  { "subsubparagraph",        { &handleSection,                  CommandSpacing::Block,     SectionHandling::Break   }},
   { "subsubsection",          { &handleSection,                  CommandSpacing::Block,     SectionHandling::Break   }},
   { "tableofcontents",        { &handleToc,                      CommandSpacing::Invisible, SectionHandling::Break   }},
   { "test",                   { &handleTest,                     CommandSpacing::XRef,      SectionHandling::Break   }},
@@ -365,46 +399,18 @@ static const std::map< std::string, DocCmdMap > docCmdMap =
   { "typedef",                { &handleFn,                       CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "union",                  { &handleUnion,                    CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "until",                  { nullptr,                         CommandSpacing::Block,     SectionHandling::Escape  }},
+  { "until",                  { nullptr,                         CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "var",                    { &handleFn,                       CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "verbatim",               { &handleFormatBlock,              CommandSpacing::Block,     SectionHandling::Break   }},
-  { "iverbatim",              { &handleFormatBlock,              CommandSpacing::Block,     SectionHandling::Break   }},
   { "verbinclude",            { nullptr,                         CommandSpacing::Inline,    SectionHandling::Break   }},
+  { "verifies",               { &handleVerifies,                 CommandSpacing::Inline,    SectionHandling::Break   }},
   { "version",                { nullptr,                         CommandSpacing::Block,     SectionHandling::Break   }},
+  { "vhdlflow",               { nullptr,                         CommandSpacing::Block,     SectionHandling::Break   }},
   { "warning",                { nullptr,                         CommandSpacing::Block,     SectionHandling::Break   }},
   { "weakgroup",              { &handleWeakGroup,                CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "xmlinclude",             { nullptr,                         CommandSpacing::Inline,    SectionHandling::Break   }},
   { "xmlonly",                { &handleFormatBlock,              CommandSpacing::Invisible, SectionHandling::Break   }},
-  { "xrefitem",               { &handleXRefItem,                 CommandSpacing::XRef,      SectionHandling::Break   }},
-  { "iliteral",               { &handleFormatBlock,              CommandSpacing::Inline,    SectionHandling::Break   }},
-  { "fileinfo",               { &handleFileInfo,                 CommandSpacing::Inline,    SectionHandling::Replace }},
-  { "lineinfo",               { &handleLineInfo,                 CommandSpacing::Inline,    SectionHandling::Replace }},
-  { "secreflist",             { nullptr,                         CommandSpacing::Invisible, SectionHandling::Break   }},
-  { "endsecreflist",          { nullptr,                         CommandSpacing::Invisible, SectionHandling::Escape  }},
-  { "dontinclude",            { nullptr,                         CommandSpacing::Invisible, SectionHandling::Break   }},
-  { "line",                   { nullptr,                         CommandSpacing::Invisible, SectionHandling::Escape  }},
-  { "skip",                   { nullptr,                         CommandSpacing::Invisible, SectionHandling::Escape  }},
-  { "skipline",               { nullptr,                         CommandSpacing::Invisible, SectionHandling::Escape  }},
-  { "until",                  { nullptr,                         CommandSpacing::Invisible, SectionHandling::Escape  }},
-  { "vhdlflow",               { nullptr,                         CommandSpacing::Block,     SectionHandling::Break   }},
-  { "enddot",                 { nullptr,                         CommandSpacing::Invisible, SectionHandling::Escape  }},
-  { "endmsc",                 { nullptr,                         CommandSpacing::Invisible, SectionHandling::Escape  }},
-  { "enduml",                 { nullptr,                         CommandSpacing::Invisible, SectionHandling::Escape  }},
-  { "endicode",               { nullptr,                         CommandSpacing::Invisible, SectionHandling::Escape  }},
-  { "endcode",                { nullptr,                         CommandSpacing::Invisible, SectionHandling::Escape  }},
-  { "endverbatim",            { nullptr,                         CommandSpacing::Invisible, SectionHandling::Escape  }},
-  { "enddocbookonly",         { nullptr,                         CommandSpacing::Invisible, SectionHandling::Escape  }},
-  { "endhtmlonly",            { nullptr,                         CommandSpacing::Invisible, SectionHandling::Escape  }},
-  { "endlatexonly",           { nullptr,                         CommandSpacing::Invisible, SectionHandling::Escape  }},
-  { "endmanonly",             { nullptr,                         CommandSpacing::Invisible, SectionHandling::Escape  }},
-  { "endrtfonly",             { nullptr,                         CommandSpacing::Invisible, SectionHandling::Escape  }},
-  { "endxmlonly",             { nullptr,                         CommandSpacing::Invisible, SectionHandling::Escape  }},
-  { "link",                   { nullptr,                         CommandSpacing::Invisible, SectionHandling::Replace }},
-  { "endlink",                { nullptr,                         CommandSpacing::Invisible, SectionHandling::Escape  }},
-  { "ifile",                  { &handleIFile,                    CommandSpacing::Invisible, SectionHandling::Replace }},
-  { "iline",                  { &handleILine,                    CommandSpacing::Invisible, SectionHandling::Replace }},
-  { "iraise",                 { &handleIRaise,                   CommandSpacing::Invisible, SectionHandling::Replace }},
-  { "iprefix",                { &handleIPrefix,                  CommandSpacing::Invisible, SectionHandling::Replace }},
-  { "plantumlfile",           { nullptr,                         CommandSpacing::Block,     SectionHandling::Break   }}
+  { "xrefitem",               { &handleXRefItem,                 CommandSpacing::XRef,      SectionHandling::Break   }}
 };
 
 #define YY_NO_INPUT 1
@@ -520,6 +526,8 @@ struct commentscanYY_state
   QCString         htmlAnchorStr;
   bool             htmlAnchor = false;
   bool             CScode = false;
+  QCString         reqId;
+  QCString         reqTitle;
 };
 
 
@@ -537,6 +545,7 @@ static void initParser(yyscan_t yyscanner);
 static bool checkStructuralIndicator(yyscan_t yyscanner);
 [[maybe_unused]] static bool makeStructuralIndicator(yyscan_t yyscanner,MakeEntryType maker);
 static void lineCount(yyscan_t yyscanner);
+static void addRequirementId(yyscan_t yyscanner);
 static void addXRefItem(yyscan_t yyscanner,
                         const QCString &listName,const QCString &itemTitle,
                         const QCString &listTitle,bool append);
@@ -554,6 +563,7 @@ static int yyread(yyscan_t yyscanner,char *buf,int max_size);
 static void addCite(yyscan_t yyscanner);
 static void addIline(yyscan_t yyscanner,int lineNr);
 static void addIlineBreak(yyscan_t yyscanner,int lineNr);
+static void escapeLabel(QCString &label);
 
 #define unput_string(yytext,yyleng) do { for (int i=(int)yyleng-1;i>=0;i--) unput(yytext[i]); } while(0)
 
@@ -572,6 +582,7 @@ static inline const char *getLexerFILE() {return __FILE__;}
 CMD       ("\\"|"@")
 PRE       ("pre"|"PRE")
 TABLE     ("table"|"TABLE")
+TABLEDEL  ("table"|"tr"|"th"|"td"|"TABLE"|"TR"|"TH"|"TD")
 P         [pP]
 UL        ("ul"|"UL")
 OL        ("ol"|"OL")
@@ -605,6 +616,7 @@ FILEECHAR [a-z_A-Z0-9\x80-\xFF\-\+=@&#~]
 FILE      ({FILESCHAR}*{FILEECHAR}+("."{FILESCHAR}*{FILEECHAR}+)*)|("\""[^\n\"]*"\"")
 ID        [$a-z_A-Z\x80-\xFF][$a-z_A-Z0-9\x80-\xFF]*
 LABELID   [a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF\-]*
+REQID     [a-z_A-Z0-9\x80-\xFF\-]+
 CITESCHAR [a-z_A-Z0-9\x80-\xFF\-\?]
 CITEECHAR [a-z_A-Z0-9\x80-\xFF\-\+:\/\?]*
 CITEID    {CITESCHAR}{CITEECHAR}*("."{CITESCHAR}{CITEECHAR}*)*|"\""{CITESCHAR}{CITEECHAR}*("."{CITESCHAR}{CITEECHAR}*)*"\""
@@ -654,6 +666,12 @@ STopt  [^\n@\\]*
 %x      SectionTitle
 %x      SubpageLabel
 %x      SubpageTitle
+%x      SatisfiesLabel
+%x      SatisfiesTitle
+%x      VerifiesLabel
+%x      VerifiesTitle
+%x      RequirementLabel
+%x      RequirementTitle
 %x      FormatBlock
 %x      LineParam
 %x      GuardParam
@@ -966,7 +984,7 @@ STopt  [^\n@\\]*
 <Comment>{B}*{CMD}[a-z_A-Z]+"{"[^}]*"}"{B}*  |
 <Comment>{B}*{CMD}[a-z_A-Z]+{B}*        { // potentially interesting command
                                           // the {B}* in the front was added for bug620924
-                                          QCString fullMatch = QCString(yytext);
+                                          QCString fullMatch = yytext;
                                           int idx = fullMatch.find('{');
                                           /* handle `f{` command as special case */
                                           if ((idx > 1) && (yytext[idx-1] == 'f') && (yytext[idx-2] == '\\' || yytext[idx-2] =='@')) REJECT;
@@ -975,7 +993,7 @@ STopt  [^\n@\\]*
                                           StringVector optList;
                                           if (idx == -1) // no options
                                           {
-                                            cmdName = QCString(yytext).stripWhiteSpace().mid(1); // to remove {CMD}
+                                            cmdName = fullMatch.stripWhiteSpace().mid(1); // to remove {CMD}
                                           }
                                           else // options present
                                           {
@@ -989,7 +1007,7 @@ STopt  [^\n@\\]*
                                           {
                                             int i=0;
                                             while (yytext[i]==' ' || yytext[i]=='\t') i++;
-                                            yyextra->spaceBeforeCmd = QCString(yytext).left(i);
+                                            yyextra->spaceBeforeCmd = fullMatch.left(i);
                                             CommandSpacing spacing = it->second.spacing;
                                             if ((spacing==CommandSpacing::Block || spacing==CommandSpacing::XRef) &&
                                                 !(yyextra->inContext==OutputXRef && cmdName=="parblock"))
@@ -1213,6 +1231,17 @@ STopt  [^\n@\\]*
                                           addOutput(yyscanner,yytext);
                                           if (*yytext == '\n') yyextra->lineNr++;
                                         }
+<Comment>"<"[/]?{TABLEDEL}">"           { // In case in xrefitem type some special handling is required
+                                          if (yyextra->inContext==OutputXRef)
+                                          {
+                                            setOutput(yyscanner,OutputDoc);
+                                            addOutput(yyscanner,yytext);
+                                          }
+                                          else
+                                          {
+                                            REJECT;
+                                          }
+                                        }
 <Comment>.                              { // catch-all for anything else
                                           addOutput(yyscanner,*yytext);
                                         }
@@ -1335,7 +1364,7 @@ STopt  [^\n@\\]*
 <NameSpaceDocArg1>{SCOPENAME}           { // handle argument
                                           makeStructuralIndicator(yyscanner,yyextra->currentMakeEntryType);
                                           lineCount(yyscanner);
-                                          yyextra->current->name = substitute(removeRedundantWhiteSpace(QCString(yytext)),QCString("."),QCString("::"));
+                                          yyextra->current->name = substitute(removeRedundantWhiteSpace(yytext),".","::");
                                           BEGIN( Comment );
                                         }
 <NameSpaceDocArg1>{LC}                  { // line continuation
@@ -1420,13 +1449,13 @@ STopt  [^\n@\\]*
 <ClassDocArg1>{SCOPENAME}{TMPLSPEC}     {
                                           makeStructuralIndicator(yyscanner,yyextra->currentMakeEntryType);
                                           lineCount(yyscanner);
-                                          yyextra->current->name = substitute(removeRedundantWhiteSpace(QCString(yytext)),".","::");
+                                          yyextra->current->name = substitute(removeRedundantWhiteSpace(yytext),".","::");
                                           BEGIN( ClassDocArg2 );
                                         }
 <ClassDocArg1>{SCOPENAME}               { // first argument
                                           makeStructuralIndicator(yyscanner,yyextra->currentMakeEntryType);
                                           lineCount(yyscanner);
-                                          yyextra->current->name = substitute(QCString(yytext),".","::");
+                                          yyextra->current->name = substitute(yytext,".","::");
                                           if (yyextra->current->section.isProtocolDoc())
                                           {
                                             yyextra->current->name+="-p";
@@ -1437,7 +1466,7 @@ STopt  [^\n@\\]*
 <CategoryDocArg1>{SCOPENAME}{B}*"("[^\)]+")" {
                                           makeStructuralIndicator(yyscanner,yyextra->currentMakeEntryType);
                                           lineCount(yyscanner);
-                                          yyextra->current->name = substitute(QCString(yytext),".","::");
+                                          yyextra->current->name = substitute(yytext,".","::");
                                           BEGIN( ClassDocArg2 );
                                         }
 <ClassDocArg1,CategoryDocArg1>{LC}      { // line continuation
@@ -1487,7 +1516,7 @@ STopt  [^\n@\\]*
 
   /* --------- handle arguments of {def,add,weak}group commands --------- */
 
-<GroupDocArg1>{LABELID}(".html"?)       { // group name
+<GroupDocArg1>{LABELID}(".html"|".xhtml")? { // group name
                                            yyextra->current->name = yytext;
                                           //lastDefGroup.groupname = yytext;
                                           //lastDefGroup.pri = yyextra->current->groupingPri();
@@ -1495,6 +1524,10 @@ STopt  [^\n@\\]*
                                           if (yyextra->current->name.endsWith(".html"))
                                           {
                                             yyextra->current->name=yyextra->current->name.left(yyextra->current->name.length()-5);
+                                          }
+                                          else if (yyextra->current->name.endsWith(".xhtml"))
+                                          {
+                                            yyextra->current->name=yyextra->current->name.left(yyextra->current->name.length()-6);
                                           }
                                           yyextra->current->type.clear();
                                           BEGIN(GroupDocArg2);
@@ -1521,9 +1554,9 @@ STopt  [^\n@\\]*
                                         }
 <GroupDocArg2>[^\n\\]+                  { // title (stored in type)
                                           yyextra->current->type += yytext;
-                                          yyextra->current->type = yyextra->current->type.stripWhiteSpace();
                                         }
 <GroupDocArg2>{DOCNL}+                  {
+                                          yyextra->current->type = yyextra->current->type.stripWhiteSpace();
                                           if ( yyextra->current->groupDocType==Entry::GROUPDOC_NORMAL &&
                                                yyextra->current->type.isEmpty()
                                              ) // defgroup requires second argument
@@ -1553,7 +1586,6 @@ STopt  [^\n@\\]*
                                         }
 <GroupDocArg2>.                         { // title (stored in type)
                                           yyextra->current->type += yytext;
-                                          yyextra->current->type = yyextra->current->type.stripWhiteSpace();
                                         }
 
   /* --------- handle arguments of page/mainpage command ------------------- */
@@ -1903,25 +1935,93 @@ STopt  [^\n@\\]*
 
   /* ----- handle arguments of the section/subsection/.. commands ------- */
 
-<SectionLabel>{LABELID}                 { // first argument
-                                          yyextra->sectionLabel=yyextra->raisePrefix+yytext;
-                                          addOutput(yyscanner,yyextra->sectionLabel.data());
-                                          yyextra->sectionTitle.clear();
-                                          BEGIN(SectionTitle);
+<SectionLabel>{LABELID}                 {
+                                          yyextra->sectionLabel+=yytext;
                                         }
-<SectionLabel>{DOCNL}                   { // missing argument
-                                          warn(yyextra->fileName,yyextra->lineNr,
+<SectionLabel>{CMD}"lineinfo"("{}")?    {
+                                          yyextra->sectionLabel += QCString().setNum(yyextra->lineNr);
+                                        }
+<SectionLabel>{CMD}"fileinfo"("{"[^}]*"}")? {
+                                          FileInfo fi(yyextra->fileName.str());
+                                          bool hasOption = false;
+                                          QCString label;
+                                          if (yytext[yyleng-1] == '}') // has parameters
+                                          {
+                                            StringVector optList;
+                                            QCString txt = yytext;
+                                            QCString optStr = txt.mid(10,yyleng-11).stripWhiteSpace();
+                                            optList = split(optStr.str(),",");
+                                            for (const auto &opt_ : optList)
+                                            {
+                                              QCString optStripped = QCString(opt_).stripWhiteSpace();
+                                              std::string opt = optStripped.lower().str();
+                                              QCString result = fileInfoLookup(fi,opt);
+                                              if (!result.isEmpty())
+                                              {
+                                                if (hasOption) // oops: already found an option
+                                                {
+                                                  warn(yyextra->fileName,yyextra->lineNr,"Multiple options specified with \\fileinfo, discarding '{}'", optStripped);
+                                                }
+                                                else
+                                                {
+                                                  label = result;
+                                                }
+                                                hasOption = true;
+                                              }
+                                              else
+                                              {
+                                                warn(yyextra->fileName,yyextra->lineNr,"Unknown option specified with \\fileinfo: '{}'", optStripped);
+                                              }
+                                            }
+                                          }
+                                          if (!hasOption)
+                                          {
+                                            if (Config_getBool(FULL_PATH_NAMES))
+                                            {
+                                              label=stripFromPath(yyextra->fileName);
+                                            }
+                                            else
+                                            {
+                                              label=yyextra->fileName;
+                                            }
+                                          }
+                                          escapeLabel(label);
+                                          yyextra->sectionLabel+=label;
+                                        }
+<SectionLabel>{DOCNL}                   {
+                                          yyextra->sectionTitle.clear();
+                                          if (yyextra->sectionLabel.isEmpty())
+                                          { // missing argument
+                                            warn(yyextra->fileName,yyextra->lineNr,
                                               "\\section command has no label"
                                               );
+                                          }
+                                          else
+                                          {
+                                            yyextra->sectionLabel=yyextra->raisePrefix+yyextra->sectionLabel;
+                                            addOutput(yyscanner,yyextra->sectionLabel.data());
+                                            addSection(yyscanner);
+                                          }
                                           if (*yytext=='\n') yyextra->lineNr++;
                                           addOutput(yyscanner,'\n');
                                           BEGIN( Comment );
                                         }
 <SectionLabel>.                         { // invalid character for section label
-                                          warn(yyextra->fileName,yyextra->lineNr,
+                                          if (yyextra->sectionLabel.isEmpty())
+                                          {
+                                            warn(yyextra->fileName,yyextra->lineNr,
                                               "Invalid or missing section label"
                                               );
-                                          BEGIN(Comment);
+                                            BEGIN(Comment);
+                                          }
+                                          else
+                                          {
+                                            yyextra->sectionLabel=yyextra->raisePrefix+yyextra->sectionLabel;
+                                            addOutput(yyscanner,yyextra->sectionLabel.data());
+                                            yyextra->sectionTitle.clear();
+                                            unput_string(yytext,yyleng);
+                                            BEGIN(SectionTitle);
+                                          }
                                         }
 <SectionTitle>{STAopt}/"\n"             { // end of section title
                                           addSection(yyscanner);
@@ -1976,7 +2076,7 @@ STopt  [^\n@\\]*
                                         }
 <SectionTitle>{B}*{CMD}[a-z_A-Z]+"{"[^}]*"}"{B}*  |
 <SectionTitle>{B}*{CMD}[a-z_A-Z]+{B}*   { // handling command in section title
-                                          QCString fullMatch = QCString(yytext);
+                                          QCString fullMatch = yytext;
                                           int idx = fullMatch.find('{');
                                           /* handle `f{` command as special case */
                                           if ((idx > 1) && (yytext[idx-1] == 'f') && (yytext[idx-2] == '\\' || yytext[idx-2] =='@')) REJECT;
@@ -1985,7 +2085,7 @@ STopt  [^\n@\\]*
                                           StringVector optList;
                                           if (idx == -1) // no options
                                           {
-                                            cmdName = QCString(yytext).stripWhiteSpace().mid(1); // to remove {CMD}
+                                            cmdName = fullMatch.stripWhiteSpace().mid(1); // to remove {CMD}
                                           }
                                           else // options present
                                           {
@@ -2139,7 +2239,7 @@ STopt  [^\n@\\]*
                                           addOutput(yyscanner,yytext);
                                           // we add subpage labels as a kind of "inheritance" relation to prevent
                                           // needing to add another list to the Entry class.
-                                          yyextra->current->extends.emplace_back(QCString(yytext),Protection::Public,Specifier::Normal);
+                                          yyextra->current->extends.emplace_back(yytext,Protection::Public,Specifier::Normal);
                                           BEGIN(SubpageTitle);
                                         }
 <SubpageLabel>{DOCNL}                   { // missing argument
@@ -2210,6 +2310,98 @@ STopt  [^\n@\\]*
                                           {
                                             BEGIN(SectionTitle);
                                           }
+                                        }
+
+  /* ----- handle arguments of the anchor command ------- */
+
+<RequirementLabel>{REQID}               { // found argument
+                                          yyextra->current->name = yytext;
+                                          yyextra->current->type.clear();
+                                          BEGIN( RequirementTitle );
+                                        }
+<SatisfiesLabel>{REQID}                 { // found argument
+                                          yyextra->reqId = yytext;
+                                          yyextra->reqTitle.clear();
+                                          BEGIN( SatisfiesTitle );
+                                        }
+<VerifiesLabel>{REQID}                  { // found argument
+                                          yyextra->reqId = yytext;
+                                          yyextra->reqTitle.clear();
+                                          BEGIN( VerifiesTitle );
+                                        }
+<RequirementLabel,SatisfiesLabel,VerifiesLabel>"\\"{B}*"\n"  { // line continuation
+                                          yyextra->lineNr++;
+                                          addOutput(yyscanner,'\n');
+                                        }
+<RequirementLabel,SatisfiesLabel,VerifiesLabel>{DOCNL}       { // missing argument
+                                          warn(yyextra->fileName,yyextra->lineNr,
+                                               "missing requirement ID after \\requirement command"
+                                              );
+                                          unput_string(yytext,yyleng);
+                                          BEGIN( Comment );
+                                        }
+<RequirementLabel,SatisfiesLabel,VerifiesLabel>.  { // invalid character for requirement label
+                                        }
+
+<RequirementTitle,SatisfiesTitle,VerifiesTitle>"\\"{B}*"\n"          { // line continuation
+                                          yyextra->lineNr++;
+                                          addOutput(yyscanner,'\n');
+                                        }
+<RequirementTitle>[^\n\\]+              { // title (stored in type)
+                                          yyextra->current->type += yytext;
+                                        }
+<SatisfiesTitle,VerifiesTitle>[^\n\\@]+ { // title (stored in type)
+                                          yyextra->reqTitle += yytext;
+                                        }
+<RequirementTitle>({CMD}("verifies"|"satisfies"|"requirement"){B}+)|{DOCNL}+              {
+                                          yyextra->current->type = yyextra->current->type.stripWhiteSpace();
+                                          unput_string(yytext,yyleng);
+                                          addRequirementId(yyscanner);
+                                          BEGIN( Comment );
+                                        }
+<SatisfiesTitle>({CMD}("verifies"|"satisfies"|"requirement"){B}+)|{DOCNL}+              {
+                                          yyextra->reqTitle = yyextra->reqTitle.stripWhiteSpace();
+                                          unput_string(yytext,yyleng);
+                                          if (yyextra->current->section.isRequirementDoc())
+                                          {
+                                            warn(yyextra->fileName,yyextra->lineNr,
+                                                 "@satisfies command is not allowed in documentation of a requirement. Put in at the place where the requirement is implemented."
+                                                );
+                                          }
+                                          else
+                                          {
+                                            yyextra->current->rqli.emplace_back(RequirementRefType::Satisfies,
+                                                yyextra->reqId,
+                                                yyextra->reqTitle,
+                                                yyextra->fileName,
+                                                yyextra->lineNr);
+                                          }
+                                          BEGIN( Comment );
+                                        }
+<VerifiesTitle>({CMD}("verifies"|"satisfies"|"requirement"){B}+)|{DOCNL}+              {
+                                          yyextra->reqTitle = yyextra->reqTitle.stripWhiteSpace();
+                                          unput_string(yytext,yyleng);
+                                          if (yyextra->current->section.isRequirementDoc())
+                                          {
+                                            warn(yyextra->fileName,yyextra->lineNr,
+                                                 "@verifies command is not allowed in documentation of a requirement. Put in at the place where the requirement is tested."
+                                                );
+                                          }
+                                          else
+                                          {
+                                            yyextra->current->rqli.emplace_back(RequirementRefType::Verifies,
+                                                yyextra->reqId,
+                                                yyextra->reqTitle,
+                                                yyextra->fileName,
+                                                yyextra->lineNr);
+                                          }
+                                          BEGIN( Comment );
+                                        }
+<RequirementTitle>.                     { // title (stored in type)
+                                          yyextra->current->type += yytext;
+                                        }
+<SatisfiesTitle,VerifiesTitle>.         { // title (stored in reqTitle)
+                                          yyextra->reqTitle += yytext;
                                         }
 
 
@@ -2306,7 +2498,7 @@ STopt  [^\n@\\]*
                                           BEGIN(GuardParam);
                                         }
 <GuardParam>{B}*[a-z_A-Z0-9.\-]+        { // parameter of if/ifnot yyextra->guards
-                                          handleGuard(yyscanner,QCString(yytext));
+                                          handleGuard(yyscanner,yytext);
                                         }
 <GuardParam>{DOCNL}                     { // end of argument
                                           //next line is commented out due to bug620924
@@ -2462,13 +2654,13 @@ STopt  [^\n@\\]*
                                           if (*yytext=='\n') yyextra->lineNr++;
                                           addOutput(yyscanner,'\n');
                                         }
-<SkipInternal>[@\\]"if"/[ \t]           {
+<SkipInternal>{CMD}"if"/[ \t]           {
                                           yyextra->condCount++;
                                           }
-<SkipInternal>[@\\]"ifnot"/[ \t]        {
+<SkipInternal>{CMD}"ifnot"/[ \t]        {
                                           yyextra->condCount++;
                                         }
-<SkipInternal>[@\\]/"endif"             {
+<SkipInternal>{CMD}/"endif"             {
                                           yyextra->condCount--;
                                           if (yyextra->condCount<0) // handle conditional section around of \internal, see bug607743
                                           {
@@ -2476,49 +2668,49 @@ STopt  [^\n@\\]*
                                             BEGIN(Comment);
                                           }
                                         }
-<SkipInternal>[@\\]/"section"[ \t]      {
+<SkipInternal>{CMD}/"section"[ \t]      {
                                           if (yyextra->sectionLevel>0)
                                           {
                                             unput('\\');
                                             BEGIN(Comment);
                                           }
                                         }
-<SkipInternal>[@\\]/"subsection"[ \t]   {
+<SkipInternal>{CMD}/"subsection"[ \t]   {
                                           if (yyextra->sectionLevel>1)
                                           {
                                             unput('\\');
                                             BEGIN(Comment);
                                           }
                                         }
-<SkipInternal>[@\\]/"subsubsection"[ \t] {
+<SkipInternal>{CMD}/"subsubsection"[ \t] {
                                           if (yyextra->sectionLevel>2)
                                           {
                                             unput('\\');
                                             BEGIN(Comment);
                                           }
                                         }
-<SkipInternal>[@\\]/"paragraph"[ \t]    {
+<SkipInternal>{CMD}/"paragraph"[ \t]    {
                                           if (yyextra->sectionLevel>3)
                                           {
                                             unput('\\');
                                             BEGIN(Comment);
                                           }
                                         }
-<SkipInternal>[@\\]/"subparagraph"[ \t] {
+<SkipInternal>{CMD}/"subparagraph"[ \t] {
                                           if (yyextra->sectionLevel>4)
                                           {
                                             unput('\\');
                                             BEGIN(Comment);
                                           }
                                         }
-<SkipInternal>[@\\]/"subsubparagraph"[ \t] {
+<SkipInternal>{CMD}/"subsubparagraph"[ \t] {
                                           if (yyextra->sectionLevel>5)
                                           {
                                             unput('\\');
                                             BEGIN(Comment);
                                           }
                                         }
-<SkipInternal>[@\\]"endinternal"[ \t]*  {
+<SkipInternal>{CMD}"endinternal"[ \t]*  {
                                           BEGIN(Comment);
                                         }
 <SkipInternal>[^ \\@\n]+                { // skip non-special characters
@@ -2580,7 +2772,7 @@ STopt  [^\n@\\]*
 
 <InGroupParam>{LABELID}                 { // group id
                                           yyextra->current->groups.emplace_back(
-                                             QCString(yytext), Grouping::GROUPING_INGROUP
+                                             yytext, Grouping::GROUPING_INGROUP
                                           );
                                           yyextra->inGroupParamFound=TRUE;
                                         }
@@ -2673,7 +2865,7 @@ STopt  [^\n@\\]*
 
 <InheritParam>({ID}("::"|"."))*{ID}     { // found argument
                                           yyextra->current->extends.emplace_back(
-                                            removeRedundantWhiteSpace(QCString(yytext)),Protection::Public,Specifier::Normal
+                                            removeRedundantWhiteSpace(yytext),Protection::Public,Specifier::Normal
                                           );
                                           BEGIN( Comment );
                                         }
@@ -2696,7 +2888,7 @@ STopt  [^\n@\\]*
 
 <ExtendsParam>({ID}("::"|"."))*{ID}     { // found argument
                                           yyextra->current->extends.emplace_back(
-                                            removeRedundantWhiteSpace(QCString(yytext)),Protection::Public,Specifier::Normal
+                                            removeRedundantWhiteSpace(yytext),Protection::Public,Specifier::Normal
                                           );
                                           BEGIN( Comment );
                                         }
@@ -2714,7 +2906,7 @@ STopt  [^\n@\\]*
 
   /* ----- handle language specific sections ------- */
 
-<SkipLang>[\\@]"~"[a-zA-Z-]*            { /* language switch */
+<SkipLang>{CMD}"~"[a-zA-Z-]*            { /* language switch */
                                           QCString langId(&yytext[2]);
                                           if (!langId.isEmpty() && !Config_isAvailableEnum(OUTPUT_LANGUAGE,langId))
                                           {
@@ -2792,6 +2984,16 @@ STopt  [^\n@\\]*
                                           addOutput(yyscanner,"\n");
                                           BEGIN(Comment);
                                         }
+<CopyDoc>"<"[/]?{TABLEDEL}">"           {
+                                          if (yyextra->braceCount==0)
+                                          {
+                                            setOutput(yyscanner,OutputDoc);
+                                            addOutput(yyscanner," \\ilinebr\\ilinebr\\copydetails ");
+                                            addOutput(yyscanner,yyextra->copyDocArg);
+                                            addOutput(yyscanner,yytext);
+                                            BEGIN(Comment);
+                                          }
+                                        }
 <CopyDoc>{DOCNL}                        {
                                           if (*yytext=='\n') yyextra->lineNr++;
                                           if (yyextra->braceCount==0)
@@ -2806,7 +3008,7 @@ STopt  [^\n@\\]*
 <CopyDoc>{LC}                           { // line continuation
                                           yyextra->lineNr++;
                                         }
-<CopyDoc>[^@\\\n()]+                    { // non-special characters
+<CopyDoc>[^@\\\n()<]+                   { // non-special characters
                                           yyextra->copyDocArg+=yytext;
                                           addOutput(yyscanner,yytext);
                                         }
@@ -3267,6 +3469,7 @@ static bool handleSection(yyscan_t yyscanner,const QCString &s, const StringVect
   setOutput(yyscanner,OutputDoc);
   //printf("handleSection(%s) raiseLevel=%d\n",qPrint(s),yyextra->raiseLevel);
   BEGIN(SectionLabel);
+  yyextra->sectionLabel.clear();
   // determine natural section level
   if      (s=="section")         yyextra->sectionLevel=SectionType::Section;
   else if (s=="subsection")      yyextra->sectionLevel=SectionType::Subsection;
@@ -3288,6 +3491,28 @@ static bool handleSection(yyscan_t yyscanner,const QCString &s, const StringVect
     default: addOutput(yyscanner,"@"+s+" ");           break;
   }
   return FALSE;
+}
+
+static bool handleRequirement(yyscan_t yyscanner,const QCString &s,const StringVector &)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  bool stop=makeStructuralIndicator(yyscanner,EntryType::makeRequirementDoc);
+  BEGIN( RequirementLabel );
+  return stop;
+}
+
+static bool handleSatisfies(yyscan_t yyscanner,const QCString &,const StringVector &)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  BEGIN( SatisfiesLabel );
+  return false;
+}
+
+static bool handleVerifies(yyscan_t yyscanner,const QCString &,const StringVector &)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  BEGIN( VerifiesLabel );
+  return false;
 }
 
 static bool handleSubpage(yyscan_t yyscanner,const QCString &s, const StringVector &)
@@ -3352,7 +3577,7 @@ static bool handleImage(yyscan_t yyscanner,const QCString &s, const StringVector
   return FALSE;
 }
 
-static bool handleCite(yyscan_t yyscanner,const QCString &s, const StringVector &)
+static bool handleCite(yyscan_t yyscanner,const QCString &s, const StringVector &optList)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   if (!yyextra->spaceBeforeCmd.isEmpty())
@@ -3360,7 +3585,14 @@ static bool handleCite(yyscan_t yyscanner,const QCString &s, const StringVector 
     addOutput(yyscanner,yyextra->spaceBeforeCmd);
     yyextra->spaceBeforeCmd.clear();
   }
-  addOutput(yyscanner,"@"+s+" ");
+  if (optList.empty())
+  {
+    addOutput(yyscanner,"@"+s+" ");
+  }
+  else
+  {
+    addOutput(yyscanner,"@"+s+"{"+QCString(join(optList,","))+"} ");
+  }
   BEGIN(CiteLabel);
   return FALSE;
 }
@@ -3404,48 +3636,25 @@ static bool handleFileInfoSection(yyscan_t yyscanner,const QCString &cmdName, co
 {
   return handleFileInfoResult(yyscanner,cmdName, optList, true);
 }
+
+static QCString fileInfoLookup(const FileInfo &fi,const std::string &optionName)
+{
+  using OptionFunc = std::function<QCString(const FileInfo &)>;
+  static std::unordered_map<std::string,OptionFunc> options =
+  {
+    // name,       function producing the value
+    { "name",      [](const FileInfo &fi_) -> QCString { return fi_.baseName();      } },
+    { "extension", [](const FileInfo &fi_) -> QCString { return fi_.extension(true); } },
+    { "filename",  [](const FileInfo &fi_) -> QCString { return fi_.fileName();      } },
+    { "directory", [](const FileInfo &fi_) -> QCString { return fi_.dirPath();       } },
+    { "full",      [](const FileInfo &fi_) -> QCString { return fi_.absFilePath();   } }
+  };
+  auto it = options.find(optionName);
+  return (it!=options.end()) ? it->second(fi) : QCString();
+}
+
 static bool handleFileInfoResult(yyscan_t yyscanner,const QCString &, const StringVector &optList, bool isSection)
 {
-  using OutputWriter = std::function<void(yyscan_t,FileInfo &,bool)>;
-  static std::unordered_map<std::string,OutputWriter> options =
-  { // name,        writer
-    { "name",      [](yyscan_t s,FileInfo &fi,bool isSect) { addOutput(s,fi.baseName());
-                                                             if (isSect)
-                                                             {
-                                                               struct yyguts_t *yyg = (struct yyguts_t*)s;
-                                                               yyextra->sectionTitle+=fi.baseName();
-                                                             }
-                                                           } },
-    { "extension", [](yyscan_t s,FileInfo &fi,bool isSect) { addOutput(s,fi.extension(true));
-                                                             if (isSect)
-                                                             {
-                                                               struct yyguts_t *yyg = (struct yyguts_t*)s;
-                                                               yyextra->sectionTitle+=fi.extension(true);
-                                                             }
-                                                           } },
-    { "filename",  [](yyscan_t s,FileInfo &fi,bool isSect) { addOutput(s,fi.fileName());
-                                                             if (isSect)
-                                                             {
-                                                               struct yyguts_t *yyg = (struct yyguts_t*)s;
-                                                               yyextra->sectionTitle+=fi.fileName();
-                                                             }
-                                                           } },
-    { "directory", [](yyscan_t s,FileInfo &fi,bool isSect) { addOutput(s,fi.dirPath());
-                                                             if (isSect)
-                                                             {
-                                                               struct yyguts_t *yyg = (struct yyguts_t*)s;
-                                                               yyextra->sectionTitle+=fi.dirPath();
-                                                             }
-                                                           } },
-    { "full",      [](yyscan_t s,FileInfo &fi,bool isSect) { addOutput(s,fi.absFilePath());
-                                                             if (isSect)
-                                                             {
-                                                               struct yyguts_t *yyg = (struct yyguts_t*)s;
-                                                               yyextra->sectionTitle+=fi.absFilePath();
-                                                             }
-                                                           } },
-  };
-
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   if (!yyextra->spaceBeforeCmd.isEmpty())
   {
@@ -3459,8 +3668,8 @@ static bool handleFileInfoResult(yyscan_t yyscanner,const QCString &, const Stri
   {
     QCString optStripped = QCString(opt_).stripWhiteSpace();
     std::string opt = optStripped.lower().str();
-    auto it = options.find(opt);
-    if (it != options.end())
+    QCString result = fileInfoLookup(fi,opt);
+    if (!result.isEmpty())
     {
       if (!first)
       {
@@ -3468,7 +3677,11 @@ static bool handleFileInfoResult(yyscan_t yyscanner,const QCString &, const Stri
       }
       else
       {
-        it->second(yyscanner,fi,isSection);
+        addOutput(yyscanner,result);
+        if (isSection)
+        {
+          yyextra->sectionTitle+=result;
+        }
       }
       first = false;
     }
@@ -4181,6 +4394,31 @@ static QCString stripQuotes(const char *s)
 
 //-----------------------------------------------------------------
 
+static void addRequirementId(yyscan_t yyscanner)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  std::unique_lock<std::mutex> lock(g_sectionMutex);
+
+  QCString reqId = yyextra->current->name;
+  //printf("### add reqId='%s' reqTitle='%s'\n",qPrint(reqId),qPrint(yyextra->current->type));
+  SectionManager &sm = SectionManager::instance();
+  const SectionInfo *si = sm.find(reqId);
+  if (si==nullptr)
+  {
+    si = sm.add(reqId,"requirements",yyextra->lineNr,
+               yyextra->current->type,SectionType::Requirement,1);
+  }
+  else // duplicate requirement
+  {
+    warn(yyextra->fileName,yyextra->lineNr,"duplicate requirement ID '{}' found at {} line {}, (first occurrence: {}, line {})",
+         reqId,
+         yyextra->fileName,yyextra->lineNr,
+         si->fileName(),si->lineNr());
+  }
+}
+
+//-----------------------------------------------------------------
+
 static void addXRefItem(yyscan_t yyscanner,
                         const QCString &listName,const QCString &itemTitle,
                         const QCString &listTitle,bool append)
@@ -4222,7 +4460,7 @@ static void addXRefItem(yyscan_t yyscanner,
     item->setAnchor(anchorLabel);
     yyextra->current->sli.push_back(item);
     QCString cmdString;
-    cmdString.sprintf(" \\xrefitem %s %d.",qPrint(listName),item->id());
+    cmdString.sprintf("\\ilinebr \\xrefitem %s %d.",qPrint(listName),item->id());
     if (yyextra->inBody)
     {
       yyextra->current->inbodyDocs += cmdString;
@@ -4269,6 +4507,28 @@ static void addXRefItem(yyscan_t yyscanner,
 
 //-----------------------------------------------------------------------------
 
+// make label match LABELID pattern
+static void escapeLabel(QCString &label)
+{
+  if (label.isEmpty()) return;
+  char c = label[0];
+  if (!((c>='a' && c<='z') || (c>='A' && c<='Z') || c=='_' || c<0))
+  {
+    label[0]='_'; // replace invalid starting char by _
+  }
+  for (size_t i=1; i<label.size(); i++)
+  {
+    c = label[i];
+    if (!((c>='a' && c<='z') || (c>='A' && c<='Z') || (c>='0' && c<='9') || c=='_' || c<0))
+    {
+      label[i]='_'; // replace invalid char by _
+    }
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+
 // Adds a formula text to the list/dictionary of formulas if it was
 // not already added. Returns the label of the formula.
 static QCString addFormula(yyscan_t yyscanner)
@@ -4284,7 +4544,7 @@ static QCString addFormula(yyscan_t yyscanner)
   //    qPrint(yyextra->formulaText.stripLeadingAndTrailingEmptyLines()),
   //    qPrint(formula)
   //    );
-  int id = FormulaManager::instance().addFormula(formula.str());
+  int id = FormulaManager::instance().addFormula(formula);
   formLabel.sprintf("\\_form#%d",id);
   for (int i=0;i<yyextra->formulaNewLines;i++) formLabel+="@_fakenl"; // add fake newlines to
                                                          // keep the warnings
@@ -4399,9 +4659,9 @@ static inline void setOutput(yyscan_t yyscanner,OutputContext ctx)
   // determine append flag for the next item (i.e. the end of this item)
   yyextra->xrefAppendFlag = !yyextra->inBody &&
                    yyextra->inContext==OutputXRef && ctx==OutputXRef && // two consecutive xref items
-                   yyextra->newXRefKind==yyextra->xrefKind &&                    // of the same kind
+                   yyextra->newXRefKind==yyextra->xrefKind &&           // of the same kind
                    (yyextra->xrefKind!=XRef_Item ||
-                    yyextra->newXRefItemKey==yyextra->xrefItemKey);              // with the same key if \xrefitem
+                    yyextra->newXRefItemKey==yyextra->xrefItemKey);     // with the same key if \xrefitem
   //printf("%d && %d && %d && (%d || %d)\n",
   //                 yyextra->inContext==OutputXRef,
   //                 ctx==OutputXRef,

@@ -41,6 +41,7 @@ typedef yyguts_t *yyscan_t;
 #include "message.h"
 #include "debug.h"
 #include "searchindex.h"
+#include "util.h"
 
 #define YY_NEVER_INTERACTIVE 1
 #define YY_NO_INPUT 1
@@ -535,9 +536,9 @@ NONLopt [^\n]*
                             BEGIN( PreLineCtrl );
                           }
 <SkipCurly>{B}*{RAWBEGIN} {
-                            QCString raw=QCString(yytext).stripWhiteSpace();
-                            yyextra->delimiter = raw.mid(2);
-                            yyextra->delimiter=yyextra->delimiter.left(yyextra->delimiter.length()-1);
+                            char *p = yytext;
+                            while (*p && qisspace(*p)) p++;
+                            yyextra->delimiter = extractBeginRawStringDelimiter(p);
                             yyextra->lastRawStringContext = YY_START;
                             yyextra->CCodeBuffer += yytext;
                             BEGIN(RawString);
@@ -673,9 +674,7 @@ NONLopt [^\n]*
                           }
 <RawString>{RAWEND}       {
                             yyextra->CCodeBuffer += yytext;
-                            QCString delimiter = yytext+1;
-                            delimiter=delimiter.left(delimiter.length()-1);
-                            if (delimiter==yyextra->delimiter)
+                            if (extractEndRawStringDelimiter(yytext)==yyextra->delimiter)
                             {
                               BEGIN(yyextra->lastRawStringContext);
                             }
@@ -820,14 +819,14 @@ NONLopt [^\n]*
                                             BEGIN(DocBlock);
                             }
                           }
-<DocCopyBlock>[\\@]("f$"|"f]"|"f}"|"f)") {
+<DocCopyBlock>{CMD}("f$"|"f]"|"f}"|"f)") {
                             yyextra->CCodeBuffer += yytext;
                             if (yyextra->docBlockName==&yytext[1])
                             {
                               BEGIN(DocBlock);
                             }
                           }
-<DocCopyBlock>[\\@]("endverbatim"|"endiliteral"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endmanonly"|"endrtfonly"|"enddot"|"endmsc"|"enduml"|"endcode")/[^a-z_A-Z0-9] { // end of verbatim block
+<DocCopyBlock>{CMD}("endverbatim"|"endiliteral"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endmanonly"|"endrtfonly"|"enddot"|"endmsc"|"enduml"|"endcode")/[^a-z_A-Z0-9] { // end of verbatim block
                             yyextra->CCodeBuffer += yytext;
                             if (&yytext[4]==yyextra->docBlockName)
                             {
@@ -1066,8 +1065,7 @@ static void codifyLines(yyscan_t yyscanner,const QCString &text)
     {
       yyextra->yyLineNr++;
       size_t l = static_cast<size_t>(p-sp-1);
-      std::string tmp(sp,l);
-      yyextra->code->codify(tmp.c_str());
+      yyextra->code->codify(QCString(sp,l));
       nextCodeLine(yyscanner);
     }
     else
@@ -1148,16 +1146,15 @@ static void handleCCode(yyscan_t yyscanner)
                yyextra->CCodeBuffer,
                SrcLangExt::Cpp,
                yyextra->stripCodeComments,
-               yyextra->exampleBlock,
-               yyextra->exampleName,
-               yyextra->sourceFileDef,
-               yyextra->startCCodeLine,
-               -1, /* endLine will be calculated in called routine */
-               yyextra->includeCodeFragment,
-               yyextra->currentMemberDef,
-               yyextra->lineNumbers,
-               yyextra->searchCtx,
-               yyextra->collectXRefs
+               CodeParserOptions()
+               .setExample(yyextra->exampleBlock,yyextra->exampleName)
+               .setFileDef(yyextra->sourceFileDef)
+               .setStartLine(yyextra->startCCodeLine)
+               .setInlineFragment(yyextra->includeCodeFragment)
+               .setMemberDef(yyextra->currentMemberDef)
+               .setShowLineNumbers(yyextra->lineNumbers)
+               .setSearchCtx(yyextra->searchCtx)
+               .setCollectXRefs(yyextra->collectXRefs)
               );
   yyextra->CCodeBuffer.clear();
   yyextra->insideCodeLine = yyextra->ccodeParser.insideCodeLine();
@@ -1195,62 +1192,43 @@ void LexCodeParser::resetCodeParserState()
 }
 
 void LexCodeParser::parseCode(OutputCodeList &codeOutIntf,
-               const QCString &scopeName,
-               const QCString &input,
-               SrcLangExt,
-               bool stripCodeComments,
-               bool isExampleBlock,
-               const QCString &exampleName,
-               const FileDef *fileDef,
-               int startLine,
-               int endLine,
-               bool inlineFragment,
-               const MemberDef *memberDef,
-               bool showLineNumbers,
-               const Definition *searchCtx,
-               bool collectXRefs
-              )
+                              const QCString &scopeName,
+                              const QCString &input,
+                              SrcLangExt,
+                              bool stripCodeComments,
+                              const CodeParserOptions &options
+                             )
 {
   yyscan_t yyscanner = p->yyscanner;
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
 
   if (input.isEmpty()) return;
 
-  DebugLex debugLex(Debug::Lex_lexcode, __FILE__, fileDef ? qPrint(fileDef->fileName()) : nullptr);
+  DebugLex debugLex(Debug::Lex_lexcode, __FILE__, options.fileDef() ? qPrint(options.fileDef()->fileName()) : nullptr);
 
-  yyextra->code = &codeOutIntf;
-  yyextra->inputString   = input.data();
-  yyextra->inputPosition = 0;
-  yyextra->fileName      = fileDef ? fileDef->fileName():"";
-  yyextra->currentFontClass = nullptr;
-  yyextra->insideCodeLine = false;
-
-  yyextra->classScope=scopeName;
-  yyextra->currentMemberDef=memberDef;
-  yyextra->searchCtx=searchCtx;
-  yyextra->collectXRefs=collectXRefs;
-
-  if (startLine!=-1)
-    yyextra->yyLineNr    = startLine;
-  else
-    yyextra->yyLineNr    = 1;
-
-  if (endLine!=-1)
-    yyextra->inputLines  = endLine+1;
-  else
-    yyextra->inputLines  = yyextra->yyLineNr + countLines(yyscanner) - 1;
-
-  yyextra->startCCodeLine = yyextra->yyLineNr;
+  yyextra->code              = &codeOutIntf;
+  yyextra->inputString       = input.data();
+  yyextra->inputPosition     = 0;
+  yyextra->fileName          = options.fileDef() ? options.fileDef()->fileName():"";
+  yyextra->currentFontClass  = nullptr;
+  yyextra->insideCodeLine    = false;
+  yyextra->classScope        = scopeName;
+  yyextra->currentMemberDef  = options.memberDef();
+  yyextra->searchCtx         = options.searchCtx();
+  yyextra->collectXRefs      = options.collectXRefs();
+  yyextra->yyLineNr          = options.startLine()!=1 ? options.startLine() : 1;
+  yyextra->inputLines        = options.endLine()!=-1  ? options.endLine()+1 : yyextra->yyLineNr + countLines(yyscanner) - 1;
+  yyextra->startCCodeLine    = yyextra->yyLineNr;
   yyextra->stripCodeComments = stripCodeComments;
-  yyextra->exampleBlock  = isExampleBlock;
-  yyextra->exampleName   = exampleName;
-  yyextra->sourceFileDef = fileDef;
-  yyextra->lineNumbers   = fileDef!=0 && showLineNumbers;
+  yyextra->exampleBlock      = options.isExample();
+  yyextra->exampleName       = options.exampleName();
+  yyextra->sourceFileDef     = options.fileDef();
+  yyextra->lineNumbers       = options.fileDef()!=nullptr && options.showLineNumbers();
 
-  if (isExampleBlock && fileDef==0)
+  if (options.isExample() && options.fileDef()==nullptr)
   {
     // create a dummy filedef for the example
-    yyextra->exampleFileDef = createFileDef(QCString(),!exampleName.isEmpty() ? exampleName : QCString("generated"));
+    yyextra->exampleFileDef = createFileDef(QCString(),!options.exampleName().isEmpty() ? options.exampleName() : QCString("generated"));
     yyextra->sourceFileDef = yyextra->exampleFileDef.get();
   }
 
@@ -1259,7 +1237,7 @@ void LexCodeParser::parseCode(OutputCodeList &codeOutIntf,
     setCurrentDoc(yyscanner,"l00001");
   }
 
-  yyextra->includeCodeFragment = inlineFragment;
+  yyextra->includeCodeFragment = options.inlineFragment();
   // Starts line 1 on the output
   startCodeLine(yyscanner);
 

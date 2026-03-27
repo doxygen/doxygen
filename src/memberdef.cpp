@@ -126,6 +126,7 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     bool isInline() const override;
     bool isExplicit() const override;
     bool isMutable() const override;
+    bool isThreadLocal() const override;
     bool isGettable() const override;
     bool isPrivateGettable() const override;
     bool isProtectedGettable() const override;
@@ -311,7 +312,8 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     void overrideInlineSource(bool e) override;
     void setTemplateMaster(const MemberDef *mt) override;
     void setFormalTemplateArguments(const ArgumentList &al) override;
-    void addListReference(Definition *d) override;
+    void addListReference(const Definition *) override;
+    void addRequirementReferences(const Definition *) override;
     void setDocsForDefinition(bool b) override;
     void setGroupAlias(const MemberDef *md) override;
     void cacheTypedefVal(const ClassDef *val,const QCString &templSpec,const QCString &resolvedType) override;
@@ -354,6 +356,8 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     StringVector getQualifiers() const override;
     ClassDefMutable *getClassDefMutable() override;
     void setModuleDef(ModuleDef *mod) override;
+    int redefineCount() const override;
+    void setRedefineCount(int) override;
 
   private:
     void _computeLinkableInProject();
@@ -511,6 +515,7 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     int m_declLine = -1;
     int m_declColumn = -1;
     int m_numberOfFlowKW = 0;
+    int m_redefineCount = 0;
 };
 
 std::unique_ptr<MemberDef> createMemberDef(const QCString &defFileName,int defLine,int defColumn,
@@ -672,6 +677,8 @@ class MemberDefAliasImpl : public DefinitionAliasMixin<MemberDef>
     { return getMdAlias()->isExplicit(); }
     bool isMutable() const override
     { return getMdAlias()->isMutable(); }
+    bool isThreadLocal() const override
+    { return getMdAlias()->isThreadLocal(); }
     bool isGettable() const override
     { return getMdAlias()->isGettable(); }
     bool isPrivateGettable() const override
@@ -932,6 +939,8 @@ class MemberDefAliasImpl : public DefinitionAliasMixin<MemberDef>
     { return getMdAlias()->requiresClause(); }
     bool visibleInIndex() const override
     { return getMdAlias()->visibleInIndex(); }
+    int redefineCount() const override
+    { return getMdAlias()->redefineCount(); }
 
     void warnIfUndocumented() const override {}
     void warnIfUndocumentedParams() const override {}
@@ -1090,6 +1099,9 @@ static bool writeDefArgumentList(OutputList &ol,const Definition *scope,const Me
 
   QCString sep = getLanguageSpecificSeparator(md->getLanguage(),true);
 
+  LinkifyTextOptions options;
+  options.setScope(scope).setFileScope(md->getBodyDef()).setSelf(md);
+
   bool first=TRUE;
   bool paramTypeStarted=FALSE;
   auto alIt = defArgList.begin();
@@ -1126,8 +1138,9 @@ static bool writeDefArgumentList(OutputList &ol,const Definition *scope,const Me
         }
         funcPtrPos = atype.find("*)(");
         if (funcPtrPos!=-1) funcPtrPos++;
-        linkifyText(TextGeneratorOLImpl(ol),scope,md->getBodyDef(),md,
-                    funcPtrPos==-1 ? atype : atype.left(funcPtrPos));
+        linkifyText(TextGeneratorOLImpl(ol),
+                    funcPtrPos==-1 ? atype : atype.left(funcPtrPos),
+                    options);
       }
     }
 
@@ -1164,8 +1177,7 @@ static bool writeDefArgumentList(OutputList &ol,const Definition *scope,const Me
     ol.startParameterExtra();
     if (funcPtrPos!=-1)
     {
-      linkifyText(TextGeneratorOLImpl(ol),scope,md->getBodyDef(),md,
-                  atype.mid(funcPtrPos));
+      linkifyText(TextGeneratorOLImpl(ol),atype.mid(funcPtrPos),options);
     }
     if (!a.array.isEmpty())
     {
@@ -1179,7 +1191,7 @@ static bool writeDefArgumentList(OutputList &ol,const Definition *scope,const Me
         n=addTemplateNames(n,scope->name(),cName);
       }
       ol.startParameterDefVal(" = ");
-      linkifyText(TextGeneratorOLImpl(ol),scope,md->getBodyDef(),md,n,FALSE,TRUE,TRUE);
+      linkifyText(TextGeneratorOLImpl(ol),n,LinkifyTextOptions(options).setKeepSpaces(true));
       ol.endParameterDefVal();
     }
     ++alIt;
@@ -1237,14 +1249,7 @@ static bool writeDefArgumentList(OutputList &ol,const Definition *scope,const Me
   }
   if (!defArgList.trailingReturnType().isEmpty())
   {
-    linkifyText(TextGeneratorOLImpl(ol), // out
-                scope,                   // scope
-                md->getBodyDef(),        // fileScope
-                md,                      // self
-                defArgList.trailingReturnType(), // text
-                FALSE                    // autoBreak
-               );
-
+    linkifyText(TextGeneratorOLImpl(ol), defArgList.trailingReturnType(), options);
   }
   return TRUE;
 }
@@ -1255,6 +1260,8 @@ static void writeExceptionListImpl(
   // this is ordinary exception spec - there must be a '('
   //printf("exception='%s'\n",qPrint(exception));
   int index = exception.find('(');
+  LinkifyTextOptions options;
+  options.setScope(cd).setFileScope(md->getBodyDef()).setSelf(md);
   if (index!=-1)
   {
     ol.exceptionEntry(exception.left(index),false);
@@ -1262,8 +1269,7 @@ static void writeExceptionListImpl(
     for (int comma = exception.find(',', index); comma!=-1; )
     {
       ++comma; // include comma
-      linkifyText(TextGeneratorOLImpl(ol),cd,md->getBodyDef(),md,
-                  exception.mid(index,comma-index));
+      linkifyText(TextGeneratorOLImpl(ol),exception.mid(index,comma-index),options);
       ol.exceptionEntry(QCString(),false);
       index=comma;
       comma = exception.find(',', index);
@@ -1272,7 +1278,7 @@ static void writeExceptionListImpl(
     if (close!=-1)
     {
       QCString type=removeRedundantWhiteSpace(exception.mid(index,close-index));
-      linkifyText(TextGeneratorOLImpl(ol),cd,md->getBodyDef(),md,type);
+      linkifyText(TextGeneratorOLImpl(ol),type,options);
       ol.exceptionEntry(QCString(),true);
     }
     else
@@ -1284,13 +1290,13 @@ static void writeExceptionListImpl(
   else // Java Exception
   {
     ol.docify(" ");
-    linkifyText(TextGeneratorOLImpl(ol),cd,md->getBodyDef(),md,exception);
+    linkifyText(TextGeneratorOLImpl(ol),exception,options);
   }
 }
 
 static void writeExceptionList(OutputList &ol, const ClassDef *cd, const MemberDef *md)
 {
-  QCString exception(QCString(md->excpString()).stripWhiteSpace());
+  QCString exception = md->excpString().stripWhiteSpace();
   if ('{'==exception.at(0))
   {
     // this is an UNO IDL attribute - need special handling
@@ -1919,7 +1925,6 @@ void MemberDefImpl::writeLink(OutputList &ol,
   QCString sep = getLanguageSpecificSeparator(lang,TRUE);
   QCString n = name();
   const ClassDef *classDef = getClassDef();
-  const ModuleDef *moduleDef = getModuleDef();
   const NamespaceDef *nspace = getNamespaceDef();
   if (!hideScopeNames)
   {
@@ -1927,11 +1932,11 @@ void MemberDefImpl::writeLink(OutputList &ol,
     {
       n.prepend(m_enumScope->displayName()+sep);
     }
-    if (classDef && gd && !isRelated())
+    if (classDef && (gd || mod) && !isRelated())
     {
       n.prepend(classDef->displayName()+sep);
     }
-    else if (nspace && (gd || fd || moduleDef))
+    else if (nspace && (gd || fd || mod))
     {
       n.prepend(nspace->displayName()+sep);
     }
@@ -2135,7 +2140,14 @@ QCString MemberDefImpl::getDeclType() const
   }
   if (isTypeAlias())
   {
-    ltype="using";
+    if (lang==SrcLangExt::Python)
+    {
+      ltype="type";
+    }
+    else
+    {
+      ltype="using";
+    }
   }
   // strip 'friend' keyword from ltype
   ltype.stripPrefix("friend ");
@@ -2158,16 +2170,12 @@ void MemberDefImpl::_writeTemplatePrefix(OutputList &ol, const Definition *def,
                                          const ArgumentList &al, bool writeReqClause) const
 {
   ol.docify("template<");
+  LinkifyTextOptions options;
+  options.setScope(def).setFileScope(getFileDef()).setSelf(this);
   for (auto it = al.begin(); it!=al.end();)
   {
     Argument a = *it;
-    linkifyText(TextGeneratorOLImpl(ol), // out
-        def,                     // scope
-        getFileDef(),            // fileScope
-        this,                    // self
-        a.type,                  // text
-        FALSE                    // autoBreak
-        );
+    linkifyText(TextGeneratorOLImpl(ol),a.type,options);
     if (!a.name.isEmpty())
     {
       ol.docify(" ");
@@ -2187,12 +2195,8 @@ void MemberDefImpl::_writeTemplatePrefix(OutputList &ol, const Definition *def,
     ol.lineBreak();
     ol.docify("requires ");
     linkifyText(TextGeneratorOLImpl(ol), // out
-        def,                     // scope
-        getFileDef(),            // fileScope
-        this,                    // self
-        m_requiresClause,  // text
-        FALSE                    // autoBreak
-        );
+        m_requiresClause,        // text
+        LinkifyTextOptions(options).setAutoBreak(true).setBreakThreshold(120));
   }
 }
 
@@ -2256,7 +2260,7 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
   OutputGenerator::MemberItemType anonType = isAnonType ? OutputGenerator::MemberItemType::AnonymousStart :
                               !m_tArgList.empty() ? OutputGenerator::MemberItemType::Templated      :
                                                           OutputGenerator::MemberItemType::Normal;
-  ol.startMemberItem(anchor(), anonType, inheritId);
+  ol.startMemberItem(annoClassDef ? QCString() : anchor(), anonType, inheritId);
 
 
   // If there is no detailed description we need to write the anchor here.
@@ -2306,13 +2310,21 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
 
   // *** write type
   QCString ltype(m_type);
-  if (isTypedef() && getLanguage() != SrcLangExt::Slice)
+  auto lang = getLanguage();
+  if (isTypedef() && lang != SrcLangExt::Slice)
   {
     ltype.prepend("typedef ");
   }
   if (isTypeAlias())
   {
-    ltype="using";
+    if (lang==SrcLangExt::Python)
+    {
+      ltype="type";
+    }
+    else
+    {
+      ltype="using";
+    }
   }
   // strip 'friend' keyword from ltype
   ltype.stripPrefix("friend ");
@@ -2320,6 +2332,8 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
   reg::Match match;
   std::string stype = ltype.str();
   bool endAnonScopeNeeded=FALSE;
+  LinkifyTextOptions options;
+  options.setScope(d).setFileScope(getBodyDef()).setSelf(this);
   if (reg::search(stype,match,r)) // member has an anonymous type
   {
     int i = static_cast<int>(match.position());
@@ -2358,27 +2372,14 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
     {
       if (getAnonymousEnumType()) // type is an anonymous enum
       {
-        linkifyText(TextGeneratorOLImpl(ol), // out
-                    d,                       // scope
-                    getBodyDef(),            // fileScope
-                    this,                    // self
-                    ltype.left(i),           // text
-                    FALSE                    // autoBreak
-                   );
+        linkifyText(TextGeneratorOLImpl(ol),ltype.left(i),options);
         getAnonymousEnumType()->writeEnumDeclaration(ol,cd,nd,fd,gd,mod);
-        //ol+=*getAnonymousEnumType()->enumDecl();
-        linkifyText(TextGeneratorOLImpl(ol),d,getFileDef(),this,ltype.right(ltype.length()-i-l),TRUE);
+        linkifyText(TextGeneratorOLImpl(ol),ltype.right(ltype.length()-i-l),LinkifyTextOptions(options).setAutoBreak(true));
       }
       else
       {
         ltype = ltype.left(i) + " { ... } " + removeAnonymousScopes(ltype.right(ltype.length()-i-l));
-        linkifyText(TextGeneratorOLImpl(ol), // out
-                    d,                       // scope
-                    getBodyDef(),            // fileScope
-                    this,                    // self
-                    ltype,                   // text
-                    FALSE                    // autoBreak
-                   );
+        linkifyText(TextGeneratorOLImpl(ol), ltype, options);
       }
     }
   }
@@ -2393,13 +2394,7 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
       ltype.prepend("(");
       ltype.append(")");
     }
-    linkifyText(TextGeneratorOLImpl(ol), // out
-                d,                       // scope
-                getBodyDef(),            // fileScope
-                this,                    // self
-                ltype,                   // text
-                FALSE                    // autoBreak
-               );
+    linkifyText(TextGeneratorOLImpl(ol),ltype,options);
   }
   bool htmlOn = ol.isEnabled(OutputType::Html);
   if (htmlOn && !ltype.isEmpty())
@@ -2482,25 +2477,22 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
   {
     if (!isDefine() && !isTypedef()) ol.writeString(" ");
     linkifyText(TextGeneratorOLImpl(ol), // out
-                d,                       // scope
-                getBodyDef(),            // fileScope
-                this,                    // self
                 isDefine() ?
                    substitute(argsString(),",",", ") :
                 isTypedef() ?
                    substitute(argsString(),")(",") (") :
                    combineArgsAndException(argsString(),excpString()), // text
-                m_annMemb!=nullptr,      // autoBreak
-                TRUE,                    // external
-                FALSE,                   // keepSpaces
-                indentLevel
+                LinkifyTextOptions(options)
+                .setArgumentList(&m_defArgList)
+                .setAutoBreak(m_annMemb!=nullptr)
+                .setIndentLevel(indentLevel)
                );
   }
 
   // *** write bitfields
   if (!m_bitfields.isEmpty()) // add bitfields
   {
-    linkifyText(TextGeneratorOLImpl(ol),d,getBodyDef(),this,m_bitfields);
+    linkifyText(TextGeneratorOLImpl(ol),m_bitfields,options);
   }
   else if (hasOneLineInitializer()
       //!init.isEmpty() && initLines==0 && // one line initializer
@@ -2510,18 +2502,18 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
     if (isTypeAlias()) // using statement
     {
       ol.writeString(" = ");
-      linkifyText(TextGeneratorOLImpl(ol),d,getBodyDef(),this,m_initializer.simplifyWhiteSpace());
+      linkifyText(TextGeneratorOLImpl(ol),m_initializer.simplifyWhiteSpace(),options);
     }
     else if (!isDefine())
     {
       //ol.writeString(" = ");
       ol.writeString(" ");
-      linkifyText(TextGeneratorOLImpl(ol),d,getBodyDef(),this,m_initializer.simplifyWhiteSpace());
+      linkifyText(TextGeneratorOLImpl(ol),m_initializer.simplifyWhiteSpace(),options);
     }
     else
     {
       ol.writeNonBreakableSpace(3);
-      linkifyText(TextGeneratorOLImpl(ol),d,getBodyDef(),this,m_initializer);
+      linkifyText(TextGeneratorOLImpl(ol),m_initializer,options);
     }
   }
 
@@ -2561,7 +2553,7 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
            ol.docify(", ");
          }
          first=false;
-         ol.docify(s.c_str());
+         ol.docify(s);
       }
       ol.docify("]");
       ol.endTypewriter();
@@ -2584,7 +2576,7 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
           ol.docify(", ");
         }
         first=false;
-        ol.docify(s.c_str());
+        ol.docify(s);
       }
       ol.docify("]");
       ol.endTypewriter();
@@ -2610,10 +2602,15 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
   {
     auto parser { createDocParser() };
     auto ast    { validatingParseDoc(*parser.get(),
-                                     briefFile(),briefLine(),
+                                     briefFile(),
+                                     briefLine(),
                                      getOuterScope()?getOuterScope():d,
-                                     this,briefDescription(),TRUE,FALSE,
-                                     QCString(),TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT)) };
+                                     this,
+                                     briefDescription(),
+                                     DocOptions()
+                                     .setIndexWords(inheritedFrom==nullptr)
+                                     .setSingleLine(true))
+                };
     if (!ast->isEmpty())
     {
       ol.startMemberDescription(anchor(),inheritId);
@@ -2694,7 +2691,9 @@ bool MemberDefImpl::hasDetailedDescription() const
             m_defArgList.hasDocumentation()) ||
            (m_templateMaster ?
             m_templateMaster->templateArguments().hasTemplateDocumentation() :
-            m_tArgList.hasTemplateDocumentation());
+            m_tArgList.hasTemplateDocumentation()) ||
+           // user-specified qualifiers
+           !m_qualifiers.empty();
 
     // generate function                  guard
     // ==================                 =======
@@ -2731,7 +2730,9 @@ bool MemberDefImpl::hasDetailedDescription() const
            // call graph
            _hasVisibleCallGraph() ||
            // caller graph
-           _hasVisibleCallerGraph();
+           _hasVisibleCallerGraph() ||
+           // requirement references
+           hasRequirementRefs();
 
     if (!hideUndocMembers) // if HIDE_UNDOC_MEMBERS is NO we also show the detailed section
                            // if there is only some generated info
@@ -2822,6 +2823,7 @@ StringVector MemberDefImpl::getLabels(const Definition *container) const
         if      (inlineInfo && isInline())              sl.emplace_back("inline");
         if      (isExplicit())                          sl.emplace_back("explicit");
         if      (isMutable())                           sl.emplace_back("mutable");
+        if      (isThreadLocal())                       sl.emplace_back("thread_local");
         if      (isStatic())                            sl.emplace_back("static");
         if      (isGettable())                          sl.emplace_back("get");
         if      (isProtectedGettable())                 sl.emplace_back("protected get");
@@ -3259,17 +3261,23 @@ void MemberDefImpl::_writeEnumValues(OutputList &ol,const Definition *container,
 
         if (hasBrief)
         {
-          ol.generateDoc(fmd->briefFile(),fmd->briefLine(),
-              getOuterScope()?getOuterScope():container,
-              fmd,fmd->briefDescription(),TRUE,FALSE,
-              QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
+          ol.generateDoc(fmd->briefFile(),
+                         fmd->briefLine(),
+                         getOuterScope()?getOuterScope():container,
+                         fmd,
+                         fmd->briefDescription(),
+                         DocOptions()
+                         .setIndexWords(true));
         }
         if (hasDetails)
         {
-          ol.generateDoc(fmd->docFile(),fmd->docLine(),
-              getOuterScope()?getOuterScope():container,
-              fmd,fmd->documentation()+"\n",TRUE,FALSE,
-              QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
+          ol.generateDoc(fmd->docFile(),
+                         fmd->docLine(),
+                         getOuterScope()?getOuterScope():container,
+                         fmd,
+                         fmd->documentation()+"\n",
+                         DocOptions()
+                         .setIndexWords(true));
         }
         ol.endDescTableData();
         ol.endDescTableRow();
@@ -3365,10 +3373,21 @@ void MemberDefImpl::_writeGroupInclude(OutputList &ol,bool inGroup) const
   // only write out the include file if this is not part of a class or file
   // definition
   bool showGroupedMembInc = Config_getBool(SHOW_GROUPED_MEMB_INC);
+  bool forceLocalIncludes = Config_getBool(FORCE_LOCAL_INCLUDES);
   const FileDef *fd = getFileDef();
   QCString nm;
-  if (fd) nm = getFileDef()->docName();
-  if (inGroup && fd && showGroupedMembInc && !nm.isEmpty())
+  if (inGroup && fd && showGroupedMembInc)
+  {
+    if (!Config_getList(STRIP_FROM_INC_PATH).empty())
+    {
+      nm = stripFromIncludePath(fd->absFilePath());
+    }
+    else
+    {
+      nm = fd->name();
+    }
+  }
+  if (!nm.isEmpty())
   {
     ol.startParagraph();
     ol.startTypewriter();
@@ -3383,7 +3402,7 @@ void MemberDefImpl::_writeGroupInclude(OutputList &ol,bool inGroup) const
       ol.docify("#include ");
     }
 
-    if (isIDLorJava) ol.docify("\""); else ol.docify("<");
+    if (isIDLorJava || forceLocalIncludes) ol.docify("\""); else ol.docify("<");
 
     if (fd->isLinkable())
     {
@@ -3394,7 +3413,7 @@ void MemberDefImpl::_writeGroupInclude(OutputList &ol,bool inGroup) const
       ol.docify(nm);
     }
 
-    if (isIDLorJava) ol.docify("\""); else ol.docify(">");
+    if (isIDLorJava || forceLocalIncludes) ol.docify("\""); else ol.docify(">");
 
     ol.endTypewriter();
     ol.endParagraph();
@@ -3421,8 +3440,14 @@ void MemberDefImpl::_writeMultiLineInitializer(OutputList &ol,const QCString &sc
     intf->resetCodeParserState();
     auto &codeOL = ol.codeGenerators();
     codeOL.startCodeFragment("DoxyCode");
-    intf->parseCode(codeOL,scopeName,m_initializer,srcLangExt,Config_getBool(STRIP_CODE_COMMENTS),FALSE,QCString(),getFileDef(),
-                     -1,-1,TRUE,this,FALSE,this);
+    intf->parseCode(codeOL,scopeName,m_initializer,srcLangExt,Config_getBool(STRIP_CODE_COMMENTS),
+                    CodeParserOptions()
+                    .setFileDef(getFileDef())
+                    .setInlineFragment(true)
+                    .setMemberDef(this)
+                    .setShowLineNumbers(false)
+                    .setSearchCtx(this)
+                   );
     codeOL.endCodeFragment("DoxyCode");
 }
 
@@ -3533,6 +3558,7 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
   ldef.stripPrefix("constexpr ");
   ldef.stripPrefix("consteval ");
   ldef.stripPrefix("constinit ");
+  ldef.stripPrefix("static ");
 
   //----------------------------------------
 
@@ -3544,6 +3570,8 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
   static const reg::Ex r(R"(@\d+)");
   reg::Match match;
   std::string sdef = ldef.str();
+  LinkifyTextOptions options;
+  options.setScope(scopedContainer).setFileScope(getBodyDef()).setSelf(this);
   if ((isVariable() || isTypedef()) && reg::search(sdef,match,r))
   {
     // find enum type and insert it in the definition
@@ -3555,11 +3583,11 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
         ol.startDoxyAnchor(cfname, cname, memAnchor, doxyName, doxyArgs);
         ol.startMemberDoc(ciname,name(),memAnchor,name(),memCount,memTotal,showInline);
         ol.addLabel(cfname, memAnchor);
-        std::string prefix = match.prefix().str();
-        std::string suffix = match.suffix().str();
-        linkifyText(TextGeneratorOLImpl(ol),scopedContainer,getBodyDef(),this,prefix.c_str());
+        QCString prefix = match.prefix().str();
+        QCString suffix = match.suffix().str();
+        linkifyText(TextGeneratorOLImpl(ol),prefix,options);
         vmd->writeEnumDeclaration(ol,getClassDef(),getNamespaceDef(),getFileDef(),getGroupDef(),getModuleDef());
-        linkifyText(TextGeneratorOLImpl(ol),scopedContainer,getBodyDef(),this,suffix.c_str());
+        linkifyText(TextGeneratorOLImpl(ol),suffix,options);
 
         found=true;
         break;
@@ -3578,15 +3606,15 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
       ol.startMemberDocName(isObjCMethod());
       if (reg::search(sdef,match,reAnonymous))
       {
-        std::string prefix = match.prefix().str();
-        std::string suffix = match.suffix().str();
-        ol.docify(prefix.c_str());
+        QCString prefix = match.prefix().str();
+        QCString suffix = match.suffix().str();
+        ol.docify(prefix);
         ol.docify(" { ... } ");
-        linkifyText(TextGeneratorOLImpl(ol),scopedContainer,getBodyDef(),this,removeAnonymousScopes(suffix.c_str()));
+        linkifyText(TextGeneratorOLImpl(ol),removeAnonymousScopes(suffix),options);
       }
       else
       {
-        linkifyText(TextGeneratorOLImpl(ol),scopedContainer,getBodyDef(),this,ldef);
+        linkifyText(TextGeneratorOLImpl(ol),ldef,options);
       }
     }
   }
@@ -3699,12 +3727,7 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
       if (pos<0) pos=0;
       if (pos>0)
       {
-        linkifyText(TextGeneratorOLImpl(ol),
-                    scopedContainer,
-                    getBodyDef(),
-                    this,
-                    ldef.left(pos)
-                   );
+        linkifyText(TextGeneratorOLImpl(ol),ldef.left(pos),options);
       }
       ol.docify(ldef.mid(pos));
       const Definition *scope = cd;
@@ -3713,12 +3736,7 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
     }
     else
     {
-      linkifyText(TextGeneratorOLImpl(ol),
-                  scopedContainer,
-                  getBodyDef(),
-                  this,
-                  substitute(ldef,"::",sep)
-                 );
+      linkifyText(TextGeneratorOLImpl(ol),substitute(ldef,"::",sep),options);
       const Definition *scope = cd;
       if (scope==nullptr) scope = nd;
       hasParameterList=writeDefArgumentList(ol,scope,this);
@@ -3730,18 +3748,18 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
       {
         ol.docify(" = ");
         QCString init = m_initializer.simplifyWhiteSpace();
-        linkifyText(TextGeneratorOLImpl(ol),scopedContainer,getBodyDef(),this,init);
+        linkifyText(TextGeneratorOLImpl(ol),init,options);
       }
       else if (!isDefine())
       {
         ol.docify(" ");
         QCString init = m_initializer.simplifyWhiteSpace();
-        linkifyText(TextGeneratorOLImpl(ol),scopedContainer,getBodyDef(),this,init);
+        linkifyText(TextGeneratorOLImpl(ol),init,options);
       }
       else
       {
         ol.writeNonBreakableSpace(3);
-        linkifyText(TextGeneratorOLImpl(ol),scopedContainer,getBodyDef(),this,m_initializer);
+        linkifyText(TextGeneratorOLImpl(ol),m_initializer,options);
       }
     }
     if (!excpString().isEmpty()) // add exception list
@@ -3760,7 +3778,7 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
     for (const auto &s : sl)
     {
       count++;
-      ol.writeLabel(s.c_str(),count==sl.size());
+      ol.writeLabel(s,count==sl.size());
     }
     ol.endLabels();
   }
@@ -3790,7 +3808,7 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
     for (const auto &s : sl)
     {
       count++;
-      ol.writeLabel(s.c_str(),count==sl.size());
+      ol.writeLabel(s,count==sl.size());
     }
     ol.endLabels();
     ol.writeString("  </td>\n");
@@ -3818,10 +3836,13 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
      )
   {
     ol.startParagraph();
-    ol.generateDoc(briefFile(),briefLine(),
-                scopedContainer,this,
-                brief,FALSE,FALSE,
-                QCString(),TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
+    ol.generateDoc(briefFile(),
+                   briefLine(),
+                   scopedContainer,
+                   this,
+                   brief,
+                   DocOptions()
+                   .setSingleLine(true));
     ol.endParagraph();
   }
 
@@ -3838,24 +3859,37 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
     }
     else
     {
-      ol.generateDoc(docFile(),docLine(),scopedContainer,this,detailed+"\n",TRUE,FALSE,
-                     QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
+      ol.generateDoc(docFile(),
+                     docLine(),
+                     scopedContainer,
+                     this,
+                     detailed+"\n",
+                     DocOptions()
+                     .setIndexWords(true));
     }
 
     if (!inbodyDocumentation().isEmpty())
     {
-      ol.generateDoc(inbodyFile(),inbodyLine(),
-                     scopedContainer,this,
-                     inbodyDocumentation()+"\n",TRUE,FALSE,
-                     QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
+      ol.generateDoc(inbodyFile(),
+                     inbodyLine(),
+                     scopedContainer,
+                     this,
+                     inbodyDocumentation()+"\n",
+                     DocOptions()
+                     .setIndexWords(true));
     }
   }
   else if (!brief.isEmpty() && (Config_getBool(REPEAT_BRIEF) || !Config_getBool(BRIEF_MEMBER_DESC)))
   {
     if (!inbodyDocumentation().isEmpty())
     {
-      ol.generateDoc(inbodyFile(),inbodyLine(),scopedContainer,this,inbodyDocumentation()+"\n",TRUE,FALSE,
-                     QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
+      ol.generateDoc(inbodyFile(),
+                     inbodyLine(),
+                     scopedContainer,
+                     this,
+                     inbodyDocumentation()+"\n",
+                     DocOptions()
+                     .setIndexWords(true));
     }
   }
 
@@ -3866,28 +3900,24 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
   const ArgumentList &docArgList = m_templateMaster ?
                                    m_templateMaster->argumentList() :
                                    m_defArgList;
-  ol.generateDoc(
-        docFile(),docLine(),
-        scopedContainer,
-        this,         // memberDef
-        inlineArgListToDoc(docArgList),    // docStr
-        TRUE,         // indexWords
-        FALSE,        // isExample
-        QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT)
-        );
+  ol.generateDoc(docFile(),
+                 docLine(),
+                 scopedContainer,
+                 this,         // memberDef
+                 inlineArgListToDoc(docArgList),    // docStr
+                 DocOptions()
+                 .setIndexWords(true));
 
   const ArgumentList &docTemplateArgList = m_templateMaster ?
                                    m_templateMaster->templateArguments() :
                                    m_tArgList;
-  ol.generateDoc(
-        docFile(),docLine(),
-        scopedContainer,
-        this,         // memberDef
-        inlineTemplateArgListToDoc(docTemplateArgList),    // docStr
-        TRUE,         // indexWords
-        FALSE,        // isExample
-        QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT)
-        );
+  ol.generateDoc(docFile(),
+                 docLine(),
+                 scopedContainer,
+                 this,         // memberDef
+                 inlineTemplateArgListToDoc(docTemplateArgList),    // docStr
+                 DocOptions()
+                 .setIndexWords(true));
 
   _writeEnumValues(ol,scopedContainer,cfname,ciname,cname);
   _writeReimplements(ol);
@@ -3902,6 +3932,7 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
   if (hasReferencedByRelation()) writeSourceReffedBy(ol,scopeStr);
   _writeCallGraph(ol);
   _writeCallerGraph(ol);
+  if (hasRequirementRefs()) writeRequirementRefs(ol);
 
   ol.endIndent();
 
@@ -3926,8 +3957,8 @@ static QCString simplifyTypeForTable(const QCString &s)
   {
     t = match.prefix().str() + match.suffix().str(); // remove the matched part
   }
-  //printf("simplifyTypeForTable(%s)->%s\n",qPrint(s),t.c_str());
-  return QCString(t);
+  //printf("simplifyTypeForTable(%s)->%s\n",qPrint(s),qPrint(t));
+  return t;
 }
 
 QCString MemberDefImpl::fieldType() const
@@ -3958,6 +3989,9 @@ void MemberDefImpl::writeMemberDocSimple(OutputList &ol, const Definition *conta
 
   ClassDef *cd = m_accessorClass;
   //printf("===> %s::anonymous: %s\n",qPrint(name()),cd?qPrint(cd->name()):"<none>");
+
+  LinkifyTextOptions options;
+  options.setScope(scope).setFileScope(getBodyDef()).setSelf(this);
 
   if (container && container->definitionType()==Definition::TypeClass &&
       !(toClassDef(container))->isJavaEnum())
@@ -3993,12 +4027,7 @@ void MemberDefImpl::writeMemberDocSimple(OutputList &ol, const Definition *conta
     }
     else // use standard auto linking
     {
-      linkifyText(TextGeneratorOLImpl(ol), // out
-          scope,                   // scope
-          getBodyDef(),            // fileScope
-          this,                    // self
-          ts                       // text
-          );
+      linkifyText(TextGeneratorOLImpl(ol),ts,options);
     }
     ol.endDoxyAnchor(cfname,memAnchor);
     ol.endInlineMemberType();
@@ -4008,16 +4037,16 @@ void MemberDefImpl::writeMemberDocSimple(OutputList &ol, const Definition *conta
   ol.docify(doxyName);
   if (isVariable() && !argsString().isEmpty() && !isObjCMethod() && !isFunctionPtr())
   {
-    linkifyText(TextGeneratorOLImpl(ol),getOuterScope(),getBodyDef(),this,argsString());
+    linkifyText(TextGeneratorOLImpl(ol),argsString(),LinkifyTextOptions(options).setArgumentList(&m_defArgList));
   }
   if (!m_bitfields.isEmpty()) // add bitfields
   {
-    linkifyText(TextGeneratorOLImpl(ol),getOuterScope(),getBodyDef(),this,m_bitfields);
+    linkifyText(TextGeneratorOLImpl(ol),m_bitfields,options);
   }
   if (hasOneLineInitializer() && !isDefine())
   {
     ol.writeString(" ");
-    linkifyText(TextGeneratorOLImpl(ol),getOuterScope(),getBodyDef(),this,m_initializer.simplifyWhiteSpace());
+    linkifyText(TextGeneratorOLImpl(ol),m_initializer.simplifyWhiteSpace(),options);
   }
   ol.endInlineMemberName();
 
@@ -4029,10 +4058,12 @@ void MemberDefImpl::writeMemberDocSimple(OutputList &ol, const Definition *conta
   /* write brief description */
   if (!brief.isEmpty())
   {
-    ol.generateDoc(briefFile(),briefLine(),
-                getOuterScope()?getOuterScope():container,this,
-                brief,FALSE,FALSE,
-                QCString(),TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
+    ol.generateDoc(briefFile(),
+                   briefLine(),
+                   getOuterScope()?getOuterScope():container,this,
+                   brief,
+                   DocOptions()
+                   .setSingleLine(true));
   }
 
   /* write detailed description */
@@ -4044,11 +4075,11 @@ void MemberDefImpl::writeMemberDocSimple(OutputList &ol, const Definition *conta
       ol.lineBreak();
       ol.enable(OutputType::Html);
     }
-    ol.generateDoc(docFile(),docLine(),
-                getOuterScope()?getOuterScope():container,this,
-                detailed+"\n",FALSE,FALSE,
-                QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
-
+    ol.generateDoc(docFile(),
+                   docLine(),
+                   getOuterScope()?getOuterScope():container,this,
+                   detailed+"\n",
+                   DocOptions());
   }
 
   ol.endInlineMemberDoc();
@@ -4178,6 +4209,7 @@ static std::mutex g_detectUndocumentedParamsMutex;
 
 void MemberDefImpl::detectUndocumentedParams(bool hasParamCommand,bool hasReturnCommand) const
 {
+  //printf("%s:detectUndocumentedParams(%d,%d)\n",qPrint(name()),hasParamCommand,hasReturnCommand);
   bool isPython = getLanguage()==SrcLangExt::Python;
 
   // this function is called while parsing the documentation. A member can have multiple
@@ -4201,29 +4233,29 @@ void MemberDefImpl::detectUndocumentedParams(bool hasParamCommand,bool hasReturn
       // see if all parameters have documentation
       for (auto it = al.begin(); it!=al.end() && allDoc; ++it)
       {
-        Argument a = *it;
-        if (!a.name.isEmpty() && a.type!="void" &&
+        const Argument &a = *it;
+        if (!a.name.isEmpty() && a.type!="void" && a.name!="..." &&
             !(isPython && (a.name=="self" || a.name=="cls"))
            )
         {
           allDoc = !a.docs.isEmpty();
         }
-        //printf("a->type=%s a->name=%s doc=%s\n",
-        //        qPrint(a->type),qPrint(a->name),qPrint(a->docs));
+        //printf("a.type=%s a.name=%s doc=%s\n",
+        //        qPrint(a.type),qPrint(a.name),qPrint(a.docs));
       }
       if (!allDoc && declAl.empty()) // try declaration arguments as well
       {
         allDoc=true;
         for (auto it = al.begin(); it!=al.end() && allDoc; ++it)
         {
-          Argument a = *it;
-          if (!a.name.isEmpty() && a.type!="void" &&
+          const Argument &a = *it;
+          if (!a.name.isEmpty() && a.type!="void" && a.name!="..." &&
               !(isPython && (a.name=="self" || a.name=="cls"))
              )
           {
             allDoc = !a.docs.isEmpty();
           }
-          //printf("a->name=%s doc=%s\n",qPrint(a->name),qPrint(a->docs));
+          //printf("a.name=%s doc=%s\n",qPrint(a.name),qPrint(a.docs));
         }
       }
     }
@@ -4275,7 +4307,8 @@ void MemberDefImpl::warnIfUndocumentedParams() const
           isVoidReturn        || // void return type
           isFortranSubroutine || // fortran subroutine
           isConstructor()     || // a constructor
-          isDestructor()         // or destructor
+          isDestructor()      || // or a destructor
+          isFriend()             // or a friend
          )
        )
     {
@@ -4339,12 +4372,11 @@ void MemberDefImpl::setAnchor()
   if (!m_args.isEmpty()) memAnchor+=m_args;
   if (m_memSpec.isAlias()) // this is for backward compatibility
   {
-    memAnchor.prepend(" = "+m_initializer);
+    memAnchor.prepend(" =  "+m_initializer);
   }
   memAnchor.prepend(definition()); // actually the method name is now included
             // twice, which is silly, but we keep it this way for backward
             // compatibility.
-
 
   // include number of template arguments as well,
   // to distinguish between two template
@@ -4359,6 +4391,13 @@ void MemberDefImpl::setAnchor()
   if (!m_requiresClause.isEmpty())
   {
     memAnchor+=" "+m_requiresClause;
+  }
+  if (m_redefineCount>0)
+  {
+    char buf[20];
+    qsnprintf(buf,20,":%d",m_redefineCount);
+    buf[19]='\0';
+    memAnchor.append(buf);
   }
 
   // convert to md5 hash
@@ -4479,21 +4518,21 @@ bool MemberDefImpl::hasMultiLineInitializer() const
 
 void MemberDefImpl::setInitializer(const QCString &initializer)
 {
-  m_initializer=initializer;
+  size_t indent=0;
+  m_initializer=detab(initializer,indent);
   int l=static_cast<int>(m_initializer.length());
   int p=l-1;
   while (p>=0 && isspace(static_cast<uint8_t>(m_initializer.at(p)))) p--;
   m_initializer=m_initializer.left(p+1);
   m_initLines=m_initializer.contains('\n');
+  stripIndentationVerbatim(m_initializer,indent, false);
+
   //printf("%s::setInitializer(%s)\n",qPrint(name()),qPrint(m_initializer));
 }
 
-void MemberDefImpl::addListReference(Definition *)
+void MemberDefImpl::addListReference(const Definition *)
 {
   bool optimizeOutputForC = Config_getBool(OPTIMIZE_OUTPUT_FOR_C);
-  //bool hideScopeNames     = Config_getBool(HIDE_SCOPE_NAMES);
-  //bool optimizeOutputJava = Config_getBool(OPTIMIZE_OUTPUT_JAVA);
-  //bool fortranOpt = Config_getBool(OPTIMIZE_FOR_FORTRAN);
   SrcLangExt lang = getLanguage();
   if (!isLinkableInProject()) return;
   QCString memLabel;
@@ -4515,17 +4554,7 @@ void MemberDefImpl::addListReference(Definition *)
                     (toClassDef(pd))->displayName() : pd->name();
   QCString sep = getLanguageSpecificSeparator(lang,TRUE);
   QCString memArgs;
-  if (!isRelated()
-      /* && commented out as a result of bug 597016
-      (
-       (!hideScopeNames &&                    // there is a scope
-        pd && pd!=Doxygen::globalScope)       // and we can show it
-       ||
-       (pd=getClassDef())                     // it's a class so we
-                                              // show the scope anyway
-      )
-      */
-     )
+  if (!isRelated())
   {
     if (isObjCMethod())
     {
@@ -4546,6 +4575,11 @@ void MemberDefImpl::addListReference(Definition *)
         qualifiedName()+argsString(), // argsString is needed for overloaded functions (see bug 609624)
         memLabel,
         getOutputFileBase()+"#"+anchor(),memName,memArgs,pd);
+}
+
+void MemberDefImpl::addRequirementReferences(const Definition *)
+{
+  RequirementManager::instance().addRequirementRefsForSymbol(this);
 }
 
 const MemberList *MemberDefImpl::getSectionList(const Definition *container) const
@@ -5261,6 +5295,11 @@ bool MemberDefImpl::isExplicit() const
 bool MemberDefImpl::isMutable() const
 {
   return m_memSpec.isMutable();
+}
+
+bool MemberDefImpl::isThreadLocal() const
+{
+  return m_memSpec.isThreadLocal();
 }
 
 bool MemberDefImpl::isGettable() const
@@ -6068,7 +6107,10 @@ void MemberDefImpl::copyArgumentNames(const MemberDef *bmd)
     {
       Argument &argDst       = *dstIt;
       const Argument &argSrc = *srcIt;
-      argDst.name = argSrc.name;
+      if (!argSrc.name.isEmpty())
+      {
+        argDst.name = argSrc.name;
+      }
       argDst.docs = argSrc.docs;
       ++srcIt;
       ++dstIt;
@@ -6085,7 +6127,10 @@ void MemberDefImpl::copyArgumentNames(const MemberDef *bmd)
     {
       Argument &argDst       = *dstIt;
       const Argument &argSrc = *srcIt;
-      argDst.name = argSrc.name;
+      if (!argSrc.name.isEmpty())
+      {
+        argDst.name = argSrc.name;
+      }
       argDst.docs = argSrc.docs;
       ++srcIt;
       ++dstIt;
@@ -6142,6 +6187,7 @@ static void transferArgumentDocumentation(ArgumentList &decAl,ArgumentList &defA
     {
       defA.docs = decA.docs;
     }
+    //printf("transferArgumentDocumentation(%s<->%s)\n",qPrint(decA.name),qPrint(defA.name));
     if (Config_getBool(RESOLVE_UNNAMED_PARAMS))
     {
       if (decA.name.isEmpty() && !defA.name.isEmpty())
@@ -6170,8 +6216,8 @@ void combineDeclarationAndDefinition(MemberDefMutable *mdec,MemberDefMutable *md
     ArgumentList &mdefAl = const_cast<ArgumentList&>(mdef->argumentList());
     ArgumentList &mdecAl = const_cast<ArgumentList&>(mdec->argumentList());
     if (sameNumTemplateArgs &&
-        matchArguments2(mdef->getOuterScope(),mdef->getFileDef(),&mdefAl,
-                        mdec->getOuterScope(),mdec->getFileDef(),&mdecAl,
+        matchArguments2(mdef->getOuterScope(),mdef->getFileDef(),mdef->typeString(),&mdefAl,
+                        mdec->getOuterScope(),mdec->getFileDef(),mdec->typeString(),&mdecAl,
                         TRUE,mdef->getLanguage()
                        )
        ) /* match found */
@@ -6186,20 +6232,36 @@ void combineDeclarationAndDefinition(MemberDefMutable *mdec,MemberDefMutable *md
       // first merge argument documentation
       transferArgumentDocumentation(mdecAl,mdefAl);
 
-      /* copy documentation between function definition and declaration */
-      if (!mdec->briefDescription().isEmpty())
+      // copy brief description between definition and declaration
+      QCString mdefBrief     = mdef->briefDescription();
+      QCString mdecBrief     = mdec->briefDescription();
+      QCString mdefBriefFile = mdef->briefFile();
+      QCString mdecBriefFile = mdec->briefFile();
+      int mdefBriefLine      = mdef->briefLine();
+      int mdecBriefLine      = mdec->briefLine();
+      if (!mdecBrief.isEmpty())
       {
-        mdef->setBriefDescription(mdec->briefDescription(),mdec->briefFile(),mdec->briefLine());
+        mdef->setBriefDescription(mdecBrief,mdecBriefFile,mdecBriefLine);
       }
-      else if (!mdef->briefDescription().isEmpty())
+      if (!mdefBrief.isEmpty())
       {
-        mdec->setBriefDescription(mdef->briefDescription(),mdef->briefFile(),mdef->briefLine());
+        mdec->setBriefDescription(mdefBrief,mdefBriefFile,mdefBriefLine);
       }
-      if (!mdef->documentation().isEmpty())
+
+      // copy detailed description between definition and declaration
+      QCString mdefDocs   = mdef->documentation();
+      QCString mdecDocs   = mdec->documentation();
+      QCString mdefFile   = mdef->docFile();
+      QCString mdecFile   = mdec->docFile();
+      int mdefLine        = mdef->docLine();
+      int mdecLine        = mdec->docLine();
+      bool mdefDocsForDef = mdef->isDocsForDefinition();
+      bool mdecDocsForDef = mdec->isDocsForDefinition();
+      if (!mdefDocs.isEmpty())
       {
         //printf("transferring docs mdef->mdec (%s->%s)\n",mdef->argsString(),mdec->argsString());
-        mdec->setDocumentation(mdef->documentation(),mdef->docFile(),mdef->docLine());
-        mdec->setDocsForDefinition(mdef->isDocsForDefinition());
+        mdec->setDocumentation(mdefDocs,mdefFile,mdefLine);
+        mdec->setDocsForDefinition(mdefDocsForDef);
         if (mdefAl.hasParameters())
         {
           auto mdefAlComb = stringToArgumentList(mdef->getLanguage(),mdef->argsString());
@@ -6207,11 +6269,11 @@ void combineDeclarationAndDefinition(MemberDefMutable *mdec,MemberDefMutable *md
           mdec->moveArgumentList(std::move(mdefAlComb));
         }
       }
-      else if (!mdec->documentation().isEmpty())
+      if (!mdecDocs.isEmpty())
       {
         //printf("transferring docs mdec->mdef (%s->%s)\n",mdec->argsString(),mdef->argsString());
-        mdef->setDocumentation(mdec->documentation(),mdec->docFile(),mdec->docLine());
-        mdef->setDocsForDefinition(mdec->isDocsForDefinition());
+        mdef->setDocumentation(mdecDocs,mdecFile,mdecLine);
+        mdef->setDocsForDefinition(mdecDocsForDef);
         if (mdecAl.hasParameters())
         {
           auto mdecAlComb = stringToArgumentList(mdec->getLanguage(),mdec->argsString());
@@ -6219,14 +6281,23 @@ void combineDeclarationAndDefinition(MemberDefMutable *mdec,MemberDefMutable *md
           mdef->moveDeclArgumentList(std::move(mdecAlComb));
         }
       }
-      if (!mdef->inbodyDocumentation().isEmpty())
+
+      // copy inbody documentation between definition and declaration
+      QCString mdefInbodyDocs = mdef->inbodyDocumentation();
+      QCString mdecInbodyDocs = mdec->inbodyDocumentation();
+      QCString mdefInbodyFile = mdef->inbodyFile();
+      QCString mdecInbodyFile = mdec->inbodyFile();
+      int mdefInbodyLine      = mdef->inbodyLine();
+      int mdecInbodyLine      = mdec->inbodyLine();
+      if (!mdefInbodyDocs.isEmpty())
       {
-        mdec->setInbodyDocumentation(mdef->inbodyDocumentation(),mdef->inbodyFile(),mdef->inbodyLine());
+        mdec->setInbodyDocumentation(mdefInbodyDocs,mdefInbodyFile,mdefInbodyLine);
       }
-      else if (!mdec->inbodyDocumentation().isEmpty())
+      if (!mdecInbodyDocs.isEmpty())
       {
-        mdef->setInbodyDocumentation(mdec->inbodyDocumentation(),mdec->inbodyFile(),mdec->inbodyLine());
+        mdef->setInbodyDocumentation(mdecInbodyDocs,mdecInbodyFile,mdecInbodyLine);
       }
+
       if (mdec->getStartBodyLine()!=-1 && mdef->getStartBodyLine()==-1)
       {
         //printf("body mdec->mdef %d-%d\n",mdec->getStartBodyLine(),mdef->getEndBodyLine());
@@ -6385,6 +6456,16 @@ CodeSymbolType MemberDefImpl::codeSymbolType() const
   return CodeSymbolType::Default;
 }
 
+int MemberDefImpl::redefineCount() const
+{
+  return m_redefineCount;
+}
+
+void MemberDefImpl::setRedefineCount(int count)
+{
+  m_redefineCount=count;
+}
+
 //-------------------------------------------------------------------------------
 // Helpers
 
@@ -6491,4 +6572,5 @@ MemberDefMutable *toMemberDefMutable(Definition *d)
     return nullptr;
   }
 }
+
 

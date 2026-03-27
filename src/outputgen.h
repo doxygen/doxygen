@@ -131,7 +131,7 @@ class OutputGenIntf
     virtual OutputType type() const = 0;
     virtual std::unique_ptr<OutputGenIntf> clone() = 0;
     virtual void addCodeGen(OutputCodeList &list) = 0;
-    virtual void writeDoc(const IDocNodeAST *ast,const Definition *ctx,const MemberDef *md, int id) = 0;
+    virtual void writeDoc(const IDocNodeAST *ast,const Definition *ctx,const MemberDef *md, int id,int sectionLevel) = 0;
     virtual void startIndexSection(IndexSection is) = 0;
     virtual void endIndexSection(IndexSection is) = 0;
     virtual void writePageLink(const QCString &name,bool first) = 0;
@@ -140,7 +140,7 @@ class OutputGenIntf
     virtual void writeStyleInfo(int part) = 0;
     virtual void writeSearchInfo() = 0;
     virtual void writeFooter(const QCString &navPath) = 0;
-    virtual void startFile(const QCString &name,const QCString &manName,const QCString &title,int id, int hierarchyLevel) = 0;
+    virtual void startFile(const QCString &name,bool isSource,const QCString &manName,const QCString &title,int id, int hierarchyLevel) = 0;
     virtual void endFile() = 0;
     virtual void startTitleHead(const QCString &fileName) = 0;
     virtual void endTitleHead(const QCString &fileName,const QCString &name) = 0;
@@ -168,7 +168,7 @@ class OutputGenIntf
                             const QCString &path,const QCString &name) = 0;
     virtual void startTypewriter() = 0;
     virtual void endTypewriter() = 0;
-    virtual void startGroupHeader(int extraLevels=0) = 0;
+    virtual void startGroupHeader(const QCString &id,int extraLevels=0) = 0;
     virtual void endGroupHeader(int extraLevels=0) = 0;
     virtual void startItemListItem() = 0;
     virtual void endItemListItem() = 0;
@@ -194,8 +194,8 @@ class OutputGenIntf
     virtual void endMemberTemplateParams(const QCString &anchor,const QCString &inheritId) = 0;
     virtual void startCompoundTemplateParams() = 0;
     virtual void endCompoundTemplateParams() = 0;
-    virtual void startMemberGroupHeader(bool b) = 0;
-    virtual void endMemberGroupHeader() = 0;
+    virtual void startMemberGroupHeader(const QCString &id,bool b) = 0;
+    virtual void endMemberGroupHeader(bool b) = 0;
     virtual void startMemberGroupDocs() = 0;
     virtual void endMemberGroupDocs() = 0;
     virtual void startMemberGroup() = 0;
@@ -247,11 +247,12 @@ class OutputGenIntf
     virtual void endPageRef(const QCString &c,const QCString &a) = 0;
     virtual void startQuickIndices() = 0;
     virtual void endQuickIndices() = 0;
-    virtual void writeSplitBar(const QCString &name) = 0;
+    virtual void writeSplitBar(const QCString &name,const QCString &allMembersFile) = 0;
     virtual void writeNavigationPath(const QCString &s) = 0;
     virtual void writeLogo() = 0;
-    virtual void writeQuickLinks(HighlightedItem hli,const QCString &file) = 0;
+    virtual void writeQuickLinks(HighlightedItem hli,const QCString &file,bool extraTabs) = 0;
     virtual void writeSummaryLink(const QCString &file,const QCString &anchor,const QCString &title,bool first) = 0;
+    virtual void writePageOutline() = 0;
     virtual void startContents() = 0;
     virtual void endContents() = 0;
     virtual void startPageDoc(const QCString &pageTitle) = 0;
@@ -315,10 +316,15 @@ class OutputGenIntf
     virtual void startLabels() = 0;
     virtual void writeLabel(const QCString &l,bool isLast) = 0;
     virtual void endLabels() = 0;
-    virtual void writeLocalToc(const SectionRefs &refs,const LocalToc &lt) = 0;
+    virtual void startLocalToc(int level) = 0;
+    virtual void endLocalToc() = 0;
+    virtual void startTocEntry(const SectionInfo *si) = 0;
+    virtual void endTocEntry(const SectionInfo *si) = 0;
     virtual void cleanup() = 0;
     virtual void startPlainFile(const QCString &name) = 0;
     virtual void endPlainFile() = 0;
+    virtual void startEmbeddedDoc(int) = 0;
+    virtual void endEmbeddedDoc() = 0;
 };
 
 

@@ -26,6 +26,7 @@
 #include "types.h"
 #include "arguments.h"
 #include "reflist.h"
+#include "requirement.h"
 #include "textstream.h"
 #include "configvalues.h"
 
@@ -223,7 +224,8 @@ class Entry
     QCString	fileName;     //!< file this entry was extracted from
     int		startLine;    //!< start line of entry in the source
     int		startColumn;  //!< start column of entry in the source
-    RefItemVector sli; //!< special lists (test/todo/bug/deprecated/..) this entry is in
+    RefItemVector sli;        //!< special lists (test/todo/bug/deprecated/..) this entry is in
+    RequirementRefs rqli;     //!< references to requirements
     SrcLangExt  lang;         //!< programming language in which this entry was found
     bool        hidden;       //!< does this represent an entity that is hidden from the output
     bool        artificial;   //!< Artificially introduced item

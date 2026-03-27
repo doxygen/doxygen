@@ -158,6 +158,7 @@ struct fortrancodeYY_state
 
   std::unique_ptr<FileDef> exampleFileDef;
   const FileDef *    sourceFileDef = nullptr;
+  bool          lineNumbers = FALSE;
   const Definition * currentDefinition = nullptr;
   const MemberDef *  currentMemberDef = nullptr;
   bool          includeCodeFragment = false;
@@ -204,7 +205,6 @@ static bool getLink(yyscan_t yyscanner,const UseMap &useMap, // map with used mo
                     OutputCodeList &ol,
                     const QCString &text);
 static void generateLink(yyscan_t yyscanner,OutputCodeList &ol, const QCString &lname);
-static void generateLink(yyscan_t yyscanner,OutputCodeList &ol, const char *lname);
 static int countLines(yyscan_t yyscanner);
 static void startScope(yyscan_t yyscanner);
 static void endScope(yyscan_t yyscanner);
@@ -438,7 +438,7 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                         }
 <ClassName>({ACCESS_SPEC}|ABSTRACT|EXTENDS)/[,:( ] { //| variable declaration
                                           startFontClass(yyscanner,"keyword");
-                                          yyextra->code->codify(QCString(yytext));
+                                          yyextra->code->codify(yytext);
                                           endFontClass(yyscanner);
                                         }
 <ClassName>\n                           { // interface may be without name
@@ -511,7 +511,7 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                           yy_push_state(YY_START,yyscanner);
                                           BEGIN(Declaration);
                                           startFontClass(yyscanner,"keywordtype");
-                                          yyextra->code->codify(QCString(yytext));
+                                          yyextra->code->codify(yytext);
                                           endFontClass(yyscanner);
                                         }
 <Start>{TYPE_SPEC}/[,:( ]               {
@@ -522,7 +522,7 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                           yy_push_state(YY_START,yyscanner);
                                           BEGIN(Declaration);
                                           startFontClass(yyscanner,"keywordtype");
-                                          yyextra->code->codify(QCString(yytext));
+                                          yyextra->code->codify(yytext);
                                           endFontClass(yyscanner);
                                         }
 <Start>{ATTR_SPEC}                      {
@@ -533,20 +533,20 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                             yyextra->isExternal = true;
                                           }
                                           startFontClass(yyscanner,"keywordtype");
-                                          yyextra->code->codify(QCString(yytext));
+                                          yyextra->code->codify(yytext);
                                           endFontClass(yyscanner);
                                         }
 <Declaration>({TYPE_SPEC}|{ATTR_SPEC})/[,:( ] { //| variable declaration
                                           if (QCString(yytext) == "external") yyextra->isExternal = true;
                                           startFontClass(yyscanner,"keywordtype");
-                                          yyextra->code->codify(QCString(yytext));
+                                          yyextra->code->codify(yytext);
                                           endFontClass(yyscanner);
                                         }
 <Declaration>{ID}                       { // local var
                                           if (yyextra->isFixedForm && yy_my_start == 1)
                                           {
                                             startFontClass(yyscanner,"comment");
-                                            yyextra->code->codify(QCString(yytext));
+                                            yyextra->code->codify(yytext);
                                             endFontClass(yyscanner);
                                           }
                                           else if (yyextra->currentMemberDef &&
@@ -559,13 +559,13 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                           }
                                           else
                                           {
-                                            yyextra->code->codify(QCString(yytext));
-                                            addLocalVar(yyscanner,QCString(yytext));
+                                            yyextra->code->codify(yytext);
+                                            addLocalVar(yyscanner,yytext);
                                           }
                                         }
 <Declaration>{BS}("=>"|"="){BS}         { // Procedure binding
                                           BEGIN(DeclarationBinding);
-                                          yyextra->code->codify(QCString(yytext));
+                                          yyextra->code->codify(yytext);
                                         }
 <DeclarationBinding>{ID}                { // Type bound procedure link
                                           generateLink(yyscanner,*yyextra->code, yytext);
@@ -573,17 +573,17 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                         }
 <Declaration>[(]                        { // start of array or type / class specification
                                           yyextra->bracketCount++;
-                                          yyextra->code->codify(QCString(yytext));
+                                          yyextra->code->codify(yytext);
                                         }
 
 <Declaration>[)]                        { // end array specification
                                           yyextra->bracketCount--;
                                           if (!yyextra->bracketCount) yyextra->inTypeDecl = 0;
-                                          yyextra->code->codify(QCString(yytext));
+                                          yyextra->code->codify(yytext);
                                         }
 
 <Declaration,DeclarationBinding>"&"     { // continuation line
-                                          yyextra->code->codify(QCString(yytext));
+                                          yyextra->code->codify(yytext);
                                           if (!yyextra->isFixedForm)
                                           {
                                             yy_push_state(YY_START,yyscanner);
@@ -739,7 +739,7 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
  /*------ variable references?  -------------------------------------*/
 
 <Start>"%"{BS}{ID}                      { // ignore references to elements
-                                          yyextra->code->codify(QCString(yytext));
+                                          yyextra->code->codify(yytext);
                                         }
 <Start>{ID}                             {
                                             yyextra->insideBody=TRUE;
@@ -791,7 +791,7 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                           yyextra->contLineNr++;
                                           YY_FTN_RESET
                                         }
-<*>^{BS}"type"{BS}"="                   { yyextra->code->codify(QCString(yytext)); }
+<*>^{BS}"type"{BS}"="                   { yyextra->code->codify(yytext); }
 
 <*>[\x80-\xFF]*                         { // keep utf8 characters together...
                                           if (yyextra->isFixedForm && yy_my_start > yyextra->fixedCommentAfter)
@@ -801,7 +801,7 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                           }
                                           else
                                           {
-                                            yyextra->code->codify(QCString(yytext));
+                                            yyextra->code->codify(yytext);
                                           }
                                         }
 <*>.                                    {
@@ -815,11 +815,11 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                           }
                                           else
                                           {
-                                            yyextra->code->codify(QCString(yytext));
+                                            yyextra->code->codify(yytext);
                                           }
                                         }
 <*>{LOG_OPER}                           { // Fortran logical comparison keywords
-                                          yyextra->code->codify(QCString(yytext));
+                                          yyextra->code->codify(yytext);
                                         }
 <*><<EOF>>                              {
                                           if (YY_START == DocBlock)
@@ -877,7 +877,7 @@ static void startFontClass(yyscan_t yyscanner,const char *s,bool specialComment)
   if (qstrcmp(yyextra->currentFontClass,s)!=0)
   {
     endFontClass(yyscanner);
-    yyextra->code->startFontClass(QCString(s));
+    yyextra->code->startFontClass(s);
     yyextra->currentFontClass=s;
   }
 }
@@ -954,7 +954,7 @@ static void codeFolding(yyscan_t yyscanner,const Definition *d)
 static void startCodeLine(yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  if (yyextra->sourceFileDef)
+  if (yyextra->sourceFileDef && yyextra->lineNumbers)
   {
     //QCString lineNumber,lineAnchor;
     //lineNumber.sprintf("%05d",yyextra->yyLineNr);
@@ -1001,10 +1001,10 @@ static void startCodeLine(yyscan_t yyscanner)
     }
   }
   yyextra->code->startCodeLine(yyextra->yyLineNr);
-  yyextra->insideCodeLine=true;  
+  yyextra->insideCodeLine=true;
   if (yyextra->currentFontClass)
   {
-    yyextra->code->startFontClass(QCString(yyextra->currentFontClass));
+    yyextra->code->startFontClass(yyextra->currentFontClass);
   }
 }
 
@@ -1048,13 +1048,12 @@ static void codifyLines(yyscan_t yyscanner,const QCString &text)
     {
       yyextra->yyLineNr++;
       size_t l = static_cast<size_t>(p-sp-1);
-      std::string tmp(sp,l);
-      yyextra->code->codify(tmp.c_str());
+      yyextra->code->codify(QCString(sp,l));
       nextCodeLine(yyscanner);
     }
     else
     {
-      yyextra->code->codify(QCString(sp));
+      yyextra->code->codify(sp);
       done=TRUE;
     }
   }
@@ -1340,11 +1339,6 @@ static void generateLink(yyscan_t yyscanner,OutputCodeList &ol, const QCString &
   }
 }
 
-static void generateLink(yyscan_t yyscanner,OutputCodeList &ol, const char *lname)
-{
-  generateLink(yyscanner,ol,QCString(lname));
-}
-
 /*! counts the number of lines in the input */
 static int countLines(yyscan_t yyscanner)
 {
@@ -1483,70 +1477,46 @@ void FortranCodeParser::resetCodeParserState()
 }
 
 void FortranCodeParser::parseCode(OutputCodeList & codeOutIntf,
-                   const QCString & /* scopeName */,
-                   const QCString & input,
-                   SrcLangExt /*lang*/,
-                   bool stripCodeComments,
-                   bool isExampleBlock,
-                   const QCString & exampleName,
-                   const FileDef * fileDef,
-                   int startLine,
-                   int endLine,
-                   bool inlineFragment,
-                   const MemberDef * /* memberDef */,
-                   bool /* showLineNumbers */,
-                   const Definition *searchCtx,
-                   bool collectXRefs
-                  )
+                                  const QCString & /* scopeName */,
+                                  const QCString & input,
+                                  SrcLangExt /*lang*/,
+                                  bool stripCodeComments,
+                                  const CodeParserOptions &options
+                                 )
 {
   yyscan_t yyscanner = p->yyscanner;
   struct yyguts_t *yyg = (struct yyguts_t*)p->yyscanner;
-  //::parseFortranCode(codeOutIntf,scopeName,input,isExampleBlock,exampleName,
-  //                   fileDef,startLine,endLine,inlineFragment,memberDef,
-  //                   showLineNumbers,searchCtx,collectXRefs,m_format);
-  //  parseFortranCode(OutputCodeList &od,const char *,const QCString &s,
-  //                bool exBlock, const char *exName,FileDef *fd,
-  //                int startLine,int endLine,bool inlineFragment,
-  //                const MemberDef *,bool,const Definition *searchCtx,
-  //                bool collectXRefs, FortranFormat format)
   if (input.isEmpty()) return;
-  DebugLex debugLex(Debug::Lex_fortrancode, __FILE__, fileDef ? qPrint(fileDef->fileName()): nullptr);
+  DebugLex debugLex(Debug::Lex_fortrancode, __FILE__, options.fileDef() ? qPrint(options.fileDef()->fileName()): nullptr);
   codeOutIntf.stripCodeComments(stripCodeComments);
-  yyextra->code = &codeOutIntf;
-  yyextra->inputString   = input.data();
-  yyextra->inputPosition = 0;
-  yyextra->fileName      = fileDef ? fileDef->fileName():"";
-  yyextra->isFixedForm = recognizeFixedForm(input,p->format);
-  yyextra->contLineNr = 1;
-  yyextra->hasContLine = nullptr;
+  yyextra->code               = &codeOutIntf;
+  yyextra->inputString        = input.data();
+  yyextra->inputPosition      = 0;
+  yyextra->fileName           = options.fileDef() ? options.fileDef()->fileName():"";
+  yyextra->isFixedForm        = recognizeFixedForm(input,p->format);
+  yyextra->contLineNr         = 1;
+  yyextra->hasContLine        = nullptr;
   if (yyextra->isFixedForm)
   {
     checkContLines(yyscanner,yyextra->inputString);
     yyextra->fixedCommentAfter = Config_getInt(FORTRAN_COMMENT_AFTER);
   }
-  yyextra->currentFontClass = nullptr;
-  yyextra->insideCodeLine = FALSE;
-  yyextra->searchCtx = searchCtx;
-  yyextra->collectXRefs = collectXRefs;
-  if (startLine!=-1)
-    yyextra->yyLineNr    = startLine;
-  else
-    yyextra->yyLineNr    = 1;
-
-  if (endLine!=-1)
-    yyextra->inputLines  = endLine+1;
-  else
-    yyextra->inputLines  = yyextra->yyLineNr + countLines(yyscanner) - 1;
-
-  yyextra->exampleBlock  = isExampleBlock;
-  yyextra->exampleName   = exampleName;
-  yyextra->sourceFileDef = fileDef;
+  yyextra->currentFontClass   = nullptr;
+  yyextra->insideCodeLine     = FALSE;
+  yyextra->searchCtx          = options.searchCtx();
+  yyextra->collectXRefs       = options.collectXRefs();
+  yyextra->yyLineNr           = options.startLine()!=-1 ? options.startLine() : 1;
+  yyextra->inputLines         = options.endLine()!=-1   ? options.endLine()+1 : yyextra->yyLineNr + countLines(yyscanner) - 1;
+  yyextra->exampleBlock       = options.isExample();
+  yyextra->exampleName        = options.exampleName();
+  yyextra->sourceFileDef      = options.fileDef();
+  yyextra->lineNumbers        = options.fileDef() && options.showLineNumbers();
   yyextra->foldStack.clear();
   yyextra->insideSpecialComment = false;
-  if (isExampleBlock && fileDef==nullptr)
+  if (options.isExample() && options.fileDef()==nullptr)
   {
     // create a dummy filedef for the example
-    yyextra->exampleFileDef = createFileDef(QCString(),exampleName);
+    yyextra->exampleFileDef = createFileDef(QCString(),options.exampleName());
     yyextra->sourceFileDef = yyextra->exampleFileDef.get();
   }
   if (yyextra->sourceFileDef)
@@ -1559,7 +1529,7 @@ void FortranCodeParser::parseCode(OutputCodeList & codeOutIntf,
   {
     yyextra->exampleFile = convertNameToFile(yyextra->exampleName+"-example");
   }
-  yyextra->includeCodeFragment = inlineFragment;
+  yyextra->includeCodeFragment = options.inlineFragment();
   startCodeLine(yyscanner);
   fortrancodeYYrestart(nullptr, yyscanner);
   BEGIN( Start );
@@ -1576,7 +1546,7 @@ void FortranCodeParser::parseCode(OutputCodeList & codeOutIntf,
       yyextra->foldStack.pop_back();
     }
   }
-  if (!fileDef && isExampleBlock && yyextra->sourceFileDef)
+  if (yyextra->exampleFileDef)
   {
     // delete the temporary file definition used for this example
     yyextra->exampleFileDef.reset();

@@ -85,8 +85,8 @@ class ManGenerator : public OutputGenerator, public OutputGenIntf
     std::unique_ptr<OutputGenIntf> clone() override { return std::make_unique<ManGenerator>(*this); }
     void addCodeGen(OutputCodeList &list) override;
     void cleanup() override;
-    void writeDoc(const IDocNodeAST *ast,const Definition *,const MemberDef *,int) override;
-    void startFile(const QCString &name,const QCString &manName,const QCString &title,int id, int hierarchyLevel) override;
+    void writeDoc(const IDocNodeAST *ast,const Definition *,const MemberDef *,int,int) override;
+    void startFile(const QCString &name,bool isSource,const QCString &manName,const QCString &title,int id, int hierarchyLevel) override;
     void endFile() override;
 
     void writeSearchInfo() override {}
@@ -125,7 +125,7 @@ class ManGenerator : public OutputGenerator, public OutputGenIntf
     void endTextLink() override {}
     void startTypewriter() override { m_t << "\\fR"; m_firstCol=FALSE; }
     void endTypewriter() override { m_t << "\\fP"; m_firstCol=FALSE; }
-    void startGroupHeader(int) override;
+    void startGroupHeader(const QCString &,int) override;
     void endGroupHeader(int) override;
     void startMemberSections() override {}
     void endMemberSections() override {}
@@ -154,8 +154,8 @@ class ManGenerator : public OutputGenerator, public OutputGenIntf
     void startCompoundTemplateParams() override;
     void endCompoundTemplateParams() override;
 
-    void startMemberGroupHeader(bool) override;
-    void endMemberGroupHeader() override;
+    void startMemberGroupHeader(const QCString &,bool) override;
+    void endMemberGroupHeader(bool) override;
     void startMemberGroupDocs() override;
     void endMemberGroupDocs() override;
     void startMemberGroup() override;
@@ -206,11 +206,12 @@ class ManGenerator : public OutputGenerator, public OutputGenIntf
     void endPageRef(const QCString &,const QCString &) override {}
     void startQuickIndices() override {}
     void endQuickIndices() override {}
-    void writeSplitBar(const QCString &) override {}
+    void writeSplitBar(const QCString &,const QCString &) override {}
     void writeNavigationPath(const QCString &) override {}
     void writeLogo() override {}
-    void writeQuickLinks(HighlightedItem,const QCString &) override {}
+    void writeQuickLinks(HighlightedItem,const QCString &,bool) override {}
     void writeSummaryLink(const QCString &,const QCString &,const QCString &,bool) override {}
+    void writePageOutline() override {}
     void startContents() override {}
     void endContents() override {}
     void writeNonBreakableSpace(int n) override { for (int i=0;i<n;i++) m_t << " "; }
@@ -221,8 +222,8 @@ class ManGenerator : public OutputGenerator, public OutputGenIntf
     void endDescTableTitle() override { endBoldEmphasis(); }
     void startDescTableRow() override {}
     void endDescTableRow() override {}
-    void startDescTableInit() override {};
-    void endDescTableInit() override {};
+    void startDescTableInit() override {}
+    void endDescTableInit() override {}
     void startDescTableData() override { m_t << "\n"; m_firstCol=TRUE; }
     void endDescTableData() override {}
 
@@ -280,15 +281,18 @@ class ManGenerator : public OutputGenerator, public OutputGenIntf
     void writeLabel(const QCString &l,bool isLast) override;
     void endLabels() override;
 
-    void writeLocalToc(const SectionRefs &,const LocalToc &) override {}
+    void startLocalToc(int) override {}
+    void endLocalToc() override {}
+    void startTocEntry(const SectionInfo *) override {}
+    void endTocEntry(const SectionInfo *) override {}
 
     void startPlainFile(const QCString &name) override { OutputGenerator::startPlainFile(name); }
     void endPlainFile() override { OutputGenerator::endPlainFile(); }
 
-  private:
-    void startTitle();
-    void endTitle();
+    void startEmbeddedDoc(int) override {}
+    void endEmbeddedDoc() override {}
 
+  private:
     bool m_firstCol = true;
     int  m_col = 0;
     bool m_paragraph = true;

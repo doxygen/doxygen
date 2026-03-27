@@ -89,7 +89,7 @@ The preprocessed input buffer is fed to the language parser, which is
 implemented as a big state machine using \c flex. It can be found
 in the file \c src/scanner.l. There is one parser for all
 languages (C/C++/Java/IDL). The state variables \c insideIDL
-and \c insideJava are uses at some places for language specific choices.
+and \c insideJava are used at some places for language specific choices.
 
 The task of the parser is to convert the input buffer into a tree of entries
 (basically an abstract syntax tree). An entry is defined in \c src/entry.h
@@ -256,7 +256,7 @@ debug output goes by default to `stdout` unless one uses `-d stderr`.
 
 <h3>Testing</h3>
 
-Doxygen has a small set of tests available to test, some, code integrity.
+Doxygen has a small set of tests available to test code integrity.
 The tests can be run by means of the command `make tests`. When only one or a
 few tests are required one can set the variable \c TEST_FLAGS when running the
 test e.g. `make TEST_FLAGS="--id 5" tests` or for multiple tests

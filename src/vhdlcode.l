@@ -104,6 +104,7 @@ struct vhdlcodeYY_state
 
   std::unique_ptr<FileDef> exampleFileDef;
   const FileDef *     sourceFileDef = nullptr;
+  bool          lineNumbers = FALSE;
   const Definition *  currentDefinition = nullptr;
   const MemberDef *   currentMemberDef = nullptr;
   bool          includeCodeFragment = false;
@@ -581,22 +582,22 @@ XILINX      "INST"|"NET"|"PIN"|"BLKNM"|"BUFG"|"COLLAPSE"|"CPLD"|"COMPGRP"|"CONFI
                                       StringVector strl=split(yytext,".");
                                       if (strl.size()>2)
                                       {
-                                        std::string s1=strl[0];
-                                        std::string s2=strl[1];
-                                        std::string s3=strl[2];
+                                        QCString s1 = strl[0];
+                                        QCString s2 = strl[1];
+                                        QCString s3 = strl[2];
                                         s1.append(".");
-                                        s3.insert(0,".");
-                                        codifyLines(yyscanner,s1.c_str(),yyextra->currClass);
-                                        ClassDef *cd=VhdlDocGen::getPackageName(s2.c_str());
+                                        s3.prepend(".");
+                                        codifyLines(yyscanner,s1,yyextra->currClass);
+                                        ClassDef *cd=VhdlDocGen::getPackageName(s2);
                                         if (cd)
                                         {
-                                          generateClassOrGlobalLink(yyscanner,*yyextra->code,s2.c_str());
+                                          generateClassOrGlobalLink(yyscanner,*yyextra->code,s2);
                                         }
                                         else
                                         {
-                                          codifyLines(yyscanner,s2.c_str());
+                                          codifyLines(yyscanner,s2);
                                         }
-                                        codifyLines(yyscanner,s3.c_str());
+                                        codifyLines(yyscanner,s3);
                                       }
                                       else
                                       {
@@ -682,8 +683,8 @@ XILINX      "INST"|"NET"|"PIN"|"BLKNM"|"BUFG"|"COLLAPSE"|"CPLD"|"COMPGRP"|"CONFI
                                       QCString ss(yytext);
                                       QCString temp=VhdlDocGen::getIndexWord(yytext,2);
                                       StringVector ql=split(yytext,temp.str());
-                                      std::string ll=ql[0];
-                                      codifyLines(yyscanner,ll.c_str(),yyextra->currClass);
+                                      QCString ll = ql[0];
+                                      codifyLines(yyscanner,ll,yyextra->currClass);
                                       temp=temp.stripWhiteSpace();
                                       temp.prepend("_");
                                       generateClassOrGlobalLink(yyscanner,*yyextra->code,temp);
@@ -971,14 +972,14 @@ static bool checkVhdlString(yyscan_t yyscanner,QCString &name)
   size_t len=name.length();
   if (len>2 && name.at(0)=='"' && name.at(len-1)=='"')
   {
-    std::string inside = name.str().substr(1,len-2);
+    QCString inside = name.mid(1,len-2);
     static const reg::Ex regg(R"(\s+)"); // any number of whitespace
-    auto qrl=split(inside,regg);
-    if (VhdlDocGen::isNumber(qrl[0]))
+    auto qrl=split(inside.str(),regg);
+    if (!qrl.empty() && VhdlDocGen::isNumber(qrl[0]))
     {
       yyextra->code->codify("\"");
       startFontClass(yyscanner,"vhdllogic");
-      yyextra->code->codify(inside.c_str());
+      yyextra->code->codify(inside);
       endFontClass(yyscanner);
       yyextra->code->codify("\"");
     }
@@ -1051,7 +1052,7 @@ static void startCodeLine(yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   //if (yyextra->currentFontClass) { yyextra->code->endFontClass(); }
-  if (yyextra->sourceFileDef)
+  if (yyextra->sourceFileDef && yyextra->lineNumbers)
   {
     //QCString lineNumber,lineAnchor;
     //lineNumber.sprintf("%05d",yyextra->yyLineNr);
@@ -1653,58 +1654,42 @@ void VHDLCodeParser::parseCode(OutputCodeList &od,
                                const QCString &s,
                                SrcLangExt,
                                bool stripCodeComments,
-                               bool exBlock,
-                               const QCString &exName,
-                               const FileDef *fd,
-                               int startLine,
-                               int endLine,
-                               bool inlineFragment,
-                               const MemberDef *memberDef,
-                               bool,
-                               const Definition *searchCtx,
-                               bool /* collectXRefs */)
+                               const CodeParserOptions &options
+                               )
 {
   yyscan_t yyscanner = p->yyscanner;
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   //printf("***parseCode() exBlock=%d exName=%s fd=%p\n",exBlock,exName,fd);
   if (s.isEmpty()) return;
-  DebugLex debugLex(Debug::Lex_vhdlcode, __FILE__, fd ? qPrint(fd->fileName()): nullptr);
-  yyextra->fileName      = fd ? fd->fileName():"";
-  if (memberDef)
+  DebugLex debugLex(Debug::Lex_vhdlcode, __FILE__, options.fileDef() ? qPrint(options.fileDef()->fileName()): nullptr);
+  yyextra->fileName      = options.fileDef() ? options.fileDef()->fileName():"";
+  if (options.memberDef())
   {
-    const ClassDef *dd=memberDef->getClassDef();
-    if (dd) yyextra->currClass=dd->name();
+    const ClassDef *dd=options.memberDef()->getClassDef();
+    if (dd) yyextra->currClass = dd->name();
   }
   od.stripCodeComments(stripCodeComments);
   resetCodeParserState();
-  yyextra->code = &od;
-  yyextra->inputString   = s.data();
-  yyextra->inputPosition = 0;
-  yyextra->currentFontClass = nullptr;
-  yyextra->insideCodeLine = false;
-  yyextra->searchCtx = searchCtx;
-  yyextra->foldStack.clear();
+  yyextra->code                 = &od;
+  yyextra->inputString          = s.data();
+  yyextra->inputPosition        = 0;
+  yyextra->currentFontClass     = nullptr;
+  yyextra->insideCodeLine       = false;
+  yyextra->searchCtx            = options.searchCtx();
   yyextra->insideSpecialComment = false;
-
-  if (startLine!=-1)
-    yyextra->yyLineNr    = startLine;
-  else
-    yyextra->yyLineNr    = 1;
-
-  if (endLine!=-1)
-    yyextra->inputLines  = endLine+1;
-  else
-    yyextra->inputLines  = yyextra->yyLineNr + countLines(yyscanner) - 1;
-
+  yyextra->yyLineNr             = options.startLine()!=-1 ? options.startLine() : 1;
+  yyextra->inputLines           = options.endLine()!=-1   ? options.endLine()+1 : yyextra->yyLineNr + countLines(yyscanner) - 1;
+  yyextra->foldStack.clear();
 
   // yyextra->theCallContext.clear();
-  yyextra->exampleBlock  = exBlock;
-  yyextra->exampleName   = exName;
-  yyextra->sourceFileDef = fd;
-  if (exBlock && fd==nullptr)
+  yyextra->exampleBlock         = options.isExample();
+  yyextra->exampleName          = options.exampleName();
+  yyextra->sourceFileDef        = options.fileDef();
+  yyextra->lineNumbers          = options.fileDef() && options.showLineNumbers();
+  if (options.isExample() && options.fileDef()==nullptr)
   {
     // create a dummy filedef for the example
-    yyextra->exampleFileDef = createFileDef("",exName);
+    yyextra->exampleFileDef = createFileDef("",options.exampleName());
     yyextra->sourceFileDef = yyextra->exampleFileDef.get();
   }
   if (yyextra->sourceFileDef)
@@ -1718,7 +1703,7 @@ void VHDLCodeParser::parseCode(OutputCodeList &od,
   {
     yyextra->exampleFile = convertNameToFile(yyextra->exampleName+"-example");
   }
-  yyextra->includeCodeFragment = inlineFragment;
+  yyextra->includeCodeFragment = options.inlineFragment();
   startCodeLine(yyscanner);
   if (!yyextra->lexInit)
   {

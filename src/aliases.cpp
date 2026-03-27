@@ -64,70 +64,61 @@ static void addValidAliasToMap(std::string_view alias)
   static std::string_view separators = "!#$%&,.?|;:'+=~`/";
   auto isValidSeparator = [](char c) -> bool { return separators.find(c)!=std::string::npos; };
 
-  static const reg::Ex re1(R"(^\a[\w-]*\s*=)");
-  static const reg::Ex re2(R"(^\a[\w-]*{[^}]*}\s*=)");
-  if (reg::search(std::string{alias},re1) || reg::search(std::string{alias},re2)) // valid name= or name{...}= part
+  static const reg::Ex re(R"(^(\a[\w-]*)({[^}]*})?\s*=)");
+  reg::Match m;
+  if (reg::search(alias,m,re)) // valid name= or name{...}= part
   {
-    size_t i=alias.find('=');
-    assert(i!=std::string::npos); // based on re1 and re2 there is always a =
-    std::string name{ stripWhiteSpace(alias.substr(0,i)) };
-    aliasValue = alias.substr(i+1);
+    size_t i=m.length();
+    assert(i!=std::string::npos); // based on re is always a =
+    assert(m.size()==3); // m[0]=full match including '=', m[1]=name, m[2]=optional params
+    aliasName  = m[1].str();
+    aliasValue = alias.substr(i);
     //printf("Alias: found name='%s' value='%s'\n",qPrint(name),qPrint(aliasValue));
-    size_t l = name.length();
-    size_t j = name.find('{');
-    if (j!=std::string::npos) // alias with parameters
+    if (m[2].length()>0) // alias with parameters
     {
-      if (name[l-1]=='}')
+      separator=",";
+      size_t b = m[2].position();   // index of '{'
+      size_t e = b + m[2].length(); // index of '}'
+      size_t k=b+1;
+      while (k<e-1 && isdigit(alias[k])) k++;
+      numParams = atoi(std::string{alias.substr(b+1,k-b-1)}.c_str());
+      if (numParams>0)
       {
-        separator=",";
-        size_t k=j+1;
-        while (k<l-1 && isdigit(name[k])) k++;
-        numParams = atoi(name.substr(j+1,k-j-1).c_str());
-        if (numParams>0)
+        if (k<e-1) // we have a separator
         {
-          if (k<l-1) // we have a separator
+          size_t s=k;
+          while (s<e && isValidSeparator(alias[s])) s++;
+          if (s<e-1)
           {
-            size_t m=k;
-            while (m<l && isValidSeparator(name[m])) m++;
-            if (m<l-1)
-            {
-              err("Invalid alias '{}': invalid separator character '{:c}' (code {:d}), allowed characters: {}. Check your config file.\n",alias,name[m],name[m],std::string{separators});
-              valid=false;
-            }
-            else
-            {
-              separator=name.substr(k,l-k-1);
-            }
+            err("Invalid alias '{}': invalid separator character '{:c}' (code {:d}), allowed characters: {}. Check your config file.\n",alias,alias[s],alias[s],separators);
+            valid=false;
           }
-          if (valid) // valid alias with parameters
+          else
           {
-            aliasName = name.substr(0,j);
-            Debug::print(Debug::Alias,0,"Alias definition: name='{}' #param='{}' separator='{}' value='{}'\n",
-                aliasName,numParams,separator,aliasValue);
+            separator=alias.substr(k,e-k-1);
           }
         }
-        else
+        if (valid) // valid alias with parameters
         {
-          err("Invalid alias '{}': missing number of parameters. Check your config file.\n",std::string{alias});
-          valid=false;
+          Debug::print(Debug::Alias,0,"Alias definition: name='{}' #param='{}' separator='{}' value='{}'\n",
+              aliasName,numParams,separator,aliasValue);
         }
       }
       else
       {
-        err("Invalid alias '{}': missing closing bracket. Check your config file.\n",std::string{alias});
+        err("Invalid alias '{}': missing number of parameters. Check your config file.\n",alias);
         valid=false;
       }
     }
     else // valid alias without parameters
     {
-      aliasName = name;
       numParams = 0;
       Debug::print(Debug::Alias,0,"Alias definition: name='{}' value='{}'\n",aliasName,aliasValue);
     }
   }
   else
   {
-    err("Invalid alias '{}': invalid 'name=' or 'name{{...}}=' part. Check you config file.\n",std::string{alias});
+    err("Invalid alias '{}': invalid 'name=' or 'name{{...}}=' part. Check you config file.\n",alias);
     valid=false;
   }
 
@@ -213,12 +204,11 @@ struct Marker
  */
 static size_t findEndOfCommand(std::string_view s)
 {
-  char c=' ';
-  size_t i=0;
-  if (!s.empty())
+  size_t i = 0;
+  while (i < s.size() && isId(s[i])) ++i;
+  if (i < s.size() && s[i] == '{')
   {
-    while (i<s.length() && (c=s[i]) && isId(c)) i++;
-    if (c=='{') i+=extractAliasArgs(s.substr(i)).length()+2; // +2 for '{' and '}'
+    i += extractAliasArgs(s.substr(i)).length() + 2; // +2 for '{' and '}'
   }
   return i;
 }

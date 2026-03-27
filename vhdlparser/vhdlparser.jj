@@ -2496,7 +2496,7 @@ QCString procedure_call_statement() :  {QCString s,s1;}
 }
 }
 
-QCString procedure_specifiction() :  {QCString s,s1;}
+QCString procedure_specification() :  {QCString s,s1;}
 {
 <PROCEDURE_T> designator() [subprogram_header()] [[<PARAMETER_T> ] <LPAREN_T> formal_parameter_list() <RPAREN_T> ]
 {return s+s1+";";}

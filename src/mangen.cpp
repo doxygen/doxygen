@@ -334,7 +334,7 @@ static QCString buildFileName(const QCString &name)
   return fileName;
 }
 
-void ManGenerator::startFile(const QCString &,const QCString &manName,const QCString &,int,int)
+void ManGenerator::startFile(const QCString &,bool,const QCString &manName,const QCString &,int,int)
 {
   startPlainFile( buildFileName( manName ) );
   m_firstCol=TRUE;
@@ -427,7 +427,7 @@ void ManGenerator::writeObjectLink(const QCString &,const QCString &,
   startBold(); docify(name); endBold();
 }
 
-void ManGenerator::startGroupHeader(int)
+void ManGenerator::startGroupHeader(const QCString &,int)
 {
   if (!m_firstCol) m_t << "\n";
   m_t << ".SH \"";
@@ -492,19 +492,6 @@ void ManGenerator::writeChar(char c)
   }
   //printf("%c",c);fflush(stdout);
   m_paragraph=FALSE;
-}
-
-void ManGenerator::startTitle()
-{
-  if (!m_firstCol) m_t << "\n";
-  m_t << ".SH \"";
-  m_firstCol=FALSE;
-  m_paragraph=FALSE;
-}
-
-void ManGenerator::endTitle()
-{
-    m_t << "\"";
 }
 
 void ManGenerator::startItemListItem()
@@ -648,12 +635,12 @@ void ManGenerator::endMemberList()
   }
 }
 
-void ManGenerator::startMemberGroupHeader(bool)
+void ManGenerator::startMemberGroupHeader(const QCString &,bool)
 {
   m_t << "\n.PP\n.RI \"\\fB";
 }
 
-void ManGenerator::endMemberGroupHeader()
+void ManGenerator::endMemberGroupHeader(bool)
 {
   m_t << "\\fP\"\n.br\n";
   m_firstCol=TRUE;
@@ -686,7 +673,7 @@ void ManGenerator::startSection(const QCString &,const QCString &,SectionType ty
     switch(type.level())
     {
       case SectionType::Page:             // fall through
-      case SectionType::Section:          startGroupHeader(0); break;
+      case SectionType::Section:          startGroupHeader("",0); break;
       case SectionType::Subsection:       // fall through
       case SectionType::Subsubsection:    // fall through
       case SectionType::Paragraph:        // fall through
@@ -760,7 +747,7 @@ void ManGenerator::endDescTable()
   endDescForItem();
 }
 
-void ManGenerator::writeDoc(const IDocNodeAST *ast,const Definition *ctx,const MemberDef *,int)
+void ManGenerator::writeDoc(const IDocNodeAST *ast,const Definition *ctx,const MemberDef *,int,int)
 {
   const DocNodeAST *astImpl = dynamic_cast<const DocNodeAST *>(ast);
   if (astImpl)

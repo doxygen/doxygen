@@ -200,7 +200,8 @@ static QCString readTextFileByName(const QCString &file)
     FileInfo fi(file.str());
     if (fi.exists())
     {
-      return fileToString(file,Config_getBool(FILTER_SOURCE_FILES));
+      size_t indent=0;
+      return detab(fileToString(file,Config_getBool(FILTER_SOURCE_FILES)),indent);
     }
   }
   const StringVector &examplePathList = Config_getList(EXAMPLE_PATH);
@@ -210,7 +211,8 @@ static QCString readTextFileByName(const QCString &file)
     FileInfo fi(absFileName);
     if (fi.exists())
     {
-      return fileToString(QCString(absFileName),Config_getBool(FILTER_SOURCE_FILES));
+      size_t indent=0;
+      return detab(fileToString(absFileName,Config_getBool(FILTER_SOURCE_FILES)),indent);
     }
   }
 
@@ -225,7 +227,8 @@ static QCString readTextFileByName(const QCString &file)
            showFileDefMatches(Doxygen::exampleNameLinkedMap,file)
           );
     }
-    return fileToString(fd->absFilePath(),Config_getBool(FILTER_SOURCE_FILES));
+    size_t indent = 0;
+    return detab(fileToString(fd->absFilePath(),Config_getBool(FILTER_SOURCE_FILES)),indent);
   }
   else
   {
@@ -286,8 +289,7 @@ void CodeFragmentManager::parseCodeFragment(OutputCodeList & codeOutList,
                       codeFragment->fileContents,
                       langExt,
                       stripCodeComments, // actually not important here
-                      false,
-                      QCString()
+                      CodeParserOptions()
                       );
     }
     codeFragment->findBlockMarkers();
@@ -298,16 +300,10 @@ void CodeFragmentManager::parseCodeFragment(OutputCodeList & codeOutList,
           codeFragment->fileContents,
           langExt,            // lang
           false,              // strip code comments (overruled before replaying)
-          false,              // isExampleBlock
-          QCString(),         // exampleName
-          fd.get(),           // fileDef
-          -1,                 // startLine
-          -1,                 // endLine
-          true,               // inlineFragment
-          nullptr,            // memberDef
-          true,               // showLineNumbers
-          nullptr,            // searchCtx
-          false               // collectXRefs
+          CodeParserOptions()
+          .setFileDef(fd.get())
+          .setInlineFragment(true)
+          .setCollectXRefs(false)
           );
     }
   }

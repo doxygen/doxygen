@@ -431,6 +431,8 @@ static QString getDocsForNode(const QDomElement &child)
   regexp.setPattern(SA("`([^`]+)`"));
   docs.replace(regexp,SA("<code>\\1</code>"));
   // \ref key "desc" -> <code>desc</code>
+  regexp.setPattern(SA("\\\\ref[ ]+[^ ]+[ ]+\"\\\\\\\\ref\""));
+  docs.replace(regexp,SA("\\\\REF"));
   regexp.setPattern(SA("\\\\ref[ ]+[^ ]+[ ]+\"([^\"]+)\""));
   docs.replace(regexp,SA("<code>\\1</code> "));
   //\ref specials
@@ -445,6 +447,7 @@ static QString getDocsForNode(const QDomElement &child)
   docs.replace(regexp,SA("\"Including formulas\""));
   // fallback for not handled
   docs.replace(SA("\\\\ref"),SA(""));
+  docs.replace(SA("\\\\REF"),SA("\\\\ref"));
   // \b word -> <b>word<\b>
   regexp.setPattern(SA("\\\\b[ ]+([^ ]+) "));
   docs.replace(regexp,SA("<b>\\1</b> "));
@@ -453,8 +456,8 @@ static QString getDocsForNode(const QDomElement &child)
   docs.replace(regexp,SA("<em>\\1</em> "));
   // \note -> <br>Note:
   // @note -> <br>Note:
-  docs.replace(SA("\\note"),SA("<br>Note:"));
-  docs.replace(SA("@note"),SA("<br>Note:"));
+  docs.replace(SA("\\note "),SA("<br>Note: "));
+  docs.replace(SA("@note "),SA("<br>Note: "));
   // \#include -> #include
   // \#undef -> #undef
   docs.replace(SA("\\#include"),SA("#include"));
@@ -462,6 +465,7 @@ static QString getDocsForNode(const QDomElement &child)
   // -# -> <br>-
   // " - " -> <br>-
   docs.replace(SA("-#"),SA("<br>-"));
+  docs.replace(SA("\\# "),SA("# "));
   docs.replace(SA(" - "),SA("<br>-"));
   // \verbatim -> <pre>
   // \endverbatim -> </pre>
@@ -469,8 +473,8 @@ static QString getDocsForNode(const QDomElement &child)
   docs.replace(SA("\\endverbatim"),SA("</pre>"));
   // \sa -> <br>See also:
   // \par -> <br>
-  docs.replace(SA("\\sa"),SA("<br>See also:"));
-  docs.replace(SA("\\par"),SA("<br>"));
+  docs.replace(SA("\\sa "),SA("<br>See also: "));
+  docs.replace(SA("\\par "),SA("<br>"));
   // 2xbackslash -> backslash
   // \@ -> @
   docs.replace(SA("\\\\"),SA("\\"));
@@ -791,7 +795,7 @@ void Expert::loadConfig(const QString &fileName)
 }
 
 void Expert::saveTopic(QTextStream &t,QDomElement &elem,TextCodecAdapter *codec,
-                       bool brief,bool condensed)
+                       bool brief,bool condensed,bool convert)
 {
   if (!brief)
   {
@@ -832,7 +836,7 @@ void Expert::saveTopic(QTextStream &t,QDomElement &elem,TextCodecAdapter *codec,
             if (option && !option->isEmpty())
             {
               t << " ";
-              option->writeValue(t,codec);
+              option->writeValue(t,codec,convert);
             }
             t << "\n";
           }
@@ -843,7 +847,7 @@ void Expert::saveTopic(QTextStream &t,QDomElement &elem,TextCodecAdapter *codec,
   }
 }
 
-bool Expert::writeConfig(QTextStream &t,bool brief, bool condensed)
+bool Expert::writeConfig(QTextStream &t,bool brief, bool condensed, bool convert)
 {
   // write global header
   t << "# Doxyfile " << getDoxygenVersion().c_str() << "\n\n";
@@ -859,7 +863,7 @@ bool Expert::writeConfig(QTextStream &t,bool brief, bool condensed)
   {
     if (childElem.tagName()==SA("group"))
     {
-      saveTopic(t,childElem,&codec,brief,condensed);
+      saveTopic(t,childElem,&codec,brief,condensed,convert);
     }
     childElem = childElem.nextSiblingElement();
   }

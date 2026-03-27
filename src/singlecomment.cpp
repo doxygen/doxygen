@@ -29,8 +29,15 @@ static void generateHtmlOutput(const QCString &fileName,const QCString &doc)
   //printf("------\n%s\n------\n",qPrint(doc));
   auto parser { createDocParser() };
   auto ast { validatingParseDoc(*parser.get(),
-                                fileName, 1, nullptr, nullptr, doc, false, false,
-                                QCString(), false, false, true) };
+                                fileName,
+                                1,
+                                nullptr,
+                                nullptr,
+                                doc,
+                                DocOptions()
+                                .setMarkdownSupport(true)
+                                .setAutolinkSupport(true))
+           };
   const DocNodeAST *astImpl = dynamic_cast<const DocNodeAST*>(ast.get());
   if (astImpl)
   {
@@ -100,11 +107,11 @@ void generateHtmlForComment(const std::string &fn,const std::string &text)
   {
     if (!child->brief.isEmpty())
     {
-      generateHtmlOutput(QCString(fn),child->brief);
+      generateHtmlOutput(fn,child->brief);
     }
     if (!child->doc.isEmpty())
     {
-      generateHtmlOutput(QCString(fn),child->doc);
+      generateHtmlOutput(fn,child->doc);
     }
   }
 }

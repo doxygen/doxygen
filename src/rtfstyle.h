@@ -64,16 +64,16 @@ struct StyleData
 
   public:
     StyleData() = default;
-    StyleData(const std::string &reference, const std::string &definition);
-    bool setStyle(const std::string &command, const std::string &styleName);
-    const char *reference() const { return m_reference.c_str(); }
-    const char *definition() const { return m_definition.c_str(); }
+    StyleData(const QCString &reference, const QCString &definition);
+    bool setStyle(const QCString &command, const QCString &styleName);
+    QCString reference() const { return m_reference; }
+    QCString definition() const { return m_definition; }
     uint32_t index() const { return m_index; }
 
   private:
     uint32_t m_index = 0; // index in style-sheet, i.e. number in s-clause
-    std::string m_reference;    // everything required to apply the style
-    std::string m_definition;   // additional tags like \snext and style name
+    QCString m_reference;    // everything required to apply the style
+    QCString m_definition;   // additional tags like \snext and style name
 };
 
 using StyleDataMap = std::map<std::string,StyleData>;

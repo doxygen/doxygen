@@ -1,18 +1,25 @@
 # spdlog
 
-Very fast, header-only/compiled, C++ logging library. [![ci](https://github.com/gabime/spdlog/actions/workflows/ci.yml/badge.svg)](https://github.com/gabime/spdlog/actions/workflows/ci.yml)&nbsp; [![Build status](https://ci.appveyor.com/api/projects/status/d2jnxclg20vd0o50?svg=true&branch=v1.x)](https://ci.appveyor.com/project/gabime/spdlog) [![Release](https://img.shields.io/github/release/gabime/spdlog.svg)](https://github.com/gabime/spdlog/releases/latest)
+ 
+[![ci](https://github.com/gabime/spdlog/actions/workflows/linux.yml/badge.svg)](https://github.com/gabime/spdlog/actions/workflows/linux.yml)&nbsp;
+[![ci](https://github.com/gabime/spdlog/actions/workflows/windows.yml/badge.svg)](https://github.com/gabime/spdlog/actions/workflows/windows.yml)&nbsp;
+[![ci](https://github.com/gabime/spdlog/actions/workflows/macos.yml/badge.svg)](https://github.com/gabime/spdlog/actions/workflows/macos.yml)&nbsp;
+[![Build status](https://ci.appveyor.com/api/projects/status/d2jnxclg20vd0o50?svg=true&branch=v1.x)](https://ci.appveyor.com/project/gabime/spdlog) [![Release](https://img.shields.io/github/release/gabime/spdlog.svg)](https://github.com/gabime/spdlog/releases/latest)
+
+Fast C++ logging library
+
 
 ## Install
 #### Header-only version
-Copy the include [folder](https://github.com/gabime/spdlog/tree/v1.x/include/spdlog) to your build tree and use a C++11 compiler.
+Copy the include [folder](include/spdlog) to your build tree and use a C++11 compiler.
 
 #### Compiled version (recommended - much faster compile times)
 ```console
 $ git clone https://github.com/gabime/spdlog.git
 $ cd spdlog && mkdir build && cd build
-$ cmake .. && make -j
+$ cmake .. && cmake --build .
 ```
-see example [CMakeLists.txt](https://github.com/gabime/spdlog/blob/v1.x/example/CMakeLists.txt) on how to use.
+see example [CMakeLists.txt](example/CMakeLists.txt) on how to use.
 
 ## Platforms
 * Linux, FreeBSD, OpenBSD, Solaris, AIX
@@ -29,8 +36,9 @@ see example [CMakeLists.txt](https://github.com/gabime/spdlog/blob/v1.x/example/
 * Gentoo: `emerge dev-libs/spdlog`
 * Arch Linux: `pacman -S spdlog`
 * openSUSE: `sudo zypper in spdlog-devel`
+* ALT Linux: `apt-get install libspdlog-devel`
 * vcpkg: `vcpkg install spdlog`
-* conan: `spdlog/[>=1.4.1]`
+* conan: `conan install --requires=spdlog/[*]`
 * conda: `conda install -c conda-forge spdlog`
 * build2: ```depends: spdlog ^1.8.2```
 
@@ -40,7 +48,7 @@ see example [CMakeLists.txt](https://github.com/gabime/spdlog/blob/v1.x/example/
 * Headers only or compiled
 * Feature-rich formatting, using the excellent [fmt](https://github.com/fmtlib/fmt) library.
 * Asynchronous mode (optional)
-* [Custom](https://github.com/gabime/spdlog/wiki/3.-Custom-formatting) formatting.
+* [Custom](https://github.com/gabime/spdlog/wiki/Custom-formatting) formatting.
 * Multi/Single threaded loggers.
 * Various log targets:
   * Rotating log files.
@@ -50,7 +58,7 @@ see example [CMakeLists.txt](https://github.com/gabime/spdlog/blob/v1.x/example/
   * Windows event log.
   * Windows debugger (```OutputDebugString(..)```).
   * Log to Qt widgets ([example](#log-to-qt-with-nice-colors)).
-  * Easily [extendable](https://github.com/gabime/spdlog/wiki/4.-Sinks#implementing-your-own-sink) with custom log targets.
+  * Easily [extendable](https://github.com/gabime/spdlog/wiki/Sinks#implementing-your-own-sink) with custom log targets.
 * Log filtering - log levels can be modified at runtime as well as compile time.
 * Support for loading log levels from argv or environment var.
 * [Backtrace](#backtrace-support) support - store debug messages in a ring buffer and display them later on demand.
@@ -296,7 +304,7 @@ struct fmt::formatter<my_type> : fmt::formatter<std::string>
 {
     auto format(my_type my, format_context &ctx) const -> decltype(ctx.out())
     {
-        return format_to(ctx.out(), "[my_type i={}]", my.i);
+        return fmt::format_to(ctx.out(), "[my_type i={}]", my.i);
     }
 };
 
@@ -380,6 +388,9 @@ void android_example()
 int main (int argc, char *argv[])
 {
     spdlog::cfg::load_env_levels();
+    // or specify the env variable name:
+    // MYAPP_LEVEL=info,mylogger=trace && ./example
+    // spdlog::cfg::load_env_levels("MYAPP_LEVEL");
     // or from the command line:
     // ./example SPDLOG_LEVEL=info,mylogger=trace
     // #include "spdlog/cfg/argv.h" // for loading levels from argv
@@ -456,7 +467,7 @@ void mdc_example()
 ---
 ## Benchmarks
 
-Below are some [benchmarks](https://github.com/gabime/spdlog/blob/v1.x/bench/bench.cpp) done in Ubuntu 64 bit, Intel i7-4770 CPU @ 3.40GHz
+Below are some [benchmarks](bench/bench.cpp) done in Ubuntu 64 bit, Intel i7-4770 CPU @ 3.40GHz
 
 #### Synchronous mode
 ```
@@ -508,7 +519,8 @@ Below are some [benchmarks](https://github.com/gabime/spdlog/blob/v1.x/bench/ben
 ```
 
 ## Documentation
-Documentation can be found in the [wiki](https://github.com/gabime/spdlog/wiki/1.-QuickStart) pages.
+
+Documentation can be found in the [wiki](https://github.com/gabime/spdlog/wiki) pages.
 
 ---
 

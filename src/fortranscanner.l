@@ -466,7 +466,7 @@ FILEMASK  {VFILEMASK}|{HFILEMASK}
 
  /*------ ignore simple comment (not documentation yyextra->comments) */
 
-<*>"!"/[^<>\n]                         {  if (YY_START == String || YY_START == DocCopyBlock)
+<*>"!"/([^<>\n]|"<ff>"|"<FF>")          {  if (YY_START == String || YY_START == DocCopyBlock)
                                           { yyextra->colNr -= (int)yyleng;
                                             REJECT;
                                           } // "!" is ignored in strings
@@ -650,11 +650,11 @@ FILEMASK  {VFILEMASK}|{HFILEMASK}
                                           }
                                         }
 <Module>{ID}                            {
-                                          addModule(yyscanner, QCString(yytext), TRUE);
+                                          addModule(yyscanner, yytext, TRUE);
                                           BEGIN(ModuleBody);
                                         }
 <Program>{ID}                           {
-                                            addModule(yyscanner, QCString(yytext), FALSE);
+                                            addModule(yyscanner, yytext, FALSE);
                                             BEGIN(ModuleBody);
                                         }
 
@@ -920,7 +920,7 @@ private                                 {
                                           }
                                         }
 {ID}                                    {
-                                          if (YY_START == Start)
+                                          if (YY_START == Start && QCString(yytext).stripWhiteSpace().lower()!="include")
                                           {
                                             addModule(yyscanner);
                                             yy_push_state(ModuleBody,yyscanner); //anon program
@@ -1571,7 +1571,7 @@ private                                 {
                                             BEGIN(DocBlock);
                                           }
                                         }
-<DocCopyBlock>[\\@]("f$"|"f]"|"f}"|"f)")     {
+<DocCopyBlock>{CMD}("f$"|"f]"|"f}"|"f)")     {
                                           yyextra->docBlock += yytext;
                                           if (yyextra->docBlockName==&yytext[1])
                                           {
@@ -1581,7 +1581,7 @@ private                                 {
                                             BEGIN(DocBlock);
                                           }
                                         }
-<DocCopyBlock>[\\@]("endverbatim"|"endiliteral"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endmanonly"|"endrtfonly"|"enddot"|"endmsc"|"enduml"|"endcode")/[^a-z_A-Z0-9] { // end of verbatim block
+<DocCopyBlock>{CMD}("endverbatim"|"endiliteral"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endmanonly"|"endrtfonly"|"enddot"|"endmsc"|"enduml"|"endcode")/[^a-z_A-Z0-9] { // end of verbatim block
                                           yyextra->docBlock += yytext;
                                           if (&yytext[4]==yyextra->docBlockName)
                                           {
@@ -2605,7 +2605,7 @@ static bool endScope(yyscan_t yyscanner,Entry *scope, bool isGlobalRoot)
     for (const auto &kv : mdfsMap)
     {
       //cout<<it.key()<<": "<<qPrint(it)<<endl;
-      Argument *arg = findArgument(scope, QCString(kv.first));
+      Argument *arg = findArgument(scope, kv.first);
 
       if (arg)
       {

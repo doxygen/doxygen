@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright (C) 1997-2021 by Dimitri van Heesch.
+ * Copyright (C) 1997-2025 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -189,6 +189,9 @@ class Ex::Private
 
     /** The pattern string as passed by the user */
     std::string pattern;
+
+    /** Number of capture groups in the pattern (excluding the whole match) */
+    size_t captureCount = 0;
 };
 
 /** Compiles a regular expression passed as a string into a stream of tokens that can be used for
@@ -198,6 +201,7 @@ void Ex::Private::compile()
 {
   error = false;
   data.clear();
+  captureCount = 0;
   if (pattern.empty()) return;
   const char *start = pattern.c_str();
   const char *ps = start;
@@ -205,6 +209,10 @@ void Ex::Private::compile()
 
   int prevTokenPos=-1;
   int tokenPos=0;
+
+  // capture group assignment
+  std::vector<size_t> captureStack;
+  size_t nextCaptureId = 0;
 
   auto addToken = [&](PToken tok)
   {
@@ -274,12 +282,27 @@ void Ex::Private::compile()
         addToken(PToken(PToken::Kind::Any));
         break;
       case '(': // begin of capture group
-        prevTokenPos = tokenPos;
-        addToken(PToken(PToken::Kind::BeginCapture));
+        {
+          prevTokenPos = tokenPos;
+          addToken(PToken(PToken::Kind::BeginCapture));
+          size_t id = ++nextCaptureId; // groups start at 1, 0 is whole match
+          data.back().setValue(static_cast<uint16_t>(id));
+          captureStack.push_back(id);
+        }
         break;
       case ')': // end of capture group
-        prevTokenPos = tokenPos;
-        addToken(PToken(PToken::Kind::EndCapture));
+        {
+          prevTokenPos = tokenPos;
+          if (captureStack.empty())
+          {
+            error=true;
+            return;
+          }
+          size_t id = captureStack.back();
+          captureStack.pop_back();
+          addToken(PToken(PToken::Kind::EndCapture));
+          data.back().setValue(static_cast<uint16_t>(id));
+        }
         break;
       case '[': // character class
         {
@@ -402,6 +425,12 @@ void Ex::Private::compile()
     }
     ps++;
   }
+  if (!captureStack.empty()) // Unmatched '('?
+  {
+    error=true;
+    return;
+  }
+  captureCount = nextCaptureId;
   //addToken(PToken(PToken::Kind::End));
 }
 
@@ -412,6 +441,7 @@ void Ex::Private::dump()
   size_t l = data.size();
   size_t i =0;
   DBG("==== compiled token stream for pattern '%s' ===\n",pattern.c_str());
+  DBG("captureCount=%zu\n",captureCount);
   while (i<l)
   {
     DBG("[%s:%04x]\n",data[i].kindStr(),data[i].value());
@@ -490,38 +520,102 @@ bool Ex::Private::matchAt(size_t tokenPos,size_t tokenLen,std::string_view str,M
     size_t startIndex = index;
     size_t len = str.length();
     PToken tok = data[++tokenPos];
-    if (tok.kind()==PToken::Kind::Character) // 'x*' -> eat x's
+
+    // Special handling for an optional capture group: (...)?
+    if (type==OptionalRange && tok.kind()==PToken::Kind::BeginCapture)
+    {
+      size_t groupId = tok.value();
+      size_t innerStart = tokenPos + 1;
+
+      // Find matching EndCapture, accounting for nesting depth
+      size_t tp = innerStart;
+      int depth = 1;
+      while (tp<tokenLen && depth>0)
+      {
+        if (data[tp].kind()==PToken::Kind::BeginCapture) depth++;
+        else if (data[tp].kind()==PToken::Kind::EndCapture) depth--;
+        tp++;
+      }
+      if (depth!=0) return false; // malformed, unmatched ')'
+      size_t endCapturePos = tp - 1;            // position of EndCapture
+      size_t afterSeqPos   = endCapturePos + 2; // skip EndCapture and End marker
+
+      // Try with the group present
+      Match tmp;
+      tmp.init(str, /*captureCount*/ captureCount);
+      bool innerOk = matchAt(innerStart,endCapturePos,str,tmp,index,level+1);
+      if (innerOk)
+      {
+        size_t capLen = tmp.length();
+
+        // Copy nested captures from tmp (they may exist inside the group)
+        for (size_t gid=1; gid<tmp.size(); gid++)
+        {
+          size_t sp = tmp[gid].position();
+          size_t sl = tmp[gid].length();
+          if (sp!=std::string::npos && sl!=std::string::npos)
+          {
+            match.startCapture(gid,sp);
+            match.endCapture(gid,sp+sl);
+          }
+        }
+        // Set the outer group's capture
+        match.startCapture(groupId,index);
+        match.endCapture(groupId,index+capLen);
+
+        bool ok = matchAt(afterSeqPos,tokenLen,str,match,index+capLen,level+1);
+        if (ok)
+        {
+          match.setMatch(pos,(index+capLen)-pos+match.length());
+          return true;
+        }
+      }
+
+      // Try with the group absent (empty capture)
+      match.startCapture(groupId,index);
+      match.endCapture(groupId,index); // zero-length
+
+      bool ok2 = matchAt(afterSeqPos,tokenLen,str,match,index,level+1);
+      if (ok2)
+      {
+        match.setMatch(pos,index-pos+match.length());
+        return true;
+      }
+      return false;
+    }
+
+    if (tok.kind()==PToken::Kind::Character) // 'x*' or 'x?'
     {
       char c_tok = tok.asciiValue();
       while (index<len && str[index]==c_tok) { index++; if (type==Optional) break; }
       tokenPos++;
     }
-    else if (tok.isCharClass()) // '[a-f0-4]* -> eat matching characters
+    else if (tok.isCharClass()) // '[a-f0-4]*' or '[...]?' -> eat matching characters
     {
       while (index<len && matchCharClass(tokenPos,str[index])) { index++; if (type==Optional) break; }
       tokenPos+=tok.value()+1; // skip over character ranges + end token
     }
-    else if (tok.kind()==PToken::Kind::Alpha) // '\a*' -> eat start id characters
+    else if (tok.kind()==PToken::Kind::Alpha) // '\a*' or '\a?' -> eat start id characters
     {
       while (index<len && isStartIdChar(str[index])) { index++; if (type==Optional) break; }
       tokenPos++;
     }
-    else if (tok.kind()==PToken::Kind::AlphaNum) // '\w*' -> eat id characters
+    else if (tok.kind()==PToken::Kind::AlphaNum) // '\w*' or '\w?' -> eat id characters
     {
       while (index<len && isIdChar(str[index])) { index++; if (type==Optional) break; }
       tokenPos++;
     }
-    else if (tok.kind()==PToken::Kind::WhiteSpace) // '\s*' -> eat spaces
+    else if (tok.kind()==PToken::Kind::WhiteSpace) // '\s*' or '\s?' -> eat spaces
     {
       while (index<len && isspace(str[index])) { index++; if (type==Optional) break; }
       tokenPos++;
     }
-    else if (tok.kind()==PToken::Kind::Digit) // '\d*' -> eat digits
+    else if (tok.kind()==PToken::Kind::Digit) // '\d*' or '\d?' -> eat digits
     {
       while (index<len && isdigit(str[index])) { index++; if (type==Optional) break; }
       tokenPos++;
     }
-    else if (tok.kind()==PToken::Kind::Any) // '.*' -> eat all
+    else if (tok.kind()==PToken::Kind::Any) // '.*' or '.?' -> eat all
     {
       if (type==Optional) index++; else index = str.length();
       tokenPos++;
@@ -531,7 +625,7 @@ bool Ex::Private::matchAt(size_t tokenPos,size_t tokenLen,std::string_view str,M
       size_t tokenStart = ++tokenPos;
       while (tokenPos<tokenLen && data[tokenPos].kind()!=PToken::Kind::EndCapture) { tokenPos++; }
       Match rangeMatch;
-      rangeMatch.init(str);
+      rangeMatch.init(str,0);
       bool found = matchAt(tokenStart,tokenPos,str,rangeMatch,index,level+1);
       if (found)
       {
@@ -563,12 +657,14 @@ bool Ex::Private::matchAt(size_t tokenPos,size_t tokenLen,std::string_view str,M
     {
       char c_tok = tok.asciiValue();
       if (index>=str.length() || str[index]!=c_tok) return false; // end of string, or non matching char
-      index++,tokenPos++;
+      index++;
+      tokenPos++;
     }
     else if (tok.isCharClass())
     {
       if (index>=str.length() || !matchCharClass(tokenPos,str[index])) return false;
-      index++,tokenPos+=tok.value()+1; // skip over character ranges + end token
+      index++;
+      tokenPos+=tok.value()+1; // skip over character ranges + end token
     }
     else
     {
@@ -614,12 +710,12 @@ bool Ex::Private::matchAt(size_t tokenPos,size_t tokenLen,std::string_view str,M
               (isIdChar(str[index]) || index==0 || !isIdChar(str[index-1]))) return false;
           break;
         case PToken::Kind::BeginCapture:
-          DBG("BeginCapture(%zu)\n",index);
-          match.startCapture(index);
+          DBG("BeginCapture(%zu) gid=%u\n",index,tok.value());
+          match.startCapture(tok.value(),index);
           break;
         case PToken::Kind::EndCapture:
-          DBG("EndCapture(%zu)\n",index);
-          match.endCapture(index);
+          DBG("EndCapture(%zu) gid=%u\n",index,tok.value());
+          match.endCapture(tok.value(),index);
           break;
         case PToken::Kind::Any:
           if (index>=str.length()) return false;
@@ -707,7 +803,7 @@ bool Ex::match(std::string_view str,Match &match,size_t pos) const
 {
   bool found=false;
   if (p->data.size()==0 || p->error) return found;
-  match.init(str);
+  match.init(str,p->captureCount);
 
   PToken tok = p->data[0];
   if (tok.kind()==PToken::Kind::BeginOfLine) // only test match at the given position
@@ -721,10 +817,10 @@ bool Ex::match(std::string_view str,Match &match,size_t pos) const
       size_t index = str.find(tok.asciiValue(),pos);
       if (index==std::string::npos)
       {
-        DBG("Ex::match(str='%s',pos=%zu)=false (no start char '%c')\n",str.c_str(),pos,tok.asciiValue());
+        DBG("Ex::match(str='%s',pos=%zu)=false (no start char '%c')\n",std::string(str).c_str(),pos,tok.asciiValue());
         return false;
       }
-      DBG("pos=%zu str='%s' char='%c' index=%zu\n",index,str.c_str(),tok.asciiValue(),index);
+      DBG("pos=%zu str='%s' char='%c' index=%zu\n",index,std::string(str).c_str(),tok.asciiValue(),index);
       pos=index;
     }
     while (pos<str.length()) // search for a match starting at pos
@@ -734,7 +830,7 @@ bool Ex::match(std::string_view str,Match &match,size_t pos) const
       pos++;
     }
   }
-  DBG("Ex::match(str='%s',pos=%zu)=%d\n",str.c_str(),pos,found);
+  DBG("Ex::match(str='%s',pos=%zu)=%d\n",std::string(str).c_str(),pos,found);
   return found;
 }
 

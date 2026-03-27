@@ -24,7 +24,7 @@ class Entry;
 class DocGroup
 {
   public:
-    DocGroup() {};
+    DocGroup() {}
 
   public:
     void enterFile(const QCString &fileName,int);

@@ -58,12 +58,12 @@ class PlantumlManager
      *  @param[in] srcLine     the line number resulting in the write command.
      *  @param[in] inlineCode  the code is coming from the `\statuml ... \enduml` (`true`) command or
      *   from the `\planumlfile` command (`false`)
-     *  @returns The name of the generated file.
+     *  @returns The names of the generated files.
      */
-    QCString writePlantUMLSource(const QCString &outDirArg,const QCString &fileName,
-                                 const QCString &content, OutputFormat format,
-                                 const QCString &engine,const QCString &srcFile,
-                                 int srcLine,bool inlineCode);
+    StringVector writePlantUMLSource(const QCString &outDirArg,const QCString &fileName,
+                                     const QCString &content, OutputFormat format,
+                                     const QCString &engine,const QCString &srcFile,
+                                     int srcLine,bool inlineCode);
 
     /** Convert a PlantUML file to an image.
      *  @param[in] baseName the name of the generated file (as returned by writePlantUMLSource())
@@ -83,6 +83,8 @@ class PlantumlManager
                 const QCString &puContent,
                 const QCString &srcFile,
                 int srcLine);
+    void generatePlantUmlFileNames(const QCString &fileName,OutputFormat format,const QCString &outDir,
+                                                    QCString &baseName,QCString &puName,QCString &imgName);
 
     FilesMap   m_pngPlantumlFiles;
     FilesMap   m_svgPlantumlFiles;

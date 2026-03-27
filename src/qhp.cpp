@@ -238,7 +238,7 @@ void Qhp::initialize()
     for (const auto &attr : customFilterAttributes)
     {
       writeIndent(p->doc,2);
-      p->doc << "<filterAttribute>" << convertToXML(QCString(attr)) << "</filterAttribute>\n";
+      p->doc << "<filterAttribute>" << convertToXML(attr) << "</filterAttribute>\n";
     }
     writeIndent(p->doc,1);
     p->doc << "</customFilter>\n";
@@ -258,7 +258,7 @@ void Qhp::initialize()
   for (const auto &attr : sectionFilterAttributes)
   {
     writeIndent(p->doc,2);
-    p->doc << "<filterAttribute>" << convertToXML(QCString(attr)) << "</filterAttribute>\n";
+    p->doc << "<filterAttribute>" << convertToXML(attr) << "</filterAttribute>\n";
   }
 
   // Add extra root node to the TOC
@@ -288,7 +288,7 @@ void Qhp::finalize()
   for (auto &s : p->files)
   {
     writeIndent(p->doc,3);
-    p->doc << s.c_str() << "\n";
+    p->doc << s << "\n";
   }
   writeIndent(p->doc,2);
   p->doc << "</files>\n";
@@ -311,11 +311,9 @@ void Qhp::decContentsDepth()
   p->sectionTree.decLevel();
 }
 
-void Qhp::addContentsItem(bool /* isDir */, const QCString & name,
-                          const QCString & /*ref*/, const QCString & file,
-                          const QCString &anchor, bool /* separateIndex */,
-                          bool /* addToNavIndex */,
-                          const Definition * /*def*/)
+void Qhp::addContentsItem(bool /* isDir */, const QCString & name, const QCString & /*ref*/,
+                          const QCString & file, const QCString &anchor, bool /* separateIndex */,
+                          bool /* addToNavIndex */, const Definition * /*def*/, const QCString & /*nameAsHtml*/)
 {
   /*
   <toc>

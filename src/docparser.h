@@ -23,6 +23,7 @@
 #include "growvector.h"
 #include "construct.h"
 #include "types.h"
+#include "docoptions.h"
 
 class MemberDef;
 class Definition;
@@ -55,6 +56,7 @@ class IDocNodeAST
 
 using IDocNodeASTPtr = std::unique_ptr<IDocNodeAST>;
 
+
 /*! Main entry point for the comment block parser.
  *  @param parserIntf The parser object created via createDocParser()
  *  @param fileName  File in which the documentation block is found (or the
@@ -64,31 +66,29 @@ using IDocNodeASTPtr = std::unique_ptr<IDocNodeAST>;
  *  @param md        Member definition to which the documentation belongs.
  *                   Can be 0.
  *  @param input     String representation of the documentation block.
- *  @param indexWords Indicates whether or not words should be put in the
- *                   search index.
- *  @param isExample TRUE if the documentation belongs to an example.
- *  @param exampleName Base name of the example file (0 if isExample is FALSE).
- *  @param singleLine Output should be presented on a single line, so without
- *                   starting a new paragraph at the end.
- *  @param linkFromIndex TRUE if the documentation is generated from an
- *                   index page. In this case context is not used to determine
- *                   the relative path when making a link.
- *  @param markdownSupport TRUE if the input needs to take markdown markup into
- *                   account.
+ *  @param options   Optional parameters.
  *  @returns         An object representing the abstract syntax tree. Ownership of the
  *                   pointer is handed over to the caller.
  */
-IDocNodeASTPtr validatingParseDoc(IDocParser &parserIntf,const QCString &fileName,int startLine,
-                            const Definition *ctx, const MemberDef *md,
-                            const QCString &input,bool indexWords,
-                            bool isExample,const QCString &exampleName,
-                            bool singleLine,bool linkFromIndex,
-                            bool markdownSupport);
+IDocNodeASTPtr validatingParseDoc(
+    IDocParser &parserIntf,
+    const QCString &fileName,
+    int startLine,
+    const Definition *ctx,
+    const MemberDef *md,
+    const QCString &input,
+    const DocOptions &options);
 
 /*! Main entry point for parsing simple text fragments. These
  *  fragments are limited to words, whitespace and symbols.
  */
 IDocNodeASTPtr validatingParseText(IDocParser &parser,const QCString &input);
+
+
+/*! Main entry point for parsing titles. These allow limited markup commands */
+IDocNodeASTPtr validatingParseTitle(IDocParser &parserIntf,const QCString &fileName,int lineNr,
+                                    const QCString &input);
+
 
 IDocNodeASTPtr createRef(IDocParser &parser,const QCString &target,const QCString &context, const QCString &srcFile = "", int srcLine = -1);
 

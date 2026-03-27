@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="indexpage" kind="page">
+    <compoundname>index</compoundname>
+    <title>My Project</title>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+      <para>Text with <computeroutput>single</computeroutput> backtick. <linebreak/>
+ Text with <lsquo/>mixed<rsquo/> backtick. <linebreak/>
+ Text <computeroutput>it's cool</computeroutput>. with embedded ' <linebreak/>
+ Text with <computeroutput>double</computeroutput> backtick. <linebreak/>
+ Text with <computeroutput>double and `single` form</computeroutput> of backticks. <linebreak/>
+ Text with <computeroutput>double backtick `ending`</computeroutput> in triple backtick. <linebreak/>
+ Text with <computeroutput>double backtick `` inside single</computeroutput> backtick. <linebreak/>
+ Text with `escaped` backticks. <linebreak/>
+ Text with triple ``` backtick not at the start of the line. <linebreak/>
+ Text with <computeroutput>X``Y</computeroutput> embedded double backticks inside backticks. <linebreak/>
+ Text in double quotes <ldquo/>left`right<rdquo/> with embedded backtick. <linebreak/>
+ Text in double quotes <ldquo/>left'right<rdquo/> with embedded single quote. <linebreak/>
+ Text in single quotes <lsquo/>left''right<rsquo/> with embedded double quote. <linebreak/>
+ <programlisting><codeline><highlight class="normal">Text<sp/>inside<sp/>triple<sp/>backticks</highlight></codeline><codeline><highlight class="normal">Nested<sp/>`single`<sp/>backtick</highlight></codeline><codeline><highlight class="normal">Nested<sp/>``</highlight><highlight class="keywordtype">double</highlight><highlight class="normal">``<sp/>backtick</highlight></codeline></programlisting> More text after triple backtick section. </para>
+    </detaileddescription>
+    <location file="110_backticks.dox"/>
+  </compounddef>
+</doxygen>

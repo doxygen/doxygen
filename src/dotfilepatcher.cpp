@@ -525,9 +525,9 @@ bool DotFilePatcher::run() const
     t.setStream(&fo);
     while (getline(fi,lineStr)) // foreach line
     {
-      std::string line = lineStr+'\n';
+      QCString line = lineStr+'\n';
       const Map &map = m_maps.front(); // there is only one 'map' for a SVG file
-      t << replaceRef(line.c_str(),map.relPath,map.urlOnly,map.context,"_top");
+      t << replaceRef(line,map.relPath,map.urlOnly,map.context,"_top");
     }
     t.flush();
     fi.close();
@@ -594,14 +594,14 @@ bool DotFilePatcher::writeSVGFigureLink(TextStream &out,const QCString &relPath,
     out << "<div class=\"zoom\">";
     //out << "<object type=\"image/svg+xml\" data=\""
     //out << "<embed type=\"image/svg+xml\" src=\""
-    out << "<iframe scrolling=\"no\" frameborder=\"0\" src=\""
+    out << "<iframe scrolling=\"no\" loading=\"lazy\" frameborder=\"0\" src=\""
         << relPath << baseName << ".svg\" width=\"100%\" height=\"" << height << "\">";
   }
   else
   {
     //out << "<object type=\"image/svg+xml\" data=\""
     //out << "<embed type=\"image/svg+xml\" src=\""
-    out << "<iframe scrolling=\"no\" frameborder=\"0\" src=\""
+    out << "<iframe scrolling=\"no\" loading=\"lazy\" frameborder=\"0\" src=\""
         << relPath << baseName << ".svg\" width=\""
         << ((width*96+48)/72) << "\" height=\""
         << ((height*96+48)/72) << "\">";

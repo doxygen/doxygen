@@ -13,7 +13,7 @@
  * Documents produced by Doxygen are derivative works derived from the
  * input used in their production; they are not affected by this license.
  *
- * Reviewed, and extented by
+ * Reviewed, and extended by
  *   Jens Kallup (kallup-dev@web.de)
  * The translation into German was provided by
  *   Jens Seidel (jensseidel@users.sf.net)
@@ -146,7 +146,7 @@
 #ifndef TRANSLATOR_DE_H
 #define TRANSLATOR_DE_H
 
-class TranslatorGerman : public TranslatorAdapter_1_8_15
+class TranslatorGerman : public Translator
 {
   public:
 
@@ -340,7 +340,7 @@ class TranslatorGerman : public TranslatorAdapter_1_8_15
       }
       else
       {
-        return "Die Liste der Ableitungen ist -mit Einschränkungen- "
+        return "Die Liste der Ableitungen ist, mit Einschränkungen, "
                "alphabetisch sortiert:";
       }
     }
@@ -1611,7 +1611,7 @@ class TranslatorGerman : public TranslatorAdapter_1_8_15
     { QCString result=dirName; result+="-Verzeichnisreferenz"; return result; }
 
     /*! This returns the word directory with or without starting capital
-     *  (\a first_capital) and in sigular or plural form (\a singular).
+     *  (\a first_capital) and in singular or plural form (\a singular).
      */
     QCString trDir(bool, bool singular) override
     {
@@ -2248,6 +2248,108 @@ class TranslatorGerman : public TranslatorAdapter_1_8_15
     QCString trDesignUnitDocumentation() override
     { return "Entwurfseinheiten-Dokumentation"; }
 
+    QCString trConstants() override
+    { return "Konstanten"; }
+
+    QCString trConstantDocumentation() override
+    { return "Konstanten Dokumentation"; }
+
+    QCString trSequences() override
+    { return "Sequenzen"; }
+
+    QCString trSequenceDocumentation() override
+    { return "Sequenzen Dokumentation"; }
+
+    QCString trDictionaries() override
+    { return "Wörterbücher"; }
+
+    QCString trDictionaryDocumentation() override
+    { return "Wörterbuch Dokumentation"; }
+
+    QCString trSliceInterfaces() override
+    { return "Schnittstellen"; }
+
+    QCString trInterfaceIndex() override
+    { return "Schnittstellen-Verzeichnis"; }
+
+    QCString trInterfaceList() override
+    { return "Liste aller Schnittstellen"; }
+
+    QCString trInterfaceListDescription() override
+    { return "Hier folgen die Schnittstellen mit Kurzbeschreibung:"; }
+
+    QCString trInterfaceHierarchy() override
+    { return "Schnittstellenhierarchie"; }
+
+    QCString trInterfaceHierarchyDescription() override
+    { return "Die Liste aller Schnittstellen ist, mit Einschränkungen, alphabetisch sortiert:"; }
+
+    QCString trInterfaceDocumentation() override
+    { return "Schnittstellen Dokumentation"; }
+
+    QCString trStructs() override
+    { return "Strukturen"; }
+
+    QCString trStructIndex() override
+    { return "Strukturen-Verzeichnis"; }
+
+    QCString trStructList() override
+    { return "Liste aller Strukturen"; }
+
+    QCString trStructListDescription() override
+    { return "Hier sind alle Strukturen mit Kurzbeschreibung:"; }
+
+    QCString trStructDocumentation() override
+    { return "Strukturen Dokumentation"; }
+
+    QCString trExceptionIndex() override
+    { return "Ausnahmen-Verzeichnis"; }
+
+    QCString trExceptionList() override
+    { return "Liste aller Ausnahmen"; }
+
+    QCString trExceptionListDescription() override
+    { return "Hier folgen alle Ausnahmen mit Kurzbeschreibung:"; }
+
+    QCString trExceptionHierarchy() override
+    { return "Ausnahmen Hierarchie"; }
+
+    QCString trExceptionHierarchyDescription() override
+    { return "Die Liste der Ausnahmen ist, mit Einschränkungen, alphabetisch sortiert:"; }
+
+    QCString trExceptionDocumentation() override
+    { return "Ausnahmen Dokumentation"; }
+
+    QCString trCompoundReferenceSlice(const QCString &clName, ClassDef::CompoundType compType, bool isLocal) override
+    {
+      QCString result=clName;
+      if (isLocal) result+=" Lokal";
+      switch(compType)
+      {
+        case ClassDef::Class:      result+=" Klasse"; break;
+        case ClassDef::Struct:     result+=" Struktur"; break;
+        case ClassDef::Union:      result+=" Union"; break;
+        case ClassDef::Interface:  result+=" Schnittstelle"; break;
+        case ClassDef::Protocol:   result+=" Protokoll"; break;
+        case ClassDef::Category:   result+=" Kategorie"; break;
+        case ClassDef::Exception:  result+=" Ausnahme"; break;
+        default: break;
+      }
+      result+=" Referenz";
+      return result;
+    }
+    QCString trOperations() override
+    { return "Operationen"; }
+
+    QCString trOperationDocumentation() override
+    { return "Operationen Dokumentation"; }
+
+    QCString trDataMembers() override
+    { return "Data Members"; }
+
+    QCString trDataMemberDocumentation() override
+    { return "Data Member Dokumentation"; }
+
 //////////////////////////////////////////////////////////////////////////
 // new since 1.9.2
 //////////////////////////////////////////////////////////////////////////
@@ -2490,16 +2592,16 @@ class TranslatorGerman : public TranslatorAdapter_1_8_15
     QCString trNamespaceMembersDescriptionTotal(NamespaceMemberHighlight::Enum hl) override
     {
       bool extractAll = Config_getBool(EXTRACT_ALL);
-      
+
       QCString result           = "Hier folgt eine Liste mit Verweisen auf die Namensraum-Dokumentation für ";
       QCString result_singular1 = result + "jede dokumentierte";
       QCString result_singular2 = result + "jedes dokumentiertes";
       QCString result_singular3 = result + "jeder dokumentierten";
       QCString result_plural    = result + "alle dokumentierten";
-      
+
       QCString singularResult = "";
       QCString pluralResult   = "";
-      
+
       switch (hl)
       {
         case NamespaceMemberHighlight::All:
@@ -2542,7 +2644,7 @@ class TranslatorGerman : public TranslatorAdapter_1_8_15
       if (!extractAll)
         result += singularResult + " mit Verweise auf die Namensraum-Dokumentation:"; else
         result += singularResult + " mit Verweise auf dem sich beziehenden Namensraum:";
-          
+
       return result;
     }
     QCString trDefinition() override  { return "Definition";}
@@ -2566,10 +2668,10 @@ class TranslatorGerman : public TranslatorAdapter_1_8_15
     {
       bool extractAll = Config_getBool(EXTRACT_ALL);
       QCString result = "Zusammengefaßt ";
-      
+
       QCString singularResult = result + "bezieht sich das Modul auf: ";
       QCString pluralResult   = result + "beziehen sich die Module auf: ";
-      
+
       switch (hl)
       {
         case ModuleMemberHighlight::All:
@@ -2608,7 +2710,7 @@ class TranslatorGerman : public TranslatorAdapter_1_8_15
       if (!extractAll)
         result = singularResult; else
         result = pluralResult;
-      
+
       return result;
     }
     QCString trExportedModules() override
@@ -2631,5 +2733,61 @@ class TranslatorGerman : public TranslatorAdapter_1_8_15
     {
       return "Wichtig";
     }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.16.0
+//////////////////////////////////////////////////////////////////////////
+
+    // the title of the requirements overview page
+    QCString trRequirements() override
+    {
+      return "Anforderungen";
+    }
+    // table header for the column with the requirements IDs
+    QCString trRequirementID() override
+    {
+      return "ID";
+    }
+    // indicates a symbol implements (satisfies) a requirement
+    QCString trSatisfies(bool singular) override
+    {
+      return createNoun(true,singular,"Erfüllt anforderung","en");
+    }
+    // indicates a requirement is satisfied (implemented) by one or more symbols
+    QCString trSatisfiedBy(const QCString &list) override
+    {
+      return "Wird erfüllt durch "+list+".";
+    }
+    QCString trUnsatisfiedRequirements() override
+    {
+      return "Nicht erfüllte Anforderungen";
+    }
+    QCString trUnsatisfiedRequirementsText(bool singular,const QCString &list) override
+    {
+      return singular ?
+        "Die Anforderung "+list+" hat keine 'erfüllt'-Beziehung." :
+        "Die Anforderungen "+list+" haben keine 'erfüllt'-Beziehung.";
+    }
+    // indicates a symbol verifies (tests) a requirement
+    QCString trVerifies(bool singular) override
+    {
+      return createNoun(true,singular,"Verifiziert anforderung","en");
+    }
+    // indicates a requirement is verified (tested) by one or more symbols
+    QCString trVerifiedBy(const QCString &list) override
+    {
+      return "Wird verifiziert durch "+list+".";
+    }
+    QCString trUnverifiedRequirements() override
+    {
+      return "Nicht verifizierte Anforderungen";
+    }
+    QCString trUnverifiedRequirementsText(bool singular,const QCString &list) override
+    {
+      return singular ?
+        "Die Anforderung "+list+" hat keine 'verifiziert'-Beziehung." :
+        "Die Anforderungen "+list+" haben keine 'verifiziert'-Beziehung.";
+    }
+
 };
 #endif

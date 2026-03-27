@@ -50,7 +50,7 @@ class VhdlTokenManagerErrorHandler: public TokenManagerErrorHandler
 
     virtual void lexicalError(bool EOFSeen, int /* lexState */, int errorLine, int /* errorColumn */, const JJString& errorAfter, JJChar curChar, VhdlParserTokenManager* /* token_manager */)
     {
-      warn(m_fileName,errorLine,"Lexical error, Encountered: '{:c}' after: '{}'",curChar, (EOFSeen? "EOF" : (const char*)errorAfter.c_str()));
+      warn(m_fileName,errorLine,"Lexical error, Encountered: '{:c}' after: '{}'",(char)curChar, (EOFSeen? "EOF" : (const char*)errorAfter.c_str()));
     }
 
     virtual void lexicalError(const JJString& errorMessage, VhdlParserTokenManager* /* token_manager */)

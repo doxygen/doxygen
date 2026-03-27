@@ -20,7 +20,7 @@ SPDLOG_INLINE ansicolor_sink<ConsoleMutex>::ansicolor_sink(FILE *target_file, co
       formatter_(details::make_unique<spdlog::pattern_formatter>())
 
 {
-    set_color_mode(mode);
+    set_color_mode_(mode);
     colors_.at(level::trace) = to_string_(white);
     colors_.at(level::debug) = to_string_(cyan);
     colors_.at(level::info) = to_string_(green);
@@ -82,12 +82,18 @@ SPDLOG_INLINE void ansicolor_sink<ConsoleMutex>::set_formatter(
 }
 
 template <typename ConsoleMutex>
-SPDLOG_INLINE bool ansicolor_sink<ConsoleMutex>::should_color() {
+SPDLOG_INLINE bool ansicolor_sink<ConsoleMutex>::should_color() const {
     return should_do_colors_;
 }
 
 template <typename ConsoleMutex>
 SPDLOG_INLINE void ansicolor_sink<ConsoleMutex>::set_color_mode(color_mode mode) {
+    std::lock_guard<mutex_t> lock(mutex_);
+    set_color_mode_(mode);
+}
+
+template <typename ConsoleMutex>
+SPDLOG_INLINE void ansicolor_sink<ConsoleMutex>::set_color_mode_(color_mode mode) {
     switch (mode) {
         case color_mode::always:
             should_do_colors_ = true;
@@ -105,15 +111,16 @@ SPDLOG_INLINE void ansicolor_sink<ConsoleMutex>::set_color_mode(color_mode mode)
 }
 
 template <typename ConsoleMutex>
-SPDLOG_INLINE void ansicolor_sink<ConsoleMutex>::print_ccode_(const string_view_t &color_code) {
-    fwrite(color_code.data(), sizeof(char), color_code.size(), target_file_);
+SPDLOG_INLINE void ansicolor_sink<ConsoleMutex>::print_ccode_(
+    const string_view_t &color_code) const {
+    details::os::fwrite_bytes(color_code.data(), color_code.size(), target_file_);
 }
 
 template <typename ConsoleMutex>
 SPDLOG_INLINE void ansicolor_sink<ConsoleMutex>::print_range_(const memory_buf_t &formatted,
                                                               size_t start,
-                                                              size_t end) {
-    fwrite(formatted.data() + start, sizeof(char), end - start, target_file_);
+                                                              size_t end) const {
+    details::os::fwrite_bytes(formatted.data() + start, end - start, target_file_);
 }
 
 template <typename ConsoleMutex>

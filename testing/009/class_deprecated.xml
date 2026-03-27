@@ -12,7 +12,15 @@
         <briefdescription>
         </briefdescription>
         <detaileddescription>
-          <para>Do deprecated things. <xrefsect id="deprecated_1_deprecated000002"><xreftitle>Deprecated</xreftitle><xrefdescription><para>No not use this function anymore. </para></xrefdescription></xrefsect></para>
+          <para>Do deprecated things.</para>
+          <para>
+            <xrefsect id="deprecated_1_deprecated000002">
+              <xreftitle>Deprecated</xreftitle>
+              <xrefdescription>
+                <para>No not use this function anymore. </para>
+              </xrefdescription>
+            </xrefsect>
+          </para>
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>

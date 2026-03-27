@@ -87,9 +87,9 @@ void Debug::print_(DebugMask mask, int prio, fmt::string_view fmt, fmt::format_a
 }
 
 static char asciiToLower(char in) {
-    if (in <= 'Z' && in >= 'A')
-        return in - ('Z' - 'z');
-    return in;
+  if (in <= 'Z' && in >= 'A')
+    return in - 'A' + 'a';
+  return in;
 }
 
 static uint64_t labelToEnumValue(const QCString &l)
@@ -153,21 +153,20 @@ DebugLex::~DebugLex()
   print(m_mask,"Finished",qPrint(m_lexName),qPrint(m_fileName));
 }
 
-void DebugLex::print(Debug::DebugMask mask,const char *state,const char *lexName,const char *fileName)
+void DebugLex::print(Debug::DebugMask mask,
+                     const char *state,
+                     const char *lexName,
+                     const char *fileName)
 {
+  if (!Debug::isFlagSet(mask)) return;
+
   if (fileName && *fileName)
   {
-    if (Debug::isFlagSet(mask))
-    {
-      fprintf(stderr,"%s lexical analyzer: %s (for: %s)\n",state, lexName, fileName);
-    }
+    fprintf(stderr, "%s lexical analyzer: %s (for: %s)\n", state, lexName, fileName);
   }
   else
   {
-    if (Debug::isFlagSet(mask))
-    {
-      fprintf(stderr,"%s lexical analyzer: %s\n",state, lexName);
-    }
+    fprintf(stderr, "%s lexical analyzer: %s\n", state, lexName);
   }
 }
 

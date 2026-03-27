@@ -1190,7 +1190,7 @@ class TranslatorGreek : public Translator
      */
     QCString trClass(bool first_capital, bool singular) override
     {
-      return createNoun(first_capital, singular, "κλάση", "");
+      return createNoun(first_capital, singular, "κλάσ", "εις", "η");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1256,7 +1256,7 @@ class TranslatorGreek : public Translator
      *  for the author section in man pages. */
     QCString trAuthor(bool first_capital, bool singular) override
     {
-      return createNoun(first_capital,singular,"συγραφ","","έας");
+      return createNoun(first_capital,singular,"συγραφ","είς","έας");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1474,7 +1474,7 @@ class TranslatorGreek : public Translator
     { QCString result=QCString("Αναφορά του Καταλόγου ") + dirName; return result; }
 
     /*! This returns the word directory with or without starting capital
-     *  (\a first_capital) and in sigular or plural form (\a singular).
+     *  (\a first_capital) and in singular or plural form (\a singular).
      */
     QCString trDir(bool first_capital, bool singular) override
     {
@@ -2664,6 +2664,60 @@ class TranslatorGreek : public Translator
     QCString trImportant() override
     {
       return "Σημαντικό";
+    }
+//////////////////////////////////////////////////////////////////////////
+// new since 1.16.0
+//////////////////////////////////////////////////////////////////////////
+
+    // the title of the requirements overview page
+    QCString trRequirements() override
+    {
+      return "Απαιτήσεις";
+    }
+    // table header for the column with the requirements IDs
+    QCString trRequirementID() override
+    {
+      return "Α/Α";
+    }
+    // indicates a symbol implements (satisfies) a requirement
+    QCString trSatisfies(bool singular) override
+    {
+      return createNoun(true, singular, "Πληρεί ", "τις απαιτήσεις", "την απαίτηση");
+    }
+    // indicates a requirement is satisfied (implemented) by one or more symbols
+    QCString trSatisfiedBy(const QCString &list) override
+    {
+      return "Πληρούται από "+list+".";
+    }
+    QCString trUnsatisfiedRequirements() override
+    {
+      return "Μη Πληρούμενες Απαιτήσεις";
+    }
+    QCString trUnsatisfiedRequirementsText(bool singular,const QCString &list) override
+    {
+      return singular ?
+        "Η απαίτηση "+list+" δεν έχουν 'satisfies' σχέση." :
+        "Οι απαιτήσεις "+list+" δεν έχουν 'satisfies' σχέση.";
+    }
+    // indicates a symbol verifies (tests) a requirement
+    QCString trVerifies(bool singular) override
+    {
+      return createNoun(true, singular, "Επιβεβαιώνει ", "τις απαιτήσεις", "την απαίτηση");
+    }
+    // indicates a requirement is verified (tested) by one or more symbols
+    QCString trVerifiedBy(const QCString &list) override
+    {
+      return "Επιβεβαιώνεται από "+list+".";
+    }
+    QCString trUnverifiedRequirements() override
+    {
+      return "Ανεπιβεβαίωτες Απαιτήσεις";
+    }
+    QCString trUnverifiedRequirementsText(bool singular,const QCString &list) override
+    {
+      return singular ?
+        "Η απαίτηση "+list+" δεν έχουν 'verifies' σχέση." :
+        "Οι απαιτήσεις "+list+" δεν έχουν 'verifies' σχέση.";
     }
 };
 

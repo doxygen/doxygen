@@ -3,14 +3,67 @@
 
 % Packages used by this style file
 \RequirePackage{alltt}
-%%\RequirePackage{array} %% moved to refman.tex due to workaround for LaTex 2019 version and unmaintained tabu package
+\RequirePackage{array}
 \RequirePackage{calc}
 \RequirePackage{float}
-%%\RequirePackage{ifthen} %% moved to refman.tex due to workaround for LaTex 2019 version and unmaintained tabu package
+\RequirePackage{ifthen}
 \RequirePackage{verbatim}
+\RequirePackage{varwidth}
 \RequirePackage[table]{xcolor}
-\RequirePackage{longtable_doxygen}
-\RequirePackage{tabu_doxygen}
+\RequirePackage{longtable}
+\RequirePackage{xltabular}
+\RequirePackage{tabularray}
+\ExplSyntaxOn
+\IfPackageAtLeastTF{tabularray}{2025-03-11}
+{
+  \IfPackageAtLeastTF{tabularray}{2025-03-12}
+  {
+    %newer version, do nothing
+  }
+  {
+     %the required version
+     \bool_gset_false:N \g__tblr_use_intarray_bool
+  }
+}
+{
+  %older version, do nothing
+}
+\ExplSyntaxOff
+\UseTblrLibrary{varwidth}
+\ExplSyntaxOn
+\int_new:N \g__doxy_nohyper_int
+\AtBeginDocument
+  {
+    \IfPackageAtLeastTF{tabularray}{2024-02-16}
+    {
+      \renewenvironment{tblrNoHyper}
+      {
+        \int_compare:nNnT {\g__doxy_nohyper_int} = {0} {\begin{NoHyper}}
+        \int_gincr:N \g__doxy_nohyper_int
+      }
+      {
+        \int_gdecr:N \g__doxy_nohyper_int
+        \int_compare:nNnT {\g__doxy_nohyper_int} = {0} {\end{NoHyper}}
+      }
+    }
+    {
+      %older version, doesn't provide tblrNoHyper
+    }
+  }
+\ExplSyntaxOff
+
+\ExplSyntaxOn
+\dim_new:N \doxytablewidth
+\NewDocumentCommand \doxycalculatetablewidth {}
+  {
+    \cs_set_protected:Nn \__tblr_build_whole:
+      {
+        \__tblr_get_table_width:
+        \dim_gset:Nn \doxytablewidth { \tablewidth }
+      }
+  }
+\ExplSyntaxOff
+
 \RequirePackage{fancyvrb}
 \RequirePackage{tabularx}
 \RequirePackage{multicol}
@@ -135,7 +188,7 @@
     {\lccode`~32 \lowercase{\global\let~}\NiceSpace}\obeyspaces%
   }%
   {%
-    {\lccode`~32 \lowercase{\global\let~}}\obeyspaces%
+    {\lccode`~32 \lowercase{\global\let~}\relax}\obeyspaces%
   }%
   \vspace{2pt}%
 }{%
@@ -143,6 +196,21 @@
   \normalsize%
   \settowidth{\CodeWidthChar}{?}%
   \settoheight{\CodeHeightChar}{?}%
+}
+
+\newlength{\ttcharwidth}%
+
+\newenvironment{DoxyEmbeddedDoc}[1][4]{%
+  \begingroup%
+  \scriptsize%
+  \settowidth{\ttcharwidth}{\scriptsize\texttt{M}}%
+  \setlength{\leftskip}{#1\ttcharwidth}%
+  \setlength{\@totalleftmargin}{#1\ttcharwidth}%
+  \addtolength{\linewidth}{-#1\ttcharwidth}%
+  \parshape 0 %
+  \noindent\ignorespaces%
+}{%
+  \par\endgroup
 }
 
 % Redefining not defined characters, i.e. "Replacement Character" in tex output.
@@ -346,59 +414,170 @@
   \end{DoxyDesc}%
 }
 
-% Used by parameter lists
-\newenvironment{DoxyParams}[2][]{%
-    \tabulinesep=1mm%
-    \par%
-    \ifthenelse{\equal{#1}{}}%
-      {\begin{longtabu*}spread 0pt [l]{|X[-1,l]|X[-1,l]|}}% name + description
-    {\ifthenelse{\equal{#1}{1}}%
-      {\begin{longtabu*}spread 0pt [l]{|X[-1,l]|X[-1,l]|X[-1,l]|}}% in/out + name + desc
-      {\begin{longtabu*}spread 0pt [l]{|X[-1,l]|X[-1,l]|X[-1,l]|X[-1,l]|}}% in/out + type + name + desc
-    }
-    \multicolumn{2}{l}{\hspace{-6pt}\bfseries\fontseries{bc}\selectfont\color{darkgray} #2}\\[1ex]%
-    \hline%
-    \endfirsthead%
-    \multicolumn{2}{l}{\hspace{-6pt}\bfseries\fontseries{bc}\selectfont\color{darkgray} #2}\\[1ex]%
-    \hline%
-    \endhead%
-}{%
-    \end{longtabu*}%
-    \vspace{6pt}%
+% define a theme for the DoxyTable environment (without caption)
+\NewTblrTheme{DoxyTableBareTheme}{
+    \DefTblrTemplate{firsthead}{default}{}%
+    \DefTblrTemplate{middlehead, lasthead}{default}{}%
+    \DefTblrTemplate{contfoot-text}{default}{}%
 }
+
+% define a theme for the DoxyTable environment (with caption)
+\NewTblrTheme{DoxyTableCaptionTheme}{
+    \SetTblrStyle{firsthead}{font=\bfseries}{}%
+    \DefTblrTemplate{middlehead, lasthead}{default}{}%
+    \DefTblrTemplate{contfoot-text}{default}{}%
+}
+
+% Define a table environment to use with Doxygen
+% parameters:
+% - #1: number of columns
+% - #2: table caption (can be empty)
+% - #3: label to refer to the table (can be empty)
+% - #4: 1=table has a heading row, 0=no heading row
+% - #5: body of the table (part between start{DoxyTable}..\end{DoxyTable}
+\NewDocumentEnvironment{DoxyTable}{m +m m m +b}{%
+\par%
+\def\hascaption{#2}%
+\def\haslabel{#3}%
+\ifx\hascaption\empty% if caption is empty
+  \SetTblrOuter[longtblr]{theme=DoxyTableBareTheme,entry=none}% table without caption or label
+\else% caption not empty
+  \ifx\haslabel\empty% if label is empty
+    \SetTblrOuter[longtblr]{theme=DoxyTableCaptionTheme,caption={#2}}% set table caption
+  \else% label not empty
+    \SetTblrOuter[longtblr]{theme=DoxyTableCaptionTheme,caption={#2},label={#3}}% set table caption and label
+  \fi%
+\fi%
+\begingroup
+\doxycalculatetablewidth
+\sbox0{% first render the table in a savebox to calculate the width of the table which will be stored in \doxytablewidth
+\begin{tblr}{hlines,vlines,measure=vbox,colspec={*{#1}{l}}}%
+#5
+\end{tblr}%
+}% end of sbox0
+\endgroup
+\ifdim\doxytablewidth>\linewidth% use flexible columns
+% now render the table for real
+\begin{longtblr}{hlines,vlines,% automatically set horizontal and vertical cell lines
+                 measure=vbox,% needed to allow nested lists and tables
+                 colspec={*{#1}{X[-1]}},% set column type for all columns
+                 rowhead=#4} % set which row is the header (0=disable, 1=enable)
+#5
+\end{longtblr}%
+\else% use fixed left aligned columns
+% now render the table for real
+\begin{longtblr}{hlines,vlines,% automatically set horizontal and vertical cell lines
+                 measure=vbox,% needed to allow nested lists and tables
+                 colspec={*{#1}{l}},% set column type for all columns
+                 rowhead=#4} % set which row is the header (0=disable, 1=enable)
+#5
+\end{longtblr}%
+\fi%
+}{% no end marker needed anymore
+}%
+
+% Define a nested table environment to use with Doxygen
+% parameters:
+% - #1: number of columns
+% - #2: 1=table has a heading row, 0=no heading row
+\NewDocumentEnvironment{DoxyTableNested}{m m +b}{%
+\begingroup
+\doxycalculatetablewidth
+\sbox0{% first render the table in a savebox to calculate the width of the table which will be stored in \doxytablewidth
+\begin{tblr}{hlines,vlines,measure=vbox,colspec={*{#1}{l}}}%
+#3
+\end{tblr}%
+}% end of sbox0
+\endgroup
+\ifdim\doxytablewidth>\linewidth% use flexible columns
+% now render the table for real
+\begin{tblr}{hlines,vlines,% automatically set horizontal and vertical cell lines
+                 measure=vbox,% needed to allow nested lists and tables
+                 colspec={*{#1}{X[-1]}},% set column type for all columns
+                 rowhead=#2} % set which row is the header (0=disable, 1=enable)
+#3
+\end{tblr}%
+\else% use fixed left aligned columns
+% now render the table for real
+\begin{tblr}{hlines,vlines,% automatically set horizontal and vertical cell lines
+                 measure=vbox,% needed to allow nested lists and tables
+                 colspec={*{#1}{l}},% set column type for all columns
+                 rowhead=#2} % set which row is the header (0=disable, 1=enable)
+#3
+\end{tblr}%
+\fi%
+}{% no end marker needed anymore
+}%
+
+% Defines a parameter table
+% Arguments:
+% #1: Number of columns
+% #2: Initial format for tblr, i.e. format except for last column
+% #3: Title of the table e.g. Params, Enumerator
+% #4: Body
+\NewDocumentCommand{\DoxyParamTable}{m m +m +m}{%
+  \SetTblrOuter[longtblr]{theme=DoxyTableBareTheme,entry=none}% set table caption and label
+  \begingroup
+  \doxycalculatetablewidth
+  \sbox0{% render table off-screen first to capture its width in \doxytablewidth
+    \begin{tblr}{measure=vbox,colspec={*{#1}{|l}|}}%
+    \SetCell[c=#1]{l} \tf{#3} \\[1ex]%
+    \hline%
+    #4
+    \end{tblr}%
+  }%
+  \endgroup
+  \ifdim\doxytablewidth>\linewidth% use flexible columns
+    \edef\DoxyTableColSpec{#2X[-1]}%
+  \else%
+    \edef\DoxyTableColSpec{#2l}%
+  \fi%
+  \expanded{\noexpand\begin{longtblr}[l,theme=DoxyTableBareTheme]%
+          {vline{1-Z}={2-Z}{solid},%    show vertical lines for all rows except the first
+           measure=vbox,%               needed to allow nested lists and tables
+           colspec=\DoxyTableColSpec}}% set column type for all columns
+  \SetCell[c=#1]{l} \tf{#3} \\\nopagebreak%
+  \hline\nopagebreak%
+  #4
+  \end{longtblr}%
+  \par\addvspace{6pt}%
+}
+
+
+% Used by parameter lists
+\NewDocumentEnvironment{DoxyParams}{O{0} m +b}{%
+  \par
+  \ifnum#1>1
+    \DoxyParamTable{4}{lll}{#2}{#3}
+  \else
+    \ifnum#1>0
+      \DoxyParamTable{3}{ll}{#2}{#3}
+    \else
+      \DoxyParamTable{2}{l}{#2}{#3}
+    \fi
+  \fi
+}{}
+
 
 % Used for fields of simple structs
-\newenvironment{DoxyFields}[1]{%
-    \tabulinesep=1mm%
-    \par%
-    \begin{longtabu*}spread 0pt [l]{|X[-1,r]|X[-1,l]|X[-1,l]|}%
-    \multicolumn{3}{l}{\hspace{-6pt}\bfseries\fontseries{bc}\selectfont\color{darkgray} #1}\\[1ex]%
-    \hline%
-    \endfirsthead%
-    \multicolumn{3}{l}{\hspace{-6pt}\bfseries\fontseries{bc}\selectfont\color{darkgray} #1}\\[1ex]%
-    \hline%
-    \endhead%
-}{%
-    \end{longtabu*}%
-    \vspace{6pt}%
-}
+\NewDocumentEnvironment{DoxyFields}{m +b}{%
+  \par
+  \DoxyParamTable{3}{rl}{#1}{#2}
+}{}
+
 
 % Used for fields simple class style enums
-\newenvironment{DoxyEnumFields}[2][]{%
-    \tabulinesep=1mm%
-    \par%
-    \ifthenelse{\equal{#1}{2}}%
-      {\begin{longtabu*}spread 0pt [l]{|X[-1,r]|X[-1,l]|}}%
-      {\begin{longtabu*}spread 0pt [l]{|X[-1,l]|X[-1,r]|X[-1,l]|}}% with init value
-    \multicolumn{2}{l}{\hspace{-6pt}\bfseries\fontseries{bc}\selectfont\color{darkgray} #2}\\[1ex]%
-    \hline%
-    \endfirsthead%
-    \multicolumn{2}{l}{\hspace{-6pt}\bfseries\fontseries{bc}\selectfont\color{darkgray} #2}\\[1ex]%
-    \hline%
-    \endhead%
-}{%
-    \end{longtabu*}%
-    \vspace{6pt}%
+\NewDocumentEnvironment{DoxyEnumFields}{O{2} m +b}{%
+  \par
+  \ifnum#1>2
+    \DoxyParamTable{3}{lr}{#2}{#3}
+  \else
+    \DoxyParamTable{2}{l}{#2}{#3}
+  \fi
+}{}
+
+\NewDocumentCommand{\tf}{m}{%
+  \hspace{-\tabcolsep}\bfseries #1%
 }
 
 % Used for parameters within a detailed function description
@@ -408,52 +587,22 @@
 }
 
 % Used by return value lists
-\newenvironment{DoxyRetVals}[1]{%
-    \tabulinesep=1mm%
-    \par%
-    \begin{longtabu*}spread 0pt [l]{|X[-1,r]|X[-1,l]|}%
-    \multicolumn{2}{l}{\hspace{-6pt}\bfseries\fontseries{bc}\selectfont\color{darkgray} #1}\\[1ex]%
-    \hline%
-    \endfirsthead%
-    \multicolumn{2}{l}{\hspace{-6pt}\bfseries\fontseries{bc}\selectfont\color{darkgray} #1}\\[1ex]%
-    \hline%
-    \endhead%
-}{%
-    \end{longtabu*}%
-    \vspace{6pt}%
-}
+\NewDocumentEnvironment{DoxyRetVals}{m +b}{%
+  \par
+  \DoxyParamTable{2}{r}{#1}{#2}
+}{}
 
 % Used by exception lists
-\newenvironment{DoxyExceptions}[1]{%
-    \tabulinesep=1mm%
-    \par%
-    \begin{longtabu*}spread 0pt [l]{|X[-1,r]|X[-1,l]|}%
-    \multicolumn{2}{l}{\hspace{-6pt}\bfseries\fontseries{bc}\selectfont\color{darkgray} #1}\\[1ex]%
-    \hline%
-    \endfirsthead%
-    \multicolumn{2}{l}{\hspace{-6pt}\bfseries\fontseries{bc}\selectfont\color{darkgray} #1}\\[1ex]%
-    \hline%
-    \endhead%
-}{%
-    \end{longtabu*}%
-    \vspace{6pt}%
-}
+\NewDocumentEnvironment{DoxyExceptions}{m +b}{%
+  \par
+  \DoxyParamTable{2}{r}{#1}{#2}
+}{}
 
 % Used by template parameter lists
-\newenvironment{DoxyTemplParams}[1]{%
-    \tabulinesep=1mm%
-    \par%
-    \begin{longtabu*}spread 0pt [l]{|X[-1,r]|X[-1,l]|}%
-    \multicolumn{2}{l}{\hspace{-6pt}\bfseries\fontseries{bc}\selectfont\color{darkgray} #1}\\[1ex]%
-    \hline%
-    \endfirsthead%
-    \multicolumn{2}{l}{\hspace{-6pt}\bfseries\fontseries{bc}\selectfont\color{darkgray} #1}\\[1ex]%
-    \hline%
-    \endhead%
-}{%
-    \end{longtabu*}%
-    \vspace{6pt}%
-}
+\NewDocumentEnvironment{DoxyTemplParams}{m +b}{%
+  \par
+  \DoxyParamTable{2}{r}{#1}{#2}
+}{}
 
 % Used for member lists
 \newenvironment{DoxyCompactItemize}{%
@@ -517,14 +666,6 @@
 
 % Used by tables
 \newcommand{\PBS}[1]{\let\temp=\\#1\let\\=\temp}%
-\newenvironment{TabularC}[1]%
-{\tabulinesep=1mm
-\begin{longtabu*}spread 0pt [c]{*#1{|X[-1]}|}}%
-{\end{longtabu*}\par}%
-
-\newenvironment{TabularNC}[1]%
-{\begin{tabu}spread 0pt [l]{*#1{|X[-1]}|}}%
-{\end{tabu}\par}%
 
 % Used for member group headers
 \newenvironment{Indent}{%
@@ -537,16 +678,59 @@
   \end{list}%
 }
 
+\newsavebox{\doxymboxbox}
+\newlength{\doxymboxlength}
+\newcommand{\doxymbox}[1]{%
+  \sbox{\doxymboxbox}{#1}%
+  \setlength{\doxymboxlength}{\wd\doxymboxbox}%
+  \ifthenelse{\doxymboxlength>\linewidth}{%
+    #1%
+  }{%
+    \mbox{#1}%
+  }%
+}
+
 % Used when hyperlinks are turned on
 \newcommand{\doxylink}[2]{%
-  \mbox{\hyperlink{#1}{#2}}%
+  \doxymbox{\hyperlink{#1}{#2}}%
+}
+
+% Used for the cite command
+\newcommand{\DoxyCite}[3]{%
+  \ifthenelse{#3=1}% 1 with square parenthesis
+  {
+    \ifthenelse{\equal{#2}{number}}%
+    { \cite{#1} }%
+    {%
+      \ifthenelse{\equal{#2}{shortauthor}}%
+      { \citetext{\citeauthor{#1}} }%
+      {%
+        \ifthenelse{\equal{#2}{year}}%
+        { \citeyearpar{#1} }%
+        {}%
+      }%
+    }%
+  }%
+  {%
+    \ifthenelse{\equal{#2}{number}}%
+    { \citealp{#1} }%
+    {%
+      \ifthenelse{\equal{#2}{shortauthor}}%
+      { \citeauthor{#1} }%
+      {%
+        \ifthenelse{\equal{#2}{year}}%
+        { \citeyear{#1} }%
+        {}%
+      }%
+    }%
+  }%
 }
 
 % Used when hyperlinks are turned on
 % Third argument is the SectionType, see the doxygen internal
 % documentation for the values (relevant: Page ... Subsubsection).
 \newcommand{\doxysectlink}[3]{%
-  \mbox{\hyperlink{#1}{#2}}%
+  \doxymbox{\hyperlink{#1}{#2}}%
 }
 % Used when hyperlinks are turned off
 \newcommand{\doxyref}[3]{%

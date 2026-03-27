@@ -122,6 +122,9 @@ struct pyscannerYY_state
   int                     decoratorRound = 0;
   bool                    checkDupEntry = false;
   bool                    firstPass = true;
+  int                     bracketDepth = 0;
+  int                     genericsContext;
+  QCString                genericsValue;
 };
 
 //-----------------------------------------------------------------------------
@@ -135,6 +138,7 @@ static void newEntry(yyscan_t yyscanner);
 static void addEntry(yyscan_t yyscanner);
 static void docVariable(yyscan_t yyscanner,const char *s);
 static void newVariable(yyscan_t yyscanner);
+static void newTypeAlias(yyscan_t yyscanner);
 static void addVariable(yyscan_t yyscanner);
 static void newFunction(yyscan_t yyscanner);
 static QCString findPackageScopeFromPath(yyscan_t yyscanner,const QCString &path);
@@ -150,6 +154,7 @@ static void initTriSingleQuoteBlock(yyscan_t yyscanner);
 static void initSpecialBlock(yyscan_t yyscanner);
 static void searchFoundDef(yyscan_t yyscanner);
 static void searchFoundClass(yyscan_t yyscanner);
+static void searchFoundTypeAlias(yyscan_t yyscanner);
 static QCString findPackageScope(yyscan_t yyscanner,const QCString &fileName);
 static void setProtection(yyscan_t yyscanner);
 
@@ -270,6 +275,11 @@ ID        [a-z_A-Z%]+{IDSYM}*
   /* Decorator */
 %x Decorator
 
+  /* Generics */
+%x Generics
+%x TypeAlias
+%x TypeValue
+
 %%
 
   /* ------------ Function recognition rules -------------- */
@@ -306,6 +316,15 @@ ID        [a-z_A-Z%]+{IDSYM}*
      "class"{BB}        {  // start of a class definition
                           searchFoundClass(yyscanner);
                           BEGIN( ClassDec ) ;
+                       }
+     ^{B}"type"{BB}    {
+                          yyextra->indent=computeIndent(yytext);
+                          searchFoundTypeAlias(yyscanner);
+                          BEGIN( TypeAlias );
+                       }
+     "type"{BB}        {
+                          searchFoundTypeAlias(yyscanner);
+                          BEGIN( TypeAlias );
                        }
      ^{B}"from"{BB}    |
      "from"{BB}        { // start of an from import
@@ -640,12 +659,15 @@ ID        [a-z_A-Z%]+{IDSYM}*
                         }
 }
 
-<SearchSkipValue,VariableDec>{
+<SearchSkipValue,VariableDec,TypeValue>{
    "="                { // the assignment operator
                         //printf("====== VariableDec at line %d\n",yyextra->yyLineNr);
                         yyextra->startInit = TRUE;
-                        yyextra->current->initializer.str(yytext);
-                        yyextra->current->initializer << " ";
+                        if (YY_START!=TypeValue)
+                        {
+                          yyextra->current->initializer.str(yytext);
+                          yyextra->current->initializer << " ";
+                        }
                       }
    {B}                { // spaces
                         yyextra->current->initializer << yytext;
@@ -734,7 +756,7 @@ ID        [a-z_A-Z%]+{IDSYM}*
                         {
                           for (const auto &child : yyextra->current_root->children())
                           {
-                            if (child->name == QCString(yytext))
+                            if (child->name == yytext)
                             {
                                yyextra->current->type = child->type;
                                break;
@@ -876,7 +898,12 @@ ID        [a-z_A-Z%]+{IDSYM}*
                               yyextra->current->bodyLine  = yyextra->yyLineNr;
                               BEGIN(FunctionBody);
                             }
-
+    "["                     { // python 3.12+ style generics
+                              yyextra->genericsContext = YY_START;
+                              yyextra->bracketDepth = 1;
+                              yyextra->genericsValue = "[";
+                              BEGIN(Generics);
+                            }
     "->"                    {
                               yyextra->defVal.str(std::string());
                               yyextra->braceCount = 0;
@@ -894,6 +921,27 @@ ID        [a-z_A-Z%]+{IDSYM}*
                               }
                               yyextra->current->args = argListToString(yyextra->current->argList);
                               yyextra->funcParamsEnd = TRUE;
+                            }
+}
+
+<Generics>{
+  {IDENTIFIER}              {
+                              yyextra->genericsValue+=yytext;
+                            }
+  "["                       {
+                              yyextra->genericsValue+=yytext;
+                              yyextra->bracketDepth++;
+                            }
+  "]"                       {
+                              yyextra->genericsValue+=yytext;
+                              yyextra->bracketDepth--;
+                              if (yyextra->bracketDepth==0)
+                              {
+                                BEGIN(yyextra->genericsContext);
+                              }
+                            }
+  .                         {
+                              yyextra->genericsValue+=yytext;
                             }
 }
 
@@ -1208,38 +1256,77 @@ ID        [a-z_A-Z%]+{IDSYM}*
                       }
 }
 
-<ClassDec>{IDENTIFIER} {
-                          if (yyextra->current->type.isEmpty())
-                          {
-                              yyextra->current->type = "class";
-                          }
-
-                          yyextra->current->section = EntryType::makeClass();
-                          yyextra->current->name = yytext;
-                          // we need to set the protectiion based on the "local" class name
-                          setProtection(yyscanner);
-
-                          // prepend scope in case of nested classes
-                          if (yyextra->current_root->section.isScope())
-                          {
-                            //printf("*** Prepending scope %s to class %s\n",qPrint(yyextra->current_root->name),qPrint(yyextra->current->name));
-                            yyextra->current->name.prepend(yyextra->current_root->name+"::");
-                          }
-
-                          yyextra->current->name = yyextra->current->name.stripWhiteSpace();
-                          yyextra->current->fileName = yyextra->fileName;
-                          yyextra->docBlockContext   = YY_START;
-                          yyextra->docBlockInBody    = FALSE;
-                          yyextra->docBlockJavaStyle = FALSE;
-                          yyextra->docBlock.clear();
-
-                          BEGIN(ClassInheritance);
+<TypeAlias>{
+     {IDENTIFIER}     {
+                        yyextra->current->name = yytext;
+                      }
+     "["              {
+                        yyextra->bracketDepth=1;
+                        yyextra->genericsContext = YY_START;
+                        yyextra->genericsValue = "[";
+                        BEGIN(Generics);
+                      }
+     "="              {
+                        yyextra->current->args = yyextra->genericsValue;
+                        BEGIN(TypeValue);
+                      }
+}
+<TypeValue>{
+    \n                {
+                        incLineNr(yyscanner);
+                        if (!stripWhiteSpace(yyextra->current->initializer.str()).empty())
+                        {
+                          newTypeAlias(yyscanner);
                         }
+                        BEGIN(Search);
+                      }
+    .                 {
+                        unput(*yytext);
+                        newTypeAlias(yyscanner);
+                        BEGIN(Search);
+                      }
+    <<EOF>>           { yyterminate();
+                      }
+}
 
-<ClassInheritance>{
-   ({BB}|[\(,\)])      { // syntactic sugar for the list
+<ClassDec>{IDENTIFIER} {
+                         if (yyextra->current->type.isEmpty())
+                         {
+                             yyextra->current->type = "class";
+                         }
+
+                         yyextra->current->section = EntryType::makeClass();
+                         yyextra->current->name = yytext;
+                         // we need to set the protectiion based on the "local" class name
+                         setProtection(yyscanner);
+
+                         // prepend scope in case of nested classes
+                         if (yyextra->current_root->section.isScope())
+                         {
+                           //printf("*** Prepending scope %s to class %s\n",qPrint(yyextra->current_root->name),qPrint(yyextra->current->name));
+                           yyextra->current->name.prepend(yyextra->current_root->name+"::");
+                         }
+
+                         yyextra->current->name = yyextra->current->name.stripWhiteSpace();
+                         yyextra->current->fileName = yyextra->fileName;
+                         yyextra->docBlockContext   = YY_START;
+                         yyextra->docBlockInBody    = FALSE;
+                         yyextra->docBlockJavaStyle = FALSE;
+                         yyextra->docBlock.clear();
+                         yyextra->bracketDepth = 0;
+
+                         BEGIN(ClassInheritance);
                        }
 
+<ClassInheritance>{
+    ({BB}|[\(,\)])     { // syntactic sugar for the list
+                       }
+    "["                {
+                         yyextra->bracketDepth=1;
+                         yyextra->genericsContext = YY_START;
+                         yyextra->genericsValue = "[";
+                         BEGIN(Generics);
+                       }
     ":"                { // begin of the class definition
                          yyextra->specialBlock = TRUE; // expecting a docstring
                          yyextra->current->bodyLine  = yyextra->yyLineNr;
@@ -1249,9 +1336,8 @@ ID        [a-z_A-Z%]+{IDSYM}*
 
     {SCOPE}            {
                          yyextra->current->extends.emplace_back(
-                                              substitute(yytext,".","::"),Protection::Public,Specifier::Normal
-                                            );
-                         //Has base class-do stuff
+                                                substitute(yytext,".","::"),Protection::Public,Specifier::Normal
+                                          );
                        }
     "'"                { // start of a single quoted string
                          yyextra->stringContext=YY_START;
@@ -1389,6 +1475,9 @@ ID        [a-z_A-Z%]+{IDSYM}*
                         BEGIN( DoubleQuoteString );
                       }
    {IDENTIFIER}       {
+                        yyextra->current->initializer << yytext;
+                      }
+   {POUNDCOMMENT}     { // normal comment
                         yyextra->current->initializer << yytext;
                       }
    .                  {
@@ -1739,6 +1828,7 @@ ID        [a-z_A-Z%]+{IDSYM}*
 
 //----------------------------------------------------------------------------
 
+
 static int yyread(yyscan_t yyscanner,char *buf,int max_size)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
@@ -1771,6 +1861,7 @@ static void initEntry(yyscan_t yyscanner)
   yyextra->current->lang       = SrcLangExt::Python;
   yyextra->current->type.clear();
   yyextra->current->name.clear();
+  yyextra->current->initializer.clear();
   yyextra->commentScanner.initGroupInfo(yyextra->current.get());
   yyextra->isStatic = FALSE;
 }
@@ -1778,12 +1869,17 @@ static void initEntry(yyscan_t yyscanner)
 static void newEntry(yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  if (yyextra->current->name.isEmpty())
+  {
+    initEntry(yyscanner);
+    return;
+  }
   bool found = false;
   if (yyextra->checkDupEntry)
   {
     for (auto &v : yyextra->current_root->children())
     {
-      //printf("candidate %s<->%s section=%s!\n",qPrint(v->name),qPrint(yyextra->current->name), v->section.to_string().c_str());
+      //printf("candidate %s<->%s section=%s!\n",qPrint(v->name),qPrint(yyextra->current->name), qPrint(v->section.to_string()));
       if (v->name==yyextra->current->name && v->section==yyextra->current->section) // name is already added, don't add it again
       {
         if (v->doc.isEmpty() && !yyextra->current->doc.isEmpty())
@@ -1879,6 +1975,13 @@ static void newVariable(yyscan_t yyscanner)
   newEntry(yyscanner);
 }
 
+static void newTypeAlias(yyscan_t yyscanner)
+{
+  //struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  //printf("*** newTypeAlias %s\n",qPrint(yyextra->current->name));
+  newEntry(yyscanner);
+}
+
 static void addVariable(yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
@@ -1926,7 +2029,7 @@ static QCString findPackageScopeFromPath(yyscan_t yyscanner,const QCString &path
   auto it = yyextra->packageNameCache.find(path.str());
   if (it!=yyextra->packageNameCache.end())
   {
-    return QCString(it->second);
+    return it->second;
   }
   FileInfo pf(path.str()+"/__init__.py"); // found package initialization file
   if (pf.exists())
@@ -1951,7 +2054,7 @@ static QCString findPackageScope(yyscan_t yyscanner,const QCString &fileName)
 {
   if (fileName.isEmpty()) return fileName;
   FileInfo fi(fileName.str());
-  return findPackageScopeFromPath(yyscanner,fi.dirPath(true).c_str());
+  return findPackageScopeFromPath(yyscanner,fi.dirPath(true));
 }
 
 static void addFrom(yyscan_t yyscanner,bool all)
@@ -2138,6 +2241,19 @@ static void searchFoundClass(yyscan_t yyscanner)
   yyextra->current->section = EntryType::makeClass();
   yyextra->current->argList.clear();
   yyextra->current->type += "class" ;
+  yyextra->current->fileName  = yyextra->fileName;
+  yyextra->current->startLine  = yyextra->yyLineNr;
+  yyextra->current->bodyLine  = yyextra->yyLineNr;
+  yyextra->packageCommentAllowed = FALSE;
+}
+
+static void searchFoundTypeAlias(yyscan_t yyscanner)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->current->section = EntryType::makeVariable();
+  yyextra->current->argList.clear();
+  yyextra->current->type = "typedef " ;
+  yyextra->current->spec.setAlias(true);
   yyextra->current->fileName  = yyextra->fileName;
   yyextra->current->startLine  = yyextra->yyLineNr;
   yyextra->current->bodyLine  = yyextra->yyLineNr;

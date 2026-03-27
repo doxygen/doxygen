@@ -30,7 +30,7 @@ class InputObsolete : public Input
     void updateDependencies()    {}
     void reset()                 {}
     bool isDefault()             { return false; }
-    void writeValue(QTextStream &,TextCodecAdapter *) {}
+    void writeValue(QTextStream &,TextCodecAdapter *,bool) {}
     void setTemplateDocs(const QString &) {}
     bool isEmpty()               { return false; };
     Kind orgKind() const         { return m_orgKind; }

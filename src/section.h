@@ -39,6 +39,7 @@ class SectionType
     static constexpr int MaxLevel        = 6;
     static constexpr int Anchor          = 7;
     static constexpr int Table           = 8;
+    static constexpr int Requirement     = 9;
 
     constexpr SectionType() : m_level(0) {}
     constexpr SectionType(int lvl) : m_level(lvl) {}
@@ -137,6 +138,7 @@ class SectionManager : public LinkedMap<SectionInfo>
     //! Returns a non-owning pointer to the newly added section.
     SectionInfo *add(const SectionInfo &si)
     {
+      //printf("SectionManager::add(%s,%s,%d,%s)\n",qPrint(si.label()),qPrint(si.fileName()),si.lineNr(),qPrint(si.title()));
       return LinkedMap<SectionInfo>::add(si.label(),si.fileName(),
                       si.lineNr(),si.title(),si.type(),si.level(),si.ref());
     }
@@ -146,6 +148,7 @@ class SectionManager : public LinkedMap<SectionInfo>
     SectionInfo *add(const QCString &label, const QCString &fileName, int lineNr,
                      const QCString &title, SectionType type, int level,const QCString &ref=QCString())
     {
+      //printf("SectionManager::add(%s,%s,%d,%s)\n",qPrint(label),qPrint(fileName),lineNr,qPrint(title));
       return LinkedMap<SectionInfo>::add(label.data(),fileName,lineNr,title,type,level,ref);
     }
 
@@ -154,6 +157,7 @@ class SectionManager : public LinkedMap<SectionInfo>
     SectionInfo *replace(const QCString &label, const QCString &fileName, int lineNr,
                          const QCString &title, SectionType type, int level,const QCString &ref=QCString())
     {
+      //printf("SectionManager::replace(%s,%s,%d,%s)\n",qPrint(label),qPrint(fileName),lineNr,qPrint(title));
       SectionInfo *si = LinkedMap<SectionInfo>::find(label.data());
       if (si)
       {

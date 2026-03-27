@@ -77,7 +77,7 @@ int genericCompareMembers(const MemberDef *c1,const MemberDef *c2)
   // then on line number at which the member is defined
   if (cmp==0)
   {
-    cmp = c1->getDefLine()-c2->getDefLine();
+    cmp = c2->getDefLine()-c1->getDefLine();
   }
   return cmp;
 }
@@ -411,12 +411,15 @@ void MemberList::writePlainDeclarations(OutputList &ol, bool inGroup,
               {
                 auto parser { createDocParser() };
                 auto ast    { validatingParseDoc(*parser.get(),
-                                                 md->briefFile(),md->briefLine(),
-                                                 cd,md,
+                                                 md->briefFile(),
+                                                 md->briefLine(),
+                                                 cd ? cd : md->getOuterScope(),
+                                                 md,
                                                  md->briefDescription(),
-                                                 TRUE,FALSE,
-                                                 QCString(),TRUE,FALSE,
-                                                 Config_getBool(MARKDOWN_SUPPORT)) };
+                                                 DocOptions()
+                                                 .setIndexWords(true)
+                                                 .setSingleLine(true))
+                            };
                 if (!ast->isEmpty())
                 {
                   ol.startMemberDescription(md->anchor());
@@ -552,8 +555,7 @@ void MemberList::writeDeclarations(OutputList &ol,
     if (!subtitle.stripWhiteSpace().isEmpty())
     {
       ol.startMemberSubtitle();
-      ol.generateDoc("[generated]",-1,ctx,nullptr,subtitle,FALSE,FALSE,
-                     QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
+      ol.generateDoc("[generated]", -1, ctx, nullptr, subtitle, DocOptions());
       ol.endMemberSubtitle();
     }
   }
@@ -576,24 +578,30 @@ void MemberList::writeDeclarations(OutputList &ol,
     }
 
     //printf("memberGroupList=%p\n",memberGroupList);
+    int groupId=0;
     for (const auto &mg : m_memberGroupRefList)
     {
       bool hasHeader=!mg->header().isEmpty();
       if (inheritId.isEmpty())
       {
+        QCString groupAnchor = QCString(listType().toLabel())+"-"+QCString().setNum(groupId++);
         //printf("mg->header=%s hasHeader=%d\n",qPrint(mg->header()),hasHeader);
-        ol.startMemberGroupHeader(hasHeader);
+        ol.startMemberGroupHeader(groupAnchor,hasHeader);
         if (hasHeader)
         {
           ol.parseText(mg->header());
         }
-        ol.endMemberGroupHeader();
+        ol.endMemberGroupHeader(hasHeader);
         if (!mg->documentation().isEmpty())
         {
           //printf("Member group has docs!\n");
           ol.startMemberGroupDocs();
-          ol.generateDoc(mg->docFile(),mg->docLine(),mg->memberContainer(),nullptr,mg->documentation()+"\n",FALSE,FALSE,
-              QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
+          ol.generateDoc(mg->docFile(),
+                         mg->docLine(),
+                         mg->memberContainer(),
+                         nullptr,
+                         mg->documentation()+"\n",
+                         DocOptions());
           ol.endMemberGroupDocs();
         }
         ol.startMemberGroup();
@@ -617,7 +625,8 @@ void MemberList::writeDeclarations(OutputList &ol,
 
 void MemberList::writeDocumentation(OutputList &ol,
                      const QCString &scopeName, const Definition *container,
-                     const QCString &title,bool showEnumValues,bool showInline) const
+                     const QCString &title,const QCString &anchor,
+                     bool showEnumValues,bool showInline) const
 {
   if (numDocMembers()==-1)
   {
@@ -634,7 +643,8 @@ void MemberList::writeDocumentation(OutputList &ol,
       ol.disable(OutputType::Html);
       ol.writeRuler();
     ol.popGeneratorState();
-    ol.startGroupHeader(showInline ? 2 : 0);
+    if (container) ol.writeAnchor(container->getOutputFileBase(),anchor);
+    ol.startGroupHeader(anchor,showInline ? 2 : 0);
     ol.parseText(title);
     ol.endGroupHeader(showInline ? 2 : 0);
   }
@@ -741,7 +751,7 @@ void MemberList::writeDocumentationPage(OutputList &ol,
       uint32_t &count = it->second.count;
       QCString diskName=md->getOutputFileBase();
       QCString title=md->qualifiedName();
-      startFile(ol,diskName,md->name(),title,HighlightedItem::None,!generateTreeView,diskName, hierarchyLevel);
+      startFile(ol,diskName,false,md->name(),title,HighlightedItem::None,!generateTreeView,diskName, hierarchyLevel);
       if (!generateTreeView)
       {
         container->writeNavigationPath(ol);
@@ -754,7 +764,7 @@ void MemberList::writeDocumentationPage(OutputList &ol,
         md->writeDocumentation(this,count++,overloadCount,ol,scopeName,container_d,m_container==MemberListContainer::Group);
 
         ol.endContents();
-        endFileWithNavPath(ol,container_d);
+        endFileWithNavPath(ol,container);
       }
       else
       {
@@ -788,7 +798,7 @@ void MemberList::addMemberGroup(MemberGroup *mg)
   m_memberGroupRefList.push_back(mg);
 }
 
-void MemberList::addListReferences(Definition *def)
+void MemberList::addListReferences(const Definition *def)
 {
   for (const auto &imd : m_members)
   {
@@ -815,6 +825,36 @@ void MemberList::addListReferences(Definition *def)
   for (const auto &mg : m_memberGroupRefList)
   {
     mg->addListReferences(def);
+  }
+}
+
+void MemberList::addRequirementReferences(const Definition *def)
+{
+  for (const auto &imd : m_members)
+  {
+    MemberDefMutable *md = toMemberDefMutable(imd);
+    if (md && !md->isAlias() && (md->getGroupDef()==nullptr || def->definitionType()==Definition::TypeGroup))
+    {
+      md->addRequirementReferences(def);
+      const MemberVector &enumFields = md->enumFieldList();
+      if (md->memberType()==MemberType::Enumeration && !enumFields.empty())
+      {
+        //printf("  Adding enum values!\n");
+        for (const auto &vmd : enumFields)
+        {
+          MemberDefMutable *vmdm = toMemberDefMutable(vmd);
+          if (vmdm)
+          {
+            //printf("   adding %s\n",qPrint(vmd->name()));
+            vmdm->addRequirementReferences(def);
+          }
+        }
+      }
+    }
+  }
+  for (const auto &mg : m_memberGroupRefList)
+  {
+    mg->addRequirementReferences(def);
   }
 }
 

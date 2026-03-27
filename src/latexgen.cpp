@@ -44,15 +44,16 @@
 #include "fileinfo.h"
 #include "utf8.h"
 #include "datetime.h"
-#include "portable.h"
 #include "outputlist.h"
 #include "moduledef.h"
 
 static QCString g_header;
+static QCString g_header_file;
 static QCString g_footer;
+static QCString g_footer_file;
 static const SelectionMarkerInfo latexMarkerInfo = { '%', "%%BEGIN ",8 ,"%%END ",6, "",0 };
 
-static QCString substituteLatexKeywords(const QCString &str, const QCString &title);
+static QCString substituteLatexKeywords(const QCString &file, const QCString &str, const QCString &title);
 
 LatexCodeGenerator::LatexCodeGenerator(TextStream *t,const QCString &relPath,const QCString &sourceFileName)
   : m_t(t), m_relPath(relPath), m_sourceFileName(sourceFileName)
@@ -202,7 +203,7 @@ void LatexCodeGenerator::writeCodeLink(CodeSymbolType,
   size_t l = name.length();
   if (ref.isEmpty() && usePDFLatex && pdfHyperlinks)
   {
-    *m_t << "\\mbox{\\hyperlink{";
+    *m_t << "\\doxymbox{\\hyperlink{";
     if (!f.isEmpty()) *m_t << stripPath(f);
     if (!f.isEmpty() && !anchor.isEmpty()) *m_t << "_";
     if (!anchor.isEmpty()) *m_t << anchor;
@@ -306,7 +307,10 @@ void LatexCodeGenerator::startCodeFragment(const QCString &style)
 void LatexCodeGenerator::endCodeFragment(const QCString &style)
 {
   //endCodeLine checks is there is still an open code line, if so closes it.
+  bool wasHidden = m_hide;
+  m_hide = false;
   endCodeLine();
+  m_hide = wasHidden;
 
   *m_t << "\\end{" << style << "}\n";
 }
@@ -636,28 +640,32 @@ void LatexGenerator::init()
 
   if (!Config_getString(LATEX_HEADER).isEmpty())
   {
-    g_header=fileToString(Config_getString(LATEX_HEADER));
+    g_header_file=Config_getString(LATEX_HEADER);
+    g_header=fileToString(g_header_file);
     //printf("g_header='%s'\n",qPrint(g_header));
-    QCString result = substituteLatexKeywords(g_header,QCString());
-    checkBlocks(result,Config_getString(LATEX_HEADER),latexMarkerInfo);
+    QCString result = substituteLatexKeywords(g_header_file,g_header,QCString());
+    checkBlocks(result,g_header_file,latexMarkerInfo);
   }
   else
   {
-    g_header = ResourceMgr::instance().getAsString("header.tex");
-    QCString result = substituteLatexKeywords(g_header,QCString());
+    g_header_file = "header.tex";
+    g_header = ResourceMgr::instance().getAsString(g_header_file);
+    QCString result = substituteLatexKeywords(g_header_file,g_header,QCString());
     checkBlocks(result,"<default header.tex>",latexMarkerInfo);
   }
   if (!Config_getString(LATEX_FOOTER).isEmpty())
   {
-    g_footer=fileToString(Config_getString(LATEX_FOOTER));
+    g_footer_file=Config_getString(LATEX_FOOTER);
+    g_footer=fileToString(g_footer_file);
     //printf("g_footer='%s'\n",qPrint(g_footer));
-    QCString result = substituteLatexKeywords(g_footer,QCString());
-    checkBlocks(result,Config_getString(LATEX_FOOTER),latexMarkerInfo);
+    QCString result = substituteLatexKeywords(g_footer_file,g_footer,QCString());
+    checkBlocks(result,g_footer_file,latexMarkerInfo);
   }
   else
   {
-    g_footer = ResourceMgr::instance().getAsString("footer.tex");
-    QCString result = substituteLatexKeywords(g_footer,QCString());
+    g_footer_file = "footer.tex";
+    g_footer = ResourceMgr::instance().getAsString(g_footer_file);
+    QCString result = substituteLatexKeywords(g_footer_file,g_footer,QCString());
     checkBlocks(result,"<default footer.tex>",latexMarkerInfo);
   }
 
@@ -697,7 +705,7 @@ void LatexGenerator::writeStyleSheetFile(TextStream &t)
   writeDefaultStyleSheet(t);
 }
 
-void LatexGenerator::startFile(const QCString &name,const QCString &,const QCString &,int,int hierarchyLevel)
+void LatexGenerator::startFile(const QCString &name,bool,const QCString &,const QCString &,int,int hierarchyLevel)
 {
 #if 0
   setEncoding(Config_getString(LATEX_OUTPUT_ENCODING));
@@ -739,14 +747,15 @@ static QCString extraLatexStyleSheet()
       if (fi.exists())
       {
         result += "\\usepackage{";
-        if (checkExtension(fi.fileName().c_str(), LATEX_STYLE_EXTENSION))
+        QCString fn = fi.fileName();
+        if (checkExtension(fn, LATEX_STYLE_EXTENSION))
         {
           // strip the extension, it will be added by the usepackage in the tex conversion process
-          result += stripExtensionGeneral(fi.fileName().c_str(), LATEX_STYLE_EXTENSION);
+          result += stripExtensionGeneral(fn, LATEX_STYLE_EXTENSION);
         }
         else
         {
-          result += fi.fileName();
+          result += fn;
         }
         result += "}\n";
       }
@@ -787,7 +796,8 @@ static QCString latex_batchmode()
   return "";
 }
 
-static QCString substituteLatexKeywords(const QCString &str,
+static QCString substituteLatexKeywords(const QCString &file,
+                                        const QCString &str,
                                         const QCString &title)
 {
   bool compactLatex = Config_getBool(COMPACT_LATEX);
@@ -855,15 +865,19 @@ static QCString substituteLatexKeywords(const QCString &str,
   QCString projectNumber = Config_getString(PROJECT_NUMBER);
 
   // first substitute generic keywords
-  QCString result = substituteKeywords(str,title,
+  QCString result = substituteKeywords(file,str,title,
         convertToLaTeX(Config_getString(PROJECT_NAME),false),
         convertToLaTeX(projectNumber,false),
         convertToLaTeX(Config_getString(PROJECT_BRIEF),false));
 
   // additional LaTeX only keywords
-  result = substituteKeywords(result,
+  result = substituteKeywords(file,result,
   {
     // keyword                     value getter
+    { "$datetime",                 [&]() { return dateToString(DateTimeType::DateTime);         } },
+    { "$date",                     [&]() { return dateToString(DateTimeType::Date);             } },
+    { "$time",                     [&]() { return dateToString(DateTimeType::Time);             } },
+    { "$year",                     [&]() { return yearToString();                               } },
     { "$latexdocumentpre",         [&]() { return theTranslator->latexDocumentPre();            } },
     { "$latexdocumentpost",        [&]() { return theTranslator->latexDocumentPost();           } },
     { "$generatedby",              [&]() { return generatedBy;                                  } },
@@ -908,7 +922,7 @@ void LatexGenerator::startIndexSection(IndexSection is)
   switch (is)
   {
     case IndexSection::isTitlePageStart:
-      m_t << substituteLatexKeywords(g_header,convertToLaTeX(Config_getString(PROJECT_NAME),m_codeGen->insideTabbing()));
+      m_t << substituteLatexKeywords(g_header_file,g_header,convertToLaTeX(Config_getString(PROJECT_NAME),m_codeGen->insideTabbing()));
       break;
     case IndexSection::isTitlePageAuthor:
       break;
@@ -1260,7 +1274,7 @@ void LatexGenerator::endIndexSection(IndexSection is)
     case IndexSection::isPageDocumentation2:
       break;
     case IndexSection::isEndIndex:
-      m_t << substituteLatexKeywords(g_footer,convertToLaTeX(Config_getString(PROJECT_NAME),m_codeGen->insideTabbing()));
+      m_t << substituteLatexKeywords(g_footer_file,g_footer,convertToLaTeX(Config_getString(PROJECT_NAME),m_codeGen->insideTabbing()));
       break;
   }
 }
@@ -1283,14 +1297,6 @@ void LatexGenerator::writeStyleInfo(int part)
   writeDefaultStyleSheet(m_t);
   endPlainFile();
 
-  // workaround for the problem caused by change in LaTeX in version 2019
-  // in the unmaintained tabu package
-  startPlainFile("tabu_doxygen.sty");
-  m_t << ResourceMgr::instance().getAsString("tabu_doxygen.sty");
-  endPlainFile();
-  startPlainFile("longtable_doxygen.sty");
-  m_t << ResourceMgr::instance().getAsString("longtable_doxygen.sty");
-  endPlainFile();
   /// an extension of the etoc package is required that is only available in the
   /// newer version. Providing the updated version to be used with older versions
   /// of LaTeX
@@ -1374,7 +1380,7 @@ void LatexGenerator::startTextLink(const QCString &f,const QCString &anchor)
   bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
   if (!m_disableLinks && pdfHyperlinks)
   {
-    m_t << "\\mbox{\\hyperlink{";
+    m_t << "\\doxymbox{\\hyperlink{";
     if (!f.isEmpty()) m_t << stripPath(f);
     if (!anchor.isEmpty()) m_t << "_" << anchor;
     m_t << "}{";
@@ -1403,7 +1409,7 @@ static QCString objectLinkToString(const QCString &ref, const QCString &f,
   QCString result;
   if (!disableLinks && ref.isEmpty() && pdfHyperlinks)
   {
-    result += "\\mbox{\\hyperlink{";
+    result += "\\doxymbox{\\hyperlink{";
     if (!f.isEmpty()) result += stripPath(f);
     if (!f.isEmpty() && !anchor.isEmpty()) result += "_";
     if (!anchor.isEmpty()) result += anchor;
@@ -1485,27 +1491,11 @@ void LatexGenerator::endTitleHead(const QCString &fileName,const QCString &name)
   }
   if (!name.isEmpty())
   {
-    m_t << "\\index{";
-    m_t << latexEscapeLabelName(name);
-    m_t << "@{";
-    m_t << latexEscapeIndexChars(name);
-    m_t << "}}\n";
+    latexWriteIndexItem(m_t,name);
   }
 }
 
-void LatexGenerator::startTitle()
-{
-  if (Config_getBool(COMPACT_LATEX))
-  {
-    m_t << "\\doxysubsection{";
-  }
-  else
-  {
-    m_t << "\\doxysection{";
-  }
-}
-
-void LatexGenerator::startGroupHeader(int extraIndentLevel)
+void LatexGenerator::startGroupHeader(const QCString &,int extraIndentLevel)
 {
   if (Config_getBool(COMPACT_LATEX))
   {
@@ -1562,33 +1552,8 @@ void LatexGenerator::startMemberDoc(const QCString &clname,
 {
   if (!memname.isEmpty() && memname[0]!='@')
   {
-    m_t << "\\index{";
-    if (!clname.isEmpty())
-    {
-      m_t << latexEscapeLabelName(clname);
-      m_t << "@{";
-      m_t << latexEscapeIndexChars(clname);
-      m_t << "}!";
-    }
-    m_t << latexEscapeLabelName(memname);
-    m_t << "@{";
-    m_t << latexEscapeIndexChars(memname);
-    m_t << "}}\n";
-
-    m_t << "\\index{";
-    m_t << latexEscapeLabelName(memname);
-    m_t << "@{";
-    m_t << latexEscapeIndexChars(memname);
-    m_t << "}";
-    if (!clname.isEmpty())
-    {
-      m_t << "!";
-      m_t << latexEscapeLabelName(clname);
-      m_t << "@{";
-      m_t << latexEscapeIndexChars(clname);
-      m_t << "}";
-    }
-    m_t << "}\n";
+    latexWriteIndexItem(m_t,clname,memname);
+    latexWriteIndexItem(m_t,memname,clname);
   }
   bool compactLatex = Config_getBool(COMPACT_LATEX);
   bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
@@ -1637,7 +1602,7 @@ void LatexGenerator::startDoxyAnchor(const QCString &fName,const QCString &,
 {
   bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
   bool usePDFLatex   = Config_getBool(USE_PDFLATEX);
-  if (m_insideTableEnv) m_t << "\\mbox{"; // see issue #6093
+  if (m_insideTableEnv) m_t << "\\doxymbox{"; // see issue #6093
   if (usePDFLatex && pdfHyperlinks)
   {
     m_t << "\\Hypertarget{";
@@ -1689,20 +1654,7 @@ void LatexGenerator::addIndexItem(const QCString &s1,const QCString &s2)
 {
   if (!s1.isEmpty())
   {
-    m_t << "\\index{";
-    m_t << latexEscapeLabelName(s1);
-    m_t << "@{";
-    m_t << latexEscapeIndexChars(s1);
-    m_t << "}";
-    if (!s2.isEmpty())
-    {
-      m_t << "!";
-      m_t << latexEscapeLabelName(s2);
-      m_t << "@{";
-      m_t << latexEscapeIndexChars(s2);
-      m_t << "}";
-    }
-    m_t << "}";
+    latexWriteIndexItem(m_t,s1,s2);
   }
 }
 
@@ -1971,10 +1923,13 @@ void LatexGenerator::endMemberList()
 }
 
 
-void LatexGenerator::startMemberGroupHeader(bool hasHeader)
+void LatexGenerator::startMemberGroupHeader(const QCString &,bool hasHeader)
 {
-  if (hasHeader) m_t << "\\begin{Indent}";
-  m_t << "\\textbf{ ";
+  if (hasHeader)
+  {
+    m_t << "\\begin{Indent}";
+    m_t << "\\textbf{ ";
+  }
   // changed back to rev 756 due to bug 660501
   //if (Config_getBool(COMPACT_LATEX))
   //{
@@ -1986,10 +1941,10 @@ void LatexGenerator::startMemberGroupHeader(bool hasHeader)
   //}
 }
 
-void LatexGenerator::endMemberGroupHeader()
+void LatexGenerator::endMemberGroupHeader(bool hasHeader)
 {
   // changed back to rev 756 due to bug 660501
-  m_t << "}\\par\n";
+  if (hasHeader) m_t << "}\\par\n";
   //m_t << "}\n";
 }
 
@@ -2131,7 +2086,7 @@ void LatexGenerator::exceptionEntry(const QCString &prefix,bool closeBracket)
   m_t << " ";
 }
 
-void LatexGenerator::writeDoc(const IDocNodeAST *ast,const Definition *ctx,const MemberDef *,int)
+void LatexGenerator::writeDoc(const IDocNodeAST *ast,const Definition *ctx,const MemberDef *,int,int)
 {
   const DocNodeAST *astImpl = dynamic_cast<const DocNodeAST*>(ast);
   if (astImpl)
@@ -2308,14 +2263,21 @@ void LatexGenerator::writeInheritedSectionTitle(
   m_t << "}\n";
 }
 
-void LatexGenerator::writeLocalToc(const SectionRefs &,const LocalToc &localToc)
+void LatexGenerator::startLocalToc(int level)
 {
-  if (localToc.isLatexEnabled())
-  {
-    int maxLevel = localToc.latexLevel() + m_hierarchyLevel;
-    m_t << "\\etocsetnexttocdepth{" << maxLevel << "}\n";
-    m_t << "\\localtableofcontents\n";
-  }
+  int maxLevel = level + m_hierarchyLevel;
+  m_t << "\\etocsetnexttocdepth{" << maxLevel << "}\n";
+  m_t << "\\localtableofcontents\n";
+}
+
+void LatexGenerator::startEmbeddedDoc(int indent)
+{
+  m_t << "\\begin{DoxyEmbeddedDoc}[" << indent << "]\n";
+}
+
+void LatexGenerator::endEmbeddedDoc()
+{
+  m_t << "\\end{DoxyEmbeddedDoc}\n";
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -2330,9 +2292,9 @@ void writeExtraLatexPackages(TextStream &t)
     for (const auto &pkgName : extraPackages)
     {
       if ((pkgName[0] == '[') || (pkgName[0] == '{'))
-        t << "\\usepackage" << pkgName.c_str() << "\n";
+        t << "\\usepackage" << pkgName << "\n";
       else
-        t << "\\usepackage{" << pkgName.c_str() << "}\n";
+        t << "\\usepackage{" << pkgName << "}\n";
     }
     t << "\n";
   }
@@ -2445,7 +2407,7 @@ void filterLatexString(TextStream &t,const QCString &str,
           else
             t << static_cast<char>(c);
           break;
-        case '#':  t << "\\#";           break;
+        case '#':  t << "\\+\\#";        break;
         case '$':  t << "\\$";           break;
         case '%':  t << "\\%";           break;
         case '^':  processEntity(t,pdfHyperlinks,"$^\\wedge$","\\string^");    break;
@@ -2492,13 +2454,13 @@ void filterLatexString(TextStream &t,const QCString &str,
         case '|':  processEntity(t,pdfHyperlinks,"$\\vert$","|");    break;
         case '~':  processEntity(t,pdfHyperlinks,"$\\sim$","\\string~");    break;
         case '[':  if (Config_getBool(PDF_HYPERLINKS) || insideItem)
-                     t << "\\mbox{[}";
+                     t << "\\+[";
                    else
                      t << "[";
                    break;
         case ']':  if (pc=='[') t << "$\\,$";
                      if (Config_getBool(PDF_HYPERLINKS) || insideItem)
-                       t << "\\mbox{]}";
+                       t << "]\\+";
                      else
                        t << "]";
                    break;
@@ -2512,7 +2474,15 @@ void filterLatexString(TextStream &t,const QCString &str,
                    break;
         case '\'': t << "\\textquotesingle{}";
                    break;
-        case '\n':  if (retainNewline) t << "\\newline"; else t << ' ';
+        case '\n': if (retainNewline)
+                   {
+                     t << "\\newline";
+                     if (insideTable) t << " ";
+                   }
+                   else
+                   {
+                     t << ' ';
+                   }
                    break;
         case ' ':  if (keepSpaces) { if (insideTabbing) t << "\\>"; else t << '~'; } else t << ' ';
                    break;
@@ -2520,7 +2490,7 @@ void filterLatexString(TextStream &t,const QCString &str,
         default:
                    //if (!insideTabbing && forceBreaks && c!=' ' && *p!=' ')
                    if (!insideTabbing &&
-                       ((c>='A' && c<='Z' && pc!=' ' && !(pc>='A' && pc <= 'Z') && pc!='\0' && *p) || (c==':' && pc!=':') || (pc=='.' && isId(c)))
+                       ((c>='A' && c<='Z' && pc!=' ' && !(pc>='A' && pc <= 'Z') && pc!='\0' && *p) || (pc=='.' && isId(c)))
                       )
                    {
                      t << "\\+";
@@ -2532,6 +2502,10 @@ void filterLatexString(TextStream &t,const QCString &str,
                    else
                    {
                      t << static_cast<char>(c);
+                   }
+                   if (!insideTabbing && ((c==':' && *p!=':') || c=='/'))
+                   {
+                     t << "\\+";
                    }
       }
     }
@@ -2679,6 +2653,7 @@ QCString latexFilterURL(const QCString &s)
       case '#':  t << "\\#"; break;
       case '%':  t << "\\%"; break;
       case '\\':  t << "\\\\"; break;
+      case '\n':  break; // ignore
       default:
         if (c<0)
         {
@@ -2693,6 +2668,27 @@ QCString latexFilterURL(const QCString &s)
     }
   }
   return t.str();
+}
+
+void latexWriteIndexItem(TextStream &m_t,const QCString &s1,const QCString &s2)
+{
+  if (!s1.isEmpty())
+  {
+    m_t << "\\index{";
+    m_t << latexEscapeLabelName(s1);
+    m_t << "@{";
+    m_t << latexEscapeIndexChars(s1);
+    m_t << "}";
+    if (!s2.isEmpty())
+    {
+      m_t << "!";
+      m_t << latexEscapeLabelName(s2);
+      m_t << "@{";
+      m_t << latexEscapeIndexChars(s2);
+      m_t << "}";
+    }
+    m_t << "}\n";
+  }
 }
 
 

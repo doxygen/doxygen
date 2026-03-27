@@ -69,7 +69,7 @@ class FormulaManager
     //! @name formula functions
     //! @{
     void           clear();
-    int            addFormula(const std::string &formulaText,int width=-1,int height=-1);
+    int            addFormula(const QCString &formulaText,int width=-1,int height=-1);
     const Formula *findFormula(int formulaId) const;
     bool           hasFormulas() const;
     //! @}

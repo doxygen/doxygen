@@ -101,13 +101,26 @@ class QCString
 {
   public:
     QCString() = default;
-    explicit QCString( const std::string &s ) : m_rep(s) {}
+    QCString(const QCString &) = default;
+    QCString &operator=(const QCString &) = default;
+    QCString(QCString &&) = default;
+    QCString &operator=(QCString &&) = default;
+   ~QCString() = default;
+
+    QCString( const std::string &s ) : m_rep(s) {}
 
     QCString( std::string &&s) : m_rep(std::move(s)) {}
 
+    QCString &operator=( std::string &&s)
+    {
+      m_rep=std::move(s);
+      return *this;
+    }
+
     QCString( std::string_view sv) : m_rep(sv) {}
 
-    QCString &operator=(std::string_view sv) {
+    QCString &operator=(std::string_view sv)
+    {
       m_rep=sv;
       return *this;
     }
@@ -177,16 +190,18 @@ class QCString
      *  @note the string will be resized to contain \a len characters. The contents of the
      *  string will be lost.
      */
-    void fill( char c, int len = -1 )
+    QCString fill( char c, int len = -1 )
     {
       int l = len==-1 ? static_cast<int>(m_rep.size()) : len;
       m_rep = std::string(l,c);
+      return *this;
     }
 
     QCString &sprintf( const char *format, ... );
 
     int	find( char c, int index=0, bool cs=TRUE ) const;
     int	find( const char *str, int index=0, bool cs=TRUE ) const;
+    int	find( const std::string &str, int index=0, bool cs=TRUE ) const;
     int find( const QCString &str, int index=0, bool cs=TRUE ) const;
 
     int	findRev( char c, int index=-1, bool cs=TRUE) const;

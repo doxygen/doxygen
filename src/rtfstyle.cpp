@@ -283,10 +283,10 @@ Rtf_Table_Default rtf_Table_Default[] =
 
 static const reg::Ex s_clause(R"(\\s(\d+)\s*)"); // match, e.g. '\s30' and capture '30'
 
-StyleData::StyleData(const std::string &reference, const std::string &definition)
+StyleData::StyleData(const QCString &reference, const QCString &definition)
 {
   reg::Match match;
-  if (reg::search(reference,match,s_clause))
+  if (reg::search(reference.str(),match,s_clause))
   {
     m_index = static_cast<int>(std::stoul(match[1].str()));
   }
@@ -298,21 +298,21 @@ StyleData::StyleData(const std::string &reference, const std::string &definition
   m_definition = definition;
 }
 
-bool StyleData::setStyle(const std::string &command, const std::string &styleName)
+bool StyleData::setStyle(const QCString &command, const QCString &styleName)
 {
   reg::Match match;
-  if (!reg::search(command,match,s_clause))
+  if (!reg::search(command.str(),match,s_clause))
   {
     err("Style sheet '{}' contains no '\\s' clause.\n{{{}}}\n", styleName, command);
     return false;
   }
   m_index = static_cast<int>(std::stoul(match[1].str()));
 
-  size_t index = command.find("\\sbasedon");
-  if (index!=std::string::npos)
+  int index = command.find("\\sbasedon");
+  if (index!=-1)
   {
-    m_reference  = command.substr(0,index);
-    m_definition = command.substr(index);
+    m_reference  = command.left(index);
+    m_definition = command.mid(index);
   }
 
   return true;
@@ -338,9 +338,9 @@ void loadStylesheet(const QCString &name, StyleDataMap& map)
     reg::Match match;
     if (reg::search(line,match,assignment_splitter))
     {
-      std::string key   = match.prefix().str();
-      std::string value = match.suffix().str();
-      auto it = map.find(key);
+      QCString key   = match.prefix().str();
+      QCString value = match.suffix().str();
+      auto it = map.find(key.str());
       if (it!=map.end())
       {
         StyleData& styleData = it->second;

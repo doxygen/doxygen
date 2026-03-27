@@ -32,6 +32,7 @@
 #include "section.h"
 #include "construct.h"
 #include "doctokenizer.h"
+#include "cite.h"
 
 class MemberDef;
 class Definition;
@@ -106,7 +107,7 @@ class DocNode
   protected:
     /*! Sets whether or not this item is inside a preformatted section */
     void setInsidePreformatted(bool p) { m_insidePre = p; }
-    enum RefType { Unknown, Anchor, Section, Table };
+    enum RefType { Unknown, Anchor, Section, Table, Requirement };
   private:
     bool m_insidePre = false;
     DocParser *m_parser;
@@ -243,19 +244,22 @@ class DocAnchor : public DocNode
 class DocCite : public DocNode
 {
   public:
-    DocCite(DocParser *parser,DocNodeVariant *parent,const QCString &target);
+    DocCite(DocParser *parser,DocNodeVariant *parent,const QCString &target,const QCString &context, CiteInfoOption opt);
     QCString file() const        { return m_file; }
     QCString relPath() const     { return m_relPath; }
     QCString ref() const         { return m_ref; }
     QCString anchor() const      { return m_anchor; }
-    QCString text() const        { return m_text; }
+    QCString target() const      { return m_target; }
+    CiteInfoOption option() const  { return m_option; }
+    QCString getText() const;
 
   private:
     QCString   m_file;
     QCString   m_relPath;
     QCString   m_ref;
     QCString   m_anchor;
-    QCString   m_text;
+    QCString   m_target;
+    CiteInfoOption m_option;
 };
 
 
@@ -279,7 +283,8 @@ class DocStyleChange : public DocNode
                  Ins           = (1<<13),
                  S             = (1<<14),
                  Cite          = (1<<15),
-                 Kbd           = (1<<16)
+                 Kbd           = (1<<16),
+                 Typewriter    = (1<<17)
                };
 
     DocStyleChange(DocParser *parser,DocNodeVariant *parent,size_t position,Style s,
@@ -606,6 +611,7 @@ class DocTitle : public DocCompoundNode
     void parse();
     void parseFromString(DocNodeVariant *,const QCString &title);
     bool hasTitle() const { return !children().empty(); }
+    bool isEmpty() const  { return !hasTitle(); }
 
   private:
 };
@@ -772,7 +778,7 @@ class DocRef : public DocCompoundNode
 {
   public:
     DocRef(DocParser *parser,DocNodeVariant *parent,const QCString &target,const QCString &context);
-    void parse();
+    void parse(char cmdChar,const QCString &cmdName);
     QCString file() const         { return m_file; }
     QCString relPath() const      { return m_relPath; }
     QCString ref() const          { return m_ref; }
@@ -1093,12 +1099,9 @@ class DocPara : public DocCompoundNode
     void handleLink(const QCString &cmdName,bool isJavaLink);
     void handleDoxyConfig(char cmdChar,const QCString &cmdName);
     void handleEmoji(char cmdChar,const QCString &cmdName);
-    void handleRef(char cmdChar,const QCString &cmdName);
     void handleSection(char cmdChar,const QCString &cmdName);
     void handleInheritDoc();
     void handleVhdlFlow();
-    void handleILine(char cmdChar,const QCString &cmdName);
-    void handleIFile(char cmdChar,const QCString &cmdName);
     void handleShowDate(char cmdChar,const QCString &cmdName);
     Token handleStartCode();
     Token handleHtmlHeader(const HtmlAttribList &tagHtmlAttribs,int level);
@@ -1270,7 +1273,7 @@ class DocHtmlTable : public DocCompoundNode
     Token parseXml();
     size_t numColumns() const { return m_numCols; }
     const DocNodeVariant *caption() const;
-    const DocNodeVariant *firstRow() const;
+    size_t numberHeaderRows() const;
 
   private:
     void computeTableGrid();
@@ -1474,6 +1477,10 @@ class DocNodeAST : public IDocNodeAST
       else if (std::holds_alternative<DocText>(root))
       {
         return std::get<DocText>(root).isEmpty();
+      }
+      else if (std::holds_alternative<DocTitle>(root))
+      {
+        return std::get<DocTitle>(root).isEmpty();
       }
       return false;
     }

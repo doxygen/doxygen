@@ -1870,28 +1870,23 @@ class TrManager:
 
         # Define templates for HTML table parts of the documentation.
         htmlTableTpl = '''
-            \\htmlonly
-            </p>
-            <table align="center" cellspacing="0" cellpadding="0" border="0">
-            <tr bgcolor="#000000">
-            <td>
-              <table cellspacing="1" cellpadding="2" border="0">
-              <tr bgcolor="#4040c0">
-              <td ><b><font size="+1" color="#ffffff"> Language </font></b></td>
-              <td ><b><font size="+1" color="#ffffff"> Maintainer </font></b></td>
-              <td ><b><font size="+1" color="#ffffff"> Contact address </font>
-                      <font size="-2" color="#ffffff">(replace the at and dot)</font></b></td>
-              <td ><b><font size="+1" color="#ffffff"> Status </font></b></td>
+            \\latexonly
+            \\footnotesize
+            \\endlatexonly
+            <table align="center" class=doxtable cellspacing="1" cellpadding="2">
+            <tr>
+              <th >Language</th>
+              <th >Maintainer</th>
+              <th >Contact address (replace the at and dot)</th>
+              <th >Status</td>
               </tr>
               <!-- table content begin -->
             %s
               <!-- table content end -->
-              </table>
-            </td>
-            </tr>
             </table>
-            <p>
-            \\endhtmlonly
+            \\latexonly
+            \\normalsize
+            \\endlatexonly
             '''
         htmlTableTpl = textwrap.dedent(htmlTableTpl)
         htmlTrTpl = '\n  <tr bgcolor="#ffffff">%s\n  </tr>'
@@ -1963,7 +1958,7 @@ class TrManager:
 
             # The last element contains the readable form of the status.
             bgcolor = self.getBgcolorByReadableStatus(obj.readableStatus)
-            lst.append(htmlTdStatusColorTpl % (bgcolor, obj.readableStatus))
+            lst.append(htmlTdStatusColorTpl % (bgcolor, obj.readableStatus.replace(".","\\.")))
 
             # Join the table data to one table row.
             trlst.append(htmlTrTpl % (''.join(lst)))
@@ -1971,77 +1966,8 @@ class TrManager:
         # Join the table rows and insert into the template.
         htmlTable = htmlTableTpl % (''.join(trlst))
 
-        # Define templates for LaTeX table parts of the documentation.
-        latexTableTpl = r'''
-            \latexonly
-            \footnotesize
-            \begin{longtable}{|l|l|l|l|}
-              \hline
-              {\bf Language} & {\bf Maintainer} & {\bf Contact address} & {\bf Status} \\
-              \hline
-            %s
-              \hline
-            \end{longtable}
-            \normalsize
-            \endlatexonly
-            '''
-        latexTableTpl = textwrap.dedent(latexTableTpl)
-        latexLineTpl = '\n' + r'  %s & %s & {\tt\tiny %s} & %s \\'
-
-        # Loop through transl objects in the order of sorted readable names
-        # and add generate the content of the LaTeX table.
-        trlst = []
-        for name, obj in self.langLst:
-            # For LaTeX, more maintainers for the same language are
-            # placed on separate rows in the table.  The line separator
-            # in the table is placed explicitly above the first
-            # maintainer. Prepare the arguments for the LaTeX row template.
-            maintainers = []
-            if obj.classId in self.__maintainersDic:
-                maintainers = self.__maintainersDic[obj.classId]
-
-            lang = obj.langReadable
-            maintainer = None  # init
-            email = None       # init
-            if obj.status == 'En':
-                # Check whether there is the coupled non-English.
-                classId = obj.classId[:-2]
-                if classId in self.__translDic:
-                    langNE = self.__translDic[classId].langReadable
-                    maintainer = 'see the %s language' % langNE
-                    email = '~'
-
-            if not maintainer and (obj.classId in self.__maintainersDic):
-                lm = [ m[0] for m in self.__maintainersDic[obj.classId] ]
-                maintainer = maintainers[0][0]
-                email = maintainers[0][1]
-
-            status = obj.readableStatus
-
-            # Use the template to produce the line of the table and insert
-            # the hline plus the constructed line into the table content.
-            # The underscore character must be escaped.
-            trlst.append('\n  \\hline')
-            s = latexLineTpl % (lang, maintainer, email, status)
-            s = s.replace('_', '\\_')
-            trlst.append(s)
-
-            # List the other maintainers for the language. Do not set
-            # lang and status for them.
-            lang = '~'
-            status = '~'
-            for m in maintainers[1:]:
-                maintainer = m[0]
-                email = m[1]
-                s = latexLineTpl % (lang, maintainer, email, status)
-                s = s.replace('_', '\\_')
-                trlst.append(s)
-
-        # Join the table lines and insert into the template.
-        latexTable = latexTableTpl % (''.join(trlst))
-
         # Put the HTML and LaTeX parts together and define the dic item.
-        tplDic['informationTable'] = htmlTable + '\n' + latexTable
+        tplDic['informationTable'] = htmlTable
 
         # Insert the symbols into the document template and write it down.
         f = xopen(fDocName, 'w')

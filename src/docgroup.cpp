@@ -223,6 +223,7 @@ void DocGroup::addDocs(Entry *e)
         info->docFile = e->docFile;
         info->docLine = e->docLine;
         info->setRefItems(e->sli);
+        info->setRequirementReferences(e->rqli);
       }
     }
     e->doc.clear();

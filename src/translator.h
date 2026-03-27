@@ -765,6 +765,25 @@ class Translator
 //////////////////////////////////////////////////////////////////////////
     virtual QCString trImportant() = 0;
 
+//////////////////////////////////////////////////////////////////////////
+// new since 1.16.0
+//////////////////////////////////////////////////////////////////////////
+    virtual QCString trRequirements() = 0;
+    virtual QCString trRequirementID() = 0;
+    virtual QCString trSatisfies(bool singular) = 0;
+    virtual QCString trSatisfiedBy(const QCString &list) = 0;
+    virtual QCString trUnsatisfiedRequirements() = 0;
+    virtual QCString trUnsatisfiedRequirementsText(bool singular,const QCString &list) = 0;
+    virtual QCString trVerifies(bool singular) = 0;
+    virtual QCString trVerifiedBy(const QCString &list) = 0;
+    virtual QCString trUnverifiedRequirements() = 0;
+    virtual QCString trUnverifiedRequirementsText(bool singular,const QCString &list) = 0;
+
+
+
+//////////////////////////////////////////////////////////////////////////
+// helpers
+//////////////////////////////////////////////////////////////////////////
   protected:
     QCString p_latexCommandName(const QCString &latexCmd)
     {
@@ -786,10 +805,9 @@ class Translator
       QCString result;
       if (first_capital)
       {
-        std::string res = getUTF8CharAt(base.str(),0);
-        res = convertUTF8ToUpper(res);
-        result = res.c_str();
-        result += base.mid(res.length());
+        QCString lc = getUTF8CharAt(base.str(),0);
+        QCString uc = convertUTF8ToUpper(lc.str());
+        result = uc + base.mid(lc.length());
       }
       else
       {
@@ -798,6 +816,7 @@ class Translator
       result += (singular ? singSuffix : plurSuffix);
       return result;
     }
+
 };
 
 #endif

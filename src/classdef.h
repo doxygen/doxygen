@@ -357,6 +357,7 @@ class ClassDef : public Definition
                  int indentLevel, const ClassDef *inheritedFrom,const QCString &inheritId) const = 0;
     virtual void writeQuickMemberLinks(OutputList &ol,const MemberDef *md) const = 0;
     virtual void writeSummaryLinks(OutputList &ol) const = 0;
+    virtual void writePageNavigation(OutputList &ol) const = 0;
     virtual void writeInlineDocumentation(OutputList &ol) const = 0;
     virtual void writeTagFile(TextStream &) const = 0;
     virtual void writeMemberDeclarations(OutputList &ol,ClassDefSet &visitedClasses,
@@ -432,6 +433,7 @@ class ClassDefMutable : public DefinitionMutable, public ClassDef
     virtual void findSectionsInDocumentation() = 0;
     virtual void addMembersToMemberGroup() = 0;
     virtual void addListReferences() = 0;
+    virtual void addRequirementReferences() = 0;
     virtual void addTypeConstraints() = 0;
     virtual void computeAnchors() = 0;
     virtual void mergeMembers() = 0;
@@ -442,6 +444,7 @@ class ClassDefMutable : public DefinitionMutable, public ClassDef
     virtual void setAnonymousEnumType() = 0;
     virtual void countMembers() = 0;
     virtual void sortAllMembersList() = 0;
+    virtual void setPrimaryConstructorParams(const ArgumentList &list) = 0;
 
 
 };

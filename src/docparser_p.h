@@ -61,6 +61,7 @@ struct DocParserContext
   const Definition *scope = nullptr;
   QCString context;
   bool inSeeBlock = false;
+  bool inCodeStyle = false;
   bool xmlComment = false;
   bool insideHtmlLink = false;
   DocNodeStack nodeStack;
@@ -74,6 +75,8 @@ struct DocParserContext
   bool         hasReturnCommand = false;
   StringMultiSet retvalsFound;
   StringMultiSet paramsFound;
+  int          paramPosition = 0;
+  int          numParameters = 0;
   const MemberDef *  memberDef = nullptr;
   bool         isExample = false;
   QCString     exampleName;
@@ -92,6 +95,7 @@ struct DocParserContext
   TokenInfo *token = nullptr;
   int      lineNo = 0;
   bool     markdownSupport = false;
+  bool     autolinkSupport = false;
 };
 
 class DocParser : public IDocParser
@@ -135,6 +139,9 @@ class DocParser : public IDocParser
     void handleCite(DocNodeVariant *parent,DocNodeList &children);
     void handlePrefix(DocNodeVariant *parent,DocNodeList &children);
     void handleImage(DocNodeVariant *parent, DocNodeList &children);
+    void handleRef(DocNodeVariant *parent, DocNodeList &children, char cmdChar, const QCString &cmdName);
+    void handleIFile(char cmdChar,const QCString &cmdName);
+    void handleILine(char cmdChar,const QCString &cmdName);
     void readTextFileByName(const QCString &file,QCString &text);
 
     std::stack< DocParserContext > contextStack;

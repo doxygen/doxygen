@@ -98,7 +98,7 @@ void ClassLinkedRefMap::writeDocumentation(OutputList &ol,const Definition * con
       if (!found)
       {
         ol.writeRuler();
-        ol.startGroupHeader();
+        ol.startGroupHeader("inline_classes");
         ol.parseText(fortranOpt?theTranslator->trTypeDocumentation():
             theTranslator->trClassDocumentation());
         ol.endGroupHeader();

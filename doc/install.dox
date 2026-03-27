@@ -21,7 +21,7 @@
 
 First go to the
 <a href="https://www.doxygen.org/download.html">download</a> page
-to get the latest distribution, if you have not downloaded Doxygen already.
+to get the latest distribution if you have not downloaded Doxygen already.
 
 \section install_src_unix Compiling from source on UNIX
 
@@ -37,7 +37,7 @@ following to build the executable:
     \addindex python
 <li>You need \c python (version 2.7 or higher, see https://www.python.org).
 <li>In order to generate a \c Makefile for your platform, you need
-    <a href="https://cmake.org/">cmake</a> version 3.14 or later.
+    <a href="https://cmake.org/">Cmake</a> version 3.14 or later.
     \addindex cmake
 </ul>
 
@@ -46,7 +46,7 @@ tools should be installed.
 
 <ul>
 <li>Qt Software's GUI toolkit
-    <a href="https://doc.qt.io/">Qt</A>
+    <a href="https://doc.qt.io/">Qt</a>
     \addindex Qt
     version 5.14 or higher (including Qt 6).
     This is needed to build the GUI front-end Doxywizard.
@@ -66,7 +66,13 @@ tools should be installed.
     <a href="https://www.ghostscript.com/">www.ghostscript.com</a>.
 </ul>
 
-Compilation is now done by performing the following steps:
+For testing at least these additional dependencies should be available:
+<ul>
+<li>xmllint (libxml2-utils)</li>
+<li>bibtex (texlive-binaries)</li>
+</ul>
+
+Compilation steps:
 
 <ol>
 <li>Unpack the archive, unless you already have done that:
@@ -85,7 +91,7 @@ Compilation is now done by performing the following steps:
         cmake -G "Unix Makefiles" ..
 
     <code>cmake</code> tries to determine the platform you use, and will look
-    for the requires tools. It will report if something is missing.
+    for the required tools. It will report if something is missing.
 
     If you have Qt-5.14 or higher installed and want to build the GUI
     front-end, you should enable it as follows:
@@ -175,7 +181,8 @@ or <a href="https://www.mingw-w64.org/">MinGW</a>.
 \addindex flex
 \addindex bison
 The next step is to install modern versions of \c bison and \c flex
-(see https://sourceforge.net/projects/winflexbison/. After installation and adding them to
+(see https://sourceforge.net/projects/winflexbison/files and select win_flex_bison3-latest.zip.
+After installation and adding them to
 your `path` rename `win_flex.exe` to `flex.exe` and `win_bison.exe` to `bison.exe`)
 \addindex python
 Furthermore you have to install \c python (version 2.7 or higher, see https://www.python.org).
@@ -183,7 +190,7 @@ These packages are needed during the compilation process.
 
 Download Doxygen's source tarball and put it somewhere (e.g. use <code>c:\\tools</code>)
 
-Now start a visual studio native command shell (for either x86 or x64) and type
+Now start a Visual Studio native command shell (for either x86 or x64) and type
 \verbatim
 cd c:\tools
 tar zxvf doxygen-x.y.z.src.tar.gz
@@ -200,7 +207,7 @@ mkdir build
 cd build
 cmake -G "Visual Studio 14 2015" ..
 \endverbatim
-This will create a project file then can be opened in Visual Studio.
+This will create a project file that can be opened in Visual Studio.
 
 If you prefer compiling from the command prompt you can use the following instead:
 \verbatim
@@ -229,7 +236,7 @@ of the GraphViz package to render nicer diagrams, see the
 If you want to produce compressed HTML files (see \ref
 cfg_generate_htmlhelp "GENERATE_HTMLHELP") in the configuration file, then
 you need the Microsoft HTML help workshop.
-In the beginning of 2021 Microsoft took the original page, with a.o. the download links,
+At the beginning of 2021, Microsoft took the original page, with a.o. the download links,
 offline the HTML help workshop was already many years in maintenance mode). 
 You can download the HTML help workshop from the web archives at
 <a href="http://web.archive.org/web/20160201063255/http://download.microsoft.com/download/0/A/9/0A939EF6-E31C-430F-A3DF-DFAE7960D564/htmlhelp.exe">Installation executable</a>.

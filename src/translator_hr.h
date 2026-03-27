@@ -21,7 +21,7 @@
 //  - Better handling of ISO-8859-2/ WIN 1250 stuff based on (actually stolen from :-)) Czech translations
 //    implemented by Petr Prikryl (prikrylp@skil.cz).
 //    As opposed to Czech translation this one assumes that Doxygen strings are written in Linux ( it's true,
-//    I don't have QT pro licence ) , and uses ISOToWin function when built in WIN32
+//    I don't have QT pro license ), and use ISOToWin function when built in WIN32
 //
 // 2000/09/18
 // - Added strings from 1.2.1
@@ -1171,7 +1171,7 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
     { QCString result= "Opis direktorija "; result += dirName; return result; }
 
     /*! This returns the word directory with or without starting capital
-     *  (\a first_capital) and in sigular or plural form (\a singular).
+     *  (\a first_capital) and in singular or plural form (\a singular).
      */
     QCString trDir(bool first_capital, bool singular) override
     {

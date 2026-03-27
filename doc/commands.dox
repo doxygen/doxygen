@@ -198,6 +198,7 @@ documentation:
 \refitem cmdrelatesalso \\relatesalso
 \refitem cmdremark \\remark
 \refitem cmdremarks \\remarks
+\refitem cmdrequirement \\requirement
 \refitem cmdresult \\result
 \refitem cmdreturn \\return
 \refitem cmdreturns \\returns
@@ -205,6 +206,7 @@ documentation:
 \refitem cmdrtfinclude \\rtfinclude
 \refitem cmdrtfonly \\rtfonly
 \refitem cmdsa \\sa
+\refitem cmdsatisfies \\satisfies
 \refitem cmdsecreflist \\secreflist
 \refitem cmdsection \\section
 \refitem cmdsee \\see
@@ -242,6 +244,7 @@ documentation:
 \refitem cmdvar \\var
 \refitem cmdverbatim \\verbatim
 \refitem cmdverbinclude \\verbinclude
+\refitem cmdverifies \\verifies
 \refitem cmdversion \\version
 \refitem cmdvhdlflow \\vhdlflow
 \refitem cmdwarning \\warning
@@ -1435,6 +1438,26 @@ Structural indicators
   Equivalent to \ref cmdrelatesalso "\\relatesalso"
 
 <hr>
+\section cmdrequirement \\requirement \<id\> [(title)]
+
+  \addindex \\requirement
+  Indicates that a comment block contains documentation for a requirement.
+  In the output, all requirements are collected on a single page.
+
+  A requirement can be referred to by its \<id\> using the normal linking commands like \ref cmdref "\\ref".
+  There are two special commands to refer to a requirement.
+  - \ref cmdsatisfies "\\satisfies" can be placed in the comment for a function or class (or any other symbol) that contributes to the
+    \e implementation of the requirement.
+  - \ref cmdverifies "\\verifies" can be placed at the function or class that \e tests the requirement.
+
+  Together the \ref cmdsatisfies "\\satisfies" and \ref cmdverifies "\\verifies" commands help to provide traceability information
+  to show where in the code a requirement has been implemented and/or tested.
+
+  Requirements can be imported via tag files as well.
+
+  \sa sections \ref cmdsatisfies "\\satisfies" and \ref cmdverifies "\\verifies"
+
+<hr>
 \section cmdshowinitializer \\showinitializer
 
   \addindex \\showinitializer
@@ -2095,19 +2118,19 @@ ALIASES  = "english=\if english" \
   The \c \\param command has an optional attribute, \<dir\>, specifying the direction
   of the parameter. Possible values are "[in]", "[out]", and "[in,out]"; note the [square] brackets
   in this description.
-  For the bidirecional values, directions "in" and "out" can be specified in any order, and they can
-  either be written altogether, or separated with a comma (`,`) or a space.
+  For the bidirectional values, directions "in" and "out" can be specified in any order, and they can
+  either be written together (without separator), or separated with a comma (`,`) or a space.
   That means that for example values "[outin]" or "[in out]" are also valid.
   Note that it is also possible to put whitespace between the command and the \<dir\>.
   When a parameter is both input and output, [in,out] is used as attribute.
   Here is an example for the function \c memcpy:
-  \code
+  \code	
 /*!
  * Copies bytes from a source memory area to a destination memory area,
  * where both areas may not overlap.
- * @param[out] dest The memory area to copy to.
- * @param[in]  src  The memory area to copy from.
- * @param[in]  n    The number of bytes to copy
+ * \param[out] dest The memory area to copy to.
+ * \param[in]  src  The memory area to copy from.
+ * \param[in]  n    The number of bytes to copy
  */
 void memcpy(void *dest, const void *src, size_t n);
   \endcode
@@ -2121,14 +2144,54 @@ void memcpy(void *dest, const void *src, size_t n);
   sectioning command is encountered. See section \ref cmdfn "\\fn" for an
   example.
 
+  The parameter name is normally the name given in the function signature. 
+  For unnamed parameters, a positional index can also be used 
+  (starting with 1 for the first parameter).
+  \code
+/** Base */
+class Base
+{
+  public:
+    /** Method
+     *  \param 1 First parameter docs
+     *  \param 2 Second parameter docs
+     */
+    virtual void method(int, int) = 0;
+};
+
+/** Derived */
+class Derived : public Base
+{
+  public:
+    void method(int x, int y) override;
+};
+  \endcode
+
+  Alternatively, a minus sign (-) can be used as placeholder
+  for the name of an unnamed parameter.
+  \code
+/** Function docs.
+ *  \param - First parameter
+ *  \param - Second parameter
+ */
+void foo(int, int)
+{
+}
+  \endcode
+
+  Both ordinal position (numeric) and dash (-) parameter names are 
+  rendered as a dash in the output, unless a later definition or 
+  overriding method provides the actual parameter names, 
+  as is the case in the \c Derived class in the example above.
+
   Note that you can also document multiple parameters with a single
-  \c \\param command using a comma separated list. Here is an example:
+  \c \\param command using a comma-separated list. Here is an example:
 
 \code
 /** Sets the position.
- *  @param x,y,z Coordinates of the position in 3D space.
+ *  \param x,y,z Coordinates of the position in 3D space.
  */
-void setPosition(double x,double y,double z,double t)
+void setPosition(double x, double y, double z)
 {
 }
 \endcode
@@ -2138,7 +2201,7 @@ void setPosition(double x,double y,double z,double t)
   (as this is not part of the definition).
   The syntax is the same as for the `phpDocumentor`, i.e.
 \verbatim
-@param  datatype1|datatype2 $paramname description
+\param  datatype1|datatype2 $paramname description
 \endverbatim
 
 <hr>
@@ -2477,16 +2540,28 @@ Commands to create links
   \sa section \ref cmdref "\\ref".
 
 <hr>
-\section cmdcite \\cite \<label\>
+\section cmdcite \\cite['{'[option]'}'] \<label\>
 
   \addindex \\cite
   Adds a bibliographic reference in the text and in the list of bibliographic
   references. The \<label\> must be a valid BibTeX label that can be found
-  in one of the .bib files listed in \ref cfg_cite_bib_files "CITE_BIB_FILES".
+  in one of the `.bib` files listed in \ref cfg_cite_bib_files "CITE_BIB_FILES".
   For the \LaTeX output the formatting of the reference in the text can be
   configured with \ref cfg_latex_bib_style "LATEX_BIB_STYLE". For other
   output formats a fixed representation is used. Note that using this
   command requires the \c bibtex tool to be present in the search path.
+
+  There are a number of options possible:
+  - `number`, `shortauthor`, `year`, these options are mutually exclusive,
+    in case none of these is specified `number` is assumed.
+    - `number` create a numerical reference
+    - `shortauthor` just the surname of the first author is given, and in case
+      multiple authors are present the text "et al." is added
+    - `year`, the year of publication is mentioned (when specified in the bibtex
+      file).
+  - `nopar`, no (square) brackets are added
+  - `nocite`, no link to a citation in the bibliography is made (and the
+    reference is not added to the bibliography based on this item)
 
 <hr>
 \section cmdendlink \\endlink
@@ -2543,6 +2618,32 @@ Commands to create links
   and ends with \ref cmdendsecreflist "\\endsecreflist".
   An example of such a list can be seen
   \ref showsecreflist "at the top of the page".
+
+<hr>
+\section cmdsatisfies \\satisfies <req-id> [(short description)]
+  \addindex \\satisfies
+  Creates a reference to a requirement with an optional short description for the link text.
+  The function, class, or other symbol that contain such reference is considered to
+  contribute to the implementation of the requirement. A comment can contain multiple
+  satisfies references pointing to different requirements.
+  There can also be multiple contributors to the implementation
+  of a single requirement, in which case the satisfies command should be mentioned in the
+  documentation of each contributing party.
+
+  \sa sections \ref cmdverifies "\\verifies" and \ref cmdrequirement "\\requirement"
+
+<hr>
+\section cmdverifies \\verifies <req-id> [(short description)]
+  \addindex \\verifies
+  Creates a reference to a requirement with an optional short description for the link text.
+  The function, class, or other symbol
+  that contain such reference is considered to contribute to testing/verifying
+  the requirement. A comment can contain multiple verifies references pointing to
+  different requirements. There can also be multiple contributors to test/verify
+  a single requirement, in which case the verifies command should be mentioned in the
+  documentation of each contributing party.
+
+  \sa sections \ref cmdsatisfies "\\satisfies" and \ref cmdrequirement "\\requirement"
 
 <hr>
 \section cmdsecreflist \\secreflist
@@ -3284,7 +3385,7 @@ Commands for visual enhancements
 \endverbatim
 
   If the contents of the code block are in a language that Doxygen cannot parse, Doxygen
-  will just show the output as-is. You can make this explicit using .unparsed, or by
+  will just show the output as-is. You can make this explicit using `.unparsed`, or by
   giving some other extension that Doxygen doesn't support, e.g.
 
 \verbatim
@@ -3529,7 +3630,7 @@ class Receiver
   PlantUML `@start...` command. This will look like `@start<engine>` where currently supported are
   the following `<engine>`s: `uml`, `bpm`, `wire`, `dot`, `ditaa`, `salt`, `math`, `latex`,
   `gantt`, `mindmap`, `wbs`, `yaml`, `creole`, `json`, `flow`, `board`, `git`, `hcl`, `regex`, `ebnf`,
-  `files`, `chen` and `chronology`.
+  `chart`, `nwdiag`, `packetdiag`, `project`, `sprites`, `files`, `chen` and `chronology`.
   By default the `<engine>` is `uml`. The `<engine>` can be specified as an option.
   Also the file to write the resulting image to can be specified by means of an option, see the
   description of the first (optional) argument for details.

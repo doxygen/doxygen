@@ -34,7 +34,6 @@ class RefList;
 class PageLinkedMap;
 class PageDef;
 class ParserManager;
-class BufStr;
 class MemberDef;
 class GroupDef;
 class GroupLinkedMap;
@@ -124,8 +123,6 @@ class Doxygen
     static SearchIndexIntf           searchIndex;
     static SymbolMap<Definition>    *symbolMap;
     static ClangUsrMap              *clangUsrMap;
-    static Cache<std::string,LookupInfo> *typeLookupCache;
-    static Cache<std::string,LookupInfo> *symbolLookupCache;
     static DirLinkedMap             *dirLinkedMap;
     static DirRelationLinkedMap      dirRelations;
     static ParserManager            *parserManager;

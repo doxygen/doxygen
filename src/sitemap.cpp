@@ -72,10 +72,10 @@ void Sitemap::finalize()
 void Sitemap::addIndexFile(const QCString & fileName)
 {
   QCString fn = fileName;
-  QCString sidemapUrl = Config_getString(SITEMAP_URL);
+  QCString sitemapUrl = Config_getString(SITEMAP_URL);
   addHtmlExtensionIfMissing(fn);
   p->doc << "  <url>\n";
-  p->doc << "    <loc>" << convertToXML(sidemapUrl + fn) << "</loc>\n";
+  p->doc << "    <loc>" << convertToXML(sitemapUrl + fn) << "</loc>\n";
   p->doc << "  </url>\n";
 }
 
@@ -140,7 +140,7 @@ void Crawlmap::addIndexFile(const QCString & fileName)
 void Crawlmap::addContentsItem(bool, const QCString &, const QCString & ref,
                                const QCString & file, const QCString & anchor,
                                bool ,bool ,
-                               const Definition *)
+                               const Definition *, const QCString &)
 {
   if (!file.isEmpty() && ref.isEmpty())      // made file optional param and
                                              // don't place links in crawl file imported

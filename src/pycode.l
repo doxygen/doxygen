@@ -85,6 +85,7 @@ struct pycodeYY_state
   int           yyLineNr = 0;        //!< current line number
   std::unique_ptr<FileDef> exampleFileDef;
   const FileDef *    sourceFileDef = nullptr;
+  bool          lineNumbers = false;
   const Definition * currentDefinition = nullptr;
   const MemberDef *  currentMemberDef = nullptr;
   bool          includeCodeFragment = FALSE;
@@ -336,7 +337,7 @@ FLOWKW            ("or"|"and"|"is"|"not"|"print"|"for"|"in"|"if"|"try"|"except"|
                                         // Try to find class in global scope
                                         if (baseDefToAdd==nullptr)
                                         {
-                                          baseDefToAdd=yyextra->symbolResolver.resolveClass(yyextra->currentDefinition,s.c_str(),true);
+                                          baseDefToAdd=yyextra->symbolResolver.resolveClass(yyextra->currentDefinition,s,true);
                                         }
 
                                         if (baseDefToAdd && baseDefToAdd->name()!=yyextra->curClassName)
@@ -949,7 +950,7 @@ static void startCodeLine(yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   //if (yyextra->currentFontClass) { yyextra->code->endFontClass(yyscanner); }
-  if (yyextra->sourceFileDef)
+  if (yyextra->sourceFileDef && yyextra->lineNumbers)
   {
     //QCString lineNumber,lineAnchor;
     //lineNumber.sprintf("%05d",yyextra->yyLineNr);
@@ -1146,8 +1147,7 @@ static void codifyLines(yyscan_t yyscanner,const QCString &text)
     {
       yyextra->yyLineNr++;
       size_t l = static_cast<size_t>(p-sp-1);
-      std::string tmp(sp,l);
-      yyextra->code->codify(tmp.c_str());
+      yyextra->code->codify(QCString(sp,l));
       nextCodeLine(yyscanner);
     }
     else
@@ -1524,21 +1524,12 @@ void PythonCodeParser::resetCodeParserState()
 }
 
 void PythonCodeParser::parseCode(OutputCodeList &codeOutIntf,
-    const QCString &/* scopeName */,
-    const QCString &input,
-    SrcLangExt /*lang*/,
-    bool stripCodeComments,
-    bool isExampleBlock,
-    const QCString &exampleName,
-    const FileDef *fileDef,
-    int startLine,
-    int endLine,
-    bool inlineFragment,
-    const MemberDef * /* memberDef */,
-    bool /* showLineNumbers */,
-    const Definition *searchCtx,
-    bool collectXRefs
-    )
+                                 const QCString &/* scopeName */,
+                                 const QCString &input,
+                                 SrcLangExt /*lang*/,
+                                 bool stripCodeComments,
+                                 const CodeParserOptions &options
+                                )
 {
   yyscan_t yyscanner = p->yyscanner;
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
@@ -1547,36 +1538,29 @@ void PythonCodeParser::parseCode(OutputCodeList &codeOutIntf,
 
   codeOutIntf.stripCodeComments(stripCodeComments);
   if (input.isEmpty()) return;
-  DebugLex debugLex(Debug::Lex_pycode, __FILE__, fileDef ? qPrint(fileDef->fileName()): nullptr);
-  yyextra->fileName      = fileDef ? fileDef->fileName():"";
-  yyextra->code = &codeOutIntf;
+  DebugLex debugLex(Debug::Lex_pycode, __FILE__, options.fileDef() ? qPrint(options.fileDef()->fileName()): nullptr);
+  yyextra->fileName      = options.fileDef() ? options.fileDef()->fileName():"";
+  yyextra->code          = &codeOutIntf;
   yyextra->inputString   = input.data();
   yyextra->inputPosition = 0;
   yyextra->currentFontClass = nullptr;
   yyextra->insideCodeLine = FALSE;
-  yyextra->searchCtx=searchCtx;
-  yyextra->collectXRefs=collectXRefs;
-  if (startLine!=-1)
-    yyextra->yyLineNr    = startLine;
-  else
-    yyextra->yyLineNr    = 1;
-  if (endLine!=-1)
-    yyextra->inputLines  = endLine+1;
-  else
-    yyextra->inputLines  = yyextra->yyLineNr + countLines(yyscanner) - 1;
-
-
-  yyextra->exampleBlock  = isExampleBlock;
-  yyextra->exampleName   = exampleName;
-  yyextra->sourceFileDef = fileDef;
-  yyextra->symbolResolver.setFileScope(fileDef);
+  yyextra->searchCtx     = options.searchCtx();
+  yyextra->collectXRefs  = options.collectXRefs();
+  yyextra->yyLineNr      = options.startLine()!=-1 ? options.startLine() : 1;
+  yyextra->inputLines    = options.endLine()!=-1   ? options.endLine()+1 : yyextra->yyLineNr + countLines(yyscanner) - 1;
+  yyextra->exampleBlock  = options.isExample();
+  yyextra->exampleName   = options.exampleName();
+  yyextra->sourceFileDef = options.fileDef();
+  yyextra->lineNumbers   = options.fileDef() && options.showLineNumbers();
+  yyextra->symbolResolver.setFileScope(options.fileDef());
   yyextra->foldStack.clear();
   yyextra->insideSpecialComment = false;
 
-  if (yyextra->exampleBlock && fileDef==nullptr)
+  if (yyextra->exampleBlock && options.fileDef()==nullptr)
   {
     // create a dummy filedef for the example
-    yyextra->exampleFileDef = createFileDef("",(!exampleName.isEmpty()?qPrint(exampleName):"generated"));
+    yyextra->exampleFileDef = createFileDef("",(!options.exampleName().isEmpty()?qPrint(options.exampleName()):"generated"));
     yyextra->sourceFileDef = yyextra->exampleFileDef.get();
   }
   if (yyextra->sourceFileDef)
@@ -1584,7 +1568,7 @@ void PythonCodeParser::parseCode(OutputCodeList &codeOutIntf,
     setCurrentDoc(yyscanner,"l00001");
   }
 
-  yyextra->includeCodeFragment = inlineFragment;
+  yyextra->includeCodeFragment = options.inlineFragment();
   // Starts line 1 on the output
   startCodeLine(yyscanner);
 

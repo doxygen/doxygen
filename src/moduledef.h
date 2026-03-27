@@ -122,6 +122,7 @@ class ModuleManager
     void addDocs(const Entry *root);
     void addTagInfo(const QCString &moduleFile,const QCString &tagName,const QCString &clangId);
     void addListReferences();
+    void addRequirementReferences();
     void addMembersToMemberGroup();
     void distributeMemberGroupDocumentation();
     void findSectionsInDocumentation();

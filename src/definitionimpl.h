@@ -77,6 +77,7 @@ class DefinitionImpl
     const GroupList &partOfGroups() const;
     bool isLinkableViaGroup() const;
     const RefItemVector &xrefListItems() const;
+    const RequirementRefs &requirementReferences() const;
     const Definition *findInnerCompound(const QCString &name) const;
     Definition *getOuterScope() const;
     const MemberVector &getReferencesMembers() const;
@@ -99,6 +100,7 @@ class DefinitionImpl
     void addSourceReferencedBy(MemberDef *d,const QCString &sourceRefName);
     void addSourceReferences(MemberDef *d,const QCString &sourceRefName);
     void setRefItems(const RefItemVector &sli);
+    void setRequirementReferences(const RequirementRefs &rqli);
     void mergeRefItems(Definition *d);
     void mergeReferences(const Definition *other);
     void mergeReferencedBy(const Definition *other);
@@ -114,11 +116,14 @@ class DefinitionImpl
     bool hasSourceReffedBy() const;
     void writeSourceRefs(OutputList &ol,const QCString &scopeName) const;
     void writeSourceReffedBy(OutputList &ol,const QCString &scopeName) const;
+    bool hasRequirementRefs() const;
+    void writeRequirementRefs(OutputList &ol) const;
     void makePartOfGroup(GroupDef *gd);
     void writeNavigationPath(OutputList &ol) const;
     QCString navigationPathAsString() const;
     void writeQuickMemberLinks(OutputList &,const MemberDef *) const;
     void writeSummaryLinks(OutputList &) const;
+    void writePageNavigation(OutputList &ol) const;
     QCString pathFragment() const;
     void writeDocAnchorsToTagFile(TextStream &) const;
     void setLocalName(const QCString &name);
@@ -200,6 +205,7 @@ class DefinitionMixin : public Base
     const GroupList &partOfGroups() const override { return m_impl.partOfGroups(); }
     bool isLinkableViaGroup() const override { return m_impl.isLinkableViaGroup(); }
     const RefItemVector &xrefListItems() const override { return m_impl.xrefListItems(); }
+    const RequirementRefs &requirementReferences() const override { return m_impl.requirementReferences(); }
     const Definition *findInnerCompound(const QCString &name) const override { return m_impl.findInnerCompound(name); }
     Definition *getOuterScope() const override { return m_impl.getOuterScope(); }
     const MemberVector &getReferencesMembers() const override { return m_impl.getReferencesMembers(); }
@@ -235,6 +241,8 @@ class DefinitionMixin : public Base
     { m_impl.addSourceReferences(md,sourceRefName); }
     void setRefItems(const RefItemVector &sli) override
     { m_impl.setRefItems(sli); }
+    void setRequirementReferences(const RequirementRefs &rqli) override
+    { m_impl.setRequirementReferences(rqli); }
     void mergeRefItems(Definition *def) override
     { m_impl.mergeRefItems(def); }
     void mergeReferences(const Definition *other) override
@@ -265,6 +273,10 @@ class DefinitionMixin : public Base
     { m_impl.writeSourceRefs(ol,scopeName); }
     void writeSourceReffedBy(OutputList &ol,const QCString &scopeName) const override
     { m_impl.writeSourceReffedBy(ol,scopeName); }
+    bool hasRequirementRefs() const override
+    { return m_impl.hasRequirementRefs(); }
+    void writeRequirementRefs(OutputList &ol) const override
+    { m_impl.writeRequirementRefs(ol); }
     void makePartOfGroup(GroupDef *gd) override
     { m_impl.makePartOfGroup(gd); }
     void writeNavigationPath(OutputList &ol) const override
@@ -275,6 +287,8 @@ class DefinitionMixin : public Base
     { m_impl.writeQuickMemberLinks(ol,md); }
     void writeSummaryLinks(OutputList &ol) const override
     { m_impl.writeSummaryLinks(ol); }
+    void writePageNavigation(OutputList &ol) const override
+    { m_impl.writePageNavigation(ol); }
     QCString pathFragment() const override
     { return m_impl.pathFragment(); }
     void writeDocAnchorsToTagFile(TextStream &fs) const override
@@ -410,6 +424,8 @@ class DefinitionAliasMixin : public Base
     { return m_alias->isLinkableViaGroup(); }
     const RefItemVector &xrefListItems() const override
     { return m_alias->xrefListItems(); }
+    const RequirementRefs &requirementReferences() const override
+    { return m_alias->requirementReferences(); }
     const Definition *findInnerCompound(const QCString &name) const override
     { return m_alias->findInnerCompound(name); }
     Definition *getOuterScope() const override

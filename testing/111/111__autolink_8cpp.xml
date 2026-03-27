@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="111__autolink_8cpp" kind="file" language="C++">
+    <compoundname>111_autolink.cpp</compoundname>
+    <innerclass refid="structmy__struct__t" prot="public">my_struct_t</innerclass>
+    <sectiondef kind="define">
+      <memberdef kind="define" id="111__autolink_8cpp_1a8ef4ab1db0ae388e9407f08fa3a95421" prot="public" static="no">
+        <name>MY_DEFINE</name>
+        <initializer>1</initializer>
+        <briefdescription>
+          <para>My define. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="111_autolink.cpp" line="10" column="9" bodyfile="111_autolink.cpp" bodystart="10" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="enum">
+      <memberdef kind="enum" id="111__autolink_8cpp_1abf13918d7284a1bed5d7a3b739f4f7da" prot="public" static="no" strong="no">
+        <type/>
+        <name>my_enum_t</name>
+        <enumvalue id="111__autolink_8cpp_1abf13918d7284a1bed5d7a3b739f4f7daaca5528c86ab6f398979a03e811731e42" prot="public">
+          <name>ENUM_A</name>
+          <briefdescription>
+            <para>A. </para>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <briefdescription>
+          <para>My enum. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="111_autolink.cpp" line="28" column="1" bodyfile="111_autolink.cpp" bodystart="29" bodyend="31"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="var">
+      <memberdef kind="variable" id="111__autolink_8cpp_1ab16669b1a4a2c5dc4f8d41107e1295dc" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int my_int</definition>
+        <argsstring/>
+        <name>my_int</name>
+        <briefdescription>
+          <para>My int. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="111_autolink.cpp" line="15" column="5" bodyfile="111_autolink.cpp" bodystart="15" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="func">
+      <memberdef kind="function" id="111__autolink_8cpp_1ac07863d69ae41a4e395b31f73b35fbcd" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void foo</definition>
+        <argsstring>()</argsstring>
+        <name>foo</name>
+        <briefdescription>
+          <para>My foo function. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="111_autolink.cpp" line="36" column="6" declfile="111_autolink.cpp" declline="36" declcolumn="6"/>
+      </memberdef>
+      <memberdef kind="function" id="111__autolink_8cpp_1ae1a3968e7947464bee7714f6d43b7002" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void test</definition>
+        <argsstring>()</argsstring>
+        <name>test</name>
+        <briefdescription>
+          <para>test function </para>
+        </briefdescription>
+        <detaileddescription>
+          <para>Inline code links everything: <computeroutput><ref refid="111__autolink_8cpp_1ac07863d69ae41a4e395b31f73b35fbcd" kindref="member">foo()</ref>, <ref refid="111__autolink_8cpp_1abf13918d7284a1bed5d7a3b739f4f7da" kindref="member">my_enum_t</ref>, <ref refid="structmy__struct__t" kindref="compound">my_struct_t</ref>, <ref refid="111__autolink_8cpp_1a8ef4ab1db0ae388e9407f08fa3a95421" kindref="member">MY_DEFINE</ref>, <ref refid="111__autolink_8cpp_1abf13918d7284a1bed5d7a3b739f4f7daaca5528c86ab6f398979a03e811731e42" kindref="member">ENUM_A</ref>, <ref refid="111__autolink_8cpp_1ab16669b1a4a2c5dc4f8d41107e1295dc" kindref="member">my_int</ref></computeroutput></para>
+          <para>Normal text only links to functions and types: <ref refid="111__autolink_8cpp_1ac07863d69ae41a4e395b31f73b35fbcd" kindref="member">foo()</ref>, <ref refid="111__autolink_8cpp_1abf13918d7284a1bed5d7a3b739f4f7da" kindref="member">my_enum_t</ref>, <ref refid="structmy__struct__t" kindref="compound">my_struct_t</ref>, MY_DEFINE, ENUM_A, my_int</para>
+          <para>
+            <programlisting filename=".c">
+              <codeline>
+                <highlight class="comment">//<sp/>code<sp/>block<sp/>links<sp/>everything:</highlight>
+                <highlight class="normal"/>
+              </codeline>
+              <codeline>
+                <highlight class="normal"><ref refid="111__autolink_8cpp_1ac07863d69ae41a4e395b31f73b35fbcd" kindref="member">foo</ref>(),<sp/><ref refid="111__autolink_8cpp_1abf13918d7284a1bed5d7a3b739f4f7da" kindref="member">my_enum_t</ref>,<sp/><ref refid="structmy__struct__t" kindref="compound">my_struct_t</ref>,<sp/><ref refid="111__autolink_8cpp_1a8ef4ab1db0ae388e9407f08fa3a95421" kindref="member">MY_DEFINE</ref>,<sp/><ref refid="111__autolink_8cpp_1abf13918d7284a1bed5d7a3b739f4f7daaca5528c86ab6f398979a03e811731e42" kindref="member">ENUM_A</ref>,<sp/><ref refid="111__autolink_8cpp_1ab16669b1a4a2c5dc4f8d41107e1295dc" kindref="member">my_int</ref></highlight>
+              </codeline>
+            </programlisting>
+          </para>
+          <para>
+            <simplesect kind="see">
+              <para>Inside see section also everything is linked: <ref refid="111__autolink_8cpp_1ac07863d69ae41a4e395b31f73b35fbcd" kindref="member">foo()</ref>, <ref refid="111__autolink_8cpp_1abf13918d7284a1bed5d7a3b739f4f7da" kindref="member">my_enum_t</ref>, <ref refid="structmy__struct__t" kindref="compound">my_struct_t</ref>, <ref refid="111__autolink_8cpp_1a8ef4ab1db0ae388e9407f08fa3a95421" kindref="member">MY_DEFINE</ref>, <ref refid="111__autolink_8cpp_1abf13918d7284a1bed5d7a3b739f4f7daaca5528c86ab6f398979a03e811731e42" kindref="member">ENUM_A</ref>, <ref refid="111__autolink_8cpp_1ab16669b1a4a2c5dc4f8d41107e1295dc" kindref="member">my_int</ref> </para>
+            </simplesect>
+          </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="111_autolink.cpp" line="55" column="6" declfile="111_autolink.cpp" declline="55" declcolumn="6"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="111_autolink.cpp"/>
+  </compounddef>
+</doxygen>

@@ -87,7 +87,7 @@
           <declname>arg2</declname>
         </param>
         <briefdescription>
-          <para>FunctionExample (overload 1) </para>
+          <para>FunctionExample (overload 1). </para>
         </briefdescription>
         <detaileddescription>
           <para>
@@ -135,7 +135,7 @@
           <declname>arg2</declname>
         </param>
         <briefdescription>
-          <para>FunctionExample (overload 2) </para>
+          <para>FunctionExample (overload 2). </para>
         </briefdescription>
         <detaileddescription>
           <para>

@@ -1,6 +1,8 @@
 %Doxygen Internals {#mainpage}
 =================
 
+[TOC]
+
 Generated on \showdate "%A, %B %-d, %Y at %-I:%M %p"
 
 Introduction

@@ -238,9 +238,9 @@ void writeDotGraphFromFile(const QCString &inFile,const QCString &outDir,
   }
 
   QCString imgExt = getDotImageExtension();
-  QCString imgName = QCString(outFile)+"."+imgExt;
-  QCString absImgName = QCString(d.absPath())+"/"+imgName;
-  QCString absOutFile = QCString(d.absPath())+"/"+outFile;
+  QCString imgName = outFile+"."+imgExt;
+  QCString absImgName = d.absPath()+"/"+imgName;
+  QCString absOutFile = d.absPath()+"/"+outFile;
 
   DotRunner dotRun(inFile);
   if (format==GraphOutputFormat::BITMAP)
@@ -279,12 +279,13 @@ void writeDotGraphFromFile(const QCString &inFile,const QCString &outDir,
  *  \param graphId a unique id for this graph, use for dynamic sections
  *  \param srcFile the source file
  *  \param srcLine the line number in the source file
+ *  \param newFile signal whether or not the file has been generated before (value `false`) or not.
  */
 void writeDotImageMapFromFile(TextStream &t,
                             const QCString &inFile, const QCString &outDir,
                             const QCString &relPath, const QCString &baseName,
                             const QCString &context,int graphId,
-                            const QCString &srcFile,int srcLine)
+                            const QCString &srcFile,int srcLine, bool newFile)
 {
 
   Dir d(outDir.str());
@@ -296,7 +297,7 @@ void writeDotImageMapFromFile(TextStream &t,
   QCString mapName = baseName+".map";
   QCString imgExt = getDotImageExtension();
   QCString imgName = baseName+"."+imgExt;
-  QCString absOutFile = QCString(d.absPath())+"/"+mapName;
+  QCString absOutFile = d.absPath()+"/"+mapName;
 
   DotRunner dotRun(inFile);
   dotRun.addJob(MAP_CMD,absOutFile,srcFile,srcLine);
@@ -310,9 +311,12 @@ void writeDotImageMapFromFile(TextStream &t,
   {
     QCString svgName = outDir+"/"+baseName+".svg";
     DotFilePatcher::writeSVGFigureLink(t,relPath,baseName,svgName);
-    DotFilePatcher patcher(svgName);
-    patcher.addSVGConversion("",TRUE,context,TRUE,graphId);
-    patcher.run();
+    if (newFile)
+    {
+      DotFilePatcher patcher(svgName);
+      patcher.addSVGConversion("",TRUE,context,TRUE,graphId);
+      patcher.run();
+    }
   }
   else // bitmap graphics
   {

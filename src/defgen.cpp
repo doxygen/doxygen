@@ -114,23 +114,8 @@ static void generateDEFForMember(const MemberDef *md,
     << md->getOutputFileBase() << "_1" << md->anchor()
     << "';\n";
 
-  t << memPrefix << "virt = ";
-  switch (md->virtualness())
-  {
-    case Specifier::Normal:  t << "normal;\n"; break;
-    case Specifier::Virtual: t << "virtual;\n"; break;
-    case Specifier::Pure:    t << "pure-virtual;\n"; break;
-    default: ASSERT(0);
-  }
-
-  t << memPrefix << "prot = ";
-  switch(md->protection())
-  {
-    case Protection::Public:    t << "public;\n"; break;
-    case Protection::Protected: t << "protected;\n"; break;
-    case Protection::Private:   t << "private;\n"; break;
-    case Protection::Package:   t << "package;\n"; break;
-  }
+  t << memPrefix << "virt = " << to_string_lower(md->virtualness()) << ";\n";
+  t << memPrefix << "prot = " << to_string_lower(md->protection()) << ";\n";
 
   if (md->memberType()!=MemberType::Define &&
       md->memberType()!=MemberType::Enumeration
@@ -341,47 +326,19 @@ static void generateDEFForClass(const ClassDef *cd,TextStream &t)
   for (const auto &bcd : cd->baseClasses())
   {
     t << "  cp-ref     = {\n" << "    ref-type = base;\n";
-    t << "    ref-id   = '"
-      << bcd.classDef->getOutputFileBase() << "';\n";
-    t << "    ref-prot = ";
-    switch (bcd.prot)
-    {
-      case Protection::Public:    t << "public;\n"; break;
-      case Protection::Package: // package scope is not possible
-      case Protection::Protected: t << "protected;\n"; break;
-      case Protection::Private:   t << "private;\n"; break;
-    }
-    t << "    ref-virt = ";
-    switch(bcd.virt)
-    {
-      case Specifier::Normal:  t << "non-virtual;";  break;
-      case Specifier::Virtual: t << "virtual;";      break;
-      case Specifier::Pure:    t << "pure-virtual;"; break;
-    }
-    t << "\n  };\n";
+    t << "    ref-id   = '" << bcd.classDef->getOutputFileBase() << "';\n";
+    t << "    ref-prot = " << to_string_lower_class(bcd.prot) << ";\n";
+    t << "    ref-virt = " << to_string_lower(bcd.virt) << ";\n";
+    t << "  };\n";
   }
 
   for (const auto &bcd : cd->subClasses())
   {
     t << "  cp-ref     = {\n" << "    ref-type = derived;\n";
-    t << "    ref-id   = '"
-      << bcd.classDef->getOutputFileBase() << "';\n";
-    t << "    ref-prot = ";
-    switch (bcd.prot)
-    {
-      case Protection::Public:    t << "public;\n"; break;
-      case Protection::Package: // packet scope is not possible!
-      case Protection::Protected: t << "protected;\n"; break;
-      case Protection::Private:   t << "private;\n"; break;
-    }
-    t << "    ref-virt = ";
-    switch (bcd.virt)
-    {
-      case Specifier::Normal:  t << "non-virtual;";  break;
-      case Specifier::Virtual: t << "virtual;";      break;
-      case Specifier::Pure:    t << "pure-virtual;"; break;
-    }
-    t << "\n  };\n";
+    t << "    ref-id   = '" << bcd.classDef->getOutputFileBase() << "';\n";
+    t << "    ref-prot = " << to_string_lower_class(bcd.prot) << ";\n";
+    t << "    ref-virt = " << to_string_lower(bcd.virt) << ";\n";
+    t << "  };\n";
   }
 
   size_t numMembers = 0;
