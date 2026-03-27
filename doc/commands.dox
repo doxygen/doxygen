@@ -96,6 +96,7 @@ documentation:
 \refitem cmdendlatexonly \\endlatexonly
 \refitem cmdendlink \\endlink
 \refitem cmdendmanonly \\endmanonly
+\refitem cmdendmermaid \\endmermaid
 \refitem cmdendmsc \\endmsc
 \refitem cmdendparblock \\endparblock
 \refitem cmdendrtfonly \\endrtfonly
@@ -160,6 +161,7 @@ documentation:
 \refitem cmdmaninclude \\maninclude
 \refitem cmdmanonly \\manonly
 \refitem cmdmemberof \\memberof
+\refitem cmdmermaidfile \\mermaidfile
 \refitem cmdmodule \\module
 \refitem cmdmsc \\msc
 \refitem cmdmscfile \\mscfile
@@ -224,6 +226,7 @@ documentation:
 \refitem cmdsnippetdoc \\snippetdoc
 \refitem cmdsnippetlineno \\snippetlineno
 \refitem cmdstatic \\static
+\refitem cmdstartmermaid \\startmermaid
 \refitem cmdstartuml \\startuml
 \refitem cmdstruct \\struct
 \refitem cmdsubpage \\subpage
@@ -3609,6 +3612,96 @@ class Receiver
   \sa section \ref cmdmscfile "\\mscfile".
 
 <hr>
+\section cmdstartmermaid \\startmermaid ['{'option'}'] ["caption"] [\<sizeindication\>=\<size\>]
+
+  \addindex \\startmermaid
+
+  Starts a text fragment which should contain a valid Mermaid diagram definition.
+  See https://mermaid.js.org/intro for examples and syntax documentation.
+  The text fragment ends with \ref cmdendmermaid "\\endmermaid".
+
+  Mermaid supports multiple diagram types including flowcharts, sequence diagrams,
+  class diagrams, state diagrams, Gantt charts, and more.
+
+  Doxygen supports two rendering modes for Mermaid diagrams, controlled by
+  the \ref cfg_mermaid_render_mode "MERMAID_RENDER_MODE" configuration option:
+  - \c CLIENT_SIDE: Embeds the diagram source in HTML and renders it in the browser
+    using mermaid.js (loaded from the URL specified by \ref cfg_mermaid_js_url "MERMAID_JS_URL").
+    No external tools are required. Only works for HTML output.
+  - \c CLI: Uses the \c mmdc command-line tool to pre-generate images.
+    Requires Node.js and \c @mermaid-js/mermaid-cli. The path to \c mmdc can be
+    set via \ref cfg_mermaid_path "MERMAID_PATH". Works for all output formats.
+  - \c AUTO (default): Uses client-side rendering for HTML and CLI for other formats.
+
+  The first argument is optional and can be used to specify the name of the
+  generated image file inside curly brackets, i.e.
+  \verbatim
+  @startmermaid{mydiagram}
+  flowchart LR
+    A --> B
+  @endmermaid
+  \endverbatim
+  When the name is specified, Doxygen will generate an image with that name.
+  Without the name Doxygen will choose a name automatically.
+
+  The second argument is optional and can be used to specify the caption
+  that is displayed below the image. This argument has to be specified
+  between quotes even if it does not contain any spaces. The quotes are
+  stripped before the caption is displayed.
+
+  The third argument is also optional and can be used to specify the
+  width or height of the image.
+  For a description of the possibilities see the paragraph
+  \ref image_sizeindicator "Size indication" with the
+  \ref cmdimage "\\image" command.
+
+  \note In Markdown files, Mermaid diagrams can also be written using fenced
+  code blocks with the \c mermaid language identifier:
+  \verbatim
+  ```mermaid
+  flowchart LR
+    A --> B
+  ```
+  \endverbatim
+  These are automatically converted to \\startmermaid / \\endmermaid.
+
+  \note Doxygen creates a temporary file that is automatically removed unless
+  the \ref cfg_dot_cleanup "DOT_CLEANUP" tag is set to `NO`.
+
+Here is an example of the use of the \c \\startmermaid command.
+\code
+/** Sender class. Can be used to send a command to the server.
+ *  The receiver will acknowledge the command by calling Ack().
+ *  \startmermaid
+ *    sequenceDiagram
+ *    Sender->>Receiver: Command()
+ *    Receiver-->>Sender: Ack()
+ *  \endmermaid
+ */
+class Sender
+{
+  public:
+    /** Acknowledgment from server */
+    void Ack(bool ok);
+};
+
+/** Receiver class. Can be used to receive and execute commands.
+ *  After execution of a command, the receiver will send an acknowledgment
+ *  \startmermaid
+ *    sequenceDiagram
+ *    Receiver->>Sender: Command()
+ *    Sender-->>Receiver: Ack()
+ *  \endmermaid
+ */
+class Receiver
+{
+  public:
+    /** Execute a command on the server */
+    void Command(int commandId);
+};
+\endcode
+
+<hr>
 \section cmdstartuml \\startuml ['{'option[,option]'}'] ["caption"] [\<sizeindication\>=\<size\>]
 
   \addindex \\startuml
@@ -3861,10 +3954,42 @@ class Receiver
   Ends a block that was started with \ref cmdmsc "\\msc".
 
 <hr>
+\section cmdendmermaid \\endmermaid
+
+  \addindex \\endmermaid
+  Ends a block that was started with \ref cmdstartmermaid "\\startmermaid".
+
+<hr>
 \section cmdenduml \\enduml
 
   \addindex \\enduml
   Ends a block that was started with \ref cmdstartuml "\\startuml".
+
+<hr>
+\section cmdmermaidfile \\mermaidfile \<file\> ["caption"] [\<sizeindication\>=\<size\>]
+
+  \addindex \\mermaidfile
+  Inserts a Mermaid diagram from \<file\> into the documentation.
+
+  The first argument specifies the file name of the Mermaid source file.
+  Doxygen will look for files in the paths (or files) that you specified
+  after the \ref cfg_mermaidfile_dirs "MERMAIDFILE_DIRS" tag.
+  If the mermaid file is found it will be used as input for rendering.
+  The resulting image will be put into the correct output directory.
+  If the mermaid file name contains spaces you'll have to put quotes ("...") around it.
+
+  The second argument is optional and can be used to specify the caption
+  that is displayed below the image. This argument has to be specified
+  between quotes even if it does not contain any spaces. The quotes are
+  stripped before the caption is displayed.
+
+  The third argument is also optional and can be used to specify the
+  width or height of the image.
+  For a description of the possibilities see the paragraph
+  \ref image_sizeindicator "Size indication" with the
+  \ref cmdimage "\\image" command.
+
+  \sa section \ref cmdstartmermaid "\\startmermaid".
 
 <hr>
 \section cmdplantumlfile \\plantumlfile \<file\> ["caption"] [\<sizeindication\>=\<size\>]
