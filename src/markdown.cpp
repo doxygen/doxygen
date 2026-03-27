@@ -3339,6 +3339,10 @@ QCString Markdown::Private::processQuotations(std::string_view data,size_t refIn
         {
           addSpecialCommand("msc","endmsc");
         }
+        else if (lang=="mermaid")
+        {
+          addSpecialCommand("startmermaid","endmermaid");
+        }
         else // normal code block
         {
           writeFencedCodeBlock(data.substr(pi),lang.view(),blockStart,blockEnd);
