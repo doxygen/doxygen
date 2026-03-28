@@ -31,7 +31,9 @@ class DotInclDepGraph : public DotGraph
 {
   public:
     DotInclDepGraph(const FileDef *fd,bool inverse);
-    ~DotInclDepGraph();
+    ~DotInclDepGraph() override;
+    NON_COPYABLE(DotInclDepGraph)
+
     QCString writeGraph(TextStream &t, GraphOutputFormat gf, EmbeddedOutputFormat ef,
                         const QCString &path,const QCString &fileName,const QCString &relPath,
                         bool writeImageMap=TRUE,int graphId=-1);
@@ -42,9 +44,9 @@ class DotInclDepGraph : public DotGraph
     void writeDocbook(TextStream &t);
 
   protected:
-    virtual QCString getBaseName() const;
-    virtual QCString getMapLabel() const;
-    virtual void computeTheGraph();
+    QCString getBaseName() const override;
+    QCString getMapLabel() const override;
+    void computeTheGraph() override;
 
   private:
     QCString diskName() const;

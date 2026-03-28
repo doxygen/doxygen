@@ -3,7 +3,7 @@ include_directories(
 )
 
 add_custom_command(
-    COMMAND ${PYTHON_EXECUTABLE} ${PROJECT_SOURCE_DIR}/src/scan_states.py ${PROJECT_SOURCE_DIR}/libxml/xml.l > ${GENERATED_SRC}/xml.l.h
+    COMMAND ${Python_EXECUTABLE} ${PROJECT_SOURCE_DIR}/src/scan_states.py ${PROJECT_SOURCE_DIR}/libxml/xml.l > ${GENERATED_SRC}/xml.l.h
     DEPENDS ${PROJECT_SOURCE_DIR}/src/scan_states.py ${PROJECT_SOURCE_DIR}/libxml/xml.l
     OUTPUT  ${GENERATED_SRC}/xml.l.h
 )

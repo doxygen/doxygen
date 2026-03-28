@@ -1,0 +1,111 @@
+/*! \page requirements Requirements
+
+Doxygen allows you to document the requirements for your project.
+
+To document a requirement, use the \ref cmdrequirement "\\requirement" command.
+Each requirement should have a unique ID and a short title. Additional details can
+be provided after the title.  Here is an example.
+
+\verbatim
+/** @requirement REQ-001 User Authentication
+ *  The system shall provide a secure authentication mechanism for user login.
+ *
+ *  The authentication system must meet the following criteria:
+ *  - Support username and password authentication
+ *  - Implement password hashing using industry-standard algorithms (e.g., bcrypt, Argon2)
+ *  - Lock accounts after 5 consecutive failed login attempts
+ *  - Require passwords to be at least 8 characters long with mixed case,
+ *    numbers, and special characters
+ *  - Provide a secure password reset mechanism via email verification
+ */
+\endverbatim
+
+For requirement traceability, you can indicate which function or class implements a requirement
+using the \ref cmdsatisfies "\\satisfies" command, e.g.:
+
+\verbatim
+/**
+ * @brief Manages user authentication and session management.
+ *
+ * This class handles all aspects of user authentication including
+ * password verification, account locking, and session creation.
+ *
+ * @satisfies REQ-001 Implements the core authentication mechanism
+ */
+class UserAuthentication { ... };
+\endverbatim
+
+In a similar manner, you can also indicate which test(s) cover a requirement
+using the \ref cmdverifies "\\verifies" command, e.g.:
+
+\verbatim
+/**
+ * @brief Test suite for user authentication functionality.
+ *
+ * @verifies REQ-001 Validates all authentication requirements
+ */
+class TestUserAuthentication { ... };
+\endverbatim
+
+If the implementation is split across multiple functions or classes you can add the
+commands to each function or class.
+
+Doxygen will produce a page listing all requirements and cross-reference the symbols that 
+link to each requirement via \ref cmdsatisfies "\\satisfies" and \ref cmdverifies "\\verifies" commands.
+
+The requirements page can also be hidden
+by setting \ref cfg_generate_requirements "GENERATE_REQUIREMENTS" to \c NO.
+
+@section external_req External Requirements
+
+If you manage the project's requirements via some external tool such as Doors or Polarion,
+you can create a tag file for Doxygen. Here is a minimal `example.tag` file with a single requirement:
+
+\verbatim
+<?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
+<tagfile doxygen_version="1.16.0">
+  <compound kind="requirement">
+    <id>0010-1234</id>
+    <title>An external requirement</title>
+    <filename>polarion/#/project/0010/workitem?id=</filename>
+  </compound>
+</tagfile>
+\endverbatim
+
+You can configure Doxygen to read this tag file via the configuration setting:
+\verbatim
+TAGFILES = example.tag=https://polarion.your-company.com
+\endverbatim
+
+When referring to a requirement in the comments, Doxygen will link the requirement ID in the requirements
+table to the external documentation by concatenating the URL specified at `TAGFILES`,
+the `filename` in the tag file and the requirement id itself.
+
+\verbatim
+https://polarion.your-company.com/polarion/#/project/0010/workitem?id=0010-1234
+\endverbatim
+
+Note that this also works if you define the requirements inside one Doxygen project,
+then export the tag file (via \ref cfg_generate_tagfile "GENERATE_TAGFILE") and import it
+into another project (via \ref cfg_tagfiles "TAGFILES") as shown above.
+
+@section traceability Requirement traceability
+
+You may want to see which parts of the code implement a requirement, and which parts test it
+and make sure all requirements are implemented and tested. To help with this, Doxygen keeps track
+of requirements that do not have any satisfies or verifies link pointing to it.
+
+Doxygen will list such requirements as unsatisfied or unverified requirements in separate sections on the
+requirements page. When all requirements are covered these sections will be empty and disappear.
+
+If you split the requirements, the implementation, and the tests into separate Doxygen projects,
+linked via tag files, as discussed in the previous section, you may want to disable these sections.
+This is controlled by the \ref cfg_req_traceability_info "REQ_TRACEABILITY_INFO" option.
+
+\htmlonly
+Go to the <a href="grouping.html">next</a> section or return to the
+ <a href="index.html">index</a>.
+\endhtmlonly
+
+*/
+

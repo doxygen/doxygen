@@ -1,0 +1,321 @@
+/******************************************************************************
+ *
+ *
+ *
+ * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
+ * for any purpose. It is provided "as is" without express or implied warranty.
+ * See the GNU General Public License for more details.
+ *
+ * Documents produced by Doxygen are derivative works derived from the
+ * input used in their production; they are not affected by this license.
+ *
+ */
+/*! \page faq Frequently Asked Questions
+
+\tableofcontents{html,latex}
+
+
+\section faq_index How to get information on the index page in HTML?
+<p>
+You should use the \ref cmdmainpage "\\mainpage" command inside a comment block like this:
+\verbatim
+/*! \mainpage My Personal Index Page
+ *
+ * \section intro_sec Introduction
+ *
+ * This is the introduction.
+ *
+ * \section install_sec Installation
+ *
+ * \subsection step1 Step 1: Opening the box
+ *
+ * etc...
+ */
+\endverbatim
+
+\section fac_al Help, some/all of the members of my class / file / namespace are not documented?
+
+  Check the following:
+  <ol>
+  <li>Is your class / file / namespace documented? If not, it will not
+      be extracted from the sources unless \ref cfg_extract_all "EXTRACT_ALL" is set to \c YES
+      in the configuration file.
+  <li>Are the members private? If so, you must set \ref cfg_extract_private "EXTRACT_PRIVATE" to \c YES
+      to make them appear in the documentation.
+  <li>Is there a function macro in your class that does not end with a
+      semicolon (e.g. MY_MACRO())? If so then you have to instruct
+      Doxygen's preprocessor to remove it.
+
+      This typically boils down to the following settings in the configuration file:
+
+      \verbatim
+ENABLE_PREPROCESSING   = YES
+MACRO_EXPANSION        = YES
+EXPAND_ONLY_PREDEF     = YES
+PREDEFINED             = MY_MACRO()=
+      \endverbatim
+
+      Please read the \ref preprocessing "preprocessing" section of the
+      manual for more information.
+  </ol>
+
+\section faq_extract_all When I set EXTRACT_ALL to NO none of my functions are shown in the documentation.
+
+In order for global functions, variables, enums, typedefs, and defines
+to be documented you should document the file in which these commands are
+located using a comment block containing a \ref cmdfile "\\file" (or \ref cmdfile "\@file")
+command.
+
+Alternatively, you can put all members in a group (or topic)
+using the \ref cmdingroup "\\ingroup" command and then document the group using a comment
+block containing the \ref cmddefgroup "\\defgroup" command.
+
+For member functions or functions that are part of a namespace you should
+document either the class or namespace.
+
+\section faq_ext_mapping My file with a custom extension is not parsed (properly) (anymore).
+
+Doxygen only parses files that are specified as input (via the \ref cfg_input "INPUT" tag)
+and that match a specified extension (mentioned in \ref cfg_file_patterns "FILE_PATTERNS")
+The list of files is then reduced by excluding files listed as \ref cfg_exclude "EXCLUDE" or
+files that match the patterns set by \ref cfg_exclude_patterns "EXCLUDE_PATTERNS".
+
+In the past Doxygen parsed all files with an unknown extension as C files which could lead to
+undesired results. Since version 1.8.8, Doxygen requires that you specify a mapping that tells
+for a certain file extension, which parser to use.
+This mapping is specified using the \ref cfg_extension_mapping "EXTENSION_MAPPING" tag.
+If no mapping is specified the file's contents will be ignored.
+
+\section faq_code How can I make Doxygen ignore some code fragment?
+
+The new and easiest way is to add one comment block
+with a \ref cmdcond "\\cond" command at the start and one comment block
+with a \ref cmdendcond "\\endcond" command at the end of the piece of
+code that should be ignored. This should be within the same file of course.
+
+But you can also use Doxygen's preprocessor for this:
+If you put
+\verbatim
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
+
+ /* code that must be skipped by Doxygen */
+
+#endif /* DOXYGEN_SHOULD_SKIP_THIS */
+\endverbatim
+around the blocks that should be hidden and put:
+\verbatim
+  PREDEFINED = DOXYGEN_SHOULD_SKIP_THIS
+\endverbatim
+in the configuration file then all blocks should be skipped by Doxygen as long
+as \ref cfg_enable_preprocessing "ENABLE_PREPROCESSING" is set to `YES`.
+
+\section faq_code_inc How can I change what is after the \#include in the class documentation?
+
+In most cases you can use \ref cfg_strip_from_inc_path "STRIP_FROM_INC_PATH"
+to strip a user defined part of a path.
+
+You can also document your class as follows
+
+\verbatim
+/*! \class MyClassName include.h path/include.h
+ *
+ *  Docs for MyClassName
+ */
+\endverbatim
+
+To make Doxygen put <br><br>
+<code>
+\#include \<path/include.h\>
+</code>
+
+in the documentation of the class MyClassName regardless of the name of the actual
+header file in which the definition of MyClassName is contained.
+
+If you want Doxygen to show that the include file should be included using
+quotes instead of angle brackets, you should type:
+\verbatim
+/*! \class MyClassName myhdr.h "path/myhdr.h"
+ *
+ *  Docs for MyClassName
+ */
+\endverbatim
+
+\section faq_chm How can I use tag files in combination with compressed HTML?
+
+If you want to refer from one compressed HTML file
+\c a.chm to another compressed HTML file
+called \c b.chm, the
+link in \c a.chm must have the following format:
+\verbatim
+<a href="mk:@MSITStore:b.chm::/file.html">
+\endverbatim
+Unfortunately this only works if both compressed HTML files are in the same
+directory.
+
+As a result you must rename the generated \c index.chm files for all projects
+into something unique and put all <code>.chm</code> files in one directory.
+
+Suppose you have a project \e a referring to a project \e b using tag file
+\c b.tag, then you could rename the \c index.chm for project \e a into
+\c a.chm and the \c index.chm for project \e b into \c b.chm. In the
+configuration file for project \e a you write:
+\verbatim
+TAGFILES = b.tag=mk:@MSITStore:b.chm::
+\endverbatim
+
+\section faq_html I don't like the quick index that is put above each HTML page, what do I do?
+
+You can disable the index by setting \ref cfg_disable_index "DISABLE_INDEX" to `YES`. Then you can
+put in your own header file by writing your own header and feed that to
+\ref cfg_html_header "HTML_HEADER".
+
+\section faq_html_header The overall HTML output looks different, while I only wanted to use my own html header file
+
+You probably forgot to include the stylesheet <code>doxygen.css</code> that
+Doxygen generates. You can include this by putting
+\verbatim
+<LINK HREF="doxygen.css" REL="stylesheet" TYPE="text/css">
+\endverbatim
+in the HEAD section of the HTML page.
+
+\section faq_use_qt Why does Doxygen use Qt?
+
+In the past (prior to version 1.9.2) Doxygen used a part of Qt 2.x for various
+utility classes. These have been replaced by STL container classes in the meantime.
+
+The GUI front-end called Doxywizard is based on a modern version of Qt.
+Doxygen itself can also be used without the GUI.
+
+\section faq_excl_dir How can I exclude all test directories from my directory tree?
+
+Simply put an exclude pattern like this in the configuration file:
+
+\verbatim
+EXCLUDE_PATTERNS = */test/*
+\endverbatim
+
+\section faq_class Doxygen automatically generates a link to the class MyClass somewhere in the running text.  How do I prevent that at a certain place?
+
+Put a \% in front of the class name. Like this: \%MyClass. Doxygen will then
+remove the % and keep the word unlinked.
+
+\section faq_pgm_X My favorite programming language is X. Can I still use Doxygen?
+
+No, not as such; Doxygen needs to understand the structure of what it reads.
+If you don't mind spending some time on it, there are several options:
+- If the grammar of X is close to C or C++, then it is probably not too hard to
+  tweak \c src/scanner.l a bit so the language is supported. This is done
+  for all other languages directly supported by Doxygen
+  (i.e. Java, IDL, C#, PHP).
+- If the grammar of X is somewhat different than you can write an input
+  filter that translates X into something similar enough to C/C++ for
+  Doxygen to understand (this approach is taken for VB, Object Pascal, and
+  JavaScript, see https://www.doxygen.org/helpers.html).
+- If the grammar is completely different one could write a parser for X and
+  write a backend that produces a similar syntax tree as is done by
+  \c src/scanner.l (and also by \c src/tagreader.cpp while reading tag files).
+
+\section faq_lex Help! I get the cryptic message "input buffer overflow, can't enlarge buffer because scanner uses REJECT"
+
+This error happens when Doxygen's lexical scanner has a rule that matches
+more than 256K of input characters in one go. I've seen this happening
+on a very large generated file (\>256K lines), where the built-in preprocessor
+converted it into an empty file (with \>256K of newlines). Another case
+where this might happen is if you have lines in your code with more than
+256K characters.
+
+If you have run into such a case and want me to fix it, you
+should send me a code fragment that triggers the message. To work around
+the problem, put some line-breaks into your file, split it up into smaller
+parts, or exclude it from the input using EXCLUDE.
+
+Another way to work around this problem is to use the cmake command with the option:
+```
+-Denlarge_lex_buffers=<size>
+```
+where `<size>` is the new size of the input (`YY_BUF_SIZE`) and read (`YY_READ_BUF_SIZE`) buffer.
+In case this option is not given the default value of 262144 (i.e. 256K) will be used.
+
+\section faq_latex When running make in the latex directory I get "TeX capacity exceeded". Now what?
+
+You can edit the texmf.cfg file to increase the default values of the
+various buffers and then run "texconfig init".
+
+\section faq_stl Why are dependencies via STL classes not shown in the dot graphs?
+
+Doxygen is unaware of the STL classes, unless the
+option \ref cfg_builtin_stl_support "BUILTIN_STL_SUPPORT" is turned on.
+
+\section faq_search I have problems getting the search engine to work with PHP5 and/or windows
+
+Please read <a href="searching.html">this</a> for hints on where to look.
+
+\section faq_cmdline Can I configure Doxygen from the command line?
+
+Not via command line options, but Doxygen can read from <code>stdin</code>,
+so you can pipe things through it. Here's an example how to override an option
+in a configuration file from the command line (assuming a UNIX like environment):
+
+\verbatim
+( cat Doxyfile ; echo "PROJECT_NUMBER=1.0" ) | doxygen -
+\endverbatim
+
+For Windows command line the following would do the same:
+
+\verbatim
+( type Doxyfile & echo PROJECT_NUMBER=1.0 ) | doxygen.exe -
+\endverbatim
+
+For Windows Powershell (checked with version 5.1) the following would do the same:
+\verbatim
+&{ type Doxyfile ; echo "PROJECT_NUMBER=1.0" } | doxygen -
+\endverbatim
+
+If multiple options with the same name are specified then Doxygen will use
+the last one. To append to an existing option you can use the += operator.
+
+\section faq_name How did Doxygen get its name?
+
+Doxygen got its name from playing with the words
+documentation and generator.
+
+\verbatim
+documentation -> docs -> dox
+generator -> gen
+\endverbatim
+
+At the time I was looking into \c lex and \c yacc, where a lot of things start with
+"yy", so the "y" slipped in and made things pronounceable
+(the proper pronouncement is Docs-ee-gen, so with a long "e").
+
+\section faq_why What was the reason to develop Doxygen?
+
+I once wrote a GUI widget based on the Qt library (it is still available at
+https://sourceforge.net/projects/qdbttabular/ but hasn't been updated since 2002).
+Qt had nicely generated documentation (using an internal tool which
+<a href="https://rant.gulbrandsen.priv.no/udoc/history">they didn't want to release</a>)
+and I wrote similar docs by hand.
+This was a nightmare to maintain, so I wanted a similar tool. I looked at
+Doc++ but that just wasn't good enough (it didn't support signals and
+slots and did not have the Qt look and feel I had grown to like),
+so I started to write my own tool...
+
+\section faq_bin How to prevent interleaved output
+
+When redirecting all the console output of Doxygen, i.e. messages and warnings, this can be interleaved or
+in a non-expected order.
+The technical reason for this is that the `stdout` can be buffered.
+It is possible to overcome this by means of the `-b` of Doxygen, like e.g `doxygen -b > out.txt 2>&1`.
+Note this might cost a little more time though.
+
+\htmlonly
+Go to the <a href="trouble.html">next</a> section or return to the
+ <a href="index.html">index</a>.
+\endhtmlonly
+
+*/
+

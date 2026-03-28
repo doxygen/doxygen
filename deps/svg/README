@@ -1,0 +1,9 @@
+Doxygen's svg.min.js script is composed of minified versions of the following
+packages:
+- svgdotjs           3.1.2: https://github.com/svgdotjs/svg.js
+- svgpan-1.2mod.js     1.2: https://github.com/aleofreddi/svgpan
+
+The Makefile will built the svg.min.js file used by doxygen.
+
+Note that svgpan.js is heavily modified for use with doxygen,
+so it cannot easily be upgraded to newer versions.

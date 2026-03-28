@@ -14,179 +14,181 @@ jobs:
       matrix:
         config:
         - {
-            name: "Ubuntu Latest GCC Release",
-            os: ubuntu-20.04,
+            name: "Ubuntu Latest GCC Release (Intel)",
+            os: ubuntu-24.04,
             build_type: "Release", cc: "gcc", cxx: "g++",
             build_gen: "Unix Makefiles",
-            cmake_extra_opts: "-Dbuild_search=YES -Dbuild_app=YES -Dbuild_parse=YES -Dbuild_xmlparser=YES -Duse_sqlite3=ON"
+            cmake_extra_opts: "-Dbuild_search=YES -Dbuild_app=YES -Dbuild_parse=YES"
           }
         - {
-            name: "Ubuntu Latest GCC Debug",
-            os: ubuntu-20.04,
+            name: "Ubuntu Latest GCC Debug (Intel)",
+            os: ubuntu-24.04,
             build_type: "Debug", cc: "gcc", cxx: "g++",
             build_gen: "Unix Makefiles",
-            cmake_extra_opts: "-Dbuild_search=YES -Dbuild_app=YES -Dbuild_parse=YES -Dbuild_xmlparser=YES -Duse_sqlite3=ON"
+            cmake_extra_opts: "-Dbuild_search=YES -Dbuild_app=YES -Dbuild_parse=YES"
           }
         - {
-            name: "Ubuntu Latest Clang Release",
-            os: ubuntu-20.04,
+            name: "Ubuntu Latest Clang Release (Intel)",
+            os: ubuntu-24.04,
             build_type: "Release", cc: "clang", cxx: "clang++",
             build_gen: "Unix Makefiles",
-            cmake_extra_opts: "-Duse_libclang=YES -Dstatic_libclang=YES -Duse_libc++=NO -Duse_sqlite3=ON"
+            cmake_extra_opts: "-Duse_libclang=YES -Dstatic_libclang=YES -Duse_libc++=NO"
           }
         - {
-            name: "Ubuntu Latest Clang Debug",
-            os: ubuntu-20.04,
+            name: "Ubuntu Latest Clang Debug (Intel)",
+            os: ubuntu-24.04,
             build_type: "Debug", cc: "clang", cxx: "clang++",
             build_gen: "Unix Makefiles",
-            cmake_extra_opts: "-Duse_libclang=YES -Dstatic_libclang=YES -Duse_libc++=NO -Duse_sqlite3=ON"
+            cmake_extra_opts: "-Duse_libclang=YES -Dstatic_libclang=YES -Duse_libc++=NO"
+          }
+
+        - {
+            name: "Ubuntu Latest GCC Release (Arm)",
+            os: ubuntu-24.04-arm,
+            build_type: "Release", cc: "gcc", cxx: "g++",
+            build_gen: "Unix Makefiles",
+            cmake_extra_opts: "-Dbuild_search=YES -Dbuild_app=YES -Dbuild_parse=YES"
           }
         - {
-            name: "macOS Latest Release",
-            os: macos-latest,
+            name: "Ubuntu Latest GCC Debug (Arm)",
+            os: ubuntu-24.04-arm,
+            build_type: "Debug", cc: "gcc", cxx: "g++",
+            build_gen: "Unix Makefiles",
+            cmake_extra_opts: "-Dbuild_search=YES -Dbuild_app=YES -Dbuild_parse=YES"
+          }
+        - {
+            name: "Ubuntu Latest Clang Release (Arm)",
+            os: ubuntu-24.04-arm,
+            build_type: "Release", cc: "clang", cxx: "clang++",
+            build_gen: "Unix Makefiles",
+            cmake_extra_opts: "-Duse_libclang=YES -Dstatic_libclang=YES -Duse_libc++=NO"
+          }
+        - {
+            name: "Ubuntu Latest Clang Debug (Arm)",
+            os: ubuntu-24.04-arm,
+            build_type: "Debug", cc: "clang", cxx: "clang++",
+            build_gen: "Unix Makefiles",
+            cmake_extra_opts: "-Duse_libclang=YES -Dstatic_libclang=YES -Duse_libc++=NO"
+          }
+        - {
+            name: "macOS Latest Release (Intel)",
+            os: macos-15-intel,
             build_type: "Release", cc: "clang", cxx: "clang++",
             build_gen: "Unix Makefiles"
           }
         - {
-            name: "macOS Latest Debug",
-            os: macos-latest,
+            name: "macOS Latest Debug (Intel)",
+            os: macos-15-intel,
             build_type: "Debug", cc: "clang", cxx: "clang++",
             build_gen: "Unix Makefiles"
           }
         - {
-            name: "Windows Latest MSVC Debug", 
+            name: "macOS Latest Release (Apple Silicon)",
+            os: macos-14,
+            build_type: "Release", cc: "clang", cxx: "clang++",
+            build_gen: "Unix Makefiles"
+          }
+        - {
+            name: "macOS Latest Debug (Apple Silicon)",
+            os: macos-14,
+            build_type: "Debug", cc: "clang", cxx: "clang++",
+            build_gen: "Unix Makefiles"
+          }
+        - {
+            name: "Windows Latest MSVC Debug",
             os: windows-latest,
             build_type: "Debug", cc: "cl", cxx: "cl",
             build_gen: "NMake Makefiles"
           }
         - {
-            name: "Windows Latest MSVC Release", 
+            name: "Windows Latest MSVC Release",
             os: windows-latest,
             build_type: "Release", cc: "cl", cxx: "cl",
             build_gen: "NMake Makefiles"
           }
     steps:
     - name: Checkout doxygen
-      uses: actions/checkout@v3
+      uses: actions/checkout@v6
       with:
         fetch-depth: 0
-      
-#    - name: Download MikTex (Windows)
-#      run: |
-#        $wc = New-Object System.Net.WebClient;
-#        $maxAttempts=5;
-#        $attemptCount=0;
-#        Do {
-#          $attemptCount++;
-#          Try {
-#            $wc.DownloadFile("https://ctan.math.illinois.edu/systems/win32/miktex/setup/windows-x64/miktexsetup-5.2.0+b8f430f-x64.zip","miktexsetup-5.2.0+b8f430f-x64.zip")
-#          } Catch [Exception] {
-#            Write-Host $_.Exception | format-list -force
-#          }
-#        } while (((Test-Path "miktexsetup-5.2.0+b8f430f-x64.zip") -eq $false) -and ($attemptCount -le $maxAttempts))  
-#      shell: pwsh
-#      if: matrix.config.os == 'windows-latest'
-      
+
     - name: Install libiconv (Windows)
       uses: suisei-cn/actions-download-file@v1
-      with: 
+      with:
         url: "https://github.com/pffang/libiconv-for-Windows/releases/download/v1.16/libiconv-for-Windows_1.16.7z"
-        target: .  
+        target: .
       if: matrix.config.os == 'windows-latest'
 
     - name: Install LaTeX (Linux)
       run: |
+        # workaround to avoid hanging on restarting the snapd after installing the firefox snap
+        sudo snap remove --purge firefox
+        sudo snap remove --purge snapd
+        sudo apt remove -y --purge snapd
+        sudo apt-mark hold snapd
+        # end workaround
+        sudo apt update --fix-missing
+        sudo apt upgrade
         sudo apt update
         sudo apt-get install texlive texlive-latex-recommended texlive-extra-utils texlive-latex-extra texlive-font-utils
       if: startsWith(matrix.config.os,'ubuntu-')
 
     - name: Install LaTeX (MacOS)
       run: |
-        brew update
-        brew install --cask mactex;
+        brew update || true
+        brew install --cask mactex || true
         echo "/Library/TeX/texbin/" >> $GITHUB_PATH
-      if: matrix.config.os == 'macos-latest'
-    
-    - name: Install libclang (Ubuntu 20.04)
+      if: startsWith(matrix.config.os,'macos-')
+
+    - name: Install libclang (Ubuntu 24.04)
       run: |
-        sudo apt update
-        sudo apt remove llvm-8 clang-8 libclang-common-8-dev clang-format-8 libllvm8
-        sudo apt remove llvm-9 llvm-9-dev llvm-9-tools llvm-9-runtime clang-9 libclang-common-9-dev clang-format-9 libllvm9
-        #sudo apt remove llvm-10 llvm-10-dev llvm-10-tools llvm-10-runtime clang-10 clang-format-10 libclang-common-10-dev libclang-cpp10 libclang1-10 libllvm10  
-        sudo apt remove llvm-11 llvm-11-dev llvm-11-tools llvm-11-runtime clang-11 clang-format-11 libclang-common-11-dev libclang-cpp11 libclang1-11 libllvm11  
-        sudo apt remove llvm-12 llvm-12-dev llvm-12-tools llvm-12-runtime clang-12 clang-format-12 libclang-common-12-dev libclang-cpp12 libclang1-12 libllvm12  
+        sudo apt remove llvm-14 llvm-14-dev llvm-14-tools llvm-14-runtime clang-14 clang-format-14 libclang-common-14-dev libclang-cpp14 libclang1-14 libllvm14
+        sudo apt remove llvm-15 llvm-15-dev llvm-15-tools llvm-15-runtime clang-15 clang-format-15 libclang-common-15-dev libclang-cpp15 libclang1-15 libllvm15
+        sudo apt remove llvm-16 llvm-16-dev llvm-16-tools llvm-16-runtime clang-16 clang-format-16 libclang-common-16-dev libclang-cpp16 libclang1-16 libllvm16
+        sudo apt remove llvm-17 llvm-17-dev llvm-17-tools llvm-17-runtime clang-17 clang-format-17 libclang-common-17-dev libclang-cpp17 libclang1-17 libllvm17
         sudo apt-get autoremove
         sudo apt-get clean
-        sudo apt install libclang-common-10-dev libclang-10-dev  
+        sudo apt install -y libclang-common-18-dev libclang-18-dev clang-18 llvm-18 llvm-18-dev
         apt list --installed | egrep '(clang|llvm)'
         ls -d /usr/lib/llvm-*/include/
-        sudo update-alternatives --install /usr/bin/clang   clang   /usr/bin/clang-10   100
-        sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-10 100
+        sudo update-alternatives --install /usr/bin/clang   clang   /usr/bin/clang-18   100
+        sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-18 100
         ls -al /usr/bin/clang++
         ls -al /etc/alternatives/clang++
         which clang++
         clang++ -v
-      if: matrix.config.os == 'ubuntu-20.04'
-    
-    - name: Install libxapian (Ubuntu 20.04)
-      run: |
-        sudo apt update
-        sudo apt install libxapian-dev
-      if: matrix.config.os == 'ubuntu-20.04'
-          
-#    - name: Extract MikTex zip (Windows)
-#      shell: bash
-#      run: |
-#        unzip miktexsetup-5.2.0+b8f430f-x64.zip
-#      if: matrix.config.os == 'windows-latest'
-#
-#    - name: Download MikTex packages (Windows)
-#      shell: bash
-#      run: |
-#        ./miktexsetup_standalone --verbose \
-#                      --local-package-repository="C:/miktex-repository" \
-#                      --remote-package-repository="https://ctan.math.illinois.edu/systems/win32/miktex/tm/packages/" \
-#                      --package-set=essential \
-#                      download
-#      if: matrix.config.os == 'windows-latest'
-#
-#    - name: Install MikTex packages (Windows)
-#      shell: bash
-#      run: |
-#        ./miktexsetup_standalone --local-package-repository="C:/miktex-repository" \
-#                      --verbose \
-#                      --package-set=essential \
-#                      --shared \
-#                      install
-#      if: matrix.config.os == 'windows-latest'
-#
-#    - name: Setting MikTex paths (Windows)
-#      shell: bash
-#      run: |
-#        echo "C:/Program Files/MiKTeX/miktex/bin/x64/" >> $GITHUB_PATH
-#        export PATH="/c/Program Files/MiKTeX/miktex/bin/x64/:$PATH"
-#        
-#        echo "Configuring MiKTeX to install missing packages on the fly"
-#        initexmf --admin --verbose --set-config-value='[MPM]AutoInstall=1'
-#      if: matrix.config.os == 'windows-latest'
+      if: matrix.config.cc == 'clang' && startsWith(matrix.config.os,'ubuntu-24')
 
-    - name: Install LaTeX (Windows)
-      uses: teatimeguest/setup-texlive-action@v2
+    - name: Install libxapian (Ubuntu 24.04)
+      run: sudo apt install libxapian-dev
+      if: startsWith(matrix.config.os,'ubuntu-24')
+
+    - name: Install MikTeX (Windows)
+      uses: nick-invision/retry@v4
       with:
-        packages: >-
-          scheme-medium
-          collection-latexextra
-          babel-dutch
-          cjk
-          bibtex
+        timeout_minutes: 15
+        max_attempts: 5
+        retry_wait_seconds: 60
+        command: |
+          choco install miktex --debug --verbose --no-progress --params "/Set:basic" -y
+          if ($?) { echo "C:\Program Files\MiKTeX\miktex\bin\x64" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 }
+      if: matrix.config.os == 'windows-latest'
+
+    - name: Configure MikTeX (Windows)
+      run: |
+        miktex --admin --verbose packages update-package-database
+        miktex --admin --verbose packages update
+        miktex --admin --verbose fndb refresh
+        initexmf --admin --verbose --set-config-value=[MPM]AutoInstall=1
+        initexmf --admin --verbose --update-fndb
+        initexmf --admin --verbose --mklinks --force
+        updmap --admin
       if: matrix.config.os == 'windows-latest'
 
     - name: Install Ghostscript (Linux)
-      run: |
-        sudo apt update
-        sudo apt-get install ghostscript
+      run: sudo apt-get install ghostscript
       if: startsWith(matrix.config.os,'ubuntu-')
-    
+
     - name: Install Ghostscript (Windows)
       run:
         choco install ghostscript
@@ -200,36 +202,34 @@ jobs:
         export GSpath=`echo "$GSpath" | sed -e "s%/c%C:%"`
         echo "$GSpath" >> $GITHUB_PATH
       if: matrix.config.os == 'windows-latest'
-      
+
     - name: Install xmllint (Linux)
-      run: |
-         sudo apt-get update
-         sudo apt-get install libxml2-utils
+      run: sudo apt-get install libxml2-utils
       if: startsWith(matrix.config.os,'ubuntu-')
 
     - name: Install xmllint (MacOS)
       run: |
-         brew update
+         brew update || true
+         brew upgrade || true
          brew install libxml2
-      if: matrix.config.os == 'macos-latest'
+      if: startsWith(matrix.config.os,'macos-')
 
     - name: Install bison (MacOS)
       run: |
         brew update
         brew install bison;
-        echo "/usr/local/opt/bison/bin" >> $GITHUB_PATH
-      if: matrix.config.os == 'macos-latest'
-    
+        echo "$(brew --prefix bison)/bin" >> $GITHUB_PATH
+        #echo "/usr/local/opt/bison/bin" >> $GITHUB_PATH
+      if: startsWith(matrix.config.os,'macos-')
+
     - name: Install bison/flex (Windows)
       run: |
-        Choco-Install -PackageName winflexbison 
-        #choco install winflexbison
+        #Choco-Install -PackageName winflexbison
+        choco install winflexbison3
       if: matrix.config.os == 'windows-latest'
 
     - name: Install Graphviz (Linux)
-      run: |
-        sudo apt update
-        sudo apt-get install graphviz
+      run: sudo apt-get install graphviz
       if: startsWith(matrix.config.os,'ubuntu-')
 
     - name: Install Graphviz (MacOS)
@@ -242,30 +242,41 @@ jobs:
           # Try again
           brew install graphviz
         fi
-      if: matrix.config.os == 'macos-latest'
+      if: startsWith(matrix.config.os,'macos-')
 
     - name: Install Graphviz (Windows)
       run:
         choco install graphviz.portable
       if: matrix.config.os == 'windows-latest'
 
-#    - name: Install Perl (Windows)
-#      run:
-#        choco install activeperl
-#      if: matrix.config.os == 'windows-latest'
-
     - name: Setup VS Environment (Windows)
       uses: seanmiddleditch/gha-setup-vsdevenv@master
       if: matrix.config.os == 'windows-latest'
 
     - name: Refresh Env (Windows)
-      run:
+      run: |
+        Import-Module $env:ChocolateyInstall\helpers\chocolateyProfile.psm1
         refreshenv
       if: matrix.config.os == 'windows-latest'
-    
-    - name: Install Qt
-      uses: jurplel/install-qt-action@v3
-    
+
+    - name: Install Qt 6.8
+      uses: jdpurcell/install-qt-action@v5
+      with:
+        version: 6.8.*
+      if: matrix.config.os == 'ubuntu-24.04-arm'
+
+    - name: Install Qt 6.2
+      uses: jdpurcell/install-qt-action@v5
+      with:
+        version: 6.2.*
+      if: startsWith(matrix.config.os,'macos-')
+
+    - name: Install Qt 5
+      uses: jdpurcell/install-qt-action@v5
+      with:
+        version: 5.*
+      if: startsWith(matrix.config.os,'macos-')!=true && matrix.config.os != 'ubuntu-24.04-arm'
+
     - name: Check tool versions (Linux / MacOS)
       shell: bash
       run: |
@@ -330,7 +341,7 @@ jobs:
             -G "${{ matrix.config.build_gen }}"
             -Dbuild_doc=YES
             -Dbuild_wizard=YES
-            ${{ matrix.config.cmake_extra_opts }}            
+            ${{ matrix.config.cmake_extra_opts }}
           RESULT_VARIABLE result
         )
         if (NOT result EQUAL 0)
@@ -343,7 +354,7 @@ jobs:
         include(ProcessorCount)
         ProcessorCount(N)
         execute_process(
-          COMMAND cmake --build build --parallel ${N} 
+          COMMAND cmake --build build --parallel ${N}
           RESULT_VARIABLE result
           OUTPUT_VARIABLE output
           ERROR_VARIABLE output
@@ -357,7 +368,7 @@ jobs:
         endif()
 
     - name: Archive build artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v7
       with:
         name: "${{ matrix.config.name }} build artifacts"
         path: build/bin/
@@ -368,7 +379,9 @@ jobs:
         set(ENV{CTEST_OUTPUT_ON_FAILURE} "ON")
 
         execute_process(
-          COMMAND cmake --build build --target tests TEST_FLAGS="--xml --xmlxsd --xhtml --qhp --docbook --rtf"
+          COMMAND
+            cmake -E env TEST_FLAGS="--xml --xmlxsd --xhtml --qhp --docbook --rtf --man"
+            cmake --build build --target tests
           RESULT_VARIABLE result
         )
         if (NOT result EQUAL 0)
@@ -382,7 +395,9 @@ jobs:
         set(ENV{CTEST_OUTPUT_ON_FAILURE} "ON")
 
         execute_process(
-          COMMAND cmake --build build --target tests TEST_FLAGS="--xml --xmlxsd --xhtml --qhp --docbook --rtf --pdf"
+          COMMAND
+            cmake -E env TEST_FLAGS="--xml --xmlxsd --xhtml --qhp --docbook --rtf --man --pdf"
+            cmake --build build --target tests
           RESULT_VARIABLE result
         )
         if (NOT result EQUAL 0)
@@ -402,20 +417,19 @@ jobs:
         endif()
 
     - name: Archive html documentation artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v7
       with:
         name: "Html documentation artifacts"
         path: build/html/
-      if: matrix.config.name == 'Ubuntu Latest GCC Release'
-
+      if: matrix.config.name == 'Ubuntu Latest GCC Release (Intel)'
 
     - name: Archive Latex documentation artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v7
       with:
         name: "Latex documentation artifacts"
         path: build/latex/doxygen_manual.pdf
-      if: matrix.config.name == 'Ubuntu Latest GCC Release'
-      
+      if: matrix.config.name == 'Ubuntu Latest GCC Release (Intel)'
+
     - name: Generate Internal documentation
       shell: cmake -P {0}
       run: |
@@ -426,12 +440,15 @@ jobs:
         if (NOT result EQUAL 0)
           message(FATAL_ERROR "Building internal documentation failed")
         endif()
-      if: matrix.config.name == 'Ubuntu Latest GCC Release'
+      if: ${{ github.ref_name == 'master' && github.event_name == 'push' && matrix.config.name == 'Ubuntu Latest GCC Release (Intel)' }}
 
     - name: Publish Internal documentation to Github pages
-      uses: peaceiris/actions-gh-pages@v3
+      uses: peaceiris/actions-gh-pages@v4
       with:
-         github_token: ${{ secrets.GITHUB_TOKEN }}
+         deploy_key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
+         external_repository: doxygen/doxygen-docs
          publish_dir: build/doxygen_docs/html
-      if: ${{ github.event_name == 'push' && matrix.config.name == 'Ubuntu Latest GCC Release' }}
+         force_orphan: true
+      if: ${{ github.ref_name == 'master' && github.event_name == 'push' && matrix.config.name == 'Ubuntu Latest GCC Release (Intel)' }}
+
 

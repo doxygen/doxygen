@@ -301,7 +301,7 @@ void SvgTextR(struct ADrawTag *ctx,
               unsigned int     y,
               const char      *string)
 {
-    SvgContext *context = getSvgCtx(ctx);
+    const SvgContext *context = getSvgCtx(ctx);
 
     svgRect(ctx, getSvgBgPen(ctx), x - 2, y - SvgTextHeight(ctx) + 1, x + SvgTextWidth(ctx, string), y - 1);
 
@@ -320,7 +320,7 @@ void SvgTextL(struct ADrawTag *ctx,
               unsigned int     y,
               const char      *string)
 {
-    SvgContext *context = getSvgCtx(ctx);
+    const SvgContext *context = getSvgCtx(ctx);
 
     svgRect(ctx, getSvgBgPen(ctx), x - (SvgTextWidth(ctx, string) + 2), y - SvgTextHeight(ctx) + 1, x, y - 1);
 
@@ -341,7 +341,7 @@ void SvgTextC(struct ADrawTag *ctx,
               unsigned int     y,
               const char      *string)
 {
-    SvgContext  *context = getSvgCtx(ctx);
+    const SvgContext  *context = getSvgCtx(ctx);
     unsigned int hw = SvgTextWidth(ctx, string) / 2;
 
     svgRect(ctx, getSvgBgPen(ctx), x - (hw + 2), y - SvgTextHeight(ctx) + 1, x + hw, y - 1);

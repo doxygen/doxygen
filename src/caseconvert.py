@@ -11,7 +11,7 @@ tolower = {}
 
 def writeMapping(file,mapping):
     for k,v in sorted(mapping.items()):
-        file.write(u"    case %s /* %s */: BSEQ(%s) /* %s */;\n" %
+        file.write(u"    case %s /* %s */: BSEQ(%s) /* %s */\n" %
                (hex(ord(k[0])), k, ",".join(f"0x{b:02x}" for b in v.encode('utf-8')), v))
 
 def writePunctuationCodes(file):
@@ -45,8 +45,8 @@ inline const char *convertUnicodeToUpper(uint32_t code)
 {
   switch(code)
   {
-''');
-writeMapping(file,toupper);
+''')
+writeMapping(file,toupper)
 file.write(r'''    default: return nullptr;
   }
 }
@@ -55,8 +55,8 @@ inline const char *convertUnicodeToLower(uint32_t code)
 {
   switch(code)
   {
-''');
-writeMapping(file,tolower);
+''')
+writeMapping(file,tolower)
 file.write(r'''    default: return nullptr;
   }
 }
@@ -65,12 +65,12 @@ inline bool isPunctuationCharacter(uint32_t code)
 {
   switch(code)
   {
-''');
-writePunctuationCodes(file);
+''')
+writePunctuationCodes(file)
 file.write(r'''    default: return false;
   }
   return false;
 }
 
 #endif
-''');
+''')

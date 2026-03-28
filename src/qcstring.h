@@ -18,6 +18,7 @@
 #define QCSTRING_H
 
 #include <string>
+#include <string_view>
 #include <algorithm>
 
 #include <cctype>
@@ -45,42 +46,31 @@
 
 void *qmemmove( void *dst, const void *src, size_t len );
 
-#if defined(_OS_WIN32_)
-#define qsnprintf _snprintf
-#else
 #define qsnprintf snprintf
-#endif
 
-char *qstrdup( const char * );
+//! Returns a copy of a string \a s.
+//! Note that memory is passed to the caller, use qstrfree() to release.
+char *qstrdup( const char *s );
+//! Frees the memory allocated using qstrdup().
+void qstrfree( const char *s );
 
-inline uint32_t cstrlen( const char *str )
-{ return static_cast<uint32_t>(strlen(str)); }
-
+//! Returns the length of string \a str, or 0 if a null pointer is passed.
 inline uint32_t qstrlen( const char *str )
 { return str ? static_cast<uint32_t>(strlen(str)) : 0; }
 
-inline char *cstrcpy( char *dst, const char *src )
-{ return strcpy(dst,src); }
-
 inline char *qstrcpy( char *dst, const char *src )
-{ return src ? strcpy(dst, src) : 0; }
+{ return src ? strcpy(dst, src) : nullptr; }
 
-char * qstrncpy(char *dst,const char *src, size_t len);
-
-inline int cstrcmp( const char *str1, const char *str2 )
-{ return strcmp(str1,str2); }
+char *qstrncpy(char *dst,const char *src, size_t len);
 
 inline bool qisempty( const char *s)
-{ return s==0 || *s==0; }
+{ return s==nullptr || *s=='\0'; }
 
 inline int qstrcmp( const char *str1, const char *str2 )
 { return (str1 && str2) ? strcmp(str1,str2) :     // both non-empty
          (qisempty(str1) && qisempty(str2)) ? 0 : // both empty
          qisempty(str1) ? -1 : 1;                 // one empty, other non-empty
 }
-
-inline int cstrncmp( const char *str1, const char *str2, size_t len )
-{ return strncmp(str1,str2,len); }
 
 inline int qstrncmp( const char *str1, const char *str2, size_t len )
 { return (str1 && str2) ? strncmp(str1,str2,len) :  // both non-empty
@@ -93,8 +83,16 @@ inline bool qisspace(char c)
 
 int qstricmp( const char *str1, const char *str2 );
 
+inline int qstricmp_sort( const char *str1, const char *str2 )
+{
+  int result = qstricmp(str1,str2);
+  return result==0 ? qstrcmp(str1,str2) : result;
+}
+
+
 int qstrnicmp( const char *str1, const char *str2, size_t len );
 
+using JavaCCString = std::basic_string<JAVACC_CHAR_TYPE>;
 
 /** This is an alternative implementation of QCString. It provides basically
  *  the same functions but uses std::string as the underlying string type
@@ -103,20 +101,50 @@ class QCString
 {
   public:
     QCString() = default;
+    QCString(const QCString &) = default;
+    QCString &operator=(const QCString &) = default;
+    QCString(QCString &&) = default;
+    QCString &operator=(QCString &&) = default;
    ~QCString() = default;
-    QCString( const QCString &s ) = default;
-    QCString &operator=( const QCString &s ) = default;
-    QCString( QCString &&s ) = default;
-    QCString &operator=( QCString &&s ) = default;
 
-    explicit QCString( const std::string &s ) : m_rep(s) {}
+    QCString( const std::string &s ) : m_rep(s) {}
 
     QCString( std::string &&s) : m_rep(std::move(s)) {}
+
+    QCString &operator=( std::string &&s)
+    {
+      m_rep=std::move(s);
+      return *this;
+    }
+
+    QCString( std::string_view sv) : m_rep(sv) {}
+
+    QCString &operator=(std::string_view sv)
+    {
+      m_rep=sv;
+      return *this;
+    }
+
+    QCString( int ) = delete;
+
+    /** For converting a JavaCC string */
+    QCString( const JavaCCString &s)
+    {
+      m_rep.resize(s.size());
+      memcpy(m_rep.data(),s.data(),s.size());
+    }
+    QCString &operator=( const JavaCCString &s)
+    {
+      m_rep.resize(s.size());
+      memcpy(m_rep.data(),s.data(),s.size());
+      return *this;
+    }
 
     /** creates a string with room for size characters
      *  @param[in] size the number of character to allocate (also counting the 0-terminator!)
      */
-    explicit QCString( size_t size ) { m_rep.resize(size>0 ? size-1 : 0); }
+    enum SizeTag { ExplicitSize };
+    explicit QCString( size_t size, SizeTag t) { m_rep.resize(size); }
 
     /** creates a string from a plain C string.
      *  @param[in] str A zero terminated C string. When 0 an empty string is created.
@@ -131,34 +159,27 @@ class QCString
 
     QCString &operator=( const std::string &s) { m_rep = s; return *this; }
 
-    /** Returns TRUE iff the string is empty. Equivalent to isEmpty(). */
-    bool isNull() const { return m_rep.empty(); }
-
     /** Returns TRUE iff the string is empty */
     bool isEmpty() const { return m_rep.empty(); }
 
     /** Returns the length of the string, not counting the 0-terminator. Equivalent to size(). */
-    uint32_t length() const { return static_cast<uint32_t>(m_rep.size()); }
+    size_t length() const { return m_rep.size(); }
 
     /** Returns the length of the string, not counting the 0-terminator. */
-    uint32_t size() const { return static_cast<uint32_t>(m_rep.size()); }
+    size_t size() const { return m_rep.size(); }
 
     /** Returns a pointer to the contents of the string in the form of a 0-terminated C string */
     const char *data() const { return m_rep.c_str(); }
+
+    std::string_view view() const { return m_rep; }
 
     /** Returns a writable pointer to the data.
      */
     char *rawData() { return &m_rep[0]; }
 
-    /** Resizes the string to hold \a newlen characters
-     *  (this value should also count the 0-terminator).
-     *  If the string is enlarged the contents will
-     *  be left unmodified.
-     */
-    bool resize( size_t newlen ) { m_rep.resize( newlen>0 ? newlen-1 : 0 ); return TRUE; }
+    void resize( size_t newlen) { m_rep.resize(newlen); }
 
-    /** Truncates the string at position \a pos. */
-    bool truncate( size_t pos ) { return resize( pos + 1 ); }
+    void clear() { m_rep.clear(); }
 
     /** Reserve space for \a size bytes without changing the string contents */
     void reserve( size_t size ) { m_rep.reserve(size); }
@@ -169,27 +190,25 @@ class QCString
      *  @note the string will be resized to contain \a len characters. The contents of the
      *  string will be lost.
      */
-    bool fill( char c, int len = -1 )
+    QCString fill( char c, int len = -1 )
     {
       int l = len==-1 ? static_cast<int>(m_rep.size()) : len;
       m_rep = std::string(l,c);
-      return TRUE;
+      return *this;
     }
 
     QCString &sprintf( const char *format, ... );
 
     int	find( char c, int index=0, bool cs=TRUE ) const;
     int	find( const char *str, int index=0, bool cs=TRUE ) const;
+    int	find( const std::string &str, int index=0, bool cs=TRUE ) const;
     int find( const QCString &str, int index=0, bool cs=TRUE ) const;
-    //int	find( const QRegExp &rx, int index=0 ) const;
 
     int	findRev( char c, int index=-1, bool cs=TRUE) const;
     int	findRev( const char *str, int index=-1, bool cs=TRUE) const;
-    //int	findRev( const QRegExp &rx, int index=-1 ) const;
 
     int	contains( char c, bool cs=TRUE ) const;
     int	contains( const char *str, bool cs=TRUE ) const;
-    //int contains( const QRegExp &rx ) const;
 
     bool stripPrefix(const QCString &prefix)
     {
@@ -201,6 +220,7 @@ class QCString
       }
       return FALSE;
     }
+
     bool stripPrefix(const char *prefix)
     {
       return stripPrefix(QCString(prefix));
@@ -218,7 +238,7 @@ class QCString
              *this;
     }
 
-    QCString mid( size_t index, size_t len=static_cast<size_t>(-1)) const
+    QCString mid( size_t index, size_t len=static_cast<size_t>(-1) ) const
     {
       size_t slen = m_rep.size();
       if (len==static_cast<uint32_t>(-1)) len = slen-index;
@@ -247,6 +267,8 @@ class QCString
       while (end>start && qisspace(m_rep[end])) end--;
       return QCString(m_rep.substr(start,1+end-start));
     }
+
+    QCString stripLeadingAndTrailingEmptyLines() const;
 
     // Returns a quoted copy of this string, unless it is already quoted.
     // Note that trailing and leading whitespace is removed.
@@ -295,6 +317,18 @@ class QCString
     /// whitespace characters replaced by a single space
     QCString simplifyWhiteSpace() const;
 
+    // Returns a copy of this string repeated n times
+    QCString repeat(unsigned int n) const
+    {
+      QCString result(n * size(), ExplicitSize);
+      size_t offset = 0;
+      for (offset = 0; offset < n * size(); offset += size())
+      {
+        memcpy(result.rawData() + offset, data(), size());
+      }
+      return result;
+    }
+
     QCString &insert( size_t index, const QCString &s )
     {
       if (s.length()>0)
@@ -313,6 +347,26 @@ class QCString
       }
       return *this;
     }
+
+    QCString &insert( size_t index, std::string_view s)
+    {
+      if (s.length()>0)
+      {
+        size_t ol = m_rep.size();
+        if (index>ol) // insert beyond end of string and fill gap with spaces
+        {
+          m_rep.resize(index+s.length());
+          std::memset(&m_rep[ol],' ',index-ol);
+          std::memcpy(&m_rep[index],s.data(),s.length()+1);
+        }
+        else // insert inside the string
+        {
+          m_rep.insert(index,s);
+        }
+      }
+      return *this;
+    }
+
     QCString &insert( size_t index, const char *s )
     {
       size_t len = s ? qstrlen(s) : 0;
@@ -360,6 +414,11 @@ class QCString
       return operator+=(s);
     }
 
+    QCString &append( std::string_view s)
+    {
+      return operator+=(s);
+    }
+
     QCString &prepend( const char *s )
     {
       return insert(0,s);
@@ -375,6 +434,11 @@ class QCString
       return insert(0,s.c_str());
     }
 
+    QCString &prepend( std::string_view s)
+    {
+      return insert(0,s);
+    }
+
     QCString &remove( size_t index, size_t len )
     {
       size_t ol = m_rep.size();
@@ -383,15 +447,14 @@ class QCString
     }
 
     QCString &replace( size_t index, size_t len, const char *s);
-    //QCString &replace( const QRegExp &rx, const char *str );
 
-    short         toShort(  bool *ok=0, int base=10 ) const;
-    uint16_t      toUShort( bool *ok=0, int base=10 ) const;
-    int	          toInt(    bool *ok=0, int base=10 ) const;
-    uint32_t      toUInt(   bool *ok=0, int base=10 ) const;
-    long          toLong(   bool *ok=0, int base=10 ) const;
-    unsigned long toULong(  bool *ok=0, int base=10 ) const;
-    uint64_t      toUInt64( bool *ok=0, int base=10 ) const;
+    short         toShort(  bool *ok=nullptr, int base=10 ) const;
+    uint16_t      toUShort( bool *ok=nullptr, int base=10 ) const;
+    int	          toInt(    bool *ok=nullptr, int base=10 ) const;
+    uint32_t      toUInt(   bool *ok=nullptr, int base=10 ) const;
+    long          toLong(   bool *ok=nullptr, int base=10 ) const;
+    unsigned long toULong(  bool *ok=nullptr, int base=10 ) const;
+    uint64_t      toUInt64( bool *ok=nullptr, int base=10 ) const;
 
     QCString &setNum(short n)
     {
@@ -443,7 +506,12 @@ class QCString
 
     bool startsWith( const char *s ) const
     {
-      if (m_rep.empty() || s==0) return s==0;
+      if (m_rep.empty() || s==nullptr) return s==nullptr;
+      return m_rep.rfind(s,0)==0; // looking "backward" starting and ending at index 0
+    }
+
+    bool startsWith( const std::string &s) const
+    {
       return m_rep.rfind(s,0)==0; // looking "backward" starting and ending at index 0
     }
 
@@ -455,9 +523,15 @@ class QCString
 
     bool endsWith(const char *s) const
     {
-      if (m_rep.empty() || s==0) return s==0;
+      if (m_rep.empty() || s==nullptr) return s==nullptr;
       size_t l = strlen(s);
       return m_rep.length()>=l && m_rep.compare(m_rep.length()-l, l, s, l)==0;
+    }
+
+    bool endsWith(const std::string &s) const
+    {
+      size_t l = s.length();
+      return m_rep.length()>=l && m_rep.compare(m_rep.length()-l, l, s)==0;
     }
 
     bool endsWith(const QCString &s) const
@@ -492,6 +566,12 @@ class QCString
       return *this;
     }
 
+    QCString &operator+=(std::string_view s)
+    {
+      m_rep+=s;
+      return *this;
+    }
+
     /** Appends string \a str to this string and returns a reference to the result. */
     QCString &operator+=( const char *s )
     {
@@ -521,12 +601,12 @@ class QCString
     }
 
     /** Indexing operator. Equivalent to at(). */
-    char &operator[]( int i )
+    char &operator[]( size_t i )
     {
       return m_rep[i];
     }
 
-    const char &operator[]( int i ) const
+    const char &operator[]( size_t i ) const
     {
       return m_rep[i];
     }
@@ -626,6 +706,21 @@ inline std::string toStdString(const QCString &s)
 
 //---- overloads
 
+inline int qstrcmp( const QCString &str1, const char *str2 )
+{
+  return qstrcmp(str1.data(),str2);
+}
+
+inline int qstrcmp( const char *str1, const QCString &str2 )
+{
+  return qstrcmp(str1,str2.data());
+}
+
+inline int qstrcmp( const QCString &str1, const QCString &str2 )
+{
+  return qstrcmp(str1.data(),str2.data());
+}
+
 inline int qstricmp( const QCString &str1, const char *str2 )
 {
   return qstricmp(str1.data(),str2);
@@ -640,6 +735,22 @@ inline int qstricmp( const QCString &str1, const QCString &str2 )
 {
   return qstricmp(str1.data(),str2.data());
 }
+
+inline int qstricmp_sort( const QCString &str1, const char *str2 )
+{
+  return qstricmp_sort(str1.data(),str2);
+}
+
+inline int qstricmp_sort( const char *str1, const QCString &str2 )
+{
+  return qstricmp_sort(str1,str2.data());
+}
+
+inline int qstricmp_sort( const QCString &str1, const QCString &str2 )
+{
+  return qstricmp_sort(str1.data(),str2.data());
+}
+
 
 inline int qstrnicmp( const QCString &str1, const char *str2, size_t len )
 {

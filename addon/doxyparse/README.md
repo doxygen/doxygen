@@ -9,7 +9,7 @@ machine-readable output.
 
 Doxyparse has been used in many software engineering research (as a source-code
 static analysis tool) regards on software metrics, quality metrics and so on,
-Doxyparse was first used by the [Analizo](http://analizo.org) toolkit, a suite
+Doxyparse was first used by the [Analizo](https://www.analizo.org) toolkit, a suite
 of source code analysis tools, aimed at being language-independent and
 extensible, able to extract and calculate a fair number of source code metrics,
 generate dependency graphs, and other software evolution analysis.

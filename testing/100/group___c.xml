@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="group___c" kind="group">
+    <compoundname>C</compoundname>
+    <title>C</title>
+    <innerfile refid="more__100__c_8c">more_100_c.c</innerfile>
+    <innerclass refid="structs" prot="public">s</innerclass>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+  </compounddef>
+</doxygen>

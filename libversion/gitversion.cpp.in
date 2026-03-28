@@ -6,18 +6,22 @@
  * - No git information is present (no .git directory)
  * in those cases clear the gitVersionString (would have string GIT-NOTFOUND).
  */
-const char *getGitVersion(void)
+std::string getGitVersion()
 {
-#define BUF_SIZE 100
-  static char gitVersionString[BUF_SIZE];
+  static std::string gitVersion;
   static bool init = false;
   if (!init)
   {
-    strncpy(gitVersionString,"@GIT_HEAD_SHA1@",BUF_SIZE-1);
-    strncat(gitVersionString,!strcmp("@GIT_IS_DIRTY@","true")?"*":"",BUF_SIZE-1);
-    if (!strcmp("@GIT_HEAD_SHA1@", "GIT-NOTFOUND")) gitVersionString[0] = '\0';
-    gitVersionString[BUF_SIZE-1]='\0';
+    gitVersion = "@GIT_HEAD_SHA1@";
+    if (std::string("@GIT_IS_DIRTY@")=="true")
+    {
+      gitVersion+="*";
+    }
+    if (gitVersion=="GIT-NOTFOUND")
+    {
+      gitVersion="";
+    }
     init = true;
   }
-  return gitVersionString;
+  return gitVersion;
 }

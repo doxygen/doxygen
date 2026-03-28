@@ -28,7 +28,7 @@
         <argsstring>()</argsstring>
         <name>func_brief</name>
         <briefdescription>
-          <para>Brief description. </para>
+          <para>Brief description.   </para>
         </briefdescription>
         <detaileddescription>
         </detaileddescription>
@@ -44,7 +44,7 @@
         <briefdescription>
         </briefdescription>
         <detaileddescription>
-          <para>Detailed description. </para>
+          <para>Detailed description.   </para>
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
@@ -56,10 +56,10 @@
         <argsstring>()</argsstring>
         <name>func_doc</name>
         <briefdescription>
-          <para>Brief description. </para>
+          <para>Brief description.   </para>
         </briefdescription>
         <detaileddescription>
-          <para>Detailed description. More text. </para>
+          <para>Detailed description.   More text. </para>
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>

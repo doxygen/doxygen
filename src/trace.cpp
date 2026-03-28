@@ -15,16 +15,37 @@
 
 #include "trace.h"
 #include "spdlog/sinks/basic_file_sink.h" // support for basic file logging
+#include "spdlog/sinks/stdout_sinks.h"
 
 std::shared_ptr<spdlog::logger> g_tracer;
 
-void initTracing(const QCString &logFile)
+void initTracing(const QCString &logFile, bool timing)
 {
   if (!logFile.isEmpty())
   {
-    g_tracer = spdlog::basic_logger_mt("tracing", logFile.str(),true);
+    std::vector<spdlog::sink_ptr> sinks;
+    if (logFile=="stdout")
+    {
+      sinks.push_back(std::make_shared<spdlog::sinks::stdout_sink_mt>());
+    }
+    else if (logFile=="stderr")
+    {
+      sinks.push_back(std::make_shared<spdlog::sinks::stderr_sink_mt>());
+    }
+    else // normal file
+    {
+      sinks.push_back(std::make_shared<spdlog::sinks::basic_file_sink_mt>(logFile.str(),true));
+    }
+    g_tracer = std::make_shared<spdlog::logger>("tracing", sinks.begin(),sinks.end());
     g_tracer->set_level(spdlog::level::trace);
-    g_tracer->set_pattern("[%C-%m-%d %T.%e][%t][%s:%#](%!) %v");
+    if (timing)
+    {
+      g_tracer->set_pattern("[%C-%m-%d %T.%e][%t][%s:%#](%!) %v");
+    }
+    else
+    {
+      g_tracer->set_pattern("[%s:%#](%!) %v");
+    }
   }
 }
 

@@ -28,9 +28,14 @@ struct Argument
   /*! return TRUE if this argument is documentation and the argument has a
    *  non empty name.
    */
-  bool hasDocumentation() const
+  bool hasDocumentation(bool allowEmptyName=false) const
   {
-    return !name.isEmpty() && !docs.isEmpty();
+    return (allowEmptyName || !name.isEmpty()) && !docs.isEmpty();
+  }
+
+  bool hasTemplateDocumentation() const
+  {
+    return (!name.isEmpty() || !type.isEmpty()) && !docs.isEmpty();
   }
 
   QCString attrib;   /*!< Argument's attribute (IDL only) */
@@ -43,11 +48,11 @@ struct Argument
   QCString typeConstraint;  /*!< Used for Java generics: \<T extends C\> */
 };
 
-enum RefQualifierType
+enum class RefQualifierType
 {
-  RefQualifierNone,
-  RefQualifierLValue,
-  RefQualifierRValue
+  None,
+  LValue,
+  RValue
 };
 
 /*! \brief This class represents an function or template argument list.
@@ -64,7 +69,9 @@ class ArgumentList
     using const_iterator = typename Vec::const_iterator;
 
     /*! Does any argument of this list have documentation? */
-    bool hasDocumentation() const;
+    bool hasDocumentation(bool allowEmptyNames=false) const;
+    /*! Does any template argument of this list have documentation? */
+    bool hasTemplateDocumentation() const;
     /*! Does this list have zero or more parameters */
     bool hasParameters() const
     {
@@ -76,9 +83,9 @@ class ArgumentList
       m_constSpecifier = FALSE;
       m_volatileSpecifier = FALSE;
       m_pureSpecifier = FALSE;
-      m_trailingReturnType.resize(0);
+      m_trailingReturnType.clear();
       m_isDeleted = FALSE;
-      m_refQualifier = RefQualifierNone;
+      m_refQualifier = RefQualifierType::None;
       m_noParameters = FALSE;
     }
 
@@ -112,7 +119,9 @@ class ArgumentList
     void setConstSpecifier(bool b)        { m_constSpecifier = b; }
     void setVolatileSpecifier(bool b)     { m_volatileSpecifier = b; }
     void setPureSpecifier(bool b)         { m_pureSpecifier = b; }
-    void setTrailingReturnType(const QCString &s) { m_trailingReturnType = s; }
+    void setTrailingReturnType(const QCString &s);
+    void appendTrailingReturnType(const QCString &s);
+    void finishTrailingReturnType();
     void setIsDeleted(bool b)             { m_isDeleted = b; }
     void setRefQualifier(RefQualifierType t) { m_refQualifier = t; }
     void setNoParameters(bool b)          { m_noParameters = b; }
@@ -130,7 +139,7 @@ class ArgumentList
     /*! method with =delete */
     bool m_isDeleted = FALSE;
     /*! C++11 ref qualifier */
-    RefQualifierType m_refQualifier = RefQualifierNone;
+    RefQualifierType m_refQualifier = RefQualifierType::None;
     /*! is it an explicit empty list */
     bool m_noParameters = FALSE;
 };

@@ -32,6 +32,7 @@ static std::map< std::string, Debug::DebugMask > s_labels =
   { "nolineno",           Debug::NoLineNo           },
   { "commentcnv",         Debug::CommentCnv         },
   { "commentscan",        Debug::CommentScan        },
+  { "formula",            Debug::Formula            },
   { "printtree",          Debug::PrintTree          },
   { "time",               Debug::Time               },
   { "extcmd",             Debug::ExtCmd             },
@@ -43,6 +44,11 @@ static std::map< std::string, Debug::DebugMask > s_labels =
   { "rtf",                Debug::Rtf                },
   { "qhp",                Debug::Qhp                },
   { "tag",                Debug::Tag                },
+  { "alias",              Debug::Alias              },
+  { "entries",            Debug::Entries            },
+  { "sections",           Debug::Sections           },
+  { "stderr",             Debug::Stderr             },
+  { "layout",             Debug::Layout             },
   { "lex",                Debug::Lex                },
   { "lex:code",           Debug::Lex_code           },
   { "lex:commentcnv",     Debug::Lex_commentcnv     },
@@ -67,25 +73,23 @@ static std::map< std::string, Debug::DebugMask > s_labels =
 };
 
 //------------------------------------------------------------------------
+static FILE *g_debugFile = stdout;
 
 Debug::DebugMask Debug::curMask = Debug::Quiet;
 int Debug::curPrio = 0;
 
-void Debug::print(DebugMask mask,int prio,const char *fmt,...)
+void Debug::print_(DebugMask mask, int prio, fmt::string_view fmt, fmt::format_args args)
 {
   if ((curMask&mask) && prio<=curPrio)
   {
-    va_list args;
-    va_start(args,fmt);
-    vfprintf(stdout, fmt, args);
-    va_end(args);
+    fmt::print(g_debugFile,"{}",fmt::vformat(fmt,args));
   }
 }
 
 static char asciiToLower(char in) {
-    if (in <= 'Z' && in >= 'A')
-        return in - ('Z' - 'z');
-    return in;
+  if (in <= 'Z' && in >= 'A')
+    return in - 'A' + 'a';
+  return in;
 }
 
 static uint64_t labelToEnumValue(const QCString &l)
@@ -99,7 +103,14 @@ static uint64_t labelToEnumValue(const QCString &l)
 bool Debug::setFlagStr(const QCString &lab)
 {
   uint64_t retVal = labelToEnumValue(lab);
-  curMask = static_cast<DebugMask>(curMask | retVal);
+  if (retVal == Debug::Stderr)
+  {
+    g_debugFile = stderr;
+  }
+  else
+  {
+    curMask = static_cast<DebugMask>(curMask | retVal);
+  }
   return retVal!=0;
 }
 
@@ -127,7 +138,7 @@ void Debug::printFlags()
 {
   for (const auto &v : s_labels)
   {
-     msg("\t%s\n",v.first.c_str());
+     msg("\t{}\n",v.first);
   }
 }
 
@@ -142,21 +153,20 @@ DebugLex::~DebugLex()
   print(m_mask,"Finished",qPrint(m_lexName),qPrint(m_fileName));
 }
 
-void DebugLex::print(Debug::DebugMask mask,const char *state,const char *lexName,const char *fileName)
+void DebugLex::print(Debug::DebugMask mask,
+                     const char *state,
+                     const char *lexName,
+                     const char *fileName)
 {
+  if (!Debug::isFlagSet(mask)) return;
+
   if (fileName && *fileName)
   {
-    if (Debug::isFlagSet(mask))
-    {
-      fprintf(stderr,"%s lexical analyzer: %s (for: %s)\n",state, lexName, fileName);
-    }
+    fprintf(stderr, "%s lexical analyzer: %s (for: %s)\n", state, lexName, fileName);
   }
   else
   {
-    if (Debug::isFlagSet(mask))
-    {
-      fprintf(stderr,"%s lexical analyzer: %s\n",state, lexName);
-    }
+    fprintf(stderr, "%s lexical analyzer: %s\n", state, lexName);
   }
 }
 

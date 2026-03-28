@@ -3,7 +3,7 @@
 
  The MIT License (MIT)
 
- Copyright (C) 1997-2020 by Dimitri van Heesch
+ Copyright (C) 1997-2026 by Dimitri van Heesch
 
  Permission is hereby granted, free of charge, to any person obtaining a copy of this software
  and associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -22,102 +22,193 @@
 
  @licend  The above is the entire license notice for the JavaScript code in this file
  */
-function toggleVisibility(linkObj)
-{
- var base = $(linkObj).attr('id');
- var summary = $('#'+base+'-summary');
- var content = $('#'+base+'-content');
- var trigger = $('#'+base+'-trigger');
- var src=$(trigger).attr('src');
- if (content.is(':visible')===true) {
-   content.hide();
-   summary.show();
-   $(linkObj).addClass('closed').removeClass('opened');
-   $(trigger).attr('src',src.substring(0,src.length-8)+'closed.png');
- } else {
-   content.show();
-   summary.hide();
-   $(linkObj).removeClass('closed').addClass('opened');
-   $(trigger).attr('src',src.substring(0,src.length-10)+'open.png');
- }
- return false;
+
+function toggleVisibility(linkObj) {
+  return dynsection.toggleVisibility(linkObj);
 }
 
-function updateStripes()
-{
-  $('table.directory tr').
-       removeClass('even').filter(':visible:even').addClass('even');
-  $('table.directory tr').
-       removeClass('odd').filter(':visible:odd').addClass('odd');
-}
+let dynsection = {
+  // helper function
+  updateStripes : function() {
+    const rows = document.querySelectorAll('table.directory tr');
+    rows.forEach(row => {
+      row.classList.remove('even', 'odd');
+    });
+    const visibleRows = Array.from(rows).filter(row => {
+      return row.offsetParent !== null; // checks if element is visible
+    });
+    visibleRows.forEach((row, index) => {
+      if (index % 2 === 0) {
+        row.classList.add('even');
+      } else {
+        row.classList.add('odd');
+      }
+    });
+  },
 
-function toggleLevel(level)
-{
-  $('table.directory tr').each(function() {
-    var l = this.id.split('_').length-1;
-    var i = $('#img'+this.id.substring(3));
-    var a = $('#arr'+this.id.substring(3));
-    if (l<level+1) {
-      i.removeClass('iconfopen iconfclosed').addClass('iconfopen');
-      a.html('&#9660;');
-      $(this).show();
-    } else if (l==level+1) {
-      i.removeClass('iconfclosed iconfopen').addClass('iconfclosed');
-      a.html('&#9658;');
-      $(this).show();
+  slide : function(element, fromHeight, toHeight, duration=200) {
+    element.style.overflow = 'hidden';
+    element.style.transition = `height ${duration}ms ease-out`;
+    element.style.height = fromHeight;
+    setTimeout(() => {
+      element.style.height = toHeight;
+      setTimeout(() => {
+        element.style.height = '';
+        element.style.transition = '';
+        element.style.overflow = '';
+        if (toHeight === '0px') {
+          element.style.display = 'none';
+        }
+      }, duration);
+    }, 0);
+  },
+
+  toggleVisibility : function(linkObj) {
+    const base = linkObj.getAttribute('id');
+    const summary = document.getElementById(base+'-summary');
+    const content = document.getElementById(base+'-content');
+    const trigger = document.getElementById(base+'-trigger');
+    const src = trigger ? trigger.getAttribute('src') : null;
+    if (content.offsetParent !== null) { // checks if element is visible
+      const height = content.offsetHeight;
+      this.slide(content, height + 'px', '0px');
+      if (summary) summary.style.display = '';
+      linkObj.querySelectorAll('.arrowhead').forEach(el => {
+        el.classList.add('closed');
+        el.classList.remove('opened');
+      });
     } else {
-      $(this).hide();
+      // slideDown animation
+      content.style.display = 'block';
+      const height = content.scrollHeight;
+      this.slide(content, '0px', height + 'px');
+      if (summary) summary.style.display = 'none';
+      linkObj.querySelectorAll('.arrowhead').forEach(el => {
+        el.classList.remove('closed');
+        el.classList.add('opened');
+      });
     }
-  });
-  updateStripes();
-}
+    return false;
+  },
 
-function toggleFolder(id)
-{
-  // the clicked row
-  var currentRow = $('#row_'+id);
+  toggleLevel : function(level) {
+    document.querySelectorAll('table.directory tr').forEach(function(row) {
+      const l = row.id.split('_').length-1;
+      const i = document.getElementById('img'+row.id.substring(3));
+      const a = document.getElementById('arr'+row.id.substring(3));
+      if (l<level+1) {
+        if (i) i.querySelectorAll('.folder-icon').forEach(el => el.classList.add('open'));
+        if (a) {
+          a.querySelectorAll('.arrowhead').forEach(el => {
+            el.classList.remove('closed');
+            el.classList.add('opened');
+          });
+        }
+        row.style.display = '';
+      } else if (l==level+1) {
+        if (a) {
+          a.querySelectorAll('.arrowhead').forEach(el => {
+            el.classList.remove('opened');
+            el.classList.add('closed');
+          });
+        }
+        if (i) i.querySelectorAll('.folder-icon').forEach(el => el.classList.remove('open'));
+        row.style.display = '';
+      } else {
+        row.style.display = 'none';
+      }
+    });
+    this.updateStripes();
+  },
 
-  // all rows after the clicked row
-  var rows = currentRow.nextAll("tr");
+  toggleFolder : function(id) {
+    // the clicked row
+    const currentRow = document.getElementById('row_'+id);
+    if (!currentRow) return;
 
-  var re = new RegExp('^row_'+id+'\\d+_$', "i"); //only one sub
+    // all rows after the clicked row
+    const rows = [];
+    let nextRow = currentRow.nextElementSibling;
+    while (nextRow && nextRow.tagName === 'TR') {
+      rows.push(nextRow);
+      nextRow = nextRow.nextElementSibling;
+    }
 
-  // only match elements AFTER this one (can't hide elements before)
-  var childRows = rows.filter(function() { return this.id.match(re); });
+    const re = new RegExp('^row_'+id+'\\d+_$', "i"); //only one sub
 
-  // first row is visible we are HIDING
-  if (childRows.filter(':first').is(':visible')===true) {
-    // replace down arrow by right arrow for current row
-    var currentRowSpans = currentRow.find("span");
-    currentRowSpans.filter(".iconfopen").removeClass("iconfopen").addClass("iconfclosed");
-    currentRowSpans.filter(".arrow").html('&#9658;');
-    rows.filter("[id^=row_"+id+"]").hide(); // hide all children
-  } else { // we are SHOWING
-    // replace right arrow by down arrow for current row
-    var currentRowSpans = currentRow.find("span");
-    currentRowSpans.filter(".iconfclosed").removeClass("iconfclosed").addClass("iconfopen");
-    currentRowSpans.filter(".arrow").html('&#9660;');
-    // replace down arrows by right arrows for child rows
-    var childRowsSpans = childRows.find("span");
-    childRowsSpans.filter(".iconfopen").removeClass("iconfopen").addClass("iconfclosed");
-    childRowsSpans.filter(".arrow").html('&#9658;');
-    childRows.show(); //show all children
-  }
-  updateStripes();
-}
+    // only match elements AFTER this one (can't hide elements before)
+    const childRows = rows.filter(function(row) { return row.id.match(re); });
 
+    if (childRows.length === 0) return;
 
-function toggleInherit(id)
-{
-  var rows = $('tr.inherit.'+id);
-  var img = $('tr.inherit_header.'+id+' img');
-  var src = $(img).attr('src');
-  if (rows.filter(':first').is(':visible')===true) {
-    rows.css('display','none');
-    $(img).attr('src',src.substring(0,src.length-8)+'closed.png');
-  } else {
-    rows.css('display','table-row'); // using show() causes jump in firefox
-    $(img).attr('src',src.substring(0,src.length-10)+'open.png');
-  }
-}
+    function replaceClass(el,fromClass,toClass) {
+      if (el.classList.contains(fromClass)) {
+        el.classList.remove(fromClass);
+        el.classList.add(toClass);
+      }
+    }
+
+    // first row is visible we are HIDING
+    if (childRows[0].offsetParent !== null) { // checks if element is visible
+      // replace down arrow by right arrow for current row
+      const currentRowSpans = currentRow.querySelectorAll("span");
+      currentRowSpans.forEach(span => {
+        if (span.classList.contains('iconfolder')) {
+          span.querySelectorAll('.folder-icon').forEach(el => el.classList.remove("open"));
+        }
+        replaceClass(span,'opened','closed');
+      });
+      rows.forEach(row => {
+        if (row.id.startsWith('row_'+id)) {
+          row.style.display = 'none'; // hide all children
+        }
+      });
+    } else { // we are SHOWING
+      // replace right arrow by down arrow for current row
+      const currentRowSpans = currentRow.querySelectorAll("span");
+      currentRowSpans.forEach(span => {
+        if (span.classList.contains('iconfolder')) {
+          span.querySelectorAll('.folder-icon').forEach(el => el.classList.add("open"));
+        }
+        replaceClass(span,'closed','opened');
+      });
+      // replace down arrows by right arrows for child rows
+      childRows.forEach(row => {
+        const childRowSpans = row.querySelectorAll("span");
+        childRowSpans.forEach(span => {
+          if (span.classList.contains('iconfolder')) {
+            span.querySelectorAll('.folder-icon').forEach(el => el.classList.remove("open"));
+          }
+          replaceClass(span,'opened','closed');
+        });
+        row.style.display = ''; //show all children
+      });
+    }
+    this.updateStripes();
+  },
+
+  toggleInherit : function(id) {
+    const rows = document.querySelectorAll('tr.inherit.'+id);
+    const header = document.querySelector('tr.inherit_header.'+id);
+    if (rows.length > 0 && rows[0].offsetParent !== null) { // checks if element is visible
+      rows.forEach(row => row.style.display = 'none');
+      if (header) {
+        header.querySelectorAll('.arrowhead').forEach(el => {
+          el.classList.add('closed');
+          el.classList.remove('opened');
+        });
+      }
+    } else {
+      rows.forEach(row => row.style.display = 'table-row');
+      if (header) {
+        header.querySelectorAll('.arrowhead').forEach(el => {
+          el.classList.remove('closed');
+          el.classList.add('opened');
+        });
+      }
+    }
+  },
+
+};
+
 /* @license-end */

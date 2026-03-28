@@ -1,0 +1,477 @@
+/******************************************************************************
+ *
+ *
+ *
+ * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
+ * for any purpose. It is provided "as is" without express or implied warranty.
+ * See the GNU General Public License for more details.
+ *
+ * Documents produced by Doxygen are derivative works derived from the
+ * input used in their production; they are not affected by this license.
+ *
+ */
+/*! \page customize Customizing the output
+
+\tableofcontents{html,latex}
+
+Doxygen provides various levels of customization.
+The section \ref minor_tweaks "Minor Tweaks" discusses what to
+do if you want to do minor tweaking to the look and feel of the output.
+The section \ref layout "Layout" show how to reorder and hide certain
+information on a page.
+The section \ref xmlgenerator "XML output" show how to generate
+whatever output you want based on the XML output produced by Doxygen.
+
+\section minor_tweaks Minor Tweaks
+
+The next subsections describe some aspects that can be tweaked with
+little effort.
+
+\subsection minor_tweaks_colors Overall Color
+
+To change the overall color of the HTML output Doxygen provides three options
+- \ref cfg_html_colorstyle_hue "HTML_COLORSTYLE_HUE"
+- \ref cfg_html_colorstyle_sat "HTML_COLORSTYLE_SAT"
+- \ref cfg_html_colorstyle_gamma "HTML_COLORSTYLE_GAMMA"
+
+to change the hue, saturation, and gamma correction of the colors respectively.
+
+For your convenience the GUI frontend \ref doxywizard_usage "Doxywizard"
+has a control that allows you to see the effect of changing the values of these options
+on the output in real time.
+
+\subsection minor_tweaks_treeview Navigation
+
+By default, Doxygen will show a title area spanning the full width of the page and
+below the contents with a navigation tree as a sidebar on the left hand side of
+each HTML page.
+
+This corresponds to the following settings in the Doxyfile:
+
+- \ref cfg_disable_index "DISABLE_INDEX" = \c YES
+- \ref cfg_generate_treeview "GENERATE_TREEVIEW" = \c YES
+- \ref cfg_full_sidebar "FULL_SIDEBAR" = \c NO
+
+\image html layout_noindex_and_treeview.png
+\image latex layout_noindex_and_treeview.png width=8cm
+
+you can make the side bar span the whole height of the page using
+
+- \ref cfg_disable_index "DISABLE_INDEX" = \c YES
+- \ref cfg_generate_treeview "GENERATE_TREEVIEW" = \c YES
+- \ref cfg_full_sidebar "FULL_SIDEBAR" = \c YES
+
+\image html layout_noindex_and_sidebar.png
+\image latex layout_noindex_and_sidebar.png width=8cm
+
+you can also replace the navigation tree by tabs on top of every HTML page,
+corresponding to the following settings:
+
+- \ref cfg_disable_index "DISABLE_INDEX" = \c NO
+- \ref cfg_generate_treeview "GENERATE_TREEVIEW" = \c NO
+
+\image html layout_index_and_notreeview.png
+\image latex layout_index_and_notreeview.png width=8cm
+
+or even have both forms of navigation:
+
+- \ref cfg_disable_index "DISABLE_INDEX" = \c NO
+- \ref cfg_generate_treeview "GENERATE_TREEVIEW" = \c YES
+- \ref cfg_full_sidebar "FULL_SIDEBAR" = \c NO
+
+\image html layout_index_and_treeview.png
+\image latex layout_index_and_treeview.png width=8cm
+
+and this also works with the side bar spanning the full height
+
+- \ref cfg_disable_index "DISABLE_INDEX" = \c NO
+- \ref cfg_generate_treeview "GENERATE_TREEVIEW" = \c YES
+- \ref cfg_full_sidebar "FULL_SIDEBAR" = \c YES
+
+\image html layout_index_and_sidebar.png
+\image latex layout_index_and_sidebar.png width=8cm
+
+if you already use an external index (i.e. have one of the following
+options enabled
+\ref cfg_generate_htmlhelp "GENERATE_HTMLHELP",
+\ref cfg_generate_eclipsehelp "GENERATE_ECLIPSEHELP",
+\ref cfg_generate_qhp "GENERATE_QHP", or
+\ref cfg_generate_docset "GENERATE_DOCSET")
+then you can also disable all indices, like so:
+
+- \ref cfg_disable_index "DISABLE_INDEX" = \c YES
+- \ref cfg_generate_treeview "GENERATE_TREEVIEW" = \c NO
+
+\image html layout_noindex_and_notreeview.png
+\image latex layout_noindex_and_notreeview.png width=8cm
+
+\subsection minor_tweaks_dynsection Dynamic Content
+
+To make the HTML output more interactive, Doxygen provides a number of options
+that are disabled by default:
+- enabling \ref cfg_html_dynamic_sections "HTML_DYNAMIC_SECTIONS" will make
+  Doxygen hide certain content (like graphs) in the HTML by default,
+  and let the reader expand these sections on request.
+- enabling \ref cfg_have_dot "HAVE_DOT" along
+  with \ref cfg_interactive_svg "INTERACTIVE_SVG" while setting
+  \ref cfg_dot_image_format "DOT_IMAGE_FORMAT" to \c svg, will make Doxygen
+  produce SVG images that will allow the user to zoom and pan (this only
+  happens when the size of the images exceeds a certain size).
+
+\subsection minor_tweaks_header_css Header, Footer, and Stylesheet changes
+
+To tweak things like fonts or colors, margins, or other look \& feel
+aspects of the HTML output in detail, you can create a different
+<a href="https://www.w3schools.com/css/default.asp">cascading style sheet</a>.
+You can also let Doxygen use a custom header and footer for each HTML
+page it generates, for instance to make the output conform to the style
+used on the rest of your web site.
+
+To do this first run Doxygen as follows:
+\verbatim
+doxygen -w html header.html footer.html customdoxygen.css
+\endverbatim
+
+This will create 3 files:
+- header.html is a HTML fragment which Doxygen normally uses to start
+  a HTML page. Note that the fragment ends with a body tag and that is
+  contains a couple of commands of the form \$word. These will be replaced
+  by Doxygen on the fly.
+- footer.html is a HTML fragment which Doxygen normally uses to end
+  a HTML page. Also here special commands can be used. This file contains the
+  link to www.doxygen.org and the body and html end tags.
+- customdoxygen.css is the default cascading style sheet
+  used by Doxygen. It is recommended only to look into this file and overrule
+  some settings you like by putting them in a separate stylesheet and
+  referencing those extra files
+  via \ref cfg_html_extra_stylesheet "HTML_EXTRA_STYLESHEET".
+
+You should edit these files and then reference them from the configuration file.
+- \ref cfg_html_header "HTML_HEADER" = \c header.html
+- \ref cfg_html_footer "HTML_FOOTER" = \c footer.html
+- \ref cfg_html_extra_stylesheet "HTML_EXTRA_STYLESHEET" = \c my_customdoxygen.css
+
+\note it is no longer recommended to use \ref cfg_html_stylesheet "HTML_STYLESHEET",
+as it makes it difficult to upgrade to a newer version of Doxygen. Use
+\ref cfg_html_extra_stylesheet "HTML_EXTRA_STYLESHEET" instead.
+
+See the documentation of the \ref cfg_html_header "HTML_HEADER" tag
+for more information about the possible meta commands you can use inside
+your custom header.
+
+\note You should not put the style sheet in the HTML output directory. Treat
+it as a source file. Doxygen will copy it for you.
+
+\note If you use images or other external content in a custom header you
+need to make sure these end up in the HTML output directory yourself,
+for instance by writing a script that runs Doxygen and then copies the
+images to the output.
+
+\warning The structure of headers and footers may change after upgrading to
+a newer version of Doxygen, so if you are using a custom header or footer,
+it might not produce valid output anymore after upgrading.
+
+\section layout Changing the layout of pages
+
+In some cases you may want to change the way the output is structured.
+A different style sheet or custom headers and footers do not help in such
+case.
+
+The solution Doxygen provides is a layout file, which you can
+modify and Doxygen will use to control what information is presented,
+in which order, and to some extent also how information is presented.
+The layout file is an XML file.
+
+The default layout can be generated
+by Doxygen using the following command:
+\verbatim
+doxygen -l
+\endverbatim
+optionally the name of the layout file can be specified, if omitted
+\c DoxygenLayout.xml will be used.
+
+The next step is to mention the layout file in the configuration file
+(see also \ref cfg_layout_file "LAYOUT_FILE")
+\verbatim
+LAYOUT_FILE = DoxygenLayout.xml
+\endverbatim
+To change the layout all you need to do is edit the layout file.
+
+The top-level structure of the file looks as follows:
+\verbatim
+<doxygenlayout version="1.0">
+  <navindex>
+    ...
+  </navindex>
+  <class>
+    ...
+  </class>
+  <namespace>
+    ...
+  </namespace>
+  <concept>
+    ...
+  </concept>
+  <file>
+    ...
+  </file>
+  <group>
+    ...
+  </group>
+  <directory>
+    ...
+  </directory>
+</doxygenlayout>
+\endverbatim
+
+The root element of the XML file is \c doxygenlayout, it has an attribute named
+\c version, which will be used in the future to cope with changes that are
+not backward compatible.
+
+The first section, identified by the \c navindex element, represents the
+layout of the navigation tabs displayed at the top of each HTML page. At the
+same time it also controls the items in the navigation tree in case
+\ref cfg_generate_treeview "GENERATE_TREEVIEW" is enabled.
+Each tab is represented by a \c tab element in the XML file.
+
+You can hide tabs by setting the \c visible attribute to \c no.
+You can also override the default title of a tab by specifying it as
+the value of the \c title attribute. If the title field is the empty string
+(the default) then Doxygen will fill in an appropriate language specific title.
+
+You can reorder the tabs by moving the tab elements in the XML file
+within the \c navindex element and even change the tree structure.
+Do not change the value of the \c type attribute however.
+Only a fixed set of types are supported, each representing a link to a
+specific index.
+
+You can also add custom tabs using a type with name "user". Here is an
+example that shows how to add a tab with title "Google" pointing to
+www.google.com:
+
+\verbatim
+  <navindex>
+    ...
+    <tab type="user" url="http://www.google.com" title="Google"/>
+    ...
+  </navindex>
+\endverbatim
+
+The URL field can also be a relative URL. If the URL starts with \@ref
+the link will point to a documented entities, such as a class, a function,
+a group, or a related page. Suppose we have defined a page using \@page with
+label mypage, then a tab with label "My Page" to this page would look
+as follows:
+
+\verbatim
+  <navindex>
+    ...
+    <tab type="user" url="@ref mypage" title="My Page"/>
+    ...
+  </navindex>
+\endverbatim
+
+You can also group tabs together in a custom group using a tab with
+type "usergroup". The following example puts the above tabs in a user
+defined group with title "My Group":
+
+\verbatim
+  <navindex>
+    ...
+    <tab type="usergroup" title="My Group">
+      <tab type="user" url="http://www.google.com" title="Google"/>
+      <tab type="user" url="@ref mypage" title="My Page"/>
+    </tab>
+    ...
+  </navindex>
+\endverbatim
+
+Groups can be nested to form a hierarchy.
+
+By default a usergroup entry in the navigation tree is a link to
+a landing page with the contents of the group. You can link to a
+different page using the `url` attribute just like you can for the
+`<tab>` element and prevent any link using `url="[none]"`, i.e.
+
+\verbatim
+   <tab type="usergroup" title="Group without link" url="[none]">
+   ...
+   </tab>
+\endverbatim
+
+The elements after \c navindex represent the layout of the different
+pages generated by Doxygen:
+- The \c class element represents the layout of all pages generated for
+  documented classes, structs, unions, and interfaces.
+- The \c namespace element represents the layout of all pages generated for
+  documented namespaces (and also Java packages).
+- The \c concept element represents the layout of all pages generated for
+  documented concepts.
+- The \c module element represents the layout of all pages generated for
+  documented C++ modules.
+- The \c file element represents the layout of all pages generated for
+  documented files.
+- The \c group element represents the layout of all pages generated for
+  documented groups (or topics).
+- The \c directory element represents the layout of all pages generated for
+  documented directories.
+
+Each XML element within one of the above page elements represents a certain
+piece of information. Some pieces can appear in each type of page,
+others are specific for a certain type of page.
+Doxygen will list the pieces in the order in which they appear
+in the XML file.
+
+The following generic elements are possible for each page:
+<dl>
+<dt>\c briefdescription
+  <dd>Represents the brief description on a page.
+<dt>\c detaileddescription
+  <dd>Represents the detailed description on a page.
+</dl>
+The following generic element is possible for each page except the \c directory page:
+<dl>
+<dt>\c authorsection
+  <dd>Represents the author section of a page (only used for man pages). This is
+      a separate section for man pages with a text like:
+      `Generated automatically by Doxygen for My Project from the source code.`
+      This should not be misinterpreted with the Doxygen commands \ref cmdauthor
+      "\\author" or \ref cmdauthors "\\authors" that generate an author paragraph
+      inside a detailed description.
+</dl>
+The following generic element is possible for each page except the \c concept page:
+<dl>
+<dt>\c memberdecl
+  <dd>Represents the quick overview of members on a page (member declarations).
+      This elements has child elements per type of member list.
+      The possible child elements are not listed in detail in the document,
+      but the name of the element should be a good indication of the type
+      of members that the element represents.
+</dl>
+The following generic element is possible for each page except the \c concept and \c module page:
+<dl>
+<dt>\c memberdef
+  <dd>Represents the detailed member list on a page (member definition).
+      Like the \c memberdecl element, also this element has a number of
+      possible child elements.
+</dl>
+
+The \c class page has the following specific elements:
+<dl>
+<dt>\c includes
+  <dd>Represents the include file needed to obtain the definition for
+      this class.
+<dt>\c inheritancegraph
+  <dd>Represents the inheritance relations for a class.
+      Note that the \ref cfg_class_graph "CLASS_GRAPH" option determines
+      if the inheritance relation is a list of base and derived classes or
+      a graph.
+<dt>\c collaborationgraph
+  <dd>Represents the collaboration graph for a class.
+<dt>\c allmemberslink
+  <dd>Represents the link to the list of all members for a class.
+<dt>\c usedfiles
+  <dd>Represents the list of files from which documentation for the class was
+      extracted.
+</dl>
+
+The \c concept page has the following specific elements:
+<dl>
+<dt>\c includes
+  <dd>Represents the include file needed to obtain the definition for
+      this class.
+<dt>\c definition
+  <dd>Represents the definition of the concept
+</dl>
+
+The \c file page has the following specific elements:
+<dl>
+<dt>\c includes
+  <dd>Represents the list of \#include statements contained in this file.
+<dt>\c includegraph
+  <dd>Represents the include dependency graph for the file.
+<dt>\c includedbygraph
+  <dd>Represents the included by dependency graph for the file.
+<dt>\c sourcelink
+  <dd>Represents the link to the source code of this file.
+</dl>
+
+The \c module page has a specific \c exportedmodules element which represents the
+modules that are exported from this module.
+
+The \c group page has a specific \c groupgraph element which represents the
+graph showing the dependencies between groups.
+
+Similarly, the \c directory page has a specific \c directorygraph element
+which represents the graph showing the dependencies between the directories
+based on the \#include relations of the files inside the directories.
+
+Some elements have a \c visible attribute which can be
+used to hide the fragment from the generated output, by setting the attribute's
+value to \c no. You can also use the value of a configuration option to
+determine the visibility, by using
+its name prefixed with a dollar sign, e.g.
+\verbatim
+  ...
+  <includes visible="$SHOW_INCLUDE_FILES"/>
+  ...
+\endverbatim
+This was mainly added for backward compatibility.
+Note that the \c visible attribute is just a hint for Doxygen.
+If no relevant information is available for a certain piece it is
+omitted even if it is set to \c yes (i.e. no empty sections are generated).<br>
+Not all elements have a \c visible attribute shown in the layout file, though
+this attribute can be used anyway (the default is `visible="yes"`).
+
+Some elements have a \c title attribute. This attribute can be used
+to customize the title Doxygen will use as a header for the piece.
+
+Note that as of doxygen version 1.13.1 and layout version 2.0, Doxygen
+will insert defaults for elements that are missing in
+the user defined layout file. This allows for the introduction of new elements, without having
+to update the user defined layout files to make them appear.
+For older Doxygen or layout versions, missing elements are treated as being invisible.
+
+\section xmlgenerator Using the XML output
+
+If the above two methods still do not provide enough flexibility, you
+can also use the XML output produced by Doxygen as a basis to
+generate the output you like. To do this set
+\ref cfg_generate_xml "GENERATE_XML" to \c YES.
+
+The XML output consists of an index file named \c index.xml which
+lists all items extracted by Doxygen with references to the other XML files
+for details. The structure of the index is described by a schema file
+\c index.xsd. All other XML files are described by the schema file
+named \c compound.xsd. If you prefer one big XML file
+you can combine the index and the other files using the
+XSLT file \c combine.xslt.
+
+You can use any XML parser to parse the files or use the one that can be found
+in the \c addon/doxmlparser directory of Doxygen's source distribution.
+Look at \c addon/doxmlparser/doxmlparser/index.py and
+\c addon/doxmlparser/doxmlparser/compound.py for the interface of the
+parser (it is generated by <a href="https://www.davekuhlman.org/generateDS.html">generatedDS</a>
+and follows the XML schema files \c index.xsd and \c compound.xsd found in
+\c templates/xml). Look in \c addon/doxmlparser/examples for examples.
+
+The advantage of using the doxmlparser is that it
+allows you to only read the index file into memory and then only those XML
+files that you implicitly load via navigating through the index. As a
+result this works even for very large projects where reading all XML
+files as one big DOM tree would not fit into memory.
+
+See <a href="https://github.com/breathe-doc/breathe">the Breathe project</a> for
+an example that uses Doxygen XML output from Python to bridge it with the
+<a href="http://www.sphinx-doc.org/en/stable/">Sphinx</a> document generator.
+
+\htmlonly
+Go to the <a href="custcmd.html">next</a> section or return to the
+ <a href="index.html">index</a>.
+\endhtmlonly
+
+ */

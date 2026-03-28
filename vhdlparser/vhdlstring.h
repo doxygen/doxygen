@@ -6,7 +6,7 @@
 #include <string.h>
 
 #include "VhdlParser.h"
-// super class for VhdlParserTokenManager 
+// super class for VhdlParserTokenManager
 // is generated in vhdlparser.jj
 // -option TOKEN_MANAGER_SUPER_CLASS = "TokenParser"
 // sets the Vhdlparser in vhdljjparser.cpp
@@ -26,7 +26,7 @@ namespace vhdl {
 }
 
 
-/** @brief Minimal string class with std::string like behaviour that fulfills the JavaCC
+/** @brief Minimal string class with std::string like behavior that fulfills the JavaCC
  *  string requirements.
  */
 
@@ -95,7 +95,7 @@ class VhdlString
     }
     VhdlString substr(int pos=0,int len=-1)
     {
-      return VhdlString(m_str?m_str+pos:0,len==-1?m_len-pos:m_len);
+      return VhdlString(m_str ? m_str+pos : nullptr, len==-1 ? m_len-pos : m_len);
     }
     int copy(char *s,int len,int pos=0) const
     {

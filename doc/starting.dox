@@ -1,0 +1,336 @@
+/******************************************************************************
+ *
+ *
+ *
+ * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
+ * for any purpose. It is provided "as is" without express or implied warranty.
+ * See the GNU General Public License for more details.
+ *
+ * Documents produced by Doxygen are derivative works derived from the
+ * input used in their production; they are not affected by this license.
+ *
+ */
+/*! \page starting Getting started
+\tableofcontents{html,latex}
+
+The executable \c doxygen is the main program that parses the sources and
+generates the documentation. See section \ref doxygen_usage for more
+detailed usage information.
+
+Optionally, the executable \c doxywizard can be used, which is a
+\ref doxywizard_usage "graphical front-end" for editing the configuration file
+that is used by Doxygen and for running Doxygen in a graphical environment.
+For macOS Doxywizard will be started by clicking on the Doxygen application
+icon.
+
+The following figure shows the relation between the tools and the flow
+of information between them (it looks complex but that's only because it
+tries to be complete):
+
+\image html infoflow.png "Doxygen information flow"
+\image latex infoflow.eps "Doxygen information flow" width=14cm
+
+\section step0 Step 0: Check if Doxygen supports your programming/hardware description language
+
+First, assure that your programming/hardware description language has a reasonable chance of being
+recognized by Doxygen. These programming languages are supported by default: C, C++, Lex, C#,
+Objective-C, IDL, Java, PHP, Python, Fortran and D. Doxygen also supports the hardware description 
+language VHDL by default. It is possible to configure certain file type extensions to use certain parsers:
+see the \ref cfg_extension_mapping "Configuration/ExtensionMappings" for details.
+Also, completely different languages can be supported by using preprocessor
+programs: see the <a href="https://www.doxygen.org/helpers.html">Helpers page</a>
+for details.
+
+\section step1 Step 1: Creating a configuration file
+
+Doxygen uses a configuration file to determine all of its settings.
+Each project should get its own configuration file. A project can consist
+of a single source file, but can also be an entire source tree that is
+recursively scanned.
+
+To simplify the creation of a configuration file, Doxygen can create a
+template configuration file for you. To do this call \c doxygen
+from the command line with the \c -g option:
+\verbatim
+doxygen -g <config-file>
+\endverbatim
+
+where \<config-file\> is the name of the configuration file. If you omit
+the file name, a file named \c Doxyfile will be created. If a file with the
+name \<config-file\> already exists, Doxygen will rename it to
+\<config-file\>.bak before generating the configuration template.
+If you use <code>-</code> (i.e. the minus sign) as the file name then
+Doxygen will try to read the configuration file from standard
+input (<code>stdin</code>), which can be useful for scripting.
+
+The configuration file has a format that is similar to that of a (simple)
+Makefile. It consists of a number of assignments (tags) of the form:
+
+<tt>TAGNAME = VALUE</tt> or <br>
+<tt>TAGNAME = VALUE1 VALUE2 ... </tt><br>
+
+You can probably leave the values of most tags in a generated template
+configuration file to their default value.  See section \ref config for
+more details about the configuration file.
+
+If you do not wish to edit the configuration file with a text editor, you should
+have a look at \ref doxywizard_usage "Doxywizard", which is a GUI
+front-end that can create, read and write Doxygen configuration files,
+and allows setting configuration options by entering them via dialogs.
+
+For a small project consisting of a few C and/or C++ source
+and header files, you can leave
+\ref cfg_input "INPUT" tag empty and Doxygen will search for sources in
+the current directory.
+
+If you have a larger project consisting of a source directory or tree
+you should assign the root directory or
+directories to the \ref cfg_input "INPUT" tag, and add one or more file
+patterns to the \ref cfg_file_patterns "FILE_PATTERNS" tag
+(for instance `*.cpp *.h`). Only files that match one of the
+patterns will be parsed (if the patterns are omitted a list of
+typical patterns is used for the types of files Doxygen supports).
+For recursive parsing of a source tree you must set
+the \ref cfg_recursive "RECURSIVE" tag to \c YES. To further fine-tune the
+list of files that is parsed the \ref cfg_exclude "EXCLUDE" and
+\ref cfg_exclude_patterns "EXCLUDE_PATTERNS" tags can be used.
+To omit all \c test directories from a source tree for instance, one could use:
+
+\verbatim EXCLUDE_PATTERNS = */test/*
+\endverbatim
+
+\anchor default_file_extension_mapping
+Doxygen looks at the file's extension to determine how to parse a file,
+using the following table:
+
+Extension | Language | Extension | Language     | Extension | Language
+---------:|--------- | ---------:|------------- | ---------:|---------
+.dox      |C / C++   | .HH       |C / C++       |.py        |Python
+.doc      |C / C++   | .hxx      |C / C++       |.pyw       |Python
+.c        |C / C++   | .hpp      |C / C++       |.f         |Fortran
+.cc       |C / C++   | .h++      |C / C++       |.for       |Fortran
+.cxx      |C / C++   | .mm       |C / C++       |.f90       |Fortran
+.cpp      |C / C++   | .txt      |C / C++       |.f95       |Fortran
+.c++      |C / C++   | .idl      |IDL           |.f03       |Fortran
+.cppm     |C / C++   | .ddl      |IDL           |.f08       |Fortran
+.ccm      |C / C++   | .odl      |IDL           |.f18       |Fortran
+.cxxm     |C / C++   | .java     |Java          |.vhd       |VHDL
+.c++m     |C / C++   | .cs       |C#            |.vhdl      |VHDL
+.ii       |C / C++   | .d        |D             |.ucf       |VHDL
+.ixx      |C / C++   | .php      |PHP           |.qsf       |VHDL
+.ipp      |C / C++   | .php4     |PHP           |.l         |Lex
+.i++      |C / C++   | .php5     |PHP           |.md        |Markdown
+.inl      |C / C++   | .inc      |PHP           |.markdown  |Markdown
+.h        |C / C++   | .phtml    |PHP           |.ice       |Slice
+.H        |C / C++   | .m        |Objective-C   |&nbsp;     |&nbsp;
+.hh       |C / C++   | .M        |Objective-C   |&nbsp;     |&nbsp;
+
+Please note that the above list might contain more items than that by default set
+in the \ref cfg_file_patterns "FILE_PATTERNS".
+
+Any extension that is not parsed can be set by adding it to
+\ref cfg_file_patterns "FILE_PATTERNS" and when the appropriate
+\ref cfg_extension_mapping "EXTENSION_MAPPING" is set.
+
+\anchor extract_all
+If you start using Doxygen for an existing project (thus without any
+documentation that Doxygen is aware of), you can still get an idea of
+what the structure is and how the documented result would look like.
+To do so, you must set
+the \ref cfg_extract_all "EXTRACT_ALL" tag in the configuration file
+to \c YES. Then, Doxygen will pretend everything in your sources is documented.
+Please note that as a consequence warnings about undocumented members
+will not be generated as long as \ref cfg_extract_all "EXTRACT_ALL" is
+set to \c YES.
+
+To analyze an existing piece of software it is useful to cross-reference
+a (documented) entity with its definition in the source files. Doxygen will
+generate such cross-references if you set
+the \ref cfg_source_browser "SOURCE_BROWSER" tag to \c YES.
+It can also include the sources directly into the documentation by setting
+\ref cfg_inline_sources "INLINE_SOURCES" to \c YES (this can be handy for
+code reviews for instance).
+
+\section step2 Step 2: Running Doxygen
+
+To generate the documentation you can now enter:
+\verbatim
+doxygen <config-file>
+\endverbatim
+
+Depending on your settings Doxygen will create \c html, \c rtf,
+\c latex, \c xml, \c man, and/or docbook directories inside the output directory.
+As the names suggest these directories contain the
+generated documentation in HTML, RTF, \LaTeX, XML,
+Unix-Man page, and DocBook format.
+
+The default output directory is the directory in which \c doxygen
+is started. The root directory to which the output is written can be changed
+using the \ref cfg_output_directory "OUTPUT_DIRECTORY". The format specific
+directory within the output directory can be selected using the
+\ref cfg_html_output "HTML_OUTPUT", \ref cfg_rtf_output "RTF_OUTPUT",
+\ref cfg_latex_output "LATEX_OUTPUT", \ref cfg_xml_output "XML_OUTPUT",
+\ref cfg_man_output "MAN_OUTPUT", and \ref cfg_docbook_output "DOCBOOK_OUTPUT".
+tags of the configuration file. If the output directory does not exist,
+\c doxygen will try to create it for you (but it will \e not try to create
+a whole path recursively, like <code>mkdir -p</code> does).
+
+\subsection html_out HTML output
+\addindex browser
+The generated HTML documentation can be viewed by pointing a HTML browser
+to the \c index.html file in the \c html directory. For the best results
+a browser that supports cascading style sheets (CSS) should be used
+(I'm using Mozilla Firefox, Google Chrome, Safari, and sometimes
+IE8, IE9, and Opera to test the generated output).
+
+Some of the features the HTML section (such as
+\ref cfg_generate_treeview "GENERATE_TREEVIEW" or the search engine)
+require a browser that supports Dynamic HTML and JavaScript enabled.
+
+\subsection latex_out LaTeX output
+\addindex LaTeX
+The generated \LaTeX documentation must first be compiled by
+a \LaTeX compiler (I use a recent teTeX distribution for Linux
+and macOS and MikTex for Windows).
+To simplify the process of compiling the generated
+documentation, \c doxygen writes a \c Makefile into the \c latex directory
+(on the Windows platform also a \c make.bat batch file is generated).
+
+The contents and targets in the \c Makefile depend on the setting of
+\ref cfg_use_pdflatex "USE_PDFLATEX". If it is disabled (set to \c NO), then
+typing \c make in the \c latex directory a \c dvi file called \c refman.dvi
+will be generated. This file can then be viewed using \c xdvi or
+converted into a PostScript file \c refman.ps by
+typing `make ps` (this requires `dvips`).
+
+To put 2 pages on one physical page use `make ps_2on1` instead.
+The resulting PostScript file can be send to a PostScript
+printer. If you do not have a PostScript printer, you can try to use
+ghostscript to convert PostScript into something your printer understands.
+
+Conversion to PDF is also possible if you have installed the ghostscript
+interpreter; just type `make pdf` (or `make pdf_2on1`).
+
+To get the best results for PDF output you should set
+the \ref cfg_pdf_hyperlinks "PDF_HYPERLINKS"
+and \ref cfg_use_pdflatex "USE_PDFLATEX" tags to \c YES.
+In this case the \c Makefile will only contain a target to build
+\c refman.pdf directly.
+
+\subsection rtf_out RTF output
+\addindex RTF
+Doxygen combines the RTF output to a single file called refman.rtf. This
+file is optimized for importing into the Microsoft Word. Certain information
+is encoded using so called fields. To show the actual value you need to
+select all (Edit - select all) and then toggle fields (right click and select
+the option from the drop down menu).
+
+\subsection xml_out XML output
+\addindex XML
+The XML output consists of a structured "dump" of the information gathered
+by Doxygen. Each compound (class/namespace/file/...) has its own XML file
+and there is also an index file called `index.xml`.
+
+A file called `combine.xslt`
+XSLT script is also generated and can be used to combine all XML files
+into a single file.
+
+Doxygen also generates two XML schema files `index.xsd`
+(for the index file) and `compound.xsd` (for the compound files).
+This schema file describes the possible elements, their attributes and
+how they are structured, i.e. it the describes the grammar of the XML
+files and can be used for validation or to steer XSLT scripts.
+
+In the `addon/doxmlparser` directory you can find a parser library for reading
+the XML output produced by Doxygen in an incremental way
+(see `addon/doxmlparser/doxmparser/index.py` and `addon/doxmlparser/doxmlparser/compound.py`
+for the interface of the library)
+
+\subsection man_out Man page output
+\addindex man
+The generated man pages can be viewed using the \c man program. You do need
+to make sure the man directory is in the man path (see the \c MANPATH
+environment variable). Note that there are some limitations to the
+capabilities of the man page format, so some information
+(like class diagrams, cross references and formulas) will be lost.
+
+\subsection docbook_out DocBook output
+\addindex docbook
+Doxygen can also generate output in the
+<a href="https://docbook.org/">DocBook</a> format. How to process the
+DocBook output is beyond the scope of this manual.
+
+\section step3 Step 3: Documenting the sources
+
+Although documenting the sources is presented as step 3, in a new project
+this should of course be step 1. Here I assume
+you already have some code and you want Doxygen to generate a nice document
+describing the API and maybe the internals and some related design
+documentation as well.
+
+If the \ref cfg_extract_all "EXTRACT_ALL" option is set to \c NO in the
+configuration file (the default), then Doxygen will only generate
+documentation for \e documented entities. So
+how do you document these? For members, classes and namespaces there are
+basically two options:
+1.  Place a \e special documentation block in front of the declaration or
+    definition of the member, class or namespace. For file, class and namespace
+    members it is also allowed to place the documentation directly after the
+    member.
+
+    See section \ref specialblock to learn more about special
+    documentation blocks.
+2.  Place a special documentation block somewhere else (another file or
+    another location) \e and put a <em>structural command</em> in the
+    documentation block. A structural command links a documentation block
+    to a certain entity that can be documented (e.g. a member, class,
+    namespace or file).
+
+    See section \ref structuralcommands to learn more
+    about structural commands.
+
+The advantage of the first option is that you do not have to repeat the
+name of the entity.
+
+Files can only be documented using the second option, since there is
+no way to put a documentation block before a file. Of course, file members
+(functions, variables, typedefs, defines) do not need an explicit
+structural command; just putting a special documentation block in front or
+behind them will work fine.
+
+The text inside a special documentation block is parsed
+before it is written to the HTML and/or \LaTeX output files.
+
+\addindex parsing
+During parsing the following steps take place:
+- Markdown formatting is replaced by corresponding HTML or special
+  commands.
+- The special commands inside the documentation are executed. See
+  section \ref commands for an overview of all commands.
+- If a line starts with some whitespace followed by one or more asterisks
+  (`*`) and then optionally more whitespace,
+  then all whitespace and asterisks are removed.
+- All resulting blank lines are treated as a paragraph separators.
+  This saves you from placing new-paragraph commands yourself
+  in order to make the generated documentation readable.
+- Links are created for words corresponding to documented classes
+  (unless the word is preceded by a \%; then the word will not be linked and
+  the \% sign is removed).
+- Links to members are created when certain patterns are found in the
+  text. See section \ref autolink
+  for more information on how the automatic link generation works.
+- HTML tags that are in the documentation are interpreted and converted
+  to \LaTeX equivalents for the \LaTeX output.
+  See section \ref htmlcmds for an overview of all supported HTML tags.
+
+\htmlonly
+Go to the <a href="docblocks.html">next</a> section or return to the
+ <a href="index.html">index</a>.
+\endhtmlonly
+
+*/
+

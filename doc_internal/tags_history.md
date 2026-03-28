@@ -444,7 +444,7 @@ The following table gives an overview of the doxygen configuration settings and 
 <!-- PLACEHOLDER -->
 </dl>
 
-## Directives
+# Directives
 
 <dl>
 <dt>New in 1.2.1</dt>

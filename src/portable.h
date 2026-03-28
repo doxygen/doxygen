@@ -7,6 +7,7 @@
 
 #include <fstream>
 
+#include "containers.h"
 #include "qcstring.h"
 
 class Buf;
@@ -33,9 +34,8 @@ namespace Portable
   FILE *         popen(const QCString &name,const QCString &type);
   int            pclose(FILE *stream);
   double         getSysElapsedTime();
-  void           sleep(int ms);
   bool           isAbsolutePath(const QCString &fileName);
-  void           correct_path();
+  void           correctPath(const StringVector &list);
   void           setShortDir();
   const char *   strnstr(const char *haystack, const char *needle, size_t haystack_len);
   const char *   devNull();

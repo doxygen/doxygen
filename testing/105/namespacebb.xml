@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="namespacebb" kind="namespace" language="C++">
+    <compoundname>bb</compoundname>
+    <innerclass refid="structbb_1_1_template_struct" prot="public">bb::TemplateStruct</innerclass>
+    <sectiondef kind="typedef">
+      <memberdef kind="typedef" id="namespacebb_1a44bdf7017e8db36d4d0cd7df9247dd59" prot="public" static="no">
+        <type>
+          <ref refid="structaa_1_1_struct1" kindref="compound">aa::Struct1</ref>
+        </type>
+        <definition>using bb::Struct1 =  aa::Struct1</definition>
+        <argsstring/>
+        <name>Struct1</name>
+        <qualifiedname>bb::Struct1</qualifiedname>
+        <briefdescription>
+          <para>alias of Structt1 in bb </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="105_using.cpp" line="68" column="2" bodyfile="105_using.cpp" bodystart="68" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="namespacebb_1acc028b753c5b8d09f24d933a1a7ae5cd" prot="public" static="no">
+        <type>
+          <ref refid="structaa_1_1_struct2" kindref="compound">aa::Struct2</ref>
+        </type>
+        <definition>using bb::Struct2 =  aa::Struct2</definition>
+        <argsstring/>
+        <name>Struct2</name>
+        <qualifiedname>bb::Struct2</qualifiedname>
+        <briefdescription>
+          <para>alias of Structt2 in bb </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="105_using.cpp" line="73" column="2" bodyfile="105_using.cpp" bodystart="73" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="namespacebb_1a4b10384eab1514f579b7651c9c4a8564" prot="public" static="no">
+        <type><ref refid="structbb_1_1_template_struct" kindref="compound">TemplateStruct</ref>&lt; <ref refid="structaa_1_1_struct1" kindref="compound">aa::Struct1</ref> &gt;</type>
+        <definition>using bb::Struct1Type =  TemplateStruct&lt;aa::Struct1&gt;</definition>
+        <argsstring/>
+        <name>Struct1Type</name>
+        <qualifiedname>bb::Struct1Type</qualifiedname>
+        <briefdescription>
+          <para><ref refid="namespacebb_1a4b10384eab1514f579b7651c9c4a8564" kindref="member">Struct1Type</ref>. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="105_using.cpp" line="78" column="2" bodyfile="105_using.cpp" bodystart="78" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="namespacebb_1afdccfa9acfdee82110ae0d64e7c664fc" prot="public" static="no">
+        <type><ref refid="structbb_1_1_template_struct" kindref="compound">TemplateStruct</ref>&lt; <ref refid="structaa_1_1_struct2" kindref="compound">aa::Struct2</ref> &gt;</type>
+        <definition>using bb::Struct2Type =  TemplateStruct&lt;aa::Struct2&gt;</definition>
+        <argsstring/>
+        <name>Struct2Type</name>
+        <qualifiedname>bb::Struct2Type</qualifiedname>
+        <briefdescription>
+          <para><ref refid="namespacebb_1afdccfa9acfdee82110ae0d64e7c664fc" kindref="member">Struct2Type</ref>. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="105_using.cpp" line="83" column="2" bodyfile="105_using.cpp" bodystart="83" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="func">
+      <memberdef kind="function" id="namespacebb_1a9018bac0330702c2a15bc96c7713637d" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int bb::FunctionExample</definition>
+        <argsstring>(Struct1Type arg1, int arg2)</argsstring>
+        <name>FunctionExample</name>
+        <qualifiedname>bb::FunctionExample</qualifiedname>
+        <param>
+          <type>
+            <ref refid="namespacebb_1a4b10384eab1514f579b7651c9c4a8564" kindref="member">Struct1Type</ref>
+          </type>
+          <declname>arg1</declname>
+        </param>
+        <param>
+          <type>int</type>
+          <declname>arg2</declname>
+        </param>
+        <briefdescription>
+          <para>FunctionExample (overload 1). </para>
+        </briefdescription>
+        <detaileddescription>
+          <para>
+            <parameterlist kind="param">
+              <parameteritem>
+                <parameternamelist>
+                  <parametername direction="out">arg1</parametername>
+                </parameternamelist>
+                <parameterdescription>
+                  <para><ref refid="namespacebb_1a4b10384eab1514f579b7651c9c4a8564" kindref="member">Struct1Type</ref> argument </para>
+                </parameterdescription>
+              </parameteritem>
+              <parameteritem>
+                <parameternamelist>
+                  <parametername direction="in">arg2</parametername>
+                </parameternamelist>
+                <parameterdescription>
+                  <para>int argument</para>
+                </parameterdescription>
+              </parameteritem>
+            </parameterlist>
+            <simplesect kind="return">
+              <para>return value </para>
+            </simplesect>
+          </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="105_using.cpp" line="93" column="5" declfile="105_using.cpp" declline="93" declcolumn="5"/>
+      </memberdef>
+      <memberdef kind="function" id="namespacebb_1ada96dde7cf2ee341fc1a2c197de4ccf3" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int bb::FunctionExample</definition>
+        <argsstring>(Struct2Type arg1, int arg2)</argsstring>
+        <name>FunctionExample</name>
+        <qualifiedname>bb::FunctionExample</qualifiedname>
+        <param>
+          <type>
+            <ref refid="namespacebb_1afdccfa9acfdee82110ae0d64e7c664fc" kindref="member">Struct2Type</ref>
+          </type>
+          <declname>arg1</declname>
+        </param>
+        <param>
+          <type>int</type>
+          <declname>arg2</declname>
+        </param>
+        <briefdescription>
+          <para>FunctionExample (overload 2). </para>
+        </briefdescription>
+        <detaileddescription>
+          <para>
+            <parameterlist kind="param">
+              <parameteritem>
+                <parameternamelist>
+                  <parametername direction="out">arg1</parametername>
+                </parameternamelist>
+                <parameterdescription>
+                  <para><ref refid="namespacebb_1afdccfa9acfdee82110ae0d64e7c664fc" kindref="member">Struct2Type</ref> argument </para>
+                </parameterdescription>
+              </parameteritem>
+              <parameteritem>
+                <parameternamelist>
+                  <parametername direction="in">arg2</parametername>
+                </parameternamelist>
+                <parameterdescription>
+                  <para>int argument</para>
+                </parameterdescription>
+              </parameteritem>
+            </parameterlist>
+            <simplesect kind="return">
+              <para>return value </para>
+            </simplesect>
+          </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="105_using.cpp" line="103" column="5" declfile="105_using.cpp" declline="103" declcolumn="5"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+      <para>namespace bb </para>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="105_using.cpp" line="54" column="1"/>
+  </compounddef>
+</doxygen>

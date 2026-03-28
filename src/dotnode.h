@@ -36,7 +36,6 @@ class EdgeInfo
     enum Styles { Solid=0, Dashed=1 };
     EdgeInfo(Colors color,Styles style,const QCString &lab,const QCString &url,int labColor)
         : m_color(color), m_style(style), m_label(lab), m_url(url), m_labColor(labColor) {}
-    ~EdgeInfo() {}
     int color() const      { return m_color; }
     int style() const      { return m_style; }
     QCString label() const { return m_label; }
@@ -68,11 +67,12 @@ using EdgeInfoVector = std::vector<EdgeInfo>;
 class DotNode
 {
   public:
+    enum class LabelStyle { Plain, List, Table };
+    static constexpr auto placeholderUrl = "-";
     static void deleteNodes(DotNode* node);
-    static QCString convertLabel(const QCString& , bool htmlLike=false);
-    DotNode(int n,const QCString &lab,const QCString &tip,const QCString &url,
-        bool rootNode=FALSE,const ClassDef *cd=0);
-    ~DotNode();
+    static QCString convertLabel(const QCString&, LabelStyle=LabelStyle::Plain);
+    DotNode(DotGraph *graph,const QCString &lab,const QCString &tip,const QCString &url,
+        bool rootNode=FALSE,const ClassDef *cd=nullptr);
 
     enum TruncState { Unknown, Truncated, Untruncated };
 
@@ -89,7 +89,7 @@ class DotNode
     int  findParent( DotNode *n );
 
     void write(TextStream &t,GraphType gt,GraphOutputFormat f,
-               bool topDown,bool toChildren,bool backArrows) const;
+               bool topDown,bool toChildren,bool backArrows);
     void writeXML(TextStream &t,bool isClassGraph) const;
     void writeDocbook(TextStream &t,bool isClassGraph) const;
     void writeDEF(TextStream &t) const;
@@ -123,8 +123,10 @@ class DotNode
     const DotNodeRefVector &children() const { return m_children; }
     const DotNodeRefVector &parents() const { return m_parents; }
     const EdgeInfoVector &edgeInfo() const { return m_edgeInfo; }
+    DotNode &setNodeId(int number) { m_number=number; return *this; }
 
   private:
+    DotGraph        *m_graph;
     int              m_number;
     QCString         m_label;                //!< label text
     QCString         m_tooltip;              //!< node's tooltip
@@ -133,7 +135,7 @@ class DotNode
     DotNodeRefVector m_children;             //!< list of child nodes (outgoing arrows)
     EdgeInfoVector   m_edgeInfo;             //!< edge info for each child
     bool             m_deleted    = false;   //!< used to mark a node as deleted
-    mutable bool     m_written    = false;   //!< used to mark a node as written
+    bool             m_written    = false;   //!< used to mark a node as written
     bool             m_hasDoc     = false;   //!< used to mark a node as documented
     bool             m_isRoot;               //!< indicates if this is a root node
     const ClassDef * m_classDef;             //!< class representing this node (can be 0)

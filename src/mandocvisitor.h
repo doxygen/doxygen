@@ -20,6 +20,7 @@
 #define MANDOCVISITOR_H
 
 #include <iostream>
+#include <array>
 
 #include "qcstring.h"
 #include "docvisitor.h"
@@ -88,6 +89,7 @@ class ManDocVisitor : public DocVisitor
     void operator()(const DocDotFile &);
     void operator()(const DocMscFile &);
     void operator()(const DocDiaFile &);
+    void operator()(const DocPlantUmlFile &);
     void operator()(const DocLink &lnk);
     void operator()(const DocRef &ref);
     void operator()(const DocSecRefItem &);
@@ -115,7 +117,7 @@ class ManDocVisitor : public DocVisitor
     // helper functions
     //--------------------------------------
 
-    void filter(const QCString &str);
+    void filter(const QCString &str, const bool retainNewline = false);
 
     //--------------------------------------
     // state variables
@@ -128,15 +130,15 @@ class ManDocVisitor : public DocVisitor
     bool m_firstCol;
     int  m_indent;
     QCString m_langExt;
+
+    struct ManListItemInfo
+    {
+      int number;
+      char type;
+    };
+    static const int maxIndentLevels = 13;
+
+    std::array<ManListItemInfo,maxIndentLevels> m_listItemInfo;
 };
 
-struct ManListItemInfo
-{
-  int number;
-  char type;
-};
-
-const int man_maxIndentLevels = 13;
-
-extern ManListItemInfo man_listItemInfo[man_maxIndentLevels];
 #endif

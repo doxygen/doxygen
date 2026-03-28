@@ -29,7 +29,7 @@ class TextStream;
 class HtmlDocVisitor : public DocVisitor
 {
   public:
-    HtmlDocVisitor(TextStream &t,OutputCodeList &ci,const Definition *ctx);
+    HtmlDocVisitor(TextStream &t,OutputCodeList &ci,const Definition *ctx,const QCString &fn = QCString());
 
     //--------------------------------------
     // visitor functions for leaf nodes
@@ -85,6 +85,7 @@ class HtmlDocVisitor : public DocVisitor
     void operator()(const DocDotFile &);
     void operator()(const DocMscFile &);
     void operator()(const DocDiaFile &);
+    void operator()(const DocPlantUmlFile &);
     void operator()(const DocLink &);
     void operator()(const DocRef &);
     void operator()(const DocSecRefItem &);
@@ -123,11 +124,11 @@ class HtmlDocVisitor : public DocVisitor
                    const QCString &tooltip = "");
     void endLink();
     void writeDotFile(const QCString &fileName,const QCString &relPath,const QCString &context,
-                      const QCString &srcFile,int srcLine);
+                      const QCString &srcFile,int srcLine, bool newFile = true);
     void writeMscFile(const QCString &fileName,const QCString &relPath,const QCString &context,
-                      const QCString &srcFile,int srcLine);
+                      const QCString &srcFile,int srcLine, bool newFile = true);
     void writeDiaFile(const QCString &fileName,const QCString &relPath,const QCString &context,
-                      const QCString &srcFile,int srcLine);
+                      const QCString &srcFile,int srcLine, bool newFile = true);
     void writePlantUMLFile(const QCString &fileName,const QCString &relPath,const QCString &context,
                            const QCString &srcFile,int srcLine);
 
@@ -146,6 +147,7 @@ class HtmlDocVisitor : public DocVisitor
     bool m_hide = false;
     bool m_insideTitle = false;
     const Definition *m_ctx;
+    QCString m_fileName;
     QCString m_langExt;
 };
 

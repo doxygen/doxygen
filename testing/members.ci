@@ -1,0 +1,7 @@
+public:
+  /** an included public member */
+  void pubMember();
+protected:
+  /** an included protected member */
+  void proMember();
+

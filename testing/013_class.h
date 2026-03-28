@@ -4,7 +4,7 @@
 // check: class_t3.xml
 // check: class_t4.xml
 
-/** A class 
+/** A class
  *  \headerfile 013_class.h "inc/013_class.h"
  */
 class T1

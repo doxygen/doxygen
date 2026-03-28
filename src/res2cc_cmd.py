@@ -15,8 +15,8 @@
 # input used in their production; they are not affected by this license.
 #
 from __future__ import print_function
-from os         import listdir, stat, walk
-from os.path    import isfile, join, splitext
+from os         import stat, walk
+from os.path    import join, splitext
 import sys
 
 class File(object):
@@ -55,10 +55,8 @@ class File(object):
     @staticmethod
     def factory(directory,subdir,fname):
         ext = splitext(fname)[1]
-        if ext=='.lum':  return LumFile(directory,subdir,fname)
-        if ext=='.luma': return LumaFile(directory,subdir,fname)
-        if ext=='.css':  return CSSFile(directory,subdir,fname)
-        if ext=='.svg':  return SVGFile(directory,subdir,fname)
+        if ext=='.svg':
+            return SVGFile(directory,subdir,fname)
         return VerbatimFile(directory,subdir,fname)
 
 class VerbatimFile(File):
@@ -69,14 +67,6 @@ class VerbatimFile(File):
     def writeDirEntry(self,outputFile):
         print("  { \"%s\", \"%s\", %s_data, %s_len, Resource::Verbatim }," % (self.subdir,self.fileName,self.bareName,self.bareName), file=outputFile)
 
-class CSSFile(File):
-    def __init__(self,directory,subdir,fileName):
-        File.__init__(self,directory,subdir,fileName,"r")
-    def writeContents(self,outputFile):
-        self.writeBytes(self.inputFile.read(),outputFile)
-    def writeDirEntry(self,outputFile):
-        print("  { \"%s\", \"%s\", %s_data, %s_len, Resource::CSS }," % (self.subdir,self.fileName,self.bareName,self.bareName), file=outputFile)
-
 class SVGFile(File):
     def __init__(self,directory,subdir,fileName):
         File.__init__(self,directory,subdir,fileName,"r")
@@ -84,22 +74,6 @@ class SVGFile(File):
         self.writeBytes(self.inputFile.read(),outputFile)
     def writeDirEntry(self,outputFile):
         print("  { \"%s\", \"%s\", %s_data, %s_len, Resource::SVG }," % (self.subdir,self.fileName,self.bareName,self.bareName), file=outputFile)
-
-class LumFile(File):
-    def __init__(self,directory,subdir,fileName):
-        File.__init__(self,directory,subdir,fileName,"r")
-    def writeContents(self,outputFile):
-        self.convertToBytes(outputFile)
-    def writeDirEntry(self,outputFile):
-        print("  { \"%s\", \"%s\", %s_data, %s_len, Resource::Luminance }," % (self.subdir,self.fileName,self.bareName,self.bareName), file=outputFile)
-
-class LumaFile(File):
-    def __init__(self,directory,subdir,fileName):
-        File.__init__(self,directory,subdir,fileName,"r")
-    def writeContents(self,outputFile):
-        self.convertToBytes(outputFile)
-    def writeDirEntry(self,outputFile):
-        print("  { \"%s\", \"%s\", %s_data, %s_len, Resource::LumAlpha }," % (self.subdir,self.fileName,self.bareName,self.bareName), file=outputFile)
 
 def main():
     if len(sys.argv)<3:

@@ -29,6 +29,8 @@
 #include "emoji.h"
 #include "filedef.h"
 #include "fileinfo.h"
+#include "codefragment.h"
+#include "cite.h"
 
 static void startSimpleSect(TextStream &t,const DocSimpleSect &s)
 {
@@ -65,6 +67,8 @@ static void startSimpleSect(TextStream &t,const DocSimpleSect &s)
       t << "remark"; break;
     case DocSimpleSect::Attention:
       t << "attention"; break;
+    case DocSimpleSect::Important:
+      t << "important"; break;
     case DocSimpleSect::User:
       t << "par"; break;
     case DocSimpleSect::Rcs:
@@ -146,7 +150,7 @@ static void visitPostEnd(TextStream &t, const char *cmd)
 
 XmlDocVisitor::XmlDocVisitor(TextStream &t,OutputCodeList &ci,const QCString &langExt)
   : m_t(t), m_ci(ci), m_insidePre(FALSE), m_hide(FALSE),
-    m_langExt(langExt)
+    m_langExt(langExt), m_sectionLevel(0)
 {
 }
 
@@ -191,7 +195,7 @@ void XmlDocVisitor::operator()(const DocSymbol &s)
   }
   else
   {
-    err("XML: non supported HTML-entity found: %s\n",HtmlEntityMapper::instance().html(s.symbol(),TRUE));
+    err("XML: non supported HTML-entity found: {}\n",HtmlEntityMapper::instance().html(s.symbol(),TRUE));
   }
 }
 
@@ -262,6 +266,8 @@ void XmlDocVisitor::operator()(const DocStyleChange &s)
     case DocStyleChange::Italic:
       if (s.enable()) m_t << "<emphasis>";     else m_t << "</emphasis>";
       break;
+    case DocStyleChange::Kbd:
+    case DocStyleChange::Typewriter:
     case DocStyleChange::Code:
       if (s.enable()) m_t << "<computeroutput>";   else m_t << "</computeroutput>";
       break;
@@ -315,7 +321,8 @@ void XmlDocVisitor::operator()(const DocVerbatim &s)
       else
           m_t << ">";
       getCodeParser(lang).parseCode(m_ci,s.context(),s.text(),langExt,
-                                    s.isExample(),s.exampleFile());
+                                    Config_getBool(STRIP_CODE_COMMENTS),
+                                    CodeParserOptions().setExample(s.isExample(),s.exampleFile()));
       m_t << "</programlisting>";
       break;
     case DocVerbatim::JavaDocLiteral:
@@ -396,24 +403,22 @@ void XmlDocVisitor::operator()(const DocInclude &inc)
 {
   if (m_hide) return;
   SrcLangExt langExt = getLanguageFromFileName(inc.extension());
+  //printf("XMLDocVisitor: DocInclude type=%d trimleft=%d\n",inc.type(),inc.trimLeft());
   switch(inc.type())
   {
     case DocInclude::IncWithLines:
       {
          m_t << "<programlisting filename=\"" << inc.file() << "\">";
          FileInfo cfi( inc.file().str() );
-         std::unique_ptr<FileDef> fd { createFileDef( cfi.dirPath(), cfi.fileName() ) };
+         auto fd = createFileDef( cfi.dirPath(), cfi.fileName());
          getCodeParser(inc.extension()).parseCode(m_ci,inc.context(),
                                            inc.text(),
                                            langExt,
-                                           inc.isExample(),
-                                           inc.exampleFile(),
-                                           fd.get(), // fileDef,
-                                           -1,    // start line
-                                           -1,    // end line
-                                           FALSE, // inline fragment
-                                           0,     // memberDef
-                                           TRUE   // show line numbers
+                                           inc.stripCodeComments(),
+                                           CodeParserOptions()
+                                           .setExample(inc.isExample(),inc.exampleFile())
+                                           .setFileDef(fd.get())
+                                           .setInlineFragment(true)
 					   );
          m_t << "</programlisting>";
       }
@@ -423,14 +428,11 @@ void XmlDocVisitor::operator()(const DocInclude &inc)
       getCodeParser(inc.extension()).parseCode(m_ci,inc.context(),
                                         inc.text(),
                                         langExt,
-                                        inc.isExample(),
-                                        inc.exampleFile(),
-                                        0,     // fileDef
-                                        -1,    // startLine
-                                        -1,    // endLine
-                                        TRUE,  // inlineFragment
-                                        0,     // memberDef
-                                        FALSE  // show line numbers
+                                        inc.stripCodeComments(),
+                                        CodeParserOptions()
+                                        .setExample(inc.isExample(),inc.exampleFile())
+                                        .setInlineFragment(true)
+                                        .setShowLineNumbers(false)
 				       );
       m_t << "</programlisting>";
       break;
@@ -478,42 +480,17 @@ void XmlDocVisitor::operator()(const DocInclude &inc)
       m_t << "</verbatim>";
       break;
     case DocInclude::Snippet:
-    case DocInclude::SnippetTrimLeft:
+    case DocInclude::SnippetWithLines:
       m_t << "<programlisting filename=\"" << inc.file() << "\">";
-      getCodeParser(inc.extension()).parseCode(m_ci,
-                                        inc.context(),
-                                        extractBlock(inc.text(),inc.blockId(),inc.type()==DocInclude::SnippetTrimLeft),
-                                        langExt,
-                                        inc.isExample(),
-                                        inc.exampleFile()
-                                       );
+      CodeFragmentManager::instance().parseCodeFragment(m_ci,
+                                       inc.file(),
+                                       inc.blockId(),
+                                       inc.context(),
+                                       inc.type()==DocInclude::SnippetWithLines,
+                                       inc.trimLeft(),
+                                       inc.stripCodeComments()
+                                      );
       m_t << "</programlisting>";
-      break;
-    case DocInclude::SnipWithLines:
-      {
-         m_t << "<programlisting filename=\"" << inc.file() << "\">";
-         FileInfo cfi( inc.file().str() );
-         std::unique_ptr<FileDef> fd { createFileDef( cfi.dirPath(), cfi.fileName() ) };
-         getCodeParser(inc.extension()).parseCode(m_ci,
-                                           inc.context(),
-                                           extractBlock(inc.text(),inc.blockId()),
-                                           langExt,
-                                           inc.isExample(),
-                                           inc.exampleFile(),
-                                           fd.get(),
-                                           lineBlock(inc.text(),inc.blockId()),
-                                           -1,    // endLine
-                                           FALSE, // inlineFragment
-                                           0,     // memberDef
-                                           TRUE   // show line number
-                                          );
-         m_t << "</programlisting>";
-      }
-      break;
-    case DocInclude::SnippetDoc:
-    case DocInclude::IncludeDoc:
-      err("Internal inconsistency: found switch SnippetDoc / IncludeDoc in file: %s"
-          "Please create a bug report\n",__FILE__);
       break;
   }
 }
@@ -543,18 +520,17 @@ void XmlDocVisitor::operator()(const DocIncOperator &op)
       if (!op.includeFileName().isEmpty())
       {
         FileInfo cfi( op.includeFileName().str() );
-        fd.reset(createFileDef( cfi.dirPath(), cfi.fileName() ));
+        fd = createFileDef( cfi.dirPath(), cfi.fileName() );
       }
 
       getCodeParser(locLangExt).parseCode(m_ci,op.context(),
-                                          op.text(),langExt,op.isExample(),
-                                          op.exampleFile(),
-                                          fd.get(),     // fileDef
-                                          op.line(),    // startLine
-                                          -1,    // endLine
-                                          FALSE, // inline fragment
-                                          0,     // memberDef
-                                          op.showLineNo()  // show line numbers
+                                          op.text(),langExt,
+                                          op.stripCodeComments(),
+                                          CodeParserOptions()
+                                          .setExample(op.isExample(), op.exampleFile())
+                                          .setFileDef(fd.get())
+                                          .setStartLine(op.line())
+                                          .setShowLineNumbers(op.showLineNo())
                                          );
     }
     pushHidden(m_hide);
@@ -603,9 +579,23 @@ void XmlDocVisitor::operator()(const DocSimpleSectSep &sep)
 void XmlDocVisitor::operator()(const DocCite &cite)
 {
   if (m_hide) return;
-  if (!cite.file().isEmpty()) startLink(cite.ref(),cite.file(),cite.anchor());
-  filter(cite.text());
-  if (!cite.file().isEmpty()) endLink();
+  auto opt = cite.option();
+  if (!cite.file().isEmpty())
+  {
+    if (!opt.noCite()) startLink(cite.ref(),cite.file(),cite.anchor());
+
+    filter(cite.getText());
+
+    if (!opt.noCite()) endLink();
+  }
+  else
+  {
+    m_t << "<b>";
+    if (!opt.noPar()) filter("[");
+    filter(cite.target());
+    if (!opt.noPar()) filter("]");
+    m_t << "</b>";
+  }
 }
 
 //--------------------------------------
@@ -637,7 +627,19 @@ void XmlDocVisitor::operator()(const DocAutoList &l)
 void XmlDocVisitor::operator()(const DocAutoListItem &li)
 {
   if (m_hide) return;
-  m_t << "<listitem>";
+  switch (li.itemNumber())
+  {
+    case DocAutoList::Unchecked: // unchecked
+      m_t << "<listitem override=\"unchecked\">";
+      break;
+    case DocAutoList::Checked_x: // checked with x
+    case DocAutoList::Checked_X: // checked with X
+      m_t << "<listitem override=\"checked\">";
+      break;
+    default:
+      m_t << "<listitem>";
+      break;
+  }
   visitChildren(li);
   m_t << "</listitem>";
 }
@@ -697,14 +699,29 @@ void XmlDocVisitor::operator()(const DocSimpleListItem &li)
 void XmlDocVisitor::operator()(const DocSection &s)
 {
   if (m_hide) return;
-  m_t << "<sect" << s.level() << " id=\"" << s.file();
-  if (!s.anchor().isEmpty()) m_t << "_1" << s.anchor();
-  m_t << "\">\n";
-  m_t << "<title>";
-  filter(convertCharEntitiesToUTF8(s.title()));
-  m_t << "</title>\n";
+  int orgSectionLevel = m_sectionLevel;
+  QCString sectId = s.file();
+  if (!s.anchor().isEmpty()) sectId += "_1"+s.anchor();
+  while (m_sectionLevel+1<s.level()) // fix missing intermediate levels
+  {
+    m_sectionLevel++;
+    m_t << "<sect" << m_sectionLevel << " id=\"" << sectId << "_1s" << m_sectionLevel << "\">";
+  }
+  m_sectionLevel++;
+  m_t << "<sect" << s.level() << " id=\"" << sectId << "\">\n";
+  if (s.title())
+  {
+    std::visit(*this,*s.title());
+  }
   visitChildren(s);
-  m_t << "</sect" << s.level() << ">\n";
+  m_t << "</sect" << s.level() << ">";
+  m_sectionLevel--;
+  while (orgSectionLevel<m_sectionLevel) // fix missing intermediate levels
+  {
+    m_t << "</sect" << m_sectionLevel << ">";
+    m_sectionLevel--;
+  }
+  m_t << "\n";
 }
 
 void XmlDocVisitor::operator()(const DocHtmlList &s)
@@ -937,7 +954,7 @@ void XmlDocVisitor::operator()(const DocImage &img)
                 altValue, img.isInlineImage());
 
   // copy the image to the output dir
-  FileDef *fd = 0;
+  FileDef *fd = nullptr;
   bool ambig;
   if (url.isEmpty() && (fd=findFileDef(Doxygen::imageNameLinkedMap,img.name(),ambig)))
   {
@@ -972,6 +989,15 @@ void XmlDocVisitor::operator()(const DocDiaFile &df)
   visitPreStart(m_t, "diafile", FALSE, *this, df.children(), stripPath(df.file()), FALSE, DocImage::Html, df.width(), df.height());
   visitChildren(df);
   visitPostEnd(m_t, "diafile");
+}
+
+void XmlDocVisitor::operator()(const DocPlantUmlFile &df)
+{
+  if (m_hide) return;
+  copyFile(df.file(),Config_getString(XML_OUTPUT)+"/"+stripPath(df.file()));
+  visitPreStart(m_t, "plantumlfile", FALSE, *this, df.children(), stripPath(df.file()), FALSE, DocImage::Html, df.width(), df.height());
+  visitChildren(df);
+  visitPostEnd(m_t, "plantumlfile");
 }
 
 void XmlDocVisitor::operator()(const DocLink &lnk)

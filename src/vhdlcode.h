@@ -26,23 +26,17 @@ class VHDLCodeParser : public CodeParserInterface
 {
   public:
     VHDLCodeParser();
-    virtual ~VHDLCodeParser();
+   ~VHDLCodeParser() override;
+    NON_COPYABLE(VHDLCodeParser)
+
     void parseCode(OutputCodeList &codeOutIntf,
                    const QCString &scopeName,
                    const QCString &input,
                    SrcLangExt lang,
-                   bool isExampleBlock,
-                   const QCString &exampleName=QCString(),
-                   const FileDef *fileDef=0,
-                   int startLine=-1,
-                   int endLine=-1,
-                   bool inlineFragment=FALSE,
-                   const MemberDef *memberDef=0,
-                   bool showLineNumbers=TRUE,
-                   const Definition *searchCtx=0,
-                   bool collectXRefs=TRUE
-                  );
-    void resetCodeParserState();
+                   bool stripCodeComments,
+                   const CodeParserOptions &options
+                  ) override;
+    void resetCodeParserState() override;
   private:
     struct Private;
     std::unique_ptr<Private> p;

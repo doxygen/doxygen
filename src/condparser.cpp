@@ -54,8 +54,7 @@ bool CondParser::parse(const QCString &fileName,int lineNr,const QCString &expr)
   }
   if (!m_err.isEmpty())
   {
-    warn(fileName,lineNr,"problem evaluating expression '%s': %s",
-        qPrint(expr),qPrint(m_err));
+    warn(fileName,lineNr,"problem evaluating expression '{}': {}", expr, m_err);
   }
   //printf("expr='%s' answer=%d\n",expr,answer);
   return answer;
@@ -108,7 +107,7 @@ int CondParser::getOperatorId(const QCString &opName)
 void CondParser::getToken()
 {
   m_tokenType = NOTHING;
-  m_token.resize(0);
+  m_token.clear();
 
   //printf("\tgetToken e:{%c}, ascii=%i, col=%i\n", *e, *e, e-expr);
 
@@ -190,19 +189,16 @@ bool CondParser::parseLevel1()
  */
 bool CondParser::parseLevel2()
 {
-  bool ans;
   int opId = getOperatorId(m_token);
   if (opId == NOT)
   {
     getToken();
-    ans = !parseLevel3();
+    return !parseLevel3();
   }
   else
   {
-    ans = parseLevel3();
+    return parseLevel3();
   }
-
-  return ans;
 }
 
 

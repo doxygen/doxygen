@@ -106,7 +106,7 @@ static bool insertMapFile(TextStream &out,const QCString &mapFile,
 
 QCString DotGraph::imgName() const
 {
-  return m_baseName + ((m_graphFormat == GOF_BITMAP) ?
+  return m_baseName + ((m_graphFormat == GraphOutputFormat::BITMAP) ?
                       ("." + getDotImageExtension()) : (Config_getBool(USE_PDFLATEX) ? ".pdf" : ".eps"));
 }
 
@@ -152,13 +152,13 @@ bool DotGraph::prepareDotFile()
 {
   if (!m_dir.exists())
   {
-    term("Output dir %s does not exist!\n", m_dir.path().c_str());
+    term("Output dir {} does not exist!\n", m_dir.path());
   }
 
   char sigStr[33];
   uint8_t md5_sig[16];
   // calculate md5
-  MD5Buffer(m_theGraph.data(), m_theGraph.length(), md5_sig);
+  MD5Buffer(m_theGraph.data(), static_cast<unsigned int>(m_theGraph.length()), md5_sig);
   // convert result to a string
   MD5SigToString(md5_sig, sigStr);
 
@@ -166,7 +166,7 @@ bool DotGraph::prepareDotFile()
 
   if (sameMd5Signature(absBaseName(), sigStr) &&
       deliverablesPresent(absImgName(),
-                          m_graphFormat == GOF_BITMAP && m_generateImageMap ? absMapName() : QCString()
+                          m_graphFormat == GraphOutputFormat::BITMAP && m_generateImageMap ? absMapName() : QCString()
                          )
      )
   {
@@ -180,20 +180,20 @@ bool DotGraph::prepareDotFile()
   std::ofstream f = Portable::openOutputStream(absDotName());
   if (!f.is_open())
   {
-    err("Could not open file %s for writing\n",qPrint(absDotName()));
+    err("Could not open file {} for writing\n",absDotName());
     return TRUE;
   }
   f << m_theGraph;
   f.close();
 
-  if (m_graphFormat == GOF_BITMAP)
+  if (m_graphFormat == GraphOutputFormat::BITMAP)
   {
     // run dot to create a bitmap image
     DotRunner * dotRun = DotManager::instance()->createRunner(absDotName(), sigStr);
     dotRun->addJob(Config_getEnumAsString(DOT_IMAGE_FORMAT), absImgName(), absDotName(), 1);
     if (m_generateImageMap) dotRun->addJob(MAP_CMD, absMapName(), absDotName(), 1);
   }
-  else if (m_graphFormat == GOF_EPS)
+  else if (m_graphFormat == GraphOutputFormat::EPS)
   {
     // run dot to create a .eps image
     DotRunner *dotRun = DotManager::instance()->createRunner(absDotName(), sigStr);
@@ -212,7 +212,7 @@ bool DotGraph::prepareDotFile()
 void DotGraph::generateCode(TextStream &t)
 {
   QCString imgExt = getDotImageExtension();
-  if (m_graphFormat==GOF_BITMAP && m_textFormat==EOF_DocBook)
+  if (m_graphFormat==GraphOutputFormat::BITMAP && m_textFormat==EmbeddedOutputFormat::DocBook)
   {
     t << "<para>\n";
     t << "    <informalfigure>\n";
@@ -226,7 +226,7 @@ void DotGraph::generateCode(TextStream &t)
     t << "    </informalfigure>\n";
     t << "</para>\n";
   }
-  else if (m_graphFormat==GOF_BITMAP && m_generateImageMap) // produce HTML to include the image
+  else if (m_graphFormat==GraphOutputFormat::BITMAP && m_generateImageMap) // produce HTML to include the image
   {
     if (imgExt=="svg") // add link to SVG file without map file
     {
@@ -249,7 +249,7 @@ void DotGraph::generateCode(TextStream &t)
     else // add link to bitmap file with image map
     {
       if (!m_noDivTag) t << "<div class=\"center\">";
-      t << "<img src=\"" << relImgName() << "\" border=\"0\" usemap=\"#" << correctId(getMapLabel()) << "\" alt=\"" << getImgAltText() << "\"/>";
+      t << "<img src=\"" << relImgName() << "\" border=\"0\" usemap=\"#" << correctId(getMapLabel()) << "\" loading=\"lazy\" alt=\"" << getImgAltText() << "\"/>";
       if (!m_noDivTag) t << "</div>";
       t << "\n";
       if (m_regenerate || !insertMapFile(t, absMapName(), m_relPath, correctId(getMapLabel())))
@@ -261,7 +261,7 @@ void DotGraph::generateCode(TextStream &t)
       }
     }
   }
-  else if (m_graphFormat==GOF_EPS) // produce tex to include the .eps image
+  else if (m_graphFormat==GraphOutputFormat::EPS) // produce tex to include the .eps image
   {
     if (m_regenerate || !DotFilePatcher::writeVecGfxFigure(t,m_baseName,absBaseName()))
     {
@@ -320,7 +320,7 @@ void DotGraph::computeGraph(DotNode *root,
     md5stream << "  rankdir=\"" << rank << "\";\n";
   }
   root->clearWriteFlag();
-  root->write(md5stream, gt, format, gt!=CallGraph && gt!=Dependency, TRUE, backArrows);
+  root->write(md5stream, gt, format, gt!=GraphType::CallGraph && gt!=GraphType::Dependency, TRUE, backArrows);
   if (renderParents)
   {
     for (const auto &pn : root->parents())

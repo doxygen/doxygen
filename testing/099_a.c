@@ -1,7 +1,7 @@
-!// objective: test enum field association
-!// input: more_099_b.c
-!// check: 099__a_8c.xml
-!// check: more__099__b_8c.xml
+// objective: test enum field association
+// input: more_099_b.c
+// check: 099__a_8c.xml
+// check: more__099__b_8c.xml
 
 /**
  * @file

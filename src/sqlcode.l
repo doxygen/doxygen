@@ -49,33 +49,32 @@ typedef yyguts_t *yyscan_t;
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
 
-#define USE_STATE2STRING 0
-
 struct sqlcodeYY_state
 {
-     OutputCodeList * code;
-     const char   *inputString;     //!< the code fragment as text
-     int           inputPosition;   //!< read offset during parsing
+     OutputCodeList * code = nullptr;
+     const char   *inputString = nullptr; //!< the code fragment as text
+     int           inputPosition = 0;     //!< read offset during parsing
      QCString      fileName;
-     int           inputLines;      //!< number of line in the code fragment
-     int           yyLineNr;        //!< current line number
-     bool          insideCodeLine;
-     const Definition   *searchCtx;
+     int           inputLines = 0;        //!< number of line in the code fragment
+     int           yyLineNr = 1;          //!< current line number
+     bool          insideCodeLine = false;
+     const Definition   *searchCtx = nullptr;
 
-     bool          exampleBlock;
+     bool          stripCodeComments = true;
+     bool          exampleBlock = false;
      QCString      exampleName;
      QCString      classScope;
 
-     const FileDef    *sourceFileDef;
-     const Definition *currentDefinition;
-     const MemberDef  *currentMemberDef;
-     bool          includeCodeFragment;
-     const char   *currentFontClass;
+     std::unique_ptr<FileDef> exampleFileDef;
+     const FileDef    *sourceFileDef = nullptr;
+     bool          lineNumbers = FALSE;
+     const Definition *currentDefinition = nullptr;
+     const MemberDef  *currentMemberDef = nullptr;
+     bool          includeCodeFragment = false;
+     const char   *currentFontClass = nullptr;
 };
 
-#if USE_STATE2STRING
-static const char *stateToString(int state);
-#endif
+[[maybe_unused]] static const char *stateToString(int state);
 
 static void setCurrentDoc(yyscan_t yyscanner,const QCString &anchor);
 static void startCodeLine(yyscan_t yyscanner);
@@ -97,7 +96,6 @@ static inline const char *getLexerFILE() {return __FILE__;}
 %}
 
 nl              (\r\n|\r|\n)
-ws              [ \t]+
 idchar          [A-Za-z0-9\-_]+
 keywords1       ("ADD"|"ALL"|"ALLOCATE"|"ALTER"|"AND"|"ANY"|"ARE"|"AS"|"ASENSITIVE"|"ASYMMETRIC"|"AT"|"ATOMIC"|"AUTHORIZATION"|"BETWEEN"|"BOTH"|"BY"|"CALL"|"CALLED"|"CASCADED"|"CAST")
 keywords2       ("CHECK"|"CLOSE"|"COLLATE"|"COLUMN"|"COMMIT"|"CONNECT"|"CONSTRAINT"|"CONTINUE"|"CORRESPONDING"|"CREATE"|"CROSS"|"CUBE"|"CURRENT"|"CURRENT_DATE"|"CURRENT_DEFAULT_TRANSFORM_GROUP")
@@ -121,7 +119,7 @@ typekeyword     (?i:"ARRAY"|"BIGINT"|"BINARY"|"BLOB"|"BOOLEAN"|"CHAR"|"CHARACTER
 flowkeyword     (?i:"CASE"|"IF"|"ELSE"|"BEGIN"|"END"|"WHILE")
 
 literalkeyword  (?i:"false"|"true"|"NULL"|"UNKNOWN")
-stringliteral   (\"[^"]*\")|('[^']*')
+stringliteral   (\"[^\"]*\")|('[^']*')
 number          [0-9]+
 literals        ({literalkeyword}|{stringliteral}|{number})
 
@@ -213,15 +211,15 @@ commentclose    "\*\/"
 static void setCurrentDoc(yyscan_t yyscanner,const QCString &anchor)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  if (Doxygen::searchIndex)
+  if (Doxygen::searchIndex.enabled())
   {
     if (yyextra->searchCtx)
     {
-      Doxygen::searchIndex->setCurrentDoc(yyextra->searchCtx,yyextra->searchCtx->anchor(),false);
+      Doxygen::searchIndex.setCurrentDoc(yyextra->searchCtx,yyextra->searchCtx->anchor(),false);
     }
     else
     {
-      Doxygen::searchIndex->setCurrentDoc(yyextra->sourceFileDef,anchor,true);
+      Doxygen::searchIndex.setCurrentDoc(yyextra->sourceFileDef,anchor,true);
     }
   }
 }
@@ -233,7 +231,7 @@ static void setCurrentDoc(yyscan_t yyscanner,const QCString &anchor)
 static void startCodeLine(yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  if (yyextra->sourceFileDef)
+  if (yyextra->sourceFileDef && yyextra->lineNumbers)
   {
     const Definition *d = yyextra->sourceFileDef->getSourceDefinition(yyextra->yyLineNr);
 
@@ -268,7 +266,7 @@ static void startCodeLine(yyscan_t yyscanner)
     }
   }
 
-  yyextra->code->startCodeLine(yyextra->sourceFileDef!=0);
+  yyextra->code->startCodeLine(yyextra->yyLineNr);
   yyextra->insideCodeLine=true;
 
   if (yyextra->currentFontClass)
@@ -323,12 +321,8 @@ static void codifyLines(yyscan_t yyscanner,const char *text)
     if (c=='\n')
     {
       yyextra->yyLineNr++;
-      int l = (int)(p-sp-1);
-      char *tmp = (char*)malloc(l+1);
-      memcpy(tmp,sp,l);
-      tmp[l]='\0';
-      yyextra->code->codify(tmp);
-      free(tmp);
+      size_t l = static_cast<size_t>(p-sp-1);
+      yyextra->code->codify(QCString(sp,l));
       nextCodeLine(yyscanner);
     }
     else
@@ -408,24 +402,16 @@ SQLCodeParser::~SQLCodeParser()
 void SQLCodeParser::resetCodeParserState()
 {
   struct yyguts_t *yyg = (struct yyguts_t*)p->yyscanner;
-  yyextra->currentDefinition = 0;
-  yyextra->currentMemberDef = 0;
+  yyextra->currentDefinition = nullptr;
+  yyextra->currentMemberDef = nullptr;
 }
 
 void SQLCodeParser::parseCode(OutputCodeList &codeOutIntf,
                const QCString &/* scopeName */,
                const QCString &input,
                SrcLangExt,
-               bool isExampleBlock,
-               const QCString &exampleName,
-               const FileDef *fileDef,
-               int startLine,
-               int endLine,
-               bool inlineFragment,
-               const MemberDef * /* memberDef */,
-               bool /* showLineNumbers */,
-               const Definition *searchCtx,
-               bool/* collectXRefs */ 
+               bool stripCodeComments,
+               const CodeParserOptions &options
               )
 {
   yyscan_t yyscanner = p->yyscanner;
@@ -433,37 +419,27 @@ void SQLCodeParser::parseCode(OutputCodeList &codeOutIntf,
 
   if (input.isEmpty()) return;
 
-  DebugLex debugLex(Debug::Lex_sqlcode, __FILE__, fileDef ? qPrint(fileDef->fileName()): NULL);
-  yyextra->fileName      = fileDef ? fileDef->fileName():"";
+  DebugLex debugLex(Debug::Lex_sqlcode, __FILE__, options.fileDef() ? qPrint(options.fileDef()->fileName()): nullptr);
+  yyextra->fileName          = options.fileDef() ? options.fileDef()->fileName():"";
+  yyextra->code              = &codeOutIntf;
+  yyextra->inputString       = input.data();
+  yyextra->inputPosition     = 0;
+  yyextra->currentFontClass  = nullptr;
+  yyextra->insideCodeLine    = false;
+  yyextra->searchCtx         = options.searchCtx();
+  yyextra->yyLineNr          = options.startLine()!=-1 ? options.startLine() : 1;
+  yyextra->inputLines        = options.endLine()!=-1   ? options.endLine()+1 : yyextra->yyLineNr + countLines(yyscanner) - 1;
+  yyextra->stripCodeComments = stripCodeComments;
+  yyextra->exampleBlock      = options.isExample();
+  yyextra->exampleName       = options.exampleName();
+  yyextra->sourceFileDef     = options.fileDef();
+  yyextra->lineNumbers       = options.fileDef() && options.showLineNumbers();
 
-  yyextra->code = &codeOutIntf;
-  yyextra->inputString   = input.data();
-  yyextra->inputPosition = 0;
-  yyextra->currentFontClass = 0;
-  yyextra->insideCodeLine = false;
-  yyextra->searchCtx=searchCtx;
-
-  if (startLine!=-1)
-    yyextra->yyLineNr    = startLine;
-  else
-    yyextra->yyLineNr    = 1;
-
-  if (endLine!=-1)
-    yyextra->inputLines  = endLine+1;
-  else
-    yyextra->inputLines  = yyextra->yyLineNr + countLines(yyscanner) - 1;
-
-  yyextra->exampleBlock  = isExampleBlock;
-  yyextra->exampleName   = exampleName;
-  yyextra->sourceFileDef = fileDef;
-
-  bool cleanupSourceDef = false;
-
-  if (isExampleBlock && fileDef==0)
+  if (options.isExample() && options.fileDef()==0)
   {
     // create a dummy filedef for the example
-    yyextra->sourceFileDef = createFileDef(QCString(),!exampleName.isEmpty() ? exampleName : QCString("generated"));
-    cleanupSourceDef = true;
+    yyextra->exampleFileDef = createFileDef(QCString(),!options.exampleName().isEmpty() ? options.exampleName() : QCString("generated"));
+    yyextra->sourceFileDef = yyextra->exampleFileDef.get();
   }
 
   if (yyextra->sourceFileDef)
@@ -471,11 +447,11 @@ void SQLCodeParser::parseCode(OutputCodeList &codeOutIntf,
     setCurrentDoc(yyscanner,"l00001");
   }
 
-  yyextra->includeCodeFragment = inlineFragment;
+  yyextra->includeCodeFragment = options.inlineFragment();
   // Starts line 1 on the output
   startCodeLine(yyscanner);
 
-  sqlcodeYYrestart( 0, yyscanner );
+  sqlcodeYYrestart( nullptr, yyscanner );
 
   sqlcodeYYlex(yyscanner);
 
@@ -483,16 +459,14 @@ void SQLCodeParser::parseCode(OutputCodeList &codeOutIntf,
   {
     endCodeLine(yyscanner);
   }
-  if (cleanupSourceDef)
+  if (yyextra->exampleFileDef)
   {
     // delete the temporary file definition used for this example
-    delete yyextra->sourceFileDef;
-    yyextra->sourceFileDef=0;
+    yyextra->exampleFileDef.reset();
+    yyextra->sourceFileDef=nullptr;
   }
 }
 
 //---------------------------------------------------------------------------------
 
-#if USE_STATE2STRING
 #include "sqlcode.l.h"
-#endif

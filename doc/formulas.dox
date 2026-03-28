@@ -1,0 +1,141 @@
+/******************************************************************************
+ *
+ * 
+ *
+ * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation under the terms of the GNU General Public License is hereby 
+ * granted. No representations are made about the suitability of this software 
+ * for any purpose. It is provided "as is" without express or implied warranty.
+ * See the GNU General Public License for more details.
+ *
+ * Documents produced by Doxygen are derivative works derived from the
+ * input used in their production; they are not affected by this license.
+ *
+ */
+/*! \page formulas Including formulas 
+
+Doxygen allows you to put \LaTeX formulas in the
+output (this works only for the HTML, \LaTeX and RTF output. To be able to include 
+formulas (as images) in the HTML and RTF documentation, you will also need to 
+have the following tools installed
+<ul>
+<li>\c latex: the \LaTeX compiler, needed to parse the formulas. 
+    To test I have used the teTeX 1.0 distribution.
+<li>\c dvips: a tool to convert DVI files to PostScript files 
+    I have used version 5.92b from Radical Eye software for testing.
+<li>\c gs: the GhostScript interpreter for converting PostScript files 
+    to bitmaps. I have used Aladdin GhostScript 8.0 for testing.
+</ul>
+For the HTML output there is also an alternative solution using
+<a href="https://www.mathjax.org">MathJax</a> which does not
+require the above tools. If you enable \ref cfg_use_mathjax "USE_MATHJAX" in
+the configuration then the latex formulas will be copied to the HTML "as is" and a
+client side JavaScript will parse them and turn them into (interactive) images.
+
+There are four ways to include formulas in the documentation.
+<ol>
+<li>Using in-text formulas that appear in the running text. 
+    These formulas should be put between a pair of \ref cmdfdollar "\\f\$"
+    commands, so
+\verbatim
+  The distance between \f$(x_1,y_1)\f$ and \f$(x_2,y_2)\f$ is 
+  \f$\sqrt{(x_2-x_1)^2+(y_2-y_1)^2}\f$.
+\endverbatim results in:
+
+  The distance between \f$(x_1,y_1)\f$ and \f$(x_2,y_2)\f$ is 
+  \f$\sqrt{(x_2-x_1)^2+(y_2-y_1)^2}\f$.
+<br>
+<li>Using in-text formulas that appear in the running text, contrary to
+    \ref cmdfdollar "\\f$" it will not explicitly open the math mode in \LaTeX.
+    These formulas should be put between \ref cmdfrndclose "\\f(" and
+    \ref cmdfrndopen "\\f)" commands, so
+\verbatim
+  The LaTeX and Tex logos are: \f(\LaTeX \f) and \f(\TeX \f).
+\endverbatim results in:
+
+  The LaTeX and Tex logos are: \LaTeX and \TeX.
+<br>
+<li>Unnumbered displayed formulas that are centered on a separate line.
+    These formulas should be put between \ref cmdfbropen "\\f[" and
+    \ref cmdfbrclose "\\f]" commands.
+    An example:
+\verbatim
+  \f[
+    |I_2|=\left| \int_{0}^T \psi(t) 
+             \left\{ 
+                u(a,t)-
+                \int_{\gamma(t)}^a 
+                \frac{d\theta}{k(\theta,t)}
+                \int_{a}^\theta c(\xi)u_t(\xi,t)\,d\xi
+             \right\} dt
+          \right|
+  \f]
+\endverbatim
+  results in:
+  \f[
+    |I_2|=\left| \int_{0}^T \psi(t) 
+             \left\{ 
+                u(a,t)-
+                \int_{\gamma(t)}^a 
+                \frac{d\theta}{k(\theta,t)}
+                \int_{a}^\theta c(\xi)u_t(\xi,t)\,d\xi
+             \right\} dt
+          \right|
+  \f]
+<li>Formulas or other latex elements that are not in a math 
+    environment can be specified using \ref cmdfcurlyopen "\\f{environment}", where
+    \c environment is the name of the \LaTeX environment, 
+    the corresponding end command is \ref cmdfcurlyclose "\\f}". Here is an example for an 
+    equation array
+\verbatim
+   \f{eqnarray*}{
+        g &=& \frac{Gm_2}{r^2} \\ 
+          &=& \frac{(6.673 \times 10^{-11}\,\mbox{m}^3\,\mbox{kg}^{-1}\,
+              \mbox{s}^{-2})(5.9736 \times 10^{24}\,\mbox{kg})}{(6371.01\,\mbox{km})^2} \\ 
+          &=& 9.82066032\,\mbox{m/s}^2
+   \f}
+\endverbatim
+  which results in:
+   \f{eqnarray*}
+        g &=& \frac{Gm_2}{r^2} \\ 
+          &=& \frac{(6.673 \times 10^{-11}\,\mbox{m}^3\,\mbox{kg}^{-1}\,
+              \mbox{s}^{-2})(5.9736 \times 10^{24}\,\mbox{kg})}{(6371.01\,\mbox{km})^2} \\ 
+          &=& 9.82066032\,\mbox{m/s}^2
+   \f}
+</ol>
+For the first and third commands one should make sure formulas contain 
+valid commands in \LaTeX's math-mode.
+The second command should valid text-mode commands that also work in math-mode when using
+\ref cfg_use_mathjax "USE_MATHJAX".
+For the fourth command the section should contain valid command for the specific environment.
+
+\warning Currently, Doxygen is not very fault tolerant in recovering 
+from typos in formulas. It may be necessary to remove the
+files <code>formula.repository</code> that are written to the html, rtf etc. directories to 
+get rid of an incorrect formula as well as the <code>form_*</code> files.
+
+To have the possibility to define your own \LaTeX commands, for e.g. formula building blocks
+or consistent writing of certain words, the configuration option \ref cfg_formula_macrofile "FORMULA_MACROFILE"
+can be used. to supply a file with \LaTeX commands.
+This file can contain \LaTeX `\newcommand` and `\renewcommand` commands and they are included
+formulas (image version and MathJax version) as well as in the generated \LaTeX output (for PDF generation).<br>
+The `\newcommand` (and `\renewcommand`) are restricted to a version without optional
+parameters so only the following types are supported:
+```
+\newcommand{\cmd}{replacement}
+\newcommand{\cmd}[nr]{replacement}
+```
+e.g.
+```
+\newcommand{\E}{\mathrm{E}}
+\newcommand{\ccSum}[3]{\sum_{#1}^{#2}{#3}}
+```
+
+\htmlonly
+Go to the <a href="tables.html">next</a> section or return to the
+ <a href="index.html">index</a>.
+\endhtmlonly
+
+*/

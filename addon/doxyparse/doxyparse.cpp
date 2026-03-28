@@ -18,7 +18,6 @@
  *
  */
 
-#include <stdlib.h>
 #if !defined(_WIN32) || defined(__CYGWIN__)
   #include <unistd.h>
 #else
@@ -41,12 +40,14 @@
 #include <cstdlib>
 #include <sstream>
 #include <map>
+#include <algorithm>
+#include <filesystem>
 #include "qcstring.h"
 #include "namespacedef.h"
 #include "portable.h"
 #include "dir.h"
 
-class Doxyparse : public OutputCodeExtension
+class Doxyparse : public OutputCodeIntf
 {
   public:
     Doxyparse(const FileDef *fd) : m_fd(fd) {}
@@ -55,9 +56,14 @@ class Doxyparse : public OutputCodeExtension
     // these are just null functions, they can be used to produce a syntax highlighted
     // and cross-linked version of the source code, but who needs that anyway ;-)
     OutputType type() const override { return OutputType::Extension; }
+    std::unique_ptr<OutputCodeIntf> clone() override { return std::make_unique<Doxyparse>(m_fd); }
     void codify(const QCString &) override {}
+    void stripCodeComments(bool) override {}
+    void startSpecialComment() override {}
+    void endSpecialComment() override {}
+    void setStripIndentAmount(size_t) override {}
     void writeCodeLink(CodeSymbolType,const QCString &,const QCString &,const QCString &,const QCString &,const QCString &)  override {}
-    void startCodeLine(bool) override {}
+    void startCodeLine(int) override {}
     void endCodeLine() override {}
     void writeCodeAnchor(const QCString &) override {}
     void startFontClass(const QCString &) override {}
@@ -68,6 +74,8 @@ class Doxyparse : public OutputCodeExtension
                               const SourceLinkInfo &) override {}
     void startCodeFragment(const QCString &) override {}
     void endCodeFragment(const QCString &) override {}
+    void startFold(int,const QCString &,const QCString &) override {}
+    void endFold() override {}
 
     void linkableSymbol(int l, const char *sym, Definition *symDef, Definition *context)
     {
@@ -97,30 +105,21 @@ static void findXRefSymbols(FileDef *fd)
   intf->resetCodeParserState();
 
   // create a new backend object
-  Doxyparse parse(fd);
+  std::unique_ptr<OutputCodeIntf> parse = std::make_unique<Doxyparse>(fd);
   OutputCodeList parseList;
-  parseList.add(OutputCodeDeferExtension(&parse));
+  parseList.add(std::move(parse));
 
   // parse the source code
-  intf->parseCode(parseList, 0, fileToString(fd->absFilePath()), lang, FALSE, 0, fd);
+  intf->parseCode(parseList, QCString(), fileToString(fd->absFilePath()), lang,
+                  FALSE, CodeParserOptions().setFileDef(fd));
 }
 
 static bool ignoreStaticExternalCall(const MemberDef *context, const MemberDef *md) {
-  if (md->isStatic()) {
-    if(md->getFileDef() && context->getFileDef()) {
-      if(md->getFileDef()->getOutputFileBase() == context->getFileDef()->getOutputFileBase())
-        // TODO ignore prefix of file
-        return false;
-      else
-        return true;
-    }
-    else {
-      return false;
-    }
-  }
-  else {
-    return false;
-  }
+  if (!md->isStatic()) return false;
+  if (!md->getFileDef() || !context->getFileDef()) return false;
+
+  // TODO ignore prefix of file
+  return md->getFileDef()->getOutputFileBase() != context->getFileDef()->getOutputFileBase();
 }
 
 static void startYamlDocument() {
@@ -174,14 +173,16 @@ static void printNumberOfConditionalPaths(const MemberDef* md) {
 }
 
 static int isPartOfCStruct(const MemberDef * md) {
-  return is_c_code && md->getClassDef() != NULL;
+  return is_c_code && md->getClassDef() != nullptr;
 }
 
-std::string sanitizeString(std::string data) {
-  QCString new_data = QCString(data.c_str());
-  new_data = substitute(new_data,"\"", "");
-  new_data = substitute(new_data,"\'", ""); // https://github.com/analizo/analizo/issues/138
-  return !new_data.isEmpty() ? new_data.data() : "";
+[[nodiscard]] std::string sanitizeString(std::string data)
+{
+  data.erase(std::remove_if(data.begin(), data.end(), [](unsigned char c) {
+               return c == '"' || c == '\'';
+             }),
+             data.end());
+  return data;
 }
 
 std::string argumentData(const Argument &argument) {
@@ -249,10 +250,10 @@ void protectionInformation(Protection protection) {
 }
 
 void cModule(const ClassDef* cd) {
-  const MemberList* ml = cd->getMemberList(MemberListType_variableMembers);
+  const MemberList* ml = cd->getMemberList(MemberListType::VariableMembers());
   if (ml) {
     const FileDef *fd = cd->getFileDef();
-    const MemberList *fd_ml = fd->getMemberList(MemberListType_allMembersList);
+    const MemberList *fd_ml = fd->getMemberList(MemberListType::AllMembersList());
     if (!fd_ml || fd_ml->size() == 0) {
       printModule(fd->getOutputFileBase().data());
       printDefines();
@@ -337,11 +338,11 @@ void listMembers(const MemberList *ml) {
 
 void listAllMembers(const ClassDef* cd) {
   // methods
-  listMembers(cd->getMemberList(MemberListType_functionMembers));
+  listMembers(cd->getMemberList(MemberListType::FunctionMembers()));
   // constructors
-  listMembers(cd->getMemberList(MemberListType_constructors));
+  listMembers(cd->getMemberList(MemberListType::Constructors()));
   // attributes
-  listMembers(cd->getMemberList(MemberListType_variableMembers));
+  listMembers(cd->getMemberList(MemberListType::VariableMembers()));
 }
 
 static void classInformation(const ClassDef* cd) {
@@ -397,7 +398,7 @@ static void listSymbols() {
   for (const auto &fn : *Doxygen::inputNameLinkedMap) {
     for (const auto &fd : *fn) {
       printFile(fd->absFilePath().data());
-      MemberList *ml = fd->getMemberList(MemberListType_allMembersList);
+      MemberList *ml = fd->getMemberList(MemberListType::AllMembersList());
       if (ml && ml->size() > 0) {
         printModule(fd->getOutputFileBase().data());
         printDefines();
@@ -428,7 +429,7 @@ int main(int argc,char **argv) {
     }
     else if (!strcmp(argv[1],"--version"))
     {
-      printf("%s version: %s\n",argv[0],getFullVersion());
+      printf("%s version: %s\n",argv[0],getFullVersion().c_str());
       exit(0);
     }
   }
@@ -492,7 +493,7 @@ int main(int argc,char **argv) {
     if (strcmp(argv[i], "-") == 0) {
       char filename[1024];
       while (1) {
-        scanf("%s[^\n]", filename);
+        (void)scanf("%s[^\n]", filename);
         if (feof(stdin)) {
           break;
         }
@@ -528,9 +529,7 @@ int main(int argc,char **argv) {
   startYamlDocument();
   listSymbols();
 
-  std::string cleanup_command = "rm -rf ";
-  cleanup_command += tmpdir.str();
-  system(cleanup_command.c_str());
-
-  exit(0);
+  std::error_code ec;
+  std::filesystem::remove_all(tmpdir.str(), ec);
+  return 0;
 }

@@ -35,13 +35,14 @@ class PythonOutlineParser : public OutlineParserInterface
 {
   public:
     PythonOutlineParser();
-    virtual ~PythonOutlineParser();
+   ~PythonOutlineParser() override;
+    NON_COPYABLE(PythonOutlineParser)
     void parseInput(const QCString &fileName,
                     const char *fileBuf,
                     const std::shared_ptr<Entry> &root,
-                    ClangTUParser *clangParser);
-    bool needsPreprocessing(const QCString &extension) const;
-    void parsePrototype(const QCString &text);
+                    ClangTUParser *clangParser) override;
+    bool needsPreprocessing(const QCString &extension) const override;
+    void parsePrototype(const QCString &text) override;
   private:
     struct Private;
     std::unique_ptr<Private> p;

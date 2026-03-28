@@ -2,13 +2,13 @@
 
   The main purpose of the script is to extract the information from sources
   related to internationalization (the translator classes). It uses the
-  information to generate documentation (language.doc,
+  information to generate documentation (language.dox,
   translator_report.txt) from templates (language.tpl, maintainers.txt).
 
   Simply run the script without parameters to get the reports and
   documentation for all supported languages. If you want to generate the
   translator report only for some languages, pass their codes as arguments
-  to the script. In that case, the language.doc will not be generated.
+  to the script. In that case, the language.dox will not be generated.
   Example:
 
     python translator.py en nl cz
@@ -23,7 +23,7 @@
   2002/05/21 - This was the last Perl version.
   2003/05/16 - List of language marks can be passed as arguments.
   2004/01/24 - Total reimplementation started: classes TrManager, and Transl.
-  2004/02/05 - First version that produces translator report. No language.doc yet.
+  2004/02/05 - First version that produces translator report. No language.dox yet.
   2004/02/10 - First fully functional version that generates both the translator
                report and the documentation. It is a bit slower than the
                Perl version, but is much less tricky and much more flexible.
@@ -35,7 +35,7 @@
   2004/05/25 - Added from __future__ import generators not to force Python 2.3.
   2004/06/03 - Removed dependency on textwrap module.
   2004/07/07 - Fixed the bug in the fill() function.
-  2004/07/21 - Better e-mail mangling for HTML part of language.doc.
+  2004/07/21 - Better e-mail mangling for HTML part of language.dox.
              - Plural not used for reporting a single missing method.
              - Removal of not used translator adapters is suggested only
                when the report is not restricted to selected languages
@@ -58,11 +58,11 @@
              - [any mark] introduced instead of [unreachable] only
              - marks highlighted in HTML
   2010/08/30 - Highlighting in what will be the table in langhowto.html modified.
-  2010/09/27 - The underscore in \latexonly part of the generated language.doc
+  2010/09/27 - The underscore in \\latexonly part of the generated language.dox
                was prefixed by backslash (was LaTeX related error).
   2013/02/19 - Better diagnostics when translator_xx.h is too crippled.
   2013/06/25 - TranslatorDecoder checks removed after removing the class.
-  2013/09/04 - Coloured status in langhowto. *ALMOST up-to-date* category
+  2013/09/04 - Colored status in langhowto. *ALMOST up-to-date* category
                of translators introduced.
   2014/06/16 - unified for Python 2.6+ and 3.0+
   """
@@ -70,7 +70,6 @@
 from __future__ import print_function
 
 import os
-import platform
 import re
 import sys
 import textwrap
@@ -170,6 +169,7 @@ class Transl:
                      'private':   'private',
                      'static':    'static',
                      'virtual':   'virtual',
+                     'override':  'override',
                      ':':         'colon',
                      ';':         'semic',
                      ',':         'comma',
@@ -486,7 +486,7 @@ class Transl:
                     self.status = '0.0.00'
 
             # Check whether status was set, or set 'strange'.
-            if self.status == None:
+            if self.status is None:
                 self.status = 'strange'
             if not self.readableStatus:
                 self.readableStatus = 'strange'
@@ -544,6 +544,7 @@ class Transl:
         status = 0
         curlyCnt = 0      # counter for the level of curly braces
 
+        backStatus = 2
         # Loop until the final state 777 is reached. The errors are processed
         # immediately. In this implementation, it always quits the application.
         while status != 777:
@@ -557,6 +558,7 @@ class Transl:
 
             elif status == 1:    # colon after the 'public'
                 if tokenId == 'colon':
+                    backStatus = 2
                     status = 2
                 else:
                     self.__unexpectedToken(status, tokenId, tokenLineNo)
@@ -565,10 +567,16 @@ class Transl:
                 if tokenId == 'virtual':
                     prototype = tokenStr  # but not to unified prototype
                     status = 3
+                elif tokenId == 'id' and tokenStr == 'QCString' and backStatus == 3:
+                    status = 4
                 elif tokenId == 'comment':
                     pass
                 elif tokenId == 'rcurly':
                     status = 11         # expected end of class
+                elif tokenId == 'id' and tokenStr == 'ABSTRACT_BASE_CLASS':
+                    status = 18
+                elif tokenId == 'protected':
+                    status = 19
                 else:
                     self.__unexpectedToken(status, tokenId, tokenLineNo)
 
@@ -704,10 +712,35 @@ class Transl:
                     prototype += ', '
                     uniPrototype += ', '
                     status = 6
+                elif tokenId == 'assign':
+                    status=20
                 elif tokenId == 'rpar':
                     prototype += tokenStr
                     uniPrototype += tokenStr
                     status = 7
+                else:
+                    self.__unexpectedToken(status, tokenId, tokenLineNo)
+
+            elif status == 18:    # start of the ABSTRACT_BASE_CLASS
+                if tokenId == 'lpar':
+                    pass
+                elif tokenId == 'rpar':
+                    status = 2
+                elif tokenId == 'id':
+                    pass
+                else:
+                    self.__unexpectedToken(status, tokenId, tokenLineNo)
+
+            elif status == 19:    # colon after the 'protected'
+                if tokenId == 'colon':
+                    backStatus = 3
+                    status = 3
+                else:
+                    self.__unexpectedToken(status, tokenId, tokenLineNo)
+
+            elif status == 20:
+                if tokenId == 'string':
+                    status = 17
                 else:
                     self.__unexpectedToken(status, tokenId, tokenLineNo)
 
@@ -731,7 +764,7 @@ class Transl:
         the source file."""
 
         assert(self.classId != 'Translator')
-        assert self.baseClassId != None, 'Class ' + self.classId + ' from the file ' + self.fname + ' does not have a base class.'
+        assert self.baseClassId is not None, 'Class ' + self.classId + ' from the file ' + self.fname + ' does not have a base class.'
 
         # The following finite automaton slightly differs from the one
         # inside self.collectPureVirtualPrototypes(). It produces the
@@ -748,7 +781,6 @@ class Transl:
         # identifiers.
         prototype = ''    # readable prototype (with everything)
         uniPrototype = '' # unified prototype (without arg. identifiers)
-        warning = ''      # warning message -- if something special detected
         methodId = None   # processed method id
 
         # Collect the method prototypes. Stop on the closing
@@ -837,6 +869,8 @@ class Transl:
                 if tokenId == 'lcurly':
                     curlyCnt = 1      # method body entered
                     status = 10
+                elif tokenId == 'override':
+                    pass
                 elif tokenId == 'comment':
                     pass
                 elif tokenId == 'assign': # allowed only for TranslatorAdapterBase
@@ -875,12 +909,12 @@ class Transl:
 
                         assert(uniPrototype not in self.prototypeDic)
                         # Insert new dictionary item, unless they have a default in translator.h
-                        if (not (prototype=="virtual QCString latexDocumentPost()" or
-                                 prototype=="virtual QCString latexDocumentPre()" or
-                                 prototype=="virtual QCString latexCommandName()" or
-                                 prototype=="virtual QCString latexFont()" or
-                                 prototype=="virtual QCString latexFontenc()" or
-                                 prototype=="virtual bool needsPunctuation()")):
+                        if (not (prototype=="QCString latexDocumentPost()" or
+                                 prototype=="QCString latexDocumentPre()" or
+                                 prototype=="QCString latexCommandName()" or
+                                 prototype=="QCString latexFont()" or
+                                 prototype=="QCString latexFontenc()" or
+                                 prototype=="bool needsPunctuation()")):
                             self.prototypeDic[uniPrototype] = prototype
                         status = 2      # body consumed
                         methodId = None # outside of any method
@@ -1061,7 +1095,7 @@ class Transl:
         # Eat the rest of the source to cause closing the file.
         while True:
             try:
-                t = next(tokenIterator)
+                next(tokenIterator)
             except StopIteration:
                 break
 
@@ -1092,6 +1126,7 @@ class Transl:
         # Check whether adapter must be used or suggest the newest one.
         # Change the status and set the note accordingly.
         if self.baseClassId != 'Translator':
+            justUpdateNeesedMessage = True
             if not self.missingMethods:
                 self.note = 'Change the base class to Translator.'
                 self.status = ''
@@ -1106,8 +1141,13 @@ class Transl:
                     if uniProto in adaptDic:
                         version, cls = adaptDic[uniProto]
                         if version < adaptMinVersion:
+                            justUpdateNeesedMessage = False
                             adaptMinVersion = version
                             adaptMinClass = cls
+
+                if justUpdateNeesedMessage:
+                    self.note = 'Change the base class to Translator.'
+                    self.status = ''
 
                 # Test against the current status -- preserve the self.status.
                 # Possibly, the translator implements enough methods to
@@ -1117,7 +1157,7 @@ class Transl:
                 # If the version of the used adapter is smaller than
                 # the required, set the note and update the status as if
                 # the newer adapter was used.
-                if adaptMinVersion > status:
+                if not justUpdateNeesedMessage and adaptMinVersion > status:
                     self.note = 'Change the base class to %s.' % adaptMinClass
                     self.status = adaptMinVersion
                     self.adaptMinClass = adaptMinClass
@@ -1231,15 +1271,24 @@ class TrManager:
         doxy_default = os.path.join(self.script_path, '..')
         self.doxy_path = os.path.abspath(os.getenv('DOXYGEN', doxy_default))
 
+        self.internal = False
+        if sys.argv[1] == '--doc':
+            self.internal = False
+        elif sys.argv[1] == '--doc_internal':
+            self.internal = True
+
         # Build the path names based on the Doxygen's root knowledge.
-        self.doc_path = os.path.join(self.doxy_path, 'doc')
+        if self.internal:
+            self.doc_path = os.path.join(self.doxy_path, 'doc_internal')
+        else:
+            self.doc_path = os.path.join(self.doxy_path, 'doc')
         self.src_path = os.path.join(self.doxy_path, 'src')
         #  Normally the original sources aren't in the current directory
         # (as we are in the build directory) so we have to specify the
         # original source /documentation / ... directory.
-        self.org_src_path = os.path.join(sys.argv[1], 'src')
-        self.org_doc_path = os.path.join(sys.argv[1], 'doc')
-        self.org_doxy_path = sys.argv[1]
+        self.org_src_path = os.path.join(sys.argv[2], 'src')
+        self.org_doc_path = os.path.join(sys.argv[2], 'doc')
+        self.org_doxy_path = sys.argv[2]
 
         # Create the empty dictionary for Transl object identified by the
         # class identifier of the translator.
@@ -1265,10 +1314,14 @@ class TrManager:
         # Set the names of the translator report text file, of the template
         # for generating "Internationalization" document, for the generated
         # file itself, and for the maintainers list.
-        self.translatorReportFileName = 'translator_report.txt'
+
+        if self.internal:
+            self.translatorReportFileName = 'translator_report.md'
+        else:
+            self.translatorReportFileName = 'translator_report.txt'
         self.maintainersFileName = 'maintainers.txt'
         self.languageTplFileName = 'language.tpl'
-        self.languageDocFileName = 'language.doc'
+        self.languageDocFileName = 'language.dox'
 
         # The information about the maintainers will be stored
         # in the dictionary with the following name.
@@ -1359,7 +1412,8 @@ class TrManager:
         # of the list.
         langReadableLst = []
         for name, obj in self.langLst:
-            if obj.status == 'En': continue
+            if obj.status == 'En':
+                continue
 
             # Append the 'En' to the classId to possibly obtain the classId
             # of the English-based object. If the object exists, modify the
@@ -1449,7 +1503,7 @@ class TrManager:
         # Remove the items for identifiers that were found in the file.
         while lst_in:
             item = lst_in.pop(0)
-            rexItem = re.compile('.*' + item + ' *\(')
+            rexItem = re.compile(r'.*' + item + r' *\(')
             if rexItem.match(cont):
                 del dic[item]
 
@@ -1525,7 +1579,11 @@ class TrManager:
         f = xopen(output, 'w')
 
         # Output the information about the version.
-        f.write('(' + self.doxVersion + ')\n\n')
+        if self.internal:
+            f.write('@page pg_trans Translator report\n\n')
+            f.write('@verbatim\n\n')
+        else:
+            f.write('(' + self.doxVersion + ')\n\n')
 
         # Output the information about the number of the supported languages
         # and the list of the languages.
@@ -1606,7 +1664,8 @@ class TrManager:
                 f.write('  %-6s' % obj.readableStatus)
                 numimpl = len(obj.missingMethods)
                 pluralS = ''
-                if numimpl > 1: pluralS = 's'
+                if numimpl > 1:
+                    pluralS = 's'
                 percent = 100 * numimpl / numRequired
                 f.write('\t%2d method%s to implement (%d %%)' % (
                         numimpl, pluralS, percent))
@@ -1634,7 +1693,8 @@ class TrManager:
                 lst.sort()
                 plural = len(lst) > 1
                 note = 'Note: The adapter class'
-                if plural: note += 'es'
+                if plural:
+                    note += 'es'
                 note += ' ' + ', '.join(lst)
                 if not plural:
                     note += ' is'
@@ -1692,6 +1752,9 @@ class TrManager:
             assert(obj.classId != 'Translator')
             obj.report(f)
 
+        if self.internal:
+            f.write('\n\n@endverbatim\n')
+
         # Close the report file and the auxiliary file with e-mails.
         f.close()
         fmail.close()
@@ -1715,7 +1778,6 @@ class TrManager:
         inside = False  # inside the record for the language
         lineReady = True
         classId = None
-        maintainersLst = None
         self.__maintainersDic = {}
         while lineReady:
             line = f.readline()            # next line
@@ -1725,14 +1787,13 @@ class TrManager:
             if line != '' and line[0] == '%':    # skip the comment line
                 continue
 
-            if not inside:                 # if outside of the record
+            if not inside:                # if outside of the record
                 if line != '':            # should be language identifier
                     classId = line
-                    maintainersLst = []
                     inside = True
                 # Otherwise skip empty line that do not act as separator.
 
-            else:                          # if inside the record
+            else:                         # if inside the record
                 if line == '':            # separator found
                     inside = False
                 else:
@@ -1751,7 +1812,7 @@ class TrManager:
 
 
     def generateLanguageDoc(self):
-        """Checks the modtime of files and generates language.doc."""
+        """Checks the modtime of files and generates language.dox."""
         self.__loadMaintainers()
 
         # Check the last modification time of the VERSION file.
@@ -1809,28 +1870,23 @@ class TrManager:
 
         # Define templates for HTML table parts of the documentation.
         htmlTableTpl = '''
-            \\htmlonly
-            </p>
-            <table align="center" cellspacing="0" cellpadding="0" border="0">
-            <tr bgcolor="#000000">
-            <td>
-              <table cellspacing="1" cellpadding="2" border="0">
-              <tr bgcolor="#4040c0">
-              <td ><b><font size="+1" color="#ffffff"> Language </font></b></td>
-              <td ><b><font size="+1" color="#ffffff"> Maintainer </font></b></td>
-              <td ><b><font size="+1" color="#ffffff"> Contact address </font>
-                      <font size="-2" color="#ffffff">(replace the at and dot)</font></b></td>
-              <td ><b><font size="+1" color="#ffffff"> Status </font></b></td>
+            \\latexonly
+            \\footnotesize
+            \\endlatexonly
+            <table align="center" class=doxtable cellspacing="1" cellpadding="2">
+            <tr>
+              <th >Language</th>
+              <th >Maintainer</th>
+              <th >Contact address (replace the at and dot)</th>
+              <th >Status</td>
               </tr>
               <!-- table content begin -->
             %s
               <!-- table content end -->
-              </table>
-            </td>
-            </tr>
             </table>
-            <p>
-            \\endhtmlonly
+            \\latexonly
+            \\normalsize
+            \\endlatexonly
             '''
         htmlTableTpl = textwrap.dedent(htmlTableTpl)
         htmlTrTpl = '\n  <tr bgcolor="#ffffff">%s\n  </tr>'
@@ -1902,7 +1958,7 @@ class TrManager:
 
             # The last element contains the readable form of the status.
             bgcolor = self.getBgcolorByReadableStatus(obj.readableStatus)
-            lst.append(htmlTdStatusColorTpl % (bgcolor, obj.readableStatus))
+            lst.append(htmlTdStatusColorTpl % (bgcolor, obj.readableStatus.replace(".","\\.")))
 
             # Join the table data to one table row.
             trlst.append(htmlTrTpl % (''.join(lst)))
@@ -1910,77 +1966,8 @@ class TrManager:
         # Join the table rows and insert into the template.
         htmlTable = htmlTableTpl % (''.join(trlst))
 
-        # Define templates for LaTeX table parts of the documentation.
-        latexTableTpl = r'''
-            \latexonly
-            \footnotesize
-            \begin{longtable}{|l|l|l|l|}
-              \hline
-              {\bf Language} & {\bf Maintainer} & {\bf Contact address} & {\bf Status} \\
-              \hline
-            %s
-              \hline
-            \end{longtable}
-            \normalsize
-            \endlatexonly
-            '''
-        latexTableTpl = textwrap.dedent(latexTableTpl)
-        latexLineTpl = '\n' + r'  %s & %s & {\tt\tiny %s} & %s \\'
-
-        # Loop through transl objects in the order of sorted readable names
-        # and add generate the content of the LaTeX table.
-        trlst = []
-        for name, obj in self.langLst:
-            # For LaTeX, more maintainers for the same language are
-            # placed on separate rows in the table.  The line separator
-            # in the table is placed explicitly above the first
-            # maintainer. Prepare the arguments for the LaTeX row template.
-            maintainers = []
-            if obj.classId in self.__maintainersDic:
-                maintainers = self.__maintainersDic[obj.classId]
-
-            lang = obj.langReadable
-            maintainer = None  # init
-            email = None       # init
-            if obj.status == 'En':
-                # Check whether there is the coupled non-English.
-                classId = obj.classId[:-2]
-                if classId in self.__translDic:
-                    langNE = self.__translDic[classId].langReadable
-                    maintainer = 'see the %s language' % langNE
-                    email = '~'
-
-            if not maintainer and (obj.classId in self.__maintainersDic):
-                lm = [ m[0] for m in self.__maintainersDic[obj.classId] ]
-                maintainer = maintainers[0][0]
-                email = maintainers[0][1]
-
-            status = obj.readableStatus
-
-            # Use the template to produce the line of the table and insert
-            # the hline plus the constructed line into the table content.
-            # The underscore character must be escaped.
-            trlst.append('\n  \\hline')
-            s = latexLineTpl % (lang, maintainer, email, status)
-            s = s.replace('_', '\\_')
-            trlst.append(s)
-
-            # List the other maintainers for the language. Do not set
-            # lang and status for them.
-            lang = '~'
-            status = '~'
-            for m in maintainers[1:]:
-                maintainer = m[0]
-                email = m[1]
-                s = latexLineTpl % (lang, maintainer, email, status)
-                s = s.replace('_', '\\_')
-                trlst.append(s)
-
-        # Join the table lines and insert into the template.
-        latexTable = latexTableTpl % (''.join(trlst))
-
         # Put the HTML and LaTeX parts together and define the dic item.
-        tplDic['informationTable'] = htmlTable + '\n' + latexTable
+        tplDic['informationTable'] = htmlTable
 
         # Insert the symbols into the document template and write it down.
         f = xopen(fDocName, 'w')

@@ -19,7 +19,7 @@
 class QCString;
 class TextStream;
 
-enum MscOutputFormat { MSC_BITMAP , MSC_EPS, MSC_SVG };
+enum class MscOutputFormat { BITMAP, EPS, SVG };
 
 void writeMscGraphFromFile(const QCString &inFile,const QCString &outDir,
                            const QCString &outFile,MscOutputFormat format,

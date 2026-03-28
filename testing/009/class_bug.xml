@@ -12,8 +12,16 @@
         <briefdescription>
         </briefdescription>
         <detaileddescription>
-          <para>Description <xrefsect id="bug_1_bug000002"><xreftitle>Bug</xreftitle><xrefdescription><para>Function bug<itemizedlist><listitem><para>list item 1 in bug</para></listitem><listitem><para>list item 2 in bug</para></listitem></itemizedlist>
-</para></xrefdescription></xrefsect></para>
+          <para>Description</para>
+          <para>
+            <xrefsect id="bug_1_bug000002">
+              <xreftitle>Bug</xreftitle>
+              <xrefdescription>
+                <para>Function bug<itemizedlist><listitem><para>list item 1 in bug</para></listitem><listitem><para>list item 2 in bug</para></listitem></itemizedlist>
+</para>
+              </xrefdescription>
+            </xrefsect>
+          </para>
           <para>More text. </para>
         </detaileddescription>
         <inbodydescription>

@@ -19,11 +19,13 @@ optional parameters:
                         for the given test
   --doxygen [DOXYGEN]   path/name of the doxygen executable
   --xmllint [XMLLINT]   path/name of the xmllint executable
-  --id IDS [IDS ...]    run test with number n only (the option can be
-                        specified to run test with number n only (the option
-                        can be specified multiple times
+  --id IDS [IDS ...]    run test number n (the option can be specified
+                        multiple times)
   --start_id START_ID   run tests starting with number n
   --end_id END_ID       run tests ending with number n
+  --exclude_id EXCLUDE_IDS [EXCLUDE_IDS ...]
+                        run without test number n (the option can be specified
+                        multiple times)
   --all                 can be used in combination with -updateref to update
                         the reference files for all tests.
   --inputdir [INPUTDIR]
@@ -38,13 +40,14 @@ optional parameters:
   --xhtml               create xhtml output and check with xmllint
   --xmlxsd              create xml output and check with xmllint against xsd
   --pdf                 create LaTeX output and create pdf from it
+  --man                 create man output
   --subdirs             use the configuration parameter CREATE_SUBDIRS=YES
   --clang               use CLANG_ASSISTED_PARSING, works only when doxygen
                         has been compiled with "use_libclang"
   --keep                keep result directories
   --cfg CFGS [CFGS ...]
                         run test with extra doxygen configuration settings
-                        (the option may be specified multiple times
+                        (the option may be specified multiple times)
 In case neither --xml, --xmlxsd, --pdf, --rtf, --docbook or --xhtml is used the
 default is set to --xml.
 
@@ -52,6 +55,8 @@ The runtests.py has the following dependencies on 3rd party tools:
 - python  to run the script
 - xmllint to normalize the XML output
 - diff    to show the differences in case a test fails
+- LaTeX   for test 12 and when testing with --pdf flag (with adequate packages)
+- perl    for test 12
 
 Each test file can have a number of special comment lines that are extracted by
 the runtests.py script and take the form:

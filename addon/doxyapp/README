@@ -1,7 +1,7 @@
-This directory contains an example of how to use doxygen as 
-an "source parsing engine" in an application. It shows how to configure doxygen 
-from the application and shows how to run doxygen without generating output, 
-and then uses the information about the symbols found in the source code.
+This directory contains an example of how to use doxygen as
+an "source parsing engine" in an application. It shows how to configure doxygen
+from the application and shows how to run doxygen without generating output.
+Practically, it allows you to extract the symbols found in the source code.
 
 Note that if you use this approach your application should be licensed under the GPL.
 

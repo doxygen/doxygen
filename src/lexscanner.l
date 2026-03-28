@@ -52,14 +52,12 @@ typedef yyguts_t *yyscan_t;
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
 
-#define USE_STATE2STRING 0
-
-#define repeatChar(chr, cnt) std::string(cnt, chr).c_str()
+#define repeatChar(chr, cnt) QCString().fill(chr,cnt)
 
 struct lexscannerYY_state
 {
   COutlineParser   cOutlineParser;
-  const char *     inputString = 0;
+  const char *     inputString = nullptr;
   int              inputPosition = 0;
 
   int              lastContext = 0;
@@ -73,7 +71,7 @@ struct lexscannerYY_state
   bool             insideCode = FALSE;
   QCString         delimiter;
   QCString         docBlockName;
-  uint32_t         fencedSize = 0;
+  size_t           fencedSize = 0;
   bool             nestedComment = false;
 
   QCString         prefix = "yy";
@@ -84,19 +82,17 @@ struct lexscannerYY_state
   int              roundCount = 0;
 
   QCString         fileName;
-  ClangTUParser   *clangParser = 0;
+  ClangTUParser   *clangParser = nullptr;
 
   std::shared_ptr<Entry> current;
   std::shared_ptr<Entry> current_root;
   SrcLangExt language;
 };
 
-#if USE_STATE2STRING
-static const char *stateToString(int state);
-#endif
+[[maybe_unused]] static const char *stateToString(int state);
 //-----------------------------------------------------------------------------
 
-// forward declarations for statefull functions
+// forward declarations for stateful functions
 static void handleCCode(yyscan_t yyscanner);
 static int yyread(yyscan_t yyscanner,char *buf,int max_size);
 
@@ -525,9 +521,9 @@ NONLopt [^\n]*
                             BEGIN( PreLineCtrl );
                           }
 <SkipCurly>{B}*{RAWBEGIN}  {
-                            QCString raw=QCString(yytext).stripWhiteSpace();
-                            yyextra->delimiter = raw.mid(2);
-                            yyextra->delimiter=yyextra->delimiter.left(yyextra->delimiter.length()-1);
+                            char *p=yytext;
+                            while (*p && qisspace(*p)) p++;
+                            yyextra->delimiter = extractBeginRawStringDelimiter(p);
                             yyextra->lastRawStringContext = YY_START;
                             yyextra->cCodeBuffer += yytext;
                             BEGIN(RawString);
@@ -655,9 +651,7 @@ NONLopt [^\n]*
                           }
 <RawString>{RAWEND}       {
                             yyextra->cCodeBuffer += yytext;
-                            QCString delimiter = yytext+1;
-                            delimiter=delimiter.left(delimiter.length()-1);
-                            if (delimiter==yyextra->delimiter)
+                            if (extractEndRawStringDelimiter(yytext)==yyextra->delimiter)
                             {
                               BEGIN(yyextra->lastRawStringContext);
                             }
@@ -799,14 +793,14 @@ NONLopt [^\n]*
                               BEGIN(DocBlock);
                             }
                           }
-<DocCopyBlock>[\\@]("f$"|"f]"|"f}"|"f)") {
+<DocCopyBlock>{CMD}("f$"|"f]"|"f}"|"f)") {
                             yyextra->cCodeBuffer += yytext;
                             if (yyextra->docBlockName==&yytext[1])
                             {
                               BEGIN(DocBlock);
                             }
                           }
-<DocCopyBlock>[\\@]("endverbatim"|"endiliteral"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endmanonly"|"endrtfonly"|"enddot"|"endmsc"|"enduml"|"endcode")/[^a-z_A-Z0-9] { // end of verbatim block
+<DocCopyBlock>{CMD}("endverbatim"|"endiliteral"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endmanonly"|"endrtfonly"|"enddot"|"endmsc"|"enduml"|"endcode")/[^a-z_A-Z0-9] { // end of verbatim block
                             yyextra->cCodeBuffer += yytext;
                             if (yyextra->docBlockName==&yytext[4])
                             {
@@ -864,7 +858,7 @@ NONLopt [^\n]*
 <DocCopyBlock>^({B}*"*"+)?{B}{0,3}"~~~"[~]* {
                             yyextra->cCodeBuffer += yytext;
                             QCString pat = substitute(yytext,"*"," ");
-                            if (yyextra->fencedSize==pat.stripWhiteSpace().length())
+                            if (yyextra->docBlockName == "~~~" && yyextra->fencedSize==pat.stripWhiteSpace().length())
                             {
                               BEGIN(DocBlock);
                             }
@@ -872,7 +866,7 @@ NONLopt [^\n]*
 <DocCopyBlock>^({B}*"*"+)?{B}{0,3}"```"[`]* {
                             yyextra->cCodeBuffer += yytext;
                             QCString pat = substitute(yytext,"*"," ");
-                            if (yyextra->fencedSize==pat.stripWhiteSpace().length())
+                            if (yyextra->docBlockName == "```" && yyextra->fencedSize==pat.stripWhiteSpace().length())
                             {
                               BEGIN(DocBlock);
                             }
@@ -962,15 +956,15 @@ static void parseMain(yyscan_t yyscanner,
   yyextra->clangParser = clangParser;
   yyextra->language    = getLanguageFromFileName(yyextra->fileName);
   rt->lang = yyextra->language;
-  msg("Parsing file %s...\n",qPrint(yyextra->fileName));
+  msg("Parsing file {}...\n",yyextra->fileName);
 
   yyextra->current_root  = rt;
   yyextra->current = std::make_shared<Entry>();
-  int sec=guessSection(yyextra->fileName);
-  if (sec)
+  EntryType sec=guessSection(yyextra->fileName);
+  if (!sec.isEmpty())
   {
     yyextra->current->name    = yyextra->fileName;
-    yyextra->current->section = sec;
+    yyextra->current->section = EntryType(sec);
     yyextra->current_root->moveToSubEntryAndRefresh(yyextra->current);
   }
   yyextra->current->reset();
@@ -993,7 +987,7 @@ static void handleCCode(yyscan_t yyscanner)
                                      yyextra->cCodeBuffer.data(),
                                      yyextra->current_root,
                                      yyextra->clangParser);
-  yyextra->cCodeBuffer.resize(0);
+  yyextra->cCodeBuffer.clear();
   return;
 }
 //----------------------------------------------------------------------------
@@ -1033,6 +1027,4 @@ void LexOutlineParser::parseInput(const QCString &fileName,
 
 //----------------------------------------------------------------------------
 
-#if USE_STATE2STRING
 #include "lexscanner.l.h"
-#endif

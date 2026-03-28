@@ -21,6 +21,7 @@
 #include <vector>
 #include <string>
 #include <utility>
+#include <cassert>
 
 //! Class implementing a symbol map that maps symbol names to objects.
 //! Symbol names do not have to be unique.
@@ -46,37 +47,34 @@ class SymbolMap
       }
       else
       {
-        m_map.emplace(std::make_pair(name.str(),VectorPtr({def})));
+        m_map.emplace(name.str(),VectorPtr({def}));
       }
     }
 
     //! Remove a symbol \a def from the map that was stored under key \a name
     void remove(const QCString &name,Ptr def)
     {
-      VectorPtr &v = find(name);
-      auto it = std::find(v.begin(),v.end(),def);
-      if (it!=v.end())
+      auto it1 = m_map.find(name.str());
+      if (it1!=m_map.end())
       {
-        v.erase(it);
-        if (v.empty())
+        VectorPtr &v = it1->second;
+        auto it2 = std::find(v.begin(),v.end(),def);
+        if (it2!=v.end())
         {
-          m_map.erase(name.str());
+          v.erase(it2);
+          if (v.empty())
+          {
+            m_map.erase(it1);
+          }
         }
       }
     }
 
     //! Find the list of symbols stored under key \a name
     //! Returns a pair of iterators pointing to the start and end of the range of matching symbols
-    const VectorPtr &find(const QCString &name) const
+    const VectorPtr &find(const QCString &name)
     {
-      auto it = m_map.find(name.str());
-      return it==m_map.end() ? m_noMatch : it->second;
-    }
-
-    //! Find the list of symbols stored under key \a name
-    //! Returns a pair of iterators pointing to the start and end of the range of matching symbols
-    VectorPtr &find(const QCString &name)
-    {
+      assert(m_noMatch.empty());
       auto it = m_map.find(name.str());
       return it==m_map.end() ? m_noMatch : it->second;
     }

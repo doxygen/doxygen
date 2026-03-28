@@ -15,7 +15,11 @@
 
 #ifndef VERSION_H
 #define VERSION_H
-const char *getDoxygenVersion(void);
-const char *getGitVersion(void);
-const char *getFullVersion(void);
+
+#include <string>
+
+std::string getDoxygenVersion();
+std::string getGitVersion();
+std::string getFullVersion();
+
 #endif

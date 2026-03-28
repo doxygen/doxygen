@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="class_test_user_authentication" kind="class" language="C++" prot="public">
+    <compoundname>TestUserAuthentication</compoundname>
+    <briefdescription>
+      <para>Test suite for user authentication functionality. </para>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <verifies>
+      <requirement refid="requirement__r_e_q-001">Validates all authentication requirements</requirement>
+    </verifies>
+    <location file="115_requirements.cpp" line="39" column="1" bodyfile="115_requirements.cpp" bodystart="39" bodyend="39"/>
+    <listofallmembers>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

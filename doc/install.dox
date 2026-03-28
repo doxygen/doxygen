@@ -1,0 +1,271 @@
+/******************************************************************************
+ *
+ *
+ *
+ * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
+ * for any purpose. It is provided "as is" without express or implied warranty.
+ * See the GNU General Public License for more details.
+ *
+ * Documents produced by Doxygen are derivative works derived from the
+ * input used in their production; they are not affected by this license.
+ *
+ */
+/*! \page install Installation
+
+\addindex installation
+\tableofcontents{html,latex}
+
+First go to the
+<a href="https://www.doxygen.org/download.html">download</a> page
+to get the latest distribution if you have not downloaded Doxygen already.
+
+\section install_src_unix Compiling from source on UNIX
+
+If you downloaded the source distribution, you need at least the
+following to build the executable:
+<ul>
+<li>The <a href="ftp://prep.ai.mit.edu/pub/gnu/">GNU</a> tools
+    \c flex, \c bison, \c libiconv and <code>GNU make</code>
+    \addindex flex
+    \addindex bison
+    \addindex libiconv
+    \addindex make
+    \addindex python
+<li>You need \c python (version 2.7 or higher, see https://www.python.org).
+<li>In order to generate a \c Makefile for your platform, you need
+    <a href="https://cmake.org/">Cmake</a> version 3.14 or later.
+    \addindex cmake
+</ul>
+
+To take full advantage of Doxygen's features the following additional
+tools should be installed.
+
+<ul>
+<li>Qt Software's GUI toolkit
+    <a href="https://doc.qt.io/">Qt</a>
+    \addindex Qt
+    version 5.14 or higher (including Qt 6).
+    This is needed to build the GUI front-end Doxywizard.
+<li>A \LaTeX distribution: for instance
+    <a href="https://tug.org/interest.html#free">TeX Live</a>
+    This is needed for generating \LaTeX, Postscript, and PDF output.
+<li><a href="https://www.graphviz.org/">
+    the Graph visualization toolkit version 2.38 or higher</a>
+    Needed for the include dependency graphs,
+    the graphical inheritance graphs, and the collaboration graphs.
+    If you compile graphviz yourself, make sure you do include
+    freetype support (which requires the freetype library and header files),
+    otherwise the graphs will not render proper text labels.
+<li>For formulas in the HTML output (when MathJax is not used)
+    or in case you do not wish to use `pdflatex`,
+    the ghostscript interpreter is needed. You can find it at
+    <a href="https://www.ghostscript.com/">www.ghostscript.com</a>.
+</ul>
+
+For testing at least these additional dependencies should be available:
+<ul>
+<li>xmllint (libxml2-utils)</li>
+<li>bibtex (texlive-binaries)</li>
+</ul>
+
+Compilation steps:
+
+<ol>
+<li>Unpack the archive, unless you already have done that:
+
+        gunzip doxygen-$VERSION.src.tar.gz    # uncompress the archive
+        tar xf doxygen-$VERSION.src.tar       # unpack it
+
+<li>Create a build directory (for instance inside the source tree)
+
+        cd doxygen-$VERSION
+        mkdir build
+        cd build
+
+<li>Run cmake with the makefile generator
+
+        cmake -G "Unix Makefiles" ..
+
+    <code>cmake</code> tries to determine the platform you use, and will look
+    for the required tools. It will report if something is missing.
+
+    If you have Qt-5.14 or higher installed and want to build the GUI
+    front-end, you should enable it as follows:
+
+        cmake -Dbuild_wizard=YES ..
+
+    For an overview of other configuration options use
+
+        cmake -L ..
+
+<li>Compile the program by running make:
+
+        make
+
+    The program should compile without problems and the binaries
+    (<code>doxygen</code> and optionally <code>doxywizard</code>)
+    should be available in the bin directory within the build directory.
+
+<li>Optional: Generate the user manual.
+
+        cmake -Dbuild_doc=YES ..
+        make docs
+
+    To let Doxygen generate the HTML and PDF documentation.
+
+    The HTML directory within the build directory will now contain the html
+    documentation (just point a HTML browser to the file
+    <code>index.html</code> in the html directory).
+
+<li>Optional: static linking
+
+    If you want to build a statically linked version of Doxygen that embeds libclang
+    you need to first build LLVM and clang from sources using the following options:
+
+        cmake -DLIBCLANG_BUILD_STATIC=ON \
+              -DBUILD_SHARED_LIBS=OFF \
+              -DLLVM_ENABLE_PIC=OFF \
+              -DLLVM_BUILD_LLVM_DYLIB=OFF \
+              -DLLVM_BUILD_LLVM_C_DYLIB=OFF \
+              -DLLVM_ENABLE_TERMINFO=OFF \
+              path_to_llvm_root_source_dir
+
+    and then build Doxygen with these options:
+
+        cmake -DCMAKE_BUILD_TYPE=Release \
+              "-DCMAKE_FIND_LIBRARY_SUFFIXES=.a" \
+              "-ldl;-lz;-lpthread" \
+              -Duse_libclang=YES \
+              path_to_doxygen_root_source_dir
+
+</ol>
+
+\section install_bin_unix    Installing the binaries on UNIX
+
+After the compilation of the source code do a <code>make install</code>
+to install Doxygen. If you downloaded the binary distribution for Linux,
+type:
+
+    make install
+
+Binaries are installed into the directory <code>/usr/local/bin</code>,
+man pages in <code>/usr/local/man/man1</code> and documentation in
+<code>/usr/local/doc/doxygen</code>
+To change this just edit the Makefile.
+
+\note You need the GNU install tool for this to work (it is part of
+the coreutils package). Other install tools may put the binaries in
+the wrong directory!
+
+If you have a RPM or DEB package, then please follow the
+standard installation procedure that is required for these packages.
+
+\section install_src_windows Compiling from source on Windows
+
+From version 1.8.10 onwards, build files need to be generated by cmake.
+cmake can be downloaded from https://cmake.org/download/
+\addindex cmake
+
+At the moment only the community version of Visual Studio 2019 is tested,
+but other version might also work.
+
+Alternatively, you can compile Doxygen
+\ref install_src_unix "the UNIX way" using
+<a href="https://en.wikipedia.org/wiki/Cygwin">Cygwin</a>
+or <a href="https://www.mingw-w64.org/">MinGW</a>.
+
+\addindex flex
+\addindex bison
+The next step is to install modern versions of \c bison and \c flex
+(see https://sourceforge.net/projects/winflexbison/files and select win_flex_bison3-latest.zip.
+After installation and adding them to
+your `path` rename `win_flex.exe` to `flex.exe` and `win_bison.exe` to `bison.exe`)
+\addindex python
+Furthermore you have to install \c python (version 2.7 or higher, see https://www.python.org).
+These packages are needed during the compilation process.
+
+Download Doxygen's source tarball and put it somewhere (e.g. use <code>c:\\tools</code>)
+
+Now start a Visual Studio native command shell (for either x86 or x64) and type
+\verbatim
+cd c:\tools
+tar zxvf doxygen-x.y.z.src.tar.gz
+\endverbatim
+to unpack the sources (you can obtain \c tar from e.g. https://gnuwin32.sourceforge.net/packages.html).
+Alternatively you can use an unpack program, like 7-Zip (see https://www.7-zip.org/)
+or use the built-in unpack feature of modern Windows systems).
+
+Now your environment is setup to generate the required project files for Doxygen.
+
+change directory to the \c doxygen-x.y.z directory, create and change to a build directory
+\verbatim
+mkdir build
+cd build
+cmake -G "Visual Studio 14 2015" ..
+\endverbatim
+This will create a project file that can be opened in Visual Studio.
+
+If you prefer compiling from the command prompt you can use the following instead:
+\verbatim
+mkdir build
+cd build
+cmake -G "NMake Makefiles" ..
+nmake
+\endverbatim
+
+Note that compiling Doxywizard requires Qt 5.14 or newer
+(see https://doc.qt.io/).
+
+Also read the next section for additional tools you may need to install to run
+Doxygen with certain features enabled.
+
+\section install_bin_windows Installing the binaries on Windows
+
+Doxygen comes as a self-installing archive, so installation is extremely simple.
+Just follow the dialogs.
+
+After installation it is recommended to also download and install GraphViz
+(version 2.38 or better is highly recommended). Doxygen can use the \c dot tool
+of the GraphViz package to render nicer diagrams, see the
+\ref cfg_have_dot "HAVE_DOT" option in the configuration file.
+
+If you want to produce compressed HTML files (see \ref
+cfg_generate_htmlhelp "GENERATE_HTMLHELP") in the configuration file, then
+you need the Microsoft HTML help workshop.
+At the beginning of 2021, Microsoft took the original page, with a.o. the download links,
+offline the HTML help workshop was already many years in maintenance mode). 
+You can download the HTML help workshop from the web archives at
+<a href="http://web.archive.org/web/20160201063255/http://download.microsoft.com/download/0/A/9/0A939EF6-E31C-430F-A3DF-DFAE7960D564/htmlhelp.exe">Installation executable</a>.
+
+If you want to produce Qt Compressed Help files (see \ref
+cfg_qhg_location "QHG_LOCATION") in the configuration file, then
+you need qhelpgenerator which is part of Qt.
+You can download Qt from <a href="https://www.qt.io/download">Qt Software Downloads</a>.
+
+In order to generate PDF output or use scientific formulas you will also need to
+install <a href="https://en.wikipedia.org/wiki/LaTeX">LaTeX</a> and
+<a href="https://en.wikipedia.org/wiki/Ghostscript">Ghostscript</a>.
+
+For \LaTeX a number of distributions exists. Popular ones that should work with
+Doxygen are <a href="https://miktex.org/">MikTex</a>
+and <a href="https://www.tug.org/protext/">proTeXt</a>.
+
+Ghostscript can be <a href="https://sourceforge.net/projects/ghostscript/">downloaded</a>
+from Sourceforge.
+
+After installing \LaTeX and Ghostscript you'll need to make sure the tools
+latex.exe, pdflatex.exe, and gswin32c.exe (or gswin64c.exe) are present in the search path of a
+command box. Follow <a href="https://www.computerhope.com/issues/ch000549.htm">these</a>
+instructions if you are unsure and run the commands from a command box to verify it works.
+
+\htmlonly
+Go to the <a href="starting.html">next</a> section or return to the
+ <a href="index.html">index</a>.
+\endhtmlonly
+
+*/
+

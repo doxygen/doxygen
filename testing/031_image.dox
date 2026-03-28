@@ -29,18 +29,18 @@ This image is inline
 within the text.
 
 Markdown style linked SVG image:\n
-[![MIT license](https://raster.shields.io/badge/license-MIT-brightgreen.svg)](https://opensource.org/licenses/MIT)
+[![MIT license](https://raster.shields.io/badge/license-MIT-brightgreen.svg)](https://opensource.org/license/mit/)
 
 Markdown style linked PNG image:\n
-[![MIT license](https://raster.shields.io/badge/license-MIT-brightgreen.png)](https://opensource.org/licenses/MIT)
+[![MIT license](https://raster.shields.io/badge/license-MIT-brightgreen.png)](https://opensource.org/license/mit/)
 
 HTML style linked SVG image:\n
-<a href="https://opensource.org/licenses/MIT">
+<a href="https://opensource.org/license/mit/">
 <img src="https://raster.shields.io/badge/license-MIT-brightgreen.svg" alt="MIT license">
 </a>
 
 HTML style linked PNG image:\n
-<a href="https://opensource.org/licenses/MIT">
+<a href="https://opensource.org/license/mit/">
 <img src="https://raster.shields.io/badge/license-MIT-brightgreen.png" alt="MIT license">
 </a>
 

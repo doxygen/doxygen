@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygenindex xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="index.xsd" version="" xml:lang="en-US">
+  <compound refid="class_container" kind="class">
+    <name>Container</name>
+  </compound>
+  <compound refid="class_container_3_01_elem5_01_4" kind="class">
+    <name>Container&lt; Elem5 &gt;</name>
+    <member refid="class_container_3_01_elem5_01_4_1af27fc554d1ab2cff4b9bbbe01cee4b37" kind="function">
+      <name>specialization</name>
+    </member>
+  </compound>
+  <compound refid="class_derived" kind="class">
+    <name>Derived</name>
+    <member refid="class_derived_1a8816f0c75dc43d50600277176729755d" kind="typedef">
+      <name>Type</name>
+    </member>
+    <member refid="class_derived_1a515b99499b83933f1748b6ed09ce025a" kind="variable">
+      <name>var</name>
+    </member>
+    <member refid="class_derived_1a69ed13e94d3f2ff1c61b41286dc514fe" kind="function">
+      <name>func</name>
+    </member>
+  </compound>
+  <compound refid="class_elem1" kind="class">
+    <name>Elem1</name>
+  </compound>
+  <compound refid="class_elem2" kind="class">
+    <name>Elem2</name>
+  </compound>
+  <compound refid="class_elem3" kind="class">
+    <name>Elem3</name>
+  </compound>
+  <compound refid="class_elem4" kind="class">
+    <name>Elem4</name>
+  </compound>
+  <compound refid="class_elem5" kind="class">
+    <name>Elem5</name>
+  </compound>
+  <compound refid="struct_container_3_01_elem5_01_4_1_1_nested" kind="struct">
+    <name>Container&lt; Elem5 &gt;::Nested</name>
+  </compound>
+  <compound refid="106__specialization_8cpp" kind="file">
+    <name>106_specialization.cpp</name>
+  </compound>
+  <compound refid="indexpage" kind="page">
+    <name>index</name>
+  </compound>
+</doxygenindex>

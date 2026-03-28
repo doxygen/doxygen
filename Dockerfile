@@ -1,8 +1,8 @@
-FROM ubuntu:focal AS builder
+FROM ubuntu:jammy AS builder
 
 RUN apt-get update && apt-get install -y \
     g++ \
-    python \
+    python3 \
     cmake \
     flex \
     bison \
@@ -18,9 +18,10 @@ RUN mkdir build \
     && make install
 
 
-FROM ubuntu:focal
+FROM ubuntu:jammy
 RUN apt-get update && apt-get install --no-install-recommends -y \
     graphviz \
     && rm -rf /var/lib/apt/lists/*
 COPY --from=builder /doxygen/build/bin/doxygen /usr/local/bin/
+WORKDIR /doxygen
 ENTRYPOINT ["doxygen"]

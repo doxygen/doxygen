@@ -19,13 +19,16 @@
 #include <string>
 #include <memory>
 
+#include "construct.h"
+
 /** @brief constant expression parser used for the C preprocessor */
 class ConstExpressionParser
 {
   public:
     ConstExpressionParser();
    ~ConstExpressionParser();
-    bool parse(const char *fileName,int line,const std::string &expression);
+    NON_COPYABLE(ConstExpressionParser)
+    bool parse(const char *fileName,int line,const std::string &expression,const std::string &orgExpression);
   private:
     struct Private;
     std::unique_ptr<Private> p;

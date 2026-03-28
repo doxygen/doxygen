@@ -1,0 +1,381 @@
+/******************************************************************************
+ *
+ *
+ *
+ * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
+ * for any purpose. It is provided "as is" without express or implied warranty.
+ * See the GNU General Public License for more details.
+ *
+ * Documents produced by Doxygen are derivative works derived from the
+ * input used in their production; they are not affected by this license.
+ *
+ */
+/*! \page htmlcmds HTML Commands
+
+\section htmltagcmds  HTML tag commands
+
+Here is a list of all HTML commands that may be used inside the
+documentation. Note that although these HTML tags are translated to the
+proper commands for output formats other than HTML, all attributes
+of a HTML tag are passed on to the HTML output only
+(the \c HREF and \c NAME attributes for the \c A tag are the only exception).
+
+<table class="markdownTable">
+<tr class="markdownTableHead"><th class="markdownTableHeadLeft">HTML Command</th><th class="markdownTableHeadLeft">Description</th></tr>
+<tr><td valign="top">\startalign\anchor htmltag_A_HREF \addindex "\<A HREF=\"...\"\>"\endalign<tt>\<A HREF="..."\></tt></td><td valign="top">Starts a hyperlink
+                       (if supported by the output format).</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_A_ID \addindex "\<A ID=\"...\"\>"\endalign<tt>\<A ID="..."\></tt></td><td valign="top">Starts a named anchor
+                       (if supported by the output format).</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_A_NAME \addindex "\<A NAME=\"...\"\>"\endalign<tt>\<A NAME="..."\></tt></td><td valign="top">Starts a named anchor
+                       (if supported by the output format).</td></tr>
+<tr><td valign="top">\endhtmltag{A}</td><td valign="top">Ends a link or anchor</td></tr>
+<tr><td valign="top">\startendhtmltag{B}</td><td valign="top">Starts and ends a piece of text displayed in a bold font.</td></tr>
+<tr><td valign="top">\startendhtmltag{BLOCKQUOTE}</td><td valign="top">Starts and ends a quotation block.</td></tr>
+<tr><td valign="top">\starthtmltag{BR}</td><td valign="top">Forces a line break.</td></tr>
+<tr><td valign="top">\startendhtmltag{CENTER}</td><td valign="top">Starts and ends a section of centered text.</td></tr>
+<tr><td valign="top">\startendhtmltag{CAPTION}</td><td valign="top">Starts and ends a caption. Use within a table only.</td></tr>
+<tr><td valign="top">\startendhtmltag{CITE}</td><td valign="top">Starts and ends a section of text displayed in a font specific for citations.</td></tr>
+<tr><td valign="top">\startendhtmltag{CODE}</td><td valign="top">Starts and ends a piece of text displayed in a typewriter font.
+                       Note that only for C# code, this command is equivalent to
+                       \ref cmdcode "\\code" (see \ref xmltag_code "\<code\>").</td></tr>
+<tr><td valign="top">\startendhtmltag{DD}</td><td valign="top">Starts and ends an item description.</td></tr>
+<tr><td valign="top">\startendhtmltag{DEL}</td><td valign="top">Starts and ends a section of deleted text, typically shown as strike through text.</td></tr>
+<tr><td valign="top">\startendhtmltag{DETAILS}</td><td valign="top">Starts and ends a section of detailed text that the user can open and close (in HTML output))</td></tr>
+<tr><td valign="top">\startendhtmltag{DFN}</td><td valign="top">Starts and ends a piece of text displayed in a typewriter font.</td></tr>
+<tr><td valign="top">\startendhtmltag{DIV}</td><td valign="top">Starts and ends a section with a specific style (HTML only)</td></tr>
+<tr><td valign="top">\startendhtmltag{DL}</td><td valign="top">Starts and ends a description list.</td></tr>
+<tr><td valign="top">\startendhtmltag{DT}</td><td valign="top">Starts and ends an item title.</td></tr>
+<tr><td valign="top">\startendhtmltag{EM}</td><td valign="top">Starts and ends a piece of text displayed in an italic font.</td></tr>
+<tr><td valign="top">\starthtmltag{HR}</td><td valign="top">Writes a horizontal ruler.</td></tr>
+<tr><td valign="top">\startendhtmltag{H1}</td><td valign="top">Starts and ends an unnumbered section.</td></tr>
+<tr><td valign="top">\startendhtmltag{H2}</td><td valign="top">Starts and ends an unnumbered subsection.</td></tr>
+<tr><td valign="top">\startendhtmltag{H3}</td><td valign="top">Starts and ends an unnumbered subsubsection.</td></tr>
+<tr><td valign="top">\startendhtmltag{H4}</td><td valign="top">Starts and ends an unnumbered subsubsection.</td></tr>
+<tr><td valign="top">\startendhtmltag{H5}</td><td valign="top">Starts and ends an unnumbered subsubsection.</td></tr>
+<tr><td valign="top">\startendhtmltag{H6}</td><td valign="top">Starts and ends an unnumbered subsubsection.</td></tr>
+<tr><td valign="top">\startendhtmltag{I}</td><td valign="top">Starts and ends a piece of text displayed in an italic font.</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_IMG \addindex "\<IMG SRC=\"...\"\>"\endalign<tt>\<IMG SRC="..." ...\></tt></td><td valign="top">This command is written with its attributes to the HTML output only. The SRC attribute is mandatory.</td></tr>
+<tr><td valign="top">\startendhtmltag{INS}</td><td valign="top">Starts and ends a section of inserted text, typically shown as underlined text.</td></tr>
+<tr><td valign="top">\startendhtmltag{KBD}</td><td valign="top">Starts and ends a piece of text displayed in a typewriter font.</td></tr>
+<tr><td valign="top">\startendhtmltag{LI}</td><td valign="top">Starts and ends a new list item.</td></tr>
+<tr><td valign="top">\startendhtmltag{OL}</td><td valign="top">Starts and ends a numbered item list.</td></tr>
+<tr><td valign="top">\startendhtmltag{P}</td><td valign="top">Starts and ends a new paragraph.</td></tr>
+<tr><td valign="top">\startendhtmltag{PRE}</td><td valign="top">Starts and ends a preformatted fragment.</td></tr>
+<tr><td valign="top">\startendhtmltag{S}</td><td valign="top">Starts and ends a section of strike through text.</td></tr>
+<tr><td valign="top">\startendhtmltag{SMALL}</td><td valign="top">Starts and ends a section of text displayed in a smaller font.</td></tr>
+<tr><td valign="top">\startendhtmltag{SPAN}</td><td valign="top">Starts and ends an inline text fragment with a specific style (HTML only)</td></tr>
+<tr><td valign="top">\startendhtmltag{STRIKE}</td><td valign="top">Starts and ends a section of strike through text.</td></tr>
+<tr><td valign="top">\startendhtmltag{STRONG}</td><td valign="top">Starts and ends a section of bold text.</td></tr>
+<tr><td valign="top">\startendhtmltag{SUB}</td><td valign="top">Starts and ends a piece of text displayed in subscript.</td></tr>
+<tr><td valign="top">\startendhtmltag{SUP}</td><td valign="top">Starts and ends a piece of text displayed in superscript.</td></tr>
+<tr><td valign="top">\startendhtmltag{TABLE}</td><td valign="top">Starts and ends a table.</td></tr>
+<tr><td valign="top">\startendhtmltag{TBODY}</td><td valign="top">Starts and ends a new table body, currently ignored by Doxygen.</td></tr>
+<tr><td valign="top">\startendhtmltag{TD}</td><td valign="top">Starts and ends a new table data element.</td></tr>
+<tr><td valign="top">\startendhtmltag{TH}</td><td valign="top">Starts and ends a new table header.</td></tr>
+<tr><td valign="top">\startendhtmltag{THEAD}</td><td valign="top">Starts and ends a new table header, currently ignored by Doxygen.</td></tr>
+<tr><td valign="top">\startendhtmltag{TFOOT}</td><td valign="top">Starts and ends a new table footer, currently ignored by Doxygen.</td></tr>
+<tr><td valign="top">\startendhtmltag{TR}</td><td valign="top">Starts and ends a new table row.</td></tr>
+<tr><td valign="top">\startendhtmltag{TT}</td><td valign="top">Starts and ends a piece of text displayed in a typewriter font.</td></tr>
+<tr><td valign="top">\startendhtmltag{U}</td><td valign="top">Starts and ends a section of underlined text.</td></tr>
+<tr><td valign="top">\startendhtmltag{UL}</td><td valign="top">Starts and ends an unnumbered item list.</td></tr>
+<tr><td valign="top">\startendhtmltag{VAR}</td><td valign="top">Starts and ends a piece of text displayed in an italic font.</td></tr>
+</table>
+
+Finally we have the HTML style comments. 
+- When using the, Doxygen, special HTML style comments, i.e. <code>\<!--! ... \--\></code>, it is not seen as comment but as
+  if the `...` part is just in the documentation. This is useful to specify Doxygen commands inside a markdown file like:
+  ```
+  <!--! \page pg1 The page -->
+  ```
+  which will be ignored by regular Markdown processors, but Doxygen will interpret this as if there was written:
+  ```
+        \page pg1 The page 
+  ```
+- To put invisible comments inside comment blocks, the normal HTML style
+  comments can be used:
+  \verbatim
+  /*! <!-- This is a comment with a comment block --> Visible text */
+  \endverbatim
+  The part `<!-- ... -->` will not be shown in the main documentation.
+
+Note: It is explicitly forbidden to use 3 dashes before the closing greater than sign.
+Doxygen won't see that as the closing either and give a warning.
+
+
+
+\section htmlentities HTML4 character entities
+
+The list of special HTML4 character entities with their descriptions has been taken from: <a href="https://www.w3.org/TR/html4/sgml/entities.html">Character entity references in HTML 4</a>.
+( Portions &copy; International Organization for Standardization 1986
+  Permission to copy in any form is granted for use with
+  conforming SGML systems and applications as defined in
+  ISO 8879, provided this notice is included in all copies.)
+| Entity | &nbsp; | Description |
+| :----- | :----- | :---------- |
+| <tt>\&nbsp;</tt> | &nbsp; | no-break space = non-breaking space |
+| <tt>\&iexcl;</tt> | &iexcl; | inverted exclamation mark |
+| <tt>\&cent;</tt> | &cent; | cent sign |
+| <tt>\&pound;</tt> | &pound; | pound sign |
+| <tt>\&curren;</tt> | &curren; | currency sign |
+| <tt>\&yen;</tt> | &yen; | yen sign = yuan sign |
+| <tt>\&brvbar;</tt> | &brvbar; | broken bar = broken vertical bar |
+| <tt>\&sect;</tt> | &sect; | section sign |
+| <tt>\&uml;</tt> | &uml; | diaeresis = spacing diaeresis |
+| <tt>\&copy;</tt> | &copy; | copyright sign |
+| <tt>\&ordf;</tt> | &ordf; | feminine ordinal indicator |
+| <tt>\&laquo;</tt> | &laquo; | left-pointing double angle quotation mark = left pointing guillemet |
+| <tt>\&not;</tt> | &not; | not sign |
+| <tt>\&shy;</tt> | &shy; | soft hyphen = discretionary hyphen |
+| <tt>\&reg;</tt> | &reg; | registered sign = registered trade mark sign |
+| <tt>\&macr;</tt> | &macr; | macron = spacing macron = overline = APL overbar |
+| <tt>\&deg;</tt> | &deg; | degree sign |
+| <tt>\&plusmn;</tt> | &plusmn; | plus-minus sign = plus-or-minus sign |
+| <tt>\&sup2;</tt> | &sup2; | superscript two = superscript digit two = squared |
+| <tt>\&sup3;</tt> | &sup3; | superscript three = superscript digit three = cubed |
+| <tt>\&acute;</tt> | &acute; | acute accent = spacing acute |
+| <tt>\&micro;</tt> | &micro; | micro sign |
+| <tt>\&para;</tt> | &para; | pilcrow sign = paragraph sign |
+| <tt>\&middot;</tt> | &middot; | middle dot = Georgian comma = Greek middle dot |
+| <tt>\&cedil;</tt> | &cedil; | cedilla = spacing cedilla |
+| <tt>\&sup1;</tt> | &sup1; | superscript one = superscript digit one |
+| <tt>\&ordm;</tt> | &ordm; | masculine ordinal indicator |
+| <tt>\&raquo;</tt> | &raquo; | right-pointing double angle quotation mark = right pointing guillemet |
+| <tt>\&frac14;</tt> | &frac14; | vulgar fraction one quarter = fraction one quarter |
+| <tt>\&frac12;</tt> | &frac12; | vulgar fraction one half = fraction one half |
+| <tt>\&frac34;</tt> | &frac34; | vulgar fraction three quarters = fraction three quarters |
+| <tt>\&iquest;</tt> | &iquest; | inverted question mark = turned question mark |
+| <tt>\&Agrave;</tt> | &Agrave; | latin capital letter A with grave = latin capital letter A grave |
+| <tt>\&Aacute;</tt> | &Aacute; | latin capital letter A with acute |
+| <tt>\&Acirc;</tt> | &Acirc; | latin capital letter A with circumflex |
+| <tt>\&Atilde;</tt> | &Atilde; | latin capital letter A with tilde |
+| <tt>\&Auml;</tt> | &Auml; | latin capital letter A with diaeresis |
+| <tt>\&Aring;</tt> | &Aring; | latin capital letter A with ring above = latin capital letter A ring |
+| <tt>\&AElig;</tt> | &AElig; | latin capital letter AE = latin capital ligature AE |
+| <tt>\&Ccedil;</tt> | &Ccedil; | latin capital letter C with cedilla |
+| <tt>\&Egrave;</tt> | &Egrave; | latin capital letter E with grave |
+| <tt>\&Eacute;</tt> | &Eacute; | latin capital letter E with acute |
+| <tt>\&Ecirc;</tt> | &Ecirc; | latin capital letter E with circumflex |
+| <tt>\&Euml;</tt> | &Euml; | latin capital letter E with diaeresis |
+| <tt>\&Igrave;</tt> | &Igrave; | latin capital letter I with grave |
+| <tt>\&Iacute;</tt> | &Iacute; | latin capital letter I with acute |
+| <tt>\&Icirc;</tt> | &Icirc; | latin capital letter I with circumflex |
+| <tt>\&Iuml;</tt> | &Iuml; | latin capital letter I with diaeresis |
+| <tt>\&ETH;</tt> | &ETH; | latin capital letter ETH |
+| <tt>\&Ntilde;</tt> | &Ntilde; | latin capital letter N with tilde |
+| <tt>\&Ograve;</tt> | &Ograve; | latin capital letter O with grave |
+| <tt>\&Oacute;</tt> | &Oacute; | latin capital letter O with acute |
+| <tt>\&Ocirc;</tt> | &Ocirc; | latin capital letter O with circumflex |
+| <tt>\&Otilde;</tt> | &Otilde; | latin capital letter O with tilde |
+| <tt>\&Ouml;</tt> | &Ouml; | latin capital letter O with diaeresis |
+| <tt>\&times;</tt> | &times; | multiplication sign |
+| <tt>\&Oslash;</tt> | &Oslash; | latin capital letter O with stroke = latin capital letter O slash |
+| <tt>\&Ugrave;</tt> | &Ugrave; | latin capital letter U with grave |
+| <tt>\&Uacute;</tt> | &Uacute; | latin capital letter U with acute |
+| <tt>\&Ucirc;</tt> | &Ucirc; | latin capital letter U with circumflex |
+| <tt>\&Uuml;</tt> | &Uuml; | latin capital letter U with diaeresis |
+| <tt>\&Yacute;</tt> | &Yacute; | latin capital letter Y with acute |
+| <tt>\&THORN;</tt> | &THORN; | latin capital letter THORN |
+| <tt>\&szlig;</tt> | &szlig; | latin small letter sharp s = ess-zed |
+| <tt>\&agrave;</tt> | &agrave; | latin small letter a with grave = latin small letter a grave |
+| <tt>\&aacute;</tt> | &aacute; | latin small letter a with acute |
+| <tt>\&acirc;</tt> | &acirc; | latin small letter a with circumflex |
+| <tt>\&atilde;</tt> | &atilde; | latin small letter a with tilde |
+| <tt>\&auml;</tt> | &auml; | latin small letter a with diaeresis |
+| <tt>\&aring;</tt> | &aring; | latin small letter a with ring above = latin small letter a ring |
+| <tt>\&aelig;</tt> | &aelig; | latin small letter ae = latin small ligature ae |
+| <tt>\&ccedil;</tt> | &ccedil; | latin small letter c with cedilla |
+| <tt>\&egrave;</tt> | &egrave; | latin small letter e with grave |
+| <tt>\&eacute;</tt> | &eacute; | latin small letter e with acute |
+| <tt>\&ecirc;</tt> | &ecirc; | latin small letter e with circumflex |
+| <tt>\&euml;</tt> | &euml; | latin small letter e with diaeresis |
+| <tt>\&igrave;</tt> | &igrave; | latin small letter i with grave |
+| <tt>\&iacute;</tt> | &iacute; | latin small letter i with acute |
+| <tt>\&icirc;</tt> | &icirc; | latin small letter i with circumflex |
+| <tt>\&iuml;</tt> | &iuml; | latin small letter i with diaeresis |
+| <tt>\&eth;</tt> | &eth; | latin small letter eth |
+| <tt>\&ntilde;</tt> | &ntilde; | latin small letter n with tilde |
+| <tt>\&ograve;</tt> | &ograve; | latin small letter o with grave |
+| <tt>\&oacute;</tt> | &oacute; | latin small letter o with acute |
+| <tt>\&ocirc;</tt> | &ocirc; | latin small letter o with circumflex |
+| <tt>\&otilde;</tt> | &otilde; | latin small letter o with tilde |
+| <tt>\&ouml;</tt> | &ouml; | latin small letter o with diaeresis |
+| <tt>\&divide;</tt> | &divide; | division sign |
+| <tt>\&oslash;</tt> | &oslash; | latin small letter o with stroke, = latin small letter o slash |
+| <tt>\&ugrave;</tt> | &ugrave; | latin small letter u with grave |
+| <tt>\&uacute;</tt> | &uacute; | latin small letter u with acute |
+| <tt>\&ucirc;</tt> | &ucirc; | latin small letter u with circumflex |
+| <tt>\&uuml;</tt> | &uuml; | latin small letter u with diaeresis |
+| <tt>\&yacute;</tt> | &yacute; | latin small letter y with acute |
+| <tt>\&thorn;</tt> | &thorn; | latin small letter thorn |
+| <tt>\&yuml;</tt> | &yuml; | latin small letter y with diaeresis |
+| <tt>\&fnof;</tt> | &fnof; | latin small f with hook = function = florin |
+| <tt>\&Alpha;</tt> | &Alpha; | greek capital letter alpha |
+| <tt>\&Beta;</tt> | &Beta; | greek capital letter beta |
+| <tt>\&Gamma;</tt> | &Gamma; | greek capital letter gamma |
+| <tt>\&Delta;</tt> | &Delta; | greek capital letter delta |
+| <tt>\&Epsilon;</tt> | &Epsilon; | greek capital letter epsilon |
+| <tt>\&Zeta;</tt> | &Zeta; | greek capital letter zeta |
+| <tt>\&Eta;</tt> | &Eta; | greek capital letter eta |
+| <tt>\&Theta;</tt> | &Theta; | greek capital letter theta |
+| <tt>\&Iota;</tt> | &Iota; | greek capital letter iota |
+| <tt>\&Kappa;</tt> | &Kappa; | greek capital letter kappa |
+| <tt>\&Lambda;</tt> | &Lambda; | greek capital letter lambda |
+| <tt>\&Mu;</tt> | &Mu; | greek capital letter mu |
+| <tt>\&Nu;</tt> | &Nu; | greek capital letter nu |
+| <tt>\&Xi;</tt> | &Xi; | greek capital letter xi |
+| <tt>\&Omicron;</tt> | &Omicron; | greek capital letter omicron |
+| <tt>\&Pi;</tt> | &Pi; | greek capital letter pi |
+| <tt>\&Rho;</tt> | &Rho; | greek capital letter rho |
+| <tt>\&Sigma;</tt> | &Sigma; | greek capital letter sigma |
+| <tt>\&Tau;</tt> | &Tau; | greek capital letter tau |
+| <tt>\&Upsilon;</tt> | &Upsilon; | greek capital letter upsilon |
+| <tt>\&Phi;</tt> | &Phi; | greek capital letter phi |
+| <tt>\&Chi;</tt> | &Chi; | greek capital letter chi |
+| <tt>\&Psi;</tt> | &Psi; | greek capital letter psi |
+| <tt>\&Omega;</tt> | &Omega; | greek capital letter omega |
+| <tt>\&alpha;</tt> | &alpha; | greek small letter alpha |
+| <tt>\&beta;</tt> | &beta; | greek small letter beta |
+| <tt>\&gamma;</tt> | &gamma; | greek small letter gamma |
+| <tt>\&delta;</tt> | &delta; | greek small letter delta |
+| <tt>\&epsilon;</tt> | &epsilon; | greek small letter epsilon |
+| <tt>\&zeta;</tt> | &zeta; | greek small letter zeta |
+| <tt>\&eta;</tt> | &eta; | greek small letter eta |
+| <tt>\&theta;</tt> | &theta; | greek small letter theta |
+| <tt>\&iota;</tt> | &iota; | greek small letter iota |
+| <tt>\&kappa;</tt> | &kappa; | greek small letter kappa |
+| <tt>\&lambda;</tt> | &lambda; | greek small letter lambda |
+| <tt>\&mu;</tt> | &mu; | greek small letter mu |
+| <tt>\&nu;</tt> | &nu; | greek small letter nu |
+| <tt>\&xi;</tt> | &xi; | greek small letter xi |
+| <tt>\&omicron;</tt> | &omicron; | greek small letter omicron |
+| <tt>\&pi;</tt> | &pi; | greek small letter pi |
+| <tt>\&rho;</tt> | &rho; | greek small letter rho |
+| <tt>\&sigmaf;</tt> | &sigmaf; | greek small letter final sigma |
+| <tt>\&sigma;</tt> | &sigma; | greek small letter sigma |
+| <tt>\&tau;</tt> | &tau; | greek small letter tau |
+| <tt>\&upsilon;</tt> | &upsilon; | greek small letter upsilon |
+| <tt>\&phi;</tt> | &phi; | greek small letter phi |
+| <tt>\&chi;</tt> | &chi; | greek small letter chi |
+| <tt>\&psi;</tt> | &psi; | greek small letter psi |
+| <tt>\&omega;</tt> | &omega; | greek small letter omega |
+| <tt>\&thetasym;</tt> | &thetasym; | greek small letter theta symbol |
+| <tt>\&upsih;</tt> | &upsih; | greek upsilon with hook symbol |
+| <tt>\&piv;</tt> | &piv; | greek pi symbol |
+| <tt>\&bull;</tt> | &bull; | bullet = black small circle |
+| <tt>\&hellip;</tt> | &hellip; | horizontal ellipsis = three dot leader |
+| <tt>\&prime;</tt> | &prime; | prime = minutes = feet |
+| <tt>\&Prime;</tt> | &Prime; | double prime = seconds = inches |
+| <tt>\&oline;</tt> | &oline; | overline = spacing overscore |
+| <tt>\&frasl;</tt> | &frasl; | fraction slash |
+| <tt>\&weierp;</tt> | &weierp; | script capital P = power set = Weierstrass p |
+| <tt>\&image;</tt> | &image; | blackletter capital I = imaginary part |
+| <tt>\&real;</tt> | &real; | blackletter capital R = real part symbol |
+| <tt>\&trade;</tt> | &trade; | trade mark sign |
+| <tt>\&alefsym;</tt> | &alefsym; | alef symbol = first transfinite cardinal |
+| <tt>\&larr;</tt> | &larr; | leftwards arrow |
+| <tt>\&uarr;</tt> | &uarr; | upwards arrow |
+| <tt>\&rarr;</tt> | &rarr; | rightwards arrow |
+| <tt>\&darr;</tt> | &darr; | downwards arrow |
+| <tt>\&harr;</tt> | &harr; | left right arrow |
+| <tt>\&crarr;</tt> | &crarr; | downwards arrow with corner leftwards = carriage return |
+| <tt>\&lArr;</tt> | &lArr; | leftwards double arrow |
+| <tt>\&uArr;</tt> | &uArr; | upwards double arrow |
+| <tt>\&rArr;</tt> | &rArr; | rightwards double arrow |
+| <tt>\&dArr;</tt> | &dArr; | downwards double arrow |
+| <tt>\&hArr;</tt> | &hArr; | left right double arrow |
+| <tt>\&forall;</tt> | &forall; | for all |
+| <tt>\&part;</tt> | &part; | partial differential |
+| <tt>\&exist;</tt> | &exist; | there exists |
+| <tt>\&empty;</tt> | &empty; | empty set = null set = diameter |
+| <tt>\&nabla;</tt> | &nabla; | nabla = backward difference |
+| <tt>\&isin;</tt> | &isin; | element of |
+| <tt>\&notin;</tt> | &notin; | not an element of |
+| <tt>\&ni;</tt> | &ni; | contains as member |
+| <tt>\&prod;</tt> | &prod; | n-ary product = product sign |
+| <tt>\&sum;</tt> | &sum; | n-ary summation |
+| <tt>\&minus;</tt> | &minus; | minus sign |
+| <tt>\&lowast;</tt> | &lowast; | asterisk operator |
+| <tt>\&radic;</tt> | &radic; | square root = radical sign |
+| <tt>\&prop;</tt> | &prop; | proportional to |
+| <tt>\&infin;</tt> | &infin; | infinity |
+| <tt>\&ang;</tt> | &ang; | angle |
+| <tt>\&and;</tt> | &and; | logical and = wedge |
+| <tt>\&or;</tt> | &or; | logical or = vee |
+| <tt>\&cap;</tt> | &cap; | intersection = cap |
+| <tt>\&cup;</tt> | &cup; | union = cup |
+| <tt>\&int;</tt> | &int; | integral |
+| <tt>\&there4;</tt> | &there4; | therefore |
+| <tt>\&sim;</tt> | &sim; | tilde operator = varies with = similar to |
+| <tt>\&cong;</tt> | &cong; | approximately equal to |
+| <tt>\&asymp;</tt> | &asymp; | almost equal to = asymptotic to |
+| <tt>\&ne;</tt> | &ne; | not equal to |
+| <tt>\&equiv;</tt> | &equiv; | identical to |
+| <tt>\&le;</tt> | &le; | less-than or equal to |
+| <tt>\&ge;</tt> | &ge; | greater-than or equal to |
+| <tt>\&sub;</tt> | &sub; | subset of |
+| <tt>\&sup;</tt> | &sup; | superset of |
+| <tt>\&nsub;</tt> | &nsub; | not a subset of |
+| <tt>\&sube;</tt> | &sube; | subset of or equal to |
+| <tt>\&supe;</tt> | &supe; | superset of or equal to |
+| <tt>\&oplus;</tt> | &oplus; | circled plus = direct sum |
+| <tt>\&otimes;</tt> | &otimes; | circled times = vector product |
+| <tt>\&perp;</tt> | &perp; | up tack = orthogonal to = perpendicular |
+| <tt>\&sdot;</tt> | &sdot; | dot operator |
+| <tt>\&lceil;</tt> | &lceil; | left ceiling = apl upstile |
+| <tt>\&rceil;</tt> | &rceil; | right ceiling |
+| <tt>\&lfloor;</tt> | &lfloor; | left floor = apl downstile |
+| <tt>\&rfloor;</tt> | &rfloor; | right floor |
+| <tt>\&lang;</tt> | &lang; | left-pointing angle bracket = bra |
+| <tt>\&rang;</tt> | &rang; | right-pointing angle bracket = ket |
+| <tt>\&loz;</tt> | &loz; | lozenge |
+| <tt>\&spades;</tt> | &spades; | black spade suit |
+| <tt>\&clubs;</tt> | &clubs; | black club suit = shamrock |
+| <tt>\&hearts;</tt> | &hearts; | black heart suit = valentine |
+| <tt>\&diams;</tt> | &diams; | black diamond suit |
+| <tt>\&quot;</tt> | &quot; | quotation mark = APL quote |
+| <tt>\&amp;</tt> | &amp; | ampersand |
+| <tt>\&lt;</tt> | &lt; | less-than sign |
+| <tt>\&gt;</tt> | &gt; | greater-than sign |
+| <tt>\&OElig;</tt> | &OElig; | latin capital ligature OE |
+| <tt>\&oelig;</tt> | &oelig; | latin small ligature oe |
+| <tt>\&Scaron;</tt> | &Scaron; | latin capital letter S with caron |
+| <tt>\&scaron;</tt> | &scaron; | latin small letter s with caron |
+| <tt>\&Yuml;</tt> | &Yuml; | latin capital letter Y with diaeresis |
+| <tt>\&circ;</tt> | &circ; | modifier letter circumflex accent |
+| <tt>\&tilde;</tt> | &tilde; | small tilde |
+| <tt>\&ensp;</tt> | &ensp; | en space |
+| <tt>\&emsp;</tt> | &emsp; | em space |
+| <tt>\&thinsp;</tt> | &thinsp; | thin space |
+| <tt>\&zwnj;</tt> | &zwnj; | zero width non-joiner |
+| <tt>\&zwj;</tt> | &zwj; | zero width joiner |
+| <tt>\&lrm;</tt> | &lrm; | left-to-right mark |
+| <tt>\&rlm;</tt> | &rlm; | right-to-left mark |
+| <tt>\&ndash;</tt> | &ndash; | en dash |
+| <tt>\&mdash;</tt> | &mdash; | em dash |
+| <tt>\&lsquo;</tt> | &lsquo; | left single quotation mark |
+| <tt>\&rsquo;</tt> | &rsquo; | right single quotation mark |
+| <tt>\&sbquo;</tt> | &sbquo; | single low-9 quotation mark |
+| <tt>\&ldquo;</tt> | &ldquo; | left double quotation mark |
+| <tt>\&rdquo;</tt> | &rdquo; | right double quotation mark |
+| <tt>\&bdquo;</tt> | &bdquo; | double low-9 quotation mark |
+| <tt>\&dagger;</tt> | &dagger; | dagger |
+| <tt>\&Dagger;</tt> | &Dagger; | double dagger |
+| <tt>\&permil;</tt> | &permil; | per mille sign |
+| <tt>\&lsaquo;</tt> | &lsaquo; | single left-pointing angle quotation mark |
+| <tt>\&rsaquo;</tt> | &rsaquo; | single right-pointing angle quotation mark |
+| <tt>\&euro;</tt> | &euro; | euro sign |
+| **Doxygen extensions** |||
+| <tt>\&tm;</tt> | &tm; | trade mark sign |
+| <tt>\&apos;</tt> | &apos; | apostrophe|
+
+\htmlonly
+<br/>
+Go to the <a href="xmlcmds.html">next</a> section or return to the
+ <a href="index.html">index</a>.
+\endhtmlonly
+
+*/

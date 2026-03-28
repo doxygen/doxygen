@@ -28,7 +28,7 @@
     <xsd:attribute name="refid" type="xsd:string" use="required"/>
     <xsd:attribute name="kind" type="MemberKind" use="required"/>
   </xsd:complexType>
-  
+
   <xsd:simpleType name="CompoundKind">
     <xsd:restriction base="xsd:string">
       <xsd:enumeration value="class"/>
@@ -46,6 +46,9 @@
       <xsd:enumeration value="dir"/>
       <xsd:enumeration value="type"/>
       <xsd:enumeration value="concept"/>
+      <xsd:enumeration value="module"/>
+      <xsd:enumeration value="requirement"/>
+      <xsd:enumeration value="requirements"/>
     </xsd:restriction>
   </xsd:simpleType>
 

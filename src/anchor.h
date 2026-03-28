@@ -19,6 +19,8 @@
 #include <memory>
 #include <string>
 
+#include "construct.h"
+
 /** Singleton class used to generate anchors for Markdown headers */
 class AnchorGenerator
 {
@@ -47,6 +49,7 @@ class AnchorGenerator
   private:
     AnchorGenerator();
    ~AnchorGenerator();
+    NON_COPYABLE(AnchorGenerator)
     struct Private;
     std::unique_ptr<Private> p;
 };

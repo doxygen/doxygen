@@ -1,6 +1,7 @@
 // objective: test \~ command with non default OUTPUT_LANGUAGE which contains '-' letter
 // check: indexpage.xml
 // config: OUTPUT_LANGUAGE = Japanese-en
+// config: LATEX_EXTRA_STYLESHEET = $INPUTDIR/latex_065.sty
 /** 
 \mainpage 
 \~english This is English.

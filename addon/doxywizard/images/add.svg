@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg"
+     width="24" height="24" viewBox="0 0 24 24"
+     role="img" aria-label="add icon">
+  <title>Add</title>
+  <defs>
+    <linearGradient id="addGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="#999999"/>
+    </linearGradient>
+    <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="0" dy="1" stdDeviation="1" flood-color="#000" flood-opacity="0.12"/>
+    </filter>
+  </defs>
+  <g filter="url(#shadow)">
+    <circle cx="12" cy="12" r="10" fill="url(#addGrad)" stroke="#999999" stroke-width="1.5" />
+  </g>
+  <rect x="11" y="6.5" width="2" height="11" rx="1" ry="1" fill="#444444"/>
+  <rect x="6.5" y="11" width="11" height="2" rx="1" ry="1" fill="#444444"/>
+</svg>

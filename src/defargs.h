@@ -26,6 +26,6 @@ class QCString;
 
 std::unique_ptr<ArgumentList> stringToArgumentList(SrcLangExt lang,
                                                    const QCString &argsString,
-                                                   QCString *extraTypeChars=0);
+                                                   QCString *extraTypeChars=nullptr);
 
 #endif

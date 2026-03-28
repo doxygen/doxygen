@@ -16,6 +16,10 @@ enum E { E1, E2 };
  *  A macro definition 
  */
 
+/** Another macro definition.
+ */
+#define MACRO4 2
+
 /** \var var
  *  A variable
  */

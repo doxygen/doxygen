@@ -45,7 +45,7 @@ static inline void writeDEFString(TextStream &t,const QCString &s)
   if (!s.isEmpty())
   {
     const char* p=s.data();
-    char c;
+    char c = 0;
 
     while ((c = *(p++)))
     {
@@ -74,7 +74,7 @@ static void generateDEFForMember(const MemberDef *md,
   // - source referenced by
   // - include code
 
-  if (md->memberType()==MemberType_EnumValue) return;
+  if (md->memberType()==MemberType::EnumValue) return;
 
   QCString scopeName;
   if (md->getClassDef())
@@ -91,22 +91,22 @@ static void generateDEFForMember(const MemberDef *md,
   bool isFunc=FALSE;
   switch (md->memberType())
   {
-    case MemberType_Define:      memType="define";     break;
-    case MemberType_EnumValue:   ASSERT(0);            break;
-    case MemberType_Property:    memType="property";   break;
-    case MemberType_Event:       memType="event";      break;
-    case MemberType_Variable:    memType="variable";   break;
-    case MemberType_Typedef:     memType="typedef";    break;
-    case MemberType_Enumeration: memType="enum";       break;
-    case MemberType_Interface:   memType="interface";  break;
-    case MemberType_Service:     memType="service";    break;
-    case MemberType_Sequence:    memType="sequence";   break;
-    case MemberType_Dictionary:  memType="dictionary"; break;
-    case MemberType_Function:    memType="function";   isFunc=TRUE; break;
-    case MemberType_Signal:      memType="signal";     isFunc=TRUE; break;
-    case MemberType_Friend:      memType="friend";     isFunc=TRUE; break;
-    case MemberType_DCOP:        memType="dcop";       isFunc=TRUE; break;
-    case MemberType_Slot:        memType="slot";       isFunc=TRUE; break;
+    case MemberType::Define:      memType="define";     break;
+    case MemberType::EnumValue:   ASSERT(0);            break;
+    case MemberType::Property:    memType="property";   break;
+    case MemberType::Event:       memType="event";      break;
+    case MemberType::Variable:    memType="variable";   break;
+    case MemberType::Typedef:     memType="typedef";    break;
+    case MemberType::Enumeration: memType="enum";       break;
+    case MemberType::Interface:   memType="interface";  break;
+    case MemberType::Service:     memType="service";    break;
+    case MemberType::Sequence:    memType="sequence";   break;
+    case MemberType::Dictionary:  memType="dictionary"; break;
+    case MemberType::Function:    memType="function";   isFunc=TRUE; break;
+    case MemberType::Signal:      memType="signal";     isFunc=TRUE; break;
+    case MemberType::Friend:      memType="friend";     isFunc=TRUE; break;
+    case MemberType::DCOP:        memType="dcop";       isFunc=TRUE; break;
+    case MemberType::Slot:        memType="slot";       isFunc=TRUE; break;
   }
 
   t << memPrefix << "kind = '" << memType << "';\n";
@@ -114,26 +114,11 @@ static void generateDEFForMember(const MemberDef *md,
     << md->getOutputFileBase() << "_1" << md->anchor()
     << "';\n";
 
-  t << memPrefix << "virt = ";
-  switch (md->virtualness())
-  {
-    case Specifier::Normal:  t << "normal;\n"; break;
-    case Specifier::Virtual: t << "virtual;\n"; break;
-    case Specifier::Pure:    t << "pure-virtual;\n"; break;
-    default: ASSERT(0);
-  }
+  t << memPrefix << "virt = " << to_string_lower(md->virtualness()) << ";\n";
+  t << memPrefix << "prot = " << to_string_lower(md->protection()) << ";\n";
 
-  t << memPrefix << "prot = ";
-  switch(md->protection())
-  {
-    case Protection::Public:    t << "public;\n"; break;
-    case Protection::Protected: t << "protected;\n"; break;
-    case Protection::Private:   t << "private;\n"; break;
-    case Protection::Package:   t << "package;\n"; break;
-  }
-
-  if (md->memberType()!=MemberType_Define &&
-      md->memberType()!=MemberType_Enumeration
+  if (md->memberType()!=MemberType::Define &&
+      md->memberType()!=MemberType::Enumeration
      )
   {
     QCString typeStr = replaceAnonymousScopes(md->typeString());
@@ -152,7 +137,7 @@ static void generateDEFForMember(const MemberDef *md,
     auto defIt = defAl.begin();
     for (const Argument &a : declAl)
     {
-      const Argument *defArg = 0;
+      const Argument *defArg = nullptr;
       if (defIt!=defAl.end())
       {
         defArg = &(*defIt);
@@ -196,8 +181,8 @@ static void generateDEFForMember(const MemberDef *md,
       t << "      }; /*" << fcnPrefix << "-param */\n";
     }
   }
-  else if (  md->memberType()==MemberType_Define
-      && md->argsString()!=0)
+  else if (  md->memberType()==MemberType::Define
+      && md->argsString()!=nullptr)
   {
     QCString defPrefix = "  " + memPrefix + "def-";
     for (const Argument &a : md->argumentList())
@@ -214,7 +199,7 @@ static void generateDEFForMember(const MemberDef *md,
       << md->initializer() << "\n_EnD_oF_dEf_TeXt_;\n";
   }
   // TODO: exceptions, const volatile
-  if (md->memberType()==MemberType_Enumeration) // enum
+  if (md->memberType()==MemberType::Enumeration) // enum
   {
     for (const auto &emd : md->enumFieldList())
     {
@@ -332,7 +317,7 @@ static void generateDEFForClass(const ClassDef *cd,TextStream &t)
 
   if (cd->isReference()) return; // skip external references.
   if (cd->name().find('@')!=-1) return; // skip anonymous compounds.
-  if (cd->templateMaster()!=0) return; // skip generated template instances.
+  if (cd->isImplicitTemplateInstance()) return; // skip generated template instances.
 
   t << cd->compoundTypeString() << " = {\n";
   t << "  cp-id     = '" << cd->getOutputFileBase() << "';\n";
@@ -341,84 +326,56 @@ static void generateDEFForClass(const ClassDef *cd,TextStream &t)
   for (const auto &bcd : cd->baseClasses())
   {
     t << "  cp-ref     = {\n" << "    ref-type = base;\n";
-    t << "    ref-id   = '"
-      << bcd.classDef->getOutputFileBase() << "';\n";
-    t << "    ref-prot = ";
-    switch (bcd.prot)
-    {
-      case Protection::Public:    t << "public;\n"; break;
-      case Protection::Package: // package scope is not possible
-      case Protection::Protected: t << "protected;\n"; break;
-      case Protection::Private:   t << "private;\n"; break;
-    }
-    t << "    ref-virt = ";
-    switch(bcd.virt)
-    {
-      case Specifier::Normal:  t << "non-virtual;";  break;
-      case Specifier::Virtual: t << "virtual;";      break;
-      case Specifier::Pure:    t << "pure-virtual;"; break;
-    }
-    t << "\n  };\n";
+    t << "    ref-id   = '" << bcd.classDef->getOutputFileBase() << "';\n";
+    t << "    ref-prot = " << to_string_lower_class(bcd.prot) << ";\n";
+    t << "    ref-virt = " << to_string_lower(bcd.virt) << ";\n";
+    t << "  };\n";
   }
 
   for (const auto &bcd : cd->subClasses())
   {
     t << "  cp-ref     = {\n" << "    ref-type = derived;\n";
-    t << "    ref-id   = '"
-      << bcd.classDef->getOutputFileBase() << "';\n";
-    t << "    ref-prot = ";
-    switch (bcd.prot)
-    {
-      case Protection::Public:    t << "public;\n"; break;
-      case Protection::Package: // packet scope is not possible!
-      case Protection::Protected: t << "protected;\n"; break;
-      case Protection::Private:   t << "private;\n"; break;
-    }
-    t << "    ref-virt = ";
-    switch (bcd.virt)
-    {
-      case Specifier::Normal:  t << "non-virtual;";  break;
-      case Specifier::Virtual: t << "virtual;";      break;
-      case Specifier::Pure:    t << "pure-virtual;"; break;
-    }
-    t << "\n  };\n";
+    t << "    ref-id   = '" << bcd.classDef->getOutputFileBase() << "';\n";
+    t << "    ref-prot = " << to_string_lower_class(bcd.prot) << ";\n";
+    t << "    ref-virt = " << to_string_lower(bcd.virt) << ";\n";
+    t << "  };\n";
   }
 
   size_t numMembers = 0;
   for (const auto &ml : cd->getMemberLists())
   {
-    if ((ml->listType()&MemberListType_detailedLists)==0)
+    if (!ml->listType().isDetailed())
     {
       numMembers+=ml->size();
     }
   }
   if (numMembers>0)
   {
-    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType_pubTypes),"public-type");
-    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType_interfaces),"interfaces");
-    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType_services),"services");
-    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType_pubMethods),"public-func");
-    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType_pubAttribs),"public-attrib");
-    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType_pubSlots),"public-slot");
-    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType_signals),"signal");
-    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType_dcopMethods),"dcop-func");
-    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType_properties),"property");
-    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType_pubStaticMethods),"public-static-func");
-    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType_pubStaticAttribs),"public-static-attrib");
-    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType_proTypes),"protected-type");
-    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType_proMethods),"protected-func");
-    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType_proAttribs),"protected-attrib");
-    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType_proSlots),"protected-slot");
-    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType_proStaticMethods),"protected-static-func");
-    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType_proStaticAttribs),"protected-static-attrib");
-    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType_priTypes),"private-type");
-    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType_priMethods),"private-func");
-    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType_priAttribs),"private-attrib");
-    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType_priSlots),"private-slot");
-    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType_priStaticMethods),"private-static-func");
-    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType_priStaticAttribs),"private-static-attrib");
-    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType_friends),"signal");
-    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType_related),"related");
+    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType::PubTypes()),"public-type");
+    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType::Interfaces()),"interfaces");
+    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType::Services()),"services");
+    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType::PubMethods()),"public-func");
+    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType::PubAttribs()),"public-attrib");
+    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType::PubSlots()),"public-slot");
+    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType::Signals()),"signal");
+    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType::DcopMethods()),"dcop-func");
+    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType::Properties()),"property");
+    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType::PubStaticMethods()),"public-static-func");
+    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType::PubStaticAttribs()),"public-static-attrib");
+    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType::ProTypes()),"protected-type");
+    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType::ProMethods()),"protected-func");
+    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType::ProAttribs()),"protected-attrib");
+    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType::ProSlots()),"protected-slot");
+    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType::ProStaticMethods()),"protected-static-func");
+    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType::ProStaticAttribs()),"protected-static-attrib");
+    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType::PriTypes()),"private-type");
+    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType::PriMethods()),"private-func");
+    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType::PriAttribs()),"private-attrib");
+    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType::PriSlots()),"private-slot");
+    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType::PriStaticMethods()),"private-static-func");
+    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType::PriStaticAttribs()),"private-static-attrib");
+    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType::Friends()),"signal");
+    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType::Related()),"related");
   }
 
   t << "  cp-filename  = '" << cd->getDefFileName() << "';\n";
@@ -429,14 +386,14 @@ static void generateDEFForClass(const ClassDef *cd,TextStream &t)
   t << "  cp-documentation = <<_EnD_oF_dEf_TeXt_\n"
     << cd->documentation() << "\n_EnD_oF_dEf_TeXt_;\n";
 
-  DotClassGraph inheritanceGraph(cd,Inheritance);
+  DotClassGraph inheritanceGraph(cd,GraphType::Inheritance);
   if (!inheritanceGraph.isTrivial())
   {
     t << "  cp-inheritancegraph = <<_EnD_oF_dEf_TeXt_\n";
     inheritanceGraph.writeDEF(t);
     t << "\n_EnD_oF_dEf_TeXt_;\n";
   }
-  DotClassGraph collaborationGraph(cd,Collaboration);
+  DotClassGraph collaborationGraph(cd,GraphType::Collaboration);
   if (!collaborationGraph.isTrivial())
   {
     t << "  cp-collaborationgraph = <<_EnD_oF_dEf_TeXt_\n";
@@ -471,14 +428,14 @@ static void generateDEFForNamespace(const NamespaceDef *nd,TextStream &t)
   writeDEFString(t,nd->name());
   t << ";\n";
 
-  generateDEFSection(nd,t,nd->getMemberList(MemberListType_decDefineMembers),"define");
-  generateDEFSection(nd,t,nd->getMemberList(MemberListType_decProtoMembers),"prototype");
-  generateDEFSection(nd,t,nd->getMemberList(MemberListType_decTypedefMembers),"typedef");
-  generateDEFSection(nd,t,nd->getMemberList(MemberListType_decSequenceMembers),"sequence");
-  generateDEFSection(nd,t,nd->getMemberList(MemberListType_decDictionaryMembers),"dictionary");
-  generateDEFSection(nd,t,nd->getMemberList(MemberListType_decEnumMembers),"enum");
-  generateDEFSection(nd,t,nd->getMemberList(MemberListType_decFuncMembers),"func");
-  generateDEFSection(nd,t,nd->getMemberList(MemberListType_decVarMembers),"var");
+  generateDEFSection(nd,t,nd->getMemberList(MemberListType::DecDefineMembers()),"define");
+  generateDEFSection(nd,t,nd->getMemberList(MemberListType::DecProtoMembers()),"prototype");
+  generateDEFSection(nd,t,nd->getMemberList(MemberListType::DecTypedefMembers()),"typedef");
+  generateDEFSection(nd,t,nd->getMemberList(MemberListType::DecSequenceMembers()),"sequence");
+  generateDEFSection(nd,t,nd->getMemberList(MemberListType::DecDictionaryMembers()),"dictionary");
+  generateDEFSection(nd,t,nd->getMemberList(MemberListType::DecEnumMembers()),"enum");
+  generateDEFSection(nd,t,nd->getMemberList(MemberListType::DecFuncMembers()),"func");
+  generateDEFSection(nd,t,nd->getMemberList(MemberListType::DecVarMembers()),"var");
 
   t << "  ns-filename  = '" << nd->getDefFileName() << "';\n";
   t << "  ns-fileline  = '" << nd->getDefLine()     << "';\n";
@@ -500,14 +457,14 @@ static void generateDEFForFile(const FileDef *fd,TextStream &t)
   writeDEFString(t,fd->name());
   t << ";\n";
 
-  generateDEFSection(fd,t,fd->getMemberList(MemberListType_decDefineMembers),"define");
-  generateDEFSection(fd,t,fd->getMemberList(MemberListType_decProtoMembers),"prototype");
-  generateDEFSection(fd,t,fd->getMemberList(MemberListType_decTypedefMembers),"typedef");
-  generateDEFSection(fd,t,fd->getMemberList(MemberListType_decSequenceMembers),"sequence");
-  generateDEFSection(fd,t,fd->getMemberList(MemberListType_decDictionaryMembers),"dictionary");
-  generateDEFSection(fd,t,fd->getMemberList(MemberListType_decEnumMembers),"enum");
-  generateDEFSection(fd,t,fd->getMemberList(MemberListType_decFuncMembers),"func");
-  generateDEFSection(fd,t,fd->getMemberList(MemberListType_decVarMembers),"var");
+  generateDEFSection(fd,t,fd->getMemberList(MemberListType::DecDefineMembers()),"define");
+  generateDEFSection(fd,t,fd->getMemberList(MemberListType::DecProtoMembers()),"prototype");
+  generateDEFSection(fd,t,fd->getMemberList(MemberListType::DecTypedefMembers()),"typedef");
+  generateDEFSection(fd,t,fd->getMemberList(MemberListType::DecSequenceMembers()),"sequence");
+  generateDEFSection(fd,t,fd->getMemberList(MemberListType::DecDictionaryMembers()),"dictionary");
+  generateDEFSection(fd,t,fd->getMemberList(MemberListType::DecEnumMembers()),"enum");
+  generateDEFSection(fd,t,fd->getMemberList(MemberListType::DecFuncMembers()),"func");
+  generateDEFSection(fd,t,fd->getMemberList(MemberListType::DecVarMembers()),"var");
 
   t << "  file-full-name  = '" << fd->getDefFileName() << "';\n";
   t << "  file-first-line = '" << fd->getDefLine()     << "';\n";
@@ -528,7 +485,7 @@ void generateDEF()
   Dir defDir(outputDirectory.str());
   if (!defDir.exists() && !defDir.mkdir(outputDirectory.str()))
   {
-    err("Could not create def directory in %s\n",qPrint(outputDirectory));
+    err("Could not create def directory in {}\n",outputDirectory);
     return;
   }
 
@@ -536,7 +493,7 @@ void generateDEF()
   std::ofstream f = Portable::openOutputStream(fileName);
   if (!f.is_open())
   {
-    err("Cannot open file %s for writing!\n",qPrint(fileName));
+    err("Cannot open file {} for writing!\n",fileName);
     return;
   }
   TextStream t(&f);

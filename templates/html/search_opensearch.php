@@ -61,7 +61,7 @@ function opensearch_xml_results($query, array $results)
   {
     foreach ($val['words'] as $j => $word)
     {
-      if (array_key_exists($word, $qs_results))
+      if (array_key_exists($word['word'], $qs_results))
         $qs_results[$word['match']]++;
       else
         $qs_results[$word['match']] = 1;
@@ -96,7 +96,7 @@ function opensearch_json_results($query, array $results)
   {
     foreach ($val['words'] as $j => $word)
     {
-      if (array_key_exists($word, $qs_results))
+      if (array_key_exists($word['word'], $qs_results))
         $qs_results[$word['match']]++;
       else
         $qs_results[$word['match']] = 1;

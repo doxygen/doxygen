@@ -21,29 +21,37 @@
 
 #include "qcstring.h"
 #include "linkedmap.h"
+#include "construct.h"
 
 class Definition;
 
-//! enum representing the various types of sections and entities that can be referred to.
-enum class SectionType
+class SectionType
 {
-  Page          = 0,
-  Section       = 1,
-  Subsection    = 2,
-  Subsubsection = 3,
-  Paragraph     = 4,
-  Anchor        = 5,
-  Table         = 6
-};
+  public:
+    static constexpr int Page            = 0;
+    static constexpr int MinLevel        = 1;
+    static constexpr int Section         = 1;
+    static constexpr int Subsection      = 2;
+    static constexpr int Subsubsection   = 3;
+    static constexpr int Paragraph       = 4;
+    static constexpr int Subparagraph    = 5;
+    static constexpr int Subsubparagraph = 6;
+    static constexpr int MaxLevel        = 6;
+    static constexpr int Anchor          = 7;
+    static constexpr int Table           = 8;
+    static constexpr int Requirement     = 9;
 
-//! return true if type is a section, and false if it is a page, anchor or table.
-inline constexpr bool isSection(SectionType type)
-{
-  return (type==SectionType::Section       ||
-          type==SectionType::Subsection    ||
-          type==SectionType::Subsubsection ||
-          type==SectionType::Paragraph);
-}
+    constexpr SectionType() : m_level(0) {}
+    constexpr SectionType(int lvl) : m_level(lvl) {}
+    constexpr int level() const { return m_level; }
+    constexpr bool isSection() const
+    {
+      return m_level>=SectionType::MinLevel && m_level<=SectionType::MaxLevel;
+    }
+
+  private:
+    int m_level;
+};
 
 //! class that provide information about a section.
 class SectionInfo
@@ -55,10 +63,6 @@ class SectionInfo
         m_lineNr(lineNr), m_fileName(fileName), m_level(level)
     {
       //printf("SectionInfo(%p) fileName=%s\n",(void*)this,qPrint(fileName));
-    }
-    ~SectionInfo()
-    {
-      //printf("~SectionInfo(%p)\n",(void*)this);
     }
 
     // getters
@@ -91,7 +95,7 @@ class SectionInfo
     QCString    m_fileName;
     bool        m_generated = false;
     int         m_level;
-    Definition *m_definition = 0;
+    Definition *m_definition = nullptr;
 };
 
 //! class that represents a list of constant references to sections.
@@ -112,7 +116,7 @@ class SectionRefs
     //! Adds a non-owning section reference.
     void add(const SectionInfo *si)
     {
-      m_lookup.insert({toStdString(si->label()),si});
+      m_lookup.emplace(toStdString(si->label()),si);
       m_entries.push_back(si);
     }
 
@@ -134,6 +138,7 @@ class SectionManager : public LinkedMap<SectionInfo>
     //! Returns a non-owning pointer to the newly added section.
     SectionInfo *add(const SectionInfo &si)
     {
+      //printf("SectionManager::add(%s,%s,%d,%s)\n",qPrint(si.label()),qPrint(si.fileName()),si.lineNr(),qPrint(si.title()));
       return LinkedMap<SectionInfo>::add(si.label(),si.fileName(),
                       si.lineNr(),si.title(),si.type(),si.level(),si.ref());
     }
@@ -143,6 +148,7 @@ class SectionManager : public LinkedMap<SectionInfo>
     SectionInfo *add(const QCString &label, const QCString &fileName, int lineNr,
                      const QCString &title, SectionType type, int level,const QCString &ref=QCString())
     {
+      //printf("SectionManager::add(%s,%s,%d,%s)\n",qPrint(label),qPrint(fileName),lineNr,qPrint(title));
       return LinkedMap<SectionInfo>::add(label.data(),fileName,lineNr,title,type,level,ref);
     }
 
@@ -151,6 +157,7 @@ class SectionManager : public LinkedMap<SectionInfo>
     SectionInfo *replace(const QCString &label, const QCString &fileName, int lineNr,
                          const QCString &title, SectionType type, int level,const QCString &ref=QCString())
     {
+      //printf("SectionManager::replace(%s,%s,%d,%s)\n",qPrint(label),qPrint(fileName),lineNr,qPrint(title));
       SectionInfo *si = LinkedMap<SectionInfo>::find(label.data());
       if (si)
       {
@@ -176,9 +183,9 @@ class SectionManager : public LinkedMap<SectionInfo>
     }
 
   private:
-    SectionManager() {}
-    SectionManager(const SectionManager &other) = delete;
-    SectionManager &operator=(const SectionManager &other) = delete;
+    SectionManager() = default;
+   ~SectionManager() = default;
+    NON_COPYABLE(SectionManager)
 };
 
 

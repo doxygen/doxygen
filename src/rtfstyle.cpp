@@ -104,8 +104,12 @@ Rtf_Style_Default rtf_Style_Default[] =
     "\\sbasedon0 \\snext0 heading 4;}{\\*\\cs10 \\additive Default Paragraph Font"
   },
   { "Heading5",
-    "\\s5\\sb90\\sa30\\keepn\\widctlpar\\adjustright \\b\\f1\\fs20\\cgrid ",
+    "\\s5\\sb90\\sa30\\keepn\\widctlpar\\adjustright \\b\\f1\\fs16\\cgrid ",
     "\\sbasedon0 \\snext0 heading 5;}{\\*\\cs10 \\additive Default Paragraph Font"
+  },
+  { "Heading6",
+    "\\s6\\sb90\\sa30\\keepn\\widctlpar\\adjustright \\b\\f1\\fs12\\cgrid ",
+    "\\sbasedon0 \\snext0 heading 6;}{\\*\\cs10 \\additive Default Paragraph Font"
   },
   { "Title",
     "\\s15\\qc\\sb240\\sa60\\widctlpar\\outlinelevel0\\adjustright \\b\\f1\\fs32\\kerning28\\cgrid ",
@@ -226,18 +230,63 @@ Rtf_Style_Default rtf_Style_Default[] =
   RTF_ListEnum(12,152,153,4680),
   RTF_ListEnum(13,153,153,5040),
 
+  { nullptr,
+    nullptr,
+    nullptr
+  }
+};
+
+#define RTF_ListElement(id,lvl,pos,chr)   \
+  { id, lvl,                              \
+    "\\listlevel\\levelnfc23\\leveljc0\\levelstartat1\\levelfollow0{\\leveltext \\'01\\u"#chr" ?;}{\\levelnumbers;}\\f8\\dbch\\af3\\fi-360\\li"#pos, \
+    "{\\*\\hyphen2\\hyphlead2\\hyphtrail2\\hyphmax0}\\nowidctlpar\\cf0\\hich\\af0\\langfe2052\\dbch\\af0\\afs24\\lang1081\\loch\\f0\\fs24\\lang1033{\\listtext\\pard\\plain \\hich\\af3\\dbch\\af3\\loch\\f8 \\'01\\u"#chr"\\tab}\\ilvl"#lvl"\\ls"#id" \\li0\\ri0\\lin0\\rin0\\fi-360\\tx"#pos"\\li"#pos"\\ri0\\lin"#pos"\\rin0\\fi-360\\kerning1\\hich\\af4\\dbch\\af5\\rtlch \\ltrch\\loch\\fs20" \
+  }
+
+Rtf_Table_Default rtf_Table_Default[] =
+{
+  RTF_ListElement( 1,0, 360, 8226),
+  RTF_ListElement( 1,1, 720, 9702),
+  RTF_ListElement( 1,2,1080, 9642),
+  RTF_ListElement( 1,3,1440, 8226),
+  RTF_ListElement( 1,4,1800, 9702),
+  RTF_ListElement( 1,5,2160, 9642),
+  RTF_ListElement( 1,6,2520, 8662),
+  RTF_ListElement( 1,7,2880, 9702),
+  RTF_ListElement( 1,8,3600, 9642),
+
+  RTF_ListElement( 2,0, 360, 9744),
+  RTF_ListElement( 2,1, 720, 9744),
+  RTF_ListElement( 2,2,1080, 9744),
+  RTF_ListElement( 2,3,1440, 9744),
+  RTF_ListElement( 2,4,1800, 9744),
+  RTF_ListElement( 2,5,2160, 9744),
+  RTF_ListElement( 2,6,2520, 9744),
+  RTF_ListElement( 2,7,2880, 9744),
+  RTF_ListElement( 2,8,3600, 9744),
+
+  RTF_ListElement( 3,0, 360, 9746),
+  RTF_ListElement( 3,1, 720, 9746),
+  RTF_ListElement( 3,2,1080, 9746),
+  RTF_ListElement( 3,3,1440, 9746),
+  RTF_ListElement( 3,4,1800, 9746),
+  RTF_ListElement( 3,5,2160, 9746),
+  RTF_ListElement( 3,6,2520, 9746),
+  RTF_ListElement( 3,7,2880, 9746),
+  RTF_ListElement( 3,8,3600, 9746),
+
   { 0,
     0,
-    0
+    nullptr,
+    nullptr
   }
 };
 
 static const reg::Ex s_clause(R"(\\s(\d+)\s*)"); // match, e.g. '\s30' and capture '30'
 
-StyleData::StyleData(const std::string &reference, const std::string &definition)
+StyleData::StyleData(const QCString &reference, const QCString &definition)
 {
   reg::Match match;
-  if (reg::search(reference,match,s_clause))
+  if (reg::search(reference.str(),match,s_clause))
   {
     m_index = static_cast<int>(std::stoul(match[1].str()));
   }
@@ -249,21 +298,21 @@ StyleData::StyleData(const std::string &reference, const std::string &definition
   m_definition = definition;
 }
 
-bool StyleData::setStyle(const std::string &command, const std::string &styleName)
+bool StyleData::setStyle(const QCString &command, const QCString &styleName)
 {
   reg::Match match;
-  if (!reg::search(command,match,s_clause))
+  if (!reg::search(command.str(),match,s_clause))
   {
-    err("Style sheet '%s' contains no '\\s' clause.\n{%s}", styleName.c_str(), command.c_str());
+    err("Style sheet '{}' contains no '\\s' clause.\n{{{}}}\n", styleName, command);
     return false;
   }
   m_index = static_cast<int>(std::stoul(match[1].str()));
 
-  size_t index = command.find("\\sbasedon");
-  if (index!=std::string::npos)
+  int index = command.find("\\sbasedon");
+  if (index!=-1)
   {
-    m_reference  = command.substr(0,index);
-    m_definition = command.substr(index);
+    m_reference  = command.left(index);
+    m_definition = command.mid(index);
   }
 
   return true;
@@ -275,10 +324,10 @@ void loadStylesheet(const QCString &name, StyleDataMap& map)
   std::ifstream file(name.str());
   if (!file.is_open())
   {
-    err("Can't open RTF style sheet file %s. Using defaults.",qPrint(name));
+    err("Can't open RTF style sheet file {}. Using defaults.\n",name);
     return;
   }
-  msg("Loading RTF style sheet %s...\n",qPrint(name));
+  msg("Loading RTF style sheet {}...\n",name);
 
   uint32_t lineNr=1;
 
@@ -289,9 +338,9 @@ void loadStylesheet(const QCString &name, StyleDataMap& map)
     reg::Match match;
     if (reg::search(line,match,assignment_splitter))
     {
-      std::string key   = match.prefix().str();
-      std::string value = match.suffix().str();
-      auto it = map.find(key);
+      QCString key   = match.prefix().str();
+      QCString value = match.suffix().str();
+      auto it = map.find(key.str());
       if (it!=map.end())
       {
         StyleData& styleData = it->second;
@@ -299,12 +348,12 @@ void loadStylesheet(const QCString &name, StyleDataMap& map)
       }
       else
       {
-        warn(name,lineNr,"Unknown style sheet name %s ignored.",key.data());
+        warn(name,lineNr,"Unknown style sheet name {} ignored.",key);
       }
     }
     else
     {
-      warn(name,lineNr,"Assignment of style sheet name expected line='%s'!",line.c_str());
+      warn(name,lineNr,"Assignment of style sheet name expected line='{}'!",line);
     }
     lineNr++;
   }
@@ -317,10 +366,10 @@ void loadExtensions(const QCString &name)
   std::ifstream file(name.str());
   if (!file.is_open())
   {
-    err("Can't open RTF extensions file %s. Using defaults.",qPrint(name));
+    err("Can't open RTF extensions file {}. Using defaults.\n",name);
     return;
   }
-  msg("Loading RTF extensions %s...\n",qPrint(name));
+  msg("Loading RTF extensions {}...\n",name);
 
   uint32_t lineNr=1;
 
@@ -340,7 +389,7 @@ void loadExtensions(const QCString &name)
       }
       else
       {
-        warn(name,lineNr,"Ignoring unknown extension key '%s'...",key.c_str());
+        warn(name,lineNr,"Ignoring unknown extension key '{}'...",key);
       }
     }
     else

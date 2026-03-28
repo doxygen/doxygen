@@ -27,6 +27,8 @@
 #include <memory>
 
 #include "qcstring.h"
+#include "construct.h"
+#include "indexlist.h"
 
 /* -- forward declarations */
 class Definition;
@@ -38,12 +40,12 @@ class MemberDef;
  * These files can be used to generate a help plugin readable
  * by the Eclipse IDE.
  */
-class EclipseHelp
+class EclipseHelp : public IndexIntf
 {
   public:
     EclipseHelp();
     virtual ~EclipseHelp();
-    EclipseHelp(EclipseHelp &&);
+    NON_COPYABLE(EclipseHelp)
 
     /* -- index interface */
     virtual void initialize();
@@ -52,7 +54,7 @@ class EclipseHelp
     virtual void decContentsDepth();
     virtual void addContentsItem(bool isDir, const QCString &name, const QCString &ref,
                                  const QCString &file, const QCString &anchor,bool separateIndex,bool addToNavIndex,
-                                 const Definition *def);
+                                 const Definition *def, const QCString &nameAsHtml);
     virtual void addIndexItem(const Definition *context,const MemberDef *md,
                               const QCString &sectionAnchor,const QCString &title);
     virtual void addIndexFile(const QCString &name);

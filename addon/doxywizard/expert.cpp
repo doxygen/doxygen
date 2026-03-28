@@ -143,7 +143,7 @@ void Expert::createTopics(const QDomElement &rootElem)
       QString setting = childElem.attribute(SA("setting"));
       if (setting.isEmpty() || IS_SUPPORTED(setting.toLatin1()))
       {
-        items.append(new QTreeWidgetItem((QTreeWidget*)0,QStringList(name)));
+        items.append(new QTreeWidgetItem((QTreeWidget*)nullptr,QStringList(name)));
         QWidget *widget = createTopicWidget(childElem);
         m_topics[name] = widget;
         m_topicStack->addWidget(widget);
@@ -431,6 +431,8 @@ static QString getDocsForNode(const QDomElement &child)
   regexp.setPattern(SA("`([^`]+)`"));
   docs.replace(regexp,SA("<code>\\1</code>"));
   // \ref key "desc" -> <code>desc</code>
+  regexp.setPattern(SA("\\\\ref[ ]+[^ ]+[ ]+\"\\\\\\\\ref\""));
+  docs.replace(regexp,SA("\\\\REF"));
   regexp.setPattern(SA("\\\\ref[ ]+[^ ]+[ ]+\"([^\"]+)\""));
   docs.replace(regexp,SA("<code>\\1</code> "));
   //\ref specials
@@ -445,6 +447,7 @@ static QString getDocsForNode(const QDomElement &child)
   docs.replace(regexp,SA("\"Including formulas\""));
   // fallback for not handled
   docs.replace(SA("\\\\ref"),SA(""));
+  docs.replace(SA("\\\\REF"),SA("\\\\ref"));
   // \b word -> <b>word<\b>
   regexp.setPattern(SA("\\\\b[ ]+([^ ]+) "));
   docs.replace(regexp,SA("<b>\\1</b> "));
@@ -453,8 +456,8 @@ static QString getDocsForNode(const QDomElement &child)
   docs.replace(regexp,SA("<em>\\1</em> "));
   // \note -> <br>Note:
   // @note -> <br>Note:
-  docs.replace(SA("\\note"),SA("<br>Note:"));
-  docs.replace(SA("@note"),SA("<br>Note:"));
+  docs.replace(SA("\\note "),SA("<br>Note: "));
+  docs.replace(SA("@note "),SA("<br>Note: "));
   // \#include -> #include
   // \#undef -> #undef
   docs.replace(SA("\\#include"),SA("#include"));
@@ -462,6 +465,7 @@ static QString getDocsForNode(const QDomElement &child)
   // -# -> <br>-
   // " - " -> <br>-
   docs.replace(SA("-#"),SA("<br>-"));
+  docs.replace(SA("\\# "),SA("# "));
   docs.replace(SA(" - "),SA("<br>-"));
   // \verbatim -> <pre>
   // \endverbatim -> </pre>
@@ -469,8 +473,8 @@ static QString getDocsForNode(const QDomElement &child)
   docs.replace(SA("\\endverbatim"),SA("</pre>"));
   // \sa -> <br>See also:
   // \par -> <br>
-  docs.replace(SA("\\sa"),SA("<br>See also:"));
-  docs.replace(SA("\\par"),SA("<br>"));
+  docs.replace(SA("\\sa "),SA("<br>See also: "));
+  docs.replace(SA("\\par "),SA("<br>"));
   // 2xbackslash -> backslash
   // \@ -> @
   docs.replace(SA("\\\\"),SA("\\"));
@@ -704,7 +708,7 @@ QWidget *Expert::createTopicWidget(QDomElement &elem)
         (setting.isEmpty() || IS_SUPPORTED(setting.toLatin1())))
     {
        Input *parentOption = m_options[dependsOn];
-       if (parentOption==0)
+       if (parentOption==nullptr)
        {
          printf("%s has depends=%s that is not valid\n",
              qPrintable(id),qPrintable(dependsOn));
@@ -791,7 +795,7 @@ void Expert::loadConfig(const QString &fileName)
 }
 
 void Expert::saveTopic(QTextStream &t,QDomElement &elem,TextCodecAdapter *codec,
-                       bool brief,bool condensed)
+                       bool brief,bool condensed,bool convert)
 {
   if (!brief)
   {
@@ -832,7 +836,7 @@ void Expert::saveTopic(QTextStream &t,QDomElement &elem,TextCodecAdapter *codec,
             if (option && !option->isEmpty())
             {
               t << " ";
-              option->writeValue(t,codec);
+              option->writeValue(t,codec,convert);
             }
             t << "\n";
           }
@@ -843,10 +847,10 @@ void Expert::saveTopic(QTextStream &t,QDomElement &elem,TextCodecAdapter *codec,
   }
 }
 
-bool Expert::writeConfig(QTextStream &t,bool brief, bool condensed)
+bool Expert::writeConfig(QTextStream &t,bool brief, bool condensed, bool convert)
 {
   // write global header
-  t << "# Doxyfile " << getDoxygenVersion() << "\n\n";
+  t << "# Doxyfile " << getDoxygenVersion().c_str() << "\n\n";
   if (!brief && !condensed)
   {
     t << convertToComment(m_header);
@@ -859,7 +863,7 @@ bool Expert::writeConfig(QTextStream &t,bool brief, bool condensed)
   {
     if (childElem.tagName()==SA("group"))
     {
-      saveTopic(t,childElem,&codec,brief,condensed);
+      saveTopic(t,childElem,&codec,brief,condensed,convert);
     }
     childElem = childElem.nextSiblingElement();
   }
@@ -940,7 +944,7 @@ static bool getBoolOption(
     const QHash<QString,Input*>&model,const QString &name)
 {
   Input *option = model[name];
-  Q_ASSERT(option!=0);
+  Q_ASSERT(option!=nullptr);
   return stringVariantToBool(option->value());
 }
 
@@ -948,7 +952,7 @@ static QString getStringOption(
     const QHash<QString,Input*>&model,const QString &name)
 {
   Input *option = model[name];
-  Q_ASSERT(option!=0);
+  Q_ASSERT(option!=nullptr);
   return option->value().toString();
 }
 

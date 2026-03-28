@@ -22,6 +22,7 @@
 
 #include "types.h"
 #include "reflist.h"
+#include "requirement.h"
 
 #define DOX_NOGROUP -1
 
@@ -30,6 +31,7 @@ class MemberDef;
 class ClassDef;
 class NamespaceDef;
 class FileDef;
+class ModuleDef;
 class GroupDef;
 class OutputList;
 class Definition;
@@ -44,16 +46,15 @@ class MemberGroup
     //MemberGroup();
     MemberGroup(const Definition *container,int id,const QCString &header,
                 const QCString &docs,const QCString &docFile,int docLine,MemberListContainer con);
-   ~MemberGroup();
     QCString header() const { return grpHeader; }
     int groupId() const { return grpId; }
     void insertMember(MemberDef *md);
     void setAnchors();
     void writePlainDeclarations(OutputList &ol,bool inGroup,
-               const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
+               const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,const ModuleDef *mod,
                int indentLevel, const ClassDef *inheritedFrom,const QCString &inheritId) const;
     void writeDeclarations(OutputList &ol,
-               const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
+               const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,const ModuleDef *mod,
                bool showInline=FALSE) const;
     void writeDocumentation(OutputList &ol,const QCString &scopeName,
                const Definition *container,bool showEnumValues,bool showInline) const;
@@ -81,8 +82,10 @@ class MemberGroup
     const Definition *memberContainer() const;
 
     int countInheritableMembers(const ClassDef *inheritedFrom) const;
-    void addListReferences(Definition *d);
+    void addListReferences(const Definition *def);
+    void addRequirementReferences(const Definition *def);
     void setRefItems(const RefItemVector &sli);
+    void setRequirementReferences(const RequirementRefs &rqli);
     const MemberList &members() const { return *memberList.get(); }
 
     QCString docFile() const { return m_docFile; }
@@ -91,7 +94,7 @@ class MemberGroup
   private:
     const Definition *m_container;
     std::unique_ptr<MemberList> memberList;      // list of all members in the group
-    MemberList *inDeclSection = 0;
+    MemberList *inDeclSection = nullptr;
     int grpId = 0;
     QCString grpHeader;
     QCString fileName;           // base name of the generated file
@@ -100,6 +103,7 @@ class MemberGroup
     QCString m_docFile;
     int m_docLine;
     RefItemVector m_xrefListItems;
+    RequirementRefs m_requirementRefs;
 };
 
 class MemberGroupRefList : public std::vector<MemberGroup *>
@@ -114,12 +118,14 @@ class MemberGroupList : public std::vector< std::unique_ptr<MemberGroup> >
 struct MemberGroupInfo
 {
   void setRefItems(const RefItemVector &sli);
+  void setRequirementReferences(const RequirementRefs &rqli);
   QCString header;
   QCString doc;
   QCString docFile;
   int docLine = -1;
   QCString compoundName;
   RefItemVector m_sli;
+  RequirementRefs m_rqli;
 };
 
 using MemberGroupInfoMap = std::unordered_map< int,std::unique_ptr<MemberGroupInfo> >;

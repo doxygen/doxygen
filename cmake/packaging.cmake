@@ -51,7 +51,7 @@ set(CPACK_RPM_PACKAGE_SUGGESTS      "doxygen-latex, doxygen-doc, doxygen-gui, gr
 set(CPACK_DEBIAN_PACKAGE_DESCRIPTION ${CPACK_PACKAGE_DESCRIPTION})
 set(CPACK_DEBIAN_PACKAGE_SECTION     "devel")
 set(CPACK_DEBIAN_PACKAGE_HOMEPAGE    "https://doxygen.org/")
-set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS   YES) #set(CPACK_DEBIAN_PACKAGE_DEPENDS    "libc6, libclang1-3.6, libgcc1, libsqlite3-0, libstdc++6, libxapian22")
+set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS   YES) #set(CPACK_DEBIAN_PACKAGE_DEPENDS    "libc6, libclang1-3.6, libgcc1, libstdc++6, libxapian22")
 set(CPACK_DEBIAN_PACKAGE_SUGGESTS    "doxygen-latex, doxygen-doc, doxygen-gui, graphviz, libclang1")
 set(CPACK_DEBIAN_PACKAGE_CONFLICTS   "graphviz (<< 1.12)")
 set(CPACK_DEBIAN_PACKAGE_MAINTAINER  "Matthias Klose <doko@debian.org>")  # Ubuntu Developers <ubuntu-devel-discuss@lists.ubuntu.com>

@@ -21,6 +21,8 @@
 
 #include <memory>
 #include "qcstring.h"
+#include "construct.h"
+#include "indexlist.h"
 
 class Definition;
 class MemberDef;
@@ -30,7 +32,7 @@ class MemberDef;
  *  These files can be used with the Microsoft HTML Help workshop
  *  to generate compressed HTML files (.chm).
  */
-class HtmlHelp
+class HtmlHelp : public IndexIntf
 {
     /*! used in imageNumber param of HTMLHelp::addContentsItem() function
         to specify document icon in tree view.
@@ -59,10 +61,10 @@ class HtmlHelp
       TOOL,             TOOL_NEW
     };
   public:
-    //static HtmlHelp *getInstance();
     HtmlHelp();
     ~HtmlHelp();
-    HtmlHelp(HtmlHelp &&);
+    NON_COPYABLE(HtmlHelp)
+
     void initialize();
     void finalize();
     void incContentsDepth();
@@ -74,7 +76,8 @@ class HtmlHelp
                          const QCString &anchor,
                          bool separateIndex,
                          bool addToNavIndex,
-                         const Definition *def);
+                         const Definition *def,
+                         const QCString &nameAsHtml);
     void addIndexItem(const Definition *context,const MemberDef *md,
                       const QCString &sectionAnchor, const QCString &title);
     void addIndexFile(const QCString &name);

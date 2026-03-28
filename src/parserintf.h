@@ -1,8 +1,6 @@
 /******************************************************************************
  *
- *
- *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2023 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -25,6 +23,7 @@
 
 #include "types.h"
 #include "containers.h"
+#include "construct.h"
 
 class Entry;
 class FileDef;
@@ -42,7 +41,7 @@ class ClangTUParser;
 class OutlineParserInterface
 {
   public:
-    virtual ~OutlineParserInterface() = default;
+    ABSTRACT_BASE_CLASS(OutlineParserInterface)
 
     /** Parses a single input file with the goal to build an Entry tree.
      *  @param[in] fileName    The full name of the file.
@@ -74,6 +73,65 @@ class OutlineParserInterface
 
 };
 
+/** Options to configure the code parser */
+struct CodeParserOptions
+{
+  public:
+    // === getters for optional params
+    bool isExample()              const { return m_isExample;       }
+    QCString exampleName()        const { return m_exampleName;     }
+    const FileDef * fileDef()     const { return m_fileDef;         }
+    int startLine()               const { return m_startLine;       }
+    int endLine()                 const { return m_endLine;         }
+    bool inlineFragment()         const { return m_inlineFragment;  }
+    const MemberDef * memberDef() const { return m_memberDef;       }
+    bool showLineNumbers()        const { return m_showLineNumbers; }
+    const Definition *searchCtx() const { return m_searchCtx;       }
+    bool collectXRefs()           const { return m_collectXRefs;    }
+
+    // === setters for optional params
+
+    /// Associate this comment block with a given example
+    CodeParserOptions &setExample(bool isExample,const QCString &name)
+    { m_isExample=isExample; m_exampleName = name; return *this; }
+
+    CodeParserOptions &setFileDef(const FileDef *fd)
+    { m_fileDef = fd; return *this; }
+
+    CodeParserOptions &setStartLine(int lineNr)
+    { m_startLine = lineNr; return *this; }
+
+    CodeParserOptions &setEndLine(int lineNr)
+    { m_endLine = lineNr; return *this; }
+
+    CodeParserOptions &setInlineFragment(bool enable)
+    { m_inlineFragment = enable; return *this; }
+
+    CodeParserOptions &setMemberDef(const MemberDef * md)
+    { m_memberDef = md; return *this; }
+
+    CodeParserOptions &setShowLineNumbers(bool enable)
+    { m_showLineNumbers = enable; return *this; }
+
+    CodeParserOptions &setSearchCtx(const Definition *d)
+    { m_searchCtx = d; return *this; }
+
+    CodeParserOptions &setCollectXRefs(bool enable)
+    { m_collectXRefs = enable; return *this; }
+
+  private:
+    bool              m_isExample       = false;
+    QCString          m_exampleName;
+    const FileDef *   m_fileDef         = nullptr;
+    int               m_startLine       = -1;
+    int               m_endLine         = -1;
+    bool              m_inlineFragment  = false;
+    const MemberDef * m_memberDef       = nullptr;
+    bool              m_showLineNumbers = true;
+    const Definition *m_searchCtx       = nullptr;
+    bool              m_collectXRefs    = true;
+};
+
 /** \brief Abstract interface for code parsers.
  *
  *  By implementing the methods of this interface one can add
@@ -83,7 +141,7 @@ class OutlineParserInterface
 class CodeParserInterface
 {
   public:
-    virtual ~CodeParserInterface() = default;
+    ABSTRACT_BASE_CLASS(CodeParserInterface)
 
     /** Parses a source file or fragment with the goal to produce
      *  highlighted and cross-referenced output.
@@ -91,36 +149,15 @@ class CodeParserInterface
      *  @param[in] scopeName Name of scope to which the code belongs.
      *  @param[in] input Actual code in the form of a string
      *  @param[in] lang The programming language of the code fragment.
-     *  @param[in] isExampleBlock TRUE iff the code is part of an example.
-     *  @param[in] exampleName Name of the example.
-     *  @param[in] fileDef File definition to which the code
-     *             is associated.
-     *  @param[in] startLine Starting line in case of a code fragment.
-     *  @param[in] endLine Ending line of the code fragment.
-     *  @param[in] inlineFragment Code fragment that is to be shown inline
-     *             as part of the documentation.
-     *  @param[in] memberDef Member definition to which the code
-     *             is associated (non null in case of an inline fragment
-     *             for a member).
-     *  @param[in] showLineNumbers if set to TRUE and also fileDef is not 0,
-     *             line numbers will be added to the source fragment
-     *  @param[in] searchCtx context under which search data has to be stored.
-     *  @param[in] collectXRefs collect cross-reference relations.
+     *  @param[in] stripCodeComments signals whether or not for the code block the doxygen comments should be stripped.
+     *  @param[in] options Additional options to configure the parser.
      */
     virtual void parseCode(OutputCodeList &codeOutList,
                            const QCString &scopeName,
                            const QCString &input,
                            SrcLangExt lang,
-                           bool isExampleBlock,
-                           const QCString &exampleName=QCString(),
-                           const FileDef *fileDef=0,
-                           int startLine=-1,
-                           int endLine=-1,
-                           bool inlineFragment=FALSE,
-                           const MemberDef *memberDef=0,
-                           bool showLineNumbers=TRUE,
-                           const Definition *searchCtx=0,
-                           bool collectXRefs=TRUE
+                           bool stripCodeComments,
+                           const CodeParserOptions &options
                           ) = 0;
 
     /** Resets the state of the code parser.
@@ -147,7 +184,7 @@ class ParserManager
 
     struct ParserPair
     {
-      ParserPair(OutlineParserFactory opf, CodeParserFactory cpf, const QCString &pn)
+      ParserPair(OutlineParserFactory opf, const CodeParserFactory &cpf, const QCString &pn)
         : outlineParserFactory(opf), codeParserFactory(cpf), parserName(pn)
       {
       }
@@ -162,8 +199,8 @@ class ParserManager
      *  @param outlineParserFactory the fallback outline parser factory to use for unknown extensions
      *  @param codeParserFactory    the fallback code parser factory to use for unknown extensions
      */
-    ParserManager(OutlineParserFactory outlineParserFactory,
-                  CodeParserFactory    codeParserFactory)
+    ParserManager(const OutlineParserFactory &outlineParserFactory,
+                  const CodeParserFactory    &codeParserFactory)
       : m_defaultParsers(outlineParserFactory,codeParserFactory, QCString())
     {
     }
@@ -176,8 +213,8 @@ class ParserManager
      *  @param[in] codeParserFactory    A factory method to create a code parser that is to be used
      *                           for the given name.
      */
-    void registerParser(const QCString &name,OutlineParserFactory outlineParserFactory,
-                                         CodeParserFactory    codeParserFactory)
+    void registerParser(const QCString &name,const OutlineParserFactory &outlineParserFactory,
+                                             const CodeParserFactory    &codeParserFactory)
     {
       m_parsers.emplace(name.str(),ParserPair(outlineParserFactory,codeParserFactory,name));
     }
@@ -228,7 +265,7 @@ class ParserManager
 
     /** Gets the name of the parser associated with given \a extension.
      *  If there is no parser explicitly registered for the supplied extension,
-     *  te empty string  will be reurned.
+     *  the empty string will be returned.
      */
     QCString getParserName(const QCString &extension)
     {

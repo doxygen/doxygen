@@ -1,0 +1,185 @@
+/******************************************************************************
+ *
+ *
+ *
+ * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
+ * for any purpose. It is provided "as is" without express or implied warranty.
+ * See the GNU General Public License for more details.
+ *
+ * Documents produced by Doxygen are derivative works derived from the
+ * input used in their production; they are not affected by this license.
+ *
+ */
+/*! \page custcmd Custom Commands
+
+\tableofcontents{html,latex}
+
+Doxygen provides a large number of \ref commands "special commands",
+\ref xmlcmds "XML commands", and \ref htmlcmds "HTML commands".
+that can be used to enhance or structure the documentation inside a comment block.
+If you for some reason have a need to define new commands you can do
+so by means of an \e alias definition.
+
+The definition of an alias should be specified in the configuration file using
+the \ref cfg_aliases "ALIASES" configuration tag.
+
+\section custcmd_simple Simple aliases
+The simplest form of an alias is a simple substitution of the form
+\verbatim
+ name=value
+\endverbatim
+ For example defining the following alias:
+\verbatim
+ ALIASES += sideeffect="\par Side Effects:^^"
+\endverbatim
+ will allow you to
+ put the command `\sideeffect` (or `@sideeffect`) in the documentation, which
+ will result in a user-defined paragraph with heading <b>Side Effects:</b>.
+
+Note that you cannot put `\n`'s in the value part of an alias to insert newlines
+(in the resulting output). You can put `^^` in the value part of an alias to
+insert a newline as if a physical newline was in the original file.
+
+Note when you need a literal `{` or `}` or `,` (or non default separator)
+in the value part of an alias you have to
+escape it by means of a backslash (`\`), this can lead to conflicts with the
+commands \c \\{ and \c \\} for these it is advised to use the version \c @@{ and \c @@} or
+use a double escape (\c \\\\{ and \c \\\\})
+
+Also note that you can redefine existing special commands if you wish.
+
+Some commands, such as \ref cmdxrefitem "\\xrefitem" are designed to be used in
+combination with aliases.
+
+\section custcmd_complex Aliases with arguments
+Aliases can also have one or more arguments. In the alias definition you then need
+to specify the number of arguments between curly braces. In the value part of the
+definition you can place `\x` markers, where '`x`' represents the argument number starting
+with 1.
+
+Here is an example of an alias definition with a single argument:
+\verbatim
+ALIASES += l{1}="\ref \1"
+\endverbatim
+
+Inside a comment block you can use it as follows
+\verbatim
+/** See \l{SomeClass} for more information. */
+\endverbatim
+which would be the same as writing
+\verbatim
+/** See \ref SomeClass for more information. */
+\endverbatim
+
+Note that you can overload an alias by a version with multiple arguments, for instance:
+\verbatim
+ALIASES += l{1}="\ref \1"
+ALIASES += l{2}="\ref \1 \"\2\""
+\endverbatim
+Note that the quotes inside the alias definition have to be escaped with a backslash.
+
+With these alias definitions, we can write
+\verbatim
+/** See \l{SomeClass,Some Text} for more information. */
+\endverbatim
+inside the comment block and it will expand to
+\verbatim
+/** See \ref SomeClass "Some Text" for more information. */
+\endverbatim
+where the command with a single argument would still work as shown before.
+
+Aliases can also be expressed in terms of other aliases, e.g. a new command
+`\reminder` can be expressed as a \ref cmdxrefitem "\\xrefitem" via an intermediate `\xreflist` command
+as follows:
+\verbatim
+ALIASES += xreflist{3}="\xrefitem \1 \"\2\" \"\3\" "
+ALIASES += reminder="\xreflist{reminders,Reminder,Reminders}"
+\endverbatim
+
+Note that if for aliases with more than one argument a comma is used as a separator,
+if you want to put a comma inside the command, you will need to escape it with a backslash,
+i.e.
+\verbatim
+\l{SomeClass,Some text\, with an escaped comma}
+\endverbatim
+given the alias definition of `\l` in the example above.
+
+By default the separator for arguments in an alias is a comma.
+However, for arguments with a lot of commas, such as templates of function
+definitions, escaping each comma can be cumbersome.
+To solve this, one can specify a different separator, directly
+after the parameter count, for example to use a semicolon
+as separator one can define the command as follows:
+\verbatim
+ALIASES += xreflist{3;}="\xrefitem \1 \"\2\" \"\3\" "
+ALIASES += reminder="\xreflist{reminders;Reminder;Reminders}"
+\endverbatim
+Note that also multi-character separators are allowed, i.e. the same example
+can be written using double pipe symbols as separator:
+\verbatim
+ALIASES += xreflist{3||}="\xrefitem \1 \"\2\" \"\3\" "
+ALIASES += reminder="\xreflist{reminders||Reminder||Reminders}"
+\endverbatim
+The following characters are allowed to create separators:
+\verbatim
+!#$%&,.?|;:'+=~`/
+\endverbatim
+
+Note that for each command and number of parameters, one can use a different separator.
+It is not recommended to select a different separator for same command however,
+as this may lead to ambiguity as to which command definition
+is to be used. Doxygen resolves such ambiguity by choosing the command which matches the
+most parameters. Consider the following, rather contrived example:
+\verbatim
+ALIASES += v{2+}="Choose 2: '\1' and '\2'"
+ALIASES += v{3;}="Choose 3: '\1', '\2', and '\3'"
+\endverbatim
+Then
+\verbatim
+- \v{One+Two}
+- \v{One;Two;Three}
+- \v{One+Two;Three;Four}
+\endverbatim
+Will produce:
+
+- Choose 2: 'One' and 'Two'
+- Choose 3: 'One', 'Two', and 'Three'
+- Choose 3: 'One+Two', 'Three', and 'Four'
+
+For the last command both definitions of `v` match, but the
+one with 3 parameters is selected as it matches more parameters.
+
+\section custcmd_nesting Nesting custom command
+
+You can use commands as arguments of aliases, including commands
+defined using aliases.
+
+As an example consider the following alias definitions
+
+\verbatim
+ALIASES += Bold{1}="<b>\1</b>"
+ALIASES += Emph{1}="<em>\1</em>"
+\endverbatim
+
+Inside a comment block you can now use:
+\verbatim
+/** This is a \Bold{bold \Emph{and} Emphasized} text fragment. */
+\endverbatim
+which will expand to
+\verbatim
+/** This is a <b>bold <em>and</em> Emphasized</b> text fragment. */
+\endverbatim
+
+
+\htmlonly
+<br/>
+Go to the <a href="external.html">next</a> section or return to the
+ <a href="index.html">index</a>.
+\endhtmlonly
+
+
+*/

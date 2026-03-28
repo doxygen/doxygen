@@ -17,16 +17,18 @@
 #include <memory>
 
 #include "qcstring.h"
+#include "construct.h"
+#include "indexlist.h"
 
 class Definition;
 class MemberDef;
 
-class Qhp
+class Qhp : public IndexIntf
 {
   public:
     Qhp();
     ~Qhp();
-    Qhp(Qhp &&);
+    NON_COPYABLE(Qhp)
 
     void initialize();
     void finalize();
@@ -34,8 +36,8 @@ class Qhp
     void decContentsDepth();
     void addContentsItem(bool isDir, const QCString & name, const QCString & ref,
                          const QCString & file, const QCString & anchor,
-                         bool separateIndex,bool addToNavIndex,
-                         const Definition *def);
+                         bool separateIndex, bool addToNavIndex,
+                         const Definition *def, const QCString &);
     void addIndexItem(const Definition *context, const MemberDef *md,
                       const QCString &sectionAnchor, const QCString &title);
     void addIndexFile(const QCString & name);

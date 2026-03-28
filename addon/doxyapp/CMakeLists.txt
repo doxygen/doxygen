@@ -4,7 +4,7 @@ include_directories(
 	${PROJECT_SOURCE_DIR}/src
 	${PROJECT_SOURCE_DIR}/libversion
 	${GENERATED_SRC}
-	${ICONV_INCLUDE_DIR}
+	${Iconv_INCLUDE_DIRS}
 	${CLANG_INCLUDEDIR}
 )
 
@@ -39,14 +39,14 @@ endif()
 target_link_libraries(doxyapp
 doxymain
 md5
+sqlite3
 xml
 lodepng
 mscgen
 doxygen_version
 doxycfg
 vhdlparser
-spdlog
-${ICONV_LIBRARIES}
+${Iconv_LIBRARIES}
 ${CMAKE_THREAD_LIBS_INIT}
 ${SQLITE3_LIBRARIES}
 ${EXTRA_LIBS}
