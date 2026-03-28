@@ -115,7 +115,7 @@ class DocParser : public IDocParser
                                      QCString *pDoc,
                                      QCString *pBrief,
                                      const Definition **pDef);
-    bool defaultHandleToken(DocNodeVariant *parent,Token tok,
+    bool defaultHandleToken(DocNodeVariant *parent,Token &tok,
                             DocNodeList &children,bool
                             handleWord=TRUE);
     void errorHandleDefaultToken(DocNodeVariant *parent,Token tok,
