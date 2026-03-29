@@ -189,12 +189,6 @@ class Tester:
                 print('RTF_OUTPUT=%s/rtf' % self.test_out, file=f)
             else:
                 print('GENERATE_RTF=NO', file=f)
-            if (self.args.man):
-                print('GENERATE_MAN=YES', file=f)
-                print('MAN_LINKS=YES', file=f)
-                print('MAN_OUTPUT=%s/man' % self.test_out, file=f)
-            else:
-                print('GENERATE_MAN=NO', file=f)
             if (self.args.docbook):
                 print('GENERATE_DOCBOOK=YES', file=f)
                 print('DOCBOOK_OUTPUT=%s/docbook' % self.test_out, file=f)
@@ -322,7 +316,6 @@ class Tester:
         failed_latex=False
         failed_docbook=False
         failed_rtf=False
-        failed_man=False
         failed_xmlxsd=False
         failed_man=False
         msg = ()
@@ -461,9 +454,6 @@ class Tester:
                 msg += (msg1,)
                 failed_rtf=True
 
-        if (self.args.man):
-            pass
-
         if (self.args.docbook):
             docbook_output='%s/docbook' % self.test_out
             if (sys.platform == 'win32'):
@@ -574,7 +564,7 @@ class Tester:
         if failed_warn:
             msg += (warnings,)
 
-        if failed_warn or failed_xml or failed_html or failed_qhp or failed_latex or failed_docbook or failed_rtf or failed_xmlxsd or failed_man:
+        if failed_warn or failed_xml or failed_html or failed_qhp or failed_latex or failed_docbook or failed_rtf or failed_xmlxsd:
             testmgr.ok(False,self.test_name,msg)
             return False
 
@@ -696,8 +686,6 @@ def main():
         'create docbook output and check with xmllint',action="store_true")
     parser.add_argument('--xhtml',help=
         'create xhtml output and check with xmllint',action="store_true")
-    parser.add_argument('--man',help=
-        'create man output',action="store_true")
     parser.add_argument('--qhp',help=
         'create qhp output and check with xmllint',action="store_true")
     parser.add_argument('--xmlxsd',help=
@@ -722,7 +710,7 @@ def main():
     args = parser.parse_args(test_flags + sys.argv[1:])
 
     # sanity check
-    if (not args.xml) and (not args.pdf) and (not args.xhtml) and (not args.qhp) and (not args.docbook and (not args.rtf) and (not args.xmlxsd) and (not args.man)):
+    if (not args.xml) and (not args.pdf) and (not args.xhtml) and (not args.qhp) and (not args.docbook and (not args.rtf) and (not args.xmlxsd)):
         args.xml=True
     if (args.updateref is not None) and (args.ids is None) and (args.all is None):
         parser.error('--updateref requires either --id or --all')
