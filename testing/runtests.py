@@ -189,6 +189,12 @@ class Tester:
                 print('RTF_OUTPUT=%s/rtf' % self.test_out, file=f)
             else:
                 print('GENERATE_RTF=NO', file=f)
+            if (self.args.man):
+                print('GENERATE_MAN=YES', file=f)
+                print('MAN_LINKS=YES', file=f)
+                print('MAN_OUTPUT=%s/man' % self.test_out, file=f)
+            else:
+                print('GENERATE_MAN=NO', file=f)
             if (self.args.docbook):
                 print('GENERATE_DOCBOOK=YES', file=f)
                 print('DOCBOOK_OUTPUT=%s/docbook' % self.test_out, file=f)
@@ -316,6 +322,7 @@ class Tester:
         failed_latex=False
         failed_docbook=False
         failed_rtf=False
+        failed_man=False
         failed_xmlxsd=False
         failed_man=False
         msg = ()
@@ -453,6 +460,9 @@ class Tester:
                 #msg += ("RTF: Not all used hyperlinks have been defined",)
                 msg += (msg1,)
                 failed_rtf=True
+
+        if (self.args.man):
+            pass
 
         if (self.args.docbook):
             docbook_output='%s/docbook' % self.test_out
@@ -686,6 +696,8 @@ def main():
         'create docbook output and check with xmllint',action="store_true")
     parser.add_argument('--xhtml',help=
         'create xhtml output and check with xmllint',action="store_true")
+    parser.add_argument('--man',help=
+        'create man output',action="store_true")
     parser.add_argument('--qhp',help=
         'create qhp output and check with xmllint',action="store_true")
     parser.add_argument('--xmlxsd',help=
