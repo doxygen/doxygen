@@ -1348,7 +1348,7 @@ void DocParser::handleILine(char cmdChar,const QCString &cmdName)
  * @retval TRUE      The token was handled.
  * @retval FALSE     The token was not handled.
  */
-bool DocParser::defaultHandleToken(DocNodeVariant *parent,Token tok, DocNodeList &children,bool handleWord)
+bool DocParser::defaultHandleToken(DocNodeVariant *parent,Token &tok, DocNodeList &children,bool handleWord)
 {
   AUTO_TRACE("token={} handleWord={}",tok.to_string(),handleWord);
   if (tok.is_any_of(TokenRetval::TK_WORD,TokenRetval::TK_LNKWORD,TokenRetval::TK_SYMBOL,TokenRetval::TK_URL,
