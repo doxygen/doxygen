@@ -404,6 +404,10 @@ QCString Markdown::Private::isBlockCommand(std::string_view data,size_t offset)
   {
     return "enduml";
   };
+  static constexpr auto getEndMermaid = [](const std::string &/* blockName */,bool,char) -> QCString
+  {
+    return "endmermaid";
+  };
   static constexpr auto getEndFormula = [](const std::string &/* blockName */,bool,char nextChar) -> QCString
   {
     switch (nextChar)
@@ -433,7 +437,7 @@ QCString Markdown::Private::isBlockCommand(std::string_view data,size_t offset)
     { "manonly",      getEndBlock   },
     { "docbookonly",  getEndBlock   },
     { "startuml",     getEndUml     },
-    { "startmermaid", getEndBlock   },
+    { "startmermaid", getEndMermaid },
     { "f",            getEndFormula }
   };
 
