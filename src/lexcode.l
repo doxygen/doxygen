@@ -1216,7 +1216,7 @@ void LexCodeParser::parseCode(OutputCodeList &codeOutIntf,
   yyextra->currentMemberDef  = options.memberDef();
   yyextra->searchCtx         = options.searchCtx();
   yyextra->collectXRefs      = options.collectXRefs();
-  yyextra->yyLineNr          = options.startLine()!=1 ? options.startLine() : 1;
+  yyextra->yyLineNr          = options.startLine()!=-1 ? options.startLine() : 1;
   yyextra->inputLines        = options.endLine()!=-1  ? options.endLine()+1 : yyextra->yyLineNr + countLines(yyscanner) - 1;
   yyextra->startCCodeLine    = yyextra->yyLineNr;
   yyextra->stripCodeComments = stripCodeComments;
