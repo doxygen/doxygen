@@ -31,6 +31,7 @@
 #include "htmlentity.h"
 #include "emoji.h"
 #include "plantuml.h"
+#include "mermaid.h"
 #include "fileinfo.h"
 #include "portable.h"
 #include "codefragment.h"
@@ -396,6 +397,17 @@ DB_VIS_C
           writePlantUMLFile(baseName,s);
           m_t << "</para>\n";
         }
+      }
+      break;
+    case DocVerbatim::Mermaid:
+      {
+        QCString docbookOutput = Config_getString(DOCBOOK_OUTPUT);
+        QCString baseName = MermaidManager::instance().writeMermaidSource(docbookOutput,
+            s.exampleFile(),s.text(),MermaidManager::MERM_BITMAP,
+            s.srcFile(),s.srcLine());
+        m_t << "<para>\n";
+        writeMermaidFile(baseName,s);
+        m_t << "</para>\n";
       }
       break;
   }
@@ -1289,6 +1301,16 @@ DB_VIS_C
   endPlantUmlFile(df.hasCaption());
 }
 
+void DocbookDocVisitor::operator()(const DocMermaidFile &df)
+{
+DB_VIS_C
+  if (m_hide) return;
+  if (!Config_getBool(DOT_CLEANUP)) copyFile(df.file(),Config_getString(DOCBOOK_OUTPUT)+"/"+stripPath(df.file()));
+  startMermaidFile(df.file(),df.relPath(),df.width(),df.height(),df.hasCaption(),df.children(),df.srcFile(),df.srcLine());
+  visitChildren(df);
+  endMermaidFile(df.hasCaption());
+}
+
 void DocbookDocVisitor::operator()(const DocLink &lnk)
 {
 DB_VIS_C
@@ -1582,6 +1604,48 @@ DB_VIS_C
 }
 
 void DocbookDocVisitor::endPlantUmlFile(bool hasCaption)
+{
+DB_VIS_C
+  if (m_hide) return;
+  m_t << "\n";
+  visitPostEnd(m_t, hasCaption);
+  m_t << "</para>\n";
+}
+
+void DocbookDocVisitor::writeMermaidFile(const QCString &baseName, const DocVerbatim &s)
+{
+DB_VIS_C
+  QCString shortName = stripPath(baseName);
+  QCString outDir = Config_getString(DOCBOOK_OUTPUT);
+  MermaidManager::instance().generateMermaidOutput(baseName,outDir,MermaidManager::MERM_BITMAP);
+  visitPreStart(m_t, s.children(), s.hasCaption(), s.relPath() + shortName + ".png", s.width(),s.height());
+  visitCaption(s.children());
+  visitPostEnd(m_t, s.hasCaption());
+}
+
+void DocbookDocVisitor::startMermaidFile(const QCString &fileName,
+    const QCString &relPath,
+    const QCString &width,
+    const QCString &height,
+    bool hasCaption,
+    const DocNodeList &children,
+    const QCString &srcFile,
+    int srcLine
+    )
+{
+DB_VIS_C
+  QCString outDir = Config_getString(DOCBOOK_OUTPUT);
+  std::string inBuf;
+  readInputFile(fileName,inBuf);
+  QCString baseName = MermaidManager::instance().writeMermaidSource(outDir,
+                           QCString(),inBuf,MermaidManager::MERM_BITMAP,srcFile,srcLine);
+  QCString shortName = stripPath(baseName);
+  MermaidManager::instance().generateMermaidOutput(baseName,outDir,MermaidManager::MERM_BITMAP);
+  m_t << "<para>\n";
+  visitPreStart(m_t, children, hasCaption, relPath + shortName + ".png", width, height);
+}
+
+void DocbookDocVisitor::endMermaidFile(bool hasCaption)
 {
 DB_VIS_C
   if (m_hide) return;

@@ -582,6 +582,7 @@
       <xsd:element name="dot" type="docDotMscType" />
       <xsd:element name="msc" type="docDotMscType" />
       <xsd:element name="plantuml" type="docPlantumlType" />
+      <xsd:element name="mermaid" type="docMermaidType" />
       <xsd:element name="anchor" type="docAnchorType" />
       <xsd:element name="formula" type="docFormulaType" />
       <xsd:element name="ref" type="docRefTextType" />
@@ -628,6 +629,7 @@
       <xsd:element name="dot" type="docDotMscType" />
       <xsd:element name="msc" type="docDotMscType" />
       <xsd:element name="plantuml" type="docPlantumlType" />
+      <xsd:element name="mermaid" type="docMermaidType" />
       <xsd:element name="anchor" type="docAnchorType" />
       <xsd:element name="formula" type="docFormulaType" />
       <xsd:element name="ref" type="docRefTextType" />
@@ -653,6 +655,7 @@
       <xsd:element name="mscfile" type="docImageFileType" />
       <xsd:element name="diafile" type="docImageFileType" />
       <xsd:element name="plantumlfile" type="docImageFileType" />
+      <xsd:element name="mermaidfile" type="docImageFileType" />
       <xsd:element name="toclist" type="docTocListType" />
       <xsd:element name="language" type="docLanguageType" />
       <xsd:element name="parameterlist" type="docParamListType" />
@@ -828,6 +831,14 @@
     <xsd:attribute name="height" type="xsd:string" use="optional"/>
     <xsd:attribute name="caption" type="xsd:string" use="optional"/>
     <xsd:attribute name="engine" type="DoxPlantumlEngine" use="optional"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="docMermaidType" mixed="true">
+    <xsd:group ref="docTitleCmdGroup" minOccurs="0" maxOccurs="unbounded" />
+    <xsd:attribute name="name" type="xsd:string" use="optional"/>
+    <xsd:attribute name="width" type="xsd:string" use="optional"/>
+    <xsd:attribute name="height" type="xsd:string" use="optional"/>
+    <xsd:attribute name="caption" type="xsd:string" use="optional"/>
   </xsd:complexType>
 
   <xsd:complexType name="docTocItemType" mixed="true">

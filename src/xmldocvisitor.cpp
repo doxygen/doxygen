@@ -390,6 +390,11 @@ void XmlDocVisitor::operator()(const DocVerbatim &s)
       filter(s.text());
       visitPostEnd(m_t, "plantuml");
       break;
+    case DocVerbatim::Mermaid:
+      visitPreStart(m_t, "mermaid", s.hasCaption(), *this, s.children(), QCString(""), FALSE, DocImage::Html, s.width(), s.height());
+      filter(s.text());
+      visitPostEnd(m_t, "mermaid");
+      break;
   }
 }
 
@@ -998,6 +1003,15 @@ void XmlDocVisitor::operator()(const DocPlantUmlFile &df)
   visitPreStart(m_t, "plantumlfile", FALSE, *this, df.children(), stripPath(df.file()), FALSE, DocImage::Html, df.width(), df.height());
   visitChildren(df);
   visitPostEnd(m_t, "plantumlfile");
+}
+
+void XmlDocVisitor::operator()(const DocMermaidFile &df)
+{
+  if (m_hide) return;
+  copyFile(df.file(),Config_getString(XML_OUTPUT)+"/"+stripPath(df.file()));
+  visitPreStart(m_t, "mermaidfile", FALSE, *this, df.children(), stripPath(df.file()), FALSE, DocImage::Html, df.width(), df.height());
+  visitChildren(df);
+  visitPostEnd(m_t, "mermaidfile");
 }
 
 void XmlDocVisitor::operator()(const DocLink &lnk)

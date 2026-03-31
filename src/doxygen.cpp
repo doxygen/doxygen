@@ -73,6 +73,7 @@
 #include "membergroup.h"
 #include "memberlist.h"
 #include "membername.h"
+#include "mermaid.h"
 #include "message.h"
 #include "moduledef.h"
 #include "msc.h"
@@ -152,6 +153,7 @@ FileNameLinkedMap    *Doxygen::dotFileNameLinkedMap = nullptr;     // dot files
 FileNameLinkedMap    *Doxygen::mscFileNameLinkedMap = nullptr;     // msc files
 FileNameLinkedMap    *Doxygen::diaFileNameLinkedMap = nullptr;     // dia files
 FileNameLinkedMap    *Doxygen::plantUmlFileNameLinkedMap = nullptr;// plantuml files
+FileNameLinkedMap    *Doxygen::mermaidFileNameLinkedMap = nullptr; // mermaid files
 NamespaceAliasInfoMap Doxygen::namespaceAliasMap;            // all namespace aliases
 StringMap             Doxygen::tagDestinationMap;            // all tag locations
 StringUnorderedSet    Doxygen::tagFileSet;                   // all tag file names
@@ -217,6 +219,7 @@ void clearAll()
   Doxygen::mscFileNameLinkedMap->clear();
   Doxygen::diaFileNameLinkedMap->clear();
   Doxygen::plantUmlFileNameLinkedMap->clear();
+  Doxygen::mermaidFileNameLinkedMap->clear();
   Doxygen::tagDestinationMap.clear();
   SectionManager::instance().clear();
   CitationManager::instance().clear();
@@ -11477,6 +11480,7 @@ void initDoxygen()
   Doxygen::mscFileNameLinkedMap = nullptr;
   Doxygen::diaFileNameLinkedMap = nullptr;
   Doxygen::plantUmlFileNameLinkedMap = nullptr;
+  Doxygen::mermaidFileNameLinkedMap = nullptr;
 
 }
 
@@ -11495,6 +11499,7 @@ void cleanUpDoxygen()
   delete Doxygen::mscFileNameLinkedMap;
   delete Doxygen::diaFileNameLinkedMap;
   delete Doxygen::plantUmlFileNameLinkedMap;
+  delete Doxygen::mermaidFileNameLinkedMap;
   Doxygen::mainPage.reset();
   delete Doxygen::pageLinkedMap;
   delete Doxygen::exampleLinkedMap;
@@ -11966,6 +11971,7 @@ void adjustConfiguration()
   Doxygen::mscFileNameLinkedMap = new FileNameLinkedMap;
   Doxygen::diaFileNameLinkedMap = new FileNameLinkedMap;
   Doxygen::plantUmlFileNameLinkedMap = new FileNameLinkedMap;
+  Doxygen::mermaidFileNameLinkedMap = new FileNameLinkedMap;
 
   setTranslator(Config_getEnum(OUTPUT_LANGUAGE));
 
@@ -12340,6 +12346,24 @@ void searchInputFiles()
   {
     readFileOrDirectory(s,                                 // s
                         Doxygen::plantUmlFileNameLinkedMap,// fnDict
+                        nullptr,                           // exclSet
+                        nullptr,                           // patList
+                        nullptr,                           // exclPatList
+                        nullptr,                           // resultList
+                        nullptr,                           // resultSet
+                        alwaysRecursive,                   // recursive
+                        TRUE,                              // errorIfNotExist
+                        &killSet);                         // killSet
+  }
+  g_s.end();
+
+  g_s.begin("Searching for mermaid files...\n");
+  killSet.clear();
+  const StringVector &mermaidFileList=Config_getList(MERMAIDFILE_DIRS);
+  for (const auto &s : mermaidFileList)
+  {
+    readFileOrDirectory(s,                                 // s
+                        Doxygen::mermaidFileNameLinkedMap, // fnDict
                         nullptr,                           // exclSet
                         nullptr,                           // patList
                         nullptr,                           // exclPatList
@@ -13394,6 +13418,10 @@ void generateOutput()
 
   g_s.begin("Running plantuml with JAVA...\n");
   PlantumlManager::instance().run();
+  g_s.end();
+
+  g_s.begin("Running mermaid (mmdc)...\n");
+  MermaidManager::instance().run();
   g_s.end();
 
   if (Config_getBool(HAVE_DOT))

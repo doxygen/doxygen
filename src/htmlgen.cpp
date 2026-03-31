@@ -325,6 +325,7 @@ static QCString substituteHtmlKeywords(const QCString &file,
   QCString searchCssJs;
   QCString searchBox;
   QCString mathJaxJs;
+  QCString mermaidJs;
   QCString extraCssText;
 
   QCString projectName = Config_getString(PROJECT_NAME);
@@ -600,6 +601,17 @@ static QCString substituteHtmlKeywords(const QCString &file,
     darkModeJs="<script type=\"text/javascript\" src=\"$relpath^darkmode_toggle.js\"></script>\n";
   }
 
+  QCString mermaidRenderMode = Config_getEnumAsString(MERMAID_RENDER_MODE);
+  if (mermaidRenderMode=="CLIENT_SIDE" || mermaidRenderMode=="AUTO")
+  {
+    QCString mermaidJsUrl = Config_getString(MERMAID_JS_URL);
+    mermaidJs = "<script type=\"module\">\n"
+                "import mermaid from '" + mermaidJsUrl + "';\n"
+                "const theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'default';\n"
+                "mermaid.initialize({ startOnLoad: true, theme: theme });\n"
+                "</script>\n";
+  }
+
   if (hasCookie) // extend the $treeview tag to avoid breaking old files used with HTML_HEADER
   {
     treeViewCssJs+="<script type=\"text/javascript\" src=\"$relpath^cookie.js\"></script>\n";
@@ -625,6 +637,7 @@ static QCString substituteHtmlKeywords(const QCString &file,
     { "$searchbox",      [&]() -> QCString { return searchBox;      } },
     { "$search",         [&]() -> QCString { return searchCssJs;    } },
     { "$mathjax",        [&]() -> QCString { return mathJaxJs;      } },
+    { "$mermaidjs",      [&]() -> QCString { return mermaidJs;      } },
     { "$darkmode",       [&]() -> QCString { return darkModeJs;     } },
     { "$generatedby",    [&]() -> QCString { return generatedBy;    } },
     { "$extrastylesheet",[&]() -> QCString { return extraCssText;   } },

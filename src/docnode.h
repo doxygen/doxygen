@@ -52,7 +52,7 @@ class DocParser;
 /* 40 */  DN(DocSimpleSect)     DN_SEP DN(DocSimpleSectSep) DN_SEP DN(DocParamSect)      DN_SEP DN(DocPara)         DN_SEP DN(DocParamList)   DN_SEP   \
 /* 45 */  DN(DocSimpleListItem) DN_SEP DN(DocHtmlListItem)  DN_SEP DN(DocHtmlDescData)   DN_SEP DN(DocHtmlCell)     DN_SEP DN(DocHtmlCaption) DN_SEP   \
 /* 50 */  DN(DocHtmlRow)        DN_SEP DN(DocHtmlTable)     DN_SEP DN(DocHtmlBlockQuote) DN_SEP DN(DocText)         DN_SEP DN(DocRoot)        DN_SEP   \
-/* 55 */  DN(DocHtmlDetails)    DN_SEP DN(DocHtmlSummary)   DN_SEP DN(DocPlantUmlFile)                                                                      \
+/* 55 */  DN(DocHtmlDetails)    DN_SEP DN(DocHtmlSummary)   DN_SEP DN(DocPlantUmlFile)   DN_SEP DN(DocMermaidFile)                                                                      \
 
 // forward declarations
 #define DN(x) class x;
@@ -375,7 +375,7 @@ class DocSeparator : public DocNode
 class DocVerbatim : public DocNode
 {
   public:
-    enum Type { Code, HtmlOnly, ManOnly, LatexOnly, RtfOnly, XmlOnly, Verbatim, Dot, Msc, DocbookOnly, PlantUML, JavaDocCode, JavaDocLiteral };
+    enum Type { Code, HtmlOnly, ManOnly, LatexOnly, RtfOnly, XmlOnly, Verbatim, Dot, Msc, DocbookOnly, PlantUML, Mermaid, JavaDocCode, JavaDocLiteral };
     DocVerbatim(DocParser *parser,DocNodeVariant *parent,const QCString &context,
                 const QCString &text, Type t,bool isExample,
                 const QCString &exampleFile,bool isBlock=FALSE,const QCString &lang=QCString());
@@ -740,6 +740,15 @@ class DocPlantUmlFile : public DocDiagramFileBase
 {
   public:
     DocPlantUmlFile(DocParser *parser,DocNodeVariant *parent,const QCString &name,const QCString &context,
+               const QCString &srcFile,int srcLine);
+    bool parse();
+};
+
+/** Node representing a mermaid file */
+class DocMermaidFile : public DocDiagramFileBase
+{
+  public:
+    DocMermaidFile(DocParser *parser,DocNodeVariant *parent,const QCString &name,const QCString &context,
                const QCString &srcFile,int srcLine);
     bool parse();
 };

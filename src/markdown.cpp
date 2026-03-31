@@ -404,6 +404,10 @@ QCString Markdown::Private::isBlockCommand(std::string_view data,size_t offset)
   {
     return "enduml";
   };
+  static constexpr auto getEndMermaid = [](const std::string &/* blockName */,bool,char) -> QCString
+  {
+    return "endmermaid";
+  };
   static constexpr auto getEndFormula = [](const std::string &/* blockName */,bool,char nextChar) -> QCString
   {
     switch (nextChar)
@@ -419,21 +423,22 @@ QCString Markdown::Private::isBlockCommand(std::string_view data,size_t offset)
   // table mapping a block start command to a function that can return the matching end block string
   static const std::unordered_map<std::string,EndBlockFunc> blockNames =
   {
-    { "dot",         getEndBlock   },
-    { "code",        getEndCode    },
-    { "icode",       getEndBlock   },
-    { "msc",         getEndBlock   },
-    { "verbatim",    getEndBlock   },
-    { "iverbatim",   getEndBlock   },
-    { "iliteral",    getEndBlock   },
-    { "latexonly",   getEndBlock   },
-    { "htmlonly",    getEndBlock   },
-    { "xmlonly",     getEndBlock   },
-    { "rtfonly",     getEndBlock   },
-    { "manonly",     getEndBlock   },
-    { "docbookonly", getEndBlock   },
-    { "startuml",    getEndUml     },
-    { "f",           getEndFormula }
+    { "dot",          getEndBlock   },
+    { "code",         getEndCode    },
+    { "icode",        getEndBlock   },
+    { "msc",          getEndBlock   },
+    { "verbatim",     getEndBlock   },
+    { "iverbatim",    getEndBlock   },
+    { "iliteral",     getEndBlock   },
+    { "latexonly",    getEndBlock   },
+    { "htmlonly",     getEndBlock   },
+    { "xmlonly",      getEndBlock   },
+    { "rtfonly",      getEndBlock   },
+    { "manonly",      getEndBlock   },
+    { "docbookonly",  getEndBlock   },
+    { "startuml",     getEndUml     },
+    { "mermaid",      getEndBlock   },
+    { "f",            getEndFormula }
   };
 
   const size_t size = data.size();
@@ -3337,6 +3342,10 @@ QCString Markdown::Private::processQuotations(std::string_view data,size_t refIn
         else if (lang=="msc") // msc is built-in
         {
           addSpecialCommand("msc","endmsc");
+        }
+        else if (lang=="mermaid")
+        {
+          addSpecialCommand("mermaid","endmermaid");
         }
         else // normal code block
         {

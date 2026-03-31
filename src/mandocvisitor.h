@@ -90,6 +90,7 @@ class ManDocVisitor : public DocVisitor
     void operator()(const DocMscFile &);
     void operator()(const DocDiaFile &);
     void operator()(const DocPlantUmlFile &);
+    void operator()(const DocMermaidFile &);
     void operator()(const DocLink &lnk);
     void operator()(const DocRef &ref);
     void operator()(const DocSecRefItem &);

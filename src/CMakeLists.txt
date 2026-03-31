@@ -286,6 +286,7 @@ add_library(doxymain STATIC
     memberdef.cpp
     membergroup.cpp
     memberlist.cpp
+    mermaid.cpp
     moduledef.cpp
     msc.cpp
     namespacedef.cpp
