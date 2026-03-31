@@ -4276,19 +4276,11 @@ to be found in the default search path.
       <docs>
 <![CDATA[
  The \c MERMAID_RENDER_MODE tag selects how Mermaid diagrams are rendered.
- Possible values are: \c CLI, \c CLIENT_SIDE, and \c AUTO.
- - \c CLI: Use the \c mmdc tool to pre-generate images (requires Node.js and
-   \c @mermaid-js/mermaid-cli). Works for all output formats.
- - \c CLIENT_SIDE: Embed \c mermaid.js in HTML output for client-side rendering.
-   Does not require \c mmdc but only works for HTML output.
- - \c AUTO (default): Use client-side rendering for HTML and \c mmdc for
-   LaTeX/PDF and other formats. If \c MERMAID_PATH is not set, non-HTML
-   diagrams will produce a warning.
 ]]>
       </docs>
-      <value name='AUTO'/>
-      <value name='CLI'/>
-      <value name='CLIENT_SIDE'/>
+      <value name='AUTO' desc='Use client-side rendering for HTML and \c mmdc for LaTeX/PDF and other formats. If \c MERMAID_PATH is not set, non-HTML diagrams will produce a warning.'/>
+      <value name='CLI' desc='Use the \c mmdc tool to pre-generate images (requires Node.js and \c mermaid-js/mermaid-cli). Works for all output formats.'/>
+      <value name='CLIENT_SIDE' desc='Embed \c mermaid.js in HTML output for client-side rendering. Does not require \c mmdc but only works for HTML output.'/>
     </option>
     <option type='string' id='MERMAID_JS_URL' format='string'
             defval='https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs'>

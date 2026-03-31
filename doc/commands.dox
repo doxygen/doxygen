@@ -161,6 +161,7 @@ documentation:
 \refitem cmdmaninclude \\maninclude
 \refitem cmdmanonly \\manonly
 \refitem cmdmemberof \\memberof
+\refitem cmdmermaid \\mermaid
 \refitem cmdmermaidfile \\mermaidfile
 \refitem cmdmodule \\module
 \refitem cmdmsc \\msc
@@ -226,7 +227,6 @@ documentation:
 \refitem cmdsnippetdoc \\snippetdoc
 \refitem cmdsnippetlineno \\snippetlineno
 \refitem cmdstatic \\static
-\refitem cmdstartmermaid \\startmermaid
 \refitem cmdstartuml \\startuml
 \refitem cmdstruct \\struct
 \refitem cmdsubpage \\subpage
@@ -3612,9 +3612,9 @@ class Receiver
   \sa section \ref cmdmscfile "\\mscfile".
 
 <hr>
-\section cmdstartmermaid \\startmermaid ['{'option'}'] ["caption"] [\<sizeindication\>=\<size\>]
+\section cmdmermaid \\mermaid ['{'option'}'] ["caption"] [\<sizeindication\>=\<size\>]
 
-  \addindex \\startmermaid
+  \addindex \\mermaid
 
   Starts a text fragment which should contain a valid Mermaid diagram definition.
   See https://mermaid.js.org/intro for examples and syntax documentation.
@@ -3624,19 +3624,12 @@ class Receiver
   class diagrams, state diagrams, Gantt charts, and more.
 
   Doxygen supports two rendering modes for Mermaid diagrams, controlled by
-  the \ref cfg_mermaid_render_mode "MERMAID_RENDER_MODE" configuration option:
-  - \c CLIENT_SIDE: Embeds the diagram source in HTML and renders it in the browser
-    using mermaid.js (loaded from the URL specified by \ref cfg_mermaid_js_url "MERMAID_JS_URL").
-    No external tools are required. Only works for HTML output.
-  - \c CLI: Uses the \c mmdc command-line tool to pre-generate images.
-    Requires Node.js and \c @mermaid-js/mermaid-cli. The path to \c mmdc can be
-    set via \ref cfg_mermaid_path "MERMAID_PATH". Works for all output formats.
-  - \c AUTO (default): Uses client-side rendering for HTML and CLI for other formats.
+  the \ref cfg_mermaid_render_mode "MERMAID_RENDER_MODE" configuration option.
 
   The first argument is optional and can be used to specify the name of the
   generated image file inside curly brackets, i.e.
   \verbatim
-  @startmermaid{mydiagram}
+  @mermaid{mydiagram}
   flowchart LR
     A --> B
   @endmermaid
@@ -3663,16 +3656,16 @@ class Receiver
     A --> B
   ```
   \endverbatim
-  These are automatically converted to \\startmermaid / \\endmermaid.
+  These are automatically converted to \\mermaid / \\endmermaid.
 
   \note Doxygen creates a temporary file that is automatically removed unless
   the \ref cfg_dot_cleanup "DOT_CLEANUP" tag is set to `NO`.
 
-Here is an example of the use of the \c \\startmermaid command.
+Here is an example of the use of the \c \\mermaid command.
 \code
 /** Sender class. Can be used to send a command to the server.
  *  The receiver will acknowledge the command by calling Ack().
- *  \startmermaid
+ *  \mermaid
  *    sequenceDiagram
  *    Sender->>Receiver: Command()
  *    Receiver-->>Sender: Ack()
@@ -3687,7 +3680,7 @@ class Sender
 
 /** Receiver class. Can be used to receive and execute commands.
  *  After execution of a command, the receiver will send an acknowledgment
- *  \startmermaid
+ *  \mermaid
  *    sequenceDiagram
  *    Receiver->>Sender: Command()
  *    Sender-->>Receiver: Ack()
@@ -3957,7 +3950,7 @@ class Receiver
 \section cmdendmermaid \\endmermaid
 
   \addindex \\endmermaid
-  Ends a block that was started with \ref cmdstartmermaid "\\startmermaid".
+  Ends a block that was started with \ref cmdmermaid "\\mermaid".
 
 <hr>
 \section cmdenduml \\enduml
@@ -3989,7 +3982,7 @@ class Receiver
   \ref image_sizeindicator "Size indication" with the
   \ref cmdimage "\\image" command.
 
-  \sa section \ref cmdstartmermaid "\\startmermaid".
+  \sa section \ref cmdmermaid "\\mermaid".
 
 <hr>
 \section cmdplantumlfile \\plantumlfile \<file\> ["caption"] [\<sizeindication\>=\<size\>]

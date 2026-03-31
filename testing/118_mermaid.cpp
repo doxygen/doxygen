@@ -5,7 +5,7 @@
 
 /** \file
  * Test inline mermaid diagram in file documentation.
- * \startmermaid
+ * \mermaid
  * flowchart LR
  *   A[Start] --> B[End]
  * \endmermaid
@@ -13,7 +13,7 @@
 
 /** Sender class. Can be used to send a command to the server.
  *  The receiver will acknowledge the command by calling Ack().
- *  \startmermaid
+ *  \mermaid
  *    sequenceDiagram
  *    Sender->>Receiver: Command()
  *    Receiver-->>Sender: Ack()
@@ -28,7 +28,7 @@ class Sender
 
 /** Receiver class. Can be used to receive and execute commands.
  *  After execution of a command, the receiver will send an acknowledgment
- *  \startmermaid
+ *  \mermaid
  *    sequenceDiagram
  *    Receiver->>Sender: Command()
  *    Sender-->>Receiver: Ack()

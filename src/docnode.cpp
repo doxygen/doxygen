@@ -4731,7 +4731,7 @@ Token DocPara::handleCommand(char cmdChar, const QCString &cmdName)
         parser()->tokenizer.setStatePara();
       }
       break;
-    case CommandType::CMD_STARTMERMAID:
+    case CommandType::CMD_MERMAID:
       {
         parser()->tokenizer.setStateMermaidOpt();
         parser()->tokenizer.lex();
@@ -4767,7 +4767,7 @@ Token DocPara::handleCommand(char cmdChar, const QCString &cmdName)
         DocVerbatim *dv = children().get_last<DocVerbatim>();
         parser()->tokenizer.setStatePara();
         QCString width,height;
-        parser()->defaultHandleTitleAndSize(CommandType::CMD_STARTMERMAID,&children().back(),dv->children(),width,height);
+        parser()->defaultHandleTitleAndSize(CommandType::CMD_MERMAID,&children().back(),dv->children(),width,height);
         parser()->tokenizer.setStateMermaid();
         retval = parser()->tokenizer.lex();
         int line = 0;
@@ -4778,7 +4778,7 @@ Token DocPara::handleCommand(char cmdChar, const QCString &cmdName)
         dv->setLocation(parser()->context.fileName,parser()->tokenizer.getLineNr());
         if (retval.is_any_of(TokenRetval::TK_NONE,TokenRetval::TK_EOF))
         {
-          warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"startmermaid section ended without end marker");
+          warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"mermaid section ended without end marker");
         }
         parser()->tokenizer.setStatePara();
       }

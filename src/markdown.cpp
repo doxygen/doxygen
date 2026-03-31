@@ -437,7 +437,7 @@ QCString Markdown::Private::isBlockCommand(std::string_view data,size_t offset)
     { "manonly",      getEndBlock   },
     { "docbookonly",  getEndBlock   },
     { "startuml",     getEndUml     },
-    { "startmermaid", getEndMermaid },
+    { "mermaid",      getEndBlock   },
     { "f",            getEndFormula }
   };
 
@@ -3345,7 +3345,7 @@ QCString Markdown::Private::processQuotations(std::string_view data,size_t refIn
         }
         else if (lang=="mermaid")
         {
-          addSpecialCommand("startmermaid","endmermaid");
+          addSpecialCommand("mermaid","endmermaid");
         }
         else // normal code block
         {
