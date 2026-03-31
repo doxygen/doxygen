@@ -375,6 +375,7 @@ void Qhp::addIndexItem(const Definition *context,const MemberDef *md,
 
   if (context && md) // member
   {
+    if (sectionAnchor.isEmpty() && !md->hasDocumentation()) return;
     QCString cfname  = md->getOutputFileBase();
     QCString argStr  = md->argsString();
     QCString level1  = context->name();
