@@ -2365,6 +2365,8 @@ static bool isFencedCodeBlock(std::string_view data,size_t refIndent,
     AUTO_TRACE_EXIT("result=false: no fence marker found #tildes={}",startTildes);
     return FALSE;
   } // not enough tildes
+  // skip whitespace
+  while (i<size && data[i]==' ') { i++; }
   if (i<size && data[i]=='{') // extract .py from ```{.py} ... ```
   {
     i++; // skip over {
