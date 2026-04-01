@@ -230,6 +230,7 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     bool hasReferencedByRelation() const override;
     bool hasEnumValues() const override;
     bool hasInlineSource() const override;
+    bool isDocTransferDone() const override;
     QCString sourceRefName() const override;
     const MemberDef *templateMaster() const override;
     QCString getScopeString() const override;
@@ -328,6 +329,7 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     void setBriefDescription(const QCString &b,const QCString &briefFile,int briefLine) override;
     void setInbodyDocumentation(const QCString &d,const QCString &inbodyFile,int inbodyLine) override;
     void setHidden(bool b) override;
+    void setDocTransferDone() override;
     void setRequiresClause(const QCString &req) override;
     void incrementFlowKeyWordCount() override;
     void writeDeclaration(OutputList &ol,
@@ -433,6 +435,7 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     QCString m_enumBaseType;    // base type of the enum (C++11)
     QCString m_requiresClause;  // requires clause (C++20)
     int m_initLines = 0;            // number of lines in the initializer
+    bool m_docTransferDone = false;
 
     TypeSpecifier m_memSpec;          // The specifiers present for this member
     VhdlSpecifier m_vhdlSpec;
@@ -881,6 +884,8 @@ class MemberDefAliasImpl : public DefinitionAliasMixin<MemberDef>
     { return getMdAlias()->hasReferencedByRelation(); }
     bool hasInlineSource() const override
     { return getMdAlias()->hasInlineSource(); }
+    bool isDocTransferDone() const override
+    { return getMdAlias()->isDocTransferDone(); }
     QCString sourceRefName() const override
     { return getMdAlias()->sourceRefName(); }
     bool hasEnumValues() const override
@@ -1873,6 +1878,11 @@ void MemberDefImpl::setBriefDescription(const QCString &b,const QCString &briefF
 {
   DefinitionMixin::setBriefDescription(b,briefFile,briefLine);
   m_isLinkableCached = 0;
+}
+
+void MemberDefImpl::setDocTransferDone()
+{
+  m_docTransferDone = true;
 }
 
 void MemberDefImpl::setInbodyDocumentation(const QCString &d,const QCString &inbodyFile,int inbodyLine)
@@ -5092,6 +5102,11 @@ int MemberDefImpl::initializerLines() const
   return m_initLines;
 }
 
+bool MemberDefImpl::isDocTransferDone() const
+{
+  return m_docTransferDone;
+}
+
 TypeSpecifier MemberDefImpl::getMemberSpecifiers() const
 {
   return m_memSpec;
@@ -6207,8 +6222,11 @@ void combineDeclarationAndDefinition(MemberDefMutable *mdec,MemberDefMutable *md
   AUTO_TRACE("mdec='{}' mdef='{}' mdec.isPrototype={} mdef.isPrototype={}",
               mdec->name(), mdef->name(), mdec->isPrototype(), mdef->isPrototype());
   if (
-      (mdef->isFunction() && !mdef->isStatic() && !mdef->isPrototype()) ||
-      (mdef->isVariable() && !mdef->isExternal() && !mdef->isStatic())
+      (!mdef->isDocTransferDone() || !mdec->isDocTransferDone()) &&
+      (
+       (mdef->isFunction() && !mdef->isStatic() && !mdef->isPrototype()) ||
+       (mdef->isVariable() && !mdef->isExternal() && !mdef->isStatic())
+      )
      )
   {
     bool sameNumTemplateArgs = mdef->templateArguments().size()==mdec->templateArguments().size();
@@ -6239,11 +6257,11 @@ void combineDeclarationAndDefinition(MemberDefMutable *mdec,MemberDefMutable *md
       QCString mdecBriefFile = mdec->briefFile();
       int mdefBriefLine      = mdef->briefLine();
       int mdecBriefLine      = mdec->briefLine();
-      if (!mdecBrief.isEmpty())
+      if (!mdef->isDocTransferDone() && !mdecBrief.isEmpty())
       {
         mdef->setBriefDescription(mdecBrief,mdecBriefFile,mdecBriefLine);
       }
-      if (!mdefBrief.isEmpty())
+      if (!mdec->isDocTransferDone() && !mdefBrief.isEmpty())
       {
         mdec->setBriefDescription(mdefBrief,mdefBriefFile,mdefBriefLine);
       }
@@ -6257,7 +6275,7 @@ void combineDeclarationAndDefinition(MemberDefMutable *mdec,MemberDefMutable *md
       int mdecLine        = mdec->docLine();
       bool mdefDocsForDef = mdef->isDocsForDefinition();
       bool mdecDocsForDef = mdec->isDocsForDefinition();
-      if (!mdefDocs.isEmpty())
+      if (!mdec->isDocTransferDone() && !mdefDocs.isEmpty())
       {
         //printf("transferring docs mdef->mdec (%s->%s)\n",mdef->argsString(),mdec->argsString());
         mdec->setDocumentation(mdefDocs,mdefFile,mdefLine);
@@ -6269,7 +6287,7 @@ void combineDeclarationAndDefinition(MemberDefMutable *mdec,MemberDefMutable *md
           mdec->moveArgumentList(std::move(mdefAlComb));
         }
       }
-      if (!mdecDocs.isEmpty())
+      if (!mdef->isDocTransferDone() && !mdecDocs.isEmpty())
       {
         //printf("transferring docs mdec->mdef (%s->%s)\n",mdec->argsString(),mdef->argsString());
         mdef->setDocumentation(mdecDocs,mdecFile,mdecLine);
@@ -6289,11 +6307,11 @@ void combineDeclarationAndDefinition(MemberDefMutable *mdec,MemberDefMutable *md
       QCString mdecInbodyFile = mdec->inbodyFile();
       int mdefInbodyLine      = mdef->inbodyLine();
       int mdecInbodyLine      = mdec->inbodyLine();
-      if (!mdefInbodyDocs.isEmpty())
+      if (!mdec->isDocTransferDone() && !mdefInbodyDocs.isEmpty())
       {
         mdec->setInbodyDocumentation(mdefInbodyDocs,mdefInbodyFile,mdefInbodyLine);
       }
-      if (!mdecInbodyDocs.isEmpty())
+      if (!mdef->isDocTransferDone() && !mdecInbodyDocs.isEmpty())
       {
         mdef->setInbodyDocumentation(mdecInbodyDocs,mdecInbodyFile,mdecInbodyLine);
       }
@@ -6348,6 +6366,9 @@ void combineDeclarationAndDefinition(MemberDefMutable *mdec,MemberDefMutable *md
 
       mdef->addQualifiers(mdec->getQualifiers());
       mdec->addQualifiers(mdef->getQualifiers());
+
+      mdef->setDocTransferDone();
+      mdec->setDocTransferDone();
     }
   }
 }
