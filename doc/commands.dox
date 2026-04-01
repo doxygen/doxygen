@@ -3656,7 +3656,7 @@ class Receiver
     A --> B
   ```
   \endverbatim
-  These are automatically converted to \\mermaid / \\endmermaid.
+  These are automatically converted to `\mermaid` / `\endmermaid`.
 
   \note Doxygen creates a temporary file that is automatically removed unless
   the \ref cfg_dot_cleanup "DOT_CLEANUP" tag is set to `NO`.
