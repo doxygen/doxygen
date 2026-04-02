@@ -653,10 +653,8 @@ void HtmlDocVisitor::operator()(const DocVerbatim &s)
     case DocVerbatim::Mermaid:
       {
         forceEndParagraph(s);
-        QCString mermaidRenderMode = Config_getEnumAsString(MERMAID_RENDER_MODE);
-        if (mermaidRenderMode=="CLI")
+        if (Config_getEnum(MERMAID_RENDER_MODE)==MERMAID_RENDER_MODE_t::CLI) // CLI mode: pre-generate image via mmdc
         {
-          // CLI mode: pre-generate image via mmdc
           QCString htmlOutput = Config_getString(HTML_OUTPUT);
           QCString imgExt = getDotImageExtension();
           MermaidManager::OutputFormat format = MermaidManager::MERM_BITMAP;
@@ -672,9 +670,8 @@ void HtmlDocVisitor::operator()(const DocVerbatim &s)
           visitCaption(m_t, s);
           m_t << "</div>\n";
         }
-        else
+        else // CLIENT_SIDE or AUTO mode: embed for client-side rendering
         {
-          // CLIENT_SIDE or AUTO mode: embed for client-side rendering
           m_t << "<div class=\"mermaidgraph\">\n";
           m_t << "<pre class=\"mermaid\">\n";
           m_t << s.text();
@@ -1882,8 +1879,7 @@ void HtmlDocVisitor::operator()(const DocMermaidFile &df)
   if (m_hide) return;
   if (!Config_getBool(DOT_CLEANUP)) copyFile(df.file(),Config_getString(HTML_OUTPUT)+"/"+stripPath(df.file()));
   forceEndParagraph(df);
-  QCString mermaidRenderMode = Config_getEnumAsString(MERMAID_RENDER_MODE);
-  if (mermaidRenderMode=="CLI")
+  if (Config_getEnum(MERMAID_RENDER_MODE)==MERMAID_RENDER_MODE_t::CLI)
   {
     QCString htmlOutput = Config_getString(HTML_OUTPUT);
     QCString imgExt = getDotImageExtension();
@@ -1909,7 +1905,7 @@ void HtmlDocVisitor::operator()(const DocMermaidFile &df)
     }
     m_t << "</div>\n";
   }
-  else
+  else // AUTO or CLIENT_SIDE
   {
     // CLIENT_SIDE or AUTO: embed mermaid source for client-side rendering
     std::string inBuf;

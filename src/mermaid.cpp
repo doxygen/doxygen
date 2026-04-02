@@ -117,12 +117,10 @@ void MermaidManager::generateMermaidOutput(const QCString &baseName, const QCStr
 static void runMermaidContent(const MermaidManager::ContentList &contentList,
                               MermaidManager::OutputFormat format)
 {
+  //printf("runMermaidContent for %zu images\n",contentList.size());
   if (contentList.empty()) return;
 
-  QCString mermaidPath = Config_getString(MERMAID_PATH);
-  if (mermaidPath.isEmpty()) return;
-
-  QCString mmdc = mermaidPath;
+  QCString mmdc = Config_getString(MERMAID_PATH);
   if (!mmdc.isEmpty() && mmdc.at(mmdc.length()-1) != '/' && mmdc.at(mmdc.length()-1) != '\\')
   {
     mmdc += "/";
@@ -140,6 +138,7 @@ static void runMermaidContent(const MermaidManager::ContentList &contentList,
 
   for (const auto &mc : contentList)
   {
+    //printf("content=%s\n",qPrint(mc.content));
     if (mc.content.isEmpty()) continue;
 
     QCString inputFile  = mc.baseName + ".mmd";

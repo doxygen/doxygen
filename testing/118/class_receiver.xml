@@ -20,7 +20,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="118_mermaid.cpp" line="41" column="10"/>
+        <location file="118_mermaid.cpp" line="42" column="10"/>
       </memberdef>
     </sectiondef>
     <briefdescription>
@@ -31,7 +31,7 @@
   Sender--&gt;&gt;Receiver: Ack()</mermaid>
  </para>
     </detaileddescription>
-    <location file="118_mermaid.cpp" line="37" column="1" bodyfile="118_mermaid.cpp" bodystart="38" bodyend="42"/>
+    <location file="118_mermaid.cpp" line="38" column="1" bodyfile="118_mermaid.cpp" bodystart="39" bodyend="43"/>
     <listofallmembers>
       <member refid="class_receiver_1a162099741e0324e6254c9bc570566e40" prot="public" virt="non-virtual">
         <scope>Receiver</scope>

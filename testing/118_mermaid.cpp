@@ -2,6 +2,7 @@
 // check: class_sender.xml
 // check: class_receiver.xml
 // check: 118__mermaid_8cpp.xml
+// config: MERMAID_RENDER_MODE=CLIENT_SIDE
 
 /** \file
  * Test inline mermaid diagram in file documentation.

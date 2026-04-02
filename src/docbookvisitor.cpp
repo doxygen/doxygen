@@ -400,6 +400,7 @@ DB_VIS_C
       }
       break;
     case DocVerbatim::Mermaid:
+      if (Config_getBool(MERMAID_RENDER_MODE)!=MERMAID_RENDER_MODE_t::CLIENT_SIDE)
       {
         QCString docbookOutput = Config_getString(DOCBOOK_OUTPUT);
         QCString baseName = MermaidManager::instance().writeMermaidSource(docbookOutput,
@@ -1305,6 +1306,7 @@ void DocbookDocVisitor::operator()(const DocMermaidFile &df)
 {
 DB_VIS_C
   if (m_hide) return;
+  if (Config_getBool(MERMAID_RENDER_MODE)==MERMAID_RENDER_MODE_t::CLIENT_SIDE) return;
   if (!Config_getBool(DOT_CLEANUP)) copyFile(df.file(),Config_getString(DOCBOOK_OUTPUT)+"/"+stripPath(df.file()));
   startMermaidFile(df.file(),df.relPath(),df.width(),df.height(),df.hasCaption(),df.children(),df.srcFile(),df.srcLine());
   visitChildren(df);
@@ -1615,6 +1617,7 @@ DB_VIS_C
 void DocbookDocVisitor::writeMermaidFile(const QCString &baseName, const DocVerbatim &s)
 {
 DB_VIS_C
+  if (Config_getBool(MERMAID_RENDER_MODE)==MERMAID_RENDER_MODE_t::CLIENT_SIDE) return;
   QCString shortName = stripPath(baseName);
   QCString outDir = Config_getString(DOCBOOK_OUTPUT);
   MermaidManager::instance().generateMermaidOutput(baseName,outDir,MermaidManager::MERM_BITMAP);
@@ -1634,6 +1637,7 @@ void DocbookDocVisitor::startMermaidFile(const QCString &fileName,
     )
 {
 DB_VIS_C
+  if (Config_getBool(MERMAID_RENDER_MODE)==MERMAID_RENDER_MODE_t::CLIENT_SIDE) return;
   QCString outDir = Config_getString(DOCBOOK_OUTPUT);
   std::string inBuf;
   readInputFile(fileName,inBuf);
