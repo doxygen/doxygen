@@ -1873,6 +1873,12 @@ NONLopt [^\n]*
                                           yyextra->current->name += "()";
                                           BEGIN( FindMembers );
                                         }
+<Operator>"("{BN}*")"{BNopt}/("[["[^\]]*"]]"){BNopt}"("        {
+                                          lineCount(yyscanner);
+                                          yyextra->current->name += yytext ;
+                                          yyextra->current->name = yyextra->current->name.simplifyWhiteSpace();
+                                          BEGIN( FindMembers ) ;
+                                        }
 <Operator>"("{BN}*")"{BNopt}/"("        {
                                           lineCount(yyscanner);
                                           yyextra->current->name += yytext ;
