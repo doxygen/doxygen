@@ -28,6 +28,7 @@ class QMenu;
 class QProcess;
 class QTimer;
 class QTabWidget;
+class QActionGroup;
 
 class MainWindow : public QMainWindow
 {
@@ -71,6 +72,8 @@ class MainWindow : public QMainWindow
     void configChanged();
     void clearRecent();
     void selectRunTab();
+    void switchLanguage(QAction *action);
+    void onLanguageChanged(const QString &langCode);
 
   private:
     MainWindow();
@@ -106,6 +109,8 @@ class MainWindow : public QMainWindow
     QProcess *m_runProcess;
     QTimer *m_timer;
     QTabWidget *m_tabs;
+    QMenu *m_languageMenu;
+    QActionGroup *m_languageActionGroup;
     int m_outputLogTextCount = 0;
     bool m_running;
     bool m_modified;

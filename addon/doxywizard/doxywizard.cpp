@@ -14,6 +14,7 @@
 #include "version.h"
 #include "expert.h"
 #include "wizard.h"
+#include "translationmanager.h"
 
 #include <QMenu>
 #include <QMenuBar>
@@ -37,7 +38,9 @@
 #include <QRegularExpression>
 #include <QDebug>
 #include <QDate>
+#include <QTranslator>
 #include <QScrollBar>
+#include <QActionGroup>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -83,6 +86,24 @@ MainWindow::MainWindow()
   m_runMenu = settings->addAction(tr("Run doxygen"),
                                   this, SLOT(runDoxygenMenu()), QKeySequence{ Qt::CTRL | Qt::Key_R });
   m_runMenu->setEnabled(false);
+
+  m_languageMenu = menuBar()->addMenu(tr("Language"));
+  m_languageActionGroup = new QActionGroup(this);
+  m_languageActionGroup->setExclusive(true);
+  
+  QStringList languages = TranslationManager::instance().availableLanguages();
+  QString currentLang = TranslationManager::instance().currentLanguageCode();
+  
+  foreach (const QString &langCode, languages)
+  {
+      TranslationManager::LanguageInfo info = TranslationManager::instance().languageInfo(langCode);
+      QAction *action = m_languageMenu->addAction(info.nativeName);
+      action->setData(langCode);
+      action->setCheckable(true);
+      action->setChecked(langCode == currentLang);
+      m_languageActionGroup->addAction(action);
+  }
+  connect(m_languageMenu, SIGNAL(triggered(QAction*)), SLOT(switchLanguage(QAction*)));
 
   QMenu *help = menuBar()->addMenu(tr("Help"));
   help->addAction(tr("Online manual"),
@@ -204,6 +225,8 @@ MainWindow::MainWindow()
   connect(m_expert,SIGNAL(changed()),SLOT(configChanged()));
   connect(m_wizard,SIGNAL(done()),SLOT(selectRunTab()));
   connect(m_expert,SIGNAL(done()),SLOT(selectRunTab()));
+  connect(&TranslationManager::instance(), SIGNAL(languageChanged(QString)), 
+          SLOT(onLanguageChanged(QString)));
 
   loadSettings();
   updateLaunchButtonState();
@@ -738,7 +761,7 @@ void MainWindow::configChanged()
 
 void MainWindow::updateTitle()
 {
-  QString title = tr("Doxygen GUI frontend");
+  QString title = tr("Doxygen GUI frontend") ;
   m_resetDefault->setEnabled(m_modified);
   if (m_modified)
   {
@@ -804,6 +827,81 @@ void MainWindow::outputLogFinish()
   m_outputLog->ensureCursorVisible();
   m_saveLog->setEnabled(true);
 }
+
+void MainWindow::switchLanguage(QAction *action)
+{
+  QString langCode = action->data().toString();
+  TranslationManager::instance().switchLanguage(langCode);
+}
+
+void MainWindow::onLanguageChanged(const QString &langCode)
+{
+  foreach (QAction *action, m_languageActionGroup->actions())
+  {
+    action->setChecked(action->data().toString() == langCode);
+  }
+  
+  m_tabs->setTabText(0, tr("Wizard"));
+  m_tabs->setTabText(1, tr("Expert"));
+  m_tabs->setTabText(2, tr("Run"));
+  
+  menuBar()->clear();
+  
+  QMenu *file = menuBar()->addMenu(tr("File"));
+  file->addAction(tr("Open..."),
+                  this, SLOT(openConfig()), QKeySequence{ Qt::CTRL | Qt::Key_O });
+  m_recentMenu = file->addMenu(tr("Open recent"));
+  file->addAction(tr("Save"),
+                  this, SLOT(saveConfig()), QKeySequence{ Qt::CTRL | Qt::Key_S });
+  file->addAction(tr("Save as..."),
+                  this, SLOT(saveConfigAs()), QKeySequence{ Qt::SHIFT | Qt::CTRL | Qt::Key_S });
+  file->addAction(tr("Quit"),
+                  this, SLOT(quit()), QKeySequence{ Qt::CTRL | Qt::Key_Q });
+
+  QMenu *settings = menuBar()->addMenu(tr("Settings"));
+  m_resetDefault = settings->addAction(tr("Reset to factory defaults"),
+                  this,SLOT(resetToDefaults()));
+  settings->addAction(tr("Use current settings at startup"),
+                  this,SLOT(makeDefaults()));
+  m_clearRecent = settings->addAction(tr("Clear recent list"),
+                  this,SLOT(clearRecent()));
+  settings->addSeparator();
+  m_runMenu = settings->addAction(tr("Run doxygen"),
+                                  this, SLOT(runDoxygenMenu()), QKeySequence{ Qt::CTRL | Qt::Key_R });
+  m_runMenu->setEnabled(!m_workingDir->text().isEmpty());
+
+  m_languageMenu = menuBar()->addMenu(tr("Language"));
+  QStringList languages = TranslationManager::instance().availableLanguages();
+  foreach (const QString &code, languages)
+  {
+      TranslationManager::LanguageInfo info = TranslationManager::instance().languageInfo(code);
+      QAction *langAction = m_languageMenu->addAction(info.nativeName);
+      langAction->setData(code);
+      langAction->setCheckable(true);
+      langAction->setChecked(code == langCode);
+      m_languageActionGroup->addAction(langAction);
+  }
+  connect(m_languageMenu, SIGNAL(triggered(QAction*)), SLOT(switchLanguage(QAction*)));
+
+  QMenu *help = menuBar()->addMenu(tr("Help"));
+  help->addAction(tr("Online manual"),
+                  this, SLOT(manual()), Qt::Key_F1);
+  help->addAction(tr("About"),
+                  this, SLOT(about()) );
+  
+  updateRecentFile();
+  updateTitle();
+  
+  m_selWorkingDir->setText(tr("Select..."));
+  m_run->setText(m_running ? tr("Stop doxygen") : tr("Run doxygen"));
+  m_runStatus->setText(m_running ? tr("Status: running") : tr("Status: not running"));
+  m_saveLog->setText(tr("Save log..."));
+  m_launchHtml->setText(tr("Show HTML output"));
+  m_showCondensedSettings->setText(tr("Condensed"));
+  m_showCondensedSettings->setToolTip(tr("Show only configuration settings different from default settings"));
+  
+  statusBar()->showMessage(tr("Language changed to: %1").arg(TranslationManager::instance().currentLanguage()), messageTimeout);
+}
 //-----------------------------------------------------------------------
 int main(int argc,char **argv)
 {
@@ -818,6 +916,9 @@ int main(int argc,char **argv)
 #endif
 
   QApplication a(argc,argv);
+  
+  TranslationManager::instance().initialize();
+
   int locArgc = argc;
 
   if (locArgc == 2)

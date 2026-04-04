@@ -13,6 +13,7 @@
 #include "inputint.h"
 #include "helplabel.h"
 #include "config_msg.h"
+#include "optiontranslations.h"
 
 #include <QSpinBox>
 #include <QGridLayout>
@@ -34,7 +35,7 @@ InputInt::InputInt( QGridLayout *layout,int &row,
                     const QString & docs )
   : m_default(defVal), m_minVal(minVal), m_maxVal(maxVal), m_docs(docs), m_id(id)
 {
-  m_lab = new HelpLabel(id);
+  m_lab = new HelpLabel(OptionTranslations::instance().translate(id));
   m_sp  = new NoWheelSpinBox;
   m_sp->setMinimum(minVal);
   m_sp->setMaximum(maxVal);
@@ -81,13 +82,14 @@ void InputInt::setValue(int val)
 void InputInt::updateDefault()
 {
   {
+    QString translatedId = OptionTranslations::instance().translate(m_id);
     if (m_val==m_default || !m_lab->isEnabled())
     {
-      m_lab->setText(QString::fromLatin1("<qt>")+m_id+QString::fromLatin1("</qt>"));
+      m_lab->setText(QString::fromLatin1("<qt>")+translatedId+QString::fromLatin1("</qt>"));
     }
     else
     {
-      m_lab->setText(QString::fromLatin1("<qt><font color='red'>")+m_id+QString::fromLatin1("</font></qt>"));
+      m_lab->setText(QString::fromLatin1("<qt><font color='red'>")+translatedId+QString::fromLatin1("</font></qt>"));
     }
     emit changed();
   }

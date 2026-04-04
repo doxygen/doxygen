@@ -14,6 +14,7 @@
 #include "helplabel.h"
 #include "doxywizard.h"
 #include "config.h"
+#include "optiontranslations.h"
 
 #include <QToolBar>
 #include <QGridLayout>
@@ -29,7 +30,7 @@ InputStrList::InputStrList( QGridLayout *layout,int &row,
                             const QString & docs)
   : m_default(sl), m_strList(sl), m_docs(docs), m_id(id)
 {
-  m_lab = new HelpLabel( id );
+  m_lab = new HelpLabel(OptionTranslations::instance().translate(id));
 
   m_le  = new QLineEdit;
   m_le->clear();
@@ -227,13 +228,14 @@ void InputStrList::update()
 
 void InputStrList::updateDefault()
 {
+  QString translatedId = OptionTranslations::instance().translate(m_id);
   if (isDefault() || !m_lab->isEnabled())
   {
-    m_lab->setText(QString::fromLatin1("<qt>")+m_id+QString::fromLatin1("</qt>"));
+    m_lab->setText(QString::fromLatin1("<qt>")+translatedId+QString::fromLatin1("</qt>"));
   }
   else
   {
-    m_lab->setText(QString::fromLatin1("<qt><font color='red'>")+m_id+QString::fromLatin1("</font></qt>"));
+    m_lab->setText(QString::fromLatin1("<qt><font color='red'>")+translatedId+QString::fromLatin1("</font></qt>"));
   }
 }
 

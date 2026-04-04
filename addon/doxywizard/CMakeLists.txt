@@ -140,9 +140,35 @@ inputbool.h
 inputstring.h
 inputstrlist.h
 wizard.h
+translationmanager.h
+optiontranslations.h
 )
 
 qt_add_resources(doxywizard_RESOURCES_RCC doxywizard.qrc)
+
+set(DOXYWIZARD_TRANSLATION_FILES
+  doxywizard_zh_CN.ts
+  doxywizard_zh_TW.ts
+  doxywizard_de.ts
+  doxywizard_fr.ts
+  doxywizard_ja.ts
+  doxywizard_ko.ts
+  doxywizard_es.ts
+  doxywizard_ru.ts
+)
+
+find_package(Qt6LinguistTools QUIET)
+if(Qt6LinguistTools_FOUND)
+  qt6_add_translation(doxywizard_QM_FILES ${DOXYWIZARD_TRANSLATION_FILES})
+else()
+  find_package(Qt5LinguistTools QUIET)
+  if(Qt5LinguistTools_FOUND)
+    qt5_add_translation(doxywizard_QM_FILES ${DOXYWIZARD_TRANSLATION_FILES})
+  else()
+    set(doxywizard_QM_FILES)
+    message(STATUS "Qt Linguist tools not found, translation files will not be compiled")
+  endif()
+endif()
 
 add_executable(doxywizard WIN32
 config_msg.cpp
@@ -153,12 +179,15 @@ inputbool.cpp
 inputstring.cpp
 inputint.cpp
 inputstrlist.cpp
+optiontranslations.cpp
+translationmanager.cpp
 ${GENERATED_SRC_WIZARD}/settings.h
 ${GENERATED_SRC_WIZARD}/config_doxyw.cpp
 ${GENERATED_SRC_WIZARD}/config_doxyw.l.h
 ${GENERATED_SRC_WIZARD}/configdoc.cpp
 ${doxywizard_MOC}
 ${doxywizard_RESOURCES_RCC}
+${doxywizard_QM_FILES}
 ${PROJECT_SOURCE_DIR}/templates/icon/doxygen.rc
 )
 
