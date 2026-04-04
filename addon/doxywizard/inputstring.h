@@ -64,6 +64,7 @@ class InputString : public QObject, public Input
     void setTemplateDocs(const QString &docs) { m_tdocs = docs; }
     bool isEmpty() { return m_str.isEmpty(); }
     QString checkEnumVal(const QString &value);
+    void retranslate();
 
   public slots:
     void reset();

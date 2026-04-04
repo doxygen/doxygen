@@ -40,8 +40,10 @@ class MainWindow : public QMainWindow
     void loadSettings();
     void saveSettings();
     void closeEvent(QCloseEvent *event);
+    void changeEvent(QEvent *event);
     QString configFileName() const { return m_fileName; }
     void updateTitle();
+    void retranslateUi();
     // access routines for outputLog pane
     void outputLogStart();
     void outputLogText(QString text);

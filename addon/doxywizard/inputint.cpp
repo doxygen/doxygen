@@ -135,3 +135,9 @@ bool InputInt::isDefault()
 {
   return m_val == m_default;
 }
+
+void InputInt::retranslate()
+{
+  m_docs = OptionTranslations::instance().translate(m_id);
+  updateDefault();
+}

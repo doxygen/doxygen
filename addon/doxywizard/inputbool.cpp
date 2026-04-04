@@ -149,3 +149,9 @@ bool InputBool::isDefault()
   return m_state == m_default;
 }
 
+void InputBool::retranslate()
+{
+  m_docs = OptionTranslations::instance().translate(m_id);
+  updateDefault();
+}
+

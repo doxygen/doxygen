@@ -13,6 +13,7 @@ public:
     static OptionTranslations& instance();
     QString translate(const QString &optionName);
     static QString trStatic(const QString &optionName);
+    void retranslate();
 
 private:
     OptionTranslations() {}

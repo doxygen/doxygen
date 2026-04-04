@@ -885,6 +885,7 @@ void Expert::showHelp(Input *option)
   if (!m_inShowHelp)
   {
     m_inShowHelp = true;
+    m_currentHelpInput = option;
     m_helper->setText(
         QString::fromLatin1("<qt><b>")+option->id()+
         QString::fromLatin1("</b><br>")+
@@ -1016,5 +1017,27 @@ bool Expert::pdfOutputPresent(const QString &workingDir) const
 void Expert::refresh()
 {
   m_treeWidget->setCurrentItem(m_treeWidget->invisibleRootItem()->child(0));
+}
+
+void Expert::retranslateUi()
+{
+  m_treeWidget->setHeaderLabels(QStringList() << tr("Topics"));
+  m_prev->setText(tr("Previous"));
+  m_next->setText(tr("Next"));
+  
+  QHashIterator<QString,Input*> i(m_options);
+  while (i.hasNext())
+  {
+    i.next();
+    if (i.value())
+    {
+      i.value()->retranslate();
+    }
+  }
+  
+  if (m_currentHelpInput)
+  {
+    showHelp(m_currentHelpInput);
+  }
 }
 

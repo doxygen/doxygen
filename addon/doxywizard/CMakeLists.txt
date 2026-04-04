@@ -170,6 +170,20 @@ else()
   endif()
 endif()
 
+foreach(qm_file ${doxywizard_QM_FILES})
+  get_filename_component(qm_name ${qm_file} NAME)
+  set(qm_dest ${CMAKE_CURRENT_SOURCE_DIR}/${qm_name})
+  add_custom_command(
+    OUTPUT ${qm_dest}
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different ${qm_file} ${qm_dest}
+    DEPENDS ${qm_file}
+    COMMENT "Copying ${qm_name} to source directory for resource embedding"
+  )
+  list(APPEND doxywizard_QM_COPIED ${qm_dest})
+endforeach()
+
+qt_add_resources(doxywizard_TRANSLATION_RESOURCES translations.qrc)
+
 add_executable(doxywizard WIN32
 config_msg.cpp
 doxywizard.cpp
@@ -187,7 +201,9 @@ ${GENERATED_SRC_WIZARD}/config_doxyw.l.h
 ${GENERATED_SRC_WIZARD}/configdoc.cpp
 ${doxywizard_MOC}
 ${doxywizard_RESOURCES_RCC}
+${doxywizard_TRANSLATION_RESOURCES}
 ${doxywizard_QM_FILES}
+${doxywizard_QM_COPIED}
 ${PROJECT_SOURCE_DIR}/templates/icon/doxygen.rc
 )
 

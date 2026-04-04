@@ -490,48 +490,48 @@ Step1::Step1(Wizard *wizard,const QHash<QString,Input*> &modelData) : m_wizard(w
   QVBoxLayout *layout = new QVBoxLayout(this);
   layout->setContentsMargins(4,4,4,4);
   layout->setSpacing(8);
-  QLabel *l = new QLabel(this);
-  l->setText(tr("Provide some information "
+  m_introLabel = new QLabel(this);
+  m_introLabel->setText(tr("Provide some information "
               "about the project you are documenting"));
-  layout->addWidget(l);
+  layout->addWidget(m_introLabel);
   QWidget *w      = new QWidget( this );
   QGridLayout *grid = new QGridLayout(w);
   grid->setSpacing(10);
 
   // project name
-  QLabel *projName = new QLabel(this);
-  projName->setText(tr("Project name:"));
-  projName->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
+  m_projNameLabel = new QLabel(this);
+  m_projNameLabel->setText(tr("Project name:"));
+  m_projNameLabel->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
   // project brief
-  QLabel *projBrief = new QLabel(this);
-  projBrief->setText(tr("Project synopsis:"));
-  projBrief->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
+  m_projBriefLabel = new QLabel(this);
+  m_projBriefLabel->setText(tr("Project synopsis:"));
+  m_projBriefLabel->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
   // project version
-  QLabel *projVersion = new QLabel(this);
-  projVersion->setText(tr("Project version or id:"));
-  projVersion->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
+  m_projVersionLabel = new QLabel(this);
+  m_projVersionLabel->setText(tr("Project version or id:"));
+  m_projVersionLabel->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
   // project icon
-  QLabel *projLogo = new QLabel(this);
-  projLogo->setMinimumSize(1,55);
-  projLogo->setText(tr("Project logo:"));
-  projLogo->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
+  m_projLogoLabel = new QLabel(this);
+  m_projLogoLabel->setMinimumSize(1,55);
+  m_projLogoLabel->setText(tr("Project logo:"));
+  m_projLogoLabel->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
 
-  grid->addWidget(projName,0,0);
-  grid->addWidget(projBrief,1,0);
-  grid->addWidget(projVersion,2,0);
-  grid->addWidget(projLogo,3,0);
+  grid->addWidget(m_projNameLabel,0,0);
+  grid->addWidget(m_projBriefLabel,1,0);
+  grid->addWidget(m_projVersionLabel,2,0);
+  grid->addWidget(m_projLogoLabel,3,0);
 
   m_projName   = new QLineEdit;
   m_projBrief  = new QLineEdit;
   m_projNumber = new QLineEdit;
-  QPushButton *projIconSel = new QPushButton(this);
-  projIconSel->setText(tr("Select..."));
+  m_projIconSel = new QPushButton(this);
+  m_projIconSel->setText(tr("Select..."));
   m_projIconLab = new QLabel;
 
   grid->addWidget(m_projName,0,1,1,2);
   grid->addWidget(m_projBrief,1,1,1,2);
   grid->addWidget(m_projNumber,2,1,1,2);
-  grid->addWidget(projIconSel,3,1);
+  grid->addWidget(m_projIconSel,3,1);
   grid->addWidget(m_projIconLab,3,2);
 
   grid->setColumnStretch(2,1);
@@ -546,15 +546,15 @@ Step1::Step1(Wizard *wizard,const QHash<QString,Input*> &modelData) : m_wizard(w
   f->setFrameShadow(QFrame::Sunken);
   layout->addWidget(f);
 
-  l = new QLabel(this);
-  l->setText(tr("Specify the directory to scan for source code"));
-  layout->addWidget(l);
+  m_srcDirLabel = new QLabel(this);
+  m_srcDirLabel->setText(tr("Specify the directory to scan for source code"));
+  layout->addWidget(m_srcDirLabel);
   QWidget *row = new QWidget;
   QHBoxLayout *rowLayout = new QHBoxLayout(row);
   rowLayout->setSpacing(10);
-  l = new QLabel(this);
-  l->setText(tr("Source code directory:"));
-  rowLayout->addWidget(l);
+  m_srcDirLabel2 = new QLabel(this);
+  m_srcDirLabel2->setText(tr("Source code directory:"));
+  rowLayout->addWidget(m_srcDirLabel2);
   m_sourceDir = new QLineEdit;
   m_srcSelectDir = new QPushButton(this);
   m_srcSelectDir->setText(tr("Select..."));
@@ -573,16 +573,16 @@ Step1::Step1(Wizard *wizard,const QHash<QString,Input*> &modelData) : m_wizard(w
   f->setFrameShadow(QFrame::Sunken);
   layout->addWidget(f);
 
-  l = new QLabel(this);
-  l->setText(tr("Specify the directory where doxygen should "
+  m_destDirLabel = new QLabel(this);
+  m_destDirLabel->setText(tr("Specify the directory where doxygen should "
               "put the generated documentation"));
-  layout->addWidget(l);
+  layout->addWidget(m_destDirLabel);
   row = new QWidget;
   rowLayout = new QHBoxLayout(row);
   rowLayout->setSpacing(10);
-  l = new QLabel(this);
-  l->setText(tr("Destination directory:"));
-  rowLayout->addWidget(l);
+  m_destDirLabel2 = new QLabel(this);
+  m_destDirLabel2->setText(tr("Destination directory:"));
+  rowLayout->addWidget(m_destDirLabel2);
   m_destDir = new QLineEdit;
   m_dstSelectDir = new QPushButton(this);
   m_dstSelectDir->setText(tr("Select..."));
@@ -592,7 +592,7 @@ Step1::Step1(Wizard *wizard,const QHash<QString,Input*> &modelData) : m_wizard(w
   layout->addStretch(1);
   setLayout(layout);
 
-  connect(projIconSel,SIGNAL(clicked()),
+  connect(m_projIconSel,SIGNAL(clicked()),
           this,SLOT(selectProjectIcon()));
   connect(m_srcSelectDir,SIGNAL(clicked()),
           this,SLOT(selectSourceDir()));
@@ -758,13 +758,31 @@ void Step1::init()
   m_destDir->setText(getStringOption(m_modelData,STR_OUTPUT_DIRECTORY));
 }
 
+void Step1::retranslateUi()
+{
+  m_introLabel->setText(tr("Provide some information "
+              "about the project you are documenting"));
+  m_projNameLabel->setText(tr("Project name:"));
+  m_projBriefLabel->setText(tr("Project synopsis:"));
+  m_projVersionLabel->setText(tr("Project version or id:"));
+  m_projLogoLabel->setText(tr("Project logo:"));
+  m_projIconSel->setText(tr("Select..."));
+  m_srcDirLabel->setText(tr("Specify the directory to scan for source code"));
+  m_srcDirLabel2->setText(tr("Source code directory:"));
+  m_srcSelectDir->setText(tr("Select..."));
+  m_recursive->setText(tr("Scan recursively"));
+  m_destDirLabel->setText(tr("Specify the directory where doxygen should "
+              "put the generated documentation"));
+  m_destDirLabel2->setText(tr("Destination directory:"));
+  m_dstSelectDir->setText(tr("Select..."));
+}
+
 
 //==========================================================================
 
 Step2::Step2(Wizard *wizard,const QHash<QString,Input*> &modelData)
   : m_wizard(wizard), m_modelData(modelData)
 {
-  QRadioButton *r;
   QVBoxLayout *layout = new QVBoxLayout(this);
 
   //---------------------------------------------------
@@ -772,14 +790,14 @@ Step2::Step2(Wizard *wizard,const QHash<QString,Input*> &modelData)
   m_extractMode = new QGroupBox(this);
   m_extractMode->setTitle(tr("Select the desired extraction mode:"));
   QGridLayout *gbox = new QGridLayout( m_extractMode );
-  r = new QRadioButton(tr("Documented entities only"));
-  r->setChecked(true);
-  m_extractModeGroup->addButton(r, 0);
-  gbox->addWidget(r,1,0);
+  m_extractModeRadio0 = new QRadioButton(tr("Documented entities only"));
+  m_extractModeRadio0->setChecked(true);
+  m_extractModeGroup->addButton(m_extractModeRadio0, 0);
+  gbox->addWidget(m_extractModeRadio0,1,0);
   // 1 -> EXTRACT_ALL = NO
-  r = new QRadioButton(tr("All Entities"));
-  m_extractModeGroup->addButton(r, 1);
-  gbox->addWidget(r,2,0);
+  m_extractModeRadio1 = new QRadioButton(tr("All Entities"));
+  m_extractModeGroup->addButton(m_extractModeRadio1, 1);
+  gbox->addWidget(m_extractModeRadio1,2,0);
   // 2 -> EXTRACT_ALL = YES
   m_crossRef = new QCheckBox(m_extractMode);
   m_crossRef->setText(tr("Include cross-referenced source code in the output"));
@@ -798,10 +816,10 @@ Step2::Step2(Wizard *wizard,const QHash<QString,Input*> &modelData)
   m_optimizeLang->setTitle(tr("Select programming language to optimize the results for"));
   gbox = new QGridLayout( m_optimizeLang );
 
-  r = new QRadioButton(m_optimizeLang);
-  r->setText(tr("Optimize for C++ output"));
-  r->setChecked(true);
-  m_optimizeLangGroup->addButton(r, 0);
+  m_optimizeLangRadio0 = new QRadioButton(m_optimizeLang);
+  m_optimizeLangRadio0->setText(tr("Optimize for C++ output"));
+  m_optimizeLangRadio0->setChecked(true);
+  m_optimizeLangGroup->addButton(m_optimizeLangRadio0, 0);
   // 0 -> OPTIMIZE_OUTPUT_FOR_C = NO
   //      OPTIMIZE_OUTPUT_JAVA  = NO
   //      OPTIMIZE_FOR_FORTRAN  = NO
@@ -809,10 +827,10 @@ Step2::Step2(Wizard *wizard,const QHash<QString,Input*> &modelData)
   //      CPP_CLI_SUPPORT       = NO
   //      HIDE_SCOPE_NAMES      = NO
   //      OPTIMIZE_OUTPUT_SLICE = NO
-  gbox->addWidget(r,0,0);
-  r = new QRadioButton(tr("Optimize for C++/CLI output"));
-  gbox->addWidget(r,1,0);
-  m_optimizeLangGroup->addButton(r, 1);
+  gbox->addWidget(m_optimizeLangRadio0,0,0);
+  m_optimizeLangRadio1 = new QRadioButton(tr("Optimize for C++/CLI output"));
+  gbox->addWidget(m_optimizeLangRadio1,1,0);
+  m_optimizeLangGroup->addButton(m_optimizeLangRadio1, 1);
   // 1 -> OPTIMIZE_OUTPUT_FOR_C = NO
   //      OPTIMIZE_OUTPUT_JAVA  = NO
   //      OPTIMIZE_FOR_FORTRAN  = NO
@@ -820,8 +838,8 @@ Step2::Step2(Wizard *wizard,const QHash<QString,Input*> &modelData)
   //      CPP_CLI_SUPPORT       = YES
   //      HIDE_SCOPE_NAMES      = NO
   //      OPTIMIZE_OUTPUT_SLICE = NO
-  r = new QRadioButton(tr("Optimize for Java or C# output"));
-  m_optimizeLangGroup->addButton(r, 2);
+  m_optimizeLangRadio2 = new QRadioButton(tr("Optimize for Java or C# output"));
+  m_optimizeLangGroup->addButton(m_optimizeLangRadio2, 2);
   // 2 -> OPTIMIZE_OUTPUT_FOR_C = NO
   //      OPTIMIZE_OUTPUT_JAVA  = YES
   //      OPTIMIZE_FOR_FORTRAN  = NO
@@ -829,9 +847,9 @@ Step2::Step2(Wizard *wizard,const QHash<QString,Input*> &modelData)
   //      CPP_CLI_SUPPORT       = NO
   //      HIDE_SCOPE_NAMES      = NO
   //      OPTIMIZE_OUTPUT_SLICE = NO
-  gbox->addWidget(r,2,0);
-  r = new QRadioButton(tr("Optimize for C or PHP output"));
-  m_optimizeLangGroup->addButton(r, 3);
+  gbox->addWidget(m_optimizeLangRadio2,2,0);
+  m_optimizeLangRadio3 = new QRadioButton(tr("Optimize for C or PHP output"));
+  m_optimizeLangGroup->addButton(m_optimizeLangRadio3, 3);
   // 3 -> OPTIMIZE_OUTPUT_FOR_C = YES
   //      OPTIMIZE_OUTPUT_JAVA  = NO
   //      OPTIMIZE_FOR_FORTRAN  = NO
@@ -839,9 +857,9 @@ Step2::Step2(Wizard *wizard,const QHash<QString,Input*> &modelData)
   //      CPP_CLI_SUPPORT       = NO
   //      HIDE_SCOPE_NAMES      = YES
   //      OPTIMIZE_OUTPUT_SLICE = NO
-  gbox->addWidget(r,3,0);
-  r = new QRadioButton(tr("Optimize for Fortran output"));
-  m_optimizeLangGroup->addButton(r, 4);
+  gbox->addWidget(m_optimizeLangRadio3,3,0);
+  m_optimizeLangRadio4 = new QRadioButton(tr("Optimize for Fortran output"));
+  m_optimizeLangGroup->addButton(m_optimizeLangRadio4, 4);
   // 4 -> OPTIMIZE_OUTPUT_FOR_C = NO
   //      OPTIMIZE_OUTPUT_JAVA  = NO
   //      OPTIMIZE_FOR_FORTRAN  = YES
@@ -849,9 +867,9 @@ Step2::Step2(Wizard *wizard,const QHash<QString,Input*> &modelData)
   //      CPP_CLI_SUPPORT       = NO
   //      HIDE_SCOPE_NAMES      = NO
   //      OPTIMIZE_OUTPUT_SLICE = NO
-  gbox->addWidget(r,4,0);
-  r = new QRadioButton(tr("Optimize for VHDL output"));
-  m_optimizeLangGroup->addButton(r, 5);
+  gbox->addWidget(m_optimizeLangRadio4,4,0);
+  m_optimizeLangRadio5 = new QRadioButton(tr("Optimize for VHDL output"));
+  m_optimizeLangGroup->addButton(m_optimizeLangRadio5, 5);
   // 5 -> OPTIMIZE_OUTPUT_FOR_C = NO
   //      OPTIMIZE_OUTPUT_JAVA  = NO
   //      OPTIMIZE_FOR_FORTRAN  = NO
@@ -859,9 +877,9 @@ Step2::Step2(Wizard *wizard,const QHash<QString,Input*> &modelData)
   //      CPP_CLI_SUPPORT       = NO
   //      HIDE_SCOPE_NAMES      = NO
   //      OPTIMIZE_OUTPUT_SLICE = NO
-  gbox->addWidget(r,5,0);
-  r = new QRadioButton(tr("Optimize for SLICE output"));
-  m_optimizeLangGroup->addButton(r, 6);
+  gbox->addWidget(m_optimizeLangRadio5,5,0);
+  m_optimizeLangRadio6 = new QRadioButton(tr("Optimize for SLICE output"));
+  m_optimizeLangGroup->addButton(m_optimizeLangRadio6, 6);
   // 5 -> OPTIMIZE_OUTPUT_FOR_C = NO
   //      OPTIMIZE_OUTPUT_JAVA  = NO
   //      OPTIMIZE_FOR_FORTRAN  = NO
@@ -869,7 +887,7 @@ Step2::Step2(Wizard *wizard,const QHash<QString,Input*> &modelData)
   //      CPP_CLI_SUPPORT       = NO
   //      HIDE_SCOPE_NAMES      = NO
   //      OPTIMIZE_OUTPUT_SLICE = YES
-  gbox->addWidget(r,6,0);
+  gbox->addWidget(m_optimizeLangRadio6,6,0);
 
   layout->addWidget(m_optimizeLang);
   layout->addStretch(1);
@@ -926,13 +944,28 @@ void Step2::init()
   m_optimizeLangGroup->button(x)->setChecked(true);
 }
 
+void Step2::retranslateUi()
+{
+  m_extractMode->setTitle(tr("Select the desired extraction mode:"));
+  m_extractModeRadio0->setText(tr("Documented entities only"));
+  m_extractModeRadio1->setText(tr("All Entities"));
+  m_crossRef->setText(tr("Include cross-referenced source code in the output"));
+  m_optimizeLang->setTitle(tr("Select programming language to optimize the results for"));
+  m_optimizeLangRadio0->setText(tr("Optimize for C++ output"));
+  m_optimizeLangRadio1->setText(tr("Optimize for C++/CLI output"));
+  m_optimizeLangRadio2->setText(tr("Optimize for Java or C# output"));
+  m_optimizeLangRadio3->setText(tr("Optimize for C or PHP output"));
+  m_optimizeLangRadio4->setText(tr("Optimize for Fortran output"));
+  m_optimizeLangRadio5->setText(tr("Optimize for VHDL output"));
+  m_optimizeLangRadio6->setText(tr("Optimize for SLICE output"));
+}
+
 //==========================================================================
 
 Step3::Step3(Wizard *wizard,const QHash<QString,Input*> &modelData)
   : m_wizard(wizard), m_modelData(modelData)
 {
   QVBoxLayout *vbox = nullptr;
-  QRadioButton *r   = nullptr;
 
   QGridLayout *gbox = new QGridLayout( this );
   gbox->addWidget(new QLabel(tr("Select the output format(s) to generate")),0,0);
@@ -941,19 +974,19 @@ Step3::Step3(Wizard *wizard,const QHash<QString,Input*> &modelData)
     m_htmlOptions->setCheckable(true);
     // GENERATE_HTML
     m_htmlOptionsGroup = new QButtonGroup(m_htmlOptions);
-    QRadioButton *r = new QRadioButton(tr("plain HTML"));
-    r->setChecked(true);
-    m_htmlOptionsGroup->addButton(r, 0);
+    m_htmlRadio0 = new QRadioButton(tr("plain HTML"));
+    m_htmlRadio0->setChecked(true);
+    m_htmlOptionsGroup->addButton(m_htmlRadio0, 0);
     vbox = new QVBoxLayout;
-    vbox->addWidget(r);
-    r = new QRadioButton(tr("with navigation panel"));
-    m_htmlOptionsGroup->addButton(r, 1);
+    vbox->addWidget(m_htmlRadio0);
+    m_htmlRadio1 = new QRadioButton(tr("with navigation panel"));
+    m_htmlOptionsGroup->addButton(m_htmlRadio1, 1);
     // GENERATE_TREEVIEW
-    vbox->addWidget(r);
-    r = new QRadioButton(tr("prepare for compressed HTML (.chm)"));
-    m_htmlOptionsGroup->addButton(r, 2);
+    vbox->addWidget(m_htmlRadio1);
+    m_htmlRadio2 = new QRadioButton(tr("prepare for compressed HTML (.chm)"));
+    m_htmlOptionsGroup->addButton(m_htmlRadio2, 2);
     // GENERATE_HTMLHELP
-    vbox->addWidget(r);
+    vbox->addWidget(m_htmlRadio2);
     m_searchEnabled=new QCheckBox(tr("With search function"));
     vbox->addWidget(m_searchEnabled);
     // SEARCH_ENGINE
@@ -973,19 +1006,19 @@ Step3::Step3(Wizard *wizard,const QHash<QString,Input*> &modelData)
     // GENERATE_LATEX
     m_texOptionsGroup = new QButtonGroup(m_texOptions);
     vbox = new QVBoxLayout;
-    r = new QRadioButton(tr("as intermediate format for hyperlinked PDF"));
-    m_texOptionsGroup->addButton(r, 0);
+    m_texRadio0 = new QRadioButton(tr("as intermediate format for hyperlinked PDF"));
+    m_texOptionsGroup->addButton(m_texRadio0, 0);
     // PDF_HYPERLINKS = YES
-    r->setChecked(true);
-    vbox->addWidget(r);
-    r = new QRadioButton(tr("as intermediate format for PDF"));
-    m_texOptionsGroup->addButton(r, 1);
+    m_texRadio0->setChecked(true);
+    vbox->addWidget(m_texRadio0);
+    m_texRadio1 = new QRadioButton(tr("as intermediate format for PDF"));
+    m_texOptionsGroup->addButton(m_texRadio1, 1);
     // PDF_HYPERLINKS = NO, USE_PDFLATEX = YES
-    vbox->addWidget(r);
-    r = new QRadioButton(tr("as intermediate format for PostScript"));
-    m_texOptionsGroup->addButton(r, 2);
+    vbox->addWidget(m_texRadio1);
+    m_texRadio2 = new QRadioButton(tr("as intermediate format for PostScript"));
+    m_texOptionsGroup->addButton(m_texRadio2, 2);
     // USE_PDFLATEX = NO
-    vbox->addWidget(r);
+    vbox->addWidget(m_texRadio2);
     vbox->addStretch(1);
     m_texOptions->setLayout(vbox);
     m_texOptions->setChecked(true);
@@ -1145,6 +1178,24 @@ void Step3::init()
   }
 }
 
+void Step3::retranslateUi()
+{
+  m_htmlOptions->setTitle(tr("HTML"));
+  m_htmlRadio0->setText(tr("plain HTML"));
+  m_htmlRadio1->setText(tr("with navigation panel"));
+  m_htmlRadio2->setText(tr("prepare for compressed HTML (.chm)"));
+  m_texOptions->setTitle(tr("LaTeX"));
+  m_texRadio0->setText(tr("as intermediate format for hyperlinked PDF"));
+  m_texRadio1->setText(tr("as intermediate format for PDF"));
+  m_texRadio2->setText(tr("as intermediate format for PostScript"));
+  m_manEnabled->setText(tr("Man pages"));
+  m_rtfEnabled->setText(tr("Rich Text Format (RTF)"));
+  m_xmlEnabled->setText(tr("XML"));
+  m_docbookEnabled->setText(tr("Docbook"));
+  m_searchEnabled->setText(tr("With search function"));
+  m_tuneColor->setText(tr("Change color..."));
+}
+
 //==========================================================================
 
 Step4::Step4(Wizard *wizard,const QHash<QString,Input*> &modelData)
@@ -1155,25 +1206,25 @@ Step4::Step4(Wizard *wizard,const QHash<QString,Input*> &modelData)
   gbox->addWidget(new QLabel(tr("Diagrams to generate")),0,0);
 
   // CLASS_GRAPH = NO, HAVE_DOT = NO
-  QRadioButton *rb = new QRadioButton(tr("No diagrams"));
-  m_diagramModeGroup->addButton(rb, 0);
-  gbox->addWidget(rb,1,0);
-  rb->setChecked(true);
+  m_diagramRadio0 = new QRadioButton(tr("No diagrams"));
+  m_diagramModeGroup->addButton(m_diagramRadio0, 0);
+  gbox->addWidget(m_diagramRadio0,1,0);
+  m_diagramRadio0->setChecked(true);
 
   // CLASS_GRAPH = TEXT, HAVE_DOT = NO
-  rb = new QRadioButton(tr("Text only"));
-  m_diagramModeGroup->addButton(rb, 1);
-  gbox->addWidget(rb,2,0);
+  m_diagramRadio1 = new QRadioButton(tr("Text only"));
+  m_diagramModeGroup->addButton(m_diagramRadio1, 1);
+  gbox->addWidget(m_diagramRadio1,2,0);
 
   // CLASS_GRAPH = YES/GRAPH, HAVE_DOT = NO
-  rb = new QRadioButton(tr("Use built-in class diagram generator"));
-  m_diagramModeGroup->addButton(rb, 2);
-  gbox->addWidget(rb,3,0);
+  m_diagramRadio2 = new QRadioButton(tr("Use built-in class diagram generator"));
+  m_diagramModeGroup->addButton(m_diagramRadio2, 2);
+  gbox->addWidget(m_diagramRadio2,3,0);
 
   // CLASS_GRAPH = YES/GRAPH, HAVE_DOT = YES
-  rb = new QRadioButton(tr("Use dot tool from the GraphViz package"));
-  m_diagramModeGroup->addButton(rb, 3);
-  gbox->addWidget(rb,4,0);
+  m_diagramRadio3 = new QRadioButton(tr("Use dot tool from the GraphViz package"));
+  m_diagramModeGroup->addButton(m_diagramRadio3, 3);
+  gbox->addWidget(m_diagramRadio3,4,0);
 
   m_dotGroup = new QGroupBox(tr("Dot graphs to generate"));
     QVBoxLayout *vbox = new QVBoxLayout;
@@ -1326,6 +1377,22 @@ void Step4::init()
   m_dotCaller->setChecked(getBoolOption(m_modelData,STR_CALLER_GRAPH));
 }
 
+void Step4::retranslateUi()
+{
+  m_diagramRadio0->setText(tr("No diagrams"));
+  m_diagramRadio1->setText(tr("Text only"));
+  m_diagramRadio2->setText(tr("Use built-in class diagram generator"));
+  m_diagramRadio3->setText(tr("Use dot tool from the GraphViz package"));
+  m_dotGroup->setTitle(tr("Dot graphs to generate"));
+  m_dotClass->setText(tr("Class graphs"));
+  m_dotCollaboration->setText(tr("Collaboration diagrams"));
+  m_dotInheritance->setText(tr("Overall Class hierarchy"));
+  m_dotInclude->setText(tr("Include dependency graphs"));
+  m_dotIncludedBy->setText(tr("Included by dependency graphs"));
+  m_dotCall->setText(tr("Call graphs"));
+  m_dotCaller->setText(tr("Called by graphs"));
+}
+
 //==========================================================================
 
 Wizard::Wizard(const QHash<QString,Input*> &modelData, QWidget *parent) :
@@ -1440,4 +1507,24 @@ void Wizard::refresh()
   m_step2->init();
   m_step3->init();
   m_step4->init();
+}
+
+void Wizard::retranslateUi()
+{
+  QTreeWidgetItem *item = m_treeWidget->invisibleRootItem()->child(0);
+  if (item) item->setText(0, tr("Project"));
+  item = m_treeWidget->invisibleRootItem()->child(1);
+  if (item) item->setText(0, tr("Mode"));
+  item = m_treeWidget->invisibleRootItem()->child(2);
+  if (item) item->setText(0, tr("Output"));
+  item = m_treeWidget->invisibleRootItem()->child(3);
+  if (item) item->setText(0, tr("Diagrams"));
+  
+  m_prev->setText(tr("Previous"));
+  m_next->setText(tr("Next"));
+  
+  m_step1->retranslateUi();
+  m_step2->retranslateUi();
+  m_step3->retranslateUi();
+  m_step4->retranslateUi();
 }

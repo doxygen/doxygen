@@ -45,6 +45,7 @@ class Input
     virtual void writeValue(QTextStream &t,TextCodecAdapter *codec,bool convert) = 0;
     virtual void setTemplateDocs(const QString &docs) = 0;
     virtual bool isEmpty() { return false; };
+    virtual void retranslate() = 0;
 };
 
 

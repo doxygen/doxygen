@@ -383,3 +383,10 @@ QString OptionTranslations::trStatic(const QString &optionName)
 {
     return instance().translate(optionName);
 }
+
+void OptionTranslations::retranslate()
+{
+    m_translations.clear();
+    m_initialized = false;
+    initTranslations();
+}

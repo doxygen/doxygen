@@ -279,3 +279,9 @@ QString InputString::checkEnumVal(const QString &value)
               " Using the default: %s!",qPrintable(value),qPrintable(m_id),qPrintable(m_default));
   return m_default;
 }
+
+void InputString::retranslate()
+{
+  m_docs = OptionTranslations::instance().translate(m_id);
+  updateDefault();
+}

@@ -320,6 +320,12 @@ QString TranslationManager::qmFilePath(const QString &langCode) const
         return QString();
     }
     
+    QString resourcePath = QString::fromLatin1(":/translations/") + info.qmFile;
+    if (QFileInfo::exists(resourcePath))
+    {
+        return resourcePath;
+    }
+    
     QString appDir = QCoreApplication::applicationDirPath();
     QString qmPath = appDir + QDir::separator() + info.qmFile;
     

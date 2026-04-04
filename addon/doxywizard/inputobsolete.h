@@ -34,6 +34,7 @@ class InputObsolete : public Input
     void setTemplateDocs(const QString &) {}
     bool isEmpty()               { return false; };
     Kind orgKind() const         { return m_orgKind; }
+    void retranslate()           {}
   private:
     QString   m_id;
     Kind      m_orgKind;

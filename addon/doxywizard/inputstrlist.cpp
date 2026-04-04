@@ -320,3 +320,9 @@ bool InputStrList::isEmpty()
   }
   return true;
 }
+
+void InputStrList::retranslate()
+{
+  m_docs = OptionTranslations::instance().translate(m_id);
+  updateDefault();
+}
