@@ -140,7 +140,7 @@ MainWindow::MainWindow()
   m_runStatus = new QLabel(tr("Status: not running"));
   m_saveLog = new QPushButton(tr("Save log..."));
   m_saveLog->setEnabled(false);
-  QPushButton *showSettings = new QPushButton(tr("Show configuration"));
+  m_showSettingsBtn = new QPushButton(tr("Show configuration"));
 
   m_showCondensedSettings = new QCheckBox(this);
   m_showCondensedSettings->setText(tr("Condensed"));
@@ -149,8 +149,8 @@ MainWindow::MainWindow()
 
   // select extra run options
   m_runOptions = new QLineEdit;
-
-  runTabLayout->addWidget(new QLabel(tr("Specify additional command line options for running doxygen")));
+  m_runOptionsLabel = new QLabel(tr("Specify additional command line options for running doxygen"));
+  runTabLayout->addWidget(m_runOptionsLabel);
   runTabLayout->addWidget(m_runOptions);
 
   QVBoxLayout *runVLayout = new QVBoxLayout;
@@ -171,7 +171,7 @@ MainWindow::MainWindow()
   QVBoxLayout *settingsLayout = new QVBoxLayout;
   runLayout->addLayout(settingsLayout);
   settingsLayout->addWidget(m_showCondensedSettings);
-  settingsLayout->addWidget(showSettings);
+  settingsLayout->addWidget(m_showSettingsBtn);
 
   QVBoxLayout *saveLayout = new QVBoxLayout;
   runLayout->addLayout(saveLayout);
@@ -181,7 +181,8 @@ MainWindow::MainWindow()
 
   // output produced by Doxygen
   runTabLayout->addLayout(runLayout);
-  runTabLayout->addWidget(new QLabel(tr("Output produced by doxygen")));
+  m_outputLabel = new QLabel(tr("Output produced by doxygen"));
+  runTabLayout->addWidget(m_outputLabel);
   QGridLayout *grid = new QGridLayout;
   //m_outputLog = new QTextEdit;
   m_outputLog = new QTextBrowser;
@@ -199,9 +200,11 @@ MainWindow::MainWindow()
   m_tabs->addTab(m_expert,tr("Expert"));
   m_tabs->addTab(m_runTab,tr("Run"));
 
-  rowLayout->addWidget(new QLabel(tr("Specify the working directory from which doxygen will run")));
+  m_workingDirLabel = new QLabel(tr("Specify the working directory from which doxygen will run"));
+  rowLayout->addWidget(m_workingDirLabel);
   rowLayout->addLayout(dirLayout);
-  rowLayout->addWidget(new QLabel(tr("Configure doxygen using the Wizard and/or Expert tab, then switch to the Run tab to generate the documentation")));
+  m_workingDirHintLabel = new QLabel(tr("Configure doxygen using the Wizard and/or Expert tab, then switch to the Run tab to generate the documentation"));
+  rowLayout->addWidget(m_workingDirHintLabel);
   mainLayout->addWidget(m_tabs);
 
   setCentralWidget(mainPart);
@@ -222,7 +225,7 @@ MainWindow::MainWindow()
   connect(m_run,SIGNAL(clicked()),SLOT(runDoxygen()));
   connect(m_launchHtml,SIGNAL(clicked()),SLOT(showHtmlOutput()));
   connect(m_saveLog,SIGNAL(clicked()),SLOT(saveLog()));
-  connect(showSettings,SIGNAL(clicked()),SLOT(showSettings()));
+  connect(m_showSettingsBtn,SIGNAL(clicked()),SLOT(showSettings()));
   connect(m_expert,SIGNAL(changed()),SLOT(configChanged()));
   connect(m_wizard,SIGNAL(done()),SLOT(selectRunTab()));
   connect(m_expert,SIGNAL(done()),SLOT(selectRunTab()));
@@ -320,6 +323,12 @@ void MainWindow::retranslateUi()
   m_showCondensedSettings->setText(tr("Condensed"));
   m_showCondensedSettings->setToolTip(tr("Show only configuration settings different from default settings"));
   
+  m_runOptionsLabel->setText(tr("Specify additional command line options for running doxygen"));
+  m_outputLabel->setText(tr("Output produced by doxygen"));
+  m_workingDirLabel->setText(tr("Specify the working directory from which doxygen will run"));
+  m_workingDirHintLabel->setText(tr("Configure doxygen using the Wizard and/or Expert tab, then switch to the Run tab to generate the documentation"));
+  m_showSettingsBtn->setText(tr("Show configuration"));
+  
   OptionTranslations::instance().retranslate();
   m_wizard->retranslateUi();
   m_expert->retranslateUi();
@@ -370,9 +379,9 @@ void MainWindow::about()
 {
   QString msg;
   QTextStream t(&msg,QIODevice::WriteOnly);
-  t << QString::fromLatin1("<qt><center>A tool to configure and run doxygen version ")+
-       QString::fromLatin1(getDoxygenVersion().c_str())+
-       QString::fromLatin1(" on your source files.</center>")+
+  t << QString::fromLatin1("<qt><center>") +
+       tr("A tool to configure and run doxygen version %1 on your source files.").arg(getDoxygenVersion().c_str()) +
+       QString::fromLatin1("</center>") +
        QString::fromLatin1("<center>(Created with Qt version  ")+
        QString::fromLatin1(QT_VERSION_STR);
        if (qstrcmp(qVersion(),QT_VERSION_STR))

@@ -151,7 +151,6 @@ bool InputBool::isDefault()
 
 void InputBool::retranslate()
 {
-  m_docs = OptionTranslations::instance().translate(m_id);
   updateDefault();
 }
 

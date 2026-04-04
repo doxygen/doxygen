@@ -82,7 +82,6 @@ class Expert : public QSplitter, public DocIntf
     QDomElement              m_rootElement;
     bool                     m_inShowHelp;
     QString                  m_header;
-    Input                   *m_currentHelpInput = nullptr;
 };
 
 #endif

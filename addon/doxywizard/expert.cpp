@@ -885,7 +885,6 @@ void Expert::showHelp(Input *option)
   if (!m_inShowHelp)
   {
     m_inShowHelp = true;
-    m_currentHelpInput = option;
     m_helper->setText(
         QString::fromLatin1("<qt><b>")+option->id()+
         QString::fromLatin1("</b><br>")+
@@ -1033,11 +1032,6 @@ void Expert::retranslateUi()
     {
       i.value()->retranslate();
     }
-  }
-  
-  if (m_currentHelpInput)
-  {
-    showHelp(m_currentHelpInput);
   }
 }
 

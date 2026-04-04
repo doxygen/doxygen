@@ -323,6 +323,5 @@ bool InputStrList::isEmpty()
 
 void InputStrList::retranslate()
 {
-  m_docs = OptionTranslations::instance().translate(m_id);
   updateDefault();
 }

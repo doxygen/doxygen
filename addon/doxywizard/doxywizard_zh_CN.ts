@@ -263,6 +263,10 @@
         <translation>Doxygen 图形界面</translation>
     </message>
     <message>
+        <source>A tool to configure and run doxygen version %1 on your source files.</source>
+        <translation>一个用于配置和运行 doxygen 版本 %1 的工具，用于处理您的源代码文件。</translation>
+    </message>
+    <message>
         <location filename="doxywizard.cpp" line="295"/>
         <source>Open configuration file</source>
         <translation>打开配置文件</translation>

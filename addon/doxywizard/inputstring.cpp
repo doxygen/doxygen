@@ -282,6 +282,5 @@ QString InputString::checkEnumVal(const QString &value)
 
 void InputString::retranslate()
 {
-  m_docs = OptionTranslations::instance().translate(m_id);
   updateDefault();
 }

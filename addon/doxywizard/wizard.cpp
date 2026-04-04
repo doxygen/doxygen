@@ -968,7 +968,8 @@ Step3::Step3(Wizard *wizard,const QHash<QString,Input*> &modelData)
   QVBoxLayout *vbox = nullptr;
 
   QGridLayout *gbox = new QGridLayout( this );
-  gbox->addWidget(new QLabel(tr("Select the output format(s) to generate")),0,0);
+  m_outputFormatLabel = new QLabel(tr("Select the output format(s) to generate"));
+  gbox->addWidget(m_outputFormatLabel,0,0);
   {
     m_htmlOptions = new QGroupBox(tr("HTML"));
     m_htmlOptions->setCheckable(true);
@@ -1180,6 +1181,7 @@ void Step3::init()
 
 void Step3::retranslateUi()
 {
+  m_outputFormatLabel->setText(tr("Select the output format(s) to generate"));
   m_htmlOptions->setTitle(tr("HTML"));
   m_htmlRadio0->setText(tr("plain HTML"));
   m_htmlRadio1->setText(tr("with navigation panel"));
@@ -1203,7 +1205,8 @@ Step4::Step4(Wizard *wizard,const QHash<QString,Input*> &modelData)
 {
   m_diagramModeGroup = new QButtonGroup(this);
   QGridLayout *gbox = new QGridLayout( this );
-  gbox->addWidget(new QLabel(tr("Diagrams to generate")),0,0);
+  m_diagramLabel = new QLabel(tr("Diagrams to generate"));
+  gbox->addWidget(m_diagramLabel,0,0);
 
   // CLASS_GRAPH = NO, HAVE_DOT = NO
   m_diagramRadio0 = new QRadioButton(tr("No diagrams"));
@@ -1379,6 +1382,7 @@ void Step4::init()
 
 void Step4::retranslateUi()
 {
+  m_diagramLabel->setText(tr("Diagrams to generate"));
   m_diagramRadio0->setText(tr("No diagrams"));
   m_diagramRadio1->setText(tr("Text only"));
   m_diagramRadio2->setText(tr("Use built-in class diagram generator"));

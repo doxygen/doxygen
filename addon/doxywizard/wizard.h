@@ -28,6 +28,7 @@ class QPushButton;
 class QRadioButton;
 class QGroupBox;
 class QButtonGroup;
+class QLabel;
 class QTabWidget;
 class Wizard;
 class QLabel;
@@ -196,6 +197,7 @@ class Step3 : public QWidget
     void tuneColorDialog();
 
   private:
+    QLabel *m_outputFormatLabel = nullptr;
     QGroupBox *m_texOptions = nullptr;
     QButtonGroup *m_texOptionsGroup = nullptr;
     QGroupBox *m_htmlOptions = nullptr;
@@ -238,6 +240,7 @@ class Step4 : public QWidget
     void setCallerGraphEnabled(int state);
 
   private:
+    QLabel *m_diagramLabel = nullptr;
     QGroupBox *m_diagramMode = nullptr;
     QButtonGroup *m_diagramModeGroup = nullptr;
     QGroupBox *m_dotGroup = nullptr;

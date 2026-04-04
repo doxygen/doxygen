@@ -99,6 +99,11 @@ class MainWindow : public QMainWindow
     QPushButton *m_launchPdf;
     QTextBrowser *m_outputLog;
     QLabel *m_runStatus;
+    QLabel *m_workingDirLabel;
+    QLabel *m_workingDirHintLabel;
+    QLabel *m_runOptionsLabel;
+    QLabel *m_outputLabel;
+    QPushButton *m_showSettingsBtn;
     Expert *m_expert;
     Wizard *m_wizard;
     QWidget *m_runTab;
