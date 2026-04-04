@@ -236,8 +236,13 @@ bool TranslationManager::switchLanguage(const QString &langCode)
     qApp->installTranslator(m_translator);
     
     m_qtTranslator = new QTranslator(this);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     QString qtQmPath = QLibraryInfo::path(QLibraryInfo::TranslationsPath) + 
                        QDir::separator() + QString::fromLatin1("qtbase_") + langCode + QString::fromLatin1(".qm");
+#else
+    QString qtQmPath = QLibraryInfo::location(QLibraryInfo::TranslationsPath) + 
+                       QDir::separator() + QString::fromLatin1("qtbase_") + langCode + QString::fromLatin1(".qm");
+#endif
     if (QFileInfo::exists(qtQmPath))
     {
         m_qtTranslator->load(qtQmPath);

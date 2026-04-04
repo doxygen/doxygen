@@ -836,11 +836,6 @@ void MainWindow::switchLanguage(QAction *action)
 
 void MainWindow::onLanguageChanged(const QString &langCode)
 {
-  foreach (QAction *action, m_languageActionGroup->actions())
-  {
-    action->setChecked(action->data().toString() == langCode);
-  }
-  
   m_tabs->setTabText(0, tr("Wizard"));
   m_tabs->setTabText(1, tr("Expert"));
   m_tabs->setTabText(2, tr("Run"));
@@ -871,6 +866,11 @@ void MainWindow::onLanguageChanged(const QString &langCode)
   m_runMenu->setEnabled(!m_workingDir->text().isEmpty());
 
   m_languageMenu = menuBar()->addMenu(tr("Language"));
+  foreach (QAction *action, m_languageActionGroup->actions())
+  {
+    m_languageActionGroup->removeAction(action);
+    delete action;
+  }
   QStringList languages = TranslationManager::instance().availableLanguages();
   foreach (const QString &code, languages)
   {
