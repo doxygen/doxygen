@@ -380,7 +380,7 @@ void MainWindow::about()
   QString msg;
   QTextStream t(&msg,QIODevice::WriteOnly);
   t << QString::fromLatin1("<qt><center>") +
-       tr("A tool to configure and run doxygen version %1 on your source files.").arg(getDoxygenVersion().c_str()) +
+       tr("A tool to configure and run doxygen version %1 on your source files.").arg(QString::fromLatin1(getDoxygenVersion().c_str())) +
        QString::fromLatin1("</center>") +
        QString::fromLatin1("<center>(Created with Qt version  ")+
        QString::fromLatin1(QT_VERSION_STR);
