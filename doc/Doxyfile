@@ -41,7 +41,7 @@ IMAGE_PATH        = . images
 INPUT             = $(INDEX_DOC) install.dox starting.dox docblocks.dox additional.dox \
 					markdown.dox lists.dox requirements.dox grouping.dox formulas.dox tables.dox diagrams.dox preprocessing.dox \
                     autolink.dox output.dox searching.dox extsearch.dox customize.dox custcmd.dox \
-                    external.dox faq.dox trouble.dox features.dox doxygen_usage.dox doxywizard_usage.dox \
+                    external.dox faq.dox trouble.dox features.dox doxygen_usage.dox doxywizard_usage.dox i18n_guide.md \
 					config.dox commands.dox htmlcmds.dox xmlcmds.dox emojisup.dox language.dox \
                     perlmod.dox arch.dox changelog.dox 
 FILE_PATTERNS     = *.cpp *.h
