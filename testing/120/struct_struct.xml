@@ -10,23 +10,23 @@
         <name>StructMember</name>
         <qualifiedname>Struct::StructMember</qualifiedname>
         <briefdescription>
-          <para>StructMember brief (in 116_tagfile.cpp). </para>
+          <para>StructMember brief (in 120_tagfile.cpp). </para>
         </briefdescription>
         <detaileddescription>
-          <para>StructMember description (in 116_tagfile.cpp). </para>
+          <para>StructMember description (in 120_tagfile.cpp). </para>
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="116_tagfile.cpp" line="95" column="7" bodyfile="116_tagfile.cpp" bodystart="95" bodyend="-1"/>
+        <location file="120_tagfile.cpp" line="95" column="7" bodyfile="120_tagfile.cpp" bodystart="95" bodyend="-1"/>
       </memberdef>
     </sectiondef>
     <briefdescription>
-      <para><ref refid="struct_struct" kindref="compound">Struct</ref> brief (in 116_tagfile.cpp). </para>
+      <para><ref refid="struct_struct" kindref="compound">Struct</ref> brief (in 120_tagfile.cpp). </para>
     </briefdescription>
     <detaileddescription>
-      <para><ref refid="struct_struct" kindref="compound">Struct</ref> description (in 116_tagfile.cpp). </para>
+      <para><ref refid="struct_struct" kindref="compound">Struct</ref> description (in 120_tagfile.cpp). </para>
     </detaileddescription>
-    <location file="116_tagfile.cpp" line="89" column="1" bodyfile="116_tagfile.cpp" bodystart="89" bodyend="96"/>
+    <location file="120_tagfile.cpp" line="89" column="1" bodyfile="120_tagfile.cpp" bodystart="89" bodyend="96"/>
     <listofallmembers>
       <member refid="struct_struct_1a077c7aa3a29e27af8dd56791844d3099" prot="public" virt="non-virtual">
         <scope>Struct</scope>

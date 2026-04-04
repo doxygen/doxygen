@@ -10,14 +10,14 @@
         <name>ClassMember</name>
         <qualifiedname>Namespace::Class::ClassMember</qualifiedname>
         <briefdescription>
-          <para>ClassMember brief (in 116_tagfile.cpp). </para>
+          <para>ClassMember brief (in 120_tagfile.cpp). </para>
         </briefdescription>
         <detaileddescription>
-          <para>ClassMember description (in 116_tagfile.cpp). </para>
+          <para>ClassMember description (in 120_tagfile.cpp). </para>
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="116_tagfile.cpp" line="171" column="11" bodyfile="116_tagfile.cpp" bodystart="171" bodyend="-1"/>
+        <location file="120_tagfile.cpp" line="171" column="11" bodyfile="120_tagfile.cpp" bodystart="171" bodyend="-1"/>
       </memberdef>
     </sectiondef>
     <sectiondef kind="public-func">
@@ -28,23 +28,23 @@
         <name>Class</name>
         <qualifiedname>Namespace::Class::Class</qualifiedname>
         <briefdescription>
-          <para><ref refid="class_namespace_1_1_class" kindref="compound">Class</ref> constructor brief (in 116_tagfile.cpp). </para>
+          <para><ref refid="class_namespace_1_1_class" kindref="compound">Class</ref> constructor brief (in 120_tagfile.cpp). </para>
         </briefdescription>
         <detaileddescription>
-          <para><ref refid="class_namespace_1_1_class" kindref="compound">Class</ref> constructor description (in 116_tagfile.cpp). </para>
+          <para><ref refid="class_namespace_1_1_class" kindref="compound">Class</ref> constructor description (in 120_tagfile.cpp). </para>
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="116_tagfile.cpp" line="164" column="7" bodyfile="116_tagfile.cpp" bodystart="164" bodyend="164"/>
+        <location file="120_tagfile.cpp" line="164" column="7" bodyfile="120_tagfile.cpp" bodystart="164" bodyend="164"/>
       </memberdef>
     </sectiondef>
     <briefdescription>
-      <para><ref refid="class_namespace_1_1_class" kindref="compound">Class</ref> brief (in 116_tagfile.cpp). </para>
+      <para><ref refid="class_namespace_1_1_class" kindref="compound">Class</ref> brief (in 120_tagfile.cpp). </para>
     </briefdescription>
     <detaileddescription>
-      <para><ref refid="class_namespace_1_1_class" kindref="compound">Class</ref> description (in 116_tagfile.cpp). </para>
+      <para><ref refid="class_namespace_1_1_class" kindref="compound">Class</ref> description (in 120_tagfile.cpp). </para>
     </detaileddescription>
-    <location file="116_tagfile.cpp" line="157" column="3" bodyfile="116_tagfile.cpp" bodystart="157" bodyend="172"/>
+    <location file="120_tagfile.cpp" line="157" column="3" bodyfile="120_tagfile.cpp" bodystart="157" bodyend="172"/>
     <listofallmembers>
       <member refid="class_namespace_1_1_class_1a3728462d9de1e54c409d273c99bfe5a8" prot="public" virt="non-virtual">
         <scope>Namespace::Class</scope>

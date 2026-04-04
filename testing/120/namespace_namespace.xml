@@ -4,11 +4,11 @@
     <compoundname>Namespace</compoundname>
     <innerclass refid="class_namespace_1_1_class" prot="public">Namespace::Class</innerclass>
     <briefdescription>
-      <para><ref refid="namespace_namespace" kindref="compound">Namespace</ref> brief (in 116_tagfile.cpp). </para>
+      <para><ref refid="namespace_namespace" kindref="compound">Namespace</ref> brief (in 120_tagfile.cpp). </para>
     </briefdescription>
     <detaileddescription>
-      <para><ref refid="namespace_namespace" kindref="compound">Namespace</ref> description (in 116_tagfile.cpp). </para>
+      <para><ref refid="namespace_namespace" kindref="compound">Namespace</ref> description (in 120_tagfile.cpp). </para>
     </detaileddescription>
-    <location file="116_tagfile.cpp" line="151" column="1"/>
+    <location file="120_tagfile.cpp" line="151" column="1"/>
   </compounddef>
 </doxygen>
