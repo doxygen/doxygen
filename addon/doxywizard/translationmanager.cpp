@@ -84,7 +84,7 @@ void TranslationManager::loadAvailableLanguages()
 
     LanguageInfo fr;
     fr.code = QString::fromLatin1("fr");
-    fr.nativeName = QString::fromLatin1("Français");
+    fr.nativeName = QString::fromUtf8("Français");
     fr.englishName = QString::fromLatin1("French");
     fr.tsFile = QString::fromLatin1("doxywizard_fr.ts");
     fr.qmFile = QString::fromLatin1("doxywizard_fr.qm");
@@ -108,7 +108,7 @@ void TranslationManager::loadAvailableLanguages()
 
     LanguageInfo es;
     es.code = QString::fromLatin1("es");
-    es.nativeName = QString::fromLatin1("Español");
+    es.nativeName = QString::fromUtf8("Español");
     es.englishName = QString::fromLatin1("Spanish");
     es.tsFile = QString::fromLatin1("doxywizard_es.ts");
     es.qmFile = QString::fromLatin1("doxywizard_es.qm");
