@@ -117,7 +117,8 @@ void MermaidManager::generateMermaidOutput(const QCString &baseName, const QCStr
 }
 
 static void runMermaidContent(const MermaidManager::ContentList &contentList,
-                              MermaidManager::OutputFormat format)
+                              MermaidManager::OutputFormat format,
+                              int offset,int total)
 {
   //printf("runMermaidContent for %zu images\n",contentList.size());
   if (contentList.empty()) return;
@@ -152,12 +153,16 @@ static void runMermaidContent(const MermaidManager::ContentList &contentList,
     if (fi.exists())
     {
       QCString cachedContent = fileToString(inputFile);
-      if (cachedContent == mc.content) continue;
+      if (cachedContent == mc.content)
+      {
+        offset++;
+        continue;
+      }
     }
 
     // Build the mmdc command arguments
     QCString args;
-    args += "-i \"" + inputFile + "\" ";
+    args += "-q -i \"" + inputFile + "\" ";
     args += "-o \"" + outputFile + "\" ";
 
     if (!mermaidConfigFile.isEmpty())
@@ -165,7 +170,7 @@ static void runMermaidContent(const MermaidManager::ContentList &contentList,
       args += "-c \"" + mermaidConfigFile + "\" ";
     }
 
-    msg("Generating Mermaid {} file {}\n", ext, outputFile);
+    msg("Generating Mermaid {} file {}/{}\n", ext, offset++,total);
     Debug::print(Debug::Mermaid, 0, "*** MermaidManager::run Running: {} {}\n", mmdc, args);
 
     int exitCode = Portable::system(mmdc.data(), args.data(), TRUE);
@@ -181,7 +186,11 @@ static void runMermaidContent(const MermaidManager::ContentList &contentList,
 void MermaidManager::run()
 {
   Debug::print(Debug::Mermaid, 0, "*** MermaidManager::run\n");
-  runMermaidContent(m_pngContent, OutputFormat::Bitmap);
-  runMermaidContent(m_svgContent, OutputFormat::SVG);
-  runMermaidContent(m_pdfContent, OutputFormat::PDF);
+  size_t total = m_pngContent.size()+m_svgContent.size()+m_pdfContent.size();
+  size_t offset = 1;
+  runMermaidContent(m_pngContent, OutputFormat::Bitmap, offset, total);
+  offset+=m_pngContent.size();
+  runMermaidContent(m_svgContent, OutputFormat::SVG, offset, total);
+  offset+=m_svgContent.size();
+  runMermaidContent(m_pdfContent, OutputFormat::PDF, offset, total);
 }

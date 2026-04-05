@@ -2090,12 +2090,12 @@ void LatexDocVisitor::startMermaidFile(const QCString &fileName,
   std::string inBuf;
   readInputFile(fileName,inBuf);
 
+  bool usePDFLatex = Config_getBool(USE_PDFLATEX);
   QCString baseName = MermaidManager::instance().writeMermaidSource(
                               outDir,QCString(),inBuf,
-                              MermaidManager::OutputFormat::Bitmap,
+                              usePDFLatex ? MermaidManager::OutputFormat::PDF : MermaidManager::OutputFormat::Bitmap,
                               srcFile,srcLine);
   QCString shortName = stripPath(baseName);
-  bool usePDFLatex = Config_getBool(USE_PDFLATEX);
   if (shortName.find('.')==-1) shortName += usePDFLatex ? ".pdf" : ".png";
   MermaidManager::instance().generateMermaidOutput(baseName,outDir,usePDFLatex ? MermaidManager::OutputFormat::PDF : MermaidManager::OutputFormat::Bitmap);
   visitPreStart(m_t,hasCaption, shortName, width, height);
