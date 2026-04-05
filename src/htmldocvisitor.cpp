@@ -674,7 +674,7 @@ void HtmlDocVisitor::operator()(const DocVerbatim &s)
         {
           m_t << "<div class=\"mermaidgraph\">\n";
           m_t << "<pre class=\"mermaid\">\n";
-          m_t << s.text();
+          m_t << convertToHtml(s.text());
           m_t << "</pre>\n";
           visitCaption(m_t, s);
           m_t << "</div>\n";
@@ -1912,7 +1912,7 @@ void HtmlDocVisitor::operator()(const DocMermaidFile &df)
     readInputFile(df.file(),inBuf);
     m_t << "<div class=\"mermaidgraph\">\n";
     m_t << "<pre class=\"mermaid\">\n";
-    m_t << inBuf;
+    m_t << convertToHtml(inBuf);
     m_t << "</pre>\n";
     if (df.hasCaption())
     {
