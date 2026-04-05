@@ -214,6 +214,22 @@
         <translation>Doxygen GUI</translation>
     </message>
     <message>
+        <source>A tool to configure and run doxygen version %1 on your source files.</source>
+        <translation>Ein Werkzeug zum Konfigurieren und Ausführen von Doxygen Version %1 für Ihre Quelldateien.</translation>
+    </message>
+    <message>
+        <source>(Created with Qt version %1)</source>
+        <translation>(Erstellt mit Qt Version %1)</translation>
+    </message>
+    <message>
+        <source>, running with %1</source>
+        <translation>, läuft mit %1</translation>
+    </message>
+    <message>
+        <source>Written by</source>
+        <translation>Geschrieben von</translation>
+    </message>
+    <message>
         <source>Open configuration file</source>
         <translation>Konfigurationsdatei öffnen</translation>
     </message>

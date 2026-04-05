@@ -214,6 +214,22 @@
         <translation>Doxygen 圖形介面</translation>
     </message>
     <message>
+        <source>A tool to configure and run doxygen version %1 on your source files.</source>
+        <translation>一個用於設定和執行 doxygen 版本 %1 的工具，用於處理您的原始碼檔案。</translation>
+    </message>
+    <message>
+        <source>(Created with Qt version %1)</source>
+        <translation>(使用 Qt 版本 %1 建立)</translation>
+    </message>
+    <message>
+        <source>, running with %1</source>
+        <translation>，執行於 %1</translation>
+    </message>
+    <message>
+        <source>Written by</source>
+        <translation>作者</translation>
+    </message>
+    <message>
         <source>Open configuration file</source>
         <translation>開啟設定檔</translation>
     </message>

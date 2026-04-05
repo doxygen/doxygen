@@ -382,15 +382,16 @@ void MainWindow::about()
   t << QString::fromLatin1("<qt><center>") +
        tr("A tool to configure and run doxygen version %1 on your source files.").arg(QString::fromLatin1(getDoxygenVersion().c_str())) +
        QString::fromLatin1("</center>") +
-       QString::fromLatin1("<center>(Created with Qt version  ")+
-       QString::fromLatin1(QT_VERSION_STR);
+       QString::fromLatin1("<center>") +
+       tr("(Created with Qt version %1)").arg(QString::fromLatin1(QT_VERSION_STR));
        if (qstrcmp(qVersion(),QT_VERSION_STR))
        {
-         t << QString::fromLatin1(", running with ")+
-              QString::fromLatin1(qVersion());
+         t << tr(", running with %1").arg(QString::fromLatin1(qVersion()));
        }
   t << QString::fromLatin1(")</center><p><br>"
-       "<center>Written by<br> Dimitri van Heesch<br>&copy; 2000-");
+       "<center>") +
+       tr("Written by") +
+       QString::fromLatin1("<br> Dimitri van Heesch<br>&copy; 2000-");
   t << QDate::currentDate().year();
   t << QString::fromLatin1("</center><p></qt>");
   QMessageBox::about(this,tr("Doxygen GUI"),msg);

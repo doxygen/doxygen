@@ -267,6 +267,18 @@
         <translation>一个用于配置和运行 doxygen 版本 %1 的工具，用于处理您的源代码文件。</translation>
     </message>
     <message>
+        <source>(Created with Qt version %1)</source>
+        <translation>(使用 Qt 版本 %1 创建)</translation>
+    </message>
+    <message>
+        <source>, running with %1</source>
+        <translation>，运行于 %1</translation>
+    </message>
+    <message>
+        <source>Written by</source>
+        <translation>作者</translation>
+    </message>
+    <message>
         <location filename="doxywizard.cpp" line="295"/>
         <source>Open configuration file</source>
         <translation>打开配置文件</translation>

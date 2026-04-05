@@ -214,6 +214,22 @@
         <translation>Doxygen GUI</translation>
     </message>
     <message>
+        <source>A tool to configure and run doxygen version %1 on your source files.</source>
+        <translation>소스 파일에 대해 doxygen 버전 %1을 구성하고 실행하는 도구입니다.</translation>
+    </message>
+    <message>
+        <source>(Created with Qt version %1)</source>
+        <translation>(Qt 버전 %1으로 생성됨)</translation>
+    </message>
+    <message>
+        <source>, running with %1</source>
+        <translation>, %1에서 실행 중</translation>
+    </message>
+    <message>
+        <source>Written by</source>
+        <translation>작성자</translation>
+    </message>
+    <message>
         <source>Open configuration file</source>
         <translation>구성 파일 열기</translation>
     </message>
