@@ -234,7 +234,7 @@ MainWindow::MainWindow()
 
   loadSettings();
   updateLaunchButtonState();
-  m_modified = true;
+  m_modified = false;
   updateTitle();
   m_wizard->refresh();
 }

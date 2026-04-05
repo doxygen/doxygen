@@ -752,10 +752,25 @@ void Expert::activateTopic(QTreeWidgetItem *item,QTreeWidgetItem *)
 {
   if (item)
   {
-    QWidget *w = m_topics[item->text(0)];
-    m_topicStack->setCurrentWidget(w);
-    m_prev->setEnabled(m_topicStack->currentIndex()!=0);
-    m_next->setEnabled(true);
+    QString translatedName = item->text(0);
+    QWidget *w = nullptr;
+    QHashIterator<QString,QWidget*> i(m_topics);
+    while (i.hasNext())
+    {
+      i.next();
+      QString originalName = i.key();
+      if (tr(originalName.toUtf8().constData()) == translatedName)
+      {
+        w = i.value();
+        break;
+      }
+    }
+    if (w)
+    {
+      m_topicStack->setCurrentWidget(w);
+      m_prev->setEnabled(m_topicStack->currentIndex()!=0);
+      m_next->setEnabled(true);
+    }
   }
 }
 
