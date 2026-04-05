@@ -151,7 +151,7 @@ void Expert::createTopics(const QDomElement &rootElem)
     }
     childElem = childElem.nextSiblingElement();
   }
-  m_treeWidget->setHeaderLabels(QStringList() << SA("Topics"));
+  m_treeWidget->setHeaderLabels(QStringList() << tr("Topics"));
   m_treeWidget->insertTopLevelItems(0,items);
   connect(m_treeWidget,
           SIGNAL(currentItemChanged(QTreeWidgetItem *,QTreeWidgetItem *)),

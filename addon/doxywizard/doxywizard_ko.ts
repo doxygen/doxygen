@@ -21,6 +21,10 @@
         <source>Next</source>
         <translation>다음</translation>
     </message>
+    <message>
+        <source>Topics</source>
+        <translation>주제</translation>
+    </message>
 </context>
 <context>
     <name>HelpLabel</name>
@@ -674,6 +678,11 @@
     <message><source>MSC File Dirs</source><translation>MSC 파일 디렉토리</translation></message>
     <message><source>DIA Path</source><translation>DIA 경로</translation></message>
     <message><source>DIA File Dirs</source><translation>DIA 파일 디렉토리</translation></message>
+    <message><source>Mermaid Path</source><translation>Mermaid 경로</translation></message>
+    <message><source>Mermaid Config File</source><translation>Mermaid 설정 파일</translation></message>
+    <message><source>Mermaid Render Mode</source><translation>Mermaid 렌더링 모드</translation></message>
+    <message><source>Mermaid JS URL</source><translation>Mermaid JS URL</translation></message>
+    <message><source>Mermaid File Dirs</source><translation>Mermaid 파일 디렉토리</translation></message>
 </context>
 <context>
     <name>Step1</name>
@@ -959,6 +968,10 @@
     <message>
         <source>Next</source>
         <translation>다음</translation>
+    </message>
+    <message>
+        <source>Topics</source>
+        <translation>주제</translation>
     </message>
 </context>
 </TS>

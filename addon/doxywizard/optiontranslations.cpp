@@ -344,6 +344,12 @@ static const struct {
     { "DIA_PATH", TR_NOOP("DIA Path") },
     { "DIAFILE_DIRS", TR_NOOP("DIA File Dirs") },
     
+    { "MERMAID_PATH", TR_NOOP("Mermaid Path") },
+    { "MERMAID_CONFIG_FILE", TR_NOOP("Mermaid Config File") },
+    { "MERMAID_RENDER_MODE", TR_NOOP("Mermaid Render Mode") },
+    { "MERMAID_JS_URL", TR_NOOP("Mermaid JS URL") },
+    { "MERMAIDFILE_DIRS", TR_NOOP("Mermaid File Dirs") },
+    
     { nullptr, nullptr }
 };
 

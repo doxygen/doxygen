@@ -775,6 +775,11 @@ void Step1::retranslateUi()
               "put the generated documentation"));
   m_destDirLabel2->setText(tr("Destination directory:"));
   m_dstSelectDir->setText(tr("Select..."));
+  
+  if (m_projIconLab->pixmap().isNull())
+  {
+    m_projIconLab->setText(tr("No Project logo selected."));
+  }
 }
 
 
@@ -1404,7 +1409,7 @@ Wizard::Wizard(const QHash<QString,Input*> &modelData, QWidget *parent) :
 {
   m_treeWidget = new QTreeWidget;
   m_treeWidget->setColumnCount(1);
-  m_treeWidget->setHeaderLabels(QStringList() << QString::fromLatin1("Topics"));
+  m_treeWidget->setHeaderLabels(QStringList() << tr("Topics"));
   QList<QTreeWidgetItem*> items;
   items.append(new QTreeWidgetItem((QTreeWidget*)nullptr,QStringList(tr("Project"))));
   items.append(new QTreeWidgetItem((QTreeWidget*)nullptr,QStringList(tr("Mode"))));
@@ -1515,6 +1520,7 @@ void Wizard::refresh()
 
 void Wizard::retranslateUi()
 {
+  m_treeWidget->setHeaderLabels(QStringList() << tr("Topics"));
   QTreeWidgetItem *item = m_treeWidget->invisibleRootItem()->child(0);
   if (item) item->setText(0, tr("Project"));
   item = m_treeWidget->invisibleRootItem()->child(1);

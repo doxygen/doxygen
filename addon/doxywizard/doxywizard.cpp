@@ -850,6 +850,10 @@ void MainWindow::updateTitle()
 {
   QString title = tr("Doxygen GUI frontend") ;
   m_resetDefault->setEnabled(m_modified);
+    if (m_modified)
+  {
+    title+=QString::fromLatin1(" +");
+  }
   if (!m_fileName.isEmpty())
   {
     title+=QString::fromLatin1(" (")+m_fileName+QString::fromLatin1(")");

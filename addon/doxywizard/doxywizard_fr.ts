@@ -21,6 +21,10 @@
         <source>Next</source>
         <translation>Suivant</translation>
     </message>
+    <message>
+        <source>Topics</source>
+        <translation>Sujets</translation>
+    </message>
 </context>
 <context>
     <name>HelpLabel</name>
@@ -674,6 +678,11 @@
     <message><source>MSC File Dirs</source><translation>Répertoires de fichiers MSC</translation></message>
     <message><source>DIA Path</source><translation>Chemin DIA</translation></message>
     <message><source>DIA File Dirs</source><translation>Répertoires de fichiers DIA</translation></message>
+    <message><source>Mermaid Path</source><translation>Chemin Mermaid</translation></message>
+    <message><source>Mermaid Config File</source><translation>Fichier de configuration Mermaid</translation></message>
+    <message><source>Mermaid Render Mode</source><translation>Mode de rendu Mermaid</translation></message>
+    <message><source>Mermaid JS URL</source><translation>URL Mermaid JS</translation></message>
+    <message><source>Mermaid File Dirs</source><translation>Répertoires de fichiers Mermaid</translation></message>
 </context>
 <context>
     <name>Step1</name>
@@ -959,6 +968,10 @@
     <message>
         <source>Next</source>
         <translation>Suivant</translation>
+    </message>
+    <message>
+        <source>Topics</source>
+        <translation>Sujets</translation>
     </message>
 </context>
 </TS>

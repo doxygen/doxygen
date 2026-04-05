@@ -25,6 +25,10 @@
         <source>Next</source>
         <translation>下一个</translation>
     </message>
+    <message>
+        <source>Topics</source>
+        <translation>主题</translation>
+    </message>
 </context>
 <context>
     <name>HelpLabel</name>
@@ -1682,6 +1686,26 @@
         <source>DIA File Dirs</source>
         <translation>DIA文件目录</translation>
     </message>
+    <message>
+        <source>Mermaid Path</source>
+        <translation>Mermaid路径</translation>
+    </message>
+    <message>
+        <source>Mermaid Config File</source>
+        <translation>Mermaid配置文件</translation>
+    </message>
+    <message>
+        <source>Mermaid Render Mode</source>
+        <translation>Mermaid渲染模式</translation>
+    </message>
+    <message>
+        <source>Mermaid JS URL</source>
+        <translation>Mermaid JS地址</translation>
+    </message>
+    <message>
+        <source>Mermaid File Dirs</source>
+        <translation>Mermaid文件目录</translation>
+    </message>
 </context>
 <context>
     <name>Step1</name>
@@ -2043,6 +2067,10 @@
         <location filename="wizard.cpp" line="1358"/>
         <source>Next</source>
         <translation>下一步</translation>
+    </message>
+    <message>
+        <source>Topics</source>
+        <translation>主题</translation>
     </message>
 </context>
 </TS>

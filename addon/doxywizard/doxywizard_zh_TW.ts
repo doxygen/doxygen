@@ -21,6 +21,10 @@
         <source>Next</source>
         <translation>下一個</translation>
     </message>
+    <message>
+        <source>Topics</source>
+        <translation>主題</translation>
+    </message>
 </context>
 <context>
     <name>HelpLabel</name>
@@ -1601,6 +1605,26 @@
         <source>DIA File Dirs</source>
         <translation>DIA 檔案目錄</translation>
     </message>
+    <message>
+        <source>Mermaid Path</source>
+        <translation>Mermaid路徑</translation>
+    </message>
+    <message>
+        <source>Mermaid Config File</source>
+        <translation>Mermaid設定檔</translation>
+    </message>
+    <message>
+        <source>Mermaid Render Mode</source>
+        <translation>Mermaid渲染模式</translation>
+    </message>
+    <message>
+        <source>Mermaid JS URL</source>
+        <translation>Mermaid JS網址</translation>
+    </message>
+    <message>
+        <source>Mermaid File Dirs</source>
+        <translation>Mermaid檔案目錄</translation>
+    </message>
 </context>
 <context>
     <name>Step1</name>
@@ -1886,6 +1910,10 @@
     <message>
         <source>Next</source>
         <translation>下一步</translation>
+    </message>
+    <message>
+        <source>Topics</source>
+        <translation>主題</translation>
     </message>
 </context>
 </TS>
