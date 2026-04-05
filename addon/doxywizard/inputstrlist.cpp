@@ -214,6 +214,7 @@ void InputStrList::setValue(const QStringList &sl)
     m_lb->addItem(m_strList[i].trimmed());
   }
   updateDefault();
+  emit changed();
 }
 
 QVariant &InputStrList::value()

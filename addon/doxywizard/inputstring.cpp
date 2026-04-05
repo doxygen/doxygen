@@ -127,6 +127,7 @@ void InputString::setValue(const QString &s)
     m_str = s;
     m_value = m_str;
     updateDefault();
+    emit changed();
   }
 }
 void InputString::updateDefault()

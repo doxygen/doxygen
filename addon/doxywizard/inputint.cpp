@@ -76,6 +76,7 @@ void InputInt::setValue(int val)
     m_sp->setValue(newVal);
     m_value = m_val;
     updateDefault();
+    emit changed();
   }
 }
 
