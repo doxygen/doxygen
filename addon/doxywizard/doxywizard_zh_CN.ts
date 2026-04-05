@@ -29,6 +29,78 @@
         <source>Topics</source>
         <translation>主题</translation>
     </message>
+    <message>
+        <source>Project</source>
+        <translation>项目</translation>
+    </message>
+    <message>
+        <source>Build</source>
+        <translation>构建</translation>
+    </message>
+    <message>
+        <source>Messages</source>
+        <translation>消息</translation>
+    </message>
+    <message>
+        <source>Input</source>
+        <translation>输入</translation>
+    </message>
+    <message>
+        <source>Source Browser</source>
+        <translation>源码浏览器</translation>
+    </message>
+    <message>
+        <source>Index</source>
+        <translation>索引</translation>
+    </message>
+    <message>
+        <source>HTML</source>
+        <translation>HTML</translation>
+    </message>
+    <message>
+        <source>LaTeX</source>
+        <translation>LaTeX</translation>
+    </message>
+    <message>
+        <source>RTF</source>
+        <translation>RTF</translation>
+    </message>
+    <message>
+        <source>Man</source>
+        <translation>Man</translation>
+    </message>
+    <message>
+        <source>XML</source>
+        <translation>XML</translation>
+    </message>
+    <message>
+        <source>Docbook</source>
+        <translation>Docbook</translation>
+    </message>
+    <message>
+        <source>AutoGen</source>
+        <translation>AutoGen</translation>
+    </message>
+    <message>
+        <source>Sqlite3</source>
+        <translation>Sqlite3</translation>
+    </message>
+    <message>
+        <source>PerlMod</source>
+        <translation>PerlMod</translation>
+    </message>
+    <message>
+        <source>Preprocessor</source>
+        <translation>预处理器</translation>
+    </message>
+    <message>
+        <source>External</source>
+        <translation>外部引用</translation>
+    </message>
+    <message>
+        <source>Dot</source>
+        <translation>Dot</translation>
+    </message>
 </context>
 <context>
     <name>HelpLabel</name>

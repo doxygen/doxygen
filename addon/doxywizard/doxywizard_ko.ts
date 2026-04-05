@@ -25,6 +25,78 @@
         <source>Topics</source>
         <translation>주제</translation>
     </message>
+    <message>
+        <source>Project</source>
+        <translation>프로젝트</translation>
+    </message>
+    <message>
+        <source>Build</source>
+        <translation>빌드</translation>
+    </message>
+    <message>
+        <source>Messages</source>
+        <translation>메시지</translation>
+    </message>
+    <message>
+        <source>Input</source>
+        <translation>입력</translation>
+    </message>
+    <message>
+        <source>Source Browser</source>
+        <translation>소스 브라우저</translation>
+    </message>
+    <message>
+        <source>Index</source>
+        <translation>인덱스</translation>
+    </message>
+    <message>
+        <source>HTML</source>
+        <translation>HTML</translation>
+    </message>
+    <message>
+        <source>LaTeX</source>
+        <translation>LaTeX</translation>
+    </message>
+    <message>
+        <source>RTF</source>
+        <translation>RTF</translation>
+    </message>
+    <message>
+        <source>Man</source>
+        <translation>Man</translation>
+    </message>
+    <message>
+        <source>XML</source>
+        <translation>XML</translation>
+    </message>
+    <message>
+        <source>Docbook</source>
+        <translation>Docbook</translation>
+    </message>
+    <message>
+        <source>AutoGen</source>
+        <translation>AutoGen</translation>
+    </message>
+    <message>
+        <source>Sqlite3</source>
+        <translation>Sqlite3</translation>
+    </message>
+    <message>
+        <source>PerlMod</source>
+        <translation>PerlMod</translation>
+    </message>
+    <message>
+        <source>Preprocessor</source>
+        <translation>전처리기</translation>
+    </message>
+    <message>
+        <source>External</source>
+        <translation>외부 참조</translation>
+    </message>
+    <message>
+        <source>Dot</source>
+        <translation>Dot</translation>
+    </message>
 </context>
 <context>
     <name>HelpLabel</name>

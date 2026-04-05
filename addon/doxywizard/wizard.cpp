@@ -776,7 +776,11 @@ void Step1::retranslateUi()
   m_destDirLabel2->setText(tr("Destination directory:"));
   m_dstSelectDir->setText(tr("Select..."));
   
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
   if (m_projIconLab->pixmap().isNull())
+#else
+  if (m_projIconLab->pixmap() == nullptr || m_projIconLab->pixmap()->isNull())
+#endif
   {
     m_projIconLab->setText(tr("No Project logo selected."));
   }

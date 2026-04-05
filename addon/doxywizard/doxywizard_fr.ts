@@ -25,6 +25,78 @@
         <source>Topics</source>
         <translation>Sujets</translation>
     </message>
+    <message>
+        <source>Project</source>
+        <translation>Projet</translation>
+    </message>
+    <message>
+        <source>Build</source>
+        <translation>Construction</translation>
+    </message>
+    <message>
+        <source>Messages</source>
+        <translation>Messages</translation>
+    </message>
+    <message>
+        <source>Input</source>
+        <translation>Entrée</translation>
+    </message>
+    <message>
+        <source>Source Browser</source>
+        <translation>Navigateur de sources</translation>
+    </message>
+    <message>
+        <source>Index</source>
+        <translation>Index</translation>
+    </message>
+    <message>
+        <source>HTML</source>
+        <translation>HTML</translation>
+    </message>
+    <message>
+        <source>LaTeX</source>
+        <translation>LaTeX</translation>
+    </message>
+    <message>
+        <source>RTF</source>
+        <translation>RTF</translation>
+    </message>
+    <message>
+        <source>Man</source>
+        <translation>Man</translation>
+    </message>
+    <message>
+        <source>XML</source>
+        <translation>XML</translation>
+    </message>
+    <message>
+        <source>Docbook</source>
+        <translation>Docbook</translation>
+    </message>
+    <message>
+        <source>AutoGen</source>
+        <translation>AutoGen</translation>
+    </message>
+    <message>
+        <source>Sqlite3</source>
+        <translation>Sqlite3</translation>
+    </message>
+    <message>
+        <source>PerlMod</source>
+        <translation>PerlMod</translation>
+    </message>
+    <message>
+        <source>Preprocessor</source>
+        <translation>Préprocesseur</translation>
+    </message>
+    <message>
+        <source>External</source>
+        <translation>Références externes</translation>
+    </message>
+    <message>
+        <source>Dot</source>
+        <translation>Dot</translation>
+    </message>
 </context>
 <context>
     <name>HelpLabel</name>

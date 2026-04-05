@@ -143,7 +143,8 @@ void Expert::createTopics(const QDomElement &rootElem)
       QString setting = childElem.attribute(SA("setting"));
       if (setting.isEmpty() || IS_SUPPORTED(setting.toLatin1()))
       {
-        items.append(new QTreeWidgetItem((QTreeWidget*)nullptr,QStringList(name)));
+        QString translatedName = tr(name.toUtf8().constData());
+        items.append(new QTreeWidgetItem((QTreeWidget*)nullptr,QStringList(translatedName)));
         QWidget *widget = createTopicWidget(childElem);
         m_topics[name] = widget;
         m_topicStack->addWidget(widget);
@@ -1023,6 +1024,19 @@ void Expert::retranslateUi()
   m_treeWidget->setHeaderLabels(QStringList() << tr("Topics"));
   m_prev->setText(tr("Previous"));
   m_next->setText(tr("Next"));
+  
+  for (int i = 0; i < m_treeWidget->topLevelItemCount(); ++i)
+  {
+    QTreeWidgetItem *item = m_treeWidget->topLevelItem(i);
+    if (item)
+    {
+      QString originalName = m_topics.key(m_topicStack->widget(i));
+      if (!originalName.isEmpty())
+      {
+        item->setText(0, tr(originalName.toUtf8().constData()));
+      }
+    }
+  }
   
   QHashIterator<QString,Input*> i(m_options);
   while (i.hasNext())
