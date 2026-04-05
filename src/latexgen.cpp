@@ -1628,7 +1628,14 @@ void LatexGenerator::addLabel(const QCString &fName, const QCString &anchor)
 void LatexGenerator::writeAnchor(const QCString &fName,const QCString &name)
 {
   //printf("LatexGenerator::writeAnchor(%s,%s)\n",fName,name);
-  m_t << "\\label{" << stripPath(name) << "}\n";
+  if (!fName.isEmpty())
+  {
+    m_t << "\\label{" << stripPath(fName) << "_" << stripPath(name) << "}\n";
+  }
+  else
+  {
+    m_t << "\\label{" << stripPath(name) << "}\n";
+  }
   bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
   bool usePDFLatex   = Config_getBool(USE_PDFLATEX);
   if (usePDFLatex && pdfHyperlinks)
