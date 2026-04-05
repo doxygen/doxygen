@@ -404,7 +404,7 @@ DB_VIS_C
       {
         QCString docbookOutput = Config_getString(DOCBOOK_OUTPUT);
         QCString baseName = MermaidManager::instance().writeMermaidSource(docbookOutput,
-            s.exampleFile(),s.text(),MermaidManager::MERM_BITMAP,
+            s.exampleFile(),s.text(),MermaidManager::OutputFormat::Bitmap,
             s.srcFile(),s.srcLine());
         m_t << "<para>\n";
         writeMermaidFile(baseName,s);
@@ -1620,7 +1620,7 @@ DB_VIS_C
   if (Config_getBool(MERMAID_RENDER_MODE)==MERMAID_RENDER_MODE_t::CLIENT_SIDE) return;
   QCString shortName = stripPath(baseName);
   QCString outDir = Config_getString(DOCBOOK_OUTPUT);
-  MermaidManager::instance().generateMermaidOutput(baseName,outDir,MermaidManager::MERM_BITMAP);
+  MermaidManager::instance().generateMermaidOutput(baseName,outDir,MermaidManager::OutputFormat::Bitmap);
   visitPreStart(m_t, s.children(), s.hasCaption(), s.relPath() + shortName + ".png", s.width(),s.height());
   visitCaption(s.children());
   visitPostEnd(m_t, s.hasCaption());
@@ -1642,9 +1642,9 @@ DB_VIS_C
   std::string inBuf;
   readInputFile(fileName,inBuf);
   QCString baseName = MermaidManager::instance().writeMermaidSource(outDir,
-                           QCString(),inBuf,MermaidManager::MERM_BITMAP,srcFile,srcLine);
+                           QCString(),inBuf,MermaidManager::OutputFormat::Bitmap,srcFile,srcLine);
   QCString shortName = stripPath(baseName);
-  MermaidManager::instance().generateMermaidOutput(baseName,outDir,MermaidManager::MERM_BITMAP);
+  MermaidManager::instance().generateMermaidOutput(baseName,outDir,MermaidManager::OutputFormat::Bitmap);
   m_t << "<para>\n";
   visitPreStart(m_t, children, hasCaption, relPath + shortName + ".png", width, height);
 }

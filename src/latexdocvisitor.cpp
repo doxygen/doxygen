@@ -502,9 +502,10 @@ void LatexDocVisitor::operator()(const DocVerbatim &s)
       if (Config_getBool(MERMAID_RENDER_MODE)!=MERMAID_RENDER_MODE_t::CLIENT_SIDE)
       {
         QCString latexOutput = Config_getString(LATEX_OUTPUT);
+        bool usePDFLatex = Config_getBool(USE_PDFLATEX);
         QCString baseName = MermaidManager::instance().writeMermaidSource(
                               latexOutput,s.exampleFile(),s.text(),
-                              MermaidManager::MERM_BITMAP,
+                              usePDFLatex ? MermaidManager::OutputFormat::PDF : MermaidManager::OutputFormat::Bitmap,
                               s.srcFile(),s.srcLine());
         writeMermaidFile(baseName, s);
       }
@@ -2067,9 +2068,10 @@ void LatexDocVisitor::writeMermaidFile(const QCString &baseName, const DocVerbat
 {
   if (Config_getBool(MERMAID_RENDER_MODE)==MERMAID_RENDER_MODE_t::CLIENT_SIDE) return;
   QCString shortName = stripPath(baseName);
-  if (shortName.find('.')==-1) shortName += ".png";
+  bool usePDFLatex = Config_getBool(USE_PDFLATEX);
+  if (shortName.find('.')==-1) shortName += usePDFLatex ? ".pdf" : ".png";
   QCString outDir = Config_getString(LATEX_OUTPUT);
-  MermaidManager::instance().generateMermaidOutput(baseName,outDir,MermaidManager::MERM_BITMAP);
+  MermaidManager::instance().generateMermaidOutput(baseName,outDir,usePDFLatex ? MermaidManager::OutputFormat::PDF : MermaidManager::OutputFormat::Bitmap);
   visitPreStart(m_t, s.hasCaption(), shortName, s.width(), s.height());
   visitCaption(s.children());
   visitPostEnd(m_t, s.hasCaption());
@@ -2090,11 +2092,12 @@ void LatexDocVisitor::startMermaidFile(const QCString &fileName,
 
   QCString baseName = MermaidManager::instance().writeMermaidSource(
                               outDir,QCString(),inBuf,
-                              MermaidManager::MERM_BITMAP,
+                              MermaidManager::OutputFormat::Bitmap,
                               srcFile,srcLine);
   QCString shortName = stripPath(baseName);
-  if (shortName.find('.')==-1) shortName += ".png";
-  MermaidManager::instance().generateMermaidOutput(baseName,outDir,MermaidManager::MERM_BITMAP);
+  bool usePDFLatex = Config_getBool(USE_PDFLATEX);
+  if (shortName.find('.')==-1) shortName += usePDFLatex ? ".pdf" : ".png";
+  MermaidManager::instance().generateMermaidOutput(baseName,outDir,usePDFLatex ? MermaidManager::OutputFormat::PDF : MermaidManager::OutputFormat::Bitmap);
   visitPreStart(m_t,hasCaption, shortName, width, height);
 }
 

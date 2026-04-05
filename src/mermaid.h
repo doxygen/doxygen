@@ -41,7 +41,7 @@ class MermaidManager
 {
   public:
     /** Mermaid output image formats */
-    enum OutputFormat { MERM_BITMAP, MERM_SVG };
+    enum class OutputFormat { Bitmap, SVG, PDF };
 
     static MermaidManager &instance();
 
@@ -77,6 +77,7 @@ class MermaidManager
 
     ContentList m_pngContent;
     ContentList m_svgContent;
+    ContentList m_pdfContent;
 };
 
 #endif

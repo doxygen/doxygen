@@ -43,8 +43,9 @@ QCString MermaidManager::imageExtension(OutputFormat format)
 {
   switch (format)
   {
-    case MERM_BITMAP: return ".png";
-    case MERM_SVG:    return ".svg";
+    case OutputFormat::Bitmap: return ".png";
+    case OutputFormat::SVG:    return ".svg";
+    case OutputFormat::PDF:    return ".pdf";
   }
   return ".png";
 }
@@ -94,8 +95,9 @@ QCString MermaidManager::writeMermaidSource(const QCString &outDirArg, const QCS
   MermaidContent mc(baseName, content, outDir, srcFile, srcLine);
   switch (format)
   {
-    case MERM_BITMAP: m_pngContent.push_back(mc); break;
-    case MERM_SVG:    m_svgContent.push_back(mc); break;
+    case OutputFormat::Bitmap: m_pngContent.push_back(mc); break;
+    case OutputFormat::SVG:    m_svgContent.push_back(mc); break;
+    case OutputFormat::PDF:    m_pdfContent.push_back(mc); break;
   }
 
   return baseName;
@@ -132,8 +134,9 @@ static void runMermaidContent(const MermaidManager::ContentList &contentList,
   QCString ext;
   switch (format)
   {
-    case MermaidManager::MERM_BITMAP: ext = "png"; break;
-    case MermaidManager::MERM_SVG:    ext = "svg"; break;
+    case MermaidManager::OutputFormat::Bitmap: ext = "png"; break;
+    case MermaidManager::OutputFormat::SVG:    ext = "svg"; break;
+    case MermaidManager::OutputFormat::PDF:    ext = "pdf"; break;
   }
 
   for (const auto &mc : contentList)
@@ -178,6 +181,7 @@ static void runMermaidContent(const MermaidManager::ContentList &contentList,
 void MermaidManager::run()
 {
   Debug::print(Debug::Mermaid, 0, "*** MermaidManager::run\n");
-  runMermaidContent(m_pngContent, MERM_BITMAP);
-  runMermaidContent(m_svgContent, MERM_SVG);
+  runMermaidContent(m_pngContent, OutputFormat::Bitmap);
+  runMermaidContent(m_svgContent, OutputFormat::SVG);
+  runMermaidContent(m_pdfContent, OutputFormat::PDF);
 }

@@ -657,10 +657,10 @@ void HtmlDocVisitor::operator()(const DocVerbatim &s)
         {
           QCString htmlOutput = Config_getString(HTML_OUTPUT);
           QCString imgExt = getDotImageExtension();
-          MermaidManager::OutputFormat format = MermaidManager::MERM_BITMAP;
+          MermaidManager::OutputFormat format = MermaidManager::OutputFormat::Bitmap;
           if (imgExt=="svg")
           {
-            format = MermaidManager::MERM_SVG;
+            format = MermaidManager::OutputFormat::SVG;
           }
           QCString baseName = MermaidManager::instance().writeMermaidSource(
                                       htmlOutput,s.exampleFile(),
@@ -1883,10 +1883,10 @@ void HtmlDocVisitor::operator()(const DocMermaidFile &df)
   {
     QCString htmlOutput = Config_getString(HTML_OUTPUT);
     QCString imgExt = getDotImageExtension();
-    MermaidManager::OutputFormat format = MermaidManager::MERM_BITMAP;
+    MermaidManager::OutputFormat format = MermaidManager::OutputFormat::Bitmap;
     if (imgExt=="svg")
     {
-      format = MermaidManager::MERM_SVG;
+      format = MermaidManager::OutputFormat::SVG;
     }
     std::string inBuf;
     readInputFile(df.file(),inBuf);
@@ -2339,12 +2339,12 @@ void HtmlDocVisitor::writeMermaidFile(const QCString &fileName, const QCString &
   QCString imgExt = getDotImageExtension();
   if (imgExt=="svg")
   {
-    MermaidManager::instance().generateMermaidOutput(fileName,outDir,MermaidManager::MERM_SVG);
+    MermaidManager::instance().generateMermaidOutput(fileName,outDir,MermaidManager::OutputFormat::SVG);
     m_t << "<object type=\"image/svg+xml\" data=\"" << relPath << baseName << ".svg\"></object>\n";
   }
   else
   {
-    MermaidManager::instance().generateMermaidOutput(fileName,outDir,MermaidManager::MERM_BITMAP);
+    MermaidManager::instance().generateMermaidOutput(fileName,outDir,MermaidManager::OutputFormat::Bitmap);
     m_t << "<img src=\"" << relPath << baseName << ".png" << "\" />\n";
   }
 }
