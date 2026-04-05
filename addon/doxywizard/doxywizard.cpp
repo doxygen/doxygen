@@ -927,6 +927,7 @@ void MainWindow::onLanguageChanged(const QString &langCode)
   {
     action->setChecked(action->data().toString() == langCode);
   }
+  configChanged();
   statusBar()->showMessage(tr("Language changed to: %1").arg(TranslationManager::instance().currentLanguage()), messageTimeout);
 }
 //-----------------------------------------------------------------------

@@ -169,7 +169,6 @@ void InputString::updateDefault()
       }
     }
     if (m_le && m_le->text()!=m_str) m_le->setText( m_str );
-    emit changed();
   }
 }
 
