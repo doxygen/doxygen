@@ -1,4 +1,4 @@
-/*! \page i18n_guide Doxywizard Internationalization (i18n) Development Guide
+\page i18n_guide Doxywizard Internationalization (i18n)
 
 This document provides detailed instructions on how to manage multi-language support in the Doxywizard project.
 
@@ -12,7 +12,7 @@ Adding a new language requires creating or modifying the following files:
 
 | File | Description |
 |------|-------------|
-| `.ts` | Translation source file for the new language (required) |
+| `doxywizard_xx.ts` | Translation source file for the new language (required) |
 | `translationmanager.cpp` | Register the new language (required) |
 | `translations.qrc` | Add resource reference (required) |
 | `CMakeLists.txt` | Add translation file reference (required) |
@@ -121,11 +121,11 @@ Translation files (`.ts`) use XML format:
 2. **Escape Special Characters**: XML special characters need to be escaped
    | Character | Escape Sequence |
    |-----------|-----------------|
-   | `<` | `&lt;` |
-   | `>` | `&gt;` |
-   | `&` | `&amp;` |
-   | `'` | `&apos;` |
-   | `"` | `&quot;` |
+   | \< | `&lt;` |
+   | \> | `&gt;` |
+   | \& | `&amp;` |
+   | '  | `&apos;` |
+   | \" | `&quot;` |
 
 3. **Maintain Consistency**: The same term should use the same translation in different places
 
@@ -275,23 +275,7 @@ strings doxywizard | grep translations
 2. Check if the translation exists in the `.ts` file
 3. Ensure `retranslateUi()` is called when switching languages
 
-\section i18n_appendix Appendix: File Structure
-
-```
-addon/doxywizard/
-├── CMakeLists.txt          # Build configuration
-├── translations.qrc        # Translation resource file
-├── translationmanager.h    # Translation manager header
-├── translationmanager.cpp  # Translation manager implementation
-├── optiontranslations.h    # Configuration option translation header
-├── optiontranslations.cpp  # Configuration option translation implementation
-├── doxywizard_zh_CN.ts     # Simplified Chinese translation
-├── doxywizard_zh_TW.ts     # Traditional Chinese translation
-├── doxywizard_de.ts        # German translation
-├── doxywizard_fr.ts        # French translation
-├── doxywizard_ja.ts        # Japanese translation
-├── doxywizard_ko.ts        # Korean translation
-├── doxywizard_es.ts        # Spanish translation
-└── doxywizard_ru.ts        # Russian translation
-```
-*/
+\htmlonly
+Go to the <a href="perlmod.html">next</a> section or return to the
+ <a href="index.html">index</a>.
+\endhtmlonly

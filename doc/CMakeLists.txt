@@ -86,7 +86,6 @@ set(DOC_FILES
     doxywizard_page4.png
     doxywizard_run.png
     doxywizard_usage.dox
-    i18n_guide.md
     expert_bool.png
         expert_enum.png
         expert_int.png
@@ -132,6 +131,7 @@ set(DOC_FILES
         xmlcmds.dox
         emojisup.dox
         language.tpl
+        i18n_guide.md
         maintainers.txt
         translator.py
         smile.png
