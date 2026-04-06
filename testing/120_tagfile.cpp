@@ -1,5 +1,5 @@
 // objective: test the tagfile output
-// config: GENERATE_TAGFILE = "$TESTOUTDIR/out/tagfile"
+// config: GENERATE_TAGFILE = "$TESTOUTDIR/tagfile"
 // config: STRIP_FROM_INC_PATH = "$INPUTDIR/more_120/include"
 // check: 120__tagfile_8cpp.xml
 // check: class_namespace_1_1_class.xml
