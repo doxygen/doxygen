@@ -159,7 +159,10 @@ class Tester:
                     value = m.group('value')
                     if (key=='config'):
                         value = value.replace('$INPUTDIR',self.args.inputdir)
-                        value = value.replace('$TESTOUTDIR',self.test_out)
+                        if (self.args.xml or self.args.xmlxsd):
+                            value = value.replace('$TESTOUTDIR',self.test_out+"/out")
+                        else:
+                            value = value.replace('$TESTOUTDIR',self.test_out)
                     # print('key=%s value=%s' % (key,value))
                     config.setdefault(key, []).append(value)
         return config

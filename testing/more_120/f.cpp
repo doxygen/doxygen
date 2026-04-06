@@ -3,9 +3,9 @@
  *
  * @ingroup Group
  *
- * @brief more_116/f.cpp brief (in more_116/f.cpp).
+ * @brief more_120/f.cpp brief (in more_120/f.cpp).
  *
- * more_116/f.cpp description (in more_116/f.cpp).
+ * more_120/f.cpp description (in more_120/f.cpp).
  */
 
 /**
@@ -13,7 +13,7 @@
  *
  * @ingroup Group
  *
- * s/h.h description (in more_116/f.cpp).
+ * s/h.h description (in more_120/f.cpp).
  */
 
 /**
@@ -21,5 +21,5 @@
  *
  * @ingroup Group
  *
- * t/s/h.h description (in more_116/f.cpp).
+ * t/s/h.h description (in more_120/f.cpp).
  */
