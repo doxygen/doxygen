@@ -143,12 +143,12 @@
         <translation>Логотип проекта не выбран.</translation>
     </message>
     <message>
-        <source>Sorry, cannot find file(</source>
-        <translation>Извините, не удалось найти файл(</translation>
+        <source>Sorry, cannot find file(%1);</source>
+        <translation>Извините, не удалось найти файл(%1);</translation>
     </message>
     <message>
-        <source>Sorry, no preview available (</source>
-        <translation>Извините, предпросмотр недоступен (</translation>
+        <source>Sorry, no preview available (%1);</source>
+        <translation>Извините, предпросмотр недоступен(%1);</translation>
     </message>
     <message>
         <source>Select file</source>
@@ -314,18 +314,10 @@
         <translation>Ошибка сохранения</translation>
     </message>
     <message>
-        <source>Error: cannot open the file </source>
-        <translation>Ошибка: невозможно открыть файл </translation>
-    </message>
-    <message>
-        <source> for writing!
-</source>
-        <translation> для записи!
-</translation>
-    </message>
-    <message>
-        <source>Reason given: </source>
-        <translation>Причина: </translation>
+        <source>Error: cannot open the file %1 for writing!
+Reason given: %2</source>
+        <translation>Ошибка: невозможно открыть файл %1 для записи!
+Причина: %2</translation>
     </message>
     <message>
         <source>Use current setting at startup?</source>
@@ -396,12 +388,8 @@
         <translation>Предупреждение</translation>
     </message>
     <message>
-        <source>Cannot open file </source>
-        <translation>Невозможно открыть файл </translation>
-    </message>
-    <message>
-        <source> for writing. Nothing saved!</source>
-        <translation> для записи. Ничего не сохранено!</translation>
+        <source>Cannot open file %1 for writing. Nothing saved!</source>
+        <translation>Невозможно открыть файл %1 для записи. Ничего не сохранено!</translation>
     </message>
     <message>
         <source>Unsaved changes</source>
@@ -811,12 +799,12 @@
         <translation>Логотип проекта не выбран.</translation>
     </message>
     <message>
-        <source>Sorry, cannot find file(</source>
-        <translation>Извините, не удалось найти файл(</translation>
+        <source>Sorry, cannot find file(%1);</source>
+        <translation>Извините, не удалось найти файл(%1);</translation>
     </message>
     <message>
-        <source>Sorry, no preview available (</source>
-        <translation>Извините, предпросмотр недоступен (</translation>
+        <source>Sorry, no preview available (%1);</source>
+        <translation>Извините, предпросмотр недоступен(%1);</translation>
     </message>
     <message>
         <source>Select source directory</source>
@@ -1044,6 +1032,14 @@
     <message>
         <source>Topics</source>
         <translation>Темы</translation>
+    </message>
+    <message>
+        <source>Sorry, cannot find file(%1);</source>
+        <translation>Извините, не удалось найти файл(%1);</translation>
+    </message>
+    <message>
+        <source>Sorry, no preview available (%1);</source>
+        <translation>Извините, предпросмотр недоступен(%1);</translation>
     </message>
 </context>
 </TS>

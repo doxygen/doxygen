@@ -143,12 +143,12 @@
         <translation>선택된 프로젝트 로고가 없습니다.</translation>
     </message>
     <message>
-        <source>Sorry, cannot find file(</source>
-        <translation>죄송합니다, 파일을 찾을 수 없습니다(</translation>
+        <source>Sorry, cannot find file(%1);</source>
+        <translation>죄송합니다, 파일을 찾을 수 없습니다(%1);</translation>
     </message>
     <message>
-        <source>Sorry, no preview available (</source>
-        <translation>죄송합니다, 미리보기를 사용할 수 없습니다 (</translation>
+        <source>Sorry, no preview available (%1);</source>
+        <translation>죄송합니다, 미리보기를 사용할 수 없습니다(%1);</translation>
     </message>
     <message>
         <source>Select file</source>
@@ -314,18 +314,10 @@
         <translation>저장 오류</translation>
     </message>
     <message>
-        <source>Error: cannot open the file </source>
-        <translation>오류: 파일을 열 수 없습니다 </translation>
-    </message>
-    <message>
-        <source> for writing!
-</source>
-        <translation> 쓰기용!
-</translation>
-    </message>
-    <message>
-        <source>Reason given: </source>
-        <translation>이유: </translation>
+        <source>Error: cannot open the file %1 for writing!
+Reason given: %2</source>
+        <translation>오류: 파일 %1을 쓰기용으로 열 수 없습니다!
+이유: %2</translation>
     </message>
     <message>
         <source>Use current setting at startup?</source>
@@ -396,12 +388,8 @@
         <translation>경고</translation>
     </message>
     <message>
-        <source>Cannot open file </source>
-        <translation>파일을 열 수 없음 </translation>
-    </message>
-    <message>
-        <source> for writing. Nothing saved!</source>
-        <translation> 쓰기용. 저장되지 않음!</translation>
+        <source>Cannot open file %1 for writing. Nothing saved!</source>
+        <translation>파일 %1을 쓰기용으로 열 수 없습니다. 저장되지 않음!</translation>
     </message>
     <message>
         <source>Unsaved changes</source>
@@ -811,12 +799,12 @@
         <translation>선택된 프로젝트 로고가 없습니다.</translation>
     </message>
     <message>
-        <source>Sorry, cannot find file(</source>
-        <translation>죄송합니다, 파일을 찾을 수 없습니다(</translation>
+        <source>Sorry, cannot find file(%1);</source>
+        <translation>죄송합니다, 파일을 찾을 수 없습니다(%1);</translation>
     </message>
     <message>
-        <source>Sorry, no preview available (</source>
-        <translation>죄송합니다, 미리보기를 사용할 수 없습니다 (</translation>
+        <source>Sorry, no preview available (%1);</source>
+        <translation>죄송합니다, 미리보기를 사용할 수 없습니다(%1);</translation>
     </message>
     <message>
         <source>Select source directory</source>
@@ -1044,6 +1032,14 @@
     <message>
         <source>Topics</source>
         <translation>주제</translation>
+    </message>
+    <message>
+        <source>Sorry, cannot find file(%1);</source>
+        <translation>죄송합니다, 파일을 찾을 수 없습니다(%1);</translation>
+    </message>
+    <message>
+        <source>Sorry, no preview available (%1);</source>
+        <translation>죄송합니다, 미리보기를 사용할 수 없습니다(%1);</translation>
     </message>
 </context>
 </TS>

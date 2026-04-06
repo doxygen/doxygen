@@ -143,12 +143,12 @@
         <translation>No se ha seleccionado logo del proyecto.</translation>
     </message>
     <message>
-        <source>Sorry, cannot find file(</source>
-        <translation>Lo siento, no se puede encontrar el archivo(</translation>
+        <source>Sorry, cannot find file(%1);</source>
+        <translation>Lo siento, no se puede encontrar el archivo(%1);</translation>
     </message>
     <message>
-        <source>Sorry, no preview available (</source>
-        <translation>Lo siento, vista previa no disponible (</translation>
+        <source>Sorry, no preview available (%1);</source>
+        <translation>Lo siento, vista previa no disponible(%1);</translation>
     </message>
     <message>
         <source>Select file</source>
@@ -314,18 +314,10 @@
         <translation>Error al guardar</translation>
     </message>
     <message>
-        <source>Error: cannot open the file </source>
-        <translation>Error: no se puede abrir el archivo </translation>
-    </message>
-    <message>
-        <source> for writing!
-</source>
-        <translation> para escritura!
-</translation>
-    </message>
-    <message>
-        <source>Reason given: </source>
-        <translation>Razón dada: </translation>
+        <source>Error: cannot open the file %1 for writing!
+Reason given: %2</source>
+        <translation>Error: no se puede abrir el archivo %1 para escritura!
+Razón dada: %2</translation>
     </message>
     <message>
         <source>Use current setting at startup?</source>
@@ -396,12 +388,8 @@
         <translation>Advertencia</translation>
     </message>
     <message>
-        <source>Cannot open file </source>
-        <translation>No se puede abrir el archivo </translation>
-    </message>
-    <message>
-        <source> for writing. Nothing saved!</source>
-        <translation> para escritura. ¡No se guardó nada!</translation>
+        <source>Cannot open file %1 for writing. Nothing saved!</source>
+        <translation>No se puede abrir el archivo %1 para escritura. ¡No se guardó nada!</translation>
     </message>
     <message>
         <source>Unsaved changes</source>
@@ -811,12 +799,12 @@
         <translation>No se ha seleccionado logo del proyecto.</translation>
     </message>
     <message>
-        <source>Sorry, cannot find file(</source>
-        <translation>Lo siento, no se puede encontrar el archivo(</translation>
+        <source>Sorry, cannot find file(%1);</source>
+        <translation>Lo siento, no se puede encontrar el archivo(%1);</translation>
     </message>
     <message>
-        <source>Sorry, no preview available (</source>
-        <translation>Lo siento, vista previa no disponible (</translation>
+        <source>Sorry, no preview available (%1);</source>
+        <translation>Lo siento, vista previa no disponible(%1);</translation>
     </message>
     <message>
         <source>Select source directory</source>
@@ -1044,6 +1032,14 @@
     <message>
         <source>Topics</source>
         <translation>Temas</translation>
+    </message>
+    <message>
+        <source>Sorry, cannot find file(%1);</source>
+        <translation>Lo siento, no se puede encontrar el archivo(%1);</translation>
+    </message>
+    <message>
+        <source>Sorry, no preview available (%1);</source>
+        <translation>Lo siento, vista previa no disponible(%1);</translation>
     </message>
 </context>
 </TS>

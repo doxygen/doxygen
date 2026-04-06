@@ -157,13 +157,13 @@
     </message>
     <message>
         <location filename="inputstring.cpp" line="153"/>
-        <source>Sorry, cannot find file(</source>
-        <translation>抱歉，找不到文件(</translation>
+        <source>Sorry, cannot find file(%1);</source>
+        <translation>抱歉，找不到文件(%1);</translation>
     </message>
     <message>
         <location filename="inputstring.cpp" line="164"/>
-        <source>Sorry, no preview available (</source>
-        <translation>抱歉，无法预览(</translation>
+        <source>Sorry, no preview available (%1);</source>
+        <translation>抱歉，无法预览(%1);</translation>
     </message>
     <message>
         <location filename="inputstring.cpp" line="190"/>
@@ -366,20 +366,10 @@
     </message>
     <message>
         <location filename="doxywizard.cpp" line="338"/>
-        <source>Error: cannot open the file </source>
-        <translation>错误：无法打开文件 </translation>
-    </message>
-    <message>
-        <location filename="doxywizard.cpp" line="338"/>
-        <source> for writing!
-</source>
-        <translation> 以进行写入！
-</translation>
-    </message>
-    <message>
-        <location filename="doxywizard.cpp" line="339"/>
-        <source>Reason given: </source>
-        <translation>原因：</translation>
+        <source>Error: cannot open the file %1 for writing!
+Reason given: %2</source>
+        <translation>错误：无法打开文件 %1 以进行写入！
+原因：%2</translation>
     </message>
     <message>
         <location filename="doxywizard.cpp" line="374"/>
@@ -467,13 +457,8 @@
     </message>
     <message>
         <location filename="doxywizard.cpp" line="710"/>
-        <source>Cannot open file </source>
-        <translation>无法打开文件 </translation>
-    </message>
-    <message>
-        <location filename="doxywizard.cpp" line="710"/>
-        <source> for writing. Nothing saved!</source>
-        <translation> 以进行写入。未保存任何内容！</translation>
+        <source>Cannot open file %1 for writing. Nothing saved!</source>
+        <translation>无法打开文件 %1 以进行写入。未保存任何内容！</translation>
     </message>
     <message>
         <location filename="doxywizard.cpp" line="741"/>
@@ -1852,14 +1837,14 @@
     <message>
         <location filename="wizard.cpp" line="623"/>
         <location filename="wizard.cpp" line="732"/>
-        <source>Sorry, cannot find file(</source>
-        <translation>抱歉，找不到文件(</translation>
+        <source>Sorry, cannot find file(%1);</source>
+        <translation>抱歉，找不到文件(%1);</translation>
     </message>
     <message>
         <location filename="wizard.cpp" line="634"/>
         <location filename="wizard.cpp" line="743"/>
-        <source>Sorry, no preview available (</source>
-        <translation>抱歉，无法预览(</translation>
+        <source>Sorry, no preview available (%1);</source>
+        <translation>抱歉，无法预览(%1);</translation>
     </message>
     <message>
         <location filename="wizard.cpp" line="645"/>
@@ -2143,6 +2128,14 @@
     <message>
         <source>Topics</source>
         <translation>主题</translation>
+    </message>
+    <message>
+        <source>Sorry, cannot find file(%1);</source>
+        <translation>抱歉，找不到文件(%1);</translation>
+    </message>
+    <message>
+        <source>Sorry, no preview available (%1);</source>
+        <translation>抱歉，无预览可用(%1);</translation>
     </message>
 </context>
 </TS>

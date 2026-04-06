@@ -445,8 +445,7 @@ void MainWindow::saveConfig(const QString &fileName)
   {
     QMessageBox::warning(this,
         tr("Error saving"),
-        QString(tr("Error: cannot open the file "))+fileName+tr(" for writing!\n")+
-        tr("Reason given: ")+QString::number(f.error()));
+        tr("Error: cannot open the file %1 for writing!\nReason given: %2").arg(fileName).arg(f.error()));
     return;
   }
   QTextStream t(&f);
@@ -817,7 +816,7 @@ void MainWindow::saveLog()
     else
     {
       QMessageBox::warning(nullptr, tr("Warning"),
-                           tr("Cannot open file ") + fn + tr(" for writing. Nothing saved!"), QMessageBox::Ok);
+                           tr("Cannot open file %1 for writing. Nothing saved!").arg(fn), QMessageBox::Ok);
     }
   }
 }

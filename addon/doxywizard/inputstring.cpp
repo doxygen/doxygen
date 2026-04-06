@@ -153,7 +153,7 @@ void InputString::updateDefault()
         QFile Fout(m_str);
         if(!Fout.exists())
         {
-          m_im->setText(tr("Sorry, cannot find file(")+m_str+QString::fromLatin1(");"));
+          m_im->setText(tr("Sorry, cannot find file(%1);").arg(m_str));
         }
         else
         {
@@ -164,7 +164,7 @@ void InputString::updateDefault()
           }
           else
           {
-            m_im->setText(tr("Sorry, no preview available (")+m_str+QString::fromLatin1(");"));
+            m_im->setText(tr("Sorry, no preview available (%1);").arg(m_str));
           }
         }
       }

@@ -143,12 +143,12 @@
         <translation>Aucun logo de projet sélectionné.</translation>
     </message>
     <message>
-        <source>Sorry, cannot find file(</source>
-        <translation>Désolé, impossible de trouver le fichier(</translation>
+        <source>Sorry, cannot find file(%1);</source>
+        <translation>Désolé, impossible de trouver le fichier(%1);</translation>
     </message>
     <message>
-        <source>Sorry, no preview available (</source>
-        <translation>Désolé, aucun aperçu disponible (</translation>
+        <source>Sorry, no preview available (%1);</source>
+        <translation>Désolé, aucun aperçu disponible (%1);</translation>
     </message>
     <message>
         <source>Select file</source>
@@ -314,18 +314,10 @@
         <translation>Erreur lors de l'enregistrement</translation>
     </message>
     <message>
-        <source>Error: cannot open the file </source>
-        <translation>Erreur : impossible d'ouvrir le fichier </translation>
-    </message>
-    <message>
-        <source> for writing!
-</source>
-        <translation> pour l'écriture !
-</translation>
-    </message>
-    <message>
-        <source>Reason given: </source>
-        <translation>Raison donnée : </translation>
+        <source>Error: cannot open the file %1 for writing!
+Reason given: %2</source>
+        <translation>Erreur : impossible d'ouvrir le fichier %1 pour l'écriture !
+Raison donnée : %2</translation>
     </message>
     <message>
         <source>Use current setting at startup?</source>
@@ -396,12 +388,8 @@
         <translation>Avertissement</translation>
     </message>
     <message>
-        <source>Cannot open file </source>
-        <translation>Impossible d'ouvrir le fichier </translation>
-    </message>
-    <message>
-        <source> for writing. Nothing saved!</source>
-        <translation> pour l'écriture. Rien n'a été enregistré !</translation>
+        <source>Cannot open file %1 for writing. Nothing saved!</source>
+        <translation>Impossible d'ouvrir le fichier %1 pour l'écriture. Rien n'a été enregistré !</translation>
     </message>
     <message>
         <source>Doxygen GUI frontend</source>
@@ -811,12 +799,12 @@
         <translation>Aucun logo de projet sélectionné.</translation>
     </message>
     <message>
-        <source>Sorry, cannot find file(</source>
-        <translation>Désolé, impossible de trouver le fichier(</translation>
+        <source>Sorry, cannot find file(%1);</source>
+        <translation>Désolé, impossible de trouver le fichier(%1);</translation>
     </message>
     <message>
-        <source>Sorry, no preview available (</source>
-        <translation>Désolé, aucun aperçu disponible (</translation>
+        <source>Sorry, no preview available (%1);</source>
+        <translation>Désolé, aucun aperçu disponible (%1);</translation>
     </message>
     <message>
         <source>Select source directory</source>
@@ -1044,6 +1032,14 @@
     <message>
         <source>Topics</source>
         <translation>Sujets</translation>
+    </message>
+    <message>
+        <source>Sorry, cannot find file(%1);</source>
+        <translation>Désolé, impossible de trouver le fichier(%1);</translation>
+    </message>
+    <message>
+        <source>Sorry, no preview available (%1);</source>
+        <translation>Désolé, aucun aperçu disponible (%1);</translation>
     </message>
 </context>
 </TS>

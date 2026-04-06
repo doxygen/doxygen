@@ -143,12 +143,12 @@
         <translation>未選擇專案標誌。</translation>
     </message>
     <message>
-        <source>Sorry, cannot find file(</source>
-        <translation>抱歉，找不到檔案(</translation>
+        <source>Sorry, cannot find file(%1);</source>
+        <translation>抱歉，找不到檔案(%1);</translation>
     </message>
     <message>
-        <source>Sorry, no preview available (</source>
-        <translation>抱歉，無法預覽(</translation>
+        <source>Sorry, no preview available (%1);</source>
+        <translation>抱歉，無法預覽(%1);</translation>
     </message>
     <message>
         <source>Select file</source>
@@ -314,18 +314,10 @@
         <translation>儲存錯誤</translation>
     </message>
     <message>
-        <source>Error: cannot open the file </source>
-        <translation>錯誤：無法開啟檔案 </translation>
-    </message>
-    <message>
-        <source> for writing!
-</source>
-        <translation> 以進行寫入！
-</translation>
-    </message>
-    <message>
-        <source>Reason given: </source>
-        <translation>原因：</translation>
+        <source>Error: cannot open the file %1 for writing!
+Reason given: %2</source>
+        <translation>錯誤：無法開啟檔案 %1 以進行寫入！
+原因：%2</translation>
     </message>
     <message>
         <source>Use current setting at startup?</source>
@@ -396,12 +388,8 @@
         <translation>警告</translation>
     </message>
     <message>
-        <source>Cannot open file </source>
-        <translation>無法開啟檔案 </translation>
-    </message>
-    <message>
-        <source> for writing. Nothing saved!</source>
-        <translation> 以進行寫入。未儲存任何內容！</translation>
+        <source>Cannot open file %1 for writing. Nothing saved!</source>
+        <translation>無法開啟檔案 %1 以進行寫入。未儲存任何內容！</translation>
     </message>
     <message>
         <source>Unsaved changes</source>
@@ -1753,12 +1741,12 @@
         <translation>未選擇專案標誌。</translation>
     </message>
     <message>
-        <source>Sorry, cannot find file(</source>
-        <translation>抱歉，找不到檔案(</translation>
+        <source>Sorry, cannot find file(%1);</source>
+        <translation>抱歉，找不到檔案(%1);</translation>
     </message>
     <message>
-        <source>Sorry, no preview available (</source>
-        <translation>抱歉，無法預覽(</translation>
+        <source>Sorry, no preview available (%1);</source>
+        <translation>抱歉，無法預覽(%1);</translation>
     </message>
     <message>
         <source>Select source directory</source>
@@ -1986,6 +1974,14 @@
     <message>
         <source>Topics</source>
         <translation>主題</translation>
+    </message>
+    <message>
+        <source>Sorry, cannot find file(%1);</source>
+        <translation>抱歉，找不到檔案(%1);</translation>
+    </message>
+    <message>
+        <source>Sorry, no preview available (%1);</source>
+        <translation>抱歉，無預覽可用(%1);</translation>
     </message>
 </context>
 </TS>

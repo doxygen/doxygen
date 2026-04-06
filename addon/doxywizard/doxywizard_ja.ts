@@ -143,12 +143,12 @@
         <translation>プロジェクトロゴが選択されていません。</translation>
     </message>
     <message>
-        <source>Sorry, cannot find file(</source>
-        <translation>申し訳ありません、ファイルが見つかりません(</translation>
+        <source>Sorry, cannot find file(%1);</source>
+        <translation>申し訳ありません、ファイルが見つかりません(%1);</translation>
     </message>
     <message>
-        <source>Sorry, no preview available (</source>
-        <translation>申し訳ありません、プレビューは利用できません(</translation>
+        <source>Sorry, no preview available (%1);</source>
+        <translation>申し訳ありません、プレビューは利用できません(%1);</translation>
     </message>
     <message>
         <source>Select file</source>
@@ -314,18 +314,10 @@
         <translation>保存エラー</translation>
     </message>
     <message>
-        <source>Error: cannot open the file </source>
-        <translation>エラー: ファイルを開けません </translation>
-    </message>
-    <message>
-        <source> for writing!
-</source>
-        <translation> 書き込み用！
-</translation>
-    </message>
-    <message>
-        <source>Reason given: </source>
-        <translation>理由: </translation>
+        <source>Error: cannot open the file %1 for writing!
+Reason given: %2</source>
+        <translation>エラー: ファイル %1 を書き込み用に開けません！
+理由: %2</translation>
     </message>
     <message>
         <source>Use current setting at startup?</source>
@@ -396,12 +388,8 @@
         <translation>警告</translation>
     </message>
     <message>
-        <source>Cannot open file </source>
-        <translation>ファイルを開けません </translation>
-    </message>
-    <message>
-        <source> for writing. Nothing saved!</source>
-        <translation> 書き込み用。何も保存されませんでした！</translation>
+        <source>Cannot open file %1 for writing. Nothing saved!</source>
+        <translation>ファイル %1 を書き込み用に開けません。何も保存されませんでした！</translation>
     </message>
     <message>
         <source>Unsaved changes</source>
@@ -811,12 +799,12 @@
         <translation>プロジェクトロゴが選択されていません。</translation>
     </message>
     <message>
-        <source>Sorry, cannot find file(</source>
-        <translation>申し訳ありません、ファイルが見つかりません(</translation>
+        <source>Sorry, cannot find file(%1);</source>
+        <translation>申し訳ありません、ファイルが見つかりません(%1);</translation>
     </message>
     <message>
-        <source>Sorry, no preview available (</source>
-        <translation>申し訳ありません、プレビューは利用できません(</translation>
+        <source>Sorry, no preview available (%1);</source>
+        <translation>申し訳ありません、プレビューは利用できません(%1);</translation>
     </message>
     <message>
         <source>Select source directory</source>
@@ -1044,6 +1032,14 @@
     <message>
         <source>Topics</source>
         <translation>トピック</translation>
+    </message>
+    <message>
+        <source>Sorry, cannot find file(%1);</source>
+        <translation>申し訳ありません、ファイルが見つかりません(%1);</translation>
+    </message>
+    <message>
+        <source>Sorry, no preview available (%1);</source>
+        <translation>申し訳ありません、プレビューは利用できません(%1);</translation>
     </message>
 </context>
 </TS>
