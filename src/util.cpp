@@ -5806,28 +5806,6 @@ QCString externalRef(const QCString &relPath,const QCString &ref,bool href)
   return result;
 }
 
-/** Writes the intensity only bitmap represented by \a data as an image to
- *  directory \a dir using the colors defined by HTML_COLORSTYLE_*.
- */
-void writeColoredImgData(const QCString &dir,ColoredImgDataItem data[])
-{
-  int hue   = Config_getInt(HTML_COLORSTYLE_HUE);
-  int sat   = Config_getInt(HTML_COLORSTYLE_SAT);
-  int gamma = Config_getInt(HTML_COLORSTYLE_GAMMA);
-  while (data->name)
-  {
-    QCString fileName = dir+"/"+data->name;
-    ColoredImage img(data->width,data->height,data->content,data->alpha,
-                     sat,hue,gamma);
-    if (!img.save(fileName))
-    {
-      fprintf(stderr,"Warning: Cannot open file %s for writing\n",data->name);
-    }
-    Doxygen::indexList->addImageFile(data->name);
-    data++;
-  }
-}
-
 /** Replaces any markers of the form \#\#AA in input string \a str
  *  by new markers of the form \#AABBCC, where \#AABBCC represents a
  *  valid color, based on the intensity represented by hex number AA

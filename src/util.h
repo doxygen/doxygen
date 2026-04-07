@@ -471,7 +471,6 @@ struct ColoredImgDataItem
   const unsigned char *alpha;
 };
 
-void writeColoredImgData(const QCString &dir,ColoredImgDataItem data[]);
 QCString replaceColorMarkers(const QCString &str);
 
 bool copyFile(const QCString &src,const QCString &dest);
