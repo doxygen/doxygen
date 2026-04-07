@@ -3020,7 +3020,7 @@ void  FlowChart::printUmlTree()
   auto baseNameVector=PlantumlManager::instance().writePlantUMLSource(htmlOutDir,n,qcs,PlantumlManager::PUML_SVG,"uml",n,1,true);
   for (const auto &baseName: baseNameVector)
   {
-    PlantumlManager::instance().generatePlantUMLOutput(baseName,htmlOutDir,PlantumlManager::PUML_SVG);
+    PlantumlManager::instance().generatePlantUMLOutput(baseName,htmlOutDir,PlantumlManager::PUML_SVG,true);
   }
 }
 

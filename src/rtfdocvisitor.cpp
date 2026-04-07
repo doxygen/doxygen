@@ -1765,7 +1765,7 @@ void RTFDocVisitor::writeDotFile(const QCString &filename, bool hasCaption,
 {
   QCString baseName=makeBaseName(filename,".dot");
   QCString outDir = Config_getString(RTF_OUTPUT);
-  if (newFile) writeDotGraphFromFile(filename,outDir,baseName,GraphOutputFormat::BITMAP,srcFile,srcLine);
+  if (newFile) writeDotGraphFromFile(filename,outDir,baseName,GraphOutputFormat::BITMAP,srcFile,srcLine,false);
   QCString imgExt = getDotImageExtension();
   includePicturePreRTF(baseName + "." + imgExt, true, hasCaption);
 }
@@ -1775,7 +1775,7 @@ void RTFDocVisitor::writeMscFile(const QCString &fileName, bool hasCaption,
 {
   QCString baseName=makeBaseName(fileName,".msc");
   QCString outDir = Config_getString(RTF_OUTPUT);
-  if (newFile) writeMscGraphFromFile(fileName,outDir,baseName,MscOutputFormat::BITMAP,srcFile,srcLine);
+  if (newFile) writeMscGraphFromFile(fileName,outDir,baseName,MscOutputFormat::BITMAP,srcFile,srcLine,false);
   includePicturePreRTF(baseName + ".png", true, hasCaption);
 }
 
@@ -1784,7 +1784,7 @@ void RTFDocVisitor::writeDiaFile(const QCString &fileName, bool hasCaption,
 {
   QCString baseName=makeBaseName(fileName,".dia");
   QCString outDir = Config_getString(RTF_OUTPUT);
-  if (newFile) writeDiaGraphFromFile(fileName,outDir,baseName,DiaOutputFormat::BITMAP,srcFile,srcLine);
+  if (newFile) writeDiaGraphFromFile(fileName,outDir,baseName,DiaOutputFormat::BITMAP,srcFile,srcLine,false);
   includePicturePreRTF(baseName + ".png", true, hasCaption);
 }
 
@@ -1792,7 +1792,7 @@ void RTFDocVisitor::writePlantUMLFile(const QCString &fileName, bool hasCaption)
 {
   QCString baseName=makeBaseName(fileName,".pu");
   QCString outDir = Config_getString(RTF_OUTPUT);
-  PlantumlManager::instance().generatePlantUMLOutput(fileName,outDir,PlantumlManager::PUML_BITMAP);
+  PlantumlManager::instance().generatePlantUMLOutput(fileName,outDir,PlantumlManager::PUML_BITMAP,false);
   includePicturePreRTF(baseName + ".png", true, hasCaption);
 }
 
@@ -1801,6 +1801,6 @@ void RTFDocVisitor::writeMermaidFile(const QCString &fileName, bool hasCaption)
   if (Config_getBool(MERMAID_RENDER_MODE)==MERMAID_RENDER_MODE_t::CLIENT_SIDE) return;
   QCString baseName=makeBaseName(fileName,".mmd");
   QCString outDir = Config_getString(RTF_OUTPUT);
-  MermaidManager::instance().generateMermaidOutput(fileName,outDir,MermaidManager::OutputFormat::Bitmap);
+  MermaidManager::instance().generateMermaidOutput(fileName,outDir,MermaidManager::OutputFormat::Bitmap,false);
   includePicturePreRTF(baseName + ".png", true, hasCaption);
 }

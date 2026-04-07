@@ -1005,7 +1005,7 @@ DB_GEN_C
   m_t << "                <imagedata width=\"50%\" align=\"center\" valign=\"middle\" scalefit=\"0\" fileref=\""
                          << relPath << fileName << ".png\">" << "</imagedata>\n";
   m_t << "            </imageobject>\n";
-  d.writeImage(m_t,dir(),relPath,fileName,FALSE);
+  d.writeImage(m_t,dir(),relPath,fileName,false,false);
   m_t << "        </mediaobject>\n";
   m_t << "    </informalfigure>\n";
   m_t << "</para>\n";

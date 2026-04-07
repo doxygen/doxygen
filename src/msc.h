@@ -23,7 +23,7 @@ enum class MscOutputFormat { BITMAP, EPS, SVG };
 
 void writeMscGraphFromFile(const QCString &inFile,const QCString &outDir,
                            const QCString &outFile,MscOutputFormat format,
-                           const QCString &srcFile,int srcLine);
+                           const QCString &srcFile,int srcLine,bool toIndex);
 
 QCString getMscImageMapFromFile(const QCString &inFile, const QCString &outDir,
                                 const QCString &relPath,const QCString &context,

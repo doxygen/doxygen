@@ -99,8 +99,9 @@ QCString MermaidManager::writeMermaidSource(const QCString &outDirArg, const QCS
 }
 
 void MermaidManager::generateMermaidOutput(const QCString &baseName, const QCString &/*outDir*/,
-                                           OutputFormat format)
+                                           OutputFormat format, bool toIndex)
 {
+  if (!toIndex) return;
   QCString imgName = baseName;
   int i = imgName.findRev('/');
   if (i != -1)

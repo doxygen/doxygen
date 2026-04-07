@@ -19,13 +19,15 @@
 #include "message.h"
 #include "util.h"
 #include "dir.h"
+#include "indexlist.h"
+#include "doxygen.h"
 
 
 static const int maxCmdLine = 40960;
 
 void writeDiaGraphFromFile(const QCString &inFile,const QCString &outDir,
                            const QCString &outFile,DiaOutputFormat format,
-                           const QCString &srcFile,int srcLine)
+                           const QCString &srcFile,int srcLine,bool toIndex)
 {
   QCString absOutFile = outDir;
   absOutFile+=Portable::pathSeparator();
@@ -80,6 +82,7 @@ void writeDiaGraphFromFile(const QCString &inFile,const QCString &outDir,
       Dir().remove(outFile.str()+".eps");
     }
   }
+  if (toIndex) Doxygen::indexList->addImageFile(outFile+extension);
 
 error:
   Dir::setCurrent(oldDir);
