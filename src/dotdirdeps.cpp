@@ -441,6 +441,9 @@ QCString DotDirDeps::writeGraph(TextStream &out, GraphOutputFormat graphFormat, 
 {
   m_linkRelations = linkRelations;
   m_urlOnly = TRUE;
+
+  m_doNotAddImageToIndex = textFormat!=EmbeddedOutputFormat::Html;
+
   return DotGraph::writeGraph(out, graphFormat, textFormat, path, fileName, relPath, generateImageMap, graphId);
 }
 

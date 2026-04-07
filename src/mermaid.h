@@ -65,8 +65,9 @@ class MermaidManager
      *  @param[in] baseName the name of the generated file (as returned by writeMermaidSource())
      *  @param[in] outDir   the directory containing the resulting image.
      *  @param[in] format   the image format that was generated.
+     *  @param[in] toIndex  add the file to the index lists for htmlhelp / qhc etc.
      */
-    void generateMermaidOutput(const QCString &baseName, const QCString &outDir, OutputFormat format);
+    void generateMermaidOutput(const QCString &baseName, const QCString &outDir, OutputFormat format, bool toIndex);
 
     struct MermaidDiagram
     {

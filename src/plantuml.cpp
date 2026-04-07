@@ -199,8 +199,9 @@ void PlantumlManager::generatePlantUmlFileNames(const QCString &fileName,OutputF
   }
 }
 
-void PlantumlManager::generatePlantUMLOutput(const QCString &baseName,const QCString &/* outDir */,OutputFormat format)
+void PlantumlManager::generatePlantUMLOutput(const QCString &baseName,const QCString &/* outDir */,OutputFormat format,bool toIndex)
 {
+  if (!toIndex) return;
   QCString imgName = baseName;
   // The basename contains path, we need to strip the path from the filename in order
   // to create the image file name which should be included in the index.qhp (Qt help index file).

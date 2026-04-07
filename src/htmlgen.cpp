@@ -2165,7 +2165,7 @@ void HtmlGenerator::endClassDiagram(const ClassDiagram &d,
   endSectionSummary(m_t);
   startSectionContent(m_t,m_sectionCount);
   TextStream tt;
-  d.writeImage(tt,dir(),m_relPath,fileName);
+  d.writeImage(tt,dir(),m_relPath,fileName,true,true);
   if (!tt.empty())
   {
     m_t << " <div class=\"center\">\n";

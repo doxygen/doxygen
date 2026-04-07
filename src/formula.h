@@ -79,12 +79,12 @@ class FormulaManager
     enum class Format { Bitmap, Vector };
     enum class HighDPI { On, Off };
     enum class Mode { Dark, Light };
-    void generateImages(const QCString &outputDir,Format format,HighDPI hd = HighDPI::Off);
+    void generateImages(const QCString &outputDir,bool toIndex,Format format,HighDPI hd = HighDPI::Off);
     //! @}
 
   private:
-    void createFormulasTexFile(Dir &d,Format format,HighDPI hd,Mode mode);
-    void createLatexFile(const QCString &fileName,Format format,Mode mode,IntVector &formulasToGenerate);
+    void createFormulasTexFile(Dir &d,Format format,HighDPI hd,Mode mode,bool toIndex);
+    void createLatexFile(const QCString &fileName,Format format,Mode mode,IntVector &formulasToGenerate,bool toIndex);
     FormulaManager();
     struct Private;
     std::unique_ptr<Private> p;

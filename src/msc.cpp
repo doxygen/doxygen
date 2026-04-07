@@ -156,7 +156,7 @@ static bool do_mscgen_generate(const QCString& inFile,const QCString& outFile,ms
 
 void writeMscGraphFromFile(const QCString &inFile,const QCString &outDir,
                            const QCString &outFile,MscOutputFormat format,
-                           const QCString &srcFile,int srcLine
+                           const QCString &srcFile,int srcLine,bool toIndex
                           )
 {
   QCString absOutFile = outDir;
@@ -207,7 +207,7 @@ void writeMscGraphFromFile(const QCString &inFile,const QCString &outDir,
   {
     imgName=imgName.right(imgName.length()-i-1);
   }
-  Doxygen::indexList->addImageFile(imgName);
+  if (toIndex) Doxygen::indexList->addImageFile(imgName);
 
 }
 
