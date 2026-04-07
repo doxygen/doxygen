@@ -144,11 +144,11 @@
     </message>
     <message>
         <source>Sorry, cannot find file(%1);</source>
-        <translation>Entschuldigung, Datei nicht gefunden(%1);</translation>
+        <translation>Entschuldigung, die Datei (%1) konnte nicht gefunden werden.</translation>
     </message>
     <message>
         <source>Sorry, no preview available (%1);</source>
-        <translation>Entschuldigung, keine Vorschau verfügbar (%1);</translation>
+        <translation>Entschuldigung, für (%1) ist keine Vorschau verfügbar.</translation>
     </message>
     <message>
         <source>Select file</source>
@@ -800,11 +800,11 @@ Angegebener Grund: %2</translation>
     </message>
     <message>
         <source>Sorry, cannot find file(%1);</source>
-        <translation>Entschuldigung, Datei nicht gefunden(%1);</translation>
+        <translation>Entschuldigung, die Datei (%1) konnte nicht gefunden werden.</translation>
     </message>
     <message>
         <source>Sorry, no preview available (%1);</source>
-        <translation>Entschuldigung, keine Vorschau verfügbar (%1);</translation>
+        <translation>Entschuldigung, für (%1) ist keine Vorschau verfügbar.</translation>
     </message>
     <message>
         <source>Select source directory</source>
@@ -1035,11 +1035,11 @@ Angegebener Grund: %2</translation>
     </message>
     <message>
         <source>Sorry, cannot find file(%1);</source>
-        <translation>Entschuldigung, Datei nicht gefunden(%1);</translation>
+        <translation>Entschuldigung, die Datei (%1) konnte nicht gefunden werden.</translation>
     </message>
     <message>
         <source>Sorry, no preview available (%1);</source>
-        <translation>Entschuldigung, keine Vorschau verfügbar (%1);</translation>
+        <translation>Entschuldigung, für (%1) ist keine Vorschau verfügbar.</translation>
     </message>
 </context>
 </TS>

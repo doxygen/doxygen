@@ -659,7 +659,7 @@ void MainWindow::runDoxygen()
       }
       else
       {
-        qDebug() << tr("Can't find the doxygen command, make sure it's in your $$PATH");
+        qDebug() << tr("Cannot find the doxygen command, make sure it is in your $$PATH");
         doxygenPath = QString::fromLatin1("");
       }
     }
