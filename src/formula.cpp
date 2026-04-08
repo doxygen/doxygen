@@ -661,7 +661,8 @@ void FormulaManager::generateImages(const QCString &path,bool toIndex,Format for
   }
 
   createFormulasTexFile(thisDir,format,hd,Mode::Light,toIndex);
-  if (Config_getEnum(HTML_COLORSTYLE)!=HTML_COLORSTYLE_t::LIGHT) // all modes other than light need a dark version
+  // for the HTML output format (toIndex == true) we possibly need the dark mode, not for the other formats
+  if (toIndex && Config_getEnum(HTML_COLORSTYLE)!=HTML_COLORSTYLE_t::LIGHT) // all modes other than light need a dark version
   {
     // note that the dark version reuses the bounding box of the light version so it needs to be
     // created after the light version.
