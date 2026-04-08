@@ -54,6 +54,7 @@ typedef yyguts_t *yyscan_t;
 
 #include <map>
 #include <vector>
+#include <stack>
 #include <algorithm>
 
 #include <stdio.h>
@@ -86,6 +87,12 @@ typedef yyguts_t *yyscan_t;
 enum ScanVar { V_IGNORE, V_VARIABLE, V_PARAMETER, V_RESULT};
 enum InterfaceType { IF_NONE, IF_SPECIFIC, IF_GENERIC, IF_ABSTRACT };
 
+struct blockState
+{
+  blockState(QCString str, int lineNr) : blockString(str), blockLineNr(lineNr) {}
+  QCString blockString;
+  int      blockLineNr = -1;
+};
 // {{{ ----- Helper structs -----
 //! Holds yyextra->modifiers (ie attributes) for one symbol (variable, function, etc)
 struct SymbolModifiers
@@ -187,6 +194,7 @@ struct fortranscannerYY_state
   QCString                 docBlockName;
   QCString                 blockString;
   int                      blockLineNr=-1;
+  std::stack<blockState>   blockStack;
   QCString                 debugStr;
   size_t                   fencedSize = 0;
 //  Argument                *parameter; // element of parameter list
@@ -235,6 +243,7 @@ static void addInterface(yyscan_t yyscanner,QCString name, InterfaceType type);
 static Argument *getParameter(yyscan_t yyscanner,const QCString &name);
 static void scanner_abort(yyscan_t yyscanner);
 static inline void pop_state(yyscan_t yyscanner);
+static inline void popBlockStack(yyscan_t yyscanner);
 
 static void startScope(yyscan_t yyscanner,Entry *scope);
 static bool endScope(yyscan_t yyscanner,Entry *scope, bool isGlobalRoot=FALSE);
@@ -493,6 +502,10 @@ FILEMASK  {VFILEMASK}|{HFILEMASK}
                                           if (YY_START == Start)
                                           {
                                             addModule(yyscanner);
+                                            yyextra->blockString=yytext;
+                                            yyextra->blockString+=" (anonymous program)";
+                                            yyextra->blockLineNr=yyextra->lineNr;
+                                            yyextra->blockStack.push(blockState(yyextra->blockString,yyextra->blockLineNr));
                                             yy_push_state(ModuleBody,yyscanner); //anon program
                                           }
                                           yy_push_state(Use,yyscanner);
@@ -648,14 +661,23 @@ FILEMASK  {VFILEMASK}|{HFILEMASK}
                                             yy_push_state(Start,yyscanner);
                                             yyextra->global_scope = INVALID_ENTRY; // signal that the yyextra->global_scope has already been used.
                                           }
+                                          popBlockStack(yyscanner);
                                         }
 <Module>{ID}                            {
-                                          addModule(yyscanner, yytext, TRUE);
+                                          addModule(yyscanner, QCString(yytext), TRUE);
+                                          yyextra->blockString="module ";
+                                          yyextra->blockString+=yytext;
+                                          yyextra->blockLineNr=yyextra->lineNr;
+                                          yyextra->blockStack.push(blockState(yyextra->blockString,yyextra->blockLineNr));
                                           BEGIN(ModuleBody);
                                         }
 <Program>{ID}                           {
-                                            addModule(yyscanner, yytext, FALSE);
-                                            BEGIN(ModuleBody);
+                                          addModule(yyscanner, QCString(yytext), FALSE);
+                                          yyextra->blockString="program ";
+                                          yyextra->blockString+=yytext;
+                                          yyextra->blockLineNr=yyextra->lineNr;
+                                          yyextra->blockStack.push(blockState(yyextra->blockString,yyextra->blockLineNr));
+                                          BEGIN(ModuleBody);
                                         }
 
   /*------- access specification --------------------------------------------------------------------------*/
@@ -676,6 +698,10 @@ FILEMASK  {VFILEMASK}|{HFILEMASK}
                                           if (YY_START == Start)
                                           {
                                             addModule(yyscanner,QCString());
+                                            yyextra->blockString=yytext;
+                                            yyextra->blockString+=" (anonymous program)";
+                                            yyextra->blockLineNr=yyextra->lineNr;
+                                            yyextra->blockStack.push(blockState(yyextra->blockString,yyextra->blockLineNr));
                                             yy_push_state(ModuleBody,yyscanner); //anon program
                                           }
 
@@ -858,6 +884,7 @@ private                                 {
                                            }
                                            yyextra->subrCurrent.pop_back();
                                            yyextra->vtype = V_IGNORE;
+                                           popBlockStack(yyscanner);
                                            pop_state(yyscanner) ;
                                         }
 <BlockData>{
@@ -881,6 +908,10 @@ private                                 {
                                           if (YY_START == Start)
                                           {
                                             addModule(yyscanner);
+                                            yyextra->blockString=yytext;
+                                            yyextra->blockString+=" (anonymous program)";
+                                            yyextra->blockLineNr=yyextra->lineNr;
+                                            yyextra->blockStack.push(blockState(yyextra->blockString,yyextra->blockLineNr));
                                             yy_push_state(ModuleBody,yyscanner); //anon program
                                           }
                                           yy_push_state(AttributeList,yyscanner);
@@ -890,6 +921,10 @@ private                                 {
                                           if (YY_START == Start)
                                           {
                                             addModule(yyscanner);
+                                            yyextra->blockString=yytext;
+                                            yyextra->blockString+=" (anonymous program)";
+                                            yyextra->blockLineNr=yyextra->lineNr;
+                                            yyextra->blockStack.push(blockState(yyextra->blockString,yyextra->blockLineNr));
                                             yy_push_state(ModuleBody,yyscanner); //anon program
                                           }
                                           QCString tmp = yytext;
@@ -904,6 +939,10 @@ private                                 {
                                           if (YY_START == Start)
                                           {
                                             addModule(yyscanner);
+                                            yyextra->blockString=yytext;
+                                            yyextra->blockString+=" (anonymous program)";
+                                            yyextra->blockLineNr=yyextra->lineNr;
+                                            yyextra->blockStack.push(blockState(yyextra->blockString,yyextra->blockLineNr));
                                             yy_push_state(ModuleBody,yyscanner); //anon program
                                           }
                                           QCString tmp = yytext;
@@ -916,6 +955,10 @@ private                                 {
                                           if (YY_START == Start)
                                           {
                                             addModule(yyscanner);
+                                            yyextra->blockString=yytext;
+                                            yyextra->blockString+=" (anonymous program)";
+                                            yyextra->blockLineNr=yyextra->lineNr;
+                                            yyextra->blockStack.push(blockState(yyextra->blockString,yyextra->blockLineNr));
                                             yy_push_state(ModuleBody,yyscanner); //anon program
                                           }
                                         }
@@ -923,6 +966,10 @@ private                                 {
                                           if (YY_START == Start && QCString(yytext).stripWhiteSpace().lower()!="include")
                                           {
                                             addModule(yyscanner);
+                                            yyextra->blockString=yytext;
+                                            yyextra->blockString+=" (anonymous program)";
+                                            yyextra->blockLineNr=yyextra->lineNr;
+                                            yyextra->blockStack.push(blockState(yyextra->blockString,yyextra->blockLineNr));
                                             yy_push_state(ModuleBody,yyscanner); //anon program
                                           }
                                         }
@@ -1191,6 +1238,10 @@ private                                 {
                                           if (YY_START == Start)
                                           {
                                             addModule(yyscanner);
+                                            yyextra->blockString=yytext;
+                                            yyextra->blockString+=" (anonymous program)";
+                                            yyextra->blockLineNr=yyextra->lineNr;
+                                            yyextra->blockStack.push(blockState(yyextra->blockString,yyextra->blockLineNr));
                                             yy_push_state(ModuleBody,yyscanner); //anon program
                                           }
 
@@ -1443,6 +1494,7 @@ private                                 {
                                           yyextra->fencedSize=0;
                                           yyextra->blockString=yytext;
                                           yyextra->blockLineNr=yyextra->lineNr;
+                                          yyextra->blockStack.push(blockState(yyextra->blockString,yyextra->blockLineNr));
                                           BEGIN(DocCopyBlock);
                                         }
 <DocBlock>{CMD}"ifile"{B}+"\""[^\n\"]+"\"" {
@@ -1476,6 +1528,7 @@ private                                 {
                                           yyextra->fencedSize=0;
                                           yyextra->blockString=yytext;
                                           yyextra->blockLineNr=yyextra->lineNr;
+                                          yyextra->blockStack.push(blockState(yyextra->blockString,yyextra->blockLineNr));
                                           BEGIN(DocCopyBlock);
                                         }
 <DocBlock>{B}*"<"<CODE>">"              {
@@ -1484,6 +1537,7 @@ private                                 {
                                           yyextra->fencedSize=0;
                                           yyextra->blockString=yytext;
                                           yyextra->blockLineNr=yyextra->lineNr;
+                                          yyextra->blockStack.push(blockState(yyextra->blockString,yyextra->blockLineNr));
                                           BEGIN(DocCopyBlock);
                                         }
 <DocBlock>{CMD}"startuml"/[^a-z_A-Z0-9\-]     { // verbatim command
@@ -1492,6 +1546,7 @@ private                                 {
                                           yyextra->fencedSize=0;
                                           yyextra->blockString=yytext;
                                           yyextra->blockLineNr=yyextra->lineNr;
+                                          yyextra->blockStack.push(blockState(yyextra->blockString,yyextra->blockLineNr));
                                           BEGIN(DocCopyBlock);
                                         }
 <DocBlock>{CMD}("verbatim"|"iliteral"|"latexonly"|"htmlonly"|"xmlonly"|"manonly"|"rtfonly"|"docbookonly"|"dot"|"msc"|"code")/[^a-z_A-Z0-9\-]     { // verbatim command
@@ -1500,6 +1555,7 @@ private                                 {
                                           yyextra->fencedSize=0;
                                           yyextra->blockString=yytext;
                                           yyextra->blockLineNr=yyextra->lineNr;
+                                          yyextra->blockStack.push(blockState(yyextra->blockString,yyextra->blockLineNr));
                                           BEGIN(DocCopyBlock);
                                         }
 <DocBlock>"~~~"[~]*                     {
@@ -1509,6 +1565,7 @@ private                                 {
                                           yyextra->fencedSize=pat.length();
                                           yyextra->blockString=yytext;
                                           yyextra->blockLineNr=yyextra->lineNr;
+                                          yyextra->blockStack.push(blockState(yyextra->blockString,yyextra->blockLineNr));
                                           BEGIN(DocCopyBlock);
                                         }
 <DocBlock>"```"[`]*/(".")?[a-zA-Z0-9#_-]+ |
@@ -1520,6 +1577,7 @@ private                                 {
                                           yyextra->fencedSize=pat.length();
                                           yyextra->blockString=yytext;
                                           yyextra->blockLineNr=yyextra->lineNr;
+                                          yyextra->blockStack.push(blockState(yyextra->blockString,yyextra->blockLineNr));
                                           BEGIN(DocCopyBlock);
                                         }
 <DocBlock>"\\ilinebr "{BS}              {
@@ -1556,8 +1614,7 @@ private                                 {
                                           if (yyextra->docBlockName=="<pre>")
                                           {
                                             yyextra->docBlockName="";
-                                            yyextra->blockString.clear();
-                                            yyextra->blockLineNr=-1;
+                                            popBlockStack(yyscanner);
                                             BEGIN(DocBlock);
                                           }
                                         }
@@ -1566,8 +1623,7 @@ private                                 {
                                           if (yyextra->docBlockName=="<code>")
                                           {
                                             yyextra->docBlockName="";
-                                            yyextra->blockString.clear();
-                                            yyextra->blockLineNr=-1;
+                                            popBlockStack(yyscanner);
                                             BEGIN(DocBlock);
                                           }
                                         }
@@ -1576,8 +1632,7 @@ private                                 {
                                           if (yyextra->docBlockName==&yytext[1])
                                           {
                                             yyextra->docBlockName="";
-                                            yyextra->blockString.clear();
-                                            yyextra->blockLineNr=-1;
+                                            popBlockStack(yyscanner);
                                             BEGIN(DocBlock);
                                           }
                                         }
@@ -1586,8 +1641,7 @@ private                                 {
                                           if (&yytext[4]==yyextra->docBlockName)
                                           {
                                             yyextra->docBlockName="";
-                                            yyextra->blockString.clear();
-                                            yyextra->blockLineNr=-1;
+                                            popBlockStack(yyscanner);
                                             BEGIN(DocBlock);
                                           }
                                         }
@@ -1609,8 +1663,7 @@ private                                 {
                                           yyextra->docBlock += pat;
                                           if (yyextra->docBlockName == "~~~" && yyextra->fencedSize==pat.length())
                                           {
-                                            yyextra->blockString.clear();
-                                            yyextra->blockLineNr=-1;
+                                            popBlockStack(yyscanner);
                                             BEGIN(DocBlock);
                                           }
                                         }
@@ -1619,8 +1672,7 @@ private                                 {
                                           yyextra->docBlock += pat;
                                           if (yyextra->docBlockName == "```" && yyextra->fencedSize==pat.length())
                                           {
-                                            yyextra->blockString.clear();
-                                            yyextra->blockLineNr=-1;
+                                            popBlockStack(yyscanner);
                                             BEGIN(DocBlock);
                                           }
                                         }
@@ -2958,6 +3010,9 @@ static void addSubprogram(yyscan_t yyscanner,const QCString &text)
   yyextra->current->startLine  = yyextra->lineNr; // used for source reference start of definition
   yyextra->current->args.clear();
   yyextra->current->argList.clear();
+  yyextra->blockString=text;
+  yyextra->blockLineNr=yyextra->lineNr;
+  yyextra->blockStack.push(blockState(yyextra->blockString,yyextra->blockLineNr));
   yyextra->docBlock.clear();
 }
 
@@ -2971,6 +3026,10 @@ static void addInterface(yyscan_t yyscanner,QCString name, InterfaceType type)
   if (YY_START == Start)
   {
     addModule(yyscanner);
+    yyextra->blockString=yytext;
+    yyextra->blockString+=" (anonymous program)";
+    yyextra->blockLineNr=yyextra->lineNr;
+    yyextra->blockStack.push(blockState(yyextra->blockString,yyextra->blockLineNr));
     yy_push_state(ModuleBody,yyscanner); //anon program
   }
 
@@ -3397,6 +3456,9 @@ static void scanner_abort(yyscan_t yyscanner)
   }
   fprintf(stderr,"********************************************************************\n");
 
+  // emty the stack
+  while (!yyextra->blockStack.empty()) yyextra->blockStack.pop();
+
   bool start=FALSE;
 
   for (const auto &ce : yyextra->global_root->children())
@@ -3419,6 +3481,21 @@ static inline void pop_state(yyscan_t yyscanner)
     warn(yyextra->fileName,yyextra->lineNr,"Unexpected statement '{}'",yytext );
   else
     yy_pop_state(yyscanner);
+}
+static inline void popBlockStack(yyscan_t yyscanner)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->blockStack.pop();
+  if (yyextra->blockStack.empty())
+  {
+    yyextra->blockString.clear();
+    yyextra->blockLineNr=-1;
+  }
+  else
+  {
+    yyextra->blockString=yyextra->blockStack.top().blockString;
+    yyextra->blockLineNr=yyextra->blockStack.top().blockLineNr;
+  }
 }
 //----------------------------------------------------------------------------
 
