@@ -2003,6 +2003,7 @@ void Config::checkAndCorrect(bool quiet, const bool check)
     adjustBoolSetting(  depOption, "HTML_CODE_FOLDING",    false  );
     adjustBoolSetting(  depOption, "INTERACTIVE_SVG",      false  );
     adjustStringSetting(depOption, "HTML_FILE_EXTENSION", ".html");
+    adjustStringSetting(depOption, "MERMAID_RENDER_MODE", "CLI");
     adjustColorStyleSetting(depOption);
     const StringVector &tagFileList = Config_getList(TAGFILES);
     StringVector filteredTagFileList;
