@@ -403,8 +403,9 @@ DB_VIS_C
       if (Config_getBool(MERMAID_RENDER_MODE)!=MERMAID_RENDER_MODE_t::CLIENT_SIDE)
       {
         QCString docbookOutput = Config_getString(DOCBOOK_OUTPUT);
+        MermaidManager::OutputFormat format = MermaidManager::imageFormat(MermaidManager::OutputFormat::Bitmap);
         QCString baseName = MermaidManager::instance().writeMermaidSource(docbookOutput,
-            s.exampleFile(),s.text(),MermaidManager::OutputFormat::Bitmap,
+            s.exampleFile(),s.text(),format,
             s.srcFile(),s.srcLine());
         m_t << "<para>\n";
         writeMermaidFile(baseName,s);
@@ -1620,8 +1621,10 @@ DB_VIS_C
   if (Config_getBool(MERMAID_RENDER_MODE)==MERMAID_RENDER_MODE_t::CLIENT_SIDE) return;
   QCString shortName = stripPath(baseName);
   QCString outDir = Config_getString(DOCBOOK_OUTPUT);
-  MermaidManager::instance().generateMermaidOutput(baseName,outDir,MermaidManager::OutputFormat::Bitmap,false);
-  visitPreStart(m_t, s.children(), s.hasCaption(), s.relPath() + shortName + ".png", s.width(),s.height());
+  MermaidManager::OutputFormat format = MermaidManager::imageFormat(MermaidManager::OutputFormat::Bitmap);
+  QCString imgExt = MermaidManager::imageExtension(format);
+  MermaidManager::instance().generateMermaidOutput(baseName,outDir,format,false);
+  visitPreStart(m_t, s.children(), s.hasCaption(), s.relPath() + shortName + "." + imgExt, s.width(),s.height());
   visitCaption(s.children());
   visitPostEnd(m_t, s.hasCaption());
 }
@@ -1641,12 +1644,14 @@ DB_VIS_C
   QCString outDir = Config_getString(DOCBOOK_OUTPUT);
   std::string inBuf;
   readInputFile(fileName,inBuf);
+  MermaidManager::OutputFormat format = MermaidManager::imageFormat(MermaidManager::OutputFormat::Bitmap);
+  QCString imgExt = MermaidManager::imageExtension(format);
   QCString baseName = MermaidManager::instance().writeMermaidSource(outDir,
-                           QCString(),inBuf,MermaidManager::OutputFormat::Bitmap,srcFile,srcLine);
+                           QCString(),inBuf,format,srcFile,srcLine);
   QCString shortName = stripPath(baseName);
-  MermaidManager::instance().generateMermaidOutput(baseName,outDir,MermaidManager::OutputFormat::Bitmap,false);
+  MermaidManager::instance().generateMermaidOutput(baseName,outDir,format,false);
   m_t << "<para>\n";
-  visitPreStart(m_t, children, hasCaption, relPath + shortName + ".png", width, height);
+  visitPreStart(m_t, children, hasCaption, relPath + shortName + "." + imgExt, width, height);
 }
 
 void DocbookDocVisitor::endMermaidFile(bool hasCaption)
