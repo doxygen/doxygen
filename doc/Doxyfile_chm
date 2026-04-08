@@ -27,3 +27,4 @@
       SEARCHENGINE           = NO
       HTML_EXTRA_STYLESHEET  = doxygen_manual_chm.css
       HTML_CODE_FOLDING      = NO
+      MERMAID_RENDER_MODE    = CLI
