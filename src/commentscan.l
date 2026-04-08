@@ -413,6 +413,11 @@ static const std::unordered_map< std::string, DocCmdMap > docCmdMap =
   { "xrefitem",               { &handleXRefItem,                 CommandSpacing::XRef,      SectionHandling::Break   }}
 };
 
+bool isDoxygenScanCmd(QCString cmdName)
+{
+  return (docCmdMap.find(cmdName.str()) != docCmdMap.end());
+}
+
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
 #define YY_NEVER_INTERACTIVE 1

@@ -45,6 +45,8 @@
 #include "doxygen.h"
 #include "commentscan.h"
 #include "entry.h"
+#include "commentcnv.h"
+#include "cmdmapper.h"
 #include "config.h"
 #include "message.h"
 #include "portable.h"
@@ -1240,6 +1242,9 @@ int Markdown::Private::processLink(const std::string_view data,size_t offset)
 {
   AUTO_TRACE("data='{}' offset={}",Trace::trunc(data),offset);
   const size_t size = data.size();
+  static const reg::Ex user("^[@#][a-z_A-Z][a-z_A-Z0-9-]*");
+  reg::Match match;
+
   QCString content;
   QCString link;
   QCString title;
@@ -1660,10 +1665,29 @@ int Markdown::Private::processLink(const std::string_view data,size_t offset)
         out+=" ";
         out+=externalLinkTarget();
         out+=">";
-        content = content.simplifyWhiteSpace();
-        processInline(std::string_view(content.str()));
-        out+="</a>";
       }
+
+      content = content.simplifyWhiteSpace();
+      if (reg::search(content.str(),match,user))
+      {
+        if (content.at(0) == '#' ||
+            !(isDoxygenScanCmd(match[0].str().data()+1) ||
+              Mappers::cmdMapper->map(match[0].str().data()+1) != CommandType::UNKNOWN)
+           )
+        {
+          out+='@';
+          out+=content;
+        }
+        else
+        {
+          processInline(std::string_view(content.str()));
+        }
+      }
+      else
+      {
+        processInline(std::string_view(content.str()));
+      }
+      out+="</a>";
     }
     else // avoid link to e.g. F[x](y)
     {
