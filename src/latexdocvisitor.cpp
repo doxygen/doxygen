@@ -502,10 +502,9 @@ void LatexDocVisitor::operator()(const DocVerbatim &s)
       if (Config_getBool(MERMAID_RENDER_MODE)!=MERMAID_RENDER_MODE_t::CLIENT_SIDE)
       {
         QCString latexOutput = Config_getString(LATEX_OUTPUT);
-        bool usePDFLatex = Config_getBool(USE_PDFLATEX);
+        MermaidManager::OutputFormat format = MermaidManager::imageFormat(MermaidManager::OutputFormat::PDF);
         QCString baseName = MermaidManager::instance().writeMermaidSource(
-                              latexOutput,s.exampleFile(),s.text(),
-                              usePDFLatex ? MermaidManager::OutputFormat::PDF : MermaidManager::OutputFormat::Bitmap,
+                              latexOutput,s.exampleFile(),s.text(),format,
                               s.srcFile(),s.srcLine());
         writeMermaidFile(baseName, s);
       }
@@ -2068,10 +2067,11 @@ void LatexDocVisitor::writeMermaidFile(const QCString &baseName, const DocVerbat
 {
   if (Config_getBool(MERMAID_RENDER_MODE)==MERMAID_RENDER_MODE_t::CLIENT_SIDE) return;
   QCString shortName = stripPath(baseName);
-  bool usePDFLatex = Config_getBool(USE_PDFLATEX);
-  if (shortName.find('.')==-1) shortName += usePDFLatex ? ".pdf" : ".png";
+  MermaidManager::OutputFormat format = MermaidManager::imageFormat(MermaidManager::OutputFormat::PDF);
+  QCString imgExt = MermaidManager::imageExtension(format);
+  if (shortName.find('.')==-1) shortName += "." + imgExt;
   QCString outDir = Config_getString(LATEX_OUTPUT);
-  MermaidManager::instance().generateMermaidOutput(baseName,outDir,usePDFLatex ? MermaidManager::OutputFormat::PDF : MermaidManager::OutputFormat::Bitmap,false);
+  MermaidManager::instance().generateMermaidOutput(baseName,outDir,format,false);
   visitPreStart(m_t, s.hasCaption(), shortName, s.width(), s.height());
   visitCaption(s.children());
   visitPostEnd(m_t, s.hasCaption());
@@ -2089,15 +2089,16 @@ void LatexDocVisitor::startMermaidFile(const QCString &fileName,
   QCString outDir = Config_getString(LATEX_OUTPUT);
   std::string inBuf;
   readInputFile(fileName,inBuf);
+  MermaidManager::OutputFormat format = MermaidManager::imageFormat(MermaidManager::OutputFormat::PDF);
+  QCString imgExt = MermaidManager::imageExtension(format);
 
   bool usePDFLatex = Config_getBool(USE_PDFLATEX);
   QCString baseName = MermaidManager::instance().writeMermaidSource(
-                              outDir,QCString(),inBuf,
-                              usePDFLatex ? MermaidManager::OutputFormat::PDF : MermaidManager::OutputFormat::Bitmap,
+                              outDir,QCString(),inBuf,format,
                               srcFile,srcLine);
   QCString shortName = stripPath(baseName);
-  if (shortName.find('.')==-1) shortName += usePDFLatex ? ".pdf" : ".png";
-  MermaidManager::instance().generateMermaidOutput(baseName,outDir,usePDFLatex ? MermaidManager::OutputFormat::PDF : MermaidManager::OutputFormat::Bitmap,false);
+  if (shortName.find('.')==-1) shortName += "." + imgExt;
+  MermaidManager::instance().generateMermaidOutput(baseName,outDir,format,false);
   visitPreStart(m_t,hasCaption, shortName, width, height);
 }
 

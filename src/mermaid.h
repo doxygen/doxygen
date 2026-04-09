@@ -77,10 +77,11 @@ class MermaidManager
     };
     using DiagramList = std::vector<MermaidDiagram>;
 
+    static QCString imageExtension(OutputFormat format);
+    static OutputFormat imageFormat(OutputFormat format);
+
   private:
     MermaidManager();
-
-    static QCString imageExtension(OutputFormat format);
 
     DiagramList m_diagrams;
 };

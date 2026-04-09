@@ -405,8 +405,9 @@ void RTFDocVisitor::operator()(const DocVerbatim &s)
       if (Config_getBool(MERMAID_RENDER_MODE)!=MERMAID_RENDER_MODE_t::CLIENT_SIDE)
       {
         QCString rtfOutput = Config_getString(RTF_OUTPUT);
+        MermaidManager::OutputFormat format = MermaidManager::imageFormat(MermaidManager::OutputFormat::Bitmap);
         QCString baseName = MermaidManager::instance().writeMermaidSource(
-                       rtfOutput,s.exampleFile(),s.text(),MermaidManager::OutputFormat::Bitmap,
+                       rtfOutput,s.exampleFile(),s.text(),format,
                        s.srcFile(),s.srcLine());
         writeMermaidFile(baseName, s.hasCaption());
         visitChildren(s);
@@ -1340,8 +1341,9 @@ void RTFDocVisitor::operator()(const DocMermaidFile &df)
   QCString rtfOutput = Config_getString(RTF_OUTPUT);
   std::string inBuf;
   readInputFile(df.file(),inBuf);
+  MermaidManager::OutputFormat format = MermaidManager::imageFormat(MermaidManager::OutputFormat::Bitmap);
   QCString baseName = MermaidManager::instance().writeMermaidSource(
-                       rtfOutput,QCString(),inBuf,MermaidManager::OutputFormat::Bitmap,
+                       rtfOutput,QCString(),inBuf,format,
                        df.srcFile(),df.srcLine());
   writeMermaidFile(baseName, df.hasCaption());
   visitChildren(df);
@@ -1801,6 +1803,8 @@ void RTFDocVisitor::writeMermaidFile(const QCString &fileName, bool hasCaption)
   if (Config_getBool(MERMAID_RENDER_MODE)==MERMAID_RENDER_MODE_t::CLIENT_SIDE) return;
   QCString baseName=makeBaseName(fileName,".mmd");
   QCString outDir = Config_getString(RTF_OUTPUT);
-  MermaidManager::instance().generateMermaidOutput(fileName,outDir,MermaidManager::OutputFormat::Bitmap,false);
-  includePicturePreRTF(baseName + ".png", true, hasCaption);
+  MermaidManager::OutputFormat format = MermaidManager::imageFormat(MermaidManager::OutputFormat::Bitmap);
+  QCString imgExt = MermaidManager::imageExtension(format);
+  MermaidManager::instance().generateMermaidOutput(fileName,outDir,format,false);
+  includePicturePreRTF(baseName + "." + imgExt, true, hasCaption);
 }

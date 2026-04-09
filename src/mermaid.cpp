@@ -44,12 +44,32 @@ QCString MermaidManager::imageExtension(OutputFormat format)
 {
   switch (format)
   {
-    case OutputFormat::Bitmap: return ".png";
-    case OutputFormat::SVG:    return ".svg";
-    case OutputFormat::PDF:    return ".pdf";
+    case OutputFormat::Bitmap: return "png";
+    case OutputFormat::SVG:    return "svg";
+    case OutputFormat::PDF:    return "pdf";
   }
-  return ".png";
+  return "png";
 }
+
+MermaidManager::OutputFormat MermaidManager::imageFormat(OutputFormat format)
+{
+  if (format == MermaidManager::OutputFormat::Bitmap)
+  {
+    QCString imgExt = getDotImageExtension();
+    if (imgExt=="svg")
+    {
+      return MermaidManager::OutputFormat::SVG;
+    }
+  }
+  else if (format == MermaidManager::OutputFormat::PDF)
+  {
+    bool usePDFLatex = Config_getBool(USE_PDFLATEX);
+    return usePDFLatex ? MermaidManager::OutputFormat::PDF : MermaidManager::OutputFormat::Bitmap;
+  }
+
+  return format;
+}
+
 
 QCString MermaidManager::writeMermaidSource(const QCString &outDirArg, const QCString &fileName,
                                             const QCString &content, OutputFormat format,
@@ -108,7 +128,7 @@ void MermaidManager::generateMermaidOutput(const QCString &baseName, const QCStr
   {
     imgName = imgName.mid(i + 1);
   }
-  imgName += imageExtension(format);
+  imgName += "." + imageExtension(format);
   Doxygen::indexList->addImageFile(imgName);
 }
 
@@ -143,13 +163,7 @@ static void runMermaid(const MermaidManager::DiagramList &diagrams)
     //printf("content=%s\n",qPrint(mc.content));
     if (diagram.info.content.isEmpty()) continue;
 
-    QCString ext;
-    switch (diagram.format)
-    {
-      case MermaidManager::OutputFormat::Bitmap: ext = "png"; break;
-      case MermaidManager::OutputFormat::SVG:    ext = "svg"; break;
-      case MermaidManager::OutputFormat::PDF:    ext = "pdf"; break;
-    }
+    QCString ext = MermaidManager::imageExtension(diagram.format);
 
     QCString inputFile  = diagram.info.baseName + ".mmd";
     QCString outputFile = diagram.info.baseName + "." + ext;

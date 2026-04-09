@@ -656,12 +656,7 @@ void HtmlDocVisitor::operator()(const DocVerbatim &s)
         if (Config_getEnum(MERMAID_RENDER_MODE)==MERMAID_RENDER_MODE_t::CLI) // CLI mode: pre-generate image via mmdc
         {
           QCString htmlOutput = Config_getString(HTML_OUTPUT);
-          QCString imgExt = getDotImageExtension();
-          MermaidManager::OutputFormat format = MermaidManager::OutputFormat::Bitmap;
-          if (imgExt=="svg")
-          {
-            format = MermaidManager::OutputFormat::SVG;
-          }
+          MermaidManager::OutputFormat format = MermaidManager::imageFormat(MermaidManager::OutputFormat::Bitmap);
           QCString baseName = MermaidManager::instance().writeMermaidSource(
                                       htmlOutput,s.exampleFile(),
                                       s.text(),format,s.srcFile(),s.srcLine());
@@ -1882,12 +1877,7 @@ void HtmlDocVisitor::operator()(const DocMermaidFile &df)
   if (Config_getEnum(MERMAID_RENDER_MODE)==MERMAID_RENDER_MODE_t::CLI)
   {
     QCString htmlOutput = Config_getString(HTML_OUTPUT);
-    QCString imgExt = getDotImageExtension();
-    MermaidManager::OutputFormat format = MermaidManager::OutputFormat::Bitmap;
-    if (imgExt=="svg")
-    {
-      format = MermaidManager::OutputFormat::SVG;
-    }
+    MermaidManager::OutputFormat format = MermaidManager::imageFormat(MermaidManager::OutputFormat::Bitmap);
     std::string inBuf;
     readInputFile(df.file(),inBuf);
     QCString baseName = MermaidManager::instance().writeMermaidSource(htmlOutput,QCString(),
@@ -2336,16 +2326,17 @@ void HtmlDocVisitor::writeMermaidFile(const QCString &fileName, const QCString &
 {
   QCString baseName=makeBaseName(fileName,".mmd");
   QCString outDir = Config_getString(HTML_OUTPUT);
-  QCString imgExt = getDotImageExtension();
-  if (imgExt=="svg")
+  MermaidManager::OutputFormat format = MermaidManager::imageFormat(MermaidManager::OutputFormat::Bitmap);
+  QCString imgExt = MermaidManager::imageExtension(format);
+
+  MermaidManager::instance().generateMermaidOutput(fileName,outDir,format,true);
+  if (format == MermaidManager::OutputFormat::SVG)
   {
-    MermaidManager::instance().generateMermaidOutput(fileName,outDir,MermaidManager::OutputFormat::SVG,true);
-    m_t << "<object type=\"image/svg+xml\" data=\"" << relPath << baseName << ".svg\"></object>\n";
+    m_t << "<object type=\"image/svg+xml\" data=\"" << relPath << baseName << "." << imgExt << "\"></object>\n";
   }
   else
   {
-    MermaidManager::instance().generateMermaidOutput(fileName,outDir,MermaidManager::OutputFormat::Bitmap,true);
-    m_t << "<img src=\"" << relPath << baseName << ".png" << "\" />\n";
+    m_t << "<img src=\"" << relPath << baseName << "." << imgExt << "\" />\n";
   }
 }
 
