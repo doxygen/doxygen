@@ -1517,12 +1517,8 @@ void ClassDefImpl::writeTemplateSpec(OutputList &ol,const Definition *d,
       {
         Argument a = *it;
         linkifyText(TextGeneratorOLImpl(ol), // out
-          d,                       // scope
-          getFileDef(),            // fileScope
-          this,                    // self
-          a.type,                  // text
-          FALSE                    // autoBreak
-          );
+          a.type,                            // text
+          LinkifyTextOptions().setScope(d).setFileScope(getFileDef()).setSelf(this));
         if (!a.name.isEmpty())
         {
           ol.docify(" ");
@@ -1543,12 +1539,8 @@ void ClassDefImpl::writeTemplateSpec(OutputList &ol,const Definition *d,
     {
       ol.docify("requires ");
       linkifyText(TextGeneratorOLImpl(ol), // out
-          d,                       // scope
-          getFileDef(),            // fileScope
-          this,                    // self
-          m_requiresClause,  // text
-          FALSE                    // autoBreak
-          );
+          m_requiresClause,                // text
+          LinkifyTextOptions().setScope(d).setFileScope(getFileDef()).setSelf(this));
       ol.lineBreak();
     }
     ol.docify(type.lower()+" "+name);

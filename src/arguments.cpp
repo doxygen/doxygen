@@ -19,9 +19,9 @@
 /*! the argument list is documented if one of its
  *  arguments is documented
  */
-bool ArgumentList::hasDocumentation() const
+bool ArgumentList::hasDocumentation(bool allowEmptyNames) const
 {
-  return std::any_of(begin(),end(),[](const Argument &a){ return a.hasDocumentation(); });
+  return std::any_of(begin(),end(),[allowEmptyNames](const Argument &a){ return a.hasDocumentation(allowEmptyNames); });
 }
 
 /*! the template argument list is documented if one of its

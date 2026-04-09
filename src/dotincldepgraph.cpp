@@ -190,6 +190,8 @@ QCString DotInclDepGraph::writeGraph(TextStream &out,
                                      bool generateImageMap,
                                      int graphId)
 {
+  m_doNotAddImageToIndex = textFormat!=EmbeddedOutputFormat::Html;
+
   return DotGraph::writeGraph(out, graphFormat, textFormat, path, fileName, relPath, generateImageMap, graphId);
 }
 

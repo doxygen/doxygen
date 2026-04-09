@@ -75,6 +75,8 @@ struct DocParserContext
   bool         hasReturnCommand = false;
   StringMultiSet retvalsFound;
   StringMultiSet paramsFound;
+  int          paramPosition = 0;
+  int          numParameters = 0;
   const MemberDef *  memberDef = nullptr;
   bool         isExample = false;
   QCString     exampleName;
@@ -113,7 +115,7 @@ class DocParser : public IDocParser
                                      QCString *pDoc,
                                      QCString *pBrief,
                                      const Definition **pDef);
-    bool defaultHandleToken(DocNodeVariant *parent,Token tok,
+    bool defaultHandleToken(DocNodeVariant *parent,Token &tok,
                             DocNodeList &children,bool
                             handleWord=TRUE);
     void errorHandleDefaultToken(DocNodeVariant *parent,Token tok,

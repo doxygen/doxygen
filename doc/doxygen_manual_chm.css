@@ -532,26 +532,13 @@ table.memberdecls {
         border-top: 1px solid #C0C0C0;
         border-left: 1px solid #C0C0C0;
         border-right: 1px solid #C0C0C0;
+        border-bottom: 1px solid #C0C0C0;
         padding: 6px 0px 6px 0px;
         color: #3D3D3D;
         font-weight: bold;
         text-shadow: 0px 1px 1px rgba(255, 255, 255, 0.9);
-        background-image:url('nav_f.png');
-        background-repeat:repeat-x;
-        background-color: #EAEAEA;
-        /* opera specific markup */
-        box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.15);
         border-top-right-radius: 4px;
         border-top-left-radius: 4px;
-        /* firefox specific markup */
-        -moz-box-shadow: rgba(0, 0, 0, 0.15) 5px 5px 5px;
-        -moz-border-radius-topright: 4px;
-        -moz-border-radius-topleft: 4px;
-        /* webkit specific markup */
-        -webkit-box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.15);
-        -webkit-border-top-right-radius: 4px;
-        -webkit-border-top-left-radius: 4px;
-
 }
 
 .memdoc, dl.reflist dd {
@@ -560,21 +547,8 @@ table.memberdecls {
         border-right: 1px solid #C0C0C0; 
         padding: 6px 10px 2px 10px;
         border-top-width: 0;
-        background-image:url('nav_g.png');
-        background-repeat:repeat-x;
-        background-color: #FFFFFF;
-        /* opera specific markup */
         border-bottom-left-radius: 4px;
         border-bottom-right-radius: 4px;
-        box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.15);
-        /* firefox specific markup */
-        -moz-border-radius-bottomleft: 4px;
-        -moz-border-radius-bottomright: 4px;
-        -moz-box-shadow: rgba(0, 0, 0, 0.15) 5px 5px 5px;
-        /* webkit specific markup */
-        -webkit-border-bottom-left-radius: 4px;
-        -webkit-border-bottom-right-radius: 4px;
-        -webkit-box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.15);
 }
 
 dl.reflist dt {
@@ -763,37 +737,22 @@ div.directory {
     display: inline-block;
 }
 
-.iconfopen {
-    width: 24px;
-    height: 18px;
-    margin-bottom: 4px;
-    background-image:url('folderopen.svg');
-    background-position: 0px -4px;
-    background-repeat: repeat-y;
-    vertical-align:top;
-    display: inline-block;
-}
-
-.iconfclosed {
-    width: 24px;
-    height: 18px;
-    margin-bottom: 4px;
-    background-image:url('folderclosed.svg');
-    background-position: 0px -4px;
-    background-repeat: repeat-y;
-    vertical-align:top;
-    display: inline-block;
+.iconfolder {
+        width: 24px;
+        height: 18px;
+        margin-top: 6px;
+        vertical-align:top;
+        display: inline-block;
+        position: relative;
 }
 
 .icondoc {
     width: 24px;
     height: 18px;
-    margin-bottom: 4px;
-    background-image:url('doc.svg');
-    background-position: 0px -4px;
-    background-repeat: repeat-y;
+    margin-top: 3px;
     vertical-align:top;
     display: inline-block;
+    position: relative;
 }
 
 table.directory {
@@ -886,48 +845,17 @@ table.fieldtable {
 }
 
 .fieldtable th {
-        background-image:url('nav_f.png');
-        background-repeat:repeat-x;
         background-color: #EAEAEA;
         font-size: 90%;
         color: #3D3D3D;
         padding-bottom: 4px;
         padding-top: 5px;
         text-align:left;
-        -moz-border-radius-topleft: 4px;
-        -moz-border-radius-topright: 4px;
-        -webkit-border-top-left-radius: 4px;
-        -webkit-border-top-right-radius: 4px;
         border-top-left-radius: 4px;
         border-top-right-radius: 4px;
         border-bottom: 1px solid #C0C0C0;
 }
 
-
-.tabsearch {
-	top: 0px;
-	left: 10px;
-	height: 36px;
-	background-image: url('tab_b.png');
-	z-index: 101;
-	overflow: hidden;
-	font-size: 13px;
-}
-
-.navpath ul
-{
-	font-size: 11px;
-	background-image:url('tab_b.png');
-	background-repeat:repeat-x;
-	background-position: 0 -5px;
-	height:30px;
-	line-height:30px;
-	color:#ABABAB;
-	border:solid 1px #D3D3D3;
-	overflow:hidden;
-	margin:0px;
-	padding:0px;
-}
 
 .navpath li
 {
@@ -935,9 +863,6 @@ table.fieldtable {
 	float:left;
 	padding-left:10px;
 	padding-right:15px;
-	background-image:url('bc_s.png');
-	background-repeat:no-repeat;
-	background-position:right;
 	color:#595959;
 }
 
@@ -1011,8 +936,6 @@ div.ingroups a
 
 div.header
 {
-        background-image:url('nav_h.png');
-        background-repeat:repeat-x;
 	background-color: #FAFAFA;
 	margin:  0px;
 	border-bottom: 1px solid #D5D5D5;
@@ -1021,11 +944,6 @@ div.header
         width: 800px;
         padding-left: 12px;
         padding-right: 12px;
-         /* firefox specific markup */
-         -moz-box-shadow: rgba(0, 0, 0, 0.15) 0px 0px 5px;
-         /* webkit specific markup */
-         -webkit-box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.15);
-
 }
 
 div.headertitle

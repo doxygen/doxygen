@@ -33,6 +33,7 @@
 #include "vhdldocgen.h"
 #include "doctokenizer.h"
 #include "plantuml.h"
+#include "mermaid.h"
 #include "language.h"
 #include "datetime.h"
 #include "trace.h"
@@ -72,7 +73,8 @@ static const StringUnorderedSet g_plantumlEngine {
   "salt", "math", "latex", "gantt", "mindmap",
   "wbs", "yaml", "creole", "json", "flow",
   "board", "git", "hcl", "regex", "ebnf",
-  "files", "chen", "chronology"
+  "files", "chen", "chronology", "chart", "nwdiag",
+  "packetdiag", "project", "sprites"
 };
 
 //---------------------------------------------------------------------------
@@ -1275,6 +1277,46 @@ bool DocPlantUmlFile::parse()
   {
     warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"included uml file '{}' is not found "
            "in any of the paths specified via PLANTUMLFILE_DIRS!",p->name);
+  }
+  return ok;
+}
+
+//---------------------------------------------------------------------------
+
+DocMermaidFile::DocMermaidFile(DocParser *parser,DocNodeVariant *parent,const QCString &name,const QCString &context,
+                       const QCString &srcFile,int srcLine) :
+  DocDiagramFileBase(parser,parent,name,context,srcFile,srcLine)
+{
+  p->relPath = parser->context.relPath;
+}
+
+bool DocMermaidFile::parse()
+{
+  bool ok = false;
+  parser()->defaultHandleTitleAndSize(CommandType::CMD_MERMAIDFILE,thisVariant(),children(),p->width,p->height);
+
+  bool ambig = false;
+  FileDef *fd = findFileDef(Doxygen::mermaidFileNameLinkedMap,p->name,ambig);
+  if (fd==nullptr && !p->name.endsWith(".mmd")) // try with .mmd extension as well
+  {
+    fd = findFileDef(Doxygen::mermaidFileNameLinkedMap,p->name+".mmd",ambig);
+  }
+  if (fd)
+  {
+    p->file = fd->absFilePath();
+    ok = true;
+    if (ambig)
+    {
+      warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"included mermaid file name '{}' is ambiguous.\n"
+           "Possible candidates:\n{}",p->name,
+           showFileDefMatches(Doxygen::mermaidFileNameLinkedMap,p->name)
+          );
+    }
+  }
+  else
+  {
+    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"included mermaid file '{}' is not found "
+           "in any of the paths specified via MERMAIDFILE_DIRS!",p->name);
   }
   return ok;
 }
@@ -3251,28 +3293,29 @@ Token DocParamList::parse(const QCString &cmdName)
   auto ns = AutoNodeStack(parser(),thisVariant());
   DocPara *par=nullptr;
   QCString saveCmdName = cmdName;
+  DocParserContext &context = parser()->context;
+  DocTokenizer &tokenizer = parser()->tokenizer;
 
-  Token tok=parser()->tokenizer.lex();
+  Token tok=tokenizer.lex();
   if (!tok.is(TokenRetval::TK_WHITESPACE))
   {
-    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"expected whitespace after \\{} command",
+    warn_doc_error(context.fileName,tokenizer.getLineNr(),"expected whitespace after \\{} command",
         saveCmdName);
     retval = Token::make_RetVal_EndParBlock();
     goto endparamlist;
   }
-  parser()->tokenizer.setStateParam();
-  tok=parser()->tokenizer.lex();
+  tokenizer.setStateParam();
+  tok=tokenizer.lex();
   while (tok.is(TokenRetval::TK_WORD)) /* there is a parameter name */
   {
     if (m_type==DocParamSect::Param)
     {
-      int typeSeparator = parser()->context.token->name.find('#'); // explicit type position
+      int typeSeparator = context.token->name.find('#'); // explicit type position
       if (typeSeparator!=-1)
       {
-        parser()->handleParameterType(thisVariant(),m_paramTypes,parser()->context.token->name.left(typeSeparator));
-        parser()->context.token->name = parser()->context.token->name.mid(typeSeparator+1);
-        parser()->context.hasParamCommand=TRUE;
-        parser()->checkArgumentName();
+        parser()->handleParameterType(thisVariant(),m_paramTypes,context.token->name.left(typeSeparator));
+        context.token->name = context.token->name.mid(typeSeparator+1);
+        context.hasParamCommand=TRUE;
         if (parent() && std::holds_alternative<DocParamSect>(*parent()))
         {
           std::get<DocParamSect>(*parent()).m_hasTypeSpecifier=true;
@@ -3280,24 +3323,24 @@ Token DocParamList::parse(const QCString &cmdName)
       }
       else
       {
-        parser()->context.hasParamCommand=TRUE;
-        parser()->checkArgumentName();
+        context.hasParamCommand=TRUE;
       }
+      parser()->checkArgumentName();
     }
     else if (m_type==DocParamSect::RetVal)
     {
-      parser()->context.hasReturnCommand=TRUE;
+      context.hasReturnCommand=TRUE;
       parser()->checkRetvalName();
     }
-    parser()->context.inSeeBlock=true;
+    context.inSeeBlock=true;
     parser()->handleLinkedWord(thisVariant(),m_params,true);
-    parser()->context.inSeeBlock=false;
-    tok=parser()->tokenizer.lex();
+    context.inSeeBlock=false;
+    tok=tokenizer.lex();
   }
-  parser()->tokenizer.setStatePara();
+  tokenizer.setStatePara();
   if (tok.is_any_of(TokenRetval::TK_NONE,TokenRetval::TK_EOF)) // premature end of comment
   {
-    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"unexpected end of comment block while parsing the "
+    warn_doc_error(context.fileName,tokenizer.getLineNr(),"unexpected end of comment block while parsing the "
         "argument of command {}",saveCmdName);
     retval = Token::make_RetVal_EndParBlock();
     goto endparamlist;
@@ -3306,7 +3349,7 @@ Token DocParamList::parse(const QCString &cmdName)
   {
     if (!tok.is(TokenRetval::TK_NEWPARA)) /* empty param description */
     {
-      warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"unexpected token {} in comment block while parsing the "
+      warn_doc_error(context.fileName,tokenizer.getLineNr(),"unexpected token {} in comment block while parsing the "
           "argument of command {}",tok.to_string(),saveCmdName);
     }
     retval = Token::make_RetVal_EndParBlock();
@@ -4688,6 +4731,58 @@ Token DocPara::handleCommand(char cmdChar, const QCString &cmdName)
         parser()->tokenizer.setStatePara();
       }
       break;
+    case CommandType::CMD_MERMAID:
+      {
+        parser()->tokenizer.setStateMermaidOpt();
+        parser()->tokenizer.lex();
+        QCString fullMatch = parser()->context.token->sectionId;
+        QCString sectionId = "";
+        int idx = fullMatch.find('{');
+        int idxEnd = fullMatch.find("}",idx+1);
+        if (idx != -1) // options present
+        {
+           sectionId = fullMatch.mid(idx+1,idxEnd-idx-1).stripWhiteSpace();
+        }
+        else
+        {
+          sectionId = parser()->context.token->sectionId;
+        }
+
+        if (sectionId.isEmpty())
+        {
+          parser()->tokenizer.setStateMermaidOpt();
+          retval = parser()->tokenizer.lex();
+          assert(retval.is(TokenRetval::RetVal_OK));
+
+          sectionId = parser()->context.token->sectionId;
+          sectionId = sectionId.stripWhiteSpace();
+        }
+
+        QCString mermaidFile(sectionId);
+        children().append<DocVerbatim>(parser(),thisVariant(),
+                                       parser()->context.context,
+                                       parser()->context.token->verb,
+                                       DocVerbatim::Mermaid,
+                                       FALSE,mermaidFile);
+        DocVerbatim *dv = children().get_last<DocVerbatim>();
+        parser()->tokenizer.setStatePara();
+        QCString width,height;
+        parser()->defaultHandleTitleAndSize(CommandType::CMD_MERMAID,&children().back(),dv->children(),width,height);
+        parser()->tokenizer.setStateMermaid();
+        retval = parser()->tokenizer.lex();
+        int line = 0;
+        QCString trimmedVerb = stripLeadingAndTrailingEmptyLines(parser()->context.token->verb,line);
+        dv->setText(trimmedVerb);
+        dv->setWidth(width);
+        dv->setHeight(height);
+        dv->setLocation(parser()->context.fileName,parser()->tokenizer.getLineNr());
+        if (retval.is_any_of(TokenRetval::TK_NONE,TokenRetval::TK_EOF))
+        {
+          warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"mermaid section ended without end marker");
+        }
+        parser()->tokenizer.setStatePara();
+      }
+      break;
     case CommandType::CMD_ENDPARBLOCK:
       retval = Token::make_RetVal_EndParBlock();
       break;
@@ -4706,10 +4801,12 @@ Token DocPara::handleCommand(char cmdChar, const QCString &cmdName)
     case CommandType::CMD_ENDDOT:
     case CommandType::CMD_ENDMSC:
     case CommandType::CMD_ENDUML:
+    case CommandType::CMD_ENDMERMAID:
       warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"unexpected command {}",parser()->context.token->name);
       break;
     case CommandType::CMD_PARAM:
       retval = handleParamSection(cmdName,DocParamSect::Param,FALSE,parser()->context.token->paramDir);
+      parser()->context.paramPosition++;
       break;
     case CommandType::CMD_TPARAM:
       retval = handleParamSection(cmdName,DocParamSect::TemplateParam,FALSE,parser()->context.token->paramDir);
@@ -4838,6 +4935,9 @@ Token DocPara::handleCommand(char cmdChar, const QCString &cmdName)
       break;
     case CommandType::CMD_PLANTUMLFILE:
       handleFile<DocPlantUmlFile>(cmdName);
+      break;
+    case CommandType::CMD_MERMAIDFILE:
+      handleFile<DocMermaidFile>(cmdName);
       break;
     case CommandType::CMD_LINK:
       handleLink(cmdName,FALSE);

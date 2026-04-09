@@ -96,6 +96,7 @@ documentation:
 \refitem cmdendlatexonly \\endlatexonly
 \refitem cmdendlink \\endlink
 \refitem cmdendmanonly \\endmanonly
+\refitem cmdendmermaid \\endmermaid
 \refitem cmdendmsc \\endmsc
 \refitem cmdendparblock \\endparblock
 \refitem cmdendrtfonly \\endrtfonly
@@ -160,6 +161,8 @@ documentation:
 \refitem cmdmaninclude \\maninclude
 \refitem cmdmanonly \\manonly
 \refitem cmdmemberof \\memberof
+\refitem cmdmermaid \\mermaid
+\refitem cmdmermaidfile \\mermaidfile
 \refitem cmdmodule \\module
 \refitem cmdmsc \\msc
 \refitem cmdmscfile \\mscfile
@@ -2118,19 +2121,19 @@ ALIASES  = "english=\if english" \
   The \c \\param command has an optional attribute, \<dir\>, specifying the direction
   of the parameter. Possible values are "[in]", "[out]", and "[in,out]"; note the [square] brackets
   in this description.
-  For the bidirecional values, directions "in" and "out" can be specified in any order, and they can
-  either be written altogether, or separated with a comma (`,`) or a space.
+  For the bidirectional values, directions "in" and "out" can be specified in any order, and they can
+  either be written together (without separator), or separated with a comma (`,`) or a space.
   That means that for example values "[outin]" or "[in out]" are also valid.
   Note that it is also possible to put whitespace between the command and the \<dir\>.
   When a parameter is both input and output, [in,out] is used as attribute.
   Here is an example for the function \c memcpy:
-  \code
+  \code	
 /*!
  * Copies bytes from a source memory area to a destination memory area,
  * where both areas may not overlap.
- * @param[out] dest The memory area to copy to.
- * @param[in]  src  The memory area to copy from.
- * @param[in]  n    The number of bytes to copy
+ * \param[out] dest The memory area to copy to.
+ * \param[in]  src  The memory area to copy from.
+ * \param[in]  n    The number of bytes to copy
  */
 void memcpy(void *dest, const void *src, size_t n);
   \endcode
@@ -2144,14 +2147,54 @@ void memcpy(void *dest, const void *src, size_t n);
   sectioning command is encountered. See section \ref cmdfn "\\fn" for an
   example.
 
+  The parameter name is normally the name given in the function signature. 
+  For unnamed parameters, a positional index can also be used 
+  (starting with 1 for the first parameter).
+  \code
+/** Base */
+class Base
+{
+  public:
+    /** Method
+     *  \param 1 First parameter docs
+     *  \param 2 Second parameter docs
+     */
+    virtual void method(int, int) = 0;
+};
+
+/** Derived */
+class Derived : public Base
+{
+  public:
+    void method(int x, int y) override;
+};
+  \endcode
+
+  Alternatively, a minus sign (-) can be used as placeholder
+  for the name of an unnamed parameter.
+  \code
+/** Function docs.
+ *  \param - First parameter
+ *  \param - Second parameter
+ */
+void foo(int, int)
+{
+}
+  \endcode
+
+  Both ordinal position (numeric) and dash (-) parameter names are 
+  rendered as a dash in the output, unless a later definition or 
+  overriding method provides the actual parameter names, 
+  as is the case in the \c Derived class in the example above.
+
   Note that you can also document multiple parameters with a single
-  \c \\param command using a comma separated list. Here is an example:
+  \c \\param command using a comma-separated list. Here is an example:
 
 \code
 /** Sets the position.
- *  @param x,y,z Coordinates of the position in 3D space.
+ *  \param x,y,z Coordinates of the position in 3D space.
  */
-void setPosition(double x,double y,double z,double t)
+void setPosition(double x, double y, double z)
 {
 }
 \endcode
@@ -2161,7 +2204,7 @@ void setPosition(double x,double y,double z,double t)
   (as this is not part of the definition).
   The syntax is the same as for the `phpDocumentor`, i.e.
 \verbatim
-@param  datatype1|datatype2 $paramname description
+\param  datatype1|datatype2 $paramname description
 \endverbatim
 
 <hr>
@@ -3569,6 +3612,89 @@ class Receiver
   \sa section \ref cmdmscfile "\\mscfile".
 
 <hr>
+\section cmdmermaid \\mermaid ['{'option'}'] ["caption"] [\<sizeindication\>=\<size\>]
+
+  \addindex \\mermaid
+
+  Starts a text fragment which should contain a valid Mermaid diagram definition.
+  See https://mermaid.js.org/intro for examples and syntax documentation.
+  The text fragment ends with \ref cmdendmermaid "\\endmermaid".
+
+  Mermaid supports multiple diagram types including flowcharts, sequence diagrams,
+  class diagrams, state diagrams, Gantt charts, and more.
+
+  Doxygen supports two rendering modes for Mermaid diagrams, controlled by
+  the \ref cfg_mermaid_render_mode "MERMAID_RENDER_MODE" configuration option.
+
+  The first argument is optional and can be used to specify the name of the
+  generated image file inside curly brackets, i.e.
+  \verbatim
+  @mermaid{mydiagram}
+  flowchart LR
+    A --> B
+  @endmermaid
+  \endverbatim
+  When the name is specified, Doxygen will generate an image with that name.
+  Without the name Doxygen will choose a name automatically.
+
+  The second argument is optional and can be used to specify the caption
+  that is displayed below the image. This argument has to be specified
+  between quotes even if it does not contain any spaces. The quotes are
+  stripped before the caption is displayed.
+
+  The third argument is also optional and can be used to specify the
+  width or height of the image.
+  For a description of the possibilities see the paragraph
+  \ref image_sizeindicator "Size indication" with the
+  \ref cmdimage "\\image" command.
+
+  \note In Markdown files, Mermaid diagrams can also be written using fenced
+  code blocks with the \c mermaid language identifier:
+  \verbatim
+  ```mermaid
+  flowchart LR
+    A --> B
+  ```
+  \endverbatim
+  These are automatically converted to `\mermaid` / `\endmermaid`.
+
+  \note Doxygen creates a temporary file that is automatically removed unless
+  the \ref cfg_dot_cleanup "DOT_CLEANUP" tag is set to `NO`.
+
+Here is an example of the use of the \c \\mermaid command.
+\code
+/** Sender class. Can be used to send a command to the server.
+ *  The receiver will acknowledge the command by calling Ack().
+ *  \mermaid
+ *    sequenceDiagram
+ *    Sender->>Receiver: Command()
+ *    Receiver-->>Sender: Ack()
+ *  \endmermaid
+ */
+class Sender
+{
+  public:
+    /** Acknowledgment from server */
+    void Ack(bool ok);
+};
+
+/** Receiver class. Can be used to receive and execute commands.
+ *  After execution of a command, the receiver will send an acknowledgment
+ *  \mermaid
+ *    sequenceDiagram
+ *    Receiver->>Sender: Command()
+ *    Sender-->>Receiver: Ack()
+ *  \endmermaid
+ */
+class Receiver
+{
+  public:
+    /** Execute a command on the server */
+    void Command(int commandId);
+};
+\endcode
+
+<hr>
 \section cmdstartuml \\startuml ['{'option[,option]'}'] ["caption"] [\<sizeindication\>=\<size\>]
 
   \addindex \\startuml
@@ -3590,7 +3716,7 @@ class Receiver
   PlantUML `@start...` command. This will look like `@start<engine>` where currently supported are
   the following `<engine>`s: `uml`, `bpm`, `wire`, `dot`, `ditaa`, `salt`, `math`, `latex`,
   `gantt`, `mindmap`, `wbs`, `yaml`, `creole`, `json`, `flow`, `board`, `git`, `hcl`, `regex`, `ebnf`,
-  `files`, `chen` and `chronology`.
+  `chart`, `nwdiag`, `packetdiag`, `project`, `sprites`, `files`, `chen` and `chronology`.
   By default the `<engine>` is `uml`. The `<engine>` can be specified as an option.
   Also the file to write the resulting image to can be specified by means of an option, see the
   description of the first (optional) argument for details.
@@ -3821,10 +3947,42 @@ class Receiver
   Ends a block that was started with \ref cmdmsc "\\msc".
 
 <hr>
+\section cmdendmermaid \\endmermaid
+
+  \addindex \\endmermaid
+  Ends a block that was started with \ref cmdmermaid "\\mermaid".
+
+<hr>
 \section cmdenduml \\enduml
 
   \addindex \\enduml
   Ends a block that was started with \ref cmdstartuml "\\startuml".
+
+<hr>
+\section cmdmermaidfile \\mermaidfile \<file\> ["caption"] [\<sizeindication\>=\<size\>]
+
+  \addindex \\mermaidfile
+  Inserts a Mermaid diagram from \<file\> into the documentation.
+
+  The first argument specifies the file name of the Mermaid source file.
+  Doxygen will look for files in the paths (or files) that you specified
+  after the \ref cfg_mermaidfile_dirs "MERMAIDFILE_DIRS" tag.
+  If the mermaid file is found it will be used as input for rendering.
+  The resulting image will be put into the correct output directory.
+  If the mermaid file name contains spaces you'll have to put quotes ("...") around it.
+
+  The second argument is optional and can be used to specify the caption
+  that is displayed below the image. This argument has to be specified
+  between quotes even if it does not contain any spaces. The quotes are
+  stripped before the caption is displayed.
+
+  The third argument is also optional and can be used to specify the
+  width or height of the image.
+  For a description of the possibilities see the paragraph
+  \ref image_sizeindicator "Size indication" with the
+  \ref cmdimage "\\image" command.
+
+  \sa section \ref cmdmermaid "\\mermaid".
 
 <hr>
 \section cmdplantumlfile \\plantumlfile \<file\> ["caption"] [\<sizeindication\>=\<size\>]

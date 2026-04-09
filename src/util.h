@@ -92,16 +92,64 @@ QCString getLanguageSpecificSeparator(SrcLangExt lang,bool classScope=FALSE);
 
 //--------------------------------------------------------------------
 
+struct LinkifyTextOptions
+{
+  public:
+    // === getters for optional params
+    const Definition *scope()          const { return m_scope; }
+    const FileDef *fileScope()         const { return m_fileScope; }
+    const Definition *self()           const { return m_self; }
+    const ArgumentList *argumentList() const { return m_al; }
+    bool  autoBreak()                  const { return m_autoBreak; }
+    bool  external()                   const { return m_external; }
+    bool  keepSpaces()                 const { return m_keepSpaces; }
+    int   indentLevel()                const { return m_indentLevel; }
+    size_t breakThreshold()            const { return m_breakThreshold; }
+
+    // === setters for optional params
+    LinkifyTextOptions & setScope(const Definition *scope)
+    { m_scope = scope; return *this; }
+
+    LinkifyTextOptions & setFileScope(const FileDef *fileScope)
+    { m_fileScope = fileScope; return *this; }
+
+    LinkifyTextOptions & setSelf(const Definition *self)
+    { m_self = self;  return *this;}
+
+    LinkifyTextOptions & setArgumentList(const ArgumentList *al)
+    { m_al = al; return *this; }
+
+    LinkifyTextOptions & setAutoBreak(bool autoBreak)
+    { m_autoBreak = autoBreak; return *this; }
+
+    LinkifyTextOptions & setExternal(bool external)
+    { m_external = external; return *this; }
+
+    LinkifyTextOptions & setKeepSpaces(bool keepSpaces)
+    { m_keepSpaces = keepSpaces; return *this; }
+
+    LinkifyTextOptions & setIndentLevel(int indentLevel)
+    { m_indentLevel = indentLevel; return *this; }
+
+    LinkifyTextOptions & setBreakThreshold(size_t breakThreshold)
+    { m_breakThreshold = breakThreshold; return *this; }
+
+  private:
+    // optional params with defaults
+    const Definition *  m_scope          = nullptr;
+    const FileDef *     m_fileScope      = nullptr;
+    const Definition *  m_self           = nullptr;
+    const ArgumentList *m_al             = nullptr;
+    bool                m_autoBreak      = false;
+    bool                m_external       = true;
+    bool                m_keepSpaces     = false;
+    int                 m_indentLevel    = 0;
+    size_t              m_breakThreshold = 30;
+};
+
 void linkifyText(const TextGeneratorIntf &ol,
-                 const Definition *scope,
-                 const FileDef *fileScope,
-                 const Definition *self,
                  const QCString &text,
-                 bool autoBreak=FALSE,
-                 bool external=TRUE,
-                 bool keepSpaces=FALSE,
-                 int indentLevel=0,
-                 size_t breakThreshold=30
+                 const LinkifyTextOptions &options
                 );
 
 QCString fileToString(const QCString &name,bool filter=FALSE,bool isSourceCode=FALSE);
@@ -423,7 +471,6 @@ struct ColoredImgDataItem
   const unsigned char *alpha;
 };
 
-void writeColoredImgData(const QCString &dir,ColoredImgDataItem data[]);
 QCString replaceColorMarkers(const QCString &str);
 
 bool copyFile(const QCString &src,const QCString &dest);

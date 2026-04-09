@@ -298,7 +298,7 @@ Go to the <a href="commands.html">next</a> section or return to the
  Enabling this option can be useful when feeding Doxygen a huge amount of source
  files, where putting all generated files in the same directory would otherwise
  cause performance problems for the file system.
- Adapt \c CREATE_SUBDIRS_LEVEL to control the number of sub-directories.
+ Adjust \c CREATE_SUBDIRS_LEVEL to control the number of sub-directories.
 ]]>
       </docs>
     </option>
@@ -2150,6 +2150,9 @@ doxygen -w html new_header.html new_footer.html new_stylesheet.css YourConfigFil
  <dt><code>$mathjax</code><dd>will be replaced with a links to
             the JavaScript and style sheets needed for the MathJax feature
             (or an empty string when \ref cfg_use_mathjax "USE_MATHJAX" is disabled).
+ <dt><code>$mermaidjs</code><dd>will be replaced with the script tag to load
+            mermaid.js for client-side diagram rendering (or an empty string
+            when \ref cfg_mermaid_render_mode "MERMAID_RENDER_MODE" is set to \c CLI).
  <dt><code>$relpath^</code><dd>
             If \ref cfg_create_subdirs "CREATE_SUBDIRS" is enabled, the command <code>$relpath^</code> can be
             used to produce a relative path to the root of the HTML output directory,
@@ -4245,6 +4248,64 @@ to be found in the default search path.
  The \c PLANTUMLFILE_DIRS tag can be used to specify one or more directories that
  contain PlantUml files that are included in the documentation (see the
  \ref cmdplantumlfile "\\plantumlfile" command).
+]]>
+      </docs>
+    </option>
+    <option type='string' id='MERMAID_PATH' format='filedir' defval=''>
+      <docs>
+<![CDATA[
+ When using Mermaid diagrams with CLI rendering, the \c MERMAID_PATH tag should be used to
+ specify the directory where the \c mmdc (Mermaid CLI) executable can be found.
+ If left blank, CLI-based rendering is disabled. For HTML output, client-side rendering
+ via JavaScript is used by default and does not require \c mmdc. For LaTeX/PDF output,
+ \c mmdc is required to pre-generate images.
+ Doxygen will generate a warning when CLI rendering is needed but \c mmdc is not available.
+]]>
+      </docs>
+    </option>
+    <option type='string' id='MERMAID_CONFIG_FILE' format='file' defval=''>
+      <docs>
+<![CDATA[
+ When using Mermaid diagrams, the \c MERMAID_CONFIG_FILE tag can be used to specify a
+ JSON configuration file for the Mermaid CLI tool (\c mmdc). This file can contain theme
+ settings and other Mermaid configuration options.
+]]>
+      </docs>
+    </option>
+    <option type='enum' id='MERMAID_RENDER_MODE' defval='AUTO'>
+      <docs>
+<![CDATA[
+ The \c MERMAID_RENDER_MODE tag selects how Mermaid diagrams are rendered.
+]]>
+      </docs>
+      <value name='AUTO' desc='(use client-side rendering for HTML and \c mmdc for LaTeX/PDF and other formats. If \c MERMAID_PATH is not set, non-HTML diagrams will produce a warning)'/>
+      <value name='CLI' desc='(use the \c mmdc tool to pre-generate images (requires \c Node.js and \c mermaid-js/mermaid-cli). Works for all output formats)'/>
+      <value name='CLIENT_SIDE' desc='(embed \c mermaid.js in HTML output for client-side rendering. Does not require \c mmdc but only works for HTML output)'/>
+    </option>
+    <option type='string' id='MERMAID_JS_URL' format='string'
+            defval='https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs'>
+      <docs>
+<![CDATA[
+ The \c MERMAID_JS_URL tag specifies the URL to load \c mermaid.js from when using
+ client-side rendering (\c MERMAID_RENDER_MODE is \c CLIENT_SIDE or \c AUTO).
+ The default points to the latest Mermaid v11 release on the jsDelivr CDN.
+ \par Examples:
+ - Latest v11 (default): \c 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs'
+ - Pinned version: \c 'https://cdn.jsdelivr.net/npm/mermaid@11.3.0/dist/mermaid.esm.min.mjs'
+ - Local copy: \c './mermaid.esm.min.mjs' (user must place file in HTML output directory)
+ \par
+ The default CDN URL requires internet access when viewing the generated documentation.
+ For offline use, download \c mermaid.esm.min.mjs and set this to a relative path,
+ or use \c MERMAID_RENDER_MODE=CLI to pre-generate images instead.
+]]>
+      </docs>
+    </option>
+    <option type='list' id='MERMAIDFILE_DIRS' format='dir'>
+      <docs>
+<![CDATA[
+ The \c MERMAIDFILE_DIRS tag can be used to specify one or more directories that
+ contain Mermaid files that are included in the documentation (see the
+ \ref cmdmermaidfile "\\mermaidfile" command).
 ]]>
       </docs>
     </option>

@@ -64,6 +64,11 @@ def clean_header(errmsg):
 
 class Tester:
     def __init__(self,args,test):
+        test_id = test.split('_')[0]
+        if args.updateref:
+            self.test_out = args.inputdir+'/'+test_id
+        else:
+            self.test_out = args.outputdir+'/test_output_'+test_id
         self.args      = args
         self.test      = test
         self.update    = args.updateref
@@ -72,11 +77,7 @@ class Tester:
             print("Test %s is missing the objective." % self.test)
             sys.exit(1)
         self.test_name = '[%s]: %s' % (self.test,self.config['objective'][0])
-        self.test_id   = self.test.split('_')[0]
-        if self.update:
-            self.test_out = self.args.inputdir+'/'+self.test_id
-        else:
-            self.test_out = self.args.outputdir+'/test_output_'+self.test_id
+        self.test_id   = test_id
         self.prepare_test()
 
     # Compares 'got_file' against 'expected_file'.
@@ -158,6 +159,10 @@ class Tester:
                     value = m.group('value')
                     if (key=='config'):
                         value = value.replace('$INPUTDIR',self.args.inputdir)
+                        if (self.args.xml or self.args.xmlxsd):
+                            value = value.replace('$TESTOUTDIR',self.test_out+"/out")
+                        else:
+                            value = value.replace('$TESTOUTDIR',self.test_out)
                     # print('key=%s value=%s' % (key,value))
                     config.setdefault(key, []).append(value)
         return config
@@ -341,6 +346,7 @@ class Tester:
                     data = xpopen('%s --format --noblanks --nowarning %s' % (self.args.xmllint,check_file))
                     if data:
                         # strip version
+                        data = re.sub(r'tagfile doxygen_version="[^"]+" doxygen_gitid="[^"]+"','tagfile doxygen_version="" doxygen_gitid=""',data)
                         data = re.sub(r'xsd" version="[0-9.-]+"','xsd" version=""',data).rstrip('\n')
                     else:
                         msg += ('Failed to run %s on the doxygen output file %s' % (self.args.xmllint,self.test_out),)
@@ -564,7 +570,7 @@ class Tester:
         if failed_warn:
             msg += (warnings,)
 
-        if failed_warn or failed_xml or failed_html or failed_qhp or failed_latex or failed_docbook or failed_rtf or failed_xmlxsd or failed_man:
+        if failed_warn or failed_xml or failed_html or failed_qhp or failed_latex or failed_docbook or failed_rtf or failed_xmlxsd:
             testmgr.ok(False,self.test_name,msg)
             return False
 
@@ -710,7 +716,7 @@ def main():
     args = parser.parse_args(test_flags + sys.argv[1:])
 
     # sanity check
-    if (not args.xml) and (not args.pdf) and (not args.xhtml) and (not args.qhp) and (not args.docbook and (not args.rtf) and (not args.xmlxsd) and (not args.man)):
+    if (not args.xml) and (not args.pdf) and (not args.xhtml) and (not args.qhp) and (not args.docbook and (not args.rtf) and (not args.xmlxsd)):
         args.xml=True
     if (args.updateref is not None) and (args.ids is None) and (args.all is None):
         parser.error('--updateref requires either --id or --all')

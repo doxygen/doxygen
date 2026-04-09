@@ -245,6 +245,8 @@ class MemberDef : public Definition
     virtual bool hasInlineSource() const = 0;
     virtual bool hasEnumValues() const = 0;
 
+    virtual bool isDocTransferDone() const = 0;
+
     virtual QCString sourceRefName() const = 0;
 
     virtual const MemberDef *templateMaster() const = 0;
@@ -337,6 +339,7 @@ class MemberDefMutable : public DefinitionMutable, public MemberDef
     virtual void setArgsString(const QCString &as) = 0;
     virtual void incrementFlowKeyWordCount() = 0;
     virtual void setEnumBaseType(const QCString &type) = 0;
+    virtual void setDocTransferDone() = 0;
 
     // relation to other members
     virtual void setReimplements(MemberDef *md) = 0;

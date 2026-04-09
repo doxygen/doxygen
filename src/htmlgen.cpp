@@ -325,6 +325,7 @@ static QCString substituteHtmlKeywords(const QCString &file,
   QCString searchCssJs;
   QCString searchBox;
   QCString mathJaxJs;
+  QCString mermaidJs;
   QCString extraCssText;
 
   QCString projectName = Config_getString(PROJECT_NAME);
@@ -600,6 +601,76 @@ static QCString substituteHtmlKeywords(const QCString &file,
     darkModeJs="<script type=\"text/javascript\" src=\"$relpath^darkmode_toggle.js\"></script>\n";
   }
 
+  QCString mermaidRenderMode = Config_getEnumAsString(MERMAID_RENDER_MODE);
+  if (mermaidRenderMode=="CLIENT_SIDE" || mermaidRenderMode=="AUTO")
+  {
+    QCString mermaidJsUrl = Config_getString(MERMAID_JS_URL);
+    mermaidJs =  "<script type=\"module\">\n"
+                 "import mermaid from '" + mermaidJsUrl + "';\n";
+    switch(Config_getEnum(HTML_COLORSTYLE))
+    {
+      case HTML_COLORSTYLE_t::LIGHT:
+        mermaidJs += "const theme = 'default';\n";
+        break;
+      case HTML_COLORSTYLE_t::DARK:
+        mermaidJs += "const theme = 'dark';\n";
+        break;
+      case HTML_COLORSTYLE_t::AUTO_LIGHT:
+      case HTML_COLORSTYLE_t::AUTO_DARK:
+        mermaidJs += "const theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'default';\n";
+        break;
+      case HTML_COLORSTYLE_t::TOGGLE:
+        mermaidJs += "const theme = DarkModeToggle.darkModeEnabled ? 'dark' : 'default'\n";
+        break;
+    }
+    mermaidJs += "mermaid.initialize({ startOnLoad: true, theme: theme });\n";
+    if (Config_getEnum(HTML_COLORSTYLE)==HTML_COLORSTYLE_t::TOGGLE)
+    {
+      mermaidJs +=
+      "(function() {\n"
+      "  const elementCode = '.mermaid';\n"
+      "  const loadMermaid = function(theme) {\n"
+      "    mermaid.initialize({theme})\n"
+      "    mermaid.init({theme}, document.querySelectorAll(elementCode))\n"
+      "  }\n"
+      "  const saveOriginalData = function() {\n"
+      "    return new Promise((resolve, reject) => {\n"
+      "      try {\n"
+      "        var els = document.querySelectorAll(elementCode), count = els.length;\n"
+      "        els.forEach(element => {\n"
+      "          element.setAttribute('data-original-code', element.innerHTML)\n"
+      "          count--\n"
+      "          if (count == 0) { resolve() }\n"
+      "        });\n"
+      "      } catch (error) { reject(error) }\n"
+      "    })\n"
+      "  }\n"
+      "  const resetProcessed = function(){\n"
+      "    return new Promise((resolve, reject) => {\n"
+      "      try {\n"
+      "        var els = document.querySelectorAll(elementCode), count = els.length;\n"
+      "        els.forEach(element => {\n"
+      "          if (element.getAttribute('data-original-code') != null) {\n"
+      "              element.removeAttribute('data-processed')\n"
+      "              element.innerHTML = element.getAttribute('data-original-code')\n"
+      "          }\n"
+      "          count--\n"
+      "          if(count == 0) { resolve() }\n"
+      "        });\n"
+      "      } catch (error) { reject(error) }\n"
+      "    })\n"
+      "  }\n"
+      "  saveOriginalData()\n"
+      "  const original = DarkModeToggle.enableDarkMode.bind(DarkModeToggle);\n"
+      "  DarkModeToggle.enableDarkMode = function(enable) {\n"
+      "      original(enable);\n"
+      "      resetProcessed().then(loadMermaid(enable ? 'dark' : 'default')).catch(console.error)\n"
+      "  };\n"
+      "})();\n";
+    }
+    mermaidJs += "</script>\n";
+  }
+
   if (hasCookie) // extend the $treeview tag to avoid breaking old files used with HTML_HEADER
   {
     treeViewCssJs+="<script type=\"text/javascript\" src=\"$relpath^cookie.js\"></script>\n";
@@ -625,6 +696,7 @@ static QCString substituteHtmlKeywords(const QCString &file,
     { "$searchbox",      [&]() -> QCString { return searchBox;      } },
     { "$search",         [&]() -> QCString { return searchCssJs;    } },
     { "$mathjax",        [&]() -> QCString { return mathJaxJs;      } },
+    { "$mermaidjs",      [&]() -> QCString { return mermaidJs;      } },
     { "$darkmode",       [&]() -> QCString { return darkModeJs;     } },
     { "$generatedby",    [&]() -> QCString { return generatedBy;    } },
     { "$extrastylesheet",[&]() -> QCString { return extraCssText;   } },
@@ -2093,7 +2165,7 @@ void HtmlGenerator::endClassDiagram(const ClassDiagram &d,
   endSectionSummary(m_t);
   startSectionContent(m_t,m_sectionCount);
   TextStream tt;
-  d.writeImage(tt,dir(),m_relPath,fileName);
+  d.writeImage(tt,dir(),m_relPath,fileName,true,true);
   if (!tt.empty())
   {
     m_t << " <div class=\"center\">\n";
@@ -3634,7 +3706,7 @@ void HtmlGenerator::writeInheritedSectionTitle(
   classLink=classLink+fn+a;
   classLink+=QCString("\">")+convertToHtml(name,FALSE)+"</a>";
   m_t << "<tr class=\"inherit_header " << id << "\">";
-  if (dynamicSections) 
+  if (dynamicSections)
   {
     m_t << "<td colspan=\"2\" onclick=\"javascript:dynsection.toggleInherit('" << id << "')\">";
     m_t << "<span class=\"dynarrow\"><span class=\"arrowhead closed\"></span></span>";

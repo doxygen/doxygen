@@ -890,15 +890,17 @@ bool leftScopeMatch(const QCString &scope, const QCString &name)
 }
 
 
-void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
-    const FileDef *fileScope,const Definition *self,
-    const QCString &text, bool autoBreak,bool external,
-    bool keepSpaces,int indentLevel,size_t breakThreshold)
+void linkifyText(const TextGeneratorIntf &out, const QCString &text,
+    const LinkifyTextOptions &options)
 {
+  const Definition *scope = options.scope();
+  const FileDef *fileScope = options.fileScope();
+  const Definition *self = options.self();
   AUTO_TRACE("scope={} fileScope={} text={} autoBreak={} external={} keepSpaces={} indentLevel={}",
       scope?scope->name():"",fileScope?fileScope->name():"",
-      text,autoBreak,external,keepSpaces,indentLevel);
+      text,options.autoBreak(),options.external(),options.keepSpaces(),options.indentLevel());
   if (text.isEmpty()) return;
+
   //printf("linkify='%s'\n",qPrint(text));
   std::string_view txtStr=text.view();
   size_t strLen = txtStr.length();
@@ -911,7 +913,7 @@ void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
   //printf("linkifyText scope=%s fileScope=%s strtxt=%s strlen=%zu external=%d\n",
   //    scope ? qPrint(scope->name()):"<none>",
   //    fileScope ? qPrint(fileScope->name()) : "<none>",
-  //    qPrint(txtStr),strLen,external);
+  //    qPrint(txtStr),strLen,options.external());
   size_t index=0;
   size_t skipIndex=0;
   size_t floatingIndex=0;
@@ -924,7 +926,7 @@ void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
     if (newIndex>0 && txtStr.at(newIndex-1)=='0') // ignore hex numbers (match x00 in 0x00)
     {
       std::string_view part = txtStr.substr(skipIndex,newIndex+matchLen-skipIndex);
-      out.writeString(part,keepSpaces);
+      out.writeString(part,options.keepSpaces());
       skipIndex=index=newIndex+matchLen;
       continue;
     }
@@ -937,8 +939,9 @@ void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
       if (txtStr.at(i)=='\\') i++; // skip next character it is escaped
     }
 
-    //printf("floatingIndex=%d strlen=%d autoBreak=%d\n",floatingIndex,strLen,autoBreak);
-    if (strLen>breakThreshold+5 && floatingIndex>breakThreshold && autoBreak) // try to insert a split point
+    //printf("floatingIndex=%d strlen=%d autoBreak=%d\n",floatingIndex,strLen,options.autoBreak());
+    if (strLen>options.breakThreshold()+5 && floatingIndex>options.breakThreshold() &&
+        options.autoBreak()) // try to insert a split point
     {
       std::string_view splitText = txtStr.substr(skipIndex,newIndex-skipIndex);
       size_t splitLength = splitText.length();
@@ -954,29 +957,42 @@ void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
       if (i!=std::string::npos) // add a link-break at i in case of Html output
       {
         std::string_view part1 = splitText.substr(0,i+offset);
-        out.writeString(part1,keepSpaces);
-        out.writeBreak(indentLevel==0 ? 0 : indentLevel+1);
+        out.writeString(part1,options.keepSpaces());
+        out.writeBreak(options.indentLevel()==0 ? 0 : options.indentLevel()+1);
         std::string_view part2 = splitText.substr(i+offset);
-        out.writeString(part2,keepSpaces);
+        out.writeString(part2,options.keepSpaces());
         floatingIndex=splitLength-i-offset+matchLen;
       }
       else
       {
-        out.writeString(splitText,keepSpaces);
+        out.writeString(splitText,options.keepSpaces());
       }
     }
     else
     {
       //ol.docify(txtStr.mid(skipIndex,newIndex-skipIndex));
       std::string_view part = txtStr.substr(skipIndex,newIndex-skipIndex);
-      out.writeString(part,keepSpaces);
+      out.writeString(part,options.keepSpaces());
     }
     // get word from string
     std::string_view word=txtStr.substr(newIndex,matchLen);
     QCString matchWord = substitute(substitute(word,"\\","::"),".","::");
+    bool found=false;
+    // check for argument name
+    if (options.argumentList())
+    {
+      for (auto it1 = options.argumentList()->begin(); it1!=options.argumentList()->end(); ++it1)
+      {
+        if (it1->name == matchWord)
+        {
+          out.writeString(matchWord.data(),options.keepSpaces());
+          found = true;
+          break;
+        }
+      }
+    }
     //printf("linkifyText word=%s matchWord=%s scope=%s\n",
     //    qPrint(word),qPrint(matchWord),scope ? qPrint(scope->name()) : "<none>");
-    bool found=FALSE;
     if (!insideString)
     {
       const ClassDef     *cd=nullptr;
@@ -989,7 +1005,7 @@ void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
       const MemberDef *typeDef = resolver.getTypedef();
       if (typeDef) // First look at typedef then class, see bug 584184.
       {
-        if (external ? typeDef->isLinkable() : typeDef->isLinkableInProject())
+        if (options.external() ? typeDef->isLinkable() : typeDef->isLinkableInProject())
         {
           if (typeDef->getOuterScope()!=self)
           {
@@ -1003,7 +1019,7 @@ void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
         }
       }
       auto writeCompoundName = [&](const auto *cd_) {
-        if (external ? cd_->isLinkable() : cd_->isLinkableInProject())
+        if (options.external() ? cd_->isLinkable() : cd_->isLinkableInProject())
         {
           if (self==nullptr || cd_->qualifiedName()!=self->qualifiedName())
           {
@@ -1062,7 +1078,7 @@ void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
         GetDefInput input(scopeName,matchWord,QCString());
         GetDefResult result = getDefs(input);
         if (result.found && result.md &&
-            (external ? result.md->isLinkable() : result.md->isLinkableInProject())
+            (options.external() ? result.md->isLinkable() : result.md->isLinkableInProject())
            )
         {
           //printf("Found ref scope=%s\n",d ? qPrint(d->name()) : "<global>");
@@ -1093,7 +1109,7 @@ void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
 
     if (!found) // add word to the result
     {
-      out.writeString(word,keepSpaces);
+      out.writeString(word,options.keepSpaces());
     }
     // set next start point in the string
     //printf("index=%d/%d\n",index,txtStr.length());
@@ -1102,7 +1118,7 @@ void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
   // add last part of the string to the result.
   //ol.docify(txtStr.right(txtStr.length()-skipIndex));
   std::string_view lastPart = txtStr.substr(skipIndex);
-  out.writeString(lastPart,keepSpaces);
+  out.writeString(lastPart,options.keepSpaces());
 }
 
 void writeMarkerList(OutputList &ol,const std::string &markerText,size_t numMarkers,
@@ -1188,15 +1204,20 @@ void writeExamples(OutputList &ol,const ExampleList &list)
 QCString inlineArgListToDoc(const ArgumentList &al)
 {
   QCString paramDocs;
-  if (al.hasDocumentation())
+  if (al.hasDocumentation(true))
   {
     for (const Argument &a : al)
     {
-      if (a.hasDocumentation())
+      if (a.hasDocumentation(true))
       {
         QCString docsWithoutDir = a.docs;
         QCString direction = extractDirection(docsWithoutDir);
-        paramDocs+=" \\ilinebr @param"+direction+" "+a.name+" "+docsWithoutDir;
+        QCString name = a.name;
+        if (name.isEmpty())
+        {
+          name = "-";
+        }
+        paramDocs+=" \\ilinebr @param"+direction+" "+name+" "+docsWithoutDir;
       }
     }
   }
@@ -2931,6 +2952,13 @@ FileDef *findFileDef(const FileNameLinkedMap *fnMap,const QCString &n,bool &ambi
       {
         FileDef *fd = fd_p.get();
         QCString fdStripPath = stripFromIncludePath(fd->getPath());
+        if (fdStripPath == pathStripped)
+        {
+          // if the stripped paths are equal, we have a perfect match
+          count = 1;
+          lastMatch=fd;
+          break;
+        }
         if (path.isEmpty() ||
             (!pathStripped.isEmpty() && fdStripPath.endsWith(pathStripped)) ||
             (pathStripped.isEmpty() && fdStripPath.isEmpty()))
@@ -5448,7 +5476,7 @@ void writeTypeConstraints(OutputList &ol,const Definition *d,const ArgumentList 
     ol.parseText(a.name);
     ol.endConstraintParam();
     ol.startConstraintType();
-    linkifyText(TextGeneratorOLImpl(ol),d,nullptr,nullptr,a.type);
+    linkifyText(TextGeneratorOLImpl(ol),a.type,LinkifyTextOptions().setScope(d));
     ol.endConstraintType();
     ol.startConstraintDocs();
     ol.generateDoc(d->docFile(),
@@ -5776,28 +5804,6 @@ QCString externalRef(const QCString &relPath,const QCString &ref,bool href)
     result = relPath;
   }
   return result;
-}
-
-/** Writes the intensity only bitmap represented by \a data as an image to
- *  directory \a dir using the colors defined by HTML_COLORSTYLE_*.
- */
-void writeColoredImgData(const QCString &dir,ColoredImgDataItem data[])
-{
-  int hue   = Config_getInt(HTML_COLORSTYLE_HUE);
-  int sat   = Config_getInt(HTML_COLORSTYLE_SAT);
-  int gamma = Config_getInt(HTML_COLORSTYLE_GAMMA);
-  while (data->name)
-  {
-    QCString fileName = dir+"/"+data->name;
-    ColoredImage img(data->width,data->height,data->content,data->alpha,
-                     sat,hue,gamma);
-    if (!img.save(fileName))
-    {
-      fprintf(stderr,"Warning: Cannot open file %s for writing\n",data->name);
-    }
-    Doxygen::indexList->addImageFile(data->name);
-    data++;
-  }
 }
 
 /** Replaces any markers of the form \#\#AA in input string \a str
