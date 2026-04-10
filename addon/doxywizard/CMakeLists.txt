@@ -225,12 +225,3 @@ else()
 endif()
 
 install(TARGETS doxywizard DESTINATION bin)
-
-add_custom_command(TARGET doxywizard POST_BUILD
-  COMMAND ${CMAKE_COMMAND} -E echo "Cleaning up .qm files (embedded in executable)..."
-)
-foreach(qm_file ${doxywizard_QM_FILES})
-  add_custom_command(TARGET doxywizard POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E remove -f ${qm_file}
-  )
-endforeach()
