@@ -143,14 +143,6 @@
         <translation>未選擇專案標誌。</translation>
     </message>
     <message>
-        <source>Sorry, cannot find file(%1);</source>
-        <translation>抱歉，找不到檔案(%1);</translation>
-    </message>
-    <message>
-        <source>Sorry, no preview available (%1);</source>
-        <translation>抱歉，無法預覽(%1);</translation>
-    </message>
-    <message>
         <source>Select file</source>
         <translation>選擇檔案</translation>
     </message>
@@ -1741,14 +1733,6 @@ Reason given: %2</source>
         <translation>未選擇專案標誌。</translation>
     </message>
     <message>
-        <source>Sorry, cannot find file(%1);</source>
-        <translation>抱歉，找不到檔案(%1);</translation>
-    </message>
-    <message>
-        <source>Sorry, no preview available (%1);</source>
-        <translation>抱歉，無法預覽(%1);</translation>
-    </message>
-    <message>
         <source>Select source directory</source>
         <translation>選擇原始碼目錄</translation>
     </message>
@@ -1975,13 +1959,16 @@ Reason given: %2</source>
         <source>Topics</source>
         <translation>主題</translation>
     </message>
+</context>
+<context>
+    <name>Messages</name>
     <message>
         <source>Sorry, cannot find file(%1);</source>
-        <translation>抱歉，找不到檔案(%1);</translation>
+        <translation>抱歉，找不到檔案 %1。</translation>
     </message>
     <message>
         <source>Sorry, no preview available (%1);</source>
-        <translation>抱歉，無預覽可用(%1);</translation>
+        <translation>抱歉，%1 無法預覽。</translation>
     </message>
 </context>
 </TS>

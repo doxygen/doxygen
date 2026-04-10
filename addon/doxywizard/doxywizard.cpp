@@ -52,6 +52,16 @@
 // globally accessible variables
 bool DoxygenWizard::debugFlag = false;
 
+QString DoxygenWizard::msgFileNotFound(const QString &fileName)
+{
+  return QCoreApplication::translate("Messages", "Sorry, cannot find file(%1);").arg(fileName);
+}
+
+QString DoxygenWizard::msgNoPreviewAvailable(const QString &fileName)
+{
+  return QCoreApplication::translate("Messages", "Sorry, no preview available (%1);").arg(fileName);
+}
+
 const int messageTimeout = 5000; //!< status bar message timeout in milliseconds.
 
 #define APPQT(x) QString::fromLatin1("<qt><pre>") + x + QString::fromLatin1("</pre></qt>")

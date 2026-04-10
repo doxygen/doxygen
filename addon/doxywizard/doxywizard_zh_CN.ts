@@ -156,16 +156,6 @@
         <translation>未选择项目logo。</translation>
     </message>
     <message>
-        <location filename="inputstring.cpp" line="153"/>
-        <source>Sorry, cannot find file(%1);</source>
-        <translation>抱歉，找不到文件(%1);</translation>
-    </message>
-    <message>
-        <location filename="inputstring.cpp" line="164"/>
-        <source>Sorry, no preview available (%1);</source>
-        <translation>抱歉，无法预览(%1);</translation>
-    </message>
-    <message>
         <location filename="inputstring.cpp" line="190"/>
         <source>Select file</source>
         <translation>选择文件</translation>
@@ -1835,18 +1825,6 @@ Reason given: %2</source>
         <translation>未选择项目 logo。</translation>
     </message>
     <message>
-        <location filename="wizard.cpp" line="623"/>
-        <location filename="wizard.cpp" line="732"/>
-        <source>Sorry, cannot find file(%1);</source>
-        <translation>抱歉，找不到文件(%1);</translation>
-    </message>
-    <message>
-        <location filename="wizard.cpp" line="634"/>
-        <location filename="wizard.cpp" line="743"/>
-        <source>Sorry, no preview available (%1);</source>
-        <translation>抱歉，无法预览(%1);</translation>
-    </message>
-    <message>
         <location filename="wizard.cpp" line="645"/>
         <source>Select source directory</source>
         <translation>选择源目录</translation>
@@ -2129,13 +2107,16 @@ Reason given: %2</source>
         <source>Topics</source>
         <translation>主题</translation>
     </message>
+</context>
+<context>
+    <name>Messages</name>
     <message>
         <source>Sorry, cannot find file(%1);</source>
-        <translation>抱歉，找不到文件(%1);</translation>
+        <translation>抱歉，找不到文件 %1。</translation>
     </message>
     <message>
         <source>Sorry, no preview available (%1);</source>
-        <translation>抱歉，无预览可用(%1);</translation>
+        <translation>抱歉，%1 无法预览。</translation>
     </message>
 </context>
 </TS>

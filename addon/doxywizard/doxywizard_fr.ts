@@ -143,14 +143,6 @@
         <translation>Aucun logo de projet sélectionné.</translation>
     </message>
     <message>
-        <source>Sorry, cannot find file(%1);</source>
-        <translation>Désolé, impossible de trouver le fichier(%1);</translation>
-    </message>
-    <message>
-        <source>Sorry, no preview available (%1);</source>
-        <translation>Désolé, aucun aperçu disponible (%1);</translation>
-    </message>
-    <message>
         <source>Select file</source>
         <translation>Sélectionner un fichier</translation>
     </message>
@@ -799,14 +791,6 @@ Raison donnée : %2</translation>
         <translation>Aucun logo de projet sélectionné.</translation>
     </message>
     <message>
-        <source>Sorry, cannot find file(%1);</source>
-        <translation>Désolé, impossible de trouver le fichier(%1);</translation>
-    </message>
-    <message>
-        <source>Sorry, no preview available (%1);</source>
-        <translation>Désolé, aucun aperçu disponible (%1);</translation>
-    </message>
-    <message>
         <source>Select source directory</source>
         <translation>Sélectionner le répertoire source</translation>
     </message>
@@ -1033,13 +1017,16 @@ Raison donnée : %2</translation>
         <source>Topics</source>
         <translation>Sujets</translation>
     </message>
+</context>
+<context>
+    <name>Messages</name>
     <message>
         <source>Sorry, cannot find file(%1);</source>
-        <translation>Désolé, impossible de trouver le fichier(%1);</translation>
+        <translation>Désolé, le fichier %1 est introuvable.</translation>
     </message>
     <message>
         <source>Sorry, no preview available (%1);</source>
-        <translation>Désolé, aucun aperçu disponible (%1);</translation>
+        <translation>Désolé, aucun aperçu disponible pour %1.</translation>
     </message>
 </context>
 </TS>

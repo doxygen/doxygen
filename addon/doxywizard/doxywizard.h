@@ -131,5 +131,7 @@ class DoxygenWizard
 {
   public:
     static bool debugFlag;
+    static QString msgFileNotFound(const QString &fileName);
+    static QString msgNoPreviewAvailable(const QString &fileName);
 };
 #endif

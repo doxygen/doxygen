@@ -143,14 +143,6 @@
         <translation>No se ha seleccionado logo del proyecto.</translation>
     </message>
     <message>
-        <source>Sorry, cannot find file(%1);</source>
-        <translation>Lo siento, no se puede encontrar el archivo(%1);</translation>
-    </message>
-    <message>
-        <source>Sorry, no preview available (%1);</source>
-        <translation>Lo siento, vista previa no disponible(%1);</translation>
-    </message>
-    <message>
         <source>Select file</source>
         <translation>Seleccionar archivo</translation>
     </message>
@@ -799,14 +791,6 @@ Razón dada: %2</translation>
         <translation>No se ha seleccionado logo del proyecto.</translation>
     </message>
     <message>
-        <source>Sorry, cannot find file(%1);</source>
-        <translation>Lo siento, no se puede encontrar el archivo(%1);</translation>
-    </message>
-    <message>
-        <source>Sorry, no preview available (%1);</source>
-        <translation>Lo siento, vista previa no disponible(%1);</translation>
-    </message>
-    <message>
         <source>Select source directory</source>
         <translation>Seleccionar directorio fuente</translation>
     </message>
@@ -1033,13 +1017,16 @@ Razón dada: %2</translation>
         <source>Topics</source>
         <translation>Temas</translation>
     </message>
+</context>
+<context>
+    <name>Messages</name>
     <message>
         <source>Sorry, cannot find file(%1);</source>
-        <translation>Lo siento, no se puede encontrar el archivo(%1);</translation>
+        <translation>Lo siento, no se puede encontrar el archivo %1.</translation>
     </message>
     <message>
         <source>Sorry, no preview available (%1);</source>
-        <translation>Lo siento, vista previa no disponible(%1);</translation>
+        <translation>Lo siento, no hay vista previa disponible para %1.</translation>
     </message>
 </context>
 </TS>

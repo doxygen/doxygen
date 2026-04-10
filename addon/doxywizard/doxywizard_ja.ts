@@ -143,14 +143,6 @@
         <translation>プロジェクトロゴが選択されていません。</translation>
     </message>
     <message>
-        <source>Sorry, cannot find file(%1);</source>
-        <translation>申し訳ありません、ファイルが見つかりません(%1);</translation>
-    </message>
-    <message>
-        <source>Sorry, no preview available (%1);</source>
-        <translation>申し訳ありません、プレビューは利用できません(%1);</translation>
-    </message>
-    <message>
         <source>Select file</source>
         <translation>ファイルを選択</translation>
     </message>
@@ -799,14 +791,6 @@ Reason given: %2</source>
         <translation>プロジェクトロゴが選択されていません。</translation>
     </message>
     <message>
-        <source>Sorry, cannot find file(%1);</source>
-        <translation>申し訳ありません、ファイルが見つかりません(%1);</translation>
-    </message>
-    <message>
-        <source>Sorry, no preview available (%1);</source>
-        <translation>申し訳ありません、プレビューは利用できません(%1);</translation>
-    </message>
-    <message>
         <source>Select source directory</source>
         <translation>ソースディレクトリを選択</translation>
     </message>
@@ -1033,13 +1017,16 @@ Reason given: %2</source>
         <source>Topics</source>
         <translation>トピック</translation>
     </message>
+</context>
+<context>
+    <name>Messages</name>
     <message>
         <source>Sorry, cannot find file(%1);</source>
-        <translation>申し訳ありません、ファイルが見つかりません(%1);</translation>
+        <translation>申し訳ありません、ファイル %1 が見つかりません。</translation>
     </message>
     <message>
         <source>Sorry, no preview available (%1);</source>
-        <translation>申し訳ありません、プレビューは利用できません(%1);</translation>
+        <translation>申し訳ありません、%1 のプレビューは利用できません。</translation>
     </message>
 </context>
 </TS>

@@ -620,7 +620,7 @@ void Step1::selectProjectIcon()
     QFile Fout(iconName);
     if(!Fout.exists())
     {
-      m_projIconLab->setText(tr("Sorry, cannot find file(%1);").arg(iconName));
+      m_projIconLab->setText(DoxygenWizard::msgFileNotFound(iconName));
     }
     else
     {
@@ -631,7 +631,7 @@ void Step1::selectProjectIcon()
       }
       else
       {
-        m_projIconLab->setText(tr("Sorry, no preview available (%1);").arg(iconName));
+        m_projIconLab->setText(DoxygenWizard::msgNoPreviewAvailable(iconName));
       }
     }
   }
@@ -729,7 +729,7 @@ void Step1::init()
     QFile Fout(iconName);
     if(!Fout.exists())
     {
-      m_projIconLab->setText(tr("Sorry, cannot find file(%1);").arg(iconName));
+      m_projIconLab->setText(DoxygenWizard::msgFileNotFound(iconName));
     }
     else
     {
@@ -740,7 +740,7 @@ void Step1::init()
       }
       else
       {
-        m_projIconLab->setText(tr("Sorry, no preview available (%1);").arg(iconName));
+        m_projIconLab->setText(DoxygenWizard::msgNoPreviewAvailable(iconName));
       }
     }
   }

@@ -143,14 +143,6 @@
         <translation>선택된 프로젝트 로고가 없습니다.</translation>
     </message>
     <message>
-        <source>Sorry, cannot find file(%1);</source>
-        <translation>죄송합니다, 파일을 찾을 수 없습니다(%1);</translation>
-    </message>
-    <message>
-        <source>Sorry, no preview available (%1);</source>
-        <translation>죄송합니다, 미리보기를 사용할 수 없습니다(%1);</translation>
-    </message>
-    <message>
         <source>Select file</source>
         <translation>파일 선택</translation>
     </message>
@@ -799,14 +791,6 @@ Reason given: %2</source>
         <translation>선택된 프로젝트 로고가 없습니다.</translation>
     </message>
     <message>
-        <source>Sorry, cannot find file(%1);</source>
-        <translation>죄송합니다, 파일을 찾을 수 없습니다(%1);</translation>
-    </message>
-    <message>
-        <source>Sorry, no preview available (%1);</source>
-        <translation>죄송합니다, 미리보기를 사용할 수 없습니다(%1);</translation>
-    </message>
-    <message>
         <source>Select source directory</source>
         <translation>소스 디렉토리 선택</translation>
     </message>
@@ -1033,13 +1017,16 @@ Reason given: %2</source>
         <source>Topics</source>
         <translation>주제</translation>
     </message>
+</context>
+<context>
+    <name>Messages</name>
     <message>
         <source>Sorry, cannot find file(%1);</source>
-        <translation>죄송합니다, 파일을 찾을 수 없습니다(%1);</translation>
+        <translation>죄송합니다, %1 파일을 찾을 수 없습니다.</translation>
     </message>
     <message>
         <source>Sorry, no preview available (%1);</source>
-        <translation>죄송합니다, 미리보기를 사용할 수 없습니다(%1);</translation>
+        <translation>죄송합니다, %1의 미리보기를 사용할 수 없습니다.</translation>
     </message>
 </context>
 </TS>

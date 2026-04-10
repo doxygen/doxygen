@@ -143,14 +143,6 @@
         <translation>Логотип проекта не выбран.</translation>
     </message>
     <message>
-        <source>Sorry, cannot find file(%1);</source>
-        <translation>Извините, не удалось найти файл(%1);</translation>
-    </message>
-    <message>
-        <source>Sorry, no preview available (%1);</source>
-        <translation>Извините, предпросмотр недоступен(%1);</translation>
-    </message>
-    <message>
         <source>Select file</source>
         <translation>Выбрать файл</translation>
     </message>
@@ -799,14 +791,6 @@ Reason given: %2</source>
         <translation>Логотип проекта не выбран.</translation>
     </message>
     <message>
-        <source>Sorry, cannot find file(%1);</source>
-        <translation>Извините, не удалось найти файл(%1);</translation>
-    </message>
-    <message>
-        <source>Sorry, no preview available (%1);</source>
-        <translation>Извините, предпросмотр недоступен(%1);</translation>
-    </message>
-    <message>
         <source>Select source directory</source>
         <translation>Выбрать каталог исходного кода</translation>
     </message>
@@ -1033,13 +1017,16 @@ Reason given: %2</source>
         <source>Topics</source>
         <translation>Темы</translation>
     </message>
+</context>
+<context>
+    <name>Messages</name>
     <message>
         <source>Sorry, cannot find file(%1);</source>
-        <translation>Извините, не удалось найти файл(%1);</translation>
+        <translation>Извините, файл %1 не найден.</translation>
     </message>
     <message>
         <source>Sorry, no preview available (%1);</source>
-        <translation>Извините, предпросмотр недоступен(%1);</translation>
+        <translation>Извините, предпросмотр для %1 недоступен.</translation>
     </message>
 </context>
 </TS>
