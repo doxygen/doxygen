@@ -404,10 +404,12 @@ void RTFDocVisitor::operator()(const DocVerbatim &s)
     case DocVerbatim::Mermaid:
       if (Config_getBool(MERMAID_RENDER_MODE)!=MERMAID_RENDER_MODE_t::CLIENT_SIDE)
       {
-        QCString rtfOutput = Config_getString(RTF_OUTPUT);
-        QCString baseName = MermaidManager::instance().writeMermaidSource(
-                       rtfOutput,s.exampleFile(),s.text(),MermaidManager::OutputFormat::Bitmap,
-                       s.srcFile(),s.srcLine());
+        auto rtfOutput    = Config_getString(RTF_OUTPUT);
+        auto outputFormat = MermaidManager::OutputFormat::RTF;
+        auto imageFormat  = MermaidManager::convertToImageFormat(outputFormat);
+        auto baseName     = MermaidManager::instance().writeMermaidSource(
+                              rtfOutput,s.exampleFile(),s.text(),imageFormat,
+                              s.srcFile(),s.srcLine());
         writeMermaidFile(baseName, s.hasCaption());
         visitChildren(s);
         includePicturePostRTF(true, s.hasCaption());
@@ -1337,12 +1339,14 @@ void RTFDocVisitor::operator()(const DocMermaidFile &df)
   DBG_RTF("{\\comment RTFDocVisitor::operator()(const DocMermaidFile &)}\n");
   if (Config_getBool(MERMAID_RENDER_MODE)==MERMAID_RENDER_MODE_t::CLIENT_SIDE) return;
   if (!Config_getBool(DOT_CLEANUP)) copyFile(df.file(),Config_getString(RTF_OUTPUT)+"/"+stripPath(df.file()));
-  QCString rtfOutput = Config_getString(RTF_OUTPUT);
   std::string inBuf;
   readInputFile(df.file(),inBuf);
-  QCString baseName = MermaidManager::instance().writeMermaidSource(
-                       rtfOutput,QCString(),inBuf,MermaidManager::OutputFormat::Bitmap,
-                       df.srcFile(),df.srcLine());
+  auto rtfOutput    = Config_getString(RTF_OUTPUT);
+  auto outputFormat = MermaidManager::OutputFormat::RTF;
+  auto imageFormat  = MermaidManager::convertToImageFormat(outputFormat);
+  auto baseName     = MermaidManager::instance().writeMermaidSource(
+                        rtfOutput,QCString(),inBuf,imageFormat,
+                        df.srcFile(),df.srcLine());
   writeMermaidFile(baseName, df.hasCaption());
   visitChildren(df);
   includePicturePostRTF(true, df.hasCaption());
@@ -1799,8 +1803,11 @@ void RTFDocVisitor::writePlantUMLFile(const QCString &fileName, bool hasCaption)
 void RTFDocVisitor::writeMermaidFile(const QCString &fileName, bool hasCaption)
 {
   if (Config_getBool(MERMAID_RENDER_MODE)==MERMAID_RENDER_MODE_t::CLIENT_SIDE) return;
-  QCString baseName=makeBaseName(fileName,".mmd");
-  QCString outDir = Config_getString(RTF_OUTPUT);
-  MermaidManager::instance().generateMermaidOutput(fileName,outDir,MermaidManager::OutputFormat::Bitmap,false);
-  includePicturePreRTF(baseName + ".png", true, hasCaption);
+  auto baseName     = makeBaseName(fileName,".mmd");
+  auto outDir       = Config_getString(RTF_OUTPUT);
+  auto outputFormat = MermaidManager::OutputFormat::RTF;
+  auto imageFormat  = MermaidManager::convertToImageFormat(outputFormat);
+  auto imgExt       = MermaidManager::imageExtension(imageFormat);
+  MermaidManager::instance().generateMermaidOutput(fileName,outDir,imageFormat,false);
+  includePicturePreRTF(baseName + "." + imgExt, true, hasCaption);
 }
