@@ -159,10 +159,12 @@ set(DOXYWIZARD_TRANSLATION_FILES
 
 find_package(Qt6LinguistTools QUIET)
 if(Qt6LinguistTools_FOUND)
+  set_source_files_properties(${DOXYWIZARD_TRANSLATION_FILES} PROPERTIES OUTPUT_LOCATION ${CMAKE_CURRENT_BINARY_DIR})
   qt6_add_translation(doxywizard_QM_FILES ${DOXYWIZARD_TRANSLATION_FILES})
 else()
   find_package(Qt5LinguistTools QUIET)
   if(Qt5LinguistTools_FOUND)
+    set_source_files_properties(${DOXYWIZARD_TRANSLATION_FILES} PROPERTIES OUTPUT_LOCATION ${CMAKE_CURRENT_BINARY_DIR})
     qt5_add_translation(doxywizard_QM_FILES ${DOXYWIZARD_TRANSLATION_FILES})
   else()
     set(doxywizard_QM_FILES)
@@ -170,19 +172,18 @@ else()
   endif()
 endif()
 
+set(TRANSLATIONS_QRC_CONTENT "<!DOCTYPE RCC>\n<RCC version=\"1.0\">\n    <qresource prefix=\"/translations\">\n")
 foreach(qm_file ${doxywizard_QM_FILES})
   get_filename_component(qm_name ${qm_file} NAME)
-  set(qm_dest ${CMAKE_CURRENT_SOURCE_DIR}/${qm_name})
-  add_custom_command(
-    OUTPUT ${qm_dest}
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different ${qm_file} ${qm_dest}
-    DEPENDS ${qm_file}
-    COMMENT "Copying ${qm_name} to source directory for resource embedding"
-  )
-  list(APPEND doxywizard_QM_COPIED ${qm_dest})
+  string(APPEND TRANSLATIONS_QRC_CONTENT "        <file>${qm_name}</file>\n")
 endforeach()
+string(APPEND TRANSLATIONS_QRC_CONTENT "    </qresource>\n</RCC>\n")
 
-qt_add_resources(doxywizard_TRANSLATION_RESOURCES translations.qrc)
+file(GENERATE OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/translations.qrc
+  CONTENT ${TRANSLATIONS_QRC_CONTENT}
+)
+
+qt_add_resources(doxywizard_TRANSLATION_RESOURCES ${CMAKE_CURRENT_BINARY_DIR}/translations.qrc)
 
 add_executable(doxywizard WIN32
 config_msg.cpp
@@ -203,7 +204,6 @@ ${doxywizard_MOC}
 ${doxywizard_RESOURCES_RCC}
 ${doxywizard_TRANSLATION_RESOURCES}
 ${doxywizard_QM_FILES}
-${doxywizard_QM_COPIED}
 ${PROJECT_SOURCE_DIR}/templates/icon/doxygen.rc
 )
 
@@ -225,3 +225,12 @@ else()
 endif()
 
 install(TARGETS doxywizard DESTINATION bin)
+
+add_custom_command(TARGET doxywizard POST_BUILD
+  COMMAND ${CMAKE_COMMAND} -E echo "Cleaning up .qm files (embedded in executable)..."
+)
+foreach(qm_file ${doxywizard_QM_FILES})
+  add_custom_command(TARGET doxywizard POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E remove -f ${qm_file}
+  )
+endforeach()
