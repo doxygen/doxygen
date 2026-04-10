@@ -1,4 +1,5 @@
 #include "optiontranslations.h"
+#include "doxywizard.h"
 #include <QCoreApplication>
 
 #define TR_NOOP(x) QT_TR_NOOP(x)
@@ -365,8 +366,21 @@ void OptionTranslations::initTranslations()
     
     for (int i = 0; s_optionTranslations[i].key != nullptr; ++i)
     {
-        m_translations.insert(QString::fromLatin1(s_optionTranslations[i].key),
-                              tr(s_optionTranslations[i].text));
+        QString key = QString::fromLatin1(s_optionTranslations[i].key);
+        QString translation;
+        if (key == QLatin1String("INPUT"))
+        {
+            translation = DoxygenWizard::msgInputTopic();
+        }
+        else if (key == QLatin1String("SOURCE_BROWSER"))
+        {
+            translation = DoxygenWizard::msgSourceBrowserTopic();
+        }
+        else
+        {
+            translation = tr(s_optionTranslations[i].text);
+        }
+        m_translations.insert(key, translation);
     }
     m_initialized = true;
 }

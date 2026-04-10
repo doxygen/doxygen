@@ -15,92 +15,6 @@
         <source>Error</source>
         <translation>错误</translation>
     </message>
-    <message>
-        <location filename="expert.cpp" line="105"/>
-        <source>Previous</source>
-        <translation>上一个</translation>
-    </message>
-    <message>
-        <location filename="expert.cpp" line="107"/>
-        <source>Next</source>
-        <translation>下一个</translation>
-    </message>
-    <message>
-        <source>Topics</source>
-        <translation>主题</translation>
-    </message>
-    <message>
-        <source>Project</source>
-        <translation>项目</translation>
-    </message>
-    <message>
-        <source>Build</source>
-        <translation>构建</translation>
-    </message>
-    <message>
-        <source>Messages</source>
-        <translation>消息</translation>
-    </message>
-    <message>
-        <source>Input</source>
-        <translation>输入</translation>
-    </message>
-    <message>
-        <source>Source Browser</source>
-        <translation>源码浏览器</translation>
-    </message>
-    <message>
-        <source>Index</source>
-        <translation>索引</translation>
-    </message>
-    <message>
-        <source>HTML</source>
-        <translation>HTML</translation>
-    </message>
-    <message>
-        <source>LaTeX</source>
-        <translation>LaTeX</translation>
-    </message>
-    <message>
-        <source>RTF</source>
-        <translation>RTF</translation>
-    </message>
-    <message>
-        <source>Man</source>
-        <translation>Man</translation>
-    </message>
-    <message>
-        <source>XML</source>
-        <translation>XML</translation>
-    </message>
-    <message>
-        <source>Docbook</source>
-        <translation>Docbook</translation>
-    </message>
-    <message>
-        <source>AutoGen</source>
-        <translation>AutoGen</translation>
-    </message>
-    <message>
-        <source>Sqlite3</source>
-        <translation>Sqlite3</translation>
-    </message>
-    <message>
-        <source>PerlMod</source>
-        <translation>PerlMod</translation>
-    </message>
-    <message>
-        <source>Preprocessor</source>
-        <translation>预处理器</translation>
-    </message>
-    <message>
-        <source>External</source>
-        <translation>外部引用</translation>
-    </message>
-    <message>
-        <source>Dot</source>
-        <translation>Dot</translation>
-    </message>
 </context>
 <context>
     <name>HelpLabel</name>
@@ -908,10 +822,6 @@ Reason given: %2</source>
         <translation>警告日志文件</translation>
     </message>
     <message>
-        <source>Input</source>
-        <translation>输入文件</translation>
-    </message>
-    <message>
         <source>Input Encoding</source>
         <translation>输入编码</translation>
     </message>
@@ -986,10 +896,6 @@ Reason given: %2</source>
     <message>
         <source>Fortran Comment After</source>
         <translation>Fortran注释位置</translation>
-    </message>
-    <message>
-        <source>Source Browser</source>
-        <translation>源代码浏览器</translation>
     </message>
     <message>
         <source>Inline Sources</source>
@@ -1863,11 +1769,6 @@ Reason given: %2</source>
         <translation>选择要生成的输出格式</translation>
     </message>
     <message>
-        <location filename="wizard.cpp" line="940"/>
-        <source>HTML</source>
-        <translation>HTML</translation>
-    </message>
-    <message>
         <location filename="wizard.cpp" line="944"/>
         <source>plain HTML</source>
         <translation>纯 HTML</translation>
@@ -1893,11 +1794,6 @@ Reason given: %2</source>
         <translation>更改颜色...</translation>
     </message>
     <message>
-        <location filename="wizard.cpp" line="971"/>
-        <source>LaTeX</source>
-        <translation>LaTeX</translation>
-    </message>
-    <message>
         <location filename="wizard.cpp" line="976"/>
         <source>as intermediate format for hyperlinked PDF</source>
         <translation>作为超链接 PDF 的中间格式</translation>
@@ -1921,16 +1817,6 @@ Reason given: %2</source>
         <location filename="wizard.cpp" line="997"/>
         <source>Rich Text Format (RTF)</source>
         <translation>富文本格式 (RTF)</translation>
-    </message>
-    <message>
-        <location filename="wizard.cpp" line="999"/>
-        <source>XML</source>
-        <translation>XML</translation>
-    </message>
-    <message>
-        <location filename="wizard.cpp" line="1001"/>
-        <source>Docbook</source>
-        <translation>Docbook</translation>
     </message>
 </context>
 <context>
@@ -2044,20 +1930,6 @@ Reason given: %2</source>
         <source>Diagrams</source>
         <translation>图表</translation>
     </message>
-    <message>
-        <location filename="wizard.cpp" line="1356"/>
-        <source>Previous</source>
-        <translation>上一步</translation>
-    </message>
-    <message>
-        <location filename="wizard.cpp" line="1358"/>
-        <source>Next</source>
-        <translation>下一步</translation>
-    </message>
-    <message>
-        <source>Topics</source>
-        <translation>主题</translation>
-    </message>
 </context>
 <context>
     <name>Messages</name>
@@ -2116,6 +1988,58 @@ Reason given: %2</source>
     <message>
         <source>Docbook</source>
         <translation>Docbook</translation>
+    </message>
+    <message>
+        <source>Build</source>
+        <translation>构建</translation>
+    </message>
+    <message>
+        <source>Messages</source>
+        <translation>消息</translation>
+    </message>
+    <message>
+        <source>Input</source>
+        <translation>输入</translation>
+    </message>
+    <message>
+        <source>Source Browser</source>
+        <translation>源码浏览器</translation>
+    </message>
+    <message>
+        <source>Index</source>
+        <translation>索引</translation>
+    </message>
+    <message>
+        <source>RTF</source>
+        <translation>RTF</translation>
+    </message>
+    <message>
+        <source>Man</source>
+        <translation>Man</translation>
+    </message>
+    <message>
+        <source>AutoGen</source>
+        <translation>AutoGen</translation>
+    </message>
+    <message>
+        <source>Sqlite3</source>
+        <translation>Sqlite3</translation>
+    </message>
+    <message>
+        <source>PerlMod</source>
+        <translation>PerlMod</translation>
+    </message>
+    <message>
+        <source>Preprocessor</source>
+        <translation>预处理器</translation>
+    </message>
+    <message>
+        <source>External</source>
+        <translation>外部引用</translation>
+    </message>
+    <message>
+        <source>Dot</source>
+        <translation>Dot</translation>
     </message>
 </context>
 </TS>

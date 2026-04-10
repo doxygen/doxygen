@@ -13,90 +13,6 @@
         <source>Error</source>
         <translation>錯誤</translation>
     </message>
-    <message>
-        <source>Previous</source>
-        <translation>上一個</translation>
-    </message>
-    <message>
-        <source>Next</source>
-        <translation>下一個</translation>
-    </message>
-    <message>
-        <source>Topics</source>
-        <translation>主題</translation>
-    </message>
-    <message>
-        <source>Project</source>
-        <translation>專案</translation>
-    </message>
-    <message>
-        <source>Build</source>
-        <translation>建置</translation>
-    </message>
-    <message>
-        <source>Messages</source>
-        <translation>訊息</translation>
-    </message>
-    <message>
-        <source>Input</source>
-        <translation>輸入</translation>
-    </message>
-    <message>
-        <source>Source Browser</source>
-        <translation>原始碼瀏覽器</translation>
-    </message>
-    <message>
-        <source>Index</source>
-        <translation>索引</translation>
-    </message>
-    <message>
-        <source>HTML</source>
-        <translation>HTML</translation>
-    </message>
-    <message>
-        <source>LaTeX</source>
-        <translation>LaTeX</translation>
-    </message>
-    <message>
-        <source>RTF</source>
-        <translation>RTF</translation>
-    </message>
-    <message>
-        <source>Man</source>
-        <translation>Man</translation>
-    </message>
-    <message>
-        <source>XML</source>
-        <translation>XML</translation>
-    </message>
-    <message>
-        <source>Docbook</source>
-        <translation>Docbook</translation>
-    </message>
-    <message>
-        <source>AutoGen</source>
-        <translation>AutoGen</translation>
-    </message>
-    <message>
-        <source>Sqlite3</source>
-        <translation>Sqlite3</translation>
-    </message>
-    <message>
-        <source>PerlMod</source>
-        <translation>PerlMod</translation>
-    </message>
-    <message>
-        <source>Preprocessor</source>
-        <translation>前置處理器</translation>
-    </message>
-    <message>
-        <source>External</source>
-        <translation>外部引用</translation>
-    </message>
-    <message>
-        <source>Dot</source>
-        <translation>Dot</translation>
-    </message>
 </context>
 <context>
     <name>HelpLabel</name>
@@ -838,10 +754,6 @@ Reason given: %2</source>
         <translation>警告日誌檔案</translation>
     </message>
     <message>
-        <source>Input</source>
-        <translation>輸入檔案</translation>
-    </message>
-    <message>
         <source>Input Encoding</source>
         <translation>輸入編碼</translation>
     </message>
@@ -916,10 +828,6 @@ Reason given: %2</source>
     <message>
         <source>Fortran Comment After</source>
         <translation>Fortran 註解位置</translation>
-    </message>
-    <message>
-        <source>Source Browser</source>
-        <translation>原始碼瀏覽器</translation>
     </message>
     <message>
         <source>Inline Sources</source>
@@ -1895,18 +1803,6 @@ Reason given: %2</source>
         <source>Diagrams</source>
         <translation>圖表</translation>
     </message>
-    <message>
-        <source>Previous</source>
-        <translation>上一步</translation>
-    </message>
-    <message>
-        <source>Next</source>
-        <translation>下一步</translation>
-    </message>
-    <message>
-        <source>Topics</source>
-        <translation>主題</translation>
-    </message>
 </context>
 <context>
     <name>Messages</name>
@@ -1965,6 +1861,58 @@ Reason given: %2</source>
     <message>
         <source>Docbook</source>
         <translation>Docbook</translation>
+    </message>
+    <message>
+        <source>Build</source>
+        <translation>建置</translation>
+    </message>
+    <message>
+        <source>Messages</source>
+        <translation>訊息</translation>
+    </message>
+    <message>
+        <source>Input</source>
+        <translation>輸入</translation>
+    </message>
+    <message>
+        <source>Source Browser</source>
+        <translation>原始碼瀏覽器</translation>
+    </message>
+    <message>
+        <source>Index</source>
+        <translation>索引</translation>
+    </message>
+    <message>
+        <source>RTF</source>
+        <translation>RTF</translation>
+    </message>
+    <message>
+        <source>Man</source>
+        <translation>Man</translation>
+    </message>
+    <message>
+        <source>AutoGen</source>
+        <translation>AutoGen</translation>
+    </message>
+    <message>
+        <source>Sqlite3</source>
+        <translation>Sqlite3</translation>
+    </message>
+    <message>
+        <source>PerlMod</source>
+        <translation>PerlMod</translation>
+    </message>
+    <message>
+        <source>Preprocessor</source>
+        <translation>前置處理器</translation>
+    </message>
+    <message>
+        <source>External</source>
+        <translation>外部引用</translation>
+    </message>
+    <message>
+        <source>Dot</source>
+        <translation>Dot</translation>
     </message>
 </context>
 </TS>

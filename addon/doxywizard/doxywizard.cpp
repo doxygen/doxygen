@@ -122,6 +122,94 @@ QString DoxygenWizard::msgDocbookFormat()
   return QCoreApplication::translate("Messages", "Docbook");
 }
 
+QString DoxygenWizard::msgBuildTopic()
+{
+  return QCoreApplication::translate("Messages", "Build");
+}
+
+QString DoxygenWizard::msgMessagesTopic()
+{
+  return QCoreApplication::translate("Messages", "Messages");
+}
+
+QString DoxygenWizard::msgInputTopic()
+{
+  return QCoreApplication::translate("Messages", "Input");
+}
+
+QString DoxygenWizard::msgSourceBrowserTopic()
+{
+  return QCoreApplication::translate("Messages", "Source Browser");
+}
+
+QString DoxygenWizard::msgIndexTopic()
+{
+  return QCoreApplication::translate("Messages", "Index");
+}
+
+QString DoxygenWizard::msgRtfFormat()
+{
+  return QCoreApplication::translate("Messages", "RTF");
+}
+
+QString DoxygenWizard::msgManFormat()
+{
+  return QCoreApplication::translate("Messages", "Man");
+}
+
+QString DoxygenWizard::msgAutoGenFormat()
+{
+  return QCoreApplication::translate("Messages", "AutoGen");
+}
+
+QString DoxygenWizard::msgSqlite3Format()
+{
+  return QCoreApplication::translate("Messages", "Sqlite3");
+}
+
+QString DoxygenWizard::msgPerlModFormat()
+{
+  return QCoreApplication::translate("Messages", "PerlMod");
+}
+
+QString DoxygenWizard::msgPreprocessorTopic()
+{
+  return QCoreApplication::translate("Messages", "Preprocessor");
+}
+
+QString DoxygenWizard::msgExternalTopic()
+{
+  return QCoreApplication::translate("Messages", "External");
+}
+
+QString DoxygenWizard::msgDotTopic()
+{
+  return QCoreApplication::translate("Messages", "Dot");
+}
+
+QString DoxygenWizard::translateExpertTopic(const QString &name)
+{
+  if (name == QLatin1String("Project")) return msgProjectTopic();
+  if (name == QLatin1String("Build")) return msgBuildTopic();
+  if (name == QLatin1String("Messages")) return msgMessagesTopic();
+  if (name == QLatin1String("Input")) return msgInputTopic();
+  if (name == QLatin1String("Source Browser")) return msgSourceBrowserTopic();
+  if (name == QLatin1String("Index")) return msgIndexTopic();
+  if (name == QLatin1String("HTML")) return msgHtmlFormat();
+  if (name == QLatin1String("LaTeX")) return msgLatexFormat();
+  if (name == QLatin1String("RTF")) return msgRtfFormat();
+  if (name == QLatin1String("Man")) return msgManFormat();
+  if (name == QLatin1String("XML")) return msgXmlFormat();
+  if (name == QLatin1String("Docbook")) return msgDocbookFormat();
+  if (name == QLatin1String("AutoGen")) return msgAutoGenFormat();
+  if (name == QLatin1String("Sqlite3")) return msgSqlite3Format();
+  if (name == QLatin1String("PerlMod")) return msgPerlModFormat();
+  if (name == QLatin1String("Preprocessor")) return msgPreprocessorTopic();
+  if (name == QLatin1String("External")) return msgExternalTopic();
+  if (name == QLatin1String("Dot")) return msgDotTopic();
+  return name;
+}
+
 const int messageTimeout = 5000; //!< status bar message timeout in milliseconds.
 
 #define APPQT(x) QString::fromLatin1("<qt><pre>") + x + QString::fromLatin1("</pre></qt>")

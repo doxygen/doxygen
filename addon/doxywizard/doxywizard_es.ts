@@ -13,90 +13,6 @@
         <source>Error</source>
         <translation>Error</translation>
     </message>
-    <message>
-        <source>Previous</source>
-        <translation>Anterior</translation>
-    </message>
-    <message>
-        <source>Next</source>
-        <translation>Siguiente</translation>
-    </message>
-    <message>
-        <source>Topics</source>
-        <translation>Temas</translation>
-    </message>
-    <message>
-        <source>Project</source>
-        <translation>Proyecto</translation>
-    </message>
-    <message>
-        <source>Build</source>
-        <translation>Construcción</translation>
-    </message>
-    <message>
-        <source>Messages</source>
-        <translation>Mensajes</translation>
-    </message>
-    <message>
-        <source>Input</source>
-        <translation>Entrada</translation>
-    </message>
-    <message>
-        <source>Source Browser</source>
-        <translation>Navegador de fuentes</translation>
-    </message>
-    <message>
-        <source>Index</source>
-        <translation>Índice</translation>
-    </message>
-    <message>
-        <source>HTML</source>
-        <translation>HTML</translation>
-    </message>
-    <message>
-        <source>LaTeX</source>
-        <translation>LaTeX</translation>
-    </message>
-    <message>
-        <source>RTF</source>
-        <translation>RTF</translation>
-    </message>
-    <message>
-        <source>Man</source>
-        <translation>Man</translation>
-    </message>
-    <message>
-        <source>XML</source>
-        <translation>XML</translation>
-    </message>
-    <message>
-        <source>Docbook</source>
-        <translation>Docbook</translation>
-    </message>
-    <message>
-        <source>AutoGen</source>
-        <translation>AutoGen</translation>
-    </message>
-    <message>
-        <source>Sqlite3</source>
-        <translation>Sqlite3</translation>
-    </message>
-    <message>
-        <source>PerlMod</source>
-        <translation>PerlMod</translation>
-    </message>
-    <message>
-        <source>Preprocessor</source>
-        <translation>Preprocesador</translation>
-    </message>
-    <message>
-        <source>External</source>
-        <translation>Referencias externas</translation>
-    </message>
-    <message>
-        <source>Dot</source>
-        <translation>Dot</translation>
-    </message>
 </context>
 <context>
     <name>HelpLabel</name>
@@ -507,7 +423,6 @@ Razón dada: %2</translation>
     <message><source>Warn Format</source><translation>Formato de advertencia</translation></message>
     <message><source>Warn Line Format</source><translation>Formato de línea de advertencia</translation></message>
     <message><source>Warn Logfile</source><translation>Archivo de registro de advertencias</translation></message>
-    <message><source>Input</source><translation>Entrada</translation></message>
     <message><source>Input Encoding</source><translation>Codificación de entrada</translation></message>
     <message><source>Input File Encoding</source><translation>Codificación de archivo de entrada</translation></message>
     <message><source>File Patterns</source><translation>Patrones de archivo</translation></message>
@@ -527,7 +442,6 @@ Razón dada: %2</translation>
     <message><source>Use MD File As Mainpage</source><translation>Usar archivo MD como página principal</translation></message>
     <message><source>Implicit Dir Docs</source><translation>Documentación implícita de directorios</translation></message>
     <message><source>Fortran Comment After</source><translation>Comentario Fortran después de</translation></message>
-    <message><source>Source Browser</source><translation>Navegador de fuentes</translation></message>
     <message><source>Inline Sources</source><translation>Fuentes en línea</translation></message>
     <message><source>Strip Code Comments</source><translation>Eliminar comentarios de código</translation></message>
     <message><source>Referenced By Relation</source><translation>Relación referenciado por</translation></message>
@@ -953,18 +867,6 @@ Razón dada: %2</translation>
         <source>Diagrams</source>
         <translation>Diagramas</translation>
     </message>
-    <message>
-        <source>Previous</source>
-        <translation>Anterior</translation>
-    </message>
-    <message>
-        <source>Next</source>
-        <translation>Siguiente</translation>
-    </message>
-    <message>
-        <source>Topics</source>
-        <translation>Temas</translation>
-    </message>
 </context>
 <context>
     <name>Messages</name>
@@ -1023,6 +925,58 @@ Razón dada: %2</translation>
     <message>
         <source>Docbook</source>
         <translation>Docbook</translation>
+    </message>
+    <message>
+        <source>Build</source>
+        <translation>Construcción</translation>
+    </message>
+    <message>
+        <source>Messages</source>
+        <translation>Mensajes</translation>
+    </message>
+    <message>
+        <source>Input</source>
+        <translation>Entrada</translation>
+    </message>
+    <message>
+        <source>Source Browser</source>
+        <translation>Navegador de fuentes</translation>
+    </message>
+    <message>
+        <source>Index</source>
+        <translation>Índice</translation>
+    </message>
+    <message>
+        <source>RTF</source>
+        <translation>RTF</translation>
+    </message>
+    <message>
+        <source>Man</source>
+        <translation>Man</translation>
+    </message>
+    <message>
+        <source>AutoGen</source>
+        <translation>AutoGen</translation>
+    </message>
+    <message>
+        <source>Sqlite3</source>
+        <translation>Sqlite3</translation>
+    </message>
+    <message>
+        <source>PerlMod</source>
+        <translation>PerlMod</translation>
+    </message>
+    <message>
+        <source>Preprocessor</source>
+        <translation>Preprocesador</translation>
+    </message>
+    <message>
+        <source>External</source>
+        <translation>Referencias externas</translation>
+    </message>
+    <message>
+        <source>Dot</source>
+        <translation>Dot</translation>
     </message>
 </context>
 </TS>

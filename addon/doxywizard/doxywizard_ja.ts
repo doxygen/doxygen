@@ -13,90 +13,6 @@
         <source>Error</source>
         <translation>エラー</translation>
     </message>
-    <message>
-        <source>Previous</source>
-        <translation>前へ</translation>
-    </message>
-    <message>
-        <source>Next</source>
-        <translation>次へ</translation>
-    </message>
-    <message>
-        <source>Topics</source>
-        <translation>トピック</translation>
-    </message>
-    <message>
-        <source>Project</source>
-        <translation>プロジェクト</translation>
-    </message>
-    <message>
-        <source>Build</source>
-        <translation>ビルド</translation>
-    </message>
-    <message>
-        <source>Messages</source>
-        <translation>メッセージ</translation>
-    </message>
-    <message>
-        <source>Input</source>
-        <translation>入力</translation>
-    </message>
-    <message>
-        <source>Source Browser</source>
-        <translation>ソースブラウザ</translation>
-    </message>
-    <message>
-        <source>Index</source>
-        <translation>インデックス</translation>
-    </message>
-    <message>
-        <source>HTML</source>
-        <translation>HTML</translation>
-    </message>
-    <message>
-        <source>LaTeX</source>
-        <translation>LaTeX</translation>
-    </message>
-    <message>
-        <source>RTF</source>
-        <translation>RTF</translation>
-    </message>
-    <message>
-        <source>Man</source>
-        <translation>Man</translation>
-    </message>
-    <message>
-        <source>XML</source>
-        <translation>XML</translation>
-    </message>
-    <message>
-        <source>Docbook</source>
-        <translation>Docbook</translation>
-    </message>
-    <message>
-        <source>AutoGen</source>
-        <translation>AutoGen</translation>
-    </message>
-    <message>
-        <source>Sqlite3</source>
-        <translation>Sqlite3</translation>
-    </message>
-    <message>
-        <source>PerlMod</source>
-        <translation>PerlMod</translation>
-    </message>
-    <message>
-        <source>Preprocessor</source>
-        <translation>プリプロセッサ</translation>
-    </message>
-    <message>
-        <source>External</source>
-        <translation>外部参照</translation>
-    </message>
-    <message>
-        <source>Dot</source>
-        <translation>Dot</translation>
-    </message>
 </context>
 <context>
     <name>HelpLabel</name>
@@ -507,7 +423,6 @@ Reason given: %2</source>
     <message><source>Warn Format</source><translation>警告形式</translation></message>
     <message><source>Warn Line Format</source><translation>警告行形式</translation></message>
     <message><source>Warn Logfile</source><translation>警告ログファイル</translation></message>
-    <message><source>Input</source><translation>入力</translation></message>
     <message><source>Input Encoding</source><translation>入力エンコーディング</translation></message>
     <message><source>Input File Encoding</source><translation>入力ファイルエンコーディング</translation></message>
     <message><source>File Patterns</source><translation>ファイルパターン</translation></message>
@@ -527,7 +442,6 @@ Reason given: %2</source>
     <message><source>Use MD File As Mainpage</source><translation>MDファイルをメインページとして使用</translation></message>
     <message><source>Implicit Dir Docs</source><translation>暗黙ディレクトリドキュメント</translation></message>
     <message><source>Fortran Comment After</source><translation>Fortranコメントの後</translation></message>
-    <message><source>Source Browser</source><translation>ソースブラウザ</translation></message>
     <message><source>Inline Sources</source><translation>インラインソース</translation></message>
     <message><source>Strip Code Comments</source><translation>コードコメントを削除</translation></message>
     <message><source>Referenced By Relation</source><translation>参照元関係</translation></message>
@@ -953,18 +867,6 @@ Reason given: %2</source>
         <source>Diagrams</source>
         <translation>図</translation>
     </message>
-    <message>
-        <source>Previous</source>
-        <translation>前へ</translation>
-    </message>
-    <message>
-        <source>Next</source>
-        <translation>次へ</translation>
-    </message>
-    <message>
-        <source>Topics</source>
-        <translation>トピック</translation>
-    </message>
 </context>
 <context>
     <name>Messages</name>
@@ -1023,6 +925,58 @@ Reason given: %2</source>
     <message>
         <source>Docbook</source>
         <translation>Docbook</translation>
+    </message>
+    <message>
+        <source>Build</source>
+        <translation>ビルド</translation>
+    </message>
+    <message>
+        <source>Messages</source>
+        <translation>メッセージ</translation>
+    </message>
+    <message>
+        <source>Input</source>
+        <translation>入力</translation>
+    </message>
+    <message>
+        <source>Source Browser</source>
+        <translation>ソースブラウザ</translation>
+    </message>
+    <message>
+        <source>Index</source>
+        <translation>インデックス</translation>
+    </message>
+    <message>
+        <source>RTF</source>
+        <translation>RTF</translation>
+    </message>
+    <message>
+        <source>Man</source>
+        <translation>Man</translation>
+    </message>
+    <message>
+        <source>AutoGen</source>
+        <translation>AutoGen</translation>
+    </message>
+    <message>
+        <source>Sqlite3</source>
+        <translation>Sqlite3</translation>
+    </message>
+    <message>
+        <source>PerlMod</source>
+        <translation>PerlMod</translation>
+    </message>
+    <message>
+        <source>Preprocessor</source>
+        <translation>プリプロセッサ</translation>
+    </message>
+    <message>
+        <source>External</source>
+        <translation>外部参照</translation>
+    </message>
+    <message>
+        <source>Dot</source>
+        <translation>Dot</translation>
     </message>
 </context>
 </TS>

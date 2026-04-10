@@ -13,90 +13,6 @@
         <source>Error</source>
         <translation>Ошибка</translation>
     </message>
-    <message>
-        <source>Previous</source>
-        <translation>Назад</translation>
-    </message>
-    <message>
-        <source>Next</source>
-        <translation>Далее</translation>
-    </message>
-    <message>
-        <source>Topics</source>
-        <translation>Темы</translation>
-    </message>
-    <message>
-        <source>Project</source>
-        <translation>Проект</translation>
-    </message>
-    <message>
-        <source>Build</source>
-        <translation>Сборка</translation>
-    </message>
-    <message>
-        <source>Messages</source>
-        <translation>Сообщения</translation>
-    </message>
-    <message>
-        <source>Input</source>
-        <translation>Ввод</translation>
-    </message>
-    <message>
-        <source>Source Browser</source>
-        <translation>Браузер исходного кода</translation>
-    </message>
-    <message>
-        <source>Index</source>
-        <translation>Индекс</translation>
-    </message>
-    <message>
-        <source>HTML</source>
-        <translation>HTML</translation>
-    </message>
-    <message>
-        <source>LaTeX</source>
-        <translation>LaTeX</translation>
-    </message>
-    <message>
-        <source>RTF</source>
-        <translation>RTF</translation>
-    </message>
-    <message>
-        <source>Man</source>
-        <translation>Man</translation>
-    </message>
-    <message>
-        <source>XML</source>
-        <translation>XML</translation>
-    </message>
-    <message>
-        <source>Docbook</source>
-        <translation>Docbook</translation>
-    </message>
-    <message>
-        <source>AutoGen</source>
-        <translation>AutoGen</translation>
-    </message>
-    <message>
-        <source>Sqlite3</source>
-        <translation>Sqlite3</translation>
-    </message>
-    <message>
-        <source>PerlMod</source>
-        <translation>PerlMod</translation>
-    </message>
-    <message>
-        <source>Preprocessor</source>
-        <translation>Препроцессор</translation>
-    </message>
-    <message>
-        <source>External</source>
-        <translation>Внешние ссылки</translation>
-    </message>
-    <message>
-        <source>Dot</source>
-        <translation>Dot</translation>
-    </message>
 </context>
 <context>
     <name>HelpLabel</name>
@@ -119,29 +35,9 @@
         <source>Update selected item</source>
         <translation>Обновить выбранный элемент</translation>
     </message>
-    <message>
-        <source>Browse to a file</source>
-        <translation>Обзор файла</translation>
-    </message>
-    <message>
-        <source>Browse to a folder</source>
-        <translation>Обзор папки</translation>
-    </message>
 </context>
 <context>
     <name>InputString</name>
-    <message>
-        <source>Browse to a file</source>
-        <translation>Обзор файла</translation>
-    </message>
-    <message>
-        <source>Browse to a folder</source>
-        <translation>Обзор папки</translation>
-    </message>
-    <message>
-        <source>No Project logo selected.</source>
-        <translation>Логотип проекта не выбран.</translation>
-    </message>
     <message>
         <source>Select file</source>
         <translation>Выбрать файл</translation>
@@ -212,10 +108,6 @@
     <message>
         <source>Language</source>
         <translation>Язык</translation>
-    </message>
-    <message>
-        <source>Select...</source>
-        <translation>Выбрать...</translation>
     </message>
     <message>
         <source>Status: not running</source>
@@ -531,7 +423,6 @@ Reason given: %2</source>
     <message><source>Warn Format</source><translation>Формат предупреждений</translation></message>
     <message><source>Warn Line Format</source><translation>Формат строки предупреждения</translation></message>
     <message><source>Warn Logfile</source><translation>Файл журнала предупреждений</translation></message>
-    <message><source>Input</source><translation>Ввод</translation></message>
     <message><source>Input Encoding</source><translation>Кодировка ввода</translation></message>
     <message><source>Input File Encoding</source><translation>Кодировка входного файла</translation></message>
     <message><source>File Patterns</source><translation>Шаблоны файлов</translation></message>
@@ -551,7 +442,6 @@ Reason given: %2</source>
     <message><source>Use MD File As Mainpage</source><translation>Использовать MD файл как главную страницу</translation></message>
     <message><source>Implicit Dir Docs</source><translation>Неявная документация каталога</translation></message>
     <message><source>Fortran Comment After</source><translation>Комментарий Fortran после</translation></message>
-    <message><source>Source Browser</source><translation>Браузер исходного кода</translation></message>
     <message><source>Inline Sources</source><translation>Встроенные исходники</translation></message>
     <message><source>Strip Code Comments</source><translation>Удалить комментарии кода</translation></message>
     <message><source>Referenced By Relation</source><translation>Отношение "упоминается в"</translation></message>
@@ -759,10 +649,6 @@ Reason given: %2</source>
         <translation>Логотип проекта:</translation>
     </message>
     <message>
-        <source>Select...</source>
-        <translation>Выбрать...</translation>
-    </message>
-    <message>
         <source>Specify the directory to scan for source code</source>
         <translation>Укажите каталог для сканирования исходного кода</translation>
     </message>
@@ -785,10 +671,6 @@ Reason given: %2</source>
     <message>
         <source>Select project icon/image</source>
         <translation>Выбрать значок/изображение проекта</translation>
-    </message>
-    <message>
-        <source>No Project logo selected.</source>
-        <translation>Логотип проекта не выбран.</translation>
     </message>
     <message>
         <source>Select source directory</source>
@@ -985,18 +867,6 @@ Reason given: %2</source>
         <source>Diagrams</source>
         <translation>Диаграммы</translation>
     </message>
-    <message>
-        <source>Previous</source>
-        <translation>Назад</translation>
-    </message>
-    <message>
-        <source>Next</source>
-        <translation>Далее</translation>
-    </message>
-    <message>
-        <source>Topics</source>
-        <translation>Темы</translation>
-    </message>
 </context>
 <context>
     <name>Messages</name>
@@ -1055,6 +925,58 @@ Reason given: %2</source>
     <message>
         <source>Docbook</source>
         <translation>Docbook</translation>
+    </message>
+    <message>
+        <source>Build</source>
+        <translation>Сборка</translation>
+    </message>
+    <message>
+        <source>Messages</source>
+        <translation>Сообщения</translation>
+    </message>
+    <message>
+        <source>Input</source>
+        <translation>Ввод</translation>
+    </message>
+    <message>
+        <source>Source Browser</source>
+        <translation>Браузер исходного кода</translation>
+    </message>
+    <message>
+        <source>Index</source>
+        <translation>Индекс</translation>
+    </message>
+    <message>
+        <source>RTF</source>
+        <translation>RTF</translation>
+    </message>
+    <message>
+        <source>Man</source>
+        <translation>Man</translation>
+    </message>
+    <message>
+        <source>AutoGen</source>
+        <translation>AutoGen</translation>
+    </message>
+    <message>
+        <source>Sqlite3</source>
+        <translation>Sqlite3</translation>
+    </message>
+    <message>
+        <source>PerlMod</source>
+        <translation>PerlMod</translation>
+    </message>
+    <message>
+        <source>Preprocessor</source>
+        <translation>Препроцессор</translation>
+    </message>
+    <message>
+        <source>External</source>
+        <translation>Внешние ссылки</translation>
+    </message>
+    <message>
+        <source>Dot</source>
+        <translation>Dot</translation>
     </message>
 </context>
 </TS>

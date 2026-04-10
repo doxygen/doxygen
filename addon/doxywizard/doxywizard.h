@@ -141,9 +141,23 @@ class DoxygenWizard
     static QString msgNextButton();
     static QString msgTopicsHeader();
     static QString msgProjectTopic();
+    static QString msgBuildTopic();
+    static QString msgMessagesTopic();
+    static QString msgInputTopic();
+    static QString msgSourceBrowserTopic();
+    static QString msgIndexTopic();
     static QString msgHtmlFormat();
     static QString msgLatexFormat();
+    static QString msgRtfFormat();
+    static QString msgManFormat();
     static QString msgXmlFormat();
     static QString msgDocbookFormat();
+    static QString msgAutoGenFormat();
+    static QString msgSqlite3Format();
+    static QString msgPerlModFormat();
+    static QString msgPreprocessorTopic();
+    static QString msgExternalTopic();
+    static QString msgDotTopic();
+    static QString translateExpertTopic(const QString &name);
 };
 #endif

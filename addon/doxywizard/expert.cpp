@@ -144,7 +144,7 @@ void Expert::createTopics(const QDomElement &rootElem)
       QString setting = childElem.attribute(SA("setting"));
       if (setting.isEmpty() || IS_SUPPORTED(setting.toLatin1()))
       {
-        QString translatedName = tr(name.toUtf8().constData());
+        QString translatedName = DoxygenWizard::translateExpertTopic(name);
         items.append(new QTreeWidgetItem((QTreeWidget*)nullptr,QStringList(translatedName)));
         QWidget *widget = createTopicWidget(childElem);
         m_topics[name] = widget;
@@ -760,7 +760,7 @@ void Expert::activateTopic(QTreeWidgetItem *item,QTreeWidgetItem *)
     {
       i.next();
       QString originalName = i.key();
-      if (tr(originalName.toUtf8().constData()) == translatedName)
+      if (DoxygenWizard::translateExpertTopic(originalName) == translatedName)
       {
         w = i.value();
         break;
@@ -1049,7 +1049,7 @@ void Expert::retranslateUi()
       QString originalName = m_topics.key(m_topicStack->widget(i));
       if (!originalName.isEmpty())
       {
-        item->setText(0, tr(originalName.toUtf8().constData()));
+        item->setText(0, DoxygenWizard::translateExpertTopic(originalName));
       }
     }
   }

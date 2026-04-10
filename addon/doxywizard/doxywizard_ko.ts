@@ -13,90 +13,6 @@
         <source>Error</source>
         <translation>오류</translation>
     </message>
-    <message>
-        <source>Previous</source>
-        <translation>이전</translation>
-    </message>
-    <message>
-        <source>Next</source>
-        <translation>다음</translation>
-    </message>
-    <message>
-        <source>Topics</source>
-        <translation>주제</translation>
-    </message>
-    <message>
-        <source>Project</source>
-        <translation>프로젝트</translation>
-    </message>
-    <message>
-        <source>Build</source>
-        <translation>빌드</translation>
-    </message>
-    <message>
-        <source>Messages</source>
-        <translation>메시지</translation>
-    </message>
-    <message>
-        <source>Input</source>
-        <translation>입력</translation>
-    </message>
-    <message>
-        <source>Source Browser</source>
-        <translation>소스 브라우저</translation>
-    </message>
-    <message>
-        <source>Index</source>
-        <translation>인덱스</translation>
-    </message>
-    <message>
-        <source>HTML</source>
-        <translation>HTML</translation>
-    </message>
-    <message>
-        <source>LaTeX</source>
-        <translation>LaTeX</translation>
-    </message>
-    <message>
-        <source>RTF</source>
-        <translation>RTF</translation>
-    </message>
-    <message>
-        <source>Man</source>
-        <translation>Man</translation>
-    </message>
-    <message>
-        <source>XML</source>
-        <translation>XML</translation>
-    </message>
-    <message>
-        <source>Docbook</source>
-        <translation>Docbook</translation>
-    </message>
-    <message>
-        <source>AutoGen</source>
-        <translation>AutoGen</translation>
-    </message>
-    <message>
-        <source>Sqlite3</source>
-        <translation>Sqlite3</translation>
-    </message>
-    <message>
-        <source>PerlMod</source>
-        <translation>PerlMod</translation>
-    </message>
-    <message>
-        <source>Preprocessor</source>
-        <translation>전처리기</translation>
-    </message>
-    <message>
-        <source>External</source>
-        <translation>외부 참조</translation>
-    </message>
-    <message>
-        <source>Dot</source>
-        <translation>Dot</translation>
-    </message>
 </context>
 <context>
     <name>HelpLabel</name>
@@ -507,7 +423,6 @@ Reason given: %2</source>
     <message><source>Warn Format</source><translation>경고 형식</translation></message>
     <message><source>Warn Line Format</source><translation>경고 라인 형식</translation></message>
     <message><source>Warn Logfile</source><translation>경고 로그 파일</translation></message>
-    <message><source>Input</source><translation>입력</translation></message>
     <message><source>Input Encoding</source><translation>입력 인코딩</translation></message>
     <message><source>Input File Encoding</source><translation>입력 파일 인코딩</translation></message>
     <message><source>File Patterns</source><translation>파일 패턴</translation></message>
@@ -527,7 +442,6 @@ Reason given: %2</source>
     <message><source>Use MD File As Mainpage</source><translation>MD 파일을 메인 페이지로 사용</translation></message>
     <message><source>Implicit Dir Docs</source><translation>암시적 디렉토리 문서</translation></message>
     <message><source>Fortran Comment After</source><translation>Fortran 주석 이후</translation></message>
-    <message><source>Source Browser</source><translation>소스 브라우저</translation></message>
     <message><source>Inline Sources</source><translation>인라인 소스</translation></message>
     <message><source>Strip Code Comments</source><translation>코드 주석 제거</translation></message>
     <message><source>Referenced By Relation</source><translation>참조된 관계</translation></message>
@@ -953,18 +867,6 @@ Reason given: %2</source>
         <source>Diagrams</source>
         <translation>다이어그램</translation>
     </message>
-    <message>
-        <source>Previous</source>
-        <translation>이전</translation>
-    </message>
-    <message>
-        <source>Next</source>
-        <translation>다음</translation>
-    </message>
-    <message>
-        <source>Topics</source>
-        <translation>주제</translation>
-    </message>
 </context>
 <context>
     <name>Messages</name>
@@ -1023,6 +925,58 @@ Reason given: %2</source>
     <message>
         <source>Docbook</source>
         <translation>Docbook</translation>
+    </message>
+    <message>
+        <source>Build</source>
+        <translation>빌드</translation>
+    </message>
+    <message>
+        <source>Messages</source>
+        <translation>메시지</translation>
+    </message>
+    <message>
+        <source>Input</source>
+        <translation>입력</translation>
+    </message>
+    <message>
+        <source>Source Browser</source>
+        <translation>소스 브라우저</translation>
+    </message>
+    <message>
+        <source>Index</source>
+        <translation>인덱스</translation>
+    </message>
+    <message>
+        <source>RTF</source>
+        <translation>RTF</translation>
+    </message>
+    <message>
+        <source>Man</source>
+        <translation>Man</translation>
+    </message>
+    <message>
+        <source>AutoGen</source>
+        <translation>AutoGen</translation>
+    </message>
+    <message>
+        <source>Sqlite3</source>
+        <translation>Sqlite3</translation>
+    </message>
+    <message>
+        <source>PerlMod</source>
+        <translation>PerlMod</translation>
+    </message>
+    <message>
+        <source>Preprocessor</source>
+        <translation>전처리기</translation>
+    </message>
+    <message>
+        <source>External</source>
+        <translation>외부 참조</translation>
+    </message>
+    <message>
+        <source>Dot</source>
+        <translation>Dot</translation>
     </message>
 </context>
 </TS>
