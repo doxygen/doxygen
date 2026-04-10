@@ -402,10 +402,11 @@ DB_VIS_C
     case DocVerbatim::Mermaid:
       if (Config_getBool(MERMAID_RENDER_MODE)!=MERMAID_RENDER_MODE_t::CLIENT_SIDE)
       {
-        QCString docbookOutput = Config_getString(DOCBOOK_OUTPUT);
-        MermaidManager::OutputFormat format = MermaidManager::imageFormat(MermaidManager::OutputFormat::Bitmap);
-        QCString baseName = MermaidManager::instance().writeMermaidSource(docbookOutput,
-            s.exampleFile(),s.text(),format,
+        auto docbookOutput = Config_getString(DOCBOOK_OUTPUT);
+        auto outputFormat  = MermaidManager::OutputFormat::Docbook;
+        auto imageFormat   = MermaidManager::convertToImageFormat(outputFormat);
+        auto baseName      = MermaidManager::instance().writeMermaidSource(docbookOutput,
+            s.exampleFile(),s.text(),imageFormat,
             s.srcFile(),s.srcLine());
         m_t << "<para>\n";
         writeMermaidFile(baseName,s);
@@ -1619,11 +1620,12 @@ void DocbookDocVisitor::writeMermaidFile(const QCString &baseName, const DocVerb
 {
 DB_VIS_C
   if (Config_getBool(MERMAID_RENDER_MODE)==MERMAID_RENDER_MODE_t::CLIENT_SIDE) return;
-  QCString shortName = stripPath(baseName);
-  QCString outDir = Config_getString(DOCBOOK_OUTPUT);
-  MermaidManager::OutputFormat format = MermaidManager::imageFormat(MermaidManager::OutputFormat::Bitmap);
-  QCString imgExt = MermaidManager::imageExtension(format);
-  MermaidManager::instance().generateMermaidOutput(baseName,outDir,format,false);
+  auto shortName    = stripPath(baseName);
+  auto outDir       = Config_getString(DOCBOOK_OUTPUT);
+  auto outputFormat = MermaidManager::OutputFormat::Docbook;
+  auto imageFormat  = MermaidManager::convertToImageFormat(outputFormat);
+  auto imgExt       = MermaidManager::imageExtension(imageFormat);
+  MermaidManager::instance().generateMermaidOutput(baseName,outDir,imageFormat,false);
   visitPreStart(m_t, s.children(), s.hasCaption(), s.relPath() + shortName + "." + imgExt, s.width(),s.height());
   visitCaption(s.children());
   visitPostEnd(m_t, s.hasCaption());
@@ -1644,12 +1646,12 @@ DB_VIS_C
   QCString outDir = Config_getString(DOCBOOK_OUTPUT);
   std::string inBuf;
   readInputFile(fileName,inBuf);
-  MermaidManager::OutputFormat format = MermaidManager::imageFormat(MermaidManager::OutputFormat::Bitmap);
-  QCString imgExt = MermaidManager::imageExtension(format);
-  QCString baseName = MermaidManager::instance().writeMermaidSource(outDir,
-                           QCString(),inBuf,format,srcFile,srcLine);
-  QCString shortName = stripPath(baseName);
-  MermaidManager::instance().generateMermaidOutput(baseName,outDir,format,false);
+  auto outputFormat = MermaidManager::OutputFormat::Docbook;
+  auto imageFormat  = MermaidManager::convertToImageFormat(outputFormat);
+  auto imgExt       = MermaidManager::imageExtension(imageFormat);
+  auto baseName     = MermaidManager::instance().writeMermaidSource(outDir,QCString(),inBuf,imageFormat,srcFile,srcLine);
+  auto shortName    = stripPath(baseName);
+  MermaidManager::instance().generateMermaidOutput(baseName,outDir,imageFormat,false);
   m_t << "<para>\n";
   visitPreStart(m_t, children, hasCaption, relPath + shortName + "." + imgExt, width, height);
 }

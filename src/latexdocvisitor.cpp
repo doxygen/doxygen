@@ -501,10 +501,11 @@ void LatexDocVisitor::operator()(const DocVerbatim &s)
     case DocVerbatim::Mermaid:
       if (Config_getBool(MERMAID_RENDER_MODE)!=MERMAID_RENDER_MODE_t::CLIENT_SIDE)
       {
-        QCString latexOutput = Config_getString(LATEX_OUTPUT);
-        MermaidManager::OutputFormat format = MermaidManager::imageFormat(MermaidManager::OutputFormat::PDF);
+        auto latexOutput  = Config_getString(LATEX_OUTPUT);
+        auto outputFormat = MermaidManager::OutputFormat::LaTeX;
+        auto imageFormat  = MermaidManager::convertToImageFormat(outputFormat);
         QCString baseName = MermaidManager::instance().writeMermaidSource(
-                              latexOutput,s.exampleFile(),s.text(),format,
+                              latexOutput,s.exampleFile(),s.text(),imageFormat,
                               s.srcFile(),s.srcLine());
         writeMermaidFile(baseName, s);
       }
@@ -2066,12 +2067,13 @@ void LatexDocVisitor::endPlantUmlFile(bool hasCaption)
 void LatexDocVisitor::writeMermaidFile(const QCString &baseName, const DocVerbatim &s)
 {
   if (Config_getBool(MERMAID_RENDER_MODE)==MERMAID_RENDER_MODE_t::CLIENT_SIDE) return;
-  QCString shortName = stripPath(baseName);
-  MermaidManager::OutputFormat format = MermaidManager::imageFormat(MermaidManager::OutputFormat::PDF);
-  QCString imgExt = MermaidManager::imageExtension(format);
+  auto shortName    = stripPath(baseName);
+  auto outDir       = Config_getString(LATEX_OUTPUT);
+  auto outputFormat = MermaidManager::OutputFormat::LaTeX;
+  auto imageFormat  = MermaidManager::convertToImageFormat(outputFormat);
+  auto imgExt       = MermaidManager::imageExtension(imageFormat);
   if (shortName.find('.')==-1) shortName += "." + imgExt;
-  QCString outDir = Config_getString(LATEX_OUTPUT);
-  MermaidManager::instance().generateMermaidOutput(baseName,outDir,format,false);
+  MermaidManager::instance().generateMermaidOutput(baseName,outDir,imageFormat,false);
   visitPreStart(m_t, s.hasCaption(), shortName, s.width(), s.height());
   visitCaption(s.children());
   visitPostEnd(m_t, s.hasCaption());
@@ -2089,16 +2091,15 @@ void LatexDocVisitor::startMermaidFile(const QCString &fileName,
   QCString outDir = Config_getString(LATEX_OUTPUT);
   std::string inBuf;
   readInputFile(fileName,inBuf);
-  MermaidManager::OutputFormat format = MermaidManager::imageFormat(MermaidManager::OutputFormat::PDF);
-  QCString imgExt = MermaidManager::imageExtension(format);
-
-  bool usePDFLatex = Config_getBool(USE_PDFLATEX);
-  QCString baseName = MermaidManager::instance().writeMermaidSource(
-                              outDir,QCString(),inBuf,format,
+  auto outputFormat = MermaidManager::OutputFormat::LaTeX;
+  auto imageFormat  = MermaidManager::convertToImageFormat(outputFormat);
+  auto imgExt       = MermaidManager::imageExtension(imageFormat);
+  auto baseName     = MermaidManager::instance().writeMermaidSource(
+                              outDir,QCString(),inBuf,imageFormat,
                               srcFile,srcLine);
-  QCString shortName = stripPath(baseName);
+  auto shortName    = stripPath(baseName);
   if (shortName.find('.')==-1) shortName += "." + imgExt;
-  MermaidManager::instance().generateMermaidOutput(baseName,outDir,format,false);
+  MermaidManager::instance().generateMermaidOutput(baseName,outDir,imageFormat,false);
   visitPreStart(m_t,hasCaption, shortName, width, height);
 }
 

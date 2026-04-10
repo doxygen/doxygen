@@ -655,11 +655,12 @@ void HtmlDocVisitor::operator()(const DocVerbatim &s)
         forceEndParagraph(s);
         if (Config_getEnum(MERMAID_RENDER_MODE)==MERMAID_RENDER_MODE_t::CLI) // CLI mode: pre-generate image via mmdc
         {
-          QCString htmlOutput = Config_getString(HTML_OUTPUT);
-          MermaidManager::OutputFormat format = MermaidManager::imageFormat(MermaidManager::OutputFormat::Bitmap);
+          auto htmlOutput = Config_getString(HTML_OUTPUT);
+          auto outputFormat = MermaidManager::OutputFormat::HTML;
+          auto imageFormat  = MermaidManager::convertToImageFormat(outputFormat);
           QCString baseName = MermaidManager::instance().writeMermaidSource(
                                       htmlOutput,s.exampleFile(),
-                                      s.text(),format,s.srcFile(),s.srcLine());
+                                      s.text(),imageFormat,s.srcFile(),s.srcLine());
           m_t << "<div class=\"mermaidgraph\">\n";
           writeMermaidFile(baseName,s.relPath(),s.context(),s.srcFile(),s.srcLine());
           visitCaption(m_t, s);
@@ -1876,12 +1877,13 @@ void HtmlDocVisitor::operator()(const DocMermaidFile &df)
   forceEndParagraph(df);
   if (Config_getEnum(MERMAID_RENDER_MODE)==MERMAID_RENDER_MODE_t::CLI)
   {
-    QCString htmlOutput = Config_getString(HTML_OUTPUT);
-    MermaidManager::OutputFormat format = MermaidManager::imageFormat(MermaidManager::OutputFormat::Bitmap);
     std::string inBuf;
     readInputFile(df.file(),inBuf);
+    auto htmlOutput   = Config_getString(HTML_OUTPUT);
+    auto outputFormat = MermaidManager::OutputFormat::HTML;
+    auto imageFormat  = MermaidManager::convertToImageFormat(outputFormat);
     QCString baseName = MermaidManager::instance().writeMermaidSource(htmlOutput,QCString(),
-                                      inBuf,format,df.srcFile(),df.srcLine());
+                                      inBuf,imageFormat,df.srcFile(),df.srcLine());
     m_t << "<div class=\"mermaidgraph\">\n";
     writeMermaidFile(baseName,df.relPath(),QCString(),df.srcFile(),df.srcLine());
     if (df.hasCaption())
@@ -2324,13 +2326,13 @@ void HtmlDocVisitor::writePlantUMLFile(const QCString &fileName, const QCString 
 void HtmlDocVisitor::writeMermaidFile(const QCString &fileName, const QCString &relPath,
                                       const QCString &,const QCString &/* srcFile */,int /* srcLine */)
 {
-  QCString baseName=makeBaseName(fileName,".mmd");
-  QCString outDir = Config_getString(HTML_OUTPUT);
-  MermaidManager::OutputFormat format = MermaidManager::imageFormat(MermaidManager::OutputFormat::Bitmap);
-  QCString imgExt = MermaidManager::imageExtension(format);
-
-  MermaidManager::instance().generateMermaidOutput(fileName,outDir,format,true);
-  if (format == MermaidManager::OutputFormat::SVG)
+  auto baseName     = makeBaseName(fileName,".mmd");
+  auto outDir       = Config_getString(HTML_OUTPUT);
+  auto outputFormat = MermaidManager::OutputFormat::HTML;
+  auto imageFormat  = MermaidManager::convertToImageFormat(outputFormat);
+  auto imgExt       = MermaidManager::imageExtension(imageFormat);
+  MermaidManager::instance().generateMermaidOutput(fileName,outDir,imageFormat,true);
+  if (imageFormat == MermaidManager::ImageFormat::SVG)
   {
     m_t << "<object type=\"image/svg+xml\" data=\"" << relPath << baseName << "." << imgExt << "\"></object>\n";
   }

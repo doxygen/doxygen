@@ -40,39 +40,35 @@ MermaidManager::MermaidManager()
 {
 }
 
-QCString MermaidManager::imageExtension(OutputFormat format)
+QCString MermaidManager::imageExtension(ImageFormat format)
 {
   switch (format)
   {
-    case OutputFormat::Bitmap: return "png";
-    case OutputFormat::SVG:    return "svg";
-    case OutputFormat::PDF:    return "pdf";
+    case ImageFormat::PNG: return "png";
+    case ImageFormat::SVG: return "svg";
+    case ImageFormat::PDF: return "pdf";
   }
   return "png";
 }
 
-MermaidManager::OutputFormat MermaidManager::imageFormat(OutputFormat format)
+MermaidManager::ImageFormat MermaidManager::convertToImageFormat(OutputFormat outputFormat)
 {
-  if (format == MermaidManager::OutputFormat::Bitmap)
+  switch(outputFormat)
   {
-    QCString imgExt = getDotImageExtension();
-    if (imgExt=="svg")
-    {
-      return MermaidManager::OutputFormat::SVG;
-    }
+    case OutputFormat::HTML:
+      // fall through
+    case OutputFormat::RTF:
+      // fall through
+    case OutputFormat::Docbook:
+      return getDotImageExtension()=="svg" ? ImageFormat::SVG : ImageFormat::PNG;
+    case OutputFormat::LaTeX:
+      return Config_getBool(USE_PDFLATEX) ? ImageFormat::PDF : ImageFormat::PNG;
   }
-  else if (format == MermaidManager::OutputFormat::PDF)
-  {
-    bool usePDFLatex = Config_getBool(USE_PDFLATEX);
-    return usePDFLatex ? MermaidManager::OutputFormat::PDF : MermaidManager::OutputFormat::Bitmap;
-  }
-
-  return format;
+  return ImageFormat::PNG;
 }
 
-
 QCString MermaidManager::writeMermaidSource(const QCString &outDirArg, const QCString &fileName,
-                                            const QCString &content, OutputFormat format,
+                                            const QCString &content, ImageFormat imageFormat,
                                             const QCString &srcFile, int srcLine)
 {
   QCString outDir(outDirArg);
@@ -113,13 +109,13 @@ QCString MermaidManager::writeMermaidSource(const QCString &outDirArg, const QCS
   file.close();
 
   // Store for batch processing in run()
-  m_diagrams.emplace_back(format,MermaidDiagramInfo(baseName, content, outDir, srcFile, srcLine));
+  m_diagrams.emplace_back(imageFormat,MermaidDiagramInfo(baseName, content, outDir, srcFile, srcLine));
 
   return baseName;
 }
 
 void MermaidManager::generateMermaidOutput(const QCString &baseName, const QCString &/*outDir*/,
-                                           OutputFormat format, bool toIndex)
+                                           ImageFormat imageFormat, bool toIndex)
 {
   if (!toIndex) return;
   QCString imgName = baseName;
@@ -128,7 +124,7 @@ void MermaidManager::generateMermaidOutput(const QCString &baseName, const QCStr
   {
     imgName = imgName.mid(i + 1);
   }
-  imgName += "." + imageExtension(format);
+  imgName += "." + imageExtension(imageFormat);
   Doxygen::indexList->addImageFile(imgName);
 }
 
@@ -163,7 +159,7 @@ static void runMermaid(const MermaidManager::DiagramList &diagrams)
     //printf("content=%s\n",qPrint(mc.content));
     if (diagram.info.content.isEmpty()) continue;
 
-    QCString ext = MermaidManager::imageExtension(diagram.format);
+    QCString ext = MermaidManager::imageExtension(diagram.imageFormat);
 
     QCString inputFile  = diagram.info.baseName + ".mmd";
     QCString outputFile = diagram.info.baseName + "." + ext;
