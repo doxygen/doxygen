@@ -525,7 +525,7 @@ Step1::Step1(Wizard *wizard,const QHash<QString,Input*> &modelData) : m_wizard(w
   m_projBrief  = new QLineEdit;
   m_projNumber = new QLineEdit;
   m_projIconSel = new QPushButton(this);
-  m_projIconSel->setText(tr("Select..."));
+  m_projIconSel->setText(DoxygenWizard::msgSelectButton());
   m_projIconLab = new QLabel;
 
   grid->addWidget(m_projName,0,1,1,2);
@@ -557,7 +557,7 @@ Step1::Step1(Wizard *wizard,const QHash<QString,Input*> &modelData) : m_wizard(w
   rowLayout->addWidget(m_srcDirLabel2);
   m_sourceDir = new QLineEdit;
   m_srcSelectDir = new QPushButton(this);
-  m_srcSelectDir->setText(tr("Select..."));
+  m_srcSelectDir->setText(DoxygenWizard::msgSelectButton());
   rowLayout->addWidget(m_sourceDir);
   rowLayout->addWidget(m_srcSelectDir);
   layout->addWidget(row);
@@ -585,7 +585,7 @@ Step1::Step1(Wizard *wizard,const QHash<QString,Input*> &modelData) : m_wizard(w
   rowLayout->addWidget(m_destDirLabel2);
   m_destDir = new QLineEdit;
   m_dstSelectDir = new QPushButton(this);
-  m_dstSelectDir->setText(tr("Select..."));
+  m_dstSelectDir->setText(DoxygenWizard::msgSelectButton());
   rowLayout->addWidget(m_destDir);
   rowLayout->addWidget(m_dstSelectDir);
   layout->addWidget(row);
@@ -613,7 +613,7 @@ void Step1::selectProjectIcon()
                                     tr("Select project icon/image"),path);
   if (iconName.isEmpty())
   {
-    m_projIconLab->setText(tr("No Project logo selected."));
+    m_projIconLab->setText(DoxygenWizard::msgNoProjectLogoSelected());
   }
   else
   {
@@ -746,7 +746,7 @@ void Step1::init()
   }
   else
   {
-    m_projIconLab->setText(tr("No Project logo selected."));
+    m_projIconLab->setText(DoxygenWizard::msgNoProjectLogoSelected());
   }
   option = m_modelData[STR_INPUT];
   if (option->value().toStringList().count()>0)
@@ -766,15 +766,15 @@ void Step1::retranslateUi()
   m_projBriefLabel->setText(tr("Project synopsis:"));
   m_projVersionLabel->setText(tr("Project version or id:"));
   m_projLogoLabel->setText(tr("Project logo:"));
-  m_projIconSel->setText(tr("Select..."));
+  m_projIconSel->setText(DoxygenWizard::msgSelectButton());
   m_srcDirLabel->setText(tr("Specify the directory to scan for source code"));
   m_srcDirLabel2->setText(tr("Source code directory:"));
-  m_srcSelectDir->setText(tr("Select..."));
+  m_srcSelectDir->setText(DoxygenWizard::msgSelectButton());
   m_recursive->setText(tr("Scan recursively"));
   m_destDirLabel->setText(tr("Specify the directory where doxygen should "
               "put the generated documentation"));
   m_destDirLabel2->setText(tr("Destination directory:"));
-  m_dstSelectDir->setText(tr("Select..."));
+  m_dstSelectDir->setText(DoxygenWizard::msgSelectButton());
   
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
   if (m_projIconLab->pixmap().isNull())
@@ -782,7 +782,7 @@ void Step1::retranslateUi()
   if (m_projIconLab->pixmap() == nullptr || m_projIconLab->pixmap()->isNull())
 #endif
   {
-    m_projIconLab->setText(tr("No Project logo selected."));
+    m_projIconLab->setText(DoxygenWizard::msgNoProjectLogoSelected());
   }
 }
 
@@ -980,7 +980,7 @@ Step3::Step3(Wizard *wizard,const QHash<QString,Input*> &modelData)
   m_outputFormatLabel = new QLabel(tr("Select the output format(s) to generate"));
   gbox->addWidget(m_outputFormatLabel,0,0);
   {
-    m_htmlOptions = new QGroupBox(tr("HTML"));
+    m_htmlOptions = new QGroupBox(DoxygenWizard::msgHtmlFormat());
     m_htmlOptions->setCheckable(true);
     // GENERATE_HTML
     m_htmlOptionsGroup = new QButtonGroup(m_htmlOptions);
@@ -1011,7 +1011,7 @@ Step3::Step3(Wizard *wizard,const QHash<QString,Input*> &modelData)
   gbox->addWidget(m_htmlOptions,1,0);
 
   {
-    m_texOptions = new QGroupBox(tr("LaTeX"));
+    m_texOptions = new QGroupBox(DoxygenWizard::msgLatexFormat());
     m_texOptions->setCheckable(true);
     // GENERATE_LATEX
     m_texOptionsGroup = new QButtonGroup(m_texOptions);
@@ -1039,9 +1039,9 @@ Step3::Step3(Wizard *wizard,const QHash<QString,Input*> &modelData)
   // GENERATE_MAN
   m_rtfEnabled=new QCheckBox(tr("Rich Text Format (RTF)"));
   // GENERATE_RTF
-  m_xmlEnabled=new QCheckBox(tr("XML"));
+  m_xmlEnabled=new QCheckBox(DoxygenWizard::msgXmlFormat());
   // GENERATE_XML
-  m_docbookEnabled=new QCheckBox(tr("Docbook"));
+  m_docbookEnabled=new QCheckBox(DoxygenWizard::msgDocbookFormat());
   // GENERATE_DOCBOOK
   gbox->addWidget(m_manEnabled,3,0);
   gbox->addWidget(m_rtfEnabled,4,0);
@@ -1191,18 +1191,18 @@ void Step3::init()
 void Step3::retranslateUi()
 {
   m_outputFormatLabel->setText(tr("Select the output format(s) to generate"));
-  m_htmlOptions->setTitle(tr("HTML"));
+  m_htmlOptions->setTitle(DoxygenWizard::msgHtmlFormat());
   m_htmlRadio0->setText(tr("plain HTML"));
   m_htmlRadio1->setText(tr("with navigation panel"));
   m_htmlRadio2->setText(tr("prepare for compressed HTML (.chm)"));
-  m_texOptions->setTitle(tr("LaTeX"));
+  m_texOptions->setTitle(DoxygenWizard::msgLatexFormat());
   m_texRadio0->setText(tr("as intermediate format for hyperlinked PDF"));
   m_texRadio1->setText(tr("as intermediate format for PDF"));
   m_texRadio2->setText(tr("as intermediate format for PostScript"));
   m_manEnabled->setText(tr("Man pages"));
   m_rtfEnabled->setText(tr("Rich Text Format (RTF)"));
-  m_xmlEnabled->setText(tr("XML"));
-  m_docbookEnabled->setText(tr("Docbook"));
+  m_xmlEnabled->setText(DoxygenWizard::msgXmlFormat());
+  m_docbookEnabled->setText(DoxygenWizard::msgDocbookFormat());
   m_searchEnabled->setText(tr("With search function"));
   m_tuneColor->setText(tr("Change color..."));
 }
@@ -1413,9 +1413,9 @@ Wizard::Wizard(const QHash<QString,Input*> &modelData, QWidget *parent) :
 {
   m_treeWidget = new QTreeWidget;
   m_treeWidget->setColumnCount(1);
-  m_treeWidget->setHeaderLabels(QStringList() << tr("Topics"));
+  m_treeWidget->setHeaderLabels(QStringList() << DoxygenWizard::msgTopicsHeader());
   QList<QTreeWidgetItem*> items;
-  items.append(new QTreeWidgetItem((QTreeWidget*)nullptr,QStringList(tr("Project"))));
+  items.append(new QTreeWidgetItem((QTreeWidget*)nullptr,QStringList(DoxygenWizard::msgProjectTopic())));
   items.append(new QTreeWidgetItem((QTreeWidget*)nullptr,QStringList(tr("Mode"))));
   items.append(new QTreeWidgetItem((QTreeWidget*)nullptr,QStringList(tr("Output"))));
   items.append(new QTreeWidgetItem((QTreeWidget*)nullptr,QStringList(tr("Diagrams"))));
@@ -1433,9 +1433,9 @@ Wizard::Wizard(const QHash<QString,Input*> &modelData, QWidget *parent) :
 
   QWidget *rightSide = new QWidget;
   QGridLayout *grid = new QGridLayout(rightSide);
-  m_prev = new QPushButton(tr("Previous"));
+  m_prev = new QPushButton(DoxygenWizard::msgPreviousButton());
   m_prev->setEnabled(false);
-  m_next = new QPushButton(tr("Next"));
+  m_next = new QPushButton(DoxygenWizard::msgNextButton());
   grid->addWidget(m_topicStack,0,0,1,2);
   grid->addWidget(m_prev,1,0,Qt::AlignLeft);
   grid->addWidget(m_next,1,1,Qt::AlignRight);
@@ -1463,7 +1463,7 @@ void Wizard::activateTopic(QTreeWidgetItem *item,QTreeWidgetItem *)
   {
 
     QString label = item->text(0);
-    if (label==tr("Project"))
+    if (label==DoxygenWizard::msgProjectTopic())
     {
       m_topicStack->setCurrentWidget(m_step1);
       m_prev->setEnabled(false);
@@ -1524,9 +1524,9 @@ void Wizard::refresh()
 
 void Wizard::retranslateUi()
 {
-  m_treeWidget->setHeaderLabels(QStringList() << tr("Topics"));
+  m_treeWidget->setHeaderLabels(QStringList() << DoxygenWizard::msgTopicsHeader());
   QTreeWidgetItem *item = m_treeWidget->invisibleRootItem()->child(0);
-  if (item) item->setText(0, tr("Project"));
+  if (item) item->setText(0, DoxygenWizard::msgProjectTopic());
   item = m_treeWidget->invisibleRootItem()->child(1);
   if (item) item->setText(0, tr("Mode"));
   item = m_treeWidget->invisibleRootItem()->child(2);
@@ -1534,8 +1534,8 @@ void Wizard::retranslateUi()
   item = m_treeWidget->invisibleRootItem()->child(3);
   if (item) item->setText(0, tr("Diagrams"));
   
-  m_prev->setText(tr("Previous"));
-  m_next->setText(tr("Next"));
+  m_prev->setText(DoxygenWizard::msgPreviousButton());
+  m_next->setText(DoxygenWizard::msgNextButton());
   
   m_step1->retranslateUi();
   m_step2->retranslateUi();

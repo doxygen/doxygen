@@ -119,29 +119,9 @@
         <source>Update selected item</source>
         <translation>選択項目を更新</translation>
     </message>
-    <message>
-        <source>Browse to a file</source>
-        <translation>ファイルを参照</translation>
-    </message>
-    <message>
-        <source>Browse to a folder</source>
-        <translation>フォルダを参照</translation>
-    </message>
 </context>
 <context>
     <name>InputString</name>
-    <message>
-        <source>Browse to a file</source>
-        <translation>ファイルを参照</translation>
-    </message>
-    <message>
-        <source>Browse to a folder</source>
-        <translation>フォルダを参照</translation>
-    </message>
-    <message>
-        <source>No Project logo selected.</source>
-        <translation>プロジェクトロゴが選択されていません。</translation>
-    </message>
     <message>
         <source>Select file</source>
         <translation>ファイルを選択</translation>
@@ -212,10 +192,6 @@
     <message>
         <source>Language</source>
         <translation>言語</translation>
-    </message>
-    <message>
-        <source>Select...</source>
-        <translation>選択...</translation>
     </message>
     <message>
         <source>Status: not running</source>
@@ -759,10 +735,6 @@ Reason given: %2</source>
         <translation>プロジェクトロゴ：</translation>
     </message>
     <message>
-        <source>Select...</source>
-        <translation>選択...</translation>
-    </message>
-    <message>
         <source>Specify the directory to scan for source code</source>
         <translation>ソースコードをスキャンするディレクトリを指定</translation>
     </message>
@@ -785,10 +757,6 @@ Reason given: %2</source>
     <message>
         <source>Select project icon/image</source>
         <translation>プロジェクトアイコン/画像を選択</translation>
-    </message>
-    <message>
-        <source>No Project logo selected.</source>
-        <translation>プロジェクトロゴが選択されていません。</translation>
     </message>
     <message>
         <source>Select source directory</source>
@@ -857,10 +825,6 @@ Reason given: %2</source>
         <translation>生成する出力形式を選択</translation>
     </message>
     <message>
-        <source>HTML</source>
-        <translation>HTML</translation>
-    </message>
-    <message>
         <source>plain HTML</source>
         <translation>プレーンテキストHTML</translation>
     </message>
@@ -881,10 +845,6 @@ Reason given: %2</source>
         <translation>色を変更...</translation>
     </message>
     <message>
-        <source>LaTeX</source>
-        <translation>LaTeX</translation>
-    </message>
-    <message>
         <source>as intermediate format for hyperlinked PDF</source>
         <translation>ハイパーリンクPDFの中間形式として</translation>
     </message>
@@ -903,14 +863,6 @@ Reason given: %2</source>
     <message>
         <source>Rich Text Format (RTF)</source>
         <translation>リッチテキスト形式 (RTF)</translation>
-    </message>
-    <message>
-        <source>XML</source>
-        <translation>XML</translation>
-    </message>
-    <message>
-        <source>Docbook</source>
-        <translation>Docbook</translation>
     </message>
 </context>
 <context>
@@ -990,10 +942,6 @@ Reason given: %2</source>
 <context>
     <name>Wizard</name>
     <message>
-        <source>Project</source>
-        <translation>プロジェクト</translation>
-    </message>
-    <message>
         <source>Mode</source>
         <translation>モード</translation>
     </message>
@@ -1027,6 +975,54 @@ Reason given: %2</source>
     <message>
         <source>Sorry, no preview available (%1);</source>
         <translation>申し訳ありません、%1 のプレビューは利用できません。</translation>
+    </message>
+    <message>
+        <source>No Project logo selected.</source>
+        <translation>プロジェクトロゴが選択されていません。</translation>
+    </message>
+    <message>
+        <source>Browse to a file</source>
+        <translation>ファイルを参照</translation>
+    </message>
+    <message>
+        <source>Browse to a folder</source>
+        <translation>フォルダを参照</translation>
+    </message>
+    <message>
+        <source>Select...</source>
+        <translation>選択...</translation>
+    </message>
+    <message>
+        <source>Previous</source>
+        <translation>前へ</translation>
+    </message>
+    <message>
+        <source>Next</source>
+        <translation>次へ</translation>
+    </message>
+    <message>
+        <source>Topics</source>
+        <translation>トピック</translation>
+    </message>
+    <message>
+        <source>Project</source>
+        <translation>プロジェクト</translation>
+    </message>
+    <message>
+        <source>HTML</source>
+        <translation>HTML</translation>
+    </message>
+    <message>
+        <source>LaTeX</source>
+        <translation>LaTeX</translation>
+    </message>
+    <message>
+        <source>XML</source>
+        <translation>XML</translation>
+    </message>
+    <message>
+        <source>Docbook</source>
+        <translation>Docbook</translation>
     </message>
 </context>
 </TS>

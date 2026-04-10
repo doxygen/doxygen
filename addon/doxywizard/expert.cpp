@@ -18,6 +18,7 @@
 #include "inputstrlist.h"
 #include "inputobsolete.h"
 #include "config.h"
+#include "doxywizard.h"
 #include "version.h"
 #include "configdoc.h"
 #include "settings.h"
@@ -102,9 +103,9 @@ Expert::Expert()
 
   QWidget *rightSide = new QWidget;
   QGridLayout *grid = new QGridLayout(rightSide);
-  m_prev = new QPushButton(tr("Previous"));
+  m_prev = new QPushButton(DoxygenWizard::msgPreviousButton());
   m_prev->setEnabled(false);
-  m_next = new QPushButton(tr("Next"));
+  m_next = new QPushButton(DoxygenWizard::msgNextButton());
   grid->addWidget(m_topicStack,0,0,1,2);
   grid->addWidget(m_prev,1,0,Qt::AlignLeft);
   grid->addWidget(m_next,1,1,Qt::AlignRight);
@@ -152,7 +153,7 @@ void Expert::createTopics(const QDomElement &rootElem)
     }
     childElem = childElem.nextSiblingElement();
   }
-  m_treeWidget->setHeaderLabels(QStringList() << tr("Topics"));
+  m_treeWidget->setHeaderLabels(QStringList() << DoxygenWizard::msgTopicsHeader());
   m_treeWidget->insertTopLevelItems(0,items);
   connect(m_treeWidget,
           SIGNAL(currentItemChanged(QTreeWidgetItem *,QTreeWidgetItem *)),
@@ -1036,9 +1037,9 @@ void Expert::refresh()
 
 void Expert::retranslateUi()
 {
-  m_treeWidget->setHeaderLabels(QStringList() << tr("Topics"));
-  m_prev->setText(tr("Previous"));
-  m_next->setText(tr("Next"));
+  m_treeWidget->setHeaderLabels(QStringList() << DoxygenWizard::msgTopicsHeader());
+  m_prev->setText(DoxygenWizard::msgPreviousButton());
+  m_next->setText(DoxygenWizard::msgNextButton());
   
   for (int i = 0; i < m_treeWidget->topLevelItemCount(); ++i)
   {

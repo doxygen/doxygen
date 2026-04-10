@@ -857,10 +857,6 @@ Reason given: %2</source>
         <translation>Выберите форматы вывода для генерации</translation>
     </message>
     <message>
-        <source>HTML</source>
-        <translation>HTML</translation>
-    </message>
-    <message>
         <source>plain HTML</source>
         <translation>простой HTML</translation>
     </message>
@@ -881,10 +877,6 @@ Reason given: %2</source>
         <translation>Изменить цвет...</translation>
     </message>
     <message>
-        <source>LaTeX</source>
-        <translation>LaTeX</translation>
-    </message>
-    <message>
         <source>as intermediate format for hyperlinked PDF</source>
         <translation>как промежуточный формат для PDF с гиперссылками</translation>
     </message>
@@ -903,14 +895,6 @@ Reason given: %2</source>
     <message>
         <source>Rich Text Format (RTF)</source>
         <translation>Формат Rich Text (RTF)</translation>
-    </message>
-    <message>
-        <source>XML</source>
-        <translation>XML</translation>
-    </message>
-    <message>
-        <source>Docbook</source>
-        <translation>Docbook</translation>
     </message>
 </context>
 <context>
@@ -990,10 +974,6 @@ Reason given: %2</source>
 <context>
     <name>Wizard</name>
     <message>
-        <source>Project</source>
-        <translation>Проект</translation>
-    </message>
-    <message>
         <source>Mode</source>
         <translation>Режим</translation>
     </message>
@@ -1027,6 +1007,54 @@ Reason given: %2</source>
     <message>
         <source>Sorry, no preview available (%1);</source>
         <translation>Извините, предпросмотр для %1 недоступен.</translation>
+    </message>
+    <message>
+        <source>No Project logo selected.</source>
+        <translation>Логотип проекта не выбран.</translation>
+    </message>
+    <message>
+        <source>Browse to a file</source>
+        <translation>Перейти к файлу</translation>
+    </message>
+    <message>
+        <source>Browse to a folder</source>
+        <translation>Перейти к папке</translation>
+    </message>
+    <message>
+        <source>Select...</source>
+        <translation>Выбрать...</translation>
+    </message>
+    <message>
+        <source>Previous</source>
+        <translation>Назад</translation>
+    </message>
+    <message>
+        <source>Next</source>
+        <translation>Далее</translation>
+    </message>
+    <message>
+        <source>Topics</source>
+        <translation>Темы</translation>
+    </message>
+    <message>
+        <source>Project</source>
+        <translation>Проект</translation>
+    </message>
+    <message>
+        <source>HTML</source>
+        <translation>HTML</translation>
+    </message>
+    <message>
+        <source>LaTeX</source>
+        <translation>LaTeX</translation>
+    </message>
+    <message>
+        <source>XML</source>
+        <translation>XML</translation>
+    </message>
+    <message>
+        <source>Docbook</source>
+        <translation>Docbook</translation>
     </message>
 </context>
 </TS>

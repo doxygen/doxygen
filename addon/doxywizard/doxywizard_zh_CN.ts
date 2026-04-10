@@ -127,34 +127,9 @@
         <source>Update selected item</source>
         <translation>更新选中项</translation>
     </message>
-    <message>
-        <location filename="inputstrlist.cpp" line="61"/>
-        <source>Browse to a file</source>
-        <translation>浏览文件</translation>
-    </message>
-    <message>
-        <location filename="inputstrlist.cpp" line="67"/>
-        <source>Browse to a folder</source>
-        <translation>浏览文件夹</translation>
-    </message>
 </context>
 <context>
     <name>InputString</name>
-    <message>
-        <location filename="inputstring.cpp" line="73"/>
-        <source>Browse to a file</source>
-        <translation>浏览文件</translation>
-    </message>
-    <message>
-        <location filename="inputstring.cpp" line="86"/>
-        <source>Browse to a folder</source>
-        <translation>浏览文件夹</translation>
-    </message>
-    <message>
-        <location filename="inputstring.cpp" line="146"/>
-        <source>No Project logo selected.</source>
-        <translation>未选择项目logo。</translation>
-    </message>
     <message>
         <location filename="inputstring.cpp" line="190"/>
         <source>Select file</source>
@@ -240,11 +215,6 @@
         <location filename="doxywizard.cpp" line="90"/>
         <source>About</source>
         <translation>关于</translation>
-    </message>
-    <message>
-        <location filename="doxywizard.cpp" line="106"/>
-        <source>Select...</source>
-        <translation>选择...</translation>
     </message>
     <message>
         <location filename="doxywizard.cpp" line="118"/>
@@ -1782,13 +1752,6 @@ Reason given: %2</source>
         <translation>项目 logo：</translation>
     </message>
     <message>
-        <location filename="wizard.cpp" line="528"/>
-        <location filename="wizard.cpp" line="560"/>
-        <location filename="wizard.cpp" line="588"/>
-        <source>Select...</source>
-        <translation>选择...</translation>
-    </message>
-    <message>
         <location filename="wizard.cpp" line="550"/>
         <source>Specify the directory to scan for source code</source>
         <translation>指定要扫描源代码的目录</translation>
@@ -1817,12 +1780,6 @@ Reason given: %2</source>
         <location filename="wizard.cpp" line="613"/>
         <source>Select project icon/image</source>
         <translation>选择项目图标/图像</translation>
-    </message>
-    <message>
-        <location filename="wizard.cpp" line="616"/>
-        <location filename="wizard.cpp" line="749"/>
-        <source>No Project logo selected.</source>
-        <translation>未选择项目 logo。</translation>
     </message>
     <message>
         <location filename="wizard.cpp" line="645"/>
@@ -2070,12 +2027,6 @@ Reason given: %2</source>
 <context>
     <name>Wizard</name>
     <message>
-        <location filename="wizard.cpp" line="1338"/>
-        <location filename="wizard.cpp" line="1386"/>
-        <source>Project</source>
-        <translation>项目</translation>
-    </message>
-    <message>
         <location filename="wizard.cpp" line="1339"/>
         <location filename="wizard.cpp" line="1392"/>
         <source>Mode</source>
@@ -2117,6 +2068,54 @@ Reason given: %2</source>
     <message>
         <source>Sorry, no preview available (%1);</source>
         <translation>抱歉，%1 无法预览。</translation>
+    </message>
+    <message>
+        <source>No Project logo selected.</source>
+        <translation>未选择项目logo。</translation>
+    </message>
+    <message>
+        <source>Browse to a file</source>
+        <translation>浏览文件</translation>
+    </message>
+    <message>
+        <source>Browse to a folder</source>
+        <translation>浏览文件夹</translation>
+    </message>
+    <message>
+        <source>Select...</source>
+        <translation>选择...</translation>
+    </message>
+    <message>
+        <source>Previous</source>
+        <translation>上一步</translation>
+    </message>
+    <message>
+        <source>Next</source>
+        <translation>下一步</translation>
+    </message>
+    <message>
+        <source>Topics</source>
+        <translation>主题</translation>
+    </message>
+    <message>
+        <source>Project</source>
+        <translation>项目</translation>
+    </message>
+    <message>
+        <source>HTML</source>
+        <translation>HTML</translation>
+    </message>
+    <message>
+        <source>LaTeX</source>
+        <translation>LaTeX</translation>
+    </message>
+    <message>
+        <source>XML</source>
+        <translation>XML</translation>
+    </message>
+    <message>
+        <source>Docbook</source>
+        <translation>Docbook</translation>
     </message>
 </context>
 </TS>

@@ -119,29 +119,9 @@
         <source>Update selected item</source>
         <translation>更新選取項目</translation>
     </message>
-    <message>
-        <source>Browse to a file</source>
-        <translation>瀏覽檔案</translation>
-    </message>
-    <message>
-        <source>Browse to a folder</source>
-        <translation>瀏覽資料夾</translation>
-    </message>
 </context>
 <context>
     <name>InputString</name>
-    <message>
-        <source>Browse to a file</source>
-        <translation>瀏覽檔案</translation>
-    </message>
-    <message>
-        <source>Browse to a folder</source>
-        <translation>瀏覽資料夾</translation>
-    </message>
-    <message>
-        <source>No Project logo selected.</source>
-        <translation>未選擇專案標誌。</translation>
-    </message>
     <message>
         <source>Select file</source>
         <translation>選擇檔案</translation>
@@ -212,10 +192,6 @@
     <message>
         <source>Language</source>
         <translation>語言</translation>
-    </message>
-    <message>
-        <source>Select...</source>
-        <translation>選擇...</translation>
     </message>
     <message>
         <source>Status: not running</source>
@@ -1701,10 +1677,6 @@ Reason given: %2</source>
         <translation>專案標誌：</translation>
     </message>
     <message>
-        <source>Select...</source>
-        <translation>選擇...</translation>
-    </message>
-    <message>
         <source>Specify the directory to scan for source code</source>
         <translation>指定要掃描原始碼的目錄</translation>
     </message>
@@ -1727,10 +1699,6 @@ Reason given: %2</source>
     <message>
         <source>Select project icon/image</source>
         <translation>選擇專案圖示/影像</translation>
-    </message>
-    <message>
-        <source>No Project logo selected.</source>
-        <translation>未選擇專案標誌。</translation>
     </message>
     <message>
         <source>Select source directory</source>
@@ -1799,10 +1767,6 @@ Reason given: %2</source>
         <translation>選擇要產生的輸出格式</translation>
     </message>
     <message>
-        <source>HTML</source>
-        <translation>HTML</translation>
-    </message>
-    <message>
         <source>plain HTML</source>
         <translation>純 HTML</translation>
     </message>
@@ -1823,10 +1787,6 @@ Reason given: %2</source>
         <translation>變更顏色...</translation>
     </message>
     <message>
-        <source>LaTeX</source>
-        <translation>LaTeX</translation>
-    </message>
-    <message>
         <source>as intermediate format for hyperlinked PDF</source>
         <translation>作為超連結 PDF 的中間格式</translation>
     </message>
@@ -1845,14 +1805,6 @@ Reason given: %2</source>
     <message>
         <source>Rich Text Format (RTF)</source>
         <translation>富文字格式 (RTF)</translation>
-    </message>
-    <message>
-        <source>XML</source>
-        <translation>XML</translation>
-    </message>
-    <message>
-        <source>Docbook</source>
-        <translation>Docbook</translation>
     </message>
 </context>
 <context>
@@ -1932,10 +1884,6 @@ Reason given: %2</source>
 <context>
     <name>Wizard</name>
     <message>
-        <source>Project</source>
-        <translation>專案</translation>
-    </message>
-    <message>
         <source>Mode</source>
         <translation>模式</translation>
     </message>
@@ -1969,6 +1917,54 @@ Reason given: %2</source>
     <message>
         <source>Sorry, no preview available (%1);</source>
         <translation>抱歉，%1 無法預覽。</translation>
+    </message>
+    <message>
+        <source>No Project logo selected.</source>
+        <translation>未選擇專案logo。</translation>
+    </message>
+    <message>
+        <source>Browse to a file</source>
+        <translation>瀏覽檔案</translation>
+    </message>
+    <message>
+        <source>Browse to a folder</source>
+        <translation>瀏覽資料夾</translation>
+    </message>
+    <message>
+        <source>Select...</source>
+        <translation>選擇...</translation>
+    </message>
+    <message>
+        <source>Previous</source>
+        <translation>上一步</translation>
+    </message>
+    <message>
+        <source>Next</source>
+        <translation>下一步</translation>
+    </message>
+    <message>
+        <source>Topics</source>
+        <translation>主題</translation>
+    </message>
+    <message>
+        <source>Project</source>
+        <translation>專案</translation>
+    </message>
+    <message>
+        <source>HTML</source>
+        <translation>HTML</translation>
+    </message>
+    <message>
+        <source>LaTeX</source>
+        <translation>LaTeX</translation>
+    </message>
+    <message>
+        <source>XML</source>
+        <translation>XML</translation>
+    </message>
+    <message>
+        <source>Docbook</source>
+        <translation>Docbook</translation>
     </message>
 </context>
 </TS>

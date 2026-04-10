@@ -119,29 +119,9 @@
         <source>Update selected item</source>
         <translation>Mettre à jour l'élément sélectionné</translation>
     </message>
-    <message>
-        <source>Browse to a file</source>
-        <translation>Parcourir vers un fichier</translation>
-    </message>
-    <message>
-        <source>Browse to a folder</source>
-        <translation>Parcourir vers un dossier</translation>
-    </message>
 </context>
 <context>
     <name>InputString</name>
-    <message>
-        <source>Browse to a file</source>
-        <translation>Parcourir vers un fichier</translation>
-    </message>
-    <message>
-        <source>Browse to a folder</source>
-        <translation>Parcourir vers un dossier</translation>
-    </message>
-    <message>
-        <source>No Project logo selected.</source>
-        <translation>Aucun logo de projet sélectionné.</translation>
-    </message>
     <message>
         <source>Select file</source>
         <translation>Sélectionner un fichier</translation>
@@ -212,10 +192,6 @@
     <message>
         <source>Language</source>
         <translation>Langue</translation>
-    </message>
-    <message>
-        <source>Select...</source>
-        <translation>Sélectionner...</translation>
     </message>
     <message>
         <source>Status: not running</source>
@@ -759,10 +735,6 @@ Raison donnée : %2</translation>
         <translation>Logo du projet :</translation>
     </message>
     <message>
-        <source>Select...</source>
-        <translation>Sélectionner...</translation>
-    </message>
-    <message>
         <source>Specify the directory to scan for source code</source>
         <translation>Spécifier le répertoire à analyser pour le code source</translation>
     </message>
@@ -785,10 +757,6 @@ Raison donnée : %2</translation>
     <message>
         <source>Select project icon/image</source>
         <translation>Sélectionner l'icône/image du projet</translation>
-    </message>
-    <message>
-        <source>No Project logo selected.</source>
-        <translation>Aucun logo de projet sélectionné.</translation>
     </message>
     <message>
         <source>Select source directory</source>
@@ -857,10 +825,6 @@ Raison donnée : %2</translation>
         <translation>Sélectionner le(s) format(s) de sortie à générer</translation>
     </message>
     <message>
-        <source>HTML</source>
-        <translation>HTML</translation>
-    </message>
-    <message>
         <source>plain HTML</source>
         <translation>HTML simple</translation>
     </message>
@@ -881,10 +845,6 @@ Raison donnée : %2</translation>
         <translation>Changer la couleur...</translation>
     </message>
     <message>
-        <source>LaTeX</source>
-        <translation>LaTeX</translation>
-    </message>
-    <message>
         <source>as intermediate format for hyperlinked PDF</source>
         <translation>comme format intermédiaire pour PDF avec liens</translation>
     </message>
@@ -903,14 +863,6 @@ Raison donnée : %2</translation>
     <message>
         <source>Rich Text Format (RTF)</source>
         <translation>Rich Text Format (RTF)</translation>
-    </message>
-    <message>
-        <source>XML</source>
-        <translation>XML</translation>
-    </message>
-    <message>
-        <source>Docbook</source>
-        <translation>Docbook</translation>
     </message>
 </context>
 <context>
@@ -990,10 +942,6 @@ Raison donnée : %2</translation>
 <context>
     <name>Wizard</name>
     <message>
-        <source>Project</source>
-        <translation>Projet</translation>
-    </message>
-    <message>
         <source>Mode</source>
         <translation>Mode</translation>
     </message>
@@ -1027,6 +975,54 @@ Raison donnée : %2</translation>
     <message>
         <source>Sorry, no preview available (%1);</source>
         <translation>Désolé, aucun aperçu disponible pour %1.</translation>
+    </message>
+    <message>
+        <source>No Project logo selected.</source>
+        <translation>Aucun logo de projet sélectionné.</translation>
+    </message>
+    <message>
+        <source>Browse to a file</source>
+        <translation>Parcourir vers un fichier</translation>
+    </message>
+    <message>
+        <source>Browse to a folder</source>
+        <translation>Parcourir vers un dossier</translation>
+    </message>
+    <message>
+        <source>Select...</source>
+        <translation>Sélectionner...</translation>
+    </message>
+    <message>
+        <source>Previous</source>
+        <translation>Précédent</translation>
+    </message>
+    <message>
+        <source>Next</source>
+        <translation>Suivant</translation>
+    </message>
+    <message>
+        <source>Topics</source>
+        <translation>Sujets</translation>
+    </message>
+    <message>
+        <source>Project</source>
+        <translation>Projet</translation>
+    </message>
+    <message>
+        <source>HTML</source>
+        <translation>HTML</translation>
+    </message>
+    <message>
+        <source>LaTeX</source>
+        <translation>LaTeX</translation>
+    </message>
+    <message>
+        <source>XML</source>
+        <translation>XML</translation>
+    </message>
+    <message>
+        <source>Docbook</source>
+        <translation>Docbook</translation>
     </message>
 </context>
 </TS>

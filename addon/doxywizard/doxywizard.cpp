@@ -62,6 +62,66 @@ QString DoxygenWizard::msgNoPreviewAvailable(const QString &fileName)
   return QCoreApplication::translate("Messages", "Sorry, no preview available (%1);").arg(fileName);
 }
 
+QString DoxygenWizard::msgNoProjectLogoSelected()
+{
+  return QCoreApplication::translate("Messages", "No Project logo selected.");
+}
+
+QString DoxygenWizard::msgBrowseToFile()
+{
+  return QCoreApplication::translate("Messages", "Browse to a file");
+}
+
+QString DoxygenWizard::msgBrowseToFolder()
+{
+  return QCoreApplication::translate("Messages", "Browse to a folder");
+}
+
+QString DoxygenWizard::msgSelectButton()
+{
+  return QCoreApplication::translate("Messages", "Select...");
+}
+
+QString DoxygenWizard::msgPreviousButton()
+{
+  return QCoreApplication::translate("Messages", "Previous");
+}
+
+QString DoxygenWizard::msgNextButton()
+{
+  return QCoreApplication::translate("Messages", "Next");
+}
+
+QString DoxygenWizard::msgTopicsHeader()
+{
+  return QCoreApplication::translate("Messages", "Topics");
+}
+
+QString DoxygenWizard::msgProjectTopic()
+{
+  return QCoreApplication::translate("Messages", "Project");
+}
+
+QString DoxygenWizard::msgHtmlFormat()
+{
+  return QCoreApplication::translate("Messages", "HTML");
+}
+
+QString DoxygenWizard::msgLatexFormat()
+{
+  return QCoreApplication::translate("Messages", "LaTeX");
+}
+
+QString DoxygenWizard::msgXmlFormat()
+{
+  return QCoreApplication::translate("Messages", "XML");
+}
+
+QString DoxygenWizard::msgDocbookFormat()
+{
+  return QCoreApplication::translate("Messages", "Docbook");
+}
+
 const int messageTimeout = 5000; //!< status bar message timeout in milliseconds.
 
 #define APPQT(x) QString::fromLatin1("<qt><pre>") + x + QString::fromLatin1("</pre></qt>")
@@ -135,7 +195,7 @@ MainWindow::MainWindow()
   // select working directory
   QHBoxLayout *dirLayout = new QHBoxLayout;
   m_workingDir = new QLineEdit;
-  m_selWorkingDir = new QPushButton(tr("Select..."));
+  m_selWorkingDir = new QPushButton(DoxygenWizard::msgSelectButton());
   dirLayout->addWidget(m_workingDir);
   dirLayout->addWidget(m_selWorkingDir);
 
@@ -325,7 +385,7 @@ void MainWindow::retranslateUi()
   updateRecentFile();
   updateTitle();
   
-  m_selWorkingDir->setText(tr("Select..."));
+  m_selWorkingDir->setText(DoxygenWizard::msgSelectButton());
   m_run->setText(m_running ? tr("Stop doxygen") : tr("Run doxygen"));
   m_runStatus->setText(m_running ? tr("Status: running") : tr("Status: not running"));
   m_saveLog->setText(tr("Save log..."));

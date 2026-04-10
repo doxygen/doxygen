@@ -59,13 +59,13 @@ InputStrList::InputStrList( QGridLayout *layout,int &row,
     {
       m_brFile = toolBar->addAction(QIcon(QString::fromLatin1(":/images/file.svg")),QString(),
                                     this,SLOT(browseFiles()));
-      m_brFile->setToolTip(tr("Browse to a file"));
+      m_brFile->setToolTip(DoxygenWizard::msgBrowseToFile());
     }
     if (lm&ListDir)
     {
       m_brDir = toolBar->addAction(QIcon(QString::fromLatin1(":/images/folder.svg")),QString(),
                                    this,SLOT(browseDir()));
-      m_brDir->setToolTip(tr("Browse to a folder"));
+      m_brDir->setToolTip(DoxygenWizard::msgBrowseToFolder());
     }
   }
   QHBoxLayout *rowLayout = new QHBoxLayout;

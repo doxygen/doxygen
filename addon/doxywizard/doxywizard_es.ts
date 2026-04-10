@@ -119,29 +119,9 @@
         <source>Update selected item</source>
         <translation>Actualizar elemento seleccionado</translation>
     </message>
-    <message>
-        <source>Browse to a file</source>
-        <translation>Buscar archivo</translation>
-    </message>
-    <message>
-        <source>Browse to a folder</source>
-        <translation>Buscar carpeta</translation>
-    </message>
 </context>
 <context>
     <name>InputString</name>
-    <message>
-        <source>Browse to a file</source>
-        <translation>Buscar archivo</translation>
-    </message>
-    <message>
-        <source>Browse to a folder</source>
-        <translation>Buscar carpeta</translation>
-    </message>
-    <message>
-        <source>No Project logo selected.</source>
-        <translation>No se ha seleccionado logo del proyecto.</translation>
-    </message>
     <message>
         <source>Select file</source>
         <translation>Seleccionar archivo</translation>
@@ -212,10 +192,6 @@
     <message>
         <source>Language</source>
         <translation>Idioma</translation>
-    </message>
-    <message>
-        <source>Select...</source>
-        <translation>Seleccionar...</translation>
     </message>
     <message>
         <source>Status: not running</source>
@@ -759,10 +735,6 @@ Razón dada: %2</translation>
         <translation>Logo del proyecto:</translation>
     </message>
     <message>
-        <source>Select...</source>
-        <translation>Seleccionar...</translation>
-    </message>
-    <message>
         <source>Specify the directory to scan for source code</source>
         <translation>Especifique el directorio para escanear código fuente</translation>
     </message>
@@ -785,10 +757,6 @@ Razón dada: %2</translation>
     <message>
         <source>Select project icon/image</source>
         <translation>Seleccionar icono/imagen del proyecto</translation>
-    </message>
-    <message>
-        <source>No Project logo selected.</source>
-        <translation>No se ha seleccionado logo del proyecto.</translation>
     </message>
     <message>
         <source>Select source directory</source>
@@ -857,10 +825,6 @@ Razón dada: %2</translation>
         <translation>Seleccione los formatos de salida a generar</translation>
     </message>
     <message>
-        <source>HTML</source>
-        <translation>HTML</translation>
-    </message>
-    <message>
         <source>plain HTML</source>
         <translation>HTML simple</translation>
     </message>
@@ -881,10 +845,6 @@ Razón dada: %2</translation>
         <translation>Cambiar color...</translation>
     </message>
     <message>
-        <source>LaTeX</source>
-        <translation>LaTeX</translation>
-    </message>
-    <message>
         <source>as intermediate format for hyperlinked PDF</source>
         <translation>como formato intermedio para PDF con hipervínculos</translation>
     </message>
@@ -903,14 +863,6 @@ Razón dada: %2</translation>
     <message>
         <source>Rich Text Format (RTF)</source>
         <translation>Formato de texto enriquecido (RTF)</translation>
-    </message>
-    <message>
-        <source>XML</source>
-        <translation>XML</translation>
-    </message>
-    <message>
-        <source>Docbook</source>
-        <translation>Docbook</translation>
     </message>
 </context>
 <context>
@@ -990,10 +942,6 @@ Razón dada: %2</translation>
 <context>
     <name>Wizard</name>
     <message>
-        <source>Project</source>
-        <translation>Proyecto</translation>
-    </message>
-    <message>
         <source>Mode</source>
         <translation>Modo</translation>
     </message>
@@ -1027,6 +975,54 @@ Razón dada: %2</translation>
     <message>
         <source>Sorry, no preview available (%1);</source>
         <translation>Lo siento, no hay vista previa disponible para %1.</translation>
+    </message>
+    <message>
+        <source>No Project logo selected.</source>
+        <translation>No se ha seleccionado logo del proyecto.</translation>
+    </message>
+    <message>
+        <source>Browse to a file</source>
+        <translation>Buscar archivo</translation>
+    </message>
+    <message>
+        <source>Browse to a folder</source>
+        <translation>Buscar carpeta</translation>
+    </message>
+    <message>
+        <source>Select...</source>
+        <translation>Seleccionar...</translation>
+    </message>
+    <message>
+        <source>Previous</source>
+        <translation>Anterior</translation>
+    </message>
+    <message>
+        <source>Next</source>
+        <translation>Siguiente</translation>
+    </message>
+    <message>
+        <source>Topics</source>
+        <translation>Temas</translation>
+    </message>
+    <message>
+        <source>Project</source>
+        <translation>Proyecto</translation>
+    </message>
+    <message>
+        <source>HTML</source>
+        <translation>HTML</translation>
+    </message>
+    <message>
+        <source>LaTeX</source>
+        <translation>LaTeX</translation>
+    </message>
+    <message>
+        <source>XML</source>
+        <translation>XML</translation>
+    </message>
+    <message>
+        <source>Docbook</source>
+        <translation>Docbook</translation>
     </message>
 </context>
 </TS>

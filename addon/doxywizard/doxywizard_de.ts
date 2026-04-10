@@ -119,37 +119,9 @@
         <source>Update selected item</source>
         <translation>Ausgewähltes Element aktualisieren</translation>
     </message>
-    <message>
-        <source>Browse to a file</source>
-        <translation>Zu einer Datei navigieren</translation>
-    </message>
-    <message>
-        <source>Browse to a folder</source>
-        <translation>Zu einem Ordner navigieren</translation>
-    </message>
 </context>
 <context>
     <name>InputString</name>
-    <message>
-        <source>Browse to a file</source>
-        <translation>Zu einer Datei navigieren</translation>
-    </message>
-    <message>
-        <source>Browse to a folder</source>
-        <translation>Zu einem Ordner navigieren</translation>
-    </message>
-    <message>
-        <source>No Project logo selected.</source>
-        <translation>Kein Projekt-Logo ausgewählt.</translation>
-    </message>
-    <message>
-        <source>Sorry, cannot find file(%1);</source>
-        <translation>Entschuldigung, die Datei (%1) konnte nicht gefunden werden.</translation>
-    </message>
-    <message>
-        <source>Sorry, no preview available (%1);</source>
-        <translation>Entschuldigung, für (%1) ist keine Vorschau verfügbar.</translation>
-    </message>
     <message>
         <source>Select file</source>
         <translation>Datei auswählen</translation>
@@ -220,10 +192,6 @@
     <message>
         <source>Language</source>
         <translation>Sprache</translation>
-    </message>
-    <message>
-        <source>Select...</source>
-        <translation>Auswählen...</translation>
     </message>
     <message>
         <source>Status: not running</source>
@@ -767,10 +735,6 @@ Angegebener Grund: %2</translation>
         <translation>Projektlogo:</translation>
     </message>
     <message>
-        <source>Select...</source>
-        <translation>Auswählen...</translation>
-    </message>
-    <message>
         <source>Specify the directory to scan for source code</source>
         <translation>Verzeichnis zum Scannen nach Quellcode angeben</translation>
     </message>
@@ -793,18 +757,6 @@ Angegebener Grund: %2</translation>
     <message>
         <source>Select project icon/image</source>
         <translation>Projektsymbol/Bild auswählen</translation>
-    </message>
-    <message>
-        <source>No Project logo selected.</source>
-        <translation>Kein Projektlogo ausgewählt.</translation>
-    </message>
-    <message>
-        <source>Sorry, cannot find file(%1);</source>
-        <translation>Entschuldigung, die Datei (%1) konnte nicht gefunden werden.</translation>
-    </message>
-    <message>
-        <source>Sorry, no preview available (%1);</source>
-        <translation>Entschuldigung, für (%1) ist keine Vorschau verfügbar.</translation>
     </message>
     <message>
         <source>Select source directory</source>
@@ -873,10 +825,6 @@ Angegebener Grund: %2</translation>
         <translation>Zu generierende Ausgabeformate auswählen</translation>
     </message>
     <message>
-        <source>HTML</source>
-        <translation>HTML</translation>
-    </message>
-    <message>
         <source>plain HTML</source>
         <translation>einfaches HTML</translation>
     </message>
@@ -897,10 +845,6 @@ Angegebener Grund: %2</translation>
         <translation>Farbe ändern...</translation>
     </message>
     <message>
-        <source>LaTeX</source>
-        <translation>LaTeX</translation>
-    </message>
-    <message>
         <source>as intermediate format for hyperlinked PDF</source>
         <translation>als Zwischenformat für verlinktes PDF</translation>
     </message>
@@ -919,14 +863,6 @@ Angegebener Grund: %2</translation>
     <message>
         <source>Rich Text Format (RTF)</source>
         <translation>Rich Text Format (RTF)</translation>
-    </message>
-    <message>
-        <source>XML</source>
-        <translation>XML</translation>
-    </message>
-    <message>
-        <source>Docbook</source>
-        <translation>Docbook</translation>
     </message>
 </context>
 <context>
@@ -1006,10 +942,6 @@ Angegebener Grund: %2</translation>
 <context>
     <name>Wizard</name>
     <message>
-        <source>Project</source>
-        <translation>Projekt</translation>
-    </message>
-    <message>
         <source>Mode</source>
         <translation>Modus</translation>
     </message>
@@ -1033,6 +965,9 @@ Angegebener Grund: %2</translation>
         <source>Topics</source>
         <translation>Themen</translation>
     </message>
+</context>
+<context>
+    <name>Messages</name>
     <message>
         <source>Sorry, cannot find file(%1);</source>
         <translation>Entschuldigung, die Datei (%1) konnte nicht gefunden werden.</translation>
@@ -1040,6 +975,54 @@ Angegebener Grund: %2</translation>
     <message>
         <source>Sorry, no preview available (%1);</source>
         <translation>Entschuldigung, für (%1) ist keine Vorschau verfügbar.</translation>
+    </message>
+    <message>
+        <source>No Project logo selected.</source>
+        <translation>Kein Projekt-Logo ausgewählt.</translation>
+    </message>
+    <message>
+        <source>Browse to a file</source>
+        <translation>Zu einer Datei navigieren</translation>
+    </message>
+    <message>
+        <source>Browse to a folder</source>
+        <translation>Zu einem Ordner navigieren</translation>
+    </message>
+    <message>
+        <source>Select...</source>
+        <translation>Auswählen...</translation>
+    </message>
+    <message>
+        <source>Previous</source>
+        <translation>Zurück</translation>
+    </message>
+    <message>
+        <source>Next</source>
+        <translation>Weiter</translation>
+    </message>
+    <message>
+        <source>Topics</source>
+        <translation>Themen</translation>
+    </message>
+    <message>
+        <source>Project</source>
+        <translation>Projekt</translation>
+    </message>
+    <message>
+        <source>HTML</source>
+        <translation>HTML</translation>
+    </message>
+    <message>
+        <source>LaTeX</source>
+        <translation>LaTeX</translation>
+    </message>
+    <message>
+        <source>XML</source>
+        <translation>XML</translation>
+    </message>
+    <message>
+        <source>Docbook</source>
+        <translation>Docbook</translation>
     </message>
 </context>
 </TS>

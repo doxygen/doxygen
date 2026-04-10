@@ -133,5 +133,17 @@ class DoxygenWizard
     static bool debugFlag;
     static QString msgFileNotFound(const QString &fileName);
     static QString msgNoPreviewAvailable(const QString &fileName);
+    static QString msgNoProjectLogoSelected();
+    static QString msgBrowseToFile();
+    static QString msgBrowseToFolder();
+    static QString msgSelectButton();
+    static QString msgPreviousButton();
+    static QString msgNextButton();
+    static QString msgTopicsHeader();
+    static QString msgProjectTopic();
+    static QString msgHtmlFormat();
+    static QString msgLatexFormat();
+    static QString msgXmlFormat();
+    static QString msgDocbookFormat();
 };
 #endif

@@ -119,29 +119,9 @@
         <source>Update selected item</source>
         <translation>선택 항목 업데이트</translation>
     </message>
-    <message>
-        <source>Browse to a file</source>
-        <translation>파일 찾아보기</translation>
-    </message>
-    <message>
-        <source>Browse to a folder</source>
-        <translation>폴더 찾아보기</translation>
-    </message>
 </context>
 <context>
     <name>InputString</name>
-    <message>
-        <source>Browse to a file</source>
-        <translation>파일 찾아보기</translation>
-    </message>
-    <message>
-        <source>Browse to a folder</source>
-        <translation>폴더 찾아보기</translation>
-    </message>
-    <message>
-        <source>No Project logo selected.</source>
-        <translation>선택된 프로젝트 로고가 없습니다.</translation>
-    </message>
     <message>
         <source>Select file</source>
         <translation>파일 선택</translation>
@@ -212,10 +192,6 @@
     <message>
         <source>Language</source>
         <translation>언어</translation>
-    </message>
-    <message>
-        <source>Select...</source>
-        <translation>선택...</translation>
     </message>
     <message>
         <source>Status: not running</source>
@@ -759,10 +735,6 @@ Reason given: %2</source>
         <translation>프로젝트 로고:</translation>
     </message>
     <message>
-        <source>Select...</source>
-        <translation>선택...</translation>
-    </message>
-    <message>
         <source>Specify the directory to scan for source code</source>
         <translation>소스 코드를 스캔할 디렉토리 지정</translation>
     </message>
@@ -785,10 +757,6 @@ Reason given: %2</source>
     <message>
         <source>Select project icon/image</source>
         <translation>프로젝트 아이콘/이미지 선택</translation>
-    </message>
-    <message>
-        <source>No Project logo selected.</source>
-        <translation>선택된 프로젝트 로고가 없습니다.</translation>
     </message>
     <message>
         <source>Select source directory</source>
@@ -857,10 +825,6 @@ Reason given: %2</source>
         <translation>생성할 출력 형식 선택</translation>
     </message>
     <message>
-        <source>HTML</source>
-        <translation>HTML</translation>
-    </message>
-    <message>
         <source>plain HTML</source>
         <translation>일반 HTML</translation>
     </message>
@@ -881,10 +845,6 @@ Reason given: %2</source>
         <translation>색상 변경...</translation>
     </message>
     <message>
-        <source>LaTeX</source>
-        <translation>LaTeX</translation>
-    </message>
-    <message>
         <source>as intermediate format for hyperlinked PDF</source>
         <translation>하이퍼링크 PDF의 중간 형식으로</translation>
     </message>
@@ -903,14 +863,6 @@ Reason given: %2</source>
     <message>
         <source>Rich Text Format (RTF)</source>
         <translation>서식 있는 텍스트 형식 (RTF)</translation>
-    </message>
-    <message>
-        <source>XML</source>
-        <translation>XML</translation>
-    </message>
-    <message>
-        <source>Docbook</source>
-        <translation>Docbook</translation>
     </message>
 </context>
 <context>
@@ -990,10 +942,6 @@ Reason given: %2</source>
 <context>
     <name>Wizard</name>
     <message>
-        <source>Project</source>
-        <translation>프로젝트</translation>
-    </message>
-    <message>
         <source>Mode</source>
         <translation>모드</translation>
     </message>
@@ -1027,6 +975,54 @@ Reason given: %2</source>
     <message>
         <source>Sorry, no preview available (%1);</source>
         <translation>죄송합니다, %1의 미리보기를 사용할 수 없습니다.</translation>
+    </message>
+    <message>
+        <source>No Project logo selected.</source>
+        <translation>선택된 프로젝트 로고가 없습니다.</translation>
+    </message>
+    <message>
+        <source>Browse to a file</source>
+        <translation>파일 찾아보기</translation>
+    </message>
+    <message>
+        <source>Browse to a folder</source>
+        <translation>폴더 찾아보기</translation>
+    </message>
+    <message>
+        <source>Select...</source>
+        <translation>선택...</translation>
+    </message>
+    <message>
+        <source>Previous</source>
+        <translation>이전</translation>
+    </message>
+    <message>
+        <source>Next</source>
+        <translation>다음</translation>
+    </message>
+    <message>
+        <source>Topics</source>
+        <translation>주제</translation>
+    </message>
+    <message>
+        <source>Project</source>
+        <translation>프로젝트</translation>
+    </message>
+    <message>
+        <source>HTML</source>
+        <translation>HTML</translation>
+    </message>
+    <message>
+        <source>LaTeX</source>
+        <translation>LaTeX</translation>
+    </message>
+    <message>
+        <source>XML</source>
+        <translation>XML</translation>
+    </message>
+    <message>
+        <source>Docbook</source>
+        <translation>Docbook</translation>
     </message>
 </context>
 </TS>
