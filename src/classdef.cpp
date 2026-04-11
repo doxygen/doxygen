@@ -955,9 +955,12 @@ std::unique_ptr<ClassDef> ClassDefImpl::deepCopy(const QCString &name) const
       auto newMd = md->deepCopy();
       if (newMd)
       {
+        AUTO_TRACE_ADD("Copying member {}",newMd->name());
         auto mmd = toMemberDefMutable(newMd.get());
-        AUTO_TRACE_ADD("Copying member {}",mmd->name());
-        mmd->moveTo(result.get());
+        if (mmd)
+        {
+          mmd->moveTo(result.get());
+        }
 
         result->internalInsertMember(newMd.get(),newMd->protection(),true);
 
@@ -4154,7 +4157,10 @@ void ClassDefImpl::mergeCategory(ClassDef *cat)
           {
             auto mmd = toMemberDefMutable(newMd.get());
             AUTO_TRACE_ADD("Copying member {}",mmd->name());
-            mmd->moveTo(this);
+            if (mmd)
+            {
+              mmd->moveTo(this);
+            }
 
             auto newMi=std::make_unique<MemberInfo>(newMd.get(),prot,mi->virt(),mi->inherited(),mi->virtualBaseClass());
             newMi->setScopePath(mi->scopePath());
