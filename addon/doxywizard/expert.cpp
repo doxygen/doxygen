@@ -22,6 +22,7 @@
 #include "version.h"
 #include "configdoc.h"
 #include "settings.h"
+#include "optiontranslations.h"
 
 #include <QTreeWidget>
 #include <QStackedWidget>
@@ -902,12 +903,12 @@ void Expert::showHelp(Input *option)
   if (!m_inShowHelp)
   {
     m_inShowHelp = true;
+    QString docs = OptionTranslations::trDocsStatic(option->id(), option->docs());
     m_helper->setText(
         QString::fromLatin1("<qt><b>")+option->id()+
         QString::fromLatin1("</b><br>")+
         QString::fromLatin1("<br/>")+
-        option->docs().
-        replace(QChar::fromLatin1('\n'),QChar::fromLatin1(' '))+
+        docs.replace(QChar::fromLatin1('\n'),QChar::fromLatin1(' '))+
         QString::fromLatin1("</qt>")
         );
     m_inShowHelp = false;

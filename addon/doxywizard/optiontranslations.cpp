@@ -409,4 +409,34 @@ void OptionTranslations::retranslate()
     m_translations.clear();
     m_initialized = false;
     initTranslations();
+    m_docsTranslations.clear();
+    m_docsInitialized = false;
+}
+
+void OptionTranslations::initDocsTranslations()
+{
+    if (m_docsInitialized) return;
+    m_docsInitialized = true;
+}
+
+QString OptionTranslations::translateDocs(const QString &optionName, const QString &defaultDocs)
+{
+    Q_UNUSED(defaultDocs);
+    if (!m_docsInitialized)
+    {
+        initDocsTranslations();
+    }
+    
+    QString translated = QCoreApplication::translate("OptionDocs", optionName.toUtf8().constData());
+    if (!translated.isEmpty() && translated != optionName)
+    {
+        return translated;
+    }
+    
+    return defaultDocs;
+}
+
+QString OptionTranslations::trDocsStatic(const QString &optionName, const QString &defaultDocs)
+{
+    return instance().translateDocs(optionName, defaultDocs);
 }
