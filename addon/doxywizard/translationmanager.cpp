@@ -18,6 +18,7 @@ TranslationManager& TranslationManager::instance()
 TranslationManager::TranslationManager()
     : m_translator(nullptr)
     , m_qtTranslator(nullptr)
+    , m_optionsTranslator(nullptr)
     , m_currentLangCode(QString::fromLatin1("en"))
     , m_initialized(false)
 {
@@ -56,6 +57,7 @@ void TranslationManager::loadAvailableLanguages()
     en.englishName = QString::fromLatin1("English");
     en.tsFile = QString();
     en.qmFile = QString();
+    en.optionsQmFile = QString();
     m_languages.insert(en.code, en);
 
     LanguageInfo zhCN;
@@ -64,6 +66,7 @@ void TranslationManager::loadAvailableLanguages()
     zhCN.englishName = QString::fromLatin1("Simplified Chinese");
     zhCN.tsFile = QString::fromLatin1("doxywizard_zh_CN.ts");
     zhCN.qmFile = QString::fromLatin1("doxywizard_zh_CN.qm");
+    zhCN.optionsQmFile = QString::fromLatin1("doxywizard_options_zh_CN.qm");
     m_languages.insert(zhCN.code, zhCN);
 
     LanguageInfo zhTW;
@@ -72,6 +75,7 @@ void TranslationManager::loadAvailableLanguages()
     zhTW.englishName = QString::fromLatin1("Traditional Chinese");
     zhTW.tsFile = QString::fromLatin1("doxywizard_zh_TW.ts");
     zhTW.qmFile = QString::fromLatin1("doxywizard_zh_TW.qm");
+    zhTW.optionsQmFile = QString::fromLatin1("doxywizard_options_zh_TW.qm");
     m_languages.insert(zhTW.code, zhTW);
 
     LanguageInfo de;
@@ -80,6 +84,7 @@ void TranslationManager::loadAvailableLanguages()
     de.englishName = QString::fromLatin1("German");
     de.tsFile = QString::fromLatin1("doxywizard_de.ts");
     de.qmFile = QString::fromLatin1("doxywizard_de.qm");
+    de.optionsQmFile = QString::fromLatin1("doxywizard_options_de.qm");
     m_languages.insert(de.code, de);
 
     LanguageInfo fr;
@@ -88,6 +93,7 @@ void TranslationManager::loadAvailableLanguages()
     fr.englishName = QString::fromLatin1("French");
     fr.tsFile = QString::fromLatin1("doxywizard_fr.ts");
     fr.qmFile = QString::fromLatin1("doxywizard_fr.qm");
+    fr.optionsQmFile = QString::fromLatin1("doxywizard_options_fr.qm");
     m_languages.insert(fr.code, fr);
 
     LanguageInfo ja;
@@ -96,6 +102,7 @@ void TranslationManager::loadAvailableLanguages()
     ja.englishName = QString::fromLatin1("Japanese");
     ja.tsFile = QString::fromLatin1("doxywizard_ja.ts");
     ja.qmFile = QString::fromLatin1("doxywizard_ja.qm");
+    ja.optionsQmFile = QString::fromLatin1("doxywizard_options_ja.qm");
     m_languages.insert(ja.code, ja);
 
     LanguageInfo ko;
@@ -104,6 +111,7 @@ void TranslationManager::loadAvailableLanguages()
     ko.englishName = QString::fromLatin1("Korean");
     ko.tsFile = QString::fromLatin1("doxywizard_ko.ts");
     ko.qmFile = QString::fromLatin1("doxywizard_ko.qm");
+    ko.optionsQmFile = QString::fromLatin1("doxywizard_options_ko.qm");
     m_languages.insert(ko.code, ko);
 
     LanguageInfo es;
@@ -112,6 +120,7 @@ void TranslationManager::loadAvailableLanguages()
     es.englishName = QString::fromLatin1("Spanish");
     es.tsFile = QString::fromLatin1("doxywizard_es.ts");
     es.qmFile = QString::fromLatin1("doxywizard_es.qm");
+    es.optionsQmFile = QString::fromLatin1("doxywizard_options_es.qm");
     m_languages.insert(es.code, es);
 
     LanguageInfo ru;
@@ -120,6 +129,7 @@ void TranslationManager::loadAvailableLanguages()
     ru.englishName = QString::fromLatin1("Russian");
     ru.tsFile = QString::fromLatin1("doxywizard_ru.ts");
     ru.qmFile = QString::fromLatin1("doxywizard_ru.qm");
+    ru.optionsQmFile = QString::fromLatin1("doxywizard_options_ru.qm");
     m_languages.insert(ru.code, ru);
 }
 
@@ -235,6 +245,21 @@ bool TranslationManager::switchLanguage(const QString &langCode)
     }
     qApp->installTranslator(m_translator);
     
+    QString qmOptionsPath = qmOptionsFilePath(langCode);
+    if (!qmOptionsPath.isEmpty())
+    {
+        m_optionsTranslator = new QTranslator(this);
+        if (m_optionsTranslator->load(qmOptionsPath))
+        {
+            qApp->installTranslator(m_optionsTranslator);
+        }
+        else
+        {
+            delete m_optionsTranslator;
+            m_optionsTranslator = nullptr;
+        }
+    }
+    
     m_qtTranslator = new QTranslator(this);
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     QString qtQmPath = QLibraryInfo::path(QLibraryInfo::TranslationsPath) + 
@@ -299,6 +324,13 @@ void TranslationManager::unloadTranslation()
         m_translator = nullptr;
     }
     
+    if (m_optionsTranslator)
+    {
+        qApp->removeTranslator(m_optionsTranslator);
+        delete m_optionsTranslator;
+        m_optionsTranslator = nullptr;
+    }
+    
     if (m_qtTranslator)
     {
         qApp->removeTranslator(m_qtTranslator);
@@ -345,4 +377,34 @@ QString TranslationManager::tsFilePath(const QString &langCode) const
     }
     
     return m_languages[langCode].tsFile;
+}
+
+QString TranslationManager::qmOptionsFilePath(const QString &langCode) const
+{
+    if (!m_languages.contains(langCode))
+    {
+        return QString();
+    }
+    
+    const LanguageInfo &info = m_languages[langCode];
+    if (info.optionsQmFile.isEmpty())
+    {
+        return QString();
+    }
+    
+    QString resourcePath = QString::fromLatin1(":/translations/") + info.optionsQmFile;
+    if (QFileInfo::exists(resourcePath))
+    {
+        return resourcePath;
+    }
+    
+    QString appDir = QCoreApplication::applicationDirPath();
+    QString qmPath = appDir + QDir::separator() + info.optionsQmFile;
+    
+    if (QFileInfo::exists(qmPath))
+    {
+        return qmPath;
+    }
+    
+    return QString();
 }

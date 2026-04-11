@@ -55,6 +55,58 @@ static QString convertToComment(const QString &s)
   }
 }
 
+static QString convertDoxyCmdToHtml(const QString &s)
+{
+  QString result = s;
+  
+  result.replace(SA("\\c "), SA("<code>"));
+  result.replace(SA("\\c("), SA("<code>("));
+  result.replace(SA("\\p "), SA("<code>"));
+  result.replace(SA("\\p("), SA("<code>("));
+  result.replace(SA("\\b "), SA("<b>"));
+  result.replace(SA("\\b("), SA("<b>("));
+  result.replace(SA("\\e "), SA("<em>"));
+  result.replace(SA("\\e("), SA("<em>("));
+  result.replace(SA("\\a "), SA("<em>"));
+  result.replace(SA("\\a("), SA("<em>("));
+  
+  QRegularExpression refRegex(SA("\\\\ref\\s+([a-zA-Z0-9_]+)(?:\\s+\"([^\"]+)\")?"));
+  QRegularExpressionMatchIterator it = refRegex.globalMatch(result);
+  QStringList replacements;
+  while (it.hasNext())
+  {
+    QRegularExpressionMatch match = it.next();
+    QString refId = match.captured(1);
+    QString refText = match.captured(2);
+    if (refText.isEmpty())
+    {
+      refText = refId;
+    }
+    QString replacement = SA("<a href=\"#") + refId + SA("\">") + refText + SA("</a>");
+    replacements.append(match.captured(0));
+    replacements.append(replacement);
+  }
+  for (int i = 0; i < replacements.size(); i += 2)
+  {
+    result.replace(replacements[i], replacements[i + 1]);
+  }
+  
+  result.replace(SA("\\&lt;"), SA("&lt;"));
+  result.replace(SA("\\&gt;"), SA("&gt;"));
+  result.replace(SA("\\&amp;"), SA("&amp;"));
+  result.replace(SA("&lt;br&gt;"), SA("<br/>"));
+  result.replace(SA("&lt;br/&gt;"), SA("<br/>"));
+  
+  result.replace(SA("\\verbatim"), SA("<pre>"));
+  result.replace(SA("\\endverbatim"), SA("</pre>"));
+  result.replace(SA("\\n"), SA("<br/>"));
+  result.replace(SA("\\$"), SA("$"));
+  result.replace(SA("\\@"), SA("@"));
+  result.replace(SA("\\\\"), SA("\\"));
+  
+  return result;
+}
+
 void Expert::setHeader(const char *header)
 {
   m_header = SA(header);
@@ -187,7 +239,8 @@ static QString getDocsForNode(const QDomElement &child)
   if (type==SA("enum"))
   {
     docs += SA("<br/>");
-    docs += SA("Possible values are: ");
+    docs += SA("%{tr:Expert:Possible values are:}");
+    docs += SA(" ");
     int numValues=0;
     docsVal = child.firstChildElement();
     while (!docsVal.isNull())
@@ -213,7 +266,7 @@ static QString getDocsForNode(const QDomElement &child)
         }
         if (i==numValues-1)
         {
-          docs+=SA(" and ");
+          docs+=SA(" ") + SA("%{tr:Expert:and}") + SA(" ");
         }
         else if (i==numValues)
         {
@@ -230,7 +283,7 @@ static QString getDocsForNode(const QDomElement &child)
     {
       docs+=SA("<br/>");
       docs+=SA("<br/>");
-      docs+=SA(" The default value is: <code>")+
+      docs+=SA(" ")+SA("%{tr:Expert:The default value is:}")+SA(" <code>")+
             child.attribute(SA("defval"))+
             SA("</code>.");
     }
@@ -239,9 +292,9 @@ static QString getDocsForNode(const QDomElement &child)
   else if (type==SA("int"))
   {
     docs+=SA("<br/>");
-    docs+=SA("Minimum value: ")+child.attribute(SA("minval"))+SA(", ");
-    docs+=SA("maximum value: ")+child.attribute(SA("maxval"))+SA(", ");
-    docs+=SA("default value: ")+child.attribute(SA("defval"))+SA(".");
+    docs+=SA("%{tr:Expert:Minimum value:}")+SA(" ")+child.attribute(SA("minval"))+SA(", ");
+    docs+=SA("%{tr:Expert:maximum value:}")+SA(" ")+child.attribute(SA("maxval"))+SA(", ");
+    docs+=SA("%{tr:Expert:default value:}")+SA(" ")+child.attribute(SA("defval"))+SA(".");
     docs+= SA("<br/>");
   }
   else if (type==SA("bool"))
@@ -249,12 +302,12 @@ static QString getDocsForNode(const QDomElement &child)
     docs+=SA("<br/>");
     if (child.hasAttribute(SA("altdefval")))
     {
-      docs+=SA(" The default value is: system dependent.");
+      docs+=SA(" ")+SA("%{tr:Expert:The default value is: system dependent.}");
     }
     else
     {
       QString defval = child.attribute(SA("defval"));
-      docs+=SA(" The default value is: <code>")+
+      docs+=SA(" ")+SA("%{tr:Expert:The default value is:}")+SA(" <code>")+
             (defval==SA("1")?SA("YES"):SA("NO"))+
             SA("</code>.");
     }
@@ -303,7 +356,7 @@ static QString getDocsForNode(const QDomElement &child)
               }
               if (i==numValues-1)
               {
-                docs += SA(" and ");
+                docs += SA(" ") + SA("%{tr:Expert:and}") + SA(" ");
               }
               else if (i==numValues)
               {
@@ -329,7 +382,7 @@ static QString getDocsForNode(const QDomElement &child)
       if (defval != SA(""))
       {
         docs+=SA("<br/>");
-        docs += SA(" The default directory is: <code>") + defval + SA("</code>.");
+        docs += SA(" ")+SA("%{tr:Expert:The default directory is:}")+SA(" <code>") + defval + SA("</code>.");
         docs += SA("<br/>");
       }
     }
@@ -341,11 +394,11 @@ static QString getDocsForNode(const QDomElement &child)
         docs+=SA("<br/>");
         if (abspath != SA("1"))
         {
-          docs += SA(" The default file is: <code>") + defval + SA("</code>.");
+          docs += SA(" ")+SA("%{tr:Expert:The default file is:}")+SA(" <code>") + defval + SA("</code>.");
         }
         else
         {
-          docs += SA(" The default file (with absolute path) is: <code>") + defval + SA("</code>.");
+          docs += SA(" ")+SA("%{tr:Expert:The default file (with absolute path) is:}")+SA(" <code>") + defval + SA("</code>.");
         }
         docs += SA("<br/>");
       }
@@ -354,7 +407,7 @@ static QString getDocsForNode(const QDomElement &child)
         if (abspath == SA("1"))
         {
           docs+=SA("<br/>");
-          docs += SA(" The file has to be specified with full path.");
+          docs += SA(" ")+SA("%{tr:Expert:The file has to be specified with full path.}");
           docs += SA("<br/>");
         }
       }
@@ -367,11 +420,11 @@ static QString getDocsForNode(const QDomElement &child)
         docs+=SA("<br/>");
         if (abspath != SA("1"))
         {
-          docs += SA(" The default image is: <code>") + defval + SA("</code>.");
+          docs += SA(" ")+SA("%{tr:Expert:The default image is:}")+SA(" <code>") + defval + SA("</code>.");
         }
         else
         {
-          docs += SA(" The default image (with absolute path) is: <code>") + defval + SA("</code>.");
+          docs += SA(" ")+SA("%{tr:Expert:The default image (with absolute path) is:}")+SA(" <code>") + defval + SA("</code>.");
         }
         docs += SA("<br/>");
       }
@@ -380,7 +433,7 @@ static QString getDocsForNode(const QDomElement &child)
         if (abspath == SA("1"))
         {
           docs+=SA("<br/>");
-          docs += SA(" The image has to be specified with full path.");
+          docs += SA(" ")+SA("%{tr:Expert:The image has to be specified with full path.}");
           docs += SA("<br/>");
         }
       }
@@ -390,7 +443,7 @@ static QString getDocsForNode(const QDomElement &child)
       if (defval != SA(""))
       {
         docs+=SA("<br/>");
-        docs += SA(" The default value is: <code>") + defval + SA("</code>.");
+        docs += SA(" %{tr:Expert:The default value is:} <code>") + defval + SA("</code>.");
         docs += SA("<br/>");
       }
     }
@@ -400,11 +453,11 @@ static QString getDocsForNode(const QDomElement &child)
   {
     QString dependsOn = child.attribute(SA("depends"));
     docs+=SA("<br/>");
-    docs+=  SA(" This tag requires that the tag \\ref cfg_");
+    docs+=  SA("%{tr:Expert:This tag requires that the tag}") + SA(" \\ref cfg_");
     docs+=  dependsOn.toLower();
     docs+=  SA(" \"");
     docs+=  dependsOn.toUpper();
-    docs+=  SA("\" is set to <code>YES</code>.");
+    docs+=  SA("\" ") + SA("%{tr:Expert:is set to}") + SA(" <code>YES</code>.");
   }
 
   // Remove / replace doxygen markup strings
@@ -904,6 +957,7 @@ void Expert::showHelp(Input *option)
   {
     m_inShowHelp = true;
     QString docs = OptionTranslations::trDocsStatic(option->id(), option->docs());
+    docs = convertDoxyCmdToHtml(docs);
     m_helper->setText(
         QString::fromLatin1("<qt><b>")+option->id()+
         QString::fromLatin1("</b><br>")+

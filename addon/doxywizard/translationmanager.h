@@ -18,6 +18,7 @@ public:
         QString englishName;
         QString tsFile;
         QString qmFile;
+        QString optionsQmFile;
     };
 
     static TranslationManager& instance();
@@ -51,10 +52,12 @@ private:
     bool loadTranslation(const QString &qmFilePath);
     void unloadTranslation();
     QString qmFilePath(const QString &langCode) const;
+    QString qmOptionsFilePath(const QString &langCode) const;
     QString tsFilePath(const QString &langCode) const;
 
     QTranslator *m_translator;
     QTranslator *m_qtTranslator;
+    QTranslator *m_optionsTranslator;
     QString m_currentLangCode;
     QMap<QString, LanguageInfo> m_languages;
     bool m_initialized;

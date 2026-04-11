@@ -146,26 +146,44 @@ optiontranslations.h
 
 qt_add_resources(doxywizard_RESOURCES_RCC doxywizard.qrc)
 
+set(TRANSLATIONS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/translations)
+
 set(DOXYWIZARD_TRANSLATION_FILES
-  doxywizard_zh_CN.ts
-  doxywizard_zh_TW.ts
-  doxywizard_de.ts
-  doxywizard_fr.ts
-  doxywizard_ja.ts
-  doxywizard_ko.ts
-  doxywizard_es.ts
-  doxywizard_ru.ts
+  ${TRANSLATIONS_DIR}/doxywizard_zh_CN.ts
+  ${TRANSLATIONS_DIR}/doxywizard_zh_TW.ts
+  ${TRANSLATIONS_DIR}/doxywizard_de.ts
+  ${TRANSLATIONS_DIR}/doxywizard_fr.ts
+  ${TRANSLATIONS_DIR}/doxywizard_ja.ts
+  ${TRANSLATIONS_DIR}/doxywizard_ko.ts
+  ${TRANSLATIONS_DIR}/doxywizard_es.ts
+  ${TRANSLATIONS_DIR}/doxywizard_ru.ts
+)
+
+set(DOXYWIZARD_OPTIONS_TRANSLATION_FILES
+  ${TRANSLATIONS_DIR}/doxywizard_options_zh_CN.ts
+  ${TRANSLATIONS_DIR}/doxywizard_options_zh_TW.ts
+  ${TRANSLATIONS_DIR}/doxywizard_options_de.ts
+  ${TRANSLATIONS_DIR}/doxywizard_options_fr.ts
+  ${TRANSLATIONS_DIR}/doxywizard_options_ja.ts
+  ${TRANSLATIONS_DIR}/doxywizard_options_ko.ts
+  ${TRANSLATIONS_DIR}/doxywizard_options_es.ts
+  ${TRANSLATIONS_DIR}/doxywizard_options_ru.ts
+)
+
+set(ALL_TRANSLATION_FILES
+  ${DOXYWIZARD_TRANSLATION_FILES}
+  ${DOXYWIZARD_OPTIONS_TRANSLATION_FILES}
 )
 
 find_package(Qt6LinguistTools QUIET)
 if(Qt6LinguistTools_FOUND)
-  set_source_files_properties(${DOXYWIZARD_TRANSLATION_FILES} PROPERTIES OUTPUT_LOCATION ${CMAKE_CURRENT_BINARY_DIR})
-  qt6_add_translation(doxywizard_QM_FILES ${DOXYWIZARD_TRANSLATION_FILES})
+  set_source_files_properties(${ALL_TRANSLATION_FILES} PROPERTIES OUTPUT_LOCATION ${CMAKE_CURRENT_BINARY_DIR})
+  qt6_add_translation(doxywizard_QM_FILES ${ALL_TRANSLATION_FILES})
 else()
   find_package(Qt5LinguistTools QUIET)
   if(Qt5LinguistTools_FOUND)
-    set_source_files_properties(${DOXYWIZARD_TRANSLATION_FILES} PROPERTIES OUTPUT_LOCATION ${CMAKE_CURRENT_BINARY_DIR})
-    qt5_add_translation(doxywizard_QM_FILES ${DOXYWIZARD_TRANSLATION_FILES})
+    set_source_files_properties(${ALL_TRANSLATION_FILES} PROPERTIES OUTPUT_LOCATION ${CMAKE_CURRENT_BINARY_DIR})
+    qt5_add_translation(doxywizard_QM_FILES ${ALL_TRANSLATION_FILES})
   else()
     set(doxywizard_QM_FILES)
     message(STATUS "Qt Linguist tools not found, translation files will not be compiled")
