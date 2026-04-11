@@ -432,10 +432,11 @@ QString OptionTranslations::translateDocs(const QString &optionName, const QStri
     
     if (!translated.isEmpty() && translated != optionName)
     {
+        int possiblePos = defaultDocs.indexOf(QLatin1String("%{tr:Expert:Possible values are:}"));
         int defaultPos = defaultDocs.indexOf(QLatin1String("%{tr:Expert:The default"));
         int requiresPos = defaultDocs.indexOf(QLatin1String("%{tr:Expert:This tag requires"));
         
-        if (defaultPos >= 0 || requiresPos >= 0)
+        if (possiblePos >= 0 || defaultPos >= 0 || requiresPos >= 0)
         {
             result = translated;
             if (!result.endsWith(QLatin1String("<br/>")))
@@ -443,7 +444,11 @@ QString OptionTranslations::translateDocs(const QString &optionName, const QStri
                 result += QLatin1String("<br/>");
             }
             
-            if (requiresPos >= 0)
+            if (possiblePos >= 0)
+            {
+                result += defaultDocs.mid(possiblePos);
+            }
+            else if (requiresPos >= 0)
             {
                 result += defaultDocs.mid(requiresPos);
             }

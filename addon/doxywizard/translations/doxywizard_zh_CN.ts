@@ -245,9 +245,9 @@
         <source>(Created with Qt version %1)</source>
         <translation>(使用 Qt 版本 %1 创建)</translation>
     </message>
-<message>
-        <source>, running with %1</source>
-        <translation>，运行于 %1</translation>
+    <message>
+        <source>(Created with Qt version %1, running with %2)</source>
+        <translation>(使用 Qt 版本 %1 创建，运行于 %2)</translation>
     </message>
 <message>
         <source>Written by</source>

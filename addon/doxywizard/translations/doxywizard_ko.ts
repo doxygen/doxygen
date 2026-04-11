@@ -245,9 +245,9 @@
         <source>(Created with Qt version %1)</source>
         <translation>(Qt 버전 %1으로 생성됨)</translation>
     </message>
-<message>
-        <source>, running with %1</source>
-        <translation>, %1에서 실행 중</translation>
+    <message>
+        <source>(Created with Qt version %1, running with %2)</source>
+        <translation>(Qt 버전 %1으로 생성됨, %2에서 실행 중)</translation>
     </message>
 <message>
         <source>Written by</source>

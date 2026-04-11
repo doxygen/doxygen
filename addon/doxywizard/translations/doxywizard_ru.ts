@@ -249,9 +249,9 @@
         <source>(Created with Qt version %1)</source>
         <translation>(Создано с помощью Qt версии %1)</translation>
     </message>
-<message>
-        <source>, running with %1</source>
-        <translation>, работает с %1</translation>
+    <message>
+        <source>(Created with Qt version %1, running with %2)</source>
+        <translation>(Создано с помощью Qt версии %1, работает с %2)</translation>
     </message>
 <message>
         <source>Written by</source>

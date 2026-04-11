@@ -76,15 +76,13 @@ static QString convertDoxyCmdToHtml(const QString &s)
   while (it.hasNext())
   {
     QRegularExpressionMatch match = it.next();
-    QString refId = match.captured(1);
     QString refText = match.captured(2);
     if (refText.isEmpty())
     {
-      refText = refId;
+      refText = match.captured(1);
     }
-    QString replacement = SA("<a href=\"#") + refId + SA("\">") + refText + SA("</a>");
     replacements.append(match.captured(0));
-    replacements.append(replacement);
+    replacements.append(refText);
   }
   for (int i = 0; i < replacements.size(); i += 2)
   {

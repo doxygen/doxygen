@@ -540,13 +540,16 @@ void MainWindow::about()
   t << QString::fromLatin1("<qt><center>") +
        tr("A tool to configure and run doxygen version %1 on your source files.").arg(QString::fromLatin1(getDoxygenVersion().c_str())) +
        QString::fromLatin1("</center>") +
-       QString::fromLatin1("<center>") +
-       tr("(Created with Qt version %1)").arg(QString::fromLatin1(QT_VERSION_STR));
-       if (qstrcmp(qVersion(),QT_VERSION_STR))
-       {
-         t << tr(", running with %1").arg(QString::fromLatin1(qVersion()));
-       }
-  t << QString::fromLatin1(")</center><p><br>"
+       QString::fromLatin1("<center>");
+      if (!qstrcmp(qVersion(),QT_VERSION_STR))
+      {
+        t << tr("(Created with Qt version %1)").arg(QString::fromLatin1(QT_VERSION_STR));
+      }
+      else
+      {
+        t << tr("(Created with Qt version %1, running with %2)").arg(QString::fromLatin1(QT_VERSION_STR),QString::fromLatin1(qVersion()));
+      }
+  t << QString::fromLatin1("</center><p><br>"
        "<center>") +
        tr("Written by") +
        QString::fromLatin1("<br> Dimitri van Heesch<br>&copy; 2000-");
