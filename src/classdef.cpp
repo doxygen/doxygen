@@ -4173,12 +4173,15 @@ void ClassDefImpl::mergeCategory(ClassDef *cat)
             QCString name = newMd->name();
             MemberName *mn = Doxygen::memberNameLinkedMap->add(name);
 
-            mmd->setCategory(category);
-            mmd->setCategoryRelation(mi->memberDef());
+            if (mmd)
+            {
+              mmd->setCategory(category);
+              mmd->setCategoryRelation(mi->memberDef());
+            }
             auto miMmd = toMemberDefMutable(mi->memberDef());
             if (miMmd) miMmd->setCategoryRelation(newMd.get());
 
-            if (makePrivate || isExtension)
+            if (mmd && (makePrivate || isExtension))
             {
               mmd->makeImplementationDetail();
             }
