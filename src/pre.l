@@ -87,6 +87,7 @@ struct FileState
   YY_BUFFER_STATE bufState = 0;
   QCString fileName;
   bool lexRulesPart = false;
+  BoolStack levelGuard;
 };
 
 struct PreIncludeInfo
@@ -297,6 +298,10 @@ struct preYY_state
   IntMap                                   argMap;
   BoolStack                                levelGuard;
   std::stack< std::unique_ptr<preYY_CondCtx> >   condStack;
+  int                                      condGuardCount;
+  QCString                                 condGuardErrorFileName;
+  int                                      condGuardErrorLine;
+  QCString                                 condGuardErrorMessage;
   std::deque< std::unique_ptr<FileState> > includeStack;
   std::unordered_map<std::string,Define*>  expandedDict;
   StringUnorderedSet                       expanded;
@@ -1678,6 +1683,7 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
                                             yyextra->ccomment=FALSE;
                                           }
                                           yyextra->condCtx=YY_START;
+                                          yyextra->condGuardCount=0;
                                           startCondSection(yyscanner," ");
                                           BEGIN(SkipCond);
                                         }
@@ -1692,7 +1698,9 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
                                         }
 
 <SkipCond>.                             { }
-<SkipCond>[^\/\!*\\@\n]+                { }
+<SkipCond>"#if"("def")?                 { yyextra->condGuardCount++; }
+<SkipCond>"#endif"                      { yyextra->condGuardCount--; }
+<SkipCond>[^\/\!*\\@\n#]+               { }
 <SkipCond>{CPPC}[/!]                    { yyextra->ccomment=FALSE; }
 <SkipCond>{CCS}[*!]                     { yyextra->ccomment=TRUE; }
 <SkipCond,SkipCComment,SkipCPPComment>{CMD}{CMD}"endcond"/[^a-z_A-Z0-9\x80-\xFF] {
@@ -2091,6 +2099,17 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
                                           }
                                           else
                                           {
+                                            if (!yyextra->levelGuard.empty())
+                                            {
+                                              if (yyextra->condGuardErrorLine!=0)
+                                              {
+                                                warn(yyextra->condGuardErrorFileName,yyextra->condGuardErrorLine,"{}",yyextra->condGuardErrorMessage);
+                                              }
+                                              else
+                                              {
+                                                warn(yyextra->fileName,yyextra->yyLineNr,"More #endif's than #if's found.");
+                                              }
+                                            }
                                             QCString toFileName = yyextra->fileName;
                                             const std::unique_ptr<FileState> &fs=yyextra->includeStack.back();
                                             //fileDefineCache->merge(yyextra->fileName,fs->fileName);
@@ -2102,6 +2121,7 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
                                             yyextra->inputBuf    = fs->oldFileBuf;
                                             yyextra->inputBufPos = fs->oldFileBufPos;
                                             yyextra->curlyCount  = fs->curlyCount;
+                                            yyextra->levelGuard  = fs->levelGuard;
                                             setFileName(yyscanner,fs->fileName);
                                             TRACE("switching to {}",yyextra->fileName);
 
@@ -2253,20 +2273,27 @@ static void incrLevel(yyscan_t yyscanner)
 {
   YY_EXTRA_TYPE state = preYYget_extra(yyscanner);
   state->levelGuard.push(false);
-  //printf("%s line %d: incrLevel %d\n",qPrint(yyextra->fileName),yyextra->yyLineNr,yyextra->levelGuard.size());
+  //printf("%s line %d: incrLevel %zu\n",qPrint(state->fileName),state->yyLineNr,state->levelGuard.size());
 }
 
 static void decrLevel(yyscan_t yyscanner)
 {
   YY_EXTRA_TYPE state = preYYget_extra(yyscanner);
-  //printf("%s line %d: decrLevel %d\n",qPrint(state->fileName),state->yyLineNr,state->levelGuard.size());
+  //printf("%s line %d: decrLevel %zu\n",qPrint(state->fileName),state->yyLineNr,state->levelGuard.size());
   if (!state->levelGuard.empty())
   {
     state->levelGuard.pop();
   }
   else
   {
-    warn(state->fileName,state->yyLineNr,"More #endif's than #if's found.");
+    if (state->condGuardErrorLine!=0)
+    {
+      warn(state->condGuardErrorFileName,state->condGuardErrorLine,"{}",state->condGuardErrorMessage);
+    }
+    else
+    {
+      warn(state->fileName,state->yyLineNr,"More #endif's than #if's found.");
+    }
   }
 }
 
@@ -3802,6 +3829,8 @@ static void readIncludeFile(yyscan_t yyscanner,const QCString &inc)
       fs->curlyCount = state->curlyCount;
       //state->curlyCount = 0; // don't reset counter, see issue #10997
       fs->lexRulesPart = state->lexRulesPart;
+      fs->levelGuard = state->levelGuard;
+      while (!state->levelGuard.empty()) state->levelGuard.pop();
       state->lexRulesPart = false;
       // push the state on the stack
       FileState *fs_ptr = fs.get();
@@ -3890,6 +3919,22 @@ static void startCondSection(yyscan_t yyscanner,const QCString &sectId)
 static void endCondSection(yyscan_t yyscanner)
 {
   YY_EXTRA_TYPE state = preYYget_extra(yyscanner);
+  if (state->condGuardCount>0 && state->condGuardErrorLine==0)
+  {
+    state->condGuardErrorLine     = state->yyLineNr;
+    state->condGuardErrorFileName = state->fileName;
+    state->condGuardErrorMessage  = "more #if's than #endif's in \\cond..\\endcond section";
+  }
+  else if (state->condGuardCount<0 && state->condGuardErrorLine==0)
+  {
+    state->condGuardErrorLine     = state->yyLineNr;
+    state->condGuardErrorFileName = state->fileName;
+    state->condGuardErrorMessage  = "more #endif's than #if's in \\cond..\\endcond section";
+  }
+  else // balanced again -> no error
+  {
+    state->condGuardErrorLine = 0;
+  }
   if (state->condStack.empty())
   {
     warn(state->fileName,state->yyLineNr,"the \\endcond does not have a corresponding \\cond in this file");
@@ -4221,6 +4266,9 @@ void Preprocessor::processFile(const QCString &fileName,const std::string &input
   state->expandedDict.clear();
   state->contextDefines.clear();
   state->pragmaSet.clear();
+  state->condGuardCount=0;
+  state->condGuardErrorLine=0;
+  while (!state->levelGuard.empty()) state->levelGuard.pop();
   while (!state->condStack.empty()) state->condStack.pop();
 
   setFileName(yyscanner,fileName);
@@ -4257,7 +4305,14 @@ void Preprocessor::processFile(const QCString &fileName,const std::string &input
 
   if (!state->levelGuard.empty())
   {
-    warn(state->fileName,state->yyLineNr,"More #if's than #endif's found (might be in an included file).");
+    if (yyextra->condGuardErrorLine!=0)
+    {
+      warn(yyextra->condGuardErrorFileName,yyextra->condGuardErrorLine,"{}",yyextra->condGuardErrorMessage);
+    }
+    else
+    {
+      warn(state->fileName,state->yyLineNr,"More #if's than #endif's found (might be in an included file).");
+    }
   }
 
   if (Debug::isFlagSet(Debug::Preprocessor))
