@@ -211,6 +211,8 @@ struct scannerYY_state
 
   ClangTUParser   *clangParser = nullptr;
 
+  bool             usingNewVarNeeded = false;
+
   int              fakeNS  = 0; //<! number of file scoped namespaces in CSharp file
   TextStream       dummyTextStream;
 
@@ -2059,9 +2061,7 @@ NONLopt [^\n]*
                                           yyextra->current->fileName = yyextra->fileName;
                                           yyextra->current->section = EntryType::makeUsingDecl();
                                           yyextra->current->startLine = yyextra->yyLineNr;
-                                          yyextra->previous = yyextra->current;
-                                          yyextra->current_root->moveToSubEntryAndRefresh(yyextra->current);
-                                          initEntry(yyscanner);
+                                          yyextra->usingNewVarNeeded = true;
                                           if (yyextra->insideCS) /* Hack: in C# a using declaration and
                                                                     directive have the same syntax, so we
                                                                     also add it as a using directive here
@@ -2090,6 +2090,42 @@ NONLopt [^\n]*
                                           storeClangId(yyscanner,yyextra->current->name.data());
                                           BEGIN(ReadInitializer);
                                         }
+<Using>";"                              {
+                                          if (yyextra->usingNewVarNeeded)
+                                          {
+                                            yyextra->previous = yyextra->current;
+                                            yyextra->current_root->moveToSubEntryAndRefresh(yyextra->current);
+                                            initEntry(yyscanner);
+                                            yyextra->usingNewVarNeeded = false;
+                                          }
+                                          BEGIN(FindMembers);
+                                        }
+<Using>{BN}*"="                         {
+                                          yyextra->lastInitializerContext = UsingAlias;
+                                          yyextra->sharpCount=0;
+                                          yyextra->initBracketCount=0;
+                                          storeClangId(yyscanner,yyextra->current->name.data());
+                                          yyextra->usingNewVarNeeded = false;
+                                          BEGIN(ReadInitializer);
+                                        }
+<Using>{B}*{CCS}                        {
+                                          yyextra->lastCContext = YY_START ;
+                                          BEGIN( SkipComment ) ;
+                                        }
+<Using>{B}*{CPPC}                       {
+                                          yyextra->lastCContext = YY_START ;
+                                          BEGIN( SkipCxxComment ) ;
+                                        }
+<Using>{B}*
+<Using>.                                {
+                                          if (yyextra->usingNewVarNeeded)
+                                          {
+                                            yyextra->previous = yyextra->current;
+                                            yyextra->current_root->moveToSubEntryAndRefresh(yyextra->current);
+                                            initEntry(yyscanner);
+                                            yyextra->usingNewVarNeeded = false;
+                                          }
+                                        }
 <UsingAlias>";"                         {
                                           yyextra->current->section = EntryType::makeVariable();
                                           QCString init = yyextra->current->initializer.str();
@@ -2115,9 +2151,9 @@ NONLopt [^\n]*
                                           yyextra->current->section = EntryType::makeUsingDir();
                                           yyextra->current_root->moveToSubEntryAndRefresh(yyextra->current);
                                           initEntry(yyscanner);
+                                          yyextra->usingNewVarNeeded = false;
                                           BEGIN(Using);
                                         }
-<Using>";"                              { BEGIN(FindMembers); }
 <FindMembers>{SCOPENAME}{BN}*"<>"       { // guided template decl
                                           QCString n=yytext;
                                           addType(yyscanner);
