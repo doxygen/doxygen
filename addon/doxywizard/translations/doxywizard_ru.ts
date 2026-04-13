@@ -55,19 +55,15 @@
     </message>
 <message>
         <source>The default image is:</source>
-        <translation>Изображение по умолчани� с абсолютным путем</translation>
-    </message>
-<message>
-        <source>That default image has to be specified with full path.</source>
-        <translation>Изображение по умолчани� с абсолют路径</translation>
+        <translation>Изображение по умолчанию:</translation>
     </message>
 <message>
         <source>This tag requires that the tag</source>
-        <translation>Этот тег require that the tag</translation>
+        <translation>Этот тег требует, чтобы тег</translation>
     </message>
 <message>
         <source>is set to</source>
-        <translation>establecido en</translation>
+        <translation>был установлен в</translation>
     </message>
 <message>
         <source>The file has to be specified with full path.</source>

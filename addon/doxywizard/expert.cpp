@@ -280,7 +280,6 @@ static QString getDocsForNode(const QDomElement &child)
     if (child.attribute(SA("defval")) != SA(""))
     {
       docs+=SA("<br/>");
-      docs+=SA("<br/>");
       docs+=SA(" ")+SA("%{tr:Expert:The default value is:}")+SA(" <code>")+
             child.attribute(SA("defval"))+
             SA("</code>.");
