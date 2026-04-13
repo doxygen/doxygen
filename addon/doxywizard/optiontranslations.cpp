@@ -443,6 +443,7 @@ QString OptionTranslations::translateDocs(const QString &optionName, const QStri
             {
                 result += QLatin1String("<br/>");
             }
+            result += QLatin1String("<br/>");
             
             if (possiblePos >= 0)
             {

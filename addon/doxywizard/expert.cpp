@@ -59,7 +59,20 @@ static QString convertDoxyCmdToHtml(const QString &s)
 {
   QString result = s;
   
-  result.replace(SA("\\c "), SA("<code>"));
+  // \c word -> <code>word</code>; word ends with ')', ',', '.' or ' '
+  QRegularExpression regexp;
+  regexp.setPattern(SA("\\\\c[ ]+([^ \\)]+)\\)"));
+  result.replace(regexp,SA("<code>\\1</code>)"));
+  
+  regexp.setPattern(SA("\\\\c[ ]+([^ ,]+),"));
+  result.replace(regexp,SA("<code>\\1</code>,"));
+  
+  regexp.setPattern(SA("\\\\c[ ]+([^ \\.]+)\\."));
+  result.replace(regexp,SA("<code>\\1</code>."));
+  
+  regexp.setPattern(SA("\\\\c[ ]+([^ ]+) "));
+  result.replace(regexp,SA("<code>\\1</code> "));
+  
   result.replace(SA("\\c("), SA("<code>("));
   result.replace(SA("\\p "), SA("<code>"));
   result.replace(SA("\\p("), SA("<code>("));
@@ -280,6 +293,7 @@ static QString getDocsForNode(const QDomElement &child)
     if (child.attribute(SA("defval")) != SA(""))
     {
       docs+=SA("<br/>");
+      docs+=SA("<br/>");
       docs+=SA(" ")+SA("%{tr:Expert:The default value is:}")+SA(" <code>")+
             child.attribute(SA("defval"))+
             SA("</code>.");
@@ -331,6 +345,9 @@ static QString getDocsForNode(const QDomElement &child)
       }
       if (numValues>0)
       {
+        docs += SA("<br/>");
+        docs += SA("%{tr:Expert:Possible values are:}");
+        docs += SA(" ");
         int i = 0;
         docsVal = child.firstChildElement();
         while (!docsVal.isNull())

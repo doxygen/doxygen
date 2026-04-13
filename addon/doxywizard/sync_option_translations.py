@@ -10,24 +10,51 @@ The script identifies options used in the wizard interface and:
 2. Generates documentation translation entries for .ts files (only missing ones)
 3. Can automatically apply changes to .ts files with --apply flag
 
+Project Structure:
+- config.xml: ../../src/config.xml (source of option definitions)
+- optiontranslations.cpp: ./optiontranslations.cpp (option name translations)
+- translations/doxywizard_*.ts: Main UI translations (Expert, MainWindow contexts)
+- translations/doxywizard_options_*.ts: Option documentation translations (OptionDocs context)
+
 Usage:
-    python sync_option_translations.py [--config CONFIG_XML] [--options OPTION_TRANSLATIONS_CPP] [--update] [--docs] [--apply]
+    python sync_option_translations.py [options]
 
 Options:
     --config       Path to config.xml (default: ../../src/config.xml)
     --options      Path to optiontranslations.cpp (default: ./optiontranslations.cpp)
-    --update       Update optiontranslations.cpp instead of just reporting
-    --docs         Generate documentation translation entries for .ts files
+    --update       Generate entries for optiontranslations.cpp
+    --docs         Analyze documentation translation entries for .ts files
     --apply        Actually modify .ts files (use with --docs)
-    --ts-dir       Directory containing .ts translation files (default: current directory)
-    --ts-file      Specific .ts file to check (optional)
+    --ts-dir       Directory containing .ts translation files (default: ./translations)
+    --ts-file      Specific .ts file to check (optional, e.g., doxywizard_options_zh_CN.ts)
+    --options-only Only process doxywizard_options_*.ts files (with --docs)
+    --verbose      Verbose output
+    --limit        Limit number of docs entries to show (default: 10)
+
+Examples:
+    # Check missing options in optiontranslations.cpp
+    python sync_option_translations.py
+
+    # Generate entries to add to optiontranslations.cpp
+    python sync_option_translations.py --update
+
+    # Check all translation files for missing OptionDocs entries
+    python sync_option_translations.py --docs
+
+    # Check only options translation files
+    python sync_option_translations.py --docs --options-only
+
+    # Apply missing entries to all translation files
+    python sync_option_translations.py --docs --apply
+
+    # Apply missing entries to a specific file
+    python sync_option_translations.py --docs --apply --ts-file doxywizard_options_de.ts
 """
 
 import argparse
 import os
 import re
 import xml.etree.ElementTree as ET
-from xml.dom import minidom
 from typing import Dict, List, Set, Tuple
 import html
 
@@ -132,6 +159,17 @@ EXCLUDED_OPTIONS = {
 }
 
 OPTION_DOCS_CONTEXT = "OptionDocs"
+
+SUPPORTED_LANGUAGES = {
+    "zh_CN": "Simplified Chinese",
+    "zh_TW": "Traditional Chinese", 
+    "de": "German",
+    "fr": "French",
+    "ja": "Japanese",
+    "ko": "Korean",
+    "es": "Spanish",
+    "ru": "Russian",
+}
 
 
 def parse_config_xml(config_path: str) -> Dict[str, str]:
@@ -317,13 +355,6 @@ def compare_options(config_options: Dict[str, str],
     return missing_in_cpp, extra_in_cpp, common
 
 
-def generate_cpp_entry(option_id: str, description: str, is_excluded: bool = False) -> str:
-    """Generate a C++ entry for optiontranslations.cpp."""
-    if is_excluded:
-        return f'    // {option_id} is excluded: uses shared message system (DoxygenWizard::msg{option_id.title().replace("_", "")}Topic())'
-    return f'    {{ "{option_id}", TR_NOOP("{description}") }},'
-
-
 def generate_ts_docs_entry(option_id: str, docs: str) -> str:
     """Generate a .ts file entry for documentation translation."""
     escaped_docs = html.escape(docs)
@@ -333,22 +364,70 @@ def generate_ts_docs_entry(option_id: str, docs: str) -> str:
     </message>'''
 
 
+def get_ts_files(ts_dir: str, options_only: bool = False) -> List[str]:
+    """Get list of .ts files in the directory."""
+    ts_files = []
+    if os.path.exists(ts_dir):
+        for f in os.listdir(ts_dir):
+            if f.endswith('.ts'):
+                if options_only:
+                    if f.startswith('doxywizard_options_'):
+                        ts_files.append(f)
+                else:
+                    ts_files.append(f)
+    return sorted(ts_files)
+
+
+def get_language_from_filename(filename: str) -> str:
+    """Extract language code from filename like doxywizard_options_zh_CN.ts"""
+    base = os.path.basename(filename)
+    parts = base.replace('.ts', '').split('_')
+    if len(parts) >= 2:
+        lang_code = '_'.join(parts[-2:]) if len(parts) >= 3 and '_' in parts[-1] else parts[-1]
+        return SUPPORTED_LANGUAGES.get(lang_code, lang_code)
+    return "Unknown"
+
+
 def main():
-    parser = argparse.ArgumentParser(description='Sync config options with optiontranslations.cpp')
+    parser = argparse.ArgumentParser(
+        description='Sync config options with optiontranslations.cpp and .ts files',
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  # Check missing options in optiontranslations.cpp
+  python sync_option_translations.py
+
+  # Generate entries to add to optiontranslations.cpp
+  python sync_option_translations.py --update
+
+  # Check all translation files for missing OptionDocs entries
+  python sync_option_translations.py --docs
+
+  # Check only options translation files (doxywizard_options_*.ts)
+  python sync_option_translations.py --docs --options-only
+
+  # Apply missing entries to all translation files
+  python sync_option_translations.py --docs --apply
+
+  # Apply missing entries to a specific file
+  python sync_option_translations.py --docs --apply --ts-file doxywizard_options_de.ts
+""")
     parser.add_argument('--config', default='../../src/config.xml',
                         help='Path to config.xml')
     parser.add_argument('--options', default='optiontranslations.cpp',
                         help='Path to optiontranslations.cpp')
     parser.add_argument('--update', action='store_true',
-                        help='Update optiontranslations.cpp instead of just reporting')
+                        help='Generate entries for optiontranslations.cpp')
     parser.add_argument('--docs', action='store_true',
-                        help='Generate documentation translation entries for .ts files')
+                        help='Analyze documentation translation entries for .ts files')
     parser.add_argument('--apply', action='store_true',
                         help='Actually modify .ts files (use with --docs)')
-    parser.add_argument('--ts-dir', default='.',
-                        help='Directory containing .ts files')
+    parser.add_argument('--ts-dir', default='./translations',
+                        help='Directory containing .ts files (default: ./translations)')
     parser.add_argument('--ts-file', default=None,
-                        help='Specific .ts file to check (optional)')
+                        help='Specific .ts file to check (e.g., doxywizard_options_zh_CN.ts)')
+    parser.add_argument('--options-only', action='store_true',
+                        help='Only process doxywizard_options_*.ts files (with --docs)')
     parser.add_argument('--verbose', '-v', action='store_true',
                         help='Verbose output')
     parser.add_argument('--limit', type=int, default=10,
@@ -362,8 +441,12 @@ def main():
     cpp_path = os.path.normpath(os.path.join(script_dir, args.options))
     ts_dir = os.path.normpath(os.path.join(script_dir, args.ts_dir))
     
+    print("=" * 70)
+    print("SYNC OPTION TRANSLATIONS")
+    print("=" * 70)
     print(f"Config XML: {config_path}")
     print(f"Option Translations: {cpp_path}")
+    print(f"TS Directory: {ts_dir}")
     print()
     
     if not os.path.exists(config_path):
@@ -444,7 +527,7 @@ def main():
                 print(f"Error: .ts file not found: {ts_path}")
                 return 1
         else:
-            ts_files = [f for f in os.listdir(ts_dir) if f.endswith('.ts')]
+            ts_files = get_ts_files(ts_dir, args.options_only)
         
         if not ts_files:
             print("No .ts files found in directory.")
@@ -454,8 +537,10 @@ def main():
         
         for ts_file in ts_files:
             ts_path = os.path.join(ts_dir, ts_file)
+            lang_name = get_language_from_filename(ts_file)
+            
             print()
-            print(f"Analyzing: {ts_file}")
+            print(f"Analyzing: {ts_file} ({lang_name})")
             print("-" * 70)
             
             existing_ids, translation_status = parse_ts_docs_entries(ts_path)
@@ -480,8 +565,6 @@ def main():
                 print()
                 print("  Entries to add to OptionDocs context:")
                 print("  ----------------------------------------")
-                print("  <context>")
-                print(f"      <name>{OPTION_DOCS_CONTEXT}</name>")
                 
                 count = 0
                 for opt_id in sorted(missing_ids):
@@ -493,8 +576,6 @@ def main():
                 
                 if count > args.limit:
                     print(f"      ... and {count - args.limit} more entries")
-                
-                print("  </context>")
                 
                 if args.verbose and count > args.limit:
                     print()
@@ -535,9 +616,8 @@ def main():
                 print(f'    {{ "{opt_id}", TR_NOOP("{desc}") }},')
         
         print()
-        print("NOTE: This script does NOT modify .ts translation files.")
-        print("After updating optiontranslations.cpp, run lupdate to update .ts files:")
-        print("  lupdate optiontranslations.cpp -ts doxywizard_zh_CN.ts ...")
+        print("NOTE: After updating optiontranslations.cpp, run lupdate to update .ts files:")
+        print("  lupdate optiontranslations.cpp -ts translations/doxywizard_zh_CN.ts ...")
     
     if missing_wizard_options or extra_in_cpp:
         return 1
