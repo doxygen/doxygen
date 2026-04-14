@@ -1,6 +1,73 @@
 <?xml version='1.0' encoding='utf-8'?>
 <TS version="2.1" language="es">
 <context>
+    <name>Expert</name>
+<message>
+        <source>Possible values are:</source>
+        <translation>Los valores posibles son:</translation>
+    </message>
+<message>
+        <source>and</source>
+        <translation>y</translation>
+    </message>
+<message>
+        <source>The default value is:</source>
+        <translation>El valor predeterminado es:</translation>
+    </message>
+<message>
+        <source>Minimum value:</source>
+        <translation>Valor mínimo:</translation>
+    </message>
+<message>
+        <source>maximum value:</source>
+        <translation>valor máximo:</translation>
+    </message>
+<message>
+        <source>default value:</source>
+        <translation>valor predeterminado:</translation>
+    </message>
+<message>
+        <source>The default value is: system dependent.</source>
+        <translation>El valor predeterminado es: dependiente del sistema.</translation>
+    </message>
+<message>
+        <source>The default directory is:</source>
+        <translation>El directorio predeterminado es:</translation>
+    </message>
+<message>
+        <source>The default file is:</source>
+        <translation>El archivo predeterminado es:</translation>
+    </message>
+<message>
+        <source>The default file (with absolute path) is:</source>
+        <translation>El archivo predeterminado (con ruta absoluta) es:</translation>
+    </message>
+<message>
+        <source>The file has to be specified with full path.</source>
+        <translation>El archivo debe especificarse con la ruta completa.</translation>
+    </message>
+<message>
+        <source>The default image is:</source>
+        <translation>La imagen predeterminada es:</translation>
+    </message>
+<message>
+        <source>The default image (with absolute path) is:</source>
+        <translation>La imagen predeterminada (con ruta absoluta) es:</translation>
+    </message>
+<message>
+        <source>The image has to be specified with full path.</source>
+        <translation>La imagen debe especificarse con la ruta completa.</translation>
+    </message>
+<message>
+        <source>This tag requires that the tag</source>
+        <translation>Esta etiqueta requiere que la etiqueta</translation>
+    </message>
+<message>
+        <source>is set to</source>
+        <translation>esté establecida en</translation>
+    </message>
+</context>
+<context>
     <name>OptionDocs</name>
 <message>
         <source>DOXYFILE_ENCODING</source>
@@ -1261,6 +1328,133 @@
 <message>
         <source>XML_PROGRAMLISTING</source>
             <translation>Si la etiqueta \c XML_PROGRAMLISTING esta configurada en \c YES, Doxygen volcara los listados de programas (incluyendo resaltado de sintaxis e informacion de referencias cruzadas) a la salida XML. Tenga en cuenta que habilitar esto aumentara significativamente el tamano de la salida XML.</translation>
+    </message>
+</context>
+<context>
+    <name>OptionValue</name>
+<message>
+        <source>(United States)</source>
+        <translation>(Estados Unidos)</translation>
+    </message>
+<message>
+        <source>(Persian)</source>
+        <translation>(Persa)</translation>
+    </message>
+<message>
+        <source>(Japanese with English messages)</source>
+        <translation>(Japones con mensajes en ingles)</translation>
+    </message>
+<message>
+        <source>(Korean with English messages)</source>
+        <translation>(Coreano con mensajes en ingles)</translation>
+    </message>
+<message>
+        <source>(Farsi)</source>
+        <translation>(Farsi)</translation>
+    </message>
+<message>
+        <source>use a fixed 'autotoc_md' string followed by a sequence number starting at 0</source>
+        <translation>usar una cadena 'autotoc_md' fija seguida de un numero de secuencia comenzando en 0</translation>
+    </message>
+<message>
+        <source>use the lower case version of title with any whitespace replaced by '-' and punctuation characters removed</source>
+        <translation>usar la version en minusculas del titulo con cualquier espacio en blanco reemplazado por '-' y caracteres de puntuacion eliminados</translation>
+    </message>
+<message>
+        <source>(to be provided as Doxygen C comment)</source>
+        <translation>(proporcionar como comentario C de Doxygen)</translation>
+    </message>
+<message>
+        <source>always generates light mode output</source>
+        <translation>siempre genera salida en modo claro</translation>
+    </message>
+<message>
+        <source>always generates dark mode output</source>
+        <translation>siempre genera salida en modo oscuro</translation>
+    </message>
+<message>
+        <source>automatically sets the mode according to the user preference, uses light mode if no preference is set (the default)</source>
+        <translation>establece automaticamente el modo segun la preferencia del usuario, usa modo claro si no hay preferencia establecida (predeterminado)</translation>
+    </message>
+<message>
+        <source>automatically sets the mode according to the user preference, uses dark mode if no preference is set</source>
+        <translation>establece automaticamente el modo segun la preferencia del usuario, usa modo oscuro si no hay preferencia establecida</translation>
+    </message>
+<message>
+        <source>allows a user to switch between light and dark mode via a button</source>
+        <translation>permite al usuario cambiar entre modo claro y oscuro mediante un boton</translation>
+    </message>
+<message>
+        <source>(the default)</source>
+        <translation>(predeterminado)</translation>
+    </message>
+<message>
+        <source>(looks nicer but requires the pdf2svg or inkscape tool)</source>
+        <translation>(se ve mejor pero requiere la herramienta pdf2svg o inkscape)</translation>
+    </message>
+<message>
+        <source>(which is slower, but has the best compatibility. This is the name for Mathjax version 2, for MathJax version 3 this will be translated into \c chtml)</source>
+        <translation>(mas lento, pero con mejor compatibilidad. Este es el nombre para MathJax version 2, para MathJax version 3 se traducira a \c chtml)</translation>
+    </message>
+<message>
+        <source>(i.e. MathML. Only supported for MathJax 2. For MathJax version 3 \c chtml will be used instead.)</source>
+        <translation>(es decir, MathML. Solo compatible con MathJax 2. Para MathJax version 3 se usara \c chtml en su lugar.)</translation>
+    </message>
+<message>
+        <source>(This is the name for Mathjax version 3, for MathJax version 2 this will be translated into \c HTML-CSS)</source>
+        <translation>(Este es el nombre para MathJax version 3, para MathJax version 2 se traducira a \c HTML-CSS)</translation>
+    </message>
+<message>
+        <source>(210 x 297 mm)</source>
+        <translation>(210 x 297 mm)</translation>
+    </message>
+<message>
+        <source>(8.5 x 11 inches)</source>
+        <translation>(8.5 x 11 pulgadas)</translation>
+    </message>
+<message>
+        <source>(8.5 x 14 inches)</source>
+        <translation>(8.5 x 14 pulgadas)</translation>
+    </message>
+<message>
+        <source>(7.25 x 10.5 inches)</source>
+        <translation>(7.25 x 10.5 pulgadas)</translation>
+    </message>
+<message>
+        <source>same as ERROR_STOP</source>
+        <translation>igual que ERROR_STOP</translation>
+    </message>
+<message>
+        <source>same as BATCH</source>
+        <translation>igual que BATCH</translation>
+    </message>
+<message>
+        <source>In batch mode nothing is printed on the terminal, errors are scrolled as if \&lt;return\&gt; is hit at every error; missing files that TeX tries to input or request from keyboard input (\\read on a not open input stream) cause the job to abort</source>
+        <translation>En modo batch no se imprime nada en la terminal, los errores se desplazan como si se presionara \&lt;return\&gt; en cada error; los archivos faltantes que TeX intenta leer o solicitar desde la entrada del teclado (\\read en un flujo de entrada no abierto) causan que el trabajo se aborte</translation>
+    </message>
+<message>
+        <source>In nonstop mode the diagnostic message will appear on the terminal, but there is no possibility of user interaction just like in batch mode</source>
+        <translation>En modo nonstop el mensaje de diagnostico aparecera en la terminal, pero no hay posibilidad de interaccion del usuario igual que en modo batch</translation>
+    </message>
+<message>
+        <source>In scroll mode, TeX will stop only for missing files to input or if keyboard input is necessary</source>
+        <translation>En modo scroll, TeX solo se detendra para archivos faltantes o si se necesita entrada del teclado</translation>
+    </message>
+<message>
+        <source>In errorstop mode, TeX will stop at each error, asking for user intervention</source>
+        <translation>En modo errorstop, TeX se detendra en cada error, solicitando intervencion del usuario</translation>
+    </message>
+<message>
+        <source>(use client-side rendering for HTML and \c mmdc for LaTeX/PDF and other formats. If \c MERMAID_PATH is not set, non-HTML diagrams will produce a warning)</source>
+        <translation>(usar renderizado del lado del cliente para HTML y \c mmdc para LaTeX/PDF y otros formatos. Si \c MERMAID_PATH no esta configurado, los diagramas no HTML produciran una advertencia)</translation>
+    </message>
+<message>
+        <source>(use the \c mmdc tool to pre-generate images (requires \c Node.js and \c mermaid-js/mermaid-cli). Works for all output formats)</source>
+        <translation>(usar la herramienta \c mmdc para pregenerar imagenes (requiere \c Node.js y \c mermaid-js/mermaid-cli). Funciona para todos los formatos de salida)</translation>
+    </message>
+<message>
+        <source>(embed \c mermaid.js in HTML output for client-side rendering. Does not require \c mmdc but only works for HTML output)</source>
+        <translation>(incrustar \c mermaid.js en la salida HTML para renderizado del lado del cliente. No requiere \c mmdc pero solo funciona para salida HTML)</translation>
     </message>
 </context>
 </TS>

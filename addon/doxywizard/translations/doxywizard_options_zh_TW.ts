@@ -2,6 +2,73 @@
 <!DOCTYPE TS>
 <TS version="2.1" language="zh_TW">
 <context>
+    <name>Expert</name>
+<message>
+        <source>Possible values are:</source>
+        <translation>可能的值有：</translation>
+    </message>
+<message>
+        <source>and</source>
+        <translation>和</translation>
+    </message>
+<message>
+        <source>The default value is:</source>
+        <translation>預設值為：</translation>
+    </message>
+<message>
+        <source>Minimum value:</source>
+        <translation>最小值：</translation>
+    </message>
+<message>
+        <source>maximum value:</source>
+        <translation>最大值：</translation>
+    </message>
+<message>
+        <source>default value:</source>
+        <translation>預設值：</translation>
+    </message>
+<message>
+        <source>The default value is: system dependent.</source>
+        <translation>預設值：取決於系統。</translation>
+    </message>
+<message>
+        <source>The default directory is:</source>
+        <translation>預設目錄為：</translation>
+    </message>
+<message>
+        <source>The default file is:</source>
+        <translation>預設檔案為：</translation>
+    </message>
+<message>
+        <source>The default file (with absolute path) is:</source>
+        <translation>預設檔案（帶絕對路徑）為：</translation>
+    </message>
+<message>
+        <source>The file has to be specified with full path.</source>
+        <translation>檔案必須使用完整路徑指定。</translation>
+    </message>
+<message>
+        <source>The default image is:</source>
+        <translation>預設影像為：</translation>
+    </message>
+<message>
+        <source>The default image (with absolute path) is:</source>
+        <translation>預設影像（帶絕對路徑）為：</translation>
+    </message>
+<message>
+        <source>The image has to be specified with full path.</source>
+        <translation>影像必須使用完整路徑指定。</translation>
+    </message>
+<message>
+        <source>This tag requires that the tag</source>
+        <translation>此標籤要求標籤</translation>
+    </message>
+<message>
+        <source>is set to</source>
+        <translation>設定為</translation>
+    </message>
+</context>
+<context>
     <name>OptionDocs</name>
 <message>
         <source>DOXYFILE_ENCODING</source>
@@ -1262,6 +1329,133 @@
 <message>
         <source>MSCFILE_DIRS</source>
             <translation>\c MSCFILE_DIRS 標籤可用于指定一个或多个包含包含在文件中的 msc 檔案的目錄（请参阅 \ref cmdmscfile &quot;\mscfile&quot; 命令）。</translation>
+    </message>
+</context>
+<context>
+    <name>OptionValue</name>
+<message>
+        <source>(United States)</source>
+        <translation>（美國）</translation>
+    </message>
+<message>
+        <source>(Persian)</source>
+        <translation>（波斯語）</translation>
+    </message>
+<message>
+        <source>(Japanese with English messages)</source>
+        <translation>（日語帶英語訊息）</translation>
+    </message>
+<message>
+        <source>(Korean with English messages)</source>
+        <translation>（韓語帶英語訊息）</translation>
+    </message>
+<message>
+        <source>(Farsi)</source>
+        <translation>（波斯語）</translation>
+    </message>
+<message>
+        <source>use a fixed 'autotoc_md' string followed by a sequence number starting at 0</source>
+        <translation>使用固定的'autotoc_md'字串後跟從0開始的序號</translation>
+    </message>
+<message>
+        <source>use the lower case version of title with any whitespace replaced by '-' and punctuation characters removed</source>
+        <translation>使用標題的小寫版本，將任何空白替換為'-'並刪除標點符號</translation>
+    </message>
+<message>
+        <source>(to be provided as Doxygen C comment)</source>
+        <translation>（作為Doxygen C註解提供）</translation>
+    </message>
+<message>
+        <source>always generates light mode output</source>
+        <translation>始終生成淺色模式輸出</translation>
+    </message>
+<message>
+        <source>always generates dark mode output</source>
+        <translation>始終生成深色模式輸出</translation>
+    </message>
+<message>
+        <source>automatically sets the mode according to the user preference, uses light mode if no preference is set (the default)</source>
+        <translation>根據使用者偏好自動設定模式，如果未設定偏好則使用淺色模式（預設）</translation>
+    </message>
+<message>
+        <source>automatically sets the mode according to the user preference, uses dark mode if no preference is set</source>
+        <translation>根據使用者偏好自動設定模式，如果未設定偏好則使用深色模式</translation>
+    </message>
+<message>
+        <source>allows a user to switch between light and dark mode via a button</source>
+        <translation>允許使用者透過按鈕在淺色和深色模式之間切換</translation>
+    </message>
+<message>
+        <source>(the default)</source>
+        <translation>（預設）</translation>
+    </message>
+<message>
+        <source>(looks nicer but requires the pdf2svg or inkscape tool)</source>
+        <translation>（看起來更好，但需要pdf2svg或inkscape工具）</translation>
+    </message>
+<message>
+        <source>(which is slower, but has the best compatibility. This is the name for Mathjax version 2, for MathJax version 3 this will be translated into \c chtml)</source>
+        <translation>（較慢，但相容性最好。這是MathJax版本2的名稱，對於MathJax版本3將被轉換為\c chtml）</translation>
+    </message>
+<message>
+        <source>(i.e. MathML. Only supported for MathJax 2. For MathJax version 3 \c chtml will be used instead.)</source>
+        <translation>（即MathML。僅MathJax 2支援。對於MathJax版本3將使用\c chtml代替。）</translation>
+    </message>
+<message>
+        <source>(This is the name for Mathjax version 3, for MathJax version 2 this will be translated into \c HTML-CSS)</source>
+        <translation>（這是MathJax版本3的名稱，對於MathJax版本2將被轉換為\c HTML-CSS）</translation>
+    </message>
+<message>
+        <source>(210 x 297 mm)</source>
+        <translation>（210 x 297 公釐）</translation>
+    </message>
+<message>
+        <source>(8.5 x 11 inches)</source>
+        <translation>（8.5 x 11 英吋）</translation>
+    </message>
+<message>
+        <source>(8.5 x 14 inches)</source>
+        <translation>（8.5 x 14 英吋）</translation>
+    </message>
+<message>
+        <source>(7.25 x 10.5 inches)</source>
+        <translation>（7.25 x 10.5 英吋）</translation>
+    </message>
+<message>
+        <source>same as ERROR_STOP</source>
+        <translation>與ERROR_STOP相同</translation>
+    </message>
+<message>
+        <source>same as BATCH</source>
+        <translation>與BATCH相同</translation>
+    </message>
+<message>
+        <source>In batch mode nothing is printed on the terminal, errors are scrolled as if \&lt;return\&gt; is hit at every error; missing files that TeX tries to input or request from keyboard input (\\read on a not open input stream) cause the job to abort</source>
+        <translation>在批次模式下，終端不列印任何內容，錯誤會像在每個錯誤處按下\&lt;return\&gt;一樣捲動；TeX嘗試輸入或從鍵盤輸入請求的缺失檔案（在未開啟的輸入串流上的\\read）會導致作業中止</translation>
+    </message>
+<message>
+        <source>In nonstop mode the diagnostic message will appear on the terminal, but there is no possibility of user interaction just like in batch mode</source>
+        <translation>在非停止模式下，診斷訊息將顯示在終端上，但像批次模式一樣無法進行使用者互動</translation>
+    </message>
+<message>
+        <source>In scroll mode, TeX will stop only for missing files to input or if keyboard input is necessary</source>
+        <translation>在捲動模式下，TeX僅在缺少輸入檔案或需要鍵盤輸入時停止</translation>
+    </message>
+<message>
+        <source>In errorstop mode, TeX will stop at each error, asking for user intervention</source>
+        <translation>在錯誤停止模式下，TeX在每個錯誤處停止，請求使用者干預</translation>
+    </message>
+<message>
+        <source>(use client-side rendering for HTML and \c mmdc for LaTeX/PDF and other formats. If \c MERMAID_PATH is not set, non-HTML diagrams will produce a warning)</source>
+        <translation>（HTML使用客戶端渲染，LaTeX/PDF和其他格式使用\c mmdc。如果未設定\c MERMAID_PATH，非HTML圖表將產生警告）</translation>
+    </message>
+<message>
+        <source>(use the \c mmdc tool to pre-generate images (requires \c Node.js and \c mermaid-js/mermaid-cli). Works for all output formats)</source>
+        <translation>（使用\c mmdc工具預生成影像（需要\c Node.js和\c mermaid-js/mermaid-cli）。適用於所有輸出格式）</translation>
+    </message>
+<message>
+        <source>(embed \c mermaid.js in HTML output for client-side rendering. Does not require \c mmdc but only works for HTML output)</source>
+        <translation>（在HTML輸出中嵌入\c mermaid.js進行客戶端渲染。不需要\c mmdc但僅適用於HTML輸出）</translation>
     </message>
 </context>
 </TS>

@@ -2,6 +2,73 @@
 <!DOCTYPE TS>
 <TS version="2.1" language="ru">
 <context>
+    <name>Expert</name>
+<message>
+        <source>Possible values are:</source>
+        <translation>Возможные значения:</translation>
+    </message>
+<message>
+        <source>and</source>
+        <translation>и</translation>
+    </message>
+<message>
+        <source>The default value is:</source>
+        <translation>Значение по умолчанию:</translation>
+    </message>
+<message>
+        <source>Minimum value:</source>
+        <translation>Минимальное значение:</translation>
+    </message>
+<message>
+        <source>maximum value:</source>
+        <translation>Максимальное значение:</translation>
+    </message>
+<message>
+        <source>default value:</source>
+        <translation>Значение по умолчанию:</translation>
+    </message>
+<message>
+        <source>The default value is: system dependent.</source>
+        <translation>Значение по умолчанию зависит от системы.</translation>
+    </message>
+<message>
+        <source>The default directory is:</source>
+        <translation>Каталог по умолчанию:</translation>
+    </message>
+<message>
+        <source>The default file is:</source>
+        <translation>Файл по умолчанию:</translation>
+    </message>
+<message>
+        <source>The default file (with absolute path) is:</source>
+        <translation>Файл по умолчанию (с абсолютным путём):</translation>
+    </message>
+<message>
+        <source>The file has to be specified with full path.</source>
+        <translation>Файл должен быть указан с полным путём.</translation>
+    </message>
+<message>
+        <source>The default image is:</source>
+        <translation>Изображение по умолчанию:</translation>
+    </message>
+<message>
+        <source>The default image (with absolute path) is:</source>
+        <translation>Изображение по умолчанию (с абсолютным путём):</translation>
+    </message>
+<message>
+        <source>The image has to be specified with full path.</source>
+        <translation>Изображение должно быть указано с полным путём.</translation>
+    </message>
+<message>
+        <source>This tag requires that the tag</source>
+        <translation>Этот тег требует, чтобы тег</translation>
+    </message>
+<message>
+        <source>is set to</source>
+        <translation>был установлен в</translation>
+    </message>
+</context>
+<context>
     <name>OptionDocs</name>
 <message>
         <source>DOXYFILE_ENCODING</source>
@@ -605,15 +672,15 @@
     </message>
 <message>
         <source>HTML_STYLESHEET</source>
-            <translation>Тег \c HTML_STYLESHEET можно использовать для указания пользовательского CSS файла, который будет вставлен в вывод HTML.</translation>
+            <translation>Тег \c HTML_STYLESHEET можно использовать для указания пользовательской каскадной таблицы стилей, используемой для каждой HTML-страницы. Её можно использовать для тонкой настройки внешнего вида HTML-вывода. Если оставить пустым, Doxygen сгенерирует таблицу стилей по умолчанию. См. также раздел \ref doxygen_usage для получения информации о том, как сгенерировать таблицу стилей, которую Doxygen обычно использует. \note Рекомендуется использовать \ref cfg_html_extra_stylesheet &quot;HTML_EXTRA_STYLESHEET&quot; вместо этого тега, так как он более надёжен, и этот тег (&lt;code&gt;HTML_STYLESHEET&lt;/code&gt;) в будущем будет устаревшим.</translation>
     </message>
 <message>
         <source>HTML_EXTRA_STYLESHEET</source>
-            <translation>Тег \c HTML_EXTRA_STYLESHEET можно использовать для указания дополнительных CSS файлов, которые будут вставлены в вывод HTML.</translation>
+            <translation>Тег \c HTML_EXTRA_STYLESHEET можно использовать для указания дополнительных пользовательских каскадных таблиц стилей, которые будут включены после стандартной таблицы стилей, созданной Doxygen. Используйте эту опцию для переопределения некоторых аспектов стиля. Это предпочтительнее, чем использование \ref cfg_html_stylesheet &quot;HTML_STYLESHEET&quot;, так как это не заменяет стандартную таблицу стилей и поэтому более надёжно для будущих обновлений. Doxygen скопирует файл таблицы стилей в выходной каталог. \note Порядок дополнительных файлов таблиц стилей важен (например, последняя таблица стилей в списке переопределяет настройки предыдущей таблицы стилей в списке). \note Поскольку в настоящее время невозможно переопределить стиль полосы прокрутки в Webkit/Chromium, стиль полосы прокрутки будет опущен в стандартном doxygen.css, если указана одна или несколько дополнительных таблиц стилей. Поэтому, если требуется пользовательская полоса прокрутки, её необходимо добавить явно.</translation>
     </message>
 <message>
         <source>HTML_EXTRA_FILES</source>
-            <translation>Тег \c HTML_EXTRA_FILES можно использовать для указания дополнительных файлов, которые должны быть скопированы в выходной каталог HTML.</translation>
+            <translation>Тег \c HTML_EXTRA_FILES можно использовать для указания одного или нескольких дополнительных изображений или других исходных файлов, которые должны быть скопированы в выходной каталог HTML. Обратите внимание, что эти файлы будут скопированы в базовый выходной каталог HTML. Используйте тег &lt;code&gt;$relpath^&lt;/code&gt; в файлах \ref cfg_html_header &quot;HTML_HEADER&quot; и/или \ref cfg_html_footer &quot;HTML_FOOTER&quot; для загрузки этих файлов. В файле \ref cfg_html_stylesheet &quot;HTML_STYLESHEET&quot; используйте только имя файла. Также обратите внимание, что файлы будут скопированы как есть; команды или теги недоступны.</translation>
     </message>
 <message>
         <source>HTML_COLORSTYLE</source>
@@ -621,7 +688,7 @@
     </message>
 <message>
         <source>HTML_COLORSTYLE_HUE</source>
-            <translation>Тег \c HTML_COLORSTYLE_HUE управляет цветом вывода HTML. Doxygen настроит цвета в таблице стилей и фоновом изображении на основе этого цвета.</translation>
+            <translation>Тег \c HTML_COLORSTYLE_HUE управляет цветом вывода HTML. Doxygen настроит цвета в таблице стилей и фоновом изображении на основе этого цвета. Оттенок указывается как угол на цветовом круге, см. https://en.wikipedia.org/wiki/Hue для получения дополнительной информации. Например, значение 0 представляет красный, 60 — желтый, 120 — зеленый, 180 — голубой, 240 — синий, 300 — фиолетовый, а 360 снова красный.</translation>
     </message>
 <message>
         <source>HTML_COLORSTYLE_SAT</source>
@@ -629,11 +696,11 @@
     </message>
 <message>
         <source>HTML_COLORSTYLE_GAMMA</source>
-            <translation>Тег \c HTML_COLORSTYLE_GAMMA управляет гамма-коррекцией, применяемой к компоненте яркости цветов в выводе HTML.</translation>
+            <translation>Тег \c HTML_COLORSTYLE_GAMMA управляет гамма-коррекцией, применяемой к компоненте яркости цветов в выводе HTML. Значения ниже 100 постепенно делают вывод светлее, а значения выше 100 делают вывод темнее. Значение, деленное на 100, является фактическим применяемым гамма-значением, поэтому 80 означает гамму 0.8, значение 220 означает гамму 2.2, а 100 не изменяет гамму.</translation>
     </message>
 <message>
         <source>HTML_DYNAMIC_MENUS</source>
-            <translation>Если тег \c HTML_DYNAMIC_MENUS установлен в \c YES, сгенерированная HTML документация будет содержать главный индекс с вертикальным навигационным меню, создаваемым динамически с помощью JavaScript.</translation>
+            <translation>Если тег \c HTML_DYNAMIC_MENUS установлен в \c YES, сгенерированная HTML документация будет содержать главный индекс с вертикальным навигационным меню, создаваемым динамически с помощью JavaScript. Если отключено, навигационный индекс будет состоять из многоуровневых вкладок, статически встроенных в каждую HTML страницу. Отключите эту опцию для поддержки браузеров без JavaScript, таких как браузер справки Qt.</translation>
     </message>
 <message>
         <source>HTML_DYNAMIC_SECTIONS</source>
@@ -645,19 +712,19 @@
     </message>
 <message>
         <source>HTML_COPY_CLIPBOARD</source>
-            <translation>Если тег \c HTML_COPY_CLIPBOARD установлен в \c YES, Doxygen покажет значок в правом верхнем углу фрагментов кода и текста, позволяющий пользователю копировать их содержимое в буфер обмена.</translation>
+            <translation>Если тег \c HTML_COPY_CLIPBOARD установлен в \c YES, Doxygen покажет значок в правом верхнем углу фрагментов кода и текста, позволяющий пользователю копировать их содержимое в буфер обмена. Обратите внимание, что это работает только тогда, когда браузер поддерживает это и веб-страница обслуживается через &lt;a href=&quot;https://www.w3.org/TR/secure-contexts/&quot;&gt;безопасный контекст&lt;/a&gt;, т.е. используя протокол https: или file:.</translation>
     </message>
 <message>
         <source>HTML_PROJECT_COOKIE</source>
-            <translation>Doxygen сохраняет некоторые настройки в браузере постоянно (например, через cookies). По умолчанию эти настройки применяются ко всем HTML страницам, которые Doxygen генерирует во всех проектах. Тег \c HTML_PROJECT_COOKIE можно использовать для сохранения настроек под проектно-специфичным ключом.</translation>
+            <translation>Doxygen сохраняет некоторые настройки в браузере постоянно (например, через cookies). По умолчанию эти настройки применяются ко всем HTML страницам, которые Doxygen генерирует во всех проектах. Тег \c HTML_PROJECT_COOKIE можно использовать для сохранения настроек под проектно-специфичным ключом, так что пользовательские предпочтения будут храниться отдельно для каждого проекта.</translation>
     </message>
 <message>
         <source>HTML_INDEX_NUM_ENTRIES</source>
-            <translation>С помощью \c HTML_INDEX_NUM_ENTRIES вы можете управлять предпочтительным количеством записей, отображаемых изначально в различных древовидных индексах.</translation>
+            <translation>С помощью \c HTML_INDEX_NUM_ENTRIES вы можете управлять предпочтительным количеством записей, отображаемых изначально в различных древовидных индексах; пользователь может позже динамически сворачивать и разворачивать записи. Doxygen развернет дерево до уровня, где видимо указанное количество записей (если только полностью свернутое дерево уже не превышает это количество). Таким образом, установка количества записей в 1 приведет к генерации полностью свернутого дерева по умолчанию. 0 — это специальное значение, указывающее на неограниченное количество записей, что приведет к генерации полностью развернутого дерева по умолчанию.</translation>
     </message>
 <message>
         <source>GENERATE_DOCSET</source>
-            <translation>Если тег \c GENERATE_DOCSET установлен в \c YES, будут сгенерированы дополнительные индексные файлы, которые могут использоваться как входные данные для &amp;lt;a href=&quot;https://developer.apple.com/xcode/&quot;&amp;gt;интегрированной среды разработки Apple Xcode 3&amp;lt;/a&amp;gt;.</translation>
+            <translation>Если тег \c GENERATE_DOCSET установлен в \c YES, будут сгенерированы дополнительные индексные файлы, которые могут использоваться как входные данные для &lt;a href=&quot;https://developer.apple.com/xcode/&quot;&gt;интегрированной среды разработки Apple Xcode 3&lt;/a&gt;, введенной в OSX 10.5 (Leopard). Для создания набора документации Doxygen сгенерирует Makefile в выходном каталоге HTML. Запуск \c make создаст набор документации в этом каталоге, а запуск &lt;code&gt;make install&lt;/code&gt; установит набор документации в &lt;code&gt;~/Library/Developer/Shared/Documentation/DocSets&lt;/code&gt;, чтобы Xcode мог найти его при запуске. См. https://developer.apple.com/library/archive/featuredarticles/DoxygenXcode/_index.html для получения дополнительной информации.</translation>
     </message>
 <message>
         <source>DOCSET_FEEDNAME</source>
@@ -665,15 +732,15 @@
     </message>
 <message>
         <source>DOCSET_FEEDURL</source>
-            <translation>Этот тег определяет URL набора документации.</translation>
+            <translation>Этот тег определяет URL набора документации. Набор документации предоставляет зонтичный термин, под которым могут быть сгруппированы несколько наборов документации от одного поставщика (например, компании или набора продуктов).</translation>
     </message>
 <message>
         <source>DOCSET_BUNDLE_ID</source>
-            <translation>Этот тег указывает строку, которая должна однозначно идентифицировать пакет набора документации. Это должна быть строка в обратном доменном стиле, например &amp;lt;code&amp;gt;com.mycompany.MyDocSet&amp;lt;/code&amp;gt;.</translation>
+            <translation>Этот тег указывает строку, которая должна однозначно идентифицировать пакет набора документации. Это должна быть строка в обратном доменном стиле, например &lt;code&gt;com.mycompany.MyDocSet&lt;/code&gt;. Doxygen добавит &lt;code&gt;.docset&lt;/code&gt; к имени.</translation>
     </message>
 <message>
         <source>DOCSET_PUBLISHER_ID</source>
-            <translation>Тег \c DOCSET_PUBLISHER_ID указывает строку, которая должна однозначно идентифицировать издателя документации.</translation>
+            <translation>Тег \c DOCSET_PUBLISHER_ID указывает строку, которая должна однозначно идентифицировать издателя документации. Это должна быть строка в обратном доменном стиле, например &lt;code&gt;com.mycompany.MyDocSet.documentation&lt;/code&gt;.</translation>
     </message>
 <message>
         <source>DOCSET_PUBLISHER_NAME</source>
@@ -681,15 +748,15 @@
     </message>
 <message>
         <source>GENERATE_HTMLHELP</source>
-            <translation>Если тег \c GENERATE_HTMLHELP установлен в \c YES, Doxygen генерирует три дополнительных HTML индексных файла: \c index.hhp, \c index.hhc и \c index.hhk.</translation>
+            <translation>Если тег \c GENERATE_HTMLHELP установлен в \c YES, Doxygen генерирует три дополнительных HTML индексных файла: \c index.hhp, \c index.hhc и \c index.hhk. \c index.hhp — это файл проекта, который может быть прочитан Microsoft HTML Help Workshop в Windows. В начале 2021 года Microsoft убрала исходную страницу, включая ссылку для скачивания (HTML Help Workshop уже много лет находится в режиме обслуживания). Вы можете скачать HTML Help Workshop из веб-архива по адресу &lt;a href=&quot;http://web.archive.org/web/20160201063255/https://download.microsoft.com/download/0/A/9/0A939EF6-E31C-430F-A3DF-DFAE7960D564/htmlhelp.exe&quot;&gt;исполняемый файл установки&lt;/a&gt;. &lt;br&gt;HTML Help Workshop содержит компилятор, который может преобразовать весь HTML вывод, сгенерированный Doxygen, в один скомпилированный HTML файл (`.chm`). Скомпилированные HTML файлы теперь используются в качестве формата справки Windows 98 и в будущем заменят старый формат справки Windows (`.hlp`) на всех платформах Windows. Сжатые HTML файлы также содержат индекс, оглавление, и вы можете искать слова в документации. HTML Workshop также содержит просмотрщик для сжатых HTML файлов.</translation>
     </message>
 <message>
         <source>CHM_FILE</source>
-            <translation>Тег \c CHM_FILE можно использовать для указания имени файла сгенерированного `.chm` файла.</translation>
+            <translation>Тег \c CHM_FILE можно использовать для указания имени файла сгенерированного `.chm` файла. К файлу можно добавить путь, если результат не должен быть записан в выходной каталог html.</translation>
     </message>
 <message>
         <source>HHC_LOCATION</source>
-            <translation>Тег \c HHC_LOCATION можно использовать для указания местоположения (абсолютный путь, включая имя файла) компилятора HTML помощи (\c hhc.exe).</translation>
+            <translation>Тег \c HHC_LOCATION можно использовать для указания местоположения (абсолютный путь, включая имя файла) компилятора HTML помощи (\c hhc.exe). Если не пусто, Doxygen попытается запустить компилятор HTML помощи на сгенерированном \c index.hhp.</translation>
     </message>
 <message>
         <source>GENERATE_CHI</source>
@@ -701,7 +768,7 @@
     </message>
 <message>
         <source>BINARY_TOC</source>
-            <translation>Флаг \c BINARY_TOC управляет тем, будет ли сгенерировано двоичное оглавление в файле `.chm` (\c YES) или обычное оглавление (\c NO).</translation>
+            <translation>Флаг \c BINARY_TOC управляет тем, будет ли сгенерировано двоичное оглавление в файле `.chm` (\c YES) или обычное оглавление (\c NO). Кроме того, это включает кнопки `Previous` и `Next`.</translation>
     </message>
 <message>
         <source>TOC_EXPAND</source>
@@ -709,7 +776,7 @@
     </message>
 <message>
         <source>SITEMAP_URL</source>
-            <translation>Тег \c SITEMAP_URL используется для указания полного URL места, где пользователь разместит сгенерированную документацию на сервере во время развертывания.</translation>
+            <translation>Тег \c SITEMAP_URL используется для указания полного URL места, где пользователь разместит сгенерированную документацию на сервере во время развертывания. Сгенерированная карта сайта называется `sitemap.xml` и помещается в каталог, указанный \ref cfg_html_output &quot;HTML_OUTPUT&quot;. Если \c SITEMAP_URL не указан, карта сайта не будет сгенерирована. Информацию о протоколе карты сайта см. на https://www.sitemaps.org</translation>
     </message>
 <message>
         <source>GENERATE_QHP</source>
@@ -1262,6 +1329,133 @@
 <message>
         <source>MSCFILE_DIRS</source>
             <translation>Тег \c MSCFILE_DIRS можно использовать для указания каталогов, содержащих файлы msc.</translation>
+    </message>
+</context>
+<context>
+    <name>OptionValue</name>
+<message>
+        <source>(United States)</source>
+        <translation>(США)</translation>
+    </message>
+<message>
+        <source>(Persian)</source>
+        <translation>(Персидский)</translation>
+    </message>
+<message>
+        <source>(Japanese with English messages)</source>
+        <translation>(Японский с английскими сообщениями)</translation>
+    </message>
+<message>
+        <source>(Korean with English messages)</source>
+        <translation>(Корейский с английскими сообщениями)</translation>
+    </message>
+<message>
+        <source>(Farsi)</source>
+        <translation>(Фарси)</translation>
+    </message>
+<message>
+        <source>use a fixed 'autotoc_md' string followed by a sequence number starting at 0</source>
+        <translation>использовать фиксированную строку 'autotoc_md' с порядковым номером, начиная с 0</translation>
+    </message>
+<message>
+        <source>use the lower case version of title with any whitespace replaced by '-' and punctuation characters removed</source>
+        <translation>использовать версию заголовка в нижнем регистре, заменяя пробелы на '-' и удаляя знаки препинания</translation>
+    </message>
+<message>
+        <source>(to be provided as Doxygen C comment)</source>
+        <translation>(должен быть предоставлен как комментарий Doxygen C)</translation>
+    </message>
+<message>
+        <source>always generates light mode output</source>
+        <translation>всегда генерирует вывод в светлом режиме</translation>
+    </message>
+<message>
+        <source>always generates dark mode output</source>
+        <translation>всегда генерирует вывод в темном режиме</translation>
+    </message>
+<message>
+        <source>automatically sets the mode according to the user preference, uses light mode if no preference is set (the default)</source>
+        <translation>автоматически устанавливает режим в соответствии с предпочтениями пользователя, использует светлый режим, если предпочтение не установлено (по умолчанию)</translation>
+    </message>
+<message>
+        <source>automatically sets the mode according to the user preference, uses dark mode if no preference is set</source>
+        <translation>автоматически устанавливает режим в соответствии с предпочтениями пользователя, использует темный режим, если предпочтение не установлено</translation>
+    </message>
+<message>
+        <source>allows a user to switch between light and dark mode via a button</source>
+        <translation>позволяет пользователю переключаться между светлым и темным режимом с помощью кнопки</translation>
+    </message>
+<message>
+        <source>(the default)</source>
+        <translation>(по умолчанию)</translation>
+    </message>
+<message>
+        <source>(looks nicer but requires the pdf2svg or inkscape tool)</source>
+        <translation>(выглядит лучше, но требует инструмент pdf2svg или inkscape)</translation>
+    </message>
+<message>
+        <source>(which is slower, but has the best compatibility. This is the name for Mathjax version 2, for MathJax version 3 this will be translated into \c chtml)</source>
+        <translation>(медленнее, но имеет лучшую совместимость. Это имя для MathJax версии 2, для MathJax версии 3 будет переведено в \c chtml)</translation>
+    </message>
+<message>
+        <source>(i.e. MathML. Only supported for MathJax 2. For MathJax version 3 \c chtml will be used instead.)</source>
+        <translation>(т.е. MathML. Поддерживается только для MathJax 2. Для MathJax версии 3 вместо этого будет использоваться \c chtml.)</translation>
+    </message>
+<message>
+        <source>(This is the name for Mathjax version 3, for MathJax version 2 this will be translated into \c HTML-CSS)</source>
+        <translation>(Это имя для MathJax версии 3, для MathJax версии 2 будет переведено в \c HTML-CSS)</translation>
+    </message>
+<message>
+        <source>(210 x 297 mm)</source>
+        <translation>(210 x 297 мм)</translation>
+    </message>
+<message>
+        <source>(8.5 x 11 inches)</source>
+        <translation>(8.5 x 11 дюймов)</translation>
+    </message>
+<message>
+        <source>(8.5 x 14 inches)</source>
+        <translation>(8.5 x 14 дюймов)</translation>
+    </message>
+<message>
+        <source>(7.25 x 10.5 inches)</source>
+        <translation>(7.25 x 10.5 дюймов)</translation>
+    </message>
+<message>
+        <source>same as ERROR_STOP</source>
+        <translation>то же, что и ERROR_STOP</translation>
+    </message>
+<message>
+        <source>same as BATCH</source>
+        <translation>то же, что и BATCH</translation>
+    </message>
+<message>
+        <source>In batch mode nothing is printed on the terminal, errors are scrolled as if \&lt;return\&gt; is hit at every error; missing files that TeX tries to input or request from keyboard input (\\read on a not open input stream) cause the job to abort</source>
+        <translation>В пакетном режиме на терминал ничего не выводится, ошибки прокручиваются так, как если бы \&lt;return\&gt; нажимался при каждой ошибке; отсутствующие файлы, которые TeX пытается ввести или запросить с клавиатуры (\\read на неоткрытом входном потоке), приводят к прерыванию задания</translation>
+    </message>
+<message>
+        <source>In nonstop mode the diagnostic message will appear on the terminal, but there is no possibility of user interaction just like in batch mode</source>
+        <translation>В режиме без остановки диагностическое сообщение появится на терминале, но взаимодействие с пользователем невозможно, как и в пакетном режиме</translation>
+    </message>
+<message>
+        <source>In scroll mode, TeX will stop only for missing files to input or if keyboard input is necessary</source>
+        <translation>В режиме прокрутки TeX остановится только для отсутствующих файлов или если необходим ввод с клавиатуры</translation>
+    </message>
+<message>
+        <source>In errorstop mode, TeX will stop at each error, asking for user intervention</source>
+        <translation>В режиме остановки при ошибке TeX останавливается при каждой ошибке, запрашивая вмешательство пользователя</translation>
+    </message>
+<message>
+        <source>(use client-side rendering for HTML and \c mmdc for LaTeX/PDF and other formats. If \c MERMAID_PATH is not set, non-HTML diagrams will produce a warning)</source>
+        <translation>(использовать рендеринг на стороне клиента для HTML и \c mmdc для LaTeX/PDF и других форматов. Если \c MERMAID_PATH не установлен, не-HTML диаграммы выдадут предупреждение)</translation>
+    </message>
+<message>
+        <source>(use the \c mmdc tool to pre-generate images (requires \c Node.js and \c mermaid-js/mermaid-cli). Works for all output formats)</source>
+        <translation>(использовать инструмент \c mmdc для предварительной генерации изображений (требуется \c Node.js и \c mermaid-js/mermaid-cli). Работает для всех форматов вывода)</translation>
+    </message>
+<message>
+        <source>(embed \c mermaid.js in HTML output for client-side rendering. Does not require \c mmdc but only works for HTML output)</source>
+        <translation>(встроить \c mermaid.js в вывод HTML для рендеринга на стороне клиента. Не требует \c mmdc, но работает только для вывода HTML)</translation>
     </message>
 </context>
 </TS>

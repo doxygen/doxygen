@@ -1,6 +1,73 @@
 <?xml version='1.0' encoding='utf-8'?>
 <TS version="2.1" language="fr">
 <context>
+    <name>Expert</name>
+<message>
+        <source>Possible values are:</source>
+        <translation>Les valeurs possibles sont :</translation>
+    </message>
+<message>
+        <source>and</source>
+        <translation>et</translation>
+    </message>
+<message>
+        <source>The default value is:</source>
+        <translation>La valeur par défaut est :</translation>
+    </message>
+<message>
+        <source>Minimum value:</source>
+        <translation>Valeur minimum :</translation>
+    </message>
+<message>
+        <source>maximum value:</source>
+        <translation>valeur maximum :</translation>
+    </message>
+<message>
+        <source>default value:</source>
+        <translation>valeur par défaut :</translation>
+    </message>
+<message>
+        <source>The default value is: system dependent.</source>
+        <translation>La valeur par défaut dépend du système.</translation>
+    </message>
+<message>
+        <source>The default directory is:</source>
+        <translation>Le répertoire par défaut est :</translation>
+    </message>
+<message>
+        <source>The default file is:</source>
+        <translation>Le fichier par défaut est :</translation>
+    </message>
+<message>
+        <source>The default file (with absolute path) is:</source>
+        <translation>Le fichier par défaut (avec chemin absolu) est :</translation>
+    </message>
+<message>
+        <source>The file has to be specified with full path.</source>
+        <translation>Le fichier doit être spécifié avec un chemin complet.</translation>
+    </message>
+<message>
+        <source>The default image is:</source>
+        <translation>L'image par défaut est :</translation>
+    </message>
+<message>
+        <source>The default image (with absolute path) is:</source>
+        <translation>L'image par défaut (avec chemin absolu) est :</translation>
+    </message>
+<message>
+        <source>The image has to be specified with full path.</source>
+        <translation>L'image doit être spécifiée avec un chemin complet.</translation>
+    </message>
+<message>
+        <source>This tag requires that the tag</source>
+        <translation>Cette balise nécessite que la balise</translation>
+    </message>
+<message>
+        <source>is set to</source>
+        <translation>soit définie sur</translation>
+    </message>
+</context>
+<context>
     <name>OptionDocs</name>
 <message>
         <source>DOXYFILE_ENCODING</source>
@@ -1261,6 +1328,133 @@
 <message>
         <source>GROUP_GRAPHS</source>
             <translation>Si la balise \c GROUP_GRAPHS est definie a \c YES, Doxygen generera un graphe pour les groupes, montrant les dependances directes des groupes. L'activation explicite d'un graphe de dependance de groupe, lorsque \c GROUP_GRAPHS est defini a \c NO, peut etre accomplie au moyen de la commande \ref cmdgroupgraph "\groupgraph". La desactivation d'un graphe de repertoire peut etre accomplie au moyen de la commande \ref cmdhidegroupgraph "\hidegroupgraph". Voir aussi le chapitre \ref grouping "Grouping" dans le manuel.</translation>
+    </message>
+</context>
+<context>
+    <name>OptionValue</name>
+<message>
+        <source>(United States)</source>
+        <translation>(Etats-Unis)</translation>
+    </message>
+<message>
+        <source>(Persian)</source>
+        <translation>(Persan)</translation>
+    </message>
+<message>
+        <source>(Japanese with English messages)</source>
+        <translation>(Japonais avec messages en anglais)</translation>
+    </message>
+<message>
+        <source>(Korean with English messages)</source>
+        <translation>(Coreen avec messages en anglais)</translation>
+    </message>
+<message>
+        <source>(Farsi)</source>
+        <translation>(Farsi)</translation>
+    </message>
+<message>
+        <source>use a fixed 'autotoc_md' string followed by a sequence number starting at 0</source>
+        <translation>utiliser une chaine 'autotoc_md' fixe suivie d'un numero de sequence commencant a 0</translation>
+    </message>
+<message>
+        <source>use the lower case version of title with any whitespace replaced by '-' and punctuation characters removed</source>
+        <translation>utiliser la version en minuscules du titre avec tous les espaces remplaces par '-' et les caracteres de ponctuation supprimes</translation>
+    </message>
+<message>
+        <source>(to be provided as Doxygen C comment)</source>
+        <translation>(a fournir comme commentaire C Doxygen)</translation>
+    </message>
+<message>
+        <source>always generates light mode output</source>
+        <translation>genere toujours une sortie en mode clair</translation>
+    </message>
+<message>
+        <source>always generates dark mode output</source>
+        <translation>genere toujours une sortie en mode sombre</translation>
+    </message>
+<message>
+        <source>automatically sets the mode according to the user preference, uses light mode if no preference is set (the default)</source>
+        <translation>definit automatiquement le mode selon la preference de l'utilisateur, utilise le mode clair si aucune preference n'est definie (par defaut)</translation>
+    </message>
+<message>
+        <source>automatically sets the mode according to the user preference, uses dark mode if no preference is set</source>
+        <translation>definit automatiquement le mode selon la preference de l'utilisateur, utilise le mode sombre si aucune preference n'est definie</translation>
+    </message>
+<message>
+        <source>allows a user to switch between light and dark mode via a button</source>
+        <translation>permet a l'utilisateur de basculer entre le mode clair et sombre via un bouton</translation>
+    </message>
+<message>
+        <source>(the default)</source>
+        <translation>(par defaut)</translation>
+    </message>
+<message>
+        <source>(looks nicer but requires the pdf2svg or inkscape tool)</source>
+        <translation>(plus joli mais necessite l'outil pdf2svg ou inkscape)</translation>
+    </message>
+<message>
+        <source>(which is slower, but has the best compatibility. This is the name for Mathjax version 2, for MathJax version 3 this will be translated into \c chtml)</source>
+        <translation>(plus lent, mais avec la meilleure compatibilite. C'est le nom pour MathJax version 2, pour MathJax version 3 cela sera traduit en \c chtml)</translation>
+    </message>
+<message>
+        <source>(i.e. MathML. Only supported for MathJax 2. For MathJax version 3 \c chtml will be used instead.)</source>
+        <translation>(c'est-a-dire MathML. Pris en charge uniquement pour MathJax 2. Pour MathJax version 3, \c chtml sera utilise a la place.)</translation>
+    </message>
+<message>
+        <source>(This is the name for Mathjax version 3, for MathJax version 2 this will be translated into \c HTML-CSS)</source>
+        <translation>(C'est le nom pour MathJax version 3, pour MathJax version 2 cela sera traduit en \c HTML-CSS)</translation>
+    </message>
+<message>
+        <source>(210 x 297 mm)</source>
+        <translation>(210 x 297 mm)</translation>
+    </message>
+<message>
+        <source>(8.5 x 11 inches)</source>
+        <translation>(8,5 x 11 pouces)</translation>
+    </message>
+<message>
+        <source>(8.5 x 14 inches)</source>
+        <translation>(8,5 x 14 pouces)</translation>
+    </message>
+<message>
+        <source>(7.25 x 10.5 inches)</source>
+        <translation>(7,25 x 10,5 pouces)</translation>
+    </message>
+<message>
+        <source>same as ERROR_STOP</source>
+        <translation>identique a ERROR_STOP</translation>
+    </message>
+<message>
+        <source>same as BATCH</source>
+        <translation>identique a BATCH</translation>
+    </message>
+<message>
+        <source>In batch mode nothing is printed on the terminal, errors are scrolled as if \&lt;return\&gt; is hit at every error; missing files that TeX tries to input or request from keyboard input (\\read on a not open input stream) cause the job to abort</source>
+        <translation>En mode batch, rien n'est imprime sur le terminal, les erreurs defilent comme si \&lt;return\&gt; etait appuye a chaque erreur; les fichiers manquants que TeX essaie de lire ou de demander a partir de l'entree clavier (\\read sur un flux d'entree non ouvert) provoquent l'arret du travail</translation>
+    </message>
+<message>
+        <source>In nonstop mode the diagnostic message will appear on the terminal, but there is no possibility of user interaction just like in batch mode</source>
+        <translation>En mode nonstop, le message de diagnostic apparaitra sur le terminal, mais il n'y a aucune possibilite d'interaction utilisateur comme en mode batch</translation>
+    </message>
+<message>
+        <source>In scroll mode, TeX will stop only for missing files to input or if keyboard input is necessary</source>
+        <translation>En mode scroll, TeX s'arretera uniquement pour les fichiers manquants a lire ou si une entree clavier est necessaire</translation>
+    </message>
+<message>
+        <source>In errorstop mode, TeX will stop at each error, asking for user intervention</source>
+        <translation>En mode errorstop, TeX s'arretera a chaque erreur, demandant l'intervention de l'utilisateur</translation>
+    </message>
+<message>
+        <source>(use client-side rendering for HTML and \c mmdc for LaTeX/PDF and other formats. If \c MERMAID_PATH is not set, non-HTML diagrams will produce a warning)</source>
+        <translation>(utiliser le rendu cote client pour HTML et \c mmdc pour LaTeX/PDF et autres formats. Si \c MERMAID_PATH n'est pas defini, les diagrammes non-HTML produiront un avertissement)</translation>
+    </message>
+<message>
+        <source>(use the \c mmdc tool to pre-generate images (requires \c Node.js and \c mermaid-js/mermaid-cli). Works for all output formats)</source>
+        <translation>(utiliser l'outil \c mmdc pour pre-generer les images (necessite \c Node.js et \c mermaid-js/mermaid-cli). Fonctionne pour tous les formats de sortie)</translation>
+    </message>
+<message>
+        <source>(embed \c mermaid.js in HTML output for client-side rendering. Does not require \c mmdc but only works for HTML output)</source>
+        <translation>(integrer \c mermaid.js dans la sortie HTML pour le rendu cote client. Ne necessite pas \c mmdc mais fonctionne uniquement pour la sortie HTML)</translation>
     </message>
 </context>
 </TS>

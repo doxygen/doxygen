@@ -1,5 +1,6 @@
 #include "optiontranslations.h"
 #include "doxywizard.h"
+#include "expert.h"
 #include <QCoreApplication>
 #include <QRegularExpression>
 
@@ -478,6 +479,10 @@ QString OptionTranslations::translateDocs(const QString &optionName, const QStri
         {
             trText = QCoreApplication::translate("Expert", text.toUtf8().constData());
         }
+        else if (context == QLatin1String("OptionValue"))
+        {
+            trText = QCoreApplication::translate("OptionValue", text.toUtf8().constData());
+        }
         else
         {
             trText = QCoreApplication::translate(context.toUtf8().constData(), text.toUtf8().constData());
@@ -491,6 +496,9 @@ QString OptionTranslations::translateDocs(const QString &optionName, const QStri
     {
         result.replace(replacements[i], replacements[i + 1]);
     }
+    
+    // Convert Doxygen markup to HTML
+    result = convertDoxyCmdToHtml(result);
     
     return result;
 }

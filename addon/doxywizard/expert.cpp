@@ -55,12 +55,21 @@ static QString convertToComment(const QString &s)
   }
 }
 
-static QString convertDoxyCmdToHtml(const QString &s)
+QString convertDoxyCmdToHtml(const QString &s)
 {
   QString result = s;
   
-  // \c word -> <code>word</code>; word ends with ')', ',', '.' or ' '
   QRegularExpression regexp;
+  
+  // remove \n at end and replace by a space
+  regexp.setPattern(SA("\\n$"));
+  result.replace(regexp,SA(" "));
+  
+  // remove <br> at end
+  regexp.setPattern(SA("<br> *$"));
+  result.replace(regexp,SA(" "));
+  
+  // \c word -> <code>word</code>; word ends with ')', ',', '.' or ' '
   regexp.setPattern(SA("\\\\c[ ]+([^ \\)]+)\\)"));
   result.replace(regexp,SA("<code>\\1</code>)"));
   
@@ -74,46 +83,126 @@ static QString convertDoxyCmdToHtml(const QString &s)
   result.replace(regexp,SA("<code>\\1</code> "));
   
   result.replace(SA("\\c("), SA("<code>("));
+  
+  // `word` -> <code>word</code>
+  result.replace(SA("``"),SA(""));
+  regexp.setPattern(SA("`([^`]+)`"));
+  result.replace(regexp,SA("<code>\\1</code>"));
+  
+  // \p word -> <code>word</code>
   result.replace(SA("\\p "), SA("<code>"));
   result.replace(SA("\\p("), SA("<code>("));
-  result.replace(SA("\\b "), SA("<b>"));
-  result.replace(SA("\\b("), SA("<b>("));
+  
+  // \b word -> <b>word</b>
+  regexp.setPattern(SA("\\\\b[ ]+([^ ]+) "));
+  result.replace(regexp,SA("<b>\\1</b> "));
+  
+  // \e word -> <em>word</em>
+  regexp.setPattern(SA("\\\\e[ ]+([^ ]+) "));
+  result.replace(regexp,SA("<em>\\1</em> "));
   result.replace(SA("\\e "), SA("<em>"));
   result.replace(SA("\\e("), SA("<em>("));
+  
+  // \a word -> <em>word</em>
   result.replace(SA("\\a "), SA("<em>"));
   result.replace(SA("\\a("), SA("<em>("));
   
-  QRegularExpression refRegex(SA("\\\\ref\\s+([a-zA-Z0-9_]+)(?:\\s+\"([^\"]+)\")?"));
-  QRegularExpressionMatchIterator it = refRegex.globalMatch(result);
-  QStringList replacements;
-  while (it.hasNext())
-  {
-    QRegularExpressionMatch match = it.next();
-    QString refText = match.captured(2);
-    if (refText.isEmpty())
-    {
-      refText = match.captured(1);
-    }
-    replacements.append(match.captured(0));
-    replacements.append(refText);
-  }
-  for (int i = 0; i < replacements.size(); i += 2)
-  {
-    result.replace(replacements[i], replacements[i + 1]);
-  }
+  // \ref key "desc" -> desc
+  // First handle special \ref cases that need to preserve the \ref for later
+  regexp.setPattern(SA("\\\\ref[ ]+[^ ]+[ ]+\"\\\\\\\\ref\""));
+  result.replace(regexp,SA("\\\\REF"));
+  regexp.setPattern(SA("\\\\ref[ ]+[^ ]+[ ]+\"([^\"]+)\""));
+  result.replace(regexp,SA("<code>\\1</code> "));
   
+  // \ref specials
+  regexp.setPattern(SA("\\\\ref[ ]+doxygen_usage"));
+  result.replace(regexp,SA("\"Doxygen usage\""));
+  regexp.setPattern(SA("\\\\ref[ ]+extsearch"));
+  result.replace(regexp,SA("\"External Indexing and Searching\""));
+  regexp.setPattern(SA("\\\\ref[ ]+external"));
+  result.replace(regexp,SA("\"Linking to external documentation\""));
+  regexp.setPattern(SA("\\\\ref[ ]+formulas"));
+  result.replace(regexp,SA("\"Including formulas\""));
+  
+  // fallback for not handled \ref
+  result.replace(SA("\\\\ref"),SA(""));
+  result.replace(SA("\\\\REF"),SA("\\\\ref"));
+  
+  // \note -> <br>Note:
+  result.replace(SA("\\note "),SA("<br>Note: "));
+  result.replace(SA("@note "),SA("<br>Note: "));
+  
+  // \#include -> #include
+  result.replace(SA("\\#include"),SA("#include"));
+  result.replace(SA("\\#undef"),SA("#undef"));
+  result.replace(SA("\\# "),SA("# "));
+  
+  // -# -> <br>-
+  result.replace(SA("-#"),SA("<br>-"));
+  result.replace(SA(" - "),SA("<br>-"));
+  
+  // \sa -> <br>See also:
+  result.replace(SA("\\sa "),SA("<br>See also: "));
+  
+  // \par -> <br>
+  result.replace(SA("\\par "),SA("<br>"));
+  
+  // \verbatim -> <pre>
+  result.replace(SA("\\verbatim"),SA("<pre>"));
+  result.replace(SA("\\endverbatim"),SA("</pre>"));
+  
+  // \n -> <br/>
+  result.replace(SA("\\n"),SA("<br/>"));
+  
+  // \& -> &amp;
   result.replace(SA("\\&lt;"), SA("&lt;"));
   result.replace(SA("\\&gt;"), SA("&gt;"));
   result.replace(SA("\\&amp;"), SA("&amp;"));
+  result.replace(SA("\\&"),SA("&amp;"));
+  
+  // \$ -> $
+  result.replace(SA("\\$"),SA("$"));
+  
+  // \< -> &lt;
+  result.replace(SA("\\<"),SA("&lt;"));
+  
+  // \> -> &gt;
+  result.replace(SA("\\>"),SA("&gt;"));
+  
+  // \@ -> @
+  result.replace(SA("\\@"),SA("@"));
+  
+  // \\ -> \
+  result.replace(SA("\\\\"),SA("\\"));
+  
+  // http/https URLs -> links
+  // Only match URL-safe characters, exclude trailing punctuation
+  regexp.setPattern(SA(" (https?://[a-zA-Z0-9_\\-./~%#+?=&]*[a-zA-Z0-9_\\-/~%#+?=&])"));
+  QRegularExpressionMatchIterator urlIt = regexp.globalMatch(result);
+  QStringList urlReplacements;
+  while (urlIt.hasNext())
+  {
+    QRegularExpressionMatch match = urlIt.next();
+    QString url = match.captured(1);
+    urlReplacements.append(match.captured(0));
+    urlReplacements.append(SA(" <a href=\"") + url + SA("\">") + url + SA("</a>"));
+  }
+  for (int i = 0; i < urlReplacements.size(); i += 2)
+  {
+    result.replace(urlReplacements[i], urlReplacements[i + 1]);
+  }
+  
+  // LaTeX formulas
+  regexp.setPattern(SA("\\\\f\\$\\\\mbox\\{\\\\LaTeX\\}\\\\f\\$"));
+  result.replace(regexp,SA("LaTeX"));
+  regexp.setPattern(SA("\\\\f\\$2\\^\\{\\(16\\+\\\\mbox\\{LOOKUP\\\\_CACHE\\\\_SIZE\\}\\)\\}\\\\f\\$"));
+  result.replace(regexp,SA("2^(16+LOOKUP_CACHE_SIZE)"));
+  regexp.setPattern(SA("\\\\f\\$2\\^\\{16\\} = 65536\\\\f\\$"));
+  result.replace(regexp,SA("2^16=65536"));
+  
+  // <br> -> <br/>
   result.replace(SA("&lt;br&gt;"), SA("<br/>"));
   result.replace(SA("&lt;br/&gt;"), SA("<br/>"));
-  
-  result.replace(SA("\\verbatim"), SA("<pre>"));
-  result.replace(SA("\\endverbatim"), SA("</pre>"));
-  result.replace(SA("\\n"), SA("<br/>"));
-  result.replace(SA("\\$"), SA("$"));
-  result.replace(SA("\\@"), SA("@"));
-  result.replace(SA("\\\\"), SA("\\"));
   
   return result;
 }
@@ -273,7 +362,7 @@ static QString getDocsForNode(const QDomElement &child)
         QString desc = docsVal.attribute(SA("desc"));
         if (!desc.isEmpty())
         {
-          docs+= SA(" ")+desc;
+          docs+= SA(" %{tr:OptionValue:")+desc+SA("}");
         }
         if (i==numValues-1)
         {
@@ -366,7 +455,7 @@ static QString getDocsForNode(const QDomElement &child)
               QString desc = docsVal.attribute(SA("desc"));
               if (desc != SA(""))
               {
-                docs += SA(" ") + desc;
+                docs += SA(" ") + SA("%{tr:OptionValue:") + desc + SA("}");
               }
               if (i==numValues-1)
               {
@@ -474,101 +563,8 @@ static QString getDocsForNode(const QDomElement &child)
     docs+=  SA("\" ") + SA("%{tr:Expert:is set to}") + SA(" <code>YES</code>.");
   }
 
-  // Remove / replace doxygen markup strings
-  // the regular expressions are hard to read so the intention will be given
-  // Note: see also configgen.py in the src directory for other doxygen parts
-  QRegularExpression regexp;
-  // remove \n at end and replace by a space
-  regexp.setPattern(SA("\\n$"));
-  docs.replace(regexp,SA(" "));
-  // remove <br> at end
-  regexp.setPattern(SA("<br> *$"));
-  docs.replace(regexp,SA(" "));
-  // \c word -> <code>word</code>; word ends with ')', ',', '.' or ' '
-  regexp.setPattern(SA("\\\\c[ ]+([^ \\)]+)\\)"));
-  docs.replace(regexp,SA("<code>\\1</code>)"));
-
-  regexp.setPattern(SA("\\\\c[ ]+([^ ,]+),"));
-  docs.replace(regexp,SA("<code>\\1</code>,"));
-
-  regexp.setPattern(SA("\\\\c[ ]+([^ \\.]+)\\."));
-  docs.replace(regexp,SA("<code>\\1</code>."));
-
-  regexp.setPattern(SA("\\\\c[ ]+([^ ]+) "));
-  docs.replace(regexp,SA("<code>\\1</code> "));
-  // `word` -> <code>word</code>
-  docs.replace(SA("``"),SA(""));
-  regexp.setPattern(SA("`([^`]+)`"));
-  docs.replace(regexp,SA("<code>\\1</code>"));
-  // \ref key "desc" -> <code>desc</code>
-  regexp.setPattern(SA("\\\\ref[ ]+[^ ]+[ ]+\"\\\\\\\\ref\""));
-  docs.replace(regexp,SA("\\\\REF"));
-  regexp.setPattern(SA("\\\\ref[ ]+[^ ]+[ ]+\"([^\"]+)\""));
-  docs.replace(regexp,SA("<code>\\1</code> "));
-  //\ref specials
-  // \ref <key> -> description
-  regexp.setPattern(SA("\\\\ref[ ]+doxygen_usage"));
-  docs.replace(regexp,SA("\"Doxygen usage\""));
-  regexp.setPattern(SA("\\\\ref[ ]+extsearch"));
-  docs.replace(regexp,SA("\"External Indexing and Searching\""));
-  regexp.setPattern(SA("\\\\ref[ ]+external"));
-  docs.replace(regexp,SA("\"Linking to external documentation\""));
-  regexp.setPattern(SA("\\\\ref[ ]+formulas"));
-  docs.replace(regexp,SA("\"Including formulas\""));
-  // fallback for not handled
-  docs.replace(SA("\\\\ref"),SA(""));
-  docs.replace(SA("\\\\REF"),SA("\\\\ref"));
-  // \b word -> <b>word<\b>
-  regexp.setPattern(SA("\\\\b[ ]+([^ ]+) "));
-  docs.replace(regexp,SA("<b>\\1</b> "));
-  // \e word -> <em>word<\em>
-  regexp.setPattern(SA("\\\\e[ ]+([^ ]+) "));
-  docs.replace(regexp,SA("<em>\\1</em> "));
-  // \note -> <br>Note:
-  // @note -> <br>Note:
-  docs.replace(SA("\\note "),SA("<br>Note: "));
-  docs.replace(SA("@note "),SA("<br>Note: "));
-  // \#include -> #include
-  // \#undef -> #undef
-  docs.replace(SA("\\#include"),SA("#include"));
-  docs.replace(SA("\\#undef"),SA("#undef"));
-  // -# -> <br>-
-  // " - " -> <br>-
-  docs.replace(SA("-#"),SA("<br>-"));
-  docs.replace(SA("\\# "),SA("# "));
-  docs.replace(SA(" - "),SA("<br>-"));
-  // \verbatim -> <pre>
-  // \endverbatim -> </pre>
-  docs.replace(SA("\\verbatim"),SA("<pre>"));
-  docs.replace(SA("\\endverbatim"),SA("</pre>"));
-  // \sa -> <br>See also:
-  // \par -> <br>
-  docs.replace(SA("\\sa "),SA("<br>See also: "));
-  docs.replace(SA("\\par "),SA("<br>"));
-  // 2xbackslash -> backslash
-  // \@ -> @
-  docs.replace(SA("\\\\"),SA("\\"));
-  docs.replace(SA("\\@"),SA("@"));
-  // \& -> &
-  // \$ -> $
-  docs.replace(SA("\\&"),SA("&"));
-  docs.replace(SA("\\$"),SA("$"));
-  // \< -> &lt;
-  // \> -> &gt;
-  docs.replace(SA("\\<"),SA("&lt;"));
-  docs.replace(SA("\\>"),SA("&gt;"));
-  regexp.setPattern(SA(" (http:[^ \\)]*)([ \\)])"));
-  docs.replace(regexp,SA(" <a href=\"\\1\">\\1</a>\\2"));
-  regexp.setPattern(SA(" (https:[^ \\)]*)([ \\)])"));
-  docs.replace(regexp,SA(" <a href=\"\\1\">\\1</a>\\2"));
-  // LaTeX name as formula -> LaTeX
-  regexp.setPattern(SA("\\\\f\\$\\\\mbox\\{\\\\LaTeX\\}\\\\f\\$"));
-  docs.replace(regexp,SA("LaTeX"));
-  // Other formula's (now just 2) so explicitly mentioned.
-  regexp.setPattern(SA("\\\\f\\$2\\^\\{\\(16\\+\\\\mbox\\{LOOKUP\\\\_CACHE\\\\_SIZE\\}\\)\\}\\\\f\\$"));
-  docs.replace(regexp,SA("2^(16+LOOKUP_CACHE_SIZE)"));
-  regexp.setPattern(SA("\\\\f\\$2\\^\\{16\\} = 65536\\\\f\\$"));
-  docs.replace(regexp,SA("2^16=65536"));
+  // Convert Doxygen markup to HTML
+  docs = convertDoxyCmdToHtml(docs);
 
   return docs.trimmed();
 }
@@ -971,7 +967,6 @@ void Expert::showHelp(Input *option)
   {
     m_inShowHelp = true;
     QString docs = OptionTranslations::trDocsStatic(option->id(), option->docs());
-    docs = convertDoxyCmdToHtml(docs);
     m_helper->setText(
         QString::fromLatin1("<qt><b>")+option->id()+
         QString::fromLatin1("</b><br>")+

@@ -28,6 +28,8 @@ class QTextBrowser;
 class QPushButton;
 class Input;
 
+QString convertDoxyCmdToHtml(const QString &s);
+
 class Expert : public QSplitter, public DocIntf
 {
     Q_OBJECT
