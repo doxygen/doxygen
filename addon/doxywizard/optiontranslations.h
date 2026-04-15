@@ -15,6 +15,7 @@ public:
     QString translateDocs(const QString &optionName, const QString &defaultDocs);
     static QString trStatic(const QString &optionName);
     static QString trDocsStatic(const QString &optionName, const QString &defaultDocs);
+    static QString translateTags(const QString &text);
     void retranslate();
 
 private:

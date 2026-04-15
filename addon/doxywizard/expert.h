@@ -79,6 +79,7 @@ class Expert : public QSplitter, public DocIntf
     QHash<QString,QWidget *> m_topics;
     QHash<QString,QObject *> m_optionWidgets;
     QHash<QString,Input *>   m_options;
+    QMap<QString, QDomElement> m_optionElements;
     QPushButton             *m_next;
     QPushButton             *m_prev;
     QDomElement              m_rootElement;

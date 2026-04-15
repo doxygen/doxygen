@@ -35,6 +35,7 @@ class Input
     virtual void update() = 0;
     virtual Kind kind() const = 0;
     virtual QString docs() const = 0;
+    virtual void setDocs(const QString &docs) = 0;
     virtual QString id() const = 0;
     virtual QString templateDocs() const = 0;
     virtual void addDependency(Input *option) = 0;

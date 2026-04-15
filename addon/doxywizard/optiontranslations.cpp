@@ -1,6 +1,7 @@
 #include "optiontranslations.h"
 #include "doxywizard.h"
 #include "expert.h"
+#include "translationmanager.h"
 #include <QCoreApplication>
 #include <QRegularExpression>
 
@@ -429,40 +430,15 @@ QString OptionTranslations::translateDocs(const QString &optionName, const QStri
     }
     
     QString translated = QCoreApplication::translate("OptionDocs", optionName.toUtf8().constData());
-    QString result = defaultDocs;
+    QString result;
     
     if (!translated.isEmpty() && translated != optionName)
     {
-        int possiblePos = defaultDocs.indexOf(QLatin1String("%{tr:Expert:Possible values are:}"));
-        int defaultPos = defaultDocs.indexOf(QLatin1String("%{tr:Expert:The default"));
-        int requiresPos = defaultDocs.indexOf(QLatin1String("%{tr:Expert:This tag requires"));
-        
-        if (possiblePos >= 0 || defaultPos >= 0 || requiresPos >= 0)
-        {
-            result = translated;
-            if (!result.endsWith(QLatin1String("<br/>")))
-            {
-                result += QLatin1String("<br/>");
-            }
-            result += QLatin1String("<br/>");
-            
-            if (possiblePos >= 0)
-            {
-                result += defaultDocs.mid(possiblePos);
-            }
-            else if (requiresPos >= 0)
-            {
-                result += defaultDocs.mid(requiresPos);
-            }
-            else if (defaultPos >= 0)
-            {
-                result += defaultDocs.mid(defaultPos);
-            }
-        }
-        else
-        {
-            result = translated;
-        }
+        result = translated;
+    }
+    else
+    {
+        result = defaultDocs;
     }
     
     QRegularExpression trPattern(QLatin1String("%\\{tr:([^:]+):([^}]+)\\}"));
@@ -497,8 +473,46 @@ QString OptionTranslations::translateDocs(const QString &optionName, const QStri
         result.replace(replacements[i], replacements[i + 1]);
     }
     
-    // Convert Doxygen markup to HTML
-    result = convertDoxyCmdToHtml(result);
+    // Note: Doxygen markup conversion is done in expert.cpp getDocsForNode()
+    
+    return result;
+}
+
+QString OptionTranslations::translateTags(const QString &text)
+{
+    QString result = text;
+    
+    QRegularExpression trPattern(QLatin1String("%\\{tr:([^:]+):([^}]+)\\}"));
+    QRegularExpressionMatchIterator it = trPattern.globalMatch(result);
+    QStringList replacements;
+    while (it.hasNext())
+    {
+        QRegularExpressionMatch match = it.next();
+        QString context = match.captured(1);
+        QString text = match.captured(2);
+        QString trText;
+        
+        if (context == QLatin1String("Expert"))
+        {
+            trText = QCoreApplication::translate("Expert", text.toUtf8().constData());
+        }
+        else if (context == QLatin1String("OptionValue"))
+        {
+            trText = QCoreApplication::translate("OptionValue", text.toUtf8().constData());
+        }
+        else
+        {
+            trText = QCoreApplication::translate(context.toUtf8().constData(), text.toUtf8().constData());
+        }
+        
+        replacements.append(match.captured(0));
+        replacements.append(trText);
+    }
+    
+    for (int i = 0; i < replacements.size(); i += 2)
+    {
+        result.replace(replacements[i], replacements[i + 1]);
+    }
     
     return result;
 }
