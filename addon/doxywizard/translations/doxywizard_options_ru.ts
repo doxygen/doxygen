@@ -12,60 +12,48 @@
         <translation>и</translation>
     </message>
 <message>
-        <source>The default value is:</source>
-        <translation>Значение по умолчанию:</translation>
+        <source>The default value is: &lt;code&gt;%1&lt;/code&gt;.</source>
+        <translation>Значение по умолчанию: &lt;code&gt;%1&lt;/code&gt;.</translation>
     </message>
 <message>
-        <source>Minimum value:</source>
-        <translation>Минимальное значение:</translation>
-    </message>
-<message>
-        <source>maximum value:</source>
-        <translation>Максимальное значение:</translation>
-    </message>
-<message>
-        <source>default value:</source>
-        <translation>Значение по умолчанию:</translation>
+        <source>Minimum value: %1, maximum value: %2, default value: %3.</source>
+        <translation>Минимальное значение: %1, максимальное значение: %2, значение по умолчанию: %3.</translation>
     </message>
 <message>
         <source>The default value is: system dependent.</source>
         <translation>Значение по умолчанию зависит от системы.</translation>
     </message>
 <message>
-        <source>The default directory is:</source>
-        <translation>Каталог по умолчанию:</translation>
+        <source>The default directory is: &lt;code&gt;%1&lt;/code&gt;.</source>
+        <translation>Каталог по умолчанию: &lt;code&gt;%1&lt;/code&gt;.</translation>
     </message>
 <message>
-        <source>The default file is:</source>
-        <translation>Файл по умолчанию:</translation>
+        <source>The default file is: &lt;code&gt;%1&lt;/code&gt;.</source>
+        <translation>Файл по умолчанию: &lt;code&gt;%1&lt;/code&gt;.</translation>
     </message>
 <message>
-        <source>The default file (with absolute path) is:</source>
-        <translation>Файл по умолчанию (с абсолютным путём):</translation>
+        <source>The default file (with absolute path) is: &lt;code&gt;%1&lt;/code&gt;.</source>
+        <translation>Файл по умолчанию (с абсолютным путём): &lt;code&gt;%1&lt;/code&gt;.</translation>
     </message>
 <message>
         <source>The file has to be specified with full path.</source>
         <translation>Файл должен быть указан с полным путём.</translation>
     </message>
 <message>
-        <source>The default image is:</source>
-        <translation>Изображение по умолчанию:</translation>
+        <source>The default image is: &lt;code&gt;%1&lt;/code&gt;.</source>
+        <translation>Изображение по умолчанию: &lt;code&gt;%1&lt;/code&gt;.</translation>
     </message>
 <message>
-        <source>The default image (with absolute path) is:</source>
-        <translation>Изображение по умолчанию (с абсолютным путём):</translation>
+        <source>The default image (with absolute path) is: &lt;code&gt;%1&lt;/code&gt;.</source>
+        <translation>Изображение по умолчанию (с абсолютным путём): &lt;code&gt;%1&lt;/code&gt;.</translation>
     </message>
 <message>
         <source>The image has to be specified with full path.</source>
         <translation>Изображение должно быть указано с полным путём.</translation>
     </message>
 <message>
-        <source>This tag requires that the tag</source>
-        <translation>Этот тег требует, чтобы тег</translation>
-    </message>
-<message>
-        <source>is set to</source>
-        <translation>был установлен в</translation>
+        <source>This tag requires that the tag %1 is set to &lt;code&gt;YES&lt;/code&gt;.</source>
+        <translation>Этот тег требует, чтобы тег %1 был установлен в &lt;code&gt;YES&lt;/code&gt;.</translation>
     </message>
 </context>
 <context>
@@ -872,51 +860,51 @@
     </message>
 <message>
         <source>MATHJAX_VERSION</source>
-            <translation>Тег \c MATHJAX_VERSION определяет версию MathJax, которая используется.</translation>
+            <translation>С помощью \c MATHJAX_VERSION можно указать используемую версию MathJax. Обратите внимание, что разные версии MathJax имеют разные требования к различным настройкам, поэтому при переключении между разными версиями MathJax может потребоваться изменение других настроек MathJax.</translation>
     </message>
 <message>
         <source>MATHJAX_FORMAT</source>
-            <translation>Тег \c MATHJAX_FORMAT определяет выходной формат, который использует MathJax.</translation>
+            <translation>При включении MathJax можно установить выходной формат по умолчанию для вывода MathJax. Для получения дополнительной информации о выходном формате см. &lt;a href="https://docs.mathjax.org/en/v2.7/output.html"&gt;MathJax версии 2&lt;/a&gt;, &lt;a href="https://docs.mathjax.org/en/v3.2/output/index.html"&gt;MathJax версии 3&lt;/a&gt; и &lt;a href="https://docs.mathjax.org/en/v4.0/output/index.htm"&gt;MathJax версии 4&lt;/a&gt;.</translation>
     </message>
 <message>
         <source>MATHJAX_RELPATH</source>
-            <translation>Тег \c MATHJAX_RELPATH определяет относительный путь к файлам MathJax.</translation>
+            <translation>При включении MathJax необходимо указать расположение относительно выходного каталога HTML с помощью параметра \c MATHJAX_RELPATH. Для MathJax версии 2 целевой каталог должен содержать скрипт `MathJax.js`. Например, если каталог \c mathjax находится на том же уровне, что и выходной каталог HTML, то \c MATHJAX_RELPATH должен быть &lt;code&gt;../mathjax&lt;/code&gt;. Для MathJax версий 3 и 4 целевой каталог должен содержать скрипт `tex-&lt;format&gt;.js` (где `&lt;format&gt;` — это `chtml` или `svg`). Значение по умолчанию указывает на сеть доставки контента MathJax, поэтому вы можете быстро увидеть результат без установки MathJax. Однако настоятельно рекомендуется установить локальную копию MathJax с https://www.mathjax.org перед развертыванием. Значение по умолчанию: - для MathJax версии 2: https://cdn.jsdelivr.net/npm/mathjax@2 - для MathJax версии 3: https://cdn.jsdelivr.net/npm/mathjax@3 - для MathJax версии 4: https://cdn.jsdelivr.net/npm/mathjax@4</translation>
     </message>
 <message>
         <source>MATHJAX_EXTENSIONS</source>
-            <translation>Тег \c MATHJAX_EXTENSIONS можно использовать для указания дополнительных расширений MathJax.</translation>
+            <translation>Тег \c MATHJAX_EXTENSIONS можно использовать для указания одного или нескольких имен расширений MathJax, которые должны быть включены во время рендеринга MathJax. Например, для MathJax версии 2 (см. https://docs.mathjax.org/en/v2.7/tex.html):\verbatim MATHJAX_EXTENSIONS = TeX/AMSmath TeX/AMSsymbols \endverbatim Например, для MathJax версии 3 (см. https://docs.mathjax.org/en/v3.2/input/tex/extensions/):\verbatim MATHJAX_EXTENSIONS = ams \endverbatim Например, для MathJax версии 4 (см. https://docs.mathjax.org/en/v4.0/input/tex/extensions/):\verbatim MATHJAX_EXTENSIONS = units \endverbatim Обратите внимание, что для MathJax версии 4 довольно много расширений уже загружаются автоматически. Чтобы отключить пакет в MathJax версии 4, можно использовать имя пакета с префиксом в виде знака минус (`-` например `MATHJAX_EXTENSIONS += -textmacros`)</translation>
     </message>
 <message>
         <source>MATHJAX_CODEFILE</source>
-            <translation>Тег \c MATHJAX_CODEFILE можно использовать для указания дополнительных файлов конфигурации MathJax.</translation>
+            <translation>Тег \c MATHJAX_CODEFILE можно использовать для указания файла с фрагментами кода JavaScript, которые будут использоваться при запуске кода MathJax. Для получения дополнительной информации см. сайт MathJax: - &lt;a href="https://docs.mathjax.org/en/v2.7/"&gt;MathJax версии 2&lt;/a&gt; - &lt;a href="https://docs.mathjax.org/en/v3.2/"&gt;MathJax версии 3&lt;/a&gt; - &lt;a href="https://docs.mathjax.org/en/v4.0/"&gt;MathJax версии 4&lt;/a&gt;</translation>
     </message>
 <message>
         <source>SEARCHENGINE</source>
-            <translation>Если тег \c SEARCHENGINE установлен в \c YES, поисковая система будет интегрирована в вывод HTML.</translation>
+            <translation>Когда тег \c SEARCHENGINE включен, Doxygen создаст поле поиска для вывода HTML. Базовая поисковая система использует JavaScript и DHTML и должна работать в любом современном браузере. Обратите внимание, что при использовании справки HTML (\ref cfg_generate_htmlhelp "GENERATE_HTMLHELP"), справки Qt (\ref cfg_generate_qhp "GENERATE_QHP") или наборов документов (\ref cfg_generate_docset "GENERATE_DOCSET") функция поиска уже есть, поэтому эту функцию обычно следует отключить. Для больших проектов поисковая система на основе JavaScript может работать медленно, тогда включение \ref cfg_server_based_search "SERVER_BASED_SEARCH" может обеспечить лучшее решение. Можно выполнять поиск с помощью клавиатуры; для перехода к полю поиска используйте &lt;code&gt;\&lt;access key\&gt; + S&lt;/code&gt; (что такое &lt;code&gt;\&lt;access key\&gt;&lt;/code&gt; зависит от операционной системы и браузера, но обычно это &lt;code&gt;\&lt;CTRL\&gt;&lt;/code&gt;, &lt;code&gt;\&lt;ALT\&gt;&lt;/code&gt;/&lt;code&gt;\&lt;option\&gt;&lt;/code&gt; или оба). Внутри поля поиска используйте &lt;code&gt;\&lt;cursor down key\&gt;&lt;/code&gt; для перехода к окну результатов поиска, по результатам можно перемещаться с помощью &lt;code&gt;\&lt;cursor keys\&gt;&lt;/code&gt;. Нажмите &lt;code&gt;\&lt;Enter\&gt;&lt;/code&gt; для выбора элемента или &lt;code&gt;\&lt;escape\&gt;&lt;/code&gt; для отмены поиска. Параметры фильтра можно выбрать, когда курсор находится внутри поля поиска, нажав &lt;code&gt;\&lt;Shift\&gt;+\&lt;cursor down\&gt;&lt;/code&gt;. Здесь также используйте &lt;code&gt;\&lt;cursor keys\&gt;&lt;/code&gt; для выбора фильтра и &lt;code&gt;\&lt;Enter\&gt;&lt;/code&gt; или &lt;code&gt;\&lt;escape\&gt;&lt;/code&gt; для активации или отмены параметра фильтра.</translation>
     </message>
 <message>
         <source>SERVER_BASED_SEARCH</source>
-            <translation>Если тег \c SERVER_BASED_SEARCH установлен в \c YES, будет использоваться серверный поиск.</translation>
+            <translation>Когда тег \c SERVER_BASED_SEARCH включен, поисковая система будет реализована с использованием веб-сервера вместо веб-клиента на JavaScript. Существует два варианта поиска на основе веб-сервера в зависимости от настройки \ref cfg_external_search "EXTERNAL_SEARCH". Когда отключено, Doxygen создаст PHP-скрипт для поиска и индексный файл, используемый скриптом. Когда \ref cfg_external_search "EXTERNAL_SEARCH" включено, индексация и поиск должны обеспечиваться внешними инструментами. См. раздел \ref extsearch для подробностей.</translation>
     </message>
 <message>
         <source>EXTERNAL_SEARCH</source>
-            <translation>Если тег \c EXTERNAL_SEARCH установлен в \c YES, будет использоваться внешняя поисковая система.</translation>
+            <translation>Когда тег \c EXTERNAL_SEARCH включен, Doxygen больше не будет создавать PHP-скрипт для поиска. Вместо этого результаты поиска записываются в XML-файл, который должен быть обработан внешним индексатором. Doxygen вызовет внешнюю поисковую систему, указанную в параметре \ref cfg_searchengine_url "SEARCHENGINE_URL", для получения результатов поиска. &lt;br&gt;Doxygen поставляется с примером индексатора (\c doxyindexer) и поисковой системы (&lt;code&gt;doxysearch.cgi&lt;/code&gt;), которые основаны на библиотеке поисковой системы с открытым исходным кодом &lt;a href="https://xapian.org/"&gt;Xapian&lt;/a&gt;. &lt;br&gt;См. раздел \ref extsearch для подробностей.</translation>
     </message>
 <message>
         <source>SEARCHENGINE_URL</source>
-            <translation>Тег \c SEARCHENGINE_URL указывает URL внешней поисковой системы.</translation>
+            <translation>\c SEARCHENGINE_URL должен указывать на поисковую систему, размещенную на веб-сервере, которая будет возвращать результаты поиска при включенном \ref cfg_external_search "EXTERNAL_SEARCH". &lt;br&gt;Doxygen поставляется с примером индексатора (\c doxyindexer) и поисковой системы (&lt;code&gt;doxysearch.cgi&lt;/code&gt;), которые основаны на библиотеке поисковой системы с открытым исходным кодом &lt;a href="https://xapian.org/"&gt;Xapian&lt;/a&gt;. См. раздел \ref extsearch для подробностей.</translation>
     </message>
 <message>
         <source>SEARCHDATA_FILE</source>
-            <translation>Тег \c SEARCHDATA_FILE указывает имя файла данных поиска.</translation>
+            <translation>Когда \ref cfg_server_based_search "SERVER_BASED_SEARCH" и \ref cfg_external_search "EXTERNAL_SEARCH" оба включены, неиндексированные данные поиска записываются в файл для индексации внешним инструментом. С помощью тега \c SEARCHDATA_FILE можно указать имя этого файла.</translation>
     </message>
 <message>
         <source>EXTERNAL_SEARCH_ID</source>
-            <translation>Тег \c EXTERNAL_SEARCH_ID указывает идентификатор внешней поисковой системы.</translation>
+            <translation>Когда \ref cfg_server_based_search "SERVER_BASED_SEARCH" и \ref cfg_external_search "EXTERNAL_SEARCH" оба включены, тег \c EXTERNAL_SEARCH_ID может использоваться как идентификатор проекта. Это полезно в сочетании с \ref cfg_extra_search_mappings "EXTRA_SEARCH_MAPPINGS" для поиска по нескольким проектам и перенаправления результатов обратно в правильный проект.</translation>
     </message>
 <message>
         <source>EXTRA_SEARCH_MAPPINGS</source>
-            <translation>Тег \c EXTRA_SEARCH_MAPPINGS можно использовать для указания дополнительных сопоставлений поиска.</translation>
+            <translation>Тег \c EXTRA_SEARCH_MAPPINGS можно использовать для включения поиска по проектам Doxygen, отличным от определенного этим файлом конфигурации, но все добавленные в один и тот же внешний поисковый индекс. Каждый проект должен иметь уникальный идентификатор, установленный через \ref cfg_external_search_id "EXTERNAL_SEARCH_ID". Сопоставление поиска затем сопоставляет идентификатор с относительным расположением, где можно найти документацию. Формат:\verbatim EXTRA_SEARCH_MAPPINGS = tagname1=loc1 tagname2=loc2 ... \endverbatim</translation>
     </message>
 <message>
         <source>GENERATE_LATEX</source>

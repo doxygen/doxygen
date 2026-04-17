@@ -11,60 +11,48 @@
         <translation>et</translation>
     </message>
 <message>
-        <source>The default value is:</source>
-        <translation>La valeur par défaut est :</translation>
+        <source>The default value is: &lt;code&gt;%1&lt;/code&gt;.</source>
+        <translation>La valeur par défaut est : &lt;code&gt;%1&lt;/code&gt;.</translation>
     </message>
 <message>
-        <source>Minimum value:</source>
-        <translation>Valeur minimum :</translation>
-    </message>
-<message>
-        <source>maximum value:</source>
-        <translation>valeur maximum :</translation>
-    </message>
-<message>
-        <source>default value:</source>
-        <translation>valeur par défaut :</translation>
+        <source>Minimum value: %1, maximum value: %2, default value: %3.</source>
+        <translation>Valeur minimum : %1, valeur maximum : %2, valeur par défaut : %3.</translation>
     </message>
 <message>
         <source>The default value is: system dependent.</source>
         <translation>La valeur par défaut dépend du système.</translation>
     </message>
 <message>
-        <source>The default directory is:</source>
-        <translation>Le répertoire par défaut est :</translation>
+        <source>The default directory is: &lt;code&gt;%1&lt;/code&gt;.</source>
+        <translation>Le répertoire par défaut est : &lt;code&gt;%1&lt;/code&gt;.</translation>
     </message>
 <message>
-        <source>The default file is:</source>
-        <translation>Le fichier par défaut est :</translation>
+        <source>The default file is: &lt;code&gt;%1&lt;/code&gt;.</source>
+        <translation>Le fichier par défaut est : &lt;code&gt;%1&lt;/code&gt;.</translation>
     </message>
 <message>
-        <source>The default file (with absolute path) is:</source>
-        <translation>Le fichier par défaut (avec chemin absolu) est :</translation>
+        <source>The default file (with absolute path) is: &lt;code&gt;%1&lt;/code&gt;.</source>
+        <translation>Le fichier par défaut (avec chemin absolu) est : &lt;code&gt;%1&lt;/code&gt;.</translation>
     </message>
 <message>
         <source>The file has to be specified with full path.</source>
         <translation>Le fichier doit être spécifié avec un chemin complet.</translation>
     </message>
 <message>
-        <source>The default image is:</source>
-        <translation>L'image par défaut est :</translation>
+        <source>The default image is: &lt;code&gt;%1&lt;/code&gt;.</source>
+        <translation>L'image par défaut est : &lt;code&gt;%1&lt;/code&gt;.</translation>
     </message>
 <message>
-        <source>The default image (with absolute path) is:</source>
-        <translation>L'image par défaut (avec chemin absolu) est :</translation>
+        <source>The default image (with absolute path) is: &lt;code&gt;%1&lt;/code&gt;.</source>
+        <translation>L'image par défaut (avec chemin absolu) est : &lt;code&gt;%1&lt;/code&gt;.</translation>
     </message>
 <message>
         <source>The image has to be specified with full path.</source>
         <translation>L'image doit être spécifiée avec un chemin complet.</translation>
     </message>
 <message>
-        <source>This tag requires that the tag</source>
-        <translation>Cette balise nécessite que la balise</translation>
-    </message>
-<message>
-        <source>is set to</source>
-        <translation>soit définie sur</translation>
+        <source>This tag requires that the tag %1 is set to &lt;code&gt;YES&lt;/code&gt;.</source>
+        <translation>Cette balise nécessite que la balise %1 soit définie sur &lt;code&gt;YES&lt;/code&gt;.</translation>
     </message>
 </context>
 <context>

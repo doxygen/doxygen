@@ -11,60 +11,48 @@
         <translation>und</translation>
     </message>
 <message>
-        <source>The default value is:</source>
-        <translation>Der Standardwert ist:</translation>
+        <source>The default value is: &lt;code&gt;%1&lt;/code&gt;.</source>
+        <translation>Der Standardwert ist: &lt;code&gt;%1&lt;/code&gt;.</translation>
     </message>
 <message>
-        <source>Minimum value:</source>
-        <translation>Mindestwert:</translation>
-    </message>
-<message>
-        <source>maximum value:</source>
-        <translation>Höchstwert:</translation>
-    </message>
-<message>
-        <source>default value:</source>
-        <translation>Standardwert:</translation>
+        <source>Minimum value: %1, maximum value: %2, default value: %3.</source>
+        <translation>Mindestwert: %1, Höchstwert: %2, Standardwert: %3.</translation>
     </message>
 <message>
         <source>The default value is: system dependent.</source>
         <translation>Der Standardwert ist: systemabhängig.</translation>
     </message>
 <message>
-        <source>The default directory is:</source>
-        <translation>Das Standardverzeichnis ist:</translation>
+        <source>The default directory is: &lt;code&gt;%1&lt;/code&gt;.</source>
+        <translation>Das Standardverzeichnis ist: &lt;code&gt;%1&lt;/code&gt;.</translation>
     </message>
 <message>
-        <source>The default file is:</source>
-        <translation>Die Standarddatei ist:</translation>
+        <source>The default file is: &lt;code&gt;%1&lt;/code&gt;.</source>
+        <translation>Die Standarddatei ist: &lt;code&gt;%1&lt;/code&gt;.</translation>
     </message>
 <message>
-        <source>The default file (with absolute path) is:</source>
-        <translation>Die Standarddatei (mit absolutem Pfad) ist:</translation>
+        <source>The default file (with absolute path) is: &lt;code&gt;%1&lt;/code&gt;.</source>
+        <translation>Die Standarddatei (mit absolutem Pfad) ist: &lt;code&gt;%1&lt;/code&gt;.</translation>
     </message>
 <message>
         <source>The file has to be specified with full path.</source>
         <translation>Die Datei muss mit vollem Pfad angegeben werden.</translation>
     </message>
 <message>
-        <source>The default image is:</source>
-        <translation>Das Standardbild ist:</translation>
+        <source>The default image is: &lt;code&gt;%1&lt;/code&gt;.</source>
+        <translation>Das Standardbild ist: &lt;code&gt;%1&lt;/code&gt;.</translation>
     </message>
 <message>
-        <source>The default image (with absolute path) is:</source>
-        <translation>Das Standardbild (mit absolutem Pfad) ist:</translation>
+        <source>The default image (with absolute path) is: &lt;code&gt;%1&lt;/code&gt;.</source>
+        <translation>Das Standardbild (mit absolutem Pfad) ist: &lt;code&gt;%1&lt;/code&gt;.</translation>
     </message>
 <message>
         <source>The image has to be specified with full path.</source>
         <translation>Das Bild muss mit vollem Pfad angegeben werden.</translation>
     </message>
 <message>
-        <source>This tag requires that the tag</source>
-        <translation>Dieses Tag erfordert, dass das Tag</translation>
-    </message>
-<message>
-        <source>is set to</source>
-        <translation>gesetzt ist auf</translation>
+        <source>This tag requires that the tag %1 is set to &lt;code&gt;YES&lt;/code&gt;.</source>
+        <translation>Dieses Tag erfordert, dass das Tag %1 auf &lt;code&gt;YES&lt;/code&gt; gesetzt ist.</translation>
     </message>
 </context>
 <context>

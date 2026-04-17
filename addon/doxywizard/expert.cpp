@@ -355,10 +355,7 @@ static QString getDocsForNode(const QDomElement &child)
     docs = baseDocs;
     if (!docs.endsWith(SA("<br/>"))) docs += SA("<br/>");
     docs += SA("<br/>");
-    if (needTranslation)
-      docs += Expert::tr("Possible values are:");
-    else
-      docs += SA("Possible values are:");
+    docs += Expert::tr("Possible values are:");
     docs += SA(" ");
     int numValues=0;
     docsVal = child.firstChildElement();
@@ -385,10 +382,7 @@ static QString getDocsForNode(const QDomElement &child)
         }
         if (i==numValues-1)
         {
-          if (needTranslation)
-            docs+=SA(" ") + Expert::tr("and") + SA(" ");
-          else
-            docs+=SA(" and ");
+          docs+=SA(" ") + Expert::tr("and") + SA(" ");
         }
         else if (i==numValues)
         {
@@ -405,12 +399,8 @@ static QString getDocsForNode(const QDomElement &child)
     {
       docs+=SA("<br/>");
       docs+=SA("<br/>");
-      if (needTranslation)
-        docs+=SA(" ")+Expert::tr("The default value is:")+SA(" <code>");
-      else
-        docs+=SA(" The default value is: <code>");
-      docs+=child.attribute(SA("defval"));
-      docs+=SA("</code>.");
+      QString defval = child.attribute(SA("defval"));
+      docs+=SA(" ")+Expert::tr("The default value is: <code>%1</code>.").arg(defval);
     }
     docs+= SA("<br/>");
   }
@@ -418,40 +408,27 @@ static QString getDocsForNode(const QDomElement &child)
   {
     docs = baseDocs;
     if (!docs.endsWith(SA("<br/>"))) docs += SA("<br/>");
-    if (needTranslation)
-    {
-      docs+=Expert::tr("Minimum value:")+SA(" ")+child.attribute(SA("minval"))+SA(", ");
-      docs+=Expert::tr("maximum value:")+SA(" ")+child.attribute(SA("maxval"))+SA(", ");
-      docs+=Expert::tr("default value:")+SA(" ")+child.attribute(SA("defval"))+SA(".");
-    }
-    else
-    {
-      docs+=SA("Minimum value: ")+child.attribute(SA("minval"))+SA(", ");
-      docs+=SA("maximum value: ")+child.attribute(SA("maxval"))+SA(", ");
-      docs+=SA("default value: ")+child.attribute(SA("defval"))+SA(".");
-    }
+    docs += SA("<br/>");
+    QString minval = child.attribute(SA("minval"));
+    QString maxval = child.attribute(SA("maxval"));
+    QString defval = child.attribute(SA("defval"));
+    docs+=Expert::tr("Minimum value: %1, maximum value: %2, default value: %3.").arg(minval).arg(maxval).arg(defval);
     docs+= SA("<br/>");
   }
   else if (type==SA("bool"))
   {
     docs = baseDocs;
     if (!docs.endsWith(SA("<br/>"))) docs += SA("<br/>");
+    docs += SA("<br/>");
     if (child.hasAttribute(SA("altdefval")))
     {
-      if (needTranslation)
-        docs+=SA(" ")+Expert::tr("The default value is: system dependent.");
-      else
-        docs+=SA(" The default value is: system dependent.");
+      docs+=SA(" ")+Expert::tr("The default value is: system dependent.");
     }
     else
     {
       QString defval = child.attribute(SA("defval"));
-      if (needTranslation)
-        docs+=SA(" ")+Expert::tr("The default value is:")+SA(" <code>");
-      else
-        docs+=SA(" The default value is: <code>");
-      docs+=(defval==SA("1")?SA("YES"):SA("NO"));
-      docs+=SA("</code>.");
+      QString valStr = (defval==SA("1")?SA("YES"):SA("NO"));
+      docs+=SA(" ")+Expert::tr("The default value is: <code>%1</code>.").arg(valStr);
     }
     docs+= SA("<br/>");
   }
@@ -477,11 +454,9 @@ static QString getDocsForNode(const QDomElement &child)
       }
       if (numValues>0)
       {
+        if (!docs.endsWith(SA("<br/>"))) docs += SA("<br/>");
         docs += SA("<br/>");
-        if (needTranslation)
-          docs += Expert::tr("Possible values are:");
-        else
-          docs += SA("Possible values are:");
+        docs += Expert::tr("Possible values are:");
         docs += SA(" ");
         int i = 0;
         docsVal = child.firstChildElement();
@@ -505,10 +480,7 @@ static QString getDocsForNode(const QDomElement &child)
               }
               if (i==numValues-1)
               {
-                if (needTranslation)
-                  docs += SA(" ") + Expert::tr("and") + SA(" ");
-                else
-                  docs += SA(" and ");
+                docs += SA(" ") + Expert::tr("and") + SA(" ");
               }
               else if (i==numValues)
               {
@@ -533,12 +505,9 @@ static QString getDocsForNode(const QDomElement &child)
     {
       if (defval != SA(""))
       {
-        docs+=SA("<br/>");
-        if (needTranslation)
-          docs += SA(" ")+Expert::tr("The default directory is:")+SA(" <code>");
-        else
-          docs += SA(" The default directory is: <code>");
-        docs += defval + SA("</code>.");
+        if (!docs.endsWith(SA("<br/>"))) docs += SA("<br/>");
+        docs += SA("<br/>");
+        docs += SA(" ")+Expert::tr("The default directory is: <code>%1</code>.").arg(defval);
         docs += SA("<br/>");
       }
     }
@@ -547,33 +516,25 @@ static QString getDocsForNode(const QDomElement &child)
       QString abspath = child.attribute(SA("abspath"));
       if (defval != SA(""))
       {
-        docs+=SA("<br/>");
+        if (!docs.endsWith(SA("<br/>"))) docs += SA("<br/>");
+        docs += SA("<br/>");
         if (abspath != SA("1"))
         {
-          if (needTranslation)
-            docs += SA(" ")+Expert::tr("The default file is:")+SA(" <code>");
-          else
-            docs += SA(" The default file is: <code>");
+          docs += SA(" ")+Expert::tr("The default file is: <code>%1</code>.").arg(defval);
         }
         else
         {
-          if (needTranslation)
-            docs += SA(" ")+Expert::tr("The default file (with absolute path) is:")+SA(" <code>");
-          else
-            docs += SA(" The default file (with absolute path) is: <code>");
+          docs += SA(" ")+Expert::tr("The default file (with absolute path) is: <code>%1</code>.").arg(defval);
         }
-        docs += defval + SA("</code>.");
         docs += SA("<br/>");
       }
       else
       {
         if (abspath == SA("1"))
         {
-          docs+=SA("<br/>");
-          if (needTranslation)
-            docs += SA(" ")+Expert::tr("The file has to be specified with full path.");
-          else
-            docs += SA(" The file has to be specified with full path.");
+          if (!docs.endsWith(SA("<br/>"))) docs += SA("<br/>");
+          docs += SA("<br/>");
+          docs += SA(" ")+Expert::tr("The file has to be specified with full path.");
           docs += SA("<br/>");
         }
       }
@@ -583,33 +544,25 @@ static QString getDocsForNode(const QDomElement &child)
       QString abspath = child.attribute(SA("abspath"));
       if (defval != SA(""))
       {
-        docs+=SA("<br/>");
+        if (!docs.endsWith(SA("<br/>"))) docs += SA("<br/>");
+        docs += SA("<br/>");
         if (abspath != SA("1"))
         {
-          if (needTranslation)
-            docs += SA(" ")+Expert::tr("The default image is:")+SA(" <code>");
-          else
-            docs += SA(" The default image is: <code>");
+          docs += SA(" ")+Expert::tr("The default image is: <code>%1</code>.").arg(defval);
         }
         else
         {
-          if (needTranslation)
-            docs += SA(" ")+Expert::tr("The default image (with absolute path) is:")+SA(" <code>");
-          else
-            docs += SA(" The default image (with absolute path) is: <code>");
+          docs += SA(" ")+Expert::tr("The default image (with absolute path) is: <code>%1</code>.").arg(defval);
         }
-        docs += defval + SA("</code>.");
         docs += SA("<br/>");
       }
       else
       {
         if (abspath == SA("1"))
         {
-          docs+=SA("<br/>");
-          if (needTranslation)
-            docs += SA(" ")+Expert::tr("The image has to be specified with full path.");
-          else
-            docs += SA(" The image has to be specified with full path.");
+          if (!docs.endsWith(SA("<br/>"))) docs += SA("<br/>");
+          docs += SA("<br/>");
+          docs += SA(" ")+Expert::tr("The image has to be specified with full path.");
           docs += SA("<br/>");
         }
       }
@@ -618,12 +571,9 @@ static QString getDocsForNode(const QDomElement &child)
     {
       if (defval != SA(""))
       {
-        docs+=SA("<br/>");
-        if (needTranslation)
-          docs += SA(" ")+Expert::tr("The default value is:")+SA(" <code>");
-        else
-          docs += SA(" The default value is: <code>");
-        docs += defval + SA("</code>.");
+        if (!docs.endsWith(SA("<br/>"))) docs += SA("<br/>");
+        docs += SA("<br/>");
+        docs += SA(" ")+Expert::tr("The default value is: <code>%1</code>.").arg(defval);
         docs += SA("<br/>");
       }
     }
@@ -632,23 +582,9 @@ static QString getDocsForNode(const QDomElement &child)
   if (child.hasAttribute(SA("depends")))
   {
     QString dependsOn = child.attribute(SA("depends"));
-    docs+=SA("<br/>");
-    if (needTranslation)
-    {
-      docs+=Expert::tr("This tag requires that the tag") + SA(" \\ref cfg_");
-      docs+=dependsOn.toLower();
-      docs+=SA(" \"");
-      docs+=dependsOn.toUpper();
-      docs+=SA("\" ") + Expert::tr("is set to") + SA(" <code>YES</code>.");
-    }
-    else
-    {
-      docs+=SA(" This tag requires that the tag \\ref cfg_");
-      docs+=dependsOn.toLower();
-      docs+=SA(" \"");
-      docs+=dependsOn.toUpper();
-      docs+=SA("\" is set to <code>YES</code>.");
-    }
+    if (!docs.endsWith(SA("<br/>"))) docs += SA("<br/>");
+    docs += SA("<br/>");
+    docs+=SA(" ")+Expert::tr("This tag requires that the tag %1 is set to <code>YES</code>.").arg(SA("\\ref cfg_")+dependsOn.toLower()+SA(" \"")+dependsOn.toUpper()+SA("\""));
   }
 
   // Convert Doxygen markup to HTML

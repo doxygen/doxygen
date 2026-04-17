@@ -12,60 +12,48 @@
         <translation>그리고</translation>
     </message>
 <message>
-        <source>The default value is:</source>
-        <translation>기본값은</translation>
+        <source>The default value is: &lt;code&gt;%1&lt;/code&gt;.</source>
+        <translation>기본값은 &lt;code&gt;%1&lt;/code&gt;입니다.</translation>
     </message>
 <message>
-        <source>Minimum value:</source>
-        <translation>최소값:</translation>
-    </message>
-<message>
-        <source>maximum value:</source>
-        <translation>최대값:</translation>
-    </message>
-<message>
-        <source>default value:</source>
-        <translation>기본값:</translation>
+        <source>Minimum value: %1, maximum value: %2, default value: %3.</source>
+        <translation>최소값: %1, 최대값: %2, 기본값: %3.</translation>
     </message>
 <message>
         <source>The default value is: system dependent.</source>
         <translation>기본값은 시스템에 따라 다릅니다.</translation>
     </message>
 <message>
-        <source>The default directory is:</source>
-        <translation>기본 디렉토리는</translation>
+        <source>The default directory is: &lt;code&gt;%1&lt;/code&gt;.</source>
+        <translation>기본 디렉토리는 &lt;code&gt;%1&lt;/code&gt;입니다.</translation>
     </message>
 <message>
-        <source>The default file is:</source>
-        <translation>기본 파일은</translation>
+        <source>The default file is: &lt;code&gt;%1&lt;/code&gt;.</source>
+        <translation>기본 파일은 &lt;code&gt;%1&lt;/code&gt;입니다.</translation>
     </message>
 <message>
-        <source>The default file (with absolute path) is:</source>
-        <translation>기본 파일(절대 경로)는</translation>
+        <source>The default file (with absolute path) is: &lt;code&gt;%1&lt;/code&gt;.</source>
+        <translation>기본 파일(절대 경로)은 &lt;code&gt;%1&lt;/code&gt;입니다.</translation>
     </message>
 <message>
         <source>The file has to be specified with full path.</source>
         <translation>파일은 전체 경로로 지정해야 합니다.</translation>
     </message>
 <message>
-        <source>The default image is:</source>
-        <translation>기본 이미지는</translation>
+        <source>The default image is: &lt;code&gt;%1&lt;/code&gt;.</source>
+        <translation>기본 이미지는 &lt;code&gt;%1&lt;/code&gt;입니다.</translation>
     </message>
 <message>
-        <source>The default image (with absolute path) is:</source>
-        <translation>기본 이미지(절대 경로)는</translation>
+        <source>The default image (with absolute path) is: &lt;code&gt;%1&lt;/code&gt;.</source>
+        <translation>기본 이미지(절대 경로)는 &lt;code&gt;%1&lt;/code&gt;입니다.</translation>
     </message>
 <message>
         <source>The image has to be specified with full path.</source>
         <translation>이미지는 전체 경로로 지정해야 합니다.</translation>
     </message>
 <message>
-        <source>This tag requires that the tag</source>
-        <translation>이 태그는 태그</translation>
-    </message>
-<message>
-        <source>is set to</source>
-        <translation>로 설정해야 합니다</translation>
+        <source>This tag requires that the tag %1 is set to &lt;code&gt;YES&lt;/code&gt;.</source>
+        <translation>이 태그는 태그 %1을 &lt;code&gt;YES&lt;/code&gt;로 설정해야 합니다.</translation>
     </message>
 </context>
 <context>

@@ -12,60 +12,48 @@
         <translation>和</translation>
     </message>
 <message>
-        <source>The default value is:</source>
-        <translation>預設值為：</translation>
+        <source>The default value is: &lt;code&gt;%1&lt;/code&gt;.</source>
+        <translation>預設值為：&lt;code&gt;%1&lt;/code&gt;。</translation>
     </message>
 <message>
-        <source>Minimum value:</source>
-        <translation>最小值：</translation>
-    </message>
-<message>
-        <source>maximum value:</source>
-        <translation>最大值：</translation>
-    </message>
-<message>
-        <source>default value:</source>
-        <translation>預設值：</translation>
+        <source>Minimum value: %1, maximum value: %2, default value: %3.</source>
+        <translation>最小值：%1，最大值：%2，預設值：%3。</translation>
     </message>
 <message>
         <source>The default value is: system dependent.</source>
         <translation>預設值：取決於系統。</translation>
     </message>
 <message>
-        <source>The default directory is:</source>
-        <translation>預設目錄為：</translation>
+        <source>The default directory is: &lt;code&gt;%1&lt;/code&gt;.</source>
+        <translation>預設目錄為：&lt;code&gt;%1&lt;/code&gt;。</translation>
     </message>
 <message>
-        <source>The default file is:</source>
-        <translation>預設檔案為：</translation>
+        <source>The default file is: &lt;code&gt;%1&lt;/code&gt;.</source>
+        <translation>預設檔案為：&lt;code&gt;%1&lt;/code&gt;。</translation>
     </message>
 <message>
-        <source>The default file (with absolute path) is:</source>
-        <translation>預設檔案（帶絕對路徑）為：</translation>
+        <source>The default file (with absolute path) is: &lt;code&gt;%1&lt;/code&gt;.</source>
+        <translation>預設檔案（帶絕對路徑）為：&lt;code&gt;%1&lt;/code&gt;。</translation>
     </message>
 <message>
         <source>The file has to be specified with full path.</source>
         <translation>檔案必須使用完整路徑指定。</translation>
     </message>
 <message>
-        <source>The default image is:</source>
-        <translation>預設影像為：</translation>
+        <source>The default image is: &lt;code&gt;%1&lt;/code&gt;.</source>
+        <translation>預設影像為：&lt;code&gt;%1&lt;/code&gt;。</translation>
     </message>
 <message>
-        <source>The default image (with absolute path) is:</source>
-        <translation>預設影像（帶絕對路徑）為：</translation>
+        <source>The default image (with absolute path) is: &lt;code&gt;%1&lt;/code&gt;.</source>
+        <translation>預設影像（帶絕對路徑）為：&lt;code&gt;%1&lt;/code&gt;。</translation>
     </message>
 <message>
         <source>The image has to be specified with full path.</source>
         <translation>影像必須使用完整路徑指定。</translation>
     </message>
 <message>
-        <source>This tag requires that the tag</source>
-        <translation>此標籤要求標籤</translation>
-    </message>
-<message>
-        <source>is set to</source>
-        <translation>設定為</translation>
+        <source>This tag requires that the tag %1 is set to &lt;code&gt;YES&lt;/code&gt;.</source>
+        <translation>此標籤要求標籤 %1 設定為 &lt;code&gt;YES&lt;/code&gt;。</translation>
     </message>
 </context>
 <context>
