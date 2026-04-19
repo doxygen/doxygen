@@ -30,15 +30,14 @@ class DotRunner
     struct DotJob
     {
       DotJob(const QCString &f, const QCString &ap, const QCString &rdn, const QCString &m,
-             const QCString &s, int l, bool c)
-        : format(f), absPath(ap), relDotName(rdn), md5Hash(m), srcFile(s), srcLine(l), cleanUp(c) {}
+             const QCString &s, int l)
+        : format(f), absPath(ap), relDotName(rdn), md5Hash(m), srcFile(s), srcLine(l) {}
       QCString format;
       QCString absPath;
       QCString relDotName;
       QCString md5Hash;
       QCString srcFile;
       int srcLine;
-      bool cleanUp;
     };
 
   public:
@@ -50,7 +49,7 @@ class DotRunner
      */
     void addJob(const QCString &absPath, const QCString &relDotName, const QCString &format,
                 const QCString &md5Hash,
-                const QCString &srcFile, int srcLine, bool cleanUp = true);
+                const QCString &srcFile, int srcLine);
 
     /** Runs dot for all queued jobs. For each unique format, a single dot
      *  invocation is made with -O and all input files for that format.

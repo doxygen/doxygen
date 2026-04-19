@@ -272,8 +272,7 @@ DotRunner::DotRunner()
 }
 
 void DotRunner::addJob(const QCString &absPath, const QCString &relDotName, const QCString &format,
-                       const QCString &md5Hash,
-                       const QCString &srcFile, int srcLine, bool cleanUp)
+                       const QCString &md5Hash, const QCString &srcFile, int srcLine)
 {
   for (const auto &job : m_jobs)
   {
@@ -284,7 +283,7 @@ void DotRunner::addJob(const QCString &absPath, const QCString &relDotName, cons
       return;
     }
   }
-  m_jobs.emplace_back(format, absPath, relDotName, md5Hash, srcFile, srcLine, cleanUp);
+  m_jobs.emplace_back(format, absPath, relDotName, md5Hash, srcFile, srcLine);
 }
 
 // Maximum command-line length passed to dot, leaving room for the exe path.
@@ -428,7 +427,7 @@ bool DotRunner::run()
       }
     }
 
-    if (job.cleanUp)
+    if (Config_getBool(DOT_CLEANUP))
     {
       Portable::unlink(job.absPath + job.relDotName);
     }

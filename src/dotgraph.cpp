@@ -186,23 +186,22 @@ bool DotGraph::prepareDotFile()
   f << m_theGraph;
   f.close();
 
-  bool cleanUp = Config_getBool(DOT_CLEANUP);
   if (m_graphFormat == GraphOutputFormat::BITMAP)
   {
     // run dot to create a bitmap image
-    DotManager::instance()->addJob(m_absPath, m_baseName + ".dot", Config_getEnumAsString(DOT_IMAGE_FORMAT), sigStr, cleanUp, absDotName(), 1);
-    if (m_generateImageMap) DotManager::instance()->addJob(m_absPath, m_baseName + ".dot", MAP_CMD, sigStr, cleanUp, absDotName(), 1);
+    DotManager::instance()->addJob(m_absPath, m_baseName + ".dot", Config_getEnumAsString(DOT_IMAGE_FORMAT), sigStr, absDotName(), 1);
+    if (m_generateImageMap) DotManager::instance()->addJob(m_absPath, m_baseName + ".dot", MAP_CMD, sigStr, absDotName(), 1);
   }
   else if (m_graphFormat == GraphOutputFormat::EPS)
   {
     // run dot to create a .eps image
     if (Config_getBool(USE_PDFLATEX))
     {
-      DotManager::instance()->addJob(m_absPath, m_baseName + ".dot", "pdf", sigStr, cleanUp, absDotName(), 1);
+      DotManager::instance()->addJob(m_absPath, m_baseName + ".dot", "pdf", sigStr, absDotName(), 1);
     }
     else
     {
-      DotManager::instance()->addJob(m_absPath, m_baseName + ".dot", "ps", sigStr, cleanUp, absDotName(), 1);
+      DotManager::instance()->addJob(m_absPath, m_baseName + ".dot", "eps", sigStr, absDotName(), 1);
     }
   }
   return TRUE;
