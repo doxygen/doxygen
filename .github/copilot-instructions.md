@@ -2,9 +2,13 @@
 
 ## Project Overview
 
-Doxygen is the de facto standard tool for generating documentation from annotated source code. It supports C++, C, Objective-C, C#, PHP, Java, Python, IDL, Fortran, VHDL, and more. The project is written primarily in C++ (C++17) and uses Flex (`.l` files) for lexical scanning, Python scripts for code generation, and CMake as its build system.
+Doxygen is the de facto standard tool for generating documentation from annotated source code. 
+It supports C++, C, Objective-C, C#, PHP, Java, Python, IDL, Fortran, VHDL, and more. 
+The project is written primarily in C++ (C++17) and uses Flex (`.l` files) for lexical scanning, 
+Python scripts for code generation, and CMake as its build system.
 
-Current version can be found in the VERSION file in the root of the repository. This is typically the development version (to be released version).
+Current version can be found in the `VERSION` file in the root of the repository. 
+This is typically the development version (next to be released version).
 
 ## Repository Structure
 
@@ -87,7 +91,7 @@ python testing/runtests.py --id 001 --doxygen ./bin/doxygen \
 ## Architecture Overview (Key Concepts)
 
 ### Configuration System
-- Defined in `src/config.xml` (XML schema)
+- Configuration options are defined in `src/config.xml` (XML schema)
 - Python script `src/configgen.py` generates `configoptions.cpp`, `configvalues.h`, `configvalues.cpp` at build time
 - Access config values with macros: `Config_getString()`, `Config_getInt()`, `Config_getList()`, `Config_getEnum()`, `Config_getBool()`
 - Config singleton class: `Config`
@@ -155,10 +159,10 @@ Use `-t [tracefile]` for full tracing output (very verbose; useful for experts).
 
 ### Adding a Regression Test
 1. Create `testing/NNN_description.ext` with the input source
-2. Add comment headers: `// objective: ...` and `// check: filename.xml`
+2. Add comment headers: `// objective: ...` and `// check: filename.xml`. To set non-default options use `// config:OPTION_NAME=VALUE`
 3. Create `testing/NNN/` directory structure with expected XML output
-4. Run test: `python testing/runtests.py --id NNN --doxygen ./bin/doxygen --inputdir ../testing --outputdir ./testing`
-5. Use `--noreg` flag to generate reference output on first run
+4. Run test in the build directory: `python ../testing/runtests.py --id NNN --doxygen ./bin/doxygen --inputdir ../testing --outputdir ./testing`
+5. Use the `--updateref` flag to generate reference output on first run.
 
 ### Modifying a Flex Scanner
 1. Edit the `.l` file in `src/`
