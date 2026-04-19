@@ -316,7 +316,8 @@ bool DotRunner::run()
 
     for (auto &[dirStr, jobs] : byDir)
     {
-      QCString dir = QCString(dirStr);
+      std::string oldDir = Dir::currentDirPath();
+      Dir::setCurrent(dirStr);
 
       // Run dot in batches to stay within command-line length limits.
       // Each batch: -Tformat -O basename1.dot basename2.dot ...
@@ -338,11 +339,11 @@ bool DotRunner::run()
         }
 
         int exitCode;
-        if ((exitCode = Portable::system(m_dotExe, dotArgs, FALSE, dir)) != 0)
+        if ((exitCode = Portable::system(m_dotExe, dotArgs, FALSE)) != 0)
         {
           err_full(jobs[batchStart]->srcFile, jobs[batchStart]->srcLine,
                    "Problems running dot: exit code={}, command='{}', dir='{}', arguments='{}'",
-                   exitCode, m_dotExe, dir, dotArgs);
+                   exitCode, m_dotExe, dirStr, dotArgs);
           ok = false;
         }
         batchStart = batchEnd;
@@ -383,11 +384,11 @@ bool DotRunner::run()
             // Re-run dot for just this one file
             QCString rerunArgs = QCString("-T") + format + " -O \"" + job->relDotName + "\"";
             int exitCode;
-            if ((exitCode = Portable::system(m_dotExe, rerunArgs, FALSE, dir)) != 0)
+            if ((exitCode = Portable::system(m_dotExe, rerunArgs, FALSE)) != 0)
             {
               err_full(job->srcFile, job->srcLine,
                        "Problems running dot: exit code={}, command='{}', dir='{}', arguments='{}'",
-                       exitCode, m_dotExe, dir, rerunArgs);
+                       exitCode, m_dotExe, dirStr, rerunArgs);
               ok = false;
             }
             else
@@ -406,6 +407,7 @@ bool DotRunner::run()
           checkPngResult(output);
         }
       }
+      Dir::setCurrent(oldDir);
     }
   }
 

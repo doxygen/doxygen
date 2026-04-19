@@ -18,7 +18,7 @@ class Buf;
 
 namespace Portable
 {
-  int            system(const QCString &command,const QCString &args,bool commandHasConsole=true,const QCString &dir=QCString());
+  int            system(const QCString &command,const QCString &args,bool commandHasConsole=true);
   uint32_t       pid();
   QCString       getenv(const QCString &variable);
   void           setenv(const QCString &variable,const QCString &value);
