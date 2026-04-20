@@ -2049,6 +2049,26 @@ to disable this feature.
 ]]>
       </docs>
     </option>
+    <option type='int' id='MAX_ITEMS_BEFORE_QUICK_INDEX' minval='0' maxval='3000' defval='30'>
+      <docs>
+<![CDATA[
+ If the number of items on a list of functions, variables, typdefs, enums or macros 
+ exceeds \c MAX_ITEMS_BEFORE_QUICK_INDEX, it will be divided into multiple sections
+ to form a quick index. If the number of items exceeds \ref cfg_max_items_before_multipage_index "MAX_ITEMS_BEFORE_MULTIPAGE_INDEX", 
+ those sections will be put on a single output page.
+]]>
+      </docs>
+    </option>
+    <option type='int' id='MAX_ITEMS_BEFORE_MULTIPAGE_INDEX' minval='0' maxval='30000' defval='200'>
+      <docs>
+<![CDATA[
+ If the number of items on a list of functions, variables, enums, typedefs or macros 
+ exceeds \c MAX_ITEMS_BEFORE_MULTIPAGE_INDEX, it will be 
+ divided into multiple pages, each sub-page containing a part of the list. 
+ (see also \ref cfg_max_items_before_quick_index "MAX_ITEMS_BEFORE_QUICK_INDEX")
+]]>
+      </docs>
+    </option>
   </group>
   <group name='HTML' docs='Configuration options related to the HTML output'>
     <option type='bool' id='GENERATE_HTML' defval='1'>
