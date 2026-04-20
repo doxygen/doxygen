@@ -1106,7 +1106,6 @@ class DocPara : public DocCompoundNode
     template<class T> void handleFile(const QCString &cmdName);
     void handleInclude(const QCString &cmdName,DocInclude::Type t);
     void handleLink(const QCString &cmdName,bool isJavaLink);
-    void handleCite(char cmdChar,const QCString &cmdName);
     void handleDoxyConfig(char cmdChar,const QCString &cmdName);
     void handleEmoji(char cmdChar,const QCString &cmdName);
     void handleSection(char cmdChar,const QCString &cmdName);

@@ -3537,111 +3537,6 @@ Token DocPara::handleParamSection(const QCString &cmdName,
   return (!rv.is(TokenRetval::TK_NEWPARA)) ? rv : Token::make_RetVal_OK();
 }
 
-void DocPara::handleCite(char cmdChar,const QCString &cmdName)
-{
-  AUTO_TRACE();
-  QCString saveCmdName = cmdName;
-  // get the argument of the cite command.
-  Token tok=parser()->tokenizer.lex();
-
-  CiteInfoOption option;
-  if (tok.is(TokenRetval::TK_WORD) && parser()->context.token->name=="{")
-  {
-    parser()->tokenizer.setStateOptions();
-    parser()->tokenizer.lex();
-    StringVector optList=split(parser()->context.token->name.str(),",");
-    for (auto const &opt : optList)
-    {
-      if (opt == "number")
-      {
-        if (!option.isUnknown())
-        {
-          warn(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Multiple options specified with \\{}, discarding '{}'", saveCmdName, opt);
-        }
-        else
-        {
-          option = CiteInfoOption::makeNumber();
-        }
-      }
-      else if (opt == "year")
-      {
-        if (!option.isUnknown())
-        {
-          warn(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Multiple options specified with \\{}, discarding '{}'", saveCmdName, opt);
-        }
-        else
-        {
-          option = CiteInfoOption::makeYear();
-        }
-      }
-      else if (opt == "shortauthor")
-      {
-        if (!option.isUnknown())
-        {
-          warn(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Multiple options specified with \\{}, discarding '{}'", saveCmdName, opt);
-        }
-        else
-        {
-          option = CiteInfoOption::makeShortAuthor();
-        }
-      }
-      else if (opt == "nopar")
-      {
-        option.setNoPar();
-      }
-      else if (opt == "nocite")
-      {
-        option.setNoCite();
-      }
-      else
-      {
-        warn(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Unknown option specified with \\{}, discarding '{}'", saveCmdName, opt);
-      }
-    }
-
-    if (option.isUnknown()) option.changeToNumber();
-
-    parser()->tokenizer.setStatePara();
-    tok=parser()->tokenizer.lex();
-    if (!tok.is(TokenRetval::TK_WHITESPACE))
-    {
-      warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"expected whitespace after \\{} command",
-          saveCmdName);
-      return;
-    }
-  }
-  else if (!tok.is(TokenRetval::TK_WHITESPACE))
-  {
-    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"expected whitespace after '{:c}{}' command",
-      cmdChar,saveCmdName);
-    return;
-  }
-  else
-  {
-    option = CiteInfoOption::makeNumber();
-  }
-
-  parser()->tokenizer.setStateCite();
-  tok=parser()->tokenizer.lex();
-  if (tok.is_any_of(TokenRetval::TK_NONE,TokenRetval::TK_EOF))
-  {
-    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"THE ONE unexpected end of comment block while parsing the "
-        "argument of command '{:c}{}'",cmdChar,saveCmdName);
-    return;
-  }
-  else if (!tok.is_any_of(TokenRetval::TK_WORD,TokenRetval::TK_LNKWORD))
-  {
-    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"unexpected token {} as the argument of '{:c}{}'",
-        tok.to_string(),cmdChar,saveCmdName);
-    return;
-  }
-  parser()->context.token->sectionId = parser()->context.token->name;
-  children().append<DocCite>(
-        parser(),thisVariant(),parser()->context.token->name,parser()->context.context,option);
-
-  parser()->tokenizer.setStatePara();
-}
-
 void DocPara::handleEmoji(char cmdChar,const QCString &cmdName)
 {
   AUTO_TRACE();
@@ -4946,7 +4841,9 @@ Token DocPara::handleCommand(char cmdChar, const QCString &cmdName)
       handleLink(cmdName,TRUE);
       break;
     case CommandType::CMD_CITE:
-      handleCite(cmdChar,cmdName);
+      {
+        parser()->handleCite(thisVariant(),children());
+      }
       break;
     case CommandType::CMD_EMOJI:
       handleEmoji(cmdChar,cmdName);
