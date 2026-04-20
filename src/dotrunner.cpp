@@ -271,19 +271,9 @@ DotRunner::DotRunner()
 {
 }
 
-void DotRunner::addJob(const QCString &absPath, const QCString &relDotName, const QCString &format,
-                       const QCString &md5Hash, const QCString &srcFile, int srcLine)
+void DotRunner::addJob(const DotJob &job)
 {
-  for (const auto &job : m_jobs)
-  {
-    if (job.absPath == absPath && job.relDotName == relDotName && job.format == format) return; // already queued
-    if (job.absPath == absPath && job.relDotName == relDotName && job.md5Hash != md5Hash)
-    {
-      err("md5 hash does not match for two different runs of {}{} !\n", absPath, relDotName);
-      return;
-    }
-  }
-  m_jobs.emplace_back(format, absPath, relDotName, md5Hash, srcFile, srcLine);
+  m_jobs.push_back(job);
 }
 
 // Maximum command-line length passed to dot, leaving room for the exe path.

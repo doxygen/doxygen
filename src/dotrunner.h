@@ -19,6 +19,7 @@
 #include <vector>
 
 #include "qcstring.h"
+#include "dotjob.h"
 
 /** Helper class to run dot from doxygen. Holds a queue of jobs, each
  *  specifying an input .dot file and output format. Call run() to execute
@@ -27,29 +28,11 @@
  */
 class DotRunner
 {
-    struct DotJob
-    {
-      DotJob(const QCString &f, const QCString &ap, const QCString &rdn, const QCString &m,
-             const QCString &s, int l)
-        : format(f), absPath(ap), relDotName(rdn), md5Hash(m), srcFile(s), srcLine(l) {}
-      QCString format;
-      QCString absPath;
-      QCString relDotName;
-      QCString md5Hash;
-      QCString srcFile;
-      int srcLine;
-    };
-
   public:
     DotRunner();
 
-    /** Adds a job: run dot on \a dotFile producing output in \a format.
-     *  Duplicate (dotFile+format) entries are silently ignored.
-     *  If the same dotFile is added with a different md5Hash, an error is reported.
-     */
-    void addJob(const QCString &absPath, const QCString &relDotName, const QCString &format,
-                const QCString &md5Hash,
-                const QCString &srcFile, int srcLine);
+    /** Queues a job to be performed by this runner. */
+    void addJob(const DotJob &job);
 
     /** Runs dot for all queued jobs. For each unique format, a single dot
      *  invocation is made with -O and all input files for that format.

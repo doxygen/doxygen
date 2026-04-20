@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright (C) 1997-2019 by Dimitri van Heesch.
+ * Copyright (C) 1997-2026 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -22,6 +22,7 @@
 #include "dotgraph.h" // only for GraphOutputFormat
 #include "dotfilepatcher.h"
 #include "dotrunner.h"
+#include "dotjob.h"
 #include "doxygen.h"
 #include "construct.h"
 
@@ -44,6 +45,7 @@ class DotManager
 
     DotRunner                                          m_runner;
     std::map<std::string, DotFilePatcher>              m_filePatchers;
+    std::vector<DotJob>                                m_jobs;
 };
 
 void writeDotGraphFromFile(const QCString &inFile,const QCString &outDir,
@@ -55,4 +57,4 @@ void writeDotImageMapFromFile(TextStream &t,
                               const QCString &context,int graphId,
                               const QCString &srcFile,int srcLine,bool newFile);
 
-#endif
+#endif // DOT_H

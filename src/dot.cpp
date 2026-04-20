@@ -93,7 +93,16 @@ void DotManager::addJob(const QCString &absPath, const QCString &relDotName, con
                         const QCString &md5Hash, const QCString &srcFile, int srcLine)
 {
   std::lock_guard<std::mutex> lock(g_dotManagerMutex);
-  m_runner.addJob(absPath, relDotName, format, md5Hash, srcFile, srcLine);
+  for (const auto &job : m_jobs)
+  {
+    if (job.absPath == absPath && job.relDotName == relDotName && job.format == format) return; // already queued
+    if (job.absPath == absPath && job.relDotName == relDotName && job.md5Hash != md5Hash)
+    {
+      err("md5 hash does not match for two different runs of {}{} !\n", absPath, relDotName);
+      return;
+    }
+  }
+  m_jobs.emplace_back(format, absPath, relDotName, md5Hash, srcFile, srcLine);
 }
 
 DotFilePatcher *DotManager::createFilePatcher(const QCString &fileName)
@@ -110,6 +119,11 @@ DotFilePatcher *DotManager::createFilePatcher(const QCString &fileName)
 
 bool DotManager::run()
 {
+  for (const auto &job: m_jobs)
+  {
+    m_runner.addJob(job);
+  }
+
   size_t numFilePatchers = m_filePatchers.size();
   if (numFilePatchers > 0)
   {
