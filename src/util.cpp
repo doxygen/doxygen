@@ -889,6 +889,34 @@ bool leftScopeMatch(const QCString &scope, const QCString &name)
          );
 }
 
+int resolveTemplateArity(const QCString &s)
+{
+  if (s.at(0) != '<') return 0; // not a template 
+
+  int arity=0;
+  int templateDepth=0;
+
+  for (size_t i=0;i<s.length();i++)
+  {
+    char c=s.at(i);
+    if (c=='<')
+    {
+      if (templateDepth==0) arity++;
+      templateDepth++;
+    }
+    else if (c==',')
+    {
+      if (templateDepth==1) arity++;
+    }
+    else if (c=='>')
+    {
+      templateDepth--;
+      if (templateDepth==0) break;
+    }
+  }
+
+  return arity;
+}
 
 void linkifyText(const TextGeneratorIntf &out, const QCString &text,
     const LinkifyTextOptions &options)
@@ -1000,8 +1028,14 @@ void linkifyText(const TextGeneratorIntf &out, const QCString &text,
       const Definition   *d=nullptr;
       //printf("** Match word '%s'\n",qPrint(matchWord));
 
+      // Use templateArity context for languages that need it (C#)
+      int templateArity=
+        (fileScope && fileScope->getLanguage()==SrcLangExt::CSharp)
+          ? resolveTemplateArity(txtStr.substr(newIndex+matchLen))
+          : 0;
+
       SymbolResolver resolver(fileScope);
-      cd=resolver.resolveClass(scope,matchWord);
+      cd=resolver.resolveClass(scope,matchWord,false,false,templateArity);
       const MemberDef *typeDef = resolver.getTypedef();
       if (typeDef) // First look at typedef then class, see bug 584184.
       {
@@ -1033,6 +1067,11 @@ void linkifyText(const TextGeneratorIntf &out, const QCString &text,
       if (found)
       {
         //printf("   -> skip\n");
+      }
+       // C# generics, cd must have not been reassigned from resolver.resolveClass
+      else if (cd && fileScope->getLanguage()==SrcLangExt::CSharp && templateArity > 0)
+      {
+        writeCompoundName(cd);
       }
       else if ((cd=getClass(matchWord)))
       {

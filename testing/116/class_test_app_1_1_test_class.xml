@@ -1,0 +1,295 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="class_test_app_1_1_test_class" kind="class" language="C#" prot="public">
+    <compoundname>TestApp::TestClass</compoundname>
+    <basecompoundref prot="public" virt="non-virtual">Bar</basecompoundref>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="class_test_app_1_1_test_class_1ab5af62cc6d392b98f6dfa49072c20a30" prot="public" static="no" mutable="no">
+        <type>
+          <ref refid="116__csharp__using__alias_8cs_1ae75c9f73964213f458197760249f45e7" kindref="member">Foo</ref>
+        </type>
+        <definition>Foo TestApp.TestClass.myFoo</definition>
+        <argsstring/>
+        <name>myFoo</name>
+        <qualifiedname>TestApp.TestClass.myFoo</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="116_csharp_using_alias.cs" line="38" column="20" bodyfile="116_csharp_using_alias.cs" bodystart="38" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="class_test_app_1_1_test_class_1a8ae7b8d812526c563af57512c6123be1" prot="public" static="no" mutable="no">
+        <type>
+          <ref refid="116__csharp__using__alias_8cs_1aa2e3ed335781094c0da07481c8ec209c" kindref="member">Bar</ref>
+        </type>
+        <definition>Bar TestApp.TestClass.myBar</definition>
+        <argsstring/>
+        <name>myBar</name>
+        <qualifiedname>TestApp.TestClass.myBar</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="116_csharp_using_alias.cs" line="39" column="20" bodyfile="116_csharp_using_alias.cs" bodystart="39" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="class_test_app_1_1_test_class_1acec90deceefaa3a90dc2f8774f0092bb" prot="public" static="no" mutable="no">
+        <type>
+          <ref refid="namespace_test_app_1aea9a30a3fcbef1e4537f09dac477ce8f" kindref="member">InnerFoo</ref>
+        </type>
+        <definition>InnerFoo TestApp.TestClass.myInnerFoo</definition>
+        <argsstring/>
+        <name>myInnerFoo</name>
+        <qualifiedname>TestApp.TestClass.myInnerFoo</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="116_csharp_using_alias.cs" line="41" column="25" bodyfile="116_csharp_using_alias.cs" bodystart="41" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="class_test_app_1_1_test_class_1af245c69b3fb0614f2ac7887c1ca02e60" prot="public" static="no" mutable="no">
+        <type>
+          <ref refid="namespace_test_app_1a8cdb4c81bf85a92bbc3a8bef4f0a10c8" kindref="member">InnerBar</ref>
+        </type>
+        <definition>InnerBar TestApp.TestClass.myInnerBar</definition>
+        <argsstring/>
+        <name>myInnerBar</name>
+        <qualifiedname>TestApp.TestClass.myInnerBar</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="116_csharp_using_alias.cs" line="42" column="25" bodyfile="116_csharp_using_alias.cs" bodystart="42" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="class_test_app_1_1_test_class_1a8b7fa1bc2aa6d0356ff3752e94730ef5" prot="public" static="no" mutable="no">
+        <type>
+          <ref refid="116__csharp__using__alias_8cs_1ac7ef973b93b0a9b102e0638795862563" kindref="member">GlobalFoo</ref>
+        </type>
+        <definition>GlobalFoo TestApp.TestClass.myGlobalFoo</definition>
+        <argsstring/>
+        <name>myGlobalFoo</name>
+        <qualifiedname>TestApp.TestClass.myGlobalFoo</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="116_csharp_using_alias.cs" line="44" column="26" bodyfile="116_csharp_using_alias.cs" bodystart="44" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="class_test_app_1_1_test_class_1a81c20b830057daabc77a301d04047316" prot="public" static="no" mutable="no">
+        <type>
+          <ref refid="116__csharp__using__alias_8cs_1a5b74ab6142215be1502722a199929058" kindref="member">GlobalBar</ref>
+        </type>
+        <definition>GlobalBar TestApp.TestClass.myGlobalBar</definition>
+        <argsstring/>
+        <name>myGlobalBar</name>
+        <qualifiedname>TestApp.TestClass.myGlobalBar</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="116_csharp_using_alias.cs" line="45" column="26" bodyfile="116_csharp_using_alias.cs" bodystart="45" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="class_test_app_1_1_test_class_1a2bbf27d0b7759d186d8d48b09151168e" prot="public" static="no" mutable="no">
+        <type>
+          <ref refid="namespace_test_app_1a8b8db320c5aed31596f429cfc60003d7" kindref="member">NestedAlias</ref>
+        </type>
+        <definition>NestedAlias TestApp.TestClass.myNestedAlias</definition>
+        <argsstring/>
+        <name>myNestedAlias</name>
+        <qualifiedname>TestApp.TestClass.myNestedAlias</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="116_csharp_using_alias.cs" line="47" column="28" bodyfile="116_csharp_using_alias.cs" bodystart="47" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="class_test_app_1_1_test_class_1a080276d674da9e7c011e5c1f7fd1ef88" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>
+          <ref refid="116__csharp__using__alias_8cs_1ae75c9f73964213f458197760249f45e7" kindref="member">Foo</ref>
+        </type>
+        <definition>Foo TestApp.TestClass.fooMethod</definition>
+        <argsstring>(Bar b)</argsstring>
+        <name>fooMethod</name>
+        <qualifiedname>TestApp.TestClass.fooMethod</qualifiedname>
+        <param>
+          <type>
+            <ref refid="116__csharp__using__alias_8cs_1aa2e3ed335781094c0da07481c8ec209c" kindref="member">Bar</ref>
+          </type>
+          <declname>b</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="116_csharp_using_alias.cs" line="49" column="20" bodyfile="116_csharp_using_alias.cs" bodystart="49" bodyend="49"/>
+      </memberdef>
+      <memberdef kind="function" id="class_test_app_1_1_test_class_1aaaa0162b354a511239bac8962c6c1121" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>
+          <ref refid="namespace_test_app_1aea9a30a3fcbef1e4537f09dac477ce8f" kindref="member">InnerFoo</ref>
+        </type>
+        <definition>InnerFoo TestApp.TestClass.innerFooMethod</definition>
+        <argsstring>(InnerBar b)</argsstring>
+        <name>innerFooMethod</name>
+        <qualifiedname>TestApp.TestClass.innerFooMethod</qualifiedname>
+        <param>
+          <type>
+            <ref refid="namespace_test_app_1a8cdb4c81bf85a92bbc3a8bef4f0a10c8" kindref="member">InnerBar</ref>
+          </type>
+          <declname>b</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="116_csharp_using_alias.cs" line="50" column="25" bodyfile="116_csharp_using_alias.cs" bodystart="50" bodyend="50"/>
+      </memberdef>
+      <memberdef kind="function" id="class_test_app_1_1_test_class_1a51b4e8ca0e1a53579fa3e0391ab85942" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>
+          <ref refid="116__csharp__using__alias_8cs_1ac7ef973b93b0a9b102e0638795862563" kindref="member">GlobalFoo</ref>
+        </type>
+        <definition>GlobalFoo TestApp.TestClass.globalFooMethod</definition>
+        <argsstring>(GlobalBar b)</argsstring>
+        <name>globalFooMethod</name>
+        <qualifiedname>TestApp.TestClass.globalFooMethod</qualifiedname>
+        <param>
+          <type>
+            <ref refid="116__csharp__using__alias_8cs_1a5b74ab6142215be1502722a199929058" kindref="member">GlobalBar</ref>
+          </type>
+          <declname>b</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="116_csharp_using_alias.cs" line="51" column="26" bodyfile="116_csharp_using_alias.cs" bodystart="51" bodyend="51"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="2">
+        <label>Bar</label>
+      </node>
+      <node id="1">
+        <label>TestApp.TestClass</label>
+        <link refid="class_test_app_1_1_test_class"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="2">
+        <label>Bar</label>
+      </node>
+      <node id="3">
+        <label>N.A</label>
+        <link refid="class_n_1_1_a"/>
+      </node>
+      <node id="6">
+        <label>N.B</label>
+        <link refid="class_n_1_1_b"/>
+      </node>
+      <node id="5">
+        <label>N.C</label>
+        <link refid="class_n_1_1_c"/>
+      </node>
+      <node id="4">
+        <label>N.Collections.Dictionary&lt; TKey, TValue &gt;</label>
+        <link refid="class_n_1_1_collections_1_1_dictionary-2-g"/>
+      </node>
+      <node id="1">
+        <label>TestApp.TestClass</label>
+        <link refid="class_test_app_1_1_test_class"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+        <childnode refid="3" relation="usage">
+          <edgelabel>myFoo</edgelabel>
+        </childnode>
+        <childnode refid="4" relation="usage">
+          <edgelabel>myBar</edgelabel>
+          <edgelabel>myGlobalBar</edgelabel>
+          <edgelabel>myInnerBar</edgelabel>
+        </childnode>
+        <childnode refid="5" relation="usage">
+          <edgelabel>myInnerFoo</edgelabel>
+        </childnode>
+        <childnode refid="6" relation="usage">
+          <edgelabel>myGlobalFoo</edgelabel>
+        </childnode>
+        <childnode refid="7" relation="usage">
+          <edgelabel>myNestedAlias</edgelabel>
+        </childnode>
+      </node>
+      <node id="7">
+        <label>TestApp.Outer.Nested</label>
+        <link refid="class_test_app_1_1_outer_1_1_nested"/>
+      </node>
+    </collaborationgraph>
+    <location file="116_csharp_using_alias.cs" line="36" column="11" bodyfile="116_csharp_using_alias.cs" bodystart="37" bodyend="52"/>
+    <listofallmembers>
+      <member refid="class_test_app_1_1_test_class_1a080276d674da9e7c011e5c1f7fd1ef88" prot="public" virt="non-virtual">
+        <scope>TestApp::TestClass</scope>
+        <name>fooMethod</name>
+      </member>
+      <member refid="class_test_app_1_1_test_class_1a51b4e8ca0e1a53579fa3e0391ab85942" prot="public" virt="non-virtual">
+        <scope>TestApp::TestClass</scope>
+        <name>globalFooMethod</name>
+      </member>
+      <member refid="class_test_app_1_1_test_class_1aaaa0162b354a511239bac8962c6c1121" prot="public" virt="non-virtual">
+        <scope>TestApp::TestClass</scope>
+        <name>innerFooMethod</name>
+      </member>
+      <member refid="class_test_app_1_1_test_class_1a8ae7b8d812526c563af57512c6123be1" prot="public" virt="non-virtual">
+        <scope>TestApp::TestClass</scope>
+        <name>myBar</name>
+      </member>
+      <member refid="class_test_app_1_1_test_class_1ab5af62cc6d392b98f6dfa49072c20a30" prot="public" virt="non-virtual">
+        <scope>TestApp::TestClass</scope>
+        <name>myFoo</name>
+      </member>
+      <member refid="class_test_app_1_1_test_class_1a81c20b830057daabc77a301d04047316" prot="public" virt="non-virtual">
+        <scope>TestApp::TestClass</scope>
+        <name>myGlobalBar</name>
+      </member>
+      <member refid="class_test_app_1_1_test_class_1a8b7fa1bc2aa6d0356ff3752e94730ef5" prot="public" virt="non-virtual">
+        <scope>TestApp::TestClass</scope>
+        <name>myGlobalFoo</name>
+      </member>
+      <member refid="class_test_app_1_1_test_class_1af245c69b3fb0614f2ac7887c1ca02e60" prot="public" virt="non-virtual">
+        <scope>TestApp::TestClass</scope>
+        <name>myInnerBar</name>
+      </member>
+      <member refid="class_test_app_1_1_test_class_1acec90deceefaa3a90dc2f8774f0092bb" prot="public" virt="non-virtual">
+        <scope>TestApp::TestClass</scope>
+        <name>myInnerFoo</name>
+      </member>
+      <member refid="class_test_app_1_1_test_class_1a2bbf27d0b7759d186d8d48b09151168e" prot="public" virt="non-virtual">
+        <scope>TestApp::TestClass</scope>
+        <name>myNestedAlias</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>
