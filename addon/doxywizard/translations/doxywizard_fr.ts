@@ -3,15 +3,67 @@
 <TS version="2.1" language="fr">
 <context>
     <name>Expert</name>
-<message>
+    <message>
         <source>Error parsing internal config.xml at line %1 column %2.
 %3</source>
         <translation>Erreur lors de l'analyse du fichier config.xml interne à la ligne %1, colonne %2.
 %3</translation>
     </message>
-<message>
+    <message>
         <source>Error</source>
         <translation>Erreur</translation>
+    </message>
+    <message>
+        <source>Possible values are:</source>
+        <translation>Les valeurs possibles sont :</translation>
+    </message>
+    <message>
+        <source>and</source>
+        <translation>et</translation>
+    </message>
+    <message>
+        <source>The default value is: &lt;code&gt;%1&lt;/code&gt;.</source>
+        <translation>La valeur par défaut est : &lt;code&gt;%1&lt;/code&gt;.</translation>
+    </message>
+    <message>
+        <source>Minimum value: %1, maximum value: %2, default value: %3.</source>
+        <translation>Valeur minimum : %1, valeur maximum : %2, valeur par défaut : %3.</translation>
+    </message>
+    <message>
+        <source>The default value is: system dependent.</source>
+        <translation>La valeur par défaut dépend du système.</translation>
+    </message>
+    <message>
+        <source>The default directory is: &lt;code&gt;%1&lt;/code&gt;.</source>
+        <translation>Le répertoire par défaut est : &lt;code&gt;%1&lt;/code&gt;.</translation>
+    </message>
+    <message>
+        <source>The default file is: &lt;code&gt;%1&lt;/code&gt;.</source>
+        <translation>Le fichier par défaut est : &lt;code&gt;%1&lt;/code&gt;.</translation>
+    </message>
+    <message>
+        <source>The default file (with absolute path) is: &lt;code&gt;%1&lt;/code&gt;.</source>
+        <translation>Le fichier par défaut (avec chemin absolu) est : &lt;code&gt;%1&lt;/code&gt;.</translation>
+    </message>
+    <message>
+        <source>The file has to be specified with full path.</source>
+        <translation>Le fichier doit être spécifié avec un chemin complet.</translation>
+    </message>
+    <message>
+        <source>The default image is: &lt;code&gt;%1&lt;/code&gt;.</source>
+        <translation>L'image par défaut est : &lt;code&gt;%1&lt;/code&gt;.</translation>
+    </message>
+    <message>
+        <source>The default image (with absolute path) is: &lt;code&gt;%1&lt;/code&gt;.</source>
+        <translation>L'image par défaut (avec chemin absolu) est : &lt;code&gt;%1&lt;/code&gt;.</translation>
+    </message>
+    <message>
+        <source>The image has to be specified with full path.</source>
+        <translation>L'image doit être spécifiée avec un chemin complet.</translation>
+    </message>
+    <message>
+        <source>This tag requires that the tag %1 is set to &lt;code&gt;YES&lt;/code&gt;.</source>
+        <translation>Cette balise nécessite que la balise %1 soit définie sur &lt;code&gt;YES&lt;/code&gt;.</translation>
     </message>
 </context>
 <context>

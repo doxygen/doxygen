@@ -3,15 +3,67 @@
 <TS version="2.1" language="ko">
 <context>
     <name>Expert</name>
-<message>
+    <message>
         <source>Error parsing internal config.xml at line %1 column %2.
 %3</source>
         <translation>내부 config.xml 파싱 오류, 줄 %1, 열 %2.
 %3</translation>
     </message>
-<message>
+    <message>
         <source>Error</source>
         <translation>오류</translation>
+    </message>
+    <message>
+        <source>Possible values are:</source>
+        <translation>가능한 값:</translation>
+    </message>
+    <message>
+        <source>and</source>
+        <translation>그리고</translation>
+    </message>
+    <message>
+        <source>The default value is: &lt;code&gt;%1&lt;/code&gt;.</source>
+        <translation>기본값은 &lt;code&gt;%1&lt;/code&gt;입니다.</translation>
+    </message>
+    <message>
+        <source>Minimum value: %1, maximum value: %2, default value: %3.</source>
+        <translation>최소값: %1, 최대값: %2, 기본값: %3.</translation>
+    </message>
+    <message>
+        <source>The default value is: system dependent.</source>
+        <translation>기본값은 시스템에 따라 다릅니다.</translation>
+    </message>
+    <message>
+        <source>The default directory is: &lt;code&gt;%1&lt;/code&gt;.</source>
+        <translation>기본 디렉토리는 &lt;code&gt;%1&lt;/code&gt;입니다.</translation>
+    </message>
+    <message>
+        <source>The default file is: &lt;code&gt;%1&lt;/code&gt;.</source>
+        <translation>기본 파일은 &lt;code&gt;%1&lt;/code&gt;입니다.</translation>
+    </message>
+    <message>
+        <source>The default file (with absolute path) is: &lt;code&gt;%1&lt;/code&gt;.</source>
+        <translation>기본 파일(절대 경로)은 &lt;code&gt;%1&lt;/code&gt;입니다.</translation>
+    </message>
+    <message>
+        <source>The file has to be specified with full path.</source>
+        <translation>파일은 전체 경로로 지정해야 합니다.</translation>
+    </message>
+    <message>
+        <source>The default image is: &lt;code&gt;%1&lt;/code&gt;.</source>
+        <translation>기본 이미지는 &lt;code&gt;%1&lt;/code&gt;입니다.</translation>
+    </message>
+    <message>
+        <source>The default image (with absolute path) is: &lt;code&gt;%1&lt;/code&gt;.</source>
+        <translation>기본 이미지(절대 경로)는 &lt;code&gt;%1&lt;/code&gt;입니다.</translation>
+    </message>
+    <message>
+        <source>The image has to be specified with full path.</source>
+        <translation>이미지는 전체 경로로 지정해야 합니다.</translation>
+    </message>
+    <message>
+        <source>This tag requires that the tag %1 is set to &lt;code&gt;YES&lt;/code&gt;.</source>
+        <translation>이 태그는 태그 %1을 &lt;code&gt;YES&lt;/code&gt;로 설정해야 합니다.</translation>
     </message>
 </context>
 <context>

@@ -42,6 +42,7 @@
 #include <QTranslator>
 #include <QScrollBar>
 #include <QActionGroup>
+#include <functional>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -102,111 +103,60 @@ QString DoxygenWizard::msgProjectTopic()
   return QCoreApplication::translate("Messages", "Project");
 }
 
-QString DoxygenWizard::msgHtmlFormat()
+#define TR_MSG_ENTRY(name) { QLatin1String(name), []() { return QCoreApplication::translate("Messages", name); } }
+
+static QMap<QString, std::function<QString()>> createMessageMap()
 {
-  return QCoreApplication::translate("Messages", "HTML");
+  static QMap<QString, std::function<QString()>> map = {
+    TR_MSG_ENTRY("HTML"),
+    TR_MSG_ENTRY("LaTeX"),
+    TR_MSG_ENTRY("XML"),
+    TR_MSG_ENTRY("Docbook"),
+    TR_MSG_ENTRY("Build"),
+    TR_MSG_ENTRY("Messages"),
+    TR_MSG_ENTRY("Input"),
+    TR_MSG_ENTRY("Source Browser"),
+    TR_MSG_ENTRY("Index"),
+    TR_MSG_ENTRY("RTF"),
+    TR_MSG_ENTRY("Man"),
+    TR_MSG_ENTRY("AutoGen"),
+    TR_MSG_ENTRY("Sqlite3"),
+    TR_MSG_ENTRY("PerlMod"),
+    TR_MSG_ENTRY("Preprocessor"),
+    TR_MSG_ENTRY("External"),
+    TR_MSG_ENTRY("Dot")
+  };
+  return map;
 }
 
-QString DoxygenWizard::msgLatexFormat()
+static QMap<QString, std::function<QString()>> &messageMap()
 {
-  return QCoreApplication::translate("Messages", "LaTeX");
+  static QMap<QString, std::function<QString()>> map = createMessageMap();
+  return map;
 }
 
-QString DoxygenWizard::msgXmlFormat()
-{
-  return QCoreApplication::translate("Messages", "XML");
-}
-
-QString DoxygenWizard::msgDocbookFormat()
-{
-  return QCoreApplication::translate("Messages", "Docbook");
-}
-
-QString DoxygenWizard::msgBuildTopic()
-{
-  return QCoreApplication::translate("Messages", "Build");
-}
-
-QString DoxygenWizard::msgMessagesTopic()
-{
-  return QCoreApplication::translate("Messages", "Messages");
-}
-
-QString DoxygenWizard::msgInputTopic()
-{
-  return QCoreApplication::translate("Messages", "Input");
-}
-
-QString DoxygenWizard::msgSourceBrowserTopic()
-{
-  return QCoreApplication::translate("Messages", "Source Browser");
-}
-
-QString DoxygenWizard::msgIndexTopic()
-{
-  return QCoreApplication::translate("Messages", "Index");
-}
-
-QString DoxygenWizard::msgRtfFormat()
-{
-  return QCoreApplication::translate("Messages", "RTF");
-}
-
-QString DoxygenWizard::msgManFormat()
-{
-  return QCoreApplication::translate("Messages", "Man");
-}
-
-QString DoxygenWizard::msgAutoGenFormat()
-{
-  return QCoreApplication::translate("Messages", "AutoGen");
-}
-
-QString DoxygenWizard::msgSqlite3Format()
-{
-  return QCoreApplication::translate("Messages", "Sqlite3");
-}
-
-QString DoxygenWizard::msgPerlModFormat()
-{
-  return QCoreApplication::translate("Messages", "PerlMod");
-}
-
-QString DoxygenWizard::msgPreprocessorTopic()
-{
-  return QCoreApplication::translate("Messages", "Preprocessor");
-}
-
-QString DoxygenWizard::msgExternalTopic()
-{
-  return QCoreApplication::translate("Messages", "External");
-}
-
-QString DoxygenWizard::msgDotTopic()
-{
-  return QCoreApplication::translate("Messages", "Dot");
-}
+QString DoxygenWizard::msgHtmlFormat() { return messageMap()[QLatin1String("HTML")](); }
+QString DoxygenWizard::msgLatexFormat() { return messageMap()[QLatin1String("LaTeX")](); }
+QString DoxygenWizard::msgXmlFormat() { return messageMap()[QLatin1String("XML")](); }
+QString DoxygenWizard::msgDocbookFormat() { return messageMap()[QLatin1String("Docbook")](); }
+QString DoxygenWizard::msgBuildTopic() { return messageMap()[QLatin1String("Build")](); }
+QString DoxygenWizard::msgMessagesTopic() { return messageMap()[QLatin1String("Messages")](); }
+QString DoxygenWizard::msgInputTopic() { return messageMap()[QLatin1String("Input")](); }
+QString DoxygenWizard::msgSourceBrowserTopic() { return messageMap()[QLatin1String("Source Browser")](); }
+QString DoxygenWizard::msgIndexTopic() { return messageMap()[QLatin1String("Index")](); }
+QString DoxygenWizard::msgRtfFormat() { return messageMap()[QLatin1String("RTF")](); }
+QString DoxygenWizard::msgManFormat() { return messageMap()[QLatin1String("Man")](); }
+QString DoxygenWizard::msgAutoGenFormat() { return messageMap()[QLatin1String("AutoGen")](); }
+QString DoxygenWizard::msgSqlite3Format() { return messageMap()[QLatin1String("Sqlite3")](); }
+QString DoxygenWizard::msgPerlModFormat() { return messageMap()[QLatin1String("PerlMod")](); }
+QString DoxygenWizard::msgPreprocessorTopic() { return messageMap()[QLatin1String("Preprocessor")](); }
+QString DoxygenWizard::msgExternalTopic() { return messageMap()[QLatin1String("External")](); }
+QString DoxygenWizard::msgDotTopic() { return messageMap()[QLatin1String("Dot")](); }
 
 QString DoxygenWizard::translateExpertTopic(const QString &name)
 {
   if (name == QLatin1String("Project")) return msgProjectTopic();
-  if (name == QLatin1String("Build")) return msgBuildTopic();
-  if (name == QLatin1String("Messages")) return msgMessagesTopic();
-  if (name == QLatin1String("Input")) return msgInputTopic();
-  if (name == QLatin1String("Source Browser")) return msgSourceBrowserTopic();
-  if (name == QLatin1String("Index")) return msgIndexTopic();
-  if (name == QLatin1String("HTML")) return msgHtmlFormat();
-  if (name == QLatin1String("LaTeX")) return msgLatexFormat();
-  if (name == QLatin1String("RTF")) return msgRtfFormat();
-  if (name == QLatin1String("Man")) return msgManFormat();
-  if (name == QLatin1String("XML")) return msgXmlFormat();
-  if (name == QLatin1String("Docbook")) return msgDocbookFormat();
-  if (name == QLatin1String("AutoGen")) return msgAutoGenFormat();
-  if (name == QLatin1String("Sqlite3")) return msgSqlite3Format();
-  if (name == QLatin1String("PerlMod")) return msgPerlModFormat();
-  if (name == QLatin1String("Preprocessor")) return msgPreprocessorTopic();
-  if (name == QLatin1String("External")) return msgExternalTopic();
-  if (name == QLatin1String("Dot")) return msgDotTopic();
+  if (messageMap().contains(name)) return messageMap()[name]();
   return name;
 }
 

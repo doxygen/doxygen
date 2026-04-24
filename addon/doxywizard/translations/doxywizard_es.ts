@@ -3,15 +3,67 @@
 <TS version="2.1" language="es">
 <context>
     <name>Expert</name>
-<message>
+    <message>
         <source>Error parsing internal config.xml at line %1 column %2.
 %3</source>
         <translation>Error al analizar el config.xml interno en la línea %1 columna %2.
 %3</translation>
     </message>
-<message>
+    <message>
         <source>Error</source>
         <translation>Error</translation>
+    </message>
+    <message>
+        <source>Possible values are:</source>
+        <translation>Los valores posibles son:</translation>
+    </message>
+    <message>
+        <source>and</source>
+        <translation>y</translation>
+    </message>
+    <message>
+        <source>The default value is: &lt;code&gt;%1&lt;/code&gt;.</source>
+        <translation>El valor predeterminado es: &lt;code&gt;%1&lt;/code&gt;.</translation>
+    </message>
+    <message>
+        <source>Minimum value: %1, maximum value: %2, default value: %3.</source>
+        <translation>Valor mínimo: %1, valor máximo: %2, valor predeterminado: %3.</translation>
+    </message>
+    <message>
+        <source>The default value is: system dependent.</source>
+        <translation>El valor predeterminado es: dependiente del sistema.</translation>
+    </message>
+    <message>
+        <source>The default directory is: &lt;code&gt;%1&lt;/code&gt;.</source>
+        <translation>El directorio predeterminado es: &lt;code&gt;%1&lt;/code&gt;.</translation>
+    </message>
+    <message>
+        <source>The default file is: &lt;code&gt;%1&lt;/code&gt;.</source>
+        <translation>El archivo predeterminado es: &lt;code&gt;%1&lt;/code&gt;.</translation>
+    </message>
+    <message>
+        <source>The default file (with absolute path) is: &lt;code&gt;%1&lt;/code&gt;.</source>
+        <translation>El archivo predeterminado (con ruta absoluta) es: &lt;code&gt;%1&lt;/code&gt;.</translation>
+    </message>
+    <message>
+        <source>The file has to be specified with full path.</source>
+        <translation>El archivo debe especificarse con la ruta completa.</translation>
+    </message>
+    <message>
+        <source>The default image is: &lt;code&gt;%1&lt;/code&gt;.</source>
+        <translation>La imagen predeterminada es: &lt;code&gt;%1&lt;/code&gt;.</translation>
+    </message>
+    <message>
+        <source>The default image (with absolute path) is: &lt;code&gt;%1&lt;/code&gt;.</source>
+        <translation>La imagen predeterminada (con ruta absoluta) es: &lt;code&gt;%1&lt;/code&gt;.</translation>
+    </message>
+    <message>
+        <source>The image has to be specified with full path.</source>
+        <translation>La imagen debe especificarse con la ruta completa.</translation>
+    </message>
+    <message>
+        <source>This tag requires that the tag %1 is set to &lt;code&gt;YES&lt;/code&gt;.</source>
+        <translation>Esta etiqueta requiere que la etiqueta %1 esté establecida en &lt;code&gt;YES&lt;/code&gt;.</translation>
     </message>
 </context>
 <context>

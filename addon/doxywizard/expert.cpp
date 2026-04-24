@@ -231,22 +231,7 @@ Expert::Expert()
   m_topicStack = new QStackedWidget;
   m_inShowHelp = false;
 
-  QFile file(SA(":/config.xml"));
-  QString err;
-  int errLine,errCol;
-  QDomDocument configXml;
-  if (file.open(QIODevice::ReadOnly))
-  {
-    if (!configXml.setContent(&file,false,&err,&errLine,&errCol))
-    {
-      QString msg = tr("Error parsing internal config.xml at line %1 column %2.\n%3").
-                  arg(errLine).arg(errCol).arg(err);
-      QMessageBox::warning(this, tr("Error"), msg);
-      exit(1);
-    }
-  }
-  m_rootElement = configXml.documentElement();
-
+  loadConfigXml();
   createTopics(m_rootElement);
   m_helper = new QTextBrowser;
   m_helper->setReadOnly(true);
@@ -273,6 +258,46 @@ Expert::Expert()
   connect(m_prev,SIGNAL(clicked()),SLOT(prevTopic()));
 
   addConfigDocs(this);
+}
+
+void Expert::loadConfigXml()
+{
+  QString langCode = TranslationManager::instance().currentLanguageCode();
+  QString configPath;
+  
+  if (langCode != QLatin1String("en"))
+  {
+    configPath = SA(":/config_") + langCode + SA(".xml");
+    QFile langFile(configPath);
+    if (!langFile.exists())
+    {
+      configPath = SA(":/config.xml");
+    }
+  }
+  else
+  {
+    configPath = SA(":/config.xml");
+  }
+  
+  QFile file(configPath);
+  QString err;
+  int errLine,errCol;
+  QDomDocument configXml;
+  if (file.open(QIODevice::ReadOnly))
+  {
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    if (!configXml.setContent(&file,&err,&errLine,&errCol))
+#else
+    if (!configXml.setContent(&file,false,&err,&errLine,&errCol))
+#endif
+    {
+      QString msg = tr("Error parsing internal config.xml at line %1 column %2.\n%3").
+                  arg(errLine).arg(errCol).arg(err);
+      QMessageBox::warning(this, tr("Error"), msg);
+      exit(1);
+    }
+  }
+  m_rootElement = configXml.documentElement();
 }
 
 Expert::~Expert()
@@ -337,22 +362,9 @@ static QString getDocsForNode(const QDomElement &child)
     docsVal = docsVal.nextSiblingElement();
   }
 
-  bool needTranslation = (TranslationManager::instance().currentLanguageCode() != QLatin1String("en"));
-  
-  QString baseDocs = docs;
-  if (needTranslation)
-  {
-    QString translatedDocs = OptionTranslations::trDocsStatic(id, docs);
-    if (!translatedDocs.isEmpty() && translatedDocs != id)
-    {
-      baseDocs = translatedDocs;
-    }
-  }
-
   // for an enum we list the values
   if (type==SA("enum"))
   {
-    docs = baseDocs;
     if (!docs.endsWith(SA("<br/>"))) docs += SA("<br/>");
     docs += SA("<br/>");
     docs += Expert::tr("Possible values are:");
@@ -406,7 +418,6 @@ static QString getDocsForNode(const QDomElement &child)
   }
   else if (type==SA("int"))
   {
-    docs = baseDocs;
     if (!docs.endsWith(SA("<br/>"))) docs += SA("<br/>");
     docs += SA("<br/>");
     QString minval = child.attribute(SA("minval"));
@@ -417,7 +428,6 @@ static QString getDocsForNode(const QDomElement &child)
   }
   else if (type==SA("bool"))
   {
-    docs = baseDocs;
     if (!docs.endsWith(SA("<br/>"))) docs += SA("<br/>");
     docs += SA("<br/>");
     if (child.hasAttribute(SA("altdefval")))
@@ -434,7 +444,6 @@ static QString getDocsForNode(const QDomElement &child)
   }
   else if (type==SA("list"))
   {
-    docs = baseDocs;
     if (child.attribute(SA("format"))==SA("string"))
     {
       int numValues = 0;
@@ -499,7 +508,6 @@ static QString getDocsForNode(const QDomElement &child)
   }
   else if (type==SA("string"))
   {
-    docs = baseDocs;
     QString defval = child.attribute(SA("defval"));
     if (child.attribute(SA("format")) == SA("dir"))
     {
@@ -1127,33 +1135,21 @@ void Expert::retranslateUi()
   m_prev->setText(DoxygenWizard::msgPreviousButton());
   m_next->setText(DoxygenWizard::msgNextButton());
   
-  for (int i = 0; i < m_treeWidget->topLevelItemCount(); ++i)
-  {
-    QTreeWidgetItem *item = m_treeWidget->topLevelItem(i);
-    if (item)
-    {
-      QString originalName = m_topics.key(m_topicStack->widget(i));
-      if (!originalName.isEmpty())
-      {
-        item->setText(0, DoxygenWizard::translateExpertTopic(originalName));
-      }
-    }
-  }
+  loadConfigXml();
   
-  QHashIterator<QString,Input*> i(m_options);
-  while (i.hasNext())
+  m_topics.clear();
+  while (m_topicStack->count() > 0)
   {
-    i.next();
-    if (i.value())
-    {
-      QString id = i.key();
-      if (m_optionElements.contains(id))
-      {
-        QString docs = getDocsForNode(m_optionElements[id]);
-        i.value()->setDocs(docs);
-      }
-      i.value()->retranslate();
-    }
+    QWidget *w = m_topicStack->widget(0);
+    m_topicStack->removeWidget(w);
   }
+  m_options.clear();
+  m_optionElements.clear();
+  
+  m_treeWidget->clear();
+  
+  createTopics(m_rootElement);
+  
+  m_treeWidget->setCurrentItem(m_treeWidget->invisibleRootItem()->child(0));
 }
 

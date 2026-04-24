@@ -69,6 +69,9 @@ add_custom_command(
 )
 set_source_files_properties(${GENERATED_SRC_WIZARD}/configdoc.cpp PROPERTIES GENERATED 1)
 
+# Localized config.xml files are manually placed in ${PROJECT_SOURCE_DIR}/src/
+# They are referenced directly in doxywizard.qrc
+
 set(LEX_FILES config_doxyw)
 
 if (NOT depfile_supported)
@@ -145,6 +148,20 @@ optiontranslations.h
 )
 
 qt_add_resources(doxywizard_RESOURCES_RCC doxywizard.qrc)
+
+# Generate localized config.qrc
+set(CONFIG_QRC_CONTENT "<!DOCTYPE RCC>\n<RCC version=\"1.0\">\n<qresource prefix=\"/\">\n")
+string(APPEND CONFIG_QRC_CONTENT "  <file alias=\"config.xml\">${PROJECT_SOURCE_DIR}/src/config.xml</file>\n")
+foreach(lang zh_CN zh_TW de fr ja ko es ru)
+  string(APPEND CONFIG_QRC_CONTENT "  <file alias=\"config_${lang}.xml\">${LOCALIZED_CONFIG_DIR}/config_${lang}.xml</file>\n")
+endforeach()
+string(APPEND CONFIG_QRC_CONTENT "</qresource>\n</RCC>\n")
+
+file(GENERATE OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/config.qrc
+  CONTENT ${CONFIG_QRC_CONTENT}
+)
+
+qt_add_resources(doxywizard_CONFIG_RESOURCES ${CMAKE_CURRENT_BINARY_DIR}/config.qrc)
 
 set(TRANSLATIONS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/translations)
 

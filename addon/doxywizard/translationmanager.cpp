@@ -51,86 +51,47 @@ void TranslationManager::initialize()
 
 void TranslationManager::loadAvailableLanguages()
 {
-    LanguageInfo en;
-    en.code = QString::fromLatin1("en");
-    en.nativeName = QString::fromLatin1("English");
-    en.englishName = QString::fromLatin1("English");
-    en.tsFile = QString();
-    en.qmFile = QString();
-    en.optionsQmFile = QString();
-    m_languages.insert(en.code, en);
-
-    LanguageInfo zhCN;
-    zhCN.code = QString::fromLatin1("zh_CN");
-    zhCN.nativeName = QString::fromUtf8("简体中文");
-    zhCN.englishName = QString::fromLatin1("Simplified Chinese");
-    zhCN.tsFile = QString::fromLatin1("doxywizard_zh_CN.ts");
-    zhCN.qmFile = QString::fromLatin1("doxywizard_zh_CN.qm");
-    zhCN.optionsQmFile = QString::fromLatin1("doxywizard_options_zh_CN.qm");
-    m_languages.insert(zhCN.code, zhCN);
-
-    LanguageInfo zhTW;
-    zhTW.code = QString::fromLatin1("zh_TW");
-    zhTW.nativeName = QString::fromUtf8("繁體中文");
-    zhTW.englishName = QString::fromLatin1("Traditional Chinese");
-    zhTW.tsFile = QString::fromLatin1("doxywizard_zh_TW.ts");
-    zhTW.qmFile = QString::fromLatin1("doxywizard_zh_TW.qm");
-    zhTW.optionsQmFile = QString::fromLatin1("doxywizard_options_zh_TW.qm");
-    m_languages.insert(zhTW.code, zhTW);
-
-    LanguageInfo de;
-    de.code = QString::fromLatin1("de");
-    de.nativeName = QString::fromLatin1("Deutsch");
-    de.englishName = QString::fromLatin1("German");
-    de.tsFile = QString::fromLatin1("doxywizard_de.ts");
-    de.qmFile = QString::fromLatin1("doxywizard_de.qm");
-    de.optionsQmFile = QString::fromLatin1("doxywizard_options_de.qm");
-    m_languages.insert(de.code, de);
-
-    LanguageInfo fr;
-    fr.code = QString::fromLatin1("fr");
-    fr.nativeName = QString::fromUtf8("Français");
-    fr.englishName = QString::fromLatin1("French");
-    fr.tsFile = QString::fromLatin1("doxywizard_fr.ts");
-    fr.qmFile = QString::fromLatin1("doxywizard_fr.qm");
-    fr.optionsQmFile = QString::fromLatin1("doxywizard_options_fr.qm");
-    m_languages.insert(fr.code, fr);
-
-    LanguageInfo ja;
-    ja.code = QString::fromLatin1("ja");
-    ja.nativeName = QString::fromUtf8("日本語");
-    ja.englishName = QString::fromLatin1("Japanese");
-    ja.tsFile = QString::fromLatin1("doxywizard_ja.ts");
-    ja.qmFile = QString::fromLatin1("doxywizard_ja.qm");
-    ja.optionsQmFile = QString::fromLatin1("doxywizard_options_ja.qm");
-    m_languages.insert(ja.code, ja);
-
-    LanguageInfo ko;
-    ko.code = QString::fromLatin1("ko");
-    ko.nativeName = QString::fromUtf8("한국어");
-    ko.englishName = QString::fromLatin1("Korean");
-    ko.tsFile = QString::fromLatin1("doxywizard_ko.ts");
-    ko.qmFile = QString::fromLatin1("doxywizard_ko.qm");
-    ko.optionsQmFile = QString::fromLatin1("doxywizard_options_ko.qm");
-    m_languages.insert(ko.code, ko);
-
-    LanguageInfo es;
-    es.code = QString::fromLatin1("es");
-    es.nativeName = QString::fromUtf8("Español");
-    es.englishName = QString::fromLatin1("Spanish");
-    es.tsFile = QString::fromLatin1("doxywizard_es.ts");
-    es.qmFile = QString::fromLatin1("doxywizard_es.qm");
-    es.optionsQmFile = QString::fromLatin1("doxywizard_options_es.qm");
-    m_languages.insert(es.code, es);
-
-    LanguageInfo ru;
-    ru.code = QString::fromLatin1("ru");
-    ru.nativeName = QString::fromUtf8("Русский");
-    ru.englishName = QString::fromLatin1("Russian");
-    ru.tsFile = QString::fromLatin1("doxywizard_ru.ts");
-    ru.qmFile = QString::fromLatin1("doxywizard_ru.qm");
-    ru.optionsQmFile = QString::fromLatin1("doxywizard_options_ru.qm");
-    m_languages.insert(ru.code, ru);
+    struct LanguageData {
+        const char *code;
+        const char *nativeName;
+        const char *englishName;
+    };
+    
+    static const LanguageData languageTable[] = {
+        { "en", "English", "English" },
+        { "zh_CN", "简体中文", "Simplified Chinese" },
+        { "zh_TW", "繁體中文", "Traditional Chinese" },
+        { "de", "Deutsch", "German" },
+        { "fr", "Français", "French" },
+        { "ja", "日本語", "Japanese" },
+        { "ko", "한국어", "Korean" },
+        { "es", "Español", "Spanish" },
+        { "ru", "Русский", "Russian" },
+        { nullptr, nullptr, nullptr }
+    };
+    
+    for (int i = 0; languageTable[i].code != nullptr; ++i)
+    {
+        LanguageInfo info;
+        info.code = QString::fromLatin1(languageTable[i].code);
+        info.nativeName = QString::fromUtf8(languageTable[i].nativeName);
+        info.englishName = QString::fromLatin1(languageTable[i].englishName);
+        
+        if (info.code == QLatin1String("en"))
+        {
+            info.tsFile = QString();
+            info.qmFile = QString();
+            info.optionsQmFile = QString();
+        }
+        else
+        {
+            info.tsFile = QString::fromLatin1("doxywizard_%1.ts").arg(info.code);
+            info.qmFile = QString::fromLatin1("doxywizard_%1.qm").arg(info.code);
+            info.optionsQmFile = QString::fromLatin1("doxywizard_options_%1.qm").arg(info.code);
+        }
+        
+        m_languages.insert(info.code, info);
+    }
 }
 
 QStringList TranslationManager::availableLanguages() const
@@ -245,20 +206,8 @@ bool TranslationManager::switchLanguage(const QString &langCode)
     }
     qApp->installTranslator(m_translator);
     
-    QString qmOptionsPath = qmOptionsFilePath(langCode);
-    if (!qmOptionsPath.isEmpty())
-    {
-        m_optionsTranslator = new QTranslator(this);
-        if (m_optionsTranslator->load(qmOptionsPath))
-        {
-            qApp->installTranslator(m_optionsTranslator);
-        }
-        else
-        {
-            delete m_optionsTranslator;
-            m_optionsTranslator = nullptr;
-        }
-    }
+    // Note: Options translations are now handled via localized config_xx.xml files
+    // The doxywizard_options_xx.qm files are no longer loaded here
     
     m_qtTranslator = new QTranslator(this);
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
@@ -324,12 +273,8 @@ void TranslationManager::unloadTranslation()
         m_translator = nullptr;
     }
     
-    if (m_optionsTranslator)
-    {
-        qApp->removeTranslator(m_optionsTranslator);
-        delete m_optionsTranslator;
-        m_optionsTranslator = nullptr;
-    }
+    // Note: m_optionsTranslator is no longer used
+    // Options translations are handled via localized config_xx.xml files
     
     if (m_qtTranslator)
     {

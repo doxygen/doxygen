@@ -3,15 +3,67 @@
 <TS version="2.1" language="ja">
 <context>
     <name>Expert</name>
-<message>
+    <message>
         <source>Error parsing internal config.xml at line %1 column %2.
 %3</source>
         <translation>内部config.xmlの解析エラー、行%1、列%2。
 %3</translation>
     </message>
-<message>
+    <message>
         <source>Error</source>
         <translation>エラー</translation>
+    </message>
+    <message>
+        <source>Possible values are:</source>
+        <translation>可能な値は:</translation>
+    </message>
+    <message>
+        <source>and</source>
+        <translation>と</translation>
+    </message>
+    <message>
+        <source>The default value is: &lt;code&gt;%1&lt;/code&gt;.</source>
+        <translation>デフォルト値は &lt;code&gt;%1&lt;/code&gt; です。</translation>
+    </message>
+    <message>
+        <source>Minimum value: %1, maximum value: %2, default value: %3.</source>
+        <translation>最小値: %1, 最大値: %2, デフォルト値: %3。</translation>
+    </message>
+    <message>
+        <source>The default value is: system dependent.</source>
+        <translation>デフォルト値はシステム依存です。</translation>
+    </message>
+    <message>
+        <source>The default directory is: &lt;code&gt;%1&lt;/code&gt;.</source>
+        <translation>デフォルトのディレクトリは &lt;code&gt;%1&lt;/code&gt; です。</translation>
+    </message>
+    <message>
+        <source>The default file is: &lt;code&gt;%1&lt;/code&gt;.</source>
+        <translation>デフォルトのファイルは &lt;code&gt;%1&lt;/code&gt; です。</translation>
+    </message>
+    <message>
+        <source>The default file (with absolute path) is: &lt;code&gt;%1&lt;/code&gt;.</source>
+        <translation>デフォルトのファイル（絶対パス）は &lt;code&gt;%1&lt;/code&gt; です。</translation>
+    </message>
+    <message>
+        <source>The file has to be specified with full path.</source>
+        <translation>ファイルは完全パスで指定する必要があります。</translation>
+    </message>
+    <message>
+        <source>The default image is: &lt;code&gt;%1&lt;/code&gt;.</source>
+        <translation>デフォルトの画像は &lt;code&gt;%1&lt;/code&gt; です。</translation>
+    </message>
+    <message>
+        <source>The default image (with absolute path) is: &lt;code&gt;%1&lt;/code&gt;.</source>
+        <translation>デフォルトの画像（絶対パス）は &lt;code&gt;%1&lt;/code&gt; です。</translation>
+    </message>
+    <message>
+        <source>The image has to be specified with full path.</source>
+        <translation>画像は完全パスで指定する必要があります。</translation>
+    </message>
+    <message>
+        <source>This tag requires that the tag %1 is set to &lt;code&gt;YES&lt;/code&gt;.</source>
+        <translation>このタグはタグ %1 を &lt;code&gt;YES&lt;/code&gt; に設定する必要があります。</translation>
     </message>
 </context>
 <context>

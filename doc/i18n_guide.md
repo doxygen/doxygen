@@ -10,26 +10,25 @@ Doxywizard uses Qt's internationalization (i18n) framework, implementing multi-l
 
 \section i18n_file_structure Translation File Structure
 
-Translation files are located in the `translations/` directory. Each language consists of two files:
+Translation files are located in the `translations/` directory:
 
 ```
 translations/
 ├── doxywizard_zh_CN.ts          # Main UI translation (Simplified Chinese)
-├── doxywizard_options_zh_CN.ts  # Configuration option translation (Simplified Chinese)
 ├── doxywizard_zh_TW.ts          # Main UI translation (Traditional Chinese)
-├── doxywizard_options_zh_TW.ts  # Configuration option translation (Traditional Chinese)
 ├── doxywizard_de.ts             # Main UI translation (German)
-├── doxywizard_options_de.ts     # Configuration option translation (German)
-├── ...                          # Other languages
-└── doxywizard_options_ru.ts     # Configuration option translation (Russian)
+├── doxywizard_fr.ts             # Main UI translation (French)
+├── doxywizard_ja.ts             # Main UI translation (Japanese)
+├── doxywizard_ko.ts             # Main UI translation (Korean)
+├── doxywizard_es.ts             # Main UI translation (Spanish)
+└── doxywizard_ru.ts             # Main UI translation (Russian)
 ```
 
 \subsection i18n_file_types File Types
 
 | File Type | Purpose | Translation Contexts |
 |-----------|---------|---------------------|
-| `doxywizard_xx.ts` | Main UI translation | `DoxygenWizard`, `Expert`, etc. |
-| `doxywizard_options_xx.ts` | Configuration option detailed descriptions | `OptionDocs`, `Expert`, `OptionValue` |
+| `doxywizard_xx.ts` | Main UI translation | `DoxygenWizard`, `Expert`, `Messages`, etc. |
 
 \subsection i18n_cmake_config CMakeLists.txt Configuration
 
@@ -44,17 +43,6 @@ set(DOXYWIZARD_TRANSLATION_FILES
   ${TRANSLATIONS_DIR}/doxywizard_es.ts
   ${TRANSLATIONS_DIR}/doxywizard_ru.ts
 )
-
-set(DOXYWIZARD_OPTIONS_TRANSLATION_FILES
-  ${TRANSLATIONS_DIR}/doxywizard_options_zh_CN.ts
-  ${TRANSLATIONS_DIR}/doxywizard_options_zh_TW.ts
-  ${TRANSLATIONS_DIR}/doxywizard_options_de.ts
-  ${TRANSLATIONS_DIR}/doxywizard_options_fr.ts
-  ${TRANSLATIONS_DIR}/doxywizard_options_ja.ts
-  ${TRANSLATIONS_DIR}/doxywizard_options_ko.ts
-  ${TRANSLATIONS_DIR}/doxywizard_options_es.ts
-  ${TRANSLATIONS_DIR}/doxywizard_options_ru.ts
-)
 ```
 
 \section i18n_contexts Translation Contexts
@@ -65,8 +53,8 @@ set(DOXYWIZARD_OPTIONS_TRANSLATION_FILES
 |---------|---------------|---------|
 | `DoxygenWizard` | `doxywizard.cpp` | Main wizard interface text |
 | `Expert` | `expert.cpp` | Expert mode interface and dynamic content |
-| `OptionDocs` | `doxywizard_options_xx.ts` | Configuration option detailed descriptions |
-| `OptionValue` | `doxywizard_options_xx.ts` | Enum value descriptions |
+| `Messages` | `doxywizard.cpp` | Topic names and format labels |
+| `Wizard` | `wizard.cpp` | Wizard step labels |
 | `InputBool` | `inputbool.cpp` | Boolean input control |
 | `InputInt` | `inputint.cpp` | Integer input control |
 | `InputString` | `inputstring.cpp` | String input control |
@@ -85,145 +73,93 @@ docs += Expert::tr("The default value is: <code>%1</code>.").arg(defval);
 
 // Dependencies
 docs += Expert::tr("This tag requires that the tag %1 is set to <code>YES</code>.")
-    .arg(SA("\\ref cfg_") + dependsOn.toLower() + SA(" \"") + dependsOn.toUpper() + SA("\""));
-```
-
-\section i18n_message_sharing Message Sharing System
-
-\subsection i18n_sharing_goals Design Goals
-
-The message sharing system aims to:
-1. Reduce duplication of translation strings
-2. Ensure the same text uses the same translation in different locations
-3. Support translation of dynamic content
-
-\subsection i18n_static_translation Static Translation Functions
-
-The `OptionTranslations` class provides static functions for obtaining translations in static contexts:
-
-```cpp
-// optiontranslations.h
-class OptionTranslations : public QObject
-{
-    Q_OBJECT
-public:
-    static OptionTranslations& instance();
-    QString translate(const QString &optionName);
-    QString translateDocs(const QString &optionName, const QString &defaultDocs);
-    static QString trStatic(const QString &optionName);
-    static QString trDocsStatic(const QString &optionName, const QString &defaultDocs);
-    static QString translateTags(const QString &text);
-    void retranslate();
-private:
-    QMap<QString, QString> m_translations;
-    QMap<QString, QString> m_docsTranslations;
-};
-```
-
-\subsection i18n_translation_tags Translation Tag System
-
-For cases where dynamic translation content needs to be embedded in translation strings, use `%{tr:context:text}` tags:
-
-```cpp
-// Use tags in translation strings
-QString docs = SA("%{tr:Expert:Possible values are:}");
-
-// The translateTags function processes these tags
-QString OptionTranslations::translateTags(const QString &text)
-{
-    QRegularExpression trPattern(QLatin1String("%\\{tr:([^:]+):([^}]+)\\}"));
-    // ... process tags and translate
-}
-```
-
-\subsection i18n_language_switch Language Switching Process
-
-When switching languages, `TranslationManager`:
-1. Unloads current translations
-2. Loads new language translation files (main and options files)
-3. Emits `languageChanged` signal
-4. Triggers `retranslateUi` to update the interface
-
-```cpp
-// translationmanager.cpp
-bool TranslationManager::switchLanguage(const QString &langCode)
-{
-    // Unload current translations
-    unloadTranslation();
-    
-    // Load main translation file
-    QString mainQmPath = QString::fromLatin1(":/translations/doxywizard_%1.qm").arg(langCode);
-    m_mainTranslator->load(mainQmPath);
-    QCoreApplication::installTranslator(m_mainTranslator);
-    
-    // Load options translation file
-    QString optionsQmPath = QString::fromLatin1(":/translations/doxywizard_options_%1.qm").arg(langCode);
-    m_optionsTranslator->load(optionsQmPath);
-    QCoreApplication::installTranslator(m_optionsTranslator);
-    
-    m_currentLangCode = langCode;
-    emit languageChanged(langCode);
-    return true;
-}
+    .arg(dependsOn);
 ```
 
 \section i18n_config_options Configuration Option Documentation Multilingual Solution
 
 \subsection i18n_config_architecture Architecture Overview
 
-Configuration option detailed descriptions come from the `config.xml` file and require special multilingual handling:
+Configuration option detailed descriptions support two multilingual approaches:
+
+**Approach 1: Localized config.xml files**
 
 ```
-config.xml → getDocsForNode() → Translation Processing → Display
+src/
+├── config.xml           # Original English configuration
+├── config_zh_CN.xml     # Simplified Chinese configuration
+├── config_zh_TW.xml     # Traditional Chinese configuration
+├── config_de.xml        # German configuration
+└── ...
 ```
+
+**Approach 2: Translation files (.ts)**
+
+Configuration option descriptions are translated directly in the main translation files using the `OptionDocs` context.
+
+\subsection i18n_config_sync Syncing Localized Config Files
+
+When the original `config.xml` is updated (options added or removed), you need to sync the localized config files. The `-sync` command provides two modes:
+
+**Report Mode (default)**: Only reports differences without modifying files:
+
+```bash
+cd src
+python configgen.py -sync config.xml /
+```
+
+**Auto-Sync Mode**: Automatically adds missing options and removes extra options:
+
+```bash
+cd src
+python configgen.py -sync config.xml / --auto
+```
+
+The `-sync` command will:
+1. Read all option IDs from the original `config.xml`
+2. Compare with each localized `config_xx.xml` file
+3. Report missing options (exist in original but not in localized)
+4. Report extra options (exist in localized but not in original)
+5. In auto-sync mode: automatically add missing options and remove extra options
+
+\note 
+- In auto-sync mode, a backup file (`.bak`) is created before modification
+- Added options use the original English documentation; you need to translate them manually
+- Existing synchronized options are not modified
 
 \subsection i18n_config_flow Translation Flow
 
-\subsubsection i18n_config_get Step 1: Get Original Documentation
+\subsubsection i18n_config_load Step 1: Load Language-Specific Config
 
-The `getDocsForNode()` function reads original English documentation from XML:
+The `Expert` class loads the appropriate config file based on current language:
 
 ```cpp
-static QString getDocsForNode(const QDomElement &child)
+void Expert::loadConfigXml()
 {
-    QString docs = SA("");
-    QDomElement docsVal = child.firstChildElement();
-    while (!docsVal.isNull())
+  QString langCode = TranslationManager::instance().currentLanguageCode();
+  QString configPath;
+  
+  if (langCode != QLatin1String("en"))
+  {
+    configPath = SA(":/config_") + langCode + SA(".xml");
+    QFile langFile(configPath);
+    if (!langFile.exists())
     {
-        if (docsVal.tagName() == SA("docs") &&
-            docsVal.attribute(SA("doxywizard")) != SA("0"))
-        {
-            for (QDomNode n = docsVal.firstChild(); !n.isNull(); n = n.nextSibling())
-            {
-                QDomText t = n.toText();
-                if (!t.isNull()) docs += t.data();
-            }
-        }
-        docsVal = docsVal.nextSiblingElement();
+      configPath = SA(":/config.xml");
     }
-    // ...
+  }
+  else
+  {
+    configPath = SA(":/config.xml");
+  }
+  
+  QFile file(configPath);
+  // ... parse XML
+  m_rootElement = configXml.documentElement();
 }
 ```
 
-\subsubsection i18n_config_translate Step 2: Translate Configuration Option Description
-
-Use `OptionTranslations::trDocsStatic()` to translate configuration option descriptions:
-
-```cpp
-bool needTranslation = (TranslationManager::instance().currentLanguageCode() != QLatin1String("en"));
-
-QString baseDocs = docs;
-if (needTranslation)
-{
-    QString translatedDocs = OptionTranslations::trDocsStatic(id, docs);
-    if (!translatedDocs.isEmpty() && translatedDocs != id)
-    {
-        baseDocs = translatedDocs;
-    }
-}
-```
-
-\subsubsection i18n_config_dynamic Step 3: Add Dynamic Content
+\subsubsection i18n_config_dynamic_content Step 2: Add Dynamic Content
 
 Dynamic content (minimum, maximum, default values) is translated using `Expert::tr()`:
 
@@ -231,7 +167,6 @@ Dynamic content (minimum, maximum, default values) is translated using `Expert::
 // int type
 if (type == SA("int"))
 {
-    docs = baseDocs;
     if (!docs.endsWith(SA("<br/>"))) docs += SA("<br/>");
     docs += SA("<br/>");
     QString minval = child.attribute(SA("minval"));
@@ -250,48 +185,37 @@ if (type == SA("bool"))
 }
 ```
 
-\subsubsection i18n_config_refresh Step 4: Update on Language Switch
+\subsubsection i18n_config_refresh Step 3: Update on Language Switch
 
-When switching languages, `retranslateUi()` regenerates documentation for all options:
+When switching languages, `retranslateUi()` reloads the config and rebuilds the UI:
 
 ```cpp
 void Expert::retranslateUi()
 {
-    // ... update interface text
+    m_treeWidget->setHeaderLabels(QStringList() << DoxygenWizard::msgTopicsHeader());
+    m_prev->setText(DoxygenWizard::msgPreviousButton());
+    m_next->setText(DoxygenWizard::msgNextButton());
     
-    QHashIterator<QString, Input*> i(m_options);
-    while (i.hasNext())
+    loadConfigXml();
+    
+    m_topics.clear();
+    while (m_topicStack->count() > 0)
     {
-        i.next();
-        if (i.value())
-        {
-            QString id = i.key();
-            if (m_optionElements.contains(id))
-            {
-                QString docs = getDocsForNode(m_optionElements[id]);
-                i.value()->setDocs(docs);
-            }
-            i.value()->retranslate();
-        }
+        QWidget *w = m_topicStack->widget(0);
+        m_topicStack->removeWidget(w);
     }
+    m_options.clear();
+    m_optionElements.clear();
+    
+    m_treeWidget->clear();
+    
+    createTopics(m_rootElement);
+    
+    m_treeWidget->setCurrentItem(m_treeWidget->invisibleRootItem()->child(0));
 }
 ```
 
 \subsection i18n_config_format Translation File Format
-
-\subsubsection i18n_optiondocs_context OptionDocs Context
-
-Configuration option descriptions use the `OptionDocs` context:
-
-```xml
-<context>
-    <name>OptionDocs</name>
-    <message>
-        <source>DOXYFILE_ENCODING</source>
-        <translation>This tag specifies the encoding used for all characters...</translation>
-    </message>
-</context>
-```
 
 \subsubsection i18n_expert_context Expert Context
 
@@ -300,6 +224,14 @@ Dynamic content uses the `Expert` context with `%1` placeholders:
 ```xml
 <context>
     <name>Expert</name>
+    <message>
+        <source>Possible values are:</source>
+        <translation>Mögliche Werte sind:</translation>
+    </message>
+    <message>
+        <source>and</source>
+        <translation>und</translation>
+    </message>
     <message>
         <source>Minimum value: %1, maximum value: %2, default value: %3.</source>
         <translation>Mindestwert: %1, Höchstwert: %2, Standardwert: %3.</translation>
@@ -313,18 +245,60 @@ Dynamic content uses the `Expert` context with `%1` placeholders:
 
 \note In XML files, `<code>` tags need to be escaped as `&lt;code&gt;` and `&lt;/code&gt;`.
 
-\subsubsection i18n_optionvalue_context OptionValue Context
+\section i18n_message_sharing Message Sharing System
 
-Enum value descriptions use the `OptionValue` context:
+\subsection i18n_sharing_goals Design Goals
 
-```xml
-<context>
-    <name>OptionValue</name>
-    <message>
-        <source>Generate HTML output</source>
-        <translation>Generar salida HTML</translation>
-    </message>
-</context>
+The message sharing system aims to:
+1. Reduce duplication of translation strings
+2. Ensure the same text uses the same translation in different locations
+3. Support translation of dynamic content
+
+\subsection i18n_static_translation Static Translation Functions
+
+The `OptionTranslations` class provides static functions for obtaining translations in static contexts:
+
+```cpp
+class OptionTranslations : public QObject
+{
+    Q_OBJECT
+public:
+    static OptionTranslations& instance();
+    QString translate(const QString &optionName);
+    static QString trStatic(const QString &optionName);
+    void retranslate();
+private:
+    QMap<QString, QString> m_translations;
+};
+```
+
+\subsection i18n_language_switch Language Switching Process
+
+When switching languages, `TranslationManager`:
+1. Unloads current translations
+2. Loads new language translation files
+3. Emits `languageChanged` signal
+4. Triggers `retranslateUi` to update the interface
+
+```cpp
+bool TranslationManager::switchLanguage(const QString &langCode)
+{
+    unloadTranslation();
+    
+    QString qmPath = qmFilePath(langCode);
+    m_translator = new QTranslator(this);
+    if (!m_translator->load(qmPath))
+    {
+        delete m_translator;
+        m_translator = nullptr;
+        return false;
+    }
+    qApp->installTranslator(m_translator);
+    
+    m_currentLangCode = langCode;
+    emit languageChanged(langCode);
+    return true;
+}
 ```
 
 \section i18n_adding Adding New Language Support
@@ -336,22 +310,26 @@ Adding a new language requires creating or modifying the following files:
 | File | Description |
 |------|-------------|
 | `doxywizard_xx.ts` | Translation source file for main UI (required) |
-| `doxywizard_options_xx.ts` | Translation source file for configuration options (required) |
 | `translationmanager.cpp` | Register the new language (required) |
 | `CMakeLists.txt` | Add translation file reference (required) |
 
+Optionally, you can also create:
+| File | Description |
+|------|-------------|
+| `config_xx.xml` | Localized configuration file (optional) |
+| `doxywizard.qrc` | Add config file reference (if using localized config) |
+
 \subsection i18n_steps Detailed Steps
 
-\subsubsection i18n_step1 Step 1: Create Translation Source Files
+\subsubsection i18n_step1 Step 1: Create Translation Source File
 
-1. Copy existing translation files as templates:
+1. Copy existing translation file as template:
    ```bash
    cp translations/doxywizard_zh_CN.ts translations/doxywizard_xx.ts
-   cp translations/doxywizard_options_zh_CN.ts translations/doxywizard_options_xx.ts
    ```
    Where `xx` is the language code (e.g., `pt` for Portuguese, `it` for Italian)
 
-2. Modify the language attribute in the file headers:
+2. Modify the language attribute in the file header:
    ```xml
    <TS version="2.1" language="xx">
    ```
@@ -363,13 +341,13 @@ Adding a new language requires creating or modifying the following files:
 Add the new language in `translationmanager.cpp`:
 
 ```cpp
-void TranslationManager::initLanguages()
-{
-    m_languages.clear();
-    m_languages.insert(QString::fromLatin1("en"), tr("English"));
+static const LanguageData languageTable[] = {
+    { "en", "English", "English" },
+    { "zh_CN", "简体中文", "Simplified Chinese" },
     // ... existing languages
-    m_languages.insert(QString::fromLatin1("xx"), tr("Language Name"));
-}
+    { "xx", "Native Name", "English Name" },
+    { nullptr, nullptr, nullptr }
+};
 ```
 
 \subsubsection i18n_step3 Step 3: Add to CMakeLists.txt
@@ -381,12 +359,23 @@ set(DOXYWIZARD_TRANSLATION_FILES
   # ... existing files
   ${TRANSLATIONS_DIR}/doxywizard_xx.ts
 )
-
-set(DOXYWIZARD_OPTIONS_TRANSLATION_FILES
-  # ... existing files
-  ${TRANSLATIONS_DIR}/doxywizard_options_xx.ts
-)
 ```
+
+\subsubsection i18n_step4 Step 4: (Optional) Create Localized Config File
+
+If you want to use localized config files:
+
+1. Copy the original config file:
+   ```bash
+   cp src/config.xml src/config_xx.xml
+   ```
+
+2. Translate the documentation strings within `<docs>` elements
+
+3. Add to `doxywizard.qrc`:
+   ```xml
+   <file alias="config_xx.xml">../../src/config_xx.xml</file>
+   ```
 
 \subsection i18n_codes Language Code Standards
 
@@ -427,7 +416,7 @@ Translation files (`.ts`) use XML format:
 
 \subsection i18n_edit Direct Edit of `.ts` File
 
-1. Open the corresponding `doxywizard_xx.ts` or `doxywizard_options_xx.ts` file
+1. Open the corresponding `doxywizard_xx.ts` file
 2. Find the `<message>` entry to modify
 3. Modify the text within the `<translation>` tag
 4. Save the file
@@ -490,39 +479,7 @@ cmake --build build --target update_translations
 
 Translate the newly added strings in each language's `.ts` file.
 
-\subsection i18n_config_strings Adding Configuration Option Strings
-
-Configuration option translations are stored in `doxywizard_options_xx.ts` files.
-
-\subsubsection i18n_config_add Step 1: Add to Translation File
-
-Add to `doxywizard_options_xx.ts`:
-
-```xml
-<context>
-    <name>OptionDocs</name>
-    <message>
-        <source>NEW_OPTION</source>
-        <translation>New Option Description</translation>
-    </message>
-</context>
-```
-
-\subsubsection i18n_config_dynamic Add Dynamic Content Translations
-
-For dynamic content like minimum/maximum values, add to the `Expert` context:
-
-```xml
-<context>
-    <name>Expert</name>
-    <message>
-        <source>Minimum value: %1, maximum value: %2, default value: %3.</source>
-        <translation>Min: %1, Max: %2, Default: %3.</translation>
-    </message>
-</context>
-```
-
-\subsection i18n_dynamic Adding Dynamic Refresh Support
+\subsection i18n_dynamic_refresh Adding Dynamic Refresh Support
 
 If you need to refresh text when switching languages, implement the `retranslateUi()` method:
 
@@ -541,60 +498,11 @@ void MyClass::retranslateUi()
 }
 ```
 
-Then call it in `MainWindow::retranslateUi()`:
+Then connect to the `languageChanged` signal:
 
 ```cpp
-void MainWindow::retranslateUi()
-{
-    // ... other refresh code
-    myClass->retranslateUi();
-}
-```
-
-\section i18n_building Building and Verification
-
-\subsection i18n_build Building the Project
-
-\subsubsection i18n_build_windows Windows (using Ninja)
-
-```cmd
-cmake -S E:\path\to\doxygen -B build -Dbuild_wizard=ON -G Ninja
-cmake --build build --target doxywizard
-```
-
-\subsubsection i18n_build_nmake Windows (using NMake)
-
-```cmd
-REM Open "x64 Native Tools Command Prompt for VS 2022"
-cmake -S E:\path\to\doxygen -B build -Dbuild_wizard=ON -G "NMake Makefiles"
-cmake --build build --target doxywizard
-```
-
-\subsubsection i18n_build_linux Linux/macOS
-
-```bash
-mkdir build && cd build
-cmake -Dbuild_wizard=ON ..
-make doxywizard
-```
-
-\subsection i18n_verify Verifying Translations
-
-1. Run `doxywizard.exe`
-2. Select Settings -> Language from the menu
-3. Select the target language
-4. Check that all interface text displays correctly
-
-\subsection i18n_verify_resource Verifying Resource Embedding
-
-Check if `.qm` files are correctly embedded in the executable:
-
-```bash
-# Windows
-rsrc -list doxywizard.exe | findstr translations
-
-# Linux
-strings doxywizard | grep translations
+connect(&TranslationManager::instance(), SIGNAL(languageChanged(QString)),
+        this, SLOT(retranslateUi()));
 ```
 
 \section i18n_issues Common Issues and Solutions
@@ -618,11 +526,11 @@ strings doxywizard | grep translations
 **Problem**: Minimum value, maximum value, default value not showing in non-English languages
 
 **Causes**:
-- Missing `Expert` context translations in `doxywizard_options_xx.ts`
+- Missing `Expert` context translations in main translation file
 - HTML tags not properly escaped in translation strings
 
 **Solutions**:
-1. Ensure `Expert` context exists in `doxywizard_options_xx.ts`
+1. Ensure `Expert` context exists in `doxywizard_xx.ts`
 2. Escape HTML tags: use `&lt;code&gt;` instead of `<code>`
 3. Use `%1` placeholders for dynamic values
 

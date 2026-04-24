@@ -71,6 +71,7 @@ class Expert : public QSplitter, public DocIntf
   private:
     void createTopics(const QDomElement &);
     void saveTopic(QTextStream &t,QDomElement &elem,TextCodecAdapter *codec,bool brief,bool dondensed,bool convert);
+    void loadConfigXml();
 
     QSplitter               *m_splitter;
     QTextBrowser            *m_helper;

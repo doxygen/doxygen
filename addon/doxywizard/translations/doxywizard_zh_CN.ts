@@ -13,6 +13,58 @@
         <source>Error</source>
         <translation>错误</translation>
     </message>
+<message>
+        <source>Possible values are:</source>
+        <translation>可能的值有：</translation>
+    </message>
+<message>
+        <source>and</source>
+        <translation>和</translation>
+    </message>
+<message>
+        <source>The default value is: &lt;code&gt;%1&lt;/code&gt;.</source>
+        <translation>默认值为：&lt;code&gt;%1&lt;/code&gt;。</translation>
+    </message>
+<message>
+        <source>Minimum value: %1, maximum value: %2, default value: %3.</source>
+        <translation>最小值：%1，最大值：%2，默认值：%3。</translation>
+    </message>
+<message>
+        <source>The default value is: system dependent.</source>
+        <translation>默认值：取决于系统。</translation>
+    </message>
+<message>
+        <source>The default directory is: &lt;code&gt;%1&lt;/code&gt;.</source>
+        <translation>默认目录为：&lt;code&gt;%1&lt;/code&gt;。</translation>
+    </message>
+<message>
+        <source>The default file is: &lt;code&gt;%1&lt;/code&gt;.</source>
+        <translation>默认文件为：&lt;code&gt;%1&lt;/code&gt;。</translation>
+    </message>
+<message>
+        <source>The default file (with absolute path) is: &lt;code&gt;%1&lt;/code&gt;.</source>
+        <translation>默认文件（带绝对路径）为：&lt;code&gt;%1&lt;/code&gt;。</translation>
+    </message>
+<message>
+        <source>The file has to be specified with full path.</source>
+        <translation>文件必须使用完整路径指定。</translation>
+    </message>
+<message>
+        <source>The default image is: &lt;code&gt;%1&lt;/code&gt;.</source>
+        <translation>默认图像为：&lt;code&gt;%1&lt;/code&gt;。</translation>
+    </message>
+<message>
+        <source>The default image (with absolute path) is: &lt;code&gt;%1&lt;/code&gt;.</source>
+        <translation>默认图像（带绝对路径）为：&lt;code&gt;%1&lt;/code&gt;。</translation>
+    </message>
+<message>
+        <source>The image has to be specified with full path.</source>
+        <translation>图像必须使用完整路径指定。</translation>
+    </message>
+<message>
+        <source>This tag requires that the tag %1 is set to &lt;code&gt;YES&lt;/code&gt;.</source>
+        <translation>此标签要求标签 %1 设置为 &lt;code&gt;YES&lt;/code&gt;。</translation>
+    </message>
 </context>
 <context>
     <name>HelpLabel</name>
