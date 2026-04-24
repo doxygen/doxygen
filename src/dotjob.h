@@ -16,19 +16,23 @@
 #ifndef DOTJOB_H
 #define DOTJOB_H
 
+#include <vector>
 #include "qcstring.h"
 
 struct DotJob
 {
-  DotJob(const QCString &f, const QCString &ap, const QCString &rdn, const QCString &m,
-      const QCString &s, int l)
-    : format(f), absPath(ap), relDotName(rdn), md5Hash(m), srcFile(s), srcLine(l) {}
-  QCString format;
+  DotJob(const QCString &ap, const QCString &rdn, const QCString &f, const QCString &m,
+      const QCString &s, size_t sz, bool genMap = false)
+    : absPath(ap), relDotName(rdn), format(f), md5Hash(m), srcFile(s), size(sz), generateImageMap(genMap) {}
   QCString absPath;
   QCString relDotName;
+  QCString format;
   QCString md5Hash;
   QCString srcFile;
-  int srcLine;
+  size_t size;
+  bool generateImageMap;
 };
+
+using DotJobs = std::vector<DotJob>;
 
 #endif // DOTJOB_H

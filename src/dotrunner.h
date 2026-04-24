@@ -31,19 +31,15 @@ class DotRunner
   public:
     DotRunner();
 
-    /** Queues a job to be performed by this runner. */
-    void addJob(const DotJob &job);
-
-    /** Runs dot for all queued jobs. For each unique format, a single dot
+    /** Runs dot for all given jobs. For each unique format, a single dot
      *  invocation is made with -O and all input files for that format.
      */
-    bool run();
+    bool run(const DotJobs &jobs);
 
     static bool readBoundingBox(const QCString &fileName, int* width, int* height, bool isEps);
 
   private:
     QCString            m_dotExe;
-    std::vector<DotJob> m_jobs;
 };
 
 #endif

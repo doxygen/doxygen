@@ -17,6 +17,7 @@
 #define DOT_H
 
 #include <map>
+#include <vector>
 
 #include "qcstring.h"
 #include "dotgraph.h" // only for GraphOutputFormat
@@ -33,8 +34,7 @@ class DotManager
 {
   public:
     static DotManager *instance();
-    void addJob(const QCString &absPath, const QCString &relDotName, const QCString &format,
-                const QCString &md5Hash, const QCString &srcFile, int srcLine);
+    void addJob(const DotJob &newJob);
     DotFilePatcher *createFilePatcher(const QCString &fileName);
     bool run();
 
@@ -43,9 +43,10 @@ class DotManager
     virtual ~DotManager();
     NON_COPYABLE(DotManager)
 
-    DotRunner                                          m_runner;
-    std::map<std::string, DotFilePatcher>              m_filePatchers;
-    std::vector<DotJob>                                m_jobs;
+    DotRunner                             m_runner;
+    std::map<std::string, DotFilePatcher> m_filePatchers;
+    DotJobs                               m_jobs;
+
 };
 
 void writeDotGraphFromFile(const QCString &inFile,const QCString &outDir,

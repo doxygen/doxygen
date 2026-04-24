@@ -81,7 +81,7 @@ DotManager *DotManager::instance()
   return &theInstance;
 }
 
-DotManager::DotManager() : m_runner(), m_filePatchers()
+DotManager::DotManager() : m_filePatchers()
 {
 }
 
@@ -89,20 +89,19 @@ DotManager::~DotManager()
 {
 }
 
-void DotManager::addJob(const QCString &absPath, const QCString &relDotName, const QCString &format,
-                        const QCString &md5Hash, const QCString &srcFile, int srcLine)
+void DotManager::addJob(const DotJob &newJob)
 {
   std::lock_guard<std::mutex> lock(g_dotManagerMutex);
   for (const auto &job : m_jobs)
   {
-    if (job.absPath == absPath && job.relDotName == relDotName && job.format == format) return; // already queued
-    if (job.absPath == absPath && job.relDotName == relDotName && job.md5Hash != md5Hash)
+    if (job.absPath == newJob.absPath && job.relDotName == newJob.relDotName && job.format == newJob.format) return; // already queued
+    if (job.absPath == newJob.absPath && job.relDotName == newJob.relDotName && job.md5Hash != newJob.md5Hash)
     {
-      err("md5 hash does not match for two different runs of {}{} !\n", absPath, relDotName);
+      err("md5 hash does not match for two different runs of {}{} !\n", newJob.absPath, newJob.relDotName);
       return;
     }
   }
-  m_jobs.emplace_back(format, absPath, relDotName, md5Hash, srcFile, srcLine);
+  m_jobs.push_back(newJob);
 }
 
 DotFilePatcher *DotManager::createFilePatcher(const QCString &fileName)
@@ -119,11 +118,6 @@ DotFilePatcher *DotManager::createFilePatcher(const QCString &fileName)
 
 bool DotManager::run()
 {
-  for (const auto &job: m_jobs)
-  {
-    m_runner.addJob(job);
-  }
-
   size_t numFilePatchers = m_filePatchers.size();
   if (numFilePatchers > 0)
   {
@@ -152,7 +146,7 @@ bool DotManager::run()
     setPath=TRUE;
   }
 
-  bool ok = m_runner.run();
+  bool ok = m_runner.run(m_jobs);
 
   if (setPath)
   {
@@ -218,7 +212,7 @@ void writeDotGraphFromFile(const QCString &inFile,const QCString &outDir,
     }
     else
     {
-      dotArgs = QCString("-Tps -o \"") + absOutFile + ".eps\" \"" + inFile + "\"";
+      dotArgs = QCString("-Teps -o \"") + absOutFile + ".eps\" \"" + inFile + "\"";
     }
   }
 
@@ -256,7 +250,7 @@ void writeDotImageMapFromFile(TextStream &t,
     term("Output dir {} does not exist!\n",outDir);
   }
 
-  QCString mapName = baseName+".map";
+  QCString mapName = baseName+".cmapx";
   QCString imgExt = getDotImageExtension();
   QCString imgName = baseName+"."+imgExt;
   QCString absOutFile = d.absPath()+"/"+mapName;

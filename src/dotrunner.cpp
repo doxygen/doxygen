@@ -271,11 +271,6 @@ DotRunner::DotRunner()
 {
 }
 
-void DotRunner::addJob(const DotJob &job)
-{
-  m_jobs.push_back(job);
-}
-
 // Maximum command-line length passed to dot, leaving room for the exe path.
 // Windows CreateProcess limit is 32767; Linux ARG_MAX is typically >= 2MB.
 // But Linux kernel also cannot allocate more than 32 pages per argument.
@@ -288,14 +283,16 @@ static constexpr size_t MAX_CMD_LEN = 32767 - 1024;
 static constexpr size_t MAX_CMD_LEN = MAX_ARG_STRLEN - 1024;
 #endif
 
-bool DotRunner::run()
+bool DotRunner::run(const DotJobs &dotJobs)
 {
-  if (m_jobs.empty()) return TRUE;
+  if (dotJobs.empty()) return TRUE;
 
   // Group jobs by format, then by directory so we can cd once per group
   std::map<std::string, std::map<std::string, std::vector<const DotJob*>>> byFormatAndDir;
-  for (const auto &job : m_jobs)
+  for (const auto &job : dotJobs)
+  {
     byFormatAndDir[job.format.str()][job.absPath.str()].push_back(&job);
+  }
 
   bool ok = true;
 
@@ -308,9 +305,16 @@ bool DotRunner::run()
       std::string oldDir = Dir::currentDirPath();
       Dir::setCurrent(dirStr);
 
+      bool hasImageMap = std::any_of(jobs.begin(),jobs.end(),[](const auto &j) { return j->generateImageMap; });
+
       // Run dot in batches to stay within command-line length limits.
       // Each batch: -Tformat -O basename1.dot basename2.dot ...
-      QCString baseArgs = QCString("-T") + format + " -O";
+      QCString baseArgs = QCString("-T") + format;
+      if (hasImageMap)
+      {
+        baseArgs += " -Tcmapx";
+      }
+      baseArgs += " -O";
       size_t exeLen = m_dotExe.length() + 1; // "exe " prefix
       size_t batchStart = 0;
       while (batchStart < jobs.size())
@@ -320,7 +324,7 @@ bool DotRunner::run()
         size_t batchEnd = batchStart;
         while (batchEnd < jobs.size())
         {
-          QCString fileArg = QCString(" \"") + jobs[batchEnd]->relDotName + "\"";
+          QCString fileArg = QCString(" ") + jobs[batchEnd]->relDotName;
           if (batchEnd > batchStart && cmdLen + fileArg.length() > MAX_CMD_LEN) break;
           dotArgs += fileArg;
           cmdLen += fileArg.length();
@@ -330,7 +334,7 @@ bool DotRunner::run()
         int exitCode;
         if ((exitCode = Portable::system(m_dotExe, dotArgs, FALSE)) != 0)
         {
-          err_full(jobs[batchStart]->srcFile, jobs[batchStart]->srcLine,
+          err_full(jobs[batchStart]->srcFile, 1,
                    "Problems running dot: exit code={}, command='{}', dir='{}', arguments='{}'",
                    exitCode, m_dotExe, dirStr, dotArgs);
           ok = false;
@@ -375,7 +379,7 @@ bool DotRunner::run()
             int exitCode;
             if ((exitCode = Portable::system(m_dotExe, rerunArgs, FALSE)) != 0)
             {
-              err_full(job->srcFile, job->srcLine,
+              err_full(job->srcFile, 1,
                        "Problems running dot: exit code={}, command='{}', dir='{}', arguments='{}'",
                        exitCode, m_dotExe, dirStr, rerunArgs);
               ok = false;
@@ -402,7 +406,7 @@ bool DotRunner::run()
 
   // Write .md5 files and clean up .dot files (once per unique dotFile)
   std::set<std::string> processed;
-  for (const auto &job : m_jobs)
+  for (const auto &job : dotJobs)
   {
     if (!processed.insert((job.absPath + job.relDotName).str()).second) continue;
 
