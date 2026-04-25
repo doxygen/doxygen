@@ -176,20 +176,8 @@ set(DOXYWIZARD_TRANSLATION_FILES
   ${TRANSLATIONS_DIR}/doxywizard_ru.ts
 )
 
-set(DOXYWIZARD_OPTIONS_TRANSLATION_FILES
-  ${TRANSLATIONS_DIR}/doxywizard_options_zh_CN.ts
-  ${TRANSLATIONS_DIR}/doxywizard_options_zh_TW.ts
-  ${TRANSLATIONS_DIR}/doxywizard_options_de.ts
-  ${TRANSLATIONS_DIR}/doxywizard_options_fr.ts
-  ${TRANSLATIONS_DIR}/doxywizard_options_ja.ts
-  ${TRANSLATIONS_DIR}/doxywizard_options_ko.ts
-  ${TRANSLATIONS_DIR}/doxywizard_options_es.ts
-  ${TRANSLATIONS_DIR}/doxywizard_options_ru.ts
-)
-
 set(ALL_TRANSLATION_FILES
   ${DOXYWIZARD_TRANSLATION_FILES}
-  ${DOXYWIZARD_OPTIONS_TRANSLATION_FILES}
 )
 
 find_package(Qt6LinguistTools QUIET)
