@@ -45,6 +45,7 @@ class InputStrList : public QObject, public Input
     void update();
     Kind kind() const { return StrList; }
     QString docs() const { return m_docs; }
+    void setDocs(const QString &docs) { m_docs = docs; }
     QString id() const { return m_id; }
     QString templateDocs() const { return m_tdocs; }
     void addDependency(Input *) { Q_ASSERT(false); }
@@ -53,6 +54,7 @@ class InputStrList : public QObject, public Input
     bool isDefault();
     void writeValue(QTextStream &t,TextCodecAdapter *codec,bool convert);
     void setTemplateDocs(const QString &docs) { m_tdocs = docs; }
+    void retranslate();
     bool isEmpty();
 
   public slots:

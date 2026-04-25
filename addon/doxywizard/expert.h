@@ -28,6 +28,8 @@ class QTextBrowser;
 class QPushButton;
 class Input;
 
+QString convertDoxyCmdToHtml(const QString &s);
+
 class Expert : public QSplitter, public DocIntf
 {
     Q_OBJECT
@@ -55,6 +57,7 @@ class Expert : public QSplitter, public DocIntf
     void activateTopic(QTreeWidgetItem *,QTreeWidgetItem *);
     QWidget *createTopicWidget(QDomElement &elem);
     void refresh();
+    void retranslateUi();
 
   private slots:
     void showHelp(Input *);
@@ -68,6 +71,7 @@ class Expert : public QSplitter, public DocIntf
   private:
     void createTopics(const QDomElement &);
     void saveTopic(QTextStream &t,QDomElement &elem,TextCodecAdapter *codec,bool brief,bool dondensed,bool convert);
+    void loadConfigXml();
 
     QSplitter               *m_splitter;
     QTextBrowser            *m_helper;
@@ -76,6 +80,7 @@ class Expert : public QSplitter, public DocIntf
     QHash<QString,QWidget *> m_topics;
     QHash<QString,QObject *> m_optionWidgets;
     QHash<QString,Input *>   m_options;
+    QMap<QString, QDomElement> m_optionElements;
     QPushButton             *m_next;
     QPushButton             *m_prev;
     QDomElement              m_rootElement;

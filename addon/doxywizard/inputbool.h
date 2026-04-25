@@ -33,6 +33,7 @@ class InputBool : public QObject, public Input
     void update();
     Kind kind() const { return Bool; }
     QString docs() const { return m_docs; }
+    void setDocs(const QString &docs) { m_docs = docs; }
     QString id() const { return m_id; }
     QString templateDocs() const { return m_tdocs; }
     void addDependency(Input *option) { m_dependencies+=option; }
@@ -42,6 +43,7 @@ class InputBool : public QObject, public Input
     void writeValue(QTextStream &t,TextCodecAdapter *codec,bool convert);
     void setTemplateDocs(const QString &docs) { m_tdocs = docs; }
     static bool convertToBool(const QVariant &v,bool &isValid);
+    void retranslate();
 
   public slots:
     void reset();

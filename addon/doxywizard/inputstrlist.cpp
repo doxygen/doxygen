@@ -14,6 +14,7 @@
 #include "helplabel.h"
 #include "doxywizard.h"
 #include "config.h"
+#include "optiontranslations.h"
 
 #include <QToolBar>
 #include <QGridLayout>
@@ -29,7 +30,7 @@ InputStrList::InputStrList( QGridLayout *layout,int &row,
                             const QString & docs)
   : m_default(sl), m_strList(sl), m_docs(docs), m_id(id)
 {
-  m_lab = new HelpLabel( id );
+  m_lab = new HelpLabel(OptionTranslations::instance().translate(id));
 
   m_le  = new QLineEdit;
   m_le->clear();
@@ -58,13 +59,13 @@ InputStrList::InputStrList( QGridLayout *layout,int &row,
     {
       m_brFile = toolBar->addAction(QIcon(QString::fromLatin1(":/images/file.svg")),QString(),
                                     this,SLOT(browseFiles()));
-      m_brFile->setToolTip(tr("Browse to a file"));
+      m_brFile->setToolTip(DoxygenWizard::msgBrowseToFile());
     }
     if (lm&ListDir)
     {
       m_brDir = toolBar->addAction(QIcon(QString::fromLatin1(":/images/folder.svg")),QString(),
                                    this,SLOT(browseDir()));
-      m_brDir->setToolTip(tr("Browse to a folder"));
+      m_brDir->setToolTip(DoxygenWizard::msgBrowseToFolder());
     }
   }
   QHBoxLayout *rowLayout = new QHBoxLayout;
@@ -213,6 +214,7 @@ void InputStrList::setValue(const QStringList &sl)
     m_lb->addItem(m_strList[i].trimmed());
   }
   updateDefault();
+  emit changed();
 }
 
 QVariant &InputStrList::value()
@@ -227,13 +229,14 @@ void InputStrList::update()
 
 void InputStrList::updateDefault()
 {
+  QString translatedId = OptionTranslations::instance().translate(m_id);
   if (isDefault() || !m_lab->isEnabled())
   {
-    m_lab->setText(QString::fromLatin1("<qt>")+m_id+QString::fromLatin1("</qt>"));
+    m_lab->setText(QString::fromLatin1("<qt>")+translatedId+QString::fromLatin1("</qt>"));
   }
   else
   {
-    m_lab->setText(QString::fromLatin1("<qt><font color='red'>")+m_id+QString::fromLatin1("</font></qt>"));
+    m_lab->setText(QString::fromLatin1("<qt><font color='red'>")+translatedId+QString::fromLatin1("</font></qt>"));
   }
 }
 
@@ -317,4 +320,9 @@ bool InputStrList::isEmpty()
     if (!s.isEmpty()) return false;
   }
   return true;
+}
+
+void InputStrList::retranslate()
+{
+  updateDefault();
 }

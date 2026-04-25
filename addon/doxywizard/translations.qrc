@@ -1,0 +1,13 @@
+<!DOCTYPE RCC>
+<RCC version="1.0">
+    <qresource prefix="/translations">
+        <file>doxywizard_zh_CN.qm</file>
+        <file>doxywizard_zh_TW.qm</file>
+        <file>doxywizard_de.qm</file>
+        <file>doxywizard_fr.qm</file>
+        <file>doxywizard_ja.qm</file>
+        <file>doxywizard_ko.qm</file>
+        <file>doxywizard_es.qm</file>
+        <file>doxywizard_ru.qm</file>
+    </qresource>
+</RCC>

@@ -13,6 +13,7 @@
 #include "inputbool.h"
 #include "helplabel.h"
 #include "config_msg.h"
+#include "optiontranslations.h"
 
 #include <QCheckBox>
 #include <QTextStream>
@@ -23,7 +24,7 @@ InputBool::InputBool( QGridLayout *layout, int &row,
                       const QString &docs )
   : m_default(checked), m_docs(docs), m_id(id)
 {
-  m_lab = new HelpLabel(id);
+  m_lab = new HelpLabel(OptionTranslations::instance().translate(id));
   m_cb = new QCheckBox;
   layout->addWidget(m_lab,row, 0);
   layout->addWidget(m_cb,row, 1);
@@ -73,13 +74,14 @@ void InputBool::setValue( bool s )
 
 void InputBool::updateDefault()
 {
+  QString translatedId = OptionTranslations::instance().translate(m_id);
   if (m_state==m_default || !m_lab->isEnabled())
   {
-    m_lab->setText(QString::fromLatin1("<qt>")+m_id+QString::fromLatin1("</qt>"));
+    m_lab->setText(QString::fromLatin1("<qt>")+translatedId+QString::fromLatin1("</qt>"));
   }
   else
   {
-    m_lab->setText(QString::fromLatin1("<qt><font color='red'>")+m_id+QString::fromLatin1("</font></qt>"));
+    m_lab->setText(QString::fromLatin1("<qt><font color='red'>")+translatedId+QString::fromLatin1("</font></qt>"));
   }
 }
 
@@ -145,5 +147,10 @@ void InputBool::writeValue(QTextStream &t,TextCodecAdapter *codec,bool)
 bool InputBool::isDefault()
 {
   return m_state == m_default;
+}
+
+void InputBool::retranslate()
+{
+  updateDefault();
 }
 

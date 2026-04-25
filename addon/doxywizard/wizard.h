@@ -28,6 +28,7 @@ class QPushButton;
 class QRadioButton;
 class QGroupBox;
 class QButtonGroup;
+class QLabel;
 class QTabWidget;
 class Wizard;
 class QLabel;
@@ -105,6 +106,7 @@ class Step1 : public QWidget
   public:
     Step1(Wizard *parent,const QHash<QString,Input*> &modelData);
     void init();
+    void retranslateUi();
 
   private slots:
     void selectSourceDir();
@@ -124,9 +126,19 @@ class Step1 : public QWidget
     QLineEdit *m_sourceDir = nullptr;
     QLineEdit *m_destDir = nullptr;
     QLabel    *m_projIconLab = nullptr;
+    QLabel    *m_introLabel = nullptr;
+    QLabel    *m_projNameLabel = nullptr;
+    QLabel    *m_projBriefLabel = nullptr;
+    QLabel    *m_projVersionLabel = nullptr;
+    QLabel    *m_projLogoLabel = nullptr;
+    QLabel    *m_srcDirLabel = nullptr;
+    QLabel    *m_srcDirLabel2 = nullptr;
+    QLabel    *m_destDirLabel = nullptr;
+    QLabel    *m_destDirLabel2 = nullptr;
     QCheckBox *m_recursive = nullptr;
     QPushButton *m_srcSelectDir = nullptr;
     QPushButton *m_dstSelectDir = nullptr;
+    QPushButton *m_projIconSel = nullptr;
     Wizard    *m_wizard = nullptr;
     const QHash<QString,Input *> &m_modelData;
 };
@@ -137,6 +149,7 @@ class Step2 : public QWidget
   public:
     Step2(Wizard *parent,const QHash<QString,Input*> &modelData);
     void init();
+    void retranslateUi();
 
   private slots:
     void optimizeFor(int choice);
@@ -149,6 +162,15 @@ class Step2 : public QWidget
     QButtonGroup *m_extractModeGroup = nullptr;
     QButtonGroup *m_optimizeLangGroup = nullptr;
     QCheckBox    *m_crossRef = nullptr;
+    QRadioButton *m_extractModeRadio0 = nullptr;
+    QRadioButton *m_extractModeRadio1 = nullptr;
+    QRadioButton *m_optimizeLangRadio0 = nullptr;
+    QRadioButton *m_optimizeLangRadio1 = nullptr;
+    QRadioButton *m_optimizeLangRadio2 = nullptr;
+    QRadioButton *m_optimizeLangRadio3 = nullptr;
+    QRadioButton *m_optimizeLangRadio4 = nullptr;
+    QRadioButton *m_optimizeLangRadio5 = nullptr;
+    QRadioButton *m_optimizeLangRadio6 = nullptr;
     Wizard       *m_wizard = nullptr;
     const QHash<QString,Input *> &m_modelData;
 };
@@ -160,6 +182,7 @@ class Step3 : public QWidget
   public:
     Step3(Wizard *parent,const QHash<QString,Input*> &modelData);
     void init();
+    void retranslateUi();
 
   private slots:
     void setHtmlEnabled(bool);
@@ -174,10 +197,17 @@ class Step3 : public QWidget
     void tuneColorDialog();
 
   private:
+    QLabel *m_outputFormatLabel = nullptr;
     QGroupBox *m_texOptions = nullptr;
     QButtonGroup *m_texOptionsGroup = nullptr;
     QGroupBox *m_htmlOptions = nullptr;
     QButtonGroup *m_htmlOptionsGroup = nullptr;
+    QRadioButton *m_htmlRadio0 = nullptr;
+    QRadioButton *m_htmlRadio1 = nullptr;
+    QRadioButton *m_htmlRadio2 = nullptr;
+    QRadioButton *m_texRadio0 = nullptr;
+    QRadioButton *m_texRadio1 = nullptr;
+    QRadioButton *m_texRadio2 = nullptr;
     QCheckBox *m_htmlEnabled = nullptr;
     QCheckBox *m_latexEnabled = nullptr;
     QCheckBox *m_manEnabled = nullptr;
@@ -197,6 +227,7 @@ class Step4 : public QWidget
   public:
     Step4(Wizard *parent,const QHash<QString,Input*> &modelData);
     void init();
+    void retranslateUi();
 
   private slots:
     void diagramModeChanged(int);
@@ -209,9 +240,14 @@ class Step4 : public QWidget
     void setCallerGraphEnabled(int state);
 
   private:
+    QLabel *m_diagramLabel = nullptr;
     QGroupBox *m_diagramMode = nullptr;
     QButtonGroup *m_diagramModeGroup = nullptr;
     QGroupBox *m_dotGroup = nullptr;
+    QRadioButton *m_diagramRadio0 = nullptr;
+    QRadioButton *m_diagramRadio1 = nullptr;
+    QRadioButton *m_diagramRadio2 = nullptr;
+    QRadioButton *m_diagramRadio3 = nullptr;
     QCheckBox *m_dotClass = nullptr;
     QCheckBox *m_dotCollaboration = nullptr;
     QCheckBox *m_dotInclude = nullptr;
@@ -232,6 +268,7 @@ class Wizard : public QSplitter
 
   public slots:
     void refresh();
+    void retranslateUi();
 
   private slots:
     void activateTopic(QTreeWidgetItem *item,QTreeWidgetItem *);

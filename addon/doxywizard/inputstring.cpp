@@ -15,6 +15,7 @@
 #include "doxywizard.h"
 #include "config_msg.h"
 #include "config.h"
+#include "optiontranslations.h"
 
 #include <QComboBox>
 #include <QLineEdit>
@@ -41,7 +42,7 @@ InputString::InputString( QGridLayout *layout,int &row,
   : m_default(s), m_sm(m), m_index(0), m_docs(docs), m_id(id),
     m_absPath(absPath==QString::fromLatin1("1"))
 {
-  m_lab = new HelpLabel(id);
+  m_lab = new HelpLabel(OptionTranslations::instance().translate(id));
   m_brFile = nullptr;
   m_brDir = nullptr;
   if (m==StringFixed)
@@ -70,7 +71,7 @@ InputString::InputString( QGridLayout *layout,int &row,
       if (m==StringFile || m==StringImage || m==StringFileDir)
       {
         m_brFile = m_br->addAction(QIcon(QString::fromLatin1(":/images/file.svg")),QString(),this,SLOT(browseFile()));
-        m_brFile->setToolTip(tr("Browse to a file"));
+        m_brFile->setToolTip(DoxygenWizard::msgBrowseToFile());
         if (m==StringImage)
         {
           m_im = new QLabel;
@@ -83,7 +84,7 @@ InputString::InputString( QGridLayout *layout,int &row,
       if (m==StringDir || m==StringFileDir)
       {
         m_brDir = m_br->addAction(QIcon(QString::fromLatin1(":/images/folder.svg")),QString(),this,SLOT(browseDir()));
-        m_brDir->setToolTip(tr("Browse to a folder"));
+        m_brDir->setToolTip(DoxygenWizard::msgBrowseToFolder());
       }
       rowLayout->addWidget( m_br);
       layout->addLayout( rowLayout, m==StringImage?row-1:row, 1, 1, 2 );
@@ -126,31 +127,33 @@ void InputString::setValue(const QString &s)
     m_str = s;
     m_value = m_str;
     updateDefault();
+    emit changed();
   }
 }
 void InputString::updateDefault()
 {
   {
+    QString translatedId = OptionTranslations::instance().translate(m_id);
     if (m_str==m_default || !m_lab->isEnabled())
     {
-      m_lab->setText(QString::fromLatin1("<qt>")+m_id+QString::fromLatin1("</qt>"));
+      m_lab->setText(QString::fromLatin1("<qt>")+translatedId+QString::fromLatin1("</qt>"));
     }
     else
     {
-      m_lab->setText(QString::fromLatin1("<qt><font color='red'>")+m_id+QString::fromLatin1("</font></qt>"));
+      m_lab->setText(QString::fromLatin1("<qt><font color='red'>")+translatedId+QString::fromLatin1("</font></qt>"));
     }
     if (m_im)
     {
       if (m_str.isEmpty())
       {
-        m_im->setText(tr("No Project logo selected."));
+        m_im->setText(DoxygenWizard::msgNoProjectLogoSelected());
       }
       else
       {
         QFile Fout(m_str);
         if(!Fout.exists())
         {
-          m_im->setText(tr("Sorry, cannot find file(")+m_str+QString::fromLatin1(");"));
+          m_im->setText(DoxygenWizard::msgFileNotFound(m_str));
         }
         else
         {
@@ -161,13 +164,12 @@ void InputString::updateDefault()
           }
           else
           {
-            m_im->setText(tr("Sorry, no preview available (")+m_str+QString::fromLatin1(");"));
+            m_im->setText(DoxygenWizard::msgNoPreviewAvailable(m_str));
           }
         }
       }
     }
     if (m_le && m_le->text()!=m_str) m_le->setText( m_str );
-    emit changed();
   }
 }
 
@@ -276,4 +278,9 @@ QString InputString::checkEnumVal(const QString &value)
   config_warn("argument '%s' for option %s is not a valid enum value."
               " Using the default: %s!",qPrintable(value),qPrintable(m_id),qPrintable(m_default));
   return m_default;
+}
+
+void InputString::retranslate()
+{
+  updateDefault();
 }

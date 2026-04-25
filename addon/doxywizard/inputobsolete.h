@@ -23,6 +23,7 @@ class InputObsolete : public Input
     void update()                {}
     Kind kind() const            { return Obsolete; }
     QString docs() const         { return QString(); }
+    void setDocs(const QString &) {}
     QString id() const           { return m_id; }
     QString templateDocs() const { return QString(); }
     void addDependency(Input *)  {}
@@ -34,6 +35,7 @@ class InputObsolete : public Input
     void setTemplateDocs(const QString &) {}
     bool isEmpty()               { return false; };
     Kind orgKind() const         { return m_orgKind; }
+    void retranslate()           {}
   private:
     QString   m_id;
     Kind      m_orgKind;

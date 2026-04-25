@@ -18,9 +18,12 @@
 #include "inputstrlist.h"
 #include "inputobsolete.h"
 #include "config.h"
+#include "doxywizard.h"
 #include "version.h"
 #include "configdoc.h"
 #include "settings.h"
+#include "optiontranslations.h"
+#include "translationmanager.h"
 
 #include <QTreeWidget>
 #include <QStackedWidget>
@@ -53,6 +56,158 @@ static QString convertToComment(const QString &s)
   }
 }
 
+QString convertDoxyCmdToHtml(const QString &s)
+{
+  QString result = s;
+  
+  QRegularExpression regexp;
+  
+  // remove \n at end and replace by a space
+  regexp.setPattern(SA("\\n$"));
+  result.replace(regexp,SA(" "));
+  
+  // remove <br> at end
+  regexp.setPattern(SA("<br> *$"));
+  result.replace(regexp,SA(" "));
+  
+  // \c word -> <code>word</code>; word ends with ')', ',', '.' or ' '
+  regexp.setPattern(SA("\\\\c[ ]+([^ \\)]+)\\)"));
+  result.replace(regexp,SA("<code>\\1</code>)"));
+  
+  regexp.setPattern(SA("\\\\c[ ]+([^ ,]+),"));
+  result.replace(regexp,SA("<code>\\1</code>,"));
+  
+  regexp.setPattern(SA("\\\\c[ ]+([^ \\.]+)\\."));
+  result.replace(regexp,SA("<code>\\1</code>."));
+  
+  regexp.setPattern(SA("\\\\c[ ]+([^ ]+) "));
+  result.replace(regexp,SA("<code>\\1</code> "));
+  
+  result.replace(SA("\\c("), SA("<code>("));
+  
+  // `word` -> <code>word</code>
+  result.replace(SA("``"),SA(""));
+  regexp.setPattern(SA("`([^`]+)`"));
+  result.replace(regexp,SA("<code>\\1</code>"));
+  
+  // \p word -> <code>word</code>
+  result.replace(SA("\\p "), SA("<code>"));
+  result.replace(SA("\\p("), SA("<code>("));
+  
+  // \b word -> <b>word</b>
+  regexp.setPattern(SA("\\\\b[ ]+([^ ]+) "));
+  result.replace(regexp,SA("<b>\\1</b> "));
+  
+  // \e word -> <em>word</em>
+  regexp.setPattern(SA("\\\\e[ ]+([^ ]+) "));
+  result.replace(regexp,SA("<em>\\1</em> "));
+  result.replace(SA("\\e "), SA("<em>"));
+  result.replace(SA("\\e("), SA("<em>("));
+  
+  // \a word -> <em>word</em>
+  result.replace(SA("\\a "), SA("<em>"));
+  result.replace(SA("\\a("), SA("<em>("));
+  
+  // \ref key "desc" -> desc
+  // First handle special \ref cases that need to preserve the \ref for later
+  regexp.setPattern(SA("\\\\ref[ ]+[^ ]+[ ]+\"\\\\\\\\ref\""));
+  result.replace(regexp,SA("\\\\REF"));
+  regexp.setPattern(SA("\\\\ref[ ]+[^ ]+[ ]+\"([^\"]+)\""));
+  result.replace(regexp,SA("<code>\\1</code> "));
+  
+  // \ref specials
+  regexp.setPattern(SA("\\\\ref[ ]+doxygen_usage"));
+  result.replace(regexp,SA("\"Doxygen usage\""));
+  regexp.setPattern(SA("\\\\ref[ ]+extsearch"));
+  result.replace(regexp,SA("\"External Indexing and Searching\""));
+  regexp.setPattern(SA("\\\\ref[ ]+external"));
+  result.replace(regexp,SA("\"Linking to external documentation\""));
+  regexp.setPattern(SA("\\\\ref[ ]+formulas"));
+  result.replace(regexp,SA("\"Including formulas\""));
+  
+  // fallback for not handled \ref
+  result.replace(SA("\\\\ref"),SA(""));
+  result.replace(SA("\\\\REF"),SA("\\\\ref"));
+  
+  // \note -> <br>Note:
+  result.replace(SA("\\note "),SA("<br>Note: "));
+  result.replace(SA("@note "),SA("<br>Note: "));
+  
+  // \#include -> #include
+  result.replace(SA("\\#include"),SA("#include"));
+  result.replace(SA("\\#undef"),SA("#undef"));
+  result.replace(SA("\\# "),SA("# "));
+  
+  // -# -> <br>-
+  result.replace(SA("-#"),SA("<br>-"));
+  result.replace(SA(" - "),SA("<br>-"));
+  
+  // \sa -> <br>See also:
+  result.replace(SA("\\sa "),SA("<br>See also: "));
+  
+  // \par -> <br>
+  result.replace(SA("\\par "),SA("<br>"));
+  
+  // \verbatim -> <pre>
+  result.replace(SA("\\verbatim"),SA("<pre>"));
+  result.replace(SA("\\endverbatim"),SA("</pre>"));
+  
+  // \n -> <br/>
+  result.replace(SA("\\n"),SA("<br/>"));
+  
+  // \& -> &amp;
+  result.replace(SA("\\&lt;"), SA("&lt;"));
+  result.replace(SA("\\&gt;"), SA("&gt;"));
+  result.replace(SA("\\&amp;"), SA("&amp;"));
+  result.replace(SA("\\&"),SA("&amp;"));
+  
+  // \$ -> $
+  result.replace(SA("\\$"),SA("$"));
+  
+  // \< -> &lt;
+  result.replace(SA("\\<"),SA("&lt;"));
+  
+  // \> -> &gt;
+  result.replace(SA("\\>"),SA("&gt;"));
+  
+  // \@ -> @
+  result.replace(SA("\\@"),SA("@"));
+  
+  // 2xbackslash -> backslash
+  result.replace(SA("\\\\"),SA("\\"));
+  
+  // http/https URLs -> links
+  // Only match URL-safe characters, exclude trailing punctuation
+  regexp.setPattern(SA(" (https?://[a-zA-Z0-9_\\-./~%#+?=&]*[a-zA-Z0-9_\\-/~%#+?=&])"));
+  QRegularExpressionMatchIterator urlIt = regexp.globalMatch(result);
+  QStringList urlReplacements;
+  while (urlIt.hasNext())
+  {
+    QRegularExpressionMatch match = urlIt.next();
+    QString url = match.captured(1);
+    urlReplacements.append(match.captured(0));
+    urlReplacements.append(SA(" <a href=\"") + url + SA("\">") + url + SA("</a>"));
+  }
+  for (int i = 0; i < urlReplacements.size(); i += 2)
+  {
+    result.replace(urlReplacements[i], urlReplacements[i + 1]);
+  }
+  
+  // LaTeX formulas
+  regexp.setPattern(SA("\\\\f\\$\\\\mbox\\{\\\\LaTeX\\}\\\\f\\$"));
+  result.replace(regexp,SA("LaTeX"));
+  regexp.setPattern(SA("\\\\f\\$2\\^\\{\\(16\\+\\\\mbox\\{LOOKUP\\\\_CACHE\\\\_SIZE\\}\\)\\}\\\\f\\$"));
+  result.replace(regexp,SA("2^(16+LOOKUP_CACHE_SIZE)"));
+  regexp.setPattern(SA("\\\\f\\$2\\^\\{16\\} = 65536\\\\f\\$"));
+  result.replace(regexp,SA("2^16=65536"));
+  
+  // <br> -> <br/>
+  result.replace(SA("&lt;br&gt;"), SA("<br/>"));
+  result.replace(SA("&lt;br/&gt;"), SA("<br/>"));
+  
+  return result;
+}
+
 void Expert::setHeader(const char *header)
 {
   m_header = SA(header);
@@ -76,22 +231,7 @@ Expert::Expert()
   m_topicStack = new QStackedWidget;
   m_inShowHelp = false;
 
-  QFile file(SA(":/config.xml"));
-  QString err;
-  int errLine,errCol;
-  QDomDocument configXml;
-  if (file.open(QIODevice::ReadOnly))
-  {
-    if (!configXml.setContent(&file,false,&err,&errLine,&errCol))
-    {
-      QString msg = tr("Error parsing internal config.xml at line %1 column %2.\n%3").
-                  arg(errLine).arg(errCol).arg(err);
-      QMessageBox::warning(this, tr("Error"), msg);
-      exit(1);
-    }
-  }
-  m_rootElement = configXml.documentElement();
-
+  loadConfigXml();
   createTopics(m_rootElement);
   m_helper = new QTextBrowser;
   m_helper->setReadOnly(true);
@@ -102,9 +242,9 @@ Expert::Expert()
 
   QWidget *rightSide = new QWidget;
   QGridLayout *grid = new QGridLayout(rightSide);
-  m_prev = new QPushButton(tr("Previous"));
+  m_prev = new QPushButton(DoxygenWizard::msgPreviousButton());
   m_prev->setEnabled(false);
-  m_next = new QPushButton(tr("Next"));
+  m_next = new QPushButton(DoxygenWizard::msgNextButton());
   grid->addWidget(m_topicStack,0,0,1,2);
   grid->addWidget(m_prev,1,0,Qt::AlignLeft);
   grid->addWidget(m_next,1,1,Qt::AlignRight);
@@ -118,6 +258,46 @@ Expert::Expert()
   connect(m_prev,SIGNAL(clicked()),SLOT(prevTopic()));
 
   addConfigDocs(this);
+}
+
+void Expert::loadConfigXml()
+{
+  QString langCode = TranslationManager::instance().currentLanguageCode();
+  QString configPath;
+  
+  if (langCode != QLatin1String("en"))
+  {
+    configPath = SA(":/config_") + langCode + SA(".xml");
+    QFile langFile(configPath);
+    if (!langFile.exists())
+    {
+      configPath = SA(":/config.xml");
+    }
+  }
+  else
+  {
+    configPath = SA(":/config.xml");
+  }
+  
+  QFile file(configPath);
+  QString err;
+  int errLine,errCol;
+  QDomDocument configXml;
+  if (file.open(QIODevice::ReadOnly))
+  {
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    if (!configXml.setContent(&file,&err,&errLine,&errCol))
+#else
+    if (!configXml.setContent(&file,false,&err,&errLine,&errCol))
+#endif
+    {
+      QString msg = tr("Error parsing internal config.xml at line %1 column %2.\n%3").
+                  arg(errLine).arg(errCol).arg(err);
+      QMessageBox::warning(this, tr("Error"), msg);
+      exit(1);
+    }
+  }
+  m_rootElement = configXml.documentElement();
 }
 
 Expert::~Expert()
@@ -143,7 +323,8 @@ void Expert::createTopics(const QDomElement &rootElem)
       QString setting = childElem.attribute(SA("setting"));
       if (setting.isEmpty() || IS_SUPPORTED(setting.toLatin1()))
       {
-        items.append(new QTreeWidgetItem((QTreeWidget*)nullptr,QStringList(name)));
+        QString translatedName = DoxygenWizard::translateExpertTopic(name);
+        items.append(new QTreeWidgetItem((QTreeWidget*)nullptr,QStringList(translatedName)));
         QWidget *widget = createTopicWidget(childElem);
         m_topics[name] = widget;
         m_topicStack->addWidget(widget);
@@ -151,7 +332,7 @@ void Expert::createTopics(const QDomElement &rootElem)
     }
     childElem = childElem.nextSiblingElement();
   }
-  m_treeWidget->setHeaderLabels(QStringList() << SA("Topics"));
+  m_treeWidget->setHeaderLabels(QStringList() << DoxygenWizard::msgTopicsHeader());
   m_treeWidget->insertTopLevelItems(0,items);
   connect(m_treeWidget,
           SIGNAL(currentItemChanged(QTreeWidgetItem *,QTreeWidgetItem *)),
@@ -162,6 +343,7 @@ void Expert::createTopics(const QDomElement &rootElem)
 static QString getDocsForNode(const QDomElement &child)
 {
   QString type = child.attribute(SA("type"));
+  QString id = child.attribute(SA("id"));
   QString docs = SA("");
   // read documentation text
   QDomElement docsVal = child.firstChildElement();
@@ -183,8 +365,10 @@ static QString getDocsForNode(const QDomElement &child)
   // for an enum we list the values
   if (type==SA("enum"))
   {
+    if (!docs.endsWith(SA("<br/>"))) docs += SA("<br/>");
     docs += SA("<br/>");
-    docs += SA("Possible values are: ");
+    docs += Expert::tr("Possible values are:");
+    docs += SA(" ");
     int numValues=0;
     docsVal = child.firstChildElement();
     while (!docsVal.isNull())
@@ -210,7 +394,7 @@ static QString getDocsForNode(const QDomElement &child)
         }
         if (i==numValues-1)
         {
-          docs+=SA(" and ");
+          docs+=SA(" ") + Expert::tr("and") + SA(" ");
         }
         else if (i==numValues)
         {
@@ -227,33 +411,34 @@ static QString getDocsForNode(const QDomElement &child)
     {
       docs+=SA("<br/>");
       docs+=SA("<br/>");
-      docs+=SA(" The default value is: <code>")+
-            child.attribute(SA("defval"))+
-            SA("</code>.");
+      QString defval = child.attribute(SA("defval"));
+      docs+=SA(" ")+Expert::tr("The default value is: <code>%1</code>.").arg(defval);
     }
     docs+= SA("<br/>");
   }
   else if (type==SA("int"))
   {
-    docs+=SA("<br/>");
-    docs+=SA("Minimum value: ")+child.attribute(SA("minval"))+SA(", ");
-    docs+=SA("maximum value: ")+child.attribute(SA("maxval"))+SA(", ");
-    docs+=SA("default value: ")+child.attribute(SA("defval"))+SA(".");
+    if (!docs.endsWith(SA("<br/>"))) docs += SA("<br/>");
+    docs += SA("<br/>");
+    QString minval = child.attribute(SA("minval"));
+    QString maxval = child.attribute(SA("maxval"));
+    QString defval = child.attribute(SA("defval"));
+    docs+=Expert::tr("Minimum value: %1, maximum value: %2, default value: %3.").arg(minval).arg(maxval).arg(defval);
     docs+= SA("<br/>");
   }
   else if (type==SA("bool"))
   {
-    docs+=SA("<br/>");
+    if (!docs.endsWith(SA("<br/>"))) docs += SA("<br/>");
+    docs += SA("<br/>");
     if (child.hasAttribute(SA("altdefval")))
     {
-      docs+=SA(" The default value is: system dependent.");
+      docs+=SA(" ")+Expert::tr("The default value is: system dependent.");
     }
     else
     {
       QString defval = child.attribute(SA("defval"));
-      docs+=SA(" The default value is: <code>")+
-            (defval==SA("1")?SA("YES"):SA("NO"))+
-            SA("</code>.");
+      QString valStr = (defval==SA("1")?SA("YES"):SA("NO"));
+      docs+=SA(" ")+Expert::tr("The default value is: <code>%1</code>.").arg(valStr);
     }
     docs+= SA("<br/>");
   }
@@ -278,6 +463,10 @@ static QString getDocsForNode(const QDomElement &child)
       }
       if (numValues>0)
       {
+        if (!docs.endsWith(SA("<br/>"))) docs += SA("<br/>");
+        docs += SA("<br/>");
+        docs += Expert::tr("Possible values are:");
+        docs += SA(" ");
         int i = 0;
         docsVal = child.firstChildElement();
         while (!docsVal.isNull())
@@ -300,7 +489,7 @@ static QString getDocsForNode(const QDomElement &child)
               }
               if (i==numValues-1)
               {
-                docs += SA(" and ");
+                docs += SA(" ") + Expert::tr("and") + SA(" ");
               }
               else if (i==numValues)
               {
@@ -315,7 +504,6 @@ static QString getDocsForNode(const QDomElement &child)
           docsVal = docsVal.nextSiblingElement();
         }
       }
-      // docs+= SA("<br/>");
     }
   }
   else if (type==SA("string"))
@@ -325,8 +513,9 @@ static QString getDocsForNode(const QDomElement &child)
     {
       if (defval != SA(""))
       {
-        docs+=SA("<br/>");
-        docs += SA(" The default directory is: <code>") + defval + SA("</code>.");
+        if (!docs.endsWith(SA("<br/>"))) docs += SA("<br/>");
+        docs += SA("<br/>");
+        docs += SA(" ")+Expert::tr("The default directory is: <code>%1</code>.").arg(defval);
         docs += SA("<br/>");
       }
     }
@@ -335,14 +524,15 @@ static QString getDocsForNode(const QDomElement &child)
       QString abspath = child.attribute(SA("abspath"));
       if (defval != SA(""))
       {
-        docs+=SA("<br/>");
+        if (!docs.endsWith(SA("<br/>"))) docs += SA("<br/>");
+        docs += SA("<br/>");
         if (abspath != SA("1"))
         {
-          docs += SA(" The default file is: <code>") + defval + SA("</code>.");
+          docs += SA(" ")+Expert::tr("The default file is: <code>%1</code>.").arg(defval);
         }
         else
         {
-          docs += SA(" The default file (with absolute path) is: <code>") + defval + SA("</code>.");
+          docs += SA(" ")+Expert::tr("The default file (with absolute path) is: <code>%1</code>.").arg(defval);
         }
         docs += SA("<br/>");
       }
@@ -350,8 +540,9 @@ static QString getDocsForNode(const QDomElement &child)
       {
         if (abspath == SA("1"))
         {
-          docs+=SA("<br/>");
-          docs += SA(" The file has to be specified with full path.");
+          if (!docs.endsWith(SA("<br/>"))) docs += SA("<br/>");
+          docs += SA("<br/>");
+          docs += SA(" ")+Expert::tr("The file has to be specified with full path.");
           docs += SA("<br/>");
         }
       }
@@ -361,14 +552,15 @@ static QString getDocsForNode(const QDomElement &child)
       QString abspath = child.attribute(SA("abspath"));
       if (defval != SA(""))
       {
-        docs+=SA("<br/>");
+        if (!docs.endsWith(SA("<br/>"))) docs += SA("<br/>");
+        docs += SA("<br/>");
         if (abspath != SA("1"))
         {
-          docs += SA(" The default image is: <code>") + defval + SA("</code>.");
+          docs += SA(" ")+Expert::tr("The default image is: <code>%1</code>.").arg(defval);
         }
         else
         {
-          docs += SA(" The default image (with absolute path) is: <code>") + defval + SA("</code>.");
+          docs += SA(" ")+Expert::tr("The default image (with absolute path) is: <code>%1</code>.").arg(defval);
         }
         docs += SA("<br/>");
       }
@@ -376,8 +568,9 @@ static QString getDocsForNode(const QDomElement &child)
       {
         if (abspath == SA("1"))
         {
-          docs+=SA("<br/>");
-          docs += SA(" The image has to be specified with full path.");
+          if (!docs.endsWith(SA("<br/>"))) docs += SA("<br/>");
+          docs += SA("<br/>");
+          docs += SA(" ")+Expert::tr("The image has to be specified with full path.");
           docs += SA("<br/>");
         }
       }
@@ -386,8 +579,9 @@ static QString getDocsForNode(const QDomElement &child)
     {
       if (defval != SA(""))
       {
-        docs+=SA("<br/>");
-        docs += SA(" The default value is: <code>") + defval + SA("</code>.");
+        if (!docs.endsWith(SA("<br/>"))) docs += SA("<br/>");
+        docs += SA("<br/>");
+        docs += SA(" ")+Expert::tr("The default value is: <code>%1</code>.").arg(defval);
         docs += SA("<br/>");
       }
     }
@@ -396,110 +590,14 @@ static QString getDocsForNode(const QDomElement &child)
   if (child.hasAttribute(SA("depends")))
   {
     QString dependsOn = child.attribute(SA("depends"));
-    docs+=SA("<br/>");
-    docs+=  SA(" This tag requires that the tag \\ref cfg_");
-    docs+=  dependsOn.toLower();
-    docs+=  SA(" \"");
-    docs+=  dependsOn.toUpper();
-    docs+=  SA("\" is set to <code>YES</code>.");
+    if (!docs.endsWith(SA("<br/>"))) docs += SA("<br/>");
+    docs += SA("<br/>");
+    docs+=SA(" ")+Expert::tr("This tag requires that the tag %1 is set to <code>YES</code>.").arg(SA("\\ref cfg_")+dependsOn.toLower()+SA(" \"")+dependsOn.toUpper()+SA("\""));
   }
 
-  // Remove / replace doxygen markup strings
-  // the regular expressions are hard to read so the intention will be given
-  // Note: see also configgen.py in the src directory for other doxygen parts
-  QRegularExpression regexp;
-  // remove \n at end and replace by a space
-  regexp.setPattern(SA("\\n$"));
-  docs.replace(regexp,SA(" "));
-  // remove <br> at end
-  regexp.setPattern(SA("<br> *$"));
-  docs.replace(regexp,SA(" "));
-  // \c word -> <code>word</code>; word ends with ')', ',', '.' or ' '
-  regexp.setPattern(SA("\\\\c[ ]+([^ \\)]+)\\)"));
-  docs.replace(regexp,SA("<code>\\1</code>)"));
-
-  regexp.setPattern(SA("\\\\c[ ]+([^ ,]+),"));
-  docs.replace(regexp,SA("<code>\\1</code>,"));
-
-  regexp.setPattern(SA("\\\\c[ ]+([^ \\.]+)\\."));
-  docs.replace(regexp,SA("<code>\\1</code>."));
-
-  regexp.setPattern(SA("\\\\c[ ]+([^ ]+) "));
-  docs.replace(regexp,SA("<code>\\1</code> "));
-  // `word` -> <code>word</code>
-  docs.replace(SA("``"),SA(""));
-  regexp.setPattern(SA("`([^`]+)`"));
-  docs.replace(regexp,SA("<code>\\1</code>"));
-  // \ref key "desc" -> <code>desc</code>
-  regexp.setPattern(SA("\\\\ref[ ]+[^ ]+[ ]+\"\\\\\\\\ref\""));
-  docs.replace(regexp,SA("\\\\REF"));
-  regexp.setPattern(SA("\\\\ref[ ]+[^ ]+[ ]+\"([^\"]+)\""));
-  docs.replace(regexp,SA("<code>\\1</code> "));
-  //\ref specials
-  // \ref <key> -> description
-  regexp.setPattern(SA("\\\\ref[ ]+doxygen_usage"));
-  docs.replace(regexp,SA("\"Doxygen usage\""));
-  regexp.setPattern(SA("\\\\ref[ ]+extsearch"));
-  docs.replace(regexp,SA("\"External Indexing and Searching\""));
-  regexp.setPattern(SA("\\\\ref[ ]+external"));
-  docs.replace(regexp,SA("\"Linking to external documentation\""));
-  regexp.setPattern(SA("\\\\ref[ ]+formulas"));
-  docs.replace(regexp,SA("\"Including formulas\""));
-  // fallback for not handled
-  docs.replace(SA("\\\\ref"),SA(""));
-  docs.replace(SA("\\\\REF"),SA("\\\\ref"));
-  // \b word -> <b>word<\b>
-  regexp.setPattern(SA("\\\\b[ ]+([^ ]+) "));
-  docs.replace(regexp,SA("<b>\\1</b> "));
-  // \e word -> <em>word<\em>
-  regexp.setPattern(SA("\\\\e[ ]+([^ ]+) "));
-  docs.replace(regexp,SA("<em>\\1</em> "));
-  // \note -> <br>Note:
-  // @note -> <br>Note:
-  docs.replace(SA("\\note "),SA("<br>Note: "));
-  docs.replace(SA("@note "),SA("<br>Note: "));
-  // \#include -> #include
-  // \#undef -> #undef
-  docs.replace(SA("\\#include"),SA("#include"));
-  docs.replace(SA("\\#undef"),SA("#undef"));
-  // -# -> <br>-
-  // " - " -> <br>-
-  docs.replace(SA("-#"),SA("<br>-"));
-  docs.replace(SA("\\# "),SA("# "));
-  docs.replace(SA(" - "),SA("<br>-"));
-  // \verbatim -> <pre>
-  // \endverbatim -> </pre>
-  docs.replace(SA("\\verbatim"),SA("<pre>"));
-  docs.replace(SA("\\endverbatim"),SA("</pre>"));
-  // \sa -> <br>See also:
-  // \par -> <br>
-  docs.replace(SA("\\sa "),SA("<br>See also: "));
-  docs.replace(SA("\\par "),SA("<br>"));
-  // 2xbackslash -> backslash
-  // \@ -> @
-  docs.replace(SA("\\\\"),SA("\\"));
-  docs.replace(SA("\\@"),SA("@"));
-  // \& -> &
-  // \$ -> $
-  docs.replace(SA("\\&"),SA("&"));
-  docs.replace(SA("\\$"),SA("$"));
-  // \< -> &lt;
-  // \> -> &gt;
-  docs.replace(SA("\\<"),SA("&lt;"));
-  docs.replace(SA("\\>"),SA("&gt;"));
-  regexp.setPattern(SA(" (http:[^ \\)]*)([ \\)])"));
-  docs.replace(regexp,SA(" <a href=\"\\1\">\\1</a>\\2"));
-  regexp.setPattern(SA(" (https:[^ \\)]*)([ \\)])"));
-  docs.replace(regexp,SA(" <a href=\"\\1\">\\1</a>\\2"));
-  // LaTeX name as formula -> LaTeX
-  regexp.setPattern(SA("\\\\f\\$\\\\mbox\\{\\\\LaTeX\\}\\\\f\\$"));
-  docs.replace(regexp,SA("LaTeX"));
-  // Other formula's (now just 2) so explicitly mentioned.
-  regexp.setPattern(SA("\\\\f\\$2\\^\\{\\(16\\+\\\\mbox\\{LOOKUP\\\\_CACHE\\\\_SIZE\\}\\)\\}\\\\f\\$"));
-  docs.replace(regexp,SA("2^(16+LOOKUP_CACHE_SIZE)"));
-  regexp.setPattern(SA("\\\\f\\$2\\^\\{16\\} = 65536\\\\f\\$"));
-  docs.replace(regexp,SA("2^16=65536"));
-
+  // Convert Doxygen markup to HTML
+  docs = convertDoxyCmdToHtml(docs);
+  
   return docs.trimmed();
 }
 
@@ -526,10 +624,9 @@ QWidget *Expert::createTopicWidget(QDomElement &elem)
               child.attribute(SA("defval"))==SA("1"),
               docs
               );
-        m_options.insert(
-            child.attribute(SA("id")),
-            boolOption
-            );
+        QString id = child.attribute(SA("id"));
+        m_options.insert(id, boolOption);
+        m_optionElements.insert(id, child);
         connect(boolOption,SIGNAL(showHelp(Input*)),SLOT(showHelp(Input*)));
         connect(boolOption,SIGNAL(changed()),SIGNAL(changed()));
       }
@@ -566,10 +663,9 @@ QWidget *Expert::createTopicWidget(QDomElement &elem)
               docs,
               child.attribute(SA("abspath"))
               );
-        m_options.insert(
-            child.attribute(SA("id")),
-            stringOption
-            );
+        QString id = child.attribute(SA("id"));
+        m_options.insert(id, stringOption);
+        m_optionElements.insert(id, child);
         connect(stringOption,SIGNAL(showHelp(Input*)),SLOT(showHelp(Input*)));
         connect(stringOption,SIGNAL(changed()),SIGNAL(changed()));
       }
@@ -593,7 +689,9 @@ QWidget *Expert::createTopicWidget(QDomElement &elem)
         }
         enumList->setDefault();
 
-        m_options.insert(child.attribute(SA("id")),enumList);
+        QString id = child.attribute(SA("id"));
+        m_options.insert(id, enumList);
+        m_optionElements.insert(id, child);
         connect(enumList,SIGNAL(showHelp(Input*)),SLOT(showHelp(Input*)));
         connect(enumList,SIGNAL(changed()),SIGNAL(changed()));
       }
@@ -608,10 +706,9 @@ QWidget *Expert::createTopicWidget(QDomElement &elem)
               child.attribute(SA("maxval")).toInt(),
               docs
               );
-        m_options.insert(
-            child.attribute(SA("id")),
-            intOption
-            );
+        QString id = child.attribute(SA("id"));
+        m_options.insert(id, intOption);
+        m_optionElements.insert(id, child);
         connect(intOption,SIGNAL(showHelp(Input*)),SLOT(showHelp(Input*)));
         connect(intOption,SIGNAL(changed()),SIGNAL(changed()));
       }
@@ -653,10 +750,9 @@ QWidget *Expert::createTopicWidget(QDomElement &elem)
               mode,
               docs
               );
-        m_options.insert(
-            child.attribute(SA("id")),
-            listOption
-            );
+        QString id = child.attribute(SA("id"));
+        m_options.insert(id, listOption);
+        m_optionElements.insert(id, child);
         connect(listOption,SIGNAL(showHelp(Input*)),SLOT(showHelp(Input*)));
         connect(listOption,SIGNAL(changed()),SIGNAL(changed()));
       }
@@ -751,10 +847,25 @@ void Expert::activateTopic(QTreeWidgetItem *item,QTreeWidgetItem *)
 {
   if (item)
   {
-    QWidget *w = m_topics[item->text(0)];
-    m_topicStack->setCurrentWidget(w);
-    m_prev->setEnabled(m_topicStack->currentIndex()!=0);
-    m_next->setEnabled(true);
+    QString translatedName = item->text(0);
+    QWidget *w = nullptr;
+    QHashIterator<QString,QWidget*> i(m_topics);
+    while (i.hasNext())
+    {
+      i.next();
+      QString originalName = i.key();
+      if (DoxygenWizard::translateExpertTopic(originalName) == translatedName)
+      {
+        w = i.value();
+        break;
+      }
+    }
+    if (w)
+    {
+      m_topicStack->setCurrentWidget(w);
+      m_prev->setEnabled(m_topicStack->currentIndex()!=0);
+      m_next->setEnabled(true);
+    }
   }
 }
 
@@ -885,12 +996,12 @@ void Expert::showHelp(Input *option)
   if (!m_inShowHelp)
   {
     m_inShowHelp = true;
+    QString docs = option->docs();
     m_helper->setText(
         QString::fromLatin1("<qt><b>")+option->id()+
         QString::fromLatin1("</b><br>")+
         QString::fromLatin1("<br/>")+
-        option->docs().
-        replace(QChar::fromLatin1('\n'),QChar::fromLatin1(' '))+
+        docs.replace(QChar::fromLatin1('\n'),QChar::fromLatin1(' '))+
         QString::fromLatin1("</qt>")
         );
     m_inShowHelp = false;
@@ -1015,6 +1126,30 @@ bool Expert::pdfOutputPresent(const QString &workingDir) const
 
 void Expert::refresh()
 {
+  m_treeWidget->setCurrentItem(m_treeWidget->invisibleRootItem()->child(0));
+}
+
+void Expert::retranslateUi()
+{
+  m_treeWidget->setHeaderLabels(QStringList() << DoxygenWizard::msgTopicsHeader());
+  m_prev->setText(DoxygenWizard::msgPreviousButton());
+  m_next->setText(DoxygenWizard::msgNextButton());
+  
+  loadConfigXml();
+  
+  m_topics.clear();
+  while (m_topicStack->count() > 0)
+  {
+    QWidget *w = m_topicStack->widget(0);
+    m_topicStack->removeWidget(w);
+  }
+  m_options.clear();
+  m_optionElements.clear();
+  
+  m_treeWidget->clear();
+  
+  createTopics(m_rootElement);
+  
   m_treeWidget->setCurrentItem(m_treeWidget->invisibleRootItem()->child(0));
 }
 

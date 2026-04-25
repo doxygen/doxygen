@@ -54,6 +54,7 @@ class InputString : public QObject, public Input
     Kind kind() const { return String; }
     StringMode stringMode() const { return m_sm; }
     QString docs() const { return m_docs; }
+    void setDocs(const QString &docs) { m_docs = docs; }
     QString id() const { return m_id; }
     QString templateDocs() const { return m_tdocs; }
     void addDependency(Input *) { Q_ASSERT(false); }
@@ -64,6 +65,7 @@ class InputString : public QObject, public Input
     void setTemplateDocs(const QString &docs) { m_tdocs = docs; }
     bool isEmpty() { return m_str.isEmpty(); }
     QString checkEnumVal(const QString &value);
+    void retranslate();
 
   public slots:
     void reset();

@@ -28,6 +28,7 @@ class QMenu;
 class QProcess;
 class QTimer;
 class QTabWidget;
+class QActionGroup;
 
 class MainWindow : public QMainWindow
 {
@@ -39,8 +40,10 @@ class MainWindow : public QMainWindow
     void loadSettings();
     void saveSettings();
     void closeEvent(QCloseEvent *event);
+    void changeEvent(QEvent *event);
     QString configFileName() const { return m_fileName; }
     void updateTitle();
+    void retranslateUi();
     // access routines for outputLog pane
     void outputLogStart();
     void outputLogText(QString text);
@@ -71,6 +74,8 @@ class MainWindow : public QMainWindow
     void configChanged();
     void clearRecent();
     void selectRunTab();
+    void switchLanguage(QAction *action);
+    void onLanguageChanged(const QString &langCode);
 
   private:
     MainWindow();
@@ -94,6 +99,11 @@ class MainWindow : public QMainWindow
     QPushButton *m_launchPdf;
     QTextBrowser *m_outputLog;
     QLabel *m_runStatus;
+    QLabel *m_workingDirLabel;
+    QLabel *m_workingDirHintLabel;
+    QLabel *m_runOptionsLabel;
+    QLabel *m_outputLabel;
+    QPushButton *m_showSettingsBtn;
     Expert *m_expert;
     Wizard *m_wizard;
     QWidget *m_runTab;
@@ -106,6 +116,8 @@ class MainWindow : public QMainWindow
     QProcess *m_runProcess;
     QTimer *m_timer;
     QTabWidget *m_tabs;
+    QMenu *m_languageMenu;
+    QActionGroup *m_languageActionGroup;
     int m_outputLogTextCount = 0;
     bool m_running;
     bool m_modified;
@@ -119,5 +131,33 @@ class DoxygenWizard
 {
   public:
     static bool debugFlag;
+    static QString msgFileNotFound(const QString &fileName);
+    static QString msgNoPreviewAvailable(const QString &fileName);
+    static QString msgNoProjectLogoSelected();
+    static QString msgBrowseToFile();
+    static QString msgBrowseToFolder();
+    static QString msgSelectButton();
+    static QString msgPreviousButton();
+    static QString msgNextButton();
+    static QString msgTopicsHeader();
+    static QString msgProjectTopic();
+    static QString msgBuildTopic();
+    static QString msgMessagesTopic();
+    static QString msgInputTopic();
+    static QString msgSourceBrowserTopic();
+    static QString msgIndexTopic();
+    static QString msgHtmlFormat();
+    static QString msgLatexFormat();
+    static QString msgRtfFormat();
+    static QString msgManFormat();
+    static QString msgXmlFormat();
+    static QString msgDocbookFormat();
+    static QString msgAutoGenFormat();
+    static QString msgSqlite3Format();
+    static QString msgPerlModFormat();
+    static QString msgPreprocessorTopic();
+    static QString msgExternalTopic();
+    static QString msgDotTopic();
+    static QString translateExpertTopic(const QString &name);
 };
 #endif

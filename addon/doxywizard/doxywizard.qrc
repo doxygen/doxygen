@@ -1,6 +1,14 @@
 <!DOCTYPE RCC><RCC version="1.0">
 <qresource prefix="/">
   <file alias="config.xml">../../src/config.xml</file>
+  <file alias="config_zh_CN.xml">../../src/config_zh_CN.xml</file>
+  <file alias="config_zh_TW.xml">../../src/config_zh_TW.xml</file>
+  <file alias="config_de.xml">../../src/config_de.xml</file>
+  <file alias="config_fr.xml">../../src/config_fr.xml</file>
+  <file alias="config_ja.xml">../../src/config_ja.xml</file>
+  <file alias="config_ko.xml">../../src/config_ko.xml</file>
+  <file alias="config_es.xml">../../src/config_es.xml</file>
+  <file alias="config_ru.xml">../../src/config_ru.xml</file>
   <file>images/add.svg</file>
   <file>images/del.svg</file>
   <file>images/file.svg</file>

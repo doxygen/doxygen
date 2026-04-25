@@ -1,0 +1,2385 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doxygenconfig>
+  <header>
+    <docs doxywizard="0" doxyfile="0">
+<![CDATA[
+/*
+ *
+ *
+ *
+ * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
+ * for any purpose. It is provided "as is" without express or implied warranty.
+ * See the GNU General Public License for more details.
+ *
+ * Documents produced by Doxygen are derivative works derived from the
+ * input used in their production; they are not affected by this license.
+ *
+ */
+/*! \page config Configuration
+\tableofcontents
+\section config_format Format
+A configuration file is a free-form ASCII text file with a structure
+that is similar to that of a \c Makefile, with the default name \c Doxyfile. It is
+parsed by \c doxygen. The file may contain tabs and newlines for
+formatting purposes. The statements in the file are case-sensitive.
+The configuration file essentially consists of a list of assignment statements.
+Each statement consists of a \c TAG_NAME written in capitals,
+followed by the equal sign (<code>=</code>) and one or more values. If the same tag
+is assigned more than once, the last assignment overwrites any earlier
+assignment. For tags that take a list as their argument,
+the <code>+=</code> operator can be used instead of <code>=</code> to append
+new values to the list. Values are sequences of non-blanks. If the value should
+contain one or more blanks it must be surrounded by quotes (<code>&quot;...&quot;</code>).
+Multiple lines can be concatenated by inserting a backslash (\c \\)
+as the last non-whitespace character of a line.
+Comments begin with the hash character (\c \#) and end at the end of the line.
+Comments may be placed anywhere within the file (except within quotes).
+Comments beginning with two hash characters (\c \#\#) are kept while updating
+the configuration file when they are placed in front of a \c TAG_NAME, or
+at the beginning or end of the configuration file.
+Environment variables can be expanded using the pattern <code>\$(ENV_VARIABLE_NAME)</code>.
+A small example:
+\verbatim
+DOT_PATH      = $(YOUR_DOT_PATH)
+\endverbatim
+You can also include part of a configuration file from another configuration
+file using a <code>\@INCLUDE</code> tag as follows:
+\verbatim
+@INCLUDE = config_file_name
+\endverbatim
+The include file is searched in the current working directory. You can
+also specify a list of directories that should be searched before looking
+in the current working directory. Do this by putting a <code>\@INCLUDE_PATH</code> tag
+with these paths before the <code>\@INCLUDE</code> tag, e.g.:
+\verbatim
+@INCLUDE_PATH = my_config_dir
+\endverbatim
+The configuration options can be divided into several categories.
+Below is an alphabetical index of the tags that are recognized
+followed by the descriptions of the tags grouped by category.
+]]>      
+    </docs>
+    <docs doxywizard="0" documentation="0">
+<![CDATA[
+This file describes the settings to be used by the documentation system
+Doxygen (www.doxygen.org) for a project.
+<br>
+All text after a double hash (##) is considered a comment and is placed
+in front of the TAG it is preceding.<br>
+All text after a single hash (#) is considered a comment and will be ignored.
+The format is:
+\verbatim
+      TAG = value [value, ...]
+\endverbatim
+For lists, items can also be appended using:
+\verbatim
+      TAG += value [value, ...]
+\endverbatim
+Values that contain spaces should be placed between quotes (\" \").
+<br>
+Note:<br>
+Use Doxygen to compare the used configuration file with the template configuration file:
+\verbatim
+      doxygen -x [configFile]
+\endverbatim
+Use Doxygen to compare the used configuration file with the template configuration file
+without replacing the environment variables or CMake type replacement variables:
+\verbatim
+      doxygen -x_noenv [configFile]
+\endverbatim
+]]>      
+    </docs>
+  </header>
+  <footer>
+    <docs doxywizard="0" doxyfile="0">
+<![CDATA[
+\section config_examples Examples
+Suppose you have a simple project consisting of two files: a source file
+\c example.cc and a header file \c example.h.
+Then a minimal configuration file is as simple as:
+\verbatim
+INPUT            = example.cc example.h
+\endverbatim
+Assuming the example makes use of Qt classes and \c perl is located
+in <code>/usr/bin</code>, a more realistic configuration file would be:
+\verbatim
+PROJECT_NAME     = Example
+INPUT            = example.cc example.h
+WARNINGS         = YES
+TAGFILES         = qt.tag
+SEARCHENGINE     = NO
+\endverbatim
+To generate the documentation for the
+<a href="https://sourceforge.net/projects/qdbttabular/">QdbtTabular</a> package
+I have used the following configuration file:
+\verbatim
+PROJECT_NAME     = QdbtTabular
+OUTPUT_DIRECTORY = html
+WARNINGS         = YES
+INPUT            = examples/examples.doc src
+FILE_PATTERNS    = *.cc *.h
+INCLUDE_PATH     = examples
+TAGFILES         = qt.tag
+SEARCHENGINE     = YES
+\endverbatim
+To regenerate the Qt-1.44 documentation from the sources, you could use the
+following configuration file:
+\verbatim
+PROJECT_NAME         = Qt
+OUTPUT_DIRECTORY     = qt_docs
+HIDE_UNDOC_MEMBERS   = YES
+HIDE_UNDOC_CLASSES   = YES
+ENABLE_PREPROCESSING = YES
+MACRO_EXPANSION      = YES
+EXPAND_ONLY_PREDEF   = YES
+SEARCH_INCLUDES      = YES
+FULL_PATH_NAMES      = YES
+STRIP_FROM_PATH      = $(QTDIR)/
+PREDEFINED           = USE_TEMPLATECLASS Q_EXPORT= \
+                       QArrayT:=QArray \
+                       QListT:=QList \
+                       QDictT:=QDict \
+                       QQueueT:=QQueue \
+                       QVectorT:=QVector \
+                       QPtrDictT:=QPtrDict \
+                       QIntDictT:=QIntDict \
+                       QStackT:=QStack \
+                       QDictIteratorT:=QDictIterator \
+                       QListIteratorT:=QListIterator \
+                       QCacheT:=QCache \
+                       QCacheIteratorT:=QCacheIterator \
+                       QIntCacheT:=QIntCache \
+                       QIntCacheIteratorT:=QIntCacheIterator \
+                       QIntDictIteratorT:=QIntDictIterator \
+                       QPtrDictIteratorT:=QPtrDictIterator
+INPUT                = $(QTDIR)/doc \
+                       $(QTDIR)/src/widgets \
+                       $(QTDIR)/src/kernel \
+                       $(QTDIR)/src/dialogs \
+                       $(QTDIR)/src/tools
+FILE_PATTERNS        = *.cpp *.h q*.doc
+INCLUDE_PATH         = $(QTDIR)/include
+RECURSIVE            = YES
+\endverbatim
+For the Qt-2.1 sources I recommend to use the following settings:
+\verbatim
+PROJECT_NAME          = Qt
+PROJECT_NUMBER        = 2.1
+HIDE_UNDOC_MEMBERS    = YES
+HIDE_UNDOC_CLASSES    = YES
+SOURCE_BROWSER        = YES
+INPUT                 = $(QTDIR)/src
+FILE_PATTERNS         = *.cpp *.h q*.doc
+RECURSIVE             = YES
+EXCLUDE_PATTERNS      = *codec.cpp moc_* */compat/* */3rdparty/*
+ALPHABETICAL_INDEX    = YES
+IGNORE_PREFIX         = Q
+ENABLE_PREPROCESSING  = YES
+MACRO_EXPANSION       = YES
+INCLUDE_PATH          = $(QTDIR)/include
+PREDEFINED            = Q_PROPERTY(x)= \
+                        Q_OVERRIDE(x)= \
+                        Q_EXPORT= \
+                        Q_ENUMS(x)= \
+                        "QT_STATIC_CONST=static const " \
+                        _WS_X11_ \
+                        INCLUDE_MENUITEM_DEF
+EXPAND_ONLY_PREDEF    = YES
+EXPAND_AS_DEFINED     = Q_OBJECT_FAKE Q_OBJECT ACTIVATE_SIGNAL_WITH_PARAM \
+                        Q_VARIANT_AS
+\endverbatim
+Here Doxygen's preprocessor is used to substitute some
+macro names that are normally substituted by the C preprocessor,
+but without doing full macro expansion.
+\htmlonly
+Go to the <a href="commands.html">next</a> section or return to the
+ <a href="index.html">index</a>.
+\endhtmlonly
+*/
+]]>      
+    </docs>
+  </footer>
+  <group name="Project" docs="Project related configuration options">
+    <option type="string" id="DOXYFILE_ENCODING" format="string" defval="UTF-8">
+      <docs>
+<![CDATA[Этот тег указывает кодировку, используемую для всех символов в файле конфигурации, которые следуют за ним. Значение по умолчанию — UTF-8, которое также является кодировкой, используемой для всего текста перед первым появлением этого тега. Doxygen использует \c libiconv (или встроенный в \c libc iconv) для перекодирования. См. https://www.gnu.org/software/libiconv/ для списка возможных кодировок.]]>        
+      </docs>
+    </option>
+    <option type="string" id="PROJECT_NAME" format="string" defval="My Project">
+      <docs>
+<![CDATA[Тег \c PROJECT_NAME — это одно слово (или последовательность слов, заключенная в двойные кавычки, если вы не используете Doxywizard), которое должно идентифицировать проект, для которого создается документация. Это имя используется в заголовке большинства сгенерированных страниц и в некоторых других местах.]]>        
+      </docs>
+    </option>
+    <option type="string" id="PROJECT_NUMBER" format="string" defval="">
+      <docs>
+<![CDATA[Тег \c PROJECT_NUMBER можно использовать для ввода номера проекта или ревизии. Это может быть полезно для архивирования сгенерированной документации или при использовании системы контроля версий.]]>        
+      </docs>
+    </option>
+    <option type="string" id="PROJECT_BRIEF" format="string" defval="">
+      <docs>
+<![CDATA[Используя тег \c PROJECT_BRIEF, можно предоставить необязательное однострочное описание проекта, которое появляется в верхней части каждой страницы и должно дать читателям быстрое представление о назначении проекта. Описание должно быть кратким.]]>        
+      </docs>
+    </option>
+    <option type="string" id="PROJECT_LOGO" format="image" defval="">
+      <docs>
+<![CDATA[С помощью тега \c PROJECT_LOGO можно указать логотип или значок, который будет включен в документацию. Максимальная высота логотипа не должна превышать 55 пикселей, а максимальная ширина — 200 пикселей. Doxygen скопирует логотип в выходной каталог.]]>        
+      </docs>
+    </option>
+    <option type="string" id="PROJECT_ICON" format="image" defval="">
+      <docs>
+<![CDATA[С помощью тега \c PROJECT_ICON можно указать значок, который будет включен в вкладки при отображении HTML-документа. Doxygen скопирует логотип в выходной каталог.]]>        
+      </docs>
+    </option>
+    <option type="string" id="OUTPUT_DIRECTORY" format="dir" defval="">
+      <docs>
+<![CDATA[Тег \c OUTPUT_DIRECTORY используется для указания (относительного или абсолютного) пути, по которому будет записана сгенерированная документация. Если введен относительный путь, он будет относительным к месту запуска Doxygen. Если оставить пустым, будет использоваться текущий каталог.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="CREATE_SUBDIRS" defval="0">
+      <docs>
+<![CDATA[Если тег \c CREATE_SUBDIRS установлен в \c YES, Doxygen создаст до 4096 подкаталогов (на 2 уровнях) в выходном каталоге каждого выходного формата и распределит сгенерированные файлы по этим каталогам. Включение этой опции может быть полезно, когда Doxygen получает большое количество исходных файлов, и размещение всех сгенерированных файлов в одном каталоге может вызвать проблемы с производительностью файловой системы. Настройте \c CREATE_SUBDIRS_LEVEL для управления количеством подкаталогов.]]>        
+      </docs>
+    </option>
+    <option type="int" id="CREATE_SUBDIRS_LEVEL" minval="0" maxval="8" defval="8" depends="CREATE_SUBDIRS">
+      <docs>
+<![CDATA[Управляет количеством подкаталогов, которые будут созданы, когда тег \c CREATE_SUBDIRS установлен в \c YES. Уровень 0 представляет 16 каталогов, и каждое увеличение уровня удваивает количество каталогов, что дает 4096 каталогов на уровне 8, который является значением по умолчанию и максимальным значением. Подкаталоги организованы в 2 уровня, первый уровень всегда имеет фиксированное количество 16 каталогов.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="ALLOW_UNICODE_NAMES" defval="0">
+      <docs>
+<![CDATA[Если тег \c ALLOW_UNICODE_NAMES установлен в \c YES, Doxygen разрешит появление не-ASCII символов в именах сгенерированных файлов. Если установлен в \c NO, не-ASCII символы будут экранированы, например, _xE3_x81_x84 будет использоваться для Unicode U+3044.]]>        
+      </docs>
+    </option>
+    <option type="enum" id="OUTPUT_LANGUAGE" defval="English">
+      <docs>
+<![CDATA[Тег \c OUTPUT_LANGUAGE используется для указания языка, на котором будет написана вся документация, сгенерированная Doxygen. Doxygen будет использовать эту информацию для генерации всего постоянного вывода на соответствующем языке.]]>        
+      </docs>
+      <value name="Afrikaans"/>
+      <value name="Arabic"/>
+      <value name="Armenian"/>
+      <value name="Brazilian"/>
+      <value name="Bulgarian"/>
+      <value name="Catalan"/>
+      <value name="Chinese"/>
+      <value name="Chinese-Traditional"/>
+      <value name="Croatian"/>
+      <value name="Czech"/>
+      <value name="Danish"/>
+      <value name="Dutch"/>
+      <value name="English" desc="(США)"/>
+      <value name="Esperanto"/>
+      <value name="Farsi" desc="(Персидский)"/>
+      <value name="Finnish"/>
+      <value name="French"/>
+      <value name="German"/>
+      <value name="Greek"/>
+      <value name="Hindi"/>
+      <value name="Hungarian"/>
+      <value name="Indonesian"/>
+      <value name="Italian"/>
+      <value name="Japanese"/>
+      <value name="Japanese-en" desc="(Японский с английскими сообщениями)"/>
+      <value name="Korean"/>
+      <value name="Korean-en" desc="(Корейский с английскими сообщениями)"/>
+      <value name="Latvian"/>
+      <value name="Lithuanian"/>
+      <value name="Macedonian"/>
+      <value name="Norwegian"/>
+      <value name="Persian" desc="(Фарси)"/>
+      <value name="Polish"/>
+      <value name="Portuguese"/>
+      <value name="Romanian"/>
+      <value name="Russian"/>
+      <value name="Serbian"/>
+      <value name="Serbian-Cyrillic"/>
+      <value name="Slovak"/>
+      <value name="Slovene"/>
+      <value name="Spanish"/>
+      <value name="Swedish"/>
+      <value name="Turkish"/>
+      <value name="Ukrainian"/>
+      <value name="Vietnamese"/>
+    </option>
+    <option type="bool" id="BRIEF_MEMBER_DESC" defval="1">
+      <docs>
+<![CDATA[Если тег \c BRIEF_MEMBER_DESC установлен в \c YES, Doxygen включит краткие описания членов после членов, перечисленных в документации файла и класса (аналогично \c Javadoc). Установите в \c NO, чтобы отключить это.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="REPEAT_BRIEF" defval="1">
+      <docs>
+<![CDATA[Если тег \c REPEAT_BRIEF установлен в \c YES, Doxygen добавит краткое описание члена или функции перед подробным описанием. &lt;br&gt;Примечание: Если оба тега \ref cfg_hide_undoc_members "HIDE_UNDOC_MEMBERS" и \ref cfg_brief_member_desc "BRIEF_MEMBER_DESC" установлены в \c NO, краткие описания будут полностью подавлены.]]>        
+      </docs>
+    </option>
+    <option type="list" id="ABBREVIATE_BRIEF" format="string">
+      <docs>
+<![CDATA[Этот тег реализует почти интеллектуальный сокращатель кратких описаний, который используется для формирования текста в различных списках. Каждая строка в этом списке, если она найдена как начальный текст краткого описания, будет удалена из текста, и результат после обработки всего списка будет использован как аннотированный текст. В противном случае краткое описание используется как есть. Если оставить пустым, будут использоваться следующие значения (`$name` автоматически заменяется именем сущности):]]>        
+      </docs>
+      <value name="The $name class"/>
+      <value name="The $name widget"/>
+      <value name="The $name file"/>
+      <value name="is"/>
+      <value name="provides"/>
+      <value name="specifies"/>
+      <value name="contains"/>
+      <value name="represents"/>
+      <value name="a"/>
+      <value name="an"/>
+      <value name="the"/>
+    </option>
+    <option type="bool" id="ALWAYS_DETAILED_SEC" defval="0">
+      <docs>
+<![CDATA[Если оба тега \c ALWAYS_DETAILED_SEC и \ref cfg_repeat_brief "REPEAT_BRIEF" установлены в \c YES, Doxygen сгенерирует подробный раздел, даже если есть только краткое описание.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="INLINE_INHERITED_MEMB" defval="0">
+      <docs>
+<![CDATA[Если тег \c INLINE_INHERITED_MEMB установлен в \c YES, Doxygen покажет все унаследованные члены в документации класса, как если бы эти члены были обычными членами класса. Конструкторы, деструкторы и операторы присваивания базового класса не будут показаны.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="FULL_PATH_NAMES" defval="1">
+      <docs>
+<![CDATA[Если тег \c FULL_PATH_NAMES установлен в \c YES, Doxygen добавит полный префикс пути к файлам в списке файлов и в заголовочных файлах. Если установлен в \c NO, будет использоваться самый короткий путь, который делает имена файлов уникальными.]]>        
+      </docs>
+    </option>
+    <option type="list" id="STRIP_FROM_PATH" format="dir" depends="FULL_PATH_NAMES">
+      <docs>
+<![CDATA[Тег \c STRIP_FROM_PATH можно использовать для удаления пользовательской части пути. Удаление выполняется только если одна из указанных строк совпадает с левой частью пути. Этот тег можно использовать для отображения относительных путей в списке файлов. Если оставить пустым, будет использоваться каталог, в котором запущен Doxygen, как путь для удаления. &lt;br&gt;Обратите внимание, что вы можете указать здесь абсолютные пути, но также и относительные пути, которые будут относительными к каталогу, в котором был запущен Doxygen.]]>        
+      </docs>
+    </option>
+    <option type="list" id="STRIP_FROM_INC_PATH" format="dir">
+      <docs>
+<![CDATA[Тег \c STRIP_FROM_INC_PATH можно использовать для удаления пользовательской части пути, упомянутой в документации класса, которая сообщает читателю, какой заголовочный файл нужно включить, чтобы использовать класс. Если оставить пустым, будет использоваться только имя заголовочного файла, содержащего определение класса. В противном случае вы должны указать список путей включения, которые обычно передаются компилятору с флагом `-I`.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="SHORT_NAMES" defval="0">
+      <docs>
+<![CDATA[Если тег \c SHORT_NAMES установлен в \c YES, Doxygen будет генерировать более короткие (но менее читаемые) имена файлов. Это может быть полезно, если ваша файловая система не поддерживает длинные имена (как DOS, Mac или CD-ROM).]]>        
+      </docs>
+    </option>
+    <option type="bool" id="JAVADOC_AUTOBRIEF" defval="0">
+      <docs>
+<![CDATA[Если тег \c JAVADOC_AUTOBRIEF установлен в \c YES, Doxygen будет интерпретировать первую строку комментариев в стиле Javadoc (до первой точки, вопросительного знака или восклицательного знака) как краткое описание. Если установлен в \c NO, стиль Javadoc будет вести себя как обычные комментарии в стиле Qt (поэтому требуется явная команда \ref cmdbrief "\@brief" для получения краткого описания).]]>        
+      </docs>
+    </option>
+    <option type="bool" id="JAVADOC_BANNER" defval="0">
+      <docs>
+<![CDATA[Если тег \c JAVADOC_BANNER установлен в \c YES, Doxygen будет интерпретировать строки типа \verbatim /***************\endverbatim как начало "баннера" комментария в стиле Javadoc. Если установлен в \c NO, стиль Javadoc будет вести себя как обычные комментарии, и Doxygen не будет интерпретировать его.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="QT_AUTOBRIEF" defval="0">
+      <docs>
+<![CDATA[Если тег \c QT_AUTOBRIEF установлен в \c YES, Doxygen будет интерпретировать первую строку комментариев в стиле Qt (до первой точки, вопросительного знака или восклицательного знака) как краткое описание. Если установлен в \c NO, стиль Qt будет вести себя как обычные комментарии в стиле Qt (поэтому требуется явная команда \ref cmdbrief "\brief" для получения краткого описания).]]>        
+      </docs>
+    </option>
+    <option type="bool" id="MULTILINE_CPP_IS_BRIEF" defval="0">
+      <docs>
+<![CDATA[Тег \c MULTILINE_CPP_IS_BRIEF можно установить в \c YES, чтобы Doxygen обрабатывал многострочные блоки специальных комментариев C++ (т.е. блоки комментариев \c //! или \c ///) как краткие описания. Это раньше было поведением по умолчанию. Новое значение по умолчанию — обрабатывать многострочные блоки комментариев C++ как подробные описания. Если вы предпочитаете старое поведение, установите этот тег в \c YES. &lt;br&gt;Обратите внимание, что установка этого тега в \c YES также означает, что комментарии Rational Rose больше не будут распознаваться.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="PYTHON_DOCSTRING" defval="1">
+      <docs>
+<![CDATA[По умолчанию строки документации Python отображаются как предварительно отформатированный текст и не могут использовать специальные команды Doxygen. Установив \c PYTHON_DOCSTRING в \c NO, можно использовать специальные команды Doxygen, и содержимое блока документации строки документации будет отображаться как документация Doxygen.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="INHERIT_DOCS" defval="1">
+      <docs>
+<![CDATA[Если тег \c INHERIT_DOCS установлен в \c YES, недокументированный член унаследует документацию от любого документированного члена, который он переопределяет.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="SEPARATE_MEMBER_PAGES" defval="0">
+      <docs>
+<![CDATA[Если тег \c SEPARATE_MEMBER_PAGES установлен в \c YES, Doxygen будет генерировать новую страницу для каждого члена. Если установлен в \c NO, документация члена станет частью файла/класса/пространства имен, который его содержит.]]>        
+      </docs>
+    </option>
+    <option type="int" id="TAB_SIZE" minval="1" maxval="16" defval="4">
+      <docs>
+<![CDATA[Тег \c TAB_SIZE можно использовать для установки количества пробелов в табуляции. Doxygen использует это значение для замены табуляций пробелами во фрагментах кода.]]>        
+      </docs>
+    </option>
+    <option type="list" id="ALIASES" format="string">
+      <docs>
+<![CDATA[Этот тег можно использовать для указания нескольких псевдонимов, которые будут действовать как команды в документации. Псевдоним имеет форму: \verbatim имя=значение\endverbatim Например, добавление \verbatim "sideeffect=@par Побочные эффекты:^^"\endverbatim позволит вам разместить команду \c \sideeffect (или \c \@sideeffect) в документации, что приведет к созданию пользовательского абзаца с заголовком "Побочные эффекты:". Обратите внимание, что вы не можете поместить \ref cmdn "\n" в часть значения псевдонима для вставки разрыва строки (в результирующем выводе). Вы можете поместить `^^` в часть значения псевдонима для вставки разрыва строки, как если бы в исходном файле был физический разрыв строки.]]>        
+      </docs>
+      <docs doxyfile="0" documentation="0">
+<![CDATA[Этот тег можно использовать для указания нескольких псевдонимов, которые будут действовать как команды в документации. Псевдоним имеет форму: \verbatim имя=значение\endverbatim Например, добавление \verbatim "sideeffect=@par Побочные эффекты:^^"\endverbatim позволит вам разместить команду \c \sideeffect (или \c \@sideeffect) в документации, что приведет к созданию пользовательского абзаца с заголовком "Побочные эффекты:". Обратите внимание, что вы не можете поместить \ref cmdn "\n" в часть значения псевдонима для вставки разрыва строки (в результирующем выводе). Вы можете поместить `^^` в часть значения псевдонима для вставки разрыва строки, как если бы в исходном файле был физический разрыв строки.]]>        
+      </docs>
+      <docs doxywizard="0" documentation="0">
+<![CDATA[
+ When you need a literal `{` or `}` or `,` in the value part of an alias you have to
+ escape them by means of a backslash (\c \\), this can lead to conflicts with the
+ commands \c \\{ and \c \\} for these it is advised to use the version \c @{ and \c @} or
+ use a double escape (\c \\\\{ and \c \\\\})
+]]>        
+      </docs>
+      <docs doxyfile="0" doxywizard="0">
+<![CDATA[
+ When you need a literal `{` or `}` or `,` in the value part of an alias you have to
+ escape them by means of a backslash (`\`), this can lead to conflicts with the
+ commands \c \\{ and \c \\} for these it is advised to use the version \c @@{ and \c @@} or
+ use a double escape (\c \\\\{ and \c \\\\})
+]]>        
+      </docs>
+    </option>
+    <option type="bool" id="OPTIMIZE_OUTPUT_FOR_C" defval="0">
+      <docs>
+<![CDATA[Если ваш проект содержит только исходный код C, установите тег \c OPTIMIZE_OUTPUT_FOR_C в \c YES. Doxygen затем сгенерирует вывод, более адаптированный для C. Например, некоторые из используемых имен будут отличаться. Список всех членов будет опущен и т.д.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="OPTIMIZE_OUTPUT_JAVA" defval="0">
+      <docs>
+<![CDATA[Если ваш проект содержит только исходный код Java или Python, установите тег \c OPTIMIZE_OUTPUT_JAVA в \c YES. Doxygen затем сгенерирует вывод, более адаптированный для языка. Например, пространства имен будут отображаться как пакеты, квалифицированные области будут выглядеть иначе и т.д.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="OPTIMIZE_FOR_FORTRAN" defval="0">
+      <docs>
+<![CDATA[Если ваш проект содержит исходный код Fortran, установите тег \c OPTIMIZE_FOR_FORTRAN в \c YES. Doxygen затем сгенерирует вывод, подходящий для Fortran.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="OPTIMIZE_OUTPUT_VHDL" defval="0">
+      <docs>
+<![CDATA[Если ваш проект содержит исходный код VHDL, установите тег \c OPTIMIZE_OUTPUT_VHDL в \c YES. Doxygen затем сгенерирует вывод, подходящий для VHDL.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="OPTIMIZE_OUTPUT_SLICE" defval="0">
+      <docs>
+<![CDATA[Если ваш проект содержит только исходный код Slice, установите тег \c OPTIMIZE_OUTPUT_SLICE в \c YES. Doxygen затем сгенерирует вывод, более адаптированный для языка. Например, пространства имен будут отображаться как модули, типы будут разделены на больше групп и т.д.]]>        
+      </docs>
+    </option>
+    <option type="list" id="EXTENSION_MAPPING" format="string">
+      <docs>
+<![CDATA[Doxygen выбирает парсер для использования на основе расширения анализируемого файла. С этим тегом вы можете назначить парсер для использования с данным расширением. Doxygen имеет встроенное сопоставление, но вы можете переопределить или расширить его с помощью этого тега. Формат: &lt;code&gt;ext=язык&lt;/code&gt;, где \c ext — расширение файла, а язык — один из парсеров, поддерживаемых Doxygen: IDL, Java, JavaScript, Csharp (C#), C, C++, Lex, D, PHP, md (Markdown), Objective-C, Python, Slice, VHDL, Fortran (Fortran с фиксированным форматом: FortranFixed, Fortran со свободным форматом: FortranFree, Fortran с неизвестным форматом: Fortran. В последнем случае парсер попытается угадать, является ли код фиксированным или свободным форматом, что является значением по умолчанию для файлов типа Fortran). Например, чтобы Doxygen обрабатывал файлы &lt;code&gt;.inc&lt;/code&gt; как файлы Fortran (по умолчанию PHP), а файлы &lt;code&gt;.f&lt;/code&gt; как файлы C (по умолчанию Fortran), используйте: `inc=Fortran f=C`. &lt;br&gt;Примечание: Для файлов без расширения вы можете использовать `no_extension` как заполнитель. &lt;br&gt;Обратите внимание, что для пользовательских расширений вам также нужно установить \ref cfg_file_patterns "FILE_PATTERNS", иначе Doxygen не будет читать эти файлы. Когда указан `no_extension`, вы должны добавить `*` в \ref cfg_file_patterns "FILE_PATTERNS". &lt;br&gt;Примечание, см. также список \ref default_file_extension_mapping "сопоставления расширений файлов по умолчанию".]]>        
+      </docs>
+    </option>
+    <option type="bool" id="MARKDOWN_SUPPORT" defval="1">
+      <docs>
+<![CDATA[Если тег \c MARKDOWN_SUPPORT включен, Doxygen будет предварительно обрабатывать все комментарии в соответствии с форматом Markdown, что позволяет создавать более читаемую документацию. См. https://daringfireball.net/projects/markdown/ для получения дополнительной информации. Вывод обработки Markdown дополнительно обрабатывается Doxygen, поэтому вы можете смешивать команды Doxygen, HTML и XML с форматированием Markdown. Отключайте это только в случае проблем с обратной совместимостью.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="MARKDOWN_STRICT" defval="1" depends="MARKDOWN_SUPPORT">
+      <docs>
+<![CDATA[Если тег \c MARKDOWN_STRICT включен, Doxygen будет обрабатывать текст в комментариях как формат Markdown, даже если собственный формат разметки Doxygen конфликтует с Markdown. Это актуально только при использовании обратных кавычек. Собственный стиль разметки Doxygen позволяет одинарной кавычке закрывать фрагмент текста, начинающийся с обратной кавычки, который затем рассматривается как цитируемый фрагмент текста, в то время как в Markdown такие фрагменты текста рассматриваются как буквальный текст и закрываются только при нахождении второй соответствующей обратной кавычки. Кроме того, собственный формат разметки Doxygen требует, чтобы двойные кавычки в разделе с обратными кавычками экранировались при их появлении, в то время как Markdown этого не требует.]]>        
+      </docs>
+    </option>
+    <option type="int" id="TOC_INCLUDE_HEADINGS" minval="0" maxval="99" defval="6" depends="MARKDOWN_SUPPORT">
+      <docs>
+<![CDATA[Когда тег \c TOC_INCLUDE_HEADINGS установлен в ненулевое значение, все заголовки до этого уровня будут автоматически включены в оглавление, даже если у них нет атрибута id. \note Эта функция в настоящее время работает только для заголовков Markdown.]]>        
+      </docs>
+    </option>
+    <option type="enum" id="MARKDOWN_ID_STYLE" defval="DOXYGEN" depends="MARKDOWN_SUPPORT">
+      <docs>
+<![CDATA[Тег \c MARKDOWN_ID_STYLE можно использовать для указания алгоритма, используемого для генерации идентификаторов для заголовков Markdown. Примечание: Каждый идентификатор уникален.]]>        
+      </docs>
+      <value name="DOXYGEN" desc="использовать фиксированную строку 'autotoc_md' с порядковым номером, начиная с 0"/>
+      <value name="GITHUB" desc="использовать версию заголовка в нижнем регистре, заменяя пробелы на '-' и удаляя знаки препинания"/>
+    </option>
+    <option type="bool" id="AUTOLINK_SUPPORT" defval="1">
+      <docs>
+<![CDATA[Когда включено, Doxygen будет пытаться связать слова, соответствующие документированному классу или пространству имен, с соответствующей документацией. Это можно предотвратить в отдельных случаях, поместив символ \c % перед словом, или глобально, установив \c AUTOLINK_SUPPORT в \c NO. Слова, перечисленные в теге \c AUTOLINK_IGNORE_WORDS, исключаются из автоматического связывания.]]>        
+      </docs>
+    </option>
+    <option type="list" id="AUTOLINK_IGNORE_WORDS" format="string" depends="AUTOLINK_SUPPORT">
+      <docs>
+<![CDATA[Этот тег указывает список слов, которые при совпадении с началом слова в документации будут подавлять генерацию автоматических ссылок, если автоматическое связывание включено через AUTOLINK_SUPPORT. Этот список не влияет на ссылки, созданные явно с помощью команд \# или \ref cmdlink "\link" или \ref cmdref "\ref".]]>        
+      </docs>
+    </option>
+    <option type="bool" id="BUILTIN_STL_SUPPORT" defval="0">
+      <docs>
+<![CDATA[Если вы используете классы STL (т.е. `std::string`, `std::vector` и т.д.), но не хотите включать исходный код (файл тегов) STL в качестве входных данных, вы должны установить этот тег в \c YES, чтобы Doxygen мог сопоставлять объявления и определения функций, чьи аргументы содержат классы STL (например, `func(std::string`); с `func(std::string) {}`). Это также делает диаграммы наследования и сотрудничества, включающие классы STL, более полными и точными.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="CPP_CLI_SUPPORT" defval="0">
+      <docs>
+<![CDATA[Если вы используете язык C++/CLI от Microsoft, вы должны установить эту опцию в \c YES для включения поддержки синтаксического анализа.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="SIP_SUPPORT" defval="0">
+      <docs>
+<![CDATA[Если ваш проект содержит только &lt;a href="https://www.riverbankcomputing.com/software"&gt;sip&lt;/a&gt; исходный код, установите тег \c SIP_SUPPORT в \c YES. Doxygen будет анализировать их как обычный C++, но будет предполагать, что все классы используют публичное наследование, когда нет явного ключевого слова защиты, вместо приватного наследования.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="IDL_PROPERTY_SUPPORT" defval="1">
+      <docs>
+<![CDATA[Для Microsoft IDL существуют атрибуты \c propget и \c propput для указания методов getter и setter для свойств. Установка этой опции в \c YES заставит Doxygen заменять методы get и set в документации на свойство. Это работает только если методы действительно получают или устанавливают простой тип. Если это не так, или вы хотите отображать методы в любом случае, вы должны установить эту опцию в \c NO.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="DISTRIBUTE_GROUP_DOC" defval="0">
+      <docs>
+<![CDATA[Если в документации используется группировка членов и тег \c DISTRIBUTE_GROUP_DOC установлен в \c YES, то Doxygen повторно использует документацию первого члена группы для других членов группы (если она есть). По умолчанию все члены группы должны быть явно документированы.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="GROUP_NESTED_COMPOUNDS" defval="0">
+      <docs>
+<![CDATA[Если структура или класс добавлены в группу и эта опция включена, любые вложенные классы или структуры также будут добавлены в ту же группу. По умолчанию эта опция отключена, и вложенные составные типы должны быть добавлены явно через \ref cmdingroup "\ingroup".]]>        
+      </docs>
+    </option>
+    <option type="bool" id="SUBGROUPING" defval="1">
+      <docs>
+<![CDATA[Установите тег \c SUBGROUPING в \c YES, чтобы разрешить группам членов класса одного типа (например, группу публичных функций) быть помещенными в подгруппу этого типа (например, в разделе Публичные функции). Установите в \c NO, чтобы предотвратить подгруппировку. Альтернативно, это можно сделать для каждого класса с помощью команды \ref cmdnosubgrouping "\nosubgrouping".]]>        
+      </docs>
+    </option>
+    <option type="bool" id="INLINE_GROUPED_CLASSES" defval="0">
+      <docs>
+<![CDATA[Когда тег \c INLINE_GROUPED_CLASSES установлен в \c YES, классы, структуры и объединения отображаются в содержащей их группе (например, с использованием \ref cmdingroup "\ingroup"), а не на отдельных страницах (для HTML и страниц Man) или в разделах (для \f$\mbox{\LaTeX}\f$ и RTF). &lt;br&gt;Обратите внимание, что эта функция не может быть объединена с \ref cfg_separate_member_pages "SEPARATE_MEMBER_PAGES".]]>        
+      </docs>
+    </option>
+    <option type="bool" id="INLINE_SIMPLE_STRUCTS" defval="0">
+      <docs>
+<![CDATA[Когда тег \c INLINE_SIMPLE_STRUCTS установлен в \c YES, структуры, классы и объединения, которые имеют только публичные поля данных или простые поля typedef, будут отображаться в документации области, в которой они определены (т.е. документация файла, пространства имен или группы), при условии, что эта область документирована. Если установлено в \c NO, структуры, классы и объединения будут отображаться на отдельных страницах (для HTML и страниц Man) или в разделах (для \f$\mbox{\LaTeX}\f$ и RTF).]]>        
+      </docs>
+    </option>
+    <option type="bool" id="TYPEDEF_HIDES_STRUCT" defval="0">
+      <docs>
+<![CDATA[Когда тег \c TYPEDEF_HIDES_STRUCT включен, typedef для структуры, объединения или перечисления будет документирован как структура, объединение или перечисление с именем typedef. Таким образом, &lt;code&gt;typedef struct TypeS {} TypeT&lt;/code&gt; будет отображаться в документации как структура с именем \c TypeT. Когда отключено, typedef будет отображаться как член файла, пространства имен или класса. Структура будет называться \c TypeS. Это обычно полезно для кода C, если соглашение о кодировании требует, чтобы все составные типы были typedef, и на typedef ссылаются только по имени, никогда по имени тега.]]>        
+      </docs>
+    </option>
+    <option type="int" id="LOOKUP_CACHE_SIZE" minval="0" maxval="9" defval="0">
+      <!-- be careful when changing these formulas as they are hard coded in the conversion script -->
+      <docs>
+<![CDATA[Размер кэша поиска символов можно установить с помощью \c LOOKUP_CACHE_SIZE. Этот кэш используется для разрешения символов на основе их имени и области видимости. Поскольку это может быть дорогостоящим процессом, и обычно одни и те же символы появляются много раз в коде, Doxygen поддерживает кэш предварительно проанализированных символов. Если кэш слишком мал, Doxygen станет медленнее. Если кэш слишком велик, память будет потрачена впустую. Размер кэша определяется следующей формулой: \f$2^{(16+\mbox{LOOKUP\_CACHE\_SIZE})}\f$. Допустимый диапазон — 0..9, значение по умолчанию — 0, что соответствует размеру кэша в \f$2^{16} = 65536\f$ символов. В конце выполнения Doxygen сообщит об использовании кэша и предложит оптимальный размер кэша с точки зрения скорости.]]>        
+      </docs>
+    </option>
+    <option type="int" id="NUM_PROC_THREADS" defval="1" minval="0" maxval="512">
+      <docs>
+<![CDATA[\c NUM_PROC_THREADS указывает количество потоков, которые Doxygen может использовать во время обработки. Когда установлено в \c 0, Doxygen установит его на основе количества ядер, доступных в системе. Вы можете установить его явно в значение больше 0, чтобы лучше контролировать баланс между нагрузкой на ЦП и скоростью обработки. В настоящее время только обработка входных данных может выполняться несколькими потоками. Поскольку это все еще экспериментальная функция, значение по умолчанию установлено в 1, что фактически отключает параллельную обработку. Пожалуйста, сообщайте о любых проблемах, с которыми вы столкнулись. Параллельная генерация диаграмм dot управляется настройкой \c DOT_NUM_THREADS.]]>        
+      </docs>
+    </option>
+    <option type="enum" id="TIMESTAMP" defval="NO">
+      <docs>
+<![CDATA[Если тег \c TIMESTAMP установлен в значение, отличное от \c NO, каждая сгенерированная страница будет содержать дату или дату и время, когда страница была сгенерирована. Установка в \c NO помогает сравнивать вывод нескольких запусков.]]>        
+      </docs>
+      <value name="YES"/>
+      <value name="NO"/>
+      <value name="DATETIME"/>
+      <value name="DATE"/>
+    </option>
+  </group>
+  <group name="Build" docs="Build related configuration options">
+    <option type="bool" id="EXTRACT_ALL" defval="0">
+      <docs>
+<![CDATA[Если тег \c EXTRACT_ALL установлен в \c YES, Doxygen будет предполагать, что все сущности в документации документированы, даже если документация недоступна. Закрытые члены класса и статические члены файла будут скрыты, если только теги \ref cfg_extract_private "EXTRACT_PRIVATE" или \ref cfg_extract_static "EXTRACT_STATIC" не установлены в \c YES соответственно. \note Это также отключит предупреждения о недокументированных членах, которые обычно генерируются, когда \ref cfg_warnings "WARNINGS" установлен в \c YES.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="EXTRACT_PRIVATE" defval="0">
+      <docs>
+<![CDATA[Если тег \c EXTRACT_PRIVATE установлен в \c YES, все закрытые члены класса будут включены в документацию.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="EXTRACT_PRIV_VIRTUAL" defval="0">
+      <docs>
+<![CDATA[Если тег \c EXTRACT_PRIV_VIRTUAL установлен в \c YES, документированные закрытые виртуальные методы класса будут включены в документацию.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="EXTRACT_PACKAGE" defval="0">
+      <docs>
+<![CDATA[Если тег \c EXTRACT_PACKAGE установлен в \c YES, все члены с областью видимости пакета или внутренней областью будут включены в документацию.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="EXTRACT_STATIC" defval="0">
+      <docs>
+<![CDATA[Если тег \c EXTRACT_STATIC установлен в \c YES, все статические члены файла будут включены в документацию.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="EXTRACT_LOCAL_CLASSES" defval="1">
+      <docs>
+<![CDATA[Если тег \c EXTRACT_LOCAL_CLASSES установлен в \c YES, классы (и структуры), определенные локально в исходных файлах, будут включены в документацию. Если установлено в \c NO, будут включены только классы, определенные в заголовочных файлах. Не влияет на исходный код Java.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="EXTRACT_LOCAL_METHODS" defval="0">
+      <docs>
+<![CDATA[Этот флаг полезен только для кода Objective-C. Если установлен в \c YES, локальные методы, определенные в разделе реализации, но не в интерфейсе, будут включены в документацию. Если установлено в \c NO, будут включены только методы в интерфейсе.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="EXTRACT_ANON_NSPACES" defval="0">
+      <docs>
+<![CDATA[Если этот флаг установлен в \c YES, члены анонимных пространств имен будут извлечены и показаны в документации как пространство имен с именем &#x27;anonymous_namespace{file}&#x27;, где file заменяется базовым именем файла, содержащего анонимное пространство имен. По умолчанию анонимные пространства имен скрыты.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="RESOLVE_UNNAMED_PARAMS" defval="1">
+      <docs>
+<![CDATA[Если этот флаг установлен в \c YES, имя неименованных параметров в объявлении будет определено соответствующим определением. По умолчанию неименованные параметры остаются безымянными в выводе.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="HIDE_UNDOC_MEMBERS" defval="0">
+      <docs>
+<![CDATA[Если тег \c HIDE_UNDOC_MEMBERS установлен в \c YES, Doxygen скроет все недокументированные члены внутри документированных классов или файлов. Если установлено в \c NO, эти члены будут включены в различные обзоры, но раздел документации не будет сгенерирован. Эта опция не имеет эффекта, если \ref cfg_extract_all "EXTRACT_ALL" включен.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="HIDE_UNDOC_CLASSES" defval="0">
+      <docs>
+<![CDATA[Если тег \c HIDE_UNDOC_CLASSES установлен в \c YES, Doxygen скроет все недокументированные классы, которые обычно были бы видны в иерархии классов. Если установлено в \c NO, эти классы будут включены в различные обзоры. Если включено, эта опция также скроет недокументированные концепции C++. Эта опция не имеет эффекта, если \ref cfg_extract_all "EXTRACT_ALL" включен.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="HIDE_UNDOC_NAMESPACES" defval="1">
+      <docs>
+<![CDATA[Если тег \c HIDE_UNDOC_NAMESPACES установлен в \c YES, Doxygen скроет все недокументированные пространства имен, которые обычно были бы видны в иерархии пространств имен. Если установлено в \c NO, эти пространства имен будут включены в различные обзоры. Эта опция не имеет эффекта, если \ref cfg_extract_all "EXTRACT_ALL" включен.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="HIDE_FRIEND_COMPOUNDS" defval="0">
+      <docs>
+<![CDATA[Если тег \c HIDE_FRIEND_COMPOUNDS установлен в \c YES, Doxygen скроет все объявления friend. Если установлено в \c NO, эти объявления будут включены в документацию.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="HIDE_IN_BODY_DOCS" defval="0">
+      <docs>
+<![CDATA[Если тег \c HIDE_IN_BODY_DOCS установлен в \c YES, Doxygen скроет любые блоки документации, найденные внутри тела функции. Если установлено в \c NO, эти блоки будут добавлены к подробному блоку документации функции.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="INTERNAL_DOCS" defval="0">
+      <docs>
+<![CDATA[Тег \c INTERNAL_DOCS определяет, будет ли включена документация, написанная после команды \ref cmdinternal "\internal". Если тег установлен в \c NO, документация будет исключена. Установите в \c YES, чтобы включить внутреннюю документацию.]]>        
+      </docs>
+    </option>
+    <option type="enum" id="CASE_SENSE_NAMES" defval="SYSTEM">
+      <docs>
+<![CDATA[Правильно установив опцию \c CASE_SENSE_NAMES, Doxygen сможет лучше адаптироваться к возможностям базовой файловой системы. Если файловая система чувствительна к регистру (т.е. поддерживает файлы в одном каталоге, имена которых отличаются только регистром), вы должны установить опцию в \c YES, чтобы правильно обрабатывать такие файлы, которые появляются во входных данных. Для файловых систем, не чувствительных к регистру, вы должны установить опцию в \c NO, чтобы правильно обрабатывать выходные файлы, записанные для символов, которые отличаются только регистром, например, для двух классов, один с именем \c CLASS, а другой с именем \c Class, а также для поддержки ссылки на файлы без указания точного регистра. В Windows (включая Cygwin) и macOS пользователи обычно должны установить эту опцию в \c NO, в то время как в Linux или других системах Unix она обычно должна быть установлена в \c YES.]]>        
+      </docs>
+      <value name="SYSTEM"/>
+      <value name="NO"/>
+      <value name="YES"/>
+    </option>
+    <option type="bool" id="HIDE_SCOPE_NAMES" defval="0">
+      <docs>
+<![CDATA[Если тег \c HIDE_SCOPE_NAMES установлен в \c NO, Doxygen будет показывать члены с их полным классом и областью пространства имен в документации. Если установлено в \c YES, область будет скрыта.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="HIDE_COMPOUND_REFERENCE" defval="0">
+      <docs>
+<![CDATA[Если тег \c HIDE_COMPOUND_REFERENCE установлен в \c NO (по умолчанию), Doxygen добавит дополнительный текст после заголовка страницы, например, Справочник класса. Если установлено в \c YES, ссылка на составной тип будет скрыта.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="SHOW_HEADERFILE" defval="1">
+      <docs>
+<![CDATA[Если тег \c SHOW_HEADERFILE установлен в \c YES, документация класса покажет, какой заголовочный файл нужно включить, чтобы использовать класс.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="SHOW_INCLUDE_FILES" defval="1">
+      <docs>
+<![CDATA[Если тег \c SHOW_INCLUDE_FILES установлен в \c YES, Doxygen поместит список файлов, включенных файлом, в документацию этого файла.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="SHOW_GROUPED_MEMB_INC" defval="0">
+      <docs>
+<![CDATA[Если тег \c SHOW_GROUPED_MEMB_INC установлен в \c YES, Doxygen добавит для каждой сгруппированной функции-члена файлы включения, которые нужны этой функции, помещая эти файлы включения в порядке, в котором они появлялись бы, если бы сгруппированная функция-член была встроенной. По умолчанию установлено в \c NO для сохранения обратной совместимости с предыдущим поведением.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="FORCE_LOCAL_INCLUDES" defval="0">
+      <docs>
+<![CDATA[Если тег \c FORCE_LOCAL_INCLUDES установлен в \c YES, файлы включения в документации функций, которые являются членами группы, будут записаны с двойными кавычками вместо угловых скобок.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="INLINE_INFO" defval="1">
+      <docs>
+<![CDATA[Если тег \c INLINE_INFO установлен в \c YES, раздел с встроенной информацией будет включен в документацию, показывающий, какие функции являются встроенными.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="SORT_MEMBER_DOCS" defval="1">
+      <docs>
+<![CDATA[Если тег \c SORT_MEMBER_DOCS установлен в \c YES, Doxygen отсортирует (подробную) документацию членов файла и класса в алфавитном порядке по имени члена. Если установлено в \c NO, члены появятся в порядке объявления.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="SORT_BRIEF_DOCS" defval="0">
+      <docs>
+<![CDATA[Если тег \c SORT_BRIEF_DOCS установлен в \c YES, Doxygen отсортирует краткие описания членов файла, пространства имен и класса в алфавитном порядке по имени члена. Если установлено в \c NO, члены появятся в порядке объявления. Обратите внимание, что это также повлияет на порядок классов в списке классов.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="SORT_MEMBERS_CTORS_1ST" defval="0">
+      <docs>
+<![CDATA[Если тег \c SORT_MEMBERS_CTORS_1ST установлен в \c YES, Doxygen отсортирует (краткую и подробную) документацию членов класса так, чтобы конструкторы и деструкторы были перечислены первыми. Если установлено в \c NO, конструкторы появятся в соответствующих порядках, определенных \ref cfg_sort_brief_docs "SORT_BRIEF_DOCS" и \ref cfg_sort_member_docs "SORT_MEMBER_DOCS". \note Если \ref cfg_sort_brief_docs "SORT_BRIEF_DOCS" установлен в \c NO, эта опция игнорируется при сортировке краткой документации членов. \note Если \ref cfg_sort_member_docs "SORT_MEMBER_DOCS" установлен в \c NO, эта опция игнорируется при сортировке подробной документации членов.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="SORT_GROUP_NAMES" defval="0">
+      <docs>
+<![CDATA[Если тег \c SORT_GROUP_NAMES установлен в \c YES, Doxygen отсортирует иерархию имен групп в алфавитном порядке. Если установлено в \c NO, имена групп появятся в порядке их определения.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="SORT_BY_SCOPE_NAME" defval="0">
+      <docs>
+<![CDATA[Если тег \c SORT_BY_SCOPE_NAME установлен в \c YES, список классов будет отсортирован по полным именам (включая пространство имен). Если установлено в \c NO, список классов будет отсортирован только по имени класса, исключая часть пространства имен. \note Если \ref cfg_hide_scope_names "HIDE_SCOPE_NAMES" установлен в \c YES, эта опция менее полезна. \note Эта опция применяется только к списку классов, а не к алфавитному списку.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="STRICT_PROTO_MATCHING" defval="0">
+      <docs>
+<![CDATA[Если опция \c STRICT_PROTO_MATCHING включена и Doxygen не может правильно проанализировать все типы аргументов функции, он отклонит соответствие между прототипом и реализацией функции-члена, даже если есть только один кандидат или если очевидно из простого строкового сопоставления, какой кандидат должен быть выбран. Отключение \c STRICT_PROTO_MATCHING все равно позволит Doxygen принимать соответствие между прототипом и реализацией в таком случае.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="GENERATE_TODOLIST" defval="1">
+      <docs>
+<![CDATA[Тег \c GENERATE_TODOLIST можно использовать для включения (\c YES) или отключения (\c NO) списка задач. Этот список создается путем размещения команд \ref cmdtodo "\todo" в документации.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="GENERATE_TESTLIST" defval="1">
+      <docs>
+<![CDATA[Тег \c GENERATE_TESTLIST можно использовать для включения (\c YES) или отключения (\c NO) списка тестов. Этот список создается путем размещения команд \ref cmdtest "\test" в документации.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="GENERATE_BUGLIST" defval="1">
+      <docs>
+<![CDATA[Тег \c GENERATE_BUGLIST можно использовать для включения (\c YES) или отключения (\c NO) списка ошибок. Этот список создается путем размещения команд \ref cmdbug "\bug" в документации.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="GENERATE_DEPRECATEDLIST" defval="1">
+      <docs>
+<![CDATA[Тег \c GENERATE_DEPRECATEDLIST можно использовать для включения (\c YES) или отключения (\c NO) списка устаревших. Этот список создается путем размещения команд \ref cmddeprecated "\deprecated" в документации.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="GENERATE_REQUIREMENTS" defval="1">
+      <docs>
+<![CDATA[Тег \c GENERATE_REQUIREMENTS можно использовать для включения (\c YES) или отключения (\c NO) страницы требований. Когда включено, эта страница создается автоматически, когда во входных данных появляется хотя бы один блок комментариев с командой \ref cmdrequirement "\requirement".]]>        
+      </docs>
+    </option>
+    <option type="enum" id="REQ_TRACEABILITY_INFO" defval="YES" depends="GENERATE_REQUIREMENTS">
+      <docs>
+<![CDATA[Тег \c REQ_TRACEABILITY_INFO управляет отображением информации о прослеживаемости на странице требований (актуально только при использовании блоков комментариев \ref cmdrequirement "\requirement"). Установка в \c NO полностью отключит информацию о прослеживаемости. Установка в \c UNSATISFIED_ONLY покажет список требований, которым не хватает отношения удовлетворения (через команду: \ref cmdsatisfies "\satisfies"). Аналогично, установка в \c UNVERIFIED_ONLY покажет список требований, которым не хватает отношения верификации (через команду: \ref cmdverifies "\verifies"). Установка тега в \c YES (по умолчанию) покажет оба списка, когда применимо.]]>        
+      </docs>
+      <value name="YES"/>
+      <value name="NO"/>
+      <value name="UNSATISFIED_ONLY"/>
+      <value name="UNVERIFIED_ONLY"/>
+    </option>
+    <option type="list" id="ENABLED_SECTIONS" format="string">
+      <docs>
+<![CDATA[Тег \c ENABLED_SECTIONS можно использовать для включения условных разделов документации, помеченных блоками \ref cmdif "\if" \&lt;section_label\&gt; ... \ref cmdendif "\endif" и \ref cmdcond "\cond" \&lt;section_label\&gt; ... \ref cmdendcond "\endcond".]]>        
+      </docs>
+    </option>
+    <option type="int" id="MAX_INITIALIZER_LINES" minval="0" maxval="10000" defval="30">
+      <docs>
+<![CDATA[Тег \c MAX_INITIALIZER_LINES определяет максимальное количество строк, которое начальное значение переменной или макроса/определения может отображать, чтобы появиться в документации. Если инициализатор содержит больше строк, чем указано здесь, он будет скрыт. Используйте значение 0, чтобы полностью скрыть инициализатор. Внешний вид значения отдельных переменных и макросов/определений можно контролировать в документации с помощью команд \ref cmdshowinitializer "\showinitializer" или \ref cmdhideinitializer "\hideinitializer", независимо от этой настройки.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="SHOW_USED_FILES" defval="1">
+      <docs>
+<![CDATA[Установите тег \c SHOW_USED_FILES в \c NO, чтобы отключить список файлов, генерируемый в нижней части документации классов и структур. Если установлено в \c YES, в списке будут упомянуты файлы, которые использовались для генерации документации.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="SHOW_FILES" defval="1">
+      <docs>
+<![CDATA[Установите тег \c SHOW_FILES в \c NO, чтобы отключить генерацию страниц файлов. Это удалит записи файлов из быстрого индекса и из древовидного представления папок (если указано).]]>        
+      </docs>
+    </option>
+    <option type="bool" id="SHOW_NAMESPACES" defval="1">
+      <docs>
+<![CDATA[Установите тег \c SHOW_NAMESPACES в \c NO, чтобы отключить генерацию страниц пространств имен. Это удалит записи пространств имен из быстрого индекса и из древовидного представления папок (если указано).]]>        
+      </docs>
+    </option>
+    <option type="string" id="FILE_VERSION_FILTER" format="file" defval="">
+      <docs>
+<![CDATA[Тег \c FILE_VERSION_FILTER можно использовать для указания программы или скрипта, который Doxygen должен вызвать для получения текущей версии каждого файла (обычно из системы контроля версий). Doxygen вызовет программу, выполнив (через &lt;code&gt;popen()&lt;/code&gt;) команду &lt;code&gt;command input-file&lt;/code&gt;, где \c command — значение тега \c FILE_VERSION_FILTER, а \c input-file — имя входного файла, предоставленного Doxygen. Все, что программа выведет в стандартный вывод, будет использовано как версия файла.]]>        
+      </docs>
+      <docs doxywizard="0" doxyfile="0">
+<![CDATA[
+<br>
+<br>
+Example of using a shell script as a filter for Unix:
+\verbatim
+ FILE_VERSION_FILTER = "/bin/sh versionfilter.sh"
+\endverbatim
+<br>
+Example shell script for CVS:
+\verbatim
+#!/bin/sh
+cvs status $1 | sed -n 's/^[ \]*Working revision:[ \t]*\([0-9][0-9\.]*\).*/\1/p'
+\endverbatim
+<br>
+Example shell script for Subversion:
+\verbatim
+#!/bin/sh
+svn stat -v $1 | sed -n 's/^[ A-Z?\*|!]\{1,15\}/r/;s/ \{1,15\}/\/r/;s/ .*//p'
+\endverbatim
+<br>
+Example filter for ClearCase:
+\verbatim
+FILE_VERSION_FILTER = "cleartool desc -fmt \%Vn"
+\endverbatim
+]]>        
+      </docs>
+      <docs documentation="0">
+<![CDATA[Тег \c FILE_VERSION_FILTER можно использовать для указания программы или скрипта, который Doxygen должен вызвать для получения текущей версии каждого файла (обычно из системы контроля версий). Doxygen вызовет программу, выполнив (через &lt;code&gt;popen()&lt;/code&gt;) команду &lt;code&gt;command input-file&lt;/code&gt;, где \c command — значение тега \c FILE_VERSION_FILTER, а \c input-file — имя входного файла, предоставленного Doxygen. Все, что программа выведет в стандартный вывод, будет использовано как версия файла.]]>        
+      </docs>
+    </option>
+    <option type="string" id="LAYOUT_FILE" format="file" defval="">
+      <docs>
+<![CDATA[Тег \c LAYOUT_FILE можно использовать для указания файла макета, который Doxygen проанализирует. Файл макета управляет глобальной структурой сгенерированных выходных файлов независимым от формата вывода способом. Чтобы создать файл макета, представляющий настройки Doxygen по умолчанию, запустите Doxygen с опцией `-l`. Вы можете опционально указать имя файла после опции, если опустите, \c DoxygenLayout.xml будет использовано как имя файла макета. См. также раздел \ref layout для информации. &lt;br&gt;Обратите внимание, что если вы запускаете Doxygen из каталога, содержащего файл с именем \c DoxygenLayout.xml, Doxygen автоматически проанализирует его, даже если тег \c LAYOUT_FILE пуст.]]>        
+      </docs>
+    </option>
+    <option type="list" id="CITE_BIB_FILES" format="file">
+      <docs>
+<![CDATA[Тег \c CITE_BIB_FILES можно использовать для указания одного или нескольких файлов \c bib, содержащих определения ссылок. Это должен быть список файлов &lt;code&gt;.bib&lt;/code&gt;. Расширение &lt;code&gt;.bib&lt;/code&gt; будет добавлено автоматически, если опущено. Это требует, чтобы инструмент \c bibtex был установлен. См. также https://en.wikipedia.org/wiki/BibTeX для дополнительной информации. Для \f$\mbox{\LaTeX}\f$ стиль ссылок может контролироваться с помощью \ref cfg_latex_bib_style "LATEX_BIB_STYLE". Чтобы использовать эту функцию, вам нужно иметь \c bibtex и \c perl доступными в пути поиска. См. также \ref cmdcite "\cite" для информации о создании цитат.]]>        
+      </docs>
+    </option>
+    <option type="list" id="EXTERNAL_TOOL_PATH" format="dir" defval="">
+      <docs>
+<![CDATA[Тег \c EXTERNAL_TOOL_PATH можно использовать для расширения пути поиска (переменная окружения PATH), чтобы внешние инструменты, такие как \c latex и \c gs, могли быть найдены. \note Каталоги, указанные с EXTERNAL_TOOL_PATH, добавляются перед путями, уже указанными переменной PATH, и добавляются в указанном порядке. \note Эта опция особенно полезна для macOS версии 14 (Sonoma) и выше, когда Doxygen запускается из Doxywizard, потому что в этом случае любые пользовательские изменения PATH игнорируются. Типичный пример на macOS — установить \verbatim EXTERNAL_TOOL_PATH = /Library/TeX/texbin /usr/local/bin \endverbatim Вместе со стандартными путями полный путь поиска, который Doxygen использует при запуске внешних инструментов, станет \verbatim PATH=/Library/TeX/texbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin \endverbatim]]>        
+      </docs>
+    </option>
+  </group>
+  <group name="Messages" docs="Configuration options related to warning and progress messages">
+    <option type="bool" id="QUIET" defval="0">
+      <docs>
+<![CDATA[Тег \c QUIET можно использовать для включения/выключения сообщений, генерируемых Doxygen на стандартный вывод. Если \c QUIET установлен в \c YES, это означает, что сообщения выключены.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="WARNINGS" defval="1">
+      <docs>
+<![CDATA[Тег \c WARNINGS можно использовать для включения/выключения предупреждающих сообщений, генерируемых Doxygen на стандартный поток ошибок (\c stderr). Если \c WARNINGS установлен в \c YES, это означает, что предупреждения включены. &lt;br&gt;\b Совет: Включите предупреждения при написании документации.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="WARN_IF_UNDOCUMENTED" defval="1">
+      <docs>
+<![CDATA[Если тег \c WARN_IF_UNDOCUMENTED установлен в \c YES, Doxygen будет генерировать предупреждения для недокументированных членов. Если \ref cfg_extract_all "EXTRACT_ALL" установлен в \c YES, этот флаг будет автоматически отключен.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="WARN_IF_DOC_ERROR" defval="1">
+      <docs>
+<![CDATA[Если тег \c WARN_IF_DOC_ERROR установлен в \c YES, Doxygen будет генерировать предупреждения о потенциальных ошибках в документации, таких как документирование некоторых параметров в документированной функции дважды, или документирование несуществующих параметров, или неправильное использование команд разметки.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="WARN_IF_INCOMPLETE_DOC" defval="1">
+      <docs>
+<![CDATA[Если тег \c WARN_IF_INCOMPLETE_DOC установлен в \c YES, Doxygen будет генерировать предупреждения о потенциально неполной документации, такой как отсутствие документации всех параметров функции или отсутствие документации возвращаемого значения, когда функция имеет тип возврата, отличный от void.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="WARN_NO_PARAMDOC" defval="0">
+      <docs>
+<![CDATA[Если тег \c WARN_NO_PARAMDOC установлен в \c YES, Doxygen будет предупреждать, если блок документации для функции или метода не содержит раздел \ref cmdparam "\param" для каждого параметра, присутствующего в объявлении, или раздел \ref cmdreturn "\return" для функций с типом возврата, отличным от void.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="WARN_IF_UNDOC_ENUM_VAL" defval="0">
+      <docs>
+<![CDATA[Если тег \c WARN_IF_UNDOC_ENUM_VAL установлен в \c YES, Doxygen будет генерировать предупреждения для недокументированных значений перечислений. Если \ref cfg_extract_all "EXTRACT_ALL" установлен в \c YES, этот флаг будет автоматически отключен.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="WARN_LAYOUT_FILE" defval="1">
+      <docs>
+<![CDATA[Если тег \c WARN_LAYOUT_FILE установлен в \c YES, Doxygen будет предупреждать, если файл макета указан и не может быть найден. Если установлено в \c NO, Doxygen молча использует файл макета по умолчанию.]]>        
+      </docs>
+    </option>
+    <option type="enum" id="WARN_AS_ERROR" defval="NO">
+      <docs>
+<![CDATA[Если тег \c WARN_AS_ERROR установлен в \c YES, Doxygen будет рассматривать все предупреждения как ошибки и прерывать обработку при возникновении предупреждений. Если установлено в \c NO, предупреждения будут рассматриваться только как предупреждения.]]>        
+      </docs>
+      <value name="NO"/>
+      <value name="YES"/>
+      <value name="FAIL_ON_WARNINGS"/>
+      <value name="FAIL_ON_WARNINGS_PRINT"/>
+    </option>
+    <option type="string" id="WARN_FORMAT" format="string" defval="$file:$line: $text">
+      <docs>
+<![CDATA[Тег \c WARN_FORMAT определяет формат предупреждающих сообщений, генерируемых Doxygen. Строка должна содержать теги \c $file, \c $line и \c $text, которые будут заменены именем файла, номером строки и текстом предупреждения соответственно.]]>        
+      </docs>
+    </option>
+    <option type="string" id="WARN_LINE_FORMAT" format="string" defval="at line $line of file $file">
+      <docs>
+<![CDATA[Тег \c WARN_LINE_FORMAT определяет формат номера строки в предупреждающих сообщениях, генерируемых Doxygen. Строка должна содержать тег \c $line, который будет заменен номером строки.]]>        
+      </docs>
+    </option>
+    <option type="string" id="WARN_LOGFILE" format="file" defval="">
+      <docs>
+<![CDATA[Тег \c WARN_LOGFILE можно использовать для указания файла, в который Doxygen может записывать предупреждающие и ошибочные сообщения, которые он генерирует. Если оставить пустым, вывод будет записан в стандартный поток ошибок (\c stderr).]]>        
+      </docs>
+    </option>
+  </group>
+  <group name="Input" docs="Configuration options related to the input files">
+    <option type="list" id="INPUT" format="filedir">
+      <docs>
+<![CDATA[Тег \c INPUT используется для указания файлов и/или каталогов, содержащих источники документации. Вы можете вводить имена файлов с шаблоном (например, &lt;code&gt;*.cpp&lt;/code&gt;) и каталоги для добавления во входные данные. Вы также можете вводить имена файлов, относительные к каталогу, из которого был запущен Doxygen. Если оставить пустым, будет использоваться текущий каталог.]]>        
+      </docs>
+    </option>
+    <option type="string" id="INPUT_ENCODING" format="string" defval="UTF-8">
+      <docs>
+<![CDATA[Этот тег можно использовать для указания кодировки, используемой во входных данных. Doxygen использует эту информацию для анализа входных файлов. См. https://en.wikipedia.org/wiki/Character_encoding для дополнительной информации. Кодировка по умолчанию — UTF-8.]]>        
+      </docs>
+    </option>
+    <option type="list" id="INPUT_FILE_ENCODING" format="string">
+      <docs>
+<![CDATA[Этот тег можно использовать для указания кодировки для каждого файла в списке входных данных. Если тег опущен или пуст, будет использоваться кодировка, указанная тегом \c INPUT_ENCODING.]]>        
+      </docs>
+    </option>
+    <option type="list" id="FILE_PATTERNS" format="string">
+      <docs>
+<![CDATA[Если значение тега \c INPUT содержит каталоги, вы можете использовать тег \c FILE_PATTERNS для указания одного или нескольких шаблонов (например, &lt;code&gt;*.c&lt;/code&gt; и &lt;code&gt;*.h&lt;/code&gt;) для фильтрации файлов в этих каталогах. Если оставить пустым, будут использоваться следующие шаблоны: `*.c, *.cc, *.cxx, *.cpp, *.c++, *.java, *.ii, *.ixx, *.ipp, *.i++, *.inl, *.idl, *.ddl, *.odl, *.h, *.hh, *.hxx, *.hpp, *.h++, *.l, *.cs, *.d, *.php, *.php4, *.php5, *.phtml, *.inc, *.m, *.markdown, *.md, *.mm, *.dox (для предоставления примеров), *.py, *.f90, *.f, *.for, *.tcl, *.vhd, *.vhdl, *.ucf, *.qsf и *.ice.]]>        
+      </docs>
+      <value name="*.c"/>
+      <value name="*.cc"/>
+      <value name="*.cxx"/>
+      <value name="*.cxxm"/>
+      <value name="*.cpp"/>
+      <value name="*.cppm"/>
+      <value name="*.ccm"/>
+      <value name="*.c++"/>
+      <value name="*.c++m"/>
+      <value name="*.java"/>
+      <value name="*.ii"/>
+      <value name="*.ixx"/>
+      <value name="*.ipp"/>
+      <value name="*.i++"/>
+      <value name="*.inl"/>
+      <value name="*.idl"/>
+      <value name="*.ddl"/>
+      <value name="*.odl"/>
+      <value name="*.h"/>
+      <value name="*.hh"/>
+      <value name="*.hxx"/>
+      <value name="*.hpp"/>
+      <value name="*.h++"/>
+      <value name="*.l"/>
+      <value name="*.cs"/>
+      <value name="*.d"/>
+      <value name="*.php"/>
+      <value name="*.php4"/>
+      <value name="*.php5"/>
+      <value name="*.phtml"/>
+      <value name="*.inc"/>
+      <value name="*.m"/>
+      <value name="*.markdown"/>
+      <value name="*.md"/>
+      <value name="*.mm"/>
+      <value name="*.dox" desc="(to be provided as Doxygen C comment)"/>
+      <value name="*.py"/>
+      <value name="*.pyw"/>
+      <value name="*.f90"/>
+      <value name="*.f95"/>
+      <value name="*.f03"/>
+      <value name="*.f08"/>
+      <value name="*.f18"/>
+      <value name="*.f"/>
+      <value name="*.for"/>
+      <value name="*.vhd"/>
+      <value name="*.vhdl"/>
+      <value name="*.ucf"/>
+      <value name="*.qsf"/>
+      <value name="*.ice"/>
+    </option>
+    <option type="bool" id="RECURSIVE" defval="0">
+      <docs>
+<![CDATA[Если тег \c RECURSIVE установлен в \c YES, подкаталоги будут искаться для входных файлов для обработки. Если установлено в \c NO, будет искаться только текущий каталог и указанные файлы.]]>        
+      </docs>
+    </option>
+    <option type="list" id="EXCLUDE" format="filedir">
+      <docs>
+<![CDATA[Тег \c EXCLUDE можно использовать для указания файлов и/или каталогов, которые должны быть исключены из источника \c INPUT. Это позволяет использовать простые фильтры на входе.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="EXCLUDE_SYMLINKS" defval="0">
+      <docs>
+<![CDATA[Если тег \c EXCLUDE_SYMLINKS установлен в \c YES, символические ссылки (на файлы или каталоги) будут исключены из входных данных.]]>        
+      </docs>
+    </option>
+    <option type="list" id="EXCLUDE_PATTERNS" format="string">
+      <docs>
+<![CDATA[Если тег \c EXCLUDE содержит каталоги, вы можете использовать тег \c EXCLUDE_PATTERNS для указания одного или нескольких шаблонов для исключения файлов в этих каталогах из обработки.]]>        
+      </docs>
+    </option>
+    <option type="list" id="EXCLUDE_SYMBOLS" format="string">
+      <docs>
+<![CDATA[Тег \c EXCLUDE_SYMBOLS можно использовать для указания одного или нескольких имен символов (пространств имен, классов, функций, макросов и т.д.), которые должны быть исключены из документации. Имя символа может быть полным именем, словом или шаблоном, использующим \c * и \c ? как подстановочные знаки.]]>        
+      </docs>
+    </option>
+    <option type="list" id="EXAMPLE_PATH" format="filedir">
+      <docs>
+<![CDATA[Тег \c EXAMPLE_PATH можно использовать для указания одного или нескольких файлов или каталогов, содержащих примеры фрагментов кода, которые Doxygen включит в документацию.]]>        
+      </docs>
+    </option>
+    <option type="list" id="EXAMPLE_PATTERNS" format="string">
+      <docs>
+<![CDATA[Если значение тега \c EXAMPLE_PATH содержит каталоги, вы можете использовать тег \c EXAMPLE_PATTERNS для указания одного или нескольких шаблонов для фильтрации файлов в этих каталогах.]]>        
+      </docs>
+      <value name="*" show_docu="NO"/>
+    </option>
+    <option type="bool" id="EXAMPLE_RECURSIVE" defval="0">
+      <docs>
+<![CDATA[Если тег \c EXAMPLE_RECURSIVE установлен в \c YES, подкаталоги будут искаться для примеров файлов для обработки. Если установлено в \c NO, будет искаться только текущий каталог и указанные файлы.]]>        
+      </docs>
+    </option>
+    <option type="list" id="IMAGE_PATH" format="filedir">
+      <docs>
+<![CDATA[Тег \c IMAGE_PATH можно использовать для указания одного или нескольких файлов или каталогов, содержащих изображения, которые должны быть включены в документацию. Путь относителен к каталогу, из которого был запущен Doxygen.]]>        
+      </docs>
+    </option>
+    <option type="string" id="INPUT_FILTER" format="file" defval="">
+      <docs>
+<![CDATA[Тег \c INPUT_FILTER можно использовать для указания программы, которая должна быть вызвана для каждого входного файла перед тем, как Doxygen обработает его. Программа вызывается с именем файла в качестве аргумента и должна вывести содержимое файла в стандартный вывод. Если программа возвращает ненулевой код выхода, файл будет исключен из обработки.]]>        
+      </docs>
+    </option>
+    <option type="list" id="FILTER_PATTERNS" format="string">
+      <docs>
+<![CDATA[Тег \c FILTER_PATTERNS можно использовать для указания фильтров для конкретных шаблонов файлов. Каждый элемент имеет форму `шаблон=фильтр`. Шаблон — это выражение с подстановочными знаками, например `*.cpp`, а фильтр — это имя программы, которая должна быть вызвана.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="FILTER_SOURCE_FILES" defval="0">
+      <docs>
+<![CDATA[Если тег \c FILTER_SOURCE_FILES установлен в \c YES, фильтр ввода также будет применен к исходным файлам перед тем, как они будут показаны в документации.]]>        
+      </docs>
+    </option>
+    <option type="list" id="FILTER_SOURCE_PATTERNS" format="string" depends="FILTER_SOURCE_FILES">
+      <docs>
+<![CDATA[Тег \c FILTER_SOURCE_PATTERNS можно использовать для указания фильтров исходного кода для конкретных шаблонов файлов. Он работает аналогично \c FILTER_PATTERNS, но применяется к исходным файлам.]]>        
+      </docs>
+    </option>
+    <option type="string" id="USE_MDFILE_AS_MAINPAGE" format="string" defval="">
+      <docs>
+<![CDATA[Тег \c USE_MDFILE_AS_MAINPAGE можно использовать для указания имени файла Markdown, который будет использоваться как главная страница. Если оставить пустым, Doxygen попытается найти файл с именем `mainpage.md` во входном каталоге.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="IMPLICIT_DIR_DOCS" defval="1">
+      <docs>
+<![CDATA[Если тег \c IMPLICIT_DIR_DOCS установлен в \c YES, Doxygen будет генерировать документацию для каталогов, даже если у них нет явной документации. Если установлено в \c NO, будут документированы только каталоги с явной документацией.]]>        
+      </docs>
+    </option>
+    <option type="int" id="FORTRAN_COMMENT_AFTER" defval="72" minval="7" maxval="10000">
+      <docs>
+<![CDATA[Тег \c FORTRAN_COMMENT_AFTER можно использовать для указания строки, которая ожидается после комментария Fortran. По умолчанию установлено в `!`, что означает, что комментарии должны начинаться с `!`.]]>        
+      </docs>
+    </option>
+  </group>
+  <group name="Source_Browser" docs="Configuration options related to source browsing">
+    <option type="bool" id="SOURCE_BROWSER" defval="0">
+      <docs>
+<![CDATA[Если тег \c SOURCE_BROWSER установлен в \c YES, будет сгенерирован список исходных файлов. Для вывода HTML исходные файлы также будут показаны с подсветкой синтаксиса.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="INLINE_SOURCES" defval="0">
+      <docs>
+<![CDATA[Если тег \c INLINE_SOURCES установлен в \c YES, тело функций, классов и пространств имен будет вставлено непосредственно в документацию.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="STRIP_CODE_COMMENTS" defval="1">
+      <docs>
+<![CDATA[Если тег \c STRIP_CODE_COMMENTS установлен в \c YES, специфические для Doxygen комментарии будут удалены из исходного кода перед его отображением.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="REFERENCED_BY_RELATION" defval="0">
+      <docs>
+<![CDATA[Если тег \c REFERENCED_BY_RELATION установлен в \c YES, для каждой документированной функции будет создан список всех функций, которые вызывают эту функцию.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="REFERENCES_RELATION" defval="0">
+      <docs>
+<![CDATA[Если тег \c REFERENCES_RELATION установлен в \c YES, для каждой документированной функции будет создан список всех документированных сущностей, которые вызываются/используются этой функцией.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="REFERENCES_LINK_SOURCE" defval="1">
+      <docs>
+<![CDATA[Если тег \c REFERENCES_LINK_SOURCE установлен в \c YES, ссылки из списков ссылок будут указывать на исходный код. Если установлено в \c NO, они будут указывать на документацию.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="SOURCE_TOOLTIPS" defval="1" depends="SOURCE_BROWSER">
+      <docs>
+<![CDATA[Если тег \c SOURCE_TOOLTIPS установлен в \c YES, всплывающие подсказки будут отображаться для объявлений и определений функций в исходном коде.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="USE_HTAGS" defval="0" depends="SOURCE_BROWSER">
+      <docs>
+<![CDATA[Если тег \c USE_HTAGS установлен в \c YES, инструмент HTAGS будет использоваться для генерации ссылок на исходный код. Это требует, чтобы инструмент HTAGS был установлен и доступен в пути.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="VERBATIM_HEADERS" defval="1">
+      <docs>
+<![CDATA[Если тег \c VERBATIM_HEADERS установлен в \c YES, заголовочные файлы будут отображаться в браузере исходного кода с подсветкой синтаксиса.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="CLANG_ASSISTED_PARSING" setting="USE_LIBCLANG" defval="0">
+      <docs>
+<![CDATA[Если тег \c CLANG_ASSISTED_PARSING установлен в \c YES, Clang будет использоваться для анализа исходного кода. Это может дать более точные результаты, но требует, чтобы Clang был установлен.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="CLANG_ADD_INC_PATHS" setting="USE_LIBCLANG" depends="CLANG_ASSISTED_PARSING" defval="1">
+      <docs>
+<![CDATA[Тег \c CLANG_ADD_INC_PATHS можно использовать для указания дополнительных путей включения для Clang.]]>        
+      </docs>
+    </option>
+    <option type="list" id="CLANG_OPTIONS" format="string" setting="USE_LIBCLANG" depends="CLANG_ASSISTED_PARSING">
+      <docs>
+<![CDATA[Тег \c CLANG_OPTIONS можно использовать для указания дополнительных опций для Clang.]]>        
+      </docs>
+    </option>
+    <option type="string" id="CLANG_DATABASE_PATH" setting="USE_LIBCLANG" defval="">
+      <docs>
+<![CDATA[Тег \c CLANG_DATABASE_PATH можно использовать для указания пути к базе данных компиляции Clang.]]>        
+      </docs>
+    </option>
+  </group>
+  <group name="Index" docs="Configuration options related to the alphabetical class index">
+    <option type="bool" id="ALPHABETICAL_INDEX" defval="1">
+      <docs>
+<![CDATA[Если тег \c ALPHABETICAL_INDEX установлен в \c YES, будет сгенерирован алфавитный указатель всех классов, функций, переменных и т.д.]]>        
+      </docs>
+    </option>
+    <option type="list" id="IGNORE_PREFIX" format="string" depends="ALPHABETICAL_INDEX">
+      <docs>
+<![CDATA[Тег \c IGNORE_PREFIX можно использовать для указания одного или нескольких префиксов, которые должны игнорироваться в алфавитном указателе.]]>        
+      </docs>
+    </option>
+  </group>
+  <group name="HTML" docs="Configuration options related to the HTML output">
+    <option type="bool" id="GENERATE_HTML" defval="1">
+      <docs>
+<![CDATA[Если тег \c GENERATE_HTML установлен в \c YES, будет сгенерирован вывод HTML.]]>        
+      </docs>
+    </option>
+    <option type="string" id="HTML_OUTPUT" format="dir" defval="html" depends="GENERATE_HTML">
+      <docs>
+<![CDATA[Тег \c HTML_OUTPUT используется для указания выходного каталога для HTML файлов. Если введен относительный путь, он будет добавлен к пути, указанному \ref cfg_output_directory "OUTPUT_DIRECTORY".]]>        
+      </docs>
+    </option>
+    <option type="string" id="HTML_FILE_EXTENSION" format="string" defval=".html" depends="GENERATE_HTML">
+      <docs>
+<![CDATA[Тег \c HTML_FILE_EXTENSION можно использовать для указания расширения файла для каждой сгенерированной HTML страницы. По умолчанию установлено в `.html`.]]>        
+      </docs>
+    </option>
+    <option type="string" id="HTML_HEADER" format="file" defval="" depends="GENERATE_HTML">
+      <docs>
+<![CDATA[Тег \c HTML_HEADER можно использовать для указания пользовательского HTML файла заголовка, который будет вставлен в каждую сгенерированную HTML страницу.]]>        
+      </docs>
+      <docs doxywizard="0" doxyfile="0">
+<![CDATA[
+ The following markers have a special meaning inside the header and footer:
+ <dl>
+ <dt><code>$title</code><dd>will be replaced with the title of the page.
+ <dt><code>$datetime</code><dd>will be replaced with the current date and time.
+ <dt><code>$date</code><dd>will be replaced with the current date.
+ <dt><code>$time</code><dd>will be replaced with the current time.
+ <dt><code>$year</code><dd>will be replaced with the current year.
+ <dt><code>$showdate(<format>)</code><dd>will be replaced with the current date
+           and time according to the format as specified by `<format>`. The
+           `<format>` follows the rules as specified for the
+           \ref cmdshowdate "\\showdate" command with the exception that no `)`
+           is allowed in the `<format>`.
+ <dt><code>$doxygenversion</code><dd>will be replaced with the version of Doxygen
+ <dt><code>$projectname</code><dd>will be replaced with the name of
+            the project (see \ref cfg_project_name "PROJECT_NAME")
+ <dt><code>$projectnumber</code><dd>will be replaced with the project number
+            (see \ref cfg_project_number "PROJECT_NUMBER")
+ <dt><code>$projectbrief</code><dd>will be replaced with the project brief
+            description (see \ref cfg_project_brief "PROJECT_BRIEF")
+ <dt><code>$projectlogo</code><dd>will be replaced with the project logo
+            (see \ref cfg_project_logo "PROJECT_LOGO")
+ <dt><code>$generatedby</code><dd>will be replaced with the output language dependent
+            version of the text "Generated by" or when the
+            \ref cfg_timestamp "TIMESTAMP" is set by the output language
+            dependent version of the text &quot;Generated on `$datetime` for `$projectname` by&quot;.
+ <dt><code>$stylesheet</code><dd>will be replaced with the setting of
+            \ref cfg_html_stylesheet "HTML_STYLESHEET" unless it is empty or the file in which case
+            it is replaced by the default setting `doxygen.css`.
+ <dt><code>$extrastylesheet</code><dd>will be replaced with the setting of
+            \ref cfg_html_extra_stylesheet "HTML_EXTRA_STYLESHEET" including the required
+            HTML tags for each extra stylesheet.
+ <dt><code>$treeview</code><dd>will be replaced with links to
+            the JavaScript and style sheets needed for the navigation tree
+            (or an empty string when \ref cfg_generate_treeview "GENERATE_TREEVIEW"
+            is disabled).
+ <dt><code>$search</code><dd>will be replaced with a links to
+            the JavaScript and style sheets needed for the search engine
+            (or an empty string when \ref cfg_searchengine "SEARCHENGINE"
+            is disabled).
+ <dt><code>$searchbox</code><dd>will be replaced with the HTML code needed for
+            the search box to be shown
+            (or an empty string when \ref cfg_searchengine "SEARCHENGINE"
+            is disabled).
+ <dt><code>$mathjax</code><dd>will be replaced with a links to
+            the JavaScript and style sheets needed for the MathJax feature
+            (or an empty string when \ref cfg_use_mathjax "USE_MATHJAX" is disabled).
+ <dt><code>$mermaidjs</code><dd>will be replaced with the script tag to load
+            mermaid.js for client-side diagram rendering (or an empty string
+            when \ref cfg_mermaid_render_mode "MERMAID_RENDER_MODE" is set to \c CLI).
+ <dt><code>$relpath^</code><dd>
+            If \ref cfg_create_subdirs "CREATE_SUBDIRS" is enabled, the command <code>$relpath^</code> can be
+            used to produce a relative path to the root of the HTML output directory,
+            e.g. use <code>$relpath^doxygen.css</code>, to refer to the standard style sheet.
+ <dt><code>$navpath</code><dd>will be replaced with a path as required by
+            \ref cfg_generate_treeview "GENERATE_TREEVIEW"
+ </dl>
+ To cope with differences in the layout of the header and footer that depend on
+ configuration settings, the header can also contain special blocks that
+ will be copied to the output or skipped depending on the configuration.
+ Such blocks have the following form:
+\verbatim
+ <!--BEGIN BLOCKNAME-->
+ Some context copied when condition BLOCKNAME holds
+ <!--END BLOCKNAME-->
+ <!--BEGIN !BLOCKNAME-->
+ Some context copied when condition BLOCKNAME does not hold
+ <!--END !BLOCKNAME-->
+\endverbatim
+ The following block names are supported:
+ <dl>
+ <dt><code>DISABLE_INDEX</code><dd>Content within this block is copied to the output
+     if the \ref cfg_disable_index "DISABLE_INDEX" option is enabled (so when the index is disabled).
+ <dt><code>GENERATE_TREEVIEW</code><dd>Content within this block is copied to the output
+     if the \ref cfg_generate_treeview "GENERATE_TREEVIEW" option is enabled.
+ <dt><code>SEARCHENGINE</code><dd>Content within this block is copied to the output
+     if the \ref cfg_searchengine "SEARCHENGINE" option is enabled.
+ <dt><code>PROJECT_NAME</code><dd>Content within the block is copied to the output
+     if the \ref cfg_project_name "PROJECT_NAME" option is not empty.
+ <dt><code>PROJECT_NUMBER</code><dd>Content within the block is copied to the output
+     if the \ref cfg_project_number "PROJECT_NUMBER" option is not empty.
+ <dt><code>PROJECT_BRIEF</code><dd>Content within the block is copied to the output
+     if the \ref cfg_project_brief "PROJECT_BRIEF" option is not empty.
+ <dt><code>PROJECT_LOGO</code><dd>Content within the block is copied to the output
+     if the \ref cfg_project_logo "PROJECT_LOGO" option is not empty.
+ <dt><code>FULL_SIDEBAR</code><dd>Content within the block is copied to the output
+     if the \ref cfg_full_sidebar "FULL_SIDEBAR",
+     \ref cfg_disable_index "DISABLE_INDEX" and \ref cfg_generate_treeview "GENERATE_TREEVIEW"
+     options are all enabled.
+ <dt><code>TITLEAREA</code><dd>Content within this block is copied to the output
+     if a title is visible at the top of each page. This is the case
+     if either \ref cfg_project_name "PROJECT_NAME",
+     \ref cfg_project_brief "PROJECT_BRIEF", \ref cfg_project_logo "PROJECT_LOGO"
+     is filled in or if both \ref cfg_disable_index "DISABLE_INDEX" and
+     \ref cfg_searchengine "SEARCHENGINE" are enabled.
+ </dl>
+]]>        
+      </docs>
+      <docs documentation="0">
+<![CDATA[Тег \c HTML_HEADER можно использовать для указания пользовательского HTML файла заголовка, который будет вставлен в каждую сгенерированную HTML страницу.]]>        
+      </docs>
+    </option>
+    <option type="string" id="HTML_FOOTER" format="file" defval="" depends="GENERATE_HTML">
+      <docs>
+<![CDATA[Тег \c HTML_FOOTER можно использовать для указания пользовательского HTML файла нижнего колонтитула, который будет вставлен в каждую сгенерированную HTML страницу.]]>        
+      </docs>
+    </option>
+    <option type="string" id="HTML_STYLESHEET" format="file" defval="" depends="GENERATE_HTML">
+      <docs>
+<![CDATA[Тег \c HTML_STYLESHEET можно использовать для указания пользовательской каскадной таблицы стилей, используемой для каждой HTML-страницы. Её можно использовать для тонкой настройки внешнего вида HTML-вывода. Если оставить пустым, Doxygen сгенерирует таблицу стилей по умолчанию. См. также раздел \ref doxygen_usage для получения информации о том, как сгенерировать таблицу стилей, которую Doxygen обычно использует. \note Рекомендуется использовать \ref cfg_html_extra_stylesheet "HTML_EXTRA_STYLESHEET" вместо этого тега, так как он более надёжен, и этот тег (<code>HTML_STYLESHEET</code>) в будущем будет устаревшим.]]>        
+      </docs>
+    </option>
+    <option type="list" id="HTML_EXTRA_STYLESHEET" format="file" defval="" depends="GENERATE_HTML">
+      <docs>
+<![CDATA[Тег \c HTML_EXTRA_STYLESHEET можно использовать для указания дополнительных пользовательских каскадных таблиц стилей, которые будут включены после стандартной таблицы стилей, созданной Doxygen. Используйте эту опцию для переопределения некоторых аспектов стиля. Это предпочтительнее, чем использование \ref cfg_html_stylesheet "HTML_STYLESHEET", так как это не заменяет стандартную таблицу стилей и поэтому более надёжно для будущих обновлений. Doxygen скопирует файл таблицы стилей в выходной каталог. \note Порядок дополнительных файлов таблиц стилей важен (например, последняя таблица стилей в списке переопределяет настройки предыдущей таблицы стилей в списке). \note Поскольку в настоящее время невозможно переопределить стиль полосы прокрутки в Webkit/Chromium, стиль полосы прокрутки будет опущен в стандартном doxygen.css, если указана одна или несколько дополнительных таблиц стилей. Поэтому, если требуется пользовательская полоса прокрутки, её необходимо добавить явно.]]>        
+      </docs>
+      <docs doxywizard="0" doxyfile="0">
+<![CDATA[
+ Here is an example style sheet that gives the contents area a fixed width:
+\verbatim
+body {
+        background-color: #CCC;
+        color: black;
+        margin: 0;
+}
+div.contents {
+        margin-bottom: 10px;
+        padding: 12px;
+        margin-left: auto;
+        margin-right: auto;
+        width: 960px;
+        background-color: white;
+        border-radius: 8px;
+}
+#titlearea {
+        background-color: white;
+}
+hr.footer {
+        display: none;
+}
+.footer {
+        background-color: #AAA;
+}
+\endverbatim
+]]>        
+      </docs>
+      <docs documentation="0">
+<![CDATA[Тег \c HTML_EXTRA_STYLESHEET можно использовать для указания дополнительных пользовательских каскадных таблиц стилей, которые будут включены после стандартной таблицы стилей, созданной Doxygen. Используйте эту опцию для переопределения некоторых аспектов стиля. Это предпочтительнее, чем использование \ref cfg_html_stylesheet "HTML_STYLESHEET", так как это не заменяет стандартную таблицу стилей и поэтому более надёжно для будущих обновлений. Doxygen скопирует файл таблицы стилей в выходной каталог. \note Порядок дополнительных файлов таблиц стилей важен (например, последняя таблица стилей в списке переопределяет настройки предыдущей таблицы стилей в списке). \note Поскольку в настоящее время невозможно переопределить стиль полосы прокрутки в Webkit/Chromium, стиль полосы прокрутки будет опущен в стандартном doxygen.css, если указана одна или несколько дополнительных таблиц стилей. Поэтому, если требуется пользовательская полоса прокрутки, её необходимо добавить явно.]]>        
+      </docs>
+    </option>
+    <option type="list" id="HTML_EXTRA_FILES" format="file" depends="GENERATE_HTML">
+      <docs>
+<![CDATA[Тег \c HTML_EXTRA_FILES можно использовать для указания одного или нескольких дополнительных изображений или других исходных файлов, которые должны быть скопированы в выходной каталог HTML. Обратите внимание, что эти файлы будут скопированы в базовый выходной каталог HTML. Используйте тег <code>$relpath^</code> в файлах \ref cfg_html_header "HTML_HEADER" и/или \ref cfg_html_footer "HTML_FOOTER" для загрузки этих файлов. В файле \ref cfg_html_stylesheet "HTML_STYLESHEET" используйте только имя файла. Также обратите внимание, что файлы будут скопированы как есть; команды или теги недоступны.]]>        
+      </docs>
+    </option>
+    <option type="enum" id="HTML_COLORSTYLE" defval="AUTO_LIGHT" depends="GENERATE_HTML">
+      <docs>
+<![CDATA[Тег \c HTML_COLORSTYLE можно использовать для указания, должен ли сгенерированный HTML вывод быть представлен в темной или светлой теме.]]>        
+      </docs>
+      <value name="LIGHT" desc="всегда генерирует вывод в светлом режиме"/>
+      <value name="DARK" desc="всегда генерирует вывод в темном режиме"/>
+      <value name="AUTO_LIGHT" desc="автоматически устанавливает режим в соответствии с предпочтениями пользователя, использует светлый режим, если предпочтение не установлено (по умолчанию)"/>
+      <value name="AUTO_DARK" desc="автоматически устанавливает режим в соответствии с предпочтениями пользователя, использует темный режим, если предпочтение не установлено"/>
+      <value name="TOGGLE" desc="позволяет пользователю переключаться между светлым и темным режимом с помощью кнопки"/>
+    </option>
+    <option type="int" id="HTML_COLORSTYLE_HUE" minval="0" maxval="359" defval="220" depends="GENERATE_HTML">
+      <docs>
+<![CDATA[Тег \c HTML_COLORSTYLE_HUE управляет цветом вывода HTML. Doxygen настроит цвета в таблице стилей и фоновом изображении на основе этого цвета. Оттенок указывается как угол на цветовом круге, см. https://en.wikipedia.org/wiki/Hue для получения дополнительной информации. Например, значение 0 представляет красный, 60 — желтый, 120 — зеленый, 180 — голубой, 240 — синий, 300 — фиолетовый, а 360 снова красный.]]>        
+      </docs>
+    </option>
+    <option type="int" id="HTML_COLORSTYLE_SAT" minval="0" maxval="255" defval="100" depends="GENERATE_HTML">
+      <docs>
+<![CDATA[Тег \c HTML_COLORSTYLE_SAT управляет чистотой (или насыщенностью) цветов в выводе HTML. Значение 0 заставит вывод использовать только оттенки серого. Значение 255 даст самые яркие цвета.]]>        
+      </docs>
+    </option>
+    <option type="int" id="HTML_COLORSTYLE_GAMMA" minval="40" maxval="240" defval="80" depends="GENERATE_HTML">
+      <docs>
+<![CDATA[Тег \c HTML_COLORSTYLE_GAMMA управляет гамма-коррекцией, применяемой к компоненте яркости цветов в выводе HTML. Значения ниже 100 постепенно делают вывод светлее, а значения выше 100 делают вывод темнее. Значение, деленное на 100, является фактическим применяемым гамма-значением, поэтому 80 означает гамму 0.8, значение 220 означает гамму 2.2, а 100 не изменяет гамму.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="HTML_DYNAMIC_MENUS" defval="1" depends="GENERATE_HTML">
+      <docs>
+<![CDATA[Если тег \c HTML_DYNAMIC_MENUS установлен в \c YES, сгенерированная HTML документация будет содержать главный индекс с вертикальным навигационным меню, создаваемым динамически с помощью JavaScript. Если отключено, навигационный индекс будет состоять из многоуровневых вкладок, статически встроенных в каждую HTML страницу. Отключите эту опцию для поддержки браузеров без JavaScript, таких как браузер справки Qt.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="HTML_DYNAMIC_SECTIONS" defval="0" depends="GENERATE_HTML">
+      <docs>
+<![CDATA[Если тег \c HTML_DYNAMIC_SECTIONS установлен в \c YES, сгенерированная HTML документация будет содержать разделы, которые можно скрыть и показать после загрузки страницы.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="HTML_CODE_FOLDING" defval="1" depends="GENERATE_HTML">
+      <docs>
+<![CDATA[Если тег \c HTML_CODE_FOLDING установлен в \c YES, классы и функции могут быть динамически свернуты и развернуты в сгенерированном HTML исходном коде.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="HTML_COPY_CLIPBOARD" defval="1" depends="GENERATE_HTML">
+      <docs>
+<![CDATA[Если тег \c HTML_COPY_CLIPBOARD установлен в \c YES, Doxygen покажет значок в правом верхнем углу фрагментов кода и текста, позволяющий пользователю копировать их содержимое в буфер обмена. Обратите внимание, что это работает только тогда, когда браузер поддерживает это и веб-страница обслуживается через <a href="https://www.w3.org/TR/secure-contexts/">безопасный контекст</a>, т.е. используя протокол https: или file:.]]>        
+      </docs>
+    </option>
+    <option type="string" id="HTML_PROJECT_COOKIE" defval="" depends="GENERATE_HTML">
+      <docs>
+<![CDATA[Doxygen сохраняет некоторые настройки в браузере постоянно (например, через cookies). По умолчанию эти настройки применяются ко всем HTML страницам, которые Doxygen генерирует во всех проектах. Тег \c HTML_PROJECT_COOKIE можно использовать для сохранения настроек под проектно-специфичным ключом, так что пользовательские предпочтения будут храниться отдельно для каждого проекта.]]>        
+      </docs>
+    </option>
+    <option type="int" id="HTML_INDEX_NUM_ENTRIES" minval="0" maxval="9999" defval="100" depends="GENERATE_HTML">
+      <docs>
+<![CDATA[С помощью \c HTML_INDEX_NUM_ENTRIES вы можете управлять предпочтительным количеством записей, отображаемых изначально в различных древовидных индексах; пользователь может позже динамически сворачивать и разворачивать записи. Doxygen развернет дерево до уровня, где видимо указанное количество записей (если только полностью свернутое дерево уже не превышает это количество). Таким образом, установка количества записей в 1 приведет к генерации полностью свернутого дерева по умолчанию. 0 — это специальное значение, указывающее на неограниченное количество записей, что приведет к генерации полностью развернутого дерева по умолчанию.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="GENERATE_DOCSET" defval="0" depends="GENERATE_HTML">
+      <docs>
+<![CDATA[Если тег \c GENERATE_DOCSET установлен в \c YES, будут сгенерированы дополнительные индексные файлы, которые могут использоваться как входные данные для <a href="https://developer.apple.com/xcode/">интегрированной среды разработки Apple Xcode 3</a>, введенной в OSX 10.5 (Leopard). Для создания набора документации Doxygen сгенерирует Makefile в выходном каталоге HTML. Запуск \c make создаст набор документации в этом каталоге, а запуск <code>make install</code> установит набор документации в <code>~/Library/Developer/Shared/Documentation/DocSets</code>, чтобы Xcode мог найти его при запуске. См. https://developer.apple.com/library/archive/featuredarticles/DoxygenXcode/_index.html для получения дополнительной информации.]]>        
+      </docs>
+    </option>
+    <option type="string" id="DOCSET_FEEDNAME" format="string" defval="Doxygen generated docs" depends="GENERATE_DOCSET">
+      <docs>
+<![CDATA[Этот тег определяет имя набора документации. Набор документации предоставляет зонтичный термин, под которым могут быть сгруппированы несколько наборов документации от одного поставщика (например, компании или набора продуктов).]]>        
+      </docs>
+    </option>
+    <option type="string" id="DOCSET_FEEDURL" format="string" depends="GENERATE_DOCSET">
+      <docs>
+<![CDATA[Этот тег определяет URL набора документации. Набор документации предоставляет зонтичный термин, под которым могут быть сгруппированы несколько наборов документации от одного поставщика (например, компании или набора продуктов).]]>        
+      </docs>
+    </option>
+    <option type="string" id="DOCSET_BUNDLE_ID" format="string" defval="org.doxygen.Project" depends="GENERATE_DOCSET">
+      <docs>
+<![CDATA[Этот тег указывает строку, которая должна однозначно идентифицировать пакет набора документации. Это должна быть строка в обратном доменном стиле, например <code>com.mycompany.MyDocSet</code>. Doxygen добавит <code>.docset</code> к имени.]]>        
+      </docs>
+    </option>
+    <option type="string" id="DOCSET_PUBLISHER_ID" format="string" defval="org.doxygen.Publisher" depends="GENERATE_DOCSET">
+      <docs>
+<![CDATA[Тег \c DOCSET_PUBLISHER_ID указывает строку, которая должна однозначно идентифицировать издателя документации. Это должна быть строка в обратном доменном стиле, например <code>com.mycompany.MyDocSet.documentation</code>.]]>        
+      </docs>
+    </option>
+    <option type="string" id="DOCSET_PUBLISHER_NAME" format="string" defval="Publisher" depends="GENERATE_DOCSET">
+      <docs>
+<![CDATA[Тег \c DOCSET_PUBLISHER_NAME идентифицирует издателя документации.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="GENERATE_HTMLHELP" defval="0" depends="GENERATE_HTML">
+      <docs>
+<![CDATA[Если тег \c GENERATE_HTMLHELP установлен в \c YES, Doxygen генерирует три дополнительных HTML индексных файла: \c index.hhp, \c index.hhc и \c index.hhk. \c index.hhp — это файл проекта, который может быть прочитан Microsoft HTML Help Workshop в Windows. В начале 2021 года Microsoft убрала исходную страницу, включая ссылку для скачивания (HTML Help Workshop уже много лет находится в режиме обслуживания). Вы можете скачать HTML Help Workshop из веб-архива по адресу <a href="http://web.archive.org/web/20160201063255/https://download.microsoft.com/download/0/A/9/0A939EF6-E31C-430F-A3DF-DFAE7960D564/htmlhelp.exe">исполняемый файл установки</a>. <br>HTML Help Workshop содержит компилятор, который может преобразовать весь HTML вывод, сгенерированный Doxygen, в один скомпилированный HTML файл (`.chm`). Скомпилированные HTML файлы теперь используются в качестве формата справки Windows 98 и в будущем заменят старый формат справки Windows (`.hlp`) на всех платформах Windows. Сжатые HTML файлы также содержат индекс, оглавление, и вы можете искать слова в документации. HTML Workshop также содержит просмотрщик для сжатых HTML файлов.]]>        
+      </docs>
+    </option>
+    <option type="string" id="CHM_FILE" format="file" defval="" depends="GENERATE_HTMLHELP">
+      <docs>
+<![CDATA[Тег \c CHM_FILE можно использовать для указания имени файла сгенерированного `.chm` файла. К файлу можно добавить путь, если результат не должен быть записан в выходной каталог html.]]>        
+      </docs>
+    </option>
+    <option type="string" id="HHC_LOCATION" format="file" defval="" depends="GENERATE_HTMLHELP" abspath="1">
+      <docs>
+<![CDATA[Тег \c HHC_LOCATION можно использовать для указания местоположения (абсолютный путь, включая имя файла) компилятора HTML помощи (\c hhc.exe). Если не пусто, Doxygen попытается запустить компилятор HTML помощи на сгенерированном \c index.hhp.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="GENERATE_CHI" defval="0" depends="GENERATE_HTMLHELP">
+      <docs>
+<![CDATA[Флаг \c GENERATE_CHI управляет тем, будет ли сгенерирован отдельный `.chi` индексный файл (\c YES) или включен в основной `.chm` файл (\c NO).]]>        
+      </docs>
+    </option>
+    <option type="string" id="CHM_INDEX_ENCODING" format="string" defval="" depends="GENERATE_HTMLHELP">
+      <docs>
+<![CDATA[\c CHM_INDEX_ENCODING используется для кодирования содержимого индексного файла HtmlHelp (\c hhk), файла содержимого (\c hhc) и файла проекта.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="BINARY_TOC" defval="0" depends="GENERATE_HTMLHELP">
+      <docs>
+<![CDATA[Флаг \c BINARY_TOC управляет тем, будет ли сгенерировано двоичное оглавление в файле `.chm` (\c YES) или обычное оглавление (\c NO). Кроме того, это включает кнопки `Previous` и `Next`.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="TOC_EXPAND" defval="0" depends="GENERATE_HTMLHELP">
+      <docs>
+<![CDATA[Флаг \c TOC_EXPAND можно установить в \c YES, чтобы добавить дополнительные элементы для членов групп в оглавление и древовидное представление документации HTML помощи.]]>        
+      </docs>
+    </option>
+    <option type="string" id="SITEMAP_URL" format="string" depends="GENERATE_HTML">
+      <docs>
+<![CDATA[Тег \c SITEMAP_URL используется для указания полного URL места, где пользователь разместит сгенерированную документацию на сервере во время развертывания. Сгенерированная карта сайта называется `sitemap.xml` и помещается в каталог, указанный \ref cfg_html_output "HTML_OUTPUT". Если \c SITEMAP_URL не указан, карта сайта не будет сгенерирована. Информацию о протоколе карты сайта см. на https://www.sitemaps.org]]>        
+      </docs>
+    </option>
+    <option type="bool" id="GENERATE_QHP" defval="0" depends="GENERATE_HTML">
+      <docs>
+<![CDATA[Если тег \c GENERATE_QHP установлен в \c YES, будет сгенерирован сжатый файл помощи Qt (`.qch`).]]>        
+      </docs>
+    </option>
+    <option type="string" id="QCH_FILE" format="file" defval="" depends="GENERATE_QHP">
+      <docs>
+<![CDATA[Тег \c QCH_FILE можно использовать для указания имени файла сгенерированного сжатого файла помощи Qt.]]>        
+      </docs>
+    </option>
+    <option type="string" id="QHP_NAMESPACE" format="string" defval="org.doxygen.Project" depends="GENERATE_QHP">
+      <docs>
+<![CDATA[Тег \c QHP_NAMESPACE указывает пространство имен, которое будет использоваться для сгенерированного файла проекта помощи Qt.]]>        
+      </docs>
+    </option>
+    <option type="string" id="QHP_VIRTUAL_FOLDER" format="string" defval="doc" depends="GENERATE_QHP">
+      <docs>
+<![CDATA[Тег \c QHP_VIRTUAL_FOLDER указывает виртуальную папку, которая будет использоваться для сгенерированного файла проекта помощи Qt.]]>        
+      </docs>
+    </option>
+    <option type="string" id="QHP_CUST_FILTER_NAME" format="string" defval="" depends="GENERATE_QHP">
+      <docs>
+<![CDATA[Тег \c QHP_CUST_FILTER_NAME указывает имя пользовательского фильтра, который может использоваться для фильтрации документации.]]>        
+      </docs>
+    </option>
+    <option type="string" id="QHP_CUST_FILTER_ATTRS" format="string" defval="" depends="GENERATE_QHP">
+      <docs>
+<![CDATA[Тег \c QHP_CUST_FILTER_ATTRS указывает атрибуты пользовательского фильтра.]]>        
+      </docs>
+    </option>
+    <option type="string" id="QHP_SECT_FILTER_ATTRS" format="string" defval="" depends="GENERATE_QHP">
+      <docs>
+<![CDATA[Тег \c QHP_SECT_FILTER_ATTRS указывает атрибуты, которые будут использоваться для фильтрации разделов.]]>        
+      </docs>
+    </option>
+    <option type="string" id="QHG_LOCATION" format="file" defval="" depends="GENERATE_QHP">
+      <docs>
+<![CDATA[Тег \c QHG_LOCATION можно использовать для указания местоположения генератора помощи Qt.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="GENERATE_ECLIPSEHELP" defval="0" depends="GENERATE_HTML">
+      <docs>
+<![CDATA[Если тег \c GENERATE_ECLIPSEHELP установлен в \c YES, будет сгенерирован файл помощи Eclipse.]]>        
+      </docs>
+    </option>
+    <option type="string" id="ECLIPSE_DOC_ID" format="string" defval="org.doxygen.Project" depends="GENERATE_ECLIPSEHELP">
+      <docs>
+<![CDATA[Тег \c ECLIPSE_DOC_ID указывает идентификатор документации, который будет использоваться для сгенерированной помощи Eclipse.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="DISABLE_INDEX" defval="0" depends="GENERATE_HTML">
+      <docs>
+<![CDATA[Если тег \c DISABLE_INDEX установлен в \c YES, индекс будет отключен в выводе HTML.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="GENERATE_TREEVIEW" defval="1" depends="GENERATE_HTML">
+      <docs>
+<![CDATA[Если тег \c GENERATE_TREEVIEW установлен в \c YES, будет сгенерировано древовидное представление в выводе HTML.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="PAGE_OUTLINE_PANEL" defval="1" depends="GENERATE_HTML">
+      <docs>
+<![CDATA[Если тег \c PAGE_OUTLINE_PANEL установлен в \c YES, будет сгенерирована панель структуры в выводе HTML.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="FULL_SIDEBAR" defval="0" depends="GENERATE_HTML">
+      <docs>
+<![CDATA[Если тег \c FULL_SIDEBAR установлен в \c YES, будет сгенерирована полная боковая панель в выводе HTML.]]>        
+      </docs>
+    </option>
+    <option type="int" id="ENUM_VALUES_PER_LINE" minval="0" maxval="20" defval="4" depends="GENERATE_HTML">
+      <docs>
+<![CDATA[Тег \c ENUM_VALUES_PER_LINE определяет количество значений перечислений, отображаемых в каждой строке в выводе HTML.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="SHOW_ENUM_VALUES" defval="0">
+      <docs>
+<![CDATA[Тег \c SHOW_ENUM_VALUES управляет отображением значений перечислений в выводе HTML.]]>        
+      </docs>
+    </option>
+    <option type="int" id="TREEVIEW_WIDTH" minval="0" maxval="1500" defval="250" depends="GENERATE_HTML">
+      <docs>
+<![CDATA[Тег \c TREEVIEW_WIDTH определяет ширину древовидного представления в выводе HTML.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="EXT_LINKS_IN_WINDOW" defval="0" depends="GENERATE_HTML">
+      <docs>
+<![CDATA[Если тег \c EXT_LINKS_IN_WINDOW установлен в \c YES, внешние ссылки будут открываться в новом окне.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="OBFUSCATE_EMAILS" defval="1" depends="GENERATE_HTML">
+      <docs>
+<![CDATA[Если тег \c OBFUSCATE_EMAILS установлен в \c YES, адреса электронной почты будут запутаны в выводе HTML.]]>        
+      </docs>
+    </option>
+    <option type="enum" id="HTML_FORMULA_FORMAT" defval="png" depends="GENERATE_HTML">
+      <docs>
+<![CDATA[Тег \c HTML_FORMULA_FORMAT определяет формат, в котором формулы отображаются в выводе HTML.]]>        
+      </docs>
+      <value name="png" desc="(по умолчанию)"/>
+      <value name="svg" desc="(выглядит лучше, но требует инструмент pdf2svg или inkscape)"/>
+    </option>
+    <option type="int" id="FORMULA_FONTSIZE" minval="8" maxval="50" defval="10" depends="GENERATE_HTML">
+      <docs>
+<![CDATA[Тег \c FORMULA_FONTSIZE определяет размер шрифта, используемый для формул.]]>        
+      </docs>
+    </option>
+    <option type="string" id="FORMULA_MACROFILE" format="file" defval="">
+      <docs>
+<![CDATA[Тег \c FORMULA_MACROFILE можно использовать для указания файла с определениями макросов для формул.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="USE_MATHJAX" defval="0" depends="GENERATE_HTML">
+      <docs>
+<![CDATA[Если тег \c USE_MATHJAX установлен в \c YES, MathJax будет использоваться для рендеринга формул в выводе HTML.]]>        
+      </docs>
+    </option>
+    <option type="enum" id="MATHJAX_VERSION" defval="MathJax_2" depends="USE_MATHJAX">
+      <docs>
+<![CDATA[С помощью \c MATHJAX_VERSION можно указать используемую версию MathJax. Обратите внимание, что разные версии MathJax имеют разные требования к различным настройкам, поэтому при переключении между разными версиями MathJax может потребоваться изменение других настроек MathJax.]]>        
+      </docs>
+      <value name="MathJax_2"/>
+      <value name="MathJax_3"/>
+      <value name="MathJax_4"/>
+    </option>
+    <option type="enum" id="MATHJAX_FORMAT" defval="HTML-CSS" depends="USE_MATHJAX">
+      <docs>
+<![CDATA[При включении MathJax можно установить выходной формат по умолчанию для вывода MathJax. Для получения дополнительной информации о выходном формате см. <a href="https://docs.mathjax.org/en/v2.7/output.html">MathJax версии 2</a>, <a href="https://docs.mathjax.org/en/v3.2/output/index.html">MathJax версии 3</a> и <a href="https://docs.mathjax.org/en/v4.0/output/index.htm">MathJax версии 4</a>.]]>        
+      </docs>
+      <value name="HTML-CSS" desc="(медленнее, но имеет лучшую совместимость. Это имя для MathJax версии 2, для MathJax версии 3 будет переведено в \c chtml)"/>
+      <value name="NativeMML" desc="(т.е. MathML. Поддерживается только для MathJax 2. Для MathJax версии 3 вместо этого будет использоваться \c chtml.)"/>
+      <value name="chtml" desc="(Это имя для MathJax версии 3, для MathJax версии 2 будет переведено в \c HTML-CSS)"/>
+      <value name="SVG"/>
+    </option>
+    <option type="string" id="MATHJAX_RELPATH" format="string" depends="USE_MATHJAX">
+      <docs>
+<![CDATA[При включении MathJax необходимо указать расположение относительно выходного каталога HTML с помощью параметра \c MATHJAX_RELPATH. Для MathJax версии 2 целевой каталог должен содержать скрипт `MathJax.js`. Например, если каталог \c mathjax находится на том же уровне, что и выходной каталог HTML, то \c MATHJAX_RELPATH должен быть <code>../mathjax</code>. Для MathJax версий 3 и 4 целевой каталог должен содержать скрипт `tex-<format>.js` (где `<format>` — это `chtml` или `svg`). Значение по умолчанию указывает на сеть доставки контента MathJax, поэтому вы можете быстро увидеть результат без установки MathJax. Однако настоятельно рекомендуется установить локальную копию MathJax с https://www.mathjax.org перед развертыванием. Значение по умолчанию: - для MathJax версии 2: https://cdn.jsdelivr.net/npm/mathjax@2 - для MathJax версии 3: https://cdn.jsdelivr.net/npm/mathjax@3 - для MathJax версии 4: https://cdn.jsdelivr.net/npm/mathjax@4]]>        
+      </docs>
+    </option>
+    <option type="list" id="MATHJAX_EXTENSIONS" format="string" depends="USE_MATHJAX">
+      <docs>
+<![CDATA[Тег \c MATHJAX_EXTENSIONS можно использовать для указания одного или нескольких имен расширений MathJax, которые должны быть включены во время рендеринга MathJax. Например, для MathJax версии 2 (см. https://docs.mathjax.org/en/v2.7/tex.html):\verbatim MATHJAX_EXTENSIONS = TeX/AMSmath TeX/AMSsymbols \endverbatim Например, для MathJax версии 3 (см. https://docs.mathjax.org/en/v3.2/input/tex/extensions/):\verbatim MATHJAX_EXTENSIONS = ams \endverbatim Например, для MathJax версии 4 (см. https://docs.mathjax.org/en/v4.0/input/tex/extensions/):\verbatim MATHJAX_EXTENSIONS = units \endverbatim Обратите внимание, что для MathJax версии 4 довольно много расширений уже загружаются автоматически. Чтобы отключить пакет в MathJax версии 4, можно использовать имя пакета с префиксом в виде знака минус (`-` например `MATHJAX_EXTENSIONS += -textmacros`)]]>        
+      </docs>
+    </option>
+    <option type="string" id="MATHJAX_CODEFILE" format="string" depends="USE_MATHJAX">
+      <docs>
+<![CDATA[Тег \c MATHJAX_CODEFILE можно использовать для указания файла с фрагментами кода JavaScript, которые будут использоваться при запуске кода MathJax. Для получения дополнительной информации см. сайт MathJax: - <a href="https://docs.mathjax.org/en/v2.7/">MathJax версии 2</a> - <a href="https://docs.mathjax.org/en/v3.2/">MathJax версии 3</a> - <a href="https://docs.mathjax.org/en/v4.0/">MathJax версии 4</a>]]>        
+      </docs>
+      <docs doxywizard="0" doxyfile="0">
+<![CDATA[
+ As an example to disable the "Math Renderer" menu item in the "Math
+ Settings" menu of MathJax:
+\verbatim
+MATHJAX_CODEFILE = disableRenderer.js
+\endverbatim
+  with in the file <code>disableRenderer.js</code>:
+\verbatim
+  MathJax.Hub.Config({
+   menuSettings: {
+    showRenderer: false,
+   }
+  });
+\endverbatim
+]]>        
+      </docs>
+      <docs documentation="0">
+<![CDATA[Тег \c MATHJAX_CODEFILE можно использовать для указания файла с фрагментами кода JavaScript, которые будут использоваться при запуске кода MathJax. Для получения дополнительной информации см. сайт MathJax: - <a href="https://docs.mathjax.org/en/v2.7/">MathJax версии 2</a> - <a href="https://docs.mathjax.org/en/v3.2/">MathJax версии 3</a> - <a href="https://docs.mathjax.org/en/v4.0/">MathJax версии 4</a>]]>        
+      </docs>
+    </option>
+    <option type="bool" id="SEARCHENGINE" defval="1" depends="GENERATE_HTML">
+      <docs>
+<![CDATA[Когда тег \c SEARCHENGINE включен, Doxygen создаст поле поиска для вывода HTML. Базовая поисковая система использует JavaScript и DHTML и должна работать в любом современном браузере. Обратите внимание, что при использовании справки HTML (\ref cfg_generate_htmlhelp "GENERATE_HTMLHELP"), справки Qt (\ref cfg_generate_qhp "GENERATE_QHP") или наборов документов (\ref cfg_generate_docset "GENERATE_DOCSET") функция поиска уже есть, поэтому эту функцию обычно следует отключить. Для больших проектов поисковая система на основе JavaScript может работать медленно, тогда включение \ref cfg_server_based_search "SERVER_BASED_SEARCH" может обеспечить лучшее решение. Можно выполнять поиск с помощью клавиатуры; для перехода к полю поиска используйте <code>\<access key\> + S</code> (что такое <code>\<access key\></code> зависит от операционной системы и браузера, но обычно это <code>\<CTRL\></code>, <code>\<ALT\></code>/<code>\<option\></code> или оба). Внутри поля поиска используйте <code>\<cursor down key\></code> для перехода к окну результатов поиска, по результатам можно перемещаться с помощью <code>\<cursor keys\></code>. Нажмите <code>\<Enter\></code> для выбора элемента или <code>\<escape\></code> для отмены поиска. Параметры фильтра можно выбрать, когда курсор находится внутри поля поиска, нажав <code>\<Shift\>+\<cursor down\></code>. Здесь также используйте <code>\<cursor keys\></code> для выбора фильтра и <code>\<Enter\></code> или <code>\<escape\></code> для активации или отмены параметра фильтра.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="SERVER_BASED_SEARCH" defval="0" depends="SEARCHENGINE">
+      <docs>
+<![CDATA[Когда тег \c SERVER_BASED_SEARCH включен, поисковая система будет реализована с использованием веб-сервера вместо веб-клиента на JavaScript. Существует два варианта поиска на основе веб-сервера в зависимости от настройки \ref cfg_external_search "EXTERNAL_SEARCH". Когда отключено, Doxygen создаст PHP-скрипт для поиска и индексный файл, используемый скриптом. Когда \ref cfg_external_search "EXTERNAL_SEARCH" включено, индексация и поиск должны обеспечиваться внешними инструментами. См. раздел \ref extsearch для подробностей.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="EXTERNAL_SEARCH" defval="0" depends="SEARCHENGINE">
+      <docs>
+<![CDATA[Когда тег \c EXTERNAL_SEARCH включен, Doxygen больше не будет создавать PHP-скрипт для поиска. Вместо этого результаты поиска записываются в XML-файл, который должен быть обработан внешним индексатором. Doxygen вызовет внешнюю поисковую систему, указанную в параметре \ref cfg_searchengine_url "SEARCHENGINE_URL", для получения результатов поиска. <br>Doxygen поставляется с примером индексатора (\c doxyindexer) и поисковой системы (<code>doxysearch.cgi</code>), которые основаны на библиотеке поисковой системы с открытым исходным кодом <a href="https://xapian.org/">Xapian</a>. <br>См. раздел \ref extsearch для подробностей.]]>        
+      </docs>
+    </option>
+    <option type="string" id="SEARCHENGINE_URL" format="string" defval="" depends="SEARCHENGINE">
+      <docs>
+<![CDATA[\c SEARCHENGINE_URL должен указывать на поисковую систему, размещенную на веб-сервере, которая будет возвращать результаты поиска при включенном \ref cfg_external_search "EXTERNAL_SEARCH". <br>Doxygen поставляется с примером индексатора (\c doxyindexer) и поисковой системы (<code>doxysearch.cgi</code>), которые основаны на библиотеке поисковой системы с открытым исходным кодом <a href="https://xapian.org/">Xapian</a>. См. раздел \ref extsearch для подробностей.]]>        
+      </docs>
+    </option>
+    <option type="string" id="SEARCHDATA_FILE" format="file" defval="searchdata.xml" depends="SEARCHENGINE">
+      <docs>
+<![CDATA[Когда \ref cfg_server_based_search "SERVER_BASED_SEARCH" и \ref cfg_external_search "EXTERNAL_SEARCH" оба включены, неиндексированные данные поиска записываются в файл для индексации внешним инструментом. С помощью тега \c SEARCHDATA_FILE можно указать имя этого файла.]]>        
+      </docs>
+    </option>
+    <option type="string" id="EXTERNAL_SEARCH_ID" format="string" defval="" depends="SEARCHENGINE">
+      <docs>
+<![CDATA[Когда \ref cfg_server_based_search "SERVER_BASED_SEARCH" и \ref cfg_external_search "EXTERNAL_SEARCH" оба включены, тег \c EXTERNAL_SEARCH_ID может использоваться как идентификатор проекта. Это полезно в сочетании с \ref cfg_extra_search_mappings "EXTRA_SEARCH_MAPPINGS" для поиска по нескольким проектам и перенаправления результатов обратно в правильный проект.]]>        
+      </docs>
+    </option>
+    <option type="list" id="EXTRA_SEARCH_MAPPINGS" format="string" depends="SEARCHENGINE">
+      <docs>
+<![CDATA[Тег \c EXTRA_SEARCH_MAPPINGS можно использовать для включения поиска по проектам Doxygen, отличным от определенного этим файлом конфигурации, но все добавленные в один и тот же внешний поисковый индекс. Каждый проект должен иметь уникальный идентификатор, установленный через \ref cfg_external_search_id "EXTERNAL_SEARCH_ID". Сопоставление поиска затем сопоставляет идентификатор с относительным расположением, где можно найти документацию. Формат:\verbatim EXTRA_SEARCH_MAPPINGS = tagname1=loc1 tagname2=loc2 ... \endverbatim]]>        
+      </docs>
+    </option>
+  </group>
+  <group name="LaTeX" docs="Configuration options related to the LaTeX output">
+    <option type="bool" id="GENERATE_LATEX" defval="1">
+      <docs>
+<![CDATA[Если тег \c GENERATE_LATEX установлен в \c YES, будет сгенерирован вывод LaTeX.]]>        
+      </docs>
+    </option>
+    <option type="string" id="LATEX_OUTPUT" format="dir" defval="latex" depends="GENERATE_LATEX">
+      <docs>
+<![CDATA[Тег \c LATEX_OUTPUT используется для указания выходного каталога для файлов LaTeX.]]>        
+      </docs>
+    </option>
+    <option type="string" id="LATEX_CMD_NAME" format="file" defval="" depends="GENERATE_LATEX">
+      <docs>
+<![CDATA[Тег \c LATEX_CMD_NAME указывает имя команды LaTeX.]]>        
+      </docs>
+    </option>
+    <option type="string" id="MAKEINDEX_CMD_NAME" format="file" defval="makeindex" depends="GENERATE_LATEX">
+      <docs>
+<![CDATA[Тег \c MAKEINDEX_CMD_NAME указывает имя команды MakeIndex.]]>        
+      </docs>
+    </option>
+    <option type="string" id="LATEX_MAKEINDEX_CMD" defval="makeindex" depends="GENERATE_LATEX">
+      <docs>
+<![CDATA[Тег \c LATEX_MAKEINDEX_CMD указывает команду, используемую для создания индекса.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="COMPACT_LATEX" defval="0" depends="GENERATE_LATEX">
+      <docs>
+<![CDATA[Если тег \c COMPACT_LATEX установлен в \c YES, будет сгенерирован компактный вывод LaTeX.]]>        
+      </docs>
+    </option>
+    <option type="enum" id="PAPER_TYPE" defval="a4" depends="GENERATE_LATEX">
+      <docs>
+<![CDATA[Тег \c PAPER_TYPE определяет размер бумаги для вывода LaTeX.]]>        
+      </docs>
+      <value name="a4" desc="(210 x 297 мм)"/>
+      <value name="letter" desc="(8.5 x 11 дюймов)"/>
+      <value name="legal" desc="(8.5 x 14 дюймов)"/>
+      <value name="executive" desc="(7.25 x 10.5 дюймов)"/>
+    </option>
+    <option type="list" id="EXTRA_PACKAGES" format="string" depends="GENERATE_LATEX">
+      <docs>
+<![CDATA[Тег \c EXTRA_PACKAGES можно использовать для указания дополнительных пакетов LaTeX.]]>        
+      </docs>
+    </option>
+    <option type="string" id="LATEX_HEADER" format="file" defval="" depends="GENERATE_LATEX">
+      <docs>
+<![CDATA[Тег \c LATEX_HEADER можно использовать для указания пользовательского файла заголовка LaTeX.]]>        
+      </docs>
+      <docs doxywizard="0" doxyfile="0">
+<![CDATA[
+ <dl>
+ <dt><code>$title</code><dd>will be replaced with the project name.
+ <dt><code>$datetime</code><dd>will be replaced with the current date and time.
+ <dt><code>$date</code><dd>will be replaced with the current date.
+ <dt><code>$time</code><dd>will be replaced with the current time.
+ <dt><code>$year</code><dd>will be replaced with the current year.
+ <dt><code>$showdate(<format>)</code><dd>will be replaced with the current date
+           and time according to the format as specified by `<format>`. The
+           `<format>` follows the rules as specified for the
+           \ref cmdshowdate "\\showdate" command with the exception that no `)`
+           is allowed in the `<format>`.
+ <dt><code>$doxygenversion</code><dd>will be replaced with the version of Doxygen
+ <dt><code>$projectname</code><dd>will be replaced with the name of
+           the project (see \ref cfg_project_name "PROJECT_NAME")
+ <dt><code>$projectnumber</code><dd>will be replaced with the project number
+           (see \ref cfg_project_number "PROJECT_NUMBER")
+ <dt><code>$projectbrief</code><dd>will be replaced with the project brief
+           description (see \ref cfg_project_brief "PROJECT_BRIEF")
+ <dt><code>$projectlogo</code><dd>will be replaced with the project logo
+           (see \ref cfg_project_logo "PROJECT_LOGO")
+ <dt><code>$latexdocumentpre</code><dd>will be replaced by an output language dependent setting
+           e.g. embed the entire document in a special environment (for Chinese, Japanese etc.)
+           Commonly used together with `$latexdocumentpost` in the footer.
+ <dt><code>$latexdocumentpost</code><dd>will be replaced by an output language dependent setting
+           e.g. embed the entire document in a special environment (for Chinese, Japanese etc.)
+           Commonly used together with `$latexdocumentpre` in the header.
+ <dt><code>$generatedby</code><dd>will be replaced with the output language dependent
+           version of the text "Generated by" or when the
+           \ref cfg_timestamp "TIMESTAMP" is set by the output language
+           dependent version of the text &quot;Generated on `$datetime` for `$projectname` by&quot;.
+ <dt><code>$latexcitereference</code><dd>will be replaced by the output language dependent$
+           version of the word "Bibliography".
+           This setting is typically used in combination with the block name `CITATIONS_PRESENT`.
+ <dt><code>$latexbibstyle</code><dd>will be replaced with the latex bib style to be used as
+           set by \ref cfg_latex_bib_style "LATEX_BIB_STYLE", in case nothing is set the bib style
+           `plain` is used.
+           This setting is typically used in combination with the block name `CITATIONS_PRESENT`.
+ <dt><code>$latexbibfiles</code><dd>will be replaced by the comma separated list of `bib`. files
+           as set by \ref cfg_cite_bib_files "CITE_BIB_FILES" (when necessary a missing `.bib` is
+           automatically added).
+           This setting is typically used in combination with the block name `CITATIONS_PRESENT`.
+ <dt><code>$papertype</code><dd>will be replaced by the paper type as set in
+           \ref cfg_paper_type "PAPER_TYPE" and the word "paper" is directly appended to it to have
+           a correct \f$\mbox{\LaTeX}\f$ paper type.
+ <dt><code>$langISO</code><dd>will be replaced by the ISO language name.
+ <dt><code>$languagesupport</code><dd>will be replaced by an output language dependent setting
+           of packages required for translating terms of the specified language.
+ <dt><code>$latexfontenc</code><dd>will be replaced by an output language dependent setting
+           of the fontencoding to be used.
+           This setting is typically used in combination with the block name `LATEX_FONTENC`.
+ <dt><code>$latexfont</code><dd>will be replaced by an output language dependent setting
+           of the fonts to be used.
+ <dt><code>$latexemojidirectory</code><dd>will be replaced by the directory as set in
+           \ref cfg_latex_emoji_directory "LATEX_EMOJI_DIRECTORY" with the backslashes replaced by
+           forward slashes (so usable by \f$\mbox{\LaTeX}\f$). In case the
+           \ref cfg_latex_emoji_directory "LATEX_EMOJI_DIRECTORY" is
+           empty, the current directory will be used.
+ <dt><code>$makeindex</code><dd>will be replaced by the command as set in
+           \ref cfg_latex_makeindex_cmd "LATEX_MAKEINDEX_CMD". Then the command doesn't start with
+           a backslash, a backslash is automatically prepended. In case the setting is empty the
+           command `\makeindex` is used.
+ <dt><code>$extralatexpackages</code><dd>will be replaced by commands for using the packages set
+           in \ref cfg_extra_packages "EXTRA_PACKAGES".
+ <dt><code>$extralatexstylesheet</code><dd>will be replaced by commands for using the packages set
+           in \ref cfg_latex_extra_stylesheet "LATEX_EXTRA_STYLESHEET" (when the extension is the default
+           extension, `.sty`, this extension is stripped for the package name).
+ <dt><code>$latexspecialformulachars</code><dd>will be replaced by the code for some special
+           unicode characters that are commonly used (i.e. superscript minus, superscript 2 and superscript 3)
+ <dt><code>$formulamacrofile</code><dd>will be replaced by the name of the file as set
+           in \ref cfg_formula_macrofile "FORMULA_MACROFILE".
+           This setting is typically used in combination with the block name `FORMULA_MACROFILE`.
+ </dl>
+To cope with differences in the layout of the header and footer that depend on
+ configuration settings, the header and footer can also contain special blocks that
+ will be copied to the output or skipped depending on the configuration.
+ Such blocks have the following form:
+\verbatim
+ %%BEGIN BLOCKNAME
+ Some context copied when condition BLOCKNAME holds
+ %%END BLOCKNAME
+ %%BEGIN !BLOCKNAME
+ Some context copied when condition BLOCKNAME does not hold
+ %%END !BLOCKNAME
+\endverbatim
+The following block names are set based on the used settings in the
+ configuration file:
+ <dl>
+ <dt><code>COMPACT_LATEX</code><dd>Content within this block is copied to the output
+     when the \ref cfg_compact_latex "COMPACT_LATEX" option is enabled.
+ <dt><code>PDF_HYPERLINKS</code><dd>Content within this block is copied to the output
+     when the \ref cfg_pdf_hyperlinks "PDF_HYPERLINKS" option is enabled.
+ <dt><code>USE_PDFLATEX</code><dd>Content within this block is copied to the output
+     when the \ref cfg_use_pdflatex "USE_PDFLATEX" option is enabled.
+ <dt><code>LATEX_BATCHMODE</code><dd>Content within this block is copied to the output
+     when the \ref cfg_latex_batchmode "LATEX_BATCHMODE" option is enabled.
+ <dt><code>TIMESTAMP</code><dd>Content within this block is copied to the output
+     when the \ref cfg_timestamp "TIMESTAMP" option is enabled.
+ </dl>
+The following block names are set based on the fact whether or not the tag has a
+ value in the used configuration file:
+ <dl>
+ <dt><code>LATEX_FONTENC</code><dd>Content within this block is copied to the output
+     when the Doxygen latex translator function returns a value for the font encoding
+     to be used. It is to be used in combination with the above mentioned `$latexfontenc`.
+ <dt><code>FORMULA_MACROFILE</code><dd>Content within this block is copied to the output
+     when the \ref cfg_formula_macrofile "FORMULA_MACROFILE" option is not empty. It is
+     to be used in combination with the above mentioned `$formulamacrofile`.
+ </dl>
+The following block name is set based on whether or not a feature is used in the
+ documentation:
+ <dl>
+ <dt><code>CITATIONS_PRESENT</code><dd>Content within this block is copied to the output
+     when in the documentation citations are present and the relevant .. are present.
+     It is to be used in combination with the above mentioned `$latexcitereference`,
+     `$latexbibstyle` and `$latexbibfiles`.
+ </dl>
+]]>        
+      </docs>
+      <docs documentation="0">
+<![CDATA[Тег \c LATEX_HEADER можно использовать для указания пользовательского файла заголовка LaTeX.]]>        
+      </docs>
+    </option>
+    <option type="string" id="LATEX_FOOTER" format="file" defval="" depends="GENERATE_LATEX">
+      <docs>
+<![CDATA[Тег \c LATEX_FOOTER можно использовать для указания пользовательского файла нижнего колонтитула LaTeX.]]>        
+      </docs>
+    </option>
+    <option type="list" id="LATEX_EXTRA_STYLESHEET" format="file" defval="" depends="GENERATE_LATEX">
+      <docs>
+<![CDATA[Тег \c LATEX_EXTRA_STYLESHEET можно использовать для указания дополнительных файлов таблиц стилей LaTeX.]]>        
+      </docs>
+    </option>
+    <option type="list" id="LATEX_EXTRA_FILES" format="file" depends="GENERATE_LATEX">
+      <docs>
+<![CDATA[Тег \c LATEX_EXTRA_FILES можно использовать для указания дополнительных файлов, которые должны быть скопированы в выходной каталог LaTeX.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="PDF_HYPERLINKS" defval="1" depends="GENERATE_LATEX">
+      <docs>
+<![CDATA[Если тег \c PDF_HYPERLINKS установлен в \c YES, будут сгенерированы PDF гиперссылки в выводе LaTeX.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="USE_PDFLATEX" defval="1" depends="GENERATE_LATEX">
+      <docs>
+<![CDATA[Если тег \c USE_PDFLATEX установлен в \c YES, pdfLaTeX будет использоваться для генерации PDF файлов.]]>        
+      </docs>
+    </option>
+    <option type="enum" id="LATEX_BATCHMODE" defval="NO" depends="GENERATE_LATEX">
+      <docs>
+<![CDATA[Если тег \c LATEX_BATCHMODE установлен в \c YES, LaTeX будет выполняться в пакетном режиме.]]>        
+      </docs>
+      <value name="NO" desc="то же, что и ERROR_STOP"/>
+      <value name="YES" desc="то же, что и BATCH"/>
+      <value name="BATCH" desc="В пакетном режиме на терминал ничего не выводится, ошибки прокручиваются так, как если бы \&lt;return\&gt; нажимался при каждой ошибке; отсутствующие файлы, которые TeX пытается ввести или запросить с клавиатуры (\\read на неоткрытом входном потоке), приводят к прерыванию задания"/>
+      <value name="NON_STOP" desc="В режиме без остановки диагностическое сообщение появится на терминале, но взаимодействие с пользователем невозможно, как и в пакетном режиме"/>
+      <value name="SCROLL" desc="В режиме прокрутки TeX остановится только для отсутствующих файлов или если необходим ввод с клавиатуры"/>
+      <value name="ERROR_STOP" desc="В режиме остановки при ошибке TeX останавливается при каждой ошибке, запрашивая вмешательство пользователя"/>
+    </option>
+    <option type="bool" id="LATEX_HIDE_INDICES" defval="0" depends="GENERATE_LATEX">
+      <docs>
+<![CDATA[Если тег \c LATEX_HIDE_INDICES установлен в \c YES, индексы будут скрыты в выводе LaTeX.]]>        
+      </docs>
+    </option>
+    <option type="string" id="LATEX_BIB_STYLE" format="string" defval="plainnat" depends="GENERATE_LATEX">
+      <docs>
+<![CDATA[Тег \c LATEX_BIB_STYLE определяет стиль, используемый для библиографических записей.]]>        
+      </docs>
+    </option>
+    <option type="string" id="LATEX_EMOJI_DIRECTORY" format="dir" defval="" depends="GENERATE_LATEX">
+      <docs>
+<![CDATA[Тег \c LATEX_EMOJI_DIRECTORY указывает каталог, где хранятся файлы эмодзи для вывода LaTeX.]]>        
+      </docs>
+    </option>
+  </group>
+  <group name="RTF" docs="Configuration options related to the RTF output">
+    <option type="bool" id="GENERATE_RTF" defval="0">
+      <docs>
+<![CDATA[Если тег \c GENERATE_RTF установлен в \c YES, будет сгенерирован вывод RTF.]]>        
+      </docs>
+    </option>
+    <option type="string" id="RTF_OUTPUT" format="dir" defval="rtf" depends="GENERATE_RTF">
+      <docs>
+<![CDATA[Тег \c RTF_OUTPUT используется для указания выходного каталога для файлов RTF.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="COMPACT_RTF" defval="0" depends="GENERATE_RTF">
+      <docs>
+<![CDATA[Если тег \c COMPACT_RTF установлен в \c YES, будет сгенерирован компактный вывод RTF.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="RTF_HYPERLINKS" defval="0" depends="GENERATE_RTF">
+      <docs>
+<![CDATA[Если тег \c RTF_HYPERLINKS установлен в \c YES, будут сгенерированы гиперссылки в выводе RTF.]]>        
+      </docs>
+    </option>
+    <option type="string" id="RTF_STYLESHEET_FILE" format="file" defval="" depends="GENERATE_RTF">
+      <docs>
+<![CDATA[Тег \c RTF_STYLESHEET_FILE можно использовать для указания пользовательского файла таблицы стилей RTF.]]>        
+      </docs>
+    </option>
+    <option type="string" id="RTF_EXTENSIONS_FILE" format="file" defval="" depends="GENERATE_RTF">
+      <docs>
+<![CDATA[Тег \c RTF_EXTENSIONS_FILE можно использовать для указания пользовательского файла расширений RTF.]]>        
+      </docs>
+    </option>
+    <option type="list" id="RTF_EXTRA_FILES" format="file" depends="GENERATE_RTF">
+      <docs>
+<![CDATA[Тег \c RTF_EXTRA_FILES можно использовать для указания дополнительных файлов, которые должны быть скопированы в выходной каталог RTF.]]>        
+      </docs>
+    </option>
+  </group>
+  <group name="Man" docs="Configuration options related to the man page output">
+    <option type="bool" id="GENERATE_MAN" defval="0">
+      <docs>
+<![CDATA[Если тег \c GENERATE_MAN установлен в \c YES, будет сгенерирован вывод страниц Man.]]>        
+      </docs>
+    </option>
+    <option type="string" id="MAN_OUTPUT" format="dir" defval="man" depends="GENERATE_MAN">
+      <docs>
+<![CDATA[Тег \c MAN_OUTPUT используется для указания выходного каталога для страниц Man.]]>        
+      </docs>
+    </option>
+    <option type="string" id="MAN_EXTENSION" format="string" defval=".3" depends="GENERATE_MAN">
+      <docs>
+<![CDATA[Тег \c MAN_EXTENSION определяет расширение файла для страниц Man.]]>        
+      </docs>
+    </option>
+    <option type="string" id="MAN_SUBDIR" format="string" defval="" depends="GENERATE_MAN">
+      <docs>
+<![CDATA[Тег \c MAN_SUBDIR определяет подкаталог для страниц Man.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="MAN_LINKS" defval="0" depends="GENERATE_MAN">
+      <docs>
+<![CDATA[Если тег \c MAN_LINKS установлен в \c YES, будут сгенерированы ссылки на страницах Man.]]>        
+      </docs>
+    </option>
+  </group>
+  <group name="XML" docs="Configuration options related to the XML output">
+    <option type="bool" id="GENERATE_XML" defval="0">
+      <docs>
+<![CDATA[Если тег \c GENERATE_XML установлен в \c YES, будет сгенерирован вывод XML.]]>        
+      </docs>
+    </option>
+    <option type="string" id="XML_OUTPUT" format="dir" defval="xml" depends="GENERATE_XML">
+      <docs>
+<![CDATA[Тег \c XML_OUTPUT используется для указания выходного каталога для файлов XML.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="XML_PROGRAMLISTING" defval="1" depends="GENERATE_XML">
+      <docs>
+<![CDATA[Если тег \c XML_PROGRAMLISTING установлен в \c YES, исходный код будет включен в вывод XML.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="XML_NS_MEMB_FILE_SCOPE" defval="0" depends="GENERATE_XML">
+      <docs>
+<![CDATA[Если тег \c XML_NS_MEMB_FILE_SCOPE установлен в \c YES, члены пространства имен в области файла будут включены в вывод XML.]]>        
+      </docs>
+    </option>
+  </group>
+  <group name="Docbook" docs="Configuration options related to the DOCBOOK output">
+    <option type="bool" id="GENERATE_DOCBOOK" defval="0">
+      <docs>
+<![CDATA[Если тег \c GENERATE_DOCBOOK установлен в \c YES, будет сгенерирован вывод DocBook.]]>        
+      </docs>
+    </option>
+    <option type="string" id="DOCBOOK_OUTPUT" format="dir" defval="docbook" depends="GENERATE_DOCBOOK">
+      <docs>
+<![CDATA[Тег \c DOCBOOK_OUTPUT используется для указания выходного каталога для файлов DocBook.]]>        
+      </docs>
+    </option>
+  </group>
+  <group name="AutoGen" docs="Configuration options for the AutoGen Definitions output">
+    <option type="bool" id="GENERATE_AUTOGEN_DEF" defval="0">
+      <docs>
+<![CDATA[Если тег \c GENERATE_AUTOGEN_DEF установлен в \c YES, будет сгенерирован файл определений AutoGen.]]>        
+      </docs>
+    </option>
+  </group>
+  <group name="Sqlite3" docs="Configuration options related to Sqlite3 output">
+    <option type="bool" id="GENERATE_SQLITE3" defval="0">
+      <docs>
+<![CDATA[Если тег \c GENERATE_SQLITE3 установлен в \c YES, Doxygen сгенерирует базу данных \c Sqlite3 с символами, найденными Doxygen, сохраненными в таблицах.]]>        
+      </docs>
+    </option>
+    <option type="string" id="SQLITE3_OUTPUT" format="dir" defval="sqlite3" depends="GENERATE_SQLITE3">
+      <docs>
+<![CDATA[Тег \c SQLITE3_OUTPUT используется для указания, где будет размещена база данных \c Sqlite3. Если введен относительный путь, значение \ref cfg_output_directory "OUTPUT_DIRECTORY" будет добавлено в начало.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="SQLITE3_RECREATE_DB" defval="1" depends="GENERATE_SQLITE3">
+      <docs>
+<![CDATA[Если тег \c SQLITE3_RECREATE_DB установлен в \c YES, существующий файл базы данных doxygen_sqlite3.db будет создаваться заново при каждом запуске Doxygen. Если установлено в \c NO, Doxygen предупредит, если файл базы данных уже найден, и не изменит его.]]>        
+      </docs>
+    </option>
+  </group>
+  <group name="PerlMod" docs="Configuration options related to the Perl module output">
+    <option type="bool" id="GENERATE_PERLMOD" defval="0">
+      <docs>
+<![CDATA[Если тег \c GENERATE_PERLMOD установлен в \c YES, Doxygen сгенерирует файл модуля Perl, который захватывает структуру кода (включая всю документацию).]]>        
+      </docs>
+    </option>
+    <option type="bool" id="PERLMOD_LATEX" defval="0" depends="GENERATE_PERLMOD">
+      <docs>
+<![CDATA[Если тег \c PERLMOD_LATEX установлен в \c YES, формулы LaTeX будут сгенерированы в выводе модуля Perl.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="PERLMOD_PRETTY" defval="1" depends="GENERATE_PERLMOD">
+      <docs>
+<![CDATA[Если тег \c PERLMOD_PRETTY установлен в \c YES, вывод модуля Perl будет красиво отформатирован.]]>        
+      </docs>
+    </option>
+    <option type="string" id="PERLMOD_MAKEVAR_PREFIX" format="string" defval="" depends="GENERATE_PERLMOD">
+      <docs>
+<![CDATA[Тег \c PERLMOD_MAKEVAR_PREFIX можно использовать для указания префикса для переменных Make в выводе модуля Perl.]]>        
+      </docs>
+    </option>
+  </group>
+  <group name="Preprocessor" docs="Configuration options related to the preprocessor">
+    <option type="bool" id="ENABLE_PREPROCESSING" defval="1">
+      <docs>
+<![CDATA[Если тег \c ENABLE_PREPROCESSING установлен в \c YES, препроцессор C будет применен к исходному коду.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="MACRO_EXPANSION" defval="0" depends="ENABLE_PREPROCESSING">
+      <docs>
+<![CDATA[Если тег \c MACRO_EXPANSION установлен в \c YES, макросы будут развернуты в исходном коде.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="EXPAND_ONLY_PREDEF" defval="0" depends="ENABLE_PREPROCESSING">
+      <docs>
+<![CDATA[Если тег \c EXPAND_ONLY_PREDEF установлен в \c YES, будут развернуты только предопределенные макросы.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="SEARCH_INCLUDES" defval="1" depends="ENABLE_PREPROCESSING">
+      <docs>
+<![CDATA[Если тег \c SEARCH_INCLUDES установлен в \c YES, включаемые файлы будут искаться для определений макросов.]]>        
+      </docs>
+    </option>
+    <option type="list" id="INCLUDE_PATH" format="dir" depends="SEARCH_INCLUDES">
+      <docs>
+<![CDATA[Тег \c INCLUDE_PATH можно использовать для указания дополнительных путей включения для препроцессора.]]>        
+      </docs>
+    </option>
+    <option type="list" id="INCLUDE_FILE_PATTERNS" format="string" depends="ENABLE_PREPROCESSING">
+      <docs>
+<![CDATA[Тег \c INCLUDE_FILE_PATTERNS можно использовать для указания шаблонов для включаемых файлов.]]>        
+      </docs>
+    </option>
+    <option type="list" id="PREDEFINED" format="string" depends="ENABLE_PREPROCESSING">
+      <docs>
+<![CDATA[Тег \c PREDEFINED можно использовать для указания предопределенных макросов.]]>        
+      </docs>
+    </option>
+    <option type="list" id="EXPAND_AS_DEFINED" format="string" depends="ENABLE_PREPROCESSING">
+      <docs>
+<![CDATA[Тег \c EXPAND_AS_DEFINED можно использовать для указания макросов, которые будут развернуты как определенные.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="SKIP_FUNCTION_MACROS" defval="1" depends="ENABLE_PREPROCESSING">
+      <docs>
+<![CDATA[Если тег \c SKIP_FUNCTION_MACROS установлен в \c YES, макросы функций будут пропущены.]]>        
+      </docs>
+    </option>
+  </group>
+  <group name="External" docs="Configuration options related to external references">
+    <option type="list" id="TAGFILES" format="file">
+      <docs>
+<![CDATA[Тег \c TAGFILES можно использовать для указания внешних файлов тегов.]]>        
+      </docs>
+    </option>
+    <option type="string" id="GENERATE_TAGFILE" format="file" defval="">
+      <docs>
+<![CDATA[Тег \c GENERATE_TAGFILE можно использовать для указания имени файла тегов, который будет сгенерирован.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="ALLEXTERNALS" defval="0">
+      <docs>
+<![CDATA[Если тег \c ALLEXTERNALS установлен в \c YES, все внешние классы и пространства имен будут включены в документацию.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="EXTERNAL_GROUPS" defval="1">
+      <docs>
+<![CDATA[Если тег \c EXTERNAL_GROUPS установлен в \c YES, внешние группы будут включены в документацию.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="EXTERNAL_PAGES" defval="1">
+      <docs>
+<![CDATA[Если тег \c EXTERNAL_PAGES установлен в \c YES, внешние страницы будут включены в документацию.]]>        
+      </docs>
+    </option>
+  </group>
+  <group name="Dot" docs="Configuration options related to diagram generator tools">
+    <option type="bool" id="HIDE_UNDOC_RELATIONS" defval="1">
+      <docs>
+<![CDATA[Если тег \c HIDE_UNDOC_RELATIONS установлен в \c YES, недокументированные отношения будут скрыты в диаграммах классов.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="HAVE_DOT" defval="0">
+      <docs>
+<![CDATA[Если тег \c HAVE_DOT установлен в \c YES, Graphviz/dot будет использоваться для генерации диаграмм.]]>        
+      </docs>
+    </option>
+    <option type="int" id="DOT_NUM_THREADS" defval="0" minval="0" maxval="512" depends="HAVE_DOT">
+      <docs>
+<![CDATA[Тег \c DOT_NUM_THREADS определяет количество потоков, используемых dot.]]>        
+      </docs>
+    </option>
+    <option type="string" id="DOT_COMMON_ATTR" format="string" depends="HAVE_DOT" defval="fontname=Helvetica,fontsize=10">
+      <docs>
+<![CDATA[Тег \c DOT_COMMON_ATTR можно использовать для указания общих атрибутов для диаграмм dot.]]>        
+      </docs>
+    </option>
+    <option type="string" id="DOT_EDGE_ATTR" format="string" depends="HAVE_DOT" defval="labelfontname=Helvetica,labelfontsize=10">
+      <docs>
+<![CDATA[Тег \c DOT_EDGE_ATTR можно использовать для указания атрибутов ребер для диаграмм dot.]]>        
+      </docs>
+    </option>
+    <option type="string" id="DOT_NODE_ATTR" format="string" depends="HAVE_DOT" defval="shape=box,height=0.2,width=0.4">
+      <docs>
+<![CDATA[Тег \c DOT_NODE_ATTR можно использовать для указания атрибутов узлов для диаграмм dot.]]>        
+      </docs>
+    </option>
+    <option type="string" id="DOT_FONTPATH" format="dir" defval="" depends="HAVE_DOT">
+      <docs>
+<![CDATA[Тег \c DOT_FONTPATH можно использовать для указания пути к шрифтам для dot.]]>        
+      </docs>
+    </option>
+    <option type="enum" id="CLASS_GRAPH" defval="YES">
+      <docs>
+<![CDATA[Если тег \c CLASS_GRAPH установлен в \c YES, будет сгенерирована диаграмма классов.]]>        
+      </docs>
+      <value name="NO" bool_representation="NO"/>
+      <value name="YES" bool_representation="YES"/>
+      <value name="TEXT" bool_representation="YES"/>
+      <value name="GRAPH" bool_representation="YES"/>
+      <value name="BUILTIN" bool_representation="YES"/>
+    </option>
+    <option type="bool" id="COLLABORATION_GRAPH" defval="1" depends="HAVE_DOT">
+      <docs>
+<![CDATA[Если тег \c COLLABORATION_GRAPH установлен в \c YES, будет сгенерирована диаграмма сотрудничества.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="GROUP_GRAPHS" defval="1" depends="HAVE_DOT">
+      <docs>
+<![CDATA[Если тег \c GROUP_GRAPHS установлен в \c YES, Doxygen сгенерирует диаграмму для групп, показывающую прямые зависимости групп.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="UML_LOOK" defval="0" depends="HAVE_DOT">
+      <docs>
+<![CDATA[Если тег \c UML_LOOK установлен в \c YES, диаграммы наследования и сотрудничества будут сгенерированы в стиле, похожем на OMG Unified Modeling Language.]]>        
+      </docs>
+    </option>
+    <option type="int" id="UML_LIMIT_NUM_FIELDS" defval="10" minval="0" maxval="100" depends="UML_LOOK">
+      <docs>
+<![CDATA[Тег \c UML_LIMIT_NUM_FIELDS ограничивает количество полей, отображаемых в диаграммах UML.]]>        
+      </docs>
+    </option>
+    <option type="int" id="UML_MAX_EDGE_LABELS" defval="10" minval="0" maxval="100" depends="UML_LOOK">
+      <docs>
+<![CDATA[Тег \c UML_MAX_EDGE_LABELS ограничивает количество меток ребер, отображаемых в диаграммах UML.]]>        
+      </docs>
+    </option>
+    <option type="enum" id="DOT_UML_DETAILS" defval="NO" depends="UML_LOOK">
+      <docs>
+<![CDATA[Тег \c DOT_UML_DETAILS управляет тем, какие детали отображаются в диаграммах UML.]]>        
+      </docs>
+      <value name="NO"/>
+      <value name="YES"/>
+      <value name="NONE"/>
+    </option>
+    <option type="int" id="DOT_WRAP_THRESHOLD" defval="17" minval="0" maxval="1000" depends="HAVE_DOT">
+      <docs>
+<![CDATA[Тег \c DOT_WRAP_THRESHOLD определяет порог для переноса строк в диаграммах dot.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="TEMPLATE_RELATIONS" defval="0" depends="HAVE_DOT">
+      <docs>
+<![CDATA[Если тег \c TEMPLATE_RELATIONS установлен в \c YES, отношения шаблонов будут отображаться в диаграммах.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="INCLUDE_GRAPH" defval="1" depends="HAVE_DOT">
+      <docs>
+<![CDATA[Если тег \c INCLUDE_GRAPH установлен в \c YES, будет сгенерирована диаграмма включений.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="INCLUDED_BY_GRAPH" defval="1" depends="HAVE_DOT">
+      <docs>
+<![CDATA[Если тег \c INCLUDED_BY_GRAPH установлен в \c YES, будет сгенерирована диаграмма "включен в".]]>        
+      </docs>
+    </option>
+    <option type="bool" id="CALL_GRAPH" defval="0" depends="HAVE_DOT">
+      <docs>
+<![CDATA[Если тег \c CALL_GRAPH установлен в \c YES, диаграмма вызовов будет сгенерирована для каждой глобальной функции или метода класса.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="CALLER_GRAPH" defval="0" depends="HAVE_DOT">
+      <docs>
+<![CDATA[Если тег \c CALLER_GRAPH установлен в \c YES, диаграмма вызывающих будет сгенерирована для каждой глобальной функции или метода класса.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="GRAPHICAL_HIERARCHY" defval="1" depends="HAVE_DOT">
+      <docs>
+<![CDATA[Если тег \c GRAPHICAL_HIERARCHY установлен в \c YES, иерархия классов будет отображаться графически.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="DIRECTORY_GRAPH" defval="1" depends="HAVE_DOT">
+      <docs>
+<![CDATA[Если тег \c DIRECTORY_GRAPH установлен в \c YES, будет сгенерирована диаграмма каталогов.]]>        
+      </docs>
+    </option>
+    <option type="int" id="DIR_GRAPH_MAX_DEPTH" minval="1" maxval="25" defval="1" depends="DIRECTORY_GRAPH">
+      <docs>
+<![CDATA[Тег \c DIR_GRAPH_MAX_DEPTH можно использовать для ограничения максимального количества уровней подкаталогов, генерируемых в диаграмме зависимостей каталогов.]]>        
+      </docs>
+    </option>
+    <option type="enum" id="DOT_IMAGE_FORMAT" defval="png" depends="HAVE_DOT">
+      <docs>
+<![CDATA[Тег \c DOT_IMAGE_FORMAT можно использовать для установки формата изображения для изображений, сгенерированных \c dot.]]>        
+      </docs>
+      <value name="png"/>
+      <value name="jpg"/>
+      <value name="gif"/>
+      <value name="svg"/>
+      <value name="png:gd"/>
+      <value name="png:gd:gd"/>
+      <value name="png:cairo"/>
+      <value name="png:cairo:gd"/>
+      <value name="png:cairo:cairo"/>
+      <value name="png:cairo:gdiplus"/>
+      <value name="png:gdiplus"/>
+      <value name="png:gdiplus:gdiplus"/>
+      <value name="svg:cairo"/>
+      <value name="svg:cairo:cairo"/>
+      <value name="svg:svg"/>
+      <value name="svg:svg:core"/>
+      <value name="gif:cairo"/>
+      <value name="gif:cairo:gd"/>
+      <value name="gif:cairo:gdiplus"/>
+      <value name="gif:gdiplus"/>
+      <value name="gif:gdiplus:gdiplus"/>
+      <value name="gif:gd"/>
+      <value name="gif:gd:gd"/>
+      <value name="jpg:cairo"/>
+      <value name="jpg:cairo:gd"/>
+      <value name="jpg:cairo:gdiplus"/>
+      <value name="jpg:gd"/>
+      <value name="jpg:gd:gd"/>
+      <value name="jpg:gdiplus"/>
+      <value name="jpg:gdiplus:gdiplus"/>
+    </option>
+    <option type="bool" id="INTERACTIVE_SVG" defval="0" depends="HAVE_DOT">
+      <docs>
+<![CDATA[Если \ref cfg_dot_image_format "DOT_IMAGE_FORMAT" установлен в `svg` или `svg:svg` или `svg:svg:core`, эту опцию можно установить в \c YES, чтобы включить интерактивные SVG изображения, которые позволяют масштабирование и панорамирование.]]>        
+      </docs>
+    </option>
+    <option type="string" id="DOT_PATH" format="filedir" defval="" depends="HAVE_DOT">
+      <docs>
+<![CDATA[Тег \c DOT_PATH можно использовать для указания пути к инструменту \c dot.]]>        
+      </docs>
+    </option>
+    <option type="list" id="DOTFILE_DIRS" format="dir" depends="HAVE_DOT">
+      <docs>
+<![CDATA[Тег \c DOTFILE_DIRS можно использовать для указания каталогов, содержащих файлы dot.]]>        
+      </docs>
+    </option>
+    <option type="string" id="DIA_PATH" format="dir" defval="">
+      <docs>
+<![CDATA[Вы можете включить диаграммы, созданные с помощью dia, в документацию Doxygen. Doxygen запустит dia для генерации диаграммы и вставит ее в документацию. Тег DIA_PATH позволяет указать каталог, где находится бинарный файл dia.]]>        
+      </docs>
+    </option>
+    <option type="list" id="DIAFILE_DIRS" format="dir">
+      <docs>
+<![CDATA[Тег \c DIAFILE_DIRS можно использовать для указания каталогов, содержащих файлы dia.]]>        
+      </docs>
+    </option>
+    <option type="string" id="PLANTUML_JAR_PATH" format="filedir" defval="">
+      <docs>
+<![CDATA[Тег \c PLANTUML_JAR_PATH указывает путь к файлу JAR PlantUML.]]>        
+      </docs>
+    </option>
+    <option type="string" id="PLANTUML_CFG_FILE" format="file" defval="">
+      <docs>
+<![CDATA[Тег \c PLANTUML_CFG_FILE можно использовать для указания файла конфигурации для PlantUML.]]>        
+      </docs>
+    </option>
+    <option type="list" id="PLANTUML_INCLUDE_PATH" format="dir" defval="">
+      <docs>
+<![CDATA[Тег \c PLANTUML_INCLUDE_PATH можно использовать для указания путей включения для PlantUML.]]>        
+      </docs>
+    </option>
+    <option type="list" id="PLANTUMLFILE_DIRS" format="dir">
+      <docs>
+<![CDATA[Тег \c PLANTUMLFILE_DIRS можно использовать для указания каталогов, содержащих файлы PlantUML.]]>        
+      </docs>
+    </option>
+    <option type="string" id="MERMAID_PATH" format="filedir" defval="">
+      <docs>
+<![CDATA[При использовании диаграмм Mermaid с CLI рендерингом тег \c MERMAID_PATH должен использоваться для указания каталога, где может быть найден исполняемый файл \c mmdc (Mermaid CLI).]]>        
+      </docs>
+    </option>
+    <option type="string" id="MERMAID_CONFIG_FILE" format="file" defval="">
+      <docs>
+<![CDATA[При использовании диаграмм Mermaid тег \c MERMAID_CONFIG_FILE можно использовать для указания файла конфигурации JSON для инструмента CLI Mermaid (\c mmdc).]]>        
+      </docs>
+    </option>
+    <option type="enum" id="MERMAID_RENDER_MODE" defval="AUTO">
+      <docs>
+<![CDATA[Тег \c MERMAID_RENDER_MODE выбирает, как рендерить диаграммы Mermaid.]]>        
+      </docs>
+      <value name="AUTO" desc="(использовать рендеринг на стороне клиента для HTML и \c mmdc для LaTeX/PDF и других форматов. Если \c MERMAID_PATH не установлен, не-HTML диаграммы выдадут предупреждение)"/>
+      <value name="CLI" desc="(использовать инструмент \c mmdc для предварительной генерации изображений (требуется \c Node.js и \c mermaid-js/mermaid-cli). Работает для всех форматов вывода)"/>
+      <value name="CLIENT_SIDE" desc="(встроить \c mermaid.js в вывод HTML для рендеринга на стороне клиента. Не требует \c mmdc, но работает только для вывода HTML)"/>
+    </option>
+    <option type="string" id="MERMAID_JS_URL" format="string" defval="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs">
+      <docs>
+<![CDATA[Тег \c MERMAID_JS_URL указывает URL, с которого загружается \c mermaid.js при использовании клиентского рендеринга.]]>        
+      </docs>
+    </option>
+    <option type="list" id="MERMAIDFILE_DIRS" format="dir">
+      <docs>
+<![CDATA[Тег \c MERMAIDFILE_DIRS можно использовать для указания каталогов, содержащих файлы Mermaid.]]>        
+      </docs>
+    </option>
+    <option type="int" id="DOT_GRAPH_MAX_NODES" minval="0" maxval="10000" defval="50" depends="HAVE_DOT">
+      <docs>
+<![CDATA[Тег \c DOT_GRAPH_MAX_NODES можно использовать для установки максимального количества узлов, отображаемых в графе.]]>        
+      </docs>
+    </option>
+    <option type="int" id="MAX_DOT_GRAPH_DEPTH" minval="0" maxval="1000" defval="0" depends="HAVE_DOT">
+      <docs>
+<![CDATA[Тег \c MAX_DOT_GRAPH_DEPTH можно использовать для установки максимальной глубины графов, сгенерированных \c dot.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="DOT_MULTI_TARGETS" defval="0" depends="HAVE_DOT">
+      <docs>
+<![CDATA[Установите тег \c DOT_MULTI_TARGETS в \c YES, чтобы позволить dot генерировать несколько выходных файлов за один запуск.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="GENERATE_LEGEND" defval="1" depends="HAVE_DOT">
+      <docs>
+<![CDATA[Если тег \c GENERATE_LEGEND установлен в \c YES, Doxygen сгенерирует страницу легенды, объясняющую значение различных блоков и стрелок в диаграммах, сгенерированных dot.]]>        
+      </docs>
+    </option>
+    <option type="bool" id="DOT_CLEANUP" defval="1">
+      <docs>
+<![CDATA[Если тег \c DOT_CLEANUP установлен в \c YES, Doxygen удалит промежуточные файлы, использованные для генерации различных графов. &lt;br&gt;Примечание: Эта настройка используется не только для файлов dot, но и для временных файлов msc.]]>        
+      </docs>
+    </option>
+    <option type="string" id="MSCGEN_TOOL" format="file" defval="">
+      <docs>
+<![CDATA[Вы можете определить диаграммы последовательности сообщений в комментариях Doxygen с помощью команды \ref cmdmsc "\msc". Если тег \c MSCGEN_TOOL оставлен пустым (по умолчанию), Doxygen будет использовать встроенную версию инструмента mscgen для генерации диаграмм. Альтернативно, тег \c MSCGEN_TOOL также может указывать имя внешнего инструмента.]]>        
+      </docs>
+    </option>
+    <option type="list" id="MSCFILE_DIRS" format="dir">
+      <docs>
+<![CDATA[Тег \c MSCFILE_DIRS можно использовать для указания каталогов, содержащих файлы msc.]]>        
+      </docs>
+    </option>
+    <option type="obsolete" orgtype="bool" id="USE_WINDOWS_ENCODING"/>
+    <option type="obsolete" orgtype="bool" id="DETAILS_AT_TOP"/>
+    <option type="obsolete" orgtype="string" id="QTHELP_FILE"/>
+    <option type="obsolete" orgtype="string" id="QTHELP_CONFIG"/>
+    <option type="obsolete" orgtype="string" id="DOXYGEN2QTHELP_LOC"/>
+    <option type="obsolete" orgtype="int" id="MAX_DOT_GRAPH_WIDTH"/>
+    <option type="obsolete" orgtype="int" id="MAX_DOT_GRAPH_HEIGHT"/>
+    <option type="obsolete" orgtype="string" id="CGI_NAME"/>
+    <option type="obsolete" orgtype="string" id="CGI_URL"/>
+    <option type="obsolete" orgtype="string" id="DOC_URL"/>
+    <option type="obsolete" orgtype="string" id="DOC_ABSPATH"/>
+    <option type="obsolete" orgtype="string" id="BIN_ABSPATH"/>
+    <option type="obsolete" orgtype="list" id="EXT_DOC_PATHS"/>
+    <option type="obsolete" orgtype="bool" id="USE_INLINE_TREES"/>
+    <option type="obsolete" orgtype="bool" id="SHOW_DIRECTORIES"/>
+    <option type="obsolete" orgtype="bool" id="HTML_ALIGN_MEMBERS"/>
+    <option type="obsolete" orgtype="int" id="SYMBOL_CACHE_SIZE"/>
+    <option type="obsolete" orgtype="string" id="XML_SCHEMA"/>
+    <option type="obsolete" orgtype="string" id="XML_DTD"/>
+    <option type="obsolete" orgtype="string" id="PERL_PATH"/>
+    <option type="obsolete" orgtype="string" id="MSCGEN_PATH"/>
+    <option type="obsolete" orgtype="list" id="TCL_SUBST"/>
+    <option type="obsolete" orgtype="int" id="COLS_IN_ALPHA_INDEX"/>
+    <option type="obsolete" orgtype="enum" id="OUTPUT_TEXT_DIRECTION"/>
+    <option type="obsolete" orgtype="bool" id="DOCBOOK_PROGRAMLISTING"/>
+    <option type="obsolete" orgtype="bool" id="RTF_SOURCE_CODE"/>
+    <option type="obsolete" orgtype="bool" id="LATEX_SOURCE_CODE"/>
+    <option type="obsolete" orgtype="bool" id="CLASS_DIAGRAMS"/>
+    <option type="obsolete" orgtype="int" id="DOT_FONTSIZE"/>
+    <option type="obsolete" orgtype="string" id="DOT_FONTNAME"/>
+    <option type="obsolete" orgtype="bool" id="FORMULA_TRANSPARENT"/>
+    <option type="obsolete" orgtype="bool" id="DOT_TRANSPARENT"/>
+    <option type="obsolete" orgtype="bool" id="HTML_TIMESTAMP"/>
+    <option type="obsolete" orgtype="bool" id="LATEX_TIMESTAMP"/>
+  </group>
+  <generator>
+    <message name="minmaxdef"><![CDATA[<br/> Minimum value: {0}, maximum value: {1}, default value: {2}.]]></message>
+    <message name="minmaxdefcode"><![CDATA[ Minimum value: <code>{0}</code>, maximum value: <code>{1}</code>, default value: <code>{2}</code>.]]></message>
+    <message name="possible"><![CDATA[Possible values are: ]]></message>
+    <message name="defvaltxt"><![CDATA[The default value is: {0}.]]></message>
+    <message name="defvalcode"><![CDATA[The default value is: <code>{0}</code>.]]></message>
+    <message name="sysdep"><![CDATA[system dependent]]></message>
+    <message name="defdir"><![CDATA[The default directory is: <code>{0}</code>.]]></message>
+    <message name="deffile"><![CDATA[The default file is: <code>{0}</code>.]]></message>
+    <message name="deffileabs"><![CDATA[The default file (with absolute path) is <code>{0}</code>]]></message>
+    <message name="deffilefull"><![CDATA[The file has to be specified with full path.]]></message>
+    <message name="defimg"><![CDATA[The default image is: <code>{0}</code>.]]></message>
+    <message name="defimgabs"><![CDATA[The default image (with absolute path) is <code>{0}</code>]]></message>
+    <message name="defimgfull"><![CDATA[The image has to be specified with full path.]]></message>
+    <message name="depstxt"><![CDATA[This tag requires that the tag \ref cfg_{0} "{1}" is set to \c YES.]]></message>
+    <message name="andtxt"><![CDATA[ and ]]></message>
+  </generator>
+</doxygenconfig>

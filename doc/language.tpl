@@ -341,7 +341,7 @@ really obsolete translators brings too much maintenance and
 run-time overhead.
 
 \htmlonly
-Go to the <a href="perlmod.html">next</a> section or return to the
+Go to the <a href="md_i18n__guide.html">next</a> section or return to the
  <a href="index.html">index</a>.
 \endhtmlonly
 
