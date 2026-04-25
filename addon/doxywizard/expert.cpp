@@ -173,7 +173,7 @@ QString convertDoxyCmdToHtml(const QString &s)
   // \@ -> @
   result.replace(SA("\\@"),SA("@"));
   
-  // \\ -> \
+  // 2xbackslash -> backslash
   result.replace(SA("\\\\"),SA("\\"));
   
   // http/https URLs -> links
