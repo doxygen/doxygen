@@ -350,6 +350,9 @@ add_executable(doxygen
 include(ApplyEditbin)
 apply_editbin(doxygen console)
 
+include(ApplyManifest)
+apply_manifest(doxygen)
+
 add_sanitizers(doxygen)
 
 if (use_libclang)
