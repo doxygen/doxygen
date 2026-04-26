@@ -39,10 +39,6 @@
 #include <QDate>
 #include <QScrollBar>
 
-#ifdef _WIN32
-#include <windows.h>
-#endif
-
 #define MAX_RECENT_FILES 10
 
 // globally accessible variables
@@ -679,15 +675,7 @@ void MainWindow::showHtmlOutput()
 {
   QString indexFile = m_expert->getHtmlOutputIndex(m_workingDir->text());
   QFileInfo fi(indexFile);
-  // TODO: the following doesn't seem to work with IE
-#ifdef _WIN32
-  //QString indexUrl(QString::fromLatin1("file:///"));
-  ShellExecute(nullptr, L"open", (LPCWSTR)fi.absoluteFilePath().utf16(), nullptr, nullptr, SW_SHOWNORMAL);
-#else
-  QString indexUrl(QString::fromLatin1("file://"));
-  indexUrl+=fi.absoluteFilePath();
-  QDesktopServices::openUrl(QUrl(indexUrl));
-#endif
+  QDesktopServices::openUrl(QUrl::fromLocalFile(fi.absoluteFilePath()));
 }
 
 void MainWindow::saveLog()
