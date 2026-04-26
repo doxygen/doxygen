@@ -119,9 +119,16 @@ DotFilePatcher *DotManager::createFilePatcher(const QCString &fileName)
 bool DotManager::run()
 {
   size_t numFilePatchers = m_filePatchers.size();
-  if (numFilePatchers > 0)
+  if (m_jobs.size()+numFilePatchers > 0)
   {
-    msg("Generating dot graphs...\n");
+    if (Config_getInt(DOT_NUM_THREADS)<=1)
+    {
+      msg("Generating dot graphs in single threaded mode...\n");
+    }
+    else
+    {
+      msg("Generating dot graphs using {:d} parallel threads...\n",Config_getInt(DOT_NUM_THREADS));
+    }
   }
 
   bool setPath=FALSE;

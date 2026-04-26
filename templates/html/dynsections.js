@@ -79,9 +79,12 @@ let dynsection = {
       });
     } else {
       // slideDown animation
-      content.style.display = 'block';
       const height = content.scrollHeight;
-      this.slide(content, '0px', height + 'px');
+      if (height==0) { // height unknown -> show immediately
+        content.style.display = 'block';
+      } else {
+        this.slide(content, '0px', height + 'px');
+      }
       if (summary) summary.style.display = 'none';
       linkObj.querySelectorAll('.arrowhead').forEach(el => {
         el.classList.remove('closed');

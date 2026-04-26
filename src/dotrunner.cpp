@@ -18,6 +18,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include "threadpool.h"
 
 #ifdef _MSC_VER
 #pragma warning( push )
@@ -271,18 +272,6 @@ DotRunner::DotRunner()
 {
 }
 
-// Maximum command-line length passed to dot, leaving room for the exe path.
-// Windows CreateProcess limit is 32767; Linux ARG_MAX is typically >= 2MB.
-// But Linux kernel also cannot allocate more than 32 pages per argument.
-#if defined(_WIN32) && !defined(__CYGWIN__)
-static constexpr size_t MAX_CMD_LEN = 32767 - 1024;
-#else
-#ifndef MAX_ARG_STRLEN
-#define MAX_ARG_STRLEN 131072
-#endif
-static constexpr size_t MAX_CMD_LEN = MAX_ARG_STRLEN - 1024;
-#endif
-
 bool DotRunner::run(const DotJobs &dotJobs)
 {
   if (dotJobs.empty()) return TRUE;
@@ -293,53 +282,143 @@ bool DotRunner::run(const DotJobs &dotJobs)
   {
     byFormatAndDir[job.format.str()][job.absPath.str()].push_back(&job);
   }
+  // sort the graphs by size so we can give the workers similar workloads
+  // (assumption: the size correlates with the amount of processing it takes to generate the output for a .dot file)
+  for (auto &[fmtStr, byDir] : byFormatAndDir)
+  {
+    for (auto &[dirStr, jobs] : byDir)
+    {
+      std::sort(jobs.begin(),jobs.end(),[](const auto &j1,const auto &j2) { return j2->size < j1->size; });
+    }
+  }
 
   bool ok = true;
-
-  for (auto &[fmtStr, byDir] : byFormatAndDir)
+  size_t prev=0;
+  for (const auto &[fmtStr, byDir] : byFormatAndDir)
   {
     QCString format = QCString(fmtStr);
 
-    for (auto &[dirStr, jobs] : byDir)
+    for (const auto &[dirStr, jobs] : byDir)
     {
       std::string oldDir = Dir::currentDirPath();
       Dir::setCurrent(dirStr);
 
+      struct CommandArgument
+      {
+        CommandArgument(const QCString &args) : arguments(args) {}
+        QCString arguments;
+        size_t numDotFiles = 0;
+        const DotJob *firstJob = nullptr;
+      };
+
+      const size_t numThreads = static_cast<size_t>(Config_getInt(DOT_NUM_THREADS));
+      const size_t batchSize = static_cast<size_t>(Config_getInt(DOT_BATCH_SIZE));
+      const size_t exeLen = m_dotExe.length() + 1; // "exe " prefix
+      const size_t maxArgLen = 32000-exeLen; // Windows CreateProcess limit is 32767; keep safe margin
+      std::vector<CommandArgument> partialCommands;
+      std::vector<CommandArgument> finalCommands;
+
       bool hasImageMap = std::any_of(jobs.begin(),jobs.end(),[](const auto &j) { return j->generateImageMap; });
 
-      // Run dot in batches to stay within command-line length limits.
-      // Each batch: -Tformat -O basename1.dot basename2.dot ...
+      // each dot command has a command arguments of the form: -Tformat -O basename1.dot basename2.dot ...
       QCString baseArgs = QCString("-T") + format;
-      if (hasImageMap)
+      if (hasImageMap) // if any image needs a map we generate one for all images
       {
         baseArgs += " -Tcmapx";
       }
       baseArgs += " -O";
-      size_t exeLen = m_dotExe.length() + 1; // "exe " prefix
-      size_t batchStart = 0;
-      while (batchStart < jobs.size())
-      {
-        QCString dotArgs = baseArgs;
-        size_t cmdLen = exeLen + baseArgs.length();
-        size_t batchEnd = batchStart;
-        while (batchEnd < jobs.size())
-        {
-          QCString fileArg = QCString(" ") + jobs[batchEnd]->relDotName;
-          if (batchEnd > batchStart && cmdLen + fileArg.length() > MAX_CMD_LEN) break;
-          dotArgs += fileArg;
-          cmdLen += fileArg.length();
-          batchEnd++;
-        }
 
-        int exitCode;
-        if ((exitCode = Portable::system(m_dotExe, dotArgs, FALSE)) != 0)
+      // prepare partial commands for each thread.
+      for (size_t i=0; i<numThreads; i++)
+      {
+        partialCommands.emplace_back(baseArgs);
+      }
+
+      // split the jobs into batches per thread
+      size_t index=0;
+      for (const auto &job : jobs)
+      {
+        QCString fileArg = QCString(" ") + job->relDotName;
+        auto &cmd = partialCommands[index];
+        if (cmd.numDotFiles<batchSize && cmd.arguments.length()+fileArg.length()<maxArgLen) // still room in this batch
         {
-          err_full(jobs[batchStart]->srcFile, 1,
-                   "Problems running dot: exit code={}, command='{}', dir='{}', arguments='{}'",
-                   exitCode, m_dotExe, dirStr, dotArgs);
-          ok = false;
+          cmd.arguments+=fileArg;
+          cmd.numDotFiles++;
         }
-        batchStart = batchEnd;
+        else // this batch is full, move to finished commands and start a new one
+        {
+          finalCommands.push_back(cmd);
+          cmd.arguments=baseArgs+fileArg;
+          cmd.numDotFiles=1;
+        }
+        if (cmd.firstJob==nullptr) cmd.firstJob=job;
+        index = (index+1)%numThreads;
+      }
+      // append partial commands to finished commands
+      finalCommands.insert(finalCommands.end(),partialCommands.begin(),partialCommands.end());
+
+      // fill work queue with dot operations
+      if (Config_getInt(DOT_NUM_THREADS)<=1) // no threads to work with
+      {
+        for (const auto &cmd : finalCommands)
+        {
+          if (cmd.numDotFiles>0) // check if there are graphs to generate first
+          {
+            if (cmd.numDotFiles>1) // batch mode
+            {
+              msg("Running dot for graphs {}-{}/{}\n",prev+1,prev+cmd.numDotFiles,dotJobs.size());
+            }
+            else // single graph mode
+            {
+              msg("Running dot for graph {}/{}\n",prev+1,dotJobs.size());
+            }
+            prev+=cmd.numDotFiles;
+            int exitCode;
+            if ((exitCode = Portable::system(m_dotExe, cmd.arguments, FALSE)) != 0)
+            {
+              err_full(cmd.firstJob->srcFile, 1,
+                  "Problems running dot: exit code={}, command='{}', dir='{}', arguments='{}'",
+                  exitCode, m_dotExe, dirStr, cmd.arguments);
+              ok = false;
+            }
+          }
+        }
+      }
+      else // use multiple threads to run instances of dot in parallel
+      {
+        ThreadPool workers(numThreads);
+        std::vector< std::future<size_t> > results;
+        for (auto & cmd: finalCommands)
+        {
+          if (cmd.numDotFiles>0)
+          {
+            auto process = [this,cmd,dirStr]() -> size_t
+            {
+              int exitCode;
+              if ((exitCode = Portable::system(m_dotExe, cmd.arguments, FALSE)) != 0)
+              {
+                err_full(cmd.firstJob->srcFile, 1,
+                    "Problems running dot: exit code={}, command='{}', dir='{}', arguments='{}'",
+                    exitCode, m_dotExe, dirStr, cmd.arguments);
+              }
+              return cmd.numDotFiles;
+            };
+            results.emplace_back(workers.queue(process));
+          }
+        }
+        for (auto &f : results)
+        {
+          size_t numDotFiles = f.get();
+          if (numDotFiles>1) // batch mode
+          {
+            msg("Running dot for graphs {}-{}/{}\n",prev+1,prev+numDotFiles,dotJobs.size());
+          }
+          else // single graph mode
+          {
+            msg("Running dot for graph {}/{}\n",prev+1,dotJobs.size());
+          }
+          prev+=numDotFiles;
+        }
       }
 
       // Post-process each output file. dot -O appends the format suffix to the
@@ -349,14 +428,24 @@ bool DotRunner::run(const DotJobs &dotJobs)
       {
         QCString base   = job->absPath + getBaseNameOfOutput(job->relDotName);
         QCString dotOutput = job->absPath + job->relDotName + "." + format;
-        QCString fileExt = (format == "cmapx") ? "map" : format;
-        QCString output = base + "." + fileExt;
+        QCString output = base + "." + format;
         Dir d;
         if (!d.rename(dotOutput.str(), output.str()))
         {
           err("Failed to rename {} to {}!\n", dotOutput, output);
           ok = false;
           continue;
+        }
+        if (job->generateImageMap)
+        {
+          QCString dotMapOutput = job->absPath + job->relDotName + ".cmapx";
+          QCString mapOutput = base + ".map";
+          if (!d.rename(dotMapOutput.str(), mapOutput.str()))
+          {
+            err("Failed to rename {} to {}!\n", dotMapOutput, mapOutput);
+            ok = false;
+            continue;
+          }
         }
 
         if (format.startsWith("pdf"))
