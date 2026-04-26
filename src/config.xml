@@ -3868,7 +3868,7 @@ where `loc1` and `loc2` can be relative or absolute paths or URLs.
 ]]>
       </docs>
     </option>
-    <option type='int' id='DOT_BATCH_SIZE' defval='20' minval='1' maxval='1000' depends='HAVE_DOT'>
+    <option type='int' id='DOT_BATCH_SIZE' defval='50' minval='1' maxval='1000' depends='HAVE_DOT'>
       <docs>
 <![CDATA[
  The \c DOT_BATCH_SIZE specifies the number of \c dot graphs Doxygen is

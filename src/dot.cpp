@@ -123,11 +123,13 @@ bool DotManager::run()
   {
     if (Config_getInt(DOT_NUM_THREADS)<=1)
     {
-      msg("Generating dot graphs in single threaded mode...\n");
+      msg("Generating {:d} dot graphs in single threaded mode with batch size {:d}...\n",
+          m_jobs.size(),Config_getInt(DOT_BATCH_SIZE));
     }
     else
     {
-      msg("Generating dot graphs using {:d} parallel threads...\n",Config_getInt(DOT_NUM_THREADS));
+      msg("Generating {:d} dot graphs using {:d} parallel threads with batch size {:d}...\n",
+          m_jobs.size(),Config_getInt(DOT_NUM_THREADS),Config_getInt(DOT_BATCH_SIZE));
     }
   }
 

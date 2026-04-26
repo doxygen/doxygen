@@ -18,6 +18,9 @@
 #include <map>
 #include <set>
 #include <string>
+#include <algorithm>
+#include <numeric>
+#include <random>
 #include "threadpool.h"
 
 #ifdef _MSC_VER
@@ -282,16 +285,8 @@ bool DotRunner::run(const DotJobs &dotJobs)
   {
     byFormatAndDir[job.format.str()][job.absPath.str()].push_back(&job);
   }
-  // sort the graphs by size so we can give the workers similar workloads
-  // (assumption: the size correlates with the amount of processing it takes to generate the output for a .dot file)
-  for (auto &[fmtStr, byDir] : byFormatAndDir)
-  {
-    for (auto &[dirStr, jobs] : byDir)
-    {
-      std::sort(jobs.begin(),jobs.end(),[](const auto &j1,const auto &j2) { return j2->size < j1->size; });
-    }
-  }
 
+  std::mt19937 rng(std::random_device{}());
   bool ok = true;
   size_t prev=0;
   for (const auto &[fmtStr, byDir] : byFormatAndDir)
@@ -303,6 +298,18 @@ bool DotRunner::run(const DotJobs &dotJobs)
       std::string oldDir = Dir::currentDirPath();
       Dir::setCurrent(dirStr);
 
+      // settings controlling how to distribute the graphs over threads and batches
+      const size_t numThreads = static_cast<size_t>(Config_getInt(DOT_NUM_THREADS));
+      const size_t batchSize  = static_cast<size_t>(Config_getInt(DOT_BATCH_SIZE));
+      const size_t exeLen     = m_dotExe.length() + 1; // "exe " prefix
+      const size_t maxArgLen  = 32000-exeLen; // Windows CreateProcess limit is 32767; keep safe margin
+
+      // create a pseudo random ordering in which to process the dot files
+      std::vector<size_t> indices(jobs.size());
+      std::iota(indices.begin(), indices.end(), 0);
+      std::shuffle(indices.begin(), indices.end(), rng);
+
+      // helper to keep track of dot command to run later
       struct CommandArgument
       {
         CommandArgument(const QCString &args) : arguments(args) {}
@@ -311,10 +318,6 @@ bool DotRunner::run(const DotJobs &dotJobs)
         const DotJob *firstJob = nullptr;
       };
 
-      const size_t numThreads = static_cast<size_t>(Config_getInt(DOT_NUM_THREADS));
-      const size_t batchSize = static_cast<size_t>(Config_getInt(DOT_BATCH_SIZE));
-      const size_t exeLen = m_dotExe.length() + 1; // "exe " prefix
-      const size_t maxArgLen = 32000-exeLen; // Windows CreateProcess limit is 32767; keep safe margin
       std::vector<CommandArgument> partialCommands;
       std::vector<CommandArgument> finalCommands;
 
@@ -328,16 +331,17 @@ bool DotRunner::run(const DotJobs &dotJobs)
       }
       baseArgs += " -O";
 
-      // prepare partial commands for each thread.
+      // prepare partial commands for each thread (command is later skipped if numDotFiles==0).
       for (size_t i=0; i<numThreads; i++)
       {
         partialCommands.emplace_back(baseArgs);
       }
 
-      // split the jobs into batches per thread
+      // split the jobs into batches per thread iterating in pseudo random order to fill each batch with a random selection of graphs
       size_t index=0;
-      for (const auto &job : jobs)
+      for (size_t i : indices)
       {
+        const auto &job = jobs[i];
         QCString fileArg = QCString(" ") + job->relDotName;
         auto &cmd = partialCommands[index];
         if (cmd.numDotFiles<batchSize && cmd.arguments.length()+fileArg.length()<maxArgLen) // still room in this batch
@@ -354,10 +358,11 @@ bool DotRunner::run(const DotJobs &dotJobs)
         if (cmd.firstJob==nullptr) cmd.firstJob=job;
         index = (index+1)%numThreads;
       }
-      // append partial commands to finished commands
+
+      // append partial commands to the final commands
       finalCommands.insert(finalCommands.end(),partialCommands.begin(),partialCommands.end());
 
-      // fill work queue with dot operations
+      // now run the finalCommands.
       if (Config_getInt(DOT_NUM_THREADS)<=1) // no threads to work with
       {
         for (const auto &cmd : finalCommands)
@@ -411,11 +416,11 @@ bool DotRunner::run(const DotJobs &dotJobs)
           size_t numDotFiles = f.get();
           if (numDotFiles>1) // batch mode
           {
-            msg("Running dot for graphs {}-{}/{}\n",prev+1,prev+numDotFiles,dotJobs.size());
+            msg("Finished running dot for graphs {}-{}/{}\n",prev+1,prev+numDotFiles,dotJobs.size());
           }
           else // single graph mode
           {
-            msg("Running dot for graph {}/{}\n",prev+1,dotJobs.size());
+            msg("Finished running dot for graph {}/{}\n",prev+1,dotJobs.size());
           }
           prev+=numDotFiles;
         }
