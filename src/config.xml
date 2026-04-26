@@ -4289,14 +4289,14 @@ to be found in the default search path.
  The \c MERMAID_JS_URL tag specifies the URL to load \c mermaid.js from when using
  client-side rendering (\c MERMAID_RENDER_MODE is \c CLIENT_SIDE or \c AUTO).
  The default points to the latest Mermaid v11 release on the jsDelivr CDN.
+ <br>
+ The default CDN URL requires internet access when viewing the generated documentation.
+ For offline use, download \c mermaid.esm.min.mjs and set this to a relative path,
+ or use \c MERMAID_RENDER_MODE=CLI to pre-generate images instead.
  \par Examples:
  - Latest v11 (default): \c 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs'
  - Pinned version: \c 'https://cdn.jsdelivr.net/npm/mermaid@11.3.0/dist/mermaid.esm.min.mjs'
  - Local copy: \c './mermaid.esm.min.mjs' (user must place file in HTML output directory)
- \par
- The default CDN URL requires internet access when viewing the generated documentation.
- For offline use, download \c mermaid.esm.min.mjs and set this to a relative path,
- or use \c MERMAID_RENDER_MODE=CLI to pre-generate images instead.
 ]]>
       </docs>
     </option>

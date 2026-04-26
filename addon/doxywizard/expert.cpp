@@ -462,11 +462,6 @@ static QString getDocsForNode(const QDomElement &child)
   // \#undef -> #undef
   docs.replace(SA("\\#include"),SA("#include"));
   docs.replace(SA("\\#undef"),SA("#undef"));
-  // -# -> <br>-
-  // " - " -> <br>-
-  docs.replace(SA("-#"),SA("<br>-"));
-  docs.replace(SA("\\# "),SA("# "));
-  docs.replace(SA(" - "),SA("<br>-"));
   // \verbatim -> <pre>
   // \endverbatim -> </pre>
   docs.replace(SA("\\verbatim"),SA("<pre>"));
@@ -499,6 +494,11 @@ static QString getDocsForNode(const QDomElement &child)
   docs.replace(regexp,SA("2^(16+LOOKUP_CACHE_SIZE)"));
   regexp.setPattern(SA("\\\\f\\$2\\^\\{16\\} = 65536\\\\f\\$"));
   docs.replace(regexp,SA("2^16=65536"));
+  // -# -> <br>-
+  // " - " -> <br>-
+  docs.replace(SA("-#"),SA("<br>-"));
+  docs.replace(SA("\\# "),SA("# "));
+  docs.replace(SA(" - "),SA("<br>-"));
 
   return docs.trimmed();
 }
