@@ -4052,10 +4052,6 @@ QCString convertToJSString(const QCString &s,bool keepEntities,bool singleQuotes
   {
     switch (c)
     {
-      case '<':  result+="&amp;lt;";
-                 break;
-      case '>':  result+="&amp;gt;";
-                 break;
       case '"':  if (!singleQuotes) result+="\\\""; else result+=c;
                  break;
       case '\'': if (singleQuotes) result+="\\\'"; else result+=c;
