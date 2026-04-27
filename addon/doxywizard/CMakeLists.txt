@@ -171,6 +171,9 @@ else()
 apply_editbin(doxywizard windows)
 endif()
 
+include(ApplyManifest)
+apply_manifest(doxywizard)
+
 if(Qt5Core_FOUND)
   target_link_libraries(doxywizard Qt5::Core Qt5::Gui Qt5::Widgets Qt5::Xml doxygen_version)
 elseif(Qt6Core_FOUND)
