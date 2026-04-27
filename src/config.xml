@@ -3871,6 +3871,19 @@ where `loc1` and `loc2` can be relative or absolute paths or URLs.
 ]]>
       </docs>
     </option>
+    <option type='int' id='DOT_BATCH_SIZE' defval='50' minval='1' maxval='1000' depends='HAVE_DOT'>
+      <docs>
+<![CDATA[
+ The \c DOT_BATCH_SIZE specifies the number of \c dot graphs Doxygen is
+ allowed to compile in a single invocation of \c dot. When set to \c 1 Doxygen will
+ invoke \c dot for each graph separately, which can cause significant process creation overhead 
+ especially on systems with many CPU cores. Together with \c DOT_NUM_THREADS this setting can be used to
+ optimise the dot processing speed for a particular system. Doxygen will try to give each
+ thread a balanced batch of work. If the total number of graphs to process 
+ exceeds `DOT_NUM_THREADS * DOT_BATCH_SIZE` then additional batches will be created for \c dot to process.
+]]>
+      </docs>
+    </option>
     <option type='string' id='DOT_COMMON_ATTR' format='string' depends='HAVE_DOT'
       defval='fontname=Helvetica,fontsize=10'>
       <docs>

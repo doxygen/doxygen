@@ -31,8 +31,6 @@
 #include "fileinfo.h"
 #include "portable.h"
 
-#define MAP_CMD "cmapx"
-
 //QCString DotGraph::DOT_FONTNAME; // will be initialized in initDot
 //int DotGraph::DOT_FONTSIZE;      // will be initialized in initDot
 
@@ -189,21 +187,18 @@ bool DotGraph::prepareDotFile()
   if (m_graphFormat == GraphOutputFormat::BITMAP)
   {
     // run dot to create a bitmap image
-    DotRunner * dotRun = DotManager::instance()->createRunner(absDotName(), sigStr);
-    dotRun->addJob(Config_getEnumAsString(DOT_IMAGE_FORMAT), absImgName(), absDotName(), 1);
-    if (m_generateImageMap) dotRun->addJob(MAP_CMD, absMapName(), absDotName(), 1);
+    DotManager::instance()->addJob(DotJob(m_absPath, m_baseName + ".dot", Config_getEnumAsString(DOT_IMAGE_FORMAT), sigStr, absDotName(), m_theGraph.size(), m_generateImageMap));
   }
   else if (m_graphFormat == GraphOutputFormat::EPS)
   {
     // run dot to create a .eps image
-    DotRunner *dotRun = DotManager::instance()->createRunner(absDotName(), sigStr);
     if (Config_getBool(USE_PDFLATEX))
     {
-      dotRun->addJob("pdf",absImgName(),absDotName(),1);
+      DotManager::instance()->addJob(DotJob(m_absPath, m_baseName + ".dot", "pdf", sigStr, absDotName(), m_theGraph.size()));
     }
     else
     {
-      dotRun->addJob("ps",absImgName(),absDotName(),1);
+      DotManager::instance()->addJob(DotJob(m_absPath, m_baseName + ".dot", "eps", sigStr, absDotName(), m_theGraph.size()));
     }
   }
   return TRUE;

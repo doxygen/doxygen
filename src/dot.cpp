@@ -81,7 +81,7 @@ DotManager *DotManager::instance()
   return &theInstance;
 }
 
-DotManager::DotManager() : m_runners(), m_filePatchers(), m_workers(static_cast<size_t>(Config_getInt(DOT_NUM_THREADS)))
+DotManager::DotManager() : m_filePatchers()
 {
 }
 
@@ -89,28 +89,19 @@ DotManager::~DotManager()
 {
 }
 
-DotRunner* DotManager::createRunner(const QCString &absDotName, const QCString& md5Hash)
+void DotManager::addJob(const DotJob &newJob)
 {
   std::lock_guard<std::mutex> lock(g_dotManagerMutex);
-  DotRunner* rv = nullptr;
-  auto const runit = m_runners.find(absDotName.str());
-  if (runit == m_runners.end())
+  for (const auto &job : m_jobs)
   {
-    auto insobj = std::make_unique<DotRunner>(absDotName, md5Hash);
-    rv = insobj.get();
-    m_runners.emplace(absDotName.str(), std::move(insobj));
-  }
-  else
-  {
-    // we have a match
-    if (md5Hash != runit->second->getMd5Hash())
+    if (job.absPath == newJob.absPath && job.relDotName == newJob.relDotName && job.format == newJob.format) return; // already queued
+    if (job.absPath == newJob.absPath && job.relDotName == newJob.relDotName && job.md5Hash != newJob.md5Hash)
     {
-      err("md5 hash does not match for two different runs of {} !\n", absDotName);
+      err("md5 hash does not match for two different runs of {}{} !\n", newJob.absPath, newJob.relDotName);
+      return;
     }
-    rv = runit->second.get();
   }
-  assert(rv);
-  return rv;
+  m_jobs.push_back(newJob);
 }
 
 DotFilePatcher *DotManager::createFilePatcher(const QCString &fileName)
@@ -127,20 +118,20 @@ DotFilePatcher *DotManager::createFilePatcher(const QCString &fileName)
 
 bool DotManager::run()
 {
-  size_t numDotRuns = m_runners.size();
   size_t numFilePatchers = m_filePatchers.size();
-  if (numDotRuns+numFilePatchers>1)
+  if (m_jobs.size()+numFilePatchers > 0)
   {
     if (Config_getInt(DOT_NUM_THREADS)<=1)
     {
-      msg("Generating dot graphs in single threaded mode...\n");
+      msg("Generating {:d} dot graphs in single threaded mode with batch size {:d}...\n",
+          m_jobs.size(),Config_getInt(DOT_BATCH_SIZE));
     }
     else
     {
-      msg("Generating dot graphs using {:d} parallel threads...\n",Config_getInt(DOT_NUM_THREADS));
+      msg("Generating {:d} dot graphs using {:d} parallel threads with batch size {:d}...\n",
+          m_jobs.size(),Config_getInt(DOT_NUM_THREADS),Config_getInt(DOT_BATCH_SIZE));
     }
   }
-  size_t i=1;
 
   bool setPath=FALSE;
   if (Config_getBool(GENERATE_HTML))
@@ -163,43 +154,18 @@ bool DotManager::run()
     setDotFontPath(Config_getString(DOCBOOK_OUTPUT));
     setPath=TRUE;
   }
-  // fill work queue with dot operations
-  size_t prev=1;
-  if (Config_getInt(DOT_NUM_THREADS)<=1) // no threads to work with
-  {
-    for (auto & dr : m_runners)
-    {
-      msg("Running dot for graph {}/{}\n",prev,numDotRuns);
-      dr.second->run();
-      prev++;
-    }
-  }
-  else // use multiple threads to run instances of dot in parallel
-  {
-    std::vector< std::future<void> > results;
-    for (auto & dr: m_runners)
-    {
-      DotRunner *runner = dr.second.get();
-      auto process = [runner]()
-      {
-        runner->run();
-      };
-      results.emplace_back(m_workers.queue(process));
-    }
-    for (auto &f : results)
-    {
-      f.get();
-      msg("Running dot for graph {}/{}\n",prev,numDotRuns);
-      prev++;
-    }
-  }
+
+  bool ok = m_runner.run(m_jobs);
+
   if (setPath)
   {
     unsetDotFontPath();
   }
 
+  if (!ok) return FALSE;
+
   // patch the output file and insert the maps and figures
-  i=1;
+  size_t i=1;
   // since patching the svg files may involve patching the header of the SVG
   // (for zoomable SVGs), and patching the .html files requires reading that
   // header after the SVG is patched, we first process the .svg files and
@@ -242,27 +208,26 @@ void writeDotGraphFromFile(const QCString &inFile,const QCString &outDir,
   QCString absImgName = d.absPath()+"/"+imgName;
   QCString absOutFile = d.absPath()+"/"+outFile;
 
-  DotRunner dotRun(inFile);
+  QCString dotArgs;
   if (format==GraphOutputFormat::BITMAP)
   {
-    dotRun.addJob(Config_getEnumAsString(DOT_IMAGE_FORMAT),absImgName,srcFile,srcLine);
+    dotArgs = QCString("-T") + Config_getEnumAsString(DOT_IMAGE_FORMAT) + " -o \"" + absImgName + "\" \"" + inFile + "\"";
   }
   else // format==GraphOutputFormat::EPS
   {
     if (Config_getBool(USE_PDFLATEX))
     {
-      dotRun.addJob("pdf",absOutFile+".pdf",srcFile,srcLine);
+      dotArgs = QCString("-Tpdf -o \"") + absOutFile + ".pdf\" \"" + inFile + "\"";
     }
     else
     {
-      dotRun.addJob("ps",absOutFile+".eps",srcFile,srcLine);
+      dotArgs = QCString("-Teps -o \"") + absOutFile + ".eps\" \"" + inFile + "\"";
     }
   }
 
-  dotRun.preventCleanUp();
-  if (!dotRun.run())
+  if (Portable::system(Doxygen::verifiedDotPath, dotArgs, FALSE) != 0)
   {
-     return;
+    return;
   }
 
   if (toIndex) Doxygen::indexList->addImageFile(imgName);
@@ -294,15 +259,13 @@ void writeDotImageMapFromFile(TextStream &t,
     term("Output dir {} does not exist!\n",outDir);
   }
 
-  QCString mapName = baseName+".map";
+  QCString mapName = baseName+".cmapx";
   QCString imgExt = getDotImageExtension();
   QCString imgName = baseName+"."+imgExt;
   QCString absOutFile = d.absPath()+"/"+mapName;
 
-  DotRunner dotRun(inFile);
-  dotRun.addJob(MAP_CMD,absOutFile,srcFile,srcLine);
-  dotRun.preventCleanUp();
-  if (!dotRun.run())
+  QCString dotArgs = QCString("-T" MAP_CMD " -o \"") + absOutFile + "\" \"" + inFile + "\"";
+  if (Portable::system(Doxygen::verifiedDotPath, dotArgs, FALSE) != 0)
   {
     return;
   }
