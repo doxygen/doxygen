@@ -556,15 +556,13 @@ static bool dupOfParent(const FTVNodePtr &n)
 static void generateJSLink(TextStream &t,const FTVNodePtr &n)
 {
   bool nameAsHtml = !n->nameAsHtml.isEmpty();
-  QCString result = nameAsHtml ? n->nameAsHtml : n->name;
-  QCString link = convertToJSString(result,nameAsHtml);
+  QCString link = nameAsHtml ? n->nameAsHtml : convertToJSString(n->name);
   if (n->file.isEmpty()) // no link
   {
     t << "\"" << link << "\", null, ";
   }
   else // link into other page
   {
-    if (Config_getBool(HIDE_SCOPE_NAMES)) result=stripScope(result);
     t << "\"" << link << "\", \"";
     t << externalRef("",n->ref,TRUE);
     t << node2URL(n);
