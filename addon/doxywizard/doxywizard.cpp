@@ -446,45 +446,47 @@ void MainWindow::updateConfigFileName(const QString &fileName)
 
 void MainWindow::loadConfigFromFile(const QString & fileName)
 {
-  // Check if the file is a valid Doxyfile by looking for "# Doxyfile" in the first line
   QFile f(fileName);
-  if (f.open(QIODevice::ReadOnly | QIODevice::Text))
-  {
-    QString firstLine;
-    bool foundDoxyfileHeader = false;
-    
-    // Read lines until we find a non-empty, non-comment line or find the header
-    while (!f.atEnd())
-    {
-      QString line = QString::fromUtf8(f.readLine()).trimmed();
-      if (line.isEmpty())
-        continue;
-      firstLine = line;
-      break;
-    }
-    f.close();
-    
-    // Check if the first non-empty line starts with "# Doxyfile"
-    if (firstLine.startsWith(QString::fromLatin1("# Doxyfile"), Qt::CaseSensitive))
-    {
-      foundDoxyfileHeader = true;
-    }
-    
-    if (!foundDoxyfileHeader)
-    {
-      QMessageBox::warning(this,
-          tr("Invalid configuration file"),
-          tr("The file '%1' does not appear to be a valid Doxygen configuration file.\n\n"
-             "A valid Doxyfile should start with '# Doxyfile' on the first line.")
-          .arg(fileName));
-      return;
-    }
-  }
-  else
+  if (!f.open(QIODevice::ReadOnly | QIODevice::Text))
   {
     QMessageBox::warning(this,
         tr("Error opening file"),
         tr("Cannot open the file %1 for reading.").arg(fileName));
+    return;
+  }
+
+  bool isValidDoxyfile = false;
+  QRegularExpression configPattern(QString::fromLatin1("^[A-Z_][A-Z0-9_]*\\s*(\\+?=)"));
+
+  while (!f.atEnd())
+  {
+    QString line = QString::fromUtf8(f.readLine()).trimmed();
+
+    if (line.isEmpty())
+      continue;
+
+    if (line.startsWith(QString::fromLatin1("# Doxyfile"), Qt::CaseSensitive))
+    {
+      isValidDoxyfile = true;
+      break;
+    }
+
+    if (configPattern.match(line).hasMatch())
+    {
+      isValidDoxyfile = true;
+      break;
+    }
+  }
+  f.close();
+
+  if (!isValidDoxyfile)
+  {
+    QMessageBox::warning(this,
+        tr("Invalid configuration file"),
+        tr("The file '%1' does not appear to be a valid Doxygen configuration file.\n\n"
+           "A valid Doxyfile should contain configuration entries in the format 'TAGNAME = VALUE' "
+           "or start with '# Doxyfile'.")
+        .arg(fileName));
     return;
   }
 
