@@ -371,6 +371,26 @@ Raison donnée : %2</translation>
         <source>Language changed to: %1</source>
         <translation>Langue changée en : %1</translation>
     </message>
+    <message>
+        <source>Invalid configuration file</source>
+        <translation>Fichier de configuration invalide</translation>
+    </message>
+    <message>
+        <source>The file &apos;%1&apos; does not appear to be a valid Doxygen configuration file.
+
+A valid Doxyfile should contain configuration entries in the format &apos;TAGNAME = VALUE&apos;.</source>
+        <translation>Le fichier &apos;%1&apos; ne semble pas être un fichier de configuration Doxygen valide.
+
+Un Doxyfile valide doit contenir des entrées de configuration au format &apos;TAGNAME = VALUE&apos;.</translation>
+    </message>
+    <message>
+        <source>Error opening file</source>
+        <translation>Erreur lors de l&apos;ouverture du fichier</translation>
+    </message>
+    <message>
+        <source>Cannot open the file %1 for reading.</source>
+        <translation>Impossible d&apos;ouvrir le fichier %1 en lecture.</translation>
+    </message>
 </context>
 <context>
     <name>TranslationManager</name>

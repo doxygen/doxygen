@@ -371,6 +371,26 @@ Reason given: %2</source>
         <source>Doxygen GUI frontend</source>
         <translation>Doxygen GUI 프론트엔드</translation>
     </message>
+    <message>
+        <source>Invalid configuration file</source>
+        <translation>잘못된 구성 파일</translation>
+    </message>
+    <message>
+        <source>The file &apos;%1&apos; does not appear to be a valid Doxygen configuration file.
+
+A valid Doxyfile should contain configuration entries in the format &apos;TAGNAME = VALUE&apos;.</source>
+        <translation>파일 &apos;%1&apos;은(는) 유효한 Doxygen 구성 파일이 아닌 것 같습니다.
+
+유효한 Doxyfile은 &apos;TAGNAME = VALUE&apos; 형식의 구성 항목을 포함해야 합니다.</translation>
+    </message>
+    <message>
+        <source>Error opening file</source>
+        <translation>파일 열기 오류</translation>
+    </message>
+    <message>
+        <source>Cannot open the file %1 for reading.</source>
+        <translation>파일 %1을(를) 읽기용으로 열 수 없습니다.</translation>
+    </message>
 </context>
 <context>
     <name>TranslationManager</name>

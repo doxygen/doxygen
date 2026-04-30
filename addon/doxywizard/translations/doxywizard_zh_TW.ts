@@ -371,6 +371,26 @@ Reason given: %2</source>
         <source>Doxygen GUI frontend</source>
         <translation>Doxygen 圖形介面前端</translation>
     </message>
+    <message>
+        <source>Invalid configuration file</source>
+        <translation>無效的設定檔</translation>
+    </message>
+    <message>
+        <source>The file &apos;%1&apos; does not appear to be a valid Doxygen configuration file.
+
+A valid Doxyfile should contain configuration entries in the format &apos;TAGNAME = VALUE&apos;.</source>
+        <translation>檔案 &apos;%1&apos; 似乎不是有效的 Doxygen 設定檔。
+
+有效的 Doxyfile 應包含格式為 &apos;TAGNAME = VALUE&apos; 的設定項。</translation>
+    </message>
+    <message>
+        <source>Error opening file</source>
+        <translation>開啟檔案錯誤</translation>
+    </message>
+    <message>
+        <source>Cannot open the file %1 for reading.</source>
+        <translation>無法開啟檔案 %1 進行讀取。</translation>
+    </message>
 </context>
 <context>
     <name>TranslationManager</name>

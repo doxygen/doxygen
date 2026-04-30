@@ -371,6 +371,26 @@ Razón dada: %2</translation>
         <source>Doxygen GUI frontend</source>
         <translation>Interfaz gráfica de Doxygen</translation>
     </message>
+    <message>
+        <source>Invalid configuration file</source>
+        <translation>Archivo de configuración no válido</translation>
+    </message>
+    <message>
+        <source>The file &apos;%1&apos; does not appear to be a valid Doxygen configuration file.
+
+A valid Doxyfile should contain configuration entries in the format &apos;TAGNAME = VALUE&apos;.</source>
+        <translation>El archivo &apos;%1&apos; no parece ser un archivo de configuración de Doxygen válido.
+
+Un Doxyfile válido debe contener entradas de configuración en el formato &apos;TAGNAME = VALUE&apos;.</translation>
+    </message>
+    <message>
+        <source>Error opening file</source>
+        <translation>Error al abrir el archivo</translation>
+    </message>
+    <message>
+        <source>Cannot open the file %1 for reading.</source>
+        <translation>No se puede abrir el archivo %1 para lectura.</translation>
+    </message>
 </context>
 <context>
     <name>TranslationManager</name>

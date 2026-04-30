@@ -446,6 +446,43 @@ void MainWindow::updateConfigFileName(const QString &fileName)
 
 void MainWindow::loadConfigFromFile(const QString & fileName)
 {
+  QFile f(fileName);
+  if (!f.open(QIODevice::ReadOnly | QIODevice::Text))
+  {
+    QMessageBox::warning(this,
+        tr("Error opening file"),
+        tr("Cannot open the file %1 for reading.").arg(fileName));
+    return;
+  }
+
+  bool isValidDoxyfile = false;
+  QRegularExpression configPattern(QString::fromLatin1("^[A-Z_][A-Z0-9_]*\\s*(\\+?=)"));
+
+  while (!f.atEnd())
+  {
+    QString line = QString::fromUtf8(f.readLine()).trimmed();
+
+    if (line.isEmpty())
+      continue;
+
+    if (configPattern.match(line).hasMatch())
+    {
+      isValidDoxyfile = true;
+      break;
+    }
+  }
+  f.close();
+
+  if (!isValidDoxyfile)
+  {
+    QMessageBox::warning(this,
+        tr("Invalid configuration file"),
+        tr("The file '%1' does not appear to be a valid Doxygen configuration file.\n\n"
+           "A valid Doxyfile should contain configuration entries in the format 'TAGNAME = VALUE'.")
+        .arg(fileName));
+    return;
+  }
+
   // save full path info of original file
   QString absFileName = QFileInfo(fileName).absoluteFilePath();
   // updates the current directory
