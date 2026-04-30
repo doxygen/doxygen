@@ -371,6 +371,26 @@ Angegebener Grund: %2</translation>
         <source>Language changed to: %1</source>
         <translation>Sprache geändert zu: %1</translation>
     </message>
+    <message>
+        <source>Invalid configuration file</source>
+        <translation>Ungültige Konfigurationsdatei</translation>
+    </message>
+    <message>
+        <source>The file '%1' does not appear to be a valid Doxygen configuration file.
+
+A valid Doxyfile should start with '# Doxyfile' on the first line.</source>
+        <translation>Die Datei '%1' scheint keine gültige Doxygen-Konfigurationsdatei zu sein.
+
+Eine gültige Doxyfile sollte mit '# Doxyfile' in der ersten Zeile beginnen.</translation>
+    </message>
+    <message>
+        <source>Error opening file</source>
+        <translation>Fehler beim Öffnen der Datei</translation>
+    </message>
+    <message>
+        <source>Cannot open the file %1 for reading.</source>
+        <translation>Die Datei %1 kann nicht zum Lesen geöffnet werden.</translation>
+    </message>
 </context>
 <context>
     <name>TranslationManager</name>

@@ -371,6 +371,26 @@ Reason given: %2</source>
         <source>Doxygen GUI frontend</source>
         <translation>Doxygen 图形界面前端</translation>
     </message>
+    <message>
+        <source>Invalid configuration file</source>
+        <translation>无效的配置文件</translation>
+    </message>
+    <message>
+        <source>The file &apos;%1&apos; does not appear to be a valid Doxygen configuration file.
+
+A valid Doxyfile should start with &apos;# Doxyfile&apos; on the first line.</source>
+        <translation>文件 &apos;%1&apos; 似乎不是有效的 Doxygen 配置文件。
+
+有效的 Doxyfile 应在第一行以 &apos;# Doxyfile&apos; 开头。</translation>
+    </message>
+    <message>
+        <source>Error opening file</source>
+        <translation>打开文件错误</translation>
+    </message>
+    <message>
+        <source>Cannot open the file %1 for reading.</source>
+        <translation>无法打开文件 %1 进行读取。</translation>
+    </message>
 </context>
 <context>
     <name>TranslationManager</name>
