@@ -378,10 +378,10 @@ Reason given: %2</source>
     <message>
         <source>The file &apos;%1&apos; does not appear to be a valid Doxygen configuration file.
 
-A valid Doxyfile should contain configuration entries in the format &apos;TAGNAME = VALUE&apos; or start with &apos;# Doxyfile&apos;.</source>
+A valid Doxyfile should contain configuration entries in the format &apos;TAGNAME = VALUE&apos;.</source>
         <translation>ファイル &apos;%1&apos; は有効なDoxygen設定ファイルではないようです。
 
-有効なDoxyfileは &apos;TAGNAME = VALUE&apos; 形式の設定エントリを含むか、&apos;# Doxyfile&apos; で始まる必要があります。</translation>
+有効なDoxyfileは &apos;TAGNAME = VALUE&apos; 形式の設定エントリを含む必要があります。</translation>
     </message>
     <message>
         <source>Error opening file</source>

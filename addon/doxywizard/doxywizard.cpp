@@ -465,12 +465,6 @@ void MainWindow::loadConfigFromFile(const QString & fileName)
     if (line.isEmpty())
       continue;
 
-    if (line.startsWith(QString::fromLatin1("# Doxyfile"), Qt::CaseSensitive))
-    {
-      isValidDoxyfile = true;
-      break;
-    }
-
     if (configPattern.match(line).hasMatch())
     {
       isValidDoxyfile = true;
@@ -484,8 +478,7 @@ void MainWindow::loadConfigFromFile(const QString & fileName)
     QMessageBox::warning(this,
         tr("Invalid configuration file"),
         tr("The file '%1' does not appear to be a valid Doxygen configuration file.\n\n"
-           "A valid Doxyfile should contain configuration entries in the format 'TAGNAME = VALUE' "
-           "or start with '# Doxyfile'.")
+           "A valid Doxyfile should contain configuration entries in the format 'TAGNAME = VALUE'.")
         .arg(fileName));
     return;
   }
