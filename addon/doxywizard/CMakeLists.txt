@@ -172,32 +172,33 @@ set(ALL_TRANSLATION_FILES
 
 find_package(Qt6LinguistTools QUIET)
 if(Qt6LinguistTools_FOUND)
-  set_source_files_properties(${ALL_TRANSLATION_FILES} PROPERTIES OUTPUT_LOCATION ${CMAKE_CURRENT_BINARY_DIR})
-  qt6_add_translation(doxywizard_QM_FILES ${ALL_TRANSLATION_FILES})
+  set(doxywizard_QM_FILES)
+  set(doxywizard_TRANSLATION_RESOURCES)
 else()
   find_package(Qt5LinguistTools QUIET)
   if(Qt5LinguistTools_FOUND)
     set_source_files_properties(${ALL_TRANSLATION_FILES} PROPERTIES OUTPUT_LOCATION ${CMAKE_CURRENT_BINARY_DIR})
     qt5_add_translation(doxywizard_QM_FILES ${ALL_TRANSLATION_FILES})
+    
+    set(TRANSLATIONS_QRC_CONTENT "<!DOCTYPE RCC>\n<RCC version=\"1.0\">\n    <qresource prefix=\"/translations\">\n")
+    set(doxywizard_QM_FILES_PATHS)
+    foreach(ts_file ${ALL_TRANSLATION_FILES})
+      get_filename_component(ts_name ${ts_file} NAME_WE)
+      set(qm_file "${CMAKE_CURRENT_BINARY_DIR}/${ts_name}.qm")
+      string(APPEND TRANSLATIONS_QRC_CONTENT "        <file alias=\"${ts_name}.qm\">${qm_file}</file>\n")
+      list(APPEND doxywizard_QM_FILES_PATHS ${qm_file})
+    endforeach()
+    string(APPEND TRANSLATIONS_QRC_CONTENT "    </qresource>\n</RCC>\n")
+    
+    file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/translations.qrc "${TRANSLATIONS_QRC_CONTENT}")
+    qt_add_resources(doxywizard_TRANSLATION_RESOURCES ${CMAKE_CURRENT_BINARY_DIR}/translations.qrc)
+    
+    set_source_files_properties(${CMAKE_CURRENT_BINARY_DIR}/translations.qrc PROPERTIES OBJECT_DEPENDS "${doxywizard_QM_FILES_PATHS}")
   else()
     set(doxywizard_QM_FILES)
+    set(doxywizard_TRANSLATION_RESOURCES)
     message(STATUS "Qt Linguist tools not found, translation files will not be compiled")
   endif()
-endif()
-
-if(doxywizard_QM_FILES)
-  set(TRANSLATIONS_QRC_CONTENT "<!DOCTYPE RCC>\n<RCC version=\"1.0\">\n    <qresource prefix=\"/translations\">\n")
-  foreach(qm_file ${doxywizard_QM_FILES})
-    get_filename_component(qm_name ${qm_file} NAME)
-    string(APPEND TRANSLATIONS_QRC_CONTENT "        <file>${qm_name}</file>\n")
-  endforeach()
-  string(APPEND TRANSLATIONS_QRC_CONTENT "    </qresource>\n</RCC>\n")
-
-  file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/translations.qrc "${TRANSLATIONS_QRC_CONTENT}")
-
-  qt_add_resources(doxywizard_TRANSLATION_RESOURCES ${CMAKE_CURRENT_BINARY_DIR}/translations.qrc)
-else()
-  set(doxywizard_TRANSLATION_RESOURCES)
 endif()
 
 add_executable(doxywizard WIN32
@@ -223,6 +224,16 @@ ${PROJECT_SOURCE_DIR}/templates/icon/doxygen.rc
 )
 
 set_property(TARGET doxywizard PROPERTY WIN32_EXECUTABLE true)
+
+if(Qt6LinguistTools_FOUND AND ALL_TRANSLATION_FILES)
+  qt_add_translations(doxywizard
+    TS_FILES ${ALL_TRANSLATION_FILES}
+    RESOURCE_PREFIX "/translations"
+    QM_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
+    LUPDATE_OPTIONS -no-obsolete
+    LRELEASE_OPTIONS -removeidentical
+  )
+endif()
 
 include(ApplyEditbin)
 if (enable_console)
