@@ -2039,6 +2039,8 @@ void HtmlDocVisitor::operator()(const DocParamList &pl)
       {
         m_t << "in,out";
       }
+      if (pl.isNullable()) m_t << ",null";
+      if (pl.isNonnull())  m_t << ",!null";
       m_t << "]";
     }
     m_t << "</td>";
