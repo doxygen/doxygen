@@ -332,7 +332,8 @@ Useful git commands for change detection:
 # Show changes to the English translator since a given tag
 git log --follow -p src/translator_en.h
 
-# Show only added/removed method lines
+# Show only added/removed method lines (replace <old-commit> and <new-commit>
+# with actual commit hashes, branch names, or tags, e.g. v1.9.0..HEAD)
 git diff <old-commit>..<new-commit> src/translator_en.h | grep '^[+-].*QCString tr'
 
 # Show changes to doxywizard GUI strings
@@ -370,7 +371,10 @@ When reviewing existing translations for quality:
    up to date.
 
 6. **Encoding**: All files must be UTF-8 without BOM. Do not use HTML entities like `&auml;`
-   in translator `.h` files; use the actual UTF-8 character `ä` directly.
+   in translator `.h` files; use the actual UTF-8 character `ä` directly. Note that this
+   is the opposite of the rule for `.ts` files (Mechanism 2), where XML special characters
+   *must* be escaped using entities — the difference arises because `.ts` files are XML
+   while `.h` files are plain C++ source.
 
 ---
 
