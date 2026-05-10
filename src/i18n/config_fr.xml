@@ -120,7 +120,7 @@
       <value name="The $name file"/>
       <value name="is"/>
       <value name="provides"/>
-      <value name="spécifiés"/>
+      <value name="specifies"/>
       <value name="contains"/>
       <value name="represents"/>
       <value name="a"/>
@@ -511,7 +511,7 @@
     </option>
     <option type="enum" id="REQ_TRACEABILITY_INFO" defval="YES" depends="GENERATE_REQUIREMENTS">
       <docs>
-<![CDATA[La balise \c REQ_TRACEABILITY_INFO contrôle si les informations de tracabilite sont affichées sur la page des exigences (pertinent uniquement lors de l'utilisation de blocs de commentaire \ref cmdrequirement "\\requirement"). Le paramètre \c NO desactivera complètement les informations de tracabilite. Le paramètre \c UNSATISFIED_ONLY affichera une liste des exigences qui manquent d'une relation satisfies (via la commande: \ref cmdsatisfies "\\satisfies"). De même le paramètre \c UNVERIFIED_ONLY affichera une liste des exigences qui manquent d'une relation vérifiés (via la commande: \ref cmdverifies "\\vérifiés"). Définir la balise à \c YES (le défaut) affichera les deux listes si applicable.]]>
+<![CDATA[La balise \c REQ_TRACEABILITY_INFO contrôle si les informations de tracabilite sont affichées sur la page des exigences (pertinent uniquement lors de l'utilisation de blocs de commentaire \ref cmdrequirement "\\requirement"). Le paramètre \c NO desactivera complètement les informations de tracabilite. Le paramètre \c UNSATISFIED_ONLY affichera une liste des exigences qui manquent d'une relation satisfies (via la commande: \ref cmdsatisfies "\\satisfies"). De même le paramètre \c UNVERIFIED_ONLY affichera une liste des exigences qui manquent d'une relation verifies (via la commande: \ref cmdverifies "\\verifies"). Définir la balise à \c YES (le défaut) affichera les deux listes si applicable.]]>
       </docs>
       <value name="YES"/>
       <value name="NO"/>
