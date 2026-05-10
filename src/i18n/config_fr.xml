@@ -229,7 +229,7 @@
     </option>
     <option type="list" id="EXTENSION_MAPPING" format="string">
       <docs>
-<![CDATA[Doxygen sélectionné l'analyseur a utiliser en fonction de l'extension des fichiers qu'il analyse. Avec cette balise, vous pouvez assigner quel analyseur utiliser pour une extension donnée. Doxygen à une correspondance intégrée, mais vous pouvez la remplacer ou l'etendre en utilisant cette balise. Le format est <code>ext=language</code>, ou \c ext est une extension de fichier, et language est l'un des analyseurs supportes par Doxygen: IDL, Java, JavaScript, Csharp (C#), C, C++, Lex, D, PHP, md (Markdown), Objective-C, Python, Slice, VHDL, Fortran (Fortran format fixe: FortranFixed, Fortran format libre: FortranFree, Fortran format inconnu: Fortran. Dans ce dernier cas, l'analyseur essaie de deviner si le code est en format fixe ou libre, c'est le défaut pour les fichiers de type Fortran). Par exemple, pour faire que Doxygen traite les fichiers <code>.inc</code> comme des fichiers Fortran (le défaut est PHP), et les fichiers <code>.f</code> comme C (le défaut est Fortran), utilisez: `inc=Fortran f=C`. <br>Note: Pour les fichiers sans extension, vous pouvez utiliser `no_extension` comme espace reserve. <br>Notez que pour les extensions personnalisées vous devez également définir \ref cfg_file_patterns "FILE_PATTERNS" sinon les fichiers ne sont pas lus par Doxygen. Lorsque vous spécifiez `no_extension` vous devriez ajouter `*` au \ref cfg_file_patterns "FILE_PATTERNS". <br>Notez voir aussi la liste des \ref default_file_extension_mapping "correspondances d'extension de fichier par défaut".]]>
+<![CDATA[Doxygen sélectionne l'analyseur à utiliser en fonction de l'extension des fichiers qu'il analyse. Avec cette balise, vous pouvez assigner quel analyseur utiliser pour une extension donnée. Doxygen a une correspondance intégrée, mais vous pouvez la remplacer ou l'etendre en utilisant cette balise. Le format est <code>ext=language</code>, ou \c ext est une extension de fichier, et language est l'un des analyseurs supportes par Doxygen: IDL, Java, JavaScript, Csharp (C#), C, C++, Lex, D, PHP, md (Markdown), Objective-C, Python, Slice, VHDL, Fortran (Fortran format fixe: FortranFixed, Fortran format libre: FortranFree, Fortran format inconnu: Fortran. Dans ce dernier cas, l'analyseur essaie de deviner si le code est en format fixe ou libre, c'est le défaut pour les fichiers de type Fortran). Par exemple, pour faire que Doxygen traite les fichiers <code>.inc</code> comme des fichiers Fortran (le défaut est PHP), et les fichiers <code>.f</code> comme C (le défaut est Fortran), utilisez: `inc=Fortran f=C`. <br>Note: Pour les fichiers sans extension, vous pouvez utiliser `no_extension` comme espace reserve. <br>Notez que pour les extensions personnalisées vous devez également définir \ref cfg_file_patterns "FILE_PATTERNS" sinon les fichiers ne sont pas lus par Doxygen. Lorsque vous spécifiez `no_extension` vous devriez ajouter `*` au \ref cfg_file_patterns "FILE_PATTERNS". <br>Notez voir aussi la liste des \ref default_file_extension_mapping "correspondances d'extension de fichier par défaut".]]>
       </docs>
     </option>
     <option type="bool" id="MARKDOWN_SUPPORT" defval="1">
@@ -256,7 +256,7 @@
     </option>
     <option type="bool" id="AUTOLINK_SUPPORT" defval="1">
       <docs>
-<![CDATA[lorsqu'activé, Doxygen essaie de lier les mots qui correspondent à des classes documentées, ou des namespaces a leur documentation correspondante. Un tel lien peut être empesche dans des cas individuels en mettant un signe \c % devant le mot ou globalement en définissant \c AUTOLINK_SUPPORT à \c NO. Les mots listes dans la balise \c AUTOLINK_IGNORE_WORDS sont exclus de la liaison automatique.]]>
+<![CDATA[Lorsqu'activé, Doxygen essaie de lier les mots qui correspondent à des classes documentées, ou des namespaces a leur documentation correspondante. Un tel lien peut être empesche dans des cas individuels en mettant un signe \c % devant le mot ou globalement en définissant \c AUTOLINK_SUPPORT à \c NO. Les mots listes dans la balise \c AUTOLINK_IGNORE_WORDS sont exclus de la liaison automatique.]]>
       </docs>
     </option>
     <option type="list" id="AUTOLINK_IGNORE_WORDS" format="string" depends="AUTOLINK_SUPPORT">
@@ -322,7 +322,7 @@
     </option>
     <option type="int" id="NUM_PROC_THREADS" defval="1" minval="0" maxval="512">
       <docs>
-<![CDATA[Le \c NUM_PROC_THREADS spécifie le nombre de threads que Doxygen est autorise a utiliser pendant le traitement. Lorsque défini à \c 0 Doxygen se basera sur le nombre de coeurs disponibles dans le système. Vous pouvez le définir explicitement à une valeur supérieure a 0 pour avoir plus de contrôle sur l'équilibre entre la charge CPU et la vitesse de traitement. Pour le moment seul le traitement d'entrée peut être fait en utilisant plusieurs threads. Puisque c'est encore une fonctionnalité expérimentale, le défaut est défini a 1, ce qui désactivé effectivement le traitement parallele. Veuillez signaler tout problème que vous rencontrez. La génération de graphes dot en parallele est contrôlée par le paramètre \c DOT_NUM_THREADS.]]>
+<![CDATA[Le \c NUM_PROC_THREADS spécifie le nombre de threads que Doxygen est autorise a utiliser pendant le traitement. Lorsque défini à \c 0 Doxygen se basera sur le nombre de coeurs disponibles dans le système. Vous pouvez le définir explicitement à une valeur supérieure a 0 pour avoir plus de contrôle sur l'équilibre entre la charge CPU et la vitesse de traitement. Pour le moment seul le traitement d'entrée peut être fait en utilisant plusieurs threads. Puisque c'est encore une fonctionnalité expérimentale, le défaut est défini a 1, ce qui désactive effectivement le traitement parallele. Veuillez signaler tout problème que vous rencontrez. La génération de graphes dot en parallele est contrôlée par le paramètre \c DOT_NUM_THREADS.]]>
       </docs>
     </option>
     <option type="enum" id="TIMESTAMP" defval="NO">
@@ -907,8 +907,8 @@
       <docs>
 <![CDATA[La balise \c HTML_COLORSTYLE peut être utilisée pour spécifier si la sortie HTML générée doit être rendue avec un thème sombre ou clair.]]>
       </docs>
-      <value name="LIGHT" desc="généré toujours une sortie en mode clair"/>
-      <value name="DARK" desc="généré toujours une sortie en mode sombre"/>
+      <value name="LIGHT" desc="génère toujours une sortie en mode clair"/>
+      <value name="DARK" desc="génère toujours une sortie en mode sombre"/>
       <value name="AUTO_LIGHT" desc="définit automatiquement le mode selon la preference de l'utilisateur, utilise le mode clair si aucune preference n'est définie (par défaut)"/>
       <value name="AUTO_DARK" desc="définit automatiquement le mode selon la preference de l'utilisateur, utilise le mode sombre si aucune preference n'est définie"/>
       <value name="TOGGLE" desc="permet à l'utilisateur de basculer entre le mode clair et sombre via un bouton"/>
@@ -1080,7 +1080,7 @@
     </option>
     <option type="bool" id="DISABLE_INDEX" defval="0" depends="GENERATE_HTML">
       <docs>
-<![CDATA[Si vous voulez un contrôle complet sur la mise en page des pages HTML générées, il peut être nécessaire de désactiver l'index et de le remplacer par le votre. La balise \c DISABLE_INDEX peut être utilisée pour activer/désactiver l'index condense (onglets) en haut de chaque page HTML. Une valeur de \c NO active l'index et la valeur \c YES le désactivé. Comme les onglets de l'index contiennent les mêmes informations que l'arbre de navigation, vous pouvez définir cette option à \c YES si vous définissez également \ref cfg_generate_treeview "GENERATE_TREEVIEW" à \c YES.]]>
+<![CDATA[Si vous voulez un contrôle complet sur la mise en page des pages HTML générées, il peut être nécessaire de désactiver l'index et de le remplacer par le votre. La balise \c DISABLE_INDEX peut être utilisée pour activer/désactiver l'index condense (onglets) en haut de chaque page HTML. Une valeur de \c NO active l'index et la valeur \c YES le désactive. Comme les onglets de l'index contiennent les mêmes informations que l'arbre de navigation, vous pouvez définir cette option à \c YES si vous définissez également \ref cfg_generate_treeview "GENERATE_TREEVIEW" à \c YES.]]>
       </docs>
     </option>
     <option type="bool" id="GENERATE_TREEVIEW" defval="1" depends="GENERATE_HTML">
@@ -1090,7 +1090,7 @@
     </option>
     <option type="bool" id="PAGE_OUTLINE_PANEL" defval="1" depends="GENERATE_HTML">
       <docs>
-<![CDATA[Lorsque \ref cfg_generate_treeview "GENERATE_TREEVIEW" est défini à \c YES, l'option \c PAGE_OUTLINE_PANEL determine si un panneau de navigation supplémentaire est affiché sur le cote droit de l'ecran, affichant un plan du contenu de la page principale, similaire a par exemple https://developer.android.com/référence. Si \ref cfg_generate_treeview "GENERATE_TREEVIEW" est défini à \c NO, cette option n'a aucun effet.]]>
+<![CDATA[Lorsque \ref cfg_generate_treeview "GENERATE_TREEVIEW" est défini à \c YES, l'option \c PAGE_OUTLINE_PANEL determine si un panneau de navigation supplémentaire est affiché sur le cote droit de l'ecran, affichant un plan du contenu de la page principale, similaire a par exemple https://developer.android.com/reference. Si \ref cfg_generate_treeview "GENERATE_TREEVIEW" est défini à \c NO, cette option n'a aucun effet.]]>
       </docs>
     </option>
     <option type="bool" id="FULL_SIDEBAR" defval="0" depends="GENERATE_HTML">
@@ -1779,7 +1779,7 @@
     </option>
     <option type="enum" id="MERMAID_RENDER_MODE" defval="AUTO">
       <docs>
-<![CDATA[La balise \c MERMAID_RENDER_MODE sélectionné la manière dont les diagrammes Mermaid sont rendus.]]>
+<![CDATA[La balise \c MERMAID_RENDER_MODE sélectionne la manière dont les diagrammes Mermaid sont rendus.]]>
       </docs>
       <value name="AUTO" desc="(utiliser le rendu cote client pour HTML et \c mmdc pour LaTeX/PDF et autres formats. Si \c MERMAID_PATH n'est pas défini, les diagrammes non-HTML produiront un avertissement)"/>
       <value name="CLI" desc="(utiliser l'outil \c mmdc pour pre-générer les images (nécessite \c Node.js et \c mermaid-js/mermaid-cli). Fonctionne pour tous les formats de sortie)"/>
