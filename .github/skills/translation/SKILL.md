@@ -22,15 +22,13 @@ strings.
 
 Doxygen uses **three separate, independent translation mechanisms**:
 
-| Mechanism | Files | Purpose |
-|---|---|---|
-| Translator classes | `src/translator_xx.h` | All text strings emitted by doxygen itself into generated documentation |
-| Qt `.ts` files | `addon/doxywizard/i18n/doxywizard_xx.ts` | Doxywizard GUI strings |
-| Config XML files | `src/i18n/config_xx.xml` | Documentation for configuration options shown in the Doxywizard Expert tab |
+| Mechanism          | Source Files                             | Target Files                       | Purpose                                                                    |
+|--------------------|------------------------------------------|------------------------------------|----------------------------------------------------------------------------|
+| Translator classes | `src/translator_en.h`                    | `src/translator_xx.h`              | All text strings emitted by doxygen itself into generated documentation    |
+| Qt `.ts` files     | `addon/doxywizard/i18n/doxywizard_xx.ts` | generated `doxywizard_xx.qm` files | Doxywizard GUI strings                                                     |
+| Config XML files   | `src/config.xml`                         | `src/i18n/config_xx.xml`           | Documentation for configuration options shown in the Doxywizard Expert tab |
 
-Each mechanism must be maintained independently. A change in the English source may require
-updates in all three places or only in one, depending on which part of the application is
-affected.
+Each mechanism must be maintained independently. A change in the English text of a source file need to be translated to each of the corresponding Target Files.
 
 ---
 
@@ -49,7 +47,7 @@ affected.
   English fallback implementations for methods introduced in a given release. A language
   translator that is not fully up to date inherits from the appropriate adapter instead of
   directly from `Translator`.
-- `src/language.cpp` registers all translators and `doc/maintainers.txt` lists the maintainer
+- `src/language.cpp` registers all translators and `doc/maintainers.txt` lists the human maintainer
   for each language.
 
 ### Identifying what needs translation
@@ -91,7 +89,7 @@ When commits touch `src/translator_en.h`:
 2. **Check the base class**: If the class inherits from `TranslatorAdapter_X_Y_Z`, all
    methods listed in that adapter (and newer adapters) are missing and fall back to English.
 3. **Add missing methods**: Copy the method signature from `TranslatorEnglish` and provide a
-   translation. Use the inline comments in `translator_en.h` to understand the context.
+   translation. Use and copy the inline comments in `translator_en.h` to understand the context.
 4. **Change the base class**: Once all methods are implemented, change the base class from
    `TranslatorAdapter_X_Y_Z` to `Translator` directly.
 5. **Update the adapter**: If a new adapter class was added to `translator_adapter.h` for the
@@ -139,15 +137,15 @@ compiled into binary `.qm` files and embedded in the application resources.
 
 Supported languages and their files:
 
-| Language | File |
-|---|---|
-| German | `addon/doxywizard/i18n/doxywizard_de.ts` |
-| Spanish | `addon/doxywizard/i18n/doxywizard_es.ts` |
-| French | `addon/doxywizard/i18n/doxywizard_fr.ts` |
-| Japanese | `addon/doxywizard/i18n/doxywizard_ja.ts` |
-| Korean | `addon/doxywizard/i18n/doxywizard_ko.ts` |
-| Russian | `addon/doxywizard/i18n/doxywizard_ru.ts` |
-| Simplified Chinese | `addon/doxywizard/i18n/doxywizard_zh_CN.ts` |
+| Language            | File                                        |
+|---------------------|---------------------------------------------|
+| German              | `addon/doxywizard/i18n/doxywizard_de.ts`    |
+| Spanish             | `addon/doxywizard/i18n/doxywizard_es.ts`    |
+| French              | `addon/doxywizard/i18n/doxywizard_fr.ts`    |
+| Japanese            | `addon/doxywizard/i18n/doxywizard_ja.ts`    |
+| Korean              | `addon/doxywizard/i18n/doxywizard_ko.ts`    |
+| Russian             | `addon/doxywizard/i18n/doxywizard_ru.ts`    |
+| Simplified Chinese  | `addon/doxywizard/i18n/doxywizard_zh_CN.ts` |
 | Traditional Chinese | `addon/doxywizard/i18n/doxywizard_zh_TW.ts` |
 
 ### Translation file format
@@ -171,17 +169,17 @@ Each `.ts` file is XML with this structure:
 
 Translation contexts and their source files:
 
-| Context | Source file | Purpose |
-|---|---|---|
-| `MainWindow` | `doxywizard.cpp` | Main wizard interface |
-| `Expert` | `expert.cpp` | Expert mode interface and dynamic content |
-| `Messages` | `doxywizard.cpp` | Topic names and format labels |
-| `Wizard` | `wizard.cpp` | Wizard step labels |
-| `Step1`–`Step4` | `wizard.cpp` | Step dialog labels |
-| `TuneColorDialog` | `wizard.cpp` | Color tuning dialog |
-| `InputString` | `inputstring.cpp` | String input control |
-| `InputStrList` | `inputstrlist.cpp` | String list input control |
-| `HelpLabel` | `helplabel.h` | Label with context menu |
+| Context           | Source file        | Purpose                                   |
+|-------------------|--------------------|-------------------------------------------|
+| `MainWindow`      | `doxywizard.cpp`   | Main wizard interface                     |
+| `Expert`          | `expert.cpp`       | Expert mode interface and dynamic content |
+| `Messages`        | `doxywizard.cpp`   | Topic names and format labels             |
+| `Wizard`          | `wizard.cpp`       | Wizard step labels                        |
+| `Step1`–`Step4`   | `wizard.cpp`       | Step dialog labels                        |
+| `TuneColorDialog` | `wizard.cpp`       | Color tuning dialog                       |
+| `InputString`     | `inputstring.cpp`  | String input control                      |
+| `InputStrList`    | `inputstrlist.cpp` | String list input control                 |
+| `HelpLabel`       | `helplabel.h`      | Label with context menu                   |
 
 ### Identifying new or changed GUI strings
 
@@ -191,8 +189,7 @@ When commits touch any of the Doxywizard `.cpp` or `.h` source files, check whet
 A quick way to scan for changes to translatable strings between two commits:
 
 ```bash
-git log --follow -p addon/doxywizard/*.cpp addon/doxywizard/*.h \
-    | grep '^[+-].*\btr("'
+git log commit1..commit2 --follow -p addon/doxywizard | grep '^[+-].*\btr("'
 ```
 
 New or changed `tr()` calls require updates to every `.ts` file.
@@ -230,12 +227,7 @@ Edit the file directly in any text editor or use Qt Linguist:
 1. Copy an existing `.ts` file (e.g., `doxywizard_de.ts`) to `doxywizard_xx.ts`.
 2. Change the `language` attribute in the `<TS>` root element to the BCP 47 tag (e.g., `pt`).
 3. Translate all `<translation>` strings.
-4. Register the language in `addon/doxywizard/translationmanager.cpp` by adding a row to
-   `languageTable`:
-   ```cpp
-   { "xx", "Native Language Name", "English Language Name" }
-   ```
-5. Verify that the CMake build picks up the new `.ts` file (it typically uses a glob; check
+4. Verify that the CMake build picks up the new `.ts` file (it typically uses a glob; check
    `addon/doxywizard/CMakeLists.txt`).
 
 ---
@@ -245,22 +237,24 @@ Edit the file directly in any text editor or use Qt Linguist:
 ### How it works
 
 The configuration options shown in the Doxywizard Expert tab come from `src/config.xml`.
-Each option has a `<docs>` element with an English description. For non-English Doxywizard
-sessions, a language-specific `src/i18n/config_xx.xml` file provides translated `<docs>`
+Each option has a `<docs>` or `<desc>` element with an English description. For non-English Doxywizard
+sessions, a language-specific `src/i18n/config_xx.xml` file provides translated `<docs>` or `<desc>`
 elements. The file mirrors the structure of `config.xml` but contains only the translated
-documentation text for each option.
+documentation text for each option. Note that when an option in `config.xml` has multiple `<docs>` tags
+only the ones where the `doxywizard` attribute is absent or set to `1` need to translated. Also 
+`<docs>` elements for a single option are combined in the translation into a single `<docs>` element.
 
 Supported languages and their files:
 
-| Language | File |
-|---|---|
-| German | `src/i18n/config_de.xml` |
-| Spanish | `src/i18n/config_es.xml` |
-| French | `src/i18n/config_fr.xml` |
-| Japanese | `src/i18n/config_ja.xml` |
-| Korean | `src/i18n/config_ko.xml` |
-| Russian | `src/i18n/config_ru.xml` |
-| Simplified Chinese | `src/i18n/config_zh_CN.xml` |
+| Language            | File                        |
+|---------------------|-----------------------------|
+| German              | `src/i18n/config_de.xml`    |
+| Spanish             | `src/i18n/config_es.xml`    |
+| French              | `src/i18n/config_fr.xml`    |
+| Japanese            | `src/i18n/config_ja.xml`    |
+| Korean              | `src/i18n/config_ko.xml`    |
+| Russian             | `src/i18n/config_ru.xml`    |
+| Simplified Chinese  | `src/i18n/config_zh_CN.xml` |
 | Traditional Chinese | `src/i18n/config_zh_TW.xml` |
 
 ### Identifying changes to `config.xml`
@@ -332,30 +326,29 @@ Key points:
 
 When reviewing commits to the repository, check the following files and act accordingly:
 
-| Changed file | Translation work required |
-|---|---|
-| `src/translator_en.h` | Update all `src/translator_xx.h` files |
-| `src/translator_adapter.h` | Review: new adapter = new methods needed in all languages |
-| `src/translator.h` | Review: new pure virtuals = mandatory new methods in all languages |
-| `addon/doxywizard/*.cpp`, `*.h` | Update all `addon/doxywizard/i18n/doxywizard_xx.ts` files |
-| `src/config.xml` | Run sync tool; translate newly added options in all `src/i18n/config_xx.xml` files |
+| Changed file                     | Translation work required                                                          |
+|----------------------------------|------------------------------------------------------------------------------------|
+| `src/translator_en.h`            | Update all `src/translator_xx.h` files                                             |
+| `src/translator_adapter.h`       | Review: new adapter = new methods needed in all languages                          |
+| `src/translator.h`               | Review: new pure virtuals = mandatory new methods in all languages                 |
+| `addon/doxywizard/*.cpp`, `*.h`  | Update all `addon/doxywizard/i18n/doxywizard_xx.ts` files                          |
+| `src/config.xml`                 | Run sync tool; translate newly added options in all `src/i18n/config_xx.xml` files |
 
 Useful git commands for change detection:
 
 ```bash
 # Show changes to the English translator since a given tag
-git log --follow -p src/translator_en.h
+git log <old-commit>..<new-commit> --follow -p src/translator_en.h
 
 # Show only added/removed method lines (replace <old-commit> and <new-commit>
 # with actual commit hashes, branch names, or tags, e.g. v1.9.0..HEAD)
 git diff <old-commit>..<new-commit> src/translator_en.h | grep '^[+-].*QCString tr'
 
 # Show changes to doxywizard GUI strings
-git log --follow -p addon/doxywizard/*.cpp addon/doxywizard/*.h \
-    | grep '^[+-].*\btr("'
+git log <old-commit>..<new-commnt> --follow -p addon/doxywizard | grep '^[+-].*\btr("'
 
 # Show changes to config.xml option documentation
-git log --follow -p src/config.xml
+git log <old-commit>..<new-commit> --follow -p src/config.xml
 ```
 
 ---
