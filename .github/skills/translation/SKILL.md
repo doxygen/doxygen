@@ -1,3 +1,17 @@
+---
+name: translation
+description: >
+  Keeps all Doxygen and Doxywizard translations up to date across three mechanisms:
+  translator C++ classes (src/translator_xx.h), Qt .ts locale files for the Doxywizard
+  GUI (addon/doxywizard/i18n/), and config-option XML files (src/i18n/config_xx.xml).
+  Use this skill when updating or adding a language translation, improving translation
+  quality, handling new or changed English source strings, adding a new language, or
+  synchronising translations after a Doxygen release.
+compatibility: >
+  Requires Python 3 (for doc/translator.py and src/configgen.py) and Git.
+  Targets the doxygen/doxygen repository.
+---
+
 # Doxygen Translation Agent Skill
 
 This document instructs a translation agent on how to keep all Doxygen and Doxywizard
