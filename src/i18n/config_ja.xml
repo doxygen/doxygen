@@ -8,7 +8,7 @@
     </option>
     <option type="string" id="PROJECT_NAME" format="string" defval="My Project">
       <docs>
-<![CDATA[\c PROJECT_NAMEタグは、ドキュメントが生成されるプロジェクトを識別する単一の単語（またはDoxywizardを使用していない場合は二重引用符で囲まれた一連の単語）です。この名前は、生成されたページのタイトルや他のいくつかの場所で使用されます。]]>
+<![CDATA[\c PROJECT_NAMEタグは、ドキュメントを生成するプロジェクトを識別する単一の単語（またはDoxywizardを使用していない場合は二重引用符で囲まれた複数の単語）です。この名前は、生成されたページのタイトルやその他の場所で使用されます。]]>
       </docs>
     </option>
     <option type="string" id="PROJECT_NUMBER" format="string" defval="">
@@ -28,7 +28,7 @@
     </option>
     <option type="string" id="PROJECT_ICON" format="image" defval="">
       <docs>
-<![CDATA[\c PROJECT_ICONタグを使用すると、HTMLドキュメントが表示されるときにタブに含まれるアイコンを指定できます。Doxygenはロゴを出力ディレクトリにコピーします。]]>
+<![CDATA[\c PROJECT_ICONタグを使用すると、HTMLドキュメントが表示されるときにブラウザのタブに表示されるアイコン（ファビコン）を指定できます。Doxygenはアイコンを出力ディレクトリにコピーします。]]>
       </docs>
     </option>
     <option type="string" id="OUTPUT_DIRECTORY" format="dir" defval="">
@@ -154,12 +154,12 @@
     </option>
     <option type="bool" id="SHORT_NAMES" defval="0">
       <docs>
-<![CDATA[\c SHORT_NAMESタグが\c YESに設定されている場合、Doxygenははるかに短い（しかし読みにくい）ファイル名を生成します。これは、DOS、Mac、CD-ROMのようにファイルシステムが長い名前をサポートしていない場合に便利です。]]>
+<![CDATA[\c SHORT_NAMESタグが\c YESに設定されている場合、Doxygenは非常に短い（ただし可読性が低い）ファイル名を生成します。これは、DOS、Mac、またはCD-ROMのようにファイルシステムが長いファイル名をサポートしていない場合に便利です。]]>
       </docs>
     </option>
     <option type="bool" id="JAVADOC_AUTOBRIEF" defval="0">
       <docs>
-<![CDATA[\c JAVADOC_AUTOBRIEFタグが\c YESに設定されている場合、DoxygenはJavadocスタイルのコメントの最初の行（最初のピリオド、疑問符、または感嘆符まで）を簡潔な説明として解釈します。\c NOに設定されている場合、Javadocスタイルは通常のQtスタイルのコメントと同様に動作します（したがって、簡潔な説明には明示的な\ref cmdbrief "\@brief"コマンドが必要です）。]]>
+<![CDATA[\c JAVADOC_AUTOBRIEFタグが\c YESに設定されている場合、DoxygenはJavadocスタイルのコメントの最初の行（最初のピリオド、疑問符、または感嘆符まで）を簡潔な説明として解釈します。\c NOに設定されている場合、Javadocスタイルは通常のQtスタイルのコメントと同様に動作します（つまり、簡潔な説明には明示的な\ref cmdbrief "\@brief"コマンドが必要です）。]]>
       </docs>
     </option>
     <option type="bool" id="JAVADOC_BANNER" defval="0">
@@ -169,7 +169,7 @@
     </option>
     <option type="bool" id="QT_AUTOBRIEF" defval="0">
       <docs>
-<![CDATA[\c QT_AUTOBRIEFタグが\c YESに設定されている場合、DoxygenはQtスタイルのコメントの最初の行（最初のピリオド、疑問符、または感嘆符まで）を簡潔な説明として解釈します。\c NOに設定されている場合、Qtスタイルは通常のQtスタイルのコメントと同様に動作します（したがって、簡潔な説明には明示的な\ref cmdbrief "\brief"コマンドが必要です）。]]>
+<![CDATA[\c QT_AUTOBRIEFタグが\c YESに設定されている場合、DoxygenはQtスタイルのコメントの最初の行（最初のピリオド、疑問符、または感嘆符まで）を簡潔な説明として解釈します。\c NOに設定されている場合、Qtスタイルは通常のQtスタイルのコメントと同様に動作します（つまり、簡潔な説明には明示的な\ref cmdbrief "\brief"コマンドが必要です）。]]>
       </docs>
     </option>
     <option type="bool" id="MULTILINE_CPP_IS_BRIEF" defval="0">
@@ -322,7 +322,7 @@
     </option>
     <option type="int" id="NUM_PROC_THREADS" defval="1" minval="0" maxval="512">
       <docs>
-<![CDATA[\c NUM_PROC_THREADSは、処理中にDoxygenが使用を許可されるスレッドの数を指定します。\c 0に設定すると、Doxygenはシステムで使用可能なコアの数に基づいて設定します。CPU負荷と処理速度のバランスをより制御するために、0より大きい値に明示的に設定できます。現時点では、入力処理のみが複数のスレッドを使用して行うことができます。これはまだ実験的な機能であるため、デフォルトは1に設定されており、並列処理は効果的に無効になっています。問題が発生した場合は報告してください。ドットグラフの並列生成は、\c DOT_NUM_THREADS設定によって制御されます。]]>
+<![CDATA[\c NUM_PROC_THREADSは、処理中にDoxygenが使用を許可されるスレッドの数を指定します。\c 0に設定すると、Doxygenはシステムで使用可能なコアの数に基づいて設定します。CPU負荷と処理速度のバランスをより細かく制御するために、0より大きい値に明示的に設定できます。現時点では、入力処理のみが複数のスレッドを使用して行うことができます。これはまだ実験的な機能であるため、デフォルトは1に設定されており、並列処理は事実上無効になっています。問題が発生した場合は報告してください。dotグラフの並列生成は、\c DOT_NUM_THREADS設定によって制御されます。]]>
       </docs>
     </option>
     <option type="enum" id="TIMESTAMP" defval="NO">
@@ -338,7 +338,7 @@
   <group name="Build" trname="ビルド" docs="ビルド関連の設定オプション">
     <option type="bool" id="EXTRACT_ALL" defval="0">
       <docs>
-<![CDATA[\c EXTRACT_ALLタグが\c YESに設定されている場合、Doxygenはドキュメント内のすべてのエンティティが文書化されていると仮定します。ドキュメントが利用可能でなかったとしてもです。プライベートクラスメンバーと静的ファイルメンバーは、\ref cfg_extract_private "EXTRACT_PRIVATE"および\ref cfg_extract_static "EXTRACT_STATIC"タグが\c YESに設定されていない限り非表示になります。\note これにより、\ref cfg_warnings "WARNINGS"が\c YESに設定されている場合に通常生成される文書化されていないメンバーに関する警告も無効になります。]]>
+<![CDATA[\c EXTRACT_ALLタグが\c YESに設定されている場合、Doxygenはドキュメント内のすべてのエンティティが文書化されていると見なします（たとえドキュメントがなくても）。プライベートクラスメンバーと静的ファイルメンバーは、\ref cfg_extract_private "EXTRACT_PRIVATE"および\ref cfg_extract_static "EXTRACT_STATIC"タグが\c YESに設定されていない限り非表示になります。\note これにより、\ref cfg_warnings "WARNINGS"が\c YESに設定されている場合に通常生成される文書化されていないメンバーに関する警告も無効になります。]]>
       </docs>
     </option>
     <option type="bool" id="EXTRACT_PRIVATE" defval="0">
@@ -383,17 +383,17 @@
     </option>
     <option type="bool" id="HIDE_UNDOC_MEMBERS" defval="0">
       <docs>
-<![CDATA[\c HIDE_UNDOC_MEMBERSタグが\c YESに設定されている場合、Doxygenは文書化されたクラスまたはファイル内の文書化されていないすべてのメンバーを非表示にします。\c NOに設定されている場合、これらのメンバーは様々な概要に含まれますが、ドキュメントセクションは生成されません。このオプションは、\ref cfg_extract_all "EXTRACT_ALL"が有効な場合は効果がありません。]]>
+<![CDATA[\c HIDE_UNDOC_MEMBERSタグが\c YESに設定されている場合、Doxygenは文書化されたクラスまたはファイル内の文書化されていないすべてのメンバーを非表示にします。\c NOに設定されている場合、これらのメンバーは各種概要には含まれますが、ドキュメントセクションは生成されません。このオプションは、\ref cfg_extract_all "EXTRACT_ALL"が有効な場合は効果がありません。]]>
       </docs>
     </option>
     <option type="bool" id="HIDE_UNDOC_CLASSES" defval="0">
       <docs>
-<![CDATA[\c HIDE_UNDOC_CLASSESタグが\c YESに設定されている場合、Doxygenはクラス階層で通常表示される文書化されていないすべてのクラスを非表示にします。\c NOに設定されている場合、これらのクラスは様々な概要に含まれます。このオプションは、有効な場合、文書化されていないC++コンセプトも非表示にします。このオプションは、\ref cfg_extract_all "EXTRACT_ALL"が有効な場合は効果がありません。]]>
+<![CDATA[\c HIDE_UNDOC_CLASSESタグが\c YESに設定されている場合、Doxygenはクラス階層で通常表示される文書化されていないすべてのクラスを非表示にします。\c NOに設定されている場合、これらのクラスは各種概要に含まれます。このオプションは、有効な場合、文書化されていないC++コンセプトも非表示にします。このオプションは、\ref cfg_extract_all "EXTRACT_ALL"が有効な場合は効果がありません。]]>
       </docs>
     </option>
     <option type="bool" id="HIDE_UNDOC_NAMESPACES" defval="1">
       <docs>
-<![CDATA[\c HIDE_UNDOC_NAMESPACESタグが\c YESに設定されている場合、Doxygenは名前空間階層で通常表示される文書化されていないすべての名前空間を非表示にします。\c NOに設定されている場合、これらの名前空間は様々な概要に含まれます。このオプションは、\ref cfg_extract_all "EXTRACT_ALL"が有効な場合は効果がありません。]]>
+<![CDATA[\c HIDE_UNDOC_NAMESPACESタグが\c YESに設定されている場合、Doxygenは名前空間階層で通常表示される文書化されていないすべての名前空間を非表示にします。\c NOに設定されている場合、これらの名前空間は各種概要に含まれます。このオプションは、\ref cfg_extract_all "EXTRACT_ALL"が有効な場合は効果がありません。]]>
       </docs>
     </option>
     <option type="bool" id="HIDE_FRIEND_COMPOUNDS" defval="0">
@@ -567,12 +567,12 @@
   <group name="Messages" trname="メッセージ" docs="警告および進行メッセージに関連する設定オプション">
     <option type="bool" id="QUIET" defval="0">
       <docs>
-<![CDATA[\c QUIETタグを使用して、Doxygenによって標準出力に生成されるメッセージをオン/オフできます。\c QUIETが\c YESに設定されている場合、メッセージがオフであることを意味します。]]>
+<![CDATA[\c QUIETタグを使用して、Doxygenが標準出力に生成するメッセージのオン/オフを切り替えることができます。\c QUIETが\c YESに設定されている場合、メッセージは抑制されます。]]>
       </docs>
     </option>
     <option type="bool" id="WARNINGS" defval="1">
       <docs>
-<![CDATA[\c WARNINGSタグを使用して、Doxygenによって標準エラー（\c stderr）に生成される警告メッセージをオン/オフできます。\c WARNINGSが\c YESに設定されている場合、警告がオンであることを意味します。<br>\b ヒント：ドキュメントの作成中に警告をオンにしてください。]]>
+<![CDATA[\c WARNINGSタグを使用して、Doxygenによって標準エラー（\c stderr）に生成される警告メッセージのオン/オフを切り替えることができます。\c WARNINGSが\c YESに設定されている場合、警告が有効になります。<br>\b ヒント：ドキュメントの作成中は警告を有効にしてください。]]>
       </docs>
     </option>
     <option type="bool" id="WARN_IF_UNDOCUMENTED" defval="1">
