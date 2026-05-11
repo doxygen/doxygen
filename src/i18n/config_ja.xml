@@ -577,7 +577,7 @@
     </option>
     <option type="bool" id="WARN_IF_UNDOCUMENTED" defval="1">
       <docs>
-<![CDATA[\c WARN_IF_UNDOCUMENTEDタグが\c YESに設定されている場合、Doxygenは文書化されていないメンバーの警告を生成します。\ref cfg_extract_all "EXTRACT_ALL"が\c YESに設定されている場合、このフラグは自動的に無効になります。]]>
+<![CDATA[\c WARN_IF_UNDOCUMENTEDタグが\c YESに設定されている場合、Doxygenは未文書化のメンバーに対して警告を生成します。\ref cfg_extract_all "EXTRACT_ALL"が\c YESに設定されている場合、このフラグは自動的に無効になります。]]>
       </docs>
     </option>
     <option type="bool" id="WARN_IF_DOC_ERROR" defval="1">
@@ -592,12 +592,12 @@
     </option>
     <option type="bool" id="WARN_NO_PARAMDOC" defval="0">
       <docs>
-<![CDATA[この\c WARN_NO_PARAMDOCオプションを有効にすると、文書化されているがパラメータまたは戻り値のドキュメントがない関数の警告を取得できます。\c NOに設定されている場合、Doxygenはパラメータドキュメントのエラーについてのみ警告し、ドキュメントの欠落については警告しません。\ref cfg_extract_all "EXTRACT_ALL"が\c YESに設定されている場合、このフラグは自動的に無効になります。\ref cfg_warn_if_incomplete_doc "WARN_IF_INCOMPLETE_DOC"も参照してください。]]>
+<![CDATA[この\c WARN_NO_PARAMDOCオプションを有効にすると、文書化されているがパラメータまたは戻り値のドキュメントがない関数に対する警告を取得できます。\c NOに設定されている場合、Doxygenはパラメータドキュメントの誤りについてのみ警告し、ドキュメントの欠落については警告しません。\ref cfg_extract_all "EXTRACT_ALL"が\c YESに設定されている場合、このフラグは自動的に無効になります。\ref cfg_warn_if_incomplete_doc "WARN_IF_INCOMPLETE_DOC"も参照してください。]]>
       </docs>
     </option>
     <option type="bool" id="WARN_IF_UNDOC_ENUM_VAL" defval="0">
       <docs>
-<![CDATA[\c WARN_IF_UNDOC_ENUM_VALオプションが\c YESに設定されている場合、Doxygenは文書化されていない列挙値について警告します。\c NOに設定されている場合、Doxygenは文書化されていない列挙値を受け入れます。\ref cfg_extract_all "EXTRACT_ALL"が\c YESに設定されている場合、このフラグは自動的に無効になります。]]>
+<![CDATA[\c WARN_IF_UNDOC_ENUM_VALオプションが\c YESに設定されている場合、Doxygenは未文書化の列挙値について警告します。\c NOに設定されている場合、Doxygenは未文書化の列挙値を受け入れます。\ref cfg_extract_all "EXTRACT_ALL"が\c YESに設定されている場合、このフラグは自動的に無効になります。]]>
       </docs>
     </option>
     <option type="bool" id="WARN_LAYOUT_FILE" defval="1">
@@ -621,12 +621,12 @@
     </option>
     <option type="string" id="WARN_LINE_FORMAT" format="string" defval="at line $line of file $file">
       <docs>
-<![CDATA[\ref cfg_warn_format "WARN_FORMAT"コマンドの`$text`部分で、より具体的な場所への参照が与えられる可能性があります。この場所にジャンプしやすくするために（Doxygenの外部で）、ユーザーはカスタムの「カット」/「ペースト」文字列を定義できます。例：\verbatim WARN_LINE_FORMAT = "'vi $file +$line'" \endverbatim \sa \ref cfg_warn_format "WARN_FORMAT"]]>
+<![CDATA[\ref cfg_warn_format "WARN_FORMAT"コマンドの`$text`部分で、より具体的な場所への参照が指定されることがあります。この場所に（Doxygen外部から）ジャンプしやすくするために、ユーザーはカスタムの「カット」/「ペースト」文字列を定義できます。例：\verbatim WARN_LINE_FORMAT = "'vi $file +$line'" \endverbatim \sa \ref cfg_warn_format "WARN_FORMAT"]]>
       </docs>
     </option>
     <option type="string" id="WARN_LOGFILE" format="file" defval="">
       <docs>
-<![CDATA[\c WARN_LOGFILEタグを使用して、警告およびエラーメッセージが書き込まれるファイルを指定できます。空白のままにすると、出力は標準エラー（`stderr`）に書き込まれます。指定されたファイルが書き込み用に開けない場合、警告およびエラーメッセージは標準エラーに書き込まれます。`-`ファイルが指定されている場合、警告およびエラーメッセージは標準出力（`stdout`）に書き込まれます。]]>
+<![CDATA[\c WARN_LOGFILEタグを使用して、警告およびエラーメッセージの出力先ファイルを指定できます。空白のままにすると、出力は標準エラー（`stderr`）に書き込まれます。指定されたファイルを書き込み用に開けない場合、警告およびエラーメッセージは標準エラーに書き込まれます。ファイルとして`-`が指定されている場合、警告およびエラーメッセージは標準出力（`stdout`）に書き込まれます。]]>
       </docs>
     </option>
   </group>
@@ -728,7 +728,7 @@
     </option>
     <option type="list" id="EXAMPLE_PATH" format="filedir">
       <docs>
-<![CDATA[\c EXAMPLE_PATHタグを使用して、インクルードされるコード例のフラグメントを含む1つ以上のファイルまたはディレクトリを指定できます（\ref cmdinclude "\include"コマンドを参照）。]]>
+<![CDATA[\c EXAMPLE_PATHタグを使用して、インクルードされるサンプルコードの断片を含む1つ以上のファイルまたはディレクトリを指定できます（\ref cmdinclude "\include"コマンドを参照）。]]>
       </docs>
     </option>
     <option type="list" id="EXAMPLE_PATTERNS" format="string">
@@ -744,7 +744,7 @@
     </option>
     <option type="list" id="IMAGE_PATH" format="filedir">
       <docs>
-<![CDATA[\c IMAGE_PATHタグを使用して、ドキュメントにインクルードされる画像を含む1つ以上のファイルまたはディレクトリを指定できます（\ref cmdimage "\image"コマンドを参照）。]]>
+<![CDATA[\c IMAGE_PATHタグを使用して、ドキュメントに含める画像が格納された1つ以上のファイルまたはディレクトリを指定できます（\ref cmdimage "\image"コマンドを参照）。]]>
       </docs>
     </option>
     <option type="string" id="INPUT_FILTER" format="file" defval="">
@@ -796,7 +796,7 @@
     </option>
     <option type="bool" id="STRIP_CODE_COMMENTS" defval="1">
       <docs>
-<![CDATA[\c STRIP_CODE_COMMENTSタグを\c YESに設定すると、Doxygenは生成されたソースコードフラグメントから特別なコメントブロックを非表示にするように指示します。通常のC、C++、Fortranコメントは常に表示されたままです。]]>
+<![CDATA[\c STRIP_CODE_COMMENTSタグを\c YESに設定すると、Doxygenは生成されたソースコード断片から特殊コマンドを含むコメントブロックを非表示にします。通常のC、C++、Fortranコメントは常に表示されたままです。]]>
       </docs>
     </option>
     <option type="bool" id="REFERENCED_BY_RELATION" defval="0">
@@ -816,7 +816,7 @@
     </option>
     <option type="bool" id="SOURCE_TOOLTIPS" defval="1" depends="SOURCE_BROWSER">
       <docs>
-<![CDATA[\c SOURCE_TOOLTIPSが有効な場合（デフォルト）、ソースコード内のハイパーリンクにカーソルを合わせると、プロトタイプ、簡潔な説明、定義およびドキュメントへのリンクなどの追加情報を含むツールチップが表示されます。これによりHTMLファイルが大きくなり、大きなファイルの読み込みが少し遅くなるため、この機能を無効にすることを選択できます。]]>
+<![CDATA[\c SOURCE_TOOLTIPSが有効な場合（デフォルト）、ソースコード内のハイパーリンクにカーソルを合わせると、プロトタイプ、概要説明、定義およびドキュメントへのリンクなどの追加情報を含むツールチップが表示されます。これによりHTMLファイルが大きくなり、大きなファイルの読み込みが少し遅くなるため、この機能を無効にすることもできます。]]>
       </docs>
     </option>
     <option type="bool" id="USE_HTAGS" defval="0" depends="SOURCE_BROWSER">
@@ -826,12 +826,12 @@
     </option>
     <option type="bool" id="VERBATIM_HEADERS" defval="1">
       <docs>
-<![CDATA[\c VERBATIM_HEADERSタグが\c YESに設定されている場合、Doxygenはインクルードが指定されている各クラスのヘッダーファイルの逐語的なコピーを生成します。これを無効にするには\c NOに設定します。\sa セクション\ref cmdclass "\class"。]]>
+<![CDATA[\c VERBATIM_HEADERSタグが\c YESに設定されている場合、Doxygenはインクルードが指定されている各クラスのヘッダーファイルをそのままコピーして出力します。これを無効にするには\c NOに設定します。\sa セクション\ref cmdclass "\class"。]]>
       </docs>
     </option>
     <option type="bool" id="CLANG_ASSISTED_PARSING" setting="USE_LIBCLANG" defval="0">
       <docs>
-<![CDATA[\c CLANG_ASSISTED_PARSINGタグが\c YESに設定されている場合、Doxygenは<a href="http://clang.llvm.org/">clangパーサー</a>を使用して、パフォーマンスの低下を犠牲にしてより正確な解析を行います。これは、Doxygenの組み込みパーサーが必要な型情報を欠いているテンプレート豊富なC++コードで特に役立ちます。@note このオプションの可用性は、DoxygenがCMakeの`-Duse_libclang=ON`オプションで生成されたかどうかに依存します。]]>
+<![CDATA[\c CLANG_ASSISTED_PARSINGタグが\c YESに設定されている場合、Doxygenは<a href="http://clang.llvm.org/">clangパーサー</a>を使用して、パフォーマンスは低下しますがより正確な解析を行います。これは、Doxygenの組み込みパーサーが必要な型情報を欠いているテンプレートを多用したC++コードで特に役立ちます。@note このオプションの可用性は、DoxygenがCMakeの`-Duse_libclang=ON`オプションでビルドされたかどうかに依存します。]]>
       </docs>
     </option>
     <option type="bool" id="CLANG_ADD_INC_PATHS" setting="USE_LIBCLANG" depends="CLANG_ASSISTED_PARSING" defval="1">
@@ -846,19 +846,19 @@
     </option>
     <option type="string" id="CLANG_DATABASE_PATH" setting="USE_LIBCLANG" defval="">
       <docs>
-<![CDATA[clangアシスト解析が有効な場合、`compile_commands.json`というファイルを含むディレクトリへのパスをclangパーサーに提供できます。このファイルは、ソースファイルがビルドされたときに使用されたオプションを含む<a href="http://clang.llvm.org/docs/HowToSetupToolingForLLVM.html">コンパイルデータベース</a>です。これは、`clang-check`のようなclangツールに`-p`オプションを指定することと同等です。これらのオプションはパーサーに渡されます。\ref cfg_clang_options "CLANG_OPTIONS"で指定されたオプションも追加されます。@note このオプションの可用性は、DoxygenがCMakeの`-Duse_libclang=ON`オプションで生成されたかどうかに依存します。]]>
+<![CDATA[clangアシスト解析が有効な場合、`compile_commands.json`というファイルを含むディレクトリへのパスをclangパーサーに提供できます。このファイルは、ソースファイルのビルド時に使用されたオプションを含む<a href="http://clang.llvm.org/docs/HowToSetupToolingForLLVM.html">コンパイルデータベース</a>です。これは、`clang-check`のようなclangツールに`-p`オプションを指定することと同等です。これらのオプションはパーサーに渡されます。\ref cfg_clang_options "CLANG_OPTIONS"で指定されたオプションも追加されます。@note このオプションの可用性は、DoxygenがCMakeの`-Duse_libclang=ON`オプションでビルドされたかどうかに依存します。]]>
       </docs>
     </option>
   </group>
   <group name="Index" trname="インデックス" docs="アルファベット順クラスインデックスに関連する設定オプション">
     <option type="bool" id="ALPHABETICAL_INDEX" defval="1">
       <docs>
-<![CDATA[\c ALPHABETICAL_INDEXタグが\c YESに設定されている場合、すべてのコンパウンドのアルファベット順インデックスが生成されます。プロジェクトに多数のクラス、構造体、共用体、またはインターフェースが含まれている場合はこれを有効にしてください。]]>
+<![CDATA[\c ALPHABETICAL_INDEXタグが\c YESに設定されている場合、すべての複合型のアルファベット順インデックスが生成されます。プロジェクトに多数のクラス、構造体、共用体、またはインターフェースが含まれている場合は、これを有効にしてください。]]>
       </docs>
     </option>
     <option type="list" id="IGNORE_PREFIX" format="string" depends="ALPHABETICAL_INDEX">
       <docs>
-<![CDATA[\c IGNORE_PREFIXタグを使用して、インデックスヘッダーの生成中に無視されるプレフィックス（またはプレフィックスのリスト）を指定できます。\c IGNORE_PREFIXタグは、クラス、関数、およびメンバー名に対して機能します。エンティティは、プレフィックスを削除した後に残るエンティティ名の最初の文字の下にアルファベット順リストに配置されます。]]>
+<![CDATA[\c IGNORE_PREFIXタグを使用して、インデックスヘッダーの生成時に無視されるプレフィックス（またはプレフィックスのリスト）を指定できます。\c IGNORE_PREFIXタグは、クラス、関数、およびメンバー名に対して機能します。エンティティは、プレフィックスを削除した後に残る名前の最初の文字でアルファベット順リストに配置されます。]]>
       </docs>
     </option>
   </group>
@@ -870,7 +870,7 @@
     </option>
     <option type="string" id="HTML_OUTPUT" format="dir" defval="html" depends="GENERATE_HTML">
       <docs>
-<![CDATA[\c HTML_OUTPUTタグは、HTMLドキュメントが配置される場所を指定するために使用されます。相対パスが入力された場合、\ref cfg_output_directory "OUTPUT_DIRECTORY"の値がその前に配置されます。]]>
+<![CDATA[\c HTML_OUTPUTタグは、HTMLドキュメントの出力先を指定するために使用されます。相対パスを入力した場合、\ref cfg_output_directory "OUTPUT_DIRECTORY"の値がその前に付加されます。]]>
       </docs>
     </option>
     <option type="string" id="HTML_FILE_EXTENSION" format="string" defval=".html" depends="GENERATE_HTML">
@@ -900,7 +900,7 @@
     </option>
     <option type="list" id="HTML_EXTRA_FILES" format="file" depends="GENERATE_HTML">
       <docs>
-<![CDATA[\c HTML_EXTRA_FILESタグを使用して、HTML出力ディレクトリにコピーされる1つ以上の追加画像または他のソースファイルを指定できます。これらのファイルはベースHTML出力ディレクトリにコピーされることに注意してください。\ref cfg_html_header "HTML_HEADER"および/または\ref cfg_html_footer "HTML_FOOTER"ファイルで<code>$relpath^</code>マーカーを使用してこれらのファイルをロードします。\ref cfg_html_stylesheet "HTML_STYLESHEET"ファイルでは、ファイル名のみを使用します。また、ファイルはそのままコピーされることにも注意してください。利用可能なコマンドやマーカーはありません。]]>
+<![CDATA[\c HTML_EXTRA_FILESタグを使用して、HTML出力ディレクトリにコピーする1つ以上の追加画像またはその他のソースファイルを指定できます。これらのファイルはベースHTML出力ディレクトリにコピーされることに注意してください。\ref cfg_html_header "HTML_HEADER"および/または\ref cfg_html_footer "HTML_FOOTER"ファイルで<code>$relpath^</code>マーカーを使用してこれらのファイルを読み込みます。\ref cfg_html_stylesheet "HTML_STYLESHEET"ファイルでは、ファイル名のみを使用します。また、ファイルはそのままコピーされることにも注意してください。コマンドやマーカーは処理されません。]]>
       </docs>
     </option>
     <option type="enum" id="HTML_COLORSTYLE" defval="AUTO_LIGHT" depends="GENERATE_HTML">
@@ -915,7 +915,7 @@
     </option>
     <option type="int" id="HTML_COLORSTYLE_HUE" minval="0" maxval="359" defval="220" depends="GENERATE_HTML">
       <docs>
-<![CDATA[\c HTML_COLORSTYLE_HUEタグはHTML出力の色を制御します。Doxygenはこの色に従ってスタイルシートと背景画像の色を調整します。色相はカラーホイール上の角度として指定されます。詳細については、https://en.wikipedia.org/wiki/Hueを参照してください。例えば、値0は赤、60は黄、120は緑、180はシアン、240は青、300は紫、360は再び赤を表します。]]>
+<![CDATA[\c HTML_COLORSTYLE_HUEタグはHTML出力の色相を制御します。Doxygenはこの色に基づいてスタイルシートと背景画像の色を調整します。色相はカラーホイール上の角度として指定されます。詳細については、https://en.wikipedia.org/wiki/Hueを参照してください。例えば、値0は赤、60は黄、120は緑、180はシアン、240は青、300は紫、360は再び赤を表します。]]>
       </docs>
     </option>
     <option type="int" id="HTML_COLORSTYLE_SAT" minval="0" maxval="255" defval="100" depends="GENERATE_HTML">
@@ -930,7 +930,7 @@
     </option>
     <option type="bool" id="HTML_DYNAMIC_MENUS" defval="1" depends="GENERATE_HTML">
       <docs>
-<![CDATA[\c HTML_DYNAMIC_MENUSタグが\c YESに設定されている場合、生成されたHTMLドキュメントには、JavaScriptを介して動的に作成される垂直ナビゲーションメニューを備えたメインインデックスが含まれます。無効にすると、ナビゲーションインデックスは、各HTMLページに静的に埋め込まれる複数レベルのタブで構成されます。QtヘルプブラウザのようにJavaScriptを持たないブラウザをサポートするには、このオプションを無効にします。]]>
+<![CDATA[\c HTML_DYNAMIC_MENUSタグが\c YESに設定されている場合、生成されたHTMLドキュメントには、JavaScriptで動的に作成される垂直ナビゲーションメニューを備えたメインインデックスが含まれます。無効にすると、ナビゲーションインデックスは各HTMLページに静的に埋め込まれた複数レベルのタブで構成されます。QtヘルプブラウザのようにJavaScriptをサポートしないブラウザに対応するには、このオプションを無効にします。]]>
       </docs>
     </option>
     <option type="bool" id="HTML_DYNAMIC_SECTIONS" defval="0" depends="GENERATE_HTML">
@@ -945,17 +945,17 @@
     </option>
     <option type="bool" id="HTML_COPY_CLIPBOARD" defval="1" depends="GENERATE_HTML">
       <docs>
-<![CDATA[\c HTML_COPY_CLIPBOARDタグが\c YESに設定されている場合、Doxygenはコードおよびテキストフラグメントの右上隅にアイコンを表示し、ユーザーがその内容をクリップボードにコピーできるようにします。これは、ブラウザでサポートされ、Webページが<a href="https://www.w3.org/TR/secure-contexts/">安全なコンテキスト</a>を介して提供されている場合にのみ機能することに注意してください。つまり、https:またはfile:プロトコルを使用しています。]]>
+<![CDATA[\c HTML_COPY_CLIPBOARDタグが\c YESに設定されている場合、Doxygenはコードおよびテキスト断片の右上隅にアイコンを表示し、ユーザーがその内容をクリップボードにコピーできるようにします。なお、これはブラウザでサポートされており、かつWebページが<a href="https://www.w3.org/TR/secure-contexts/">安全なコンテキスト</a>（https:またはfile:プロトコル）で提供されている場合にのみ機能します。]]>
       </docs>
     </option>
     <option type="string" id="HTML_PROJECT_COOKIE" defval="" depends="GENERATE_HTML">
       <docs>
-<![CDATA[Doxygenは、ブラウザにいくつかの設定を永続的に保存します（例：Cookieを介して）。デフォルトでは、これらの設定はすべてのプロジェクトでDoxygenによって生成されたすべてのHTMLページに適用されます。\c HTML_PROJECT_COOKIEタグを使用して、設定をプロジェクト固有のキーの下に保存し、ユーザー設定が個別に保存されるようにすることができます。]]>
+<![CDATA[Doxygenはブラウザにいくつかの設定を永続的に保存します（例：Cookieを使用）。デフォルトでは、これらの設定はすべてのプロジェクトでDoxygenが生成したすべてのHTMLページに適用されます。\c HTML_PROJECT_COOKIEタグを使用すると、設定をプロジェクト固有のキーで保存し、ユーザー設定が個別に保存されるようにできます。]]>
       </docs>
     </option>
     <option type="int" id="HTML_INDEX_NUM_ENTRIES" minval="0" maxval="9999" defval="100" depends="GENERATE_HTML">
       <docs>
-<![CDATA[\c HTML_INDEX_NUM_ENTRIESを使用すると、様々なツリー構造インデックスに最初に表示されるエントリの推奨数を制御できます。ユーザーは後で動的にエントリを展開および折りたたむことができます。Doxygenは、最大で指定された数のエントリが表示されるレベルまでツリーを展開します（完全に折りたたまれたツリーがすでにこの量を超えている場合を除く）。したがって、エントリ数を1に設定すると、デフォルトで完全に折りたたまれたツリーが生成されます。0は無限のエントリ数を表す特別な値で、デフォルトで完全に展開されたツリーになります。]]>
+<![CDATA[\c HTML_INDEX_NUM_ENTRIESを使用すると、各種ツリー構造インデックスに最初に表示されるエントリーの推奨数を制御できます。ユーザーは後で動的にエントリーを展開および折りたたむことができます。Doxygenは、指定された数以下のエントリーが表示されるレベルまでツリーを展開します（完全に折りたたまれたツリーがすでにこの量を超えている場合を除く）。そのため、エントリー数を1に設定すると、デフォルトで完全に折りたたまれたツリーが生成されます。0は無限のエントリー数を表す特別な値で、デフォルトで完全に展開されたツリーになります。]]>
       </docs>
     </option>
     <option type="bool" id="GENERATE_DOCSET" defval="0" depends="GENERATE_HTML">
@@ -965,12 +965,12 @@
     </option>
     <option type="string" id="DOCSET_FEEDNAME" format="string" defval="Doxygen generated docs" depends="GENERATE_DOCSET">
       <docs>
-<![CDATA[このタグはdocsetフィードの名前を決定します。ドキュメントフィードは、単一のプロバイダー（企業や製品スイートなど）からの複数のドキュメントセットをグループ化できる傘を提供します。]]>
+<![CDATA[このタグはdocsetフィードの名前を決定します。ドキュメントフィードは、単一のプロバイダー（企業や製品スイートなど）からの複数のドキュメントセットをグループ化するための上位分類を提供します。]]>
       </docs>
     </option>
     <option type="string" id="DOCSET_FEEDURL" format="string" depends="GENERATE_DOCSET">
       <docs>
-<![CDATA[このタグはdocsetフィードのURLを決定します。ドキュメントフィードは、単一のプロバイダー（企業や製品スイートなど）からの複数のドキュメントセットをグループ化できる傘を提供します。]]>
+<![CDATA[このタグはdocsetフィードのURLを決定します。ドキュメントフィードは、単一のプロバイダー（企業や製品スイートなど）からの複数のドキュメントセットをグループ化するための上位分類を提供します。]]>
       </docs>
     </option>
     <option type="string" id="DOCSET_BUNDLE_ID" format="string" defval="org.doxygen.Project" depends="GENERATE_DOCSET">
@@ -1015,17 +1015,17 @@
     </option>
     <option type="bool" id="BINARY_TOC" defval="0" depends="GENERATE_HTMLHELP">
       <docs>
-<![CDATA[\c BINARY_TOCフラグは、`.chm`ファイルでバイナリ目次が生成されるか（\c YES）、通常の目次が生成されるか（\c NO）を制御します。さらに、`前へ`および`次へ`ボタンを有効にします。]]>
+<![CDATA[\c BINARY_TOCフラグは、`.chm`ファイルでバイナリ目次を生成するか（\c YES）、通常の目次を生成するか（\c NO）を制御します。さらに、「前へ」および「次へ」ボタンを有効にします。]]>
       </docs>
     </option>
     <option type="bool" id="TOC_EXPAND" defval="0" depends="GENERATE_HTMLHELP">
       <docs>
-<![CDATA[\c TOC_EXPANDフラグを\c YESに設定すると、HTMLヘルプドキュメントの目次とツリービューにグループメンバーの追加項目が追加されます。]]>
+<![CDATA[\c TOC_EXPANDフラグを\c YESに設定すると、HTMLヘルプドキュメントの目次およびツリービューにグループメンバーの追加項目が追加されます。]]>
       </docs>
     </option>
     <option type="string" id="SITEMAP_URL" format="string" depends="GENERATE_HTML">
       <docs>
-<![CDATA[\c SITEMAP_URLタグは、ドキュメントのデプロイ中にユーザーが生成されたドキュメントをサーバーに配置する場所の完全なURLを指定するために使用されます。生成されたサイトマップは`sitemap.xml`と呼ばれ、\ref cfg_html_output "HTML_OUTPUT"で指定されたディレクトリに配置されます。\c SITEMAP_URLが指定されていない場合、サイトマップは生成されません。サイトマッププロトコルの詳細については、https://www.sitemaps.orgを参照してください。]]>
+<![CDATA[\c SITEMAP_URLタグは、ドキュメントのデプロイ時にユーザーが生成されたドキュメントをサーバー上のどこに配置するかを示す完全なURLを指定するために使用されます。生成されるサイトマップは`sitemap.xml`という名前で、\ref cfg_html_output "HTML_OUTPUT"で指定されたディレクトリに配置されます。\c SITEMAP_URLが指定されていない場合、サイトマップは生成されません。サイトマッププロトコルの詳細については、https://www.sitemaps.orgを参照してください。]]>
       </docs>
     </option>
     <option type="bool" id="GENERATE_QHP" defval="0" depends="GENERATE_HTML">
@@ -1045,7 +1045,7 @@
     </option>
     <option type="string" id="QHP_VIRTUAL_FOLDER" format="string" defval="doc" depends="GENERATE_QHP">
       <docs>
-<![CDATA[\c QHP_VIRTUAL_FOLDERタグは、Qtヘルププロジェクト出力を生成するときに使用する名前空間を指定します。詳細については、<a href="https://doc.qt.io/archives/qt-4.8/qthelpproject.html#virtual-folders">Qtヘルププロジェクト/仮想フォルダー</a>を参照してください。]]>
+<![CDATA[\c QHP_VIRTUAL_FOLDERタグは、Qtヘルププロジェクト出力を生成するときに使用する仮想フォルダーを指定します。詳細については、<a href="https://doc.qt.io/archives/qt-4.8/qthelpproject.html#virtual-folders">Qtヘルププロジェクト/仮想フォルダー</a>を参照してください。]]>
       </docs>
     </option>
     <option type="string" id="QHP_CUST_FILTER_NAME" format="string" defval="" depends="GENERATE_QHP">
@@ -1075,7 +1075,7 @@
     </option>
     <option type="string" id="ECLIPSE_DOC_ID" format="string" defval="org.doxygen.Project" depends="GENERATE_ECLIPSEHELP">
       <docs>
-<![CDATA[`Eclipse`ヘルププラグインの一意の識別子。プラグインをインストールするとき、HTMLおよびXMLファイルを含むディレクトリ名もこの名前を持つ必要があります。各ドキュメントセットには独自の識別子が必要です。]]>
+<![CDATA[`Eclipse`ヘルププラグインの一意の識別子です。プラグインをインストールする際、HTMLおよびXMLファイルを含むディレクトリ名もこの名前にする必要があります。各ドキュメントセットには独自の識別子が必要です。]]>
       </docs>
     </option>
     <option type="bool" id="DISABLE_INDEX" defval="0" depends="GENERATE_HTML">
@@ -1085,12 +1085,12 @@
     </option>
     <option type="bool" id="GENERATE_TREEVIEW" defval="1" depends="GENERATE_HTML">
       <docs>
-<![CDATA[\c GENERATE_TREEVIEWタグは、階層情報を表示するためのツリーのようなインデックス構造を生成するかどうかを指定するために使用されます。タグ値が\c YESに設定されている場合、ツリーのようなインデックス構造を含むサイドパネルが生成されます（HTMLヘルプ用に生成されるものと同様）。これが機能するには、JavaScript、DHTML、CSS、フレームをサポートするブラウザが必要です（つまり、最新のブラウザ）。WindowsユーザーはHTMLヘルプ機能を使用した方が良いでしょう。カスタムスタイルシート（\ref cfg_html_extra_stylesheet "HTML_EXTRA_STYLESHEET"を参照）を使用すると、インデックスの外観をさらに微調整できます（\ref doxygen_finetuneを参照）。例として、Doxygenによって生成されたデフォルトのスタイルシートには、\ref cfg_project_name "PROJECT_NAME"の代わりにツリーのルートに画像を配置する方法を示す例があります。ツリーは基本的にタブインデックスよりも詳細な情報を持っているため、このオプションを有効にする際に\ref cfg_disable_index "DISABLE_INDEX"を\c YESに設定することを検討できます。]]>
+<![CDATA[\c GENERATE_TREEVIEWタグは、階層情報を表示するためのツリー状インデックス構造を生成するかどうかを指定するために使用されます。タグ値が\c YESに設定されている場合、ツリー状インデックス構造を含むサイドパネルが生成されます（HTMLヘルプ用に生成されるものと同様）。これが機能するには、JavaScript、DHTML、CSS、フレームをサポートするブラウザが必要です（つまり、最新のブラウザ）。WindowsユーザーはHTMLヘルプ機能を使用した方が良いでしょう。カスタムスタイルシート（\ref cfg_html_extra_stylesheet "HTML_EXTRA_STYLESHEET"を参照）を使用すると、インデックスの外観をさらに微調整できます（\ref doxygen_finetuneを参照）。例として、Doxygenが生成するデフォルトのスタイルシートには、\ref cfg_project_name "PROJECT_NAME"の代わりにツリーのルートに画像を配置する方法を示す例があります。ツリーは基本的にタブインデックスよりも詳細な情報を持っているため、このオプションを有効にする際に\ref cfg_disable_index "DISABLE_INDEX"を\c YESに設定することを検討できます。]]>
       </docs>
     </option>
     <option type="bool" id="PAGE_OUTLINE_PANEL" defval="1" depends="GENERATE_HTML">
       <docs>
-<![CDATA[\ref cfg_generate_treeview "GENERATE_TREEVIEW"が\c YESに設定されている場合、\c PAGE_OUTLINE_PANELオプションは、画面の右側に追加のナビゲーションパネルを表示するかどうかを決定し、メインページのコンテンツのアウトラインを表示します（例：https://developer.android.com/reference）。\ref cfg_generate_treeview "GENERATE_TREEVIEW"が\c NOに設定されている場合、このオプションは効果がありません。]]>
+<![CDATA[\ref cfg_generate_treeview "GENERATE_TREEVIEW"が\c YESに設定されている場合、\c PAGE_OUTLINE_PANELオプションは画面の右側に追加のナビゲーションパネルを表示するかどうかを決定し、メインページの目次を表示します（例：https://developer.android.com/referenceと同様）。\ref cfg_generate_treeview "GENERATE_TREEVIEW"が\c NOに設定されている場合、このオプションは効果がありません。]]>
       </docs>
     </option>
     <option type="bool" id="FULL_SIDEBAR" defval="0" depends="GENERATE_HTML">
@@ -1105,7 +1105,7 @@
     </option>
     <option type="bool" id="SHOW_ENUM_VALUES" defval="0">
       <docs>
-<![CDATA[\c SHOW_ENUM_VALUESタグが設定されている場合、Doxygenは列挙ニーモニックの横に指定された列挙値を表示します。]]>
+<![CDATA[\c SHOW_ENUM_VALUESタグが設定されている場合、Doxygenは列挙ニーモニックの横に列挙値を表示します。]]>
       </docs>
     </option>
     <option type="int" id="TREEVIEW_WIDTH" minval="0" maxval="1500" defval="250" depends="GENERATE_HTML">
@@ -1125,29 +1125,29 @@
     </option>
     <option type="enum" id="HTML_FORMULA_FORMAT" defval="png" depends="GENERATE_HTML">
       <docs>
-<![CDATA[\c HTML_FORMULA_FORMATオプションが\c svgに設定されている場合、Doxygenはpdf2svgツール（https://github.com/dawbarton/pdf2svgを参照）またはinkscape（https://inkscape.orgを参照）を使用して、HTML出力のPNGの代わりに数式をSVG画像として生成します。これらの画像は、スケーリングされた解像度で一般的により良く見えます。]]>
+<![CDATA[\c HTML_FORMULA_FORMATオプションが\c svgに設定されている場合、Doxygenはpdf2svgツール（https://github.com/dawbarton/pdf2svgを参照）またはinkscape（https://inkscape.orgを参照）を使用して、HTML出力でPNGの代わりに数式をSVG画像として生成します。これらの画像は、拡大表示時により美しく見えます。]]>
       </docs>
       <value name="png" desc="(デフォルト)"/>
       <value name="svg" desc="(より美しく表示されますが、pdf2svgまたはinkscapeツールが必要)"/>
     </option>
     <option type="int" id="FORMULA_FONTSIZE" minval="8" maxval="50" defval="10" depends="GENERATE_HTML">
       <docs>
-<![CDATA[このタグを使用して、HTMLドキュメントに画像としてインクルードされる\f$\mbox{\LaTeX}\f$数式のフォントサイズを変更します。Doxygenの実行が成功した後にフォントサイズを変更する場合は、強制的に再生成するためにHTML出力ディレクトリからすべての`form_*.png`画像を手動で削除する必要があります。]]>
+<![CDATA[このタグを使用して、HTMLドキュメントに画像として埋め込まれる\f$\mbox{\LaTeX}\f$数式のフォントサイズを変更します。Doxygenの実行が成功した後にフォントサイズを変更する場合は、再生成を強制するためにHTML出力ディレクトリからすべての`form_*.png`画像を手動で削除する必要があります。]]>
       </docs>
     </option>
     <option type="string" id="FORMULA_MACROFILE" format="file" defval="">
       <docs>
-<![CDATA[\c FORMULA_MACROFILEには、数式の構成要素として使用される新しい\f$\mbox{\LaTeX}\f$コマンドを作成するための\f$\mbox{\LaTeX}\f$ `\newcommand`および`\renewcommand`コマンドを含めることができます。詳細については、セクション\ref formulasを参照してください。]]>
+<![CDATA[\c FORMULA_MACROFILEには、数式の構成要素として使用する新しい\f$\mbox{\LaTeX}\f$コマンドを作成するための\f$\mbox{\LaTeX}\f$ `\newcommand`および`\renewcommand`コマンドを記述できます。詳細については、セクション\ref formulasを参照してください。]]>
       </docs>
     </option>
     <option type="bool" id="USE_MATHJAX" defval="0" depends="GENERATE_HTML">
       <docs>
-<![CDATA[\c USE_MATHJAXオプションを有効にすると、事前レンダリングされたビットマップを使用する代わりに、レンダリングにクライアント側JavaScriptを使用するMathJax（https://www.mathjax.orgを参照）を使用して\f$\mbox{\LaTeX}\f$数式をレンダリングします。\f$\mbox{\LaTeX}\f$がインストールされていない場合、またはHTML出力で数式をよりきれいに見せたい場合に使用します。有効にした場合、MathJaxを個別にインストールし、\ref cfg_mathjax_relpath "MATHJAX_RELPATH"オプションを使用してパスを設定する必要がある場合もあります。]]>
+<![CDATA[\c USE_MATHJAXオプションを有効にすると、事前レンダリングされたビットマップの代わりに、クライアント側JavaScriptでレンダリングを行うMathJax（https://www.mathjax.orgを参照）を使用して\f$\mbox{\LaTeX}\f$数式をレンダリングします。\f$\mbox{\LaTeX}\f$がインストールされていない場合、またはHTML出力で数式をより美しく表示したい場合に使用します。有効にした場合、MathJaxを別途インストールし、\ref cfg_mathjax_relpath "MATHJAX_RELPATH"オプションでパスを設定する必要がある場合もあります。]]>
       </docs>
     </option>
     <option type="enum" id="MATHJAX_VERSION" defval="MathJax_2" depends="USE_MATHJAX">
       <docs>
-<![CDATA[\c MATHJAX_VERSIONを使用すると、使用するMathJaxのバージョンを指定できます。MathJaxの異なるバージョンは異なる設定に対して異なる要件を持っているため、MathJaxの異なるバージョン間で切り替える際に他のMathJax設定も変更する必要がある可能性があることに注意してください。]]>
+<![CDATA[\c MATHJAX_VERSIONを使用すると、使用するMathJaxのバージョンを指定できます。なお、MathJaxのバージョンによって設定要件が異なるため、バージョンを切り替える際には他のMathJax設定も変更が必要になる場合があります。]]>
       </docs>
       <value name="MathJax_2"/>
       <value name="MathJax_3"/>
@@ -1189,7 +1189,7 @@
     </option>
     <option type="string" id="MATHJAX_CODEFILE" format="string" depends="USE_MATHJAX">
       <docs>
-<![CDATA[\c MATHJAX_CODEFILEタグを使用して、MathJaxコードの起動時に使用されるJavaScriptコードの断片を含むファイルを指定できます。詳細については、Mathjaxサイトを参照してください：- <a href="https://docs.mathjax.org/en/v2.7/">MathJaxバージョン2</a> - <a href="https://docs.mathjax.org/en/v3.2/">MathJaxバージョン3</a> - <a href="https://docs.mathjax.org/en/v4.0/">MathJaxバージョン4</a>]]>
+<![CDATA[\c MATHJAX_CODEFILEタグを使用して、MathJaxコードの起動時に使用されるJavaScriptコードを含むファイルを指定できます。詳細については、MathJaxサイトを参照してください：- <a href="https://docs.mathjax.org/en/v2.7/">MathJaxバージョン2</a> - <a href="https://docs.mathjax.org/en/v3.2/">MathJaxバージョン3</a> - <a href="https://docs.mathjax.org/en/v4.0/">MathJaxバージョン4</a>]]>
       </docs>
     </option>
     <option type="bool" id="SEARCHENGINE" defval="1" depends="GENERATE_HTML">
@@ -1199,7 +1199,7 @@
     </option>
     <option type="bool" id="SERVER_BASED_SEARCH" defval="0" depends="SEARCHENGINE">
       <docs>
-<![CDATA[\c SERVER_BASED_SEARCHタグが有効な場合、検索エンジンはJavaScriptを使用するWebクライアントの代わりにWebサーバーを使用して実装されます。\ref cfg_external_search "EXTERNAL_SEARCH"設定に応じて、Webサーバーベースの検索には2つのタイプがあります。無効な場合、Doxygenは検索用のPHPスクリプトとスクリプトが使用するインデックスファイルを生成します。\ref cfg_external_search "EXTERNAL_SEARCH"が有効な場合、インデックス作成と検索は外部ツールによって提供される必要があります。詳細については、セクション\ref extsearchを参照してください。]]>
+<![CDATA[\c SERVER_BASED_SEARCHタグが有効な場合、検索エンジンはJavaScriptを使用するWebクライアントではなくWebサーバーを使用して実装されます。\ref cfg_external_search "EXTERNAL_SEARCH"設定に応じて、Webサーバーベースの検索には2つの種類があります。無効の場合、Doxygenは検索用のPHPスクリプトとスクリプトが使用するインデックスファイルを生成します。\ref cfg_external_search "EXTERNAL_SEARCH"が有効な場合、インデックス作成と検索は外部ツールで提供する必要があります。詳細については、セクション\ref extsearchを参照してください。]]>
       </docs>
     </option>
     <option type="bool" id="EXTERNAL_SEARCH" defval="0" depends="SEARCHENGINE">
@@ -1209,22 +1209,22 @@
     </option>
     <option type="string" id="SEARCHENGINE_URL" format="string" defval="" depends="SEARCHENGINE">
       <docs>
-<![CDATA[\c SEARCHENGINE_URLは、\ref cfg_external_search "EXTERNAL_SEARCH"が有効な場合に検索結果を返すWebサーバーによってホストされる検索エンジンを指す必要があります。<br>Doxygenには、オープンソース検索エンジンライブラリ<a href="https://xapian.org/">Xapian</a>に基づいたサンプルインデクサー（\c doxyindexer）と検索エンジン（<code>doxysearch.cgi</code>）が付属しています。詳細については、セクション\ref extsearchを参照してください。]]>
+<![CDATA[\c SEARCHENGINE_URLは、\ref cfg_external_search "EXTERNAL_SEARCH"が有効な場合に検索結果を返す、Webサーバーでホストされている検索エンジンのURLを指定します。<br>Doxygenには、オープンソース検索エンジンライブラリ<a href="https://xapian.org/">Xapian</a>に基づいたサンプルインデクサー（\c doxyindexer）と検索エンジン（<code>doxysearch.cgi</code>）が付属しています。詳細については、セクション\ref extsearchを参照してください。]]>
       </docs>
     </option>
     <option type="string" id="SEARCHDATA_FILE" format="file" defval="searchdata.xml" depends="SEARCHENGINE">
       <docs>
-<![CDATA[\ref cfg_server_based_search "SERVER_BASED_SEARCH"と\ref cfg_external_search "EXTERNAL_SEARCH"の両方が有効な場合、インデックス付けされていない検索データは、外部ツールによるインデックス作成のためにファイルに書き込まれます。\c SEARCHDATA_FILEタグでこのファイルの名前を指定できます。]]>
+<![CDATA[\ref cfg_server_based_search "SERVER_BASED_SEARCH"と\ref cfg_external_search "EXTERNAL_SEARCH"の両方が有効な場合、未インデックスの検索データが外部ツールでのインデックス作成用にファイルに書き込まれます。\c SEARCHDATA_FILEタグでこのファイルの名前を指定できます。]]>
       </docs>
     </option>
     <option type="string" id="EXTERNAL_SEARCH_ID" format="string" defval="" depends="SEARCHENGINE">
       <docs>
-<![CDATA[\ref cfg_server_based_search "SERVER_BASED_SEARCH"と\ref cfg_external_search "EXTERNAL_SEARCH"の両方が有効な場合、\c EXTERNAL_SEARCH_IDタグをプロジェクトの識別子として使用できます。これは、\ref cfg_extra_search_mappings "EXTRA_SEARCH_MAPPINGS"と組み合わせて、複数のプロジェクトを検索し、結果を正しいプロジェクトにリダイレクトするのに役立ちます。]]>
+<![CDATA[\ref cfg_server_based_search "SERVER_BASED_SEARCH"と\ref cfg_external_search "EXTERNAL_SEARCH"の両方が有効な場合、\c EXTERNAL_SEARCH_IDタグをプロジェクトの識別子として使用できます。これは\ref cfg_extra_search_mappings "EXTRA_SEARCH_MAPPINGS"と組み合わせて、複数のプロジェクトを横断検索し、結果を適切なプロジェクトにリダイレクトするのに役立ちます。]]>
       </docs>
     </option>
     <option type="list" id="EXTRA_SEARCH_MAPPINGS" format="string" depends="SEARCHENGINE">
       <docs>
-<![CDATA[\c EXTRA_SEARCH_MAPPINGSタグを使用して、この設定ファイルで定義されたプロジェクト以外のDoxygenプロジェクトを検索できるようにすることができますが、それらはすべて同じ外部検索インデックスに追加されます。各プロジェクトには、\ref cfg_external_search_id "EXTERNAL_SEARCH_ID"を介して設定された一意のIDが必要です。検索マッピングは、IDをドキュメントが見つかる相対的な場所にマッピングします。形式は：\verbatim EXTRA_SEARCH_MAPPINGS = tagname1=loc1 tagname2=loc2 ... \endverbatim]]>
+<![CDATA[\c EXTRA_SEARCH_MAPPINGSタグを使用すると、この設定ファイルで定義されたプロジェクト以外のDoxygenプロジェクトも検索できるようになります。ただし、それらはすべて同じ外部検索インデックスに追加されている必要があります。各プロジェクトには、\ref cfg_external_search_id "EXTERNAL_SEARCH_ID"で設定された一意のIDが必要です。検索マッピングは、IDをドキュメントが存在する相対パスにマッピングします。形式は：\verbatim EXTRA_SEARCH_MAPPINGS = tagname1=loc1 tagname2=loc2 ... \endverbatim]]>
       </docs>
     </option>
   </group>
