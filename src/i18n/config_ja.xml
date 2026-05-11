@@ -1256,7 +1256,7 @@
     </option>
     <option type="bool" id="COMPACT_LATEX" defval="0" depends="GENERATE_LATEX">
       <docs>
-<![CDATA[\c COMPACT_LATEXタグが\c YESに設定されている場合、Doxygenはよりコンパクトな\f$\mbox{\LaTeX}\f$ドキュメントを生成します。これは小さなプロジェクトに役立ち、一般的にいくつかの木を節約するのに役立ちます。]]>
+<![CDATA[\c COMPACT_LATEXタグが\c YESに設定されている場合、Doxygenはよりコンパクトな\f$\mbox{\LaTeX}\f$ドキュメントを生成します。これは小さなプロジェクトに役立ち、一般的に紙の節約にもなります。]]>
       </docs>
     </option>
     <option type="enum" id="PAPER_TYPE" defval="a4" depends="GENERATE_LATEX">
@@ -1305,7 +1305,7 @@
     </option>
     <option type="enum" id="LATEX_BATCHMODE" defval="NO" depends="GENERATE_LATEX">
       <docs>
-<![CDATA[\c LATEX_BATCHMODEタグは、エラーが発生した場合の\f$\mbox{\LaTeX}\f$の動作を通知します。]]>
+<![CDATA[\c LATEX_BATCHMODEタグは、エラーが発生した場合の\f$\mbox{\LaTeX}\f$の動作を制御します。]]>
       </docs>
       <value name="NO" desc="ERROR_STOPと同じ"/>
       <value name="YES" desc="BATCHと同じ"/>
@@ -1316,7 +1316,7 @@
     </option>
     <option type="bool" id="LATEX_HIDE_INDICES" defval="0" depends="GENERATE_LATEX">
       <docs>
-<![CDATA[\c LATEX_HIDE_INDICESタグが\c YESに設定されている場合、Doxygenは出力にインデックスの章（ファイルインデックス、コンパウンドインデックスなど）を含めません。]]>
+<![CDATA[\c LATEX_HIDE_INDICESタグが\c YESに設定されている場合、Doxygenは出力にインデックスの章（ファイルインデックス、複合型インデックスなど）を含めません。]]>
       </docs>
     </option>
     <option type="string" id="LATEX_BIB_STYLE" format="string" defval="plainnat" depends="GENERATE_LATEX">
@@ -1343,7 +1343,7 @@
     </option>
     <option type="bool" id="COMPACT_RTF" defval="0" depends="GENERATE_RTF">
       <docs>
-<![CDATA[\c COMPACT_RTFタグが\c YESに設定されている場合、DoxygenはよりコンパクトなRTFドキュメントを生成します。これは小さなプロジェクトに役立ち、一般的にいくつかの木を節約するのに役立ちます。]]>
+<![CDATA[\c COMPACT_RTFタグが\c YESに設定されている場合、DoxygenはよりコンパクトなRTFドキュメントを生成します。これは小さなプロジェクトに役立ち、一般的に紙の節約にもなります。]]>
       </docs>
     </option>
     <option type="bool" id="RTF_HYPERLINKS" defval="0" depends="GENERATE_RTF">
@@ -1353,12 +1353,12 @@
     </option>
     <option type="string" id="RTF_STYLESHEET_FILE" format="file" defval="" depends="GENERATE_RTF">
       <docs>
-<![CDATA[ファイルからスタイルシート定義をロードします。構文はDoxygenの設定ファイルと同様で、一連の割り当てです。オーバーライドのみを提供する必要があり、欠落している定義はデフォルト値に設定されます。<br>Doxygenが通常使用するデフォルトのスタイルシートの生成方法については、セクション\ref doxygen_usageも参照してください。]]>
+<![CDATA[ファイルからスタイルシート定義をロードします。構文はDoxygenの設定ファイルと同様で、一連の代入文です。置き換えたい定義のみを提供すればよく、省略された定義はデフォルト値に設定されます。<br>Doxygenが通常使用するデフォルトのスタイルシートの生成方法については、セクション\ref doxygen_usageも参照してください。]]>
       </docs>
     </option>
     <option type="string" id="RTF_EXTENSIONS_FILE" format="file" defval="" depends="GENERATE_RTF">
       <docs>
-<![CDATA[RTFドキュメントの生成で使用されるオプションの変数を定義します。構文はDoxygenの設定ファイルと同様です。テンプレート拡張ファイルは、<code>doxygen -e rtf extensionFile</code>を使用して生成できます。]]>
+<![CDATA[RTFドキュメントの生成で使用されるオプションの変数を設定します。構文はDoxygenの設定ファイルと同様です。テンプレート拡張ファイルは、<code>doxygen -e rtf extensionFile</code>を使用して生成できます。]]>
       </docs>
     </option>
     <option type="list" id="RTF_EXTRA_FILES" format="file" depends="GENERATE_RTF">
@@ -1385,19 +1385,19 @@
     </option>
     <option type="string" id="MAN_SUBDIR" format="string" defval="" depends="GENERATE_MAN">
       <docs>
-<![CDATA[\c MAN_SUBDIRタグは、マニュアルページが配置される\c MAN_OUTPUT内に作成されるディレクトリの名前を決定します。デフォルトでは、\c MAN_EXTENSIONの先頭の`.`を削除したものがmanに続きます。]]>
+<![CDATA[\c MAN_SUBDIRタグは、マニュアルページが配置される\c MAN_OUTPUT内に作成されるディレクトリの名前を決定します。デフォルトでは、manの後に\c MAN_EXTENSIONの先頭の`.`を除いた文字列が続きます。]]>
       </docs>
     </option>
     <option type="bool" id="MAN_LINKS" defval="0" depends="GENERATE_MAN">
       <docs>
-<![CDATA[\c MAN_LINKSタグが\c YESに設定され、Doxygenがman出力を生成する場合、実際のマニュアルページ内の文書化された各エンティティに対して追加のmanファイルが生成されます。これらの追加ファイルは実際のマニュアルページをソースするだけですが、それらがないと\c manコマンドは正しいページを見つけることができません。]]>
+<![CDATA[\c MAN_LINKSタグが\c YESに設定され、Doxygenがman出力を生成する場合、実際のマニュアルページ内の文書化された各エンティティに対して追加のmanファイルが生成されます。これらの追加ファイルは実際のマニュアルページを参照するだけですが、これらがないと\c manコマンドは正しいページを見つけることができません。]]>
       </docs>
     </option>
   </group>
   <group name="XML" docs="XML出力に関連する設定オプション">
     <option type="bool" id="GENERATE_XML" defval="0">
       <docs>
-<![CDATA[\c GENERATE_XMLタグが\c YESに設定されている場合、Doxygenはコード構造をキャプチャするXMLファイルを生成し、すべてのドキュメントを含みます。]]>
+<![CDATA[\c GENERATE_XMLタグが\c YESに設定されている場合、Doxygenはすべてのドキュメントを含むコードの構造を記録したXMLファイルを生成します。]]>
       </docs>
     </option>
     <option type="string" id="XML_OUTPUT" format="dir" defval="xml" depends="GENERATE_XML">
@@ -1407,12 +1407,12 @@
     </option>
     <option type="bool" id="XML_PROGRAMLISTING" defval="1" depends="GENERATE_XML">
       <docs>
-<![CDATA[\c XML_PROGRAMLISTINGタグが\c YESに設定されている場合、DoxygenはXML出力にプログラムリスト（構文強調表示と相互参照情報を含む）をコピーします。これを有効にするとXML出力のサイズが大幅に増加することに注意してください。]]>
+<![CDATA[\c XML_PROGRAMLISTINGタグが\c YESに設定されている場合、Doxygenはプログラムリスト（構文強調表示と相互参照情報を含む）をXML出力に出力します。これを有効にするとXML出力のサイズが大幅に増加することに注意してください。]]>
       </docs>
     </option>
     <option type="bool" id="XML_NS_MEMB_FILE_SCOPE" defval="0" depends="GENERATE_XML">
       <docs>
-<![CDATA[\c XML_NS_MEMB_FILE_SCOPEタグが\c YESに設定されている場合、Doxygenはファイルスコープ内の名前空間メンバーも含め、HTML出力に対応します。]]>
+<![CDATA[\c XML_NS_MEMB_FILE_SCOPEタグが\c YESに設定されている場合、DoxygenはHTML出力と同様に、ファイルスコープ内の名前空間メンバーも含めます。]]>
       </docs>
     </option>
   </group>
@@ -1431,14 +1431,14 @@
   <group name="AutoGen" docs="AutoGen Definitions出力のための設定オプション">
     <option type="bool" id="GENERATE_AUTOGEN_DEF" defval="0">
       <docs>
-<![CDATA[\c GENERATE_AUTOGEN_DEFタグが\c YESに設定されている場合、Doxygenはコード構造をキャプチャするAutoGen定義ファイル（https://autogen.sourceforge.net/を参照）を生成し、すべてのドキュメントを含みます。この機能はまだ実験的であり、現時点では不完全であることに注意してください。]]>
+<![CDATA[\c GENERATE_AUTOGEN_DEFタグが\c YESに設定されている場合、Doxygenはすべてのドキュメントを含むコードの構造を記録したAutoGen定義ファイル（https://autogen.sourceforge.net/を参照）を生成します。なお、この機能はまだ実験的であり、現時点では不完全です。]]>
       </docs>
     </option>
   </group>
   <group name="Sqlite3" docs="Sqlite3出力に関連する設定オプション">
     <option type="bool" id="GENERATE_SQLITE3" defval="0">
       <docs>
-<![CDATA[\c GENERATE_SQLITE3タグが\c YESに設定されている場合、Doxygenは\c Sqlite3データベースを生成し、Doxygenによって見つかったシンボルがテーブルに保存されます。]]>
+<![CDATA[\c GENERATE_SQLITE3タグが\c YESに設定されている場合、DoxygenはDoxygenによって発見されたシンボルをテーブルに保存した\c Sqlite3データベースを生成します。]]>
       </docs>
     </option>
     <option type="string" id="SQLITE3_OUTPUT" format="dir" defval="sqlite3" depends="GENERATE_SQLITE3">
@@ -1448,14 +1448,14 @@
     </option>
     <option type="bool" id="SQLITE3_RECREATE_DB" defval="1" depends="GENERATE_SQLITE3">
       <docs>
-<![CDATA[\c SQLITE3_RECREATE_DBタグが\c YESに設定されている場合、既存のdoxygen_sqlite3.dbデータベースファイルはDoxygenが実行されるたびに再作成されます。\c NOに設定されている場合、Doxygenはデータベースファイルがすでに見つかった場合に警告し、変更しません。]]>
+<![CDATA[\c SQLITE3_RECREATE_DBタグが\c YESに設定されている場合、既存のdoxygen_sqlite3.dbデータベースファイルはDoxygenを実行するたびに再作成されます。\c NOに設定されている場合、Doxygenはデータベースファイルがすでに存在する場合は警告を出し、変更しません。]]>
       </docs>
     </option>
   </group>
   <group name="PerlMod" docs="Perlモジュール出力に関連する設定オプション">
     <option type="bool" id="GENERATE_PERLMOD" defval="0">
       <docs>
-<![CDATA[\c GENERATE_PERLMODタグが\c YESに設定されている場合、Doxygenはコード構造をキャプチャするPerlモジュールファイルを生成し、すべてのドキュメントを含みます。<br>この機能はまだ実験的であり、現時点では不完全であることに注意してください。]]>
+<![CDATA[\c GENERATE_PERLMODタグが\c YESに設定されている場合、Doxygenはすべてのドキュメントを含むコードの構造を記録したPerlモジュールファイルを生成します。<br>なお、この機能はまだ実験的であり、現時点では不完全です。]]>
       </docs>
     </option>
     <option type="bool" id="PERLMOD_LATEX" defval="0" depends="GENERATE_PERLMOD">
@@ -1465,12 +1465,12 @@
     </option>
     <option type="bool" id="PERLMOD_PRETTY" defval="1" depends="GENERATE_PERLMOD">
       <docs>
-<![CDATA[\c PERLMOD_PRETTYタグが\c YESに設定されている場合、Perlモジュール出力は人間が読めるようにきれいにフォーマットされます。これは何が起こっているかを理解したい場合に便利です。一方、このタグが\c NOに設定されている場合、Perlモジュール出力のサイズははるかに小さくなり、Perlは同様に解析します。]]>
+<![CDATA[\c PERLMOD_PRETTYタグが\c YESに設定されている場合、Perlモジュール出力は人間が読みやすいようにきれいにフォーマットされます。これは内部の動作を理解したい場合に便利です。一方、このタグが\c NOに設定されている場合、Perlモジュール出力のサイズははるかに小さくなりますが、Perlは同様に解析できます。]]>
       </docs>
     </option>
     <option type="string" id="PERLMOD_MAKEVAR_PREFIX" format="string" defval="" depends="GENERATE_PERLMOD">
       <docs>
-<![CDATA[生成された`doxyrules.make`ファイルのmake変数名は、\c PERLMOD_MAKEVAR_PREFIXに含まれる文字列が前に付きます。これは、同じ`Makefile`に含まれる異なる`doxyrules.make`ファイルが互いの変数を上書きしないようにするのに役立ちます。]]>
+<![CDATA[生成された`doxyrules.make`ファイルのmake変数名には、\c PERLMOD_MAKEVAR_PREFIXに含まれる文字列が先頭に付加されます。これは、同じ`Makefile`にインクルードされる異なる`doxyrules.make`ファイルが互いの変数を上書きしないようにするのに役立ちます。]]>
       </docs>
     </option>
   </group>
@@ -1517,19 +1517,19 @@
     </option>
     <option type="bool" id="SKIP_FUNCTION_MACROS" defval="1" depends="ENABLE_PREPROCESSING">
       <docs>
-<![CDATA[\c SKIP_FUNCTION_MACROSタグが\c YESに設定されている場合、Doxygenのプリプロセッサは、行単独で、すべて大文字の名前を持ち、セミコロンで終わらない関数のようなマクロへのすべての参照を削除します。そのような関数マクロは通常ボイラープレートコードに使用され、削除されないとパーサーを混乱させます。]]>
+<![CDATA[\c SKIP_FUNCTION_MACROSタグが\c YESに設定されている場合、Doxygenのプリプロセッサは、単独行にある、すべて大文字の名前を持ち、セミコロンで終わらない関数マクロへのすべての参照を削除します。このような関数マクロは通常ボイラープレートコードに使用され、削除されないとパーサーを混乱させます。]]>
       </docs>
     </option>
   </group>
   <group name="External" trname="外部参照" docs="外部参照に関連する設定オプション">
     <option type="list" id="TAGFILES" format="file">
       <docs>
-<![CDATA[\c TAGFILESタグを使用して、1つ以上のタグファイルを指定できます。各タグファイルについて、外部ドキュメントの場所を追加する必要があります。場所なしのタグファイルの形式は次のとおりです：\verbatim TAGFILES = file1 file2 ... \endverbatim タグファイルの場所の追加は次のように行います：\verbatim TAGFILES = file1=loc1 "file2 = loc2" ... \endverbatim ここで`loc1`と`loc2`は相対パス、絶対パス、またはURLにすることができます。タグファイルの使用の詳細については、セクション\ref externalを参照してください。\note 各タグファイルは一意の名前を持つ必要があります（または名前はパスを含みません）。タグファイルがDoxygenが実行されるディレクトリにない場合は、ここでタグファイルへのパスも指定する必要があります。]]>
+<![CDATA[\c TAGFILESタグを使用して、1つ以上のタグファイルを指定できます。各タグファイルについて、外部ドキュメントの場所を追加する必要があります。場所なしのタグファイルの形式は次のとおりです：\verbatim TAGFILES = file1 file2 ... \endverbatim タグファイルの場所の追加は次のように行います：\verbatim TAGFILES = file1=loc1 "file2 = loc2" ... \endverbatim ここで`loc1`と`loc2`は相対パス、絶対パス、またはURLにすることができます。タグファイルの使用の詳細については、セクション\ref externalを参照してください。\note 各タグファイルは一意の名前を持つ必要があります（名前にはパスを\e 含みません）。タグファイルがDoxygenを実行するディレクトリにない場合は、ここでタグファイルへのパスも指定する必要があります。]]>
       </docs>
     </option>
     <option type="string" id="GENERATE_TAGFILE" format="file" defval="">
       <docs>
-<![CDATA[\c GENERATE_TAGFILEの後にファイル名が指定されている場合、Doxygenは読み取った入力ファイルに基づいてタグファイルを作成します。タグファイルの使用の詳細については、セクション\ref externalを参照してください。]]>
+<![CDATA[\c GENERATE_TAGFILEの後にファイル名が指定されると、Doxygenは読み取った入力ファイルに基づいてタグファイルを作成します。タグファイルの使用の詳細については、セクション\ref externalを参照してください。]]>
       </docs>
     </option>
     <option type="bool" id="ALLEXTERNALS" defval="0">
@@ -1551,7 +1551,7 @@
   <group name="Dot" docs="ダイアグラム生成ツールに関連する設定オプション">
     <option type="bool" id="HIDE_UNDOC_RELATIONS" defval="1">
       <docs>
-<![CDATA[\c YESに設定されている場合、継承およびコラボレーショングラフは、ターゲットが文書化されていないかクラスでない場合、継承および使用関係を非表示にします。]]>
+<![CDATA[\c HIDE_UNDOC_RELATIONS タグが\c YESに設定されている場合、継承およびコラボレーショングラフは、ターゲットが未文書化であるかクラスでない場合、継承および使用関係を非表示にします。]]>
       </docs>
     </option>
     <option type="bool" id="HAVE_DOT" defval="0">
@@ -1561,7 +1561,7 @@
     </option>
     <option type="int" id="DOT_NUM_THREADS" defval="0" minval="0" maxval="512" depends="HAVE_DOT">
       <docs>
-<![CDATA[\c DOT_NUM_THREADSは、Doxygenが並列で実行を許可される\c dot呼び出しの数を指定します。\c 0に設定すると、Doxygenはシステムで利用可能なプロセッサの数に基づいて設定します。CPU負荷と処理速度のバランスをより制御するために、0より大きい値に明示的に設定できます。]]>
+<![CDATA[\c DOT_NUM_THREADSは、Doxygenが並列で実行できる\c dot呼び出しの数を指定します。\c 0に設定すると、Doxygenはシステムで利用可能なプロセッサの数に基づいて決定します。CPU負荷と処理速度のバランスを制御するために、0より大きい値を明示的に設定できます。]]>
       </docs>
     </option>
     <option type="int" id="DOT_BATCH_SIZE" defval="50" minval="1" maxval="1000" depends="HAVE_DOT">
@@ -1578,22 +1578,22 @@
     </option>
     <option type="string" id="DOT_COMMON_ATTR" format="string" depends="HAVE_DOT" defval="fontname=Helvetica,fontsize=10">
       <docs>
-<![CDATA[\c DOT_COMMON_ATTRは、ノード、エッジ、およびサブグラフラベルの共通属性です。Doxygenが生成するdotファイルで異なる外観のフォントを使用したい場合、fontname、fontcolor、およびfontsize属性を指定できます。詳細については、<a href=https://graphviz.org/doc/info/attrs.html>ノード、エッジ、およびグラフ属性の仕様</a>を参照してください。dotがフォントを見つけることができることを確認する必要があります。これは、標準の場所に配置するか、\c DOTFONTPATH環境変数を設定するか、フォントを含むディレクトリに\ref cfg_dot_fontpath "DOT_FONTPATH"を設定することで行います。graphvizのデフォルトフォントサイズは14です。]]>
+<![CDATA[\c DOT_COMMON_ATTRは、ノード、エッジ、およびサブグラフラベルの共通属性です。Doxygenが生成するdotファイルで異なる外観のフォントを使用したい場合、fontname、fontcolor、およびfontsize属性を指定できます。詳細については、<a href=https://graphviz.org/doc/info/attrs.html>ノード、エッジ、およびグラフ属性の仕様</a>を参照してください。\c dotがフォントを見つけられることを確認する必要があります。これは、標準の場所に配置するか、\c DOTFONTPATH環境変数を設定するか、フォントを含むディレクトリに\ref cfg_dot_fontpath "DOT_FONTPATH"を設定することで行います。デフォルトのgraphvizフォントサイズは14です。]]>
       </docs>
     </option>
     <option type="string" id="DOT_EDGE_ATTR" format="string" depends="HAVE_DOT" defval="labelfontname=Helvetica,labelfontsize=10">
       <docs>
-<![CDATA[\c DOT_EDGE_ATTRは\ref cfg_dot_common_attr "DOT_COMMON_ATTR"と連結されます。エレガントなスタイルのために、'arrowhead=open, arrowtail=open, arrowsize=0.5'を追加できます。<a href=https://graphviz.org/doc/info/arrows.html>矢印形状の完全なドキュメント。</a>]]>
+<![CDATA[\c DOT_EDGE_ATTRは\ref cfg_dot_common_attr "DOT_COMMON_ATTR"と連結されます。エレガントなスタイルにするには、'arrowhead=open, arrowtail=open, arrowsize=0.5'を追加できます。<a href=https://graphviz.org/doc/info/arrows.html>矢印形状の完全なドキュメント</a>]]>
       </docs>
     </option>
     <option type="string" id="DOT_NODE_ATTR" format="string" depends="HAVE_DOT" defval="shape=box,height=0.2,width=0.4">
       <docs>
-<![CDATA[\c DOT_NODE_ATTRは\ref cfg_dot_common_attr "DOT_COMMON_ATTR"と連結されます。ノードの周りのボックスなしのビューには、'shape=plain'または'shape=plaintext'を設定します。<a href=https://www.graphviz.org/doc/info/shapes.html>形状の仕様。</a>]]>
+<![CDATA[\c DOT_NODE_ATTRは\ref cfg_dot_common_attr "DOT_COMMON_ATTR"と連結されます。ノードの周りのボックスなしの表示には、'shape=plain'または'shape=plaintext'を設定します。<a href=https://www.graphviz.org/doc/info/shapes.html>形状の仕様</a>]]>
       </docs>
     </option>
     <option type="string" id="DOT_FONTPATH" format="dir" defval="" depends="HAVE_DOT">
       <docs>
-<![CDATA[\ref cfg_dot_common_attr "DOT_COMMON_ATTR"および他のdot属性でfontnameで指定されたフォントをdotが見つけることができるパスを設定できます。]]>
+<![CDATA[\ref cfg_dot_common_attr "DOT_COMMON_ATTR"および他のdot属性でfontnameにより指定されたフォントを\c dotが見つけられるパスを設定できます。]]>
       </docs>
     </option>
     <option type="enum" id="CLASS_GRAPH" defval="YES">
@@ -1613,22 +1613,22 @@
     </option>
     <option type="bool" id="GROUP_GRAPHS" defval="1" depends="HAVE_DOT">
       <docs>
-<![CDATA[\c GROUP_GRAPHSタグが\c YESに設定されている場合、Doxygenはグループのグラフを生成し、グループの直接の依存関係を示します。\c GROUP_GRAPHSが\c NOに設定されている場合、グループ依存グラフを明示的に有効にするには、\ref cmdgroupgraph "\groupgraph"コマンドを使用できます。ディレクトリグラフを無効にするには、\ref cmdhidegroupgraph "\hidegroupgraph"コマンドを使用できます。マニュアルの\ref grouping "グループ化"の章も参照してください。]]>
+<![CDATA[\c GROUP_GRAPHSタグが\c YESに設定されている場合、Doxygenはグループのグラフを生成し、グループの直接の依存関係を示します。\c GROUP_GRAPHSが\c NOに設定されている場合でも、グループ依存グラフを明示的に有効にするには、\ref cmdgroupgraph "\groupgraph"コマンドを使用できます。グループグラフを無効にするには、\ref cmdhidegroupgraph "\hidegroupgraph"コマンドを使用できます。マニュアルの\ref grouping "グループ化"の章も参照してください。]]>
       </docs>
     </option>
     <option type="bool" id="UML_LOOK" defval="0" depends="HAVE_DOT">
       <docs>
-<![CDATA[\c UML_LOOKタグが\c YESに設定されている場合、DoxygenはOMGの統一モデリング言語と同様のスタイルで継承およびコラボレーションダイアグラムを生成します。]]>
+<![CDATA[\c UML_LOOKタグが\c YESに設定されている場合、DoxygenはOMGの統一モデリング言語（UML）と同様のスタイルで継承およびコラボレーションダイアグラムを生成します。]]>
       </docs>
     </option>
     <option type="int" id="UML_LIMIT_NUM_FIELDS" defval="10" minval="0" maxval="100" depends="UML_LOOK">
       <docs>
-<![CDATA[\ref cfg_uml_look "UML_LOOK"タグが有効な場合、フィールドとメソッドはクラスノード内に表示されます。多くのフィールドまたはメソッドと多くのノードがある場合、グラフは有用でないほど大きくなる可能性があります。\c UML_LIMIT_NUM_FIELDSしきい値は、サイズをより管理しやすくするために各タイプの要素数を制限します。制限なしの場合は0に設定します。しきい値は制限が適用される前に50%超過する可能性があることに注意してください。したがって、しきい値を10に設定すると、最大15フィールドが表示される可能性がありますが、数が15を超えると、表示されるフィールドの総数は10に制限されます。]]>
+<![CDATA[\ref cfg_uml_look "UML_LOOK"タグが有効な場合、フィールドとメソッドはクラスノード内に表示されます。多くのフィールドやメソッドと多くのノードがある場合、グラフは有用でないほど大きくなる可能性があります。\c UML_LIMIT_NUM_FIELDSしきい値は、サイズをより管理しやすくするために各タイプのアイテム数を制限します。制限なしの場合は0に設定します。なお、しきい値は制限が適用される前に50%まで超過する可能性があります。したがって、しきい値を10に設定すると、最大15フィールドが表示される可能性がありますが、数が15を超えると、表示されるフィールドの総数は10に制限されます。]]>
       </docs>
     </option>
     <option type="int" id="UML_MAX_EDGE_LABELS" defval="10" minval="0" maxval="100" depends="UML_LOOK">
       <docs>
-<![CDATA[\ref cfg_uml_look "UML_LOOK"タグが有効な場合、フィールドラベルは2つのクラスノード間のエッジに沿って表示されます。多くのフィールドと多くのノードがある場合、グラフは雑然としすぎる可能性があります。\c UML_MAX_EDGE_LABELSしきい値は、サイズをより管理しやすくするために要素数を制限します。制限なしの場合は0に設定します。]]>
+<![CDATA[\ref cfg_uml_look "UML_LOOK"タグが有効な場合、フィールドラベルは2つのクラスノード間のエッジに沿って表示されます。多くのフィールドと多くのノードがある場合、グラフは雑然としすぎる可能性があります。\c UML_MAX_EDGE_LABELSしきい値は、サイズをより管理しやすくするためにアイテム数を制限します。制限なしの場合は0に設定します。]]>
       </docs>
     </option>
     <option type="enum" id="DOT_UML_DETAILS" defval="NO" depends="UML_LOOK">
@@ -1671,7 +1671,7 @@
     </option>
     <option type="bool" id="GRAPHICAL_HIERARCHY" defval="1" depends="HAVE_DOT">
       <docs>
-<![CDATA[\c GRAPHICAL_HIERARCHYタグが\c YESに設定されている場合、Doxygenはテキストではなくすべてのクラスのグラフィカル階層を生成します。]]>
+<![CDATA[\c GRAPHICAL_HIERARCHYタグが\c YESに設定されている場合、Doxygenはテキストの代わりにすべてのクラスのグラフィカルな階層図を生成します。]]>
       </docs>
     </option>
     <option type="bool" id="DIRECTORY_GRAPH" defval="1" depends="HAVE_DOT">
@@ -1681,12 +1681,12 @@
     </option>
     <option type="int" id="DIR_GRAPH_MAX_DEPTH" minval="1" maxval="25" defval="1" depends="DIRECTORY_GRAPH">
       <docs>
-<![CDATA[\c DIR_GRAPH_MAX_DEPTHタグを使用して、\c dotによって生成されるディレクトリ依存グラフで生成されるサブディレクトリレベルの最大数を制限できます。]]>
+<![CDATA[\c DIR_GRAPH_MAX_DEPTHタグを使用して、\c dotによってディレクトリ依存グラフで生成される子ディレクトリレベルの最大数を制限できます。]]>
       </docs>
     </option>
     <option type="enum" id="DOT_IMAGE_FORMAT" defval="png" depends="HAVE_DOT">
       <docs>
-<![CDATA[\c DOT_IMAGE_FORMATタグを使用して、\c dotによって生成される画像の画像形式を設定できます。画像形式の説明については、\c dotツールのドキュメントの出力形式のセクションを参照してください（<a href="https://www.graphviz.org/">Graphviz</a>）。<br>`svg:cairo`および`svg:cairo:cairo`形式は\ref cfg_interactive_svg "INTERACTIVE_SVG"と組み合わせて使用できないことに注意してください（\ref cfg_interactive_svg "INTERACTIVE_SVG"は`NO`に設定されます）。]]>
+<![CDATA[\c DOT_IMAGE_FORMATタグを使用して、\c dotによって生成される画像の形式を設定できます。画像形式の説明については、\c dotツールのドキュメントの出力形式セクションを参照してください（<a href="https://www.graphviz.org/">Graphviz</a>）。<br>なお、`svg:cairo`および`svg:cairo:cairo`形式は\ref cfg_interactive_svg "INTERACTIVE_SVG"と組み合わせて使用できません（\ref cfg_interactive_svg "INTERACTIVE_SVG"は`NO`に設定されます）。]]>
       </docs>
       <value name="png"/>
       <value name="jpg"/>
@@ -1721,7 +1721,7 @@
     </option>
     <option type="bool" id="INTERACTIVE_SVG" defval="0" depends="HAVE_DOT">
       <docs>
-<![CDATA[\ref cfg_dot_image_format "DOT_IMAGE_FORMAT"が`svg`または`svg:svg`または`svg:svg:core`に設定されている場合、このオプションを\c YESに設定して、ズームとパンを可能にするインタラクティブSVG画像の生成を有効にできます。<br>Internet Explorer以外の最新のブラウザが必要です。テスト済みで動作するもの：Firefox、Chrome、Safari、Opera。<br>\ref cfg_dot_image_format "DOT_IMAGE_FORMAT"が`svg:cairo`または`svg:cairo:cairo`に設定されている場合、このオプションは自動的に無効になることに注意してください。]]>
+<![CDATA[\ref cfg_dot_image_format "DOT_IMAGE_FORMAT"が`svg`または`svg:svg`または`svg:svg:core`に設定されている場合、このオプションを\c YESに設定して、ズームとパンを可能にするインタラクティブSVG画像の生成を有効にできます。<br>なお、Internet Explorer以外の最新のブラウザが必要です。テスト済みで動作するもの：Firefox、Chrome、Safari、Opera。<br>\ref cfg_dot_image_format "DOT_IMAGE_FORMAT"が`svg:cairo`または`svg:cairo:cairo`に設定されている場合、このオプションは自動的に無効になります。]]>
       </docs>
     </option>
     <option type="string" id="DOT_PATH" format="filedir" defval="" depends="HAVE_DOT">
@@ -1736,7 +1736,7 @@
     </option>
     <option type="string" id="DIA_PATH" format="dir" defval="">
       <docs>
-<![CDATA[ドキュメントにdiaで作成されたダイアグラムをインクルードできます。Doxygenはdiaを実行してダイアグラムを生成し、ドキュメントに挿入します。DIA_PATHタグを使用すると、diaバイナリが存在するディレクトリを指定できます。空白のままにすると、diaはデフォルトの検索パスで見つかると仮定されます。]]>
+<![CDATA[Doxygenドキュメントにdiaで作成したダイアグラムを含めることができます。Doxygenはdiaを実行してダイアグラムを生成し、ドキュメントに挿入します。\c DIA_PATHタグを使用すると、diaバイナリが存在するディレクトリを指定できます。空白のままにすると、diaはデフォルトの検索パスで見つかると仮定されます。]]>
       </docs>
     </option>
     <option type="list" id="DIAFILE_DIRS" format="dir">
@@ -1746,7 +1746,7 @@
     </option>
     <option type="string" id="PLANTUML_JAR_PATH" format="filedir" defval="">
       <docs>
-<![CDATA[PlantUMLを使用する場合、\c PLANTUML_JAR_PATHタグを使用して、javaが\c plantuml.jarファイルまたは使用する\c jarファイルのファイル名を見つけることができるパスを指定する必要があります。空白のままにすると、PlantUMLは使用されないか、前処理ステップ中に呼び出されると仮定されます。この場合、Doxygenは\ref cmdstartuml "\startuml"コマンドに遭遇すると警告を生成し、ダイアグラムの出力を生成しません。]]>
+<![CDATA[PlantUMLを使用する場合、\c PLANTUML_JAR_PATHタグを使用して、javaが\c plantuml.jarファイルを見つけられるパス、または使用する\c jarファイルのファイル名を指定する必要があります。空白のままにすると、PlantUMLは使用されないか、前処理ステップで呼び出されると仮定されます。この場合、Doxygenは\ref cmdstartuml "\startuml"コマンドに遭遇すると警告を生成し、ダイアグラムの出力を生成しません。]]>
       </docs>
     </option>
     <option type="string" id="PLANTUML_CFG_FILE" format="file" defval="">
@@ -1776,7 +1776,7 @@
     </option>
     <option type="enum" id="MERMAID_RENDER_MODE" defval="AUTO">
       <docs>
-<![CDATA[\c MERMAID_RENDER_MODEタグは、Mermaidダイアグラムがレンダリングされる方法を選択します。]]>
+<![CDATA[\c MERMAID_RENDER_MODEタグは、Mermaidダイアグラムのレンダリング方法を選択します。]]>
       </docs>
       <value name="AUTO" desc="(HTMLにはクライアント側レンダリングを使用し、LaTeX/PDFおよびその他の形式には\c mmdcを使用。\c MERMAID_PATHが設定されていない場合、非HTMLダイアグラムは警告を生成します)"/>
       <value name="CLI" desc="(\c mmdcツールを使用して画像を事前生成(\c Node.jsと\c mermaid-js/mermaid-cliが必要)。すべての出力形式で動作)"/>
@@ -1794,27 +1794,27 @@
     </option>
     <option type="int" id="DOT_GRAPH_MAX_NODES" minval="0" maxval="10000" defval="50" depends="HAVE_DOT">
       <docs>
-<![CDATA[\c DOT_GRAPH_MAX_NODESタグを使用して、グラフに表示されるノードの最大数を設定できます。グラフ内のノード数がこの値を超える場合、Doxygenはグラフを切り捨て、ノードを赤いボックスとして表すことで視覚化します。グラフのルートノードの直接の子の数がすでに\c DOT_GRAPH_MAX_NODESを超えている場合、グラフはまったく表示されないことに注意してください。また、グラフのサイズは\ref cfg_max_dot_graph_depth "MAX_DOT_GRAPH_DEPTH"によってさらに制限される可能性があることにも注意してください。]]>
+<![CDATA[\c DOT_GRAPH_MAX_NODESタグを使用して、グラフに表示されるノードの最大数を設定できます。グラフ内のノード数がこの値を超えると、Doxygenはグラフを切り詰め、ノードを赤いボックスとして表示することで視覚化します。なお、グラフのルートノードの直接の子の数がすでに\c DOT_GRAPH_MAX_NODESを超えている場合、グラフは表示されません。また、グラフのサイズは\ref cfg_max_dot_graph_depth "MAX_DOT_GRAPH_DEPTH"によってさらに制限される可能性があります。]]>
       </docs>
     </option>
     <option type="int" id="MAX_DOT_GRAPH_DEPTH" minval="0" maxval="1000" defval="0" depends="HAVE_DOT">
       <docs>
-<![CDATA[\c MAX_DOT_GRAPH_DEPTHタグを使用して、\c dotによって生成されるグラフの最大深度を設定できます。深度値3は、最大3エッジを通るパスを介してルートから到達可能なノードのみが表示されることを意味します。ルートノードからより遠いノードは省略されます。このオプションを1または2に設定すると、大規模なコードベースの計算時間が大幅に削減される可能性があることに注意してください。また、グラフのサイズは\ref cfg_dot_graph_max_nodes "DOT_GRAPH_MAX_NODES"によってさらに制限される可能性があることにも注意してください。深度0を使用すると、深度の制限がないことを意味します。]]>
+<![CDATA[\c MAX_DOT_GRAPH_DEPTHタグを使用して、\c dotによって生成されるグラフの最大深度を設定できます。深度値3は、最大3エッジを経由するパスでルートから到達可能なノードのみが表示されることを意味します。ルートノードからより遠いノードは省略されます。なお、このオプションを1または2に設定すると、大規模なコードベースの計算時間を大幅に削減できます。また、グラフのサイズは\ref cfg_dot_graph_max_nodes "DOT_GRAPH_MAX_NODES"によってさらに制限される可能性があります。深度0を使用すると、深度の制限はありません。]]>
       </docs>
     </option>
     <option type="bool" id="GENERATE_LEGEND" defval="1" depends="HAVE_DOT">
       <docs>
-<![CDATA[\c GENERATE_LEGENDタグが\c YESに設定されている場合、Doxygenはdotによって生成されたグラフの様々なボックスと矢印の意味を説明する凡例ページを生成します。\note このタグは、\ref cfg_uml_look "UML_LOOK"が設定されていない場合、つまり継承およびコラボレーションダイアグラムにDoxygenの内部グラフィカル表現が使用される場合に必要です。]]>
+<![CDATA[\c GENERATE_LEGENDタグが\c YESに設定されている場合、Doxygenはdotによって生成されたグラフの様々なボックスと矢印の意味を説明する凡例ページを生成します。\note このタグは、\ref cfg_uml_look "UML_LOOK"が設定されていないことを前提としています。つまり、継承およびコラボレーションダイアグラムにDoxygenの内部グラフィカル表現が使用される場合に有効です。]]>
       </docs>
     </option>
     <option type="bool" id="DOT_CLEANUP" defval="1">
       <docs>
-<![CDATA[\c DOT_CLEANUPタグが\c YESに設定されている場合、Doxygenは様々なグラフを生成するために使用される中間ファイルを削除します。<br>注意：この設定はdotファイルだけでなく、一時的なmscファイルにも使用されます。]]>
+<![CDATA[\c DOT_CLEANUPタグが\c YESに設定されている場合、Doxygenは各種グラフを生成するために使用された中間ファイルを削除します。<br>なお、この設定はdotファイルだけでなく、一時的なmscファイルにも適用されます。]]>
       </docs>
     </option>
     <option type="string" id="MSCGEN_TOOL" format="file" defval="">
       <docs>
-<![CDATA[Doxygenコメント内で\ref cmdmsc "\msc"コマンドを使用してメッセージシーケンスダイアグラムを定義できます。\c MSCGEN_TOOLタグが空白のままにされている場合（デフォルト）、Doxygenはダイアグラムを生成するために組み込みバージョンのmscgenツールを使用します。または、\c MSCGEN_TOOLタグで外部ツールの名前を指定することもできます。例えば、値として`prog`を指定すると、Doxygenはツールを`prog -T <outfile_format> -o <outputfile> <inputfile>`として呼び出します。外部ツールは、出力ファイル形式「png」、「eps」、「svg」、および「ismap」をサポートする必要があります。]]>
+<![CDATA[Doxygenコメント内で\ref cmdmsc "\msc"コマンドを使用してメッセージシーケンスチャートを定義できます。\c MSCGEN_TOOLタグが空白のまま（デフォルト）の場合、Doxygenはチャートを生成するために組み込みバージョンのmscgenツールを使用します。または、\c MSCGEN_TOOLタグで外部ツールの名前を指定することもできます。例えば、値として`prog`を指定すると、Doxygenはツールを`prog -T <outfile_format> -o <outputfile> <inputfile>`として呼び出します。外部ツールは、出力ファイル形式「png」、「eps」、「svg」、および「ismap」をサポートする必要があります。]]>
       </docs>
     </option>
     <option type="list" id="MSCFILE_DIRS" format="dir">
