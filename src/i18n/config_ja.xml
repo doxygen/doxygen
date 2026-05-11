@@ -8,7 +8,7 @@
     </option>
     <option type="string" id="PROJECT_NAME" format="string" defval="My Project">
       <docs>
-<![CDATA[\c PROJECT_NAMEタグは、ドキュメントを生成するプロジェクトを識別する単一の単語（またはDoxywizardを使用していない場合は二重引用符で囲まれた複数の単語）です。この名前は、生成されたページのタイトルやその他の場所で使用されます。]]>
+<![CDATA[\c PROJECT_NAMEタグは、ドキュメントを生成するプロジェクトを識別する単一の単語（またはDoxywizardを使用していない場合は二重引用符で囲んだ複数の単語）です。この名前は、生成されるほとんどのページのタイトルなどで使用されます。]]>
       </docs>
     </option>
     <option type="string" id="PROJECT_NUMBER" format="string" defval="">
@@ -18,7 +18,7 @@
     </option>
     <option type="string" id="PROJECT_BRIEF" format="string" defval="">
       <docs>
-<![CDATA[\c PROJECT_BRIEFタグを使用すると、各ページの上部に表示されるプロジェクトのオプションの1行説明を提供でき、プロジェクトの目的について読者に素早いアイデアを与えることができます。説明は短くしてください。]]>
+<![CDATA[\c PROJECT_BRIEFタグを使用すると、各ページの上部に表示されるプロジェクトの簡単な1行説明を提供できます。これにより、読者はプロジェクトの目的をすぐに把握できます。説明は短くしてください。]]>
       </docs>
     </option>
     <option type="string" id="PROJECT_LOGO" format="image" defval="">
@@ -38,7 +38,7 @@
     </option>
     <option type="bool" id="CREATE_SUBDIRS" defval="0">
       <docs>
-<![CDATA[\c CREATE_SUBDIRSタグが\c YESに設定されている場合、Doxygenは各出力形式の出力ディレクトリの下に最大4096のサブディレクトリ（2レベル）を作成し、生成されたファイルをこれらのディレクトリに分散させます。このオプションを有効にすると、Doxygenに大量のソースファイルを供給する場合に便利です。すべての生成ファイルを同じディレクトリに置くと、ファイルシステムのパフォーマンスの問題が発生する可能性があります。サブディレクトリの数を制御するには\c CREATE_SUBDIRS_LEVELを調整してください。]]>
+<![CDATA[\c CREATE_SUBDIRSタグが\c YESに設定されている場合、Doxygenは各出力形式の出力ディレクトリの下に最大4096のサブディレクトリ（2レベル）を作成し、生成されたファイルをこれらのディレクトリに分散させます。このオプションは、Doxygenに大量のソースファイルを処理させる場合に便利です。すべての生成ファイルを同じディレクトリに置くと、ファイルシステムのパフォーマンス問題が発生する可能性があるためです。サブディレクトリの数は\c CREATE_SUBDIRS_LEVELで調整してください。]]>
       </docs>
     </option>
     <option type="int" id="CREATE_SUBDIRS_LEVEL" minval="0" maxval="8" defval="8" depends="CREATE_SUBDIRS">
@@ -48,7 +48,7 @@
     </option>
     <option type="bool" id="ALLOW_UNICODE_NAMES" defval="0">
       <docs>
-<![CDATA[\c ALLOW_UNICODE_NAMESタグが\c YESに設定されている場合、Doxygenは生成されたファイルの名前に非ASCII文字が表示されることを許可します。\c NOに設定されている場合、非ASCII文字はエスケープされます。例えば、Unicode U+3044には_xE3_x81_x84が使用されます。]]>
+<![CDATA[\c ALLOW_UNICODE_NAMESタグが\c YESに設定されている場合、Doxygenは生成ファイルの名前に非ASCII文字を使用できます。\c NOに設定されている場合、非ASCII文字はエスケープされます。例えば、Unicode U+3044には_xE3_x81_x84が使用されます。]]>
       </docs>
     </option>
     <option type="enum" id="OUTPUT_LANGUAGE" defval="English">
@@ -103,17 +103,17 @@
     </option>
     <option type="bool" id="BRIEF_MEMBER_DESC" defval="1">
       <docs>
-<![CDATA[\c BRIEF_MEMBER_DESCタグが\c YESに設定されている場合、Doxygenはファイルおよびクラスのドキュメントにリストされているメンバーの後に簡潔なメンバー説明を含めます（\c Javadocと同様）。これを無効にするには\c NOに設定してください。]]>
+<![CDATA[\c BRIEF_MEMBER_DESCタグが\c YESに設定されている場合、Doxygenはファイルおよびクラスのドキュメントにリストされているメンバーの後に概要説明を含めます（\c Javadocと同様）。無効にするには\c NOに設定してください。]]>
       </docs>
     </option>
     <option type="bool" id="REPEAT_BRIEF" defval="1">
       <docs>
-<![CDATA[\c REPEAT_BRIEFタグが\c YESに設定されている場合、Doxygenはメンバーまたは関数の簡潔な説明を詳細な説明の前に追加します。<br>注意：\ref cfg_hide_undoc_members "HIDE_UNDOC_MEMBERS"と\ref cfg_brief_member_desc "BRIEF_MEMBER_DESC"の両方が\c NOに設定されている場合、簡潔な説明は完全に抑制されます。]]>
+<![CDATA[\c REPEAT_BRIEFタグが\c YESに設定されている場合、Doxygenはメンバーまたは関数の概要説明を詳細な説明の前に追加します。<br>なお、\ref cfg_hide_undoc_members "HIDE_UNDOC_MEMBERS"と\ref cfg_brief_member_desc "BRIEF_MEMBER_DESC"の両方が\c NOに設定されている場合、概要説明は完全に抑制されます。]]>
       </docs>
     </option>
     <option type="list" id="ABBREVIATE_BRIEF" format="string">
       <docs>
-<![CDATA[このタグは、様々なリストのテキストを形成するために使用される準インテリジェントな簡潔説明の略語を実装します。このリストの各文字列が簡潔な説明の先頭テキストとして見つかった場合、テキストから削除され、リスト全体の処理後の結果が注釈付きテキストとして使用されます。それ以外の場合、簡潔な説明はそのまま使用されます。空白のままにすると、次の値が使用されます（`$name`はエンティティの名前に自動的に置き換えられます）：]]>
+<![CDATA[このタグは、各種一覧のテキストを整形するために使用される準インテリジェントな概要説明の省略機能を実装します。このリストの各文字列が概要説明の先頭に見つかった場合、その文字列はテキストから削除され、リスト全体の処理後の結果が注釈テキストとして使用されます。それ以外の場合、概要説明はそのまま使用されます。空白のままにすると、次の値が使用されます（`$name`は自動的にエンティティ名に置き換えられます）：]]>
       </docs>
       <value name="The $name class"/>
       <value name="The $name widget"/>
@@ -129,7 +129,7 @@
     </option>
     <option type="bool" id="ALWAYS_DETAILED_SEC" defval="0">
       <docs>
-<![CDATA[\c ALWAYS_DETAILED_SECと\ref cfg_repeat_brief "REPEAT_BRIEF"タグの両方が\c YESに設定されている場合、簡潔な説明しかない場合でも、Doxygenは詳細セクションを生成します。]]>
+<![CDATA[\c ALWAYS_DETAILED_SECと\ref cfg_repeat_brief "REPEAT_BRIEF"タグの両方が\c YESに設定されている場合、概要説明しかない場合でも、Doxygenは詳細セクションを生成します。]]>
       </docs>
     </option>
     <option type="bool" id="INLINE_INHERITED_MEMB" defval="0">
@@ -144,7 +144,7 @@
     </option>
     <option type="list" id="STRIP_FROM_PATH" format="dir" depends="FULL_PATH_NAMES">
       <docs>
-<![CDATA[\c STRIP_FROM_PATHタグを使用して、パスのユーザー定義部分を削除できます。削除は、指定された文字列のいずれかがパスの左側部分と一致する場合にのみ行われます。このタグを使用して、ファイルリストに相対パスを表示できます。空白のままにすると、Doxygenが実行されるディレクトリが削除するパスとして使用されます。<br>ここでは絶対パスを指定できますが、Doxygenが開始されるディレクトリからの相対パスも指定できることに注意してください。]]>
+<![CDATA[\c STRIP_FROM_PATHタグを使用して、パスのユーザー定義部分を削除できます。削除は、指定された文字列のいずれかがパスの左側部分と一致する場合にのみ行われます。このタグを使用して、ファイルリストに相対パスを表示できます。空白のままにすると、Doxygenが実行されるディレクトリが削除対象のパスとして使用されます。<br>なお、ここでは絶対パスだけでなく、Doxygenの開始ディレクトリからの相対パスも指定できます。]]>
       </docs>
     </option>
     <option type="list" id="STRIP_FROM_INC_PATH" format="dir">
@@ -154,12 +154,12 @@
     </option>
     <option type="bool" id="SHORT_NAMES" defval="0">
       <docs>
-<![CDATA[\c SHORT_NAMESタグが\c YESに設定されている場合、Doxygenは非常に短い（ただし可読性が低い）ファイル名を生成します。これは、DOS、Mac、またはCD-ROMのようにファイルシステムが長いファイル名をサポートしていない場合に便利です。]]>
+<![CDATA[\c SHORT_NAMESタグが\c YESに設定されている場合、Doxygenは非常に短い（ただし可読性の低い）ファイル名を生成します。これは、DOS、Mac、CD-ROMのようにファイルシステムが長いファイル名をサポートしない場合に便利です。]]>
       </docs>
     </option>
     <option type="bool" id="JAVADOC_AUTOBRIEF" defval="0">
       <docs>
-<![CDATA[\c JAVADOC_AUTOBRIEFタグが\c YESに設定されている場合、DoxygenはJavadocスタイルのコメントの最初の行（最初のピリオド、疑問符、または感嘆符まで）を簡潔な説明として解釈します。\c NOに設定されている場合、Javadocスタイルは通常のQtスタイルのコメントと同様に動作します（つまり、簡潔な説明には明示的な\ref cmdbrief "\@brief"コマンドが必要です）。]]>
+<![CDATA[\c JAVADOC_AUTOBRIEFタグが\c YESに設定されている場合、DoxygenはJavadocスタイルのコメントの最初の行（最初のピリオド、疑問符、または感嘆符まで）を概要説明として解釈します。\c NOに設定されている場合、Javadocスタイルは通常のQtスタイルのコメントと同様に動作します（つまり、概要説明には明示的な\ref cmdbrief "\@brief"コマンドが必要です）。]]>
       </docs>
     </option>
     <option type="bool" id="JAVADOC_BANNER" defval="0">
@@ -169,27 +169,27 @@
     </option>
     <option type="bool" id="QT_AUTOBRIEF" defval="0">
       <docs>
-<![CDATA[\c QT_AUTOBRIEFタグが\c YESに設定されている場合、DoxygenはQtスタイルのコメントの最初の行（最初のピリオド、疑問符、または感嘆符まで）を簡潔な説明として解釈します。\c NOに設定されている場合、Qtスタイルは通常のQtスタイルのコメントと同様に動作します（つまり、簡潔な説明には明示的な\ref cmdbrief "\brief"コマンドが必要です）。]]>
+<![CDATA[\c QT_AUTOBRIEFタグが\c YESに設定されている場合、DoxygenはQtスタイルのコメントの最初の行（最初のピリオド、疑問符、または感嘆符まで）を概要説明として解釈します。\c NOに設定されている場合、Qtスタイルは通常のQtスタイルのコメントと同様に動作します（つまり、概要説明には明示的な\ref cmdbrief "\brief"コマンドが必要です）。]]>
       </docs>
     </option>
     <option type="bool" id="MULTILINE_CPP_IS_BRIEF" defval="0">
       <docs>
-<![CDATA[\c MULTILINE_CPP_IS_BRIEFタグを\c YESに設定すると、Doxygenは複数行のC++特別コメントブロック（つまり、\c //!または\c ///コメントのブロック）を簡潔な説明として扱います。これが以前のデフォルトの動作でした。新しいデフォルトは、複数行のC++コメントブロックを詳細な説明として扱うことです。以前の動作を好む場合は、このタグを\c YESに設定してください。<br>このタグを\c YESに設定すると、Rational Roseコメントが認識されなくなることにも注意してください。]]>
+<![CDATA[\c MULTILINE_CPP_IS_BRIEFタグを\c YESに設定すると、Doxygenは複数行のC++特殊コメントブロック（\c //!または\c ///コメントのブロック）を概要説明として扱います。これは以前のデフォルト動作でした。新しいデフォルトでは、複数行のC++コメントブロックを詳細説明として扱います。以前の動作を好む場合は、このタグを\c YESに設定してください。<br>なお、このタグを\c YESに設定すると、Rational Roseコメントは認識されなくなります。]]>
       </docs>
     </option>
     <option type="bool" id="PYTHON_DOCSTRING" defval="1">
       <docs>
-<![CDATA[デフォルトでは、Pythonのdocstringは整形済みテキストとして表示され、Doxygenの特別なコマンドは使用できません。\c PYTHON_DOCSTRINGを\c NOに設定すると、Doxygenの特別なコマンドを使用でき、docstringドキュメントブロックの内容がDoxygenドキュメントとして表示されます。]]>
+<![CDATA[デフォルトでは、Pythonのdocstringは整形済みテキストとして表示され、Doxygenの特殊コマンドは使用できません。\c PYTHON_DOCSTRINGを\c NOに設定すると、Doxygenの特殊コマンドを使用でき、docstringドキュメントブロックの内容がDoxygenドキュメントとして表示されます。]]>
       </docs>
     </option>
     <option type="bool" id="INHERIT_DOCS" defval="1">
       <docs>
-<![CDATA[\c INHERIT_DOCSタグが\c YESに設定されている場合、文書化されていないメンバーは、それが再実装する文書化されたメンバーからドキュメントを継承します。]]>
+<![CDATA[\c INHERIT_DOCSタグが\c YESに設定されている場合、未文書化メンバーは、それが再実装する文書化済みメンバーからドキュメントを継承します。]]>
       </docs>
     </option>
     <option type="bool" id="SEPARATE_MEMBER_PAGES" defval="0">
       <docs>
-<![CDATA[\c SEPARATE_MEMBER_PAGESタグが\c YESに設定されている場合、Doxygenは各メンバーの新しいページを生成します。\c NOに設定されている場合、メンバーのドキュメントはそれを含むファイル/クラス/名前空間の一部になります。]]>
+<![CDATA[\c SEPARATE_MEMBER_PAGESタグが\c YESに設定されている場合、Doxygenは各メンバーに個別のページを生成します。\c NOに設定されている場合、メンバーのドキュメントはそれを含むファイル/クラス/名前空間の一部となります。]]>
       </docs>
     </option>
     <option type="int" id="TAB_SIZE" minval="1" maxval="16" defval="4">
@@ -199,37 +199,37 @@
     </option>
     <option type="list" id="ALIASES" format="string">
       <docs>
-<![CDATA[このタグを使用して、ドキュメント内のコマンドとして機能する多数のエイリアスを指定できます。エイリアスの形式は次のとおりです：\verbatim name=value\endverbatim 例えば、\verbatim "sideeffect=@par Side Effects:^^"\endverbatim を追加すると、ドキュメントに\c \sideeffect（または\c \@sideeffect）コマンドを配置でき、「Side Effects:」という見出しのユーザー定義段落が生成されます。エイリアスの値部分に\ref cmdn "\n"を入れて改行を挿入することはできません（結果の出力で）。エイリアスの値部分に`^^`を入れると、元のファイルに物理的な改行があるかのように改行を挿入できます。]]>
+<![CDATA[このタグを使用して、ドキュメント内でコマンドとして機能するエイリアスを指定できます。エイリアスの形式は次のとおりです：\verbatim name=value\endverbatim 例えば、\verbatim "sideeffect=@par Side Effects:^^"\endverbatim を追加すると、ドキュメントに\c \sideeffect（または\c \@sideeffect）コマンドを記述でき、「Side Effects:」という見出しのユーザー定義段落が生成されます。なお、エイリアスの値部分に\ref cmdn "\n"を入れて改行を挿入することはできません（出力結果において）。エイリアスの値部分に`^^`を入れると、元のファイルに物理的な改行があるかのように改行を挿入できます。]]>
       </docs>
     </option>
     <option type="bool" id="OPTIMIZE_OUTPUT_FOR_C" defval="0">
       <docs>
-<![CDATA[\c OPTIMIZE_OUTPUT_FOR_Cタグを\c YESに設定すると、プロジェクトがCソースのみで構成されている場合、DoxygenはCにより適した出力を生成します。例えば、使用される名前の一部が異なります。すべてのメンバーのリストは省略されます。]]>
+<![CDATA[プロジェクトがCソースのみで構成されている場合、\c OPTIMIZE_OUTPUT_FOR_Cタグを\c YESに設定してください。DoxygenはCにより適した出力を生成します。例えば、使用される名前の一部が異なり、すべてのメンバーのリストは省略されます。]]>
       </docs>
     </option>
     <option type="bool" id="OPTIMIZE_OUTPUT_JAVA" defval="0">
       <docs>
-<![CDATA[\c OPTIMIZE_OUTPUT_JAVAタグを\c YESに設定すると、プロジェクトがJavaまたはPythonソースのみで構成されている場合、Doxygenはその言語により適した出力を生成します。例えば、名前空間はパッケージとして表示され、修飾されたスコープは異なって見えます。]]>
+<![CDATA[プロジェクトがJavaまたはPythonソースのみで構成されている場合、\c OPTIMIZE_OUTPUT_JAVAタグを\c YESに設定してください。Doxygenはその言語により適した出力を生成します。例えば、名前空間はパッケージとして表示され、修飾スコープの表示が異なります。]]>
       </docs>
     </option>
     <option type="bool" id="OPTIMIZE_FOR_FORTRAN" defval="0">
       <docs>
-<![CDATA[\c OPTIMIZE_FOR_FORTRANタグを\c YESに設定すると、プロジェクトがFortranソースで構成されている場合、DoxygenはFortranに適した出力を生成します。]]>
+<![CDATA[プロジェクトがFortranソースで構成されている場合、\c OPTIMIZE_FOR_FORTRANタグを\c YESに設定してください。DoxygenはFortranに適した出力を生成します。]]>
       </docs>
     </option>
     <option type="bool" id="OPTIMIZE_OUTPUT_VHDL" defval="0">
       <docs>
-<![CDATA[\c OPTIMIZE_OUTPUT_VHDLタグを\c YESに設定すると、プロジェクトがVHDLソースで構成されている場合、DoxygenはVHDLに適した出力を生成します。]]>
+<![CDATA[プロジェクトがVHDLソースで構成されている場合、\c OPTIMIZE_OUTPUT_VHDLタグを\c YESに設定してください。DoxygenはVHDLに適した出力を生成します。]]>
       </docs>
     </option>
     <option type="bool" id="OPTIMIZE_OUTPUT_SLICE" defval="0">
       <docs>
-<![CDATA[\c OPTIMIZE_OUTPUT_SLICEタグを\c YESに設定すると、プロジェクトがSliceソースのみで構成されている場合、Doxygenはその言語により適した出力を生成します。例えば、名前空間はモジュールとして表示され、型はより多くのグループに分離されます。]]>
+<![CDATA[プロジェクトがSliceソースのみで構成されている場合、\c OPTIMIZE_OUTPUT_SLICEタグを\c YESに設定してください。Doxygenはその言語により適した出力を生成します。例えば、名前空間はモジュールとして表示され、型はより多くのグループに分類されます。]]>
       </docs>
     </option>
     <option type="list" id="EXTENSION_MAPPING" format="string">
       <docs>
-<![CDATA[Doxygenは、解析するファイルの拡張子に応じて使用するパーサーを選択します。このタグを使用すると、特定の拡張子に使用するパーサーを割り当てることができます。Doxygenには組み込みのマッピングがありますが、このタグを使用して上書きまたは拡張できます。形式は<code>ext=language</code>で、\c extはファイル拡張子、languageはDoxygenがサポートするパーサーの1つです：IDL、Java、JavaScript、Csharp（C#）、C、C++、Lex、D、PHP、md（Markdown）、Objective-C、Python、Slice、VHDL、Fortran（固定形式Fortran：FortranFixed、自由形式Fortran：FortranFree、不明形式Fortran：Fortran。後者の場合、パーサーはコードが固定形式か自由形式かを推測しようとします。これがFortranタイプのファイルのデフォルトです）。例えば、Doxygenに<code>.inc</code>ファイルをFortranファイルとして扱わせ（デフォルトはPHP）、<code>.f</code>ファイルをCとして扱わせる（デフォルトはFortran）には、`inc=Fortran f=C`を使用します。<br>注意：拡張子のないファイルの場合、プレースホルダーとして`no_extension`を使用できます。<br>カスタム拡張子の場合、\ref cfg_file_patterns "FILE_PATTERNS"も設定する必要があります。そうしないと、ファイルはDoxygenによって読み取られません。`no_extension`を指定する場合は、\ref cfg_file_patterns "FILE_PATTERNS"に`*`を追加する必要があります。<br>\ref default_file_extension_mapping "デフォルトのファイル拡張子マッピング"のリストも参照してください。]]>
+<![CDATA[Doxygenは、解析するファイルの拡張子に応じて使用するパーサーを選択します。このタグを使用すると、特定の拡張子に使用するパーサーを割り当てることができます。Doxygenには組み込みのマッピングがありますが、このタグを使用して上書きまたは拡張できます。形式は<code>ext=language</code>で、\c extはファイル拡張子、languageはDoxygenがサポートするパーサーの1つです：IDL、Java、JavaScript、Csharp（C#）、C、C++、Lex、D、PHP、md（Markdown）、Objective-C、Python、Slice、VHDL、Fortran（固定形式Fortran：FortranFixed、自由形式Fortran：FortranFree、不明形式Fortran：Fortran。後者の場合、パーサーはコードが固定形式か自由形式かを推測します。これがFortranタイプのファイルのデフォルトです）。例えば、Doxygenに<code>.inc</code>ファイルをFortranファイルとして扱わせ（デフォルトはPHP）、<code>.f</code>ファイルをCとして扱わせる（デフォルトはFortran）には、`inc=Fortran f=C`を使用します。<br>なお、拡張子のないファイルの場合、プレースホルダーとして`no_extension`を使用できます。<br>カスタム拡張子の場合、\ref cfg_file_patterns "FILE_PATTERNS"も設定する必要があります。そうしないとDoxygenはファイルを読み取りません。`no_extension`を指定する場合は、\ref cfg_file_patterns "FILE_PATTERNS"に`*`を追加してください。<br>\ref default_file_extension_mapping "デフォルトのファイル拡張子マッピング"のリストも参照してください。]]>
       </docs>
     </option>
     <option type="bool" id="MARKDOWN_SUPPORT" defval="1">
@@ -239,34 +239,34 @@
     </option>
     <option type="bool" id="MARKDOWN_STRICT" defval="1" depends="MARKDOWN_SUPPORT">
       <docs>
-<![CDATA[\c MARKDOWN_STRICTタグが有効な場合、DoxygenはDoxygenのネイティブマークアップ形式がMarkdownと競合する場合でも、コメント内のテキストをMarkdownフォーマットとして扱います。これは、バッククォートが使用される場合にのみ関連します。Doxygenのネイティブマークアップスタイルでは、単一引用符がバッククォートで始まるテキストフラグメントを終了し、それを引用テキストとして扱うことができますが、Markdownではそのようなテキストフラグメントは逐語的として扱われ、2番目の一致するバッククォートが見つかった場合にのみ終了します。また、Doxygenのネイティブマークアップ形式では、バッククォートセクションに表示される二重引用符をエスケープする必要がありますが、Markdownではこれは必要ありません。]]>
+<![CDATA[\c MARKDOWN_STRICTタグが有効な場合、DoxygenのネイティブマークアップとMarkdownが競合する場合でも、コメント内のテキストをMarkdown形式として扱います。これはバッククォートが使用される場合にのみ関係します。Doxygenのネイティブマークアップでは、シングルクォートがバッククォートで始まるテキストを終了させ、引用テキストとして扱いますが、Markdownではそのようなテキストはそのまま表示され、2番目の対応するバッククォートが見つかった場合にのみ終了します。また、Doxygenのネイティブマークアップでは、バッククォートセクション内のダブルクォートをエスケープする必要がありますが、Markdownでは不要です。]]>
       </docs>
     </option>
     <option type="int" id="TOC_INCLUDE_HEADINGS" minval="0" maxval="99" defval="6" depends="MARKDOWN_SUPPORT">
       <docs>
-<![CDATA[\c TOC_INCLUDE_HEADINGSタグが非ゼロ値に設定されている場合、id属性を持たない場合でも、そのレベルまでのすべての見出しが目次に自動的に含まれます。\note この機能は現在Markdown見出しにのみ適用されます。]]>
+<![CDATA[\c TOC_INCLUDE_HEADINGSタグが非ゼロ値に設定されている場合、id属性がなくても、そのレベルまでのすべての見出しが目次に自動的に含まれます。\note この機能は現在Markdown見出しにのみ適用されます。]]>
       </docs>
     </option>
     <option type="enum" id="MARKDOWN_ID_STYLE" defval="DOXYGEN" depends="MARKDOWN_SUPPORT">
       <docs>
-<![CDATA[\c MARKDOWN_ID_STYLEタグを使用して、Markdown見出しの識別子を生成するために使用されるアルゴリズムを指定できます。注意：各識別子は一意です。]]>
+<![CDATA[\c MARKDOWN_ID_STYLEタグを使用して、Markdown見出しの識別子を生成するアルゴリズムを指定できます。なお、各識別子は一意です。]]>
       </docs>
       <value name="DOXYGEN" desc="0から始まるシーケンス番号が続く固定の'autotoc_md'文字列を使用"/>
       <value name="GITHUB" desc="タイトルの小文字版を使用し、空白は'-'に置換し、句読点文字は削除"/>
     </option>
     <option type="bool" id="AUTOLINK_SUPPORT" defval="1">
       <docs>
-<![CDATA[有効な場合、Doxygenは文書化されたクラスまたは名前空間に対応する単語を対応するドキュメントにリンクしようとします。そのようなリンクは、単語の前に\c %記号を置くか、\c AUTOLINK_SUPPORTを\c NOに設定することで、個々のケースで防止できます。\c AUTOLINK_IGNORE_WORDSタグにリストされている単語は、自動リンクから除外されます。]]>
+<![CDATA[有効にすると、Doxygenは文書化されたクラスや名前空間に対応する単語を自動的に対応するドキュメントにリンクしようとします。このようなリンクは、単語の前に\c %記号を置くことで個別に防止できます。また、\c AUTOLINK_SUPPORTを\c NOに設定することでグローバルに無効化できます。\c AUTOLINK_IGNORE_WORDSタグにリストされた単語は自動リンクの対象外になります。]]>
       </docs>
     </option>
     <option type="list" id="AUTOLINK_IGNORE_WORDS" format="string" depends="AUTOLINK_SUPPORT">
       <docs>
-<![CDATA[このタグは、ドキュメント内の単語の先頭と一致する場合、AUTOLINK_SUPPORTを介して自動リンク生成が有効になっている場合に、自動リンク生成を抑制する単語のリストを指定します。このリストは、\#または\ref cmdlink "\link"または\ref cmdref "\ref"コマンドを使用して明示的に作成されたリンクには影響しません。]]>
+<![CDATA[このタグは、AUTOLINK_SUPPORTを介した自動リンク生成が有効な場合に、ドキュメント内で単語の先頭と一致すると自動リンク生成を抑制する単語のリストを指定します。このリストは、\#や\ref cmdlink "\link"、\ref cmdref "\ref"コマンドを使用して明示的に作成されたリンクには影響しません。]]>
       </docs>
     </option>
     <option type="bool" id="BUILTIN_STL_SUPPORT" defval="0">
       <docs>
-<![CDATA[STLクラス（`std::string`、`std::vector`など）を使用しているが、STLソースの（タグファイル）を入力として含めたくない場合は、このタグを\c YESに設定して、Doxygenが引数にSTLクラスを含む関数宣言と定義を一致させることができるようにする必要があります（例：`func(std::string`);と`func(std::string) {}`）。これにより、STLクラスを含む継承図とコラボレーション図もより完全で正確になります。]]>
+<![CDATA[STLクラス（`std::string`、`std::vector`など）を使用しているが、STLソースのタグファイルを入力として含めたくない場合は、このタグを\c YESに設定する必要があります。これにより、DoxygenはSTLクラスを引数に持つ関数の宣言と定義を一致させることができます（例：`func(std::string`);と`func(std::string) {}`）。また、STLクラスを含む継承図とコラボレーション図もより完全で正確になります。]]>
       </docs>
     </option>
     <option type="bool" id="CPP_CLI_SUPPORT" defval="0">
@@ -276,7 +276,7 @@
     </option>
     <option type="bool" id="SIP_SUPPORT" defval="0">
       <docs>
-<![CDATA[\c SIP_SUPPORTタグを\c YESに設定すると、プロジェクトが<a href="https://www.riverbankcomputing.com/software">sip</a>ソースのみで構成されている場合、Doxygenはそれらを通常のC++のように解析しますが、明示的な保護キーワードが存在しない場合、すべてのクラスがプライベート継承ではなくパブリック継承を使用すると仮定します。]]>
+<![CDATA[プロジェクトが<a href="https://www.riverbankcomputing.com/software">sip</a>ソースのみで構成されている場合は、\c SIP_SUPPORTタグを\c YESに設定します。Doxygenはそれらを通常のC++と同様に解析しますが、明示的な保護キーワードがない場合、すべてのクラスがプライベート継承ではなくパブリック継承を使用すると見なします。]]>
       </docs>
     </option>
     <option type="bool" id="IDL_PROPERTY_SUPPORT" defval="1">
@@ -291,27 +291,27 @@
     </option>
     <option type="bool" id="GROUP_NESTED_COMPOUNDS" defval="0">
       <docs>
-<![CDATA[構造体またはクラスをグループに追加し、このオプションが有効な場合、ネストされたクラスまたは構造体も同じグループに追加されます。デフォルトでは、このオプションは無効であり、\ref cmdingroup "\ingroup"を介してネストされたコンパウンドを明示的に追加する必要があります。]]>
+<![CDATA[構造体またはクラスをグループに追加し、このオプションが有効な場合、ネストされたクラスや構造体も同じグループに追加されます。デフォルトではこのオプションは無効であり、ネストされた複合型は\ref cmdingroup "\ingroup"を使用して明示的に追加する必要があります。]]>
       </docs>
     </option>
     <option type="bool" id="SUBGROUPING" defval="1">
       <docs>
-<![CDATA[\c SUBGROUPINGタグを\c YESに設定すると、同じタイプのクラスメンバーグループ（例えば、パブリック関数のグループ）をそのタイプのサブグループとして配置できます（例えば、パブリック関数セクションの下）。サブグループ化を防ぐには、\c NOに設定します。または、\ref cmdnosubgrouping "\nosubgrouping"コマンドを使用してクラスごとに行うこともできます。]]>
+<![CDATA[\c SUBGROUPINGタグを\c YESに設定すると、同じタイプのクラスメンバーグループ（例：パブリック関数のグループ）を、そのタイプのサブグループとして配置できます（例：パブリック関数セクションの下）。サブグループ化を防ぐには\c NOに設定します。または、\ref cmdnosubgrouping "\nosubgrouping"コマンドを使用してクラスごとに指定することもできます。]]>
       </docs>
     </option>
     <option type="bool" id="INLINE_GROUPED_CLASSES" defval="0">
       <docs>
-<![CDATA[\c INLINE_GROUPED_CLASSESタグが\c YESに設定されている場合、クラス、構造体、および共用体は、それらが含まれているグループ内に表示されます（例：\ref cmdingroup "\ingroup"を使用）。別のページ（HTMLおよびManページの場合）またはセクション（\f$\mbox{\LaTeX}\f$およびRTFの場合）ではなく。<br>この機能は\ref cfg_separate_member_pages "SEPARATE_MEMBER_PAGES"と組み合わせて動作しないことに注意してください。]]>
+<![CDATA[\c INLINE_GROUPED_CLASSESタグが\c YESに設定されている場合、クラス、構造体、および共用体は、別のページ（HTMLおよびManページの場合）またはセクション（\f$\mbox{\LaTeX}\f$およびRTFの場合）ではなく、それらが含まれているグループ内に表示されます（例：\ref cmdingroup "\ingroup"を使用）。<br>なお、この機能は\ref cfg_separate_member_pages "SEPARATE_MEMBER_PAGES"と組み合わせて使用できません。]]>
       </docs>
     </option>
     <option type="bool" id="INLINE_SIMPLE_STRUCTS" defval="0">
       <docs>
-<![CDATA[\c INLINE_SIMPLE_STRUCTSタグが\c YESに設定されている場合、パブリックデータフィールドまたは単純なtypedefフィールドのみを持つ構造体、クラス、および共用体は、そのスコープが文書化されている場合、定義されているスコープのドキュメント内にインラインで表示されます（つまり、ファイル、名前空間、またはグループのドキュメント）。\c NOに設定されている場合、構造体、クラス、および共用体は別のページ（HTMLおよびManページの場合）またはセクション（\f$\mbox{\LaTeX}\f$およびRTFの場合）に表示されます。]]>
+<![CDATA[\c INLINE_SIMPLE_STRUCTSタグが\c YESに設定されている場合、パブリックデータフィールドまたは単純なtypedefフィールドのみを持つ構造体、クラス、および共用体は、そのスコープが文書化されていれば、定義されているスコープ（ファイル、名前空間、またはグループ）のドキュメント内にインラインで表示されます。\c NOに設定されている場合、構造体、クラス、および共用体は別のページ（HTMLおよびManページの場合）またはセクション（\f$\mbox{\LaTeX}\f$およびRTFの場合）に表示されます。]]>
       </docs>
     </option>
     <option type="bool" id="TYPEDEF_HIDES_STRUCT" defval="0">
       <docs>
-<![CDATA[\c TYPEDEF_HIDES_STRUCTタグが有効な場合、構造体、共用体、または列挙型のtypedefは、typedefの名前を持つ構造体、共用体、または列挙型として文書化されます。したがって、<code>typedef struct TypeS {} TypeT</code>は、ドキュメント内で\c TypeTという名前の構造体として表示されます。無効な場合、typedefはファイル、名前空間、またはクラスのメンバーとして表示されます。構造体は\c TypeSという名前になります。これは、コーディング規約ですべての複合型がtypedefされ、typedefのみが参照され、タグ名は決して参照されない場合に、Cコードで一般的に便利です。]]>
+<![CDATA[\c TYPEDEF_HIDES_STRUCTタグを有効にすると、構造体、共用体、または列挙型のtypedefは、typedef名を持つ構造体、共用体、または列挙型として文書化されます。例えば、<code>typedef struct TypeS {} TypeT</code>は、ドキュメント内で\c TypeTという名前の構造体として表示されます。無効な場合、typedefはファイル、名前空間、またはクラスのメンバーとして表示され、構造体は\c TypeSという名前になります。これは、コーディング規約ですべての複合型をtypedefし、タグ名ではなくtypedef名のみを参照する場合に、Cコードで特に便利です。]]>
       </docs>
     </option>
     <option type="int" id="LOOKUP_CACHE_SIZE" minval="0" maxval="9" defval="0">
@@ -322,12 +322,12 @@
     </option>
     <option type="int" id="NUM_PROC_THREADS" defval="1" minval="0" maxval="512">
       <docs>
-<![CDATA[\c NUM_PROC_THREADSは、処理中にDoxygenが使用を許可されるスレッドの数を指定します。\c 0に設定すると、Doxygenはシステムで使用可能なコアの数に基づいて設定します。CPU負荷と処理速度のバランスをより細かく制御するために、0より大きい値に明示的に設定できます。現時点では、入力処理のみが複数のスレッドを使用して行うことができます。これはまだ実験的な機能であるため、デフォルトは1に設定されており、並列処理は事実上無効になっています。問題が発生した場合は報告してください。dotグラフの並列生成は、\c DOT_NUM_THREADS設定によって制御されます。]]>
+<![CDATA[\c NUM_PROC_THREADSは、処理中にDoxygenが使用できるスレッド数を指定します。\c 0に設定すると、Doxygenはシステムで利用可能なコア数に基づいて決定します。CPU負荷と処理速度のバランスをより細かく制御するには、0より大きい値を明示的に設定できます。現時点では、入力処理のみが複数スレッドで実行可能です。これはまだ実験的な機能のため、デフォルトは1に設定されており、並列処理は実質的に無効になっています。問題が発生した場合はご報告ください。dotグラフの並列生成は、\c DOT_NUM_THREADS設定で制御されます。]]>
       </docs>
     </option>
     <option type="enum" id="TIMESTAMP" defval="NO">
       <docs>
-<![CDATA[\c TIMESTAMPタグが\c NO以外に設定されている場合、生成された各ページには、ページが生成された日付または日時が含まれます。これを\c NOに設定すると、複数の実行の出力を比較する場合に役立ちます。]]>
+<![CDATA[\c TIMESTAMPタグが\c NO以外に設定されている場合、生成された各ページにはページが生成された日付または日時が含まれます。\c NOに設定すると、複数回の実行結果を比較する際に便利です。]]>
       </docs>
       <value name="YES"/>
       <value name="NO"/>
@@ -338,7 +338,7 @@
   <group name="Build" trname="ビルド" docs="ビルド関連の設定オプション">
     <option type="bool" id="EXTRACT_ALL" defval="0">
       <docs>
-<![CDATA[\c EXTRACT_ALLタグが\c YESに設定されている場合、Doxygenはドキュメント内のすべてのエンティティが文書化されていると見なします（たとえドキュメントがなくても）。プライベートクラスメンバーと静的ファイルメンバーは、\ref cfg_extract_private "EXTRACT_PRIVATE"および\ref cfg_extract_static "EXTRACT_STATIC"タグが\c YESに設定されていない限り非表示になります。\note これにより、\ref cfg_warnings "WARNINGS"が\c YESに設定されている場合に通常生成される文書化されていないメンバーに関する警告も無効になります。]]>
+<![CDATA[\c EXTRACT_ALLタグが\c YESに設定されている場合、Doxygenはドキュメントがなくても、すべてのエンティティが文書化されているものとして扱います。プライベートクラスメンバーと静的ファイルメンバーは、それぞれ\ref cfg_extract_private "EXTRACT_PRIVATE"および\ref cfg_extract_static "EXTRACT_STATIC"タグを\c YESに設定しない限り非表示になります。\note これにより、\ref cfg_warnings "WARNINGS"が\c YESに設定されている場合に通常生成される未文書化メンバーに関する警告も無効になります。]]>
       </docs>
     </option>
     <option type="bool" id="EXTRACT_PRIVATE" defval="0">
@@ -363,7 +363,7 @@
     </option>
     <option type="bool" id="EXTRACT_LOCAL_CLASSES" defval="1">
       <docs>
-<![CDATA[\c EXTRACT_LOCAL_CLASSESタグが\c YESに設定されている場合、ソースファイルでローカルに定義されたクラス（および構造体）がドキュメントに含まれます。\c NOに設定されている場合、ヘッダーファイルで定義されたクラスのみが含まれます。Javaソースには効果がありません。]]>
+<![CDATA[\c EXTRACT_LOCAL_CLASSESタグが\c YESに設定されている場合、ソースファイル内でローカルに定義されたクラス（および構造体）がドキュメントに含まれます。\c NOに設定されている場合、ヘッダーファイルで定義されたクラスのみが含まれます。Javaソースでは効果がありません。]]>
       </docs>
     </option>
     <option type="bool" id="EXTRACT_LOCAL_METHODS" defval="0">
@@ -373,27 +373,27 @@
     </option>
     <option type="bool" id="EXTRACT_ANON_NSPACES" defval="0">
       <docs>
-<![CDATA[このフラグが\c YESに設定されている場合、匿名名前空間のメンバーが抽出され、ドキュメント内で'anonymous_namespace{file}'という名前空間として表示されます。fileは匿名名前空間を含むファイルのベース名に置き換えられます。デフォルトでは、匿名名前空間は非表示です。]]>
+<![CDATA[このフラグが\c YESに設定されている場合、匿名名前空間のメンバーが抽出され、ドキュメント内で'anonymous_namespace{file}'という名前の名前空間として表示されます。ここでfileは匿名名前空間を含むファイルのベース名に置き換えられます。デフォルトでは匿名名前空間は非表示です。]]>
       </docs>
     </option>
     <option type="bool" id="RESOLVE_UNNAMED_PARAMS" defval="1">
       <docs>
-<![CDATA[このフラグが\c YESに設定されている場合、宣言内の名前のないパラメータの名前は、対応する定義によって決定されます。デフォルトでは、名前のないパラメータは出力内で名前のないままです。]]>
+<![CDATA[このフラグが\c YESに設定されている場合、宣言内の無名パラメータの名前は対応する定義から決定されます。デフォルトでは、無名パラメータは出力でも無名のままです。]]>
       </docs>
     </option>
     <option type="bool" id="HIDE_UNDOC_MEMBERS" defval="0">
       <docs>
-<![CDATA[\c HIDE_UNDOC_MEMBERSタグが\c YESに設定されている場合、Doxygenは文書化されたクラスまたはファイル内の文書化されていないすべてのメンバーを非表示にします。\c NOに設定されている場合、これらのメンバーは各種概要には含まれますが、ドキュメントセクションは生成されません。このオプションは、\ref cfg_extract_all "EXTRACT_ALL"が有効な場合は効果がありません。]]>
+<![CDATA[\c HIDE_UNDOC_MEMBERSタグが\c YESに設定されている場合、Doxygenは文書化されたクラスまたはファイル内の未文書化メンバーをすべて非表示にします。\c NOに設定されている場合、これらのメンバーは各種概要には含まれますが、ドキュメントセクションは生成されません。\ref cfg_extract_all "EXTRACT_ALL"が有効な場合、このオプションは効果がありません。]]>
       </docs>
     </option>
     <option type="bool" id="HIDE_UNDOC_CLASSES" defval="0">
       <docs>
-<![CDATA[\c HIDE_UNDOC_CLASSESタグが\c YESに設定されている場合、Doxygenはクラス階層で通常表示される文書化されていないすべてのクラスを非表示にします。\c NOに設定されている場合、これらのクラスは各種概要に含まれます。このオプションは、有効な場合、文書化されていないC++コンセプトも非表示にします。このオプションは、\ref cfg_extract_all "EXTRACT_ALL"が有効な場合は効果がありません。]]>
+<![CDATA[\c HIDE_UNDOC_CLASSESタグが\c YESに設定されている場合、Doxygenはクラス階層で通常表示される未文書化のクラスをすべて非表示にします。\c NOに設定されている場合、これらのクラスは各種概要に含まれます。このオプションを有効にすると、未文書化のC++コンセプトも非表示になります。\ref cfg_extract_all "EXTRACT_ALL"が有効な場合、このオプションは効果がありません。]]>
       </docs>
     </option>
     <option type="bool" id="HIDE_UNDOC_NAMESPACES" defval="1">
       <docs>
-<![CDATA[\c HIDE_UNDOC_NAMESPACESタグが\c YESに設定されている場合、Doxygenは名前空間階層で通常表示される文書化されていないすべての名前空間を非表示にします。\c NOに設定されている場合、これらの名前空間は各種概要に含まれます。このオプションは、\ref cfg_extract_all "EXTRACT_ALL"が有効な場合は効果がありません。]]>
+<![CDATA[\c HIDE_UNDOC_NAMESPACESタグが\c YESに設定されている場合、Doxygenは名前空間階層で通常表示される未文書化の名前空間をすべて非表示にします。\c NOに設定されている場合、これらの名前空間は各種概要に含まれます。\ref cfg_extract_all "EXTRACT_ALL"が有効な場合、このオプションは効果がありません。]]>
       </docs>
     </option>
     <option type="bool" id="HIDE_FRIEND_COMPOUNDS" defval="0">
@@ -403,17 +403,17 @@
     </option>
     <option type="bool" id="HIDE_IN_BODY_DOCS" defval="0">
       <docs>
-<![CDATA[\c HIDE_IN_BODY_DOCSタグが\c YESに設定されている場合、Doxygenは関数の本体内で見つかったすべてのドキュメントブロックを非表示にします。\c NOに設定されている場合、これらのブロックは関数の詳細なドキュメントブロックに追加されます。]]>
+<![CDATA[\c HIDE_IN_BODY_DOCSタグが\c YESに設定されている場合、Doxygenは関数本体内で見つかったドキュメントブロックをすべて非表示にします。\c NOに設定されている場合、これらのブロックは関数の詳細ドキュメントブロックに追加されます。]]>
       </docs>
     </option>
     <option type="bool" id="INTERNAL_DOCS" defval="0">
       <docs>
-<![CDATA[\c INTERNAL_DOCSタグは、\ref cmdinternal "\internal"コマンドの後に入力されたドキュメントが含まれるかどうかを決定します。タグが\c NOに設定されている場合、ドキュメントは除外されます。内部ドキュメントを含めるには、\c YESに設定してください。]]>
+<![CDATA[\c INTERNAL_DOCSタグは、\ref cmdinternal "\internal"コマンドの後に記述されたドキュメントを含めるかどうかを決定します。タグが\c NOに設定されている場合、そのドキュメントは除外されます。内部ドキュメントを含めるには\c YESに設定してください。]]>
       </docs>
     </option>
     <option type="enum" id="CASE_SENSE_NAMES" defval="SYSTEM">
       <docs>
-<![CDATA[\c CASE_SENSE_NAMESオプションの正しい設定により、Doxygenは基礎となるファイルシステムの機能により良く一致できるようになります。ファイルシステムが大文字と小文字を区別する場合（つまり、大文字と小文字のみが異なる名前を持つファイルを同じディレクトリでサポートする場合）、入力にそのようなファイルが表示される場合、オプションを\c YESに設定してそれらのファイルを適切に処理する必要があります。大文字と小文字を区別しないファイルシステムの場合、オプションを\c NOに設定して、大文字と小文字のみが異なるシンボルのために書き込まれた出力ファイルを適切に処理する必要があります。例えば、\c CLASSと\c Classという名前の2つのクラス、および正確な一致する大文字小文字を指定せずにファイルへの参照もサポートするためです。Windows（Cygwinを含む）およびmacOSでは、ユーザーは通常このオプションを\c NOに設定する必要がありますが、Linuxまたは他のUnix系では、通常\c YESに設定する必要があります。]]>
+<![CDATA[\c CASE_SENSE_NAMESオプションを正しく設定することで、Doxygenは基盤となるファイルシステムの機能に適切に対応できるようになります。ファイルシステムが大文字と小文字を区別する場合（同じディレクトリ内で大文字小文字のみが異なる名前のファイルをサポートする場合）、入力にそのようなファイルが含まれる場合はオプションを\c YESに設定して適切に処理する必要があります。大文字と小文字を区別しないファイルシステムの場合は、オプションを\c NOに設定して、大文字小文字のみが異なるシンボル（例：\c CLASSと\c Classという2つのクラス）の出力ファイルを適切に処理し、また正確な大文字小文字を指定せずにファイルを参照できるようにする必要があります。Windows（Cygwinを含む）およびmacOSでは、通常このオプションを\c NOに設定し、Linuxやその他のUnix系では、通常\c YESに設定してください。]]>
       </docs>
       <value name="SYSTEM"/>
       <value name="NO"/>
@@ -421,12 +421,12 @@
     </option>
     <option type="bool" id="HIDE_SCOPE_NAMES" defval="0">
       <docs>
-<![CDATA[\c HIDE_SCOPE_NAMESタグが\c NOに設定されている場合、Doxygenはドキュメント内の完全なクラスおよび名前空間スコープを持つメンバーを表示します。\c YESに設定されている場合、スコープは非表示になります。]]>
+<![CDATA[\c HIDE_SCOPE_NAMESタグが\c NOに設定されている場合、Doxygenはドキュメント内でメンバーを完全なクラスおよび名前空間スコープ付きで表示します。\c YESに設定されている場合、スコープは非表示になります。]]>
       </docs>
     </option>
     <option type="bool" id="HIDE_COMPOUND_REFERENCE" defval="0">
       <docs>
-<![CDATA[\c HIDE_COMPOUND_REFERENCEタグが\c NO（デフォルト）に設定されている場合、Doxygenはページのタイトルにクラスリファレンスなどの追加テキストを追加します。\c YESに設定されている場合、コンパウンドリファレンスは非表示になります。]]>
+<![CDATA[\c HIDE_COMPOUND_REFERENCEタグが\c NO（デフォルト）に設定されている場合、Doxygenはページのタイトルに「クラスリファレンス」などの追加テキストを付加します。\c YESに設定されている場合、複合型リファレンスは非表示になります。]]>
       </docs>
     </option>
     <option type="bool" id="SHOW_HEADERFILE" defval="1">
@@ -436,12 +436,12 @@
     </option>
     <option type="bool" id="SHOW_INCLUDE_FILES" defval="1">
       <docs>
-<![CDATA[\c SHOW_INCLUDE_FILESタグが\c YESに設定されている場合、Doxygenはそのファイルのドキュメントにファイルによってインクルードされるファイルのリストを配置します。]]>
+<![CDATA[\c SHOW_INCLUDE_FILESタグが\c YESに設定されている場合、Doxygenはファイルのドキュメントに、そのファイルがインクルードしているファイルのリストを含めます。]]>
       </docs>
     </option>
     <option type="bool" id="SHOW_GROUPED_MEMB_INC" defval="0">
       <docs>
-<![CDATA[\c SHOW_GROUPED_MEMB_INCタグが\c YESに設定されている場合、Doxygenはグループ化された各メンバーのドキュメントにインクルードステートメントを追加し、メンバーを使用するためにどのファイルをインクルードするかを読者に伝えます。]]>
+<![CDATA[\c SHOW_GROUPED_MEMB_INCタグが\c YESに設定されている場合、Doxygenはグループ化された各メンバーのドキュメントにインクルード文を追加し、そのメンバーを使用するためにどのファイルをインクルードすべきかを読者に示します。]]>
       </docs>
     </option>
     <option type="bool" id="FORCE_LOCAL_INCLUDES" defval="0">
@@ -461,12 +461,12 @@
     </option>
     <option type="bool" id="SORT_BRIEF_DOCS" defval="0">
       <docs>
-<![CDATA[\c SORT_BRIEF_DOCSタグが\c YESに設定されている場合、Doxygenはファイル、名前空間、およびクラスメンバーの簡潔な説明をメンバー名でアルファベット順にソートします。\c NOに設定されている場合、メンバーは宣言順に表示されます。これはクラスリスト内のクラスの順序にも影響することに注意してください。]]>
+<![CDATA[\c SORT_BRIEF_DOCSタグが\c YESに設定されている場合、Doxygenはファイル、名前空間、およびクラスメンバーの概要説明をメンバー名でアルファベット順にソートします。\c NOに設定されている場合、メンバーは宣言順に表示されます。なお、これはクラスリスト内のクラスの順序にも影響します。]]>
       </docs>
     </option>
     <option type="bool" id="SORT_MEMBERS_CTORS_1ST" defval="0">
       <docs>
-<![CDATA[\c SORT_MEMBERS_CTORS_1STタグが\c YESに設定されている場合、Doxygenはクラスメンバーの（簡潔および詳細な）ドキュメントをソートし、コンストラクタとデストラクタが最初にリストされるようにします。\c NOに設定されている場合、コンストラクタは\ref cfg_sort_brief_docs "SORT_BRIEF_DOCS"および\ref cfg_sort_member_docs "SORT_MEMBER_DOCS"で定義されたそれぞれの順序で表示されます。\note \ref cfg_sort_brief_docs "SORT_BRIEF_DOCS"が\c NOに設定されている場合、このオプションは簡潔なメンバードキュメントのソートには無視されます。\note \ref cfg_sort_member_docs "SORT_MEMBER_DOCS"が\c NOに設定されている場合、このオプションは詳細なメンバードキュメントのソートには無視されます。]]>
+<![CDATA[\c SORT_MEMBERS_CTORS_1STタグが\c YESに設定されている場合、Doxygenはクラスメンバーの（概要および詳細）ドキュメントをソートし、コンストラクタとデストラクタを最初に表示します。\c NOに設定されている場合、コンストラクタは\ref cfg_sort_brief_docs "SORT_BRIEF_DOCS"および\ref cfg_sort_member_docs "SORT_MEMBER_DOCS"で定義された順序で表示されます。\note \ref cfg_sort_brief_docs "SORT_BRIEF_DOCS"が\c NOに設定されている場合、概要メンバードキュメントのソートではこのオプションは無視されます。\note \ref cfg_sort_member_docs "SORT_MEMBER_DOCS"が\c NOに設定されている場合、詳細メンバードキュメントのソートではこのオプションは無視されます。]]>
       </docs>
     </option>
     <option type="bool" id="SORT_GROUP_NAMES" defval="0">
@@ -476,12 +476,12 @@
     </option>
     <option type="bool" id="SORT_BY_SCOPE_NAME" defval="0">
       <docs>
-<![CDATA[\c SORT_BY_SCOPE_NAMEタグが\c YESに設定されている場合、クラスリストは名前空間を含む完全修飾名でソートされます。\c NOに設定されている場合、クラスリストは名前空間部分を含まずにクラス名のみでソートされます。\note このオプションは、\ref cfg_hide_scope_names "HIDE_SCOPE_NAMES"が\c YESに設定されている場合はあまり役に立ちません。\note このオプションはクラスリストにのみ適用され、アルファベット順リストには適用されません。]]>
+<![CDATA[\c SORT_BY_SCOPE_NAMEタグが\c YESに設定されている場合、クラスリストは名前空間を含む完全修飾名でソートされます。\c NOに設定されている場合、クラスリストは名前空間部分を除いたクラス名のみでソートされます。\note このオプションは、\ref cfg_hide_scope_names "HIDE_SCOPE_NAMES"が\c YESに設定されている場合はあまり有用ではありません。\note このオプションはクラスリストにのみ適用され、アルファベット順リストには適用されません。]]>
       </docs>
     </option>
     <option type="bool" id="STRICT_PROTO_MATCHING" defval="0">
       <docs>
-<![CDATA[\c STRICT_PROTO_MATCHINGオプションが有効で、Doxygenが関数のすべてのパラメータの正しい型解決に失敗した場合、候補が1つしかない場合、または単純な文字列一致で選択する候補が明らかな場合でも、メンバー関数のプロトタイプと実装の間の一致を拒否します。\c STRICT_PROTO_MATCHINGを無効にすると、Doxygenはそのような場合でもプロトタイプと実装の間の一致を受け入れます。]]>
+<![CDATA[\c STRICT_PROTO_MATCHINGオプションが有効で、Doxygenが関数のすべてのパラメータの型解決に失敗した場合、候補が1つしかない場合や、単純な文字列一致で選択すべき候補が明らかな場合でも、メンバー関数のプロトタイプと実装の一致を拒否します。\c STRICT_PROTO_MATCHINGを無効にすると、そのような場合でもプロトタイプと実装の一致を受け入れます。]]>
       </docs>
     </option>
     <option type="bool" id="GENERATE_TODOLIST" defval="1">
@@ -511,7 +511,7 @@
     </option>
     <option type="enum" id="REQ_TRACEABILITY_INFO" defval="YES" depends="GENERATE_REQUIREMENTS">
       <docs>
-<![CDATA[\c REQ_TRACEABILITY_INFOタグは、要件ページにトレーサビリティ情報が表示されるかどうかを制御します（\ref cmdrequirement "\requirement"コメントブロックを使用する場合にのみ関連）。\c NOに設定すると、トレーサビリティ情報は完全に無効になります。\c UNSATISFIED_ONLYに設定すると、満足関係が欠けている要件のリストが表示されます（\ref cmdsatisfies "\satisfies"コマンドを介して）。同様に、\c UNVERIFIED_ONLYに設定すると、検証関係が欠けている要件のリストが表示されます（\ref cmdverifies "\verifies"コマンドを介して）。タグを\c YES（デフォルト）に設定すると、該当する場合両方のリストが表示されます。]]>
+<![CDATA[\c REQ_TRACEABILITY_INFOタグは、要件ページにトレーサビリティ情報を表示するかどうかを制御します（\ref cmdrequirement "\requirement"コメントブロック使用時のみ関連）。\c NOに設定すると、トレーサビリティ情報は完全に無効になります。\c UNSATISFIED_ONLYに設定すると、満足関係が欠けている要件のリストを表示します（\ref cmdsatisfies "\satisfies"コマンド経由）。同様に、\c UNVERIFIED_ONLYに設定すると、検証関係が欠けている要件のリストを表示します（\ref cmdverifies "\verifies"コマンド経由）。\c YES（デフォルト）に設定すると、該当する場合は両方のリストを表示します。]]>
       </docs>
       <value name="YES"/>
       <value name="NO"/>
@@ -525,7 +525,7 @@
     </option>
     <option type="int" id="MAX_INITIALIZER_LINES" minval="0" maxval="10000" defval="30">
       <docs>
-<![CDATA[\c MAX_INITIALIZER_LINESタグは、変数またはマクロ/定義の初期値がドキュメントに表示されるために持つことができる最大行数を決定します。初期化子がここで指定された行数を超える場合、非表示になります。初期化子を完全に非表示にするには、0の値を使用します。個々の変数とマクロ/定義の値の外観は、この設定に関係なく、ドキュメントで\ref cmdshowinitializer "\showinitializer"または\ref cmdhideinitializer "\hideinitializer"コマンドを使用して制御できます。]]>
+<![CDATA[\c MAX_INITIALIZER_LINESタグは、変数またはマクロ/定義の初期値がドキュメントに表示される最大行数を指定します。初期化子がここで指定した行数を超える場合は非表示になります。初期化子を完全に非表示にするには0を指定します。個々の変数やマクロ/定義の値の表示は、この設定に関係なく、ドキュメント内で\ref cmdshowinitializer "\showinitializer"または\ref cmdhideinitializer "\hideinitializer"コマンドを使用して制御できます。]]>
       </docs>
     </option>
     <option type="bool" id="SHOW_USED_FILES" defval="1">
@@ -545,12 +545,12 @@
     </option>
     <option type="string" id="FILE_VERSION_FILTER" format="file" defval="">
       <docs>
-<![CDATA[\c FILE_VERSION_FILTERタグを使用して、Doxygenが各ファイルの現在のバージョンを取得するために呼び出すプログラムまたはスクリプトを指定できます（通常はバージョン管理システムから）。Doxygenは、<code>popen()</code>を介してコマンド<code>command input-file</code>を実行することでプログラムを呼び出します。ここで、\c commandは\c FILE_VERSION_FILTERタグの値、\c input-fileはDoxygenが提供する入力ファイルの名前です。プログラムが標準出力に書き込むものはすべてファイルバージョンとして使用されます。]]>
+<![CDATA[\c FILE_VERSION_FILTERタグを使用して、各ファイルの現在のバージョンを取得するためにDoxygenが呼び出すプログラムまたはスクリプトを指定できます（通常はバージョン管理システムから取得）。Doxygenは<code>popen()</code>経由で<code>command input-file</code>コマンドを実行してプログラムを呼び出します。ここで\c commandは\c FILE_VERSION_FILTERタグの値、\c input-fileはDoxygenが提供する入力ファイル名です。プログラムが標準出力に書き込んだ内容がファイルバージョンとして使用されます。]]>
       </docs>
     </option>
     <option type="string" id="LAYOUT_FILE" format="file" defval="">
       <docs>
-<![CDATA[\c LAYOUT_FILEタグを使用して、Doxygenが解析するレイアウトファイルを指定できます。レイアウトファイルは、出力形式に依存しない方法で生成された出力ファイルのグローバル構造を制御します。Doxygenのデフォルトを表すレイアウトファイルを作成するには、`-l`オプションを指定してDoxygenを実行します。オプションの後にファイル名をオプションで指定できます。省略した場合、\c DoxygenLayout.xmlがレイアウトファイルの名前として使用されます。詳細については、セクション\ref layoutも参照してください。<br>\c DoxygenLayout.xmlというファイルを含むディレクトリからDoxygenを実行すると、\c LAYOUT_FILEタグが空白のままでも、Doxygenはそれを自動的に解析することに注意してください。]]>
+<![CDATA[\c LAYOUT_FILEタグを使用して、Doxygenが解析するレイアウトファイルを指定できます。レイアウトファイルは、出力形式に依存しない方法で生成される出力ファイルのグローバル構造を制御します。Doxygenのデフォルトを表すレイアウトファイルを作成するには、`-l`オプションを指定してDoxygenを実行します。オプションの後にファイル名を指定できます。省略した場合、\c DoxygenLayout.xmlがレイアウトファイル名として使用されます。詳細についてはセクション\ref layoutを参照してください。<br>なお、\c DoxygenLayout.xmlというファイルを含むディレクトリからDoxygenを実行すると、\c LAYOUT_FILEタグが空白でも、Doxygenはそれを自動的に解析します。]]>
       </docs>
     </option>
     <option type="list" id="CITE_BIB_FILES" format="file">
@@ -560,7 +560,7 @@
     </option>
     <option type="list" id="EXTERNAL_TOOL_PATH" format="dir" defval="">
       <docs>
-<![CDATA[\c EXTERNAL_TOOL_PATHタグを使用して、\c latexや\c gsなどの外部ツールが見つかるように検索パス（PATH環境変数）を拡張できます。\note EXTERNAL_TOOL_PATHで指定されたディレクトリは、PATH変数ですでに指定されているパスの前に追加され、指定された順序で追加されます。\note このオプションは、DoxywizardからDoxygenを実行する場合、macOSバージョン14（Sonoma）以降で特に便利です。この場合、PATHへのユーザー定義の変更は無視されるためです。macOSの典型的な例は、\verbatim EXTERNAL_TOOL_PATH = /Library/TeX/texbin /usr/local/bin \endverbatim 標準パスと共に設定すると、外部ツールを起動するときにdoxygenが使用する完全な検索パスは、\verbatim PATH=/Library/TeX/texbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin \endverbatim になります。]]>
+<![CDATA[\c EXTERNAL_TOOL_PATHタグを使用して、\c latexや\c gsなどの外部ツールを見つけられるように検索パス（PATH環境変数）を拡張できます。\note EXTERNAL_TOOL_PATHで指定したディレクトリは、PATH変数で既に指定されているパスの前に、指定した順序で追加されます。\note このオプションは、DoxywizardからDoxygenを実行する場合のmacOSバージョン14（Sonoma）以降で特に便利です。この場合、PATHへのユーザー定義の変更は無視されるためです。macOSでの典型的な例は、\verbatim EXTERNAL_TOOL_PATH = /Library/TeX/texbin /usr/local/bin \endverbatim のように設定することで、標準パスと合わせて、外部ツール起動時にDoxygenが使用する完全な検索パスは\verbatim PATH=/Library/TeX/texbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin \endverbatim となります。]]>
       </docs>
     </option>
   </group>
