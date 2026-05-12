@@ -1,0 +1,427 @@
+{
+  "groups": [
+    "missing"
+  ],
+  "data": [
+    {
+      "type": "option",
+      "id": "PROJECT_ICON",
+      "group": "Project",
+      "en": "With the \\c PROJECT_ICON tag one can specify an icon that is\n included in the tabs when the HTML document is shown.\n Doxygen will copy the logo to the output directory.",
+      "ko": "\\c PROJECT_ICON 태그를 사용하여 HTML 문서가 표시될 때 탭에 포함될 아이콘을 지정할 수 있습니다. Doxygen은 아이콘을 출력 디렉토리에 복사합니다."
+    },
+    {
+      "type": "option",
+      "id": "CREATE_SUBDIRS_LEVEL",
+      "group": "Project",
+      "en": "Controls the number of sub-directories that will be created when \\c CREATE_SUBDIRS tag\n is set to \\c YES. Level 0 represents 16 directories, and every level increment\n doubles the number of directories, resulting in 4096 directories at level 8 which is the\n default and also the maximum value. The sub-directories are organized in 2 levels, the first\n level always has a fixed number of 16 directories.",
+      "ko": "\\c CREATE_SUBDIRS 태그가 \\c YES로 설정된 경우 생성되는 하위 디렉토리 수를 제어합니다. 레벨 0은 16개 디렉토리를 나타내며, 레벨이 증가할 때마다 디렉토리 수가 두 배가 되어 레벨 8에서 4096개 디렉토리가 됩니다. 이것이 기본값이자 최대값입니다. 하위 디렉토리는 2레벨로 구성되며, 첫 번째 레벨은 항상 16개 디렉토리의 고정된 수를 가집니다."
+    },
+    {
+      "type": "option",
+      "id": "JAVADOC_BANNER",
+      "group": "Project",
+      "en": "If the \\c JAVADOC_BANNER tag is set to \\c YES then Doxygen\n  will interpret a line such as \\verbatim /***************\\endverbatim as being the\n  beginning of a Javadoc-style comment \"banner\". If set to \\c NO, the\n  Javadoc-style will behave just like regular comments and it will\n  not be interpreted by Doxygen.",
+      "ko": "\\c JAVADOC_BANNER 태그가 \\c YES로 설정되면 Doxygen은 \\verbatim /***************\\endverbatim와 같은 줄을 Javadoc 스타일 주석 \"배너\"의 시작으로 해석합니다. \\c NO로 설정되면 Javadoc 스타일은 일반 주석처럼 작동하며 Doxygen은 이를 해석하지 않습니다."
+    },
+    {
+      "type": "option",
+      "id": "PYTHON_DOCSTRING",
+      "group": "Project",
+      "en": "By default Python docstrings are displayed as preformatted text\n  and Doxygen's special commands cannot be used. By setting \\c PYTHON_DOCSTRING to\n  \\c NO the Doxygen's special commands can be used and the contents of the docstring\n  documentation blocks is shown as Doxygen documentation.",
+      "ko": "기본적으로 Python docstring은 미리 형식화된 텍스트로 표시되며 Doxygen의 특수 명령을 사용할 수 없습니다. \\c PYTHON_DOCSTRING을 \\c NO로 설정하면 Doxygen의 특수 명령을 사용할 수 있으며 docstring 문서 블록의 내용이 Doxygen 문서로 표시됩니다."
+    },
+    {
+      "type": "option",
+      "id": "OPTIMIZE_OUTPUT_SLICE",
+      "group": "Project",
+      "en": "Set the \\c OPTIMIZE_OUTPUT_SLICE tag to \\c YES if your project consists of Slice\n sources only. Doxygen will then generate output that is more tailored\n for that language. For instance, namespaces will be presented as modules,\n types will be separated into more groups, etc.",
+      "ko": "\\c OPTIMIZE_OUTPUT_SLICE 태그를 \\c YES로 설정하면 프로젝트가 Slice 소스로만 구성된 경우 Doxygen은 해당 언어에 더 적합한 출력을 생성합니다. 예를 들어, 네임스페이스가 모듈로 표시되고 유형이 더 많은 그룹으로 분리됩니다."
+    },
+    {
+      "type": "option",
+      "id": "EXTENSION_MAPPING",
+      "group": "Project",
+      "en": "Doxygen selects the parser to use depending on the extension of the files it parses.\n With this tag you can assign which parser to use for a given extension.\n Doxygen has a built-in mapping, but you can override or extend it using this tag.\n The format is <code>ext=language</code>, where \\c ext is a file extension, and language is one of\n the parsers supported by Doxygen: IDL, Java, JavaScript, Csharp (C#), C, C++, Lex, D, PHP,\n md (Markdown), Objective-C, Python, Slice, VHDL, Fortran (fixed format Fortran: FortranFixed,\n free formatted Fortran: FortranFree, unknown formatted Fortran: Fortran. In\n the later case the parser tries to guess whether the code is fixed or free\n formatted code, this is the default for Fortran type files).\n\n For instance to make Doxygen treat\n <code>.inc</code> files as Fortran files (default is PHP), and <code>.f</code> files as C (default is Fortran),\n use: `inc=Fortran f=C`.\n\n <br>Note: For files without extension you can use `no_extension` as a placeholder.\n <br>Note that for custom extensions you also need to set \\ref cfg_file_patterns \"FILE_PATTERNS\" otherwise the\n files are not read by Doxygen. When specifying `no_extension` you should add `*`\n to the \\ref cfg_file_patterns \"FILE_PATTERNS\".\n <br>Note see also the list of \\ref default_file_extension_mapping \"default file extension mappings\".",
+      "ko": "Doxygen은 구문 분석하는 파일의 확장자에 따라 사용할 파서를 선택합니다. 이 태그를 사용하여 특정 확장자에 사용할 파서를 할당할 수 있습니다. Doxygen에는 기본 제공 매핑이 있지만 이 태그를 사용하여 재정의하거나 확장할 수 있습니다. 형식은 <code>ext=language</code>이며, \\c ext는 파일 확장자, language는 Doxygen이 지원하는 파서 중 하나입니다: IDL, Java, JavaScript, Csharp(C#), C, C++, Lex, D, PHP, md(Markdown), Objective-C, Python, Slice, VHDL, Fortran(고정 형식 Fortran: FortranFixed, 자유 형식 Fortran: FortranFree, 알 수 없는 형식 Fortran: Fortran. 후자의 경우 파서는 코드가 고정 형식인지 자유 형식인지 추측하려고 시도합니다. 이것이 Fortran 유형 파일의 기본값입니다). 예를 들어 Doxygen이 <code>.inc</code> 파일을 Fortran 파일로 처리하게 하고(기본값은 PHP), <code>.f</code> 파일을 C로 처리하게 하려면(기본값은 Fortran), `inc=Fortran f=C`를 사용하세요.<br>참고: 확장자가 없는 파일의 경우 플레이스홀더로 `no_extension`을 사용할 수 있습니다.<br>사용자 정의 확장자의 경우 \\ref cfg_file_patterns \"FILE_PATTERNS\"도 설정해야 합니다. 그렇지 않으면 파일이 Doxygen에서 읽히지 않습니다. `no_extension`을 지정하는 경우 \\ref cfg_file_patterns \"FILE_PATTERNS\"에 `*`를 추가해야 합니다.<br>\\ref default_file_extension_mapping \"기본 파일 확장자 매핑\" 목록도 참조하세요."
+    },
+    {
+      "type": "option",
+      "id": "MARKDOWN_STRICT",
+      "group": "Project",
+      "en": "If the \\c MARKDOWN_STRICT tag is enabled then Doxygen treats text in comments as Markdown formatted\n also in cases where Doxygen's native markup format conflicts with that of Markdown. This is only relevant\n in cases where backticks are used. Doxygen's native markup style allows a single quote to end a\n text fragment started with a backtick and then treat it as a piece of quoted text, whereas in Markdown such text fragment\n is treated as verbatim and only ends when a second matching backtick is found. Also, Doxygen's native markup\n format requires double quotes to be escaped when they appear in a backtick section, whereas this is not needed\n for Markdown.",
+      "ko": "\\c MARKDOWN_STRICT 태그가 활성화되면 Doxygen은 Doxygen의 네이티브 마크업 형식이 Markdown과 충돌하더라도 주석 내의 텍스트를 Markdown 형식으로 처리합니다. 이는 백틱이 사용되는 경우에만 관련이 있습니다. Doxygen의 네이티브 마크업 스타일에서는 백틱으로 시작하는 텍스트 조각을 종료하는 데 단일 따옴표를 사용할 수 있으며, 이를 인용된 텍스트로 처리하지만, Markdown에서는 이러한 텍스트 조각이 축어적으로 처리되며 두 번째 일치하는 백틱이 발견된 경우에만 종료됩니다. 또한 Doxygen의 네이티브 마크업 형식에서는 백틱 섹션에 나타나는 큰따옴표를 이스케이프해야 하지만 Markdown에서는 필요하지 않습니다."
+    },
+    {
+      "type": "option",
+      "id": "TOC_INCLUDE_HEADINGS",
+      "group": "Project",
+      "en": "When the \\c TOC_INCLUDE_HEADINGS tag is set to a non-zero value, all headings\n up to that level are automatically included in the table of contents, even if\n they do not have an id attribute.\n \\note This feature currently applies only to Markdown headings.",
+      "ko": "\\c TOC_INCLUDE_HEADINGS 태그가 0이 아닌 값으로 설정되면 id 속성이 없는 경우에도 해당 레벨까지의 모든 제목이 목차에 자동으로 포함됩니다.\\note 이 기능은 현재 Markdown 제목에만 적용됩니다."
+    },
+    {
+      "type": "option",
+      "id": "MARKDOWN_ID_STYLE",
+      "group": "Project",
+      "en": "The \\c MARKDOWN_ID_STYLE tag can be used to specify the algorithm used to generate identifiers for the Markdown headings.\n Note: Every identifier is unique.",
+      "ko": "\\c MARKDOWN_ID_STYLE 태그를 사용하여 Markdown 제목의 식별자를 생성하는 데 사용되는 알고리즘을 지정할 수 있습니다. 참고: 각 식별자는 고유합니다."
+    },
+    {
+      "type": "option",
+      "id": "AUTOLINK_IGNORE_WORDS",
+      "group": "Project",
+      "en": "This tag specifies a list of words that, when matching the start of a word in the documentation,\n  will suppress auto links generation, if it is enabled via AUTOLINK_SUPPORT. \n  This list does not affect links explicitly created using \\# or \n  the \\ref cmdlink \"\\\\link\" or \\ref cmdref \"\\\\ref\" commands.",
+      "ko": "이 태그는 문서의 단어 시작과 일치하는 경우 AUTOLINK_SUPPORT를 통한 자동 링크 생성이 활성화된 경우 자동 링크 생성을 억제하는 단어 목록을 지정합니다. 이 목록은 \\# 또는 \\ref cmdlink \"\\link\" 또는 \\ref cmdref \"\\ref\" 명령을 사용하여 명시적으로 생성된 링크에는 영향을 주지 않습니다."
+    },
+    {
+      "type": "option",
+      "id": "NUM_PROC_THREADS",
+      "group": "Project",
+      "en": "The \\c NUM_PROC_THREADS specifies the number of threads Doxygen is allowed to use during\n processing. When set to \\c 0 Doxygen will based this on the number of cores\n available in the system. You can set it explicitly to a value larger than 0\n to get more control over the balance between CPU load and processing speed.\n At this moment only the input processing can be done using multiple threads.\n Since this is still an experimental feature the default is set to 1,\n which effectively disables parallel processing. Please report any issues you\n encounter.\n Generating dot graphs in parallel is controlled by the \\c DOT_NUM_THREADS setting.",
+      "ko": "\\c NUM_PROC_THREADS는 처리 중에 Doxygen이 사용을 허용하는 스레드 수를 지정합니다. \\c 0으로 설정하면 Doxygen은 시스템에서 사용 가능한 코어 수에 따라 설정합니다. CPU 부하와 처리 속도의 균형을 더 제어하기 위해 0보다 큰 값으로 명시적으로 설정할 수 있습니다. 현재 입력 처리만 여러 스레드를 사용하여 수행할 수 있습니다. 이것은 아직 실험적인 기능이므로 기본값은 1로 설정되어 있으며 병렬 처리는 효과적으로 비활성화되어 있습니다. 문제가 발생하면 보고해 주세요. dot 그래프의 병렬 생성은 \\c DOT_NUM_THREADS 설정에 의해 제어됩니다."
+    },
+    {
+      "type": "option",
+      "id": "TIMESTAMP",
+      "group": "Project",
+      "en": "If the \\c TIMESTAMP tag is set different from \\c NO then \n each generated page will contain the date or date and time when the page\n was generated. Setting this to \\c NO can help when comparing the output of\n multiple runs.",
+      "ko": "\\c TIMESTAMP 태그가 \\c NO 이외의 값으로 설정되면 생성된 각 페이지에는 페이지가 생성된 날짜 또는 날짜/시간이 포함됩니다. 이를 \\c NO로 설정하면 여러 실행의 출력을 비교할 때 유용합니다."
+    },
+    {
+      "type": "option",
+      "id": "RESOLVE_UNNAMED_PARAMS",
+      "group": "Build",
+      "en": "If this flag is set to \\c YES, the name of an unnamed parameter in a declaration will be\n determined by the corresponding definition. By default unnamed parameters remain unnamed\n in the output.",
+      "ko": "이 플래그가 \\c YES로 설정되면 선언에서 이름 없는 매개변수의 이름은 해당 정의에 의해 결정됩니다. 기본적으로 이름 없는 매개변수는 출력에서 이름 없는 상태로 유지됩니다."
+    },
+    {
+      "type": "option",
+      "id": "HIDE_UNDOC_NAMESPACES",
+      "group": "Build",
+      "en": "If the \\c HIDE_UNDOC_NAMESPACES tag is set to \\c YES, Doxygen will hide all\n undocumented namespaces that are normally visible in the namespace hierarchy.\n If set to \\c NO, these namespaces will be included in the\n various overviews.\n This option has no effect if \\ref cfg_extract_all \"EXTRACT_ALL\" is enabled.",
+      "ko": "\\c HIDE_UNDOC_NAMESPACES 태그가 \\c YES로 설정되면 Doxygen은 네임스페이스 계층 구조에서 일반적으로 표시되는 문서화되지 않은 모든 네임스페이스를 숨깁니다. \\c NO로 설정되면 이러한 네임스페이스는 다양한 개요에 포함됩니다. 이 옵션은 \\ref cfg_extract_all \"EXTRACT_ALL\"이 활성화된 경우 효과가 없습니다."
+    },
+    {
+      "type": "option",
+      "id": "HIDE_COMPOUND_REFERENCE",
+      "group": "Build",
+      "en": "If the \\c HIDE_COMPOUND_REFERENCE tag is set to \\c NO (default) then\n Doxygen will append additional text to a page's title, such as Class Reference.\n If set to \\c YES the compound reference will be hidden.",
+      "ko": "\\c HIDE_COMPOUND_REFERENCE 태그가 \\c NO(기본값)로 설정되면 Doxygen은 페이지 제목에 클래스 참조와 같은 추가 텍스트를 추가합니다. \\c YES로 설정되면 컴파운드 참조가 숨겨집니다."
+    },
+    {
+      "type": "option",
+      "id": "SHOW_HEADERFILE",
+      "group": "Build",
+      "en": "If the \\c SHOW_HEADERFILE tag is set to \\c YES then the documentation\n for a class will show which file needs to be included to use the class.",
+      "ko": "\\c SHOW_HEADERFILE 태그가 \\c YES로 설정되면 클래스의 문서에는 클래스를 사용하기 위해 포함해야 하는 파일이 표시됩니다."
+    },
+    {
+      "type": "option",
+      "id": "SHOW_GROUPED_MEMB_INC",
+      "group": "Build",
+      "en": "If the \\c SHOW_GROUPED_MEMB_INC tag is set to \\c YES then Doxygen\n will add for each grouped member an include statement to the documentation,\n telling the reader which file to include in order to use the member.",
+      "ko": "\\c SHOW_GROUPED_MEMB_INC 태그가 \\c YES로 설정되면 Doxygen은 그룹화된 각 멤버의 문서에 include 문을 추가하여 멤버를 사용하기 위해 어떤 파일을 포함해야 하는지 독자에게 알립니다."
+    },
+    {
+      "type": "option",
+      "id": "INLINE_INFO",
+      "group": "Build",
+      "en": "If the \\c INLINE_INFO tag is set to \\c YES then a tag [inline]\n is inserted in the documentation for inline members.",
+      "ko": "\\c INLINE_INFO 태그가 \\c YES로 설정되면 인라인 멤버의 문서에 [inline] 태그가 삽입됩니다."
+    },
+    {
+      "type": "option",
+      "id": "SORT_MEMBER_DOCS",
+      "group": "Build",
+      "en": "If the \\c SORT_MEMBER_DOCS tag is set to \\c YES then Doxygen\n will sort the (detailed) documentation of file and class members\n alphabetically by member name. If set to \\c NO, the members will appear in\n declaration order.",
+      "ko": "\\c SORT_MEMBER_DOCS 태그가 \\c YES로 설정되면 Doxygen은 파일 및 클래스 멤버의 (상세) 문서를 멤버 이름으로 알파벳순으로 정렬합니다. \\c NO로 설정되면 멤버는 선언 순서대로 표시됩니다."
+    },
+    {
+      "type": "option",
+      "id": "SORT_BRIEF_DOCS",
+      "group": "Build",
+      "en": "If the \\c SORT_BRIEF_DOCS tag is set to \\c YES then Doxygen will sort the\n brief descriptions of file, namespace and class members alphabetically\n by member name. If set to \\c NO, the members will appear in\n declaration order. Note that this will also influence the order of the\n classes in the class list.",
+      "ko": "\\c SORT_BRIEF_DOCS 태그가 \\c YES로 설정되면 Doxygen은 파일, 네임스페이스 및 클래스 멤버의 간결한 설명을 멤버 이름으로 알파벳순으로 정렬합니다. \\c NO로 설정되면 멤버는 선언 순서대로 표시됩니다. 이는 클래스 목록 내의 클래스 순서에도 영향을 미칩니다."
+    },
+    {
+      "type": "option",
+      "id": "SORT_MEMBERS_CTORS_1ST",
+      "group": "Build",
+      "en": "If the \\c SORT_MEMBERS_CTORS_1ST tag is set to \\c YES then Doxygen\n will sort the (brief and detailed) documentation of class members so that\n constructors and destructors are listed first. If set to \\c NO\n the constructors will appear in the respective orders defined by\n \\ref cfg_sort_brief_docs \"SORT_BRIEF_DOCS\" and \\ref cfg_sort_member_docs \"SORT_MEMBER_DOCS\".\n \\note If \\ref cfg_sort_brief_docs \"SORT_BRIEF_DOCS\" is set to \\c NO this option is ignored for\n       sorting brief member documentation.\n \\note If \\ref cfg_sort_member_docs \"SORT_MEMBER_DOCS\" is set to \\c NO this option is ignored for\n       sorting detailed member documentation.",
+      "ko": "\\c SORT_MEMBERS_CTORS_1ST 태그가 \\c YES로 설정되면 Doxygen은 클래스 멤버의 (간결 및 상세) 문서를 정렬하여 생성자와 소멸자가 먼저 나열되도록 합니다. \\c NO로 설정되면 생성자는 \\ref cfg_sort_brief_docs \"SORT_BRIEF_DOCS\" 및 \\ref cfg_sort_member_docs \"SORT_MEMBER_DOCS\"에서 정의된 각각의 순서로 표시됩니다.\\note \\ref cfg_sort_brief_docs \"SORT_BRIEF_DOCS\"가 \\c NO로 설정되면 이 옵션은 간결한 멤버 문서 정렬에 무시됩니다.\\note \\ref cfg_sort_member_docs \"SORT_MEMBER_DOCS\"가 \\c NO로 설정되면 이 옵션은 상세한 멤버 문서 정렬에 무시됩니다."
+    },
+    {
+      "type": "option",
+      "id": "SORT_GROUP_NAMES",
+      "group": "Build",
+      "en": "If the \\c SORT_GROUP_NAMES tag is set to \\c YES then Doxygen will sort the\n hierarchy of group names into alphabetical order. If set to \\c NO\n the group names will appear in their defined order.",
+      "ko": "\\c SORT_GROUP_NAMES 태그가 \\c YES로 설정되면 Doxygen은 그룹 이름의 계층 구조를 알파벳순으로 정렬합니다. \\c NO로 설정되면 그룹 이름은 정의된 순서대로 표시됩니다."
+    },
+    {
+      "type": "option",
+      "id": "SORT_BY_SCOPE_NAME",
+      "group": "Build",
+      "en": "If the \\c SORT_BY_SCOPE_NAME tag is set to \\c YES, the class list will be\n sorted by fully-qualified names, including namespaces. If set to\n \\c NO, the class list will be sorted only by class name,\n not including the namespace part.\n \\note This option is not very useful if \\ref cfg_hide_scope_names \"HIDE_SCOPE_NAMES\" is set to \\c YES.\n \\note This option applies only to the class list, not to the\n       alphabetical list.",
+      "ko": "\\c SORT_BY_SCOPE_NAME 태그가 \\c YES로 설정되면 클래스 목록은 네임스페이스를 포함한 완전히 정규화된 이름으로 정렬됩니다. \\c NO로 설정되면 클래스 목록은 네임스페이스 부분을 포함하지 않고 클래스 이름만으로 정렬됩니다.\\note 이 옵션은 \\ref cfg_hide_scope_names \"HIDE_SCOPE_NAMES\"가 \\c YES로 설정된 경우 그다지 유용하지 않습니다.\\note 이 옵션은 클래스 목록에만 적용되며 알파벳순 목록에는 적용되지 않습니다."
+    },
+    {
+      "type": "option",
+      "id": "STRICT_PROTO_MATCHING",
+      "group": "Build",
+      "en": "If the \\c STRICT_PROTO_MATCHING option is enabled and Doxygen fails to\n do proper type resolution of all parameters of a function it will reject a\n match between the prototype and the implementation of a member function even\n if there is only one candidate or it is obvious which candidate to choose\n by doing a simple string match. By disabling \\c STRICT_PROTO_MATCHING Doxygen\n will still accept a match between prototype and implementation in such cases.",
+      "ko": "\\c STRICT_PROTO_MATCHING 옵션이 활성화되고 Doxygen이 함수의 모든 매개변수에 대한 올바른 유형 해결에 실패한 경우, 후보가 하나만 있거나 단순 문자열 일치로 선택할 후보가 명백한 경우에도 멤버 함수의 프로토타입과 구현 간의 일치를 거부합니다. \\c STRICT_PROTO_MATCHING을 비활성화하면 Doxygen은 그러한 경우에도 프로토타입과 구현 간의 일치를 수락합니다."
+    },
+    {
+      "type": "option",
+      "id": "GENERATE_TODOLIST",
+      "group": "Build",
+      "en": "The \\c GENERATE_TODOLIST tag can be used to enable (\\c YES) or\n disable (\\c NO) the todo list. This list is created by\n putting \\ref cmdtodo \"\\\\todo\" commands in the documentation.",
+      "ko": "\\c GENERATE_TODOLIST 태그를 사용하여 todo 목록을 활성화(\\c YES) 또는 비활성화(\\c NO)할 수 있습니다. 이 목록은 문서에 \\ref cmdtodo \"\\todo\" 명령을 배치하여 생성됩니다."
+    },
+    {
+      "type": "option",
+      "id": "GENERATE_TESTLIST",
+      "group": "Build",
+      "en": "The \\c GENERATE_TESTLIST tag can be used to enable (\\c YES) or\n disable (\\c NO) the test list. This list is created by\n putting \\ref cmdtest \"\\\\test\" commands in the documentation.",
+      "ko": "\\c GENERATE_TESTLIST 태그를 사용하여 테스트 목록을 활성화(\\c YES) 또는 비활성화(\\c NO)할 수 있습니다. 이 목록은 문서에 \\ref cmdtest \"\\test\" 명령을 배치하여 생성됩니다."
+    },
+    {
+      "type": "option",
+      "id": "GENERATE_BUGLIST",
+      "group": "Build",
+      "en": "The \\c GENERATE_BUGLIST tag can be used to enable (\\c YES) or\n disable (\\c NO) the bug list. This list is created by\n putting \\ref cmdbug \"\\\\bug\" commands in the documentation.",
+      "ko": "\\c GENERATE_BUGLIST 태그를 사용하여 버그 목록을 활성화(\\c YES) 또는 비활성화(\\c NO)할 수 있습니다. 이 목록은 문서에 \\ref cmdbug \"\\bug\" 명령을 배치하여 생성됩니다."
+    },
+    {
+      "type": "option",
+      "id": "GENERATE_DEPRECATEDLIST",
+      "group": "Build",
+      "en": "The \\c GENERATE_DEPRECATEDLIST tag can be used to enable (\\c YES) or\n disable (\\c NO) the deprecated list. This list is created by\n putting \\ref cmddeprecated \"\\\\deprecated\"\n commands in the documentation.",
+      "ko": "\\c GENERATE_DEPRECATEDLIST 태그를 사용하여 사용되지 않는 목록을 활성화(\\c YES) 또는 비활성화(\\c NO)할 수 있습니다. 이 목록은 문서에 \\ref cmddeprecated \"\\deprecated\" 명령을 배치하여 생성됩니다."
+    },
+    {
+      "type": "option",
+      "id": "GENERATE_REQUIREMENTS",
+      "group": "Build",
+      "en": "The \\c GENERATE_REQUIREMENTS tag can be used to enable (\\c YES) or\n disable (\\c NO) the requirements page. When enabled, this page is\n automatically created when at least one comment block with\n a \\ref cmdrequirement \"\\\\requirement\" command appears in the input.",
+      "ko": "\\c GENERATE_REQUIREMENTS 태그를 사용하여 요구 사항 페이지를 활성화(\\c YES) 또는 비활성화(\\c NO)할 수 있습니다. 활성화된 경우 이 페이지는 입력에 \\ref cmdrequirement \"\\requirement\" 명령을 포함하는 하나 이상의 주석 블록이 나타나면 자동으로 생성됩니다."
+    },
+    {
+      "type": "option",
+      "id": "REQ_TRACEABILITY_INFO",
+      "group": "Build",
+      "en": "The \\c REQ_TRACEABILITY_INFO tag controls if traceability information\n is shown on the requirements page (only relevant when using\n \\ref cmdrequirement \"\\\\requirement\" comment blocks).\n The setting \\c NO will disable the traceability information altogether.\n The setting \\c UNSATISFIED_ONLY will show a list of requirements that are missing\n a satisfies relation (through the command: \\ref cmdsatisfies \"\\\\satisfies\").\n Similarly the setting \\c UNVERIFIED_ONLY will show a list of requirements that\n are missing a verifies relation (through the command: \\ref cmdverifies \"\\\\verifies\").\n Setting the tag to \\c YES (the default) will show both lists if applicable.",
+      "ko": "\\c REQ_TRACEABILITY_INFO 태그는 요구 사항 페이지에 추적 가능성 정보가 표시되는지 여부를 제어합니다(\\ref cmdrequirement \"\\requirement\" 주석 블록을 사용하는 경우에만 관련). \\c NO로 설정하면 추적 가능성 정보가 완전히 비활성화됩니다. \\c UNSATISFIED_ONLY로 설정하면 충족 관계가 누락된 요구 사항 목록이 표시됩니다(\\ref cmdsatisfies \"\\satisfies\" 명령을 통해). 마찬가지로, \\c UNVERIFIED_ONLY로 설정하면 검증 관계가 누락된 요구 사항 목록이 표시됩니다(\\ref cmdverifies \"\\verifies\" 명령을 통해). 태그를 \\c YES(기본값)로 설정하면 해당되는 경우 두 목록이 모두 표시됩니다."
+    },
+    {
+      "type": "option",
+      "id": "ENABLED_SECTIONS",
+      "group": "Build",
+      "en": "The \\c ENABLED_SECTIONS tag can be used to enable conditional\n documentation sections, marked by \\ref cmdif \"\\\\if\" \\<section_label\\> ...\n \\ref cmdendif \"\\\\endif\" and \\ref cmdcond \"\\\\cond\" \\<section_label\\> ...\n \\ref cmdendcond \"\\\\endcond\" blocks.",
+      "ko": "\\c ENABLED_SECTIONS 태그를 사용하여 \\ref cmdif \"\\if\" \\<section_label\\> ... \\ref cmdendif \"\\endif\" 및 \\ref cmdcond \"\\cond\" \\<section_label\\> ... \\ref cmdendcond \"\\endcond\" 블록으로 표시된 조건부 문서 섹션을 활성화할 수 있습니다."
+    },
+    {
+      "type": "option",
+      "id": "MAX_INITIALIZER_LINES",
+      "group": "Build",
+      "en": "The \\c MAX_INITIALIZER_LINES tag determines the maximum number of lines\n that the initial value of a variable or macro / define can have for it to appear in\n the documentation. If the initializer\n consists of more lines than specified here it will be hidden. Use a value\n of 0 to hide initializers completely. The appearance of the value of\n individual variables and macros / defines can be controlled using \\ref cmdshowinitializer \"\\\\showinitializer\"\n or \\ref cmdhideinitializer \"\\\\hideinitializer\" command in the documentation regardless of this setting.",
+      "ko": "\\c MAX_INITIALIZER_LINES 태그는 변수 또는 매크로/정의의 초기 값이 문서에 표시되기 위해 가질 수 있는 최대 줄 수를 결정합니다. 초기화자가 여기에 지정된 줄 수를 초과하면 숨겨집니다. 초기화자를 완전히 숨기려면 0 값을 사용합니다. 개별 변수와 매크로/정의의 값 외관은 이 설정과 관계없이 문서에서 \\ref cmdshowinitializer \"\\showinitializer\" 또는 \\ref cmdhideinitializer \"\\hideinitializer\" 명령을 사용하여 제어할 수 있습니다."
+    },
+    {
+      "type": "option",
+      "id": "SHOW_USED_FILES",
+      "group": "Build",
+      "en": "Set the \\c SHOW_USED_FILES tag to \\c NO to disable the list of files generated\n at the bottom of the documentation of classes and structs. If set to \\c YES, the\n list will mention the files that were used to generate the documentation.",
+      "ko": "\\c SHOW_USED_FILES 태그를 \\c NO로 설정하면 클래스와 구조체의 문서 하단에 생성되는 파일 목록이 비활성화됩니다. \\c YES로 설정되면 목록은 문서 생성에 사용된 파일을 나타냅니다."
+    },
+    {
+      "type": "option",
+      "id": "SHOW_FILES",
+      "group": "Build",
+      "en": "Set the \\c SHOW_FILES tag to \\c NO to disable the generation of the Files page.\n This will remove the Files entry from the Quick Index and from the\n Folder Tree View (if specified).",
+      "ko": "\\c SHOW_FILES 태그를 \\c NO로 설정하면 파일 페이지 생성이 비활성화됩니다. 이렇게 하면 빠른 인덱스와 폴더 트리 보기(지정된 경우)에서 파일 항목이 제거됩니다."
+    },
+    {
+      "type": "option",
+      "id": "SHOW_NAMESPACES",
+      "group": "Build",
+      "en": "Set the \\c SHOW_NAMESPACES tag to \\c NO to disable the generation of the\n Namespaces page. This will remove the Namespaces entry from the Quick Index\n and from the Folder Tree View (if specified).",
+      "ko": "\\c SHOW_NAMESPACES 태그를 \\c NO로 설정하면 네임스페이스 페이지 생성이 비활성화됩니다. 이렇게 하면 빠른 인덱스와 폴더 트리 보기(지정된 경우)에서 네임스페이스 항목이 제거됩니다."
+    },
+    {
+      "type": "option",
+      "id": "FILE_VERSION_FILTER",
+      "group": "Build",
+      "en": "The \\c FILE_VERSION_FILTER tag can be used to specify a program or script that\n Doxygen should invoke to get the current version for each file (typically from the\n version control system). Doxygen will invoke the program by executing (via\n <code>popen()</code>) the command <code>command input-file</code>, where \\c command is\n the value of the \\c FILE_VERSION_FILTER tag, and \\c input-file is the name\n of an input file provided by Doxygen.\n Whatever the program writes to standard output is used as the file version.\nFor an example see the documentation.",
+      "ko": "\\c FILE_VERSION_FILTER 태그를 사용하여 Doxygen이 각 파일의 현재 버전을 가져오기 위해 호출하는 프로그램 또는 스크립트를 지정할 수 있습니다(일반적으로 버전 관리 시스템에서). Doxygen은 <code>popen()</code>을 통해 명령<code>command input-file</code>을 실행하여 프로그램을 호출합니다. 여기서 \\c command는 \\c FILE_VERSION_FILTER 태그의 값, \\c input-file은 Doxygen이 제공하는 입력 파일의 이름입니다. 프로그램이 표준 출력에 쓰는 모든 것은 파일 버전으로 사용됩니다."
+    },
+    {
+      "type": "option",
+      "id": "LAYOUT_FILE",
+      "group": "Build",
+      "en": "The \\c LAYOUT_FILE tag can be used to specify a layout file which will be parsed by\n Doxygen. The layout file controls the global structure of the generated output files\n in an output format independent way. To create the layout file that represents\n Doxygen's defaults, run Doxygen with the `-l` option. You can optionally specify a\n file name after the option, if omitted \\c DoxygenLayout.xml will be used as the name\n of the layout file.\n See also section \\ref layout for information.\n <br>Note that if you run Doxygen from a directory containing\n a file called \\c DoxygenLayout.xml, Doxygen will parse it automatically even if\n the \\c LAYOUT_FILE tag is left empty.",
+      "ko": "\\c LAYOUT_FILE 태그를 사용하여 Doxygen이 구문 분석할 레이아웃 파일을 지정할 수 있습니다. 레이아웃 파일은 생성된 출력 파일의 전역 구조를 출력 형식 독립적인 방식으로 제어합니다. Doxygen의 기본값을 나타내는 레이아웃 파일을 생성하려면 `-l` 옵션을 지정하여 Doxygen을 실행합니다. 선택적으로 파일 이름을 지정할 수 있습니다. 생략하면 \\c DoxygenLayout.xml이 레이아웃 파일의 이름으로 사용됩니다. 자세한 내용은 섹션 \\ref layout도 참조하세요.<br>\\c DoxygenLayout.xml이라는 파일을 포함하는 디렉토리에서 Doxygen을 실행하면 \\c LAYOUT_FILE 태그가 비워 두어도 Doxygen이 자동으로 이를 구문 분석합니다."
+    },
+    {
+      "type": "option",
+      "id": "CITE_BIB_FILES",
+      "group": "Build",
+      "en": "The \\c CITE_BIB_FILES tag can be used to specify one or more \\c bib files\n containing the reference definitions. This must be a list of <code>.bib</code> files. The\n <code>.bib</code> extension is automatically appended if omitted. This requires the\n \\c bibtex tool to be installed. See also https://en.wikipedia.org/wiki/BibTeX for\n more info. For \\f$\\mbox{\\LaTeX}\\f$ the style of the bibliography can be controlled\n using \\ref cfg_latex_bib_style \"LATEX_BIB_STYLE\".\n To use this feature you need \\c bibtex and \\c perl available in the search path.\n See also \\ref cmdcite \"\\\\cite\" for info how to create references.",
+      "ko": "\\c CITE_BIB_FILES 태그를 사용하여 참조 정의를 포함하는 하나 이상의 \\c bib 파일을 지정할 수 있습니다. 이것은 <code>.bib</code> 파일 목록이어야 합니다. <code>.bib</code> 확장자는 생략된 경우 자동으로 추가됩니다. 이를 위해서는 \\c bibtex 도구가 설치되어 있어야 합니다. 자세한 내용은 https://en.wikipedia.org/wiki/BibTeX도 참조하세요. \\f$\\mbox{\\LaTeX}\\f$의 경우 참고 문헌의 스타일은 \\ref cfg_latex_bib_style \"LATEX_BIB_STYLE\"를 사용하여 제어할 수 있습니다. 이 기능을 사용하려면 검색 경로에서 \\c bibtex와 \\c perl을 사용할 수 있어야 합니다. 참조 생성 방법은 \\ref cmdcite \"\\cite\"도 참조하세요."
+    },
+    {
+      "type": "option",
+      "id": "EXTERNAL_TOOL_PATH",
+      "group": "Build",
+      "en": "The \\c EXTERNAL_TOOL_PATH tag can be used to extend the search path (PATH environment variable)\n so that external tools such as \\c latex and \\c gs can be found. \n \\note Directories specified with EXTERNAL_TOOL_PATH are added in front of the path already specified by\n the PATH variable, and are added in the order specified.\n \\note This option is particularly useful for macOS version 14 (Sonoma) and higher,\n when running Doxygen from Doxywizard, because in this case any user-defined changes to the PATH\n are ignored. A typical example on macOS is to set\n\\verbatim\nEXTERNAL_TOOL_PATH = /Library/TeX/texbin /usr/local/bin\n\\endverbatim\n together with the standard path, the full search path used by doxygen when launching external tools\n will then become\n\\verbatim\nPATH=/Library/TeX/texbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin\n\\endverbatim",
+      "ko": "\\c EXTERNAL_TOOL_PATH 태그를 사용하여 \\c latex 및 \\c gs와 같은 외부 도구를 찾을 수 있도록 검색 경로(PATH 환경 변수)를 확장할 수 있습니다.\\note EXTERNAL_TOOL_PATH에서 지정된 디렉토리는 PATH 변수에서 이미 지정된 경로 앞에 추가되며, 지정된 순서대로 추가됩니다.\\note 이 옵션은 Doxywizard에서 Doxygen을 실행하는 경우 macOS 버전 14(Sonoma) 이상에서 특히 편리합니다. 이 경우 PATH에 대한 사용자 정의 변경 사항이 무시되기 때문입니다. macOS의 일반적인 예는 \\verbatim EXTERNAL_TOOL_PATH = /Library/TeX/texbin /usr/local/bin \\endverbatim 표준 경로와 함께 설정하면 외부 도구를 시작할 때 doxygen이 사용하는 전체 검색 경로는 \\verbatim PATH=/Library/TeX/texbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin \\endverbatim이 됩니다."
+    },
+    {
+      "type": "option",
+      "id": "WARN_IF_INCOMPLETE_DOC",
+      "group": "Messages",
+      "en": "If \\c WARN_IF_INCOMPLETE_DOC is set to \\c YES, Doxygen will warn about\n incomplete function parameter documentation.\n If set to \\c NO, Doxygen will accept that some parameters have no\n documentation without warning.",
+      "ko": "\\c WARN_IF_INCOMPLETE_DOC이 \\c YES로 설정되면 Doxygen은 불완전한 함수 매개변수 문서에 대해 경고합니다. \\c NO로 설정되면 Doxygen은 일부 매개변수에 문서가 없는 것을 경고 없이 수락합니다."
+    },
+    {
+      "type": "option",
+      "id": "WARN_IF_UNDOC_ENUM_VAL",
+      "group": "Messages",
+      "en": "If \\c WARN_IF_UNDOC_ENUM_VAL option is set to \\c YES, Doxygen will warn\n about undocumented enumeration values.\n If set to \\c NO, Doxygen will accept undocumented enumeration values.\n If \\ref cfg_extract_all \"EXTRACT_ALL\" is set to \\c YES then this flag will\n automatically be disabled.",
+      "ko": "\\c WARN_IF_UNDOC_ENUM_VAL 옵션이 \\c YES로 설정되면 Doxygen은 문서화되지 않은 열거형 값에 대해 경고합니다. \\c NO로 설정되면 Doxygen은 문서화되지 않은 열거형 값을 수락합니다. \\ref cfg_extract_all \"EXTRACT_ALL\"이 \\c YES로 설정되면 이 플래그는 자동으로 비활성화됩니다."
+    },
+    {
+      "type": "option",
+      "id": "WARN_LAYOUT_FILE",
+      "group": "Messages",
+      "en": "If \\c WARN_LAYOUT_FILE option is set to \\c YES, Doxygen will warn\n about issues found while parsing the user defined layout file, such as missing\n or wrong elements. See also \\ref cfg_layout_file \"LAYOUT_FILE\" for details.\n If set to \\c NO, problems with the layout file will be suppressed.",
+      "ko": "\\c WARN_LAYOUT_FILE 옵션이 \\c YES로 설정되면 Doxygen은 사용자 정의 레이아웃 파일 구문 분석 중에 발견된 문제(누락 또는 잘못된 요소 등)에 대해 경고합니다. 자세한 내용은 \\ref cfg_layout_file \"LAYOUT_FILE\"도 참조하세요. \\c NO로 설정되면 레이아웃 파일 문제가 억제됩니다."
+    },
+    {
+      "type": "option",
+      "id": "WARN_LINE_FORMAT",
+      "group": "Messages",
+      "en": "In the `$text` part of the \\ref cfg_warn_format \"WARN_FORMAT\" command it is\n possible that a reference to a more specific place is given.  To make it easier\n to jump to this place (outside of Doxygen) the user can define a custom\n \"cut\" / \"paste\" string.\n\n Example:\n \\verbatim\n  WARN_LINE_FORMAT = \"'vi $file +$line'\"\n \\endverbatim\n\n \\sa \\ref cfg_warn_format \"WARN_FORMAT\"",
+      "ko": "\\ref cfg_warn_format \"WARN_FORMAT\" 명령의 `$text` 부분에서 더 구체적인 위치에 대한 참조가 제공될 수 있습니다. 이 위치로 쉽게 이동할 수 있도록(Doxygen 외부에서) 사용자는 사용자 정의 \"잘라내기\"/\"붙여넣기\" 문자열을 정의할 수 있습니다. 예: \\verbatim WARN_LINE_FORMAT = \"'vi $file +$line'\" \\endverbatim \\sa \\ref cfg_warn_format \"WARN_FORMAT\""
+    },
+    {
+      "type": "option",
+      "id": "HIDE_UNDOC_RELATIONS",
+      "group": "Dot",
+      "en": "If set to \\c YES the inheritance and collaboration graphs will hide\n inheritance and usage relations if the target is undocumented\n or is not a class.",
+      "ko": "\\c YES로 설정되면 상속 및 협업 그래프는 대상이 문서화되지 않았거나 클래스가 아닌 경우 상속 및 사용 관계를 숨깁니다."
+    },
+    {
+      "type": "option",
+      "id": "DOT_BATCH_SIZE",
+      "group": "Dot",
+      "en": "The \\c DOT_BATCH_SIZE specifies the number of \\c dot graphs Doxygen is\n allowed to compile in a single invocation of \\c dot. When set to \\c 1 Doxygen will\n invoke \\c dot for each graph separately, which can cause significant process creation overhead \n especially on systems with many CPU cores. Together with \\c DOT_NUM_THREADS this setting can be used to\n optimise the dot processing speed for a particular system. Doxygen will try to give each\n thread a balanced batch of work. If the total number of graphs to process \n exceeds `DOT_NUM_THREADS * DOT_BATCH_SIZE` then additional batches will be created for \\c dot to process.",
+      "ko": "\\c DOT_BATCH_SIZE는 Doxygen이 단일 \\c dot 호출에서 컴파일할 수 있는 \\c dot 그래프의 수를 지정합니다.\n \\c 1로 설정하면 Doxygen은 각 그래프에 대해 별도로 \\c dot을 호출하며, 이는 특히 많은 CPU 코어가\n 있는 시스템에서 상당한 프로세스 생성 오버헤드를 유발할 수 있습니다.\\c DOT_NUM_THREADS와 함께\n 이 설정을 사용하여 특정 시스템의 dot 처리 속도를 최적화할 수 있습니다. Doxygen은 각 스레드에\n 균형 잡힌 작업량을 할당하려고 시도합니다. 처리할 그래프의 총 수가 `DOT_NUM_THREADS * DOT_BATCH_SIZE`를\n 초과하면 \\c dot이 처리할 추가 배치가 생성됩니다."
+    },
+    {
+      "type": "option",
+      "id": "DOT_COMMON_ATTR",
+      "group": "Dot",
+      "en": "\\c DOT_COMMON_ATTR is common attributes for nodes, edges and labels of subgraphs.\n When you want a differently looking font in the dot files that Doxygen generates\n you can specify fontname, fontcolor and fontsize attributes.\n For details please see\n <a href=https://graphviz.org/doc/info/attrs.html>Node, Edge and Graph Attributes specification</a>\n You need to make sure dot is able to find the font,\n which can be done by putting it in a standard location\n or by setting the \\c DOTFONTPATH environment variable or by\n setting \\ref cfg_dot_fontpath \"DOT_FONTPATH\" to the\n directory containing the font.\n Default graphviz fontsize is 14.",
+      "ko": "\\c DOT_COMMON_ATTR는 노드, 에지 및 서브그래프 레이블의 공통 속성입니다. Doxygen이 생성하는 dot 파일에서 다른 외관의 글꼴을 사용하려면 fontname, fontcolor 및 fontsize 속성을 지정할 수 있습니다. 자세한 내용은 <a href=https://graphviz.org/doc/info/attrs.html>노드, 에지 및 그래프 속성 사양</a>을 참조하세요. dot이 글꼴을 찾을 수 있는지 확인해야 합니다. 이는 표준 위치에 배치하거나 \\c DOTFONTPATH 환경 변수를 설정하거나 글꼴을 포함하는 디렉토리에 \\ref cfg_dot_fontpath \"DOT_FONTPATH\"를 설정하여 수행할 수 있습니다. graphviz의 기본 글꼴 크기는 14입니다."
+    },
+    {
+      "type": "option",
+      "id": "DOT_EDGE_ATTR",
+      "group": "Dot",
+      "en": "\\c DOT_EDGE_ATTR is concatenated with \\ref cfg_dot_common_attr \"DOT_COMMON_ATTR\".\n For elegant style you can add 'arrowhead=open, arrowtail=open, arrowsize=0.5'.\n <a href=https://graphviz.org/doc/info/arrows.html>Complete documentation about arrows shapes.</a>",
+      "ko": "\\c DOT_EDGE_ATTR는 \\ref cfg_dot_common_attr \"DOT_COMMON_ATTR\"와 연결됩니다. 우아한 스타일을 위해 'arrowhead=open, arrowtail=open, arrowsize=0.5'를 추가할 수 있습니다. <a href=https://graphviz.org/doc/info/arrows.html>화살표 모양의 전체 문서.</a>"
+    },
+    {
+      "type": "option",
+      "id": "DOT_NODE_ATTR",
+      "group": "Dot",
+      "en": "\\c DOT_NODE_ATTR is concatenated with \\ref cfg_dot_common_attr \"DOT_COMMON_ATTR\".\n For view without boxes around nodes set 'shape=plain' or 'shape=plaintext'\n <a href=https://www.graphviz.org/doc/info/shapes.html>Shapes specification</a>",
+      "ko": "\\c DOT_NODE_ATTR는 \\ref cfg_dot_common_attr \"DOT_COMMON_ATTR\"와 연결됩니다. 노드 주위의 상자 없는 보기를 위해 'shape=plain' 또는 'shape=plaintext'를 설정합니다. <a href=https://www.graphviz.org/doc/info/shapes.html>모양 사양.</a>"
+    },
+    {
+      "type": "option",
+      "id": "UML_MAX_EDGE_LABELS",
+      "group": "Dot",
+      "en": "If the \\ref cfg_uml_look \"UML_LOOK\" tag is enabled, field labels are shown along\n the edge between two class nodes. If there are many fields and many nodes the\n graph may become too cluttered. The \\c UML_MAX_EDGE_LABELS threshold limits\n the number of items to make the size more manageable. Set this to 0 for no limit.",
+      "ko": "\\ref cfg_uml_look \"UML_LOOK\" 태그가 활성화된 경우 필드 레이블은 두 클래스 노드 사이의 에지를 따라 표시됩니다. 많은 필드와 많은 노드가 있는 경우 그래프가 너무 복잡해질 수 있습니다. \\c UML_MAX_EDGE_LABELS 임계값은 크기를 더 관리하기 쉽게 만들기 위해 요소 수를 제한합니다. 제한 없이 0으로 설정합니다."
+    },
+    {
+      "type": "option",
+      "id": "DOT_UML_DETAILS",
+      "group": "Dot",
+      "en": "If the \\c DOT_UML_DETAILS tag is set to \\c NO, Doxygen will\nshow attributes and methods without types and arguments in the UML graphs.\nIf the \\c DOT_UML_DETAILS tag is set to \\c YES, Doxygen will\nadd type and arguments for attributes and methods in the UML graphs.\nIf the \\c DOT_UML_DETAILS tag is set to \\c NONE, Doxygen will not generate\nfields with class member information in the UML graphs.\nThe class diagrams will look similar to the default class diagrams but using\nUML notation for the relationships.",
+      "ko": "\\c DOT_UML_DETAILS 태그가 \\c NO로 설정되면 Doxygen은 UML 그래프에서 유형 및 인수 없이 속성과 메서드를 표시합니다. \\c DOT_UML_DETAILS 태그가 \\c YES로 설정되면 Doxygen은 UML 그래프에서 속성과 메서드의 유형 및 인수를 추가합니다. \\c DOT_UML_DETAILS 태그가 \\c NONE으로 설정되면 Doxygen은 UML 그래프에서 클래스 멤버 정보가 있는 필드를 생성하지 않습니다. 클래스 다이어그램은 기본 클래스 다이어그램과 유사하지만 관계에 UML 표기법을 사용합니다."
+    },
+    {
+      "type": "option",
+      "id": "DOT_WRAP_THRESHOLD",
+      "group": "Dot",
+      "en": "The \\c DOT_WRAP_THRESHOLD tag can be used to set the maximum number of characters to display on\n a single line. If the actual line length exceeds this threshold significantly it will be wrapped\n across multiple lines. Some heuristics are applied to avoid ugly line breaks.",
+      "ko": "\\c DOT_WRAP_THRESHOLD 태그를 사용하여 한 줄에 표시되는 최대 문자 수를 설정할 수 있습니다. 실제 줄 길이가 이 임계값을 크게 초과하면 여러 줄로 나뉩니다. 보기 흉한 줄 바꿈을 피하기 위해 몇 가지 휴리스틱이 적용됩니다."
+    },
+    {
+      "type": "option",
+      "id": "DIR_GRAPH_MAX_DEPTH",
+      "group": "Dot",
+      "en": "The \\c DIR_GRAPH_MAX_DEPTH tag can be used to limit the maximum number of\n levels of child directories generated in directory dependency graphs by \\c dot.",
+      "ko": "\\c DIR_GRAPH_MAX_DEPTH 태그를 사용하여 \\c dot에 의해 생성되는 디렉토리 종속성 그래프에서 생성되는 하위 디렉토리 레벨의 최대 수를 제한할 수 있습니다."
+    },
+    {
+      "type": "option",
+      "id": "DIA_PATH",
+      "group": "Dot",
+      "en": "You can include diagrams made with dia in Doxygen documentation. Doxygen will then run\ndia to produce the diagram and insert it in the documentation. The DIA_PATH tag allows\nyou to specify the directory where the dia binary resides. If left empty dia is assumed\nto be found in the default search path.",
+      "ko": "문서에 dia로 만든 다이어그램을 포함할 수 있습니다. Doxygen은 dia를 실행하여 다이어그램을 생성하고 문서에 삽입합니다. DIA_PATH 태그를 사용하면 dia 바이너리가 있는 디렉토리를 지정할 수 있습니다. 비워 두면 dia는 기본 검색 경로에서 찾을 수 있다고 가정합니다."
+    },
+    {
+      "type": "option",
+      "id": "PLANTUMLFILE_DIRS",
+      "group": "Dot",
+      "en": "The \\c PLANTUMLFILE_DIRS tag can be used to specify one or more directories that\n contain PlantUml files that are included in the documentation (see the\n \\ref cmdplantumlfile \"\\\\plantumlfile\" command).",
+      "ko": "\\c PLANTUMLFILE_DIRS 태그를 사용하여 문서에 포함될 PlantUml 파일을 포함하는 하나 이상의 디렉토리를 지정할 수 있습니다(\\ref cmdplantumlfile \"\\plantumlfile\" 명령 참조)."
+    },
+    {
+      "type": "option",
+      "id": "MERMAID_PATH",
+      "group": "Dot",
+      "en": "When using Mermaid diagrams with CLI rendering, the \\c MERMAID_PATH tag should be used to\n specify the directory where the \\c mmdc (Mermaid CLI) executable can be found.\n If left blank, CLI-based rendering is disabled. For HTML output, client-side rendering\n via JavaScript is used by default and does not require \\c mmdc. For LaTeX/PDF output,\n \\c mmdc is required to pre-generate images.\n Doxygen will generate a warning when CLI rendering is needed but \\c mmdc is not available.",
+      "ko": "CLI 렌더링으로 Mermaid 다이어그램을 사용하는 경우 \\c MERMAID_PATH 태그를 사용하여 \\c mmdc(Mermaid CLI) 실행 파일을 찾을 수 있는 디렉토리를 지정해야 합니다. 비워 두면 CLI 기반 렌더링이 비활성화됩니다. HTML 출력의 경우 JavaScript를 통한 클라이언트 측 렌더링이 기본적으로 사용되며 \\c mmdc가 필요하지 않습니다. \\f$\\mbox{\\LaTeX}\\f$/PDF 출력의 경우 이미지를 미리 생성하기 위해 \\c mmdc가 필요합니다. CLI 렌더링이 필요하지만 \\c mmdc를 사용할 수 없는 경우 Doxygen은 경고를 생성합니다."
+    },
+    {
+      "type": "option",
+      "id": "MERMAID_CONFIG_FILE",
+      "group": "Dot",
+      "en": "When using Mermaid diagrams, the \\c MERMAID_CONFIG_FILE tag can be used to specify a\n JSON configuration file for the Mermaid CLI tool (\\c mmdc). This file can contain theme\n settings and other Mermaid configuration options.",
+      "ko": "Mermaid 다이어그램을 사용하는 경우 \\c MERMAID_CONFIG_FILE 태그를 사용하여 Mermaid CLI 도구(\\c mmdc)에 대한 JSON 구성 파일을 지정할 수 있습니다. 이 파일에는 테마 설정 및 기타 Mermaid 구성 옵션이 포함될 수 있습니다."
+    },
+    {
+      "type": "option",
+      "id": "MERMAID_RENDER_MODE",
+      "group": "Dot",
+      "en": "The \\c MERMAID_RENDER_MODE tag selects how Mermaid diagrams are rendered.",
+      "ko": "\\c MERMAID_RENDER_MODE 태그는 Mermaid 다이어그램이 렌더링되는 방식을 선택합니다."
+    },
+    {
+      "type": "option",
+      "id": "MERMAID_JS_URL",
+      "group": "Dot",
+      "en": "The \\c MERMAID_JS_URL tag specifies the URL to load \\c mermaid.js from when using\n client-side rendering (\\c MERMAID_RENDER_MODE is \\c CLIENT_SIDE or \\c AUTO).\n The default points to the latest Mermaid v11 release on the jsDelivr CDN.\n <br>\n The default CDN URL requires internet access when viewing the generated documentation.\n For offline use, download \\c mermaid.esm.min.mjs and set this to a relative path,\n or use \\c MERMAID_RENDER_MODE=CLI to pre-generate images instead.\n \\par Examples:\n - Latest v11 (default): \\c 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs'\n - Pinned version: \\c 'https://cdn.jsdelivr.net/npm/mermaid@11.3.0/dist/mermaid.esm.min.mjs'\n - Local copy: \\c './mermaid.esm.min.mjs' (user must place file in HTML output directory)",
+      "ko": "\\c MERMAID_JS_URL 태그는 클라이언트 측 렌더링을 사용하는 경우(\\c MERMAID_RENDER_MODE가 \\c CLIENT_SIDE 또는 \\c AUTO) \\c mermaid.js를 로드할 URL을 지정합니다. 기본값은 jsDelivr CDN의 최신 Mermaid v11을 가리킵니다. \\par 예: - 최신 v11(기본값): \\c 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs' - 고정된 버전: \\c 'https://cdn.jsdelivr.net/npm/mermaid@11.3.0/dist/mermaid.esm.min.mjs' - 로컬 복사본: \\c './mermaid.esm.min.mjs'(사용자는 파일을 HTML 출력 디렉토리에 배치해야 함) \\par 기본 CDN URL은 생성된 문서를 볼 때 인터넷 액세스가 필요합니다. 오프라인 사용의 경우 \\c mermaid.esm.min.mjs를 다운로드하고 이것을 상대 경로로 설정하거나 대신 \\c MERMAID_RENDER_MODE=CLI를 사용하여 이미지를 미리 생성하세요."
+    },
+    {
+      "type": "option",
+      "id": "MERMAIDFILE_DIRS",
+      "group": "Dot",
+      "en": "The \\c MERMAIDFILE_DIRS tag can be used to specify one or more directories that\n contain Mermaid files that are included in the documentation (see the\n \\ref cmdmermaidfile \"\\\\mermaidfile\" command).",
+      "ko": "\\c MERMAIDFILE_DIRS 태그를 사용하여 문서에 포함될 Mermaid 파일을 포함하는 하나 이상의 디렉토리를 지정할 수 있습니다(\\ref cmdmermaidfile \"\\mermaidfile\" 명령 참조)."
+    },
+    {
+      "type": "option",
+      "id": "MSCGEN_TOOL",
+      "group": "Dot",
+      "en": "You can define message sequence charts within Doxygen comments using the \\ref cmdmsc \"\\\\msc\"\n command. If the \\c MSCGEN_TOOL tag is left empty (the default), then Doxygen will use a built-in\n version of mscgen tool to produce the charts.\n Alternatively, the \\c MSCGEN_TOOL tag can also specify the name an external tool.\n For instance, specifying `prog` as the value, Doxygen will call the tool\n as `prog -T <outfile_format> -o <outputfile> <inputfile>`. The external tool\n should support output file formats \"png\", \"eps\", \"svg\", and \"ismap\".",
+      "ko": "Doxygen 주석 내에서 \\ref cmdmsc \"\\msc\" 명령을 사용하여 메시지 시퀀스 다이어그램을 정의할 수 있습니다. \\c MSCGEN_TOOL 태그가 비워진 경우(기본값) Doxygen은 다이어그램을 생성하기 위해 내장 버전의 mscgen 도구를 사용합니다. 또는 \\c MSCGEN_TOOL 태그로 외부 도구의 이름을 지정할 수도 있습니다. 예를 들어 값으로 `prog`를 지정하면 Doxygen은 도구를 `prog -T <outfile_format> -o <outputfile> <inputfile>`로 호출합니다. 외부 도구는 출력 파일 형식 \"png\", \"eps\", \"svg\" 및 \"ismap\"을 지원해야 합니다."
+    }
+  ]
+}
