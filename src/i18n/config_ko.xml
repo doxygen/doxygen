@@ -28,7 +28,7 @@
     </option>
     <option type="string" id="PROJECT_ICON" format="image" defval="">
       <docs>
-<![CDATA[\c PROJECT_ICON 태그를 사용하여 HTML 문서가 볼 때 탭에 포함될 아이콘을 지정할 수 있습니다. Doxygen은 로고를 출력 디렉토리에 복사합니다.]]>
+<![CDATA[\c PROJECT_ICON 태그를 사용하여 HTML 문서가 표시될 때 탭에 포함될 아이콘을 지정할 수 있습니다. Doxygen은 아이콘을 출력 디렉토리에 복사합니다.]]>
       </docs>
     </option>
     <option type="string" id="OUTPUT_DIRECTORY" format="dir" defval="">
