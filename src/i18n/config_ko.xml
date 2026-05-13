@@ -18,7 +18,7 @@
     </option>
     <option type="string" id="PROJECT_BRIEF" format="string" defval="">
       <docs>
-<![CDATA[\c PROJECT_BRIEF 태그를 사용하여 각 페이지 상단에 표시되는 프로젝트의 선택적 한 줄 설명을 제공할 수 있으며, 독자에게 프로젝트의 목적에 대한 빠른 아이디어를 제공합니다. 설명은 짧아야 합니다.]]>
+<![CDATA[\c PROJECT_BRIEF 태그를 사용하여 각 페이지 상단에 표시되는 프로젝트의 선택적 한 줄 설명을 제공할 수 있으며, 독자에게 프로젝트의 목적을 간략히 전달합니다. 설명은 짧아야 합니다.]]>
       </docs>
     </option>
     <option type="string" id="PROJECT_LOGO" format="image" defval="">
@@ -28,7 +28,7 @@
     </option>
     <option type="string" id="PROJECT_ICON" format="image" defval="">
       <docs>
-<![CDATA[\c PROJECT_ICON 태그를 사용하여 HTML 문서가 볼 때 탭에 포함될 아이콘을 지정할 수 있습니다. Doxygen은 로고를 출력 디렉터리에 복사합니다.]]>
+<![CDATA[\c PROJECT_ICON 태그를 사용하여 HTML 문서를 표시할 때 탭에 포함될 아이콘을 지정할 수 있습니다. Doxygen은 로고를 출력 디렉터리에 복사합니다.]]>
       </docs>
     </option>
     <option type="string" id="OUTPUT_DIRECTORY" format="dir" defval="">
@@ -53,7 +53,7 @@
     </option>
     <option type="enum" id="OUTPUT_LANGUAGE" defval="English">
       <docs>
-<![CDATA[\c OUTPUT_LANGUAGE 태그는 Doxygen에 의해 생성되는 모든 문서가 작성되는 언어를 지정하는 데 사용됩니다. Doxygen은 이 정보를 사용하여 적절한 언어로 모든 상수 출력을 생성합니다.]]>
+<![CDATA[\c OUTPUT_LANGUAGE 태그는 Doxygen에 의해 생성되는 모든 문서가 작성되는 언어를 지정하는 데 사용됩니다. Doxygen은 이 정보를 사용하여 적절한 언어로 모든 고정 문자열 출력을 생성합니다.]]>
       </docs>
       <value name="Afrikaans"/>
       <value name="Arabic"/>
