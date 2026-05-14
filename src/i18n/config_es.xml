@@ -199,7 +199,7 @@
     </option>
     <option type="list" id="ALIASES" format="string">
       <docs>
-<![CDATA[Esta etiqueta se puede usar para especificar varios alias que actuen como comandos en la documentación. Un alias tiene la forma: \verbatim nombre=valor\endverbatim Por ejemplo, agregar \verbatim "sideeffect=@par Efectos secundarios:^^"\endverbatim le permitirá colocar el comando \c \sideeffect (o \c \@sideeffect) en la documentación, lo que resultará en un párrafo definido por el usuario con el encabezado "Efectos secundarios:". Tenga en cuenta que no puede poner \ref cmdn "\n" en el valor de un alias para insertar un salto de línea (en la salida resultante). Puede poner `^^` en el valor de un alias para insertar un salto de línea como si hubiera un salto de línea físico en el archivo original. Si necesita un `{` o `}` o `,` literal en el valor de un alias, debe escaparlos con una barra invertida (\c \\).]]>
+<![CDATA[Esta etiqueta se puede usar para especificar varios alias que actuen como comandos en la documentación. Un alias tiene la forma: \verbatim nombre=valor\endverbatim Por ejemplo, agregar \verbatim "sideeffect=@par Efectos secundarios:^^"\endverbatim le permitirá colocar el comando \c \sideeffect (o \c \@sideeffect) en la documentación, lo que resultará en un párrafo definido por el usuario con el encabezado "Efectos secundarios:". Tenga en cuenta que no puede poner \ref cmdn "\n" en el valor de un alias para insertar un salto de línea (en la salida resultante). Puede poner `^^` en el valor de un alias para insertar un salto de línea como si hubiera un salto de línea físico en el archivo original. Si necesita un `{` o `}` o `,` literal en el valor de un alias, debe escaparlos con una barra invertida; esto puede generar conflictos con los comandos `\{` y `\}`, por lo que para estos se recomienda usar la versión `@{` y `@}` o usar una doble barra invertida (`\\\\{` y `\\\\}`).]]>
       </docs>
     </option>
     <option type="bool" id="OPTIMIZE_OUTPUT_FOR_C" defval="0">
@@ -229,7 +229,7 @@
     </option>
     <option type="list" id="EXTENSION_MAPPING" format="string">
       <docs>
-<![CDATA[Doxygen selecciona el analizador a usar basándose en la extensión del archivo a analizar. Con esta etiqueta puede asignar un analizador para usar con una extensión dada. Doxygen tiene un mapeo incorporado, pero puede anularlo o extenderlo con esta etiqueta. El formato es <code>ext=lenguaje</code>, donde \c ext es una extensión de archivo y lenguaje es uno de los analizadores soportados por Doxygen: IDL, Java, JavaScript, Csharp (C#), C, C++, Lex, D, PHP, md (Markdown), Objective-C, Python, Slice, VHDL, Fortran (Fortran de formato fijo: FortranFixed, Fortran de formato libre: FortranFree, Fortran de formato desconocido: Fortran. En este último caso, el analizador intentará adivinar si el código es de formato fijo o libre, que es el valor predeterminado para archivos de tipo Fortran). Por ejemplo, para hacer que Doxygen trate los archivos <code>.inc</code> como archivos Fortran (el valor predeterminado es PHP) y los archivos <code>.f</code> como C (el valor predeterminado es Fortran), use: `inc=Fortran f=C`. <br>Nota: Para archivos sin extensión, puede usar `no_extension` como comodín. <br>Nota: Para extensiones personalizadas, también debe configurar \ref cfg_file_patterns "FILE_PATTERNS", de lo contrario los archivos no serán leidos por Doxygen. <br>Nota: Vea también la lista de \ref default_file_extension_mapping "mapeos de extensiones de archivo predeterminados".]]>
+<![CDATA[Doxygen selecciona el analizador a usar basándose en la extensión del archivo a analizar. Con esta etiqueta puede asignar un analizador para usar con una extensión dada. Doxygen tiene un mapeo incorporado, pero puede anularlo o extenderlo con esta etiqueta. El formato es <code>ext=lenguaje</code>, donde \c ext es una extensión de archivo y lenguaje es uno de los analizadores soportados por Doxygen: IDL, Java, JavaScript, Csharp (C#), C, C++, Lex, D, PHP, md (Markdown), Objective-C, Python, Slice, VHDL, Fortran (Fortran de formato fijo: FortranFixed, Fortran de formato libre: FortranFree, Fortran de formato desconocido: Fortran. En este último caso, el analizador intentará adivinar si el código es de formato fijo o libre, que es el valor predeterminado para archivos de tipo Fortran). Por ejemplo, para hacer que Doxygen trate los archivos <code>.inc</code> como archivos Fortran (el valor predeterminado es PHP) y los archivos <code>.f</code> como C (el valor predeterminado es Fortran), use: `inc=Fortran f=C`. <br>Nota: Para archivos sin extensión, puede usar `no_extension` como comodín. <br>Nota: Cuando se especifica `no_extension`, también debe agregar `*` a \ref cfg_file_patterns "FILE_PATTERNS". <br>Nota: Para extensiones personalizadas, también debe configurar \ref cfg_file_patterns "FILE_PATTERNS", de lo contrario los archivos no serán leidos por Doxygen. <br>Nota: Vea también la lista de \ref default_file_extension_mapping "mapeos de extensiones de archivo predeterminados".]]>
       </docs>
     </option>
     <option type="bool" id="MARKDOWN_SUPPORT" defval="1">
@@ -276,7 +276,7 @@
     </option>
     <option type="bool" id="SIP_SUPPORT" defval="0">
       <docs>
-<![CDATA[Si usa SIP (vea https://www.riverbankcomputing.com/software/sip/) para crear enlaces Python, configure esta opción en \c YES para que Doxygen reconozca los comentarios especiales para soporte SIP.]]>
+<![CDATA[Configure la etiqueta \c SIP_SUPPORT en \c YES si su proyecto consiste solo en fuentes [sip]. Doxygen las analizará como C++ normal pero asumirá que todas las clases usan herencia pública en lugar de privada cuando no se presenta ninguna palabra clave de protección explícita.]]>
       </docs>
     </option>
     <option type="bool" id="IDL_PROPERTY_SUPPORT" defval="1">
@@ -441,7 +441,7 @@
     </option>
     <option type="bool" id="SHOW_GROUPED_MEMB_INC" defval="0">
       <docs>
-<![CDATA[Si la etiqueta \c SHOW_GROUPED_MEMB_INC está configurada en \c YES, las dependencias de inclusión para miembros de grupos se mostrarán en la documentación.]]>
+<![CDATA[Si la etiqueta \c SHOW_GROUPED_MEMB_INC está configurada en \c YES, Doxygen agregará para cada miembro agrupado una declaración de inclusión en la documentación, indicando al lector qué archivo debe incluir para poder usar el miembro.]]>
       </docs>
     </option>
     <option type="bool" id="FORCE_LOCAL_INCLUDES" defval="0">
@@ -530,17 +530,17 @@
     </option>
     <option type="bool" id="SHOW_USED_FILES" defval="1">
       <docs>
-<![CDATA[Configure la etiqueta \c SHOW_USED_FILES en \c NO para deshabilitar la lista de archivos generados al final de la documentación de una clase.]]>
+<![CDATA[Configure la etiqueta \c SHOW_USED_FILES en \c NO para deshabilitar la lista de archivos generados al final de la documentación de clases y estructuras. Si se configura en \c YES, la lista mencionará los archivos que se usaron para generar la documentación.]]>
       </docs>
     </option>
     <option type="bool" id="SHOW_FILES" defval="1">
       <docs>
-<![CDATA[Si la etiqueta \c SHOW_FILES está configurada en \c NO, la lista de archivos no se generará. Esto ahorra tiempo si tiene un número muy grande de archivos y no necesita la lista de archivos.]]>
+<![CDATA[Configure la etiqueta \c SHOW_FILES en \c NO para deshabilitar la generación de la página de Archivos. Esto eliminará la entrada de Archivos del Índice Rápido y de la Vista de Árbol de Carpetas (si está especificada).]]>
       </docs>
     </option>
     <option type="bool" id="SHOW_NAMESPACES" defval="1">
       <docs>
-<![CDATA[Si la etiqueta \c SHOW_NAMESPACES está configurada en \c NO, la lista de espacios de nombres no se generará. Esto ahorra tiempo si tiene un número muy grande de espacios de nombres y no necesita la lista de espacios de nombres.]]>
+<![CDATA[Configure la etiqueta \c SHOW_NAMESPACES en \c NO para deshabilitar la generación de la página de Espacios de nombres. Esto eliminará la entrada de Espacios de nombres del Índice Rápido y de la Vista de Árbol de Carpetas (si está especificada).]]>
       </docs>
     </option>
     <option type="string" id="FILE_VERSION_FILTER" format="file" defval="">
@@ -718,28 +718,28 @@
     </option>
     <option type="list" id="EXCLUDE_PATTERNS" format="string">
       <docs>
-<![CDATA[Si el valor de la etiqueta \ref cfg_input "INPUT" contiene directorios, puede usar la etiqueta \c EXCLUDE_PATTERNS para especificar uno o más patrones de comodín para excluir ciertos archivos de esos directorios.]]>
+<![CDATA[Si el valor de la etiqueta \ref cfg_input "INPUT" contiene directorios, puede usar la etiqueta \c EXCLUDE_PATTERNS para especificar uno o más patrones de comodín para excluir ciertos archivos de esos directorios. <br>Nota: Los comodines se comparan contra el archivo con ruta absoluta, por lo que para excluir todos los directorios de prueba, por ejemplo, use el patrón `*/test/*`]]>
       </docs>
     </option>
     <option type="list" id="EXCLUDE_SYMBOLS" format="string">
       <docs>
-<![CDATA[La etiqueta \c EXCLUDE_SYMBOLS se puede usar para especificar uno o más nombres de símbolos que deben excluirse de la salida. El símbolo puede ser un nombre de función, variable, estructura, typedef, etc.]]>
+<![CDATA[La etiqueta \c EXCLUDE_SYMBOLS se puede usar para especificar uno o más nombres de símbolos (espacios de nombres, clases, funciones, etc.) que deben excluirse de la salida. El nombre del símbolo puede ser un nombre completamente calificado, una palabra, o si se usa el comodín `*`, una subcadena. Ejemplos: `ANamespace`, `AClass`, `ANamespace::AClass`, `ANamespace::*Test`]]>
       </docs>
     </option>
     <option type="list" id="EXAMPLE_PATH" format="filedir">
       <docs>
-<![CDATA[La etiqueta \c EXAMPLE_PATH se puede usar para especificar uno o más archivos o directorios que contienen fragmentos de código de ejemplo.]]>
+<![CDATA[La etiqueta \c EXAMPLE_PATH se puede usar para especificar uno o más archivos o directorios que contienen fragmentos de código de ejemplo que se incluyen (vea el comando \ref cmdinclude "\\include").]]>
       </docs>
     </option>
     <option type="list" id="EXAMPLE_PATTERNS" format="string">
       <docs>
-<![CDATA[Si el valor de la etiqueta \ref cfg_example_path "EXAMPLE_PATH" contiene directorios, puede usar la etiqueta \c EXAMPLE_PATTERNS para especificar uno o más patrones de comodín para filtrar los archivos fuente en los directorios.]]>
+<![CDATA[Si el valor de la etiqueta \ref cfg_example_path "EXAMPLE_PATH" contiene directorios, puede usar la etiqueta \c EXAMPLE_PATTERNS para especificar uno o más patrones de comodín para filtrar los archivos fuente en los directorios. Si se deja vacío, se incluyen todos los archivos.]]>
       </docs>
       <value name="*" show_docu="NO"/>
     </option>
     <option type="bool" id="EXAMPLE_RECURSIVE" defval="0">
       <docs>
-<![CDATA[Si la etiqueta \c EXAMPLE_RECURSIVE está configurada en \c YES, se buscarán subdirectorios en busca de archivos de entrada. Si se configura en \c NO, solo se buscarán los directorios especificados en la etiqueta \ref cfg_example_path "EXAMPLE_PATH".]]>
+<![CDATA[Si la etiqueta \c EXAMPLE_RECURSIVE está configurada en \c YES, se buscarán subdirectorios en los directorios especificados con \ref cfg_example_path "EXAMPLE_PATH" en busca de archivos de entrada para los comandos \ref cmdinclude "\\include" o \ref cmddontinclude "\\dontinclude", independientemente del valor de la etiqueta \ref cfg_recursive "RECURSIVE".]]>
       </docs>
     </option>
     <option type="list" id="IMAGE_PATH" format="filedir">
@@ -791,7 +791,7 @@
     </option>
     <option type="bool" id="INLINE_SOURCES" defval="0">
       <docs>
-<![CDATA[Si la etiqueta \c INLINE_SOURCES está configurada en \c YES, el cuerpo de funciones, clases y espacios de nombres se insertará directamente en la documentación.]]>
+<![CDATA[Si la etiqueta \c INLINE_SOURCES está configurada en \c YES, el cuerpo de funciones, macros multilínea, enumeraciones o variables inicializadas con lista se insertará directamente en la documentación.]]>
       </docs>
     </option>
     <option type="bool" id="STRIP_CODE_COMMENTS" defval="1">
@@ -831,7 +831,7 @@
     </option>
     <option type="bool" id="CLANG_ASSISTED_PARSING" setting="USE_LIBCLANG" defval="0">
       <docs>
-<![CDATA[Si la etiqueta \c CLANG_ASSISTED_PARSING está configurada en \c YES, Doxygen usará el analizador clang para un análisis más preciso a costa de un rendimiento reducido.]]>
+<![CDATA[Si la etiqueta \c CLANG_ASSISTED_PARSING está configurada en \c YES, Doxygen usará el analizador clang para un análisis más preciso a costa de un rendimiento reducido. Esto puede ser particularmente útil para código C++ rico en plantillas para el cual el analizador integrado de Doxygen carece de la información de tipo necesaria. @note La disponibilidad de esta opción depende de si Doxygen fue generado con la opción `-Duse_libclang=ON` para CMake.]]>
       </docs>
     </option>
     <option type="bool" id="CLANG_ADD_INC_PATHS" setting="USE_LIBCLANG" depends="CLANG_ASSISTED_PARSING" defval="1">
@@ -846,14 +846,14 @@
     </option>
     <option type="string" id="CLANG_DATABASE_PATH" setting="USE_LIBCLANG" defval="">
       <docs>
-<![CDATA[Si el análisis asistido por clang está habilitado, puede proporcionar al analizador clang la ruta al directorio que contiene un archivo llamado `compile_commands.json`. Este archivo puede ser generado por CMake con la opción CMAKE_EXPORT_COMPILE_COMMANDS.]]>
+<![CDATA[Si el análisis asistido por clang está habilitado, puede proporcionar al analizador clang la ruta al directorio que contiene un archivo llamado `compile_commands.json`. Este archivo puede ser generado por CMake con la opción CMAKE_EXPORT_COMPILE_COMMANDS. Esto es equivalente a especificar la opción `-p` a una herramienta clang, como `clang-check`. Estas opciones se pasarán al analizador. También se agregarán las opciones especificadas con \ref cfg_clang_options "CLANG_OPTIONS". @note La disponibilidad de esta opción depende de si Doxygen fue generado con la opción `-Duse_libclang=ON` para CMake.]]>
       </docs>
     </option>
   </group>
   <group name="Index" trname="Índice" docs="Opciones de configuración relacionadas con el índice alfabético de clases">
     <option type="bool" id="ALPHABETICAL_INDEX" defval="1">
       <docs>
-<![CDATA[Si la etiqueta \c ALPHABETICAL_INDEX está configurada en \c YES, se generará un índice alfabético de todas las entidades. Si configura las etiquetas \ref cfg_extract_all "EXTRACT_ALL" y \ref cfg_extract_private "EXTRACT_PRIVATE" en \c YES, también se generará el índice de todos los elementos internos. Si no desea esto, puede configurar \ref cfg_ignore_prefix "IGNORE_PREFIX" en un valor no vacío.]]>
+<![CDATA[Si la etiqueta \c ALPHABETICAL_INDEX está configurada en \c YES, se generará un índice alfabético de todos los compuestos. Habilítela si el proyecto contiene muchas clases, estructuras, uniones o interfaces.]]>
       </docs>
     </option>
     <option type="list" id="IGNORE_PREFIX" format="string" depends="ALPHABETICAL_INDEX">
@@ -1100,7 +1100,7 @@
     </option>
     <option type="int" id="ENUM_VALUES_PER_LINE" minval="0" maxval="20" defval="4" depends="GENERATE_HTML">
       <docs>
-<![CDATA[La etiqueta \c ENUM_VALUES_PER_LINE se puede usar para establecer el número de valores de enumeración que Doxygen agrupará en una línea.]]>
+<![CDATA[La etiqueta \c ENUM_VALUES_PER_LINE se puede usar para establecer el número de valores de enumeración que Doxygen agrupará en una línea. <br>Tenga en cuenta que un valor de 0 suprimirá completamente los valores de enumeración de la sección de descripción general.]]>
       </docs>
     </option>
     <option type="bool" id="SHOW_ENUM_VALUES" defval="0">
@@ -1321,12 +1321,12 @@
     </option>
     <option type="string" id="LATEX_BIB_STYLE" format="string" defval="plainnat" depends="GENERATE_LATEX">
       <docs>
-<![CDATA[La etiqueta \c LATEX_BIB_STYLE se puede usar para especificar el estilo de bibliografia que usa la herramienta \c bibtex. Por defecto, esto está configurado en `plainnat`.]]>
+<![CDATA[La etiqueta \c LATEX_BIB_STYLE se puede usar para especificar el estilo a usar para la bibliografía, p. ej. \c plainnat o \c ieeetr. Vea https://en.wikipedia.org/wiki/BibTeX y \ref cmdcite "\\cite" para más información.]]>
       </docs>
     </option>
     <option type="string" id="LATEX_EMOJI_DIRECTORY" format="dir" defval="" depends="GENERATE_LATEX">
       <docs>
-<![CDATA[La etiqueta \c LATEX_EMOJI_DIRECTORY se usa para especificar la ruta desde donde se leen las imagenes de emoji. Si se deja vacío, se usará el directorio de emoji predeterminado.]]>
+<![CDATA[La etiqueta \c LATEX_EMOJI_DIRECTORY se usa para especificar la ruta (relativa o absoluta) desde donde se leen las imagenes de emoji. Si se ingresa una ruta relativa, será relativa al directorio \ref cfg_latex_output "LATEX_OUTPUT". Si se deja vacío, se usará el directorio \ref cfg_latex_output "LATEX_OUTPUT".]]>
       </docs>
     </option>
   </group>
@@ -1348,7 +1348,7 @@
     </option>
     <option type="bool" id="RTF_HYPERLINKS" defval="0" depends="GENERATE_RTF">
       <docs>
-<![CDATA[Si la etiqueta \c RTF_HYPERLINKS está configurada en \c YES, la salida RTF generada puede contener enlaces. Esto requiere que el archivo de salida sea leido por aplicaciones como Word o WordPad que soportan enlaces RTF. Para otras aplicaciones, los enlaces aparecen como texto normal.]]>
+<![CDATA[Si la etiqueta \c RTF_HYPERLINKS está configurada en \c YES, el RTF generado contendrá campos de hipervínculo. El archivo RTF contendrá enlaces (igual que la salida HTML) en lugar de referencias de página. Esto hace que la salida sea adecuada para navegación en línea usando Word u otros lectores compatibles con Word que soporten esos campos. <br>Nota: WordPad (write) y otros no soportan enlaces.]]>
       </docs>
     </option>
     <option type="string" id="RTF_STYLESHEET_FILE" format="file" defval="" depends="GENERATE_RTF">
