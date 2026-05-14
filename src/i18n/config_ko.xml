@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<doxygenconfig>
-  <group name="Project" docs="Project related configuration options">
+<doxygenconfig lang="한국어">
+  <group name="Project" trname="프로젝트" docs="프로젝트 관련 구성 옵션">
     <option type="string" id="DOXYFILE_ENCODING" format="string" defval="UTF-8">
       <docs>
 <![CDATA[이 태그는 구성 파일에서 이 태그 이후에 오는 모든 문자에 사용되는 인코딩을 지정합니다. 기본값은 UTF-8이며, 이 태그가 처음 나타나기 전의 모든 텍스트에도 사용되는 인코딩입니다. Doxygen은 트랜스코딩을 위해 \c libiconv(또는 \c libc에 내장된 iconv)를 사용합니다. 가능한 인코딩 목록은 https://www.gnu.org/software/libiconv/을 참조하세요.]]>
@@ -18,32 +18,32 @@
     </option>
     <option type="string" id="PROJECT_BRIEF" format="string" defval="">
       <docs>
-<![CDATA[\c PROJECT_BRIEF 태그를 사용하여 각 페이지 상단에 표시되는 프로젝트의 선택적 한 줄 설명을 제공할 수 있으며, 독자에게 프로젝트의 목적에 대한 빠른 아이디어를 제공합니다. 설명은 짧아야 합니다.]]>
+<![CDATA[\c PROJECT_BRIEF 태그를 사용하여 각 페이지 상단에 표시되는 프로젝트의 선택적 한 줄 설명을 제공할 수 있으며, 독자에게 프로젝트의 목적을 간략히 전달합니다. 설명은 짧아야 합니다.]]>
       </docs>
     </option>
     <option type="string" id="PROJECT_LOGO" format="image" defval="">
       <docs>
-<![CDATA[\c PROJECT_LOGO 태그를 사용하여 문서에 포함될 로고 또는 아이콘을 지정할 수 있습니다. 로고의 최대 높이는 55픽셀을 초과해서는 안 되며, 최대 너비는 200픽셀을 초과해서는 안 됩니다. Doxygen은 로고를 출력 디렉토리에 복사합니다.]]>
+<![CDATA[\c PROJECT_LOGO 태그를 사용하여 문서에 포함될 로고 또는 아이콘을 지정할 수 있습니다. 로고의 최대 높이는 55픽셀을 초과해서는 안 되며, 최대 너비는 200픽셀을 초과해서는 안 됩니다. Doxygen은 로고를 출력 디렉터리에 복사합니다.]]>
       </docs>
     </option>
     <option type="string" id="PROJECT_ICON" format="image" defval="">
       <docs>
-<![CDATA[\c PROJECT_ICON 태그를 사용하여 HTML 문서가 볼 때 탭에 포함될 아이콘을 지정할 수 있습니다. Doxygen은 로고를 출력 디렉토리에 복사합니다.]]>
+<![CDATA[\c PROJECT_ICON 태그를 사용하여 HTML 문서를 표시할 때 탭에 포함될 아이콘을 지정할 수 있습니다. Doxygen은 로고를 출력 디렉터리에 복사합니다.]]>
       </docs>
     </option>
     <option type="string" id="OUTPUT_DIRECTORY" format="dir" defval="">
       <docs>
-<![CDATA[\c OUTPUT_DIRECTORY 태그는 생성된 문서가 기록될 경로(상대 또는 절대)를 지정하는 데 사용됩니다. 상대 경로가 입력되면 Doxygen이 시작된 위치에서의 상대 경로가 됩니다. 비워 두면 현재 디렉토리가 사용됩니다.]]>
+<![CDATA[\c OUTPUT_DIRECTORY 태그는 생성된 문서가 기록될 경로(상대 또는 절대)를 지정하는 데 사용됩니다. 상대 경로가 입력되면 Doxygen이 시작된 위치에서의 상대 경로가 됩니다. 비워 두면 현재 디렉터리가 사용됩니다.]]>
       </docs>
     </option>
     <option type="bool" id="CREATE_SUBDIRS" defval="0">
       <docs>
-<![CDATA[\c CREATE_SUBDIRS 태그가 \c YES로 설정되면 Doxygen은 각 출력 형식의 출력 디렉토리 아래에 최대 4096개의 하위 디렉토리(2레벨)를 생성하고 생성된 파일을 이러한 디렉토리에 분산시킵니다. 이 옵션을 활성화하면 Doxygen에 많은 소스 파일을 공급할 때 편리합니다. 모든 생성 파일을 동일한 디렉토리에 두면 파일 시스템 성능 문제가 발생할 수 있습니다. 하위 디렉토리 수를 제어하려면 \c CREATE_SUBDIRS_LEVEL을 조정하세요.]]>
+<![CDATA[\c CREATE_SUBDIRS 태그가 \c YES로 설정되면 Doxygen은 각 출력 형식의 출력 디렉터리 아래에 최대 4096개의 하위 디렉터리(2레벨)를 생성하고 생성된 파일을 이러한 디렉터리에 분산시킵니다. 이 옵션을 활성화하면 Doxygen에 많은 소스 파일을 공급할 때 편리합니다. 모든 생성 파일을 동일한 디렉터리에 두면 파일 시스템 성능 문제가 발생할 수 있습니다. 하위 디렉터리 수를 제어하려면 \c CREATE_SUBDIRS_LEVEL을 조정하세요.]]>
       </docs>
     </option>
     <option type="int" id="CREATE_SUBDIRS_LEVEL" minval="0" maxval="8" defval="8" depends="CREATE_SUBDIRS">
       <docs>
-<![CDATA[\c CREATE_SUBDIRS 태그가 \c YES로 설정된 경우 생성되는 하위 디렉토리 수를 제어합니다. 레벨 0은 16개 디렉토리를 나타내며, 레벨이 증가할 때마다 디렉토리 수가 두 배가 되어 레벨 8에서 4096개 디렉토리가 됩니다. 이것이 기본값이자 최대값입니다. 하위 디렉토리는 2레벨로 구성되며, 첫 번째 레벨은 항상 16개 디렉토리의 고정된 수를 가집니다.]]>
+<![CDATA[\c CREATE_SUBDIRS 태그가 \c YES로 설정된 경우 생성되는 하위 디렉터리 수를 제어합니다. 레벨 0은 16개 디렉터리를 나타내며, 레벨이 증가할 때마다 디렉터리 수가 두 배가 되어 레벨 8에서 4096개 디렉터리가 됩니다. 이것이 기본값이자 최대값입니다. 하위 디렉터리는 2레벨로 구성되며, 첫 번째 레벨은 항상 16개 디렉터리의 고정된 수를 가집니다.]]>
       </docs>
     </option>
     <option type="bool" id="ALLOW_UNICODE_NAMES" defval="0">
@@ -53,7 +53,7 @@
     </option>
     <option type="enum" id="OUTPUT_LANGUAGE" defval="English">
       <docs>
-<![CDATA[\c OUTPUT_LANGUAGE 태그는 Doxygen에 의해 생성되는 모든 문서가 작성되는 언어를 지정하는 데 사용됩니다. Doxygen은 이 정보를 사용하여 적절한 언어로 모든 상수 출력을 생성합니다.]]>
+<![CDATA[\c OUTPUT_LANGUAGE 태그는 Doxygen에 의해 생성되는 모든 문서가 작성되는 언어를 지정하는 데 사용됩니다. Doxygen은 이 정보를 사용하여 적절한 언어로 모든 고정 문자열 출력을 생성합니다.]]>
       </docs>
       <value name="Afrikaans"/>
       <value name="Arabic"/>
@@ -144,7 +144,7 @@
     </option>
     <option type="list" id="STRIP_FROM_PATH" format="dir" depends="FULL_PATH_NAMES">
       <docs>
-<![CDATA[\c STRIP_FROM_PATH 태그를 사용하여 경로의 사용자 정의 부분을 제거할 수 있습니다. 제거는 지정된 문자열 중 하나가 경로의 왼쪽 부분과 일치하는 경우에만 수행됩니다. 이 태그를 사용하여 파일 목록에 상대 경로를 표시할 수 있습니다. 비워 두면 Doxygen이 실행되는 디렉토리가 제거할 경로로 사용됩니다.<br>여기에 절대 경로를 지정할 수 있지만, Doxygen이 시작되는 디렉토리에서의 상대 경로도 지정할 수 있습니다.]]>
+<![CDATA[\c STRIP_FROM_PATH 태그를 사용하여 경로의 사용자 정의 부분을 제거할 수 있습니다. 제거는 지정된 문자열 중 하나가 경로의 왼쪽 부분과 일치하는 경우에만 수행됩니다. 이 태그를 사용하여 파일 목록에 상대 경로를 표시할 수 있습니다. 비워 두면 Doxygen이 실행되는 디렉터리가 제거할 경로로 사용됩니다.<br>여기에 절대 경로를 지정할 수 있지만, Doxygen이 시작되는 디렉터리에서의 상대 경로도 지정할 수 있습니다.]]>
       </docs>
     </option>
     <option type="list" id="STRIP_FROM_INC_PATH" format="dir">
@@ -229,7 +229,7 @@
     </option>
     <option type="list" id="EXTENSION_MAPPING" format="string">
       <docs>
-<![CDATA[Doxygen은 구문 분석하는 파일의 확장자에 따라 사용할 파서를 선택합니다. 이 태그를 사용하여 특정 확장자에 사용할 파서를 할당할 수 있습니다. Doxygen에는 기본 제공 매핑이 있지만 이 태그를 사용하여 재정의하거나 확장할 수 있습니다. 형식은 <code>ext=language</code>이며, \c ext는 파일 확장자, language는 Doxygen이 지원하는 파서 중 하나입니다: IDL, Java, JavaScript, Csharp(C#), C, C++, Lex, D, PHP, md(Markdown), Objective-C, Python, Slice, VHDL, Fortran(고정 형식 Fortran: FortranFixed, 자유 형식 Fortran: FortranFree, 알 수 없는 형식 Fortran: Fortran. 후자의 경우 파서는 코드가 고정 형식인지 자유 형식인지 추측하려고 시도합니다. 이것이 Fortran 유형 파일의 기본값입니다). 예를 들어 Doxygen이 <code>.inc</code> 파일을 Fortran 파일로 처리하게 하고(기본값은 PHP), <code>.f</code> 파일을 C로 처리하게 하려면(기본값은 Fortran), `inc=Fortran f=C`를 사용하세요.<br>참고: 확장자가 없는 파일의 경우 플레이스홀더로 `no_extension`을 사용할 수 있습니다.<br>사용자 정의 확장자의 경우 \ref cfg_file_patterns "FILE_PATTERNS"도 설정해야 합니다. 그렇지 않으면 파일이 Doxygen에서 읽히지 않습니다. `no_extension`을 지정하는 경우 \ref cfg_file_patterns "FILE_PATTERNS"에 `*`를 추가해야 합니다.<br>\ref default_file_extension_mapping "기본 파일 확장자 매핑" 목록도 참조하세요.]]>
+<![CDATA[Doxygen은 구문 분석하는 파일의 확장자에 따라 사용할 파서를 선택합니다. 이 태그를 사용하여 특정 확장자에 사용할 파서를 할당할 수 있습니다. Doxygen에는 기본 제공 매핑이 있지만 이 태그를 사용하여 재정의하거나 확장할 수 있습니다. 형식은 `ext=language`이며, `ext`는 파일 확장자, `language`는 Doxygen이 지원하는 파서 중 하나입니다: IDL, Java, JavaScript, Csharp(C#), C, C++, Lex, D, PHP, md(Markdown), Objective-C, Python, Slice, VHDL, Fortran(고정 형식 Fortran: FortranFixed, 자유 형식 Fortran: FortranFree, 알 수 없는 형식 Fortran: Fortran. 후자의 경우 파서는 코드가 고정 형식인지 자유 형식인지 추측하려고 시도합니다. 이것이 Fortran 유형 파일의 기본값입니다). 예를 들어 Doxygen이 <code>.inc</code> 파일을 Fortran 파일로 처리하게 하고(기본값은 PHP), <code>.f</code> 파일을 C로 처리하게 하려면(기본값은 Fortran), `inc=Fortran f=C`를 사용하세요.<br>참고: 확장자가 없는 파일의 경우 플레이스홀더로 `no_extension`을 사용할 수 있습니다.<br>사용자 정의 확장자의 경우 \ref cfg_file_patterns "FILE_PATTERNS"도 설정해야 합니다. 그렇지 않으면 파일이 Doxygen에서 읽히지 않습니다. `no_extension`을 지정하는 경우 \ref cfg_file_patterns "FILE_PATTERNS"에 `*`를 추가해야 합니다.<br>\ref default_file_extension_mapping "기본 파일 확장자 매핑" 목록도 참조하세요.]]>
       </docs>
     </option>
     <option type="bool" id="MARKDOWN_SUPPORT" defval="1">
@@ -335,7 +335,7 @@
       <value name="DATE"/>
     </option>
   </group>
-  <group name="Build" docs="Build related configuration options">
+  <group name="Build" trname="빌드" docs="빌드 관련 구성 옵션">
     <option type="bool" id="EXTRACT_ALL" defval="0">
       <docs>
 <![CDATA[\c EXTRACT_ALL 태그가 \c YES로 설정되면 Doxygen은 문서의 모든 엔티티가 문서화된 것으로 가정합니다. 문서를 사용할 수 없는 경우에도 마찬가지입니다. private 클래스 멤버와 static 파일 멤버는 \ref cfg_extract_private "EXTRACT_PRIVATE" 및 \ref cfg_extract_static "EXTRACT_STATIC" 태그가 \c YES로 설정되지 않은 한 숨겨집니다.\note 이렇게 하면 \ref cfg_warnings "WARNINGS"가 \c YES로 설정된 경우 일반적으로 생성되는 문서화되지 않은 멤버에 대한 경고도 비활성화됩니다.]]>
@@ -413,7 +413,7 @@
     </option>
     <option type="enum" id="CASE_SENSE_NAMES" defval="SYSTEM">
       <docs>
-<![CDATA[\c CASE_SENSE_NAMES 옵션의 올바른 설정을 통해 Doxygen은 기본 파일 시스템의 기능과 더 잘 일치할 수 있습니다. 파일 시스템이 대소문자를 구분하는 경우(즉, 대소문자만 다른 이름을 가진 파일을 동일한 디렉토리에서 지원하는 경우), 입력에 그러한 파일이 나타나는 경우 옵션을 \c YES로 설정하여 해당 파일을 적절하게 처리해야 합니다. 대소문자를 구분하지 않는 파일 시스템의 경우, 옵션을 \c NO로 설정하여 대소문자만 다른 기호에 대해 작성된 출력 파일을 적절하게 처리해야 합니다. 예를 들어, \c CLASS와 \c Class라는 이름의 두 클래스, 그리고 파일에 대한 참조도 정확히 일치하는 대소문자를 지정하지 않고 지원하기 위해서입니다. Windows(Cygwin 포함) 및 macOS에서는 사용자가 일반적으로 이 옵션을 \c NO로 설정해야 하지만, Linux 또는 기타 Unix 계열에서는 일반적으로 \c YES로 설정해야 합니다.]]>
+<![CDATA[\c CASE_SENSE_NAMES 옵션의 올바른 설정을 통해 Doxygen은 기본 파일 시스템의 기능과 더 잘 일치할 수 있습니다. 파일 시스템이 대소문자를 구분하는 경우(즉, 대소문자만 다른 이름을 가진 파일을 동일한 디렉터리에서 지원하는 경우), 입력에 그러한 파일이 나타나는 경우 옵션을 \c YES로 설정하여 해당 파일을 적절하게 처리해야 합니다. 대소문자를 구분하지 않는 파일 시스템의 경우, 옵션을 \c NO로 설정하여 대소문자만 다른 기호에 대해 작성된 출력 파일을 적절하게 처리해야 합니다. 예를 들어, \c CLASS와 \c Class라는 이름의 두 클래스, 그리고 파일에 대한 참조도 정확히 일치하는 대소문자를 지정하지 않고 지원하기 위해서입니다. Windows(Cygwin 포함) 및 macOS에서는 사용자가 일반적으로 이 옵션을 \c NO로 설정해야 하지만, Linux 또는 기타 Unix 계열에서는 일반적으로 \c YES로 설정해야 합니다.]]>
       </docs>
       <value name="SYSTEM"/>
       <value name="NO"/>
@@ -550,7 +550,7 @@
     </option>
     <option type="string" id="LAYOUT_FILE" format="file" defval="">
       <docs>
-<![CDATA[\c LAYOUT_FILE 태그를 사용하여 Doxygen이 구문 분석할 레이아웃 파일을 지정할 수 있습니다. 레이아웃 파일은 생성된 출력 파일의 전역 구조를 출력 형식 독립적인 방식으로 제어합니다. Doxygen의 기본값을 나타내는 레이아웃 파일을 생성하려면 `-l` 옵션을 지정하여 Doxygen을 실행합니다. 선택적으로 파일 이름을 지정할 수 있습니다. 생략하면 \c DoxygenLayout.xml이 레이아웃 파일의 이름으로 사용됩니다. 자세한 내용은 섹션 \ref layout도 참조하세요.<br>\c DoxygenLayout.xml이라는 파일을 포함하는 디렉토리에서 Doxygen을 실행하면 \c LAYOUT_FILE 태그가 비워 두어도 Doxygen이 자동으로 이를 구문 분석합니다.]]>
+<![CDATA[\c LAYOUT_FILE 태그를 사용하여 Doxygen이 구문 분석할 레이아웃 파일을 지정할 수 있습니다. 레이아웃 파일은 생성된 출력 파일의 전역 구조를 출력 형식 독립적인 방식으로 제어합니다. Doxygen의 기본값을 나타내는 레이아웃 파일을 생성하려면 `-l` 옵션을 지정하여 Doxygen을 실행합니다. 선택적으로 파일 이름을 지정할 수 있습니다. 생략하면 \c DoxygenLayout.xml이 레이아웃 파일의 이름으로 사용됩니다. 자세한 내용은 섹션 \ref layout도 참조하세요.<br>\c DoxygenLayout.xml이라는 파일을 포함하는 디렉터리에서 Doxygen을 실행하면 \c LAYOUT_FILE 태그가 비워 두어도 Doxygen이 자동으로 이를 구문 분석합니다.]]>
       </docs>
     </option>
     <option type="list" id="CITE_BIB_FILES" format="file">
@@ -560,11 +560,11 @@
     </option>
     <option type="list" id="EXTERNAL_TOOL_PATH" format="dir" defval="">
       <docs>
-<![CDATA[\c EXTERNAL_TOOL_PATH 태그를 사용하여 \c latex 및 \c gs와 같은 외부 도구를 찾을 수 있도록 검색 경로(PATH 환경 변수)를 확장할 수 있습니다.\note EXTERNAL_TOOL_PATH에서 지정된 디렉토리는 PATH 변수에서 이미 지정된 경로 앞에 추가되며, 지정된 순서대로 추가됩니다.\note 이 옵션은 Doxywizard에서 Doxygen을 실행하는 경우 macOS 버전 14(Sonoma) 이상에서 특히 편리합니다. 이 경우 PATH에 대한 사용자 정의 변경 사항이 무시되기 때문입니다. macOS의 일반적인 예는 \verbatim EXTERNAL_TOOL_PATH = /Library/TeX/texbin /usr/local/bin \endverbatim 표준 경로와 함께 설정하면 외부 도구를 시작할 때 doxygen이 사용하는 전체 검색 경로는 \verbatim PATH=/Library/TeX/texbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin \endverbatim이 됩니다.]]>
+<![CDATA[\c EXTERNAL_TOOL_PATH 태그를 사용하여 \c latex 및 \c gs와 같은 외부 도구를 찾을 수 있도록 검색 경로(PATH 환경 변수)를 확장할 수 있습니다.\note EXTERNAL_TOOL_PATH에서 지정된 디렉터리는 PATH 변수에서 이미 지정된 경로 앞에 추가되며, 지정된 순서대로 추가됩니다.\note 이 옵션은 Doxywizard에서 Doxygen을 실행하는 경우 macOS 버전 14(Sonoma) 이상에서 특히 편리합니다. 이 경우 PATH에 대한 사용자 정의 변경 사항이 무시되기 때문입니다. macOS의 일반적인 예는 \verbatim EXTERNAL_TOOL_PATH = /Library/TeX/texbin /usr/local/bin \endverbatim 표준 경로와 함께 설정하면 외부 도구를 시작할 때 doxygen이 사용하는 전체 검색 경로는 \verbatim PATH=/Library/TeX/texbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin \endverbatim이 됩니다.]]>
       </docs>
     </option>
   </group>
-  <group name="Messages" docs="Configuration options related to warning and progress messages">
+  <group name="Messages" trname="메시지" docs="경고 및 진행 메시지 관련 구성 옵션">
     <option type="bool" id="QUIET" defval="0">
       <docs>
 <![CDATA[\c QUIET 태그를 사용하여 Doxygen에 의해 표준 출력에 생성되는 메시지를 켜거나 끌 수 있습니다. \c QUIET가 \c YES로 설정되면 메시지가 꺼져 있음을 의미합니다.]]>
@@ -630,10 +630,10 @@
       </docs>
     </option>
   </group>
-  <group name="Input" docs="Configuration options related to the input files">
+  <group name="Input" trname="입력" docs="입력 파일 관련 구성 옵션">
     <option type="list" id="INPUT" format="filedir">
       <docs>
-<![CDATA[\c INPUT 태그는 문서화된 소스 파일을 포함하는 파일 및/또는 디렉토리를 지정하는 데 사용됩니다. \c myfile.cpp와 같은 파일 이름 또는 \c /usr/src/myproject와 같은 디렉토리를 입력할 수 있습니다. 파일 또는 디렉토리를 공백으로 구분하세요. \ref cfg_file_patterns "FILE_PATTERNS" 및 \ref cfg_extension_mapping "EXTENSION_MAPPING"도 참조하세요.\note 이 태그가 비어 있으면 현재 디렉토리가 검색됩니다.]]>
+<![CDATA[\c INPUT 태그는 문서화된 소스 파일을 포함하는 파일 및/또는 디렉터리를 지정하는 데 사용됩니다. \c myfile.cpp와 같은 파일 이름 또는 \c /usr/src/myproject와 같은 디렉터리를 입력할 수 있습니다. 파일 또는 디렉터리를 공백으로 구분하세요. \ref cfg_file_patterns "FILE_PATTERNS" 및 \ref cfg_extension_mapping "EXTENSION_MAPPING"도 참조하세요.\note 이 태그가 비어 있으면 현재 디렉터리가 검색됩니다.]]>
       </docs>
     </option>
     <option type="string" id="INPUT_ENCODING" format="string" defval="UTF-8">
@@ -648,7 +648,7 @@
     </option>
     <option type="list" id="FILE_PATTERNS" format="string">
       <docs>
-<![CDATA[\ref cfg_input "INPUT" 태그의 값에 디렉토리가 포함된 경우 \c FILE_PATTERNS 태그를 사용하여 디렉토리 내의 소스 파일을 필터링하는 하나 이상의 와일드카드 패턴(`*.cpp` 및 `*.h`처럼)을 지정할 수 있습니다.<br>사용자 정의 확장자 또는 직접 지원되지 않는 확장자의 경우 확장자에 대한 \ref cfg_extension_mapping "EXTENSION_MAPPING"도 설정해야 합니다. 그렇지 않으면 파일이 Doxygen에서 읽히지 않습니다.<br>기본적으로 확인되는 파일 패턴 목록은 \ref default_file_extension_mapping "기본 파일 확장자 매핑" 목록과 다를 수 있습니다.<br>비워 두면 다음 패턴이 테스트됩니다:]]>
+<![CDATA[\ref cfg_input "INPUT" 태그의 값에 디렉터리가 포함된 경우 \c FILE_PATTERNS 태그를 사용하여 디렉터리 내의 소스 파일을 필터링하는 하나 이상의 와일드카드 패턴(`*.cpp` 및 `*.h`처럼)을 지정할 수 있습니다.<br>사용자 정의 확장자 또는 직접 지원되지 않는 확장자의 경우 확장자에 대한 \ref cfg_extension_mapping "EXTENSION_MAPPING"도 설정해야 합니다. 그렇지 않으면 파일이 Doxygen에서 읽히지 않습니다.<br>기본적으로 확인되는 파일 패턴 목록은 \ref default_file_extension_mapping "기본 파일 확장자 매핑" 목록과 다를 수 있습니다.<br>비워 두면 다음 패턴이 테스트됩니다:]]>
       </docs>
       <value name="*.c"/>
       <value name="*.cc"/>
@@ -703,22 +703,22 @@
     </option>
     <option type="bool" id="RECURSIVE" defval="0">
       <docs>
-<![CDATA[\c RECURSIVE 태그를 사용하여 입력 파일의 하위 디렉토리도 검색할지 여부를 지정할 수 있습니다.]]>
+<![CDATA[\c RECURSIVE 태그를 사용하여 입력 파일의 하위 디렉터리도 검색할지 여부를 지정할 수 있습니다.]]>
       </docs>
     </option>
     <option type="list" id="EXCLUDE" format="filedir">
       <docs>
-<![CDATA[\c EXCLUDE 태그를 사용하여 \ref cfg_input "INPUT" 소스 파일에서 제외할 파일 및/또는 디렉토리를 지정할 수 있습니다. 이를 통해 \ref cfg_input "INPUT" 태그에서 루트가 지정된 디렉토리 트리에서 하위 디렉토리를 쉽게 제외할 수 있습니다.<br>상대 경로는 Doxygen이 실행되는 디렉토리에서의 상대 경로입니다.]]>
+<![CDATA[\c EXCLUDE 태그를 사용하여 \ref cfg_input "INPUT" 소스 파일에서 제외할 파일 및/또는 디렉터리를 지정할 수 있습니다. 이를 통해 \ref cfg_input "INPUT" 태그에서 루트가 지정된 디렉터리 트리에서 하위 디렉터리를 쉽게 제외할 수 있습니다.<br>상대 경로는 Doxygen이 실행되는 디렉터리에서의 상대 경로입니다.]]>
       </docs>
     </option>
     <option type="bool" id="EXCLUDE_SYMLINKS" defval="0">
       <docs>
-<![CDATA[\c EXCLUDE_SYMLINKS 태그를 사용하여 심볼릭 링크(Unix 파일 시스템의 기능)인 파일 또는 디렉토리를 입력에서 제외할지 여부를 선택할 수 있습니다.]]>
+<![CDATA[\c EXCLUDE_SYMLINKS 태그를 사용하여 심볼릭 링크(Unix 파일 시스템의 기능)인 파일 또는 디렉터리를 입력에서 제외할지 여부를 선택할 수 있습니다.]]>
       </docs>
     </option>
     <option type="list" id="EXCLUDE_PATTERNS" format="string">
       <docs>
-<![CDATA[\ref cfg_input "INPUT" 태그의 값에 디렉토리가 포함된 경우 \c EXCLUDE_PATTERNS 태그를 사용하여 해당 디렉토리에서 특정 파일을 제외하는 하나 이상의 와일드카드 패턴을 지정할 수 있습니다.<br>와일드카드는 절대 경로를 가진 파일과 일치하므로 모든 테스트 디렉토리를 제외하려면 예를 들어 패턴 `*``/test/``*`를 사용하세요.]]>
+<![CDATA[\ref cfg_input "INPUT" 태그의 값에 디렉터리가 포함된 경우 \c EXCLUDE_PATTERNS 태그를 사용하여 해당 디렉터리에서 특정 파일을 제외하는 하나 이상의 와일드카드 패턴을 지정할 수 있습니다.<br>와일드카드는 절대 경로를 가진 파일과 일치하므로 모든 테스트 디렉터리를 제외하려면 예를 들어 패턴 `*``/test/``*`를 사용하세요.]]>
       </docs>
     </option>
     <option type="list" id="EXCLUDE_SYMBOLS" format="string">
@@ -728,23 +728,23 @@
     </option>
     <option type="list" id="EXAMPLE_PATH" format="filedir">
       <docs>
-<![CDATA[\c EXAMPLE_PATH 태그를 사용하여 포함될 코드 예제 조각을 포함하는 하나 이상의 파일 또는 디렉토리를 지정할 수 있습니다(\ref cmdinclude "\include" 명령 참조).]]>
+<![CDATA[\c EXAMPLE_PATH 태그를 사용하여 포함될 코드 예제 조각을 포함하는 하나 이상의 파일 또는 디렉터리를 지정할 수 있습니다(\ref cmdinclude "\include" 명령 참조).]]>
       </docs>
     </option>
     <option type="list" id="EXAMPLE_PATTERNS" format="string">
       <docs>
-<![CDATA[\ref cfg_example_path "EXAMPLE_PATH" 태그의 값에 디렉토리가 포함된 경우 \c EXAMPLE_PATTERNS 태그를 사용하여 디렉토리 내의 소스 파일을 필터링하는 하나 이상의 와일드카드 패턴(`*.cpp` 및 `*.h`처럼)을 지정할 수 있습니다. 비워 두면 모든 파일이 포함됩니다.]]>
+<![CDATA[\ref cfg_example_path "EXAMPLE_PATH" 태그의 값에 디렉터리가 포함된 경우 \c EXAMPLE_PATTERNS 태그를 사용하여 디렉터리 내의 소스 파일을 필터링하는 하나 이상의 와일드카드 패턴(`*.cpp` 및 `*.h`처럼)을 지정할 수 있습니다. 비워 두면 모든 파일이 포함됩니다.]]>
       </docs>
       <value name="*" show_docu="NO"/>
     </option>
     <option type="bool" id="EXAMPLE_RECURSIVE" defval="0">
       <docs>
-<![CDATA[\c EXAMPLE_RECURSIVE 태그가 \c YES로 설정되면 \ref cfg_recursive "RECURSIVE" 태그의 값과 관계없이 \ref cmdinclude "\include" 또는 \ref cmddontinclude "\dontinclude" 명령에 사용할 입력 파일의 하위 디렉토리가 검색됩니다.]]>
+<![CDATA[\c EXAMPLE_RECURSIVE 태그가 \c YES로 설정되면 \ref cfg_recursive "RECURSIVE" 태그의 값과 관계없이 \ref cmdinclude "\include" 또는 \ref cmddontinclude "\dontinclude" 명령에 사용할 입력 파일의 하위 디렉터리가 검색됩니다.]]>
       </docs>
     </option>
     <option type="list" id="IMAGE_PATH" format="filedir">
       <docs>
-<![CDATA[\c IMAGE_PATH 태그를 사용하여 문서에 포함될 이미지를 포함하는 하나 이상의 파일 또는 디렉토리를 지정할 수 있습니다(\ref cmdimage "\image" 명령 참조).]]>
+<![CDATA[\c IMAGE_PATH 태그를 사용하여 문서에 포함될 이미지를 포함하는 하나 이상의 파일 또는 디렉터리를 지정할 수 있습니다(\ref cmdimage "\image" 명령 참조).]]>
       </docs>
     </option>
     <option type="string" id="INPUT_FILTER" format="file" defval="">
@@ -774,7 +774,7 @@
     </option>
     <option type="bool" id="IMPLICIT_DIR_DOCS" defval="1">
       <docs>
-<![CDATA[\c IMPLICIT_DIR_DOCS 태그가 \c YES로 설정되면 프로젝트 루트의 하위 디렉토리에서 발견된 `README.md` 파일은 `README.md`가 \ref cmddir "\dir", \ref cmdpage "\page", 또는 \ref cmdmainpage "\mainpage" 명령으로 시작하지 않는 한 해당 하위 디렉토리의 문서로 사용됩니다. \c NO로 설정되면 `README.md` 파일이 디렉토리 문서로 사용되기 위해서는 명시적인 \ref cmddir "\dir" 명령으로 시작해야 합니다.]]>
+<![CDATA[\c IMPLICIT_DIR_DOCS 태그가 \c YES로 설정되면 프로젝트 루트의 하위 디렉터리에서 발견된 `README.md` 파일은 `README.md`가 \ref cmddir "\dir", \ref cmdpage "\page", 또는 \ref cmdmainpage "\mainpage" 명령으로 시작하지 않는 한 해당 하위 디렉터리의 문서로 사용됩니다. \c NO로 설정되면 `README.md` 파일이 디렉터리 문서로 사용되기 위해서는 명시적인 \ref cmddir "\dir" 명령으로 시작해야 합니다.]]>
       </docs>
     </option>
     <option type="int" id="FORTRAN_COMMENT_AFTER" defval="72" minval="7" maxval="10000">
@@ -783,7 +783,7 @@
       </docs>
     </option>
   </group>
-  <group name="Source_Browser" docs="Configuration options related to source browsing">
+  <group name="Source_Browser" trname="소스 브라우저" docs="소스 탐색 관련 구성 옵션">
     <option type="bool" id="SOURCE_BROWSER" defval="0">
       <docs>
 <![CDATA[\c SOURCE_BROWSER 태그가 \c YES로 설정되면 소스 파일 목록이 생성됩니다. 문서화된 엔티티는 이러한 소스와 상호 참조됩니다.<br>참고: 생성된 출력에서 모든 소스 코드를 제거하려면 \ref cfg_verbatim_headers "VERBATIM_HEADERS"도 \c NO로 설정되어 있는지 확인하세요.]]>
@@ -836,21 +836,21 @@
     </option>
     <option type="bool" id="CLANG_ADD_INC_PATHS" setting="USE_LIBCLANG" depends="CLANG_ASSISTED_PARSING" defval="1">
       <docs>
-<![CDATA[\c CLANG_ASSISTED_PARSING 태그가 \c YES로 설정되고 \c CLANG_ADD_INC_PATHS 태그가 \c YES로 설정되면 Doxygen은 각 입력의 디렉토리를 include 경로에 추가합니다.]]>
+<![CDATA[\c CLANG_ASSISTED_PARSING 태그가 \c YES로 설정되고 \c CLANG_ADD_INC_PATHS 태그가 \c YES로 설정되면 Doxygen은 각 입력의 디렉터리를 include 경로에 추가합니다.]]>
       </docs>
     </option>
     <option type="list" id="CLANG_OPTIONS" format="string" setting="USE_LIBCLANG" depends="CLANG_ASSISTED_PARSING">
       <docs>
-<![CDATA[clang 지원 구문 분석이 활성화된 경우 컴파일러를 호출할 때 일반적으로 사용하는 명령줄 옵션을 컴파일러에 제공할 수 있습니다. include 경로는 \ref cfg_input "INPUT" 및 \ref cfg_include_path "INCLUDE_PATH"에서 지정된 파일 및 디렉토리에 대해 Doxygen에 의해 이미 설정되어 있습니다.]]>
+<![CDATA[clang 지원 구문 분석이 활성화된 경우 컴파일러를 호출할 때 일반적으로 사용하는 명령줄 옵션을 컴파일러에 제공할 수 있습니다. include 경로는 \ref cfg_input "INPUT" 및 \ref cfg_include_path "INCLUDE_PATH"에서 지정된 파일 및 디렉터리에 대해 Doxygen에 의해 이미 설정되어 있습니다.]]>
       </docs>
     </option>
     <option type="string" id="CLANG_DATABASE_PATH" setting="USE_LIBCLANG" defval="">
       <docs>
-<![CDATA[clang 지원 구문 분석이 활성화된 경우 `compile_commands.json`이라는 파일을 포함하는 디렉토리의 경로를 clang 파서에 제공할 수 있습니다. 이 파일은 소스 파일이 빌드될 때 사용된 옵션을 포함하는 <a href="http://clang.llvm.org/docs/HowToSetupToolingForLLVM.html">컴파일 데이터베이스</a>입니다. 이는 `clang-check`와 같은 clang 도구에 `-p` 옵션을 지정하는 것과 동일합니다. 이러한 옵션은 파서에 전달됩니다. \ref cfg_clang_options "CLANG_OPTIONS"에서 지정된 옵션도 추가됩니다. @note 이 옵션의 가용성은 Doxygen이 CMake의 `-Duse_libclang=ON` 옵션으로 생성되었는지 여부에 따라 달라집니다.]]>
+<![CDATA[clang 지원 구문 분석이 활성화된 경우 `compile_commands.json`이라는 파일을 포함하는 디렉터리의 경로를 clang 파서에 제공할 수 있습니다. 이 파일은 소스 파일이 빌드될 때 사용된 옵션을 포함하는 <a href="http://clang.llvm.org/docs/HowToSetupToolingForLLVM.html">컴파일 데이터베이스</a>입니다. 이는 `clang-check`와 같은 clang 도구에 `-p` 옵션을 지정하는 것과 동일합니다. 이러한 옵션은 파서에 전달됩니다. \ref cfg_clang_options "CLANG_OPTIONS"에서 지정된 옵션도 추가됩니다. @note 이 옵션의 가용성은 Doxygen이 CMake의 `-Duse_libclang=ON` 옵션으로 생성되었는지 여부에 따라 달라집니다.]]>
       </docs>
     </option>
   </group>
-  <group name="Index" docs="Configuration options related to the alphabetical class index">
+  <group name="Index" trname="인덱스" docs="알파벳순 클래스 인덱스 관련 구성 옵션">
     <option type="bool" id="ALPHABETICAL_INDEX" defval="1">
       <docs>
 <![CDATA[\c ALPHABETICAL_INDEX 태그가 \c YES로 설정되면 모든 컴파운드의 알파벳순 인덱스가 생성됩니다. 프로젝트에 많은 수의 클래스, 구조체, 공용체 또는 인터페이스가 포함된 경우 이를 활성화하세요.]]>
@@ -862,7 +862,7 @@
       </docs>
     </option>
   </group>
-  <group name="HTML" docs="Configuration options related to the HTML output">
+  <group name="HTML" docs="HTML 출력 관련 구성 옵션">
     <option type="bool" id="GENERATE_HTML" defval="1">
       <docs>
 <![CDATA[\c GENERATE_HTML 태그가 \c YES로 설정되면 Doxygen은 HTML 출력을 생성합니다.]]>
@@ -895,12 +895,12 @@
     </option>
     <option type="list" id="HTML_EXTRA_STYLESHEET" format="file" defval="" depends="GENERATE_HTML">
       <docs>
-<![CDATA[\c HTML_EXTRA_STYLESHEET 태그를 사용하여 Doxygen에 의해 생성된 표준 스타일시트 이후에 포함되는 추가 사용자 정의 계단식 스타일시트를 지정할 수 있습니다. 이 옵션을 사용하면 특정 스타일 측면을 재정의할 수 있습니다. 이는 표준 스타일시트를 대체하지 않으므로 향후 업데이트에 대해 더 견고한 \ref cfg_html_stylesheet "HTML_STYLESHEET"를 사용하는 것보다 권장됩니다. Doxygen은 스타일시트 파일을 출력 디렉토리에 복사합니다. \note 추가 스타일시트 파일의 순서는 중요합니다(예: 목록의 마지막 스타일시트는 목록에서 이전 것의 설정을 재정의함). \note 스크롤바 스타일링은 현재 Webkit/Chromium에서 재정의할 수 없으므로 하나 이상의 추가 스타일시트가 지정된 경우 스타일링은 기본 doxygen.css에서 제외됩니다. 따라서 스크롤바 사용자 정의가 필요한 경우 명시적으로 추가해야 합니다.]]>
+<![CDATA[\c HTML_EXTRA_STYLESHEET 태그를 사용하여 Doxygen에 의해 생성된 표준 스타일시트 이후에 포함되는 추가 사용자 정의 계단식 스타일시트를 지정할 수 있습니다. 이 옵션을 사용하면 특정 스타일 측면을 재정의할 수 있습니다. 이는 표준 스타일시트를 대체하지 않으므로 향후 업데이트에 대해 더 견고한 \ref cfg_html_stylesheet "HTML_STYLESHEET"를 사용하는 것보다 권장됩니다. Doxygen은 스타일시트 파일을 출력 디렉터리에 복사합니다. \note 추가 스타일시트 파일의 순서는 중요합니다(예: 목록의 마지막 스타일시트는 목록에서 이전 것의 설정을 재정의함). \note 스크롤바 스타일링은 현재 Webkit/Chromium에서 재정의할 수 없으므로 하나 이상의 추가 스타일시트가 지정된 경우 스타일링은 기본 doxygen.css에서 제외됩니다. 따라서 스크롤바 사용자 정의가 필요한 경우 명시적으로 추가해야 합니다.]]>
       </docs>
     </option>
     <option type="list" id="HTML_EXTRA_FILES" format="file" depends="GENERATE_HTML">
       <docs>
-<![CDATA[\c HTML_EXTRA_FILES 태그를 사용하여 HTML 출력 디렉토리에 복사될 하나 이상의 추가 이미지 또는 다른 소스 파일을 지정할 수 있습니다. 이러한 파일은 기본 HTML 출력 디렉토리에 복사됩니다. \ref cfg_html_header "HTML_HEADER" 및/또는 \ref cfg_html_footer "HTML_FOOTER" 파일에서 <code>$relpath^</code> 마커를 사용하여 이러한 파일을 로드합니다. \ref cfg_html_stylesheet "HTML_STYLESHEET" 파일에서는 파일 이름만 사용합니다. 또한 파일은 있는 그대로 복사된다는 점에도 유의하세요. 사용 가능한 명령이나 마커가 없습니다.]]>
+<![CDATA[\c HTML_EXTRA_FILES 태그를 사용하여 HTML 출력 디렉터리에 복사될 하나 이상의 추가 이미지 또는 다른 소스 파일을 지정할 수 있습니다. 이러한 파일은 기본 HTML 출력 디렉터리에 복사됩니다. \ref cfg_html_header "HTML_HEADER" 및/또는 \ref cfg_html_footer "HTML_FOOTER" 파일에서 <code>$relpath^</code> 마커를 사용하여 이러한 파일을 로드합니다. \ref cfg_html_stylesheet "HTML_STYLESHEET" 파일에서는 파일 이름만 사용합니다. 또한 파일은 있는 그대로 복사된다는 점에도 유의하세요. 사용 가능한 명령이나 마커가 없습니다.]]>
       </docs>
     </option>
     <option type="enum" id="HTML_COLORSTYLE" defval="AUTO_LIGHT" depends="GENERATE_HTML">
@@ -960,7 +960,7 @@
     </option>
     <option type="bool" id="GENERATE_DOCSET" defval="0" depends="GENERATE_HTML">
       <docs>
-<![CDATA[\c GENERATE_DOCSET 태그가 \c YES로 설정되면 OSX 10.5(Leopard)에서 도입된 <a href="https://developer.apple.com/xcode/">Apple의 Xcode 3 통합 개발 환경</a>에 대한 입력으로 사용할 수 있는 추가 인덱스 파일이 생성됩니다. 문서 세트를 생성하기 위해 Doxygen은 HTML 출력 디렉토리에 Makefile을 생성합니다. \c make를 실행하면 해당 디렉토리에 docset이 생성되고, <code>make install</code>을 실행하면 docset이 <code>~/Library/Developer/Shared/Documentation/DocSets</code>에 설치되어 Xcode가 시작 시 이를 찾을 수 있습니다. 자세한 내용은 https://developer.apple.com/library/archive/featuredarticles/DoxygenXcode/_index.html을 참조하세요.]]>
+<![CDATA[\c GENERATE_DOCSET 태그가 \c YES로 설정되면 OSX 10.5(Leopard)에서 도입된 <a href="https://developer.apple.com/xcode/">Apple의 Xcode 3 통합 개발 환경</a>에 대한 입력으로 사용할 수 있는 추가 인덱스 파일이 생성됩니다. 문서 세트를 생성하기 위해 Doxygen은 HTML 출력 디렉터리에 Makefile을 생성합니다. \c make를 실행하면 해당 디렉터리에 docset이 생성되고, <code>make install</code>을 실행하면 docset이 <code>~/Library/Developer/Shared/Documentation/DocSets</code>에 설치되어 Xcode가 시작 시 이를 찾을 수 있습니다. 자세한 내용은 https://developer.apple.com/library/archive/featuredarticles/DoxygenXcode/_index.html을 참조하세요.]]>
       </docs>
     </option>
     <option type="string" id="DOCSET_FEEDNAME" format="string" defval="Doxygen generated docs" depends="GENERATE_DOCSET">
@@ -995,7 +995,7 @@
     </option>
     <option type="string" id="CHM_FILE" format="file" defval="" depends="GENERATE_HTMLHELP">
       <docs>
-<![CDATA[\c CHM_FILE 태그를 사용하여 결과 `.chm` 파일의 파일 이름을 지정할 수 있습니다. 결과를 HTML 출력 디렉토리에 쓰지 않으려면 파일 앞에 경로를 추가할 수 있습니다.]]>
+<![CDATA[\c CHM_FILE 태그를 사용하여 결과 `.chm` 파일의 파일 이름을 지정할 수 있습니다. 결과를 HTML 출력 디렉터리에 쓰지 않으려면 파일 앞에 경로를 추가할 수 있습니다.]]>
       </docs>
     </option>
     <option type="string" id="HHC_LOCATION" format="file" defval="" depends="GENERATE_HTMLHELP" abspath="1">
@@ -1025,7 +1025,7 @@
     </option>
     <option type="string" id="SITEMAP_URL" format="string" depends="GENERATE_HTML">
       <docs>
-<![CDATA[\c SITEMAP_URL 태그는 문서 배포 중에 사용자가 생성된 문서를 서버에 배치할 위치의 전체 URL을 지정하는 데 사용됩니다. 생성된 사이트맵은 `sitemap.xml`이라고 하며 \ref cfg_html_output "HTML_OUTPUT"에서 지정된 디렉토리에 배치됩니다. \c SITEMAP_URL이 지정되지 않으면 사이트맵이 생성되지 않습니다. 사이트맵 프로토콜에 대한 자세한 내용은 https://www.sitemaps.org를 참조하세요.]]>
+<![CDATA[\c SITEMAP_URL 태그는 문서 배포 중에 사용자가 생성된 문서를 서버에 배치할 위치의 전체 URL을 지정하는 데 사용됩니다. 생성된 사이트맵은 `sitemap.xml`이라고 하며 \ref cfg_html_output "HTML_OUTPUT"에서 지정된 디렉터리에 배치됩니다. \c SITEMAP_URL이 지정되지 않으면 사이트맵이 생성되지 않습니다. 사이트맵 프로토콜에 대한 자세한 내용은 https://www.sitemaps.org를 참조하세요.]]>
       </docs>
     </option>
     <option type="bool" id="GENERATE_QHP" defval="0" depends="GENERATE_HTML">
@@ -1070,12 +1070,12 @@
     </option>
     <option type="bool" id="GENERATE_ECLIPSEHELP" defval="0" depends="GENERATE_HTML">
       <docs>
-<![CDATA[\c GENERATE_ECLIPSEHELP 태그가 \c YES로 설정되면 HTML 파일과 함께 추가 인덱스 파일이 생성되며, 이들은 `Eclipse` 도움말 플러그인을 형성합니다. 이 플러그인을 설치하고 `Eclipse`의 도움말 콘텐츠 메뉴 아래에서 사용할 수 있도록 하려면 HTML 및 XML 파일을 포함하는 디렉토리의 내용을 eclipse의 플러그인 디렉토리에 복사해야 합니다. 플러그인 디렉토리 내의 디렉토리 이름은 \ref cfg_eclipse_doc_id "ECLIPSE_DOC_ID" 값과 같아야 합니다. 복사 후 `Eclipse`를 다시 시작해야 도움말이 나타납니다.]]>
+<![CDATA[\c GENERATE_ECLIPSEHELP 태그가 \c YES로 설정되면 HTML 파일과 함께 추가 인덱스 파일이 생성되며, 이들은 `Eclipse` 도움말 플러그인을 형성합니다. 이 플러그인을 설치하고 `Eclipse`의 도움말 콘텐츠 메뉴 아래에서 사용할 수 있도록 하려면 HTML 및 XML 파일을 포함하는 디렉터리의 내용을 eclipse의 플러그인 디렉터리에 복사해야 합니다. 플러그인 디렉터리 내의 디렉터리 이름은 \ref cfg_eclipse_doc_id "ECLIPSE_DOC_ID" 값과 같아야 합니다. 복사 후 `Eclipse`를 다시 시작해야 도움말이 나타납니다.]]>
       </docs>
     </option>
     <option type="string" id="ECLIPSE_DOC_ID" format="string" defval="org.doxygen.Project" depends="GENERATE_ECLIPSEHELP">
       <docs>
-<![CDATA[`Eclipse` 도움말 플러그인의 고유 식별자. 플러그인을 설치할 때 HTML 및 XML 파일을 포함하는 디렉토리 이름도 이 이름을 가져야 합니다. 각 문서 세트에는 자체 식별자가 있어야 합니다.]]>
+<![CDATA[`Eclipse` 도움말 플러그인의 고유 식별자. 플러그인을 설치할 때 HTML 및 XML 파일을 포함하는 디렉터리 이름도 이 이름을 가져야 합니다. 각 문서 세트에는 자체 식별자가 있어야 합니다.]]>
       </docs>
     </option>
     <option type="bool" id="DISABLE_INDEX" defval="0" depends="GENERATE_HTML">
@@ -1132,7 +1132,7 @@
     </option>
     <option type="int" id="FORMULA_FONTSIZE" minval="8" maxval="50" defval="10" depends="GENERATE_HTML">
       <docs>
-<![CDATA[이 태그를 사용하여 HTML 문서에 이미지로 포함되는 \f$\mbox{\LaTeX}\f$ 수식의 글꼴 크기를 변경할 수 있습니다. Doxygen 실행이 성공한 후 글꼴 크기를 변경하는 경우 강제로 다시 생성하기 위해 HTML 출력 디렉토리에서 모든 `form_*.png` 이미지를 수동으로 제거해야 합니다.]]>
+<![CDATA[이 태그를 사용하여 HTML 문서에 이미지로 포함되는 \f$\mbox{\LaTeX}\f$ 수식의 글꼴 크기를 변경할 수 있습니다. Doxygen 실행이 성공한 후 글꼴 크기를 변경하는 경우 강제로 다시 생성하기 위해 HTML 출력 디렉터리에서 모든 `form_*.png` 이미지를 수동으로 제거해야 합니다.]]>
       </docs>
     </option>
     <option type="string" id="FORMULA_MACROFILE" format="file" defval="">
@@ -1165,11 +1165,11 @@
         <option type="string" id="MATHJAX_RELPATH" format="string" depends="USE_MATHJAX">
       <docs>
 <![CDATA[
- MathJax가 활성화되면 \c MATHJAX_RELPATH 옵션을 사용하여 HTML 출력 디렉토리에 대한
- 상대 위치를 지정해야 합니다. MathJax 버전 2의 경우 대상 디렉토리에 `MathJax.js` 스크립트가
- 포함되어야 합니다. 예를 들어, \c mathjax 디렉토리가 HTML 출력 디렉토리와 같은 수준에
+ MathJax가 활성화되면 \c MATHJAX_RELPATH 옵션을 사용하여 HTML 출력 디렉터리에 대한
+ 상대 위치를 지정해야 합니다. MathJax 버전 2의 경우 대상 디렉터리에 `MathJax.js` 스크립트가
+ 포함되어야 합니다. 예를 들어, \c mathjax 디렉터리가 HTML 출력 디렉터리와 같은 수준에
  있는 경우 \c MATHJAX_RELPATH는 <code>../mathjax</code>여야 합니다. MathJax 버전 3 및 4의 경우
- 대상 디렉토리에 `tex-<format>.js` 스크립트(`<format>`은 `chtml` 또는 `svg`)가 포함되어야 합니다.
+ 대상 디렉터리에 `tex-<format>.js` 스크립트(`<format>`은 `chtml` 또는 `svg`)가 포함되어야 합니다.
  기본값은 MathJax 콘텐츠 전송 네트워크를 가리키므로 MathJax를 설치하지 않고도
  빠르게 결과를 볼 수 있습니다. 그러나 배포 전에 https://www.mathjax.org에서
  MathJax의 로컬 복사본을 설치하는 것이 강력히 권장됩니다.
@@ -1227,7 +1227,7 @@
       </docs>
     </option>
   </group>
-  <group name="LaTeX" docs="Configuration options related to the LaTeX output">
+  <group name="LaTeX" docs="LaTeX 출력 관련 구성 옵션">
     <option type="bool" id="GENERATE_LATEX" defval="1">
       <docs>
 <![CDATA[\c GENERATE_LATEX 태그가 \c YES로 설정되면 Doxygen은 \f$\mbox{\LaTeX}\f$ 출력을 생성합니다.]]>
@@ -1284,12 +1284,12 @@
     </option>
     <option type="list" id="LATEX_EXTRA_STYLESHEET" format="file" defval="" depends="GENERATE_LATEX">
       <docs>
-<![CDATA[\c LATEX_EXTRA_STYLESHEET 태그를 사용하여 Doxygen에 의해 생성된 표준 스타일시트 이후에 포함되는 추가 사용자 정의 \f$\mbox{\LaTeX}\f$ 스타일시트를 지정할 수 있습니다. 이 옵션을 사용하면 특정 스타일 측면을 재정의할 수 있습니다. Doxygen은 스타일시트 파일을 출력 디렉토리에 복사합니다. \note 추가 스타일시트 파일의 순서는 중요합니다(예: 목록의 마지막 스타일시트는 목록에서 이전 것의 설정을 재정의함).]]>
+<![CDATA[\c LATEX_EXTRA_STYLESHEET 태그를 사용하여 Doxygen에 의해 생성된 표준 스타일시트 이후에 포함되는 추가 사용자 정의 \f$\mbox{\LaTeX}\f$ 스타일시트를 지정할 수 있습니다. 이 옵션을 사용하면 특정 스타일 측면을 재정의할 수 있습니다. Doxygen은 스타일시트 파일을 출력 디렉터리에 복사합니다. \note 추가 스타일시트 파일의 순서는 중요합니다(예: 목록의 마지막 스타일시트는 목록에서 이전 것의 설정을 재정의함).]]>
       </docs>
     </option>
     <option type="list" id="LATEX_EXTRA_FILES" format="file" depends="GENERATE_LATEX">
       <docs>
-<![CDATA[\c LATEX_EXTRA_FILES 태그를 사용하여 \ref cfg_latex_output "LATEX_OUTPUT" 출력 디렉토리에 복사될 하나 이상의 추가 이미지 또는 다른 소스 파일을 지정할 수 있습니다. 파일은 있는 그대로 복사된다는 점에 유의하세요. 사용 가능한 명령이나 마커가 없습니다.]]>
+<![CDATA[\c LATEX_EXTRA_FILES 태그를 사용하여 \ref cfg_latex_output "LATEX_OUTPUT" 출력 디렉터리에 복사될 하나 이상의 추가 이미지 또는 다른 소스 파일을 지정할 수 있습니다. 파일은 있는 그대로 복사된다는 점에 유의하세요. 사용 가능한 명령이나 마커가 없습니다.]]>
       </docs>
     </option>
     <option type="bool" id="PDF_HYPERLINKS" defval="1" depends="GENERATE_LATEX">
@@ -1325,11 +1325,11 @@
     </option>
     <option type="string" id="LATEX_EMOJI_DIRECTORY" format="dir" defval="" depends="GENERATE_LATEX">
       <docs>
-<![CDATA[\c LATEX_EMOJI_DIRECTORY 태그는 이모지 이미지가 로드되는 (상대 또는 절대) 경로를 지정하는 데 사용됩니다. 상대 경로가 입력되면 \ref cfg_latex_output "LATEX_OUTPUT" 디렉토리에서의 상대 경로가 됩니다. 비워 두면 \ref cfg_latex_output "LATEX_OUTPUT" 디렉토리가 사용됩니다.]]>
+<![CDATA[\c LATEX_EMOJI_DIRECTORY 태그는 이모지 이미지가 로드되는 (상대 또는 절대) 경로를 지정하는 데 사용됩니다. 상대 경로가 입력되면 \ref cfg_latex_output "LATEX_OUTPUT" 디렉터리에서의 상대 경로가 됩니다. 비워 두면 \ref cfg_latex_output "LATEX_OUTPUT" 디렉터리가 사용됩니다.]]>
       </docs>
     </option>
   </group>
-  <group name="RTF" docs="Configuration options related to the RTF output">
+  <group name="RTF" docs="RTF 출력 관련 구성 옵션">
     <option type="bool" id="GENERATE_RTF" defval="0">
       <docs>
 <![CDATA[\c GENERATE_RTF 태그가 \c YES로 설정되면 Doxygen은 RTF 출력을 생성합니다. RTF 출력은 Word 97용으로 최적화되어 있으며 다른 RTF 리더/편집기에서는 그다지 예쁘지 않을 수 있습니다.]]>
@@ -1362,11 +1362,11 @@
     </option>
     <option type="list" id="RTF_EXTRA_FILES" format="file" depends="GENERATE_RTF">
       <docs>
-<![CDATA[\c RTF_EXTRA_FILES 태그를 사용하여 \ref cfg_rtf_output "RTF_OUTPUT" 출력 디렉토리에 복사될 하나 이상의 추가 이미지 또는 다른 소스 파일을 지정할 수 있습니다. 파일은 있는 그대로 복사된다는 점에 유의하세요. 사용 가능한 명령이나 마커가 없습니다.]]>
+<![CDATA[\c RTF_EXTRA_FILES 태그를 사용하여 \ref cfg_rtf_output "RTF_OUTPUT" 출력 디렉터리에 복사될 하나 이상의 추가 이미지 또는 다른 소스 파일을 지정할 수 있습니다. 파일은 있는 그대로 복사된다는 점에 유의하세요. 사용 가능한 명령이나 마커가 없습니다.]]>
       </docs>
     </option>
   </group>
-  <group name="Man" docs="Configuration options related to the man page output">
+  <group name="Man" docs="man 페이지 출력 관련 구성 옵션">
     <option type="bool" id="GENERATE_MAN" defval="0">
       <docs>
 <![CDATA[\c GENERATE_MAN 태그가 \c YES로 설정되면 Doxygen은 클래스와 파일의 매뉴얼 페이지를 생성합니다.]]>
@@ -1374,7 +1374,7 @@
     </option>
     <option type="string" id="MAN_OUTPUT" format="dir" defval="man" depends="GENERATE_MAN">
       <docs>
-<![CDATA[\c MAN_OUTPUT 태그는 매뉴얼 페이지가 배치될 위치를 지정하는 데 사용됩니다. 상대 경로가 입력되면 \ref cfg_output_directory "OUTPUT_DIRECTORY"의 값이 그 앞에 배치됩니다. \c man3 디렉토리가 \c MAN_OUTPUT에서 지정된 디렉토리 내에 생성됩니다.]]>
+<![CDATA[\c MAN_OUTPUT 태그는 매뉴얼 페이지가 배치될 위치를 지정하는 데 사용됩니다. 상대 경로가 입력되면 \ref cfg_output_directory "OUTPUT_DIRECTORY"의 값이 그 앞에 배치됩니다. \c man3 디렉터리가 \c MAN_OUTPUT에서 지정된 디렉터리 내에 생성됩니다.]]>
       </docs>
     </option>
     <option type="string" id="MAN_EXTENSION" format="string" defval=".3" depends="GENERATE_MAN">
@@ -1384,7 +1384,7 @@
     </option>
     <option type="string" id="MAN_SUBDIR" format="string" defval="" depends="GENERATE_MAN">
       <docs>
-<![CDATA[\c MAN_SUBDIR 태그는 매뉴얼 페이지가 배치되는 \c MAN_OUTPUT 내에 생성되는 디렉토리의 이름을 결정합니다. 기본적으로 \c MAN_EXTENSION의 선행 `.`이 제거된 것 뒤에 man이 옵니다.]]>
+<![CDATA[\c MAN_SUBDIR 태그는 매뉴얼 페이지가 배치되는 \c MAN_OUTPUT 내에 생성되는 디렉터리의 이름을 결정합니다. 기본적으로 \c MAN_EXTENSION의 선행 `.`이 제거된 것 뒤에 man이 옵니다.]]>
       </docs>
     </option>
     <option type="bool" id="MAN_LINKS" defval="0" depends="GENERATE_MAN">
@@ -1393,7 +1393,7 @@
       </docs>
     </option>
   </group>
-  <group name="XML" docs="Configuration options related to the XML output">
+  <group name="XML" docs="XML 출력 관련 구성 옵션">
     <option type="bool" id="GENERATE_XML" defval="0">
       <docs>
 <![CDATA[\c GENERATE_XML 태그가 \c YES로 설정되면 Doxygen은 코드 구조를 캡처하는 XML 파일을 생성하며 모든 문서를 포함합니다.]]>
@@ -1415,7 +1415,7 @@
       </docs>
     </option>
   </group>
-  <group name="Docbook" docs="Configuration options related to the DOCBOOK output">
+  <group name="Docbook" docs="DOCBOOK 출력 관련 구성 옵션">
     <option type="bool" id="GENERATE_DOCBOOK" defval="0">
       <docs>
 <![CDATA[\c GENERATE_DOCBOOK 태그가 \c YES로 설정되면 Doxygen은 PDF 생성에 사용할 수 있는 Docbook 파일을 생성합니다.]]>
@@ -1427,14 +1427,14 @@
       </docs>
     </option>
   </group>
-  <group name="AutoGen" docs="Configuration options for the AutoGen Definitions output">
+  <group name="AutoGen" docs="AutoGen Definitions 출력을 위한 구성 옵션">
     <option type="bool" id="GENERATE_AUTOGEN_DEF" defval="0">
       <docs>
 <![CDATA[\c GENERATE_AUTOGEN_DEF 태그가 \c YES로 설정되면 Doxygen은 코드 구조를 캡처하는 AutoGen 정의 파일(https://autogen.sourceforge.net/ 참조)을 생성하며 모든 문서를 포함합니다. 이 기능은 아직 실험적이며 현재 불완전합니다.]]>
       </docs>
     </option>
   </group>
-  <group name="Sqlite3" docs="Configuration options related to Sqlite3 output">
+  <group name="Sqlite3" docs="Sqlite3 출력 관련 구성 옵션">
     <option type="bool" id="GENERATE_SQLITE3" defval="0">
       <docs>
 <![CDATA[\c GENERATE_SQLITE3 태그가 \c YES로 설정되면 Doxygen은 \c Sqlite3 데이터베이스를 생성하며 Doxygen에 의해 발견된 기호가 테이블에 저장됩니다.]]>
@@ -1451,7 +1451,7 @@
       </docs>
     </option>
   </group>
-  <group name="PerlMod" docs="Configuration options related to the Perl module output">
+  <group name="PerlMod" docs="Perl 모듈 출력 관련 구성 옵션">
     <option type="bool" id="GENERATE_PERLMOD" defval="0">
       <docs>
 <![CDATA[\c GENERATE_PERLMOD 태그가 \c YES로 설정되면 Doxygen은 코드 구조를 캡처하는 Perl 모듈 파일을 생성하며 모든 문서를 포함합니다. <br>이 기능은 아직 실험적이며 현재 불완전합니다.]]>
@@ -1473,7 +1473,7 @@
       </docs>
     </option>
   </group>
-  <group name="Preprocessor" docs="Configuration options related to the preprocessor">
+  <group name="Preprocessor" trname="전처리기" docs="전처리기 관련 구성 옵션">
     <option type="bool" id="ENABLE_PREPROCESSING" defval="1">
       <docs>
 <![CDATA[\c ENABLE_PREPROCESSING 태그가 \c YES로 설정되면 Doxygen은 소스 및 포함 파일에서 발견된 모든 C 전처리기 지시문을 평가합니다.]]>
@@ -1496,12 +1496,12 @@
     </option>
     <option type="list" id="INCLUDE_PATH" format="dir" depends="SEARCH_INCLUDES">
       <docs>
-<![CDATA[\c INCLUDE_PATH 태그를 사용하여 입력 파일이 아니지만 전처리기에 의해 처리되어야 하는 포함 파일을 포함하는 하나 이상의 디렉토리를 지정할 수 있습니다. \c INCLUDE_PATH는 재귀적이지 않으므로 \ref cfg_recursive "RECURSIVE"의 설정은 여기서 효과가 없습니다.]]>
+<![CDATA[\c INCLUDE_PATH 태그를 사용하여 입력 파일이 아니지만 전처리기에 의해 처리되어야 하는 포함 파일을 포함하는 하나 이상의 디렉터리를 지정할 수 있습니다. \c INCLUDE_PATH는 재귀적이지 않으므로 \ref cfg_recursive "RECURSIVE"의 설정은 여기서 효과가 없습니다.]]>
       </docs>
     </option>
     <option type="list" id="INCLUDE_FILE_PATTERNS" format="string" depends="ENABLE_PREPROCESSING">
       <docs>
-<![CDATA[\c INCLUDE_FILE_PATTERNS 태그를 사용하여 디렉토리 내의 헤더 파일을 필터링하는 하나 이상의 와일드카드 패턴(`*.h` 및 `*.hpp`처럼)을 지정할 수 있습니다. 비워 두면 \ref cfg_file_patterns "FILE_PATTERNS"에서 지정된 패턴이 사용됩니다.]]>
+<![CDATA[\c INCLUDE_FILE_PATTERNS 태그를 사용하여 디렉터리 내의 헤더 파일을 필터링하는 하나 이상의 와일드카드 패턴(`*.h` 및 `*.hpp`처럼)을 지정할 수 있습니다. 비워 두면 \ref cfg_file_patterns "FILE_PATTERNS"에서 지정된 패턴이 사용됩니다.]]>
       </docs>
     </option>
     <option type="list" id="PREDEFINED" format="string" depends="ENABLE_PREPROCESSING">
@@ -1520,10 +1520,10 @@
       </docs>
     </option>
   </group>
-  <group name="External" docs="Configuration options related to external references">
+  <group name="External" trname="외부 참조" docs="외부 참조 관련 구성 옵션">
     <option type="list" id="TAGFILES" format="file">
       <docs>
-<![CDATA[\c TAGFILES 태그를 사용하여 하나 이상의 태그 파일을 지정할 수 있습니다. 각 태그 파일에 대해 외부 문서의 위치를 추가해야 합니다. 위치 없는 태그 파일의 형식은 다음과 같습니다: \verbatim TAGFILES = file1 file2 ... \endverbatim 태그 파일의 위치 추가는 다음과 같이 수행됩니다: \verbatim TAGFILES = file1=loc1 "file2 = loc2" ... \endverbatim 여기서 `loc1`과 `loc2`는 상대 경로, 절대 경로 또는 URL이 될 수 있습니다. 태그 파일 사용에 대한 자세한 내용은 섹션 \ref external을 참조하세요. \note 각 태그 파일은 고유한 이름을 가져야 합니다(또는 이름은 경로를 포함하지 않음). 태그 파일이 Doxygen이 실행되는 디렉토리에 없는 경우 여기서 태그 파일의 경로도 지정해야 합니다.]]>
+<![CDATA[\c TAGFILES 태그를 사용하여 하나 이상의 태그 파일을 지정할 수 있습니다. 각 태그 파일에 대해 외부 문서의 위치를 추가해야 합니다. 위치 없는 태그 파일의 형식은 다음과 같습니다: \verbatim TAGFILES = file1 file2 ... \endverbatim 태그 파일의 위치 추가는 다음과 같이 수행됩니다: \verbatim TAGFILES = file1=loc1 "file2 = loc2" ... \endverbatim 여기서 `loc1`과 `loc2`는 상대 경로, 절대 경로 또는 URL이 될 수 있습니다. 태그 파일 사용에 대한 자세한 내용은 섹션 \ref external을 참조하세요. \note 각 태그 파일은 고유한 이름을 가져야 합니다(또는 이름은 경로를 포함하지 않음). 태그 파일이 Doxygen이 실행되는 디렉터리에 없는 경우 여기서 태그 파일의 경로도 지정해야 합니다.]]>
       </docs>
     </option>
     <option type="string" id="GENERATE_TAGFILE" format="file" defval="">
@@ -1547,7 +1547,7 @@
       </docs>
     </option>
   </group>
-  <group name="Dot" docs="Configuration options related to diagram generator tools">
+  <group name="Dot" docs="다이어그램 생성 도구 관련 구성 옵션">
     <option type="bool" id="HIDE_UNDOC_RELATIONS" defval="1">
       <docs>
 <![CDATA[\c YES로 설정되면 상속 및 협업 그래프는 대상이 문서화되지 않았거나 클래스가 아닌 경우 상속 및 사용 관계를 숨깁니다.]]>
@@ -1577,7 +1577,7 @@
     </option>
     <option type="string" id="DOT_COMMON_ATTR" format="string" depends="HAVE_DOT" defval="fontname=Helvetica,fontsize=10">
       <docs>
-<![CDATA[\c DOT_COMMON_ATTR는 노드, 에지 및 서브그래프 레이블의 공통 속성입니다. Doxygen이 생성하는 dot 파일에서 다른 외관의 글꼴을 사용하려면 fontname, fontcolor 및 fontsize 속성을 지정할 수 있습니다. 자세한 내용은 <a href=https://graphviz.org/doc/info/attrs.html>노드, 에지 및 그래프 속성 사양</a>을 참조하세요. dot이 글꼴을 찾을 수 있는지 확인해야 합니다. 이는 표준 위치에 배치하거나 \c DOTFONTPATH 환경 변수를 설정하거나 글꼴을 포함하는 디렉토리에 \ref cfg_dot_fontpath "DOT_FONTPATH"를 설정하여 수행할 수 있습니다. graphviz의 기본 글꼴 크기는 14입니다.]]>
+<![CDATA[\c DOT_COMMON_ATTR는 노드, 에지 및 서브그래프 레이블의 공통 속성입니다. Doxygen이 생성하는 dot 파일에서 다른 외관의 글꼴을 사용하려면 fontname, fontcolor 및 fontsize 속성을 지정할 수 있습니다. 자세한 내용은 <a href=https://graphviz.org/doc/info/attrs.html>노드, 에지 및 그래프 속성 사양</a>을 참조하세요. dot이 글꼴을 찾을 수 있는지 확인해야 합니다. 이는 표준 위치에 배치하거나 \c DOTFONTPATH 환경 변수를 설정하거나 글꼴을 포함하는 디렉터리에 \ref cfg_dot_fontpath "DOT_FONTPATH"를 설정하여 수행할 수 있습니다. graphviz의 기본 글꼴 크기는 14입니다.]]>
       </docs>
     </option>
     <option type="string" id="DOT_EDGE_ATTR" format="string" depends="HAVE_DOT" defval="labelfontname=Helvetica,labelfontsize=10">
@@ -1612,7 +1612,7 @@
     </option>
     <option type="bool" id="GROUP_GRAPHS" defval="1" depends="HAVE_DOT">
       <docs>
-<![CDATA[\c GROUP_GRAPHS 태그가 \c YES로 설정되면 Doxygen은 그룹의 그래프를 생성하여 그룹의 직접 종속성을 보여줍니다. \c GROUP_GRAPHS가 \c NO로 설정된 경우 그룹 종속 그래프를 명시적으로 활성화하려면 \ref cmdgroupgraph "\groupgraph" 명령을 사용할 수 있습니다. 디렉토리 그래프를 비활성화하려면 \ref cmdhidegroupgraph "\hidegroupgraph" 명령을 사용할 수 있습니다. 매뉴얼의 \ref grouping "그룹화" 장도 참조하세요.]]>
+<![CDATA[\c GROUP_GRAPHS 태그가 \c YES로 설정되면 Doxygen은 그룹의 그래프를 생성하여 그룹의 직접 종속성을 보여줍니다. \c GROUP_GRAPHS가 \c NO로 설정된 경우 그룹 종속 그래프를 명시적으로 활성화하려면 \ref cmdgroupgraph "\groupgraph" 명령을 사용할 수 있습니다. 디렉터리 그래프를 비활성화하려면 \ref cmdhidegroupgraph "\hidegroupgraph" 명령을 사용할 수 있습니다. 매뉴얼의 \ref grouping "그룹화" 장도 참조하세요.]]>
       </docs>
     </option>
     <option type="bool" id="UML_LOOK" defval="0" depends="HAVE_DOT">
@@ -1675,12 +1675,12 @@
     </option>
     <option type="bool" id="DIRECTORY_GRAPH" defval="1" depends="HAVE_DOT">
       <docs>
-<![CDATA[\c DIRECTORY_GRAPH 태그가 \c YES로 설정되면 Doxygen은 디렉토리의 다른 디렉토리에 대한 종속성을 그래픽으로 보여줍니다. 종속성 관계는 디렉토리 내의 파일 간의 \c \#include 관계에 의해 결정됩니다. \c DIRECTORY_GRAPH가 \c NO로 설정된 경우 디렉토리 그래프를 명시적으로 활성화하려면 \ref cmddirectorygraph "\directorygraph" 명령을 사용할 수 있습니다. 디렉토리 그래프를 비활성화하려면 \ref cmdhidedirectorygraph "\hidedirectorygraph" 명령을 사용할 수 있습니다.]]>
+<![CDATA[\c DIRECTORY_GRAPH 태그가 \c YES로 설정되면 Doxygen은 디렉터리의 다른 디렉터리에 대한 종속성을 그래픽으로 보여줍니다. 종속성 관계는 디렉터리 내의 파일 간의 \c \#include 관계에 의해 결정됩니다. \c DIRECTORY_GRAPH가 \c NO로 설정된 경우 디렉터리 그래프를 명시적으로 활성화하려면 \ref cmddirectorygraph "\directorygraph" 명령을 사용할 수 있습니다. 디렉터리 그래프를 비활성화하려면 \ref cmdhidedirectorygraph "\hidedirectorygraph" 명령을 사용할 수 있습니다.]]>
       </docs>
     </option>
     <option type="int" id="DIR_GRAPH_MAX_DEPTH" minval="1" maxval="25" defval="1" depends="DIRECTORY_GRAPH">
       <docs>
-<![CDATA[\c DIR_GRAPH_MAX_DEPTH 태그를 사용하여 \c dot에 의해 생성되는 디렉토리 종속성 그래프에서 생성되는 하위 디렉토리 레벨의 최대 수를 제한할 수 있습니다.]]>
+<![CDATA[\c DIR_GRAPH_MAX_DEPTH 태그를 사용하여 \c dot에 의해 생성되는 디렉터리 종속성 그래프에서 생성되는 하위 디렉터리 레벨의 최대 수를 제한할 수 있습니다.]]>
       </docs>
     </option>
     <option type="enum" id="DOT_IMAGE_FORMAT" defval="png" depends="HAVE_DOT">
@@ -1730,17 +1730,17 @@
     </option>
     <option type="list" id="DOTFILE_DIRS" format="dir" depends="HAVE_DOT">
       <docs>
-<![CDATA[\c DOTFILE_DIRS 태그를 사용하여 문서에 포함될 dot 파일을 포함하는 하나 이상의 디렉토리를 지정할 수 있습니다(\ref cmddotfile "\dotfile" 명령 참조).]]>
+<![CDATA[\c DOTFILE_DIRS 태그를 사용하여 문서에 포함될 dot 파일을 포함하는 하나 이상의 디렉터리를 지정할 수 있습니다(\ref cmddotfile "\dotfile" 명령 참조).]]>
       </docs>
     </option>
     <option type="string" id="DIA_PATH" format="dir" defval="">
       <docs>
-<![CDATA[문서에 dia로 만든 다이어그램을 포함할 수 있습니다. Doxygen은 dia를 실행하여 다이어그램을 생성하고 문서에 삽입합니다. DIA_PATH 태그를 사용하면 dia 바이너리가 있는 디렉토리를 지정할 수 있습니다. 비워 두면 dia는 기본 검색 경로에서 찾을 수 있다고 가정합니다.]]>
+<![CDATA[문서에 dia로 만든 다이어그램을 포함할 수 있습니다. Doxygen은 dia를 실행하여 다이어그램을 생성하고 문서에 삽입합니다. DIA_PATH 태그를 사용하면 dia 바이너리가 있는 디렉터리를 지정할 수 있습니다. 비워 두면 dia는 기본 검색 경로에서 찾을 수 있다고 가정합니다.]]>
       </docs>
     </option>
     <option type="list" id="DIAFILE_DIRS" format="dir">
       <docs>
-<![CDATA[\c DIAFILE_DIRS 태그를 사용하여 문서에 포함될 dia 파일을 포함하는 하나 이상의 디렉토리를 지정할 수 있습니다(\ref cmddiafile "\diafile" 명령 참조).]]>
+<![CDATA[\c DIAFILE_DIRS 태그를 사용하여 문서에 포함될 dia 파일을 포함하는 하나 이상의 디렉터리를 지정할 수 있습니다(\ref cmddiafile "\diafile" 명령 참조).]]>
       </docs>
     </option>
     <option type="string" id="PLANTUML_JAR_PATH" format="filedir" defval="">
@@ -1760,12 +1760,12 @@
     </option>
     <option type="list" id="PLANTUMLFILE_DIRS" format="dir">
       <docs>
-<![CDATA[\c PLANTUMLFILE_DIRS 태그를 사용하여 문서에 포함될 PlantUml 파일을 포함하는 하나 이상의 디렉토리를 지정할 수 있습니다(\ref cmdplantumlfile "\plantumlfile" 명령 참조).]]>
+<![CDATA[\c PLANTUMLFILE_DIRS 태그를 사용하여 문서에 포함될 PlantUml 파일을 포함하는 하나 이상의 디렉터리를 지정할 수 있습니다(\ref cmdplantumlfile "\plantumlfile" 명령 참조).]]>
       </docs>
     </option>
     <option type="string" id="MERMAID_PATH" format="filedir" defval="">
       <docs>
-<![CDATA[CLI 렌더링으로 Mermaid 다이어그램을 사용하는 경우 \c MERMAID_PATH 태그를 사용하여 \c mmdc(Mermaid CLI) 실행 파일을 찾을 수 있는 디렉토리를 지정해야 합니다. 비워 두면 CLI 기반 렌더링이 비활성화됩니다. HTML 출력의 경우 JavaScript를 통한 클라이언트 측 렌더링이 기본적으로 사용되며 \c mmdc가 필요하지 않습니다. \f$\mbox{\LaTeX}\f$/PDF 출력의 경우 이미지를 미리 생성하기 위해 \c mmdc가 필요합니다. CLI 렌더링이 필요하지만 \c mmdc를 사용할 수 없는 경우 Doxygen은 경고를 생성합니다.]]>
+<![CDATA[CLI 렌더링으로 Mermaid 다이어그램을 사용하는 경우 \c MERMAID_PATH 태그를 사용하여 \c mmdc(Mermaid CLI) 실행 파일을 찾을 수 있는 디렉터리를 지정해야 합니다. 비워 두면 CLI 기반 렌더링이 비활성화됩니다. HTML 출력의 경우 JavaScript를 통한 클라이언트 측 렌더링이 기본적으로 사용되며 \c mmdc가 필요하지 않습니다. \f$\mbox{\LaTeX}\f$/PDF 출력의 경우 이미지를 미리 생성하기 위해 \c mmdc가 필요합니다. CLI 렌더링이 필요하지만 \c mmdc를 사용할 수 없는 경우 Doxygen은 경고를 생성합니다.]]>
       </docs>
     </option>
     <option type="string" id="MERMAID_CONFIG_FILE" format="file" defval="">
@@ -1783,12 +1783,12 @@
     </option>
     <option type="string" id="MERMAID_JS_URL" format="string" defval="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs">
       <docs>
-<![CDATA[\c MERMAID_JS_URL 태그는 클라이언트 측 렌더링을 사용하는 경우(\c MERMAID_RENDER_MODE가 \c CLIENT_SIDE 또는 \c AUTO) \c mermaid.js를 로드할 URL을 지정합니다. 기본값은 jsDelivr CDN의 최신 Mermaid v11을 가리킵니다. \par 예: - 최신 v11(기본값): \c 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs' - 고정된 버전: \c 'https://cdn.jsdelivr.net/npm/mermaid@11.3.0/dist/mermaid.esm.min.mjs' - 로컬 복사본: \c './mermaid.esm.min.mjs'(사용자는 파일을 HTML 출력 디렉토리에 배치해야 함) \par 기본 CDN URL은 생성된 문서를 볼 때 인터넷 액세스가 필요합니다. 오프라인 사용의 경우 \c mermaid.esm.min.mjs를 다운로드하고 이것을 상대 경로로 설정하거나 대신 \c MERMAID_RENDER_MODE=CLI를 사용하여 이미지를 미리 생성하세요.]]>
+<![CDATA[\c MERMAID_JS_URL 태그는 클라이언트 측 렌더링을 사용하는 경우(\c MERMAID_RENDER_MODE가 \c CLIENT_SIDE 또는 \c AUTO) \c mermaid.js를 로드할 URL을 지정합니다. 기본값은 jsDelivr CDN의 최신 Mermaid v11을 가리킵니다. \par 예: - 최신 v11(기본값): \c 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs' - 고정된 버전: \c 'https://cdn.jsdelivr.net/npm/mermaid@11.3.0/dist/mermaid.esm.min.mjs' - 로컬 복사본: \c './mermaid.esm.min.mjs'(사용자는 파일을 HTML 출력 디렉터리에 배치해야 함) \par 기본 CDN URL은 생성된 문서를 볼 때 인터넷 액세스가 필요합니다. 오프라인 사용의 경우 \c mermaid.esm.min.mjs를 다운로드하고 이것을 상대 경로로 설정하거나 대신 \c MERMAID_RENDER_MODE=CLI를 사용하여 이미지를 미리 생성하세요.]]>
       </docs>
     </option>
     <option type="list" id="MERMAIDFILE_DIRS" format="dir">
       <docs>
-<![CDATA[\c MERMAIDFILE_DIRS 태그를 사용하여 문서에 포함될 Mermaid 파일을 포함하는 하나 이상의 디렉토리를 지정할 수 있습니다(\ref cmdmermaidfile "\mermaidfile" 명령 참조).]]>
+<![CDATA[\c MERMAIDFILE_DIRS 태그를 사용하여 문서에 포함될 Mermaid 파일을 포함하는 하나 이상의 디렉터리를 지정할 수 있습니다(\ref cmdmermaidfile "\mermaidfile" 명령 참조).]]>
       </docs>
     </option>
     <option type="int" id="DOT_GRAPH_MAX_NODES" minval="0" maxval="10000" defval="50" depends="HAVE_DOT">
@@ -1818,7 +1818,7 @@
     </option>
     <option type="list" id="MSCFILE_DIRS" format="dir">
       <docs>
-<![CDATA[\c MSCFILE_DIRS 태그를 사용하여 문서에 포함될 msc 파일을 포함하는 하나 이상의 디렉토리를 지정할 수 있습니다(\ref cmdmscfile "\mscfile" 명령 참조).]]>
+<![CDATA[\c MSCFILE_DIRS 태그를 사용하여 문서에 포함될 msc 파일을 포함하는 하나 이상의 디렉터리를 지정할 수 있습니다(\ref cmdmscfile "\mscfile" 명령 참조).]]>
       </docs>
     </option>
   </group>

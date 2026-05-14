@@ -768,7 +768,7 @@ def syncLocalizedConfig(elem, translationsDir, autoSync=False):
         srcDir = os.path.dirname(srcDir)
     srcDir = os.path.join(srcDir, 'src')
 
-    for configFile in sorted(glob.glob("translations/config_*.xml")):
+    for configFile in sorted(glob.glob("i18n/config_*.xml")):
 
         if not os.path.exists(configFile):
             print("Skipping %s: config file not found" % configFile)

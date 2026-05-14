@@ -45,6 +45,12 @@ class MainWindow : public QMainWindow
     void outputLogStart();
     void outputLogText(QString text);
     void outputLogFinish();
+    void dump();
+    void setLanguage(const QString &langCode)
+    {
+      m_settings.setValue(QString::fromLatin1("language/code"), langCode);
+      m_settings.sync();
+    }
 
   public slots:
     void manual();
@@ -56,6 +62,7 @@ class MainWindow : public QMainWindow
     void resetToDefaults();
     void selectTab(int);
     void quit();
+    void switchLanguage();
 
   private slots:
     void openRecent(QAction *action);
@@ -111,13 +118,19 @@ class MainWindow : public QMainWindow
     bool m_modified;
 };
 
-/*! \brief This class serves as a namespace for global variables used by the doxygen wizard.
- *
- *  All fields in this class are public and static, so they can be used directly.
- */
-class DoxygenWizard
+namespace DoxygenWizard
 {
-  public:
-    static bool debugFlag;
+  extern bool    debugFlag;
+  extern QString langCode;
+  QString msgFileNotFound(const QString &fileName);
+  QString msgNoPreviewAvailable(const QString &fileName);
+  QString msgNoProjectLogoSelected();
+  QString msgBrowseToFile();
+  QString msgBrowseToFolder();
+  QString msgSelectButton();
+  QString msgPreviousButton();
+  QString msgNextButton();
+  QString msgTopicsHeader();
 };
+
 #endif

@@ -575,6 +575,8 @@ static QCString convertFileId2Var(const QCString &fileId)
   QCString varId = fileId;
   int i=varId.findRev('/');
   if (i>=0) varId = varId.mid(i+1);
+  if (isdigit(varId[0])) varId.prepend("_");
+
   return substitute(varId,"-","_");
 }
 

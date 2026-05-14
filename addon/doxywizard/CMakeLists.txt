@@ -4,11 +4,15 @@ if (force_qt STREQUAL "Qt6" OR NOT force_qt)
   if (Qt6Core_FOUND)
     message(STATUS "Using Qt6")
     find_package(Qt6 REQUIRED COMPONENTS Widgets Gui Xml Svg)
+    set(QT_VERSION_MAJOR "6")
     macro(qt_wrap_cpp)
       qt6_wrap_cpp(${ARGN})
     endmacro()
     macro(qt_add_resources)
       qt6_add_resources(${ARGN})
+    endmacro()
+    macro(qt_add_translation)
+      qt6_add_translation(${ARGN})
     endmacro()
   elseif (force_qt STREQUAL "Qt6")
     # no fallback to Qt5
@@ -22,11 +26,15 @@ if (force_qt STREQUAL "Qt5" OR NOT Qt6_FOUND)
   if (Qt5Core_FOUND)
     message(STATUS "Using Qt5")
     find_package(Qt5 REQUIRED COMPONENTS Widgets Gui Xml Svg)
+    set(QT_VERSION_MAJOR "5")
     macro(qt_wrap_cpp)
       qt5_wrap_cpp(${ARGN})
     endmacro()
     macro(qt_add_resources)
       qt5_add_resources(${ARGN})
+    endmacro()
+    macro(qt_add_translation)
+      qt5_add_translation(${ARGN})
     endmacro()
   elseif (force_qt STREQUAL "Qt5")
     message(FATAL_ERROR "Qt5 not found")
@@ -140,7 +148,57 @@ inputbool.h
 inputstring.h
 inputstrlist.h
 wizard.h
+languagedialog.h
 )
+
+set(TRANSLATIONS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/i18n)
+file(GLOB DOXYWIZARD_TRANSLATION_FILES CONFIGURE_DEPENDS "${TRANSLATIONS_DIR}/doxywizard_*.ts")
+
+find_package(Qt${QT_VERSION_MAJOR} COMPONENTS LinguistTools QUIET)
+if(Qt${QT_VERSION_MAJOR}LinguistTools_FOUND)
+  set(I18N_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/i18n)
+  file(MAKE_DIRECTORY ${I18N_BINARY_DIR})
+  set_source_files_properties(${DOXYWIZARD_TRANSLATION_FILES} PROPERTIES OUTPUT_LOCATION ${I18N_BINARY_DIR})
+  qt_add_translation(doxywizard_QM_FILES ${DOXYWIZARD_TRANSLATION_FILES})
+  get_target_property(QT_QMAKE_EXECUTABLE Qt${QT_VERSION_MAJOR}::qmake IMPORTED_LOCATION)
+  execute_process(
+      COMMAND "${QT_QMAKE_EXECUTABLE}" -query QT_INSTALL_TRANSLATIONS
+      OUTPUT_VARIABLE QT_TRANSLATIONS_DIR
+      OUTPUT_STRIP_TRAILING_WHITESPACE
+  )
+  message(STATUS "Qt translations dir: ${QT_TRANSLATIONS_DIR}")
+
+  set(TRANSLATIONS_QRC_CONTENT "<!DOCTYPE RCC>\n<RCC version=\"1.0\">\n    <qresource>\n")
+  set(doxywizard_QM_FILES_PATHS)
+  foreach(ts_file ${DOXYWIZARD_TRANSLATION_FILES})
+    get_filename_component(ts_name ${ts_file} NAME_WE)
+    string(REGEX REPLACE "doxywizard_(.+)" "\\1" LOCALE "${ts_name}")
+    set(qm_file "${I18N_BINARY_DIR}/${ts_name}.qm")
+    list(APPEND doxywizard_QM_FILES_PATHS ${qm_file})
+
+    if (QT_TRANSLATIONS_DIR)
+      if (EXISTS "${QT_TRANSLATIONS_DIR}/qtbase_${LOCALE}.qm")
+        configure_file("${QT_TRANSLATIONS_DIR}/qtbase_${LOCALE}.qm" "${I18N_BINARY_DIR}/qtbase_${LOCALE}.qm" COPYONLY)
+        string(APPEND TRANSLATIONS_QRC_CONTENT "        <file>i18n/qtbase_${LOCALE}.qm</file>\n")
+      else()
+        message(WARNING "Qt translation file ${QT_TRANSLATIONS_DIR}/qtbase_${LOCALE}.qm not found")
+      endif()
+    endif()
+    configure_file("${PROJECT_SOURCE_DIR}/src/i18n/config_${LOCALE}.xml" "${I18N_BINARY_DIR}/config_${LOCALE}.xml" COPYONLY)
+    string(APPEND TRANSLATIONS_QRC_CONTENT "        <file>i18n/config_${LOCALE}.xml</file>\n")
+    string(APPEND TRANSLATIONS_QRC_CONTENT "        <file>i18n/${ts_name}.qm</file>\n")
+  endforeach()
+  string(APPEND TRANSLATIONS_QRC_CONTENT "    </qresource>\n</RCC>\n")
+
+  message(STATUS "i18n.qrc:\n${TRANSLATIONS_QRC_CONTENT}")
+  file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/i18n.qrc "${TRANSLATIONS_QRC_CONTENT}")
+  set_source_files_properties(${CMAKE_CURRENT_BINARY_DIR}/i18n.qrc PROPERTIES OBJECT_DEPENDS "${doxywizard_QM_FILES_PATHS}")
+  qt_add_resources(doxywizard_TRANSLATION_RESOURCES ${CMAKE_CURRENT_BINARY_DIR}/i18n.qrc)
+
+else()
+  message(STATUS "Qt Linguist tools not found, translation files will not be compiled")
+  set(doxywizard_TRANSLATION_RESOURCES)
+endif()
 
 qt_add_resources(doxywizard_RESOURCES_RCC doxywizard.qrc)
 
@@ -153,11 +211,13 @@ inputbool.cpp
 inputstring.cpp
 inputint.cpp
 inputstrlist.cpp
+languagedialog.cpp
 ${GENERATED_SRC_WIZARD}/settings.h
 ${GENERATED_SRC_WIZARD}/config_doxyw.cpp
 ${GENERATED_SRC_WIZARD}/config_doxyw.l.h
 ${GENERATED_SRC_WIZARD}/configdoc.cpp
 ${doxywizard_MOC}
+${doxywizard_TRANSLATION_RESOURCES}
 ${doxywizard_RESOURCES_RCC}
 ${PROJECT_SOURCE_DIR}/templates/icon/doxygen.rc
 )

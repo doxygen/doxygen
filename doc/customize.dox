@@ -468,6 +468,8 @@ files as one big DOM tree would not fit into memory.
 See <a href="https://github.com/breathe-doc/breathe">the Breathe project</a> for
 an example that uses Doxygen XML output from Python to bridge it with the
 <a href="http://www.sphinx-doc.org/en/stable/">Sphinx</a> document generator.
+See also <a href="https://0state.com/moxygen">Moxygen</a> for converting
+Doxygen XML output to Markdown for use with static documentation tools.
 
 \htmlonly
 Go to the <a href="custcmd.html">next</a> section or return to the

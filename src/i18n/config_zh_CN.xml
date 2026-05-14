@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<doxygenconfig>
-  <group name="Project" docs="Project related configuration options">
+<doxygenconfig lang="简体中文">
+  <group name="Project" trname="项目" docs="与项目相关的配置选项">
     <option type="string" id="DOXYFILE_ENCODING" format="string" defval="UTF-8">
       <docs>
 <![CDATA[此标签指定配置文件中所有后续字符使用的编码。默认值为 UTF-8，这也是此标签首次出现之前所有文本使用的编码。Doxygen 使用 \c libiconv（或 \c libc 中内置的 iconv）进行转码。有关可能的编码列表，请参阅 https://www.gnu.org/software/libiconv/。]]>
@@ -229,7 +229,7 @@
     </option>
     <option type="list" id="EXTENSION_MAPPING" format="string">
       <docs>
-<![CDATA[Doxygen 根据解析文件的扩展名选择要使用的解析器。使用此标签，您可以为给定扩展名分配要使用的解析器。Doxygen 有内置映射，但您可以使用此标签覆盖或扩展它。格式为 <code>ext=language</code>，其中 \c ext 是文件扩展名，language 是 Doxygen 支持的解析器之一：IDL、Java、JavaScript、Csharp (C#)、C、C++、Lex、D、PHP、md (Markdown)、Objective-C、Python、Slice、VHDL、Fortran（固定格式 Fortran：FortranFixed，自由格式 Fortran：FortranFree，未知格式 Fortran：Fortran。在后一种情况下，解析器尝试猜测代码是固定格式还是自由格式代码，这是 Fortran 类型文件的默认设置）。例如，要使 Doxygen 将 <code>.inc</code> 文件视为 Fortran 文件（默认为 PHP），将 <code>.f</code> 文件视为 C 文件（默认为 Fortran），请使用：`inc=Fortran f=C`。<br>注意：对于没有扩展名的文件，您可以使用 `no_extension` 作为占位符。<br>请注意，对于自定义扩展名，您还需要设置 \ref cfg_file_patterns "FILE_PATTERNS"，否则 Doxygen 不会读取这些文件。指定 `no_extension` 时，应将 `*` 添加到 \ref cfg_file_patterns "FILE_PATTERNS"。<br>注意，另请参阅 \ref default_file_extension_mapping "默认文件扩展名映射"列表。]]>
+<![CDATA[Doxygen 根据解析文件的扩展名选择要使用的解析器。使用此标签，您可以为给定扩展名分配要使用的解析器。Doxygen 有内置映射，但您可以使用此标签覆盖或扩展它。格式为 `ext=language`，其中 `ext` 是文件扩展名，`language` 是 Doxygen 支持的解析器之一：IDL、Java、JavaScript、Csharp (C#)、C、C++、Lex、D、PHP、md (Markdown)、Objective-C、Python、Slice、VHDL、Fortran（固定格式 Fortran：FortranFixed，自由格式 Fortran：FortranFree，未知格式 Fortran：Fortran。在后一种情况下，解析器尝试猜测代码是固定格式还是自由格式代码，这是 Fortran 类型文件的默认设置）。例如，要使 Doxygen 将 <code>.inc</code> 文件视为 Fortran 文件（默认为 PHP），将 <code>.f</code> 文件视为 C 文件（默认为 Fortran），请使用：`inc=Fortran f=C`。<br>注意：对于没有扩展名的文件，您可以使用 `no_extension` 作为占位符。<br>请注意，对于自定义扩展名，您还需要设置 \ref cfg_file_patterns "FILE_PATTERNS"，否则 Doxygen 不会读取这些文件。指定 `no_extension` 时，应将 `*` 添加到 \ref cfg_file_patterns "FILE_PATTERNS"。<br>注意，另请参阅 \ref default_file_extension_mapping "默认文件扩展名映射"列表。]]>
       </docs>
     </option>
     <option type="bool" id="MARKDOWN_SUPPORT" defval="1">
@@ -335,7 +335,7 @@
       <value name="DATE"/>
     </option>
   </group>
-  <group name="Build" docs="Build related configuration options">
+  <group name="Build" trname="构建" docs="与构建相关的配置选项">
     <option type="bool" id="EXTRACT_ALL" defval="0">
       <docs>
 <![CDATA[如果 \c EXTRACT_ALL 标签设置为 \c YES，Doxygen 将假设文档中的所有实体都已记录，即使没有可用的文档。私有类成员和静态文件成员将被隐藏，除非分别设置了 \ref cfg_extract_private "EXTRACT_PRIVATE" 或 \ref cfg_extract_static "EXTRACT_STATIC" 标签为 \c YES。\note 这也将禁用通常在 \ref cfg_warnings "WARNINGS" 设置为 \c YES 时产生的有关未记录成员的警告。]]>
@@ -564,7 +564,7 @@
       </docs>
     </option>
   </group>
-  <group name="Messages" docs="Configuration options related to warning and progress messages">
+  <group name="Messages" trname="消息" docs="与警告和进度消息相关的配置选项">
     <option type="bool" id="QUIET" defval="0">
       <docs>
 <![CDATA[\c QUIET 标签可用于打开/关闭 Doxygen 生成到标准输出的消息。如果 \c QUIET 设置为 \c YES，这意味着消息已关闭。]]>
@@ -630,7 +630,7 @@
       </docs>
     </option>
   </group>
-  <group name="Input" docs="Configuration options related to the input files">
+  <group name="Input" trname="输入" docs="与输入文件相关的配置选项">
     <option type="list" id="INPUT" format="filedir">
       <docs>
 <![CDATA[\c INPUT 标签用于指定包含已记录源文件的文件和/或目录。您可以输入文件名如 \c myfile.cpp 或目录如 \c /usr/src/myproject。用空格分隔文件或目录。另请参阅 \ref cfg_file_patterns "FILE_PATTERNS" 和 \ref cfg_extension_mapping "EXTENSION_MAPPING" \note 如果此标签为空，则搜索当前目录。]]>
@@ -783,7 +783,7 @@
       </docs>
     </option>
   </group>
-  <group name="Source_Browser" docs="Configuration options related to source browsing">
+  <group name="Source_Browser" trname="源码浏览器" docs="与源代码浏览相关的配置选项">
     <option type="bool" id="SOURCE_BROWSER" defval="0">
       <docs>
 <![CDATA[如果 \c SOURCE_BROWSER 标签设置为 \c YES，则将生成源文件列表。已记录的实体将与这些源交叉引用。<br>注意：要摆脱生成输出中的所有源代码，请确保也将 \ref cfg_verbatim_headers "VERBATIM_HEADERS" 设置为 \c NO。]]>
@@ -850,7 +850,7 @@
       </docs>
     </option>
   </group>
-  <group name="Index" docs="Configuration options related to the alphabetical class index">
+  <group name="Index" trname="索引" docs="与字母顺序类索引相关的配置选项">
     <option type="bool" id="ALPHABETICAL_INDEX" defval="1">
       <docs>
 <![CDATA[如果 \c ALPHABETICAL_INDEX 标签设置为 \c YES，将生成所有复合类型的字母索引。如果项目包含大量类、结构体、联合体或接口，请启用此选项。]]>
@@ -862,7 +862,7 @@
       </docs>
     </option>
   </group>
-  <group name="HTML" docs="Configuration options related to the HTML output">
+  <group name="HTML" docs="与 HTML 输出相关的配置选项">
     <option type="bool" id="GENERATE_HTML" defval="1">
       <docs>
 <![CDATA[如果 \c GENERATE_HTML 标签设置为 \c YES，Doxygen 将生成 HTML 输出]]>
@@ -1162,7 +1162,7 @@
       <value name="chtml" desc="（这是MathJax版本3的名称，对于MathJax版本2将被转换为\c HTML-CSS）"/>
       <value name="SVG"/>
     </option>
-        <option type="string" id="MATHJAX_RELPATH" format="string" depends="USE_MATHJAX">
+    <option type="string" id="MATHJAX_RELPATH" format="string" depends="USE_MATHJAX">
       <docs>
 <![CDATA[
  当启用 MathJax 时，您需要使用 \c MATHJAX_RELPATH 选项指定相对于 HTML 输出目录的位置。
@@ -1226,7 +1226,7 @@
       </docs>
     </option>
   </group>
-  <group name="LaTeX" docs="Configuration options related to the LaTeX output">
+  <group name="LaTeX" docs="与 LaTeX 输出相关的配置选项">
     <option type="bool" id="GENERATE_LATEX" defval="1">
       <docs>
 <![CDATA[如果 \c GENERATE_LATEX 标签设置为 \c YES，Doxygen 将生成 \f$\mbox{\LaTeX}\f$ 输出。]]>
@@ -1328,7 +1328,7 @@
       </docs>
     </option>
   </group>
-  <group name="RTF" docs="Configuration options related to the RTF output">
+  <group name="RTF" docs="与 RTF 输出相关的配置选项">
     <option type="bool" id="GENERATE_RTF" defval="0">
       <docs>
 <![CDATA[如果 \c GENERATE_RTF 标签设置为 \c YES，Doxygen 将生成 RTF 输出。RTF 输出针对 Word 97 进行了优化，在其他 RTF 阅读器/编辑器中可能看起来不太漂亮。]]>
@@ -1365,7 +1365,7 @@
       </docs>
     </option>
   </group>
-  <group name="Man" docs="Configuration options related to the man page output">
+  <group name="Man" docs="与 man 页面输出相关的配置选项">
     <option type="bool" id="GENERATE_MAN" defval="0">
       <docs>
 <![CDATA[如果 \c GENERATE_MAN 标签设置为 \c YES，Doxygen 将为类和文件生成 man 页面。]]>
@@ -1392,7 +1392,7 @@
       </docs>
     </option>
   </group>
-  <group name="XML" docs="Configuration options related to the XML output">
+  <group name="XML" docs="与 XML 输出相关的配置选项">
     <option type="bool" id="GENERATE_XML" defval="0">
       <docs>
 <![CDATA[如果 \c GENERATE_XML 标签设置为 \c YES，Doxygen 将生成一个捕获代码结构（包括所有文档）的 XML 文件。]]>
@@ -1414,7 +1414,7 @@
       </docs>
     </option>
   </group>
-  <group name="Docbook" docs="Configuration options related to the DOCBOOK output">
+  <group name="Docbook" docs="与 DOCBOOK 输出相关的配置选项">
     <option type="bool" id="GENERATE_DOCBOOK" defval="0">
       <docs>
 <![CDATA[如果 \c GENERATE_DOCBOOK 标签设置为 \c YES，Doxygen 将生成可用于生成 PDF 的 Docbook 文件。]]>
@@ -1426,14 +1426,14 @@
       </docs>
     </option>
   </group>
-  <group name="AutoGen" docs="Configuration options for the AutoGen Definitions output">
+  <group name="AutoGen" docs="AutoGen Definitions 输出的配置选项">
     <option type="bool" id="GENERATE_AUTOGEN_DEF" defval="0">
       <docs>
 <![CDATA[如果 \c GENERATE_AUTOGEN_DEF 标签设置为 \c YES，Doxygen 将生成一个捕获代码结构（包括所有文档）的 AutoGen 定义（请参阅 https://autogen.sourceforge.net/）文件。请注意，此功能目前仍处于实验阶段且不完整。]]>
       </docs>
     </option>
   </group>
-  <group name="Sqlite3" docs="Configuration options related to Sqlite3 output">
+  <group name="Sqlite3" docs="与 Sqlite3 输出相关的配置选项">
     <option type="bool" id="GENERATE_SQLITE3" defval="0">
       <docs>
 <![CDATA[如果 \c GENERATE_SQLITE3 标签设置为 \c YES，Doxygen 将生成一个 \c Sqlite3 数据库，其中包含 Doxygen 找到的符号存储在表中。]]>
@@ -1450,7 +1450,7 @@
       </docs>
     </option>
   </group>
-  <group name="PerlMod" docs="Configuration options related to the Perl module output">
+  <group name="PerlMod" docs="与 Perl 模块输出相关的配置选项">
     <option type="bool" id="GENERATE_PERLMOD" defval="0">
       <docs>
 <![CDATA[如果 \c GENERATE_PERLMOD 标签设置为 \c YES，Doxygen 将生成一个捕获代码结构（包括所有文档）的 Perl 模块文件。<br>请注意，此功能目前仍处于实验阶段且不完整。]]>
@@ -1472,7 +1472,7 @@
       </docs>
     </option>
   </group>
-  <group name="Preprocessor" docs="Configuration options related to the preprocessor">
+  <group name="Preprocessor" trname="预处理器" docs="与预处理器相关的配置选项">
     <option type="bool" id="ENABLE_PREPROCESSING" defval="1">
       <docs>
 <![CDATA[如果 \c ENABLE_PREPROCESSING 标签设置为 \c YES，Doxygen 将评估源文件和包含文件中找到的所有 C 预处理指令。]]>
@@ -1519,7 +1519,7 @@
       </docs>
     </option>
   </group>
-  <group name="External" docs="Configuration options related to external references">
+  <group name="External" trname="外部引用" docs="与外部引用相关的配置选项">
     <option type="list" id="TAGFILES" format="file">
       <docs>
 <![CDATA[\c TAGFILES 标签可用于指定一个或多个标签文件。对于每个标签文件，应添加外部文档的位置。没有此位置的标签文件的格式如下：\verbatim TAGFILES = file1 file2 ... \endverbatim 为标签文件添加位置的方式如下：\verbatim TAGFILES = file1=loc1 "file2 = loc2" ... \endverbatim 其中 `loc1` 和 `loc2` 可以是相对或绝对路径或 URL。有关使用标签文件的更多信息，请参阅第 \ref external 节。\note 每个标签文件必须具有唯一的名称（其中名称不包括路径）。如果标签文件不在运行 Doxygen 的目录中，您还必须在此处指定标签文件的路径。]]>
@@ -1546,7 +1546,7 @@
       </docs>
     </option>
   </group>
-  <group name="Dot" docs="Configuration options related to diagram generator tools">
+  <group name="Dot" docs="与图表生成工具相关的配置选项">
     <option type="bool" id="HIDE_UNDOC_RELATIONS" defval="1">
       <docs>
 <![CDATA[如果设置为 \c YES，继承和协作图将隐藏目标未记录或不是类的继承和使用关系。]]>
@@ -1610,7 +1610,7 @@
     </option>
     <option type="bool" id="GROUP_GRAPHS" defval="1" depends="HAVE_DOT">
       <docs>
-<![CDATA[如果 \c GROUP_GRAPHS 标签设置为 \c YES，Doxygen 将为组生成图，显示直接的组依赖关系。当 \c GROUP_GRAPHS 设置为 \c NO 时，可以通过命令 \ref cmdgroupgraph "\\groupgraph" 显式启用组依赖图。可以通过命令 \ref cmdhidegroupgraph "\\hidegroupgraph" 禁用目录图。]]>
+<![CDATA[如果 \c GROUP_GRAPHS 标签设置为 \c YES，Doxygen 将为组生成图，显示直接的组依赖关系。当 \c GROUP_GRAPHS 设置为 \c NO 时，可以通过命令 \ref cmdgroupgraph "\\groupgraph" 显式启用组依赖图。可以通过命令 \ref cmdhidegroupgraph "\\hidegroupgraph" 禁用组图。]]>
       </docs>
     </option>
     <option type="bool" id="UML_LOOK" defval="0" depends="HAVE_DOT">

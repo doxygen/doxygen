@@ -29,15 +29,11 @@ class FileDef;
 class FileName : public std::vector< std::unique_ptr<FileDef> >
 {
   public:
-    FileName(const QCString &nm,const QCString &fn) : m_name(nm), m_fName(fn), m_pathName("tmp") {}
+    explicit FileName(const QCString &nm) : m_name(nm) {}
     QCString fileName() const { return m_name; }
-    QCString fullName() const { return m_fName; }
-    QCString path() const { return m_pathName; }
 
   private:
     QCString m_name;
-    QCString m_fName;
-    QCString m_pathName;
 };
 
 //! Custom combined key compare and hash functor that uses a lower case string in

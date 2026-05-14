@@ -62,6 +62,7 @@ void SearchTerm::makeTitle()
 QCString SearchTerm::termEncoded() const
 {
   TextStream t;
+
   for (size_t i=0;i<word.length();i++)
   {
     if (isIdJS(word.at(i)))

@@ -1380,13 +1380,17 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          return Token::make_TK_NONE();
                        }
 <St_IFile>{BLANK}*{FILEMASK} {
-                         yyextra->fileName = QCString(yytext).stripWhiteSpace();
+                         QCString text(yytext);
+                         text = text.stripWhiteSpace();
+                         yyextra->fileName = text;
+                         yyextra->token.name = text;
                          return Token::make_TK_WORD();
                        }
 <St_IFile>{BLANK}*"\""[^\n\"]+"\"" {
                          QCString text(yytext);
                          text = text.stripWhiteSpace();
                          yyextra->fileName = text.mid(1,text.length()-2);
+                         yyextra->token.name = text.mid(1,text.length()-2);
                          return Token::make_TK_WORD();
                        }
 <St_File>{FILEMASK}    {

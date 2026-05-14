@@ -123,7 +123,9 @@ function initNavTree(toroot,relpath,allMembersFile) {
     const i = varName.lastIndexOf('/');
     const n = i>=0 ? varName.substring(i+1) : varName;
     const e = n.replace(/-/g,'_');
-    return window[e];
+    const r = (e[0] >= '0' && e[0] <= '9') ? '_' + e : e;
+
+    return window[r];
   }
 
   const stripPath = (uri) => uri.substring(uri.lastIndexOf('/')+1);

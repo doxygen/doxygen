@@ -1,0 +1,1827 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doxygenconfig lang="Français">
+  <group name="Project" trname="Projet" docs="Options de configuration relatives au projet">
+    <option type="string" id="DOXYFILE_ENCODING" format="string" defval="UTF-8">
+      <docs>
+<![CDATA[Cette balise spécifie l'encodage utilisé pour tous les caractères du fichier de configuration qui suivent. La valeur par défaut est UTF-8, qui est également l'encodage utilisé pour tout le texte avant la première occurrence de cette balise. Doxygen utilise \c libiconv (ou l'iconv intégré dans \c libc) pour le transcodage. Voir https://www.gnu.org/software/libiconv/ pour la liste des encodages possibles.]]>
+      </docs>
+    </option>
+    <option type="string" id="PROJECT_NAME" format="string" defval="My Project">
+      <docs>
+<![CDATA[La balise \c PROJECT_NAME est un mot unique (ou une séquence de mots entourés de guillemets doubles, sauf si vous utilisez Doxywizard) qui doit identifier le projet pour lequel la documentation est générée. Ce nom est utilisé dans le titre de la plupart des pages générées et dans quelques autres endroits.]]>
+      </docs>
+    </option>
+    <option type="string" id="PROJECT_NUMBER" format="string" defval="">
+      <docs>
+<![CDATA[La balise \c PROJECT_NUMBER peut être utilisée pour entrer un numéro de projet ou de révision. Cela peut être utile pour archiver la documentation générée ou si un système de contrôle de version est utilisé.]]>
+      </docs>
+    </option>
+    <option type="string" id="PROJECT_BRIEF" format="string" defval="">
+      <docs>
+<![CDATA[En utilisant la balise \c PROJECT_BRIEF, on peut fournir une description optionnelle d'une ligne pour un projet qui apparaît en haut de chaque page et devrait donner aux lecteurs une idée rapide du but du projet. Gardez la description courte.]]>
+      </docs>
+    </option>
+    <option type="string" id="PROJECT_LOGO" format="image" defval="">
+      <docs>
+<![CDATA[Avec la balise \c PROJECT_LOGO, on peut spécifier un logo ou une icône qui est inclus dans la documentation. La hauteur maximale du logo ne doit pas dépasser 55 pixels et la largeur maximale ne doit pas dépasser 200 pixels. Doxygen copiera le logo dans le répertoire de sortie.]]>
+      </docs>
+    </option>
+    <option type="string" id="PROJECT_ICON" format="image" defval="">
+      <docs>
+<![CDATA[Avec la balise \c PROJECT_ICON, on peut spécifier une icône qui est incluse dans les onglets lorsque le document HTML est affiché. Doxygen copiera le logo dans le répertoire de sortie.]]>
+      </docs>
+    </option>
+    <option type="string" id="OUTPUT_DIRECTORY" format="dir" defval="">
+      <docs>
+<![CDATA[La balise \c OUTPUT_DIRECTORY est utilisée pour spécifier le chemin (relatif ou absolu) dans lequel la documentation générée sera écrite. Si un chemin relatif est entre, il sera relatif à l'emplacement ou Doxygen a été lance. Si laissé vide, le répertoire courant sera utilisé.]]>
+      </docs>
+    </option>
+    <option type="bool" id="CREATE_SUBDIRS" defval="0">
+      <docs>
+<![CDATA[Si la balise \c CREATE_SUBDIRS est définie à \c YES, Doxygen créera jusqu'à 4096 sous-répertoires (sur 2 niveaux) sous le répertoire de sortie de chaque format de sortie et distribuera les fichiers générés sur ces répertoires. Activer cette option peut être utile lors de l'alimentation de Doxygen avec une grande quantité de fichiers sources, ou mettre tous les fichiers générés dans le même répertoire causerait autrement des problèmes de performance pour le système de fichiers. Ajustez \c CREATE_SUBDIRS_LEVEL pour contrôler le nombre de sous-répertoires.]]>
+      </docs>
+    </option>
+    <option type="int" id="CREATE_SUBDIRS_LEVEL" minval="0" maxval="8" defval="8" depends="CREATE_SUBDIRS">
+      <docs>
+<![CDATA[Contrôle le nombre de sous-répertoires qui seront créés lorsque la balise \c CREATE_SUBDIRS est définie à \c YES. Le niveau 0 représente 16 répertoires, et chaque incrément de niveau double le nombre de répertoires, résultant en 4096 répertoires au niveau 8 qui est la valeur par défaut et également la valeur maximale. Les sous-répertoires sont organisés sur 2 niveaux, le premier niveau a toujours un nombre fixe de 16 répertoires.]]>
+      </docs>
+    </option>
+    <option type="bool" id="ALLOW_UNICODE_NAMES" defval="0">
+      <docs>
+<![CDATA[Si la balise \c ALLOW_UNICODE_NAMES est définie à \c YES, Doxygen permettra aux caractères non-ASCII d'apparaître dans les noms des fichiers générés. Si défini à \c NO, les caractères non-ASCII seront échappés, par exemple _xE3_x81_x84 sera utilisé pour Unicode U+3044.]]>
+      </docs>
+    </option>
+    <option type="enum" id="OUTPUT_LANGUAGE" defval="English">
+      <docs>
+<![CDATA[La balise \c OUTPUT_LANGUAGE est utilisée pour spécifier la langue dans laquelle toute la documentation générée par Doxygen est écrite. Doxygen utilisera cette information pour générer toute la sortie constante dans la langue appropriée.]]>
+      </docs>
+      <value name="Afrikaans"/>
+      <value name="Arabic"/>
+      <value name="Armenian"/>
+      <value name="Brazilian"/>
+      <value name="Bulgarian"/>
+      <value name="Catalan"/>
+      <value name="Chinese"/>
+      <value name="Chinese-Traditional"/>
+      <value name="Croatian"/>
+      <value name="Czech"/>
+      <value name="Danish"/>
+      <value name="Dutch"/>
+      <value name="English" desc="(États-Unis)"/>
+      <value name="Esperanto"/>
+      <value name="Farsi" desc="(Persan)"/>
+      <value name="Finnish"/>
+      <value name="French"/>
+      <value name="German"/>
+      <value name="Greek"/>
+      <value name="Hindi"/>
+      <value name="Hungarian"/>
+      <value name="Indonesian"/>
+      <value name="Italian"/>
+      <value name="Japanese"/>
+      <value name="Japanese-en" desc="(Japonais avec messages en anglais)"/>
+      <value name="Korean"/>
+      <value name="Korean-en" desc="(Coréen avec messages en anglais)"/>
+      <value name="Latvian"/>
+      <value name="Lithuanian"/>
+      <value name="Macedonian"/>
+      <value name="Norwegian"/>
+      <value name="Persian" desc="(Farsi)"/>
+      <value name="Polish"/>
+      <value name="Portuguese"/>
+      <value name="Romanian"/>
+      <value name="Russian"/>
+      <value name="Serbian"/>
+      <value name="Serbian-Cyrillic"/>
+      <value name="Slovak"/>
+      <value name="Slovene"/>
+      <value name="Spanish"/>
+      <value name="Swedish"/>
+      <value name="Turkish"/>
+      <value name="Ukrainian"/>
+      <value name="Vietnamese"/>
+    </option>
+    <option type="bool" id="BRIEF_MEMBER_DESC" defval="1">
+      <docs>
+<![CDATA[Si la balise \c BRIEF_MEMBER_DESC est définie à \c YES, Doxygen inclura les descriptions brèves des membres après les membres qui sont listés dans la documentation du fichier et de la classe (similaire à \c Javadoc). Définir à \c NO pour désactiver cela.]]>
+      </docs>
+    </option>
+    <option type="bool" id="REPEAT_BRIEF" defval="1">
+      <docs>
+<![CDATA[Si la balise \c REPEAT_BRIEF est définie à \c YES, Doxygen ajoutera la description brève d'un membre ou d'une fonction avant la description détaillée. <br>Remarque: Si \ref cfg_hide_undoc_members "HIDE_UNDOC_MEMBERS" et \ref cfg_brief_member_desc "BRIEF_MEMBER_DESC" sont tous deux définis à \c NO, les descriptions brèves seront complètement supprimées.]]>
+      </docs>
+    </option>
+    <option type="list" id="ABBREVIATE_BRIEF" format="string">
+      <docs>
+<![CDATA[Cette balise implémente un abréviateur de description brève quasi-intelligent qui est utilisé pour former le texte dans diverses listes. Chaque chaîne de cette liste, si elle est trouvée comme texte de début de la description brève, sera retirée du texte et le résultat, après traitement de toute la liste, est utilisé comme texte annoté. Sinon, la description brève est utilisée telle quelle. Si laissé vide, les valeurs suivantes sont utilisées (`$name` est automatiquement remplace par le nom de l'entité):]]>
+      </docs>
+      <value name="The $name class"/>
+      <value name="The $name widget"/>
+      <value name="The $name file"/>
+      <value name="is"/>
+      <value name="provides"/>
+      <value name="specifies"/>
+      <value name="contains"/>
+      <value name="represents"/>
+      <value name="a"/>
+      <value name="an"/>
+      <value name="the"/>
+    </option>
+    <option type="bool" id="ALWAYS_DETAILED_SEC" defval="0">
+      <docs>
+<![CDATA[Si les balises \c ALWAYS_DETAILED_SEC et \ref cfg_repeat_brief "REPEAT_BRIEF" sont toutes deux définies à \c YES, alors Doxygen générera une section détaillée même s'il n'y a qu'une description brève.]]>
+      </docs>
+    </option>
+    <option type="bool" id="INLINE_INHERITED_MEMB" defval="0">
+      <docs>
+<![CDATA[Si la balise \c INLINE_INHERITED_MEMB est définie à \c YES, Doxygen affichera tous les membres hérités d'une classe dans la documentation de cette classe comme si ces membres étaient des membres ordinaires de la classe. Les constructeurs, destructeurs et opérateurs d'affectation des classes de base ne seront pas affichés.]]>
+      </docs>
+    </option>
+    <option type="bool" id="FULL_PATH_NAMES" defval="1">
+      <docs>
+<![CDATA[Si la balise \c FULL_PATH_NAMES est définie à \c YES, Doxygen ajoutera le chemin complet avant les noms de fichiers dans la liste des fichiers et dans les fichiers d'en-tête. Si défini à \c NO, le chemin le plus court qui rend le nom de fichier unique sera utilisé.]]>
+      </docs>
+    </option>
+    <option type="list" id="STRIP_FROM_PATH" format="dir" depends="FULL_PATH_NAMES">
+      <docs>
+<![CDATA[La balise \c STRIP_FROM_PATH peut être utilisée pour retirer une partie définie par l'utilisateur du chemin. Le retrait n'est effectue que si l'une des chaînes spécifiées correspond à la partie gauche du chemin. La balise peut être utilisée pour afficher des chemins relatifs dans la liste des fichiers. Si laissé vide, le répertoire à partir duquel Doxygen est lance est utilisé comme chemin a retirer. <br>Remarquez que vous pouvez spécifier des chemins absolus ici, mais aussi des chemins relatifs, qui seront relatifs au répertoire ou Doxygen est lance.]]>
+      </docs>
+    </option>
+    <option type="list" id="STRIP_FROM_INC_PATH" format="dir">
+      <docs>
+<![CDATA[La balise \c STRIP_FROM_INC_PATH peut être utilisée pour retirer une partie définie par l'utilisateur du chemin mentionne dans la documentation d'une classe, qui indique au lecteur quel fichier d'en-tête inclure pour utiliser une classe. Si laissé vide, seul le nom du fichier d'en-tête contenant la définition de la classe est utilisé. Sinon, on devrait spécifier la liste des chemins d'inclusion qui sont normalement passés au compilateur en utilisant l'option `-I`.]]>
+      </docs>
+    </option>
+    <option type="bool" id="SHORT_NAMES" defval="0">
+      <docs>
+<![CDATA[Si la balise \c SHORT_NAMES est définie à \c YES, Doxygen générera des noms de fichiers beaucoup plus courts (mais moins lisibles). Cela peut être utile si votre système de fichiers ne supporte pas les longs noms comme sur DOS, Mac ou CD-ROM.]]>
+      </docs>
+    </option>
+    <option type="bool" id="JAVADOC_AUTOBRIEF" defval="0">
+      <docs>
+<![CDATA[Si la balise \c JAVADOC_AUTOBRIEF est définie à \c YES alors Doxygen interprétera la première ligne (jusqu'au premier point, point d'interrogation ou point d'exclamation) d'un commentaire de style Javadoc comme la description brève. Si défini à \c NO, le style Javadoc se comportera comme des commentaires de style Qt normaux (requérant donc une commande \ref cmdbrief "\@brief" explicite pour une description brève).]]>
+      </docs>
+    </option>
+    <option type="bool" id="JAVADOC_BANNER" defval="0">
+      <docs>
+<![CDATA[Si la balise \c JAVADOC_BANNER est définie à \c YES alors Doxygen interprétera une ligne telle que \verbatim /***************\endverbatim comme étant le début d'une "bannière" de commentaire de style Javadoc. Si défini à \c NO, le style Javadoc se comportera comme des commentaires normaux et Doxygen ne l'interprétera pas.]]>
+      </docs>
+    </option>
+    <option type="bool" id="QT_AUTOBRIEF" defval="0">
+      <docs>
+<![CDATA[Si la balise \c QT_AUTOBRIEF est définie à \c YES alors Doxygen interprétera la première ligne (jusqu'au premier point, point d'interrogation ou point d'exclamation) d'un commentaire de style Qt comme la description brève. Si défini à \c NO, le style Qt se comportera comme des commentaires de style Qt normaux (requérant donc une commande \ref cmdbrief "\brief" explicite pour une description brève).]]>
+      </docs>
+    </option>
+    <option type="bool" id="MULTILINE_CPP_IS_BRIEF" defval="0">
+      <docs>
+<![CDATA[La balise \c MULTILINE_CPP_IS_BRIEF peut être définie à \c YES pour faire que Doxygen traite un bloc de commentaire spécial C++ multiligne (c'est-à-dire un bloc de commentaires \c //! ou \c ///) comme une description brève. C'était le comportement par défaut. Le nouveau défaut est de traiter un bloc de commentaire C++ multiligne comme une description détaillée. Définissez cette balise à \c YES si vous préférez l'ancien comportement. <br>Remarquez que définir cette balise à \c YES signifie également que les commentaires Rational Rose ne sont plus reconnus.]]>
+      </docs>
+    </option>
+    <option type="bool" id="PYTHON_DOCSTRING" defval="1">
+      <docs>
+<![CDATA[Par défaut, les docstrings Python sont affichées comme du texte préformaté et les commandes spéciales de Doxygen ne peuvent pas être utilisées. En définissant \c PYTHON_DOCSTRING à \c NO, les commandes spéciales de Doxygen peuvent être utilisées et le contenu des blocs de documentation docstring est affiché comme documentation Doxygen.]]>
+      </docs>
+    </option>
+    <option type="bool" id="INHERIT_DOCS" defval="1">
+      <docs>
+<![CDATA[Si la balise \c INHERIT_DOCS est définie à \c YES alors un membre non documente hérité de la documentation de tout membre documente qu'il re-implémente.]]>
+      </docs>
+    </option>
+    <option type="bool" id="SEPARATE_MEMBER_PAGES" defval="0">
+      <docs>
+<![CDATA[Si la balise \c SEPARATE_MEMBER_PAGES est définie à \c YES alors Doxygen produira une nouvelle page pour chaque membre. Si défini à \c NO, la documentation d'un membre fera partie du fichier/classe/namespace qui le contient.]]>
+      </docs>
+    </option>
+    <option type="int" id="TAB_SIZE" minval="1" maxval="16" defval="4">
+      <docs>
+<![CDATA[La balise \c TAB_SIZE peut être utilisée pour définir le nombre d'espaces dans une tabulation. Doxygen utilise cette valeur pour remplacer les tabulations par des espaces dans les fragments de code.]]>
+      </docs>
+    </option>
+    <option type="list" id="ALIASES" format="string">
+      <docs>
+<![CDATA[Cette balise peut être utilisée pour spécifier un certain nombre d'alias qui agissent comme des commandes dans la documentation. Un alias à la forme: \verbatim name=value \endverbatim Par exemple, ajouter \verbatim "sideeffect=@par Side Effects:^^" \endverbatim vous permettra de placer la commande \c \\sideeffect (ou \c \@sideeffect) dans la documentation, ce qui résultera en un paragraphe défini par l'utilisateur avec le titre "Side Effects:". Notez que vous ne pouvez pas mettre de \ref cmdn "\\n" dans la partie valeur d'un alias pour insérer des sauts de ligne (dans la sortie résultante). Vous pouvez mettre `^^` dans la partie valeur d'un alias pour insérer un saut de ligne comme si un saut de ligne physique était dans le fichier original. Si vous avez besoin d'un `{` ou `}` ou `,` littéral dans la partie valeur d'un alias, vous devez les échapper avec une barre oblique inverse (\c \\).]]>
+      </docs>
+    </option>
+    <option type="bool" id="OPTIMIZE_OUTPUT_FOR_C" defval="0">
+      <docs>
+<![CDATA[Définissez la balise \c OPTIMIZE_OUTPUT_FOR_C à \c YES si votre projet consiste uniquement en sources C. Doxygen générera alors une sortie plus adaptée au C. Par exemple, certains des noms utilisés seront différents. La liste de tous les membres sera omise, etc.]]>
+      </docs>
+    </option>
+    <option type="bool" id="OPTIMIZE_OUTPUT_JAVA" defval="0">
+      <docs>
+<![CDATA[Définissez la balise \c OPTIMIZE_OUTPUT_JAVA à \c YES si votre projet consiste uniquement en sources Java ou Python. Doxygen générera alors une sortie plus adaptée à ce langage. Par exemple, les namespaces seront présentés comme des packages, les portées qualifiées auront un aspect différent, etc.]]>
+      </docs>
+    </option>
+    <option type="bool" id="OPTIMIZE_FOR_FORTRAN" defval="0">
+      <docs>
+<![CDATA[Définissez la balise \c OPTIMIZE_FOR_FORTRAN à \c YES si votre projet consiste en sources Fortran. Doxygen générera alors une sortie adaptée au Fortran.]]>
+      </docs>
+    </option>
+    <option type="bool" id="OPTIMIZE_OUTPUT_VHDL" defval="0">
+      <docs>
+<![CDATA[Définissez la balise \c OPTIMIZE_OUTPUT_VHDL à \c YES si votre projet consiste en sources VHDL. Doxygen générera alors une sortie adaptée au VHDL.]]>
+      </docs>
+    </option>
+    <option type="bool" id="OPTIMIZE_OUTPUT_SLICE" defval="0">
+      <docs>
+<![CDATA[Définissez la balise \c OPTIMIZE_OUTPUT_SLICE à \c YES si votre projet consiste uniquement en sources Slice. Doxygen générera alors une sortie plus adaptée à ce langage. Par exemple, les namespaces seront présentés comme des modules, les types seront séparés en plus de groupes, etc.]]>
+      </docs>
+    </option>
+    <option type="list" id="EXTENSION_MAPPING" format="string">
+      <docs>
+<![CDATA[Doxygen sélectionne l'analyseur à utiliser en fonction de l'extension des fichiers qu'il analyse. Avec cette balise, vous pouvez assigner quel analyseur utiliser pour une extension donnée. Doxygen a une correspondance intégrée, mais vous pouvez la remplacer ou l'étendre en utilisant cette balise. Le format est `ext=language`, ou `ext` est une extension de fichier, et `language` est l'un des analyseurs supportés par Doxygen: IDL, Java, JavaScript, Csharp (C#), C, C++, Lex, D, PHP, md (Markdown), Objective-C, Python, Slice, VHDL, Fortran (Fortran format fixe: FortranFixed, Fortran format libre: FortranFree, Fortran format inconnu: Fortran. Dans ce dernier cas, l'analyseur essaie de deviner si le code est en format fixe ou libre, c'est le défaut pour les fichiers de type Fortran). Par exemple, pour faire que Doxygen traite les fichiers <code>.inc</code> comme des fichiers Fortran (le défaut est PHP), et les fichiers <code>.f</code> comme C (le défaut est Fortran), utilisez: `inc=Fortran f=C`. <br>Note: Pour les fichiers sans extension, vous pouvez utiliser `no_extension` comme espace réservé. <br>Notez que pour les extensions personnalisées vous devez également définir \ref cfg_file_patterns "FILE_PATTERNS" sinon les fichiers ne sont pas lus par Doxygen. Lorsque vous spécifiez `no_extension` vous devriez ajouter `*` au \ref cfg_file_patterns "FILE_PATTERNS". <br>Notez voir aussi la liste des \ref default_file_extension_mapping "correspondances d'extension de fichier par défaut".]]>
+      </docs>
+    </option>
+    <option type="bool" id="MARKDOWN_SUPPORT" defval="1">
+      <docs>
+<![CDATA[Si la balise \c MARKDOWN_SUPPORT est activée alors Doxygen pré-traite tous les commentaires selon le format Markdown, ce qui permet une documentation plus lisible. Voir https://daringfireball.net/projects/markdown/ pour plus de détails. La sortie du traitement Markdown est ensuite traitée par Doxygen, vous pouvez donc mélanger les commandes Doxygen, HTML et XML avec le formatage Markdown. Désactivez uniquement en cas de problèmes de compatibilité ascendante.]]>
+      </docs>
+    </option>
+    <option type="bool" id="MARKDOWN_STRICT" defval="1" depends="MARKDOWN_SUPPORT">
+      <docs>
+<![CDATA[Si la balise \c MARKDOWN_STRICT est activée alors Doxygen traite le texte dans les commentaires comme formaté en Markdown aussi dans les cas ou le format de balisage natif de Doxygen entre en conflit avec celui de Markdown. Cela n'est pertinent que dans les cas ou des backticks sont utilisés. Le style de balisage natif de Doxygen permet à un guillemet simple de terminer un fragment de texte commencé par un backtick et de le traiter comme un morceau de texte cité, alors qu'en Markdown un tel fragment est traité comme verbatim et ne se termine que lorsqu'un deuxième backtick correspondant est trouvé. De plus, le format de balisage natif de Doxygen nécessite que les guillemets doubles soient échappés lorsqu'ils apparaissent dans une section backtick, alors que cela n'est pas nécessaire pour Markdown.]]>
+      </docs>
+    </option>
+    <option type="int" id="TOC_INCLUDE_HEADINGS" minval="0" maxval="99" defval="6" depends="MARKDOWN_SUPPORT">
+      <docs>
+<![CDATA[Lorsque la balise \c TOC_INCLUDE_HEADINGS est définie à une valeur non nulle, tous les titres jusqu'à ce niveau sont automatiquement inclus dans la table des matières, même s'ils n'ont pas d'attribut id. \note Cette fonctionnalité s'applique actuellement uniquement aux titres Markdown.]]>
+      </docs>
+    </option>
+    <option type="enum" id="MARKDOWN_ID_STYLE" defval="DOXYGEN" depends="MARKDOWN_SUPPORT">
+      <docs>
+<![CDATA[La balise \c MARKDOWN_ID_STYLE peut être utilisée pour spécifier l'algorithme utilisé pour générer les identifiants pour les titres Markdown. Note: Chaque identifiant est unique.]]>
+      </docs>
+      <value name="DOXYGEN" desc="utiliser une chaîne 'autotoc_md' fixe suivie d'un numéro de séquence commençant à 0"/>
+      <value name="GITHUB" desc="utiliser la version en minuscules du titre avec tous les espaces remplacés par '-' et les caractères de ponctuation supprimés"/>
+    </option>
+    <option type="bool" id="AUTOLINK_SUPPORT" defval="1">
+      <docs>
+<![CDATA[Lorsqu'activé, Doxygen essaie de lier les mots qui correspondent à des classes documentées, ou des namespaces à leur documentation correspondante. Un tel lien peut être empesche dans des cas individuels en mettant un signe \c % devant le mot ou globalement en définissant \c AUTOLINK_SUPPORT à \c NO. Les mots listes dans la balise \c AUTOLINK_IGNORE_WORDS sont exclus de la liaison automatique.]]>
+      </docs>
+    </option>
+    <option type="list" id="AUTOLINK_IGNORE_WORDS" format="string" depends="AUTOLINK_SUPPORT">
+      <docs>
+<![CDATA[Cette balise spécifie une liste de mots qui, lorsqu'ils correspondent au début d'un mot dans la documentation, supprimeront la génération de liens automatiques, si elle est activée via AUTOLINK_SUPPORT. Cette liste n'affecte pas les liens créés explicitement en utilisant \# ou les commandes \ref cmdlink "\\link" ou \ref cmdref "\\ref".]]>
+      </docs>
+    </option>
+    <option type="bool" id="BUILTIN_STL_SUPPORT" defval="0">
+      <docs>
+<![CDATA[Si vous utilisez des classes STL (c'est-à-dire `std::string`, `std::vector`, etc.) mais ne voulez pas inclure (un fichier de balises pour) les sources STL comme entrée, alors vous devriez définir cette balise à \c YES afin de laisser Doxygen faire correspondre les déclarations et définitions de fonctions dont les arguments contiennent des classes STL (par ex. `func(std::string`); versus `func(std::string) {}`). Cela rend également les diagrammes d'héritage et de collaboration qui impliquent des classes STL plus complets et précis.]]>
+      </docs>
+    </option>
+    <option type="bool" id="CPP_CLI_SUPPORT" defval="0">
+      <docs>
+<![CDATA[Si vous utilisez le langage C++/CLI de Microsoft, vous devriez définir cette option à \c YES pour activer le support de l'analyse.]]>
+      </docs>
+    </option>
+    <option type="bool" id="SIP_SUPPORT" defval="0">
+      <docs>
+<![CDATA[Définissez la balise \c SIP_SUPPORT à \c YES si votre projet consiste uniquement en sources <a href="https://www.riverbankcomputing.com/software">sip</a>. Doxygen les analysera comme du C++ normal mais supposera que toutes les classes utilisent l'héritage public au lieu de l'héritage prive lorsqu'aucun mot-cle de protection explicite n'est présent.]]>
+      </docs>
+    </option>
+    <option type="bool" id="IDL_PROPERTY_SUPPORT" defval="1">
+      <docs>
+<![CDATA[Pour l'IDL de Microsoft, il y a des attributs \c propget et \c propput pour indiquer les méthodes getter et setter pour une propriété. Définir cette option à \c YES fera que Doxygen remplacera les méthodes get et set par une propriété dans la documentation. Cela ne fonctionnera que si les méthodes obtiennent ou definissent effectivement un type simple. Si ce n'est pas le cas, ou si vous voulez montrer les méthodes quand même, vous devriez définir cette option à \c NO.]]>
+      </docs>
+    </option>
+    <option type="bool" id="DISTRIBUTE_GROUP_DOC" defval="0">
+      <docs>
+<![CDATA[Si le regroupement de membres est utilisé dans la documentation et que la balise \c DISTRIBUTE_GROUP_DOC est définie à \c YES alors Doxygen reutilisera la documentation du premier membre du groupe (s'il y en a) pour les autres membres du groupe. Par défaut, tous les membres d'un groupe doivent être documentés explicitement.]]>
+      </docs>
+    </option>
+    <option type="bool" id="GROUP_NESTED_COMPOUNDS" defval="0">
+      <docs>
+<![CDATA[Si on ajoute une struct ou une classe à un groupe et que cette option est activée, alors toute classe ou struct imbriquée est également ajoutée au même groupe. Par défaut cette option est désactivée et on doit ajouter les composes imbriques explicitement via \ref cmdingroup "\\ingroup".]]>
+      </docs>
+    </option>
+    <option type="bool" id="SUBGROUPING" defval="1">
+      <docs>
+<![CDATA[Définissez la balise \c SUBGROUPING à \c YES pour permettre aux groupes de membres de classe du même type (par exemple un groupe de fonctions publiques) d'être mis comme sous-groupe de ce type (par exemple sous la section Fonctions Publiques). Définissez-la à \c NO pour empêcher le sous-groupement. Alternativement, cela peut être fait par classe en utilisant la commande \ref cmdnosubgrouping "\\nosubgrouping".]]>
+      </docs>
+    </option>
+    <option type="bool" id="INLINE_GROUPED_CLASSES" defval="0">
+      <docs>
+<![CDATA[Lorsque la balise \c INLINE_GROUPED_CLASSES est définie à \c YES, les classes, structs et unions sont affichés à l'intérieur du groupe dans lequel ils sont inclus (par exemple en utilisant \ref cmdingroup "\\ingroup") au lieu d'une page séparée (pour HTML et pages de manuel) ou section (pour \f$\mbox{\LaTeX}\f$ et RTF). <br>Notez que cette fonctionnalité ne fonctionne pas en combinaison avec \ref cfg_separate_member_pages "SEPARATE_MEMBER_PAGES".]]>
+      </docs>
+    </option>
+    <option type="bool" id="INLINE_SIMPLE_STRUCTS" defval="0">
+      <docs>
+<![CDATA[Lorsque la balise \c INLINE_SIMPLE_STRUCTS est définie à \c YES, les structs, classes et unions avec uniquement des champs de données publics ou des champs typedef simples seront affichés en ligne dans la documentation de la portée dans laquelle ils sont définis (c'est-à-dire documentation de fichier, namespace ou groupe), à condition que cette portée soit documentée. Si défini à \c NO, les structs, classes et unions sont affichés sur une page séparée (pour HTML et pages de manuel) ou section (pour \f$\mbox{\LaTeX}\f$ et RTF).]]>
+      </docs>
+    </option>
+    <option type="bool" id="TYPEDEF_HIDES_STRUCT" defval="0">
+      <docs>
+<![CDATA[Lorsque la balise \c TYPEDEF_HIDES_STRUCT est activée, un typedef d'une struct, union ou enum est documente comme struct, union ou enum avec le nom du typedef. Donc <code>typedef struct TypeS {} TypeT</code> apparaîtra dans la documentation comme une struct avec le nom \c TypeT. Lorsque désactivé, le typedef apparaîtra comme un membre d'un fichier, namespace ou classe. Et la struct sera nommée \c TypeS. Cela peut typiquement être utile pour le code C au cas ou la convention de codage dicte que tous les types composes sont typedefes et seul le typedef est référence, jamais le nom de tag.]]>
+      </docs>
+    </option>
+    <option type="int" id="LOOKUP_CACHE_SIZE" minval="0" maxval="9" defval="0">
+      <!-- be careful when changing these formulas as they are hard coded in the conversion script -->
+      <docs>
+<![CDATA[La taille du cache de recherche de symboles peut être définie en utilisant \c LOOKUP_CACHE_SIZE. Ce cache est utilisé pour résoudre les symboles donnes leur nom et portée. Puisque cela peut être un processus couteux et souvent le même symbole apparaît plusieurs fois dans le code, Doxygen garde un cache de symboles pre-resolus. Si le cache est trop petit Doxygen deviendra plus lent. Si le cache est trop grand, la mémoire est gaspillée. La taille du cache est donnée par cette formule: \f$2^{(16+\mbox{LOOKUP\_CACHE\_SIZE})}\f$. La plage valide est 0..9, le défaut est 0, correspondant à une taille de cache de \f$2^{16} = 65536\f$ symboles. à la fin d'une exécution Doxygen rapportera l'utilisation du cache et suggerera la taille de cache optimale d'un point de vue vitesse.]]>
+      </docs>
+    </option>
+    <option type="int" id="NUM_PROC_THREADS" defval="1" minval="0" maxval="512">
+      <docs>
+<![CDATA[Le \c NUM_PROC_THREADS spécifie le nombre de threads que Doxygen est autorisé à utiliser pendant le traitement. Lorsque défini à \c 0 Doxygen se basera sur le nombre de coeurs disponibles dans le système. Vous pouvez le définir explicitement à une valeur supérieure à 0 pour avoir plus de contrôle sur l'équilibre entre la charge CPU et la vitesse de traitement. Pour le moment seul le traitement d'entrée peut être fait en utilisant plusieurs threads. Puisque c'est encore une fonctionnalité expérimentale, le défaut est défini à 1, ce qui désactive effectivement le traitement parallele. Veuillez signaler tout problème que vous rencontrez. La génération de graphes dot en parallele est contrôlée par le paramètre \c DOT_NUM_THREADS.]]>
+      </docs>
+    </option>
+    <option type="enum" id="TIMESTAMP" defval="NO">
+      <docs>
+<![CDATA[Si la balise \c TIMESTAMP est définie différemment de \c NO alors chaque page générée contiendra la date ou la date et l'heure ou la page a été générée. Définir cela à \c NO peut aider lors de la comparaison de la sortie de plusieurs exécutions.]]>
+      </docs>
+      <value name="YES"/>
+      <value name="NO"/>
+      <value name="DATETIME"/>
+      <value name="DATE"/>
+    </option>
+  </group>
+  <group name="Build" trname="Construction" docs="Options de configuration relatives à la compilation">
+    <option type="bool" id="EXTRACT_ALL" defval="0">
+      <docs>
+<![CDATA[Si la balise \c EXTRACT_ALL est définie à \c YES, Doxygen supposera que toutes les entités dans la documentation sont documentées, même si aucune documentation n'était disponible. Les membres prives de classe et les membres statiques de fichier seront cachés sauf si les balises \ref cfg_extract_private "EXTRACT_PRIVATE" respectivement \ref cfg_extract_static "EXTRACT_STATIC" sont définies à \c YES. \note Cela desactivera également les avertissements sur les membres non documentés qui sont normalement produits lorsque \ref cfg_warnings "WARNINGS" est défini à \c YES.]]>
+      </docs>
+    </option>
+    <option type="bool" id="EXTRACT_PRIVATE" defval="0">
+      <docs>
+<![CDATA[Si la balise \c EXTRACT_PRIVATE est définie à \c YES, tous les membres prives d'une classe seront inclus dans la documentation.]]>
+      </docs>
+    </option>
+    <option type="bool" id="EXTRACT_PRIV_VIRTUAL" defval="0">
+      <docs>
+<![CDATA[Si la balise \c EXTRACT_PRIV_VIRTUAL est définie à \c YES, les méthodes virtuelles prives documentées d'une classe seront incluses dans la documentation.]]>
+      </docs>
+    </option>
+    <option type="bool" id="EXTRACT_PACKAGE" defval="0">
+      <docs>
+<![CDATA[Si la balise \c EXTRACT_PACKAGE est définie à \c YES, tous les membres avec une portée package ou interne seront inclus dans la documentation.]]>
+      </docs>
+    </option>
+    <option type="bool" id="EXTRACT_STATIC" defval="0">
+      <docs>
+<![CDATA[Si la balise \c EXTRACT_STATIC est définie à \c YES, tous les membres statiques d'un fichier seront inclus dans la documentation.]]>
+      </docs>
+    </option>
+    <option type="bool" id="EXTRACT_LOCAL_CLASSES" defval="1">
+      <docs>
+<![CDATA[Si la balise \c EXTRACT_LOCAL_CLASSES est définie à \c YES, les classes (et structs) définies localement dans les fichiers sources seront incluses dans la documentation. Si défini à \c NO, seules les classes définies dans les fichiers d'en-tête sont incluses. N'a aucun effet pour les sources Java.]]>
+      </docs>
+    </option>
+    <option type="bool" id="EXTRACT_LOCAL_METHODS" defval="0">
+      <docs>
+<![CDATA[Ce drapeau n'est utile que pour le code Objective-C. Si défini à \c YES, les méthodes locales, qui sont définies dans la section d'implémentation mais pas dans l'interface sont incluses dans la documentation. Si défini à \c NO, seules les méthodes dans l'interface sont incluses.]]>
+      </docs>
+    </option>
+    <option type="bool" id="EXTRACT_ANON_NSPACES" defval="0">
+      <docs>
+<![CDATA[Si ce drapeau est défini à \c YES, les membres des namespaces anonymes seront extraits et apparaîtront dans la documentation comme un namespace appelé 'anonymous_namespace{file}', ou file sera remplace par le nom de base du fichier qui contient le namespace anonyme. Par défaut les namespaces anonymes sont cachés.]]>
+      </docs>
+    </option>
+    <option type="bool" id="RESOLVE_UNNAMED_PARAMS" defval="1">
+      <docs>
+<![CDATA[Si ce drapeau est défini à \c YES, le nom d'un paramètre sans nom dans une déclaration sera détermine par la définition correspondante. Par défaut les paramètres sans nom restent sans nom dans la sortie.]]>
+      </docs>
+    </option>
+    <option type="bool" id="HIDE_UNDOC_MEMBERS" defval="0">
+      <docs>
+<![CDATA[Si la balise \c HIDE_UNDOC_MEMBERS est définie à \c YES, Doxygen cachera tous les membres non documentés à l'intérieur des classes ou fichiers documentés. Si défini à \c NO ces membres seront inclus dans les différents aperçus, mais aucune section de documentation n'est générée. Cette option n'a aucun effet si \ref cfg_extract_all "EXTRACT_ALL" est activé.]]>
+      </docs>
+    </option>
+    <option type="bool" id="HIDE_UNDOC_CLASSES" defval="0">
+      <docs>
+<![CDATA[Si la balise \c HIDE_UNDOC_CLASSES est définie à \c YES, Doxygen cachera toutes les classes non documentées qui sont normalement visibles dans la hiérarchie de classes. Si défini à \c NO, ces classes seront incluses dans les différents aperçus. Cette option cachera également les concepts C++ non documentés si active. Cette option n'a aucun effet si \ref cfg_extract_all "EXTRACT_ALL" est activé.]]>
+      </docs>
+    </option>
+    <option type="bool" id="HIDE_UNDOC_NAMESPACES" defval="1">
+      <docs>
+<![CDATA[Si la balise \c HIDE_UNDOC_NAMESPACES est définie à \c YES, Doxygen cachera tous les namespaces non documentés qui sont normalement visibles dans la hiérarchie des namespaces. Si défini à \c NO, ces namespaces seront inclus dans les différents aperçus. Cette option n'a aucun effet si \ref cfg_extract_all "EXTRACT_ALL" est activé.]]>
+      </docs>
+    </option>
+    <option type="bool" id="HIDE_FRIEND_COMPOUNDS" defval="0">
+      <docs>
+<![CDATA[Si la balise \c HIDE_FRIEND_COMPOUNDS est définie à \c YES, Doxygen cachera toutes les déclarations friend. Si défini à \c NO, ces déclarations seront incluses dans la documentation.]]>
+      </docs>
+    </option>
+    <option type="bool" id="HIDE_IN_BODY_DOCS" defval="0">
+      <docs>
+<![CDATA[Si la balise \c HIDE_IN_BODY_DOCS est définie à \c YES, Doxygen cachera tous les blocs de documentation trouvés à l'intérieur du corps d'une fonction. Si défini à \c NO, ces blocs seront ajoutés au bloc de documentation détaillé de la fonction.]]>
+      </docs>
+    </option>
+    <option type="bool" id="INTERNAL_DOCS" defval="0">
+      <docs>
+<![CDATA[La balise \c INTERNAL_DOCS détermine si la documentation qui est tapée après une commande \ref cmdinternal "\\internal" est incluse. Si la balise est définie à \c NO alors la documentation sera exclue. Définissez-la à \c YES pour inclure la documentation interne.]]>
+      </docs>
+    </option>
+    <option type="enum" id="CASE_SENSE_NAMES" defval="SYSTEM">
+      <docs>
+<![CDATA[Avec le reglage correct de l'option \c CASE_SENSE_NAMES, Doxygen sera mieux à même de correspondre aux capacites du système de fichiers sous-jacent. Si le système de fichiers est sensible à la casse (c'est-à-dire qu'il supporte des fichiers dans le même répertoire dont les noms ne différent que par la casse), l'option doit être définie à \c YES pour traiter correctement ces fichiers s'ils apparaissent dans l'entrée. Pour les systèmes de fichiers qui ne sont pas sensibles à la casse, l'option devrait être définie à \c NO pour traiter correctement les fichiers de sortie écrits pour des symboles qui ne différent que par la casse, comme pour deux classes, une nommée \c CLASS et l'autre nommée \c Class, et pour supporter également les références aux fichiers sans avoir a spécifier la casse exacte correspondante. Sur Windows (y compris Cygwin) et macOS, les utilisateurs devraient généralement définir cette option à \c NO, alors que sur Linux ou d'autres variantes Unix, elle devrait généralement être définie à \c YES.]]>
+      </docs>
+      <value name="SYSTEM"/>
+      <value name="NO"/>
+      <value name="YES"/>
+    </option>
+    <option type="bool" id="HIDE_SCOPE_NAMES" defval="0">
+      <docs>
+<![CDATA[Si la balise \c HIDE_SCOPE_NAMES est définie à \c NO alors Doxygen affichera les membres avec leurs portées de classe et de namespace complètes dans la documentation. Si défini à \c YES, la portée sera cachée.]]>
+      </docs>
+    </option>
+    <option type="bool" id="HIDE_COMPOUND_REFERENCE" defval="0">
+      <docs>
+<![CDATA[Si la balise \c HIDE_COMPOUND_REFERENCE est définie à \c NO (défaut) alors Doxygen ajoutera du texte supplémentaire au titre d'une page, tel que Class Référence. Si défini à \c YES la référence du compose sera cachée.]]>
+      </docs>
+    </option>
+    <option type="bool" id="SHOW_HEADERFILE" defval="1">
+      <docs>
+<![CDATA[Si la balise \c SHOW_HEADERFILE est définie à \c YES alors la documentation d'une classe montrera quel fichier doit être inclus pour utiliser la classe.]]>
+      </docs>
+    </option>
+    <option type="bool" id="SHOW_INCLUDE_FILES" defval="1">
+      <docs>
+<![CDATA[Si la balise \c SHOW_INCLUDE_FILES est définie à \c YES alors Doxygen mettra une liste des fichiers qui sont inclus par un fichier dans la documentation de ce fichier.]]>
+      </docs>
+    </option>
+    <option type="bool" id="SHOW_GROUPED_MEMB_INC" defval="0">
+      <docs>
+<![CDATA[Si la balise \c SHOW_GROUPED_MEMB_INC est définie à \c YES alors Doxygen ajoutera pour chaque membre groupe une instruction d'inclusion à la documentation, indiquant au lecteur quel fichier inclure pour utiliser le membre.]]>
+      </docs>
+    </option>
+    <option type="bool" id="FORCE_LOCAL_INCLUDES" defval="0">
+      <docs>
+<![CDATA[Si la balise \c FORCE_LOCAL_INCLUDES est définie à \c YES alors Doxygen listera les fichiers d'inclusion avec des guillemets doubles dans la documentation plutôt qu'avec des chevrons.]]>
+      </docs>
+    </option>
+    <option type="bool" id="INLINE_INFO" defval="1">
+      <docs>
+<![CDATA[Si la balise \c INLINE_INFO est définie à \c YES alors une étiquette [inline] est insérée dans la documentation pour les membres inline.]]>
+      </docs>
+    </option>
+    <option type="bool" id="SORT_MEMBER_DOCS" defval="1">
+      <docs>
+<![CDATA[Si la balise \c SORT_MEMBER_DOCS est définie à \c YES alors Doxygen triera la documentation (détaillée) des membres de fichier et de classe alphabétiquement par nom de membre. Si défini à \c NO, les membres apparaîtront dans l'ordre de déclaration.]]>
+      </docs>
+    </option>
+    <option type="bool" id="SORT_BRIEF_DOCS" defval="0">
+      <docs>
+<![CDATA[Si la balise \c SORT_BRIEF_DOCS est définie à \c YES alors Doxygen triera les descriptions brèves des membres de fichier, namespace et classe alphabétiquement par nom de membre. Si défini à \c NO, les membres apparaîtront dans l'ordre de déclaration. Notez que cela influencera également l'ordre des classes dans la liste des classes.]]>
+      </docs>
+    </option>
+    <option type="bool" id="SORT_MEMBERS_CTORS_1ST" defval="0">
+      <docs>
+<![CDATA[Si la balise \c SORT_MEMBERS_CTORS_1ST est définie à \c YES alors Doxygen triera la documentation (brève et détaillée) des membres de classe de sorte que les constructeurs et destructeurs soient listes en premier. Si défini à \c NO les constructeurs apparaîtront dans les ordres respectifs définis par \ref cfg_sort_brief_docs "SORT_BRIEF_DOCS" et \ref cfg_sort_member_docs "SORT_MEMBER_DOCS". \note Si \ref cfg_sort_brief_docs "SORT_BRIEF_DOCS" est défini à \c NO cette option est ignorée pour le tri de la documentation brève des membres. \note Si \ref cfg_sort_member_docs "SORT_MEMBER_DOCS" est défini à \c NO cette option est ignorée pour le tri de la documentation détaillée des membres.]]>
+      </docs>
+    </option>
+    <option type="bool" id="SORT_GROUP_NAMES" defval="0">
+      <docs>
+<![CDATA[Si la balise \c SORT_GROUP_NAMES est définie à \c YES alors Doxygen triera la hiérarchie des noms de groupes en ordre alphabetique. Si défini à \c NO les noms de groupes apparaîtront dans leur ordre défini.]]>
+      </docs>
+    </option>
+    <option type="bool" id="SORT_BY_SCOPE_NAME" defval="0">
+      <docs>
+<![CDATA[Si la balise \c SORT_BY_SCOPE_NAME est définie à \c YES, la liste des classes sera triée par noms complètement qualifies, y compris les namespaces. Si défini à \c NO, la liste des classes sera triée uniquement par nom de classe, sans inclure la partie namespace. \note Cette option n'est pas tres utile si \ref cfg_hide_scope_names "HIDE_SCOPE_NAMES" est défini à \c YES. \note Cette option s'applique uniquement à la liste des classes, pas à la liste alphabetique.]]>
+      </docs>
+    </option>
+    <option type="bool" id="STRICT_PROTO_MATCHING" defval="0">
+      <docs>
+<![CDATA[Si l'option \c STRICT_PROTO_MATCHING est activée et que Doxygen échoue à faire une résolution de type correcte de tous les paramètres d'une fonction, il rejettera une correspondance entre le prototype et l'implémentation d'une fonction membre même s'il n'y a qu'un seul candidat ou s'il est evident quel candidat choisir en faisant une simple correspondance de chaîne. En desactivant \c STRICT_PROTO_MATCHING, Doxygen acceptera toujours une correspondance entre prototype et implémentation dans de tels cas.]]>
+      </docs>
+    </option>
+    <option type="bool" id="GENERATE_TODOLIST" defval="1">
+      <docs>
+<![CDATA[La balise \c GENERATE_TODOLIST peut être utilisée pour activer (\c YES) ou désactiver (\c NO) la liste des taches. Cette liste est créée en mettant des commandes \ref cmdtodo "\\todo" dans la documentation.]]>
+      </docs>
+    </option>
+    <option type="bool" id="GENERATE_TESTLIST" defval="1">
+      <docs>
+<![CDATA[La balise \c GENERATE_TESTLIST peut être utilisée pour activer (\c YES) ou désactiver (\c NO) la liste des tests. Cette liste est créée en mettant des commandes \ref cmdtest "\\test" dans la documentation.]]>
+      </docs>
+    </option>
+    <option type="bool" id="GENERATE_BUGLIST" defval="1">
+      <docs>
+<![CDATA[La balise \c GENERATE_BUGLIST peut être utilisée pour activer (\c YES) ou désactiver (\c NO) la liste des bugs. Cette liste est créée en mettant des commandes \ref cmdbug "\\bug" dans la documentation.]]>
+      </docs>
+    </option>
+    <option type="bool" id="GENERATE_DEPRECATEDLIST" defval="1">
+      <docs>
+<![CDATA[La balise \c GENERATE_DEPRECATEDLIST peut être utilisée pour activer (\c YES) ou désactiver (\c NO) la liste des éléments deprecies. Cette liste est créée en mettant des commandes \ref cmddeprecated "\\deprecated" dans la documentation.]]>
+      </docs>
+    </option>
+    <option type="bool" id="GENERATE_REQUIREMENTS" defval="1">
+      <docs>
+<![CDATA[La balise \c GENERATE_REQUIREMENTS peut être utilisée pour activer (\c YES) ou désactiver (\c NO) la page des exigences. Lorsqu'activée, cette page est automatiquement créée lorsqu'au moins un bloc de commentaire avec une commande \ref cmdrequirement "\\requirement" apparaît dans l'entrée.]]>
+      </docs>
+    </option>
+    <option type="enum" id="REQ_TRACEABILITY_INFO" defval="YES" depends="GENERATE_REQUIREMENTS">
+      <docs>
+<![CDATA[La balise \c REQ_TRACEABILITY_INFO contrôle si les informations de traçabilité sont affichées sur la page des exigences (pertinent uniquement lors de l'utilisation de blocs de commentaire \ref cmdrequirement "\\requirement"). Le paramètre \c NO desactivera complètement les informations de traçabilité. Le paramètre \c UNSATISFIED_ONLY affichera une liste des exigences qui manquent d'une relation satisfies (via la commande: \ref cmdsatisfies "\\satisfies"). De même le paramètre \c UNVERIFIED_ONLY affichera une liste des exigences qui manquent d'une relation verifies (via la commande: \ref cmdverifies "\\verifies"). Définir la balise à \c YES (le défaut) affichera les deux listes si applicable.]]>
+      </docs>
+      <value name="YES"/>
+      <value name="NO"/>
+      <value name="UNSATISFIED_ONLY"/>
+      <value name="UNVERIFIED_ONLY"/>
+    </option>
+    <option type="list" id="ENABLED_SECTIONS" format="string">
+      <docs>
+<![CDATA[La balise \c ENABLED_SECTIONS peut être utilisée pour activer des sections de documentation conditionnelles, marquées par \ref cmdif "\\if" \<section_label\> ... \ref cmdendif "\\endif" et \ref cmdcond "\\cond" \<section_label\> ... \ref cmdendcond "\\endcond".]]>
+      </docs>
+    </option>
+    <option type="int" id="MAX_INITIALIZER_LINES" minval="0" maxval="10000" defval="30">
+      <docs>
+<![CDATA[La balise \c MAX_INITIALIZER_LINES détermine le nombre maximal de lignes que la valeur initiale d'une variable ou macro / define peut avoir pour apparaître dans la documentation. Si l'initialiseur consiste en plus de lignes que spécifie ici, il sera cache. Utilisez une valeur de 0 pour cacher complètement les initialiseurs. L'apparence de la valeur des variables individuelles et macros / defines peut être contrôlée en utilisant la commande \ref cmdshowinitializer "\\showinitializer" ou \ref cmdhideinitializer "\\hideinitializer" dans la documentation indépendamment de ce paramètre.]]>
+      </docs>
+    </option>
+    <option type="bool" id="SHOW_USED_FILES" defval="1">
+      <docs>
+<![CDATA[Définissez la balise \c SHOW_USED_FILES à \c NO pour désactiver la liste des fichiers générés au bas de la documentation des classes et structs. Si défini à \c YES, la liste mentionnera les fichiers qui ont été utilisés pour générer la documentation.]]>
+      </docs>
+    </option>
+    <option type="bool" id="SHOW_FILES" defval="1">
+      <docs>
+<![CDATA[Définissez la balise \c SHOW_FILES à \c NO pour désactiver la génération de la page Fichiers. Cela supprimera l'entrée Fichiers de l'Index Rapide et de la Vue Arborescente des Dossiers (si spécifie).]]>
+      </docs>
+    </option>
+    <option type="bool" id="SHOW_NAMESPACES" defval="1">
+      <docs>
+<![CDATA[Définissez la balise \c SHOW_NAMESPACES à \c NO pour désactiver la génération de la page Namespaces. Cela supprimera l'entrée Namespaces de l'Index Rapide et de la Vue Arborescente des Dossiers (si spécifie).]]>
+      </docs>
+    </option>
+    <option type="string" id="FILE_VERSION_FILTER" format="file" defval="">
+      <docs>
+<![CDATA[La balise \c FILE_VERSION_FILTER peut être utilisée pour spécifier un programme ou script que Doxygen devrait invoquer pour obtenir la version actuelle de chaque fichier (généralement à partir du système de contrôle de version). Doxygen invoquera le programme en executant (via <code>popen()</code>) la commande <code>command input-file</code>, ou \c command est la valeur de la balise \c FILE_VERSION_FILTER, et \c input-file est le nom d'un fichier d'entrée fourni par Doxygen. Ce que le programme écrit sur la sortie standard est utilisé comme version de fichier.]]>
+      </docs>
+    </option>
+    <option type="string" id="LAYOUT_FILE" format="file" defval="">
+      <docs>
+<![CDATA[La balise \c LAYOUT_FILE peut être utilisée pour spécifier un fichier de mise en page qui sera analysé par Doxygen. Le fichier de mise en page contrôle la structure globale des fichiers de sortie générés d'une manière indépendante du format de sortie. Pour créer le fichier de mise en page qui représente les valeurs par défaut de Doxygen, exécutez Doxygen avec l'option `-l`. Vous pouvez optionnellement spécifier un nom de fichier après l'option, si omis \c DoxygenLayout.xml sera utilisé comme nom du fichier de mise en page. Voir aussi la section \ref layout pour plus d'informations. <br>Notez que si vous exécutez Doxygen à partir d'un répertoire contenant un fichier appelé \c DoxygenLayout.xml, Doxygen l'analysera automatiquement même si la balise \c LAYOUT_FILE est laissée vide.]]>
+      </docs>
+    </option>
+    <option type="list" id="CITE_BIB_FILES" format="file">
+      <docs>
+<![CDATA[La balise \c CITE_BIB_FILES peut être utilisée pour spécifier un ou plusieurs fichiers \c bib contenant les définitions de référence. Cela doit être une liste de fichiers <code>.bib</code>. L'extension <code>.bib</code> est automatiquement ajoutée si omise. Cela nécessite que l'outil \c bibtex soit installe. Voir aussi https://en.wikipedia.org/wiki/BibTeX pour plus d'infos. Pour \f$\mbox{\LaTeX}\f$ le style de la bibliographie peut être contrôle en utilisant \ref cfg_latex_bib_style "LATEX_BIB_STYLE". Pour utiliser cette fonctionnalité vous avez besoin de \c bibtex et \c perl disponibles dans le chemin de recherche. Voir aussi \ref cmdcite "\\cite" pour plus d'infos sur la création de références.]]>
+      </docs>
+    </option>
+    <option type="list" id="EXTERNAL_TOOL_PATH" format="dir" defval="">
+      <docs>
+<![CDATA[La balise \c EXTERNAL_TOOL_PATH peut être utilisée pour étendre le chemin de recherche (variable d'environnement PATH) afin que des outils externes tels que \c latex et \c gs puissent être trouvés. \note Les répertoires spécifiés avec EXTERNAL_TOOL_PATH sont ajoutés devant le chemin déjà spécifie par la variable PATH, et sont ajoutés dans l'ordre spécifie. \note Cette option est particulièrement utile pour macOS version 14 (Sonoma) et supérieures, lors de l'exécution de Doxygen depuis Doxywizard, car dans ce cas toutes les modifications définies par l'utilisateur du PATH sont ignorées. Un exemple typique sur macOS est de définir \verbatim EXTERNAL_TOOL_PATH = /Library/TeX/texbin /usr/local/bin \endverbatim avec le chemin standard, le chemin de recherche complet utilisé par doxygen lors du lancement d'outils externes deviendra alors \verbatim PATH=/Library/TeX/texbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin \endverbatim]]>
+      </docs>
+    </option>
+  </group>
+  <group name="Messages" trname="Messages" docs="Options de configuration relatives aux messages d'avertissement et de progression">
+    <option type="bool" id="QUIET" defval="0">
+      <docs>
+<![CDATA[La balise \c QUIET peut être utilisée pour activer/désactiver les messages qui sont générés vers la sortie standard par Doxygen. Si \c QUIET est défini à \c YES cela implique que les messages sont désactivés.]]>
+      </docs>
+    </option>
+    <option type="bool" id="WARNINGS" defval="1">
+      <docs>
+<![CDATA[La balise \c WARNINGS peut être utilisée pour activer/désactiver les messages d'avertissement qui sont générés vers la sortie d'erreur standard (\c stderr) par Doxygen. Si \c WARNINGS est défini à \c YES cela implique que les avertissements sont activés. <br> <b>Conseil:</b> Activez les avertissements pendant l'écriture de la documentation.]]>
+      </docs>
+    </option>
+    <option type="bool" id="WARN_IF_UNDOCUMENTED" defval="1">
+      <docs>
+<![CDATA[Si la balise \c WARN_IF_UNDOCUMENTED est définie à \c YES alors Doxygen générera des avertissements pour les membres non documentés. Si \ref cfg_extract_all "EXTRACT_ALL" est défini à \c YES alors ce drapeau sera automatiquement désactivé.]]>
+      </docs>
+    </option>
+    <option type="bool" id="WARN_IF_DOC_ERROR" defval="1">
+      <docs>
+<![CDATA[Si la balise \c WARN_IF_DOC_ERROR est définie à \c YES, Doxygen générera des avertissements pour les erreurs potentielles dans la documentation, comme documenter certains paramètres dans une fonction documentée deux fois, ou documenter des paramètres qui n'existent pas ou utiliser incorrectement les commandes de balisage.]]>
+      </docs>
+    </option>
+    <option type="bool" id="WARN_IF_INCOMPLETE_DOC" defval="1">
+      <docs>
+<![CDATA[Si \c WARN_IF_INCOMPLETE_DOC est défini à \c YES, Doxygen avertira des documentations de paramètres de fonction incomplètes. Si défini à \c NO, Doxygen acceptera que certains paramètres n'aient pas de documentation sans avertissement.]]>
+      </docs>
+    </option>
+    <option type="bool" id="WARN_NO_PARAMDOC" defval="0">
+      <docs>
+<![CDATA[Cette option \c WARN_NO_PARAMDOC peut être activée pour obtenir des avertissements pour les fonctions qui sont documentées, mais qui n'ont pas de documentation pour leurs paramètres ou valeur de retour. Si défini à \c NO, Doxygen avertira uniquement des erreurs de documentation de paramètres, mais pas de l'absence de documentation. Si \ref cfg_extract_all "EXTRACT_ALL" est défini à \c YES alors ce drapeau sera automatiquement désactivé. Voir aussi \ref cfg_warn_if_incomplete_doc "WARN_IF_INCOMPLETE_DOC"]]>
+      </docs>
+    </option>
+    <option type="bool" id="WARN_IF_UNDOC_ENUM_VAL" defval="0">
+      <docs>
+<![CDATA[Si l'option \c WARN_IF_UNDOC_ENUM_VAL est définie à \c YES, Doxygen avertira des valeurs d'énumération non documentées. Si défini à \c NO, Doxygen acceptera les valeurs d'énumération non documentées. Si \ref cfg_extract_all "EXTRACT_ALL" est défini à \c YES alors ce drapeau sera automatiquement désactivé.]]>
+      </docs>
+    </option>
+    <option type="bool" id="WARN_LAYOUT_FILE" defval="1">
+      <docs>
+<![CDATA[Si l'option \c WARN_LAYOUT_FILE est définie à \c YES, Doxygen avertira des problèmes trouvés lors de l'analyse du fichier de mise en page défini par l'utilisateur, tels que des éléments manquants ou incorrects. Voir aussi \ref cfg_layout_file "LAYOUT_FILE" pour plus de détails. Si défini à \c NO, les problèmes avec le fichier de mise en page seront supprimés.]]>
+      </docs>
+    </option>
+    <option type="enum" id="WARN_AS_ERROR" defval="NO">
+      <docs>
+<![CDATA[Si la balise \c WARN_AS_ERROR est définie à \c YES alors Doxygen s'arrêtera immediatement lorsqu'un avertissement est rencontre. Si la balise \c WARN_AS_ERROR est définie à \c FAIL_ON_WARNINGS alors Doxygen continuera à s'exécuter comme si la balise \c WARN_AS_ERROR était définie à \c NO, mais à la fin du processus Doxygen retournera un statut non nul. Si la balise \c WARN_AS_ERROR est définie à \c FAIL_ON_WARNINGS_PRINT alors Doxygen se comporte comme \c FAIL_ON_WARNINGS mais au cas ou aucun \ref cfg_warn_logfile "WARN_LOGFILE" n'est défini Doxygen n'ecrira pas les messages d'avertissement entre les autres messages mais les ecrira à la fin d'une exécution, au cas ou un \ref cfg_warn_logfile "WARN_LOGFILE" est défini les messages d'avertissement seront en plus d'être dans le fichier défini également affichés à la fin d'une exécution, sauf si le \ref cfg_warn_logfile "WARN_LOGFILE" est défini comme `-` c'est-à-dire la sortie standard (`stdout`) dans ce cas le comportement restera comme avec le paramètre \c FAIL_ON_WARNINGS.]]>
+      </docs>
+      <value name="NO"/>
+      <value name="YES"/>
+      <value name="FAIL_ON_WARNINGS"/>
+      <value name="FAIL_ON_WARNINGS_PRINT"/>
+    </option>
+    <option type="string" id="WARN_FORMAT" format="string" defval="$file:$line: $text">
+      <docs>
+<![CDATA[La balise \c WARN_FORMAT détermine le format des messages d'avertissement que Doxygen peut produire. La chaîne doit contenir les balises <code>\$file</code>, <code>\$line</code>, et <code>\$text</code>, qui seront remplacées par le fichier et le numéro de ligne d'ou l'avertissement a originate et le texte de l'avertissement. Optionnellement le format peut contenir <code>$version</code>, qui sera remplace par la version du fichier (si elle a pu être obtenue via \ref cfg_file_version_filter "FILE_VERSION_FILTER") \sa \ref cfg_warn_line_format "WARN_LINE_FORMAT"]]>
+      </docs>
+    </option>
+    <option type="string" id="WARN_LINE_FORMAT" format="string" defval="at line $line of file $file">
+      <docs>
+<![CDATA[Dans la partie `$text` de la commande \ref cfg_warn_format "WARN_FORMAT" il est possible qu'une référence à un endroit plus spécifique soit donnée. Pour faciliter le saut à cet endroit (en dehors de Doxygen) l'utilisateur peut définir une chaîne "couper" / "coller" personnalisée. Exemple: \verbatim WARN_LINE_FORMAT = "'vi $file +$line'" \endverbatim \sa \ref cfg_warn_format "WARN_FORMAT"]]>
+      </docs>
+    </option>
+    <option type="string" id="WARN_LOGFILE" format="file" defval="">
+      <docs>
+<![CDATA[La balise \c WARN_LOGFILE peut être utilisée pour spécifier un fichier dans lequel les messages d'avertissement et d'erreur doivent être écrits. Si laissée vide, la sortie est écrite vers la sortie d'erreur standard (`stderr`). Au cas ou le fichier spécifie ne peut pas être ouvert pour écriture, les messages d'avertissement et d'erreur sont écrits vers la sortie d'erreur standard. Lorsqu'un fichier `-` est spécifié, les messages d'avertissement et d'erreur sont écrits vers la sortie standard (`stdout`).]]>
+      </docs>
+    </option>
+  </group>
+  <group name="Input" trname="Entrée" docs="Options de configuration relatives aux fichiers d'entrée">
+    <option type="list" id="INPUT" format="filedir">
+      <docs>
+<![CDATA[La balise \c INPUT est utilisée pour spécifier les fichiers et/ou répertoires qui contiennent les fichiers sources documentés. Vous pouvez entrer des noms de fichiers comme \c myfile.cpp ou des répertoires comme \c /usr/src/myproject. Separez les fichiers ou répertoires par des espaces. Voir aussi \ref cfg_file_patterns "FILE_PATTERNS" et \ref cfg_extension_mapping "EXTENSION_MAPPING" \note Si cette balise est vide, le répertoire courant est recherche.]]>
+      </docs>
+    </option>
+    <option type="string" id="INPUT_ENCODING" format="string" defval="UTF-8">
+      <docs>
+<![CDATA[Cette balise peut être utilisée pour spécifier l'encodage de caractères des fichiers sources que Doxygen analyse. Interne Doxygen utilise l'encodage UTF-8. Doxygen utilise `libiconv` (ou le `iconv` intégré dans `libc`) pour le transcodage. Voir <a href="https://www.gnu.org/software/libiconv/">la documentation libiconv</a> pour la liste des encodages possibles. \sa \ref cfg_input_file_encoding "INPUT_FILE_ENCODING"]]>
+      </docs>
+    </option>
+    <option type="list" id="INPUT_FILE_ENCODING" format="string">
+      <docs>
+<![CDATA[Cette balise peut être utilisée pour spécifier l'encodage de caractères des fichiers sources que Doxygen analyse. La balise \c INPUT_FILE_ENCODING peut être utilisée pour spécifier l'encodage de caractères sur une base par modèle de fichier. Doxygen comparera le nom du fichier avec chaque modèle et appliquera l'encodage au lieu du \ref cfg_input_encoding "INPUT_ENCODING" par défaut s'il y a une correspondance. Les encodages de caractères sont une liste de la forme: modèle=encodage (comme `*.php=ISO-8859-1`). \sa \ref cfg_input_encoding "INPUT_ENCODING" pour plus d'informations sur les encodages supportés.]]>
+      </docs>
+    </option>
+    <option type="list" id="FILE_PATTERNS" format="string">
+      <docs>
+<![CDATA[Si la valeur de la balise \ref cfg_input "INPUT" contient des répertoires, vous pouvez utiliser la balise \c FILE_PATTERNS pour spécifier un ou plusieurs modèles de caractères generiques (comme `*.cpp` et `*.h`) pour filtrer les fichiers sources dans les répertoires. <br>Notez que pour les extensions personnalisées ou non directement supportées vous devez également définir \ref cfg_extension_mapping "EXTENSION_MAPPING" pour l'extension sinon les fichiers ne sont pas lus par Doxygen. <br>Notez que la liste des modèles de fichiers vérifiés par défaut peut différer de la liste des \ref default_file_extension_mapping "correspondances d'extension de fichier par défaut". <br>Si laissée vide, les modèles suivants sont testes:]]>
+      </docs>
+      <value name="*.c"/>
+      <value name="*.cc"/>
+      <value name="*.cxx"/>
+      <value name="*.cxxm"/>
+      <value name="*.cpp"/>
+      <value name="*.cppm"/>
+      <value name="*.ccm"/>
+      <value name="*.c++"/>
+      <value name="*.c++m"/>
+      <value name="*.java"/>
+      <value name="*.ii"/>
+      <value name="*.ixx"/>
+      <value name="*.ipp"/>
+      <value name="*.i++"/>
+      <value name="*.inl"/>
+      <value name="*.idl"/>
+      <value name="*.ddl"/>
+      <value name="*.odl"/>
+      <value name="*.h"/>
+      <value name="*.hh"/>
+      <value name="*.hxx"/>
+      <value name="*.hpp"/>
+      <value name="*.h++"/>
+      <value name="*.l"/>
+      <value name="*.cs"/>
+      <value name="*.d"/>
+      <value name="*.php"/>
+      <value name="*.php4"/>
+      <value name="*.php5"/>
+      <value name="*.phtml"/>
+      <value name="*.inc"/>
+      <value name="*.m"/>
+      <value name="*.markdown"/>
+      <value name="*.md"/>
+      <value name="*.mm"/>
+      <value name="*.dox" desc="(to be provided as Doxygen C comment)"/>
+      <value name="*.py"/>
+      <value name="*.pyw"/>
+      <value name="*.f90"/>
+      <value name="*.f95"/>
+      <value name="*.f03"/>
+      <value name="*.f08"/>
+      <value name="*.f18"/>
+      <value name="*.f"/>
+      <value name="*.for"/>
+      <value name="*.vhd"/>
+      <value name="*.vhdl"/>
+      <value name="*.ucf"/>
+      <value name="*.qsf"/>
+      <value name="*.ice"/>
+    </option>
+    <option type="bool" id="RECURSIVE" defval="0">
+      <docs>
+<![CDATA[La balise \c RECURSIVE peut être utilisée pour spécifier si les sous-répertoires doivent être recherches pour les fichiers d'entrée également.]]>
+      </docs>
+    </option>
+    <option type="list" id="EXCLUDE" format="filedir">
+      <docs>
+<![CDATA[La balise \c EXCLUDE peut être utilisée pour spécifier les fichiers et/ou répertoires qui doivent être exclus des fichiers sources \ref cfg_input "INPUT". De cette facon, vous pouvez facilement exclure un sous-répertoire d'une arborescence de répertoires dont la racine est spécifiée avec la balise \ref cfg_input "INPUT". <br>Remarquez que les chemins relatifs sont relatifs au répertoire à partir duquel Doxygen est exécuté.]]>
+      </docs>
+    </option>
+    <option type="bool" id="EXCLUDE_SYMLINKS" defval="0">
+      <docs>
+<![CDATA[La balise \c EXCLUDE_SYMLINKS peut être utilisée pour sélectionner si les fichiers ou répertoires qui sont des liens symboliques (une fonctionnalité du système de fichiers Unix) sont exclus de l'entrée.]]>
+      </docs>
+    </option>
+    <option type="list" id="EXCLUDE_PATTERNS" format="string">
+      <docs>
+<![CDATA[Si la valeur de la balise \ref cfg_input "INPUT" contient des répertoires, vous pouvez utiliser la balise \c EXCLUDE_PATTERNS pour spécifier un ou plusieurs modèles de caractères generiques pour exclure certains fichiers de ces répertoires. <br>Notez que les caractères generiques sont comparés au fichier avec le chemin absolu, donc pour exclure tous les répertoires de test par exemple utilisez le modèle `*``/test/``*`]]>
+      </docs>
+    </option>
+    <option type="list" id="EXCLUDE_SYMBOLS" format="string">
+      <docs>
+<![CDATA[La balise \c EXCLUDE_SYMBOLS peut être utilisée pour spécifier un ou plusieurs noms de symboles (namespaces, classes, fonctions, etc.) qui doivent être exclus de la sortie. Le nom de symbole peut être un nom complètement qualifie, un mot, ou si le caractère generique `*` est utilisé, une sous-chaîne. Exemples: `ANamespace`, `AClass`, `ANamespace::AClass`, `ANamespace::*Test`]]>
+      </docs>
+    </option>
+    <option type="list" id="EXAMPLE_PATH" format="filedir">
+      <docs>
+<![CDATA[La balise \c EXAMPLE_PATH peut être utilisée pour spécifier un ou plusieurs fichiers ou répertoires qui contiennent des fragments de code exemple qui sont inclus (voir la commande \ref cmdinclude "\\include").]]>
+      </docs>
+    </option>
+    <option type="list" id="EXAMPLE_PATTERNS" format="string">
+      <docs>
+<![CDATA[Si la valeur de la balise \ref cfg_example_path "EXAMPLE_PATH" contient des répertoires, vous pouvez utiliser la balise \c EXAMPLE_PATTERNS pour spécifier un ou plusieurs modèles de caractères generiques (comme `*.cpp` et `*.h`) pour filtrer les fichiers sources dans les répertoires. Si laissée vide, tous les fichiers sont inclus.]]>
+      </docs>
+      <value name="*" show_docu="NO"/>
+    </option>
+    <option type="bool" id="EXAMPLE_RECURSIVE" defval="0">
+      <docs>
+<![CDATA[Si la balise \c EXAMPLE_RECURSIVE est définie à \c YES alors les sous-répertoires seront recherches pour les fichiers d'entrée a utiliser avec les commandes \ref cmdinclude "\\include" ou \ref cmddontinclude "\\dontinclude" indépendamment de la valeur de la balise \ref cfg_recursive "RECURSIVE".]]>
+      </docs>
+    </option>
+    <option type="list" id="IMAGE_PATH" format="filedir">
+      <docs>
+<![CDATA[La balise \c IMAGE_PATH peut être utilisée pour spécifier un ou plusieurs fichiers ou répertoires qui contiennent des images qui doivent être incluses dans la documentation (voir la commande \ref cmdimage "\\image").]]>
+      </docs>
+    </option>
+    <option type="string" id="INPUT_FILTER" format="file" defval="">
+      <docs>
+<![CDATA[La balise \c INPUT_FILTER peut être utilisée pour spécifier un programme que Doxygen devrait invoquer pour filtrer chaque fichier d'entrée. Doxygen invoquera le programme de filtre en executant (via <code>popen()</code>) la commande: <br> <code>\<filtre\> \<fichier-entrée\></code> <br> ou <code>\<filtre\></code> est la valeur de la balise \c INPUT_FILTER, et <code>\<fichier-entrée\></code> est le nom d'un fichier d'entrée. Doxygen utilisera ensuite la sortie que le programme de filtre écrit sur la sortie standard. Si \ref cfg_filter_patterns "FILTER_PATTERNS" est spécifié, cette balise sera ignorée. <br>Notez que le filtre ne doit pas ajouter ou supprimer de lignes; il est appliqué avant que le code ne soit scanne, mais pas lorsque le code de sortie est généré. Si des lignes sont ajoutées ou supprimées, les ancres ne seront pas placées correctement. <br>Notez que Doxygen utilisera les données traitées et ecrites sur la sortie standard pour un traitement ulterieur, donc rien d'autre, comme des instructions de débogage ou des commandes utilisées (donc dans le cas d'un fichier batch Windows utilisez toujours `@echo OFF`), ne doit être écrit sur la sortie standard. <br>Notez que pour les extensions personnalisées ou non directement supportées vous devez également définir \ref cfg_extension_mapping "EXTENSION_MAPPING" pour l'extension sinon les fichiers ne sont pas correctement traités par Doxygen.<br>]]>
+      </docs>
+    </option>
+    <option type="list" id="FILTER_PATTERNS" format="string">
+      <docs>
+<![CDATA[La balise \c FILTER_PATTERNS peut être utilisée pour spécifier des filtres sur une base par modèle de fichier. Doxygen comparera le nom du fichier avec chaque modèle et appliquera le filtre s'il y a une correspondance. Les filtres sont une liste de la forme: modèle=filtre (comme `*.cpp=my_cpp_filter`). Voir \ref cfg_input_filter "INPUT_FILTER" pour plus d'informations sur l'utilisation des filtres. Si la balise \c FILTER_PATTERNS est vide ou si aucun des modèles ne correspond au nom du fichier, \ref cfg_input_filter "INPUT_FILTER" est appliqué. <br>Notez que pour les extensions personnalisées ou non directement supportées vous devez également définir \ref cfg_extension_mapping "EXTENSION_MAPPING" pour l'extension sinon les fichiers ne sont pas correctement traités par Doxygen.<br>]]>
+      </docs>
+    </option>
+    <option type="bool" id="FILTER_SOURCE_FILES" defval="0">
+      <docs>
+<![CDATA[Si la balise \c FILTER_SOURCE_FILES est définie à \c YES, le filtre d'entrée (si défini en utilisant \ref cfg_input_filter "INPUT_FILTER") sera également utilisé pour filtrer les fichiers d'entrée qui sont utilisés pour produire les fichiers sources a parcourir (c'est-à-dire lorsque \ref cfg_source_browser "SOURCE_BROWSER" est défini à \c YES).]]>
+      </docs>
+    </option>
+    <option type="list" id="FILTER_SOURCE_PATTERNS" format="string" depends="FILTER_SOURCE_FILES">
+      <docs>
+<![CDATA[La balise \c FILTER_SOURCE_PATTERNS peut être utilisée pour spécifier des filtres sources par modèle de fichier. Un modèle remplacera le paramètre pour \ref cfg_filter_patterns "FILTER_PATTERN" (s'il y en a) et il est également possible de désactiver le filtrage source pour un modèle spécifique en utilisant `*.ext=` (donc sans nommer de filtre).]]>
+      </docs>
+    </option>
+    <option type="string" id="USE_MDFILE_AS_MAINPAGE" format="string" defval="">
+      <docs>
+<![CDATA[Si la balise \c USE_MDFILE_AS_MAINPAGE fait référence au nom d'un fichier markdown qui fait partie de l'entrée, son contenu sera place sur la page principale (`index.html`). Cela peut être utile si vous avez un projet par exemple sur GitHub et voulez reutiliser la page d'introduction également pour la sortie Doxygen.]]>
+      </docs>
+    </option>
+    <option type="bool" id="IMPLICIT_DIR_DOCS" defval="1">
+      <docs>
+<![CDATA[Si la balise \c IMPLICIT_DIR_DOCS est définie à \c YES, tout fichier `README.md` trouve dans les sous-répertoires de la racine du projet est utilisé comme documentation pour ce sous-répertoire, sauf si le `README.md` commence par une commande \ref cmddir "\\dir", \ref cmdpage "\\page" ou \ref cmdmainpage "\\mainpage". Si défini à \c NO, le fichier `README.md` doit commencer par une commande \ref cmddir "\\dir" explicite pour être utilisé comme documentation de répertoire.]]>
+      </docs>
+    </option>
+    <option type="int" id="FORTRAN_COMMENT_AFTER" defval="72" minval="7" maxval="10000">
+      <docs>
+<![CDATA[La norme Fortran spécifie que pour le code Fortran format fixe, tous les caractères à partir de la position 72 sont considérés comme des commentaires. Une extension courante est d'autoriser des lignes plus longues avant que le commentaire automatique ne commence. Le paramètre \c FORTRAN_COMMENT_AFTER permettra également que des lignes plus longues puissent être traitées avant que le commentaire automatique ne commence.]]>
+      </docs>
+    </option>
+  </group>
+  <group name="Source_Browser" trname="Navigateur de sources" docs="Options de configuration relatives à la navigation dans le code source">
+    <option type="bool" id="SOURCE_BROWSER" defval="0">
+      <docs>
+<![CDATA[Si la balise \c SOURCE_BROWSER est définie à \c YES, une liste de fichiers sources sera générée. Les entités documentées seront référencées croisées avec ces sources. <br>Remarque: Pour se débarrasser de tout le code source dans la sortie générée, assurez-vous que également \ref cfg_verbatim_headers "VERBATIM_HEADERS" est défini à \c NO.]]>
+      </docs>
+    </option>
+    <option type="bool" id="INLINE_SOURCES" defval="0">
+      <docs>
+<![CDATA[Définir la balise \c INLINE_SOURCES à \c YES inclura le corps des fonctions, macros multilignes, énumérations ou variables a initialisation de liste directement dans la documentation.]]>
+      </docs>
+    </option>
+    <option type="bool" id="STRIP_CODE_COMMENTS" defval="1">
+      <docs>
+<![CDATA[Définir la balise \c STRIP_CODE_COMMENTS à \c YES indiquera a Doxygen de cacher tous les blocs de commentaires speciaux des fragments de code source générés. Les commentaires normaux C, C++ et Fortran resteront toujours visibles.]]>
+      </docs>
+    </option>
+    <option type="bool" id="REFERENCED_BY_RELATION" defval="0">
+      <docs>
+<![CDATA[Si la balise \c REFERENCED_BY_RELATION est définie à \c YES, alors pour chaque entité documentée, toutes les fonctions documentées la referencant seront listées.]]>
+      </docs>
+    </option>
+    <option type="bool" id="REFERENCES_RELATION" defval="0">
+      <docs>
+<![CDATA[Si la balise \c REFERENCES_RELATION est définie à \c YES, alors pour chaque fonction documentée, toutes les entités documentées appelées/utilisées par cette fonction seront listées.]]>
+      </docs>
+    </option>
+    <option type="bool" id="REFERENCES_LINK_SOURCE" defval="1">
+      <docs>
+<![CDATA[Si la balise \c REFERENCES_LINK_SOURCE est définie à \c YES et que la balise \ref cfg_source_browser "SOURCE_BROWSER" est définie à \c YES, alors les hyperliens des fonctions dans les listes \ref cfg_references_relation "REFERENCES_RELATION" et \ref cfg_referenced_by_relation "REFERENCED_BY_RELATION" pointeront vers le code source. Sinon, ils pointeront vers la documentation.]]>
+      </docs>
+    </option>
+    <option type="bool" id="SOURCE_TOOLTIPS" defval="1" depends="SOURCE_BROWSER">
+      <docs>
+<![CDATA[Si \c SOURCE_TOOLTIPS est activé (le défaut), alors survoler un hyperlien dans le code source affichera une infobulle avec des informations supplémentaires telles que le prototype, la description brève et les liens vers la définition et la documentation. Comme cela rendra le fichier HTML plus grand et le chargement des grands fichiers un peu plus lent, vous pouvez choisir de désactiver cette fonctionnalité.]]>
+      </docs>
+    </option>
+    <option type="bool" id="USE_HTAGS" defval="0" depends="SOURCE_BROWSER">
+      <docs>
+<![CDATA[Si la balise \c USE_HTAGS est définie à \c YES, les références au code source pointeront vers le HTML généré par l'outil \c htags(1) au lieu du navigateur de source intégré de Doxygen. L'outil \c htags fait partie du système de balisage de source global de GNU (voir https://www.gnu.org/software/global/global.html). Vous aurez besoin de la version 4.8.6 ou supérieure. <br> Pour l'utiliser, faites ce qui suit: -# Installez la dernière version de \c global -# Activez \ref cfg_source_browser "SOURCE_BROWSER" et \c USE_HTAGS dans le fichier de configuration -# Assurez-vous que \ref cfg_input "INPUT" pointe vers la racine de l'arborescence des sources -# Exécutez \c doxygen normalement <br> Doxygen invoquera \c htags (et qui invoquera à son tour \c gtags), donc ces outils doivent être disponibles depuis la ligne de commande (c'est-à-dire dans le chemin de recherche). <br> Résultat: au lieu du navigateur de source généré par Doxygen, les liens vers le code source pointeront maintenant vers la sortie de \c htags.]]>
+      </docs>
+    </option>
+    <option type="bool" id="VERBATIM_HEADERS" defval="1">
+      <docs>
+<![CDATA[Si la balise \c VERBATIM_HEADERS est définie à \c YES, Doxygen générera une copie verbatim du fichier d'en-tête pour chaque classe pour laquelle une inclusion est spécifiée. Définir à \c NO pour désactiver cela. \sa Section \ref cmdclass "\class".]]>
+      </docs>
+    </option>
+    <option type="bool" id="CLANG_ASSISTED_PARSING" setting="USE_LIBCLANG" defval="0">
+      <docs>
+<![CDATA[Si la balise \c CLANG_ASSISTED_PARSING est définie à \c YES, Doxygen utilisera l'<a href="http://clang.llvm.org/">analyseur clang</a> pour une analyse plus précise au prix de performances reduites. Cela peut être particulièrement utile avec le code C++ riche en templates pour lequel l'analyseur intégré de Doxygen manque des informations de type nécessaires. @note La disponibilité de cette option dépend de si Doxygen a été généré avec l'option `-Duse_libclang=ON` pour CMake.]]>
+      </docs>
+    </option>
+    <option type="bool" id="CLANG_ADD_INC_PATHS" setting="USE_LIBCLANG" depends="CLANG_ASSISTED_PARSING" defval="1">
+      <docs>
+<![CDATA[Si la balise \c CLANG_ASSISTED_PARSING est définie à \c YES et que la balise \c CLANG_ADD_INC_PATHS est définie à \c YES, Doxygen ajoutera le répertoire de chaque entrée au chemin d'inclusion.]]>
+      </docs>
+    </option>
+    <option type="list" id="CLANG_OPTIONS" format="string" setting="USE_LIBCLANG" depends="CLANG_ASSISTED_PARSING">
+      <docs>
+<![CDATA[Si l'analyse assistée par clang est activée, vous pouvez fournir au compilateur des options de ligne de commande que vous utiliseriez normalement lors de l'appel du compilateur. Remarquez que les chemins d'inclusion seront déjà définis par Doxygen pour les fichiers et répertoires spécifiés avec \ref cfg_input "INPUT" et \ref cfg_include_path "INCLUDE_PATH".]]>
+      </docs>
+    </option>
+    <option type="string" id="CLANG_DATABASE_PATH" setting="USE_LIBCLANG" defval="">
+      <docs>
+<![CDATA[Si l'analyse assistée par clang est activée, vous pouvez fournir à l'analyseur clang le chemin vers le répertoire contenant un fichier appelé `compile_commands.json`. Ce fichier est la <a href="http://clang.llvm.org/docs/HowToSetupToolingForLLVM.html">base de données de compilation</a> contenant les options utilisées lors de la construction des fichiers sources. Cela équivaut a spécifier l'option `-p` à un outil clang, tel que `clang-check`. Ces options seront ensuite passées à l'analyseur. Toutes les options spécifiées avec \ref cfg_clang_options "CLANG_OPTIONS" seront également ajoutées. @note La disponibilité de cette option dépend de si Doxygen a été généré avec l'option `-Duse_libclang=ON` pour CMake.]]>
+      </docs>
+    </option>
+  </group>
+  <group name="Index" trname="Index" docs="Options de configuration relatives à l'index alphabétique des classes">
+    <option type="bool" id="ALPHABETICAL_INDEX" defval="1">
+      <docs>
+<![CDATA[Si la balise \c ALPHABETICAL_INDEX est définie à \c YES, un index alphabetique de tous les composes sera généré. Activez cela si le projet contient beaucoup de classes, structures, unions ou interfaces.]]>
+      </docs>
+    </option>
+    <option type="list" id="IGNORE_PREFIX" format="string" depends="ALPHABETICAL_INDEX">
+      <docs>
+<![CDATA[La balise \c IGNORE_PREFIX peut être utilisée pour spécifier un préfixe (ou une liste de préfixes) qui doit être ignore lors de la génération des en-têtes d'index. La balise \c IGNORE_PREFIX fonctionne pour les noms de classes, fonctions et membres. L'entité sera placée dans la liste alphabetique sous la première lettre du nom de l'entité qui reste après suppression du préfixe.]]>
+      </docs>
+    </option>
+  </group>
+  <group name="HTML" docs="Options de configuration relatives à la sortie HTML">
+    <option type="bool" id="GENERATE_HTML" defval="1">
+      <docs>
+<![CDATA[Si la balise \c GENERATE_HTML est définie à \c YES, Doxygen générera une sortie HTML]]>
+      </docs>
+    </option>
+    <option type="string" id="HTML_OUTPUT" format="dir" defval="html" depends="GENERATE_HTML">
+      <docs>
+<![CDATA[La balise \c HTML_OUTPUT est utilisée pour spécifier ou les docs HTML seront placées. Si un chemin relatif est entre, la valeur de \ref cfg_output_directory "OUTPUT_DIRECTORY" sera mise devant.]]>
+      </docs>
+    </option>
+    <option type="string" id="HTML_FILE_EXTENSION" format="string" defval=".html" depends="GENERATE_HTML">
+      <docs>
+<![CDATA[La balise \c HTML_FILE_EXTENSION peut être utilisée pour spécifier l'extension de fichier pour chaque page HTML générée (par exemple: <code>.htm, .php, .asp</code>).]]>
+      </docs>
+    </option>
+    <option type="string" id="HTML_HEADER" format="file" defval="" depends="GENERATE_HTML">
+      <docs>
+<![CDATA[La balise \c HTML_HEADER peut être utilisée pour spécifier un fichier d'en-tête HTML défini par l'utilisateur pour chaque page HTML générée. Si la balise est laissée vide, Doxygen générera un en-tête standard. <br>Pour obtenir un HTML valide, le fichier d'en-tête doit inclure tous les scripts et feuilles de style dont Doxygen a besoin, ce qui dépend des options de configuration utilisées (par exemple le paramètre \ref cfg_generate_treeview "GENERATE_TREEVIEW"). Il est fortement recommandé de commencer avec un en-tête par défaut en utilisant \verbatim doxygen -w html new_header.html new_footer.html new_stylesheet.css YourConfigFile \endverbatim puis de modifier le fichier \c new_header.html. Voir aussi la section \ref doxygen_usage pour plus d'informations sur la génération de l'en-tête par défaut que Doxygen utilise normalement. @note L'en-tête est sujet à changement, donc vous devez généralement régénérer l'en-tête par défaut lors de la mise à jour vers une version plus récente de Doxygen.]]>
+      </docs>
+    </option>
+    <option type="string" id="HTML_FOOTER" format="file" defval="" depends="GENERATE_HTML">
+      <docs>
+<![CDATA[La balise \c HTML_FOOTER peut être utilisée pour spécifier un pied de page HTML défini par l'utilisateur pour chaque page HTML générée. Si la balise est laissée vide, Doxygen générera un pied de page standard. Voir \ref cfg_html_header "HTML_HEADER" pour plus d'informations sur la génération d'un pied de page par défaut et les commandes spéciales qui peuvent être utilisées dans le pied de page. Voir aussi la section \ref doxygen_usage pour plus d'informations sur la génération du pied de page par défaut que Doxygen utilise normalement.]]>
+      </docs>
+    </option>
+    <option type="string" id="HTML_STYLESHEET" format="file" defval="" depends="GENERATE_HTML">
+      <docs>
+<![CDATA[La balise \c HTML_STYLESHEET peut être utilisée pour spécifier une feuille de style en cascade définie par l'utilisateur qui est utilisée par chaque page HTML. Elle peut être utilisée pour affiner l'apparence de la sortie HTML. Si laissée vide, Doxygen générera une feuille de style par défaut. Voir aussi la section \ref doxygen_usage pour plus d'informations sur la génération de la feuille de style que Doxygen utilise normalement. \note Il est recommandé d'utiliser \ref cfg_html_extra_stylesheet "HTML_EXTRA_STYLESHEET" au lieu de cette balise, car elle est plus robuste et cette balise (<code>HTML_STYLESHEET</code>) deviendra obsolète à l'avenir.]]>
+      </docs>
+    </option>
+    <option type="list" id="HTML_EXTRA_STYLESHEET" format="file" defval="" depends="GENERATE_HTML">
+      <docs>
+<![CDATA[La balise \c HTML_EXTRA_STYLESHEET peut être utilisée pour spécifier des feuilles de style en cascade supplémentaires définies par l'utilisateur qui sont incluses après les feuilles de style standard créées par Doxygen. En utilisant cette option, on peut redéfinir certains aspects de style. Ceci est préférable à l'utilisation de \ref cfg_html_stylesheet "HTML_STYLESHEET" car elle ne remplace pas la feuille de style standard et est donc plus robuste face aux mises à jour futures. Doxygen copiera les fichiers de feuille de style dans le répertoire de sortie. \note L'ordre des fichiers de feuille de style supplémentaires est important (par exemple, la dernière feuille de style de la liste redéfinit les paramètres des précédentes dans la liste). \note Comme le style des barres de défilement ne peut actuellement pas être remplace dans Webkit/Chromium, le style sera omis du doxygen.css par défaut si une ou plusieurs feuilles de style supplémentaires ont été spécifiées. Donc si la personnalisation des barres de défilement est souhaitée, elle doit être ajoutée explicitement.]]>
+      </docs>
+    </option>
+    <option type="list" id="HTML_EXTRA_FILES" format="file" depends="GENERATE_HTML">
+      <docs>
+<![CDATA[La balise \c HTML_EXTRA_FILES peut être utilisée pour spécifier un ou plusieurs fichiers images supplémentaires ou autres fichiers sources qui doivent être copiés dans le répertoire de sortie HTML. Notez que ces fichiers seront copiés dans le répertoire de sortie HTML de base. Utilisez le marqueur <code>$relpath^</code> dans les fichiers \ref cfg_html_header "HTML_HEADER" et/ou \ref cfg_html_footer "HTML_FOOTER" pour charger ces fichiers. Dans le fichier \ref cfg_html_stylesheet "HTML_STYLESHEET", utilisez uniquement le nom du fichier. Notez également que les fichiers seront copiés tels quels; il n'y a pas de commandes ou de marqueurs disponibles.]]>
+      </docs>
+    </option>
+    <option type="enum" id="HTML_COLORSTYLE" defval="AUTO_LIGHT" depends="GENERATE_HTML">
+      <docs>
+<![CDATA[La balise \c HTML_COLORSTYLE peut être utilisée pour spécifier si la sortie HTML générée doit être rendue avec un thème sombre ou clair.]]>
+      </docs>
+      <value name="LIGHT" desc="génère toujours une sortie en mode clair"/>
+      <value name="DARK" desc="génère toujours une sortie en mode sombre"/>
+      <value name="AUTO_LIGHT" desc="définit automatiquement le mode selon la preference de l'utilisateur, utilise le mode clair si aucune preference n'est définie (par défaut)"/>
+      <value name="AUTO_DARK" desc="définit automatiquement le mode selon la preference de l'utilisateur, utilise le mode sombre si aucune preference n'est définie"/>
+      <value name="TOGGLE" desc="permet à l'utilisateur de basculer entre le mode clair et sombre via un bouton"/>
+    </option>
+    <option type="int" id="HTML_COLORSTYLE_HUE" minval="0" maxval="359" defval="220" depends="GENERATE_HTML">
+      <docs>
+<![CDATA[La balise \c HTML_COLORSTYLE_HUE contrôle la couleur de la sortie HTML. Doxygen ajustera les couleurs dans la feuille de style et les images d'arrière-plan en fonction de cette couleur. La teinte est spécifiée comme un angle sur une roue chromatique, voir https://en.wikipedia.org/wiki/Hue pour plus d'informations. Par exemple, la valeur 0 représente le rouge, 60 le jaune, 120 le vert, 180 le cyan, 240 le bleu, 300 le violet et 360 le rouge à nouveau.]]>
+      </docs>
+    </option>
+    <option type="int" id="HTML_COLORSTYLE_SAT" minval="0" maxval="255" defval="100" depends="GENERATE_HTML">
+      <docs>
+<![CDATA[La balise \c HTML_COLORSTYLE_SAT contrôle la pureté (ou saturation) des couleurs dans la sortie HTML. Pour une valeur de 0, la sortie utilisera uniquement des niveaux de gris. Une valeur de 255 produira les couleurs les plus vives.]]>
+      </docs>
+    </option>
+    <option type="int" id="HTML_COLORSTYLE_GAMMA" minval="40" maxval="240" defval="80" depends="GENERATE_HTML">
+      <docs>
+<![CDATA[La balise \c HTML_COLORSTYLE_GAMMA contrôle la correction gamma appliquée à la composante de luminance des couleurs dans la sortie HTML. Les valeurs inférieures à 100 rendent progressivement la sortie plus claire, tandis que les valeurs supérieures à 100 rendent la sortie plus foncée. La valeur divisée par 100 est le gamma réel appliqué, donc 80 représente un gamma de 0.8, la valeur 220 représente un gamma de 2.2, et 100 ne change pas le gamma.]]>
+      </docs>
+    </option>
+    <option type="bool" id="HTML_DYNAMIC_MENUS" defval="1" depends="GENERATE_HTML">
+      <docs>
+<![CDATA[Si la balise \c HTML_DYNAMIC_MENUS est définie à \c YES, la documentation HTML générée contiendra un index principal avec des menus de navigation verticaux qui sont créés dynamiquement via JavaScript. Si désactivé, l'index de navigation consistera en plusieurs niveaux d'onglets qui sont intégrés statiquement dans chaque page HTML. Désactivez cette option pour prendre en charge les navigateurs qui n'ont pas JavaScript, comme le navigateur d'aide Qt.]]>
+      </docs>
+    </option>
+    <option type="bool" id="HTML_DYNAMIC_SECTIONS" defval="0" depends="GENERATE_HTML">
+      <docs>
+<![CDATA[Si la balise \c HTML_DYNAMIC_SECTIONS est définie à \c YES, la documentation HTML générée contiendra des sections qui peuvent être cachées et affichées après le chargement de la page.]]>
+      </docs>
+    </option>
+    <option type="bool" id="HTML_CODE_FOLDING" defval="1" depends="GENERATE_HTML">
+      <docs>
+<![CDATA[Si la balise \c HTML_CODE_FOLDING est définie à \c YES, les classes et fonctions peuvent être repliées et développées dynamiquement dans le code source HTML généré.]]>
+      </docs>
+    </option>
+    <option type="bool" id="HTML_COPY_CLIPBOARD" defval="1" depends="GENERATE_HTML">
+      <docs>
+<![CDATA[Si la balise \c HTML_COPY_CLIPBOARD est définie à \c YES, Doxygen affichera une icône dans le coin supérieur droit des fragments de code et de texte qui permet à l'utilisateur de copier son contenu dans le presse-papiers. Notez que cela ne fonctionne que si le navigateur le prend en charge et que la page Web est servie via un <a href="https://www.w3.org/TR/secure-contexts/">contexte sécurisé</a>, c'est-à-dire en utilisant le protocole https: ou file:.]]>
+      </docs>
+    </option>
+    <option type="string" id="HTML_PROJECT_COOKIE" defval="" depends="GENERATE_HTML">
+      <docs>
+<![CDATA[Doxygen stocke quelques paramètres de manière persistante dans le navigateur (via par exemple les cookies). Par défaut, ces paramètres s'appliquent a toutes les pages HTML générées par Doxygen pour tous les projets. La balise \c HTML_PROJECT_COOKIE peut être utilisée pour stocker les paramètres sous une cle spécifique au projet, de sorte que les preferences de l'utilisateur seront stockées séparément.]]>
+      </docs>
+    </option>
+    <option type="int" id="HTML_INDEX_NUM_ENTRIES" minval="0" maxval="9999" defval="100" depends="GENERATE_HTML">
+      <docs>
+<![CDATA[Avec \c HTML_INDEX_NUM_ENTRIES, on peut contrôler le nombre préféré d'entrées affichées initialement dans les différents indices structures en arborescence; l'utilisateur peut développer et réduire les entrées dynamiquement plus tard. Doxygen développera l'arbre à un tel niveau qu'au maximum le nombre spécifie d'entrées sont visibles (sauf si un arbre complètement réduit dépasse déjà ce montant). Donc définir le nombre d'entrées à 1 produira un arbre complètement réduit par défaut. 0 est une valeur spéciale représentant un nombre infini d'entrées et résultera en un arbre complètement développé par défaut.]]>
+      </docs>
+    </option>
+    <option type="bool" id="GENERATE_DOCSET" defval="0" depends="GENERATE_HTML">
+      <docs>
+<![CDATA[Si la balise \c GENERATE_DOCSET est définie à \c YES, des fichiers d'index supplémentaires seront générés qui peuvent être utilisés comme entrée pour l'<a href="https://developer.apple.com/xcode/">environnement de développement intégré Xcode 3 d'Apple</a>, introduit avec OSX 10.5 (Leopard). Pour créer un ensemble de documentation, Doxygen générera un Makefile dans le répertoire de sortie HTML. L'exécution de \c make produira le docset dans ce répertoire et l'exécution de <code>make install</code> installera le docset dans <code>~/Library/Developer/Shared/Documentation/DocSets</code> afin que Xcode le trouve au démarrage. Voir https://developer.apple.com/library/archive/featuredarticles/DoxygenXcode/_index.html pour plus d'informations.]]>
+      </docs>
+    </option>
+    <option type="string" id="DOCSET_FEEDNAME" format="string" defval="Doxygen generated docs" depends="GENERATE_DOCSET">
+      <docs>
+<![CDATA[Cette balise détermine le nom du flux docset. Un flux de documentation fournit un parapluie sous lequel plusieurs ensembles de documentation d'un seul fournisseur (comme une entreprise ou une suite de produits) peuvent être regroupes.]]>
+      </docs>
+    </option>
+    <option type="string" id="DOCSET_FEEDURL" format="string" depends="GENERATE_DOCSET">
+      <docs>
+<![CDATA[Cette balise détermine l'URL du flux docset. Un flux de documentation fournit un parapluie sous lequel plusieurs ensembles de documentation d'un seul fournisseur (comme une entreprise ou une suite de produits) peuvent être regroupes.]]>
+      </docs>
+    </option>
+    <option type="string" id="DOCSET_BUNDLE_ID" format="string" defval="org.doxygen.Project" depends="GENERATE_DOCSET">
+      <docs>
+<![CDATA[Cette balise spécifie une chaîne qui doit identifier de manière unique l'ensemble de documentation bundle. Il doit s'agir d'une chaîne de style nom de domaine inverse, par exemple <code>com.mycompany.MyDocSet</code>. Doxygen ajoutera <code>.docset</code> au nom.]]>
+      </docs>
+    </option>
+    <option type="string" id="DOCSET_PUBLISHER_ID" format="string" defval="org.doxygen.Publisher" depends="GENERATE_DOCSET">
+      <docs>
+<![CDATA[La balise \c DOCSET_PUBLISHER_ID spécifie une chaîne qui doit identifier de manière unique l'editeur de la documentation. Il doit s'agir d'une chaîne de style nom de domaine inverse, par exemple <code>com.mycompany.MyDocSet.documentation</code>.]]>
+      </docs>
+    </option>
+    <option type="string" id="DOCSET_PUBLISHER_NAME" format="string" defval="Publisher" depends="GENERATE_DOCSET">
+      <docs>
+<![CDATA[La balise \c DOCSET_PUBLISHER_NAME identifie l'editeur de la documentation.]]>
+      </docs>
+    </option>
+    <option type="bool" id="GENERATE_HTMLHELP" defval="0" depends="GENERATE_HTML">
+      <docs>
+<![CDATA[Si la balise \c GENERATE_HTMLHELP est définie à \c YES, Doxygen génère trois fichiers d'index HTML supplémentaires: \c index.hhp, \c index.hhc, et \c index.hhk. Le \c index.hhp est un fichier de projet qui peut être lu par l'atelier d'aide HTML de Microsoft sur Windows. Au début de 2021, Microsoft a mis hors ligne la page originale, avec notamment les liens de téléchargement (l'atelier d'aide HTML était déjà en mode maintenance depuis de nombreuses années). Vous pouvez télécharger l'atelier d'aide HTML depuis les archives Web a <a href="http://web.archive.org/web/20160201063255/https://download.microsoft.com/download/0/A/9/0A939EF6-E31C-430F-A3DF-DFAE7960D564/htmlhelp.exe">exécutable d'installation</a>. <br>L'atelier d'aide HTML contient un compilateur qui peut convertir toute la sortie HTML générée par Doxygen en un seul fichier HTML compilé (`.chm`). Les fichiers HTML compilés sont maintenant utilisés comme format d'aide Windows 98 et remplaceront l'ancien format d'aide Windows (`.hlp`) sur toutes les plateformes Windows à l'avenir. Les fichiers HTML compressés contiennent également un index, une table des matières, et vous pouvez rechercher des mots dans la documentation. L'atelier HTML contient également une visionneuse pour les fichiers HTML compressés.]]>
+      </docs>
+    </option>
+    <option type="string" id="CHM_FILE" format="file" defval="" depends="GENERATE_HTMLHELP">
+      <docs>
+<![CDATA[La balise \c CHM_FILE peut être utilisée pour spécifier le nom du fichier `.chm` résultant. Vous pouvez ajouter un chemin devant le fichier si le résultat ne doit pas être écrit dans le répertoire de sortie html.]]>
+      </docs>
+    </option>
+    <option type="string" id="HHC_LOCATION" format="file" defval="" depends="GENERATE_HTMLHELP" abspath="1">
+      <docs>
+<![CDATA[La balise \c HHC_LOCATION peut être utilisée pour spécifier l'emplacement (chemin absolu incluant le nom de fichier) du compilateur d'aide HTML (\c hhc.exe). Si non vide, Doxygen essaiera d'exécuter le compilateur d'aide HTML sur le \c index.hhp généré.]]>
+      </docs>
+    </option>
+    <option type="bool" id="GENERATE_CHI" defval="0" depends="GENERATE_HTMLHELP">
+      <docs>
+<![CDATA[Le drapeau \c GENERATE_CHI contrôle si un fichier d'index `.chi` séparé est généré (\c YES) ou s'il doit être inclus dans le fichier `.chm` principal (\c NO).]]>
+      </docs>
+    </option>
+    <option type="string" id="CHM_INDEX_ENCODING" format="string" defval="" depends="GENERATE_HTMLHELP">
+      <docs>
+<![CDATA[Le \c CHM_INDEX_ENCODING est utilisé pour encoder le contenu du fichier d'index HtmlHelp (\c hhk), de la table des matières (\c hhc) et du fichier de projet.]]>
+      </docs>
+    </option>
+    <option type="bool" id="BINARY_TOC" defval="0" depends="GENERATE_HTMLHELP">
+      <docs>
+<![CDATA[Le drapeau \c BINARY_TOC contrôle si une table des matières binaire est générée (\c YES) ou une table des matières normale (\c NO) dans le fichier `.chm`. De plus, il active les boutons `Précédent` et `Suivant`.]]>
+      </docs>
+    </option>
+    <option type="bool" id="TOC_EXPAND" defval="0" depends="GENERATE_HTMLHELP">
+      <docs>
+<![CDATA[Le drapeau \c TOC_EXPAND peut être défini à \c YES pour ajouter des éléments supplémentaires pour les membres de groupe à la table des matières de la documentation d'aide HTML et à la vue en arborescence.]]>
+      </docs>
+    </option>
+    <option type="string" id="SITEMAP_URL" format="string" depends="GENERATE_HTML">
+      <docs>
+<![CDATA[La balise \c SITEMAP_URL est utilisée pour spécifier l'URL complète de l'endroit ou la documentation générée sera placée sur le serveur par l'utilisateur lors du déploiement de la documentation. Le plan de site généré s'appelle `sitemap.xml` et est place dans le répertoire spécifie par \ref cfg_html_output "HTML_OUTPUT". Si aucun \c SITEMAP_URL n'est spécifié, aucun plan de site n'est généré. Pour plus d'informations sur le protocole de plan de site, voir https://www.sitemaps.org]]>
+      </docs>
+    </option>
+    <option type="bool" id="GENERATE_QHP" defval="0" depends="GENERATE_HTML">
+      <docs>
+<![CDATA[Si la balise \c GENERATE_QHP est définie à \c YES et que \ref cfg_qhp_namespace "QHP_NAMESPACE" et \ref cfg_qhp_virtual_folder "QHP_VIRTUAL_FOLDER" sont tous deux définis, un fichier d'index supplémentaire sera généré qui peut être utilisé comme entrée pour le qhelpgenerator de Qt pour générer une aide compressée Qt (`.qch`) de la documentation HTML générée.]]>
+      </docs>
+    </option>
+    <option type="string" id="QCH_FILE" format="file" defval="" depends="GENERATE_QHP">
+      <docs>
+<![CDATA[Si la balise \ref cfg_qhg_location "QHG_LOCATION" est spécifiée, la balise \c QCH_FILE peut être utilisée pour spécifier le nom du fichier `.qch` résultant. Le chemin spécifie est relatif au dossier de sortie HTML.]]>
+      </docs>
+    </option>
+    <option type="string" id="QHP_NAMESPACE" format="string" defval="org.doxygen.Project" depends="GENERATE_QHP">
+      <docs>
+<![CDATA[La balise \c QHP_NAMESPACE spécifie l'espace de noms a utiliser lors de la génération de la sortie du projet d'aide Qt. Pour plus d'informations, voir <a href="https://doc.qt.io/archives/qt-4.8/qthelpproject.html#namespace">Projet d'aide Qt / Namespace</a>.]]>
+      </docs>
+    </option>
+    <option type="string" id="QHP_VIRTUAL_FOLDER" format="string" defval="doc" depends="GENERATE_QHP">
+      <docs>
+<![CDATA[La balise \c QHP_VIRTUAL_FOLDER spécifie l'espace de noms a utiliser lors de la génération de la sortie du projet d'aide Qt. Pour plus d'informations, voir <a href="https://doc.qt.io/archives/qt-4.8/qthelpproject.html#virtual-folders">Projet d'aide Qt / Dossiers virtuels</a>.]]>
+      </docs>
+    </option>
+    <option type="string" id="QHP_CUST_FILTER_NAME" format="string" defval="" depends="GENERATE_QHP">
+      <docs>
+<![CDATA[Si la balise \c QHP_CUST_FILTER_NAME est définie, elle spécifie le nom d'un filtre personnalise a ajouter. Pour plus d'informations, voir <a href="https://doc.qt.io/archives/qt-4.8/qthelpproject.html#custom-filters">Projet d'aide Qt / Filtres personnalises</a>.]]>
+      </docs>
+    </option>
+    <option type="string" id="QHP_CUST_FILTER_ATTRS" format="string" defval="" depends="GENERATE_QHP">
+      <docs>
+<![CDATA[La balise \c QHP_CUST_FILTER_ATTRS spécifie la liste des attributs du filtre personnalise a ajouter. Pour plus d'informations, voir <a href="https://doc.qt.io/archives/qt-4.8/qthelpproject.html#custom-filters">Projet d'aide Qt / Filtres personnalises</a>.]]>
+      </docs>
+    </option>
+    <option type="string" id="QHP_SECT_FILTER_ATTRS" format="string" defval="" depends="GENERATE_QHP">
+      <docs>
+<![CDATA[La balise \c QHP_SECT_FILTER_ATTRS spécifie la liste des attributs avec lesquels la section de filtre de ce projet correspond. <a href="https://doc.qt.io/archives/qt-4.8/qthelpproject.html#filter-attributes">Projet d'aide Qt / Attributs de filtre</a>.]]>
+      </docs>
+    </option>
+    <option type="string" id="QHG_LOCATION" format="file" defval="" depends="GENERATE_QHP">
+      <docs>
+<![CDATA[La balise \c QHG_LOCATION peut être utilisée pour spécifier l'emplacement (chemin absolu incluant le nom de fichier) du qhelpgenerator de Qt. Si non vide, Doxygen essaiera d'exécuter qhelpgenerator sur le fichier `.qhp` généré.]]>
+      </docs>
+    </option>
+    <option type="bool" id="GENERATE_ECLIPSEHELP" defval="0" depends="GENERATE_HTML">
+      <docs>
+<![CDATA[Si la balise \c GENERATE_ECLIPSEHELP est définie à \c YES, des fichiers d'index supplémentaires seront générés, et avec les fichiers HTML, ils forment un plugin d'aide `Eclipse`. Pour installer ce plugin et le rendre disponible sous le menu du contenu d'aide dans `Eclipse`, le contenu du répertoire contenant les fichiers HTML et XML doit être copie dans le répertoire des plugins d'eclipse. Le nom du répertoire dans le répertoire des plugins doit être le même que la valeur \ref cfg_eclipse_doc_id "ECLIPSE_DOC_ID". Après la copie, `Eclipse` doit être redemarre avant que l'aide n'apparaisse.]]>
+      </docs>
+    </option>
+    <option type="string" id="ECLIPSE_DOC_ID" format="string" defval="org.doxygen.Project" depends="GENERATE_ECLIPSEHELP">
+      <docs>
+<![CDATA[Un identifiant unique pour le plugin d'aide `Eclipse`. Lors de l'installation du plugin, le nom du répertoire contenant les fichiers HTML et XML doit également avoir ce nom. Chaque ensemble de documentation doit avoir son propre identifiant.]]>
+      </docs>
+    </option>
+    <option type="bool" id="DISABLE_INDEX" defval="0" depends="GENERATE_HTML">
+      <docs>
+<![CDATA[Si vous voulez un contrôle complet sur la mise en page des pages HTML générées, il peut être nécessaire de désactiver l'index et de le remplacer par le votre. La balise \c DISABLE_INDEX peut être utilisée pour activer/désactiver l'index condense (onglets) en haut de chaque page HTML. Une valeur de \c NO active l'index et la valeur \c YES le désactive. Comme les onglets de l'index contiennent les mêmes informations que l'arbre de navigation, vous pouvez définir cette option à \c YES si vous définissez également \ref cfg_generate_treeview "GENERATE_TREEVIEW" à \c YES.]]>
+      </docs>
+    </option>
+    <option type="bool" id="GENERATE_TREEVIEW" defval="1" depends="GENERATE_HTML">
+      <docs>
+<![CDATA[La balise \c GENERATE_TREEVIEW est utilisée pour spécifier si une structure d'index en arborescence doit être générée pour afficher des informations hiérarchiques. Si la valeur de la balise est définie à \c YES, un panneau latéral sera généré contenant une structure d'index en arborescence (tout comme celle qui est générée pour l'aide HTML). Pour que cela fonctionne, un navigateur qui prend en charge JavaScript, DHTML, CSS et les cadres est requis (c'est-à-dire tout navigateur moderne). Les utilisateurs de Windows sont probablement mieux lotis en utilisant la fonctionnalité d'aide HTML. Via des feuilles de style personnalisées (voir \ref cfg_html_extra_stylesheet "HTML_EXTRA_STYLESHEET"), on peut affiner davantage l'apparence de l'index (voir \ref doxygen_finetune). A titre d'exemple, la feuille de style par défaut générée par Doxygen à un exemple qui montre comment placer une image à la racine de l'arbre au lieu du \ref cfg_project_name "PROJECT_NAME". Comme l'arbre a fondamentalement plus d'informations détaillées que l'index des onglets, vous pouvez envisager de définir \ref cfg_disable_index "DISABLE_INDEX" à \c YES lors de l'activation de cette option.]]>
+      </docs>
+    </option>
+    <option type="bool" id="PAGE_OUTLINE_PANEL" defval="1" depends="GENERATE_HTML">
+      <docs>
+<![CDATA[Lorsque \ref cfg_generate_treeview "GENERATE_TREEVIEW" est défini à \c YES, l'option \c PAGE_OUTLINE_PANEL détermine si un panneau de navigation supplémentaire est affiché sur le côté droit de l'écran, affichant un plan du contenu de la page principale, similaire à par exemple https://developer.android.com/reference. Si \ref cfg_generate_treeview "GENERATE_TREEVIEW" est défini à \c NO, cette option n'a aucun effet.]]>
+      </docs>
+    </option>
+    <option type="bool" id="FULL_SIDEBAR" defval="0" depends="GENERATE_HTML">
+      <docs>
+<![CDATA[Lorsque \ref cfg_generate_treeview "GENERATE_TREEVIEW" est défini à \c YES, l'option \c FULL_SIDEBAR détermine si la barre latérale est limitée uniquement à la zone de l'arborescence (valeur \c NO) ou si elle doit s'étendre sur toute la hauteur de la fenêtre (valeur \c YES). Définir ceci à \c YES donne une mise en page similaire à par exemple https://docs.readthedocs.io avec plus d'espace pour le contenu, mais moins d'espace pour le logo, le titre et la description du projet. Si \ref cfg_generate_treeview "GENERATE_TREEVIEW" est défini à \c NO, cette option n'a aucun effet.]]>
+      </docs>
+    </option>
+    <option type="int" id="ENUM_VALUES_PER_LINE" minval="0" maxval="20" defval="4" depends="GENERATE_HTML">
+      <docs>
+<![CDATA[La balise \c ENUM_VALUES_PER_LINE peut être utilisée pour définir le nombre de valeurs d'énumération que Doxygen regroupera sur une ligne dans la documentation HTML générée. <br>Notez qu'une valeur de 0 supprimera complètement les valeurs d'énumération de la section de vue d'ensemble.]]>
+      </docs>
+    </option>
+    <option type="bool" id="SHOW_ENUM_VALUES" defval="0">
+      <docs>
+<![CDATA[Lorsque la balise \c SHOW_ENUM_VALUES est définie, Doxygen affichera les valeurs d'énumération spécifiées a côté des mnémoniques d'énumération.]]>
+      </docs>
+    </option>
+    <option type="int" id="TREEVIEW_WIDTH" minval="0" maxval="1500" defval="250" depends="GENERATE_HTML">
+      <docs>
+<![CDATA[Si l'arborescence est activée (voir \ref cfg_generate_treeview "GENERATE_TREEVIEW"), cette balise peut être utilisée pour définir la largeur initiale (en pixels) du cadre dans lequel l'arbre est affiché.]]>
+      </docs>
+    </option>
+    <option type="bool" id="EXT_LINKS_IN_WINDOW" defval="0" depends="GENERATE_HTML">
+      <docs>
+<![CDATA[Si l'option \c EXT_LINKS_IN_WINDOW est définie à \c YES, Doxygen ouvrira les liens vers des symboles externes importés via des fichiers de balises dans une fenêtre séparée.]]>
+      </docs>
+    </option>
+    <option type="bool" id="OBFUSCATE_EMAILS" defval="1" depends="GENERATE_HTML">
+      <docs>
+<![CDATA[Si la balise \c OBFUSCATE_EMAILS est définie à \c YES, Doxygen offusquera les adresses email.]]>
+      </docs>
+    </option>
+    <option type="enum" id="HTML_FORMULA_FORMAT" defval="png" depends="GENERATE_HTML">
+      <docs>
+<![CDATA[Si l'option \c HTML_FORMULA_FORMAT est définie à \c svg, Doxygen utilisera l'outil pdf2svg (voir https://github.com/dawbarton/pdf2svg) ou inkscape (voir https://inkscape.org) pour générer des formules en tant qu'images SVG au lieu de PNG pour la sortie HTML. Ces images auront généralement une meilleure apparence à des resolutions mises à l'echelle.]]>
+      </docs>
+      <value name="png" desc="(par défaut)"/>
+      <value name="svg" desc="(plus joli mais nécessite l'outil pdf2svg ou inkscape)"/>
+    </option>
+    <option type="int" id="FORMULA_FONTSIZE" minval="8" maxval="50" defval="10" depends="GENERATE_HTML">
+      <docs>
+<![CDATA[Utilisez cette balise pour changer la taille de police des formules \f$\mbox{\LaTeX}\f$ incluses en tant qu'images dans la documentation HTML. Lorsque vous changez la taille de police après une exécution Doxygen reussie, vous devez supprimer manuellement toutes les images `form_*.png` du répertoire de sortie HTML pour forcer leur regeneration.]]>
+      </docs>
+    </option>
+    <option type="string" id="FORMULA_MACROFILE" format="file" defval="">
+      <docs>
+<![CDATA[Le \c FORMULA_MACROFILE peut contenir des commandes \f$\mbox{\LaTeX}\f$ `\newcommand` et `\renewcommand` pour créer de nouvelles commandes \f$\mbox{\LaTeX}\f$ a utiliser dans les formules comme blocs de construction. Voir la section \ref formulas pour plus de détails.]]>
+      </docs>
+    </option>
+    <option type="bool" id="USE_MATHJAX" defval="0" depends="GENERATE_HTML">
+      <docs>
+<![CDATA[Activez l'option \c USE_MATHJAX pour rendre les formules \f$\mbox{\LaTeX}\f$ en utilisant MathJax (voir https://www.mathjax.org) qui utilise JavaScript côté client pour le rendu au lieu d'utiliser des bitmaps pre-rendus. Utilisez ceci si vous n'avez pas \f$\mbox{\LaTeX}\f$ installe ou si vous voulez que les formules soient plus jolies dans la sortie HTML. lorsqu'activé, vous devrez peut-être également installer MathJax séparément et configurer le chemin d'accès en utilisant l'option \ref cfg_mathjax_relpath "MATHJAX_RELPATH".]]>
+      </docs>
+    </option>
+    <option type="enum" id="MATHJAX_VERSION" defval="MathJax_2" depends="USE_MATHJAX">
+      <docs>
+<![CDATA[Avec \c MATHJAX_VERSION, il est possible de spécifier la version de MathJax a utiliser. Notez que les différentes versions de MathJax ont des exigences différentes en ce qui concerne les différents paramètres, il est donc possible que d'autres paramètres MathJax doivent également être modifies lors du passage entre les différentes versions de MathJax.]]>
+      </docs>
+      <value name="MathJax_2"/>
+      <value name="MathJax_3"/>
+      <value name="MathJax_4"/>
+    </option>
+    <option type="enum" id="MATHJAX_FORMAT" defval="HTML-CSS" depends="USE_MATHJAX">
+      <docs>
+<![CDATA[Lorsque MathJax est activé, vous pouvez définir le format de sortie par défaut a utiliser pour la sortie MathJax. Pour plus de détails sur le format de sortie, voir <a href="https://docs.mathjax.org/en/v2.7/output.html">MathJax version 2</a>, <a href="https://docs.mathjax.org/en/v3.2/output/index.html">MathJax version 3</a> et <a href="https://docs.mathjax.org/en/v4.0/output/index.htm">MathJax version 4</a>.]]>
+      </docs>
+      <value name="HTML-CSS" desc="(plus lent, mais avec la meilleure compatibilité. C'est le nom pour MathJax version 2, pour MathJax version 3 cela sera traduit en \c chtml)"/>
+      <value name="NativeMML" desc="(c'est-à-dire MathML. Pris en charge uniquement pour MathJax 2. Pour MathJax version 3, \c chtml sera utilisé à la place.)"/>
+      <value name="chtml" desc="(C'est le nom pour MathJax version 3, pour MathJax version 2 cela sera traduit en \c HTML-CSS)"/>
+      <value name="SVG"/>
+    </option>
+        <option type="string" id="MATHJAX_RELPATH" format="string" depends="USE_MATHJAX">
+      <docs>
+<![CDATA[
+ Lorsque MathJax est activé, vous devez spécifier l'emplacement relatif au répertoire
+ de sortie HTML en utilisant l'option \c MATHJAX_RELPATH. Pour MathJax version 2, le répertoire
+ de destination doit contenir le script `MathJax.js`. Par exemple, si le répertoire \c mathjax
+ se trouve au même niveau que le répertoire de sortie HTML, alors \c MATHJAX_RELPATH doit
+ être <code>../mathjax</code>. Pour MathJax versions 3 et 4, le répertoire de destination
+ doit contenir le script `tex-<format>.js` (ou `<format>` est `chtml` ou `svg`).
+ La valeur par défaut pointe vers le Reseau de Distribution de Contenu MathJax pour que
+ vous puissiez voir rapidement le résultat sans installer MathJax. Cependant, il est fortement recommandé d'installer une copie locale de MathJax depuis https://www.mathjax.org avant le déploiement.
+
+ La valeur par défaut est :
+ - dans le cas de MathJax version 2 : https://cdn.jsdelivr.net/npm/mathjax@2
+ - dans le cas de MathJax version 3 : https://cdn.jsdelivr.net/npm/mathjax@3
+ - dans le cas de MathJax version 4 : https://cdn.jsdelivr.net/npm/mathjax@4
+]]>
+      </docs>
+    </option>
+    <option type="list" id="MATHJAX_EXTENSIONS" format="string" depends="USE_MATHJAX">
+      <docs>
+<![CDATA[La balise \c MATHJAX_EXTENSIONS peut être utilisée pour spécifier un ou plusieurs noms d'extension MathJax qui doivent être activés pendant le rendu MathJax. Par exemple pour la version 2 de MathJax (voir https://docs.mathjax.org/en/v2.7/tex.html): \verbatim MATHJAX_EXTENSIONS = TeX/AMSmath TeX/AMSsymbols \endverbatim Par exemple pour la version 3 de MathJax (voir https://docs.mathjax.org/en/v3.2/input/tex/extensions/): \verbatim MATHJAX_EXTENSIONS = ams \endverbatim Par exemple pour la version 4 de MathJax (voir https://docs.mathjax.org/en/v4.0/input/tex/extensions/): \verbatim MATHJAX_EXTENSIONS = units \endverbatim Notez que pour la version 4 de Mathjax, quelques extensions sont déjà automatiquement chargées. Pour désactiver un paquet dans la version 4 de Mathjax, on peut utiliser le nom du paquet précède d'un signe moins (`-` comme `MATHJAX_EXTENSIONS += -textmacros`)]]>
+      </docs>
+    </option>
+    <option type="string" id="MATHJAX_CODEFILE" format="string" depends="USE_MATHJAX">
+      <docs>
+<![CDATA[La balise \c MATHJAX_CODEFILE peut être utilisée pour spécifier un fichier avec des morceaux de code JavaScript qui seront utilisés au démarrage du code MathJax. Voir le site Mathjax pour plus de détails: - <a href="https://docs.mathjax.org/en/v2.7/">MathJax version 2</a> - <a href="https://docs.mathjax.org/en/v3.2/">MathJax version 3</a> - <a href="https://docs.mathjax.org/en/v4.0/">MathJax version 4</a>]]>
+      </docs>
+    </option>
+    <option type="bool" id="SEARCHENGINE" defval="1" depends="GENERATE_HTML">
+      <docs>
+<![CDATA[Lorsque la balise \c SEARCHENGINE est activée, Doxygen générera une boite de recherche pour la sortie HTML. Le moteur de recherche sous-jacent utilise JavaScript et DHTML et devrait fonctionner sur tout navigateur moderne. Notez que lors de l'utilisation de l'aide HTML (\ref cfg_generate_htmlhelp "GENERATE_HTMLHELP"), de l'aide Qt (\ref cfg_generate_qhp "GENERATE_QHP") ou des docsets (\ref cfg_generate_docset "GENERATE_DOCSET"), il existe déjà une fonction de recherche, celle-ci devrait donc généralement être désactivée. Pour les grands projets, le moteur de recherche base sur JavaScript peut être lent, alors l'activation de \ref cfg_server_based_search "SERVER_BASED_SEARCH" peut fournir une meilleure solution. Il est possible de rechercher en utilisant le clavier; pour accéder à la boite de recherche, utilisez <code>\<touche d'accès\> + S</code> (ce qu'est la <code>\<touche d'accès\></code> dépend de l'OS et du navigateur, mais c'est généralement <code>\<CTRL\></code>, <code>\<ALT\></code>/<code>\<option\></code>, ou les deux). Dans la boite de recherche, utilisez la <code>\<touche curseur bas\></code> pour accéder à la fenêtre des résultats de recherche, les résultats peuvent être navigues en utilisant les <code>\<touches curseur\></code>. Appuyez sur <code>\<Entrée\></code> pour sélectionner un élément ou <code>\<echap\></code> pour annuler la recherche. Les options de filtre peuvent être sélectionnées lorsque le curseur est dans la boite de recherche en appuyant sur <code>\<Maj\>+\<curseur bas\></code>. Ici aussi, utilisez les <code>\<touches curseur\></code> pour sélectionner un filtre et <code>\<Entrée\></code> ou <code>\<echap\></code> pour activer ou annuler l'option de filtre.]]>
+      </docs>
+    </option>
+    <option type="bool" id="SERVER_BASED_SEARCH" defval="0" depends="SEARCHENGINE">
+      <docs>
+<![CDATA[Lorsque la balise \c SERVER_BASED_SEARCH est activée, le moteur de recherche sera implémenté en utilisant un serveur Web au lieu d'un client Web utilisant JavaScript. Il existe deux types de recherche basée sur un serveur Web selon le paramètre \ref cfg_external_search "EXTERNAL_SEARCH". Lorsqu'il est désactivé, Doxygen générera un script PHP pour la recherche et un fichier d'index utilisé par le script. Lorsque \ref cfg_external_search "EXTERNAL_SEARCH" est activé, l'indexation et la recherche doivent être fournies par des outils externes. Voir la section \ref extsearch pour plus de détails.]]>
+      </docs>
+    </option>
+    <option type="bool" id="EXTERNAL_SEARCH" defval="0" depends="SEARCHENGINE">
+      <docs>
+<![CDATA[Lorsque la balise \c EXTERNAL_SEARCH est activée, Doxygen ne générera plus le script PHP pour la recherche. Au lieu de cela, les résultats de recherche sont écrits dans un fichier XML qui doit être traite par un indexeur externe. Doxygen invoquera un moteur de recherche externe pointe par l'option \ref cfg_searchengine_url "SEARCHENGINE_URL" pour obtenir les résultats de recherche. <br>Doxygen est fourni avec un exemple d'indexeur (\c doxyindexer) et de moteur de recherche (<code>doxysearch.cgi</code>) qui sont bases sur la bibliothèque de moteur de recherche open source <a href="https://xapian.org/">Xapian</a>. <br>Voir la section \ref extsearch pour plus de détails.]]>
+      </docs>
+    </option>
+    <option type="string" id="SEARCHENGINE_URL" format="string" defval="" depends="SEARCHENGINE">
+      <docs>
+<![CDATA[Le \c SEARCHENGINE_URL doit pointer vers un moteur de recherche heberge par un serveur Web qui retourner les résultats de recherche lorsque \ref cfg_external_search "EXTERNAL_SEARCH" est activé. <br>Doxygen est fourni avec un exemple d'indexeur (\c doxyindexer) et de moteur de recherche (<code>doxysearch.cgi</code>) qui sont bases sur la bibliothèque de moteur de recherche open source <a href="https://xapian.org/">Xapian</a>. Voir la section \ref extsearch pour plus de détails.]]>
+      </docs>
+    </option>
+    <option type="string" id="SEARCHDATA_FILE" format="file" defval="searchdata.xml" depends="SEARCHENGINE">
+      <docs>
+<![CDATA[Lorsque \ref cfg_server_based_search "SERVER_BASED_SEARCH" et \ref cfg_external_search "EXTERNAL_SEARCH" sont tous deux activés, les données de recherche non indexées sont ecrites dans un fichier pour l'indexation par un outil externe. Avec la balise \c SEARCHDATA_FILE, le nom de ce fichier peut être spécifie.]]>
+      </docs>
+    </option>
+    <option type="string" id="EXTERNAL_SEARCH_ID" format="string" defval="" depends="SEARCHENGINE">
+      <docs>
+<![CDATA[Lorsque \ref cfg_server_based_search "SERVER_BASED_SEARCH" et \ref cfg_external_search "EXTERNAL_SEARCH" sont tous deux activés, la balise \c EXTERNAL_SEARCH_ID peut être utilisée comme identifiant pour le projet. Ceci est utile en combinaison avec \ref cfg_extra_search_mappings "EXTRA_SEARCH_MAPPINGS" pour rechercher dans plusieurs projets et rediriger les résultats vers le bon projet.]]>
+      </docs>
+    </option>
+    <option type="list" id="EXTRA_SEARCH_MAPPINGS" format="string" depends="SEARCHENGINE">
+      <docs>
+<![CDATA[La balise \c EXTRA_SEARCH_MAPPINGS peut être utilisée pour activer la recherche dans des projets Doxygen autres que celui défini par ce fichier de configuration, mais qui sont tous ajoutés au même index de recherche externe. Chaque projet doit avoir un identifiant unique défini via \ref cfg_external_search_id "EXTERNAL_SEARCH_ID". Le mappage de recherche mappe ensuite l'identifiant vers un emplacement relatif ou la documentation peut être trouvée. Le format est: \verbatim EXTRA_SEARCH_MAPPINGS = tagname1=loc1 tagname2=loc2 ... \endverbatim]]>
+      </docs>
+    </option>
+  </group>
+  <group name="LaTeX" docs="Options de configuration relatives à la sortie LaTeX">
+    <option type="bool" id="GENERATE_LATEX" defval="1">
+      <docs>
+<![CDATA[Si la balise \c GENERATE_LATEX est définie à \c YES, Doxygen générera une sortie \f$\mbox{\LaTeX}\f$.]]>
+      </docs>
+    </option>
+    <option type="string" id="LATEX_OUTPUT" format="dir" defval="latex" depends="GENERATE_LATEX">
+      <docs>
+<![CDATA[La balise \c LATEX_OUTPUT est utilisée pour spécifier ou les docs \f$\mbox{\LaTeX}\f$ seront placées. Si un chemin relatif est entre, la valeur de \ref cfg_output_directory "OUTPUT_DIRECTORY" sera mise devant.]]>
+      </docs>
+    </option>
+    <option type="string" id="LATEX_CMD_NAME" format="file" defval="" depends="GENERATE_LATEX">
+      <docs>
+<![CDATA[La balise \c LATEX_CMD_NAME peut être utilisée pour spécifier le nom de la commande \f$\mbox{\LaTeX}\f$ a invoquer. <br>Notez que lorsque \ref cfg_use_pdflatex "USE_PDFLATEX" n'est pas active, le défaut est \c latex, lorsque \ref cfg_use_pdflatex "USE_PDFLATEX" est activé, le défaut est \c pdflatex et dans ce dernier cas si \c latex est choisi, il est écrasé par \c pdflatex. Pour des langages de sortie spécifiques, le défaut peut avoir été défini différemment, cela dépend de l'implémentation du langage de sortie.]]>
+      </docs>
+    </option>
+    <option type="string" id="MAKEINDEX_CMD_NAME" format="file" defval="makeindex" depends="GENERATE_LATEX">
+      <docs>
+<![CDATA[La balise \c MAKEINDEX_CMD_NAME peut être utilisée pour spécifier le nom de la commande pour générer l'index pour \f$\mbox{\LaTeX}\f$. @note Cette balise est utilisée dans le `Makefile` / `make.bat`. \sa \ref cfg_latex_makeindex_cmd "LATEX_MAKEINDEX_CMD" pour la partie dans le fichier de sortie généré (`.tex`).]]>
+      </docs>
+    </option>
+    <option type="string" id="LATEX_MAKEINDEX_CMD" defval="makeindex" depends="GENERATE_LATEX">
+      <docs>
+<![CDATA[La balise \c LATEX_MAKEINDEX_CMD peut être utilisée pour spécifier le nom de la commande pour générer l'index pour \f$\mbox{\LaTeX}\f$. S'il n'y a pas de barre oblique inverse (`\`) comme premier caractère, elle sera automatiquement ajoutée dans le code \f$\mbox{\LaTeX}\f$. @note Cette balise est utilisée dans le fichier de sortie généré (`.tex`). \sa \ref cfg_makeindex_cmd_name "MAKEINDEX_CMD_NAME" pour la partie dans le `Makefile` / `make.bat`.]]>
+      </docs>
+    </option>
+    <option type="bool" id="COMPACT_LATEX" defval="0" depends="GENERATE_LATEX">
+      <docs>
+<![CDATA[Si la balise \c COMPACT_LATEX est définie à \c YES, Doxygen génère des documents \f$\mbox{\LaTeX}\f$ plus compacts. Cela peut être utile pour les petits projets et peut aider a economiser quelques arbres en général.]]>
+      </docs>
+    </option>
+    <option type="enum" id="PAPER_TYPE" defval="a4" depends="GENERATE_LATEX">
+      <docs>
+<![CDATA[La balise \c PAPER_TYPE peut être utilisée pour définir le type de papier utilisé par l'imprimante.]]>
+      </docs>
+      <value name="a4" desc="(210 x 297 mm)"/>
+      <value name="letter" desc="(8,5 x 11 pouces)"/>
+      <value name="legal" desc="(8,5 x 14 pouces)"/>
+      <value name="executive" desc="(7,25 x 10,5 pouces)"/>
+    </option>
+    <option type="list" id="EXTRA_PACKAGES" format="string" depends="GENERATE_LATEX">
+      <docs>
+<![CDATA[La balise \c EXTRA_PACKAGES peut être utilisée pour spécifier un ou plusieurs noms de paquets \f$\mbox{\LaTeX}\f$ qui doivent être inclus dans la sortie \f$\mbox{\LaTeX}\f$. Le paquet peut être spécifie simplement par son nom ou avec la syntaxe correcte a utiliser avec la commande \f$\mbox{\LaTeX}\f$ `\usepackage`. Pour obtenir la police `times` par exemple, vous pouvez spécifier: \verbatim EXTRA_PACKAGES=times ou EXTRA_PACKAGES={times} \endverbatim Pour utiliser l'option `intlimits` avec le paquet `amsmath`, vous pouvez spécifier: \verbatim EXTRA_PACKAGES=[intlimits]{amsmath} \endverbatim Si laissé vide, aucun paquet supplémentaire ne sera inclus.]]>
+      </docs>
+    </option>
+    <option type="string" id="LATEX_HEADER" format="file" defval="" depends="GENERATE_LATEX">
+      <docs>
+<![CDATA[La balise \c LATEX_HEADER peut être utilisée pour spécifier un en-tête \f$\mbox{\LaTeX}\f$ défini par l'utilisateur pour le document \f$\mbox{\LaTeX}\f$ généré. L'en-tête doit contenir tout jusqu'au premier chapitre. S'il est laissé vide, Doxygen générera un en-tête standard. Il est fortement recommandé de commencer avec un en-tête par défaut en utilisant \verbatim doxygen -w latex new_header.tex new_footer.tex new_stylesheet.sty \endverbatim puis de modifier le fichier \c new_header.tex. Voir aussi la section \ref doxygen_usage pour plus d'informations sur la génération de l'en-tête par défaut que Doxygen utilise normalement. <br>Note: N'utilisez un en-tête défini par l'utilisateur que si vous savez ce que vous faites! @note L'en-tête est sujet à changement, donc vous devez généralement régénérer l'en-tête par défaut lors de la mise à jour vers une version plus récente de Doxygen. Les commandes suivantes ont une signification spéciale dans l'en-tête (et le pied de page):]]>
+      </docs>
+    </option>
+    <option type="string" id="LATEX_FOOTER" format="file" defval="" depends="GENERATE_LATEX">
+      <docs>
+<![CDATA[La balise \c LATEX_FOOTER peut être utilisée pour spécifier un pied de page \f$\mbox{\LaTeX}\f$ défini par l'utilisateur pour le document \f$\mbox{\LaTeX}\f$ généré. Le pied de page doit contenir tout après le dernier chapitre. S'il est laissé vide, Doxygen générera un pied de page standard. Voir \ref cfg_latex_header "LATEX_HEADER" pour plus d'informations sur la génération d'un pied de page par défaut et les commandes spéciales qui peuvent être utilisées dans le pied de page. Voir aussi la section \ref doxygen_usage pour plus d'informations sur la génération du pied de page par défaut que Doxygen utilise normalement. Note: N'utilisez un pied de page défini par l'utilisateur que si vous savez ce que vous faites!]]>
+      </docs>
+    </option>
+    <option type="list" id="LATEX_EXTRA_STYLESHEET" format="file" defval="" depends="GENERATE_LATEX">
+      <docs>
+<![CDATA[La balise \c LATEX_EXTRA_STYLESHEET peut être utilisée pour spécifier des feuilles de style \f$\mbox{\LaTeX}\f$ supplémentaires définies par l'utilisateur qui sont incluses après les feuilles de style standard créées par Doxygen. En utilisant cette option, on peut redéfinir certains aspects de style. Doxygen copiera les fichiers de feuille de style dans le répertoire de sortie. \note L'ordre des fichiers de feuille de style supplémentaires est important (par exemple, la dernière feuille de style de la liste redéfinit les paramètres des précédentes dans la liste).]]>
+      </docs>
+    </option>
+    <option type="list" id="LATEX_EXTRA_FILES" format="file" depends="GENERATE_LATEX">
+      <docs>
+<![CDATA[La balise \c LATEX_EXTRA_FILES peut être utilisée pour spécifier une ou plusieurs images supplémentaires ou autres fichiers sources qui doivent être copiés dans le répertoire de sortie \ref cfg_latex_output "LATEX_OUTPUT". Notez que les fichiers seront copiés tels quels; il n'y a pas de commandes ou de marqueurs disponibles.]]>
+      </docs>
+    </option>
+    <option type="bool" id="PDF_HYPERLINKS" defval="1" depends="GENERATE_LATEX">
+      <docs>
+<![CDATA[Si la balise \c PDF_HYPERLINKS est définie à \c YES, le \f$\mbox{\LaTeX}\f$ généré est prepare pour la conversion en PDF (en utilisant \c ps2pdf ou \c pdflatex). Le fichier PDF contiendra des liens (tout comme la sortie HTML) au lieu de références de pages. Cela rend la sortie adaptée à la navigation en ligne en utilisant un lecteur PDF.]]>
+      </docs>
+    </option>
+    <option type="bool" id="USE_PDFLATEX" defval="1" depends="GENERATE_LATEX">
+      <docs>
+<![CDATA[Si la balise \c USE_PDFLATEX est définie à \c YES, Doxygen utilisera le moteur comme spécifie avec \ref cfg_latex_cmd_name "LATEX_CMD_NAME" pour générer le fichier PDF directement à partir des fichiers \f$\mbox{\LaTeX}\f$. Définissez cette option à \c YES pour obtenir une documentation PDF de meilleure qualité. <br>Voir aussi la section \ref cfg_latex_cmd_name "LATEX_CMD_NAME" pour sélectionner le moteur.]]>
+      </docs>
+    </option>
+    <option type="enum" id="LATEX_BATCHMODE" defval="NO" depends="GENERATE_LATEX">
+      <docs>
+<![CDATA[La balise \c LATEX_BATCHMODE signale le comportement de \f$\mbox{\LaTeX}\f$ en cas d'erreur.]]>
+      </docs>
+      <value name="NO" desc="identique a ERROR_STOP"/>
+      <value name="YES" desc="identique a BATCH"/>
+      <value name="BATCH" desc="En mode batch, rien n'est imprime sur le terminal, les erreurs defilent comme si \&lt;return\&gt; était appuye à chaque erreur; les fichiers manquants que TeX essaie de lire ou de demander à partir de l'entrée clavier (\\read sur un flux d'entrée non ouvert) provoquent l'arret du travail"/>
+      <value name="NON_STOP" desc="En mode nonstop, le message de diagnostic apparaîtra sur le terminal, mais il n'y a aucune possibilite d'interaction utilisateur comme en mode batch"/>
+      <value name="SCROLL" desc="En mode scroll, TeX s'arrêtera uniquement pour les fichiers manquants a lire ou si une entrée clavier est nécessaire"/>
+      <value name="ERROR_STOP" desc="En mode errorstop, TeX s'arrêtera à chaque erreur, demandant l'intervention de l'utilisateur"/>
+    </option>
+    <option type="bool" id="LATEX_HIDE_INDICES" defval="0" depends="GENERATE_LATEX">
+      <docs>
+<![CDATA[Si la balise \c LATEX_HIDE_INDICES est définie à \c YES, Doxygen n'inclura pas les chapitres d'index (tels que l'index des fichiers, l'index des composes, etc.) dans la sortie.]]>
+      </docs>
+    </option>
+    <option type="string" id="LATEX_BIB_STYLE" format="string" defval="plainnat" depends="GENERATE_LATEX">
+      <docs>
+<![CDATA[La balise \c LATEX_BIB_STYLE peut être utilisée pour spécifier le style a utiliser pour la bibliographie, par exemple \c plainnat ou \c ieeetr. Voir https://en.wikipedia.org/wiki/BibTeX et \ref cmdcite "\cite" pour plus d'informations.]]>
+      </docs>
+    </option>
+    <option type="string" id="LATEX_EMOJI_DIRECTORY" format="dir" defval="" depends="GENERATE_LATEX">
+      <docs>
+<![CDATA[La balise \c LATEX_EMOJI_DIRECTORY est utilisée pour spécifier le chemin (relatif ou absolu) à partir duquel les images emoji seront lues. Si un chemin relatif est entre, il sera relatif au répertoire \ref cfg_latex_output "LATEX_OUTPUT". Si laissé vide, le répertoire \ref cfg_latex_output "LATEX_OUTPUT" sera utilisé.]]>
+      </docs>
+    </option>
+  </group>
+  <group name="RTF" docs="Options de configuration relatives à la sortie RTF">
+    <option type="bool" id="GENERATE_RTF" defval="0">
+      <docs>
+<![CDATA[Si la balise \c GENERATE_RTF est définie à \c YES, Doxygen générera une sortie RTF. La sortie RTF est optimisée pour Word 97 et peut ne pas sembler tres jolie avec d'autres lecteurs/editeurs RTF.]]>
+      </docs>
+    </option>
+    <option type="string" id="RTF_OUTPUT" format="dir" defval="rtf" depends="GENERATE_RTF">
+      <docs>
+<![CDATA[La balise \c RTF_OUTPUT est utilisée pour spécifier ou les docs RTF seront placées. Si un chemin relatif est entre, la valeur de \ref cfg_output_directory "OUTPUT_DIRECTORY" sera mise devant.]]>
+      </docs>
+    </option>
+    <option type="bool" id="COMPACT_RTF" defval="0" depends="GENERATE_RTF">
+      <docs>
+<![CDATA[Si la balise \c COMPACT_RTF est définie à \c YES, Doxygen génère des documents RTF plus compacts. Cela peut être utile pour les petits projets et peut aider a economiser quelques arbres en général.]]>
+      </docs>
+    </option>
+    <option type="bool" id="RTF_HYPERLINKS" defval="0" depends="GENERATE_RTF">
+      <docs>
+<![CDATA[Si la balise \c RTF_HYPERLINKS est définie à \c YES, le RTF généré contiendra des champs de lien hypertexte. Le fichier RTF contiendra des liens (tout comme la sortie HTML) au lieu de références de pages. Cela rend la sortie adaptée à la navigation en ligne en utilisant Word ou d'autres lecteurs compatibles Word qui prennent en charge ces champs. <br>Note: WordPad (write) et d'autres ne prennent pas en charge les liens.]]>
+      </docs>
+    </option>
+    <option type="string" id="RTF_STYLESHEET_FILE" format="file" defval="" depends="GENERATE_RTF">
+      <docs>
+<![CDATA[Charge les définitions de feuille de style à partir d'un fichier. La syntaxe est similaire au fichier de configuration de Doxygen, c'est-à-dire une serie d'affectations. Vous devez uniquement fournir des remplacements, les définitions manquantes sont définies a leur valeur par défaut. <br>Voir aussi la section \ref doxygen_usage pour plus d'informations sur la génération de la feuille de style par défaut que Doxygen utilise normalement.]]>
+      </docs>
+    </option>
+    <option type="string" id="RTF_EXTENSIONS_FILE" format="file" defval="" depends="GENERATE_RTF">
+      <docs>
+<![CDATA[Définit des variables optionnelles utilisées dans la génération d'un document RTF. La syntaxe est similaire au fichier de configuration de Doxygen. Un fichier d'extensions modèle peut être généré en utilisant <code>doxygen -e rtf extensionFile</code>.]]>
+      </docs>
+    </option>
+    <option type="list" id="RTF_EXTRA_FILES" format="file" depends="GENERATE_RTF">
+      <docs>
+<![CDATA[La balise \c RTF_EXTRA_FILES peut être utilisée pour spécifier une ou plusieurs images supplémentaires ou autres fichiers sources qui doivent être copiés dans le répertoire de sortie \ref cfg_rtf_output "RTF_OUTPUT". Notez que les fichiers seront copiés tels quels; il n'y a pas de commandes ou de marqueurs disponibles.]]>
+      </docs>
+    </option>
+  </group>
+  <group name="Man" docs="Options de configuration relatives à la sortie des pages de manuel">
+    <option type="bool" id="GENERATE_MAN" defval="0">
+      <docs>
+<![CDATA[Si la balise \c GENERATE_MAN est définie à \c YES, Doxygen générera des pages de manuel pour les classes et les fichiers.]]>
+      </docs>
+    </option>
+    <option type="string" id="MAN_OUTPUT" format="dir" defval="man" depends="GENERATE_MAN">
+      <docs>
+<![CDATA[La balise \c MAN_OUTPUT est utilisée pour spécifier ou les pages de manuel seront placées. Si un chemin relatif est entre, la valeur de \ref cfg_output_directory "OUTPUT_DIRECTORY" sera mise devant. Un répertoire \c man3 sera créé dans le répertoire spécifie par \c MAN_OUTPUT.]]>
+      </docs>
+    </option>
+    <option type="string" id="MAN_EXTENSION" format="string" defval=".3" depends="GENERATE_MAN">
+      <docs>
+<![CDATA[La balise \c MAN_EXTENSION détermine l'extension qui est ajoutée aux pages de manuel générées. Si la section du manuel ne commence pas par un chiffre, le chiffre 3 est ajouté au début. Le point (.) au début de la balise \c MAN_EXTENSION est optionnel.]]>
+      </docs>
+    </option>
+    <option type="string" id="MAN_SUBDIR" format="string" defval="" depends="GENERATE_MAN">
+      <docs>
+<![CDATA[La balise \c MAN_SUBDIR détermine le nom du répertoire créé dans \c MAN_OUTPUT dans lequel les pages de manuel sont placées. Par défaut, c'est man suivi de \c MAN_EXTENSION avec le `.` initial supprime.]]>
+      </docs>
+    </option>
+    <option type="bool" id="MAN_LINKS" defval="0" depends="GENERATE_MAN">
+      <docs>
+<![CDATA[Si la balise \c MAN_LINKS est définie à \c YES et que Doxygen génère une sortie man, alors il générera un fichier man supplémentaire pour chaque entité documentée dans la ou les vraies pages de manuel. Ces fichiers supplémentaires ne font que sourcer la vraie page de manuel, mais sans eux la commande \c man serait incapable de trouver la bonne page.]]>
+      </docs>
+    </option>
+  </group>
+  <group name="XML" docs="Options de configuration relatives à la sortie XML">
+    <option type="bool" id="GENERATE_XML" defval="0">
+      <docs>
+<![CDATA[Si la balise \c GENERATE_XML est définie à \c YES, Doxygen générera un fichier XML qui capture la structure du code, y compris toute la documentation.]]>
+      </docs>
+    </option>
+    <option type="string" id="XML_OUTPUT" format="dir" defval="xml" depends="GENERATE_XML">
+      <docs>
+<![CDATA[La balise \c XML_OUTPUT est utilisée pour spécifier ou les pages XML seront placées. Si un chemin relatif est entre, la valeur de \ref cfg_output_directory "OUTPUT_DIRECTORY" sera mise devant.]]>
+      </docs>
+    </option>
+    <option type="bool" id="XML_PROGRAMLISTING" defval="1" depends="GENERATE_XML">
+      <docs>
+<![CDATA[Si la balise \c XML_PROGRAMLISTING est définie à \c YES, Doxygen copiera les listes de programmes (y compris la coloration syntaxique et les informations de référence croisée) dans la sortie XML. Notez que l'activation de cela augmentera de manière significative la taille de la sortie XML.]]>
+      </docs>
+    </option>
+    <option type="bool" id="XML_NS_MEMB_FILE_SCOPE" defval="0" depends="GENERATE_XML">
+      <docs>
+<![CDATA[Si la balise \c XML_NS_MEMB_FILE_SCOPE est définie à \c YES, Doxygen inclura les membres de namespace dans la portée du fichier également, correspondant à la sortie HTML.]]>
+      </docs>
+    </option>
+  </group>
+  <group name="Docbook" docs="Options de configuration relatives à la sortie DOCBOOK">
+    <option type="bool" id="GENERATE_DOCBOOK" defval="0">
+      <docs>
+<![CDATA[Si la balise \c GENERATE_DOCBOOK est définie à \c YES, Doxygen générera des fichiers Docbook qui peuvent être utilisés pour générer du PDF.]]>
+      </docs>
+    </option>
+    <option type="string" id="DOCBOOK_OUTPUT" format="dir" defval="docbook" depends="GENERATE_DOCBOOK">
+      <docs>
+<![CDATA[La balise \c DOCBOOK_OUTPUT est utilisée pour spécifier ou les pages Docbook seront placées. Si un chemin relatif est entre, la valeur de \ref cfg_output_directory "OUTPUT_DIRECTORY" sera mise devant.]]>
+      </docs>
+    </option>
+  </group>
+  <group name="AutoGen" docs="Options de configuration pour la sortie AutoGen Définitions">
+    <option type="bool" id="GENERATE_AUTOGEN_DEF" defval="0">
+      <docs>
+<![CDATA[Si la balise \c GENERATE_AUTOGEN_DEF est définie à \c YES, Doxygen générera un fichier de définitions AutoGen (voir https://autogen.sourceforge.net/) qui capture la structure du code, y compris toute la documentation. Notez que cette fonctionnalité est encore expérimentale et incomplète pour le moment.]]>
+      </docs>
+    </option>
+  </group>
+  <group name="Sqlite3" docs="Options de configuration relatives à la sortie Sqlite3">
+    <option type="bool" id="GENERATE_SQLITE3" defval="0">
+      <docs>
+<![CDATA[Si la balise \c GENERATE_SQLITE3 est définie à \c YES, Doxygen générera une base de données \c Sqlite3 avec les symboles trouvés par Doxygen stockés dans des tables.]]>
+      </docs>
+    </option>
+    <option type="string" id="SQLITE3_OUTPUT" format="dir" defval="sqlite3" depends="GENERATE_SQLITE3">
+      <docs>
+<![CDATA[La balise \c SQLITE3_OUTPUT est utilisée pour spécifier ou la base de données \c Sqlite3 sera placée. Si un chemin relatif est entre, la valeur de \ref cfg_output_directory "OUTPUT_DIRECTORY" sera mise devant.]]>
+      </docs>
+    </option>
+    <option type="bool" id="SQLITE3_RECREATE_DB" defval="1" depends="GENERATE_SQLITE3">
+      <docs>
+<![CDATA[Si la balise \c SQLITE3_RECREATE_DB est définie à \c YES, le fichier de base de données doxygen_sqlite3.db existant sera recréé à chaque exécution de Doxygen. Si défini à \c NO, Doxygen avertira si un fichier de base de données est déjà trouve et ne le modifiera pas.]]>
+      </docs>
+    </option>
+  </group>
+  <group name="PerlMod" docs="Options de configuration relatives à la sortie du module Perl">
+    <option type="bool" id="GENERATE_PERLMOD" defval="0">
+      <docs>
+<![CDATA[Si la balise \c GENERATE_PERLMOD est définie à \c YES, Doxygen générera un fichier de module Perl qui capture la structure du code, y compris toute la documentation. <br>Notez que cette fonctionnalité est encore expérimentale et incomplète pour le moment.]]>
+      </docs>
+    </option>
+    <option type="bool" id="PERLMOD_LATEX" defval="0" depends="GENERATE_PERLMOD">
+      <docs>
+<![CDATA[Si la balise \c PERLMOD_LATEX est définie à \c YES, Doxygen générera les règles \c Makefile nécessaires, les scripts \c Perl et le code \f$\mbox{\LaTeX}\f$ pour pouvoir générer une sortie PDF et DVI à partir de la sortie du module Perl.]]>
+      </docs>
+    </option>
+    <option type="bool" id="PERLMOD_PRETTY" defval="1" depends="GENERATE_PERLMOD">
+      <docs>
+<![CDATA[Si la balise \c PERLMOD_PRETTY est définie à \c YES, la sortie du module Perl sera bien formatée pour qu'elle puisse être analyse par un lecteur humain. Cela est utile si vous voulez comprendre ce qui se passe. D'un autre côté, si cette balise est définie à \c NO, la taille de la sortie du module Perl sera beaucoup plus petite et Perl l'analyser de la même manière.]]>
+      </docs>
+    </option>
+    <option type="string" id="PERLMOD_MAKEVAR_PREFIX" format="string" defval="" depends="GENERATE_PERLMOD">
+      <docs>
+<![CDATA[Les noms des variables make dans le fichier `doxyrules.make` généré sont préfixes par la chaîne contenue dans \c PERLMOD_MAKEVAR_PREFIX. Cela est utile pour que différents fichiers `doxyrules.make` inclus par le même `Makefile` n'ecrasent pas les variables les uns des autres.]]>
+      </docs>
+    </option>
+  </group>
+  <group name="Preprocessor" trname="Préprocesseur" docs="Options de configuration relatives au préprocesseur">
+    <option type="bool" id="ENABLE_PREPROCESSING" defval="1">
+      <docs>
+<![CDATA[Si la balise \c ENABLE_PREPROCESSING est définie à \c YES, Doxygen evaluera toutes les directives de préprocesseur C trouvées dans les sources et les fichiers d'inclusion.]]>
+      </docs>
+    </option>
+    <option type="bool" id="MACRO_EXPANSION" defval="0" depends="ENABLE_PREPROCESSING">
+      <docs>
+<![CDATA[Si la balise \c MACRO_EXPANSION est définie à \c YES, Doxygen etendra tous les noms de macros dans le code source. Si défini à \c NO, seule la compilation conditionnelle sera effectuée. L'expansion de macro peut être faite de manière contrôlée en définissant \ref cfg_expand_only_predef "EXPAND_ONLY_PREDEF" à \c YES.]]>
+      </docs>
+    </option>
+    <option type="bool" id="EXPAND_ONLY_PREDEF" defval="0" depends="ENABLE_PREPROCESSING">
+      <docs>
+<![CDATA[Si les balises \c EXPAND_ONLY_PREDEF et \ref cfg_macro_expansion "MACRO_EXPANSION" sont toutes deux définies à \c YES, alors l'expansion de macro est limitée aux macros spécifiées avec les balises \ref cfg_predefined "PREDEFINED" et \ref cfg_expand_as_defined "EXPAND_AS_DEFINED".]]>
+      </docs>
+    </option>
+    <option type="bool" id="SEARCH_INCLUDES" defval="1" depends="ENABLE_PREPROCESSING">
+      <docs>
+<![CDATA[Si la balise \c SEARCH_INCLUDES est définie à \c YES, les fichiers d'inclusion dans le \ref cfg_include_path "INCLUDE_PATH" seront recherches si un \c \#include est trouvé.]]>
+      </docs>
+    </option>
+    <option type="list" id="INCLUDE_PATH" format="dir" depends="SEARCH_INCLUDES">
+      <docs>
+<![CDATA[La balise \c INCLUDE_PATH peut être utilisée pour spécifier un ou plusieurs répertoires qui contiennent des fichiers d'inclusion qui ne sont pas des fichiers d'entrée mais qui doivent être traités par le préprocesseur. Notez que le \c INCLUDE_PATH n'est pas recursif, donc le paramètre de \ref cfg_recursive "RECURSIVE" n'a aucun effet ici.]]>
+      </docs>
+    </option>
+    <option type="list" id="INCLUDE_FILE_PATTERNS" format="string" depends="ENABLE_PREPROCESSING">
+      <docs>
+<![CDATA[Vous pouvez utiliser la balise \c INCLUDE_FILE_PATTERNS pour spécifier un ou plusieurs modèles de caractères generiques (comme `*.h` et `*.hpp`) pour filtrer les fichiers d'en-tête dans les répertoires. Si laissé vide, les modèles spécifiés avec \ref cfg_file_patterns "FILE_PATTERNS" seront utilisés.]]>
+      </docs>
+    </option>
+    <option type="list" id="PREDEFINED" format="string" depends="ENABLE_PREPROCESSING">
+      <docs>
+<![CDATA[La balise \c PREDEFINED peut être utilisée pour spécifier un ou plusieurs noms de macros qui sont définis avant que le préprocesseur ne soit lance (similaire à l'option `-D` de par exemple \c gcc). L'argument de la balise est une liste de macros de la forme: <code>name</code> ou <code>name=définition</code> (sans espaces). Si la définition et le `=`" sont omis, `=1` est suppose. Pour empêcher une définition de macro d'être non définie via \c \#undef ou recursivement développée, utilisez l'opérateur <code>:=</code> au lieu de l'opérateur \c =.]]>
+      </docs>
+    </option>
+    <option type="list" id="EXPAND_AS_DEFINED" format="string" depends="ENABLE_PREPROCESSING">
+      <docs>
+<![CDATA[Si les balises \ref cfg_macro_expansion "MACRO_EXPANSION" et \ref cfg_expand_only_predef "EXPAND_ONLY_PREDEF" sont définies à \c YES, cette balise peut être utilisée pour spécifier une liste de noms de macros qui doivent être développées. La définition de macro trouvée dans les sources sera utilisée. Utilisez la balise \ref cfg_predefined "PREDEFINED" si vous voulez utiliser une définition de macro différente qui prime sur la définition trouvée dans le code source.]]>
+      </docs>
+    </option>
+    <option type="bool" id="SKIP_FUNCTION_MACROS" defval="1" depends="ENABLE_PREPROCESSING">
+      <docs>
+<![CDATA[Si la balise \c SKIP_FUNCTION_MACROS est définie à \c YES, le préprocesseur de Doxygen supprimera toutes les références aux macros de type fonction qui sont seules sur une ligne, ont un nom entièrement en majuscules et ne se terminent pas par un point-virgule. De telles macros de fonction sont généralement utilisées pour le code standard et perturberont l'analyseur si elles ne sont pas supprimées.]]>
+      </docs>
+    </option>
+  </group>
+  <group name="External" trname="Références externes" docs="Options de configuration relatives aux références externes">
+    <option type="list" id="TAGFILES" format="file">
+      <docs>
+<![CDATA[La balise \c TAGFILES peut être utilisée pour spécifier un ou plusieurs fichiers de balises. Pour chaque fichier de balises, l'emplacement de la documentation externe doit être ajouté. Le format d'un fichier de balises sans cet emplacement est le suivant: \verbatim TAGFILES = file1 file2 ... \endverbatim L'ajout d'un emplacement pour les fichiers de balises se fait comme suit: \verbatim TAGFILES = file1=loc1 "file2 = loc2" ... \endverbatim ou `loc1` et `loc2` peuvent être des chemins relatifs ou absolus ou des URL. Voir la section \ref external pour plus d'informations sur l'utilisation des fichiers de balises. \note Chaque fichier de balises doit avoir un nom unique (ou le nom n'inclut PAS le chemin). Si un fichier de balises n'est pas situe dans le répertoire dans lequel Doxygen est exécuté, vous devez également spécifier le chemin d'accès au fichier de balises ici.]]>
+      </docs>
+    </option>
+    <option type="string" id="GENERATE_TAGFILE" format="file" defval="">
+      <docs>
+<![CDATA[Lorsqu'un nom de fichier est spécifié après \c GENERATE_TAGFILE, Doxygen créera un fichier de balises base sur les fichiers d'entrée qu'il lit. Voir la section \ref external pour plus d'informations sur l'utilisation des fichiers de balises.]]>
+      </docs>
+    </option>
+    <option type="bool" id="ALLEXTERNALS" defval="0">
+      <docs>
+<![CDATA[Si la balise \c ALLEXTERNALS est définie à \c YES, toutes les classes et namespaces externes seront listés dans l'index des classes et des namespaces. Si défini à \c NO, seules les classes externes héritées seront listées.]]>
+      </docs>
+    </option>
+    <option type="bool" id="EXTERNAL_GROUPS" defval="1">
+      <docs>
+<![CDATA[Si la balise \c EXTERNAL_GROUPS est définie à \c YES, tous les groupes externes seront listés dans l'index des sujets. Si défini à \c NO, seuls les groupes du projet actuel seront listés.]]>
+      </docs>
+    </option>
+    <option type="bool" id="EXTERNAL_PAGES" defval="1">
+      <docs>
+<![CDATA[Si la balise \c EXTERNAL_PAGES est définie à \c YES, toutes les pages externes seront listées dans l'index des pages connexes. Si défini à \c NO, seules les pages du projet actuel seront listées.]]>
+      </docs>
+    </option>
+  </group>
+  <group name="Dot" docs="Options de configuration relatives aux outils de génération de diagrammes">
+    <option type="bool" id="HIDE_UNDOC_RELATIONS" defval="1">
+      <docs>
+<![CDATA[Si défini à \c YES, les graphes d'héritage et de collaboration cacheront les relations d'héritage et d'utilisation si la cible est non documentée ou n'est pas une classe.]]>
+      </docs>
+    </option>
+    <option type="bool" id="HAVE_DOT" defval="0">
+      <docs>
+<![CDATA[Si vous définissez la balise \c HAVE_DOT à \c YES, Doxygen supposera que l'outil \c dot est disponible depuis le \c path. Cet outil fait partie de <a href="https://www.graphviz.org/">Graphviz</a>, une boite a outils de visualisation de graphes d'AT&T et Lucent Bell Labs. Les autres options de cette section n'ont aucun effet si cette option est définie à \c NO.]]>
+      </docs>
+    </option>
+    <option type="int" id="DOT_NUM_THREADS" defval="0" minval="0" maxval="512" depends="HAVE_DOT">
+      <docs>
+<![CDATA[Le \c DOT_NUM_THREADS spécifie le nombre d'invocations \c dot que Doxygen est autorisé à exécuter en parallele. Lorsqu'il est défini à \c 0, Doxygen le basera sur le nombre de processeurs disponibles dans le système. Vous pouvez le définir explicitement à une valeur supérieure à 0 pour avoir un contrôle sur l'équilibre entre la charge CPU et la vitesse de traitement.]]>
+      </docs>
+    </option>
+    <option type="int" id="DOT_BATCH_SIZE" defval="50" minval="1" maxval="1000" depends="HAVE_DOT">
+      <docs>
+<![CDATA[
+ Le \c DOT_BATCH_SIZE spécifie le nombre de graphiques \c dot que Doxygen est autorisé à compiler en une seule invocation de \c dot. Lorsqu'il est défini sur \c 1, Doxygen
+ invoquera \c dot pour chaque graphique séparément, ce qui peut entrainer une surcharge
+ significative de création de processus, en particulier sur les systèmes avec de nombreux
+ cœurs de CPU. Ensemble avec \c DOT_NUM_THREADS, ce paramètre peut être utilisé pour
+ optimiser la vitesse de traitement de dot pour un système particulier. Doxygen essaiera
+ d'attribuer à chaque thread une charge de travail équilibrée. Si le nombre total de
+ graphiques a traiter dépasse `DOT_NUM_THREADS * DOT_BATCH_SIZE`, des lots supplémentaires
+ seront créés pour que \c dot les traite.
+]]>
+      </docs>
+    </option>
+    <option type="string" id="DOT_COMMON_ATTR" format="string" depends="HAVE_DOT" defval="fontname=Helvetica,fontsize=10">
+      <docs>
+<![CDATA[\c DOT_COMMON_ATTR est des attributs communs pour les nœuds, les arêtes et les étiquettes de sous-graphes. Lorsque vous voulez une police d'apparence différente dans les fichiers dot que Doxygen génère, vous pouvez spécifier les attributs fontname, fontcolor et fontsize. Pour plus de détails, voir <a href=https://graphviz.org/doc/info/attrs.html>spécification des attributs de Nœud, Arête et Graphe</a>. Vous devez vous assurer que dot est capable de trouver la police, ce qui peut être fait en la placant dans un emplacement standard ou en définissant la variable d'environnement \c DOTFONTPATH ou en définissant \ref cfg_dot_fontpath "DOT_FONTPATH" sur le répertoire contenant la police. La taille de police graphviz par défaut est 14.]]>
+      </docs>
+    </option>
+    <option type="string" id="DOT_EDGE_ATTR" format="string" depends="HAVE_DOT" defval="labelfontname=Helvetica,labelfontsize=10">
+      <docs>
+<![CDATA[\c DOT_EDGE_ATTR est concatene avec \ref cfg_dot_common_attr "DOT_COMMON_ATTR". Pour un style elegant, vous pouvez ajouter 'arrowhead=open, arrowtail=open, arrowsize=0.5'. <a href=https://graphviz.org/doc/info/arrows.html>Documentation complète sur les formes de flèches.</a>]]>
+      </docs>
+    </option>
+    <option type="string" id="DOT_NODE_ATTR" format="string" depends="HAVE_DOT" defval="shape=box,height=0.2,width=0.4">
+      <docs>
+<![CDATA[\c DOT_NODE_ATTR est concatene avec \ref cfg_dot_common_attr "DOT_COMMON_ATTR". Pour une vue sans boites autour des nœuds, définissez 'shape=plain' ou 'shape=plaintext'. <a href=https://www.graphviz.org/doc/info/shapes.html>Spécification des formes.</a>]]>
+      </docs>
+    </option>
+    <option type="string" id="DOT_FONTPATH" format="dir" defval="" depends="HAVE_DOT">
+      <docs>
+<![CDATA[Vous pouvez définir le chemin ou \c dot peut trouver la police spécifiée avec fontname dans \ref cfg_dot_common_attr "DOT_COMMON_ATTR" et d'autres attributs dot.]]>
+      </docs>
+    </option>
+    <option type="enum" id="CLASS_GRAPH" defval="YES">
+      <docs>
+<![CDATA[Si la balise \c CLASS_GRAPH est définie à \c YES ou \c GRAPH ou \c BUILTIN, Doxygen générera un graphe pour chaque classe documentée montrant les relations d'héritage directes et indirectes. Si la balise \c CLASS_GRAPH est définie à \c YES ou \c GRAPH et que \ref cfg_have_dot "HAVE_DOT" est activé également, alors `dot` sera utilisé pour dessiner le graphe. Si la balise \c CLASS_GRAPH est définie à \c YES et que \ref cfg_have_dot "HAVE_DOT" est désactivé ou si la balise \c CLASS_GRAPH est définie à \c BUILTIN, alors le generateur intégré sera utilisé. Si la balise \c CLASS_GRAPH est définie à \c TEXT, les relations d'héritage directes et indirectes seront affichées sous forme de textes / liens. L'activation explicite d'un graphe d'héritage ou le choix d'une representation différente pour un graphe d'héritage d'une classe spécifique peut être accompli au moyen de la commande \ref cmdinheritancegraph "\inheritancegraph". La désactivation d'un graphe d'héritage peut être accomplie au moyen de la commande \ref cmdhideinheritancegraph "\hideinheritancegraph".]]>
+      </docs>
+      <value name="NO" bool_representation="NO"/>
+      <value name="YES" bool_representation="YES"/>
+      <value name="TEXT" bool_representation="YES"/>
+      <value name="GRAPH" bool_representation="YES"/>
+      <value name="BUILTIN" bool_representation="YES"/>
+    </option>
+    <option type="bool" id="COLLABORATION_GRAPH" defval="1" depends="HAVE_DOT">
+      <docs>
+<![CDATA[Si la balise \c COLLABORATION_GRAPH est définie à \c YES, Doxygen générera un graphe pour chaque classe documentée montrant les dépendances d'implémentation directes et indirectes (héritage, containment et variables de référence de classe) de la classe avec d'autres classes documentées. L'activation explicite d'un graphe de collaboration, lorsque \c COLLABORATION_GRAPH est défini à \c NO, peut être accomplie au moyen de la commande \ref cmdcollaborationgraph "\collaborationgraph". La désactivation d'un graphe de collaboration peut être accomplie au moyen de la commande \ref cmdhidecollaborationgraph "\hidecollaborationgraph".]]>
+      </docs>
+    </option>
+    <option type="bool" id="GROUP_GRAPHS" defval="1" depends="HAVE_DOT">
+      <docs>
+<![CDATA[Si la balise \c GROUP_GRAPHS est définie à \c YES, Doxygen générera un graphe pour les groupes, montrant les dépendances directes des groupes. L'activation explicite d'un graphe de dépendance de groupe, lorsque \c GROUP_GRAPHS est défini à \c NO, peut être accomplie au moyen de la commande \ref cmdgroupgraph "\groupgraph". La désactivation d'un graphe de répertoire peut être accomplie au moyen de la commande \ref cmdhidegroupgraph "\hidegroupgraph". Voir aussi le chapitre \ref grouping "Grouping" dans le manuel.]]>
+      </docs>
+    </option>
+    <option type="bool" id="UML_LOOK" defval="0" depends="HAVE_DOT">
+      <docs>
+<![CDATA[Si la balise \c UML_LOOK est définie à \c YES, Doxygen générera des diagrammes d'héritage et de collaboration dans un style similaire au langage de modelisation unifie de l'OMG.]]>
+      </docs>
+    </option>
+    <option type="int" id="UML_LIMIT_NUM_FIELDS" defval="10" minval="0" maxval="100" depends="UML_LOOK">
+      <docs>
+<![CDATA[Si la balise \ref cfg_uml_look "UML_LOOK" est activée, les champs et méthodes sont affichés à l'intérieur du nœud de classe. S'il y a beaucoup de champs ou méthodes et beaucoup de nœuds, le graphe peut devenir trop grand pour être utile. Le seuil \c UML_LIMIT_NUM_FIELDS limite le nombre d'éléments pour chaque type pour rendre la taille plus gérable. Définissez ceci à 0 pour aucune limite. Notez que le seuil peut être dépasse de 50% avant que la limite ne soit appliquée. Donc lorsque vous définissez le seuil à 10, jusqu'à 15 champs peuvent apparaître, mais si le nombre dépasse 15, le nombre total de champs affichés est limite à 10.]]>
+      </docs>
+    </option>
+    <option type="int" id="UML_MAX_EDGE_LABELS" defval="10" minval="0" maxval="100" depends="UML_LOOK">
+      <docs>
+<![CDATA[Si la balise \ref cfg_uml_look "UML_LOOK" est activée, les étiquettes de champ sont affichées le long de l'arête entre deux nœuds de classe. S'il y a beaucoup de champs et beaucoup de nœuds, le graphe peut devenir trop encombre. Le seuil \c UML_MAX_EDGE_LABELS limite le nombre d'éléments pour rendre la taille plus gérable. Définissez ceci à 0 pour aucune limite.]]>
+      </docs>
+    </option>
+    <option type="enum" id="DOT_UML_DETAILS" defval="NO" depends="UML_LOOK">
+      <docs>
+<![CDATA[Si la balise \c DOT_UML_DETAILS est définie à \c NO, Doxygen affichera les attributs et méthodes sans types et arguments dans les graphes UML. Si la balise \c DOT_UML_DETAILS est définie à \c YES, Doxygen ajoutera le type et les arguments pour les attributs et méthodes dans les graphes UML. Si la balise \c DOT_UML_DETAILS est définie à \c NONE, Doxygen ne générera pas de champs avec des informations de membre de classe dans les graphes UML. Les diagrammes de classe ressembleront aux diagrammes de classe par défaut mais en utilisant la notation UML pour les relations.]]>
+      </docs>
+      <value name="NO"/>
+      <value name="YES"/>
+      <value name="NONE"/>
+    </option>
+    <option type="int" id="DOT_WRAP_THRESHOLD" defval="17" minval="0" maxval="1000" depends="HAVE_DOT">
+      <docs>
+<![CDATA[La balise \c DOT_WRAP_THRESHOLD peut être utilisée pour définir le nombre maximal de caractères a afficher sur une seule ligne. Si la longueur réelle de la ligne dépasse significativement ce seuil, elle sera divisée sur plusieurs lignes. Quelques heuristiques sont appliquées pour éviter les coupures de ligne inesthetiques.]]>
+      </docs>
+    </option>
+    <option type="bool" id="TEMPLATE_RELATIONS" defval="0" depends="HAVE_DOT">
+      <docs>
+<![CDATA[Si la balise \c TEMPLATE_RELATIONS est définie à \c YES, les graphes d'héritage et de collaboration montreront les relations entre les templates et leurs instances.]]>
+      </docs>
+    </option>
+    <option type="bool" id="INCLUDE_GRAPH" defval="1" depends="HAVE_DOT">
+      <docs>
+<![CDATA[Si les balises \c INCLUDE_GRAPH, \ref cfg_enable_preprocessing "ENABLE_PREPROCESSING" et \ref cfg_search_includes "SEARCH_INCLUDES" sont définies à \c YES, Doxygen générera un graphe pour chaque fichier documente montrant les dépendances d'inclusion directes et indirectes du fichier avec d'autres fichiers documentés. L'activation explicite d'un graphe d'inclusion, lorsque \c INCLUDE_GRAPH est défini à \c NO, peut être accomplie au moyen de la commande \ref cmdincludegraph "\includegraph". La désactivation d'un graphe d'inclusion peut être accomplie au moyen de la commande \ref cmdhideincludegraph "\hideincludegraph".]]>
+      </docs>
+    </option>
+    <option type="bool" id="INCLUDED_BY_GRAPH" defval="1" depends="HAVE_DOT">
+      <docs>
+<![CDATA[Si les balises \c INCLUDED_BY_GRAPH, \ref cfg_enable_preprocessing "ENABLE_PREPROCESSING" et \ref cfg_search_includes "SEARCH_INCLUDES" sont définies à \c YES, Doxygen générera un graphe pour chaque fichier documente montrant les dépendances d'inclusion directes et indirectes du fichier avec d'autres fichiers documentés. L'activation explicite d'un graphe d'inclusion par, lorsque \c INCLUDED_BY_GRAPH est défini à \c NO, peut être accomplie au moyen de la commande \ref cmdincludedbygraph "\includedbygraph". La désactivation d'un graphe d'inclusion par peut être accomplie au moyen de la commande \ref cmdhideincludedbygraph "\hideincludedbygraph".]]>
+      </docs>
+    </option>
+    <option type="bool" id="CALL_GRAPH" defval="0" depends="HAVE_DOT">
+      <docs>
+<![CDATA[Si la balise \c CALL_GRAPH est définie à \c YES, Doxygen générera un graphe de dépendance d'appel pour chaque fonction globale ou méthode de classe. <br>Notez que l'activation de cette option augmentera de manière significative le temps d'une exécution. Donc dans la plupart des cas, il sera préférable d'activer les graphes d'appel uniquement pour les fonctions sélectionnées en utilisant la commande \ref cmdcallgraph "\callgraph". La désactivation d'un graphe d'appel peut être accomplie au moyen de la commande \ref cmdhidecallgraph "\hidecallgraph".]]>
+      </docs>
+    </option>
+    <option type="bool" id="CALLER_GRAPH" defval="0" depends="HAVE_DOT">
+      <docs>
+<![CDATA[Si la balise \c CALLER_GRAPH est définie à \c YES, Doxygen générera un graphe de dépendance d'appelant pour chaque fonction globale ou méthode de classe. <br>Notez que l'activation de cette option augmentera de manière significative le temps d'une exécution. Donc dans la plupart des cas, il sera préférable d'activer les graphes d'appelant uniquement pour les fonctions sélectionnées en utilisant la commande \ref cmdcallergraph "\callergraph". La désactivation d'un graphe d'appelant peut être accomplie au moyen de la commande \ref cmdhidecallergraph "\hidecallergraph".]]>
+      </docs>
+    </option>
+    <option type="bool" id="GRAPHICAL_HIERARCHY" defval="1" depends="HAVE_DOT">
+      <docs>
+<![CDATA[Si la balise \c GRAPHICAL_HIERARCHY est définie à \c YES, Doxygen générera une hiérarchie graphique de toutes les classes au lieu d'une textuelle.]]>
+      </docs>
+    </option>
+    <option type="bool" id="DIRECTORY_GRAPH" defval="1" depends="HAVE_DOT">
+      <docs>
+<![CDATA[Si la balise \c DIRECTORY_GRAPH est définie à \c YES, Doxygen montrera les dépendances d'un répertoire sur d'autres répertoires de manière graphique. Les relations de dépendance sont déterminées par les relations \c \#include entre les fichiers dans les répertoires. L'activation explicite d'un graphe de répertoire, lorsque \c DIRECTORY_GRAPH est défini à \c NO, peut être accomplie au moyen de la commande \ref cmddirectorygraph "\directorygraph". La désactivation d'un graphe de répertoire peut être accomplie au moyen de la commande \ref cmdhidedirectorygraph "\hidedirectorygraph".]]>
+      </docs>
+    </option>
+    <option type="int" id="DIR_GRAPH_MAX_DEPTH" minval="1" maxval="25" defval="1" depends="DIRECTORY_GRAPH">
+      <docs>
+<![CDATA[La balise \c DIR_GRAPH_MAX_DEPTH peut être utilisée pour limiter le nombre maximal de niveaux de sous-répertoires générés dans les graphes de dépendance de répertoire par \c dot.]]>
+      </docs>
+    </option>
+    <option type="enum" id="DOT_IMAGE_FORMAT" defval="png" depends="HAVE_DOT">
+      <docs>
+<![CDATA[La balise \c DOT_IMAGE_FORMAT peut être utilisée pour définir le format d'image des images générées par \c dot. Pour une explication des formats d'image, voir la section des formats de sortie dans la documentation de l'outil \c dot (<a href="https://www.graphviz.org/">Graphviz</a>). <br>Notez que les formats `svg:cairo` et `svg:cairo:cairo` ne peuvent pas être utilisés en combinaison avec \ref cfg_interactive_svg "INTERACTIVE_SVG" (le \ref cfg_interactive_svg "INTERACTIVE_SVG" sera défini a `NO`).]]>
+      </docs>
+      <value name="png"/>
+      <value name="jpg"/>
+      <value name="gif"/>
+      <value name="svg"/>
+      <value name="png:gd"/>
+      <value name="png:gd:gd"/>
+      <value name="png:cairo"/>
+      <value name="png:cairo:gd"/>
+      <value name="png:cairo:cairo"/>
+      <value name="png:cairo:gdiplus"/>
+      <value name="png:gdiplus"/>
+      <value name="png:gdiplus:gdiplus"/>
+      <value name="svg:cairo"/>
+      <value name="svg:cairo:cairo"/>
+      <value name="svg:svg"/>
+      <value name="svg:svg:core"/>
+      <value name="gif:cairo"/>
+      <value name="gif:cairo:gd"/>
+      <value name="gif:cairo:gdiplus"/>
+      <value name="gif:gdiplus"/>
+      <value name="gif:gdiplus:gdiplus"/>
+      <value name="gif:gd"/>
+      <value name="gif:gd:gd"/>
+      <value name="jpg:cairo"/>
+      <value name="jpg:cairo:gd"/>
+      <value name="jpg:cairo:gdiplus"/>
+      <value name="jpg:gd"/>
+      <value name="jpg:gd:gd"/>
+      <value name="jpg:gdiplus"/>
+      <value name="jpg:gdiplus:gdiplus"/>
+    </option>
+    <option type="bool" id="INTERACTIVE_SVG" defval="0" depends="HAVE_DOT">
+      <docs>
+<![CDATA[Si \ref cfg_dot_image_format "DOT_IMAGE_FORMAT" est défini a `svg` ou `svg:svg` ou `svg:svg:core`, cette option peut être définie à \c YES pour activer la génération d'images SVG interactives qui permettent le zoom et le panoramique. <br>Notez que cela nécessite un navigateur moderne autre qu'Internet Explorer. Testes et fonctionnels: Firefox, Chrome, Safari et Opera. <br>Notez que cette option sera automatiquement désactivée lorsque \ref cfg_dot_image_format "DOT_IMAGE_FORMAT" est défini a `svg:cairo` ou `svg:cairo:cairo`.]]>
+      </docs>
+    </option>
+    <option type="string" id="DOT_PATH" format="filedir" defval="" depends="HAVE_DOT">
+      <docs>
+<![CDATA[La balise \c DOT_PATH peut être utilisée pour spécifier le chemin ou l'outil \c dot peut être trouvé. Si laissé vide, il est suppose que l'outil \c dot peut être trouvé dans le \c path.]]>
+      </docs>
+    </option>
+    <option type="list" id="DOTFILE_DIRS" format="dir" depends="HAVE_DOT">
+      <docs>
+<![CDATA[La balise \c DOTFILE_DIRS peut être utilisée pour spécifier un ou plusieurs répertoires qui contiennent des fichiers dot qui sont inclus dans la documentation (voir la commande \ref cmddotfile "\dotfile").]]>
+      </docs>
+    </option>
+    <option type="string" id="DIA_PATH" format="dir" defval="">
+      <docs>
+<![CDATA[Vous pouvez inclure des diagrammes faits avec dia dans la documentation Doxygen. Doxygen executera ensuite dia pour produire le diagramme et l'insérer dans la documentation. La balise DIA_PATH vous permet de spécifier le répertoire ou reside le binaire dia. Si laissé vide, dia est suppose être trouve dans le chemin de recherche par défaut.]]>
+      </docs>
+    </option>
+    <option type="list" id="DIAFILE_DIRS" format="dir">
+      <docs>
+<![CDATA[La balise \c DIAFILE_DIRS peut être utilisée pour spécifier un ou plusieurs répertoires qui contiennent des fichiers dia qui sont inclus dans la documentation (voir la commande \ref cmddiafile "\diafile").]]>
+      </docs>
+    </option>
+    <option type="string" id="PLANTUML_JAR_PATH" format="filedir" defval="">
+      <docs>
+<![CDATA[Lors de l'utilisation de PlantUML, la balise \c PLANTUML_JAR_PATH devrait être utilisée pour spécifier le chemin ou java peut trouver le fichier \c plantuml.jar ou le nom de fichier du fichier \c jar a utiliser. Si laissé vide, il est suppose que PlantUML n'est pas utilise ou appelé lors d'une étape de prétraitement. Doxygen générera un avertissement lorsqu'il rencontrera une commande \ref cmdstartuml "\startuml" dans ce cas et ne générera pas de sortie pour le diagramme.]]>
+      </docs>
+    </option>
+    <option type="string" id="PLANTUML_CFG_FILE" format="file" defval="">
+      <docs>
+<![CDATA[Lors de l'utilisation de PlantUML, la balise \c PLANTUML_CFG_FILE peut être utilisée pour spécifier un fichier de configuration pour PlantUML.]]>
+      </docs>
+    </option>
+    <option type="list" id="PLANTUML_INCLUDE_PATH" format="dir" defval="">
+      <docs>
+<![CDATA[Lors de l'utilisation de PlantUML, les chemins spécifiés sont recherches pour les fichiers spécifiés par l'instruction \c !include dans un bloc PlantUML.]]>
+      </docs>
+    </option>
+    <option type="list" id="PLANTUMLFILE_DIRS" format="dir">
+      <docs>
+<![CDATA[La balise \c PLANTUMLFILE_DIRS peut être utilisée pour spécifier un ou plusieurs répertoires qui contiennent des fichiers PlantUml qui sont inclus dans la documentation (voir la commande \ref cmdplantumlfile "\plantumlfile").]]>
+      </docs>
+    </option>
+    <option type="string" id="MERMAID_PATH" format="filedir" defval="">
+      <docs>
+<![CDATA[Lors de l'utilisation de diagrammes Mermaid avec le rendu CLI, la balise \c MERMAID_PATH devrait être utilisée pour spécifier le répertoire ou l'exécutable \c mmdc (Mermaid CLI) peut être trouvé. Si laissé vide, le rendu basé sur CLI est désactivé. Pour la sortie HTML, le rendu côté client via JavaScript est utilisé par défaut et ne nécessite pas \c mmdc. Pour la sortie LaTeX/PDF, \c mmdc est requis pour pre-générer les images. Doxygen générera un avertissement lorsque le rendu CLI est nécessaire mais que \c mmdc n'est pas disponible.]]>
+      </docs>
+    </option>
+    <option type="string" id="MERMAID_CONFIG_FILE" format="file" defval="">
+      <docs>
+<![CDATA[Lors de l'utilisation de diagrammes Mermaid, la balise \c MERMAID_CONFIG_FILE peut être utilisée pour spécifier un fichier de configuration JSON pour l'outil Mermaid CLI (\c mmdc). Ce fichier peut contenir des paramètres de thème et d'autres options de configuration Mermaid.]]>
+      </docs>
+    </option>
+    <option type="enum" id="MERMAID_RENDER_MODE" defval="AUTO">
+      <docs>
+<![CDATA[La balise \c MERMAID_RENDER_MODE sélectionne la manière dont les diagrammes Mermaid sont rendus.]]>
+      </docs>
+      <value name="AUTO" desc="(utiliser le rendu côté client pour HTML et \c mmdc pour LaTeX/PDF et autres formats. Si \c MERMAID_PATH n'est pas défini, les diagrammes non-HTML produiront un avertissement)"/>
+      <value name="CLI" desc="(utiliser l'outil \c mmdc pour pre-générer les images (nécessite \c Node.js et \c mermaid-js/mermaid-cli). Fonctionne pour tous les formats de sortie)"/>
+      <value name="CLIENT_SIDE" desc="(integrer \c mermaid.js dans la sortie HTML pour le rendu côté client. Ne nécessite pas \c mmdc mais fonctionne uniquement pour la sortie HTML)"/>
+    </option>
+    <option type="string" id="MERMAID_JS_URL" format="string" defval="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs">
+      <docs>
+<![CDATA[La balise \c MERMAID_JS_URL spécifie l'URL à partir de laquelle charger \c mermaid.js lors de l'utilisation du rendu côté client (\c MERMAID_RENDER_MODE est \c CLIENT_SIDE ou \c AUTO). Le défaut pointe vers la dernière version Mermaid v11 sur le CDN jsDelivr. \par Exemples: - Dernière v11 (défaut): \c 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs' - Version épinglée: \c 'https://cdn.jsdelivr.net/npm/mermaid@11.3.0/dist/mermaid.esm.min.mjs' - Copie locale: \c './mermaid.esm.min.mjs' (l'utilisateur doit placer le fichier dans le répertoire de sortie HTML) \par L'URL CDN par défaut nécessite un accès Internet lors de la consultation de la documentation générée. Pour une utilisation hors ligne, telechargez \c mermaid.esm.min.mjs et définissez ceci sur un chemin relatif, ou utilisez \c MERMAID_RENDER_MODE=CLI pour pre-générer les images à la place.]]>
+      </docs>
+    </option>
+    <option type="list" id="MERMAIDFILE_DIRS" format="dir">
+      <docs>
+<![CDATA[La balise \c MERMAIDFILE_DIRS peut être utilisée pour spécifier un ou plusieurs répertoires qui contiennent des fichiers Mermaid qui sont inclus dans la documentation (voir la commande \ref cmdmermaidfile "\mermaidfile").]]>
+      </docs>
+    </option>
+    <option type="int" id="DOT_GRAPH_MAX_NODES" minval="0" maxval="10000" defval="50" depends="HAVE_DOT">
+      <docs>
+<![CDATA[La balise \c DOT_GRAPH_MAX_NODES peut être utilisée pour définir le nombre maximal de nœuds qui seront affichés dans le graphe. Si le nombre de nœuds dans un graphe devient supérieur à cette valeur, Doxygen tronquera le graphe, ce qui est visualise en représentant un nœud comme une boite rouge. Notez que si le nombre d'enfants directs du nœud racine dans un graphe est déjà supérieur à \c DOT_GRAPH_MAX_NODES, le graphe ne sera pas affiche du tout. Notez également que la taille d'un graphe peut être encore restreinte par \ref cfg_max_dot_graph_depth "MAX_DOT_GRAPH_DEPTH".]]>
+      </docs>
+    </option>
+    <option type="int" id="MAX_DOT_GRAPH_DEPTH" minval="0" maxval="1000" defval="0" depends="HAVE_DOT">
+      <docs>
+<![CDATA[La balise \c MAX_DOT_GRAPH_DEPTH peut être utilisée pour définir la profondeur maximale des graphes générés par \c dot. Une valeur de profondeur de 3 signifie que seuls les nœuds atteignables depuis la racine en suivant un chemin via au maximum 3 arêtes seront affichés. Les nœuds qui se trouvent plus loin du nœud racine seront omis. Notez que définir cette option à 1 ou 2 peut réduire considerablement le temps de calcul nécessaire pour les grandes bases de code. Notez également que la taille d'un graphe peut être encore restreinte par \ref cfg_dot_graph_max_nodes "DOT_GRAPH_MAX_NODES". Utiliser une profondeur de 0 signifie aucune restriction de profondeur.]]>
+      </docs>
+    </option>
+    <option type="bool" id="GENERATE_LEGEND" defval="1" depends="HAVE_DOT">
+      <docs>
+<![CDATA[Si la balise \c GENERATE_LEGEND est définie à \c YES, Doxygen générera une page de legende expliquant la signification des diverses boites et flèches dans les graphes générés par dot. \note Cette balise nécessite que \ref cfg_uml_look "UML_LOOK" ne soit pas défini, c'est-à-dire que la representation graphique interne de Doxygen pour les diagrammes d'héritage et de collaboration soit utilisée.]]>
+      </docs>
+    </option>
+    <option type="bool" id="DOT_CLEANUP" defval="1">
+      <docs>
+<![CDATA[Si la balise \c DOT_CLEANUP est définie à \c YES, Doxygen supprimera les fichiers intermédiaires qui sont utilisés pour générer les divers graphes. <br>Note: Ce paramètre est utilisé non seulement pour les fichiers dot mais aussi pour les fichiers temporaires msc.]]>
+      </docs>
+    </option>
+    <option type="string" id="MSCGEN_TOOL" format="file" defval="">
+      <docs>
+<![CDATA[Vous pouvez définir des diagrammes de séquence de messages dans les commentaires Doxygen en utilisant la commande \ref cmdmsc "\msc". Si la balise \c MSCGEN_TOOL est laissée vide (le défaut), Doxygen utilisera une version intégrée de l'outil mscgen pour produire les diagrammes. Alternativement, la balise \c MSCGEN_TOOL peut également spécifier le nom d'un outil externe. Par exemple, en specifiant `prog` comme valeur, Doxygen appellera l'outil comme `prog -T <outfile_format> -o <outputfile> <inputfile>`. L'outil externe devrait prendre en charge les formats de fichier de sortie "png", "eps", "svg" et "ismap".]]>
+      </docs>
+    </option>
+    <option type="list" id="MSCFILE_DIRS" format="dir">
+      <docs>
+<![CDATA[La balise \c MSCFILE_DIRS peut être utilisée pour spécifier un ou plusieurs répertoires qui contiennent des fichiers msc qui sont inclus dans la documentation (voir la commande \ref cmdmscfile "\mscfile").]]>
+      </docs>
+    </option>
+  </group>
+</doxygenconfig>

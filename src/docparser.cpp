@@ -644,6 +644,7 @@ Token DocParser::handleStyleArgument(DocNodeVariant *parent,DocNodeList &childre
         reg::match(context.token->name.str(),specialChar))
     {
       // special character that ends the markup command
+      AUTO_TRACE_ADD("special character ending style argument: '{}'",context.token->name);
       if (siz != context.styleStack.size()) handlePendingStyleCommands(parent,children,siz);
       return tok;
     }
@@ -742,13 +743,14 @@ void DocParser::handleStyleLeave(DocNodeVariant *parent,DocNodeList &children,
  */
 void DocParser::handlePendingStyleCommands(DocNodeVariant *parent,DocNodeList &children, int oldStackSize)
 {
-  AUTO_TRACE();
+  AUTO_TRACE("context.styleStack.size()={}",context.styleStack.size());
   if (!context.styleStack.empty())
   {
     int locOldStackSize = (oldStackSize==-1?0:context.styleStack.size() - oldStackSize);
     const DocStyleChange *sc = &std::get<DocStyleChange>(*context.styleStack.top());
     while (sc && sc->position()>=context.nodeStack.size())
     { // there are unclosed style modifiers in the paragraph
+      AUTO_TRACE_ADD("unclosed style at position {}",sc->position());
       children.append<DocStyleChange>(this,parent,context.nodeStack.size(),
                                            sc->style(),sc->tagName(),FALSE);
       if (locOldStackSize)
@@ -823,7 +825,7 @@ Token DocParser::handleAHref(DocNodeVariant *parent,DocNodeList &children,
 
 void DocParser::handleUnclosedStyleCommands()
 {
-  AUTO_TRACE();
+  AUTO_TRACE("content.initialStyleStack.size()={}",context.initialStyleStack.size());
   if (!context.initialStyleStack.empty())
   {
     QCString tagName = std::get<DocStyleChange>(*context.initialStyleStack.top()).tagName();
@@ -1424,7 +1426,7 @@ void DocParser::handleIFile(char cmdChar,const QCString &cmdName)
       cmdChar,cmdName);
     return;
   }
-  tokenizer.setStateFile();
+  tokenizer.setStateIFile();
   tok=tokenizer.lex();
   tokenizer.setStatePara();
   if (!tok.is(TokenRetval::TK_WORD))
@@ -1434,7 +1436,6 @@ void DocParser::handleIFile(char cmdChar,const QCString &cmdName)
     return;
   }
   context.fileName = context.token->name;
-  tokenizer.setStatePara();
 }
 
 void DocParser::handleILine(char cmdChar,const QCString &cmdName)
@@ -1442,13 +1443,13 @@ void DocParser::handleILine(char cmdChar,const QCString &cmdName)
   AUTO_TRACE();
   tokenizer.setStateILine();
   Token tok = tokenizer.lex();
+  tokenizer.setStatePara();
   if (!tok.is(TokenRetval::TK_WORD))
   {
     warn_doc_error(context.fileName,tokenizer.getLineNr(),"invalid argument for command '{:c}{}'",
       cmdChar,cmdName);
     return;
   }
-  tokenizer.setStatePara();
 }
 
 /* Helper function that deals with the most common tokens allowed in

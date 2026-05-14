@@ -11140,7 +11140,7 @@ static void readDir(FileInfo *fi,
           FileName *fn=nullptr;
           if (!name.empty())
           {
-            fn = fnMap->add(name,fullName);
+            fn = fnMap->add(name);
             fn->push_back(std::move(fd));
           }
         }
@@ -11228,7 +11228,7 @@ void readFileOrDirectory(const QCString &s,
             auto fd = createFileDef(dirPath+"/",name);
             if (!name.empty())
             {
-              FileName *fn = fnMap->add(name,filePath);
+              FileName *fn = fnMap->add(name);
               fn->push_back(std::move(fd));
             }
           }
@@ -12424,12 +12424,6 @@ void searchInputFiles()
   }
 
   // Sort the FileDef objects by full path to get a predictable ordering over multiple runs
-  std::stable_sort(Doxygen::inputNameLinkedMap->begin(),
-            Doxygen::inputNameLinkedMap->end(),
-            [](const auto &f1,const auto &f2)
-            {
-              return  qstricmp_sort(f1->fullName(),f2->fullName())<0;
-            });
   for (auto &fileName : *Doxygen::inputNameLinkedMap)
   {
     if (fileName->size()>1)
@@ -12440,6 +12434,12 @@ void searchInputFiles()
         });
     }
   }
+  std::stable_sort(Doxygen::inputNameLinkedMap->begin(),
+            Doxygen::inputNameLinkedMap->end(),
+            [](const auto &f1,const auto &f2)
+            {
+              return qstricmp_sort(f1->front()->absFilePath(),f2->front()->absFilePath())<0;
+            });
   if (Doxygen::inputNameLinkedMap->empty())
   {
     warn_uncond("No files to be processed, please check your settings, in particular INPUT, FILE_PATTERNS, and RECURSIVE\n");

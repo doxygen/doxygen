@@ -1676,7 +1676,7 @@ void TagFileParser::buildLists(const std::shared_ptr<Entry> &root)
       }
       else
       {
-        mn = Doxygen::inputNameLinkedMap->add(tfi->name,fullName);
+        mn = Doxygen::inputNameLinkedMap->add(tfi->name);
         mn->push_back(std::move(fd));
       }
       buildMemberList(fe,tfi->members);
