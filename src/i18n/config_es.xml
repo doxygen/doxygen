@@ -1643,7 +1643,7 @@
     </option>
     <option type="int" id="DOT_WRAP_THRESHOLD" defval="17" minval="0" maxval="1000" depends="HAVE_DOT">
       <docs>
-<![CDATA[La etiqueta \c DOT_WRAP_THRESHOLD se puede usar para establecer el número máximo de caracteres que se mostrarán en una sola línea. Si la longitud de la línea excede este valor, la línea se ajustará.]]>
+<![CDATA[La etiqueta \c DOT_WRAP_THRESHOLD se puede usar para establecer el número máximo de caracteres que se mostrarán en una sola línea. Si la longitud de la línea excede este valor significativamente, la línea se dividirá en múltiples líneas. Se aplican algunas heurísticas para evitar saltos de línea poco estéticos.]]>
       </docs>
     </option>
     <option type="bool" id="TEMPLATE_RELATIONS" defval="0" depends="HAVE_DOT">
@@ -1653,7 +1653,7 @@
     </option>
     <option type="bool" id="INCLUDE_GRAPH" defval="1" depends="HAVE_DOT">
       <docs>
-<![CDATA[Si la etiqueta \c INCLUDE_GRAPH está configurada en \c YES, Doxygen generará un grafo para cada archivo documentado que muestre las dependencias de inclusión directas e indirectas del archivo con otros archivos documentados. La activación explícita de un grafo de inclusión cuando \c INCLUDE_GRAPH está configurado en \c NO se puede lograr con el comando \ref cmdincludegraph "\\includegraph". La desactivación de un grafo de inclusión se puede lograr con el comando \ref cmdhideincludegraph "\\hideincludegraph".]]>
+<![CDATA[Si las etiquetas \c INCLUDE_GRAPH, \ref cfg_enable_preprocessing "ENABLE_PREPROCESSING" y \ref cfg_search_includes "SEARCH_INCLUDES" están configuradas en \c YES, Doxygen generará un grafo para cada archivo documentado que muestre las dependencias de inclusión directas e indirectas del archivo con otros archivos documentados. La activación explícita de un grafo de inclusión cuando \c INCLUDE_GRAPH está configurado en \c NO se puede lograr con el comando \ref cmdincludegraph "\\includegraph". La desactivación de un grafo de inclusión se puede lograr con el comando \ref cmdhideincludegraph "\\hideincludegraph".]]>
       </docs>
     </option>
     <option type="bool" id="INCLUDED_BY_GRAPH" defval="1" depends="HAVE_DOT">
@@ -1806,7 +1806,7 @@
     </option>
     <option type="bool" id="GENERATE_LEGEND" defval="1" depends="HAVE_DOT">
       <docs>
-<![CDATA[Si la etiqueta \c GENERATE_LEGEND está configurada en \c YES, Doxygen generará una página de leyenda que explica el significado de los diferentes cuadros en los grafos producidos por dot.]]>
+<![CDATA[Si la etiqueta \c GENERATE_LEGEND está configurada en \c YES, Doxygen generará una página de leyenda que explica el significado de los diferentes cuadros en los grafos producidos por dot. \note Esta etiqueta requiere que \ref cfg_uml_look "UML_LOOK" no esté habilitado, es decir, que se use la representación gráfica interna de Doxygen para los diagramas de herencia y colaboración.]]>
       </docs>
     </option>
     <option type="bool" id="DOT_CLEANUP" defval="1">
