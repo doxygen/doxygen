@@ -229,22 +229,22 @@
     </option>
     <option type="list" id="EXTENSION_MAPPING" format="string">
       <docs>
-<![CDATA[Doxygen sélectionne l'analyseur à utiliser en fonction de l'extension des fichiers qu'il analyse. Avec cette balise, vous pouvez assigner quel analyseur utiliser pour une extension donnée. Doxygen a une correspondance intégrée, mais vous pouvez la remplacer ou l'étendre en utilisant cette balise. Le format est <code>ext=language</code>, ou \c ext est une extension de fichier, et language est l'un des analyseurs supportes par Doxygen: IDL, Java, JavaScript, Csharp (C#), C, C++, Lex, D, PHP, md (Markdown), Objective-C, Python, Slice, VHDL, Fortran (Fortran format fixe: FortranFixed, Fortran format libre: FortranFree, Fortran format inconnu: Fortran. Dans ce dernier cas, l'analyseur essaie de deviner si le code est en format fixe ou libre, c'est le défaut pour les fichiers de type Fortran). Par exemple, pour faire que Doxygen traite les fichiers <code>.inc</code> comme des fichiers Fortran (le défaut est PHP), et les fichiers <code>.f</code> comme C (le défaut est Fortran), utilisez: `inc=Fortran f=C`. <br>Note: Pour les fichiers sans extension, vous pouvez utiliser `no_extension` comme espace reserve. <br>Notez que pour les extensions personnalisées vous devez également définir \ref cfg_file_patterns "FILE_PATTERNS" sinon les fichiers ne sont pas lus par Doxygen. Lorsque vous spécifiez `no_extension` vous devriez ajouter `*` au \ref cfg_file_patterns "FILE_PATTERNS". <br>Notez voir aussi la liste des \ref default_file_extension_mapping "correspondances d'extension de fichier par défaut".]]>
+<![CDATA[Doxygen sélectionne l'analyseur à utiliser en fonction de l'extension des fichiers qu'il analyse. Avec cette balise, vous pouvez assigner quel analyseur utiliser pour une extension donnée. Doxygen a une correspondance intégrée, mais vous pouvez la remplacer ou l'étendre en utilisant cette balise. Le format est <code>ext=language</code>, ou \c ext est une extension de fichier, et language est l'un des analyseurs supportés par Doxygen: IDL, Java, JavaScript, Csharp (C#), C, C++, Lex, D, PHP, md (Markdown), Objective-C, Python, Slice, VHDL, Fortran (Fortran format fixe: FortranFixed, Fortran format libre: FortranFree, Fortran format inconnu: Fortran. Dans ce dernier cas, l'analyseur essaie de deviner si le code est en format fixe ou libre, c'est le défaut pour les fichiers de type Fortran). Par exemple, pour faire que Doxygen traite les fichiers <code>.inc</code> comme des fichiers Fortran (le défaut est PHP), et les fichiers <code>.f</code> comme C (le défaut est Fortran), utilisez: `inc=Fortran f=C`. <br>Note: Pour les fichiers sans extension, vous pouvez utiliser `no_extension` comme espace réservé. <br>Notez que pour les extensions personnalisées vous devez également définir \ref cfg_file_patterns "FILE_PATTERNS" sinon les fichiers ne sont pas lus par Doxygen. Lorsque vous spécifiez `no_extension` vous devriez ajouter `*` au \ref cfg_file_patterns "FILE_PATTERNS". <br>Notez voir aussi la liste des \ref default_file_extension_mapping "correspondances d'extension de fichier par défaut".]]>
       </docs>
     </option>
     <option type="bool" id="MARKDOWN_SUPPORT" defval="1">
       <docs>
-<![CDATA[Si la balise \c MARKDOWN_SUPPORT est activée alors Doxygen pré-traite tous les commentaires selon le format Markdown, ce qui permet une documentation plus lisible. Voir https://daringfireball.net/projects/markdown/ pour plus de détails. La sortie du traitement Markdown est ensuite traitée par Doxygen, vous pouvez donc melanger les commandes Doxygen, HTML et XML avec le formatage Markdown. Désactivez uniquement en cas de problèmes de compatibilite ascendante.]]>
+<![CDATA[Si la balise \c MARKDOWN_SUPPORT est activée alors Doxygen pré-traite tous les commentaires selon le format Markdown, ce qui permet une documentation plus lisible. Voir https://daringfireball.net/projects/markdown/ pour plus de détails. La sortie du traitement Markdown est ensuite traitée par Doxygen, vous pouvez donc mélanger les commandes Doxygen, HTML et XML avec le formatage Markdown. Désactivez uniquement en cas de problèmes de compatibilité ascendante.]]>
       </docs>
     </option>
     <option type="bool" id="MARKDOWN_STRICT" defval="1" depends="MARKDOWN_SUPPORT">
       <docs>
-<![CDATA[Si la balise \c MARKDOWN_STRICT est activée alors Doxygen traite le texte dans les commentaires comme formatte en Markdown aussi dans les cas ou le format de balisage natif de Doxygen entre en conflit avec celui de Markdown. Cela n'est pertinent que dans les cas ou des backticks sont utilisés. Le style de balisage natif de Doxygen permet à un guillemet simple de terminer un fragment de texte commence par un backtick et de le traiter comme un morceau de texte cite, alors qu'en Markdown un tel fragment est traite comme verbatim et ne se termine que lorsqu'un deuxième backtick correspondant est trouve. De plus, le format de balisage natif de Doxygen nécessite que les guillemets doubles soient échappés lorsqu'ils apparaissent dans une section backtick, alors que cela n'est pas nécessaire pour Markdown.]]>
+<![CDATA[Si la balise \c MARKDOWN_STRICT est activée alors Doxygen traite le texte dans les commentaires comme formaté en Markdown aussi dans les cas ou le format de balisage natif de Doxygen entre en conflit avec celui de Markdown. Cela n'est pertinent que dans les cas ou des backticks sont utilisés. Le style de balisage natif de Doxygen permet à un guillemet simple de terminer un fragment de texte commencé par un backtick et de le traiter comme un morceau de texte cité, alors qu'en Markdown un tel fragment est traité comme verbatim et ne se termine que lorsqu'un deuxième backtick correspondant est trouvé. De plus, le format de balisage natif de Doxygen nécessite que les guillemets doubles soient échappés lorsqu'ils apparaissent dans une section backtick, alors que cela n'est pas nécessaire pour Markdown.]]>
       </docs>
     </option>
     <option type="int" id="TOC_INCLUDE_HEADINGS" minval="0" maxval="99" defval="6" depends="MARKDOWN_SUPPORT">
       <docs>
-<![CDATA[Lorsque la balise \c TOC_INCLUDE_HEADINGS est définie à une valeur non nulle, tous les titres jusqu'à ce niveau sont automatiquement inclus dans la table des matieres, même s'ils n'ont pas d'attribut id. \note Cette fonctionnalité s'applique actuellement uniquement aux titres Markdown.]]>
+<![CDATA[Lorsque la balise \c TOC_INCLUDE_HEADINGS est définie à une valeur non nulle, tous les titres jusqu'à ce niveau sont automatiquement inclus dans la table des matières, même s'ils n'ont pas d'attribut id. \note Cette fonctionnalité s'applique actuellement uniquement aux titres Markdown.]]>
       </docs>
     </option>
     <option type="enum" id="MARKDOWN_ID_STYLE" defval="DOXYGEN" depends="MARKDOWN_SUPPORT">
@@ -643,7 +643,7 @@
     </option>
     <option type="list" id="INPUT_FILE_ENCODING" format="string">
       <docs>
-<![CDATA[Cette balise peut être utilisée pour spécifier l'encodage de caractères des fichiers sources que Doxygen analyse. La balise \c INPUT_FILE_ENCODING peut être utilisée pour spécifier l'encodage de caractères sur une base par modèle de fichier. Doxygen comparera le nom du fichier avec chaque modèle et appliquera l'encodage au lieu du \ref cfg_input_encoding "INPUT_ENCODING" par défaut s'il y a une correspondance. Les encodages de caractères sont une liste de la forme: modèle=encodage (comme `*.php=ISO-8859-1`). \sa \ref cfg_input_encoding "INPUT_ENCODING" pour plus d'informations sur les encodages supportes.]]>
+<![CDATA[Cette balise peut être utilisée pour spécifier l'encodage de caractères des fichiers sources que Doxygen analyse. La balise \c INPUT_FILE_ENCODING peut être utilisée pour spécifier l'encodage de caractères sur une base par modèle de fichier. Doxygen comparera le nom du fichier avec chaque modèle et appliquera l'encodage au lieu du \ref cfg_input_encoding "INPUT_ENCODING" par défaut s'il y a une correspondance. Les encodages de caractères sont une liste de la forme: modèle=encodage (comme `*.php=ISO-8859-1`). \sa \ref cfg_input_encoding "INPUT_ENCODING" pour plus d'informations sur les encodages supportés.]]>
       </docs>
     </option>
     <option type="list" id="FILE_PATTERNS" format="string">
@@ -990,7 +990,7 @@
     </option>
     <option type="bool" id="GENERATE_HTMLHELP" defval="0" depends="GENERATE_HTML">
       <docs>
-<![CDATA[Si la balise \c GENERATE_HTMLHELP est définie à \c YES, Doxygen génère trois fichiers d'index HTML supplémentaires: \c index.hhp, \c index.hhc, et \c index.hhk. Le \c index.hhp est un fichier de projet qui peut être lu par l'atelier d'aide HTML de Microsoft sur Windows. Au début de 2021, Microsoft a mis hors ligne la page originale, avec notamment les liens de téléchargement (l'atelier d'aide HTML était déjà en mode maintenance depuis de nombreuses années). Vous pouvez télécharger l'atelier d'aide HTML depuis les archives Web a <a href="http://web.archive.org/web/20160201063255/https://download.microsoft.com/download/0/A/9/0A939EF6-E31C-430F-A3DF-DFAE7960D564/htmlhelp.exe">executable d'installation</a>. <br>L'atelier d'aide HTML contient un compilateur qui peut convertir toute la sortie HTML générée par Doxygen en un seul fichier HTML compile (`.chm`). Les fichiers HTML compilés sont maintenant utilisés comme format d'aide Windows 98 et remplaceront l'ancien format d'aide Windows (`.hlp`) sur toutes les plateformes Windows à l'avenir. Les fichiers HTML compresses contiennent également un index, une table des matieres, et vous pouvez rechercher des mots dans la documentation. L'atelier HTML contient également une visionneuse pour les fichiers HTML compresses.]]>
+<![CDATA[Si la balise \c GENERATE_HTMLHELP est définie à \c YES, Doxygen génère trois fichiers d'index HTML supplémentaires: \c index.hhp, \c index.hhc, et \c index.hhk. Le \c index.hhp est un fichier de projet qui peut être lu par l'atelier d'aide HTML de Microsoft sur Windows. Au début de 2021, Microsoft a mis hors ligne la page originale, avec notamment les liens de téléchargement (l'atelier d'aide HTML était déjà en mode maintenance depuis de nombreuses années). Vous pouvez télécharger l'atelier d'aide HTML depuis les archives Web a <a href="http://web.archive.org/web/20160201063255/https://download.microsoft.com/download/0/A/9/0A939EF6-E31C-430F-A3DF-DFAE7960D564/htmlhelp.exe">exécutable d'installation</a>. <br>L'atelier d'aide HTML contient un compilateur qui peut convertir toute la sortie HTML générée par Doxygen en un seul fichier HTML compilé (`.chm`). Les fichiers HTML compilés sont maintenant utilisés comme format d'aide Windows 98 et remplaceront l'ancien format d'aide Windows (`.hlp`) sur toutes les plateformes Windows à l'avenir. Les fichiers HTML compressés contiennent également un index, une table des matières, et vous pouvez rechercher des mots dans la documentation. L'atelier HTML contient également une visionneuse pour les fichiers HTML compressés.]]>
       </docs>
     </option>
     <option type="string" id="CHM_FILE" format="file" defval="" depends="GENERATE_HTMLHELP">
@@ -1010,17 +1010,17 @@
     </option>
     <option type="string" id="CHM_INDEX_ENCODING" format="string" defval="" depends="GENERATE_HTMLHELP">
       <docs>
-<![CDATA[Le \c CHM_INDEX_ENCODING est utilisé pour encoder le contenu du fichier d'index HtmlHelp (\c hhk), de la table des matieres (\c hhc) et du fichier de projet.]]>
+<![CDATA[Le \c CHM_INDEX_ENCODING est utilisé pour encoder le contenu du fichier d'index HtmlHelp (\c hhk), de la table des matières (\c hhc) et du fichier de projet.]]>
       </docs>
     </option>
     <option type="bool" id="BINARY_TOC" defval="0" depends="GENERATE_HTMLHELP">
       <docs>
-<![CDATA[Le drapeau \c BINARY_TOC contrôle si une table des matieres binaire est générée (\c YES) ou une table des matieres normale (\c NO) dans le fichier `.chm`. De plus, il active les boutons `Précédent` et `Suivant`.]]>
+<![CDATA[Le drapeau \c BINARY_TOC contrôle si une table des matières binaire est générée (\c YES) ou une table des matières normale (\c NO) dans le fichier `.chm`. De plus, il active les boutons `Précédent` et `Suivant`.]]>
       </docs>
     </option>
     <option type="bool" id="TOC_EXPAND" defval="0" depends="GENERATE_HTMLHELP">
       <docs>
-<![CDATA[Le drapeau \c TOC_EXPAND peut être défini à \c YES pour ajouter des éléments supplémentaires pour les membres de groupe à la table des matieres de la documentation d'aide HTML et à la vue en arborescence.]]>
+<![CDATA[Le drapeau \c TOC_EXPAND peut être défini à \c YES pour ajouter des éléments supplémentaires pour les membres de groupe à la table des matières de la documentation d'aide HTML et à la vue en arborescence.]]>
       </docs>
     </option>
     <option type="string" id="SITEMAP_URL" format="string" depends="GENERATE_HTML">
@@ -1030,7 +1030,7 @@
     </option>
     <option type="bool" id="GENERATE_QHP" defval="0" depends="GENERATE_HTML">
       <docs>
-<![CDATA[Si la balise \c GENERATE_QHP est définie à \c YES et que \ref cfg_qhp_namespace "QHP_NAMESPACE" et \ref cfg_qhp_virtual_folder "QHP_VIRTUAL_FOLDER" sont tous deux définis, un fichier d'index supplémentaire sera généré qui peut être utilisé comme entrée pour le qhelpgenerator de Qt pour générer une aide compresse Qt (`.qch`) de la documentation HTML générée.]]>
+<![CDATA[Si la balise \c GENERATE_QHP est définie à \c YES et que \ref cfg_qhp_namespace "QHP_NAMESPACE" et \ref cfg_qhp_virtual_folder "QHP_VIRTUAL_FOLDER" sont tous deux définis, un fichier d'index supplémentaire sera généré qui peut être utilisé comme entrée pour le qhelpgenerator de Qt pour générer une aide compressé Qt (`.qch`) de la documentation HTML générée.]]>
       </docs>
     </option>
     <option type="string" id="QCH_FILE" format="file" defval="" depends="GENERATE_QHP">
@@ -1157,7 +1157,7 @@
       <docs>
 <![CDATA[Lorsque MathJax est activé, vous pouvez définir le format de sortie par défaut a utiliser pour la sortie MathJax. Pour plus de détails sur le format de sortie, voir <a href="https://docs.mathjax.org/en/v2.7/output.html">MathJax version 2</a>, <a href="https://docs.mathjax.org/en/v3.2/output/index.html">MathJax version 3</a> et <a href="https://docs.mathjax.org/en/v4.0/output/index.htm">MathJax version 4</a>.]]>
       </docs>
-      <value name="HTML-CSS" desc="(plus lent, mais avec la meilleure compatibilite. C'est le nom pour MathJax version 2, pour MathJax version 3 cela sera traduit en \c chtml)"/>
+      <value name="HTML-CSS" desc="(plus lent, mais avec la meilleure compatibilité. C'est le nom pour MathJax version 2, pour MathJax version 3 cela sera traduit en \c chtml)"/>
       <value name="NativeMML" desc="(c'est-à-dire MathML. Pris en charge uniquement pour MathJax 2. Pour MathJax version 3, \c chtml sera utilisé à la place.)"/>
       <value name="chtml" desc="(C'est le nom pour MathJax version 3, pour MathJax version 2 cela sera traduit en \c HTML-CSS)"/>
       <value name="SVG"/>
@@ -1491,7 +1491,7 @@
     </option>
     <option type="bool" id="SEARCH_INCLUDES" defval="1" depends="ENABLE_PREPROCESSING">
       <docs>
-<![CDATA[Si la balise \c SEARCH_INCLUDES est définie à \c YES, les fichiers d'inclusion dans le \ref cfg_include_path "INCLUDE_PATH" seront recherches si un \c \#include est trouve.]]>
+<![CDATA[Si la balise \c SEARCH_INCLUDES est définie à \c YES, les fichiers d'inclusion dans le \ref cfg_include_path "INCLUDE_PATH" seront recherches si un \c \#include est trouvé.]]>
       </docs>
     </option>
     <option type="list" id="INCLUDE_PATH" format="dir" depends="SEARCH_INCLUDES">
@@ -1767,7 +1767,7 @@
     </option>
     <option type="string" id="MERMAID_PATH" format="filedir" defval="">
       <docs>
-<![CDATA[Lors de l'utilisation de diagrammes Mermaid avec le rendu CLI, la balise \c MERMAID_PATH devrait être utilisée pour spécifier le répertoire ou l'executable \c mmdc (Mermaid CLI) peut être trouve. Si laissé vide, le rendu base sur CLI est désactivé. Pour la sortie HTML, le rendu côté client via JavaScript est utilisé par défaut et ne nécessite pas \c mmdc. Pour la sortie LaTeX/PDF, \c mmdc est requis pour pre-générer les images. Doxygen générera un avertissement lorsque le rendu CLI est nécessaire mais que \c mmdc n'est pas disponible.]]>
+<![CDATA[Lors de l'utilisation de diagrammes Mermaid avec le rendu CLI, la balise \c MERMAID_PATH devrait être utilisée pour spécifier le répertoire ou l'exécutable \c mmdc (Mermaid CLI) peut être trouve. Si laissé vide, le rendu base sur CLI est désactivé. Pour la sortie HTML, le rendu côté client via JavaScript est utilisé par défaut et ne nécessite pas \c mmdc. Pour la sortie LaTeX/PDF, \c mmdc est requis pour pre-générer les images. Doxygen générera un avertissement lorsque le rendu CLI est nécessaire mais que \c mmdc n'est pas disponible.]]>
       </docs>
     </option>
     <option type="string" id="MERMAID_CONFIG_FILE" format="file" defval="">
