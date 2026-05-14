@@ -1030,7 +1030,7 @@
     </option>
     <option type="bool" id="GENERATE_QHP" defval="0" depends="GENERATE_HTML">
       <docs>
-<![CDATA[Si la balise \c GENERATE_QHP est définie à \c YES et que \ref cfg_qhp_namespace "QHP_NAMESPACE" et \ref cfg_qhp_virtual_folder "QHP_VIRTUAL_FOLDER" sont tous deux définis, un fichier d'index supplémentaire sera généré qui peut être utilisé comme entrée pour le qhelpgenerator de Qt pour générer une aide compressé Qt (`.qch`) de la documentation HTML générée.]]>
+<![CDATA[Si la balise \c GENERATE_QHP est définie à \c YES et que \ref cfg_qhp_namespace "QHP_NAMESPACE" et \ref cfg_qhp_virtual_folder "QHP_VIRTUAL_FOLDER" sont tous deux définis, un fichier d'index supplémentaire sera généré qui peut être utilisé comme entrée pour le qhelpgenerator de Qt pour générer une aide compressée Qt (`.qch`) de la documentation HTML générée.]]>
       </docs>
     </option>
     <option type="string" id="QCH_FILE" format="file" defval="" depends="GENERATE_QHP">
@@ -1727,7 +1727,7 @@
     </option>
     <option type="string" id="DOT_PATH" format="filedir" defval="" depends="HAVE_DOT">
       <docs>
-<![CDATA[La balise \c DOT_PATH peut être utilisée pour spécifier le chemin ou l'outil \c dot peut être trouve. Si laissé vide, il est suppose que l'outil \c dot peut être trouve dans le \c path.]]>
+<![CDATA[La balise \c DOT_PATH peut être utilisée pour spécifier le chemin ou l'outil \c dot peut être trouvé. Si laissé vide, il est suppose que l'outil \c dot peut être trouvé dans le \c path.]]>
       </docs>
     </option>
     <option type="list" id="DOTFILE_DIRS" format="dir" depends="HAVE_DOT">
@@ -1767,7 +1767,7 @@
     </option>
     <option type="string" id="MERMAID_PATH" format="filedir" defval="">
       <docs>
-<![CDATA[Lors de l'utilisation de diagrammes Mermaid avec le rendu CLI, la balise \c MERMAID_PATH devrait être utilisée pour spécifier le répertoire ou l'exécutable \c mmdc (Mermaid CLI) peut être trouve. Si laissé vide, le rendu base sur CLI est désactivé. Pour la sortie HTML, le rendu côté client via JavaScript est utilisé par défaut et ne nécessite pas \c mmdc. Pour la sortie LaTeX/PDF, \c mmdc est requis pour pre-générer les images. Doxygen générera un avertissement lorsque le rendu CLI est nécessaire mais que \c mmdc n'est pas disponible.]]>
+<![CDATA[Lors de l'utilisation de diagrammes Mermaid avec le rendu CLI, la balise \c MERMAID_PATH devrait être utilisée pour spécifier le répertoire ou l'exécutable \c mmdc (Mermaid CLI) peut être trouvé. Si laissé vide, le rendu basé sur CLI est désactivé. Pour la sortie HTML, le rendu côté client via JavaScript est utilisé par défaut et ne nécessite pas \c mmdc. Pour la sortie LaTeX/PDF, \c mmdc est requis pour pre-générer les images. Doxygen générera un avertissement lorsque le rendu CLI est nécessaire mais que \c mmdc n'est pas disponible.]]>
       </docs>
     </option>
     <option type="string" id="MERMAID_CONFIG_FILE" format="file" defval="">
