@@ -53,7 +53,7 @@
     </option>
     <option type="enum" id="OUTPUT_LANGUAGE" defval="English">
       <docs>
-<![CDATA[\c OUTPUT_LANGUAGE 標籤用於指定 Doxygen 產生的所有檔案使用的語言。Doxygen 將使用此資訊以正确的語言產生所有常量輸出。]]>
+<![CDATA[\c OUTPUT_LANGUAGE 標籤用於指定 Doxygen 產生的所有檔案使用的語言。Doxygen 將使用此資訊以正確的語言產生所有常量輸出。]]>
       </docs>
       <value name="Afrikaans"/>
       <value name="Arabic"/>
@@ -113,7 +113,7 @@
     </option>
     <option type="list" id="ABBREVIATE_BRIEF" format="string">
       <docs>
-<![CDATA[此標籤實現了一個准智能簡要描述縮寫器，用於形成各种列資料表中的文本。此列資料表中的每個字元串，如果作為簡要描述的前導文本找到，將從文本中剥离，處理整個列資料表後的結果用作註解文本。否則，簡要描述按原樣使用。如果留空，則使用以下值（`$name` 自动取代為實體名稱）：]]>
+<![CDATA[此標籤實現了一個准智能簡要描述縮寫器，用於形成各种列資料表中的文本。此列資料表中的每個字元串，如果作為簡要描述的前導文本找到，將從文本中剥离，處理整個列資料表後的結果用作註解文本。否則，簡要描述按原樣使用。如果留空，則使用以下值（`$name` 自動取代為實體名稱）：]]>
       </docs>
       <value name="The $name class"/>
       <value name="The $name widget"/>
@@ -129,7 +129,7 @@
     </option>
     <option type="bool" id="ALWAYS_DETAILED_SEC" defval="0">
       <docs>
-<![CDATA[如果 \c ALWAYS_DETAILED_SEC 和 \ref cfg_repeat_brief "REPEAT_BRIEF" 標籤都設定為 \c YES，那么即使只有簡要描述，Doxygen 也會產生詳細部分。]]>
+<![CDATA[如果 \c ALWAYS_DETAILED_SEC 和 \ref cfg_repeat_brief "REPEAT_BRIEF" 標籤都設定為 \c YES，那麼即使只有簡要描述，Doxygen 也會產生詳細部分。]]>
       </docs>
     </option>
     <option type="bool" id="INLINE_INHERITED_MEMB" defval="0">
@@ -154,7 +154,7 @@
     </option>
     <option type="bool" id="SHORT_NAMES" defval="0">
       <docs>
-<![CDATA[如果 \c SHORT_NAMES 標籤設定為 \c YES，Doxygen 將產生更短（但可读性较差）的檔案名。如果您的檔案系統不支援長名稱（如 DOS、Mac 或 CD-ROM），這可能很有用。]]>
+<![CDATA[如果 \c SHORT_NAMES 標籤設定為 \c YES，Doxygen 將產生更短（但可讀性較差）的檔案名。如果您的檔案系統不支援長名稱（如 DOS、Mac 或 CD-ROM），這可能很有用。]]>
       </docs>
     </option>
     <option type="bool" id="JAVADOC_AUTOBRIEF" defval="0">
@@ -204,12 +204,12 @@
     </option>
     <option type="bool" id="OPTIMIZE_OUTPUT_FOR_C" defval="0">
       <docs>
-<![CDATA[如果您的專案仅包含 C 原始碼程式碼，請將 \c OPTIMIZE_OUTPUT_FOR_C 標籤設定為 \c YES。Doxygen 随後將產生更适合 C 的輸出。例如，將使用一些不同的名稱。將省略所有成員的列資料表等。]]>
+<![CDATA[如果您的專案僅包含 C 原始碼程式碼，請將 \c OPTIMIZE_OUTPUT_FOR_C 標籤設定為 \c YES。Doxygen 随後將產生更适合 C 的輸出。例如，將使用一些不同的名稱。將省略所有成員的列資料表等。]]>
       </docs>
     </option>
     <option type="bool" id="OPTIMIZE_OUTPUT_JAVA" defval="0">
       <docs>
-<![CDATA[如果您的專案仅包含 Java 或 Python 原始碼程式碼，請將 \c OPTIMIZE_OUTPUT_JAVA 標籤設定為 \c YES。Doxygen 随後將產生更适合該語言的輸出。例如，命名空間將顯示為包，限定作用域將看起來不同等。]]>
+<![CDATA[如果您的專案僅包含 Java 或 Python 原始碼程式碼，請將 \c OPTIMIZE_OUTPUT_JAVA 標籤設定為 \c YES。Doxygen 随後將產生更适合該語言的輸出。例如，命名空間將顯示為包，限定作用域將看起來不同等。]]>
       </docs>
     </option>
     <option type="bool" id="OPTIMIZE_FOR_FORTRAN" defval="0">
@@ -224,27 +224,27 @@
     </option>
     <option type="bool" id="OPTIMIZE_OUTPUT_SLICE" defval="0">
       <docs>
-<![CDATA[如果您的專案仅包含 Slice 原始碼程式碼，請將 \c OPTIMIZE_OUTPUT_SLICE 標籤設定為 \c YES。Doxygen 随後將產生更适合該語言的輸出。例如，命名空間將顯示為模組，類別型將分成更多群組等。]]>
+<![CDATA[如果您的專案僅包含 Slice 原始碼程式碼，請將 \c OPTIMIZE_OUTPUT_SLICE 標籤設定為 \c YES。Doxygen 随後將產生更适合該語言的輸出。例如，命名空間將顯示為模組，類別型將分成更多群組等。]]>
       </docs>
     </option>
     <option type="list" id="EXTENSION_MAPPING" format="string">
       <docs>
-<![CDATA[Doxygen 根據解析檔案的擴充功能名選择要使用的解析器。使用此標籤，您可以為給定擴充功能名設定要使用的解析器。Doxygen 有內建映射，但您可以使用此標籤覆寫或擴充功能它。格式為 <code>ext=language</code>，其中 \c ext 是檔案擴充功能名，language 是 Doxygen 支援的解析器之一：IDL、Java、JavaScript、Csharp (C#)、C、C++、Lex、D、PHP、md (Markdown)、Objective-C、Python、Slice、VHDL、Fortran（固定格式 Fortran：FortranFixed，自由格式 Fortran：FortranFree，未知格式 Fortran：Fortran。在後一种情况下，解析器尝試猜測程式碼是固定格式还是自由格式程式碼，這是 Fortran 類別型檔案的預設設定）。例如，要使 Doxygen 將 <code>.inc</code> 檔案视為 Fortran 檔案（預設為 PHP），將 <code>.f</code> 檔案视為 C 檔案（預設為 Fortran），請使用：`inc=Fortran f=C`。<br>注意：對于没有擴充功能名的檔案，您可以使用 `no_extension` 作為占位符。<br>請注意，對于自定義擴充功能名，您还需要設定 \ref cfg_file_patterns "FILE_PATTERNS"，否則 Doxygen 不會读取這些檔案。指定 `no_extension` 時，應將 `*` 添加到 \ref cfg_file_patterns "FILE_PATTERNS"。<br>注意，另請參閱 \ref default_file_extension_mapping "預設檔案擴充功能名映射"列資料表。]]>
+<![CDATA[Doxygen 根據解析檔案的擴充功能名選择要使用的解析器。使用此標籤，您可以為給定擴充功能名設定要使用的解析器。Doxygen 有內建映射，但您可以使用此標籤覆寫或擴充功能它。格式為 <code>ext=language</code>，其中 \c ext 是檔案擴充功能名，language 是 Doxygen 支援的解析器之一：IDL、Java、JavaScript、Csharp (C#)、C、C++、Lex、D、PHP、md (Markdown)、Objective-C、Python、Slice、VHDL、Fortran（固定格式 Fortran：FortranFixed，自由格式 Fortran：FortranFree，未知格式 Fortran：Fortran。在後一种情况下，解析器尝試猜測程式碼是固定格式还是自由格式程式碼，這是 Fortran 類別型檔案的預設設定）。例如，要使 Doxygen 將 <code>.inc</code> 檔案视為 Fortran 檔案（預設為 PHP），將 <code>.f</code> 檔案视為 C 檔案（預設為 Fortran），請使用：`inc=Fortran f=C`。<br>注意：對于沒有擴充功能名的檔案，您可以使用 `no_extension` 作為占位符。<br>請注意，對于自定義擴充功能名，您还需要設定 \ref cfg_file_patterns "FILE_PATTERNS"，否則 Doxygen 不會讀取這些檔案。指定 `no_extension` 時，應將 `*` 添加到 \ref cfg_file_patterns "FILE_PATTERNS"。<br>注意，另請參閱 \ref default_file_extension_mapping "預設檔案擴充功能名映射"列資料表。]]>
       </docs>
     </option>
     <option type="bool" id="MARKDOWN_SUPPORT" defval="1">
       <docs>
-<![CDATA[如果啟用了 \c MARKDOWN_SUPPORT 標籤，Doxygen 將根據 Markdown 格式前置處理所有註解，這允許更可读的檔案。有關詳細資訊，請參閱 https://daringfireball.net/projects/markdown/。Markdown 處理的輸出進一步由 Doxygen 處理，因此您可以將 Doxygen、HTML 和 XML 命令與 Markdown 格式混合使用。仅在向後兼容性問題時停用。]]>
+<![CDATA[如果啟用了 \c MARKDOWN_SUPPORT 標籤，Doxygen 將根據 Markdown 格式前置處理所有註解，這允許更可读的檔案。有關詳細資訊，請參閱 https://daringfireball.net/projects/markdown/。Markdown 處理的輸出進一步由 Doxygen 處理，因此您可以將 Doxygen、HTML 和 XML 命令與 Markdown 格式混合使用。僅在向後兼容性問題時停用。]]>
       </docs>
     </option>
     <option type="bool" id="MARKDOWN_STRICT" defval="1" depends="MARKDOWN_SUPPORT">
       <docs>
-<![CDATA[如果啟用了 \c MARKDOWN_STRICT 標籤，Doxygen 將在 Doxygen 的本机標記格式與 Markdown 衝突的情况下，也將註解中的文本视為 Markdown 格式。這仅在使用反引號的情况下相關。Doxygen 的本机標記樣式允許單引號關閉以反引號開始的文本片段，然後將其视為引用文本片段，而在 Markdown 中，此類別文本片段被视為逐字文本，仅在找到第二個匹配的反引號時才關閉。此外，Doxygen 的本机標記格式要求在反引號部分中出現雙引號時進行轉義，而 Markdown 不需要這樣做。]]>
+<![CDATA[如果啟用了 \c MARKDOWN_STRICT 標籤，Doxygen 將在 Doxygen 的本机標記格式與 Markdown 衝突的情况下，也將註解中的文本视為 Markdown 格式。這僅在使用反引號的情况下相關。Doxygen 的本机標記樣式允許單引號關閉以反引號開始的文本片段，然後將其视為引用文本片段，而在 Markdown 中，此類別文本片段被视為逐字文本，僅在找到第二個匹配的反引號時才關閉。此外，Doxygen 的本机標記格式要求在反引號部分中出現雙引號時進行轉義，而 Markdown 不需要這樣做。]]>
       </docs>
     </option>
     <option type="int" id="TOC_INCLUDE_HEADINGS" minval="0" maxval="99" defval="6" depends="MARKDOWN_SUPPORT">
       <docs>
-<![CDATA[當 \c TOC_INCLUDE_HEADINGS 標籤設定為非零值時，直到該層級的所有標题都會自动包含在目錄中，即使它们没有 id 屬性。\note 此功能目前仅适用於 Markdown 標题。]]>
+<![CDATA[當 \c TOC_INCLUDE_HEADINGS 標籤設定為非零值時，直到該層級的所有標题都會自動包含在目錄中，即使它們沒有 id 屬性。\note 此功能目前僅適用於 Markdown 標题。]]>
       </docs>
     </option>
     <option type="enum" id="MARKDOWN_ID_STYLE" defval="DOXYGEN" depends="MARKDOWN_SUPPORT">
@@ -256,12 +256,12 @@
     </option>
     <option type="bool" id="AUTOLINK_SUPPORT" defval="1">
       <docs>
-<![CDATA[啟用後，Doxygen 尝試將對應于已記錄類別或命名空間的單詞連結到其相應的檔案。可以通過在單詞前放置 \c % 符號來防止個別情况下的此類別連結，或者通過將 \c AUTOLINK_SUPPORT 設定為 \c NO 來全局防止。\c AUTOLINK_IGNORE_WORDS 標籤中列出的單詞被排除在自动連結之外。]]>
+<![CDATA[啟用後，Doxygen 尝試將對應于已記錄類別或命名空間的單詞連結到其相應的檔案。可以通過在單詞前放置 \c % 符號來防止個別情况下的此類別連結，或者通過將 \c AUTOLINK_SUPPORT 設定為 \c NO 來全局防止。\c AUTOLINK_IGNORE_WORDS 標籤中列出的單詞被排除在自動連結之外。]]>
       </docs>
     </option>
     <option type="list" id="AUTOLINK_IGNORE_WORDS" format="string" depends="AUTOLINK_SUPPORT">
       <docs>
-<![CDATA[此標籤指定一個單詞列資料表，當與檔案中單詞的開頭匹配時，如果通過 AUTOLINK_SUPPORT 啟用了自动連結產生，將抑制自动連結產生。此列資料表不影响使用 \# 或 \ref cmdlink "\link" 或 \ref cmdref "\ref" 命令顯式建立的連結。]]>
+<![CDATA[此標籤指定一個單詞列資料表，當與檔案中單詞的開頭匹配時，如果通過 AUTOLINK_SUPPORT 啟用了自動連結產生，將抑制自動連結產生。此列資料表不影响使用 \# 或 \ref cmdlink "\link" 或 \ref cmdref "\ref" 命令顯式建立的連結。]]>
       </docs>
     </option>
     <option type="bool" id="BUILTIN_STL_SUPPORT" defval="0">
@@ -276,17 +276,17 @@
     </option>
     <option type="bool" id="SIP_SUPPORT" defval="0">
       <docs>
-<![CDATA[如果您的專案仅包含 <a href="https://www.riverbankcomputing.com/software">sip</a> 原始碼程式碼，請將 \c SIP_SUPPORT 標籤設定為 \c YES。Doxygen 將像普通 C++ 一樣解析它们，但會假設所有類別在没有顯式保護關键字時都使用公共繼承而不是私有繼承。]]>
+<![CDATA[如果您的專案僅包含 <a href="https://www.riverbankcomputing.com/software">sip</a> 原始碼程式碼，請將 \c SIP_SUPPORT 標籤設定為 \c YES。Doxygen 將像普通 C++ 一樣解析它們，但會假設所有類別在沒有顯式保護關键字時都使用公共繼承而不是私有繼承。]]>
       </docs>
     </option>
     <option type="bool" id="IDL_PROPERTY_SUPPORT" defval="1">
       <docs>
-<![CDATA[對于 Microsoft 的 IDL，有 \c propget 和 \c propput 屬性來指示屬性的 getter 和 setter 方法。將此選項設定為 \c YES 將使 Doxygen 在檔案中用屬性取代 get 和 set 方法。這仅在方法确實是取得或設定簡單類別型時才有效。如果不是這种情况，或者您想无论如何顯示方法，應將此選項設定為 \c NO。]]>
+<![CDATA[對于 Microsoft 的 IDL，有 \c propget 和 \c propput 屬性來指示屬性的 getter 和 setter 方法。將此選項設定為 \c YES 將使 Doxygen 在檔案中用屬性取代 get 和 set 方法。這僅在方法确實是取得或設定簡單類別型時才有效。如果不是這种情况，或者您想无论如何顯示方法，應將此選項設定為 \c NO。]]>
       </docs>
     </option>
     <option type="bool" id="DISTRIBUTE_GROUP_DOC" defval="0">
       <docs>
-<![CDATA[如果在檔案中使用了成員分群組，並且 \c DISTRIBUTE_GROUP_DOC 標籤設定為 \c YES，那么 Doxygen 將為群組中的其他成員重用群組中第一個成員的檔案（如果有）。預設情况下，群組的所有成員必须顯式記錄。]]>
+<![CDATA[如果在檔案中使用了成員分群組，並且 \c DISTRIBUTE_GROUP_DOC 標籤設定為 \c YES，那麼 Doxygen 將為群組中的其他成員重用群組中第一個成員的檔案（如果有）。預設情况下，群組的所有成員必须顯式記錄。]]>
       </docs>
     </option>
     <option type="bool" id="GROUP_NESTED_COMPOUNDS" defval="0">
@@ -301,12 +301,12 @@
     </option>
     <option type="bool" id="INLINE_GROUPED_CLASSES" defval="0">
       <docs>
-<![CDATA[當 \c INLINE_GROUPED_CLASSES 標籤設定為 \c YES 時，類別、結構和聯合體顯示在包含它们的群組中（例如使用 \ref cmdingroup "\ingroup"），而不是在單独的頁面上（對于 HTML 和 Man 頁面）或部分中（對于 \f$\mbox{\LaTeX}\f$ 和 RTF）。<br>請注意，此功能不能與 \ref cfg_separate_member_pages "SEPARATE_MEMBER_PAGES" 結合使用。]]>
+<![CDATA[當 \c INLINE_GROUPED_CLASSES 標籤設定為 \c YES 時，類別、結構和聯合體顯示在包含它們的群組中（例如使用 \ref cmdingroup "\ingroup"），而不是在單独的頁面上（對于 HTML 和 Man 頁面）或部分中（對于 \f$\mbox{\LaTeX}\f$ 和 RTF）。<br>請注意，此功能不能與 \ref cfg_separate_member_pages "SEPARATE_MEMBER_PAGES" 結合使用。]]>
       </docs>
     </option>
     <option type="bool" id="INLINE_SIMPLE_STRUCTS" defval="0">
       <docs>
-<![CDATA[當 \c INLINE_SIMPLE_STRUCTS 標籤設定為 \c YES 時，仅具有公共資料欄位或簡單 typedef 欄位的結構、類別和聯合體將顯示在定義它们的作用域的檔案中（即檔案、命名空間或群組檔案），前提是此作用域已記錄。如果設定為 \c NO，結構、類別和聯合體將顯示在單独的頁面上（對于 HTML 和 Man 頁面）或部分中（對于 \f$\mbox{\LaTeX}\f$ 和 RTF）。]]>
+<![CDATA[當 \c INLINE_SIMPLE_STRUCTS 標籤設定為 \c YES 時，僅具有公共資料欄位或簡單 typedef 欄位的結構、類別和聯合體將顯示在定義它們的作用域的檔案中（即檔案、命名空間或群組檔案），前提是此作用域已記錄。如果設定為 \c NO，結構、類別和聯合體將顯示在單独的頁面上（對于 HTML 和 Man 頁面）或部分中（對于 \f$\mbox{\LaTeX}\f$ 和 RTF）。]]>
       </docs>
     </option>
     <option type="bool" id="TYPEDEF_HIDES_STRUCT" defval="0">
@@ -327,7 +327,7 @@
     </option>
     <option type="enum" id="TIMESTAMP" defval="NO">
       <docs>
-<![CDATA[如果 \c TIMESTAMP 標籤設定為不同于 \c NO 的值，則每個產生的頁面將包含頁面產生時的日期或日期和時間。將此設定為 \c NO 有助于比较多次運行的輸出。]]>
+<![CDATA[如果 \c TIMESTAMP 標籤設定為不同于 \c NO 的值，則每個產生的頁面將包含頁面產生時的日期或日期和時間。將此設定為 \c NO 有助于比較多次運行的輸出。]]>
       </docs>
       <value name="YES"/>
       <value name="NO"/>
@@ -338,7 +338,7 @@
   <group name="Build" trname="建置" docs="與建置相關的設定選項">
     <option type="bool" id="EXTRACT_ALL" defval="0">
       <docs>
-<![CDATA[如果 \c EXTRACT_ALL 標籤設定為 \c YES，Doxygen 將假設檔案中的所有實體都已記錄，即使没有可用的檔案。私有類別成員和靜態檔案成員將被隐藏，除非分別設定了 \ref cfg_extract_private "EXTRACT_PRIVATE" 或 \ref cfg_extract_static "EXTRACT_STATIC" 標籤為 \c YES。\note 這也將停用通常在 \ref cfg_warnings "WARNINGS" 設定為 \c YES 時產生的有關未記錄成員的警告。]]>
+<![CDATA[如果 \c EXTRACT_ALL 標籤設定為 \c YES，Doxygen 將假設檔案中的所有實體都已記錄，即使沒有可用的檔案。私有類別成員和靜態檔案成員將被隐藏，除非分別設定了 \ref cfg_extract_private "EXTRACT_PRIVATE" 或 \ref cfg_extract_static "EXTRACT_STATIC" 標籤為 \c YES。\note 這也將停用通常在 \ref cfg_warnings "WARNINGS" 設定為 \c YES 時產生的有關未記錄成員的警告。]]>
       </docs>
     </option>
     <option type="bool" id="EXTRACT_PRIVATE" defval="0">
@@ -363,12 +363,12 @@
     </option>
     <option type="bool" id="EXTRACT_LOCAL_CLASSES" defval="1">
       <docs>
-<![CDATA[如果 \c EXTRACT_LOCAL_CLASSES 標籤設定為 \c YES，在原始碼檔案中本地定義的類別（和結構）將包含在檔案中。如果設定為 \c NO，則只包含在頭檔案中定義的類別。對 Java 原始碼程式碼没有任何影响。]]>
+<![CDATA[如果 \c EXTRACT_LOCAL_CLASSES 標籤設定為 \c YES，在原始碼檔案中本地定義的類別（和結構）將包含在檔案中。如果設定為 \c NO，則只包含在頭檔案中定義的類別。對 Java 原始碼程式碼沒有任何影响。]]>
       </docs>
     </option>
     <option type="bool" id="EXTRACT_LOCAL_METHODS" defval="0">
       <docs>
-<![CDATA[此標志仅對 Objective-C 程式碼有用。如果設定為 \c YES，在實現部分定義但不在介面中的本地方法將包含在檔案中。如果設定為 \c NO，則只包含介面中的方法。]]>
+<![CDATA[此標志僅對 Objective-C 程式碼有用。如果設定為 \c YES，在實現部分定義但不在介面中的本地方法將包含在檔案中。如果設定為 \c NO，則只包含介面中的方法。]]>
       </docs>
     </option>
     <option type="bool" id="EXTRACT_ANON_NSPACES" defval="0">
@@ -413,7 +413,7 @@
     </option>
     <option type="enum" id="CASE_SENSE_NAMES" defval="SYSTEM">
       <docs>
-<![CDATA[通過正确設定選項 \c CASE_SENSE_NAMES，Doxygen 將能够更好地匹配底層檔案系統的功能。如果檔案系統區分大小寫（即它支援同一目錄中名稱仅大小寫不同的檔案），則必须將選項設定為 \c YES 以正确處理輸入中出現的此類別檔案。對于不區分大小寫的檔案系統，應將選項設定為 \c NO 以正确處理為仅大小寫不同的符號編寫的輸出檔案，例如對于兩個類別，一個名為 \c CLASS，另一個名為 \c Class，並且还支援引用檔案而无需指定完全匹配的大小寫。在 Windows（包括 Cygwin）和 macOS 上，使用者通常應將此選項設定為 \c NO，而在 Linux 或其他 Unix 系統上，通常應將其設定為 \c YES。]]>
+<![CDATA[通過正確設定選項 \c CASE_SENSE_NAMES，Doxygen 將能够更好地匹配底層檔案系統的功能。如果檔案系統區分大小寫（即它支援同一目錄中名稱僅大小寫不同的檔案），則必须將選項設定為 \c YES 以正確處理輸入中出現的此類別檔案。對于不區分大小寫的檔案系統，應將選項設定為 \c NO 以正確處理為僅大小寫不同的符號編寫的輸出檔案，例如對于兩個類別，一個名為 \c CLASS，另一個名為 \c Class，並且还支援引用檔案而无需指定完全匹配的大小寫。在 Windows（包括 Cygwin）和 macOS 上，使用者通常應將此選項設定為 \c NO，而在 Linux 或其他 Unix 系統上，通常應將其設定為 \c YES。]]>
       </docs>
       <value name="SYSTEM"/>
       <value name="NO"/>
@@ -476,12 +476,12 @@
     </option>
     <option type="bool" id="SORT_BY_SCOPE_NAME" defval="0">
       <docs>
-<![CDATA[如果 \c SORT_BY_SCOPE_NAME 標籤設定為 \c YES，類別列資料表將按完全限定名稱（包括命名空間）排序。如果設定為 \c NO，類別列資料表將仅按類別名排序，不包括命名空間部分。\note 如果 \ref cfg_hide_scope_names "HIDE_SCOPE_NAMES" 設定為 \c YES，此選項不太有用。\note 此選項仅适用於類別列資料表，不适用於字母列資料表。]]>
+<![CDATA[如果 \c SORT_BY_SCOPE_NAME 標籤設定為 \c YES，類別列資料表將按完全限定名稱（包括命名空間）排序。如果設定為 \c NO，類別列資料表將僅按類別名排序，不包括命名空間部分。\note 如果 \ref cfg_hide_scope_names "HIDE_SCOPE_NAMES" 設定為 \c YES，此選項不太有用。\note 此選項僅適用於類別列資料表，不適用於字母列資料表。]]>
       </docs>
     </option>
     <option type="bool" id="STRICT_PROTO_MATCHING" defval="0">
       <docs>
-<![CDATA[如果啟用了 \c STRICT_PROTO_MATCHING 選項，並且 Doxygen 无法正确解析函式的所有參數類別型，它將拒絕成員函式的原型和實現之間的匹配，即使只有一個候選者或者通過簡單的字元串匹配很明顯應該選择哪個候選者。通過停用 \c STRICT_PROTO_MATCHING，Doxygen 仍將在這种情况下接受原型和實現之間的匹配。]]>
+<![CDATA[如果啟用了 \c STRICT_PROTO_MATCHING 選項，並且 Doxygen 無法正確解析函式的所有參數類別型，它將拒絕成員函式的原型和實現之間的匹配，即使只有一個候選者或者通過簡單的字元串匹配很明顯應該選择哪個候選者。通過停用 \c STRICT_PROTO_MATCHING，Doxygen 仍將在這种情况下接受原型和實現之間的匹配。]]>
       </docs>
     </option>
     <option type="bool" id="GENERATE_TODOLIST" defval="1">
@@ -506,12 +506,12 @@
     </option>
     <option type="bool" id="GENERATE_REQUIREMENTS" defval="1">
       <docs>
-<![CDATA[\c GENERATE_REQUIREMENTS 標籤可用於啟用（\c YES）或停用（\c NO）需求頁面。啟用後，當輸入中至少出現一個带有 \ref cmdrequirement "\requirement" 命令的註解塊時，此頁面會自动建立。]]>
+<![CDATA[\c GENERATE_REQUIREMENTS 標籤可用於啟用（\c YES）或停用（\c NO）需求頁面。啟用後，當輸入中至少出現一個带有 \ref cmdrequirement "\requirement" 命令的註解塊時，此頁面會自動建立。]]>
       </docs>
     </option>
     <option type="enum" id="REQ_TRACEABILITY_INFO" defval="YES" depends="GENERATE_REQUIREMENTS">
       <docs>
-<![CDATA[\c REQ_TRACEABILITY_INFO 標籤控制是否在需求頁面上顯示可追溯性資訊（仅在使用 \ref cmdrequirement "\requirement" 註解塊時相關）。設定 \c NO 將完全停用可追溯性資訊。設定 \c UNSATISFIED_ONLY 將顯示缺少满足關系（通過命令：\ref cmdsatisfies "\satisfies"）的需求列資料表。類別似地，設定 \c UNVERIFIED_ONLY 將顯示缺少驗證關系（通過命令：\ref cmdverifies "\verifies"）的需求列資料表。將標籤設定為 \c YES（預設）將在适用時顯示兩個列資料表。]]>
+<![CDATA[\c REQ_TRACEABILITY_INFO 標籤控制是否在需求頁面上顯示可追溯性資訊（僅在使用 \ref cmdrequirement "\requirement" 註解塊時相關）。設定 \c NO 將完全停用可追溯性資訊。設定 \c UNSATISFIED_ONLY 將顯示缺少满足關系（通過命令：\ref cmdsatisfies "\satisfies"）的需求列資料表。類別似地，設定 \c UNVERIFIED_ONLY 將顯示缺少驗證關系（通過命令：\ref cmdverifies "\verifies"）的需求列資料表。將標籤設定為 \c YES（預設）將在適用時顯示兩個列資料表。]]>
       </docs>
       <value name="YES"/>
       <value name="NO"/>
@@ -550,12 +550,12 @@
     </option>
     <option type="string" id="LAYOUT_FILE" format="file" defval="">
       <docs>
-<![CDATA[\c LAYOUT_FILE 標籤可用於指定 Doxygen 將解析的布局檔案。布局檔案以独立于輸出格式的方式控制產生輸出檔案的全局結構。要建立資料表示 Doxygen 預設值的布局檔案，請使用 `-l` 選項運行 Doxygen。您可以選择在選項後指定檔案名，如果省略，則使用 \c DoxygenLayout.xml 作為布局檔案的名稱。另請參閱第 \ref layout 節以取得資訊。<br>請注意，如果您從包含名為 \c DoxygenLayout.xml 的檔案的目錄運行 Doxygen，即使 \c LAYOUT_FILE 標籤為空，Doxygen 也會自动解析它。]]>
+<![CDATA[\c LAYOUT_FILE 標籤可用於指定 Doxygen 將解析的布局檔案。布局檔案以獨立于輸出格式的方式控制產生輸出檔案的全局結構。要建立資料表示 Doxygen 預設值的布局檔案，請使用 `-l` 選項運行 Doxygen。您可以選择在選項後指定檔案名，如果省略，則使用 \c DoxygenLayout.xml 作為布局檔案的名稱。另請參閱第 \ref layout 節以取得資訊。<br>請注意，如果您從包含名為 \c DoxygenLayout.xml 的檔案的目錄運行 Doxygen，即使 \c LAYOUT_FILE 標籤為空，Doxygen 也會自動解析它。]]>
       </docs>
     </option>
     <option type="list" id="CITE_BIB_FILES" format="file">
       <docs>
-<![CDATA[\c CITE_BIB_FILES 標籤可用於指定一個或多個包含參考定義的 \c bib 檔案。這必须是 <code>.bib</code> 檔案列資料表。如果省略，會自动附加 <code>.bib</code> 擴充功能名。這需要安裝 \c bibtex 工具。另請參閱 https://en.wikipedia.org/wiki/BibTeX 以取得更多資訊。對于 \f$\mbox{\LaTeX}\f$，可以使用 \ref cfg_latex_bib_style "LATEX_BIB_STYLE" 控制參考文献的樣式。要使用此功能，您需要在搜尋路徑中有 \c bibtex 和 \c perl 可用。另請參閱 \ref cmdcite "\cite" 以取得有關如何建立引用的資訊。]]>
+<![CDATA[\c CITE_BIB_FILES 標籤可用於指定一個或多個包含參考定義的 \c bib 檔案。這必须是 <code>.bib</code> 檔案列資料表。如果省略，會自動附加 <code>.bib</code> 擴充功能名。這需要安裝 \c bibtex 工具。另請參閱 https://en.wikipedia.org/wiki/BibTeX 以取得更多資訊。對于 \f$\mbox{\LaTeX}\f$，可以使用 \ref cfg_latex_bib_style "LATEX_BIB_STYLE" 控制參考文献的樣式。要使用此功能，您需要在搜尋路徑中有 \c bibtex 和 \c perl 可用。另請參閱 \ref cmdcite "\cite" 以取得有關如何建立引用的資訊。]]>
       </docs>
     </option>
     <option type="list" id="EXTERNAL_TOOL_PATH" format="dir" defval="">
@@ -577,7 +577,7 @@
     </option>
     <option type="bool" id="WARN_IF_UNDOCUMENTED" defval="1">
       <docs>
-<![CDATA[如果 \c WARN_IF_UNDOCUMENTED 標籤設定為 \c YES，Doxygen 將為未記錄的成員產生警告。如果 \ref cfg_extract_all "EXTRACT_ALL" 設定為 \c YES，則此標志將自动停用。]]>
+<![CDATA[如果 \c WARN_IF_UNDOCUMENTED 標籤設定為 \c YES，Doxygen 將為未記錄的成員產生警告。如果 \ref cfg_extract_all "EXTRACT_ALL" 設定為 \c YES，則此標志將自動停用。]]>
       </docs>
     </option>
     <option type="bool" id="WARN_IF_DOC_ERROR" defval="1">
@@ -587,17 +587,17 @@
     </option>
     <option type="bool" id="WARN_IF_INCOMPLETE_DOC" defval="1">
       <docs>
-<![CDATA[如果 \c WARN_IF_INCOMPLETE_DOC 設定為 \c YES，Doxygen 將警告不完整的函式參數檔案。如果設定為 \c NO，Doxygen 將接受某些參數没有檔案而不發出警告。]]>
+<![CDATA[如果 \c WARN_IF_INCOMPLETE_DOC 設定為 \c YES，Doxygen 將警告不完整的函式參數檔案。如果設定為 \c NO，Doxygen 將接受某些參數沒有檔案而不發出警告。]]>
       </docs>
     </option>
     <option type="bool" id="WARN_NO_PARAMDOC" defval="0">
       <docs>
-<![CDATA[可以啟用此 \c WARN_NO_PARAMDOC 選項以取得已記錄但没有參數或傳回值檔案的函式的警告。如果設定為 \c NO，Doxygen 只會警告錯誤的參數檔案，而不會警告缺少檔案。如果 \ref cfg_extract_all "EXTRACT_ALL" 設定為 \c YES，則此標志將自动停用。另請參閱 \ref cfg_warn_if_incomplete_doc "WARN_IF_INCOMPLETE_DOC"]]>
+<![CDATA[可以啟用此 \c WARN_NO_PARAMDOC 選項以取得已記錄但沒有參數或傳回值檔案的函式的警告。如果設定為 \c NO，Doxygen 只會警告錯誤的參數檔案，而不會警告缺少檔案。如果 \ref cfg_extract_all "EXTRACT_ALL" 設定為 \c YES，則此標志將自動停用。另請參閱 \ref cfg_warn_if_incomplete_doc "WARN_IF_INCOMPLETE_DOC"]]>
       </docs>
     </option>
     <option type="bool" id="WARN_IF_UNDOC_ENUM_VAL" defval="0">
       <docs>
-<![CDATA[如果 \c WARN_IF_UNDOC_ENUM_VAL 選項設定為 \c YES，Doxygen 將警告未記錄的列舉值。如果設定為 \c NO，Doxygen 將接受未記錄的列舉值。如果 \ref cfg_extract_all "EXTRACT_ALL" 設定為 \c YES，則此標志將自动停用。]]>
+<![CDATA[如果 \c WARN_IF_UNDOC_ENUM_VAL 選項設定為 \c YES，Doxygen 將警告未記錄的列舉值。如果設定為 \c NO，Doxygen 將接受未記錄的列舉值。如果 \ref cfg_extract_all "EXTRACT_ALL" 設定為 \c YES，則此標志將自動停用。]]>
       </docs>
     </option>
     <option type="bool" id="WARN_LAYOUT_FILE" defval="1">
@@ -607,7 +607,7 @@
     </option>
     <option type="enum" id="WARN_AS_ERROR" defval="NO">
       <docs>
-<![CDATA[如果 \c WARN_AS_ERROR 標籤設定為 \c YES，則 Doxygen 將在遇到警告時立即停止。如果 \c WARN_AS_ERROR 標籤設定為 \c FAIL_ON_WARNINGS，則 Doxygen 將繼续運行，就像 \c WARN_AS_ERROR 標籤設定為 \c NO 一樣，但在 Doxygen 過程結束時，Doxygen 將傳回非零狀態。如果 \c WARN_AS_ERROR 標籤設定為 \c FAIL_ON_WARNINGS_PRINT，則 Doxygen 的行為類別似于 \c FAIL_ON_WARNINGS，但在未定義 \ref cfg_warn_logfile "WARN_LOGFILE" 的情况下，Doxygen 不會在其他訊息之間寫入警告訊息，而是在運行結束時寫入它们，如果定義了 \ref cfg_warn_logfile "WARN_LOGFILE"，警告訊息除了在定義的檔案中外，还會在運行結束時顯示，除非 \ref cfg_warn_logfile "WARN_LOGFILE" 定義為 `-` 即標准輸出（`stdout`），在這种情况下，行為將保持為設定 \c FAIL_ON_WARNINGS。]]>
+<![CDATA[如果 \c WARN_AS_ERROR 標籤設定為 \c YES，則 Doxygen 將在遇到警告時立即停止。如果 \c WARN_AS_ERROR 標籤設定為 \c FAIL_ON_WARNINGS，則 Doxygen 將繼续運行，就像 \c WARN_AS_ERROR 標籤設定為 \c NO 一樣，但在 Doxygen 過程結束時，Doxygen 將傳回非零狀態。如果 \c WARN_AS_ERROR 標籤設定為 \c FAIL_ON_WARNINGS_PRINT，則 Doxygen 的行為類別似于 \c FAIL_ON_WARNINGS，但在未定義 \ref cfg_warn_logfile "WARN_LOGFILE" 的情况下，Doxygen 不會在其他訊息之間寫入警告訊息，而是在運行結束時寫入它們，如果定義了 \ref cfg_warn_logfile "WARN_LOGFILE"，警告訊息除了在定義的檔案中外，还會在運行結束時顯示，除非 \ref cfg_warn_logfile "WARN_LOGFILE" 定義為 `-` 即標准輸出（`stdout`），在這种情况下，行為將保持為設定 \c FAIL_ON_WARNINGS。]]>
       </docs>
       <value name="NO"/>
       <value name="YES"/>
@@ -616,7 +616,7 @@
     </option>
     <option type="string" id="WARN_FORMAT" format="string" defval="$file:$line: $text">
       <docs>
-<![CDATA[\c WARN_FORMAT 標籤确定 Doxygen 可以產生的警告訊息的格式。字元串應包含 <code>\$file</code>、<code>\$line</code> 和 <code>\$text</code> 標籤，它们將被警告起原始碼的檔案和行號以及警告文本取代。可選地，格式可以包含 <code>$version</code>，它將被檔案的版本取代（如果可以通過 \ref cfg_file_version_filter "FILE_VERSION_FILTER" 取得）\sa \ref cfg_warn_line_format "WARN_LINE_FORMAT"]]>
+<![CDATA[\c WARN_FORMAT 標籤确定 Doxygen 可以產生的警告訊息的格式。字元串應包含 <code>\$file</code>、<code>\$line</code> 和 <code>\$text</code> 標籤，它們將被警告起原始碼的檔案和行號以及警告文本取代。可選地，格式可以包含 <code>$version</code>，它將被檔案的版本取代（如果可以通過 \ref cfg_file_version_filter "FILE_VERSION_FILTER" 取得）\sa \ref cfg_warn_line_format "WARN_LINE_FORMAT"]]>
       </docs>
     </option>
     <option type="string" id="WARN_LINE_FORMAT" format="string" defval="at line $line of file $file">
@@ -626,7 +626,7 @@
     </option>
     <option type="string" id="WARN_LOGFILE" format="file" defval="">
       <docs>
-<![CDATA[\c WARN_LOGFILE 標籤可用於指定應將警告和錯誤訊息寫入的檔案。如果留空，輸出將寫入標准錯誤（`stderr`）。如果无法開啟指定的檔案進行寫入，警告和錯誤訊息將寫入標准錯誤。當指定檔案 `-` 時，警告和錯誤訊息將寫入標准輸出（`stdout`）。]]>
+<![CDATA[\c WARN_LOGFILE 標籤可用於指定應將警告和錯誤訊息寫入的檔案。如果留空，輸出將寫入標准錯誤（`stderr`）。如果無法開啟指定的檔案進行寫入，警告和錯誤訊息將寫入標准錯誤。當指定檔案 `-` 時，警告和錯誤訊息將寫入標准輸出（`stdout`）。]]>
       </docs>
     </option>
   </group>
@@ -643,12 +643,12 @@
     </option>
     <option type="list" id="INPUT_FILE_ENCODING" format="string">
       <docs>
-<![CDATA[此標籤可用於指定 Doxygen 解析的原始碼檔案的字元編碼。\c INPUT_FILE_ENCODING 標籤可用於基于每個檔案模式指定字元編碼。Doxygen 將檔案名與每個模式進行比较，如果有匹配，則應用編碼而不是預設的 \ref cfg_input_encoding "INPUT_ENCODING"。字元編碼是以下形式的列資料表：pattern=encoding（如 `*.php=ISO-8859-1`）。\sa \ref cfg_input_encoding "INPUT_ENCODING" 以取得有關支援編碼的更多資訊。]]>
+<![CDATA[此標籤可用於指定 Doxygen 解析的原始碼檔案的字元編碼。\c INPUT_FILE_ENCODING 標籤可用於基於每個檔案模式指定字元編碼。Doxygen 將檔案名與每個模式進行比較，如果有匹配，則應用編碼而不是預設的 \ref cfg_input_encoding "INPUT_ENCODING"。字元編碼是以下形式的列資料表：pattern=encoding（如 `*.php=ISO-8859-1`）。\sa \ref cfg_input_encoding "INPUT_ENCODING" 以取得有關支援編碼的更多資訊。]]>
       </docs>
     </option>
     <option type="list" id="FILE_PATTERNS" format="string">
       <docs>
-<![CDATA[如果 \ref cfg_input "INPUT" 標籤的值包含目錄，則可以使用 \c FILE_PATTERNS 標籤指定一個或多個通配符模式（如 `*.cpp` 和 `*.h`）來過濾目錄中的原始碼檔案。<br>請注意，對于自定義擴充功能名或未直接支援的擴充功能名，您还需要為擴充功能名設定 \ref cfg_extension_mapping "EXTENSION_MAPPING"，否則 Doxygen 不會读取這些檔案。<br>請注意，預設選中的檔案模式列資料表可能與 \ref default_file_extension_mapping "預設檔案擴充功能名映射"列資料表不同。<br>如果留空，則測試以下模式：]]>
+<![CDATA[如果 \ref cfg_input "INPUT" 標籤的值包含目錄，則可以使用 \c FILE_PATTERNS 標籤指定一個或多個通配符模式（如 `*.cpp` 和 `*.h`）來過濾目錄中的原始碼檔案。<br>請注意，對于自定義擴充功能名或未直接支援的擴充功能名，您还需要為擴充功能名設定 \ref cfg_extension_mapping "EXTENSION_MAPPING"，否則 Doxygen 不會讀取這些檔案。<br>請注意，預設選中的檔案模式列資料表可能與 \ref default_file_extension_mapping "預設檔案擴充功能名映射"列資料表不同。<br>如果留空，則測試以下模式：]]>
       </docs>
       <value name="*.c"/>
       <value name="*.cc"/>
@@ -749,12 +749,12 @@
     </option>
     <option type="string" id="INPUT_FILTER" format="file" defval="">
       <docs>
-<![CDATA[\c INPUT_FILTER 標籤可用於指定 Doxygen 應為每個輸入檔案呼叫的過濾器。Doxygen 將通過執行（通過 <code>popen()</code>）命令來呼叫過濾器程式：<br><code>\<filter\> \<input-file\></code><br>其中 <code>\<filter\></code> 是 \c INPUT_FILTER 標籤的值，<code>\<input-file\></code> 是輸入檔案的名稱。Doxygen 随後將使用過濾器程式寫入標准輸出的輸出進行進一步處理。如果指定了 \ref cfg_filter_patterns "FILTER_PATTERNS"，則忽略此標籤。<br>請注意，過濾器不得添加或刪除行；它在掃描程式碼之前應用，但在產生輸出程式碼時不應用。如果添加或刪除行，锚點將无法正确放置。<br>請注意，Doxygen 將使用處理並寫入標准輸出的資料進行進一步處理，因此不應將其他任何內容（如偵錯语句或使用的命令（因此在 Windows 批處理檔案中始终使用 `@echo OFF`））寫入標准輸出。<br>請注意，對于自定義擴充功能名或未直接支援的擴充功能名，您还需要為擴充功能名設定 \ref cfg_extension_mapping "EXTENSION_MAPPING"，否則 Doxygen 不會正确處理這些檔案。<br>]]>
+<![CDATA[\c INPUT_FILTER 標籤可用於指定 Doxygen 應為每個輸入檔案呼叫的過濾器。Doxygen 將通過執行（通過 <code>popen()</code>）命令來呼叫過濾器程式：<br><code>\<filter\> \<input-file\></code><br>其中 <code>\<filter\></code> 是 \c INPUT_FILTER 標籤的值，<code>\<input-file\></code> 是輸入檔案的名稱。Doxygen 随後將使用過濾器程式寫入標准輸出的輸出進行進一步處理。如果指定了 \ref cfg_filter_patterns "FILTER_PATTERNS"，則忽略此標籤。<br>請注意，過濾器不得添加或刪除行；它在掃描程式碼之前應用，但在產生輸出程式碼時不應用。如果添加或刪除行，锚點將無法正確放置。<br>請注意，Doxygen 將使用處理並寫入標准輸出的資料進行進一步處理，因此不應將其他任何內容（如偵錯语句或使用的命令（因此在 Windows 批處理檔案中始终使用 `@echo OFF`））寫入標准輸出。<br>請注意，對于自定義擴充功能名或未直接支援的擴充功能名，您还需要為擴充功能名設定 \ref cfg_extension_mapping "EXTENSION_MAPPING"，否則 Doxygen 不會正確處理這些檔案。<br>]]>
       </docs>
     </option>
     <option type="list" id="FILTER_PATTERNS" format="string">
       <docs>
-<![CDATA[\c FILTER_PATTERNS 標籤可用於基于每個檔案模式指定過濾器。Doxygen 將檔案名與每個模式進行比较，如果有匹配，則應用過濾器。過濾器是以下形式的列資料表：pattern=filter（如 `*.cpp=my_cpp_filter`）。請參閱 \ref cfg_input_filter "INPUT_FILTER" 以取得有關如何使用過濾器的更多資訊。如果 \c FILTER_PATTERNS 標籤為空或没有模式匹配檔案名，則應用 \ref cfg_input_filter "INPUT_FILTER"。<br>請注意，對于自定義擴充功能名或未直接支援的擴充功能名，您还需要為擴充功能名設定 \ref cfg_extension_mapping "EXTENSION_MAPPING"，否則 Doxygen 不會正确處理這些檔案。<br>]]>
+<![CDATA[\c FILTER_PATTERNS 標籤可用於基於每個檔案模式指定過濾器。Doxygen 將檔案名與每個模式進行比較，如果有匹配，則應用過濾器。過濾器是以下形式的列資料表：pattern=filter（如 `*.cpp=my_cpp_filter`）。請參閱 \ref cfg_input_filter "INPUT_FILTER" 以取得有關如何使用過濾器的更多資訊。如果 \c FILTER_PATTERNS 標籤為空或沒有模式匹配檔案名，則應用 \ref cfg_input_filter "INPUT_FILTER"。<br>請注意，對于自定義擴充功能名或未直接支援的擴充功能名，您还需要為擴充功能名設定 \ref cfg_extension_mapping "EXTENSION_MAPPING"，否則 Doxygen 不會正確處理這些檔案。<br>]]>
       </docs>
     </option>
     <option type="bool" id="FILTER_SOURCE_FILES" defval="0">
@@ -764,7 +764,7 @@
     </option>
     <option type="list" id="FILTER_SOURCE_PATTERNS" format="string" depends="FILTER_SOURCE_FILES">
       <docs>
-<![CDATA[\c FILTER_SOURCE_PATTERNS 標籤可用於基于每個檔案模式指定原始碼過濾器。模式將覆寫 \ref cfg_filter_patterns "FILTER_PATTERN" 的設定（如果有），也可以使用 `*.ext=` 停用特定模式的原始碼過濾器（因此不命名過濾器）。]]>
+<![CDATA[\c FILTER_SOURCE_PATTERNS 標籤可用於基於每個檔案模式指定原始碼過濾器。模式將覆寫 \ref cfg_filter_patterns "FILTER_PATTERN" 的設定（如果有），也可以使用 `*.ext=` 停用特定模式的原始碼過濾器（因此不命名過濾器）。]]>
       </docs>
     </option>
     <option type="string" id="USE_MDFILE_AS_MAINPAGE" format="string" defval="">
@@ -779,7 +779,7 @@
     </option>
     <option type="int" id="FORTRAN_COMMENT_AFTER" defval="72" minval="7" maxval="10000">
       <docs>
-<![CDATA[Fortran 標准規定，對于固定格式的 Fortran 程式碼，從位置 72 開始的所有字元都被视為註解。一個常見的擴充功能是允許在自动註解開始之前有更長的行。設定 \c FORTRAN_COMMENT_AFTER 也將使在自动註解開始之前可以處理更長的行。]]>
+<![CDATA[Fortran 標准規定，對于固定格式的 Fortran 程式碼，從位置 72 開始的所有字元都被视為註解。一個常見的擴充功能是允許在自動註解開始之前有更長的行。設定 \c FORTRAN_COMMENT_AFTER 也將使在自動註解開始之前可以處理更長的行。]]>
       </docs>
     </option>
   </group>
@@ -811,7 +811,7 @@
     </option>
     <option type="bool" id="REFERENCES_LINK_SOURCE" defval="1">
       <docs>
-<![CDATA[如果 \c REFERENCES_LINK_SOURCE 標籤設定為 \c YES 且 \ref cfg_source_browser "SOURCE_BROWSER" 標籤設定為 \c YES，則 \ref cfg_references_relation "REFERENCES_RELATION" 和 \ref cfg_referenced_by_relation "REFERENCED_BY_RELATION" 列資料表中函式的超連結將連結到原始碼程式碼。否則，它们將連結到檔案。]]>
+<![CDATA[如果 \c REFERENCES_LINK_SOURCE 標籤設定為 \c YES 且 \ref cfg_source_browser "SOURCE_BROWSER" 標籤設定為 \c YES，則 \ref cfg_references_relation "REFERENCES_RELATION" 和 \ref cfg_referenced_by_relation "REFERENCED_BY_RELATION" 列資料表中函式的超連結將連結到原始碼程式碼。否則，它們將連結到檔案。]]>
       </docs>
     </option>
     <option type="bool" id="SOURCE_TOOLTIPS" defval="1" depends="SOURCE_BROWSER">
@@ -858,7 +858,7 @@
     </option>
     <option type="list" id="IGNORE_PREFIX" format="string" depends="ALPHABETICAL_INDEX">
       <docs>
-<![CDATA[\c IGNORE_PREFIX 標籤可用於指定在產生索引標题時應忽略的前缀（或前缀列資料表）。\c IGNORE_PREFIX 標籤适用於類別、函式和成員名稱。實體將放置在移除前缀後實體名稱的首字母下的字母列資料表中。]]>
+<![CDATA[\c IGNORE_PREFIX 標籤可用於指定在產生索引標题時應忽略的前缀（或前缀列資料表）。\c IGNORE_PREFIX 標籤適用於類別、函式和成員名稱。實體將放置在移除前缀後實體名稱的首字母下的字母列資料表中。]]>
       </docs>
     </option>
   </group>
@@ -895,12 +895,12 @@
     </option>
     <option type="list" id="HTML_EXTRA_STYLESHEET" format="file" defval="" depends="GENERATE_HTML">
       <docs>
-<![CDATA[\c HTML_EXTRA_STYLESHEET 標籤可用於指定在 Doxygen 建立的標准樣式資料表之後包含的其他使用者定義的層聯樣式資料表。使用此選項可以覆寫某些樣式方面。這比使用 \ref cfg_html_stylesheet "HTML_STYLESHEET" 更可取，因為它不會取代標准樣式資料表，因此對未來的更新更加健壮。Doxygen 會將樣式資料表檔案複製到輸出目錄。\note 额外樣式資料表檔案的顺序很重要（例如，列資料表中的最後一個樣式資料表覆寫列資料表中前一個樣式資料表的設定）。\note 由於目前无法在 Webkit/Chromium 中覆寫捲軸的樣式，如果指定了一個或多個额外樣式資料表，預設 doxygen.css 中將省略捲軸樣式。因此，如果需要自定義捲軸，必须顯式添加。]]>
+<![CDATA[\c HTML_EXTRA_STYLESHEET 標籤可用於指定在 Doxygen 建立的標准樣式資料表之後包含的其他使用者定義的層聯樣式資料表。使用此選項可以覆寫某些樣式方面。這比使用 \ref cfg_html_stylesheet "HTML_STYLESHEET" 更可取，因為它不會取代標准樣式資料表，因此對未來的更新更加健壮。Doxygen 會將樣式資料表檔案複製到輸出目錄。\note 额外樣式資料表檔案的顺序很重要（例如，列資料表中的最後一個樣式資料表覆寫列資料表中前一個樣式資料表的設定）。\note 由於目前無法在 Webkit/Chromium 中覆寫捲軸的樣式，如果指定了一個或多個额外樣式資料表，預設 doxygen.css 中將省略捲軸樣式。因此，如果需要自定義捲軸，必须顯式添加。]]>
       </docs>
     </option>
     <option type="list" id="HTML_EXTRA_FILES" format="file" depends="GENERATE_HTML">
       <docs>
-<![CDATA[\c HTML_EXTRA_FILES 標籤可用於指定一個或多個應複製到 HTML 輸出目錄的额外影像或其他原始碼檔案。請注意，這些檔案將被複製到基本 HTML 輸出目錄。使用 \ref cfg_html_header "HTML_HEADER" 和/或 \ref cfg_html_footer "HTML_FOOTER" 檔案中的 <code>$relpath^</code> 標記來加載這些檔案。在 \ref cfg_html_stylesheet "HTML_STYLESHEET" 檔案中，仅使用檔案名。另請注意，檔案將按原樣複製；没有可用的命令或標記。]]>
+<![CDATA[\c HTML_EXTRA_FILES 標籤可用於指定一個或多個應複製到 HTML 輸出目錄的额外影像或其他原始碼檔案。請注意，這些檔案將被複製到基本 HTML 輸出目錄。使用 \ref cfg_html_header "HTML_HEADER" 和/或 \ref cfg_html_footer "HTML_FOOTER" 檔案中的 <code>$relpath^</code> 標記來加載這些檔案。在 \ref cfg_html_stylesheet "HTML_STYLESHEET" 檔案中，僅使用檔案名。另請注意，檔案將按原樣複製；沒有可用的命令或標記。]]>
       </docs>
     </option>
     <option type="enum" id="HTML_COLORSTYLE" defval="AUTO_LIGHT" depends="GENERATE_HTML">
@@ -920,7 +920,7 @@
     </option>
     <option type="int" id="HTML_COLORSTYLE_SAT" minval="0" maxval="255" defval="100" depends="GENERATE_HTML">
       <docs>
-<![CDATA[\c HTML_COLORSTYLE_SAT 標籤控制 HTML 輸出中色彩的纯度（或饱和度）。值為 0 時，輸出將仅使用灰度。值為 255 將產生最鲜艳的色彩。]]>
+<![CDATA[\c HTML_COLORSTYLE_SAT 標籤控制 HTML 輸出中色彩的纯度（或饱和度）。值為 0 時，輸出將僅使用灰度。值為 255 將產生最鲜艳的色彩。]]>
       </docs>
     </option>
     <option type="int" id="HTML_COLORSTYLE_GAMMA" minval="40" maxval="240" defval="80" depends="GENERATE_HTML">
@@ -930,7 +930,7 @@
     </option>
     <option type="bool" id="HTML_DYNAMIC_MENUS" defval="1" depends="GENERATE_HTML">
       <docs>
-<![CDATA[如果 \c HTML_DYNAMIC_MENUS 標籤設定為 \c YES，則產生的 HTML 檔案將包含一個主索引，其中包含通過 JavaScript 动態建立的垂直導航選單。如果停用，導航索引將由靜態嵌入每個 HTML 頁面的多層選項卡群組成。停用此選項以支援没有 JavaScript 的瀏覽器，如 Qt 說明瀏覽器。]]>
+<![CDATA[如果 \c HTML_DYNAMIC_MENUS 標籤設定為 \c YES，則產生的 HTML 檔案將包含一個主索引，其中包含通過 JavaScript 动態建立的垂直導航選單。如果停用，導航索引將由靜態嵌入每個 HTML 頁面的多層選項卡群組成。停用此選項以支援沒有 JavaScript 的瀏覽器，如 Qt 說明瀏覽器。]]>
       </docs>
     </option>
     <option type="bool" id="HTML_DYNAMIC_SECTIONS" defval="0" depends="GENERATE_HTML">
@@ -945,12 +945,12 @@
     </option>
     <option type="bool" id="HTML_COPY_CLIPBOARD" defval="1" depends="GENERATE_HTML">
       <docs>
-<![CDATA[如果 \c HTML_COPY_CLIPBOARD 標籤設定為 \c YES，Doxygen 將在程式碼和文本片段的右上角顯示一個圖示，允許使用者將其內容複製到剪贴板。請注意，這仅在瀏覽器支援且網頁通過<a href="https://www.w3.org/TR/secure-contexts/">安全性上下文</a>提供服务時才有效，即使用 https: 或 file: 協定。]]>
+<![CDATA[如果 \c HTML_COPY_CLIPBOARD 標籤設定為 \c YES，Doxygen 將在程式碼和文本片段的右上角顯示一個圖示，允許使用者將其內容複製到剪贴板。請注意，這僅在瀏覽器支援且網頁通過<a href="https://www.w3.org/TR/secure-contexts/">安全性上下文</a>提供服务時才有效，即使用 https: 或 file: 協定。]]>
       </docs>
     </option>
     <option type="string" id="HTML_PROJECT_COOKIE" defval="" depends="GENERATE_HTML">
       <docs>
-<![CDATA[Doxygen 在瀏覽器中持久存储一些設定（例如通過 cookie）。預設情况下，這些設定适用於 Doxygen 在所有專案中產生的所有 HTML 頁面。\c HTML_PROJECT_COOKIE 標籤可用於在專案特定的键下存储設定，以便使用者首選項將單独存储。]]>
+<![CDATA[Doxygen 在瀏覽器中持久存儲一些設定（例如通過 cookie）。預設情况下，這些設定適用於 Doxygen 在所有專案中產生的所有 HTML 頁面。\c HTML_PROJECT_COOKIE 標籤可用於在專案特定的键下存儲設定，以便使用者首選項將單独存儲。]]>
       </docs>
     </option>
     <option type="int" id="HTML_INDEX_NUM_ENTRIES" minval="0" maxval="9999" defval="100" depends="GENERATE_HTML">
@@ -990,7 +990,7 @@
     </option>
     <option type="bool" id="GENERATE_HTMLHELP" defval="0" depends="GENERATE_HTML">
       <docs>
-<![CDATA[如果 \c GENERATE_HTMLHELP 標籤設定為 \c YES，Doxygen 會產生三個额外的 HTML 索引檔案：\c index.hhp、\c index.hhc 和 \c index.hhk。\c index.hhp 是一個專案檔案，可以由 Windows 上的 Microsoft HTML Help Workshop 读取。2021 年初，Microsoft 將原始頁面（包括下載連結）下線（HTML 說明工作室已经處于维護模式多年）。您可以從網路檔案下載 HTML 說明工作室，网址為 <a href="http://web.archive.org/web/20160201063255/https://download.microsoft.com/download/0/A/9/0A939EF6-E31C-430F-A3DF-DFAE7960D564/htmlhelp.exe">安裝可執行檔案</a>。<br>HTML Help Workshop 包含一個編译器，可以將 Doxygen 產生的所有 HTML 輸出轉換為單個編译的 HTML 檔案（`.chm`）。編译的 HTML 檔案現在用作 Windows 98 說明格式，將來將在所有 Windows 平台上取代旧的 Windows 說明格式（`.hlp`）。壓縮的 HTML 檔案还包含索引、目錄，您可以在檔案中搜尋單詞。HTML 工作室还包含一個用於壓縮 HTML 檔案的查看器。]]>
+<![CDATA[如果 \c GENERATE_HTMLHELP 標籤設定為 \c YES，Doxygen 會產生三個额外的 HTML 索引檔案：\c index.hhp、\c index.hhc 和 \c index.hhk。\c index.hhp 是一個專案檔案，可以由 Windows 上的 Microsoft HTML Help Workshop 讀取。2021 年初，Microsoft 將原始頁面（包括下載連結）下線（HTML 說明工作室已经處于维護模式多年）。您可以從網路檔案下載 HTML 說明工作室，网址為 <a href="http://web.archive.org/web/20160201063255/https://download.microsoft.com/download/0/A/9/0A939EF6-E31C-430F-A3DF-DFAE7960D564/htmlhelp.exe">安裝可執行檔案</a>。<br>HTML Help Workshop 包含一個編译器，可以將 Doxygen 產生的所有 HTML 輸出轉換為單個編译的 HTML 檔案（`.chm`）。編译的 HTML 檔案現在用作 Windows 98 說明格式，將來將在所有 Windows 平台上取代旧的 Windows 說明格式（`.hlp`）。壓縮的 HTML 檔案还包含索引、目錄，您可以在檔案中搜尋單詞。HTML 工作室还包含一個用於壓縮 HTML 檔案的查看器。]]>
       </docs>
     </option>
     <option type="string" id="CHM_FILE" format="file" defval="" depends="GENERATE_HTMLHELP">
@@ -1070,7 +1070,7 @@
     </option>
     <option type="bool" id="GENERATE_ECLIPSEHELP" defval="0" depends="GENERATE_HTML">
       <docs>
-<![CDATA[如果 \c GENERATE_ECLIPSEHELP 標籤設定為 \c YES，將產生额外的索引檔案，與 HTML 檔案一起，它们形成一個 `Eclipse` 說明外掛程式。要安裝此外掛程式並使其在 `Eclipse` 的說明內容選單下可用，需要將包含 HTML 和 XML 檔案的目錄的內容複製到 eclipse 的外掛程式目錄中。外掛程式目錄中的目錄名稱應與 \ref cfg_eclipse_doc_id "ECLIPSE_DOC_ID" 值相同。複製後，`Eclipse` 需要重新啟動才能顯示說明。]]>
+<![CDATA[如果 \c GENERATE_ECLIPSEHELP 標籤設定為 \c YES，將產生额外的索引檔案，與 HTML 檔案一起，它們形成一個 `Eclipse` 說明外掛程式。要安裝此外掛程式並使其在 `Eclipse` 的說明內容選單下可用，需要將包含 HTML 和 XML 檔案的目錄的內容複製到 eclipse 的外掛程式目錄中。外掛程式目錄中的目錄名稱應與 \ref cfg_eclipse_doc_id "ECLIPSE_DOC_ID" 值相同。複製後，`Eclipse` 需要重新啟動才能顯示說明。]]>
       </docs>
     </option>
     <option type="string" id="ECLIPSE_DOC_ID" format="string" defval="org.doxygen.Project" depends="GENERATE_ECLIPSEHELP">
@@ -1095,7 +1095,7 @@
     </option>
     <option type="bool" id="FULL_SIDEBAR" defval="0" depends="GENERATE_HTML">
       <docs>
-<![CDATA[當 \ref cfg_generate_treeview "GENERATE_TREEVIEW" 設定為 \c YES 時，\c FULL_SIDEBAR 選項确定侧邊緣栏是否仅限于樹视圖區域（值 \c NO）还是應該延伸到視窗的整個高度（值 \c YES）。將此設定為 \c YES 會產生類別似于例如 https://docs.readthedocs.io 的布局，內容空間更大，但專案徽標、標题和描述的空間更小。如果 \ref cfg_generate_treeview "GENERATE_TREEVIEW" 設定為 \c NO，此選項无效。]]>
+<![CDATA[當 \ref cfg_generate_treeview "GENERATE_TREEVIEW" 設定為 \c YES 時，\c FULL_SIDEBAR 選項确定侧邊緣栏是否僅限于樹视圖區域（值 \c NO）还是應該延伸到視窗的整個高度（值 \c YES）。將此設定為 \c YES 會產生類別似于例如 https://docs.readthedocs.io 的布局，內容空間更大，但專案徽標、標题和描述的空間更小。如果 \ref cfg_generate_treeview "GENERATE_TREEVIEW" 設定為 \c NO，此選項无效。]]>
       </docs>
     </option>
     <option type="int" id="ENUM_VALUES_PER_LINE" minval="0" maxval="20" defval="4" depends="GENERATE_HTML">
@@ -1132,7 +1132,7 @@
     </option>
     <option type="int" id="FORMULA_FONTSIZE" minval="8" maxval="50" defval="10" depends="GENERATE_HTML">
       <docs>
-<![CDATA[使用此標籤更改包含在 HTML 檔案中作為影像的 \f$\mbox{\LaTeX}\f$ 公式的字型大小。在成功運行 Doxygen 後更改字型大小時，您需要手动從 HTML 輸出目錄中刪除任何 `form_*.png` 影像以强制重新產生它们。]]>
+<![CDATA[使用此標籤更改包含在 HTML 檔案中作為影像的 \f$\mbox{\LaTeX}\f$ 公式的字型大小。在成功運行 Doxygen 後更改字型大小時，您需要手动從 HTML 輸出目錄中刪除任何 `form_*.png` 影像以强制重新產生它們。]]>
       </docs>
     </option>
     <option type="string" id="FORMULA_MACROFILE" format="file" defval="">
@@ -1142,7 +1142,7 @@
     </option>
     <option type="bool" id="USE_MATHJAX" defval="0" depends="GENERATE_HTML">
       <docs>
-<![CDATA[啟用 \c USE_MATHJAX 選項以使用 MathJax（請參閱 https://www.mathjax.org）呈現 \f$\mbox{\LaTeX}\f$ 公式，它使用客戶端 JavaScript 進行呈現，而不是使用預呈現的位圖。如果您没有安裝 \f$\mbox{\LaTeX}\f$ 或者您希望公式在 HTML 輸出中看起來更漂亮，請使用此選項。啟用後，您可能还需要單独安裝 MathJax 並使用 \ref cfg_mathjax_relpath "MATHJAX_RELPATH" 選項設定其路徑。]]>
+<![CDATA[啟用 \c USE_MATHJAX 選項以使用 MathJax（請參閱 https://www.mathjax.org）呈現 \f$\mbox{\LaTeX}\f$ 公式，它使用客戶端 JavaScript 進行呈現，而不是使用預呈現的位圖。如果您沒有安裝 \f$\mbox{\LaTeX}\f$ 或者您希望公式在 HTML 輸出中看起來更漂亮，請使用此選項。啟用後，您可能还需要單独安裝 MathJax 並使用 \ref cfg_mathjax_relpath "MATHJAX_RELPATH" 選項設定其路徑。]]>
       </docs>
     </option>
     <option type="enum" id="MATHJAX_VERSION" defval="MathJax_2" depends="USE_MATHJAX">
@@ -1182,7 +1182,7 @@
     </option>
     <option type="list" id="MATHJAX_EXTENSIONS" format="string" depends="USE_MATHJAX">
       <docs>
-<![CDATA[\c MATHJAX_EXTENSIONS 標籤可用於指定在 MathJax 呈現期間應啟用的一個或多個 MathJax 擴充功能名稱。例如，對于 MathJax 版本 2（請參閱 https://docs.mathjax.org/en/v2.7/tex.html）：\verbatim MATHJAX_EXTENSIONS = TeX/AMSmath TeX/AMSsymbols \endverbatim 例如，對于 MathJax 版本 3（請參閱 https://docs.mathjax.org/en/v3.2/input/tex/extensions/）：\verbatim MATHJAX_EXTENSIONS = ams \endverbatim 例如，對于 MathJax 版本 4（請參閱 https://docs.mathjax.org/en/v4.0/input/tex/extensions/）：\verbatim MATHJAX_EXTENSIONS = units \endverbatim 請注意，對于 Mathjax 版本 4，已经自动加載了相當多的擴充功能。要在 Mathjax 版本 4 中停用包，可以使用前面带有减號的包名稱（`-` 如 `MATHJAX_EXTENSIONS += -textmacros`）]]>
+<![CDATA[\c MATHJAX_EXTENSIONS 標籤可用於指定在 MathJax 呈現期間應啟用的一個或多個 MathJax 擴充功能名稱。例如，對于 MathJax 版本 2（請參閱 https://docs.mathjax.org/en/v2.7/tex.html）：\verbatim MATHJAX_EXTENSIONS = TeX/AMSmath TeX/AMSsymbols \endverbatim 例如，對于 MathJax 版本 3（請參閱 https://docs.mathjax.org/en/v3.2/input/tex/extensions/）：\verbatim MATHJAX_EXTENSIONS = ams \endverbatim 例如，對于 MathJax 版本 4（請參閱 https://docs.mathjax.org/en/v4.0/input/tex/extensions/）：\verbatim MATHJAX_EXTENSIONS = units \endverbatim 請注意，對于 Mathjax 版本 4，已经自動加載了相當多的擴充功能。要在 Mathjax 版本 4 中停用包，可以使用前面带有减號的包名稱（`-` 如 `MATHJAX_EXTENSIONS += -textmacros`）]]>
       </docs>
     </option>
     <option type="string" id="MATHJAX_CODEFILE" format="string" depends="USE_MATHJAX">
@@ -1192,22 +1192,22 @@
     </option>
     <option type="bool" id="SEARCHENGINE" defval="1" depends="GENERATE_HTML">
       <docs>
-<![CDATA[當 \c SEARCHENGINE 標籤啟用時，Doxygen 將為 HTML 輸出產生一個搜尋框。底層搜尋引擎使用 JavaScript 和 DHTML，應該可以在任何現代瀏覽器上運行。請注意，當使用 HTML 說明（\ref cfg_generate_htmlhelp "GENERATE_HTMLHELP"）、Qt 說明（\ref cfg_generate_qhp "GENERATE_QHP"）或檔案集（\ref cfg_generate_docset "GENERATE_DOCSET"）時，已经有搜尋功能，因此通常應停用此功能。對于大型專案，基于 JavaScript 的搜尋引擎可能很慢，然後啟用 \ref cfg_server_based_search "SERVER_BASED_SEARCH" 可能提供更好的解决方案。可以使用键盘進行搜尋；要跳轉到搜尋框，請使用 <code>\<access key\> + S</code>（<code>\<access key\></code> 取决于操作系統和瀏覽器，但通常是 <code>\<CTRL\></code>、<code>\<ALT\></code>/<code>\<option\></code> 或兩者）。在搜尋框內，使用 <code>\<cursor down key\></code> 跳轉到搜尋結果視窗，可以使用 <code>\<cursor keys\></code> 導航結果。按 <code>\<Enter\></code> 選择專案或 <code>\<escape\></code> 取消搜尋。當光標在搜尋框內時，可以通過按 <code>\<Shift\>+\<cursor down\></code> 選择過濾器選項。在這里也使用 <code>\<cursor keys\></code> 選择過濾器，使用 <code>\<Enter\></code> 或 <code>\<escape\></code> 激活或取消過濾器選項。]]>
+<![CDATA[當 \c SEARCHENGINE 標籤啟用時，Doxygen 將為 HTML 輸出產生一個搜尋框。底層搜尋引擎使用 JavaScript 和 DHTML，應該可以在任何現代瀏覽器上運行。請注意，當使用 HTML 說明（\ref cfg_generate_htmlhelp "GENERATE_HTMLHELP"）、Qt 說明（\ref cfg_generate_qhp "GENERATE_QHP"）或檔案集（\ref cfg_generate_docset "GENERATE_DOCSET"）時，已经有搜尋功能，因此通常應停用此功能。對于大型專案，基於 JavaScript 的搜尋引擎可能很慢，然後啟用 \ref cfg_server_based_search "SERVER_BASED_SEARCH" 可能提供更好的解决方案。可以使用键盘進行搜尋；要跳轉到搜尋框，請使用 <code>\<access key\> + S</code>（<code>\<access key\></code> 取决于操作系統和瀏覽器，但通常是 <code>\<CTRL\></code>、<code>\<ALT\></code>/<code>\<option\></code> 或兩者）。在搜尋框內，使用 <code>\<cursor down key\></code> 跳轉到搜尋結果視窗，可以使用 <code>\<cursor keys\></code> 導航結果。按 <code>\<Enter\></code> 選择專案或 <code>\<escape\></code> 取消搜尋。當光標在搜尋框內時，可以通過按 <code>\<Shift\>+\<cursor down\></code> 選择過濾器選項。在這里也使用 <code>\<cursor keys\></code> 選择過濾器，使用 <code>\<Enter\></code> 或 <code>\<escape\></code> 激活或取消過濾器選項。]]>
       </docs>
     </option>
     <option type="bool" id="SERVER_BASED_SEARCH" defval="0" depends="SEARCHENGINE">
       <docs>
-<![CDATA[當 \c SERVER_BASED_SEARCH 標籤啟用時，搜尋引擎將使用 Web 伺服器而不是使用 JavaScript 的 Web 客戶端來實現。根據 \ref cfg_external_search "EXTERNAL_SEARCH" 設定，有兩种风格的基于 Web 伺服器的搜尋。停用時，Doxygen 將產生用於搜尋的 PHP 脚本和脚本使用的索引檔案。當啟用 \ref cfg_external_search "EXTERNAL_SEARCH" 時，需要由外部工具提供索引和搜尋。有關詳細資訊，請參閱第 \ref extsearch 節。]]>
+<![CDATA[當 \c SERVER_BASED_SEARCH 標籤啟用時，搜尋引擎將使用 Web 伺服器而不是使用 JavaScript 的 Web 客戶端來實現。根據 \ref cfg_external_search "EXTERNAL_SEARCH" 設定，有兩种风格的基於 Web 伺服器的搜尋。停用時，Doxygen 將產生用於搜尋的 PHP 脚本和脚本使用的索引檔案。當啟用 \ref cfg_external_search "EXTERNAL_SEARCH" 時，需要由外部工具提供索引和搜尋。有關詳細資訊，請參閱第 \ref extsearch 節。]]>
       </docs>
     </option>
     <option type="bool" id="EXTERNAL_SEARCH" defval="0" depends="SEARCHENGINE">
       <docs>
-<![CDATA[當 \c EXTERNAL_SEARCH 標籤啟用時，Doxygen 將不再產生用於搜尋的 PHP 脚本。相反，搜尋結果將寫入 XML 檔案，需要由外部索引器處理。Doxygen 將呼叫 \ref cfg_searchengine_url "SEARCHENGINE_URL" 選項指向的外部搜尋引擎以取得搜尋結果。<br>Doxygen 附带一個示例索引器（\c doxyindexer）和搜尋引擎（<code>doxysearch.cgi</code>），它们基于開原始碼搜尋引擎库 <a href="https://xapian.org/">Xapian</a>。<br>有關詳細資訊，請參閱第 \ref extsearch 節。]]>
+<![CDATA[當 \c EXTERNAL_SEARCH 標籤啟用時，Doxygen 將不再產生用於搜尋的 PHP 脚本。相反，搜尋結果將寫入 XML 檔案，需要由外部索引器處理。Doxygen 將呼叫 \ref cfg_searchengine_url "SEARCHENGINE_URL" 選項指向的外部搜尋引擎以取得搜尋結果。<br>Doxygen 附带一個示例索引器（\c doxyindexer）和搜尋引擎（<code>doxysearch.cgi</code>），它們基於開原始碼搜尋引擎库 <a href="https://xapian.org/">Xapian</a>。<br>有關詳細資訊，請參閱第 \ref extsearch 節。]]>
       </docs>
     </option>
     <option type="string" id="SEARCHENGINE_URL" format="string" defval="" depends="SEARCHENGINE">
       <docs>
-<![CDATA[\c SEARCHENGINE_URL 應指向由 Web 伺服器托管的搜尋引擎，當啟用 \ref cfg_external_search "EXTERNAL_SEARCH" 時將傳回搜尋結果。<br>Doxygen 附带一個示例索引器（\c doxyindexer）和搜尋引擎（<code>doxysearch.cgi</code>），它们基于開原始碼搜尋引擎库 <a href="https://xapian.org/">Xapian</a>。有關詳細資訊，請參閱第 \ref extsearch 節。]]>
+<![CDATA[\c SEARCHENGINE_URL 應指向由 Web 伺服器托管的搜尋引擎，當啟用 \ref cfg_external_search "EXTERNAL_SEARCH" 時將傳回搜尋結果。<br>Doxygen 附带一個示例索引器（\c doxyindexer）和搜尋引擎（<code>doxysearch.cgi</code>），它們基於開原始碼搜尋引擎库 <a href="https://xapian.org/">Xapian</a>。有關詳細資訊，請參閱第 \ref extsearch 節。]]>
       </docs>
     </option>
     <option type="string" id="SEARCHDATA_FILE" format="file" defval="searchdata.xml" depends="SEARCHENGINE">
@@ -1217,7 +1217,7 @@
     </option>
     <option type="string" id="EXTERNAL_SEARCH_ID" format="string" defval="" depends="SEARCHENGINE">
       <docs>
-<![CDATA[當 \ref cfg_server_based_search "SERVER_BASED_SEARCH" 和 \ref cfg_external_search "EXTERNAL_SEARCH" 都啟用時，\c EXTERNAL_SEARCH_ID 標籤可用作專案的標識符。這與 \ref cfg_extra_search_mappings "EXTRA_SEARCH_MAPPINGS" 結合使用很有用，可以搜尋多個專案並將結果重定向回正确的專案。]]>
+<![CDATA[當 \ref cfg_server_based_search "SERVER_BASED_SEARCH" 和 \ref cfg_external_search "EXTERNAL_SEARCH" 都啟用時，\c EXTERNAL_SEARCH_ID 標籤可用作專案的標識符。這與 \ref cfg_extra_search_mappings "EXTRA_SEARCH_MAPPINGS" 結合使用很有用，可以搜尋多個專案並將結果重定向回正確的專案。]]>
       </docs>
     </option>
     <option type="list" id="EXTRA_SEARCH_MAPPINGS" format="string" depends="SEARCHENGINE">
@@ -1249,7 +1249,7 @@
     </option>
     <option type="string" id="LATEX_MAKEINDEX_CMD" defval="makeindex" depends="GENERATE_LATEX">
       <docs>
-<![CDATA[\c LATEX_MAKEINDEX_CMD 標籤可用於指定為 \f$\mbox{\LaTeX}\f$ 產生索引的命令名稱。如果第一個字元没有反斜杠（`\`），則會自动添加到 \f$\mbox{\LaTeX}\f$ 程式碼中。@note 此標籤在產生輸出檔案（`.tex`）中使用。\sa \ref cfg_makeindex_cmd_name "MAKEINDEX_CMD_NAME" 用於 `Makefile` / `make.bat` 中的部分。]]>
+<![CDATA[\c LATEX_MAKEINDEX_CMD 標籤可用於指定為 \f$\mbox{\LaTeX}\f$ 產生索引的命令名稱。如果第一個字元沒有反斜杠（`\`），則會自動添加到 \f$\mbox{\LaTeX}\f$ 程式碼中。@note 此標籤在產生輸出檔案（`.tex`）中使用。\sa \ref cfg_makeindex_cmd_name "MAKEINDEX_CMD_NAME" 用於 `Makefile` / `make.bat` 中的部分。]]>
       </docs>
     </option>
     <option type="bool" id="COMPACT_LATEX" defval="0" depends="GENERATE_LATEX">
@@ -1268,7 +1268,7 @@
     </option>
     <option type="list" id="EXTRA_PACKAGES" format="string" depends="GENERATE_LATEX">
       <docs>
-<![CDATA[\c EXTRA_PACKAGES 標籤可用於指定應包含在 \f$\mbox{\LaTeX}\f$ 輸出中的一個或多個 \f$\mbox{\LaTeX}\f$ 包名稱。可以仅通過名稱或使用與 \f$\mbox{\LaTeX}\f$ `\usepackage` 命令一起使用的正确语法來指定包。例如，要取得 `times` 字型，您可以指定：\verbatim EXTRA_PACKAGES=times 或 EXTRA_PACKAGES={times} \endverbatim 要將選項 `intlimits` 與 `amsmath` 包一起使用，您可以指定：\verbatim EXTRA_PACKAGES=[intlimits]{amsmath} \endverbatim 如果留空，則不包含额外的包。]]>
+<![CDATA[\c EXTRA_PACKAGES 標籤可用於指定應包含在 \f$\mbox{\LaTeX}\f$ 輸出中的一個或多個 \f$\mbox{\LaTeX}\f$ 包名稱。可以僅通過名稱或使用與 \f$\mbox{\LaTeX}\f$ `\usepackage` 命令一起使用的正確語法來指定包。例如，要取得 `times` 字型，您可以指定：\verbatim EXTRA_PACKAGES=times 或 EXTRA_PACKAGES={times} \endverbatim 要將選項 `intlimits` 與 `amsmath` 包一起使用，您可以指定：\verbatim EXTRA_PACKAGES=[intlimits]{amsmath} \endverbatim 如果留空，則不包含额外的包。]]>
       </docs>
     </option>
     <option type="string" id="LATEX_HEADER" format="file" defval="" depends="GENERATE_LATEX">
@@ -1288,7 +1288,7 @@
     </option>
     <option type="list" id="LATEX_EXTRA_FILES" format="file" depends="GENERATE_LATEX">
       <docs>
-<![CDATA[\c LATEX_EXTRA_FILES 標籤可用於指定一個或多個應複製到 \ref cfg_latex_output "LATEX_OUTPUT" 輸出目錄的额外影像或其他原始碼檔案。請注意，檔案將按原樣複製；没有可用的命令或標記。]]>
+<![CDATA[\c LATEX_EXTRA_FILES 標籤可用於指定一個或多個應複製到 \ref cfg_latex_output "LATEX_OUTPUT" 輸出目錄的额外影像或其他原始碼檔案。請注意，檔案將按原樣複製；沒有可用的命令或標記。]]>
       </docs>
     </option>
     <option type="bool" id="PDF_HYPERLINKS" defval="1" depends="GENERATE_LATEX">
@@ -1298,7 +1298,7 @@
     </option>
     <option type="bool" id="USE_PDFLATEX" defval="1" depends="GENERATE_LATEX">
       <docs>
-<![CDATA[如果 \c USE_PDFLATEX 標籤設定為 \c YES，Doxygen 將使用 \ref cfg_latex_cmd_name "LATEX_CMD_NAME" 指定的引擎直接從 \f$\mbox{\LaTeX}\f$ 檔案產生 PDF 檔案。將此選項設定為 \c YES 以獲得更高质量的 PDF 檔案。<br>另請參閱第 \ref cfg_latex_cmd_name "LATEX_CMD_NAME" 節以選择引擎。]]>
+<![CDATA[如果 \c USE_PDFLATEX 標籤設定為 \c YES，Doxygen 將使用 \ref cfg_latex_cmd_name "LATEX_CMD_NAME" 指定的引擎直接從 \f$\mbox{\LaTeX}\f$ 檔案產生 PDF 檔案。將此選項設定為 \c YES 以獲得更高品質的 PDF 檔案。<br>另請參閱第 \ref cfg_latex_cmd_name "LATEX_CMD_NAME" 節以選择引擎。]]>
       </docs>
     </option>
     <option type="enum" id="LATEX_BATCHMODE" defval="NO" depends="GENERATE_LATEX">
@@ -1324,14 +1324,14 @@
     </option>
     <option type="string" id="LATEX_EMOJI_DIRECTORY" format="dir" defval="" depends="GENERATE_LATEX">
       <docs>
-<![CDATA[\c LATEX_EMOJI_DIRECTORY 標籤用於指定读取 emoji 影像的（相對或絕對）路徑。如果輸入相對路徑，它將相對于 \ref cfg_latex_output "LATEX_OUTPUT" 目錄。如果留空，則使用 \ref cfg_latex_output "LATEX_OUTPUT" 目錄。]]>
+<![CDATA[\c LATEX_EMOJI_DIRECTORY 標籤用於指定讀取 emoji 影像的（相對或絕對）路徑。如果輸入相對路徑，它將相對于 \ref cfg_latex_output "LATEX_OUTPUT" 目錄。如果留空，則使用 \ref cfg_latex_output "LATEX_OUTPUT" 目錄。]]>
       </docs>
     </option>
   </group>
   <group name="RTF" docs="與 RTF 輸出相關的設定選項">
     <option type="bool" id="GENERATE_RTF" defval="0">
       <docs>
-<![CDATA[如果 \c GENERATE_RTF 標籤設定為 \c YES，Doxygen 將產生 RTF 輸出。RTF 輸出针對 Word 97 進行了最佳化，在其他 RTF 閱读器/編辑器中可能看起來不太漂亮。]]>
+<![CDATA[如果 \c GENERATE_RTF 標籤設定為 \c YES，Doxygen 將產生 RTF 輸出。RTF 輸出针對 Word 97 進行了最佳化，在其他 RTF 閱讀器/編辑器中可能看起來不太漂亮。]]>
       </docs>
     </option>
     <option type="string" id="RTF_OUTPUT" format="dir" defval="rtf" depends="GENERATE_RTF">
@@ -1346,22 +1346,22 @@
     </option>
     <option type="bool" id="RTF_HYPERLINKS" defval="0" depends="GENERATE_RTF">
       <docs>
-<![CDATA[如果 \c RTF_HYPERLINKS 標籤設定為 \c YES，產生的 RTF 將包含超連結欄位。RTF 檔案將包含連結（就像 HTML 輸出一樣）而不是頁面引用。這使得輸出适合使用 Word 或其他支援這些欄位的 Word 兼容閱读器進行在線浏览。<br>注意：寫字板（write）和其他程式不支援連結。]]>
+<![CDATA[如果 \c RTF_HYPERLINKS 標籤設定為 \c YES，產生的 RTF 將包含超連結欄位。RTF 檔案將包含連結（就像 HTML 輸出一樣）而不是頁面引用。這使得輸出适合使用 Word 或其他支援這些欄位的 Word 兼容閱讀器進行在線浏览。<br>注意：寫字板（write）和其他程式不支援連結。]]>
       </docs>
     </option>
     <option type="string" id="RTF_STYLESHEET_FILE" format="file" defval="" depends="GENERATE_RTF">
       <docs>
-<![CDATA[從檔案加載樣式資料表定義。语法類別似于 Doxygen 的設定檔案，即一系列赋值。您只需要提供取代，缺少的定義設定為其預設值。<br>另請參閱第 \ref doxygen_usage 節以取得有關如何產生 Doxygen 通常使用的預設樣式資料表的資訊。]]>
+<![CDATA[從檔案加載樣式資料表定義。語法類別似于 Doxygen 的設定檔案，即一系列赋值。您只需要提供取代，缺少的定義設定為其預設值。<br>另請參閱第 \ref doxygen_usage 節以取得有關如何產生 Doxygen 通常使用的預設樣式資料表的資訊。]]>
       </docs>
     </option>
     <option type="string" id="RTF_EXTENSIONS_FILE" format="file" defval="" depends="GENERATE_RTF">
       <docs>
-<![CDATA[設定產生 RTF 檔案時使用的可選變數。语法類別似于 Doxygen 的設定檔案。可以使用 <code>doxygen -e rtf extensionFile</code> 產生範本擴充功能檔案。]]>
+<![CDATA[設定產生 RTF 檔案時使用的可選變數。語法類別似于 Doxygen 的設定檔案。可以使用 <code>doxygen -e rtf extensionFile</code> 產生範本擴充功能檔案。]]>
       </docs>
     </option>
     <option type="list" id="RTF_EXTRA_FILES" format="file" depends="GENERATE_RTF">
       <docs>
-<![CDATA[\c RTF_EXTRA_FILES 標籤可用於指定一個或多個應複製到 \ref cfg_rtf_output "RTF_OUTPUT" 輸出目錄的额外影像或其他原始碼檔案。請注意，檔案將按原樣複製；没有可用的命令或標記。]]>
+<![CDATA[\c RTF_EXTRA_FILES 標籤可用於指定一個或多個應複製到 \ref cfg_rtf_output "RTF_OUTPUT" 輸出目錄的额外影像或其他原始碼檔案。請注意，檔案將按原樣複製；沒有可用的命令或標記。]]>
       </docs>
     </option>
   </group>
@@ -1388,7 +1388,7 @@
     </option>
     <option type="bool" id="MAN_LINKS" defval="0" depends="GENERATE_MAN">
       <docs>
-<![CDATA[如果 \c MAN_LINKS 標籤設定為 \c YES 且 Doxygen 產生 man 輸出，則它將為真實 man 頁面中記錄的每個實體產生一個额外的 man 檔案。這些额外的檔案仅引用真實的 man 頁面，但没有它们，\c man 命令將无法找到正确的頁面。]]>
+<![CDATA[如果 \c MAN_LINKS 標籤設定為 \c YES 且 Doxygen 產生 man 輸出，則它將為真實 man 頁面中記錄的每個實體產生一個额外的 man 檔案。這些额外的檔案僅引用真實的 man 頁面，但沒有它們，\c man 命令將無法找到正確的頁面。]]>
       </docs>
     </option>
   </group>
@@ -1405,7 +1405,7 @@
     </option>
     <option type="bool" id="XML_PROGRAMLISTING" defval="1" depends="GENERATE_XML">
       <docs>
-<![CDATA[如果 \c XML_PROGRAMLISTING 標籤設定為 \c YES，Doxygen 將把程式列資料表（包括语法高亮和交叉引用資訊）轉储到 XML 輸出。請注意，啟用此功能將顯著增加 XML 輸出的大小。]]>
+<![CDATA[如果 \c XML_PROGRAMLISTING 標籤設定為 \c YES，Doxygen 將把程式列資料表（包括語法高亮和交叉引用資訊）轉储到 XML 輸出。請注意，啟用此功能將顯著增加 XML 輸出的大小。]]>
       </docs>
     </option>
     <option type="bool" id="XML_NS_MEMB_FILE_SCOPE" defval="0" depends="GENERATE_XML">
@@ -1436,7 +1436,7 @@
   <group name="Sqlite3" docs="與 Sqlite3 輸出相關的設定選項">
     <option type="bool" id="GENERATE_SQLITE3" defval="0">
       <docs>
-<![CDATA[如果 \c GENERATE_SQLITE3 標籤設定為 \c YES，Doxygen 將產生一個 \c Sqlite3 資料库，其中包含 Doxygen 找到的符號存储在資料表中。]]>
+<![CDATA[如果 \c GENERATE_SQLITE3 標籤設定為 \c YES，Doxygen 將產生一個 \c Sqlite3 資料库，其中包含 Doxygen 找到的符號存儲在資料表中。]]>
       </docs>
     </option>
     <option type="string" id="SQLITE3_OUTPUT" format="dir" defval="sqlite3" depends="GENERATE_SQLITE3">
@@ -1463,7 +1463,7 @@
     </option>
     <option type="bool" id="PERLMOD_PRETTY" defval="1" depends="GENERATE_PERLMOD">
       <docs>
-<![CDATA[如果 \c PERLMOD_PRETTY 標籤設定為 \c YES，Perl 模組輸出將被很好地格式化，以便人類別閱读器解析。如果您想了解發生了什么，這很有用。另一方面，如果此標籤設定為 \c NO，Perl 模組輸出的大小將小得多，Perl 也會同樣解析它。]]>
+<![CDATA[如果 \c PERLMOD_PRETTY 標籤設定為 \c YES，Perl 模組輸出將被很好地格式化，以便人類別閱讀器解析。如果您想了解發生了什么，這很有用。另一方面，如果此標籤設定為 \c NO，Perl 模組輸出的大小將小得多，Perl 也會同樣解析它。]]>
       </docs>
     </option>
     <option type="string" id="PERLMOD_MAKEVAR_PREFIX" format="string" defval="" depends="GENERATE_PERLMOD">
@@ -1485,7 +1485,7 @@
     </option>
     <option type="bool" id="EXPAND_ONLY_PREDEF" defval="0" depends="ENABLE_PREPROCESSING">
       <docs>
-<![CDATA[如果 \c EXPAND_ONLY_PREDEF 和 \ref cfg_macro_expansion "MACRO_EXPANSION" 標籤都設定為 \c YES，則巨集展開仅限于使用 \ref cfg_predefined "PREDEFINED" 和 \ref cfg_expand_as_defined "EXPAND_AS_DEFINED" 標籤指定的巨集。]]>
+<![CDATA[如果 \c EXPAND_ONLY_PREDEF 和 \ref cfg_macro_expansion "MACRO_EXPANSION" 標籤都設定為 \c YES，則巨集展開僅限于使用 \ref cfg_predefined "PREDEFINED" 和 \ref cfg_expand_as_defined "EXPAND_AS_DEFINED" 標籤指定的巨集。]]>
       </docs>
     </option>
     <option type="bool" id="SEARCH_INCLUDES" defval="1" depends="ENABLE_PREPROCESSING">
@@ -1522,12 +1522,12 @@
   <group name="External" trname="外部引用" docs="與外部參考相關的設定選項">
     <option type="list" id="TAGFILES" format="file">
       <docs>
-<![CDATA[\c TAGFILES 標籤可用於指定一個或多個標籤檔案。對于每個標籤檔案，應添加外部檔案的位置。没有此位置的標籤檔案的格式如下：\verbatim TAGFILES = file1 file2 ... \endverbatim 為標籤檔案添加位置的方式如下：\verbatim TAGFILES = file1=loc1 "file2 = loc2" ... \endverbatim 其中 `loc1` 和 `loc2` 可以是相對或絕對路徑或 URL。有關使用標籤檔案的更多資訊，請參閱第 \ref external 節。\note 每個標籤檔案必须具有唯一的名稱（其中名稱不包括路徑）。如果標籤檔案不在運行 Doxygen 的目錄中，您还必须在此處指定標籤檔案的路徑。]]>
+<![CDATA[\c TAGFILES 標籤可用於指定一個或多個標籤檔案。對于每個標籤檔案，應添加外部檔案的位置。沒有此位置的標籤檔案的格式如下：\verbatim TAGFILES = file1 file2 ... \endverbatim 為標籤檔案添加位置的方式如下：\verbatim TAGFILES = file1=loc1 "file2 = loc2" ... \endverbatim 其中 `loc1` 和 `loc2` 可以是相對或絕對路徑或 URL。有關使用標籤檔案的更多資訊，請參閱第 \ref external 節。\note 每個標籤檔案必须具有唯一的名稱（其中名稱不包括路徑）。如果標籤檔案不在運行 Doxygen 的目錄中，您还必须在此處指定標籤檔案的路徑。]]>
       </docs>
     </option>
     <option type="string" id="GENERATE_TAGFILE" format="file" defval="">
       <docs>
-<![CDATA[在 \c GENERATE_TAGFILE 後指定檔案名時，Doxygen 將建立一個基于其读取的輸入檔案的標籤檔案。有關標籤檔案使用的更多資訊，請參閱第 \ref external 節。]]>
+<![CDATA[在 \c GENERATE_TAGFILE 後指定檔案名時，Doxygen 將建立一個基於其讀取的輸入檔案的標籤檔案。有關標籤檔案使用的更多資訊，請參閱第 \ref external 節。]]>
       </docs>
     </option>
     <option type="bool" id="ALLEXTERNALS" defval="0">
@@ -1585,7 +1585,7 @@
     </option>
     <option type="string" id="DOT_NODE_ATTR" format="string" depends="HAVE_DOT" defval="shape=box,height=0.2,width=0.4">
       <docs>
-<![CDATA[\c DOT_NODE_ATTR 與 \ref cfg_dot_common_attr "DOT_COMMON_ATTR" 連線。對于没有節點周围框的视圖，設定 'shape=plain' 或 'shape=plaintext' <a href=https://www.graphviz.org/doc/info/shapes.html>形状規范</a>]]>
+<![CDATA[\c DOT_NODE_ATTR 與 \ref cfg_dot_common_attr "DOT_COMMON_ATTR" 連線。對于沒有節點周围框的视圖，設定 'shape=plain' 或 'shape=plaintext' <a href=https://www.graphviz.org/doc/info/shapes.html>形状規范</a>]]>
       </docs>
     </option>
     <option type="string" id="DOT_FONTPATH" format="dir" defval="" depends="HAVE_DOT">
@@ -1620,7 +1620,7 @@
     </option>
     <option type="int" id="UML_LIMIT_NUM_FIELDS" defval="10" minval="0" maxval="100" depends="UML_LOOK">
       <docs>
-<![CDATA[如果啟用了 \ref cfg_uml_look "UML_LOOK" 標籤，欄位和方法將顯示在類別節點內。如果有很多欄位或方法和很多節點，圖可能變得太大而无法使用。\c UML_LIMIT_NUM_FIELDS 阈值限制每种類別型的項數，以使大小更易于管理。將此設定為 0 資料表示无限制。請注意，在强制執行限制之前，阈值可能會超出 50%。因此，當您將阈值設定為 10 時，最多可能出現 15 個欄位，但如果數量超過 15，則顯示的欄位总數限制為 10。]]>
+<![CDATA[如果啟用了 \ref cfg_uml_look "UML_LOOK" 標籤，欄位和方法將顯示在類別節點內。如果有很多欄位或方法和很多節點，圖可能變得太大而無法使用。\c UML_LIMIT_NUM_FIELDS 阈值限制每种類別型的項數，以使大小更易于管理。將此設定為 0 資料表示无限制。請注意，在强制執行限制之前，阈值可能會超出 50%。因此，當您將阈值設定為 10 時，最多可能出現 15 個欄位，但如果數量超過 15，則顯示的欄位总數限制為 10。]]>
       </docs>
     </option>
     <option type="int" id="UML_MAX_EDGE_LABELS" defval="10" minval="0" maxval="100" depends="UML_LOOK">
@@ -1718,7 +1718,7 @@
     </option>
     <option type="bool" id="INTERACTIVE_SVG" defval="0" depends="HAVE_DOT">
       <docs>
-<![CDATA[如果 \ref cfg_dot_image_format "DOT_IMAGE_FORMAT" 設定為 `svg` 或 `svg:svg` 或 `svg:svg:core`，則可以將此選項設定為 \c YES 以啟用允許縮放和平移的交互式 SVG 影像的產生。<br>請注意，這需要除 Internet Explorer 之外的現代瀏覽器。已測試並正常工作的有 Firefox、Chrome、Safari 和 Opera。<br>注意，當 \ref cfg_dot_image_format "DOT_IMAGE_FORMAT" 設定為 `svg:cairo` 或 `svg:cairo:cairo` 時，此選項將自动停用。]]>
+<![CDATA[如果 \ref cfg_dot_image_format "DOT_IMAGE_FORMAT" 設定為 `svg` 或 `svg:svg` 或 `svg:svg:core`，則可以將此選項設定為 \c YES 以啟用允許縮放和平移的交互式 SVG 影像的產生。<br>請注意，這需要除 Internet Explorer 之外的現代瀏覽器。已測試並正常工作的有 Firefox、Chrome、Safari 和 Opera。<br>注意，當 \ref cfg_dot_image_format "DOT_IMAGE_FORMAT" 設定為 `svg:cairo` 或 `svg:cairo:cairo` 時，此選項將自動停用。]]>
       </docs>
     </option>
     <option type="string" id="DOT_PATH" format="filedir" defval="" depends="HAVE_DOT">
@@ -1763,7 +1763,7 @@
     </option>
     <option type="string" id="MERMAID_PATH" format="filedir" defval="">
       <docs>
-<![CDATA[使用带有 CLI 呈現的 Mermaid 圖資料表時，\c MERMAID_PATH 標籤應用於指定可以找到 \c mmdc (Mermaid CLI) 可執行檔案的目錄。如果留空，則停用基于 CLI 的呈現。對于 HTML 輸出，預設通過 JavaScript 使用客戶端呈現，不需要 \c mmdc。對于 LaTeX/PDF 輸出，需要 \c mmdc 來預產生影像。當需要 CLI 呈現但 \c mmdc 不可用時，Doxygen 將產生警告。]]>
+<![CDATA[使用带有 CLI 呈現的 Mermaid 圖資料表時，\c MERMAID_PATH 標籤應用於指定可以找到 \c mmdc (Mermaid CLI) 可執行檔案的目錄。如果留空，則停用基於 CLI 的呈現。對于 HTML 輸出，預設通過 JavaScript 使用客戶端呈現，不需要 \c mmdc。對于 LaTeX/PDF 輸出，需要 \c mmdc 來預產生影像。當需要 CLI 呈現但 \c mmdc 不可用時，Doxygen 將產生警告。]]>
       </docs>
     </option>
     <option type="string" id="MERMAID_CONFIG_FILE" format="file" defval="">
@@ -1796,7 +1796,7 @@
     </option>
     <option type="int" id="MAX_DOT_GRAPH_DEPTH" minval="0" maxval="1000" defval="0" depends="HAVE_DOT">
       <docs>
-<![CDATA[\c MAX_DOT_GRAPH_DEPTH 標籤可用於設定由 \c dot 產生的圖的最大深度。深度值 3 意味着只顯示從根通過最多 3 条邊緣的路徑可达的節點。距离根節點更远的節點將被省略。請注意，將此選項設定為 1 或 2 可能會大大减少大型程式碼库所需的计算時間。另請注意，圖的大小可以通過 \ref cfg_dot_graph_max_nodes "DOT_GRAPH_MAX_NODES" 進一步限制。使用深度 0 資料表示没有深度限制。]]>
+<![CDATA[\c MAX_DOT_GRAPH_DEPTH 標籤可用於設定由 \c dot 產生的圖的最大深度。深度值 3 意味着只顯示從根通過最多 3 条邊緣的路徑可达的節點。距离根節點更远的節點將被省略。請注意，將此選項設定為 1 或 2 可能會大大减少大型程式碼库所需的计算時間。另請注意，圖的大小可以通過 \ref cfg_dot_graph_max_nodes "DOT_GRAPH_MAX_NODES" 進一步限制。使用深度 0 資料表示沒有深度限制。]]>
       </docs>
     </option>
     <option type="bool" id="GENERATE_LEGEND" defval="1" depends="HAVE_DOT">
@@ -1806,7 +1806,7 @@
     </option>
     <option type="bool" id="DOT_CLEANUP" defval="1">
       <docs>
-<![CDATA[如果 \c DOT_CLEANUP 標籤設定為 \c YES，Doxygen 將刪除用於產生各种圖的中間檔案。<br>注意：此設定不仅用於 dot 檔案，还用於 msc 临時檔案。]]>
+<![CDATA[如果 \c DOT_CLEANUP 標籤設定為 \c YES，Doxygen 將刪除用於產生各种圖的中間檔案。<br>注意：此設定不僅用於 dot 檔案，还用於 msc 临時檔案。]]>
       </docs>
     </option>
     <option type="string" id="MSCGEN_TOOL" format="file" defval="">
