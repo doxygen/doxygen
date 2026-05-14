@@ -3,7 +3,7 @@
   <group name="Project" trname="Proyecto" docs="Opciones de configuración relacionadas con el proyecto">
     <option type="string" id="DOXYFILE_ENCODING" format="string" defval="UTF-8">
       <docs>
-<![CDATA[Esta etiqueta específica la codificación de todos los caracteres en el archivo de configuración que sigue. El valor predeterminado es UTF-8, que también es la codificación para todo el texto antes de la primera aparición de esta etiqueta. Doxygen usa \c libiconv (o iconv incorporado en \c libc) para la transcodificación. Ver https://www.gnu.org/software/libiconv/ para la lista de posibles codificaciones.]]>
+<![CDATA[Esta etiqueta especifica la codificación de todos los caracteres en el archivo de configuración que sigue. El valor predeterminado es UTF-8, que también es la codificación para todo el texto antes de la primera aparición de esta etiqueta. Doxygen usa \c libiconv (o iconv incorporado en \c libc) para la transcodificación. Ver https://www.gnu.org/software/libiconv/ para la lista de posibles codificaciones.]]>
       </docs>
     </option>
     <option type="string" id="PROJECT_NAME" format="string" defval="My Project">
@@ -113,7 +113,7 @@
     </option>
     <option type="list" id="ABBREVIATE_BRIEF" format="string">
       <docs>
-<![CDATA[Esta etiqueta implementa un abreviador de descripción breve casi inteligente que se usa para formar el texto en varias listas. Cada cadena en esta lista, si se encuentra como el texto inicial de una descripción breve, se eliminará del texto, y el resultado después de procesar toda la lista se usará como el texto anotado. De lo contrario, se usará la descripción breve como se específico. Si se deja vacío, se usarán los siguientes valores (`$name` se reemplaza automáticamente por el nombre de la entidad):]]>
+<![CDATA[Esta etiqueta implementa un abreviador de descripción breve casi inteligente que se usa para formar el texto en varias listas. Cada cadena en esta lista, si se encuentra como el texto inicial de una descripción breve, se eliminará del texto, y el resultado después de procesar toda la lista se usará como el texto anotado. De lo contrario, se usará la descripción breve como se especificó. Si se deja vacío, se usarán los siguientes valores (`$name` se reemplaza automáticamente por el nombre de la entidad):]]>
       </docs>
       <value name="The $name class"/>
       <value name="The $name widget"/>
@@ -209,7 +209,7 @@
     </option>
     <option type="bool" id="OPTIMIZE_OUTPUT_JAVA" defval="0">
       <docs>
-<![CDATA[Configure la etiqueta \c OPTIMIZE_OUTPUT_JAVA en \c YES si su proyecto consiste solo en fuentes Java o Python. Doxygen generará una salida más adaptada a ese lenguaje. Por ejemplo, los espacios de nombres se presentaran como paquetes, los ámbitos calificados se veran diferentes, etc.]]>
+<![CDATA[Configure la etiqueta \c OPTIMIZE_OUTPUT_JAVA en \c YES si su proyecto consiste solo en fuentes Java o Python. Doxygen generará una salida más adaptada a ese lenguaje. Por ejemplo, los espacios de nombres se presentarán como paquetes, los ámbitos calificados se verán diferentes, etc.]]>
       </docs>
     </option>
     <option type="bool" id="OPTIMIZE_FOR_FORTRAN" defval="0">
@@ -224,7 +224,7 @@
     </option>
     <option type="bool" id="OPTIMIZE_OUTPUT_SLICE" defval="0">
       <docs>
-<![CDATA[Configure la etiqueta \c OPTIMIZE_OUTPUT_SLICE en \c YES si su proyecto consiste solo en fuentes Slice. Doxygen generará una salida más adaptada a ese lenguaje. Por ejemplo, los espacios de nombres se presentaran como módulos, los tipos se agruparan en más grupos, etc.]]>
+<![CDATA[Configure la etiqueta \c OPTIMIZE_OUTPUT_SLICE en \c YES si su proyecto consiste solo en fuentes Slice. Doxygen generará una salida más adaptada a ese lenguaje. Por ejemplo, los espacios de nombres se presentarán como módulos, los tipos se agruparán en más grupos, etc.]]>
       </docs>
     </option>
     <option type="list" id="EXTENSION_MAPPING" format="string">
@@ -261,7 +261,7 @@
     </option>
     <option type="list" id="AUTOLINK_IGNORE_WORDS" format="string" depends="AUTOLINK_SUPPORT">
       <docs>
-<![CDATA[Esta etiqueta específica una lista de palabras que, cuando coinciden con el comienzo de una palabra en la documentación, suprimirán la generación automática de enlaces cuando esta está habilitada por AUTOLINK_SUPPORT. Esta lista no afecta los enlaces creados explícitamente con \# o los comandos \ref cmdlink "\\link" o \ref cmdref "\\ref".]]>
+<![CDATA[Esta etiqueta especifica una lista de palabras que, cuando coinciden con el comienzo de una palabra en la documentación, suprimirán la generación automática de enlaces cuando esta está habilitada por AUTOLINK_SUPPORT. Esta lista no afecta los enlaces creados explícitamente con \# o los comandos \ref cmdlink "\\link" o \ref cmdref "\\ref".]]>
       </docs>
     </option>
     <option type="bool" id="BUILTIN_STL_SUPPORT" defval="0">
@@ -317,12 +317,12 @@
     <option type="int" id="LOOKUP_CACHE_SIZE" minval="0" maxval="9" defval="0">
       <!-- be careful when changing these formulas as they are hard coded in the conversion script -->
       <docs>
-<![CDATA[El tamaño del cache de búsqueda de símbolos se puede configurar con \c LOOKUP_CACHE_SIZE. Este cache se usa para resolver símbolos por su nombre y alcance. Dado que este puede ser un proceso costoso y el mismo símbolo aparece a menudo múltiples veces en el código, Doxygen mantiene un cache de símbolos pre-resueltos. Si el cache es demasiado pequeno, Doxygen será más lento. Si el cache es demasiado grande, se desperdicia memoria. El tamaño del cache viene dado por esta formula: \f$2^{(16+\mbox{LOOKUP\_CACHE\_SIZE})}\f$. El rango válido es 0..9, el predeterminado es 0, que corresponde a un tamaño de cache de \f$2^{16} = 65536\f$ símbolos. Al final de una ejecución, Doxygen informará el uso del cache y sugerirá el tamaño de cache optimo desde el punto de vista de la velocidad.]]>
+<![CDATA[El tamaño del cache de búsqueda de símbolos se puede configurar con \c LOOKUP_CACHE_SIZE. Este cache se usa para resolver símbolos por su nombre y alcance. Dado que este puede ser un proceso costoso y el mismo símbolo aparece a menudo múltiples veces en el código, Doxygen mantiene un cache de símbolos pre-resueltos. Si el cache es demasiado pequeño, Doxygen será más lento. Si el cache es demasiado grande, se desperdicia memoria. El tamaño del cache viene dado por esta formula: \f$2^{(16+\mbox{LOOKUP\_CACHE\_SIZE})}\f$. El rango válido es 0..9, el predeterminado es 0, que corresponde a un tamaño de cache de \f$2^{16} = 65536\f$ símbolos. Al final de una ejecución, Doxygen informará el uso del cache y sugerirá el tamaño de cache óptimo desde el punto de vista de la velocidad.]]>
       </docs>
     </option>
     <option type="int" id="NUM_PROC_THREADS" defval="1" minval="0" maxval="512">
       <docs>
-<![CDATA[La etiqueta \c NUM_PROC_THREADS específica el número de subprocesos que Doxygen puede usar durante el procesamiento. Cuando se configura en \c 0, Doxygen lo basara en el número de núcleos disponibles en el sistema. Puede configurarlo explícitamente en un valor mayor que 0 para obtener más control sobre el equilibrio entre la carga de la CPU y la velocidad de procesamiento. Por el momento, solo el procesamiento de entrada se puede realizar con múltiples subprocesos. Dado que esta es todavia una caracteristica experimental, el valor predeterminado se establece en 1, lo que deshabilita efectivamente el procesamiento paralelo. Por favor, informe cualquier problema que encuentre. La generación paralela de grafos dot se controla mediante la configuración \c DOT_NUM_THREADS.]]>
+<![CDATA[La etiqueta \c NUM_PROC_THREADS especifica el número de subprocesos que Doxygen puede usar durante el procesamiento. Cuando se configura en \c 0, Doxygen lo basará en el número de núcleos disponibles en el sistema. Puede configurarlo explícitamente en un valor mayor que 0 para obtener más control sobre el equilibrio entre la carga de la CPU y la velocidad de procesamiento. Por el momento, solo el procesamiento de entrada se puede realizar con múltiples subprocesos. Dado que esta es todavía una característica experimental, el valor predeterminado se establece en 1, lo que deshabilita efectivamente el procesamiento paralelo. Por favor, informe cualquier problema que encuentre. La generación paralela de grafos dot se controla mediante la configuración \c DOT_NUM_THREADS.]]>
       </docs>
     </option>
     <option type="enum" id="TIMESTAMP" defval="NO">
@@ -338,7 +338,7 @@
   <group name="Build" trname="Construcción" docs="Opciones de configuración relacionadas con la compilación">
     <option type="bool" id="EXTRACT_ALL" defval="0">
       <docs>
-<![CDATA[Si la etiqueta \c EXTRACT_ALL está configurada en \c YES, Doxygen asumira que todas las entidades en la documentación están documentadas, incluso si no habia documentación disponible. Los miembros privados de clase y los miembros estáticos de archivo se ocultarán a menos que las etiquetas \ref cfg_extract_private "EXTRACT_PRIVATE" y \ref cfg_extract_static "EXTRACT_STATIC" esten configuradas en \c YES. \nota Esto también deshabilita las advertencias sobre miembros no documentados que normalmente se generan cuando \ref cfg_warnings "WARNINGS" está configurado en \c YES.]]>
+<![CDATA[Si la etiqueta \c EXTRACT_ALL está configurada en \c YES, Doxygen asumira que todas las entidades en la documentación están documentadas, incluso si no habia documentación disponible. Los miembros privados de clase y los miembros estáticos de archivo se ocultarán a menos que las etiquetas \ref cfg_extract_private "EXTRACT_PRIVATE" y \ref cfg_extract_static "EXTRACT_STATIC" estén configuradas en \c YES. \nota Esto también deshabilita las advertencias sobre miembros no documentados que normalmente se generan cuando \ref cfg_warnings "WARNINGS" está configurado en \c YES.]]>
       </docs>
     </option>
     <option type="bool" id="EXTRACT_PRIVATE" defval="0">
@@ -373,7 +373,7 @@
     </option>
     <option type="bool" id="EXTRACT_ANON_NSPACES" defval="0">
       <docs>
-<![CDATA[Si esta bandera está configurada en \c YES, los miembros de espacios de nombres anonimos serán extraidos y aparecerán en la documentación como un espacio de nombres llamado 'anonymous_namespace{file}', donde file se reemplaza por el nombre base del archivo que contiene el espacio de nombres anonimo. Por defecto, los espacios de nombres anonimos estan ocultos.]]>
+<![CDATA[Si esta bandera está configurada en \c YES, los miembros de espacios de nombres anónimos serán extraidos y aparecerán en la documentación como un espacio de nombres llamado 'anonymous_namespace{file}', donde file se reemplaza por el nombre base del archivo que contiene el espacio de nombres anónimo. Por defecto, los espacios de nombres anónimos están ocultos.]]>
       </docs>
     </option>
     <option type="bool" id="RESOLVE_UNNAMED_PARAMS" defval="1">
@@ -626,7 +626,7 @@
     </option>
     <option type="string" id="WARN_LOGFILE" format="file" defval="">
       <docs>
-<![CDATA[La etiqueta \c WARN_LOGFILE se puede usar para especificar un archivo en el que se deben escribir los mensajes de advertencia y error. Si se deja vacío, la salida se escribe en el error estándar (`stderr`). En caso de que el archivo especificado no se pueda abrir para escritura, los mensajes de advertencia y error se escriben en el error estándar. Cuando se específica el archivo `-`, los mensajes de advertencia y error se escriben en la salida estándar (`stdout`).]]>
+<![CDATA[La etiqueta \c WARN_LOGFILE se puede usar para especificar un archivo en el que se deben escribir los mensajes de advertencia y error. Si se deja vacío, la salida se escribe en el error estándar (`stderr`). En caso de que el archivo especificado no se pueda abrir para escritura, los mensajes de advertencia y error se escriben en el error estándar. Cuando se especifica el archivo `-`, los mensajes de advertencia y error se escriben en la salida estándar (`stdout`).]]>
       </docs>
     </option>
   </group>
@@ -708,7 +708,7 @@
     </option>
     <option type="list" id="EXCLUDE" format="filedir">
       <docs>
-<![CDATA[La etiqueta \c EXCLUDE se puede usar para especificar archivos y/o directorios que deben excluirse de los archivos fuente \ref cfg_input "INPUT". De esta manera puede excluir facilmente un subdirectorio de un árbol de directorios cuya raíz se específica con la etiqueta \ref cfg_input "INPUT". <br>Tenga en cuenta que las rutas relativas son relativas al directorio desde donde se ejecuta Doxygen.]]>
+<![CDATA[La etiqueta \c EXCLUDE se puede usar para especificar archivos y/o directorios que deben excluirse de los archivos fuente \ref cfg_input "INPUT". De esta manera puede excluir fácilmente un subdirectorio de un árbol de directorios cuya raíz se especifica con la etiqueta \ref cfg_input "INPUT". <br>Tenga en cuenta que las rutas relativas son relativas al directorio desde donde se ejecuta Doxygen.]]>
       </docs>
     </option>
     <option type="bool" id="EXCLUDE_SYMLINKS" defval="0">
@@ -749,7 +749,7 @@
     </option>
     <option type="string" id="INPUT_FILTER" format="file" defval="">
       <docs>
-<![CDATA[La etiqueta \c INPUT_FILTER se puede usar para especificar un programa que Doxygen debe invocar para cada archivo de entrada. Doxygen invocará el programa de filtro ejecutando (via <code>popen()</code>) el comando: <br> <code>\<filtro\> \<archivo-entrada\></code> <br> donde <code>\<filtro\></code> es el valor de la etiqueta \c INPUT_FILTER y <code>\<archivo-entrada\></code> es el nombre de un archivo de entrada. Doxygen usará entonces la salida que el programa de filtro escriba en la salida estándar. Si \ref cfg_filter_patterns "FILTER_PATTERNS" está especificado, esta etiqueta se ignorará. <br>Tenga en cuenta que el filtro no debe agregar ni eliminar líneas; se aplica antes de que se escanee el código, pero no cuando se genera el código de salida. Si se agregan o eliminan líneas, los anclajes no se colocaran correctamente. <br>Tenga en cuenta que Doxygen usará los datos procesados y escritos en la salida estándar para su posterior procesamiento, por lo que no se debe escribir nada más, como declaraciones de depuración o comandos usados (así que en el caso de un archivo por lotes de Windows, siempre use `@echo OFF`). <br>Tenga en cuenta que para extensiones personalizadas o extensiones no soportadas directamente, también debe configurar \ref cfg_extension_mapping "EXTENSION_MAPPING" para la extensión, de lo contrario los archivos no serán procesados correctamente por Doxygen.<br>]]>
+<![CDATA[La etiqueta \c INPUT_FILTER se puede usar para especificar un programa que Doxygen debe invocar para cada archivo de entrada. Doxygen invocará el programa de filtro ejecutando (via <code>popen()</code>) el comando: <br> <code>\<filtro\> \<archivo-entrada\></code> <br> donde <code>\<filtro\></code> es el valor de la etiqueta \c INPUT_FILTER y <code>\<archivo-entrada\></code> es el nombre de un archivo de entrada. Doxygen usará entonces la salida que el programa de filtro escriba en la salida estándar. Si \ref cfg_filter_patterns "FILTER_PATTERNS" está especificado, esta etiqueta se ignorará. <br>Tenga en cuenta que el filtro no debe agregar ni eliminar líneas; se aplica antes de que se escanee el código, pero no cuando se genera el código de salida. Si se agregan o eliminan líneas, los anclajes no se colocarán correctamente. <br>Tenga en cuenta que Doxygen usará los datos procesados y escritos en la salida estándar para su posterior procesamiento, por lo que no se debe escribir nada más, como declaraciones de depuración o comandos usados (así que en el caso de un archivo por lotes de Windows, siempre use `@echo OFF`). <br>Tenga en cuenta que para extensiones personalizadas o extensiones no soportadas directamente, también debe configurar \ref cfg_extension_mapping "EXTENSION_MAPPING" para la extensión, de lo contrario los archivos no serán procesados correctamente por Doxygen.<br>]]>
       </docs>
     </option>
     <option type="list" id="FILTER_PATTERNS" format="string">
@@ -779,7 +779,7 @@
     </option>
     <option type="int" id="FORTRAN_COMMENT_AFTER" defval="72" minval="7" maxval="10000">
       <docs>
-<![CDATA[El estándar Fortran específica que para el código Fortran de formato fijo, todos los caracteres desde la posición 72 se consideran comentarios. Una extensión común es permitir líneas más largas antes de que comience el comentario automático. La configuración \c FORTRAN_COMMENT_AFTER también hace posible que se procesen líneas más largas antes de que comience el comentario automático.]]>
+<![CDATA[El estándar Fortran especifica que para el código Fortran de formato fijo, todos los caracteres desde la posición 72 se consideran comentarios. Una extensión común es permitir líneas más largas antes de que comience el comentario automático. La configuración \c FORTRAN_COMMENT_AFTER también hace posible que se procesen líneas más largas antes de que comience el comentario automático.]]>
       </docs>
     </option>
   </group>
@@ -826,7 +826,7 @@
     </option>
     <option type="bool" id="VERBATIM_HEADERS" defval="1">
       <docs>
-<![CDATA[Si la etiqueta \c VERBATIM_HEADERS está configurada en \c YES, Doxygen generará una copia literal del archivo de encabezado para cada clase para la cual se específica una inclusión. Configure en \c NO para deshabilitar esto. \sa Sección \ref cmdclass "\\class".]]>
+<![CDATA[Si la etiqueta \c VERBATIM_HEADERS está configurada en \c YES, Doxygen generará una copia literal del archivo de encabezado para cada clase para la cual se especifica una inclusión. Configure en \c NO para deshabilitar esto. \sa Sección \ref cmdclass "\\class".]]>
       </docs>
     </option>
     <option type="bool" id="CLANG_ASSISTED_PARSING" setting="USE_LIBCLANG" defval="0">
@@ -870,7 +870,7 @@
     </option>
     <option type="string" id="HTML_OUTPUT" format="dir" defval="html" depends="GENERATE_HTML">
       <docs>
-<![CDATA[La etiqueta \c HTML_OUTPUT se usa para especificar donde se colocaran los documentos HTML. Si se ingresa una ruta relativa, el valor de \ref cfg_output_directory "OUTPUT_DIRECTORY" se antepondrá.]]>
+<![CDATA[La etiqueta \c HTML_OUTPUT se usa para especificar donde se colocarán los documentos HTML. Si se ingresa una ruta relativa, el valor de \ref cfg_output_directory "OUTPUT_DIRECTORY" se antepondrá.]]>
       </docs>
     </option>
     <option type="string" id="HTML_FILE_EXTENSION" format="string" defval=".html" depends="GENERATE_HTML">
@@ -900,7 +900,7 @@
     </option>
     <option type="list" id="HTML_EXTRA_FILES" format="file" depends="GENERATE_HTML">
       <docs>
-<![CDATA[La etiqueta \c HTML_EXTRA_FILES se puede usar para especificar una o más imagenes adicionales u otros archivos de origen que deben copiarse en el directorio de salida HTML. Tenga en cuenta que estos archivos se copiarán en el directorio de salida HTML base. Use el marcador <code>$relpath^</code> en los archivos \ref cfg_html_header "HTML_HEADER" y/o \ref cfg_html_footer "HTML_FOOTER" para cargar estos archivos. En el archivo \ref cfg_html_stylesheet "HTML_STYLESHEET" use solo el nombre del archivo. Tenga en cuenta también que los archivos se copian tal como estan; no hay comandos o marcadores disponibles.]]>
+<![CDATA[La etiqueta \c HTML_EXTRA_FILES se puede usar para especificar una o más imagenes adicionales u otros archivos de origen que deben copiarse en el directorio de salida HTML. Tenga en cuenta que estos archivos se copiarán en el directorio de salida HTML base. Use el marcador <code>$relpath^</code> en los archivos \ref cfg_html_header "HTML_HEADER" y/o \ref cfg_html_footer "HTML_FOOTER" para cargar estos archivos. En el archivo \ref cfg_html_stylesheet "HTML_STYLESHEET" use solo el nombre del archivo. Tenga en cuenta también que los archivos se copian tal como están; no hay comandos o marcadores disponibles.]]>
       </docs>
     </option>
     <option type="enum" id="HTML_COLORSTYLE" defval="AUTO_LIGHT" depends="GENERATE_HTML">
@@ -915,7 +915,7 @@
     </option>
     <option type="int" id="HTML_COLORSTYLE_HUE" minval="0" maxval="359" defval="220" depends="GENERATE_HTML">
       <docs>
-<![CDATA[La etiqueta \c HTML_COLORSTYLE_HUE controla el color de la salida HTML. Doxygen ajustara los colores en la hoja de estilo y las imagenes de fondo de acuerdo con este color. El tono se específica como un ángulo en una rueda de color, vea https://en.wikipedia.org/wiki/Hue para más información. Por ejemplo, el valor 0 representa rojo, 60 es amarillo, 120 es verde, 180 es cian, 240 es azul, 300 es púrpura y 360 es rojo de nuevo.]]>
+<![CDATA[La etiqueta \c HTML_COLORSTYLE_HUE controla el color de la salida HTML. Doxygen ajustará los colores en la hoja de estilo y las imagenes de fondo de acuerdo con este color. El tono se especifica como un ángulo en una rueda de color, vea https://en.wikipedia.org/wiki/Hue para más información. Por ejemplo, el valor 0 representa rojo, 60 es amarillo, 120 es verde, 180 es cian, 240 es azul, 300 es púrpura y 360 es rojo de nuevo.]]>
       </docs>
     </option>
     <option type="int" id="HTML_COLORSTYLE_SAT" minval="0" maxval="255" defval="100" depends="GENERATE_HTML">
@@ -975,12 +975,12 @@
     </option>
     <option type="string" id="DOCSET_BUNDLE_ID" format="string" defval="org.doxygen.Project" depends="GENERATE_DOCSET">
       <docs>
-<![CDATA[Esta etiqueta específica una cadena que debe identificar de manera única el paquete del conjunto de documentos. Esta debe ser una cadena en estilo de nombre de dominio inverso, por ejemplo, <code>com.mycompany.MyDocSet</code>. Doxygen añadirá <code>.docset</code> al nombre.]]>
+<![CDATA[Esta etiqueta especifica una cadena que debe identificar de manera única el paquete del conjunto de documentos. Esta debe ser una cadena en estilo de nombre de dominio inverso, por ejemplo, <code>com.mycompany.MyDocSet</code>. Doxygen añadirá <code>.docset</code> al nombre.]]>
       </docs>
     </option>
     <option type="string" id="DOCSET_PUBLISHER_ID" format="string" defval="org.doxygen.Publisher" depends="GENERATE_DOCSET">
       <docs>
-<![CDATA[La etiqueta \c DOCSET_PUBLISHER_ID específica una cadena que debe identificar de manera única al editor de documentación. Esta debe ser una cadena en estilo de nombre de dominio inverso, por ejemplo, <code>com.mycompany.MyDocSet.documentation</code>.]]>
+<![CDATA[La etiqueta \c DOCSET_PUBLISHER_ID especifica una cadena que debe identificar de manera única al editor de documentación. Esta debe ser una cadena en estilo de nombre de dominio inverso, por ejemplo, <code>com.mycompany.MyDocSet.documentation</code>.]]>
       </docs>
     </option>
     <option type="string" id="DOCSET_PUBLISHER_NAME" format="string" defval="Publisher" depends="GENERATE_DOCSET">
@@ -1015,7 +1015,7 @@
     </option>
     <option type="bool" id="BINARY_TOC" defval="0" depends="GENERATE_HTMLHELP">
       <docs>
-<![CDATA[La bandera \c BINARY_TOC controla si se genera un tabla de contenidos binaria. Si se configura en \c YES, se creará una tabla de contenidos binaria, lo que resultará en una búsqueda más rápida y archivos más pequenos. La tabla de contenidos predeterminada se almacena en un archivo de texto.]]>
+<![CDATA[La bandera \c BINARY_TOC controla si se genera un tabla de contenidos binaria. Si se configura en \c YES, se creará una tabla de contenidos binaria, lo que resultará en una búsqueda más rápida y archivos más pequeños. La tabla de contenidos predeterminada se almacena en un archivo de texto.]]>
       </docs>
     </option>
     <option type="bool" id="TOC_EXPAND" defval="0" depends="GENERATE_HTMLHELP">
@@ -1040,27 +1040,27 @@
     </option>
     <option type="string" id="QHP_NAMESPACE" format="string" defval="org.doxygen.Project" depends="GENERATE_QHP">
       <docs>
-<![CDATA[La etiqueta \c QHP_NAMESPACE específica el espacio de nombres a usar al generar la salida del Proyecto de Ayuda Qt. Para más información, vea <a href="https://doc.qt.io/archives/qt-4.8/qthelpproject.html#namespace">Qt Help Project / Namespace</a>.]]>
+<![CDATA[La etiqueta \c QHP_NAMESPACE especifica el espacio de nombres a usar al generar la salida del Proyecto de Ayuda Qt. Para más información, vea <a href="https://doc.qt.io/archives/qt-4.8/qthelpproject.html#namespace">Qt Help Project / Namespace</a>.]]>
       </docs>
     </option>
     <option type="string" id="QHP_VIRTUAL_FOLDER" format="string" defval="doc" depends="GENERATE_QHP">
       <docs>
-<![CDATA[La etiqueta \c QHP_VIRTUAL_FOLDER específica el espacio de nombres a usar al generar la salida del Proyecto de Ayuda Qt. Para más información, vea <a href="https://doc.qt.io/archives/qt-4.8/qthelpproject.html#virtual-folders">Qt Help Project / Virtual Folders</a>.]]>
+<![CDATA[La etiqueta \c QHP_VIRTUAL_FOLDER especifica el espacio de nombres a usar al generar la salida del Proyecto de Ayuda Qt. Para más información, vea <a href="https://doc.qt.io/archives/qt-4.8/qthelpproject.html#virtual-folders">Qt Help Project / Virtual Folders</a>.]]>
       </docs>
     </option>
     <option type="string" id="QHP_CUST_FILTER_NAME" format="string" defval="" depends="GENERATE_QHP">
       <docs>
-<![CDATA[Si la etiqueta \c QHP_CUST_FILTER_NAME está configurada, específica el nombre de un filtro personalizado a agregar. Para más información, vea <a href="https://doc.qt.io/archives/qt-4.8/qthelpproject.html#custom-filters">Qt Help Project / Custom Filters</a>.]]>
+<![CDATA[Si la etiqueta \c QHP_CUST_FILTER_NAME está configurada, especifica el nombre de un filtro personalizado a agregar. Para más información, vea <a href="https://doc.qt.io/archives/qt-4.8/qthelpproject.html#custom-filters">Qt Help Project / Custom Filters</a>.]]>
       </docs>
     </option>
     <option type="string" id="QHP_CUST_FILTER_ATTRS" format="string" defval="" depends="GENERATE_QHP">
       <docs>
-<![CDATA[La etiqueta \c QHP_CUST_FILTER_ATTRS específica la lista de atributos del filtro personalizado a agregar. Para más información, vea <a href="https://doc.qt.io/archives/qt-4.8/qthelpproject.html#custom-filters">Qt Help Project / Custom Filters</a>.]]>
+<![CDATA[La etiqueta \c QHP_CUST_FILTER_ATTRS especifica la lista de atributos del filtro personalizado a agregar. Para más información, vea <a href="https://doc.qt.io/archives/qt-4.8/qthelpproject.html#custom-filters">Qt Help Project / Custom Filters</a>.]]>
       </docs>
     </option>
     <option type="string" id="QHP_SECT_FILTER_ATTRS" format="string" defval="" depends="GENERATE_QHP">
       <docs>
-<![CDATA[La etiqueta \c QHP_SECT_FILTER_ATTRS específica la lista de atributos con los que coincide la sección de filtro de este proyecto. <a href="https://doc.qt.io/archives/qt-4.8/qthelpproject.html#filter-attributes">Qt Help Project / Filter Attributes</a>.]]>
+<![CDATA[La etiqueta \c QHP_SECT_FILTER_ATTRS especifica la lista de atributos con los que coincide la sección de filtro de este proyecto. <a href="https://doc.qt.io/archives/qt-4.8/qthelpproject.html#filter-attributes">Qt Help Project / Filter Attributes</a>.]]>
       </docs>
     </option>
     <option type="string" id="QHG_LOCATION" format="file" defval="" depends="GENERATE_QHP">
@@ -1085,7 +1085,7 @@
     </option>
     <option type="bool" id="GENERATE_TREEVIEW" defval="1" depends="GENERATE_HTML">
       <docs>
-<![CDATA[La etiqueta \c GENERATE_TREEVIEW se usa para especificar si se debe generar una estructura de índice en forma de árbol para mostrar información jerarquica. Si el valor de la etiqueta está configurado en \c YES, se generará un panel lateral que contiene una estructura de índice en forma de árbol (igual que la que se genera para la Ayuda HTML). Para que esto funcione se requiere un navegador que soporte JavaScript, DHTML, CSS y marcos (es decir, cualquier navegador moderno). Los usuarios de Windows probablemente esten mejor usando la función de ayuda HTML. A través de hojas de estilo personalizadas (vea \ref cfg_html_extra_stylesheet "HTML_EXTRA_STYLESHEET") se puede ajustar aún más la apariencia del índice (vea \ref doxygen_finetune). Como ejemplo, la hoja de estilo predeterminada generada por Doxygen tiene un ejemplo que muestra como colocar una imagen en la raíz del árbol en lugar del \ref cfg_project_name "PROJECT_NAME".]]>
+<![CDATA[La etiqueta \c GENERATE_TREEVIEW se usa para especificar si se debe generar una estructura de índice en forma de árbol para mostrar información jerárquica. Si el valor de la etiqueta está configurado en \c YES, se generará un panel lateral que contiene una estructura de índice en forma de árbol (igual que la que se genera para la Ayuda HTML). Para que esto funcione se requiere un navegador que soporte JavaScript, DHTML, CSS y marcos (es decir, cualquier navegador moderno). Los usuarios de Windows probablemente estén mejor usando la función de ayuda HTML. A través de hojas de estilo personalizadas (vea \ref cfg_html_extra_stylesheet "HTML_EXTRA_STYLESHEET") se puede ajustar aún más la apariencia del índice (vea \ref doxygen_finetune). Como ejemplo, la hoja de estilo predeterminada generada por Doxygen tiene un ejemplo que muestra como colocar una imagen en la raíz del árbol en lugar del \ref cfg_project_name "PROJECT_NAME".]]>
       </docs>
     </option>
     <option type="bool" id="PAGE_OUTLINE_PANEL" defval="1" depends="GENERATE_HTML">
@@ -1100,7 +1100,7 @@
     </option>
     <option type="int" id="ENUM_VALUES_PER_LINE" minval="0" maxval="20" defval="4" depends="GENERATE_HTML">
       <docs>
-<![CDATA[La etiqueta \c ENUM_VALUES_PER_LINE se puede usar para establecer el número de valores de enumeración que Doxygen agrupara en una línea.]]>
+<![CDATA[La etiqueta \c ENUM_VALUES_PER_LINE se puede usar para establecer el número de valores de enumeración que Doxygen agrupará en una línea.]]>
       </docs>
     </option>
     <option type="bool" id="SHOW_ENUM_VALUES" defval="0">
@@ -1115,7 +1115,7 @@
     </option>
     <option type="bool" id="EXT_LINKS_IN_WINDOW" defval="0" depends="GENERATE_HTML">
       <docs>
-<![CDATA[Si la opción \c EXT_LINKS_IN_WINDOW está configurada en \c YES, Doxygen abrira enlaces a símbolos externos importados a través de archivos de etiquetas en una ventana separada.]]>
+<![CDATA[Si la opción \c EXT_LINKS_IN_WINDOW está configurada en \c YES, Doxygen abrirá enlaces a símbolos externos importados a través de archivos de etiquetas en una ventana separada.]]>
       </docs>
     </option>
     <option type="bool" id="OBFUSCATE_EMAILS" defval="1" depends="GENERATE_HTML">
@@ -1236,7 +1236,7 @@
     </option>
     <option type="string" id="LATEX_OUTPUT" format="dir" defval="latex" depends="GENERATE_LATEX">
       <docs>
-<![CDATA[La etiqueta \c LATEX_OUTPUT se usa para especificar donde se colocaran los documentos \f$\mbox{\LaTeX}\f$. Si se ingresa una ruta relativa, el valor de \ref cfg_output_directory "OUTPUT_DIRECTORY" se antepondrá.]]>
+<![CDATA[La etiqueta \c LATEX_OUTPUT se usa para especificar donde se colocarán los documentos \f$\mbox{\LaTeX}\f$. Si se ingresa una ruta relativa, el valor de \ref cfg_output_directory "OUTPUT_DIRECTORY" se antepondrá.]]>
       </docs>
     </option>
     <option type="string" id="LATEX_CMD_NAME" format="file" defval="" depends="GENERATE_LATEX">
@@ -1256,7 +1256,7 @@
     </option>
     <option type="bool" id="COMPACT_LATEX" defval="0" depends="GENERATE_LATEX">
       <docs>
-<![CDATA[Si la etiqueta \c COMPACT_LATEX está configurada en \c YES, Doxygen generará documentos \f$\mbox{\LaTeX}\f$ más compactos. Esto puede ser útil para proyectos pequenos y puede ayudar a ahorrar algunos árboles en general.]]>
+<![CDATA[Si la etiqueta \c COMPACT_LATEX está configurada en \c YES, Doxygen generará documentos \f$\mbox{\LaTeX}\f$ más compactos. Esto puede ser útil para proyectos pequeños y puede ayudar a ahorrar algunos árboles en general.]]>
       </docs>
     </option>
     <option type="enum" id="PAPER_TYPE" defval="a4" depends="GENERATE_LATEX">
@@ -1275,12 +1275,12 @@
     </option>
     <option type="string" id="LATEX_HEADER" format="file" defval="" depends="GENERATE_LATEX">
       <docs>
-<![CDATA[La etiqueta \c LATEX_HEADER se puede usar para especificar un encabezado \f$\mbox{\LaTeX}\f$ personalizado para el documento \f$\mbox{\LaTeX}\f$ generado. El encabezado debe contener todo hasta el primer capitulo. Si se deja vacío, Doxygen generará un encabezado estándar. Se recomienda encarecidamente comenzar con un encabezado estándar usando \verbatim doxygen -w latex new_header.tex new_footer.tex new_stylesheet.sty \endverbatim y luego modificar el archivo \c new_header.tex. Vea también la sección \ref doxygen_usage para información sobre como generar el encabezado estándar que Doxygen normalmente usa. <br>Nota: ¡Solo use un encabezado personalizado si sabe lo que esta haciendo! @note El encabezado puede cambiar, por lo que generalmente necesita regenerar el encabezado estándar cuando actualiza a una versión más nueva de Doxygen. Para una descripción de los posibles marcadores y nombres de bloques, vea la documentación.]]>
+<![CDATA[La etiqueta \c LATEX_HEADER se puede usar para especificar un encabezado \f$\mbox{\LaTeX}\f$ personalizado para el documento \f$\mbox{\LaTeX}\f$ generado. El encabezado debe contener todo hasta el primer capítulo. Si se deja vacío, Doxygen generará un encabezado estándar. Se recomienda encarecidamente comenzar con un encabezado estándar usando \verbatim doxygen -w latex new_header.tex new_footer.tex new_stylesheet.sty \endverbatim y luego modificar el archivo \c new_header.tex. Vea también la sección \ref doxygen_usage para información sobre como generar el encabezado estándar que Doxygen normalmente usa. <br>Nota: ¡Solo use un encabezado personalizado si sabe lo que está haciendo! @note El encabezado puede cambiar, por lo que generalmente necesita regenerar el encabezado estándar cuando actualiza a una versión más nueva de Doxygen. Para una descripción de los posibles marcadores y nombres de bloques, vea la documentación.]]>
       </docs>
     </option>
     <option type="string" id="LATEX_FOOTER" format="file" defval="" depends="GENERATE_LATEX">
       <docs>
-<![CDATA[La etiqueta \c LATEX_FOOTER se puede usar para especificar un pie de página \f$\mbox{\LaTeX}\f$ personalizado para el documento \f$\mbox{\LaTeX}\f$ generado. El pie de página debe contener todo después del último capitulo. Si se deja vacío, Doxygen generará un pie de página estándar. Vea \ref cfg_latex_header "LATEX_HEADER" para más información sobre como generar un pie de página estándar y que comandos especiales se pueden usar en el pie de página. Vea también la sección \ref doxygen_usage para información sobre como generar el pie de página estándar que Doxygen normalmente usa. Nota: ¡Solo use un pie de página personalizado si sabe lo que esta haciendo!]]>
+<![CDATA[La etiqueta \c LATEX_FOOTER se puede usar para especificar un pie de página \f$\mbox{\LaTeX}\f$ personalizado para el documento \f$\mbox{\LaTeX}\f$ generado. El pie de página debe contener todo después del último capítulo. Si se deja vacío, Doxygen generará un pie de página estándar. Vea \ref cfg_latex_header "LATEX_HEADER" para más información sobre como generar un pie de página estándar y que comandos especiales se pueden usar en el pie de página. Vea también la sección \ref doxygen_usage para información sobre como generar el pie de página estándar que Doxygen normalmente usa. Nota: ¡Solo use un pie de página personalizado si sabe lo que está haciendo!]]>
       </docs>
     </option>
     <option type="list" id="LATEX_EXTRA_STYLESHEET" format="file" defval="" depends="GENERATE_LATEX">
@@ -1290,7 +1290,7 @@
     </option>
     <option type="list" id="LATEX_EXTRA_FILES" format="file" depends="GENERATE_LATEX">
       <docs>
-<![CDATA[La etiqueta \c LATEX_EXTRA_FILES se puede usar para especificar una o más imagenes adicionales u otros archivos de origen que deben copiarse en el directorio de salida \ref cfg_latex_output "LATEX_OUTPUT". Tenga en cuenta que los archivos se copian tal como estan; no hay comandos o marcadores disponibles.]]>
+<![CDATA[La etiqueta \c LATEX_EXTRA_FILES se puede usar para especificar una o más imagenes adicionales u otros archivos de origen que deben copiarse en el directorio de salida \ref cfg_latex_output "LATEX_OUTPUT". Tenga en cuenta que los archivos se copian tal como están; no hay comandos o marcadores disponibles.]]>
       </docs>
     </option>
     <option type="bool" id="PDF_HYPERLINKS" defval="1" depends="GENERATE_LATEX">
@@ -1316,7 +1316,7 @@
     </option>
     <option type="bool" id="LATEX_HIDE_INDICES" defval="0" depends="GENERATE_LATEX">
       <docs>
-<![CDATA[Si la etiqueta \c LATEX_HIDE_INDICES está configurada en \c YES, Doxygen no incluirá los capitulos de índice (como Índice de Archivos, Índice de Compuestos, etc.) en la salida.]]>
+<![CDATA[Si la etiqueta \c LATEX_HIDE_INDICES está configurada en \c YES, Doxygen no incluirá los capítulos de índice (como Índice de Archivos, Índice de Compuestos, etc.) en la salida.]]>
       </docs>
     </option>
     <option type="string" id="LATEX_BIB_STYLE" format="string" defval="plainnat" depends="GENERATE_LATEX">
@@ -1338,12 +1338,12 @@
     </option>
     <option type="string" id="RTF_OUTPUT" format="dir" defval="rtf" depends="GENERATE_RTF">
       <docs>
-<![CDATA[La etiqueta \c RTF_OUTPUT se usa para especificar donde se colocaran los documentos RTF. Si se ingresa una ruta relativa, el valor de \ref cfg_output_directory "OUTPUT_DIRECTORY" se antepondrá.]]>
+<![CDATA[La etiqueta \c RTF_OUTPUT se usa para especificar donde se colocarán los documentos RTF. Si se ingresa una ruta relativa, el valor de \ref cfg_output_directory "OUTPUT_DIRECTORY" se antepondrá.]]>
       </docs>
     </option>
     <option type="bool" id="COMPACT_RTF" defval="0" depends="GENERATE_RTF">
       <docs>
-<![CDATA[Si la etiqueta \c COMPACT_RTF está configurada en \c YES, Doxygen generará documentos RTF más compactos. Esto puede ser útil para proyectos pequenos y puede ayudar a ahorrar algunos árboles en general.]]>
+<![CDATA[Si la etiqueta \c COMPACT_RTF está configurada en \c YES, Doxygen generará documentos RTF más compactos. Esto puede ser útil para proyectos pequeños y puede ayudar a ahorrar algunos árboles en general.]]>
       </docs>
     </option>
     <option type="bool" id="RTF_HYPERLINKS" defval="0" depends="GENERATE_RTF">
@@ -1363,7 +1363,7 @@
     </option>
     <option type="list" id="RTF_EXTRA_FILES" format="file" depends="GENERATE_RTF">
       <docs>
-<![CDATA[La etiqueta \c RTF_EXTRA_FILES se puede usar para especificar una o más imagenes adicionales u otros archivos de origen que deben copiarse en el directorio de salida RTF. Tenga en cuenta que los archivos se copian tal como estan; no hay comandos o marcadores disponibles.]]>
+<![CDATA[La etiqueta \c RTF_EXTRA_FILES se puede usar para especificar una o más imagenes adicionales u otros archivos de origen que deben copiarse en el directorio de salida RTF. Tenga en cuenta que los archivos se copian tal como están; no hay comandos o marcadores disponibles.]]>
       </docs>
     </option>
   </group>
@@ -1375,7 +1375,7 @@
     </option>
     <option type="string" id="MAN_OUTPUT" format="dir" defval="man" depends="GENERATE_MAN">
       <docs>
-<![CDATA[La etiqueta \c MAN_OUTPUT se usa para especificar donde se colocaran las páginas de manual. Si se ingresa una ruta relativa, el valor de \ref cfg_output_directory "OUTPUT_DIRECTORY" se antepondrá. Se creará un directorio \c man3 dentro del directorio especificado por \c MAN_OUTPUT.]]>
+<![CDATA[La etiqueta \c MAN_OUTPUT se usa para especificar donde se colocarán las páginas de manual. Si se ingresa una ruta relativa, el valor de \ref cfg_output_directory "OUTPUT_DIRECTORY" se antepondrá. Se creará un directorio \c man3 dentro del directorio especificado por \c MAN_OUTPUT.]]>
       </docs>
     </option>
     <option type="string" id="MAN_EXTENSION" format="string" defval=".3" depends="GENERATE_MAN">
@@ -1402,12 +1402,12 @@
     </option>
     <option type="string" id="XML_OUTPUT" format="dir" defval="xml" depends="GENERATE_XML">
       <docs>
-<![CDATA[La etiqueta \c XML_OUTPUT se usa para especificar donde se colocaran las páginas XML. Si se ingresa una ruta relativa, el valor de \ref cfg_output_directory "OUTPUT_DIRECTORY" se antepondrá.]]>
+<![CDATA[La etiqueta \c XML_OUTPUT se usa para especificar donde se colocarán las páginas XML. Si se ingresa una ruta relativa, el valor de \ref cfg_output_directory "OUTPUT_DIRECTORY" se antepondrá.]]>
       </docs>
     </option>
     <option type="bool" id="XML_PROGRAMLISTING" defval="1" depends="GENERATE_XML">
       <docs>
-<![CDATA[Si la etiqueta \c XML_PROGRAMLISTING está configurada en \c YES, Doxygen volcara los listados de programas (incluyendo resaltado de sintaxis e información de referencias cruzadas) a la salida XML. Tenga en cuenta que habilitar esto aumentara significativamente el tamaño de la salida XML.]]>
+<![CDATA[Si la etiqueta \c XML_PROGRAMLISTING está configurada en \c YES, Doxygen volcará los listados de programas (incluyendo resaltado de sintaxis e información de referencias cruzadas) a la salida XML. Tenga en cuenta que habilitar esto aumentará significativamente el tamaño de la salida XML.]]>
       </docs>
     </option>
     <option type="bool" id="XML_NS_MEMB_FILE_SCOPE" defval="0" depends="GENERATE_XML">
@@ -1424,7 +1424,7 @@
     </option>
     <option type="string" id="DOCBOOK_OUTPUT" format="dir" defval="docbook" depends="GENERATE_DOCBOOK">
       <docs>
-<![CDATA[La etiqueta \c DOCBOOK_OUTPUT se usa para especificar donde se colocaran las páginas Docbook. Si se ingresa una ruta relativa, el valor de \ref cfg_output_directory "OUTPUT_DIRECTORY" se antepondrá.]]>
+<![CDATA[La etiqueta \c DOCBOOK_OUTPUT se usa para especificar donde se colocarán las páginas Docbook. Si se ingresa una ruta relativa, el valor de \ref cfg_output_directory "OUTPUT_DIRECTORY" se antepondrá.]]>
       </docs>
     </option>
   </group>
@@ -1448,7 +1448,7 @@
     </option>
     <option type="bool" id="SQLITE3_RECREATE_DB" defval="1" depends="GENERATE_SQLITE3">
       <docs>
-<![CDATA[Si la etiqueta \c SQLITE3_RECREATE_DB está configurada en \c YES, el archivo de base de datos doxygen_sqlite3.db existente se recreara con cada ejecución de Doxygen. Si se configura en \c NO, Doxygen advertirá si ya se encuentra un archivo de base de datos y no lo modificara.]]>
+<![CDATA[Si la etiqueta \c SQLITE3_RECREATE_DB está configurada en \c YES, el archivo de base de datos doxygen_sqlite3.db existente se recreará con cada ejecución de Doxygen. Si se configura en \c NO, Doxygen advertirá si ya se encuentra un archivo de base de datos y no lo modificará.]]>
       </docs>
     </option>
   </group>
@@ -1465,7 +1465,7 @@
     </option>
     <option type="bool" id="PERLMOD_PRETTY" defval="1" depends="GENERATE_PERLMOD">
       <docs>
-<![CDATA[Si la etiqueta \c PERLMOD_PRETTY está configurada en \c YES, la salida del módulo Perl estará formateada de manera agradable para que pueda ser analizada por un lector humano. Esto es útil si desea entender lo que esta sucediendo. Por otro lado, si esta etiqueta está configurada en \c NO, el tamaño de la salida del módulo Perl será mucho más pequeno y Perl lo analizará de la misma manera.]]>
+<![CDATA[Si la etiqueta \c PERLMOD_PRETTY está configurada en \c YES, la salida del módulo Perl estará formateada de manera agradable para que pueda ser analizada por un lector humano. Esto es útil si desea entender lo que está sucediendo. Por otro lado, si esta etiqueta está configurada en \c NO, el tamaño de la salida del módulo Perl será mucho más pequeño y Perl lo analizará de la misma manera.]]>
       </docs>
     </option>
     <option type="string" id="PERLMOD_MAKEVAR_PREFIX" format="string" defval="" depends="GENERATE_PERLMOD">
@@ -1512,12 +1512,12 @@
     </option>
     <option type="list" id="EXPAND_AS_DEFINED" format="string" depends="ENABLE_PREPROCESSING">
       <docs>
-<![CDATA[Si las etiquetas \ref cfg_macro_expansion "MACRO_EXPANSION" y \ref cfg_expand_only_predef "EXPAND_ONLY_PREDEF" están configuradas en \c YES, esta etiqueta se puede usar para especificar una lista de nombres de macros que deben expandirse.]]>
+<![CDATA[Si las etiquetas \ref cfg_macro_expansion "MACRO_EXPANSION" y \ref cfg_expand_only_predef "EXPAND_ONLY_PREDEF" están configuradas en \c YES, esta etiqueta se puede usar para especificar una lista de nombres de macros que deben expandirse. Se usará la definición de macro que se encuentre en el código fuente. Use la etiqueta \ref cfg_predefined "PREDEFINED" si desea usar una definición de macro diferente que anule la definición encontrada en el código fuente.]]>
       </docs>
     </option>
     <option type="bool" id="SKIP_FUNCTION_MACROS" defval="1" depends="ENABLE_PREPROCESSING">
       <docs>
-<![CDATA[Esta etiqueta se puede usar para especificar la lista de macros de función que deben omitirse en la documentación. Las macros de función son macros que parecen funciones y tienen parámetros.]]>
+<![CDATA[Si la etiqueta \c SKIP_FUNCTION_MACROS está configurada en \c YES, el preprocesador de Doxygen eliminará todas las referencias a macros similares a funciones que están solas en una línea, tienen un nombre completamente en mayúsculas y no terminan con punto y coma. Estas macros de función se usan típicamente para código repetitivo y confundirán al analizador si no se eliminan.]]>
       </docs>
     </option>
   </group>
@@ -1529,7 +1529,7 @@
     </option>
     <option type="string" id="GENERATE_TAGFILE" format="file" defval="">
       <docs>
-<![CDATA[Si se específica un nombre de archivo después de \c GENERATE_TAGFILE, Doxygen creará un archivo de etiquetas que puede ser usado por otro proyecto para crear referencias a este proyecto.]]>
+<![CDATA[Si se especifica un nombre de archivo después de \c GENERATE_TAGFILE, Doxygen creará un archivo de etiquetas que puede ser usado por otro proyecto para crear referencias a este proyecto.]]>
       </docs>
     </option>
     <option type="bool" id="ALLEXTERNALS" defval="0">
@@ -1561,13 +1561,13 @@
     </option>
     <option type="int" id="DOT_NUM_THREADS" defval="0" minval="0" maxval="512" depends="HAVE_DOT">
       <docs>
-<![CDATA[La etiqueta \c DOT_NUM_THREADS específica el número de invocaciones de \c dot que Doxygen puede ejecutar en paralelo. Cuando se configura en \c 0, Doxygen lo basara en el número de procesadores disponibles en el sistema. Puede configurarlo explícitamente en un valor mayor que 0 para obtener control sobre el equilibrio entre la carga de la CPU y la velocidad de procesamiento.]]>
+<![CDATA[La etiqueta \c DOT_NUM_THREADS especifica el número de invocaciones de \c dot que Doxygen puede ejecutar en paralelo. Cuando se configura en \c 0, Doxygen lo basará en el número de procesadores disponibles en el sistema. Puede configurarlo explícitamente en un valor mayor que 0 para obtener control sobre el equilibrio entre la carga de la CPU y la velocidad de procesamiento.]]>
       </docs>
     </option>
     <option type="int" id="DOT_BATCH_SIZE" defval="50" minval="1" maxval="1000" depends="HAVE_DOT">
       <docs>
 <![CDATA[
- El \c DOT_BATCH_SIZE específica el número de gráficos \c dot que Doxygen puede compilar
+ El \c DOT_BATCH_SIZE especifica el número de gráficos \c dot que Doxygen puede compilar
  en una sola invocación de \c dot. Cuando se establece en \c 1, Doxygen invocará \c dot
  para cada gráfico por separado, lo que puede causar una sobrecarga significativa de
  creación de procesos, especialmente en sistemas con muchos núcleos de CPU. Junto con
@@ -1615,7 +1615,7 @@
     </option>
     <option type="bool" id="GROUP_GRAPHS" defval="1" depends="HAVE_DOT">
       <docs>
-<![CDATA[Si la etiqueta \c GROUP_GRAPHS está configurada en \c YES, Doxygen generará un grafo para grupos que muestre las dependencias directas de grupos. La activación explícita de un grafo de dependencia de grupos cuando \c GROUP_GRAPHS está configurado en \c NO se puede lograr con el comando \ref cmdgroupgraph "\\groupgraph". La desactivación de un grafo de dependencia de grupos se puede lograr con el comando \ref cmdhidegroupgraph "\\hidegroupgraph". Vea también el capitulo \ref grouping "Agrupación" en el manual.]]>
+<![CDATA[Si la etiqueta \c GROUP_GRAPHS está configurada en \c YES, Doxygen generará un grafo para grupos que muestre las dependencias directas de grupos. La activación explícita de un grafo de dependencia de grupos cuando \c GROUP_GRAPHS está configurado en \c NO se puede lograr con el comando \ref cmdgroupgraph "\\groupgraph". La desactivación de un grafo de dependencia de grupos se puede lograr con el comando \ref cmdhidegroupgraph "\\hidegroupgraph". Vea también el capítulo \ref grouping "Agrupación" en el manual.]]>
       </docs>
     </option>
     <option type="bool" id="UML_LOOK" defval="0" depends="HAVE_DOT">
@@ -1625,17 +1625,17 @@
     </option>
     <option type="int" id="UML_LIMIT_NUM_FIELDS" defval="10" minval="0" maxval="100" depends="UML_LOOK">
       <docs>
-<![CDATA[Si la etiqueta \ref cfg_uml_look "UML_LOOK" está habilitada, los campos y métodos se muestran dentro del nodo de clase. Si hay muchos campos o métodos y muchos nodos, el grafo puede volverse demasiado grande para ser útil. El umbral \c UML_LIMIT_NUM_FIELDS limita el número de elementos para cada tipo para hacer el tamaño más manejable. Configure esto en 0 para sin limite. Tenga en cuenta que el umbral puede excederse en un 50% antes de que se aplique el limite. Así que cuando configura el umbral en 10, pueden aparecer hasta 15 campos, pero si el número excede 15, la cantidad total de campos mostrados se limita a 10.]]>
+<![CDATA[Si la etiqueta \ref cfg_uml_look "UML_LOOK" está habilitada, los campos y métodos se muestran dentro del nodo de clase. Si hay muchos campos o métodos y muchos nodos, el grafo puede volverse demasiado grande para ser útil. El umbral \c UML_LIMIT_NUM_FIELDS limita el número de elementos para cada tipo para hacer el tamaño más manejable. Configure esto en 0 para sin límite. Tenga en cuenta que el umbral puede excederse en un 50% antes de que se aplique el límite. Así que cuando configura el umbral en 10, pueden aparecer hasta 15 campos, pero si el número excede 15, la cantidad total de campos mostrados se limita a 10.]]>
       </docs>
     </option>
     <option type="int" id="UML_MAX_EDGE_LABELS" defval="10" minval="0" maxval="100" depends="UML_LOOK">
       <docs>
-<![CDATA[Si la etiqueta \ref cfg_uml_look "UML_LOOK" está habilitada, las etiquetas de campo se muestran a lo largo de la arista entre dos nodos de clase. Si hay muchos campos y muchos nodos, el grafo puede volverse demasiado desordenado. El umbral \c UML_MAX_EDGE_LABELS limita el número de elementos para hacer el tamaño más manejable. Configure esto en 0 para sin limite.]]>
+<![CDATA[Si la etiqueta \ref cfg_uml_look "UML_LOOK" está habilitada, las etiquetas de campo se muestran a lo largo de la arista entre dos nodos de clase. Si hay muchos campos y muchos nodos, el grafo puede volverse demasiado desordenado. El umbral \c UML_MAX_EDGE_LABELS limita el número de elementos para hacer el tamaño más manejable. Configure esto en 0 para sin límite.]]>
       </docs>
     </option>
     <option type="enum" id="DOT_UML_DETAILS" defval="NO" depends="UML_LOOK">
       <docs>
-<![CDATA[Si la etiqueta \c DOT_UML_DETAILS está configurada en \c NO, Doxygen mostrará atributos y métodos sin tipos y argumentos en los grafos UML. Si la etiqueta \c DOT_UML_DETAILS está configurada en \c YES, Doxygen agregará tipo y argumentos para atributos y métodos en los grafos UML. Si la etiqueta \c DOT_UML_DETAILS está configurada en \c NONE, Doxygen no generará campos con información de miembros de clase en los grafos UML. Los diagramas de clase se veran similares a los diagramas de clase predeterminados pero usando notación UML para las relaciones.]]>
+<![CDATA[Si la etiqueta \c DOT_UML_DETAILS está configurada en \c NO, Doxygen mostrará atributos y métodos sin tipos y argumentos en los grafos UML. Si la etiqueta \c DOT_UML_DETAILS está configurada en \c YES, Doxygen agregará tipo y argumentos para atributos y métodos en los grafos UML. Si la etiqueta \c DOT_UML_DETAILS está configurada en \c NONE, Doxygen no generará campos con información de miembros de clase en los grafos UML. Los diagramas de clase se verán similares a los diagramas de clase predeterminados pero usando notación UML para las relaciones.]]>
       </docs>
       <value name="NO"/>
       <value name="YES"/>
@@ -1643,7 +1643,7 @@
     </option>
     <option type="int" id="DOT_WRAP_THRESHOLD" defval="17" minval="0" maxval="1000" depends="HAVE_DOT">
       <docs>
-<![CDATA[La etiqueta \c DOT_WRAP_THRESHOLD se puede usar para establecer el número máximo de caracteres que se mostrarán en una sola línea. Si la longitud de la línea excede este valor, la línea se ajustara.]]>
+<![CDATA[La etiqueta \c DOT_WRAP_THRESHOLD se puede usar para establecer el número máximo de caracteres que se mostrarán en una sola línea. Si la longitud de la línea excede este valor, la línea se ajustará.]]>
       </docs>
     </option>
     <option type="bool" id="TEMPLATE_RELATIONS" defval="0" depends="HAVE_DOT">
@@ -1663,12 +1663,12 @@
     </option>
     <option type="bool" id="CALL_GRAPH" defval="0" depends="HAVE_DOT">
       <docs>
-<![CDATA[Si la etiqueta \c CALL_GRAPH está configurada en \c YES, Doxygen generará un grafo de dependencias de llamadas para cada función global o método de clase. Tenga en cuenta que habilitar esta opción requiere que la configuración \ref cfg_have_dot "HAVE_DOT" este en \c YES. La activación explícita de un grafo de llamadas cuando \c CALL_GRAPH está configurado en \c NO se puede lograr con el comando \ref cmdcallgraph "\\callgraph". La desactivación de un grafo de llamadas se puede lograr con el comando \ref cmdhidecallgraph "\\hidecallgraph".]]>
+<![CDATA[Si la etiqueta \c CALL_GRAPH está configurada en \c YES, Doxygen generará un grafo de dependencias de llamadas para cada función global o método de clase. Tenga en cuenta que habilitar esta opción aumentará significativamente el tiempo de ejecución. Por lo tanto, en la mayoría de los casos será mejor habilitar grafos de llamadas solo para funciones seleccionadas usando el comando \ref cmdcallgraph "\\callgraph". La desactivación de un grafo de llamadas se puede lograr con el comando \ref cmdhidecallgraph "\\hidecallgraph".]]>
       </docs>
     </option>
     <option type="bool" id="CALLER_GRAPH" defval="0" depends="HAVE_DOT">
       <docs>
-<![CDATA[Si la etiqueta \c CALLER_GRAPH está configurada en \c YES, Doxygen generará un grafo de dependencias de llamadores para cada función global o método de clase. Tenga en cuenta que habilitar esta opción requiere que la configuración \ref cfg_have_dot "HAVE_DOT" este en \c YES. La activación explícita de un grafo de llamadores cuando \c CALLER_GRAPH está configurado en \c NO se puede lograr con el comando \ref cmdcallergraph "\\callergraph". La desactivación de un grafo de llamadores se puede lograr con el comando \ref cmdhidecallergraph "\\hidecallergraph".]]>
+<![CDATA[Si la etiqueta \c CALLER_GRAPH está configurada en \c YES, Doxygen generará un grafo de dependencias de llamadores para cada función global o método de clase. Tenga en cuenta que habilitar esta opción aumentará significativamente el tiempo de ejecución. Por lo tanto, en la mayoría de los casos será mejor habilitar grafos de llamadores solo para funciones seleccionadas usando el comando \ref cmdcallergraph "\\callergraph". La desactivación de un grafo de llamadores se puede lograr con el comando \ref cmdhidecallergraph "\\hidecallergraph".]]>
       </docs>
     </option>
     <option type="bool" id="GRAPHICAL_HIERARCHY" defval="1" depends="HAVE_DOT">
@@ -1688,7 +1688,7 @@
     </option>
     <option type="enum" id="DOT_IMAGE_FORMAT" defval="png" depends="HAVE_DOT">
       <docs>
-<![CDATA[La etiqueta \c DOT_IMAGE_FORMAT se puede usar para establecer el formato de imagen de las imagenes generadas por \c dot. Para una explicación de los formatos de imagen, vea la sección de formatos de salida en la documentación de la herramienta \c dot (<a href="https://www.graphviz.org/">Graphviz</a>). <br>Tenga en cuenta que los formatos `svg:cairo` y `svg:cairo:cairo` no se pueden usar en combinación con \ref cfg_interactive_svg "INTERACTIVE_SVG" (\ref cfg_interactive_svg "INTERACTIVE_SVG" se configurara en `NO`).]]>
+<![CDATA[La etiqueta \c DOT_IMAGE_FORMAT se puede usar para establecer el formato de imagen de las imagenes generadas por \c dot. Para una explicación de los formatos de imagen, vea la sección de formatos de salida en la documentación de la herramienta \c dot (<a href="https://www.graphviz.org/">Graphviz</a>). <br>Tenga en cuenta que los formatos `svg:cairo` y `svg:cairo:cairo` no se pueden usar en combinación con \ref cfg_interactive_svg "INTERACTIVE_SVG" (\ref cfg_interactive_svg "INTERACTIVE_SVG" se configurará en `NO`).]]>
       </docs>
       <value name="png"/>
       <value name="jpg"/>
@@ -1778,7 +1778,7 @@
     </option>
     <option type="enum" id="MERMAID_RENDER_MODE" defval="AUTO">
       <docs>
-<![CDATA[La etiqueta \c MERMAID_RENDER_MODE controla como se renderizan los diagramas Mermaid. Los valores posibles son: \c CLI (usa la herramienta `mmdc` desde la línea de comandos), \c CLIENT (usa mermaid.js en el navegador) o \c SERVER (usa mermaid.ink como servicio externo). Por defecto, esto está configurado en \c CLIENT.]]>
+<![CDATA[La etiqueta \c MERMAID_RENDER_MODE controla cómo se renderizan los diagramas Mermaid.]]>
       </docs>
       <value name="AUTO" desc="(usar renderizado del lado del cliente para HTML y \c mmdc para LaTeX/PDF y otros formatos. Si \c MERMAID_PATH no está configurado, los diagramas no HTML producirán una advertencia)"/>
       <value name="CLI" desc="(usar la herramienta \c mmdc para pregenerar imagenes (requiere \c Node.js y \c mermaid-js/mermaid-cli). Funciona para todos los formatos de salida)"/>
@@ -1786,7 +1786,7 @@
     </option>
     <option type="string" id="MERMAID_JS_URL" format="string" defval="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs">
       <docs>
-<![CDATA[La etiqueta \c MERMAID_JS_URL específica la URL desde donde cargar \c mermaid.js cuando se usa renderizado del lado del cliente (\c MERMAID_RENDER_MODE es \c CLIENT_SIDE o \c AUTO). El valor predeterminado apunta a la última versión de Mermaid v11 en el CDN de jsDelivr. \par Ejemplos: - Última v11 (predeterminado): \c 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs' - Versión fijada: \c 'https://cdn.jsdelivr.net/npm/mermaid@11.3.0/dist/mermaid.esm.min.mjs' - Copia local: \c './mermaid.esm.min.mjs' (el usuario debe colocar el archivo en el directorio de salida HTML) \par La URL del CDN predeterminada requiere acceso a Internet al ver la documentación generada. Para uso sin conexión, descargue \c mermaid.esm.min.mjs y configure esto en una ruta relativa, o use \c MERMAID_RENDER_MODE=CLI para pre-generar imagenes en su lugar.]]>
+<![CDATA[La etiqueta \c MERMAID_JS_URL especifica la URL desde donde cargar \c mermaid.js cuando se usa renderizado del lado del cliente (\c MERMAID_RENDER_MODE es \c CLIENT_SIDE o \c AUTO). El valor predeterminado apunta a la última versión de Mermaid v11 en el CDN de jsDelivr. \par Ejemplos: - Última v11 (predeterminado): \c 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs' - Versión fijada: \c 'https://cdn.jsdelivr.net/npm/mermaid@11.3.0/dist/mermaid.esm.min.mjs' - Copia local: \c './mermaid.esm.min.mjs' (el usuario debe colocar el archivo en el directorio de salida HTML) \par La URL del CDN predeterminada requiere acceso a Internet al ver la documentación generada. Para uso sin conexión, descargue \c mermaid.esm.min.mjs y configure esto en una ruta relativa, o use \c MERMAID_RENDER_MODE=CLI para pre-generar imagenes en su lugar.]]>
       </docs>
     </option>
     <option type="list" id="MERMAIDFILE_DIRS" format="dir">
@@ -1801,7 +1801,7 @@
     </option>
     <option type="int" id="MAX_DOT_GRAPH_DEPTH" minval="0" maxval="1000" defval="0" depends="HAVE_DOT">
       <docs>
-<![CDATA[La etiqueta \c MAX_DOT_GRAPH_DEPTH se puede usar para establecer la profundidad máxima de los grafos generados por \c dot. Un valor de profundidad de 3 significa que solo se mostrarán los nodos que son accesibles desde el nodo raíz a través de una ruta de como máximo 3 aristas. Los nodos que se encuentran más lejos del nodo raíz se omitiran. Tenga en cuenta que configurar esta opción en 1 o 2 puede reducir en gran medida el tiempo de computación necesario para bases de código grandes. Tenga en cuenta también que el tamaño de un grafo puede estar más limitado por \ref cfg_dot_graph_max_nodes "DOT_GRAPH_MAX_NODES". Usar una profundidad de 0 significa sin limite de profundidad.]]>
+<![CDATA[La etiqueta \c MAX_DOT_GRAPH_DEPTH se puede usar para establecer la profundidad máxima de los grafos generados por \c dot. Un valor de profundidad de 3 significa que solo se mostrarán los nodos que son accesibles desde el nodo raíz a través de una ruta de como máximo 3 aristas. Los nodos que se encuentran más lejos del nodo raíz se omitirán. Tenga en cuenta que configurar esta opción en 1 o 2 puede reducir en gran medida el tiempo de computación necesario para bases de código grandes. Tenga en cuenta también que el tamaño de un grafo puede estar más limitado por \ref cfg_dot_graph_max_nodes "DOT_GRAPH_MAX_NODES". Usar una profundidad de 0 significa sin límite de profundidad.]]>
       </docs>
     </option>
     <option type="bool" id="GENERATE_LEGEND" defval="1" depends="HAVE_DOT">
