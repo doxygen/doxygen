@@ -1,3 +1,0 @@
-Found 315 active options in config.xml
-
-Sync complete!
