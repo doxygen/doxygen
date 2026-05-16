@@ -902,7 +902,14 @@ doxygen -w html new_header.html new_footer.html new_stylesheet.css YourConfigFil
     </option>
     <option type="string" id="HTML_FOOTER" format="file" defval="" depends="GENERATE_HTML">
       <docs>
-<![CDATA[Тег \c HTML_FOOTER можно использовать для указания пользовательского HTML файла нижнего колонтитула, который будет вставлен в каждую сгенерированную HTML страницу.]]>
+<![CDATA[Тег \c HTML_FOOTER можно использовать для указания пользовательского HTML-файла нижнего колонтитула (подвала), который будет вставлен в каждую сгенерированную HTML-страницу.
+ Если тег оставить пустым, Doxygen сгенерирует стандартный подвал.
+
+ Чтобы получить корректный HTML, файл подвала должен включать все скрипты и таблицы стилей, необходимые Doxygen, что зависит от используемых параметров конфигурации (например, от значения \ref cfg_generate_treeview "GENERATE_TREEVIEW"). Настоятельно рекомендуется начать с подвала по умолчанию, выполнив команду:
+\verbatim
+doxygen -w html new_header.html new_footer.html new_stylesheet.css YourConfigFile
+\endverbatim
+ и затем отредактировать файл \c new_footer.html. Дополнительную информацию см. в разделе \ref doxygen_usage.]]>
       </docs>
     </option>
     <option type="string" id="HTML_STYLESHEET" format="file" defval="" depends="GENERATE_HTML">
@@ -1047,7 +1054,10 @@ doxygen -w html new_header.html new_footer.html new_stylesheet.css YourConfigFil
     </option>
     <option type="bool" id="GENERATE_QHP" defval="0" depends="GENERATE_HTML">
       <docs>
-<![CDATA[Если тег \c GENERATE_QHP установлен в \c YES, будет сгенерирован сжатый файл помощи Qt (`.qch`).]]>
+<![CDATA[Если тег \c GENERATE_QHP установлен в \c YES и заданы оба тега \ref cfg_qhp_namespace "QHP_NAMESPACE"
+ и \ref cfg_qhp_virtual_folder "QHP_VIRTUAL_FOLDER", будет сгенерирован дополнительный индексный файл,
+ который можно использовать в качестве входных данных для утилиты Qt \c qhelpgenerator
+ для создания сжатого файла справки Qt (.qch) из сгенерированной HTML-документации.]]>
       </docs>
     </option>
     <option type="string" id="QCH_FILE" format="file" defval="" depends="GENERATE_QHP">
@@ -1072,17 +1082,21 @@ doxygen -w html new_header.html new_footer.html new_stylesheet.css YourConfigFil
     </option>
     <option type="string" id="QHP_CUST_FILTER_ATTRS" format="string" defval="" depends="GENERATE_QHP">
       <docs>
-<![CDATA[Тег \c QHP_CUST_FILTER_ATTRS указывает атрибуты пользовательского фильтра.]]>
+<![CDATA[Тег \ref cfg_qhp_cust_filter_name "QHP_CUST_FILTER_NAME" указывает имя добавляемого пользовательского фильтра.
+ Подробнее см. на странице
+ <a href="https://doc.qt.io/archives/qt-4.8/qthelpproject.html#custom-filters">Qt Help Project / Custom Filters</a>.]]>
       </docs>
     </option>
     <option type="string" id="QHP_SECT_FILTER_ATTRS" format="string" defval="" depends="GENERATE_QHP">
       <docs>
-<![CDATA[Тег \c QHP_SECT_FILTER_ATTRS указывает атрибуты, которые будут использоваться для фильтрации разделов.]]>
+<![CDATA[Тег \c QHP_SECT_FILTER_ATTRS задаёт список атрибутов, которым должна соответствовать секция фильтра данного проекта.
+ <a href="https://doc.qt.io/archives/qt-4.8/qthelpproject.html#filter-attributes">Qt Help Project / Filter Attributes</a>.]]>
       </docs>
     </option>
     <option type="string" id="QHG_LOCATION" format="file" defval="" depends="GENERATE_QHP">
       <docs>
-<![CDATA[Тег \c QHG_LOCATION можно использовать для указания местоположения генератора помощи Qt.]]>
+<![CDATA[Тег \c QHG_LOCATION можно использовать для указания местоположения (абсолютный путь, включая имя файла) утилиты Qt \c qhelpgenerator.
+ Если указано непустое значение, Doxygen попытается запустить \c qhelpgenerator для сгенерированного файла \c .qhp.]]>
       </docs>
     </option>
     <option type="bool" id="GENERATE_ECLIPSEHELP" defval="0" depends="GENERATE_HTML">
@@ -1132,7 +1146,12 @@ doxygen -w html new_header.html new_footer.html new_stylesheet.css YourConfigFil
     </option>
     <option type="bool" id="PAGE_OUTLINE_PANEL" defval="1" depends="GENERATE_HTML">
       <docs>
-<![CDATA[Если тег \c PAGE_OUTLINE_PANEL установлен в \c YES, будет сгенерирована панель структуры в выводе HTML.]]>
+<![CDATA[Если тег \c PAGE_OUTLINE_PANEL установлен в \c YES, Doxygen создаст панель структуры
+ на правой стороне вывода, отображающую все заголовки страницы в виде дерева.
+ Если страница не содержит заголовков, панель структуры не отображается.
+ Панель структуры отображается только при включённом параметре \ref cfg_generate_treeview "GENERATE_TREEVIEW".
+
+ \note Эта опция поддерживается только для формата вывода HTML.]]>
       </docs>
     </option>
     <option type="bool" id="FULL_SIDEBAR" defval="0" depends="GENERATE_HTML">
@@ -1146,7 +1165,10 @@ doxygen -w html new_header.html new_footer.html new_stylesheet.css YourConfigFil
     </option>
     <option type="int" id="ENUM_VALUES_PER_LINE" minval="0" maxval="20" defval="4" depends="GENERATE_HTML">
       <docs>
-<![CDATA[Тег \c ENUM_VALUES_PER_LINE определяет количество значений перечислений, отображаемых в каждой строке в выводе HTML.]]>
+<![CDATA[Тег \c ENUM_VALUES_PER_LINE можно использовать для задания количества значений перечисления,
+ которые Doxygen будет группировать на одной строке в сгенерированной HTML-документации.
+
+ Обратите внимание: значение 0 полностью подавляет вывод значений перечисления в разделе обзора.]]>
       </docs>
     </option>
     <option type="bool" id="SHOW_ENUM_VALUES" defval="0">
@@ -1156,7 +1178,9 @@ doxygen -w html new_header.html new_footer.html new_stylesheet.css YourConfigFil
     </option>
     <option type="int" id="TREEVIEW_WIDTH" minval="0" maxval="1500" defval="250" depends="GENERATE_HTML">
       <docs>
-<![CDATA[Тег \c TREEVIEW_WIDTH определяет ширину древовидного представления в выводе HTML.]]>
+<![CDATA[Когда включён параметр \ref cfg_generate_treeview "GENERATE_TREEVIEW", ширина
+ (в пикселях) окна, в котором будет отрисовано дерево, задаётся данным параметром.
+ Значение по умолчанию: 250.]]>
       </docs>
     </option>
     <option type="bool" id="EXT_LINKS_IN_WINDOW" defval="0" depends="GENERATE_HTML">
@@ -1171,19 +1195,27 @@ doxygen -w html new_header.html new_footer.html new_stylesheet.css YourConfigFil
     </option>
     <option type="enum" id="HTML_FORMULA_FORMAT" defval="png" depends="GENERATE_HTML">
       <docs>
-<![CDATA[Тег \c HTML_FORMULA_FORMAT определяет формат, в котором формулы отображаются в выводе HTML.]]>
+<![CDATA[Используйте этот тег для изменения шрифта изображений формул \f$\mbox{\LaTeX}\f$, включаемых в HTML-документацию.
+ Шрифт влияет на качество отрисовки и размер файлов изображений формул. Возможные значения:
+ \c png (по умолчанию) и \c svg. Обратите внимание: при изменении этого параметра необходимо
+ удалить все кешированные изображения формул; см. также \ref cfg_formula_fontsize "FORMULA_FONTSIZE".]]>
       </docs>
       <value name="png" desc="(по умолчанию)"/>
       <value name="svg" desc="(выглядит лучше, но требует инструмент pdf2svg или inkscape)"/>
     </option>
     <option type="int" id="FORMULA_FONTSIZE" minval="8" maxval="50" defval="10" depends="GENERATE_HTML">
       <docs>
-<![CDATA[Тег \c FORMULA_FONTSIZE определяет размер шрифта, используемый для формул.]]>
+<![CDATA[Тег \c FORMULA_FONTSIZE позволяет изменить размер шрифта для изображений формул \f$\mbox{\LaTeX}\f$,
+ включаемых в HTML-документацию.
+ При изменении размера шрифта после успешного запуска Doxygen необходимо вручную удалить
+ все изображения \c form_*.png из выходного каталога HTML, чтобы принудить Doxygen пересоздать их.]]>
       </docs>
     </option>
     <option type="string" id="FORMULA_MACROFILE" format="file" defval="">
       <docs>
-<![CDATA[Тег \c FORMULA_MACROFILE можно использовать для указания файла с определениями макросов для формул.]]>
+<![CDATA[Файл \c FORMULA_MACROFILE может содержать команды \f$\mbox{\LaTeX}\f$ \c \newcommand и \c \renewcommand
+ для создания новых команд \f$\mbox{\LaTeX}\f$, используемых в формулах как строительные блоки.
+ Подробнее см. в разделе \ref formulas.]]>
       </docs>
     </option>
     <option type="bool" id="USE_MATHJAX" defval="0" depends="GENERATE_HTML">
@@ -1288,7 +1320,8 @@ doxygen -w html new_header.html new_footer.html new_stylesheet.css YourConfigFil
     </option>
     <option type="string" id="LATEX_OUTPUT" format="dir" defval="latex" depends="GENERATE_LATEX">
       <docs>
-<![CDATA[Тег \c LATEX_OUTPUT используется для указания выходного каталога для файлов LaTeX.]]>
+<![CDATA[Тег \c LATEX_OUTPUT используется для указания каталога, в который будут помещены документы \f$\mbox{\LaTeX}\f$.
+ Если задан относительный путь, перед ним будет подставлено значение \ref cfg_output_directory "OUTPUT_DIRECTORY".]]>
       </docs>
     </option>
     <option type="string" id="LATEX_CMD_NAME" format="file" defval="" depends="GENERATE_LATEX">
@@ -1318,7 +1351,8 @@ doxygen -w html new_header.html new_footer.html new_stylesheet.css YourConfigFil
     </option>
     <option type="bool" id="COMPACT_LATEX" defval="0" depends="GENERATE_LATEX">
       <docs>
-<![CDATA[Если тег \c COMPACT_LATEX установлен в \c YES, будет сгенерирован компактный вывод LaTeX.]]>
+<![CDATA[Если тег \c COMPACT_LATEX установлен в \c YES, Doxygen генерирует более компактную документацию \f$\mbox{\LaTeX}\f$.
+ Это может быть полезно для небольших проектов и помогает в целом сэкономить бумагу.]]>
       </docs>
     </option>
     <option type="enum" id="PAPER_TYPE" defval="a4" depends="GENERATE_LATEX">
@@ -1404,12 +1438,19 @@ doxygen -w latex new_header.tex new_footer.tex new_stylesheet.sty
     </option>
     <option type="bool" id="PDF_HYPERLINKS" defval="1" depends="GENERATE_LATEX">
       <docs>
-<![CDATA[Если тег \c PDF_HYPERLINKS установлен в \c YES, будут сгенерированы PDF гиперссылки в выводе LaTeX.]]>
+<![CDATA[Если тег \c PDF_HYPERLINKS установлен в \c YES, генерируемый \f$\mbox{\LaTeX}\f$ подготавливается
+ для конвертации в PDF (с помощью \c ps2pdf или \c pdflatex).
+ PDF-файл будет содержать гиперссылки (как в HTML-выводе) вместо номеров страниц.
+ Это делает вывод удобным для просмотра в браузере PDF.]]>
       </docs>
     </option>
     <option type="bool" id="USE_PDFLATEX" defval="1" depends="GENERATE_LATEX">
       <docs>
-<![CDATA[Если тег \c USE_PDFLATEX установлен в \c YES, pdfLaTeX будет использоваться для генерации PDF файлов.]]>
+<![CDATA[Если тег \c USE_PDFLATEX установлен в \c YES, Doxygen будет использовать механизм, указанный
+ в теге \ref cfg_latex_cmd_name "LATEX_CMD_NAME", для непосредственной генерации PDF-файла из файлов
+ \f$\mbox{\LaTeX}\f$. Установите этот параметр в \c YES для получения PDF-документации более высокого качества.
+ \note Начиная с Doxygen 1.8.16 Doxygen использует не \c pdflatex, а
+ \c lualatex при работе с формулами MathJax, если только \ref cfg_use_pdflatex "USE_PDFLATEX" не установлен в \c NO.]]>
       </docs>
     </option>
     <option type="enum" id="LATEX_BATCHMODE" defval="NO" depends="GENERATE_LATEX">
@@ -1430,24 +1471,30 @@ doxygen -w latex new_header.tex new_footer.tex new_stylesheet.sty
     </option>
     <option type="string" id="LATEX_BIB_STYLE" format="string" defval="plainnat" depends="GENERATE_LATEX">
       <docs>
-<![CDATA[Тег \c LATEX_BIB_STYLE определяет стиль, используемый для библиографических записей.]]>
+<![CDATA[Тег \c LATEX_BIB_STYLE можно использовать для указания стиля библиографии,
+ например \c plainnat или \c ieeetr.
+ См. https://en.wikipedia.org/wiki/BibTeX и \ref cmdcite "\\cite" для получения дополнительной информации.]]>
       </docs>
     </option>
     <option type="string" id="LATEX_EMOJI_DIRECTORY" format="dir" defval="" depends="GENERATE_LATEX">
       <docs>
-<![CDATA[Тег \c LATEX_EMOJI_DIRECTORY указывает каталог, где хранятся файлы эмодзи для вывода LaTeX.]]>
+<![CDATA[Если тег \c LATEX_EMOJI_DIRECTORY установлен в \c YES, Doxygen скопирует
+ изображения эмодзи, необходимые для HTML и \f$\mbox{\LaTeX}\f$ вывода, в выходной каталог.
+ Подробности см. в разделе \ref emojisupport.]]>
       </docs>
     </option>
   </group>
   <group name="RTF" docs="Параметры конфигурации, связанные с выводом RTF">
     <option type="bool" id="GENERATE_RTF" defval="0">
       <docs>
-<![CDATA[Если тег \c GENERATE_RTF установлен в \c YES, будет сгенерирован вывод RTF.]]>
+<![CDATA[Если тег \c GENERATE_RTF установлен в \c YES, Doxygen будет генерировать вывод в формате RTF.
+ Вывод RTF оптимизирован для Word 97 и может выглядеть не идеально в других редакторах/просмотрщиках RTF.]]>
       </docs>
     </option>
     <option type="string" id="RTF_OUTPUT" format="dir" defval="rtf" depends="GENERATE_RTF">
       <docs>
-<![CDATA[Тег \c RTF_OUTPUT используется для указания выходного каталога для файлов RTF.]]>
+<![CDATA[Тег \c RTF_OUTPUT используется для указания каталога, в который будут помещены документы RTF.
+ Если задан относительный путь, перед ним будет подставлено значение \ref cfg_output_directory "OUTPUT_DIRECTORY".]]>
       </docs>
     </option>
     <option type="bool" id="COMPACT_RTF" defval="0" depends="GENERATE_RTF">
@@ -1467,12 +1514,22 @@ doxygen -w latex new_header.tex new_footer.tex new_stylesheet.sty
     </option>
     <option type="string" id="RTF_STYLESHEET_FILE" format="file" defval="" depends="GENERATE_RTF">
       <docs>
-<![CDATA[Тег \c RTF_STYLESHEET_FILE можно использовать для указания пользовательского файла таблицы стилей RTF.]]>
+<![CDATA[Загружает определения таблицы стилей из файла. Синтаксис аналогичен файлу конфигурации Doxygen,
+ то есть представляет собой набор присваиваний. Необходимо указывать только замены;
+ отсутствующие определения устанавливаются в значения по умолчанию.
+
+ Информацию о генерации таблицы стилей по умолчанию, которую Doxygen обычно использует,
+ см. также в разделе \ref doxygen_finetune.]]>
       </docs>
     </option>
     <option type="string" id="RTF_EXTENSIONS_FILE" format="file" defval="" depends="GENERATE_RTF">
       <docs>
-<![CDATA[Тег \c RTF_EXTENSIONS_FILE можно использовать для указания пользовательского файла расширений RTF.]]>
+<![CDATA[Загружает определения расширений из файла. Синтаксис аналогичен файлу конфигурации Doxygen,
+ то есть представляет собой набор присваиваний. Необходимо указывать только замены;
+ отсутствующие определения устанавливаются в значения по умолчанию.
+
+ Информацию о генерации файла расширений по умолчанию, который Doxygen обычно использует,
+ см. также в разделе \ref doxygen_finetune.]]>
       </docs>
     </option>
     <option type="list" id="RTF_EXTRA_FILES" format="file" depends="GENERATE_RTF">
@@ -1489,22 +1546,33 @@ doxygen -w latex new_header.tex new_footer.tex new_stylesheet.sty
     </option>
     <option type="string" id="MAN_OUTPUT" format="dir" defval="man" depends="GENERATE_MAN">
       <docs>
-<![CDATA[Тег \c MAN_OUTPUT используется для указания выходного каталога для страниц Man.]]>
+<![CDATA[Тег \c MAN_OUTPUT используется для указания каталога, в который будут помещены man-страницы.
+ Если задан относительный путь, перед ним будет подставлено значение \ref cfg_output_directory "OUTPUT_DIRECTORY".
+ Внутри каталога, указанного в \c MAN_OUTPUT, будет создан каталог \c man3.]]>
       </docs>
     </option>
     <option type="string" id="MAN_EXTENSION" format="string" defval=".3" depends="GENERATE_MAN">
       <docs>
-<![CDATA[Тег \c MAN_EXTENSION определяет расширение файла для страниц Man.]]>
+<![CDATA[Тег \c MAN_EXTENSION определяет расширение, добавляемое к сгенерированным man-страницам.
+ Если секция руководства не начинается с цифры, перед ней добавляется цифра 3.
+ Значение по умолчанию: .3.]]>
       </docs>
     </option>
     <option type="string" id="MAN_SUBDIR" format="string" defval="" depends="GENERATE_MAN">
       <docs>
-<![CDATA[Тег \c MAN_SUBDIR определяет подкаталог для страниц Man.]]>
+<![CDATA[Тег \c MAN_SUBDIR определяет имя каталога, создаваемого внутри
+ \ref cfg_man_output "MAN_OUTPUT", в который помещаются man-страницы.
+ По умолчанию используется \c man с последующим значением \ref cfg_man_extension "MAN_EXTENSION"
+ без начальной точки.]]>
       </docs>
     </option>
     <option type="bool" id="MAN_LINKS" defval="0" depends="GENERATE_MAN">
       <docs>
-<![CDATA[Если тег \c MAN_LINKS установлен в \c YES, будут сгенерированы ссылки на страницах Man.]]>
+<![CDATA[Если тег \c MAN_LINKS установлен в \c YES и Doxygen генерирует вывод в формате man,
+ для каждой задокументированной сущности в реальных man-страницах будет создан дополнительный man-файл.
+ Эти дополнительные файлы лишь ссылаются на реальную man-страницу, однако без них команда \c man
+ не сможет найти нужную страницу.
+ Значение по умолчанию: \c NO.]]>
       </docs>
     </option>
   </group>
@@ -1516,12 +1584,15 @@ doxygen -w latex new_header.tex new_footer.tex new_stylesheet.sty
     </option>
     <option type="string" id="XML_OUTPUT" format="dir" defval="xml" depends="GENERATE_XML">
       <docs>
-<![CDATA[Тег \c XML_OUTPUT используется для указания выходного каталога для файлов XML.]]>
+<![CDATA[Тег \c XML_OUTPUT используется для указания каталога, в который будут помещены XML-страницы.
+ Если задан относительный путь, перед ним будет подставлено значение \ref cfg_output_directory "OUTPUT_DIRECTORY".]]>
       </docs>
     </option>
     <option type="bool" id="XML_PROGRAMLISTING" defval="1" depends="GENERATE_XML">
       <docs>
-<![CDATA[Если тег \c XML_PROGRAMLISTING установлен в \c YES, исходный код будет включен в вывод XML.]]>
+<![CDATA[Если тег \c XML_PROGRAMLISTING установлен в \c YES, Doxygen будет включать листинги программ
+ (с подсветкой синтаксиса и информацией о перекрёстных ссылках) в XML-вывод.
+ Обратите внимание: включение этого параметра значительно увеличит объём XML-вывода.]]>
       </docs>
     </option>
     <option type="bool" id="XML_NS_MEMB_FILE_SCOPE" defval="0" depends="GENERATE_XML">
@@ -1538,14 +1609,17 @@ doxygen -w latex new_header.tex new_footer.tex new_stylesheet.sty
     </option>
     <option type="string" id="DOCBOOK_OUTPUT" format="dir" defval="docbook" depends="GENERATE_DOCBOOK">
       <docs>
-<![CDATA[Тег \c DOCBOOK_OUTPUT используется для указания выходного каталога для файлов DocBook.]]>
+<![CDATA[Тег \c DOCBOOK_OUTPUT используется для указания каталога, в который будут помещены страницы DocBook.
+ Если задан относительный путь, перед ним будет подставлено значение \ref cfg_output_directory "OUTPUT_DIRECTORY".]]>
       </docs>
     </option>
   </group>
   <group name="AutoGen" docs="Параметры конфигурации для вывода AutoGen Definitions">
     <option type="bool" id="GENERATE_AUTOGEN_DEF" defval="0">
       <docs>
-<![CDATA[Если тег \c GENERATE_AUTOGEN_DEF установлен в \c YES, будет сгенерирован файл определений AutoGen.]]>
+<![CDATA[Если тег \c GENERATE_AUTOGEN_DEF установлен в \c YES, Doxygen сгенерирует файл
+ определений AutoGen (\c .def), отражающий структуру кода, включая всю документацию.
+ Обратите внимание: данная функция всё ещё является экспериментальной и неполной.]]>
       </docs>
     </option>
   </group>
@@ -1574,17 +1648,25 @@ doxygen -w latex new_header.tex new_footer.tex new_stylesheet.sty
     </option>
     <option type="bool" id="PERLMOD_LATEX" defval="0" depends="GENERATE_PERLMOD">
       <docs>
-<![CDATA[Если тег \c PERLMOD_LATEX установлен в \c YES, формулы LaTeX будут сгенерированы в выводе модуля Perl.]]>
+<![CDATA[Если тег \c PERLMOD_LATEX установлен в \c YES, включается генерация файла \f$\mbox{\LaTeX}\f$
+ из вывода PerlMod с использованием файла \c Doxyrules.make, создаваемого вместе с Perl-модулем.
+
+ \note Для этой опции требуется рабочая установка \f$\mbox{\LaTeX}\f$.]]>
       </docs>
     </option>
     <option type="bool" id="PERLMOD_PRETTY" defval="1" depends="GENERATE_PERLMOD">
       <docs>
-<![CDATA[Если тег \c PERLMOD_PRETTY установлен в \c YES, вывод модуля Perl будет красиво отформатирован.]]>
+<![CDATA[Установите тег \c PERLMOD_PRETTY в \c YES для форматированного вывода генерируемого Perl-модуля.
+ Если установить тег в \c NO, будет сгенерирован более компактный Perl-модуль.
+
+ \note Рекомендуется запустить \c perltidy для полученного Perl-модуля, чтобы дополнительно проверить его корректность.]]>
       </docs>
     </option>
     <option type="string" id="PERLMOD_MAKEVAR_PREFIX" format="string" defval="" depends="GENERATE_PERLMOD">
       <docs>
-<![CDATA[Тег \c PERLMOD_MAKEVAR_PREFIX можно использовать для указания префикса для переменных Make в выводе модуля Perl.]]>
+<![CDATA[Имена переменных make в генерируемом файле \c doxyrules.make дополняются префиксом, заданным в \c PERLMOD_MAKEVAR_PREFIX.
+ Это полезно, когда несколько файлов \c doxyrules.make, включаемых одним \c Makefile,
+ не должны перезаписывать переменные друг друга.]]>
       </docs>
     </option>
   </group>
@@ -1596,12 +1678,17 @@ doxygen -w latex new_header.tex new_footer.tex new_stylesheet.sty
     </option>
     <option type="bool" id="MACRO_EXPANSION" defval="0" depends="ENABLE_PREPROCESSING">
       <docs>
-<![CDATA[Если тег \c MACRO_EXPANSION установлен в \c YES, макросы будут развернуты в исходном коде.]]>
+<![CDATA[Если тег \c MACRO_EXPANSION установлен в \c YES, Doxygen будет раскрывать все имена макросов
+ в исходном коде. Если установлен в \c NO, будет выполняться только условная компиляция.
+ Раскрытие макросов можно ограничить, установив
+ \ref cfg_expand_only_predef "EXPAND_ONLY_PREDEF" в \c YES.]]>
       </docs>
     </option>
     <option type="bool" id="EXPAND_ONLY_PREDEF" defval="0" depends="ENABLE_PREPROCESSING">
       <docs>
-<![CDATA[Если тег \c EXPAND_ONLY_PREDEF установлен в \c YES, будут развернуты только предопределенные макросы.]]>
+<![CDATA[Если теги \c EXPAND_ONLY_PREDEF и \c MACRO_EXPANSION оба установлены в \c YES,
+ раскрытие макросов ограничивается макросами, указанными в тегах
+ \ref cfg_predefined "PREDEFINED" и \ref cfg_expand_as_defined "EXPAND_AS_DEFINED".]]>
       </docs>
     </option>
     <option type="bool" id="SEARCH_INCLUDES" defval="1" depends="ENABLE_PREPROCESSING">
@@ -1611,12 +1698,16 @@ doxygen -w latex new_header.tex new_footer.tex new_stylesheet.sty
     </option>
     <option type="list" id="INCLUDE_PATH" format="dir" depends="SEARCH_INCLUDES">
       <docs>
-<![CDATA[Тег \c INCLUDE_PATH можно использовать для указания дополнительных путей включения для препроцессора.]]>
+<![CDATA[Тег \c INCLUDE_PATH можно использовать для указания одного или нескольких каталогов,
+ содержащих включаемые файлы, которые не являются входными файлами, но должны обрабатываться препроцессором.
+ Обратите внимание: по умолчанию \ref cfg_include_path "INCLUDE_PATH" не просматривается рекурсивно.]]>
       </docs>
     </option>
     <option type="list" id="INCLUDE_FILE_PATTERNS" format="string" depends="ENABLE_PREPROCESSING">
       <docs>
-<![CDATA[Тег \c INCLUDE_FILE_PATTERNS можно использовать для указания шаблонов для включаемых файлов.]]>
+<![CDATA[Тег \c INCLUDE_FILE_PATTERNS позволяет задать один или несколько шаблонов подстановки
+ (например, \c *.h и \c *.hpp) для фильтрации заголовочных файлов в каталогах.
+ Если оставить пустым, будут использованы шаблоны, указанные в \c FILE_PATTERNS.]]>
       </docs>
     </option>
     <option type="list" id="PREDEFINED" format="string" depends="ENABLE_PREPROCESSING">
@@ -1631,12 +1722,20 @@ doxygen -w latex new_header.tex new_footer.tex new_stylesheet.sty
     </option>
     <option type="list" id="EXPAND_AS_DEFINED" format="string" depends="ENABLE_PREPROCESSING">
       <docs>
-<![CDATA[Тег \c EXPAND_AS_DEFINED можно использовать для указания макросов, которые будут развернуты как определенные.]]>
+<![CDATA[Если теги \c MACRO_EXPANSION и \c EXPAND_ONLY_PREDEF оба установлены в \c YES,
+ данный тег можно использовать для указания списка имён макросов, которые должны быть раскрыты.
+ Будет использоваться определение макроса, найденное в исходных кодах.
+ Используйте тег \c PREDEFINED, если нужно задать другое определение макроса,
+ которое должно переопределять найденное в исходном коде.]]>
       </docs>
     </option>
     <option type="bool" id="SKIP_FUNCTION_MACROS" defval="1" depends="ENABLE_PREPROCESSING">
       <docs>
-<![CDATA[Если тег \c SKIP_FUNCTION_MACROS установлен в \c YES, макросы функций будут пропущены.]]>
+<![CDATA[Если тег \c SKIP_FUNCTION_MACROS установлен в \c YES, препроцессор Doxygen будет
+ удалять все ссылки на функционально-подобные макросы, которые стоят отдельной строкой,
+ имеют имя полностью в верхнем регистре и не заканчиваются точкой с запятой.
+ Такие функциональные макросы обычно используются для шаблонного кода и могут нарушить
+ работу парсера, если их не удалить.]]>
       </docs>
     </option>
   </group>
@@ -1693,7 +1792,10 @@ doxygen -w latex new_header.tex new_footer.tex new_stylesheet.sty
     </option>
     <option type="bool" id="HAVE_DOT" defval="0">
       <docs>
-<![CDATA[Если тег \c HAVE_DOT установлен в \c YES, Graphviz/dot будет использоваться для генерации диаграмм.]]>
+<![CDATA[Если тег \c HAVE_DOT установлен в \c YES, Doxygen считает, что инструмент \c dot
+ доступен через системный путь. Этот инструмент является частью Graphviz (см.:
+ https://www.graphviz.org/), набора инструментов для визуализации графов от AT&T и Lucent Bell Labs.
+ Остальные параметры данного раздела не имеют эффекта, если этот параметр установлен в \c NO.]]>
       </docs>
     </option>
     <option type="int" id="DOT_NUM_THREADS" defval="0" minval="0" maxval="512" depends="HAVE_DOT">
@@ -1735,12 +1837,18 @@ doxygen -w latex new_header.tex new_footer.tex new_stylesheet.sty
     </option>
     <option type="string" id="DOT_EDGE_ATTR" format="string" depends="HAVE_DOT" defval="labelfontname=Helvetica,labelfontsize=10">
       <docs>
-<![CDATA[Тег \c DOT_EDGE_ATTR можно использовать для указания атрибутов ребер для диаграмм dot.]]>
+<![CDATA[Тег \c DOT_EDGE_ATTR можно использовать для добавления атрибутов к рёбрам графов \c dot.\n
+ Значение по умолчанию: `labelfontname=Helvetica,labelfontsize=10`.\n
+ Подробнее см. в
+ <a href="https://graphviz.org/doc/info/attrs.html">документации Graphviz</a>.]]>
       </docs>
     </option>
     <option type="string" id="DOT_NODE_ATTR" format="string" depends="HAVE_DOT" defval="shape=box,height=0.2,width=0.4">
       <docs>
-<![CDATA[Тег \c DOT_NODE_ATTR можно использовать для указания атрибутов узлов для диаграмм dot.]]>
+<![CDATA[Тег \c DOT_NODE_ATTR можно использовать для добавления атрибутов к узлам графов \c dot.\n
+ Значение по умолчанию: `shape=box,height=0.2,width=0.4`.\n
+ Подробнее см. в
+ <a href="https://graphviz.org/doc/info/attrs.html">документации Graphviz</a>.]]>
       </docs>
     </option>
     <option type="string" id="DOT_FONTPATH" format="dir" defval="" depends="HAVE_DOT">
@@ -1786,7 +1894,14 @@ doxygen -w latex new_header.tex new_footer.tex new_stylesheet.sty
     </option>
     <option type="bool" id="GROUP_GRAPHS" defval="1" depends="HAVE_DOT">
       <docs>
-<![CDATA[Если тег \c GROUP_GRAPHS установлен в \c YES, Doxygen сгенерирует диаграмму для групп, показывающую прямые зависимости групп.]]>
+<![CDATA[Если тег \c GROUP_GRAPHS установлен в \c YES, Doxygen будет генерировать граф для групп,
+ показывающий прямые зависимости между группами.
+ См. также \ref cfg_group_graphs "GROUP_GRAPHS" для получения дополнительных сведений.
+
+ Явное включение графа зависимостей группы можно выполнить с помощью команды
+ \ref cmdgroupgraph "\\groupgraph".
+ Отключение графа зависимостей группы можно выполнить с помощью команды
+ \ref cmdhidegroupgraph "\\hidegroupgraph".]]>
       </docs>
     </option>
     <option type="bool" id="UML_LOOK" defval="0" depends="HAVE_DOT">
@@ -1807,7 +1922,11 @@ doxygen -w latex new_header.tex new_footer.tex new_stylesheet.sty
     </option>
     <option type="int" id="UML_MAX_EDGE_LABELS" defval="10" minval="0" maxval="100" depends="UML_LOOK">
       <docs>
-<![CDATA[Тег \c UML_MAX_EDGE_LABELS ограничивает количество меток ребер, отображаемых в диаграммах UML.]]>
+<![CDATA[Когда включён тег \ref cfg_uml_look "UML_LOOK", максимальное количество меток
+ на ребре ограничивается этим значением (по умолчанию 10).
+ Количество меток обычно равно числу методов (для отношения агрегации)
+ или числу полей (для отношения ассоциации).
+ Установка значения 0 отобразит все метки, но может затруднить чтение диаграммы.]]>
       </docs>
     </option>
     <option type="enum" id="DOT_UML_DETAILS" defval="NO" depends="UML_LOOK">
@@ -1827,7 +1946,10 @@ doxygen -w latex new_header.tex new_footer.tex new_stylesheet.sty
     </option>
     <option type="int" id="DOT_WRAP_THRESHOLD" defval="17" minval="0" maxval="1000" depends="HAVE_DOT">
       <docs>
-<![CDATA[Тег \c DOT_WRAP_THRESHOLD определяет порог для переноса строк в диаграммах dot.]]>
+<![CDATA[Тег \c DOT_WRAP_THRESHOLD можно использовать для задания минимального числа символов,
+ после которого выполняется перенос строки. Каждый символ строки, превышающий этот порог,
+ будет перенесён на новую строку.
+ Установите значение 0, чтобы отключить перенос.]]>
       </docs>
     </option>
     <option type="bool" id="TEMPLATE_RELATIONS" defval="0" depends="HAVE_DOT">
@@ -1865,12 +1987,28 @@ doxygen -w latex new_header.tex new_footer.tex new_stylesheet.sty
     </option>
     <option type="bool" id="CALL_GRAPH" defval="0" depends="HAVE_DOT">
       <docs>
-<![CDATA[Если тег \c CALL_GRAPH установлен в \c YES, диаграмма вызовов будет сгенерирована для каждой глобальной функции или метода класса.]]>
+<![CDATA[Если тег \c CALL_GRAPH установлен в \c YES, Doxygen будет генерировать граф зависимостей вызовов
+ для каждой глобальной функции или метода класса.
+
+ Обратите внимание: включение этой опции значительно увеличит время выполнения.
+ Поэтому в большинстве случаев лучше включать графы вызовов только для выбранных функций
+ с помощью команды \ref cmdcallgraph "\\callgraph".
+
+ Отключение графа вызовов можно выполнить с помощью команды
+ \ref cmdhidecallgraph "\\hidecallgraph".]]>
       </docs>
     </option>
     <option type="bool" id="CALLER_GRAPH" defval="0" depends="HAVE_DOT">
       <docs>
-<![CDATA[Если тег \c CALLER_GRAPH установлен в \c YES, диаграмма вызывающих будет сгенерирована для каждой глобальной функции или метода класса.]]>
+<![CDATA[Если тег \c CALLER_GRAPH установлен в \c YES, Doxygen будет генерировать граф зависимостей вызывающих
+ для каждой глобальной функции или метода класса.
+
+ Обратите внимание: включение этой опции значительно увеличит время выполнения.
+ Поэтому в большинстве случаев лучше включать графы вызывающих только для выбранных функций
+ с помощью команды \ref cmdcallergraph "\\callergraph".
+
+ Отключение графа вызывающих можно выполнить с помощью команды
+ \ref cmdhidecallergraph "\\hidecallergraph".]]>
       </docs>
     </option>
     <option type="bool" id="GRAPHICAL_HIERARCHY" defval="1" depends="HAVE_DOT">
@@ -1897,7 +2035,12 @@ doxygen -w latex new_header.tex new_footer.tex new_stylesheet.sty
     </option>
     <option type="enum" id="DOT_IMAGE_FORMAT" defval="png" depends="HAVE_DOT">
       <docs>
-<![CDATA[Тег \c DOT_IMAGE_FORMAT можно использовать для установки формата изображения для изображений, сгенерированных \c dot.]]>
+<![CDATA[Если тег \c DOT_IMAGE_FORMAT установлен в \c svg, Doxygen будет генерировать
+ SVG-изображения с поддержкой \c SGML. Обратите внимание: при использовании формата \c svg
+ совместно с тегом \ref cfg_html_file_extension "HTML_FILE_EXTENSION", установленным в \c xhtml,
+ SVG-файлы не кодируются в base64 и поэтому не могут быть встроены в XHTML-вывод.
+ Для SVG-изображений возможны интерактивные эффекты при наведении курсора —
+ для этого установите параметр \ref cfg_interactive_svg "INTERACTIVE_SVG" в \c YES.]]>
       </docs>
       <value name="png"/>
       <value name="jpg"/>
@@ -1932,17 +2075,28 @@ doxygen -w latex new_header.tex new_footer.tex new_stylesheet.sty
     </option>
     <option type="bool" id="INTERACTIVE_SVG" defval="0" depends="HAVE_DOT">
       <docs>
-<![CDATA[Если \ref cfg_dot_image_format "DOT_IMAGE_FORMAT" установлен в `svg` или `svg:svg` или `svg:svg:core`, эту опцию можно установить в \c YES, чтобы включить интерактивные SVG изображения, которые позволяют масштабирование и панорамирование.]]>
+<![CDATA[Если тег \c INTERACTIVE_SVG установлен в \c YES, а \c DOT_IMAGE_FORMAT — в \c svg,
+ при наведении курсора на узлы графа будет отображаться всплывающая подсказка с информацией
+ об этом узле. Это удобно, поскольку большие графы бывают весьма сложными, и навигация
+ по графу с помощью подсказок помогает понять его содержимое.
+
+ Также можно установить \c INTERACTIVE_SVG в \c NO и при этом сохранить возможность
+ масштабирования и перемещения. Для этого установите \ref cfg_dot_image_format "DOT_IMAGE_FORMAT"
+ в \c svg, а \ref cfg_html_file_extension "HTML_FILE_EXTENSION" — в \c xhtml. В этом случае
+ SVG встраивается непосредственно в HTML-документ.]]>
       </docs>
     </option>
     <option type="string" id="DOT_PATH" format="filedir" defval="" depends="HAVE_DOT">
       <docs>
-<![CDATA[Тег \c DOT_PATH можно использовать для указания пути к инструменту \c dot.]]>
+<![CDATA[Вы можете задать путь, по которому \c dot может найти пользовательские файлы форм,
+ на которые ссылается атрибут \c shapefile узла в графе \c dot.]]>
       </docs>
     </option>
     <option type="list" id="DOTFILE_DIRS" format="dir" depends="HAVE_DOT">
       <docs>
-<![CDATA[Тег \c DOTFILE_DIRS можно использовать для указания каталогов, содержащих файлы dot.]]>
+<![CDATA[Тег \c DOTFILE_DIRS можно использовать для указания одного или нескольких каталогов,
+ содержащих dot-файлы, которые включаются в документацию (см. команду
+ \ref cmddotfile "\\dotfile").]]>
       </docs>
     </option>
     <option type="string" id="DIA_PATH" format="dir" defval="">
@@ -1952,7 +2106,9 @@ doxygen -w latex new_header.tex new_footer.tex new_stylesheet.sty
     </option>
     <option type="list" id="DIAFILE_DIRS" format="dir">
       <docs>
-<![CDATA[Тег \c DIAFILE_DIRS можно использовать для указания каталогов, содержащих файлы dia.]]>
+<![CDATA[Тег \c DIAFILE_DIRS можно использовать для указания одного или нескольких каталогов,
+ содержащих файлы диаграмм Dia, включаемые в документацию (см. команду
+ \ref cmddiafile "\\diafile").]]>
       </docs>
     </option>
     <option type="string" id="PLANTUML_JAR_PATH" format="filedir" defval="">
@@ -1979,12 +2135,20 @@ doxygen -w latex new_header.tex new_footer.tex new_stylesheet.sty
     </option>
     <option type="list" id="PLANTUMLFILE_DIRS" format="dir">
       <docs>
-<![CDATA[Тег \c PLANTUMLFILE_DIRS можно использовать для указания каталогов, содержащих файлы PlantUML.]]>
+<![CDATA[Тег \c PLANTUMLFILE_DIRS можно использовать для указания одного или нескольких каталогов,
+ содержащих файлы диаграмм PlantUML, включаемые в документацию (см. команду
+ \ref cmdplantumlfile "\\plantumlfile").]]>
       </docs>
     </option>
     <option type="string" id="MERMAID_PATH" format="filedir" defval="">
       <docs>
-<![CDATA[При использовании диаграмм Mermaid с CLI рендерингом тег \c MERMAID_PATH должен использоваться для указания каталога, где может быть найден исполняемый файл \c mmdc (Mermaid CLI).]]>
+<![CDATA[Когда задан параметр \ref cfg_mermaid_path "MERMAID_PATH", Doxygen будет использовать локальную копию библиотеки Mermaid JS.
+ Дополнительные сведения см. на странице https://mermaid.js.org/intro/getting-started.html.
+ \note Doxygen тестировался с Mermaid JS версии 10.9.0.
+ При использовании другой версии некоторые диаграммы могут отображаться некорректно.
+ \note Если задан параметр \ref cfg_mermaid_path "MERMAID_PATH", параметр \ref cfg_mermaid_js_url "MERMAID_JS_URL" использоваться не будет.
+ В каталоге, указанном параметром \ref cfg_mermaid_path "MERMAID_PATH", должен находиться файл
+ \c mermaid.min.js. Обратите внимание, что следует указывать путь (а не имя файла).]]>
       </docs>
     </option>
     <option type="string" id="MERMAID_CONFIG_FILE" format="file" defval="">
@@ -2014,7 +2178,9 @@ doxygen -w latex new_header.tex new_footer.tex new_stylesheet.sty
     </option>
     <option type="list" id="MERMAIDFILE_DIRS" format="dir">
       <docs>
-<![CDATA[Тег \c MERMAIDFILE_DIRS можно использовать для указания каталогов, содержащих файлы Mermaid.]]>
+<![CDATA[Тег \c MERMAIDFILE_DIRS можно использовать для указания одного или нескольких каталогов,
+ содержащих файлы диаграмм Mermaid, включаемые в документацию (см. команду
+ \ref cmdmermaidfile "\\mermaidfile").]]>
       </docs>
     </option>
     <option type="int" id="DOT_GRAPH_MAX_NODES" minval="0" maxval="10000" defval="50" depends="HAVE_DOT">
@@ -2055,7 +2221,9 @@ doxygen -w latex new_header.tex new_footer.tex new_stylesheet.sty
     </option>
     <option type="list" id="MSCFILE_DIRS" format="dir">
       <docs>
-<![CDATA[Тег \c MSCFILE_DIRS можно использовать для указания каталогов, содержащих файлы msc.]]>
+<![CDATA[Тег \c MSCFILE_DIRS можно использовать для указания одного или нескольких каталогов,
+ содержащих файлы диаграмм MSC, включаемые в документацию (см. команду
+ \ref cmdmscfile "\\mscfile").]]>
       </docs>
     </option>
   </group>
