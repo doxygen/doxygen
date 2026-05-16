@@ -880,7 +880,24 @@
     </option>
     <option type="string" id="HTML_HEADER" format="file" defval="" depends="GENERATE_HTML">
       <docs>
-<![CDATA[Тег \c HTML_HEADER можно использовать для указания пользовательского HTML файла заголовка, который будет вставлен в каждую сгенерированную HTML страницу.]]>
+<![CDATA[Тег \c HTML_HEADER можно использовать для указания пользовательского файла HTML-заголовка
+ для каждой сгенерированной HTML-страницы.
+ Если тег оставить пустым, Doxygen сгенерирует стандартный заголовок.
+
+ Для получения корректного HTML заголовочный файл должен включать все скрипты и таблицы стилей,
+ которые нужны Doxygen и которые зависят от используемых параметров конфигурации (например, от
+ значения параметра \ref cfg_generate_treeview "GENERATE_TREEVIEW"). Настоятельно рекомендуется
+ начать с заголовка по умолчанию, выполнив команду
+\verbatim
+doxygen -w html new_header.html new_footer.html new_stylesheet.css YourConfigFile
+\endverbatim
+ а затем отредактировать файл \c new_header.html.
+
+ Дополнительные сведения о том, как сгенерировать заголовок по умолчанию, который обычно использует Doxygen,
+ см. в разделе \ref doxygen_usage.
+
+ @note Заголовок может изменяться, поэтому как правило необходимо повторно генерировать заголовок по умолчанию
+ при обновлении до более новой версии Doxygen. Описание возможных маркеров и имён блоков см. в документации.]]>
       </docs>
     </option>
     <option type="string" id="HTML_FOOTER" format="file" defval="" depends="GENERATE_HTML">
@@ -1070,7 +1087,10 @@
     </option>
     <option type="bool" id="GENERATE_ECLIPSEHELP" defval="0" depends="GENERATE_HTML">
       <docs>
-<![CDATA[Если тег \c GENERATE_ECLIPSEHELP установлен в \c YES, будет сгенерирован файл помощи Eclipse.]]>
+<![CDATA[Если тег \c GENERATE_ECLIPSEHELP установлен в \c YES, будут сгенерированы дополнительные
+ индексные файлы, необходимые для браузера справки Eclipse. Эти файлы можно объединить
+ с HTML-выводом для создания плагина справки Eclipse; дополнительные сведения см. на странице
+ https://help.eclipse.org/kepler/index.jsp?topic=%2Forg.eclipse.platform.doc.isv%2Fguide%2Fua_help_format.htm.]]>
       </docs>
     </option>
     <option type="string" id="ECLIPSE_DOC_ID" format="string" defval="org.doxygen.Project" depends="GENERATE_ECLIPSEHELP">
@@ -1080,12 +1100,34 @@
     </option>
     <option type="bool" id="DISABLE_INDEX" defval="0" depends="GENERATE_HTML">
       <docs>
-<![CDATA[Если тег \c DISABLE_INDEX установлен в \c YES, индекс будет отключен в выводе HTML.]]>
+<![CDATA[Тег \c DISABLE_INDEX можно использовать для включения/отключения сжатого индекса (вкладок)
+ в верхней части каждой HTML-страницы. При значении \c NO индекс включён, при значении
+ \c YES — отключён.
+
+ Поскольку вкладки индекса содержат ту же информацию, что и дерево навигации, можно
+ установить эту опцию в \c YES при включении
+ \ref cfg_generate_treeview "GENERATE_TREEVIEW".]]>
       </docs>
     </option>
     <option type="bool" id="GENERATE_TREEVIEW" defval="1" depends="GENERATE_HTML">
       <docs>
-<![CDATA[Если тег \c GENERATE_TREEVIEW установлен в \c YES, будет сгенерировано древовидное представление в выводе HTML.]]>
+<![CDATA[Тег \c GENERATE_TREEVIEW используется для указания, следует ли генерировать
+ древовидную индексную структуру для отображения иерархической информации.
+ Если значение тега установлено в \c YES, будет сгенерирована боковая панель,
+ содержащая древовидную индексную структуру (аналогичную той, которая генерируется
+ для HTML Help). Для этого требуется браузер с поддержкой JavaScript, DHTML, CSS и фреймов
+ (то есть любой современный браузер).
+ Пользователям Windows, вероятно, удобнее использовать функцию HTML help.
+
+ С помощью пользовательских таблиц стилей (см. \ref cfg_html_extra_stylesheet "HTML_EXTRA_STYLESHEET")
+ можно дополнительно настроить внешний вид индекса (см. \ref doxygen_finetune).
+ Например, таблица стилей по умолчанию, генерируемая Doxygen, содержит
+ пример того, как разместить изображение в корне дерева вместо
+ \ref cfg_project_name "PROJECT_NAME".
+
+ Поскольку дерево содержит более детальную информацию, чем вкладки индекса, можно
+ рассмотреть установку \ref cfg_disable_index "DISABLE_INDEX" в \c YES при
+ включении этой опции.]]>
       </docs>
     </option>
     <option type="bool" id="PAGE_OUTLINE_PANEL" defval="1" depends="GENERATE_HTML">
@@ -1095,7 +1137,11 @@
     </option>
     <option type="bool" id="FULL_SIDEBAR" defval="0" depends="GENERATE_HTML">
       <docs>
-<![CDATA[Если тег \c FULL_SIDEBAR установлен в \c YES, будет сгенерирована полная боковая панель в выводе HTML.]]>
+<![CDATA[Если параметр \c FULL_SIDEBAR установлен в \c YES, дерево навигации будет отображаться
+ на левой стороне вывода. В противном случае на левой стороне будет показан только выбранный элемент.
+ Если параметр \ref cfg_generate_treeview "GENERATE_TREEVIEW" отключён, этот параметр не имеет эффекта.
+
+ \note Эта опция поддерживается только для формата вывода HTML.]]>
       </docs>
     </option>
     <option type="int" id="ENUM_VALUES_PER_LINE" minval="0" maxval="20" defval="4" depends="GENERATE_HTML">
@@ -1142,7 +1188,13 @@
     </option>
     <option type="bool" id="USE_MATHJAX" defval="0" depends="GENERATE_HTML">
       <docs>
-<![CDATA[Если тег \c USE_MATHJAX установлен в \c YES, MathJax будет использоваться для рендеринга формул в выводе HTML.]]>
+<![CDATA[При включении \c MathJax можно задать выходной формат по умолчанию для вывода MathJax.
+
+ Если оставить пустым, используется значение \c HTML-CSS; дополнительные сведения о
+ различных выходных форматах см. на странице
+ https://docs.mathjax.org/en/latest/output.html.
+ Возможные значения: \c HTML-CSS (медленнее, но обеспечивает наилучшую
+ совместимость), \c NativeMML (то есть MathML) и \c SVG.]]>
       </docs>
     </option>
     <option type="enum" id="MATHJAX_VERSION" defval="MathJax_2" depends="USE_MATHJAX">
@@ -1241,17 +1293,27 @@
     </option>
     <option type="string" id="LATEX_CMD_NAME" format="file" defval="" depends="GENERATE_LATEX">
       <docs>
-<![CDATA[Тег \c LATEX_CMD_NAME указывает имя команды LaTeX.]]>
+<![CDATA[Тег \c LATEX_CMD_NAME можно использовать для указания имени вызываемой команды \f$\mbox{\LaTeX}\f$.
+ <br>Обратите внимание: если \ref cfg_use_pdflatex "USE_PDFLATEX" не включён, по умолчанию используется \c latex;
+ если \ref cfg_use_pdflatex "USE_PDFLATEX" включён, по умолчанию используется \c pdflatex, и в этом случае,
+ если выбрано \c latex, оно будет заменено на \c pdflatex. Для отдельных языков вывода значение по умолчанию
+ может быть установлено иначе — это зависит от реализации поддержки соответствующего языка.]]>
       </docs>
     </option>
     <option type="string" id="MAKEINDEX_CMD_NAME" format="file" defval="makeindex" depends="GENERATE_LATEX">
       <docs>
-<![CDATA[Тег \c MAKEINDEX_CMD_NAME указывает имя команды MakeIndex.]]>
+<![CDATA[Тег \c MAKEINDEX_CMD_NAME можно использовать для указания имени команды,
+ генерирующей индекс для \f$\mbox{\LaTeX}\f$.
+ \note Этот тег используется в генерируемом выходном файле (\c .tex).
+ Если оставить пустым, в качестве имени команды по умолчанию будет использоваться \c makeindex.]]>
       </docs>
     </option>
     <option type="string" id="LATEX_MAKEINDEX_CMD" defval="makeindex" depends="GENERATE_LATEX">
       <docs>
-<![CDATA[Тег \c LATEX_MAKEINDEX_CMD указывает команду, используемую для создания индекса.]]>
+<![CDATA[Тег \c LATEX_MAKEINDEX_CMD можно использовать для указания имени команды, генерирующей индекс для \f$\mbox{\LaTeX}\f$.
+ \note Этот тег используется в генерируемом выходном файле (\c .tex).
+ Если оставить пустым, в качестве имени команды по умолчанию будет использоваться \c makeindex.
+ Пользователи Linux/Mac также могут использовать \c xindy, если он установлен.]]>
       </docs>
     </option>
     <option type="bool" id="COMPACT_LATEX" defval="0" depends="GENERATE_LATEX">
@@ -1270,22 +1332,69 @@
     </option>
     <option type="list" id="EXTRA_PACKAGES" format="string" depends="GENERATE_LATEX">
       <docs>
-<![CDATA[Тег \c EXTRA_PACKAGES можно использовать для указания дополнительных пакетов LaTeX.]]>
+<![CDATA[Тег \c EXTRA_PACKAGES можно использовать для указания одного или нескольких имён пакетов \f$\mbox{\LaTeX}\f$,
+ которые должны быть включены в вывод \f$\mbox{\LaTeX}\f$.
+ Пакет можно указать только по его имени или с необязательными аргументами для этого пакета.
+ Если требуются пакеты с параметрами, необходимо указать список \c options=value
+ в качестве первого аргумента:
+\verbatim
+EXTRA_PACKAGES={options=list}packagename
+\endverbatim
+ или
+\verbatim
+EXTRA_PACKAGES=packagename
+\endverbatim
+ Пример:
+\verbatim
+EXTRA_PACKAGES={options=with-obsolete}acronym
+\endverbatim]]>
       </docs>
     </option>
     <option type="string" id="LATEX_HEADER" format="file" defval="" depends="GENERATE_LATEX">
       <docs>
-<![CDATA[Тег \c LATEX_HEADER можно использовать для указания пользовательского файла заголовка LaTeX.]]>
+<![CDATA[Тег \c LATEX_HEADER можно использовать для указания пользовательского \f$\mbox{\LaTeX}\f$
+ заголовка для генерируемого документа \f$\mbox{\LaTeX}\f$.
+ Заголовок должен содержать всё вплоть до первой главы.
+ Если оставить пустым, Doxygen сгенерирует стандартный заголовок.
+
+ Настоятельно рекомендуется начать с заголовка по умолчанию, выполнив команду
+\verbatim
+doxygen -w latex new_header.tex new_footer.tex new_stylesheet.sty
+\endverbatim
+ а затем отредактировать файл \c new_header.tex.
+
+ Дополнительные сведения о том, как сгенерировать заголовок по умолчанию, который обычно использует Doxygen,
+ см. в разделе \ref doxygen_usage.
+
+ <br>Примечание: используйте пользовательский заголовок только если вы знаете, что делаете!
+
+ @note Заголовок может изменяться, поэтому как правило
+ необходимо повторно генерировать заголовок по умолчанию при обновлении до более новой версии Doxygen.
+ Следующие команды имеют особое значение внутри заголовка (и нижнего колонтитула):
+Описание возможных маркеров и имён блоков см. в документации.]]>
       </docs>
     </option>
     <option type="string" id="LATEX_FOOTER" format="file" defval="" depends="GENERATE_LATEX">
       <docs>
-<![CDATA[Тег \c LATEX_FOOTER можно использовать для указания пользовательского файла нижнего колонтитула LaTeX.]]>
+<![CDATA[Тег \c LATEX_FOOTER можно использовать для указания пользовательского нижнего колонтитула \f$\mbox{\LaTeX}\f$ для
+ генерируемого документа \f$\mbox{\LaTeX}\f$.
+ Нижний колонтитул должен содержать всё после последней главы.
+ Если оставить пустым, Doxygen сгенерирует стандартный нижний колонтитул.
+ Обратите внимание, что нижний колонтитул может изменяться, поэтому как правило
+ необходимо повторно генерировать нижний колонтитул по умолчанию при обновлении до более новой версии Doxygen.
+ Дополнительные сведения о том, как сгенерировать нижний колонтитул по умолчанию, который обычно использует Doxygen,
+ см. в разделе \ref doxygen_usage.]]>
       </docs>
     </option>
     <option type="list" id="LATEX_EXTRA_STYLESHEET" format="file" defval="" depends="GENERATE_LATEX">
       <docs>
-<![CDATA[Тег \c LATEX_EXTRA_STYLESHEET можно использовать для указания дополнительных файлов таблиц стилей LaTeX.]]>
+<![CDATA[Тег \c LATEX_EXTRA_STYLESHEET можно использовать для указания дополнительных пользовательских
+ таблиц стилей \f$\mbox{\LaTeX}\f$, которые включаются после стандартных таблиц стилей,
+ создаваемых Doxygen. С помощью этой опции можно переопределить некоторые аспекты стиля.
+ Doxygen скопирует файлы таблиц стилей в выходной каталог.
+
+ \note Порядок дополнительных файлов таблиц стилей имеет значение (например, последняя
+ таблица стилей в списке переопределяет настройки предыдущих таблиц в списке).]]>
       </docs>
     </option>
     <option type="list" id="LATEX_EXTRA_FILES" format="file" depends="GENERATE_LATEX">
@@ -1348,7 +1457,12 @@
     </option>
     <option type="bool" id="RTF_HYPERLINKS" defval="0" depends="GENERATE_RTF">
       <docs>
-<![CDATA[Если тег \c RTF_HYPERLINKS установлен в \c YES, будут сгенерированы гиперссылки в выводе RTF.]]>
+<![CDATA[Установите тег \c RTF_HYPERLINKS в \c YES, если необходимо, чтобы ссылки в RTF-документе,
+ сгенерированном Doxygen, работали. Установите эту опцию в \c NO, если вы хотите
+ использовать RTF-файлы вместе с Microsoft Word.
+ Microsoft Word некорректно поддерживает ссылки на именованные якоря внутри
+ одного документа, а также не поддерживает ссылки на якоря в других документах.
+ Поэтому гиперссылки в таких случаях будут отключены.]]>
       </docs>
     </option>
     <option type="string" id="RTF_STYLESHEET_FILE" format="file" defval="" depends="GENERATE_RTF">
@@ -1507,7 +1621,12 @@
     </option>
     <option type="list" id="PREDEFINED" format="string" depends="ENABLE_PREPROCESSING">
       <docs>
-<![CDATA[Тег \c PREDEFINED можно использовать для указания предопределенных макросов.]]>
+<![CDATA[Тег \c PREDEFINED можно использовать для указания одного или нескольких имён макросов,
+ которые определяются до запуска препроцессора (аналогично опции \c -D
+ для \c gcc). Аргументом тега является список макросов вида:
+ \c name или \c name=definition (без пробелов). Если определение и знак "=" опущены,
+ предполагается "=1". Чтобы предотвратить отмену определения макроса через
+ \c #undef или рекурсивное раскрытие, используйте оператор := вместо оператора =.]]>
       </docs>
     </option>
     <option type="list" id="EXPAND_AS_DEFINED" format="string" depends="ENABLE_PREPROCESSING">
@@ -1524,7 +1643,25 @@
   <group name="External" trname="Внешние ссылки" docs="Параметры конфигурации, связанные с внешними ссылками">
     <option type="list" id="TAGFILES" format="file">
       <docs>
-<![CDATA[Тег \c TAGFILES можно использовать для указания внешних файлов тегов.]]>
+<![CDATA[Тег \c TAGFILES можно использовать для указания одного или нескольких файлов тегов.
+
+Для каждого файла тегов необходимо указать расположение внешней документации.
+Формат файла тегов без расположения следующий:
+\verbatim
+  TAGFILES = file1 file2 ...
+\endverbatim
+Добавление расположения для файлов тегов выполняется следующим образом:
+\verbatim
+  TAGFILES = file1=loc1 "file2 = loc2" ...
+\endverbatim
+где `loc1` и `loc2` могут быть относительными или абсолютными путями или URL-адресами.
+ Дополнительные сведения об использовании файлов тегов см. в разделе \ref external.
+
+ \note
+  Каждый файл тегов должен иметь уникальное имя
+  (при этом имя \e НЕ включает путь).
+  Если файл тегов не находится в каталоге, из которого запускается Doxygen,
+  необходимо также указать путь к файлу тегов здесь.]]>
       </docs>
     </option>
     <option type="string" id="GENERATE_TAGFILE" format="file" defval="">
@@ -1561,7 +1698,12 @@
     </option>
     <option type="int" id="DOT_NUM_THREADS" defval="0" minval="0" maxval="512" depends="HAVE_DOT">
       <docs>
-<![CDATA[Тег \c DOT_NUM_THREADS определяет количество потоков, используемых dot.]]>
+<![CDATA[Тег \c DOT_NUM_THREADS задаёт количество вызовов \c dot, которые Doxygen
+ может выполнять параллельно. При значении \c 0 Doxygen автоматически определяет это число
+ на основе количества доступных процессоров. Можно явно задать значение больше 0, чтобы
+ контролировать баланс между нагрузкой на CPU и скоростью обработки. Обратите внимание, что
+ при многопоточной сборке вывод вызовов \c dot не является детерминированным;
+ см. \ref cfg_dot_cleanup "DOT_CLEANUP".]]>
       </docs>
     </option>
     <option type="int" id="DOT_BATCH_SIZE" defval="50" minval="1" maxval="1000" depends="HAVE_DOT">
@@ -1580,7 +1722,15 @@
     </option>
     <option type="string" id="DOT_COMMON_ATTR" format="string" depends="HAVE_DOT" defval="fontname=Helvetica,fontsize=10">
       <docs>
-<![CDATA[Тег \c DOT_COMMON_ATTR можно использовать для указания общих атрибутов для диаграмм dot.]]>
+<![CDATA[Тег \c DOT_COMMON_ATTR можно использовать для добавления атрибутов ко всем графам \c dot.\n
+ По умолчанию используется `fontname=Helvetica,fontsize=10`.\n
+ Дополнительные сведения см. в
+ <a href="https://graphviz.org/doc/info/attrs.html">документации Graphviz</a>.
+
+ Следующие атрибуты управляют тем, какие атрибуты \c dot используются для узлов в
+ графах \c dot:
+ - \ref cfg_dot_node_attr "DOT_NODE_ATTR": общие атрибуты для всех узлов
+ - \ref cfg_dot_edge_attr "DOT_EDGE_ATTR": общие атрибуты для всех рёбер]]>
       </docs>
     </option>
     <option type="string" id="DOT_EDGE_ATTR" format="string" depends="HAVE_DOT" defval="labelfontname=Helvetica,labelfontsize=10">
@@ -1600,7 +1750,20 @@
     </option>
     <option type="enum" id="CLASS_GRAPH" defval="YES">
       <docs>
-<![CDATA[Если тег \c CLASS_GRAPH установлен в \c YES, будет сгенерирована диаграмма классов.]]>
+<![CDATA[Если тег \c CLASS_GRAPH установлен в \c YES, \c GRAPH или \c BUILTIN, Doxygen
+ сгенерирует граф для каждого документированного класса, показывающий прямые и
+ косвенные отношения наследования.
+ Если тег \c CLASS_GRAPH установлен в \c YES или \c GRAPH, а также включён тег \ref cfg_have_dot "HAVE_DOT",
+ то для построения графа будет использован инструмент `dot`.
+ Если тег \c CLASS_GRAPH установлен в \c YES, а тег \ref cfg_have_dot "HAVE_DOT" отключён,
+ или если тег \c CLASS_GRAPH установлен в \c BUILTIN, будет использован встроенный генератор.
+ Если тег \c CLASS_GRAPH установлен в \c TEXT, прямые и косвенные отношения наследования
+ будут показаны в виде текста/ссылок.
+ Явное включение графа наследования или выбор другого представления для графа наследования
+ конкретного класса можно выполнить с помощью команды
+ \ref cmdinheritancegraph "\\inheritancegraph".
+ Отключение графа наследования можно выполнить с помощью команды
+ \ref cmdhideinheritancegraph "\\hideinheritancegraph".]]>
       </docs>
       <value name="NO" bool_representation="NO"/>
       <value name="YES" bool_representation="YES"/>
@@ -1610,7 +1773,15 @@
     </option>
     <option type="bool" id="COLLABORATION_GRAPH" defval="1" depends="HAVE_DOT">
       <docs>
-<![CDATA[Если тег \c COLLABORATION_GRAPH установлен в \c YES, будет сгенерирована диаграмма сотрудничества.]]>
+<![CDATA[Если тег \c COLLABORATION_GRAPH установлен в \c YES, Doxygen сгенерирует граф
+ для каждого документированного класса, показывающий прямые и косвенные зависимости реализации
+ (наследование, включение и ссылки на классы через переменные) этого класса
+ с другими документированными классами.
+
+ Явное включение графа коллаборации можно выполнить с помощью
+ команды \ref cmdcollaborationgraph "\\collaborationgraph".
+ Отключение графа коллаборации можно выполнить с помощью команды
+ \ref cmdhidecollaborationgraph "\\hidecollaborationgraph".]]>
       </docs>
     </option>
     <option type="bool" id="GROUP_GRAPHS" defval="1" depends="HAVE_DOT">
@@ -1625,7 +1796,13 @@
     </option>
     <option type="int" id="UML_LIMIT_NUM_FIELDS" defval="10" minval="0" maxval="100" depends="UML_LOOK">
       <docs>
-<![CDATA[Тег \c UML_LIMIT_NUM_FIELDS ограничивает количество полей, отображаемых в диаграммах UML.]]>
+<![CDATA[Когда включён тег \ref cfg_uml_look "UML_LOOK", каждый класс отображается в виде блока
+ на диаграмме классов, опционально с атрибутами и операциями.
+ Для каждого класса максимальное количество отображаемых атрибутов и операций ограничено
+ этим значением (по умолчанию 10).
+ \note Общее количество отображаемых полей вдвое больше значения этого параметра
+ (то есть учитываются и атрибуты, и операции).
+ Установка значения 0 отобразит все поля, но может затруднить чтение диаграммы.]]>
       </docs>
     </option>
     <option type="int" id="UML_MAX_EDGE_LABELS" defval="10" minval="0" maxval="100" depends="UML_LOOK">
@@ -1635,7 +1812,14 @@
     </option>
     <option type="enum" id="DOT_UML_DETAILS" defval="NO" depends="UML_LOOK">
       <docs>
-<![CDATA[Тег \c DOT_UML_DETAILS управляет тем, какие детали отображаются в диаграммах UML.]]>
+<![CDATA[Если тег \ref cfg_uml_look "UML_LOOK" включён, поля и методы отображаются внутри
+ узлов класса и структуры. Если полей или методов очень много, а также много узлов,
+ граф может стать слишком большим для практического использования. Тег \c DOT_UML_DETAILS позволяет
+ задать уровень детализации, отображаемой на графе:
+ - \c NO: Отображаются только имена классов (без атрибутов и операций).
+ - \c YES: Отображаются атрибуты и операции.
+ - \c NONE: Атрибуты и операции не отображаются, блоки компактны
+   (это может ускорить процесс рендеринга).]]>
       </docs>
       <value name="NO"/>
       <value name="YES"/>
@@ -1653,12 +1837,30 @@
     </option>
     <option type="bool" id="INCLUDE_GRAPH" defval="1" depends="HAVE_DOT">
       <docs>
-<![CDATA[Если тег \c INCLUDE_GRAPH установлен в \c YES, будет сгенерирована диаграмма включений.]]>
+<![CDATA[Если теги \c INCLUDE_GRAPH, \c ENABLE_PREPROCESSING и \c SEARCH_INCLUDES установлены в \c YES,
+ Doxygen сгенерирует граф для каждого документированного файла, показывающий прямые и
+ косвенные зависимости включения этого файла от других документированных файлов.
+ Значение по умолчанию: \c YES.
+ Этот тег требует, чтобы тег \ref cfg_have_dot "HAVE_DOT" был установлен в \c YES.
+
+ Явное включение графа зависимостей включения можно выполнить с помощью
+ команды \ref cmdincludegraph "\\includegraph".
+ Отключение графа зависимостей включения можно выполнить с помощью команды
+ \ref cmdhideincludegraph "\\hideincludegraph".]]>
       </docs>
     </option>
     <option type="bool" id="INCLUDED_BY_GRAPH" defval="1" depends="HAVE_DOT">
       <docs>
-<![CDATA[Если тег \c INCLUDED_BY_GRAPH установлен в \c YES, будет сгенерирована диаграмма "включен в".]]>
+<![CDATA[Если теги \c INCLUDED_BY_GRAPH, \c ENABLE_PREPROCESSING и \c SEARCH_INCLUDES
+ установлены в \c YES, Doxygen сгенерирует граф для каждого документированного файла, показывающий
+ прямые и косвенные зависимости включения этого файла от других документированных файлов.
+ Значение по умолчанию: \c YES.
+ Этот тег требует, чтобы тег \ref cfg_have_dot "HAVE_DOT" был установлен в \c YES.
+
+ Явное включение графа «включён в» можно выполнить с помощью
+ команды \ref cmdincludedby "\\includedby".
+ Отключение графа «включён в» можно выполнить с помощью команды
+ \ref cmdhideincludedby "\\hideincludedby".]]>
       </docs>
     </option>
     <option type="bool" id="CALL_GRAPH" defval="0" depends="HAVE_DOT">
@@ -1678,7 +1880,14 @@
     </option>
     <option type="bool" id="DIRECTORY_GRAPH" defval="1" depends="HAVE_DOT">
       <docs>
-<![CDATA[Если тег \c DIRECTORY_GRAPH установлен в \c YES, будет сгенерирована диаграмма каталогов.]]>
+<![CDATA[Если тег \c DIRECTORY_GRAPH установлен в \c YES, Doxygen будет графически показывать зависимости
+ каталога от других каталогов. Зависимости определяются по отношениям \c #include
+ между файлами в каталогах.
+
+ Явное включение графа каталогов можно выполнить с помощью
+ команды \ref cmddirectorygraph "\\directorygraph".
+ Отключение графа каталогов можно выполнить с помощью команды
+ \ref cmdhidedirectorygraph "\\hidedirectorygraph".]]>
       </docs>
     </option>
     <option type="int" id="DIR_GRAPH_MAX_DEPTH" minval="1" maxval="25" defval="1" depends="DIRECTORY_GRAPH">
@@ -1748,7 +1957,14 @@
     </option>
     <option type="string" id="PLANTUML_JAR_PATH" format="filedir" defval="">
       <docs>
-<![CDATA[Тег \c PLANTUML_JAR_PATH указывает путь к файлу JAR PlantUML.]]>
+<![CDATA[При генерации вывода Doxygen может использовать инструмент PlantUML
+ (\c http://plantuml.com) для генерации диаграмм и схем.
+ Тег \c PLANTUML_JAR_PATH должен использоваться для указания пути, по которому
+ \c java может найти файл \c plantuml.jar, или имени jar-файла для использования.
+ Если оставить пустым, предполагается, что PlantUML не используется или вызывается
+ на этапе предварительной обработки.
+ В этом случае Doxygen выдаст предупреждение при обнаружении команды \plantuml
+ и не выполнит рендеринг диаграммы.]]>
       </docs>
     </option>
     <option type="string" id="PLANTUML_CFG_FILE" format="file" defval="">
@@ -1786,7 +2002,14 @@
     </option>
     <option type="string" id="MERMAID_JS_URL" format="string" defval="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs">
       <docs>
-<![CDATA[Тег \c MERMAID_JS_URL указывает URL, с которого загружается \c mermaid.js при использовании клиентского рендеринга.]]>
+<![CDATA[Если параметр \ref cfg_mermaid_path "MERMAID_PATH" пуст, Doxygen будет использовать CDN для загрузки
+ библиотеки Mermaid JS. URL-адрес можно переопределить с помощью параметра \c MERMAID_JS_URL.
+ Дополнительные сведения см. на странице https://mermaid.js.org/intro/getting-started.html.
+ \note Doxygen тестировался с Mermaid JS версии 10.9.0.
+ При использовании другой версии некоторые диаграммы могут отображаться некорректно.
+ \note При просмотре сгенерированной HTML-документации без сервера по схеме \c file://
+ доступ к CDN невозможен, поэтому следует использовать локальную копию библиотеки Mermaid JS.
+ Укажите путь с помощью параметра \ref cfg_mermaid_path "MERMAID_PATH".]]>
       </docs>
     </option>
     <option type="list" id="MERMAIDFILE_DIRS" format="dir">
@@ -1796,12 +2019,23 @@
     </option>
     <option type="int" id="DOT_GRAPH_MAX_NODES" minval="0" maxval="10000" defval="50" depends="HAVE_DOT">
       <docs>
-<![CDATA[Тег \c DOT_GRAPH_MAX_NODES можно использовать для установки максимального количества узлов, отображаемых в графе.]]>
+<![CDATA[Тег \c DOT_GRAPH_MAX_NODES можно использовать для задания максимального количества узлов,
+ которые будут отображаться на графе. Если количество узлов в графе становится
+ больше этого значения, Doxygen усечёт граф, визуализируя узел в виде красного прямоугольника.
+ Обратите внимание: если количество прямых дочерних узлов корневого узла в графе уже превышает
+ \c DOT_GRAPH_MAX_NODES, граф вообще не будет показан. Также обратите внимание,
+ что размер графа может быть дополнительно ограничен с помощью \ref cfg_max_dot_graph_depth "MAX_DOT_GRAPH_DEPTH".]]>
       </docs>
     </option>
     <option type="int" id="MAX_DOT_GRAPH_DEPTH" minval="0" maxval="1000" defval="0" depends="HAVE_DOT">
       <docs>
-<![CDATA[Тег \c MAX_DOT_GRAPH_DEPTH можно использовать для установки максимальной глубины графов, сгенерированных \c dot.]]>
+<![CDATA[Тег \c MAX_DOT_GRAPH_DEPTH можно использовать для задания максимальной глубины
+ графов, генерируемых инструментом dot. Значение глубины 3 означает, что будут отображаться только
+ узлы, достижимые из корневого узла по пути не более чем из 3 рёбер. Узлы,
+ расположенные дальше от корневого узла, будут опущены. Обратите внимание, что установка
+ этой опции в 1 или 2 может значительно сократить время вычислений для больших
+ кодовых баз. Также обратите внимание, что размер графа может быть дополнительно ограничен с помощью
+ \ref cfg_dot_graph_max_nodes "DOT_GRAPH_MAX_NODES". Использование глубины 0 означает отсутствие ограничения глубины.]]>
       </docs>
     </option>
     <option type="bool" id="GENERATE_LEGEND" defval="1" depends="HAVE_DOT">
