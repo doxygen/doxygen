@@ -643,7 +643,16 @@
     </option>
     <option type="list" id="INPUT_FILE_ENCODING" format="string">
       <docs>
-<![CDATA[Тег \c INPUT_FILE_ENCODING позволяет задать кодировку символов для конкретных входных файлов, переопределяя глобальный параметр \ref cfg_input_encoding "INPUT_ENCODING" для отдельных файлов. Формат: \verbatim шаблон=кодировка \endverbatim Например: \verbatim INPUT_FILE_ENCODING = *.cpp=windows-1251 \endverbatim]]>
+<![CDATA[Этот тег можно использовать для указания кодировки символов исходных файлов,
+ которые Doxygen обрабатывает.
+ Тег \c INPUT_FILE_ENCODING позволяет задать кодировку символов для отдельных шаблонов файлов.
+ Doxygen будет сравнивать имя файла с каждым шаблоном и применять кодировку к совпадающим файлам.
+ Шаблоны работают так же, как в теге \c FILE_PATTERNS.
+ Если ни один шаблон не соответствует имени файла, в качестве кодировки по умолчанию
+ используется \ref cfg_doxyfile_encoding "DOXYFILE_ENCODING".
+
+ Обратите внимание, что для пользовательских или иных неизвестных расширений файлов можно
+ также включить поддержку языка с помощью тега \ref cfg_extension_mapping "EXTENSION_MAPPING".]]>
       </docs>
     </option>
     <option type="list" id="FILE_PATTERNS" format="string">
@@ -749,7 +758,22 @@
     </option>
     <option type="string" id="INPUT_FILTER" format="file" defval="">
       <docs>
-<![CDATA[Тег \c INPUT_FILTER можно использовать для указания программы-фильтра, применяемой Doxygen к входным файлам. Doxygen вызовет фильтр как: \verbatim <фильтр> <входной файл> \endverbatim Стандартный вывод фильтра будет использован в качестве входных данных для Doxygen. Используйте пробел для разделения исполняемого файла от аргументов, если это необходимо. Фильтр не должен добавлять или удалять строки, поскольку это может привести к неправильным сообщениям об ошибках. Ожидается, что вывод фильтра стабилен: при повторных вызовах с теми же входными данными фильтр должен выдавать одинаковый результат. Если выполнение фильтра завершается ненулевым кодом возврата (то есть с ошибкой), входной файл не будет обработан.]]>
+<![CDATA[Тег \c INPUT_FILTER можно использовать для указания программы, которую Doxygen должен
+ вызывать для фильтрации каждого входного файла. Doxygen вызовет программу-фильтр,
+ исполняя (через \c popen()) команду:
+\verbatim
+<filter> <input-file>
+\endverbatim
+ где \c <filter> — значение тега \c INPUT_FILTER, а \c <input-file> — имя входного файла.
+ Doxygen будет использовать вывод, который программа-фильтр записывает в стандартный вывод.
+ Если задан тег \c FILTER_PATTERNS, данный тег будет проигнорирован.
+
+ \note Фильтр не должен добавлять или удалять строки; он применяется до сканирования кода,
+ но не во время генерации выходного кода. Если строки добавляются или удаляются,
+ якоря будут расставлены неверно.
+
+ \note Doxygen не будет запускать фильтр, если он работает в режиме
+ \ref cfg_filter_cache_directory "FILTER_CACHE_DIRECTORY" и существует кэшированная версия вывода фильтра.]]>
       </docs>
     </option>
     <option type="list" id="FILTER_PATTERNS" format="string">
@@ -774,7 +798,13 @@
     </option>
     <option type="bool" id="IMPLICIT_DIR_DOCS" defval="1">
       <docs>
-<![CDATA[Если тег \c IMPLICIT_DIR_DOCS установлен в \c YES, а в каталоге присутствует файл \c README.md, Doxygen будет использовать его содержимое в качестве описания каталога, если в каталоге отсутствует явная документация Doxygen.]]>
+<![CDATA[Если тег \c IMPLICIT_DIR_DOCS установлен в \c YES, Doxygen автоматически добавит
+ документацию ко всем каталогам, для которых во входных данных не задана команда \ref cmddir "\\dir".
+ Документация для каждого каталога будет включать краткое описание на основе имени каталога,
+ подробное описание на основе необязательной документации внутри подкаталога,
+ а также список файлов и подкаталогов, найденных в этом каталоге.
+ Установите в \c NO, если необходимо документировать только явно задокументированные каталоги.
+ По умолчанию — \c YES.]]>
       </docs>
     </option>
     <option type="int" id="FORTRAN_COMMENT_AFTER" defval="72" minval="7" maxval="10000">
@@ -811,7 +841,11 @@
     </option>
     <option type="bool" id="REFERENCES_LINK_SOURCE" defval="1">
       <docs>
-<![CDATA[Если тег \c REFERENCES_LINK_SOURCE установлен в \c YES, ссылки из списков ссылок будут указывать на исходный код. Если установлено в \c NO, они будут указывать на документацию.]]>
+<![CDATA[Если тег \c REFERENCES_LINK_SOURCE установлен в \c YES и тег \c SOURCE_BROWSER
+ также установлен в \c YES, гиперссылки из функций в списках
+ \ref cfg_references_relation "REFERENCES_RELATION"
+ и \ref cfg_referenced_by_relation "REFERENCED_BY_RELATION" будут указывать
+ на исходный код. В противном случае они будут указывать на документацию.]]>
       </docs>
     </option>
     <option type="bool" id="SOURCE_TOOLTIPS" defval="1" depends="SOURCE_BROWSER">
@@ -1062,22 +1096,29 @@ doxygen -w html new_header.html new_footer.html new_stylesheet.css YourConfigFil
     </option>
     <option type="string" id="QCH_FILE" format="file" defval="" depends="GENERATE_QHP">
       <docs>
-<![CDATA[Тег \c QCH_FILE можно использовать для указания имени файла сгенерированного сжатого файла помощи Qt.]]>
+<![CDATA[Тег \c QCH_FILE можно использовать для указания имени результирующего файла .qch.
+ Указанный путь задаётся относительно папки вывода HTML.]]>
       </docs>
     </option>
     <option type="string" id="QHP_NAMESPACE" format="string" defval="org.doxygen.Project" depends="GENERATE_QHP">
       <docs>
-<![CDATA[Тег \c QHP_NAMESPACE указывает пространство имен, которое будет использоваться для сгенерированного файла проекта помощи Qt.]]>
+<![CDATA[Тег \c QHP_NAMESPACE задаёт пространство имён, используемое при генерации вывода Qt Help Project.
+ Подробнее см. на странице
+ <a href="https://doc.qt.io/archives/qt-4.8/qthelpproject.html#namespace">Qt Help Project / Namespace</a>.]]>
       </docs>
     </option>
     <option type="string" id="QHP_VIRTUAL_FOLDER" format="string" defval="doc" depends="GENERATE_QHP">
       <docs>
-<![CDATA[Тег \c QHP_VIRTUAL_FOLDER указывает виртуальную папку, которая будет использоваться для сгенерированного файла проекта помощи Qt.]]>
+<![CDATA[Если тег \ref cfg_generate_qhp "GENERATE_QHP" установлен в \c YES, тег \c QHP_VIRTUAL_FOLDER
+ задаёт пространство имён, используемое при генерации вывода Qt Help Project. Подробнее см. на странице
+ <a href="https://doc.qt.io/archives/qt-4.8/qthelpproject.html#virtual-folders">Qt Help Project / Virtual Folders</a>.]]>
       </docs>
     </option>
     <option type="string" id="QHP_CUST_FILTER_NAME" format="string" defval="" depends="GENERATE_QHP">
       <docs>
-<![CDATA[Тег \c QHP_CUST_FILTER_NAME указывает имя пользовательского фильтра, который может использоваться для фильтрации документации.]]>
+<![CDATA[Тег \c QHP_CUST_FILTER_NAME задаёт имя добавляемого пользовательского фильтра.
+ Подробнее см. на странице
+ <a href="https://doc.qt.io/archives/qt-4.8/qthelpproject.html#custom-filters">Qt Help Project / Custom Filters</a>.]]>
       </docs>
     </option>
     <option type="string" id="QHP_CUST_FILTER_ATTRS" format="string" defval="" depends="GENERATE_QHP">
@@ -1109,7 +1150,9 @@ doxygen -w html new_header.html new_footer.html new_stylesheet.css YourConfigFil
     </option>
     <option type="string" id="ECLIPSE_DOC_ID" format="string" defval="org.doxygen.Project" depends="GENERATE_ECLIPSEHELP">
       <docs>
-<![CDATA[Тег \c ECLIPSE_DOC_ID указывает идентификатор документации, который будет использоваться для сгенерированной помощи Eclipse.]]>
+<![CDATA[Уникальный идентификатор для плагина справки Eclipse. При установке плагина каталог,
+ содержащий HTML- и XML-файлы, должен иметь это же имя.
+ Каждый набор документации должен иметь собственный идентификатор.]]>
       </docs>
     </option>
     <option type="bool" id="DISABLE_INDEX" defval="0" depends="GENERATE_HTML">
@@ -1433,7 +1476,10 @@ doxygen -w latex new_header.tex new_footer.tex new_stylesheet.sty
     </option>
     <option type="list" id="LATEX_EXTRA_FILES" format="file" depends="GENERATE_LATEX">
       <docs>
-<![CDATA[Тег \c LATEX_EXTRA_FILES можно использовать для указания дополнительных файлов, которые должны быть скопированы в выходной каталог LaTeX.]]>
+<![CDATA[Тег \c LATEX_EXTRA_FILES можно использовать для указания одного или нескольких
+ дополнительных изображений или других исходных файлов, которые должны быть скопированы
+ в выходной каталог \f$\mbox{\LaTeX}\f$. Обратите внимание, что файлы копируются как есть;
+ никакие команды или маркеры не доступны.]]>
       </docs>
     </option>
     <option type="bool" id="PDF_HYPERLINKS" defval="1" depends="GENERATE_LATEX">
@@ -1466,7 +1512,9 @@ doxygen -w latex new_header.tex new_footer.tex new_stylesheet.sty
     </option>
     <option type="bool" id="LATEX_HIDE_INDICES" defval="0" depends="GENERATE_LATEX">
       <docs>
-<![CDATA[Если тег \c LATEX_HIDE_INDICES установлен в \c YES, индексы будут скрыты в выводе LaTeX.]]>
+<![CDATA[Тег \c LATEX_HIDE_INDICES можно использовать для необязательного скрытия
+ глав-указателей из оглавления, которые генерируются Doxygen. Это полезно, если
+ необходимо отображать только алфавитный указатель, а не все остальные индексы.]]>
       </docs>
     </option>
     <option type="string" id="LATEX_BIB_STYLE" format="string" defval="plainnat" depends="GENERATE_LATEX">
@@ -1499,7 +1547,9 @@ doxygen -w latex new_header.tex new_footer.tex new_stylesheet.sty
     </option>
     <option type="bool" id="COMPACT_RTF" defval="0" depends="GENERATE_RTF">
       <docs>
-<![CDATA[Если тег \c COMPACT_RTF установлен в \c YES, будет сгенерирован компактный вывод RTF.]]>
+<![CDATA[Если тег \c COMPACT_RTF установлен в \c YES, Doxygen будет генерировать более компактные
+ RTF-документы. Это может быть полезно для небольших проектов и в целом способствует
+ экономии ресурсов.]]>
       </docs>
     </option>
     <option type="bool" id="RTF_HYPERLINKS" defval="0" depends="GENERATE_RTF">
@@ -1534,7 +1584,10 @@ doxygen -w latex new_header.tex new_footer.tex new_stylesheet.sty
     </option>
     <option type="list" id="RTF_EXTRA_FILES" format="file" depends="GENERATE_RTF">
       <docs>
-<![CDATA[Тег \c RTF_EXTRA_FILES можно использовать для указания дополнительных файлов, которые должны быть скопированы в выходной каталог RTF.]]>
+<![CDATA[Тег \c RTF_EXTRA_FILES можно использовать для указания одного или нескольких
+ дополнительных изображений или других исходных файлов, которые должны быть скопированы
+ в каталог \ref cfg_rtf_output "RTF_OUTPUT". Обратите внимание, что файлы копируются как есть;
+ никакие команды или маркеры не доступны.]]>
       </docs>
     </option>
   </group>
@@ -1579,7 +1632,8 @@ doxygen -w latex new_header.tex new_footer.tex new_stylesheet.sty
   <group name="XML" docs="Параметры конфигурации, связанные с выводом XML">
     <option type="bool" id="GENERATE_XML" defval="0">
       <docs>
-<![CDATA[Если тег \c GENERATE_XML установлен в \c YES, будет сгенерирован вывод XML.]]>
+<![CDATA[Если тег \c GENERATE_XML установлен в \c YES, Doxygen создаст XML-файл,
+ содержащий структуру кода вместе со всей документацией.]]>
       </docs>
     </option>
     <option type="string" id="XML_OUTPUT" format="dir" defval="xml" depends="GENERATE_XML">
@@ -1765,22 +1819,30 @@ doxygen -w latex new_header.tex new_footer.tex new_stylesheet.sty
     </option>
     <option type="string" id="GENERATE_TAGFILE" format="file" defval="">
       <docs>
-<![CDATA[Тег \c GENERATE_TAGFILE можно использовать для указания имени файла тегов, который будет сгенерирован.]]>
+<![CDATA[Если после тега \c GENERATE_TAGFILE указано имя файла, Doxygen создаст
+ файл тегов на основе считанных входных файлов. Подробнее об использовании файлов
+ тегов см. в разделе \ref external.]]>
       </docs>
     </option>
     <option type="bool" id="ALLEXTERNALS" defval="0">
       <docs>
-<![CDATA[Если тег \c ALLEXTERNALS установлен в \c YES, все внешние классы и пространства имен будут включены в документацию.]]>
+<![CDATA[Если тег \c ALLEXTERNALS установлен в \c YES, все внешние классы и
+ пространства имён будут перечислены в индексе классов и пространств имён.
+ Если установлено в \c NO, в списке будут отображаться только унаследованные внешние классы.]]>
       </docs>
     </option>
     <option type="bool" id="EXTERNAL_GROUPS" defval="1">
       <docs>
-<![CDATA[Если тег \c EXTERNAL_GROUPS установлен в \c YES, внешние группы будут включены в документацию.]]>
+<![CDATA[Если тег \c EXTERNAL_GROUPS установлен в \c YES, все внешние группы будут
+ перечислены в индексе модулей. Если установлено в \c NO, в индексе модулей
+ будут отображены только группы текущего проекта.]]>
       </docs>
     </option>
     <option type="bool" id="EXTERNAL_PAGES" defval="1">
       <docs>
-<![CDATA[Если тег \c EXTERNAL_PAGES установлен в \c YES, внешние страницы будут включены в документацию.]]>
+<![CDATA[Если тег \c EXTERNAL_PAGES установлен в \c YES, все внешние страницы будут
+ включены в оглавление. Если установлено в \c NO, в оглавление будут включены
+ только страницы текущего проекта.]]>
       </docs>
     </option>
   </group>
@@ -1853,7 +1915,10 @@ doxygen -w latex new_header.tex new_footer.tex new_stylesheet.sty
     </option>
     <option type="string" id="DOT_FONTPATH" format="dir" defval="" depends="HAVE_DOT">
       <docs>
-<![CDATA[Тег \c DOT_FONTPATH можно использовать для указания пути к шрифтам для dot.]]>
+<![CDATA[По умолчанию \c dot игнорирует пользовательские шрифты, используемые для отображения текста
+ в пользовательских диаграммах \c dot (например, написанных с помощью \ref cmddotfile "\\dotfile").
+ Чтобы избежать этого, необходимо явно указать путь к шрифтам для \c dot;
+ данный параметр позволяет задать дополнительные каталоги для поиска шрифтов.]]>
       </docs>
     </option>
     <option type="enum" id="CLASS_GRAPH" defval="YES">
@@ -2206,7 +2271,9 @@ doxygen -w latex new_header.tex new_footer.tex new_stylesheet.sty
     </option>
     <option type="bool" id="GENERATE_LEGEND" defval="1" depends="HAVE_DOT">
       <docs>
-<![CDATA[Если тег \c GENERATE_LEGEND установлен в \c YES, Doxygen сгенерирует страницу легенды, объясняющую значение различных блоков и стрелок в диаграммах, сгенерированных dot.]]>
+<![CDATA[Если тег \c GENERATE_LEGEND установлен в \c YES, Doxygen сгенерирует страницу легенды,
+ объясняющую значение различных блоков и стрелок в диаграммах, сгенерированных dot.
+ \note Этот тег требует, чтобы тег \ref cfg_have_dot "HAVE_DOT" был установлен в \c YES.]]>
       </docs>
     </option>
     <option type="bool" id="DOT_CLEANUP" defval="1">
