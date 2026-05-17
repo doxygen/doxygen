@@ -41,6 +41,7 @@
 #include <QScrollBar>
 #include <QLocale>
 #include <QTranslator>
+#include <QList>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -51,6 +52,7 @@
 // globally accessible variables
 bool DoxygenWizard::debugFlag = false;
 QString DoxygenWizard::langCode;
+static QList<QString> newArgs;
 
 const int messageTimeout = 5000; //!< status bar message timeout in milliseconds.
 
@@ -469,7 +471,7 @@ void MainWindow::switchLanguage()
         setLanguage(langCode);
         saveSettings();
         qApp->quit();
-        QProcess::startDetached(qApp->arguments()[0], qApp->arguments().mid(1));
+        QProcess::startDetached(qApp->arguments()[0], newArgs);
       }
     }
   }
@@ -962,6 +964,7 @@ int main(int argc,char **argv)
 
   QApplication a(argc,argv);
 
+
   int optInd=1;
   bool langSet = false;
   bool dumpFlag = false;
@@ -1000,6 +1003,7 @@ int main(int argc,char **argv)
     else if (!qstrcmp(argv[optInd],"--debug"))
     {
       DoxygenWizard::debugFlag = true;
+      newArgs.push_back(QString::fromLatin1(argv[optInd]));
     }
     else if (!qstrcmp(argv[optInd],"--language"))
     {
@@ -1064,6 +1068,7 @@ int main(int argc,char **argv)
     }
     if (optInd+1==argc && argv[argc-1][0]!='-') // name of config file as an argument
     {
+      newArgs.push_back(QString::fromLatin1(argv[argc-1]));
       main.loadConfigFromFile(QString::fromLocal8Bit(argv[argc-1]));
     }
     if (dumpFlag)
