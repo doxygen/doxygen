@@ -190,7 +190,7 @@ if(Qt${QT_VERSION_MAJOR}LinguistTools_FOUND)
   endforeach()
   string(APPEND TRANSLATIONS_QRC_CONTENT "    </qresource>\n</RCC>\n")
 
-  message(STATUS "i18n.qrc:\n${TRANSLATIONS_QRC_CONTENT}")
+  # message(STATUS "i18n.qrc:\n${TRANSLATIONS_QRC_CONTENT}")
   file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/i18n.qrc "${TRANSLATIONS_QRC_CONTENT}")
   set_source_files_properties(${CMAKE_CURRENT_BINARY_DIR}/i18n.qrc PROPERTIES OBJECT_DEPENDS "${doxywizard_QM_FILES_PATHS}")
   qt_add_resources(doxywizard_TRANSLATION_RESOURCES ${CMAKE_CURRENT_BINARY_DIR}/i18n.qrc)
