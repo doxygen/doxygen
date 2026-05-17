@@ -940,7 +940,7 @@ static void usage(const char *exeName, const QString txt)
 {
   QMessageBox msgBox;
   QString fullText = txt;
-  fullText +=  QString::fromLatin1("Usage: %1 [--debug] [--dump] [--language [lang]] [config file]\n").arg(QString::fromLatin1(exeName));
+  fullText +=  QString::fromLatin1("Usage: %1 [--debug] [--dump] [--doxyfile] [--language [lang]] [config file]\n").arg(QString::fromLatin1(exeName));
   fullText +=  QString::fromLatin1("Usage: %1 --help\n").arg(QString::fromLatin1(exeName));
   fullText +=  QString::fromLatin1("Usage: %1 --version\n").arg(QString::fromLatin1(exeName));
   msgBox.setText(fullText);
@@ -965,6 +965,7 @@ int main(int argc,char **argv)
   int optInd=1;
   bool langSet = false;
   bool dumpFlag = false;
+  bool doxyfileFlag = false;
   QString langSel;
   while (optInd<argc && argv[optInd][0]=='-' && argv[optInd][1]=='-')
   {
@@ -996,6 +997,10 @@ int main(int argc,char **argv)
     else if (!qstrcmp(argv[optInd],"--dump"))
     {
       dumpFlag = true;
+    }
+    else if (!qstrcmp(argv[optInd],"--doxyfile"))
+    {
+      doxyfileFlag = true;
     }
     else if (!qstrcmp(argv[optInd],"--debug"))
     {
@@ -1066,10 +1071,18 @@ int main(int argc,char **argv)
     {
       main.loadConfigFromFile(QString::fromLocal8Bit(argv[argc-1]));
     }
+
     if (dumpFlag)
     {
       main.dump();
     }
+    if (doxyfileFlag)
+    {
+      QString fn = QString::fromLatin1("Doxyfile_%1").arg(DoxygenWizard::langCode);
+      main.saveConfig(fn);
+    }
+    if (dumpFlag ||doxyfileFlag) exit(0);
+
     main.show();
     return a.exec();
   }
