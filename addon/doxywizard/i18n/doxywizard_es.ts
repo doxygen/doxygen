@@ -93,6 +93,10 @@
         <source>Description</source>
         <translation>Descripción</translation>
     </message>
+    <message>
+        <source>Search settings...</source>
+        <translation>Buscar ajustes...</translation>
+    </message>
 </context>
 <context>
     <name>HelpLabel</name>

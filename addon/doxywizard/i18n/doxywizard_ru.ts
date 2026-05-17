@@ -93,6 +93,10 @@
         <source>Description</source>
         <translation>Описание</translation>
     </message>
+    <message>
+        <source>Search settings...</source>
+        <translation>Поиск настроек...</translation>
+    </message>
 </context>
 <context>
     <name>HelpLabel</name>

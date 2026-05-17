@@ -13,22 +13,29 @@
 #ifndef EXPERT_H
 #define EXPERT_H
 
-#include <QSplitter>
+#include <QWidget>
 #include <QDomElement>
 #include <QHash>
+#include <QList>
 
 #include "docintf.h"
 #include "adapter.h"
 
 class QTreeWidget;
 class QTreeWidgetItem;
-class QStackedWidget;
+class QScrollArea;
+class QVBoxLayout;
+class QLineEdit;
+class QSplitter;
 class QSettings;
-class QTextBrowser;
+class QTextStream;
+class QLabel;
+class QFrame;
 class QPushButton;
+class QTimer;
 class Input;
 
-class Expert : public QSplitter, public DocIntf
+class Expert : public QWidget, public DocIntf
 {
     Q_OBJECT
 
@@ -53,36 +60,72 @@ class Expert : public QSplitter, public DocIntf
     void add(const char *name,const char *doc);
 
   public slots:
-    void activateTopic(QTreeWidgetItem *,QTreeWidgetItem *);
-    QWidget *createTopicWidget(QDomElement &elem);
     void refresh();
 
   private slots:
-    void showHelp(Input *);
-    void nextTopic();
-    void prevTopic();
+    void filterChanged(const QString &text);
+    void groupSelected(QTreeWidgetItem *current, QTreeWidgetItem *previous);
+    void prevGroup();
+    void nextGroup();
 
   signals:
     void changed();
     void done();
 
   private:
-    void createTopics(const QDomElement &);
-    void saveTopic(QTextStream &t,QDomElement &elem,TextCodecAdapter *codec,bool brief,bool dondensed,bool convert);
+    // Per-option bookkeeping
+    struct OptionEntry
+    {
+      QString           groupName;
+      QString           id;
+      QString           docs;
+      QWidget          *card;             ///< card widget (docs label + control holder)
+      QLabel           *docsLabel;        ///< docs label inside the card
+      QTreeWidgetItem  *treeItem;         ///< child item in the left tree (nullptr when showAll)
+      Input            *input;            ///< the Input object
+      bool              labelHighlighted = false; ///< true when docsLabel shows highlighted text
+    };
+
+    // Per-group bookkeeping
+    struct GroupEntry
+    {
+      QString            name;
+      QString            translatedName;
+      QString            docs;
+      QDomElement        domElement;  ///< stored for lazy card creation
+      bool               cardsCreated = false;
+      QWidget           *section;    ///< the group section container widget
+      QLabel            *header;     ///< the group name header label
+      QTreeWidgetItem   *treeItem;
+      QList<OptionEntry> options;
+    };
+
+    void createGroups(const QDomElement &rootElem);
+    void createOptionCard(GroupEntry &group, const QDomElement &child);
+    void ensureGroupCardsCreated(GroupEntry &group);
+    void ensureAllGroupsCreated();
+    void wireDependencies();
+    void activateGroup(int index);
+    void saveTopic(QTextStream &t, QDomElement &elem, TextCodecAdapter *codec,
+                   bool brief, bool condensed, bool convert);
     QString getDocsForNode(const QDomElement &child) const;
 
-    QSplitter               *m_splitter;
-    QTextBrowser            *m_helper;
-    QTreeWidget             *m_treeWidget;
-    QStackedWidget          *m_topicStack;
-    QHash<QString,QWidget *> m_topics;
-    QHash<QString,QObject *> m_optionWidgets;
-    QHash<QString,Input *>   m_options;
-    QPushButton             *m_next;
-    QPushButton             *m_prev;
-    QDomElement              m_rootElement;
-    bool                     m_inShowHelp;
-    QString                  m_header;
+    QSplitter              *m_splitter;
+    QTreeWidget            *m_treeWidget;
+    QLineEdit              *m_searchBox;
+    QScrollArea            *m_scrollArea;
+    QWidget                *m_rightContainer;
+    QVBoxLayout            *m_rightLayout;
+    QWidget                *m_navBar;
+    QPushButton            *m_prevButton;
+    QPushButton            *m_nextButton;
+    QTimer                 *m_filterTimer;
+    int                     m_currentGroupIndex = -1;
+
+    QList<GroupEntry>       m_groups;
+    QHash<QString,Input *>  m_options;
+    QDomElement             m_rootElement;
+    QString                 m_header;
 };
 
 #endif
