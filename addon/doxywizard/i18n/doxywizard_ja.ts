@@ -74,26 +74,6 @@
         <translation>参照:</translation>
     </message>
     <message>
-        <source>Doxygen usage</source>
-        <translation>Doxygenの使用方法</translation>
-    </message>
-    <message>
-        <source>External Indexing and Searching</source>
-        <translation>外部インデックス作成と検索</translation>
-    </message>
-    <message>
-        <source>Linking to external documentation</source>
-        <translation>外部ドキュメントへのリンク</translation>
-    </message>
-    <message>
-        <source>Including formulas</source>
-        <translation>数式の含め方</translation>
-    </message>
-    <message>
-        <source>Description</source>
-        <translation>説明</translation>
-    </message>
-    <message>
         <source>Search settings...</source>
         <translation>設定を検索...</translation>
     </message>

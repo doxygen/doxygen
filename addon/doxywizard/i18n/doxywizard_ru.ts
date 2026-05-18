@@ -74,26 +74,6 @@
         <translation>См. также:</translation>
     </message>
     <message>
-        <source>Doxygen usage</source>
-        <translation>Использование Doxygen</translation>
-    </message>
-    <message>
-        <source>External Indexing and Searching</source>
-        <translation>Внешнее индексирование и поиск</translation>
-    </message>
-    <message>
-        <source>Linking to external documentation</source>
-        <translation>Ссылка на внешнюю документацию</translation>
-    </message>
-    <message>
-        <source>Including formulas</source>
-        <translation>Включение формул</translation>
-    </message>
-    <message>
-        <source>Description</source>
-        <translation>Описание</translation>
-    </message>
-    <message>
         <source>Search settings...</source>
         <translation>Поиск настроек...</translation>
     </message>
