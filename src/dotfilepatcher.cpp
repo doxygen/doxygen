@@ -28,7 +28,7 @@
 
 // top part of the interactive SVG header
 static const char svgZoomHeader0[] = R"svg(
-<svg id="main" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" onload="init(evt)">
+<svg id="main" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve">
 )svg";
 
 static const char svgZoomHeader0_noinit[] = R"svg(
@@ -83,13 +83,13 @@ static const char svgZoomHeader2[] = R"svg(
 static const char svgZoomFooter1[] = R"svg(
 <g id="navigator" transform="translate(0 0)" fill="#404254">
   <rect fill="#f2f5e9" fill-opacity="0.5" stroke="#606060" stroke-width=".5" x="0" y="0" width="60" height="60"/>
-  <use id="zoomplus" xlink:href="#zoomPlus" x="17" y="9" onmousedown="handleZoom(evt,'in')"/>
-  <use id="zoomminus" xlink:href="#zoomMin" x="42" y="9" onmousedown="handleZoom(evt,'out')"/>
-  <use id="reset" xlink:href="#resetDef" x="30" y="36" onmousedown="handleReset()"/>
-   <use id="arrowup" xlink:href="#arrowUp" x="0" y="0" onmousedown="handlePan(0,-1)"/>
-  <use id="arrowright" xlink:href="#arrowRight" x="0" y="0" onmousedown="handlePan(1,0)"/>
-  <use id="arrowdown" xlink:href="#arrowDown" x="0" y="0" onmousedown="handlePan(0,1)"/>
-  <use id="arrowleft" xlink:href="#arrowLeft" x="0" y="0" onmousedown="handlePan(-1,0)"/>
+  <use id="zoomplus" xlink:href="#zoomPlus" x="17" y="9" data-zoom="in"/>
+  <use id="zoomminus" xlink:href="#zoomMin" x="42" y="9" data-zoom="out"/>
+  <use id="reset" xlink:href="#resetDef" x="30" y="36" data-reset="true"/>
+  <use id="arrowup" xlink:href="#arrowUp" x="0" y="0" data-pan-x="0" data-pan-y="-1"/>
+  <use id="arrowright" xlink:href="#arrowRight" x="0" y="0" data-pan-x="1" data-pan-y="0"/>
+  <use id="arrowdown" xlink:href="#arrowDown" x="0" y="0" data-pan-x="0" data-pan-y="1"/>
+  <use id="arrowleft" xlink:href="#arrowLeft" x="0" y="0" data-pan-x="-1" data-pan-y="0"/>
 </g>
 <svg viewBox="0 0 15 15" width="100%" height="30px" preserveAspectRatio="xMaxYMin meet">
  <g id="arrow_out" transform="scale(0.3 0.3)">
@@ -112,12 +112,6 @@ static const char svgZoomFooter2[] = R"svg(
 [data-mouse-over-selected='true']  { opacity: 1.0; }
 ]]>
 </style>
-<script type="application/ecmascript"><![CDATA[
-document.addEventListener('DOMContentLoaded', (event) => {
-  highlightEdges();
-  highlightAdjacentNodes();
-});
-]]></script>
 </svg>
 )svg";
 
@@ -390,19 +384,17 @@ bool DotFilePatcher::run() const
           {
             t << svgZoomHeader2;
           }
+          t << "<script type=\"application/ecmascript\" xlink:href=\"" << relPath << "svg.min.js\"/>\n";
+          t << "<svg id=\"graph\" class=\"graph\"";
           if (useNagivation)
           {
-            t << "<script type=\"application/ecmascript\">\n";
-            t << "var viewWidth = " << width << ";\n";
-            t << "var viewHeight = " << height << ";\n";
+            t << " data-view-width=\"" << width << "\" data-view-height=\"" << height << "\"";
             if (graphId>=0)
             {
-              t << "var sectionId = 'dynsection-" << graphId << "';\n";
+               t << " data-section-id=\"dynsection-" << graphId << "\"";
             }
-            t << "</script>\n";
           }
-          t << "<script type=\"application/ecmascript\" xlink:href=\"" << relPath << "svg.min.js\"/>\n";
-          t << "<svg id=\"graph\" class=\"graph\">\n";
+          t << ">\n";
 
           if (useNagivation)
           {

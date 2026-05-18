@@ -215,3 +215,44 @@ let dynsection = {
 };
 
 /* @license-end */
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.embeddoc[data-indent]').forEach(el => {
+    el.style.marginLeft = el.getAttribute('data-indent') + 'ch';
+  });
+
+  document.body.addEventListener('click', (e) => {
+    let mailEl = e.target.closest('[data-mail]');
+    if (mailEl) {
+      e.preventDefault();
+      let parts = mailEl.getAttribute('data-mail').split("'+'");
+      let mail = parts.join('').replace(/'/g, '');
+      location.href = mail;
+    }
+
+    let el = e.target.closest('[data-dyn-toggle]');
+    if (el) {
+      dynsection.toggleVisibility(el);
+      e.preventDefault();
+      return;
+    }
+    el = e.target.closest('[data-dyn-folder]');
+    if (el) {
+      dynsection.toggleFolder(el.getAttribute('data-dyn-folder'));
+      e.preventDefault();
+      return;
+    }
+    el = e.target.closest('[data-dyn-inherit]');
+    if (el) {
+      dynsection.toggleInherit(el.getAttribute('data-dyn-inherit'));
+      e.preventDefault();
+      return;
+    }
+    el = e.target.closest('[data-dyn-level]');
+    if (el) {
+      dynsection.toggleLevel(parseInt(el.getAttribute('data-dyn-level')));
+      e.preventDefault();
+      return;
+    }
+  });
+});
