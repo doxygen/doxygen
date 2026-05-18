@@ -231,12 +231,15 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   document.body.addEventListener('click', (e) => {
-    let mailEl = e.target.closest('[data-mail]');
+    let mailEl = e.target.closest('a[href^="mai\'+"]');
     if (mailEl) {
       e.preventDefault();
-      let parts = mailEl.getAttribute('data-mail').split("'+'");
+      let parts = mailEl.getAttribute('href').split("'+'");
       let mail = parts.join('').replace(/'/g, '');
-      location.href = mail;
+      if (mail.startsWith('mailto:') || mail.startsWith('http:') || mail.startsWith('https:')) {
+        location.href = mail;
+      }
+      return;
     }
 
     let dynhead = e.target.closest('.dynheader');
