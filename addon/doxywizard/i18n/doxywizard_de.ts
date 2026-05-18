@@ -74,26 +74,6 @@
         <translation>Siehe auch:</translation>
     </message>
     <message>
-        <source>Doxygen usage</source>
-        <translation>Doxygen-Verwendung</translation>
-    </message>
-    <message>
-        <source>External Indexing and Searching</source>
-        <translation>Externe Indizierung und Suche</translation>
-    </message>
-    <message>
-        <source>Linking to external documentation</source>
-        <translation>Verknüpfung mit externer Dokumentation</translation>
-    </message>
-    <message>
-        <source>Including formulas</source>
-        <translation>Formeln einbinden</translation>
-    </message>
-    <message>
-        <source>Description</source>
-        <translation>Beschreibung</translation>
-    </message>
-    <message>
         <source>Search settings...</source>
         <translation>Einstellungen suchen...</translation>
     </message>
