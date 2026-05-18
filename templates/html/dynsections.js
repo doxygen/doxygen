@@ -217,40 +217,58 @@ let dynsection = {
 /* @license-end */
 
 document.addEventListener('DOMContentLoaded', () => {
-  document.querySelectorAll('.embeddoc[data-indent]').forEach(el => {
-    el.style.marginLeft = el.getAttribute('data-indent') + 'ch';
+  document.querySelectorAll('.embeddoc').forEach(el => {
+    el.className.split(' ').forEach(cls => {
+      if (cls.startsWith('indent-')) {
+        let indent = parseInt(cls.substring(7), 10);
+        if (!isNaN(indent)) el.style.marginLeft = indent + 'ch';
+      }
+    });
   });
 
   document.body.addEventListener('click', (e) => {
-    let mailEl = e.target.closest('[data-mail]');
+    let mailEl = e.target.closest('a[href^="mai\'+"]');
     if (mailEl) {
       e.preventDefault();
-      let parts = mailEl.getAttribute('data-mail').split("'+'");
+      let parts = mailEl.getAttribute('href').split("'+'");
       let mail = parts.join('').replace(/'/g, '');
-      location.href = mail;
+      if (mail.startsWith('mailto:') || mail.startsWith('http:') || mail.startsWith('https:')) {
+        location.href = mail;
+      }
+      return;
     }
 
-    let el = e.target.closest('[data-dyn-toggle]');
-    if (el) {
-      dynsection.toggleVisibility(el);
+    let dynhead = e.target.closest('.dynheader');
+    if (dynhead) {
+      dynsection.toggleVisibility(dynhead);
       e.preventDefault();
       return;
     }
-    el = e.target.closest('[data-dyn-folder]');
-    if (el) {
-      dynsection.toggleFolder(el.getAttribute('data-dyn-folder'));
+
+    let folder = e.target.closest('.iconfolder, .arrow');
+    if (folder && folder.id && (folder.id.startsWith('img_') || folder.id.startsWith('arr_'))) {
+      dynsection.toggleFolder(folder.id.substring(4));
       e.preventDefault();
       return;
     }
-    el = e.target.closest('[data-dyn-inherit]');
-    if (el) {
-      dynsection.toggleInherit(el.getAttribute('data-dyn-inherit'));
+
+    let dynInherit = e.target.closest('td.dyn-inherit');
+    if (dynInherit && dynInherit.parentElement) {
+      let inheritClass = Array.from(dynInherit.parentElement.classList).find(c => c.startsWith('inherit_') && c !== 'inherit_header');
+      if (inheritClass) {
+        dynsection.toggleInherit(inheritClass.substring(8));
+      }
       e.preventDefault();
       return;
     }
-    el = e.target.closest('[data-dyn-level]');
-    if (el) {
-      dynsection.toggleLevel(parseInt(el.getAttribute('data-dyn-level')));
+
+    let dynLevel = e.target.closest('[class*="dyn-level-"]');
+    if (dynLevel) {
+      let levelClass = Array.from(dynLevel.classList).find(c => c.startsWith('dyn-level-'));
+      if (levelClass) {
+        let level = parseInt(levelClass.substring(10), 10);
+        if (!isNaN(level)) dynsection.toggleLevel(level);
+      }
       e.preventDefault();
       return;
     }

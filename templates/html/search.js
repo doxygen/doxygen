@@ -687,7 +687,8 @@ function init_search() {
     link.setAttribute('class','SelectItem');
     link.addEventListener('click', function() { searchBox.OnSelectItem(key); });
     link.href='#';
-    link.innerHTML='<span class="SelectionMark">&#160;</span>'+indexSectionLabels[key];
+    link.innerHTML='<span class="SelectionMark">&#160;</span>';
+    link.appendChild(document.createTextNode(indexSectionLabels[key]));
     results.appendChild(link);
   }
 
