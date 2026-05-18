@@ -1140,6 +1140,8 @@ class DocParamList : public DocNode
     void markLast(bool b=TRUE)      { m_isLast=b; }
     bool isFirst() const            { return m_isFirst; }
     bool isLast() const             { return m_isLast; }
+    bool isNullable() const         { return m_isNullable; }
+    bool isNonnull() const          { return m_isNonnull; }
     Token parse(const QCString &cmdName);
     Token parseXml(const QCString &paramName);
 
@@ -1151,6 +1153,8 @@ class DocParamList : public DocNode
     DocParamSect::Direction m_dir = DocParamSect::Unspecified;
     bool                    m_isFirst = false;
     bool                    m_isLast = false;
+    bool                    m_isNullable = false;
+    bool                    m_isNonnull = false;
 };
 
 /** Node representing a simple list item */

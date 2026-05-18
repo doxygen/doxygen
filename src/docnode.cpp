@@ -3325,6 +3325,29 @@ Token DocParamList::parse(const QCString &cmdName)
         context.hasParamCommand=TRUE;
       }
       parser()->checkArgumentName();
+      if (context.memberDef)
+      {
+        const ArgumentList &al = context.memberDef->isDocsForDefinition() ?
+            context.memberDef->argumentList() :
+            context.memberDef->declArgumentList();
+        for (const Argument &a : al)
+        {
+          QCString argName = context.memberDef->isDefine() ? a.type : a.name;
+          QCString stripped = argName.stripWhiteSpace();
+          if (stripped == context.token->name)
+          {
+            if (a.type.find("_Nullable") != -1) m_isNullable = true;
+            if (a.type.find("_Nonnull")  != -1) m_isNonnull  = true;
+            if (m_isNullable && m_isNonnull)
+            {
+              warn_doc_error(context.fileName,context.memberDef->getDefLine(),
+                  "parameter '{}' is marked both _Nullable and _Nonnull",
+                  context.token->name);
+            }
+            break;
+          }
+        }
+      }
     }
     else if (m_type==DocParamSect::RetVal)
     {
