@@ -271,6 +271,15 @@ Expert::Expert()
     exit(1);
   }
   m_rootElement = configXml.documentElement();
+  QDomElement childElem = m_rootElement.firstChildElement();
+  while (!childElem.isNull())
+  {
+    if (childElem.tagName()==SA("generator"))
+    {
+      createMessagesList(childElem);
+    }
+    childElem = childElem.nextSiblingElement();
+  }
   if (!DoxygenWizard::langCode.isEmpty() && DoxygenWizard::langCode!=SA("en"))
   {
     QFile trFile(SA(":/i18n/config_%1.xml").arg(DoxygenWizard::langCode));
@@ -282,6 +291,15 @@ Expert::Expert()
         QString msg = tr("Error parsing internal config_%1.xml at line %2 column %3.\n%4").
                     arg(DoxygenWizard::langCode).arg(errLine).arg(errCol).arg(err);
         QMessageBox::warning(this, tr("Error"), msg);
+      }
+      QDomElement childElem = trConfigXml.documentElement().firstChildElement();
+      while (!childElem.isNull())
+      {
+        if (childElem.tagName()==SA("generator"))
+        {
+          createMessagesList(childElem);
+        }
+        childElem = childElem.nextSiblingElement();
       }
       // overrule english text with translations
       translateTopics(m_rootElement,trConfigXml.documentElement());
@@ -718,8 +736,7 @@ QString Expert::getDocsForNode(const QDomElement &child) const
   {
     if (!docs.endsWith(SA("<br/>"))) docs += SA("<br/>");
     docs += SA("<br/>");
-    docs += tr("Possible values are:");
-    docs += SA(" ");
+    docs += m_messages[SA("possible")];
     int numValues=0;
     docsVal = child.firstChildElement();
     while (!docsVal.isNull())
@@ -745,7 +762,7 @@ QString Expert::getDocsForNode(const QDomElement &child) const
         }
         if (i==numValues-1)
         {
-          docs+=SA(" ") + tr("and") + SA(" ");
+          docs+=m_messages[SA("andtxt")];
         }
         else if (i==numValues)
         {
@@ -763,7 +780,7 @@ QString Expert::getDocsForNode(const QDomElement &child) const
       docs+=SA("<br/>");
       docs+=SA("<br/>");
       QString defval = child.attribute(SA("defval"));
-      docs+=SA(" ")+tr("The default value is: <code>%1</code>.").arg(defval);
+      docs+=SA(" ")+m_messages[SA("defvalcode")].arg(defval);
     }
     docs+= SA("<br/>");
   }
@@ -774,7 +791,7 @@ QString Expert::getDocsForNode(const QDomElement &child) const
     QString minval = child.attribute(SA("minval"));
     QString maxval = child.attribute(SA("maxval"));
     QString defval = child.attribute(SA("defval"));
-    docs+=tr("Minimum value: %1, maximum value: %2, default value: %3.").arg(minval).arg(maxval).arg(defval);
+    docs+=m_messages[SA("minmaxdef")].arg(minval).arg(maxval).arg(defval);
     docs+= SA("<br/>");
   }
   else if (type==SA("bool"))
@@ -783,13 +800,13 @@ QString Expert::getDocsForNode(const QDomElement &child) const
     docs+=SA("<br/>");
     if (child.hasAttribute(SA("altdefval")))
     {
-      docs+=SA(" ")+tr("The default value is: system dependent.");
+      docs+=SA(" ")+m_messages[SA("defsysdep")];
     }
     else
     {
       QString defval = child.attribute(SA("defval"));
       QString valStr = (defval==SA("1")?SA("YES"):SA("NO"));
-      docs+=SA(" ")+tr("The default value is: <code>%1</code>.").arg(valStr);
+      docs+=SA(" ")+m_messages[SA("defvalcode")].arg(valStr);
     }
     docs+= SA("<br/>");
   }
@@ -816,8 +833,7 @@ QString Expert::getDocsForNode(const QDomElement &child) const
       {
         if (!docs.endsWith(SA("<br/>"))) docs += SA("<br/>");
         docs += SA("<br/>");
-        docs += tr("Possible values are:");
-        docs += SA(" ");
+        docs += m_messages[SA("possible")];
         int i = 0;
         docsVal = child.firstChildElement();
         while (!docsVal.isNull())
@@ -840,7 +856,7 @@ QString Expert::getDocsForNode(const QDomElement &child) const
               }
               if (i==numValues-1)
               {
-                docs += SA(" ") + tr("and") + SA(" ");
+                docs += m_messages[SA("andtxt")];
               }
               else if (i==numValues)
               {
@@ -867,7 +883,7 @@ QString Expert::getDocsForNode(const QDomElement &child) const
       {
         if (!docs.endsWith(SA("<br/>"))) docs += SA("<br/>");
         docs+=SA("<br/>");
-        docs += SA(" ")+tr("The default directory is: <code>%1</code>.").arg(defval);
+        docs += SA(" ")+m_messages[SA("defdir")].arg(defval);
         docs += SA("<br/>");
       }
     }
@@ -880,11 +896,11 @@ QString Expert::getDocsForNode(const QDomElement &child) const
         docs+=SA("<br/>");
         if (abspath != SA("1"))
         {
-          docs += SA(" ")+tr("The default file is: <code>%1</code>.").arg(defval);
+          docs += SA(" ")+m_messages[SA("deffile")].arg(defval);
         }
         else
         {
-          docs += SA(" ")+tr("The default file (with absolute path) is: <code>%1</code>.").arg(defval);
+          docs += SA(" ")+m_messages[SA("deffilecode")].arg(defval);
         }
         docs += SA("<br/>");
       }
@@ -894,7 +910,7 @@ QString Expert::getDocsForNode(const QDomElement &child) const
         {
           if (!docs.endsWith(SA("<br/>"))) docs += SA("<br/>");
           docs+=SA("<br/>");
-          docs += SA(" ")+tr("The file has to be specified with full path.");
+          docs += SA(" ")+m_messages[SA("deffilefull")];
           docs += SA("<br/>");
         }
       }
@@ -908,11 +924,11 @@ QString Expert::getDocsForNode(const QDomElement &child) const
         docs+=SA("<br/>");
         if (abspath != SA("1"))
         {
-          docs += SA(" ")+tr("The default image is: <code>%1</code>.").arg(defval);
+          docs += SA(" ")+m_messages[SA("defimg")].arg(defval);
         }
         else
         {
-          docs += SA(" ")+tr("The default image (with absolute path) is: <code>%1</code>.").arg(defval);
+          docs += SA(" ")+m_messages[SA("defimgabs")].arg(defval);
         }
         docs += SA("<br/>");
       }
@@ -922,7 +938,7 @@ QString Expert::getDocsForNode(const QDomElement &child) const
         {
           if (!docs.endsWith(SA("<br/>"))) docs += SA("<br/>");
           docs+=SA("<br/>");
-          docs += SA(" ")+tr("The image has to be specified with full path.");
+          docs += SA(" ")+m_messages[SA("defimgfull")];
           docs += SA("<br/>");
         }
       }
@@ -933,7 +949,7 @@ QString Expert::getDocsForNode(const QDomElement &child) const
       {
         if (!docs.endsWith(SA("<br/>"))) docs += SA("<br/>");
         docs+=SA("<br/>");
-        docs += SA(" ")+tr("The default value is: <code>%1</code>.").arg(defval);
+        docs += SA(" ")+m_messages[SA("defvalcode")].arg(defval);
         docs += SA("<br/>");
       }
     }
@@ -944,7 +960,7 @@ QString Expert::getDocsForNode(const QDomElement &child) const
     QString dependsOn = child.attribute(SA("depends"));
     if (!docs.endsWith(SA("<br/>"))) docs += SA("<br/>");
     docs+=SA("<br/>");
-    docs += SA(" ")+tr("This tag requires that the tag %1 is set to <code>YES</code>.").arg(SA("\\ref cfg_")+dependsOn.toLower()+SA(" \"")+dependsOn.toUpper()+SA("\""));
+    docs += SA(" ")+m_messages[SA("depstxt")].arg(SA("\\ref cfg_")+dependsOn.toLower()+SA(" \"")+dependsOn.toUpper()+SA("\""));
   }
 
   // Remove / replace doxygen markup strings
@@ -1000,8 +1016,8 @@ QString Expert::getDocsForNode(const QDomElement &child) const
   docs.replace(regexp,SA("<em>\\1</em> "));
   // \note -> <br>Note:
   // @note -> <br>Note:
-  docs.replace(SA("\\note "),SA("<br>Note: "));
-  docs.replace(SA("@note "),SA("<br>Note: "));
+  docs.replace(SA("\\note "),SA("<br>")+m_messages[SA("notetxt")]+SA(" "));
+  docs.replace(SA("@note "),SA("<br>")+m_messages[SA("notetxt")]+SA(" "));
   // \#include -> #include
   // \#undef -> #undef
   docs.replace(SA("\\#include"),SA("#include"));
@@ -1012,7 +1028,7 @@ QString Expert::getDocsForNode(const QDomElement &child) const
   docs.replace(SA("\\endverbatim"),SA("</pre>"));
   // \sa -> <br>See also:
   // \par -> <br>
-  docs.replace(SA("\\sa "),SA("<br>See also: "));
+  docs.replace(SA("\\sa "),SA("<br>")+m_messages[SA("seealsotxt")]+SA(" "));
   docs.replace(SA("\\par "),SA("<br>"));
   // 2xbackslash -> backslash
   // \@ -> @
@@ -1464,6 +1480,27 @@ bool Expert::pdfOutputPresent(const QString &workingDir) const
   return fi.exists() && fi.isFile();
 }
 
+void Expert::createMessagesList(QDomElement &elem)
+{
+  QDomElement child   = elem.firstChildElement();
+  while (!child.isNull())
+  {
+    QString name = child.attribute(SA("name"));
+    QString docs;
+    QDomNode n = child.firstChild();
+    if (!n.isNull())
+    {
+      QDomText t = n.toText();
+      if (!t.isNull()) docs+=t.data();
+    }
+    docs = docs.replace(SA("{0}"),SA("%1"))
+               .replace(SA("{1}"),SA("%2"))
+               .replace(SA("{2}"),SA("%3"));
+    m_messages.insert(name,docs);
+    child = child.nextSiblingElement();
+  }
+}
+
 void Expert::refresh()
 {
   m_searchBox->clear();
@@ -1484,6 +1521,7 @@ void Expert::dump()
 #else
     out.setEncoding(QStringConverter::Utf8);
 #endif
+    // Regular documentation
     QHashIterator<QString, Input*> i(m_options);
     std::vector<QString> v;
     while (i.hasNext())
@@ -1506,6 +1544,23 @@ void Expert::dump()
     for (const auto & n : v)
     {
       out << n << ": " <<  m_options[n]->docs() << "\n";
+      out << SA("=================================\n");
+    }
+
+    out << SA("\n\n");
+
+    // Generated documentation
+    QHashIterator<QString, QString> g(m_messages);
+    std::vector<QString> vg;
+    while (g.hasNext())
+    {
+      g.next();
+      vg.push_back(g.key());
+    }
+    std::sort(vg.begin(),vg.end(),compareFunction);
+    for (const auto & n : vg)
+    {
+      out << n << ": " <<  m_messages[n] << "\n";
       out << SA("=================================\n");
     }
 

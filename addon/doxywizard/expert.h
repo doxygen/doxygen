@@ -60,6 +60,7 @@ class Expert : public QWidget, public DocIntf
     void add(const char *name,const char *doc);
 
   public slots:
+    void createMessagesList(QDomElement &elem);
     void refresh();
 
   private slots:
@@ -124,6 +125,7 @@ class Expert : public QWidget, public DocIntf
 
     QList<GroupEntry>       m_groups;
     QHash<QString,Input *>  m_options;
+    QHash<QString,QString>  m_messages;
     QDomElement             m_rootElement;
     QString                 m_header;
 };

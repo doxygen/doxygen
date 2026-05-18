@@ -1825,4 +1825,25 @@
       </docs>
     </option>
   </group>
+  <generator>
+    <message name='andtxt'><![CDATA[y]]></message>
+    <message name='minmaxdef'><![CDATA[Valor mínimo: {0}, valor máximo: {1}, valor predeterminado: {2}.]]></message>
+    <message name='minmaxdefcode'><![CDATA[Valor mínimo: <code>{0}</code>, valor máximo: <code>{1}</code>, valor predeterminado: <code>{2}</code>.]]></message>
+    <message name='possible'><![CDATA[Los valores posibles son:]]></message>
+    <message name='defvaltxt'><![CDATA[El valor predeterminado es: {0}.]]></message>
+    <message name='defvalcode'><![CDATA[El valor predeterminado es: <code&>{0}</code&>.]]></message>
+    <message name='defsysdep'><![CDATA[El valor predeterminado es: dependiente del sistema.]]></message>
+    <message name='sysdep'><![CDATA[dependiente del sistema]]></message>
+    <message name='defdir'><![CDATA[El directorio predeterminado es: <code&>{0}</code&>.]]></message>
+    <message name='deffile'><![CDATA[El archivo predeterminado es: <code&>{0}</code&>.]]></message>
+    <message name='deffileabs'><![CDATA[El archivo predeterminado (con ruta absoluta) es: <code&>{0}</code&>.]]></message>
+    <message name='deffilefull'><![CDATA[El archivo debe especificarse con la ruta completa.]]></message>
+    <message name='defimg'><![CDATA[La imagen predeterminada es: <code&>{0}</code&>.]]></message>
+    <message name='defimgabs'><![CDATA[La imagen predeterminada (con ruta absoluta) es: <code&>{0}</code&>.]]></message>
+    <message name='defimgfull'><![CDATA[La imagen debe especificarse con la ruta completa.]]></message>
+    <message name='depstxt'><![CDATA[Esta etiqueta requiere que la etiqueta {0} esté establecida en <code&>YES</code&>.]]></message>
+    <message name='depstxtref'><![CDATA[Esta etiqueta requiere que la etiqueta \ref cfg_{0} "{1}" esté establecida en <code&>YES</code&>.]]></message>
+    <message name='notetxt'><![CDATA[Nota:]]></message>
+    <message name='seealsotxt'><![CDATA[Ver también:]]></message>
+  </generator>
 </doxygenconfig>

@@ -56,10 +56,10 @@ def transformDocs(doc):
     doc = doc.replace("\\# ", "# ")
     doc = doc.replace("-# ", "\n - ")
     doc = doc.replace(" - ", "\n - ")
-    doc = doc.replace("\\sa ", "\nSee also: ")
+    doc = doc.replace("\\sa ", "\n"+messages['seealsotxt']+" ")
     doc = doc.replace("\\par ", "\n")
-    doc = doc.replace("@note ", "\nNote: ")
-    doc = doc.replace("\\note ", "\nNote: ")
+    doc = doc.replace("@note ", "\n"+messages['notetxt']+" ")
+    doc = doc.replace("\\note ", "\n"+messages['notetxt']+" ")
     doc = doc.replace("\\verbatim", "\n")
     doc = doc.replace("\\endverbatim", "\n")
     doc = doc.replace("<code>", "")
@@ -190,7 +190,7 @@ def prepCDocs(node):
         elif (type == 'int'):
             minval = node.getAttribute('minval')
             maxval = node.getAttribute('maxval')
-            doc += messages['minmaxdef'].format(minval, maxval, defval)
+            doc += "<br/>" + messages['minmaxdef'].format(minval, maxval, defval)
         elif (type == 'bool'):
             if (node.hasAttribute('altdefval')):
                 doc += "<br/>" + messages['defvaltxt'].format(messages['sysdep'])
@@ -238,7 +238,7 @@ def prepCDocs(node):
         # depends handling
         if (node.hasAttribute('depends')):
             depends = node.getAttribute('depends')
-            doc += "<br/>" + messages['depstxt'].format(depends.lower(), depends.upper())
+            doc += "<br/>" + messages['depstxtref'].format(depends.lower(), depends.upper())
 
     docC = transformDocs(doc)
     return docC
@@ -663,7 +663,7 @@ def parseOptionDoc(node, first):
         if (node.hasAttribute('depends')):
             depends = node.getAttribute('depends')
             print("")
-            print(messages['depstxt'].format(depends.lower(), depends.upper()))
+            print(messages['depstxtref'].format(depends.lower(), depends.upper()))
         return False
 
 
