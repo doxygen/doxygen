@@ -14,66 +14,6 @@
         <translation>Ошибка</translation>
     </message>
     <message>
-        <source>Possible values are:</source>
-        <translation>Возможные значения:</translation>
-    </message>
-    <message>
-        <source>and</source>
-        <translation>и</translation>
-    </message>
-    <message>
-        <source>The default value is: &lt;code&gt;%1&lt;/code&gt;.</source>
-        <translation>Значение по умолчанию: &lt;code&gt;%1&lt;/code&gt;.</translation>
-    </message>
-    <message>
-        <source>Minimum value: %1, maximum value: %2, default value: %3.</source>
-        <translation>Минимальное значение: %1, максимальное значение: %2, значение по умолчанию: %3.</translation>
-    </message>
-    <message>
-        <source>The default value is: system dependent.</source>
-        <translation>Значение по умолчанию зависит от системы.</translation>
-    </message>
-    <message>
-        <source>The default directory is: &lt;code&gt;%1&lt;/code&gt;.</source>
-        <translation>Каталог по умолчанию: &lt;code&gt;%1&lt;/code&gt;.</translation>
-    </message>
-    <message>
-        <source>The default file is: &lt;code&gt;%1&lt;/code&gt;.</source>
-        <translation>Файл по умолчанию: &lt;code&gt;%1&lt;/code&gt;.</translation>
-    </message>
-    <message>
-        <source>The default file (with absolute path) is: &lt;code&gt;%1&lt;/code&gt;.</source>
-        <translation>Файл по умолчанию (с абсолютным путём): &lt;code&gt;%1&lt;/code&gt;.</translation>
-    </message>
-    <message>
-        <source>The file has to be specified with full path.</source>
-        <translation>Файл должен быть указан с полным путём.</translation>
-    </message>
-    <message>
-        <source>The default image is: &lt;code&gt;%1&lt;/code&gt;.</source>
-        <translation>Изображение по умолчанию: &lt;code&gt;%1&lt;/code&gt;.</translation>
-    </message>
-    <message>
-        <source>The default image (with absolute path) is: &lt;code&gt;%1&lt;/code&gt;.</source>
-        <translation>Изображение по умолчанию (с абсолютным путём): &lt;code&gt;%1&lt;/code&gt;.</translation>
-    </message>
-    <message>
-        <source>The image has to be specified with full path.</source>
-        <translation>Изображение должно быть указано с полным путём.</translation>
-    </message>
-    <message>
-        <source>This tag requires that the tag %1 is set to &lt;code&gt;YES&lt;/code&gt;.</source>
-        <translation>Этот тег требует, чтобы тег %1 был установлен в &lt;code&gt;YES&lt;/code&gt;.</translation>
-    </message>
-    <message>
-        <source>Note:</source>
-        <translation>Примечание:</translation>
-    </message>
-    <message>
-        <source>See also:</source>
-        <translation>См. также:</translation>
-    </message>
-    <message>
         <source>Doxygen usage</source>
         <translation>Использование Doxygen</translation>
     </message>

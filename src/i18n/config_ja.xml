@@ -1823,4 +1823,25 @@
       </docs>
     </option>
   </group>
+  <generator>
+    <message name='andtxt'><![CDATA[と]]></message>
+    <message name='minmaxdef'><![CDATA[最小値: {0}, 最大値: {1}, デフォルト値: {2}。]]></message>
+    <message name='minmaxdefcode'><![CDATA[最小値: <code>{0}</code>, 最大値: <code>{1}</code>, デフォルト値: <code>{2}</code>。]]></message>
+    <message name='possible'><![CDATA[可能な値は:]]></message>
+    <message name='defvaltxt'><![CDATA[デフォルト値は {0} です。]]></message>
+    <message name='defvalcode'><![CDATA[デフォルト値は <code&>{0}</code&> です。]]></message>
+    <message name='defsysdep'><![CDATA[デフォルト値はシステム依存です。]]></message>
+    <message name='sysdep'><![CDATA[システム依存で]]></message>
+    <message name='defdir'><![CDATA[デフォルトのディレクトリは <code&>{0}</code&> です。]]></message>
+    <message name='deffile'><![CDATA[デフォルトのファイルは <code&>{0}</code&> です。]]></message>
+    <message name='deffileabs'><![CDATA[デフォルトのファイル（絶対パス）は <code&>{0}</code&> です。]]></message>
+    <message name='deffilefull'><![CDATA[ファイルは完全パスで指定する必要があります。]]></message>
+    <message name='defimg'><![CDATA[デフォルトの画像は <code&>{0}</code&> です。]]></message>
+    <message name='defimgabs'><![CDATA[デフォルトの画像（絶対パス）は <code&>{0}</code&> です。]]></message>
+    <message name='defimgfull'><![CDATA[画像は完全パスで指定する必要があります。]]></message>
+    <message name='depstxt'><![CDATA[このタグはタグ {0} を <code&>YES</code&> に設定する必要があります。]]></message>
+    <message name='depstxtref'><![CDATA[このタグはタグ \ref cfg_{0} "{1}" を <code&>YES</code&> に設定する必要があります。]]></message>
+    <message name='notetxt'><![CDATA[注:]]></message>
+    <message name='seealsotxt'><![CDATA[参照:]]></message>
+  </generator>
 </doxygenconfig>
