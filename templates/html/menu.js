@@ -567,3 +567,22 @@ function initMenu(relPath,treeview) {
 }
 
 /* @license-end */
+
+document.addEventListener('DOMContentLoaded', () => {
+  const configElem = document.getElementById('doxygen-config');
+  if (configElem) {
+    const config = JSON.parse(configElem.textContent);
+    initMenu(config.relPath, config.generateTreeView);
+    if (config.searchEngine) {
+      if (!config.serverBasedSearch) {
+        if (!config.disableIndex && config.dynamicMenus && !config.fullSidebar) {
+          if (typeof init_search === 'function') init_search();
+        }
+      } else {
+        if (document.querySelector('.searchresults') && typeof searchBox !== 'undefined') {
+          searchBox.DOMSearchField().focus();
+        }
+      }
+    }
+  }
+});

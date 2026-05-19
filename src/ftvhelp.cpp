@@ -268,15 +268,13 @@ static void generateIndent(TextStream &t, const FTVNodePtr &n,bool opened)
     const char *ARROW_DOWN = "<span class=\"arrowhead opened\"></span>";
     const char *ARROW_RIGHT = "<span class=\"arrowhead closed\"></span>";
     QCString dir = opened ? ARROW_DOWN : ARROW_RIGHT;
-    t << "<span style=\"width:" << (indent*16) << "px;display:inline-block;\">&#160;</span>"
-      << "<span id=\"arr_" << generateIndentLabel(n,0) << "\" class=\"arrow\" ";
-    t << "onclick=\"dynsection.toggleFolder('" << generateIndentLabel(n,0) << "')\"";
-    t << ">" << dir
+    for(int i=0;i<indent;i++) t << "<span class=\"spacer\">&#160;</span>";
+    t << "<span id=\"arr_" << generateIndentLabel(n,0) << "\" class=\"arrow\">" << dir
       << "</span>";
   }
   else
   {
-    t << "<span style=\"width:" << ((indent+1)*16) << "px;display:inline-block;\">&#160;</span>";
+    for(int i=0;i<=indent;i++) t << "<span class=\"spacer\">&#160;</span>";
   }
 }
 
@@ -388,7 +386,7 @@ void FTVHelp::Private::generateTree(TextStream &t, const FTVNodes &nl,int level,
     else
       t << " class=\"odd\"";
     if (level>=maxLevel && dynamicSections) // item invisible by default
-      t << " style=\"display:none;\"";
+      t << " class=\"hidden\"";
     else // item visible by default
       index++;
     t << "><td class=\"entry\">";
@@ -430,9 +428,8 @@ void FTVHelp::Private::generateTree(TextStream &t, const FTVNodes &nl,int level,
       }
       else if (dynamicSections)
       {
-        t << "<span id=\"img_" << generateIndentLabel(n,0) << "\" class=\"iconfolder"
-          << "\" onclick=\"dynsection.toggleFolder('" << generateIndentLabel(n,0)
-          << "')\"><div class=\"folder-icon"
+        t << "<span id=\"img_" << generateIndentLabel(n,0) << "\" class=\"iconfolder\">"
+          << "<div class=\"folder-icon"
           << (nodeOpened ? " open" : "")
           << "\"></div></span>";
       }
@@ -903,7 +900,7 @@ void FTVHelp::generateTreeViewInline(TextStream &t)
       t << " ";
       for (int i=1;i<=depth;i++)
       {
-        t << "<span onclick=\"javascript:dynsection.toggleLevel(" << i << ");\">" << i << "</span>";
+        t << "<span class=\"dyn-level-" << i << "\">" << i << "</span>";
       }
       t << "]</div>";
     }

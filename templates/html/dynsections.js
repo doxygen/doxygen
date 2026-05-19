@@ -215,3 +215,62 @@ let dynsection = {
 };
 
 /* @license-end */
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.embeddoc').forEach(el => {
+    el.className.split(' ').forEach(cls => {
+      if (cls.startsWith('indent-')) {
+        let indent = parseInt(cls.substring(7), 10);
+        if (!isNaN(indent)) el.style.marginLeft = indent + 'ch';
+      }
+    });
+  });
+
+  document.body.addEventListener('click', (e) => {
+    let mailEl = e.target.closest('a[href^="mai\'+"]');
+    if (mailEl) {
+      e.preventDefault();
+      let parts = mailEl.getAttribute('href').split("'+'");
+      let mail = parts.join('').replace(/'/g, '');
+      if (mail.startsWith('mailto:') || mail.startsWith('http:') || mail.startsWith('https:')) {
+        location.href = mail;
+      }
+      return;
+    }
+
+    let dynhead = e.target.closest('.dynheader');
+    if (dynhead) {
+      dynsection.toggleVisibility(dynhead);
+      e.preventDefault();
+      return;
+    }
+
+    let folder = e.target.closest('.iconfolder, .arrow');
+    if (folder && folder.id && (folder.id.startsWith('img_') || folder.id.startsWith('arr_'))) {
+      dynsection.toggleFolder(folder.id.substring(4));
+      e.preventDefault();
+      return;
+    }
+
+    let dynInherit = e.target.closest('td.dyn-inherit');
+    if (dynInherit && dynInherit.parentElement) {
+      let inheritClass = Array.from(dynInherit.parentElement.classList).find(c => c.startsWith('inherit_') && c !== 'inherit_header');
+      if (inheritClass) {
+        dynsection.toggleInherit(inheritClass.substring(8));
+      }
+      e.preventDefault();
+      return;
+    }
+
+    let dynLevel = e.target.closest('[class*="dyn-level-"]');
+    if (dynLevel) {
+      let levelClass = Array.from(dynLevel.classList).find(c => c.startsWith('dyn-level-'));
+      if (levelClass) {
+        let level = parseInt(levelClass.substring(10), 10);
+        if (!isNaN(level)) dynsection.toggleLevel(level);
+      }
+      e.preventDefault();
+      return;
+    }
+  });
+});
