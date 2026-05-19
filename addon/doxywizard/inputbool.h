@@ -15,10 +15,10 @@
 
 #include "input.h"
 #include <QObject>
+#include <QLabel>
 
 class QCheckBox;
 class QGridLayout;
-class QLabel;
 
 class InputBool : public QObject, public Input
 {
@@ -41,6 +41,7 @@ class InputBool : public QObject, public Input
     bool isDefault();
     void writeValue(QTextStream &t,TextCodecAdapter *codec,bool convert);
     void setTemplateDocs(const QString &docs) { m_tdocs = docs; }
+    void setText(const QString &txt) { m_lab->setText(txt); }
     static bool convertToBool(const QVariant &v,bool &isValid);
 
   public slots:
