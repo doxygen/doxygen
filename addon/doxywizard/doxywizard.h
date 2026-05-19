@@ -51,6 +51,7 @@ class MainWindow : public QMainWindow
       m_settings.setValue(QString::fromLatin1("language/code"), langCode);
       m_settings.sync();
     }
+    void saveConfig(const QString &fileName);
 
   public slots:
     void manual();
@@ -81,7 +82,6 @@ class MainWindow : public QMainWindow
 
   private:
     MainWindow();
-    void saveConfig(const QString &fileName);
     void addRecentFile(const QString &fileName);
     void addRecentFileList(const QString &fileName);
     void updateRecentFile(void);
