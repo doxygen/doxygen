@@ -209,7 +209,7 @@ Expert::Expert()
   m_treeWidget = new QTreeWidget;
   m_treeWidget->setColumnCount(1);
   m_treeWidget->setHeaderLabel(tr("Topics"));
-  m_treeWidget->setRootIsDecorated(false);
+  m_treeWidget->setRootIsDecorated(true);
   m_treeWidget->header()->setSectionResizeMode(QHeaderView::Fixed);
 
   // --- Right: scroll area containing all group sections ---
@@ -1115,7 +1115,6 @@ void Expert::filterChanged(const QString &text)
 {
   QString filter = text.trimmed().toLower();
   bool showAll = filter.length()<=2;
-  m_treeWidget->setRootIsDecorated(!showAll);
 
   m_rightContainer->setUpdatesEnabled(false);
   m_treeWidget->setUpdatesEnabled(false);
