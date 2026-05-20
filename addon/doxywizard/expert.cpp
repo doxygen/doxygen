@@ -516,7 +516,13 @@ void Expert::createOptionCard(GroupEntry &group, const QDomElement &child)
     docsLabel->setOpenExternalLinks(true);
     docsLabel->setContentsMargins(0, 2, 0, 4);
     // Use a smaller, muted style for the description text
-    docsLabel->setText(SMALL_FONT_START + docs + SMALL_FONT_END);
+    QString display = SMALL_FONT_START + SA("<b>") + id + SA("</b>");
+    if (!docs.isEmpty())
+    {
+      display += SA(" &mdash; ") + docs;
+    }
+    display += SMALL_FONT_END;
+    docsLabel->setText(display);
     // Dim the label using PlaceholderText, which is calibrated for readable
     // secondary text in both light and dark modes (available since Qt 5.12).
     QColor textColor = docsLabel->palette().color(QPalette::Text);
@@ -1137,7 +1143,14 @@ void Expert::filterChanged(const QString &text)
         }
         if (opt.docsLabel && opt.labelHighlighted)
         {
-          opt.docsLabel->setText(SMALL_FONT_START + opt.docs + SMALL_FONT_END);
+          QString display = SMALL_FONT_START + SA("<b>") + opt.id + SA("</b>");
+          if (!opt.docs.isEmpty())
+          {
+            display += SA(" &mdash; ") + opt.docs;
+          }
+          display += SMALL_FONT_END;
+          opt.docsLabel->setText(display);
+          opt.input->setText(opt.id);
           opt.labelHighlighted = false;
         }
       }
@@ -1176,6 +1189,7 @@ void Expert::filterChanged(const QString &text)
         {
           QString hiDocs = matchesDocs ? highlightInHtml(opt.docs, filter) : opt.docs;
           QString hiId   = matchesId   ? highlightInHtml(opt.id,   filter) : opt.id;
+          opt.input->setText(hiId);
           QString display = SMALL_FONT_START + SA("<b>") + hiId + SA("</b>");
           if (!opt.docs.isEmpty())
           {
