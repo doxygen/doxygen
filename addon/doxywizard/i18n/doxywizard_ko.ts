@@ -74,26 +74,6 @@
         <translation>참조:</translation>
     </message>
     <message>
-        <source>Doxygen usage</source>
-        <translation>Doxygen 사용법</translation>
-    </message>
-    <message>
-        <source>External Indexing and Searching</source>
-        <translation>외부 인덱싱 및 검색</translation>
-    </message>
-    <message>
-        <source>Linking to external documentation</source>
-        <translation>외부 문서 연결</translation>
-    </message>
-    <message>
-        <source>Including formulas</source>
-        <translation>수식 포함</translation>
-    </message>
-    <message>
-        <source>Description</source>
-        <translation>설명</translation>
-    </message>
-    <message>
         <source>Search settings...</source>
         <translation>설정 검색...</translation>
     </message>
