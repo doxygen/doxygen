@@ -360,6 +360,10 @@ Reason given: %2</source>
         <translation>Doxygen 图形界面前端</translation>
     </message>
     <message>
+        <source>Hide documentation</source>
+        <translation>隐藏文档</translation>
+    </message>
+    <message>
         <source>Switch language...</source>
         <translation>切换语言...</translation>
     </message>

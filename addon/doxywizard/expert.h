@@ -61,6 +61,7 @@ class Expert : public QWidget, public DocIntf
 
   public slots:
     void refresh();
+    void hideDocumentation();
 
   private slots:
     void filterChanged(const QString &text);
@@ -81,6 +82,7 @@ class Expert : public QWidget, public DocIntf
       QString           docs;
       QWidget          *card;             ///< card widget (docs label + control holder)
       QLabel           *docsLabel;        ///< docs label inside the card
+      QFrame           *sep;              ///< separator settings inside the card
       QTreeWidgetItem  *treeItem;         ///< child item in the left tree (nullptr when showAll)
       Input            *input;            ///< the Input object
       bool              labelHighlighted = false; ///< true when docsLabel shows highlighted text
