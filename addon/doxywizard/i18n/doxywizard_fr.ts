@@ -360,6 +360,10 @@ Raison donnée : %2</translation>
         <translation>Langue changée en : %1</translation>
     </message>
     <message>
+        <source>Hide documentation</source>
+        <translation>Masquer la documentation</translation>
+    </message>
+    <message>
         <source>Switch language...</source>
         <translation>Changer de langue...</translation>
     </message>

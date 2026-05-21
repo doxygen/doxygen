@@ -360,6 +360,10 @@ Reason given: %2</source>
         <translation>Doxygen GUI 프론트엔드</translation>
     </message>
     <message>
+        <source>Hide documentation</source>
+        <translation>문서 숨기기</translation>
+    </message>
+    <message>
         <source>Switch language...</source>
         <translation>언어 전환...</translation>
     </message>

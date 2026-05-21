@@ -574,6 +574,7 @@ void Expert::createOptionCard(GroupEntry &group, const QDomElement &child)
   entry.docs      = docs;
   entry.card      = container;
   entry.docsLabel = docsLabel;
+  entry.sep       = sep;
   entry.treeItem  = optTreeItem;
   entry.input     = input;
   group.options.append(entry);
@@ -643,6 +644,24 @@ void Expert::ensureGroupCardsCreated(GroupEntry &group)
     if (opt.input)
     {
       opt.input->updateDependencies();
+    }
+  }
+}
+
+void Expert::setDocumentationVisibility(bool hidden)
+{
+  for (GroupEntry &group : m_groups)
+  {
+    for (const OptionEntry &opt : group.options)
+    {
+      if (opt.sep)
+      {
+        opt.sep->setHidden(hidden);
+      }
+      if (opt.docsLabel)
+      {
+        opt.docsLabel->setHidden(hidden);
+      }
     }
   }
 }

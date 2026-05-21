@@ -360,6 +360,10 @@ Razón dada: %2</translation>
         <translation>Interfaz gráfica de Doxygen</translation>
     </message>
     <message>
+        <source>Hide documentation</source>
+        <translation>Ocultar documentación</translation>
+    </message>
+    <message>
         <source>Switch language...</source>
         <translation>Cambiar idioma...</translation>
     </message>

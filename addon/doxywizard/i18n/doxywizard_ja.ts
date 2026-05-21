@@ -360,6 +360,10 @@ Reason given: %2</source>
         <translation>Doxygen GUIフロントエンド</translation>
     </message>
     <message>
+        <source>Hide documentation</source>
+        <translation>ドキュメントを非表示にする</translation>
+    </message>
+    <message>
         <source>Switch language...</source>
         <translation>言語を切り替える...</translation>
     </message>

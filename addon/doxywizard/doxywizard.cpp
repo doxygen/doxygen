@@ -148,6 +148,11 @@ MainWindow::MainWindow()
                   this,SLOT(resetToDefaults()));
   settings->addAction(tr("Use current settings at startup"),
                   this,SLOT(makeDefaults()));
+  m_hideDocumentation = settings->addAction(tr("Hide documentation"),
+                  this,SLOT(setDocumentationVisibility()));
+  m_hideDocumentation->setCheckable(true);
+  bool hidden = m_settings.value(QString::fromLatin1("documentation/hide")).toBool();
+  m_hideDocumentation->setChecked(hidden);
   settings->addAction(tr("Switch language..."),
                   this,SLOT(switchLanguage()));
   m_clearRecent = settings->addAction(tr("Clear recent list"),
@@ -283,6 +288,7 @@ MainWindow::MainWindow()
   m_modified = false;
   updateTitle();
   m_wizard->refresh();
+  m_expert->setDocumentationVisibility(hidden);
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
@@ -460,6 +466,15 @@ void MainWindow::makeDefaults()
     m_settings.setValue(QString::fromLatin1("wizard/loadsettings"), true);
     m_settings.sync();
   }
+}
+
+void MainWindow::setDocumentationVisibility()
+{
+  // New state
+  bool hidden = m_hideDocumentation->isChecked();
+  m_settings.setValue(QString::fromLatin1("documentation/hide"), hidden);
+  m_settings.sync();
+  m_expert->setDocumentationVisibility(hidden);
 }
 
 void MainWindow::switchLanguage()
@@ -893,11 +908,13 @@ void MainWindow::outputLogStart()
   m_outputLogTextCount = 0;
   m_outputLog->clear();
 }
+
 void MainWindow::outputLogText(QString text)
 {
   m_outputLogTextCount++;
   m_outputLog->append(APPQT(text));
 }
+
 void MainWindow::outputLogFinish()
 {
   if (m_outputLogTextCount > 0)
