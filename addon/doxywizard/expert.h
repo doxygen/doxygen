@@ -54,6 +54,7 @@ class Expert : public QWidget, public DocIntf
     bool pdfOutputPresent(const QString &workingDir) const;
     QString getHtmlOutputIndex(const QString &workingDir) const;
     void dump();
+    void setDocumentationVisibility(bool hidden);
 
     // DocIntf methods
     void setHeader(const char *name);
@@ -61,7 +62,6 @@ class Expert : public QWidget, public DocIntf
 
   public slots:
     void refresh();
-    void hideDocumentation();
 
   private slots:
     void filterChanged(const QString &text);

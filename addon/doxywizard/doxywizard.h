@@ -61,7 +61,7 @@ class MainWindow : public QMainWindow
     void selectTab(int);
     void quit();
     void switchLanguage();
-    void hideDocumentation();
+    void setDocumentationVisibility();
 
   private slots:
     void openRecent(QAction *action);
@@ -119,7 +119,6 @@ class MainWindow : public QMainWindow
 namespace DoxygenWizard
 {
   extern bool    debugFlag;
-  extern bool    hideDocumentation;
   extern QString langCode;
   QString msgFileNotFound(const QString &fileName);
   QString msgNoPreviewAvailable(const QString &fileName);

@@ -643,7 +643,8 @@ void Expert::ensureGroupCardsCreated(GroupEntry &group)
     }
   }
 }
-void Expert::hideDocumentation()
+
+void Expert::setDocumentationVisibility(bool hidden)
 {
   for (GroupEntry &group : m_groups)
   {
@@ -651,11 +652,11 @@ void Expert::hideDocumentation()
     {
       if (opt.sep)
       {
-        opt.sep->setHidden(DoxygenWizard::hideDocumentation);
+        opt.sep->setHidden(hidden);
       }
       if (opt.docsLabel)
       {
-        opt.docsLabel->setHidden(DoxygenWizard::hideDocumentation);
+        opt.docsLabel->setHidden(hidden);
       }
     }
   }
@@ -669,7 +670,6 @@ void Expert::ensureAllGroupsCreated()
   {
     ensureGroupCardsCreated(group);
   }
-  hideDocumentation();
 
   // Re-run update so cross-group dependencies are fully applied
   QHashIterator<QString,Input*> i(m_options);

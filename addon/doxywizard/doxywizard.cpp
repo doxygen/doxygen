@@ -51,7 +51,6 @@
 
 // globally accessible variables
 bool DoxygenWizard::debugFlag = false;
-bool DoxygenWizard::hideDocumentation = false;
 QString DoxygenWizard::langCode;
 static QList<QString> newArgs;
 
@@ -150,9 +149,10 @@ MainWindow::MainWindow()
   settings->addAction(tr("Use current settings at startup"),
                   this,SLOT(makeDefaults()));
   m_hideDocumentation = settings->addAction(tr("Hide documentation"),
-                  this,SLOT(hideDocumentation()));
+                  this,SLOT(setDocumentationVisibility()));
   m_hideDocumentation->setCheckable(true);
-  m_hideDocumentation->setChecked(DoxygenWizard::hideDocumentation);
+  bool hidden = m_settings.value(QString::fromLatin1("documentation/hide")).toBool();
+  m_hideDocumentation->setChecked(hidden);
   settings->addAction(tr("Switch language..."),
                   this,SLOT(switchLanguage()));
   m_clearRecent = settings->addAction(tr("Clear recent list"),
@@ -288,6 +288,7 @@ MainWindow::MainWindow()
   m_modified = false;
   updateTitle();
   m_wizard->refresh();
+  m_expert->setDocumentationVisibility(hidden);
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
@@ -467,13 +468,13 @@ void MainWindow::makeDefaults()
   }
 }
 
-void MainWindow::hideDocumentation()
+void MainWindow::setDocumentationVisibility()
 {
   // New state
-  DoxygenWizard::hideDocumentation = m_hideDocumentation->isChecked();
-  m_settings.setValue(QString::fromLatin1("documentation/hide"), DoxygenWizard::hideDocumentation);
+  bool hidden = m_hideDocumentation->isChecked();
+  m_settings.setValue(QString::fromLatin1("documentation/hide"), hidden);
   m_settings.sync();
-  m_expert-> hideDocumentation();
+  m_expert->setDocumentationVisibility(hidden);
 }
 
 void MainWindow::switchLanguage()
@@ -907,11 +908,13 @@ void MainWindow::outputLogStart()
   m_outputLogTextCount = 0;
   m_outputLog->clear();
 }
+
 void MainWindow::outputLogText(QString text)
 {
   m_outputLogTextCount++;
   m_outputLog->append(APPQT(text));
 }
+
 void MainWindow::outputLogFinish()
 {
   if (m_outputLogTextCount > 0)
@@ -1061,9 +1064,6 @@ int main(int argc,char **argv)
   {
     qDebug() << "Starting doxywizard...";
     QString initialPath = QDir::currentPath();
-
-    QSettings settings(QString::fromLatin1("Doxygen.org"), QString::fromLatin1("Doxywizard"));
-    DoxygenWizard::hideDocumentation = settings.value(QString::fromLatin1("documentation/hide")).toBool();
 
     if (langSet)
     {
