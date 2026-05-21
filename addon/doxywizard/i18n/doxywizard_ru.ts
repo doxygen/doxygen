@@ -360,6 +360,10 @@ Reason given: %2</source>
         <translation>Графический интерфейс Doxygen</translation>
     </message>
     <message>
+        <source>Hide documentation</source>
+        <translation>Скрыть документацию</translation>
+    </message>
+    <message>
         <source>Switch language...</source>
         <translation>Сменить язык...</translation>
     </message>

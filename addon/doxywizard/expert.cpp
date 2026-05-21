@@ -570,6 +570,7 @@ void Expert::createOptionCard(GroupEntry &group, const QDomElement &child)
   entry.docs      = docs;
   entry.card      = container;
   entry.docsLabel = docsLabel;
+  entry.sep       = sep;
   entry.treeItem  = optTreeItem;
   entry.input     = input;
   group.options.append(entry);
@@ -642,6 +643,23 @@ void Expert::ensureGroupCardsCreated(GroupEntry &group)
     }
   }
 }
+void Expert::hideDocumentation()
+{
+  for (GroupEntry &group : m_groups)
+  {
+    for (const OptionEntry &opt : group.options)
+    {
+      if (opt.sep)
+      {
+        opt.sep->setHidden(DoxygenWizard::hideDocumentation);
+      }
+      if (opt.docsLabel)
+      {
+        opt.docsLabel->setHidden(DoxygenWizard::hideDocumentation);
+      }
+    }
+  }
+}
 
 // Create cards for every group that hasn't been created yet, then do a full
 // dependency update (needed when cross-group deps span newly-created groups).
@@ -651,6 +669,7 @@ void Expert::ensureAllGroupsCreated()
   {
     ensureGroupCardsCreated(group);
   }
+  hideDocumentation();
 
   // Re-run update so cross-group dependencies are fully applied
   QHashIterator<QString,Input*> i(m_options);

@@ -360,6 +360,10 @@ Angegebener Grund: %2</translation>
         <translation>Sprache geändert zu: %1</translation>
     </message>
     <message>
+        <source>Hide documentation</source>
+        <translation>Dokumentation ausblenden</translation>
+    </message>
+    <message>
         <source>Switch language...</source>
         <translation>Sprache wechseln...</translation>
     </message>
