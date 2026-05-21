@@ -334,6 +334,12 @@ void MainWindow::updateWorkingDir()
   setWorkingDir(m_workingDir->text());
 }
 
+void MainWindow::setLanguage(const QString &langCode)
+{
+  m_settings.setValue(QString::fromLatin1("language/code"), langCode);
+  m_settings.sync();
+}
+
 void MainWindow::manual()
 {
   QDesktopServices::openUrl(QUrl(QString::fromLatin1("https://www.doxygen.org/manual/index.html")));
@@ -1040,6 +1046,7 @@ int main(int argc,char **argv)
 
   {
     qDebug() << "Starting doxywizard...";
+    QString initialPath = QDir::currentPath();
 
     if (langSet)
     {
@@ -1079,11 +1086,13 @@ int main(int argc,char **argv)
 
     if (dumpFlag)
     {
+      main.setWorkingDir(initialPath);
       main.dump();
     }
     if (doxyfileFlag)
     {
       QString fn = QString::fromLatin1("Doxyfile_%1").arg(DoxygenWizard::langCode);
+      main.setWorkingDir(initialPath);
       main.saveConfig(fn);
     }
     if (dumpFlag ||doxyfileFlag) exit(0);

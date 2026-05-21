@@ -46,11 +46,8 @@ class MainWindow : public QMainWindow
     void outputLogText(QString text);
     void outputLogFinish();
     void dump();
-    void setLanguage(const QString &langCode)
-    {
-      m_settings.setValue(QString::fromLatin1("language/code"), langCode);
-      m_settings.sync();
-    }
+    void setWorkingDir(const QString &dirName);
+    void setLanguage(const QString &langCode);
     void saveConfig(const QString &fileName);
 
   public slots:
@@ -86,7 +83,6 @@ class MainWindow : public QMainWindow
     void addRecentFileList(const QString &fileName);
     void updateRecentFile(void);
     void updateConfigFileName(const QString &fileName);
-    void setWorkingDir(const QString &dirName);
     void updateLaunchButtonState();
     bool discardUnsavedChanges(bool saveOption=true);
 
