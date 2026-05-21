@@ -642,7 +642,7 @@ size_t Markdown::Private::isSpecialCommand(std::string_view data,size_t offset)
     { "emoji",          endOfLabel },
     { "enum",           endOfLabel },
     { "example",        endOfLine  },
-    { "exception",      endOfLine  },
+    { "exception",      endOfLabel },
     { "extends",        endOfLabel },
     { "file",           endOfLine  },
     { "fn",             endOfFunc  },
