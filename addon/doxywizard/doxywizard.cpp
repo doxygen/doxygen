@@ -133,15 +133,27 @@ MainWindow::MainWindow()
   : m_settings(QString::fromLatin1("Doxygen.org"), QString::fromLatin1("Doxywizard"))
 {
   QMenu *file = menuBar()->addMenu(tr("File"));
-  file->addAction(tr("Open..."),
-                  this, SLOT(openConfig()), QKeySequence{ Qt::CTRL | Qt::Key_O });
+  {
+    QAction *a = file->addAction(tr("Open..."));
+    a->setShortcut(QKeySequence{ Qt::CTRL | Qt::Key_O });
+    connect(a, SIGNAL(triggered()), this, SLOT(openConfig()));
+  }
   m_recentMenu = file->addMenu(tr("Open recent"));
-  file->addAction(tr("Save"),
-                  this, SLOT(saveConfig()), QKeySequence{ Qt::CTRL | Qt::Key_S });
-  file->addAction(tr("Save as..."),
-                  this, SLOT(saveConfigAs()), QKeySequence{ Qt::SHIFT | Qt::CTRL | Qt::Key_S });
-  file->addAction(tr("Quit"),
-                  this, SLOT(quit()), QKeySequence{ Qt::CTRL | Qt::Key_Q });
+  {
+    QAction *a = file->addAction(tr("Save"));
+    a->setShortcut(QKeySequence{ Qt::CTRL | Qt::Key_S });
+    connect(a, SIGNAL(triggered()), this, SLOT(saveConfig()));
+  }
+  {
+    QAction *a = file->addAction(tr("Save as..."));
+    a->setShortcut(QKeySequence{ Qt::SHIFT | Qt::CTRL | Qt::Key_S });
+    connect(a, SIGNAL(triggered()), this, SLOT(saveConfigAs()));
+  }
+  {
+    QAction *a = file->addAction(tr("Quit"));
+    a->setShortcut(QKeySequence{ Qt::CTRL | Qt::Key_Q });
+    connect(a, SIGNAL(triggered()), this, SLOT(quit()));
+  }
 
   QMenu *settings = menuBar()->addMenu(tr("Settings"));
   m_resetDefault = settings->addAction(tr("Reset to factory defaults"),
@@ -158,13 +170,17 @@ MainWindow::MainWindow()
   m_clearRecent = settings->addAction(tr("Clear recent list"),
                   this,SLOT(clearRecent()));
   settings->addSeparator();
-  m_runMenu = settings->addAction(tr("Run doxygen"),
-                                  this, SLOT(runDoxygenMenu()), QKeySequence{ Qt::CTRL | Qt::Key_R });
+  m_runMenu = settings->addAction(tr("Run doxygen"));
+  m_runMenu->setShortcut(QKeySequence{ Qt::CTRL | Qt::Key_R });
+  connect(m_runMenu, SIGNAL(triggered()), this, SLOT(runDoxygenMenu()));
   m_runMenu->setEnabled(false);
 
   QMenu *help = menuBar()->addMenu(tr("Help"));
-  help->addAction(tr("Online manual"),
-                  this, SLOT(manual()), Qt::Key_F1);
+  {
+    QAction *a = help->addAction(tr("Online manual"));
+    a->setShortcut(Qt::Key_F1);
+    connect(a, SIGNAL(triggered()), this, SLOT(manual()));
+  }
   help->addAction(tr("About"),
                   this, SLOT(about()) );
 
@@ -652,7 +668,7 @@ void MainWindow::runDoxygen()
   if (!m_running)
   {
     QString doxygenPath;
-#if defined(Q_OS_MACX)
+#if defined(Q_OS_MACOS)
     doxygenPath = qApp->applicationDirPath()+QString::fromLatin1("/../Resources/");
     qDebug() << "Doxygen path: " << doxygenPath;
     if ( !QFile(doxygenPath + QString::fromLatin1("doxygen")).exists() )

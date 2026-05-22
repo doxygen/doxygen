@@ -209,6 +209,22 @@ static void translateTopics(QDomElement &configRoot,const QDomElement &translati
   }
 }
 
+static bool xmlSetContent(QDomDocument &doc, QIODevice *dev, QString *err, int *errLine, int *errCol)
+{
+#if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
+  auto result = doc.setContent(dev, QDomDocument::ParseOption::Default);
+  if (!result)
+  {
+    *err     = result.errorMessage;
+    *errLine = static_cast<int>(result.errorLine);
+    *errCol  = static_cast<int>(result.errorColumn);
+  }
+  return bool(result);
+#else
+  return doc.setContent(dev, false, err, errLine, errCol);
+#endif
+}
+
 Expert::Expert()
 {
   // --- Search bar (top) ---
@@ -274,7 +290,7 @@ Expert::Expert()
   QString err = tr("Error");
   int errLine=0,errCol=0;
   QDomDocument configXml;
-  if (!file.open(QIODevice::ReadOnly) || !configXml.setContent(&file,false,&err,&errLine,&errCol))
+  if (!file.open(QIODevice::ReadOnly) || !xmlSetContent(configXml,&file,&err,&errLine,&errCol))
   {
     QString msg = tr("Error parsing internal config.xml at line %1 column %2.\n%3").
                 arg(errLine).arg(errCol).arg(err);
@@ -288,7 +304,7 @@ Expert::Expert()
     if (trFile.open(QIODevice::ReadOnly))
     {
       QDomDocument trConfigXml;
-      if (!trConfigXml.setContent(&trFile,false,&err,&errLine,&errCol))
+      if (!xmlSetContent(trConfigXml,&trFile,&err,&errLine,&errCol))
       {
         QString msg = tr("Error parsing internal config_%1.xml at line %2 column %3.\n%4").
                     arg(DoxygenWizard::langCode).arg(errLine).arg(errCol).arg(err);
