@@ -32,6 +32,8 @@ class InputObsolete : public Input
     bool isDefault()             { return false; }
     void writeValue(QTextStream &,TextCodecAdapter *,bool) {}
     void setTemplateDocs(const QString &) {}
+    void setText(const QString &txt) {}
+    void setToolTip(const QString &txt) {}
     bool isEmpty()               { return false; };
     Kind orgKind() const         { return m_orgKind; }
   private:

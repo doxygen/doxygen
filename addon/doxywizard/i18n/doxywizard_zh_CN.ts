@@ -14,26 +14,6 @@
         <translation>错误</translation>
     </message>
     <message>
-        <source>Doxygen usage</source>
-        <translation>Doxygen 用法</translation>
-    </message>
-    <message>
-        <source>External Indexing and Searching</source>
-        <translation>外部索引和搜索</translation>
-    </message>
-    <message>
-        <source>Linking to external documentation</source>
-        <translation>链接到外部文档</translation>
-    </message>
-    <message>
-        <source>Including formulas</source>
-        <translation>包含公式</translation>
-    </message>
-    <message>
-        <source>Description</source>
-        <translation>描述</translation>
-    </message>
-    <message>
         <source>Search settings...</source>
         <translation>搜索设置...</translation>
     </message>
@@ -318,6 +298,10 @@ Reason given: %2</source>
     <message>
         <source>Doxygen GUI frontend</source>
         <translation>Doxygen 图形界面前端</translation>
+    </message>
+    <message>
+        <source>Hide documentation</source>
+        <translation>隐藏文档</translation>
     </message>
     <message>
         <source>Switch language...</source>

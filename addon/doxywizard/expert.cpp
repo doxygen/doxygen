@@ -65,6 +65,17 @@ static QString convertToComment(const QString &s)
   }
 }
 
+static QString displayDocs(const QString &id,const QString &docs)
+{
+  QString display = SMALL_FONT_START + SA("<b>") + id + SA("</b>");
+  if (!docs.isEmpty())
+  {
+    display += SA(" &mdash; ") + docs;
+  }
+  display += SMALL_FONT_END;
+  return display;
+}
+
 void Expert::setHeader(const char *header)
 {
   m_header = SA(header);
@@ -198,6 +209,22 @@ static void translateTopics(QDomElement &configRoot,const QDomElement &translati
   }
 }
 
+static bool xmlSetContent(QDomDocument &doc, QIODevice *dev, QString *err, int *errLine, int *errCol)
+{
+#if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
+  auto result = doc.setContent(dev, QDomDocument::ParseOption::Default);
+  if (!result)
+  {
+    *err     = result.errorMessage;
+    *errLine = static_cast<int>(result.errorLine);
+    *errCol  = static_cast<int>(result.errorColumn);
+  }
+  return bool(result);
+#else
+  return doc.setContent(dev, false, err, errLine, errCol);
+#endif
+}
+
 Expert::Expert()
 {
   // --- Search bar (top) ---
@@ -209,7 +236,7 @@ Expert::Expert()
   m_treeWidget = new QTreeWidget;
   m_treeWidget->setColumnCount(1);
   m_treeWidget->setHeaderLabel(tr("Topics"));
-  m_treeWidget->setRootIsDecorated(false);
+  m_treeWidget->setRootIsDecorated(true);
   m_treeWidget->header()->setSectionResizeMode(QHeaderView::Fixed);
 
   // --- Right: scroll area containing all group sections ---
@@ -263,7 +290,7 @@ Expert::Expert()
   QString err = tr("Error");
   int errLine=0,errCol=0;
   QDomDocument configXml;
-  if (!file.open(QIODevice::ReadOnly) || !configXml.setContent(&file,false,&err,&errLine,&errCol))
+  if (!file.open(QIODevice::ReadOnly) || !xmlSetContent(configXml,&file,&err,&errLine,&errCol))
   {
     QString msg = tr("Error parsing internal config.xml at line %1 column %2.\n%3").
                 arg(errLine).arg(errCol).arg(err);
@@ -286,7 +313,7 @@ Expert::Expert()
     if (trFile.open(QIODevice::ReadOnly))
     {
       QDomDocument trConfigXml;
-      if (!trConfigXml.setContent(&trFile,false,&err,&errLine,&errCol))
+      if (!xmlSetContent(trConfigXml,&trFile,&err,&errLine,&errCol))
       {
         QString msg = tr("Error parsing internal config_%1.xml at line %2 column %3.\n%4").
                     arg(DoxygenWizard::langCode).arg(errLine).arg(errCol).arg(err);
@@ -386,6 +413,7 @@ void Expert::createGroups(const QDomElement &rootElem)
 
         // Tree widget item for this group
         group.treeItem = new QTreeWidgetItem(m_treeWidget, QStringList() << translatedName);
+        group.treeItem->setToolTip(0,SA("<qt>") + group.docs + SA("</qt>"));
 
         group.section->hide();
         m_rightLayout->addWidget(group.section);
@@ -533,8 +561,7 @@ void Expert::createOptionCard(GroupEntry &group, const QDomElement &child)
     docsLabel->setWordWrap(true);
     docsLabel->setOpenExternalLinks(true);
     docsLabel->setContentsMargins(0, 2, 0, 4);
-    // Use a smaller, muted style for the description text
-    docsLabel->setText(SMALL_FONT_START + docs + SMALL_FONT_END);
+    docsLabel->setText(displayDocs(id,docs));
     // Dim the label using PlaceholderText, which is calibrated for readable
     // secondary text in both light and dark modes (available since Qt 5.12).
     QColor textColor = docsLabel->palette().color(QPalette::Text);
@@ -582,6 +609,7 @@ void Expert::createOptionCard(GroupEntry &group, const QDomElement &child)
   entry.docs      = docs;
   entry.card      = container;
   entry.docsLabel = docsLabel;
+  entry.sep       = sep;
   entry.treeItem  = optTreeItem;
   entry.input     = input;
   group.options.append(entry);
@@ -651,6 +679,36 @@ void Expert::ensureGroupCardsCreated(GroupEntry &group)
     if (opt.input)
     {
       opt.input->updateDependencies();
+    }
+  }
+}
+
+void Expert::setDocumentationVisibility(bool hidden)
+{
+  for (GroupEntry &group : m_groups)
+  {
+    for (const OptionEntry &opt : group.options)
+    {
+      if (opt.sep)
+      {
+        opt.sep->setHidden(hidden);
+      }
+      if (opt.docsLabel)
+      {
+        opt.docsLabel->setHidden(hidden);
+        // only enable tooltips when documentation is hidden
+        if (opt.input)
+        {
+          if (hidden)
+          {
+            opt.input->setToolTip(SA("<qt>") + opt.docsLabel->text() + SA("</qt>"));
+          }
+          else
+          {
+            opt.input->setToolTip(SA(""));
+          }
+        }
+      }
     }
   }
 }
@@ -1131,7 +1189,6 @@ void Expert::filterChanged(const QString &text)
 {
   QString filter = text.trimmed().toLower();
   bool showAll = filter.length()<=2;
-  m_treeWidget->setRootIsDecorated(!showAll);
 
   m_rightContainer->setUpdatesEnabled(false);
   m_treeWidget->setUpdatesEnabled(false);
@@ -1154,7 +1211,8 @@ void Expert::filterChanged(const QString &text)
         }
         if (opt.docsLabel && opt.labelHighlighted)
         {
-          opt.docsLabel->setText(SMALL_FONT_START + opt.docs + SMALL_FONT_END);
+          opt.docsLabel->setText(displayDocs(opt.id, opt.docs));
+          opt.input->setText(opt.id);
           opt.labelHighlighted = false;
         }
       }
@@ -1193,13 +1251,8 @@ void Expert::filterChanged(const QString &text)
         {
           QString hiDocs = matchesDocs ? highlightInHtml(opt.docs, filter) : opt.docs;
           QString hiId   = matchesId   ? highlightInHtml(opt.id,   filter) : opt.id;
-          QString display = SMALL_FONT_START + SA("<b>") + hiId + SA("</b>");
-          if (!opt.docs.isEmpty())
-          {
-            display += SA(" &mdash; ") + hiDocs;
-          }
-          display += SMALL_FONT_END;
-          opt.docsLabel->setText(display);
+          opt.input->setText(hiId);
+          opt.docsLabel->setText(displayDocs(hiId,hiDocs));
           opt.labelHighlighted = true;
         }
 
@@ -1215,6 +1268,8 @@ void Expert::filterChanged(const QString &text)
     m_rightContainer->setUpdatesEnabled(true);
     m_treeWidget->setUpdatesEnabled(true);
   }
+  bool hidden = QSettings(QString::fromLatin1("Doxygen.org"), QString::fromLatin1("Doxywizard")).value(QString::fromLatin1("documentation/hide")).toBool();
+  setDocumentationVisibility(hidden);
 }
 
 void Expert::groupSelected(QTreeWidgetItem *item, QTreeWidgetItem *)
