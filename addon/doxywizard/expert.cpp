@@ -661,6 +661,18 @@ void Expert::setDocumentationVisibility(bool hidden)
       if (opt.docsLabel)
       {
         opt.docsLabel->setHidden(hidden);
+        // only enable tooltips when documentation is hidden
+        if (opt.input)
+        {
+          if (hidden)
+          {
+            opt.input->setToolTip(SA("<qt>") + opt.docsLabel->text() + SA("</qt>"));
+          }
+          else
+          {
+            opt.input->setToolTip(SA(""));
+          }
+        }
       }
     }
   }
@@ -1223,6 +1235,8 @@ void Expert::filterChanged(const QString &text)
     m_rightContainer->setUpdatesEnabled(true);
     m_treeWidget->setUpdatesEnabled(true);
   }
+  bool hidden = QSettings(QString::fromLatin1("Doxygen.org"), QString::fromLatin1("Doxywizard")).value(QString::fromLatin1("documentation/hide")).toBool();
+  setDocumentationVisibility(hidden);
 }
 
 void Expert::groupSelected(QTreeWidgetItem *item, QTreeWidgetItem *)
