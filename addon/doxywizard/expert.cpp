@@ -379,6 +379,7 @@ void Expert::createGroups(const QDomElement &rootElem)
 
         // Tree widget item for this group
         group.treeItem = new QTreeWidgetItem(m_treeWidget, QStringList() << translatedName);
+        group.treeItem->setToolTip(0,SA("<qt>") + group.docs + SA("</qt>"));
 
         group.section->hide();
         m_rightLayout->addWidget(group.section);
