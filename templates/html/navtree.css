@@ -46,10 +46,6 @@
   line-height: 22px;
 }
 
-#nav-tree .label a {
-  padding:2px;
-}
-
 #nav-tree .selected a {
   text-decoration:none;
   color:var(--page-link-color);

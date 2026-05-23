@@ -227,7 +227,6 @@ dt.alphachar{
 
 a {
 	color: var(--page-link-color);
-	font-weight: normal;
 	text-decoration: none;
 }
 
