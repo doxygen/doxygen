@@ -329,7 +329,7 @@ void HtmlDocVisitor::writeObfuscatedMailAddress(const QCString &url)
   }
   else
   {
-    m_t << "<a href=\"#\" onclick=\"location.href='mai'+'lto:'";
+    m_t << "<a href=\"mai'+'lto:";
     if (!url.isEmpty())
     {
       const char *p = url.data();
@@ -345,7 +345,7 @@ void HtmlDocVisitor::writeObfuscatedMailAddress(const QCString &url)
         if (size==3) size=2; else size=3;
       }
     }
-    m_t << "; return false;\">";
+    m_t << "\">";
   }
 }
 

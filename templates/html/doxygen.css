@@ -2142,3 +2142,33 @@ details[open]>summary::before {
         display: inline-block;
         transform: rotate(0deg);
 }
+
+.spacer {
+  width: 16px;
+  display: inline-block;
+}
+
+
+#searchBoxPos1 {
+  position: absolute;
+  right: 8px;
+  top: 8px;
+  height: 36px;
+}
+
+#searchBoxPos2 {
+  float: right;
+}
+
+#splitbar {
+  -moz-user-select: none;
+  user-select: none;
+}
+
+.dynheader {
+  cursor: pointer;
+}
+
+.hidden {
+  display: none;
+}
