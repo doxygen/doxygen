@@ -136,7 +136,7 @@ let dynsection = {
     // all rows after the clicked row
     const rows = [];
     let nextRow = currentRow.nextElementSibling;
-    while (nextRow && nextRow.tagName === 'TR') {
+    while (nextRow && nextRow.tagName.toLowerCase() === 'tr') {
       rows.push(nextRow);
       nextRow = nextRow.nextElementSibling;
     }
