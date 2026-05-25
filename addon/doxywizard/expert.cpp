@@ -756,17 +756,19 @@ QString Expert::getDocsForNode(const QDomElement &child) const
   QString docs = SA("");
   // read documentation text
   QDomElement docsVal = child.firstChildElement();
+  bool first = true;
   while (!docsVal.isNull())
   {
     if (docsVal.tagName()==SA("docs") &&
         docsVal.attribute(SA("doxywizard")) != SA("0"))
     {
+      if (!first) docs += SA("<br/>");
+      first = false;
       for (QDomNode n = docsVal.firstChild(); !n.isNull(); n = n.nextSibling())
       {
         QDomText t = n.toText();
         if (!t.isNull()) docs+=t.data();
       }
-      docs += SA("<br/>");
     }
     docsVal = docsVal.nextSiblingElement();
   }
@@ -818,12 +820,11 @@ QString Expert::getDocsForNode(const QDomElement &child) const
     }
     if (child.attribute(SA("defval")) != SA(""))
     {
-      docs+=SA("<br/>");
+      if (!docs.endsWith(SA("<br/>"))) docs += SA("<br/>");
       docs+=SA("<br/>");
       QString defval = child.attribute(SA("defval"));
       docs+=SA(" ")+tr("The default value is: <code>%1</code>.").arg(defval);
     }
-    docs+= SA("<br/>");
   }
   else if (type==SA("int"))
   {
@@ -833,7 +834,6 @@ QString Expert::getDocsForNode(const QDomElement &child) const
     QString maxval = child.attribute(SA("maxval"));
     QString defval = child.attribute(SA("defval"));
     docs+=tr("Minimum value: %1, maximum value: %2, default value: %3.").arg(minval).arg(maxval).arg(defval);
-    docs+= SA("<br/>");
   }
   else if (type==SA("bool"))
   {
@@ -849,7 +849,6 @@ QString Expert::getDocsForNode(const QDomElement &child) const
       QString valStr = (defval==SA("1")?SA("YES"):SA("NO"));
       docs+=SA(" ")+tr("The default value is: <code>%1</code>.").arg(valStr);
     }
-    docs+= SA("<br/>");
   }
   else if (type==SA("list"))
   {
@@ -913,7 +912,6 @@ QString Expert::getDocsForNode(const QDomElement &child) const
           docsVal = docsVal.nextSiblingElement();
         }
       }
-      // docs+= SA("<br/>");
     }
   }
   else if (type==SA("string"))
@@ -926,7 +924,6 @@ QString Expert::getDocsForNode(const QDomElement &child) const
         if (!docs.endsWith(SA("<br/>"))) docs += SA("<br/>");
         docs+=SA("<br/>");
         docs += SA(" ")+tr("The default directory is: <code>%1</code>.").arg(defval);
-        docs += SA("<br/>");
       }
     }
     else if (child.attribute(SA("format")) == SA("file"))
@@ -944,7 +941,6 @@ QString Expert::getDocsForNode(const QDomElement &child) const
         {
           docs += SA(" ")+tr("The default file (with absolute path) is: <code>%1</code>.").arg(defval);
         }
-        docs += SA("<br/>");
       }
       else
       {
@@ -953,7 +949,6 @@ QString Expert::getDocsForNode(const QDomElement &child) const
           if (!docs.endsWith(SA("<br/>"))) docs += SA("<br/>");
           docs+=SA("<br/>");
           docs += SA(" ")+tr("The file has to be specified with full path.");
-          docs += SA("<br/>");
         }
       }
     }
@@ -972,7 +967,6 @@ QString Expert::getDocsForNode(const QDomElement &child) const
         {
           docs += SA(" ")+tr("The default image (with absolute path) is: <code>%1</code>.").arg(defval);
         }
-        docs += SA("<br/>");
       }
       else
       {
@@ -981,7 +975,6 @@ QString Expert::getDocsForNode(const QDomElement &child) const
           if (!docs.endsWith(SA("<br/>"))) docs += SA("<br/>");
           docs+=SA("<br/>");
           docs += SA(" ")+tr("The image has to be specified with full path.");
-          docs += SA("<br/>");
         }
       }
     }
@@ -992,7 +985,6 @@ QString Expert::getDocsForNode(const QDomElement &child) const
         if (!docs.endsWith(SA("<br/>"))) docs += SA("<br/>");
         docs+=SA("<br/>");
         docs += SA(" ")+tr("The default value is: <code>%1</code>.").arg(defval);
-        docs += SA("<br/>");
       }
     }
   }
