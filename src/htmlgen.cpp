@@ -77,15 +77,10 @@ static void writeClientSearchBox(TextStream &t,const QCString &relPath)
 {
   t << "        <div id=\"MSearchBox\" class=\"MSearchBoxInactive\">\n";
   t << "        <span class=\"left\">\n";
-  t << "          <span id=\"MSearchSelect\" class=\"search-icon\" ";
-  t << "onmouseover=\"return searchBox.OnSearchSelectShow()\" ";
-  t << "onmouseout=\"return searchBox.OnSearchSelectHide()\">";
+  t << "          <span id=\"MSearchSelect\" class=\"search-icon\">";
   t << "<span class=\"search-icon-dropdown\"></span></span>\n";
   t << "          <input type=\"text\" id=\"MSearchField\" value=\"\" placeholder=\""
-    << theTranslator->trSearch() << "\" accesskey=\"S\"\n";
-  t << "               onfocus=\"searchBox.OnSearchFieldFocus(true)\" \n";
-  t << "               onblur=\"searchBox.OnSearchFieldFocus(false)\" \n";
-  t << "               onkeyup=\"searchBox.OnSearchFieldChange(event)\"/>\n";
+    << theTranslator->trSearch() << "\" accesskey=\"S\"/>\n";
   t << "          </span><span class=\"right\">\n";
   t << "            <a id=\"MSearchClose\" href=\"javascript:searchBox.CloseResultsWindow()\">"
     << "<div id=\"MSearchCloseImg\" class=\"close-icon\"></div></a>\n";
@@ -114,9 +109,7 @@ static void writeServerSearchBox(TextStream &t,const QCString &relPath,bool high
   if (!highlightSearch || !Config_getBool(HTML_DYNAMIC_MENUS))
   {
     t << "              <input type=\"text\" id=\"MSearchField\" name=\"query\" value=\"\" placeholder=\""
-      << theTranslator->trSearch() << "\" size=\"20\" accesskey=\"S\" \n";
-    t << "                     onfocus=\"searchBox.OnSearchFieldFocus(true)\" \n";
-    t << "                     onblur=\"searchBox.OnSearchFieldFocus(false)\"/>\n";
+      << theTranslator->trSearch() << "\" size=\"20\" accesskey=\"S\"/>\n";
     t << "            </form>\n";
     t << "          </div><div class=\"right\"></div>\n";
     t << "        </div>\n";
@@ -417,24 +410,9 @@ static QCString substituteHtmlKeywords(const QCString &file,
 
     if (!serverBasedSearch)
     {
-      if (disableIndex || !Config_getBool(HTML_DYNAMIC_MENUS) || Config_getBool(FULL_SIDEBAR))
-      {
-        searchCssJs += "<script type=\"text/javascript\">\n"
-				        "document.addEventListener('DOMContentLoaded', init_search);\n"
-					"</script>";
-      }
     }
     else
     {
-      if (disableIndex || !Config_getBool(HTML_DYNAMIC_MENUS))
-      {
-        searchCssJs += "<script type=\"text/javascript\">\n"
-					"document.addEventListener('DOMContentLoaded', () => {\n"
-					"  if (document.querySelector('.searchresults')) { searchBox.DOMSearchField().focus(); }\n"
-					"});\n"
-					"</script>\n";
-      }
-
       // OPENSEARCH_PROVIDER {
       searchCssJs += "<link rel=\"search\" href=\"" + relPath +
                      "search_opensearch.php?v=opensearch.xml\" "
@@ -1663,10 +1641,7 @@ void HtmlGenerator::writeSearchInfoStatic(TextStream &t,const QCString &)
   if (searchEngine && !serverBasedSearch)
   {
     t << "<!-- window showing the filter options -->\n";
-    t << "<div id=\"MSearchSelectWindow\"\n";
-    t << "     onmouseover=\"return searchBox.OnSearchSelectShow()\"\n";
-    t << "     onmouseout=\"return searchBox.OnSearchSelectHide()\"\n";
-    t << "     onkeydown=\"return searchBox.OnSearchSelectKey(event)\">\n";
+    t << "<div id=\"MSearchSelectWindow\">\n";
     t << "</div>\n";
     t << "\n";
     t << "<!-- iframe showing the search results (closed by default) -->\n";
@@ -2089,9 +2064,7 @@ static void startSectionHeader(TextStream &t,
   if (dynamicSections)
   {
     t << "<div id=\"dynsection-" << sectionCount << "\" "
-         "onclick=\"return dynsection.toggleVisibility(this)\" "
-         "class=\"dynheader closed\" "
-         "style=\"cursor:pointer;\">"
+         "class=\"dynheader closed\">"
          "<span class=\"dynarrow\"><span class=\"arrowhead closed\"></span></span>";
   }
   else
@@ -2113,8 +2086,7 @@ static void startSectionSummary(TextStream &t,int sectionCount)
   if (dynamicSections)
   {
     t << "<div id=\"dynsection-" << sectionCount << "-summary\" "
-         "class=\"dynsummary\" "
-         "style=\"display:block;\">\n";
+         "class=\"dynsummary\">\n";
   }
 }
 
@@ -2135,8 +2107,7 @@ static void startSectionContent(TextStream &t,int sectionCount)
   if (dynamicSections)
   {
     t << "<div id=\"dynsection-" << sectionCount << "-content\" "
-         "class=\"dyncontent\" "
-         "style=\"display:none;\">\n";
+         "class=\"dyncontent hidden\">\n";
   }
   else
   {
@@ -3092,6 +3063,18 @@ static void writeDefaultQuickLinks(TextStream &t,
     case HighlightedItem::Search: break;
   }
 
+  t << "<script type=\"application/json\" id=\"doxygen-config\">\n";
+  t << "{\n";
+  t << "  \"relPath\": \"" << relPath << "\",\n";
+  t << "  \"generateTreeView\": " << (generateTreeView?"true":"false") << ",\n";
+  t << "  \"searchEngine\": " << (searchEngine?"true":"false") << ",\n";
+  t << "  \"serverBasedSearch\": " << (serverBasedSearch?"true":"false") << ",\n";
+  t << "  \"disableIndex\": " << (disableIndex?"true":"false") << ",\n";
+  t << "  \"dynamicMenus\": " << (dynamicMenus?"true":"false") << ",\n";
+  t << "  \"fullSidebar\": " << (fullSidebar?"true":"false") << "\n";
+  t << "}\n";
+  t << "</script>\n";
+
   if (!disableIndex && dynamicMenus)
   {
     QCString searchPage;
@@ -3105,39 +3088,20 @@ static void writeDefaultQuickLinks(TextStream &t,
     }
     t << "<script type=\"text/javascript\" src=\"" << relPath << "menudata.js\"></script>\n";
     t << "<script type=\"text/javascript\" src=\"" << relPath << "menu.js\"></script>\n";
-    t << "<script type=\"text/javascript\">\n";
-    t << "document.addEventListener('DOMContentLoaded', () => {\n";
-    t << "  initMenu('" << relPath << "'," << (generateTreeView?"true":"false") << ");\n";
-    if (searchEngine)
-    {
-      if (!serverBasedSearch)
-      {
-        if (!disableIndex && dynamicMenus && !fullSidebar)
-        {
-          t << "  init_search();\n";
-        }
-      }
-      else
-      {
-          t << "  if (document.querySelector('.searchresults')) { searchBox.DOMSearchField().focus(); }\n";
-      }
-    }
-    t << "});\n";
-    t << "</script>\n";
     t << "<div id=\"main-nav-mobile\">\n";
     if (searchEngine && !fullSidebar)
     {
       t <<   "<div class=\"sm sm-dox\"><input id=\"main-menu-state\" type=\"checkbox\"/>\n";
       t <<     "<label class=\"main-menu-btn\" for=\"main-menu-state\">\n";
       t <<     "<span class=\"main-menu-btn-icon\"></span> Toggle main menu visibility</label>\n";
-      t <<     "<span id=\"searchBoxPos1\" style=\"position:absolute;right:8px;top:8px;height:36px;\">";
+      t <<     "<span id=\"searchBoxPos1\">";
       t <<     "</span>\n";
       t <<   "</div>\n";
     }
     t << "</div><!-- main-nav-mobile -->\n";
     t << "<div id=\"main-nav\">\n";
     t << "  <ul class=\"sm sm-dox\" id=\"main-menu\">\n";
-    t << "    <li id=\"searchBoxPos2\" style=\"float:right\">\n";
+    t << "    <li id=\"searchBoxPos2\">\n";
     if (searchEngine && !(generateTreeView && fullSidebar))
     {
       t << getSearchBox(serverBasedSearch,relPath,false);
@@ -3215,8 +3179,7 @@ QCString HtmlGenerator::writeSplitBarAsString(const QCString &name,const QCStrin
      "      <div id=\"nav-sync\" class=\"sync\"></div>\n"
      "    </div>\n"
      "  </div>\n"
-     "  <div id=\"splitbar\" style=\"-moz-user-select:none;\" \n"
-     "       class=\"ui-resizable-handle\">\n"
+     "  <div id=\"splitbar\" class=\"ui-resizable-handle\">\n"
      "  </div>\n"
      "</div>\n"
      "<script type=\"text/javascript\">\n"
@@ -3619,7 +3582,7 @@ void HtmlGenerator::endInlineMemberDoc()
 void HtmlGenerator::startEmbeddedDoc(int indent)
 {
   DBG_HTML(m_t << "<!-- startEmbeddedDoc -->\n";)
-  m_t << "<div class=\"embeddoc\" style=\"margin-left:" << indent << "ch;\">";
+  m_t << "<div class=\"embeddoc indent-" << indent << "\">";
 }
 
 void HtmlGenerator::endEmbeddedDoc()
@@ -3708,7 +3671,7 @@ void HtmlGenerator::writeInheritedSectionTitle(
   m_t << "<tr class=\"inherit_header " << id << "\">";
   if (dynamicSections)
   {
-    m_t << "<td colspan=\"2\" onclick=\"javascript:dynsection.toggleInherit('" << id << "')\">";
+    m_t << "<td colspan=\"2\" class=\"dyn-inherit\">";
     m_t << "<span class=\"dynarrow\"><span class=\"arrowhead closed\"></span></span>";
   }
   else

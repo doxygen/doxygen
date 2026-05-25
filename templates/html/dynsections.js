@@ -79,9 +79,10 @@ let dynsection = {
       });
     } else {
       // slideDown animation
+      content.classList.remove('hidden');
+      content.style.display = 'block';
       const height = content.scrollHeight;
       if (height==0) { // height unknown -> show immediately
-        content.style.display = 'block';
       } else {
         this.slide(content, '0px', height + 'px');
       }
@@ -108,6 +109,7 @@ let dynsection = {
           });
         }
         row.style.display = '';
+        row.classList.remove('hidden');
       } else if (l==level+1) {
         if (a) {
           a.querySelectorAll('.arrowhead').forEach(el => {
@@ -117,8 +119,10 @@ let dynsection = {
         }
         if (i) i.querySelectorAll('.folder-icon').forEach(el => el.classList.remove('open'));
         row.style.display = '';
+        row.classList.remove('hidden');
       } else {
         row.style.display = 'none';
+        row.classList.add('hidden');
       }
     });
     this.updateStripes();
@@ -132,7 +136,7 @@ let dynsection = {
     // all rows after the clicked row
     const rows = [];
     let nextRow = currentRow.nextElementSibling;
-    while (nextRow && nextRow.tagName === 'TR') {
+    while (nextRow && nextRow.tagName.toLowerCase() === 'tr') {
       rows.push(nextRow);
       nextRow = nextRow.nextElementSibling;
     }
@@ -164,6 +168,7 @@ let dynsection = {
       rows.forEach(row => {
         if (row.id.startsWith('row_'+id)) {
           row.style.display = 'none'; // hide all children
+          row.classList.add('hidden');
         }
       });
     } else { // we are SHOWING
@@ -185,6 +190,7 @@ let dynsection = {
           replaceClass(span,'opened','closed');
         });
         row.style.display = ''; //show all children
+        row.classList.remove('hidden');
       });
     }
     this.updateStripes();
@@ -194,7 +200,7 @@ let dynsection = {
     const rows = document.querySelectorAll('tr.inherit.'+id);
     const header = document.querySelector('tr.inherit_header.'+id);
     if (rows.length > 0 && rows[0].offsetParent !== null) { // checks if element is visible
-      rows.forEach(row => row.style.display = 'none');
+      rows.forEach(row => { row.style.display = 'none'; row.classList.add('hidden'); });
       if (header) {
         header.querySelectorAll('.arrowhead').forEach(el => {
           el.classList.add('closed');
@@ -202,7 +208,7 @@ let dynsection = {
         });
       }
     } else {
-      rows.forEach(row => row.style.display = 'table-row');
+      rows.forEach(row => { row.style.display = 'table-row'; row.classList.remove('hidden'); });
       if (header) {
         header.querySelectorAll('.arrowhead').forEach(el => {
           el.classList.remove('closed');
@@ -213,5 +219,64 @@ let dynsection = {
   },
 
 };
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.embeddoc').forEach(el => {
+    el.className.split(' ').forEach(cls => {
+      if (cls.startsWith('indent-')) {
+        let indent = parseInt(cls.substring(7), 10);
+        if (!isNaN(indent)) el.style.marginLeft = indent + 'ch';
+      }
+    });
+  });
+
+  document.body.addEventListener('click', (e) => {
+    let mailEl = e.target.closest('a[href^="mai\'+"]');
+    if (mailEl) {
+      e.preventDefault();
+      let parts = mailEl.getAttribute('href').split("'+'");
+      let mail = parts.join('').replace(/'/g, '');
+      if (mail.startsWith('mailto:') || mail.startsWith('http:') || mail.startsWith('https:')) {
+        location.href = mail;
+      }
+      return;
+    }
+
+    let dynhead = e.target.closest('.dynheader');
+    if (dynhead) {
+      dynsection.toggleVisibility(dynhead);
+      e.preventDefault();
+      return;
+    }
+
+    let folder = e.target.closest('.iconfolder, .arrow');
+    if (folder && folder.id && (folder.id.startsWith('img_') || folder.id.startsWith('arr_'))) {
+      dynsection.toggleFolder(folder.id.substring(4));
+      e.preventDefault();
+      return;
+    }
+
+    let dynInherit = e.target.closest('td.dyn-inherit');
+    if (dynInherit && dynInherit.parentElement) {
+      let inheritClass = Array.from(dynInherit.parentElement.classList).find(c => c !== 'inherit_header');
+      if (inheritClass) {
+        dynsection.toggleInherit(inheritClass);
+      }
+      e.preventDefault();
+      return;
+    }
+
+    let dynLevel = e.target.closest('[class*="dyn-level-"]');
+    if (dynLevel) {
+      let levelClass = Array.from(dynLevel.classList).find(c => c.startsWith('dyn-level-'));
+      if (levelClass) {
+        let level = parseInt(levelClass.substring(10), 10);
+        if (!isNaN(level)) dynsection.toggleLevel(level);
+      }
+      e.preventDefault();
+      return;
+    }
+  });
+});
 
 /* @license-end */

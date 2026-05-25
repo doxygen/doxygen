@@ -227,7 +227,6 @@ dt.alphachar{
 
 a {
 	color: var(--page-link-color);
-	font-weight: normal;
 	text-decoration: none;
 }
 
@@ -2142,4 +2141,34 @@ details[open]>summary::before {
         font-size: 80%;
         display: inline-block;
         transform: rotate(0deg);
+}
+
+.spacer {
+  width: 16px;
+  display: inline-block;
+}
+
+
+#searchBoxPos1 {
+  position: absolute;
+  right: 8px;
+  top: 8px;
+  height: 36px;
+}
+
+#searchBoxPos2 {
+  float: right;
+}
+
+#splitbar {
+  -moz-user-select: none;
+  user-select: none;
+}
+
+.dynheader {
+  cursor: pointer;
+}
+
+.hidden {
+  display: none;
 }

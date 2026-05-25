@@ -4638,6 +4638,10 @@ NONLopt [^\n]*
                                               QCString brief     = yyextra->current->brief;
                                               int      briefLine = yyextra->current->briefLine;
                                               QCString briefFile = yyextra->current->briefFile;
+                                              auto     groups    = yyextra->current->groups;
+                                              auto     anchors   = yyextra->current->anchors;
+                                              auto     sli       = yyextra->current->sli;
+                                              auto     rqli      = yyextra->current->rqli;
                                               // reset documentation values
                                               yyextra->current->doc       = "";
                                               yyextra->current->docLine   = 0;
@@ -4645,6 +4649,10 @@ NONLopt [^\n]*
                                               yyextra->current->brief     = "";
                                               yyextra->current->briefLine = 0;
                                               yyextra->current->briefFile = "";
+                                              yyextra->current->groups.clear();
+                                              yyextra->current->anchors.clear();
+                                              yyextra->current->sli.clear();
+                                              yyextra->current->rqli.clear();
                                               while ((split_point = yyextra->current->name.find("::")) != -1)
                                               {
                                                 std::shared_ptr<Entry> new_current = std::make_shared<Entry>(*yyextra->current);
@@ -4664,6 +4672,10 @@ NONLopt [^\n]*
                                               yyextra->current->brief     = brief;
                                               yyextra->current->briefLine = briefLine;
                                               yyextra->current->briefFile = briefFile;
+                                              yyextra->current->groups    = groups;
+                                              yyextra->current->anchors   = anchors;
+                                              yyextra->current->sli       = sli;
+                                              yyextra->current->rqli      = rqli;
                                             }
                                             QCString &cn = yyextra->current->name;
                                             QCString rn = yyextra->current_root->name;

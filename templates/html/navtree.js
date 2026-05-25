@@ -30,7 +30,7 @@ function initNavTree(toroot,relpath,allMembersFile) {
   const ARROW_DOWN = '<span class="arrowhead opened"></span>';
   const ARROW_RIGHT = '<span class="arrowhead closed"></span>';
   const NAVPATH_COOKIE_NAME = '$PROJECTID'+'navpath';
-  const fullSidebar = typeof page_layout!=='undefined' && page_layout==1;
+  const fullSidebar = document.querySelector('meta[name="doxygen-page-layout"]') !== null;
 
   // Helper functions to replace jQuery
   const $  = (selector) => document.querySelector(selector);
@@ -617,7 +617,7 @@ function initNavTree(toroot,relpath,allMembersFile) {
     let sidenav,mainnav,pagenav,container,navtree,content,header,footer,barWidth=6;
     const RESIZE_COOKIE_NAME = ''+'width';
     const PAGENAV_COOKIE_NAME = ''+'pagenav';
-    const fullSidebar = typeof page_layout!=='undefined' && page_layout==1;
+    const fullSidebar = document.querySelector('meta[name="doxygen-page-layout"]') !== null;
 
     function showHideNavBar() {
       const bar = document.querySelector('div.sm-dox');

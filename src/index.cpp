@@ -3992,18 +3992,7 @@ static void countRelatedPages(int &docPages,int &indexPages)
 
 //----------------------------------------------------------------------------
 
-static bool mainPageHasOwnTitle()
-{
-  QCString projectName = Config_getString(PROJECT_NAME);
-  QCString title;
-  if (Doxygen::mainPage)
-  {
-    title = filterTitle(Doxygen::mainPage->title());
-  }
-  return !projectName.isEmpty() && mainPageHasTitle() && qstricmp(title,projectName)!=0;
-}
-
-static void writePages(PageDef *pd,FTVHelp *ftv)
+static void writePages(PageDef *pd,FTVHelp *ftv,bool reuseRoot = false)
 {
   //printf("writePages()=%s pd=%p mainpage=%p\n",qPrint(pd->name()),(void*)pd,(void*)Doxygen::mainPage.get());
   LayoutNavEntry *lne = LayoutDocManager::instance().rootNavEntry()->find(LayoutNavEntry::Pages);
@@ -4040,8 +4029,7 @@ static void writePages(PageDef *pd,FTVHelp *ftv)
     }
   }
   if (hasSubPages && ftv) ftv->incContentsDepth();
-  bool doIndent = (hasSections || hasSubPages) &&
-                  (pd!=Doxygen::mainPage.get() || mainPageHasOwnTitle());
+  bool doIndent = (hasSections || hasSubPages) && !reuseRoot;
   if (doIndent)
   {
     Doxygen::indexList->incContentsDepth();
@@ -4980,7 +4968,7 @@ static void writeIndex(OutputList &ol)
     }
     if (hasSubs)
     {
-      writePages(Doxygen::mainPage.get(),nullptr);
+      writePages(Doxygen::mainPage.get(),nullptr,!hasTitle);
     }
   }
 
