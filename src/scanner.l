@@ -4630,6 +4630,7 @@ NONLopt [^\n]*
                                             std::shared_ptr<Entry> original_root = yyextra->current_root; // save root this namespace is in
                                             if (yyextra->current->section.isNamespace() && yyextra->current->type == "namespace")
                                             {
+                                              //printf("namespace %s\n",qPrint(yyextra->current->name));
                                               int split_point;
                                               // save documentation values
                                               QCString doc       = yyextra->current->doc;
@@ -4659,6 +4660,11 @@ NONLopt [^\n]*
                                                 yyextra->current->program.str(std::string());
                                                 new_current->name  = yyextra->current->name.mid(split_point + 2);
                                                 yyextra->current->name  = yyextra->current->name.left(split_point);
+                                                if (yyextra->current->name.startsWith("inline ")) // C++20 style nested inline namespace syntax
+                                                {
+                                                  yyextra->current->name = yyextra->current->name.mid(7);
+                                                  yyextra->current->spec.setInline(true);
+                                                }
                                                 if (!yyextra->current_root->name.isEmpty()) yyextra->current->name.prepend(yyextra->current_root->name+"::");
 
                                                 yyextra->current_root->moveToSubEntryAndKeep(yyextra->current);
@@ -4678,6 +4684,11 @@ NONLopt [^\n]*
                                               yyextra->current->rqli      = rqli;
                                             }
                                             QCString &cn = yyextra->current->name;
+                                            if (cn.startsWith("inline ")) // C++20 style nested inline namespace syntax
+                                            {
+                                              cn = cn.mid(7);
+                                              yyextra->current->spec.setInline(true);
+                                            }
                                             QCString rn = yyextra->current_root->name;
                                             //printf("cn='%s' rn='%s' yyextra->isTypedef=%d\n",qPrint(cn),qPrint(rn),yyextra->isTypedef);
                                             if (!cn.isEmpty() && !rn.isEmpty())
@@ -6477,6 +6488,19 @@ NONLopt [^\n]*
                                             unput('{'); // fake start of body
                                           }
                                           BEGIN( ClassVar );
+                                        }
+<CompoundName>({ID}{BN}*"::"{BN}*)+("inline"{BN}+({ID}{BN}*"::"{BN}*)*)+{ID} { // C++20 style nested inline namespace syntax
+                                          if (yyextra->current->section.isNamespace())
+                                          {
+                                            yyextra->current->name = QCString(yytext).simplifyWhiteSpace();
+                                            storeClangId(yyscanner,yyextra->current->name.data());
+                                            lineCount(yyscanner);
+                                            BEGIN( ClassVar );
+                                          }
+                                          else
+                                          {
+                                            REJECT;
+                                          }
                                         }
 <CompoundName>{CSSCOPENAME}             { // C# style scope
                                           yyextra->current->name = substitute(yytext,".","::");
