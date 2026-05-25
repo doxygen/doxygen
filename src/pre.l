@@ -1493,7 +1493,14 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
                                           yyextra->insideComment=FALSE;
                                         }
   */
-<DefineText>{CCS}[!*]?                  {
+<DefineText>{CCS}[^!*]                  {
+                                          yyextra->defLitText+=' ';
+                                          outputArray(yyscanner,yytext,yyleng);
+                                          yyextra->lastCContext=YY_START;
+                                          yyextra->commentCount=1;
+                                          BEGIN(SkipCComment);
+                                        }
+<DefineText>{CCS}[!*]                   {
                                           yyextra->defText+=yytext;
                                           yyextra->defLitText+=yytext;
                                           yyextra->lastCContext=YY_START;
