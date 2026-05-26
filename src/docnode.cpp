@@ -3332,7 +3332,7 @@ Token DocParamList::parse(const QCString &cmdName)
       parser()->checkRetvalName();
     }
     context.inSeeBlock=true;
-    parser()->handleLinkedWord(thisVariant(),m_params,true);
+    parser()->handleLinkedWord(thisVariant(),m_params,m_type==DocParamSect::Param);
     context.inSeeBlock=false;
     tok=tokenizer.lex();
   }
