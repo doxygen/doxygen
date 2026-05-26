@@ -1824,4 +1824,25 @@
       </docs>
     </option>
   </group>
+  <generator>
+    <message name="minmaxdef"><![CDATA[Mindestwert: {0}, Höchstwert: {1}, Standardwert: {2}.]]></message>
+    <message name="minmaxdefcode"><![CDATA[ Mindestwert: <code></code>{0}, Höchstwert: <code>{1}</code>, Standardwert: <code>{2}</code>, ]]></message>
+    <message name="possible"><![CDATA[Mögliche Werte sind: ]]></message>
+    <message name="defvaltxt"><![CDATA[Der Standardwert ist: {0}.]]></message>
+    <message name="defvalcode"><![CDATA[Der Standardwert ist: <code>{0}</code>.]]></message>
+    <message name="defsysdep"><![CDATA[Der Standardwert ist: systemabhängig.]]></message>
+    <message name="sysdep"><![CDATA[systemabhängig]]></message>
+    <message name="defdir"><![CDATA[Das Standardverzeichnis ist: <code>{0}</code>.]]></message>
+    <message name="deffile"><![CDATA[Die Standarddatei ist: <code>{0}</code>.]]></message>
+    <message name="deffileabs"><![CDATA[Die Standarddatei (mit absolutem Pfad) ist: <code>{0}</code>.]]></message>
+    <message name="deffilefull"><![CDATA[Die Datei muss mit vollem Pfad angegeben werden.]]></message>
+    <message name="defimg"><![CDATA[Das Standardbild ist: <code>{0}</code>.]]></message>
+    <message name="defimgabs"><![CDATA[Das Standardbild (mit absolutem Pfad) ist: <code>{0}</code>.]]></message>
+    <message name="defimgfull"><![CDATA[Das Bild muss mit vollem Pfad angegeben werden.]]></message>
+    <message name="depstxt"><![CDATA[Dieses Tag erfordert, dass das Tag {0} auf <code>YES</code> gesetzt ist.]]></message>
+    <message name="depstxtref"><![CDATA[Dieses Tag erfordert, dass das Tag \ref cfg_{0} "{1}" auf <code>YES</code> gesetzt ist.]]></message>
+    <message name="andtxt"><![CDATA[ und ]]></message>
+    <message name='notetxt'><![CDATA[Hinweis:]]></message>
+    <message name='seealsotxt'><![CDATA[Siehe auch:]]></message>
+  </generator>
 </doxygenconfig>

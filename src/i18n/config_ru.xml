@@ -2396,4 +2396,25 @@ doxygen -w latex new_header.tex new_footer.tex new_stylesheet.sty
       </docs>
     </option>
   </group>
+  <generator>
+    <message name='andtxt'><![CDATA[и]]></message>
+    <message name='minmaxdef'><![CDATA[Минимальное значение: {0}, максимальное значение: {1}, значение по умолчанию: {2}.]]></message>
+    <message name='minmaxdefcode'><![CDATA[Минимальное значение: <code>{0}</code>, максимальное значение: <code>{1}</code>, значение по умолчанию: <code>{2}</code>.]]></message>
+    <message name='possible'><![CDATA[Возможные значения:]]></message>
+    <message name='defvaltxt'><![CDATA[Значение по умолчанию: {0}.]]></message>
+    <message name='defvalcode'><![CDATA[Значение по умолчанию: <code&>{0}</code&>.]]></message>
+    <message name='defsysdep'><![CDATA[Значение по умолчанию зависит от системы.]]></message>
+    <message name='sysdep'><![CDATA[зависит от системы]]></message>
+    <message name='defdir'><![CDATA[Каталог по умолчанию: <code&>{0}</code&>.]]></message>
+    <message name='deffile'><![CDATA[Файл по умолчанию: <code&>{0}</code&>.]]></message>
+    <message name='deffileabs'><![CDATA[Файл по умолчанию (с абсолютным путём): <code&>{0}</code&>.]]></message>
+    <message name='deffilefull'><![CDATA[Файл должен быть указан с полным путём.]]></message>
+    <message name='defimg'><![CDATA[Изображение по умолчанию: <code&>{0}</code&>.]]></message>
+    <message name='defimgabs'><![CDATA[Изображение по умолчанию (с абсолютным путём): <code&>{0}</code&>.]]></message>
+    <message name='defimgfull'><![CDATA[Изображение должно быть указано с полным путём.]]></message>
+    <message name='depstxt'><![CDATA[Этот тег требует, чтобы тег {0} был установлен в <code&>YES</code&>.]]></message>
+    <message name='depstxtref'><![CDATA[Этот тег требует, чтобы тег \ref cfg_{0} "{1}" был установлен в <code&>YES</code&>.]]></message>
+    <message name='notetxt'><![CDATA[Примечание:]]></message>
+    <message name='seealsotxt'><![CDATA[См. также:]]></message>
+  </generator>
 </doxygenconfig>

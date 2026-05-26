@@ -1820,4 +1820,25 @@
       </docs>
     </option>
   </group>
+  <generator>
+    <message name='andtxt'><![CDATA[和]]></message>
+    <message name='minmaxdef'><![CDATA[最小值：{0}，最大值：{1}，默认值：{2}。]]></message>
+    <message name='minmaxdefcode'><![CDATA[最小值：<code>{0}</code>，最大值：<code>{1}</code>，默认值：<code>{2}</code>。]]></message>
+    <message name='possible'><![CDATA[可能的值有：]]></message>
+    <message name='defvaltxt'><![CDATA[默认值为：{0}。]]></message>
+    <message name='defvalcode'><![CDATA[默认值为：<code&>{0}</code&>。]]></message>
+    <message name='defsysdep'><![CDATA[默认值：取决于系统。]]></message>
+    <message name='sysdep'><![CDATA[系统相关取]]></message>
+    <message name='defdir'><![CDATA[默认目录为：<code&>{0}</code&>。]]></message>
+    <message name='deffile'><![CDATA[默认文件为：<code&>{0}</code&>。]]></message>
+    <message name='deffileabs'><![CDATA[默认文件（带绝对路径）为：<code&>{0}</code&>。]]></message>
+    <message name='deffilefull'><![CDATA[文件必须使用完整路径指定。]]></message>
+    <message name='defimg'><![CDATA[默认图像为：<code&>{0}</code&>。]]></message>
+    <message name='defimgabs'><![CDATA[默认图像（带绝对路径）为：<code&>{0}</code&>。]]></message>
+    <message name='defimgfull'><![CDATA[图像必须使用完整路径指定。]]></message>
+    <message name='depstxt'><![CDATA[此标签要求标签 {0} 设置为 <code&>YES</code&>。]]></message>
+    <message name='depstxtref'><![CDATA[此标签要求标签 \ref cfg_{0} "{1}" 设置为 <code&>YES</code&>。]]></message>
+    <message name='notetxt'><![CDATA[注意：]]></message>
+    <message name='seealsotxt'><![CDATA[另请参阅：]]></message>
+  </generator>
 </doxygenconfig>

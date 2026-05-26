@@ -1824,4 +1824,25 @@
       </docs>
     </option>
   </group>
+  <generator>
+    <message name='andtxt'><![CDATA[et]]></message>
+    <message name='minmaxdef'><![CDATA[Valeur minimum : {0}, valeur maximum : {1}, valeur par défaut : {2}.]]></message>
+    <message name='minmaxdefcode'><![CDATA[Valeur minimum : <code>{0}</code>, valeur maximum : <code>{1}</code>, valeur par défaut : <code>{2}</code>.]]></message>
+    <message name='possible'><![CDATA[Les valeurs possibles sont :]]></message>
+    <message name='defvaltxt'><![CDATA[La valeur par défaut est : {0}.]]></message>
+    <message name='defvalcode'><![CDATA[La valeur par défaut est : <code&>{0}</code&>.]]></message>
+    <message name='defsysdep'><![CDATA[La valeur par défaut dépend du système.]]></message>
+    <message name='sysdep'><![CDATA[dépend du système]]></message>
+    <message name='defdir'><![CDATA[Le répertoire par défaut est : <code&>{0}</code&>.]]></message>
+    <message name='deffile'><![CDATA[Le fichier par défaut est : <code&>{0}</code&>.]]></message>
+    <message name='deffileabs'><![CDATA[Le fichier par défaut (avec chemin absolu) est : <code&>{0}</code&>.]]></message>
+    <message name='deffilefull'><![CDATA[Le fichier doit être spécifié avec un chemin complet.]]></message>
+    <message name='defimg'><![CDATA[L'image par défaut est : <code&>{0}</code&>.]]></message>
+    <message name='defimgabs'><![CDATA[L'image par défaut (avec chemin absolu) est : <code&>{0}</code&>.]]></message>
+    <message name='defimgfull'><![CDATA[L'image doit être spécifiée avec un chemin complet.]]></message>
+    <message name='depstxt'><![CDATA[Cette balise nécessite que la balise {0} soit définie sur <code&>YES</code&>.]]></message>
+    <message name='depstxtref'><![CDATA[Cette balise nécessite que la balise \ref cfg_{0} "{1}" soit définie sur <code&>YES</code&>.]]></message>
+    <message name='notetxt'><![CDATA[Note :]]></message>
+    <message name='seealsotxt'><![CDATA[Voir aussi :]]></message>
+  </generator>
 </doxygenconfig>
