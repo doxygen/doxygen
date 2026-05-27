@@ -1821,23 +1821,23 @@
     </option>
   </group>
   <generator>
-    <message name='andtxt'><![CDATA[和]]></message>
     <message name='minmaxdef'><![CDATA[最小值：{0}，最大值：{1}，預設值：{2}。]]></message>
     <message name='minmaxdefcode'><![CDATA[最小值：<code>{0}</code>，最大值：<code>{1}</code>，預設值：<code>{2}</code>。]]></message>
     <message name='possible'><![CDATA[可能的值有：]]></message>
     <message name='defvaltxt'><![CDATA[預設值為：{0}。]]></message>
-    <message name='defvalcode'><![CDATA[預設值為：<code&>{0}</code&>。]]></message>
+    <message name='defvalcode'><![CDATA[預設值為：<code>{0}</code>。]]></message>
     <message name='defsysdep'><![CDATA[預設值：取決於系統。]]></message>
     <message name='sysdep'><![CDATA[預系統相關]]></message>
-    <message name='defdir'><![CDATA[預設目錄為：<code&>{0}</code&>。]]></message>
-    <message name='deffile'><![CDATA[預設檔案為：<code&>{0}</code&>。]]></message>
-    <message name='deffileabs'><![CDATA[預設檔案（帶絕對路徑）為：<code&>{0}</code&>。]]></message>
+    <message name='defdir'><![CDATA[預設目錄為：<code>{0}</code>。]]></message>
+    <message name='deffile'><![CDATA[預設檔案為：<code>{0}</code>。]]></message>
+    <message name='deffileabs'><![CDATA[預設檔案（帶絕對路徑）為：<code>{0}</code>。]]></message>
     <message name='deffilefull'><![CDATA[檔案必須使用完整路徑指定。]]></message>
-    <message name='defimg'><![CDATA[預設影像為：<code&>{0}</code&>。]]></message>
-    <message name='defimgabs'><![CDATA[預設影像（帶絕對路徑）為：<code&>{0}</code&>。]]></message>
+    <message name='defimg'><![CDATA[預設影像為：<code>{0}</code>。]]></message>
+    <message name='defimgabs'><![CDATA[預設影像（帶絕對路徑）為：<code>{0}</code>。]]></message>
     <message name='defimgfull'><![CDATA[影像必須使用完整路徑指定。]]></message>
-    <message name='depstxt'><![CDATA[此標籤要求標籤 {0} 設定為 <code&>YES</code&>。]]></message>
-    <message name='depstxtref'><![CDATA[此標籤要求標籤 \ref cfg_{0} "{1}" 設定為 <code&>YES</code&>。]]></message>
+    <message name='depstxt'><![CDATA[此標籤要求標籤 {0} 設定為 <code>YES</code>。]]></message>
+    <message name='depstxtref'><![CDATA[此標籤要求標籤 \ref cfg_{0} "{1}" 設定為 <code>YES</code>。]]></message>
+    <message name='andtxt'><![CDATA[和]]></message>
     <message name='notetxt'><![CDATA[注意：]]></message>
     <message name='seealsotxt'><![CDATA[另請參閱：]]></message>
   </generator>
