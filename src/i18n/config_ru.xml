@@ -229,7 +229,7 @@
     </option>
     <option type="list" id="EXTENSION_MAPPING" format="string">
       <docs>
-<![CDATA[Doxygen выбирает парсер для использования на основе расширения анализируемого файла. С этим тегом вы можете назначить парсер для использования с данным расширением. Doxygen имеет встроенное сопоставление, но вы можете переопределить или расширить его с помощью этого тега. Формат: `ext=language`, где `ext` — расширение файла, а `language` — один из парсеров, поддерживаемых Doxygen: IDL, Java, JavaScript, Csharp (C#), C, C++, Lex, D, PHP, md (Markdown), Objective-C, Python, Slice, VHDL, Fortran (Fortran с фиксированным форматом: FortranFixed, Fortran со свободным форматом: FortranFree, Fortran с неизвестным форматом: Fortran. В последнем случае парсер попытается угадать, является ли код фиксированным или свободным форматом, что является значением по умолчанию для файлов типа Fortran). Например, чтобы Doxygen обрабатывал файлы &lt;code&gt;.inc&lt;/code&gt; как файлы Fortran (по умолчанию PHP), а файлы &lt;code&gt;.f&lt;/code&gt; как файлы C (по умолчанию Fortran), используйте: `inc=Fortran f=C`. &lt;br&gt;Примечание: Для файлов без расширения вы можете использовать `no_extension` как заполнитель. &lt;br&gt;Обратите внимание, что для пользовательских расширений вам также нужно установить \ref cfg_file_patterns "FILE_PATTERNS", иначе Doxygen не будет читать эти файлы. Когда указан `no_extension`, вы должны добавить `*` в \ref cfg_file_patterns "FILE_PATTERNS". &lt;br&gt;Примечание, см. также список \ref default_file_extension_mapping "сопоставления расширений файлов по умолчанию".]]>
+<![CDATA[Doxygen выбирает парсер для использования на основе расширения анализируемого файла. С этим тегом вы можете назначить парсер для использования с данным расширением. Doxygen имеет встроенное сопоставление, но вы можете переопределить или расширить его с помощью этого тега. Формат: `ext=language`, где `ext` — расширение файла, а `language` — один из парсеров, поддерживаемых Doxygen: IDL, Java, JavaScript, Csharp (C#), C, C++, Lex, D, PHP, md (Markdown), Objective-C, Python, Slice, VHDL, Fortran (Fortran с фиксированным форматом: FortranFixed, Fortran со свободным форматом: FortranFree, Fortran с неизвестным форматом: Fortran. В последнем случае парсер попытается угадать, является ли код фиксированным или свободным форматом, что является значением по умолчанию для файлов типа Fortran). Например, чтобы Doxygen обрабатывал файлы &lt;codegt;.inc&lt;/codegt; как файлы Fortran (по умолчанию PHP), а файлы &lt;codegt;.f&lt;/codegt; как файлы C (по умолчанию Fortran), используйте: `inc=Fortran f=C`. &lt;br&gt;Примечание: Для файлов без расширения вы можете использовать `no_extension` как заполнитель. &lt;br&gt;Обратите внимание, что для пользовательских расширений вам также нужно установить \ref cfg_file_patterns "FILE_PATTERNS", иначе Doxygen не будет читать эти файлы. Когда указан `no_extension`, вы должны добавить `*` в \ref cfg_file_patterns "FILE_PATTERNS". &lt;br&gt;Примечание, см. также список \ref default_file_extension_mapping "сопоставления расширений файлов по умолчанию".]]>
       </docs>
     </option>
     <option type="bool" id="MARKDOWN_SUPPORT" defval="1">
@@ -311,7 +311,7 @@
     </option>
     <option type="bool" id="TYPEDEF_HIDES_STRUCT" defval="0">
       <docs>
-<![CDATA[Когда тег \c TYPEDEF_HIDES_STRUCT включен, typedef для структуры, объединения или перечисления будет документирован как структура, объединение или перечисление с именем typedef. Таким образом, &lt;code&gt;typedef struct TypeS {} TypeT&lt;/code&gt; будет отображаться в документации как структура с именем \c TypeT. Когда отключено, typedef будет отображаться как член файла, пространства имен или класса. Структура будет называться \c TypeS. Это обычно полезно для кода C, если соглашение о кодировании требует, чтобы все составные типы были typedef, и на typedef ссылаются только по имени, никогда по имени тега.]]>
+<![CDATA[Когда тег \c TYPEDEF_HIDES_STRUCT включен, typedef для структуры, объединения или перечисления будет документирован как структура, объединение или перечисление с именем typedef. Таким образом, &lt;codegt;typedef struct TypeS {} TypeT&lt;/codegt; будет отображаться в документации как структура с именем \c TypeT. Когда отключено, typedef будет отображаться как член файла, пространства имен или класса. Структура будет называться \c TypeS. Это обычно полезно для кода C, если соглашение о кодировании требует, чтобы все составные типы были typedef, и на typedef ссылаются только по имени, никогда по имени тега.]]>
       </docs>
     </option>
     <option type="int" id="LOOKUP_CACHE_SIZE" minval="0" maxval="9" defval="0">
@@ -545,7 +545,7 @@
     </option>
     <option type="string" id="FILE_VERSION_FILTER" format="file" defval="">
       <docs>
-<![CDATA[Тег \c FILE_VERSION_FILTER можно использовать для указания программы или скрипта, который Doxygen должен вызвать для получения текущей версии каждого файла (обычно из системы контроля версий). Doxygen вызовет программу, выполнив (через &lt;code&gt;popen()&lt;/code&gt;) команду &lt;code&gt;command input-file&lt;/code&gt;, где \c command — значение тега \c FILE_VERSION_FILTER, а \c input-file — имя входного файла, предоставленного Doxygen. Все, что программа выведет в стандартный вывод, будет использовано как версия файла.]]>
+<![CDATA[Тег \c FILE_VERSION_FILTER можно использовать для указания программы или скрипта, который Doxygen должен вызвать для получения текущей версии каждого файла (обычно из системы контроля версий). Doxygen вызовет программу, выполнив (через &lt;codegt;popen()&lt;/codegt;) команду &lt;codegt;command input-file&lt;/codegt;, где \c command — значение тега \c FILE_VERSION_FILTER, а \c input-file — имя входного файла, предоставленного Doxygen. Все, что программа выведет в стандартный вывод, будет использовано как версия файла.]]>
       </docs>
     </option>
     <option type="string" id="LAYOUT_FILE" format="file" defval="">
@@ -555,7 +555,7 @@
     </option>
     <option type="list" id="CITE_BIB_FILES" format="file">
       <docs>
-<![CDATA[Тег \c CITE_BIB_FILES можно использовать для указания одного или нескольких файлов \c bib, содержащих определения ссылок. Это должен быть список файлов &lt;code&gt;.bib&lt;/code&gt;. Расширение &lt;code&gt;.bib&lt;/code&gt; будет добавлено автоматически, если опущено. Это требует, чтобы инструмент \c bibtex был установлен. См. также https://en.wikipedia.org/wiki/BibTeX для дополнительной информации. Для \f$\mbox{\LaTeX}\f$ стиль ссылок может контролироваться с помощью \ref cfg_latex_bib_style "LATEX_BIB_STYLE". Чтобы использовать эту функцию, вам нужно иметь \c bibtex и \c perl доступными в пути поиска. См. также \ref cmdcite "\cite" для информации о создании цитат.]]>
+<![CDATA[Тег \c CITE_BIB_FILES можно использовать для указания одного или нескольких файлов \c bib, содержащих определения ссылок. Это должен быть список файлов &lt;codegt;.bib&lt;/codegt;. Расширение &lt;codegt;.bib&lt;/codegt; будет добавлено автоматически, если опущено. Это требует, чтобы инструмент \c bibtex был установлен. См. также https://en.wikipedia.org/wiki/BibTeX для дополнительной информации. Для \f$\mbox{\LaTeX}\f$ стиль ссылок может контролироваться с помощью \ref cfg_latex_bib_style "LATEX_BIB_STYLE". Чтобы использовать эту функцию, вам нужно иметь \c bibtex и \c perl доступными в пути поиска. См. также \ref cmdcite "\cite" для информации о создании цитат.]]>
       </docs>
     </option>
     <option type="list" id="EXTERNAL_TOOL_PATH" format="dir" defval="">
@@ -2397,23 +2397,23 @@ doxygen -w latex new_header.tex new_footer.tex new_stylesheet.sty
     </option>
   </group>
   <generator>
-    <message name='andtxt'><![CDATA[и]]></message>
     <message name='minmaxdef'><![CDATA[Минимальное значение: {0}, максимальное значение: {1}, значение по умолчанию: {2}.]]></message>
     <message name='minmaxdefcode'><![CDATA[Минимальное значение: <code>{0}</code>, максимальное значение: <code>{1}</code>, значение по умолчанию: <code>{2}</code>.]]></message>
     <message name='possible'><![CDATA[Возможные значения:]]></message>
     <message name='defvaltxt'><![CDATA[Значение по умолчанию: {0}.]]></message>
-    <message name='defvalcode'><![CDATA[Значение по умолчанию: <code&>{0}</code&>.]]></message>
+    <message name='defvalcode'><![CDATA[Значение по умолчанию: <code>{0}</code>.]]></message>
     <message name='defsysdep'><![CDATA[Значение по умолчанию зависит от системы.]]></message>
     <message name='sysdep'><![CDATA[зависит от системы]]></message>
-    <message name='defdir'><![CDATA[Каталог по умолчанию: <code&>{0}</code&>.]]></message>
-    <message name='deffile'><![CDATA[Файл по умолчанию: <code&>{0}</code&>.]]></message>
-    <message name='deffileabs'><![CDATA[Файл по умолчанию (с абсолютным путём): <code&>{0}</code&>.]]></message>
+    <message name='defdir'><![CDATA[Каталог по умолчанию: <code>{0}</code>.]]></message>
+    <message name='deffile'><![CDATA[Файл по умолчанию: <code>{0}</code>.]]></message>
+    <message name='deffileabs'><![CDATA[Файл по умолчанию (с абсолютным путём): <code>{0}</code>.]]></message>
     <message name='deffilefull'><![CDATA[Файл должен быть указан с полным путём.]]></message>
-    <message name='defimg'><![CDATA[Изображение по умолчанию: <code&>{0}</code&>.]]></message>
-    <message name='defimgabs'><![CDATA[Изображение по умолчанию (с абсолютным путём): <code&>{0}</code&>.]]></message>
+    <message name='defimg'><![CDATA[Изображение по умолчанию: <code>{0}</code>.]]></message>
+    <message name='defimgabs'><![CDATA[Изображение по умолчанию (с абсолютным путём): <code>{0}</code>.]]></message>
     <message name='defimgfull'><![CDATA[Изображение должно быть указано с полным путём.]]></message>
-    <message name='depstxt'><![CDATA[Этот тег требует, чтобы тег {0} был установлен в <code&>YES</code&>.]]></message>
-    <message name='depstxtref'><![CDATA[Этот тег требует, чтобы тег \ref cfg_{0} "{1}" был установлен в <code&>YES</code&>.]]></message>
+    <message name='depstxt'><![CDATA[Этот тег требует, чтобы тег {0} был установлен в <code>YES</code>.]]></message>
+    <message name='depstxtref'><![CDATA[Этот тег требует, чтобы тег \ref cfg_{0} "{1}" был установлен в <code>YES</code>.]]></message>
+    <message name='andtxt'><![CDATA[и]]></message>
     <message name='notetxt'><![CDATA[Примечание:]]></message>
     <message name='seealsotxt'><![CDATA[См. также:]]></message>
   </generator>
