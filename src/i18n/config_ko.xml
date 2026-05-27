@@ -1823,23 +1823,23 @@
     </option>
   </group>
   <generator>
-    <message name='andtxt'><![CDATA[그리고]]></message>
     <message name='minmaxdef'><![CDATA[최소값: {0}, 최대값: {1}, 기본값: {2}.]]></message>
     <message name='minmaxdefcode'><![CDATA[최소값: <code>{0}</code>, 최대값: <code>{1}</code>, 기본값: <code>{2}</code>.]]></message>
     <message name='possible'><![CDATA[가능한 값:]]></message>
     <message name='defvaltxt'><![CDATA[기본값은 {0}입니다.]]></message>
-    <message name='defvalcode'><![CDATA[기본값은 <code&>{0}</code&>입니다.]]></message>
+    <message name='defvalcode'><![CDATA[기본값은 <code>{0}</code>입니다.]]></message>
     <message name='defsysdep'><![CDATA[기본값은 시스템에 따라 다릅니다.]]></message>
     <message name='sysdep'><![CDATA[시스템 종속적]]></message>
-    <message name='defdir'><![CDATA[기본 디렉토리는 <code&>{0}</code&>입니다.]]></message>
-    <message name='deffile'><![CDATA[기본 파일은 <code&>{0}</code&>입니다.]]></message>
-    <message name='deffileabs'><![CDATA[기본 파일(절대 경로)은 <code&>{0}</code&>입니다.]]></message>
+    <message name='defdir'><![CDATA[기본 디렉토리는 <code>{0}</code>입니다.]]></message>
+    <message name='deffile'><![CDATA[기본 파일은 <code>{0}</code>입니다.]]></message>
+    <message name='deffileabs'><![CDATA[기본 파일(절대 경로)은 <code>{0}</code>입니다.]]></message>
     <message name='deffilefull'><![CDATA[파일은 전체 경로로 지정해야 합니다.]]></message>
-    <message name='defimg'><![CDATA[기본 이미지는 <code&>{0}</code&>입니다.]]></message>
-    <message name='defimgabs'><![CDATA[기본 이미지(절대 경로)는 <code&>{0}</code&>입니다.]]></message>
+    <message name='defimg'><![CDATA[기본 이미지는 <code>{0}</code>입니다.]]></message>
+    <message name='defimgabs'><![CDATA[기본 이미지(절대 경로)는 <code>{0}</code>입니다.]]></message>
     <message name='defimgfull'><![CDATA[이미지는 전체 경로로 지정해야 합니다.]]></message>
-    <message name='depstxt'><![CDATA[이 태그는 태그 {0}을 <code&>YES</code&>로 설정해야 합니다.]]></message>
-    <message name='depstxtref'><![CDATA[이 태그는 태그 \ref cfg_{0} "{1}"을 <code&>YES</code&>로 설정해야 합니다.]]></message>
+    <message name='depstxt'><![CDATA[이 태그는 태그 {0}을 <code>YES</code>로 설정해야 합니다.]]></message>
+    <message name='depstxtref'><![CDATA[이 태그는 태그 \ref cfg_{0} "{1}"을 <code>YES</code>로 설정해야 합니다.]]></message>
+    <message name='andtxt'><![CDATA[그리고]]></message>
     <message name='notetxt'><![CDATA[참고:]]></message>
     <message name='seealsotxt'><![CDATA[참조:]]></message>
   </generator>
