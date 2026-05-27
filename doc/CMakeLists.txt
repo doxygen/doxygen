@@ -76,9 +76,11 @@ set(DOC_FILES
     doxygen_manual_chm.css
     doxygen_usage.dox
     doxywizard_expert.png
+    doxywizard_expert_search.png
     doxywizard_main.png
     doxywizard_menu_file.png
     doxywizard_menu_settings.png
+    doxywizard_language.png
     doxywizard_menu_help.png
     doxywizard_page1.png
     doxywizard_page2.png
