@@ -138,7 +138,7 @@ class DocParser : public IDocParser
     void handleInitialStyleCommands(DocNodeVariant *parent,DocNodeList &children);
     Token handleAHref(DocNodeVariant *parent,DocNodeList &children,const HtmlAttribList &tagHtmlAttribs);
     void handleUnclosedStyleCommands();
-    void handleLinkedWord(DocNodeVariant *parent,DocNodeList &children,bool ignoreAutoLinkFlag=FALSE);
+    void handleLinkedWord(DocNodeVariant *parent,DocNodeList &children,bool ignoreAutoLinkFlag=FALSE,bool typeLinkOnly=false);
     void handleParameterType(DocNodeVariant *parent,DocNodeList &children,const QCString &paramTypes);
     void handleInternalRef(DocNodeVariant *parent,DocNodeList &children);
     void handleAnchor(DocNodeVariant *parent,DocNodeList &children);

@@ -844,7 +844,7 @@ void DocParser::handleUnclosedStyleCommands()
   }
 }
 
-void DocParser::handleLinkedWord(DocNodeVariant *parent,DocNodeList &children,bool ignoreAutoLinkFlag)
+void DocParser::handleLinkedWord(DocNodeVariant *parent,DocNodeList &children,bool ignoreAutoLinkFlag,bool typeLinkOnly)
 {
   // helper to check if word w starts with any of the words in AUTOLINK_IGNORE_WORDS
   auto ignoreWord = [](const QCString &w) -> bool {
@@ -879,21 +879,31 @@ void DocParser::handleLinkedWord(DocNodeVariant *parent,DocNodeList &children,bo
       )
      )
   {
-    //printf("ADD %s = %p (linkable?=%d)\n",qPrint(context.token->name),(void*)member,member ? member->isLinkable() : FALSE);
-    if (member && member->isLinkable()) // member link
+    //printf("ADD %s = %p (linkable?=%d typeLinkOnly=%d)\n",
+    //    qPrint(context.token->name),(void*)member,member ? member->isLinkable() : FALSE, typeLinkOnly);
+    if (member && member->isLinkable())
     {
-      AUTO_TRACE_ADD("resolved reference as member link");
-      if (member->isObjCMethod())
+      if (!typeLinkOnly || context.token->name.startsWith("#") ||
+          member->isTypedef() || member->isEnumerate() || member->isEnumValue()) // filter on type links
       {
-        bool localLink = context.memberDef ? member->getClassDef()==context.memberDef->getClassDef() : FALSE;
-        name = member->objCMethodName(localLink,inSeeBlock);
+        AUTO_TRACE_ADD("resolved reference as member link");
+        if (member->isObjCMethod())
+        {
+          bool localLink = context.memberDef ? member->getClassDef()==context.memberDef->getClassDef() : FALSE;
+          name = member->objCMethodName(localLink,inSeeBlock);
+        }
+        children.append<DocLinkedWord>(
+              this,parent,name,
+              member->getReference(),
+              member->getOutputFileBase(),
+              member->anchor(),
+              member->briefDescriptionAsTooltip());
       }
-      children.append<DocLinkedWord>(
-            this,parent,name,
-            member->getReference(),
-            member->getOutputFileBase(),
-            member->anchor(),
-            member->briefDescriptionAsTooltip());
+      else // explicit type link, but not a type
+      {
+        AUTO_TRACE_ADD("no link as request is type but member is not a type or explicit link");
+        children.append<DocWord>(this,parent,context.token->name);
+      }
     }
     else if (compound->isLinkable()) // compound link
     {
