@@ -192,10 +192,7 @@ def prepCDocs(node):
             maxval = node.getAttribute('maxval')
             doc += "<br/>" + messages['minmaxdef'].format(minval, maxval, defval)
         elif (type == 'bool'):
-            if (node.hasAttribute('altdefval')):
-                doc += "<br/>" + messages['defvaltxt'].format(messages['sysdep'])
-            else:
-                doc += "<br/>" + messages['defvaltxt'].format("YES" if (defval == "1") else "NO")
+            doc += "<br/>" + messages['defvaltxt'].format("YES" if (defval == "1") else "NO")
         elif (type == 'list'):
             if format == 'string':
                 values = collectValues(node)
@@ -607,10 +604,7 @@ def parseOptionDoc(node, first):
         elif (type == 'bool'):
             print("")
             print("")
-            if (node.hasAttribute('altdefval')):
-                print(messages['defvaltxt'].format(messages['sysdep']))
-            else:
-                print(messages['defvalcode'].format("YES" if (defval == "1") else "NO"))
+            print(messages['defvalcode'].format("YES" if (defval == "1") else "NO"))
             print("")
         elif (type == 'list'):
             if format == 'string':

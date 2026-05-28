@@ -1826,8 +1826,6 @@
     <message name='possible'><![CDATA[可能的值有：]]></message>
     <message name='defvaltxt'><![CDATA[預設值為：{0}。]]></message>
     <message name='defvalcode'><![CDATA[預設值為：<code>{0}</code>。]]></message>
-    <message name='defsysdep'><![CDATA[預設值：取決於系統。]]></message>
-    <message name='sysdep'><![CDATA[預系統相關]]></message>
     <message name='defdir'><![CDATA[預設目錄為：<code>{0}</code>。]]></message>
     <message name='deffile'><![CDATA[預設檔案為：<code>{0}</code>。]]></message>
     <message name='deffileabs'><![CDATA[預設檔案（帶絕對路徑）為：<code>{0}</code>。]]></message>

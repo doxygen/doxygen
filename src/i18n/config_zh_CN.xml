@@ -1826,8 +1826,6 @@
     <message name='possible'><![CDATA[可能的值有：]]></message>
     <message name='defvaltxt'><![CDATA[默认值为：{0}。]]></message>
     <message name='defvalcode'><![CDATA[默认值为：<code>{0}</code>。]]></message>
-    <message name='defsysdep'><![CDATA[默认值：取决于系统。]]></message>
-    <message name='sysdep'><![CDATA[系统相关取]]></message>
     <message name='defdir'><![CDATA[默认目录为：<code>{0}</code>。]]></message>
     <message name='deffile'><![CDATA[默认文件为：<code>{0}</code>。]]></message>
     <message name='deffileabs'><![CDATA[默认文件（带绝对路径）为：<code>{0}</code>。]]></message>

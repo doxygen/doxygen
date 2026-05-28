@@ -4434,8 +4434,6 @@ This setting is not only used for dot files but also for msc temporary files.
     <message name='possible'><![CDATA[Possible values are: ]]></message>
     <message name='defvaltxt'><![CDATA[The default value is: {0}.]]></message>
     <message name='defvalcode'><![CDATA[The default value is: <code>{0}</code>.]]></message>
-    <message name='defsysdep'><![CDATA[The default value is: system dependent]]></message>
-    <message name='sysdep'><![CDATA[system dependent]]></message>
     <message name='defdir'><![CDATA[The default directory is: <code>{0}</code>.]]></message>
     <message name='deffile'><![CDATA[The default file is: <code>{0}</code>.]]></message>
     <message name='deffileabs'><![CDATA[The default file (with absolute path) is <code>{0}</code>]]></message>
