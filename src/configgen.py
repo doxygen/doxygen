@@ -165,7 +165,6 @@ def prepCDocs(node):
     type = node.getAttribute('type')
     format = node.getAttribute('format')
     defval = node.getAttribute('defval')
-    #adefval = node.getAttribute('altdefval')
     doc = ""
     if (type != 'obsolete'):
         for n in node.childNodes:
@@ -249,7 +248,6 @@ def parseOption(node):
     type = node.getAttribute('type')
     format = node.getAttribute('format')
     defval = node.getAttribute('defval')
-    adefval = node.getAttribute('altdefval')
     depends = node.getAttribute('depends')
     setting = node.getAttribute('setting')
     orgtype = node.getAttribute('orgtype')
@@ -258,9 +256,7 @@ def parseOption(node):
         print("#if %s" % (setting))
     print("  //----")
     if type == 'bool':
-        if len(adefval) > 0:
-            enabled = adefval
-        elif defval == '1':
+        if defval == '1':
             enabled = "TRUE"
         else:
             enabled = "FALSE"
@@ -556,7 +552,6 @@ def parseOptionDoc(node, first):
     type = node.getAttribute('type')
     format = node.getAttribute('format')
     defval = node.getAttribute('defval')
-    #adefval = node.getAttribute('altdefval')
     depends = node.getAttribute('depends')
     #setting = node.getAttribute('setting')
     doc = ""
