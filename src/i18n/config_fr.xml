@@ -1830,8 +1830,6 @@
     <message name='possible'><![CDATA[Les valeurs possibles sont :]]></message>
     <message name='defvaltxt'><![CDATA[La valeur par défaut est : {0}.]]></message>
     <message name='defvalcode'><![CDATA[La valeur par défaut est : <code>{0}</code>.]]></message>
-    <message name='defsysdep'><![CDATA[La valeur par défaut dépend du système.]]></message>
-    <message name='sysdep'><![CDATA[dépend du système]]></message>
     <message name='defdir'><![CDATA[Le répertoire par défaut est : <code>{0}</code>.]]></message>
     <message name='deffile'><![CDATA[Le fichier par défaut est : <code>{0}</code>.]]></message>
     <message name='deffileabs'><![CDATA[Le fichier par défaut (avec chemin absolu) est : <code>{0}</code>.]]></message>

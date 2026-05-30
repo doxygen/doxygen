@@ -856,16 +856,9 @@ QString Expert::getDocsForNode(const QDomElement &child) const
   {
     if (!docs.endsWith(SA("<br/>"))) docs += SA("<br/>");
     docs+=SA("<br/>");
-    if (child.hasAttribute(SA("altdefval")))
-    {
-      docs+=SA(" ")+m_messages[SA("defsysdep")];
-    }
-    else
-    {
-      QString defval = child.attribute(SA("defval"));
-      QString valStr = (defval==SA("1")?SA("YES"):SA("NO"));
-      docs+=SA(" ")+m_messages[SA("defvalcode")].arg(valStr);
-    }
+    QString defval = child.attribute(SA("defval"));
+    QString valStr = (defval==SA("1")?SA("YES"):SA("NO"));
+    docs+=SA(" ")+m_messages[SA("defvalcode")].arg(valStr);
   }
   else if (type==SA("list"))
   {
