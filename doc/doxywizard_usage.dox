@@ -133,8 +133,8 @@ The Expert tab is divided into a number of panes:
 <dt>Top pane<dd>The search input field
 <dt>Bottom left pane<dd>The Topics pane (i.e. sections in the
 configuration file) that are available. By clicking on a topic the
-corresponding settings will appear in the Botom right pane. Each topic has a small tooltip
-with a smal description.
+corresponding settings will appear in the Bottom right pane. Each topic has a small tooltip
+with a small description.
 <dt>Bottom right pane<dd>The Settings pane, in this pane you will find the
 settings that are available for the selected topic / selected search. In case the name
 for a setting is colored red, the setting has a non-default value.
@@ -153,8 +153,8 @@ The search field:
 \image latex doxywizard_expert_search.png "Search input field" width=15cm
 
 The text entered in this field is searched in the name of the settings and in the documentation 
-of the settings, only the setings that match the search text will will be shown in the botom left pane
-and in the botytom right pane. In the bottom right pane the found text will be highlighted (in case of 
+of the settings, only the settings that match the search text will will be shown in the bottom left pane
+and in the bottom right pane. In the bottom right pane the found text will be highlighted (in case of 
 "Hide documentation" set the highlighting will take place in the tooltip.
 
 
