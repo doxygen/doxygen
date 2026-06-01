@@ -1828,8 +1828,6 @@
     <message name='possible'><![CDATA[가능한 값:]]></message>
     <message name='defvaltxt'><![CDATA[기본값은 {0}입니다.]]></message>
     <message name='defvalcode'><![CDATA[기본값은 <code>{0}</code>입니다.]]></message>
-    <message name='defsysdep'><![CDATA[기본값은 시스템에 따라 다릅니다.]]></message>
-    <message name='sysdep'><![CDATA[시스템 종속적]]></message>
     <message name='defdir'><![CDATA[기본 디렉토리는 <code>{0}</code>입니다.]]></message>
     <message name='deffile'><![CDATA[기본 파일은 <code>{0}</code>입니다.]]></message>
     <message name='deffileabs'><![CDATA[기본 파일(절대 경로)은 <code>{0}</code>입니다.]]></message>

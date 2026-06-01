@@ -130,20 +130,33 @@ is needed. This needs to be installed separately.
 
 The Expert tab is divided into a number of panes:
 <dl>
-<dt>Top left pane<dd>The Topics pane (i.e. sections in the
+<dt>Top pane<dd>The search input field
+<dt>Bottom left pane<dd>The Topics pane (i.e. sections in the
 configuration file) that are available. By clicking on a topic the
-corresponding settings will appear in the Right pane.
-<dt>Bottom left pane<dd>The help pane, this will be updated when one
-hovers over the name of a setting in the Right pane.
-<dt>Right pane<dd>The Settings pane, in this pane you will find the
-settings that are available for the selected topic. In case the name for a setting is colored
-red, the setting has a non-default value.
+corresponding settings will appear in the Bottom right pane. Each topic has a small tooltip
+with a small description.
+<dt>Bottom right pane<dd>The Settings pane, in this pane you will find the
+settings that are available for the selected topic / selected search. In case the name
+for a setting is colored red, the setting has a non-default value.
 In case a setting is grayed out, the setting is depending on another setting that is disabled.
-Which setting it depends on is indicated in the help pane on the bottom left.
+Which setting it depends on is indicated in the help information (below the setting or in case
+when "Hide documentation" s set in the tooltip of the settingo).
 </dl>
 
+
+Overview: 
 \image html doxywizard_expert.png "Some options from the Expert tab"
 \image latex doxywizard_expert.png "Some options from the Expert tab" width=15cm
+
+The search field:
+\image html doxywizard_expert_search.png "Search input field" 
+\image latex doxywizard_expert_search.png "Search input field" width=15cm
+
+The text entered in this field is searched in the name of the settings and in the documentation 
+of the settings, only the settings that match the search text will will be shown in the bottom left pane
+and in the bottom right pane. In the bottom right pane the found text will be highlighted (in case of 
+"Hide documentation" set the highlighting will take place in the tooltip.
+
 
 The representation of the input field depends on the type of the configuration option.
 <ul>
@@ -278,6 +291,13 @@ The file menu with a couple of useful items for loading and saving settings.
 <dt>Use current settings at startup<dd>Stores the current configuration settings as the
     default to use next time the GUI is started. You will be asked to
     confirm the action.
+<dt>Hide documentation<dd>When set a check-mark appears in front of the setting and in the bottom right panel
+    of the expert tab the documentation is not shown but shown as a toltip.
+<dt>Language<dd>Select the language in which the items in the doxywizard will be shown. A new window will appear
+    with the supported languages:<br>
+    \image html doxywizard_menu_settings.png "Language selection window"
+    \image latex doxywizard_language.png "Language selection window" width=6.7cm
+    Note: changing the language will automatically restart the application.
 <dt>Clear recent list<dd>Clears the "Open recent" list in the \ref dw_menu_file. This menu
     item is only accessible when there are recent files in the "Open recent" list.
 <dt>Run Doxygen<dd>Selecting this item is identical to switching to the \ref dw_run "Run" tab,

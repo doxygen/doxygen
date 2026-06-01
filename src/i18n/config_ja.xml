@@ -1829,8 +1829,6 @@
     <message name='possible'><![CDATA[可能な値は:]]></message>
     <message name='defvaltxt'><![CDATA[デフォルト値は {0} です。]]></message>
     <message name='defvalcode'><![CDATA[デフォルト値は <code>{0}</code> です。]]></message>
-    <message name='defsysdep'><![CDATA[デフォルト値はシステム依存です。]]></message>
-    <message name='sysdep'><![CDATA[システム依存で]]></message>
     <message name='defdir'><![CDATA[デフォルトのディレクトリは <code>{0}</code> です。]]></message>
     <message name='deffile'><![CDATA[デフォルトのファイルは <code>{0}</code> です。]]></message>
     <message name='deffileabs'><![CDATA[デフォルトのファイル（絶対パス）は <code>{0}</code> です。]]></message>

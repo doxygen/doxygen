@@ -165,7 +165,6 @@ def prepCDocs(node):
     type = node.getAttribute('type')
     format = node.getAttribute('format')
     defval = node.getAttribute('defval')
-    #adefval = node.getAttribute('altdefval')
     doc = ""
     if (type != 'obsolete'):
         for n in node.childNodes:
@@ -192,10 +191,7 @@ def prepCDocs(node):
             maxval = node.getAttribute('maxval')
             doc += "<br/>" + messages['minmaxdef'].format(minval, maxval, defval)
         elif (type == 'bool'):
-            if (node.hasAttribute('altdefval')):
-                doc += "<br/>" + messages['defvaltxt'].format(messages['sysdep'])
-            else:
-                doc += "<br/>" + messages['defvaltxt'].format("YES" if (defval == "1") else "NO")
+            doc += "<br/>" + messages['defvaltxt'].format("YES" if (defval == "1") else "NO")
         elif (type == 'list'):
             if format == 'string':
                 values = collectValues(node)
@@ -252,7 +248,6 @@ def parseOption(node):
     type = node.getAttribute('type')
     format = node.getAttribute('format')
     defval = node.getAttribute('defval')
-    adefval = node.getAttribute('altdefval')
     depends = node.getAttribute('depends')
     setting = node.getAttribute('setting')
     orgtype = node.getAttribute('orgtype')
@@ -261,9 +256,7 @@ def parseOption(node):
         print("#if %s" % (setting))
     print("  //----")
     if type == 'bool':
-        if len(adefval) > 0:
-            enabled = adefval
-        elif defval == '1':
+        if defval == '1':
             enabled = "TRUE"
         else:
             enabled = "FALSE"
@@ -559,7 +552,6 @@ def parseOptionDoc(node, first):
     type = node.getAttribute('type')
     format = node.getAttribute('format')
     defval = node.getAttribute('defval')
-    #adefval = node.getAttribute('altdefval')
     depends = node.getAttribute('depends')
     #setting = node.getAttribute('setting')
     doc = ""
@@ -607,10 +599,7 @@ def parseOptionDoc(node, first):
         elif (type == 'bool'):
             print("")
             print("")
-            if (node.hasAttribute('altdefval')):
-                print(messages['defvaltxt'].format(messages['sysdep']))
-            else:
-                print(messages['defvalcode'].format("YES" if (defval == "1") else "NO"))
+            print(messages['defvalcode'].format("YES" if (defval == "1") else "NO"))
             print("")
         elif (type == 'list'):
             if format == 'string':

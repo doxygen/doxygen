@@ -2402,8 +2402,6 @@ doxygen -w latex new_header.tex new_footer.tex new_stylesheet.sty
     <message name='possible'><![CDATA[Возможные значения:]]></message>
     <message name='defvaltxt'><![CDATA[Значение по умолчанию: {0}.]]></message>
     <message name='defvalcode'><![CDATA[Значение по умолчанию: <code>{0}</code>.]]></message>
-    <message name='defsysdep'><![CDATA[Значение по умолчанию зависит от системы.]]></message>
-    <message name='sysdep'><![CDATA[зависит от системы]]></message>
     <message name='defdir'><![CDATA[Каталог по умолчанию: <code>{0}</code>.]]></message>
     <message name='deffile'><![CDATA[Файл по умолчанию: <code>{0}</code>.]]></message>
     <message name='deffileabs'><![CDATA[Файл по умолчанию (с абсолютным путём): <code>{0}</code>.]]></message>

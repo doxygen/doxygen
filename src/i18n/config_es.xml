@@ -1831,8 +1831,6 @@
     <message name='possible'><![CDATA[Los valores posibles son:]]></message>
     <message name='defvaltxt'><![CDATA[El valor predeterminado es: {0}.]]></message>
     <message name='defvalcode'><![CDATA[El valor predeterminado es: <code>{0}</code>.]]></message>
-    <message name='defsysdep'><![CDATA[El valor predeterminado es: dependiente del sistema.]]></message>
-    <message name='sysdep'><![CDATA[dependiente del sistema]]></message>
     <message name='defdir'><![CDATA[El directorio predeterminado es: <code>{0}</code>.]]></message>
     <message name='deffile'><![CDATA[El archivo predeterminado es: <code>{0}</code>.]]></message>
     <message name='deffileabs'><![CDATA[El archivo predeterminado (con ruta absoluta) es: <code>{0}</code>.]]></message>
