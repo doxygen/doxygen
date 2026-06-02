@@ -556,6 +556,7 @@ static void generateJSLink(TextStream &t,const FTVNodePtr &n)
 {
   bool nameAsHtml = !n->nameAsHtml.isEmpty();
   QCString link = nameAsHtml ? convertToJSString(n->nameAsHtml,true) : convertToJSString(n->name);
+  link = substitute(link,"\n","");
   if (n->file.isEmpty()) // no link
   {
     t << "\"" << link << "\", null, ";
