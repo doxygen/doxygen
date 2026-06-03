@@ -22,6 +22,7 @@
 #include "configdoc.h"
 #include "settings.h"
 #include "doxywizard.h"
+#include "configswitcher.h"
 
 #include <QDebug>
 #include <QFile>
@@ -86,7 +87,7 @@ void Expert::add(const char *name,const char *docs)
   Input *opt = m_options[SA(name)];
   if (opt)
   {
-    opt->setTemplateDocs(SA(docs));
+    opt->setTemplateDocs(QString::fromStdString(docs));
   }
 }
 
@@ -356,7 +357,11 @@ Expert::Expert()
   connect(m_prevButton, SIGNAL(clicked()), this, SLOT(prevGroup()));
   connect(m_nextButton, SIGNAL(clicked()), this, SLOT(nextGroup()));
 
-  addConfigDocs(this);
+  auto it = langNames.find(DoxygenWizard::langCode.toStdString());
+  if (it!=langNames.end())
+  {
+    it->second(this);
+  }
 }
 
 Expert::~Expert()
