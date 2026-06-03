@@ -981,9 +981,12 @@ static void usage(const char *exeName, const QString txt)
 {
   QMessageBox msgBox;
   QString fullText = txt;
-  fullText +=  QString::fromLatin1("Usage: %1 [--debug] [--dump] [--doxyfile] [--language [lang]] [config file]\n").arg(QString::fromLatin1(exeName));
-  fullText +=  QString::fromLatin1("Usage: %1 --help\n").arg(QString::fromLatin1(exeName));
-  fullText +=  QString::fromLatin1("Usage: %1 --version\n").arg(QString::fromLatin1(exeName));
+  fullText +=  QString::fromLatin1("Usage:\n");
+  fullText +=  QString::fromLatin1("  %1 [--debug] [--dump] [--doxyfile] [--language [lang]] [config file]\n").arg(QString::fromLatin1(exeName));
+  fullText +=  QString::fromLatin1("    or\n");
+  fullText +=  QString::fromLatin1("  %1 --help\n").arg(QString::fromLatin1(exeName));
+  fullText +=  QString::fromLatin1("    or\n");
+  fullText +=  QString::fromLatin1("  %1 --version\n").arg(QString::fromLatin1(exeName));
   msgBox.setText(fullText);
   msgBox.exec();
 }
