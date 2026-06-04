@@ -1781,7 +1781,7 @@
     </option>
     <option type="string" id="MERMAID_JS_URL" format="string" defval="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs">
       <docs>
-<![CDATA[\c MERMAID_JS_URL 標籤指定在使用客戶端呈現時（\c MERMAID_RENDER_MODE 為 \c CLIENT_SIDE 或 \c AUTO）從中加載 \c mermaid.js 的 URL。預設指向 jsDelivr CDN 上最新的 Mermaid v11 版本。\par 示例：- 最新 v11（預設）：\c 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs' - 固定版本：\c 'https://cdn.jsdelivr.net/npm/mermaid@11.3.0/dist/mermaid.esm.min.mjs' - 本地副本：\c './mermaid.esm.min.mjs'（使用者必须將檔案放在 HTML 輸出目錄中）\par 預設 CDN URL 在查看產生的檔案時需要互聯网访問。對于离線使用，請下載 \c mermaid.esm.min.mjs 並將其設定為相對路徑，或使用 \c MERMAID_RENDER_MODE=CLI 代替預產生影像。]]>
+<![CDATA[\c MERMAID_JS_URL 標籤指定在使用客戶端呈現時（\c MERMAID_RENDER_MODE 為 \c CLIENT_SIDE 或 \c AUTO）從中加載 \c mermaid.js 的 URL。預設指向 jsDelivr CDN 上最新的 Mermaid v11 版本。\par 示例：- 最新 v11（預設）：<code>https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs</code> - 固定版本：<code>https://cdn.jsdelivr.net/npm/mermaid@11.3.0/dist/mermaid.esm.min.mjs</code> - 本地副本：<code>./mermaid.esm.min.mjs</code>（使用者必须將檔案放在 HTML 輸出目錄中）\par 預設 CDN URL 在查看產生的檔案時需要互聯网访問。對于离線使用，請下載 \c mermaid.esm.min.mjs 並將其設定為相對路徑，或使用 \c MERMAID_RENDER_MODE=CLI 代替預產生影像。]]>
       </docs>
     </option>
     <option type="list" id="MERMAIDFILE_DIRS" format="dir">

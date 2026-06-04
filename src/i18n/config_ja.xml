@@ -1784,7 +1784,7 @@
     </option>
     <option type="string" id="MERMAID_JS_URL" format="string" defval="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs">
       <docs>
-<![CDATA[\c MERMAID_JS_URLタグは、クライアント側レンダリングを使用する場合（\c MERMAID_RENDER_MODEが\c CLIENT_SIDEまたは\c AUTO）に\c mermaid.jsをロードするURLを指定します。デフォルトはjsDelivr CDNの最新のMermaid v11を指しています。\par 例：- 最新のv11（デフォルト）：\c 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs' - ピン留めされたバージョン：\c 'https://cdn.jsdelivr.net/npm/mermaid@11.3.0/dist/mermaid.esm.min.mjs' - ローカルコピー：\c './mermaid.esm.min.mjs'（ユーザーはファイルをHTML出力ディレクトリに配置する必要があります）\par デフォルトのCDN URLは、生成されたドキュメントを表示する際にインターネットアクセスが必要です。オフライン使用の場合は、\c mermaid.esm.min.mjsをダウンロードしてこれを相対パスに設定するか、代わりに\c MERMAID_RENDER_MODE=CLIを使用して画像を事前生成します。]]>
+<![CDATA[\c MERMAID_JS_URLタグは、クライアント側レンダリングを使用する場合（\c MERMAID_RENDER_MODEが\c CLIENT_SIDEまたは\c AUTO）に\c mermaid.jsをロードするURLを指定します。デフォルトはjsDelivr CDNの最新のMermaid v11を指しています。\par 例：- 最新のv11（デフォルト）：<code>https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs</code> - ピン留めされたバージョン：<code>https://cdn.jsdelivr.net/npm/mermaid@11.3.0/dist/mermaid.esm.min.mjs</code> - ローカルコピー：<code>./mermaid.esm.min.mjs</code>（ユーザーはファイルをHTML出力ディレクトリに配置する必要があります）\par デフォルトのCDN URLは、生成されたドキュメントを表示する際にインターネットアクセスが必要です。オフライン使用の場合は、\c mermaid.esm.min.mjsをダウンロードしてこれを相対パスに設定するか、代わりに\c MERMAID_RENDER_MODE=CLIを使用して画像を事前生成します。]]>
       </docs>
     </option>
     <option type="list" id="MERMAIDFILE_DIRS" format="dir">

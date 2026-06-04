@@ -1783,7 +1783,7 @@
     </option>
     <option type="string" id="MERMAID_JS_URL" format="string" defval="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs">
       <docs>
-<![CDATA[\c MERMAID_JS_URL 태그는 클라이언트 측 렌더링을 사용하는 경우(\c MERMAID_RENDER_MODE가 \c CLIENT_SIDE 또는 \c AUTO) \c mermaid.js를 로드할 URL을 지정합니다. 기본값은 jsDelivr CDN의 최신 Mermaid v11을 가리킵니다. \par 예: - 최신 v11(기본값): \c 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs' - 고정된 버전: \c 'https://cdn.jsdelivr.net/npm/mermaid@11.3.0/dist/mermaid.esm.min.mjs' - 로컬 복사본: \c './mermaid.esm.min.mjs'(사용자는 파일을 HTML 출력 디렉터리에 배치해야 함) \par 기본 CDN URL은 생성된 문서를 볼 때 인터넷 액세스가 필요합니다. 오프라인 사용의 경우 \c mermaid.esm.min.mjs를 다운로드하고 이것을 상대 경로로 설정하거나 대신 \c MERMAID_RENDER_MODE=CLI를 사용하여 이미지를 미리 생성하세요.]]>
+<![CDATA[\c MERMAID_JS_URL 태그는 클라이언트 측 렌더링을 사용하는 경우(\c MERMAID_RENDER_MODE가 \c CLIENT_SIDE 또는 \c AUTO) \c mermaid.js를 로드할 URL을 지정합니다. 기본값은 jsDelivr CDN의 최신 Mermaid v11을 가리킵니다. \par 예: - 최신 v11(기본값): <code>https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs</code> - 고정된 버전: <code>https://cdn.jsdelivr.net/npm/mermaid@11.3.0/dist/mermaid.esm.min.mjs</code> - 로컬 복사본: <code>./mermaid.esm.min.mjs</code>(사용자는 파일을 HTML 출력 디렉터리에 배치해야 함) \par 기본 CDN URL은 생성된 문서를 볼 때 인터넷 액세스가 필요합니다. 오프라인 사용의 경우 \c mermaid.esm.min.mjs를 다운로드하고 이것을 상대 경로로 설정하거나 대신 \c MERMAID_RENDER_MODE=CLI를 사용하여 이미지를 미리 생성하세요.]]>
       </docs>
     </option>
     <option type="list" id="MERMAIDFILE_DIRS" format="dir">
