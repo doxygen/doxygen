@@ -593,6 +593,10 @@ img.formulaInl, img.inline {
 	vertical-align: middle;
 }
 
+div.toc img.inline {
+        float: none;
+        vertical-align: top
+}
 div.center {
 	text-align: center;
 	margin-top: 0px;
