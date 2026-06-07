@@ -55,20 +55,14 @@ Each mechanism must be maintained independently. A change in the English text of
 Run the `doc/translator.py` script from the repository root to get a full report:
 
 ```bash
-python doc/translator.py
+python translator.py --doc .
 ```
 
-This generates `translator_report.txt` and `language.dox`. The report shows:
+This generates `doc/translator_report.txt` and `doc/language.dox`. The report shows:
 - Which translators are fully up to date (inherit directly from `Translator`)
 - Which translators are outdated (inherit from an adapter class) and which methods they are
   missing
 - The percentage of implemented methods per language
-
-To check a specific language only (e.g., German):
-
-```bash
-python doc/translator.py de
-```
 
 ### Finding new or changed English strings
 
@@ -94,6 +88,11 @@ When commits touch `src/translator_en.h`:
    `TranslatorAdapter_X_Y_Z` to `Translator` directly.
 5. **Update the adapter**: If a new adapter class was added to `translator_adapter.h` for the
    current release, it must include the English fallback for each new method.
+
+Run the following script from the root of the repo to check for build errors:
+```bash
+bash .github/skills/translation/compile_language.sh
+```
 
 ### Quality guidelines for translator classes
 
