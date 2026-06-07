@@ -2330,9 +2330,9 @@ doxygen -w latex new_header.tex new_footer.tex new_stylesheet.sty
  относительный путь, либо используйте \c MERMAID_RENDER_MODE=CLI для предварительной
  генерации изображений.
  \par Примеры:
- - Последняя v11 (по умолчанию): \c 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs'
- - Фиксированная версия: \c 'https://cdn.jsdelivr.net/npm/mermaid@11.3.0/dist/mermaid.esm.min.mjs'
- - Локальная копия: \c './mermaid.esm.min.mjs' (пользователь должен поместить файл в каталог HTML-вывода)]]>
+ - Последняя v11 (по умолчанию): <code>https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs</code>
+ - Фиксированная версия: <code>https://cdn.jsdelivr.net/npm/mermaid@11.3.0/dist/mermaid.esm.min.mjs</code>
+ - Локальная копия: <code>./mermaid.esm.min.mjs</code> (пользователь должен поместить файл в каталог HTML-вывода)]]>
       </docs>
     </option>
     <option type="list" id="MERMAIDFILE_DIRS" format="dir">
