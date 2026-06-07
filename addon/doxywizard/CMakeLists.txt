@@ -43,13 +43,13 @@ if (force_qt STREQUAL "Qt5" OR NOT Qt6_FOUND)
   endif()
 endif()
 
+set(GENERATED_SRC_WIZARD ${GENERATED_SRC}/doxywizard)
 include_directories(
   .
   ${PROJECT_SOURCE_DIR}/libversion
-  ${GENERATED_SRC}
+  ${GENERATED_SRC_WIZARD}
 )
 
-set(GENERATED_SRC_WIZARD ${GENERATED_SRC}/doxywizard)
 file(MAKE_DIRECTORY ${GENERATED_SRC_WIZARD})
 
 add_definitions(-DQT_NO_CAST_FROM_ASCII -DQT_NO_CAST_TO_ASCII -DUNICODE)
@@ -76,6 +76,29 @@ add_custom_command(
     OUTPUT ${GENERATED_SRC_WIZARD}/configdoc.cpp
 )
 set_source_files_properties(${GENERATED_SRC_WIZARD}/configdoc.cpp PROPERTIES GENERATED 1)
+
+set(CONFIG_TRANSLATIONS_DIR ${PROJECT_SOURCE_DIR}/src/i18n)
+file(GLOB DOXYWIZARD_CONFIG_TRANSLATION_FILES CONFIGURE_DEPENDS "${CONFIG_TRANSLATIONS_DIR}/config_*.xml")
+foreach(config_file ${DOXYWIZARD_CONFIG_TRANSLATION_FILES})
+    get_filename_component(config_name ${config_file} NAME_WE)
+    string(REGEX REPLACE "config_(.+)" "\\1" LOCALE "${config_name}")
+
+    add_custom_command(
+        COMMAND ${Python_EXECUTABLE} ${PROJECT_SOURCE_DIR}/src/configgen.py -wiz ${CONFIG_TRANSLATIONS_DIR}/config_${LOCALE}.xml > ${GENERATED_SRC_WIZARD}/configdoc_${LOCALE}.cpp
+        DEPENDS  ${PROJECT_SOURCE_DIR}/src/configgen.py ${CONFIG_TRANSLATIONS_DIR}/config_${LOCALE}.xml
+        OUTPUT ${GENERATED_SRC_WIZARD}/configdoc_${LOCALE}.cpp
+    )
+    set(GENERATED_CONFIG ${GENERATED_CONFIG} ${GENERATED_SRC_WIZARD}/configdoc_${LOCALE}.cpp)
+    set_source_files_properties(${GENERATED_SRC_WIZARD}/configdoc_${LOCALE}.cpp PROPERTIES GENERATED 1)
+endforeach()
+
+set(CONFIG_SWITCHER ${GENERATED_SRC_WIZARD}/configswitcher.h)
+    add_custom_command(
+        COMMAND ${Python_EXECUTABLE} ${PROJECT_SOURCE_DIR}/src/configgen.py -wizswitch ${PROJECT_SOURCE_DIR}/src/config.xml ${DOXYWIZARD_CONFIG_TRANSLATION_FILES} > ${CONFIG_SWITCHER}
+        DEPENDS  ${PROJECT_SOURCE_DIR}/src/configgen.py ${PROJECT_SOURCE_DIR}/src/config.xml ${DOXYWIZARD_CONFIG_TRANSLATION_FILES}
+        OUTPUT ${CONFIG_SWITCHER}
+    )
+set_source_files_properties(${CONFIG_SWITCHER} PROPERTIES GENERATED 1)
 
 set(LEX_FILES config_doxyw)
 
@@ -213,9 +236,11 @@ inputint.cpp
 inputstrlist.cpp
 languagedialog.cpp
 ${GENERATED_SRC_WIZARD}/settings.h
+${CONFIG_SWITCHER}
 ${GENERATED_SRC_WIZARD}/config_doxyw.cpp
 ${GENERATED_SRC_WIZARD}/config_doxyw.l.h
 ${GENERATED_SRC_WIZARD}/configdoc.cpp
+${GENERATED_CONFIG}
 ${doxywizard_MOC}
 ${doxywizard_TRANSLATION_RESOURCES}
 ${doxywizard_RESOURCES_RCC}
