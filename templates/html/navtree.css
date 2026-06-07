@@ -31,6 +31,7 @@
   padding:0px;
   border:0px;
   vertical-align: middle;
+  float: none;
 }
 
 #nav-tree a {
@@ -241,6 +242,10 @@ div.nav-sync-icon:hover span.sync-icon-right {
 	box-sizing: content-box;
         position: relative;
 	border-left: 1px solid var(--nav-border-color);
+}
+
+#page-nav img.inline {
+  float: none;
 }
 
 #page-nav-tree {
