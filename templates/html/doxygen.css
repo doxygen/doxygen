@@ -594,8 +594,9 @@ img.formulaInl, img.inline {
 }
 
 div.toc img.inline {
-        float: none;
-        vertical-align: top
+	float: none;
+	vertical-align: top;
+	max-height: 14px;
 }
 div.center {
 	text-align: center;
