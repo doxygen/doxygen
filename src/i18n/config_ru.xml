@@ -108,7 +108,7 @@
     </option>
     <option type="bool" id="REPEAT_BRIEF" defval="1">
       <docs>
-<![CDATA[Если тег \c REPEAT_BRIEF установлен в \c YES, Doxygen добавит краткое описание члена или функции перед подробным описанием. &lt;br&gt;Примечание: Если оба тега \ref cfg_hide_undoc_members "HIDE_UNDOC_MEMBERS" и \ref cfg_brief_member_desc "BRIEF_MEMBER_DESC" установлены в \c NO, краткие описания будут полностью подавлены.]]>
+<![CDATA[Если тег \c REPEAT_BRIEF установлен в \c YES, Doxygen добавит краткое описание члена или функции перед подробным описанием. <br>Примечание: Если оба тега \ref cfg_hide_undoc_members "HIDE_UNDOC_MEMBERS" и \ref cfg_brief_member_desc "BRIEF_MEMBER_DESC" установлены в \c NO, краткие описания будут полностью подавлены.]]>
       </docs>
     </option>
     <option type="list" id="ABBREVIATE_BRIEF" format="string">
@@ -144,7 +144,7 @@
     </option>
     <option type="list" id="STRIP_FROM_PATH" format="dir" depends="FULL_PATH_NAMES">
       <docs>
-<![CDATA[Тег \c STRIP_FROM_PATH можно использовать для удаления пользовательской части пути. Удаление выполняется только если одна из указанных строк совпадает с левой частью пути. Этот тег можно использовать для отображения относительных путей в списке файлов. Если оставить пустым, будет использоваться каталог, в котором запущен Doxygen, как путь для удаления. &lt;br&gt;Обратите внимание, что вы можете указать здесь абсолютные пути, но также и относительные пути, которые будут относительными к каталогу, в котором был запущен Doxygen.]]>
+<![CDATA[Тег \c STRIP_FROM_PATH можно использовать для удаления пользовательской части пути. Удаление выполняется только если одна из указанных строк совпадает с левой частью пути. Этот тег можно использовать для отображения относительных путей в списке файлов. Если оставить пустым, будет использоваться каталог, в котором запущен Doxygen, как путь для удаления. <br>Обратите внимание, что вы можете указать здесь абсолютные пути, но также и относительные пути, которые будут относительными к каталогу, в котором был запущен Doxygen.]]>
       </docs>
     </option>
     <option type="list" id="STRIP_FROM_INC_PATH" format="dir">
@@ -174,7 +174,7 @@
     </option>
     <option type="bool" id="MULTILINE_CPP_IS_BRIEF" defval="0">
       <docs>
-<![CDATA[Тег \c MULTILINE_CPP_IS_BRIEF можно установить в \c YES, чтобы Doxygen обрабатывал многострочные блоки специальных комментариев C++ (т.е. блоки комментариев \c //! или \c ///) как краткие описания. Это раньше было поведением по умолчанию. Новое значение по умолчанию — обрабатывать многострочные блоки комментариев C++ как подробные описания. Если вы предпочитаете старое поведение, установите этот тег в \c YES. &lt;br&gt;Обратите внимание, что установка этого тега в \c YES также означает, что комментарии Rational Rose больше не будут распознаваться.]]>
+<![CDATA[Тег \c MULTILINE_CPP_IS_BRIEF можно установить в \c YES, чтобы Doxygen обрабатывал многострочные блоки специальных комментариев C++ (т.е. блоки комментариев \c //! или \c ///) как краткие описания. Это раньше было поведением по умолчанию. Новое значение по умолчанию — обрабатывать многострочные блоки комментариев C++ как подробные описания. Если вы предпочитаете старое поведение, установите этот тег в \c YES. <br>Обратите внимание, что установка этого тега в \c YES также означает, что комментарии Rational Rose больше не будут распознаваться.]]>
       </docs>
     </option>
     <option type="bool" id="PYTHON_DOCSTRING" defval="1">
@@ -229,7 +229,7 @@
     </option>
     <option type="list" id="EXTENSION_MAPPING" format="string">
       <docs>
-<![CDATA[Doxygen выбирает парсер для использования на основе расширения анализируемого файла. С этим тегом вы можете назначить парсер для использования с данным расширением. Doxygen имеет встроенное сопоставление, но вы можете переопределить или расширить его с помощью этого тега. Формат: `ext=language`, где `ext` — расширение файла, а `language` — один из парсеров, поддерживаемых Doxygen: IDL, Java, JavaScript, Csharp (C#), C, C++, Lex, D, PHP, md (Markdown), Objective-C, Python, Slice, VHDL, Fortran (Fortran с фиксированным форматом: FortranFixed, Fortran со свободным форматом: FortranFree, Fortran с неизвестным форматом: Fortran. В последнем случае парсер попытается угадать, является ли код фиксированным или свободным форматом, что является значением по умолчанию для файлов типа Fortran). Например, чтобы Doxygen обрабатывал файлы &lt;codegt;.inc&lt;/codegt; как файлы Fortran (по умолчанию PHP), а файлы &lt;codegt;.f&lt;/codegt; как файлы C (по умолчанию Fortran), используйте: `inc=Fortran f=C`. &lt;br&gt;Примечание: Для файлов без расширения вы можете использовать `no_extension` как заполнитель. &lt;br&gt;Обратите внимание, что для пользовательских расширений вам также нужно установить \ref cfg_file_patterns "FILE_PATTERNS", иначе Doxygen не будет читать эти файлы. Когда указан `no_extension`, вы должны добавить `*` в \ref cfg_file_patterns "FILE_PATTERNS". &lt;br&gt;Примечание, см. также список \ref default_file_extension_mapping "сопоставления расширений файлов по умолчанию".]]>
+<![CDATA[Doxygen выбирает парсер для использования на основе расширения анализируемого файла. С этим тегом вы можете назначить парсер для использования с данным расширением. Doxygen имеет встроенное сопоставление, но вы можете переопределить или расширить его с помощью этого тега. Формат: `ext=language`, где `ext` — расширение файла, а `language` — один из парсеров, поддерживаемых Doxygen: IDL, Java, JavaScript, Csharp (C#), C, C++, Lex, D, PHP, md (Markdown), Objective-C, Python, Slice, VHDL, Fortran (Fortran с фиксированным форматом: FortranFixed, Fortran со свободным форматом: FortranFree, Fortran с неизвестным форматом: Fortran. В последнем случае парсер попытается угадать, является ли код фиксированным или свободным форматом, что является значением по умолчанию для файлов типа Fortran). Например, чтобы Doxygen обрабатывал файлы <code>.inc</code> как файлы Fortran (по умолчанию PHP), а файлы <code>.f</code> как файлы C (по умолчанию Fortran), используйте: `inc=Fortran f=C`. <br>Примечание: Для файлов без расширения вы можете использовать `no_extension` как заполнитель. <br>Обратите внимание, что для пользовательских расширений вам также нужно установить \ref cfg_file_patterns "FILE_PATTERNS", иначе Doxygen не будет читать эти файлы. Когда указан `no_extension`, вы должны добавить `*` в \ref cfg_file_patterns "FILE_PATTERNS". <br>Примечание, см. также список \ref default_file_extension_mapping "сопоставления расширений файлов по умолчанию".]]>
       </docs>
     </option>
     <option type="bool" id="MARKDOWN_SUPPORT" defval="1">
@@ -276,7 +276,7 @@
     </option>
     <option type="bool" id="SIP_SUPPORT" defval="0">
       <docs>
-<![CDATA[Если ваш проект содержит только &lt;a href="https://www.riverbankcomputing.com/software"&gt;sip&lt;/a&gt; исходный код, установите тег \c SIP_SUPPORT в \c YES. Doxygen будет анализировать их как обычный C++, но будет предполагать, что все классы используют публичное наследование, когда нет явного ключевого слова защиты, вместо приватного наследования.]]>
+<![CDATA[Если ваш проект содержит только <a href="https://www.riverbankcomputing.com/software">sip</a> исходный код, установите тег \c SIP_SUPPORT в \c YES. Doxygen будет анализировать их как обычный C++, но будет предполагать, что все классы используют публичное наследование, когда нет явного ключевого слова защиты, вместо приватного наследования.]]>
       </docs>
     </option>
     <option type="bool" id="IDL_PROPERTY_SUPPORT" defval="1">
@@ -301,7 +301,7 @@
     </option>
     <option type="bool" id="INLINE_GROUPED_CLASSES" defval="0">
       <docs>
-<![CDATA[Когда тег \c INLINE_GROUPED_CLASSES установлен в \c YES, классы, структуры и объединения отображаются в содержащей их группе (например, с использованием \ref cmdingroup "\ingroup"), а не на отдельных страницах (для HTML и страниц Man) или в разделах (для \f$\mbox{\LaTeX}\f$ и RTF). &lt;br&gt;Обратите внимание, что эта функция не может быть объединена с \ref cfg_separate_member_pages "SEPARATE_MEMBER_PAGES".]]>
+<![CDATA[Когда тег \c INLINE_GROUPED_CLASSES установлен в \c YES, классы, структуры и объединения отображаются в содержащей их группе (например, с использованием \ref cmdingroup "\ingroup"), а не на отдельных страницах (для HTML и страниц Man) или в разделах (для \f$\mbox{\LaTeX}\f$ и RTF). <br>Обратите внимание, что эта функция не может быть объединена с \ref cfg_separate_member_pages "SEPARATE_MEMBER_PAGES".]]>
       </docs>
     </option>
     <option type="bool" id="INLINE_SIMPLE_STRUCTS" defval="0">
@@ -311,7 +311,7 @@
     </option>
     <option type="bool" id="TYPEDEF_HIDES_STRUCT" defval="0">
       <docs>
-<![CDATA[Когда тег \c TYPEDEF_HIDES_STRUCT включен, typedef для структуры, объединения или перечисления будет документирован как структура, объединение или перечисление с именем typedef. Таким образом, &lt;codegt;typedef struct TypeS {} TypeT&lt;/codegt; будет отображаться в документации как структура с именем \c TypeT. Когда отключено, typedef будет отображаться как член файла, пространства имен или класса. Структура будет называться \c TypeS. Это обычно полезно для кода C, если соглашение о кодировании требует, чтобы все составные типы были typedef, и на typedef ссылаются только по имени, никогда по имени тега.]]>
+<![CDATA[Когда тег \c TYPEDEF_HIDES_STRUCT включен, typedef для структуры, объединения или перечисления будет документирован как структура, объединение или перечисление с именем typedef. Таким образом, <code>typedef struct TypeS {} TypeT</code> будет отображаться в документации как структура с именем \c TypeT. Когда отключено, typedef будет отображаться как член файла, пространства имен или класса. Структура будет называться \c TypeS. Это обычно полезно для кода C, если соглашение о кодировании требует, чтобы все составные типы были typedef, и на typedef ссылаются только по имени, никогда по имени тега.]]>
       </docs>
     </option>
     <option type="int" id="LOOKUP_CACHE_SIZE" minval="0" maxval="9" defval="0">
@@ -520,7 +520,7 @@
     </option>
     <option type="list" id="ENABLED_SECTIONS" format="string">
       <docs>
-<![CDATA[Тег \c ENABLED_SECTIONS можно использовать для включения условных разделов документации, помеченных блоками \ref cmdif "\if" \&lt;section_label\&gt; ... \ref cmdendif "\endif" и \ref cmdcond "\cond" \&lt;section_label\&gt; ... \ref cmdendcond "\endcond".]]>
+<![CDATA[Тег \c ENABLED_SECTIONS можно использовать для включения условных разделов документации, помеченных блоками \ref cmdif "\if" \<section_label\> ... \ref cmdendif "\endif" и \ref cmdcond "\cond" \<section_label\> ... \ref cmdendcond "\endcond".]]>
       </docs>
     </option>
     <option type="int" id="MAX_INITIALIZER_LINES" minval="0" maxval="10000" defval="30">
@@ -545,17 +545,17 @@
     </option>
     <option type="string" id="FILE_VERSION_FILTER" format="file" defval="">
       <docs>
-<![CDATA[Тег \c FILE_VERSION_FILTER можно использовать для указания программы или скрипта, который Doxygen должен вызвать для получения текущей версии каждого файла (обычно из системы контроля версий). Doxygen вызовет программу, выполнив (через &lt;codegt;popen()&lt;/codegt;) команду &lt;codegt;command input-file&lt;/codegt;, где \c command — значение тега \c FILE_VERSION_FILTER, а \c input-file — имя входного файла, предоставленного Doxygen. Все, что программа выведет в стандартный вывод, будет использовано как версия файла.]]>
+<![CDATA[Тег \c FILE_VERSION_FILTER можно использовать для указания программы или скрипта, который Doxygen должен вызвать для получения текущей версии каждого файла (обычно из системы контроля версий). Doxygen вызовет программу, выполнив (через <code>popen()</code>) команду <code>command input_file</code>, где \c command — значение тега \c FILE_VERSION_FILTER, а \c input_file — имя входного файла, предоставленного Doxygen. Все, что программа выведет в стандартный вывод, будет использовано как версия файла.]]>
       </docs>
     </option>
     <option type="string" id="LAYOUT_FILE" format="file" defval="">
       <docs>
-<![CDATA[Тег \c LAYOUT_FILE можно использовать для указания файла макета, который Doxygen проанализирует. Файл макета управляет глобальной структурой сгенерированных выходных файлов независимым от формата вывода способом. Чтобы создать файл макета, представляющий настройки Doxygen по умолчанию, запустите Doxygen с опцией `-l`. Вы можете опционально указать имя файла после опции, если опустите, \c DoxygenLayout.xml будет использовано как имя файла макета. См. также раздел \ref layout для информации. &lt;br&gt;Обратите внимание, что если вы запускаете Doxygen из каталога, содержащего файл с именем \c DoxygenLayout.xml, Doxygen автоматически проанализирует его, даже если тег \c LAYOUT_FILE пуст.]]>
+<![CDATA[Тег \c LAYOUT_FILE можно использовать для указания файла макета, который Doxygen проанализирует. Файл макета управляет глобальной структурой сгенерированных выходных файлов независимым от формата вывода способом. Чтобы создать файл макета, представляющий настройки Doxygen по умолчанию, запустите Doxygen с опцией `-l`. Вы можете опционально указать имя файла после опции, если опустите, \c DoxygenLayout.xml будет использовано как имя файла макета. См. также раздел \ref layout для информации. <br>Обратите внимание, что если вы запускаете Doxygen из каталога, содержащего файл с именем \c DoxygenLayout.xml, Doxygen автоматически проанализирует его, даже если тег \c LAYOUT_FILE пуст.]]>
       </docs>
     </option>
     <option type="list" id="CITE_BIB_FILES" format="file">
       <docs>
-<![CDATA[Тег \c CITE_BIB_FILES можно использовать для указания одного или нескольких файлов \c bib, содержащих определения ссылок. Это должен быть список файлов &lt;codegt;.bib&lt;/codegt;. Расширение &lt;codegt;.bib&lt;/codegt; будет добавлено автоматически, если опущено. Это требует, чтобы инструмент \c bibtex был установлен. См. также https://en.wikipedia.org/wiki/BibTeX для дополнительной информации. Для \f$\mbox{\LaTeX}\f$ стиль ссылок может контролироваться с помощью \ref cfg_latex_bib_style "LATEX_BIB_STYLE". Чтобы использовать эту функцию, вам нужно иметь \c bibtex и \c perl доступными в пути поиска. См. также \ref cmdcite "\cite" для информации о создании цитат.]]>
+<![CDATA[Тег \c CITE_BIB_FILES можно использовать для указания одного или нескольких файлов \c bib, содержащих определения ссылок. Это должен быть список файлов <code>.bib</code>. Расширение <code>.bib</code> будет добавлено автоматически, если опущено. Это требует, чтобы инструмент \c bibtex был установлен. См. также https://en.wikipedia.org/wiki/BibTeX для дополнительной информации. Для \f$\mbox{\LaTeX}\f$ стиль ссылок может контролироваться с помощью \ref cfg_latex_bib_style "LATEX_BIB_STYLE". Чтобы использовать эту функцию, вам нужно иметь \c bibtex и \c perl доступными в пути поиска. См. также \ref cmdcite "\cite" для информации о создании цитат.]]>
       </docs>
     </option>
     <option type="list" id="EXTERNAL_TOOL_PATH" format="dir" defval="">
@@ -572,7 +572,7 @@
     </option>
     <option type="bool" id="WARNINGS" defval="1">
       <docs>
-<![CDATA[Тег \c WARNINGS можно использовать для включения/выключения предупреждающих сообщений, генерируемых Doxygen на стандартный поток ошибок (\c stderr). Если \c WARNINGS установлен в \c YES, это означает, что предупреждения включены. &lt;br&gt;\b Совет: Включите предупреждения при написании документации.]]>
+<![CDATA[Тег \c WARNINGS можно использовать для включения/выключения предупреждающих сообщений, генерируемых Doxygen на стандартный поток ошибок (\c stderr). Если \c WARNINGS установлен в \c YES, это означает, что предупреждения включены. <br><b>Совет:</b> Включите предупреждения при написании документации.]]>
       </docs>
     </option>
     <option type="bool" id="WARN_IF_UNDOCUMENTED" defval="1">
@@ -1361,7 +1361,7 @@ doxygen -w html new_header.html new_footer.html new_stylesheet.css YourConfigFil
       </docs>
       <value name="HTML-CSS" desc="(медленнее, но имеет лучшую совместимость. Это имя для MathJax версии 2, для MathJax версии 3 будет переведено в \c chtml)"/>
       <value name="NativeMML" desc="(т.е. MathML. Поддерживается только для MathJax 2. Для MathJax версии 3 вместо этого будет использоваться \c chtml.)"/>
-      <value name="chtml" desc="(Это имя для MathJax версии 3, для MathJax версии 2 будет переведено в \c HTML-CSS)"/>
+      <value name="chtml" desc="(Это имя для MathJax версии 3, для MathJax версии 2 будет переведено в &lt;code&gt;HTML-CSS&lt;/code&gt;)"/>
       <value name="SVG"/>
     </option>
         <option type="string" id="MATHJAX_RELPATH" format="string" depends="USE_MATHJAX">
@@ -1901,8 +1901,7 @@ doxygen -w latex new_header.tex new_footer.tex new_stylesheet.sty
 где `loc1` и `loc2` могут быть относительными или абсолютными путями или URL-адресами.
  Дополнительные сведения об использовании файлов тегов см. в разделе \ref external.
 
- \note
-  Каждый файл тегов должен иметь уникальное имя
+ \note Каждый файл тегов должен иметь уникальное имя
   (при этом имя \e НЕ включает путь).
   Если файл тегов не находится в каталоге, из которого запускается Doxygen,
   необходимо также указать путь к файлу тегов здесь.]]>
@@ -2316,7 +2315,7 @@ doxygen -w latex new_header.tex new_footer.tex new_stylesheet.sty
 <![CDATA[Тег \c MERMAID_RENDER_MODE выбирает, как рендерить диаграммы Mermaid.]]>
       </docs>
       <value name="AUTO" desc="(использовать рендеринг на стороне клиента для HTML и \c mmdc для LaTeX/PDF и других форматов. Если \c MERMAID_PATH не установлен, не-HTML диаграммы выдадут предупреждение)"/>
-      <value name="CLI" desc="(использовать инструмент \c mmdc для предварительной генерации изображений (требуется \c Node.js и \c mermaid-js/mermaid-cli). Работает для всех форматов вывода)"/>
+      <value name="CLI" desc="(использовать инструмент \c mmdc для предварительной генерации изображений (требуется \c Node.js и &lt;code&gt;mermaid-js/mermaid-cli&lt;/code&gt;). Работает для всех форматов вывода)"/>
       <value name="CLIENT_SIDE" desc="(встроить \c mermaid.js в вывод HTML для рендеринга на стороне клиента. Не требует \c mmdc, но работает только для вывода HTML)"/>
     </option>
     <option type="string" id="MERMAID_JS_URL" format="string" defval="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs">
@@ -2374,7 +2373,7 @@ doxygen -w latex new_header.tex new_footer.tex new_stylesheet.sty
     </option>
     <option type="bool" id="DOT_CLEANUP" defval="1">
       <docs>
-<![CDATA[Если тег \c DOT_CLEANUP установлен в \c YES, Doxygen удалит промежуточные файлы, использованные для генерации различных графов. &lt;br&gt;Примечание: Эта настройка используется не только для файлов dot, но и для временных файлов msc.]]>
+<![CDATA[Если тег \c DOT_CLEANUP установлен в \c YES, Doxygen удалит промежуточные файлы, использованные для генерации различных графов. <br>Примечание: Эта настройка используется не только для файлов dot, но и для временных файлов msc.]]>
       </docs>
     </option>
     <option type="string" id="MSCGEN_TOOL" format="file" defval="">

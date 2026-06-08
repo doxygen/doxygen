@@ -545,7 +545,7 @@
     </option>
     <option type="string" id="FILE_VERSION_FILTER" format="file" defval="">
       <docs>
-<![CDATA[La balise \c FILE_VERSION_FILTER peut être utilisée pour spécifier un programme ou script que Doxygen devrait invoquer pour obtenir la version actuelle de chaque fichier (généralement à partir du système de contrôle de version). Doxygen invoquera le programme en executant (via <code>popen()</code>) la commande <code>command input-file</code>, ou \c command est la valeur de la balise \c FILE_VERSION_FILTER, et \c input-file est le nom d'un fichier d'entrée fourni par Doxygen. Ce que le programme écrit sur la sortie standard est utilisé comme version de fichier.]]>
+<![CDATA[La balise \c FILE_VERSION_FILTER peut être utilisée pour spécifier un programme ou script que Doxygen devrait invoquer pour obtenir la version actuelle de chaque fichier (généralement à partir du système de contrôle de version). Doxygen invoquera le programme en executant (via <code>popen()</code>) la commande <code>command input_file</code>, ou \c command est la valeur de la balise \c FILE_VERSION_FILTER, et \c input_file est le nom d'un fichier d'entrée fourni par Doxygen. Ce que le programme écrit sur la sortie standard est utilisé comme version de fichier.]]>
       </docs>
     </option>
     <option type="string" id="LAYOUT_FILE" format="file" defval="">
@@ -1159,7 +1159,7 @@
       </docs>
       <value name="HTML-CSS" desc="(plus lent, mais avec la meilleure compatibilité. C'est le nom pour MathJax version 2, pour MathJax version 3 cela sera traduit en \c chtml)"/>
       <value name="NativeMML" desc="(c'est-à-dire MathML. Pris en charge uniquement pour MathJax 2. Pour MathJax version 3, \c chtml sera utilisé à la place.)"/>
-      <value name="chtml" desc="(C'est le nom pour MathJax version 3, pour MathJax version 2 cela sera traduit en \c HTML-CSS)"/>
+      <value name="chtml" desc="(C'est le nom pour MathJax version 3, pour MathJax version 2 cela sera traduit en &lt;code&gt;HTML-CSS&lt;/code&gt;)"/>
       <value name="SVG"/>
     </option>
         <option type="string" id="MATHJAX_RELPATH" format="string" depends="USE_MATHJAX">
@@ -1523,7 +1523,7 @@
   <group name="External" trname="Références externes" docs="Options de configuration relatives aux références externes">
     <option type="list" id="TAGFILES" format="file">
       <docs>
-<![CDATA[La balise \c TAGFILES peut être utilisée pour spécifier un ou plusieurs fichiers de balises. Pour chaque fichier de balises, l'emplacement de la documentation externe doit être ajouté. Le format d'un fichier de balises sans cet emplacement est le suivant: \verbatim TAGFILES = file1 file2 ... \endverbatim L'ajout d'un emplacement pour les fichiers de balises se fait comme suit: \verbatim TAGFILES = file1=loc1 "file2 = loc2" ... \endverbatim ou `loc1` et `loc2` peuvent être des chemins relatifs ou absolus ou des URL. Voir la section \ref external pour plus d'informations sur l'utilisation des fichiers de balises. \note Chaque fichier de balises doit avoir un nom unique (ou le nom n'inclut PAS le chemin). Si un fichier de balises n'est pas situe dans le répertoire dans lequel Doxygen est exécuté, vous devez également spécifier le chemin d'accès au fichier de balises ici.]]>
+<![CDATA[La balise \c TAGFILES peut être utilisée pour spécifier un ou plusieurs fichiers de balises. Pour chaque fichier de balises, l'emplacement de la documentation externe doit être ajouté. Le format d'un fichier de balises sans cet emplacement est le suivant: \verbatim TAGFILES = file1 file2 ... \endverbatim L'ajout d'un emplacement pour les fichiers de balises se fait comme suit: \verbatim TAGFILES = file1=loc1 "file2 = loc2" ... \endverbatim ou `loc1` et `loc2` peuvent être des chemins relatifs ou absolus ou des URL. Voir la section \ref external pour plus d'informations sur l'utilisation des fichiers de balises. \note Chaque fichier de balises doit avoir un nom unique (ou le nom n'inclut \e PAS le chemin). Si un fichier de balises n'est pas situe dans le répertoire dans lequel Doxygen est exécuté, vous devez également spécifier le chemin d'accès au fichier de balises ici.]]>
       </docs>
     </option>
     <option type="string" id="GENERATE_TAGFILE" format="file" defval="">
@@ -1780,7 +1780,7 @@
 <![CDATA[La balise \c MERMAID_RENDER_MODE sélectionne la manière dont les diagrammes Mermaid sont rendus.]]>
       </docs>
       <value name="AUTO" desc="(utiliser le rendu côté client pour HTML et \c mmdc pour LaTeX/PDF et autres formats. Si \c MERMAID_PATH n'est pas défini, les diagrammes non-HTML produiront un avertissement)"/>
-      <value name="CLI" desc="(utiliser l'outil \c mmdc pour pre-générer les images (nécessite \c Node.js et \c mermaid-js/mermaid-cli). Fonctionne pour tous les formats de sortie)"/>
+      <value name="CLI" desc="(utiliser l'outil \c mmdc pour pre-générer les images (nécessite \c Node.js et &lt;code&gt;mermaid-js/mermaid-cli&lt;/code&gt;). Fonctionne pour tous les formats de sortie)"/>
       <value name="CLIENT_SIDE" desc="(integrer \c mermaid.js dans la sortie HTML pour le rendu côté client. Ne nécessite pas \c mmdc mais fonctionne uniquement pour la sortie HTML)"/>
     </option>
     <option type="string" id="MERMAID_JS_URL" format="string" defval="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs">
