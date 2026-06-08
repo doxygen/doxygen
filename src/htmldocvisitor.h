@@ -26,7 +26,7 @@ class OutputCodeList;
 class TextStream;
 
 /*! @brief Concrete visitor implementation for HTML output. */
-class HtmlDocVisitor : public DocVisitor
+class HtmlDocVisitor final : public DocVisitor
 {
   public:
     HtmlDocVisitor(TextStream &t,OutputCodeList &ci,const Definition *ctx,const QCString &fn = QCString());

@@ -43,7 +43,7 @@ class OutputCodeList;
  *  This allows to add the same generator to multiple lists (one that owns the element, and others that refers to it).
  */
 template<class OutputCodeGen>
-class OutputCodeDefer : public OutputCodeIntf
+class OutputCodeDefer final : public OutputCodeIntf
 {
   public:
     OutputCodeDefer(OutputCodeGen *codeGen) : m_codeGen(codeGen) {}
@@ -109,7 +109,7 @@ using OutputCodeDeferExtension  = OutputCodeDefer<OutputCodeIntf>;
 /** Implementation that allows capturing calls made to the code interface to later
  *  invoke them on a #OutputCodeList via replay().
  */
-class OutputCodeRecorder : public OutputCodeIntf
+class OutputCodeRecorder final : public OutputCodeIntf
 {
   public:
     OutputType type() const override { return OutputType::Recorder; }

@@ -131,7 +131,7 @@ class SectionRefs
 };
 
 //! singleton class that owns the list of all sections
-class SectionManager : public LinkedMap<SectionInfo>
+class SectionManager final : public LinkedMap<SectionInfo>
 {
   public:
     //! Add a new section given the data of an existing section.

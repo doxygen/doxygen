@@ -30,7 +30,7 @@ class OutputCodeList;
 class TextStream;
 
 /*! @brief Concrete visitor implementation for LaTeX output. */
-class ManDocVisitor : public DocVisitor
+class ManDocVisitor final : public DocVisitor
 {
   public:
     ManDocVisitor(TextStream &t,OutputCodeList &ci,const QCString &langExt);

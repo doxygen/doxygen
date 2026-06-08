@@ -23,7 +23,7 @@
 class Definition;
 class MemberDef;
 
-class Qhp : public IndexIntf
+class Qhp final : public IndexIntf
 {
   public:
     Qhp();

@@ -26,7 +26,7 @@ class MemberDef;
 class QCString;
 class Definition;
 
-class CCodeParser : public CodeParserInterface
+class CCodeParser final : public CodeParserInterface
 {
   public:
     CCodeParser();

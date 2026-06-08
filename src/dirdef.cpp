@@ -34,7 +34,7 @@
 
 //----------------------------------------------------------------------
 
-class DirDefImpl : public DefinitionMixin<DirDef>
+class DirDefImpl final : public DefinitionMixin<DirDef>
 {
   public:
     DirDefImpl(const QCString &path);

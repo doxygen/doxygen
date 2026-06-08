@@ -28,7 +28,7 @@
 
 //------------------------------------------------------------------------------------
 
-class ConceptDefImpl : public DefinitionMixin<ConceptDefMutable>
+class ConceptDefImpl final : public DefinitionMixin<ConceptDefMutable>
 {
   public:
     ConceptDefImpl(const QCString &fileName,int startLine,int startColumn,
@@ -102,7 +102,7 @@ std::unique_ptr<ConceptDef> createConceptDef(
 
 //------------------------------------------------------------------------------------
 
-class ConceptDefAliasImpl : public DefinitionAliasMixin<ConceptDef>
+class ConceptDefAliasImpl final : public DefinitionAliasMixin<ConceptDef>
 {
   public:
     ConceptDefAliasImpl(const Definition *newScope,const ConceptDef *cd)

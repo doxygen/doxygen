@@ -27,7 +27,7 @@
 class TextStream;
 
 /** Representation of an include dependency graph */
-class DotInclDepGraph : public DotGraph
+class DotInclDepGraph final : public DotGraph
 {
   public:
     DotInclDepGraph(const FileDef *fd,bool inverse);

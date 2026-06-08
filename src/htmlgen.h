@@ -22,7 +22,7 @@
 class OutputCodeList;
 
 /** Generator for HTML code fragments */
-class HtmlCodeGenerator : public OutputCodeIntf
+class HtmlCodeGenerator final : public OutputCodeIntf
 {
   public:
     HtmlCodeGenerator(TextStream *t,const QCString &relPath);
@@ -92,7 +92,7 @@ class HtmlCodeGenerator : public OutputCodeIntf
 };
 
 /** Generator for HTML output */
-class HtmlGenerator : public OutputGenerator, public OutputGenIntf
+class HtmlGenerator final : public OutputGenerator, public OutputGenIntf
 {
   public:
     HtmlGenerator();

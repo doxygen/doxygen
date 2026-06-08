@@ -506,7 +506,7 @@ struct UsesClassDef
   bool containment = true;
 };
 
-class UsesClassList : public std::vector<UsesClassDef>
+class UsesClassList final : public std::vector<UsesClassDef>
 {
 };
 
@@ -533,7 +533,7 @@ struct ConstraintClassDef
   StringSet accessors;
 };
 
-class ConstraintClassList : public std::vector<ConstraintClassDef>
+class ConstraintClassList final : public std::vector<ConstraintClassDef>
 {
 };
 

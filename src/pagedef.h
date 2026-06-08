@@ -67,11 +67,11 @@ const PageDef      *toPageDef(const Definition *d);
 
 // ------------------
 
-class PageLinkedMap : public LinkedMap<PageDef>
+class PageLinkedMap final : public LinkedMap<PageDef>
 {
 };
 
-class PageLinkedRefMap : public LinkedRefMap<PageDef>
+class PageLinkedRefMap final : public LinkedRefMap<PageDef>
 {
 };
 

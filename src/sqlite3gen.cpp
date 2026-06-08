@@ -833,7 +833,7 @@ SqlStmt memberdef_param_insert={
   ,nullptr
 };
 
-class TextGeneratorSqlite3Impl : public TextGeneratorIntf
+class TextGeneratorSqlite3Impl final : public TextGeneratorIntf
 {
   public:
     TextGeneratorSqlite3Impl(StringVector &l) : m_list(l) { }

@@ -22,7 +22,7 @@ class MemberDef;
 
 void codeFreeVhdlScanner();
 
-class VHDLCodeParser : public CodeParserInterface
+class VHDLCodeParser final : public CodeParserInterface
 {
   public:
     VHDLCodeParser();

@@ -28,7 +28,7 @@
 class ClassLinkedMap;
 
 /** Represents a graphical class hierarchy */
-class DotGfxHierarchyTable : public DotGraph
+class DotGfxHierarchyTable final : public DotGraph
 {
   public:
     DotGfxHierarchyTable(const QCString &prefix="",ClassDef::CompoundType ct=ClassDef::Class);

@@ -24,7 +24,7 @@
 class OutputCodeList;
 
 /** Generator for LaTeX code fragments */
-class LatexCodeGenerator : public OutputCodeIntf
+class LatexCodeGenerator final : public OutputCodeIntf
 {
   public:
     LatexCodeGenerator(TextStream *t,const QCString &relPath,const QCString &sourceFile);
@@ -90,7 +90,7 @@ class LatexCodeGenerator : public OutputCodeIntf
 };
 
 /** Generator for LaTeX output. */
-class LatexGenerator : public OutputGenerator, public OutputGenIntf
+class LatexGenerator final : public OutputGenerator, public OutputGenIntf
 {
   public:
     LatexGenerator();

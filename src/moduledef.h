@@ -92,18 +92,18 @@ class ModuleDef : public DefinitionMutable, public Definition
 ModuleDef            *toModuleDef(Definition *d);
 const ModuleDef      *toModuleDef(const Definition *d);
 
-class ModuleLinkedMap : public LinkedMap<ModuleDef>
+class ModuleLinkedMap final : public LinkedMap<ModuleDef>
 {
 };
 
-class ModuleLinkedRefMap : public LinkedRefMap<ModuleDef>
+class ModuleLinkedRefMap final : public LinkedRefMap<ModuleDef>
 {
   public:
     bool declVisible() const;
     void writeDeclaration(OutputList &ol,const QCString &header,bool localNames) const;
 };
 
-class ModuleList : public std::vector<ModuleDef *>
+class ModuleList final : public std::vector<ModuleDef *>
 {
 };
 

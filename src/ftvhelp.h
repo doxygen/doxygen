@@ -37,7 +37,7 @@ class TextStream;
 
 /** A class that generates a dynamic tree view side panel.
  */
-class FTVHelp : public IndexIntf
+class FTVHelp final : public IndexIntf
 {
   public:
     FTVHelp(bool LTI);

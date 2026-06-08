@@ -25,7 +25,7 @@
 #include "textstream.h"
 
 /*! @brief Concrete visitor implementation for TEXT output. */
-class TextDocVisitor : public DocVisitor
+class TextDocVisitor final : public DocVisitor
 {
   public:
     TextDocVisitor(TextStream &t) : m_t(t) {}

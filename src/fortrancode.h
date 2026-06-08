@@ -47,13 +47,13 @@ class FortranCodeParser : public CodeParserInterface
     std::unique_ptr<Private> p;
 };
 
-class FortranCodeParserFree : public FortranCodeParser
+class FortranCodeParserFree final : public FortranCodeParser
 {
   public:
     FortranCodeParserFree() : FortranCodeParser(FortranFormat::Free) { }
 };
 
-class FortranCodeParserFixed : public FortranCodeParser
+class FortranCodeParserFixed final : public FortranCodeParser
 {
   public:
     FortranCodeParserFixed() : FortranCodeParser(FortranFormat::Fixed) { }

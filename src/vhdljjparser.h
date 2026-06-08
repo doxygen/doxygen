@@ -24,7 +24,7 @@ enum  class VhdlSection { UNKNOWN = 0, GEN_SEC=0x1, PARAM_SEC,CONTEXT_SEC,PROTEC
  *
  * This is the VHDL language parser for doxygen.
  */
-class VHDLOutlineParser : public OutlineParserInterface
+class VHDLOutlineParser final : public OutlineParserInterface
 {
   public:
     VHDLOutlineParser();

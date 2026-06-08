@@ -24,7 +24,7 @@
  *
  *  This is the Lex language parser for doxygen.
  */
-class LexOutlineParser : public OutlineParserInterface
+class LexOutlineParser final : public OutlineParserInterface
 {
   public:
     LexOutlineParser();

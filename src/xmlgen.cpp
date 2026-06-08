@@ -182,7 +182,7 @@ void writeXMLLink(TextStream &t,const QCString &extRef,const QCString &compoundI
 }
 
 /** Implements TextGeneratorIntf for an XML stream. */
-class TextGeneratorXMLImpl : public TextGeneratorIntf
+class TextGeneratorXMLImpl final : public TextGeneratorIntf
 {
   public:
     TextGeneratorXMLImpl(TextStream &t): m_t(t) {}

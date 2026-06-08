@@ -24,7 +24,7 @@
 class OutputCodeList;
 
 /** Generator for RTF code fragments */
-class RTFCodeGenerator : public OutputCodeIntf
+class RTFCodeGenerator final : public OutputCodeIntf
 {
   public:
     RTFCodeGenerator(TextStream *t);
@@ -76,7 +76,7 @@ class RTFCodeGenerator : public OutputCodeIntf
 
 
 /** Generator for RTF output. */
-class RTFGenerator : public OutputGenerator, public OutputGenIntf
+class RTFGenerator final : public OutputGenerator, public OutputGenIntf
 {
   public:
     RTFGenerator();

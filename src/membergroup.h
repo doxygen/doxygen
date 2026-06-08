@@ -106,11 +106,11 @@ class MemberGroup
     RequirementRefs m_requirementRefs;
 };
 
-class MemberGroupRefList : public std::vector<MemberGroup *>
+class MemberGroupRefList final : public std::vector<MemberGroup *>
 {
 };
 
-class MemberGroupList : public std::vector< std::unique_ptr<MemberGroup> >
+class MemberGroupList final : public std::vector< std::unique_ptr<MemberGroup> >
 {
 };
 

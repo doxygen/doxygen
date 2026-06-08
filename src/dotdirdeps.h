@@ -22,7 +22,7 @@
 #include "dirdef.h"
 
 /** Representation of an directory dependency graph */
-class DotDirDeps : public DotGraph
+class DotDirDeps final : public DotGraph
 {
   public:
     DotDirDeps(const DirDef *dir);

@@ -11400,7 +11400,7 @@ static const char *getArg(int argc,char **argv,int &optInd)
 //----------------------------------------------------------------------------
 
 /** @brief /dev/null outline parser */
-class NullOutlineParser : public OutlineParserInterface
+class NullOutlineParser final : public OutlineParserInterface
 {
   public:
     void parseInput(const QCString &/* file */, const char * /* buf */,const std::shared_ptr<Entry> &, ClangTUParser*) override {}

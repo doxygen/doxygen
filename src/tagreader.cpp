@@ -112,7 +112,7 @@ struct TagCompoundInfo
 
 
 /** Container for class specific info that can be read from a tagfile */
-struct TagClassInfo : public TagCompoundInfo
+struct TagClassInfo final : public TagCompoundInfo
 {
   enum class Kind { None=-1, Class, Struct, Union, Interface, Exception, Protocol, Category, Enum, Service, Singleton };
   TagClassInfo(Kind k) : kind(k) {}
@@ -128,7 +128,7 @@ struct TagClassInfo : public TagCompoundInfo
 using TagClassInfoPtr = std::unique_ptr<TagClassInfo>;
 
 /** Container for concept specific info that can be read from a tagfile */
-struct TagConceptInfo : public TagCompoundInfo
+struct TagConceptInfo final : public TagCompoundInfo
 {
   QCString clangId;
 };
@@ -136,7 +136,7 @@ struct TagConceptInfo : public TagCompoundInfo
 using TagConceptInfoPtr = std::unique_ptr<TagConceptInfo>;
 
 /** Container for module specific info that can be read from a tagfile */
-struct TagModuleInfo : public TagCompoundInfo
+struct TagModuleInfo final : public TagCompoundInfo
 {
   QCString clangId;
 };
@@ -145,7 +145,7 @@ using TagModuleInfoPtr = std::unique_ptr<TagModuleInfo>;
 
 
 /** Container for namespace specific info that can be read from a tagfile */
-struct TagNamespaceInfo : public TagCompoundInfo
+struct TagNamespaceInfo final : public TagCompoundInfo
 {
   QCString clangId;
   StringVector classList;
@@ -156,7 +156,7 @@ struct TagNamespaceInfo : public TagCompoundInfo
 using TagNamespaceInfoPtr = std::unique_ptr<TagNamespaceInfo>;
 
 /** Container for package specific info that can be read from a tagfile */
-struct TagPackageInfo : public TagCompoundInfo
+struct TagPackageInfo final : public TagCompoundInfo
 {
   StringVector classList;
 };
@@ -164,7 +164,7 @@ struct TagPackageInfo : public TagCompoundInfo
 using TagPackageInfoPtr = std::unique_ptr<TagPackageInfo>;
 
 /** Container for file specific info that can be read from a tagfile */
-struct TagFileInfo : public TagCompoundInfo
+struct TagFileInfo final : public TagCompoundInfo
 {
   QCString path;
   StringVector classList;
@@ -176,7 +176,7 @@ struct TagFileInfo : public TagCompoundInfo
 using TagFileInfoPtr = std::unique_ptr<TagFileInfo>;
 
 /** Container for group specific info that can be read from a tagfile */
-struct TagGroupInfo : public TagCompoundInfo
+struct TagGroupInfo final : public TagCompoundInfo
 {
   QCString title;
   StringVector subgroupList;
@@ -192,7 +192,7 @@ struct TagGroupInfo : public TagCompoundInfo
 using TagGroupInfoPtr = std::unique_ptr<TagGroupInfo>;
 
 /** Container for page specific info that can be read from a tagfile */
-struct TagPageInfo : public TagCompoundInfo
+struct TagPageInfo final : public TagCompoundInfo
 {
   QCString title;
   StringVector subpages;
@@ -201,7 +201,7 @@ struct TagPageInfo : public TagCompoundInfo
 using TagPageInfoPtr = std::unique_ptr<TagPageInfo>;
 
 /** Container for directory specific info that can be read from a tagfile */
-struct TagDirInfo : public TagCompoundInfo
+struct TagDirInfo final : public TagCompoundInfo
 {
   QCString path;
   StringVector subdirList;
@@ -211,7 +211,7 @@ struct TagDirInfo : public TagCompoundInfo
 using TagDirInfoPtr = std::unique_ptr<TagDirInfo>;
 
 /** Container for requirement specific info that can be read from a tagfile */
-struct TagRequirementInfo : public TagCompoundInfo
+struct TagRequirementInfo final : public TagCompoundInfo
 {
   QCString id;
   QCString title;

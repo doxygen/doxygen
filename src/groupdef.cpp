@@ -50,7 +50,7 @@
 
 //---------------------------------------------------------------------------
 
-class GroupDefImpl : public DefinitionMixin<GroupDef>
+class GroupDefImpl final : public DefinitionMixin<GroupDef>
 {
   public:
     GroupDefImpl(const QCString &fileName,int line,const QCString &name,const QCString &title,const QCString &refFileName=QCString());

@@ -19,7 +19,7 @@
 #include "parserintf.h"
 
 /** @brief Generic code parser */
-class FileCodeParser : public CodeParserInterface
+class FileCodeParser final : public CodeParserInterface
 {
   public:
     void parseCode(OutputCodeList &codeOutIntf,

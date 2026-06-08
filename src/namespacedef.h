@@ -38,11 +38,11 @@ class NamespaceDefMutable;
 
 using NamespaceDefSet = std::unordered_set<const NamespaceDef*>;
 
-class NamespaceLinkedMap : public LinkedMap<NamespaceDef>
+class NamespaceLinkedMap final : public LinkedMap<NamespaceDef>
 {
 };
 
-class NamespaceLinkedRefMap : public LinkedRefMap<const NamespaceDef>
+class NamespaceLinkedRefMap final : public LinkedRefMap<const NamespaceDef>
 {
   public:
     void writeDeclaration(OutputList &ol,const QCString &title,

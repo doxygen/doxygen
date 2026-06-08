@@ -42,13 +42,13 @@ class FortranOutlineParser : public OutlineParserInterface
     std::unique_ptr<Private> p;
 };
 
-class FortranOutlineParserFree : public FortranOutlineParser
+class FortranOutlineParserFree final : public FortranOutlineParser
 {
   public:
     FortranOutlineParserFree() : FortranOutlineParser(FortranFormat::Free) { }
 };
 
-class FortranOutlineParserFixed : public FortranOutlineParser
+class FortranOutlineParserFixed final : public FortranOutlineParser
 {
   public:
     FortranOutlineParserFixed() : FortranOutlineParser(FortranFormat::Fixed) { }

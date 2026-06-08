@@ -146,11 +146,11 @@ class DotNode
     int              m_subgraphId = -1;
 };
 
-class DotNodeMap : public std::map<std::string,DotNode*>
+class DotNodeMap final : public std::map<std::string,DotNode*>
 {
 };
 
-class DotNodeDeque : public std::deque<DotNode*>
+class DotNodeDeque final : public std::deque<DotNode*>
 {
 };
 

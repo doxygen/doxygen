@@ -23,7 +23,7 @@
 #include "memberdef.h"
 
 /** Representation of an call graph */
-class DotCallGraph : public DotGraph
+class DotCallGraph final : public DotGraph
 {
   public:
     DotCallGraph(const MemberDef *md,bool inverse);

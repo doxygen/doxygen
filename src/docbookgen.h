@@ -44,7 +44,7 @@
 
 class OutputCodeList;
 
-class DocbookCodeGenerator : public OutputCodeIntf
+class DocbookCodeGenerator final : public OutputCodeIntf
 {
   public:
     DocbookCodeGenerator(TextStream *t);
@@ -100,7 +100,7 @@ class DocbookCodeGenerator : public OutputCodeIntf
     size_t      m_stripIndentAmount = 0;
 };
 
-class DocbookGenerator : public OutputGenerator, public OutputGenIntf
+class DocbookGenerator final : public OutputGenerator, public OutputGenIntf
 {
   public:
     DocbookGenerator();

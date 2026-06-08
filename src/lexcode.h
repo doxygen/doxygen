@@ -26,7 +26,7 @@ class Definition;
 
 /** LEX code scanner.
  */
-class LexCodeParser : public CodeParserInterface
+class LexCodeParser final : public CodeParserInterface
 {
   public:
     LexCodeParser();

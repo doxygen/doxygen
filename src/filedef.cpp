@@ -118,7 +118,7 @@ using DefinitionLineMap = std::unordered_map<int,const Definition *>;
 using MemberDefLineMap  = std::unordered_map<int,const MemberDef *>;
 using IncludeInfoMap = std::unordered_map<std::string, const IncludeInfo *>;
 
-class FileDefImpl : public DefinitionMixin<FileDef>
+class FileDefImpl final : public DefinitionMixin<FileDef>
 {
   public:
     FileDefImpl(const QCString &p,const QCString &n,const QCString &ref=QCString(),const QCString &dn=QCString());

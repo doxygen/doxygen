@@ -103,7 +103,7 @@ class ConfigOption
 
 /** Section marker for grouping the configuration options.
  */
-class ConfigInfo : public ConfigOption
+class ConfigInfo final : public ConfigOption
 {
   public:
     ConfigInfo(const char *name,const char *doc)
@@ -121,7 +121,7 @@ class ConfigInfo : public ConfigOption
 
 /** Class representing a list type option.
  */
-class ConfigList : public ConfigOption
+class ConfigList final : public ConfigOption
 {
   public:
     enum WidgetType { String, File, Dir, FileAndDir };
@@ -153,7 +153,7 @@ class ConfigList : public ConfigOption
 
 /** Class representing an enum type option.
  */
-class ConfigEnum : public ConfigOption
+class ConfigEnum final : public ConfigOption
 {
   public:
     ConfigEnum(const char *name,const char *doc,const char *defVal)
@@ -184,7 +184,7 @@ class ConfigEnum : public ConfigOption
 
 /** Class representing a string type option.
  */
-class ConfigString : public ConfigOption
+class ConfigString final : public ConfigOption
 {
   public:
     enum WidgetType { String, File, Dir, Image, FileAndDir };
@@ -216,7 +216,7 @@ class ConfigString : public ConfigOption
 
 /** Class representing an integer type option.
  */
-class ConfigInt : public ConfigOption
+class ConfigInt final : public ConfigOption
 {
   public:
     ConfigInt(const char *name,const char *doc,int minVal,int maxVal,int defVal)
@@ -251,7 +251,7 @@ class ConfigInt : public ConfigOption
 
 /** Class representing a Boolean type option.
  */
-class ConfigBool : public ConfigOption
+class ConfigBool final : public ConfigOption
 {
   public:
     ConfigBool(const char *name,const char *doc,bool defVal)
@@ -281,7 +281,7 @@ class ConfigBool : public ConfigOption
 
 /** Section marker for obsolete options
  */
-class ConfigObsolete : public ConfigOption
+class ConfigObsolete final : public ConfigOption
 {
   public:
     ConfigObsolete(const char *name,OptionType orgType) : ConfigOption(O_Obsolete), m_orgType(orgType)
@@ -305,7 +305,7 @@ class ConfigObsolete : public ConfigOption
 
 /** Section marker for compile time optional options
  */
-class ConfigDisabled : public ConfigOption
+class ConfigDisabled final : public ConfigOption
 {
   public:
     ConfigDisabled(const char *name) : ConfigOption(O_Disabled)

@@ -26,7 +26,7 @@ class Definition;
 
 /** SQL scanner. Only support syntax highlighting of code at the moment.
  */
-class SQLCodeParser : public CodeParserInterface
+class SQLCodeParser final : public CodeParserInterface
 {
   public:
     SQLCodeParser();

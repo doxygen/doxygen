@@ -124,11 +124,11 @@ const GroupDef      *toGroupDef(const Definition *d);
 
 // ------------------
 
-class GroupLinkedMap : public LinkedMap<GroupDef>
+class GroupLinkedMap final : public LinkedMap<GroupDef>
 {
 };
 
-class GroupList : public std::vector<GroupDef *>
+class GroupList final : public std::vector<GroupDef *>
 {
 };
 

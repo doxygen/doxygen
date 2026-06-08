@@ -53,7 +53,7 @@ class FilePair
 // ------------------
 
 /** A linked map of file pairs */
-class FilePairLinkedMap : public LinkedMap<FilePair>
+class FilePairLinkedMap final : public LinkedMap<FilePair>
 {
 };
 
@@ -109,7 +109,7 @@ class UsedDir
 class DirDef : public DefinitionMutable, public Definition
 {
   public:
-    class UsedDirLinkedMap : public LinkedMap<UsedDir> {};
+    class UsedDirLinkedMap final : public LinkedMap<UsedDir> {};
 
     // accessors
     virtual const QCString shortName() const = 0;
@@ -171,16 +171,16 @@ class DirRelation
 };
 
 /** A linked map of directories */
-class DirLinkedMap : public LinkedMap<DirDef>
+class DirLinkedMap final : public LinkedMap<DirDef>
 {
 };
 
 /** A list of directories. */
-class DirList : public std::vector<const DirDef*>
+class DirList final : public std::vector<const DirDef*>
 {
 };
 
-class DirRelationLinkedMap : public LinkedMap<DirRelation>
+class DirRelationLinkedMap final : public LinkedMap<DirRelation>
 {
 };
 

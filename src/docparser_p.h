@@ -39,7 +39,7 @@ using DefinitionStack = std::vector<const Definition *>;
 using DocNodeStack = std::stack<DocNodeVariant *>;
 
 template<typename T, typename Container = std::deque<T>>
-class IterableStack : public std::stack<T, Container>
+class IterableStack final : public std::stack<T, Container>
 {
     using std::stack<T, Container>::c;
 
@@ -98,7 +98,7 @@ struct DocParserContext
   bool     autolinkSupport = false;
 };
 
-class DocParser : public IDocParser
+class DocParser final : public IDocParser
 {
   public:
     class AutoSaveContext

@@ -81,7 +81,7 @@ struct IncludeInfo
   IncludeKind kind = IncludeKind::IncludeSystem;
 };
 
-class IncludeInfoList : public std::vector<IncludeInfo>
+class IncludeInfoList final : public std::vector<IncludeInfo>
 {
 };
 
@@ -220,7 +220,7 @@ const FileDef      *toFileDef(const Definition *d);
 
 // ------------------
 
-class FileList : public std::vector<const FileDef *>
+class FileList final : public std::vector<const FileDef *>
 {
 };
 

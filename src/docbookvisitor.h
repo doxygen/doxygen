@@ -28,7 +28,7 @@ class QCString;
 class TextStream;
 
 /*! @brief Concrete visitor implementation for Docbook output. */
-class DocbookDocVisitor : public DocVisitor
+class DocbookDocVisitor final : public DocVisitor
 {
   public:
     DocbookDocVisitor(TextStream &t,OutputCodeList &ci,const QCString &langExt);

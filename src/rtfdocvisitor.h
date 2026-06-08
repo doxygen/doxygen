@@ -28,7 +28,7 @@ class OutputCodeList;
 class TextStream;
 
 /*! @brief Concrete visitor implementation for RTF output. */
-class RTFDocVisitor : public DocVisitor
+class RTFDocVisitor final : public DocVisitor
 {
   public:
     RTFDocVisitor(TextStream &t,OutputCodeList &ci,const QCString &langExt, int hierarchyLevel = 0);

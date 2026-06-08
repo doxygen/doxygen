@@ -26,7 +26,7 @@
  *  supports C++ and various languages that are closely related to C++,
  *  such as C, C#, Objective-C, Java, PHP, and IDL.
  */
-class COutlineParser : public OutlineParserInterface
+class COutlineParser final : public OutlineParserInterface
 {
   public:
     COutlineParser();

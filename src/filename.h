@@ -26,7 +26,7 @@
 class FileDef;
 
 /** Class representing all files with a certain base name */
-class FileName : public std::vector< std::unique_ptr<FileDef> >
+class FileName final : public std::vector< std::unique_ptr<FileDef> >
 {
   public:
     explicit FileName(const QCString &nm) : m_name(nm) {}
@@ -64,7 +64,7 @@ class FileNameFn
 };
 
 /** Ordered dictionary of FileName objects. */
-class FileNameLinkedMap : public LinkedMap<FileName,FileNameFn,FileNameFn,
+class FileNameLinkedMap final : public LinkedMap<FileName,FileNameFn,FileNameFn,
                                            std::unordered_multimap<std::string,FileName*,FileNameFn,FileNameFn> >
 {
 };

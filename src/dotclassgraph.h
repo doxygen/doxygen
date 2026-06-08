@@ -25,7 +25,7 @@
 class TextStream;
 
 /** Representation of a class inheritance or dependency graph */
-class DotClassGraph : public DotGraph
+class DotClassGraph final : public DotGraph
 {
   public:
     DotClassGraph(const ClassDef *cd,GraphType t);

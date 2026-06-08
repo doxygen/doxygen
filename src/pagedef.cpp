@@ -28,7 +28,7 @@
 
 //------------------------------------------------------------------------------------------
 
-class PageDefImpl : public DefinitionMixin<PageDef>
+class PageDefImpl final : public DefinitionMixin<PageDef>
 {
   public:
     PageDefImpl(const QCString &f,int l,const QCString &n,const QCString &d,const QCString &t);

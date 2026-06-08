@@ -23,7 +23,7 @@
 class Definition;
 class MemberDef;
 
-class Sitemap : public IndexIntf
+class Sitemap final : public IndexIntf
 {
   public:
     Sitemap();
@@ -51,7 +51,7 @@ class Sitemap : public IndexIntf
     std::unique_ptr<Private> p;
 };
 
-class Crawlmap : public IndexIntf
+class Crawlmap final : public IndexIntf
 {
   public:
     Crawlmap();

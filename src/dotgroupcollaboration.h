@@ -25,7 +25,7 @@
 class TextStream;
 
 /** Representation of a group collaboration graph */
-class DotGroupCollaboration : public DotGraph
+class DotGroupCollaboration final : public DotGraph
 {
   public :
     DotGroupCollaboration(const GroupDef* gd);

@@ -45,7 +45,7 @@ struct HeaderInfo
 using HeaderInfoVector = std::vector<HeaderInfo>;
 
 
-class ModuleDefImpl : public DefinitionMixin<ModuleDef>
+class ModuleDefImpl final : public DefinitionMixin<ModuleDef>
 {
   public:
     ModuleDefImpl(const QCString &fileName,int startLine,int startColom,

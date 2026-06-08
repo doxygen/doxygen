@@ -29,7 +29,7 @@ struct HtmlAttrib
 };
 
 /*! \brief Class representing a list of HTML attributes. */
-class HtmlAttribList : public std::vector<HtmlAttrib>
+class HtmlAttribList final : public std::vector<HtmlAttrib>
 {
   public:
     void mergeAttribute(const QCString &optName,const QCString &optValue)

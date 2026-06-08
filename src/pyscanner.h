@@ -31,7 +31,7 @@
  *
  * This is the Python language parser for doxygen.
  */
-class PythonOutlineParser : public OutlineParserInterface
+class PythonOutlineParser final : public OutlineParserInterface
 {
   public:
     PythonOutlineParser();

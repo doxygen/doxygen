@@ -30,7 +30,7 @@ class OutputCodeList;
 class QCString;
 
 /*! @brief Concrete visitor implementation for XML output. */
-class XmlDocVisitor : public DocVisitor
+class XmlDocVisitor final : public DocVisitor
 {
   public:
     XmlDocVisitor(TextStream &t,OutputCodeList &ci,const QCString &langExt);

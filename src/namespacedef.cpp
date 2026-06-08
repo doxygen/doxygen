@@ -51,7 +51,7 @@ static QCString makeDisplayName(const NamespaceDef *nd,bool includeScope)
 }
 //------------------------------------------------------------------
 
-class NamespaceDefImpl : public DefinitionMixin<NamespaceDefMutable>
+class NamespaceDefImpl final : public DefinitionMixin<NamespaceDefMutable>
 {
   public:
     NamespaceDefImpl(const QCString &defFileName,int defLine,int defColumn,
@@ -181,7 +181,7 @@ std::unique_ptr<NamespaceDef> createNamespaceDef(const QCString &defFileName,int
 
 //------------------------------------------------------------------
 
-class NamespaceDefAliasImpl : public DefinitionAliasMixin<NamespaceDef>
+class NamespaceDefAliasImpl final : public DefinitionAliasMixin<NamespaceDef>
 {
   public:
     NamespaceDefAliasImpl(const Definition *newScope,const NamespaceDef *nd)

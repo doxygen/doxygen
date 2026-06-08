@@ -27,7 +27,7 @@ class Definition;
 
 /** XML scanner. Only support syntax highlighting of code at the moment.
  */
-class XMLCodeParser : public CodeParserInterface
+class XMLCodeParser final : public CodeParserInterface
 {
   public:
     XMLCodeParser();

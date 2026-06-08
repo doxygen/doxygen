@@ -268,7 +268,7 @@ void PerlModOutput::iclose(char c)
 }
 
 /*! @brief Concrete visitor implementation for PerlMod output. */
-class PerlModDocVisitor : public DocVisitor
+class PerlModDocVisitor final : public DocVisitor
 {
   public:
     PerlModDocVisitor(PerlModOutput &);

@@ -98,7 +98,7 @@ struct LayoutDocEntrySimple : LayoutDocEntry
     bool m_visible;
 };
 
-struct LayoutDocEntrySection: public LayoutDocEntrySimple
+struct LayoutDocEntrySection final : public LayoutDocEntrySimple
 {
   LayoutDocEntrySection(Kind k,const std::string &id,const QCString &tl,bool v) :
     LayoutDocEntrySimple(k,id,v), m_title(tl) {}
@@ -108,7 +108,7 @@ private:
 };
 
 /** @brief Represents of a member declaration list with configurable title and subtitle. */
-struct LayoutDocEntryMemberDecl: public LayoutDocEntry
+struct LayoutDocEntryMemberDecl final : public LayoutDocEntry
 {
   LayoutDocEntryMemberDecl(MemberListType tp,const std::string &id,
                            const QCString &tl,const QCString &ss, bool v)
@@ -128,7 +128,7 @@ private:
 };
 
 /** @brief Represents of a member definition list with configurable title. */
-struct LayoutDocEntryMemberDef: public LayoutDocEntry
+struct LayoutDocEntryMemberDef final : public LayoutDocEntry
 {
   LayoutDocEntryMemberDef(MemberListType tp,const std::string &id, const QCString &tl,bool v)
     : type(tp), m_id(id), m_title(tl), m_visible(v) {}

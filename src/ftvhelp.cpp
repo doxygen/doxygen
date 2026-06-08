@@ -527,7 +527,7 @@ struct NavIndexEntry
   QCString path;
 };
 
-class NavIndexEntryList : public std::vector<NavIndexEntry>
+class NavIndexEntryList final : public std::vector<NavIndexEntry>
 {
 };
 

@@ -72,7 +72,7 @@ class TextGeneratorIntf
 };
 
 /** Implements TextGeneratorIntf for an OutputDocInterface stream. */
-class TextGeneratorOLImpl : public TextGeneratorIntf
+class TextGeneratorOLImpl final : public TextGeneratorIntf
 {
   public:
     TextGeneratorOLImpl(OutputList &ol);

@@ -40,7 +40,7 @@ class MemberDef;
  * These files can be used to generate a help plugin readable
  * by the Eclipse IDE.
  */
-class EclipseHelp : public IndexIntf
+class EclipseHelp final : public IndexIntf
 {
   public:
     EclipseHelp();

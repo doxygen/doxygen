@@ -32,7 +32,7 @@ class MemberDef;
  *  These files can be used to create context help
  *  for use within Apple's Xcode 3.0 development environment
  */
-class DocSets : public IndexIntf
+class DocSets final : public IndexIntf
 {
   public:
     DocSets();

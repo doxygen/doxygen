@@ -115,7 +115,7 @@ class RefList
     std::unordered_map< int, RefItem* > m_lookup;
 };
 
-class RefListManager : public LinkedMap<RefList>
+class RefListManager final : public LinkedMap<RefList>
 {
   public:
     static RefListManager &instance()

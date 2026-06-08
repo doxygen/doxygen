@@ -50,7 +50,7 @@
 
 //-----------------------------------------------------------------------------
 
-class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
+class MemberDefImpl final : public DefinitionMixin<MemberDefMutable>
 {
   public:
     MemberDefImpl(const QCString &defFileName,int defLine,int defColumn,
@@ -533,7 +533,7 @@ std::unique_ptr<MemberDef> createMemberDef(const QCString &defFileName,int defLi
 
 //-----------------------------------------------------------------------------
 
-class MemberDefAliasImpl : public DefinitionAliasMixin<MemberDef>
+class MemberDefAliasImpl final : public DefinitionAliasMixin<MemberDef>
 {
   public:
     MemberDefAliasImpl(const Definition *newScope,const MemberDef *md)

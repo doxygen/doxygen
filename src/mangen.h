@@ -21,7 +21,7 @@
 class OutputCodeList;
 
 /** Generator for Man page code fragments */
-class ManCodeGenerator : public OutputCodeIntf
+class ManCodeGenerator final : public OutputCodeIntf
 {
   public:
     ManCodeGenerator(TextStream *t);
@@ -65,7 +65,7 @@ class ManCodeGenerator : public OutputCodeIntf
 };
 
 /** Generator for Man page output. */
-class ManGenerator : public OutputGenerator, public OutputGenIntf
+class ManGenerator final : public OutputGenerator, public OutputGenIntf
 {
   public:
     ManGenerator();

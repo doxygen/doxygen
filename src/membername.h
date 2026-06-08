@@ -59,7 +59,7 @@ class MemberName
 };
 
 /** Ordered dictionary of MemberName objects. */
-class MemberNameLinkedMap : public LinkedMap<MemberName>
+class MemberNameLinkedMap final : public LinkedMap<MemberName>
 {
   public:
     MemberName::Ptr take(const QCString &key,const MemberDef *value)
@@ -146,7 +146,7 @@ class MemberNameInfo
     Vec m_members;
 };
 
-class MemberNameInfoLinkedMap : public LinkedMap<MemberNameInfo>
+class MemberNameInfoLinkedMap final : public LinkedMap<MemberNameInfo>
 {
 };
 

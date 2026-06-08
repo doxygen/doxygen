@@ -121,7 +121,7 @@ class MemberVector
 };
 
 /** A list of MemberDef objects as shown in documentation sections. */
-class MemberList : public MemberVector
+class MemberList final : public MemberVector
 {
   public:
     MemberList(MemberListType lt,MemberListContainer container);
@@ -179,11 +179,11 @@ class MemberList : public MemberVector
     bool m_needsSorting;
 };
 
-class MemberLinkedRefMap : public LinkedRefMap<const MemberDef>
+class MemberLinkedRefMap final : public LinkedRefMap<const MemberDef>
 {
 };
 
-class MemberLists : public std::vector< std::unique_ptr<MemberList> >
+class MemberLists final : public std::vector< std::unique_ptr<MemberList> >
 {
   public:
     MemberLists() = default;

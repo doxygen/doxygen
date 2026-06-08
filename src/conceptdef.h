@@ -82,11 +82,11 @@ std::unique_ptr<ConceptDef> createConceptDefAlias(const Definition *newScope,con
 
 // ---- Map
 
-class ConceptLinkedMap : public LinkedMap<ConceptDef>
+class ConceptLinkedMap final : public LinkedMap<ConceptDef>
 {
 };
 
-class ConceptLinkedRefMap : public LinkedRefMap<ConceptDef>
+class ConceptLinkedRefMap final : public LinkedRefMap<ConceptDef>
 {
   public:
     bool declVisible() const;

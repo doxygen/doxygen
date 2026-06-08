@@ -47,7 +47,7 @@ class Markdown
     static ActionTable_t actions;
 };
 
-class MarkdownOutlineParser : public OutlineParserInterface
+class MarkdownOutlineParser final : public OutlineParserInterface
 {
   public:
     MarkdownOutlineParser();

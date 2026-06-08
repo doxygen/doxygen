@@ -181,7 +181,7 @@ static QCString getCompoundTypeString(SrcLangExt lang,ClassDef::CompoundType com
 
 
 /** Implementation of the ClassDef interface */
-class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
+class ClassDefImpl final : public DefinitionMixin<ClassDefMutable>
 {
   public:
     ClassDefImpl(const QCString &fileName,int startLine,int startColumn,
@@ -570,7 +570,7 @@ std::unique_ptr<ClassDef> createClassDef(
 }
 //-----------------------------------------------------------------------------
 
-class ClassDefAliasImpl : public DefinitionAliasMixin<ClassDef>
+class ClassDefAliasImpl final : public DefinitionAliasMixin<ClassDef>
 {
   public:
     ClassDefAliasImpl(const Definition *newScope,const ClassDef *cd)

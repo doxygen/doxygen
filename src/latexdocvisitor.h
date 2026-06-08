@@ -34,7 +34,7 @@ enum class TexOrPdf
 };
 
 /*! @brief Concrete visitor implementation for LaTeX output. */
-class LatexDocVisitor : public DocVisitor
+class LatexDocVisitor final : public DocVisitor
 {
   public:
     LatexDocVisitor(TextStream &t,OutputCodeList &ci,LatexCodeGenerator &lcg,

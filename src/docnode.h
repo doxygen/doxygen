@@ -115,7 +115,7 @@ class DocNode
     DocNodeVariant *m_thisVariant = nullptr;
 };
 
-struct DocNodeList : public GrowVector<DocNodeVariant>
+struct DocNodeList final : public GrowVector<DocNodeVariant>
 {
   /** Append a new DocNodeVariant to the list by constructing it with type T and
    *  parameters Args.
@@ -149,7 +149,7 @@ class DocCompoundNode : public DocNode
 
 /** Node representing a word
  */
-class DocWord : public DocNode
+class DocWord final : public DocNode
 {
   public:
     DocWord(DocParser *parser,DocNodeVariant *parent,const QCString &word);
@@ -161,7 +161,7 @@ class DocWord : public DocNode
 
 /** Node representing a word that can be linked to something
  */
-class DocLinkedWord : public DocNode
+class DocLinkedWord final : public DocNode
 {
   public:
     DocLinkedWord(DocParser *parser,DocNodeVariant *parent,const QCString &word,
@@ -184,7 +184,7 @@ class DocLinkedWord : public DocNode
 };
 
 /** Node representing a URL (or email address) */
-class DocURL : public DocNode
+class DocURL final : public DocNode
 {
   public:
     DocURL(DocParser *parser,DocNodeVariant *parent,const QCString &url,bool isEmail) :
@@ -198,7 +198,7 @@ class DocURL : public DocNode
 };
 
 /** Node representing a line break */
-class DocLineBreak : public DocNode
+class DocLineBreak final : public DocNode
 {
   public:
     DocLineBreak(DocParser *parser,DocNodeVariant *parent) : DocNode(parser,parent) {}
@@ -212,7 +212,7 @@ class DocLineBreak : public DocNode
 };
 
 /** Node representing a horizontal ruler */
-class DocHorRuler : public DocNode
+class DocHorRuler final : public DocNode
 {
   public:
     DocHorRuler(DocParser *parser,DocNodeVariant *parent,const HtmlAttribList &attribs)
@@ -225,7 +225,7 @@ class DocHorRuler : public DocNode
 };
 
 /** Node representing an anchor */
-class DocAnchor : public DocNode
+class DocAnchor final : public DocNode
 {
   public:
     DocAnchor(DocParser *parser,DocNodeVariant *parent,const QCString &id,bool newAnchor);
@@ -241,7 +241,7 @@ class DocAnchor : public DocNode
 };
 
 /** Node representing a citation of some bibliographic reference */
-class DocCite : public DocNode
+class DocCite final : public DocNode
 {
   public:
     DocCite(DocParser *parser,DocNodeVariant *parent,const QCString &target,const QCString &context, CiteInfoOption opt);
@@ -264,7 +264,7 @@ class DocCite : public DocNode
 
 
 /** Node representing a style change */
-class DocStyleChange : public DocNode
+class DocStyleChange final : public DocNode
 {
   public:
     enum Style { Bold          = (1<<0),
@@ -324,7 +324,7 @@ class DocStyleChange : public DocNode
 };
 
 /** Node representing a special symbol */
-class DocSymbol : public DocNode
+class DocSymbol final : public DocNode
 {
   public:
     DocSymbol(DocParser *parser,DocNodeVariant *parent,HtmlEntityMapper::SymType s)
@@ -337,7 +337,7 @@ class DocSymbol : public DocNode
 };
 
 /** Node representing an emoji */
-class DocEmoji : public DocNode
+class DocEmoji final : public DocNode
 {
   public:
     DocEmoji(DocParser *parser,DocNodeVariant *parent,const QCString &symName);
@@ -350,7 +350,7 @@ class DocEmoji : public DocNode
 };
 
 /** Node representing some amount of white space */
-class DocWhiteSpace : public DocNode
+class DocWhiteSpace final : public DocNode
 {
   public:
     DocWhiteSpace(DocParser *parser,DocNodeVariant *parent,const QCString &chars)
@@ -361,7 +361,7 @@ class DocWhiteSpace : public DocNode
 };
 
 /** Node representing a separator */
-class DocSeparator : public DocNode
+class DocSeparator final : public DocNode
 {
   public:
     DocSeparator(DocParser *parser,DocNodeVariant *parent,const QCString &chars)
@@ -372,7 +372,7 @@ class DocSeparator : public DocNode
 };
 
 /** Node representing a verbatim, unparsed text fragment */
-class DocVerbatim : public DocNode
+class DocVerbatim final : public DocNode
 {
   public:
     enum Type { Code, HtmlOnly, ManOnly, LatexOnly, RtfOnly, XmlOnly, Verbatim, Dot, Msc, DocbookOnly, PlantUML, Mermaid, JavaDocCode, JavaDocLiteral };
@@ -431,7 +431,7 @@ class DocVerbatim : public DocNode
 
 
 /** Node representing an included text block from file */
-class DocInclude : public DocNode
+class DocInclude final : public DocNode
 {
   public:
   enum Type { Include, DontInclude, VerbInclude, HtmlInclude, LatexInclude,
@@ -473,7 +473,7 @@ class DocInclude : public DocNode
 };
 
 /** Node representing a include/dontinclude operator block */
-class DocIncOperator : public DocNode
+class DocIncOperator final : public DocNode
 {
   public:
     enum Type { Line, SkipLine, Skip, Until };
@@ -525,7 +525,7 @@ class DocIncOperator : public DocNode
 };
 
 /** Node representing an item of a cross-referenced list */
-class DocFormula : public DocNode
+class DocFormula final : public DocNode
 {
   public:
     DocFormula(DocParser *parser,DocNodeVariant *parent,int id);
@@ -548,7 +548,7 @@ class DocFormula : public DocNode
 };
 
 /** Node representing an entry in the index. */
-class DocIndexEntry : public DocNode
+class DocIndexEntry final : public DocNode
 {
   public:
     DocIndexEntry(DocParser *parser,DocNodeVariant *parent,const Definition *scope,const MemberDef *md)
@@ -567,7 +567,7 @@ class DocIndexEntry : public DocNode
 //-----------------------------------------------------------------------
 
 /** Node representing an auto List */
-class DocAutoList : public DocCompoundNode
+class DocAutoList final : public DocCompoundNode
 {
   public:
     enum ListType
@@ -591,7 +591,7 @@ class DocAutoList : public DocCompoundNode
 };
 
 /** Node representing an item of a auto list */
-class DocAutoListItem : public DocCompoundNode
+class DocAutoListItem final : public DocCompoundNode
 {
   public:
     DocAutoListItem(DocParser *parser,DocNodeVariant *parent,int indent,int num);
@@ -604,7 +604,7 @@ class DocAutoListItem : public DocCompoundNode
 };
 
 /** Node representing a simple section title */
-class DocTitle : public DocCompoundNode
+class DocTitle final : public DocCompoundNode
 {
   public:
     DocTitle(DocParser *parser,DocNodeVariant *parent) : DocCompoundNode(parser,parent) {}
@@ -617,7 +617,7 @@ class DocTitle : public DocCompoundNode
 };
 
 /** Node representing an item of a cross-referenced list */
-class DocXRefItem : public DocCompoundNode
+class DocXRefItem final : public DocCompoundNode
 {
   public:
     DocXRefItem(DocParser *parser,DocNodeVariant *parent,int id,const QCString &key);
@@ -638,7 +638,7 @@ class DocXRefItem : public DocCompoundNode
 };
 
 /** Node representing an image */
-class DocImage : public DocCompoundNode
+class DocImage final : public DocCompoundNode
 {
   public:
     enum Type { Html, Latex, Rtf, DocBook, Xml };
@@ -709,7 +709,7 @@ class DocDiagramFileBase : public DocCompoundNode
 };
 
 /** Node representing a dot file */
-class DocDotFile : public DocDiagramFileBase
+class DocDotFile final : public DocDiagramFileBase
 {
   public:
     DocDotFile(DocParser *parser,DocNodeVariant *parent,const QCString &name,const QCString &context,
@@ -718,7 +718,7 @@ class DocDotFile : public DocDiagramFileBase
 };
 
 /** Node representing a msc file */
-class DocMscFile : public DocDiagramFileBase
+class DocMscFile final : public DocDiagramFileBase
 {
   public:
     DocMscFile(DocParser *parser,DocNodeVariant *parent,const QCString &name,const QCString &context,
@@ -727,7 +727,7 @@ class DocMscFile : public DocDiagramFileBase
 };
 
 /** Node representing a dia file */
-class DocDiaFile : public DocDiagramFileBase
+class DocDiaFile final : public DocDiagramFileBase
 {
   public:
     DocDiaFile(DocParser *parser,DocNodeVariant *parent,const QCString &name,const QCString &context,
@@ -736,7 +736,7 @@ class DocDiaFile : public DocDiagramFileBase
 };
 
 /** Node representing a uml file */
-class DocPlantUmlFile : public DocDiagramFileBase
+class DocPlantUmlFile final : public DocDiagramFileBase
 {
   public:
     DocPlantUmlFile(DocParser *parser,DocNodeVariant *parent,const QCString &name,const QCString &context,
@@ -745,7 +745,7 @@ class DocPlantUmlFile : public DocDiagramFileBase
 };
 
 /** Node representing a mermaid file */
-class DocMermaidFile : public DocDiagramFileBase
+class DocMermaidFile final : public DocDiagramFileBase
 {
   public:
     DocMermaidFile(DocParser *parser,DocNodeVariant *parent,const QCString &name,const QCString &context,
@@ -754,7 +754,7 @@ class DocMermaidFile : public DocDiagramFileBase
 };
 
 /** Node representing a VHDL flow chart */
-class DocVhdlFlow : public DocCompoundNode
+class DocVhdlFlow final : public DocCompoundNode
 {
   public:
     DocVhdlFlow(DocParser *parser,DocNodeVariant *parent);
@@ -764,7 +764,7 @@ class DocVhdlFlow : public DocCompoundNode
 };
 
 /** Node representing a link to some item */
-class DocLink : public DocCompoundNode
+class DocLink final : public DocCompoundNode
 {
   public:
     DocLink(DocParser *parser,DocNodeVariant *parent,const QCString &target);
@@ -783,7 +783,7 @@ class DocLink : public DocCompoundNode
 };
 
 /** Node representing a reference to some item */
-class DocRef : public DocCompoundNode
+class DocRef final : public DocCompoundNode
 {
   public:
     DocRef(DocParser *parser,DocNodeVariant *parent,const QCString &target,const QCString &context);
@@ -812,7 +812,7 @@ class DocRef : public DocCompoundNode
 };
 
 /** Node representing an internal reference to some item */
-class DocInternalRef : public DocCompoundNode
+class DocInternalRef final : public DocCompoundNode
 {
   public:
     DocInternalRef(DocParser *parser,DocNodeVariant *parent,const QCString &target);
@@ -828,7 +828,7 @@ class DocInternalRef : public DocCompoundNode
 };
 
 /** Node representing a Hypertext reference */
-class DocHRef : public DocCompoundNode
+class DocHRef final : public DocCompoundNode
 {
   public:
     DocHRef(DocParser *parser,DocNodeVariant *parent,const HtmlAttribList &attribs,const QCString &url,
@@ -849,7 +849,7 @@ class DocHRef : public DocCompoundNode
 };
 
 /** Node Html summary */
-class DocHtmlSummary : public DocCompoundNode
+class DocHtmlSummary final : public DocCompoundNode
 {
   public:
     DocHtmlSummary(DocParser *parser,DocNodeVariant *parent,const HtmlAttribList &attribs) :
@@ -862,7 +862,7 @@ class DocHtmlSummary : public DocCompoundNode
 };
 
 /** Node Html details */
-class DocHtmlDetails : public DocCompoundNode
+class DocHtmlDetails final : public DocCompoundNode
 {
   public:
     DocHtmlDetails(DocParser *parser,DocNodeVariant *parent,const HtmlAttribList &attribs) :
@@ -878,7 +878,7 @@ class DocHtmlDetails : public DocCompoundNode
 };
 
 /** Node Html heading */
-class DocHtmlHeader : public DocCompoundNode
+class DocHtmlHeader final : public DocCompoundNode
 {
   public:
     DocHtmlHeader(DocParser *parser,DocNodeVariant *parent,const HtmlAttribList &attribs,int level) :
@@ -893,7 +893,7 @@ class DocHtmlHeader : public DocCompoundNode
 };
 
 /** Node representing a Html description item */
-class DocHtmlDescTitle : public DocCompoundNode
+class DocHtmlDescTitle final : public DocCompoundNode
 {
   public:
     DocHtmlDescTitle(DocParser *parser,DocNodeVariant *parent,const HtmlAttribList &attribs) :
@@ -906,7 +906,7 @@ class DocHtmlDescTitle : public DocCompoundNode
 };
 
 /** Node representing a Html description list */
-class DocHtmlDescList : public DocCompoundNode
+class DocHtmlDescList final : public DocCompoundNode
 {
   public:
     DocHtmlDescList(DocParser *parser,DocNodeVariant *parent,const HtmlAttribList &attribs) :
@@ -919,7 +919,7 @@ class DocHtmlDescList : public DocCompoundNode
 };
 
 /** Node representing a normal section */
-class DocSection : public DocCompoundNode
+class DocSection final : public DocCompoundNode
 {
   public:
     DocSection(DocParser *parser,DocNodeVariant *parent,int level,const QCString &id) :
@@ -940,7 +940,7 @@ class DocSection : public DocCompoundNode
 };
 
 /** Node representing a reference to a section */
-class DocSecRefItem : public DocCompoundNode
+class DocSecRefItem final : public DocCompoundNode
 {
   public:
     DocSecRefItem(DocParser *parser,DocNodeVariant *parent,const QCString &target);
@@ -964,7 +964,7 @@ class DocSecRefItem : public DocCompoundNode
 };
 
 /** Node representing a list of section references */
-class DocSecRefList : public DocCompoundNode
+class DocSecRefList final : public DocCompoundNode
 {
   public:
     DocSecRefList(DocParser *parser,DocNodeVariant *parent) : DocCompoundNode(parser,parent) {}
@@ -974,7 +974,7 @@ class DocSecRefList : public DocCompoundNode
 };
 
 /** Node representing an internal section of documentation */
-class DocInternal : public DocCompoundNode
+class DocInternal final : public DocCompoundNode
 {
   public:
     DocInternal(DocParser *parser,DocNodeVariant *parent) : DocCompoundNode(parser,parent) {}
@@ -984,7 +984,7 @@ class DocInternal : public DocCompoundNode
 };
 
 /** Node representing an block of paragraphs */
-class DocParBlock : public DocCompoundNode
+class DocParBlock final : public DocCompoundNode
 {
   public:
     DocParBlock(DocParser *parser,DocNodeVariant *parent) : DocCompoundNode(parser,parent) {}
@@ -995,7 +995,7 @@ class DocParBlock : public DocCompoundNode
 
 
 /** Node representing a simple list */
-class DocSimpleList : public DocCompoundNode
+class DocSimpleList final : public DocCompoundNode
 {
   public:
     DocSimpleList(DocParser *parser,DocNodeVariant *parent) : DocCompoundNode(parser,parent) {}
@@ -1005,7 +1005,7 @@ class DocSimpleList : public DocCompoundNode
 };
 
 /** Node representing a Html list */
-class DocHtmlList : public DocCompoundNode
+class DocHtmlList final : public DocCompoundNode
 {
   public:
     enum Type { Unordered, Ordered };
@@ -1022,7 +1022,7 @@ class DocHtmlList : public DocCompoundNode
 };
 
 /** Node representing a simple section */
-class DocSimpleSect : public DocCompoundNode
+class DocSimpleSect final : public DocCompoundNode
 {
   public:
     enum Type
@@ -1049,7 +1049,7 @@ class DocSimpleSect : public DocCompoundNode
 /** Node representing a separator between two simple sections of the
  *  same type.
  */
-class DocSimpleSectSep : public DocNode
+class DocSimpleSectSep final : public DocNode
 {
   public:
     DocSimpleSectSep(DocParser *parser,DocNodeVariant *parent) : DocNode(parser,parent) {}
@@ -1058,7 +1058,7 @@ class DocSimpleSectSep : public DocNode
 };
 
 /** Node representing a parameter section */
-class DocParamSect : public DocCompoundNode
+class DocParamSect final : public DocCompoundNode
 {
     friend class DocParamList;
   public:
@@ -1085,7 +1085,7 @@ class DocParamSect : public DocCompoundNode
 };
 
 /** Node representing a paragraph in the documentation tree */
-class DocPara : public DocCompoundNode
+class DocPara final : public DocCompoundNode
 {
   public:
     DocPara(DocParser *parser,DocNodeVariant *parent);
@@ -1126,7 +1126,7 @@ class DocPara : public DocCompoundNode
 };
 
 /** Node representing a parameter list. */
-class DocParamList : public DocNode
+class DocParamList final : public DocNode
 {
   public:
     DocParamList(DocParser *parser,DocNodeVariant *parent,DocParamSect::Type t,DocParamSect::Direction d)
@@ -1154,7 +1154,7 @@ class DocParamList : public DocNode
 };
 
 /** Node representing a simple list item */
-class DocSimpleListItem : public DocNode
+class DocSimpleListItem final : public DocNode
 {
   public:
     DocSimpleListItem(DocParser *parser,DocNodeVariant *parent);
@@ -1166,7 +1166,7 @@ class DocSimpleListItem : public DocNode
 };
 
 /** Node representing a HTML list item */
-class DocHtmlListItem : public DocCompoundNode
+class DocHtmlListItem final : public DocCompoundNode
 {
   public:
     DocHtmlListItem(DocParser *parser,DocNodeVariant *parent,const HtmlAttribList &attribs,int num)
@@ -1182,7 +1182,7 @@ class DocHtmlListItem : public DocCompoundNode
 };
 
 /** Node representing a HTML description data */
-class DocHtmlDescData : public DocCompoundNode
+class DocHtmlDescData final : public DocCompoundNode
 {
   public:
     DocHtmlDescData(DocParser *parser,DocNodeVariant *parent) : DocCompoundNode(parser,parent) {}
@@ -1194,7 +1194,7 @@ class DocHtmlDescData : public DocCompoundNode
 };
 
 /** Node representing a HTML table cell */
-class DocHtmlCell : public DocCompoundNode
+class DocHtmlCell final : public DocCompoundNode
 {
     friend class DocHtmlTable;
   public:
@@ -1229,7 +1229,7 @@ class DocHtmlCell : public DocCompoundNode
 };
 
 /** Node representing a HTML table caption */
-class DocHtmlCaption : public DocCompoundNode
+class DocHtmlCaption final : public DocCompoundNode
 {
   public:
     DocHtmlCaption(DocParser *parser,DocNodeVariant *parent,const HtmlAttribList &attribs);
@@ -1247,7 +1247,7 @@ class DocHtmlCaption : public DocCompoundNode
 };
 
 /** Node representing a HTML table row */
-class DocHtmlRow : public DocCompoundNode
+class DocHtmlRow final : public DocCompoundNode
 {
     friend class DocHtmlTable;
   public:
@@ -1270,7 +1270,7 @@ class DocHtmlRow : public DocCompoundNode
 };
 
 /** Node representing a HTML table */
-class DocHtmlTable : public DocCompoundNode
+class DocHtmlTable final : public DocCompoundNode
 {
   public:
     DocHtmlTable(DocParser *parser,DocNodeVariant *parent,const HtmlAttribList &attribs)
@@ -1292,7 +1292,7 @@ class DocHtmlTable : public DocCompoundNode
 };
 
 /** Node representing an HTML blockquote */
-class DocHtmlBlockQuote : public DocCompoundNode
+class DocHtmlBlockQuote final : public DocCompoundNode
 {
   public:
     DocHtmlBlockQuote(DocParser *parser,DocNodeVariant *parent,const HtmlAttribList &attribs)
@@ -1305,7 +1305,7 @@ class DocHtmlBlockQuote : public DocCompoundNode
 };
 
 /** Root node of a text fragment */
-class DocText : public DocCompoundNode
+class DocText final : public DocCompoundNode
 {
   public:
     DocText(DocParser *parser) : DocCompoundNode(parser,nullptr) {}
@@ -1314,7 +1314,7 @@ class DocText : public DocCompoundNode
 };
 
 /** Root node of documentation tree */
-class DocRoot : public DocCompoundNode
+class DocRoot final : public DocCompoundNode
 {
   public:
     DocRoot(DocParser *parser,bool indent,bool sl)
@@ -1467,7 +1467,7 @@ inline void dumpDocNodeList(const DocNodeList &children)
 //----------------------------------------------------------------------------------
 
 /** Class representing the abstract syntax tree of a documentation block */
-class DocNodeAST : public IDocNodeAST
+class DocNodeAST final: public IDocNodeAST
 {
   public:
     // Note that r can only be a rvalue, not a general forwarding reference.

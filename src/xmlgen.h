@@ -17,7 +17,7 @@
 
 class TextStream;
 
-class XMLCodeGenerator : public OutputCodeIntf
+class XMLCodeGenerator final : public OutputCodeIntf
 {
   public:
     XMLCodeGenerator(TextStream *t);

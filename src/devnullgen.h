@@ -17,7 +17,7 @@
 #include "outputgen.h"
 
 /** Class implementing OutputCodeIntf by throwing away everything. */
-class DevNullCodeGenerator : public OutputCodeIntf
+class DevNullCodeGenerator final : public OutputCodeIntf
 {
   public:
     OutputType type() const override { return OutputType::Null; }

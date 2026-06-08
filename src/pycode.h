@@ -30,7 +30,7 @@ class MemberDef;
 class QCString;
 class Definition;
 
-class PythonCodeParser : public CodeParserInterface
+class PythonCodeParser final : public CodeParserInterface
 {
   public:
     PythonCodeParser();
