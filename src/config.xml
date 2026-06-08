@@ -1338,8 +1338,8 @@ Go to the <a href="commands.html">next</a> section or return to the
  The \c FILE_VERSION_FILTER tag can be used to specify a program or script that
  Doxygen should invoke to get the current version for each file (typically from the
  version control system). Doxygen will invoke the program by executing (via
- <code>popen()</code>) the command <code>command input-file</code>, where \c command is
- the value of the \c FILE_VERSION_FILTER tag, and \c input-file is the name
+ <code>popen()</code>) the command <code>command input_file</code>, where \c command is
+ the value of the \c FILE_VERSION_FILTER tag, and \c input_file is the name
  of an input file provided by Doxygen.
  Whatever the program writes to standard output is used as the file version.
 ]]>
@@ -1445,7 +1445,7 @@ PATH=/Library/TeX/texbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
  generated to standard error (\c stderr) by Doxygen. If \c WARNINGS is set to
  \c YES this implies that the warnings are on.
 <br>
- \b Tip: Turn warnings on while writing the documentation.
+ <b>Tip:</b> Turn warnings on while writing the documentation.
 ]]>
       </docs>
     </option>
@@ -2859,7 +2859,7 @@ obfuscate email addresses.
       </docs>
       <value name="HTML-CSS" desc="(which is slower, but has the best compatibility. This is the name for Mathjax version 2, for MathJax version 3 this will be translated into \c chtml)"/>
       <value name="NativeMML" desc="(i.e. MathML. Only supported for MathJax 2. For MathJax version 3 \c chtml will be used instead.)"/>
-      <value name="chtml" desc="(This is the name for Mathjax version 3, for MathJax version 2 this will be translated into \c HTML-CSS)"/>
+      <value name="chtml" desc="(This is the name for Mathjax version 3, for MathJax version 2 this will be translated into &lt;code&gt;HTML-CSS&lt;/code&gt;)"/>
       <value name="SVG"/>
     </option>
     <option type='string' id='MATHJAX_RELPATH' format='string' depends='USE_MATHJAX'>
@@ -3793,8 +3793,7 @@ Adding location for the tag files is done as follows:
 where `loc1` and `loc2` can be relative or absolute paths or URLs.
  See the section \ref external for more information about the use of tag files.
 
- \note
-  Each tag file must have a unique name
+ \note Each tag file must have a unique name
   (where the name does \e NOT include the path).
   If a tag file is not located in the directory in which Doxygen
   is run, you must also specify the path to the tagfile here.
@@ -4292,7 +4291,7 @@ to be found in the default search path.
 ]]>
       </docs>
       <value name='AUTO' desc='(use client-side rendering for HTML and \c mmdc for LaTeX/PDF and other formats. If \c MERMAID_PATH is not set, non-HTML diagrams will produce a warning)'/>
-      <value name='CLI' desc='(use the \c mmdc tool to pre-generate images (requires \c Node.js and \c mermaid-js/mermaid-cli). Works for all output formats)'/>
+      <value name='CLI' desc='(use the \c mmdc tool to pre-generate images (requires \c Node.js and &lt;code&gt;mermaid-js/mermaid-cli&lt;/code&gt;). Works for all output formats)'/>
       <value name='CLIENT_SIDE' desc='(embed \c mermaid.js in HTML output for client-side rendering. Does not require \c mmdc but only works for HTML output)'/>
     </option>
     <option type='string' id='MERMAID_JS_URL' format='string'

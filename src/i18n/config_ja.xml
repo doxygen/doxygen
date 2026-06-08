@@ -545,7 +545,7 @@
     </option>
     <option type="string" id="FILE_VERSION_FILTER" format="file" defval="">
       <docs>
-<![CDATA[\c FILE_VERSION_FILTERタグを使用して、各ファイルの現在のバージョンを取得するためにDoxygenが呼び出すプログラムまたはスクリプトを指定できます（通常はバージョン管理システムから取得）。Doxygenは<code>popen()</code>経由で<code>command input-file</code>コマンドを実行してプログラムを呼び出します。ここで\c commandは\c FILE_VERSION_FILTERタグの値、\c input-fileはDoxygenが提供する入力ファイル名です。プログラムが標準出力に書き込んだ内容がファイルバージョンとして使用されます。]]>
+<![CDATA[\c FILE_VERSION_FILTERタグを使用して、各ファイルの現在のバージョンを取得するためにDoxygenが呼び出すプログラムまたはスクリプトを指定できます（通常はバージョン管理システムから取得）。Doxygenは<code>popen()</code>経由で<code>command input_file</code>コマンドを実行してプログラムを呼び出します。ここで\c commandは\c FILE_VERSION_FILTERタグの値、\c input_fileはDoxygenが提供する入力ファイル名です。プログラムが標準出力に書き込んだ内容がファイルバージョンとして使用されます。]]>
       </docs>
     </option>
     <option type="string" id="LAYOUT_FILE" format="file" defval="">
@@ -572,7 +572,7 @@
     </option>
     <option type="bool" id="WARNINGS" defval="1">
       <docs>
-<![CDATA[\c WARNINGSタグを使用して、Doxygenによって標準エラー（\c stderr）に生成される警告メッセージのオン/オフを切り替えることができます。\c WARNINGSが\c YESに設定されている場合、警告が有効になります。<br>\b ヒント：ドキュメントの作成中は警告を有効にしてください。]]>
+<![CDATA[\c WARNINGSタグを使用して、Doxygenによって標準エラー（\c stderr）に生成される警告メッセージのオン/オフを切り替えることができます。\c WARNINGSが\c YESに設定されている場合、警告が有効になります。<br><b>ヒント：</b>ドキュメントの作成中は警告を有効にしてください。]]>
       </docs>
     </option>
     <option type="bool" id="WARN_IF_UNDOCUMENTED" defval="1">
@@ -1159,7 +1159,7 @@
       </docs>
       <value name="HTML-CSS" desc="(より遅いですが、最高の互換性があります。これはMathJaxバージョン2の名称で、MathJaxバージョン3では\c chtmlに変換されます)"/>
       <value name="NativeMML" desc="(MathML。MathJax 2のみサポート。MathJaxバージョン3では\c chtmlが代わりに使用されます。)"/>
-      <value name="chtml" desc="(これはMathJaxバージョン3の名称で、MathJaxバージョン2では\c HTML-CSSに変換されます)"/>
+      <value name="chtml" desc="(これはMathJaxバージョン3の名称で、MathJaxバージョン2では&lt;code&gt;HTML-CSS&lt;/code&gt;に変換されます)"/>
       <value name="SVG"/>
     </option>
         <option type="string" id="MATHJAX_RELPATH" format="string" depends="USE_MATHJAX">
@@ -1524,7 +1524,7 @@
   <group name="External" trname="外部参照" docs="外部参照に関連する設定オプション">
     <option type="list" id="TAGFILES" format="file">
       <docs>
-<![CDATA[\c TAGFILESタグを使用して、1つ以上のタグファイルを指定できます。各タグファイルについて、外部ドキュメントの場所を追加する必要があります。場所なしのタグファイルの形式は次のとおりです：\verbatim TAGFILES = file1 file2 ... \endverbatim タグファイルの場所の追加は次のように行います：\verbatim TAGFILES = file1=loc1 "file2 = loc2" ... \endverbatim ここで`loc1`と`loc2`は相対パス、絶対パス、またはURLにすることができます。タグファイルの使用の詳細については、セクション\ref externalを参照してください。\note 各タグファイルは一意の名前を持つ必要があります（名前にはパスを\e 含みません）。タグファイルがDoxygenを実行するディレクトリにない場合は、ここでタグファイルへのパスも指定する必要があります。]]>
+<![CDATA[\c TAGFILESタグを使用して、1つ以上のタグファイルを指定できます。各タグファイルについて、外部ドキュメントの場所を追加する必要があります。場所なしのタグファイルの形式は次のとおりです：\verbatim TAGFILES = file1 file2 ... \endverbatim タグファイルの場所の追加は次のように行います：\verbatim TAGFILES = file1=loc1 "file2 = loc2" ... \endverbatim ここで`loc1`と`loc2`は相対パス、絶対パス、またはURLにすることができます。タグファイルの使用の詳細については、セクション\ref externalを参照してください。\note 各タグファイルは一意の名前を持つ必要があります（名前にはパスを含みません）。タグファイルがDoxygenを実行するディレクトリにない場合は、ここでタグファイルへのパスも指定する必要があります。]]>
       </docs>
     </option>
     <option type="string" id="GENERATE_TAGFILE" format="file" defval="">
@@ -1779,7 +1779,7 @@
 <![CDATA[\c MERMAID_RENDER_MODEタグは、Mermaidダイアグラムのレンダリング方法を選択します。]]>
       </docs>
       <value name="AUTO" desc="(HTMLにはクライアント側レンダリングを使用し、LaTeX/PDFおよびその他の形式には\c mmdcを使用。\c MERMAID_PATHが設定されていない場合、非HTMLダイアグラムは警告を生成します)"/>
-      <value name="CLI" desc="(\c mmdcツールを使用して画像を事前生成(\c Node.jsと\c mermaid-js/mermaid-cliが必要)。すべての出力形式で動作)"/>
+      <value name="CLI" desc="(\c mmdcツールを使用して画像を事前生成(\c Node.jsと&lt;code&gt;mermaid-js/mermaid-cli&lt;/code&gt;が必要)。すべての出力形式で動作)"/>
       <value name="CLIENT_SIDE" desc="(クライアント側レンダリングのために\c mermaid.jsをHTML出力に埋め込み。\c mmdcは不要ですが、HTML出力でのみ動作)"/>
     </option>
     <option type="string" id="MERMAID_JS_URL" format="string" defval="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs">

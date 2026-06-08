@@ -545,7 +545,7 @@
     </option>
     <option type="string" id="FILE_VERSION_FILTER" format="file" defval="">
       <docs>
-<![CDATA[\c FILE_VERSION_FILTER 标签可用于指定 Doxygen 应调用的程序或脚本，以获取每个文件的当前版本（通常来自版本控制系统）。Doxygen 将通过执行（通过 <code>popen()</code>）命令 <code>command input-file</code> 来调用程序，其中 \c command 是 \c FILE_VERSION_FILTER 标签的值，\c input-file 是 Doxygen 提供的输入文件的名称。程序写入标准输出的任何内容都用作文件版本。]]>
+<![CDATA[\c FILE_VERSION_FILTER 标签可用于指定 Doxygen 应调用的程序或脚本，以获取每个文件的当前版本（通常来自版本控制系统）。Doxygen 将通过执行（通过 <code>popen()</code>）命令 <code>command input_file</code> 来调用程序，其中 \c command 是 \c FILE_VERSION_FILTER 标签的值，\c input_file 是 Doxygen 提供的输入文件的名称。程序写入标准输出的任何内容都用作文件版本。]]>
       </docs>
     </option>
     <option type="string" id="LAYOUT_FILE" format="file" defval="">
@@ -572,7 +572,7 @@
     </option>
     <option type="bool" id="WARNINGS" defval="1">
       <docs>
-<![CDATA[\c WARNINGS 标签可用于打开/关闭 Doxygen 生成到标准错误（\c stderr）的警告消息。如果 \c WARNINGS 设置为 \c YES，这意味着警告已打开。<br>\b 提示：在编写文档时打开警告。]]>
+<![CDATA[\c WARNINGS 标签可用于打开/关闭 Doxygen 生成到标准错误（\c stderr）的警告消息。如果 \c WARNINGS 设置为 \c YES，这意味着警告已打开。<br><b>提示：</b>在编写文档时打开警告。]]>
       </docs>
     </option>
     <option type="bool" id="WARN_IF_UNDOCUMENTED" defval="1">
@@ -1159,7 +1159,7 @@
       </docs>
       <value name="HTML-CSS" desc="（较慢，但兼容性最好。这是MathJax版本2的名称，对于MathJax版本3将被转换为\c chtml）"/>
       <value name="NativeMML" desc="（即MathML。仅MathJax 2支持。对于MathJax版本3将使用\c chtml代替。）"/>
-      <value name="chtml" desc="（这是MathJax版本3的名称，对于MathJax版本2将被转换为\c HTML-CSS）"/>
+      <value name="chtml" desc="（这是MathJax版本3的名称，对于MathJax版本2将被转换为&lt;code&gt;HTML-CSS&lt;/code&gt;）"/>
       <value name="SVG"/>
     </option>
     <option type="string" id="MATHJAX_RELPATH" format="string" depends="USE_MATHJAX">
@@ -1776,7 +1776,7 @@
 <![CDATA[\c MERMAID_RENDER_MODE 标签选择如何呈现 Mermaid 图表。]]>
       </docs>
       <value name="AUTO" desc="（HTML使用客户端渲染，LaTeX/PDF和其他格式使用\c mmdc。如果未设置\c MERMAID_PATH，非HTML图表将产生警告）"/>
-      <value name="CLI" desc="（使用\c mmdc工具预生成图像（需要\c Node.js和\c mermaid-js/mermaid-cli）。适用于所有输出格式）"/>
+      <value name="CLI" desc="（使用\c mmdc工具预生成图像（需要\c Node.js和&lt;code&gt;mermaid-js/mermaid-cli&lt;/code&gt;）。适用于所有输出格式）"/>
       <value name="CLIENT_SIDE" desc="（在HTML输出中嵌入\c mermaid.js进行客户端渲染。不需要\c mmdc但仅适用于HTML输出）"/>
     </option>
     <option type="string" id="MERMAID_JS_URL" format="string" defval="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs">

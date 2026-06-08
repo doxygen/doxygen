@@ -545,7 +545,7 @@
     </option>
     <option type="string" id="FILE_VERSION_FILTER" format="file" defval="">
       <docs>
-<![CDATA[La etiqueta \c FILE_VERSION_FILTER se puede usar para especificar un programa o script que Doxygen debe invocar para obtener la versión actual de cada archivo (típicamente del sistema de control de versiones). Doxygen invocará el programa ejecutando (via <code>popen()</code>) el comando <code>command input-file</code>, donde \c command es el valor de la etiqueta \c FILE_VERSION_FILTER y \c input-file es el nombre de un archivo de entrada proporcionado por Doxygen. Lo que sea que el programa escriba en la salida estándar se usará como la versión del archivo. Para un ejemplo, vea la documentación.]]>
+<![CDATA[La etiqueta \c FILE_VERSION_FILTER se puede usar para especificar un programa o script que Doxygen debe invocar para obtener la versión actual de cada archivo (típicamente del sistema de control de versiones). Doxygen invocará el programa ejecutando (via <code>popen()</code>) el comando <code>command input_file</code>, donde \c command es el valor de la etiqueta \c FILE_VERSION_FILTER y \c input_file es el nombre de un archivo de entrada proporcionado por Doxygen. Lo que sea que el programa escriba en la salida estándar se usará como la versión del archivo. Para un ejemplo, vea la documentación.]]>
       </docs>
     </option>
     <option type="string" id="LAYOUT_FILE" format="file" defval="">
@@ -572,7 +572,7 @@
     </option>
     <option type="bool" id="WARNINGS" defval="1">
       <docs>
-<![CDATA[La etiqueta \c WARNINGS se puede usar para activar/desactivar los mensajes de advertencia generados a la salida de error estándar (\c stderr) por Doxygen. Si \c WARNINGS está configurado en \c YES, esto implica que las advertencias están activadas. <br> \b Consejo: Active las advertencias mientras escribe la documentación.]]>
+<![CDATA[La etiqueta \c WARNINGS se puede usar para activar/desactivar los mensajes de advertencia generados a la salida de error estándar (\c stderr) por Doxygen. Si \c WARNINGS está configurado en \c YES, esto implica que las advertencias están activadas. <br> <b>Consejo:</b> Active las advertencias mientras escribe la documentación.]]>
       </docs>
     </option>
     <option type="bool" id="WARN_IF_UNDOCUMENTED" defval="1">
@@ -1159,7 +1159,7 @@
       </docs>
       <value name="HTML-CSS" desc="(más lento, pero con mejor compatibilidad. Este es el nombre para MathJax versión 2, para MathJax versión 3 se traducirá a \c chtml)"/>
       <value name="NativeMML" desc="(es decir, MathML. Solo compatible con MathJax 2. Para MathJax versión 3 se usará \c chtml en su lugar.)"/>
-      <value name="chtml" desc="(Este es el nombre para MathJax versión 3, para MathJax versión 2 se traducirá a \c HTML-CSS)"/>
+      <value name="chtml" desc="(Este es el nombre para MathJax versión 3, para MathJax versión 2 se traducirá a &lt;code&gt;HTML-CSS&lt;/code&gt;)"/>
       <value name="SVG"/>
     </option>
         <option type="string" id="MATHJAX_RELPATH" format="string" depends="USE_MATHJAX">
@@ -1524,7 +1524,7 @@
   <group name="External" trname="Referencias externas" docs="Opciones de configuración relacionadas con las referencias externas">
     <option type="list" id="TAGFILES" format="file">
       <docs>
-<![CDATA[La etiqueta \c TAGFILES se puede usar para especificar uno o más archivos de etiquetas. Para cada archivo de etiquetas se debe agregar la ubicación de la documentación externa. El formato de un archivo de etiquetas sin esta ubicación es el siguiente: \verbatim TAGFILES = file1 file2 ... \endverbatim Agregar ubicación para los archivos de etiquetas se hace de la siguiente manera: \verbatim TAGFILES = file1=loc1 "file2 = loc2" ... \endverbatim donde `loc1` y `loc2` pueden ser rutas relativas o absolutas o URLs. Vea la sección \ref external para más información sobre el uso de archivos de etiquetas. \note Cada archivo de etiquetas debe tener un nombre único (donde el nombre NO incluye la ruta). Si un archivo de etiquetas no está ubicado en el directorio en el que se ejecuta Doxygen, también debe especificar la ruta al archivo de etiquetas aquí.]]>
+<![CDATA[La etiqueta \c TAGFILES se puede usar para especificar uno o más archivos de etiquetas. Para cada archivo de etiquetas se debe agregar la ubicación de la documentación externa. El formato de un archivo de etiquetas sin esta ubicación es el siguiente: \verbatim TAGFILES = file1 file2 ... \endverbatim Agregar ubicación para los archivos de etiquetas se hace de la siguiente manera: \verbatim TAGFILES = file1=loc1 "file2 = loc2" ... \endverbatim donde `loc1` y `loc2` pueden ser rutas relativas o absolutas o URLs. Vea la sección \ref external para más información sobre el uso de archivos de etiquetas. \note Cada archivo de etiquetas debe tener un nombre único (donde el nombre \e NO incluye la ruta). Si un archivo de etiquetas no está ubicado en el directorio en el que se ejecuta Doxygen, también debe especificar la ruta al archivo de etiquetas aquí.]]>
       </docs>
     </option>
     <option type="string" id="GENERATE_TAGFILE" format="file" defval="">
@@ -1781,7 +1781,7 @@
 <![CDATA[La etiqueta \c MERMAID_RENDER_MODE controla cómo se renderizan los diagramas Mermaid.]]>
       </docs>
       <value name="AUTO" desc="(usar renderizado del lado del cliente para HTML y \c mmdc para LaTeX/PDF y otros formatos. Si \c MERMAID_PATH no está configurado, los diagramas no HTML producirán una advertencia)"/>
-      <value name="CLI" desc="(usar la herramienta \c mmdc para pregenerar imagenes (requiere \c Node.js y \c mermaid-js/mermaid-cli). Funciona para todos los formatos de salida)"/>
+      <value name="CLI" desc="(usar la herramienta \c mmdc para pregenerar imagenes (requiere \c Node.js y &lt;code&gt;mermaid-js/mermaid-cli&lt;/code&gt;). Funciona para todos los formatos de salida)"/>
       <value name="CLIENT_SIDE" desc="(incrustar \c mermaid.js en la salida HTML para renderizado del lado del cliente. No requiere \c mmdc pero solo funciona para salida HTML)"/>
     </option>
     <option type="string" id="MERMAID_JS_URL" format="string" defval="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs">
