@@ -10,7 +10,7 @@ Lithuanian, Macedonian, Norwegian, Persian, Polish, Portuguese,
 Romanian, Russian, Serbian, SerbianCyrillic, Slovak, Slovene, Spanish,
 Swedish, Turkish, Ukrainian, and Vietnamese.
 
-Of them, 9 translators are up-to-date, 33 translators are based on
+Of them, 8 translators are up-to-date, 34 translators are based on
 some adapter class, and 2 are English based.
 
 ----------------------------------------------------------------------
@@ -27,7 +27,6 @@ problems were not spotted by the script:
   TranslatorGreek
   TranslatorPolish
   TranslatorPortuguese
-  TranslatorSpanish
 
 ----------------------------------------------------------------------
 The following translator classes are ALMOST up-to-date (sorted
@@ -42,6 +41,7 @@ when the class was last updated and number of methods that must be
 implemented to become up-to-date:
 
   TranslatorSwedish               1.9.6 	27 methods to implement (8 %)
+  TranslatorSpanish               1.9.6 	21 methods to implement (6 %)
   TranslatorCzech                 1.9.6 	27 methods to implement (8 %)
   TranslatorHindi                 1.9.4 	30 methods to implement (9 %)
   TranslatorBulgarian             1.9.4 	30 methods to implement (9 %)
@@ -2772,6 +2772,36 @@ TranslatorSlovene   (TranslatorAdapter_1_4_6)  132 methods to implement (41 %)
     virtual QCString trVerifiedBy(const QCString & list)
     virtual QCString trVerifies(bool singular)
     virtual QCString trVhdlType(VhdlSpecifier type, bool single)
+
+
+TranslatorSpanish   (TranslatorAdapter_1_9_6)  21 methods to implement (6 %)
+-----------------
+
+  Implements 298 of the required methods (93 %).
+
+  Missing methods (should be implemented):
+
+    virtual QCString trCopyToClipboard()
+    virtual QCString trDeclaration()
+    virtual QCString trDefinition()
+    virtual QCString trExportedModules()
+    virtual QCString trImportant()
+    virtual QCString trModuleMembersDescriptionTotal(ModuleMemberHighlight::Enum hl)
+    virtual QCString trRequirementID()
+    virtual QCString trRequirements()
+    virtual QCString trSatisfiedBy(const QCString & list)
+    virtual QCString trSatisfies(bool singular)
+    virtual QCString trTopicDocumentation()
+    virtual QCString trTopicIndex()
+    virtual QCString trTopicList()
+    virtual QCString trTopicListDescription()
+    virtual QCString trTopics()
+    virtual QCString trUnsatisfiedRequirements()
+    virtual QCString trUnsatisfiedRequirementsText(bool singular, const QCString & list)
+    virtual QCString trUnverifiedRequirements()
+    virtual QCString trUnverifiedRequirementsText(bool singular, const QCString & list)
+    virtual QCString trVerifiedBy(const QCString & list)
+    virtual QCString trVerifies(bool singular)
 
 
 TranslatorSwedish   (TranslatorAdapter_1_9_6)  27 methods to implement (8 %)
