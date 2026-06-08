@@ -77,6 +77,16 @@
  *              |   Removed QCString trNoDescriptionAvailable() override
  *              |   Corrected some misspelling thanx to Christophe C.
  * -------------+------------------------------------------------------------
+ *  2026-06-07  | Updated to release 1.16.0: implemented all 29 missing
+ *              |   methods (trFlowchart, trRelatedSymbols and related,
+ *              |   trCompoundType, trFileMembersDescriptionTotal,
+ *              |   trCompoundMembersDescriptionTotal,
+ *              |   trNamespaceMembersDescriptionTotal, trDefinition,
+ *              |   trDeclaration, trTopics and related,
+ *              |   trModuleMembersDescriptionTotal, trExportedModules,
+ *              |   trCopyToClipboard, trImportant, requirements/satisfies/
+ *              |   verifies family). Base class changed to Translator.
+ * -------------+------------------------------------------------------------
  */
 
 #ifndef TRANSLATOR_FR_H
@@ -103,7 +113,7 @@
 // Translator class (by the local maintainer) when the localized
 // translator is made up-to-date again.
 
-class TranslatorFrench : public TranslatorAdapter_1_9_5
+class TranslatorFrench : public Translator
 {
   public:
 
@@ -2366,6 +2376,348 @@ class TranslatorFrench : public TranslatorAdapter_1_9_5
 
     QCString trPackageList() override
     { return "Liste des paquetages"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.5
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used as a section header for VHDL process flowcharts. */
+    QCString trFlowchart() override
+    { return "Organigramme :"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.7
+//////////////////////////////////////////////////////////////////////////
+
+    /*! used in the compound documentation before a list of related symbols.
+     *
+     *  Supersedes trRelatedFunctions
+     */
+    QCString trRelatedSymbols() override
+    { return "Symboles associés"; }
+
+    /*! subscript for the related symbols
+     *
+     *  Supersedes trRelatedSubscript
+     */
+    QCString trRelatedSymbolsSubscript() override
+    { return "(Notez que ce ne sont pas des symboles membres.)"; }
+
+    /*! used in the class documentation as a header before the list of all
+     * related classes.
+     *
+     * Supersedes trRelatedFunctionDocumentation
+     */
+    QCString trRelatedSymbolDocumentation() override
+    { return "Documentation des amis et des symboles associés"; }
+
+    /*! the compound type as used for the xrefitems */
+    QCString trCompoundType(ClassDef::CompoundType compType, SrcLangExt lang) override
+    {
+      QCString result;
+      switch(compType)
+      {
+        case ClassDef::Class:
+          if (lang == SrcLangExt::Fortran) result=trType(true,true);
+          else result=trClass(true,true);
+          break;
+        case ClassDef::Struct:     result="Structure"; break;
+        case ClassDef::Union:      result="Union"; break;
+        case ClassDef::Interface:  result="Interface"; break;
+        case ClassDef::Protocol:   result="Protocole"; break;
+        case ClassDef::Category:   result="Catégorie"; break;
+        case ClassDef::Exception:  result="Exception"; break;
+        case ClassDef::Service:    result="Service"; break;
+        case ClassDef::Singleton:  result="Singleton"; break;
+        default: break;
+      }
+      return result;
+    }
+
+    QCString trFileMembersDescriptionTotal(FileMemberHighlight::Enum hl) override
+    {
+      bool extractAll = Config_getBool(EXTRACT_ALL);
+      QCString result="Voici la liste de toutes les ";
+
+      switch (hl)
+      {
+        case FileMemberHighlight::All:
+          if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+          {
+            result+="fonctions, variables, macros, énumérations et définitions de type ";
+          }
+          else
+          {
+            result+="membres de fichier ";
+          }
+          break;
+        case FileMemberHighlight::Functions:
+          result+="fonctions ";
+          break;
+        case FileMemberHighlight::Variables:
+          result+="variables ";
+          break;
+        case FileMemberHighlight::Typedefs:
+          result+="définitions de type ";
+          break;
+        case FileMemberHighlight::Sequences:
+          result+="séquences ";
+          break;
+        case FileMemberHighlight::Dictionaries:
+          result+="dictionnaires ";
+          break;
+        case FileMemberHighlight::Enums:
+          result+="énumérations ";
+          break;
+        case FileMemberHighlight::EnumValues:
+          result+="valeurs d'énumération ";
+          break;
+        case FileMemberHighlight::Defines:
+          result+="macros ";
+          break;
+        case FileMemberHighlight::Total: // for completeness
+          break;
+      }
+      if (!extractAll) result+="documentées ";
+      result+="avec des liens vers ";
+      if (extractAll)
+        result+="les fichiers auxquels ils appartiennent :";
+      else
+        result+="la documentation :";
+      return result;
+    }
+
+    QCString trCompoundMembersDescriptionTotal(ClassMemberHighlight::Enum hl) override
+    {
+      bool extractAll = Config_getBool(EXTRACT_ALL);
+      QCString result="Voici la liste de tous les ";
+
+      switch (hl)
+      {
+        case ClassMemberHighlight::All:
+          if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+          {
+            result+="champs de structure et d'union ";
+          }
+          else
+          {
+            result+="membres de classe ";
+          }
+          break;
+        case ClassMemberHighlight::Functions:
+          result+="fonctions ";
+          break;
+        case ClassMemberHighlight::Variables:
+          result+="variables ";
+          break;
+        case ClassMemberHighlight::Typedefs:
+          result+="définitions de type ";
+          break;
+        case ClassMemberHighlight::Enums:
+          result+="énumérations ";
+          break;
+        case ClassMemberHighlight::EnumValues:
+          result+="valeurs d'énumération ";
+          break;
+        case ClassMemberHighlight::Properties:
+          result+="propriétés ";
+          break;
+        case ClassMemberHighlight::Events:
+          result+="événements ";
+          break;
+        case ClassMemberHighlight::Related:
+          result+="symboles associés ";
+          break;
+        case ClassMemberHighlight::Total: // for completeness
+          break;
+      }
+      if (!extractAll) result+="documentés ";
+      result+="avec des liens vers ";
+      if (!extractAll)
+      {
+        if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+        {
+          result+="la documentation de structure/union de chaque champ :";
+        }
+        else
+        {
+          result+="la documentation de classe de chaque membre :";
+        }
+      }
+      else
+      {
+        if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+        {
+          result+="les structures/unions auxquelles ils appartiennent :";
+        }
+        else
+        {
+          result+="les classes auxquelles ils appartiennent :";
+        }
+      }
+      return result;
+    }
+
+    QCString trNamespaceMembersDescriptionTotal(NamespaceMemberHighlight::Enum hl) override
+    {
+      bool extractAll = Config_getBool(EXTRACT_ALL);
+      QCString result="Voici la liste de tous les ";
+
+      switch (hl)
+      {
+        case NamespaceMemberHighlight::All:
+          result+="membres des espaces de nommage ";
+          break;
+        case NamespaceMemberHighlight::Functions:
+          result+="fonctions des espaces de nommage ";
+          break;
+        case NamespaceMemberHighlight::Variables:
+          result+="variables des espaces de nommage ";
+          break;
+        case NamespaceMemberHighlight::Typedefs:
+          result+="définitions de type des espaces de nommage ";
+          break;
+        case NamespaceMemberHighlight::Sequences:
+          result+="séquences des espaces de nommage ";
+          break;
+        case NamespaceMemberHighlight::Dictionaries:
+          result+="dictionnaires des espaces de nommage ";
+          break;
+        case NamespaceMemberHighlight::Enums:
+          result+="énumérations des espaces de nommage ";
+          break;
+        case NamespaceMemberHighlight::EnumValues:
+          result+="valeurs d'énumération des espaces de nommage ";
+          break;
+        case NamespaceMemberHighlight::Total: // for completeness
+          break;
+      }
+      if (!extractAll) result+="documentés ";
+      result+="avec des liens vers ";
+      if (extractAll)
+        result+="la documentation de namespace de chaque membre :";
+      else
+        result+="les espaces de nommage auxquels ils appartiennent :";
+      return result;
+    }
+
+    QCString trDefinition() override  { return "Définition"; }
+    QCString trDeclaration() override { return "Déclaration"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.8
+//////////////////////////////////////////////////////////////////////////
+
+    QCString trTopics() override
+    { return "Sujets"; }
+    QCString trTopicDocumentation() override
+    { return "Documentation des sujets"; }
+    QCString trTopicList() override
+    { return "Liste des sujets"; }
+    QCString trTopicIndex() override
+    { return "Index des sujets"; }
+    QCString trTopicListDescription() override
+    { return "Liste de tous les sujets avec une brève description :"; }
+
+    QCString trModuleMembersDescriptionTotal(ModuleMemberHighlight::Enum hl) override
+    {
+      bool extractAll = Config_getBool(EXTRACT_ALL);
+      QCString result="Voici la liste de tous les ";
+
+      switch (hl)
+      {
+        case ModuleMemberHighlight::All:
+          result+="membres de module ";
+          break;
+        case ModuleMemberHighlight::Functions:
+          result+="fonctions de module ";
+          break;
+        case ModuleMemberHighlight::Variables:
+          result+="variables de module ";
+          break;
+        case ModuleMemberHighlight::Typedefs:
+          result+="définitions de type de module ";
+          break;
+        case ModuleMemberHighlight::Enums:
+          result+="énumérations de module ";
+          break;
+        case ModuleMemberHighlight::EnumValues:
+          result+="valeurs d'énumération de module ";
+          break;
+        case ModuleMemberHighlight::Total: // for completeness
+          break;
+      }
+      if (!extractAll) result+="documentés ";
+      result+="avec des liens vers ";
+      if (extractAll)
+        result+="la documentation de module de chaque membre :";
+      else
+        result+="le module auquel ils appartiennent :";
+      return result;
+    }
+
+    QCString trExportedModules() override
+    { return "Modules exportés"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.10.0
+//////////////////////////////////////////////////////////////////////////
+
+    QCString trCopyToClipboard() override
+    { return "Copier dans le presse-papiers"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.11.0
+//////////////////////////////////////////////////////////////////////////
+
+    QCString trImportant() override
+    { return "Important"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.16.0
+//////////////////////////////////////////////////////////////////////////
+
+    QCString trRequirements() override
+    { return "Exigences"; }
+
+    QCString trRequirementID() override
+    { return "ID"; }
+
+    QCString trSatisfies(bool singular) override
+    {
+      return singular ? "Satisfait l'exigence" : "Satisfait les exigences";
+    }
+
+    QCString trSatisfiedBy(const QCString &list) override
+    { return "Satisfaite par "+list+"."; }
+
+    QCString trUnsatisfiedRequirements() override
+    { return "Exigences non satisfaites"; }
+
+    QCString trUnsatisfiedRequirementsText(bool singular,const QCString &list) override
+    {
+      return singular ?
+        "L'exigence "+list+" n'a pas de relation 'satisfies'." :
+        "Les exigences "+list+" n'ont pas de relation 'satisfies'.";
+    }
+
+    QCString trVerifies(bool singular) override
+    {
+      return singular ? "Vérifie l'exigence" : "Vérifie les exigences";
+    }
+
+    QCString trVerifiedBy(const QCString &list) override
+    { return "Vérifiée par "+list+"."; }
+
+    QCString trUnverifiedRequirements() override
+    { return "Exigences non vérifiées"; }
+
+    QCString trUnverifiedRequirementsText(bool singular,const QCString &list) override
+    {
+      return singular ?
+        "L'exigence "+list+" n'a pas de relation 'verifies'." :
+        "Les exigences "+list+" n'ont pas de relation 'verifies'.";
+    }
 
 };
 
