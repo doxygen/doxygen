@@ -10,7 +10,7 @@ Lithuanian, Macedonian, Norwegian, Persian, Polish, Portuguese,
 Romanian, Russian, Serbian, SerbianCyrillic, Slovak, Slovene, Spanish,
 Swedish, Turkish, Ukrainian, and Vietnamese.
 
-Of them, 8 translators are up-to-date, 34 translators are based on
+Of them, 9 translators are up-to-date, 33 translators are based on
 some adapter class, and 2 are English based.
 
 ----------------------------------------------------------------------
@@ -25,6 +25,7 @@ problems were not spotted by the script:
   TranslatorFrench
   TranslatorGerman
   TranslatorGreek
+  TranslatorJapanese
   TranslatorPolish
   TranslatorPortuguese
 
@@ -48,7 +49,6 @@ implemented to become up-to-date:
   TranslatorSlovak                1.8.15	76 methods to implement (23 %)
   TranslatorRomanian              1.8.15	76 methods to implement (23 %)
   TranslatorKorean                1.8.15	76 methods to implement (23 %)
-  TranslatorJapanese              1.8.15	76 methods to implement (23 %)
   TranslatorItalian               1.8.15	76 methods to implement (23 %)
   TranslatorHungarian             1.8.15	76 methods to implement (23 %)
   TranslatorChinesetraditional    1.8.15	76 methods to implement (23 %)
@@ -1403,91 +1403,6 @@ TranslatorIndonesian   (TranslatorAdapter_1_8_0)  97 methods to implement (30 %)
 
 TranslatorItalian   (TranslatorAdapter_1_8_15)  76 methods to implement (23 %)
 -----------------
-
-  Implements 243 of the required methods (76 %).
-
-  Missing methods (should be implemented):
-
-    virtual QCString trCompoundMembersDescriptionTotal(ClassMemberHighlight::Enum hl)
-    virtual QCString trCompoundReferenceSlice(const QCString & clName, ClassDef::CompoundType compType, bool isLocal)
-    virtual QCString trCompoundType(ClassDef::CompoundType compType, SrcLangExt lang)
-    virtual QCString trConcept(bool first_capital, bool singular)
-    virtual QCString trConceptDefinition()
-    virtual QCString trConceptDocumentation()
-    virtual QCString trConceptIndex()
-    virtual QCString trConceptList()
-    virtual QCString trConceptListDescription(bool extractAll)
-    virtual QCString trConceptReference(const QCString & conceptName)
-    virtual QCString trConstantDocumentation()
-    virtual QCString trConstants()
-    virtual QCString trCopyToClipboard()
-    virtual QCString trCustomReference(const QCString & name)
-    virtual QCString trDataMemberDocumentation()
-    virtual QCString trDataMembers()
-    virtual QCString trDeclaration()
-    virtual QCString trDefinition()
-    virtual QCString trDesignUnitDocumentation()
-    virtual QCString trDesignUnitHierarchy()
-    virtual QCString trDesignUnitIndex()
-    virtual QCString trDesignUnitList()
-    virtual QCString trDesignUnitListDescription()
-    virtual QCString trDesignUnitMembers()
-    virtual QCString trDesignUnits()
-    virtual QCString trDictionaries()
-    virtual QCString trDictionaryDocumentation()
-    virtual QCString trExceptionDocumentation()
-    virtual QCString trExceptionHierarchy()
-    virtual QCString trExceptionHierarchyDescription()
-    virtual QCString trExceptionIndex()
-    virtual QCString trExceptionList()
-    virtual QCString trExceptionListDescription()
-    virtual QCString trExportedModules()
-    virtual QCString trFileMembersDescriptionTotal(FileMemberHighlight::Enum hl)
-    virtual QCString trFlowchart()
-    virtual QCString trFunctionAndProc()
-    virtual QCString trImportant()
-    virtual QCString trInterfaceDocumentation()
-    virtual QCString trInterfaceHierarchy()
-    virtual QCString trInterfaceHierarchyDescription()
-    virtual QCString trInterfaceIndex()
-    virtual QCString trInterfaceList()
-    virtual QCString trInterfaceListDescription()
-    virtual QCString trModuleMembersDescriptionTotal(ModuleMemberHighlight::Enum hl)
-    virtual QCString trNamespaceMembersDescriptionTotal(NamespaceMemberHighlight::Enum hl)
-    virtual QCString trOperationDocumentation()
-    virtual QCString trOperations()
-    virtual QCString trPackageList()
-    virtual QCString trRelatedSymbolDocumentation()
-    virtual QCString trRelatedSymbols()
-    virtual QCString trRelatedSymbolsSubscript()
-    virtual QCString trRequirementID()
-    virtual QCString trRequirements()
-    virtual QCString trSatisfiedBy(const QCString & list)
-    virtual QCString trSatisfies(bool singular)
-    virtual QCString trSequenceDocumentation()
-    virtual QCString trSequences()
-    virtual QCString trSliceInterfaces()
-    virtual QCString trStructDocumentation()
-    virtual QCString trStructIndex()
-    virtual QCString trStructList()
-    virtual QCString trStructListDescription()
-    virtual QCString trStructs()
-    virtual QCString trTopicDocumentation()
-    virtual QCString trTopicIndex()
-    virtual QCString trTopicList()
-    virtual QCString trTopicListDescription()
-    virtual QCString trTopics()
-    virtual QCString trUnsatisfiedRequirements()
-    virtual QCString trUnsatisfiedRequirementsText(bool singular, const QCString & list)
-    virtual QCString trUnverifiedRequirements()
-    virtual QCString trUnverifiedRequirementsText(bool singular, const QCString & list)
-    virtual QCString trVerifiedBy(const QCString & list)
-    virtual QCString trVerifies(bool singular)
-    virtual QCString trVhdlType(VhdlSpecifier type, bool single)
-
-
-TranslatorJapanese   (TranslatorAdapter_1_8_15)  76 methods to implement (23 %)
-------------------
 
   Implements 243 of the required methods (76 %).
 
