@@ -62,6 +62,8 @@ def transformDocs(doc):
     doc = doc.replace("\\note ", "\n"+messages['notetxt']+" ")
     doc = doc.replace("\\verbatim", "\n")
     doc = doc.replace("\\endverbatim", "\n")
+    doc = doc.replace("<b>", "")
+    doc = doc.replace("</b>", "")
     doc = doc.replace("<code>", "")
     doc = doc.replace("</code>", "")
     doc = doc.replace("`", "")

@@ -1022,18 +1022,28 @@ QString Expert::getDocsForNode(const QDomElement &child) const
   regexp.setPattern(SA("<br> *$"));
   docs.replace(regexp,SA(" "));
   docs.replace(SA("(\\c \\\\)"),SA("(\\c JUST_WIZARD_BACKSLASH)"));
-  // \c word -> <code>word</code>; word ends with ')', ',', '.' or ' '
-  regexp.setPattern(SA("\\\\c[ ]+([^ \\)]+)\\)"));
-  docs.replace(regexp,SA("<code>\\1</code>)"));
 
-  regexp.setPattern(SA("\\\\c[ ]+([^ ,]+),"));
-  docs.replace(regexp,SA("<code>\\1</code>,"));
+  regexp.setPattern(SA("\\\\c[ ]+([A-Za-z]+\\.[a-z]+\\.[a-z]+\\.[a-z]+)"));
+  docs.replace(regexp,SA("<code>\\1</code>"));
 
-  regexp.setPattern(SA("\\\\c[ ]+([^ \\.]+)\\."));
-  docs.replace(regexp,SA("<code>\\1</code>."));
+  regexp.setPattern(SA("\\\\c[ ]+([A-Za-z]+\\.[a-z]+)"));
+  docs.replace(regexp,SA("<code>\\1</code>"));
 
-  regexp.setPattern(SA("\\\\c[ ]+([^ ]+) "));
-  docs.replace(regexp,SA("<code>\\1</code> "));
+  regexp.setPattern(SA("\\\\c[ ]+(\\\\#[a-z]+)"));
+  docs.replace(regexp,SA("<code>\\1</code>"));
+
+  regexp.setPattern(SA("\\\\c[ ]+(\\\\[@\\\\])?([%=!\\\"/A-Za-z0-9_]+)(\\([0-9]*\\))?"));
+  docs.replace(regexp,SA("<code>\\1\\2\\3</code>"));
+
+  regexp.setPattern(SA("\\\\c[ ]+(\\\\\\\\[{}])"));
+  docs.replace(regexp,SA("<code>\\1</code>"));
+
+  regexp.setPattern(SA("\\\\c[ ]+(\\\\\\\\\\\\\\\\[{}])"));
+  docs.replace(regexp,SA("<code>\\1</code>"));
+
+  regexp.setPattern(SA("\\\\c[ ]+(@[{}])"));
+  docs.replace(regexp,SA("<code>\\1</code>"));
+
   // `word` -> <code>word</code>
   docs.replace(SA("``"),SA(""));
   regexp.setPattern(SA("`([^`]+)`"));

@@ -544,7 +544,7 @@
     </option>
     <option type="string" id="FILE_VERSION_FILTER" format="file" defval="">
       <docs>
-<![CDATA[Das \c FILE_VERSION_FILTER-Tag kann verwendet werden, um ein Programm oder Skript anzugeben, das Doxygen aufrufen soll, um die aktuelle Version für jede Datei zu erhalten (typischerweise vom Versionskontrollsystem). Doxygen ruft das Programm auf, indem es (über <code>popen()</code>) den Befehl <code>command input-file</code> ausführt, wobei \c command der Wert des \c FILE_VERSION_FILTER-Tags ist und \c input-file der Name einer von Doxygen bereitgestellten Eingabedatei ist. Was auch immer das Programm auf die Standardausgabe schreibt, wird als Dateiversion verwendet. Für ein Beispiel siehe die Dokumentation.]]>
+<![CDATA[Das \c FILE_VERSION_FILTER-Tag kann verwendet werden, um ein Programm oder Skript anzugeben, das Doxygen aufrufen soll, um die aktuelle Version für jede Datei zu erhalten (typischerweise vom Versionskontrollsystem). Doxygen ruft das Programm auf, indem es (über <code>popen()</code>) den Befehl <code>command input_file</code> ausführt, wobei \c command der Wert des \c FILE_VERSION_FILTER-Tags ist und \c input_file der Name einer von Doxygen bereitgestellten Eingabedatei ist. Was auch immer das Programm auf die Standardausgabe schreibt, wird als Dateiversion verwendet. Für ein Beispiel siehe die Dokumentation.]]>
       </docs>
     </option>
     <option type="string" id="LAYOUT_FILE" format="file" defval="">
@@ -571,7 +571,7 @@
     </option>
     <option type="bool" id="WARNINGS" defval="1">
       <docs>
-<![CDATA[Das \c WARNINGS-Tag kann verwendet werden, um die Warnmeldungen ein- oder auszuschalten, die von Doxygen auf die Standardfehlerausgabe (\c stderr) generiert werden. Wenn \c WARNINGS auf \c YES gesetzt ist, bedeutet dies, dass die Warnungen eingeschaltet sind. <br> \b Tipp: Schalten Sie Warnungen ein, während Sie die Dokumentation schreiben.]]>
+<![CDATA[Das \c WARNINGS-Tag kann verwendet werden, um die Warnmeldungen ein- oder auszuschalten, die von Doxygen auf die Standardfehlerausgabe (\c stderr) generiert werden. Wenn \c WARNINGS auf \c YES gesetzt ist, bedeutet dies, dass die Warnungen eingeschaltet sind. <br> <b>Tipp:</b> Schalten Sie Warnungen ein, während Sie die Dokumentation schreiben.]]>
       </docs>
     </option>
     <option type="bool" id="WARN_IF_UNDOCUMENTED" defval="1">
@@ -1158,7 +1158,7 @@
       </docs>
       <value name="HTML-CSS" desc="(langsamer, aber mit bester Kompatibilität. Dies ist der Name für MathJax Version 2, für MathJax Version 3 wird dies in \c chtml übersetzt)"/>
       <value name="NativeMML" desc="(d.h. MathML. Nur für MathJax 2 unterstützt. Für MathJax Version 3 wird stattdessen \c chtml verwendet.)"/>
-      <value name="chtml" desc="(Dies ist der Name für MathJax Version 3, für MathJax Version 2 wird dies in \c HTML-CSS übersetzt)"/>
+      <value name="chtml" desc="(Dies ist der Name für MathJax Version 3, für MathJax Version 2 wird dies in &lt;code&gt;HTML-CSS&lt;/code&gt; übersetzt)"/>
       <value name="SVG"/>
     </option>
         <option type="string" id="MATHJAX_RELPATH" format="string" depends="USE_MATHJAX">
@@ -1523,7 +1523,7 @@
   <group name="External" trname="Externe Referenzen" docs="Konfigurationsoptionen für externe Referenzen">
     <option type="list" id="TAGFILES" format="file">
       <docs>
-<![CDATA[Das \c TAGFILES-Tag kann verwendet werden, um eine oder mehrere Tag-Dateien anzugeben. Für jede Tag-Datei sollte der Speicherort der externen Dokumentation hinzugefügt werden. Das Format einer Tag-Datei ohne diesen Speicherort ist wie folgt: \verbatim TAGFILES = file1 file2 ... \endverbatim Das Hinzufügen des Speicherorts für die Tag-Dateien erfolgt wie folgt: \verbatim TAGFILES = file1=loc1 "file2 = loc2" ... \endverbatim wobei `loc1` und `loc2` relative oder absolute Pfade oder URLs sein können. Siehe den Abschnitt \ref external für weitere Informationen zur Verwendung von Tag-Dateien. \note Jede Tag-Datei muss einen eindeutigen Namen haben (wobei der Name den Pfad NICHT enthält). Wenn eine Tag-Datei nicht in dem Verzeichnis liegt, in dem Doxygen ausgeführt wird, müssen Sie auch den Pfad zur Tag-Datei hier angeben.]]>
+<![CDATA[Das \c TAGFILES-Tag kann verwendet werden, um eine oder mehrere Tag-Dateien anzugeben. Für jede Tag-Datei sollte der Speicherort der externen Dokumentation hinzugefügt werden. Das Format einer Tag-Datei ohne diesen Speicherort ist wie folgt: \verbatim TAGFILES = file1 file2 ... \endverbatim Das Hinzufügen des Speicherorts für die Tag-Dateien erfolgt wie folgt: \verbatim TAGFILES = file1=loc1 "file2 = loc2" ... \endverbatim wobei `loc1` und `loc2` relative oder absolute Pfade oder URLs sein können. Siehe den Abschnitt \ref external für weitere Informationen zur Verwendung von Tag-Dateien. \note Jede Tag-Datei muss einen eindeutigen Namen haben (wobei der Name den Pfad \e NICHT enthält). Wenn eine Tag-Datei nicht in dem Verzeichnis liegt, in dem Doxygen ausgeführt wird, müssen Sie auch den Pfad zur Tag-Datei hier angeben.]]>
       </docs>
     </option>
     <option type="string" id="GENERATE_TAGFILE" format="file" defval="">
@@ -1780,7 +1780,7 @@
 <![CDATA[Das \c MERMAID_RENDER_MODE-Tag steuert, wie Mermaid-Diagramme gerendert werden. Mögliche Werte sind: \c CLI (verwendet das `mmdc`-Tool von der Befehlszeile), \c CLIENT (verwendet mermaid.js im Browser) oder \c SERVER (verwendet mermaid.ink als externen Dienst). Standardmäßig ist dies auf \c CLIENT gesetzt.]]>
       </docs>
       <value name="AUTO" desc="(verwendet Client-Side-Rendering für HTML und \c mmdc für LaTeX/PDF und andere Formate. Wenn \c MERMAID_PATH nicht gesetzt ist, erzeugen Nicht-HTML-Diagramme eine Warnung)"/>
-      <value name="CLI" desc="(verwendet das \c mmdc-Tool zum Vorgenerieren von Bildern (erfordert \c Node.js und \c mermaid-js/mermaid-cli). Funktioniert für alle Ausgabeformate)"/>
+      <value name="CLI" desc="(verwendet das \c mmdc-Tool zum Vorgenerieren von Bildern (erfordert \c Node.js und &lt;code&gt;mermaid-js/mermaid-cli&lt;/code&gt;). Funktioniert für alle Ausgabeformate)"/>
       <value name="CLIENT_SIDE" desc="(bettet \c mermaid.js in die HTML-Ausgabe für Client-Side-Rendering ein. Erfordert kein \c mmdc, funktioniert aber nur für HTML-Ausgabe)"/>
     </option>
     <option type="string" id="MERMAID_JS_URL" format="string" defval="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs">

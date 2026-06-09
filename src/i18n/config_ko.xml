@@ -545,7 +545,7 @@
     </option>
     <option type="string" id="FILE_VERSION_FILTER" format="file" defval="">
       <docs>
-<![CDATA[\c FILE_VERSION_FILTER 태그를 사용하여 Doxygen이 각 파일의 현재 버전을 가져오기 위해 호출하는 프로그램 또는 스크립트를 지정할 수 있습니다(일반적으로 버전 관리 시스템에서). Doxygen은 <code>popen()</code>을 통해 명령<code>command input-file</code>을 실행하여 프로그램을 호출합니다. 여기서 \c command는 \c FILE_VERSION_FILTER 태그의 값, \c input-file은 Doxygen이 제공하는 입력 파일의 이름입니다. 프로그램이 표준 출력에 쓰는 모든 것은 파일 버전으로 사용됩니다.]]>
+<![CDATA[\c FILE_VERSION_FILTER 태그를 사용하여 Doxygen이 각 파일의 현재 버전을 가져오기 위해 호출하는 프로그램 또는 스크립트를 지정할 수 있습니다(일반적으로 버전 관리 시스템에서). Doxygen은 <code>popen()</code>을 통해 명령<code>command input_file</code>을 실행하여 프로그램을 호출합니다. 여기서 \c command는 \c FILE_VERSION_FILTER 태그의 값, \c input_file은 Doxygen이 제공하는 입력 파일의 이름입니다. 프로그램이 표준 출력에 쓰는 모든 것은 파일 버전으로 사용됩니다.]]>
       </docs>
     </option>
     <option type="string" id="LAYOUT_FILE" format="file" defval="">
@@ -572,7 +572,7 @@
     </option>
     <option type="bool" id="WARNINGS" defval="1">
       <docs>
-<![CDATA[\c WARNINGS 태그를 사용하여 Doxygen에 의해 표준 오류(\c stderr)에 생성되는 경고 메시지를 켜거나 끌 수 있습니다. \c WARNINGS가 \c YES로 설정되면 경고가 켜져 있음을 의미합니다.<br>\b 팁: 문서 작성 중에 경고를 켜두세요.]]>
+<![CDATA[\c WARNINGS 태그를 사용하여 Doxygen에 의해 표준 오류(\c stderr)에 생성되는 경고 메시지를 켜거나 끌 수 있습니다. \c WARNINGS가 \c YES로 설정되면 경고가 켜져 있음을 의미합니다.<br><b> 팁:</b> 문서 작성 중에 경고를 켜두세요.]]>
       </docs>
     </option>
     <option type="bool" id="WARN_IF_UNDOCUMENTED" defval="1">
@@ -1159,7 +1159,7 @@
       </docs>
       <value name="HTML-CSS" desc="(느리지만 최상의 호환성 제공. MathJax 버전 2의 이름이며, MathJax 버전 3에서는 \c chtml로 변환됨)"/>
       <value name="NativeMML" desc="(즉, MathML. MathJax 2만 지원. MathJax 버전 3에서는 대신 \c chtml이 사용됨.)"/>
-      <value name="chtml" desc="(MathJax 버전 3의 이름이며, MathJax 버전 2에서는 \c HTML-CSS로 변환됨)"/>
+      <value name="chtml" desc="(MathJax 버전 3의 이름이며, MathJax 버전 2에서는 &lt;code&gt;HTML-CSS&lt;/code&gt;로 변환됨)"/>
       <value name="SVG"/>
     </option>
         <option type="string" id="MATHJAX_RELPATH" format="string" depends="USE_MATHJAX">
@@ -1778,7 +1778,7 @@
 <![CDATA[\c MERMAID_RENDER_MODE 태그는 Mermaid 다이어그램이 렌더링되는 방식을 선택합니다.]]>
       </docs>
       <value name="AUTO" desc="(HTML은 클라이언트 측 렌더링 사용, LaTeX/PDF 및 기타 형식은 \c mmdc 사용. \c MERMAID_PATH가 설정되지 않은 경우 비 HTML 다이어그램은 경고를 생성함)"/>
-      <value name="CLI" desc="(\c mmdc 도구를 사용하여 이미지 사전 생성(\c Node.js 및 \c mermaid-js/mermaid-cli 필요). 모든 출력 형식에서 작동)"/>
+      <value name="CLI" desc="(\c mmdc 도구를 사용하여 이미지 사전 생성(\c Node.js 및 &lt;code&gt;mermaid-js/mermaid-cli&lt;/code&gt; 필요). 모든 출력 형식에서 작동)"/>
       <value name="CLIENT_SIDE" desc="(클라이언트 측 렌더링을 위해 \c mermaid.js를 HTML 출력에 포함. \c mmdc가 필요 없지만 HTML 출력에서만 작동)"/>
     </option>
     <option type="string" id="MERMAID_JS_URL" format="string" defval="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs">
