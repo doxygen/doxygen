@@ -2758,8 +2758,8 @@ class TranslatorSpanish : public Translator
           pluralResult="variables";
           break;
         case ModuleMemberHighlight::Typedefs:
-          singularResult="«typedef»";
-          pluralResult="«typedefs»";
+          singularResult="definición de tipo";
+          pluralResult="definiciones de tipo";
           break;
         case ModuleMemberHighlight::Enums:
           singularResult="enumeración";
