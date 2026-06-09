@@ -31,6 +31,7 @@
  * Updated to 1.8.4 by Bartomeu Creus Navarro (17-julio-2013)
  * Updated to 1.9.6 by David H. Martín (28-diciembre-2022)
  * Updated to 1.9.7 by David H. Martín (27-marzo-2023)
+ * Updated to 1.16.0 by GitHub Copilot (08-junio-2026)
 */
 
 namespace SpanishTranslatorUtils
@@ -116,9 +117,27 @@ namespace SpanishTranslatorUtils
           return true;
       }
     }
+
+    /*! Returns true if the gender of the given component is masculine in
+    Spanish. */
+    inline bool isModuleMemberHighlightMasculine(ModuleMemberHighlight::Enum hl)
+    {
+      switch (hl)
+      {
+        case ModuleMemberHighlight::Functions:
+        case ModuleMemberHighlight::Variables:
+        case ModuleMemberHighlight::Enums:
+          return false;
+        case ModuleMemberHighlight::All:
+        case ModuleMemberHighlight::Typedefs:
+        case ModuleMemberHighlight::EnumValues:
+        default:
+          return true;
+      }
+    }
 }
 
-class TranslatorSpanish : public TranslatorAdapter_1_9_6
+class TranslatorSpanish : public Translator
 {
   public:
 
@@ -2691,6 +2710,143 @@ class TranslatorSpanish : public TranslatorAdapter_1_9_6
         result+="a los espacios de nombres a los que pertenecen:";
       return result;
     }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.6
+//////////////////////////////////////////////////////////////////////////
+
+    QCString trDefinition() override
+    { return "Definición"; }
+    QCString trDeclaration() override
+    { return "Declaración"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.8
+//////////////////////////////////////////////////////////////////////////
+
+    QCString trTopics() override
+    { return "Temas"; }
+    QCString trTopicDocumentation() override
+    { return "Documentación de temas"; }
+    QCString trTopicList() override
+    { return "Lista de temas"; }
+    QCString trTopicIndex() override
+    { return "Índice de temas"; }
+    QCString trTopicListDescription() override
+    { return "Esta es la lista de todos los temas con breves descripciones:"; }
+
+    QCString trModuleMembersDescriptionTotal(ModuleMemberHighlight::Enum hl) override
+    {
+      bool extractAll = Config_getBool(EXTRACT_ALL);
+      bool masculine = SpanishTranslatorUtils::isModuleMemberHighlightMasculine(hl);
+      QCString result="Lista de ";
+      result+=(masculine ? "todos los " : "todas las ");
+      QCString singularResult = "";
+      QCString pluralResult = "";
+      switch (hl)
+      {
+        case ModuleMemberHighlight::All:
+          singularResult="miembro";
+          pluralResult="miembros";
+          break;
+        case ModuleMemberHighlight::Functions:
+          singularResult="función";
+          pluralResult="funciones";
+          break;
+        case ModuleMemberHighlight::Variables:
+          singularResult="variable";
+          pluralResult="variables";
+          break;
+        case ModuleMemberHighlight::Typedefs:
+          singularResult="definición de tipo";
+          pluralResult="definiciones de tipo";
+          break;
+        case ModuleMemberHighlight::Enums:
+          singularResult="enumeración";
+          pluralResult="enumeraciones";
+          break;
+        case ModuleMemberHighlight::EnumValues:
+          singularResult="valor enumerado";
+          pluralResult="valores enumerados";
+          break;
+        case ModuleMemberHighlight::Total: // for completeness
+          break;
+      }
+      result+=(pluralResult.isEmpty() ? singularResult+"s" : pluralResult);
+      result+=" del módulo ";
+      if (!extractAll) result+=(masculine ? "documentados " : "documentadas ");
+      result+="con enlaces ";
+      if (extractAll)
+        result+="a la documentación del módulo de cada " + singularResult + ":";
+      else
+        result+="al módulo al que pertenecen:";
+      return result;
+    }
+
+    QCString trExportedModules() override
+    { return "Módulos exportados"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.10.0
+//////////////////////////////////////////////////////////////////////////
+
+    QCString trCopyToClipboard() override
+    { return "Copiar al portapapeles"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.11.0
+//////////////////////////////////////////////////////////////////////////
+
+    QCString trImportant() override
+    { return "Importante"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.16.0
+//////////////////////////////////////////////////////////////////////////
+
+    // the title of the requirements overview page
+    QCString trRequirements() override
+    { return "Requisitos"; }
+    // table header for the column with the requirements IDs
+    QCString trRequirementID() override
+    { return "ID"; }
+    // indicates a symbol implements (satisfies) a requirement
+    QCString trSatisfies(bool singular) override
+    {
+      return singular ?
+        "Satisface el requisito" :
+        "Satisface los requisitos";
+    }
+    // indicates a requirement is satisfied (implemented) by one or more symbols
+    QCString trSatisfiedBy(const QCString &list) override
+    { return "Satisfecho por "+list+"."; }
+    QCString trUnsatisfiedRequirements() override
+    { return "Requisitos no satisfechos"; }
+    QCString trUnsatisfiedRequirementsText(bool singular,const QCString &list) override
+    {
+      return singular ?
+        "El requisito "+list+" no tiene una relación 'satisface'." :
+        "Los requisitos "+list+" no tienen una relación 'satisface'.";
+    }
+    // indicates a symbol verifies (tests) a requirement
+    QCString trVerifies(bool singular) override
+    {
+      return singular ?
+        "Verifica el requisito" :
+        "Verifica los requisitos";
+    }
+    // indicates a requirement is verified (tested) by one or more symbols
+    QCString trVerifiedBy(const QCString &list) override
+    { return "Verificado por "+list+"."; }
+    QCString trUnverifiedRequirements() override
+    { return "Requisitos no verificados"; }
+    QCString trUnverifiedRequirementsText(bool singular,const QCString &list) override
+    {
+      return singular ?
+        "El requisito "+list+" no tiene una relación 'verifica'." :
+        "Los requisitos "+list+" no tienen una relación 'verifica'.";
+    }
+
 };
 
 #endif
