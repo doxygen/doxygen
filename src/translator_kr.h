@@ -18,6 +18,9 @@
 
 
 /* Korean translators
+ * doxygen-1.9.x/2.x update
+ *   * GitHub Copilot (2026-06-10): updated to be fully up-to-date with
+ *     TranslatorEnglish, implementing all 76 methods missing since 1.8.15
  * doxygen-svn
  *   * fly1004@gmail.com
  * doxygen-1.5.3
@@ -48,7 +51,7 @@
  Translator class (by the local maintainer) when the localized
  translator is made up-to-date again.
 */
-class TranslatorKorean : public TranslatorAdapter_1_8_15
+class TranslatorKorean : public Translator
 {
   public:
 
@@ -1985,6 +1988,625 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
       if (!single) result+="들";
 	  result+="로부터 생성되었습니다.:";
       return result;
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.8.15
+//////////////////////////////////////////////////////////////////////////
+
+    /** VHDL type or entity names */
+    QCString trVhdlType(VhdlSpecifier type,bool single) override
+    {
+      switch(type)
+      {
+        case VhdlSpecifier::LIBRARY:
+          if (single) return "라이브러리";
+          else        return "라이브러리들";
+        case VhdlSpecifier::PACKAGE:
+          if (single) return "패키지";
+          else        return "패키지들";
+        case VhdlSpecifier::SIGNAL:
+          if (single) return "시그널";
+          else        return "시그널들";
+        case VhdlSpecifier::COMPONENT:
+          if (single) return "컴포넌트";
+          else        return "컴포넌트들";
+        case VhdlSpecifier::CONSTANT:
+          if (single) return "상수";
+          else        return "상수들";
+        case VhdlSpecifier::ENTITY:
+          if (single) return "엔티티";
+          else        return "엔티티들";
+        case VhdlSpecifier::TYPE:
+          if (single) return "타입";
+          else        return "타입들";
+        case VhdlSpecifier::SUBTYPE:
+          if (single) return "서브타입";
+          else        return "서브타입들";
+        case VhdlSpecifier::FUNCTION:
+          if (single) return "함수";
+          else        return "함수들";
+        case VhdlSpecifier::RECORD:
+          if (single) return "레코드";
+          else        return "레코드들";
+        case VhdlSpecifier::PROCEDURE:
+          if (single) return "프로시저";
+          else        return "프로시저들";
+        case VhdlSpecifier::ARCHITECTURE:
+          if (single) return "아키텍처";
+          else        return "아키텍처들";
+        case VhdlSpecifier::ATTRIBUTE:
+          if (single) return "속성";
+          else        return "속성들";
+        case VhdlSpecifier::PROCESS:
+          if (single) return "프로세스";
+          else        return "프로세스들";
+        case VhdlSpecifier::PORT:
+          if (single) return "포트";
+          else        return "포트들";
+        case VhdlSpecifier::USE:
+          if (single) return "use 절";
+          else        return "Use 절들";
+        case VhdlSpecifier::GENERIC:
+          if (single) return "제네릭";
+          else        return "제네릭들";
+        case VhdlSpecifier::PACKAGE_BODY:
+          return "패키지 바디";
+        case VhdlSpecifier::UNITS:
+          return "유닛들";
+        case VhdlSpecifier::SHAREDVARIABLE:
+          if (single) return "공유 변수";
+          else        return "공유 변수들";
+        case VhdlSpecifier::VFILE:
+          if (single) return "파일";
+          else        return "파일들";
+        case VhdlSpecifier::GROUP:
+          if (single) return "그룹";
+          else        return "그룹들";
+        case VhdlSpecifier::INSTANTIATION:
+          if (single) return "인스턴스화";
+          else        return "인스턴스화들";
+        case VhdlSpecifier::ALIAS:
+          if (single) return "별칭";
+          else        return "별칭들";
+        case VhdlSpecifier::CONFIG:
+          if (single) return "설정";
+          else        return "설정들";
+        case VhdlSpecifier::MISCELLANEOUS:
+          return "기타";
+        case VhdlSpecifier::UCF_CONST:
+          return "제약";
+        default:
+          return "클래스";
+      }
+    }
+
+    QCString trDesignUnitDocumentation() override
+    { return "설계 유닛 문서화"; }
+
+    QCString trDesignUnitHierarchy() override
+    { return "설계 유닛 계층도"; }
+
+    QCString trDesignUnitIndex() override
+    { return "설계 유닛 색인"; }
+
+    QCString trDesignUnitList() override
+    { return "설계 유닛 목록"; }
+
+    QCString trDesignUnitListDescription() override
+    {
+      return "다음은 모든 설계 유닛 멤버들의 목록입니다. "
+             "각 항목은 해당 멤버가 속한 엔티티의 링크를 가지고 있습니다.:";
+    }
+
+    QCString trDesignUnitMembers() override
+    { return "설계 유닛 멤버들"; }
+
+    QCString trDesignUnits() override
+    { return "설계 유닛"; }
+
+    QCString trFunctionAndProc() override
+    { return "함수/프로시저/프로세스"; }
+
+    QCString trFlowchart() override
+    { return "순서도:"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.8.19 (Slice support)
+//////////////////////////////////////////////////////////////////////////
+
+    QCString trPackageList() override
+    { return "패키지 목록"; }
+
+    QCString trSliceInterfaces() override
+    { return "인터페이스"; }
+
+    QCString trInterfaceIndex() override
+    { return "인터페이스 색인"; }
+
+    QCString trInterfaceList() override
+    { return "인터페이스 목록"; }
+
+    QCString trInterfaceListDescription() override
+    { return "다음은 간략한 설명과 함께 인터페이스들의 목록입니다.:"; }
+
+    QCString trInterfaceHierarchy() override
+    { return "인터페이스 계층도"; }
+
+    QCString trInterfaceHierarchyDescription() override
+    { return "이 상속 목록은 완전하진 않지만 알파벳순으로 대략적으로 정렬되어있습니다.:"; }
+
+    QCString trInterfaceDocumentation() override
+    { return "인터페이스 문서화"; }
+
+    QCString trExceptionIndex() override
+    { return "예외 색인"; }
+
+    QCString trExceptionList() override
+    { return "예외 목록"; }
+
+    QCString trExceptionListDescription() override
+    { return "다음은 간략한 설명과 함께 예외들의 목록입니다.:"; }
+
+    QCString trExceptionHierarchy() override
+    { return "예외 계층도"; }
+
+    QCString trExceptionHierarchyDescription() override
+    { return "이 상속 목록은 완전하진 않지만 알파벳순으로 대략적으로 정렬되어있습니다.:"; }
+
+    QCString trExceptionDocumentation() override
+    { return "예외 문서화"; }
+
+    QCString trCompoundReferenceSlice(const QCString &clName, ClassDef::CompoundType compType, bool isLocal) override
+    {
+      QCString result=clName;
+      if (isLocal) result+=" 로컬";
+      switch(compType)
+      {
+        case ClassDef::Class:      result+=" 클래스"; break;
+        case ClassDef::Struct:     result+=" 구조체"; break;
+        case ClassDef::Union:      result+=" 공용체"; break;
+        case ClassDef::Interface:  result+=" 인터페이스"; break;
+        case ClassDef::Protocol:   result+=" 프로토콜"; break;
+        case ClassDef::Category:   result+=" 카테고리"; break;
+        case ClassDef::Exception:  result+=" 예외"; break;
+        default: break;
+      }
+      result+=" 참조";
+      return result;
+    }
+
+    QCString trCompoundType(ClassDef::CompoundType compType, SrcLangExt lang) override
+    {
+      QCString result;
+      switch(compType)
+      {
+        case ClassDef::Class:
+          if (lang == SrcLangExt::Fortran) trType(true,true);
+          else result=trClass(true,true);
+          break;
+        case ClassDef::Struct:     result="구조체"; break;
+        case ClassDef::Union:      result="공용체"; break;
+        case ClassDef::Interface:  result="인터페이스"; break;
+        case ClassDef::Protocol:   result="프로토콜"; break;
+        case ClassDef::Category:   result="카테고리"; break;
+        case ClassDef::Exception:  result="예외"; break;
+        case ClassDef::Service:    result="서비스"; break;
+        case ClassDef::Singleton:  result="싱글톤"; break;
+        default: break;
+      }
+      return result;
+    }
+
+    QCString trStructs() override
+    { return "구조체"; }
+
+    QCString trStructIndex() override
+    { return "구조체 색인"; }
+
+    QCString trStructList() override
+    { return "구조체 목록"; }
+
+    QCString trStructListDescription() override
+    { return "다음은 간략한 설명과 함께 구조체들의 목록입니다.:"; }
+
+    QCString trStructDocumentation() override
+    { return "구조체 문서화"; }
+
+    QCString trSequences() override
+    { return "시퀀스"; }
+
+    QCString trSequenceDocumentation() override
+    { return "시퀀스 문서화"; }
+
+    QCString trDictionaries() override
+    { return "딕셔너리"; }
+
+    QCString trDictionaryDocumentation() override
+    { return "딕셔너리 문서화"; }
+
+    QCString trConstants() override
+    { return "상수"; }
+
+    QCString trConstantDocumentation() override
+    { return "상수 문서화"; }
+
+    QCString trOperations() override
+    { return "연산"; }
+
+    QCString trOperationDocumentation() override
+    { return "연산 문서화"; }
+
+    QCString trDataMembers() override
+    { return "데이터 멤버"; }
+
+    QCString trDataMemberDocumentation() override
+    { return "데이터 멤버 문서화"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.2
+//////////////////////////////////////////////////////////////////////////
+
+    QCString trCompoundMembersDescriptionTotal(ClassMemberHighlight::Enum hl) override
+    {
+      bool extractAll = Config_getBool(EXTRACT_ALL);
+      QCString result="다음은 ";
+      if (!extractAll)
+      {
+        result+="문서화된 ";
+      }
+
+      switch (hl)
+      {
+        case ClassMemberHighlight::All:
+          if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+          {
+            result+="모든 구조체와 공용체의 필드들";
+          }
+          else
+          {
+            result+="모든 클래스 멤버들";
+          }
+          break;
+        case ClassMemberHighlight::Functions:
+          result+="모든 함수들";
+          break;
+        case ClassMemberHighlight::Variables:
+          result+="모든 변수들";
+          break;
+        case ClassMemberHighlight::Typedefs:
+          result+="모든 타입정의들";
+          break;
+        case ClassMemberHighlight::Enums:
+          result+="모든 열거형들";
+          break;
+        case ClassMemberHighlight::EnumValues:
+          result+="모든 열거형 값들";
+          break;
+        case ClassMemberHighlight::Properties:
+          result+="모든 속성들";
+          break;
+        case ClassMemberHighlight::Events:
+          result+="모든 이벤트들";
+          break;
+        case ClassMemberHighlight::Related:
+          result+="모든 관련 심볼들";
+          break;
+        case ClassMemberHighlight::Total: // for completeness
+          break;
+      }
+      result+="의 목록입니다. ";
+      if (!extractAll)
+      {
+        if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+        {
+          result+="각 필드들은 해당 필드에 대한 구조체/공용체의 "
+                  "문서화 페이지의 링크를 가지고 있습니다.:";
+        }
+        else
+        {
+          result+="각 멤버들은 해당 멤버에 대한 클래스의 "
+                  "문서화 페이지의 링크를 가지고 있습니다.:";
+        }
+      }
+      else
+      {
+        if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+        {
+          result+="각 필드들은 해당 필드가 속해 있는 구조체/공용체에 "
+                  "대한 링크를 가지고 있습니다.:";
+        }
+        else
+        {
+          result+="각 멤버들은 해당 멤버가 속해 있는 클래스에 "
+                  "대한 링크를 가지고 있습니다.:";
+        }
+      }
+      return result;
+    }
+
+    QCString trFileMembersDescriptionTotal(FileMemberHighlight::Enum hl) override
+    {
+      bool extractAll = Config_getBool(EXTRACT_ALL);
+      QCString result="다음은 ";
+      if (!extractAll) result+="문서화된 ";
+
+      switch (hl)
+      {
+        case FileMemberHighlight::All:
+          if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+          {
+            result+="모든 함수, 변수, 매크로, 열거형 및 타입정의들";
+          }
+          else
+          {
+            result+="모든 파일 멤버들";
+          }
+          break;
+        case FileMemberHighlight::Functions:
+          result+="모든 함수들";
+          break;
+        case FileMemberHighlight::Variables:
+          result+="모든 변수들";
+          break;
+        case FileMemberHighlight::Typedefs:
+          result+="모든 타입정의들";
+          break;
+        case FileMemberHighlight::Sequences:
+          result+="모든 시퀀스들";
+          break;
+        case FileMemberHighlight::Dictionaries:
+          result+="모든 딕셔너리들";
+          break;
+        case FileMemberHighlight::Enums:
+          result+="모든 열거형들";
+          break;
+        case FileMemberHighlight::EnumValues:
+          result+="모든 열거형 값들";
+          break;
+        case FileMemberHighlight::Defines:
+          result+="모든 매크로들";
+          break;
+        case FileMemberHighlight::Total: // for completeness
+          break;
+      }
+      result+="의 목록입니다. ";
+      if (extractAll)
+        result+="각 항목은 해당 항목이 속한 파일 페이지의 링크를 가지고 있습니다.:";
+      else
+        result+="각 항목은 그에 대한 문서화 페이지의 링크를 가지고 있습니다.:";
+      return result;
+    }
+
+    QCString trNamespaceMembersDescriptionTotal(NamespaceMemberHighlight::Enum hl) override
+    {
+      bool extractAll = Config_getBool(EXTRACT_ALL);
+      QCString result="다음은 ";
+      if (!extractAll) result+="문서화된 ";
+      result+="모든 네임스페이스 ";
+      switch (hl)
+      {
+        case NamespaceMemberHighlight::All:
+          result+="멤버들";
+          break;
+        case NamespaceMemberHighlight::Functions:
+          result+="함수들";
+          break;
+        case NamespaceMemberHighlight::Variables:
+          result+="변수들";
+          break;
+        case NamespaceMemberHighlight::Typedefs:
+          result+="타입정의들";
+          break;
+        case NamespaceMemberHighlight::Sequences:
+          result+="시퀀스들";
+          break;
+        case NamespaceMemberHighlight::Dictionaries:
+          result+="딕셔너리들";
+          break;
+        case NamespaceMemberHighlight::Enums:
+          result+="열거형들";
+          break;
+        case NamespaceMemberHighlight::EnumValues:
+          result+="열거형 값들";
+          break;
+        case NamespaceMemberHighlight::Total: // for completeness
+          break;
+      }
+      result+="의 목록입니다. ";
+      if (extractAll)
+        result+="각 항목은 해당 항목의 네임스페이스 문서화 페이지의 링크를 가지고 있습니다.:";
+      else
+        result+="각 항목은 그들이 속한 네임스페이스 페이지의 링크를 가지고 있습니다.:";
+      return result;
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.4
+//////////////////////////////////////////////////////////////////////////
+
+    QCString trRelatedSymbols() override
+    { return "관련 심볼"; }
+
+    QCString trRelatedSymbolsSubscript() override
+    { return "(멤버 심볼이 아닙니다. 주의하십시오.)"; }
+
+    QCString trRelatedSymbolDocumentation() override
+    { return "Friend 및 관련 심볼 문서화"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.5
+//////////////////////////////////////////////////////////////////////////
+
+    QCString trDeclaration() override
+    { return "선언"; }
+
+    QCString trDefinition() override
+    { return "정의"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.6
+//////////////////////////////////////////////////////////////////////////
+
+    QCString trConcept(bool first_capital, bool singular) override
+    {
+      return createNoun(first_capital, singular, "개념", "들");
+    }
+
+    QCString trConceptDefinition() override
+    { return "개념 정의"; }
+
+    QCString trConceptDocumentation() override
+    { return "개념 문서화"; }
+
+    QCString trConceptIndex() override
+    { return "개념 색인"; }
+
+    QCString trConceptList() override
+    { return "개념 목록"; }
+
+    QCString trConceptListDescription(bool extractAll) override
+    {
+      QCString result="다음은 ";
+      if (!extractAll) result+="문서화된 ";
+      result+="모든 개념들의 목록입니다. (간략한 설명만을 보여줍니다):";
+      return result;
+    }
+
+    QCString trConceptReference(const QCString &conceptName) override
+    {
+      QCString result=conceptName;
+      result+=" 개념 참조";
+      return result;
+    }
+
+    QCString trModuleMembersDescriptionTotal(ModuleMemberHighlight::Enum hl) override
+    {
+      bool extractAll = Config_getBool(EXTRACT_ALL);
+      QCString result="다음은 ";
+      if (!extractAll) result+="문서화된 ";
+      result+="모든 모듈 ";
+      QCString singularResult = "";
+      QCString pluralResult = "";
+      switch (hl)
+      {
+        case ModuleMemberHighlight::All:
+          pluralResult="멤버들";
+          break;
+        case ModuleMemberHighlight::Functions:
+          pluralResult="함수들";
+          break;
+        case ModuleMemberHighlight::Variables:
+          pluralResult="변수들";
+          break;
+        case ModuleMemberHighlight::Typedefs:
+          pluralResult="타입정의들";
+          break;
+        case ModuleMemberHighlight::Enums:
+          pluralResult="열거형들";
+          break;
+        case ModuleMemberHighlight::EnumValues:
+          pluralResult="열거형 값들";
+          break;
+        case ModuleMemberHighlight::Total: // for completeness
+          break;
+      }
+      result+=pluralResult;
+      result+="의 목록입니다. ";
+      if (extractAll)
+        result+="각 항목은 해당 멤버의 모듈 문서화 페이지의 링크를 가지고 있습니다.:";
+      else
+        result+="각 항목은 그들이 속한 모듈의 링크를 가지고 있습니다.:";
+      return result;
+    }
+
+    QCString trExportedModules() override
+    { return "내보낸 모듈"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.8
+//////////////////////////////////////////////////////////////////////////
+
+    QCString trTopics() override
+    { return "토픽"; }
+
+    QCString trTopicDocumentation() override
+    { return "토픽 문서화"; }
+
+    QCString trTopicIndex() override
+    { return "토픽 색인"; }
+
+    QCString trTopicList() override
+    { return "토픽 목록"; }
+
+    QCString trTopicListDescription() override
+    { return "다음은 모든 토픽들의 목록입니다. (간략한 설명만을 보여줍니다):"; }
+
+    QCString trCustomReference(const QCString &name) override
+    { return QCString(name)+" 참조"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.10.0
+//////////////////////////////////////////////////////////////////////////
+
+    QCString trCopyToClipboard() override
+    { return "클립보드에 복사"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.11.0
+//////////////////////////////////////////////////////////////////////////
+
+    QCString trImportant() override
+    { return "중요"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.16.0 (requirements)
+//////////////////////////////////////////////////////////////////////////
+
+    QCString trRequirements() override
+    { return "요구사항"; }
+
+    QCString trRequirementID() override
+    { return "ID"; }
+
+    QCString trSatisfies(bool singular) override
+    {
+      return createNoun(true, singular, "요구사항 충족", "");
+    }
+
+    QCString trSatisfiedBy(const QCString &list) override
+    {
+      return list+"에 의해 충족됨.";
+    }
+
+    QCString trUnsatisfiedRequirements() override
+    { return "충족되지 않은 요구사항"; }
+
+    QCString trUnsatisfiedRequirementsText(bool singular,const QCString &list) override
+    {
+      return singular ?
+        "요구사항 "+list+"에 'satisfies' 관계가 없습니다." :
+        "요구사항 "+list+"에 'satisfies' 관계가 없습니다.";
+    }
+
+    QCString trVerifies(bool singular) override
+    {
+      return createNoun(true, singular, "요구사항 검증", "");
+    }
+
+    QCString trVerifiedBy(const QCString &list) override
+    {
+      return list+"에 의해 검증됨.";
+    }
+
+    QCString trUnverifiedRequirements() override
+    { return "검증되지 않은 요구사항"; }
+
+    QCString trUnverifiedRequirementsText(bool singular,const QCString &list) override
+    {
+      return singular ?
+        "요구사항 "+list+"에 'verifies' 관계가 없습니다." :
+        "요구사항 "+list+"에 'verifies' 관계가 없습니다.";
     }
 
 };
