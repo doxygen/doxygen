@@ -2045,8 +2045,8 @@ class TranslatorKorean : public Translator
           if (single) return "포트";
           else        return "포트들";
         case VhdlSpecifier::USE:
-          if (single) return "use 절";
-          else        return "Use 절들";
+          if (single) return "사용 절";
+          else        return "사용 절들";
         case VhdlSpecifier::GENERIC:
           if (single) return "제네릭";
           else        return "제네릭들";
