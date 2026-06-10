@@ -2068,8 +2068,7 @@ class TranslatorJapanese : public Translator
         case VhdlSpecifier::PORT:
           return "ポート";
         case VhdlSpecifier::USE:
-          if (single) return "use 節";
-          else        return "use 節";
+          return "使用節";
         case VhdlSpecifier::GENERIC:
           return "ジェネリック";
         case VhdlSpecifier::PACKAGE_BODY:
@@ -2322,44 +2321,154 @@ class TranslatorJapanese : public Translator
 
     QCString trFileMembersDescriptionTotal(FileMemberHighlight::Enum hl) override
     {
-      if (hl==FileMemberHighlight::All)
+      bool extractAll = Config_getBool(EXTRACT_ALL);
+      QCString result;
+      if (extractAll) result += "全";
+      else result += "詳解あり";
+      switch (hl)
       {
-        return trFileMembersDescription(Config_getBool(EXTRACT_ALL));
+        case FileMemberHighlight::All:
+          if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+            result += "関数・変数・マクロ・列挙・型定義";
+          else
+            result += "ファイルメンバ";
+          break;
+        case FileMemberHighlight::Functions:
+          result += "関数";
+          break;
+        case FileMemberHighlight::Variables:
+          result += "変数";
+          break;
+        case FileMemberHighlight::Typedefs:
+          result += "型定義";
+          break;
+        case FileMemberHighlight::Sequences:
+          result += "シーケンス";
+          break;
+        case FileMemberHighlight::Dictionaries:
+          result += "辞書";
+          break;
+        case FileMemberHighlight::Enums:
+          result += "列挙型";
+          break;
+        case FileMemberHighlight::EnumValues:
+          result += "列挙値";
+          break;
+        case FileMemberHighlight::Defines:
+          result += "マクロ";
+          break;
+        case FileMemberHighlight::Total: // for completeness
+          break;
       }
+      result += "の一覧です。";
+      if (extractAll)
+        result += "各々が属するファイルへのリンクがあります。";
       else
-      {
-        // hack to work around a mozilla bug, which refuses to switch to
-        // normal lists otherwise
-        return "&nbsp;";
-      }
+        result += "各詳解へのリンクがあります。";
+      return result;
     }
 
     QCString trCompoundMembersDescriptionTotal(ClassMemberHighlight::Enum hl) override
     {
-      if (hl==ClassMemberHighlight::All)
+      bool extractAll = Config_getBool(EXTRACT_ALL);
+      QCString result;
+      if (extractAll) result += "全";
+      else result += "詳解あり";
+      switch (hl)
       {
-        return trCompoundMembersDescription(Config_getBool(EXTRACT_ALL));
+        case ClassMemberHighlight::All:
+          if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+            result += "構造体・共用体フィールド";
+          else
+            result += "クラスメンバ";
+          break;
+        case ClassMemberHighlight::Functions:
+          result += "関数";
+          break;
+        case ClassMemberHighlight::Variables:
+          result += "変数";
+          break;
+        case ClassMemberHighlight::Typedefs:
+          result += "型定義";
+          break;
+        case ClassMemberHighlight::Enums:
+          result += "列挙型";
+          break;
+        case ClassMemberHighlight::EnumValues:
+          result += "列挙値";
+          break;
+        case ClassMemberHighlight::Properties:
+          result += "プロパティ";
+          break;
+        case ClassMemberHighlight::Events:
+          result += "イベント";
+          break;
+        case ClassMemberHighlight::Related:
+          result += "関連シンボル";
+          break;
+        case ClassMemberHighlight::Total: // for completeness
+          break;
+      }
+      result += "の一覧です。";
+      if (!extractAll)
+      {
+        if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+          result += "各フィールドが属する構造体・共用体詳解へのリンクがあります。";
+        else
+          result += "各メンバが属するクラス詳解へのリンクがあります。";
       }
       else
       {
-        // hack to work around a mozilla bug, which refuses to switch to
-        // normal lists otherwise
-        return "&nbsp;";
+        if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+          result += "各フィールドが属する構造体・共用体へのリンクがあります。";
+        else
+          result += "各メンバが属するクラスへのリンクがあります。";
       }
+      return result;
     }
 
     QCString trNamespaceMembersDescriptionTotal(NamespaceMemberHighlight::Enum hl) override
     {
-      if (hl==NamespaceMemberHighlight::All)
+      bool extractAll = Config_getBool(EXTRACT_ALL);
+      QCString result;
+      if (extractAll) result += "全";
+      else result += "詳解あり";
+      result += "名前空間";
+      switch (hl)
       {
-        return trNamespaceMemberDescription(Config_getBool(EXTRACT_ALL));
+        case NamespaceMemberHighlight::All:
+          result += "メンバ";
+          break;
+        case NamespaceMemberHighlight::Functions:
+          result += "関数";
+          break;
+        case NamespaceMemberHighlight::Variables:
+          result += "変数";
+          break;
+        case NamespaceMemberHighlight::Typedefs:
+          result += "型定義";
+          break;
+        case NamespaceMemberHighlight::Sequences:
+          result += "シーケンス";
+          break;
+        case NamespaceMemberHighlight::Dictionaries:
+          result += "辞書";
+          break;
+        case NamespaceMemberHighlight::Enums:
+          result += "列挙型";
+          break;
+        case NamespaceMemberHighlight::EnumValues:
+          result += "列挙値";
+          break;
+        case NamespaceMemberHighlight::Total: // for completeness
+          break;
       }
+      result += "の一覧です。";
+      if (extractAll)
+        result += "各名前空間メンバの所属名前空間へのリンクがあります。";
       else
-      {
-        // hack to work around a mozilla bug, which refuses to switch to
-        // normal lists otherwise
-        return "&nbsp;";
-      }
+        result += "各メンバ詳解へのリンクがあります。";
+      return result;
     }
 
     QCString trDefinition() override
