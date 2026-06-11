@@ -30,6 +30,9 @@
  * 1.8.5)
  * Translation Added for 1.8.4 and revised
  *      by Suzumizaki-Kimitaka (30-Aug-2013)
+ * 1.18.0)
+ * Added 76 missing translation methods from releases 1.8.15 to 1.16.0
+ *      by GitHub Copilot (09-Jun-2026)
  */
 /*
 Messages for translators written in Japanese:
@@ -69,7 +72,7 @@ Doxygen の開発の方でもそれはそれでいーんじゃん？みたいな
 #ifndef TRANSLATOR_JP_H
 #define TRANSLATOR_JP_H
 
-class TranslatorJapanese : public TranslatorAdapter_1_8_15
+class TranslatorJapanese : public Translator
 {
   public:
     QCString idLanguage() override
@@ -1994,6 +1997,598 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
       return "次のファイルからこの Singleton について"
              "の詳解を抽出しました:";
     }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.8.15
+//////////////////////////////////////////////////////////////////////////
+
+    /** VHDL design unit hierarchy */
+    QCString trDesignUnitHierarchy() override
+    { return "デザインユニット階層"; }
+
+    /** VHDL design unit list */
+    QCString trDesignUnitList() override
+    { return "デザインユニット一覧"; }
+
+    /** VHDL design unit members */
+    QCString trDesignUnitMembers() override
+    { return "デザインユニットメンバ"; }
+
+    /** VHDL design unit list description */
+    QCString trDesignUnitListDescription() override
+    {
+      return "エンティティへのリンクを持つ全デザインユニットメンバの一覧です:";
+    }
+
+    /** VHDL design unit index */
+    QCString trDesignUnitIndex() override
+    { return "デザインユニット索引"; }
+
+    /** VHDL design units */
+    QCString trDesignUnits() override
+    { return "デザインユニット"; }
+
+    /** VHDL functions/procedures/processes */
+    QCString trFunctionAndProc() override
+    { return "関数/プロシージャ/プロセス"; }
+
+    /** VHDL type */
+    QCString trVhdlType(VhdlSpecifier type, bool single) override
+    {
+      switch(type)
+      {
+        case VhdlSpecifier::LIBRARY:
+          return "ライブラリ";
+        case VhdlSpecifier::PACKAGE:
+          return "パッケージ";
+        case VhdlSpecifier::SIGNAL:
+          return "シグナル";
+        case VhdlSpecifier::COMPONENT:
+          return "コンポーネント";
+        case VhdlSpecifier::CONSTANT:
+          return "定数";
+        case VhdlSpecifier::ENTITY:
+          return "エンティティ";
+        case VhdlSpecifier::TYPE:
+          return "型";
+        case VhdlSpecifier::SUBTYPE:
+          return "サブタイプ";
+        case VhdlSpecifier::FUNCTION:
+          return "関数";
+        case VhdlSpecifier::RECORD:
+          return "レコード";
+        case VhdlSpecifier::PROCEDURE:
+          return "プロシージャ";
+        case VhdlSpecifier::ARCHITECTURE:
+          return "アーキテクチャ";
+        case VhdlSpecifier::ATTRIBUTE:
+          return "属性";
+        case VhdlSpecifier::PROCESS:
+          return "プロセス";
+        case VhdlSpecifier::PORT:
+          return "ポート";
+        case VhdlSpecifier::USE:
+          return "使用節";
+        case VhdlSpecifier::GENERIC:
+          return "ジェネリック";
+        case VhdlSpecifier::PACKAGE_BODY:
+          return "パッケージボディ";
+        case VhdlSpecifier::UNITS:
+          return "ユニット";
+        case VhdlSpecifier::SHAREDVARIABLE:
+          return "共有変数";
+        case VhdlSpecifier::VFILE:
+          return "ファイル";
+        case VhdlSpecifier::GROUP:
+          return "グループ";
+        case VhdlSpecifier::INSTANTIATION:
+          return "インスタンス化";
+        case VhdlSpecifier::ALIAS:
+          return "エイリアス";
+        case VhdlSpecifier::CONFIG:
+          return "コンフィギュレーション";
+        case VhdlSpecifier::MISCELLANEOUS:
+          return "その他";
+        case VhdlSpecifier::UCF_CONST:
+          return "制約";
+        default:
+          return "クラス";
+      }
+    }
+
+    QCString trCustomReference(const QCString &name) override
+    { return name+" 詳解"; }
+
+    /* Slice */
+    QCString trConstants() override
+    { return "定数"; }
+
+    QCString trConstantDocumentation() override
+    { return "定数詳解"; }
+
+    QCString trSequences() override
+    { return "シーケンス"; }
+
+    QCString trSequenceDocumentation() override
+    { return "シーケンス詳解"; }
+
+    QCString trDictionaries() override
+    { return "辞書"; }
+
+    QCString trDictionaryDocumentation() override
+    { return "辞書詳解"; }
+
+    QCString trSliceInterfaces() override
+    { return "インタフェース"; }
+
+    QCString trInterfaceIndex() override
+    { return "インタフェース索引"; }
+
+    QCString trInterfaceList() override
+    { return "インタフェース一覧"; }
+
+    QCString trInterfaceListDescription() override
+    { return "概要付きインタフェースの一覧です:"; }
+
+    QCString trInterfaceHierarchy() override
+    { return "インタフェース階層"; }
+
+    QCString trInterfaceHierarchyDescription() override
+    { return "クラス階層一覧です。大雑把に文字符号順で並べられています。"; }
+
+    QCString trInterfaceDocumentation() override
+    { return "インタフェース詳解"; }
+
+    QCString trStructs() override
+    { return "構造体"; }
+
+    QCString trStructIndex() override
+    { return "構造体索引"; }
+
+    QCString trStructList() override
+    { return "構造体一覧"; }
+
+    QCString trStructListDescription() override
+    { return "概要付き構造体の一覧です:"; }
+
+    QCString trStructDocumentation() override
+    { return "構造体詳解"; }
+
+    QCString trExceptionIndex() override
+    { return "例外索引"; }
+
+    QCString trExceptionList() override
+    { return "例外一覧"; }
+
+    QCString trExceptionListDescription() override
+    { return "概要付き例外の一覧です:"; }
+
+    QCString trExceptionHierarchy() override
+    { return "例外階層"; }
+
+    QCString trExceptionHierarchyDescription() override
+    { return "例外階層一覧です。大雑把に文字符号順で並べられています。"; }
+
+    QCString trExceptionDocumentation() override
+    { return "例外詳解"; }
+
+    QCString trCompoundReferenceSlice(const QCString &clName, ClassDef::CompoundType compType, bool isLocal) override
+    {
+      QCString result=clName;
+      if (isLocal) result+=" ローカル";
+      switch(compType)
+      {
+        case ClassDef::Class:      result+=" クラス"; break;
+        case ClassDef::Struct:     result+=" 構造体"; break;
+        case ClassDef::Union:      result+=" 共用体"; break;
+        case ClassDef::Interface:  result+=" インタフェース"; break;
+        case ClassDef::Protocol:   result+=" プロトコル"; break;
+        case ClassDef::Category:   result+=" カテゴリ"; break;
+        case ClassDef::Exception:  result+=" 例外"; break;
+        default: break;
+      }
+      result+=" 詳解";
+      return result;
+    }
+
+    QCString trOperations() override
+    { return "操作"; }
+
+    QCString trOperationDocumentation() override
+    { return "操作詳解"; }
+
+    QCString trDataMembers() override
+    { return "データメンバ"; }
+
+    QCString trDataMemberDocumentation() override
+    { return "データメンバ詳解"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.8.19
+//////////////////////////////////////////////////////////////////////////
+
+    /** VHDL design unit documentation */
+    QCString trDesignUnitDocumentation() override
+    { return "デザインユニット詳解"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.2
+//////////////////////////////////////////////////////////////////////////
+
+    /** C++20 concept */
+    QCString trConcept(bool /*first_capital*/, bool /*singular*/) override
+    { return "コンセプト"; }
+
+    /*! used as the title of the HTML page of a C++20 concept page */
+    QCString trConceptReference(const QCString &conceptName) override
+    {
+      QCString result=conceptName;
+      result+=" コンセプト詳解";
+      return result;
+    }
+
+    /*! used as the title of page containing all the index of all concepts. */
+    QCString trConceptList() override
+    { return "コンセプト一覧"; }
+
+    /*! used as the title of chapter containing the index listing all concepts. */
+    QCString trConceptIndex() override
+    { return "コンセプト索引"; }
+
+    /*! used as the title of chapter containing all information about concepts. */
+    QCString trConceptDocumentation() override
+    { return "コンセプト詳解"; }
+
+    /*! used as an introduction to the concept list */
+    QCString trConceptListDescription(bool extractAll) override
+    {
+      if (extractAll)
+      {
+        return "全コンセプトの一覧です。";
+      }
+      return "詳解が付けられているコンセプトの一覧です。";
+    }
+
+    /*! used to introduce the definition of the C++20 concept */
+    QCString trConceptDefinition() override
+    { return "コンセプトの定義"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.4
+//////////////////////////////////////////////////////////////////////////
+
+    QCString trPackageList() override
+    { return "パッケージ一覧"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.6
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This is used for translation of the word that will be
+     *  followed by a single name of the VHDL process flowchart.
+     */
+    QCString trFlowchart() override
+    { return "フローチャート:"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.7
+//////////////////////////////////////////////////////////////////////////
+
+    /*! used in the compound documentation before a list of related symbols.
+     *
+     *  Supersedes trRelatedFunctions
+     */
+    QCString trRelatedSymbols() override
+    { return "関連シンボル"; }
+
+    /*! subscript for the related symbols
+     *
+     *  Supersedes trRelatedSubscript
+     */
+    QCString trRelatedSymbolsSubscript() override
+    { return "（これらはメンバシンボルではありません）"; }
+
+    /*! used in the class documentation as a header before the list of all
+     * related classes.
+     *
+     * Supersedes trRelatedFunctionDocumentation
+     */
+    QCString trRelatedSymbolDocumentation() override
+    { return "フレンドと関連シンボルの詳解"; }
+
+    /*! the compound type as used for the xrefitems */
+    QCString trCompoundType(ClassDef::CompoundType compType, SrcLangExt lang) override
+    {
+      QCString result;
+      switch(compType)
+      {
+        case ClassDef::Class:
+          if (lang == SrcLangExt::Fortran) result=trType(true,true);
+          else result=trClass(true,true);
+          break;
+        case ClassDef::Struct:     result="構造体"; break;
+        case ClassDef::Union:      result="共用体"; break;
+        case ClassDef::Interface:  result="インタフェース"; break;
+        case ClassDef::Protocol:   result="プロトコル"; break;
+        case ClassDef::Category:   result="カテゴリ"; break;
+        case ClassDef::Exception:  result="例外"; break;
+        case ClassDef::Service:    result="サービス"; break;
+        case ClassDef::Singleton:  result="シングルトン"; break;
+        default: break;
+      }
+      return result;
+    }
+
+    QCString trFileMembersDescriptionTotal(FileMemberHighlight::Enum hl) override
+    {
+      bool extractAll = Config_getBool(EXTRACT_ALL);
+      QCString result;
+      if (extractAll) result += "全";
+      else result += "詳解あり";
+      switch (hl)
+      {
+        case FileMemberHighlight::All:
+          if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+            result += "関数・変数・マクロ・列挙・型定義";
+          else
+            result += "ファイルメンバ";
+          break;
+        case FileMemberHighlight::Functions:
+          result += "関数";
+          break;
+        case FileMemberHighlight::Variables:
+          result += "変数";
+          break;
+        case FileMemberHighlight::Typedefs:
+          result += "型定義";
+          break;
+        case FileMemberHighlight::Sequences:
+          result += "シーケンス";
+          break;
+        case FileMemberHighlight::Dictionaries:
+          result += "辞書";
+          break;
+        case FileMemberHighlight::Enums:
+          result += "列挙型";
+          break;
+        case FileMemberHighlight::EnumValues:
+          result += "列挙値";
+          break;
+        case FileMemberHighlight::Defines:
+          result += "マクロ";
+          break;
+        case FileMemberHighlight::Total: // for completeness
+          break;
+      }
+      result += "の一覧です。";
+      if (extractAll)
+        result += "各々が属するファイルへのリンクがあります。";
+      else
+        result += "各詳解へのリンクがあります。";
+      return result;
+    }
+
+    QCString trCompoundMembersDescriptionTotal(ClassMemberHighlight::Enum hl) override
+    {
+      bool extractAll = Config_getBool(EXTRACT_ALL);
+      QCString result;
+      if (extractAll) result += "全";
+      else result += "詳解あり";
+      switch (hl)
+      {
+        case ClassMemberHighlight::All:
+          if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+            result += "構造体・共用体フィールド";
+          else
+            result += "クラスメンバ";
+          break;
+        case ClassMemberHighlight::Functions:
+          result += "関数";
+          break;
+        case ClassMemberHighlight::Variables:
+          result += "変数";
+          break;
+        case ClassMemberHighlight::Typedefs:
+          result += "型定義";
+          break;
+        case ClassMemberHighlight::Enums:
+          result += "列挙型";
+          break;
+        case ClassMemberHighlight::EnumValues:
+          result += "列挙値";
+          break;
+        case ClassMemberHighlight::Properties:
+          result += "プロパティ";
+          break;
+        case ClassMemberHighlight::Events:
+          result += "イベント";
+          break;
+        case ClassMemberHighlight::Related:
+          result += "関連シンボル";
+          break;
+        case ClassMemberHighlight::Total: // for completeness
+          break;
+      }
+      result += "の一覧です。";
+      if (!extractAll)
+      {
+        if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+          result += "各フィールドが属する構造体・共用体詳解へのリンクがあります。";
+        else
+          result += "各メンバが属するクラス詳解へのリンクがあります。";
+      }
+      else
+      {
+        if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+          result += "各フィールドが属する構造体・共用体へのリンクがあります。";
+        else
+          result += "各メンバが属するクラスへのリンクがあります。";
+      }
+      return result;
+    }
+
+    QCString trNamespaceMembersDescriptionTotal(NamespaceMemberHighlight::Enum hl) override
+    {
+      bool extractAll = Config_getBool(EXTRACT_ALL);
+      QCString result;
+      if (extractAll) result += "全";
+      else result += "詳解あり";
+      result += "名前空間";
+      switch (hl)
+      {
+        case NamespaceMemberHighlight::All:
+          result += "メンバ";
+          break;
+        case NamespaceMemberHighlight::Functions:
+          result += "関数";
+          break;
+        case NamespaceMemberHighlight::Variables:
+          result += "変数";
+          break;
+        case NamespaceMemberHighlight::Typedefs:
+          result += "型定義";
+          break;
+        case NamespaceMemberHighlight::Sequences:
+          result += "シーケンス";
+          break;
+        case NamespaceMemberHighlight::Dictionaries:
+          result += "辞書";
+          break;
+        case NamespaceMemberHighlight::Enums:
+          result += "列挙型";
+          break;
+        case NamespaceMemberHighlight::EnumValues:
+          result += "列挙値";
+          break;
+        case NamespaceMemberHighlight::Total: // for completeness
+          break;
+      }
+      result += "の一覧です。";
+      if (extractAll)
+        result += "各名前空間メンバの所属名前空間へのリンクがあります。";
+      else
+        result += "各メンバ詳解へのリンクがあります。";
+      return result;
+    }
+
+    QCString trDefinition() override
+    { return "定義"; }
+
+    QCString trDeclaration() override
+    { return "宣言"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.8
+//////////////////////////////////////////////////////////////////////////
+
+    QCString trTopics() override
+    { return "トピック"; }
+
+    QCString trTopicDocumentation() override
+    { return "トピック詳解"; }
+
+    QCString trTopicList() override
+    { return "トピック一覧"; }
+
+    QCString trTopicIndex() override
+    { return "トピック索引"; }
+
+    QCString trTopicListDescription() override
+    { return "概要付きトピックの一覧です:"; }
+
+    QCString trModuleMembersDescriptionTotal(ModuleMemberHighlight::Enum hl) override
+    {
+      bool extractAll = Config_getBool(EXTRACT_ALL);
+      QCString result;
+      if (extractAll) result += "全";
+      else result += "詳解あり";
+      switch (hl)
+      {
+        case ModuleMemberHighlight::All:
+          result += "モジュールメンバ";
+          break;
+        case ModuleMemberHighlight::Functions:
+          result += "関数";
+          break;
+        case ModuleMemberHighlight::Variables:
+          result += "変数";
+          break;
+        case ModuleMemberHighlight::Typedefs:
+          result += "型定義";
+          break;
+        case ModuleMemberHighlight::Enums:
+          result += "列挙型";
+          break;
+        case ModuleMemberHighlight::EnumValues:
+          result += "列挙値";
+          break;
+        case ModuleMemberHighlight::Total: // for completeness
+          break;
+      }
+      result += "の一覧です。";
+      if (extractAll)
+        result += "各モジュールメンバの所属モジュールへのリンクがあります。";
+      else
+        result += "各メンバ詳解へのリンクがあります。";
+      return result;
+    }
+
+    QCString trExportedModules() override
+    { return "エクスポートされたモジュール"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.10.0
+//////////////////////////////////////////////////////////////////////////
+
+    QCString trCopyToClipboard() override
+    { return "クリップボードにコピー"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.11.0
+//////////////////////////////////////////////////////////////////////////
+
+    QCString trImportant() override
+    { return "重要"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.16.0
+//////////////////////////////////////////////////////////////////////////
+
+    // the title of the requirements overview page
+    QCString trRequirements() override
+    { return "要件"; }
+
+    // table header for the column with the requirements IDs
+    QCString trRequirementID() override
+    { return "ID"; }
+
+    // indicates a symbol implements (satisfies) a requirement
+    QCString trSatisfies(bool /*singular*/) override
+    { return "実装する要件"; }
+
+    // indicates a requirement is satisfied (implemented) by one or more symbols
+    QCString trSatisfiedBy(const QCString &list) override
+    { return list+" によって実装されています。"; }
+
+    QCString trUnsatisfiedRequirements() override
+    { return "未実装の要件"; }
+
+    QCString trUnsatisfiedRequirementsText(bool /*singular*/, const QCString &list) override
+    { return "要件 "+list+" は 'satisfies' 関係を持っていません。"; }
+
+    // indicates a symbol verifies (tests) a requirement
+    QCString trVerifies(bool /*singular*/) override
+    { return "検証する要件"; }
+
+    // indicates a requirement is verified (tested) by one or more symbols
+    QCString trVerifiedBy(const QCString &list) override
+    { return list+" によって検証されています。"; }
+
+    QCString trUnverifiedRequirements() override
+    { return "未検証の要件"; }
+
+    QCString trUnverifiedRequirementsText(bool /*singular*/, const QCString &list) override
+    { return "要件 "+list+" は 'verifies' 関係を持っていません。"; }
 
 };
 
