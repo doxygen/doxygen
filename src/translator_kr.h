@@ -2095,8 +2095,7 @@ class TranslatorKorean : public Translator
 
     QCString trDesignUnitListDescription() override
     {
-      return "다음은 모든 설계 유닛 멤버들의 목록입니다. "
-             "각 항목은 해당 멤버가 속한 엔티티의 링크를 가지고 있습니다.:";
+      return "다음은 모든 설계 유닛 멤버들의 목록이며, 각 항목에는 해당 멤버가 속한 엔티티의 링크가 포함되어 있습니다:";
     }
 
     QCString trDesignUnitMembers() override
