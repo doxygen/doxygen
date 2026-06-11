@@ -2312,7 +2312,7 @@ class TranslatorRussian : public TranslatorAdapter_1_16_0
     switch (compType) {
     case ClassDef::Class:
       if (lang == SrcLangExt::Fortran)
-        trType(true, true);
+        result = trType(true, true);
       else
         result = trClass(true, true);
       break;
