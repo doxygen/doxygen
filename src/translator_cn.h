@@ -24,7 +24,7 @@
 */
 #define CN_SPC " "
 
-class TranslatorChinese : public TranslatorAdapter_1_16_0
+class TranslatorChinese : public Translator
 {
   public:
     /*! Used for identification of the language. The identification
@@ -2614,6 +2614,63 @@ class TranslatorChinese : public TranslatorAdapter_1_16_0
     QCString trImportant() override
     {
       return "重要事项";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.16.0
+//////////////////////////////////////////////////////////////////////////
+
+    // the title of the requirements overview page
+    QCString trRequirements() override
+    {
+      return "需求";
+    }
+    // table header for the column with the requirements IDs
+    QCString trRequirementID() override
+    {
+      return "ID";
+    }
+    // indicates a symbol implements (satisfies) a requirement
+    QCString trSatisfies(bool /*singular*/) override
+    {
+      return "满足需求";
+    }
+    // indicates a requirement is satisfied (implemented) by one or more symbols
+    QCString trSatisfiedBy(const QCString &list) override
+    {
+      return "由" CN_SPC+list+CN_SPC "满足。";
+    }
+    QCString trUnsatisfiedRequirements() override
+    {
+      return "未满足的需求";
+    }
+    QCString trUnsatisfiedRequirementsText(bool singular,const QCString &list) override
+    {
+      if (singular)
+        return "需求" CN_SPC+list+CN_SPC "没有\"satisfies\"关联。";
+      else
+        return "需求" CN_SPC+list+CN_SPC "没有\"satisfies\"关联。";
+    }
+    // indicates a symbol verifies (tests) a requirement
+    QCString trVerifies(bool /*singular*/) override
+    {
+      return "验证需求";
+    }
+    // indicates a requirement is verified (tested) by one or more symbols
+    QCString trVerifiedBy(const QCString &list) override
+    {
+      return "由" CN_SPC+list+CN_SPC "验证。";
+    }
+    QCString trUnverifiedRequirements() override
+    {
+      return "未验证的需求";
+    }
+    QCString trUnverifiedRequirementsText(bool singular,const QCString &list) override
+    {
+      if (singular)
+        return "需求" CN_SPC+list+CN_SPC "没有\"verifies\"关联。";
+      else
+        return "需求" CN_SPC+list+CN_SPC "没有\"verifies\"关联。";
     }
 };
 
