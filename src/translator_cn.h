@@ -2644,12 +2644,9 @@ class TranslatorChinese : public Translator
     {
       return "未满足的需求";
     }
-    QCString trUnsatisfiedRequirementsText(bool singular,const QCString &list) override
+    QCString trUnsatisfiedRequirementsText(bool /*singular*/, const QCString &list) override
     {
-      if (singular)
-        return "需求" CN_SPC+list+CN_SPC "没有\"satisfies\"关联。";
-      else
-        return "需求" CN_SPC+list+CN_SPC "没有\"satisfies\"关联。";
+      return "需求" CN_SPC+list+CN_SPC "没有\"satisfies\"关联。";
     }
     // indicates a symbol verifies (tests) a requirement
     QCString trVerifies(bool /*singular*/) override
