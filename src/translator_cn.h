@@ -2662,12 +2662,9 @@ class TranslatorChinese : public Translator
     {
       return "未验证的需求";
     }
-    QCString trUnverifiedRequirementsText(bool singular,const QCString &list) override
+    QCString trUnverifiedRequirementsText(bool /*singular*/, const QCString &list) override
     {
-      if (singular)
-        return "需求" CN_SPC+list+CN_SPC "没有\"verifies\"关联。";
-      else
-        return "需求" CN_SPC+list+CN_SPC "没有\"verifies\"关联。";
+      return "需求" CN_SPC+list+CN_SPC "没有\"verifies\"关联。";
     }
 };
 
