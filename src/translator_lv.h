@@ -2380,7 +2380,7 @@ class TranslatorLatvian : public TranslatorAdapter_1_16_0
       switch(compType)
       {
       case ClassDef::Class:
-        if (lang == SrcLangExt::Fortran) trType(true,true);
+        if (lang == SrcLangExt::Fortran) result=trType(true,true);
         else result=trClass(true,true);
         break;
       case ClassDef::Struct:     result="Struktūra"; break;
