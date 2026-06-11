@@ -730,6 +730,7 @@ def parseGenerator(node):
 def collectOptions(elem):
     """Collect all option IDs from config.xml."""
     options = set()
+    messages = set()
     optionsWithElems = {}
     for group in elem.getElementsByTagName('group'):
         for option in group.getElementsByTagName('option'):
@@ -738,9 +739,34 @@ def collectOptions(elem):
             if optionId and optionType!='obsolete':
                 options.add(optionId)
                 optionsWithElems[optionId] = option
-    return (options,optionsWithElems)
+    for generator in elem.getElementsByTagName('generator'):
+        for message in generator.getElementsByTagName('message'):
+            messageId = message.getAttribute('name')
+            messages.add(messageId)
 
-def syncLocalizedConfig(elem, translationsDir, autoSync=False):
+    return (options,optionsWithElems,messages)
+
+def syncWarnings(typ, existing, language):
+    missing = existing - language
+    extra = language - existing
+
+    if missing:
+        print("  Missing %d %s: %s" % (len(missing), typ, ', '.join(sorted(list(missing))[:5])))
+        if len(missing) > 5:
+            print("  ... and %d more" % (len(missing) - 5))
+
+    if extra:
+        print("  Extra %d %s (not in original): %s" % (len(extra), typ, ', '.join(sorted(list(extra))[:5])))
+        if len(extra) > 5:
+             print("  ... and %d more" % (len(extra) - 5))
+
+    if not missing and not extra:
+        print("  OK - all %s are synchronized" % typ)
+        return(False)
+
+    return(True)
+
+def syncLocalizedConfig(elem, configFile, translationsDir, autoSync=False):
     """Sync localized config_xx.xml files with original config.xml.
 
     Args:
@@ -751,18 +777,18 @@ def syncLocalizedConfig(elem, translationsDir, autoSync=False):
     import os
     import shutil
 
-    existingOptions, existingOptionsWithElements = collectOptions(elem)
-    print("Found %d active options in config.xml" % len(existingOptions))
+    existingOptions, existingOptionsWithElements, existingMessages = collectOptions(elem)
+    print("Found %d active options in %s" % (len(existingOptions), configFile))
+    print("Found %d active messages in %s" % (len(existingMessages), configFile))
 
-    srcDir = os.path.dirname(translationsDir)
-    if os.path.basename(srcDir) == 'addon':
-        srcDir = os.path.dirname(srcDir)
-    srcDir = os.path.join(srcDir, 'src')
+    translationFiles = sorted(glob.glob("%s/config_*.xml" % translationsDir))
+    if not translationFiles:
+            print("No translation config file in %s" % translationsDir)
 
-    for configFile in sorted(glob.glob("i18n/config_*.xml")):
+    for configFile in translationFiles:
 
         if not os.path.exists(configFile):
-            print("Skipping %s: config file not found" % configFile)
+            print("Skipping %s: translation config file not found" % configFile)
             continue
 
         print("Processing %s..." % configFile)
@@ -775,36 +801,18 @@ def syncLocalizedConfig(elem, translationsDir, autoSync=False):
             print("  Error parsing %s: %s" % (configFile, e))
             continue
 
-        langOptions = set()
-        langOptionsWithElements = {}
-        for group in langDoc.getElementsByTagName('group'):
-            for option in group.getElementsByTagName('option'):
-                optionId = option.getAttribute('id')
-                if optionId:
-                    langOptions.add(optionId)
-                    langOptionsWithElements[optionId] = option
+        langOptions, langOptionsWithElements, langMessages = collectOptions(langDoc)
 
-        missingOptions = existingOptions - langOptions
-        extraOptions = langOptions - existingOptions
+        optionsError = syncWarnings('Options', existingOptions, langOptions)
+        messagesError = syncWarnings('Messages', existingMessages, langMessages)
 
-        if missingOptions:
-            print("  Missing %d options: %s" % (len(missingOptions), ', '.join(sorted(list(missingOptions))[:5])))
-            if len(missingOptions) > 5:
-                print("  ... and %d more" % (len(missingOptions) - 5))
-
-        if extraOptions:
-            print("  Extra %d options (not in original): %s" % (len(extraOptions), ', '.join(sorted(list(extraOptions))[:5])))
-            if len(extraOptions) > 5:
-                print("  ... and %d more" % (len(extraOptions) - 5))
-
-        if not missingOptions and not extraOptions:
-            print("  OK - all options synchronized")
-            continue
-
-        if autoSync and (missingOptions or extraOptions):
+        if autoSync and (optionsError or messagesError):
             print("  Auto-syncing...")
 
             rootElement = langDoc.documentElement
+
+            missingOptions = existingOptions - langOptions
+            extraOptions = langOptions - existingOptions
 
             for optionId in extraOptions:
                 optionElem = langOptionsWithElements[optionId]
@@ -815,15 +823,41 @@ def syncLocalizedConfig(elem, translationsDir, autoSync=False):
             for optionId in missingOptions:
                 optionElem = existingOptionsWithElements[optionId]
                 importedElem = langDoc.importNode(optionElem, True)
+                parentGroupName = optionElem.parentNode.getAttribute('name')
 
-                parentGroup = None
+                parentGroupNew = None
                 for group in rootElement.getElementsByTagName('group'):
-                    parentGroup = group
+                    parentGroupNew = group
                     break
+                for group in rootElement.getElementsByTagName('group'):
+                    if group.getAttribute('name') == parentGroupName:
+                        parentGroupNew = group
+                        break
 
-                if parentGroup:
-                    parentGroup.appendChild(importedElem)
+                if parentGroupNew:
+                    parentGroupNew.appendChild(importedElem)
                     print("    Added: %s" % optionId)
+
+            missingMessages = existingMessages - langMessages
+            extraMessages = langMessages - existingMessages
+
+            for generator in langDoc.getElementsByTagName('generator'):
+                parentGeneratorNew = generator
+
+            for messageId in extraMessages:
+                for message in parentGeneratorNew.getElementsByTagName('message'):
+                    if messageId == message.getAttribute('name'):
+                        parentGeneratorNew.removeChild(message)
+                        print("    Removed: %s" % messageId)
+
+            for generator in elem.getElementsByTagName('generator'):
+                parentGenerator = generator
+
+            for messageId in missingMessages:
+                for message in parentGenerator.getElementsByTagName('message'):
+                    if messageId == message.getAttribute('name'):
+                        parentGeneratorNew.appendChild(message)
+                        print("    Added: %s" % messageId)
 
             backupFile = configFile + ".bak"
             shutil.copy2(configFile, backupFile)
@@ -832,8 +866,7 @@ def syncLocalizedConfig(elem, translationsDir, autoSync=False):
             outputStr = outputContent.decode('utf-8') if isinstance(outputContent, bytes) else outputContent
 
             lines = outputStr.split('\n')
-            filteredLines = [line for line in lines if line.strip()]
-            outputStr = '\n'.join(filteredLines)
+            filteredLines = [line.rstrip() for line in lines if line.strip()]
 
             with io.open(configFile, 'w', encoding='utf8') as f:
                 f.write(outputStr)
@@ -844,8 +877,8 @@ def syncLocalizedConfig(elem, translationsDir, autoSync=False):
     print("\nSync %s!" % ("complete" if not autoSync else "and update complete"))
 
 def main():
-    if len(sys.argv)<3 or (sys.argv[1] not in ['-doc','-cpp','-wiz','-wizswitch','-maph','-maps','-sync']):
-        sys.exit('Usage: %s -doc|-cpp|-wiz|-wizswitch|-maph|-maps|-sync config.xml [translations_dir]' % sys.argv[0])
+    if len(sys.argv)<3 or (sys.argv[1] not in ['-doc','-cpp','-wiz','-wizswitch','-maph','-maps','-sync','-auto']):
+        sys.exit('Usage: %s -doc|-cpp|-wiz|-wizswitch|-maph|-maps|-sync|-auto config.xml [translations_dir]' % sys.argv[0])
     try:
         configFile = sys.argv[2]
         if sys.version_info.major == 2:
@@ -871,8 +904,8 @@ def main():
 
     if (sys.argv[1] == "-doc"):
         print("/* WARNING: This file is generated!")
-        print(" * Do not edit this file, but edit config.xml instead and run")
-        print(" * python configgen.py -doc config.xml to regenerate this file!")
+        print(" * Do not edit this file, but edit %s instead and run" % configFile)
+        print(" * python configgen.py -doc %s to regenerate this file!" % configFile)
         print(" */")
         # process header
         for n in elem.childNodes:
@@ -901,8 +934,8 @@ def main():
                     parseFooterDoc(n)
     elif (sys.argv[1] == "-maph"):
         print("/* WARNING: This file is generated!")
-        print(" * Do not edit this file, but edit config.xml instead and run")
-        print(" * python configgen.py -maph config.xml to regenerate this file!")
+        print(" * Do not edit this file, but edit %s instead and run" % configFile)
+        print(" * python configgen.py -maph %s to regenerate this file!" % configFile)
         print(" */")
         print("#ifndef CONFIGVALUES_H")
         print("#define CONFIGVALUES_H")
@@ -971,8 +1004,8 @@ def main():
         print("#endif")
     elif (sys.argv[1] == "-maps"):
         print("/* WARNING: This file is generated!")
-        print(" * Do not edit this file, but edit config.xml instead and run")
-        print(" * python configgen.py -maps config.xml to regenerate this file!")
+        print(" * Do not edit this file, but edit %s instead and run" % configFile)
+        print(" * python configgen.py -maps %s to regenerate this file!" % configFile)
         print(" */")
         print("#include \"configvalues.h\"")
         print("#include \"configimpl.h\"")
@@ -1038,8 +1071,8 @@ def main():
         print("")
     elif (sys.argv[1] == "-cpp"):
         print("/* WARNING: This file is generated!")
-        print(" * Do not edit this file, but edit config.xml instead and run")
-        print(" * python configgen.py -cpp config.xml to regenerate this file!")
+        print(" * Do not edit this file, but edit %s instead and run" % configFile)
+        print(" * python configgen.py -cpp %s to regenerate this file!" % configFile)
         print(" */")
         print("")
         print("#include \"configoptions.h\"")
@@ -1070,8 +1103,8 @@ def main():
         locale = re.sub('.*config', '', configFile)
         locale = re.sub('.xml', '', locale)
         print("/* WARNING: This file is generated!")
-        print(" * Do not edit this file, but edit config.xml instead and run")
-        print(" * python configgen.py -wiz config.xml to regenerate this file!")
+        print(" * Do not edit this file, but edit %s instead and run" % configFile)
+        print(" * python configgen.py -wiz %s to regenerate this file!" % configFile)
         print(" */")
         print("#include \"configdoc.h\"")
         print("#include \"docintf.h\"")
@@ -1113,12 +1146,12 @@ def main():
         print("};")
         print("")
         print("#endif")
-    elif (sys.argv[1] == "-sync"):
-        if len(sys.argv) < 3:
-            sys.exit('Usage: %s -sync config.xml translations_dir [--auto]' % sys.argv[0])
-        translationsDir = sys.argv[3]
-        autoSync = '--auto' in sys.argv
-        syncLocalizedConfig(elem, translationsDir, autoSync)
+    elif (sys.argv[1] == "-sync" or sys.argv[1] == "-auto"):
+        if len(sys.argv) < 4:
+            translationsDir = 'i18n'
+        else:
+            translationsDir = sys.argv[3]
+        syncLocalizedConfig(elem, configFile, translationsDir, sys.argv[1] == "-auto")
 
 if __name__ == '__main__':
     main()
