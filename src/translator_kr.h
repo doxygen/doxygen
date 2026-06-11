@@ -2181,7 +2181,7 @@ class TranslatorKorean : public Translator
       switch(compType)
       {
         case ClassDef::Class:
-          if (lang == SrcLangExt::Fortran) trType(true,true);
+          if (lang == SrcLangExt::Fortran) result=trType(true,true);
           else result=trClass(true,true);
           break;
         case ClassDef::Struct:     result="구조체"; break;
@@ -2485,7 +2485,6 @@ class TranslatorKorean : public Translator
       QCString result="다음은 ";
       if (!extractAll) result+="문서화된 ";
       result+="모든 모듈 ";
-      QCString singularResult = "";
       QCString pluralResult = "";
       switch (hl)
       {
@@ -2581,11 +2580,9 @@ class TranslatorKorean : public Translator
     QCString trUnsatisfiedRequirements() override
     { return "충족되지 않은 요구사항"; }
 
-    QCString trUnsatisfiedRequirementsText(bool singular,const QCString &list) override
+    QCString trUnsatisfiedRequirementsText(bool /*singular*/,const QCString &list) override
     {
-      return singular ?
-        "요구사항 "+list+"에 'satisfies' 관계가 없습니다." :
-        "요구사항 "+list+"에 'satisfies' 관계가 없습니다.";
+      return "요구사항 "+list+"에 'satisfies' 관계가 없습니다.";
     }
 
     QCString trVerifies(bool singular) override
@@ -2601,11 +2598,9 @@ class TranslatorKorean : public Translator
     QCString trUnverifiedRequirements() override
     { return "검증되지 않은 요구사항"; }
 
-    QCString trUnverifiedRequirementsText(bool singular,const QCString &list) override
+    QCString trUnverifiedRequirementsText(bool /*singular*/,const QCString &list) override
     {
-      return singular ?
-        "요구사항 "+list+"에 'verifies' 관계가 없습니다." :
-        "요구사항 "+list+"에 'verifies' 관계가 없습니다.";
+      return "요구사항 "+list+"에 'verifies' 관계가 없습니다.";
     }
 
 };
