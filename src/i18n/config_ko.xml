@@ -1838,4 +1838,5 @@
     <message name='andtxt'><![CDATA[그리고]]></message>
     <message name='notetxt'><![CDATA[참고:]]></message>
     <message name='seealsotxt'><![CDATA[참조:]]></message>
+  </generator>
 </doxygenconfig>
