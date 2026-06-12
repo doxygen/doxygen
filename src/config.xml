@@ -4428,10 +4428,8 @@ This setting is not only used for dot files but also for msc temporary files.
     <option type='obsolete' orgtype='bool' id='DOT_MULTI_TARGETS'/>
   </group>
   <generator>
-    <message name='minmaxdef'><![CDATA[Minimum value: {0}, maximum value: {1}, default value: {2}.]]></message>
-    <message name='minmaxdefcode'><![CDATA[ Minimum value: <code>{0}</code>, maximum value: <code>{1}</code>, default value: <code>{2}</code>.]]></message>
+    <message name='minmaxdefcode'><![CDATA[Minimum value: <code>{0}</code>, maximum value: <code>{1}</code>, default value: <code>{2}</code>.]]></message>
     <message name='possible'><![CDATA[Possible values are: ]]></message>
-    <message name='defvaltxt'><![CDATA[The default value is: {0}.]]></message>
     <message name='defvalcode'><![CDATA[The default value is: <code>{0}</code>.]]></message>
     <message name='defdir'><![CDATA[The default directory is: <code>{0}</code>.]]></message>
     <message name='deffile'><![CDATA[The default file is: <code>{0}</code>.]]></message>

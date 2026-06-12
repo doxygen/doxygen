@@ -1821,10 +1821,8 @@
     </option>
   </group>
   <generator>
-    <message name='minmaxdef'><![CDATA[最小值：{0}，最大值：{1}，預設值：{2}。]]></message>
     <message name='minmaxdefcode'><![CDATA[最小值：<code>{0}</code>，最大值：<code>{1}</code>，預設值：<code>{2}</code>。]]></message>
     <message name='possible'><![CDATA[可能的值有：]]></message>
-    <message name='defvaltxt'><![CDATA[預設值為：{0}。]]></message>
     <message name='defvalcode'><![CDATA[預設值為：<code>{0}</code>。]]></message>
     <message name='defdir'><![CDATA[預設目錄為：<code>{0}</code>。]]></message>
     <message name='deffile'><![CDATA[預設檔案為：<code>{0}</code>。]]></message>

@@ -2396,10 +2396,8 @@ doxygen -w latex new_header.tex new_footer.tex new_stylesheet.sty
     </option>
   </group>
   <generator>
-    <message name='minmaxdef'><![CDATA[Минимальное значение: {0}, максимальное значение: {1}, значение по умолчанию: {2}.]]></message>
     <message name='minmaxdefcode'><![CDATA[Минимальное значение: <code>{0}</code>, максимальное значение: <code>{1}</code>, значение по умолчанию: <code>{2}</code>.]]></message>
     <message name='possible'><![CDATA[Возможные значения:]]></message>
-    <message name='defvaltxt'><![CDATA[Значение по умолчанию: {0}.]]></message>
     <message name='defvalcode'><![CDATA[Значение по умолчанию: <code>{0}</code>.]]></message>
     <message name='defdir'><![CDATA[Каталог по умолчанию: <code>{0}</code>.]]></message>
     <message name='deffile'><![CDATA[Файл по умолчанию: <code>{0}</code>.]]></message>

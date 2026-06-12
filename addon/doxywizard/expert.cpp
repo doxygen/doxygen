@@ -855,7 +855,7 @@ QString Expert::getDocsForNode(const QDomElement &child) const
     QString minval = child.attribute(SA("minval"));
     QString maxval = child.attribute(SA("maxval"));
     QString defval = child.attribute(SA("defval"));
-    docs+=m_messages[SA("minmaxdef")].arg(minval).arg(maxval).arg(defval);
+    docs+=m_messages[SA("minmaxdefcode")].arg(minval).arg(maxval).arg(defval);
   }
   else if (type==SA("bool"))
   {

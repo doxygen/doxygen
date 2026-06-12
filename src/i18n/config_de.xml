@@ -1825,10 +1825,8 @@
     </option>
   </group>
   <generator>
-    <message name="minmaxdef"><![CDATA[Mindestwert: {0}, Höchstwert: {1}, Standardwert: {2}.]]></message>
-    <message name="minmaxdefcode"><![CDATA[ Mindestwert: <code>{0}</code>, Höchstwert: <code>{1}</code>, Standardwert: <code>{2}</code>, ]]></message>
+    <message name="minmaxdefcode"><![CDATA[Mindestwert: <code>{0}</code>, Höchstwert: <code>{1}</code>, Standardwert: <code>{2}</code>.]]></message>
     <message name="possible"><![CDATA[Mögliche Werte sind: ]]></message>
-    <message name="defvaltxt"><![CDATA[Der Standardwert ist: {0}.]]></message>
     <message name="defvalcode"><![CDATA[Der Standardwert ist: <code>{0}</code>.]]></message>
     <message name="defdir"><![CDATA[Das Standardverzeichnis ist: <code>{0}</code>.]]></message>
     <message name="deffile"><![CDATA[Die Standarddatei ist: <code>{0}</code>.]]></message>
