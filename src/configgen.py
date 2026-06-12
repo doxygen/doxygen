@@ -869,7 +869,8 @@ def syncLocalizedConfig(elem, configFile, translationsDir, autoSync=False):
             filteredLines = [line.rstrip() for line in lines if line.strip()]
 
             with io.open(configFile, 'w', encoding='utf8') as f:
-                f.write(outputStr)
+                f.write("\n".join(filteredLines))
+                f.write("\n")
 
             print("  Backup saved to: %s" % backupFile)
             print("  File updated: %s" % configFile)
