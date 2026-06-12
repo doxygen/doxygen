@@ -1826,10 +1826,8 @@
     </option>
   </group>
   <generator>
-    <message name='minmaxdef'><![CDATA[Valor mínimo: {0}, valor máximo: {1}, valor predeterminado: {2}.]]></message>
     <message name='minmaxdefcode'><![CDATA[Valor mínimo: <code>{0}</code>, valor máximo: <code>{1}</code>, valor predeterminado: <code>{2}</code>.]]></message>
     <message name='possible'><![CDATA[Los valores posibles son:]]></message>
-    <message name='defvaltxt'><![CDATA[El valor predeterminado es: {0}.]]></message>
     <message name='defvalcode'><![CDATA[El valor predeterminado es: <code>{0}</code>.]]></message>
     <message name='defdir'><![CDATA[El directorio predeterminado es: <code>{0}</code>.]]></message>
     <message name='deffile'><![CDATA[El archivo predeterminado es: <code>{0}</code>.]]></message>

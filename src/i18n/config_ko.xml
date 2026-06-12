@@ -1823,10 +1823,8 @@
     </option>
   </group>
   <generator>
-    <message name='minmaxdef'><![CDATA[최소값: {0}, 최대값: {1}, 기본값: {2}.]]></message>
     <message name='minmaxdefcode'><![CDATA[최소값: <code>{0}</code>, 최대값: <code>{1}</code>, 기본값: <code>{2}</code>.]]></message>
     <message name='possible'><![CDATA[가능한 값:]]></message>
-    <message name='defvaltxt'><![CDATA[기본값은 {0}입니다.]]></message>
     <message name='defvalcode'><![CDATA[기본값은 <code>{0}</code>입니다.]]></message>
     <message name='defdir'><![CDATA[기본 디렉토리는 <code>{0}</code>입니다.]]></message>
     <message name='deffile'><![CDATA[기본 파일은 <code>{0}</code>입니다.]]></message>

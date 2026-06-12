@@ -191,9 +191,9 @@ def prepCDocs(node):
         elif (type == 'int'):
             minval = node.getAttribute('minval')
             maxval = node.getAttribute('maxval')
-            doc += "<br/>" + messages['minmaxdef'].format(minval, maxval, defval)
+            doc += "<br/>" + messages['minmaxdefcode'].format(minval, maxval, defval)
         elif (type == 'bool'):
-            doc += "<br/>" + messages['defvaltxt'].format("YES" if (defval == "1") else "NO")
+            doc += "<br/>" + messages['defvalcode'].format("YES" if (defval == "1") else "NO")
         elif (type == 'list'):
             if format == 'string':
                 values = collectValues(node)
