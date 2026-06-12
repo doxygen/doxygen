@@ -2582,7 +2582,7 @@ class TranslatorKorean : public Translator
 
     QCString trUnsatisfiedRequirementsText(bool /*singular*/,const QCString &list) override
     {
-      return "요구사항 "+list+"에 'satisfies' 관계가 없습니다.";
+      return "요구사항 "+list+"에 '충족' 관계가 없습니다.";
     }
 
     QCString trVerifies(bool singular) override
@@ -2600,7 +2600,7 @@ class TranslatorKorean : public Translator
 
     QCString trUnverifiedRequirementsText(bool /*singular*/,const QCString &list) override
     {
-      return "요구사항 "+list+"에 'verifies' 관계가 없습니다.";
+      return "요구사항 "+list+"에 '검증' 관계가 없습니다.";
     }
 
 };

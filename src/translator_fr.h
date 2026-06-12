@@ -2697,8 +2697,8 @@ class TranslatorFrench : public Translator
     QCString trUnsatisfiedRequirementsText(bool singular,const QCString &list) override
     {
       return singular ?
-        "L'exigence "+list+" n'a pas de relation 'satisfies'." :
-        "Les exigences "+list+" n'ont pas de relation 'satisfies'.";
+        "L'exigence "+list+" n'a pas de relation 'satisfait'." :
+        "Les exigences "+list+" n'ont pas de relation 'satisfait'.";
     }
 
     QCString trVerifies(bool singular) override
@@ -2715,8 +2715,8 @@ class TranslatorFrench : public Translator
     QCString trUnverifiedRequirementsText(bool singular,const QCString &list) override
     {
       return singular ?
-        "L'exigence "+list+" n'a pas de relation 'verifies'." :
-        "Les exigences "+list+" n'ont pas de relation 'verifies'.";
+        "L'exigence "+list+" n'a pas de relation 'vérifie'." :
+        "Les exigences "+list+" n'ont pas de relation 'vérifie'.";
     }
 
 };

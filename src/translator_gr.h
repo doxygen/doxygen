@@ -2696,8 +2696,8 @@ class TranslatorGreek : public Translator
     QCString trUnsatisfiedRequirementsText(bool singular,const QCString &list) override
     {
       return singular ?
-        "Η απαίτηση "+list+" δεν έχουν 'satisfies' σχέση." :
-        "Οι απαιτήσεις "+list+" δεν έχουν 'satisfies' σχέση.";
+        "Η απαίτηση "+list+" δεν έχουν 'πληρεί' σχέση." :
+        "Οι απαιτήσεις "+list+" δεν έχουν 'πληρεί' σχέση.";
     }
     // indicates a symbol verifies (tests) a requirement
     QCString trVerifies(bool singular) override
@@ -2716,8 +2716,8 @@ class TranslatorGreek : public Translator
     QCString trUnverifiedRequirementsText(bool singular,const QCString &list) override
     {
       return singular ?
-        "Η απαίτηση "+list+" δεν έχουν 'verifies' σχέση." :
-        "Οι απαιτήσεις "+list+" δεν έχουν 'verifies' σχέση.";
+        "Η απαίτηση "+list+" δεν έχουν 'επιβεβαιώνει' σχέση." :
+        "Οι απαιτήσεις "+list+" δεν έχουν 'επιβεβαιώνει' σχέση.";
     }
 };
 

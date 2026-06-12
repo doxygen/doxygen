@@ -2614,8 +2614,8 @@ class TranslatorPolish : public Translator
     QCString trUnsatisfiedRequirementsText(bool singular,const QCString &list) override
     {
       return singular ?
-        "Wymóg "+list+" nie ma relacji 'satisfies'." :
-        "Wymogi "+list+" nie ma relacji 'satisfies'.";
+        "Wymóg "+list+" nie ma relacji 'spełnia'." :
+        "Wymogi "+list+" nie ma relacji 'spełnia'.";
     }
     // indicates a symbol verifies (tests) a requirement
     QCString trVerifies(bool singular) override
@@ -2634,8 +2634,8 @@ class TranslatorPolish : public Translator
     QCString trUnverifiedRequirementsText(bool singular,const QCString &list) override
     {
       return singular ?
-        "Wymóg "+list+" nie posiada relacji 'verifies'." :
-        "Wymogi "+list+" nie posiadają relacji 'verifies'.";
+        "Wymóg "+list+" nie posiada relacji 'weryfikuje'." :
+        "Wymogi "+list+" nie posiadają relacji 'weryfikuje'.";
     }
 };
 
