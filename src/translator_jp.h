@@ -2574,7 +2574,7 @@ class TranslatorJapanese : public Translator
     { return "未実装の要件"; }
 
     QCString trUnsatisfiedRequirementsText(bool /*singular*/, const QCString &list) override
-    { return "要件 "+list+" は 'satisfies' 関係を持っていません。"; }
+    { return "要件 "+list+" は '実装' 関係を持っていません。"; }
 
     // indicates a symbol verifies (tests) a requirement
     QCString trVerifies(bool /*singular*/) override
@@ -2588,7 +2588,7 @@ class TranslatorJapanese : public Translator
     { return "未検証の要件"; }
 
     QCString trUnverifiedRequirementsText(bool /*singular*/, const QCString &list) override
-    { return "要件 "+list+" は 'verifies' 関係を持っていません。"; }
+    { return "要件 "+list+" は '検証' 関係を持っていません。"; }
 
 };
 

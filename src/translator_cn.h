@@ -2646,7 +2646,7 @@ class TranslatorChinese : public Translator
     }
     QCString trUnsatisfiedRequirementsText(bool /*singular*/, const QCString &list) override
     {
-      return "需求" CN_SPC+list+CN_SPC "没有\"satisfies\"关联。";
+      return "需求" CN_SPC+list+CN_SPC "没有\"满足\"关联。";
     }
     // indicates a symbol verifies (tests) a requirement
     QCString trVerifies(bool /*singular*/) override
@@ -2664,7 +2664,7 @@ class TranslatorChinese : public Translator
     }
     QCString trUnverifiedRequirementsText(bool /*singular*/, const QCString &list) override
     {
-      return "需求" CN_SPC+list+CN_SPC "没有\"verifies\"关联。";
+      return "需求" CN_SPC+list+CN_SPC "没有\"验证\"关联。";
     }
 };
 
