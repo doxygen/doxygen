@@ -1390,7 +1390,13 @@ class TrManager:
 
         # Sort the list and extract the object identifiers (classId's) for
         # the up-to-date translators and English-based translators.
-        statLst.sort()
+        statLst1 = []
+        for obj in statLst:
+          statLst1.append(re.sub(r'^(\d)\.(\d)\.',r'\1.0\2.', obj))
+        statLst1.sort()
+        statLst = []
+        for obj in statLst1:
+          statLst.append(re.sub(r'^(\d)\.0(\d)\.',r'\1.\2.', obj))
         self.upToDateIdLst = [x.split('|')[2] for x in statLst if x[0] == '|']
         self.EnBasedIdLst = [x.split('|')[2] for x in statLst if x[:2] == 'En']
 
@@ -1626,27 +1632,34 @@ class TrManager:
 
 
             # Write separately the list of "ALMOST up-to-date" translator classes.
-            s = '''The following translator classes are ALMOST up-to-date (sorted
-                alphabetically). This means that they derive from the
-                Translator class, but there still may be some minor problems
-                listed for them:'''
-            f.write('\n' + ('-' * 70) + '\n')
-            f.write(fill(s) + '\n\n')
-            mailtoLst = []
+            almostUpToDate = False
             for x in self.upToDateIdLst:
                 obj = self.__translDic[x]
                 if obj.note is not None:
-                    f.write('  ' + obj.classId + '\t-- ' + obj.note + '\n')
-                    mailtoLst.extend(self.__emails(obj.classId))
+                    almostUpToDate = True
 
-            fmail.write('\n\nalmost up-to-date\n')
-            fmail.write('; '.join(mailtoLst))
+            if almostUpToDate:
+                s = '''The following translator classes are ALMOST up-to-date (sorted
+                    alphabetically). This means that they derive from the
+                    Translator class, but there still may be some minor problems
+                    listed for them:'''
+                f.write('\n' + ('-' * 70) + '\n')
+                f.write(fill(s) + '\n\n')
+                mailtoLst = []
+                for x in self.upToDateIdLst:
+                    obj = self.__translDic[x]
+                    if obj.note is not None:
+                        f.write('  ' + obj.classId + '\t-- ' + obj.note + '\n')
+                        mailtoLst.extend(self.__emails(obj.classId))
 
-        # Write the list of the adapter based classes. The very obsolete
+                fmail.write('\n\nalmost up-to-date\n')
+                fmail.write('; '.join(mailtoLst))
+
+        # Write the list of the adapter based classes. The very incomplete
         # translators that derive from TranslatorEnglish are included.
         if self.adaptIdLst:
             s = '''The following translator classes need maintenance
-                (the most obsolete at the end). The other info shows the
+                (the most incomplete at the end). The other info shows the
                 estimation of Doxygen version when the class was last
                 updated and number of methods that must be implemented to
                 become up-to-date:'''
@@ -1924,7 +1937,7 @@ class TrManager:
                 if classId in self.__translDic:
                     lang = self.__translDic[classId].langReadable
                     mm = 'see the %s language' % lang
-                    ee = '&#160;'
+                    ee = '&nbsp;'
 
             if not mm and obj.classId in self.__maintainersDic:
                 # Build a string of names separated by the HTML break element.
