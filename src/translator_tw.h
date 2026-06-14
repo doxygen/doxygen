@@ -2015,83 +2015,60 @@ class TranslatorChinesetraditional : public Translator
     QCString trFunctionAndProc() override
     { return "函式/程序/行程"; }
     /** VHDL type */
-    QCString trVhdlType(VhdlSpecifier type,bool single) override
+    QCString trVhdlType(VhdlSpecifier type,bool /*single*/) override
     {
       switch(type)
       {
         case VhdlSpecifier::LIBRARY:
-          if (single) return "函式庫";
-          else        return "函式庫";
+          return "函式庫";
         case VhdlSpecifier::PACKAGE:
-          if (single) return "套件";
-          else        return "套件";
+          return "套件";
         case VhdlSpecifier::SIGNAL:
-          if (single) return "訊號";
-          else        return "訊號";
+          return "訊號";
         case VhdlSpecifier::COMPONENT:
-          if (single) return "元件";
-          else        return "元件";
+          return "元件";
         case VhdlSpecifier::CONSTANT:
-          if (single) return "常數";
-          else        return "常數";
+          return "常數";
         case VhdlSpecifier::ENTITY:
-          if (single) return "實體";
-          else        return "實體";
+          return "實體";
         case VhdlSpecifier::TYPE:
-          if (single) return "型別";
-          else        return "型別";
+          return "型別";
         case VhdlSpecifier::SUBTYPE:
-          if (single) return "子型別";
-          else        return "子型別";
+          return "子型別";
         case VhdlSpecifier::FUNCTION:
-          if (single) return "函式";
-          else        return "函式";
+          return "函式";
         case VhdlSpecifier::RECORD:
-          if (single) return "紀錄";
-          else        return "紀錄";
+          return "紀錄";
         case VhdlSpecifier::PROCEDURE:
-          if (single) return "程序";
-          else        return "程序";
+          return "程序";
         case VhdlSpecifier::ARCHITECTURE:
-          if (single) return "架構";
-          else        return "架構";
+          return "架構";
         case VhdlSpecifier::ATTRIBUTE:
-          if (single) return "屬性";
-          else        return "屬性";
+          return "屬性";
         case VhdlSpecifier::PROCESS:
-          if (single) return "行程";
-          else        return "行程";
+          return "行程";
         case VhdlSpecifier::PORT:
-          if (single) return "埠";
-          else        return "埠";
+          return "埠";
         case VhdlSpecifier::USE:
-          if (single) return "使用語句";
-          else        return "使用語句";
+          return "使用語句";
         case VhdlSpecifier::GENERIC:
-          if (single) return "通用";
-          else        return "通用";
+          return "通用";
         case VhdlSpecifier::PACKAGE_BODY:
           return "套件本體";
         case VhdlSpecifier::UNITS:
           return "單元";
         case VhdlSpecifier::SHAREDVARIABLE:
-          if (single) return "共享變數";
-          else        return "共享變數";
+          return "共享變數";
         case VhdlSpecifier::VFILE:
-          if (single) return "檔案";
-          else        return "檔案";
+          return "檔案";
         case VhdlSpecifier::GROUP:
-          if (single) return "群組";
-          else        return "群組";
+          return "群組";
         case VhdlSpecifier::INSTANTIATION:
-          if (single) return "實例化";
-          else        return "實例化";
+          return "實例化";
         case VhdlSpecifier::ALIAS:
-          if (single) return "別名";
-          else        return "別名";
+          return "別名";
         case VhdlSpecifier::CONFIG:
-          if (single) return "組態";
-          else        return "組態";
+          return "組態";
         case VhdlSpecifier::MISCELLANEOUS:
           return "雜項";
         case VhdlSpecifier::UCF_CONST:
@@ -2248,12 +2225,8 @@ class TranslatorChinesetraditional : public Translator
 //////////////////////////////////////////////////////////////////////////
 
     /** C++20 concept */
-    QCString trConcept(bool first_capital, bool singular) override
-    {
-      QCString result(first_capital ? "概念" : "概念");
-      (void)singular;
-      return result;
-    }
+    QCString trConcept(bool /*first_capital*/, bool /*singular*/) override
+    { return "概念"; }
     /*! used as the title of the HTML page of a C++20 concept page */
     QCString trConceptReference(const QCString &conceptName) override
     {
@@ -2404,7 +2377,7 @@ class TranslatorChinesetraditional : public Translator
       if (extractAll)
         result+="其所屬的檔案:";
       else
-        result+="說明文件:"
+        result+="說明文件:";
       return result;
     }
     QCString trCompoundMembersDescriptionTotal(ClassMemberHighlight::Enum hl) override
@@ -2521,7 +2494,7 @@ class TranslatorChinesetraditional : public Translator
       if (extractAll)
         result+="每個"+singularResult+"的命名空間說明文件:";
       else
-        result+="其所屬的命名空間:"
+        result+="其所屬的命名空間:";
       return result;
     }
     QCString trDefinition() override  { return "定義"; }
@@ -2576,7 +2549,7 @@ class TranslatorChinesetraditional : public Translator
       if (extractAll)
         result+="每個"+singularResult+"的模組說明文件:";
       else
-        result+="其所屬的模組:"
+        result+="其所屬的模組:";
       return result;
     }
     QCString trExportedModules() override
@@ -2614,9 +2587,8 @@ class TranslatorChinesetraditional : public Translator
     {
       return "ID";
     }
-    QCString trSatisfies(bool singular) override
+    QCString trSatisfies(bool /*singular*/) override
     {
-      (void)singular;
       return "滿足需求";
     }
     QCString trSatisfiedBy(const QCString &list) override
@@ -2627,14 +2599,12 @@ class TranslatorChinesetraditional : public Translator
     {
       return "未滿足的需求";
     }
-    QCString trUnsatisfiedRequirementsText(bool singular,const QCString &list) override
+    QCString trUnsatisfiedRequirementsText(bool /*singular*/,const QCString &list) override
     {
-      (void)singular;
       return "需求"+list+"沒有「滿足」關聯。";
     }
-    QCString trVerifies(bool singular) override
+    QCString trVerifies(bool /*singular*/) override
     {
-      (void)singular;
       return "驗證需求";
     }
     QCString trVerifiedBy(const QCString &list) override
@@ -2645,9 +2615,8 @@ class TranslatorChinesetraditional : public Translator
     {
       return "未驗證的需求";
     }
-    QCString trUnverifiedRequirementsText(bool singular,const QCString &list) override
+    QCString trUnverifiedRequirementsText(bool /*singular*/,const QCString &list) override
     {
-      (void)singular;
       return "需求"+list+"沒有「驗證」關聯。";
     }
 
