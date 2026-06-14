@@ -15,6 +15,10 @@
  *
  * The translation into Chinesetraditional was provided by
  *   Daniel YC Lin (dlin.tw <at> gmail.com) since v1.2.16-v1.5.5
+ *
+ * Updated to be in sync with release 1.16.0 by the Doxygen project (2026):
+ *   - Added methods introduced in releases 1.8.15, 1.8.19, 1.9.2, 1.9.4,
+ *     1.9.5, 1.9.6, 1.9.8, 1.10.0, 1.11.0, and 1.16.0.
  */
 
 #ifndef TRANSLATOR_TW_H
@@ -41,7 +45,7 @@
 // Translator class (by the local maintainer) when the localized
 // translator is made up-to-date again.
 
-class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
+class TranslatorChinesetraditional : public Translator
 {
   public:
 
@@ -1981,6 +1985,670 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
                                 "所產生";
       result+=":";
       return result;
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.8.15
+//////////////////////////////////////////////////////////////////////////
+
+    /** VHDL design unit hierarchy */
+    QCString trDesignUnitHierarchy() override
+    { return "設計單元階層"; }
+    /** VHDL design unit list */
+    QCString trDesignUnitList() override
+    { return "設計單元列表"; }
+    /** VHDL design unit members */
+    QCString trDesignUnitMembers() override
+    { return "設計單元成員"; }
+    /** VHDL design unit list description */
+    QCString trDesignUnitListDescription() override
+    {
+      return "這是所有設計單元成員的列表，附帶連結至其所屬的實體:";
+    }
+    /** VHDL design unit index */
+    QCString trDesignUnitIndex() override
+    { return "設計單元索引"; }
+    /** VHDL design units */
+    QCString trDesignUnits() override
+    { return "設計單元"; }
+    /** VHDL functions/procedures/processes */
+    QCString trFunctionAndProc() override
+    { return "函式/程序/行程"; }
+    /** VHDL type */
+    QCString trVhdlType(VhdlSpecifier type,bool single) override
+    {
+      switch(type)
+      {
+        case VhdlSpecifier::LIBRARY:
+          if (single) return "函式庫";
+          else        return "函式庫";
+        case VhdlSpecifier::PACKAGE:
+          if (single) return "套件";
+          else        return "套件";
+        case VhdlSpecifier::SIGNAL:
+          if (single) return "訊號";
+          else        return "訊號";
+        case VhdlSpecifier::COMPONENT:
+          if (single) return "元件";
+          else        return "元件";
+        case VhdlSpecifier::CONSTANT:
+          if (single) return "常數";
+          else        return "常數";
+        case VhdlSpecifier::ENTITY:
+          if (single) return "實體";
+          else        return "實體";
+        case VhdlSpecifier::TYPE:
+          if (single) return "型別";
+          else        return "型別";
+        case VhdlSpecifier::SUBTYPE:
+          if (single) return "子型別";
+          else        return "子型別";
+        case VhdlSpecifier::FUNCTION:
+          if (single) return "函式";
+          else        return "函式";
+        case VhdlSpecifier::RECORD:
+          if (single) return "紀錄";
+          else        return "紀錄";
+        case VhdlSpecifier::PROCEDURE:
+          if (single) return "程序";
+          else        return "程序";
+        case VhdlSpecifier::ARCHITECTURE:
+          if (single) return "架構";
+          else        return "架構";
+        case VhdlSpecifier::ATTRIBUTE:
+          if (single) return "屬性";
+          else        return "屬性";
+        case VhdlSpecifier::PROCESS:
+          if (single) return "行程";
+          else        return "行程";
+        case VhdlSpecifier::PORT:
+          if (single) return "埠";
+          else        return "埠";
+        case VhdlSpecifier::USE:
+          if (single) return "使用語句";
+          else        return "使用語句";
+        case VhdlSpecifier::GENERIC:
+          if (single) return "通用";
+          else        return "通用";
+        case VhdlSpecifier::PACKAGE_BODY:
+          return "套件本體";
+        case VhdlSpecifier::UNITS:
+          return "單元";
+        case VhdlSpecifier::SHAREDVARIABLE:
+          if (single) return "共享變數";
+          else        return "共享變數";
+        case VhdlSpecifier::VFILE:
+          if (single) return "檔案";
+          else        return "檔案";
+        case VhdlSpecifier::GROUP:
+          if (single) return "群組";
+          else        return "群組";
+        case VhdlSpecifier::INSTANTIATION:
+          if (single) return "實例化";
+          else        return "實例化";
+        case VhdlSpecifier::ALIAS:
+          if (single) return "別名";
+          else        return "別名";
+        case VhdlSpecifier::CONFIG:
+          if (single) return "組態";
+          else        return "組態";
+        case VhdlSpecifier::MISCELLANEOUS:
+          return "雜項";
+        case VhdlSpecifier::UCF_CONST:
+          return "限制條件";
+        default:
+          return "類別";
+      }
+    }
+    QCString trCustomReference(const QCString &name) override
+    { return QCString(name)+" 參考文件"; }
+
+    /* Slice */
+    QCString trConstants() override
+    {
+      return "常數";
+    }
+    QCString trConstantDocumentation() override
+    {
+      return "常數說明文件";
+    }
+    QCString trSequences() override
+    {
+      return "序列";
+    }
+    QCString trSequenceDocumentation() override
+    {
+      return "序列說明文件";
+    }
+    QCString trDictionaries() override
+    {
+      return "字典";
+    }
+    QCString trDictionaryDocumentation() override
+    {
+      return "字典說明文件";
+    }
+    QCString trSliceInterfaces() override
+    {
+      return "介面";
+    }
+    QCString trInterfaceIndex() override
+    {
+      return "介面索引";
+    }
+    QCString trInterfaceList() override
+    {
+      return "介面列表";
+    }
+    QCString trInterfaceListDescription() override
+    {
+      return "以下是附帶簡略說明的介面:";
+    }
+    QCString trInterfaceHierarchy() override
+    {
+      return "介面階層";
+    }
+    QCString trInterfaceHierarchyDescription() override
+    {
+      return "此繼承列表大致按字母排序:";
+    }
+    QCString trInterfaceDocumentation() override
+    {
+      return "介面說明文件";
+    }
+    QCString trStructs() override
+    {
+      return "結構";
+    }
+    QCString trStructIndex() override
+    {
+      return "結構索引";
+    }
+    QCString trStructList() override
+    {
+      return "結構列表";
+    }
+    QCString trStructListDescription() override
+    {
+      return "以下是附帶簡略說明的結構:";
+    }
+    QCString trStructDocumentation() override
+    {
+      return "結構說明文件";
+    }
+    QCString trExceptionIndex() override
+    {
+      return "例外索引";
+    }
+    QCString trExceptionList() override
+    {
+      return "例外列表";
+    }
+    QCString trExceptionListDescription() override
+    {
+      return "以下是附帶簡略說明的例外:";
+    }
+    QCString trExceptionHierarchy() override
+    {
+      return "例外階層";
+    }
+    QCString trExceptionHierarchyDescription() override
+    {
+      return "此繼承列表大致按字母排序:";
+    }
+    QCString trExceptionDocumentation() override
+    {
+      return "例外說明文件";
+    }
+    QCString trCompoundReferenceSlice(const QCString &clName, ClassDef::CompoundType compType, bool isLocal) override
+    {
+      QCString result=clName;
+      if (isLocal) result+=" 區域";
+      switch(compType)
+      {
+        case ClassDef::Class:      result+=" 類別"; break;
+        case ClassDef::Struct:     result+=" 結構"; break;
+        case ClassDef::Union:      result+=" 聯合"; break;
+        case ClassDef::Interface:  result+=" 介面"; break;
+        case ClassDef::Protocol:   result+=" 協定"; break;
+        case ClassDef::Category:   result+=" 分類"; break;
+        case ClassDef::Exception:  result+=" 例外"; break;
+        default: break;
+      }
+      result+=" 參考文件";
+      return result;
+    }
+    QCString trOperations() override
+    {
+      return "操作";
+    }
+    QCString trOperationDocumentation() override
+    {
+      return "操作說明文件";
+    }
+    QCString trDataMembers() override
+    {
+      return "資料成員";
+    }
+    QCString trDataMemberDocumentation() override
+    {
+      return "資料成員說明文件";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.8.19
+//////////////////////////////////////////////////////////////////////////
+
+    /** VHDL design unit documentation */
+    QCString trDesignUnitDocumentation() override
+    { return "設計單元說明文件"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.2
+//////////////////////////////////////////////////////////////////////////
+
+    /** C++20 concept */
+    QCString trConcept(bool first_capital, bool singular) override
+    {
+      QCString result(first_capital ? "概念" : "概念");
+      (void)singular;
+      return result;
+    }
+    /*! used as the title of the HTML page of a C++20 concept page */
+    QCString trConceptReference(const QCString &conceptName) override
+    {
+      QCString result=conceptName;
+      result+=" 概念參考文件";
+      return result;
+    }
+
+    /*! used as the title of page containing all the index of all concepts. */
+    QCString trConceptList() override
+    { return "概念列表"; }
+
+    /*! used as the title of chapter containing the index listing all concepts. */
+    QCString trConceptIndex() override
+    { return "概念索引"; }
+
+    /*! used as the title of chapter containing all information about concepts. */
+    QCString trConceptDocumentation() override
+    { return "概念說明文件"; }
+
+    /*! used as an introduction to the concept list */
+    QCString trConceptListDescription(bool extractAll) override
+    {
+      QCString result="這是所有";
+      if (!extractAll) result+="有文件的";
+      result+="概念的列表，附帶簡略說明:";
+      return result;
+    }
+
+    /*! used to introduce the definition of the C++20 concept */
+    QCString trConceptDefinition() override
+    {
+      return "概念定義";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.4
+//////////////////////////////////////////////////////////////////////////
+
+    QCString trPackageList() override
+    { return "套件列表"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.5
+//////////////////////////////////////////////////////////////////////////
+
+    /*! used for translation of the word that will be
+     *  followed by a single name of the VHDL process flowchart.
+     */
+    QCString trFlowchart() override
+    { return "流程圖:"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.6
+//////////////////////////////////////////////////////////////////////////
+
+    /*! used in the compound documentation before a list of related symbols.
+     *
+     *  Supersedes trRelatedFunctions
+     */
+    QCString trRelatedSymbols() override
+    { return "相關符號"; }
+
+    /*! subscript for the related symbols
+     *
+     *  Supersedes trRelatedSubscript
+     */
+    QCString trRelatedSymbolsSubscript() override
+    { return "(注意：這些不是成員符號)"; }
+
+    /*! used in the class documentation as a header before the list of all
+     * related classes.
+     *
+     * Supersedes trRelatedFunctionDocumentation
+     */
+    QCString trRelatedSymbolDocumentation() override
+    { return "友元及相關符號說明文件"; }
+
+    /*! the compound type as used for the xrefitems */
+    QCString trCompoundType(ClassDef::CompoundType compType, SrcLangExt lang) override
+    {
+      QCString result;
+      switch(compType)
+      {
+        case ClassDef::Class:
+          if (lang == SrcLangExt::Fortran) result=trType(true,true);
+          else result=trClass(true,true);
+          break;
+        case ClassDef::Struct:     result="結構"; break;
+        case ClassDef::Union:      result="聯合"; break;
+        case ClassDef::Interface:  result="介面"; break;
+        case ClassDef::Protocol:   result="協定"; break;
+        case ClassDef::Category:   result="分類"; break;
+        case ClassDef::Exception:  result="例外"; break;
+        case ClassDef::Service:    result="服務"; break;
+        case ClassDef::Singleton:  result="Singleton"; break;
+        default: break;
+      }
+      return result;
+    }
+
+    QCString trFileMembersDescriptionTotal(FileMemberHighlight::Enum hl) override
+    {
+      bool extractAll = Config_getBool(EXTRACT_ALL);
+      QCString result="這是全部";
+      if (!extractAll) result+="文件化的";
+
+      switch (hl)
+      {
+        case FileMemberHighlight::All:
+          if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+          {
+            result+="函式，變數，定義，列舉，及型態定義";
+          }
+          else
+          {
+            result+="檔案成員";
+          }
+          break;
+        case FileMemberHighlight::Functions:
+          result+="函式";
+          break;
+        case FileMemberHighlight::Variables:
+          result+="變數";
+          break;
+        case FileMemberHighlight::Typedefs:
+          result+="型態定義";
+          break;
+        case FileMemberHighlight::Sequences:
+          result+="序列";
+          break;
+        case FileMemberHighlight::Dictionaries:
+          result+="字典";
+          break;
+        case FileMemberHighlight::Enums:
+          result+="列舉型態";
+          break;
+        case FileMemberHighlight::EnumValues:
+          result+="列舉值";
+          break;
+        case FileMemberHighlight::Defines:
+          result+="巨集";
+          break;
+        case FileMemberHighlight::Total: // for completeness
+          break;
+      }
+      result+="，並且帶有連結至";
+      if (extractAll)
+        result+="這些檔案所屬:";
+      else
+        result+="說明文件:";
+      return result;
+    }
+    QCString trCompoundMembersDescriptionTotal(ClassMemberHighlight::Enum hl) override
+    {
+      bool extractAll = Config_getBool(EXTRACT_ALL);
+      QCString result="這是全部";
+      if (!extractAll)
+      {
+        result+="文件化過";
+      }
+
+      switch (hl)
+      {
+        case ClassMemberHighlight::All:
+          if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+          {
+            result+="結構及聯合型態欄位";
+          }
+          else
+          {
+            result+="類別成員";
+          }
+          break;
+        case ClassMemberHighlight::Functions:
+          result+="函式";
+          break;
+        case ClassMemberHighlight::Variables:
+          result+="變數";
+          break;
+        case ClassMemberHighlight::Typedefs:
+          result+="型態定義";
+          break;
+        case ClassMemberHighlight::Enums:
+          result+="列舉型態";
+          break;
+        case ClassMemberHighlight::EnumValues:
+          result+="列舉值";
+          break;
+        case ClassMemberHighlight::Properties:
+          result+="屬性";
+          break;
+        case ClassMemberHighlight::Events:
+          result+="事件";
+          break;
+        case ClassMemberHighlight::Related:
+          result+="相關符號";
+          break;
+        case ClassMemberHighlight::Total: // for completeness
+          break;
+      }
+      result+=", 並且帶有連結至";
+      if (!extractAll)
+      {
+        if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+        {
+          result+="每個欄位的結構/聯合型態說明文件:";
+        }
+        else
+        {
+          result+="每個成員的類別說明文件:";
+        }
+      }
+      else
+      {
+        if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+        {
+          result+="這些結構/聯合型態所屬:";
+        }
+        else
+        {
+          result+="這些類別所屬:";
+        }
+      }
+      return result;
+    }
+    QCString trNamespaceMembersDescriptionTotal(NamespaceMemberHighlight::Enum hl) override
+    {
+      bool extractAll = Config_getBool(EXTRACT_ALL);
+      QCString result="這是全部";
+      if (!extractAll) result+="文件化的";
+      result+="命名空間";
+      QCString singularResult = "";
+      switch (hl)
+      {
+        case NamespaceMemberHighlight::All:
+          singularResult="成員";
+          break;
+        case NamespaceMemberHighlight::Functions:
+          singularResult="函式";
+          break;
+        case NamespaceMemberHighlight::Variables:
+          singularResult="變數";
+          break;
+        case NamespaceMemberHighlight::Typedefs:
+          singularResult="型態定義";
+          break;
+        case NamespaceMemberHighlight::Sequences:
+          singularResult="序列";
+          break;
+        case NamespaceMemberHighlight::Dictionaries:
+          singularResult="字典";
+          break;
+        case NamespaceMemberHighlight::Enums:
+          singularResult="列舉型態";
+          break;
+        case NamespaceMemberHighlight::EnumValues:
+          singularResult="列舉值";
+          break;
+        case NamespaceMemberHighlight::Total: // for completeness
+          break;
+      }
+      result+=singularResult;
+      result+="，並且帶有連結至";
+      if (extractAll)
+        result+="每個"+singularResult+"的命名空間說明文件:";
+      else
+        result+="這些命名空間所屬:";
+      return result;
+    }
+    QCString trDefinition() override  { return "定義"; }
+    QCString trDeclaration() override { return "宣告"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.8
+//////////////////////////////////////////////////////////////////////////
+
+    QCString trTopics() override
+    { return "主題"; }
+    QCString trTopicDocumentation() override
+    { return "主題說明文件"; }
+    QCString trTopicList() override
+    { return "主題列表"; }
+    QCString trTopicIndex() override
+    { return "主題索引"; }
+    QCString trTopicListDescription() override
+    { return "這是所有主題的列表，附帶簡略說明:"; }
+    QCString trModuleMembersDescriptionTotal(ModuleMemberHighlight::Enum hl) override
+    {
+      bool extractAll = Config_getBool(EXTRACT_ALL);
+      QCString result="這是全部";
+      if (!extractAll) result+="文件化的";
+      result+="模組";
+      QCString singularResult = "";
+      switch (hl)
+      {
+        case ModuleMemberHighlight::All:
+          singularResult="成員";
+          break;
+        case ModuleMemberHighlight::Functions:
+          singularResult="函式";
+          break;
+        case ModuleMemberHighlight::Variables:
+          singularResult="變數";
+          break;
+        case ModuleMemberHighlight::Typedefs:
+          singularResult="型態定義";
+          break;
+        case ModuleMemberHighlight::Enums:
+          singularResult="列舉型態";
+          break;
+        case ModuleMemberHighlight::EnumValues:
+          singularResult="列舉值";
+          break;
+        case ModuleMemberHighlight::Total: // for completeness
+          break;
+      }
+      result+=singularResult;
+      result+="，並且帶有連結至";
+      if (extractAll)
+        result+="每個"+singularResult+"的模組說明文件:";
+      else
+        result+="這些模組所屬:";
+      return result;
+    }
+    QCString trExportedModules() override
+    {
+      return "匯出的模組";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.10.0
+//////////////////////////////////////////////////////////////////////////
+
+    QCString trCopyToClipboard() override
+    {
+      return "複製到剪貼簿";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.11.0
+//////////////////////////////////////////////////////////////////////////
+
+    QCString trImportant() override
+    {
+      return "重要";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.16.0
+//////////////////////////////////////////////////////////////////////////
+
+    QCString trRequirements() override
+    {
+      return "需求";
+    }
+    QCString trRequirementID() override
+    {
+      return "ID";
+    }
+    QCString trSatisfies(bool singular) override
+    {
+      (void)singular;
+      return "滿足需求";
+    }
+    QCString trSatisfiedBy(const QCString &list) override
+    {
+      return "由"+list+"滿足。";
+    }
+    QCString trUnsatisfiedRequirements() override
+    {
+      return "未滿足的需求";
+    }
+    QCString trUnsatisfiedRequirementsText(bool singular,const QCString &list) override
+    {
+      (void)singular;
+      return "需求"+list+"沒有「滿足」關聯。";
+    }
+    QCString trVerifies(bool singular) override
+    {
+      (void)singular;
+      return "驗證需求";
+    }
+    QCString trVerifiedBy(const QCString &list) override
+    {
+      return "由"+list+"驗證。";
+    }
+    QCString trUnverifiedRequirements() override
+    {
+      return "未驗證的需求";
+    }
+    QCString trUnverifiedRequirementsText(bool singular,const QCString &list) override
+    {
+      (void)singular;
+      return "需求"+list+"沒有「驗證」關聯。";
     }
 
 };
