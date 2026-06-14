@@ -2450,9 +2450,9 @@ void filterLatexString(TextStream &t,const QCString &str,
                    }
                    break;
         case '*':  processEntity(t,pdfHyperlinks,"$\\ast$","*");    break;
-        case '_':  if (!insideTabbing) t << "\\+";
+        case '_':  if (!insideTabbing && *p) t << "\\+";
                    t << "\\_";
-                   if (!insideTabbing) t << "\\+";
+                   if (!insideTabbing && *p) t << "\\+";
                    break;
         case '{':  t << "\\{";           break;
         case '}':  t << "\\}";           break;
@@ -2466,7 +2466,7 @@ void filterLatexString(TextStream &t,const QCString &str,
                      t << "[";
                    break;
         case ']':  if (pc=='[') t << "$\\,$";
-                     if (Config_getBool(PDF_HYPERLINKS) || insideItem)
+                     if ((Config_getBool(PDF_HYPERLINKS) || insideItem) && *p)
                        t << "]\\+";
                      else
                        t << "]";
@@ -2510,7 +2510,7 @@ void filterLatexString(TextStream &t,const QCString &str,
                    {
                      t << static_cast<char>(c);
                    }
-                   if (!insideTabbing && ((c==':' && *p!=':') || c=='/'))
+                   if (!insideTabbing && *p && ((c==':' && *p!=':') || c=='/'))
                    {
                      t << "\\+";
                    }
