@@ -2402,9 +2402,9 @@ class TranslatorChinesetraditional : public Translator
       }
       result+="，並且帶有連結至";
       if (extractAll)
-        result+="這些檔案所屬:";
+        result+="其所屬的檔案:";
       else
-        result+="說明文件:";
+        result+="說明文件:"
       return result;
     }
     QCString trCompoundMembersDescriptionTotal(ClassMemberHighlight::Enum hl) override
@@ -2471,11 +2471,11 @@ class TranslatorChinesetraditional : public Translator
       {
         if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
         {
-          result+="這些結構/聯合型態所屬:";
+          result+="其所屬的結構/聯合型態:";
         }
         else
         {
-          result+="這些類別所屬:";
+          result+="其所屬的類別:";
         }
       }
       return result;
@@ -2521,7 +2521,7 @@ class TranslatorChinesetraditional : public Translator
       if (extractAll)
         result+="每個"+singularResult+"的命名空間說明文件:";
       else
-        result+="這些命名空間所屬:";
+        result+="其所屬的命名空間:"
       return result;
     }
     QCString trDefinition() override  { return "定義"; }
@@ -2576,7 +2576,7 @@ class TranslatorChinesetraditional : public Translator
       if (extractAll)
         result+="每個"+singularResult+"的模組說明文件:";
       else
-        result+="這些模組所屬:";
+        result+="其所屬的模組:"
       return result;
     }
     QCString trExportedModules() override
