@@ -1728,7 +1728,7 @@ class TranslatorKorean : public Translator
     /*! directory relation for \a name */
     QCString trDirRelation(const QCString &name) override
     {
-      return QCString(name)+" 관계";
+      return name+" 관계";
     }
 
     /*! Loading message shown when loading search results */
@@ -1765,7 +1765,7 @@ class TranslatorKorean : public Translator
      */
     QCString trFileIn(const QCString &name) override
     {
-      return QCString(name) + "의 파일";
+      return name + "의 파일";
     }
 
     /*! when clicking a directory dependency label, a page with a
@@ -1774,7 +1774,7 @@ class TranslatorKorean : public Translator
      */
     QCString trIncludesFileIn(const QCString &name) override
     {
-      return QCString(name) + "의 파일 포함";
+      return name + "의 파일 포함";
     }
 
     /** Compiles a date string.
@@ -1841,7 +1841,7 @@ class TranslatorKorean : public Translator
 
     /*! Header for the graph showing the directory dependencies */
     QCString trDirDepGraph(const QCString &name) override
-    { return QCString(name) + QCString("에 대한 디렉토리 의존성 그래프:"); }
+    { return name + QCString("에 대한 디렉토리 의존성 그래프:"); }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 1.8.0
@@ -1867,11 +1867,11 @@ class TranslatorKorean : public Translator
 
     /*! Header of a Java enum page (Java enums are represented as classes). */
     QCString trEnumReference(const QCString &name) override
-    { return QCString(name)+" Enum Reference"; }
+    { return name+" Enum Reference"; }
 
     /*! Used for a section containing inherited members */
     QCString trInheritedFrom(const QCString &members,const QCString &what) override
-    { return QCString(what) + QCString("(으)로부터 상속된 ") + QCString(members); }
+    { return what + QCString("(으)로부터 상속된 ") + members; }
 
     /*! Header of the sections with inherited members specific for the
      *  base class(es)
@@ -2541,7 +2541,7 @@ class TranslatorKorean : public Translator
     { return "다음은 모든 토픽들의 목록입니다. (간략한 설명만을 보여줍니다):"; }
 
     QCString trCustomReference(const QCString &name) override
-    { return QCString(name)+" 참조"; }
+    { return name+" 참조"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 1.10.0

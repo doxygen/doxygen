@@ -1729,7 +1729,7 @@ class TranslatorBulgarian : public TranslatorAdapter_1_9_4
     /*! directory relation for \a name */
     QCString trDirRelation(const QCString &name) override
     {
-      return QCString(name)+" Връзка";
+      return name+" Връзка";
     }
 
     /*! Loading message shown when loading search results */
@@ -1868,11 +1868,11 @@ class TranslatorBulgarian : public TranslatorAdapter_1_9_4
 
     /*! Header of a Java enum page (Java enums are represented as classes). */
     QCString trEnumReference(const QCString &name) override
-    { return QCString(name)+" Изброяване Справка"; }
+    { return name+" Изброяване Справка"; }
 
     /*! Used for a section containing inherited members */
     QCString trInheritedFrom(const QCString &members,const QCString &what) override
-    { return QCString(members)+" наследен от "+what; }
+    { return members+" наследен от "+what; }
 
     /*! Header of the sections with inherited members specific for the
      *  base class(es)
@@ -2106,7 +2106,7 @@ class TranslatorBulgarian : public TranslatorAdapter_1_9_4
       }
     }
     QCString trCustomReference(const QCString &name) override
-    { return QCString(name)+" Отнася се"; }
+    { return name+" Отнася се"; }
 
     /* Slice */
     QCString trConstants() override

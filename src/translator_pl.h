@@ -1671,7 +1671,7 @@ class TranslatorPolish : public Translator
     /*! directory relation for \a name */
     QCString trDirRelation(const QCString &name) override
     {
-      return "Relacja "+ QCString(name);
+      return "Relacja "+ name;
     }
 
     /*! Loading message shown when loading search results */
@@ -1817,7 +1817,7 @@ class TranslatorPolish : public Translator
 
     /*! Used for a section containing inherited members */
     QCString trInheritedFrom(const QCString &members,const QCString &what) override
-    { return QCString(members)+" dziedziczone z "+what; }
+    { return members+" dziedziczone z "+what; }
 
     /*! Header of the sections with inherited members specific for the
      *  base class(es)
