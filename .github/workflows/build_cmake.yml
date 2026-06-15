@@ -249,10 +249,16 @@ jobs:
         choco install graphviz.portable
       if: matrix.config.os == 'windows-latest'
 
+    #- name: Setup VS Environment (Windows)
+    #  uses: seanmiddleditch/gha-setup-vsdevenv@master
+    #    toolset_version: 14.3
+    #  if: matrix.config.os == 'windows-latest'
+
     - name: Setup VS Environment (Windows)
-      uses: seanmiddleditch/gha-setup-vsdevenv@master
-        toolset_version: 14.3
-      if: matrix.config.os == 'windows-latest'
+      uses: microsoft/setup-msbuild@v2
+      with:
+        vs-version: '[17.0,18.0)'   # force VS 2022 = 17.x, disable VS 2025 (18.x)
+      if: startsWith(matrix.config.os, 'windows-')
 
     - name: Refresh Env (Windows)
       run: |
