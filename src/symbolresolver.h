@@ -107,7 +107,7 @@ class SymbolResolver
 
     // getters
 
-    /** In case a call to resolveClass() resolves to a type member (e.g. an enum)
+    /** In case a call to resolveClass() resolves to a type member (e.g\. an enum)
      *  this method will return it.
      */
     const MemberDef *getTypedef() const;
