@@ -251,7 +251,7 @@ jobs:
 
     - name: Setup VS Environment (Windows)
       uses: seanmiddleditch/gha-setup-vsdevenv@master
-      toolset_version: 14.3
+        toolset_version: 14.3
       if: matrix.config.os == 'windows-latest'
 
     - name: Refresh Env (Windows)
