@@ -2078,7 +2078,7 @@ class TranslatorChinesetraditional : public Translator
       }
     }
     QCString trCustomReference(const QCString &name) override
-    { return QCString(name)+" 參考文件"; }
+    { return name+" 參考文件"; }
 
     /* Slice */
     QCString trConstants() override
