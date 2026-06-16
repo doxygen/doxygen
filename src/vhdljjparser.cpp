@@ -628,10 +628,9 @@ QCString VHDLOutlineParser::popLabel(QCString & q)
 
 
 void VHDLOutlineParser::addProto(const QCString &s1,const QCString &s2,const QCString &s3,
-                                 const QCString &s4,const QCString &s5,const QCString &s6)
+                                 const QCString &s4,const QCString &/*s5*/,const QCString &s6)
 {
   VhdlParser::SharedState *s = &p->shared;
-  (void)s5; // avoid unused warning
   StringVector ql=split(s2.str(),",");
 
   for (const auto &n : ql)

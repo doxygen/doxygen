@@ -496,11 +496,9 @@ void MemberList::writePlainDeclarations(OutputList &ol, bool inGroup,
  */
 void MemberList::writeDeclarations(OutputList &ol,
              const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,const ModuleDef *mod,
-             const QCString &title,const QCString &subtitle, bool showEnumValues,
+             const QCString &title,const QCString &subtitle, bool /*showEnumValues*/,
              bool showInline,const ClassDef *inheritedFrom,MemberListType lt,bool showSectionTitle) const
 {
-  (void)showEnumValues; // unused
-
   //printf("----- writeDeclaration() this=%p ---- inheritedFrom=%p\n",this,inheritedFrom);
   bool optimizeVhdl = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
   QCString inheritId;
