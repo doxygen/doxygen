@@ -2428,7 +2428,7 @@ void ClassDefImpl::writeTagFile(TextStream &tagFile) const
   tagFile << "  </compound>\n";
 }
 
-/** Write class documentation inside another container (i.e. a group) */
+/** Write class documentation inside another container (i.e\. a group) */
 void ClassDefImpl::writeInlineDocumentation(OutputList &ol) const
 {
   bool isSimple = m_isSimple;

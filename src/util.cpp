@@ -1350,7 +1350,7 @@ QCString tempArgListToString(const ArgumentList &al,SrcLangExt lang,bool include
 /*! takes the \a buf of the given length \a len and converts CR LF (DOS)
  * or CR (MAC) line ending to LF (Unix).  Returns the length of the
  * converted content (i.e. the same as \a len (Unix, MAC) or
- * smaller (DOS).
+ * smaller (DOS)).
  */
 static void filterCRLF(std::string &contents)
 {
@@ -6189,7 +6189,7 @@ uint32_t getUtf8CodeToUpper( const QCString& s, int idx )
 
 //----------------------------------------------------------------------------
 
-/** Strip the direction part from docs and return it as a string in canonical form
+/** Strip the direction part from docs and return it as a string in canonical form.
  *  The input \a docs string can start with e.g. "[in]", "[in, out]", "[inout]", "[out,in]"...
  *  @returns either "[in,out]", "[in]", or "[out]" or the empty string.
  */

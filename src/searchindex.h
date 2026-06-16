@@ -107,7 +107,7 @@ class SearchIndex
 };
 
 /** Writes search index that should be used with an externally provided search engine,
- *  e.g. doxyindexer and doxysearch.cgi.
+ *  e.g\. doxyindexer and doxysearch.cgi.
  */
 class SearchIndexExternal
 {
