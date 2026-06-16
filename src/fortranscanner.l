@@ -3116,10 +3116,9 @@ static void subrHandleCommentBlock(yyscan_t yyscanner,const QCString &doc,bool b
   yyextra->current->inbodyDocs = "";
 
   // strip \\param or @param, so we can do some extra checking. We will add it later on again.
-  if (!loc_doc.stripPrefix("\\param") &&
-      !loc_doc.stripPrefix("@param")
-     ) (void)loc_doc; // Do nothing work has been done by stripPrefix; (void)loc_doc: to overcome 'empty controlled statement' warning
-  loc_doc.stripWhiteSpace();
+  if (loc_doc.stripPrefix("\\param") ||
+      loc_doc.stripPrefix("@param")
+     ) loc_doc = loc_doc.stripWhiteSpace();
 
   // direction as defined with the declaration of the parameter
   int dir1 = yyextra->modifiers[yyextra->current_root][yyextra->argName.lower().str()].direction;
@@ -3220,12 +3219,11 @@ static void subrHandleCommentBlockResult(yyscan_t yyscanner,const QCString &doc,
   yyextra->current->inbodyDocs = "";
 
   // strip \\returns or @returns. We will add it later on again.
-  if (!loc_doc.stripPrefix("\\returns") &&
-      !loc_doc.stripPrefix("\\return") &&
-      !loc_doc.stripPrefix("@returns") &&
-      !loc_doc.stripPrefix("@return")
-     ) (void)loc_doc; // Do nothing work has been done by stripPrefix; (void)loc_doc: to overcome 'empty controlled statement' warning
-  loc_doc.stripWhiteSpace();
+  if (loc_doc.stripPrefix("\\returns") ||
+      loc_doc.stripPrefix("\\return") ||
+      loc_doc.stripPrefix("@returns") ||
+      loc_doc.stripPrefix("@return")
+     ) loc_doc = loc_doc.stripWhiteSpace();
 
   if (!loc_doc.isEmpty() && (loc_doc.lower() != yyextra->argName.lower()))
   {
