@@ -96,13 +96,13 @@ jobs:
           }
         - {
             name: "Windows Latest MSVC Debug",
-            os: windows-latest,
+            os: windows-2022,
             build_type: "Debug", cc: "cl", cxx: "cl",
             build_gen: "NMake Makefiles"
           }
         - {
             name: "Windows Latest MSVC Release",
-            os: windows-latest,
+            os: windows-2022,
             build_type: "Release", cc: "cl", cxx: "cl",
             build_gen: "NMake Makefiles"
           }
@@ -117,7 +117,7 @@ jobs:
       with:
         url: "https://github.com/pffang/libiconv-for-Windows/releases/download/v1.16/libiconv-for-Windows_1.16.7z"
         target: .
-      if: matrix.config.os == 'windows-latest'
+      if: matrix.config.os == 'windows-2022'
 
     - name: Install LaTeX (Linux)
       run: |
@@ -172,7 +172,7 @@ jobs:
         command: |
           choco install miktex --debug --verbose --no-progress --params "/Set:basic" -y
           if ($?) { echo "C:\Program Files\MiKTeX\miktex\bin\x64" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 }
-      if: matrix.config.os == 'windows-latest'
+      if: matrix.config.os == 'windows-2022'
 
     - name: Configure MikTeX (Windows)
       run: |
@@ -183,7 +183,7 @@ jobs:
         initexmf --admin --verbose --update-fndb
         initexmf --admin --verbose --mklinks --force
         updmap --admin
-      if: matrix.config.os == 'windows-latest'
+      if: matrix.config.os == 'windows-2022'
 
     - name: Install Ghostscript (Linux)
       run: sudo apt-get install ghostscript
@@ -192,7 +192,7 @@ jobs:
     - name: Install Ghostscript (Windows)
       run:
         choco install ghostscript
-      if: matrix.config.os == 'windows-latest'
+      if: matrix.config.os == 'windows-2022'
 
     - name: Setting Ghostscript paths (Windows)
       shell: bash
@@ -201,7 +201,7 @@ jobs:
         export PATH="$GSpath:$PATH"
         export GSpath=`echo "$GSpath" | sed -e "s%/c%C:%"`
         echo "$GSpath" >> $GITHUB_PATH
-      if: matrix.config.os == 'windows-latest'
+      if: matrix.config.os == 'windows-2022'
 
     - name: Install xmllint (Linux)
       run: sudo apt-get install libxml2-utils
@@ -226,7 +226,7 @@ jobs:
       run: |
         #Choco-Install -PackageName winflexbison
         choco install winflexbison3
-      if: matrix.config.os == 'windows-latest'
+      if: matrix.config.os == 'windows-2022'
 
     - name: Install Graphviz (Linux)
       run: sudo apt-get install graphviz
@@ -247,24 +247,23 @@ jobs:
     - name: Install Graphviz (Windows)
       run:
         choco install graphviz.portable
-      if: matrix.config.os == 'windows-latest'
-
-    #- name: Setup VS Environment (Windows)
-    #  uses: seanmiddleditch/gha-setup-vsdevenv@master
-    #    toolset_version: 14.3
-    #  if: matrix.config.os == 'windows-latest'
+      if: matrix.config.os == 'windows-2022'
 
     - name: Setup VS Environment (Windows)
-      uses: microsoft/setup-msbuild@v2
-      with:
-        vs-version: '[17.0,18.0)'   # force VS 2022 = 17.x, disable VS 2025 (18.x)
-      if: startsWith(matrix.config.os, 'windows-')
+      uses: seanmiddleditch/gha-setup-vsdevenv@master
+      if: matrix.config.os == 'windows-2022'
+
+    #- name: Setup VS Environment (Windows)
+    #  uses: microsoft/setup-msbuild@v2
+    #  with:
+    #    vs-version: '[17.0,18.0)'   # force VS 2022 = 17.x, disable VS 2025 (18.x)
+    #  if: startsWith(matrix.config.os, 'windows-')
 
     - name: Refresh Env (Windows)
       run: |
         Import-Module $env:ChocolateyInstall\helpers\chocolateyProfile.psm1
         refreshenv
-      if: matrix.config.os == 'windows-latest'
+      if: matrix.config.os == 'windows-2022'
 
     - name: Install Qt 6.8
       uses: jdpurcell/install-qt-action@v5
@@ -307,7 +306,7 @@ jobs:
         dot -V;
         echo "=== ghostscript ===";
         gs --version;
-      if: matrix.config.os != 'windows-latest'
+      if: matrix.config.os != 'windows-2022'
 
     - name: Check tool versions (Windows)
       shell: bash
@@ -332,7 +331,7 @@ jobs:
         dot -V;
         echo "=== ghostscript ===";
         gswin64c --version;
-      if: matrix.config.os == 'windows-latest'
+      if: matrix.config.os == 'windows-2022'
 
     - name: Configure
       shell: cmake -P {0}
@@ -394,7 +393,7 @@ jobs:
         if (NOT result EQUAL 0)
           message(FATAL_ERROR "Running tests failed!")
         endif()
-      if: matrix.config.os != 'windows-latest'
+      if: matrix.config.os != 'windows-2022'
 
     - name: Run tests (Windows)
       shell: cmake -P {0}
@@ -410,7 +409,7 @@ jobs:
         if (NOT result EQUAL 0)
           message(FATAL_ERROR "Running tests failed!")
         endif()
-      if: matrix.config.os == 'windows-latest'
+      if: matrix.config.os == 'windows-2022'
 
     - name: Generate documentation
       shell: cmake -P {0}
