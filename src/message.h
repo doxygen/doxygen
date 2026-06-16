@@ -204,27 +204,7 @@ template<> struct fmt::formatter<SrcLangExt> : formatter<std::string>
 template<> struct fmt::formatter<MemberType> : formatter<std::string>
 {
   auto format(MemberType mtype, format_context& ctx) const {
-    std::string result="Unknown";
-    switch (mtype)
-    {
-      case MemberType::Define:      result="Define";      break;
-      case MemberType::Function:    result="Function";    break;
-      case MemberType::Variable:    result="Variable";    break;
-      case MemberType::Typedef:     result="Typedef";     break;
-      case MemberType::Enumeration: result="Enumeration"; break;
-      case MemberType::EnumValue:   result="EnumValue";   break;
-      case MemberType::Signal:      result="Signal";      break;
-      case MemberType::Slot:        result="Slot";        break;
-      case MemberType::Friend:      result="Friend";      break;
-      case MemberType::DCOP:        result="DCOP";        break;
-      case MemberType::Property:    result="Property";    break;
-      case MemberType::Event:       result="Event";       break;
-      case MemberType::Interface:   result="Interface";   break;
-      case MemberType::Service:     result="Service";     break;
-      case MemberType::Sequence:    result="Sequence";    break;
-      case MemberType::Dictionary:  result="Dictionary";  break;
-    }
-    return formatter<std::string>::format(result, ctx);
+    return formatter<std::string>::format(to_string(mtype), ctx);
   }
 };
 

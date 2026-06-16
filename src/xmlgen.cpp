@@ -696,27 +696,9 @@ static void generateXMLForMember(const MemberDef *md,TextStream &ti,TextStream &
   // group members are only visible in their group
   bool groupMember = md->getGroupDef() && def->definitionType()!=Definition::TypeGroup;
 
-  QCString memType;
-  bool isFunc=FALSE;
-  switch (md->memberType())
-  {
-    case MemberType::Define:      memType="define";      break;
-    case MemberType::Function:    memType="function";    isFunc=TRUE; break;
-    case MemberType::Variable:    memType="variable";    break;
-    case MemberType::Typedef:     memType="typedef";     break;
-    case MemberType::Enumeration: memType="enum";        break;
-    case MemberType::EnumValue:   ASSERT(0);             break;
-    case MemberType::Signal:      memType="signal";      isFunc=TRUE; break;
-    case MemberType::Slot:        memType="slot";        isFunc=TRUE; break;
-    case MemberType::Friend:      memType="friend";      isFunc=TRUE; break;
-    case MemberType::DCOP:        memType="dcop";        isFunc=TRUE; break;
-    case MemberType::Property:    memType="property";    break;
-    case MemberType::Event:       memType="event";       break;
-    case MemberType::Interface:   memType="interface";   break;
-    case MemberType::Service:     memType="service";     break;
-    case MemberType::Sequence:    memType="sequence";    break;
-    case MemberType::Dictionary:  memType="dictionary";  break;
-  }
+  if (md->memberType() == MemberType::EnumValue) ASSERT(0);
+  bool isFunc=to_isFunction(md->memberType());
+  QCString memType = to_string_lower(md->memberType());
 
   QCString nameStr = md->name();
   QCString typeStr = md->typeString();

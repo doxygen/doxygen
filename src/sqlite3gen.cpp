@@ -1660,19 +1660,7 @@ static void generateSqlite3ForMember(const MemberDef *md, struct Refid scope_ref
   bindIntParameter(memberdef_insert,":static",md->isStatic());
   bindIntParameter(memberdef_insert,":extern",md->isExternal());
 
-  bool isFunc=FALSE;
-  switch (md->memberType())
-  {
-    case MemberType::Function: // fall through
-    case MemberType::Signal:   // fall through
-    case MemberType::Friend:   // fall through
-    case MemberType::DCOP:     // fall through
-    case MemberType::Slot:
-      isFunc=TRUE;
-      break;
-    default:
-      break;
-  }
+  bool isFunc=to_isFunction(md->memberType());
 
   if (isFunc)
   {

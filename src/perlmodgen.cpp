@@ -1498,28 +1498,9 @@ void PerlModGenerator::generatePerlModForMember(const MemberDef *md,const Defini
   // - template arguments
   //     (templateArguments(), definitionTemplateParameterLists())
 
-  QCString memType;
+  QCString memType = to_string_lower(md->memberType());
   QCString name;
-  bool isFunc=FALSE;
-  switch (md->memberType())
-  {
-    case MemberType::Define:      memType="define";     break;
-    case MemberType::EnumValue:   memType="enumvalue";  break;
-    case MemberType::Property:    memType="property";   break;
-    case MemberType::Variable:    memType="variable";   break;
-    case MemberType::Typedef:     memType="typedef";    break;
-    case MemberType::Enumeration: memType="enum";       break;
-    case MemberType::Function:    memType="function";   isFunc=TRUE; break;
-    case MemberType::Signal:      memType="signal";     isFunc=TRUE; break;
-    case MemberType::Friend:      memType="friend";     isFunc=TRUE; break;
-    case MemberType::DCOP:        memType="dcop";       isFunc=TRUE; break;
-    case MemberType::Slot:        memType="slot";       isFunc=TRUE; break;
-    case MemberType::Event:       memType="event";      break;
-    case MemberType::Interface:   memType="interface";  break;
-    case MemberType::Service:     memType="service";    break;
-    case MemberType::Sequence:    memType="sequence";   break;
-    case MemberType::Dictionary:  memType="dictionary"; break;
-  }
+  bool isFunc=to_isFunction(md->memberType());
 
   bool isFortran = md->getLanguage()==SrcLangExt::Fortran;
   name = md->name();
