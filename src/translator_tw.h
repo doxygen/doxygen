@@ -1864,7 +1864,7 @@ class TranslatorChinesetraditional : public Translator
 
     /*! Header of a Java enum page (Java enums are represented as classes). */
     QCString trEnumReference(const QCString &name) override
-    { return QCString(name)+" 列舉型態參考"; }
+    { return name+" 列舉型態參考"; }
 
     /*! Used for a section containing inherited members */
     QCString trInheritedFrom(const QCString &members,const QCString &what) override
