@@ -4097,26 +4097,15 @@ void MemberDefImpl::writeMemberDocSimple(OutputList &ol, const Definition *conta
 
 QCString MemberDefImpl::memberTypeName() const
 {
-  switch (m_mtype)
+  if (m_mtype == MemberType::Define)
   {
-    case MemberType::Define:      return "macro definition";
-    case MemberType::Function:    return "function";
-    case MemberType::Variable:    return "variable";
-    case MemberType::Typedef:     return "typedef";
-    case MemberType::Enumeration: return "enumeration";
-    case MemberType::EnumValue:   return "enumvalue";
-    case MemberType::Signal:      return "signal";
-    case MemberType::Slot:        return "slot";
-    case MemberType::Friend:      return "friend";
-    case MemberType::DCOP:        return "dcop";
-    case MemberType::Property:    return "property";
-    case MemberType::Event:       return "event";
-    case MemberType::Interface:   return "interface";
-    case MemberType::Service:     return "service";
-    case MemberType::Sequence:    return "sequence";
-    case MemberType::Dictionary:  return "dictionary";
-    default:          return "unknown";
+    return "macro definition";
   }
+  else if (m_mtype == MemberType::Enumeration)
+  {
+    return "enumeration";
+  }
+  return to_string_lower(m_mtype);
 }
 
 void MemberDefImpl::warnIfUndocumented() const
@@ -4627,24 +4616,13 @@ void MemberDefImpl::writeTagFile(TextStream &tagFile,bool useQualifiedName,bool 
   if (!isLinkableInProject()) return;
   if (!showNamespaceMembers && getNamespaceDef()) return;
   tagFile << "    <member kind=\"";
-  switch (m_mtype)
+  if (m_mtype == MemberType::Enumeration)
   {
-    case MemberType::Define:      tagFile << "define";      break;
-    case MemberType::EnumValue:   tagFile << "enumvalue";   break;
-    case MemberType::Property:    tagFile << "property";    break;
-    case MemberType::Event:       tagFile << "event";       break;
-    case MemberType::Variable:    tagFile << "variable";    break;
-    case MemberType::Typedef:     tagFile << "typedef";     break;
-    case MemberType::Enumeration: tagFile << "enumeration"; break;
-    case MemberType::Function:    tagFile << "function";    break;
-    case MemberType::Signal:      tagFile << "signal";      break;
-    case MemberType::Friend:      tagFile << "friend";      break;
-    case MemberType::DCOP:        tagFile << "dcop";        break;
-    case MemberType::Slot:        tagFile << "slot";        break;
-    case MemberType::Interface:   tagFile << "interface";   break;
-    case MemberType::Service:     tagFile << "service";     break;
-    case MemberType::Sequence:    tagFile << "sequence";    break;
-    case MemberType::Dictionary:  tagFile << "dictionary";  break;
+    tagFile << "enumeration";
+  }
+  else
+  {
+    tagFile << to_string_lower(m_mtype);
   }
   if (m_prot!=Protection::Public)
   {
