@@ -1836,7 +1836,7 @@ class TranslatorChinesetraditional : public Translator
 
     /*! Header for the graph showing the directory dependencies */
     QCString trDirDepGraph(const QCString &name) override
-    { return QCString(name)+"的目錄關連圖"+":"; }
+    { return name+"的目錄關連圖"+":"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 1.8.0
