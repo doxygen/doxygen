@@ -1868,7 +1868,7 @@ class TranslatorChinesetraditional : public Translator
 
     /*! Used for a section containing inherited members */
     QCString trInheritedFrom(const QCString &members,const QCString &what) override
-    { return QCString(members)+" 繼承自 "+what; }
+    { return members+" 繼承自 "+what; }
 
     /*! Header of the sections with inherited members specific for the
      *  base class(es)
