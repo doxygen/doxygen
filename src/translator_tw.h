@@ -1723,7 +1723,7 @@ class TranslatorChinesetraditional : public Translator
     /*! directory relation for \a name */
     QCString trDirRelation(const QCString &name) override
     {
-      return QCString(name)+" 關連";
+      return name+" 關連";
     }
 
     /*! Loading message shown when loading search results */
