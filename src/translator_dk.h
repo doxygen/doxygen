@@ -1659,7 +1659,7 @@ class TranslatorDanish : public TranslatorAdapter_1_8_0
     /*! directory relation for \a name */
     QCString trDirRelation(const QCString &name) override
     {
-      return QCString(name)+" Relation";        // " Relation"
+      return name+" Relation";        // " Relation"
     }
 
     /*! Loading message shown when loading search results */

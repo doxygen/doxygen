@@ -1766,7 +1766,7 @@ class TranslatorPortuguese : public Translator
      */
     QCString trDirRelation(const QCString &name) override
     {
-      return "Relação " + QCString(name);
+      return "Relação " + name;
     }
 
     /*! Loading message shown when loading search results */
@@ -1923,7 +1923,7 @@ class TranslatorPortuguese : public Translator
 
     /*! Used for a section containing inherited members */
     QCString trInheritedFrom(const QCString &members,const QCString &what) override
-    { return QCString(members)+" herdados de "+what; }
+    { return members+" herdados de "+what; }
 
     /*! Header of the sections with inherited members specific for the
      *  base class(es)
@@ -2170,7 +2170,7 @@ class TranslatorPortuguese : public Translator
       }
     }
     QCString trCustomReference(const QCString &name) override
-    { return "Referência de " + QCString(name); }
+    { return "Referência de " + name; }
 
     /* Slice */
     QCString trConstants() override

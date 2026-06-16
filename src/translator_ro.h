@@ -1723,7 +1723,7 @@ class TranslatorRomanian : public TranslatorAdapter_1_8_15
     /*! directory relation for \a name */
     QCString trDirRelation(const QCString &name) override
     {
-      return QCString(name)+" Relație";
+      return name+" Relație";
     }
 
     /*! Loading message shown when loading search results */
@@ -1868,11 +1868,11 @@ class TranslatorRomanian : public TranslatorAdapter_1_8_15
 
     /*! Header of a Java enum page (Java enums are represented as classes). */
     QCString trEnumReference(const QCString &name) override
-    { return QCString(name)+" Referință Enum"; }
+    { return name+" Referință Enum"; }
 
     /*! Used for a section containing inherited members */
     QCString trInheritedFrom(const QCString &members,const QCString &what) override
-    { return QCString(members)+" moștenit(e) din "+what; }
+    { return members+" moștenit(e) din "+what; }
 
     /*! Header of the sections with inherited members specific for the
      *  base class(es)

@@ -1796,7 +1796,7 @@ class TranslatorFrench : public Translator
     /*! directory relation for \a name */
     QCString trDirRelation(const QCString &name) override
     {
-      return "Relation " + QCString(name);
+      return "Relation " + name;
     }
 
     /*! Loading message shown when loading search results */
@@ -1940,11 +1940,11 @@ class TranslatorFrench : public Translator
 
     /*! Header of a Java enum page (Java enums are represented as classes). */
     QCString trEnumReference(const QCString &name) override
-    { return QCString(name)+" Référence de l'énumération"; }
+    { return name+" Référence de l'énumération"; }
 
     /*! Used for a section containing inherited members */
     QCString trInheritedFrom(const QCString &members,const QCString &what) override
-    { return QCString(members)+" hérités de "+what; }
+    { return members+" hérités de "+what; }
 
     /*! Header of the sections with inherited members specific for the
      *  base class(es)
@@ -2178,7 +2178,7 @@ class TranslatorFrench : public Translator
       }
     }
     QCString trCustomReference(const QCString &name) override
-    { return QCString("Référence ") + QCString(name); }
+    { return QCString("Référence ") + name; }
 
     QCString trConstants() override
     {

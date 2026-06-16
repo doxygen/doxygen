@@ -608,7 +608,7 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
         default: break;
       }
       if (isTemplate) result+=" قالب";
-      result=QCString(clName) + " مرجع" +result ;
+      result=clName + " مرجع" +result ;
       return result;
     }
 
@@ -1698,7 +1698,7 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
     /*! directory relation for \a name */
     QCString trDirRelation(const QCString &name) override
     {
-      return QCString(name) + " Relation";
+      return name + " Relation";
     }
 
     /*! Loading message shown when loading search results */

@@ -1686,7 +1686,7 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
     /*! directory relation for \a name */
     QCString trDirRelation(const QCString &name) override
     {
-      return "Зв'язок з "+QCString(name);
+      return "Зв'язок з "+name;
     }
 
     /*! Loading message shown when loading search results */
@@ -1827,11 +1827,11 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
 
     /*! Header of a Java enum page (Java enums are represented as classes). */
     QCString trEnumReference(const QCString &name) override
-    { return QCString(name)+" Перелік"; }
+    { return name+" Перелік"; }
 
     /*! Used for a section containing inherited members */
     QCString trInheritedFrom(const QCString &members,const QCString &what) override
-    { return QCString(members)+" успадковано з "+what; }
+    { return members+" успадковано з "+what; }
 
     /*! Header of the sections with inherited members specific for the
      *  base class(es)

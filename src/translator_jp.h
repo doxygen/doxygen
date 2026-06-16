@@ -1740,7 +1740,7 @@ class TranslatorJapanese : public Translator
     /*! directory relation for \a name */
     QCString trDirRelation(const QCString &name) override
     {
-      return QCString(name)+" 関係";
+      return name+" 関係";
     }
 
     /*! Loading message shown when loading search results */
@@ -1852,7 +1852,7 @@ class TranslatorJapanese : public Translator
 
     /*! Header for the graph showing the directory dependencies */
     QCString trDirDepGraph(const QCString &name) override
-    { return QCString(name)+" のディレクトリ依存関係図"; }
+    { return name+" のディレクトリ依存関係図"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 1.8.0

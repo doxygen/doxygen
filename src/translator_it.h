@@ -1693,7 +1693,7 @@ class TranslatorItalian : public TranslatorAdapter_1_8_15
     /*! directory relation for \a name */
     QCString trDirRelation(const QCString &name) override
     {
-      return "Relazione per "+QCString(name);
+      return "Relazione per "+name;
     }
 
     /*! Loading message shown when loading search results */
@@ -1837,11 +1837,11 @@ class TranslatorItalian : public TranslatorAdapter_1_8_15
 
     /*! Header of a Java enum page (Java enums are represented as classes). */
     QCString trEnumReference(const QCString &name) override
-    { return QCString("Riferimenti per il tipo enumerato ") + QCString(name); }
+    { return QCString("Riferimenti per il tipo enumerato ") + name; }
 
     /*! Used for a section containing inherited members */
     QCString trInheritedFrom(const QCString &members,const QCString &what) override
-    { return QCString(members)+" ereditati da "+what; }
+    { return members+" ereditati da "+what; }
 
     /*! Header of the sections with inherited members specific for the
      *  base class(es)

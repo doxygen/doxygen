@@ -1720,7 +1720,7 @@ class TranslatorLatvian : public TranslatorAdapter_1_16_0
     /*! directory relation for \a name */
     QCString trDirRelation(const QCString &name) override
     {
-      return QCString(name)+" relācija";
+      return name+" relācija";
     }
 
     /*! Loading message shown when loading search results */
@@ -1865,11 +1865,11 @@ class TranslatorLatvian : public TranslatorAdapter_1_16_0
 
     /*! Header of a Java enum page (Java enums are represented as classes). */
     QCString trEnumReference(const QCString &name) override
-    { return QCString(name)+" uzskaitījumliterāļa atsauce"; }
+    { return name+" uzskaitījumliterāļa atsauce"; }
 
     /*! Used for a section containing inherited members */
     QCString trInheritedFrom(const QCString &members,const QCString &what) override
-    { return QCString(members)+" manto no "+what; }
+    { return members+" manto no "+what; }
 
     /*! Header of the sections with inherited members specific for the
      *  base class(es)
