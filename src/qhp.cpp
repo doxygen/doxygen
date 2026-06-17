@@ -367,7 +367,6 @@ void Qhp::addContentsItem(bool /* isDir */, const QCString & name, const QCStrin
 void Qhp::addIndexItem(const Definition *context,const MemberDef *md,
                        const QCString &sectionAnchor,const QCString &word)
 {
-  (void)word;
   //printf("addIndexItem(%s %s %s\n",
   //       context?context->name().data():"<none>",
   //       md?md->name().data():"<none>",

@@ -1706,7 +1706,7 @@ class TranslatorTurkish : public TranslatorAdapter_1_7_5
     /*! directory relation for \a name */
     QCString trDirRelation(const QCString &name) override
     {
-    return QCString(name)+" İlişkisi";
+    return name+" İlişkisi";
     }
 
     /*! Loading message shown when loading search results */

@@ -1760,9 +1760,9 @@ class TranslatorChinese : public Translator
     /*! directory relation for \a name */
     QCString trDirRelation(const QCString &name) override
     {
-      // return QCString(name)+" Relation";
+      // return name+" Relation";
       // unsure
-      return QCString(name)+CN_SPC "关系";
+      return name+CN_SPC "关系";
     }
 
     /*! Loading message shown when loading search results */
@@ -1876,7 +1876,7 @@ class TranslatorChinese : public Translator
     /*! Header for the graph showing the directory dependencies */
     QCString trDirDepGraph(const QCString &name) override
     {
-      return QCString(name)+CN_SPC "的目录依赖关系图";
+      return name+CN_SPC "的目录依赖关系图";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1901,11 +1901,11 @@ class TranslatorChinese : public Translator
 
     /*! Header of a Java enum page (Java enums are represented as classes). */
     QCString trEnumReference(const QCString &name) override
-    { return QCString(name)+CN_SPC "枚举类型参考"; }
+    { return name+CN_SPC "枚举类型参考"; }
 
     /*! Used for a section containing inherited members */
     QCString trInheritedFrom(const QCString &members,const QCString &what) override
-    { return QCString(members)+CN_SPC "继承自" CN_SPC+what; }
+    { return members+CN_SPC "继承自" CN_SPC+what; }
 
     /*! Header of the sections with inherited members specific for the
      *  base class(es)
@@ -2111,7 +2111,7 @@ class TranslatorChinese : public Translator
       }
     }
     QCString trCustomReference(const QCString &name) override
-    { return QCString(name)+" 引用"; }
+    { return name+" 引用"; }
 
     /* Slice */
     QCString trConstants() override

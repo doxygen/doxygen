@@ -141,7 +141,7 @@ class ClassDef : public Definition
     /** returns the file name to use for the inheritance graph */
     virtual QCString inheritanceGraphFileName() const = 0;
 
-    /** Returns the type of compound this is, i.e. class/struct/union/.. */
+    /** Returns the type of compound this is, i.e\. class/struct/union/..\. */
     virtual CompoundType compoundType() const = 0;
 
     /** Returns the type of compound as a string */

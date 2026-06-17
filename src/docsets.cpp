@@ -222,7 +222,7 @@ void DocSets::decContentsDepth()
   //printf("DocSets::decContentsDepth() depth=%zu\n",p->indentStack.size());
 }
 
-void DocSets::addContentsItem(bool isDir,
+void DocSets::addContentsItem(bool /*isDir*/,
                               const QCString &name,
                               const QCString &ref,
                               const QCString &file,
@@ -232,7 +232,6 @@ void DocSets::addContentsItem(bool isDir,
                               const Definition * /*def*/,
                               const QCString & /* nameAsHtml */)
 {
-  (void)isDir;
   //printf("DocSets::addContentsItem(%s) depth=%zu\n",name,p->indentStack.size());
   if (ref==nullptr)
   {
@@ -508,8 +507,7 @@ void DocSets::writeToken(TextStream &t,
   t << "  </Token>\n";
 }
 
-void DocSets::addIndexFile(const QCString &name)
+void DocSets::addIndexFile(const QCString &/*name*/)
 {
-  (void)name;
 }
 

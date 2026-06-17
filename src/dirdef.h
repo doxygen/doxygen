@@ -78,17 +78,17 @@ class UsedDir
     const DirDef *dir() const { return m_dir; }
 
     /** Returns true iff any of the dependencies between source and destination files are
-     *  direct (i.e. not "inherited" from sub directories)
+     *  direct (i.e\. not "inherited" from sub directories)
      */
     bool hasDirectDeps() const { return m_hasDirectDeps; }
 
     /** Returns true iff any of the dependencies from the source file to the destination file are
-     *  directly coming from a file in the source directory (i.e. not inherited via sub directories)
+     *  directly coming from a file in the source directory (i.e\. not inherited via sub directories)
      */
     bool hasDirectSrcDeps() const { return m_hasDirectSrcDeps; }
 
     /** Returns true iff any of the dependencies from the source file to the destination file are
-     *  directly targeting a file in the destination directory (i.e. not inherited via sub directories)
+     *  directly targeting a file in the destination directory (i.e\. not inherited via sub directories)
      */
     bool hasDirectDstDeps() const { return m_hasDirectDstDeps; }
 
