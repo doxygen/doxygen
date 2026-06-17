@@ -1141,8 +1141,19 @@ static bool writeDefArgumentList(OutputList &ol,const Definition *scope,const Me
         {
           atype=addTemplateNames(atype,scope->name(),cName);
         }
-        funcPtrPos = atype.find("*)(");
-        if (funcPtrPos!=-1) funcPtrPos++;
+        // 1. split ...*)(... -> '*' + name + ')(...'
+        // 2. split ...*[some thing])(... -> '*' + name + '[some thing])(...'
+        int starPos = atype.find('*');               // find pointer
+        if (starPos==-1) starPos = atype.find('&'); // can also be reference
+        funcPtrPos = atype.find(")(");
+        if (starPos!=-1 && funcPtrPos>starPos)
+        {
+          funcPtrPos=starPos+1;
+        }
+        else
+        {
+          funcPtrPos=-1;
+        }
         linkifyText(TextGeneratorOLImpl(ol),
                     funcPtrPos==-1 ? atype : atype.left(funcPtrPos),
                     options);

@@ -159,8 +159,12 @@ CPPC  "/\/"
 <ReadFuncArgType>{B}*			{
   					  yyextra->curArgTypeName+=" ";
   					}
-<ReadFuncArgType>"["[^\]]*"]"		{ 
-					  if (yyextra->curArgTypeName.stripWhiteSpace().isEmpty())
+<ReadFuncArgType,ReadFuncArgPtr>"["[^\]]*"]" {
+  					  if (YY_START==ReadFuncArgPtr)
+                                          {
+                                            yyextra->curArgTypeName+=yytext;
+                                          }
+                                          else if (yyextra->curArgTypeName.stripWhiteSpace().isEmpty())
 					  {
 					    yyextra->curArgAttrib=yytext; // for M$-IDL
 					  }
