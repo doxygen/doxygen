@@ -96,7 +96,6 @@ function(set_project_warnings project_name)
       -Wdouble-promotion # warn if float is implicit promoted to double
       -Wformat=2 # warn on security issues around functions that format output
                  # (ie printf)
-      $<$<COMPILE_LANGUAGE:CXX>:-Wextra-semi>
 
       # turn off warning caused by generated code (flex)
       -Wno-unused-parameter
@@ -112,12 +111,15 @@ function(set_project_warnings project_name)
   elseif(CMAKE_CXX_COMPILER_ID MATCHES ".*Clang") # e.g. Clang or AppleClang
     set(PROJECT_WARNINGS ${CLANG_WARNINGS})
   elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    set(GCC_EXTRA_WARNINGS)
     if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER "7.0.0")
-      set(GCC_EXTRA_WARNINGS
+      set(GCC_EXTRA_WARNINGS ${GCC_EXTRA_WARNINGS}
         -Wno-implicit-fallthrough
       )
-    else()
-      set(GCC_EXTRA_WARNINGS
+    endif()
+    if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER "8.0.0")
+      set(GCC_EXTRA_WARNINGS ${GCC_EXTRA_WARNINGS}
+        -Wextra-semi
       )
     endif()
     set(PROJECT_WARNINGS ${GCC_WARNINGS} ${GCC_EXTRA_WARNINGS})
