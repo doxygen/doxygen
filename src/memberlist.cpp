@@ -422,7 +422,7 @@ void MemberList::writePlainDeclarations(OutputList &ol, bool inGroup,
                             };
                 if (!ast->isEmpty())
                 {
-                  ol.startMemberDescription(md->anchor());
+                  ol.startMemberDescription(md->anchor(),inheritId);
                   ol.writeDoc(ast.get(),cd,md);
                   if (md->hasDetailedDescription())
                   {
