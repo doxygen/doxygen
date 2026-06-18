@@ -50,6 +50,7 @@ class DotFilePatcher
 
     static bool writeVecGfxFigure(TextStream& out, const QCString& baseName,
                                   const QCString& figureName);
+    static bool makeStdSVG(QCString patchFile);
 
   private:
     struct Map
