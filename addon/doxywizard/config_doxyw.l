@@ -703,8 +703,88 @@ static void substEnvVarsInStrList(QStringList &sl)
 
 //--------------------------------------------------------------------------
 
+inline bool qisspace(char c)
+{
+  return c==' ' || c=='\t' || c=='\n' || c=='\r';
+} 
+
+// Returns a quoted copy of this string, unless it is already quoted.
+// Note that trailing and leading whitespace is removed.
+QString quoted(QString &inpValue)
+{
+  std::string rep =  inpValue.toStdString();
+  size_t start=0, sl=rep.size(), end=sl-1;
+  while (start<sl  && qisspace(rep[start])) start++; // skip over leading whitespace
+  if (start==sl) return QString(); // only whitespace
+  while (end>start && qisspace(rep[end]))   end--;   // skip over trailing whitespace
+  bool needsQuotes=false;
+  size_t i=start;
+  if (i<end && rep[i]!='"') // stripped string has at least non-whitespace unquoted character
+  {
+    while (i<end && !needsQuotes) // check if the to be quoted part has at least one whitespace character
+    {
+      needsQuotes = rep[i] =='-';
+      needsQuotes |= qisspace(rep[i++]);
+    }
+  }
+  std::string  result = rep.substr(start,1+end-start);
+  if (needsQuotes)
+  {
+    result = "\"" + result + "\"";
+  }
+  return QString::fromUtf8(result.c_str());
+}
+
+static void updateAttribute(InputString *attr, const char *key, QString &inpValue)
+{
+  QString attrValue = attr->value().toString();
+  std::string s = attrValue.toStdString();
+  // look for key\s*=
+  QRegularExpression re(QString::fromLatin1(key)+QString::fromLatin1(R"(\s*=)"));
+  QRegularExpressionMatch match = re.match(attrValue);
+  if (match.hasMatch()) // replace existing attribute
+  {
+    size_t len      = s.length();
+    size_t startPos = match.capturedStart()+match.capturedLength(); // position after =
+    size_t pos      = startPos;
+    while (pos<len && qisspace(s[pos])) pos++;
+    if (pos<len && s[pos]=='"') // quoted value, search for end quote, ignoring escaped quotes
+    {
+      char pc=s[pos];
+      pos++; // skip over start quote
+      while (pos<len && (s[pos]!='"' || (s[pos]=='"' && pc=='\\'))) pc=s[pos++];
+      if (pos<len) pos++; // skip over end quote
+    }
+    else // unquoted value, search for attribute separator (space,comma, or semicolon)
+    {
+      while (pos<len && s[pos]!=',' && s[pos]!=';' && !qisspace(s[pos])) pos++;
+    }
+    QString value;
+    if (inpValue.isEmpty())
+    {
+      value = attrValue.mid(startPos,pos-startPos);
+    }
+    else
+    {
+      value = inpValue;
+    }
+    // pos is now the position after the value, so replace the part between [start..pos) with the new value
+    attrValue=attrValue.left(startPos)+quoted(value)+attrValue.mid(pos);
+  }
+  else // append new attribute
+  {
+    if (!inpValue.isEmpty())
+    {
+      if (!attrValue.isEmpty()) attrValue+=QString::fromLatin1(",");
+      attrValue+=QString::fromLatin1(key)+QString::fromLatin1("=")+quoted(inpValue);
+    }
+  }
+  attr->setValue(attrValue);
+}
+
 static void upgradeConfig(const QHash<QString,Input*> &options)
 {
+  // check for presence of obsolete CLASS_DIAGRAM option and correct CLASS_GRAPH if needed
   auto it1 = options.find(QString::fromLatin1("CLASS_DIAGRAMS"));
   auto it2 = options.find(QString::fromLatin1("HAVE_DOT"));
   auto it3 = options.find(QString::fromLatin1("CLASS_GRAPH"));
@@ -728,6 +808,118 @@ static void upgradeConfig(const QHash<QString,Input*> &options)
         {
           config_warn("Changing CLASS_GRAPH option to TEXT because obsolete option CLASS_DIAGRAM was found and set to NO.\n");
           optClassGraph->setValue(QString::fromLatin1("TEXT"));
+        }
+      }
+    }
+  }
+
+  // update TIMESTAMP based on HTML_TIMESTAMP and LATEX_TIMESTAMP
+  auto HtmlTimestamp = options.find(QString::fromLatin1("HTML_TIMESTAMP"));
+  auto timestamp     = options.find(QString::fromLatin1("TIMESTAMP"));
+  if (HtmlTimestamp!=options.end() && timestamp!=options.end())
+  {
+    if ((*HtmlTimestamp)->kind()==Input::Obsolete)
+    {
+      InputObsolete *htmlTimestamp_ = dynamic_cast<InputObsolete*>(*HtmlTimestamp);
+      InputString   *timestamp_ = dynamic_cast<InputString*>(*timestamp);
+      if (htmlTimestamp_->orgKind()==Input::Bool)
+      {
+        const QVariant &htmlTimestampValue = htmlTimestamp_->value();
+        bool isValid = false;
+        bool bTimestamp = InputBool::convertToBool(htmlTimestampValue,isValid);
+        if (isValid && bTimestamp)
+        {
+          config_warn("Changing TIMESTAMP option to YES because obsolete option HTML_TIMESTAMP was found and was set to YES.\n");
+          timestamp_->setValue(QString::fromLatin1("YES"));
+        }
+      }
+    }
+  }
+
+  auto LatexTimestamp = options.find(QString::fromLatin1("LATEX_TIMESTAMP"));
+  if (LatexTimestamp!=options.end() && timestamp!=options.end())
+  {
+    if ((*LatexTimestamp)->kind()==Input::Obsolete)
+    {
+      InputObsolete *latexTimestamp_ = dynamic_cast<InputObsolete*>(*LatexTimestamp);
+      InputString   *timestamp_ = dynamic_cast<InputString*>(*timestamp);
+      if (latexTimestamp_->orgKind()==Input::Bool)
+      {
+        const QVariant &latexTimestampValue = latexTimestamp_->value();
+        bool isValid = false;
+        bool bTimestamp = InputBool::convertToBool(latexTimestampValue,isValid);
+        if (isValid && bTimestamp)
+        {
+          config_warn("Changing TIMESTAMP option to YES because obsolete option LATEX_TIMESTAMP was found and was set to YES.\n");
+          timestamp_->setValue(QString::fromLatin1("YES"));
+        }
+      }
+    }
+  }
+
+  auto fontName = options.find(QString::fromLatin1("DOT_FONTNAME"));
+  auto fontSize = options.find(QString::fromLatin1("DOT_FONTSIZE"));
+  QString fontNameValue;
+  QString fontSizeValue;
+  // correct DOT_FONTNAME if needed
+  if (fontName!=options.end())
+  {
+    if ((*fontName)->kind()==Input::Obsolete)
+    {
+      InputObsolete *fontName_ = dynamic_cast<InputObsolete*>(*fontName);
+      fontNameValue = fontName_->value().toString();
+      if (fontNameValue == QString::fromLatin1("FreeSans") ||
+          fontNameValue == QString::fromLatin1("FreeSans.ttf"))
+      {
+        config_warn("doxygen no longer ships with the FreeSans font.\n"
+                    "  You may want to clear or change DOT_FONTNAME.\n"
+                    "  Otherwise you run the risk that the wrong font is being used for dot generated graphs.\n");
+      }
+    }
+  }
+
+  if (fontSize!=options.end())
+  {
+    if ((*fontSize)->kind()==Input::Obsolete)
+    {
+      InputObsolete *fontSize_ = dynamic_cast<InputObsolete*>(*fontSize);
+      fontSizeValue = fontSize_->value().toString();
+    }
+  }
+
+  if (fontName!=options.end() || fontSize!=options.end())
+  {
+    auto commonAttrOpt = options.find(QString::fromLatin1("DOT_COMMON_ATTR"));
+    auto edgeAttrOpt = options.find(QString::fromLatin1("DOT_EDGE_ATTR"));
+    if ((*commonAttrOpt)->kind()==Input::String)
+    {
+      QString commonAttrValue;
+      InputString *commonAttr_ = dynamic_cast<InputString*>(*commonAttrOpt);
+      if ((*commonAttr_).stringMode()==InputString::StringFree)
+      {
+        if (fontName!=options.end())
+        {
+          updateAttribute(commonAttr_, "fontname", fontNameValue);
+        }
+        if (fontSize!=options.end())
+        {
+          updateAttribute(commonAttr_, "fontsize", fontSizeValue);
+        }
+      }
+    }
+    if ((*edgeAttrOpt)->kind()==Input::String)
+    {
+      QString edgeAttrValue;
+      InputString *edgeAttr_ = dynamic_cast<InputString*>(*edgeAttrOpt);
+      if ((*edgeAttr_).stringMode()==InputString::StringFree)
+      {
+        if (fontName!=options.end())
+        {
+          updateAttribute(edgeAttr_, "labelfontname", fontNameValue);
+        }
+        if (fontSize!=options.end())
+        {
+          updateAttribute(edgeAttr_, "labelfontsize", fontSizeValue);
         }
       }
     }
