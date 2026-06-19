@@ -257,6 +257,7 @@ static const std::unordered_map< std::string, DocCmdMap > docCmdMap =
   { "endlink",                { nullptr,                         CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "endmanonly",             { nullptr,                         CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "endmsc",                 { nullptr,                         CommandSpacing::Invisible, SectionHandling::Escape  }},
+  { "endmermaid",             { nullptr,                         CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "endparblock",            { &handleEndParBlock,              CommandSpacing::Block,     SectionHandling::Escape  }},
   { "endrtfonly",             { nullptr,                         CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "endsecreflist",          { nullptr,                         CommandSpacing::Invisible, SectionHandling::Escape  }},
@@ -325,6 +326,8 @@ static const std::unordered_map< std::string, DocCmdMap > docCmdMap =
   { "module",                 { &handleModule,                   CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "msc",                    { &handleFormatBlock,              CommandSpacing::Block,     SectionHandling::Break   }},
   { "mscfile",                { nullptr,                         CommandSpacing::Block,     SectionHandling::Break   }},
+  { "mermaid",                { &handleFormatBlock,              CommandSpacing::Block,     SectionHandling::Break   }},
+  { "mermaidfile",            { nullptr,                         CommandSpacing::Block,     SectionHandling::Break   }},
   { "name",                   { &handleName,                     CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "namespace",              { &handleNamespace,                CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "noop",                   { &handleNoop,                     CommandSpacing::Invisible, SectionHandling::Replace }},
@@ -2407,7 +2410,7 @@ STopt  [^\n@\\]*
 
   /* ----- handle arguments of the preformatted block commands ------- */
 
-<FormatBlock>{CMD}("endverbatim"|"endiverbatim"|"endiliteral"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endrtfonly"|"endmanonly"|"enddot"|"endcode"|"endicode"|"endmsc")/{NW} { // possible ends
+<FormatBlock>{CMD}("endverbatim"|"endiverbatim"|"endiliteral"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endrtfonly"|"endmanonly"|"enddot"|"endcode"|"endicode"|"endmsc"|"endmermaid")/{NW} { // possible ends
                                           addOutput(yyscanner,yytext);
                                           if (&yytext[4]==yyextra->blockName) // found end of the block
                                           {

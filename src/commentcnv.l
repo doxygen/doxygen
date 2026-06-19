@@ -621,7 +621,7 @@ SLASHopt [/]*
                                      yyextra->verbatimLine=yyextra->lineNr;
                                      BEGIN(VerbatimCode);
                                    }
-<CComment,ReadLine,IncludeFile>{CMD}("dot"|"code"|"msc"|"startuml")/[^a-z_A-Z0-9] { /* start of a verbatim block */
+<CComment,ReadLine,IncludeFile>{CMD}("dot"|"code"|"msc"|"startuml"|"mermaid")/[^a-z_A-Z0-9] { /* start of a verbatim block */
                                      copyToOutput(yyscanner,yytext,yyleng);
                                      if (yyextra->inSpecialComment || yyextra->specialComment || yyextra->lang==SrcLangExt::Markdown)
                                      {
@@ -818,7 +818,7 @@ SLASHopt [/]*
                                        BEGIN(yyextra->lastCommentContext);
                                      }
                                    }
-<VerbatimCode>{CMD}("enddot"|"endcode"|"endmsc"|"enduml")/("{")? { // end of verbatim block
+<VerbatimCode>{CMD}("enddot"|"endcode"|"endmsc"|"enduml"|"endmermaid")/("{")? { // end of verbatim block
                                      copyToOutput(yyscanner,yytext,yyleng);
 				     if (&yytext[1]==yyextra->blockName)
 				     {

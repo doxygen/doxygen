@@ -375,6 +375,7 @@ static QCString getFilteredImageAttributes(std::string_view fmt, const QCString 
 // \dot .. \enddot
 // \code .. \endcode
 // \msc .. \endmsc
+// \mermaid .. \endmermaid
 // \f$..\f$
 // \f(..\f)
 // \f[..\f]
@@ -662,6 +663,7 @@ size_t Markdown::Private::isSpecialCommand(std::string_view data,size_t offset)
     { "latexinclude",   endOfLine  },
     { "maninclude",     endOfLine  },
     { "memberof",       endOfLabel },
+    { "mermaidfile",    endOfLine  },
     { "mscfile",        endOfLine  },
     { "namespace",      endOfLabel },
     { "noop",           endOfLine  },
