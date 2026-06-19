@@ -2037,6 +2037,7 @@ static size_t isVerbatimSection(const char *data,size_t i,size_t len,QCString &e
     CHECK_FOR_COMMAND("icode",endMarker="endicode");
     CHECK_FOR_COMMAND("code",endMarker="endcode");
     CHECK_FOR_COMMAND("msc",endMarker="endmsc");
+    CHECK_FOR_COMMAND("mermaid",endMarker="endmermaid");
     CHECK_FOR_COMMAND("iverbatim",endMarker="endiverbatim");
     CHECK_FOR_COMMAND("verbatim",endMarker="endverbatim");
     CHECK_FOR_COMMAND("iliteral",endMarker="endiliteral");

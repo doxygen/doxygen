@@ -767,7 +767,7 @@ NONLopt [^\n]*
                             yyextra->nestedComment=FALSE;
                             BEGIN(DocCopyBlock);
                           }
-<DocBlock>{CMD}("verbatim"|"iliteral"|"latexonly"|"htmlonly"|"xmlonly"|"manonly"|"rtfonly"|"docbookonly"|"dot"|"msc"|"code")/[^a-z_A-Z0-9\-] { // verbatim command (which could contain nested comments!)
+<DocBlock>{CMD}("verbatim"|"iliteral"|"latexonly"|"htmlonly"|"xmlonly"|"manonly"|"rtfonly"|"docbookonly"|"dot"|"msc"|"mermaid"|"code")/[^a-z_A-Z0-9\-] { // verbatim command (which could contain nested comments!)
                             yyextra->CCodeBuffer += yytext;
                             yyextra->docBlockName=&yytext[1];
                             yyextra->fencedSize=0;
@@ -826,7 +826,7 @@ NONLopt [^\n]*
                               BEGIN(DocBlock);
                             }
                           }
-<DocCopyBlock>{CMD}("endverbatim"|"endiliteral"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endmanonly"|"endrtfonly"|"enddot"|"endmsc"|"enduml"|"endcode")/[^a-z_A-Z0-9] { // end of verbatim block
+<DocCopyBlock>{CMD}("endverbatim"|"endiliteral"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endmanonly"|"endrtfonly"|"enddot"|"endmsc"|"endmermaid"|"enduml"|"endcode")/[^a-z_A-Z0-9] { // end of verbatim block
                             yyextra->CCodeBuffer += yytext;
                             if (&yytext[4]==yyextra->docBlockName)
                             {

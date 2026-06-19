@@ -1515,6 +1515,10 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                                       yyextra->endMarker="endmsc";
                                       BEGIN(St_SecSkip);
                                     }
+<St_Sections>{CMD}"mermaid"/[^a-z_A-Z0-9] {
+                                      yyextra->endMarker="endmermaid";
+                                      BEGIN(St_SecSkip);
+                                    }
 <St_Sections>{CMD}"startuml"/[^a-z_A-Z0-9] {
                                       yyextra->endMarker="enduml";
                                       BEGIN(St_SecSkip);

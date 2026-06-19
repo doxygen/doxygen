@@ -372,8 +372,8 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 CMD            [\\@]
 FORMULA_START  {CMD}("f{"|"f$"|"f["|"f(")
 FORMULA_END    {CMD}("f}"|"f$"|"f]"|"f)")
-VERBATIM_START {CMD}("verbatim"|"iliteral"|"latexonly"|"htmlonly"|"xmlonly"|"docbookonly"|"rtfonly"|"manonly"|"dot"|"msc"|"startuml"|"code"("{"[^}]*"}")?){BN}+
-VERBATIM_END   {CMD}("endverbatim"|"endiliteral"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endrtfonly"|"endmanonly"|"enddot"|"endmsc"|"enduml"|"endcode")
+VERBATIM_START {CMD}("verbatim"|"iliteral"|"latexonly"|"htmlonly"|"xmlonly"|"docbookonly"|"rtfonly"|"manonly"|"dot"|"msc"|"mermaid"|"startuml"|"code"("{"[^}]*"}")?){BN}+
+VERBATIM_END   {CMD}("endverbatim"|"endiliteral"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endrtfonly"|"endmanonly"|"enddot"|"endmsc"|"endmermaid"|"enduml"|"endcode")
 VERBATIM_LINE  {CMD}"noop"{B}+
 LITERAL_BLOCK  {FORMULA_START}|{VERBATIM_START}
 LITERAL_BLOCK_END {FORMULA_END}|{VERBATIM_END}
