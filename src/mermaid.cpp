@@ -242,6 +242,13 @@ static void runMermaid(const MermaidManager::DiagramList &diagrams)
   }
 }
 
+void MermaidManager::setHasInlineDiagrams()
+{
+  // CLI mode creates images locally, other modes create inline diagram descriptions
+  // in the HTML output and rely on rendering them in the browser.
+  m_hasInlineDiagrams=Config_getEnum(MERMAID_RENDER_MODE)!=MERMAID_RENDER_MODE_t::CLI;
+}
+
 void MermaidManager::run()
 {
   Debug::print(Debug::Mermaid, 0, "*** MermaidManager::run\n");

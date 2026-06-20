@@ -56,6 +56,7 @@ typedef yyguts_t *yyscan_t;
 #include "entry.h"
 #include "formula.h"
 #include "language.h"
+#include "mermaid.h"
 #include "message.h"
 #include "parserintf.h"
 #include "reflist.h"
@@ -112,6 +113,7 @@ static bool handleAnchor(yyscan_t yyscanner,const QCString &, const StringVector
 static bool handleImage(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleCite(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleFormatBlock(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleMermaidFile(yyscan_t yyscanner,const QCString &s,const StringVector &);
 static bool handleAddIndex(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleIf(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleIfNot(yyscan_t yyscanner,const QCString &, const StringVector &);
@@ -327,7 +329,7 @@ static const std::unordered_map< std::string, DocCmdMap > docCmdMap =
   { "msc",                    { &handleFormatBlock,              CommandSpacing::Block,     SectionHandling::Break   }},
   { "mscfile",                { nullptr,                         CommandSpacing::Block,     SectionHandling::Break   }},
   { "mermaid",                { &handleFormatBlock,              CommandSpacing::Block,     SectionHandling::Break   }},
-  { "mermaidfile",            { nullptr,                         CommandSpacing::Block,     SectionHandling::Break   }},
+  { "mermaidfile",            { &handleMermaidFile,              CommandSpacing::Block,     SectionHandling::Break   }},
   { "name",                   { &handleName,                     CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "namespace",              { &handleNamespace,                CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "noop",                   { &handleNoop,                     CommandSpacing::Invisible, SectionHandling::Replace }},
@@ -3608,6 +3610,10 @@ static bool handleFormatBlock(yyscan_t yyscanner,const QCString &s, const String
     addOutput(yyscanner,yyextra->spaceBeforeCmd);
     yyextra->spaceBeforeCmd.clear();
   }
+  if (s=="mermaid")
+  {
+    MermaidManager::instance().setHasInlineDiagrams();
+  }
   if (optList.empty())
   {
     addOutput(yyscanner,"@"+s+" ");
@@ -3621,6 +3627,14 @@ static bool handleFormatBlock(yyscan_t yyscanner,const QCString &s, const String
   yyextra->commentCount=0;
   BEGIN(FormatBlock);
   return FALSE;
+}
+
+static bool handleMermaidFile(yyscan_t yyscanner,const QCString &s,const StringVector &)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  MermaidManager::instance().setHasInlineDiagrams();
+  addOutput(yyscanner,yytext);
+  return false;
 }
 
 static bool handleAddIndex(yyscan_t yyscanner,const QCString &, const StringVector &)

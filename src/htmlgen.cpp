@@ -56,6 +56,7 @@
 #include "portable.h"
 #include "outputlist.h"
 #include "stringutil.h"
+#include "mermaid.h"
 
 //#define DBG_HTML(x) x;
 #define DBG_HTML(x)
@@ -579,8 +580,7 @@ static QCString substituteHtmlKeywords(const QCString &file,
     darkModeJs="<script type=\"text/javascript\" src=\"$relpath^darkmode_toggle.js\"></script>\n";
   }
 
-  QCString mermaidRenderMode = Config_getEnumAsString(MERMAID_RENDER_MODE);
-  if (mermaidRenderMode=="CLIENT_SIDE" || mermaidRenderMode=="AUTO")
+  if (MermaidManager::instance().hasInlineDiagrams())
   {
     QCString mermaidJsUrl = Config_getString(MERMAID_JS_URL);
     mermaidJs =  "<script type=\"module\">\n"
