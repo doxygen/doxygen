@@ -732,6 +732,8 @@ def collectOptions(elem):
     options = set()
     messages = set()
     optionsWithElems = {}
+    attrib = {}
+    values = set()
     for group in elem.getElementsByTagName('group'):
         for option in group.getElementsByTagName('option'):
             optionId = option.getAttribute('id')
@@ -739,12 +741,15 @@ def collectOptions(elem):
             if optionId and optionType!='obsolete':
                 options.add(optionId)
                 optionsWithElems[optionId] = option
+                attrib[optionId] = sorted(option.attributes.items())
+                if option.getElementsByTagName('value'):
+                    values.add(optionId)
     for generator in elem.getElementsByTagName('generator'):
         for message in generator.getElementsByTagName('message'):
             messageId = message.getAttribute('name')
             messages.add(messageId)
 
-    return (options,optionsWithElems,messages)
+    return (options,optionsWithElems,messages,attrib,values)
 
 def syncWarnings(typ, existing, language):
     missing = existing - language
@@ -777,7 +782,7 @@ def syncLocalizedConfig(elem, configFile, translationsDir, autoSync=False):
     import os
     import shutil
 
-    existingOptions, existingOptionsWithElements, existingMessages = collectOptions(elem)
+    existingOptions, existingOptionsWithElements, existingMessages, existingAttrib, existingValues = collectOptions(elem)
     print("Found %d active options in %s" % (len(existingOptions), configFile))
     print("Found %d active messages in %s" % (len(existingMessages), configFile))
 
@@ -801,12 +806,104 @@ def syncLocalizedConfig(elem, configFile, translationsDir, autoSync=False):
             print("  Error parsing %s: %s" % (configFile, e))
             continue
 
-        langOptions, langOptionsWithElements, langMessages = collectOptions(langDoc)
+        langOptions, langOptionsWithElements, langMessages, langAttrib, langValues = collectOptions(langDoc)
 
         optionsError = syncWarnings('Options', existingOptions, langOptions)
         messagesError = syncWarnings('Messages', existingMessages, langMessages)
 
-        if autoSync and (optionsError or messagesError):
+        # attributes handling
+        extraOptions = langOptions - existingOptions
+        langMatch = langOptions - extraOptions
+        attribError = set()
+        for optionId in langMatch:
+            missingAttrib = set(existingAttrib[optionId]) - set(langAttrib[optionId])
+            extraAttrib = set(langAttrib[optionId]) - set(existingAttrib[optionId])
+            if missingAttrib:
+                attribError.add(optionId)
+                print("  Missing %d %s for %s" % (len(missingAttrib), "attributes", optionId))
+
+            if extraAttrib:
+                attribError.add(optionId)
+                print("  Extra %d %s for %s" % (len(extraAttrib), "attributes", optionId))
+        if not attribError:
+            print("  OK - all %s are synchronized" % "attributes")
+
+        # values handling
+        valuesError = False
+        # we only need options that are also in the original
+        langValues = langValues - extraOptions
+        # language options that should have values
+        missingAllValues = existingValues - langValues
+        if missingAllValues:
+            print("  Missing %d %s: %s" % (len(missingAllValues), "all values", ', '.join(sorted(list(missingAllValues))[:5])))
+            if len(missingAllValues) > 5:
+                print("  ... and %d more" % (len(missingAllValues) - 5))
+            valuesError = True
+        # language options that should have no values
+        extraAllValues = langValues - existingValues
+        if extraAllValues:
+            print("  Extra %d %s: %s" % (len(extraAllValues), "all values", ', '.join(sorted(list(extraAllValues))[:5])))
+            if len(extraAllValues) > 5:
+                print("  ... and %d more" % (len(extraAllValues) - 5))
+            valuesError = True
+
+        # both have values, some furter investigations
+        bothValues = existingValues - missingAllValues
+        # partial extra / missing attr
+        bothError = set()
+        for optionId in bothValues:
+            optionElem = existingOptionsWithElements[optionId]
+            langElem = langOptionsWithElements[optionId]
+            optValues = set()
+            langValues = set()
+            for optValue in optionElem.getElementsByTagName('value'):
+                 optValues.add(optValue.getAttribute('name'))
+            for langValue in langElem.getElementsByTagName('value'):
+                 langValues.add(langValue.getAttribute('name'))
+            missingValues = optValues - langValues
+            missingLen = len(missingValues)
+            extraLen = len(langValues - optValues)
+            if missingLen:
+                print("  Missing %d %s for %s" % (missingLen, "values", optionId))
+                bothError.add(optionId)
+            if extraLen:
+                print("  Extra %d %s for %s" % (extraLen, "values", optionId))
+                bothError.add(optionId)
+            # both have value elements
+            bothName = optValues - missingValues
+            for name in bothName:
+                toCorrect = False
+                for optValue in optionElem.getElementsByTagName('value'):
+                    if optValue.getAttribute('name') == name:
+                        optAttr = set(optValue.attributes.items())
+                        break
+                for langValue in langElem.getElementsByTagName('value'):
+                    if langValue.getAttribute('name') == name:
+                        langAttr = set(langValue.attributes.items())
+                        break
+                missing = optAttr - langAttr
+                extra = langAttr - optAttr
+                if missing or extra:
+                    if len(missing) == 1 and len(extra) == 1:
+                        for attr, dummy in missing:
+                            missAttr = attr
+                            break
+                        for attr, dummy in extra:
+                            extraAttr = attr
+                            break
+                        if missAttr != 'desc' or extraAttr != 'desc':
+                           bothError.add(optionId)
+                           toCorrect = True
+                    else:
+                        bothError.add(optionId)
+                        toCorrect = True
+                if toCorrect:
+                    print("  Differences in attributes for %s with name %s for %s" % ("value", name, optionId))
+
+        if not (valuesError or bothError):
+            print("  OK - all %s are synchronized" % "values")
+
+        if autoSync and (optionsError or messagesError or attribError or valuesError or bothError):
             print("  Auto-syncing...")
 
             rootElement = langDoc.documentElement
@@ -838,6 +935,118 @@ def syncLocalizedConfig(elem, configFile, translationsDir, autoSync=False):
                     parentGroupNew.appendChild(importedElem)
                     print("    Added: %s" % optionId)
 
+            # handle option attributes
+            for optionId in attribError:
+                existingElem = existingOptionsWithElements[optionId]
+                langElem = langOptionsWithElements[optionId]
+                for attr,val in langElem.attributes.items():
+                    langElem.removeAttribute(attr)
+                for attr,val in existingElem.attributes.items():
+                    langElem.setAttribute(attr,val)
+
+            # handle values
+            for optionId in extraAllValues:
+                optionElem = langOptionsWithElements[optionId]
+                for valueElem in optionElem.getElementsByTagName('value'):
+                    optionElem.removeChild(valueElem)
+                print("    Removed all values of: %s" % optionId)
+
+            for optionId in missingAllValues:
+                existingElem = existingOptionsWithElements[optionId]
+                langElem = langOptionsWithElements[optionId]
+                for valueElem in existingElem.getElementsByTagName('value'):
+                    importedElem = langDoc.importNode(valueElem, True)
+                    langElem.appendChild(importedElem)
+                print("    Added all values for: %s" % optionId)
+
+            # handle bothValue errors
+            for optionId in bothError:
+                optionElem = existingOptionsWithElements[optionId]
+                langElem = langOptionsWithElements[optionId]
+                optValues = set()
+                langValues = set()
+                for optValue in optionElem.getElementsByTagName('value'):
+                     optValues.add(optValue.getAttribute('name'))
+                for langValue in langElem.getElementsByTagName('value'):
+                     langValues.add(langValue.getAttribute('name'))
+                missing = optValues - langValues
+                extra = langValues - optValues
+                existingElem = existingOptionsWithElements[optionId]
+                langElem = langOptionsWithElements[optionId]
+                if missing:
+                    for miss in missing:
+                        for allVal in existingElem.getElementsByTagName('value'):
+                            if allVal.getAttribute('name') == miss:
+                                importedElem = langDoc.importNode(allVal, True)
+                                langElem.appendChild(importedElem)
+                                print("    Added: value %s of %s" % (miss,optionId))
+                if extra:
+                    for extr in extra:
+                        for allVal in langElem.getElementsByTagName('value'):
+                            if allVal.getAttribute('name') == extr:
+                                langElem.removeChild(allVal)
+                                print("    Removed: value %s of %s" % (extr,optionId))
+
+                # both have value elements
+                bothName = optValues - missing
+                for name in bothName:
+                    toCorrect = False
+                    for optValue in optionElem.getElementsByTagName('value'):
+                        if optValue.getAttribute('name') == name:
+                            optAttr = set(optValue.attributes.items())
+                            break
+                    for langValue in langElem.getElementsByTagName('value'):
+                        if langValue.getAttribute('name') == name:
+                            langAttr = set(langValue.attributes.items())
+                            break
+                    missing = optAttr - langAttr
+                    extra = langAttr - optAttr
+                    if missing or extra:
+                        if len(missing) == 1 and len(extra) == 1:
+                            for attr, dummy in missing:
+                                missAttr = attr
+                                break
+                            for attr, dummy in extra:
+                                extraAttr = attr
+                                break
+                            if missAttr != 'desc' or extraAttr != 'desc':
+                               toCorrect = True
+                        else:
+                            toCorrect = True
+
+                    if toCorrect:
+                        optHasDesc = False
+                        for optValue in optionElem.getElementsByTagName('value'):
+                            if optValue.getAttribute('name') == name:
+                                for attr, dummy in optValue.attributes.items():
+                                    if attr == 'desc':
+                                        optHasDesc = True
+                                        break
+                                break
+                        langHasDesc = False
+                        for langValue in langElem.getElementsByTagName('value'):
+                            if langValue.getAttribute('name') == name:
+                                for attr, dummy in langValue.attributes.items():
+                                    if attr == 'desc':
+                                        langHasDesc = True
+                                        break
+                                break
+                        for langValue in langElem.getElementsByTagName('value'):
+                            if langValue.getAttribute('name') == name:
+                                for attr, dummy in langValue.attributes.items():
+                                    if attr != 'desc' or not optHasDesc:
+                                        langValue.removeAttribute(attr)
+                                lang = langValue
+                                break
+                        for optValue in optionElem.getElementsByTagName('value'):
+                            if optValue.getAttribute('name') == name:
+                                for attr, val in optValue.attributes.items():
+                                    if attr != 'desc' or not langHasDesc:
+                                        lang.setAttribute(attr,val)
+                                break
+
+
+            # handle generator / messages
             missingMessages = existingMessages - langMessages
             extraMessages = langMessages - existingMessages
 
@@ -856,7 +1065,8 @@ def syncLocalizedConfig(elem, configFile, translationsDir, autoSync=False):
             for messageId in missingMessages:
                 for message in parentGenerator.getElementsByTagName('message'):
                     if messageId == message.getAttribute('name'):
-                        parentGeneratorNew.appendChild(message)
+                        importedElem = langDoc.importNode(message, True)
+                        parentGeneratorNew.appendChild(importedElem)
                         print("    Added: %s" % messageId)
 
             backupFile = configFile + ".bak"
@@ -1110,7 +1320,7 @@ def main():
         print("#include \"configdoc.h\"")
         print("#include \"docintf.h\"")
         print("")
-        ##
+
         print("void addConfigDocs{0}(DocIntf *doc)".format(locale))
         print("{")
         for n in elem.childNodes:
