@@ -3091,7 +3091,20 @@ NONLopt [^\n]*
                                             yyextra->docBlockContext   = YY_START;
                                             yyextra->docBlockInBody    = FALSE;
                                             yyextra->docBlockAutoBrief = ( yytext[yyleng-2]=='*' && Config_getBool(JAVADOC_AUTOBRIEF) ) ||
-                                                                ( yytext[yyleng-2]=='!' && Config_getBool(QT_AUTOBRIEF) );
+                                                                         ( yytext[yyleng-2]=='!' && Config_getBool(QT_AUTOBRIEF) );
+                                            if (YY_START==MemberSpec && yyextra->memspecEntry && yyextra->memspecEntry->briefFile.isEmpty()) // see issue #10900
+                                            {
+                                              if (yytext[yyleng-3]=='/')
+                                              {
+                                                yyextra->memspecEntry->briefFile = yyextra->fileName;
+                                                yyextra->memspecEntry->briefLine = yyextra->yyLineNr;
+                                              }
+                                              else
+                                              {
+                                                yyextra->memspecEntry->docFile = yyextra->fileName;
+                                                yyextra->memspecEntry->docLine = yyextra->yyLineNr;
+                                              }
+                                            }
 
                                             QCString indent;
                                             indent.fill(' ',computeIndent(yytext,yyextra->column));
@@ -3128,7 +3141,7 @@ NONLopt [^\n]*
                                             yyextra->docBlockContext   = YY_START;
                                             yyextra->docBlockInBody    = FALSE;
                                             yyextra->docBlockAutoBrief = ( yytext[yyleng-2]=='*' && Config_getBool(JAVADOC_AUTOBRIEF) ) ||
-                                                                ( yytext[yyleng-2]=='!' && Config_getBool(QT_AUTOBRIEF) );
+                                                                         ( yytext[yyleng-2]=='!' && Config_getBool(QT_AUTOBRIEF) );
 
                                             QCString indent;
                                             indent.fill(' ',computeIndent(yytext,yyextra->column));
