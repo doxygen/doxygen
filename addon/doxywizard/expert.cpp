@@ -107,6 +107,14 @@ static void translateEnumDescription(QDomElement &valueElem,const QDomElement &t
   }
 }
 
+static bool getFilter(QDomElement docsVal)
+{
+  QString attr = docsVal.attribute(SA("filter"));
+  if (attr.isEmpty()) return true;
+  if (attr.contains(SA("doxywizard"))) return true;
+  return false;
+}
+
 static void translateOption(QDomElement &configRoot,const QDomElement &translationRoot)
 {
   QDomElement docsVal   = configRoot.firstChildElement();
@@ -123,9 +131,11 @@ static void translateOption(QDomElement &configRoot,const QDomElement &translati
   while (!docsVal.isNull())
   {
     //qDebug() << "tagName" << docsVal.tagName();
-    if (docsVal.tagName()==SA("docs") && docsVal.attribute(SA("doxywizard"))!=SA("0"))
+    if (docsVal.tagName()==SA("docs") && getFilter(docsVal))
     {
-      docsVal.setAttribute(SA("doxywizard"),SA("0"));
+      docsVal.removeAttribute(SA("filter"));
+      // we just need a value so we don't have an empty filter (and thus potential a match on doxywizard later on).
+      docsVal.setAttribute(SA("filter"),SA("dummy"));
     }
     else if (docsVal.tagName()==SA("value") && docsVal.hasAttribute(SA("desc")))
     {
@@ -782,8 +792,7 @@ QString Expert::getDocsForNode(const QDomElement &child) const
   bool first = true;
   while (!docsVal.isNull())
   {
-    if (docsVal.tagName()==SA("docs") &&
-        docsVal.attribute(SA("doxywizard")) != SA("0"))
+    if (docsVal.tagName()==SA("docs") && getFilter(docsVal))
     {
       if (!first) docs += SA("<br/>");
       first = false;
