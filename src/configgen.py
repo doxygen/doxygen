@@ -847,7 +847,7 @@ def syncLocalizedConfig(elem, configFile, translationsDir, autoSync=False):
                 print("  ... and %d more" % (len(extraAllValues) - 5))
             valuesError = True
 
-        # both have values, some furter investigations
+        # both have values, some further investigations
         bothValues = existingValues - missingAllValues
         # partial extra / missing attr
         bothError = set()
