@@ -1,6 +1,6 @@
 <doxygenconfig>
   <header>
-    <docs doxywizard='0' doxyfile='0'>
+    <docs filter="documentation">
       <![CDATA[
 /*
  *
@@ -69,7 +69,7 @@ Below is an alphabetical index of the tags that are recognized
 followed by the descriptions of the tags grouped by category.
 ]]>
     </docs>
-    <docs doxywizard='0' documentation='0'>
+    <docs filter="doxywizard,doxyfile">
       <![CDATA[
 This file describes the settings to be used by the documentation system
 Doxygen (www.doxygen.org) for a project.
@@ -101,7 +101,7 @@ without replacing the environment variables or CMake type replacement variables:
     </docs>
   </header>
   <footer>
-    <docs doxywizard='0' doxyfile='0'>
+    <docs filter="documentation">
       <![CDATA[
 \section config_examples Examples
 
@@ -593,7 +593,7 @@ Go to the <a href="commands.html">next</a> section or return to the
  a physical newline was in the original file.
 ]]>
       </docs>
-      <docs doxyfile='0' documentation='0'>
+      <docs filter="doxywizard,doxyfile">
 <![CDATA[
  When you need a literal `{` or `}` or `,` in the value part of an alias you have to
  escape them by means of a backslash (\c \\), this can lead to conflicts with the
@@ -601,15 +601,7 @@ Go to the <a href="commands.html">next</a> section or return to the
  use a double escape (\c \\\\{ and \c \\\\})
 ]]>
       </docs>
-      <docs doxywizard='0' documentation='0'>
-<![CDATA[
- When you need a literal `{` or `}` or `,` in the value part of an alias you have to
- escape them by means of a backslash (\c \\), this can lead to conflicts with the
- commands \c \\{ and \c \\} for these it is advised to use the version \c @{ and \c @} or
- use a double escape (\c \\\\{ and \c \\\\})
-]]>
-      </docs>
-      <docs doxyfile='0' doxywizard='0'>
+      <docs filter="documentation">
 <![CDATA[
  When you need a literal `{` or `}` or `,` in the value part of an alias you have to
  escape them by means of a backslash (\c \\), this can lead to conflicts with the
@@ -1344,7 +1336,7 @@ Go to the <a href="commands.html">next</a> section or return to the
  Whatever the program writes to standard output is used as the file version.
 ]]>
       </docs>
-      <docs doxywizard='0' doxyfile='0'>
+      <docs filter="documentation">
 <![CDATA[
 <br>
 <br>
@@ -1371,7 +1363,7 @@ FILE_VERSION_FILTER = "cleartool desc -fmt \%Vn"
 \endverbatim
 ]]>
       </docs>
-      <docs documentation='0'>
+      <docs filter="doxyfile,doxywizard">
 <![CDATA[
  For an example see the documentation.
 ]]>
@@ -2102,7 +2094,7 @@ doxygen -w html new_header.html new_footer.html new_stylesheet.css YourConfigFil
  Doxygen.
 ]]>
       </docs>
-      <docs doxywizard='0' doxyfile='0'>
+      <docs filter="documentation">
 <![CDATA[
  The following markers have a special meaning inside the header and footer:
  <dl>
@@ -2202,7 +2194,7 @@ doxygen -w html new_header.html new_footer.html new_stylesheet.css YourConfigFil
  </dl>
 ]]>
       </docs>
-      <docs documentation='0'>
+      <docs filter="doxyfile,doxywizard">
 <![CDATA[
  For a description of the possible markers and block names see the documentation.
 ]]>
@@ -2261,7 +2253,7 @@ doxygen -w html new_header.html new_footer.html new_stylesheet.css YourConfigFil
  So if scrollbar customization is desired it has to be added explicitly.
 ]]>
       </docs>
-      <docs doxywizard='0' doxyfile='0'>
+      <docs filter="documentation">
 <![CDATA[
  Here is an example style sheet that gives the contents area a fixed width:
 \verbatim
@@ -2295,7 +2287,7 @@ hr.footer {
 \endverbatim
 ]]>
       </docs>
-      <docs documentation='0'>
+      <docs filter="doxyfile,doxywizard">
 <![CDATA[
  For an example see the documentation.
 ]]>
@@ -2918,7 +2910,7 @@ a package in Mathjax version 4 one can use the package name prepended with a min
  - <a href="https://docs.mathjax.org/en/v4.0/">MathJax version 4</a>
 ]]>
       </docs>
-      <docs doxywizard='0' doxyfile='0'>
+      <docs filter="documentation">
 <![CDATA[
  As an example to disable the "Math Renderer" menu item in the "Math
  Settings" menu of MathJax:
@@ -2935,7 +2927,7 @@ MATHJAX_CODEFILE = disableRenderer.js
 \endverbatim
 ]]>
       </docs>
-      <docs documentation='0'>
+      <docs filter="doxyfile,doxywizard">
 <![CDATA[
  For an example see the documentation.
 ]]>
@@ -3172,7 +3164,7 @@ doxygen -w latex new_header.tex new_footer.tex new_stylesheet.sty
  The following commands have a special meaning inside the header (and footer):
 ]]>
       </docs>
-      <docs doxywizard='0' doxyfile='0'>
+      <docs filter="documentation">
 <![CDATA[
  <dl>
  <dt><code>$title</code><dd>will be replaced with the project name.
@@ -3293,7 +3285,7 @@ The following block name is set based on whether or not a feature is used in the
  </dl>
 ]]>
       </docs>
-      <docs documentation='0'>
+      <docs filter="doxyfile,doxywizard">
 <![CDATA[
  For a description of the possible markers and block names see the documentation.
 ]]>

@@ -144,12 +144,21 @@ def addValues(var, node):
                 print("  %s->addValue(\"%s\");" % (var, name))
 
 
-def parseHeader(node,objName):
+def getFilter(node, mode):
+    attr = node.getAttribute('filter')
+    if not attr:
+        return True
+    if mode in attr:
+        return True
+    return False
+
+
+def parseHeader(node, objName, mode):
     doc = ""
     for n in node.childNodes:
         if n.nodeType == Node.ELEMENT_NODE:
             if (n.nodeName == "docs"):
-                if (n.getAttribute('doxyfile') != "0"):
+                if getFilter(n, mode):
                     doc += parseDocs(n)
     docC = transformDocs(doc)
     print("  %s->setHeader(" % (objName))
@@ -163,7 +172,7 @@ def parseHeader(node,objName):
     print("             );")
 
 
-def prepCDocs(node):
+def prepCDocs(node, mode):
     type = node.getAttribute('type')
     format = node.getAttribute('format')
     defval = node.getAttribute('defval')
@@ -171,7 +180,7 @@ def prepCDocs(node):
     if (type != 'obsolete'):
         for n in node.childNodes:
             if (n.nodeName == "docs"):
-                if (n.getAttribute('doxyfile') != "0"):
+                if getFilter(n, mode):
                     if n.nodeType == Node.ELEMENT_NODE:
                         doc += parseDocs(n)
         if (type == 'enum'):
@@ -242,7 +251,7 @@ def prepCDocs(node):
     return docC
 
 
-def parseOption(node):
+def parseOption(node, mode):
     # Handling part for Doxyfile
     name = node.getAttribute('id')
     if len(name)>23:
@@ -253,7 +262,7 @@ def parseOption(node):
     depends = node.getAttribute('depends')
     setting = node.getAttribute('setting')
     orgtype = node.getAttribute('orgtype')
-    docC = prepCDocs(node)
+    docC = prepCDocs(node, mode)
     if len(setting) > 0:
         print("#if %s" % (setting))
     print("  //----")
@@ -363,7 +372,7 @@ def parseOption(node):
         print("#endif")
 
 
-def parseGroups(node):
+def parseGroups(node, mode):
     name = node.getAttribute('name')
     doc = node.getAttribute('docs')
     setting = node.getAttribute('setting')
@@ -379,7 +388,7 @@ def parseGroups(node):
     print("")
     for n in node.childNodes:
         if n.nodeType == Node.ELEMENT_NODE:
-            parseOption(n)
+            parseOption(n, mode)
 
 def parseGroupMapEnums(node):
     def escape(value):
@@ -530,12 +539,12 @@ def parseGroupMapInit(node):
             if len(setting) > 0:
                 print("#endif")
 
-def parseGroupCDocs(node):
+def parseGroupCDocs(node, mode):
     for n in node.childNodes:
         if n.nodeType == Node.ELEMENT_NODE:
             type = n.getAttribute('type')
             name = n.getAttribute('id')
-            docC = prepCDocs(n)
+            docC = prepCDocs(n, mode)
             if type != 'obsolete':
                 print("  doc->add(")
                 print("              \"%s\"," % (name))
@@ -548,7 +557,7 @@ def parseGroupCDocs(node):
                         print("              \"%s\"" % (line))
                 print("          );")
 
-def parseOptionDoc(node, first):
+def parseOptionDoc(node, first, mode):
     # Handling part for documentation
     name = node.getAttribute('id')
     type = node.getAttribute('type')
@@ -560,7 +569,7 @@ def parseOptionDoc(node, first):
     if (type != 'obsolete'):
         for n in node.childNodes:
             if (n.nodeName == "docs"):
-                if (n.getAttribute('documentation') != "0"):
+                if getFilter(n, mode):
                     if n.nodeType == Node.ELEMENT_NODE:
                         doc += parseDocs(n)
         if (first):
@@ -658,7 +667,7 @@ def parseOptionDoc(node, first):
         return False
 
 
-def parseGroupsDoc(node):
+def parseGroupsDoc(node, mode):
     name = node.getAttribute('name')
     doc = node.getAttribute('docs')
     print("\\section config_%s %s" % (name.lower(), doc))
@@ -669,7 +678,7 @@ def parseGroupsDoc(node):
     first = True
     for n in node.childNodes:
         if n.nodeType == Node.ELEMENT_NODE:
-            first = parseOptionDoc(n, first)
+            first = parseOptionDoc(n, first, mode)
     if (not first):
         print("</dl>")
 
@@ -693,23 +702,22 @@ def parseDocs(node):
     #doc += "<br>"
     return doc
 
-
-def parseHeaderDoc(node):
+def parseHeaderDoc(node, mode):
     doc = ""
     for n in node.childNodes:
         if n.nodeType == Node.ELEMENT_NODE:
             if (n.nodeName == "docs"):
-                if (n.getAttribute('documentation') != "0"):
+                if getFilter(n, mode):
                     doc += parseDocs(n)
     print(doc)
 
 
-def parseFooterDoc(node):
+def parseFooterDoc(node, mode):
     doc = ""
     for n in node.childNodes:
         if n.nodeType == Node.ELEMENT_NODE:
             if (n.nodeName == "docs"):
-                if (n.getAttribute('documentation') != "0"):
+                if getFilter(n, mode):
                     doc += parseDocs(n)
     print(doc)
 
@@ -1114,6 +1122,7 @@ def main():
         sys.exit('<generator> section missing in %s' % configFile)
 
     if (sys.argv[1] == "-doc"):
+        mode = "documentation"
         print("/* WARNING: This file is generated!")
         print(" * Do not edit this file, but edit %s instead and run" % configFile)
         print(" * python configgen.py -doc %s to regenerate this file!" % configFile)
@@ -1122,7 +1131,7 @@ def main():
         for n in elem.childNodes:
             if n.nodeType == Node.ELEMENT_NODE:
                 if (n.nodeName == "header"):
-                    parseHeaderDoc(n)
+                    parseHeaderDoc(n, mode)
         # generate list with all commands
         commandsList = ()
         for n in elem.childNodes:
@@ -1137,12 +1146,12 @@ def main():
         for n in elem.childNodes:
             if n.nodeType == Node.ELEMENT_NODE:
                 if (n.nodeName == "group"):
-                    parseGroupsDoc(n)
+                    parseGroupsDoc(n, mode)
         # process footers
         for n in elem.childNodes:
             if n.nodeType == Node.ELEMENT_NODE:
                 if (n.nodeName == "footer"):
-                    parseFooterDoc(n)
+                    parseFooterDoc(n, mode)
     elif (sys.argv[1] == "-maph"):
         print("/* WARNING: This file is generated!")
         print(" * Do not edit this file, but edit %s instead and run" % configFile)
@@ -1281,6 +1290,7 @@ def main():
         print("}")
         print("")
     elif (sys.argv[1] == "-cpp"):
+        mode = "doxyfile"
         print("/* WARNING: This file is generated!")
         print(" * Do not edit this file, but edit %s instead and run" % configFile)
         print(" * python configgen.py -cpp %s to regenerate this file!" % configFile)
@@ -1303,13 +1313,14 @@ def main():
         for n in elem.childNodes:
             if n.nodeType == Node.ELEMENT_NODE:
                 if (n.nodeName == "header"):
-                    parseHeader(n,'cfg')
+                    parseHeader(n,'cfg', mode)
         for n in elem.childNodes:
             if n.nodeType == Node.ELEMENT_NODE:
                 if (n.nodeName == "group"):
-                    parseGroups(n)
+                    parseGroups(n, mode)
         print("}")
     elif (sys.argv[1] == "-wiz"):
+        mode = "doxywizard"
         configFile = sys.argv[2]
         locale = re.sub('.*config', '', configFile)
         locale = re.sub('.xml', '', locale)
@@ -1326,14 +1337,13 @@ def main():
         for n in elem.childNodes:
             if n.nodeType == Node.ELEMENT_NODE:
                 if (n.nodeName == "header"):
-                    parseHeader(n,'doc')
+                    parseHeader(n,'doc', mode)
         for n in elem.childNodes:
             if n.nodeType == Node.ELEMENT_NODE:
                 if (n.nodeName == "group"):
-                    parseGroupCDocs(n)
+                    parseGroupCDocs(n, mode)
         print("}")
     elif (sys.argv[1] == "-wizswitch"):
-          #// SWITCHER
         print("#ifndef CONFIGSWITCHER_H")
         print("#define CONFIGSWITCHER_H")
         print("")
