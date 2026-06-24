@@ -107,7 +107,13 @@ static void translateEnumDescription(QDomElement &valueElem,const QDomElement &t
   }
 }
 
-static void translateOption(QDomElement &configRoot,const QDomElement &translationRoot)
+static bool getFilter(QDomElement docsVal, const QString &mode)
+{
+  QString attr = docsVal.attribute(SA("filter"));
+  return attr.isEmpty() || attr.contains(mode);
+}
+
+static void translateOption(QDomElement &configRoot,const QDomElement &translationRoot, const QString &mode)
 {
   QDomElement docsVal   = configRoot.firstChildElement();
   QDomElement trDocsVal = translationRoot.firstChildElement();
@@ -123,9 +129,11 @@ static void translateOption(QDomElement &configRoot,const QDomElement &translati
   while (!docsVal.isNull())
   {
     //qDebug() << "tagName" << docsVal.tagName();
-    if (docsVal.tagName()==SA("docs") && docsVal.attribute(SA("doxywizard"))!=SA("0"))
+    if (docsVal.tagName()==SA("docs") && getFilter(docsVal, mode))
     {
-      docsVal.setAttribute(SA("doxywizard"),SA("0"));
+      docsVal.removeAttribute(SA("filter"));
+      // we just need a value so we don't have an empty filter (and thus potential a match on doxywizard later on).
+      docsVal.setAttribute(SA("filter"),SA("dummy"));
     }
     else if (docsVal.tagName()==SA("value") && docsVal.hasAttribute(SA("desc")))
     {
@@ -136,7 +144,7 @@ static void translateOption(QDomElement &configRoot,const QDomElement &translati
   }
 }
 
-static void translateTopics(QDomElement &configRoot,const QDomElement &translationRoot)
+static void translateTopics(QDomElement &configRoot,const QDomElement &translationRoot, const QString &mode)
 {
   struct GroupInfo
   {
@@ -196,7 +204,7 @@ static void translateTopics(QDomElement &configRoot,const QDomElement &translati
           QString id = optionElem.attribute(SA("id"));
           if (groupMap[name].options.contains(id))
           {
-            translateOption(groupMap[name].options[id],optionElem);
+            translateOption(groupMap[name].options[id],optionElem,mode);
           }
           else
           {
@@ -287,6 +295,8 @@ Expert::Expert()
   mainLayout->addWidget(m_searchBox);
   mainLayout->addWidget(m_splitter);
 
+  QString mode = SA("doxywizard");
+
   QFile file(SA(":/config.xml"));
   QString err = tr("Error");
   int errLine=0,errCol=0;
@@ -330,7 +340,7 @@ Expert::Expert()
         childElem = childElem.nextSiblingElement();
       }
       // overrule english text with translations
-      translateTopics(m_rootElement,trConfigXml.documentElement());
+      translateTopics(m_rootElement,trConfigXml.documentElement(),mode);
     }
     else
     {
@@ -342,7 +352,7 @@ Expert::Expert()
   // createGroups() activates group 0 (lazy), but the Wizard needs all m_options
   // populated before it is constructed, so we create all cards eagerly here.
   createGroups(m_rootElement);
-  ensureAllGroupsCreated();
+  ensureAllGroupsCreated(mode);
 
   // --- Wire up signals ---
   m_filterTimer = new QTimer(this);
@@ -436,14 +446,14 @@ void Expert::createGroups(const QDomElement &rootElem)
   }
 }
 
-void Expert::createOptionCard(GroupEntry &group, const QDomElement &child)
+void Expert::createOptionCard(GroupEntry &group, const QDomElement &child, const QString &mode)
 {
   QString setting = child.attribute(SA("setting"));
   if (!setting.isEmpty() && !IS_SUPPORTED(setting.toLatin1())) return;
 
   QString type = child.attribute(SA("type"));
   QString id   = child.attribute(SA("id"));
-  QString docs = getDocsForNode(child);
+  QString docs = getDocsForNode(child, mode);
 
   // Each option gets its own control layout
   QWidget     *ctrlWidget = new QWidget;
@@ -658,7 +668,7 @@ void Expert::wireDependencies()
 }
 
 // Create option cards for 'group' if they haven't been created yet.
-void Expert::ensureGroupCardsCreated(GroupEntry &group)
+void Expert::ensureGroupCardsCreated(GroupEntry &group, const QString &mode)
 {
   if (group.cardsCreated) return;
   group.cardsCreated = true;
@@ -668,7 +678,7 @@ void Expert::ensureGroupCardsCreated(GroupEntry &group)
   {
     if (optElem.tagName() == SA("option"))
     {
-      createOptionCard(group, optElem);
+      createOptionCard(group, optElem, mode);
     }
     optElem = optElem.nextSiblingElement();
   }
@@ -720,11 +730,11 @@ void Expert::setDocumentationVisibility(bool hidden)
 
 // Create cards for every group that hasn't been created yet, then do a full
 // dependency update (needed when cross-group deps span newly-created groups).
-void Expert::ensureAllGroupsCreated()
+void Expert::ensureAllGroupsCreated(const QString &mode)
 {
   for (GroupEntry &group : m_groups)
   {
-    ensureGroupCardsCreated(group);
+    ensureGroupCardsCreated(group, mode);
   }
 
   // Re-run update so cross-group dependencies are fully applied
@@ -773,7 +783,7 @@ void Expert::nextGroup()
 }
 
 
-QString Expert::getDocsForNode(const QDomElement &child) const
+QString Expert::getDocsForNode(const QDomElement &child, const QString &mode) const
 {
   QString type = child.attribute(SA("type"));
   QString docs = SA("");
@@ -782,8 +792,7 @@ QString Expert::getDocsForNode(const QDomElement &child) const
   bool first = true;
   while (!docsVal.isNull())
   {
-    if (docsVal.tagName()==SA("docs") &&
-        docsVal.attribute(SA("doxywizard")) != SA("0"))
+    if (docsVal.tagName()==SA("docs") && getFilter(docsVal, mode))
     {
       if (!first) docs += SA("<br/>");
       first = false;
