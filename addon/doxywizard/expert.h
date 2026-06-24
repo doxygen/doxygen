@@ -104,14 +104,14 @@ class Expert : public QWidget, public DocIntf
     };
 
     void createGroups(const QDomElement &rootElem);
-    void createOptionCard(GroupEntry &group, const QDomElement &child);
-    void ensureGroupCardsCreated(GroupEntry &group);
-    void ensureAllGroupsCreated();
+    void createOptionCard(GroupEntry &group, const QDomElement &child, QString &mode);
+    void ensureGroupCardsCreated(GroupEntry &group, QString &mode);
+    void ensureAllGroupsCreated(QString &mode);
     void wireDependencies();
     void activateGroup(int index);
     void saveTopic(QTextStream &t, QDomElement &elem, TextCodecAdapter *codec,
                    bool brief, bool condensed, bool convert);
-    QString getDocsForNode(const QDomElement &child) const;
+    QString getDocsForNode(const QDomElement &child, QString &mode) const;
 
     QSplitter              *m_splitter;
     QTreeWidget            *m_treeWidget;
