@@ -71,6 +71,7 @@ def transformDocs(doc):
     doc = doc.replace("\\>", ">")
     doc = doc.replace("\\@", "@")
     doc = doc.replace("\\\\", "\\")
+    doc = doc.replace("@@", "@")
     # \ref name "description" -> description
     doc = re.sub('\\\\ref +[^ ]* +"\\\\ref"', '\\\\REF', doc)
     doc = re.sub('\\\\ref +[^ ]* +"([^"]*)"', '\\1', doc)
