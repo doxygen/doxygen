@@ -3517,15 +3517,15 @@ void HtmlGenerator::startInlineHeader()
 {
   if (m_emptySection)
   {
-    m_t << "<table class=\"memberdecls\">\n";
+    m_t << "<table class=\"memberdecls memberdecls-inline\">\n";
     m_emptySection=FALSE;
   }
-  m_t << "<tr><td colspan=\"2\"><h3>";
+  m_t << "<tr><th colspan=\"2\"><h3>";
 }
 
 void HtmlGenerator::endInlineHeader()
 {
-  m_t << "</h3></td></tr>\n";
+  m_t << "</h3></th></tr>\n";
 }
 
 void HtmlGenerator::startMemberDocSimple(bool isEnum)

@@ -723,6 +723,11 @@ table.memberdecls {
 	padding: 0px;
 }
 
+table.memberdecls-inline {
+	border: 1px solid var(--memdef-border-color);
+	border-radius: 4px;
+}
+
 .memberdecls td, .fieldtable tr {
 	transition-property: background-color, box-shadow;
 	transition-duration: 0.5s;
@@ -1377,7 +1382,11 @@ table.fieldtable {
 	border-bottom: none;
 }
 
-.fieldtable th {
+.memberdecls-inline th h3 {
+  margin-left: 15px;
+}
+
+.memberdecls-inline th, .fieldtable th {
 	background-color: var(--memdef-title-background-color);
 	font-size: 90%;
 	color: var(--memdef-proto-text-color);
