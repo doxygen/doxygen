@@ -1053,6 +1053,9 @@ QString Expert::getDocsForNode(const QDomElement &child, const QString &mode) co
   regexp.setPattern(SA("\\\\c[ ]+(@[{}])"));
   docs.replace(regexp,SA("<code>\\1</code>"));
 
+  regexp.setPattern(SA("\\\\c[ ]+(@@[{}])"));
+  docs.replace(regexp,SA("<code>\\1</code>"));
+
   // `word` -> <code>word</code>
   docs.replace(SA("``"),SA(""));
   regexp.setPattern(SA("`([^`]+)`"));
@@ -1101,6 +1104,7 @@ QString Expert::getDocsForNode(const QDomElement &child, const QString &mode) co
   // \@ -> @
   docs.replace(SA("\\\\"),SA("\\"));
   docs.replace(SA("\\@"),SA("@"));
+  docs.replace(SA("@@"),SA("@"));
   // \& -> &
   // \$ -> $
   docs.replace(SA("\\&"),SA("&"));
