@@ -201,6 +201,11 @@
       <docs>
 <![CDATA[このタグを使用して、ドキュメント内でコマンドとして機能するエイリアスを指定できます。エイリアスの形式は次のとおりです：\verbatim name=value\endverbatim 例えば、\verbatim "sideeffect=@par Side Effects:^^"\endverbatim を追加すると、ドキュメントに\c \sideeffect（または\c \@sideeffect）コマンドを記述でき、「Side Effects:」という見出しのユーザー定義段落が生成されます。なお、エイリアスの値部分に\ref cmdn "\n"を入れて改行を挿入することはできません（出力結果において）。エイリアスの値部分に`^^`を入れると、元のファイルに物理的な改行があるかのように改行を挿入できます。]]>
       </docs>
+      <docs>
+<![CDATA[
+エイリアスの値部分にリテラルの `{`、`}`、または `,` が必要な場合は、バックスラッシュ (\c \\) でエスケープする必要があります。これは、コマンド \c \\{ および \c \\} と競合する可能性があります。これらのコマンドには、バージョン \c @@{ および \c @@} を使用するか、二重エスケープ (\c \\\\{ および \c \\\\}) を使用することをお勧めします。
+]]>
+    </docs>
     </option>
     <option type="bool" id="OPTIMIZE_OUTPUT_FOR_C" defval="0">
       <docs>
@@ -547,6 +552,11 @@
       <docs>
 <![CDATA[\c FILE_VERSION_FILTERタグを使用して、各ファイルの現在のバージョンを取得するためにDoxygenが呼び出すプログラムまたはスクリプトを指定できます（通常はバージョン管理システムから取得）。Doxygenは<code>popen()</code>経由で<code>command input_file</code>コマンドを実行してプログラムを呼び出します。ここで\c commandは\c FILE_VERSION_FILTERタグの値、\c input_fileはDoxygenが提供する入力ファイル名です。プログラムが標準出力に書き込んだ内容がファイルバージョンとして使用されます。]]>
       </docs>
+      <docs filter="doxyfile,doxywizard">
+<![CDATA[
+例についてはドキュメントを参照してください。
+]]>
+      </docs>
     </option>
     <option type="string" id="LAYOUT_FILE" format="file" defval="">
       <docs>
@@ -882,6 +892,11 @@
       <docs>
 <![CDATA[\c HTML_HEADERタグを使用して、生成される各HTMLページのユーザー定義HTMLヘッダーファイルを指定できます。タグが空白のままの場合、Doxygenは標準ヘッダーを生成します。<br>有効なHTMLを取得するには、ヘッダーファイルにDoxygenが必要とするすべてのスクリプトとスタイルシートを含める必要があります。これは使用される設定オプションに依存します（例：\ref cfg_generate_treeview "GENERATE_TREEVIEW"の設定）。次を使用してデフォルトのヘッダーから始めることを強くお勧めします：\verbatim doxygen -w html new_header.html new_footer.html new_stylesheet.css YourConfigFile \endverbatim 次にファイル\c new_header.htmlを変更します。Doxygenが通常使用するデフォルトヘッダーの生成方法については、セクション\ref doxygen_usageも参照してください。@note ヘッダーは変更される可能性があるため、通常はDoxygenの新しいバージョンにアップグレードする際にデフォルトヘッダーを再生成する必要があります。]]>
       </docs>
+      <docs filter="doxyfile,doxywizard">
+<![CDATA[
+使用可能なマーカー名とブロック名の説明については、ドキュメントを参照してください。
+]]>
+      </docs>
     </option>
     <option type="string" id="HTML_FOOTER" format="file" defval="" depends="GENERATE_HTML">
       <docs>
@@ -896,6 +911,11 @@
     <option type="list" id="HTML_EXTRA_STYLESHEET" format="file" defval="" depends="GENERATE_HTML">
       <docs>
 <![CDATA[\c HTML_EXTRA_STYLESHEETタグを使用して、Doxygenによって作成された標準スタイルシートの後にインクルードされる追加のユーザー定義カスケーディングスタイルシートを指定できます。このオプションを使用すると、特定のスタイルの側面をオーバーライドできます。これは、標準スタイルシートを置き換えないため、将来の更新に対してより堅牢な\ref cfg_html_stylesheet "HTML_STYLESHEET"を使用するよりも推奨されます。Doxygenはスタイルシートファイルを出力ディレクトリにコピーします。\note 追加のスタイルシートファイルの順序は重要です（例：リストの最後のスタイルシートは、リスト内の前のものの設定をオーバーライドします）。\note スクロールバーのスタイル設定は現在Webkit/Chromiumでオーバーライドできないため、1つ以上の追加スタイルシートが指定されている場合、スタイル設定はデフォルトのdoxygen.cssから除外されます。したがって、スクロールバーのカスタマイズが必要な場合は、明示的に追加する必要があります。]]>
+      </docs>
+      <docs filter="doxyfile,doxywizard">
+<![CDATA[
+例についてはドキュメントを参照してください。
+]]>
       </docs>
     </option>
     <option type="list" id="HTML_EXTRA_FILES" format="file" depends="GENERATE_HTML">
@@ -1191,6 +1211,11 @@
       <docs>
 <![CDATA[\c MATHJAX_CODEFILEタグを使用して、MathJaxコードの起動時に使用されるJavaScriptコードを含むファイルを指定できます。詳細については、MathJaxサイトを参照してください：- <a href="https://docs.mathjax.org/en/v2.7/">MathJaxバージョン2</a> - <a href="https://docs.mathjax.org/en/v3.2/">MathJaxバージョン3</a> - <a href="https://docs.mathjax.org/en/v4.0/">MathJaxバージョン4</a>]]>
       </docs>
+      <docs filter="doxyfile,doxywizard">
+<![CDATA[
+例についてはドキュメントを参照してください。
+]]>
+      </docs>
     </option>
     <option type="bool" id="SEARCHENGINE" defval="1" depends="GENERATE_HTML">
       <docs>
@@ -1275,7 +1300,12 @@
     </option>
     <option type="string" id="LATEX_HEADER" format="file" defval="" depends="GENERATE_LATEX">
       <docs>
-<![CDATA[\c LATEX_HEADERタグを使用して、生成された\f$\mbox{\LaTeX}\f$ドキュメントのユーザー定義\f$\mbox{\LaTeX}\f$ヘッダーを指定できます。ヘッダーは最初の章までのすべてを含む必要があります。空白のままにすると、Doxygenは標準ヘッダーを生成します。次を使用してデフォルトのヘッダーから始めることを強くお勧めします：\verbatim doxygen -w latex new_header.tex new_footer.tex new_stylesheet.sty \endverbatim 次にファイル\c new_header.texを変更します。Doxygenが通常使用するデフォルトヘッダーの生成方法については、セクション\ref doxygen_usageも参照してください。<br>注意：自分が何をしているかを理解している場合にのみ、ユーザー定義ヘッダーを使用してください！@note ヘッダーは変更される可能性があるため、通常はDoxygenの新しいバージョンにアップグレードする際にデフォルトヘッダーを再生成する必要があります。次のコマンドはヘッダー（およびフッター）内で特別な意味を持ちます：]]>
+<![CDATA[\c LATEX_HEADERタグを使用して、生成された\f$\mbox{\LaTeX}\f$ドキュメントのユーザー定義\f$\mbox{\LaTeX}\f$ヘッダーを指定できます。ヘッダーは最初の章までのすべてを含む必要があります。空白のままにすると、Doxygenは標準ヘッダーを生成します。次を使用してデフォルトのヘッダーから始めることを強くお勧めします：\verbatim doxygen -w latex new_header.tex new_footer.tex new_stylesheet.sty \endverbatim 次にファイル\c new_header.texを変更します。Doxygenが通常使用するデフォルトヘッダーの生成方法については、セクション\ref doxygen_usageも参照してください。<br>注意：自分が何をしているかを理解している場合にのみ、ユーザー定義ヘッダーを使用してください！@note ヘッダーは変更される可能性があるため、通常はDoxygenの新しいバージョンにアップグレードする際にデフォルトヘッダーを再生成する必要があります。]]>
+      </docs>
+      <docs filter="doxyfile,doxywizard">
+<![CDATA[
+使用可能なマーカー名とブロック名の説明については、ドキュメントを参照してください。
+]]>
       </docs>
     </option>
     <option type="string" id="LATEX_FOOTER" format="file" defval="" depends="GENERATE_LATEX">

@@ -201,6 +201,11 @@
       <docs>
 <![CDATA[Этот тег можно использовать для указания нескольких псевдонимов, которые будут действовать как команды в документации. Псевдоним имеет форму: \verbatim имя=значение\endverbatim Например, добавление \verbatim "sideeffect=@par Побочные эффекты:^^"\endverbatim позволит вам разместить команду \c \sideeffect (или \c \@sideeffect) в документации, что приведет к созданию пользовательского абзаца с заголовком "Побочные эффекты:". Обратите внимание, что вы не можете поместить \ref cmdn "\n" в часть значения псевдонима для вставки разрыва строки (в результирующем выводе). Вы можете поместить `^^` в часть значения псевдонима для вставки разрыва строки, как если бы в исходном файле был физический разрыв строки.]]>
       </docs>
+      <docs>
+<![CDATA[
+Когда вам нужен литерал `{` или `}` или `,` в значении псевдонима, вам необходимо экранировать их с помощью обратной косой черты (\c \\), это может привести к конфликтам с командами \c \\{ и \c \\}, для них рекомендуется использовать вариант \c @@{ и \c @@} или использовать двойное экранирование (\c \\\\{ и \c \\\\})
+]]>
+    </docs>
     </option>
     <option type="bool" id="OPTIMIZE_OUTPUT_FOR_C" defval="0">
       <docs>
@@ -546,6 +551,11 @@
     <option type="string" id="FILE_VERSION_FILTER" format="file" defval="">
       <docs>
 <![CDATA[Тег \c FILE_VERSION_FILTER можно использовать для указания программы или скрипта, который Doxygen должен вызвать для получения текущей версии каждого файла (обычно из системы контроля версий). Doxygen вызовет программу, выполнив (через <code>popen()</code>) команду <code>command input_file</code>, где \c command — значение тега \c FILE_VERSION_FILTER, а \c input_file — имя входного файла, предоставленного Doxygen. Все, что программа выведет в стандартный вывод, будет использовано как версия файла.]]>
+      </docs>
+      <docs filter="doxyfile,doxywizard">
+<![CDATA[
+Пример см. в документации.
+]]>
       </docs>
     </option>
     <option type="string" id="LAYOUT_FILE" format="file" defval="">
@@ -1000,7 +1010,12 @@ doxygen -w html new_header.html new_footer.html new_stylesheet.css YourConfigFil
  см. в разделе \ref doxygen_usage.
 
  @note Заголовок может изменяться, поэтому как правило необходимо повторно генерировать заголовок по умолчанию
- при обновлении до более новой версии Doxygen. Описание возможных маркеров и имён блоков см. в документации.]]>
+ при обновлении до более новой версии Doxygen.]]>
+      </docs>
+      <docs filter="doxyfile,doxywizard">
+<![CDATA[
+Описание возможных маркеров и названий блоков см. в документации.
+]]>
       </docs>
     </option>
     <option type="string" id="HTML_FOOTER" format="file" defval="" depends="GENERATE_HTML">
@@ -1025,6 +1040,11 @@ doxygen -w html new_header.html new_footer.html new_stylesheet.css YourConfigFil
     <option type="list" id="HTML_EXTRA_STYLESHEET" format="file" defval="" depends="GENERATE_HTML">
       <docs>
 <![CDATA[Тег \c HTML_EXTRA_STYLESHEET можно использовать для указания дополнительных пользовательских каскадных таблиц стилей, которые будут включены после стандартной таблицы стилей, созданной Doxygen. Используйте эту опцию для переопределения некоторых аспектов стиля. Это предпочтительнее, чем использование \ref cfg_html_stylesheet "HTML_STYLESHEET", так как это не заменяет стандартную таблицу стилей и поэтому более надёжно для будущих обновлений. Doxygen скопирует файл таблицы стилей в выходной каталог. \note Порядок дополнительных файлов таблиц стилей важен (например, последняя таблица стилей в списке переопределяет настройки предыдущей таблицы стилей в списке). \note Поскольку в настоящее время невозможно переопределить стиль полосы прокрутки в Webkit/Chromium, стиль полосы прокрутки будет опущен в стандартном doxygen.css, если указана одна или несколько дополнительных таблиц стилей. Поэтому, если требуется пользовательская полоса прокрутки, её необходимо добавить явно.]]>
+      </docs>
+      <docs filter="doxyfile,doxywizard">
+<![CDATA[
+Пример см. в документации.
+]]>
       </docs>
     </option>
     <option type="list" id="HTML_EXTRA_FILES" format="file" depends="GENERATE_HTML">
@@ -1393,6 +1413,11 @@ doxygen -w html new_header.html new_footer.html new_stylesheet.css YourConfigFil
       <docs>
 <![CDATA[Тег \c MATHJAX_CODEFILE можно использовать для указания файла с фрагментами кода JavaScript, которые будут использоваться при запуске кода MathJax. Для получения дополнительной информации см. сайт MathJax: - <a href="https://docs.mathjax.org/en/v2.7/">MathJax версии 2</a> - <a href="https://docs.mathjax.org/en/v3.2/">MathJax версии 3</a> - <a href="https://docs.mathjax.org/en/v4.0/">MathJax версии 4</a>]]>
       </docs>
+      <docs filter="doxyfile,doxywizard">
+<![CDATA[
+Пример см. в документации.
+]]>
+      </docs>
     </option>
     <option type="bool" id="SEARCHENGINE" defval="1" depends="GENERATE_HTML">
       <docs>
@@ -1524,9 +1549,12 @@ doxygen -w latex new_header.tex new_footer.tex new_stylesheet.sty
  <br>Примечание: используйте пользовательский заголовок только если вы знаете, что делаете!
 
  @note Заголовок может изменяться, поэтому как правило
- необходимо повторно генерировать заголовок по умолчанию при обновлении до более новой версии Doxygen.
- Следующие команды имеют особое значение внутри заголовка (и нижнего колонтитула):
-Описание возможных маркеров и имён блоков см. в документации.]]>
+ необходимо повторно генерировать заголовок по умолчанию при обновлении до более новой версии Doxygen.]]>
+      </docs>
+      <docs filter="doxyfile,doxywizard">
+<![CDATA[
+Описание возможных маркеров и названий блоков см. в документации.
+]]>
       </docs>
     </option>
     <option type="string" id="LATEX_FOOTER" format="file" defval="" depends="GENERATE_LATEX">

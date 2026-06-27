@@ -199,8 +199,13 @@
     </option>
     <option type="list" id="ALIASES" format="string">
       <docs>
-<![CDATA[Esta etiqueta se puede usar para especificar varios alias que actuen como comandos en la documentación. Un alias tiene la forma: \verbatim nombre=valor\endverbatim Por ejemplo, agregar \verbatim "sideeffect=@par Efectos secundarios:^^"\endverbatim le permitirá colocar el comando \c \sideeffect (o \c \@sideeffect) en la documentación, lo que resultará en un párrafo definido por el usuario con el encabezado "Efectos secundarios:". Tenga en cuenta que no puede poner \ref cmdn "\n" en el valor de un alias para insertar un salto de línea (en la salida resultante). Puede poner `^^` en el valor de un alias para insertar un salto de línea como si hubiera un salto de línea físico en el archivo original. Si necesita un `{` o `}` o `,` literal en el valor de un alias, debe escaparlos con una barra invertida; esto puede generar conflictos con los comandos `\{` y `\}`, por lo que para estos se recomienda usar la versión `@{` y `@}` o usar una doble barra invertida (`\\\\{` y `\\\\}`).]]>
+<![CDATA[Esta etiqueta se puede usar para especificar varios alias que actuen como comandos en la documentación. Un alias tiene la forma: \verbatim nombre=valor\endverbatim Por ejemplo, agregar \verbatim "sideeffect=@par Efectos secundarios:^^"\endverbatim le permitirá colocar el comando \c \sideeffect (o \c \@sideeffect) en la documentación, lo que resultará en un párrafo definido por el usuario con el encabezado "Efectos secundarios:". Tenga en cuenta que no puede poner \ref cmdn "\n" en el valor de un alias para insertar un salto de línea (en la salida resultante). Puede poner `^^` en el valor de un alias para insertar un salto de línea como si hubiera un salto de línea físico en el archivo original.]]>
       </docs>
+      <docs>
+<![CDATA[
+Cuando necesites usar literalmente `{`, `}` o `,` en el valor de un alias, debes escaparlos con una barra invertida (\c \\). Esto puede generar conflictos con los comandos `\c \\{` y `\c \\}`. Para estos últimos, se recomienda usar la versión `\c @@{` y `\c @@}` o usar una doble secuencia de escape (`\c \\\\{` y `\c \\\\}`).
+]]>
+    </docs>
     </option>
     <option type="bool" id="OPTIMIZE_OUTPUT_FOR_C" defval="0">
       <docs>
@@ -545,7 +550,12 @@
     </option>
     <option type="string" id="FILE_VERSION_FILTER" format="file" defval="">
       <docs>
-<![CDATA[La etiqueta \c FILE_VERSION_FILTER se puede usar para especificar un programa o script que Doxygen debe invocar para obtener la versión actual de cada archivo (típicamente del sistema de control de versiones). Doxygen invocará el programa ejecutando (via <code>popen()</code>) el comando <code>command input_file</code>, donde \c command es el valor de la etiqueta \c FILE_VERSION_FILTER y \c input_file es el nombre de un archivo de entrada proporcionado por Doxygen. Lo que sea que el programa escriba en la salida estándar se usará como la versión del archivo. Para un ejemplo, vea la documentación.]]>
+<![CDATA[La etiqueta \c FILE_VERSION_FILTER se puede usar para especificar un programa o script que Doxygen debe invocar para obtener la versión actual de cada archivo (típicamente del sistema de control de versiones). Doxygen invocará el programa ejecutando (via <code>popen()</code>) el comando <code>command input_file</code>, donde \c command es el valor de la etiqueta \c FILE_VERSION_FILTER y \c input_file es el nombre de un archivo de entrada proporcionado por Doxygen. Lo que sea que el programa escriba en la salida estándar se usará como la versión del archivo.]]>
+      </docs>
+      <docs filter="doxyfile,doxywizard">
+<![CDATA[
+Para un ejemplo, vea la documentación.
+]]>
       </docs>
     </option>
     <option type="string" id="LAYOUT_FILE" format="file" defval="">
@@ -880,7 +890,12 @@
     </option>
     <option type="string" id="HTML_HEADER" format="file" defval="" depends="GENERATE_HTML">
       <docs>
-<![CDATA[La etiqueta \c HTML_HEADER se puede usar para especificar un archivo de encabezado HTML personalizado para cada página HTML generada. Si la etiqueta se deja vacía, Doxygen generará un encabezado estándar. <br>Para obtener HTML válido, el archivo de encabezado debe contener todos los scripts y hojas de estilo que Doxygen necesita, lo cual depende de las opciones de configuración usadas (por ejemplo, la configuración \ref cfg_generate_treeview "GENERATE_TREEVIEW"). Se recomienda encarecidamente comenzar con un encabezado estándar usando \verbatim doxygen -w html new_header.html new_footer.html new_stylesheet.css YourConfigFile \endverbatim y luego modificar el archivo \c new_header.html. Vea también la sección \ref doxygen_usage para información sobre como generar el encabezado estándar que Doxygen normalmente usa. @note El encabezado puede cambiar, por lo que generalmente necesita regenerar el encabezado estándar cuando actualiza a una versión más nueva de Doxygen. Para una descripción de los posibles marcadores y nombres de bloques, vea la documentación.]]>
+<![CDATA[La etiqueta \c HTML_HEADER se puede usar para especificar un archivo de encabezado HTML personalizado para cada página HTML generada. Si la etiqueta se deja vacía, Doxygen generará un encabezado estándar. <br>Para obtener HTML válido, el archivo de encabezado debe contener todos los scripts y hojas de estilo que Doxygen necesita, lo cual depende de las opciones de configuración usadas (por ejemplo, la configuración \ref cfg_generate_treeview "GENERATE_TREEVIEW"). Se recomienda encarecidamente comenzar con un encabezado estándar usando \verbatim doxygen -w html new_header.html new_footer.html new_stylesheet.css YourConfigFile \endverbatim y luego modificar el archivo \c new_header.html. Vea también la sección \ref doxygen_usage para información sobre como generar el encabezado estándar que Doxygen normalmente usa. @note El encabezado puede cambiar, por lo que generalmente necesita regenerar el encabezado estándar cuando actualiza a una versión más nueva de Doxygen.]]>
+      </docs>
+      <docs filter="doxyfile,doxywizard">
+<![CDATA[
+Para una descripción de los posibles marcadores y nombres de bloques, vea la documentación.
+]]>
       </docs>
     </option>
     <option type="string" id="HTML_FOOTER" format="file" defval="" depends="GENERATE_HTML">
@@ -895,7 +910,12 @@
     </option>
     <option type="list" id="HTML_EXTRA_STYLESHEET" format="file" defval="" depends="GENERATE_HTML">
       <docs>
-<![CDATA[La etiqueta \c HTML_EXTRA_STYLESHEET se puede usar para especificar hojas de estilo en cascada personalizadas adicionales que se incluirán después de las hojas de estilo estándar creadas por Doxygen. Con esta opción puede anular ciertos aspectos de estilo. Esto es preferible al uso de \ref cfg_html_stylesheet "HTML_STYLESHEET" ya que no reemplaza la hoja de estilo estándar y por lo tanto es más robusto frente a actualizaciones futuras. Doxygen copiará los archivos de hoja de estilo en el directorio de salida. \nota El orden de los archivos de hoja de estilo adicionales es importante (por ejemplo, la última hoja de estilo en la lista anula la configuración de las anteriores en la lista). \nota Dado que el estilo de las barras de desplazamiento en webkit/Chromium actualmente no se puede anular, el estilo del archivo estándar doxygen.css se omite cuando se especifican una o más hojas de estilo adicionales. Entonces, si se desea personalizar las barras de desplazamiento, debe agregarse explícitamente. Para un ejemplo, vea la documentación.]]>
+<![CDATA[La etiqueta \c HTML_EXTRA_STYLESHEET se puede usar para especificar hojas de estilo en cascada personalizadas adicionales que se incluirán después de las hojas de estilo estándar creadas por Doxygen. Con esta opción puede anular ciertos aspectos de estilo. Esto es preferible al uso de \ref cfg_html_stylesheet "HTML_STYLESHEET" ya que no reemplaza la hoja de estilo estándar y por lo tanto es más robusto frente a actualizaciones futuras. Doxygen copiará los archivos de hoja de estilo en el directorio de salida. \nota El orden de los archivos de hoja de estilo adicionales es importante (por ejemplo, la última hoja de estilo en la lista anula la configuración de las anteriores en la lista). \nota Dado que el estilo de las barras de desplazamiento en webkit/Chromium actualmente no se puede anular, el estilo del archivo estándar doxygen.css se omite cuando se especifican una o más hojas de estilo adicionales. Entonces, si se desea personalizar las barras de desplazamiento, debe agregarse explícitamente.]]>
+      </docs>
+      <docs filter="doxyfile,doxywizard">
+<![CDATA[
+Para un ejemplo, vea la documentación.
+]]>
       </docs>
     </option>
     <option type="list" id="HTML_EXTRA_FILES" format="file" depends="GENERATE_HTML">
@@ -1162,7 +1182,7 @@
       <value name="chtml" desc="(Este es el nombre para MathJax versión 3, para MathJax versión 2 se traducirá a &lt;code&gt;HTML-CSS&lt;/code&gt;)"/>
       <value name="SVG"/>
     </option>
-        <option type="string" id="MATHJAX_RELPATH" format="string" depends="USE_MATHJAX">
+    <option type="string" id="MATHJAX_RELPATH" format="string" depends="USE_MATHJAX">
       <docs>
 <![CDATA[
  Cuando MathJax está activado, necesita especificar la ubicación relativa al directorio
@@ -1189,7 +1209,12 @@
     </option>
     <option type="string" id="MATHJAX_CODEFILE" format="string" depends="USE_MATHJAX">
       <docs>
-<![CDATA[La etiqueta \c MATHJAX_CODEFILE se puede usar para especificar un archivo con fragmentos de código JavaScript que se usarán cuando se inicie el código MathJax. Vea el sitio web de MathJax para más detalles: - <a href="https://docs.mathjax.org/en/v2.7/">MathJax versión 2</a> - <a href="https://docs.mathjax.org/en/v3.2/">MathJax versión 3</a> - <a href="https://docs.mathjax.org/en/v4.0/">MathJax versión 4</a> Para un ejemplo, vea la documentación.]]>
+<![CDATA[La etiqueta \c MATHJAX_CODEFILE se puede usar para especificar un archivo con fragmentos de código JavaScript que se usarán cuando se inicie el código MathJax. Vea el sitio web de MathJax para más detalles: - <a href="https://docs.mathjax.org/en/v2.7/">MathJax versión 2</a> - <a href="https://docs.mathjax.org/en/v3.2/">MathJax versión 3</a> - <a href="https://docs.mathjax.org/en/v4.0/">MathJax versión 4</a>]]>
+      </docs>
+      <docs filter="doxyfile,doxywizard">
+<![CDATA[
+Para un ejemplo, vea la documentación.
+]]>
       </docs>
     </option>
     <option type="bool" id="SEARCHENGINE" defval="1" depends="GENERATE_HTML">
@@ -1275,7 +1300,12 @@
     </option>
     <option type="string" id="LATEX_HEADER" format="file" defval="" depends="GENERATE_LATEX">
       <docs>
-<![CDATA[La etiqueta \c LATEX_HEADER se puede usar para especificar un encabezado \f$\mbox{\LaTeX}\f$ personalizado para el documento \f$\mbox{\LaTeX}\f$ generado. El encabezado debe contener todo hasta el primer capítulo. Si se deja vacío, Doxygen generará un encabezado estándar. Se recomienda encarecidamente comenzar con un encabezado estándar usando \verbatim doxygen -w latex new_header.tex new_footer.tex new_stylesheet.sty \endverbatim y luego modificar el archivo \c new_header.tex. Vea también la sección \ref doxygen_usage para información sobre como generar el encabezado estándar que Doxygen normalmente usa. <br>Nota: ¡Solo use un encabezado personalizado si sabe lo que está haciendo! @note El encabezado puede cambiar, por lo que generalmente necesita regenerar el encabezado estándar cuando actualiza a una versión más nueva de Doxygen. Para una descripción de los posibles marcadores y nombres de bloques, vea la documentación.]]>
+<![CDATA[La etiqueta \c LATEX_HEADER se puede usar para especificar un encabezado \f$\mbox{\LaTeX}\f$ personalizado para el documento \f$\mbox{\LaTeX}\f$ generado. El encabezado debe contener todo hasta el primer capítulo. Si se deja vacío, Doxygen generará un encabezado estándar. Se recomienda encarecidamente comenzar con un encabezado estándar usando \verbatim doxygen -w latex new_header.tex new_footer.tex new_stylesheet.sty \endverbatim y luego modificar el archivo \c new_header.tex. Vea también la sección \ref doxygen_usage para información sobre como generar el encabezado estándar que Doxygen normalmente usa. <br>Nota: ¡Solo use un encabezado personalizado si sabe lo que está haciendo! @note El encabezado puede cambiar, por lo que generalmente necesita regenerar el encabezado estándar cuando actualiza a una versión más nueva de Doxygen.]]>
+      </docs>
+      <docs filter="doxyfile,doxywizard">
+<![CDATA[
+Para una descripción de los posibles marcadores y nombres de bloques, vea la documentación.
+ ]]>
       </docs>
     </option>
     <option type="string" id="LATEX_FOOTER" format="file" defval="" depends="GENERATE_LATEX">

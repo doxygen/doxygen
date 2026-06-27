@@ -199,7 +199,15 @@
     </option>
     <option type="list" id="ALIASES" format="string">
       <docs>
-<![CDATA[Cette balise peut être utilisée pour spécifier un certain nombre d'alias qui agissent comme des commandes dans la documentation. Un alias à la forme: \verbatim name=value \endverbatim Par exemple, ajouter \verbatim "sideeffect=@par Side Effects:^^" \endverbatim vous permettra de placer la commande \c \\sideeffect (ou \c \@sideeffect) dans la documentation, ce qui résultera en un paragraphe défini par l'utilisateur avec le titre "Side Effects:". Notez que vous ne pouvez pas mettre de \ref cmdn "\\n" dans la partie valeur d'un alias pour insérer des sauts de ligne (dans la sortie résultante). Vous pouvez mettre `^^` dans la partie valeur d'un alias pour insérer un saut de ligne comme si un saut de ligne physique était dans le fichier original. Si vous avez besoin d'un `{` ou `}` ou `,` littéral dans la partie valeur d'un alias, vous devez les échapper avec une barre oblique inverse (\c \\).]]>
+<![CDATA[Cette balise peut être utilisée pour spécifier un certain nombre d'alias qui agissent comme des commandes dans la documentation. Un alias à la forme: \verbatim name=value \endverbatim Par exemple, ajouter \verbatim "sideeffect=@par Side Effects:^^" \endverbatim vous permettra de placer la commande \c \\sideeffect (ou \c \@sideeffect) dans la documentation, ce qui résultera en un paragraphe défini par l'utilisateur avec le titre "Side Effects:". Notez que vous ne pouvez pas mettre de \ref cmdn "\\n" dans la partie valeur d'un alias pour insérer des sauts de ligne (dans la sortie résultante). Vous pouvez mettre `^^` dans la partie valeur d'un alias pour insérer un saut de ligne comme si un saut de ligne physique était dans le fichier original.]]>
+      </docs>
+      <docs>
+<![CDATA[
+Lorsque vous avez besoin d'un caractère littéral `{` ou `}` ou `,` dans la valeur d'un alias, vous devez
+les échapper à l'aide d'une barre oblique inverse (\c \\). Cela peut entraîner des conflits avec les
+commandes \c \\{ et \c \\}. Pour celles-ci, il est conseillé d'utiliser la version \c @@{ et \c @@} ou
+d'utiliser une double échappement (\c \\\\{ et \c \\\\}).
+]]>
       </docs>
     </option>
     <option type="bool" id="OPTIMIZE_OUTPUT_FOR_C" defval="0">
@@ -547,6 +555,11 @@
       <docs>
 <![CDATA[La balise \c FILE_VERSION_FILTER peut être utilisée pour spécifier un programme ou script que Doxygen devrait invoquer pour obtenir la version actuelle de chaque fichier (généralement à partir du système de contrôle de version). Doxygen invoquera le programme en executant (via <code>popen()</code>) la commande <code>command input_file</code>, ou \c command est la valeur de la balise \c FILE_VERSION_FILTER, et \c input_file est le nom d'un fichier d'entrée fourni par Doxygen. Ce que le programme écrit sur la sortie standard est utilisé comme version de fichier.]]>
       </docs>
+      <docs filter="doxyfile,doxywizard">
+<![CDATA[
+Pour un exemple, consultez la documentation.
+]]>
+      </docs>
     </option>
     <option type="string" id="LAYOUT_FILE" format="file" defval="">
       <docs>
@@ -882,6 +895,11 @@
       <docs>
 <![CDATA[La balise \c HTML_HEADER peut être utilisée pour spécifier un fichier d'en-tête HTML défini par l'utilisateur pour chaque page HTML générée. Si la balise est laissée vide, Doxygen générera un en-tête standard. <br>Pour obtenir un HTML valide, le fichier d'en-tête doit inclure tous les scripts et feuilles de style dont Doxygen a besoin, ce qui dépend des options de configuration utilisées (par exemple le paramètre \ref cfg_generate_treeview "GENERATE_TREEVIEW"). Il est fortement recommandé de commencer avec un en-tête par défaut en utilisant \verbatim doxygen -w html new_header.html new_footer.html new_stylesheet.css YourConfigFile \endverbatim puis de modifier le fichier \c new_header.html. Voir aussi la section \ref doxygen_usage pour plus d'informations sur la génération de l'en-tête par défaut que Doxygen utilise normalement. @note L'en-tête est sujet à changement, donc vous devez généralement régénérer l'en-tête par défaut lors de la mise à jour vers une version plus récente de Doxygen.]]>
       </docs>
+      <docs filter="doxyfile,doxywizard">
+<![CDATA[
+Pour une description des marqueurs et noms de blocs possibles, consultez la documentation.
+]]>
+      </docs>
     </option>
     <option type="string" id="HTML_FOOTER" format="file" defval="" depends="GENERATE_HTML">
       <docs>
@@ -896,6 +914,11 @@
     <option type="list" id="HTML_EXTRA_STYLESHEET" format="file" defval="" depends="GENERATE_HTML">
       <docs>
 <![CDATA[La balise \c HTML_EXTRA_STYLESHEET peut être utilisée pour spécifier des feuilles de style en cascade supplémentaires définies par l'utilisateur qui sont incluses après les feuilles de style standard créées par Doxygen. En utilisant cette option, on peut redéfinir certains aspects de style. Ceci est préférable à l'utilisation de \ref cfg_html_stylesheet "HTML_STYLESHEET" car elle ne remplace pas la feuille de style standard et est donc plus robuste face aux mises à jour futures. Doxygen copiera les fichiers de feuille de style dans le répertoire de sortie. \note L'ordre des fichiers de feuille de style supplémentaires est important (par exemple, la dernière feuille de style de la liste redéfinit les paramètres des précédentes dans la liste). \note Comme le style des barres de défilement ne peut actuellement pas être remplace dans Webkit/Chromium, le style sera omis du doxygen.css par défaut si une ou plusieurs feuilles de style supplémentaires ont été spécifiées. Donc si la personnalisation des barres de défilement est souhaitée, elle doit être ajoutée explicitement.]]>
+      </docs>
+      <docs filter="doxyfile,doxywizard">
+<![CDATA[
+Pour un exemple, consultez la documentation.
+]]>
       </docs>
     </option>
     <option type="list" id="HTML_EXTRA_FILES" format="file" depends="GENERATE_HTML">
@@ -1162,7 +1185,7 @@
       <value name="chtml" desc="(C'est le nom pour MathJax version 3, pour MathJax version 2 cela sera traduit en &lt;code&gt;HTML-CSS&lt;/code&gt;)"/>
       <value name="SVG"/>
     </option>
-        <option type="string" id="MATHJAX_RELPATH" format="string" depends="USE_MATHJAX">
+    <option type="string" id="MATHJAX_RELPATH" format="string" depends="USE_MATHJAX">
       <docs>
 <![CDATA[
  Lorsque MathJax est activé, vous devez spécifier l'emplacement relatif au répertoire
@@ -1189,6 +1212,11 @@
     <option type="string" id="MATHJAX_CODEFILE" format="string" depends="USE_MATHJAX">
       <docs>
 <![CDATA[La balise \c MATHJAX_CODEFILE peut être utilisée pour spécifier un fichier avec des morceaux de code JavaScript qui seront utilisés au démarrage du code MathJax. Voir le site Mathjax pour plus de détails: - <a href="https://docs.mathjax.org/en/v2.7/">MathJax version 2</a> - <a href="https://docs.mathjax.org/en/v3.2/">MathJax version 3</a> - <a href="https://docs.mathjax.org/en/v4.0/">MathJax version 4</a>]]>
+      </docs>
+      <docs filter="doxyfile,doxywizard">
+<![CDATA[
+Pour un exemple, consultez la documentation.
+]]>
       </docs>
     </option>
     <option type="bool" id="SEARCHENGINE" defval="1" depends="GENERATE_HTML">
@@ -1274,7 +1302,12 @@
     </option>
     <option type="string" id="LATEX_HEADER" format="file" defval="" depends="GENERATE_LATEX">
       <docs>
-<![CDATA[La balise \c LATEX_HEADER peut être utilisée pour spécifier un en-tête \f$\mbox{\LaTeX}\f$ défini par l'utilisateur pour le document \f$\mbox{\LaTeX}\f$ généré. L'en-tête doit contenir tout jusqu'au premier chapitre. S'il est laissé vide, Doxygen générera un en-tête standard. Il est fortement recommandé de commencer avec un en-tête par défaut en utilisant \verbatim doxygen -w latex new_header.tex new_footer.tex new_stylesheet.sty \endverbatim puis de modifier le fichier \c new_header.tex. Voir aussi la section \ref doxygen_usage pour plus d'informations sur la génération de l'en-tête par défaut que Doxygen utilise normalement. <br>Note: N'utilisez un en-tête défini par l'utilisateur que si vous savez ce que vous faites! @note L'en-tête est sujet à changement, donc vous devez généralement régénérer l'en-tête par défaut lors de la mise à jour vers une version plus récente de Doxygen. Les commandes suivantes ont une signification spéciale dans l'en-tête (et le pied de page):]]>
+<![CDATA[La balise \c LATEX_HEADER peut être utilisée pour spécifier un en-tête \f$\mbox{\LaTeX}\f$ défini par l'utilisateur pour le document \f$\mbox{\LaTeX}\f$ généré. L'en-tête doit contenir tout jusqu'au premier chapitre. S'il est laissé vide, Doxygen générera un en-tête standard. Il est fortement recommandé de commencer avec un en-tête par défaut en utilisant \verbatim doxygen -w latex new_header.tex new_footer.tex new_stylesheet.sty \endverbatim puis de modifier le fichier \c new_header.tex. Voir aussi la section \ref doxygen_usage pour plus d'informations sur la génération de l'en-tête par défaut que Doxygen utilise normalement. <br>Note: N'utilisez un en-tête défini par l'utilisateur que si vous savez ce que vous faites! @note L'en-tête est sujet à changement, donc vous devez généralement régénérer l'en-tête par défaut lors de la mise à jour vers une version plus récente de Doxygen.]]>
+      </docs>
+      <docs filter="doxyfile,doxywizard">
+<![CDATA[
+Pour une description des marqueurs et noms de blocs possibles, consultez la documentation.
+]]>
       </docs>
     </option>
     <option type="string" id="LATEX_FOOTER" format="file" defval="" depends="GENERATE_LATEX">
