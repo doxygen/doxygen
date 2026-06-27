@@ -13090,10 +13090,6 @@ void parseInput()
   CitationManager::instance().generatePage();
   g_s.end();
 
-  g_s.begin("Counting members...\n");
-  countMembers();
-  g_s.end();
-
   g_s.begin("Counting data structures...\n");
   Index::instance().countDataStructures();
   g_s.end();
@@ -13300,6 +13296,12 @@ void generateOutput()
 
   g_s.begin("Generating file sources...\n");
   generateFileSources();
+  g_s.end();
+
+  g_s.begin("Counting members...\n");
+  // needs to be done after generating the sources
+  // but before generating the compound documentation, see bug #12233
+  countMembers();
   g_s.end();
 
   g_s.begin("Generating file documentation...\n");
