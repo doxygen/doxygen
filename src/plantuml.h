@@ -45,6 +45,13 @@ class PlantumlManager
 
     static PlantumlManager &instance();
 
+    bool needToRun() const
+    {
+      return !m_pngPlantumlContent.empty() ||
+             !m_svgPlantumlContent.empty() ||
+             !m_epsPlantumlContent.empty();
+    }
+
     /** Run plant UML tool for all images */
     void run();
 

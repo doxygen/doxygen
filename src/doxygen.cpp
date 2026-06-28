@@ -13418,15 +13418,21 @@ void generateOutput()
     g_s.end();
   }
 
-  g_s.begin("Running plantuml with JAVA...\n");
-  PlantumlManager::instance().run();
-  g_s.end();
+  if (PlantumlManager::instance().needToRun())
+  {
+    g_s.begin("Running plantuml with JAVA...\n");
+    PlantumlManager::instance().run();
+    g_s.end();
+  }
 
-  g_s.begin("Running mermaid (mmdc)...\n");
-  MermaidManager::instance().run();
-  g_s.end();
+  if (MermaidManager::instance().needToRun())
+  {
+    g_s.begin("Running mermaid (mmdc)...\n");
+    MermaidManager::instance().run();
+    g_s.end();
+  }
 
-  if (Config_getBool(HAVE_DOT))
+  if (Config_getBool(HAVE_DOT) && DotManager::instance()->needToRun())
   {
     g_s.begin("Running dot...\n");
     DotManager::instance()->run();

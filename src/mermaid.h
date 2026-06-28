@@ -48,6 +48,7 @@ class MermaidManager
 
     void setHasInlineDiagrams();
     bool hasInlineDiagrams() const { return m_hasInlineDiagrams; }
+    bool needToRun() const { return !m_diagrams.empty(); }
 
     /** Run mmdc tool for all collected diagrams */
     void run();

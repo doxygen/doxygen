@@ -36,6 +36,7 @@ class DotManager
     static DotManager *instance();
     void addJob(const DotJob &newJob);
     DotFilePatcher *createFilePatcher(const QCString &fileName);
+    bool needToRun() const { return m_jobs.size()+m_filePatchers.size()>0; }
     bool run();
 
   private:
