@@ -201,6 +201,11 @@
       <docs>
 <![CDATA[此标签可用于指定多个在文档中充当命令的别名。别名的形式为：\verbatim name=value\endverbatim 例如添加 \verbatim "sideeffect=@par Side Effects:^^"\endverbatim 将允许您在文档中放置命令 \c \sideeffect（或 \c \@sideeffect），这将产生一个带有标题"Side Effects:"的用户定义段落。请注意，您不能在别名的值部分放置 \ref cmdn "\n" 来插入换行符（在结果输出中）。您可以在别名的值部分放置 `^^` 来插入换行符，就像原始文件中有物理换行符一样。]]>
       </docs>
+      <docs>
+<![CDATA[
+当别名的值部分需要使用字面值 `{`、`}` 或 `,` 时，必须使用反斜杠 (\c \\) 进行转义。这可能会与命令 `\c \\{` 和 `\c \\}` 冲突。建议使用版本 `\c @@{` 和 `\c @@}`，或者使用双重转义 (\c \\\\{` 和 `\c \\\\})
+]]>
+      </docs>
     </option>
     <option type="bool" id="OPTIMIZE_OUTPUT_FOR_C" defval="0">
       <docs>
@@ -547,6 +552,11 @@
       <docs>
 <![CDATA[\c FILE_VERSION_FILTER 标签可用于指定 Doxygen 应调用的程序或脚本，以获取每个文件的当前版本（通常来自版本控制系统）。Doxygen 将通过执行（通过 <code>popen()</code>）命令 <code>command input_file</code> 来调用程序，其中 \c command 是 \c FILE_VERSION_FILTER 标签的值，\c input_file 是 Doxygen 提供的输入文件的名称。程序写入标准输出的任何内容都用作文件版本。]]>
       </docs>
+      <docs filter="doxyfile,doxywizard">
+<![CDATA[
+例如，请参阅文档。
+]]>
+      </docs>
     </option>
     <option type="string" id="LAYOUT_FILE" format="file" defval="">
       <docs>
@@ -882,6 +892,11 @@
       <docs>
 <![CDATA[\c HTML_HEADER 标签可用于为每个生成的 HTML 页面指定用户定义的 HTML 头文件。如果标签留空，Doxygen 将生成标准头文件。<br>要获得有效的 HTML，头文件需要包含 Doxygen 需要的任何脚本和样式表，这取决于使用的配置选项（例如设置 \ref cfg_generate_treeview "GENERATE_TREEVIEW"）。强烈建议使用默认头文件开始：\verbatim doxygen -w html new_header.html new_footer.html new_stylesheet.css YourConfigFile \endverbatim 然后修改文件 \c new_header.html。另请参阅第 \ref doxygen_usage 节以获取有关如何生成 Doxygen 通常使用的默认头文件的信息。@note 头文件可能会更改，因此通常在升级到更新版本的 Doxygen 时必须重新生成默认头文件。]]>
       </docs>
+      <docs filter="doxyfile,doxywizard">
+<![CDATA[
+有关可用标记和代码块名称的说明，请参阅文档。
+]]>
+      </docs>
     </option>
     <option type="string" id="HTML_FOOTER" format="file" defval="" depends="GENERATE_HTML">
       <docs>
@@ -896,6 +911,11 @@
     <option type="list" id="HTML_EXTRA_STYLESHEET" format="file" defval="" depends="GENERATE_HTML">
       <docs>
 <![CDATA[\c HTML_EXTRA_STYLESHEET 标签可用于指定在 Doxygen 创建的标准样式表之后包含的其他用户定义的级联样式表。使用此选项可以覆盖某些样式方面。这比使用 \ref cfg_html_stylesheet "HTML_STYLESHEET" 更可取，因为它不会替换标准样式表，因此对未来的更新更加健壮。Doxygen 会将样式表文件复制到输出目录。\note 额外样式表文件的顺序很重要（例如，列表中的最后一个样式表覆盖列表中前一个样式表的设置）。\note 由于目前无法在 Webkit/Chromium 中覆盖滚动条的样式，如果指定了一个或多个额外样式表，默认 doxygen.css 中将省略滚动条样式。因此，如果需要自定义滚动条，必须显式添加。]]>
+      </docs>
+      <docs filter="doxyfile,doxywizard">
+<![CDATA[
+例如，请参阅文档。
+]]>
       </docs>
     </option>
     <option type="list" id="HTML_EXTRA_FILES" format="file" depends="GENERATE_HTML">
@@ -1189,6 +1209,11 @@
       <docs>
 <![CDATA[\c MATHJAX_CODEFILE 标签可用于指定一个包含 JavaScript 代码片段的文件，这些代码将在 MathJax 代码启动时使用。有关更多详细信息，请参阅 Mathjax 网站：- <a href="https://docs.mathjax.org/en/v2.7/">MathJax 版本 2</a> - <a href="https://docs.mathjax.org/en/v3.2/">MathJax 版本 3</a> - <a href="https://docs.mathjax.org/en/v4.0/">MathJax 版本 4</a>]]>
       </docs>
+      <docs filter="doxyfile,doxywizard">
+<![CDATA[
+例如，请参阅文档。
+]]>
+      </docs>
     </option>
     <option type="bool" id="SEARCHENGINE" defval="1" depends="GENERATE_HTML">
       <docs>
@@ -1274,6 +1299,11 @@
     <option type="string" id="LATEX_HEADER" format="file" defval="" depends="GENERATE_LATEX">
       <docs>
 <![CDATA[\c LATEX_HEADER 标签可用于为生成的 \f$\mbox{\LaTeX}\f$ 文档指定用户定义的 \f$\mbox{\LaTeX}\f$ 头文件。头文件应包含直到第一章的所有内容。如果留空，Doxygen 将生成标准头文件。强烈建议使用默认头文件开始：\verbatim doxygen -w latex new_header.tex new_footer.tex new_stylesheet.sty \endverbatim 然后修改文件 \c new_header.tex。另请参阅第 \ref doxygen_usage 节以获取有关如何生成 Doxygen 通常使用的默认头文件的信息。<br>注意：只有在您知道自己在做什么时才使用用户定义的头文件！@note 头文件可能会更改，因此通常在升级到更新版本的 Doxygen 时必须重新生成默认头文件。]]>
+      </docs>
+      <docs filter="doxyfile,doxywizard">
+<![CDATA[
+有关可用标记和代码块名称的说明，请参阅文档。
+]]>
       </docs>
     </option>
     <option type="string" id="LATEX_FOOTER" format="file" defval="" depends="GENERATE_LATEX">

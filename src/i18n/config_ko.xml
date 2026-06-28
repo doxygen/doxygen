@@ -201,6 +201,11 @@
       <docs>
 <![CDATA[이 태그를 사용하여 문서에서 명령으로 작동하는 여러 별칭을 지정할 수 있습니다. 별칭의 형식은 다음과 같습니다: \verbatim name=value\endverbatim 예를 들어, \verbatim "sideeffect=@par Side Effects:^^"\endverbatim 를 추가하면 문서에 \c \sideeffect(또는 \c \@sideeffect) 명령을 배치할 수 있으며, "Side Effects:"라는 제목의 사용자 정의 단락이 생성됩니다. 별칭의 값 부분에 \ref cmdn "\n"을 넣어 줄 바꿈을 삽입할 수 없습니다(결과 출력에서). 별칭의 값 부분에 `^^`를 넣으면 원본 파일에 물리적 줄 바꿈이 있는 것처럼 줄 바꿈을 삽입할 수 있습니다.]]>
       </docs>
+      <docs>
+<![CDATA[
+별칭의 값 부분에 리터럴 `{`, `}` 또는 `,`가 필요한 경우 백슬래시(\c \\)를 사용하여 이스케이프해야 합니다. 이로 인해 `\c \\{` 및 `\c \\}` 명령과 충돌이 발생할 수 있습니다. 이러한 명령의 경우 `\c @@{` 및 `\c @@}` 버전을 사용하거나 이중 이스케이프(`\c \\\\{` 및 `\c \\\\}`)를 사용하는 것이 좋습니다.
+]]>
+    </docs>
     </option>
     <option type="bool" id="OPTIMIZE_OUTPUT_FOR_C" defval="0">
       <docs>
@@ -547,6 +552,11 @@
       <docs>
 <![CDATA[\c FILE_VERSION_FILTER 태그를 사용하여 Doxygen이 각 파일의 현재 버전을 가져오기 위해 호출하는 프로그램 또는 스크립트를 지정할 수 있습니다(일반적으로 버전 관리 시스템에서). Doxygen은 <code>popen()</code>을 통해 명령<code>command input_file</code>을 실행하여 프로그램을 호출합니다. 여기서 \c command는 \c FILE_VERSION_FILTER 태그의 값, \c input_file은 Doxygen이 제공하는 입력 파일의 이름입니다. 프로그램이 표준 출력에 쓰는 모든 것은 파일 버전으로 사용됩니다.]]>
       </docs>
+      <docs filter="doxyfile,doxywizard">
+<![CDATA[
+예시는 설명서를 참조하십시오.
+]]>
+      </docs>
     </option>
     <option type="string" id="LAYOUT_FILE" format="file" defval="">
       <docs>
@@ -882,6 +892,11 @@
       <docs>
 <![CDATA[\c HTML_HEADER 태그를 사용하여 생성되는 각 HTML 페이지의 사용자 정의 HTML 헤더 파일을 지정할 수 있습니다. 태그가 비워 두면 Doxygen은 표준 헤더를 생성합니다. <br>유효한 HTML을 얻으려면 헤더 파일에 Doxygen이 필요로 하는 모든 스크립트와 스타일시트를 포함해야 합니다. 이는 사용되는 설정 옵션에 따라 다릅니다(예: \ref cfg_generate_treeview "GENERATE_TREEVIEW" 설정). 다음을 사용하여 기본 헤더에서 시작하는 것이 좋습니다: \verbatim doxygen -w html new_header.html new_footer.html new_stylesheet.css YourConfigFile \endverbatim 그런 다음 파일 \c new_header.html을 수정하세요. Doxygen이 일반적으로 사용하는 기본 헤더 생성 방법에 대해서는 섹션 \ref doxygen_usage도 참조하세요. @note 헤더는 변경될 수 있으므로 일반적으로 Doxygen의 새 버전으로 업그레이드할 때 기본 헤더를 다시 생성해야 합니다.]]>
       </docs>
+      <docs filter="doxyfile,doxywizard">
+<![CDATA[
+사용 가능한 마커 및 블록 이름에 대한 설명은 설명서를 참조하십시오.
+]]>
+      </docs>
     </option>
     <option type="string" id="HTML_FOOTER" format="file" defval="" depends="GENERATE_HTML">
       <docs>
@@ -896,6 +911,11 @@
     <option type="list" id="HTML_EXTRA_STYLESHEET" format="file" defval="" depends="GENERATE_HTML">
       <docs>
 <![CDATA[\c HTML_EXTRA_STYLESHEET 태그를 사용하여 Doxygen에 의해 생성된 표준 스타일시트 이후에 포함되는 추가 사용자 정의 계단식 스타일시트를 지정할 수 있습니다. 이 옵션을 사용하면 특정 스타일 측면을 재정의할 수 있습니다. 이는 표준 스타일시트를 대체하지 않으므로 향후 업데이트에 대해 더 견고한 \ref cfg_html_stylesheet "HTML_STYLESHEET"를 사용하는 것보다 권장됩니다. Doxygen은 스타일시트 파일을 출력 디렉터리에 복사합니다. \note 추가 스타일시트 파일의 순서는 중요합니다(예: 목록의 마지막 스타일시트는 목록에서 이전 것의 설정을 재정의함). \note 스크롤바 스타일링은 현재 Webkit/Chromium에서 재정의할 수 없으므로 하나 이상의 추가 스타일시트가 지정된 경우 스타일링은 기본 doxygen.css에서 제외됩니다. 따라서 스크롤바 사용자 정의가 필요한 경우 명시적으로 추가해야 합니다.]]>
+      </docs>
+      <docs filter="doxyfile,doxywizard">
+<![CDATA[
+예시는 설명서를 참조하십시오.
+]]>
       </docs>
     </option>
     <option type="list" id="HTML_EXTRA_FILES" format="file" depends="GENERATE_HTML">
@@ -1190,6 +1210,11 @@
       <docs>
 <![CDATA[\c MATHJAX_CODEFILE 태그를 사용하여 MathJax 코드의 시작 시 사용되는 JavaScript 코드 조각을 포함하는 파일을 지정할 수 있습니다. 자세한 내용은 Mathjax 사이트를 참조하세요: - <a href="https://docs.mathjax.org/en/v2.7/">MathJax 버전 2</a> - <a href="https://docs.mathjax.org/en/v3.2/">MathJax 버전 3</a> - <a href="https://docs.mathjax.org/en/v4.0/">MathJax 버전 4</a>]]>
       </docs>
+      <docs filter="doxyfile,doxywizard">
+<![CDATA[
+예시는 설명서를 참조하십시오.
+]]>
+      </docs>
     </option>
     <option type="bool" id="SEARCHENGINE" defval="1" depends="GENERATE_HTML">
       <docs>
@@ -1274,7 +1299,12 @@
     </option>
     <option type="string" id="LATEX_HEADER" format="file" defval="" depends="GENERATE_LATEX">
       <docs>
-<![CDATA[\c LATEX_HEADER 태그를 사용하여 생성된 \f$\mbox{\LaTeX}\f$ 문서의 사용자 정의 \f$\mbox{\LaTeX}\f$ 헤더를 지정할 수 있습니다. 헤더는 첫 번째 장까지의 모든 것을 포함해야 합니다. 비워 두면 Doxygen은 표준 헤더를 생성합니다. 다음을 사용하여 기본 헤더에서 시작하는 것이 좋습니다: \verbatim doxygen -w latex new_header.tex new_footer.tex new_stylesheet.sty \endverbatim 그런 다음 파일 \c new_header.tex를 수정하세요. Doxygen이 일반적으로 사용하는 기본 헤더 생성 방법에 대해서는 섹션 \ref doxygen_usage도 참조하세요. <br>참고: 자신이 무엇을 하고 있는지 이해하는 경우에만 사용자 정의 헤더를 사용하세요! @note 헤더는 변경될 수 있으므로 일반적으로 Doxygen의 새 버전으로 업그레이드할 때 기본 헤더를 다시 생성해야 합니다. 다음 명령은 헤더(및 푸터) 내에서 특별한 의미를 갖습니다:]]>
+<![CDATA[\c LATEX_HEADER 태그를 사용하여 생성된 \f$\mbox{\LaTeX}\f$ 문서의 사용자 정의 \f$\mbox{\LaTeX}\f$ 헤더를 지정할 수 있습니다. 헤더는 첫 번째 장까지의 모든 것을 포함해야 합니다. 비워 두면 Doxygen은 표준 헤더를 생성합니다. 다음을 사용하여 기본 헤더에서 시작하는 것이 좋습니다: \verbatim doxygen -w latex new_header.tex new_footer.tex new_stylesheet.sty \endverbatim 그런 다음 파일 \c new_header.tex를 수정하세요. Doxygen이 일반적으로 사용하는 기본 헤더 생성 방법에 대해서는 섹션 \ref doxygen_usage도 참조하세요. <br>참고: 자신이 무엇을 하고 있는지 이해하는 경우에만 사용자 정의 헤더를 사용하세요! @note 헤더는 변경될 수 있으므로 일반적으로 Doxygen의 새 버전]]>
+      </docs>
+      <docs filter="doxyfile,doxywizard">
+<![CDATA[
+사용 가능한 마커 및 블록 이름에 대한 설명은 설명서를 참조하십시오.
+]]>
       </docs>
     </option>
     <option type="string" id="LATEX_FOOTER" format="file" defval="" depends="GENERATE_LATEX">
