@@ -199,8 +199,15 @@
     </option>
     <option type="list" id="ALIASES" format="string">
       <docs>
-<![CDATA[Dieses Tag kann verwendet werden, um eine Reihe von Aliasnamen anzugeben, die als Befehle in der Dokumentation fungieren. Ein Alias hat die Form: \verbatim name=wert\endverbatim Zum Beispiel wurde das Hinzufügen von \verbatim "sideeffect=@par Nebeneffekte:^^"\endverbatim es Ihnen ermöglichen, den Befehl \c \sideeffect (oder \c \@sideeffect) in der Dokumentation zu platzieren, was einen benutzerdefinierten Absatz mit der Überschrift "Nebeneffekte:" erzeugt. Beachten Sie, dass Sie im Werteteil eines Alias kein \ref cmdn "\n" einfügen können, um einen Zeilenumbruch einzufügen (in der resultierenden Ausgabe). Sie können `^^` im Werteteil eines Alias einfügen, um einen Zeilenumbruch einzufügen, als ob ein physikalischer Zeilenumbruch in der Originaldatei vorhanden wäre. Wenn Sie ein wörtliches `{` oder `}` oder `,` im Werteteil eines Alias benötigen, müssen Sie diese mit einem Backslash maskieren (\c \\).]]>
+<![CDATA[Dieses Tag kann verwendet werden, um eine Reihe von Aliasnamen anzugeben, die als Befehle in der Dokumentation fungieren. Ein Alias hat die Form: \verbatim name=wert\endverbatim Zum Beispiel wurde das Hinzufügen von \verbatim "sideeffect=@par Nebeneffekte:^^"\endverbatim es Ihnen ermöglichen, den Befehl \c \\sideeffect (oder \c \@sideeffect) in der Dokumentation zu platzieren, was einen benutzerdefinierten Absatz mit der Überschrift "Nebeneffekte:" erzeugt. Beachten Sie, dass Sie im Werteteil eines Alias kein \ref cmdn "\\n" einfügen können, um einen Zeilenumbruch einzufügen (in der resultierenden Ausgabe). Sie können `^^` im Werteteil eines Alias einfügen, um einen Zeilenumbruch einzufügen, als ob ein physikalischer Zeilenumbruch in der Originaldatei vorhanden wäre.]]>
       </docs>
+      <docs>
+<![CDATA[
+Wenn Sie in einem Alias im Wertteil ein Literal wie `{`, `}` oder `,` benötigen, müssen Sie diese
+mit einem Backslash (\c \\) maskieren. Dies kann zu Konflikten mit den
+Befehlen \c \\{ und \c \\} führen. Für diese empfiehlt es sich, die Versionen \c @@{ und \c @@} zu verwenden oder
+eine doppelte Maskierung (\c \\\\{ und \c \\\\}) zu verwenden.]]>
+    </docs>
     </option>
     <option type="bool" id="OPTIMIZE_OUTPUT_FOR_C" defval="0">
       <docs>
@@ -544,7 +551,12 @@
     </option>
     <option type="string" id="FILE_VERSION_FILTER" format="file" defval="">
       <docs>
-<![CDATA[Das \c FILE_VERSION_FILTER-Tag kann verwendet werden, um ein Programm oder Skript anzugeben, das Doxygen aufrufen soll, um die aktuelle Version für jede Datei zu erhalten (typischerweise vom Versionskontrollsystem). Doxygen ruft das Programm auf, indem es (über <code>popen()</code>) den Befehl <code>command input_file</code> ausführt, wobei \c command der Wert des \c FILE_VERSION_FILTER-Tags ist und \c input_file der Name einer von Doxygen bereitgestellten Eingabedatei ist. Was auch immer das Programm auf die Standardausgabe schreibt, wird als Dateiversion verwendet. Für ein Beispiel siehe die Dokumentation.]]>
+<![CDATA[Das \c FILE_VERSION_FILTER-Tag kann verwendet werden, um ein Programm oder Skript anzugeben, das Doxygen aufrufen soll, um die aktuelle Version für jede Datei zu erhalten (typischerweise vom Versionskontrollsystem). Doxygen ruft das Programm auf, indem es (über <code>popen()</code>) den Befehl <code>command input_file</code> ausführt, wobei \c command der Wert des \c FILE_VERSION_FILTER-Tags ist und \c input_file der Name einer von Doxygen bereitgestellten Eingabedatei ist. Was auch immer das Programm auf die Standardausgabe schreibt, wird als Dateiversion verwendet.]]>
+      </docs>
+      <docs filter="doxyfile,doxywizard">
+<![CDATA[
+ Für ein Beispiel siehe die Dokumentation.
+ ]]>
       </docs>
     </option>
     <option type="string" id="LAYOUT_FILE" format="file" defval="">
@@ -820,7 +832,12 @@
     </option>
     <option type="bool" id="USE_HTAGS" defval="0" depends="SOURCE_BROWSER">
       <docs>
-<![CDATA[Wenn das \c USE_HTAGS-Tag auf \c YES gesetzt ist, verweisen die Referenzen auf den Quellcode auf das vom \c htags(1)-Tool generierte HTML anstelle des integrierten Quellcode-Browsers von Doxygen. Das \c htags-Tool ist Teil des globalen Quellcode-Tagging-Systems von GNU (siehe https://www.gnu.org/software/global/global.html). Sie benötigen Version 4.8.6 oder höher. <br>Um es zu verwenden, tun Sie Folgendes: -# Installieren Sie die neueste Version von \c global -# Aktivieren Sie \ref cfg_source_browser "SOURCE_BROWSER" und \c USE_HTAGS in der Konfigurationsdatei -# Stellen Sie sicher, dass \ref cfg_input "INPUT" auf die Wurzel des Quellbaums zeigt -# Führen Sie \c doxygen wie gewohnt aus <br>Doxygen ruft \c htags auf (und das wiederum ruft \c gtags auf), daher müssen diese Tools über die Befehlszeile verfügbar sein (d.h. im Suchpfad). <br>Das Ergebnis: Anstelle des von Doxygen generierten Quellcode-Browsers zeigen die Links zum Quellcode jetzt auf die Ausgabe von \c htags.]]>
+<![CDATA[Wenn das \c USE_HTAGS-Tag auf \c YES gesetzt ist, verweisen die Referenzen auf den Quellcode auf das vom \c htags(1)-Tool generierte HTML anstelle des integrierten Quellcode-Browsers von Doxygen. Das \c htags-Tool ist Teil des globalen Quellcode-Tagging-Systems von GNU (siehe https://www.gnu.org/software/global/global.html). Sie benötigen Version 4.8.6 oder höher. <br>Um es zu verwenden, tun Sie Folgendes:
+-# Installieren Sie die neueste Version von \c global
+-# Aktivieren Sie \ref cfg_source_browser "SOURCE_BROWSER" und \c USE_HTAGS in der Konfigurationsdatei
+-# Stellen Sie sicher, dass \ref cfg_input "INPUT" auf die Wurzel des Quellbaums zeigt
+-# Führen Sie \c doxygen wie gewohnt aus
+<br>Doxygen ruft \c htags auf (und das wiederum ruft \c gtags auf), daher müssen diese Tools über die Befehlszeile verfügbar sein (d.h. im Suchpfad). <br>Das Ergebnis: Anstelle des von Doxygen generierten Quellcode-Browsers zeigen die Links zum Quellcode jetzt auf die Ausgabe von \c htags.]]>
       </docs>
     </option>
     <option type="bool" id="VERBATIM_HEADERS" defval="1">
@@ -879,7 +896,12 @@
     </option>
     <option type="string" id="HTML_HEADER" format="file" defval="" depends="GENERATE_HTML">
       <docs>
-<![CDATA[Das \c HTML_HEADER-Tag kann verwendet werden, um eine benutzerdefinierte HTML-Header-Datei für jede generierte HTML-Seite anzugeben. Wenn das Tag leer gelassen wird, generiert Doxygen einen Standard-Header. <br>Um gültiges HTML zu erhalten, muss die Header-Datei alle Skripte und Stylesheets enthalten, die Doxygen benötigt, was von den verwendeten Konfigurationsoptionen abhängt (z.B. die Einstellung \ref cfg_generate_treeview "GENERATE_TREEVIEW"). Es wird dringend empfohlen, mit einem Standard-Header zu beginnen, indem Sie \verbatim doxygen -w html new_header.html new_footer.html new_stylesheet.css YourConfigFile \endverbatim verwenden und dann die Datei \c new_header.html ändern. Siehe auch Abschnitt \ref doxygen_usage für Informationen zum Generieren des Standard-Headers, den Doxygen normalerweise verwendet. @note Der Header kann sich ändern, daher müssen Sie normalerweise den Standard-Header regenerieren, wenn Sie auf eine neuere Version von Doxygen aktualisieren. Für eine Beschreibung der möglichen Marker und Blocknamen siehe die Dokumentation.]]>
+<![CDATA[Das \c HTML_HEADER-Tag kann verwendet werden, um eine benutzerdefinierte HTML-Header-Datei für jede generierte HTML-Seite anzugeben. Wenn das Tag leer gelassen wird, generiert Doxygen einen Standard-Header. <br>Um gültiges HTML zu erhalten, muss die Header-Datei alle Skripte und Stylesheets enthalten, die Doxygen benötigt, was von den verwendeten Konfigurationsoptionen abhängt (z.B. die Einstellung \ref cfg_generate_treeview "GENERATE_TREEVIEW"). Es wird dringend empfohlen, mit einem Standard-Header zu beginnen, indem Sie \verbatim doxygen -w html new_header.html new_footer.html new_stylesheet.css YourConfigFile \endverbatim verwenden und dann die Datei \c new_header.html ändern. Siehe auch Abschnitt \ref doxygen_usage für Informationen zum Generieren des Standard-Headers, den Doxygen normalerweise verwendet. @note Der Header kann sich ändern, daher müssen Sie normalerweise den Standard-Header regenerieren, wenn Sie auf eine neuere Version von Doxygen aktualisieren.]]>
+      </docs>
+      <docs filter="doxyfile,doxywizard">
+<![CDATA[
+ Für eine Beschreibung der möglichen Marker und Blocknamen siehe die Dokumentation.
+ ]]>
       </docs>
     </option>
     <option type="string" id="HTML_FOOTER" format="file" defval="" depends="GENERATE_HTML">
@@ -894,7 +916,12 @@
     </option>
     <option type="list" id="HTML_EXTRA_STYLESHEET" format="file" defval="" depends="GENERATE_HTML">
       <docs>
-<![CDATA[Das \c HTML_EXTRA_STYLESHEET-Tag kann verwendet werden, um zusätzliche benutzerdefinierte Cascading Stylesheets anzugeben, die nach den von Doxygen erstellten Standard-Stylesheets eingebunden werden. Mit dieser Option können bestimmte Stilaspekte überschrieben werden. Dies ist der Verwendung von \ref cfg_html_stylesheet "HTML_STYLESHEET" vorzuziehen, da es das Standard-Stylesheet nicht ersetzt und daher robuster gegen zukünftige Updates ist. Doxygen kopiert die Stylesheet-Dateien in das Ausgabeverzeichnis. \note Die Reihenfolge der zusätzlichen Stylesheet-Dateien ist wichtig (z.B. überschreibt das letzte Stylesheet in der Liste die Einstellungen der vorherigen in der Liste). \note Da die Gestaltung von Scrollleisten in Webkit/Chromium derzeit nicht überschrieben werden kann, wird die Gestaltung aus der Standard-datei doxygen.css weggelassen, wenn ein oder mehrere zusätzliche Stylesheets angegeben wurden. Wenn also eine Anpassung der Scrollleisten gewünscht wird, muss diese explizit hinzugefügt werden. Für ein Beispiel siehe die Dokumentation.]]>
+<![CDATA[Das \c HTML_EXTRA_STYLESHEET-Tag kann verwendet werden, um zusätzliche benutzerdefinierte Cascading Stylesheets anzugeben, die nach den von Doxygen erstellten Standard-Stylesheets eingebunden werden. Mit dieser Option können bestimmte Stilaspekte überschrieben werden. Dies ist der Verwendung von \ref cfg_html_stylesheet "HTML_STYLESHEET" vorzuziehen, da es das Standard-Stylesheet nicht ersetzt und daher robuster gegen zukünftige Updates ist. Doxygen kopiert die Stylesheet-Dateien in das Ausgabeverzeichnis. \note Die Reihenfolge der zusätzlichen Stylesheet-Dateien ist wichtig (z.B. überschreibt das letzte Stylesheet in der Liste die Einstellungen der vorherigen in der Liste). \note Da die Gestaltung von Scrollleisten in Webkit/Chromium derzeit nicht überschrieben werden kann, wird die Gestaltung aus der Standard-datei doxygen.css weggelassen, wenn ein oder mehrere zusätzliche Stylesheets angegeben wurden. Wenn also eine Anpassung der Scrollleisten gewünscht wird, muss diese explizit hinzugefügt werden.]]>
+      </docs>
+      <docs filter="doxyfile,doxywizard">
+<![CDATA[
+ Für ein Beispiel siehe die Dokumentation.
+ ]]>
       </docs>
     </option>
     <option type="list" id="HTML_EXTRA_FILES" format="file" depends="GENERATE_HTML">
@@ -1161,7 +1188,7 @@
       <value name="chtml" desc="(Dies ist der Name für MathJax Version 3, für MathJax Version 2 wird dies in &lt;code&gt;HTML-CSS&lt;/code&gt; übersetzt)"/>
       <value name="SVG"/>
     </option>
-        <option type="string" id="MATHJAX_RELPATH" format="string" depends="USE_MATHJAX">
+    <option type="string" id="MATHJAX_RELPATH" format="string" depends="USE_MATHJAX">
       <docs>
 <![CDATA[
  Wenn MathJax aktiviert ist, müssen Sie den Speicherort relativ zum HTML-Ausgabeverzeichnis
@@ -1188,7 +1215,15 @@
     </option>
     <option type="string" id="MATHJAX_CODEFILE" format="string" depends="USE_MATHJAX">
       <docs>
-<![CDATA[Das \c MATHJAX_CODEFILE-Tag kann verwendet werden, um eine Datei mit JavaScript-Code-Stucken anzugeben, die beim Start des MathJax-Codes verwendet werden. Siehe die MathJax-Website für weitere Details: - <a href="https://docs.mathjax.org/en/v2.7/">MathJax version 2</a> - <a href="https://docs.mathjax.org/en/v3.2/">MathJax version 3</a> - <a href="https://docs.mathjax.org/en/v4.0/">MathJax version 4</a> Für ein Beispiel siehe die Dokumentation.]]>
+<![CDATA[Das \c MATHJAX_CODEFILE-Tag kann verwendet werden, um eine Datei mit JavaScript-Code-Stucken anzugeben, die beim Start des MathJax-Codes verwendet werden. Siehe die MathJax-Website für weitere Details:
+ - <a href="https://docs.mathjax.org/en/v2.7/">MathJax version 2</a>
+ - <a href="https://docs.mathjax.org/en/v3.2/">MathJax version 3</a>
+ - <a href="https://docs.mathjax.org/en/v4.0/">MathJax version 4</a>]]>
+      </docs>
+      <docs filter="doxyfile,doxywizard">
+<![CDATA[
+ Für ein Beispiel siehe die Dokumentation.
+ ]]>
       </docs>
     </option>
     <option type="bool" id="SEARCHENGINE" defval="1" depends="GENERATE_HTML">
@@ -1274,7 +1309,12 @@
     </option>
     <option type="string" id="LATEX_HEADER" format="file" defval="" depends="GENERATE_LATEX">
       <docs>
-<![CDATA[Das \c LATEX_HEADER-Tag kann verwendet werden, um einen benutzerdefinierten \f$\mbox{\LaTeX}\f$-Header für das generierte \f$\mbox{\LaTeX}\f$-Dokument anzugeben. Der Header sollte alles bis zum ersten Kapitel enthalten. Wenn er leer gelassen wird, generiert Doxygen einen Standard-Header. Es wird dringend empfohlen, mit einem Standard-Header zu beginnen, indem Sie \verbatim doxygen -w latex new_header.tex new_footer.tex new_stylesheet.sty \endverbatim verwenden und dann die Datei \c new_header.tex ändern. Siehe auch Abschnitt \ref doxygen_usage für Informationen zum Generieren des Standard-Headers, den Doxygen normalerweise verwendet. <br>Hinweis: Verwenden Sie nur einen benutzerdefinierten Header, wenn Sie wissen, was Sie tun! @note Der Header kann sich ändern, daher müssen Sie normalerweise den Standard-Header regenerieren, wenn Sie auf eine neuere Version von Doxygen aktualisieren. Für eine Beschreibung der möglichen Marker und Blocknamen siehe die Dokumentation.]]>
+<![CDATA[Das \c LATEX_HEADER-Tag kann verwendet werden, um einen benutzerdefinierten \f$\mbox{\LaTeX}\f$-Header für das generierte \f$\mbox{\LaTeX}\f$-Dokument anzugeben. Der Header sollte alles bis zum ersten Kapitel enthalten. Wenn er leer gelassen wird, generiert Doxygen einen Standard-Header. Es wird dringend empfohlen, mit einem Standard-Header zu beginnen, indem Sie \verbatim doxygen -w latex new_header.tex new_footer.tex new_stylesheet.sty \endverbatim verwenden und dann die Datei \c new_header.tex ändern. Siehe auch Abschnitt \ref doxygen_usage für Informationen zum Generieren des Standard-Headers, den Doxygen normalerweise verwendet. <br>Hinweis: Verwenden Sie nur einen benutzerdefinierten Header, wenn Sie wissen, was Sie tun! @note Der Header kann sich ändern, daher müssen Sie normalerweise den Standard-Header regenerieren, wenn Sie auf eine neuere Version von Doxygen aktualisieren.]]>
+      </docs>
+      <docs filter="doxyfile,doxywizard">
+<![CDATA[
+ Für eine Beschreibung der möglichen Marker und Blocknamen siehe die Dokumentation.
+ ]]>
       </docs>
     </option>
     <option type="string" id="LATEX_FOOTER" format="file" defval="" depends="GENERATE_LATEX">
@@ -1785,7 +1825,14 @@
     </option>
     <option type="string" id="MERMAID_JS_URL" format="string" defval="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs">
       <docs>
-<![CDATA[Das \c MERMAID_JS_URL-Tag gibt die URL an, von der \c mermaid.js geladen werden soll, wenn clientseitiges Rendering verwendet wird (\c MERMAID_RENDER_MODE ist \c CLIENT_SIDE oder \c AUTO). Der Standardwert verweist auf die neueste Mermaid v11-Version auf dem jsDelivr CDN. \par Beispiele: - Neueste v11 (Standard): <code>https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs</code> - Angeheftete Version: <code>https://cdn.jsdelivr.net/npm/mermaid@11.3.0/dist/mermaid.esm.min.mjs</code> - Lokale Kopie: <code>./mermaid.esm.min.mjs</code> (Benutzer muss Datei im HTML-Ausgabeverzeichnis platzieren) \par Die Standard-CDN-URL erfordert Internetzugang beim Anzeigen der generierten Dokumentation. Für die Offline-Verwendung laden Sie \c mermaid.esm.min.mjs herunter und setzen Sie dies auf einen relativen Pfad, oder verwenden Sie \c MERMAID_RENDER_MODE=CLI, um stattdessen Bilder vorab zu generieren.]]>
+<![CDATA[Das \c MERMAID_JS_URL-Tag gibt die URL an, von der \c mermaid.js geladen werden soll, wenn clientseitiges Rendering verwendet wird (\c MERMAID_RENDER_MODE ist \c CLIENT_SIDE oder \c AUTO). Der Standardwert verweist auf die neueste Mermaid v11-Version auf dem jsDelivr CDN.
+<br>
+Die Standard-CDN-URL erfordert Internetzugang beim Anzeigen der generierten Dokumentation. Für die Offline-Verwendung laden Sie \c mermaid.esm.min.mjs herunter und setzen Sie dies auf einen relativen Pfad, oder verwenden Sie \c MERMAID_RENDER_MODE=CLI, um stattdessen Bilder vorab zu generieren.
+\par Beispiele:
+ - Neueste v11 (Standard): <code>https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs</code>
+ - Angeheftete Version: <code>https://cdn.jsdelivr.net/npm/mermaid@11.3.0/dist/mermaid.esm.min.mjs</code>
+ - Lokale Kopie: <code>./mermaid.esm.min.mjs</code> (Benutzer muss Datei im HTML-Ausgabeverzeichnis platzieren)
+]]>
       </docs>
     </option>
     <option type="list" id="MERMAIDFILE_DIRS" format="dir">

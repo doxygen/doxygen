@@ -117,25 +117,32 @@ static void translateOption(QDomElement &configRoot,const QDomElement &translati
 {
   QDomElement docsVal   = configRoot.firstChildElement();
   QDomElement trDocsVal = translationRoot.firstChildElement();
-  bool first=true;
-  if (!docsVal.isNull()   && docsVal.tagName()==SA("docs") &&
-      !trDocsVal.isNull() && trDocsVal.tagName()==SA("docs"))
+  while (!docsVal.isNull() && !trDocsVal.isNull())
   {
-    //qDebug() << "id=" << configRoot.attribute(SA("id")) << "trId=" << translationRoot.attribute(SA("id"));
-    docsVal.parentNode().replaceChild(trDocsVal,docsVal);
-  }
-  docsVal = configRoot.firstChildElement().nextSiblingElement();
-  // disable options docs (already part of the translation)
-  while (!docsVal.isNull())
-  {
-    //qDebug() << "tagName" << docsVal.tagName();
     if (docsVal.tagName()==SA("docs") && getFilter(docsVal, mode))
     {
-      docsVal.removeAttribute(SA("filter"));
-      // we just need a value so we don't have an empty filter (and thus potential a match on doxywizard later on).
-      docsVal.setAttribute(SA("filter"),SA("dummy"));
+      if (trDocsVal.tagName()==SA("docs") && getFilter(trDocsVal, mode))
+      {
+        QDomNode oldText = docsVal.firstChild();
+        oldText.setNodeValue (trDocsVal.text());
+        docsVal = docsVal.nextSiblingElement();
+        trDocsVal = trDocsVal.nextSiblingElement();
+      }
+      else
+      {
+        trDocsVal = trDocsVal.nextSiblingElement();
+      }
     }
-    else if (docsVal.tagName()==SA("value") && docsVal.hasAttribute(SA("desc")))
+    else
+    {
+      docsVal = docsVal.nextSiblingElement();
+    }
+  }
+  docsVal = configRoot.firstChildElement();
+  // Just handle value tags
+  while (!docsVal.isNull())
+  {
+    if (docsVal.tagName()==SA("value") && docsVal.hasAttribute(SA("desc")))
     {
       //qDebug() << "attribute" << docsVal.attribute(SA("desc"));
       translateEnumDescription(docsVal,translationRoot);

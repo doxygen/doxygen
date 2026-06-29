@@ -3153,11 +3153,11 @@ doxygen -w latex new_header.tex new_footer.tex new_stylesheet.sty
  @note The header is subject to change so you typically
  have to regenerate the default header when upgrading to a newer version of
  Doxygen.
- The following commands have a special meaning inside the header (and footer):
 ]]>
       </docs>
       <docs filter="documentation">
 <![CDATA[
+ The following markers have a special meaning inside the header and footer:
  <dl>
  <dt><code>$title</code><dd>will be replaced with the project name.
  <dt><code>$datetime</code><dd>will be replaced with the current date and time.

@@ -199,8 +199,13 @@
     </option>
     <option type="list" id="ALIASES" format="string">
       <docs>
-<![CDATA[Esta etiqueta se puede usar para especificar varios alias que actuen como comandos en la documentación. Un alias tiene la forma: \verbatim nombre=valor\endverbatim Por ejemplo, agregar \verbatim "sideeffect=@par Efectos secundarios:^^"\endverbatim le permitirá colocar el comando \c \sideeffect (o \c \@sideeffect) en la documentación, lo que resultará en un párrafo definido por el usuario con el encabezado "Efectos secundarios:". Tenga en cuenta que no puede poner \ref cmdn "\n" en el valor de un alias para insertar un salto de línea (en la salida resultante). Puede poner `^^` en el valor de un alias para insertar un salto de línea como si hubiera un salto de línea físico en el archivo original. Si necesita un `{` o `}` o `,` literal en el valor de un alias, debe escaparlos con una barra invertida; esto puede generar conflictos con los comandos `\{` y `\}`, por lo que para estos se recomienda usar la versión `@{` y `@}` o usar una doble barra invertida (`\\\\{` y `\\\\}`).]]>
+<![CDATA[Esta etiqueta se puede usar para especificar varios alias que actuen como comandos en la documentación. Un alias tiene la forma: \verbatim nombre=valor\endverbatim Por ejemplo, agregar \verbatim "sideeffect=@par Efectos secundarios:^^"\endverbatim le permitirá colocar el comando \c \\sideeffect (o \c \@sideeffect) en la documentación, lo que resultará en un párrafo definido por el usuario con el encabezado "Efectos secundarios:". Tenga en cuenta que no puede poner \ref cmdn "\\n" en el valor de un alias para insertar un salto de línea (en la salida resultante). Puede poner `^^` en el valor de un alias para insertar un salto de línea como si hubiera un salto de línea físico en el archivo original.]]>
       </docs>
+      <docs>
+<![CDATA[
+Cuando necesites usar literalmente `{`, `}` o `,` en el valor de un alias, debes escaparlos con una barra invertida (\c \\). Esto puede generar conflictos con los comandos \c \\{ y \c \\}. Para estos últimos, se recomienda usar la versión \c @@{ y \c @@} o usar una doble secuencia de escape (\c \\\\{ y \c \\\\}).
+]]>
+    </docs>
     </option>
     <option type="bool" id="OPTIMIZE_OUTPUT_FOR_C" defval="0">
       <docs>
@@ -338,7 +343,7 @@
   <group name="Build" trname="Construcción" docs="Opciones de configuración relacionadas con la compilación">
     <option type="bool" id="EXTRACT_ALL" defval="0">
       <docs>
-<![CDATA[Si la etiqueta \c EXTRACT_ALL está configurada en \c YES, Doxygen asumira que todas las entidades en la documentación están documentadas, incluso si no habia documentación disponible. Los miembros privados de clase y los miembros estáticos de archivo se ocultarán a menos que las etiquetas \ref cfg_extract_private "EXTRACT_PRIVATE" y \ref cfg_extract_static "EXTRACT_STATIC" estén configuradas en \c YES. \nota Esto también deshabilita las advertencias sobre miembros no documentados que normalmente se generan cuando \ref cfg_warnings "WARNINGS" está configurado en \c YES.]]>
+<![CDATA[Si la etiqueta \c EXTRACT_ALL está configurada en \c YES, Doxygen asumira que todas las entidades en la documentación están documentadas, incluso si no habia documentación disponible. Los miembros privados de clase y los miembros estáticos de archivo se ocultarán a menos que las etiquetas \ref cfg_extract_private "EXTRACT_PRIVATE" y \ref cfg_extract_static "EXTRACT_STATIC" estén configuradas en \c YES. \note Esto también deshabilita las advertencias sobre miembros no documentados que normalmente se generan cuando \ref cfg_warnings "WARNINGS" está configurado en \c YES.]]>
       </docs>
     </option>
     <option type="bool" id="EXTRACT_PRIVATE" defval="0">
@@ -545,7 +550,12 @@
     </option>
     <option type="string" id="FILE_VERSION_FILTER" format="file" defval="">
       <docs>
-<![CDATA[La etiqueta \c FILE_VERSION_FILTER se puede usar para especificar un programa o script que Doxygen debe invocar para obtener la versión actual de cada archivo (típicamente del sistema de control de versiones). Doxygen invocará el programa ejecutando (via <code>popen()</code>) el comando <code>command input_file</code>, donde \c command es el valor de la etiqueta \c FILE_VERSION_FILTER y \c input_file es el nombre de un archivo de entrada proporcionado por Doxygen. Lo que sea que el programa escriba en la salida estándar se usará como la versión del archivo. Para un ejemplo, vea la documentación.]]>
+<![CDATA[La etiqueta \c FILE_VERSION_FILTER se puede usar para especificar un programa o script que Doxygen debe invocar para obtener la versión actual de cada archivo (típicamente del sistema de control de versiones). Doxygen invocará el programa ejecutando (via <code>popen()</code>) el comando <code>command input_file</code>, donde \c command es el valor de la etiqueta \c FILE_VERSION_FILTER y \c input_file es el nombre de un archivo de entrada proporcionado por Doxygen. Lo que sea que el programa escriba en la salida estándar se usará como la versión del archivo.]]>
+      </docs>
+      <docs filter="doxyfile,doxywizard">
+<![CDATA[
+Para un ejemplo, vea la documentación.
+]]>
       </docs>
     </option>
     <option type="string" id="LAYOUT_FILE" format="file" defval="">
@@ -560,7 +570,7 @@
     </option>
     <option type="list" id="EXTERNAL_TOOL_PATH" format="dir" defval="">
       <docs>
-<![CDATA[La etiqueta \c EXTERNAL_TOOL_PATH se puede usar para extender la ruta de búsqueda (variable de entorno PATH) para que las herramientas externas como \c latex y \c gs puedan ser encontradas. \nota Los directorios especificados con EXTERNAL_TOOL_PATH se agregan antes de las rutas ya especificadas por la variable PATH y se agregan en el orden especificado. \nota Esta opción es particularmente útil para macOS versión 14 (Sonoma) y superior cuando Doxygen se ejecuta desde Doxywizard, ya que en ese caso se ignoran todos los cambios personalizados en PATH. Un ejemplo típico en macOS es configurar \verbatim EXTERNAL_TOOL_PATH = /Library/TeX/texbin /usr/local/bin \endverbatim Junto con la ruta predeterminada, la ruta de búsqueda completa que Doxygen usará al iniciar herramientas externas se convierte en \verbatim PATH=/Library/TeX/texbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin \endverbatim]]>
+<![CDATA[La etiqueta \c EXTERNAL_TOOL_PATH se puede usar para extender la ruta de búsqueda (variable de entorno PATH) para que las herramientas externas como \c latex y \c gs puedan ser encontradas. \note Los directorios especificados con EXTERNAL_TOOL_PATH se agregan antes de las rutas ya especificadas por la variable PATH y se agregan en el orden especificado. \note Esta opción es particularmente útil para macOS versión 14 (Sonoma) y superior cuando Doxygen se ejecuta desde Doxywizard, ya que en ese caso se ignoran todos los cambios personalizados en PATH. Un ejemplo típico en macOS es configurar \verbatim EXTERNAL_TOOL_PATH = /Library/TeX/texbin /usr/local/bin \endverbatim Junto con la ruta predeterminada, la ruta de búsqueda completa que Doxygen usará al iniciar herramientas externas se convierte en \verbatim PATH=/Library/TeX/texbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin \endverbatim]]>
       </docs>
     </option>
   </group>
@@ -633,7 +643,7 @@
   <group name="Input" trname="Entrada" docs="Opciones de configuración relacionadas con los archivos de entrada">
     <option type="list" id="INPUT" format="filedir">
       <docs>
-<![CDATA[La etiqueta \c INPUT se usa para especificar los archivos y/o directorios que contienen los archivos de código fuente y otros archivos de documentación. Puede ingresar nombres de archivo como \c myfile.cpp o directorios como \c /usr/src/myproject. Separe los archivos o directorios con espacios. Vea también \ref cfg_file_patterns "FILE_PATTERNS" y \ref cfg_extension_mapping "EXTENSION_MAPPING". \nota Si esta etiqueta está vacía, se buscará en el directorio actual.]]>
+<![CDATA[La etiqueta \c INPUT se usa para especificar los archivos y/o directorios que contienen los archivos de código fuente y otros archivos de documentación. Puede ingresar nombres de archivo como \c myfile.cpp o directorios como \c /usr/src/myproject. Separe los archivos o directorios con espacios. Vea también \ref cfg_file_patterns "FILE_PATTERNS" y \ref cfg_extension_mapping "EXTENSION_MAPPING". \note Si esta etiqueta está vacía, se buscará en el directorio actual.]]>
       </docs>
     </option>
     <option type="string" id="INPUT_ENCODING" format="string" defval="UTF-8">
@@ -718,7 +728,7 @@
     </option>
     <option type="list" id="EXCLUDE_PATTERNS" format="string">
       <docs>
-<![CDATA[Si el valor de la etiqueta \ref cfg_input "INPUT" contiene directorios, puede usar la etiqueta \c EXCLUDE_PATTERNS para especificar uno o más patrones de comodín para excluir ciertos archivos de esos directorios. <br>Nota: Los comodines se comparan contra el archivo con ruta absoluta, por lo que para excluir todos los directorios de prueba, por ejemplo, use el patrón `*/test/*`]]>
+<![CDATA[Si el valor de la etiqueta \ref cfg_input "INPUT" contiene directorios, puede usar la etiqueta \c EXCLUDE_PATTERNS para especificar uno o más patrones de comodín para excluir ciertos archivos de esos directorios. <br>Nota: Los comodines se comparan contra el archivo con ruta absoluta, por lo que para excluir todos los directorios de prueba, por ejemplo, use el patrón `*``/test``/*`]]>
       </docs>
     </option>
     <option type="list" id="EXCLUDE_SYMBOLS" format="string">
@@ -821,7 +831,12 @@
     </option>
     <option type="bool" id="USE_HTAGS" defval="0" depends="SOURCE_BROWSER">
       <docs>
-<![CDATA[Si la etiqueta \c USE_HTAGS está configurada en \c YES, las referencias al código fuente apuntaran al HTML generado por la herramienta \c htags(1) en lugar del navegador de código fuente incorporado de Doxygen. La herramienta \c htags es parte del sistema de etiquetado de código fuente global de GNU (vea https://www.gnu.org/software/global/global.html). Necesitara la versión 4.8.6 o superior. <br>Para usarlo haga lo siguiente: -# Instale la última versión de \c global -# Habilite \ref cfg_source_browser "SOURCE_BROWSER" y \c USE_HTAGS en el archivo de configuración -# Asegurese de que \ref cfg_input "INPUT" apunte a la raíz del árbol de fuentes -# Ejecute \c doxygen como de costumbre <br>Doxygen invocará \c htags (y eso a su vez invocará \c gtags), por lo que estas herramientas deben estar disponibles desde la línea de comandos (es decir, en la ruta de búsqueda). <br>El resultado: en lugar del navegador de código fuente generado por Doxygen, los enlaces al código fuente ahora apuntaran a la salida de \c htags.]]>
+<![CDATA[Si la etiqueta \c USE_HTAGS está configurada en \c YES, las referencias al código fuente apuntaran al HTML generado por la herramienta \c htags(1) en lugar del navegador de código fuente incorporado de Doxygen. La herramienta \c htags es parte del sistema de etiquetado de código fuente global de GNU (vea https://www.gnu.org/software/global/global.html). Necesitara la versión 4.8.6 o superior. <br>Para usarlo haga lo siguiente:
+-# Instale la última versión de \c global
+-# Habilite \ref cfg_source_browser "SOURCE_BROWSER" y \c USE_HTAGS en el archivo de configuración
+-# Asegurese de que \ref cfg_input "INPUT" apunte a la raíz del árbol de fuentes
+-# Ejecute \c doxygen como de costumbre
+<br>Doxygen invocará \c htags (y eso a su vez invocará \c gtags), por lo que estas herramientas deben estar disponibles desde la línea de comandos (es decir, en la ruta de búsqueda). <br>El resultado: en lugar del navegador de código fuente generado por Doxygen, los enlaces al código fuente ahora apuntaran a la salida de \c htags.]]>
       </docs>
     </option>
     <option type="bool" id="VERBATIM_HEADERS" defval="1">
@@ -880,7 +895,12 @@
     </option>
     <option type="string" id="HTML_HEADER" format="file" defval="" depends="GENERATE_HTML">
       <docs>
-<![CDATA[La etiqueta \c HTML_HEADER se puede usar para especificar un archivo de encabezado HTML personalizado para cada página HTML generada. Si la etiqueta se deja vacía, Doxygen generará un encabezado estándar. <br>Para obtener HTML válido, el archivo de encabezado debe contener todos los scripts y hojas de estilo que Doxygen necesita, lo cual depende de las opciones de configuración usadas (por ejemplo, la configuración \ref cfg_generate_treeview "GENERATE_TREEVIEW"). Se recomienda encarecidamente comenzar con un encabezado estándar usando \verbatim doxygen -w html new_header.html new_footer.html new_stylesheet.css YourConfigFile \endverbatim y luego modificar el archivo \c new_header.html. Vea también la sección \ref doxygen_usage para información sobre como generar el encabezado estándar que Doxygen normalmente usa. @note El encabezado puede cambiar, por lo que generalmente necesita regenerar el encabezado estándar cuando actualiza a una versión más nueva de Doxygen. Para una descripción de los posibles marcadores y nombres de bloques, vea la documentación.]]>
+<![CDATA[La etiqueta \c HTML_HEADER se puede usar para especificar un archivo de encabezado HTML personalizado para cada página HTML generada. Si la etiqueta se deja vacía, Doxygen generará un encabezado estándar. <br>Para obtener HTML válido, el archivo de encabezado debe contener todos los scripts y hojas de estilo que Doxygen necesita, lo cual depende de las opciones de configuración usadas (por ejemplo, la configuración \ref cfg_generate_treeview "GENERATE_TREEVIEW"). Se recomienda encarecidamente comenzar con un encabezado estándar usando \verbatim doxygen -w html new_header.html new_footer.html new_stylesheet.css YourConfigFile \endverbatim y luego modificar el archivo \c new_header.html. Vea también la sección \ref doxygen_usage para información sobre como generar el encabezado estándar que Doxygen normalmente usa. @note El encabezado puede cambiar, por lo que generalmente necesita regenerar el encabezado estándar cuando actualiza a una versión más nueva de Doxygen.]]>
+      </docs>
+      <docs filter="doxyfile,doxywizard">
+<![CDATA[
+Para una descripción de los posibles marcadores y nombres de bloques, vea la documentación.
+]]>
       </docs>
     </option>
     <option type="string" id="HTML_FOOTER" format="file" defval="" depends="GENERATE_HTML">
@@ -890,12 +910,17 @@
     </option>
     <option type="string" id="HTML_STYLESHEET" format="file" defval="" depends="GENERATE_HTML">
       <docs>
-<![CDATA[La etiqueta \c HTML_STYLESHEET se puede usar para especificar una hoja de estilo en cascada personalizada que es usada por cada página HTML. Se puede usar para ajustar la apariencia de la salida HTML. Si se deja vacío, Doxygen generará una hoja de estilo estándar. Vea también la sección \ref doxygen_usage para información sobre como generar la hoja de estilo que Doxygen normalmente usa. \nota Se recomienda usar \ref cfg_html_extra_stylesheet "HTML_EXTRA_STYLESHEET" en lugar de esta etiqueta, ya que es más robusto y esta etiqueta (<code>HTML_STYLESHEET</code>) quedara obsoleta en el futuro.]]>
+<![CDATA[La etiqueta \c HTML_STYLESHEET se puede usar para especificar una hoja de estilo en cascada personalizada que es usada por cada página HTML. Se puede usar para ajustar la apariencia de la salida HTML. Si se deja vacío, Doxygen generará una hoja de estilo estándar. Vea también la sección \ref doxygen_usage para información sobre como generar la hoja de estilo que Doxygen normalmente usa. \note Se recomienda usar \ref cfg_html_extra_stylesheet "HTML_EXTRA_STYLESHEET" en lugar de esta etiqueta, ya que es más robusto y esta etiqueta (<code>HTML_STYLESHEET</code>) quedara obsoleta en el futuro.]]>
       </docs>
     </option>
     <option type="list" id="HTML_EXTRA_STYLESHEET" format="file" defval="" depends="GENERATE_HTML">
       <docs>
-<![CDATA[La etiqueta \c HTML_EXTRA_STYLESHEET se puede usar para especificar hojas de estilo en cascada personalizadas adicionales que se incluirán después de las hojas de estilo estándar creadas por Doxygen. Con esta opción puede anular ciertos aspectos de estilo. Esto es preferible al uso de \ref cfg_html_stylesheet "HTML_STYLESHEET" ya que no reemplaza la hoja de estilo estándar y por lo tanto es más robusto frente a actualizaciones futuras. Doxygen copiará los archivos de hoja de estilo en el directorio de salida. \nota El orden de los archivos de hoja de estilo adicionales es importante (por ejemplo, la última hoja de estilo en la lista anula la configuración de las anteriores en la lista). \nota Dado que el estilo de las barras de desplazamiento en webkit/Chromium actualmente no se puede anular, el estilo del archivo estándar doxygen.css se omite cuando se especifican una o más hojas de estilo adicionales. Entonces, si se desea personalizar las barras de desplazamiento, debe agregarse explícitamente. Para un ejemplo, vea la documentación.]]>
+<![CDATA[La etiqueta \c HTML_EXTRA_STYLESHEET se puede usar para especificar hojas de estilo en cascada personalizadas adicionales que se incluirán después de las hojas de estilo estándar creadas por Doxygen. Con esta opción puede anular ciertos aspectos de estilo. Esto es preferible al uso de \ref cfg_html_stylesheet "HTML_STYLESHEET" ya que no reemplaza la hoja de estilo estándar y por lo tanto es más robusto frente a actualizaciones futuras. Doxygen copiará los archivos de hoja de estilo en el directorio de salida. \note El orden de los archivos de hoja de estilo adicionales es importante (por ejemplo, la última hoja de estilo en la lista anula la configuración de las anteriores en la lista). \note Dado que el estilo de las barras de desplazamiento en webkit/Chromium actualmente no se puede anular, el estilo del archivo estándar doxygen.css se omite cuando se especifican una o más hojas de estilo adicionales. Entonces, si se desea personalizar las barras de desplazamiento, debe agregarse explícitamente.]]>
+      </docs>
+      <docs filter="doxyfile,doxywizard">
+<![CDATA[
+Para un ejemplo, vea la documentación.
+]]>
       </docs>
     </option>
     <option type="list" id="HTML_EXTRA_FILES" format="file" depends="GENERATE_HTML">
@@ -1162,7 +1187,7 @@
       <value name="chtml" desc="(Este es el nombre para MathJax versión 3, para MathJax versión 2 se traducirá a &lt;code&gt;HTML-CSS&lt;/code&gt;)"/>
       <value name="SVG"/>
     </option>
-        <option type="string" id="MATHJAX_RELPATH" format="string" depends="USE_MATHJAX">
+    <option type="string" id="MATHJAX_RELPATH" format="string" depends="USE_MATHJAX">
       <docs>
 <![CDATA[
  Cuando MathJax está activado, necesita especificar la ubicación relativa al directorio
@@ -1189,7 +1214,15 @@
     </option>
     <option type="string" id="MATHJAX_CODEFILE" format="string" depends="USE_MATHJAX">
       <docs>
-<![CDATA[La etiqueta \c MATHJAX_CODEFILE se puede usar para especificar un archivo con fragmentos de código JavaScript que se usarán cuando se inicie el código MathJax. Vea el sitio web de MathJax para más detalles: - <a href="https://docs.mathjax.org/en/v2.7/">MathJax versión 2</a> - <a href="https://docs.mathjax.org/en/v3.2/">MathJax versión 3</a> - <a href="https://docs.mathjax.org/en/v4.0/">MathJax versión 4</a> Para un ejemplo, vea la documentación.]]>
+<![CDATA[La etiqueta \c MATHJAX_CODEFILE se puede usar para especificar un archivo con fragmentos de código JavaScript que se usarán cuando se inicie el código MathJax. Vea el sitio web de MathJax para más detalles:
+ - <a href="https://docs.mathjax.org/en/v2.7/">MathJax versión 2</a>
+ - <a href="https://docs.mathjax.org/en/v3.2/">MathJax versión 3</a>
+ - <a href="https://docs.mathjax.org/en/v4.0/">MathJax versión 4</a>]]>
+      </docs>
+      <docs filter="doxyfile,doxywizard">
+<![CDATA[
+Para un ejemplo, vea la documentación.
+]]>
       </docs>
     </option>
     <option type="bool" id="SEARCHENGINE" defval="1" depends="GENERATE_HTML">
@@ -1275,7 +1308,12 @@
     </option>
     <option type="string" id="LATEX_HEADER" format="file" defval="" depends="GENERATE_LATEX">
       <docs>
-<![CDATA[La etiqueta \c LATEX_HEADER se puede usar para especificar un encabezado \f$\mbox{\LaTeX}\f$ personalizado para el documento \f$\mbox{\LaTeX}\f$ generado. El encabezado debe contener todo hasta el primer capítulo. Si se deja vacío, Doxygen generará un encabezado estándar. Se recomienda encarecidamente comenzar con un encabezado estándar usando \verbatim doxygen -w latex new_header.tex new_footer.tex new_stylesheet.sty \endverbatim y luego modificar el archivo \c new_header.tex. Vea también la sección \ref doxygen_usage para información sobre como generar el encabezado estándar que Doxygen normalmente usa. <br>Nota: ¡Solo use un encabezado personalizado si sabe lo que está haciendo! @note El encabezado puede cambiar, por lo que generalmente necesita regenerar el encabezado estándar cuando actualiza a una versión más nueva de Doxygen. Para una descripción de los posibles marcadores y nombres de bloques, vea la documentación.]]>
+<![CDATA[La etiqueta \c LATEX_HEADER se puede usar para especificar un encabezado \f$\mbox{\LaTeX}\f$ personalizado para el documento \f$\mbox{\LaTeX}\f$ generado. El encabezado debe contener todo hasta el primer capítulo. Si se deja vacío, Doxygen generará un encabezado estándar. Se recomienda encarecidamente comenzar con un encabezado estándar usando \verbatim doxygen -w latex new_header.tex new_footer.tex new_stylesheet.sty \endverbatim y luego modificar el archivo \c new_header.tex. Vea también la sección \ref doxygen_usage para información sobre como generar el encabezado estándar que Doxygen normalmente usa. <br>Nota: ¡Solo use un encabezado personalizado si sabe lo que está haciendo! @note El encabezado puede cambiar, por lo que generalmente necesita regenerar el encabezado estándar cuando actualiza a una versión más nueva de Doxygen.]]>
+      </docs>
+      <docs filter="doxyfile,doxywizard">
+<![CDATA[
+Para una descripción de los posibles marcadores y nombres de bloques, vea la documentación.
+ ]]>
       </docs>
     </option>
     <option type="string" id="LATEX_FOOTER" format="file" defval="" depends="GENERATE_LATEX">
@@ -1285,7 +1323,7 @@
     </option>
     <option type="list" id="LATEX_EXTRA_STYLESHEET" format="file" defval="" depends="GENERATE_LATEX">
       <docs>
-<![CDATA[La etiqueta \c LATEX_EXTRA_STYLESHEET se puede usar para especificar hojas de estilo \f$\mbox{\LaTeX}\f$ personalizadas adicionales que se incluirán después de las hojas de estilo estándar creadas por Doxygen. Con esta opción puede anular ciertos aspectos de estilo. Doxygen copiará los archivos de hoja de estilo en el directorio de salida. \nota El orden de los archivos de hoja de estilo adicionales es importante (por ejemplo, la última hoja de estilo en la lista anula la configuración de las anteriores en la lista).]]>
+<![CDATA[La etiqueta \c LATEX_EXTRA_STYLESHEET se puede usar para especificar hojas de estilo \f$\mbox{\LaTeX}\f$ personalizadas adicionales que se incluirán después de las hojas de estilo estándar creadas por Doxygen. Con esta opción puede anular ciertos aspectos de estilo. Doxygen copiará los archivos de hoja de estilo en el directorio de salida. \note El orden de los archivos de hoja de estilo adicionales es importante (por ejemplo, la última hoja de estilo en la lista anula la configuración de las anteriores en la lista).]]>
       </docs>
     </option>
     <option type="list" id="LATEX_EXTRA_FILES" format="file" depends="GENERATE_LATEX">
@@ -1786,7 +1824,14 @@
     </option>
     <option type="string" id="MERMAID_JS_URL" format="string" defval="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs">
       <docs>
-<![CDATA[La etiqueta \c MERMAID_JS_URL especifica la URL desde donde cargar \c mermaid.js cuando se usa renderizado del lado del cliente (\c MERMAID_RENDER_MODE es \c CLIENT_SIDE o \c AUTO). El valor predeterminado apunta a la última versión de Mermaid v11 en el CDN de jsDelivr. \par Ejemplos: - Última v11 (predeterminado): <code>https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs</code> - Versión fijada: <code>https://cdn.jsdelivr.net/npm/mermaid@11.3.0/dist/mermaid.esm.min.mjs</code> - Copia local: <code>./mermaid.esm.min.mjs</code> (el usuario debe colocar el archivo en el directorio de salida HTML) \par La URL del CDN predeterminada requiere acceso a Internet al ver la documentación generada. Para uso sin conexión, descargue \c mermaid.esm.min.mjs y configure esto en una ruta relativa, o use \c MERMAID_RENDER_MODE=CLI para pre-generar imagenes en su lugar.]]>
+<![CDATA[La etiqueta \c MERMAID_JS_URL especifica la URL desde donde cargar \c mermaid.js cuando se usa renderizado del lado del cliente (\c MERMAID_RENDER_MODE es \c CLIENT_SIDE o \c AUTO). El valor predeterminado apunta a la última versión de Mermaid v11 en el CDN de jsDelivr.
+<br>
+La URL del CDN predeterminada requiere acceso a Internet al ver la documentación generada. Para uso sin conexión, descargue \c mermaid.esm.min.mjs y configure esto en una ruta relativa, o use \c MERMAID_RENDER_MODE=CLI para pre-generar imagenes en su lugar.
+\par Ejemplos:
+ - Última v11 (predeterminado): <code>https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs</code>/
+ - Versión fijada: <code>https://cdn.jsdelivr.net/npm/mermaid@11.3.0/dist/mermaid.esm.min.mjs</code>/
+ - Copia local: <code>./mermaid.esm.min.mjs</code> (el usuario debe colocar el archivo en el directorio de salida HTML)
+]]>
       </docs>
     </option>
     <option type="list" id="MERMAIDFILE_DIRS" format="dir">

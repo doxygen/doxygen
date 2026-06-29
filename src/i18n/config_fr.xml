@@ -169,7 +169,7 @@
     </option>
     <option type="bool" id="QT_AUTOBRIEF" defval="0">
       <docs>
-<![CDATA[Si la balise \c QT_AUTOBRIEF est définie à \c YES alors Doxygen interprétera la première ligne (jusqu'au premier point, point d'interrogation ou point d'exclamation) d'un commentaire de style Qt comme la description brève. Si défini à \c NO, le style Qt se comportera comme des commentaires de style Qt normaux (requérant donc une commande \ref cmdbrief "\brief" explicite pour une description brève).]]>
+<![CDATA[Si la balise \c QT_AUTOBRIEF est définie à \c YES alors Doxygen interprétera la première ligne (jusqu'au premier point, point d'interrogation ou point d'exclamation) d'un commentaire de style Qt comme la description brève. Si défini à \c NO, le style Qt se comportera comme des commentaires de style Qt normaux (requérant donc une commande \ref cmdbrief "\\brief" explicite pour une description brève).]]>
       </docs>
     </option>
     <option type="bool" id="MULTILINE_CPP_IS_BRIEF" defval="0">
@@ -199,7 +199,15 @@
     </option>
     <option type="list" id="ALIASES" format="string">
       <docs>
-<![CDATA[Cette balise peut être utilisée pour spécifier un certain nombre d'alias qui agissent comme des commandes dans la documentation. Un alias à la forme: \verbatim name=value \endverbatim Par exemple, ajouter \verbatim "sideeffect=@par Side Effects:^^" \endverbatim vous permettra de placer la commande \c \\sideeffect (ou \c \@sideeffect) dans la documentation, ce qui résultera en un paragraphe défini par l'utilisateur avec le titre "Side Effects:". Notez que vous ne pouvez pas mettre de \ref cmdn "\\n" dans la partie valeur d'un alias pour insérer des sauts de ligne (dans la sortie résultante). Vous pouvez mettre `^^` dans la partie valeur d'un alias pour insérer un saut de ligne comme si un saut de ligne physique était dans le fichier original. Si vous avez besoin d'un `{` ou `}` ou `,` littéral dans la partie valeur d'un alias, vous devez les échapper avec une barre oblique inverse (\c \\).]]>
+<![CDATA[Cette balise peut être utilisée pour spécifier un certain nombre d'alias qui agissent comme des commandes dans la documentation. Un alias à la forme: \verbatim name=value \endverbatim Par exemple, ajouter \verbatim "sideeffect=@par Side Effects:^^" \endverbatim vous permettra de placer la commande \c \\sideeffect (ou \c \@sideeffect) dans la documentation, ce qui résultera en un paragraphe défini par l'utilisateur avec le titre "Side Effects:". Notez que vous ne pouvez pas mettre de \ref cmdn "\\n" dans la partie valeur d'un alias pour insérer des sauts de ligne (dans la sortie résultante). Vous pouvez mettre `^^` dans la partie valeur d'un alias pour insérer un saut de ligne comme si un saut de ligne physique était dans le fichier original.]]>
+      </docs>
+      <docs>
+<![CDATA[
+Lorsque vous avez besoin d'un caractère littéral `{` ou `}` ou `,` dans la valeur d'un alias, vous devez
+les échapper à l'aide d'une barre oblique inverse (\c \\). Cela peut entraîner des conflits avec les
+commandes \c \\{ et \c \\}. Pour celles-ci, il est conseillé d'utiliser la version \c @@{ et \c @@} ou
+d'utiliser une double échappement (\c \\\\{ et \c \\\\}).
+]]>
       </docs>
     </option>
     <option type="bool" id="OPTIMIZE_OUTPUT_FOR_C" defval="0">
@@ -547,6 +555,11 @@
       <docs>
 <![CDATA[La balise \c FILE_VERSION_FILTER peut être utilisée pour spécifier un programme ou script que Doxygen devrait invoquer pour obtenir la version actuelle de chaque fichier (généralement à partir du système de contrôle de version). Doxygen invoquera le programme en executant (via <code>popen()</code>) la commande <code>command input_file</code>, ou \c command est la valeur de la balise \c FILE_VERSION_FILTER, et \c input_file est le nom d'un fichier d'entrée fourni par Doxygen. Ce que le programme écrit sur la sortie standard est utilisé comme version de fichier.]]>
       </docs>
+      <docs filter="doxyfile,doxywizard">
+<![CDATA[
+Pour un exemple, consultez la documentation.
+]]>
+      </docs>
     </option>
     <option type="string" id="LAYOUT_FILE" format="file" defval="">
       <docs>
@@ -821,12 +834,17 @@
     </option>
     <option type="bool" id="USE_HTAGS" defval="0" depends="SOURCE_BROWSER">
       <docs>
-<![CDATA[Si la balise \c USE_HTAGS est définie à \c YES, les références au code source pointeront vers le HTML généré par l'outil \c htags(1) au lieu du navigateur de source intégré de Doxygen. L'outil \c htags fait partie du système de balisage de source global de GNU (voir https://www.gnu.org/software/global/global.html). Vous aurez besoin de la version 4.8.6 ou supérieure. <br> Pour l'utiliser, faites ce qui suit: -# Installez la dernière version de \c global -# Activez \ref cfg_source_browser "SOURCE_BROWSER" et \c USE_HTAGS dans le fichier de configuration -# Assurez-vous que \ref cfg_input "INPUT" pointe vers la racine de l'arborescence des sources -# Exécutez \c doxygen normalement <br> Doxygen invoquera \c htags (et qui invoquera à son tour \c gtags), donc ces outils doivent être disponibles depuis la ligne de commande (c'est-à-dire dans le chemin de recherche). <br> Résultat: au lieu du navigateur de source généré par Doxygen, les liens vers le code source pointeront maintenant vers la sortie de \c htags.]]>
+<![CDATA[Si la balise \c USE_HTAGS est définie à \c YES, les références au code source pointeront vers le HTML généré par l'outil \c htags(1) au lieu du navigateur de source intégré de Doxygen. L'outil \c htags fait partie du système de balisage de source global de GNU (voir https://www.gnu.org/software/global/global.html). Vous aurez besoin de la version 4.8.6 ou supérieure. <br> Pour l'utiliser, faites ce qui suit:
+-# Installez la dernière version de \c global
+-# Activez \ref cfg_source_browser "SOURCE_BROWSER" et \c USE_HTAGS dans le fichier de configuration
+-# Assurez-vous que \ref cfg_input "INPUT" pointe vers la racine de l'arborescence des sources
+-# Exécutez \c doxygen normalement
+<br> Doxygen invoquera \c htags (et qui invoquera à son tour \c gtags), donc ces outils doivent être disponibles depuis la ligne de commande (c'est-à-dire dans le chemin de recherche). <br> Résultat: au lieu du navigateur de source généré par Doxygen, les liens vers le code source pointeront maintenant vers la sortie de \c htags.]]>
       </docs>
     </option>
     <option type="bool" id="VERBATIM_HEADERS" defval="1">
       <docs>
-<![CDATA[Si la balise \c VERBATIM_HEADERS est définie à \c YES, Doxygen générera une copie verbatim du fichier d'en-tête pour chaque classe pour laquelle une inclusion est spécifiée. Définir à \c NO pour désactiver cela. \sa Section \ref cmdclass "\class".]]>
+<![CDATA[Si la balise \c VERBATIM_HEADERS est définie à \c YES, Doxygen générera une copie verbatim du fichier d'en-tête pour chaque classe pour laquelle une inclusion est spécifiée. Définir à \c NO pour désactiver cela. \sa Section \ref cmdclass "\\class".]]>
       </docs>
     </option>
     <option type="bool" id="CLANG_ASSISTED_PARSING" setting="USE_LIBCLANG" defval="0">
@@ -882,6 +900,11 @@
       <docs>
 <![CDATA[La balise \c HTML_HEADER peut être utilisée pour spécifier un fichier d'en-tête HTML défini par l'utilisateur pour chaque page HTML générée. Si la balise est laissée vide, Doxygen générera un en-tête standard. <br>Pour obtenir un HTML valide, le fichier d'en-tête doit inclure tous les scripts et feuilles de style dont Doxygen a besoin, ce qui dépend des options de configuration utilisées (par exemple le paramètre \ref cfg_generate_treeview "GENERATE_TREEVIEW"). Il est fortement recommandé de commencer avec un en-tête par défaut en utilisant \verbatim doxygen -w html new_header.html new_footer.html new_stylesheet.css YourConfigFile \endverbatim puis de modifier le fichier \c new_header.html. Voir aussi la section \ref doxygen_usage pour plus d'informations sur la génération de l'en-tête par défaut que Doxygen utilise normalement. @note L'en-tête est sujet à changement, donc vous devez généralement régénérer l'en-tête par défaut lors de la mise à jour vers une version plus récente de Doxygen.]]>
       </docs>
+      <docs filter="doxyfile,doxywizard">
+<![CDATA[
+Pour une description des marqueurs et noms de blocs possibles, consultez la documentation.
+]]>
+      </docs>
     </option>
     <option type="string" id="HTML_FOOTER" format="file" defval="" depends="GENERATE_HTML">
       <docs>
@@ -896,6 +919,11 @@
     <option type="list" id="HTML_EXTRA_STYLESHEET" format="file" defval="" depends="GENERATE_HTML">
       <docs>
 <![CDATA[La balise \c HTML_EXTRA_STYLESHEET peut être utilisée pour spécifier des feuilles de style en cascade supplémentaires définies par l'utilisateur qui sont incluses après les feuilles de style standard créées par Doxygen. En utilisant cette option, on peut redéfinir certains aspects de style. Ceci est préférable à l'utilisation de \ref cfg_html_stylesheet "HTML_STYLESHEET" car elle ne remplace pas la feuille de style standard et est donc plus robuste face aux mises à jour futures. Doxygen copiera les fichiers de feuille de style dans le répertoire de sortie. \note L'ordre des fichiers de feuille de style supplémentaires est important (par exemple, la dernière feuille de style de la liste redéfinit les paramètres des précédentes dans la liste). \note Comme le style des barres de défilement ne peut actuellement pas être remplace dans Webkit/Chromium, le style sera omis du doxygen.css par défaut si une ou plusieurs feuilles de style supplémentaires ont été spécifiées. Donc si la personnalisation des barres de défilement est souhaitée, elle doit être ajoutée explicitement.]]>
+      </docs>
+      <docs filter="doxyfile,doxywizard">
+<![CDATA[
+Pour un exemple, consultez la documentation.
+]]>
       </docs>
     </option>
     <option type="list" id="HTML_EXTRA_FILES" format="file" depends="GENERATE_HTML">
@@ -1162,7 +1190,7 @@
       <value name="chtml" desc="(C'est le nom pour MathJax version 3, pour MathJax version 2 cela sera traduit en &lt;code&gt;HTML-CSS&lt;/code&gt;)"/>
       <value name="SVG"/>
     </option>
-        <option type="string" id="MATHJAX_RELPATH" format="string" depends="USE_MATHJAX">
+    <option type="string" id="MATHJAX_RELPATH" format="string" depends="USE_MATHJAX">
       <docs>
 <![CDATA[
  Lorsque MathJax est activé, vous devez spécifier l'emplacement relatif au répertoire
@@ -1188,7 +1216,15 @@
     </option>
     <option type="string" id="MATHJAX_CODEFILE" format="string" depends="USE_MATHJAX">
       <docs>
-<![CDATA[La balise \c MATHJAX_CODEFILE peut être utilisée pour spécifier un fichier avec des morceaux de code JavaScript qui seront utilisés au démarrage du code MathJax. Voir le site Mathjax pour plus de détails: - <a href="https://docs.mathjax.org/en/v2.7/">MathJax version 2</a> - <a href="https://docs.mathjax.org/en/v3.2/">MathJax version 3</a> - <a href="https://docs.mathjax.org/en/v4.0/">MathJax version 4</a>]]>
+<![CDATA[La balise \c MATHJAX_CODEFILE peut être utilisée pour spécifier un fichier avec des morceaux de code JavaScript qui seront utilisés au démarrage du code MathJax. Voir le site Mathjax pour plus de détails:
+ - <a href="https://docs.mathjax.org/en/v2.7/">MathJax version 2</a>
+ - <a href="https://docs.mathjax.org/en/v3.2/">MathJax version 3</a>
+ - <a href="https://docs.mathjax.org/en/v4.0/">MathJax version 4</a>]]>
+      </docs>
+      <docs filter="doxyfile,doxywizard">
+<![CDATA[
+Pour un exemple, consultez la documentation.
+]]>
       </docs>
     </option>
     <option type="bool" id="SEARCHENGINE" defval="1" depends="GENERATE_HTML">
@@ -1274,7 +1310,12 @@
     </option>
     <option type="string" id="LATEX_HEADER" format="file" defval="" depends="GENERATE_LATEX">
       <docs>
-<![CDATA[La balise \c LATEX_HEADER peut être utilisée pour spécifier un en-tête \f$\mbox{\LaTeX}\f$ défini par l'utilisateur pour le document \f$\mbox{\LaTeX}\f$ généré. L'en-tête doit contenir tout jusqu'au premier chapitre. S'il est laissé vide, Doxygen générera un en-tête standard. Il est fortement recommandé de commencer avec un en-tête par défaut en utilisant \verbatim doxygen -w latex new_header.tex new_footer.tex new_stylesheet.sty \endverbatim puis de modifier le fichier \c new_header.tex. Voir aussi la section \ref doxygen_usage pour plus d'informations sur la génération de l'en-tête par défaut que Doxygen utilise normalement. <br>Note: N'utilisez un en-tête défini par l'utilisateur que si vous savez ce que vous faites! @note L'en-tête est sujet à changement, donc vous devez généralement régénérer l'en-tête par défaut lors de la mise à jour vers une version plus récente de Doxygen. Les commandes suivantes ont une signification spéciale dans l'en-tête (et le pied de page):]]>
+<![CDATA[La balise \c LATEX_HEADER peut être utilisée pour spécifier un en-tête \f$\mbox{\LaTeX}\f$ défini par l'utilisateur pour le document \f$\mbox{\LaTeX}\f$ généré. L'en-tête doit contenir tout jusqu'au premier chapitre. S'il est laissé vide, Doxygen générera un en-tête standard. Il est fortement recommandé de commencer avec un en-tête par défaut en utilisant \verbatim doxygen -w latex new_header.tex new_footer.tex new_stylesheet.sty \endverbatim puis de modifier le fichier \c new_header.tex. Voir aussi la section \ref doxygen_usage pour plus d'informations sur la génération de l'en-tête par défaut que Doxygen utilise normalement. <br>Note: N'utilisez un en-tête défini par l'utilisateur que si vous savez ce que vous faites! @note L'en-tête est sujet à changement, donc vous devez généralement régénérer l'en-tête par défaut lors de la mise à jour vers une version plus récente de Doxygen.]]>
+      </docs>
+      <docs filter="doxyfile,doxywizard">
+<![CDATA[
+Pour une description des marqueurs et noms de blocs possibles, consultez la documentation.
+]]>
       </docs>
     </option>
     <option type="string" id="LATEX_FOOTER" format="file" defval="" depends="GENERATE_LATEX">
@@ -1320,7 +1361,7 @@
     </option>
     <option type="string" id="LATEX_BIB_STYLE" format="string" defval="plainnat" depends="GENERATE_LATEX">
       <docs>
-<![CDATA[La balise \c LATEX_BIB_STYLE peut être utilisée pour spécifier le style a utiliser pour la bibliographie, par exemple \c plainnat ou \c ieeetr. Voir https://en.wikipedia.org/wiki/BibTeX et \ref cmdcite "\cite" pour plus d'informations.]]>
+<![CDATA[La balise \c LATEX_BIB_STYLE peut être utilisée pour spécifier le style a utiliser pour la bibliographie, par exemple \c plainnat ou \c ieeetr. Voir https://en.wikipedia.org/wiki/BibTeX et \ref cmdcite "\\cite" pour plus d'informations.]]>
       </docs>
     </option>
     <option type="string" id="LATEX_EMOJI_DIRECTORY" format="dir" defval="" depends="GENERATE_LATEX">
@@ -1506,7 +1547,7 @@
     </option>
     <option type="list" id="PREDEFINED" format="string" depends="ENABLE_PREPROCESSING">
       <docs>
-<![CDATA[La balise \c PREDEFINED peut être utilisée pour spécifier un ou plusieurs noms de macros qui sont définis avant que le préprocesseur ne soit lance (similaire à l'option `-D` de par exemple \c gcc). L'argument de la balise est une liste de macros de la forme: <code>name</code> ou <code>name=définition</code> (sans espaces). Si la définition et le `=`" sont omis, `=1` est suppose. Pour empêcher une définition de macro d'être non définie via \c \#undef ou recursivement développée, utilisez l'opérateur <code>:=</code> au lieu de l'opérateur \c =.]]>
+<![CDATA[La balise \c PREDEFINED peut être utilisée pour spécifier un ou plusieurs noms de macros qui sont définis avant que le préprocesseur ne soit lance (similaire à l'option `-D` de par exemple \c gcc). L'argument de la balise est une liste de macros de la forme: <code>name</code> ou <code>name=définition</code> (sans espaces). Si la définition et le `=` sont omis, `=1` est suppose. Pour empêcher une définition de macro d'être non définie via \c \#undef ou recursivement développée, utilisez l'opérateur <code>:=</code> au lieu de l'opérateur \c =.]]>
       </docs>
     </option>
     <option type="list" id="EXPAND_AS_DEFINED" format="string" depends="ENABLE_PREPROCESSING">
@@ -1599,7 +1640,7 @@
     </option>
     <option type="enum" id="CLASS_GRAPH" defval="YES">
       <docs>
-<![CDATA[Si la balise \c CLASS_GRAPH est définie à \c YES ou \c GRAPH ou \c BUILTIN, Doxygen générera un graphe pour chaque classe documentée montrant les relations d'héritage directes et indirectes. Si la balise \c CLASS_GRAPH est définie à \c YES ou \c GRAPH et que \ref cfg_have_dot "HAVE_DOT" est activé également, alors `dot` sera utilisé pour dessiner le graphe. Si la balise \c CLASS_GRAPH est définie à \c YES et que \ref cfg_have_dot "HAVE_DOT" est désactivé ou si la balise \c CLASS_GRAPH est définie à \c BUILTIN, alors le generateur intégré sera utilisé. Si la balise \c CLASS_GRAPH est définie à \c TEXT, les relations d'héritage directes et indirectes seront affichées sous forme de textes / liens. L'activation explicite d'un graphe d'héritage ou le choix d'une representation différente pour un graphe d'héritage d'une classe spécifique peut être accompli au moyen de la commande \ref cmdinheritancegraph "\inheritancegraph". La désactivation d'un graphe d'héritage peut être accomplie au moyen de la commande \ref cmdhideinheritancegraph "\hideinheritancegraph".]]>
+<![CDATA[Si la balise \c CLASS_GRAPH est définie à \c YES ou \c GRAPH ou \c BUILTIN, Doxygen générera un graphe pour chaque classe documentée montrant les relations d'héritage directes et indirectes. Si la balise \c CLASS_GRAPH est définie à \c YES ou \c GRAPH et que \ref cfg_have_dot "HAVE_DOT" est activé également, alors `dot` sera utilisé pour dessiner le graphe. Si la balise \c CLASS_GRAPH est définie à \c YES et que \ref cfg_have_dot "HAVE_DOT" est désactivé ou si la balise \c CLASS_GRAPH est définie à \c BUILTIN, alors le generateur intégré sera utilisé. Si la balise \c CLASS_GRAPH est définie à \c TEXT, les relations d'héritage directes et indirectes seront affichées sous forme de textes / liens. L'activation explicite d'un graphe d'héritage ou le choix d'une representation différente pour un graphe d'héritage d'une classe spécifique peut être accompli au moyen de la commande \ref cmdinheritancegraph "\\inheritancegraph". La désactivation d'un graphe d'héritage peut être accomplie au moyen de la commande \ref cmdhideinheritancegraph "\\hideinheritancegraph".]]>
       </docs>
       <value name="NO" bool_representation="NO"/>
       <value name="YES" bool_representation="YES"/>
@@ -1609,12 +1650,12 @@
     </option>
     <option type="bool" id="COLLABORATION_GRAPH" defval="1" depends="HAVE_DOT">
       <docs>
-<![CDATA[Si la balise \c COLLABORATION_GRAPH est définie à \c YES, Doxygen générera un graphe pour chaque classe documentée montrant les dépendances d'implémentation directes et indirectes (héritage, containment et variables de référence de classe) de la classe avec d'autres classes documentées. L'activation explicite d'un graphe de collaboration, lorsque \c COLLABORATION_GRAPH est défini à \c NO, peut être accomplie au moyen de la commande \ref cmdcollaborationgraph "\collaborationgraph". La désactivation d'un graphe de collaboration peut être accomplie au moyen de la commande \ref cmdhidecollaborationgraph "\hidecollaborationgraph".]]>
+<![CDATA[Si la balise \c COLLABORATION_GRAPH est définie à \c YES, Doxygen générera un graphe pour chaque classe documentée montrant les dépendances d'implémentation directes et indirectes (héritage, containment et variables de référence de classe) de la classe avec d'autres classes documentées. L'activation explicite d'un graphe de collaboration, lorsque \c COLLABORATION_GRAPH est défini à \c NO, peut être accomplie au moyen de la commande \ref cmdcollaborationgraph "\\collaborationgraph". La désactivation d'un graphe de collaboration peut être accomplie au moyen de la commande \ref cmdhidecollaborationgraph "\\hidecollaborationgraph".]]>
       </docs>
     </option>
     <option type="bool" id="GROUP_GRAPHS" defval="1" depends="HAVE_DOT">
       <docs>
-<![CDATA[Si la balise \c GROUP_GRAPHS est définie à \c YES, Doxygen générera un graphe pour les groupes, montrant les dépendances directes des groupes. L'activation explicite d'un graphe de dépendance de groupe, lorsque \c GROUP_GRAPHS est défini à \c NO, peut être accomplie au moyen de la commande \ref cmdgroupgraph "\groupgraph". La désactivation d'un graphe de répertoire peut être accomplie au moyen de la commande \ref cmdhidegroupgraph "\hidegroupgraph". Voir aussi le chapitre \ref grouping "Grouping" dans le manuel.]]>
+<![CDATA[Si la balise \c GROUP_GRAPHS est définie à \c YES, Doxygen générera un graphe pour les groupes, montrant les dépendances directes des groupes. L'activation explicite d'un graphe de dépendance de groupe, lorsque \c GROUP_GRAPHS est défini à \c NO, peut être accomplie au moyen de la commande \ref cmdgroupgraph "\\groupgraph". La désactivation d'un graphe de répertoire peut être accomplie au moyen de la commande \ref cmdhidegroupgraph "\\hidegroupgraph". Voir aussi le chapitre \ref grouping "Grouping" dans le manuel.]]>
       </docs>
     </option>
     <option type="bool" id="UML_LOOK" defval="0" depends="HAVE_DOT">
@@ -1652,22 +1693,22 @@
     </option>
     <option type="bool" id="INCLUDE_GRAPH" defval="1" depends="HAVE_DOT">
       <docs>
-<![CDATA[Si les balises \c INCLUDE_GRAPH, \ref cfg_enable_preprocessing "ENABLE_PREPROCESSING" et \ref cfg_search_includes "SEARCH_INCLUDES" sont définies à \c YES, Doxygen générera un graphe pour chaque fichier documente montrant les dépendances d'inclusion directes et indirectes du fichier avec d'autres fichiers documentés. L'activation explicite d'un graphe d'inclusion, lorsque \c INCLUDE_GRAPH est défini à \c NO, peut être accomplie au moyen de la commande \ref cmdincludegraph "\includegraph". La désactivation d'un graphe d'inclusion peut être accomplie au moyen de la commande \ref cmdhideincludegraph "\hideincludegraph".]]>
+<![CDATA[Si les balises \c INCLUDE_GRAPH, \ref cfg_enable_preprocessing "ENABLE_PREPROCESSING" et \ref cfg_search_includes "SEARCH_INCLUDES" sont définies à \c YES, Doxygen générera un graphe pour chaque fichier documente montrant les dépendances d'inclusion directes et indirectes du fichier avec d'autres fichiers documentés. L'activation explicite d'un graphe d'inclusion, lorsque \c INCLUDE_GRAPH est défini à \c NO, peut être accomplie au moyen de la commande \ref cmdincludegraph "\\includegraph". La désactivation d'un graphe d'inclusion peut être accomplie au moyen de la commande \ref cmdhideincludegraph "\\hideincludegraph".]]>
       </docs>
     </option>
     <option type="bool" id="INCLUDED_BY_GRAPH" defval="1" depends="HAVE_DOT">
       <docs>
-<![CDATA[Si les balises \c INCLUDED_BY_GRAPH, \ref cfg_enable_preprocessing "ENABLE_PREPROCESSING" et \ref cfg_search_includes "SEARCH_INCLUDES" sont définies à \c YES, Doxygen générera un graphe pour chaque fichier documente montrant les dépendances d'inclusion directes et indirectes du fichier avec d'autres fichiers documentés. L'activation explicite d'un graphe d'inclusion par, lorsque \c INCLUDED_BY_GRAPH est défini à \c NO, peut être accomplie au moyen de la commande \ref cmdincludedbygraph "\includedbygraph". La désactivation d'un graphe d'inclusion par peut être accomplie au moyen de la commande \ref cmdhideincludedbygraph "\hideincludedbygraph".]]>
+<![CDATA[Si les balises \c INCLUDED_BY_GRAPH, \ref cfg_enable_preprocessing "ENABLE_PREPROCESSING" et \ref cfg_search_includes "SEARCH_INCLUDES" sont définies à \c YES, Doxygen générera un graphe pour chaque fichier documente montrant les dépendances d'inclusion directes et indirectes du fichier avec d'autres fichiers documentés. L'activation explicite d'un graphe d'inclusion par, lorsque \c INCLUDED_BY_GRAPH est défini à \c NO, peut être accomplie au moyen de la commande \ref cmdincludedbygraph "\\includedbygraph". La désactivation d'un graphe d'inclusion par peut être accomplie au moyen de la commande \ref cmdhideincludedbygraph "\\hideincludedbygraph".]]>
       </docs>
     </option>
     <option type="bool" id="CALL_GRAPH" defval="0" depends="HAVE_DOT">
       <docs>
-<![CDATA[Si la balise \c CALL_GRAPH est définie à \c YES, Doxygen générera un graphe de dépendance d'appel pour chaque fonction globale ou méthode de classe. <br>Notez que l'activation de cette option augmentera de manière significative le temps d'une exécution. Donc dans la plupart des cas, il sera préférable d'activer les graphes d'appel uniquement pour les fonctions sélectionnées en utilisant la commande \ref cmdcallgraph "\callgraph". La désactivation d'un graphe d'appel peut être accomplie au moyen de la commande \ref cmdhidecallgraph "\hidecallgraph".]]>
+<![CDATA[Si la balise \c CALL_GRAPH est définie à \c YES, Doxygen générera un graphe de dépendance d'appel pour chaque fonction globale ou méthode de classe. <br>Notez que l'activation de cette option augmentera de manière significative le temps d'une exécution. Donc dans la plupart des cas, il sera préférable d'activer les graphes d'appel uniquement pour les fonctions sélectionnées en utilisant la commande \ref cmdcallgraph "\\callgraph". La désactivation d'un graphe d'appel peut être accomplie au moyen de la commande \ref cmdhidecallgraph "\\hidecallgraph".]]>
       </docs>
     </option>
     <option type="bool" id="CALLER_GRAPH" defval="0" depends="HAVE_DOT">
       <docs>
-<![CDATA[Si la balise \c CALLER_GRAPH est définie à \c YES, Doxygen générera un graphe de dépendance d'appelant pour chaque fonction globale ou méthode de classe. <br>Notez que l'activation de cette option augmentera de manière significative le temps d'une exécution. Donc dans la plupart des cas, il sera préférable d'activer les graphes d'appelant uniquement pour les fonctions sélectionnées en utilisant la commande \ref cmdcallergraph "\callergraph". La désactivation d'un graphe d'appelant peut être accomplie au moyen de la commande \ref cmdhidecallergraph "\hidecallergraph".]]>
+<![CDATA[Si la balise \c CALLER_GRAPH est définie à \c YES, Doxygen générera un graphe de dépendance d'appelant pour chaque fonction globale ou méthode de classe. <br>Notez que l'activation de cette option augmentera de manière significative le temps d'une exécution. Donc dans la plupart des cas, il sera préférable d'activer les graphes d'appelant uniquement pour les fonctions sélectionnées en utilisant la commande \ref cmdcallergraph "\\callergraph". La désactivation d'un graphe d'appelant peut être accomplie au moyen de la commande \ref cmdhidecallergraph "\\hidecallergraph".]]>
       </docs>
     </option>
     <option type="bool" id="GRAPHICAL_HIERARCHY" defval="1" depends="HAVE_DOT">
@@ -1677,7 +1718,7 @@
     </option>
     <option type="bool" id="DIRECTORY_GRAPH" defval="1" depends="HAVE_DOT">
       <docs>
-<![CDATA[Si la balise \c DIRECTORY_GRAPH est définie à \c YES, Doxygen montrera les dépendances d'un répertoire sur d'autres répertoires de manière graphique. Les relations de dépendance sont déterminées par les relations \c \#include entre les fichiers dans les répertoires. L'activation explicite d'un graphe de répertoire, lorsque \c DIRECTORY_GRAPH est défini à \c NO, peut être accomplie au moyen de la commande \ref cmddirectorygraph "\directorygraph". La désactivation d'un graphe de répertoire peut être accomplie au moyen de la commande \ref cmdhidedirectorygraph "\hidedirectorygraph".]]>
+<![CDATA[Si la balise \c DIRECTORY_GRAPH est définie à \c YES, Doxygen montrera les dépendances d'un répertoire sur d'autres répertoires de manière graphique. Les relations de dépendance sont déterminées par les relations \c \#include entre les fichiers dans les répertoires. L'activation explicite d'un graphe de répertoire, lorsque \c DIRECTORY_GRAPH est défini à \c NO, peut être accomplie au moyen de la commande \ref cmddirectorygraph "\\directorygraph". La désactivation d'un graphe de répertoire peut être accomplie au moyen de la commande \ref cmdhidedirectorygraph "\\hidedirectorygraph".]]>
       </docs>
     </option>
     <option type="int" id="DIR_GRAPH_MAX_DEPTH" minval="1" maxval="25" defval="1" depends="DIRECTORY_GRAPH">
@@ -1732,7 +1773,7 @@
     </option>
     <option type="list" id="DOTFILE_DIRS" format="dir" depends="HAVE_DOT">
       <docs>
-<![CDATA[La balise \c DOTFILE_DIRS peut être utilisée pour spécifier un ou plusieurs répertoires qui contiennent des fichiers dot qui sont inclus dans la documentation (voir la commande \ref cmddotfile "\dotfile").]]>
+<![CDATA[La balise \c DOTFILE_DIRS peut être utilisée pour spécifier un ou plusieurs répertoires qui contiennent des fichiers dot qui sont inclus dans la documentation (voir la commande \ref cmddotfile "\\dotfile").]]>
       </docs>
     </option>
     <option type="string" id="DIA_PATH" format="dir" defval="">
@@ -1742,12 +1783,12 @@
     </option>
     <option type="list" id="DIAFILE_DIRS" format="dir">
       <docs>
-<![CDATA[La balise \c DIAFILE_DIRS peut être utilisée pour spécifier un ou plusieurs répertoires qui contiennent des fichiers dia qui sont inclus dans la documentation (voir la commande \ref cmddiafile "\diafile").]]>
+<![CDATA[La balise \c DIAFILE_DIRS peut être utilisée pour spécifier un ou plusieurs répertoires qui contiennent des fichiers dia qui sont inclus dans la documentation (voir la commande \ref cmddiafile "\\diafile").]]>
       </docs>
     </option>
     <option type="string" id="PLANTUML_JAR_PATH" format="filedir" defval="">
       <docs>
-<![CDATA[Lors de l'utilisation de PlantUML, la balise \c PLANTUML_JAR_PATH devrait être utilisée pour spécifier le chemin ou java peut trouver le fichier \c plantuml.jar ou le nom de fichier du fichier \c jar a utiliser. Si laissé vide, il est suppose que PlantUML n'est pas utilise ou appelé lors d'une étape de prétraitement. Doxygen générera un avertissement lorsqu'il rencontrera une commande \ref cmdstartuml "\startuml" dans ce cas et ne générera pas de sortie pour le diagramme.]]>
+<![CDATA[Lors de l'utilisation de PlantUML, la balise \c PLANTUML_JAR_PATH devrait être utilisée pour spécifier le chemin ou java peut trouver le fichier \c plantuml.jar ou le nom de fichier du fichier \c jar a utiliser. Si laissé vide, il est suppose que PlantUML n'est pas utilise ou appelé lors d'une étape de prétraitement. Doxygen générera un avertissement lorsqu'il rencontrera une commande \ref cmdstartuml "\\startuml" dans ce cas et ne générera pas de sortie pour le diagramme.]]>
       </docs>
     </option>
     <option type="string" id="PLANTUML_CFG_FILE" format="file" defval="">
@@ -1762,7 +1803,7 @@
     </option>
     <option type="list" id="PLANTUMLFILE_DIRS" format="dir">
       <docs>
-<![CDATA[La balise \c PLANTUMLFILE_DIRS peut être utilisée pour spécifier un ou plusieurs répertoires qui contiennent des fichiers PlantUml qui sont inclus dans la documentation (voir la commande \ref cmdplantumlfile "\plantumlfile").]]>
+<![CDATA[La balise \c PLANTUMLFILE_DIRS peut être utilisée pour spécifier un ou plusieurs répertoires qui contiennent des fichiers PlantUml qui sont inclus dans la documentation (voir la commande \ref cmdplantumlfile "\\plantumlfile").]]>
       </docs>
     </option>
     <option type="string" id="MERMAID_PATH" format="filedir" defval="">
@@ -1785,12 +1826,19 @@
     </option>
     <option type="string" id="MERMAID_JS_URL" format="string" defval="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs">
       <docs>
-<![CDATA[La balise \c MERMAID_JS_URL spécifie l'URL à partir de laquelle charger \c mermaid.js lors de l'utilisation du rendu côté client (\c MERMAID_RENDER_MODE est \c CLIENT_SIDE ou \c AUTO). Le défaut pointe vers la dernière version Mermaid v11 sur le CDN jsDelivr. \par Exemples: - Dernière v11 (défaut): <code>https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs</code> - Version épinglée: <code>https://cdn.jsdelivr.net/npm/mermaid@11.3.0/dist/mermaid.esm.min.mjs</code> - Copie locale: <code>./mermaid.esm.min.mjs</code> (l'utilisateur doit placer le fichier dans le répertoire de sortie HTML) \par L'URL CDN par défaut nécessite un accès Internet lors de la consultation de la documentation générée. Pour une utilisation hors ligne, telechargez \c mermaid.esm.min.mjs et définissez ceci sur un chemin relatif, ou utilisez \c MERMAID_RENDER_MODE=CLI pour pre-générer les images à la place.]]>
+<![CDATA[La balise \c MERMAID_JS_URL spécifie l'URL à partir de laquelle charger \c mermaid.js lors de l'utilisation du rendu côté client (\c MERMAID_RENDER_MODE est \c CLIENT_SIDE ou \c AUTO). Le défaut pointe vers la dernière version Mermaid v11 sur le CDN jsDelivr.
+<br>
+L'URL CDN par défaut nécessite un accès Internet lors de la consultation de la documentation générée. Pour une utilisation hors ligne, telechargez \c mermaid.esm.min.mjs et définissez ceci sur un chemin relatif, ou utilisez \c MERMAID_RENDER_MODE=CLI pour pre-générer les images à la place.
+\par Exemples:
+ - Dernière v11 (défaut): <code>https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs</code>
+ - Version épinglée: <code>https://cdn.jsdelivr.net/npm/mermaid@11.3.0/dist/mermaid.esm.min.mjs</code>
+ - Copie locale: <code>./mermaid.esm.min.mjs</code> (l'utilisateur doit placer le fichier dans le répertoire de sortie HTML)
+]]>
       </docs>
     </option>
     <option type="list" id="MERMAIDFILE_DIRS" format="dir">
       <docs>
-<![CDATA[La balise \c MERMAIDFILE_DIRS peut être utilisée pour spécifier un ou plusieurs répertoires qui contiennent des fichiers Mermaid qui sont inclus dans la documentation (voir la commande \ref cmdmermaidfile "\mermaidfile").]]>
+<![CDATA[La balise \c MERMAIDFILE_DIRS peut être utilisée pour spécifier un ou plusieurs répertoires qui contiennent des fichiers Mermaid qui sont inclus dans la documentation (voir la commande \ref cmdmermaidfile "\\mermaidfile").]]>
       </docs>
     </option>
     <option type="int" id="DOT_GRAPH_MAX_NODES" minval="0" maxval="10000" defval="50" depends="HAVE_DOT">
@@ -1815,12 +1863,12 @@
     </option>
     <option type="string" id="MSCGEN_TOOL" format="file" defval="">
       <docs>
-<![CDATA[Vous pouvez définir des diagrammes de séquence de messages dans les commentaires Doxygen en utilisant la commande \ref cmdmsc "\msc". Si la balise \c MSCGEN_TOOL est laissée vide (le défaut), Doxygen utilisera une version intégrée de l'outil mscgen pour produire les diagrammes. Alternativement, la balise \c MSCGEN_TOOL peut également spécifier le nom d'un outil externe. Par exemple, en specifiant `prog` comme valeur, Doxygen appellera l'outil comme `prog -T <outfile_format> -o <outputfile> <inputfile>`. L'outil externe devrait prendre en charge les formats de fichier de sortie "png", "eps", "svg" et "ismap".]]>
+<![CDATA[Vous pouvez définir des diagrammes de séquence de messages dans les commentaires Doxygen en utilisant la commande \ref cmdmsc "\\msc". Si la balise \c MSCGEN_TOOL est laissée vide (le défaut), Doxygen utilisera une version intégrée de l'outil mscgen pour produire les diagrammes. Alternativement, la balise \c MSCGEN_TOOL peut également spécifier le nom d'un outil externe. Par exemple, en specifiant `prog` comme valeur, Doxygen appellera l'outil comme `prog -T <outfile_format> -o <outputfile> <inputfile>`. L'outil externe devrait prendre en charge les formats de fichier de sortie "png", "eps", "svg" et "ismap".]]>
       </docs>
     </option>
     <option type="list" id="MSCFILE_DIRS" format="dir">
       <docs>
-<![CDATA[La balise \c MSCFILE_DIRS peut être utilisée pour spécifier un ou plusieurs répertoires qui contiennent des fichiers msc qui sont inclus dans la documentation (voir la commande \ref cmdmscfile "\mscfile").]]>
+<![CDATA[La balise \c MSCFILE_DIRS peut être utilisée pour spécifier un ou plusieurs répertoires qui contiennent des fichiers msc qui sont inclus dans la documentation (voir la commande \ref cmdmscfile "\\mscfile").]]>
       </docs>
     </option>
   </group>
