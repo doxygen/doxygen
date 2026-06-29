@@ -169,7 +169,7 @@
     </option>
     <option type="bool" id="QT_AUTOBRIEF" defval="0">
       <docs>
-<![CDATA[Если тег \c QT_AUTOBRIEF установлен в \c YES, Doxygen будет интерпретировать первую строку комментариев в стиле Qt (до первой точки, вопросительного знака или восклицательного знака) как краткое описание. Если установлен в \c NO, стиль Qt будет вести себя как обычные комментарии в стиле Qt (поэтому требуется явная команда \ref cmdbrief "\brief" для получения краткого описания).]]>
+<![CDATA[Если тег \c QT_AUTOBRIEF установлен в \c YES, Doxygen будет интерпретировать первую строку комментариев в стиле Qt (до первой точки, вопросительного знака или восклицательного знака) как краткое описание. Если установлен в \c NO, стиль Qt будет вести себя как обычные комментарии в стиле Qt (поэтому требуется явная команда \ref cmdbrief "\\brief" для получения краткого описания).]]>
       </docs>
     </option>
     <option type="bool" id="MULTILINE_CPP_IS_BRIEF" defval="0">
@@ -199,7 +199,7 @@
     </option>
     <option type="list" id="ALIASES" format="string">
       <docs>
-<![CDATA[Этот тег можно использовать для указания нескольких псевдонимов, которые будут действовать как команды в документации. Псевдоним имеет форму: \verbatim имя=значение\endverbatim Например, добавление \verbatim "sideeffect=@par Побочные эффекты:^^"\endverbatim позволит вам разместить команду \c \sideeffect (или \c \@sideeffect) в документации, что приведет к созданию пользовательского абзаца с заголовком "Побочные эффекты:". Обратите внимание, что вы не можете поместить \ref cmdn "\n" в часть значения псевдонима для вставки разрыва строки (в результирующем выводе). Вы можете поместить `^^` в часть значения псевдонима для вставки разрыва строки, как если бы в исходном файле был физический разрыв строки.]]>
+<![CDATA[Этот тег можно использовать для указания нескольких псевдонимов, которые будут действовать как команды в документации. Псевдоним имеет форму: \verbatim имя=значение\endverbatim Например, добавление \verbatim "sideeffect=@par Побочные эффекты:^^"\endverbatim позволит вам разместить команду \c \\sideeffect (или \c \@sideeffect) в документации, что приведет к созданию пользовательского абзаца с заголовком "Побочные эффекты:". Обратите внимание, что вы не можете поместить \ref cmdn "\\n" в часть значения псевдонима для вставки разрыва строки (в результирующем выводе). Вы можете поместить `^^` в часть значения псевдонима для вставки разрыва строки, как если бы в исходном файле был физический разрыв строки.]]>
       </docs>
       <docs>
 <![CDATA[
@@ -266,7 +266,7 @@
     </option>
     <option type="list" id="AUTOLINK_IGNORE_WORDS" format="string" depends="AUTOLINK_SUPPORT">
       <docs>
-<![CDATA[Этот тег указывает список слов, которые при совпадении с началом слова в документации будут подавлять генерацию автоматических ссылок, если автоматическое связывание включено через AUTOLINK_SUPPORT. Этот список не влияет на ссылки, созданные явно с помощью команд \# или \ref cmdlink "\link" или \ref cmdref "\ref".]]>
+<![CDATA[Этот тег указывает список слов, которые при совпадении с началом слова в документации будут подавлять генерацию автоматических ссылок, если автоматическое связывание включено через AUTOLINK_SUPPORT. Этот список не влияет на ссылки, созданные явно с помощью команд \# или \ref cmdlink "\\link" или \ref cmdref "\\ref".]]>
       </docs>
     </option>
     <option type="bool" id="BUILTIN_STL_SUPPORT" defval="0">
@@ -296,17 +296,17 @@
     </option>
     <option type="bool" id="GROUP_NESTED_COMPOUNDS" defval="0">
       <docs>
-<![CDATA[Если структура или класс добавлены в группу и эта опция включена, любые вложенные классы или структуры также будут добавлены в ту же группу. По умолчанию эта опция отключена, и вложенные составные типы должны быть добавлены явно через \ref cmdingroup "\ingroup".]]>
+<![CDATA[Если структура или класс добавлены в группу и эта опция включена, любые вложенные классы или структуры также будут добавлены в ту же группу. По умолчанию эта опция отключена, и вложенные составные типы должны быть добавлены явно через \ref cmdingroup "\\ingroup".]]>
       </docs>
     </option>
     <option type="bool" id="SUBGROUPING" defval="1">
       <docs>
-<![CDATA[Установите тег \c SUBGROUPING в \c YES, чтобы разрешить группам членов класса одного типа (например, группу публичных функций) быть помещенными в подгруппу этого типа (например, в разделе Публичные функции). Установите в \c NO, чтобы предотвратить подгруппировку. Альтернативно, это можно сделать для каждого класса с помощью команды \ref cmdnosubgrouping "\nosubgrouping".]]>
+<![CDATA[Установите тег \c SUBGROUPING в \c YES, чтобы разрешить группам членов класса одного типа (например, группу публичных функций) быть помещенными в подгруппу этого типа (например, в разделе Публичные функции). Установите в \c NO, чтобы предотвратить подгруппировку. Альтернативно, это можно сделать для каждого класса с помощью команды \ref cmdnosubgrouping "\\nosubgrouping".]]>
       </docs>
     </option>
     <option type="bool" id="INLINE_GROUPED_CLASSES" defval="0">
       <docs>
-<![CDATA[Когда тег \c INLINE_GROUPED_CLASSES установлен в \c YES, классы, структуры и объединения отображаются в содержащей их группе (например, с использованием \ref cmdingroup "\ingroup"), а не на отдельных страницах (для HTML и страниц Man) или в разделах (для \f$\mbox{\LaTeX}\f$ и RTF). <br>Обратите внимание, что эта функция не может быть объединена с \ref cfg_separate_member_pages "SEPARATE_MEMBER_PAGES".]]>
+<![CDATA[Когда тег \c INLINE_GROUPED_CLASSES установлен в \c YES, классы, структуры и объединения отображаются в содержащей их группе (например, с использованием \ref cmdingroup "\\ingroup"), а не на отдельных страницах (для HTML и страниц Man) или в разделах (для \f$\mbox{\LaTeX}\f$ и RTF). <br>Обратите внимание, что эта функция не может быть объединена с \ref cfg_separate_member_pages "SEPARATE_MEMBER_PAGES".]]>
       </docs>
     </option>
     <option type="bool" id="INLINE_SIMPLE_STRUCTS" defval="0">
@@ -378,7 +378,7 @@
     </option>
     <option type="bool" id="EXTRACT_ANON_NSPACES" defval="0">
       <docs>
-<![CDATA[Если этот флаг установлен в \c YES, члены анонимных пространств имен будут извлечены и показаны в документации как пространство имен с именем &#x27;anonymous_namespace{file}&#x27;, где file заменяется базовым именем файла, содержащего анонимное пространство имен. По умолчанию анонимные пространства имен скрыты.]]>
+<![CDATA[Если этот флаг установлен в \c YES, члены анонимных пространств имен будут извлечены и показаны в документации как пространство имен с именем 'anonymous_namespace{file}', где file заменяется базовым именем файла, содержащего анонимное пространство имен. По умолчанию анонимные пространства имен скрыты.]]>
       </docs>
     </option>
     <option type="bool" id="RESOLVE_UNNAMED_PARAMS" defval="1">
@@ -413,7 +413,7 @@
     </option>
     <option type="bool" id="INTERNAL_DOCS" defval="0">
       <docs>
-<![CDATA[Тег \c INTERNAL_DOCS определяет, будет ли включена документация, написанная после команды \ref cmdinternal "\internal". Если тег установлен в \c NO, документация будет исключена. Установите в \c YES, чтобы включить внутреннюю документацию.]]>
+<![CDATA[Тег \c INTERNAL_DOCS определяет, будет ли включена документация, написанная после команды \ref cmdinternal "\\internal". Если тег установлен в \c NO, документация будет исключена. Установите в \c YES, чтобы включить внутреннюю документацию.]]>
       </docs>
     </option>
     <option type="enum" id="CASE_SENSE_NAMES" defval="SYSTEM">
@@ -491,32 +491,32 @@
     </option>
     <option type="bool" id="GENERATE_TODOLIST" defval="1">
       <docs>
-<![CDATA[Тег \c GENERATE_TODOLIST можно использовать для включения (\c YES) или отключения (\c NO) списка задач. Этот список создается путем размещения команд \ref cmdtodo "\todo" в документации.]]>
+<![CDATA[Тег \c GENERATE_TODOLIST можно использовать для включения (\c YES) или отключения (\c NO) списка задач. Этот список создается путем размещения команд \ref cmdtodo "\\todo" в документации.]]>
       </docs>
     </option>
     <option type="bool" id="GENERATE_TESTLIST" defval="1">
       <docs>
-<![CDATA[Тег \c GENERATE_TESTLIST можно использовать для включения (\c YES) или отключения (\c NO) списка тестов. Этот список создается путем размещения команд \ref cmdtest "\test" в документации.]]>
+<![CDATA[Тег \c GENERATE_TESTLIST можно использовать для включения (\c YES) или отключения (\c NO) списка тестов. Этот список создается путем размещения команд \ref cmdtest "\\test" в документации.]]>
       </docs>
     </option>
     <option type="bool" id="GENERATE_BUGLIST" defval="1">
       <docs>
-<![CDATA[Тег \c GENERATE_BUGLIST можно использовать для включения (\c YES) или отключения (\c NO) списка ошибок. Этот список создается путем размещения команд \ref cmdbug "\bug" в документации.]]>
+<![CDATA[Тег \c GENERATE_BUGLIST можно использовать для включения (\c YES) или отключения (\c NO) списка ошибок. Этот список создается путем размещения команд \ref cmdbug "\\bug" в документации.]]>
       </docs>
     </option>
     <option type="bool" id="GENERATE_DEPRECATEDLIST" defval="1">
       <docs>
-<![CDATA[Тег \c GENERATE_DEPRECATEDLIST можно использовать для включения (\c YES) или отключения (\c NO) списка устаревших. Этот список создается путем размещения команд \ref cmddeprecated "\deprecated" в документации.]]>
+<![CDATA[Тег \c GENERATE_DEPRECATEDLIST можно использовать для включения (\c YES) или отключения (\c NO) списка устаревших. Этот список создается путем размещения команд \ref cmddeprecated "\\deprecated" в документации.]]>
       </docs>
     </option>
     <option type="bool" id="GENERATE_REQUIREMENTS" defval="1">
       <docs>
-<![CDATA[Тег \c GENERATE_REQUIREMENTS можно использовать для включения (\c YES) или отключения (\c NO) страницы требований. Когда включено, эта страница создается автоматически, когда во входных данных появляется хотя бы один блок комментариев с командой \ref cmdrequirement "\requirement".]]>
+<![CDATA[Тег \c GENERATE_REQUIREMENTS можно использовать для включения (\c YES) или отключения (\c NO) страницы требований. Когда включено, эта страница создается автоматически, когда во входных данных появляется хотя бы один блок комментариев с командой \ref cmdrequirement "\\requirement".]]>
       </docs>
     </option>
     <option type="enum" id="REQ_TRACEABILITY_INFO" defval="YES" depends="GENERATE_REQUIREMENTS">
       <docs>
-<![CDATA[Тег \c REQ_TRACEABILITY_INFO управляет отображением информации о прослеживаемости на странице требований (актуально только при использовании блоков комментариев \ref cmdrequirement "\requirement"). Установка в \c NO полностью отключит информацию о прослеживаемости. Установка в \c UNSATISFIED_ONLY покажет список требований, которым не хватает отношения удовлетворения (через команду: \ref cmdsatisfies "\satisfies"). Аналогично, установка в \c UNVERIFIED_ONLY покажет список требований, которым не хватает отношения верификации (через команду: \ref cmdverifies "\verifies"). Установка тега в \c YES (по умолчанию) покажет оба списка, когда применимо.]]>
+<![CDATA[Тег \c REQ_TRACEABILITY_INFO управляет отображением информации о прослеживаемости на странице требований (актуально только при использовании блоков комментариев \ref cmdrequirement "\\requirement"). Установка в \c NO полностью отключит информацию о прослеживаемости. Установка в \c UNSATISFIED_ONLY покажет список требований, которым не хватает отношения удовлетворения (через команду: \ref cmdsatisfies "\\satisfies"). Аналогично, установка в \c UNVERIFIED_ONLY покажет список требований, которым не хватает отношения верификации (через команду: \ref cmdverifies "\\verifies"). Установка тега в \c YES (по умолчанию) покажет оба списка, когда применимо.]]>
       </docs>
       <value name="YES"/>
       <value name="NO"/>
@@ -525,12 +525,12 @@
     </option>
     <option type="list" id="ENABLED_SECTIONS" format="string">
       <docs>
-<![CDATA[Тег \c ENABLED_SECTIONS можно использовать для включения условных разделов документации, помеченных блоками \ref cmdif "\if" \<section_label\> ... \ref cmdendif "\endif" и \ref cmdcond "\cond" \<section_label\> ... \ref cmdendcond "\endcond".]]>
+<![CDATA[Тег \c ENABLED_SECTIONS можно использовать для включения условных разделов документации, помеченных блоками \ref cmdif "\\if" \<section_label\> ... \ref cmdendif "\\endif" и \ref cmdcond "\\cond" \<section_label\> ... \ref cmdendcond "\\endcond".]]>
       </docs>
     </option>
     <option type="int" id="MAX_INITIALIZER_LINES" minval="0" maxval="10000" defval="30">
       <docs>
-<![CDATA[Тег \c MAX_INITIALIZER_LINES определяет максимальное количество строк, которое начальное значение переменной или макроса/определения может отображать, чтобы появиться в документации. Если инициализатор содержит больше строк, чем указано здесь, он будет скрыт. Используйте значение 0, чтобы полностью скрыть инициализатор. Внешний вид значения отдельных переменных и макросов/определений можно контролировать в документации с помощью команд \ref cmdshowinitializer "\showinitializer" или \ref cmdhideinitializer "\hideinitializer", независимо от этой настройки.]]>
+<![CDATA[Тег \c MAX_INITIALIZER_LINES определяет максимальное количество строк, которое начальное значение переменной или макроса/определения может отображать, чтобы появиться в документации. Если инициализатор содержит больше строк, чем указано здесь, он будет скрыт. Используйте значение 0, чтобы полностью скрыть инициализатор. Внешний вид значения отдельных переменных и макросов/определений можно контролировать в документации с помощью команд \ref cmdshowinitializer "\\showinitializer" или \ref cmdhideinitializer "\\hideinitializer", независимо от этой настройки.]]>
       </docs>
     </option>
     <option type="bool" id="SHOW_USED_FILES" defval="1">
@@ -565,7 +565,7 @@
     </option>
     <option type="list" id="CITE_BIB_FILES" format="file">
       <docs>
-<![CDATA[Тег \c CITE_BIB_FILES можно использовать для указания одного или нескольких файлов \c bib, содержащих определения ссылок. Это должен быть список файлов <code>.bib</code>. Расширение <code>.bib</code> будет добавлено автоматически, если опущено. Это требует, чтобы инструмент \c bibtex был установлен. См. также https://en.wikipedia.org/wiki/BibTeX для дополнительной информации. Для \f$\mbox{\LaTeX}\f$ стиль ссылок может контролироваться с помощью \ref cfg_latex_bib_style "LATEX_BIB_STYLE". Чтобы использовать эту функцию, вам нужно иметь \c bibtex и \c perl доступными в пути поиска. См. также \ref cmdcite "\cite" для информации о создании цитат.]]>
+<![CDATA[Тег \c CITE_BIB_FILES можно использовать для указания одного или нескольких файлов \c bib, содержащих определения ссылок. Это должен быть список файлов <code>.bib</code>. Расширение <code>.bib</code> будет добавлено автоматически, если опущено. Это требует, чтобы инструмент \c bibtex был установлен. См. также https://en.wikipedia.org/wiki/BibTeX для дополнительной информации. Для \f$\mbox{\LaTeX}\f$ стиль ссылок может контролироваться с помощью \ref cfg_latex_bib_style "LATEX_BIB_STYLE". Чтобы использовать эту функцию, вам нужно иметь \c bibtex и \c perl доступными в пути поиска. См. также \ref cmdcite "\\cite" для информации о создании цитат.]]>
       </docs>
     </option>
     <option type="list" id="EXTERNAL_TOOL_PATH" format="dir" defval="">
@@ -884,7 +884,7 @@
     </option>
     <option type="bool" id="STRIP_CODE_COMMENTS" defval="1">
       <docs>
-<![CDATA[Если тег \c STRIP_CODE_COMMENTS установлен в \c YES, специальные блоки документирующих комментариев (/*! ... */) будут скрыты в исходном коде в браузере, чтобы не захламлять код. Обычные комментарии на C, C++ и Fortran всегда остаются видимыми.]]>
+<![CDATA[Если тег \c STRIP_CODE_COMMENTS установлен в \c YES, специальные блоки документирующих комментариев будут скрыты в исходном коде в браузере, чтобы не захламлять код. Обычные комментарии на C, C++ и Fortran всегда остаются видимыми.]]>
       </docs>
     </option>
     <option type="bool" id="REFERENCED_BY_RELATION" defval="0">
@@ -1352,7 +1352,7 @@ doxygen -w html new_header.html new_footer.html new_stylesheet.css YourConfigFil
     </option>
     <option type="string" id="FORMULA_MACROFILE" format="file" defval="">
       <docs>
-<![CDATA[Файл \c FORMULA_MACROFILE может содержать команды \f$\mbox{\LaTeX}\f$ \c \newcommand и \c \renewcommand
+<![CDATA[Файл \c FORMULA_MACROFILE может содержать команды \f$\mbox{\LaTeX}\f$ `\newcommana`d и `\renewcommand`
  для создания новых команд \f$\mbox{\LaTeX}\f$, используемых в формулах как строительные блоки.
  Подробнее см. в разделе \ref formulas.]]>
       </docs>
@@ -1411,7 +1411,10 @@ doxygen -w html new_header.html new_footer.html new_stylesheet.css YourConfigFil
     </option>
     <option type="string" id="MATHJAX_CODEFILE" format="string" depends="USE_MATHJAX">
       <docs>
-<![CDATA[Тег \c MATHJAX_CODEFILE можно использовать для указания файла с фрагментами кода JavaScript, которые будут использоваться при запуске кода MathJax. Для получения дополнительной информации см. сайт MathJax: - <a href="https://docs.mathjax.org/en/v2.7/">MathJax версии 2</a> - <a href="https://docs.mathjax.org/en/v3.2/">MathJax версии 3</a> - <a href="https://docs.mathjax.org/en/v4.0/">MathJax версии 4</a>]]>
+<![CDATA[Тег \c MATHJAX_CODEFILE можно использовать для указания файла с фрагментами кода JavaScript, которые будут использоваться при запуске кода MathJax. Для получения дополнительной информации см. сайт MathJax:
+ - <a href="https://docs.mathjax.org/en/v2.7/">MathJax версии 2</a>
+ - <a href="https://docs.mathjax.org/en/v3.2/">MathJax версии 3</a>
+ - <a href="https://docs.mathjax.org/en/v4.0/">MathJax версии 4</a>]]>
       </docs>
       <docs filter="doxyfile,doxywizard">
 <![CDATA[
@@ -1890,7 +1893,7 @@ doxygen -w latex new_header.tex new_footer.tex new_stylesheet.sty
  для \c gcc). Аргументом тега является список макросов вида:
  \c name или \c name=definition (без пробелов). Если определение и знак "=" опущены,
  предполагается "=1". Чтобы предотвратить отмену определения макроса через
- \c #undef или рекурсивное раскрытие, используйте оператор := вместо оператора =.]]>
+ \c \#undef или рекурсивное раскрытие, используйте оператор := вместо оператора =.]]>
       </docs>
     </option>
     <option type="list" id="EXPAND_AS_DEFINED" format="string" depends="ENABLE_PREPROCESSING">
@@ -2162,9 +2165,9 @@ doxygen -w latex new_header.tex new_footer.tex new_stylesheet.sty
  Этот тег требует, чтобы тег \ref cfg_have_dot "HAVE_DOT" был установлен в \c YES.
 
  Явное включение графа «включён в» можно выполнить с помощью
- команды \ref cmdincludedby "\\includedby".
+ команды \ref cmdincludedbygraph "\\includedbygraph".
  Отключение графа «включён в» можно выполнить с помощью команды
- \ref cmdhideincludedby "\\hideincludedby".]]>
+ \ref cmdhideincludedbygraph "\\hideincludedbygraph".]]>
       </docs>
     </option>
     <option type="bool" id="CALL_GRAPH" defval="0" depends="HAVE_DOT">
@@ -2201,7 +2204,7 @@ doxygen -w latex new_header.tex new_footer.tex new_stylesheet.sty
     <option type="bool" id="DIRECTORY_GRAPH" defval="1" depends="HAVE_DOT">
       <docs>
 <![CDATA[Если тег \c DIRECTORY_GRAPH установлен в \c YES, Doxygen будет графически показывать зависимости
- каталога от других каталогов. Зависимости определяются по отношениям \c #include
+ каталога от других каталогов. Зависимости определяются по отношениям \c \#include
  между файлами в каталогах.
 
  Явное включение графа каталогов можно выполнить с помощью
@@ -2301,7 +2304,7 @@ doxygen -w latex new_header.tex new_footer.tex new_stylesheet.sty
  \c java может найти файл \c plantuml.jar, или имени jar-файла для использования.
  Если оставить пустым, предполагается, что PlantUML не используется или вызывается
  на этапе предварительной обработки.
- В этом случае Doxygen выдаст предупреждение при обнаружении команды \plantuml
+ В этом случае Doxygen выдаст предупреждение при обнаружении команды \ref cmdstartuml "\\startuml"
  и не выполнит рендеринг диаграммы.]]>
       </docs>
     </option>
