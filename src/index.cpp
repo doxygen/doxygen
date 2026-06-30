@@ -477,6 +477,10 @@ static void writeMemberToIndex(const Definition *def,const MemberDef *md,bool ad
   bool lAddToIndex = addToIndex && !namespaceMemberInFileDocs;
   QCString name = namespaceMemberInFileDocs || defType==Definition::TypeModule ?
                   md->qualifiedName() : md->name();
+  if (md->toAnonymousMember())
+  {
+    name.prepend(md->toAnonymousMember()->anonymousMemberPrefix());
+  }
   if (md->getOuterScope()==def ||
       (md->getNamespaceDef()!=nullptr && defType==Definition::TypeFile) ||
       md->getOuterScope()==Doxygen::globalScope)

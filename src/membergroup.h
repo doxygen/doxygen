@@ -65,6 +65,7 @@ class MemberGroup
                MemberListType lt,
                const ClassDef *inheritedFrom,const QCString &inheritId) const;
     void setAnonymousEnumType();
+    void setAnonymousMemberPrefix(const QCString &prefix);
 
     const QCString &documentation() const { return doc; }
     bool allMembersInSameSection() const { return inSameSection; }

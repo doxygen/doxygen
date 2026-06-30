@@ -929,7 +929,7 @@ function initNavTree(toroot,relpath,allMembersFile) {
           id = tr.getAttribute('id');
           let text = is_anon_enum ? 'anonymous enum' : (td.querySelector(':first-child') ? td.querySelector(':first-child').textContent : '');
           let isMemberGroupHeader = hasClass(tr, 'groupHeader');
-          if (tr.offsetParent !== null && last_id!=id && id!==undefined) {
+          if (tr.offsetParent !== null && last_id!=id && id!==undefined && id!==null) {
             if (isMemberGroupHeader && inMemberGroup) {
               ulStack.pop();
               inMemberGroup=false;
@@ -1100,7 +1100,7 @@ function initNavTree(toroot,relpath,allMembersFile) {
         }
         offsets.push({id:'',y:1e10});
         let scrollTarget = undefined, numItems=0;
-        for (let i=0;i<topMapping.length;i++) {
+        for (let i=0;i<offsets.length-1;i++) {
           const ys = offsets[i].y;
           const ye = offsets[i+1].y;
           const id = offsets[i].id;

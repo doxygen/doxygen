@@ -307,8 +307,6 @@ class ClassDef : public Definition
 
     virtual bool isSimple() const = 0;
 
-    virtual const ClassDef *tagLessReference() const = 0;
-
     virtual const MemberDef *isSmartPointer() const = 0;
 
     virtual bool isJavaEnum() const = 0;
@@ -394,7 +392,6 @@ class ClassDefMutable : public DefinitionMutable, public ClassDef
     virtual void setTypeConstraints(const ArgumentList &al) = 0;
     virtual void setCategoryOf(ClassDef *cd) = 0;
     virtual void setUsedOnly(bool b) = 0;
-    virtual void setTagLessReference(const ClassDef *cd) = 0;
     virtual void setMetaData(const QCString &md) = 0;
     virtual void setRequiresClause(const QCString &req) = 0;
     virtual void addQualifiers(const StringVector &qualifiers) = 0;
@@ -402,10 +399,12 @@ class ClassDefMutable : public DefinitionMutable, public ClassDef
     virtual CLASS_GRAPH_t hasInheritanceGraph() const = 0;
     virtual void overrideInheritanceGraph(CLASS_GRAPH_t e) = 0;
     virtual void setImplicitTemplateInstance(bool b) = 0;
+    virtual void setAnonymousMemberPrefix(const QCString &prefix) = 0;
 
     // collaboration graph related members
     virtual bool hasCollaborationGraph() const = 0;
     virtual void overrideCollaborationGraph(bool e) = 0;
+
 
     //-----------------------------------------------------------------------------------
     // --- helpers ----
