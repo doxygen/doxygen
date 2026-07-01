@@ -21,12 +21,15 @@
  * Alexandr V. Chelpanov <cav@cryptopro.ru> released Sep 25, 2004
  * Благодарности: Vitaly A. Repin <vitaly@radio.hop.stu.neva.ru>,
  *    Михаил Глушенков <bbman@mail.ru>
+ *
+ * 01 Jul 2026: updated with the requirements related methods introduced
+ *              since release 1.16.0
  */
 
 #ifndef TRANSLATOR_RU_H
 #define TRANSLATOR_RU_H
 
-class TranslatorRussian : public TranslatorAdapter_1_16_0
+class TranslatorRussian : public Translator
 {
   public:
     /*! Used for identification of the language. */
@@ -2575,6 +2578,61 @@ class TranslatorRussian : public TranslatorAdapter_1_16_0
   // new since 1.11.0
   //////////////////////////////////////////////////////////////////////////
   QCString trImportant() override { return "Важно!"; }
+
+  //////////////////////////////////////////////////////////////////////////
+  // new since 1.16.0
+  //////////////////////////////////////////////////////////////////////////
+
+  // the title of the requirements overview page
+  QCString trRequirements() override
+  {
+    return "Требования";
+  }
+  // table header for the column with the requirements IDs
+  QCString trRequirementID() override
+  {
+    return "ID";
+  }
+  // indicates a symbol implements (satisfies) a requirement
+  QCString trSatisfies(bool singular) override
+  {
+    return createNoun(true, singular, "Удовлетворяет требовани", "ям", "ю");
+  }
+  // indicates a requirement is satisfied (implemented) by one or more symbols
+  QCString trSatisfiedBy(const QCString &list) override
+  {
+    return "Удовлетворяется "+list+".";
+  }
+  QCString trUnsatisfiedRequirements() override
+  {
+    return "Неудовлетворенные требования";
+  }
+  QCString trUnsatisfiedRequirementsText(bool singular,const QCString &list) override
+  {
+    return singular ?
+      "Требование "+list+" не имеет отношения 'удовлетворяет'." :
+      "Требования "+list+" не имеют отношения 'удовлетворяет'.";
+  }
+  // indicates a symbol verifies (tests) a requirement
+  QCString trVerifies(bool singular) override
+  {
+    return createNoun(true, singular, "Проверяет требовани", "я", "е");
+  }
+  // indicates a requirement is verified (tested) by one or more symbols
+  QCString trVerifiedBy(const QCString &list) override
+  {
+    return "Проверяется "+list+".";
+  }
+  QCString trUnverifiedRequirements() override
+  {
+    return "Непроверенные требования";
+  }
+  QCString trUnverifiedRequirementsText(bool singular,const QCString &list) override
+  {
+    return singular ?
+      "Требование "+list+" не имеет отношения 'проверяет'." :
+      "Требования "+list+" не имеют отношения 'проверяет'.";
+  }
 };
 
 #endif
