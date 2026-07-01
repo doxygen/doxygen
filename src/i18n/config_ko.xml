@@ -129,7 +129,7 @@
     </option>
     <option type="bool" id="ALWAYS_DETAILED_SEC" defval="0">
       <docs>
-<![CDATA[\c ALWAYS_DETAILED_SEC와 \ref cfg_repeat_brief "REPEAT_BRIEF" 태그가 모두 \c YES 로 설정되면 Doxygen은 간결한 설명만 있는 경우에도 상세 섹션을 생성합니다.]]>
+<![CDATA[\c ALWAYS_DETAILED_SEC 와 \ref cfg_repeat_brief "REPEAT_BRIEF" 태그가 모두 \c YES 로 설정되면 Doxygen은 간결한 설명만 있는 경우에도 상세 섹션을 생성합니다.]]>
       </docs>
     </option>
     <option type="bool" id="INLINE_INHERITED_MEMB" defval="0">
@@ -164,7 +164,7 @@
     </option>
     <option type="bool" id="JAVADOC_BANNER" defval="0">
       <docs>
-<![CDATA[\c JAVADOC_BANNER 태그가 \c YES 로 설정되면 Doxygen은 \verbatim /***************\endverbatim와 같은 줄을 Javadoc 스타일 주석 "배너"의 시작으로 해석합니다. \c NO 로 설정되면 Javadoc 스타일은 일반 주석처럼 작동하며 Doxygen은 이를 해석하지 않습니다.]]>
+<![CDATA[\c JAVADOC_BANNER 태그가 \c YES 로 설정되면 Doxygen은 \verbatim /***************\endverbatim 와 같은 줄을 Javadoc 스타일 주석 "배너"의 시작으로 해석합니다. \c NO 로 설정되면 Javadoc 스타일은 일반 주석처럼 작동하며 Doxygen은 이를 해석하지 않습니다.]]>
       </docs>
     </option>
     <option type="bool" id="QT_AUTOBRIEF" defval="0">
@@ -322,12 +322,12 @@
     <option type="int" id="LOOKUP_CACHE_SIZE" minval="0" maxval="9" defval="0">
       <!-- be careful when changing these formulas as they are hard coded in the conversion script -->
       <docs>
-<![CDATA[기호 조회 캐시의 크기는 \c LOOKUP_CACHE_SIZE를 사용하여 설정할 수 있습니다. 이 캐시는 이름과 범위를 기반으로 기호를 해결하는 데 사용됩니다. 이는 비용이 많이 드는 프로세스이며 동일한 기호가 코드에서 여러 번 나타나는 경우가 많으므로 Doxygen은 미리 해결된 기호의 캐시를 유지합니다. 캐시가 너무 작으면 Doxygen이 느려집니다. 캐시가 너무 크면 메모리가 낭비됩니다. 캐시 크기는 다음 공식으로 제공됩니다: \f$2^{(16+\mbox{LOOKUP\_CACHE\_SIZE})}\f$. 유효한 범위는 0..9이며, 기본값은 0이며, 캐시 크기는 \f$2^{16} = 65536\f$ 기호에 해당합니다. 실행 종료 시 Doxygen은 캐시 사용량을 보고하고 속도 관점에서 최적의 캐시 크기를 제안합니다.]]>
+<![CDATA[기호 조회 캐시의 크기는 \c LOOKUP_CACHE_SIZE 를 사용하여 설정할 수 있습니다. 이 캐시는 이름과 범위를 기반으로 기호를 해결하는 데 사용됩니다. 이는 비용이 많이 드는 프로세스이며 동일한 기호가 코드에서 여러 번 나타나는 경우가 많으므로 Doxygen은 미리 해결된 기호의 캐시를 유지합니다. 캐시가 너무 작으면 Doxygen이 느려집니다. 캐시가 너무 크면 메모리가 낭비됩니다. 캐시 크기는 다음 공식으로 제공됩니다: \f$2^{(16+\mbox{LOOKUP\_CACHE\_SIZE})}\f$. 유효한 범위는 0..9이며, 기본값은 0이며, 캐시 크기는 \f$2^{16} = 65536\f$ 기호에 해당합니다. 실행 종료 시 Doxygen은 캐시 사용량을 보고하고 속도 관점에서 최적의 캐시 크기를 제안합니다.]]>
       </docs>
     </option>
     <option type="int" id="NUM_PROC_THREADS" defval="1" minval="0" maxval="512">
       <docs>
-<![CDATA[\c NUM_PROC_THREADS는 처리 중에 Doxygen이 사용을 허용하는 스레드 수를 지정합니다. \c 0 으로 설정하면 Doxygen은 시스템에서 사용 가능한 코어 수에 따라 설정합니다. CPU 부하와 처리 속도의 균형을 더 제어하기 위해 0보다 큰 값으로 명시적으로 설정할 수 있습니다. 현재 입력 처리만 여러 스레드를 사용하여 수행할 수 있습니다. 이것은 아직 실험적인 기능이므로 기본값은 1로 설정되어 있으며 병렬 처리는 효과적으로 비활성화되어 있습니다. 문제가 발생하면 보고해 주세요. dot 그래프의 병렬 생성은 \c DOT_NUM_THREADS 설정에 의해 제어됩니다.]]>
+<![CDATA[\c NUM_PROC_THREADS 는 처리 중에 Doxygen이 사용을 허용하는 스레드 수를 지정합니다. \c 0 으로 설정하면 Doxygen은 시스템에서 사용 가능한 코어 수에 따라 설정합니다. CPU 부하와 처리 속도의 균형을 더 제어하기 위해 0보다 큰 값으로 명시적으로 설정할 수 있습니다. 현재 입력 처리만 여러 스레드를 사용하여 수행할 수 있습니다. 이것은 아직 실험적인 기능이므로 기본값은 1로 설정되어 있으며 병렬 처리는 효과적으로 비활성화되어 있습니다. 문제가 발생하면 보고해 주세요. dot 그래프의 병렬 생성은 \c DOT_NUM_THREADS 설정에 의해 제어됩니다.]]>
       </docs>
     </option>
     <option type="enum" id="TIMESTAMP" defval="NO">
@@ -570,7 +570,7 @@
     </option>
     <option type="list" id="EXTERNAL_TOOL_PATH" format="dir" defval="">
       <docs>
-<![CDATA[\c EXTERNAL_TOOL_PATH 태그를 사용하여 \c latex 및 \c gs 와 같은 외부 도구를 찾을 수 있도록 검색 경로(PATH 환경 변수)를 확장할 수 있습니다.\note EXTERNAL_TOOL_PATH에서 지정된 디렉터리는 PATH 변수에서 이미 지정된 경로 앞에 추가되며, 지정된 순서대로 추가됩니다.\note 이 옵션은 Doxywizard에서 Doxygen을 실행하는 경우 macOS 버전 14(Sonoma) 이상에서 특히 편리합니다. 이 경우 PATH에 대한 사용자 정의 변경 사항이 무시되기 때문입니다. macOS의 일반적인 예는 \verbatim EXTERNAL_TOOL_PATH = /Library/TeX/texbin /usr/local/bin \endverbatim 표준 경로와 함께 설정하면 외부 도구를 시작할 때 doxygen이 사용하는 전체 검색 경로는 \verbatim PATH=/Library/TeX/texbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin \endverbatim이 됩니다.]]>
+<![CDATA[\c EXTERNAL_TOOL_PATH 태그를 사용하여 \c latex 및 \c gs 와 같은 외부 도구를 찾을 수 있도록 검색 경로(PATH 환경 변수)를 확장할 수 있습니다.\note EXTERNAL_TOOL_PATH에서 지정된 디렉터리는 PATH 변수에서 이미 지정된 경로 앞에 추가되며, 지정된 순서대로 추가됩니다.\note 이 옵션은 Doxywizard에서 Doxygen을 실행하는 경우 macOS 버전 14(Sonoma) 이상에서 특히 편리합니다. 이 경우 PATH에 대한 사용자 정의 변경 사항이 무시되기 때문입니다. macOS의 일반적인 예는 \verbatim EXTERNAL_TOOL_PATH = /Library/TeX/texbin /usr/local/bin \endverbatim 표준 경로와 함께 설정하면 외부 도구를 시작할 때 doxygen이 사용하는 전체 검색 경로는 \verbatim PATH=/Library/TeX/texbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin \endverbatim 이 됩니다.]]>
       </docs>
     </option>
   </group>
@@ -597,7 +597,7 @@
     </option>
     <option type="bool" id="WARN_IF_INCOMPLETE_DOC" defval="1">
       <docs>
-<![CDATA[\c WARN_IF_INCOMPLETE_DOC이 \c YES 로 설정되면 Doxygen은 불완전한 함수 매개변수 문서에 대해 경고합니다. \c NO 로 설정되면 Doxygen은 일부 매개변수에 문서가 없는 것을 경고 없이 수락합니다.]]>
+<![CDATA[\c WARN_IF_INCOMPLETE_DOC 이 \c YES 로 설정되면 Doxygen은 불완전한 함수 매개변수 문서에 대해 경고합니다. \c NO 로 설정되면 Doxygen은 일부 매개변수에 문서가 없는 것을 경고 없이 수락합니다.]]>
       </docs>
     </option>
     <option type="bool" id="WARN_NO_PARAMDOC" defval="0">
@@ -617,7 +617,7 @@
     </option>
     <option type="enum" id="WARN_AS_ERROR" defval="NO">
       <docs>
-<![CDATA[\c WARN_AS_ERROR 태그가 \c YES 로 설정되면 Doxygen은 경고가 발생하자마자 중지됩니다. \c WARN_AS_ERROR 태그가 \c FAIL_ON_WARNINGS로 설정되면 Doxygen은 \c WARN_AS_ERROR 태그가 \c NO 로 설정된 것처럼 실행을 계속하지만, Doxygen 프로세스 종료 시 Doxygen은 0이 아닌 상태로 반환됩니다. \c WARN_AS_ERROR 태그가 \c FAIL_ON_WARNINGS_PRINT 로 설정되면 Doxygen은 \c FAIL_ON_WARNINGS 처럼 작동하지만 \ref cfg_warn_logfile "WARN_LOGFILE"이 정의되지 않은 경우 Doxygen은 경고 메시지를 다른 메시지 사이에 쓰지 않고 실행 종료 시 씁니다. \ref cfg_warn_logfile "WARN_LOGFILE"이 정의된 경우 경고 메시지는 정의된 파일에 있는 것 외에도 실행 종료 시에도 표시됩니다. 단, \ref cfg_warn_logfile "WARN_LOGFILE"이 `-`(즉, 표준 출력 `stdout`)으로 정의된 경우는 제외되며, 이 경우 동작은 \c FAIL_ON_WARNINGS 설정과 동일하게 유지됩니다.]]>
+<![CDATA[\c WARN_AS_ERROR 태그가 \c YES 로 설정되면 Doxygen은 경고가 발생하자마자 중지됩니다. \c WARN_AS_ERROR 태그가 \c FAIL_ON_WARNINGS 로 설정되면 Doxygen은 \c WARN_AS_ERROR 태그가 \c NO 로 설정된 것처럼 실행을 계속하지만, Doxygen 프로세스 종료 시 Doxygen은 0이 아닌 상태로 반환됩니다. \c WARN_AS_ERROR 태그가 \c FAIL_ON_WARNINGS_PRINT 로 설정되면 Doxygen은 \c FAIL_ON_WARNINGS 처럼 작동하지만 \ref cfg_warn_logfile "WARN_LOGFILE"이 정의되지 않은 경우 Doxygen은 경고 메시지를 다른 메시지 사이에 쓰지 않고 실행 종료 시 씁니다. \ref cfg_warn_logfile "WARN_LOGFILE"이 정의된 경우 경고 메시지는 정의된 파일에 있는 것 외에도 실행 종료 시에도 표시됩니다. 단, \ref cfg_warn_logfile "WARN_LOGFILE"이 `-`(즉, 표준 출력 `stdout`)으로 정의된 경우는 제외되며, 이 경우 동작은 \c FAIL_ON_WARNINGS 설정과 동일하게 유지됩니다.]]>
       </docs>
       <value name="NO"/>
       <value name="YES"/>
@@ -1150,7 +1150,7 @@
     </option>
     <option type="enum" id="HTML_FORMULA_FORMAT" defval="png" depends="GENERATE_HTML">
       <docs>
-<![CDATA[\c HTML_FORMULA_FORMAT 옵션이 \c svg로 설정되면 Doxygen은 pdf2svg 도구(https://github.com/dawbarton/pdf2svg 참조) 또는 inkscape(https://inkscape.org 참조)를 사용하여 HTML 출력에서 PNG 대신 수식을 SVG 이미지로 생성합니다. 이러한 이미지는 일반적으로 확장된 해상도에서 더 잘 보입니다.]]>
+<![CDATA[\c HTML_FORMULA_FORMAT 옵션이 \c svg 로 설정되면 Doxygen은 pdf2svg 도구(https://github.com/dawbarton/pdf2svg 참조) 또는 inkscape(https://inkscape.org 참조)를 사용하여 HTML 출력에서 PNG 대신 수식을 SVG 이미지로 생성합니다. 이러한 이미지는 일반적으로 확장된 해상도에서 더 잘 보입니다.]]>
       </docs>
       <value name="png" desc="(기본값)"/>
       <value name="svg" desc="(더 보기 좋지만 pdf2svg 또는 inkscape 도구 필요)"/>
@@ -1723,7 +1723,7 @@
     </option>
     <option type="enum" id="DOT_IMAGE_FORMAT" defval="png" depends="HAVE_DOT">
       <docs>
-<![CDATA[\c DOT_IMAGE_FORMAT 태그를 사용하여 \c dot에 의해 생성되는 이미지의 이미지 형식을 설정할 수 있습니다. 이미지 형식에 대한 설명은 \c dot 도구 문서의 출력 형식 섹션을 참조하세요(<a href="https://www.graphviz.org/">Graphviz</a>). <br>`svg:cairo` 및 `svg:cairo:cairo` 형식은 \ref cfg_interactive_svg "INTERACTIVE_SVG"와 함께 사용할 수 없습니다(\ref cfg_interactive_svg "INTERACTIVE_SVG"는 `NO`로 설정됨).]]>
+<![CDATA[\c DOT_IMAGE_FORMAT 태그를 사용하여 \c dot 에 의해 생성되는 이미지의 이미지 형식을 설정할 수 있습니다. 이미지 형식에 대한 설명은 \c dot 도구 문서의 출력 형식 섹션을 참조하세요(<a href="https://www.graphviz.org/">Graphviz</a>). <br>`svg:cairo` 및 `svg:cairo:cairo` 형식은 \ref cfg_interactive_svg "INTERACTIVE_SVG"와 함께 사용할 수 없습니다(\ref cfg_interactive_svg "INTERACTIVE_SVG"는 `NO`로 설정됨).]]>
       </docs>
       <value name="png"/>
       <value name="jpg"/>

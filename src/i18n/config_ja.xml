@@ -164,7 +164,7 @@
     </option>
     <option type="bool" id="JAVADOC_BANNER" defval="0">
       <docs>
-<![CDATA[\c JAVADOC_BANNER タグが\c YES に設定されている場合、Doxygenは\verbatim /***************\endverbatimのような行をJavadocスタイルのコメント「バナー」の開始として解釈します。\c NO に設定されている場合、Javadocスタイルは通常のコメントと同様に動作し、Doxygenはそれを解釈しません。]]>
+<![CDATA[\c JAVADOC_BANNER タグが\c YES に設定されている場合、Doxygenは\verbatim /***************\endverbatim のような行をJavadocスタイルのコメント「バナー」の開始として解釈します。\c NO に設定されている場合、Javadocスタイルは通常のコメントと同様に動作し、Doxygenはそれを解釈しません。]]>
       </docs>
     </option>
     <option type="bool" id="QT_AUTOBRIEF" defval="0">
@@ -261,7 +261,7 @@
     </option>
     <option type="bool" id="AUTOLINK_SUPPORT" defval="1">
       <docs>
-<![CDATA[有効にすると、Doxygenは文書化されたクラスや名前空間に対応する単語を自動的に対応するドキュメントにリンクしようとします。このようなリンクは、単語の前に\c %記号を置くことで個別に防止できます。また、\c AUTOLINK_SUPPORT を\c NO に設定することでグローバルに無効化できます。\c AUTOLINK_IGNORE_WORDS タグにリストされた単語は自動リンクの対象外になります。]]>
+<![CDATA[有効にすると、Doxygenは文書化されたクラスや名前空間に対応する単語を自動的に対応するドキュメントにリンクしようとします。このようなリンクは、単語の前に\c % 記号を置くことで個別に防止できます。また、\c AUTOLINK_SUPPORT を\c NO に設定することでグローバルに無効化できます。\c AUTOLINK_IGNORE_WORDS タグにリストされた単語は自動リンクの対象外になります。]]>
       </docs>
     </option>
     <option type="list" id="AUTOLINK_IGNORE_WORDS" format="string" depends="AUTOLINK_SUPPORT">
@@ -327,7 +327,7 @@
     </option>
     <option type="int" id="NUM_PROC_THREADS" defval="1" minval="0" maxval="512">
       <docs>
-<![CDATA[\c NUM_PROC_THREADS は、処理中にDoxygenが使用できるスレッド数を指定します。\c 0に設定すると、Doxygenはシステムで利用可能なコア数に基づいて決定します。CPU負荷と処理速度のバランスをより細かく制御するには、0より大きい値を明示的に設定できます。現時点では、入力処理のみが複数スレッドで実行可能です。これはまだ実験的な機能のため、デフォルトは1に設定されており、並列処理は実質的に無効になっています。問題が発生した場合はご報告ください。dotグラフの並列生成は、\c DOT_NUM_THREADS 設定で制御されます。]]>
+<![CDATA[\c NUM_PROC_THREADS は、処理中にDoxygenが使用できるスレッド数を指定します。\c 0 に設定すると、Doxygenはシステムで利用可能なコア数に基づいて決定します。CPU負荷と処理速度のバランスをより細かく制御するには、0より大きい値を明示的に設定できます。現時点では、入力処理のみが複数スレッドで実行可能です。これはまだ実験的な機能のため、デフォルトは1に設定されており、並列処理は実質的に無効になっています。問題が発生した場合はご報告ください。dotグラフの並列生成は、\c DOT_NUM_THREADS 設定で制御されます。]]>
       </docs>
     </option>
     <option type="enum" id="TIMESTAMP" defval="NO">
@@ -1794,7 +1794,7 @@
     </option>
     <option type="list" id="PLANTUML_INCLUDE_PATH" format="dir" defval="">
       <docs>
-<![CDATA[PlantUMLを使用する場合、指定されたパスはPlantUMLブロック内の\c !includeステートメントで指定されたファイルに対して検索されます。]]>
+<![CDATA[PlantUMLを使用する場合、指定されたパスはPlantUMLブロック内の\c !include ステートメントで指定されたファイルに対して検索されます。]]>
       </docs>
     </option>
     <option type="list" id="PLANTUMLFILE_DIRS" format="dir">
