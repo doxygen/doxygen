@@ -2609,9 +2609,8 @@ class TranslatorRussian : public Translator
   }
   QCString trUnsatisfiedRequirementsText(bool singular,const QCString &list) override
   {
-    return singular ?
-      "Требование "+list+" не имеет отношения 'удовлетворяет'." :
-      "Требования "+list+" не имеют отношения 'удовлетворяет'.";
+    return createNoun(true, singular, "Требовани", "я", "е")+" "+list+" не "+
+           (singular ? "имеет" : "имеют")+" отношения 'удовлетворяет'.";
   }
   // indicates a symbol verifies (tests) a requirement
   QCString trVerifies(bool singular) override
@@ -2629,9 +2628,8 @@ class TranslatorRussian : public Translator
   }
   QCString trUnverifiedRequirementsText(bool singular,const QCString &list) override
   {
-    return singular ?
-      "Требование "+list+" не имеет отношения 'проверяет'." :
-      "Требования "+list+" не имеют отношения 'проверяет'.";
+    return createNoun(true, singular, "Требовани", "я", "е")+" "+list+" не "+
+           (singular ? "имеет" : "имеют")+" отношения 'проверяет'.";
   }
 };
 
