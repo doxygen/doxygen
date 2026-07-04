@@ -30,7 +30,7 @@
  * In entries and arguments case is the same as in code, in modifier map case is lowered and
  * then it is compared to lowered entry/argument names.
  * UPDATE:
- * While it is true that Fortran is case-insensitive, modern-Fortran programmers (and even the old-schools) 
+ * While it is true that Fortran is case-insensitive, modern-Fortran programmers (and even the old-schools)
  * hardly modify the case of Fortran entities throughout their codebase. As such, if a decision is to be made
  * on whether to keep case-sensitivity, the readability of the generated documentation should be given more weight
  * than the remote scenario where a Fortran developer uses mixed-case programming. In particular, several Fortran
@@ -118,6 +118,8 @@ struct SymbolModifiers
   bool pointer;
   bool target;
   bool save;
+  bool len;
+  bool kind;
   bool deferred;
   bool nonoverridable;
   bool nopass;
@@ -131,7 +133,7 @@ struct SymbolModifiers
   SymbolModifiers() : type(), returnName(), protection(NONE_P), direction(NONE_D),
     optional(FALSE), protect(FALSE), dimension(), allocatable(FALSE),
     external(FALSE), intrinsic(FALSE), parameter(FALSE),
-    pointer(FALSE), target(FALSE), save(FALSE), deferred(FALSE), nonoverridable(FALSE),
+    pointer(FALSE), target(FALSE), save(FALSE), len(FALSE), kind(FALSE), deferred(FALSE), nonoverridable(FALSE),
     nopass(FALSE), pass(FALSE), contiguous(FALSE), volat(FALSE), value(FALSE), passVar(),
     bindVar() {}
 
@@ -261,6 +263,18 @@ static const char *stateToString(int state);
 
  //-----------------------------------------------------------------------------
  //-----------------------------------------------------------------------------
+/*
+lexer macros for ignoring preprocessing fences.
+comment out to reactivate normal (and confusing)
+default behavior of Doxygen.
+ */
+
+PP_FENCE (if|ifdef|ifndef|elif|else|endif)
+PP_LINE_MARKER [0-9]+
+PP_DIRECTIVE ({PP_FENCE}|{PP_LINE_MARKER}|line)
+
+ //-----------------------------------------------------------------------------
+ //-----------------------------------------------------------------------------
 IDSYM     [a-z_A-Z0-9]
 NOTIDSYM  [^a-z_A-Z0-9]
 SEPARATE  [:, \t]
@@ -291,7 +305,7 @@ INTENT_SPEC intent{BS}"("{BS}(in|out|in{BS}out){BS}")"
 /*
 ATTR_SPEC           (ALLOCATABLE|ASSIGNMENT|ASYNCHRONOUS|ABSTRACT|CODIMENSION|CONTIGUOUS|DEFERRED|DIMENSION|EXTENDS|EXTERNAL|INTENT{BS}"("{BS}(IN|OUT|IN{BS}OUT){BS}")"|INTRINSIC|LOCAL|LOCAL_INIT|NON_INTRINSIC|NON_OVERRIDABLE|NOPASS|OPERATOR|OPTIONAL|OVERRIDABLE|PARAMETER|PASS{ARGS}?|POINTER|PRIVATE|PROTECTED|PUBLIC|SAVE|SEQUENCE|SHARED|TARGET|VALUE|VOLATILE)
  */
-ATTR_SPEC (EXTERNAL|ALLOCATABLE|DIMENSION{ARGS}|{INTENT_SPEC}|INTRINSIC|OPTIONAL|PARAMETER|POINTER|PROTECTED|PRIVATE|PUBLIC|SAVE|TARGET|NOPASS|PASS{ARGS}?|DEFERRED|NON_OVERRIDABLE|CONTIGUOUS|VOLATILE|VALUE)
+ATTR_SPEC (KIND|LEN|EXTERNAL|ALLOCATABLE|DIMENSION{ARGS}|{INTENT_SPEC}|INTRINSIC|OPTIONAL|PARAMETER|POINTER|PROTECTED|PRIVATE|PUBLIC|SAVE|TARGET|NOPASS|PASS{ARGS}?|DEFERRED|NON_OVERRIDABLE|CONTIGUOUS|VOLATILE|VALUE)
 
 ACCESS_SPEC (PRIVATE|PUBLIC)
 
@@ -363,6 +377,31 @@ SCOPENAME ({ID}{BS}"::"{BS})*
                                         }
 <Prepass>^{BS}\n                        { /* skip empty lines */
                                           yyextra->lineCountPrepass ++;
+                                        }
+<*>^{BS}"#"{BS}{PP_DIRECTIVE}[^\n]*\n   {
+                                          /*
+                                           * Ignore Fortran preprocessing fence / line-marker lines.
+                                           *
+                                           * Important:
+                                           * If we are inside the Fortran continuation prepass state,
+                                           * do not terminate the continued statement. Just count the
+                                           * skipped physical line.
+                                           *
+                                           * Comment out this section along with the relevant lexer macros
+                                           * defined above (e.g., PP_FENCE, PP_LINE_MARKER, PP_DIRECTIVE)
+                                           * to revive the original (confusing) Doxygen behavior.
+                                           *
+                                           */
+                                          yyextra->colNr = 0;
+
+                                          if (YY_START == Prepass)
+                                          {
+                                            yyextra->lineCountPrepass++;
+                                          }
+                                          else
+                                          {
+                                            newLine(yyscanner);
+                                          }
                                         }
 <*>^.*\n                                { // prepass: look for line continuations
                                           yyextra->functionLine = FALSE;
@@ -1919,6 +1958,8 @@ SymbolModifiers& SymbolModifiers::operator|=(const SymbolModifiers &mdfs)
   pointer |= mdfs.pointer;
   target |= mdfs.target;
   save |= mdfs.save;
+  len |= mdfs.len;
+  kind |= mdfs.kind;
   deferred |= mdfs.deferred;
   nonoverridable |= mdfs.nonoverridable;
   nopass |= mdfs.nopass;
@@ -2000,6 +2041,14 @@ SymbolModifiers& SymbolModifiers::operator|=(QCString mdfStringArg)
   else if (mdfString=="nopass")
   {
     newMdf.nopass = TRUE;
+  }
+  else if (mdfString=="len")
+  {
+    newMdf.len = TRUE;
+  }
+  else if (mdfString=="kind")
+  {
+    newMdf.kind = TRUE;
   }
   else if (mdfString=="deferred")
   {
@@ -2124,6 +2173,16 @@ static QCString applyModifiers(QCString typeName, const SymbolModifiers& mdfs)
   {
     if (!typeName.isEmpty()) typeName += ", ";
     typeName += "save";
+  }
+  if (mdfs.len)
+  {
+    if (!typeName.isEmpty()) typeName += ", ";
+    typeName += "len";
+  }
+  if (mdfs.kind)
+  {
+    if (!typeName.isEmpty()) typeName += ", ";
+    typeName += "kind";
   }
   if (mdfs.deferred)
   {
@@ -2607,7 +2666,7 @@ static void subrHandleCommentBlock(yyscan_t yyscanner,const QCString &doc,bool b
     else
     {
       // something different specified, give warning and leave error.
-      warn(yyextra->fileName,yyextra->lineNr, "Routine: %s%s inconsistency between intent attribute and documentation for parameter %s:", 
+      warn(yyextra->fileName,yyextra->lineNr, "Routine: %s%s inconsistency between intent attribute and documentation for parameter %s:",
              qPrint(yyextra->current->name),qPrint(yyextra->current->args),qPrint(yyextra->argName));
       handleCommentBlock(yyscanner,QCString("\n\n@param ") + directionParam[dir1] + " " +
                          yyextra->argName + " " + loc_doc,brief);
@@ -2633,7 +2692,7 @@ static void subrHandleCommentBlock(yyscan_t yyscanner,const QCString &doc,bool b
     }
     else
     {
-      warn(yyextra->fileName,yyextra->lineNr, "Routine: %s%s inconsistency between intent attribute and documentation for parameter %s:", 
+      warn(yyextra->fileName,yyextra->lineNr, "Routine: %s%s inconsistency between intent attribute and documentation for parameter %s:",
              qPrint(yyextra->current->name),qPrint(yyextra->current->args),qPrint(yyextra->argName));
       handleCommentBlock(yyscanner,QCString("\n\n@param ") + directionParam[dir1] + " " +
                          yyextra->argName + " " + loc_doc,brief);
@@ -2657,7 +2716,7 @@ static void subrHandleCommentBlock(yyscan_t yyscanner,const QCString &doc,bool b
     }
     else
     {
-      warn(yyextra->fileName,yyextra->lineNr, "Routine: %s%s inconsistency between intent attribute and documentation for parameter %s:", 
+      warn(yyextra->fileName,yyextra->lineNr, "Routine: %s%s inconsistency between intent attribute and documentation for parameter %s:",
              qPrint(yyextra->current->name),qPrint(yyextra->current->args),qPrint(yyextra->argName));
       handleCommentBlock(yyscanner,QCString("\n\n@param ") + directionParam[dir1] + " " +
                          yyextra->argName + " " + loc_doc,brief);
