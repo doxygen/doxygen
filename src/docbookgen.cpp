@@ -1481,7 +1481,7 @@ void DocbookGenerator::endTocEntry(const SectionInfo *si)
 static constexpr auto hex="0123456789ABCDEF";
 
 /*! Converts a string to an DocBook-encoded string */
-QCString convertToDocBook(const QCString &s, const bool retainNewline)
+QCString convertToDocBook(const QCString &s, const bool retainNewline, const bool /* citeEntry */)
 {
   if (s.isEmpty()) return s;
   QCString result;

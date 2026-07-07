@@ -579,7 +579,7 @@ DB_VIS_C
   {
     if (!opt.noCite()) startLink(cite.file(),filterId(cite.anchor()));
 
-    filter(cite.getText());
+    filter(cite.getText(), false, true);
 
     if (!opt.noCite()) endLink();
   }
@@ -1533,10 +1533,10 @@ DB_VIS_C
 }
 
 
-void DocbookDocVisitor::filter(const QCString &str, const bool retainNewLine)
+void DocbookDocVisitor::filter(const QCString &str, const bool retainNewLine, const bool citeEntry)
 {
 DB_VIS_C
-  m_t << convertToDocBook(str, retainNewLine);
+  m_t << convertToDocBook(str, retainNewLine, citeEntry);
 }
 
 void DocbookDocVisitor::startLink(const QCString &file,const QCString &anchor)

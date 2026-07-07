@@ -135,7 +135,7 @@ class LatexDocVisitor final : public DocVisitor
     // helper functions
     //--------------------------------------
 
-    void filter(const QCString &str, const bool retainNewLine = false);
+    void filter(const QCString &str, const bool retainNewLine = false, const bool citeEntry = false);
     void startLink(const QCString &ref,const QCString &file,
                    const QCString &anchor,bool refToTable=false,bool refToSection=false);
     void endLink(const QCString &ref,const QCString &file,

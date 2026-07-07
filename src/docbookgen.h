@@ -352,7 +352,7 @@ private:
     TocState m_tocState;
 };
 
-QCString convertToDocBook(const QCString &s, const bool retainNewline = false);
+QCString convertToDocBook(const QCString &s, const bool retainNewline = false, const bool citeEntry = false);
 
 
 #endif
