@@ -623,7 +623,7 @@ void RTFDocVisitor::operator()(const DocCite &cite)
   {
     if (!opt.noCite()) startLink(cite.ref(),cite.file(),cite.anchor());
 
-    filter(cite.getText());
+    filter(cite.getText(),false, true);
 
     if (!opt.noCite()) endLink(cite.ref());
   }
@@ -1693,11 +1693,13 @@ void RTFDocVisitor::operator()(const DocParBlock &pb)
 //    return s;
 //}
 
-void RTFDocVisitor::filter(const QCString &str,bool verbatim)
+void RTFDocVisitor::filter(const QCString &str,bool verbatim, const bool citeEntry)
 {
   if (!str.isEmpty())
   {
     const char *p=str.data();
+    const char *q = nullptr;
+    int cnt = 0;
     while (*p)
     {
       char c=*p++;
@@ -1706,6 +1708,36 @@ void RTFDocVisitor::filter(const QCString &str,bool verbatim)
         case '{':  m_t << "\\{";            break;
         case '}':  m_t << "\\}";            break;
         case '\\': m_t << "\\\\";           break;
+        case '&':  // possibility to have a special symbol
+          if (!citeEntry) { m_t << c; break;}
+          q = p;
+          cnt = 2; // we have to count & and ; as well
+          while ((*q >= 'a' && *q <= 'z') || (*q >= 'A' && *q <= 'Z') || (*q >= '0' && *q <= '9'))
+          {
+            cnt++;
+            q++;
+          }
+          if (*q == ';')
+          {
+             --p; // we need & as well
+             HtmlEntityMapper::SymType res = HtmlEntityMapper::instance().name2sym(QCString(p).left(cnt));
+             if (res == HtmlEntityMapper::Sym_Unknown)
+             {
+               p++;
+               m_t << "&";
+             }
+             else
+             {
+               m_t << HtmlEntityMapper::instance().rtf(res);
+               q++;
+               p = q;
+             }
+          }
+          else
+          {
+            m_t << "&";
+          }
+          break;
         case '\n': if (verbatim)
                    {
                      m_t << "\\par\n";

@@ -589,7 +589,7 @@ void XmlDocVisitor::operator()(const DocCite &cite)
   {
     if (!opt.noCite()) startLink(cite.ref(),cite.file(),cite.anchor());
 
-    filter(cite.getText());
+    filter(cite.getText(), false, true);
 
     if (!opt.noCite()) endLink();
   }
@@ -1181,9 +1181,9 @@ void XmlDocVisitor::operator()(const DocParBlock &pb)
 }
 
 
-void XmlDocVisitor::filter(const QCString &str)
+void XmlDocVisitor::filter(const QCString &str, const bool keepEntities, const bool citeEntry)
 {
-  m_t << convertToXML(str);
+  m_t << convertToXML(str, keepEntities, citeEntry);
 }
 
 void XmlDocVisitor::startLink(const QCString &ref,const QCString &file,const QCString &anchor)

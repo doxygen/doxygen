@@ -424,14 +424,15 @@ void ManDocVisitor::operator()(const DocCite &cite)
   if (!cite.file().isEmpty())
   {
     txt = cite.getText();
+    filter(txt, false, true);
   }
   else
   {
     if (!opt.noPar()) txt += "[";
     txt += cite.target();
     if (!opt.noPar()) txt += "]";
+    filter(txt);
   }
-  filter(txt);
   m_t << "\\fP";
 }
 
@@ -991,13 +992,15 @@ void ManDocVisitor::operator()(const DocParBlock &pb)
   visitChildren(pb);
 }
 
-void ManDocVisitor::filter(const QCString &str, const bool retainNewline)
+void ManDocVisitor::filter(const QCString &str, const bool retainNewline, const bool citeEntry)
 {
   if (!str.isEmpty())
   {
     const char *p=str.data();
     char c=0;
     bool insideDoubleQuote = false;
+    const char *q = nullptr;
+    int cnt = 0;
     while ((c=*p++))
     {
       switch(c)
@@ -1006,6 +1009,37 @@ void ManDocVisitor::filter(const QCString &str, const bool retainNewline)
         case '\\': m_t << "\\\\"; break;
         case '\"': m_t << "\""; insideDoubleQuote = !insideDoubleQuote; break;
         case '\n': if (retainNewline || !insideDoubleQuote) m_t << c; break;
+        case '&':  // possibility to have a special symbol
+          if (!citeEntry) { m_t << c; break;}
+          q = p;
+          cnt = 2; // we have to count & and ; as well
+          while ((*q >= 'a' && *q <= 'z') || (*q >= 'A' && *q <= 'Z') || (*q >= '0' && *q <= '9'))
+          {
+            cnt++;
+            q++;
+          }
+          if (*q == ';')
+          {
+             --p; // we need & as well
+             HtmlEntityMapper::SymType res = HtmlEntityMapper::instance().name2sym(QCString(p).left(cnt));
+             if (res == HtmlEntityMapper::Sym_Unknown)
+             {
+               p++;
+               m_t << "&";
+             }
+             else
+             {
+               m_t << HtmlEntityMapper::instance().man(res);
+               q++;
+               p = q;
+             }
+          }
+          else
+          {
+            m_t << "&";
+          }
+          break;
+
         default: m_t << c; break;
       }
     }

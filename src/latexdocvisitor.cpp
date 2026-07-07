@@ -1848,7 +1848,7 @@ void LatexDocVisitor::operator()(const DocParBlock &pb)
   visitChildren(pb);
 }
 
-void LatexDocVisitor::filter(const QCString &str, const bool retainNewLine)
+void LatexDocVisitor::filter(const QCString &str, const bool retainNewLine, const bool /* citeEntry */)
 {
   //printf("LatexDocVisitor::filter(%s) m_insideTabbing=%d m_insideTable=%d\n",qPrint(str),m_lcg.insideTabbing(),m_lcg.usedTableLevel()>0);
   filterLatexString(m_t,str,

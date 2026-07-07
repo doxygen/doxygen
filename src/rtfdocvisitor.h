@@ -116,7 +116,7 @@ class RTFDocVisitor final : public DocVisitor
     // helper functions
     //--------------------------------------
 
-    void filter(const QCString &str,bool verbatim=FALSE);
+    void filter(const QCString &str, bool verbatim = false, const bool citeEntry = false);
     void startLink(const QCString &ref,const QCString &file,
                    const QCString &anchor);
     void endLink(const QCString &ref);
