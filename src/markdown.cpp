@@ -624,7 +624,7 @@ size_t Markdown::Private::isSpecialCommand(std::string_view data,size_t offset)
     { "b",              endOfLabel },
     { "c",              endOfLabel },
     { "category",       endOfLine  },
-    { "cite",           endOfLabel },
+    { "cite",           endOfLabelOpt },
     { "class",          endOfLine  },
     { "concept",        endOfLine  },
     { "copybrief",      endOfFunc  },

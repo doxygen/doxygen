@@ -1150,7 +1150,7 @@ STopt  [^\n@\\]*
 <Comment>{CMD}"---"                     { // escaped mdash
                                           addOutput(yyscanner,yytext);
                                         }
-<Comment>{CMD}"--"                      { // escaped mdash
+<Comment>{CMD}"--"                      { // escaped ndash
                                           addOutput(yyscanner,yytext);
                                         }
 <Comment>"---"                          { // mdash
