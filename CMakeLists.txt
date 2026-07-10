@@ -62,7 +62,7 @@ list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/Sanitizers")
 include(version)
 
-message(STATUS "Using Cmake version ${CMAKE_VERSION}")
+message(STATUS "Using CMake version ${CMAKE_VERSION}")
 if(${CMAKE_VERSION} VERSION_LESS "3.21.0")
   set(depfile_supported  "0" CACHE INTERNAL "DEPFILE is not supported")
 else()
