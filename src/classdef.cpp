@@ -256,7 +256,6 @@ class ClassDefImpl final : public DefinitionMixin<ClassDefMutable>
     QCString anchor() const override;
     bool isEmbeddedInOuterScope() const override;
     bool isSimple() const override;
-    const ClassDef *tagLessReference() const override;
     const MemberDef *isSmartPointer() const override;
     bool isJavaEnum() const override;
     QCString title() const override;
@@ -301,13 +300,13 @@ class ClassDefImpl final : public DefinitionMixin<ClassDefMutable>
     void setTemplateBaseClassNames(const TemplateNameMap &templateNames) override;
     void setTemplateMaster(const ClassDef *tm) override;
     void setImplicitTemplateInstance(bool b) override;
+    void setAnonymousMemberPrefix(const QCString &prefix) override;
     void setTypeConstraints(const ArgumentList &al) override;
     void addMemberToTemplateInstance(const MemberDef *md, const ArgumentList &templateArguments, const QCString &templSpec) override;
     void addMembersToTemplateInstance(const ClassDef *cd,const ArgumentList &templateArguments,const QCString &templSpec) override;
     void makeTemplateArgument(bool b=TRUE) override;
     void setCategoryOf(ClassDef *cd) override;
     void setUsedOnly(bool b) override;
-    void setTagLessReference(const ClassDef *cd) override;
     void setMetaData(const QCString &md) override;
     void findSectionsInDocumentation() override;
     void addMembersToMemberGroup() override;
@@ -538,8 +537,6 @@ class ClassDefImpl final : public DefinitionMixin<ClassDefMutable>
     /** Does this class overloaded the -> operator? */
     const MemberDef *m_arrowOperator = nullptr;
 
-    const ClassDef *m_tagLessRef = nullptr;
-
     /** Does this class represent a Java style enum? */
     bool m_isJavaEnum = false;
 
@@ -709,8 +706,6 @@ class ClassDefAliasImpl final : public DefinitionAliasMixin<ClassDef>
     { return getCdAlias()->isEmbeddedInOuterScope(); }
     bool isSimple() const override
     { return getCdAlias()->isSimple(); }
-    const ClassDef *tagLessReference() const override
-    { return getCdAlias()->tagLessReference(); }
     const MemberDef *isSmartPointer() const override
     { return getCdAlias()->isSmartPointer(); }
     bool isJavaEnum() const override
@@ -835,7 +830,6 @@ ClassDefImpl::ClassDefImpl(
   m_usedOnly = FALSE;
   m_isSimple = Config_getBool(INLINE_SIMPLE_STRUCTS);
   m_arrowOperator = nullptr;
-  m_tagLessRef = nullptr;
   m_spec=TypeSpecifier();
   //QCString ns;
   //extractNamespaceName(name,className,ns);
@@ -913,7 +907,6 @@ std::unique_ptr<ClassDef> ClassDefImpl::deepCopy(const QCString &name) const
   result->m_vhdlSummaryTitles = m_vhdlSummaryTitles;
   result->m_isSimple = m_isSimple;
   result->m_arrowOperator = m_arrowOperator;
-  result->m_tagLessRef = m_tagLessRef;
   result->m_isJavaEnum = m_isJavaEnum;
   result->m_spec = m_spec;
   result->m_metaData = m_metaData;
@@ -3585,6 +3578,35 @@ void ClassDefImpl::writeDeclaration(OutputList &ol,const MemberDef *md,bool inGr
   }
   ol.docify(" {");
   ol.endMemberItem(OutputGenerator::MemberItemType::AnonymousStart);
+  if (!briefDescription().isEmpty() &&
+      Config_getBool(BRIEF_MEMBER_DESC)
+     )
+  {
+    auto parser { createDocParser() };
+    auto ast    { validatingParseDoc(*parser.get(),
+                                     briefFile(),
+                                     briefLine(),
+                                     this,
+                                     nullptr,
+                                     briefDescription(),
+                                     DocOptions()
+                                     .setIndexWords(inheritedFrom==nullptr)
+                                     .setSingleLine(true))
+                };
+    if (!ast->isEmpty())
+    {
+      ol.startMemberDescription(anchor(),inheritId);
+      ol.writeDoc(ast.get(),this,nullptr);
+
+      // for RTF we need to add an extra empty paragraph
+      ol.pushGeneratorState();
+      ol.disableAllBut(OutputType::RTF);
+      ol.startParagraph();
+      ol.endParagraph();
+      ol.popGeneratorState();
+      ol.endMemberDescription();
+    }
+  }
   ol.endMemberDeclaration(md ? md->anchor() : QCString(),inheritId);
 
   // write user defined member groups
@@ -3623,7 +3645,7 @@ bool ClassDefImpl::isLinkableInProject() const
     //      !isArtificial(),
     //      !isHidden(),
     //      !isAnonymous(),
-    //      m_prot,
+    //      protectionLevelVisible(m_prot),
     //      !m_isLocal   || extractLocal,
     //      hasDocumentation() ||  m_tempArgs.hasTemplateDocumentation() || !hideUndoc,
     //      !m_isStatic  || extractStatic,
@@ -5087,6 +5109,21 @@ void ClassDefImpl::setImplicitTemplateInstance(bool b)
   m_implicitTemplateInstance = b;
 }
 
+void ClassDefImpl::setAnonymousMemberPrefix(const QCString &prefix)
+{
+  for (const auto &mg : m_memberGroups)
+  {
+    mg->setAnonymousMemberPrefix(prefix);
+  }
+  for (auto &ml : m_memberLists)
+  {
+    if (ml->listType().isDetailed())
+    {
+      ml->setAnonymousMemberPrefix(prefix);
+    }
+  }
+}
+
 bool ClassDefImpl::isTemplate() const
 {
   return !m_tempArgs.empty();
@@ -5289,6 +5326,11 @@ bool ClassDefImpl::isEmbeddedInOuterScope() const
         container->isLinkableInProject() // class in documented scope
        );
 
+  if (isAnonymous())
+  {
+    return false; // don't inline an anonymous class
+  }
+
   // inline because of INLINE_GROUPED_CLASSES=YES ?
   bool b1 = (inlineGroupedClasses && !partOfGroups().empty()); // a grouped class
   // inline because of INLINE_SIMPLE_STRUCTS=YES ?
@@ -5303,16 +5345,6 @@ bool ClassDefImpl::isEmbeddedInOuterScope() const
   //    qPrint(name()),inlineGroupedClasses,inlineSimpleClasses,
   //    partOfGroups().pointer(),m_isSimple,getOuterScope()?qPrint(getOuterScope()->name()):"<none>",b1,b2);
   return b1 || b2;  // either reason will do
-}
-
-const ClassDef *ClassDefImpl::tagLessReference() const
-{
-  return m_tagLessRef;
-}
-
-void ClassDefImpl::setTagLessReference(const ClassDef *cd)
-{
-  m_tagLessRef = cd;
 }
 
 void ClassDefImpl::removeMemberFromLists(MemberDef *md)

@@ -296,8 +296,8 @@ void DefinitionImpl::setName(const QCString &name)
   if (name.isEmpty()) return;
   p->name = name;
   p->isAnonymous = p->name.isEmpty() ||
-                        p->name.at(0)=='@' ||
-                        p->name.find("::@")!=-1;
+                   p->name.at(0)=='@' ||
+                   p->name.find("::@")!=-1;
 }
 
 void DefinitionImpl::setId(const QCString &id)

@@ -4734,8 +4734,8 @@ NONLopt [^\n]*
                                               else
                                               {
                                                 yyextra->memspecEntry = yyextra->current;
-                                                yyextra->current_root->moveToSubEntryAndKeep( yyextra->current ) ;
-                                                yyextra->current = std::make_shared<Entry>(*yyextra->current);
+                                                yyextra->current_root->moveToSubEntryAndRefresh( yyextra->current ) ;
+                                                yyextra->current = std::make_shared<Entry>(*yyextra->memspecEntry);
                                                 if (yyextra->current->section.isNamespace() ||
                                                     yyextra->current->spec.isInterface() ||
                                                     yyextra->insideJava || yyextra->insidePHP || yyextra->insideCS || yyextra->insideD || yyextra->insideJS ||
@@ -4750,14 +4750,9 @@ NONLopt [^\n]*
                                                 }
                                                 else
                                                 {
-                                                  static const reg::Ex re(R"(@\d+$)");
-                                                  if (!yyextra->isTypedef && yyextra->memspecEntry &&
-                                                      !reg::search(yyextra->memspecEntry->name.str(),re)) // not typedef or anonymous type (see bug691071)
-                                                  {
-                                                    // enabled the next two lines for bug 623424
-                                                    yyextra->current->doc.clear();
-                                                    yyextra->current->brief.clear();
-                                                  }
+                                                  // enabled the next two lines for bug 623424
+                                                  yyextra->current->doc.clear();
+                                                  yyextra->current->brief.clear();
                                                   BEGIN( MemberSpec ) ;
                                                 }
                                               }
@@ -4864,6 +4859,7 @@ NONLopt [^\n]*
                                           BEGIN(FindMembers);
                                         }
 <MemberSpec>[,;]                        {
+                                          //printf("msName=%s\n",qPrint(yyextra->msName));
                                           if (yyextra->msName.isEmpty() && !yyextra->current->name.isEmpty())
                                           {
                                             // see if the compound does not have a name or is yyextra->inside another
@@ -4953,7 +4949,8 @@ NONLopt [^\n]*
                                           }
                                           if (*yytext==';') // end of a struct/class ...
                                           {
-                                            if (!yyextra->isTypedef && yyextra->msName.isEmpty() && yyextra->memspecEntry && yyextra->current->section.isCompound())
+                                            if (!yyextra->isTypedef && yyextra->msName.isEmpty() &&
+                                                 yyextra->memspecEntry && yyextra->current->section.isCompound())
                                             { // case where a class/struct has a doc block after it
                                               if (!yyextra->current->doc.isEmpty())
                                               {

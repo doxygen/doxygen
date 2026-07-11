@@ -165,6 +165,7 @@ class MemberList final : public MemberVector
     void setNeedsSorting(bool b);
     const MemberGroupRefList &getMemberGroupList() const { return m_memberGroupRefList; }
     void setAnonymousEnumType();
+    void setAnonymousMemberPrefix(const QCString &prefix);
     void setAnchors();
 
   private:

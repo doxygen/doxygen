@@ -234,6 +234,8 @@ class MemberDef : public Definition
 
     virtual bool fromAnonymousScope() const = 0;
     virtual MemberDef *fromAnonymousMember() const = 0;
+    virtual MemberDef *toAnonymousMember() const = 0;
+    virtual QCString anonymousMemberPrefix() const = 0;
 
     // callgraph related members
     virtual bool hasCallGraph() const = 0;
@@ -380,6 +382,9 @@ class MemberDefMutable : public DefinitionMutable, public MemberDef
 
     // anonymous scope members
     virtual void setFromAnonymousMember(MemberDef *m) = 0;
+    virtual void setToAnonymousMember(MemberDef *m) = 0;
+    virtual void determineScopeForAnonymousMembers() = 0;
+    virtual void setAnonymousMemberPrefix(const QCString &prefix) = 0;
 
     virtual void overrideCallGraph(bool e) = 0;
     virtual void overrideCallerGraph(bool e) = 0;

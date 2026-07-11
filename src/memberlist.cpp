@@ -245,6 +245,22 @@ void MemberList::setAnonymousEnumType()
   }
 }
 
+void MemberList::setAnonymousMemberPrefix(const QCString &prefix)
+{
+  for (const auto &md : m_members)
+  {
+    MemberDefMutable *mdm = toMemberDefMutable(md);
+    if (mdm)
+    {
+      mdm->setAnonymousMemberPrefix(prefix);
+    }
+  }
+  for (const auto &mg : m_memberGroupRefList)
+  {
+    mg->setAnonymousMemberPrefix(prefix);
+  }
+}
+
 int MemberList::countEnumValues(const MemberDef *md) const
 {
   int numEnumValues=0;
