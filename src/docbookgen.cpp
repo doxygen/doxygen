@@ -76,7 +76,7 @@
 
 inline void writeDocbookString(TextStream &t,const QCString &s)
 {
-  t << convertToDocBook(s);
+  t << DocbookGenerator::convertToDocbook(s);
 }
 
 inline void writeDocbookCodeString(bool hide,TextStream &t,const QCString &str, size_t &col, size_t stripIndentAmount)
@@ -137,12 +137,12 @@ inline void writeDocbookCodeString(bool hide,TextStream &t,const QCString &str, 
 static void addIndexTerm(TextStream &t, QCString prim, QCString sec = "")
 {
   t << "<indexterm><primary>";
-  t << convertToDocBook(prim);
+  t << DocbookGenerator::convertToDocbook(prim);
   t << "</primary>";
   if (!sec.isEmpty())
   {
     t << "<secondary>";
-    t << convertToDocBook(sec);
+    t << DocbookGenerator::convertToDocbook(sec);
     t << "</secondary>";
   }
   t << "</indexterm>\n";
@@ -456,7 +456,7 @@ DB_GEN_C2("IndexSection " << is)
       {
         QCString dbk_projectName = Config_getString(PROJECT_NAME);
         m_t << "    <info>\n";
-        m_t << "    <title>" << convertToDocBook(dbk_projectName) << "</title>\n";
+        m_t << "    <title>" << convertToDocbook(dbk_projectName) << "</title>\n";
         m_t << "    </info>\n";
       }
       break;
@@ -768,7 +768,7 @@ DB_GEN_C
 void DocbookGenerator::docify(const QCString &str)
 {
 DB_GEN_C
-  m_t << convertToDocBook(str);
+  m_t << convertToDocbook(str);
 }
 static QCString objectLinkToString(const QCString &, const QCString &f,
                                    const QCString &anchor, const QCString &text)
@@ -784,7 +784,7 @@ DB_GEN_C
   {
     result += "<link linkend=\"_" + stripPath(f) + "\">";
   }
-  result += convertToDocBook(text);
+  result += DocbookGenerator::convertToDocbook(text);
   result += "</link>";
   return result;
 }
@@ -911,7 +911,7 @@ void DocbookGenerator::startMemberDoc(const QCString &clname, const QCString &me
 {
 DB_GEN_C2("m_inLevel " << m_inLevel)
   openSection();
-  m_t << "    <title>" << convertToDocBook(title);
+  m_t << "    <title>" << convertToDocbook(title);
   if (memTotal>1)
   {
     m_t << "<computeroutput>[" << memCount << "/" << memTotal << "]</computeroutput>";
@@ -1165,7 +1165,7 @@ DB_GEN_C
     title = theTranslator->trCompoundMembers();
   }
   m_t << "<table frame=\"all\">\n";
-  if (!title.isEmpty()) m_t << "<title>" << convertToDocBook(title) << "</title>\n";
+  if (!title.isEmpty()) m_t << "<title>" << convertToDocbook(title) << "</title>\n";
   m_t << "    <tgroup cols=\"" << ncols << "\" align=\"left\" colsep=\"1\" rowsep=\"1\">\n";
   for (int i = 0; i < ncols; i++)
   {
@@ -1220,12 +1220,12 @@ DB_GEN_C
   m_t << "</entry></row>\n";
 }
 
-void DocbookGenerator::startDescTable(const QCString &title,const bool hasInits)
+void DocbookGenerator::startDescTable(const QCString &title,bool hasInits)
 {
 DB_GEN_C
   int ncols = (hasInits?3:2);
   m_t << "<informaltable frame=\"all\">\n";
-  if (!title.isEmpty()) m_t << "<title>" << convertToDocBook(title) << "</title>\n";
+  if (!title.isEmpty()) m_t << "<title>" << convertToDocbook(title) << "</title>\n";
   m_t << "    <tgroup cols=\"" << ncols << "\" align=\"left\" colsep=\"1\" rowsep=\"1\">\n";
   int i = 1;
   m_t << "      <colspec colname='c" << i++ << "'/>\n";
@@ -1411,7 +1411,7 @@ void DocbookGenerator::writeInheritedSectionTitle(
                   const QCString &title, const QCString &name)
 {
 DB_GEN_C
-  m_t << theTranslator->trInheritedFrom(convertToDocBook(title), objectLinkToString(ref, file, anchor, name));
+  m_t << theTranslator->trInheritedFrom(convertToDocbook(title), objectLinkToString(ref, file, anchor, name));
 }
 
 void DocbookGenerator::startLocalToc(int level)
@@ -1458,7 +1458,7 @@ void DocbookGenerator::startTocEntry(const SectionInfo *si)
     }
     if (nextLevel <= m_tocState.maxLevel)
     {
-      QCString label = convertToDocBook(si->label());
+      QCString label = convertToDocbook(si->label());
       m_t << "      <tocentry>";
     }
   }
@@ -1481,21 +1481,19 @@ void DocbookGenerator::endTocEntry(const SectionInfo *si)
 static constexpr auto hex="0123456789ABCDEF";
 
 /*! Converts a string to an DocBook-encoded string */
-QCString convertToDocBook(const QCString &s, const bool retainNewline, const bool /* citeEntry */)
+QCString DocbookGenerator::convertToDocbook(const QCString &s, bool retainNewline, bool /* citeEntry */)
 {
   if (s.isEmpty()) return s;
   QCString result;
   result.reserve(s.length()+32);
   const char *p = s.data();
-  const char *q = nullptr;
-  int cnt = 0;
   char c = 0;
   while ((c=*p++))
   {
     switch (c)
     {
       case '\n':
-        if (retainNewline) 
+        if (retainNewline)
         {
           result+="<literallayout>&#160;&#xa;</literallayout>";
           result+=c;
@@ -1504,33 +1502,7 @@ QCString convertToDocBook(const QCString &s, const bool retainNewline, const boo
       case '<':  result+="&lt;";   break;
       case '>':  result+="&gt;";   break;
       case '&':  // possibility to have a special symbol
-        q = p;
-        cnt = 2; // we have to count & and ; as well
-        while ((*q >= 'a' && *q <= 'z') || (*q >= 'A' && *q <= 'Z') || (*q >= '0' && *q <= '9'))
-        {
-          cnt++;
-          q++;
-        }
-        if (*q == ';')
-        {
-           --p; // we need & as well
-           HtmlEntityMapper::SymType res = HtmlEntityMapper::instance().name2sym(QCString(p).left(cnt));
-           if (res == HtmlEntityMapper::Sym_Unknown)
-           {
-             p++;
-             result+="&amp;";
-           }
-           else
-           {
-             result+=HtmlEntityMapper::instance().docbook(res);
-             q++;
-             p = q;
-           }
-        }
-        else
-        {
-          result+="&amp;";
-        }
+        p = writeHtmlEntity(result, p-1, [](HtmlEntityMapper::SymType symType) { return HtmlEntityMapper::instance().docbook(symType); }, "&amp;");
         break;
       case '\'': result+="&apos;"; break;
       case '"':  result+="&quot;"; break;

@@ -178,7 +178,7 @@ class DocbookGenerator final : public OutputGenerator, public OutputGenIntf
     void addIndexItem(const QCString &,const QCString &) override;
     void writeNonBreakableSpace(int) override;
 
-    void startDescTable(const QCString &title,const bool hasInits) override;
+    void startDescTable(const QCString &title,bool hasInits) override;
     void endDescTable() override;
     void startDescTableRow() override;
     void endDescTableRow() override;
@@ -322,6 +322,7 @@ class DocbookGenerator final : public OutputGenerator, public OutputGenIntf
 
     void startEmbeddedDoc(int) override {}
     void endEmbeddedDoc() override {}
+    static QCString convertToDocbook(const QCString &s, bool retainNewline = false, bool citeEntry = false);
 
 private:
     void openSection(const QCString &attr=QCString());
@@ -352,7 +353,6 @@ private:
     TocState m_tocState;
 };
 
-QCString convertToDocBook(const QCString &s, const bool retainNewline = false, const bool citeEntry = false);
 
 
 #endif

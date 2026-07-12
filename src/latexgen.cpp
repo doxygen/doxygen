@@ -2357,7 +2357,6 @@ void filterLatexString(TextStream &t,const QCString &str,
   bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
   //printf("filterLatexString(%s) insideTabbing=%d\n",qPrint(str),insideTabbing);
   const char *p = str.data();
-  const char *q = nullptr;
   unsigned char pc='\0';
 
   while (*p)
@@ -2420,33 +2419,7 @@ void filterLatexString(TextStream &t,const QCString &str,
         case '^':  processEntity(t,pdfHyperlinks,"$^\\wedge$","\\string^");    break;
         case '&':  {
                      // possibility to have a special symbol
-                     q = p;
-                     int cnt = 2; // we have to count & and ; as well
-                     while ((*q >= 'a' && *q <= 'z') || (*q >= 'A' && *q <= 'Z') || (*q >= '0' && *q <= '9'))
-                     {
-                       cnt++;
-                       q++;
-                     }
-                     if (*q == ';')
-                     {
-                       --p; // we need & as well
-                       HtmlEntityMapper::SymType res = HtmlEntityMapper::instance().name2sym(QCString(p).left(cnt));
-                       if (res == HtmlEntityMapper::Sym_Unknown)
-                       {
-                         p++;
-                         t << "\\&";
-                       }
-                       else
-                       {
-                         t << HtmlEntityMapper::instance().latex(res);
-                         q++;
-                         p = q;
-                       }
-                     }
-                     else
-                     {
-                       t << "\\&";
-                     }
+                     p = writeHtmlEntity(t, p-1, [](HtmlEntityMapper::SymType symType) { return HtmlEntityMapper::instance().latex(symType); }, "\\&");
                    }
                    break;
         case '*':  processEntity(t,pdfHyperlinks,"$\\ast$","*");    break;
