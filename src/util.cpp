@@ -3936,8 +3936,6 @@ QCString convertToXML(const QCString &s, bool keepEntities, const bool citeEntry
   QCString result;
   result.reserve(s.length()+32);
   const char *p = s.data();
-  const char *q = nullptr;
-  int cnt = 0;
   char c = 0;
   while ((c=*p++))
   {
@@ -3966,33 +3964,7 @@ QCString convertToXML(const QCString &s, bool keepEntities, const bool citeEntry
                  }
                  else if (citeEntry)
                  {
-                    q = p;
-                    cnt = 2; // we have to count & and ; as well
-                    while ((*q >= 'a' && *q <= 'z') || (*q >= 'A' && *q <= 'Z') || (*q >= '0' && *q <= '9'))
-                    {
-                      cnt++;
-                      q++;
-                    }
-                    if (*q == ';')
-                    {
-                       --p; // we need & as well
-                       HtmlEntityMapper::SymType res = HtmlEntityMapper::instance().name2sym(QCString(p).left(cnt));
-                       if (res == HtmlEntityMapper::Sym_Unknown)
-                       {
-                         p++;
-                         result+="&amp;";
-                       }
-                       else
-                       {
-                         result+=HtmlEntityMapper::instance().xml(res);
-                         q++;
-                         p = q;
-                       }
-                    }
-                    else
-                    {
-                      result+="&amp;";
-                    }
+                   p = writeHtmlEntity(result, p-1, [](HtmlEntityMapper::SymType symType) { return HtmlEntityMapper::instance().xml(symType); }, "&amp;");
                  }
                  else
                  {
@@ -7047,3 +7019,57 @@ void cleanupInlineGraph()
     }
   }
 }
+
+// Detect: T << QCString using SFINAE (Substitution Failure Is Not An Error)
+template <typename T, typename = void>
+struct has_insertion_op : std::false_type {};
+
+template <typename T>
+struct has_insertion_op< T, std::void_t<decltype(std::declval<T&>() << std::declval<const QCString &>())> > : std::true_type {};
+
+template <typename T>
+inline constexpr bool has_insertion_op_v = has_insertion_op<T>::value;
+
+template<class T>
+const char *writeHtmlEntity(T &result, const char *s, HtmlEntityMapperFunc &&mapper, const char *fallback)
+{
+  assert(s!=nullptr);
+  assert(s[0]=='&');
+  const char *q = s+1;
+  size_t cnt = 2; // we have to count & and ; as well
+  while ((*q >= 'a' && *q <= 'z') || (*q >= 'A' && *q <= 'Z') || (*q >= '0' && *q <= '9'))
+  {
+    cnt++;
+    q++;
+  }
+  if (*q == ';') // valid entity name
+  {
+    HtmlEntityMapper::SymType res = HtmlEntityMapper::instance().name2sym(QCString(s).left(cnt));
+    if (res!=HtmlEntityMapper::Sym_Unknown)
+    {
+      if constexpr (has_insertion_op_v<T>)
+      {
+        result << mapper(res);
+      }
+      else
+      {
+        result += mapper(res);
+      }
+      return q+1;
+    }
+  }
+  if constexpr (has_insertion_op_v<T>)
+  {
+    result << fallback;
+  }
+  else
+  {
+    result += fallback;
+  }
+  return s+1;
+}
+
+// explicit instantiations
+template const char *writeHtmlEntity<QCString>(QCString& t, const char *s, HtmlEntityMapperFunc &&mapper, const char *fallback);
+template const char *writeHtmlEntity<TextStream>(TextStream& t, const char *s, HtmlEntityMapperFunc &&mapper, const char *fallback);
+
