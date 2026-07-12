@@ -116,7 +116,7 @@ void DocbookDocVisitor::visitPreStart(TextStream &t,
   t << "                <imagedata";
   if (!width.isEmpty())
   {
-    t << " width=\"" << convertToDocBook(width) << "\"";
+    t << " width=\"" << DocbookGenerator::convertToDocbook(width) << "\"";
   }
   else
   {
@@ -124,7 +124,7 @@ void DocbookDocVisitor::visitPreStart(TextStream &t,
   }
   if (!height.isEmpty())
   {
-    t << " depth=\"" << convertToDocBook(height) << "\"";
+    t << " depth=\"" << DocbookGenerator::convertToDocbook(height) << "\"";
   }
   t << " align=\"center\" valign=\"middle\" scalefit=\"0\" fileref=\"" << name << "\">";
   t << "</imagedata>\n";
@@ -579,7 +579,7 @@ DB_VIS_C
   {
     if (!opt.noCite()) startLink(cite.file(),filterId(cite.anchor()));
 
-    filter(cite.getText());
+    filter(cite.getText(), false, true);
 
     if (!opt.noCite()) endLink();
   }
@@ -671,7 +671,7 @@ DB_VIS_C
       }
       else
       {
-        m_t << "<formalpara><title>" << convertToDocBook(theTranslator->trSeeAlso()) << "</title>\n";
+        m_t << "<formalpara><title>" << DocbookGenerator::convertToDocbook(theTranslator->trSeeAlso()) << "</title>\n";
       }
       break;
     case DocSimpleSect::Return:
@@ -681,7 +681,7 @@ DB_VIS_C
       }
       else
       {
-        m_t << "<formalpara><title>" << convertToDocBook(theTranslator->trReturns()) << "</title>\n";
+        m_t << "<formalpara><title>" << DocbookGenerator::convertToDocbook(theTranslator->trReturns()) << "</title>\n";
       }
       break;
     case DocSimpleSect::Author:
@@ -691,7 +691,7 @@ DB_VIS_C
       }
       else
       {
-        m_t << "<formalpara><title>" << convertToDocBook(theTranslator->trAuthor(TRUE, TRUE)) << "</title>\n";
+        m_t << "<formalpara><title>" << DocbookGenerator::convertToDocbook(theTranslator->trAuthor(TRUE, TRUE)) << "</title>\n";
       }
       break;
     case DocSimpleSect::Authors:
@@ -701,7 +701,7 @@ DB_VIS_C
       }
       else
       {
-        m_t << "<formalpara><title>" << convertToDocBook(theTranslator->trAuthor(TRUE, FALSE)) << "</title>\n";
+        m_t << "<formalpara><title>" << DocbookGenerator::convertToDocbook(theTranslator->trAuthor(TRUE, FALSE)) << "</title>\n";
       }
       break;
     case DocSimpleSect::Version:
@@ -711,7 +711,7 @@ DB_VIS_C
       }
       else
       {
-        m_t << "<formalpara><title>" << convertToDocBook(theTranslator->trVersion()) << "</title>\n";
+        m_t << "<formalpara><title>" << DocbookGenerator::convertToDocbook(theTranslator->trVersion()) << "</title>\n";
       }
       break;
     case DocSimpleSect::Since:
@@ -721,7 +721,7 @@ DB_VIS_C
       }
       else
       {
-        m_t << "<formalpara><title>" << convertToDocBook(theTranslator->trSince()) << "</title>\n";
+        m_t << "<formalpara><title>" << DocbookGenerator::convertToDocbook(theTranslator->trSince()) << "</title>\n";
       }
       break;
     case DocSimpleSect::Date:
@@ -731,7 +731,7 @@ DB_VIS_C
       }
       else
       {
-        m_t << "<formalpara><title>" << convertToDocBook(theTranslator->trDate()) << "</title>\n";
+        m_t << "<formalpara><title>" << DocbookGenerator::convertToDocbook(theTranslator->trDate()) << "</title>\n";
       }
       break;
     case DocSimpleSect::Note:
@@ -741,7 +741,7 @@ DB_VIS_C
       }
       else
       {
-        m_t << "<note><title>" << convertToDocBook(theTranslator->trNote()) << "</title>\n";
+        m_t << "<note><title>" << DocbookGenerator::convertToDocbook(theTranslator->trNote()) << "</title>\n";
       }
       break;
     case DocSimpleSect::Warning:
@@ -751,7 +751,7 @@ DB_VIS_C
       }
       else
       {
-        m_t << "<warning><title>" << convertToDocBook(theTranslator->trWarning()) << "</title>\n";
+        m_t << "<warning><title>" << DocbookGenerator::convertToDocbook(theTranslator->trWarning()) << "</title>\n";
       }
       break;
     case DocSimpleSect::Pre:
@@ -761,7 +761,7 @@ DB_VIS_C
       }
       else
       {
-        m_t << "<formalpara><title>" << convertToDocBook(theTranslator->trPrecondition()) << "</title>\n";
+        m_t << "<formalpara><title>" << DocbookGenerator::convertToDocbook(theTranslator->trPrecondition()) << "</title>\n";
       }
       break;
     case DocSimpleSect::Post:
@@ -771,7 +771,7 @@ DB_VIS_C
       }
       else
       {
-        m_t << "<formalpara><title>" << convertToDocBook(theTranslator->trPostcondition()) << "</title>\n";
+        m_t << "<formalpara><title>" << DocbookGenerator::convertToDocbook(theTranslator->trPostcondition()) << "</title>\n";
       }
       break;
     case DocSimpleSect::Copyright:
@@ -781,7 +781,7 @@ DB_VIS_C
       }
       else
       {
-        m_t << "<formalpara><title>" << convertToDocBook(theTranslator->trCopyright()) << "</title>\n";
+        m_t << "<formalpara><title>" << DocbookGenerator::convertToDocbook(theTranslator->trCopyright()) << "</title>\n";
       }
       break;
     case DocSimpleSect::Invar:
@@ -791,7 +791,7 @@ DB_VIS_C
       }
       else
       {
-        m_t << "<formalpara><title>" << convertToDocBook(theTranslator->trInvariant()) << "</title>\n";
+        m_t << "<formalpara><title>" << DocbookGenerator::convertToDocbook(theTranslator->trInvariant()) << "</title>\n";
       }
       break;
     case DocSimpleSect::Remark:
@@ -802,7 +802,7 @@ DB_VIS_C
       }
       else
       {
-        m_t << "<formalpara><title>" << convertToDocBook(theTranslator->trRemarks()) << "</title>\n";
+        m_t << "<formalpara><title>" << DocbookGenerator::convertToDocbook(theTranslator->trRemarks()) << "</title>\n";
       }
       break;
     case DocSimpleSect::Attention:
@@ -812,7 +812,7 @@ DB_VIS_C
       }
       else
       {
-        m_t << "<caution><title>" << convertToDocBook(theTranslator->trAttention()) << "</title>\n";
+        m_t << "<caution><title>" << DocbookGenerator::convertToDocbook(theTranslator->trAttention()) << "</title>\n";
       }
       break;
     case DocSimpleSect::Important:
@@ -822,7 +822,7 @@ DB_VIS_C
       }
       else
       {
-        m_t << "<important><title>" << convertToDocBook(theTranslator->trImportant()) << "</title>\n";
+        m_t << "<important><title>" << DocbookGenerator::convertToDocbook(theTranslator->trImportant()) << "</title>\n";
       }
       break;
     case DocSimpleSect::User:
@@ -1068,7 +1068,7 @@ DB_VIS_C
     if (supportedHtmlAttribute(opt.name))
     {
       // process supported attributes only
-      m_t << " " << opt.name << "='" << convertToDocBook(opt.value) << "'";
+      m_t << " " << opt.name << "='" << DocbookGenerator::convertToDocbook(opt.value) << "'";
     }
   }
   m_t << ">\n";
@@ -1122,13 +1122,13 @@ DB_VIS_C
       }
       else
       {
-        m_t << " class='" << convertToDocBook(opt.value) << "'";
+        m_t << " class='" << DocbookGenerator::convertToDocbook(opt.value) << "'";
       }
     }
     else if (supportedHtmlAttribute(opt.name))
     {
       // process supported attributes only
-      m_t << " " << opt.name << "='" << convertToDocBook(opt.value) << "'";
+      m_t << " " << opt.name << "='" << DocbookGenerator::convertToDocbook(opt.value) << "'";
     }
   }
   m_t << ">";
@@ -1162,7 +1162,7 @@ DB_VIS_C
   if (m_hide) return;
   if (href.url().at(0) != '#')
   {
-    m_t << "<link xlink:href=\"" << convertToDocBook(href.url()) << "\">";
+    m_t << "<link xlink:href=\"" << DocbookGenerator::convertToDocbook(href.url()) << "\">";
   }
   else
   {
@@ -1533,10 +1533,10 @@ DB_VIS_C
 }
 
 
-void DocbookDocVisitor::filter(const QCString &str, const bool retainNewLine)
+void DocbookDocVisitor::filter(const QCString &str, bool retainNewLine, bool citeEntry)
 {
 DB_VIS_C
-  m_t << convertToDocBook(str, retainNewLine);
+  m_t << DocbookGenerator::convertToDocbook(str, retainNewLine, citeEntry);
 }
 
 void DocbookDocVisitor::startLink(const QCString &file,const QCString &anchor)

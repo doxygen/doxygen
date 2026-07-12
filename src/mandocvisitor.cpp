@@ -424,14 +424,15 @@ void ManDocVisitor::operator()(const DocCite &cite)
   if (!cite.file().isEmpty())
   {
     txt = cite.getText();
+    filter(txt, false, true);
   }
   else
   {
     if (!opt.noPar()) txt += "[";
     txt += cite.target();
     if (!opt.noPar()) txt += "]";
+    filter(txt);
   }
-  filter(txt);
   m_t << "\\fP";
 }
 
@@ -991,7 +992,7 @@ void ManDocVisitor::operator()(const DocParBlock &pb)
   visitChildren(pb);
 }
 
-void ManDocVisitor::filter(const QCString &str, const bool retainNewline)
+void ManDocVisitor::filter(const QCString &str, const bool retainNewline, const bool citeEntry)
 {
   if (!str.isEmpty())
   {
@@ -1006,6 +1007,10 @@ void ManDocVisitor::filter(const QCString &str, const bool retainNewline)
         case '\\': m_t << "\\\\"; break;
         case '\"': m_t << "\""; insideDoubleQuote = !insideDoubleQuote; break;
         case '\n': if (retainNewline || !insideDoubleQuote) m_t << c; break;
+        case '&':  // possibility to have a special symbol
+          if (!citeEntry) { m_t << c; break;}
+          p = writeHtmlEntity(m_t, p-1, [](HtmlEntityMapper::SymType symType) { return HtmlEntityMapper::instance().man(symType); }, "&");
+          break;
         default: m_t << c; break;
       }
     }

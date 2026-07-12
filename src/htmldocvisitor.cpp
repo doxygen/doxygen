@@ -967,7 +967,7 @@ void HtmlDocVisitor::operator()(const DocCite &cite)
   if (!cite.file().isEmpty())
   {
     if (!opt.noCite()) startLink(cite.ref(),cite.file(),cite.relPath(),cite.anchor());
-    filter(cite.getText());
+    filter(cite.getText(), false, true);
     if (!opt.noCite()) endLink();
   }
   else
@@ -2153,7 +2153,7 @@ void HtmlDocVisitor::operator()(const DocParBlock &pb)
   visitChildren(pb);
 }
 
-void HtmlDocVisitor::filter(const QCString &str, const bool retainNewline)
+void HtmlDocVisitor::filter(const QCString &str, bool retainNewline, bool citeEntry)
 {
   if (str.isEmpty()) return;
   const char *p=str.data();
@@ -2165,7 +2165,10 @@ void HtmlDocVisitor::filter(const QCString &str, const bool retainNewline)
       case '\n': if(retainNewline) m_t << "<br/>"; m_t << c; break;
       case '<':  m_t << "&lt;"; break;
       case '>':  m_t << "&gt;"; break;
-      case '&':  m_t << "&amp;"; break;
+      case '&':  // possibility to have a special symbol
+        if (!citeEntry) {m_t << "&amp;"; break;}
+        p = writeHtmlEntity(m_t, p-1, [](HtmlEntityMapper::SymType symType) { return HtmlEntityMapper::instance().html(symType); }, "&amp;");
+        break;
       case '\\':
         if ((*p == '(') || (*p == ')') || (*p == '[') || (*p == ']'))
           m_t << "\\&zwj;" << *p++;

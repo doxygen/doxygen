@@ -623,7 +623,7 @@ void RTFDocVisitor::operator()(const DocCite &cite)
   {
     if (!opt.noCite()) startLink(cite.ref(),cite.file(),cite.anchor());
 
-    filter(cite.getText());
+    filter(cite.getText(),false, true);
 
     if (!opt.noCite()) endLink(cite.ref());
   }
@@ -1693,7 +1693,7 @@ void RTFDocVisitor::operator()(const DocParBlock &pb)
 //    return s;
 //}
 
-void RTFDocVisitor::filter(const QCString &str,bool verbatim)
+void RTFDocVisitor::filter(const QCString &str,bool verbatim, const bool citeEntry)
 {
   if (!str.isEmpty())
   {
@@ -1706,6 +1706,10 @@ void RTFDocVisitor::filter(const QCString &str,bool verbatim)
         case '{':  m_t << "\\{";            break;
         case '}':  m_t << "\\}";            break;
         case '\\': m_t << "\\\\";           break;
+        case '&':  // possibility to have a special symbol
+          if (!citeEntry) { m_t << c; break;}
+          p = writeHtmlEntity( m_t, p-1, [](HtmlEntityMapper::SymType symType) { return HtmlEntityMapper::instance().rtf(symType); }, "&");
+          break;
         case '\n': if (verbatim)
                    {
                      m_t << "\\par\n";

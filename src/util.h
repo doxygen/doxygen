@@ -36,6 +36,7 @@
 #include "regex.h"
 #include "conceptdef.h"
 #include "construct.h"
+#include "htmlentity.h"
 
 //--------------------------------------------------------------------
 
@@ -323,7 +324,7 @@ QCString correctId(const QCString &s);
 
 QCString convertToHtml(const QCString &s,bool keepEntities=true);
 
-QCString convertToXML(const QCString &s, bool keepEntities=false);
+QCString convertToXML(const QCString &s, bool keepEntities=false, bool citeEntry = false);
 
 QCString convertToJSString(const QCString &s,bool keepEntities=false,bool singleQuotes=false);
 
@@ -537,5 +538,18 @@ QCString extractEndRawStringDelimiter(const char *rawEnd);
 
 QCString writeFileContents(const QCString &baseName,const QCString &extension,const QCString &content,bool &exists);
 void cleanupInlineGraph();
+
+using HtmlEntityMapperFunc = std::function<QCString(HtmlEntityMapper::SymType)>;
+
+/*! Writes an HTML entity for the current symbol and advances the input pointer.
+ *  \tparam T Type of the output sink used to write encoded output.
+ *  \param t Output target receiving the encoded entity or fallback text.
+ *  \param s Pointer to the start of a potential HTML entity in the input text.
+ *  \param mapper Callback that maps a entity symbol type to its HTML entity string.
+ *  \param fallback Fallback string written when no entity mapping is available.
+ *  \return Pointer to the position after the processed HTML entity in the input text.
+ */
+template<class T>
+const char *writeHtmlEntity(T& t, const char *s, HtmlEntityMapperFunc &&mapper, const char *fallback);
 
 #endif
