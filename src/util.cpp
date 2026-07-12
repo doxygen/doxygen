@@ -3930,12 +3930,14 @@ QCString correctId(const QCString &s)
 }
 
 /*! Converts a string to an XML-encoded string */
-QCString convertToXML(const QCString &s, bool keepEntities)
+QCString convertToXML(const QCString &s, bool keepEntities, const bool citeEntry)
 {
   if (s.isEmpty()) return s;
   QCString result;
   result.reserve(s.length()+32);
   const char *p = s.data();
+  const char *q = nullptr;
+  int cnt = 0;
   char c = 0;
   while ((c=*p++))
   {
@@ -3961,6 +3963,36 @@ QCString convertToXML(const QCString &s, bool keepEntities)
                    {
                      result+="&amp;";
                    }
+                 }
+                 else if (citeEntry)
+                 {
+                    q = p;
+                    cnt = 2; // we have to count & and ; as well
+                    while ((*q >= 'a' && *q <= 'z') || (*q >= 'A' && *q <= 'Z') || (*q >= '0' && *q <= '9'))
+                    {
+                      cnt++;
+                      q++;
+                    }
+                    if (*q == ';')
+                    {
+                       --p; // we need & as well
+                       HtmlEntityMapper::SymType res = HtmlEntityMapper::instance().name2sym(QCString(p).left(cnt));
+                       if (res == HtmlEntityMapper::Sym_Unknown)
+                       {
+                         p++;
+                         result+="&amp;";
+                       }
+                       else
+                       {
+                         result+=HtmlEntityMapper::instance().xml(res);
+                         q++;
+                         p = q;
+                       }
+                    }
+                    else
+                    {
+                      result+="&amp;";
+                    }
                  }
                  else
                  {

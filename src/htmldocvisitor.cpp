@@ -967,7 +967,7 @@ void HtmlDocVisitor::operator()(const DocCite &cite)
   if (!cite.file().isEmpty())
   {
     if (!opt.noCite()) startLink(cite.ref(),cite.file(),cite.relPath(),cite.anchor());
-    filter(cite.getText());
+    filter(cite.getText(), false, true);
     if (!opt.noCite()) endLink();
   }
   else
@@ -2153,10 +2153,12 @@ void HtmlDocVisitor::operator()(const DocParBlock &pb)
   visitChildren(pb);
 }
 
-void HtmlDocVisitor::filter(const QCString &str, const bool retainNewline)
+void HtmlDocVisitor::filter(const QCString &str, const bool retainNewline, const bool citeEntry)
 {
   if (str.isEmpty()) return;
   const char *p=str.data();
+  const char *q = nullptr;
+  int cnt = 0;
   while (*p)
   {
     char c=*p++;
@@ -2165,7 +2167,37 @@ void HtmlDocVisitor::filter(const QCString &str, const bool retainNewline)
       case '\n': if(retainNewline) m_t << "<br/>"; m_t << c; break;
       case '<':  m_t << "&lt;"; break;
       case '>':  m_t << "&gt;"; break;
-      case '&':  m_t << "&amp;"; break;
+      case '&':  // possibility to have a special symbol
+        if (!citeEntry) {m_t << "&amp;"; break;}
+        q = p;
+        cnt = 2; // we have to count & and ; as well
+        while ((*q >= 'a' && *q <= 'z') || (*q >= 'A' && *q <= 'Z') || (*q >= '0' && *q <= '9'))
+        {
+          cnt++;
+          q++;
+        }
+        if (*q == ';')
+        {
+           --p; // we need & as well
+           HtmlEntityMapper::SymType res = HtmlEntityMapper::instance().name2sym(QCString(p).left(cnt));
+           if (res == HtmlEntityMapper::Sym_Unknown)
+           {
+             p++;
+             m_t << "&amp;";
+           }
+           else
+           {
+             m_t << HtmlEntityMapper::instance().html(res);
+             q++;
+             p = q;
+           }
+        }
+        else
+        {
+          m_t << "&amp;";
+        }
+        break;
+
       case '\\':
         if ((*p == '(') || (*p == ')') || (*p == '[') || (*p == ']'))
           m_t << "\\&zwj;" << *p++;

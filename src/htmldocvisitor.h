@@ -118,7 +118,7 @@ class HtmlDocVisitor final : public DocVisitor
     //--------------------------------------
 
     void writeObfuscatedMailAddress(const QCString &url);
-    void filter(const QCString &str, const bool retainNewline = false);
+    void filter(const QCString &str, const bool retainNewline = false, const bool citeEntry = false);
     QCString filterQuotedCdataAttr(const QCString &str);
     void startLink(const QCString &ref,const QCString &file,
                    const QCString &relPath,const QCString &anchor,
