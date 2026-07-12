@@ -85,7 +85,7 @@ function (sanitizer_check_compiler_flag FLAG LANG VARIABLE)
 
     elseif (${LANG} STREQUAL "Fortran")
         # CheckFortranCompilerFlag was introduced in CMake 3.x. To be compatible
-        # with older Cmake versions, we will check if this module is present
+        # with older CMake versions, we will check if this module is present
         # before we use it. Otherwise we will define Fortran coverage support as
         # not available.
         include(CheckFortranCompilerFlag OPTIONAL RESULT_VARIABLE INCLUDED)
