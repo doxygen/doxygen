@@ -32,11 +32,12 @@ Doxygen's cmake configuration provides a number of options:
 - build_wizard    Build the GUI frontend for doxygen.
 - build_app       Example showing how to embed doxygen in an application.
 - build_parse     Parses source code and dumps the dependencies between the code elements.
-- build_xmlparser Example showing how to parse doxygen's XML output.
 - build_search    Build external search tools (doxysearch and doxyindexer).
-- build_doc       Build user manual.
+- build_doc       Build user manual (HTML and PDF).
+- build_doc_chm   Build user manual (CHM).
 - use_libclang    Add support for libclang parsing.
 - use_sys_spdlog  Use system spdlog library instead of the one bundled.
+- use_sys_fmt     Use system fmt library instead of the one bundled.
 - use_sys_sqlite3 Use system sqlite3 library instead of the one bundled.
 - win_static      Link with /MT in stead of /MD on windows.
 - force_qt=<vers> Forces doxywizard to build using the specified major version, this can be Qt5 or Qt6
