@@ -1751,7 +1751,7 @@ void addMemberToGroups(const Entry *root,MemberDef *md)
         {
           //printf("insertMember successful\n");
           mdm->setGroupDef(fgd,pri,root->fileName,root->startLine,!root->doc.isEmpty());
-          ClassDefMutable *cdm = toClassDefMutable(mdm->getClassDefOfAnonymousType());
+          ClassDefMutable *cdm = toClassDefMutable(const_cast<ClassDef*>(mdm->getClassDefOfAnonymousType()));
           if (cdm)
           {
             cdm->setGroupDefForAllMembers(fgd,pri,root->fileName,root->startLine,root->doc.length() != 0);

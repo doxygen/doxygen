@@ -1419,7 +1419,7 @@ void VhdlDocGen::writeVHDLDeclaration(MemberDefMutable* mdef,OutputList &ol,
   //  if (hasHtmlHelp) htmlHelp = HtmlHelp::getInstance();
 
   // search for the last anonymous scope in the member type
-  ClassDef *annoClassDef=mdef->getClassDefOfAnonymousType();
+  const ClassDef *annoClassDef=mdef->getClassDefOfAnonymousType();
 
   // start a new member declaration
   OutputGenerator::MemberItemType memType = annoClassDef!=nullptr ? OutputGenerator::MemberItemType::AnonymousStart :

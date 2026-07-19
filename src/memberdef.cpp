@@ -92,7 +92,6 @@ class MemberDefImpl final : public DefinitionMixin<MemberDefMutable>
     const GroupDef *getGroupDef() const override;
           GroupDef *getGroupDef() override;
     const ModuleDef *getModuleDef() const override;
-    ClassDef *accessorClass() const override;
     QCString getReadAccessor() const override;
     QCString getWriteAccessor() const override;
     Grouping::GroupPri_t getGroupPri() const override;
@@ -235,7 +234,7 @@ class MemberDefImpl final : public DefinitionMixin<MemberDefMutable>
     QCString sourceRefName() const override;
     const MemberDef *templateMaster() const override;
     QCString getScopeString() const override;
-    ClassDef *getClassDefOfAnonymousType() const override;
+    const ClassDef *getClassDefOfAnonymousType() const override;
     bool isTypedefValCached() const override;
     const ClassDef *getCachedTypedefVal() const override;
     QCString getCachedTypedefTemplSpec() const override;
@@ -300,7 +299,6 @@ class MemberDefImpl final : public DefinitionMixin<MemberDefMutable>
     void setDefinitionTemplateParameterLists(const ArgumentLists &lists) override;
     void setTypeConstraints(const ArgumentList &al) override;
     void setType(const QCString &t) override;
-    void setAccessorType(ClassDef *cd,const QCString &t) override;
     void setNamespace(NamespaceDef *nd) override;
     void setMemberGroup(MemberGroup *grp) override;
     void setMemberGroupId(int id) override;
@@ -363,8 +361,7 @@ class MemberDefImpl final : public DefinitionMixin<MemberDefMutable>
     void setModuleDef(ModuleDef *mod) override;
     int redefineCount() const override;
     void setRedefineCount(int) override;
-    void determineScopeForAnonymousMembers() override;
-    void setAnonymousMemberPrefix(const QCString &prefix) override;
+    void setClassDefOfAnonymousType(const ClassDef *cd) override;
 
   private:
     void _computeLinkableInProject();
@@ -422,8 +419,6 @@ class MemberDefImpl final : public DefinitionMixin<MemberDefMutable>
     ExampleList m_examples;     // a dictionary of all examples for quick access
 
     QCString m_type;            // return actual type
-    QCString m_accessorType;    // return type that tell how to get to this member
-    ClassDef *m_accessorClass = nullptr;  // class that this member accesses (for anonymous types)
     QCString m_args;            // function arguments/variable array specifiers
     QCString m_def;             // member definition in code (fully qualified name)
     QCString m_anc;             // HTML anchor name
@@ -462,7 +457,7 @@ class MemberDefImpl final : public DefinitionMixin<MemberDefMutable>
 
     QCString m_metaData;        // Slice metadata.
 
-    mutable ClassDef *m_cachedAnonymousType = nullptr; // if the member has an anonymous compound
+    const ClassDef *m_anonymousType = nullptr; // if the member has an anonymous compound
                                    // as its type then this is computed by
                                    // getClassDefOfAnonymousType() and
                                    // cached here.
@@ -615,8 +610,6 @@ class MemberDefAliasImpl final : public DefinitionAliasMixin<MemberDef>
           NamespaceDef* getNamespaceDef() override
     { return getMdAlias()->getNamespaceDef(); }
 
-    const ClassDef *accessorClass() const override
-    { return getMdAlias()->accessorClass(); }
     QCString getReadAccessor() const override
     { return getMdAlias()->getReadAccessor(); }
     QCString getWriteAccessor() const override
@@ -905,7 +898,7 @@ class MemberDefAliasImpl final : public DefinitionAliasMixin<MemberDef>
     { return getMdAlias()->templateMaster(); }
     QCString getScopeString() const override
     { return getMdAlias()->getScopeString(); }
-    ClassDef *getClassDefOfAnonymousType() const override
+    const ClassDef *getClassDefOfAnonymousType() const override
     { return getMdAlias()->getClassDefOfAnonymousType(); }
     bool isTypedefValCached() const override
     { return getMdAlias()->isTypedefValCached(); }
@@ -1360,7 +1353,6 @@ void MemberDefImpl::init(Definition *d,
   m_moduleDef=nullptr;
   m_redefines=nullptr;
   m_relatedAlso=nullptr;
-  m_accessorClass=nullptr;
   m_nspace=nullptr;
   m_memDef=nullptr;
   m_memDec=nullptr;
@@ -1402,7 +1394,7 @@ void MemberDefImpl::init(Definition *d,
   m_groupAlias=nullptr;
   m_explExt=FALSE;
   m_tspec=FALSE;
-  m_cachedAnonymousType=nullptr;
+  m_anonymousType=nullptr;
   m_maxInitLines=Config_getInt(MAX_INITIALIZER_LINES);
   m_userInitLines=-1;
   m_docEnumValues=FALSE;
@@ -1496,8 +1488,6 @@ std::unique_ptr<MemberDef> MemberDefImpl::deepCopy() const
   result->m_memDec                         = m_memDec                         ;
   result->m_relatedAlso                    = m_relatedAlso                    ;
   result->m_examples                       = m_examples                       ;
-  result->m_accessorType                   = m_accessorType                   ;
-  result->m_accessorClass                  = m_accessorClass                  ;
   result->m_def                            = m_def                            ;
   result->m_anc                            = m_anc                            ;
   result->m_decl                           = m_decl                           ;
@@ -1523,7 +1513,7 @@ std::unique_ptr<MemberDef> MemberDefImpl::deepCopy() const
   result->m_templateMaster                 = m_templateMaster                 ;
   result->m_formalTemplateArguments        = m_formalTemplateArguments        ;
   result->m_defTmpArgLists                 = m_defTmpArgLists                 ;
-  result->m_cachedAnonymousType            = m_cachedAnonymousType            ;
+  result->m_anonymousType                  = m_anonymousType                  ;
   result->m_sectionMap                     = m_sectionMap                     ;
   result->m_groupAlias                     = m_groupAlias                     ;
   result->m_grpId                          = m_grpId                          ;
@@ -2006,99 +1996,17 @@ void MemberDefImpl::writeLink(OutputList &ol,
 
 static std::mutex g_cachedAnonymousTypeMutex;
 
+void MemberDefImpl::setClassDefOfAnonymousType(const ClassDef *cd)
+{
+  m_anonymousType = cd;
+}
+
 /*! If this member has an anonymous class/struct/union as its type, then
  *  this method will return the ClassDef that describes this return type.
  */
-ClassDef *MemberDefImpl::getClassDefOfAnonymousType() const
+const ClassDef *MemberDefImpl::getClassDefOfAnonymousType() const
 {
-  std::lock_guard<std::mutex> lock(g_cachedAnonymousTypeMutex);
-  //printf("%s:getClassDefOfAnonymousType() cache=%s\n",qPrint(name()),
-  //                   m_cachedAnonymousType?qPrint(m_cachedAnonymousType->name()):"<empty>");
-  if (m_cachedAnonymousType) return m_cachedAnonymousType;
-
-  QCString cname;
-  if (getClassDef()!=nullptr)
-  {
-    cname=getClassDef()->name();
-  }
-  else if (getNamespaceDef()!=nullptr)
-  {
-    cname=getNamespaceDef()->name();
-  }
-  QCString ltype(m_type);
-  // strip 'friend' keyword from ltype
-  ltype.stripPrefix("friend ");
-
-  // search for the last anonymous scope in the member type
-  ClassDef *annoClassDef=nullptr;
-
-  // match expression if it contains at least one @1 marker, e.g.
-  // 'struct A::@1::@2::B' matches 'A::@1::@2::B' but 'struct A::B' does not match.
-  std::string stype = ltype.str();
-  static const reg::Ex r(R"([\w@:]*@\d+[\w@:]*)");
-  reg::Match match;
-  if (reg::search(stype,match,r)) // found anonymous scope in type
-  {
-    QCString annName = match.str();
-
-    // if inside a class or namespace try to prepend the scope name
-    if (!cname.isEmpty() && annName.left(cname.length()+2)!=cname+"::")
-    {
-      QCString ts=stripAnonymousNamespaceScope(cname+"::"+annName);
-      annoClassDef=getClass(ts);
-    }
-    // if not found yet, try without scope name
-    if (annoClassDef==nullptr)
-    {
-      QCString ts=stripAnonymousNamespaceScope(annName);
-      annoClassDef=getClass(ts);
-    }
-  }
-  m_cachedAnonymousType = annoClassDef;
-  return annoClassDef;
-}
-
-void MemberDefImpl::determineScopeForAnonymousMembers()
-{
-  ClassDef *cd = getClassDefOfAnonymousType();
-  MemberDef *md = fromAnonymousMember();
-  if (cd && md==nullptr) // skip member of anonymous types that are themselves also anonymous
-                         // (e.g. y in struct { struct { int x; } y; } z;)
-  {
-    ClassDefMutable *cdm = toClassDefMutable(cd);
-    if (cdm)
-    {
-      //printf("class %s setAnonymousMemberPrefix(%s)\n",qPrint(cdm->name()),qPrint(name()));
-      cdm->setAnonymousMemberPrefix(name());
-    }
-  }
-}
-
-void MemberDefImpl::setAnonymousMemberPrefix(const QCString &prefix)
-{
-  //printf("> MemberDefImpl::setAnonymousMemberPrefix(%s) for %s\n",qPrint(prefix),qPrint(qualifiedName()));
-  m_anonymousPrefix.prepend(prefix+".");
-  for (const auto &md : m_enumFields)
-  {
-    MemberDefMutable *mdm = toMemberDefMutable(md);
-    if (mdm)
-    {
-      mdm->setAnonymousMemberPrefix(prefix);
-    }
-  }
-
-  ClassDef *acd = getClassDefOfAnonymousType();
-  MemberDef *amd = fromAnonymousMember();
-  if (acd && amd) // also add prefix to member of anonymous types that are themselves also anonymous
-                  // (e.g. prefix z.y. for x in struct { struct { int x; } y; } z;)
-  {
-    ClassDefMutable *acdm = toClassDefMutable(acd);
-    if (acdm)
-    {
-      acdm->setAnonymousMemberPrefix(prefix);
-    }
-  }
-  //printf("< MemberDefImpl::setAnonymousMemberPrefix(%s) for %s\n",qPrint(prefix),qPrint(qualifiedName()));
+  return m_anonymousType;
 }
 
 QCString MemberDefImpl::anonymousMemberPrefix() const
@@ -2335,7 +2243,7 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
   QCString cfname = getOutputFileBase();
 
   // search for the last anonymous scope in the member type
-  ClassDef *annoClassDef=getClassDefOfAnonymousType();
+  const ClassDef *annoClassDef=getClassDefOfAnonymousType();
 
   ol.startMemberDeclaration();
 
@@ -2412,59 +2320,45 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
   }
   // strip 'friend' keyword from ltype
   ltype.stripPrefix("friend ");
-  static const reg::Ex r(R"(@\d+)");
+  static const reg::Ex r(R"(@\d+)"); // anonymous type marker
   reg::Match match;
   std::string stype = ltype.str();
   bool endAnonScopeNeeded=FALSE;
   LinkifyTextOptions options;
   options.setScope(d).setFileScope(getBodyDef()).setSelf(this);
-  if (reg::search(stype,match,r)) // member has an anonymous type
+  if (reg::search(stype,match,r)) // member has an anonymous type marker
   {
-    int i = static_cast<int>(match.position());
-    int l = static_cast<int>(match.length());
-    //printf("annoClassDef=%p annMemb=%p scopeName='%s' anonymous='%s'\n",
-    //    annoClassDef,annMemb,qPrint(cname),qPrint(ltype.mid(i,l)));
+    //printf("name=%s annoClassDef=%p stype='%s' scopeName='%s'\n",
+    //    qPrint(name()),(void*)annoClassDef,qPrint(stype),qPrint(cname));
 
-    if (annoClassDef) // type is an anonymous compound
+    static const reg::Ex ar(R"([\w@:]*@\d+[\w@:]*)"); // anonymous type marker(s) including scope
+    reg::Match amatch;
+    reg::search(stype,amatch,ar);
+    int ai = static_cast<int>(amatch.position());
+    int al = static_cast<int>(amatch.length());
+    const MemberDef *amd = getAnonymousEnumType();
+    if (annoClassDef && amd==nullptr) // type is an anonymous compound
     {
-      int ir=i+l;
-      //printf("<<<<<<<<<<<<<<\n");
-      ol.startAnonTypeScope(indentLevel);
-      annoClassDef->writeDeclaration(ol,m_fromAnnMemb,inGroup,indentLevel+1,inheritedFrom,inheritId);
-      //printf(">>>>>>>>>>>>>> startMemberItem(2)\n");
-      anonType = OutputGenerator::MemberItemType::AnonymousEnd;
-      ol.startMemberItem(anchor(),anonType,inheritId);
-      for (int j=0;j< indentLevel;j++)
-      {
-        ol.writeNonBreakableSpace(3);
-      }
-      QCString varName=ltype.right(ltype.length()-ir).stripWhiteSpace();
-      //printf(">>>>>> ltype='%s' varName='%s'\n",qPrint(ltype),qPrint(varName));
-      ol.docify("}");
-      if (varName.isEmpty() && isAnonymous())
-      {
-        ol.docify(";");
-      }
-      else if (!varName.isEmpty() && (varName.at(0)=='*' || varName.at(0)=='&'))
-      {
-        ol.docify(" ");
-        ol.docify(varName);
-      }
-      endAnonScopeNeeded=TRUE;
+      ol.writeObjectLink(annoClassDef->getReference(),annoClassDef->getOutputFileBase(),
+                         annoClassDef->anchor(),ltype.left(ai)+ltype.right(ltype.length()-ai-al));
     }
-    else
+    else if (amd) // type is an anonymous enum
     {
-      if (getAnonymousEnumType()) // type is an anonymous enum
+      QCString typePlaceholder = " { ... } ";
+      if (lang==SrcLangExt::Cpp)
       {
-        linkifyText(TextGeneratorOLImpl(ol),ltype.left(i),options);
-        getAnonymousEnumType()->writeEnumDeclaration(ol,cd,nd,fd,gd,mod);
-        linkifyText(TextGeneratorOLImpl(ol),ltype.right(ltype.length()-i-l),LinkifyTextOptions(options).setAutoBreak(true));
+        if (amd->isEnumStruct()) typePlaceholder.prepend(" struct");
+        else if (amd->isStrong()) typePlaceholder.prepend(" class");
       }
-      else
-      {
-        ltype = ltype.left(i) + " { ... } " + removeAnonymousScopes(ltype.right(ltype.length()-i-l));
-        linkifyText(TextGeneratorOLImpl(ol), ltype, options);
-      }
+      ol.writeObjectLink(amd->getReference(),amd->getOutputFileBase(),
+                         amd->anchor(),ltype.left(ai)+typePlaceholder+ltype.right(ltype.length()-ai-al));
+    }
+    else // fallback if anonymous type is not found
+    {
+      int i = static_cast<int>(match.position());
+      int l = static_cast<int>(match.length());
+      ltype = ltype.left(i) + " { ... } " + removeAnonymousScopes(ltype.right(ltype.length()-i-l));
+      linkifyText(TextGeneratorOLImpl(ol), ltype, options);
     }
   }
   else if (ltype=="@") // rename type from enum values
@@ -3412,7 +3306,18 @@ QCString MemberDefImpl::displayDefinition() const
   reg::Match match;
   if (reg::search(sdef,match,reAnonymous))
   {
-    ldef = match.prefix().str() + " { ... } " + removeAnonymousScopes(match.suffix().str());
+    const ClassDef *annoClassDef=getClassDefOfAnonymousType();
+    if (annoClassDef)
+    {
+      static const reg::Ex ar(R"([\w@:]*@\d+[\w@:]*)");
+      reg::Match amatch;
+      reg::search(sdef,amatch,ar);
+      ldef = amatch.prefix().str() + annoClassDef->displayName() + amatch.suffix().str();
+    }
+    else
+    {
+      ldef = match.prefix().str() + " { ... } " + removeAnonymousScopes(match.suffix().str());
+    }
   }
 
   const ClassDef *cd=getClassDef();
@@ -3604,6 +3509,15 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
     if (title.at(0)=='@')
     {
       ldef = title = "anonymous enum";
+      if (isSliceLocal())
+      {
+        ldef.prepend("local ");
+      }
+      if (lang==SrcLangExt::Cpp)
+      {
+        if (isEnumStruct()) ldef.append(" struct");
+        else if (isStrong()) ldef.append(" class");
+      }
       if (!m_enumBaseType.isEmpty())
       {
         ldef+=" : "+m_enumBaseType;
@@ -3684,7 +3598,7 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
     }
     if (!found) // anonymous compound
     {
-      ClassDef *annoClassDef=getClassDefOfAnonymousType();
+      const ClassDef *annoClassDef=getClassDefOfAnonymousType();
       QCString typeName;
       if (annoClassDef) typeName=annoClassDef->compoundTypeString();
       ol.startDoxyAnchor(cfname, cname, memAnchor, doxyName, doxyArgs);
@@ -3695,11 +3609,44 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
       ol.startMemberDocName(isObjCMethod());
       if (reg::search(sdef,match,reAnonymous))
       {
-        QCString prefix = match.prefix().str();
-        QCString suffix = match.suffix().str();
-        ol.docify(prefix);
-        ol.docify(" { ... } ");
-        linkifyText(TextGeneratorOLImpl(ol),removeAnonymousScopes(suffix),options);
+        static const reg::Ex ar(R"([\w@:]*@\d+[\w@:]*)");
+        reg::Match amatch;
+        reg::search(sdef,amatch,ar);
+        QCString prefix = amatch.prefix().str();
+        QCString suffix = removeAnonymousScopes(amatch.suffix().str());
+        //printf("writeDocumentation(): anonymous compound in definition: sdef='%s' prefix='%s' suffix='%s' annoClassDef=%p\n",
+        //    qPrint(sdef), qPrint(prefix),qPrint(suffix),(void*)annoClassDef);
+        const MemberDef *amd = getAnonymousEnumType();
+        if (annoClassDef && amd==nullptr)
+        {
+          ol.docify(prefix);
+          QCString annTypeName = annoClassDef->displayName(true);
+          if (suffix.isEmpty())
+          {
+            suffix=" "+localName();
+          }
+          ol.writeObjectLink(annoClassDef->getReference(),annoClassDef->getOutputFileBase(),
+              annoClassDef->anchor(),annTypeName);
+          linkifyText(TextGeneratorOLImpl(ol),suffix,options);
+        }
+        else if (amd) // type is an anonymous enum
+        {
+          QCString typePlaceholder = " { ... } ";
+          if (lang==SrcLangExt::Cpp)
+          {
+            if (amd->isEnumStruct()) typePlaceholder.prepend(" struct");
+            else if (amd->isStrong()) typePlaceholder.prepend(" class");
+          }
+          ol.writeObjectLink(amd->getReference(),amd->getOutputFileBase(),amd->anchor(),prefix+typePlaceholder+suffix);
+        }
+        else
+        {
+          prefix = match.prefix().str();
+          suffix = removeAnonymousScopes(match.suffix().str());
+          ol.docify(prefix);
+          ol.docify(" { ... } ");
+          linkifyText(TextGeneratorOLImpl(ol),suffix,options);
+        }
       }
       else
       {
@@ -4052,12 +3999,7 @@ static QCString simplifyTypeForTable(const QCString &s)
 
 QCString MemberDefImpl::fieldType() const
 {
-  QCString type = m_accessorType;
-  if (type.isEmpty())
-  {
-    type = m_type;
-  }
-
+  QCString type = m_type;
   if (isTypedef() && getLanguage() != SrcLangExt::Slice) type.prepend("typedef ");
   return simplifyTypeForTable(type);
 }
@@ -4076,9 +4018,6 @@ void MemberDefImpl::writeMemberDocSimple(OutputList &ol, const Definition *conta
     doxyName="__unnamed__";
   }
 
-  ClassDef *cd = m_accessorClass;
-  //printf("===> %s::anonymous: %s\n",qPrint(name()),cd?qPrint(cd->name()):"<none>");
-
   LinkifyTextOptions options;
   options.setScope(scope).setFileScope(getBodyDef()).setSelf(this);
 
@@ -4094,30 +4033,7 @@ void MemberDefImpl::writeMemberDocSimple(OutputList &ol, const Definition *conta
     if (isFunctionPtr())
         ts = m_type + m_args;
 
-    if (cd) // cd points to an anonymous struct pointed to by this member
-      // so we add a link to it from the type column.
-    {
-      int i=0;
-      const char *prefixes[] = { "struct ","union ","class ", nullptr };
-      const char **p = prefixes;
-      while (*p)
-      {
-        int l=qstrlen(*p);
-        if (ts.left(l)==*p)
-        {
-          ol.writeString(*p);
-          i=l;
-        }
-        p++;
-      }
-      ol.writeObjectLink(cd->getReference(),
-          cd->getOutputFileBase(),
-          cd->anchor(),ts.mid(i));
-    }
-    else // use standard auto linking
-    {
-      linkifyText(TextGeneratorOLImpl(ol),ts,options);
-    }
+    linkifyText(TextGeneratorOLImpl(ol),ts,options);
     ol.endDoxyAnchor(cfname,memAnchor);
     ol.endInlineMemberType();
   }
@@ -4990,17 +4906,6 @@ void MemberDefImpl::setTypeConstraints(const ArgumentList &al)
 void MemberDefImpl::setType(const QCString &t)
 {
   m_type = t;
-}
-
-void MemberDefImpl::setAccessorType(ClassDef *cd,const QCString &t)
-{
-  m_accessorClass = cd;
-  m_accessorType = t;
-}
-
-ClassDef *MemberDefImpl::accessorClass() const
-{
-  return m_accessorClass;
 }
 
 void MemberDefImpl::findSectionsInDocumentation()

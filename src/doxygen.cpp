@@ -1525,6 +1525,310 @@ void distributeClassGroupRelations()
 }
 
 //----------------------------------------------------------------------
+
+template<typename Container>
+static void associateVariableWithAnonymousEnumType(const MemberDef *md,
+                                                   const Container *cd,
+                                                   const MemberDef *enumTypeMember,
+                                                   MemberListType mlFilter)
+{
+  if (md && md->isEnumerate() && md->name().startsWith("@")) // anonymous enum type
+  {
+    MemberList *eiml = cd->getMemberList(mlFilter);
+    if (eiml)
+    {
+      for (const auto &eimd : *eiml)
+      {
+        QCString vtype = eimd->typeString();
+        if (vtype.find(md->name())!=-1)
+        {
+          MemberDefMutable *mimd = toMemberDefMutable(eimd);
+          if (mimd)
+          {
+            mimd->setAnonymousEnumType(enumTypeMember);
+            break;
+          }
+        }
+      }
+    }
+  }
+}
+
+static ClassDefMutable *createTagLessInstance(const Definition *root,const ClassDef *templ,const QCString &fieldName)
+{
+  QCString n = templ->name();
+  // replace e.g. X::@1343:@4343::Y -> X::[struct]::Y
+  int sn = n.find('@');
+  if (sn!=-1)
+  {
+    const char *p = n.data()+sn;
+    char c;
+    while ((c=*p))
+    {
+      if (!isdigit(c) && c!='@' &&  c!=':') break;
+      p++;
+    }
+    n = n.left(sn)+"["+templ->compoundTypeString().str()+"]"+p;
+  }
+  // add field name to the class name to make it unique again, e.g. X::[struct]::Y.m
+  QCString fullName = n+"."+fieldName;
+
+  //printf("** adding class %s based on %s in %s\n",qPrint(fullName),qPrint(templ->name()),qPrint(root->name()));
+  ClassDefMutable *cd = toClassDefMutable(
+      Doxygen::classLinkedMap->add(fullName,
+         createClassDef(templ->getDefFileName(),
+                        templ->getDefLine(),
+                        templ->getDefColumn(),
+                        fullName,
+                        templ->compoundType())));
+  if (cd)
+  {
+    //printf("cd->name()=%s displayName=%s\n",qPrint(cd->name()),qPrint(cd->displayName()));
+    cd->setDocumentation(templ->documentation(),templ->docFile(),templ->docLine()); // copy docs to definition
+    cd->setBriefDescription(templ->briefDescription(),templ->briefFile(),templ->briefLine());
+    cd->setLanguage(templ->getLanguage());
+    cd->setBodySegment(templ->getDefLine(),templ->getStartBodyLine(),templ->getEndBodyLine());
+    cd->setBodyDef(templ->getBodyDef());
+
+    if (root!=Doxygen::globalScope)
+    {
+      DefinitionMutable *outerScope = toDefinitionMutable(const_cast<Definition*>(root));
+      if (root && root->definitionType()==Definition::TypeFile)
+      {
+        FileDef *fd = toFileDef(const_cast<Definition*>(root));
+        fd->insertClass(cd);
+        cd->setFileDef(fd);
+        cd->setOuterScope(Doxygen::globalScope);
+      }
+      else if (outerScope)
+      {
+        outerScope->addInnerCompound(cd);
+        cd->setOuterScope(const_cast<Definition*>(root));
+      }
+    }
+
+    for (auto &gd : root->partOfGroups())
+    {
+      cd->makePartOfGroup(gd);
+      gd->addClass(cd);
+    }
+
+    auto addMember = [&](const MemberDef *md) -> MemberDefMutable*
+    {
+      auto newMd = createMemberDef(md->getDefFileName(),md->getDefLine(),md->getDefColumn(),
+          md->typeString(),md->name(),md->argsString(),md->excpString(),
+          md->protection(),md->virtualness(),md->isStatic(),Relationship::Member,
+          md->memberType(),
+          ArgumentList(),ArgumentList(),"");
+      MemberDefMutable *imd = toMemberDefMutable(newMd.get());
+      imd->setMemberClass(cd);
+      imd->setDefinition(md->definition());
+      imd->setDocumentation(md->documentation(),md->docFile(),md->docLine());
+      imd->setBriefDescription(md->briefDescription(),md->briefFile(),md->briefLine());
+      imd->setInbodyDocumentation(md->inbodyDocumentation(),md->inbodyFile(),md->inbodyLine());
+      imd->setMemberSpecifiers(md->getMemberSpecifiers());
+      imd->setId(md->id());
+      imd->addQualifiers(md->getQualifiers());
+      imd->setVhdlSpecifiers(md->getVhdlSpecifiers());
+      imd->setMemberGroupId(md->getMemberGroupId());
+      imd->setInitializer(md->initializer());
+      imd->setRequiresClause(md->requiresClause());
+      imd->setMaxInitLines(md->initializerLines());
+      imd->setBitfields(md->bitfieldString());
+      imd->setLanguage(md->getLanguage());
+      imd->setClassDefOfAnonymousType(cd);
+      cd->insertMember(imd);
+      associateVariableWithAnonymousEnumType(md,cd,imd,MemberListType::PubAttribs());
+      MemberName *mn = Doxygen::memberNameLinkedMap->add(md->name());
+      mn->push_back(std::move(newMd));
+      return imd;
+
+    };
+
+    MemberList *ml = templ->getMemberList(MemberListType::PubAttribs());
+    if (ml)
+    {
+      for (const auto &md : *ml)
+      {
+        //printf("    Member attribute %s def=%s\n",qPrint(md->name()),qPrint(md->definition()));
+        addMember(md);
+      }
+    }
+    ml = templ->getMemberList(MemberListType::PubTypes());
+    if (ml)
+    {
+      for (const auto &md : *ml)
+      {
+        //printf("    Member type %s def=%s\n",qPrint(md->name()),qPrint(md->definition()));
+        MemberDefMutable *mdm = addMember(md);
+        if (md->isEnumerate() && md->name().startsWith("@")) // anonymous enum type
+        {
+          for (const auto &emd : md->enumFieldList())
+          {
+            //printf("      enum field %s\n",qPrint(emd->name()));
+            MemberDefMutable *emdm = addMember(emd);
+            mdm->insertEnumField(emdm);
+            emdm->setEnumScope(md);
+          }
+        }
+      }
+    }
+  }
+  return cd;
+}
+
+/** Look through the members of class \a cd and its public members.
+ *  If there is a member m of a tag less struct/union,
+ *  then we create a duplicate of the struct/union with the name of the
+ *  member to identify it.
+ *  So if cd has name S, then the tag less struct/union will get name S.m
+ *  Since tag less structs can be nested we need to call this function
+ *  recursively. Later on we need to patch the member types so we keep
+ *  track of the hierarchy of classes we create.
+ */
+template<typename Container, typename TagContainer>
+static void processTagLessClasses(const Definition *root,
+                                  const Container *cd,
+                                  const TagContainer *tagParent,
+                                  MemberListType varFilter,
+                                  MemberListType typeFilter,
+                                  const QCString &prefix,int count)
+{
+  AUTO_TRACE("count={} name={}\n",count,cd->name());
+  if (tagParent /*&& !cd->getClasses().empty()*/)
+  {
+    MemberList *ml = cd->getMemberList(varFilter);
+    if (ml)
+    {
+      int pos=0;
+      for (const auto &md : *ml)
+      {
+        QCString type = md->typeString();
+        //printf("  member %s: type='%s' outerScope='%s'\n",qPrint(md->name()),qPrint(type),qPrint(md->getOuterScope()?md->getOuterScope()->name():"<null>"));
+        if ((cd->definitionType()!=Definition::TypeFile || md->getOuterScope()==Doxygen::globalScope) && // part namespace members only if cd is a namespace
+            (type.find("::@")!=-1 || type.find(" @")!=-1)) // member of tag less struct/union
+        {
+          std::vector<const ClassDef *> candidates;
+          for (const auto &icd : cd->getClasses())
+          {
+            candidates.push_back(icd);
+          }
+          for (const auto &icd : candidates)
+          {
+            //printf("  comparing '%s'<->'%s'\n",qPrint(type),qPrint(icd->name()));
+            if (type.find(icd->name())!=-1) // matching tag less struct/union
+            {
+              QCString name = md->name();
+              if (md->isAnonymous()) name = "__unnamed" + QCString().setNum(pos++)+"__";
+              if (!prefix.isEmpty()) name.prepend(prefix+".");
+              //printf("    found %s in scope %s\n",qPrint(name),qPrint(cd->name()));
+              ClassDefMutable *ncd = createTagLessInstance(root,icd,name);
+              if (ncd)
+              {
+                processTagLessClasses(ncd,icd,ncd,MemberListType::PubAttribs(),MemberListType::PubTypes(),name,count+1);
+                //printf("      addTagged %s to %s\n",qPrint(ncd->name()),qPrint(tagParent->name()));
+                ncd->setTagLessReference(icd);
+
+                // associate the variable of the anonymous type with the type member
+                MemberList *pml = tagParent->getMemberList(varFilter);
+                if (pml)
+                {
+                  for (const auto &pmd : *pml)
+                  {
+                    MemberDefMutable *pmdm = toMemberDefMutable(pmd);
+                    if (pmdm && pmd->name()==md->name())
+                    {
+                      pmdm->setClassDefOfAnonymousType(ncd);
+                    }
+                  }
+                }
+              }
+            }
+            else
+            {
+              //printf("   no match for %s in %s\n",qPrint(icd->name()),qPrint(type));
+            }
+          }
+        }
+      }
+    }
+    // associate the variable of the anonymous enum type with the type member
+    ml = cd->getMemberList(typeFilter);
+    if (ml)
+    {
+      for (const auto &md : *ml)
+      {
+        MemberListType mlFilter = cd->definitionType()==Definition::TypeClass ? MemberListType::PubAttribs() : MemberListType::DecVarMembers();
+        associateVariableWithAnonymousEnumType(md,cd,md,mlFilter);
+      }
+    }
+  }
+}
+
+template<typename Container>
+static void findTagLessClasses(std::set<const Definition *> &candidates,const Container *cd)
+{
+  for (const auto &icd : cd->getClasses())
+  {
+    if (icd->name().find("@")==-1) // process all non-anonymous inner classes
+    {
+      findTagLessClasses(candidates,icd);
+    }
+  }
+
+  candidates.insert(cd);
+}
+
+static void findTagLessClasses()
+{
+  std::set<const Definition *> candidates;
+  for (auto &cd : *Doxygen::classLinkedMap)
+  {
+    Definition *scope = cd->getOuterScope();
+    //printf("  scope=%s for class %s\n",qPrint(scope?scope->name():"<null>"),qPrint(cd->name()));
+    if (scope && scope->definitionType()==Definition::TypeNamespace) // class that is not nested
+    {
+      const NamespaceDef *nd = toNamespaceDef(scope);
+      if (nd && nd==Doxygen::globalScope) // class at global namespace
+      {
+        const FileDef *fd = cd->getFileDef();
+        if (fd)
+        {
+          findTagLessClasses(candidates,fd);
+        }
+      }
+      else if (nd) // class in a namespace
+      {
+        findTagLessClasses(candidates,nd);
+      }
+    }
+  }
+
+  // since processTagLessClasses is potentially adding classes to Doxygen::classLinkedMap
+  // we need to call it outside of the loop above, otherwise the iterator gets invalidated!
+  for (const auto &d : candidates)
+  {
+    //printf("------ processing tag-less classes for %s\n",qPrint(d->name()));
+    if (d->definitionType()==Definition::TypeNamespace)
+    {
+      const NamespaceDef *nd = toNamespaceDef(d);
+      processTagLessClasses(nd,nd,nd,MemberListType::DecVarMembers(),MemberListType::DecEnumMembers(),"",0);
+    }
+    else if (d->definitionType()==Definition::TypeFile)
+    {
+      const FileDef *fd = toFileDef(d);
+      processTagLessClasses(fd,fd,fd,MemberListType::DecVarMembers(),MemberListType::DecEnumMembers(),"",0);
+    }
+    else if (d->definitionType()==Definition::TypeClass)
+    {
+      const ClassDef *cd = toClassDef(d);
+      processTagLessClasses(cd,cd,cd,MemberListType::PubAttribs(),MemberListType::PubTypes(),"",0);
+    }
+  }
+}
+
+
+//----------------------------------------------------------------------
 // build a list of all namespaces mentioned in the documentation
 // and all namespaces that have a documentation block before their definition.
 static void buildNamespaceList(const Entry *root)
@@ -3190,52 +3494,10 @@ static void addVariable(const Entry *root,int isFuncPtr=-1)
     // into a non-anonymous parent scope as well. This is needed to
     // be able to refer to it using \var or \fn
 
-    //int indentDepth=0;
-    int si=scope.find('@');
-    //int anonyScopes = 0;
-    //bool added=FALSE;
 
     Relationship relationship = isMemberOf ? Relationship::Foreign :
       isRelated  ? Relationship::Related :
       Relationship::Member  ;
-    if (si!=-1) // anonymous scope or type
-    {
-      QCString pScope;
-      ClassDefMutable *pcd=nullptr;
-      pScope = scope.left(std::max(si-2,0)); // scope without tag less parts
-      if (!pScope.isEmpty())
-        pScope.prepend(annScopePrefix);
-      else if (annScopePrefix.length()>2)
-        pScope=annScopePrefix.left(annScopePrefix.length()-2);
-      if (name.at(0)!='@')
-      {
-        if (!pScope.isEmpty() && (pcd=getClassMutable(pScope)))
-        {
-          AUTO_TRACE_ADD("Adding member '{}' in anonymous scope to parent scope '{}'",name,pScope);
-          md=addVariableToClass(root,  // entry
-              pcd,   // class to add member to
-              mtype, // member type
-              type,  // type value as string
-              name,  // member name
-              args,  // arguments as string
-              TRUE,  // from anonymous scope
-              nullptr,     // from anonymous member
-              root->protection,
-              relationship
-              );
-          //added=TRUE;
-        }
-        else // anonymous scope inside namespace or file => put variable in the global scope
-        {
-          if (mtype==MemberType::Variable)
-          {
-            AUTO_TRACE_ADD("Adding member '{}' in anonymous scope to global scope",name);
-            md=addVariableToFile(root,mtype,pScope,type,name,args,TRUE,nullptr);
-          }
-          //added=TRUE;
-        }
-      }
-    }
 
     addVariableToClass(root,   // entry
         cd,     // class to add member to
@@ -8745,34 +9007,6 @@ static void addSourceReferences()
 
 //----------------------------------------------------------------------------
 
-static void determineScopeForAnonymousMembers()
-{
-  for (const auto &mn : *Doxygen::memberNameLinkedMap)
-  {
-    for (const auto &md : *mn)
-    {
-      MemberDefMutable *mdm = toMemberDefMutable(md.get());
-      if (mdm)
-      {
-        mdm->determineScopeForAnonymousMembers();
-      }
-    }
-  }
-  for (const auto &mn : *Doxygen::functionNameLinkedMap)
-  {
-    for (const auto &md : *mn)
-    {
-      MemberDefMutable *mdm = toMemberDefMutable(md.get());
-      if (mdm)
-      {
-        mdm->determineScopeForAnonymousMembers();
-      }
-    }
-  }
-}
-
-//----------------------------------------------------------------------------
-
 // add the macro definitions found during preprocessing as file members
 static void buildDefineList()
 {
@@ -12784,6 +13018,10 @@ void parseInput()
   createTemplateInstanceMembers();
   g_s.end();
 
+  g_s.begin("Searching for tag less structs...\n");
+  findTagLessClasses();
+  g_s.end();
+
   g_s.begin("Building page list...\n");
   buildPageList(root.get());
   g_s.end();
@@ -12871,7 +13109,6 @@ void parseInput()
   g_s.begin("Computing member relations...\n");
   mergeCategories();
   computeMemberRelations();
-  determineScopeForAnonymousMembers();
   g_s.end();
 
   g_s.begin("Building full member lists recursively...\n");

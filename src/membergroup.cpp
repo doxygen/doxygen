@@ -82,11 +82,6 @@ void MemberGroup::setAnchors()
   memberList->setAnchors();
 }
 
-void MemberGroup::setAnonymousMemberPrefix(const QCString &prefix)
-{
-  memberList->setAnonymousMemberPrefix(prefix);
-}
-
 void MemberGroup::writeDeclarations(OutputList &ol,
                const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,const ModuleDef *mod,
                bool showInline) const

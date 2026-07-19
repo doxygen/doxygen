@@ -245,22 +245,6 @@ void MemberList::setAnonymousEnumType()
   }
 }
 
-void MemberList::setAnonymousMemberPrefix(const QCString &prefix)
-{
-  for (const auto &md : m_members)
-  {
-    MemberDefMutable *mdm = toMemberDefMutable(md);
-    if (mdm)
-    {
-      mdm->setAnonymousMemberPrefix(prefix);
-    }
-  }
-  for (const auto &mg : m_memberGroupRefList)
-  {
-    mg->setAnonymousMemberPrefix(prefix);
-  }
-}
-
 int MemberList::countEnumValues(const MemberDef *md) const
 {
   int numEnumValues=0;
@@ -404,17 +388,25 @@ void MemberList::writePlainDeclarations(OutputList &ol, bool inGroup,
               {
                 ol.writeString("local ");
               }
-              ol.writeString("enum ");
+              QCString enumType = "enum ";
               if (md->getLanguage()==SrcLangExt::Cpp && md->isStrong())
               {
                 if (md->isEnumStruct())
                 {
-                  ol.writeString("struct ");
+                  enumType+="struct ";
                 }
                 else
                 {
-                  ol.writeString("class ");
+                  enumType+="class ";
                 }
+              }
+              if (md->name().startsWith("@"))
+              {
+                ol.writeObjectLink(md->getReference(),md->getOutputFileBase(),md->anchor(),enumType);
+              }
+              else
+              {
+                ol.writeString(enumType);
               }
               ol.insertMemberAlign();
               md->writeEnumDeclaration(ol,cd,nd,fd,gd,mod);

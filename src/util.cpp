@@ -3252,6 +3252,7 @@ QCString substituteKeywords(const QCString &file,const QCString &s,const QCStrin
 int getPrefixIndex(const QCString &name)
 {
   if (name.isEmpty()) return 0;
+  int result=0;
   const StringVector &sl = Config_getList(IGNORE_PREFIX);
   for (const auto &s : sl)
   {
@@ -3266,10 +3267,12 @@ int getPrefixIndex(const QCString &name)
     }
     if (*ps==0 && *pd!=0)
     {
-      return i;
+      result=i;
+      break;
     }
   }
-  return 0;
+  if (result<static_cast<int>(name.length())-1 && name.at(result)=='[') result++; // for e.g. [union] return u
+  return result;
 }
 
 //----------------------------------------------------------------------------

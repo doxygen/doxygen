@@ -995,11 +995,6 @@ static void writeClassTreeForList(OutputList &ol,const ClassLinkedMap &cl,bool &
   bool sliceOpt = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
   for (const auto &cd : cl)
   {
-    //printf("class %s classHasVisibleRoot=%d isVisibleInHierarchy=%d\n",
-    //             qPrint(cd->name()),
-    //              classHasVisibleRoot(cd->baseClasses()),
-    //              cd->isVisibleInHierarchy()
-    //      );
     bool b = false;
     if (cd->getLanguage()==SrcLangExt::VHDL)
     {
@@ -2298,11 +2293,11 @@ static void writeAlphabeticalClassList(OutputList &ol, ClassDef::CompoundType ct
   {
     if (sliceOpt && cd->compoundType() != ct)
       continue;
+    if (cd->getLanguage()==SrcLangExt::VHDL && !(VhdlDocGen::convert(cd->protection())==VhdlDocGen::ENTITYCLASS ))// no architecture
+      continue;
+
     if (cd->isLinkableInProject() && !cd->isImplicitTemplateInstance())
     {
-      if (cd->getLanguage()==SrcLangExt::VHDL && !(VhdlDocGen::convert(cd->protection())==VhdlDocGen::ENTITYCLASS ))// no architecture
-        continue;
-
       // get the first UTF8 character (after the part that should be ignored)
       int index = getPrefixIndex(cd->className());
       std::string letter = getUTF8CharAt(cd->className().str(),index);
@@ -2585,8 +2580,7 @@ struct AnnotatedIndexContext
 
 static void writeAnnotatedIndexGeneric(OutputList &ol,const AnnotatedIndexContext ctx)
 {
-  //printf("writeAnnotatedIndex: count=%d printed=%d\n",
-  //    annotatedClasses,annotatedClassesPrinted);
+  //printf("writeAnnotatedIndex: count=%d printed=%d\n", ctx.numAnnotated, ctx.numPrinted);
   if (ctx.numAnnotated==0) return;
 
   ol.pushGeneratorState();

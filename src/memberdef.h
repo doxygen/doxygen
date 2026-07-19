@@ -84,8 +84,6 @@ class MemberDef : public Definition
     virtual       NamespaceDef* getNamespaceDef()       = 0;
     virtual const ModuleDef*    getModuleDef() const    = 0;
 
-    virtual const ClassDef *accessorClass() const = 0;
-
     // grabbing the property read/write accessor names
     virtual QCString getReadAccessor() const = 0;
     virtual QCString getWriteAccessor() const = 0;
@@ -253,7 +251,7 @@ class MemberDef : public Definition
 
     virtual const MemberDef *templateMaster() const = 0;
     virtual QCString getScopeString() const = 0;
-    virtual ClassDef *getClassDefOfAnonymousType() const = 0;
+    virtual const ClassDef *getClassDefOfAnonymousType() const = 0;
 
     // cached typedef functions
     virtual bool isTypedefValCached() const = 0;
@@ -371,7 +369,6 @@ class MemberDefMutable : public DefinitionMutable, public MemberDef
     virtual void setDefinitionTemplateParameterLists(const ArgumentLists &lists) = 0;
     virtual void setTypeConstraints(const ArgumentList &al) = 0;
     virtual void setType(const QCString &t) = 0;
-    virtual void setAccessorType(ClassDef *cd,const QCString &t) = 0;
 
     // namespace related members
     virtual void setNamespace(NamespaceDef *nd) = 0;
@@ -383,8 +380,7 @@ class MemberDefMutable : public DefinitionMutable, public MemberDef
     // anonymous scope members
     virtual void setFromAnonymousMember(MemberDef *m) = 0;
     virtual void setToAnonymousMember(MemberDef *m) = 0;
-    virtual void determineScopeForAnonymousMembers() = 0;
-    virtual void setAnonymousMemberPrefix(const QCString &prefix) = 0;
+    virtual void setClassDefOfAnonymousType(const ClassDef *cd) = 0;
 
     virtual void overrideCallGraph(bool e) = 0;
     virtual void overrideCallerGraph(bool e) = 0;
