@@ -965,6 +965,7 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
                                           }
                                         }
 <FindDefineArgs>{CPPC}.*\n              { // replace C++ single line style comment by C style comment
+                                          if (getLanguageFromFileName(yyextra->fileName)==SrcLangExt::Fortran) REJECT;
                                           yyextra->defArgsStr+=QCString("/*")+&yytext[2]+" */";
                                         }
 <FindDefineArgs>\"                      {
