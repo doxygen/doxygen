@@ -140,6 +140,7 @@ function initMenu(relPath,treeview) {
       } else {
         slideUp(mainMenu, SLIDE_DELAY, () => {
           mainMenu.style.display = 'none';
+          initResizableIfExists();
         });
       }
     });
