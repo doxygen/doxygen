@@ -965,6 +965,7 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
                                           }
                                         }
 <FindDefineArgs>{CPPC}.*\n              { // replace C++ single line style comment by C style comment
+                                          if (getLanguageFromFileName(yyextra->fileName)==SrcLangExt::Fortran) REJECT;
                                           yyextra->defArgsStr+=QCString("/*")+&yytext[2]+" */";
                                         }
 <FindDefineArgs>\"                      {
@@ -2656,6 +2657,22 @@ static inline void addTillEndOfString(yyscan_t yyscanner,const QCString &expr,QC
   }
 }
 
+static inline void addTillEndOfComment(yyscan_t yyscanner,const QCString &expr,QCString *rest,
+                                       uint32_t &pos,char term,QCString &arg)
+{
+  int cc;
+  while ((cc=getNextChar(yyscanner,expr,rest,pos))!=EOF && cc!=0)
+  {
+    if (cc=='*' && getCurrentChar(yyscanner,expr,rest,pos)=='/')
+    {
+      arg+=(char)cc;
+      cc = getNextChar(yyscanner,expr,rest,pos);
+      return;
+    }
+    arg+=(char)cc;
+  }
+}
+
 static void skipCommentMacroName(yyscan_t yyscanner, const QCString &expr, QCString *rest,
                                  int &cc, uint32_t &j, int &len)
 {
@@ -2796,6 +2813,17 @@ static bool replaceFunctionMacro(yyscan_t yyscanner,const QCString &expr,QCStrin
             arg+=c;
             addTillEndOfString(yyscanner,expr,rest,j,c,arg);
           }
+          else if (c=='/')
+          {
+            int nxtChar = getCurrentChar(yyscanner,expr,rest,j);
+            if (nxtChar == '*')
+            {
+              arg+=c;
+              addTillEndOfComment(yyscanner,expr,rest,j,c,arg);
+            }
+            // We don't need to handle the // case as this has already been converted into a /* .. */ comment.
+          }
+
           if (c==')')
           {
             lvl--;
