@@ -27,7 +27,6 @@ function initMenu(relPath,treeview) {
   const SHOW_DELAY = 250;  // 250ms delay before showing
   const HIDE_DELAY = 500;  // 500ms delay before hiding
   const SLIDE_DELAY = 250; // 250ms slide up/down delay
-  const SLIDE_DELAY_MAIN = 0; // 0ms slide up/down delay for main menu
   const WHEEL_STEP = 30;   // 30 pixel per mouse wheel tick
   const ARROW_STEP = 5;    // 5 pixel when hovering arrow up/down
   const ARROW_POLL_INTERVAL = 20; // 20ms per arrow up/down check
@@ -139,7 +138,7 @@ function initMenu(relPath,treeview) {
           initResizableIfExists();
         });
       } else {
-        slideUp(mainMenu, SLIDE_DELAY_MAIN, () => {
+        slideUp(mainMenu, SLIDE_DELAY, () => {
           mainMenu.style.display = 'none';
           initResizableIfExists();
         });
