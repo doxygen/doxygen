@@ -3337,6 +3337,7 @@ QCString Markdown::Private::processQuotations(std::string_view data,size_t refIn
             // ```                               @enduml
             // ----------------------------------------------------
             pl = "@"+startCmd+"\n" + pl + "@"+endCmd;
+            ii=0;
             addNewLines = false;
           }
           else // we have a @start... command inside the code block
