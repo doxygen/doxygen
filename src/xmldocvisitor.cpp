@@ -1114,6 +1114,8 @@ void XmlDocVisitor::operator()(const DocParamList &pl)
         m_t << "inout";
       }
       m_t << "\"";
+      if (pl.isNullable()) m_t << " nonnull=\"False\"";
+      if (pl.isNonnull())  m_t << " nonnull=\"True\"";
     }
     m_t << ">";
     std::visit(*this,param);
