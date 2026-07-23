@@ -2730,6 +2730,22 @@ QCString linkToText(SrcLangExt lang,const QCString &link,bool isFileName)
   return result;
 }
 
+static const DirDef *resolveDirLink(const QCString &linkRef)
+{
+  const DirDef *dd = Doxygen::dirLinkedMap->find(FileInfo(linkRef.str()).absFilePath()+"/");
+  //printf("resolveDirLink(%s) -> %s\n",qPrint(linkRef),dd?qPrint(dd->name()):"<none>");
+  if (dd==nullptr)
+  {
+    for (const auto &path : Config_getList(STRIP_FROM_PATH))
+    {
+      FileInfo fi(path+linkRef.str());
+      //printf("  trying to strip path '%s' from linkRef '%s' fi='%s'\n",qPrint(path),qPrint(linkRef),qPrint(fi.absFilePath()));
+      dd = Doxygen::dirLinkedMap->find(fi.absFilePath()+"/");
+      if (dd) break;
+    }
+  }
+  return dd;
+}
 
 bool resolveLink(/* in */ const QCString &scName,
     /* in */ const QCString &lr,
@@ -2855,8 +2871,7 @@ bool resolveLink(/* in */ const QCString &scName,
     AUTO_TRACE_EXIT("namespace");
     return TRUE;
   }
-  else if ((dir=Doxygen::dirLinkedMap->find(FileInfo(linkRef.str()).absFilePath()+"/"))
-      && dir->isLinkable()) // TODO: make this location independent like filedefs
+  else if ((dir=resolveDirLink(linkRef)) && dir->isLinkable())
   {
     *resContext=dir;
     AUTO_TRACE_EXIT("directory");
