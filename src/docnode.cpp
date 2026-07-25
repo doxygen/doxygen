@@ -787,8 +787,9 @@ DocRef::DocRef(DocParser *parser,DocNodeVariant *parent,const QCString &target,c
                  (compound->definitionType()==Definition::TypeFile ||
                   compound->definitionType()==Definition::TypePage ? TRUE : FALSE) :
                  FALSE;
+    bool isDir = compound && compound->definitionType()==Definition::TypeDir;
     if (compound && lang==SrcLangExt::Markdown) lang = compound->getLanguage();
-    m_text = linkToText(lang,target,isFile);
+    m_text = linkToText(lang,target,isFile || isDir);
     m_anchor = anchor;
     if (compound && compound->isLinkable()) // ref to compound
     {

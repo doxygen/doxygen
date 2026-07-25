@@ -205,8 +205,8 @@ URLPROTOCOL ("http:"|"https:"|"ftp:"|"ftps:"|"sftp:"|"file:"|"news:"|"irc:"|"irc
 FILEICHAR [a-z_A-Z0-9\x80-\xFF\\:\\\/\-\+=&#@~]
 FILEECHAR [a-z_A-Z0-9\x80-\xFF\-\+=&#@~]
 FILECHARS {FILEICHAR}*{FILEECHAR}+
-HFILEMASK {FILEICHAR}*("."{FILEICHAR}+)+{FILECHARS}*
-VFILEMASK {FILECHARS}("."{FILECHARS})*
+HFILEMASK {FILEICHAR}*("."+{FILEICHAR}+)+{FILECHARS}*
+VFILEMASK {FILECHARS}("."+{FILECHARS})*
 FILEMASK  {VFILEMASK}|{HFILEMASK}
 LINKMASK  [^ \t\n\r\\@<&${}]+("("[^\n)]*")")?({BLANK}*("const"|"volatile"){BLANK}+)?
 VERBATIM  "verbatim"{BLANK}*

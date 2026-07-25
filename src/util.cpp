@@ -2705,7 +2705,7 @@ bool resolveRef(/* in */  const QCString &scName,
   return FALSE;
 }
 
-QCString linkToText(SrcLangExt lang,const QCString &link,bool isFileName)
+QCString linkToText(SrcLangExt lang,const QCString &link,bool ignoreDots)
 {
   //bool optimizeOutputJava = Config_getBool(OPTIMIZE_OUTPUT_JAVA);
   QCString result=link;
@@ -2714,7 +2714,7 @@ QCString linkToText(SrcLangExt lang,const QCString &link,bool isFileName)
     // replace # by ::
     result=substitute(result,"#","::");
     // replace . by ::
-    if (!isFileName && result.find('<')==-1) result=substitute(result,".","::",3);
+    if (!ignoreDots && result.find('<')==-1) result=substitute(result,".","::",3);
     // strip leading :: prefix if present
     if (result.at(0)==':' && result.at(1)==':')
     {

@@ -388,7 +388,7 @@ QCString unescapeCharsInString(const QCString &s);
 
 void addGroupListToTitle(OutputList &ol,const Definition *d);
 
-QCString linkToText(SrcLangExt lang,const QCString &link,bool isFileName);
+QCString linkToText(SrcLangExt lang,const QCString &link,bool ignoreDots);
 
 bool checkExtension(const QCString &fName, const QCString &ext);
 
