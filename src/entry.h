@@ -192,6 +192,7 @@ class Entry
     Specifier    virt;        //!< virtualness of the entry
     QCString     args;        //!< member argument string
     QCString     bitfields;   //!< member's bit fields
+    QCString     attributes;  //!< member's attributes (e.g. [[nodiscard]])
     ArgumentList argList;     //!< member arguments as a list
     ArgumentLists tArgLists;  //!< template argument declarations
     TextStream   program;     //!< the program text

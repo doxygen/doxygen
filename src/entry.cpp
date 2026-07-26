@@ -67,6 +67,7 @@ Entry::Entry(const Entry &e) : section(e.section)
   virt        = e.virt;
   args        = e.args;
   bitfields   = e.bitfields;
+  attributes  = e.attributes;
   argList     = e.argList;
   tArgLists   = e.tArgLists;
   program.str(e.program.str());
@@ -186,6 +187,7 @@ void Entry::reset()
   type.clear();
   args.clear();
   bitfields.clear();
+  attributes.clear();
   exception.clear();
   program.str(std::string());
   includeFile.clear();

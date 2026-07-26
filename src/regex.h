@@ -177,8 +177,14 @@ class Match
       return m;
     }
 
-    /** Returns the number of sub matches available in this match. */
-    size_t size()     const { return m_subMatches.size(); }
+    /** Returns the number of sub matches available in this match.
+     *  Only counts groups that actually matched (trailing unmatched optional groups are excluded). */
+    size_t size() const
+    {
+      size_t s = m_subMatches.size();
+      while (s > 1 && m_subMatches[s-1].position() == std::string::npos) s--;
+      return s;
+    }
 
     /** Returns the n-th SubMatch object. Note that there is always 1 SubMatch object
      *  representing the whole match.

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="deprecated" kind="page">
+    <compoundname>deprecated</compoundname>
+    <title>Deprecated List</title>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+      <para>
+        <variablelist>
+          <varlistentry>
+            <term>Member <ref refid="struct_logger_1ad44f46593cb8c4c87c1178eb326e2f64" kindref="member">Logger::log</ref>  ()</term>
+          </varlistentry>
+          <listitem>
+            <para><anchor id="deprecated_1_deprecated000003"/>Use <ref refid="struct_logger_1a9da0f55730ac4331ade9150bda054649" kindref="member">write()</ref> instead </para>
+          </listitem>
+          <varlistentry>
+            <term>Member <ref refid="struct_logger_1add601a143e898b8ae6ff491d9dc9dd90" kindref="member">Logger::log_old</ref>  ()</term>
+          </varlistentry>
+          <listitem>
+            <para><anchor id="deprecated_1_deprecated000004"/>Use <ref refid="struct_logger_1a9da0f55730ac4331ade9150bda054649" kindref="member">write()</ref> instead  </para>
+          </listitem>
+          <varlistentry>
+            <term>Member <ref refid="struct_logger_1abc41bfb031d896170c7675fa96a6b30c" kindref="member">Logger::Logger</ref>  ()</term>
+          </varlistentry>
+          <listitem>
+            <para><anchor id="deprecated_1_deprecated000002"/>Use <ref refid="struct_logger_1ac545b19b12b8065992980ad726d0ee52" kindref="member">Logger(int level)</ref> instead </para>
+          </listitem>
+          <varlistentry>
+            <term>Struct <ref refid="struct_old_config" kindref="compound">OldConfig</ref>  </term>
+          </varlistentry>
+          <listitem>
+            <para><anchor id="deprecated_1_deprecated000001"/>Use NewConfig instead</para>
+          </listitem>
+        </variablelist>
+      </para>
+    </detaileddescription>
+    <location file="deprecated"/>
+  </compounddef>
+</doxygen>

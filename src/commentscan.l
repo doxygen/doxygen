@@ -3375,6 +3375,7 @@ static bool handleDeprecated(yyscan_t yyscanner,const QCString &, const StringVe
   yyextra->newXRefKind = XRef_Deprecated;
   setOutput(yyscanner,OutputXRef);
   yyextra->xrefKind = XRef_Deprecated;
+  yyextra->current->spec.setDeprDoc(true);
   return FALSE;
 }
 
@@ -4436,19 +4437,19 @@ static void addRequirementId(yyscan_t yyscanner)
 
 //-----------------------------------------------------------------
 
-static void addXRefItem(yyscan_t yyscanner,
+static void addXRefItemToEntry(Entry *current, const QCString &docs,
                         const QCString &listName,const QCString &itemTitle,
-                        const QCString &listTitle,bool append)
+                        const QCString &listTitle,bool append,bool inBody,int lineNr)
 {
-  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   if (listName.isEmpty()) return;
-  //printf("addXRefItem(%s,%s,%s,%d)\n",listName,itemTitle,listTitle,append);
+  //printf("addXRefItem(listName=%s,itemTitle=%s,listTitle=%s,append=%d,inbody=%d)\n",
+  //    qPrint(listName),qPrint(itemTitle),qPrint(listTitle),append,inBody);
 
   std::unique_lock<std::mutex> lock(g_sectionMutex);
 
   RefList *refList = RefListManager::instance().add(listName,listTitle,itemTitle);
   RefItem *item = nullptr;
-  for (auto it = yyextra->current->sli.rbegin(); it != yyextra->current->sli.rend(); ++it)
+  for (auto it = current->sli.rbegin(); it != current->sli.rend(); ++it)
   {
     RefItem *i = *it;
     if (i && i->list()->listName()==listName)
@@ -4461,30 +4462,29 @@ static void addXRefItem(yyscan_t yyscanner,
   if (item && append) // already found item of same type just before this one
   {
     //printf("listName=%s item id = %d existing\n",listName,item->id());
-    item->setText(item->text() + " <p>" + yyextra->outputXRef);
+    item->setText(item->text() + " <p>" + docs);
     //printf("%s: text +=%s\n",listName,qPrint(item->text));
   }
   else // new item
   {
-
     // if we have already an item from the same list type (e.g. a second @todo)
     // in the same Entry (i.e. lii!=0) then we reuse its link anchor.
     item = refList->add();
     //printf("listName=%s item id = %d new yyextra->current=%p\n",listName,item->id(),yyextra->current);
     QCString anchorLabel;
     anchorLabel.sprintf("_%s%06d",listName.data(),item->id());
-    item->setText(yyextra->outputXRef);
+    item->setText(docs);
     item->setAnchor(anchorLabel);
-    yyextra->current->sli.push_back(item);
+    current->sli.push_back(item);
     QCString cmdString;
     cmdString.sprintf("\\ilinebr \\xrefitem %s %d.",qPrint(listName),item->id());
-    if (yyextra->inBody)
+    if (inBody)
     {
-      yyextra->current->inbodyDocs += cmdString;
+      current->inbodyDocs += cmdString;
     }
     else
     {
-      yyextra->current->doc += cmdString;
+      current->doc += cmdString;
     }
 
     {
@@ -4494,31 +4494,37 @@ static void addXRefItem(yyscan_t yyscanner,
       {
         if (!si->ref().isEmpty()) // we are from a tag file
         {
-          si = sm.replace(anchorLabel,listName,yyextra->lineNr,
-              yyextra->sectionTitle,SectionType::Anchor,
-              yyextra->sectionLevel);
-          yyextra->current->anchors.push_back(si);
+          si = sm.replace(anchorLabel,listName,lineNr,"",SectionType::Anchor,0);
+          current->anchors.push_back(si);
         }
         else if (si->lineNr() != -1)
         {
-          warn(listName,yyextra->lineNr,"multiple use of section label '{}', (first occurrence: {}, line {})",
+          warn(listName,lineNr,"multiple use of section label '{}', (first occurrence: {}, line {})",
               anchorLabel,si->fileName(),si->lineNr());
         }
         else
         {
-          warn(listName,yyextra->lineNr,"multiple use of section label '{}', (first occurrence: {})",
+          warn(listName,lineNr,"multiple use of section label '{}', (first occurrence: {})",
               anchorLabel,si->fileName());
         }
       }
       else
       {
-        si = sm.add(anchorLabel,listName,yyextra->lineNr,
-            yyextra->sectionTitle,SectionType::Anchor,
-            yyextra->sectionLevel);
-        yyextra->current->anchors.push_back(si);
+        si = sm.add(anchorLabel,listName,lineNr,"",SectionType::Anchor,0);
+        current->anchors.push_back(si);
       }
     }
   }
+}
+
+//-----------------------------------------------------------------------------
+
+static void addXRefItem(yyscan_t yyscanner,
+                        const QCString &listName,const QCString &itemTitle,
+                        const QCString &listTitle,bool append)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  addXRefItemToEntry(yyextra->current,yyextra->outputXRef,listName,itemTitle,listTitle,append,yyextra->inBody,yyextra->lineNr);
   yyextra->outputXRef.clear();
 }
 
@@ -4721,7 +4727,7 @@ static inline void setOutput(yyscan_t yyscanner,OutputContext ctx)
         addXRefItem(yyscanner,QCString("deprecated"),
             theTranslator->trDeprecated(),
             theTranslator->trDeprecatedList(),
-            xrefAppendToPrev
+            xrefAppendToPrev || yyextra->current->spec.isDeprAttr()
             );
         break;
       case XRef_Item:  // user defined list
@@ -5195,6 +5201,37 @@ void CommentScanner::close(Entry *e,const QCString &fileName,int lineNr,bool fou
 bool CommentScanner::isCommand(const QCString &cmdName)
 {
   return (docCmdMap.find(cmdName.str()) != docCmdMap.end());
+}
+
+void CommentScanner::addDeprecatedDocs(Entry *current,int lineNr)
+{
+  static reg::Ex deprecated_re(R"(deprecated\s*(\(\s*\"([^\"]*)\"\s*\))?)");
+  reg::Match match;
+  std::string attr = current->attributes.str();
+  if (!current->spec.isDeprDoc() && reg::search(attr,match,deprecated_re))
+  {
+    QCString docs;
+    if (match.size()==3) // deprecated attribute with documentation
+    {
+      docs = match[2].str().c_str();
+    }
+    else // deprecated attribute without documentation
+    {
+      current->spec.setDeprAttr(true);
+    }
+    addXRefItemToEntry(current,
+                       docs,
+                       "deprecated",
+                       theTranslator->trDeprecated(),
+                       theTranslator->trDeprecatedList(),
+                       true,  // append
+                       false, // inBody
+                       lineNr);
+  }
+  else
+  {
+    //printf("no match in attributes='%s'\n",qPrint(attr));
+  }
 }
 
 

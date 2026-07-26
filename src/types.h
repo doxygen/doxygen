@@ -684,7 +684,7 @@ class LocalToc
 /* 50 */ TSPEC(Default)           TSPEC(Delete)          TSPEC(NoExcept)          TSPEC(Attribute)    TSPEC(Property)           \
 /* 55 */ TSPEC(Readonly)          TSPEC(Bound)           TSPEC(Constrained)       TSPEC(Transient)    TSPEC(MaybeVoid)          \
 /* 60 */ TSPEC(MaybeDefault)      TSPEC(MaybeAmbiguous)  TSPEC(Published)         TSPEC(ConstEval)    TSPEC(ConstInit)          \
-/* 65 */ TSPEC(NoDiscard)         TSPEC(ThreadLocal)
+/* 65 */ TSPEC(NoDiscard)         TSPEC(ThreadLocal)     TSPEC(DeprDoc)           TSPEC(DeprAttr)
 // clang-format on
 
 /** Wrapper class for a number of boolean properties.

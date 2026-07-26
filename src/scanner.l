@@ -163,6 +163,7 @@ struct scannerYY_state
   QCString *pCopyCurlyString = nullptr;
   QCString *pCopySharpString = nullptr;
   QCString *pCopyRawString = nullptr;
+  QCString *pCopyC11AttributeString = nullptr;
   TextStream *pCopyCurlyGString = nullptr;
   TextStream *pCopyRoundGString = nullptr;
   TextStream *pCopySquareGString = nullptr;
@@ -375,7 +376,6 @@ NONLopt [^\n]*
 %x      SkipPHPString
 %x      SkipInits
 %x      SkipC11Inits
-%x      SkipC11Attribute
 %x      SkipCPP
 %x      SkipComment
 %x      SkipCxxComment
@@ -440,6 +440,7 @@ NONLopt [^\n]*
 %x      CopyRound
 %x      CopySharp
 %x      CopyCurly
+%x      CopyC11Attribute
 %x      CopyComment
 %x      GCopyRound
 %x      GCopySquare
@@ -3620,6 +3621,33 @@ NONLopt [^\n]*
                                           *yyextra->pCopyQuotedGString << *yytext;
                                         }
 
+  /* generic C++ attribute copy rules */
+<CopyC11Attribute>\"                    {
+                                          *yyextra->pCopyC11AttributeString += *yytext;
+                                          yyextra->pCopyQuotedString=yyextra->pCopyC11AttributeString;
+                                          yyextra->lastStringContext=YY_START;
+                                          BEGIN(CopyString);
+                                        }
+<CopyC11Attribute>\n                    {
+                                          lineCount(yyscanner);
+                                          *yyextra->pCopyC11AttributeString += *yytext;
+                                        }
+<CopyC11Attribute>{ID}                  {
+                                          if (qstrcmp(yytext,"nodiscard")==0)
+                                          {
+                                            yyextra->current->spec.setNoDiscard(true);
+                                          }
+                                          *yyextra->pCopyC11AttributeString += yytext;
+                                        }
+<CopyC11Attribute>.                     {
+                                          *yyextra->pCopyC11AttributeString += *yytext;
+                                        }
+<CopyC11Attribute>"]]"                  { /* end of the attribute list */
+                                          CommentScanner::addDeprecatedDocs(yyextra->current.get(), yyextra->yyLineNr);
+                                          BEGIN(yyextra->lastC11AttributeContext);
+                                        }
+
+
   /* generic round bracket list copy rules */
 <CopyRound>\"                           {
                                           *yyextra->pCopyRoundString += *yytext;
@@ -6050,9 +6078,6 @@ NONLopt [^\n]*
                                             BEGIN(SkipInits);
                                           }
                                         }
-<SkipC11Attribute>"]]"                 {
-                                          BEGIN(yyextra->lastC11AttributeContext);
-                                        }
 <SkipInits>"{"                          { // C++11 style initializer
                                           unput('{');
                                           BEGIN( SFunction );
@@ -6148,7 +6173,7 @@ NONLopt [^\n]*
                                           //addToBody(yytext);
                                           BEGIN( SkipCurlyCpp );
                                         }
-<SkipCurly,SkipC11Inits,SkipInits,SkipC11Attribute,ReadExpressionBody>\n   {
+<SkipCurly,SkipC11Inits,SkipInits,ReadExpressionBody>\n   {
                                           lineCount(yyscanner);
                                           //addToBody(yytext);
                                         }
@@ -6186,22 +6211,22 @@ NONLopt [^\n]*
                                           //addToBody(yytext);
                                           lineCount(yyscanner);
                                         }
-<SkipInits,SkipC11Inits,SkipCurly,SkipCurlyCpp,SkipC11Attribute,ReadExpressionBody>{CCS}    {
+<SkipInits,SkipC11Inits,SkipCurly,SkipCurlyCpp,CopyC11Attribute,ReadExpressionBody>{CCS}    {
                                           //addToBody(yytext);
                                           yyextra->lastCContext = YY_START;
                                           BEGIN(SkipComment);
                                         }
-<SkipInits,SkipC11Inits,SkipCurly,SkipCurlyCpp,SkipC11Attribute,ReadExpressionBody>{CPPC}  {
+<SkipInits,SkipC11Inits,SkipCurly,SkipCurlyCpp,CopyC11Attribute,ReadExpressionBody>{CPPC}  {
                                           //addToBody(yytext);
                                           yyextra->lastCContext = YY_START;
                                           BEGIN(SkipCxxComment);
                                         }
-<SkipInits,SkipC11Inits,SkipC11Attribute>"("             {
+<SkipInits,SkipC11Inits>"("             {
                                           yyextra->roundCount=0;
                                           yyextra->lastSkipRoundContext=YY_START;
                                           BEGIN(SkipRound);
                                         }
-<SkipInits,SkipC11Inits,SkipC11Attribute>\"             {
+<SkipInits,SkipC11Inits>\"              {
                                           yyextra->lastStringContext=YY_START;
                                           BEGIN( SkipString );
                                         }
@@ -6238,13 +6263,7 @@ NONLopt [^\n]*
                                             BEGIN(SkipPHPString);
                                           }
                                         }
-<SkipC11Attribute>{ID}                  {
-                                          if (QCString(yytext)=="nodiscard")
-                                          {
-                                            yyextra->current->spec.setNoDiscard(true);
-                                          }
-                                        }
-<SkipInits,SkipC11Inits,SkipCurly,SkipCurlyCpp,SkipC11Attribute,ReadExpressionBody>.       { }
+<SkipInits,SkipC11Inits,SkipCurly,SkipCurlyCpp,ReadExpressionBody>.       { }
 <SkipString,SkipPHPString>\\.           { }
 <SkipString>\"                          {
                                           BEGIN( yyextra->lastStringContext );
@@ -7155,7 +7174,7 @@ NONLopt [^\n]*
                                         }
 <Comment>.                              { yyextra->current->program << *yytext ; }
 
-<FindMembers,FindFields,MemberSpec,FuncQual,SkipCurly,Operator,ClassVar,SkipInits,SkipC11Inits,SkipC11Attribute,ReadExpressionBody,Bases,OldStyleArgs>({CPPC}{B}*)?{CCS}"!" {
+<FindMembers,FindFields,MemberSpec,FuncQual,SkipCurly,Operator,ClassVar,SkipInits,SkipC11Inits,ReadExpressionBody,Bases,OldStyleArgs>({CPPC}{B}*)?{CCS}"!" {
                                           //printf("Start doc block at %d\n",yyextra->yyLineNr);
                                           if (!yyextra->current->doc.isEmpty())
                                           {
@@ -7937,7 +7956,8 @@ NONLopt [^\n]*
                                           if (!yyextra->insideCpp) REJECT;
                                           if (YY_START == CopyGString || YY_START == CopyGString) REJECT;
                                           yyextra->lastC11AttributeContext = YY_START;
-                                          BEGIN( SkipC11Attribute );
+                                          yyextra->pCopyC11AttributeString = &yyextra->current->attributes;
+                                          BEGIN( CopyC11Attribute );
                                         }
 
 <*>\n                                   { lineCount(yyscanner); }
