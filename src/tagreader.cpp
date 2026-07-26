@@ -399,6 +399,7 @@ class TagFileParser
       QCString protStr   = XMLHandlers::value(attrib,"protection");
       QCString virtStr   = XMLHandlers::value(attrib,"virtualness");
       QCString staticStr = XMLHandlers::value(attrib,"static");
+      QCString typeStr   = XMLHandlers::value(attrib,"type");
       m_curMember.lineNr = m_locator->lineNr();
       if (protStr=="protected")
       {
@@ -419,6 +420,10 @@ class TagFileParser
       if (staticStr=="yes")
       {
         m_curMember.isStatic = TRUE;
+      }
+      if (!typeStr.isEmpty())
+      {
+        m_curMember.type = typeStr;
       }
       m_stateStack.push(m_state);
       m_state = InMember;
