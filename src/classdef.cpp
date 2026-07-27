@@ -3728,6 +3728,20 @@ void ClassDefImpl::mergeMembersFromBaseClasses(bool mergeVirtualBaseClass)
   bool inlineInheritedMembers = Config_getBool(INLINE_INHERITED_MEMB);
   bool extractPrivate         = Config_getBool(EXTRACT_PRIVATE);
 
+  auto insertMember = [&](const ClassDef *cd,MemberDef *md,Protection prot)
+  {
+    if (inlineInheritedMembers && !isStandardFunc(md))
+    {
+      //printf("      %s::insertMember(%s)\n",qPrint(name()),qPrint(srcMd->name()));
+      internalInsertMember(md,prot,FALSE);
+      if (!cd->isLinkable()) // if the base is not linkable then move the member to this class
+      {
+        MemberDefMutable *mdm = toMemberDefMutable(md);
+        mdm->moveTo(this);
+      }
+    }
+  };
+
   //printf("  mergeMembers for %s mergeVirtualBaseClass=%d\n",qPrint(name()),mergeVirtualBaseClass);
   // the merge the base members with this class' members
   for (const auto &bcd : baseClasses())
@@ -3849,14 +3863,7 @@ void ClassDefImpl::mergeMembersFromBaseClasses(bool mergeVirtualBaseClass)
                 prot = bcd.prot;
               }
 
-              if (inlineInheritedMembers)
-              {
-                if (!isStandardFunc(srcMd))
-                {
-                  //printf("      %s::insertMember(%s)\n",qPrint(name()),qPrint(srcMd->name()));
-                  internalInsertMember(srcMd,prot,FALSE);
-                }
-              }
+              insertMember(bClass,srcMd,prot);
 
               Specifier virt=srcMi->virt();
               if (virt==Specifier::Normal && bcd.virt!=Specifier::Normal) virt=bcd.virt;
@@ -3927,15 +3934,8 @@ void ClassDefImpl::mergeMembersFromBaseClasses(bool mergeVirtualBaseClass)
 
               if (prot!=Protection::Private || extractPrivate)
               {
+                insertMember(bClass,mi->memberDef(),prot);
 
-                if (inlineInheritedMembers)
-                {
-                  if (!isStandardFunc(mi->memberDef()))
-                  {
-                    //printf("      %s::insertMember '%s'\n",qPrint(name()),qPrint(mi->memberDef()->name()));
-                    internalInsertMember(mi->memberDef(),prot,FALSE);
-                  }
-                }
                 //printf("Adding!\n");
                 std::unique_ptr<MemberInfo> newMi = std::make_unique<MemberInfo>(mi->memberDef(),prot,virt,TRUE,virtualBaseClass);
                 newMi->setScopePath(bClass->name()+sep+mi->scopePath());
