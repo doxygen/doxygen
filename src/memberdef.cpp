@@ -331,6 +331,7 @@ class MemberDefImpl final : public DefinitionMixin<MemberDefMutable>
     void setInbodyDocumentation(const QCString &d,const QCString &inbodyFile,int inbodyLine) override;
     void setHidden(bool b) override;
     void setDocTransferDone() override;
+    void setExplicitInherited(bool b) override;
     void setRequiresClause(const QCString &req) override;
     void incrementFlowKeyWordCount() override;
     void writeDeclaration(OutputList &ol,
@@ -482,6 +483,7 @@ class MemberDefImpl final : public DefinitionMixin<MemberDefMutable>
 
     // to store the output file base from tag files
     QCString m_explicitOutputFileBase;
+    bool m_explicitInherited = false;
 
     // to store extra qualifiers
     StringVector m_qualifiers;
@@ -1900,6 +1902,11 @@ void MemberDefImpl::setDocTransferDone()
   m_docTransferDone = true;
 }
 
+void MemberDefImpl::setExplicitInherited(bool b)
+{
+  m_explicitInherited = b;
+}
+
 void MemberDefImpl::setInbodyDocumentation(const QCString &d,const QCString &inbodyFile,int inbodyLine)
 {
   DefinitionMixin::setInbodyDocumentation(d,inbodyFile,inbodyLine);
@@ -2766,7 +2773,10 @@ StringVector MemberDefImpl::getLabels(const Definition *container) const
 {
   StringVector sl;
   bool inlineInfo = Config_getBool(INLINE_INFO);
-
+  bool inherited = getClassDef() &&
+                   (getClassDef()!=container || m_explicitInherited) &&
+                   container->definitionType()==TypeClass &&
+                   !isRelated();
   Specifier lvirt=virtualness();
   if ((!isObjCMethod() || isOptional() || isRequired()) &&
       (protection()!=Protection::Public || lvirt!=Specifier::Normal ||
@@ -2775,7 +2785,7 @@ StringVector MemberDefImpl::getLabels(const Definition *container) const
        isSignal() || isSlot() ||
        isStatic() || isExternal() ||
        isExported() ||
-       (getClassDef() && getClassDef()!=container && container->definitionType()==TypeClass) ||
+       inherited ||
        TypeSpecifier(m_memSpec).setInline(false)!=TypeSpecifier()
       )
      )
@@ -2872,11 +2882,7 @@ StringVector MemberDefImpl::getLabels(const Definition *container) const
           sl.emplace_back("implementation");
         }
       }
-      if (getClassDef() &&
-          container->definitionType()==TypeClass &&
-          getClassDef()!=container &&
-          !isRelated()
-         )
+      if (inherited)
       {
         sl.emplace_back("inherited");
       }

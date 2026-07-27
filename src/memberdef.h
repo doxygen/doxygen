@@ -340,6 +340,7 @@ class MemberDefMutable : public DefinitionMutable, public MemberDef
     virtual void incrementFlowKeyWordCount() = 0;
     virtual void setEnumBaseType(const QCString &type) = 0;
     virtual void setDocTransferDone() = 0;
+    virtual void setExplicitInherited(bool b) = 0;
 
     // relation to other members
     virtual void setReimplements(MemberDef *md) = 0;
@@ -415,6 +416,7 @@ class MemberDefMutable : public DefinitionMutable, public MemberDef
     virtual void addQualifiers(const StringVector &qualifiers) = 0;
 
     virtual void setModuleDef(ModuleDef *mod) = 0;
+
 
     // macro redefinition
     virtual void setRedefineCount(int count) = 0;

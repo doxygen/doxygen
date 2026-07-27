@@ -3738,6 +3738,7 @@ void ClassDefImpl::mergeMembersFromBaseClasses(bool mergeVirtualBaseClass)
       {
         MemberDefMutable *mdm = toMemberDefMutable(md);
         mdm->moveTo(this);
+        mdm->setExplicitInherited(true);
       }
     }
   };
