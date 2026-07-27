@@ -1361,6 +1361,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           BEGIN( MemberCall );
                                         }
 <MemberCall>{SCOPETNAME}/{BN}*"("       {
+                                          DBG_CTX((stderr,"MemberCall: '%s'\n",qPrint(yytext)));
                                           if (yyextra->theCallContext.getScope().globalDef())
                                           {
                                             if (!generateClassMemberLink(yyscanner,*yyextra->code,yyextra->theCallContext.getScope().globalDef(),yytext))
@@ -3051,7 +3052,7 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
 
   if (sym && sym->isLinkable()) // is it a linkable class
   {
-    DBG_CTX((stderr,"is linkable class %s\n",qPrint(scName)));
+    DBG_CTX((stderr,"%s is linkable type=%d\n",qPrint(sym->name()),int(sym->definitionType())));
     if (yyextra->exampleBlock)
     {
       std::lock_guard<std::mutex> lock(Doxygen::addExampleMutex);
@@ -3080,7 +3081,6 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
     }
     writeMultiLineCodeLink(yyscanner,ol,sym,scName);
     addToSearchIndex(yyscanner,scopeName);
-    yyextra->theCallContext.setScope(ScopedTypeVariant(sym));
     if (sym && sym->definitionType()==Definition::TypeMember)
     {
       const MemberDef *md = toMemberDef(sym);
@@ -3092,6 +3092,11 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
       {
         addDocCrossReference(yyextra->currentMemberDef,md);
       }
+      setCallContextForVar(yyscanner,scName);
+    }
+    else
+    {
+      yyextra->theCallContext.setScope(ScopedTypeVariant(sym));
     }
   }
   else // not a class, maybe a global member
