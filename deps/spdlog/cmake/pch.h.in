@@ -10,7 +10,6 @@
 
 // details/file_helper-inl.h
 // details/os-inl.h
-// fmt/bundled/core.h
 // fmt/bundled/posix.h
 // logger-inl.h
 // sinks/daily_file_sink.h
@@ -23,7 +22,6 @@
 
 // details/os-inl.h
 // details/pattern_formatter-inl.h
-// fmt/bundled/core.h
 // fmt/bundled/format-inl.h
 #include <cstring>
 
@@ -73,7 +71,6 @@
 // details/registry.h
 // details/tcp_client-windows.h
 // details/tcp_client.h
-// fmt/bundled/core.h
 // sinks/android_sink.h
 // sinks/ansicolor_sink.h
 // sinks/basic_file_sink.h
@@ -150,7 +147,6 @@
 
 // common.h
 // details/fmt_helper.h
-// fmt/bundled/core.h
 // fmt/bundled/ranges.h
 #include <type_traits>
 

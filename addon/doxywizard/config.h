@@ -26,7 +26,7 @@ bool parseConfig(
       const QHash<QString,Input *> &options
     );
 
-void writeStringValue(QTextStream &t,TextCodecAdapter *codec,const QString &s);
+void writeStringValue(QTextStream &t,TextCodecAdapter *codec,const QString &s,bool convert);
 
 // directly copied from ../../src/config.h to be consistent
 enum

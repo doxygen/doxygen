@@ -19,13 +19,15 @@
 #include "message.h"
 #include "util.h"
 #include "dir.h"
+#include "indexlist.h"
+#include "doxygen.h"
 
 
 static const int maxCmdLine = 40960;
 
 void writeDiaGraphFromFile(const QCString &inFile,const QCString &outDir,
                            const QCString &outFile,DiaOutputFormat format,
-                           const QCString &srcFile,int srcLine)
+                           const QCString &srcFile,int srcLine,bool toIndex)
 {
   QCString absOutFile = outDir;
   absOutFile+=Portable::pathSeparator();
@@ -40,12 +42,12 @@ void writeDiaGraphFromFile(const QCString &inFile,const QCString &outDir,
   QCString diaArgs;
   QCString extension;
   diaArgs+="-n ";
-  if (format==DIA_BITMAP)
+  if (format==DiaOutputFormat::BITMAP)
   {
     diaArgs+="-t png-libart";
     extension=".png";
   }
-  else if (format==DIA_EPS)
+  else if (format==DiaOutputFormat::EPS)
   {
     diaArgs+="-t eps";
     extension=".eps";
@@ -62,11 +64,11 @@ void writeDiaGraphFromFile(const QCString &inFile,const QCString &outDir,
   //printf("*** running: %s %s outDir:%s %s\n",qPrint(diaExe),qPrint(diaArgs),outDir,outFile);
   if (Portable::system(diaExe,diaArgs,FALSE)!=0)
   {
-    err_full(srcFile,srcLine,"Problems running %s. Check your installation or look typos in you dia file %s",
-        qPrint(diaExe),qPrint(inFile));
+    err_full(srcFile,srcLine,"Problems running {}. Check your installation or look typos in you dia file {}",
+        diaExe,inFile);
     goto error;
   }
-  if ( (format==DIA_EPS) && (Config_getBool(USE_PDFLATEX)) )
+  if ( (format==DiaOutputFormat::EPS) && (Config_getBool(USE_PDFLATEX)) )
   {
     QCString epstopdfArgs(maxCmdLine, QCString::ExplicitSize);
     epstopdfArgs.sprintf("\"%s.eps\" --outfile=\"%s.pdf\"",
@@ -75,7 +77,12 @@ void writeDiaGraphFromFile(const QCString &inFile,const QCString &outDir,
     {
       err("Problems running epstopdf. Check your TeX installation!\n");
     }
+    else
+    {
+      Dir().remove(outFile.str()+".eps");
+    }
   }
+  if (toIndex) Doxygen::indexList->addImageFile(outFile+extension);
 
 error:
   Dir::setCurrent(oldDir);

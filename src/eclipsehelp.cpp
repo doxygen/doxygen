@@ -58,7 +58,6 @@ struct EclipseHelp::Private
 
 EclipseHelp::EclipseHelp() : p(std::make_unique<Private>()) {}
 EclipseHelp::~EclipseHelp() = default;
-EclipseHelp::EclipseHelp(EclipseHelp&&) = default;
 
 /*!
  * \brief Initialize the Eclipse generator
@@ -73,7 +72,7 @@ void EclipseHelp::initialize()
   p->tocstream = Portable::openOutputStream(name);
   if (!p->tocstream.is_open())
   {
-    term("Could not open file %s for writing\n", qPrint(name));
+    term("Could not open file {} for writing\n", name);
   }
 
   // -- write the opening tag
@@ -158,6 +157,7 @@ void EclipseHelp::decContentsDepth()
  * @param separateIndex not used.
  * @param addToNavIndex not used.
  * @param def not used.
+ * @param nameAsHtml name parameter in HTML format
  */
 void EclipseHelp::addContentsItem(
     bool /* isDir */,
@@ -167,7 +167,8 @@ void EclipseHelp::addContentsItem(
     const QCString &anchor,
     bool /* separateIndex */,
     bool /* addToNavIndex */,
-    const Definition * /*def*/)
+    const Definition * /*def*/,
+    const QCString & /* nameAsHtml */)
 {
   // -- write the topic tag
   p->closedTag();

@@ -19,15 +19,15 @@
 #include "dotgraph.h"
 
 /** Representation of a legend explaining the meaning of boxes, arrows, and colors */
-class DotLegendGraph : public DotGraph
+class DotLegendGraph final : public DotGraph
 {
   public:
     void writeGraph(const QCString &path);
 
   private:
-    virtual QCString getBaseName() const;
-    virtual void computeTheGraph();
-    virtual QCString getMapLabel() const;
+    QCString getBaseName() const override;
+    void computeTheGraph() override;
+    QCString getMapLabel() const override;
 
 };
 

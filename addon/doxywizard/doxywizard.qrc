@@ -1,11 +1,12 @@
 <!DOCTYPE RCC><RCC version="1.0">
 <qresource prefix="/">
   <file alias="config.xml">../../src/config.xml</file>
-  <file>images/add.png</file>
-  <file>images/del.png</file>
-  <file>images/file.png</file>
-  <file>images/folder.png</file>
-  <file>images/refresh.png</file>
-  <file>images/tunecolor.png</file>
+  <file>images/add.svg</file>
+  <file>images/del.svg</file>
+  <file>images/file.svg</file>
+  <file>images/folder.svg</file>
+  <file>images/refresh.svg</file>
+  <file>images/tunecolor_light.png</file>
+  <file>images/tunecolor_dark.png</file>
 </qresource>
 </RCC>

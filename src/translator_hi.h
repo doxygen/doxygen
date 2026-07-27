@@ -183,6 +183,11 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
     QCString latexLanguageSupportCommand() override
     { return ""; }
 
+    QCString latexCommandName() override
+    {
+      return p_latexCommandName("xelatex");
+    }
+
     QCString trISOLang() override
     { return "hi-IN"; }
 
@@ -419,8 +424,8 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
     // index titles (the project name is prepended for these)
 
     /*! This is used in HTML as the title of index.html. */
-    QCString trDocumentation() override
-    { return "दस्तावेज़ीकरण"; }
+    QCString trDocumentation(const QCString &projName) override
+    { return (!projName.isEmpty()?projName + " " : "") + "दस्तावेज़ीकरण"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * index of all groups.
@@ -719,9 +724,8 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
     QCString trWriteList(int numEntries) override
     {
       QCString result;
-      int i;
       // the inherits list contain `numEntries' classes
-      for (i = 0; i < numEntries; ++i)
+      for (int i = 0; i < numEntries; ++i)
       {
         // use generateMarker to generate placeholders for the class links!
         result += generateMarker(i); // generate marker for entry i in the list
@@ -1434,7 +1438,7 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
 
     /*! This is used in HTML as the title of page with source code for file filename
      */
-    QCString trSourceFile(QCString& filename) override
+    QCString trSourceFile(const QCString& filename) override
     { return filename + " स्त्रोत फ़ाइल"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1805,10 +1809,10 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
       QCString text  = full? months_full[month-1] : months_short[month-1];
       return text;
     }
-    QCString trDayPeriod(int period) override
+    QCString trDayPeriod(bool period) override
     {
       static const char *dayPeriod[] = { "am", "pm" };
-      return dayPeriod[period];
+      return dayPeriod[period?1:0];
     }
 
 //////////////////////////////////////////////////////////////////////////

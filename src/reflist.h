@@ -22,6 +22,7 @@
 
 #include "qcstring.h"
 #include "linkedmap.h"
+#include "construct.h"
 
 class Definition;
 class RefList;
@@ -114,7 +115,7 @@ class RefList
     std::unordered_map< int, RefItem* > m_lookup;
 };
 
-class RefListManager : public LinkedMap<RefList>
+class RefListManager final : public LinkedMap<RefList>
 {
   public:
     static RefListManager &instance()
@@ -124,9 +125,9 @@ class RefListManager : public LinkedMap<RefList>
     }
 
   private:
-    RefListManager() {}
-    RefListManager(const RefListManager &other) = delete;
-    RefListManager &operator=(const RefListManager &other) = delete;
+    RefListManager() = default;
+   ~RefListManager() = default;
+    NON_COPYABLE(RefListManager)
 };
 
 using RefItemVector = std::vector<RefItem*>;

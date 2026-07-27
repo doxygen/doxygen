@@ -21,22 +21,35 @@
 #include "version.h"
 #include "configdoc.h"
 #include "settings.h"
+#include "doxywizard.h"
+#include "configswitcher.h"
 
-#include <QTreeWidget>
-#include <QStackedWidget>
-#include <QTextBrowser>
-#include <QSplitter>
-#include <QGridLayout>
-#include <QPushButton>
-#include <QScrollArea>
+#include <QDebug>
 #include <QFile>
-#include <QMessageBox>
-#include <QSettings>
-#include <QTextStream>
 #include <QFileInfo>
+#include <QFrame>
+#include <QGridLayout>
+#include <QHeaderView>
+#include <QLabel>
+#include <QLineEdit>
+#include <QMessageBox>
+#include <QPushButton>
 #include <QRegularExpression>
+#include <QScrollArea>
+#include <QScrollBar>
+#include <QSettings>
+#include <QSplitter>
+#include <QTextStream>
+#include <QTimer>
+#include <QTreeWidget>
+#include <QVBoxLayout>
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#include <QStringConverter>
+#endif
 
 #define SA(x) QString::fromLatin1(x)
+#define SMALL_FONT_START SA("<span style=\"font-size: 12px\">")
+#define SMALL_FONT_END   SA("</span")
 
 
 static QString convertToComment(const QString &s)
@@ -53,6 +66,17 @@ static QString convertToComment(const QString &s)
   }
 }
 
+static QString displayDocs(const QString &id,const QString &docs)
+{
+  QString display = SMALL_FONT_START + SA("<b>") + id + SA("</b>");
+  if (!docs.isEmpty())
+  {
+    display += SA(" &mdash; ") + docs;
+  }
+  display += SMALL_FONT_END;
+  return display;
+}
+
 void Expert::setHeader(const char *header)
 {
   m_header = SA(header);
@@ -63,61 +87,298 @@ void Expert::add(const char *name,const char *docs)
   Input *opt = m_options[SA(name)];
   if (opt)
   {
-    opt->setTemplateDocs(SA(docs));
+    opt->setTemplateDocs(QString::fromStdString(docs));
   }
 }
 
 //------------------------------------------------------------------------------------
 
-Expert::Expert()
+static void translateEnumDescription(QDomElement &valueElem,const QDomElement &translationRoot)
 {
-  m_treeWidget = new QTreeWidget;
-  m_treeWidget->setColumnCount(1);
-  m_topicStack = new QStackedWidget;
-  m_inShowHelp = false;
-
-  QFile file(SA(":/config.xml"));
-  QString err;
-  int errLine,errCol;
-  QDomDocument configXml;
-  if (file.open(QIODevice::ReadOnly))
+  QDomElement trDocsVal = translationRoot.firstChildElement();
+  while (!trDocsVal.isNull())
   {
-    if (!configXml.setContent(&file,false,&err,&errLine,&errCol))
+    if (trDocsVal.tagName()==SA("value") && trDocsVal.attribute(SA("name"))==valueElem.attribute(SA("name")) && trDocsVal.hasAttribute(SA("desc")))
     {
-      QString msg = tr("Error parsing internal config.xml at line %1 column %2.\n%3").
-                  arg(errLine).arg(errCol).arg(err);
-      QMessageBox::warning(this, tr("Error"), msg);
-      exit(1);
+      QString trDesc = trDocsVal.attribute(SA("desc"));
+      valueElem.setAttribute(SA("desc"),trDesc);
+    }
+    trDocsVal = trDocsVal.nextSiblingElement();
+  }
+}
+
+static bool getFilter(QDomElement docsVal, const QString &mode)
+{
+  QString attr = docsVal.attribute(SA("filter"));
+  return attr.isEmpty() || attr.contains(mode);
+}
+
+static void translateOption(QDomElement &configRoot,const QDomElement &translationRoot, const QString &mode)
+{
+  QDomElement docsVal   = configRoot.firstChildElement();
+  QDomElement trDocsVal = translationRoot.firstChildElement();
+  while (!docsVal.isNull() && !trDocsVal.isNull())
+  {
+    if (docsVal.tagName()==SA("docs") && getFilter(docsVal, mode))
+    {
+      if (trDocsVal.tagName()==SA("docs") && getFilter(trDocsVal, mode))
+      {
+        QDomNode oldText = docsVal.firstChild();
+        oldText.setNodeValue (trDocsVal.text());
+        docsVal = docsVal.nextSiblingElement();
+        trDocsVal = trDocsVal.nextSiblingElement();
+      }
+      else
+      {
+        trDocsVal = trDocsVal.nextSiblingElement();
+      }
+    }
+    else
+    {
+      docsVal = docsVal.nextSiblingElement();
     }
   }
-  m_rootElement = configXml.documentElement();
+  docsVal = configRoot.firstChildElement();
+  // Just handle value tags
+  while (!docsVal.isNull())
+  {
+    if (docsVal.tagName()==SA("value") && docsVal.hasAttribute(SA("desc")))
+    {
+      //qDebug() << "attribute" << docsVal.attribute(SA("desc"));
+      translateEnumDescription(docsVal,translationRoot);
+    }
+    docsVal = docsVal.nextSiblingElement();
+  }
+}
 
-  createTopics(m_rootElement);
-  m_helper = new QTextBrowser;
-  m_helper->setReadOnly(true);
-  m_helper->setOpenExternalLinks(true);
-  m_splitter = new QSplitter(Qt::Vertical);
+static void translateTopics(QDomElement &configRoot,const QDomElement &translationRoot, const QString &mode)
+{
+  struct GroupInfo
+  {
+    QDomElement elem;
+    QMap<QString, QDomElement> options;
+  };
+  QMap<QString,GroupInfo> groupMap;
+
+  // collect the elements in a nested map
+  QDomElement groupElem = configRoot.firstChildElement();
+  while (!groupElem.isNull())
+  {
+    // store group itself
+    if (groupElem.tagName()==SA("group"))
+    {
+      QString name = groupElem.attribute(SA("name"));
+      groupMap[name].elem = groupElem;
+      // store options inside the group
+      QDomElement optionElem = groupElem.firstChildElement();
+      while (!optionElem.isNull())
+      {
+        if (optionElem.tagName()==SA("option"))
+        {
+          QString id = optionElem.attribute(SA("id"));
+          groupMap[name].options[id] = optionElem;
+        }
+        optionElem = optionElem.nextSiblingElement();
+      }
+    }
+    groupElem = groupElem.nextSiblingElement();
+  }
+
+  groupElem = translationRoot.firstChildElement();
+  while (!groupElem.isNull())
+  {
+    if (groupElem.tagName()==SA("group"))
+    {
+      // translate the group docs
+      QString name   = groupElem.attribute(SA("name"));
+      if (groupMap.contains(name))
+      {
+        QString trDocs = groupElem.attribute(SA("docs"));
+        QString trName = groupElem.attribute(SA("trname"));
+        groupMap[name].elem.setAttribute(SA("docs"),trDocs);
+        groupMap[name].elem.setAttribute(SA("trname"),trName);
+      }
+      else
+      {
+        qDebug() << "group does not have translation" << name;
+      }
+      // translate the option docs
+      QDomElement optionElem = groupElem.firstChildElement();
+      while (!optionElem.isNull())
+      {
+        if (optionElem.tagName()==SA("option"))
+        {
+          QString id = optionElem.attribute(SA("id"));
+          if (groupMap[name].options.contains(id))
+          {
+            translateOption(groupMap[name].options[id],optionElem,mode);
+          }
+          else
+          {
+            qDebug() << "group " << name << "does not have option" << id;
+          }
+        }
+        optionElem = optionElem.nextSiblingElement();
+      }
+    }
+    groupElem = groupElem.nextSiblingElement();
+  }
+}
+
+static bool xmlSetContent(QDomDocument &doc, QIODevice *dev, QString *err, int *errLine, int *errCol)
+{
+#if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
+  auto result = doc.setContent(dev, QDomDocument::ParseOption::Default);
+  if (!result)
+  {
+    *err     = result.errorMessage;
+    *errLine = static_cast<int>(result.errorLine);
+    *errCol  = static_cast<int>(result.errorColumn);
+  }
+  return bool(result);
+#else
+  return doc.setContent(dev, false, err, errLine, errCol);
+#endif
+}
+
+Expert::Expert()
+{
+  // --- Search bar (top) ---
+  m_searchBox = new QLineEdit;
+  m_searchBox->setPlaceholderText(tr("Search settings..."));
+  m_searchBox->setClearButtonEnabled(true);
+
+  // --- Left: tree widget for group navigation ---
+  m_treeWidget = new QTreeWidget;
+  m_treeWidget->setColumnCount(1);
+  m_treeWidget->setHeaderLabel(tr("Topics"));
+  m_treeWidget->setRootIsDecorated(true);
+  m_treeWidget->header()->setSectionResizeMode(QHeaderView::Fixed);
+
+  // --- Right: scroll area containing all group sections ---
+  m_rightContainer = new QWidget;
+  m_rightLayout = new QVBoxLayout(m_rightContainer);
+  m_rightLayout->setContentsMargins(0, 0, 0, 0);
+  m_rightLayout->setSpacing(0);
+  m_rightLayout->setAlignment(Qt::AlignTop);
+
+  m_scrollArea = new QScrollArea;
+  m_scrollArea->setWidgetResizable(true);
+  m_scrollArea->setWidget(m_rightContainer);
+  m_scrollArea->setFrameShape(QFrame::NoFrame);
+
+  // --- Navigation bar (Prev / Next) below the scroll area ---
+  m_prevButton = new QPushButton(DoxygenWizard::msgPreviousButton());
+  m_nextButton = new QPushButton(DoxygenWizard::msgNextButton());
+  m_prevButton->setEnabled(false);
+  m_nextButton->setEnabled(false);
+
+  m_navBar = new QWidget;
+  QHBoxLayout *navLayout = new QHBoxLayout(m_navBar);
+  navLayout->setContentsMargins(4, 4, 4, 4);
+  navLayout->addWidget(m_prevButton);
+  navLayout->addStretch();
+  navLayout->addWidget(m_nextButton);
+
+  // Right panel = scroll area + nav bar
+  QWidget *rightPanel = new QWidget;
+  QVBoxLayout *rightPanelLayout = new QVBoxLayout(rightPanel);
+  rightPanelLayout->setContentsMargins(0, 0, 0, 0);
+  rightPanelLayout->setSpacing(0);
+  rightPanelLayout->addWidget(m_scrollArea);
+  rightPanelLayout->addWidget(m_navBar);
+
+  // --- Horizontal splitter (left: tree, right: options) ---
+  m_splitter = new QSplitter(Qt::Horizontal);
   m_splitter->addWidget(m_treeWidget);
-  m_splitter->addWidget(m_helper);
+  m_splitter->addWidget(rightPanel);
+  m_splitter->setStretchFactor(0, 0);
+  m_splitter->setStretchFactor(1, 1);
+  m_splitter->setSizes({200, 600});
 
-  QWidget *rightSide = new QWidget;
-  QGridLayout *grid = new QGridLayout(rightSide);
-  m_prev = new QPushButton(tr("Previous"));
-  m_prev->setEnabled(false);
-  m_next = new QPushButton(tr("Next"));
-  grid->addWidget(m_topicStack,0,0,1,2);
-  grid->addWidget(m_prev,1,0,Qt::AlignLeft);
-  grid->addWidget(m_next,1,1,Qt::AlignRight);
-  grid->setColumnStretch(0,1);
-  grid->setRowStretch(0,1);
+  QVBoxLayout *mainLayout = new QVBoxLayout(this);
+  mainLayout->setContentsMargins(4, 4, 4, 4);
+  mainLayout->setSpacing(4);
+  mainLayout->addWidget(m_searchBox);
+  mainLayout->addWidget(m_splitter);
 
-  addWidget(m_splitter);
-  addWidget(rightSide);
-  connect(m_next,SIGNAL(clicked()),SLOT(nextTopic()));
+  QString mode = SA("doxywizard");
 
-  connect(m_prev,SIGNAL(clicked()),SLOT(prevTopic()));
+  QFile file(SA(":/config.xml"));
+  QString err = tr("Error");
+  int errLine=0,errCol=0;
+  QDomDocument configXml;
+  if (!file.open(QIODevice::ReadOnly) || !xmlSetContent(configXml,&file,&err,&errLine,&errCol))
+  {
+    QString msg = tr("Error parsing internal config.xml at line %1 column %2.\n%3").
+                arg(errLine).arg(errCol).arg(err);
+    QMessageBox::warning(this, tr("Error"), msg);
+    exit(1);
+  }
+  m_rootElement = configXml.documentElement();
+  QDomElement childElem = m_rootElement.firstChildElement();
+  while (!childElem.isNull())
+  {
+    if (childElem.tagName()==SA("generator"))
+    {
+      createMessagesList(childElem);
+    }
+    childElem = childElem.nextSiblingElement();
+  }
+  if (!DoxygenWizard::langCode.isEmpty() && DoxygenWizard::langCode!=SA("en"))
+  {
+    QFile trFile(SA(":/i18n/config_%1.xml").arg(DoxygenWizard::langCode));
+    if (trFile.open(QIODevice::ReadOnly))
+    {
+      QDomDocument trConfigXml;
+      if (!xmlSetContent(trConfigXml,&trFile,&err,&errLine,&errCol))
+      {
+        QString msg = tr("Error parsing internal config_%1.xml at line %2 column %3.\n%4").
+                    arg(DoxygenWizard::langCode).arg(errLine).arg(errCol).arg(err);
+        QMessageBox::warning(this, tr("Error"), msg);
+      }
+      QDomElement childElem = trConfigXml.documentElement().firstChildElement();
+      while (!childElem.isNull())
+      {
+        if (childElem.tagName()==SA("generator"))
+        {
+          createMessagesList(childElem);
+        }
+        childElem = childElem.nextSiblingElement();
+      }
+      // overrule english text with translations
+      translateTopics(m_rootElement,trConfigXml.documentElement(),mode);
+    }
+    else
+    {
+      qDebug() << SA("config_%1.xml not found").arg(DoxygenWizard::langCode);
+    }
+  }
 
-  addConfigDocs(this);
+  // --- Build all group sections and option cards ---
+  // createGroups() activates group 0 (lazy), but the Wizard needs all m_options
+  // populated before it is constructed, so we create all cards eagerly here.
+  createGroups(m_rootElement);
+  ensureAllGroupsCreated(mode);
+
+  // --- Wire up signals ---
+  m_filterTimer = new QTimer(this);
+  m_filterTimer->setSingleShot(true);
+  m_filterTimer->setInterval(200);
+  connect(m_searchBox,   SIGNAL(textChanged(const QString&)),
+          m_filterTimer, SLOT(start()));
+  connect(m_filterTimer, &QTimer::timeout, this,
+          [this](){ filterChanged(m_searchBox->text()); });
+  connect(m_treeWidget, SIGNAL(currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)),
+          this,         SLOT(groupSelected(QTreeWidgetItem*,QTreeWidgetItem*)));
+  connect(m_prevButton, SIGNAL(clicked()), this, SLOT(prevGroup()));
+  connect(m_nextButton, SIGNAL(clicked()), this, SLOT(nextGroup()));
+
+  auto it = langNames.find(DoxygenWizard::langCode.toStdString());
+  if (it!=langNames.end())
+  {
+    it->second(this);
+  }
 }
 
 Expert::~Expert()
@@ -130,52 +391,423 @@ Expert::~Expert()
   }
 }
 
-void Expert::createTopics(const QDomElement &rootElem)
+void Expert::createGroups(const QDomElement &rootElem)
 {
-  QList<QTreeWidgetItem*> items;
-  QDomElement childElem = rootElem.firstChildElement();
-  while (!childElem.isNull())
+  // --- Create group structures (header + tree items) — NO option cards yet ---
+  QDomElement groupElem = rootElem.firstChildElement();
+  while (!groupElem.isNull())
   {
-    if (childElem.tagName()==SA("group"))
+    if (groupElem.tagName() == SA("group"))
     {
-      // Remove _ from a group name like: Source_Browser
-      QString name = childElem.attribute(SA("name")).replace(SA("_"),SA(" "));
-      QString setting = childElem.attribute(SA("setting"));
+      QString setting = groupElem.attribute(SA("setting"));
       if (setting.isEmpty() || IS_SUPPORTED(setting.toLatin1()))
       {
-        items.append(new QTreeWidgetItem((QTreeWidget*)0,QStringList(name)));
-        QWidget *widget = createTopicWidget(childElem);
-        m_topics[name] = widget;
-        m_topicStack->addWidget(widget);
+        GroupEntry group;
+        group.name = groupElem.attribute(SA("name"));
+        group.docs = groupElem.attribute(SA("docs"));
+        QString translatedName = groupElem.attribute(SA("trname")).replace(SA("_"), SA(" "));
+        if (translatedName.isEmpty()) translatedName = group.name.replace(SA("_"), SA(" "));
+        group.translatedName = translatedName;
+        group.domElement     = groupElem;
+        group.cardsCreated   = false;
+
+        // Group section container (header + separator only; option cards added lazily)
+        group.section = new QWidget;
+        group.section->setObjectName(SA("grpSection_") + group.name);
+        QVBoxLayout *sectionLayout = new QVBoxLayout(group.section);
+        sectionLayout->setContentsMargins(0, 12, 0, 0);
+        sectionLayout->setSpacing(0);
+
+        // Group header label
+        group.header = new QLabel(translatedName + SA(" - ") + group.docs);
+        QFont headerFont = group.header->font();
+        headerFont.setPointSize(headerFont.pointSize() + 2);
+        headerFont.setBold(true);
+        group.header->setFont(headerFont);
+        group.header->setContentsMargins(8, 4, 8, 4);
+        sectionLayout->addWidget(group.header);
+
+        // Thick separator line beneath group header
+        QFrame *headerSep = new QFrame;
+        headerSep->setFrameShape(QFrame::HLine);
+        headerSep->setFrameShadow(QFrame::Sunken);
+        sectionLayout->addWidget(headerSep);
+
+        // Tree widget item for this group
+        group.treeItem = new QTreeWidgetItem(m_treeWidget, QStringList() << translatedName);
+        group.treeItem->setToolTip(0,SA("<qt>") + group.docs + SA("</qt>"));
+
+        group.section->hide();
+        m_rightLayout->addWidget(group.section);
+        m_groups.append(group);
       }
     }
-    childElem = childElem.nextSiblingElement();
+    groupElem = groupElem.nextSiblingElement();
   }
-  m_treeWidget->setHeaderLabels(QStringList() << SA("Topics"));
-  m_treeWidget->insertTopLevelItems(0,items);
-  connect(m_treeWidget,
-          SIGNAL(currentItemChanged(QTreeWidgetItem *,QTreeWidgetItem *)),
-          this,
-          SLOT(activateTopic(QTreeWidgetItem *,QTreeWidgetItem *)));
+  m_rightLayout->addStretch(1);
+
+  // Activate the first group (creates its cards, shows it, selects tree item)
+  if (!m_groups.isEmpty())
+  {
+    activateGroup(0);
+  }
 }
 
-static QString getDocsForNode(const QDomElement &child)
+void Expert::createOptionCard(GroupEntry &group, const QDomElement &child, const QString &mode)
+{
+  QString setting = child.attribute(SA("setting"));
+  if (!setting.isEmpty() && !IS_SUPPORTED(setting.toLatin1())) return;
+
+  QString type = child.attribute(SA("type"));
+  QString id   = child.attribute(SA("id"));
+  QString docs = getDocsForNode(child, mode);
+
+  // Each option gets its own control layout
+  QWidget     *ctrlWidget = new QWidget;
+  QGridLayout *ctrlLayout = new QGridLayout(ctrlWidget);
+  ctrlLayout->setContentsMargins(8, 4, 8, 0);
+  ctrlLayout->setSpacing(5);
+  ctrlLayout->setColumnStretch(1, 2);
+
+  int row = 0;
+  Input *input = nullptr;
+
+  if (type == SA("bool"))
+  {
+    InputBool *boolOption = new InputBool(ctrlLayout, row,
+                                         id,
+                                         child.attribute(SA("defval")) == SA("1"),
+                                         docs);
+    input = boolOption;
+    connect(boolOption, SIGNAL(changed()), SIGNAL(changed()));
+  }
+  else if (type == SA("string"))
+  {
+    InputString::StringMode mode;
+    QString format = child.attribute(SA("format"));
+    if      (format == SA("dir"))     mode = InputString::StringDir;
+    else if (format == SA("file"))    mode = InputString::StringFile;
+    else if (format == SA("filedir")) mode = InputString::StringFileDir;
+    else if (format == SA("image"))   mode = InputString::StringImage;
+    else                              mode = InputString::StringFree;
+    InputString *stringOption = new InputString(ctrlLayout, row, id,
+                                                child.attribute(SA("defval")),
+                                                mode,
+                                                docs,
+                                                child.attribute(SA("abspath")));
+    input = stringOption;
+    connect(stringOption, SIGNAL(changed()), SIGNAL(changed()));
+  }
+  else if (type == SA("enum"))
+  {
+    InputString *enumList = new InputString(ctrlLayout, row, id,
+                                            child.attribute(SA("defval")),
+                                            InputString::StringFixed,
+                                            docs);
+    QDomElement enumVal = child.firstChildElement();
+    while (!enumVal.isNull())
+    {
+      if (enumVal.tagName() == SA("value"))
+      {
+        enumList->addValue(enumVal.attribute(SA("name")));
+      }
+      enumVal = enumVal.nextSiblingElement();
+    }
+    enumList->setDefault();
+    input = enumList;
+    connect(enumList, SIGNAL(changed()), SIGNAL(changed()));
+  }
+  else if (type == SA("int"))
+  {
+    InputInt *intOption = new InputInt(ctrlLayout, row, id,
+                   child.attribute(SA("defval")).toInt(),
+                   child.attribute(SA("minval")).toInt(),
+                   child.attribute(SA("maxval")).toInt(),
+                   docs);
+    input = intOption;
+    connect(intOption, SIGNAL(changed()), SIGNAL(changed()));
+  }
+  else if (type == SA("list"))
+  {
+    InputStrList::ListMode mode;
+    QString format = child.attribute(SA("format"));
+    if      (format == SA("dir"))     mode = InputStrList::ListDir;
+    else if (format == SA("file"))    mode = InputStrList::ListFile;
+    else if (format == SA("filedir")) mode = InputStrList::ListFileDir;
+    else                              mode = InputStrList::ListString;
+    QStringList sl;
+    QDomElement listVal = child.firstChildElement();
+    while (!listVal.isNull())
+    {
+      if (listVal.tagName() == SA("value"))
+      {
+        sl.append(listVal.attribute(SA("name")));
+      }
+      listVal = listVal.nextSiblingElement();
+    }
+    InputStrList *listOption =
+      new InputStrList(ctrlLayout, row,
+                       id, sl, mode, docs);
+    input = listOption;
+    connect(listOption, SIGNAL(changed()), SIGNAL(changed()));
+  }
+  else if (type == SA("obsolete"))
+  {
+    Input::Kind orgKind;
+    QString orgKindStr = child.attribute(SA("orgtype"));
+    if      (orgKindStr == SA("int"))                    orgKind = Input::Int;
+    else if (orgKindStr == SA("bool"))                   orgKind = Input::Bool;
+    else if (orgKindStr == SA("string") ||
+             orgKindStr == SA("enum"))                   orgKind = Input::String;
+    else if (orgKindStr == SA("strlist"))                orgKind = Input::StrList;
+    else                                                 orgKind = Input::Obsolete;
+    input = new InputObsolete(id, orgKind);
+    m_options.insert(id, input);
+    // Obsolete options are not shown
+    return;
+  }
+  else
+  {
+    printf("Unsupported type %s\n", qPrintable(type));
+  }
+
+  if (input)
+    m_options.insert(id, input);
+
+  // Inline documentation label (spans all 3 columns, shown below the controls)
+  QLabel *docsLabel = nullptr;
+  if (!docs.isEmpty())
+  {
+    docsLabel = new QLabel;
+    docsLabel->setTextFormat(Qt::RichText);
+    docsLabel->setWordWrap(true);
+    docsLabel->setOpenExternalLinks(true);
+    docsLabel->setContentsMargins(0, 2, 0, 4);
+    docsLabel->setText(displayDocs(id,docs));
+    // Dim the label using PlaceholderText, which is calibrated for readable
+    // secondary text in both light and dark modes (available since Qt 5.12).
+    QColor textColor = docsLabel->palette().color(QPalette::Text);
+    QColor bgColor = docsLabel->palette().color(QPalette::Window);
+
+    double mixAmount = 0.5;
+    int r = textColor.red()   * mixAmount + bgColor.red()   * (1.0-mixAmount);
+    int g = textColor.green() * mixAmount + bgColor.green() * (1.0-mixAmount);
+    int b = textColor.blue()  * mixAmount + bgColor.blue()  * (1.0-mixAmount);
+
+    QPalette pal = docsLabel->palette();
+    pal.setColor(QPalette::WindowText, QColor(r,g,b));
+    docsLabel->setPalette(pal);
+    ctrlLayout->addWidget(docsLabel, row, 0, 1, 3);
+    row++;
+  }
+  ctrlLayout->setRowStretch(row, 0);
+
+  // Thin separator at the bottom of each option card
+  QFrame *sep = new QFrame;
+  sep->setFrameShape(QFrame::HLine);
+  sep->setFrameShadow(QFrame::Plain);
+
+  // Wrap the control widget + separator into a single container so we can
+  // show/hide both together during filtering
+  QWidget *container = new QWidget;
+  QVBoxLayout *containerLayout = new QVBoxLayout(container);
+  containerLayout->setContentsMargins(0, 0, 0, 0);
+  containerLayout->setSpacing(0);
+  containerLayout->addWidget(ctrlWidget);
+  containerLayout->addWidget(sep);
+
+  // Add to the group section
+  QVBoxLayout *sectionLayout = static_cast<QVBoxLayout *>(group.section->layout());
+  sectionLayout->addWidget(container);
+
+  // Child tree item for this option (hidden by default – only visible when filtering)
+  QTreeWidgetItem *optTreeItem = new QTreeWidgetItem(group.treeItem, QStringList() << id);
+  optTreeItem->setHidden(true);
+
+  // Record the entry for filtering
+  OptionEntry entry;
+  entry.groupName = group.name;
+  entry.id        = id;
+  entry.docs      = docs;
+  entry.card      = container;
+  entry.docsLabel = docsLabel;
+  entry.sep       = sep;
+  entry.treeItem  = optTreeItem;
+  entry.input     = input;
+  group.options.append(entry);
+}
+
+// ---------------------------------------------------------------------------
+// Lazy-creation helpers
+// ---------------------------------------------------------------------------
+
+// Wire any dependencies from the root DOM that can be resolved with the
+// currently available m_options entries. Uses m_wiredDeps to avoid double
+// wiring when called multiple times.
+void Expert::wireDependencies()
+{
+  QDomElement groupElem = m_rootElement.firstChildElement();
+  while (!groupElem.isNull())
+  {
+    if (groupElem.tagName() == SA("group"))
+    {
+      QDomElement optElem = groupElem.firstChildElement();
+      while (!optElem.isNull())
+      {
+        QString setting   = optElem.attribute(SA("setting"));
+        QString dependsOn = optElem.attribute(SA("depends"));
+        QString id        = optElem.attribute(SA("id"));
+        if (!dependsOn.isEmpty() &&
+            (setting.isEmpty() || IS_SUPPORTED(setting.toLatin1())))
+        {
+          Input *parentOption = m_options.value(dependsOn);
+          Input *thisOption   = m_options.value(id);
+          if (parentOption && thisOption)
+          {
+            parentOption->addDependency(thisOption);
+          }
+        }
+        optElem = optElem.nextSiblingElement();
+      }
+    }
+    groupElem = groupElem.nextSiblingElement();
+  }
+}
+
+// Create option cards for 'group' if they haven't been created yet.
+void Expert::ensureGroupCardsCreated(GroupEntry &group, const QString &mode)
+{
+  if (group.cardsCreated) return;
+  group.cardsCreated = true;
+
+  QDomElement optElem = group.domElement.firstChildElement();
+  while (!optElem.isNull())
+  {
+    if (optElem.tagName() == SA("option"))
+    {
+      createOptionCard(group, optElem, mode);
+    }
+    optElem = optElem.nextSiblingElement();
+  }
+
+  // Bottom spacing for the section (mirrors what was in the old createGroups loop)
+
+  // Wire what can be wired now (intra-group + any cross-group where both sides exist)
+  wireDependencies();
+
+  // Apply dependency states for this group's options
+  for (const OptionEntry &opt : group.options)
+  {
+    if (opt.input)
+    {
+      opt.input->updateDependencies();
+    }
+  }
+}
+
+void Expert::setDocumentationVisibility(bool hidden)
+{
+  for (GroupEntry &group : m_groups)
+  {
+    for (const OptionEntry &opt : group.options)
+    {
+      if (opt.sep)
+      {
+        opt.sep->setHidden(hidden);
+      }
+      if (opt.docsLabel)
+      {
+        opt.docsLabel->setHidden(hidden);
+        // only enable tooltips when documentation is hidden
+        if (opt.input)
+        {
+          if (hidden)
+          {
+            opt.input->setToolTip(SA("<qt>") + opt.docsLabel->text() + SA("</qt>"));
+          }
+          else
+          {
+            opt.input->setToolTip(SA(""));
+          }
+        }
+      }
+    }
+  }
+}
+
+// Create cards for every group that hasn't been created yet, then do a full
+// dependency update (needed when cross-group deps span newly-created groups).
+void Expert::ensureAllGroupsCreated(const QString &mode)
+{
+  for (GroupEntry &group : m_groups)
+  {
+    ensureGroupCardsCreated(group, mode);
+  }
+
+  // Re-run update so cross-group dependencies are fully applied
+  QHashIterator<QString,Input*> i(m_options);
+  while (i.hasNext())
+  {
+    i.next();
+    if (i.value()) i.value()->updateDependencies();
+  }
+}
+
+// Show only group[index] in showAll mode, update tree selection and nav buttons.
+void Expert::activateGroup(int index)
+{
+  if (index < 0 || index >= m_groups.size()) return;
+  m_currentGroupIndex = index;
+
+  GroupEntry &group = m_groups[index];
+  //ensureGroupCardsCreated(group);
+
+  // Show only the active group's section
+  for (int i = 0; i < m_groups.size(); i++)
+    m_groups[i].section->setVisible(i == index);
+
+  // Scroll to top
+  m_scrollArea->verticalScrollBar()->setValue(0);
+
+  // Update tree selection without re-triggering groupSelected
+  m_treeWidget->blockSignals(true);
+  m_treeWidget->setCurrentItem(group.treeItem);
+  m_treeWidget->blockSignals(false);
+
+  // Enable/disable navigation buttons
+  m_prevButton->setEnabled(index > 0);
+  m_nextButton->setEnabled(index < m_groups.size() - 1);
+}
+
+void Expert::prevGroup()
+{
+  activateGroup(m_currentGroupIndex - 1);
+}
+
+void Expert::nextGroup()
+{
+  activateGroup(m_currentGroupIndex + 1);
+}
+
+
+QString Expert::getDocsForNode(const QDomElement &child, const QString &mode) const
 {
   QString type = child.attribute(SA("type"));
   QString docs = SA("");
   // read documentation text
   QDomElement docsVal = child.firstChildElement();
+  bool first = true;
   while (!docsVal.isNull())
   {
-    if (docsVal.tagName()==SA("docs") &&
-        docsVal.attribute(SA("doxywizard")) != SA("0"))
+    if (docsVal.tagName()==SA("docs") && getFilter(docsVal, mode))
     {
+      if (!first) docs += SA("<br/>");
+      first = false;
       for (QDomNode n = docsVal.firstChild(); !n.isNull(); n = n.nextSibling())
       {
         QDomText t = n.toText();
         if (!t.isNull()) docs+=t.data();
       }
-      docs += SA("<br/>");
     }
     docsVal = docsVal.nextSiblingElement();
   }
@@ -183,8 +815,9 @@ static QString getDocsForNode(const QDomElement &child)
   // for an enum we list the values
   if (type==SA("enum"))
   {
+    if (!docs.endsWith(SA("<br/>"))) docs += SA("<br/>");
     docs += SA("<br/>");
-    docs += SA("Possible values are: ");
+    docs += m_messages[SA("possible")];
     int numValues=0;
     docsVal = child.firstChildElement();
     while (!docsVal.isNull())
@@ -210,7 +843,7 @@ static QString getDocsForNode(const QDomElement &child)
         }
         if (i==numValues-1)
         {
-          docs+=SA(" and ");
+          docs+=m_messages[SA("andtxt")];
         }
         else if (i==numValues)
         {
@@ -225,37 +858,28 @@ static QString getDocsForNode(const QDomElement &child)
     }
     if (child.attribute(SA("defval")) != SA(""))
     {
+      if (!docs.endsWith(SA("<br/>"))) docs += SA("<br/>");
       docs+=SA("<br/>");
-      docs+=SA("<br/>");
-      docs+=SA(" The default value is: <code>")+
-            child.attribute(SA("defval"))+
-            SA("</code>.");
+      QString defval = child.attribute(SA("defval"));
+      docs+=SA(" ")+m_messages[SA("defvalcode")].arg(defval);
     }
-    docs+= SA("<br/>");
   }
   else if (type==SA("int"))
   {
+    if (!docs.endsWith(SA("<br/>"))) docs += SA("<br/>");
     docs+=SA("<br/>");
-    docs+=SA("Minimum value: ")+child.attribute(SA("minval"))+SA(", ");
-    docs+=SA("maximum value: ")+child.attribute(SA("maxval"))+SA(", ");
-    docs+=SA("default value: ")+child.attribute(SA("defval"))+SA(".");
-    docs+= SA("<br/>");
+    QString minval = child.attribute(SA("minval"));
+    QString maxval = child.attribute(SA("maxval"));
+    QString defval = child.attribute(SA("defval"));
+    docs+=m_messages[SA("minmaxdefcode")].arg(minval).arg(maxval).arg(defval);
   }
   else if (type==SA("bool"))
   {
+    if (!docs.endsWith(SA("<br/>"))) docs += SA("<br/>");
     docs+=SA("<br/>");
-    if (child.hasAttribute(SA("altdefval")))
-    {
-      docs+=SA(" The default value is: system dependent.");
-    }
-    else
-    {
-      QString defval = child.attribute(SA("defval"));
-      docs+=SA(" The default value is: <code>")+
-            (defval==SA("1")?SA("YES"):SA("NO"))+
-            SA("</code>.");
-    }
-    docs+= SA("<br/>");
+    QString defval = child.attribute(SA("defval"));
+    QString valStr = (defval==SA("1")?SA("YES"):SA("NO"));
+    docs+=SA(" ")+m_messages[SA("defvalcode")].arg(valStr);
   }
   else if (type==SA("list"))
   {
@@ -278,6 +902,9 @@ static QString getDocsForNode(const QDomElement &child)
       }
       if (numValues>0)
       {
+        if (!docs.endsWith(SA("<br/>"))) docs += SA("<br/>");
+        docs += SA("<br/>");
+        docs += m_messages[SA("possible")];
         int i = 0;
         docsVal = child.firstChildElement();
         while (!docsVal.isNull())
@@ -300,7 +927,7 @@ static QString getDocsForNode(const QDomElement &child)
               }
               if (i==numValues-1)
               {
-                docs += SA(" and ");
+                docs += m_messages[SA("andtxt")];
               }
               else if (i==numValues)
               {
@@ -315,7 +942,6 @@ static QString getDocsForNode(const QDomElement &child)
           docsVal = docsVal.nextSiblingElement();
         }
       }
-      // docs+= SA("<br/>");
     }
   }
   else if (type==SA("string"))
@@ -325,9 +951,9 @@ static QString getDocsForNode(const QDomElement &child)
     {
       if (defval != SA(""))
       {
+        if (!docs.endsWith(SA("<br/>"))) docs += SA("<br/>");
         docs+=SA("<br/>");
-        docs += SA(" The default directory is: <code>") + defval + SA("</code>.");
-        docs += SA("<br/>");
+        docs += SA(" ")+m_messages[SA("defdir")].arg(defval);
       }
     }
     else if (child.attribute(SA("format")) == SA("file"))
@@ -335,24 +961,24 @@ static QString getDocsForNode(const QDomElement &child)
       QString abspath = child.attribute(SA("abspath"));
       if (defval != SA(""))
       {
+        if (!docs.endsWith(SA("<br/>"))) docs += SA("<br/>");
         docs+=SA("<br/>");
         if (abspath != SA("1"))
         {
-          docs += SA(" The default file is: <code>") + defval + SA("</code>.");
+          docs += SA(" ")+m_messages[SA("deffile")].arg(defval);
         }
         else
         {
-          docs += SA(" The default file (with absolute path) is: <code>") + defval + SA("</code>.");
+          docs += SA(" ")+m_messages[SA("deffilecode")].arg(defval);
         }
-        docs += SA("<br/>");
       }
       else
       {
         if (abspath == SA("1"))
         {
+          if (!docs.endsWith(SA("<br/>"))) docs += SA("<br/>");
           docs+=SA("<br/>");
-          docs += SA(" The file has to be specified with full path.");
-          docs += SA("<br/>");
+          docs += SA(" ")+m_messages[SA("deffilefull")];
         }
       }
     }
@@ -361,24 +987,24 @@ static QString getDocsForNode(const QDomElement &child)
       QString abspath = child.attribute(SA("abspath"));
       if (defval != SA(""))
       {
+        if (!docs.endsWith(SA("<br/>"))) docs += SA("<br/>");
         docs+=SA("<br/>");
         if (abspath != SA("1"))
         {
-          docs += SA(" The default image is: <code>") + defval + SA("</code>.");
+          docs += SA(" ")+m_messages[SA("defimg")].arg(defval);
         }
         else
         {
-          docs += SA(" The default image (with absolute path) is: <code>") + defval + SA("</code>.");
+          docs += SA(" ")+m_messages[SA("defimgabs")].arg(defval);
         }
-        docs += SA("<br/>");
       }
       else
       {
         if (abspath == SA("1"))
         {
+          if (!docs.endsWith(SA("<br/>"))) docs += SA("<br/>");
           docs+=SA("<br/>");
-          docs += SA(" The image has to be specified with full path.");
-          docs += SA("<br/>");
+          docs += SA(" ")+m_messages[SA("defimgfull")];
         }
       }
     }
@@ -386,9 +1012,9 @@ static QString getDocsForNode(const QDomElement &child)
     {
       if (defval != SA(""))
       {
+        if (!docs.endsWith(SA("<br/>"))) docs += SA("<br/>");
         docs+=SA("<br/>");
-        docs += SA(" The default value is: <code>") + defval + SA("</code>.");
-        docs += SA("<br/>");
+        docs += SA(" ")+m_messages[SA("defvalcode")].arg(defval);
       }
     }
   }
@@ -396,12 +1022,9 @@ static QString getDocsForNode(const QDomElement &child)
   if (child.hasAttribute(SA("depends")))
   {
     QString dependsOn = child.attribute(SA("depends"));
+    if (!docs.endsWith(SA("<br/>"))) docs += SA("<br/>");
     docs+=SA("<br/>");
-    docs+=  SA(" This tag requires that the tag \\ref cfg_");
-    docs+=  dependsOn.toLower();
-    docs+=  SA(" \"");
-    docs+=  dependsOn.toUpper();
-    docs+=  SA("\" is set to <code>YES</code>.");
+    docs += SA(" ")+m_messages[SA("depstxt")].arg(SA("\\ref cfg_")+dependsOn.toLower()+SA(" \"")+dependsOn.toUpper()+SA("\""));
   }
 
   // Remove / replace doxygen markup strings
@@ -414,23 +1037,39 @@ static QString getDocsForNode(const QDomElement &child)
   // remove <br> at end
   regexp.setPattern(SA("<br> *$"));
   docs.replace(regexp,SA(" "));
-  // \c word -> <code>word</code>; word ends with ')', ',', '.' or ' '
-  regexp.setPattern(SA("\\\\c[ ]+([^ \\)]+)\\)"));
-  docs.replace(regexp,SA("<code>\\1</code>)"));
+  docs.replace(SA("(\\c \\\\)"),SA("(\\c JUST_WIZARD_BACKSLASH)"));
 
-  regexp.setPattern(SA("\\\\c[ ]+([^ ,]+),"));
-  docs.replace(regexp,SA("<code>\\1</code>,"));
+  regexp.setPattern(SA("\\\\c[ ]+([A-Za-z]+\\.[a-z]+\\.[a-z]+\\.[a-z]+)"));
+  docs.replace(regexp,SA("<code>\\1</code>"));
 
-  regexp.setPattern(SA("\\\\c[ ]+([^ \\.]+)\\."));
-  docs.replace(regexp,SA("<code>\\1</code>."));
+  regexp.setPattern(SA("\\\\c[ ]+([A-Za-z]+\\.[a-z]+)"));
+  docs.replace(regexp,SA("<code>\\1</code>"));
 
-  regexp.setPattern(SA("\\\\c[ ]+([^ ]+) "));
-  docs.replace(regexp,SA("<code>\\1</code> "));
+  regexp.setPattern(SA("\\\\c[ ]+(\\\\#[a-z]+)"));
+  docs.replace(regexp,SA("<code>\\1</code>"));
+
+  regexp.setPattern(SA("\\\\c[ ]+(\\\\[@\\\\])?([%=!\\\"/A-Za-z0-9_]+)(\\([0-9]*\\))?"));
+  docs.replace(regexp,SA("<code>\\1\\2\\3</code>"));
+
+  regexp.setPattern(SA("\\\\c[ ]+(\\\\\\\\[{}])"));
+  docs.replace(regexp,SA("<code>\\1</code>"));
+
+  regexp.setPattern(SA("\\\\c[ ]+(\\\\\\\\\\\\\\\\[{}])"));
+  docs.replace(regexp,SA("<code>\\1</code>"));
+
+  regexp.setPattern(SA("\\\\c[ ]+(@[{}])"));
+  docs.replace(regexp,SA("<code>\\1</code>"));
+
+  regexp.setPattern(SA("\\\\c[ ]+(@@[{}])"));
+  docs.replace(regexp,SA("<code>\\1</code>"));
+
   // `word` -> <code>word</code>
   docs.replace(SA("``"),SA(""));
   regexp.setPattern(SA("`([^`]+)`"));
   docs.replace(regexp,SA("<code>\\1</code>"));
   // \ref key "desc" -> <code>desc</code>
+  regexp.setPattern(SA("\\\\ref[ ]+[^ ]+[ ]+\"\\\\\\\\ref\""));
+  docs.replace(regexp,SA("\\\\REF"));
   regexp.setPattern(SA("\\\\ref[ ]+[^ ]+[ ]+\"([^\"]+)\""));
   docs.replace(regexp,SA("<code>\\1</code> "));
   //\ref specials
@@ -445,6 +1084,7 @@ static QString getDocsForNode(const QDomElement &child)
   docs.replace(regexp,SA("\"Including formulas\""));
   // fallback for not handled
   docs.replace(SA("\\\\ref"),SA(""));
+  docs.replace(SA("\\\\REF"),SA("\\\\ref"));
   // \b word -> <b>word<\b>
   regexp.setPattern(SA("\\\\b[ ]+([^ ]+) "));
   docs.replace(regexp,SA("<b>\\1</b> "));
@@ -453,28 +1093,25 @@ static QString getDocsForNode(const QDomElement &child)
   docs.replace(regexp,SA("<em>\\1</em> "));
   // \note -> <br>Note:
   // @note -> <br>Note:
-  docs.replace(SA("\\note"),SA("<br>Note:"));
-  docs.replace(SA("@note"),SA("<br>Note:"));
+  docs.replace(SA("\\note "),SA("<br>")+m_messages[SA("notetxt")]+SA(" "));
+  docs.replace(SA("@note "),SA("<br>")+m_messages[SA("notetxt")]+SA(" "));
   // \#include -> #include
   // \#undef -> #undef
   docs.replace(SA("\\#include"),SA("#include"));
   docs.replace(SA("\\#undef"),SA("#undef"));
-  // -# -> <br>-
-  // " - " -> <br>-
-  docs.replace(SA("-#"),SA("<br>-"));
-  docs.replace(SA(" - "),SA("<br>-"));
   // \verbatim -> <pre>
   // \endverbatim -> </pre>
   docs.replace(SA("\\verbatim"),SA("<pre>"));
   docs.replace(SA("\\endverbatim"),SA("</pre>"));
   // \sa -> <br>See also:
   // \par -> <br>
-  docs.replace(SA("\\sa"),SA("<br>See also:"));
-  docs.replace(SA("\\par"),SA("<br>"));
+  docs.replace(SA("\\sa "),SA("<br>")+m_messages[SA("seealsotxt")]+SA(" "));
+  docs.replace(SA("\\par "),SA("<br>"));
   // 2xbackslash -> backslash
   // \@ -> @
   docs.replace(SA("\\\\"),SA("\\"));
   docs.replace(SA("\\@"),SA("@"));
+  docs.replace(SA("@@"),SA("@"));
   // \& -> &
   // \$ -> $
   docs.replace(SA("\\&"),SA("&"));
@@ -495,267 +1132,213 @@ static QString getDocsForNode(const QDomElement &child)
   docs.replace(regexp,SA("2^(16+LOOKUP_CACHE_SIZE)"));
   regexp.setPattern(SA("\\\\f\\$2\\^\\{16\\} = 65536\\\\f\\$"));
   docs.replace(regexp,SA("2^16=65536"));
+  // -# -> <br>-
+  // " - " -> <br>-
+  docs.replace(SA("-#"),SA("<br>-"));
+  docs.replace(SA("\\# "),SA("# "));
+  docs.replace(SA(" - "),SA("<br>-"));
+  docs.replace(SA("JUST_WIZARD_BACKSLASH"),SA("\\"));
 
   return docs.trimmed();
 }
 
-QWidget *Expert::createTopicWidget(QDomElement &elem)
+// Highlight all occurrences of 'filter' inside an HTML string without touching tag content.
+static QString highlightInHtml(const QString &html, const QString &filter)
 {
-  QScrollArea *area   = new QScrollArea;
-  QWidget     *topic  = new QWidget;
-  QGridLayout *layout = new QGridLayout(topic);
-  QDomElement child   = elem.firstChildElement();
-  int row=0;
-  while (!child.isNull())
-  {
-    QString setting = child.attribute(SA("setting"));
-    if (setting.isEmpty() || IS_SUPPORTED(setting.toLatin1()))
-    {
-      QString type = child.attribute(SA("type"));
-      QString docs = getDocsForNode(child);
-      if (type==SA("bool"))
-      {
-        InputBool *boolOption =
-          new InputBool(
-              layout,row,
-              child.attribute(SA("id")),
-              child.attribute(SA("defval"))==SA("1"),
-              docs
-              );
-        m_options.insert(
-            child.attribute(SA("id")),
-            boolOption
-            );
-        connect(boolOption,SIGNAL(showHelp(Input*)),SLOT(showHelp(Input*)));
-        connect(boolOption,SIGNAL(changed()),SIGNAL(changed()));
-      }
-      else if (type==SA("string"))
-      {
-        InputString::StringMode mode;
-        QString format = child.attribute(SA("format"));
-        if (format==SA("dir"))
-        {
-          mode = InputString::StringDir;
-        }
-        else if (format==SA("file"))
-        {
-          mode = InputString::StringFile;
-        }
-        else if (format==SA("filedir"))
-        {
-          mode = InputString::StringFileDir;
-        }
-        else if (format==SA("image"))
-        {
-          mode = InputString::StringImage;
-        }
-        else // format=="string"
-        {
-          mode = InputString::StringFree;
-        }
-        InputString *stringOption =
-          new InputString(
-              layout,row,
-              child.attribute(SA("id")),
-              child.attribute(SA("defval")),
-              mode,
-              docs,
-              child.attribute(SA("abspath"))
-              );
-        m_options.insert(
-            child.attribute(SA("id")),
-            stringOption
-            );
-        connect(stringOption,SIGNAL(showHelp(Input*)),SLOT(showHelp(Input*)));
-        connect(stringOption,SIGNAL(changed()),SIGNAL(changed()));
-      }
-      else if (type==SA("enum"))
-      {
-        InputString *enumList = new InputString(
-            layout,row,
-            child.attribute(SA("id")),
-            child.attribute(SA("defval")),
-            InputString::StringFixed,
-            docs
-            );
-        QDomElement enumVal = child.firstChildElement();
-        while (!enumVal.isNull())
-        {
-          if (enumVal.tagName()==SA("value"))
-          {
-            enumList->addValue(enumVal.attribute(SA("name")));
-          }
-          enumVal = enumVal.nextSiblingElement();
-        }
-        enumList->setDefault();
+  if (filter.isEmpty()) return html;
 
-        m_options.insert(child.attribute(SA("id")),enumList);
-        connect(enumList,SIGNAL(showHelp(Input*)),SLOT(showHelp(Input*)));
-        connect(enumList,SIGNAL(changed()),SIGNAL(changed()));
-      }
-      else if (type==SA("int"))
-      {
-        InputInt *intOption =
-          new InputInt(
-              layout,row,
-              child.attribute(SA("id")),
-              child.attribute(SA("defval")).toInt(),
-              child.attribute(SA("minval")).toInt(),
-              child.attribute(SA("maxval")).toInt(),
-              docs
-              );
-        m_options.insert(
-            child.attribute(SA("id")),
-            intOption
-            );
-        connect(intOption,SIGNAL(showHelp(Input*)),SLOT(showHelp(Input*)));
-        connect(intOption,SIGNAL(changed()),SIGNAL(changed()));
-      }
-      else if (type==SA("list"))
-      {
-        InputStrList::ListMode mode;
-        QString format = child.attribute(SA("format"));
-        if (format==SA("dir"))
-        {
-          mode = InputStrList::ListDir;
-        }
-        else if (format==SA("file"))
-        {
-          mode = InputStrList::ListFile;
-        }
-        else if (format==SA("filedir"))
-        {
-          mode = InputStrList::ListFileDir;
-        }
-        else // format=="string"
-        {
-          mode = InputStrList::ListString;
-        }
-        QStringList sl;
-        QDomElement listVal = child.firstChildElement();
-        while (!listVal.isNull())
-        {
-          if (listVal.tagName()==SA("value"))
-          {
-            sl.append(listVal.attribute(SA("name")));
-          }
-          listVal = listVal.nextSiblingElement();
-        }
-        InputStrList *listOption =
-          new InputStrList(
-              layout,row,
-              child.attribute(SA("id")),
-              sl,
-              mode,
-              docs
-              );
-        m_options.insert(
-            child.attribute(SA("id")),
-            listOption
-            );
-        connect(listOption,SIGNAL(showHelp(Input*)),SLOT(showHelp(Input*)));
-        connect(listOption,SIGNAL(changed()),SIGNAL(changed()));
-      }
-      else if (type==SA("obsolete"))
-      {
-        Input::Kind orgKind;
-        QString orgKindStr = child.attribute(SA("orgtype"));
-        if (orgKindStr==SA("int"))
-        {
-          orgKind = Input::Int;
-        }
-        else if (orgKindStr==SA("bool"))
-        {
-          orgKind = Input::Bool;
-        }
-        else if (orgKindStr==SA("string") || orgKindStr==SA("enum"))
-        {
-          orgKind = Input::String;
-        }
-        else if (orgKindStr==SA("strlist"))
-        {
-          orgKind = Input::StrList;
-        }
-        else
-        {
-          orgKind = Input::Obsolete;
-        }
-        InputObsolete *obsoleteOption =
-          new InputObsolete(child.attribute(SA("id")),orgKind);
-        m_options.insert(child.attribute(SA("id")),obsoleteOption);
-        // ignore
-      }
-      else // should not happen
-      {
-        printf("Unsupported type %s\n",qPrintable(child.attribute(SA("type"))));
-      }
-    } // IS_SUPPORTED
-    child = child.nextSiblingElement();
-  }
+  const QString markOpen  = SA("<span style='background-color:#ffff00;color:#000000'>");
+  const QString markClose = SA("</span>");
+  const int filterLen = filter.length();
 
-  // compute dependencies between options
-  child = elem.firstChildElement();
-  while (!child.isNull())
+  QString result;
+  result.reserve(html.size() + 64);
+  int i = 0;
+  int len = html.length();
+
+  while (i < len)
   {
-    QString setting = child.attribute(SA("setting"));
-    QString dependsOn = child.attribute(SA("depends"));
-    QString id        = child.attribute(SA("id"));
-    if (!dependsOn.isEmpty() &&
-        (setting.isEmpty() || IS_SUPPORTED(setting.toLatin1())))
+    // Pass HTML tags through unchanged
+    if (html[i] == QLatin1Char('<'))
     {
-       Input *parentOption = m_options[dependsOn];
-       if (parentOption==0)
-       {
-         printf("%s has depends=%s that is not valid\n",
-             qPrintable(id),qPrintable(dependsOn));
-       }
-       Input *thisOption   = m_options[id];
-       Q_ASSERT(parentOption);
-       Q_ASSERT(thisOption);
-       if (parentOption && thisOption)
-       {
-         //printf("Adding dependency '%s' (%p)->'%s' (%p)\n",
-         //  qPrintable(dependsOn),parentOption,
-         //  qPrintable(id),thisOption);
-         parentOption->addDependency(thisOption);
-       }
+      int end = html.indexOf(QLatin1Char('>'), i);
+      if (end == -1) end = len - 1;
+      result += html.mid(i, end - i + 1);
+      i = end + 1;
+      continue;
     }
-    child = child.nextSiblingElement();
-  }
-
-  // set initial dependencies
-  QHashIterator<QString,Input*> i(m_options);
-  while (i.hasNext())
-  {
-    i.next();
-    if (i.value())
+    // In text content: search for next match using indexOf
+    int matchPos = html.indexOf(filter, i, Qt::CaseInsensitive);
+    if (matchPos == -1)
     {
-      i.value()->updateDependencies();
+      result += html.mid(i);
+      break;
     }
+    // Copy text up to the match, respecting embedded tags
+    while (i < matchPos)
+    {
+      if (html[i] == QLatin1Char('<'))
+      {
+        int end = html.indexOf(QLatin1Char('>'), i);
+        if (end == -1) end = len - 1;
+        if (end >= matchPos)
+        {
+          // tag straddles the match position; emit tag and re-search
+          result += html.mid(i, end - i + 1);
+          i = end + 1;
+          matchPos = html.indexOf(filter, i, Qt::CaseInsensitive);
+          if (matchPos == -1) { result += html.mid(i); i = len; }
+          continue;
+        }
+        result += html.mid(i, end - i + 1);
+        i = end + 1;
+      }
+      else
+      {
+        result += html[i++];
+      }
+    }
+    if (i >= len) break;
+    result += markOpen + html.mid(matchPos, filterLen) + markClose;
+    i = matchPos + filterLen;
   }
-
-  layout->setRowStretch(row,1);
-  layout->setColumnStretch(1,2);
-  layout->setSpacing(5);
-  topic->setLayout(layout);
-  area->setWidget(topic);
-  area->setWidgetResizable(true);
-  return area;
+  return result;
 }
 
-void Expert::activateTopic(QTreeWidgetItem *item,QTreeWidgetItem *)
+void Expert::filterChanged(const QString &text)
 {
-  if (item)
+  QString filter = text.trimmed().toLower();
+  bool showAll = filter.length()<=2;
+
+  m_rightContainer->setUpdatesEnabled(false);
+  m_treeWidget->setUpdatesEnabled(false);
+
+  if (showAll)
   {
-    QWidget *w = m_topics[item->text(0)];
-    m_topicStack->setCurrentWidget(w);
-    m_prev->setEnabled(m_topicStack->currentIndex()!=0);
-    m_next->setEnabled(true);
+    // Show all mode
+
+    // Restore single-group view and show the nav bar
+    m_navBar->setVisible(true);
+    // Restore each created group's option cards and collapse tree children
+    for (GroupEntry &group : m_groups)
+    {
+      for (OptionEntry &opt : group.options)
+      {
+        opt.card->setVisible(true);
+        if (opt.treeItem)
+        {
+          opt.treeItem->setHidden(true);
+        }
+        if (opt.docsLabel && opt.labelHighlighted)
+        {
+          opt.docsLabel->setText(displayDocs(opt.id, opt.docs));
+          opt.input->setText(opt.id);
+          opt.labelHighlighted = false;
+        }
+      }
+      if (group.treeItem)
+      {
+        group.treeItem->setHidden(false);
+        group.treeItem->setExpanded(false);
+      }
+    }
+    m_rightContainer->setUpdatesEnabled(true);
+    m_treeWidget->setUpdatesEnabled(true);
+    // Re-activate the current group (shows its section, hides the rest)
+    activateGroup(m_currentGroupIndex >= 0 ? m_currentGroupIndex : 0);
+  }
+  else
+  {
+    // Filter mode
+    m_navBar->setVisible(false);
+
+    for (GroupEntry &group : m_groups)
+    {
+      bool anyVisible = false;
+      for (OptionEntry &opt : group.options)
+      {
+        bool matchesId   = opt.id.contains(filter, Qt::CaseInsensitive);
+        bool matchesDocs = opt.docs.contains(filter, Qt::CaseInsensitive);
+        bool visible     = matchesId || matchesDocs;
+        opt.card->setVisible(visible);
+
+        if (opt.treeItem)
+        {
+          opt.treeItem->setHidden(!visible);
+        }
+
+        if (opt.docsLabel)
+        {
+          QString hiDocs = matchesDocs ? highlightInHtml(opt.docs, filter) : opt.docs;
+          QString hiId   = matchesId   ? highlightInHtml(opt.id,   filter) : opt.id;
+          opt.input->setText(hiId);
+          opt.docsLabel->setText(displayDocs(hiId,hiDocs));
+          opt.labelHighlighted = true;
+        }
+
+        if (visible) anyVisible = true;
+      }
+      group.section->setVisible(anyVisible);
+      if (group.treeItem)
+      {
+        group.treeItem->setHidden(!anyVisible);
+        group.treeItem->setExpanded(anyVisible);
+      }
+    }
+    m_rightContainer->setUpdatesEnabled(true);
+    m_treeWidget->setUpdatesEnabled(true);
+  }
+  bool hidden = QSettings(QString::fromLatin1("Doxygen.org"), QString::fromLatin1("Doxywizard")).value(QString::fromLatin1("documentation/hide")).toBool();
+  setDocumentationVisibility(hidden);
+}
+
+void Expert::groupSelected(QTreeWidgetItem *item, QTreeWidgetItem *)
+{
+  if (!item) return;
+
+  bool filterActive = m_searchBox->text().trimmed().length() > 2;
+
+  if (!filterActive)
+  {
+    // showAll mode: clicking a group item activates it
+    for (int i = 0; i < m_groups.size(); i++)
+    {
+      if (m_groups[i].treeItem == item)
+      {
+        activateGroup(i);
+        return;
+      }
+    }
+  }
+  else
+  {
+    // Filter mode: scroll the right panel to the clicked group or option
+    m_rightContainer->updateGeometry();
+    for (const GroupEntry &group : m_groups)
+    {
+      if (group.treeItem == item)
+      {
+        int y = group.section->mapTo(m_rightContainer, QPoint(0, 0)).y();
+        m_scrollArea->verticalScrollBar()->setValue(y);
+        return;
+      }
+      for (const OptionEntry &opt : group.options)
+      {
+        if (opt.treeItem == item)
+        {
+          int y = opt.card->mapTo(m_rightContainer, QPoint(0, 0)).y();
+          m_scrollArea->verticalScrollBar()->setValue(y);
+          return;
+        }
+      }
+    }
   }
 }
+
 
 void Expert::loadSettings(QSettings *s)
 {
+  //ensureAllGroupsCreated();
   QHashIterator<QString,Input*> i(m_options);
   while (i.hasNext())
   {
@@ -772,6 +1355,7 @@ void Expert::loadSettings(QSettings *s)
 
 void Expert::saveSettings(QSettings *s)
 {
+  //ensureAllGroupsCreated();
   QHashIterator<QString,Input*> i(m_options);
   while (i.hasNext())
   {
@@ -787,11 +1371,12 @@ void Expert::saveSettings(QSettings *s)
 void Expert::loadConfig(const QString &fileName)
 {
   //printf("Expert::loadConfig(%s)\n",qPrintable(fileName));
+  //ensureAllGroupsCreated();
   parseConfig(fileName,m_options);
 }
 
 void Expert::saveTopic(QTextStream &t,QDomElement &elem,TextCodecAdapter *codec,
-                       bool brief,bool condensed)
+                       bool brief,bool condensed,bool convert)
 {
   if (!brief)
   {
@@ -832,7 +1417,7 @@ void Expert::saveTopic(QTextStream &t,QDomElement &elem,TextCodecAdapter *codec,
             if (option && !option->isEmpty())
             {
               t << " ";
-              option->writeValue(t,codec);
+              option->writeValue(t,codec,convert);
             }
             t << "\n";
           }
@@ -843,8 +1428,9 @@ void Expert::saveTopic(QTextStream &t,QDomElement &elem,TextCodecAdapter *codec,
   }
 }
 
-bool Expert::writeConfig(QTextStream &t,bool brief, bool condensed)
+bool Expert::writeConfig(QTextStream &t,bool brief, bool condensed, bool convert)
 {
+  //ensureAllGroupsCreated();
   // write global header
   t << "# Doxyfile " << getDoxygenVersion().c_str() << "\n\n";
   if (!brief && !condensed)
@@ -852,14 +1438,14 @@ bool Expert::writeConfig(QTextStream &t,bool brief, bool condensed)
     t << convertToComment(m_header);
   }
 
-  Input *option = m_options[QString::fromLatin1("DOXYFILE_ENCODING")];
+  Input *option = m_options[SA("DOXYFILE_ENCODING")];
   TextCodecAdapter codec(option->value().toString().toLatin1());
   QDomElement childElem = m_rootElement.firstChildElement();
   while (!childElem.isNull())
   {
     if (childElem.tagName()==SA("group"))
     {
-      saveTopic(t,childElem,&codec,brief,condensed);
+      saveTopic(t,childElem,&codec,brief,condensed,convert);
     }
     childElem = childElem.nextSiblingElement();
   }
@@ -876,48 +1462,9 @@ bool Expert::restoreInnerState ( const QByteArray & state )
   return m_splitter->restoreState(state);
 }
 
-void Expert::showHelp(Input *option)
-{
-  if (!m_inShowHelp)
-  {
-    m_inShowHelp = true;
-    m_helper->setText(
-        QString::fromLatin1("<qt><b>")+option->id()+
-        QString::fromLatin1("</b><br>")+
-        QString::fromLatin1("<br/>")+
-        option->docs().
-        replace(QChar::fromLatin1('\n'),QChar::fromLatin1(' '))+
-        QString::fromLatin1("</qt>")
-        );
-    m_inShowHelp = false;
-  }
-}
-
-void Expert::nextTopic()
-{
-  if (m_topicStack->currentIndex()+1==m_topicStack->count()) // last topic
-  {
-    done();
-  }
-  else
-  {
-    m_topicStack->setCurrentIndex(m_topicStack->currentIndex()+1);
-    m_next->setEnabled(m_topicStack->count()!=m_topicStack->currentIndex()+1);
-    m_prev->setEnabled(m_topicStack->currentIndex()!=0);
-    m_treeWidget->setCurrentItem(m_treeWidget->invisibleRootItem()->child(m_topicStack->currentIndex()));
-  }
-}
-
-void Expert::prevTopic()
-{
-  m_topicStack->setCurrentIndex(m_topicStack->currentIndex()-1);
-  m_next->setEnabled(m_topicStack->count()!=m_topicStack->currentIndex()+1);
-  m_prev->setEnabled(m_topicStack->currentIndex()!=0);
-  m_treeWidget->setCurrentItem(m_treeWidget->invisibleRootItem()->child(m_topicStack->currentIndex()));
-}
-
 void Expert::resetToDefaults()
 {
+  //ensureAllGroupsCreated();
   //printf("Expert::makeDefaults()\n");
   QHashIterator<QString,Input*> i(m_options);
   while (i.hasNext())
@@ -933,14 +1480,14 @@ void Expert::resetToDefaults()
 static bool stringVariantToBool(const QVariant &v)
 {
   QString s = v.toString().toLower();
-  return s==QString::fromLatin1("yes") || s==QString::fromLatin1("true") || s==QString::fromLatin1("1");
+  return s==SA("yes") || s==SA("true") || s==SA("1");
 }
 
 static bool getBoolOption(
     const QHash<QString,Input*>&model,const QString &name)
 {
   Input *option = model[name];
-  Q_ASSERT(option!=0);
+  Q_ASSERT(option!=nullptr);
   return stringVariantToBool(option->value());
 }
 
@@ -948,14 +1495,14 @@ static QString getStringOption(
     const QHash<QString,Input*>&model,const QString &name)
 {
   Input *option = model[name];
-  Q_ASSERT(option!=0);
+  Q_ASSERT(option!=nullptr);
   return option->value().toString();
 }
 
 
 bool Expert::htmlOutputPresent(const QString &workingDir) const
 {
-  bool generateHtml = getBoolOption(m_options,QString::fromLatin1("GENERATE_HTML"));
+  bool generateHtml = getBoolOption(m_options,SA("GENERATE_HTML"));
   if (!generateHtml || workingDir.isEmpty()) return false;
   QString indexFile = getHtmlOutputIndex(workingDir);
   QFileInfo fi(indexFile);
@@ -964,8 +1511,8 @@ bool Expert::htmlOutputPresent(const QString &workingDir) const
 
 QString Expert::getHtmlOutputIndex(const QString &workingDir) const
 {
-  QString outputDir = getStringOption(m_options,QString::fromLatin1("OUTPUT_DIRECTORY"));
-  QString htmlOutputDir = getStringOption(m_options,QString::fromLatin1("HTML_OUTPUT"));
+  QString outputDir = getStringOption(m_options,SA("OUTPUT_DIRECTORY"));
+  QString htmlOutputDir = getStringOption(m_options,SA("HTML_OUTPUT"));
   //printf("outputDir=%s\n",qPrintable(outputDir));
   //printf("htmlOutputDir=%s\n",qPrintable(htmlOutputDir));
   QString indexFile = workingDir;
@@ -975,7 +1522,7 @@ QString Expert::getHtmlOutputIndex(const QString &workingDir) const
   }
   else // append
   {
-    indexFile += QString::fromLatin1("/")+outputDir;
+    indexFile += SA("/")+outputDir;
   }
   if (QFileInfo(htmlOutputDir).isAbsolute()) // override
   {
@@ -983,34 +1530,117 @@ QString Expert::getHtmlOutputIndex(const QString &workingDir) const
   }
   else // append
   {
-    indexFile += QString::fromLatin1("/")+htmlOutputDir;
+    indexFile += SA("/")+htmlOutputDir;
   }
-  indexFile+=QString::fromLatin1("/index.html");
+  indexFile+=SA("/index.html");
   return indexFile;
 }
 
 bool Expert::pdfOutputPresent(const QString &workingDir) const
 {
-  bool generateLatex = getBoolOption(m_options,QString::fromLatin1("GENERATE_LATEX"));
-  bool pdfLatex = getBoolOption(m_options,QString::fromLatin1("USE_PDFLATEX"));
+  bool generateLatex = getBoolOption(m_options,SA("GENERATE_LATEX"));
+  bool pdfLatex = getBoolOption(m_options,SA("USE_PDFLATEX"));
   if (!generateLatex || !pdfLatex) return false;
-  QString latexOutput = getStringOption(m_options,QString::fromLatin1("LATEX_OUTPUT"));
+  QString latexOutput = getStringOption(m_options,SA("LATEX_OUTPUT"));
   QString indexFile;
   if (QFileInfo(latexOutput).isAbsolute())
   {
-    indexFile = latexOutput+QString::fromLatin1("/refman.pdf");
+    indexFile = latexOutput+SA("/refman.pdf");
   }
   else
   {
-    indexFile = workingDir+QString::fromLatin1("/")+
-                latexOutput+QString::fromLatin1("/refman.pdf");
+    indexFile = workingDir+SA("/")+latexOutput+SA("/refman.pdf");
   }
   QFileInfo fi(indexFile);
   return fi.exists() && fi.isFile();
 }
 
+void Expert::createMessagesList(QDomElement &elem)
+{
+  QDomElement child   = elem.firstChildElement();
+  while (!child.isNull())
+  {
+    QString name = child.attribute(SA("name"));
+    QString docs;
+    QDomNode n = child.firstChild();
+    if (!n.isNull())
+    {
+      QDomText t = n.toText();
+      if (!t.isNull()) docs+=t.data();
+    }
+    docs = docs.replace(SA("{0}"),SA("%1"))
+               .replace(SA("{1}"),SA("%2"))
+               .replace(SA("{2}"),SA("%3"));
+    m_messages.insert(name,docs);
+    child = child.nextSiblingElement();
+  }
+}
+
 void Expert::refresh()
 {
-  m_treeWidget->setCurrentItem(m_treeWidget->invisibleRootItem()->child(0));
+  m_searchBox->clear();
+  activateGroup(0);
+}
+
+bool compareFunction (QString a, QString b) {return a<b;}
+
+void Expert::dump()
+{
+  //ensureAllGroupsCreated();
+  QFile fileOut(SA("dump_%1.txt").arg(DoxygenWizard::langCode));
+  if (fileOut.open(QFile::WriteOnly|QFile::Text))
+  {
+    QTextStream out(&fileOut);
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    out.setCodec(QTextCodec::codecForName("UTF-8"));
+#else
+    out.setEncoding(QStringConverter::Utf8);
+#endif
+    // Regular documentation
+    QHashIterator<QString, Input*> i(m_options);
+    std::vector<QString> v;
+    while (i.hasNext())
+    {
+      i.next();
+      if (!i.value())
+      {
+        // no value  present, like for not compiled in settings (CLANG_...)
+      }
+      else if (i.value()->docs().isEmpty())
+      {
+        // no documentation present, like for Obsolete items
+      }
+      else
+      {
+        v.push_back(i.key());
+      }
+    }
+    std::sort(v.begin(),v.end(),compareFunction);
+    for (const auto & n : v)
+    {
+      out << n << ": " <<  m_options[n]->docs() << "\n";
+      out << SA("=================================\n");
+    }
+
+    out << SA("\n\n");
+
+    // Generated documentation
+    QHashIterator<QString, QString> g(m_messages);
+    std::vector<QString> vg;
+    while (g.hasNext())
+    {
+      g.next();
+      vg.push_back(g.key());
+    }
+    std::sort(vg.begin(),vg.end(),compareFunction);
+    for (const auto & n : vg)
+    {
+      out << n << ": " <<  m_messages[n] << "\n";
+      out << SA("=================================\n");
+    }
+
+    fileOut.flush();
+    fileOut.close();
+  }
 }
 

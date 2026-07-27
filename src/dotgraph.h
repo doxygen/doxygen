@@ -21,13 +21,14 @@
 
 #include "qcstring.h"
 #include "dir.h"
+#include "construct.h"
 
 class DotNode;
 class TextStream;
 
-enum GraphOutputFormat    { GOF_BITMAP, GOF_EPS };
-enum EmbeddedOutputFormat { EOF_Html, EOF_LaTeX, EOF_Rtf, EOF_DocBook };
-enum GraphType            { Dependency, Inheritance, Collaboration, Hierarchy, CallGraph };
+enum class GraphOutputFormat    { BITMAP, EPS };
+enum class EmbeddedOutputFormat { Html, LaTeX, Rtf, DocBook };
+enum class GraphType            { Dependency, Inheritance, Collaboration, Hierarchy, CallGraph };
 
 /** A dot graph */
 class DotGraph
@@ -37,6 +38,7 @@ class DotGraph
     DotGraph() : m_doNotAddImageToIndex(FALSE), m_noDivTag(FALSE),
                  m_zoomable(TRUE), m_urlOnly(FALSE) {}
     virtual ~DotGraph() = default;
+    NON_COPYABLE(DotGraph)
 
   protected:
     /** returns the node number. */
@@ -80,8 +82,8 @@ class DotGraph
     QCString relImgName()  const { return m_relPath + imgName(); }
 
     // the following variables are used while writing the graph to a .dot file
-    GraphOutputFormat      m_graphFormat = GOF_BITMAP;
-    EmbeddedOutputFormat   m_textFormat = EOF_Html;
+    GraphOutputFormat      m_graphFormat = GraphOutputFormat::BITMAP;
+    EmbeddedOutputFormat   m_textFormat = EmbeddedOutputFormat::Html;
     Dir                    m_dir;
     QCString               m_fileName;
     QCString               m_relPath;
@@ -98,8 +100,6 @@ class DotGraph
     bool                   m_urlOnly = false;
 
   private:
-    DotGraph(const DotGraph &);
-    DotGraph &operator=(const DotGraph &);
 
     bool prepareDotFile();
     void generateCode(TextStream &t);

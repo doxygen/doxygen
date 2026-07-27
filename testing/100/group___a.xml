@@ -9,7 +9,7 @@
       <memberdef kind="enum" id="group___a_1gaa57b8491d1d8fc1014dd54bcf83b130a" prot="public" static="no" strong="no">
         <type/>
         <name>E</name>
-        <enumvalue id="group___a_1ggaa57b8491d1d8fc1014dd54bcf83b130aac7b0fd14a12d3b1941ee5f10c795c648" prot="public">
+        <enumvalue id="group___a_1ggaa57b8491d1d8fc1014dd54bcf83b130aa42a4ade1acd55a49164099104990e09f" prot="public">
           <name>A</name>
           <briefdescription>
             <para>A in <ref refid="100__a_8c" kindref="compound">100_a.c</ref>. </para>
@@ -18,7 +18,7 @@
             <para>More for A in <ref refid="100__a_8c" kindref="compound">100_a.c</ref> from <ref refid="more__100__c_8c" kindref="compound">more_100_c.c</ref>. </para>
           </detaileddescription>
         </enumvalue>
-        <enumvalue id="group___a_1ggaa57b8491d1d8fc1014dd54bcf83b130aa1d5389f0fe7d7497267c2a70ae6a4881" prot="public">
+        <enumvalue id="group___a_1ggaa57b8491d1d8fc1014dd54bcf83b130aa3f2a77ecd272aa6d6b5902faa5e5fc68" prot="public">
           <name>B</name>
           <briefdescription>
             <para>B in <ref refid="100__a_8c" kindref="compound">100_a.c</ref>. </para>
@@ -28,10 +28,10 @@
           </detaileddescription>
         </enumvalue>
         <briefdescription>
-          <para>E in <ref refid="100__a_8c" kindref="compound">100_a.c</ref>. </para>
+          <para><ref refid="group___a_1gaa57b8491d1d8fc1014dd54bcf83b130a" kindref="member">E</ref> in <ref refid="100__a_8c" kindref="compound">100_a.c</ref>. </para>
         </briefdescription>
         <detaileddescription>
-          <para>More for E in <ref refid="100__a_8c" kindref="compound">100_a.c</ref> from <ref refid="more__100__c_8c" kindref="compound">more_100_c.c</ref>. </para>
+          <para>More for <ref refid="group___a_1gaa57b8491d1d8fc1014dd54bcf83b130a" kindref="member">E</ref> in <ref refid="100__a_8c" kindref="compound">100_a.c</ref> from <ref refid="more__100__c_8c" kindref="compound">more_100_c.c</ref>. </para>
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
@@ -39,16 +39,16 @@
       </memberdef>
     </sectiondef>
     <sectiondef kind="typedef">
-      <memberdef kind="typedef" id="group___a_1ga4ed70e44cd9d80a2082e1ae033eb7fc3" prot="public" static="no">
+      <memberdef kind="typedef" id="group___a_1ga5a6fd16639bb7ebdbd75952dc246cf51" prot="public" static="no">
         <type>struct <ref refid="structs" kindref="compound">s</ref></type>
-        <definition>struct s T</definition>
+        <definition>typedef struct s T</definition>
         <argsstring/>
         <name>T</name>
         <briefdescription>
-          <para>T in <ref refid="100__a_8c" kindref="compound">100_a.c</ref>. </para>
+          <para><ref refid="group___a_1ga5a6fd16639bb7ebdbd75952dc246cf51" kindref="member">T</ref> in <ref refid="100__a_8c" kindref="compound">100_a.c</ref>. </para>
         </briefdescription>
         <detaileddescription>
-          <para>More for T in <ref refid="100__a_8c" kindref="compound">100_a.c</ref> from <ref refid="more__100__c_8c" kindref="compound">more_100_c.c</ref>. </para>
+          <para>More for <ref refid="group___a_1ga5a6fd16639bb7ebdbd75952dc246cf51" kindref="member">T</ref> in <ref refid="100__a_8c" kindref="compound">100_a.c</ref> from <ref refid="more__100__c_8c" kindref="compound">more_100_c.c</ref>. </para>
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
@@ -56,9 +56,9 @@
       </memberdef>
     </sectiondef>
     <sectiondef kind="var">
-      <memberdef kind="variable" id="group___a_1ga7e98b8a17c0aad30ba64d47b74e2a6c1" prot="public" static="no" mutable="no">
+      <memberdef kind="variable" id="group___a_1gacb559820d9ca11295b4500f179ef6392" prot="public" static="no" mutable="no">
         <type>int</type>
-        <definition>i</definition>
+        <definition>int i</definition>
         <argsstring/>
         <name>i</name>
         <briefdescription>
@@ -71,9 +71,9 @@
         </inbodydescription>
         <location file="100_a.c" line="81" column="5" bodyfile="100_a.c" bodystart="81" bodyend="-1"/>
       </memberdef>
-      <memberdef kind="variable" id="group___a_1gabf2bc2545a4a5f5683d9ef3ed0d977e0" prot="public" static="yes" mutable="no">
+      <memberdef kind="variable" id="group___a_1ga37d972ae0b47b9099e30983131d31916" prot="public" static="yes" mutable="no">
         <type>int</type>
-        <definition>j</definition>
+        <definition>int j</definition>
         <argsstring/>
         <name>j</name>
         <briefdescription>

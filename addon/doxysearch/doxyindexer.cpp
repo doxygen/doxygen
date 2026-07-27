@@ -22,8 +22,9 @@
 #include <fstream>
 #include <iterator>
 #include <regex>
+#include <filesystem>
+#include <unordered_map>
 
-#include <sys/stat.h>
 
 // Xapian include
 #include <xapian.h>
@@ -104,7 +105,7 @@ static void addWords(const std::string &s,Xapian::Document &doc,int wfd)
 /** Adds all identifiers in \a s to document \a doc with weight \a wfd */
 static void addIdentifiers(const std::string &s,Xapian::Document &doc,int wfd)
 {
-  std::regex id_re("[A-Z_a-z][A-Z_a-z0-9]*");
+  static const std::regex id_re("[A-Z_a-z][A-Z_a-z0-9]*");
   auto id_begin = std::sregex_iterator(s.begin(), s.end(), id_re);
   auto id_end   = std::sregex_iterator();
 
@@ -176,18 +177,21 @@ class XMLContentHandler
     void startElement(const std::string &name, const XMLHandlers::Attributes &attrib)
     {
       m_data="";
-      if (name=="field")
-      {
-        std::string fieldName = XMLHandlers::value(attrib,"name");
-        if      (fieldName=="type")     m_curFieldName=TypeField;
-        else if (fieldName=="name")     m_curFieldName=NameField;
-        else if (fieldName=="args")     m_curFieldName=ArgsField;
-        else if (fieldName=="tag")      m_curFieldName=TagField;
-        else if (fieldName=="url")      m_curFieldName=UrlField;
-        else if (fieldName=="keywords") m_curFieldName=KeywordField;
-        else if (fieldName=="text")     m_curFieldName=TextField;
-        else m_curFieldName=UnknownField;
-      }
+
+      if (name != "field") return;
+
+      static const std::unordered_map<std::string, FieldNames> fieldMap{
+        { "type", TypeField },
+        { "name", NameField },
+        { "args", ArgsField },
+        { "tag", TagField },
+        { "url", UrlField },
+        { "keywords", KeywordField },
+        { "text", TextField }
+      };
+      std::string fieldName = XMLHandlers::value(attrib, "name");
+      auto        it        = fieldMap.find(fieldName);
+      m_curFieldName        = (it != fieldMap.end()) ? it->second : UnknownField;
     }
 
     /** Handler for an end tag. Called for `</doc>` and `</field>` tags */
@@ -292,7 +296,9 @@ inline std::string fileToString(const std::string &fileName)
   std::ifstream t(fileName);
   std::string result;
   t.seekg(0, std::ios::end);
-  result.reserve(t.tellg());
+  auto size = t.tellg();
+  if (size < 0) size = 0;
+  result.reserve(static_cast<std::size_t>(size));
   t.seekg(0, std::ios::beg);
   result.assign(std::istreambuf_iterator<char>(t),
                 std::istreambuf_iterator<char>());
@@ -301,8 +307,8 @@ inline std::string fileToString(const std::string &fileName)
 
 bool dirExists(const char *path)
 {
-  struct stat info = {};
-  return stat(path,&info)==0 && (info.st_mode&S_IFDIR);
+  std::error_code ec;
+  return std::filesystem::is_directory(path, ec);
 }
 
 /** main function to index data */
@@ -315,7 +321,8 @@ int main(int argc,const char **argv)
   std::string outputDir;
   for (int i=1;i<argc;i++)
   {
-    if (std::string(argv[i])=="-o")
+    const std::string arg{ argv[i] };
+    if (arg == "-o")
     {
       if (i>=argc-1)
       {
@@ -333,11 +340,11 @@ int main(int argc,const char **argv)
         }
       }
     }
-    else if (std::string(argv[i])=="-h" || std::string(argv[i])=="--help")
+    else if (arg == "-h" || arg == "--help")
     {
       usage(argv[0],0);
     }
-    else if (std::string(argv[i])=="-v" || std::string(argv[i])=="--version")
+    else if (arg == "-v" || arg == "--version")
     {
       std::cerr << argv[0] << " version: " << getFullVersion() << std::endl;
       exit(0);

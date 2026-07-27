@@ -19,11 +19,12 @@
 #include <initializer_list>
 
 #include "qcstring.h"
+#include "construct.h"
 
 /** @brief Compiled resource */
 struct Resource
 {
-  enum Type { Verbatim, Luminance, LumAlpha, CSS, SVG };
+  enum Type { Verbatim, SVG };
   const char *category;
   const char *name;
   const unsigned char *data;
@@ -59,6 +60,8 @@ class ResourceMgr
 
     ResourceMgr();
    ~ResourceMgr();
+    NON_COPYABLE(ResourceMgr)
+
     class Private;
     std::unique_ptr<Private> p;
 };

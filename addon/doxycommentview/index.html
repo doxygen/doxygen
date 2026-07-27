@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Doxygen comment viewer</title>
+    <link rel="stylesheet" type="text/css" href="/doxygen.css"/>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            height: 100vh;
+        }
+        .panel {
+            display: flex;
+            width: 50%;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .line-numbers {
+            background: #f0f0f0;
+            padding: 10px;
+            margin: 0px;
+            margin-top: 2px;
+            text-align: right;
+            user-select: none;
+            white-space: pre;
+            border-right: 1px solid #ccc;
+            font-family: monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            overflow: hidden;
+        }
+        #input {
+            width: 100%;
+            height: 100%;
+            padding: 10px;
+            margin: 0px;
+            box-sizing: border-box;
+            resize: none;
+            font-family: monospace;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        #output {
+            border-left: 1px solid #ccc;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        #output-area {
+            flex: 1;
+            overflow: auto;
+        }
+        #console-area {
+            height: 150px; /* Fixed height for the console area */
+            border-top: 1px solid #ccc;
+            overflow: auto;
+            background-color: #f9f9f9; /* Light grey background for console area */
+            padding: 10px;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+<body>
+    <div class="panel">
+        <div class="line-numbers" id="line-numbers">1</div>
+        <textarea id="input" oninput="updateLineNumbers()" onscroll="syncScroll()" onkeydown="updateLineNumbers()" onkeyup="updateLineNumbers()"></textarea>
+    </div>
+    <div class="panel" id="output">
+        <!-- Processed output will appear here -->
+      <div id="output-area">
+            <!-- Processed output will appear here -->
+        </div>
+        <div id="console-area">
+            <!-- Error messages will appear here -->
+        </div>
+    </div>
+    <script>
+        function updateLineNumbers() {
+            const textarea = document.getElementById('input');
+            const lineNumbers = document.getElementById('line-numbers');
+
+            const lines = textarea.value.split('\n').length;
+            let lineNumberString = '';
+            for (let i = 1; i <= lines; i++) {
+                lineNumberString += i + '\n';
+            }
+
+            lineNumbers.textContent = lineNumberString;
+        }
+
+        function syncScroll() {
+            const textarea = document.getElementById('input');
+            const lineNumbers = document.getElementById('line-numbers');
+            lineNumbers.scrollTop = textarea.scrollTop;
+        }
+
+        function processInput() {
+            const input = document.getElementById('input').value;
+            sessionStorage.setItem('userInput', input);
+            fetch('/process', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ input: input }),
+            })
+            .then(response => response.json())
+            .then(result => {
+                document.getElementById('output-area').innerHTML = result.html_output;
+                document.getElementById('console-area').innerHTML = result.error_output;
+            });
+        }
+
+        document.getElementById('input').addEventListener('input', () => {
+            processInput();
+        });
+
+        // Load previously saved input from local storage
+        window.onload = () => {
+            const savedInput = sessionStorage.getItem('userInput');
+            if (savedInput) {
+                document.getElementById('input').value = savedInput;
+                processInput();
+            }
+            // Initial line numbers update
+            updateLineNumbers();
+        };
+    </script>
+</body>
+</html>

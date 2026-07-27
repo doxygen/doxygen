@@ -660,7 +660,7 @@ CONTAINS
   
   !*****************************************************************************
   !!
-  !> Pack function specialised for TYPE(String) as a replacement for 
+  !> Pack function specialized for TYPE(String) as a replacement for 
   !! the intrinsic.
   !!
   !! @param[in]     array             The array of things to pack.

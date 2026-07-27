@@ -22,7 +22,7 @@ There are also situations however where you want to
 search for something by keyword rather than browse for it.
 
 HTML browsers by default have no search capabilities that work across multiple
-pages, so either doxygen or external tools need to help to facilitate 
+pages, so either Doxygen or external tools need to help to facilitate 
 this feature.
 
 Doxygen has 7 different ways to add searching to the HTML output, each of which
@@ -53,7 +53,7 @@ has its own advantages and disadvantages:
 <h2>2. Server side searching</h2>
    If you plan to put the HTML documentation on a web server, and that
    web server has the capability to process PHP code, then you can also use 
-   doxygen's built-in server side search engine. 
+   Doxygen's built-in server side search engine. 
 
    To enable this set both
    \ref cfg_searchengine "SEARCHENGINE" and 
@@ -70,14 +70,16 @@ has its own advantages and disadvantages:
    search option.
 
 <h2>3. Server side searching with external indexing</h2>
-   With release 1.8.3 of doxygen, another server based search option has
-   been added. With this option doxygen generates the raw data that can be 
+   With release 1.8.3 of Doxygen, another server based search option has
+   been added. With this option Doxygen generates the raw data that can be 
    searched and leaves it up to external tools to do the indexing and 
    searching, meaning that you could use your own indexer and search engine 
-   of choice. To make life easier doxygen ships with an example indexer 
+   of choice. To make life easier Doxygen ships with an example indexer 
    (doxyindexer) and search engine (doxysearch.cgi) based on 
    the <a href="https://xapian.org/">Xapian</a> open source search engine 
-   library.
+   library. Both binaries are included in the distribution but not installed
+   by default; they can be manually copied from the `bin` folder to i.e.
+   `/usr/local/bin` or `/var/www/cgi-bin` as desired.
 
    To enable this search method set 
    \ref cfg_searchengine "SEARCHENGINE",
@@ -87,24 +89,24 @@ has its own advantages and disadvantages:
    See \subpage extsearch for configuration details.
 
    Advantages over option 2 are that this method (potentially) scales to 
-   very large projects. It is also possible to combine multiple doxygen 
+   very large projects. It is also possible to combine multiple Doxygen 
    projects and external data into one search index. 
    The way the interaction with the search engine is done, makes it 
    possible to search from local HTML pages. Also the search results have 
    better ranking and show context information (if available).
 
    Disadvantages are that is requires a web server that can execute a CGI
-   binary, and an additional indexing step after running doxygen.
+   binary, and an additional indexing step after running Doxygen.
 
 <h2>4. Windows Compiled HTML Help</h2>
-   If you are running doxygen on Windows, then you can make a 
-   compiled HTML Help file (.chm) out of the HTML files produced by doxygen.
+   If you are running Doxygen on Windows, then you can make a 
+   compiled HTML Help file (.chm) out of the HTML files produced by Doxygen.
    This is a single file containing all HTML files and it also includes a
    search index. There are viewers for this format on many platforms,
    and Windows even supports it natively.
 
    To enable this set \ref cfg_generate_htmlhelp "GENERATE_HTMLHELP" to \c YES
-   in the configuration file. To let doxygen compile the HTML Help file for you,
+   in the configuration file. To let Doxygen compile the HTML Help file for you,
    you also need to specify the path to the HTML compiler (hhc.exe) using the
    \ref cfg_hhc_location "HHC_LOCATION" configuration option and the name of the
    resulting CHM file using \ref cfg_chm_file "CHM_FILE".
@@ -117,9 +119,9 @@ has its own advantages and disadvantages:
    by Microsoft. Although the tool works fine for most people, it can 
    sometimes crash for no apparent reason (how typical). 
 
-<h2>5. Mac OS X Doc Sets</h2> 
-   If you are running doxygen on Mac OS X 10.5 or higher, 
-   then you can make a "doc set" out of the HTML files produced by doxygen.
+<h2>5. macOS Doc Sets</h2> 
+   If you are running Doxygen on macOS 10.5 or higher, 
+   then you can make a "doc set" out of the HTML files produced by Doxygen.
    A doc set consists of a single directory with a special structure 
    containing the HTML files along with a precompiled search index. 
    A doc set can be embedded in Xcode (the integrated development environment 
@@ -127,7 +129,7 @@ has its own advantages and disadvantages:
 
    To enable the creation of doc sets set \ref cfg_generate_docset "GENERATE_DOCSET"
    to \c YES in the configuration file. There are a couple of other doc set related
-   options you may want to set. After doxygen has finished you will find
+   options you may want to set. After Doxygen has finished you will find
    a Makefile in the HTML output directory. Running "make install" on this
    Makefile will compile and install the doc set.
    See <a href="https://developer.apple.com/library/archive/featuredarticles/DoxygenXcode/_index.html">this 
@@ -135,10 +137,10 @@ has its own advantages and disadvantages:
 
    Advantage of this method is that it nicely integrates with the Xcode
    development environment, allowing for instance to click on an identifier 
-   in the editor and jump to the corresponding section in the doxygen 
+   in the editor and jump to the corresponding section in the Doxygen 
    documentation.
 
-   Disadvantage is that it only works in combination with Xcode on MacOSX.
+   Disadvantage is that it only works in combination with Xcode on macOS.
 
 <h2>6. Qt Compressed Help</h2> 
    If you develop for or want to install the Qt application framework,
@@ -165,7 +167,7 @@ has its own advantages and disadvantages:
 
 <h2>7. Eclipse Help Plugin</h2>
    If you use eclipse, you can embed the documentation generated by
-   doxygen as a help plugin. It will then appear as a topic in the help 
+   Doxygen as a help plugin. It will then appear as a topic in the help 
    browser that can be started from "Help contents" in the Help menu.
    Eclipse will generate a search index for the documentation when you
    first search for a keyword.
@@ -180,7 +182,7 @@ has its own advantages and disadvantages:
 \endverbatim
    then create the \c com.yourcompany.yourproject directory (so with
    the same name as the value of \c ECLIPSE_DOC_ID) in the 
-   \c plugin directory of eclipse and after doxygen completes copy
+   \c plugin directory of eclipse and after Doxygen completes copy
    to contents of the help output directory to 
    the \c com.yourcompany.yourproject directory.
    Then restart eclipse to make let it find the new plugin.

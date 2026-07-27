@@ -29,40 +29,34 @@ class Definition;
 class FortranCodeParser : public CodeParserInterface
 {
   public:
-    FortranCodeParser(FortranFormat format=FortranFormat_Unknown);
-    virtual ~FortranCodeParser();
+    FortranCodeParser(FortranFormat format=FortranFormat::Unknown);
+   ~FortranCodeParser() override;
+    NON_COPYABLE(FortranCodeParser)
+
     void parseCode(OutputCodeList &codeOutIntf,
                    const QCString &scopeName,
                    const QCString &input,
                    SrcLangExt lang,
-                   bool isExampleBlock,
-                   const QCString &exampleName=QCString(),
-                   const FileDef *fileDef=nullptr,
-                   int startLine=-1,
-                   int endLine=-1,
-                   bool inlineFragment=FALSE,
-                   const MemberDef *memberDef=nullptr,
-                   bool showLineNumbers=TRUE,
-                   const Definition *searchCtx=nullptr,
-                   bool collectXRefs=TRUE
-                  );
-    void resetCodeParserState();
+                   bool stripCodeComments,
+                   const CodeParserOptions &options
+                  ) override;
+    void resetCodeParserState() override;
 
   private:
     struct Private;
     std::unique_ptr<Private> p;
 };
 
-class FortranCodeParserFree : public FortranCodeParser
+class FortranCodeParserFree final : public FortranCodeParser
 {
   public:
-    FortranCodeParserFree() : FortranCodeParser(FortranFormat_Free) { }
+    FortranCodeParserFree() : FortranCodeParser(FortranFormat::Free) { }
 };
 
-class FortranCodeParserFixed : public FortranCodeParser
+class FortranCodeParserFixed final : public FortranCodeParser
 {
   public:
-    FortranCodeParserFixed() : FortranCodeParser(FortranFormat_Fixed) { }
+    FortranCodeParserFixed() : FortranCodeParser(FortranFormat::Fixed) { }
 };
 
 #endif

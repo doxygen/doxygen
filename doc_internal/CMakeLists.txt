@@ -19,7 +19,7 @@ else()
     find_package(Doxygen)
 endif()
 
-configure_file(${CMAKE_SOURCE_DIR}/doc_internal/Doxyfile.in "${CMAKE_CURRENT_BINARY_DIR}/Doxyfile" @ONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in "${CMAKE_CURRENT_BINARY_DIR}/Doxyfile" @ONLY)
 
 set(DOC_FILES
         language.tpl
@@ -27,7 +27,7 @@ set(DOC_FILES
         translator.py
 )
 
-file(GLOB LANG_FILES CONFIGURE_DEPENDS "${TOP}/src//translator_??.h")
+file(GLOB LANG_FILES CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/src//translator_??.h")
 
 foreach (f  ${DOC_FILES})
 add_custom_command(OUTPUT ${PROJECT_BINARY_DIR}/doc_internal/${f}

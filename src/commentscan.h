@@ -17,10 +17,35 @@
 #define COMMENTSCAN_H
 
 #include <memory>
+#include <stack>
+
 #include "types.h"
+#include "construct.h"
 
 class Entry;
 class OutlineParserInterface;
+
+class GuardedSection
+{
+  public:
+    GuardedSection(bool parentVisible)
+      : m_parentVisible(parentVisible) {}
+    void setEnabled(bool enabled) { m_enabled = enabled; }
+    bool isEnabled() const { return m_enabled; }
+    void setEnabledFound() { m_enabledFound = true; }
+    bool isEnabledFound() const { return m_enabledFound; }
+    bool parentVisible() const { return m_parentVisible; }
+    void setElse() { m_hasElse = true; }
+    bool hasElse() const { return m_hasElse; }
+
+  private:
+    bool m_parentVisible;
+    bool m_enabledFound = false;
+    bool m_enabled = false;
+    bool m_hasElse = false;
+};
+
+using GuardedSectionStack = std::stack<GuardedSection>;
 
 /** @file
  *  @brief Interface for the comment block scanner */
@@ -30,6 +55,7 @@ class CommentScanner
   public:
     CommentScanner();
    ~CommentScanner();
+    NON_COPYABLE(CommentScanner)
 
     /** Invokes the comment block parser with the request to parse a
      *  single comment block.
@@ -61,6 +87,7 @@ class CommentScanner
      *         finds that a the comment block finishes the entry and a new one
      *         needs to be started.
      *  @param[in] markdownEnabled Indicates if markdown specific processing should be done.
+     *  @param[inout] guards Tracks nested conditional sections (if,ifnot,..)
      *  @returns TRUE if the comment requires further processing. The
      *         parameter \a newEntryNeeded will typically be true in this case and
      *         \a position will indicate the offset inside the \a comment string
@@ -78,7 +105,8 @@ class CommentScanner
                            Protection &prot,
                            int &position,
                            bool &newEntryNeeded,
-                           bool markdownEnabled
+                           bool markdownEnabled,
+                           GuardedSectionStack *guards
                           );
     void initGroupInfo(Entry *entry);
     void enterFile(const QCString &fileName,int lineNr);
@@ -87,6 +115,8 @@ class CommentScanner
     void leaveCompound(const QCString &fileName,int line,const QCString &name);
     void open(Entry *e,const QCString &fileName,int line,bool implicit=false);
     void close(Entry *e,const QCString &fileName,int line,bool foundInline,bool implicit=false);
+    static bool isCommand(const QCString &cmdName);
+    static void addDeprecatedDocs(Entry *current,int lineNr);
   private:
     struct Private;
     std::unique_ptr<Private> p;

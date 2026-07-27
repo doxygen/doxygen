@@ -26,7 +26,7 @@
     <briefdescription>
     </briefdescription>
     <detaileddescription>
-      <para><ref refid="class_receiver" kindref="compound">Receiver</ref> class. Can be used to receive and execute commands. After execution of a command, the receiver will send an acknowledgement <msc>
+      <para><ref refid="class_receiver" kindref="compound">Receiver</ref> class. Can be used to receive and execute commands. After execution of a command, the receiver will send an acknowledgment <msc>
   Receiver,Sender;
   Receiver&lt;-Sender [label="Command()", URL="\ref Command()"];
   Receiver-&gt;Sender [label="Ack()", URL="\ref Sender::Ack()", ID="1"];

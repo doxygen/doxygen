@@ -68,6 +68,7 @@ struct xmlcodeYY_state
   bool          insideCodeLine = false;
   const Definition   *searchCtx = nullptr;
 
+  bool          stripCodeComments = true;
   bool          exampleBlock = false;
   QCString      exampleName;
   QCString      exampleFile;
@@ -81,6 +82,7 @@ struct xmlcodeYY_state
 
   std::unique_ptr<FileDef> exampleFileDef;
   const FileDef *     sourceFileDef = nullptr;
+  bool          lineNumbers = FALSE;
   const Definition *  currentDefinition = nullptr;
   const MemberDef *   currentMemberDef = nullptr;
   bool          includeCodeFragment = false;
@@ -119,7 +121,6 @@ esc         "&#"[0-9]+";"|"&#x"[0-9a-fA-F]+";"
 name        {namestart}{namechar}*
 comment     {open}"!--"([^-]|"-"[^-])*"--"{close}
 cdata       {open}"![CDATA["([^\]]|"\]"[^\]])*"]]"{close}
-data        "random string"
 string      \"([^\"&]|{esc})*\"|\'([^'&]|{esc})*\'
 
 %option noyywrap
@@ -232,15 +233,15 @@ static void codify(yyscan_t yyscanner,const char* text)
 static void setCurrentDoc(yyscan_t yyscanner,const QCString &anchor)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  if (Doxygen::searchIndex)
+  if (Doxygen::searchIndex.enabled())
   {
     if (yyextra->searchCtx)
     {
-      Doxygen::searchIndex->setCurrentDoc(yyextra->searchCtx,yyextra->searchCtx->anchor(),false);
+      Doxygen::searchIndex.setCurrentDoc(yyextra->searchCtx,yyextra->searchCtx->anchor(),false);
     }
     else
     {
-      Doxygen::searchIndex->setCurrentDoc(yyextra->sourceFileDef,anchor,true);
+      Doxygen::searchIndex.setCurrentDoc(yyextra->sourceFileDef,anchor,true);
     }
   }
 }
@@ -252,7 +253,7 @@ static void setCurrentDoc(yyscan_t yyscanner,const QCString &anchor)
 static void startCodeLine(yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  if (yyextra->sourceFileDef)
+  if (yyextra->sourceFileDef && yyextra->lineNumbers)
   {
     const Definition *d = yyextra->sourceFileDef->getSourceDefinition(yyextra->yyLineNr);
 
@@ -343,12 +344,8 @@ static void codifyLines(yyscan_t yyscanner,const char *text)
     if (c=='\n')
     {
       yyextra->yyLineNr++;
-      int l = (int)(p-sp-1);
-      char *tmp = (char*)malloc(l+1);
-      strncpy(tmp,sp,l);
-      tmp[l]='\0';
-      yyextra->code->codify(tmp);
-      free(tmp);
+      size_t l = static_cast<size_t>(p-sp-1);
+      yyextra->code->codify(QCString(sp,l));
       nextCodeLine(yyscanner);
     }
     else
@@ -412,59 +409,43 @@ XMLCodeParser::~XMLCodeParser()
 void XMLCodeParser::resetCodeParserState()
 {
   struct yyguts_t *yyg = (struct yyguts_t*)p->yyscanner;
-  yyextra->currentDefinition = 0;
-  yyextra->currentMemberDef = 0;
+  yyextra->currentDefinition = nullptr;
+  yyextra->currentMemberDef = nullptr;
 }
 
 void XMLCodeParser::parseCode(OutputCodeList &codeOutIntf,
-               const QCString &/* scopeName */,
-               const QCString &input,
-               SrcLangExt,
-               bool isExampleBlock,
-               const QCString &exampleName,
-               const FileDef *fileDef,
-               int startLine,
-               int endLine,
-               bool inlineFragment,
-               const MemberDef * /* memberDef */,
-               bool /* showLineNumbers */,
-               const Definition *searchCtx,
-               bool/* collectXRefs */ 
-              )
+                              const QCString &/* scopeName */,
+                              const QCString &input,
+                              SrcLangExt,
+                              bool stripCodeComments,
+                              const CodeParserOptions &options
+                             )
 {
   yyscan_t yyscanner = p->yyscanner;
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
 
   if (input.isEmpty()) return;
 
-  DebugLex debugLex(Debug::Lex_xmlcode, __FILE__, fileDef ? qPrint(fileDef->fileName()): NULL);
-  yyextra->fileName      = fileDef ? fileDef->fileName():"";
+  DebugLex debugLex(Debug::Lex_xmlcode, __FILE__, options.fileDef() ? qPrint(options.fileDef()->fileName()): nullptr);
+  yyextra->fileName          = options.fileDef() ? options.fileDef()->fileName():"";
+  yyextra->code              = &codeOutIntf;
+  yyextra->inputString       = input.data();
+  yyextra->inputPosition     = 0;
+  yyextra->currentFontClass  = nullptr;
+  yyextra->insideCodeLine    = false;
+  yyextra->searchCtx         = options.searchCtx();
+  yyextra->yyLineNr          = options.startLine()!=-1 ? options.startLine() : 1;
+  yyextra->inputLines        = options.endLine()!=-1   ? options.endLine()+1 : yyextra->yyLineNr + countLines(yyscanner) - 1;
+  yyextra->stripCodeComments = stripCodeComments;
+  yyextra->exampleBlock      = options.isExample();
+  yyextra->exampleName       = options.exampleName();
+  yyextra->sourceFileDef     = options.fileDef();
+  yyextra->lineNumbers       = options.fileDef() && options.showLineNumbers();
 
-  yyextra->code = &codeOutIntf;
-  yyextra->inputString   = input.data();
-  yyextra->inputPosition = 0;
-  yyextra->currentFontClass = 0;
-  yyextra->insideCodeLine = false;
-  yyextra->searchCtx = searchCtx;
-
-  if (startLine!=-1)
-    yyextra->yyLineNr    = startLine;
-  else
-    yyextra->yyLineNr    = 1;
-
-  if (endLine!=-1)
-    yyextra->inputLines  = endLine+1;
-  else
-    yyextra->inputLines  = yyextra->yyLineNr + countLines(yyscanner) - 1;
-
-  yyextra->exampleBlock  = isExampleBlock;
-  yyextra->exampleName   = exampleName;
-  yyextra->sourceFileDef = fileDef;
-
-  if (isExampleBlock && fileDef==0)
+  if (options.isExample() && options.fileDef()==nullptr)
   {
     // create a dummy filedef for the example
-    yyextra->exampleFileDef = createFileDef("",(!exampleName.isEmpty()?exampleName:QCString("generated")));
+    yyextra->exampleFileDef = createFileDef("",(!options.exampleName().isEmpty()?options.exampleName():QCString("generated")));
     yyextra->sourceFileDef = yyextra->exampleFileDef.get();
   }
 
@@ -473,11 +454,11 @@ void XMLCodeParser::parseCode(OutputCodeList &codeOutIntf,
     setCurrentDoc(yyscanner,"l00001");
   }
 
-  yyextra->includeCodeFragment = inlineFragment;
+  yyextra->includeCodeFragment = options.inlineFragment();
   // Starts line 1 on the output
   startCodeLine(yyscanner);
 
-  xmlcodeYYrestart( 0, yyscanner );
+  xmlcodeYYrestart( nullptr, yyscanner );
 
   xmlcodeYYlex(yyscanner);
 
@@ -489,7 +470,7 @@ void XMLCodeParser::parseCode(OutputCodeList &codeOutIntf,
   {
     // delete the temporary file definition used for this example
     yyextra->exampleFileDef.reset();
-    yyextra->sourceFileDef=0;
+    yyextra->sourceFileDef=nullptr;
   }
 }
 

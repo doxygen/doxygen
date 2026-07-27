@@ -20,53 +20,37 @@
 #include <vector>
 #include <sstream>
 #include <iostream>
-#include <fstream>
 #include <string>
 #include <algorithm>
+#include <filesystem>
 
 // Xapian includes
 #include <xapian.h>
 
 #include "version.h"
 
-#ifdef _WIN32
-#include <windows.h>
-#else
-#include <sys/stat.h>
-#endif
 
-#define FIELD_TYPE 1
-#define FIELD_NAME 2
-#define FIELD_ARGS 3
-#define FIELD_TAG  4
-#define FIELD_URL  5
-#define FIELD_KEYW 6
-#define FIELD_DOC  7
+constexpr Xapian::valueno FIELD_TYPE{ 1 };
+constexpr Xapian::valueno FIELD_NAME{ 2 };
+constexpr Xapian::valueno FIELD_ARGS{ 3 };
+constexpr Xapian::valueno FIELD_TAG{ 4 };
+constexpr Xapian::valueno FIELD_URL{ 5 };
+constexpr Xapian::valueno FIELD_KEYW{ 6 };
+constexpr Xapian::valueno FIELD_DOC{ 7 };
 
-#define HEX2DEC(x) (((x)>='0' && (x)<='9')?((x)-'0'):\
-                    ((x)>='a' && (x)<='f')?((x)-'a'+10):\
-                    ((x)>='A' && (x)<='F')?((x)-'A'+10):-1)
-
-
-bool dirExists(const std::string& dirName)
+constexpr int             hex2dec(unsigned char c)
 {
-#ifdef _WIN32
-  DWORD ftyp = GetFileAttributesA(dirName.c_str());
-  if (ftyp == INVALID_FILE_ATTRIBUTES)
-    return false;  //something is wrong with your path!
+  if (c >= '0' && c <= '9') return c - '0';
+  if (c >= 'a' && c <= 'f') return c - 'a' + 10;
+  if (c >= 'A' && c <= 'F') return c - 'A' + 10;
+  return -1;
+}
 
-  if (ftyp & FILE_ATTRIBUTE_DIRECTORY)
-    return true;   // this is a directory!
-#else
-  struct stat sb;
 
-  if (stat(dirName.c_str(), &sb)==0 && S_ISDIR(sb.st_mode))
-  {
-    return true;
-  }
-#endif
-
-  return false;
+bool dirExists(const std::string &dirname)
+{
+  std::error_code ec;
+  return std::filesystem::is_directory(dirname, ec);
 }
 
 
@@ -90,11 +74,10 @@ static std::string uriDecode(const std::string & sSrc)
   {
     if (*pSrc == '%') // replace %2A with corresponding ASCII character
     {
-      char dec1, dec2;
+      int           dec1, dec2;
       unsigned char c1=*(pSrc+1);
       unsigned char c2=*(pSrc+2);
-      if (-1 != (dec1 = HEX2DEC(c1))
-       && -1 != (dec2 = HEX2DEC(c2)))
+      if (-1 != (dec1 = hex2dec(c1)) && -1 != (dec2 = hex2dec(c2)))
       {
         *pEnd++ = (dec1 << 4) + dec2;
         pSrc += 3;
@@ -359,7 +342,7 @@ int main(int argc,char **argv)
     std::cout << "Content-Type:application/javascript;charset=utf-8\r\n\n";
     // parse query string
     std::vector<std::string> parts = split(queryString,'&');
-    std::string searchFor,callback;
+    std::string              searchFor;
     int num=1,page=0;
     for (std::vector<std::string>::const_iterator it=parts.begin();it!=parts.end();++it)
     {

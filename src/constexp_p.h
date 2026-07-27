@@ -22,6 +22,9 @@
 //! @brief Private interface between Parser (constexp.y) and Lexer (constexp.l)
 
 #include "cppvalue.h"
+#ifdef YYSTYPE
+#undef YYSTYPE
+#endif
 #define YYSTYPE CPPValue
 #define YY_TYPEDEF_YY_SCANNER_T
 

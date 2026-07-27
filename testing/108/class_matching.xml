@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="class_matching" kind="class" language="C++" prot="public">
+    <compoundname>Matching</compoundname>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="class_matching_1a4003bb2dfbdcec84e08cc37eee7d7b35" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>class T</type>
+          </param>
+        </templateparamlist>
+        <type>std::vector&lt; std::size_t &gt;</type>
+        <definition>auto Matching::make_foo</definition>
+        <argsstring>(T t)</argsstring>
+        <name>make_foo</name>
+        <qualifiedname>Matching::make_foo</qualifiedname>
+        <param>
+          <type>T</type>
+          <declname>t</declname>
+        </param>
+        <briefdescription>
+          <para>the declaration with normal return type </para>
+        </briefdescription>
+        <detaileddescription>
+          <para>The definition with matching trailing return type </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="108_trailing_return_types.cpp" line="29" column="17" bodyfile="108_trailing_return_types.cpp" bodystart="34" bodyend="34"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+      <para>A class </para>
+    </detaileddescription>
+    <location file="108_trailing_return_types.cpp" line="24" column="1" bodyfile="108_trailing_return_types.cpp" bodystart="25" bodyend="30"/>
+    <listofallmembers>
+      <member refid="class_matching_1a4003bb2dfbdcec84e08cc37eee7d7b35" prot="public" virt="non-virtual">
+        <scope>Matching</scope>
+        <name>make_foo</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="112__aliases_8cpp" kind="file" language="C++">
+    <compoundname>112_aliases.cpp</compoundname>
+    <sectiondef kind="func">
+      <memberdef kind="function" id="112__aliases_8cpp_1a888d87a9f8a6e3e80d5c45e838cc0416" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void foo1</definition>
+        <argsstring>()</argsstring>
+        <name>foo1</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>Embedded list</para>
+          <para>
+            <itemizedlist>
+              <listitem>
+                <para>item1</para>
+              </listitem>
+              <listitem>
+                <para>item2</para>
+              </listitem>
+            </itemizedlist>
+          </para>
+          <para>Verbatim section includes slashes <verbatim>/// * item1
+/// * item2
+/// </verbatim></para>
+          <para>Code section, does not include slashes, but shows comments <programlisting><codeline><highlight class="normal">//<sp/>code<sp/>comment</highlight></codeline><codeline><highlight class="normal">int<sp/>foo();</highlight></codeline></programlisting></para>
+          <para>Dot graph, does not include slashes <dot>
+    // dot comment
+    digraph G {
+      A -&gt; B
+    }
+    </dot>
+</para>
+          <para>
+            <simplesect kind="note">
+              <para>
+                <parblock>
+                  <para>Some text<itemizedlist><listitem><para>item1</para></listitem><listitem><para>item2</para></listitem></itemizedlist>
+</para>
+                  <para>More text </para>
+                </parblock>
+              </para>
+            </simplesect>
+          </para>
+          <para>
+            <simplesect kind="note">
+              <para>
+                <parblock>
+                  <para>Alias with embedded verbatim section <verbatim>/// Some text
+/// </verbatim> </para>
+                </parblock>
+              </para>
+            </simplesect>
+          </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="112_aliases.cpp" line="46" column="10" declfile="112_aliases.cpp" declline="46" declcolumn="10"/>
+      </memberdef>
+      <memberdef kind="function" id="112__aliases_8cpp_1a2d19baf875d1256bf3bfe2b8d02f20ea" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void foo2</definition>
+        <argsstring>()</argsstring>
+        <name>foo2</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>Embedded list</para>
+          <para>
+            <itemizedlist>
+              <listitem>
+                <para>item1</para>
+              </listitem>
+              <listitem>
+                <para>item2</para>
+              </listitem>
+            </itemizedlist>
+          </para>
+          <para>Verbatim section includes slashes <verbatim>*  * item1
+*  * item2
+*  </verbatim></para>
+          <para>Code section, does not include slashes, but shows comments <programlisting><codeline><highlight class="normal">//<sp/>code<sp/>comment</highlight></codeline><codeline><highlight class="normal">int<sp/>foo();</highlight></codeline></programlisting></para>
+          <para>Dot graph, does not include slashes <dot>
+   // dot comment
+   digraph G {
+     A -&gt; B
+   }
+   </dot>
+</para>
+          <para>
+            <simplesect kind="note">
+              <para>
+                <parblock>
+                  <para>Some text<itemizedlist><listitem><para>item1</para></listitem><listitem><para>item2</para></listitem></itemizedlist>
+</para>
+                  <para>More text </para>
+                </parblock>
+              </para>
+            </simplesect>
+          </para>
+          <para>
+            <simplesect kind="note">
+              <para>
+                <parblock>
+                  <para>Alias with embedded verbatim section <verbatim>*   Some text
+*   </verbatim> </para>
+                </parblock>
+              </para>
+            </simplesect>
+          </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="112_aliases.cpp" line="88" column="10" declfile="112_aliases.cpp" declline="88" declcolumn="10"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="112_aliases.cpp"/>
+  </compounddef>
+</doxygen>

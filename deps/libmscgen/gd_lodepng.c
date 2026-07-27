@@ -8,13 +8,12 @@ BGD_DECLARE(void) gdImagePng (gdImagePtr im, FILE * outFile)
   int **ptpixels = im->tpixels;
   unsigned char *pixelBuffer = (unsigned char *)malloc(3*im->sx*im->sy);
   unsigned char *pOut = pixelBuffer;
-  int x,y;
-  for (y=0;y<im->sy;y++)
+  for (int y = 0; y < im->sy; y++)
   {
     int *pThisRow = *ptpixels++;
-    for (x=0;x<im->sx;x++)
+    for (int x = 0; x < im->sx; x++)
     {
-      int thisPixel = *pThisRow++;
+      const int thisPixel = *pThisRow++;
       *pOut++ = gdTrueColorGetRed(thisPixel);
       *pOut++ = gdTrueColorGetGreen(thisPixel);
       *pOut++ = gdTrueColorGetBlue(thisPixel);

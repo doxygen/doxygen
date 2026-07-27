@@ -16,7 +16,7 @@ def print_unprocessed_attributes(node):
         print("WARNING: '%s' has unprocessed attr '%s'" % (node.tag,key))
 
 def extract_attribute(node,attribute,pnl):
-    if not attribute in node.attrib:
+    if attribute not in node.attrib:
         return
     pnl.append("%s = ?" % attribute)
     val.append(node.attrib[attribute])
@@ -24,7 +24,7 @@ def extract_attribute(node,attribute,pnl):
 
 def extract_element(node,chld,pnl):
     # deal with <tag />
-    if chld.text == None:
+    if chld.text is None:
         if len(chld.attrib)==0:
             node.remove(chld)
         return
@@ -111,7 +111,7 @@ def load_xml(name):
 def open_db(dbname):
     global g_conn
 
-    if dbname == None:
+    if dbname is None:
         dbname = "doxygen_sqlite3.db"
 
     if not os.path.isfile(dbname):

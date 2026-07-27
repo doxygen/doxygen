@@ -22,10 +22,10 @@
 */
 
 /*!
-  Since this documentation block belongs to the class Autolink_Test no link to 
-  Autolink_Test is generated.
+  This documentation block belongs to the class Autolink_Test which can also be
+  linked with #Autolink_Test.
 
-  Two ways to link to a constructor are: #Autolink_Test and Autolink_Test().
+  To link to a constructor: #Autolink_Test() and Autolink_Test().
 
   Links to the destructor are: #~Autolink_Test and ~Autolink_Test().
   

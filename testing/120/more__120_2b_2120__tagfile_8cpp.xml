@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="more__120_2b_2120__tagfile_8cpp" kind="file" language="C++">
+    <compoundname>120_tagfile.cpp</compoundname>
+    <briefdescription>
+      <para><ref refid="more__120_2b_2120__tagfile_8cpp" kindref="compound">more_120/b/120_tagfile.cpp</ref> brief (in <ref refid="more__120_2b_2120__tagfile_8cpp" kindref="compound">more_120/b/120_tagfile.cpp</ref>). </para>
+    </briefdescription>
+    <detaileddescription>
+      <para><ref refid="more__120_2b_2120__tagfile_8cpp" kindref="compound">more_120/b/120_tagfile.cpp</ref> description (in 120_tagfile.cpp).</para>
+      <para><ref refid="more__120_2b_2120__tagfile_8cpp" kindref="compound">more_120/b/120_tagfile.cpp</ref> description (in <ref refid="more__120_2b_2120__tagfile_8cpp" kindref="compound">more_120/b/120_tagfile.cpp</ref>). </para>
+    </detaileddescription>
+    <location file="more_120/b/120_tagfile.cpp"/>
+  </compounddef>
+</doxygen>

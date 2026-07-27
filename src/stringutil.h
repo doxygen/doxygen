@@ -47,7 +47,7 @@ inline void substituteInplace(std::string &s,
 /** Returns a new string where occurrences of substring \a toReplace in string \a s are replaced by
  *  string \a replaceWith.
  */
-inline std::string substituteStringView(std::string_view &s,
+inline std::string substituteStringView(std::string_view s,
                               std::string_view toReplace,std::string_view replaceWith)
 {
   std::string buf;
@@ -79,6 +79,34 @@ inline std::string_view stripWhiteSpace(std::string_view s)
   if (start==sl) return s.substr(0,0); // only whitespace
   while (end>start && isspace(s[end])) end--;
   return s.substr(start,end+1-start);
+}
+
+inline void addTerminalCharIfMissing(std::string &s,char c)
+{
+  if (s.empty())
+  {
+    s+=c;
+  }
+  else
+  {
+    if (s[s.length()-1]!=c) s+=c;
+  }
+}
+
+/// returns TRUE iff \a data points to a substring that matches string literal \a str
+template <size_t N>
+bool literal_at(const char *data,const char (&str)[N])
+{
+  size_t len = N-1; // exclude 0 terminator
+  return data!=nullptr && data[0]==str[0] && qstrncmp(data+1,str+1,len-1)==0;
+}
+
+/// returns TRUE iff \a data points to a substring that matches string literal \a str
+template <size_t N>
+bool literal_at(std::string_view data,const char (&str)[N])
+{
+  size_t len = N-1; // exclude 0 terminator
+  return len<=data.size() && data[0]==str[0] && qstrncmp(data.data()+1,str+1,len-1)==0;
 }
 
 #endif // STRINGUTIL_H

@@ -45,6 +45,10 @@ class MainWindow : public QMainWindow
     void outputLogStart();
     void outputLogText(QString text);
     void outputLogFinish();
+    void dump();
+    void setWorkingDir(const QString &dirName);
+    void setLanguage(const QString &langCode);
+    void saveConfig(const QString &fileName);
 
   public slots:
     void manual();
@@ -56,12 +60,15 @@ class MainWindow : public QMainWindow
     void resetToDefaults();
     void selectTab(int);
     void quit();
+    void switchLanguage();
+    void setDocumentationVisibility();
 
   private slots:
     void openRecent(QAction *action);
     void selectWorkingDir();
     void updateWorkingDir();
     void runDoxygen();
+    void runDoxygenMenu();
     void readStdout();
     void runComplete();
     void showHtmlOutput();
@@ -73,12 +80,10 @@ class MainWindow : public QMainWindow
 
   private:
     MainWindow();
-    void saveConfig(const QString &fileName);
     void addRecentFile(const QString &fileName);
     void addRecentFileList(const QString &fileName);
     void updateRecentFile(void);
     void updateConfigFileName(const QString &fileName);
-    void setWorkingDir(const QString &dirName);
     void updateLaunchButtonState();
     bool discardUnsavedChanges(bool saveOption=true);
 
@@ -86,6 +91,7 @@ class MainWindow : public QMainWindow
     QLineEdit *m_runOptions;
     QPushButton *m_selWorkingDir;
     QPushButton *m_run;
+    QAction *m_runMenu;
     QPushButton *m_saveLog;
     QCheckBox   *m_showCondensedSettings;
     QPushButton *m_launchHtml;
@@ -94,8 +100,10 @@ class MainWindow : public QMainWindow
     QLabel *m_runStatus;
     Expert *m_expert;
     Wizard *m_wizard;
+    QWidget *m_runTab;
     QString m_fileName;
     QSettings m_settings;
+    QAction *m_hideDocumentation;
     QMenu *m_recentMenu;
     QStringList m_recentFiles;
     QAction *m_resetDefault;
@@ -108,13 +116,19 @@ class MainWindow : public QMainWindow
     bool m_modified;
 };
 
-/*! \brief This class serves as a namespace for global variables used by the doxygen wizard.
- *
- *  All fields in this class are public and static, so they can be used directly.
- */
-class DoxygenWizard
+namespace DoxygenWizard
 {
-  public:
-    static bool debugFlag;
+  extern bool    debugFlag;
+  extern QString langCode;
+  QString msgFileNotFound(const QString &fileName);
+  QString msgNoPreviewAvailable(const QString &fileName);
+  QString msgNoProjectLogoSelected();
+  QString msgBrowseToFile();
+  QString msgBrowseToFolder();
+  QString msgSelectButton();
+  QString msgPreviousButton();
+  QString msgNextButton();
+  QString msgTopicsHeader();
 };
+
 #endif

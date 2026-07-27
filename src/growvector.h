@@ -20,7 +20,9 @@
 #include <memory>
 #include <iterator>
 
-/** @brief std::vector like container optimised for pushing elements to the back.
+#include "construct.h"
+
+/** @brief std::vector like container optimized for pushing elements to the back.
  *
  *  It differs from std::vector in that it can grow without invalidating
  *  pointers to its members just like std::deque and std::list.
@@ -60,16 +62,15 @@ class GrowVector
         using reference         = I&;
 
         Iterator(C &vec,size_t pos) : m_vec(&vec), m_pos(pos) {}
-        Iterator(const Iterator &other) = default;
-        Iterator &operator=(const Iterator &other) = default;
+        DEFAULT_COPYABLE(Iterator)
         reference operator*() const { return m_vec->at(m_pos); }
         pointer operator->()        { return &m_vec->at(m_pos); }
         Iterator& operator++()      { m_pos++; return *this; }
         Iterator operator++(int)    { Iterator tmp = *this; ++(*this); return tmp; }
         Iterator& operator--()      { m_pos--; return *this; }
         Iterator operator--(int)    { Iterator tmp = *this; --(*this); return tmp; }
-        friend bool operator== (const Iterator& a, const Iterator& b) { return a.m_pos == b.m_pos; };
-        friend bool operator!= (const Iterator& a, const Iterator& b) { return a.m_pos != b.m_pos; };
+        friend bool operator== (const Iterator& a, const Iterator& b) { return a.m_pos == b.m_pos; }
+        friend bool operator!= (const Iterator& a, const Iterator& b) { return a.m_pos != b.m_pos; }
 
       private:
         C     *m_vec;

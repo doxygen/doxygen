@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="md_062__main" kind="page">
+    <compoundname>md_062__main</compoundname>
+    <title>062_main</title>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+      <para>Some text in main.md</para>
+      <sect1 id="md_062__main_1autotoc_md0">
+        <title>Section 1</title>
+        <sect2 id="md_062__main_1autotoc_md1">
+          <title>Included Section 1.1</title>
+          <para>Some text in sub.md.</para>
+          <sect3 id="md_062__main_1autotoc_md2">
+            <title>Included Section x.1.1</title>
+            <para>Some text in subsub.md.</para>
+          </sect3>
+        </sect2>
+      </sect1>
+      <sect1 id="md_062__main_1autotoc_md3">
+        <title>Section 2</title>
+        <sect2 id="md_062__main_1autotoc_md4">
+          <title>Subsection 2.1</title>
+          <sect3 id="md_062__main_1autotoc_md5">
+            <title>Included Section x.1.1</title>
+            <para>Some text in subsub.md.</para>
+          </sect3>
+        </sect2>
+      </sect1>
+    </detaileddescription>
+    <location file="062_main.md"/>
+  </compounddef>
+</doxygen>

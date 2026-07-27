@@ -51,10 +51,6 @@ h1
 div.contents
 {
   background-color: var(--page-background-color);
-}
-
-div.contents
-{
   border: 1px solid var(--toc-border-color);
   border-radius: 7px 7px 7px 7px;
 }
@@ -83,9 +79,18 @@ div.contents, div.headertitle
 
 div.headertitle
 {
-  font-size: 150%;
   text-shadow: 0px 2px 2px var(--title-shadow-color);
   color: var(--title-text-color);
+}
+
+div.headertitle .title
+{
+  line-height: 38px;
+}
+
+div.contents {
+  padding-left: 12px;
+  padding-right: 12px;
 }
 
 @media(min-width: 1120px) {
@@ -98,3 +103,24 @@ div.contents, div.headertitle
 }
 
 } /* end @media */
+
+
+body {
+    scrollbar-color: var(--scrollbar-thumb-color) var(--scrollbar-background-color);
+}
+
+::-webkit-scrollbar {
+        background-color: var(--scrollbar-background-color);
+        height: 12px;
+        width: 12px;
+}
+::-webkit-scrollbar-thumb {
+        border-radius: 6px;
+        box-shadow: inset 0 0 12px 12px var(--scrollbar-thumb-color);
+        border: solid 2px transparent;
+}
+::-webkit-scrollbar-corner {
+        background-color: var(--scrollbar-background-color);
+}
+
+

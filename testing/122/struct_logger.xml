@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="struct_logger" kind="struct" language="C++" prot="public">
+    <compoundname>Logger</compoundname>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="struct_logger_1abc41bfb031d896170c7675fa96a6b30c" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type/>
+        <definition>Logger::Logger</definition>
+        <argsstring>()</argsstring>
+        <name>Logger</name>
+        <qualifiedname>Logger::Logger</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>
+            <xrefsect id="deprecated_1_deprecated000002">
+              <xreftitle>Deprecated</xreftitle>
+              <xrefdescription>
+                <para>Use <ref refid="struct_logger_1ac545b19b12b8065992980ad726d0ee52" kindref="member">Logger(int level)</ref> instead</para>
+              </xrefdescription>
+            </xrefsect>
+          </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="122_deprecated.cpp" line="16" column="5" bodyfile="122_deprecated.cpp" bodystart="16" bodyend="16"/>
+      </memberdef>
+      <memberdef kind="function" id="struct_logger_1ac545b19b12b8065992980ad726d0ee52" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type/>
+        <definition>Logger::Logger</definition>
+        <argsstring>(int level)</argsstring>
+        <name>Logger</name>
+        <qualifiedname>Logger::Logger</qualifiedname>
+        <param>
+          <type>int</type>
+          <declname>level</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>new logger constructor </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="122_deprecated.cpp" line="19" column="5" bodyfile="122_deprecated.cpp" bodystart="19" bodyend="19"/>
+      </memberdef>
+      <memberdef kind="function" id="struct_logger_1ad44f46593cb8c4c87c1178eb326e2f64" prot="public" static="no" nodiscard="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void Logger::log</definition>
+        <argsstring>()</argsstring>
+        <name>log</name>
+        <qualifiedname>Logger::log</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>
+            <xrefsect id="deprecated_1_deprecated000003">
+              <xreftitle>Deprecated</xreftitle>
+              <xrefdescription>
+                <para>Use <ref refid="struct_logger_1a9da0f55730ac4331ade9150bda054649" kindref="member">write()</ref> instead</para>
+              </xrefdescription>
+            </xrefsect>
+          </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="122_deprecated.cpp" line="22" column="10" bodyfile="122_deprecated.cpp" bodystart="22" bodyend="22"/>
+      </memberdef>
+      <memberdef kind="function" id="struct_logger_1add601a143e898b8ae6ff491d9dc9dd90" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void Logger::log_old</definition>
+        <argsstring>()</argsstring>
+        <name>log_old</name>
+        <qualifiedname>Logger::log_old</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>
+            <xrefsect id="deprecated_1_deprecated000004">
+              <xreftitle>Deprecated</xreftitle>
+              <xrefdescription>
+                <para>Use <ref refid="struct_logger_1a9da0f55730ac4331ade9150bda054649" kindref="member">write()</ref> instead </para>
+              </xrefdescription>
+            </xrefsect>
+          </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="122_deprecated.cpp" line="26" column="10" bodyfile="122_deprecated.cpp" bodystart="26" bodyend="26"/>
+      </memberdef>
+      <memberdef kind="function" id="struct_logger_1a9da0f55730ac4331ade9150bda054649" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void Logger::write</definition>
+        <argsstring>()</argsstring>
+        <name>write</name>
+        <qualifiedname>Logger::write</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>new function </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="122_deprecated.cpp" line="29" column="10" bodyfile="122_deprecated.cpp" bodystart="29" bodyend="29"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+      <para>Deprecating a constructor. </para>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="122_deprecated.cpp" line="14" column="1" bodyfile="122_deprecated.cpp" bodystart="14" bodyend="30"/>
+    <listofallmembers>
+      <member refid="struct_logger_1ad44f46593cb8c4c87c1178eb326e2f64" prot="public" virt="non-virtual">
+        <scope>Logger</scope>
+        <name>log</name>
+      </member>
+      <member refid="struct_logger_1add601a143e898b8ae6ff491d9dc9dd90" prot="public" virt="non-virtual">
+        <scope>Logger</scope>
+        <name>log_old</name>
+      </member>
+      <member refid="struct_logger_1abc41bfb031d896170c7675fa96a6b30c" prot="public" virt="non-virtual">
+        <scope>Logger</scope>
+        <name>Logger</name>
+      </member>
+      <member refid="struct_logger_1ac545b19b12b8065992980ad726d0ee52" prot="public" virt="non-virtual">
+        <scope>Logger</scope>
+        <name>Logger</name>
+      </member>
+      <member refid="struct_logger_1a9da0f55730ac4331ade9150bda054649" prot="public" virt="non-virtual">
+        <scope>Logger</scope>
+        <name>write</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

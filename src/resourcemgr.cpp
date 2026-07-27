@@ -48,7 +48,7 @@ void ResourceMgr::registerResources(std::initializer_list<Resource> resources)
 {
   for (auto &res : resources)
   {
-    p->resources.insert({res.name,res});
+    p->resources.emplace(res.name,res);
   }
 }
 
@@ -68,7 +68,7 @@ bool ResourceMgr::writeCategory(const QCString &categoryName,const QCString &tar
       }
       if (!ok)
       {
-        err("Failed to write resource '%s' to directory '%s'\n",res.name,qPrint(targetDir));
+        err("Failed to write resource '{}' to directory '{}'\n",res.name,targetDir);
         return FALSE;
       }
     }
@@ -99,62 +99,6 @@ bool ResourceMgr::copyResourceAs(const QCString &name,const QCString &targetDir,
           }
         }
         break;
-      case Resource::Luminance:
-        {
-          QCString n = name;
-          n = n.left(n.length()-4)+".png"; // replace .lum by .png
-          const uint8_t *data = res->data;
-          uint16_t width   = (data[0]<<8)+data[1];
-          uint16_t height  = (data[2]<<8)+data[3];
-          ColoredImgDataItem images[2];
-          images[0].name    = n.data();
-          images[0].width   = width;
-          images[0].height  = height;
-          images[0].content = &data[4];
-          images[0].alpha   = 0;
-          images[1].name    = 0; // terminator
-          writeColoredImgData(targetDir,images);
-          return TRUE;
-        }
-        break;
-      case Resource::LumAlpha:
-        {
-          QCString n = name;
-          n = n.left(n.length()-5)+".png"; // replace .luma by .png
-          const uint8_t *data = res->data;
-          uint16_t width   = (data[0]<<8)+data[1];
-          uint16_t height  = (data[2]<<8)+data[3];
-          ColoredImgDataItem images[2];
-          images[0].name    = n.data();
-          images[0].width   = width;
-          images[0].height  = height;
-          images[0].content = &data[4];
-          images[0].alpha   = &data[4+width*height];
-          images[1].name    = 0; // terminator
-          writeColoredImgData(targetDir,images);
-          return TRUE;
-        }
-        break;
-      case Resource::CSS:
-        {
-          std::ofstream t = Portable::openOutputStream(pathName,append);
-          if (t.is_open())
-          {
-            QCString buf(res->size, QCString::ExplicitSize);
-            memcpy(buf.rawData(),res->data,res->size);
-            buf = replaceColorMarkers(buf);
-            if (name=="navtree.css")
-            {
-              t << substitute(buf,"$width",QCString().setNum(Config_getInt(TREEVIEW_WIDTH))+"px");
-            }
-            else
-            {
-              t << substitute(buf,"$doxygenversion",getDoxygenVersion());
-            }
-            return TRUE;
-          }
-        }
-        break;
       case Resource::SVG:
         {
           std::ofstream t = Portable::openOutputStream(pathName,append);
@@ -170,7 +114,7 @@ bool ResourceMgr::copyResourceAs(const QCString &name,const QCString &targetDir,
   }
   else
   {
-    err("requested resource '%s' not compiled in!\n",qPrint(name));
+    err("requested resource '{}' not compiled in!\n",name);
   }
   return FALSE;
 }
@@ -184,7 +128,7 @@ const Resource *ResourceMgr::get(const QCString &name) const
 {
   auto it = p->resources.find(name.str());
   if (it!=p->resources.end()) return &it->second;
-  return 0;
+  return nullptr;
 }
 
 QCString ResourceMgr::getAsString(const QCString &name) const

@@ -6,7 +6,7 @@
  *  First get the inputs
  *  \snippet snippet_test.cpp input
  *  Then do the bubbling
- *  \snippet snippet_test.cpp bubble
+ *  \snippet{trimleft,nostrip} snippet_test.cpp bubble
  *  Then write the result
- *  \snippet snippet_test.cpp output
+ *  \snippet{lineno,strip} snippet_test.cpp output
  */

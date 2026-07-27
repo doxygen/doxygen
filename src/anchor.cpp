@@ -25,7 +25,7 @@
 
 struct AnchorGenerator::Private
 {
-  StringSet anchorsUsed;
+  StringUnorderedSet anchorsUsed;
   int anchorCount=0;
   std::mutex mutex;
   std::unordered_map<std::string,int> idCount;
@@ -45,15 +45,9 @@ constexpr auto prefix = "autotoc_md";
 
 std::string AnchorGenerator::addPrefixIfNeeded(const std::string &anchor)
 {
-  if (Config_getEnum(MARKDOWN_ID_STYLE)==MARKDOWN_ID_STYLE_t::GITHUB &&
-      (anchor.empty() || anchor.at(0)=='-' || (anchor.at(0)>='0' && anchor.at(0)<='9')))
-  {
-    return prefix+anchor;
-  }
-  else
-  {
-    return anchor;
-  }
+  return (Config_getEnum(MARKDOWN_ID_STYLE) == MARKDOWN_ID_STYLE_t::GITHUB &&
+         (anchor.empty() || anchor.front() == '-' || std::isdigit(anchor.front())))
+    ? prefix + anchor : anchor;
 }
 
 std::string AnchorGenerator::generate(const std::string &label)
@@ -70,7 +64,7 @@ std::string AnchorGenerator::generate(const std::string &label)
 
   auto createGitHubStyleAnchor = [&]()
   {
-    result="";
+    result.clear();
     size_t pos=0;
     while (pos<label.length())
     {
@@ -140,6 +134,5 @@ int AnchorGenerator::reserve(const std::string &anchor)
 bool AnchorGenerator::looksGenerated(const std::string &anchor)
 {
   return Config_getEnum(MARKDOWN_ID_STYLE)==MARKDOWN_ID_STYLE_t::DOXYGEN &&
-         QCString(anchor).startsWith("autotoc_md");
+         QCString(anchor).startsWith(prefix);
 }
-

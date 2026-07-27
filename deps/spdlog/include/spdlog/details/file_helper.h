@@ -13,8 +13,7 @@ namespace details {
 // When failing to open a file, retry several times(5) with a delay interval(10 ms).
 // Throw spdlog_ex exception on errors.
 
-class SPDLOG_API file_helper
-{
+class SPDLOG_API file_helper {
 public:
     file_helper() = default;
     explicit file_helper(const file_event_handlers &event_handlers);
@@ -26,6 +25,7 @@ public:
     void open(const filename_t &fname, bool truncate = false);
     void reopen(bool truncate);
     void flush();
+    void sync();
     void close();
     void write(const memory_buf_t &buf);
     size_t size() const;
@@ -53,9 +53,9 @@ private:
     filename_t filename_;
     file_event_handlers event_handlers_;
 };
-} // namespace details
-} // namespace spdlog
+}  // namespace details
+}  // namespace spdlog
 
 #ifdef SPDLOG_HEADER_ONLY
-#    include "file_helper-inl.h"
+    #include "file_helper-inl.h"
 #endif

@@ -32,7 +32,7 @@ For the HTML output there is also an alternative solution using
 <a href="https://www.mathjax.org">MathJax</a> which does not
 require the above tools. If you enable \ref cfg_use_mathjax "USE_MATHJAX" in
 the configuration then the latex formulas will be copied to the HTML "as is" and a
-client side javascript will parse them and turn them into (interactive) images.
+client side JavaScript will parse them and turn them into (interactive) images.
 
 There are four ways to include formulas in the documentation.
 <ol>
@@ -55,7 +55,7 @@ There are four ways to include formulas in the documentation.
   The LaTeX and Tex logos are: \f(\LaTeX \f) and \f(\TeX \f).
 \endverbatim results in:
 
-  The LaTeX and Tex logos are: \f(\LaTeX \f) and \f(\TeX \f).
+  The LaTeX and Tex logos are: \LaTeX and \TeX.
 <br>
 <li>Unnumbered displayed formulas that are centered on a separate line.
     These formulas should be put between \ref cmdfbropen "\\f[" and
@@ -111,7 +111,7 @@ The second command should valid text-mode commands that also work in math-mode w
 \ref cfg_use_mathjax "USE_MATHJAX".
 For the fourth command the section should contain valid command for the specific environment.
 
-\warning Currently, doxygen is not very fault tolerant in recovering 
+\warning Currently, Doxygen is not very fault tolerant in recovering 
 from typos in formulas. It may be necessary to remove the
 files <code>formula.repository</code> that are written to the html, rtf etc. directories to 
 get rid of an incorrect formula as well as the <code>form_*</code> files.

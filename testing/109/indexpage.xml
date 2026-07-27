@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="indexpage" kind="page">
+    <compoundname>index</compoundname>
+    <title>My Project</title>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+      <para>This page demonstrates how various HTML tags are rendered by Doxygen.</para>
+      <sect1 id="index_1autotoc_md0_1s1">
+        <sect2 id="index_1autotoc_md0">
+          <title>Text Formatting</title>
+          <para>
+            <bold>Bold text using &lt;b&gt;</bold>
+            <linebreak/>
+            <bold>Bold text using &lt;strong&gt;</bold>
+            <linebreak/>
+            <emphasis>Italic text using &lt;i&gt;</emphasis>
+            <linebreak/>
+            <emphasis>Emphasized text using &lt;em&gt;</emphasis>
+            <linebreak/>
+            <emphasis>Variable using &lt;var&gt;</emphasis>
+            <linebreak/>
+            <cite>Citation using &lt;cite&gt;</cite>
+            <linebreak/>
+            <underline>Underlined text using &lt;u&gt;</underline>
+            <linebreak/>
+            <ins>Inserted text using &lt;ins&gt;</ins>
+            <linebreak/>
+            <s>Strikethrough using &lt;s&gt;</s>
+            <linebreak/>
+            <strike>Strikethrough using &lt;strike&gt;</strike>
+            <linebreak/>
+            <subscript>Subscript using &lt;sub&gt;</subscript>
+            <linebreak/>
+            <superscript>Superscript using &lt;sup&gt;</superscript>
+            <linebreak/>
+            <computeroutput>Code format using &lt;code&gt;</computeroutput>
+            <linebreak/>
+            <computeroutput>Typewriter format using &lt;dfn&gt;</computeroutput>
+            <linebreak/>
+            <computeroutput>Typewriter format using &lt;tt&gt;</computeroutput>
+            <linebreak/>
+            <computeroutput>Keyboard text using &lt;kbd&gt;</computeroutput>
+            <linebreak/>
+          </para>
+          <para>
+            <ulink url="https://www.doxygen.nl">A link to doxygen's homepage</ulink>
+          </para>
+          <para>A forced line break<linebreak/>
+ Continue on the next line </para>
+          <para><anchor id="index_1anchor_point_id"/>Anchor point with id <linebreak/><anchor id="index_1anchor_point_namw"/>Anchor point with name</para>
+          <para>
+            <blockquote>
+              <para>Start of quotation block</para>
+            </blockquote>
+          </para>
+          <para>
+            <center>Piece of centered text</center>
+          </para>
+          <para>
+            <hruler/>
+          </para>
+          <para>
+            <variablelist>
+              <varlistentry>
+                <term>Description title 1 </term>
+              </varlistentry>
+              <listitem>
+                <para>Description item 1 </para>
+              </listitem>
+              <varlistentry>
+                <term>Description title 2 </term>
+              </varlistentry>
+              <listitem>
+                <para>Description item 2 </para>
+              </listitem>
+            </variablelist>
+          </para>
+          <para>
+            <image type="html" name="https://www.doxygen.nl/manual/doxygen_logo.svg" inline="yes"/>
+          </para>
+          <para>
+            <details>
+              <summary>Summary text</summary>
+              <para>Contents of the details section. </para>
+            </details>
+          </para>
+          <para>Text in a div Text in a span</para>
+          <para>
+            <heading level="1">Heading level 1</heading>
+          </para>
+          <para>
+            <heading level="2">Heading level 2</heading>
+          </para>
+          <para>
+            <heading level="3">Heading level 3</heading>
+          </para>
+          <para>
+            <heading level="4">Heading level 4</heading>
+          </para>
+          <para>
+            <heading level="5">Heading level 5</heading>
+          </para>
+          <para>
+            <heading level="6">Heading level 6</heading>
+          </para>
+          <para>Table with all tags <table rows="4" cols="2"><caption>Council budget (in £) 2018 </caption><row><entry thead="yes"><para>Items</para></entry><entry thead="yes"><para>Expenditure</para></entry></row><row><entry thead="yes"><para>Donuts</para></entry><entry thead="no"><para>3,000</para></entry></row><row><entry thead="yes"><para>Stationery</para></entry><entry thead="no"><para>18,000</para></entry></row><row><entry thead="yes"><para>Totals</para></entry><entry thead="no"><para>21,000</para></entry></row></table>
+</para>
+          <para>Table with minimal tags <table rows="4" cols="2"><caption>Council budget (in £) 2018</caption><row><entry thead="yes"><para>Items</para></entry><entry thead="yes"><para>Expenditure </para></entry></row><row><entry thead="yes"><para>Donuts</para></entry><entry thead="no"><para>3,000 </para></entry></row><row><entry thead="yes"><para>Stationery</para></entry><entry thead="no"><para>18,000 </para></entry></row><row><entry thead="yes"><para>Totals</para></entry><entry thead="no"><para>21,000 </para></entry></row></table>
+</para>
+        </sect2>
+      </sect1>
+    </detaileddescription>
+    <location file="109_htmlcmds.dox"/>
+  </compounddef>
+</doxygen>

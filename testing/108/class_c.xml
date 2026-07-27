@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="class_c" kind="class" language="C++" prot="public" abstract="yes">
+    <compoundname>C</compoundname>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="class_c_1a0b664e9b999fca39643fe34a77579794" prot="public" static="no" const="no" explicit="no" inline="no" virt="pure-virtual">
+        <type>int</type>
+        <definition>virtual int C::f_pure</definition>
+        <argsstring>()=0</argsstring>
+        <name>f_pure</name>
+        <qualifiedname>C::f_pure</qualifiedname>
+        <briefdescription>
+          <para>Pure. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="108_trailing_return_types.cpp" line="9" column="18"/>
+      </memberdef>
+      <memberdef kind="function" id="class_c_1a0c18882ecf4845fe4c4b36700f2494df" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int C::f_override</definition>
+        <argsstring>() override</argsstring>
+        <name>f_override</name>
+        <qualifiedname>C::f_override</qualifiedname>
+        <briefdescription>
+          <para>Override. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="108_trailing_return_types.cpp" line="11" column="10"/>
+      </memberdef>
+      <memberdef kind="function" id="class_c_1a04dd9ca5948792c146024e91dc007446" prot="public" static="no" const="no" explicit="no" inline="no" final="yes" virt="virtual">
+        <type>int</type>
+        <definition>virtual int C::f_final</definition>
+        <argsstring>() final</argsstring>
+        <name>f_final</name>
+        <qualifiedname>C::f_final</qualifiedname>
+        <briefdescription>
+          <para>Final. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="108_trailing_return_types.cpp" line="13" column="18"/>
+      </memberdef>
+      <memberdef kind="function" id="class_c_1a67f38ea378777e64ac87f0f50c619be9" prot="public" static="no" const="no" explicit="no" inline="no" final="yes" virt="virtual">
+        <type>int</type>
+        <definition>virtual int C::f_override_final</definition>
+        <argsstring>() override final</argsstring>
+        <name>f_override_final</name>
+        <qualifiedname>C::f_override_final</qualifiedname>
+        <briefdescription>
+          <para>Final and override. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="108_trailing_return_types.cpp" line="15" column="18"/>
+      </memberdef>
+      <memberdef kind="function" id="class_c_1af38c9dfcbee6ef5ee3d56fe3992f57b5" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type><ref refid="class_c" kindref="compound">C</ref> &amp;</type>
+        <definition>C &amp; C::operator=</definition>
+        <argsstring>(C const &amp;)=delete</argsstring>
+        <name>operator=</name>
+        <qualifiedname>C::operator=</qualifiedname>
+        <param>
+          <type><ref refid="class_c" kindref="compound">C</ref> const &amp;</type>
+        </param>
+        <briefdescription>
+          <para>Deleted copy operator. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="108_trailing_return_types.cpp" line="18" column="10"/>
+      </memberdef>
+      <memberdef kind="function" id="class_c_1a5103c38b9ec827c03fe5f0b63071846b" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type><ref refid="class_c" kindref="compound">C</ref> &amp;</type>
+        <definition>C &amp; C::operator=</definition>
+        <argsstring>(C &amp;&amp;)=default</argsstring>
+        <name>operator=</name>
+        <qualifiedname>C::operator=</qualifiedname>
+        <param>
+          <type><ref refid="class_c" kindref="compound">C</ref> &amp;&amp;</type>
+        </param>
+        <briefdescription>
+          <para>Defaulted move operator. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="108_trailing_return_types.cpp" line="20" column="10"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+      <para>A structure. </para>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="108_trailing_return_types.cpp" line="6" column="1" bodyfile="108_trailing_return_types.cpp" bodystart="6" bodyend="21"/>
+    <listofallmembers>
+      <member refid="class_c_1a04dd9ca5948792c146024e91dc007446" prot="public" virt="virtual">
+        <scope>C</scope>
+        <name>f_final</name>
+      </member>
+      <member refid="class_c_1a0c18882ecf4845fe4c4b36700f2494df" prot="public" virt="non-virtual">
+        <scope>C</scope>
+        <name>f_override</name>
+      </member>
+      <member refid="class_c_1a67f38ea378777e64ac87f0f50c619be9" prot="public" virt="virtual">
+        <scope>C</scope>
+        <name>f_override_final</name>
+      </member>
+      <member refid="class_c_1a0b664e9b999fca39643fe34a77579794" prot="public" virt="pure-virtual">
+        <scope>C</scope>
+        <name>f_pure</name>
+      </member>
+      <member refid="class_c_1af38c9dfcbee6ef5ee3d56fe3992f57b5" prot="public" virt="non-virtual">
+        <scope>C</scope>
+        <name>operator=</name>
+      </member>
+      <member refid="class_c_1a5103c38b9ec827c03fe5f0b63071846b" prot="public" virt="non-virtual">
+        <scope>C</scope>
+        <name>operator=</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

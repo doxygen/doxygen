@@ -26,7 +26,7 @@ class OutputCodeList;
 class TextStream;
 
 /*! @brief Concrete visitor implementation for HTML output. */
-class HtmlDocVisitor : public DocVisitor
+class HtmlDocVisitor final : public DocVisitor
 {
   public:
     HtmlDocVisitor(TextStream &t,OutputCodeList &ci,const Definition *ctx,const QCString &fn = QCString());
@@ -85,6 +85,8 @@ class HtmlDocVisitor : public DocVisitor
     void operator()(const DocDotFile &);
     void operator()(const DocMscFile &);
     void operator()(const DocDiaFile &);
+    void operator()(const DocPlantUmlFile &);
+    void operator()(const DocMermaidFile &);
     void operator()(const DocLink &);
     void operator()(const DocRef &);
     void operator()(const DocSecRefItem &);
@@ -116,20 +118,22 @@ class HtmlDocVisitor : public DocVisitor
     //--------------------------------------
 
     void writeObfuscatedMailAddress(const QCString &url);
-    void filter(const QCString &str, const bool retainNewline = false);
+    void filter(const QCString &str, bool retainNewline = false, bool citeEntry = false);
     QCString filterQuotedCdataAttr(const QCString &str);
     void startLink(const QCString &ref,const QCString &file,
                    const QCString &relPath,const QCString &anchor,
                    const QCString &tooltip = "");
     void endLink();
     void writeDotFile(const QCString &fileName,const QCString &relPath,const QCString &context,
-                      const QCString &srcFile,int srcLine);
+                      const QCString &srcFile,int srcLine, bool newFile = true);
     void writeMscFile(const QCString &fileName,const QCString &relPath,const QCString &context,
-                      const QCString &srcFile,int srcLine);
+                      const QCString &srcFile,int srcLine, bool newFile = true);
     void writeDiaFile(const QCString &fileName,const QCString &relPath,const QCString &context,
-                      const QCString &srcFile,int srcLine);
+                      const QCString &srcFile,int srcLine, bool newFile = true);
     void writePlantUMLFile(const QCString &fileName,const QCString &relPath,const QCString &context,
                            const QCString &srcFile,int srcLine);
+    void writeMermaidFile(const QCString &fileName,const QCString &relPath,const QCString &context,
+                          const QCString &srcFile,int srcLine);
 
     template<class DocNode>
     void forceEndParagraph(const DocNode &n);

@@ -31,12 +31,12 @@
 class Sender
 {
   public:
-    /** Acknowledgement from server */
+    /** Acknowledgment from server */
     void Ack(bool ok);
 };
 
 /** Receiver class. Can be used to receive and execute commands.
- *  After execution of a command, the receiver will send an acknowledgement
+ *  After execution of a command, the receiver will send an acknowledgment
  *  \msc
  *    Receiver,Sender;
  *    Receiver<-Sender [label="Command()", URL="\ref Command()"];

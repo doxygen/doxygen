@@ -45,8 +45,8 @@ inline const char *convertUnicodeToUpper(uint32_t code)
 {
   switch(code)
   {
-''');
-writeMapping(file,toupper);
+''')
+writeMapping(file,toupper)
 file.write(r'''    default: return nullptr;
   }
 }
@@ -55,8 +55,8 @@ inline const char *convertUnicodeToLower(uint32_t code)
 {
   switch(code)
   {
-''');
-writeMapping(file,tolower);
+''')
+writeMapping(file,tolower)
 file.write(r'''    default: return nullptr;
   }
 }
@@ -65,12 +65,12 @@ inline bool isPunctuationCharacter(uint32_t code)
 {
   switch(code)
   {
-''');
-writePunctuationCodes(file);
+''')
+writePunctuationCodes(file)
 file.write(r'''    default: return false;
   }
   return false;
 }
 
 #endif
-''');
+''')

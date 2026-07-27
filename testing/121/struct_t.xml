@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="struct_t" kind="struct" language="C++" prot="public">
+    <compoundname>T</compoundname>
+    <innerclass refid="struct_t_1_1_0fstruct_0e_8s" prot="public">T::[struct].s</innerclass>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="struct_t_1aa841b7873c11bcfef7c9101d081e20d6" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int T::x</definition>
+        <argsstring/>
+        <name>x</name>
+        <qualifiedname>T::x</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>member x </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="121_anonymous.cpp" line="13" column="7" bodyfile="121_anonymous.cpp" bodystart="13" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="struct_t_1a44fa4dfdae11dc48bfab763de3b4b0f2" prot="public" static="no" mutable="no">
+        <type>struct T::@105130175255352330347034351325246210066126346122</type>
+        <definition>struct T::@105130175255352330347034351325246210066126346122 T::s</definition>
+        <argsstring/>
+        <name>s</name>
+        <qualifiedname>T::s</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>struct s </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="121_anonymous.cpp" line="27" column="11"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+      <para>a struct </para>
+    </detaileddescription>
+    <location file="121_anonymous.cpp" line="11" column="1" bodyfile="121_anonymous.cpp" bodystart="12" bodyend="28"/>
+    <listofallmembers>
+      <member refid="struct_t_1a44fa4dfdae11dc48bfab763de3b4b0f2" prot="public" virt="non-virtual">
+        <scope>T</scope>
+        <name>s</name>
+      </member>
+      <member refid="struct_t_1aa841b7873c11bcfef7c9101d081e20d6" prot="public" virt="non-virtual">
+        <scope>T</scope>
+        <name>x</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

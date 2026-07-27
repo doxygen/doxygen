@@ -30,7 +30,7 @@ class OutputCodeList;
 class QCString;
 
 /*! @brief Concrete visitor implementation for XML output. */
-class XmlDocVisitor : public DocVisitor
+class XmlDocVisitor final : public DocVisitor
 {
   public:
     XmlDocVisitor(TextStream &t,OutputCodeList &ci,const QCString &langExt);
@@ -89,6 +89,8 @@ class XmlDocVisitor : public DocVisitor
     void operator()(const DocDotFile &);
     void operator()(const DocMscFile &);
     void operator()(const DocDiaFile &);
+    void operator()(const DocPlantUmlFile &);
+    void operator()(const DocMermaidFile &);
     void operator()(const DocLink &);
     void operator()(const DocRef &);
     void operator()(const DocSecRefItem &);
@@ -116,7 +118,7 @@ class XmlDocVisitor : public DocVisitor
     // helper functions
     //--------------------------------------
 
-    void filter(const QCString &str);
+    void filter(const QCString &str, const bool keepEntities = false, const bool citeEntry = false);
     void startLink(const QCString &ref,const QCString &file,
                    const QCString &anchor);
     void endLink();
@@ -127,9 +129,10 @@ class XmlDocVisitor : public DocVisitor
 
     TextStream &m_t;
     OutputCodeList &m_ci;
-    bool m_insidePre;
-    bool m_hide;
+    bool m_insidePre = false;
+    bool m_hide = false;
     QCString m_langExt;
+    int m_sectionLevel;
 };
 
 #endif

@@ -28,7 +28,7 @@ class CondParser
 {
   // public functions
   public:
-    CondParser() : m_e(0), m_tokenType(NOTHING) {}
+    CondParser() : m_e(nullptr), m_tokenType(NOTHING) {}
     bool parse(const QCString &fileName,int lineNr,const QCString &expr);
 
     // enumerations

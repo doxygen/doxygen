@@ -17,23 +17,23 @@
 /*! \page external Linking to external documentation
 
 If your project depends on external libraries or tools, there are several 
-reasons to not include all sources for these with every run of doxygen:
+reasons to not include all sources for these with every run of Doxygen:
 
 <dl>
 <dt>Disk space:<dd> Some documentation may be available outside of the output 
-    directory of doxygen already, for instance somewhere on the web. 
+    directory of Doxygen already, for instance somewhere on the web. 
     You may want to link to these pages instead of generating the documentation 
     in your local output directory.
 <dt>Compilation speed:<dd> External projects typically have a different update 
-    frequency from your own project. It does not make much sense to let doxygen 
+    frequency from your own project. It does not make much sense to let Doxygen 
     parse the sources for these external project over and over again, even if 
     nothing has changed.
-<dt>Memory:<dd> For very large source trees, letting doxygen parse all sources 
+<dt>Memory:<dd> For very large source trees, letting Doxygen parse all sources 
     may simply take too much of your system's memory. By dividing the sources 
     into several "packages", the sources of one package can be parsed by 
-    doxygen, while all other packages that this package depends on, are 
+    Doxygen, while all other packages that this package depends on, are 
     linked in externally. This saves a lot of memory.
-<dt>Availability:<dd> For some projects that are documented with doxygen,
+<dt>Availability:<dd> For some projects that are documented with Doxygen,
     the sources may just not be available.
 <dt>Copyright issues:<dd>If the external
     package and its documentation are copyright someone else, it may be
@@ -46,7 +46,7 @@ reasons to not include all sources for these with every run of doxygen:
 
 </dl>
 
-If any of the above apply, you can use doxygen's tag file mechanism.
+If any of the above apply, you can use Doxygen's tag file mechanism.
 A tag file is basically a compact representation of the entities found in the
 external sources. Doxygen can both generate and read tag files.
 
@@ -59,7 +59,7 @@ you should specify the name of the tag files after
 the \ref cfg_tagfiles "TAGFILES" option in the configuration file.
 
 A tag file typically only contains a relative location of the documentation from the
-point where doxygen was run. So when you include a tag file in other project 
+point where Doxygen was run. So when you include a tag file in other project 
 you have to specify where the external documentation is located in relation this project.
 You can do this in the configuration file by assigning the (relative) location to the
 tag files specified after the \ref cfg_tagfiles "TAGFILES" configuration
@@ -86,9 +86,9 @@ The directory structure looks as follows:
   +- ext2
   |   +- html               HTML output directory for ext2
   |   |- ext2.tag           tag file for ext2
-  |- proj.cfg               doxygen configuration file for proj
-  |- ext1.cfg               doxygen configuration file for ext1
-  |- ext2.cfg               doxygen configuration file for ext2
+  |- proj.cfg               Doxygen configuration file for proj
+  |- ext1.cfg               Doxygen configuration file for ext1
+  |- ext2.cfg               Doxygen configuration file for ext2
 \endverbatim
 
 \par

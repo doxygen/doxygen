@@ -33,7 +33,7 @@ RefItem *RefList::add()
   std::unique_ptr<RefItem> item = std::make_unique<RefItem>(m_id,this);
   RefItem *result = item.get();
   m_entries.push_back(std::move(item));
-  m_lookup.insert({m_id,result});
+  m_lookup.emplace(m_id,result);
   return result;
 }
 
@@ -56,9 +56,9 @@ void RefList::generatePage()
 {
   if (!isEnabled()) return;
 
-  std::sort(m_entries.begin(),m_entries.end(),
-            [](std::unique_ptr<RefItem> &left,std::unique_ptr<RefItem> &right)
-            { return qstricmp(left->title(),right->title()) < 0; });
+  std::stable_sort(m_entries.begin(),m_entries.end(),
+            [](const std::unique_ptr<RefItem> &left,const std::unique_ptr<RefItem> &right)
+            { return qstricmp_sort(left->title(),right->title()) < 0; });
   //RefItem *item;
   QCString doc;
   int cnt = 0;
@@ -121,6 +121,6 @@ void RefList::generatePage()
   //printf("generatePage('%s')\n",doc.data());
   if (cnt>0)
   {
-    addRelatedPage(m_listName,m_pageTitle,doc,m_fileName,1,1,RefItemVector(),0,0,TRUE);
+    addRelatedPage(m_listName,m_pageTitle,doc,m_fileName,1,1,RefItemVector(),nullptr,nullptr,TRUE);
   }
 }

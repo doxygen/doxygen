@@ -62,6 +62,7 @@ endmacro()
 
 CHECK_REQUIRED_VARIABLE(PRE_CONFIGURE_GIT_VERSION_FILE)
 CHECK_REQUIRED_VARIABLE(POST_CONFIGURE_GIT_VERSION_FILE)
+CHECK_REQUIRED_VARIABLE(GIT_CONFIG_DIR)
 CHECK_OPTIONAL_VARIABLE(GIT_STATE_FILE "${GENERATED_SRC}/git_state")
 #CHECK_REQUIRED_VARIABLE(GIT_STATE_FILE)
 CHECK_OPTIONAL_VARIABLE(GIT_WORKING_DIR "${PROJECT_SOURCE_DIR}")
@@ -98,35 +99,41 @@ function(GetGitState _working_dir _state)
 
     # Get the hash for HEAD.
     set(_success "true")
-    execute_process(COMMAND
-        "${GIT_EXECUTABLE}" rev-parse --verify HEAD
-        WORKING_DIRECTORY "${_working_dir}"
-        RESULT_VARIABLE res
-        OUTPUT_VARIABLE _hashvar
-        ERROR_QUIET
-        OUTPUT_STRIP_TRAILING_WHITESPACE)
-    if(NOT res EQUAL 0)
+    if(EXISTS "${GIT_CONFIG_DIR}")
+        execute_process(COMMAND
+            "${GIT_EXECUTABLE}" rev-parse --verify HEAD
+            WORKING_DIRECTORY "${_working_dir}"
+            RESULT_VARIABLE res
+            OUTPUT_VARIABLE _hashvar
+            ERROR_QUIET
+            OUTPUT_STRIP_TRAILING_WHITESPACE)
+        if(NOT res EQUAL 0)
+            set(_success "false")
+            set(_hashvar "GIT-NOTFOUND")
+        endif()
+    
+        # Get whether or not the working tree is dirty.
+        execute_process(COMMAND
+            "${GIT_EXECUTABLE}" status --porcelain
+            WORKING_DIRECTORY "${_working_dir}"
+            RESULT_VARIABLE res
+            OUTPUT_VARIABLE out
+            ERROR_QUIET
+            OUTPUT_STRIP_TRAILING_WHITESPACE)
+        if(NOT res EQUAL 0)
+            set(_success "false")
+            set(_dirty "false")
+        else()
+            if(NOT "${out}" STREQUAL "")
+                set(_dirty "true")
+            else()
+                set(_dirty "false")
+            endif()
+        endif()
+    else()
         set(_success "false")
         set(_hashvar "GIT-NOTFOUND")
-    endif()
-
-    # Get whether or not the working tree is dirty.
-    execute_process(COMMAND
-        "${GIT_EXECUTABLE}" status --porcelain
-        WORKING_DIRECTORY "${_working_dir}"
-        RESULT_VARIABLE res
-        OUTPUT_VARIABLE out
-        ERROR_QUIET
-        OUTPUT_STRIP_TRAILING_WHITESPACE)
-    if(NOT res EQUAL 0)
-        set(_success "false")
         set(_dirty "false")
-    else()
-        if(NOT "${out}" STREQUAL "")
-            set(_dirty "true")
-        else()
-            set(_dirty "false")
-        endif()
     endif()
 
     # Return a list of our variables to the parent scope.
@@ -199,6 +206,7 @@ function(SetupGitMonitoring)
             -DGIT_WORKING_DIR=${GIT_WORKING_DIR}
             -DGIT_EXECUTABLE=${GIT_EXECUTABLE}
             -DGIT_STATE_FILE=${GIT_STATE_FILE}
+	    -DGIT_CONFIG_DIR=${GIT_CONFIG_DIR}
 	    -DPRE_CONFIGURE_GIT_VERSION_FILE=${PRE_CONFIGURE_GIT_VERSION_FILE}
 	    -DPOST_CONFIGURE_GIT_VERSION_FILE=${POST_CONFIGURE_GIT_VERSION_FILE}
             -P "${CMAKE_CURRENT_LIST_FILE}")

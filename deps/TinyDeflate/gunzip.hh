@@ -702,7 +702,7 @@ namespace gunzip_ns
                     // Note: Throws away progress already made traversing the tree
                     return ~std::uint_least32_t(0); // error flag
                 }
-                cur = (unsigned(cur) << 1) | unsigned(bool(p));
+                cur = (unsigned(cur) << 1) | bool(p);
             #ifdef DEFL_DO_HUFF_STATS
                 if(len > maxlen)
                 {
@@ -944,27 +944,23 @@ namespace gunzip_ns
 
         // The following routines are macros rather than e.g. lambda functions,
         // in order to make them inlined in the function structure, and breakable/resumable.
-	#define CONCAT(a, b) a##b
 
         // Bit-by-bit input routine
-        #define DummyGetBits_(line,numbits) do { \
-            auto CONCAT(pd,line) = state.template GetBits<bool(Abortable&Flag_InputAbortable)>(std::forward<InputFunctor>(input), numbits); \
-            if((Abortable & Flag_InputAbortable) && !~CONCAT(pd,line)) return -2; \
+        #define DummyGetBits(numbits) do { \
+            auto p = state.template GetBits<bool(Abortable&Flag_InputAbortable)>(std::forward<InputFunctor>(input), numbits); \
+            if((Abortable & Flag_InputAbortable) && !~p) return -2; \
         } while(0)
-        #define DummyGetBits(numbits) DummyGetBits_(__LINE__, numbits)
 
-        #define GetBits_(line,numbits, target) \
-            auto CONCAT(pb,line) = state.template GetBits<bool(Abortable&Flag_InputAbortable)>(std::forward<InputFunctor>(input), numbits); \
-            if((Abortable & Flag_InputAbortable) && !~CONCAT(pb,line)) return -2; \
-            target = CONCAT(pb,line)
-        #define GetBits(numbits, target) GetBits_(__LINE__, numbits, target)
+        #define GetBits(numbits, target) \
+            auto p = state.template GetBits<bool(Abortable&Flag_InputAbortable)>(std::forward<InputFunctor>(input), numbits); \
+            if((Abortable & Flag_InputAbortable) && !~p) return -2; \
+            target = p
 
         // Huffman tree read routine.
-        #define HuffRead_(line, tree, target) \
-            auto CONCAT(ph,line) = state.template HuffRead<bool(Abortable&Flag_InputAbortable)>(std::forward<InputFunctor>(input), tree); \
-            if((Abortable & Flag_InputAbortable) && !~CONCAT(ph,line)) return -2; \
-            target = CONCAT(ph,line)
-        #define HuffRead(tree, target) HuffRead_(__LINE__, tree, target)
+        #define HuffRead(tree, target) \
+            auto p = state.template HuffRead<bool(Abortable&Flag_InputAbortable)>(std::forward<InputFunctor>(input), tree); \
+            if((Abortable & Flag_InputAbortable) && !~p) return -2; \
+            target = p
 
         #define Fail_If(condition) do { \
             /*assert(!(condition));*/ \
@@ -1141,21 +1137,21 @@ namespace gunzip_ns
             //fprintf(stderr, "both track flag\n");
             SizeTracker<DeflateTrackBothSize> tracker;
             return tracker(Gunzip<code & Flag_NoTrackFlagMask>
-                (tracker.template ForwardInput(i), tracker.template ForwardOutput(o), tracker.template ForwardWindow(c), std::forward<B>(b)));
+                (tracker.template ForwardInput<I>(i), tracker.template ForwardOutput<O>(o), tracker.template ForwardWindow<C>(c), std::forward<B>(b)));
         }
         else if constexpr(code & Flag_TrackIn)
         {
             //fprintf(stderr, "in track flag\n");
             SizeTracker<DeflateTrackInSize> tracker;
             return tracker(Gunzip<code & Flag_NoTrackFlagMask>
-                (tracker.template ForwardInput(i),std::forward<O>(o),std::forward<C>(c),std::forward<B>(b)));
+                (tracker.template ForwardInput<I>(i),std::forward<O>(o),std::forward<C>(c),std::forward<B>(b)));
         }
         else if constexpr(code & Flag_TrackOut)
         {
             //fprintf(stderr, "out track flag\n");
             SizeTracker<DeflateTrackOutSize> tracker;
             return tracker(Gunzip<code & Flag_NoTrackFlagMask>
-                (std::forward<I>(i), tracker.template ForwardOutput(o), tracker.template ForwardWindow(c), std::forward<B>(b)));
+                (std::forward<I>(i), tracker.template ForwardOutput<O>(o), tracker.template ForwardWindow<C>(c), std::forward<B>(b)));
         }
         else
         {

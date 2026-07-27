@@ -24,17 +24,18 @@
  *
  *  This is the Lex language parser for doxygen.
  */
-class LexOutlineParser : public OutlineParserInterface
+class LexOutlineParser final : public OutlineParserInterface
 {
   public:
     LexOutlineParser();
-   ~LexOutlineParser();
+   ~LexOutlineParser() override;
+    NON_COPYABLE(LexOutlineParser)
     void parseInput(const QCString &fileName,
                     const char *fileBuf,
                     const std::shared_ptr<Entry> &root,
-                    ClangTUParser *clangParser);
-    bool needsPreprocessing(const QCString &/* extension */) const { return TRUE; };
-    void parsePrototype(const QCString &/* text */){}
+                    ClangTUParser *clangParser) override;
+    bool needsPreprocessing(const QCString &/* extension */) const override { return TRUE; }
+    void parsePrototype(const QCString &/* text */) override {}
 
   private:
     struct Private;

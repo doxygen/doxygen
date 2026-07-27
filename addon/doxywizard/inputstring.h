@@ -18,8 +18,8 @@
 #include <QObject>
 #include <QMap>
 #include <QStringList>
+#include <QLabel>
 
-class QLabel;
 class QLineEdit;
 class QToolBar;
 class QComboBox;
@@ -60,8 +60,10 @@ class InputString : public QObject, public Input
     void setEnabled(bool);
     void updateDependencies() {}
     bool isDefault();
-    void writeValue(QTextStream &t,TextCodecAdapter *codec);
+    void writeValue(QTextStream &t,TextCodecAdapter *codec,bool convert);
     void setTemplateDocs(const QString &docs) { m_tdocs = docs; }
+    void setText(const QString &txt) { m_lab->setText(txt); }
+    void setToolTip(const QString &txt) { m_lab->setToolTip(txt); }
     bool isEmpty() { return m_str.isEmpty(); }
     QString checkEnumVal(const QString &value);
 

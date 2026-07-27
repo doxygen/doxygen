@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="indexpage" kind="page">
+    <compoundname>index</compoundname>
+    <title>My Project</title>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+      <para>See <ref refid="struct_container_3_01_elem5_01_4_1_1_nested" kindref="compound">Container&lt;Elem5&gt;::Nested</ref> for more info. See <ref refid="class_container_3_01_elem5_01_4_1af27fc554d1ab2cff4b9bbbe01cee4b37" kindref="member">Container&lt;Elem5&gt;::specialization()</ref> for more info. </para>
+    </detaileddescription>
+    <location file="106_specialization.cpp"/>
+  </compounddef>
+</doxygen>

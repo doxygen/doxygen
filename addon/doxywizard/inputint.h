@@ -15,9 +15,9 @@
 
 #include "input.h"
 #include <QObject>
+#include <QLabel>
 
 class QGridLayout;
-class QLabel;
 class QSpinBox;
 
 class InputInt : public QObject, public Input
@@ -42,8 +42,10 @@ class InputInt : public QObject, public Input
     void setEnabled(bool);
     void updateDependencies() {}
     bool isDefault();
-    void writeValue(QTextStream &t,TextCodecAdapter *codec);
+    void writeValue(QTextStream &t,TextCodecAdapter *codec,bool convert);
     void setTemplateDocs(const QString &docs) { m_tdocs = docs; }
+    void setText(const QString &txt) { m_lab->setText(txt); }
+    void setToolTip(const QString &txt) { m_lab->setToolTip(txt); }
 
   public slots:
     void reset();

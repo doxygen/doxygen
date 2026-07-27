@@ -60,7 +60,7 @@ It has a caption, table heading, various row and column spans,
 a nested table as one of the cells, and a item list in another cell.
 
 Note that the end tags (like `</td>`) are left out in the example above.
-This is allowed, and in the HTML output doxygen will add the end tags again.
+This is allowed, and in the HTML output Doxygen will add the end tags again.
 
 \latexonly \newpage \endlatexonly
 The output will look as follows:

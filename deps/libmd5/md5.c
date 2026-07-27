@@ -37,8 +37,8 @@ detectEndianess()
   int nl = 0x12345678;
   short ns = 0x1234;
 
-  unsigned char *p = (unsigned char *)(&nl);
-  unsigned char *sp = (unsigned char *)(&ns);
+  const unsigned char *p = (unsigned char *)(&nl);
+  const unsigned char *sp = (unsigned char *)(&ns);
 
   if (g_endianessDetected) return;
   if ( p[0] == 0x12 && p[1] == 0x34 && p[2] == 0x56 && p[3] == 0x78 )
@@ -60,11 +60,9 @@ detectEndianess()
 static void
 byteSwap(UWORD32 *buf, unsigned words)
 {
-        md5byte *p;
-
         if (!g_bigEndian) return;
 
-	p = (md5byte *)buf;
+	md5byte *p = (md5byte *)buf;
 
 	do {
 		*buf++ = (UWORD32)((unsigned)p[3] << 8 | p[2]) << 16 |
@@ -98,11 +96,9 @@ MD5Init(struct MD5Context *ctx)
 void
 MD5Update(struct MD5Context *ctx, md5byte const *buf, unsigned len)
 {
-	UWORD32 t;
-
 	/* Update byte count */
 
-	t = ctx->bytes[0];
+	UWORD32 t = ctx->bytes[0];
 	if ((ctx->bytes[0] = t + len) < t)
 		ctx->bytes[1]++;	/* Carry from low to high */
 
@@ -189,12 +185,10 @@ MD5Final(md5byte digest[16], struct MD5Context *ctx)
 void
 MD5Transform(UWORD32 buf[4], UWORD32 const in[16])
 {
-	UWORD32 a, b, c, d;
-
-	a = buf[0];
-	b = buf[1];
-	c = buf[2];
-	d = buf[3];
+	UWORD32 a = buf[0];
+	UWORD32 b = buf[1];
+	UWORD32 c = buf[2];
+	UWORD32 d = buf[3];
 
 	MD5STEP(F1, a, b, c, d, in[0] + 0xd76aa478, 7);
 	MD5STEP(F1, d, a, b, c, in[1] + 0xe8c7b756, 12);
@@ -284,18 +278,14 @@ void MD5Buffer (const char *buf,unsigned int len,unsigned char sig[16])
 
 void MD5SigToString(unsigned char signature[16],char str[33])
 {
-  unsigned char *sig_p;
-  char          *str_p;
-  unsigned int  high, low;
+  char *str_p = str;
 
-  str_p = str;
-
-  for (sig_p = (unsigned char *)signature;
+  for (unsigned char *sig_p = (unsigned char *)signature;
       sig_p < (unsigned char *)signature + 16;
       sig_p++)
   {
-    high = *sig_p / 16;
-    low = *sig_p % 16;
+    unsigned int high = *sig_p / 16;
+    unsigned int low = *sig_p % 16;
     /* account for 2 chars */
     *str_p++ = HEX_STRING[high];
     *str_p++ = HEX_STRING[low];
@@ -303,5 +293,3 @@ void MD5SigToString(unsigned char signature[16],char str[33])
   /* account for 1 terminator */
   *str_p++ = '\0';
 }
-
-

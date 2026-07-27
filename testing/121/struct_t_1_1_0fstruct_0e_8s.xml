@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="struct_t_1_1_0fstruct_0e_8s" kind="struct" language="C++" prot="public">
+    <compoundname>T::[struct].s</compoundname>
+    <innerclass refid="union_t_1_1_0funion_0e_8s_8u" prot="public">T::[union].s.u</innerclass>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="struct_t_1_1_0fstruct_0e_8s_1ade01733ce8634b5413cb31a8239c4481" prot="public" static="no" mutable="no">
+        <type>enum T::@105130175255352330347034351325246210066126346122::@232107032177334151031303003373145175047371003261</type>
+        <definition>enum T::@105130175255352330347034351325246210066126346122::@232107032177334151031303003373145175047371003261 T::@105130175255352330347034351325246210066126346122::e_var</definition>
+        <argsstring/>
+        <name>e_var</name>
+        <qualifiedname>T::[struct].s::e_var</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>enum variable </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="121_anonymous.cpp" line="20" column="17"/>
+      </memberdef>
+      <memberdef kind="variable" id="struct_t_1_1_0fstruct_0e_8s_1aebff4d08a434bcceb9772610ac024070" prot="public" static="no" mutable="no">
+        <type>union T::@105130175255352330347034351325246210066126346122::@337034040244106107341147123013254310356115075002</type>
+        <definition>union T::@105130175255352330347034351325246210066126346122::@337034040244106107341147123013254310356115075002 T::@105130175255352330347034351325246210066126346122::u</definition>
+        <argsstring/>
+        <name>u</name>
+        <qualifiedname>T::[struct].s::u</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>union u </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="121_anonymous.cpp" line="25" column="13"/>
+      </memberdef>
+      <memberdef kind="variable" id="struct_t_1_1_0fstruct_0e_8s_1a7dff8056c360f232b02ff004fd8f2911" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int T::@105130175255352330347034351325246210066126346122::y</definition>
+        <argsstring/>
+        <name>y</name>
+        <qualifiedname>T::[struct].s::y</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>member y </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="121_anonymous.cpp" line="26" column="9"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-type">
+      <memberdef kind="enum" id="struct_t_1_1_0fstruct_0e_8s_1a6d27de74a6ef55dbcb346437d032b003" prot="public" static="no" strong="no">
+        <type/>
+        <name>@232107032177334151031303003373145175047371003261</name>
+        <qualifiedname>T::[struct].s::@232107032177334151031303003373145175047371003261</qualifiedname>
+        <enumvalue id="struct_t_1_1_0fstruct_0e_8s_1a6d27de74a6ef55dbcb346437d032b003ac8583711dec1aac1889a0a0e8b892ea0" prot="public">
+          <name>EVal1</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+            <para>enum value 1 </para>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="struct_t_1_1_0fstruct_0e_8s_1a6d27de74a6ef55dbcb346437d032b003a22b29a9da51c3a136913e60425b63297" prot="public">
+          <name>EVal2</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+            <para>enum value 2 </para>
+          </detaileddescription>
+        </enumvalue>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="121_anonymous.cpp" line="16" column="5"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="121_anonymous.cpp" line="14" column="3" bodyfile="121_anonymous.cpp" bodystart="15" bodyend="27"/>
+    <listofallmembers>
+      <member refid="struct_t_1_1_0fstruct_0e_8s_1ade01733ce8634b5413cb31a8239c4481" prot="public" virt="non-virtual">
+        <scope>T::[struct].s</scope>
+        <name>e_var</name>
+      </member>
+      <member refid="struct_t_1_1_0fstruct_0e_8s_1a6d27de74a6ef55dbcb346437d032b003ac8583711dec1aac1889a0a0e8b892ea0" prot="public" virt="non-virtual">
+        <scope>T::[struct].s</scope>
+        <name>EVal1</name>
+      </member>
+      <member refid="struct_t_1_1_0fstruct_0e_8s_1ac8583711dec1aac1889a0a0e8b892ea0" prot="public" virt="non-virtual">
+        <scope>T::[struct].s</scope>
+        <name>EVal1</name>
+      </member>
+      <member refid="struct_t_1_1_0fstruct_0e_8s_1a6d27de74a6ef55dbcb346437d032b003a22b29a9da51c3a136913e60425b63297" prot="public" virt="non-virtual">
+        <scope>T::[struct].s</scope>
+        <name>EVal2</name>
+      </member>
+      <member refid="struct_t_1_1_0fstruct_0e_8s_1a22b29a9da51c3a136913e60425b63297" prot="public" virt="non-virtual">
+        <scope>T::[struct].s</scope>
+        <name>EVal2</name>
+      </member>
+      <member refid="struct_t_1_1_0fstruct_0e_8s_1aebff4d08a434bcceb9772610ac024070" prot="public" virt="non-virtual">
+        <scope>T::[struct].s</scope>
+        <name>u</name>
+      </member>
+      <member refid="struct_t_1_1_0fstruct_0e_8s_1a7dff8056c360f232b02ff004fd8f2911" prot="public" virt="non-virtual">
+        <scope>T::[struct].s</scope>
+        <name>y</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

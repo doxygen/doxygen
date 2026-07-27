@@ -20,6 +20,7 @@
 
 #include <vector>
 #include <memory>
+#include <optional>
 
 #include <sys/types.h>
 
@@ -46,7 +47,8 @@ class ModuleDef;
 class MemberDef : public Definition
 {
   public:
-    virtual DefType definitionType() const = 0;
+    ABSTRACT_BASE_CLASS(MemberDef)
+
     // move this member into a different scope
     virtual std::unique_ptr<MemberDef> deepCopy() const =0;
     virtual void moveTo(Definition *) = 0;
@@ -58,11 +60,6 @@ class MemberDef : public Definition
     //-----------------------------------------------------------------------------------
     // ----  getters -----
     //-----------------------------------------------------------------------------------
-
-    // link id
-    virtual QCString getOutputFileBase() const = 0;
-    virtual QCString getReference() const = 0;
-    virtual QCString anchor() const = 0;
 
     virtual QCString declaration() const = 0;
     virtual QCString definition() const = 0;
@@ -87,20 +84,18 @@ class MemberDef : public Definition
     virtual       NamespaceDef* getNamespaceDef()       = 0;
     virtual const ModuleDef*    getModuleDef() const    = 0;
 
-    virtual const ClassDef *accessorClass() const = 0;
-
     // grabbing the property read/write accessor names
     virtual QCString getReadAccessor() const = 0;
     virtual QCString getWriteAccessor() const = 0;
 
     // querying the grouping definition
+    virtual GroupDef *getGroupDef() = 0;
     virtual const GroupDef *getGroupDef() const = 0;
     virtual Grouping::GroupPri_t getGroupPri() const = 0;
     virtual QCString getGroupFileName() const = 0;
     virtual int getGroupStartLine() const = 0;
     virtual bool getGroupHasDocs() const = 0;
 
-    virtual QCString qualifiedName() const = 0;
     virtual QCString objCMethodName(bool localLink,bool showStatic) const = 0;
 
     // direct kind info
@@ -131,6 +126,7 @@ class MemberDef : public Definition
     virtual bool isInline() const = 0;
     virtual bool isExplicit() const = 0;
     virtual bool isMutable() const = 0;
+    virtual bool isThreadLocal() const = 0;
     virtual bool isGettable() const = 0;
     virtual bool isPrivateGettable() const = 0;
     virtual bool isProtectedGettable() const = 0;
@@ -189,6 +185,7 @@ class MemberDef : public Definition
     virtual bool isConstExpr() const = 0;
     virtual bool isConstEval() const = 0;
     virtual bool isConstInit() const = 0;
+    virtual bool isNoDiscard() const = 0;
     virtual int  numberOfFlowKeyWords() const = 0;
 
     // derived getters
@@ -198,10 +195,6 @@ class MemberDef : public Definition
     virtual bool isRelatedOrFriend() const = 0;
 
     // output info
-    virtual bool isLinkableInProject() const = 0;
-    virtual bool isLinkable() const = 0;
-    virtual bool hasDocumentation() const = 0;  // overrides hasDocumentation in definition.h
-    //bool hasUserDocumentation() const = 0; // overrides hasUserDocumentation
     virtual bool isDeleted() const = 0;
     virtual bool isBriefSectionVisible() const = 0;
     virtual bool isDetailedSectionVisible(MemberListContainer container) const = 0;
@@ -231,6 +224,7 @@ class MemberDef : public Definition
     virtual const ArgumentList &declArgumentList() const = 0;
     virtual const ArgumentList &templateArguments() const = 0;
     virtual const ArgumentLists &definitionTemplateParameterLists() const = 0;
+    virtual std::optional<ArgumentList> formalTemplateArguments() const = 0;
 
     // member group related members
     virtual int getMemberGroupId() const = 0;
@@ -238,6 +232,8 @@ class MemberDef : public Definition
 
     virtual bool fromAnonymousScope() const = 0;
     virtual MemberDef *fromAnonymousMember() const = 0;
+    virtual MemberDef *toAnonymousMember() const = 0;
+    virtual QCString anonymousMemberPrefix() const = 0;
 
     // callgraph related members
     virtual bool hasCallGraph() const = 0;
@@ -247,10 +243,15 @@ class MemberDef : public Definition
     virtual bool hasReferencedByRelation() const = 0;
 
     virtual bool hasInlineSource() const = 0;
+    virtual bool hasEnumValues() const = 0;
+
+    virtual bool isDocTransferDone() const = 0;
+
+    virtual QCString sourceRefName() const = 0;
 
     virtual const MemberDef *templateMaster() const = 0;
     virtual QCString getScopeString() const = 0;
-    virtual ClassDef *getClassDefOfAnonymousType() const = 0;
+    virtual const ClassDef *getClassDefOfAnonymousType() const = 0;
 
     // cached typedef functions
     virtual bool isTypedefValCached() const = 0;
@@ -266,7 +267,6 @@ class MemberDef : public Definition
     virtual ClassDef *category() const = 0;
     virtual const MemberDef *categoryRelation() const = 0;
 
-    virtual QCString displayName(bool=TRUE) const = 0;
     virtual QCString getDeclType() const = 0;
     virtual StringVector getLabels(const Definition *container) const = 0;
     virtual StringVector getQualifiers() const = 0;
@@ -275,12 +275,7 @@ class MemberDef : public Definition
 
     virtual QCString requiresClause() const = 0;
 
-
-    // overrules
-    virtual QCString documentation() const = 0;
-    virtual QCString briefDescription(bool abbr=FALSE) const = 0;
     virtual QCString fieldType() const = 0;
-    virtual bool isReference() const = 0;
 
     virtual QCString getDeclFileName() const = 0;
     virtual int getDeclLine() const = 0;
@@ -300,6 +295,7 @@ class MemberDef : public Definition
     virtual void warnIfUndocumented() const = 0;
     virtual void warnIfUndocumentedParams() const = 0;
     virtual bool visibleInIndex() const = 0;
+    virtual int redefineCount() const = 0;
 
     // TODO: this is not a getter, should be passed at construction
     virtual void setMemberGroup(MemberGroup *grp) = 0;
@@ -309,6 +305,7 @@ class MemberDef : public Definition
 class MemberDefMutable : public DefinitionMutable, public MemberDef
 {
   public:
+    ABSTRACT_BASE_CLASS(MemberDefMutable)
 
     //-----------------------------------------------------------------------------------
     // ----  setters -----
@@ -328,7 +325,7 @@ class MemberDefMutable : public DefinitionMutable, public MemberDef
     virtual void setMaxInitLines(int lines) = 0;
     virtual void setMemberClass(ClassDef *cd) = 0;
     virtual void setSectionList(const Definition *container,const MemberList *sl) = 0;
-    virtual void setGroupDef(const GroupDef *gd,Grouping::GroupPri_t pri,
+    virtual void setGroupDef(GroupDef *gd,Grouping::GroupPri_t pri,
                      const QCString &fileName,int startLine,bool hasDocs,
                      MemberDef *member=nullptr) = 0;
     virtual void setReadAccessor(const QCString &r) = 0;
@@ -342,6 +339,8 @@ class MemberDefMutable : public DefinitionMutable, public MemberDef
     virtual void setArgsString(const QCString &as) = 0;
     virtual void incrementFlowKeyWordCount() = 0;
     virtual void setEnumBaseType(const QCString &type) = 0;
+    virtual void setDocTransferDone() = 0;
+    virtual void setExplicitInherited(bool b) = 0;
 
     // relation to other members
     virtual void setReimplements(MemberDef *md) = 0;
@@ -351,7 +350,7 @@ class MemberDefMutable : public DefinitionMutable, public MemberDef
 
     // enumeration specific members
     virtual void insertEnumField(MemberDef *md) = 0;
-    virtual void setEnumScope(const MemberDef *md,bool livesInsideEnum=FALSE) = 0;
+    virtual void setEnumScope(MemberDef *md,bool livesInsideEnum=FALSE) = 0;
     virtual void setEnumClassScope(ClassDef *cd) = 0;
     virtual void setDocumentedEnumValues(bool value) = 0;
     virtual void setAnonymousEnumType(const MemberDef *md) = 0;
@@ -371,7 +370,6 @@ class MemberDefMutable : public DefinitionMutable, public MemberDef
     virtual void setDefinitionTemplateParameterLists(const ArgumentLists &lists) = 0;
     virtual void setTypeConstraints(const ArgumentList &al) = 0;
     virtual void setType(const QCString &t) = 0;
-    virtual void setAccessorType(ClassDef *cd,const QCString &t) = 0;
 
     // namespace related members
     virtual void setNamespace(NamespaceDef *nd) = 0;
@@ -382,22 +380,20 @@ class MemberDefMutable : public DefinitionMutable, public MemberDef
 
     // anonymous scope members
     virtual void setFromAnonymousMember(MemberDef *m) = 0;
+    virtual void setToAnonymousMember(MemberDef *m) = 0;
+    virtual void setClassDefOfAnonymousType(const ClassDef *cd) = 0;
 
-    virtual void enableCallGraph(bool e) = 0;
-    virtual void mergeEnableCallGraph(bool other) = 0;
-    virtual void enableCallerGraph(bool e) = 0;
-    virtual void mergeEnableCallerGraph(bool other) = 0;
+    virtual void overrideCallGraph(bool e) = 0;
+    virtual void overrideCallerGraph(bool e) = 0;
+    virtual void overrideReferencedByRelation(bool e) = 0;
+    virtual void overrideReferencesRelation(bool e) = 0;
+    virtual void overrideInlineSource(bool e) = 0;
+    virtual void overrideEnumValues(bool e) = 0;
 
-    virtual void enableReferencedByRelation(bool e) = 0;
-    virtual void mergeEnableReferencedByRelation(bool other) = 0;
-    virtual void enableReferencesRelation(bool e) = 0;
-    virtual void mergeEnableReferencesRelation(bool other) = 0;
-
-    virtual void enableInlineSource(bool e) = 0;
-    virtual void mergeEnableInlineSource(bool other) = 0;
-
-    virtual void setTemplateMaster(MemberDef *mt) = 0;
-    virtual void addListReference(Definition *d) = 0;
+    virtual void setTemplateMaster(const MemberDef *mt) = 0;
+    virtual void setFormalTemplateArguments(const ArgumentList &al) = 0;
+    virtual void addListReference(const Definition *) = 0;
+    virtual void addRequirementReferences(const Definition *) = 0;
     virtual void setDocsForDefinition(bool b) = 0;
     virtual void setGroupAlias(const MemberDef *md) = 0;
 
@@ -415,17 +411,15 @@ class MemberDefMutable : public DefinitionMutable, public MemberDef
     virtual void setCategory(ClassDef *) = 0;
     virtual void setCategoryRelation(const MemberDef *) = 0;
 
-    virtual void setDocumentation(const QCString &d,const QCString &docFile,int docLine,bool stripWhiteSpace=TRUE) = 0;
-    virtual void setBriefDescription(const QCString &b,const QCString &briefFile,int briefLine) = 0;
-    virtual void setInbodyDocumentation(const QCString &d,const QCString &inbodyFile,int inbodyLine) = 0;
-
-    virtual void setHidden(bool b) = 0;
-
     virtual void setRequiresClause(const QCString &req) = 0;
 
     virtual void addQualifiers(const StringVector &qualifiers) = 0;
 
     virtual void setModuleDef(ModuleDef *mod) = 0;
+
+
+    // macro redefinition
+    virtual void setRedefineCount(int count) = 0;
 
     //-----------------------------------------------------------------------------------
     // --- actions ----

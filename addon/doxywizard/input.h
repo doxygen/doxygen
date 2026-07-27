@@ -42,8 +42,10 @@ class Input
     virtual void updateDependencies() = 0;
     virtual void reset() = 0;
     virtual bool isDefault() = 0;
-    virtual void writeValue(QTextStream &t,TextCodecAdapter *codec) = 0;
+    virtual void writeValue(QTextStream &t,TextCodecAdapter *codec,bool convert) = 0;
     virtual void setTemplateDocs(const QString &docs) = 0;
+    virtual void setText(const QString &txt) = 0;
+    virtual void setToolTip(const QString &txt) = 0;
     virtual bool isEmpty() { return false; };
 };
 

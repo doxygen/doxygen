@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 
 from __future__ import print_function
-import argparse, glob, itertools, re, shutil, os, sys
+import re
+import os
+import sys
 import subprocess
 import shlex
 
@@ -70,7 +72,7 @@ def get_commands(version):
         if cmds_reg.match(line):
             lst_list.append(re.sub(cmds_reg,'',line).replace("\\\\","\\"))
         elif line.startswith("\\endsecreflist"):
-            break;
+            break
     return lst_list
 
 
@@ -80,13 +82,13 @@ def process_commands(old_version,new_version):
     old_list = get_commands(old_version)
     new_list = get_commands(new_version)
     hits = []
-    for l in new_list:
+    for n in new_list:
         toadd = True
         for o in old_list:
-            if l == o:
+            if n == o:
                 toadd = False
         if toadd:
-            hits.append(l)
+            hits.append(n)
 
     cmds = ""
     first = True
@@ -121,21 +123,21 @@ def process_tags(old_version,new_version):
     (new_active,new_obsolete) = get_tags(new_version)
     hits_active = []
     hits_obsolete = []
-    for l in new_active:
+    for n in new_active:
         toadd = True
         for o in old_active:
-            if l == o:
+            if n == o:
                 toadd = False
         if toadd:
-            hits_active.append(l)
+            hits_active.append(n)
 
-    for l in new_obsolete:
+    for n in new_obsolete:
         toadd = True
         for o in old_obsolete:
-            if l == o:
+            if n == o:
                 toadd = False
         if toadd:
-            hits_obsolete.append(l)
+            hits_obsolete.append(n)
 
     tags= ""
     if len(hits_active) != 0:

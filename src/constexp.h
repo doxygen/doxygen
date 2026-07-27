@@ -19,12 +19,15 @@
 #include <string>
 #include <memory>
 
+#include "construct.h"
+
 /** @brief constant expression parser used for the C preprocessor */
 class ConstExpressionParser
 {
   public:
     ConstExpressionParser();
    ~ConstExpressionParser();
+    NON_COPYABLE(ConstExpressionParser)
     bool parse(const char *fileName,int line,const std::string &expression,const std::string &orgExpression);
   private:
     struct Private;

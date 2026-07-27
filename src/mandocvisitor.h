@@ -30,7 +30,7 @@ class OutputCodeList;
 class TextStream;
 
 /*! @brief Concrete visitor implementation for LaTeX output. */
-class ManDocVisitor : public DocVisitor
+class ManDocVisitor final : public DocVisitor
 {
   public:
     ManDocVisitor(TextStream &t,OutputCodeList &ci,const QCString &langExt);
@@ -89,6 +89,8 @@ class ManDocVisitor : public DocVisitor
     void operator()(const DocDotFile &);
     void operator()(const DocMscFile &);
     void operator()(const DocDiaFile &);
+    void operator()(const DocPlantUmlFile &);
+    void operator()(const DocMermaidFile &);
     void operator()(const DocLink &lnk);
     void operator()(const DocRef &ref);
     void operator()(const DocSecRefItem &);
@@ -116,7 +118,7 @@ class ManDocVisitor : public DocVisitor
     // helper functions
     //--------------------------------------
 
-    void filter(const QCString &str);
+    void filter(const QCString &str, const bool retainNewline = false, const bool citeEntry = false);
 
     //--------------------------------------
     // state variables

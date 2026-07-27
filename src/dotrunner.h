@@ -16,56 +16,30 @@
 #ifndef DOTRUNNER_H
 #define DOTRUNNER_H
 
-#include <string>
-#include <thread>
-#include <list>
-#include <queue>
-#include <mutex>
-#include <condition_variable>
-#include <memory>
+#include <vector>
 
 #include "qcstring.h"
+#include "dotjob.h"
 
-/** Helper class to run dot from doxygen from multiple threads.  */
+/** Helper class to run dot from doxygen. Holds a queue of jobs, each
+ *  specifying an input .dot file and output format. Call run() to execute
+ *  all queued jobs, batched as a single dot invocation per output format
+ *  using the -O flag for automatic output file naming.
+ */
 class DotRunner
 {
-    struct DotJob
-    {
-      DotJob(const QCString &f, const QCString &o, const QCString &a,
-             const QCString &s,int l)
-        : format(f), output(o), args(a), srcFile(s), srcLine(l) {}
-      QCString format;
-      QCString output;
-      QCString args;
-      QCString srcFile;
-      int srcLine;
-    };
-
   public:
-    /** Creates a runner for a dot \a file. */
-    DotRunner(const QCString & absDotName, const QCString& md5Hash = QCString());
+    DotRunner();
 
-    /** Adds an additional job to the run.
-     *  Performing multiple jobs one file can be faster.
+    /** Runs dot for all given jobs. For each unique format, a single dot
+     *  invocation is made with -O and all input files for that format.
      */
-    void addJob(const QCString &format,const QCString &output,const QCString &srcFile,int srcLine);
-
-    /** Prevent cleanup of the dot file (for user provided dot files) */
-    void preventCleanUp() { m_cleanUp = false; }
-
-    /** Runs dot for all jobs added. */
-    bool run();
-
-    QCString getMd5Hash() { return m_md5Hash; }
+    bool run(const DotJobs &jobs);
 
     static bool readBoundingBox(const QCString &fileName, int* width, int* height, bool isEps);
 
   private:
-    QCString m_file;
-    QCString m_md5Hash;
-    QCString m_dotExe;
-    bool     m_cleanUp;
-    std::vector<DotJob>  m_jobs;
+    QCString            m_dotExe;
 };
 
 #endif

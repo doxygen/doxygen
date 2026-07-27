@@ -34,7 +34,7 @@ void TextDocVisitor::operator()(const DocSymbol &s)
   }
   else
   {
-    err("text: non supported HTML-entity found: %s\n",HtmlEntityMapper::instance().html(s.symbol(),TRUE));
+    err("text: non supported HTML-entity found: {}\n",HtmlEntityMapper::instance().html(s.symbol(),TRUE));
   }
 }
 
@@ -81,7 +81,7 @@ void TextDocVisitor::operator()(const DocCite &cite)
   }
   else
   {
-    filter(cite.text());
+    filter(cite.target());
   }
 }
 
@@ -90,15 +90,11 @@ void TextDocVisitor::filter(const QCString &str)
   if (str.isEmpty()) return;
   //printf("TextDocVisitor::filter(%s)\n",str);
   const char *p=str.data();
-  char c;
   while (*p)
   {
-    c=*p++;
-    switch(c)
-    {
-      case '\n':  m_t << " ";      break;
-      default:    m_t << c;
-    }
+    char c = *p++;
+    if (c=='\n') c=' ';
+    else m_t << c;
   }
 }
 

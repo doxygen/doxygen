@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="class_test" kind="class" language="C++" prot="public">
+    <compoundname>Test</compoundname>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="class_test_1a03179ef9ecc0c0bccb7cf38441b2f73d" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void Test::pubMember</definition>
+        <argsstring>()</argsstring>
+        <name>pubMember</name>
+        <qualifiedname>Test::pubMember</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>an included public member </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="members.ci" line="4" column="8"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="protected-func">
+      <memberdef kind="function" id="class_test_1a6c15350627eb93f7dd1a71e9e2ac8a03" prot="protected" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void Test::proMember</definition>
+        <argsstring>()</argsstring>
+        <name>proMember</name>
+        <qualifiedname>Test::proMember</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>an included protected member </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="members.ci" line="7" column="8"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+      <para><ref refid="class_test" kindref="compound">Test</ref> clasx. </para>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="103_include.cpp" line="5" column="1" bodyfile="103_include.cpp" bodystart="6" bodyend="8"/>
+    <listofallmembers>
+      <member refid="class_test_1a6c15350627eb93f7dd1a71e9e2ac8a03" prot="protected" virt="non-virtual">
+        <scope>Test</scope>
+        <name>proMember</name>
+      </member>
+      <member refid="class_test_1a03179ef9ecc0c0bccb7cf38441b2f73d" prot="public" virt="non-virtual">
+        <scope>Test</scope>
+        <name>pubMember</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

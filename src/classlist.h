@@ -23,11 +23,11 @@
 
 class Definition;
 
-class ClassLinkedMap : public LinkedMap<ClassDef>
+class ClassLinkedMap final : public LinkedMap<ClassDef>
 {
 };
 
-class ClassLinkedRefMap : public LinkedRefMap<ClassDef>
+class ClassLinkedRefMap final : public LinkedRefMap<ClassDef>
 {
   public:
     bool declVisible(const ClassDef::CompoundType *filter=nullptr) const;

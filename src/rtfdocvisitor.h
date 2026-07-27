@@ -1,4 +1,4 @@
-/******************************************************************************
+  /******************************************************************************
  *
  *
  *
@@ -28,7 +28,7 @@ class OutputCodeList;
 class TextStream;
 
 /*! @brief Concrete visitor implementation for RTF output. */
-class RTFDocVisitor : public DocVisitor
+class RTFDocVisitor final : public DocVisitor
 {
   public:
     RTFDocVisitor(TextStream &t,OutputCodeList &ci,const QCString &langExt, int hierarchyLevel = 0);
@@ -87,6 +87,8 @@ class RTFDocVisitor : public DocVisitor
     void operator()(const DocDotFile &);
     void operator()(const DocMscFile &);
     void operator()(const DocDiaFile &);
+    void operator()(const DocPlantUmlFile &);
+    void operator()(const DocMermaidFile &);
     void operator()(const DocLink &);
     void operator()(const DocRef &ref);
     void operator()(const DocSecRefItem &);
@@ -114,11 +116,12 @@ class RTFDocVisitor : public DocVisitor
     // helper functions
     //--------------------------------------
 
-    void filter(const QCString &str,bool verbatim=FALSE);
+    void filter(const QCString &str, bool verbatim = false, const bool citeEntry = false);
     void startLink(const QCString &ref,const QCString &file,
                    const QCString &anchor);
     void endLink(const QCString &ref);
     QCString getStyle(const QCString &name);
+    QCString getListTable(const int id);
 
     int indentLevel() const;
     void incIndentLevel();
@@ -126,12 +129,11 @@ class RTFDocVisitor : public DocVisitor
 
     void includePicturePreRTF(const QCString &name, bool isTypeRTF, bool hasCaption, bool inlineImage = FALSE);
     void includePicturePostRTF(bool isTypeRTF, bool hasCaption, bool inlineImage = FALSE);
-    void writeDotFile(const QCString &fileName, bool hasCaption,const QCString &srcFile,int srcLine);
-    void writeDotFile(const DocDotFile &);
-    void writeMscFile(const QCString &fileName, bool hasCaption,const QCString &srcFile,int srcLine);
-    void writeMscFile(const DocMscFile &);
-    void writeDiaFile(const DocDiaFile &);
+    void writeDotFile(const QCString &fileName, bool hasCaption,const QCString &srcFile,int srcLine,bool newFile = true);
+    void writeMscFile(const QCString &fileName, bool hasCaption,const QCString &srcFile,int srcLine,bool newFile = true);
+    void writeDiaFile(const QCString &fileName, bool hasCaption,const QCString &srcFile,int srcLine,bool newFile = true);
     void writePlantUMLFile(const QCString &fileName, bool hasCaption);
+    void writeMermaidFile(const QCString &fileName, bool hasCaption);
 
     //--------------------------------------
     // state variables
@@ -150,6 +152,7 @@ class RTFDocVisitor : public DocVisitor
     struct RTFListItemInfo
     {
       bool isEnum = false;
+      bool isCheck = false;
       int number = 1;
       char type = '1';
     };

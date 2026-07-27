@@ -1,0 +1,11 @@
+Checks: >
+  -*,
+  bugprone-use-after-move,
+  bugprone-infinite-loop,
+  bugprone-narrowing-conversions,
+  clang-analyzer-deadcode.DeadStores,
+  cppcoreguidelines-pro-type-cstyle-cast,
+  performance-unnecessary-copy-initialization,
+  performance-for-range-copy,
+  performance-move-const-arg,
+  portability-*

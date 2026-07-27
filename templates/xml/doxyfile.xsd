@@ -16,13 +16,19 @@
     <xsd:sequence>
       <xsd:element name="value" type="valueType" minOccurs="0" maxOccurs="unbounded"/>
     </xsd:sequence>
-    <xsd:attribute name="id" type="xsd:string" use="required"/>
+    <xsd:attribute name="id" type="idType" use="required"/>
     <xsd:attribute name="default" type="defaultType" use="required"/>
     <xsd:attribute name="type" type="typeType" use="required"/>
   </xsd:complexType>
 
   <xsd:simpleType name="valueType">
     <xsd:restriction base="xsd:string">
+    </xsd:restriction>
+  </xsd:simpleType>
+
+  <xsd:simpleType name="idType">
+    <xsd:restriction base="xsd:string">
+      <!-- Automatically insert here the configuration settings -->
     </xsd:restriction>
   </xsd:simpleType>
 

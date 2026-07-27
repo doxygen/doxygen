@@ -18,6 +18,8 @@
 #include <map>
 #include <string>
 
+#include "construct.h"
+
 class TextStream;
 
 /** @brief Singleton helper class to map emoji entities to other formats */
@@ -33,6 +35,7 @@ class EmojiEntityMapper
   private:
     EmojiEntityMapper();
    ~EmojiEntityMapper();
+    NON_COPYABLE(EmojiEntityMapper)
     static EmojiEntityMapper *s_instance;
     std::map<std::string,int> m_name2symGh;
 };

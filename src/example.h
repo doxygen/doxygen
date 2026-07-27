@@ -33,7 +33,7 @@ struct Example
   QCString file;
 };
 
-class ExampleList : public std::vector<Example>
+class ExampleList final : public std::vector<Example>
 {
   public:
     bool inSort( const Example& ex )

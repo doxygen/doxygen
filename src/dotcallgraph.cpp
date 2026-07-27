@@ -23,7 +23,7 @@
 static QCString getUniqueId(const MemberDef *md)
 {
   const MemberDef *def = md->memberDefinition();
-  if (def==0) def = md;
+  if (def==nullptr) def = md;
   QCString result = def->getReference()+"$"+
          def->getOutputFileBase()+"#"+
          def->anchor();
@@ -69,7 +69,7 @@ void DotCallGraph::buildGraph(DotNode *n,const MemberDef *md,int distance)
         n->addChild(bn,EdgeInfo::Blue,EdgeInfo::Solid);
         bn->addParent(n);
         bn->setDistance(distance);
-        m_usedNodes.insert(std::make_pair(uniqueId.str(),bn));
+        m_usedNodes.emplace(uniqueId.str(),bn);
 
         buildGraph(bn,rmd,distance+1);
       }
@@ -140,7 +140,7 @@ DotCallGraph::DotCallGraph(const MemberDef *md,bool inverse)
     TRUE     // root node
   );
   m_startNode->setDistance(0);
-  m_usedNodes.insert(std::make_pair(uniqueId.str(),m_startNode));
+  m_usedNodes.emplace(uniqueId.str(),m_startNode);
   buildGraph(m_startNode,md,1);
 
   int maxNodes = Config_getInt(DOT_GRAPH_MAX_NODES);
@@ -166,7 +166,7 @@ void DotCallGraph::computeTheGraph()
 {
   computeGraph(
     m_startNode,
-    CallGraph,
+    GraphType::CallGraph,
     m_graphFormat,
     m_inverse ? "RL" : "LR",
     FALSE,
@@ -189,7 +189,7 @@ QCString DotCallGraph::writeGraph(
         const QCString &relPath,bool generateImageMap,
         int graphId)
 {
-  m_doNotAddImageToIndex = textFormat!=EOF_Html;
+  m_doNotAddImageToIndex = textFormat!=EmbeddedOutputFormat::Html;
 
   return DotGraph::writeGraph(out, graphFormat, textFormat, path, fileName, relPath, generateImageMap, graphId);
 }

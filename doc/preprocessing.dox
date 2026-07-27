@@ -16,10 +16,10 @@
  */
 /*! \page preprocessing Preprocessing
 
-Source files that are used as input to doxygen can be parsed by doxygen's
+Source files that are used as input to Doxygen can be parsed by Doxygen's
 built-in C-preprocessor.
 
-By default doxygen does only partial preprocessing. That is, it
+By default Doxygen does only partial preprocessing. That is, it
 evaluates conditional compilation statements (like \c \#if) and
 evaluates macro definitions, but it does not perform macro expansion.
 
@@ -35,7 +35,7 @@ So if you have the following code fragment
 #endif
 \endverbatim
 
-Then by default doxygen will feed the following to its parser:
+Then by default Doxygen will feed the following to its parser:
 
 \verbatim
 #define VERSION
@@ -46,7 +46,7 @@ Then by default doxygen will feed the following to its parser:
 
 You can disable all preprocessing by setting
 \ref cfg_enable_preprocessing "ENABLE_PREPROCESSING" to \c
-NO in the configuration file. In the case above doxygen will then read
+NO in the configuration file. In the case above Doxygen will then read
 both statements, i.e.:
 
 \verbatim
@@ -65,8 +65,8 @@ to \c YES. Then the result after preprocessing becomes:
   static const char * version = "2.xx";
 \endverbatim
 
-Note that doxygen will now expand \e all macro definitions
-(recursively if needed). This is often too much. Therefore, doxygen also
+Note that Doxygen will now expand \e all macro definitions
+(recursively if needed). This is often too much. Therefore, Doxygen also
 allows you to expand only those defines that you explicitly
 specify. For this you have to set the
 \ref cfg_expand_only_predef "EXPAND_ONLY_PREDEF" tag to \c YES
@@ -82,8 +82,8 @@ for GNU's \c __attribute__ extension. Here is an example function.
 extern "C" void __declspec(dllexport) ErrorMsg( String aMessage,...);
 \endverbatim
 
-When nothing is done, doxygen will be confused and see \c __declspec as
-some sort of function. To help doxygen one typically uses the following
+When nothing is done, Doxygen will be confused and see \c __declspec as
+some sort of function. To help Doxygen one typically uses the following
 preprocessor settings:
 
 \verbatim
@@ -93,7 +93,7 @@ EXPAND_ONLY_PREDEF     = YES
 PREDEFINED             = __declspec(x)=
 \endverbatim
 
-This will make sure the \c __declspec(dllexport) is removed before doxygen
+This will make sure the \c __declspec(dllexport) is removed before Doxygen
 parses the source code.
 
 Similar settings can be used for removing \c __attribute__ expressions from the input:
@@ -126,7 +126,7 @@ DECLARE_INTERFACE(IUnknown)
 };
 \endverbatim
 
-without macro expansion doxygen will get confused, but we may not want to
+without macro expansion Doxygen will get confused, but we may not want to
 expand the \c REFIID macro, because it is documented and the user that reads
 the documentation should use it when implementing the interface.
 
@@ -144,7 +144,7 @@ PREDEFINED           = "DECLARE_INTERFACE(name)=class name" \
 		       __cplusplus
 \endverbatim
 
-we can make sure that the proper result is fed to doxygen's parser:
+we can make sure that the proper result is fed to Doxygen's parser:
 \verbatim
 /*! A reference to an IID */
 #define REFIID
@@ -166,7 +166,7 @@ defines (like \c __cplusplus).
 
 Note also that preprocessor definitions that are normally defined
 automatically by the preprocessor (like \c __cplusplus), have to be defined
-by hand with doxygen's parser (this is done because these defines
+by hand with Doxygen's parser (this is done because these defines
 are often platform/compiler specific).
 
 In some cases you may want to substitute a macro name or function by
@@ -182,14 +182,14 @@ class QListT
 };
 \endverbatim
 
-Then the only way to get doxygen interpret this as a class definition
+Then the only way to get Doxygen interpret this as a class definition
 for class \c QList is to define:
 \verbatim
 PREDEFINED = QListT:=QList
 \endverbatim
 
 Here is an example provided by Valter Minute and Reyes Ponce that helps
-doxygen to wade through the boilerplate code in Microsoft's ATL \& MFC
+Doxygen to wade through the boilerplate code in Microsoft's ATL \& MFC
 libraries:
 
 \verbatim
@@ -250,16 +250,16 @@ PREDEFINED           = "DECLARE_INTERFACE(name)=class name" \
                         id5, id6, id7, id8, id9, id10, id11)="
 \endverbatim
 
-As you can see doxygen's preprocessor is quite powerful, but if you want
+As you can see Doxygen's preprocessor is quite powerful, but if you want
 even more flexibility you can always write an input filter and specify it
 after the \ref cfg_input_filter "INPUT_FILTER" tag or
 the \ref cfg_filter_patterns "FILTER_PATTERNS" tag
 (or the \ref cfg_filter_source_patterns "FILTER_SOURCE_PATTERNS" tag).<br>
 If you are unsure what the effect of the filter will be
-you can run doxygen as follows: `doxygen -d filteroutput`.
+you can run Doxygen as follows: `doxygen -d filteroutput`.
 
-If you are unsure what the effect of doxygen's preprocessing will be
-you can run doxygen as follows:
+If you are unsure what the effect of Doxygen's preprocessing will be
+you can run Doxygen as follows:
 \verbatim
   doxygen -d Preprocessor
 \endverbatim
@@ -267,7 +267,7 @@ or when the line numbers are not wanted:
 \verbatim
   doxygen -d Preprocessor -d NoLineno
 \endverbatim
-This will instruct doxygen to dump the input sources to standard output after
+This will instruct Doxygen to dump the input sources to standard output after
 preprocessing has been done (Hint: set <code>QUIET = YES</code> and
 <code>WARNINGS = NO</code> in the configuration file to disable any other
 output).

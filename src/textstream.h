@@ -25,6 +25,7 @@
 #include <type_traits>
 
 #include "qcstring.h"
+#include "construct.h"
 
 /** @brief Text streaming class that buffers data.
  *
@@ -58,10 +59,7 @@ class TextStream final
     /** Writes any data that is buffered to the attached std::ostream */
    ~TextStream() { flush(); }
 
-    TextStream(const TextStream &) = delete;
-    TextStream &operator=(const TextStream &) = delete;
-    TextStream(TextStream &&) = default;
-    TextStream &operator=(TextStream &&) = delete;
+    ONLY_DEFAULT_MOVABLE(TextStream)
 
     /** Sets or changes the std::ostream to write to.
      *  @note Any data already buffered will be flushed.
@@ -78,19 +76,6 @@ class TextStream final
       flush();
       m_s = nullptr;
       m_f = f;
-    }
-
-    /** Returns the attached std::ostream object.
-     *  @see setStream()
-     */
-    std::ostream *stream() const
-    {
-      return m_s;
-    }
-
-    FILE *file() const
-    {
-      return m_f;
     }
 
     /** Adds a character to the stream */

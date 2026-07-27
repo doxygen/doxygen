@@ -25,11 +25,13 @@
 class TextStream;
 
 /** Representation of a group collaboration graph */
-class DotGroupCollaboration : public DotGraph
+class DotGroupCollaboration final : public DotGraph
 {
   public :
     DotGroupCollaboration(const GroupDef* gd);
-   ~DotGroupCollaboration();
+   ~DotGroupCollaboration() override;
+    NON_COPYABLE(DotGroupCollaboration)
+
     QCString writeGraph(TextStream &t, GraphOutputFormat gf,EmbeddedOutputFormat ef,
                         const QCString &path,const QCString &fileName,const QCString &relPath,
                         bool writeImageMap=TRUE,int graphId=-1);
@@ -38,9 +40,9 @@ class DotGroupCollaboration : public DotGraph
     int numNodes() const;
 
   protected:
-    virtual QCString getBaseName() const;
-    virtual QCString getMapLabel() const;
-    virtual void computeTheGraph();
+    QCString getBaseName() const override;
+    QCString getMapLabel() const override;
+    void computeTheGraph() override;
 
   private :
     enum EdgeType
