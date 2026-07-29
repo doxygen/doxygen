@@ -46,7 +46,7 @@ class NamespaceLinkedRefMap final : public LinkedRefMap<const NamespaceDef>
 {
   public:
     void writeDeclaration(OutputList &ol,const QCString &title,
-            bool isConstantGroup=false, bool localName=FALSE);
+            bool isConstantGroup=false, bool localName=false);
     bool declVisible(bool isContantGroup) const;
 };
 

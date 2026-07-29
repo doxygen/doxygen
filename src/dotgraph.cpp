@@ -35,7 +35,7 @@
 //int DotGraph::DOT_FONTSIZE;      // will be initialized in initDot
 
 /*! Checks if a file "baseName".md5 exists. If so the contents
-*  are compared with \a md5. If equal FALSE is returned.
+*  are compared with \a md5. If equal false is returned.
 *  The .md5 is created or updated after successful creation of the output file.
 */
 static bool sameMd5Signature(const QCString &baseName,
@@ -169,7 +169,7 @@ bool DotGraph::prepareDotFile()
      )
   {
     // all needed files are there
-    return FALSE;
+    return false;
   }
 
   // need to rebuild the image
@@ -179,7 +179,7 @@ bool DotGraph::prepareDotFile()
   if (!f.is_open())
   {
     err("Could not open file {} for writing\n",absDotName());
-    return TRUE;
+    return true;
   }
   f << m_theGraph;
   f.close();
@@ -201,7 +201,7 @@ bool DotGraph::prepareDotFile()
       DotManager::instance()->addJob(DotJob(m_absPath, m_baseName + ".dot", "eps", sigStr, absDotName(), m_theGraph.size()));
     }
   }
-  return TRUE;
+  return true;
 }
 
 void DotGraph::generateCode(TextStream &t)
@@ -232,7 +232,7 @@ void DotGraph::generateCode(TextStream &t)
         {
           DotManager::instance()->
                createFilePatcher(absImgName())->
-               addSVGConversion(m_relPath,FALSE,QCString(),m_zoomable,m_graphId);
+               addSVGConversion(m_relPath,false,QCString(),m_zoomable,m_graphId);
         }
         int mapId = DotManager::instance()->
                createFilePatcher(m_fileName)->
@@ -262,7 +262,7 @@ void DotGraph::generateCode(TextStream &t)
     {
       int figId = DotManager::instance()->
                   createFilePatcher(m_fileName)->
-                  addFigure(m_baseName,absBaseName(),FALSE /*TRUE*/);
+                  addFigure(m_baseName,absBaseName(),false /*true*/);
       t << "\n% FIG " << figId << "\n";
     }
   }
@@ -315,7 +315,7 @@ void DotGraph::computeGraph(DotNode *root,
     md5stream << "  rankdir=\"" << rank << "\";\n";
   }
   root->clearWriteFlag();
-  root->write(md5stream, gt, format, gt!=GraphType::CallGraph && gt!=GraphType::Dependency, TRUE, backArrows);
+  root->write(md5stream, gt, format, gt!=GraphType::CallGraph && gt!=GraphType::Dependency, true, backArrows);
   if (renderParents)
   {
     for (const auto &pn : root->parents())
@@ -330,15 +330,15 @@ void DotGraph::computeGraph(DotNode *root,
             format,                                              // output format
             pn,                                                  // child node
             &pn->edgeInfo()[index],                              // edge info
-            FALSE,                                               // topDown?
+            false,                                               // topDown?
             backArrows                                           // point back?
           );
       }
       pn->write(md5stream,      // stream
                 gt,             // graph type
                 format,         // output format
-                TRUE,           // topDown?
-                FALSE,          // toChildren?
+                true,           // topDown?
+                false,          // toChildren?
                 backArrows      // backward pointing arrows?
       );
     }

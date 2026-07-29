@@ -47,7 +47,7 @@ class DirDefImpl final : public DefinitionMixin<DirDef>
     QCString anchor() const override { return QCString(); }
     bool isLinkableInProject() const override;
     bool isLinkable() const override;
-    QCString displayName(bool=TRUE) const override { return m_dispName; }
+    QCString displayName(bool=true) const override { return m_dispName; }
     const QCString shortName() const override { return m_shortName; }
     void addSubDir(DirDef *subdir) override;
     const FileList &getFiles() const override { return m_fileList; }
@@ -375,7 +375,7 @@ void DirDefImpl::writeSubDirList(OutputList &ol)
   if (numSubdirs>0)
   {
     ol.startMemberHeader("subdirs");
-    ol.parseText(theTranslator->trDir(TRUE,FALSE));
+    ol.parseText(theTranslator->trDir(true,false));
     ol.endMemberHeader();
     ol.startMemberList();
     for(const auto dd : m_subdirs)
@@ -392,7 +392,7 @@ void DirDefImpl::writeSubDirList(OutputList &ol)
           ol.writeString("<span class=\"iconfolder\"><div class=\"folder-icon\"></div></span>");
           ol.enableAll();
           ol.disable(OutputType::Html);
-          ol.parseText(theTranslator->trDir(FALSE,TRUE)+" ");
+          ol.parseText(theTranslator->trDir(false,true)+" ");
           ol.popGeneratorState();
         }
         ol.insertMemberAlign();
@@ -441,7 +441,7 @@ void DirDefImpl::writeFileList(OutputList &ol)
   if (numFiles>0)
   {
     ol.startMemberHeader("files");
-    ol.parseText(theTranslator->trFile(TRUE,FALSE));
+    ol.parseText(theTranslator->trFile(true,false));
     ol.endMemberHeader();
     ol.startMemberList();
     for (const auto &fd : m_fileList)
@@ -469,7 +469,7 @@ void DirDefImpl::writeFileList(OutputList &ol)
           }
           ol.enableAll();
           ol.disable(OutputType::Html);
-          ol.docify(theTranslator->trFile(FALSE,TRUE)+" ");
+          ol.docify(theTranslator->trFile(false,true)+" ");
           ol.popGeneratorState();
         }
         ol.insertMemberAlign();
@@ -736,7 +736,7 @@ void DirDefImpl::addUsesDependency(const DirDef *dir,const FileDef *srcFd,
       qPrint(dstFd->name()));
 
   // levels match => add direct dependency
-  bool added=FALSE;
+  bool added=false;
   UsedDir *usedDir = m_usedDirs.find(dir->getOutputFileBase());
   if (usedDir) // dir dependency already present
   {
@@ -745,7 +745,7 @@ void DirDefImpl::addUsesDependency(const DirDef *dir,const FileDef *srcFd,
      {
        AUTO_TRACE_ADD("{} => {} new file dependency",srcFd->name(),dstFd->name());
        usedDir->addFileDep(srcFd,dstFd, srcDirect, dstDirect);
-       added=TRUE;
+       added=true;
      }
      else
      {
@@ -758,7 +758,7 @@ void DirDefImpl::addUsesDependency(const DirDef *dir,const FileDef *srcFd,
     auto newUsedDir = std::make_unique<UsedDir>(dir);
     newUsedDir->addFileDep(srcFd,dstFd, srcDirect, dstDirect);
     m_usedDirs.add(dir->getOutputFileBase(),std::move(newUsedDir));
-    added=TRUE;
+    added=true;
   }
   if (added)
   {
@@ -793,7 +793,7 @@ void DirDefImpl::addListReferences()
 {
   QCString name = getOutputFileBase();
   addRefItem(xrefListItems(), name,
-             theTranslator->trDir(TRUE,TRUE),
+             theTranslator->trDir(true,true),
              name,displayName(),QCString(),nullptr);
 }
 
@@ -839,11 +839,11 @@ void DirDefImpl::computeDependencies()
 bool DirDefImpl::isParentOf(const DirDef *dir) const
 {
   if (dir->parent()==this) // this is a parent of dir
-    return TRUE;
+    return true;
   else if (dir->parent()) // repeat for the parent of dir
     return isParentOf(dir->parent());
   else
-    return FALSE;
+    return false;
 }
 
 bool DirDefImpl::depGraphIsTrivial() const
@@ -906,10 +906,10 @@ bool DirDefImpl::matchPath(const QCString &path,const StringVector &l)
     std::string prefix = s.substr(0,path.length());
     if (qstricmp_sort(prefix.c_str(),path)==0) // case insensitive compare
     {
-      return TRUE;
+      return true;
     }
   }
-  return FALSE;
+  return false;
 }
 
 /*! strip part of \a path if it matches
@@ -1050,7 +1050,7 @@ static void computeCommonDirPrefix()
     path=removeLongPathMarker((*it)->name());
     int i=path.findRev('/',static_cast<int>(path.length())-2);
     path=path.left(i+1);
-    bool done=FALSE;
+    bool done=false;
     if (i==-1)
     {
       path="";
@@ -1073,7 +1073,7 @@ static void computeCommonDirPrefix()
               if (i==-1) // no unique prefix -> stop
               {
                 path="";
-                done=TRUE;
+                done=true;
               }
               else // restart with shorter path
               {
@@ -1090,7 +1090,7 @@ static void computeCommonDirPrefix()
             if (i==-1) // no unique prefix -> stop
             {
               path="";
-              done=TRUE;
+              done=true;
             }
             else // restart with shorter path
             {
@@ -1103,7 +1103,7 @@ static void computeCommonDirPrefix()
         if (count==Doxygen::dirLinkedMap->size())
           // path matches for all directories -> found the common prefix
         {
-          done=TRUE;
+          done=true;
         }
       }
     }

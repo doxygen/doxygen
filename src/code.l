@@ -110,14 +110,14 @@ struct codeYY_state
   QCString      absFileName;
   int           inputLines = 0;      //!< number of line in the code fragment
   int           yyLineNr = 0;        //!< current line number
-  bool          insideCodeLine = FALSE;
-  bool          skipCodify = FALSE;  //!< for CSharp files scoped namespace {
+  bool          insideCodeLine = false;
+  bool          skipCodify = false;  //!< for CSharp files scoped namespace {
 
-  bool          exampleBlock = FALSE;
+  bool          exampleBlock = false;
   QCString      exampleName;
   QCString      exampleFile;
 
-  bool          insideTemplate = FALSE;
+  bool          insideTemplate = false;
   QCString      type;
   QCString      name;
   QCString      args;
@@ -128,13 +128,13 @@ struct codeYY_state
   int           anchorCount = 0;
   std::unique_ptr<FileDef> exampleFileDef;
   const FileDef *     sourceFileDef = nullptr;
-  bool          lineNumbers = FALSE;
+  bool          lineNumbers = false;
   const Definition *  currentDefinition = nullptr;
   const MemberDef *   currentMemberDef = nullptr;
-  bool          includeCodeFragment = FALSE;
+  bool          includeCodeFragment = false;
   const char *  currentFontClass = nullptr;
-  bool          searchingForBody = FALSE;
-  bool          insideBody = FALSE;
+  bool          searchingForBody = false;
+  bool          insideBody = false;
   int           bodyCurlyCount = 0;
   QCString      saveName;
   QCString      saveType;
@@ -143,8 +143,8 @@ struct codeYY_state
   int           bracketCount = 0;
   int           curlyCount   = 0;
   int           sharpCount   = 0;
-  bool          inFunctionTryBlock = FALSE;
-  bool          inForEachExpression = FALSE;
+  bool          inFunctionTryBlock = false;
+  bool          inForEachExpression = false;
 
   int           lastTemplCastContext = 0;
   int           lastSpecialCContext = 0;
@@ -157,17 +157,17 @@ struct codeYY_state
   int           skipInlineInitContext = 0;
 
   SrcLangExt    lang = SrcLangExt::Unknown;
-  bool          insideObjC = FALSE;
-  bool          insideProtocolList = FALSE;
+  bool          insideObjC = false;
+  bool          insideProtocolList = false;
   bool          insideSpecialComment = false;
 
-  bool          lexInit = FALSE;
+  bool          lexInit = false;
 
   std::vector<int>  scopeNameLengthStack;
 
-  int           isPrefixedWithThis = FALSE;
+  int           isPrefixedWithThis = false;
   const Definition *searchCtx = nullptr;
-  bool          collectXRefs = FALSE;
+  bool          collectXRefs = false;
 
   ObjCCallCtx * currentCtx=nullptr;
   int           currentCtxId=0;
@@ -227,15 +227,15 @@ static bool getLinkInScope(yyscan_t yyscanner,const QCString &c,  // scope
                            const QCString &memberText, // exact text
                            OutputCodeList &ol,
                            const QCString &text,
-                           bool varOnly=FALSE
+                           bool varOnly=false
                           );
 static bool getLink(yyscan_t yyscanner,const QCString &className,
                     const QCString &memberName,
                     OutputCodeList &ol,
                     const QCString &text=QCString(),
-                    bool varOnly=FALSE);
+                    bool varOnly=false);
 static void generateClassOrGlobalLink(yyscan_t yyscanner,OutputCodeList &ol,const QCString &clName,
-                                      bool typeOnly=FALSE,bool varOnly=FALSE);
+                                      bool typeOnly=false,bool varOnly=false);
 static bool generateClassMemberLink(yyscan_t yyscanner,OutputCodeList &ol,const MemberDef *xmd,const QCString &memName);
 static bool generateClassMemberLink(yyscan_t yyscanner,OutputCodeList &ol,const Definition *def,const QCString &memName);
 static void generateMemberLink(yyscan_t yyscanner,OutputCodeList &ol,const QCString &varName,
@@ -384,7 +384,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           BEGIN( ReadInclude );
                                         }
 <Body>("@interface"|"@implementation"|"@protocol")[ \t\n]+ {
-                                          yyextra->insideObjC=TRUE;
+                                          yyextra->insideObjC=true;
                                           startFontClass(yyscanner,"keyword");
                                           codifyLines(yyscanner,yytext);
                                           endFontClass(yyscanner);
@@ -448,8 +448,8 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           {
                                             if (yyextra->searchingForBody)
                                             {
-                                              yyextra->searchingForBody=FALSE;
-                                              yyextra->insideBody=TRUE;
+                                              yyextra->searchingForBody=false;
+                                              yyextra->insideBody=true;
                                             }
                                             if (yyextra->insideBody) yyextra->bodyCurlyCount++;
                                             if (!yyextra->curClassName.isEmpty()) // valid class name
@@ -525,7 +525,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                             }
                                             else // not ambiguous
                                             {
-                                              found = TRUE;
+                                              found = true;
                                             }
                                           }
                                           DBG_CTX((stderr,"      include file %s found=%d\n",fd ? qPrint(fd->absFilePath()) : "<none>",found));
@@ -589,7 +589,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           DBG_CTX((stderr,"yyextra->bodyCurlyCount=%d\n",yyextra->bodyCurlyCount));
                                           if (--yyextra->bodyCurlyCount<=0)
                                           {
-                                            yyextra->insideBody=FALSE;
+                                            yyextra->insideBody=false;
                                             yyextra->currentMemberDef=nullptr;
                                             if (yyextra->currentDefinition)
                                               yyextra->currentDefinition=yyextra->currentDefinition->getOuterScope();
@@ -607,7 +607,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           }
                                           else
                                           {
-                                            yyextra->insideObjC = FALSE;
+                                            yyextra->insideObjC = false;
                                           }
                                           if (yyextra->insideBody)
                                           {
@@ -623,7 +623,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                                 popScope(yyscanner);
                                               }
                                             }
-                                            yyextra->insideBody=FALSE;
+                                            yyextra->insideBody=false;
                                           }
 
                                           startFontClass(yyscanner,"keyword");
@@ -645,7 +645,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           else
                                           {
                                             yyextra->code->codify(yytext);
-                                            yyextra->searchingForBody=FALSE;
+                                            yyextra->searchingForBody=false;
                                             BEGIN( Body );
                                           }
                                         }
@@ -769,8 +769,8 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           }
                                           if (yyextra->searchingForBody)
                                           {
-                                            yyextra->searchingForBody=FALSE;
-                                            yyextra->insideBody=TRUE;
+                                            yyextra->searchingForBody=false;
+                                            yyextra->insideBody=true;
                                           }
                                           if (yyextra->insideBody) yyextra->bodyCurlyCount++;
                                           if (!yyextra->curClassName.isEmpty()) // valid class name
@@ -830,12 +830,12 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           }
                                           else
                                           {
-                                            yyextra->insideProtocolList=TRUE;
+                                            yyextra->insideProtocolList=true;
                                           }
                                         }
 <Bases>">"                              {
                                           yyextra->code->codify(yytext);
-                                          yyextra->insideProtocolList=FALSE;
+                                          yyextra->insideProtocolList=false;
                                         }
 <SkipSharp>"<"                          {
                                           yyextra->code->codify(yytext);
@@ -905,7 +905,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           startFontClass(yyscanner,"keyword");
                                           codifyLines(yyscanner,yytext);
                                           endFontClass(yyscanner);
-                                          yyextra->insideTemplate=TRUE;
+                                          yyextra->insideTemplate=true;
                                           yyextra->sharpCount=0;
                                         }
 <Body>"concept"{BN}+                    {
@@ -953,7 +953,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
 <UsingName>\n                           { codifyLines(yyscanner,yytext); BEGIN(Body); }
 <UsingName>.                            { codifyLines(yyscanner,yytext); BEGIN(Body); }
 <Body,FuncCall>"$"?"this"("->"|".")     { yyextra->code->codify(yytext); // this-> for C++, this. for C#
-                                          yyextra->isPrefixedWithThis = TRUE;
+                                          yyextra->isPrefixedWithThis = true;
                                         }
 <Body>{KEYWORD}/([^a-z_A-Z0-9])         {
                                           if (yyextra->lang==SrcLangExt::Java && qstrcmp("internal",yytext) ==0) REJECT;
@@ -1015,7 +1015,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           endFontClass(yyscanner);
                                           if (yyextra->inFunctionTryBlock && (qstrcmp(yytext,"catch")==0 || qstrcmp(yytext,"finally")==0))
                                           {
-                                            yyextra->inFunctionTryBlock=FALSE;
+                                            yyextra->inFunctionTryBlock=false;
                                           }
                                         }
 <Body>{FLOWCONDITION}/([^a-z_A-Z0-9])   {
@@ -1025,7 +1025,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           endFontClass(yyscanner);
                                           if (yyextra->inFunctionTryBlock && (strcmp(yytext,"catch")==0 || strcmp(yytext,"finally")==0))
                                           {
-                                            yyextra->inFunctionTryBlock=FALSE;
+                                            yyextra->inFunctionTryBlock=false;
                                           }
                                         }
 <Body>{FLOWKW}/{B}*                     {
@@ -1251,7 +1251,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           startFontClass(yyscanner,"stringliteral");
                                           yyextra->code->codify(yytext+i+1);
                                           yyextra->lastStringContext=YY_START;
-                                          yyextra->inForEachExpression = FALSE;
+                                          yyextra->inForEachExpression = false;
                                           yyextra->delimiter = extractBeginRawStringDelimiter(yytext);
                                           BEGIN( RawString );
                                         }
@@ -1259,7 +1259,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           startFontClass(yyscanner,"stringliteral");
                                           yyextra->code->codify(yytext);
                                           yyextra->lastStringContext=YY_START;
-                                          yyextra->inForEachExpression = FALSE;
+                                          yyextra->inForEachExpression = false;
                                           BEGIN( SkipString );
                                         }
 <FuncCall,Body,MemberCall,MemberCall2,SkipInits,InlineInit>{NUMBER} { //Note similar code in commentcnv.l
@@ -1270,7 +1270,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           startFontClass(yyscanner,"stringliteral");
                                           yyextra->code->codify(yytext);
                                           yyextra->lastStringContext=YY_START;
-                                          yyextra->inForEachExpression = FALSE;
+                                          yyextra->inForEachExpression = false;
                                           BEGIN( SkipStringS );
                                         }
 <SkipString>[^\"\\\r\n]{1,100}          {
@@ -1341,7 +1341,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           {
                                             if (--yyextra->sharpCount<=0)
                                             {
-                                              yyextra->insideTemplate=FALSE;
+                                              yyextra->insideTemplate=false;
                                             }
                                           }
                                           yyextra->code->codify(yytext);
@@ -1481,8 +1481,8 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
 
                                           if (yyextra->searchingForBody)
                                           {
-                                            yyextra->searchingForBody=FALSE;
-                                            yyextra->insideBody=TRUE;
+                                            yyextra->searchingForBody=false;
+                                            yyextra->insideBody=true;
                                           }
                                           yyextra->code->codify(yytext);
                                           if (yyextra->insideBody)
@@ -1651,7 +1651,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                         }
 <FuncCall>";"                           { // probably a cast, not a function call
                                           yyextra->code->codify(yytext);
-                                          yyextra->inForEachExpression = FALSE;
+                                          yyextra->inForEachExpression = false;
                                           BEGIN( Body );
                                         }
 <MemberCall2,FuncCall>,                 {
@@ -1727,7 +1727,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                             addVariable(yyscanner,yyextra->parmType,yyextra->parmName);
                                           }
                                           yyextra->theCallContext.popScope(yyextra->name, yyextra->type, yyextra->bracketCount);
-                                          yyextra->inForEachExpression = FALSE;
+                                          yyextra->inForEachExpression = false;
                                           //yyextra->theCallContext.setClass(0); // commented out, otherwise a()->b() does not work for b().
                                           yyextra->code->codify(yytext);
                                           if (--yyextra->bracketCount<=0)
@@ -1758,7 +1758,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
 <CallEnd>[;:]                           {
                                           codifyLines(yyscanner,yytext);
                                           yyextra->bracketCount=0;
-                                          if (*yytext==';') yyextra->searchingForBody=FALSE;
+                                          if (*yytext==';') yyextra->searchingForBody=false;
                                           if (!yyextra->type.isEmpty())
                                           {
                                             DBG_CTX((stderr,"add variable yyextra->type=%s yyextra->name=%s)\n",qPrint(yyextra->type),qPrint(yyextra->name)));
@@ -1845,8 +1845,8 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           yyextra->code->codify("{");
                                           if (yyextra->searchingForBody)
                                           {
-                                            yyextra->searchingForBody=FALSE;
-                                            yyextra->insideBody=TRUE;
+                                            yyextra->searchingForBody=false;
+                                            yyextra->insideBody=true;
                                           }
                                           if (yyextra->insideBody) yyextra->bodyCurlyCount++;
                                           yyextra->type.clear(); yyextra->name.clear();
@@ -1856,7 +1856,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           startFontClass(yyscanner,"keyword");
                                           yyextra->code->codify(yytext);
                                           endFontClass(yyscanner);
-                                          yyextra->inFunctionTryBlock=TRUE;
+                                          yyextra->inFunctionTryBlock=true;
                                         }
 <CallEnd>"requires"                     { // function-try-block
                                           startFontClass(yyscanner,"keyword");
@@ -1910,8 +1910,8 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           yyextra->code->codify(yytext);
                                           if (yyextra->searchingForBody)
                                           {
-                                            yyextra->searchingForBody=FALSE;
-                                            yyextra->insideBody=TRUE;
+                                            yyextra->searchingForBody=false;
+                                            yyextra->insideBody=true;
                                           }
                                           if (yyextra->insideBody) yyextra->bodyCurlyCount++;
                                           if (yyextra->name.find("::")!=-1)
@@ -2293,11 +2293,11 @@ static void setCurrentDoc(yyscan_t yyscanner,const QCString &anchor)
   {
     if (yyextra->searchCtx)
     {
-      Doxygen::searchIndex.setCurrentDoc(yyextra->searchCtx,yyextra->searchCtx->anchor(),FALSE);
+      Doxygen::searchIndex.setCurrentDoc(yyextra->searchCtx,yyextra->searchCtx->anchor(),false);
     }
     else
     {
-      Doxygen::searchIndex.setCurrentDoc(yyextra->sourceFileDef,anchor,TRUE);
+      Doxygen::searchIndex.setCurrentDoc(yyextra->sourceFileDef,anchor,true);
     }
   }
 }
@@ -2306,7 +2306,7 @@ static void addToSearchIndex(yyscan_t /*yyscanner*/,const QCString &text)
 {
   if (Doxygen::searchIndex.enabled())
   {
-    Doxygen::searchIndex.addWord(text,FALSE);
+    Doxygen::searchIndex.addWord(text,false);
   }
 }
 
@@ -2415,7 +2415,7 @@ static void codeFolding(yyscan_t yyscanner,const Definition *d)
 }
 
 /*! start a new line of code, inserting a line number if yyextra->sourceFileDef
- * is TRUE. If a definition starts at the current line, then the line
+ * is true. If a definition starts at the current line, then the line
  * number is linked to the documentation of that definition.
  */
 static void startCodeLine(yyscan_t yyscanner)
@@ -2435,8 +2435,8 @@ static void startCodeLine(yyscan_t yyscanner)
     {
       yyextra->currentDefinition = d;
       yyextra->currentMemberDef = yyextra->sourceFileDef->getSourceMember(yyextra->yyLineNr);
-      yyextra->insideBody = FALSE;
-      yyextra->searchingForBody = TRUE;
+      yyextra->insideBody = false;
+      yyextra->searchingForBody = true;
       yyextra->realScope = d!=Doxygen::globalScope ? d->name() : "";
       yyextra->type.clear();
       yyextra->name.clear();
@@ -2521,7 +2521,7 @@ static void codifyLines(yyscan_t yyscanner,const QCString &text)
   if (text.isEmpty()) return;
   const char *p=text.data(),*sp=p;
   char c;
-  bool done=FALSE;
+  bool done=false;
   while (!done)
   {
     sp=p;
@@ -2536,7 +2536,7 @@ static void codifyLines(yyscan_t yyscanner,const QCString &text)
     else
     {
       yyextra->code->codify(sp);
-      done=TRUE;
+      done=true;
     }
   }
 }
@@ -2574,7 +2574,7 @@ static void writeMultiLineCodeLink(yyscan_t yyscanner,OutputCodeList &ol,
   {
     tooltip = d->briefDescriptionAsTooltip();
   }
-  bool done=FALSE;
+  bool done=false;
   const char *p=text.data();
   while (!done)
   {
@@ -2592,7 +2592,7 @@ static void writeMultiLineCodeLink(yyscan_t yyscanner,OutputCodeList &ol,
     {
       DBG_CTX((stderr,"writeCodeLink(%s,%s,%s,%s)\n",qPrint(ref),qPrint(file),qPrint(anchor),sp));
       ol.writeCodeLink(d->codeSymbolType(),ref,file,anchor,sp,tooltip);
-      done=TRUE;
+      done=true;
     }
   }
 }
@@ -2884,11 +2884,11 @@ static bool getLinkInScope(yyscan_t yyscanner,
 
         writeMultiLineCodeLink(yyscanner,ol,result.md, !text.isEmpty() ? text : memberText);
         addToSearchIndex(yyscanner,!text.isEmpty() ? text : memberText);
-        return TRUE;
+        return true;
       }
     }
   }
-  return FALSE;
+  return false;
 }
 
 static bool getLink(yyscan_t yyscanner,
@@ -2911,9 +2911,9 @@ static bool getLink(yyscan_t yyscanner,
       c.prepend(yyextra->curClassName);
       return getLinkInScope(yyscanner,c,m,memberName,ol,text,varOnly);
     }
-    return FALSE;
+    return false;
   }
-  return TRUE;
+  return true;
 }
 
 static void generateClassOrGlobalLink(yyscan_t yyscanner,
@@ -2951,7 +2951,7 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
   }
   const ScopedTypeVariant *lcd=nullptr;
   const Definition *sym=nullptr;
-  bool isLocal=FALSE;
+  bool isLocal=false;
 
   DBG_CTX((stderr,"generateClassOrGlobalLink(name=%s) yyextra->scopeName=%s scopeName=%s\n",qPrint(scName),qPrint(yyextra->scopeName),qPrint(scopeName)));
   if (!yyextra->isPrefixedWithThis || (lcd=yyextra->theVarContext.findVariable(scopeName))==nullptr) // not a local variable
@@ -3045,10 +3045,10 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
         //return;
       //}
     }
-    isLocal=TRUE;
+    isLocal=true;
     DBG_CTX((stderr,"is a local variable sym=%p!\n",(void*)sym));
   }
-  yyextra->isPrefixedWithThis = FALSE; // discard the "this" prefix for the next calls
+  yyextra->isPrefixedWithThis = false; // discard the "this" prefix for the next calls
 
   if (sym && sym->isLinkable()) // is it a linkable class
   {
@@ -3201,11 +3201,11 @@ static bool generateClassMemberLink(yyscan_t yyscanner,
       // write the actual link
       writeMultiLineCodeLink(yyscanner,ol,xmd,memName);
       addToSearchIndex(yyscanner,memName);
-      return TRUE;
+      return true;
     }
   }
 
-  return FALSE;
+  return false;
 }
 
 static bool generateClassMemberLink(yyscan_t yyscanner,
@@ -3231,7 +3231,7 @@ static bool generateClassMemberLink(yyscan_t yyscanner,
         yyextra->theCallContext.setScope(ScopedTypeVariant(innerDef));
         addToSearchIndex(yyscanner,memName);
         writeMultiLineCodeLink(yyscanner,*yyextra->code,innerDef,memName);
-        return TRUE;
+        return true;
       }
     }
   }
@@ -3245,10 +3245,10 @@ static bool generateClassMemberLink(yyscan_t yyscanner,
       yyextra->theCallContext.setScope(ScopedTypeVariant(innerDef));
       addToSearchIndex(yyscanner,memName);
       writeMultiLineCodeLink(yyscanner,*yyextra->code,innerDef,memName);
-      return TRUE;
+      return true;
     }
   }
-  return FALSE;
+  return false;
 }
 
 static void generateMemberLink(yyscan_t yyscanner,
@@ -3979,7 +3979,7 @@ static bool isCastKeyword(const char *keyword)
 {
   QCString s(keyword);
   int i=s.find('<');
-  if (i==-1) return FALSE;
+  if (i==-1) return false;
   QCString kw = s.left(i).stripWhiteSpace();
   return kw=="const_cast" || kw=="static_cast" || kw=="dynamic_cast" || kw=="reinterpret_cast";
 }
@@ -4117,7 +4117,7 @@ void CCodeParser::parseCode(OutputCodeList &od,const QCString &scopeName,const Q
   yyextra->currentFontClass = nullptr;
   yyextra->searchCtx = options.searchCtx();
   yyextra->collectXRefs = options.collectXRefs();
-  yyextra->inFunctionTryBlock = FALSE;
+  yyextra->inFunctionTryBlock = false;
   yyextra->symbolResolver.setFileScope(options.fileDef());
   yyextra->foldStack.clear();
   yyextra->insideSpecialComment = false;
@@ -4127,7 +4127,7 @@ void CCodeParser::parseCode(OutputCodeList &od,const QCString &scopeName,const Q
   yyextra->bodyCurlyCount = 0;
   yyextra->bracketCount  = 0;
   yyextra->sharpCount    = 0;
-  yyextra->insideTemplate = FALSE;
+  yyextra->insideTemplate = false;
   yyextra->theCallContext.clear();
   while (!yyextra->scopeStack.empty()) yyextra->scopeStack.pop();
   yyextra->scopeName     = scopeName;
@@ -4151,11 +4151,11 @@ void CCodeParser::parseCode(OutputCodeList &od,const QCString &scopeName,const Q
   yyextra->currentDefinition = options.searchCtx() ? options.searchCtx() : getResolvedNamespace(scopeName);
   yyextra->currentMemberDef = nullptr;
   yyextra->searchingForBody = options.isExample();
-  yyextra->insideBody = FALSE;
+  yyextra->insideBody = false;
   yyextra->bracketCount = 0;
   if (!yyextra->exampleName.isEmpty())
   {
-    yyextra->exampleFile = convertNameToFile(yyextra->exampleName+"-example",FALSE,TRUE);
+    yyextra->exampleFile = convertNameToFile(yyextra->exampleName+"-example",false,true);
     DBG_CTX((stderr,"yyextra->exampleFile=%s\n",qPrint(yyextra->exampleFile)));
   }
   yyextra->includeCodeFragment = options.inlineFragment();
@@ -4172,7 +4172,7 @@ void CCodeParser::parseCode(OutputCodeList &od,const QCString &scopeName,const Q
   if (options.memberDef()) setParameterList(yyscanner,options.memberDef());
   BEGIN( Body );
   codeYYlex(yyscanner);
-  yyextra->lexInit=TRUE;
+  yyextra->lexInit=true;
   if (yyextra->insideCodeLine)
   {
     endCodeLine(yyscanner);

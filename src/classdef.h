@@ -126,13 +126,13 @@ class ClassDef : public Definition
 
     virtual QCString getInstanceOutputFileBase() const = 0;
 
-    /** Returns TRUE if this is a local class definition, see EXTRACT_LOCAL_CLASSES */
+    /** Returns true if this is a local class definition, see EXTRACT_LOCAL_CLASSES */
     virtual bool isLocal() const = 0;
 
     /** returns the classes nested into this class */
     virtual ClassLinkedRefMap getClasses() const = 0;
 
-    /** returns TRUE if this class has a non-empty detailed description */
+    /** returns true if this class has a non-empty detailed description */
     virtual bool hasDetailedDescription() const = 0;
 
     /** returns the file name to use for the collaboration graph */
@@ -199,18 +199,18 @@ class ClassDef : public Definition
     /** Returns the member with the given name */
     virtual const MemberDef *getMemberByName(const QCString &) const = 0;
 
-    /** Returns TRUE iff \a bcd is a direct or indirect base class of this
+    /** Returns true iff \a bcd is a direct or indirect base class of this
      *  class. This function will recursively traverse all branches of the
      *  inheritance tree.
      */
     virtual int isBaseClass(const ClassDef *bcd,bool followInstances,const QCString &templSpec=QCString()) const = 0;
 
-    /** Returns TRUE iff \a bcd is a direct or indirect sub class of this
+    /** Returns true iff \a bcd is a direct or indirect sub class of this
      *  class.
      */
     virtual bool isSubClass(ClassDef *bcd,int level=0) const = 0;
 
-    /** returns TRUE iff \a md is a member of this class or of the
+    /** returns true iff \a md is a member of this class or of the
      *  the public/protected members of a base class
      */
     virtual bool isAccessibleMember(const MemberDef *md) const = 0;
@@ -225,7 +225,7 @@ class ClassDef : public Definition
      */
     virtual const ClassDef *templateMaster() const = 0;
 
-    /** Returns TRUE if this class is a template */
+    /** Returns true if this class is a template */
     virtual bool isTemplate() const = 0;
 
     virtual const IncludeInfo *includeInfo() const = 0;
@@ -250,36 +250,36 @@ class ClassDef : public Definition
     virtual QCString qualifiedNameWithTemplateParameters(
         const ArgumentLists *actualParams=nullptr,uint32_t *actualParamIndex=nullptr) const = 0;
 
-    /** Returns TRUE if there is at least one pure virtual member in this
+    /** Returns true if there is at least one pure virtual member in this
      *  class.
      */
     virtual bool isAbstract() const = 0;
 
-    /** Returns TRUE if this class is implemented in Objective-C */
+    /** Returns true if this class is implemented in Objective-C */
     virtual bool isObjectiveC() const = 0;
 
-    /** Returns TRUE if this class is implemented in Fortran */
+    /** Returns true if this class is implemented in Fortran */
     virtual bool isFortran() const = 0;
 
-    /** Returns TRUE if this class is implemented in C# */
+    /** Returns true if this class is implemented in C# */
     virtual bool isCSharp() const = 0;
 
-    /** Returns TRUE if this class is marked as final */
+    /** Returns true if this class is marked as final */
     virtual bool isFinal() const = 0;
 
-    /** Returns TRUE if this class is marked as sealed */
+    /** Returns true if this class is marked as sealed */
     virtual bool isSealed() const = 0;
 
-    /** Returns TRUE if this class is marked as published */
+    /** Returns true if this class is marked as published */
     virtual bool isPublished() const = 0;
 
-    /** Returns TRUE if this class represents an Objective-C 2.0 extension (nameless category) */
+    /** Returns true if this class represents an Objective-C 2.0 extension (nameless category) */
     virtual bool isExtension() const = 0;
 
-    /** Returns TRUE if this class represents a forward declaration of a template class */
+    /** Returns true if this class represents a forward declaration of a template class */
     virtual bool isForwardDeclared() const = 0;
 
-    /** Returns TRUE if this class represents an interface */
+    /** Returns true if this class represents an interface */
     virtual bool isInterface() const = 0;
 
     /** Returns the class of which this is a category (Objective-C only) */
@@ -361,8 +361,8 @@ class ClassDef : public Definition
     virtual void writeMemberDeclarations(OutputList &ol,ClassDefSet &visitedClasses,
                  MemberListType lt,const QCString &title,
                  const QCString &subTitle=QCString(),
-                 bool showInline=FALSE,const ClassDef *inheritedFrom=nullptr,
-                 MemberListType lt2=MemberListType::Invalid(),bool invert=FALSE,bool showAlways=FALSE) const = 0;
+                 bool showInline=false,const ClassDef *inheritedFrom=nullptr,
+                 MemberListType lt2=MemberListType::Invalid(),bool invert=false,bool showAlways=false) const = 0;
     virtual void addGroupedInheritedMembers(OutputList &ol,MemberListType lt,
                  const ClassDef *inheritedFrom,const QCString &inheritId) const = 0;
 };
@@ -427,7 +427,7 @@ class ClassDefMutable : public DefinitionMutable, public ClassDef
     virtual bool addExample(const QCString &anchor,const QCString &name, const QCString &file) = 0;
     virtual void addUsedClass(ClassDef *cd,const QCString &accessName,Protection prot) = 0;
     virtual void addUsedByClass(ClassDef *cd,const QCString &accessName,Protection prot) = 0;
-    virtual void makeTemplateArgument(bool b=TRUE) = 0;
+    virtual void makeTemplateArgument(bool b=true) = 0;
     virtual void mergeCategory(ClassDef *category) = 0;
     virtual void findSectionsInDocumentation() = 0;
     virtual void addMembersToMemberGroup() = 0;
@@ -453,7 +453,7 @@ std::unique_ptr<ClassDef> createClassDef(
              const QCString &fileName,int startLine,int startColumn,
              const QCString &name,ClassDef::CompoundType ct,
              const QCString &ref=QCString(),const QCString &fName=QCString(),
-             bool isSymbol=TRUE,bool isJavaEnum=FALSE);
+             bool isSymbol=true,bool isJavaEnum=false);
 
 std::unique_ptr<ClassDef> createClassDefAlias(const Definition *newScope,const ClassDef *cd);
 

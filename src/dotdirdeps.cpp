@@ -427,7 +427,7 @@ void DotDirDeps::computeTheGraph()
 
 QCString DotDirDeps::getMapLabel() const
 {
-  return escapeCharsInString(m_baseName,FALSE);
+  return escapeCharsInString(m_baseName,false);
 }
 
 QCString DotDirDeps::getImgAltText() const
@@ -440,7 +440,7 @@ QCString DotDirDeps::writeGraph(TextStream &out, GraphOutputFormat graphFormat, 
                                 int graphId, bool linkRelations)
 {
   m_linkRelations = linkRelations;
-  m_urlOnly = TRUE;
+  m_urlOnly = true;
 
   m_doNotAddImageToIndex = textFormat!=EmbeddedOutputFormat::Html;
 

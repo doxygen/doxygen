@@ -152,7 +152,7 @@ class RTFGenerator final : public OutputGenerator, public OutputGenIntf
     void startHeaderSection() override {}
     void endHeaderSection() override {}
     void startMemberHeader(const QCString &,int) override { startGroupHeader("",0); }
-    void endMemberHeader() override { endGroupHeader(FALSE); }
+    void endMemberHeader() override { endGroupHeader(false); }
     void startMemberSubtitle() override;
     void endMemberSubtitle() override;
     void startMemberDocList() override {}

@@ -158,7 +158,7 @@ struct fortrancodeYY_state
 
   std::unique_ptr<FileDef> exampleFileDef;
   const FileDef *    sourceFileDef = nullptr;
-  bool          lineNumbers = FALSE;
+  bool          lineNumbers = false;
   const Definition * currentDefinition = nullptr;
   const MemberDef *  currentMemberDef = nullptr;
   bool          includeCodeFragment = false;
@@ -349,9 +349,9 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
 <Use>{ID}                               {
                                           QCString tmp(yytext);
                                           tmp = tmp.lower();
-                                          yyextra->insideBody=TRUE;
+                                          yyextra->insideBody=true;
                                           generateLink(yyscanner,*yyextra->code, yytext);
-                                          yyextra->insideBody=FALSE;
+                                          yyextra->insideBody=false;
 
                                           /* append module name to use dict */
                                           yyextra->useEntry = UseEntry();
@@ -367,9 +367,9 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                           QCString tmp(yytext);
                                           tmp = tmp.lower();
                                           yyextra->useEntry.onlyNames.push_back(tmp);
-                                          yyextra->insideBody=TRUE;
+                                          yyextra->insideBody=true;
                                           generateLink(yyscanner,*yyextra->code, yytext);
-                                          yyextra->insideBody=FALSE;
+                                          yyextra->insideBody=false;
                                         }
 <Use,UseOnly,Import>"\n"                {
                                           unput(*yytext);
@@ -386,9 +386,9 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                           BEGIN(Import);
                                         }
 <Import>{ID}                            {
-                                          yyextra->insideBody=TRUE;
+                                          yyextra->insideBody=true;
                                           generateLink(yyscanner,*yyextra->code, yytext);
-                                          yyextra->insideBody=FALSE;
+                                          yyextra->insideBody=false;
                                         }
 <Import>("ONLY"|"NONE"|"ALL")           {
                                           startFontClass(yyscanner,"keywordtype");
@@ -600,7 +600,7 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
 <Declaration,DeclarationBinding>"\n"    { // end declaration line (?)
                                           if (yyextra->endComment)
                                           {
-                                            yyextra->endComment=FALSE;
+                                            yyextra->endComment=false;
                                           }
                                           else
                                           {
@@ -626,9 +626,9 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                           BEGIN(SubCall);
                                         }
 <SubCall>{ID}                           { // subroutine call
-                                          yyextra->insideBody=TRUE;
+                                          yyextra->insideBody=true;
                                           generateLink(yyscanner,*yyextra->code, yytext);
-                                          yyextra->insideBody=FALSE;
+                                          yyextra->insideBody=false;
                                           pop_state(yyscanner);
                                         }
 <Start>{ID}{BS}/"("                     { // function call
@@ -648,9 +648,9 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                           }
                                           else
                                           {
-                                            yyextra->insideBody=TRUE;
+                                            yyextra->insideBody=true;
                                             generateLink(yyscanner,*yyextra->code,yytext);
-                                            yyextra->insideBody=FALSE;
+                                            yyextra->insideBody=false;
                                           }
                                         }
 
@@ -742,9 +742,9 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                           yyextra->code->codify(yytext);
                                         }
 <Start>{ID}                             {
-                                            yyextra->insideBody=TRUE;
+                                            yyextra->insideBody=true;
                                             generateLink(yyscanner,*yyextra->code, yytext);
-                                            yyextra->insideBody=FALSE;
+                                            yyextra->insideBody=false;
                                         }
  /*------ strings --------------------------------------------------*/
 <String>\n                              { // string with \n inside
@@ -780,7 +780,7 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
 <*>\n                                   {
                                           if (yyextra->endComment)
                                           {
-                                            yyextra->endComment=FALSE;
+                                            yyextra->endComment=false;
                                           }
                                           else
                                           {
@@ -889,11 +889,11 @@ static void setCurrentDoc(yyscan_t yyscanner,const QCString &anchor)
   {
     if (yyextra->searchCtx)
     {
-      Doxygen::searchIndex.setCurrentDoc(yyextra->searchCtx,yyextra->searchCtx->anchor(),FALSE);
+      Doxygen::searchIndex.setCurrentDoc(yyextra->searchCtx,yyextra->searchCtx->anchor(),false);
     }
     else
     {
-      Doxygen::searchIndex.setCurrentDoc(yyextra->sourceFileDef,anchor,TRUE);
+      Doxygen::searchIndex.setCurrentDoc(yyextra->sourceFileDef,anchor,true);
     }
   }
 }
@@ -902,7 +902,7 @@ static void addToSearchIndex(yyscan_t /*yyscanner*/,const QCString &text)
 {
   if (Doxygen::searchIndex.enabled())
   {
-    Doxygen::searchIndex.addWord(text,FALSE);
+    Doxygen::searchIndex.addWord(text,false);
   }
 }
 
@@ -948,7 +948,7 @@ static void codeFolding(yyscan_t yyscanner,const Definition *d)
 }
 
 /*! start a new line of code, inserting a line number if yyextra->sourceFileDef
- * is TRUE. If a definition starts at the current line, then the line
+ * is true. If a definition starts at the current line, then the line
  * number is linked to the documentation of that definition.
  */
 static void startCodeLine(yyscan_t yyscanner)
@@ -966,8 +966,8 @@ static void startCodeLine(yyscan_t yyscanner)
     {
       yyextra->currentDefinition = d;
       yyextra->currentMemberDef = yyextra->sourceFileDef->getSourceMember(yyextra->yyLineNr);
-      yyextra->insideBody = FALSE;
-      yyextra->endComment = FALSE;
+      yyextra->insideBody = false;
+      yyextra->endComment = false;
       QCString lineAnchor;
       lineAnchor.sprintf("l%05d",yyextra->yyLineNr);
       if (yyextra->currentMemberDef)
@@ -1039,7 +1039,7 @@ static void codifyLines(yyscan_t yyscanner,const QCString &text)
   if (text.isEmpty()) return;
   const char *p=text.data(),*sp=p;
   char c = 0;
-  bool done=FALSE;
+  bool done=false;
   while (!done)
   {
     sp=p;
@@ -1054,7 +1054,7 @@ static void codifyLines(yyscan_t yyscanner,const QCString &text)
     else
     {
       yyextra->code->codify(sp);
-      done=TRUE;
+      done=true;
     }
   }
 }
@@ -1077,7 +1077,7 @@ static void writeMultiLineCodeLink(yyscan_t yyscanner,OutputCodeList &ol,
   {
     tooltip = d->briefDescriptionAsTooltip();
   }
-  bool done=FALSE;
+  bool done=false;
   const char *p=text.data();
   while (!done)
   {
@@ -1095,7 +1095,7 @@ static void writeMultiLineCodeLink(yyscan_t yyscanner,OutputCodeList &ol,
     {
       //printf("writeCodeLink(%s,%s,%s,%s)\n",ref,file,anchor,sp);
       ol.writeCodeLink(d->codeSymbolType(),ref,file,anchor,sp,tooltip);
-      done=TRUE;
+      done=true;
     }
   }
 }
@@ -1109,12 +1109,12 @@ static void writeMultiLineCodeLink(yyscan_t yyscanner,OutputCodeList &ol,
 static bool getFortranNamespaceDefs(const QCString &mname,
                                NamespaceDef *&cd)
 {
-  if (mname.isEmpty()) return FALSE; /* empty name => nothing to link */
+  if (mname.isEmpty()) return false; /* empty name => nothing to link */
 
   // search for module
-  if ((cd=Doxygen::namespaceLinkedMap->find(mname))) return TRUE;
+  if ((cd=Doxygen::namespaceLinkedMap->find(mname))) return true;
 
-  return FALSE;
+  return false;
 }
 //-------------------------------------------------------------------------------
 /**
@@ -1128,7 +1128,7 @@ static bool getFortranNamespaceDefs(const QCString &mname,
 static bool getFortranTypeDefs(const QCString &tname, const QCString &moduleName,
                                ClassDef *&cd, const UseMap &useMap)
 {
-  if (tname.isEmpty()) return FALSE; /* empty name => nothing to link */
+  if (tname.isEmpty()) return false; /* empty name => nothing to link */
 
   //cout << "=== search for type: " << tname << endl;
 
@@ -1136,12 +1136,12 @@ static bool getFortranTypeDefs(const QCString &tname, const QCString &moduleName
   if ((cd=Doxygen::classLinkedMap->find(tname)))
   {
     //cout << "=== type found in global module" << endl;
-    return TRUE;
+    return true;
   }
   else if (!moduleName.isEmpty() && (cd=Doxygen::classLinkedMap->find(moduleName+"::"+tname)))
   {
     //cout << "=== type found in local module" << endl;
-    return TRUE;
+    return true;
   }
   else
   {
@@ -1150,12 +1150,12 @@ static bool getFortranTypeDefs(const QCString &tname, const QCString &moduleName
       if ((cd=Doxygen::classLinkedMap->find(useEntry.module+"::"+tname)))
       {
         //cout << "===  type found in used module" << endl;
-        return TRUE;
+        return true;
       }
     }
   }
 
-  return FALSE;
+  return false;
 }
 
 /**
@@ -1260,7 +1260,7 @@ static bool getGenericProcedureLink(yyscan_t ,const ClassDef *,
                                     const QCString &,
                                     OutputCodeList &)
 {
-  return FALSE;
+  return false;
 }
 
 static bool getLink(yyscan_t yyscanner,const UseMap &useMap, // dictionary with used modules
@@ -1274,7 +1274,7 @@ static bool getLink(yyscan_t yyscanner,const UseMap &useMap, // dictionary with 
 
   if ((md=getFortranDefs(yyscanner,memberName, yyextra->currentModule, useMap)) && md->isLinkable())
   {
-    if (md->isVariable() && (md->getLanguage()!=SrcLangExt::Fortran)) return FALSE; // Non Fortran variables aren't handled yet,
+    if (md->isVariable() && (md->getLanguage()!=SrcLangExt::Fortran)) return false; // Non Fortran variables aren't handled yet,
                                                                                    // see also linkifyText in util.cpp
 
     const Definition *d = md->getOuterScope()==Doxygen::globalScope ?
@@ -1289,10 +1289,10 @@ static bool getLink(yyscan_t yyscanner,const UseMap &useMap, // dictionary with 
       }
       writeMultiLineCodeLink(yyscanner,ol,md,!text.isEmpty() ? text : memberText);
       addToSearchIndex(yyscanner, !text.isEmpty() ? text : memberText);
-      return TRUE;
+      return true;
     }
   }
-  return FALSE;
+  return false;
 }
 
 
@@ -1472,7 +1472,7 @@ void FortranCodeParser::resetCodeParserState()
   yyextra->currentDefinition = nullptr;
   yyextra->currentMemberDef = nullptr;
   yyextra->currentFontClass = nullptr;
-  yyextra->insideCodeLine = FALSE;
+  yyextra->insideCodeLine = false;
   BEGIN( Start );
 }
 
@@ -1502,7 +1502,7 @@ void FortranCodeParser::parseCode(OutputCodeList & codeOutIntf,
     yyextra->fixedCommentAfter = Config_getInt(FORTRAN_COMMENT_AFTER);
   }
   yyextra->currentFontClass   = nullptr;
-  yyextra->insideCodeLine     = FALSE;
+  yyextra->insideCodeLine     = false;
   yyextra->searchCtx          = options.searchCtx();
   yyextra->collectXRefs       = options.collectXRefs();
   yyextra->yyLineNr           = options.startLine()!=-1 ? options.startLine() : 1;

@@ -146,8 +146,8 @@ class DocbookDocVisitor final : public DocVisitor
                    const QCString &name,
                    const QCString &width,
                    const QCString &height,
-                   bool inlineImage = FALSE);
-    void visitPostEnd(TextStream &t, bool hasCaption, bool inlineImage = FALSE);
+                   bool inlineImage = false);
+    void visitPostEnd(TextStream &t, bool hasCaption, bool inlineImage = false);
     void visitCaption(const DocNodeList &children);
     //--------------------------------------
     // state variables

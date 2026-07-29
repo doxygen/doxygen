@@ -216,7 +216,7 @@ int Portable::system(const QCString &command,const QCString &args,bool commandHa
       reinterpret_cast<wchar_t*>(fullCmdW), // Command line, can be mutated by CreateProcessW
       nullptr, // Process handle not inheritable
       nullptr, // Thread handle not inheritable
-      FALSE, // Set handle inheritance to FALSE
+      false, // Set handle inheritance to false
       CREATE_NO_WINDOW,
       nullptr, // Use parent's environment block
       nullptr, // Use parent's starting directory
@@ -470,9 +470,9 @@ const char *Portable::commandExtension()
 bool Portable::fileSystemIsCaseSensitive()
 {
 #if defined(_WIN32) || defined(macintosh) || defined(__MACOSX__) || defined(__APPLE__) || defined(__CYGWIN__)
-  return FALSE;
+  return false;
 #else
-  return TRUE;
+  return true;
 #endif
 }
 

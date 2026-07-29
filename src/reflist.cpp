@@ -22,7 +22,7 @@
 #include "config.h"
 
 RefList::RefList(const QCString &listName, const QCString &pageTitle, const QCString &secTitle) :
-       m_listName(listName), m_fileName(convertNameToFile(listName,FALSE,TRUE)),
+       m_listName(listName), m_fileName(convertNameToFile(listName,false,true)),
        m_pageTitle(pageTitle), m_secTitle(secTitle)
 {
 }
@@ -121,6 +121,6 @@ void RefList::generatePage()
   //printf("generatePage('%s')\n",doc.data());
   if (cnt>0)
   {
-    addRelatedPage(m_listName,m_pageTitle,doc,m_fileName,1,1,RefItemVector(),nullptr,nullptr,TRUE);
+    addRelatedPage(m_listName,m_pageTitle,doc,m_fileName,1,1,RefItemVector(),nullptr,nullptr,true);
   }
 }

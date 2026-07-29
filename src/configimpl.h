@@ -506,7 +506,7 @@ class ConfigImpl
     /*! @} */
 
     /*! Writes a template configuration to stream \a t. If \a shortIndex
-     *  is \c TRUE the description of each configuration option will
+     *  is \c true the description of each configuration option will
      *  be omitted.
      */
     void writeTemplate(TextStream &t,bool shortIndex,bool updateOnly);
@@ -550,16 +550,16 @@ class ConfigImpl
     void init();
 
     /*! Parse a configuration data in string \a str.
-     *  \returns TRUE if successful, or FALSE if the string could not be
+     *  \returns true if successful, or false if the string could not be
      *  parsed.
      */
-    bool parseString(const QCString &fn,const QCString &str,bool upd = FALSE);
+    bool parseString(const QCString &fn,const QCString &str,bool upd = false);
 
     /*! Parse a configuration file with name \a fn.
-     *  \returns TRUE if successful, FALSE if the file could not be
+     *  \returns true if successful, false if the file could not be
      *  opened or read.
      */
-    bool parse(const QCString &fn,bool upd = FALSE);
+    bool parse(const QCString &fn,bool upd = false);
 
     /*! Append user start comment
      */

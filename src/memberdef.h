@@ -290,7 +290,7 @@ class MemberDef : public Definition
                 const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,const ModuleDef *mod) const = 0;
     virtual void writeLink(OutputList &ol,
                  const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,const ModuleDef *md,
-                 bool onlyText=FALSE) const = 0;
+                 bool onlyText=false) const = 0;
     virtual void detectUndocumentedParams(bool hasParamCommand,bool hasReturnCommand) const = 0;
     virtual void warnIfUndocumented() const = 0;
     virtual void warnIfUndocumentedParams() const = 0;
@@ -350,7 +350,7 @@ class MemberDefMutable : public DefinitionMutable, public MemberDef
 
     // enumeration specific members
     virtual void insertEnumField(MemberDef *md) = 0;
-    virtual void setEnumScope(MemberDef *md,bool livesInsideEnum=FALSE) = 0;
+    virtual void setEnumScope(MemberDef *md,bool livesInsideEnum=false) = 0;
     virtual void setEnumClassScope(ClassDef *cd) = 0;
     virtual void setDocumentedEnumValues(bool value) = 0;
     virtual void setAnonymousEnumType(const MemberDef *md) = 0;
@@ -436,8 +436,8 @@ class MemberDefMutable : public DefinitionMutable, public MemberDef
 
     virtual void writeDocumentation(const MemberList *ml,int memCount,int memTotal,OutputList &ol,
                  const QCString &scopeName,const Definition *container,
-                 bool inGroup,bool showEnumValues=FALSE,bool
-                 showInline=FALSE) const = 0;
+                 bool inGroup,bool showEnumValues=false,bool
+                 showInline=false) const = 0;
     virtual void writeMemberDocSimple(OutputList &ol,const Definition *container) const = 0;
     virtual void writeTagFile(TextStream &,bool useQualifiedName,bool showNamespaceMembers) const = 0;
 

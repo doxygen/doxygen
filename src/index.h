@@ -229,7 +229,7 @@ void startFile(OutputList &ol,const QCString &name,bool isSource,const QCString 
                const QCString &title,HighlightedItem hli=HighlightedItem::None,
                bool additionalIndices=false,const QCString &altSidebarName=QCString(), int hierarchyLevel=0,
                const QCString &allMembersFile=QCString());
-void endFile(OutputList &ol,bool skipNavIndex=FALSE,bool skipEndContents=FALSE,
+void endFile(OutputList &ol,bool skipNavIndex=false,bool skipEndContents=false,
              const QCString &navPath=QCString());
 void endFileWithNavPath(OutputList &ol,const DefinitionMutable *d,bool showPageNavigation=true);
 

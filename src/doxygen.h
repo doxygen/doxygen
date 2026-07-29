@@ -156,7 +156,7 @@ void readFileOrDirectory(const QCString &s,
                         StringVector *resultList,
                         StringUnorderedSet *resultSet,
                         bool recursive,
-                        bool errorIfNotExist=TRUE,
+                        bool errorIfNotExist=true,
                         StringUnorderedSet *killSet = nullptr,
                         StringUnorderedSet *paths = nullptr
                        );

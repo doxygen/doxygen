@@ -57,7 +57,7 @@ class MarkdownOutlineParser final : public OutlineParserInterface
                     const char *fileBuf,
                     const std::shared_ptr<Entry> &root,
                     ClangTUParser *clangParser) override;
-    bool needsPreprocessing(const QCString &) const override { return FALSE; }
+    bool needsPreprocessing(const QCString &) const override { return false; }
     void parsePrototype(const QCString &text) override;
   private:
     struct Private;

@@ -123,8 +123,8 @@ class ManGenerator final : public OutputGenerator, public OutputGenIntf
                          const QCString &anchor,const QCString &name) override;
     void startTextLink(const QCString &,const QCString &) override {}
     void endTextLink() override {}
-    void startTypewriter() override { m_t << "\\fR"; m_firstCol=FALSE; }
-    void endTypewriter() override { m_t << "\\fP"; m_firstCol=FALSE; }
+    void startTypewriter() override { m_t << "\\fR"; m_firstCol=false; }
+    void endTypewriter() override { m_t << "\\fP"; m_firstCol=false; }
     void startGroupHeader(const QCString &,int) override;
     void endGroupHeader(int) override;
     void startMemberSections() override {}
@@ -163,12 +163,12 @@ class ManGenerator final : public OutputGenerator, public OutputGenIntf
 
     void writeRuler() override {}
     void writeAnchor(const QCString &,const QCString &) override {}
-    void startEmphasis() override { m_t << "\\fI"; m_firstCol=FALSE; }
-    void endEmphasis() override { m_t << "\\fP"; m_firstCol=FALSE; }
-    void startBold() override { m_t << "\\fB"; m_firstCol=FALSE; }
-    void endBold() override { m_t << "\\fP"; m_firstCol=FALSE; }
-    void startBoldEmphasis() { m_t << "\\f(BI"; m_firstCol=FALSE; }
-    void endBoldEmphasis() { m_t << "\\fP"; m_firstCol=FALSE; }
+    void startEmphasis() override { m_t << "\\fI"; m_firstCol=false; }
+    void endEmphasis() override { m_t << "\\fP"; m_firstCol=false; }
+    void startBold() override { m_t << "\\fB"; m_firstCol=false; }
+    void endBold() override { m_t << "\\fP"; m_firstCol=false; }
+    void startBoldEmphasis() { m_t << "\\f(BI"; m_firstCol=false; }
+    void endBoldEmphasis() { m_t << "\\fP"; m_firstCol=false; }
     void lineBreak(const QCString &) override { m_t << "\n.br\n"; }
     void writeChar(char c) override;
     void startMemberDoc(const QCString &,const QCString &,const QCString &,const QCString &,int,int,bool) override;
@@ -184,8 +184,8 @@ class ManGenerator final : public OutputGenerator, public OutputGenIntf
     void endCenter() override {}
     void startSmall() override {}
     void endSmall() override {}
-    void startMemberDescription(const QCString &,const QCString &,bool) override { m_t << "\n.RI \""; m_firstCol=FALSE; }
-    void endMemberDescription() override { m_t << "\""; m_firstCol=FALSE; }
+    void startMemberDescription(const QCString &,const QCString &,bool) override { m_t << "\n.RI \""; m_firstCol=false; }
+    void endMemberDescription() override { m_t << "\""; m_firstCol=false; }
     void startMemberDeclaration() override {}
     void endMemberDeclaration(const QCString &,const QCString &) override {}
     void writeInheritedSectionTitle(const QCString &,const QCString &,const QCString &,
@@ -224,7 +224,7 @@ class ManGenerator final : public OutputGenerator, public OutputGenIntf
     void endDescTableRow() override {}
     void startDescTableInit() override {}
     void endDescTableInit() override {}
-    void startDescTableData() override { m_t << "\n"; m_firstCol=TRUE; }
+    void startDescTableData() override { m_t << "\n"; m_firstCol=true; }
     void endDescTableData() override {}
 
     void startDotGraph() override {}

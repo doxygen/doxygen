@@ -72,26 +72,26 @@ class CommentScanner
      *         Mainly used for producing warnings.
      *  @param[in,out] lineNr The line number at which the comment block was found.
      *         When the function returns it will be set to the last line parsed.
-     *  @param[in] isBrief TRUE iff this comment block represents a brief description.
-     *  @param[in] isJavadocStyle TRUE iff this comment block is in "Javadoc" style.
+     *  @param[in] isBrief true iff this comment block represents a brief description.
+     *  @param[in] isJavadocStyle true iff this comment block is in "Javadoc" style.
      *         This means that it starts as a brief description until the end of
      *         the sentences is found and then proceeds as a detailed description.
-     *  @param[in] isInbody TRUE iff this comment block is located in the body of
+     *  @param[in] isInbody true iff this comment block is located in the body of
      *         a function.
      *  @param[in,out] prot The protection level in which this comment block was
      *         found. Commands in the comment block may override this.
      *  @param[in,out] position The character position within \a comment where the
      *         comment block starts. Typically used in case the comment block
      *         contains multiple structural commands.
-     *  @param[out] newEntryNeeded Boolean that is TRUE if the comment block parser
+     *  @param[out] newEntryNeeded Boolean that is true if the comment block parser
      *         finds that a the comment block finishes the entry and a new one
      *         needs to be started.
      *  @param[in] markdownEnabled Indicates if markdown specific processing should be done.
      *  @param[inout] guards Tracks nested conditional sections (if,ifnot,..)
-     *  @returns TRUE if the comment requires further processing. The
+     *  @returns true if the comment requires further processing. The
      *         parameter \a newEntryNeeded will typically be true in this case and
      *         \a position will indicate the offset inside the \a comment string
-     *         where to proceed parsing. FALSE indicates no further processing is
+     *         where to proceed parsing. false indicates no further processing is
      *         needed.
      */
     bool parseCommentBlock(OutlineParserInterface *parser,

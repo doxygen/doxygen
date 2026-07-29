@@ -561,10 +561,10 @@ CPPC  "/\/"
                                           yyextra->curTypeConstraint+=' ';
                                         }
 <FuncQual>"const"		       	{
-					  yyextra->argList->setConstSpecifier(TRUE);
+					  yyextra->argList->setConstSpecifier(true);
 					}
 <FuncQual>"volatile"		    	{
-					  yyextra->argList->setVolatileSpecifier(TRUE);
+					  yyextra->argList->setVolatileSpecifier(true);
 					}
 <FuncQual>"override"                    {
                                         }
@@ -575,7 +575,7 @@ CPPC  "/\/"
                                           yyextra->argList->setRefQualifier(RefQualifierType::RValue);
 					}
 <FuncQual,TrailingReturn>"="{B}*"0"  	{
-					  yyextra->argList->setPureSpecifier(TRUE);
+					  yyextra->argList->setPureSpecifier(true);
                                           BEGIN(FuncQual);
 					}
 <FuncQual>"->"                          { // C++11 trailing return type
@@ -842,7 +842,7 @@ std::unique_ptr<ArgumentList> stringToArgumentList(SrcLangExt lang, const QCStri
   defargsYYlex(yyscanner);
   if (yyextra->argList->empty())
   {
-    yyextra->argList->setNoParameters(TRUE);
+    yyextra->argList->setNoParameters(true);
   }
   if (extraTypeChars) *extraTypeChars=yyextra->extraTypeChars;
   //printf("stringToArgumentList(%s) result=%s\n",argsString,qPrint(argListToString(*al)));

@@ -447,7 +447,7 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                            reg::search(text,match,re);
                            size_t markPos = match.position();
                            assert(markPos!=std::string::npos);
-                           yyextra->token.isEnumList = FALSE;
+                           yyextra->token.isEnumList = false;
                            yyextra->token.isCheckedList = false;
                            yyextra->token.id         = -1;
                            yyextra->token.indent     = computeIndent(text.c_str(),markPos);
@@ -565,31 +565,31 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                        }
 <St_Para>{URLPROTOCOL}{URLMASK}/[,\.] { // URL, or URL.
                          yyextra->token.name=yytext;
-                         yyextra->token.isEMailAddr=FALSE;
+                         yyextra->token.isEMailAddr=false;
                          return Token::make_TK_URL();
                        }
 <St_Para>{URLPROTOCOL}{URLMASK} { // URL
                          yyextra->token.name=yytext;
-                         yyextra->token.isEMailAddr=FALSE;
+                         yyextra->token.isEMailAddr=false;
                          return Token::make_TK_URL();
                        }
 <St_Para>"<"{URLPROTOCOL}{URLMASK}">" { // URL
                          yyextra->token.name=yytext;
                          yyextra->token.name = yyextra->token.name.mid(1,yyextra->token.name.length()-2);
-                         yyextra->token.isEMailAddr=FALSE;
+                         yyextra->token.isEMailAddr=false;
                          return Token::make_TK_URL();
                        }
 <St_Para>{MAILADDR}    { // Mail address
                          yyextra->token.name=yytext;
                          yyextra->token.name.stripPrefix("mailto:");
-                         yyextra->token.isEMailAddr=TRUE;
+                         yyextra->token.isEMailAddr=true;
                          return Token::make_TK_URL();
                        }
 <St_Para>"<"{MAILADDR}">" { // Mail address
                          yyextra->token.name=yytext;
                          yyextra->token.name = yyextra->token.name.mid(1,yyextra->token.name.length()-2);
                          yyextra->token.name.stripPrefix("mailto:");
-                         yyextra->token.isEMailAddr=TRUE;
+                         yyextra->token.isEMailAddr=true;
                          return Token::make_TK_URL();
                        }
 <St_Para>"<"{MAILADDR2}">" { // anti spam mail address
@@ -1673,14 +1673,14 @@ static void handleHtmlTag(yyscan_t yyscanner,const char *text)
   QCString tagText(text);
   yyextra->token.text = tagText;
   yyextra->token.attribs.clear();
-  yyextra->token.endTag = FALSE;
-  yyextra->token.emptyTag = FALSE;
+  yyextra->token.endTag = false;
+  yyextra->token.emptyTag = false;
 
   // Check for end tag
   int startNamePos=1;
   if (tagText.at(1)=='/')
   {
-    yyextra->token.endTag = TRUE;
+    yyextra->token.endTag = true;
     startNamePos++;
   }
 
@@ -1707,7 +1707,7 @@ static void handleHtmlTag(yyscan_t yyscanner,const char *text)
     // Check for XML style "empty" tag.
     if (c == '/')
     {
-      yyextra->token.emptyTag = TRUE;
+      yyextra->token.emptyTag = true;
       break;
     }
     int startName=i;
@@ -1796,7 +1796,7 @@ bool DocTokenizer::popContext()
   yyscan_t yyscanner = p->yyscanner;
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   //printf("DocTokenizer::popContext() stack=%zu\n",yyextra->lexerStack.size());
-  if (yyextra->lexerStack.empty()) return FALSE;
+  if (yyextra->lexerStack.empty()) return false;
   const auto &ctx = yyextra->lexerStack.top();
   yyextra->autoListLevel = ctx->autoListLevel;
   yyextra->inputPos      = ctx->inputPos;
@@ -1808,7 +1808,7 @@ bool DocTokenizer::popContext()
 
   BEGIN(ctx->rule);
   yyextra->lexerStack.pop();
-  return TRUE;
+  return true;
 }
 
 
@@ -1865,7 +1865,7 @@ void DocTokenizer::init(const char *input,const QCString &fileName,bool markdown
   yyextra->inputString = input;
   yyextra->inputPos    = 0;
   yyextra->fileName    = fileName;
-  yyextra->insidePre   = FALSE;
+  yyextra->insidePre   = false;
   yyextra->markdownSupport = markdownSupport;
   yyextra->insideHtmlLink = insideHtmlLink;
   BEGIN(St_Para);

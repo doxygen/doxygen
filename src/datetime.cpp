@@ -35,12 +35,12 @@ std::tm getCurrentDateTime()
     uint64_t epoch = sourceDateEpoch.toUInt64(&ok);
     if (!ok)
     {
-      static bool warnedOnce=FALSE;
+      static bool warnedOnce=false;
       if (!warnedOnce)
       {
         warn_uncond("Environment variable SOURCE_DATE_EPOCH does not contain a valid number; value is '{}'\n",
             sourceDateEpoch);
-        warnedOnce=TRUE;
+        warnedOnce=true;
       }
     }
     else // use given epoch value as current 'built' time

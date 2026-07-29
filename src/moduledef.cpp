@@ -56,7 +56,7 @@ class ModuleDefImpl final : public DefinitionMixin<ModuleDef>
     // --- Definition
     DefType definitionType() const override { return TypeModule; }
     CodeSymbolType codeSymbolType() const override { return CodeSymbolType::Module; }
-    QCString displayName(bool=TRUE) const override { return name(); }
+    QCString displayName(bool=true) const override { return name(); }
     QCString getOutputFileBase() const override;
     QCString anchor() const override { return ""; }
     bool isLinkableInProject() const override {
@@ -502,12 +502,12 @@ void ModuleDefImpl::writeDocumentation(OutputList &ol)
 
 void ModuleDefImpl::writeClassDeclarations(OutputList &ol,const QCString &title)
 {
-  m_classes.writeDeclaration(ol,nullptr,title,FALSE);
+  m_classes.writeDeclaration(ol,nullptr,title,false);
 }
 
 void ModuleDefImpl::writeConcepts(OutputList &ol,const QCString &title)
 {
-  m_concepts.writeDeclaration(ol,title,FALSE);
+  m_concepts.writeDeclaration(ol,title,false);
 }
 
 void ModuleDefImpl::startMemberDeclarations(OutputList &ol)
@@ -525,7 +525,7 @@ void ModuleDefImpl::startMemberDocumentation(OutputList &ol)
   if (Config_getBool(SEPARATE_MEMBER_PAGES))
   {
     ol.disable(OutputType::Html);
-    Doxygen::suppressDocWarnings = TRUE;
+    Doxygen::suppressDocWarnings = true;
   }
 }
 
@@ -534,7 +534,7 @@ void ModuleDefImpl::endMemberDocumentation(OutputList &ol)
   if (Config_getBool(SEPARATE_MEMBER_PAGES))
   {
     ol.enable(OutputType::Html);
-    Doxygen::suppressDocWarnings = FALSE;
+    Doxygen::suppressDocWarnings = false;
   }
 }
 
@@ -658,7 +658,7 @@ void ModuleDefImpl::writeAuthorSection(OutputList &ol)
   ol.pushGeneratorState();
   ol.disableAllBut(OutputType::Man);
   ol.startGroupHeader();
-  ol.parseText(theTranslator->trAuthor(TRUE,TRUE));
+  ol.parseText(theTranslator->trAuthor(true,true));
   ol.endGroupHeader();
   ol.parseText(theTranslator->trGeneratedAutomatically(Config_getString(PROJECT_NAME)));
   ol.popGeneratorState();
@@ -689,8 +689,8 @@ void ModuleDefImpl::addListReferences()
   addRefItem(xrefListItems(),
              qualifiedName(),
              getLanguage()==SrcLangExt::Fortran ?
-             theTranslator->trModule(TRUE,TRUE) :
-             theTranslator->trNamespace(TRUE,TRUE),
+             theTranslator->trModule(true,true) :
+             theTranslator->trNamespace(true,true),
              getOutputFileBase(),displayName(),
              QCString(),
              this
@@ -775,7 +775,7 @@ void ModuleDefImpl::sortMemberLists()
 {
   for (auto &ml : m_memberLists)
   {
-    if (ml->needsSorting()) { ml->sort(); ml->setNeedsSorting(FALSE); }
+    if (ml->needsSorting()) { ml->sort(); ml->setNeedsSorting(false); }
   }
 
   if (Config_getBool(SORT_BRIEF_DOCS))
@@ -829,7 +829,7 @@ void ModuleDefImpl::writeSummaryLinks(OutputList &ol) const
 {
   ol.pushGeneratorState();
   ol.disableAllBut(OutputType::Html);
-  bool first=TRUE;
+  bool first=true;
   SrcLangExt lang=getLanguage();
   for (const auto &lde : LayoutDocManager::instance().docEntries(LayoutDocManager::Module))
   {
@@ -838,19 +838,19 @@ void ModuleDefImpl::writeSummaryLinks(OutputList &ol) const
     {
       QCString label = "classes";
       ol.writeSummaryLink(QCString(),label,ls->title(lang),first);
-      first=FALSE;
+      first=false;
     }
     else if (lde->kind()==LayoutDocEntry::ModuleConcepts && m_concepts.declVisible() && ls)
     {
       QCString label = "concepts";
       ol.writeSummaryLink(QCString(),label,ls->title(lang),first);
-      first=FALSE;
+      first=false;
     }
     else if (lde->kind()==LayoutDocEntry::ModuleUsedFiles && ls)
     {
       QCString label = "files";
       ol.writeSummaryLink(QCString(),label,ls->title(lang),first);
-      first=FALSE;
+      first=false;
     }
     else if (lde->kind()==LayoutDocEntry::MemberDecl)
     {
@@ -861,7 +861,7 @@ void ModuleDefImpl::writeSummaryLinks(OutputList &ol) const
         if (ml && ml->declVisible())
         {
           ol.writeSummaryLink(QCString(),ml->listType().toLabel(),lmd->title(lang),first);
-          first=FALSE;
+          first=false;
         }
       }
     }
@@ -895,7 +895,7 @@ void ModuleDefImpl::writeDeclarationLink(OutputList &ol,bool &found,const QCStri
       }
       ol.endMemberHeader();
       ol.startMemberList();
-      found=TRUE;
+      found=true;
     }
     ol.startMemberDeclaration();
     QCString cname = displayName(!localNames);
@@ -960,7 +960,7 @@ void ModuleDefImpl::writeExports(OutputList &ol,const QCString &title)
         ModuleDef *mod = ModuleManager::instance().getPrimaryInterface(importInfo.importName);
         ol.startMemberDeclaration();
         ol.startMemberItem(importInfo.importName,OutputGenerator::MemberItemType::Normal);
-        ol.docify(theTranslator->trModule(FALSE,TRUE)+" ");
+        ol.docify(theTranslator->trModule(false,true)+" ");
         ol.insertMemberAlign();
         if (mod && mod->isLinkable())
         {
@@ -1011,7 +1011,7 @@ void ModuleDefImpl::writeFiles(OutputList &ol,const QCString &title)
         QCString anc = fd->anchor();
         if (anc.isEmpty()) anc=fname; else anc.prepend(fname+"_");
         ol.startMemberItem(anc,OutputGenerator::MemberItemType::Normal);
-        ol.docify(theTranslator->trFile(FALSE,TRUE)+" ");
+        ol.docify(theTranslator->trFile(false,true)+" ");
         ol.insertMemberAlign();
         QCString path=fd->getPath();
         if (Config_getBool(FULL_PATH_NAMES))
@@ -1238,7 +1238,7 @@ bool ModuleLinkedRefMap::declVisible() const
 
 void ModuleLinkedRefMap::writeDeclaration(OutputList &ol,const QCString &header,bool localNames) const
 {
-  bool found=FALSE;
+  bool found=false;
   for (const auto &mod : *this)
   {
     toModuleDefImpl(mod)->writeDeclarationLink(ol,found,header,localNames);

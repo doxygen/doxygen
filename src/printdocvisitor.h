@@ -28,7 +28,7 @@
 class PrintDocVisitor
 {
   public:
-    PrintDocVisitor() : m_indent(0), m_needsEnter(FALSE), m_insidePre(FALSE) {}
+    PrintDocVisitor() : m_indent(0), m_needsEnter(false), m_insidePre(false) {}
 
     //--------------------------------------
 
@@ -57,14 +57,14 @@ class PrintDocVisitor
     void operator()(const DocSymbol &s)
     {
       indent_leaf();
-      const char *res = HtmlEntityMapper::instance().utf8(s.symbol(),TRUE);
+      const char *res = HtmlEntityMapper::instance().utf8(s.symbol(),true);
       if (res)
       {
         printf("%s",res);
       }
       else
       {
-        printf("print: non supported HTML-entity found: %s\n",HtmlEntityMapper::instance().html(s.symbol(),TRUE));
+        printf("print: non supported HTML-entity found: %s\n",HtmlEntityMapper::instance().html(s.symbol(),true));
       }
     }
     void operator()(const DocEmoji &s)
@@ -764,12 +764,12 @@ class PrintDocVisitor
     {
       if (m_needsEnter) printf("\n");
       for (int i=0;i<m_indent;i++) printf(".");
-      m_needsEnter=FALSE;
+      m_needsEnter=false;
     }
     void indent_leaf()
     {
       if (!m_needsEnter) indent();
-      m_needsEnter=TRUE;
+      m_needsEnter=true;
     }
     void indent_pre()
     {

@@ -511,7 +511,7 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
         case ClassDef::Exception:  result+="iznimke (exception)"; break;
         default: break;
       }
-      result+=" je napravljena iz " + trFile(FALSE, single) + ": ";
+      result+=" je napravljena iz " + trFile(false, single) + ": ";
 	  return result;
     }
 

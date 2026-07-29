@@ -203,7 +203,7 @@ static void runMermaid(const MermaidManager::DiagramList &diagrams)
       auto processFile = [&cmd]()
       {
         Debug::print(Debug::Mermaid, 0, "*** MermaidManager::run Running: {} {}\n", cmd.mmdc, cmd.args);
-        int exitCode = Portable::system(cmd.mmdc.data(), cmd.args.data(), TRUE);
+        int exitCode = Portable::system(cmd.mmdc.data(), cmd.args.data(), true);
         if (exitCode != 0)
         {
           err_full(cmd.srcFile, cmd.srcLine,
@@ -231,7 +231,7 @@ static void runMermaid(const MermaidManager::DiagramList &diagrams)
       msg("Generating Mermaid file {}/{}\n", offset, total);
       Debug::print(Debug::Mermaid, 0, "*** MermaidManager::run Running: {} {}\n", cmd.mmdc, cmd.args);
 
-      int exitCode = Portable::system(cmd.mmdc.data(), cmd.args.data(), TRUE);
+      int exitCode = Portable::system(cmd.mmdc.data(), cmd.args.data(), true);
       if (exitCode != 0)
       {
         err_full(cmd.srcFile, cmd.srcLine,

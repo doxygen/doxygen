@@ -94,7 +94,7 @@ static void visitCaption(XmlDocVisitor &visitor, const DocNodeList &children)
 static void visitPreStart(TextStream &t, const char *cmd, bool doCaption,
                           XmlDocVisitor &visitor, const DocNodeList &children,
                           const QCString &name, bool writeType, DocImage::Type type, const QCString &width,
-                          const QCString &height, const QCString engine = QCString(), const QCString &alt = QCString(), bool inlineImage = FALSE)
+                          const QCString &height, const QCString engine = QCString(), const QCString &alt = QCString(), bool inlineImage = false)
 {
   t << "<" << cmd;
   if (writeType)
@@ -112,7 +112,7 @@ static void visitPreStart(TextStream &t, const char *cmd, bool doCaption,
   }
   if (!name.isEmpty())
   {
-    t << " name=\"" << convertToXML(name, TRUE) << "\"";
+    t << " name=\"" << convertToXML(name, true) << "\"";
   }
   if (!width.isEmpty())
   {
@@ -149,7 +149,7 @@ static void visitPostEnd(TextStream &t, const char *cmd)
 }
 
 XmlDocVisitor::XmlDocVisitor(TextStream &t,OutputCodeList &ci,const QCString &langExt)
-  : m_t(t), m_ci(ci), m_insidePre(FALSE), m_hide(FALSE),
+  : m_t(t), m_ci(ci), m_insidePre(false), m_hide(false),
     m_langExt(langExt), m_sectionLevel(0)
 {
 }
@@ -195,7 +195,7 @@ void XmlDocVisitor::operator()(const DocSymbol &s)
   }
   else
   {
-    err("XML: non supported HTML-entity found: {}\n",HtmlEntityMapper::instance().html(s.symbol(),TRUE));
+    err("XML: non supported HTML-entity found: {}\n",HtmlEntityMapper::instance().html(s.symbol(),true));
   }
 }
 
@@ -290,12 +290,12 @@ void XmlDocVisitor::operator()(const DocStyleChange &s)
       if (s.enable())
       {
         m_t << "<preformatted>";
-        m_insidePre=TRUE;
+        m_insidePre=true;
       }
       else
       {
         m_t << "</preformatted>";
-        m_insidePre=FALSE;
+        m_insidePre=false;
       }
       break;
     case DocStyleChange::Div:  /* HTML only */ break;
@@ -376,22 +376,22 @@ void XmlDocVisitor::operator()(const DocVerbatim &s)
       m_t << s.text();
       break;
     case DocVerbatim::Dot:
-      visitPreStart(m_t, "dot", s.hasCaption(), *this, s.children(), QCString(""), FALSE, DocImage::Html, s.width(), s.height());
+      visitPreStart(m_t, "dot", s.hasCaption(), *this, s.children(), QCString(""), false, DocImage::Html, s.width(), s.height());
       filter(s.text());
       visitPostEnd(m_t, "dot");
       break;
     case DocVerbatim::Msc:
-      visitPreStart(m_t, "msc", s.hasCaption(), *this, s.children(),  QCString(""), FALSE, DocImage::Html, s.width(), s.height());
+      visitPreStart(m_t, "msc", s.hasCaption(), *this, s.children(),  QCString(""), false, DocImage::Html, s.width(), s.height());
       filter(s.text());
       visitPostEnd(m_t, "msc");
       break;
     case DocVerbatim::PlantUML:
-      visitPreStart(m_t, "plantuml", s.hasCaption(), *this, s.children(),  QCString(""), FALSE, DocImage::Html, s.width(), s.height(), s.engine());
+      visitPreStart(m_t, "plantuml", s.hasCaption(), *this, s.children(),  QCString(""), false, DocImage::Html, s.width(), s.height(), s.engine());
       filter(s.text());
       visitPostEnd(m_t, "plantuml");
       break;
     case DocVerbatim::Mermaid:
-      visitPreStart(m_t, "mermaid", s.hasCaption(), *this, s.children(), QCString(""), FALSE, DocImage::Html, s.width(), s.height());
+      visitPreStart(m_t, "mermaid", s.hasCaption(), *this, s.children(), QCString(""), false, DocImage::Html, s.width(), s.height());
       filter(s.text());
       visitPostEnd(m_t, "mermaid");
       break;
@@ -511,7 +511,7 @@ void XmlDocVisitor::operator()(const DocIncOperator &op)
       m_t << "<programlisting filename=\"" << op.includeFileName() << "\">";
     }
     pushHidden(m_hide);
-    m_hide = TRUE;
+    m_hide = true;
   }
   QCString locLangExt = getFileNameExtension(op.includeFileName());
   if (locLangExt.isEmpty()) locLangExt = m_langExt;
@@ -539,7 +539,7 @@ void XmlDocVisitor::operator()(const DocIncOperator &op)
                                          );
     }
     pushHidden(m_hide);
-    m_hide=TRUE;
+    m_hide=true;
   }
   if (op.isLast())
   {
@@ -902,7 +902,7 @@ void XmlDocVisitor::operator()(const DocInternal &i)
 void XmlDocVisitor::operator()(const DocHRef &href)
 {
   if (m_hide) return;
-  m_t << "<ulink url=\"" << convertToXML(href.url(), TRUE) << "\">";
+  m_t << "<ulink url=\"" << convertToXML(href.url(), true) << "\">";
   visitChildren(href);
   m_t << "</ulink>";
 }
@@ -954,7 +954,7 @@ void XmlDocVisitor::operator()(const DocImage &img)
   auto it = std::find_if(attribs.begin(),attribs.end(),
                          [](const auto &att) { return att.name=="alt"; });
   QCString altValue = it!=attribs.end() ? it->value : "";
-  visitPreStart(m_t, "image", FALSE, *this, img.children(), baseName, TRUE,
+  visitPreStart(m_t, "image", false, *this, img.children(), baseName, true,
                 img.type(), img.width(), img.height(), QCString(),
                 altValue, img.isInlineImage());
 
@@ -973,7 +973,7 @@ void XmlDocVisitor::operator()(const DocDotFile &df)
 {
   if (m_hide) return;
   copyFile(df.file(),Config_getString(XML_OUTPUT)+"/"+stripPath(df.file()));
-  visitPreStart(m_t, "dotfile", FALSE, *this, df.children(), stripPath(df.file()), FALSE, DocImage::Html, df.width(), df.height());
+  visitPreStart(m_t, "dotfile", false, *this, df.children(), stripPath(df.file()), false, DocImage::Html, df.width(), df.height());
   visitChildren(df);
   visitPostEnd(m_t, "dotfile");
 }
@@ -982,7 +982,7 @@ void XmlDocVisitor::operator()(const DocMscFile &df)
 {
   if (m_hide) return;
   copyFile(df.file(),Config_getString(XML_OUTPUT)+"/"+stripPath(df.file()));
-  visitPreStart(m_t, "mscfile", FALSE, *this, df.children(), stripPath(df.file()), FALSE, DocImage::Html, df.width(), df.height());
+  visitPreStart(m_t, "mscfile", false, *this, df.children(), stripPath(df.file()), false, DocImage::Html, df.width(), df.height());
   visitChildren(df);
   visitPostEnd(m_t, "mscfile");
 }
@@ -991,7 +991,7 @@ void XmlDocVisitor::operator()(const DocDiaFile &df)
 {
   if (m_hide) return;
   copyFile(df.file(),Config_getString(XML_OUTPUT)+"/"+stripPath(df.file()));
-  visitPreStart(m_t, "diafile", FALSE, *this, df.children(), stripPath(df.file()), FALSE, DocImage::Html, df.width(), df.height());
+  visitPreStart(m_t, "diafile", false, *this, df.children(), stripPath(df.file()), false, DocImage::Html, df.width(), df.height());
   visitChildren(df);
   visitPostEnd(m_t, "diafile");
 }
@@ -1000,7 +1000,7 @@ void XmlDocVisitor::operator()(const DocPlantUmlFile &df)
 {
   if (m_hide) return;
   copyFile(df.file(),Config_getString(XML_OUTPUT)+"/"+stripPath(df.file()));
-  visitPreStart(m_t, "plantumlfile", FALSE, *this, df.children(), stripPath(df.file()), FALSE, DocImage::Html, df.width(), df.height());
+  visitPreStart(m_t, "plantumlfile", false, *this, df.children(), stripPath(df.file()), false, DocImage::Html, df.width(), df.height());
   visitChildren(df);
   visitPostEnd(m_t, "plantumlfile");
 }
@@ -1009,7 +1009,7 @@ void XmlDocVisitor::operator()(const DocMermaidFile &df)
 {
   if (m_hide) return;
   copyFile(df.file(),Config_getString(XML_OUTPUT)+"/"+stripPath(df.file()));
-  visitPreStart(m_t, "mermaidfile", FALSE, *this, df.children(), stripPath(df.file()), FALSE, DocImage::Html, df.width(), df.height());
+  visitPreStart(m_t, "mermaidfile", false, *this, df.children(), stripPath(df.file()), false, DocImage::Html, df.width(), df.height());
   visitChildren(df);
   visitPostEnd(m_t, "mermaidfile");
 }

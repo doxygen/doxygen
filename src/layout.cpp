@@ -76,7 +76,7 @@ inline QCString compileOptions(const QCString &def,SrcLangExt langId1,const QCSt
          "|"+QCString().setNum(static_cast<long>(langId5))+"="+value5;
 }
 
-static bool elemIsVisible(const XMLHandlers::Attributes &attrib,bool defVal=TRUE)
+static bool elemIsVisible(const XMLHandlers::Attributes &attrib,bool defVal=true)
 {
   QCString visible = XMLHandlers::value(attrib,"visible");
   //printf("visible_attribute=%s\n",qPrint(visible));
@@ -101,8 +101,8 @@ static bool elemIsVisible(const XMLHandlers::Attributes &attrib,bool defVal=TRUE
     }
   }
   QCString visibleLow = visible.lower();
-  if (visibleLow=="no" || visibleLow=="false" || visibleLow=="0") return FALSE;
-  else if (visibleLow=="yes" || visibleLow=="true" || visibleLow=="1") return TRUE;
+  if (visibleLow=="no" || visibleLow=="false" || visibleLow=="0") return false;
+  else if (visibleLow=="yes" || visibleLow=="true" || visibleLow=="1") return true;
   else
   {
     err("found unsupported value '{}' for visible attribute in layout file, reverting to '{}'\n",
@@ -168,7 +168,7 @@ QCString LayoutNavEntry::url() const
     if (!df->file().isEmpty() || !df->anchor().isEmpty())
     {
       found = true;
-      url=externalRef(relPath,df->ref(),TRUE);
+      url=externalRef(relPath,df->ref(),true);
       if (!df->file().isEmpty())
       {
         QCString fn = df->file();
@@ -289,7 +289,7 @@ class LayoutParser
       if (m_rootNav && !m_rootNav->find(LayoutNavEntry::MainPage))
       {
         // no MainPage node... add one as the first item of the root node...
-        m_rootNav->insertChild(0,std::make_unique<LayoutNavEntry>(m_rootNav,LayoutNavEntry::MainPage, TRUE,
+        m_rootNav->insertChild(0,std::make_unique<LayoutNavEntry>(m_rootNav,LayoutNavEntry::MainPage, true,
                                                    "index",theTranslator->trMainPage(),""));
       }
     }
@@ -497,7 +497,7 @@ class LayoutParser
         },
         { "files",
           LayoutNavEntry::Files,
-          theTranslator->trFile(TRUE,FALSE),
+          theTranslator->trFile(true,false),
           theTranslator->trFileList(),
           theTranslator->trFileListDescription(extractAll),
           "files"
@@ -565,7 +565,7 @@ class LayoutParser
         {
           warn_layout(fileName,m_locator->lineNr(),"the type '{}' is not supported for the entry tag within a navindex! Check your layout file!",type);
         }
-        m_invalidEntry=TRUE;
+        m_invalidEntry=true;
         return;
       }
       LayoutNavEntry::Kind kind = mapping[i].kind;
@@ -617,7 +617,7 @@ class LayoutParser
     {
       // set the root back to the parent
       if (m_rootNav && !m_invalidEntry) m_rootNav = m_rootNav->parent();
-      m_invalidEntry=FALSE;
+      m_invalidEntry=false;
     }
 
     void startTop(const std::string &,const XMLHandlers::Attributes &attrib,LayoutDocManager::LayoutPart part,
@@ -815,7 +815,7 @@ static const std::map< std::string, ElementCallbacks > g_elementHandlers =
   { "class/memberdecl/membergroups",              { startCb(&LayoutParser::startSimpleEntry,LayoutDocEntry::MemberGroups) } },
   { "class/memberdecl/nestedclasses",             { startCb(&LayoutParser::startSectionEntry,LayoutDocEntry::ClassNestedClasses,
                                                             []() { return compileOptions(/*default*/        theTranslator->trCompounds(),
-                                                                                         SrcLangExt::VHDL,   theTranslator->trVhdlType(VhdlSpecifier::ENTITY,FALSE),
+                                                                                         SrcLangExt::VHDL,   theTranslator->trVhdlType(VhdlSpecifier::ENTITY,false),
                                                                                          SrcLangExt::Fortran,theTranslator->trDataTypes()); })
                                                   } },
   { "class/memberdecl/services",                  { startCb(&LayoutParser::startMemberDeclEntry,MemberListType::Services(),
@@ -996,7 +996,7 @@ static const std::map< std::string, ElementCallbacks > g_elementHandlers =
                                                   } },
   { "namespace/memberdecl/classes",               { startCb(&LayoutParser::startSectionEntry,LayoutDocEntry::NamespaceClasses,
                                                             []() { return compileOptions(/* default */      theTranslator->trCompounds(),
-                                                                           SrcLangExt::VHDL,   theTranslator->trVhdlType(VhdlSpecifier::ENTITY,FALSE),
+                                                                           SrcLangExt::VHDL,   theTranslator->trVhdlType(VhdlSpecifier::ENTITY,false),
                                                                            SrcLangExt::Fortran,theTranslator->trDataTypes()); })
                                                   } },
   { "namespace/memberdecl/concepts",              { startCb(&LayoutParser::startSectionEntry, LayoutDocEntry::NamespaceConcepts,
@@ -1084,7 +1084,7 @@ static const std::map< std::string, ElementCallbacks > g_elementHandlers =
                                                   } },
   { "file/memberdecl/classes",                    { startCb(&LayoutParser::startSectionEntry,LayoutDocEntry::FileClasses,
                                                             []() { return compileOptions(/* default */      theTranslator->trCompounds(),
-                                                                                         SrcLangExt::VHDL,   theTranslator->trVhdlType(VhdlSpecifier::ENTITY,FALSE),
+                                                                                         SrcLangExt::VHDL,   theTranslator->trVhdlType(VhdlSpecifier::ENTITY,false),
                                                                                          SrcLangExt::Fortran,theTranslator->trDataTypes()); })
                                                   } },
   { "file/memberdecl/concepts",                   { startCb(&LayoutParser::startSectionEntry, LayoutDocEntry::FileConcepts,
@@ -1180,7 +1180,7 @@ static const std::map< std::string, ElementCallbacks > g_elementHandlers =
   { "group/memberdecl/membergroups",              { startCb(&LayoutParser::startSimpleEntry, LayoutDocEntry::MemberGroups)  } },
   { "group/memberdecl/classes",                   { startCb(&LayoutParser::startSectionEntry, LayoutDocEntry::GroupClasses,
                                                             []() { return compileOptions(/* default */       theTranslator->trCompounds(),
-                                                                                         SrcLangExt::VHDL,    theTranslator->trVhdlType(VhdlSpecifier::ENTITY,FALSE),
+                                                                                         SrcLangExt::VHDL,    theTranslator->trVhdlType(VhdlSpecifier::ENTITY,false),
                                                                                          SrcLangExt::Fortran, theTranslator->trDataTypes()); })
                                                   } },
   { "group/memberdecl/concepts",                  { startCb(&LayoutParser::startSectionEntry, LayoutDocEntry::GroupConcepts,
@@ -1201,7 +1201,7 @@ static const std::map< std::string, ElementCallbacks > g_elementHandlers =
                                                             []() { return compileOptions(theTranslator->trTopics()); })
                                                   } },
   { "group/memberdecl/files",                     { startCb(&LayoutParser::startSectionEntry, LayoutDocEntry::GroupFiles,
-                                                            []() { return compileOptions(theTranslator->trFile(TRUE,FALSE)); })
+                                                            []() { return compileOptions(theTranslator->trFile(true,false)); })
                                                   } },
   { "group/memberdecl/defines",                   { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::DecDefineMembers(),
                                                             []() { return compileOptions(theTranslator->trDefines()); })
@@ -1336,7 +1336,7 @@ static const std::map< std::string, ElementCallbacks > g_elementHandlers =
                                                   } },
   { "module/memberdecl/membergroups",             { startCb(&LayoutParser::startSimpleEntry, LayoutDocEntry::MemberGroups)  } },
   { "module/memberdecl/files",                    { startCb(&LayoutParser::startSectionEntry, LayoutDocEntry::ModuleUsedFiles,
-                                                            []() { return compileOptions(theTranslator->trFile(TRUE,FALSE)); })
+                                                            []() { return compileOptions(theTranslator->trFile(true,false)); })
                                                   } },
 
   // directory layout handlers

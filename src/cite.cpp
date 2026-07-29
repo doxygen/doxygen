@@ -447,7 +447,7 @@ void CitationManager::generatePage()
       err("could not open file {} for reading\n",citeListFile);
     }
 
-    bool insideBib=FALSE;
+    bool insideBib=false;
     //printf("input=[%s]\n",qPrint(input));
     std::string lineStr;
     while (getline(f,lineStr))
@@ -455,8 +455,8 @@ void CitationManager::generatePage()
       QCString line(lineStr);
       //printf("pos=%d s=%d line=[%s]\n",pos,s,qPrint(line));
 
-      if      (line.find("<!-- BEGIN BIBLIOGRAPHY")!=-1) insideBib=TRUE;
-      else if (line.find("<!-- END BIBLIOGRAPH")!=-1)    insideBib=FALSE;
+      if      (line.find("<!-- BEGIN BIBLIOGRAPHY")!=-1) insideBib=true;
+      else if (line.find("<!-- END BIBLIOGRAPH")!=-1)    insideBib=false;
       // determine text to use at the location of the @cite command
       if (insideBib && ((i=line.find("name=\"CITEREF_"))!=-1 || (i=line.find("name=\"#CITEREF_"))!=-1))
       {

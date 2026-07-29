@@ -137,13 +137,13 @@ static bool mustBeOutsideParagraph(const DocNodeVariant &n)
                                  /* <summary> */     DocHtmlSummary,
                                                      DocIncOperator >(n))
   {
-    return TRUE;
+    return true;
   }
   const DocVerbatim *dv = std::get_if<DocVerbatim>(&n);
   if (dv)
   {
     DocVerbatim::Type t = dv->type();
-    if (t == DocVerbatim::JavaDocCode || t == DocVerbatim::JavaDocLiteral) return FALSE;
+    if (t == DocVerbatim::JavaDocCode || t == DocVerbatim::JavaDocLiteral) return false;
     return t!=DocVerbatim::HtmlOnly || dv->isBlock();
   }
   const DocStyleChange *sc = std::get_if<DocStyleChange>(&n);
@@ -163,7 +163,7 @@ static bool mustBeOutsideParagraph(const DocNodeVariant &n)
   {
     return !di->isInlineImage();
   }
-  return FALSE;
+  return false;
 }
 
 static bool isDocVerbatimVisible(const DocVerbatim &s)
@@ -175,9 +175,9 @@ static bool isDocVerbatimVisible(const DocVerbatim &s)
     case DocVerbatim::XmlOnly:
     case DocVerbatim::RtfOnly:
     case DocVerbatim::DocbookOnly:
-      return FALSE;
+      return false;
     default:
-      return TRUE;
+      return true;
   }
 }
 
@@ -191,9 +191,9 @@ static bool isDocIncludeVisible(const DocInclude &s)
     case DocInclude::ManInclude:
     case DocInclude::XmlInclude:
     case DocInclude::DocbookInclude:
-      return FALSE;
+      return false;
     default:
-      return TRUE;
+      return true;
   }
 }
 
@@ -202,9 +202,9 @@ static bool isDocIncOperatorVisible(const DocIncOperator &s)
   switch (s.type())
   {
     case DocIncOperator::Skip:
-      return FALSE;
+      return false;
     default:
-      return TRUE;
+      return true;
   }
 }
 
@@ -302,7 +302,7 @@ void HtmlDocVisitor::operator()(const DocSymbol &s)
     else
     {
       err("HTML: non supported HTML-entity found: {}\n",
-          HtmlEntityMapper::instance().html(s.symbol(),TRUE));
+          HtmlEntityMapper::instance().html(s.symbol(),true));
     }
   }
 }
@@ -501,11 +501,11 @@ void HtmlDocVisitor::operator()(const DocStyleChange &s)
       {
         forceEndParagraph(s);
         m_t << "<pre" << s.attribs().toString() << ">";
-        m_insidePre=TRUE;
+        m_insidePre=true;
       }
       else
       {
-        m_insidePre=FALSE;
+        m_insidePre=false;
         m_t << "</pre>";
         forceStartParagraph(s);
       }
@@ -780,7 +780,7 @@ void HtmlDocVisitor::operator()(const DocIncOperator &op)
     forceEndParagraph(op);
     if (!m_hide) m_ci.startCodeFragment("DoxyCode");
     pushHidden(m_hide);
-    m_hide=TRUE;
+    m_hide=true;
   }
   QCString locLangExt = getFileNameExtension(op.includeFileName());
   if (locLangExt.isEmpty()) locLangExt = m_langExt;
@@ -811,7 +811,7 @@ void HtmlDocVisitor::operator()(const DocIncOperator &op)
                                );
     }
     pushHidden(m_hide);
-    m_hide=TRUE;
+    m_hide=true;
   }
   if (op.isLast())
   {
@@ -838,17 +838,17 @@ void HtmlDocVisitor::operator()(const DocFormula &f)
   if (Config_getBool(USE_MATHJAX))
   {
     QCString text = f.text();
-    bool closeInline = FALSE;
+    bool closeInline = false;
     if (!bDisplay && !text.isEmpty() && text.at(0)=='$' &&
                       text.at(text.length()-1)=='$')
     {
-      closeInline=TRUE;
+      closeInline=true;
       text = text.mid(1,text.length()-2);
       m_t << "\\(";
     }
     else if (!bDisplay && !text.isEmpty())
     {
-      closeInline=TRUE;
+      closeInline=true;
       m_t << "\\(";
     }
     m_t << convertToHtml(text);
@@ -1076,7 +1076,7 @@ bool isSeparatedParagraph(const DocSimpleSect &parent,const DocPara &par)
 {
   const DocNodeList &nodes = parent.children();
   auto it = std::find_if(std::begin(nodes),std::end(nodes),[&par](const auto &n) { return holds_value(&par,n); });
-  if (it==std::end(nodes)) return FALSE;
+  if (it==std::end(nodes)) return false;
   size_t count = parent.children().size();
   auto isSeparator = [](auto &&it_) { return std::get_if<DocSimpleSectSep>(&(*it_))!=nullptr; };
   if (count>1 && it==std::begin(nodes)) // it points to first node
@@ -1097,8 +1097,8 @@ bool isSeparatedParagraph(const DocSimpleSect &parent,const DocPara &par)
 static contexts_t getParagraphContext(const DocPara &p,bool &isFirst,bool &isLast)
 {
   contexts_t t=contexts_t::NONE;
-  isFirst=FALSE;
-  isLast=FALSE;
+  isFirst=false;
+  isLast=false;
   if (p.parent())
   {
     const auto parBlock = std::get_if<DocParBlock>(p.parent());
@@ -1142,16 +1142,16 @@ static contexts_t getParagraphContext(const DocPara &p,bool &isFirst,bool &isLas
     const auto docSimpleListItem = std::get_if<DocSimpleListItem>(p.parent());
     if (docSimpleListItem)
     {
-      isFirst=TRUE;
-      isLast =TRUE;
+      isFirst=true;
+      isLast =true;
       t=contexts_t::STARTLI; // not used
       return t;
     }
     const auto docParamList = std::get_if<DocParamList>(p.parent());
     if (docParamList)
     {
-      isFirst=TRUE;
-      isLast =TRUE;
+      isFirst=true;
+      isLast =true;
       t=contexts_t::STARTLI; // not used
       return t;
     }
@@ -1207,7 +1207,7 @@ static contexts_t getParagraphContext(const DocPara &p,bool &isFirst,bool &isLas
         // be included in <dd>..</dd> so avoid addition paragraph
         // markers
       {
-        isFirst=isLast=TRUE;
+        isFirst=isLast=true;
       }
       if (!isFirst && !isLast) t = contexts_t::INTERDD;
       return t;
@@ -1228,7 +1228,7 @@ static contexts_t getParagraphContext(const DocPara &p,bool &isFirst,bool &isLas
 
 static bool determineIfNeedsTag(const DocPara &p)
 {
-  bool needsTag = FALSE;
+  bool needsTag = false;
   if (p.parent())
   {
     if (holds_one_of_alternatives<DocSection,
@@ -1246,7 +1246,7 @@ static bool determineIfNeedsTag(const DocPara &p)
                          DocHtmlSummary
                          >(*p.parent()))
     {
-      needsTag = TRUE;
+      needsTag = true;
     }
     else if (std::get_if<DocRoot>(p.parent()))
     {
@@ -1280,7 +1280,7 @@ void HtmlDocVisitor::operator()(const DocPara &p)
       const DocNodeVariant &n = *it;
       if (mustBeOutsideParagraph(n))
       {
-        needsTagBefore = FALSE;
+        needsTagBefore = false;
       }
     }
   }
@@ -1292,7 +1292,7 @@ void HtmlDocVisitor::operator()(const DocPara &p)
   bool isLast  = false;
   contexts_t t = getParagraphContext(p,isFirst,isLast);
   //printf("startPara first=%d last=%d\n",isFirst,isLast);
-  if (isFirst && isLast) needsTagBefore=FALSE;
+  if (isFirst && isLast) needsTagBefore=false;
 
   //printf("  needsTagBefore=%d\n",needsTagBefore);
   // write the paragraph tag (if needed)
@@ -1319,7 +1319,7 @@ void HtmlDocVisitor::operator()(const DocPara &p)
       {
         if (mustBeOutsideParagraph(n))
         {
-          needsTagAfter = FALSE;
+          needsTagAfter = false;
         }
         // stop searching if we found a node that is visible
         break;
@@ -1337,7 +1337,7 @@ void HtmlDocVisitor::operator()(const DocPara &p)
   }
 
   //printf("endPara first=%d last=%d\n",isFirst,isLast);
-  if (isFirst && isLast) needsTagAfter=FALSE;
+  if (isFirst && isLast) needsTagAfter=false;
 
   //printf("  needsTagAfter=%d\n",needsTagAfter);
   if (needsTagAfter) m_t << "</p>\n";
@@ -1364,9 +1364,9 @@ void HtmlDocVisitor::operator()(const DocSimpleSect &s)
     case DocSimpleSect::Return:
       m_t << theTranslator->trReturns(); break;
     case DocSimpleSect::Author:
-      m_t << theTranslator->trAuthor(TRUE,TRUE); break;
+      m_t << theTranslator->trAuthor(true,true); break;
     case DocSimpleSect::Authors:
-      m_t << theTranslator->trAuthor(TRUE,FALSE); break;
+      m_t << theTranslator->trAuthor(true,false); break;
     case DocSimpleSect::Version:
       m_t << theTranslator->trVersion(); break;
     case DocSimpleSect::Since:
@@ -1933,7 +1933,7 @@ void HtmlDocVisitor::operator()(const DocRef &ref)
   if (m_hide) return;
   if (!ref.file().isEmpty())
   {
-    // when ref.isSubPage()==TRUE we use ref.file() for HTML and
+    // when ref.isSubPage()==true we use ref.file() for HTML and
     // ref.anchor() for LaTeX/RTF
     startLink(ref.ref(),ref.file(),ref.relPath(),ref.isSubPage() ? QCString() : ref.anchor(), ref.targetTitle());
   }
@@ -2053,10 +2053,10 @@ void HtmlDocVisitor::operator()(const DocParamList &pl)
     m_t << "</td>";
   }
   m_t << "<td class=\"paramname\">";
-  bool first=TRUE;
+  bool first=true;
   for (const auto &param : pl.parameters())
   {
-    if (!first) m_t << ","; else first=FALSE;
+    if (!first) m_t << ","; else first=false;
     std::visit(*this,param);
   }
   m_t << "</td><td>";
@@ -2345,7 +2345,7 @@ void HtmlDocVisitor::writeMermaidFile(const QCString &fileName, const QCString &
   }
 }
 
-/** Returns TRUE if the child nodes in paragraph \a para until \a nodeIndex
+/** Returns true if the child nodes in paragraph \a para until \a nodeIndex
     contain a style change node that is still active and that style change is one that
     must be located outside of a paragraph, i.e. it is a center, div, or pre tag.
     See also bug746162.
@@ -2355,7 +2355,7 @@ static bool insideStyleChangeThatIsOutsideParagraph(const DocPara *para,
 {
   //printf("insideStyleChangeThatIsOutputParagraph(index=%d)\n",nodeIndex);
   int styleMask=0;
-  bool styleOutsideParagraph=FALSE;
+  bool styleOutsideParagraph=false;
   while (!styleOutsideParagraph)
   {
     const DocNodeVariant *n = &(*it);
@@ -2374,7 +2374,7 @@ static bool insideStyleChangeThatIsOutsideParagraph(const DocPara *para,
           paraStyle
          )
       {
-        styleOutsideParagraph=TRUE;
+        styleOutsideParagraph=true;
       }
     }
     if (it!=std::begin(para->children()))

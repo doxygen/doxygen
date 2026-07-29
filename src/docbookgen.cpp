@@ -225,7 +225,7 @@ void DocbookCodeGenerator::startCodeLine(int)
 {
   if (m_hide) return;
   Docbook_DB(("(startCodeLine)\n"));
-  m_insideCodeLine=TRUE;
+  m_insideCodeLine=true;
   m_col=0;
 }
 
@@ -237,7 +237,7 @@ void DocbookCodeGenerator::endCodeLine()
   m_lineNumber = -1;
   m_refId.clear();
   m_external.clear();
-  m_insideCodeLine=FALSE;
+  m_insideCodeLine=false;
 }
 
 void DocbookCodeGenerator::startFontClass(const QCString &colorClass)
@@ -245,7 +245,7 @@ void DocbookCodeGenerator::startFontClass(const QCString &colorClass)
   if (m_hide) return;
   Docbook_DB(("(startFontClass)\n"));
   *m_t << "<emphasis role=\"" << colorClass << "\">";
-  m_insideSpecialHL=TRUE;
+  m_insideSpecialHL=true;
 }
 
 void DocbookCodeGenerator::endFontClass()
@@ -253,7 +253,7 @@ void DocbookCodeGenerator::endFontClass()
   if (m_hide) return;
   Docbook_DB(("(endFontClass)\n"));
   *m_t << "</emphasis>"; // non DocBook
-  m_insideSpecialHL=FALSE;
+  m_insideSpecialHL=false;
 }
 
 void DocbookCodeGenerator::writeCodeAnchor(const QCString &)
@@ -266,7 +266,7 @@ void DocbookCodeGenerator::writeLineNumber(const QCString &ref,const QCString &f
 {
   if (m_hide) return;
   Docbook_DB(("(writeLineNumber)\n"));
-  m_insideCodeLine = TRUE;
+  m_insideCodeLine = true;
   if (Config_getBool(SOURCE_BROWSER))
   {
     QCString lineNumber;
@@ -427,7 +427,7 @@ void DocbookGenerator::endFile()
 DB_GEN_C
   closeAllSections();
   m_inLevel = -1;
-  m_inGroup = FALSE;
+  m_inGroup = false;
 
   // Write page links only after all sections have been closed to avoid bugs
   m_t << m_pageLinks;
@@ -545,7 +545,7 @@ DB_GEN_C2("IndexSection " << is)
       {
         if (Doxygen::mainPage)
         {
-          writePageLink(QCString("mainpage"), TRUE);
+          writePageLink(QCString("mainpage"), true);
         }
       }
       break;
@@ -589,7 +589,7 @@ DB_GEN_C2("IndexSection " << is)
         {
           if (!gd->isReference() && !gd->isASubGroup())
           {
-            writePageLink(gd->getOutputFileBase(), TRUE);
+            writePageLink(gd->getOutputFileBase(), true);
           }
         }
       }
@@ -602,7 +602,7 @@ DB_GEN_C2("IndexSection " << is)
         {
           if (!mod->isReference() && mod->isPrimaryInterface())
           {
-            writePageLink(mod->getOutputFileBase(), TRUE);
+            writePageLink(mod->getOutputFileBase(), true);
           }
         }
       }
@@ -701,7 +701,7 @@ DB_GEN_C2("IndexSection " << is)
           if (!pd->getGroupDef() && !pd->isReference() && !pd->hasParentPage()
             && Doxygen::mainPage.get() != pd.get())
           {
-            writePageLink(pd->getOutputFileBase(), TRUE);
+            writePageLink(pd->getOutputFileBase(), true);
           }
         }
       break;
@@ -756,7 +756,7 @@ void DocbookGenerator::startMemberHeader(const QCString &,int)
 {
 DB_GEN_C
   m_t << "<simplesect>\n";
-  m_inSimpleSect[m_levelListItem] = TRUE;
+  m_inSimpleSect[m_levelListItem] = true;
   m_t << "    <title>";
 }
 
@@ -804,18 +804,18 @@ void DocbookGenerator::endMemberList()
 {
 DB_GEN_C
   if (m_inListItem[m_levelListItem]) m_t << "</listitem>\n";
-  m_inListItem[m_levelListItem] = FALSE;
+  m_inListItem[m_levelListItem] = false;
   m_t << "        </itemizedlist>\n";
   m_levelListItem = (m_levelListItem> 0 ?  m_levelListItem - 1 : 0);
   if (m_inSimpleSect[m_levelListItem]) m_t << "</simplesect>\n";
-  m_inSimpleSect[m_levelListItem] = FALSE;
+  m_inSimpleSect[m_levelListItem] = false;
 }
 void DocbookGenerator::startMemberItem(const QCString &,MemberItemType,const QCString &)
 {
 DB_GEN_C
   if (m_inListItem[m_levelListItem]) m_t << "</listitem>\n";
   m_t << "            <listitem><para>";
-  m_inListItem[m_levelListItem] = TRUE;
+  m_inListItem[m_levelListItem] = true;
 }
 void DocbookGenerator::endMemberItem(MemberItemType)
 {
@@ -836,10 +836,10 @@ void DocbookGenerator::startGroupHeader(const QCString &,int extraIndentLevel)
 {
 DB_GEN_C2("m_inLevel " << m_inLevel)
 DB_GEN_C2("extraIndentLevel " << extraIndentLevel)
-  m_firstMember = TRUE;
+  m_firstMember = true;
   if (m_inSimpleSect[m_levelListItem]) m_t << "</simplesect>\n";
-  m_inSimpleSect[m_levelListItem] = FALSE;
-  if (m_inLevel != -1) m_inGroup = TRUE;
+  m_inSimpleSect[m_levelListItem] = false;
+  if (m_inLevel != -1) m_inGroup = true;
   if (m_inLevel == extraIndentLevel) closeSection();
   m_inLevel = extraIndentLevel;
   openSection();
@@ -850,7 +850,7 @@ void DocbookGenerator::writeRuler()
 DB_GEN_C2("m_inLevel " << m_inLevel)
 DB_GEN_C2("m_inGroup " << m_inGroup)
   if (m_inGroup) closeSection();
-  m_inGroup = FALSE;
+  m_inGroup = false;
 }
 
 void DocbookGenerator::endGroupHeader(int)
@@ -893,7 +893,7 @@ void DocbookGenerator::startTextBlock(bool dense)
 DB_GEN_C
   if (dense)
   {
-    m_denseText = TRUE;
+    m_denseText = true;
     m_t << "<programlisting linenumbering=\"unnumbered\">";
   }
 }
@@ -902,7 +902,7 @@ void DocbookGenerator::endTextBlock(bool)
 DB_GEN_C
   if (m_denseText)
   {
-    m_denseText = FALSE;
+    m_denseText = false;
     m_t << "</programlisting>";
   }
 }
@@ -947,7 +947,7 @@ DB_GEN_C
   if (!m_inListItem[m_levelListItem] && !m_descTable && !m_simpleTable)
   {
     if (!m_firstMember) closeSection();
-    m_firstMember = FALSE;
+    m_firstMember = false;
   }
   if (!anchor.isEmpty())
   {
@@ -1232,7 +1232,7 @@ DB_GEN_C
   if (hasInits) m_t << "      <colspec colname='c" << i++ << "' align='right'/>\n";
   m_t << "      <colspec colname='c" << i++ << "'/>\n";
   m_t << "<tbody>\n";
-  m_descTable = TRUE;
+  m_descTable = true;
 }
 
 void DocbookGenerator::endDescTable()
@@ -1241,7 +1241,7 @@ DB_GEN_C
   m_t << "    </tbody>\n";
   m_t << "    </tgroup>\n";
   m_t << "</informaltable>\n";
-  m_descTable = FALSE;
+  m_descTable = false;
 }
 
 void DocbookGenerator::startDescTableRow()
@@ -1296,7 +1296,7 @@ DB_GEN_C
 void DocbookGenerator::endGroupCollaboration(DotGroupCollaboration &g)
 {
 DB_GEN_C
-  g.writeGraph(m_t,GraphOutputFormat::BITMAP,EmbeddedOutputFormat::DocBook,dir(),fileName(),relPath,FALSE);
+  g.writeGraph(m_t,GraphOutputFormat::BITMAP,EmbeddedOutputFormat::DocBook,dir(),fileName(),relPath,false);
 }
 void DocbookGenerator::startDotGraph()
 {
@@ -1305,7 +1305,7 @@ DB_GEN_C
 void DocbookGenerator::endDotGraph(DotClassGraph &g)
 {
 DB_GEN_C
-  g.writeGraph(m_t,GraphOutputFormat::BITMAP,EmbeddedOutputFormat::DocBook,dir(),fileName(),relPath,TRUE,FALSE);
+  g.writeGraph(m_t,GraphOutputFormat::BITMAP,EmbeddedOutputFormat::DocBook,dir(),fileName(),relPath,true,false);
 }
 void DocbookGenerator::startInclDepGraph()
 {
@@ -1314,7 +1314,7 @@ DB_GEN_C
 void DocbookGenerator::endInclDepGraph(DotInclDepGraph &g)
 {
 DB_GEN_C
-  QCString fn = g.writeGraph(m_t,GraphOutputFormat::BITMAP,EmbeddedOutputFormat::DocBook,dir(),fileName(),relPath,FALSE);
+  QCString fn = g.writeGraph(m_t,GraphOutputFormat::BITMAP,EmbeddedOutputFormat::DocBook,dir(),fileName(),relPath,false);
 }
 void DocbookGenerator::startCallGraph()
 {
@@ -1323,7 +1323,7 @@ DB_GEN_C
 void DocbookGenerator::endCallGraph(DotCallGraph &g)
 {
 DB_GEN_C
-  QCString fn = g.writeGraph(m_t,GraphOutputFormat::BITMAP,EmbeddedOutputFormat::DocBook,dir(),fileName(),relPath,FALSE);
+  QCString fn = g.writeGraph(m_t,GraphOutputFormat::BITMAP,EmbeddedOutputFormat::DocBook,dir(),fileName(),relPath,false);
 }
 void DocbookGenerator::startDirDepGraph()
 {
@@ -1332,7 +1332,7 @@ DB_GEN_C
 void DocbookGenerator::endDirDepGraph(DotDirDeps &g)
 {
 DB_GEN_C
-  QCString fn = g.writeGraph(m_t,GraphOutputFormat::BITMAP,EmbeddedOutputFormat::DocBook,dir(),fileName(),relPath,FALSE);
+  QCString fn = g.writeGraph(m_t,GraphOutputFormat::BITMAP,EmbeddedOutputFormat::DocBook,dir(),fileName(),relPath,false);
 }
 void DocbookGenerator::startMemberDocList()
 {
@@ -1341,7 +1341,7 @@ DB_GEN_C
 void DocbookGenerator::endMemberDocList()
 {
 DB_GEN_C
-  m_inGroup = TRUE;
+  m_inGroup = true;
 }
 void DocbookGenerator::startConstraintList(const QCString &header)
 {

@@ -56,7 +56,7 @@ class DiagramItem
     uint32_t number() const { return m_num; }
     Protection protection() const { return m_prot; }
     Specifier virtualness() const { return m_virt; }
-    void putInList() { m_inList=TRUE; }
+    void putInList() { m_inList=true; }
     bool isInList() const { return m_inList; }
     const ClassDef *getClassDef() const { return m_classDef; }
   private:
@@ -113,7 +113,7 @@ class TreeDiagram
                    uint32_t baseRows,uint32_t superRows,
                    uint32_t cellWidth,uint32_t cellHeight,
                    QCString relPath="",
-                   bool generateMap=TRUE);
+                   bool generateMap=true);
     void drawConnectors(TextStream &t,Image *image,
                    bool doBase,bool bitmap,
                    uint32_t baseRows,uint32_t superRows,
@@ -231,7 +231,7 @@ static Protection getMinProtectionLevel(const DiagramItemList &dil)
 
 static void writeBitmapBox(DiagramItem *di,Image *image,
                            uint32_t x,uint32_t y,uint32_t w,uint32_t h,bool firstRow,
-                           bool hasDocs,bool children=FALSE)
+                           bool hasDocs,bool children=false)
 {
   uint8_t colFill = hasDocs ? (firstRow ? 8 : 2) : 7;
   uint8_t colBorder = (firstRow || !hasDocs) ? 1 : 3;
@@ -250,7 +250,7 @@ static void writeBitmapBox(DiagramItem *di,Image *image,
 }
 
 static void writeVectorBox(TextStream &t,DiagramItem *di,
-                           float x,float y,bool children=FALSE)
+                           float x,float y,bool children=false)
 {
   if (di->virtualness()==Specifier::Virtual) t << "dashed\n";
   t << " (" << convertToPSString(di->label()) << ") " << x << " " << y << " box\n";
@@ -270,7 +270,7 @@ static void writeMapArea(TextStream &t,const ClassDef *cd,QCString relPath,
       t << externalLinkTarget(true);
     }
     t << "href=\"";
-    t << externalRef(relPath,ref,TRUE);
+    t << externalRef(relPath,ref,true);
     QCString fn = cd->getOutputFileBase();
     addHtmlExtensionIfMissing(fn);
     t << fn;
@@ -406,7 +406,7 @@ void TreeDiagram::moveChildren(DiagramItem *root,int dx)
 
 bool TreeDiagram::layoutTree(DiagramItem *root,uint32_t r)
 {
-  bool moved=FALSE;
+  bool moved=false;
   //printf("layoutTree(%s,%d)\n",qPrint(root->label()),r);
 
   if (root->numChildren()>0)
@@ -423,7 +423,7 @@ bool TreeDiagram::layoutTree(DiagramItem *root,uint32_t r)
       {
         row->item(k)->move(static_cast<int>(pPos-cPos),0);
       }
-      moved=TRUE;
+      moved=true;
     }
     else if (pPos<cPos) // move parent
     {
@@ -434,7 +434,7 @@ bool TreeDiagram::layoutTree(DiagramItem *root,uint32_t r)
       {
         row->item(k)->move(static_cast<int>(cPos-pPos),0);
       }
-      moved=TRUE;
+      moved=true;
     }
 
     // recurse to children
@@ -457,7 +457,7 @@ void TreeDiagram::computeLayout()
     //printf("computeLayout() list row at %d\n",row->number());
     DiagramItem *opi=nullptr;
     int delta=0;
-    bool first=TRUE;
+    bool first=true;
     for (const auto &di : *row)
     {
       DiagramItem *pi=di->parentItem();
@@ -533,10 +533,10 @@ void TreeDiagram::computeExtremes(uint32_t *maxLabelLen,uint32_t *maxXPos)
   uint32_t ml=0,mx=0;
   for (const auto &dr : m_rows) // for each row
   {
-    bool done=FALSE;
+    bool done=false;
     for (const auto &di : *dr) // for each item in a row
     {
-      if (di->isInList()) done=TRUE;
+      if (di->isInList()) done=true;
       if (maxXPos) mx=std::max(mx,di->xPos());
       if (maxLabelLen) ml=std::max(ml,Image::stringLength(di->label()));
     }
@@ -591,7 +591,7 @@ void TreeDiagram::drawBoxes(TextStream &t,Image *image,
   auto it = m_rows.begin();
   if (it!=m_rows.end() && !doBase) ++it;
   bool firstRow = doBase;
-  bool done=FALSE;
+  bool done=false;
   float superRowsF = static_cast<float>(superRows);
   for (;it!=m_rows.end() && !done;++it) // for each row
   {
@@ -667,7 +667,7 @@ void TreeDiagram::drawBoxes(TextStream &t,Image *image,
 
         ++dit;
       }
-      done=TRUE;
+      done=true;
     }
     else // draw a tree of boxes
     {
@@ -708,7 +708,7 @@ void TreeDiagram::drawBoxes(TextStream &t,Image *image,
         }
       }
     }
-    firstRow=FALSE;
+    firstRow=false;
   }
 }
 
@@ -717,7 +717,7 @@ void TreeDiagram::drawConnectors(TextStream &t,Image *image,
                                  uint32_t baseRows,uint32_t superRows,
                                  uint32_t cellWidth,uint32_t cellHeight)
 {
-  bool done=FALSE;
+  bool done=false;
   auto it = m_rows.begin();
   float superRowsF = static_cast<float>(superRows);
   for (;it!=m_rows.end() && !done;++it) // for each row
@@ -891,7 +891,7 @@ void TreeDiagram::drawConnectors(TextStream &t,Image *image,
         }
         if (rit!=dr->end()) ++rit;
       }
-      done=TRUE; // the tree is drawn now
+      done=true; // the tree is drawn now
     }
     else // normal tree connector
     {
@@ -1296,7 +1296,7 @@ void ClassDiagram::writeFigure(TextStream &output,const QCString &path,
 
     for (const auto &dr : p->base)
     {
-      bool done=FALSE;
+      bool done=false;
       for (const auto &di : *dr)
       {
         done=di->isInList();
@@ -1310,7 +1310,7 @@ void ClassDiagram::writeFigure(TextStream &output,const QCString &path,
     for (;it!=p->super.end();++it)
     {
       const auto &dr = *it;
-      bool done=FALSE;
+      bool done=false;
       for (const auto &di : *dr)
       {
         done=di->isInList();
@@ -1329,12 +1329,12 @@ void ClassDiagram::writeFigure(TextStream &output,const QCString &path,
       << "boundx scalefactor div boundy scalefactor div scale\n";
 
     t << "\n% ----- classes -----\n\n";
-    p->base.drawBoxes(t,nullptr,TRUE,FALSE,baseRows,superRows,0,0);
-    p->super.drawBoxes(t,nullptr,FALSE,FALSE,baseRows,superRows,0,0);
+    p->base.drawBoxes(t,nullptr,true,false,baseRows,superRows,0,0);
+    p->super.drawBoxes(t,nullptr,false,false,baseRows,superRows,0,0);
 
     t << "\n% ----- relations -----\n\n";
-    p->base.drawConnectors(t,nullptr,TRUE,FALSE,baseRows,superRows,0,0);
-    p->super.drawConnectors(t,nullptr,FALSE,FALSE,baseRows,superRows,0,0);
+    p->base.drawConnectors(t,nullptr,true,false,baseRows,superRows,0,0);
+    p->super.drawConnectors(t,nullptr,false,false,baseRows,superRows,0,0);
 
   }
   f.close();
@@ -1380,10 +1380,10 @@ void ClassDiagram::writeImage(TextStream &t,const QCString &path,
 
   Image image(imageWidth,imageHeight);
 
-  p->base.drawBoxes(t,&image,TRUE,TRUE,baseRows,superRows,cellWidth,cellHeight,relPath,generateMap);
-  p->super.drawBoxes(t,&image,FALSE,TRUE,baseRows,superRows,cellWidth,cellHeight,relPath,generateMap);
-  p->base.drawConnectors(t,&image,TRUE,TRUE,baseRows,superRows,cellWidth,cellHeight);
-  p->super.drawConnectors(t,&image,FALSE,TRUE,baseRows,superRows,cellWidth,cellHeight);
+  p->base.drawBoxes(t,&image,true,true,baseRows,superRows,cellWidth,cellHeight,relPath,generateMap);
+  p->super.drawBoxes(t,&image,false,true,baseRows,superRows,cellWidth,cellHeight,relPath,generateMap);
+  p->base.drawConnectors(t,&image,true,true,baseRows,superRows,cellWidth,cellHeight);
+  p->super.drawConnectors(t,&image,false,true,baseRows,superRows,cellWidth,cellHeight);
 
 #define IMAGE_EXT ".png"
   image.save(QCString(path)+"/"+fileName+IMAGE_EXT);

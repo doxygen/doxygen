@@ -123,7 +123,7 @@ class DocParser final : public IDocParser
                                      const Definition **pDef);
     bool defaultHandleToken(DocNodeVariant *parent,Token &tok,
                             DocNodeList &children,bool
-                            handleWord=TRUE);
+                            handleWord=true);
     void errorHandleDefaultToken(DocNodeVariant *parent,Token tok,
                                  DocNodeList &children,const QCString &txt);
     void defaultHandleTitleAndSize(const CommandType cmd, DocNodeVariant *parent,
@@ -138,7 +138,7 @@ class DocParser final : public IDocParser
     void handleInitialStyleCommands(DocNodeVariant *parent,DocNodeList &children);
     Token handleAHref(DocNodeVariant *parent,DocNodeList &children,const HtmlAttribList &tagHtmlAttribs);
     void handleUnclosedStyleCommands();
-    void handleLinkedWord(DocNodeVariant *parent,DocNodeList &children,bool ignoreAutoLinkFlag=FALSE,bool typeLinkOnly=false);
+    void handleLinkedWord(DocNodeVariant *parent,DocNodeList &children,bool ignoreAutoLinkFlag=false,bool typeLinkOnly=false);
     void handleParameterType(DocNodeVariant *parent,DocNodeList &children,const QCString &paramTypes);
     void handleInternalRef(DocNodeVariant *parent,DocNodeList &children);
     void handleAnchor(DocNodeVariant *parent,DocNodeList &children);
@@ -190,43 +190,43 @@ inline bool isPreformatted(const DocNodeVariant *n)
   return std::visit([](auto &&x)->decltype(auto) { return x.isPreformatted(); }, *n);
 }
 
-/*! Returns TRUE iff node n is a child of a preformatted node */
+/*! Returns true iff node n is a child of a preformatted node */
 inline bool insidePRE(const DocNodeVariant *n)
 {
   while (n)
   {
-    if (isPreformatted(n)) return TRUE;
+    if (isPreformatted(n)) return true;
     n=parent(n);
   }
-  return FALSE;
+  return false;
 }
 
-/*! Returns TRUE iff node n is a child of a html list item node */
+/*! Returns true iff node n is a child of a html list item node */
 inline bool insideLI(const DocNodeVariant *n)
 {
   while (n)
   {
-    if (std::holds_alternative<DocHtmlListItem>(*n)) return TRUE;
+    if (std::holds_alternative<DocHtmlListItem>(*n)) return true;
     n=parent(n);
   }
-  return FALSE;
+  return false;
 }
 
-/*! Returns TRUE iff node n is a child of a html list item node */
+/*! Returns true iff node n is a child of a html list item node */
 inline bool insideBlockQuote(const DocNodeVariant *n)
 {
   while (n)
   {
-    if (std::holds_alternative<DocHtmlBlockQuote>(*n)) return TRUE;
+    if (std::holds_alternative<DocHtmlBlockQuote>(*n)) return true;
     n=parent(n);
   }
-  return FALSE;
+  return false;
 }
 
 
 //---------------------------------------------------------------------------
 
-/*! Returns TRUE iff node n is a child of a unordered html list node */
+/*! Returns true iff node n is a child of a unordered html list node */
 inline bool insideUL(const DocNodeVariant *n)
 {
   while (n)
@@ -234,16 +234,16 @@ inline bool insideUL(const DocNodeVariant *n)
     if (std::holds_alternative<DocHtmlList>(*n) &&
         std::get<DocHtmlList>(*n).type()==DocHtmlList::Unordered)
     {
-      return TRUE;
+      return true;
     }
     n=parent(n);
   }
-  return FALSE;
+  return false;
 }
 
 //---------------------------------------------------------------------------
 
-/*! Returns TRUE iff node n is a child of a ordered html list node */
+/*! Returns true iff node n is a child of a ordered html list node */
 inline bool insideOL(const DocNodeVariant *n)
 {
   while (n)
@@ -251,11 +251,11 @@ inline bool insideOL(const DocNodeVariant *n)
     if (std::holds_alternative<DocHtmlList>(*n) &&
         std::get<DocHtmlList>(*n).type()==DocHtmlList::Ordered)
     {
-      return TRUE;
+      return true;
     }
     n=parent(n);
   }
-  return FALSE;
+  return false;
 }
 
 //---------------------------------------------------------------------------
@@ -264,10 +264,10 @@ inline bool insideTable(const DocNodeVariant *n)
 {
   while (n)
   {
-    if (std::holds_alternative<DocHtmlTable>(*n)) return TRUE;
+    if (std::holds_alternative<DocHtmlTable>(*n)) return true;
     n=parent(n);
   }
-  return FALSE;
+  return false;
 }
 
 //---------------------------------------------------------------------------
@@ -276,10 +276,10 @@ inline bool insideDetails(const DocNodeVariant *n)
 {
   while (n)
   {
-    if (std::holds_alternative<DocHtmlDetails>(*n)) return TRUE;
+    if (std::holds_alternative<DocHtmlDetails>(*n)) return true;
     n=parent(n);
   }
-  return FALSE;
+  return false;
 }
 
 //---------------------------------------------------------------------------
@@ -288,10 +288,10 @@ inline bool insideDL(const DocNodeVariant *n)
 {
   while (n)
   {
-    if (std::holds_alternative<DocHtmlDescList>(*n)) return TRUE;
+    if (std::holds_alternative<DocHtmlDescList>(*n)) return true;
     n=parent(n);
   }
-  return FALSE;
+  return false;
 }
 
 #endif

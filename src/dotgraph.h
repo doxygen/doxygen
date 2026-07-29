@@ -35,8 +35,8 @@ class DotGraph
 {
     friend class DotNode;
   public:
-    DotGraph() : m_doNotAddImageToIndex(FALSE), m_noDivTag(FALSE),
-                 m_zoomable(TRUE), m_urlOnly(FALSE) {}
+    DotGraph() : m_doNotAddImageToIndex(false), m_noDivTag(false),
+                 m_zoomable(true), m_urlOnly(false) {}
     virtual ~DotGraph() = default;
     NON_COPYABLE(DotGraph)
 
@@ -52,7 +52,7 @@ class DotGraph
                         const QCString &path,
                         const QCString &fileName,
                         const QCString &relPath,
-                        bool writeImageMap=TRUE,
+                        bool writeImageMap=true,
                         int graphId=-1
                        );
 

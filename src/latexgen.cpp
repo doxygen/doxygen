@@ -226,7 +226,7 @@ void LatexCodeGenerator::writeLineNumber(const QCString &ref,const QCString &fil
   if (!m_doxyCodeLineOpen)
   {
     *m_t << "\\DoxyCodeLine{";
-    m_doxyCodeLineOpen = TRUE;
+    m_doxyCodeLineOpen = true;
   }
   if (Config_getBool(SOURCE_BROWSER))
   {
@@ -272,7 +272,7 @@ void LatexCodeGenerator::startCodeLine(int)
   if (!m_doxyCodeLineOpen)
   {
     *m_t << "\\DoxyCodeLine{";
-    m_doxyCodeLineOpen = TRUE;
+    m_doxyCodeLineOpen = true;
   }
 }
 
@@ -282,7 +282,7 @@ void LatexCodeGenerator::endCodeLine()
   if (m_doxyCodeLineOpen)
   {
     *m_t << "}";
-    m_doxyCodeLineOpen = FALSE;
+    m_doxyCodeLineOpen = false;
   }
   codify("\n");
 }
@@ -1048,7 +1048,7 @@ void LatexGenerator::startIndexSection(IndexSection is)
       break;
     case IndexSection::isFileDocumentation:
       {
-        bool isFirst=TRUE;
+        bool isFirst=true;
         for (const auto &fn : *Doxygen::inputNameLinkedMap)
         {
           for (const auto &fd : *fn)
@@ -1059,7 +1059,7 @@ void LatexGenerator::startIndexSection(IndexSection is)
               {
                 if (compactLatex) m_t << "\\doxysection"; else m_t << "\\chapter";
                 m_t << "{"; //File Documentation}\n";
-                isFirst=FALSE;
+                isFirst=false;
                 break;
               }
             }
@@ -1094,7 +1094,7 @@ void LatexGenerator::endIndexSection(IndexSection is)
       {
         if (Doxygen::mainPage)
         {
-          writePageLink(Doxygen::mainPage->getOutputFileBase(), FALSE);
+          writePageLink(Doxygen::mainPage->getOutputFileBase(), false);
         }
       }
       break;
@@ -1132,7 +1132,7 @@ void LatexGenerator::endIndexSection(IndexSection is)
         {
           if (!gd->isReference() && !gd->isASubGroup())
           {
-            writePageLink(gd->getOutputFileBase(), FALSE);
+            writePageLink(gd->getOutputFileBase(), false);
           }
         }
       }
@@ -1144,14 +1144,14 @@ void LatexGenerator::endIndexSection(IndexSection is)
         {
           if (!mod->isReference() && mod->isPrimaryInterface())
           {
-            writePageLink(mod->getOutputFileBase(), FALSE);
+            writePageLink(mod->getOutputFileBase(), false);
           }
         }
       }
       break;
     case IndexSection::isDirDocumentation:
       {
-        bool found=FALSE;
+        bool found=false;
         for (const auto &dd : *Doxygen::dirLinkedMap)
         {
           if (dd->isLinkableInProject())
@@ -1159,7 +1159,7 @@ void LatexGenerator::endIndexSection(IndexSection is)
             if (!found)
             {
               m_t << "}\n";
-              found = TRUE;
+              found = true;
             }
             m_t << "\\input{" << dd->getOutputFileBase() << "}\n";
           }
@@ -1168,7 +1168,7 @@ void LatexGenerator::endIndexSection(IndexSection is)
       break;
     case IndexSection::isNamespaceDocumentation:
       {
-        bool found=FALSE;
+        bool found=false;
         for (const auto &nd : *Doxygen::namespaceLinkedMap)
         {
           if (nd->isLinkableInProject() && !nd->isAlias())
@@ -1185,7 +1185,7 @@ void LatexGenerator::endIndexSection(IndexSection is)
       break;
     case IndexSection::isConceptDocumentation:
       {
-        bool found=FALSE;
+        bool found=false;
         for (const auto &cd : *Doxygen::conceptLinkedMap)
         {
           if (cd->isLinkableInProject() && !cd->isAlias())
@@ -1202,7 +1202,7 @@ void LatexGenerator::endIndexSection(IndexSection is)
       break;
     case IndexSection::isClassDocumentation:
       {
-        bool found=FALSE;
+        bool found=false;
         for (const auto &cd : *Doxygen::classLinkedMap)
         {
           if (cd->isLinkableInProject() &&
@@ -1214,7 +1214,7 @@ void LatexGenerator::endIndexSection(IndexSection is)
             if (!found)
             {
               m_t << "}\n"; // end doxysection or chapter title
-              found=TRUE;
+              found=true;
             }
             m_t << "\\input{" << cd->getOutputFileBase() << "}\n";
           }
@@ -1223,7 +1223,7 @@ void LatexGenerator::endIndexSection(IndexSection is)
       break;
     case IndexSection::isFileDocumentation:
       {
-        bool isFirst=TRUE;
+        bool isFirst=true;
         for (const auto &fn : *Doxygen::inputNameLinkedMap)
         {
           for (const auto &fd : *fn)
@@ -1234,7 +1234,7 @@ void LatexGenerator::endIndexSection(IndexSection is)
               {
                 m_t << "}\n"; // end doxysection or chapter title
               }
-              isFirst=FALSE;
+              isFirst=false;
               m_t << "\\input{" << fd->getOutputFileBase() << "}\n";
             }
             if (fd->generateSourceFile())
@@ -1243,7 +1243,7 @@ void LatexGenerator::endIndexSection(IndexSection is)
               {
                 m_t << "}\n"; // end doxysection or chapter title
               }
-              isFirst=FALSE;
+              isFirst=false;
               m_t << "\\input{" << fd->getSourceFileBase() << "}\n";
             }
           }
@@ -1266,7 +1266,7 @@ void LatexGenerator::endIndexSection(IndexSection is)
           if (!pd->getGroupDef() && !pd->isReference() && !pd->hasParentPage()
             && pd->name() != "citelist" && Doxygen::mainPage.get() != pd.get())
           {
-            writePageLink(pd->getOutputFileBase(), FALSE);
+            writePageLink(pd->getOutputFileBase(), false);
           }
         }
       }
@@ -1515,12 +1515,12 @@ void LatexGenerator::startGroupHeader(const QCString &,int extraIndentLevel)
     extraIndentLevel += m_hierarchyLevel + 1;
     m_t << "\\doxy" << QCString("sub").repeat(extraIndentLevel) << "section{";
   }
-  m_disableLinks=TRUE;
+  m_disableLinks=true;
 }
 
 void LatexGenerator::endGroupHeader(int)
 {
-  m_disableLinks=FALSE;
+  m_disableLinks=false;
   m_t << "}\n";
 }
 
@@ -1533,12 +1533,12 @@ void LatexGenerator::startMemberHeader(const QCString &,int)
   }
 
   m_t << "\\doxysub" << QCString("sub").repeat(l) << "section*{";
-  m_disableLinks=TRUE;
+  m_disableLinks=true;
 }
 
 void LatexGenerator::endMemberHeader()
 {
-  m_disableLinks=FALSE;
+  m_disableLinks=false;
   m_t << "}\n";
 }
 
@@ -1586,12 +1586,12 @@ void LatexGenerator::startMemberDoc(const QCString &clname,
   }
   m_t << "}";
   m_t << "\n{\\footnotesize\\ttfamily ";
-  //m_disableLinks=TRUE;
+  //m_disableLinks=true;
 }
 
 void LatexGenerator::endMemberDoc(bool)
 {
-  m_disableLinks=FALSE;
+  m_disableLinks=false;
   m_t << "}\n\n";
   //if (Config_getBool(COMPACT_LATEX)) m_t << "\\hfill";
 }
@@ -1798,7 +1798,7 @@ void LatexGenerator::endMemberItem(MemberItemType)
   {
     m_t << "\\\\";
   }
-  m_templateMemberItem = FALSE;
+  m_templateMemberItem = false;
   m_t << "\n";
 }
 

@@ -200,8 +200,8 @@ class OutputGenIntf
     virtual void endMemberGroupDocs() = 0;
     virtual void startMemberGroup() = 0;
     virtual void endMemberGroup(bool last) = 0;
-    virtual void insertMemberAlign(bool templ=FALSE) = 0;
-    virtual void insertMemberAlignLeft(OutputGenerator::MemberItemType typ=OutputGenerator::MemberItemType::Normal, bool templ=FALSE) = 0;
+    virtual void insertMemberAlign(bool templ=false) = 0;
+    virtual void insertMemberAlignLeft(OutputGenerator::MemberItemType typ=OutputGenerator::MemberItemType::Normal, bool templ=false) = 0;
     virtual void writeRuler() = 0;
     virtual void writeAnchor(const QCString &fileName,const QCString &name) = 0;
     virtual void startEmphasis() = 0;
@@ -279,8 +279,8 @@ class OutputGenIntf
     virtual void startGroupCollaboration() = 0;
     virtual void endGroupCollaboration(DotGroupCollaboration &g) = 0;
     virtual void writeGraphicalHierarchy(DotGfxHierarchyTable &g) = 0;
-    virtual void startTextBlock(bool dense=FALSE) = 0;
-    virtual void endTextBlock(bool paraBreak=FALSE) = 0;
+    virtual void startTextBlock(bool dense=false) = 0;
+    virtual void endTextBlock(bool paraBreak=false) = 0;
     virtual void lastIndexPage() = 0;
     virtual void startMemberDocPrefixItem() = 0;
     virtual void endMemberDocPrefixItem() = 0;

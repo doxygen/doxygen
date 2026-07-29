@@ -27,7 +27,7 @@ void DotInclDepGraph::buildGraph(DotNode *n,const FileDef *fd,int distance)
     const FileDef *bfd = ii.fileDef;
     QCString in = ii.includeName;
     //printf(">>>> in='%s' bfd=%p\n",qPrint(ii->includeName),bfd);
-    bool doc=TRUE,src=FALSE;
+    bool doc=true,src=false;
     if (bfd)
     {
       in  = bfd->absFilePath();
@@ -63,7 +63,7 @@ void DotInclDepGraph::buildGraph(DotNode *n,const FileDef *fd,int distance)
                          ii.includeName,   // label
                          tooltip,           // tip
                          tmp_url,           // url
-                         FALSE,             // rootNode
+                         false,             // rootNode
                          nullptr);                // cd
         n->addChild(bn,EdgeInfo::Blue,EdgeInfo::Solid);
         bn->addParent(n);
@@ -103,12 +103,12 @@ void DotInclDepGraph::determineTruncatedNodes(DotNodeDeque &queue)
     queue.pop_front();
     if (n->isVisible() && n->isTruncated()==DotNode::Unknown)
     {
-      bool truncated = FALSE;
+      bool truncated = false;
       for (const auto &dn : n->children())
       {
         if (!dn->isVisible())
         {
-          truncated = TRUE;
+          truncated = true;
         }
         else
         {
@@ -132,7 +132,7 @@ DotInclDepGraph::DotInclDepGraph(const FileDef *fd,bool inverse)
                             fd->docName(),
                             tooltip,
                             tmp_url,
-                            TRUE);    // root node
+                            true);    // root node
   m_startNode->setDistance(0);
   m_usedNodes.emplace(fd->absFilePath().str(),m_startNode);
   buildGraph(m_startNode,fd,1);
@@ -165,7 +165,7 @@ QCString DotInclDepGraph::getBaseName() const
 
 void DotInclDepGraph::computeTheGraph()
 {
-  computeGraph(m_startNode, GraphType::Dependency, m_graphFormat, "", FALSE,
+  computeGraph(m_startNode, GraphType::Dependency, m_graphFormat, "", false,
                m_inverse, m_startNode->label(), m_theGraph);
 }
 
@@ -173,11 +173,11 @@ QCString DotInclDepGraph::getMapLabel() const
 {
   if (m_inverse)
   {
-    return escapeCharsInString(m_startNode->label(),FALSE) + "dep";
+    return escapeCharsInString(m_startNode->label(),false) + "dep";
   }
   else
   {
-    return escapeCharsInString(m_startNode->label(),FALSE);
+    return escapeCharsInString(m_startNode->label(),false);
   }
 }
 
@@ -214,7 +214,7 @@ void DotInclDepGraph::writeXML(TextStream &t)
 {
   for (const auto &[name,node] : m_usedNodes)
   {
-    node->writeXML(t,FALSE);
+    node->writeXML(t,false);
   }
 }
 
@@ -222,6 +222,6 @@ void DotInclDepGraph::writeDocbook(TextStream &t)
 {
   for (const auto &[name,node] : m_usedNodes)
   {
-    node->writeDocbook(t,FALSE);
+    node->writeDocbook(t,false);
   }
 }

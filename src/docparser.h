@@ -60,7 +60,7 @@ using IDocNodeASTPtr = std::unique_ptr<IDocNodeAST>;
 /*! Main entry point for the comment block parser.
  *  @param parserIntf The parser object created via createDocParser()
  *  @param fileName  File in which the documentation block is found (or the
- *                   name of the example file in case isExample is TRUE).
+ *                   name of the example file in case isExample is true).
  *  @param startLine Line at which the documentation block is found.
  *  @param ctx       Class or namespace to which this block belongs.
  *  @param md        Member definition to which the documentation belongs.

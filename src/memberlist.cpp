@@ -38,7 +38,7 @@ MemberList::MemberList(MemberListType lt,MemberListContainer con) : m_container(
   m_numDecEnumValues=0;
   m_numDocMembers=-1; // special value indicating that value needs to be computed
   m_numDocEnumValues=0;
-  m_needsSorting=FALSE;
+  m_needsSorting=false;
 }
 
 MemberList::~MemberList()
@@ -286,31 +286,31 @@ bool MemberList::declVisible() const
         case MemberType::Sequence:   // fall through
         case MemberType::Dictionary: // fall through
         case MemberType::Event:
-          return TRUE;
+          return true;
         case MemberType::Enumeration:
           {
             // if this is an anonymous enum and there are variables of this
             // enum type (i.e. enumVars>0), then we do not show the enum here.
             if (countEnumValues(md)==0) // show enum here
             {
-              return TRUE;
+              return true;
             }
           }
           break;
         case MemberType::Friend:
-          return TRUE;
+          return true;
         case MemberType::EnumValue:
           {
             if (m_container==MemberListContainer::Group)
             {
-              return TRUE;
+              return true;
             }
           }
           break;
       }
     }
   }
-  return FALSE;
+  return false;
 }
 
 void MemberList::writePlainDeclarations(OutputList &ol, bool inGroup,
@@ -334,7 +334,7 @@ void MemberList::writePlainDeclarations(OutputList &ol, bool inGroup,
 
   ol.pushGeneratorState();
 
-  bool first=TRUE;
+  bool first=true;
   for (const auto &md : m_members)
   {
     //printf(">>> Member '%s' type=%d visible=%d inheritedFrom=%p inheritId=%s\n",
@@ -360,7 +360,7 @@ void MemberList::writePlainDeclarations(OutputList &ol, bool inGroup,
         case MemberType::Dictionary:  // fall through
         case MemberType::Event:
           {
-            if (first) ol.startMemberList(),first=FALSE;
+            if (first) ol.startMemberList(),first=false;
             md->writeDeclaration(ol,cd,nd,fd,gd,mod,inGroup,indentLevel,inheritedFrom,inheritId);
             break;
           }
@@ -374,7 +374,7 @@ void MemberList::writePlainDeclarations(OutputList &ol, bool inGroup,
               if (first)
               {
                 ol.startMemberList();
-                first=FALSE;
+                first=false;
               }
               ol.startMemberDeclaration();
               ol.startMemberItem(md->anchor(),OutputGenerator::MemberItemType::Normal,inheritId);
@@ -456,7 +456,7 @@ void MemberList::writePlainDeclarations(OutputList &ol, bool inGroup,
             if (first)
             {
               ol.startMemberList();
-              first=FALSE;
+              first=false;
             }
             md->writeDeclaration(ol,cd,nd,fd,gd,mod,inGroup,indentLevel,inheritedFrom,inheritId);
             break;
@@ -466,7 +466,7 @@ void MemberList::writePlainDeclarations(OutputList &ol, bool inGroup,
             if (inGroup)
             {
               //printf("EnumValue!\n");
-              if (first) ol.startMemberList(),first=FALSE;
+              if (first) ol.startMemberList(),first=false;
               md->writeDeclaration(ol,cd,nd,fd,gd,mod,true,indentLevel,inheritedFrom,inheritId);
             }
           }
@@ -493,8 +493,8 @@ void MemberList::writePlainDeclarations(OutputList &ol, bool inGroup,
  *  @param mod non-null if this list is part of module documentation.
  *  @param title Title to use for the member list.
  *  @param subtitle Sub title to use for the member list.
- *  @param showEnumValues Obsolete, always set to FALSE.
- *  @param showInline if set to TRUE if title is rendered differently
+ *  @param showEnumValues Obsolete, always set to false.
+ *  @param showInline if set to true if title is rendered differently
  *  @param inheritedFrom if not 0, the list is shown inside the
  *         given class as inherited members, parameter cd points to the
  *         class containing the members.

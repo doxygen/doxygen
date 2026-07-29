@@ -42,7 +42,7 @@ using AliasInfoMap   = std::unordered_map<std::string,AliasOverloads>;   // key 
 //-----------------------------------------------------------
 
 static std::string expandAliasRec(StringUnorderedSet &aliasesProcessed,
-                               std::string_view s,bool allowRecursion=FALSE);
+                               std::string_view s,bool allowRecursion=false);
 static int countAliasArguments(std::string_view args, std::string_view sep);
 static std::string extractAliasArgs(std::string_view args);
 static std::string expandAlias(std::string_view aliasName,std::string_view aliasValue);

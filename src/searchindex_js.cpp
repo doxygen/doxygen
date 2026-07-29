@@ -187,8 +187,8 @@ static std::array<SearchIndexInfo,NUM_SEARCH_INDICES> g_searchIndexInfo =
   { /* SEARCH_INDEX_EXCEPTIONS */   "exceptions"  , []() { return theTranslator->trExceptions();          }, {} },
   { /* SEARCH_INDEX_NAMESPACES */   "namespaces"  , []() { return Config_getBool(OPTIMIZE_OUTPUT_SLICE) ?
                                                                   theTranslator->trModules() :
-                                                                  theTranslator->trNamespace(TRUE,FALSE); }, {} },
-  { /* SEARCH_INDEX_FILES */        "files"       , []() { return theTranslator->trFile(TRUE,FALSE);      }, {} },
+                                                                  theTranslator->trNamespace(true,false); }, {} },
+  { /* SEARCH_INDEX_FILES */        "files"       , []() { return theTranslator->trFile(true,false);      }, {} },
   { /* SEARCH_INDEX_FUNCTIONS */    "functions"   , []() { return Config_getBool(OPTIMIZE_OUTPUT_SLICE) ?
                                                                   theTranslator->trOperations() :
                                                                   theTranslator->trFunctions();           }, {} },
@@ -204,8 +204,8 @@ static std::array<SearchIndexInfo,NUM_SEARCH_INDICES> g_searchIndexInfo =
   { /* SEARCH_INDEX_EVENTS */       "events"      , []() { return theTranslator->trEvents();              }, {} },
   { /* SEARCH_INDEX_RELATED */      "related"     , []() { return theTranslator->trFriends();             }, {} },
   { /* SEARCH_INDEX_DEFINES */      "defines"     , []() { return theTranslator->trDefines();             }, {} },
-  { /* SEARCH_INDEX_GROUPS */       "groups"      , []() { return theTranslator->trGroup(TRUE,FALSE);     }, {} },
-  { /* SEARCH_INDEX_PAGES */        "pages"       , []() { return theTranslator->trPage(TRUE,FALSE);      }, {} },
+  { /* SEARCH_INDEX_GROUPS */       "groups"      , []() { return theTranslator->trGroup(true,false);     }, {} },
+  { /* SEARCH_INDEX_PAGES */        "pages"       , []() { return theTranslator->trPage(true,false);      }, {} },
   { /* SEARCH_INDEX_CONCEPTS */     "concepts"    , []() { return theTranslator->trConcept(true,false);   }, {} },
   { /* SEARCH_INDEX_MODULES */      "modules"     , []() { return theTranslator->trModule(true,false);    }, {} }
 } };
@@ -622,7 +622,7 @@ static void writeJavasScriptSearchDataPage(const QCString &baseName,const QCStri
   // searchData[x][1][y+1][2] = scope
 
   ti << "[\n";
-  bool firstEntry=TRUE;
+  bool firstEntry=true;
 
   int childCount=0;
   QCString lastWord;
@@ -650,7 +650,7 @@ static void writeJavasScriptSearchDataPage(const QCString &baseName,const QCStri
         ti << "]]]";
         ti << ",\n";
       }
-      firstEntry=FALSE;
+      firstEntry=false;
       ti << "  ['" << id << "_" << cnt++ << "',['";
       if (next==SearchTerm::LinkInfo() || it->word!=word) // unique result, show title
       {
@@ -711,7 +711,7 @@ static void writeJavasScriptSearchDataPage(const QCString &baseName,const QCStri
     }
     else // multiple entries with the same name
     {
-      bool found=FALSE;
+      bool found=false;
       bool overloadedFunction = ((prevScope!=nullptr && scope==prevScope) || (scope && scope==nextScope)) &&
                                  md && md->isCallable();
       QCString prefix;

@@ -148,11 +148,11 @@ class MemberList final : public MemberVector
     void writeDeclarations(OutputList &ol,
                const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,const ModuleDef *mod,
                const QCString &title,const QCString &subtitle,
-               bool showEnumValues=FALSE,bool showInline=FALSE,
+               bool showEnumValues=false,bool showInline=false,
                const ClassDef *inheritedFrom=nullptr,MemberListType lt=MemberListType::PubMethods(),bool showSectionTitle=true) const;
     void writeDocumentation(OutputList &ol,const QCString &scopeName,
                const Definition *container,const QCString &title, const QCString &anchor,
-               bool showEnumValues=FALSE,bool showInline=FALSE) const;
+               bool showEnumValues=false,bool showInline=false) const;
     void writeSimpleDocumentation(OutputList &ol,const Definition *container) const;
     void writeDocumentationPage(OutputList &ol,
                const QCString &scopeName, const DefinitionMutable *container, int hierarchyLevel=0) const;

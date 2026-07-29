@@ -72,7 +72,7 @@ class DotNode
     static void deleteNodes(DotNode* node);
     static QCString convertLabel(const QCString&, LabelStyle=LabelStyle::Plain);
     DotNode(DotGraph *graph,const QCString &lab,const QCString &tip,const QCString &url,
-        bool rootNode=FALSE,const ClassDef *cd=nullptr);
+        bool rootNode=false,const ClassDef *cd=nullptr);
 
     enum TruncState { Unknown, Truncated, Untruncated };
 
@@ -98,7 +98,7 @@ class DotNode
     void writeBox(TextStream &t,GraphType gt,GraphOutputFormat f,
                   bool hasNonReachableChildren) const;
     void writeArrow(TextStream &t,GraphType gt,GraphOutputFormat f,const DotNode *cn,
-                    const EdgeInfo *ei,bool topDown, bool pointBack=TRUE) const;
+                    const EdgeInfo *ei,bool topDown, bool pointBack=true) const;
 
     QCString label() const         { return m_label; }
     int  number() const            { return m_number; }
@@ -118,8 +118,8 @@ class DotNode
 
     void colorConnectedNodes(int curColor);
     void setDistance(int distance);
-    void markAsVisible(bool b=TRUE) { m_visible=b; }
-    DotNode& markAsTruncated(bool b=TRUE) { m_truncated=b ? Truncated : Untruncated; return *this;}
+    void markAsVisible(bool b=true) { m_visible=b; }
+    DotNode& markAsTruncated(bool b=true) { m_truncated=b ? Truncated : Untruncated; return *this;}
     const DotNodeRefVector &children() const { return m_children; }
     const DotNodeRefVector &parents() const { return m_parents; }
     const EdgeInfoVector &edgeInfo() const { return m_edgeInfo; }

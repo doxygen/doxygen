@@ -145,7 +145,7 @@ HtmlHelpIndex::~HtmlHelpIndex() = default;
  *  \param anchor the anchor of the documentation within the page.
  *  \param hasLink if true, the url (without anchor) can be used in the
  *         level1 item, when writing the header of a list of level2 items.
- *  \param reversed TRUE if level1 is the member name and level2 the compound
+ *  \param reversed true if level1 is the member name and level2 the compound
  *         name.
  */
 void HtmlHelpIndex::addItem(const QCString &level1,const QCString &level2,
@@ -220,14 +220,14 @@ static QCString convertToHtmlAndTruncate(const QCString &s)
  *  Will result in the following list:
  *
  *  <pre>
- *    a1       -> link to url if hasLink==TRUE
+ *    a1       -> link to url if hasLink==true
  *      b1     -> link to url#anchor
  *      b2     -> link to url#anchor
- *    a2       -> link to url if hasLink==TRUE
+ *    a2       -> link to url if hasLink==true
  *      b1     -> link to url#anchor
  *      b2     -> link to url#anchor
- *    a3       -> link to url if hasLink==TRUE
- *    a4       -> link to url if hasLink==TRUE
+ *    a3       -> link to url if hasLink==true
+ *    a4       -> link to url if hasLink==true
  *      b1     -> link to url#anchor
  *  </pre>
  */
@@ -238,7 +238,7 @@ void HtmlHelpIndex::writeFields(std::ostream &t)
             [](const auto &e1,const auto &e2) { return qstricmp_sort(e1->name,e2->name)<0; }
            );
   QCString prevLevel1;
-  bool level2Started=FALSE;
+  bool level2Started=false;
   for (auto it = std::begin(m_map); it!=std::end(m_map); ++it)
   {
     auto &f = *it;
@@ -256,7 +256,7 @@ void HtmlHelpIndex::writeFields(std::ostream &t)
 
     { // finish old list at level 2
       if (level2Started) t << "  </UL>\n";
-      level2Started=FALSE;
+      level2Started=false;
 
       // <Antony>
       // Added this code so that an item with only one subitem is written
@@ -284,7 +284,7 @@ void HtmlHelpIndex::writeFields(std::ostream &t)
       if (level2.isEmpty())
       {
         t << "  <LI><OBJECT type=\"text/sitemap\">";
-        t << "<param name=\"Local\" value=\"" << field2URL(f.get(),FALSE);
+        t << "<param name=\"Local\" value=\"" << field2URL(f.get(),false);
         t << "\">";
         t << "<param name=\"Name\" value=\"" << convertToHtmlAndTruncate(m_recoder.recode(level1)) << "\">"
            "</OBJECT>\n";
@@ -294,7 +294,7 @@ void HtmlHelpIndex::writeFields(std::ostream &t)
         if (f->link)
         {
           t << "  <LI><OBJECT type=\"text/sitemap\">";
-          t << "<param name=\"Local\" value=\"" << field2URL(f.get(),TRUE);
+          t << "<param name=\"Local\" value=\"" << field2URL(f.get(),true);
           t << "\">";
           t << "<param name=\"Name\" value=\"" << convertToHtmlAndTruncate(m_recoder.recode(level1)) << "\">"
                "</OBJECT>\n";
@@ -311,17 +311,17 @@ void HtmlHelpIndex::writeFields(std::ostream &t)
     if (!level2Started && !level2.isEmpty())
     { // start new list at level 2
       t << "  <UL>\n";
-      level2Started=TRUE;
+      level2Started=true;
     }
     else if (level2Started && level2.isEmpty())
     { // end list at level 2
       t << "  </UL>\n";
-      level2Started=FALSE;
+      level2Started=false;
     }
     if (level2Started)
     {
       t << "    <LI><OBJECT type=\"text/sitemap\">";
-      t << "<param name=\"Local\" value=\"" << field2URL(f.get(),FALSE);
+      t << "<param name=\"Local\" value=\"" << field2URL(f.get(),false);
       t << "\">";
       t << "<param name=\"Name\" value=\"" << convertToHtmlAndTruncate(m_recoder.recode(level2)) << "\">"
          "</OBJECT>\n";
@@ -554,7 +554,7 @@ void HtmlHelp::addContentsItem(bool isDir,
   p->ctsItemPresent = true;
   for (int i=0; i<p->dc; i++) p->cts << "  ";
   p->cts << "<LI><OBJECT type=\"text/sitemap\">";
-  p->cts << "<param name=\"Name\" value=\"" << convertToHtml(p->recoder.recode(name),TRUE) << "\">";
+  p->cts << "<param name=\"Name\" value=\"" << convertToHtml(p->recoder.recode(name),true) << "\">";
   if (!file.isEmpty())      // made file optional param - KPW
   {
     if (file[0]=='!' || file[0]=='^') // special markers for user defined URLs
@@ -608,13 +608,13 @@ void HtmlHelp::addIndexItem(const Definition *context,const MemberDef *md,
     QCString level1  = context->name();
     QCString level2  = md->name() + argStr;
     QCString anchor  = !sectionAnchor.isEmpty() ? sectionAnchor : md->anchor();
-    p->index.addItem(level1,level2,cfname,anchor,TRUE,FALSE);
-    p->index.addItem(level2,level1,cfname,anchor,TRUE,TRUE);
+    p->index.addItem(level1,level2,cfname,anchor,true,false);
+    p->index.addItem(level2,level1,cfname,anchor,true,true);
   }
   else if (context)
   {
     QCString level1  = !word.isEmpty() ? word : context->name();
-    p->index.addItem(level1,QCString(),context->getOutputFileBase(),sectionAnchor,TRUE,FALSE);
+    p->index.addItem(level1,QCString(),context->getOutputFileBase(),sectionAnchor,true,false);
   }
 }
 

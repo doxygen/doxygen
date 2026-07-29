@@ -58,7 +58,7 @@ class PageDefImpl final : public DefinitionMixin<PageDef>
     LocalToc localToc() const override { return m_localToc; }
     void setPageScope(Definition *d) override { m_pageScope = d; }
     Definition *getPageScope() const override { return m_pageScope; }
-    QCString displayName(bool=TRUE) const override { return hasTitle() ? m_title : DefinitionMixin::name(); }
+    QCString displayName(bool=true) const override { return hasTitle() ? m_title : DefinitionMixin::name(); }
     bool showLineNo() const override;
     void setTitle(const QCString &title) override;
     void writeDocumentation(OutputList &ol) override;
@@ -95,8 +95,8 @@ PageDefImpl::PageDefImpl(const QCString &f,int l,const QCString &n,
   setDocumentation(d,f,l);
   m_pageScope = nullptr;
   m_nestingLevel = 0;
-  m_fileName = ::convertNameToFile(n,FALSE,TRUE);
-  m_showLineNo = FALSE;
+  m_fileName = ::convertNameToFile(n,false,true);
+  m_showLineNo = false;
   setTitle(t);
 }
 
@@ -212,7 +212,7 @@ void PageDefImpl::addListReferences()
     name = getGroupDef()->getOutputFileBase();
   }
   addRefItem(xrefListItems(),name,
-             theTranslator->trPage(TRUE,TRUE),
+             theTranslator->trPage(true,true),
              name,title(),QCString(),nullptr);
 }
 
@@ -234,7 +234,7 @@ void PageDefImpl::writeTagFile(TextStream &tagFile)
   {
     if (rl->listName()==name())
     {
-      found=TRUE;
+      found=true;
       break;
     }
   }
@@ -270,8 +270,8 @@ void PageDefImpl::writeDocumentation(OutputList &ol)
 
   //outputList->disable(OutputType::Man);
   QCString pageName,manPageName;
-  pageName    = escapeCharsInString(name(),FALSE,TRUE);
-  manPageName = escapeCharsInString(name(),TRUE,TRUE);
+  pageName    = escapeCharsInString(name(),false,true);
+  manPageName = escapeCharsInString(name(),true,true);
 
   //printf("PageDefImpl::writeDocumentation: %s\n",getOutputFileBase().data());
 
@@ -434,7 +434,7 @@ void PageDefImpl::writePageDocumentation(OutputList &ol) const
 
     for (const auto &subPage : m_subPages)
     {
-      ol.writePageLink(subPage->getOutputFileBase(), FALSE);
+      ol.writePageLink(subPage->getOutputFileBase(), false);
     }
 
     ol.popGeneratorState();

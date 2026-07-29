@@ -231,7 +231,7 @@ void RTFCodeGenerator::endCodeFragment(const QCString &)
 
   DBG_RTF(*m_t << "{\\comment (endCodeFragment) }\n")
   *m_t << "}\n";
-  //m_omitParagraph = TRUE;
+  //m_omitParagraph = true;
 }
 
 void RTFCodeGenerator::writeLineNumber(const QCString &ref,const QCString &fileName,const QCString &anchor,int l,bool writeLineAnchor)
@@ -887,7 +887,7 @@ void RTFGenerator::startIndexSection(IndexSection is)
     case IndexSection::isFileDocumentation:
       {
         //File Documentation
-        bool isFirst=TRUE;
+        bool isFirst=true;
         for (const auto &fn : *Doxygen::inputNameLinkedMap)
         {
           for (const auto &fd : *fn)
@@ -897,7 +897,7 @@ void RTFGenerator::startIndexSection(IndexSection is)
               if (isFirst)
               {
                 beginRTFChapter();
-                isFirst=FALSE;
+                isFirst=false;
                 break;
               }
             }
@@ -1038,7 +1038,7 @@ void RTFGenerator::endIndexSection(IndexSection is)
     case IndexSection::isMainPage:
       if (Doxygen::mainPage)
       {
-        writePageLink(Doxygen::mainPage->getOutputFileBase(), TRUE);
+        writePageLink(Doxygen::mainPage->getOutputFileBase(), true);
       }
       break;
     case IndexSection::isTopicIndex:
@@ -1112,7 +1112,7 @@ void RTFGenerator::endIndexSection(IndexSection is)
         {
           if (!gd->isReference() && !gd->isASubGroup())
           {
-            writePageLink(gd->getOutputFileBase(), FALSE);
+            writePageLink(gd->getOutputFileBase(), false);
           }
         }
       }
@@ -1124,7 +1124,7 @@ void RTFGenerator::endIndexSection(IndexSection is)
         {
           if (!mod->isReference() && mod->isPrimaryInterface())
           {
-            writePageLink(mod->getOutputFileBase(), FALSE);
+            writePageLink(mod->getOutputFileBase(), false);
           }
         }
       }
@@ -1224,7 +1224,7 @@ void RTFGenerator::endIndexSection(IndexSection is)
       break;
     case IndexSection::isFileDocumentation:
       {
-        bool isFirst=TRUE;
+        bool isFirst=true;
 
         m_t << "{\\tc \\v " << theTranslator->trFileDocumentation() << "}\n";
         for (const auto &fn : *Doxygen::inputNameLinkedMap)
@@ -1238,7 +1238,7 @@ void RTFGenerator::endIndexSection(IndexSection is)
               {
                 beginRTFSection();
               }
-              isFirst=FALSE;
+              isFirst=false;
               m_t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"";
               m_t << fd->getOutputFileBase();
               m_t << ".rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
@@ -1250,7 +1250,7 @@ void RTFGenerator::endIndexSection(IndexSection is)
               {
                 beginRTFSection();
               }
-              isFirst=FALSE;
+              isFirst=false;
               m_t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"";
               m_t << fd->getSourceFileBase();
               m_t << ".rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
@@ -1286,7 +1286,7 @@ void RTFGenerator::endIndexSection(IndexSection is)
           if (!pd->getGroupDef() && !pd->isReference() && !pd->hasParentPage()
             && Doxygen::mainPage.get() != pd.get())
           {
-            writePageLink(pd->getOutputFileBase(), FALSE);
+            writePageLink(pd->getOutputFileBase(), false);
           }
         }
       }
@@ -1333,7 +1333,7 @@ void RTFGenerator::lineBreak(const QCString &)
 {
   DBG_RTF(m_t << "{\\comment (lineBreak)}"    << "\n")
   m_t << "\\par\n";
-  m_omitParagraph = TRUE;
+  m_omitParagraph = true;
 }
 
 void RTFGenerator::writeString(const QCString &text)
@@ -1348,7 +1348,7 @@ void RTFGenerator::startIndexList()
   m_t << "\\par\n";
   incIndentLevel();
   m_t << rtf_Style_Reset << rtf_LCList_DepthStyle() << "\n";
-  m_omitParagraph = TRUE;
+  m_omitParagraph = true;
 }
 
 void RTFGenerator::endIndexList()
@@ -1357,7 +1357,7 @@ void RTFGenerator::endIndexList()
   if (!m_omitParagraph)
   {
     m_t << "\\par";
-    m_omitParagraph = TRUE;
+    m_omitParagraph = true;
   }
   m_t << "}";
   decIndentLevel();
@@ -1383,7 +1383,7 @@ void RTFGenerator::endItemList()
   DBG_RTF(m_t << "{\\comment (endItemList level=" << indentLevel() << ")}\n")
   m_t << "}";
   decIndentLevel();
-  m_omitParagraph = TRUE;
+  m_omitParagraph = true;
 }
 
 /*! write bullet or enum item */
@@ -1403,7 +1403,7 @@ void RTFGenerator::startItemListItem()
   {
     m_t << rtf_BList_DepthStyle() << "\n";
   }
-  m_omitParagraph = TRUE;
+  m_omitParagraph = true;
 }
 
 void RTFGenerator::endItemListItem()
@@ -1418,7 +1418,7 @@ void RTFGenerator::startIndexItem(const QCString &,const QCString &)
   if (!m_omitParagraph)
   {
     m_t << "\\par\n";
-    m_omitParagraph = TRUE;
+    m_omitParagraph = true;
   }
 }
 
@@ -1435,7 +1435,7 @@ void RTFGenerator::endIndexItem(const QCString &ref,const QCString &fn)
   {
     m_t << "\n";
   }
-  m_omitParagraph = TRUE;
+  m_omitParagraph = true;
 }
 
 void RTFGenerator::writeStartAnnoItem(const QCString &,const QCString &f,
@@ -1495,7 +1495,7 @@ void RTFGenerator::endIndexValue(const QCString &name,bool hasBrief)
   {
     m_t << "\n";
   }
-  m_omitParagraph=FALSE;
+  m_omitParagraph=false;
   newParagraph();
 }
 
@@ -1790,7 +1790,7 @@ void RTFGenerator::endMemberDescription()
   decIndentLevel();
   m_t << "\\par";
   m_t << "}\n";
-  m_omitParagraph = TRUE;
+  m_omitParagraph = true;
 }
 
 void RTFGenerator::startDescForItem()
@@ -1835,7 +1835,7 @@ void RTFGenerator::endSection(const QCString &lab,SectionType)
 {
   DBG_RTF(m_t << "{\\comment (endSection)}\n")
   // make bookmark
-  m_omitParagraph=FALSE;
+  m_omitParagraph=false;
   newParagraph();
   writeAnchor(QCString(),lab);
   m_t << "}";
@@ -1845,7 +1845,7 @@ void RTFGenerator::docify(const QCString &str)
 {
   if (str.isEmpty()) return;
   m_t << docifyToString(str);
-  m_omitParagraph = FALSE;
+  m_omitParagraph = false;
 }
 
 void RTFGenerator::writeChar(char c)
@@ -2112,7 +2112,7 @@ void RTFGenerator::endTextBlock(bool /*paraBreak*/)
   newParagraph();
   DBG_RTF(m_t << "{\\comment endTextBlock}\n")
   m_t << "}\n";
-  //m_omitParagraph = TRUE;
+  //m_omitParagraph = true;
 }
 
 void RTFGenerator::newParagraph()
@@ -2122,7 +2122,7 @@ void RTFGenerator::newParagraph()
     DBG_RTF(m_t << "{\\comment (newParagraph)}\n")
     m_t << "\\par\n";
   }
-  m_omitParagraph = FALSE;
+  m_omitParagraph = false;
 }
 
 void RTFGenerator::startParagraph(const QCString &txt)
@@ -2137,7 +2137,7 @@ void RTFGenerator::endParagraph()
 {
   DBG_RTF(m_t << "{\\comment endParagraph}\n")
   m_t << "}\\par\n";
-  m_omitParagraph = TRUE;
+  m_omitParagraph = true;
 }
 
 void RTFGenerator::startMemberSubtitle()
@@ -2186,7 +2186,7 @@ static void encodeForOutput(TextStream &t,const QCString &s)
 {
   if (s==nullptr) return;
   QCString encoding;
-  bool converted=FALSE;
+  bool converted=false;
   size_t l = s.length();
   static std::vector<char> enc;
   if (l*4>enc.size()) enc.resize(l*4); // worst case
@@ -2204,7 +2204,7 @@ static void encodeForOutput(TextStream &t,const QCString &s)
       if (!portable_iconv(cd, &inputPtr, &iLeft, &outputPtr, &oLeft))
       {
         enc.resize(enc.size()-oLeft);
-        converted=TRUE;
+        converted=true;
       }
       portable_iconv_close(cd);
     }
@@ -2214,7 +2214,7 @@ static void encodeForOutput(TextStream &t,const QCString &s)
     memcpy(enc.data(),s.data(),l);
     enc.resize(l);
   }
-  bool multiByte = FALSE;
+  bool multiByte = false;
 
   for (size_t i=0;i<enc.size();i++)
   {
@@ -2232,7 +2232,7 @@ static void encodeForOutput(TextStream &t,const QCString &s)
       }
       else
       {
-        multiByte = FALSE;           // end of Double Bytes Character.
+        multiByte = false;           // end of Double Bytes Character.
       }
     }
     else
@@ -2283,7 +2283,7 @@ static bool preProcessFile(Dir &d,const QCString &infName, TextStream &t, bool b
       size_t endNamePos    = prevLine.find('"',startNamePos);
       QCString fileName    = prevLine.substr(startNamePos,endNamePos-startNamePos);
       DBG_RTF(t << "{\\comment begin include " << fileName << "}\n")
-      if (!preProcessFile(d,fileName,t,FALSE)) return FALSE;
+      if (!preProcessFile(d,fileName,t,false)) return false;
       DBG_RTF(t << "{\\comment end include " << fileName << "}\n")
     }
     else if (!first) // no INCLUDETEXT on this line
@@ -2310,7 +2310,7 @@ static bool preProcessFile(Dir &d,const QCString &infName, TextStream &t, bool b
   f.close();
   // remove temporary file
   if (!rtfDebug && removeFile) removeSet.insert(FileInfo(d.filePath(infName.str())).absFilePath());
-  return TRUE;
+  return true;
 }
 
 void RTFGenerator::startDotGraph()
@@ -2322,7 +2322,7 @@ void RTFGenerator::endDotGraph(DotClassGraph &g)
 {
   newParagraph();
 
-  QCString fn = g.writeGraph(m_t,GraphOutputFormat::BITMAP,EmbeddedOutputFormat::Rtf,dir(),fileName(),m_relPath,TRUE,FALSE);
+  QCString fn = g.writeGraph(m_t,GraphOutputFormat::BITMAP,EmbeddedOutputFormat::Rtf,dir(),fileName(),m_relPath,true,false);
 
   // display the file
   m_t << "{\n";
@@ -2345,7 +2345,7 @@ void RTFGenerator::endInclDepGraph(DotInclDepGraph &g)
 {
   newParagraph();
 
-  QCString fn = g.writeGraph(m_t,GraphOutputFormat::BITMAP,EmbeddedOutputFormat::Rtf,dir(),fileName(),m_relPath,FALSE);
+  QCString fn = g.writeGraph(m_t,GraphOutputFormat::BITMAP,EmbeddedOutputFormat::Rtf,dir(),fileName(),m_relPath,false);
 
   // display the file
   m_t << "{\n";
@@ -2375,7 +2375,7 @@ void RTFGenerator::endCallGraph(DotCallGraph &g)
 {
   newParagraph();
 
-  QCString fn = g.writeGraph(m_t,GraphOutputFormat::BITMAP,EmbeddedOutputFormat::Rtf,dir(),fileName(),m_relPath,FALSE);
+  QCString fn = g.writeGraph(m_t,GraphOutputFormat::BITMAP,EmbeddedOutputFormat::Rtf,dir(),fileName(),m_relPath,false);
 
   // display the file
   m_t << "{\n";
@@ -2397,7 +2397,7 @@ void RTFGenerator::endDirDepGraph(DotDirDeps &g)
 {
   newParagraph();
 
-  QCString fn = g.writeGraph(m_t,GraphOutputFormat::BITMAP,EmbeddedOutputFormat::Rtf,dir(),fileName(),m_relPath,FALSE);
+  QCString fn = g.writeGraph(m_t,GraphOutputFormat::BITMAP,EmbeddedOutputFormat::Rtf,dir(),fileName(),m_relPath,false);
 
   // display the file
   m_t << "{\n";
@@ -2467,7 +2467,7 @@ bool RTFGenerator::preProcessFileInplace(const QCString &path,const QCString &na
   if (!d.exists())
   {
     err("Output dir {} does not exist!\n",path);
-    return FALSE;
+    return false;
   }
   std::string oldDir = Dir::currentDirPath();
 
@@ -2483,7 +2483,7 @@ bool RTFGenerator::preProcessFileInplace(const QCString &path,const QCString &na
   {
     err("Failed to open {} for writing!\n",combinedName);
     Dir::setCurrent(oldDir);
-    return FALSE;
+    return false;
   }
   TextStream outt(&f);
 
@@ -2494,7 +2494,7 @@ bool RTFGenerator::preProcessFileInplace(const QCString &path,const QCString &na
     f.close();
     if (!rtfDebug) removeSet.insert(FileInfo(thisDir.filePath(combinedName.str())).absFilePath());
     Dir::setCurrent(oldDir);
-    return FALSE;
+    return false;
   }
 
   // everything worked, move the files
@@ -2520,7 +2520,7 @@ bool RTFGenerator::preProcessFileInplace(const QCString &path,const QCString &na
   }
 
   Dir::setCurrent(oldDir);
-  return TRUE;
+  return true;
 }
 
 void RTFGenerator::startMemberGroupHeader(const QCString &,bool hasHeader)
@@ -2582,10 +2582,10 @@ void RTFGenerator::startExamples()
 void RTFGenerator::endExamples()
 {
   DBG_RTF(m_t << "{\\comment (endExamples)}\n")
-  m_omitParagraph = FALSE;
+  m_omitParagraph = false;
   newParagraph();
   decIndentLevel();
-  m_omitParagraph = TRUE;
+  m_omitParagraph = true;
   m_t << "}";
 }
 
@@ -2626,7 +2626,7 @@ void RTFGenerator::writeDoc(const IDocNodeAST *ast,const Definition *ctx,const M
     RTFDocVisitor visitor(m_t,*m_codeList,ctx?ctx->getDefFileExtension():QCString(""),m_hierarchyLevel);
     std::visit(visitor,astImpl->root);
   }
-  m_omitParagraph = TRUE;
+  m_omitParagraph = true;
 }
 
 void RTFGenerator::rtfwriteRuler_doubleline()
@@ -2710,7 +2710,7 @@ void RTFGenerator::endConstraintList()
   DBG_RTF(m_t << "{\\comment (endConstraintList)}\n")
   newParagraph();
   decIndentLevel();
-  m_omitParagraph = TRUE;
+  m_omitParagraph = true;
   m_t << "}";
 }
 

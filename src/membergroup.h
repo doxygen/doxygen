@@ -55,7 +55,7 @@ class MemberGroup
                int indentLevel, const ClassDef *inheritedFrom,const QCString &inheritId) const;
     void writeDeclarations(OutputList &ol,
                const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,const ModuleDef *mod,
-               bool showInline=FALSE) const;
+               bool showInline=false) const;
     void writeDocumentation(OutputList &ol,const QCString &scopeName,
                const Definition *container,bool showEnumValues,bool showInline) const;
     void writeDocumentationPage(OutputList &ol,const QCString &scopeName,

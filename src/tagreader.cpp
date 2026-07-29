@@ -419,7 +419,7 @@ class TagFileParser
       }
       if (staticStr=="yes")
       {
-        m_curMember.isStatic = TRUE;
+        m_curMember.isStatic = true;
       }
       if (!typeStr.isEmpty())
       {
@@ -1212,7 +1212,7 @@ void TagFileParser::startCompound( const XMLHandlers::Attributes& attrib )
   TagClassInfo *classInfo = m_curCompound.getClassInfo();
   if (isObjC=="yes" && classInfo)
   {
-    classInfo->isObjC = TRUE;
+    classInfo->isObjC = true;
   }
 }
 
@@ -1461,7 +1461,7 @@ void TagFileParser::buildMemberList(const std::shared_ptr<Entry> &ce,const std::
         ev->tagInfoData.tagName    = m_tagName;
         ev->tagInfoData.anchor     = evi.anchor;
         ev->tagInfoData.fileName   = evi.file;
-        ev->hasTagInfo    = TRUE;
+        ev->hasTagInfo    = true;
         me->moveToSubEntryAndKeep(ev);
       }
     }
@@ -1479,7 +1479,7 @@ void TagFileParser::buildMemberList(const std::shared_ptr<Entry> &ce,const std::
     me->tagInfoData.tagName    = m_tagName;
     me->tagInfoData.anchor     = tmi.anchor;
     me->tagInfoData.fileName   = tmi.anchorFile;
-    me->hasTagInfo    = TRUE;
+    me->hasTagInfo    = true;
     if (tmi.kind=="define")
     {
       me->type="#define";
@@ -1582,7 +1582,7 @@ void TagFileParser::buildClassEntry(const std::shared_ptr<Entry> &root, const Ta
   ce->tagInfoData.fileName = tci->filename;
   ce->startLine            = tci->lineNr;
   ce->fileName             = m_tagName;
-  ce->hasTagInfo           = TRUE;
+  ce->hasTagInfo           = true;
   ce->id                   = tci->clangId;
   ce->lang                 = tci->isObjC ? SrcLangExt::ObjC : SrcLangExt::Unknown;
   // transfer base class list
@@ -1666,7 +1666,7 @@ void TagFileParser::buildLists(const std::shared_ptr<Entry> &root)
       addDocAnchors(fe,tfi->docAnchors);
       fe->tagInfoData.tagName  = m_tagName;
       fe->tagInfoData.fileName = tfi->filename;
-      fe->hasTagInfo = TRUE;
+      fe->hasTagInfo = true;
 
       QCString fullName = m_tagName+":"+tfi->path+stripPath(tfi->name);
       fe->fileName  = fullName;
@@ -1703,7 +1703,7 @@ void TagFileParser::buildLists(const std::shared_ptr<Entry> &root)
       ce->tagInfoData.fileName = tci->filename;
       ce->startLine   = tci->lineNr;
       ce->fileName    = m_tagName;
-      ce->hasTagInfo  = TRUE;
+      ce->hasTagInfo  = true;
       ce->id       = tci->clangId;
 
       root->moveToSubEntryAndKeep(ce);
@@ -1760,7 +1760,7 @@ void TagFileParser::buildLists(const std::shared_ptr<Entry> &root)
       ne->tagInfoData.fileName = tni->filename;
       ne->startLine   = tni->lineNr;
       ne->fileName    = m_tagName;
-      ne->hasTagInfo  = TRUE;
+      ne->hasTagInfo  = true;
       ne->id       = tni->clangId;
 
       buildMemberList(ne,tni->members);
@@ -1782,7 +1782,7 @@ void TagFileParser::buildLists(const std::shared_ptr<Entry> &root)
       pe->tagInfoData.fileName = tpgi->filename;
       pe->startLine   = tpgi->lineNr;
       pe->fileName    = m_tagName;
-      pe->hasTagInfo  = TRUE;
+      pe->hasTagInfo  = true;
 
       buildMemberList(pe,tpgi->members);
       root->moveToSubEntryAndKeep(pe);
@@ -1804,7 +1804,7 @@ void TagFileParser::buildLists(const std::shared_ptr<Entry> &root)
       ge->tagInfoData.fileName = tgi->filename;
       ge->startLine   = tgi->lineNr;
       ge->fileName    = m_tagName;
-      ge->hasTagInfo  = TRUE;
+      ge->hasTagInfo  = true;
 
       buildMemberList(ge,tgi->members);
       root->moveToSubEntryAndKeep(ge);
@@ -1852,7 +1852,7 @@ void TagFileParser::buildLists(const std::shared_ptr<Entry> &root)
       pe->tagInfoData.fileName = stripExtension(tpi->filename);
       pe->startLine   = tpi->lineNr;
       pe->fileName    = m_tagName;
-      pe->hasTagInfo  = TRUE;
+      pe->hasTagInfo  = true;
       root->moveToSubEntryAndKeep(pe);
     }
   }

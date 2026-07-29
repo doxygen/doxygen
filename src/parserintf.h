@@ -56,7 +56,7 @@ class OutlineParserInterface
                             const std::shared_ptr<Entry> &root,
                             ClangTUParser *clangParser) = 0;
 
-    /** Returns TRUE if the language identified by \a extension needs
+    /** Returns true if the language identified by \a extension needs
      *  the C preprocessor to be run before feed the result to the input
      *  parser.
      *  @see parseInput()
@@ -220,14 +220,14 @@ class ParserManager
     }
 
     /** Registers a file \a extension with a parser with name \a parserName.
-     *  Returns TRUE if the extension was successfully registered.
+     *  Returns true if the extension was successfully registered.
      */
     bool registerExtension(const QCString &extension, const QCString &parserName)
     {
-      if (parserName.isEmpty() || extension.isEmpty()) return FALSE;
+      if (parserName.isEmpty() || extension.isEmpty()) return false;
 
       const auto &parserIt = m_parsers.find(parserName.str());
-      if (parserIt == m_parsers.end()) return FALSE;
+      if (parserIt == m_parsers.end()) return false;
 
       auto extensionIt = m_extensions.find(extension.str());
       if (extensionIt != m_extensions.end()) // extension already exists
@@ -235,7 +235,7 @@ class ParserManager
         m_extensions.erase(extensionIt); // remove it (e.g. user specified extension overrules built in one)
       }
       m_extensions.emplace(extension.str(),parserIt->second); // add new mapping
-      return TRUE;
+      return true;
     }
 
     /** Gets the interface to the parser associated with a given \a extension.

@@ -360,7 +360,7 @@ bool Image::save(const QCString &fileName)
   LodePNG_saveFile(buffer, bufferSize, fileName.data());
   free(buffer);
   LodePNG_Encoder_cleanup(&encoder);
-  return TRUE;
+  return true;
 }
 
 //----------------------------------------------------------------
@@ -469,7 +469,7 @@ bool ColoredImage::save(const QCString &fileName)
   LodePNG_saveFile(buffer, bufferSize, fileName.data());
   LodePNG_Encoder_cleanup(&encoder);
   free(buffer);
-  return TRUE;
+  return true;
 }
 
 

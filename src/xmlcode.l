@@ -82,7 +82,7 @@ struct xmlcodeYY_state
 
   std::unique_ptr<FileDef> exampleFileDef;
   const FileDef *     sourceFileDef = nullptr;
-  bool          lineNumbers = FALSE;
+  bool          lineNumbers = false;
   const Definition *  currentDefinition = nullptr;
   const MemberDef *   currentMemberDef = nullptr;
   bool          includeCodeFragment = false;

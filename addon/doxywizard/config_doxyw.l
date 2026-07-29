@@ -633,7 +633,7 @@ static void substEnvVarsInStrList(QStringList &sl)
 
   foreach (QString result, sl)
   {
-    // an argument with quotes will have an extra space at the end, so wasQuoted will be TRUE.
+    // an argument with quotes will have an extra space at the end, so wasQuoted will be true.
     bool wasQuoted = (result.indexOf(QChar::fromLatin1(' '))!=-1) ||
                      (result.indexOf(QChar::fromLatin1('\t'))!=-1);
     // here we strip the quote again

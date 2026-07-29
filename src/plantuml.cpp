@@ -354,7 +354,7 @@ static void runPlantumlContent(const PlantumlManager::FilesMap &plantumlFiles,
 
       if (cachedContent == nb.content) continue;
 
-      if ((exitCode=Portable::system(pumlExe.data(),pumlArguments.data(),TRUE))!=0)
+      if ((exitCode=Portable::system(pumlExe.data(),pumlArguments.data(),true))!=0)
       {
         err_full(nb.srcFile,nb.srcLine,"Problems running PlantUML. Verify that the command 'java -jar \"{}\" -h' works from the command line. Exit code: {}.",
             plantumlJarPath,exitCode);

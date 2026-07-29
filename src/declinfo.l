@@ -340,8 +340,8 @@ void parseFuncDecl(const QCString &decl,const SrcLangExt lang,QCString &cl,QCStr
   yyextra->inputString   = decl.data();
   //printf("Input='%s'\n",yyextra->inputString);
   yyextra->inputPosition      = 0;
-  yyextra->classTempListFound = FALSE;
-  yyextra->funcTempListFound  = FALSE;
+  yyextra->classTempListFound = false;
+  yyextra->funcTempListFound  = false;
   yyextra->insideObjC = lang==SrcLangExt::ObjC;
   yyextra->insidePHP  = lang==SrcLangExt::PHP;
   yyextra->insidePython  = lang==SrcLangExt::Python;
