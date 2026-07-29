@@ -379,6 +379,10 @@ span.tt {
 	background-color: var(--fragment-background-color);
 }
 
+.label span.tt {
+	background: none;
+}
+
 .clipboard {
 	width: 24px;
 	height: 24px;
