@@ -575,6 +575,31 @@ const Definition *SymbolResolver::Private::getResolvedSymbolRec(
     QCString bestResolvedType;
     int minDistance=10000; // init at "infinite"
 
+    // helper to skip symbol definitions that should not be considered for lookup
+    auto skipDefinition = [this,&explicitScopePart](const Definition *d) -> bool {
+      if (d->definitionType()==Definition::TypeMember)
+      {
+        const MemberDef *emd = dynamic_cast<const MemberDef *>(d);
+        if (emd &&
+            emd->isEnumValue() &&
+            emd->getEnumScope() &&
+            emd->getEnumScope()->isStrong() &&
+            explicitScopePart.isEmpty())
+        {
+          // skip lookup for strong enum values without explicit scope, see issue #11799
+          return true;
+        }
+        if (emd &&
+            emd->isStatic() &&
+            emd->getFileDef()!=m_fileScope)
+        {
+          // skip lookup for static members that are not in the current file scope
+          return true;
+        }
+      }
+      return false;
+    };
+
     for (Definition *d : range)
     {
       if (isCodeSymbol(d->definitionType()) &&
@@ -587,15 +612,7 @@ const Definition *SymbolResolver::Private::getResolvedSymbolRec(
           )
          )
       {
-        if (d->definitionType()==Definition::TypeMember)
-        {
-          const MemberDef *emd = dynamic_cast<const MemberDef *>(d);
-          if (emd && emd->isEnumValue() && emd->getEnumScope() && emd->getEnumScope()->isStrong() && explicitScopePart.isEmpty())
-          {
-            // skip lookup for strong enum values without explicit scope, see issue #11799
-            continue;
-          }
-        }
+        if (skipDefinition(d)) continue;
         getResolvedSymbol(visitedKeys,scope,d,args,checkCV,insideCode,explicitScopePart,strippedTemplateParams,false,
             minDistance,bestMatch,bestTypedef,bestTemplSpec,bestResolvedType);
       }
@@ -610,6 +627,7 @@ const Definition *SymbolResolver::Private::getResolvedSymbolRec(
       {
         if (isCodeSymbol(d->definitionType()))
         {
+          if (skipDefinition(d)) continue;
           getResolvedSymbol(visitedKeys,scope,d,QCString(),false,insideCode,explicitScopePart,strippedTemplateParams,true,
             minDistance,bestMatch,bestTypedef,bestTemplSpec,bestResolvedType);
         }
