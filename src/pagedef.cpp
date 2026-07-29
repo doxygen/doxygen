@@ -46,6 +46,7 @@ class PageDefImpl final : public DefinitionMixin<PageDef>
     QCString anchor() const override { return QCString(); }
     void findSectionsInDocumentation() override;
     QCString title() const override { return m_title; }
+    QCString titleAsText() const override;
     const GroupDef * getGroupDef() const override;
     const PageLinkedRefMap &getSubPages() const override { return m_subPages; }
     void addInnerCompound(Definition *d) override;
@@ -72,6 +73,7 @@ class PageDefImpl final : public DefinitionMixin<PageDef>
   private:
     QCString m_fileName;
     QCString m_title;
+    QCString m_titleAsText;
     PageLinkedRefMap m_subPages;                 // list of pages in the group
     Definition *m_pageScope;
     int m_nestingLevel;
@@ -88,13 +90,14 @@ std::unique_ptr<PageDef> createPageDef(const QCString &f,int l,const QCString &n
 
 PageDefImpl::PageDefImpl(const QCString &f,int l,const QCString &n,
                  const QCString &d,const QCString &t)
- : DefinitionMixin(f,l,1,n), m_title(!t.isEmpty() ? t : n)
+ : DefinitionMixin(f,l,1,n)
 {
   setDocumentation(d,f,l);
   m_pageScope = nullptr;
   m_nestingLevel = 0;
   m_fileName = ::convertNameToFile(n,FALSE,TRUE);
   m_showLineNo = FALSE;
+  setTitle(t);
 }
 
 PageDefImpl::~PageDefImpl()
@@ -278,11 +281,11 @@ void PageDefImpl::writeDocumentation(OutputList &ol)
   ol.pushGeneratorState();
   //2.{
   ol.disableAllBut(OutputType::Man);
-  startFile(ol,getOutputFileBase(),false,manPageName,title(),HighlightedItem::Pages,!generateTreeView,
+  startFile(ol,getOutputFileBase(),false,manPageName,titleAsText(),HighlightedItem::Pages,!generateTreeView,
             QCString() /* altSidebarName */, hierarchyLevel);
   ol.enableAll();
   ol.disable(OutputType::Man);
-  startFile(ol,getOutputFileBase(),false,pageName,title(),HighlightedItem::Pages,!generateTreeView,
+  startFile(ol,getOutputFileBase(),false,pageName,titleAsText(),HighlightedItem::Pages,!generateTreeView,
             QCString() /* altSidebarName */, hierarchyLevel);
   ol.popGeneratorState();
   //2.}
@@ -494,7 +497,21 @@ bool PageDefImpl::hasTitle() const
 
 void PageDefImpl::setTitle(const QCString &title)
 {
-  m_title = title;
+  if (!title.isEmpty())
+  {
+    m_title = title;
+    m_titleAsText = parseCommentAsText(this,nullptr,title,docFile(),docLine());
+  }
+  else
+  {
+    m_title = name();
+    m_titleAsText = m_title;
+  }
+}
+
+QCString PageDefImpl::titleAsText() const
+{
+  return m_titleAsText;
 }
 
 // --- Cast functions

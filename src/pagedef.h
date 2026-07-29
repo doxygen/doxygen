@@ -36,6 +36,7 @@ class PageDef : public DefinitionMutable, public Definition
     // getters
     virtual void findSectionsInDocumentation() = 0;
     virtual QCString title() const = 0;
+    virtual QCString titleAsText() const = 0;
     virtual const GroupDef *getGroupDef() const = 0;
     virtual const PageLinkedRefMap &getSubPages() const = 0;
     virtual bool visibleInIndex() const = 0;
