@@ -9,16 +9,60 @@
       <para>
         <variablelist>
           <varlistentry>
-            <term>Member <ref refid="struct_logger_1ad44f46593cb8c4c87c1178eb326e2f64" kindref="member">Logger::log</ref>  ()</term>
+            <term>Member <ref refid="struct_logger_1ab56da257fcb8836106030efa342ca472" kindref="member">Logger::log_old1</ref>  ()</term>
           </varlistentry>
           <listitem>
-            <para><anchor id="deprecated_1_deprecated000003"/>Use <ref refid="struct_logger_1a9da0f55730ac4331ade9150bda054649" kindref="member">write()</ref> instead </para>
+            <para>
+              <anchor id="deprecated_1_deprecated000003"/>
+              <emphasis>Use</emphasis>
+              <computeroutput>
+                <ref refid="struct_logger_1a9da0f55730ac4331ade9150bda054649" kindref="member">write()</ref>
+              </computeroutput>
+              <emphasis>instead</emphasis>
+            </para>
           </listitem>
           <varlistentry>
-            <term>Member <ref refid="struct_logger_1add601a143e898b8ae6ff491d9dc9dd90" kindref="member">Logger::log_old</ref>  ()</term>
+            <term>Member <ref refid="struct_logger_1aa9fce4a96383008cbaea8c72d757b9e5" kindref="member">Logger::log_old2</ref>  ()</term>
           </varlistentry>
           <listitem>
-            <para><anchor id="deprecated_1_deprecated000004"/>Use <ref refid="struct_logger_1a9da0f55730ac4331ade9150bda054649" kindref="member">write()</ref> instead  </para>
+            <para>
+              <anchor id="deprecated_1_deprecated000004"/>
+            </para>
+          </listitem>
+          <varlistentry>
+            <term>Member <ref refid="struct_logger_1a7971a7a104c71ead687cf23b7780d9c6" kindref="member">Logger::log_old3</ref>  ()</term>
+          </varlistentry>
+          <listitem>
+            <para><anchor id="deprecated_1_deprecated000005"/>Use <computeroutput><ref refid="struct_logger_1a9da0f55730ac4331ade9150bda054649" kindref="member">write()</ref></computeroutput> instead  </para>
+          </listitem>
+          <varlistentry>
+            <term>Member <ref refid="struct_logger_1a0211eaf2bd4f4c6b74489461c7f09bc7" kindref="member">Logger::log_old4</ref>  ()</term>
+          </varlistentry>
+          <listitem>
+            <para><anchor id="deprecated_1_deprecated000006"/>Use <computeroutput><ref refid="struct_logger_1a9da0f55730ac4331ade9150bda054649" kindref="member">write()</ref></computeroutput> instead  </para>
+          </listitem>
+          <varlistentry>
+            <term>Member <ref refid="struct_logger_1ae6627fc5e81ba51a4bee76c05ef032a6" kindref="member">Logger::log_old5</ref>  ()</term>
+          </varlistentry>
+          <listitem>
+            <para>
+              <anchor id="deprecated_1_deprecated000007"/>
+            </para>
+            <para>Use <computeroutput><ref refid="struct_logger_1a9da0f55730ac4331ade9150bda054649" kindref="member">write()</ref></computeroutput> instead  </para>
+          </listitem>
+          <varlistentry>
+            <term>Member <ref refid="struct_logger_1ad6bf69c73ac3c77f6e72047876b7e537" kindref="member">Logger::log_old6</ref>  ()</term>
+          </varlistentry>
+          <listitem>
+            <para><anchor id="deprecated_1_deprecated000008"/>Use <computeroutput><ref refid="struct_logger_1a9da0f55730ac4331ade9150bda054649" kindref="member">write()</ref></computeroutput> instead </para>
+            <para><anchor id="deprecated_1_deprecated000009"/>Second deprecation message </para>
+          </listitem>
+          <varlistentry>
+            <term>Member <ref refid="struct_logger_1a5a3f0213cc23c2d36c140bc0eafc25b0" kindref="member">Logger::log_old7</ref>  ()</term>
+          </varlistentry>
+          <listitem>
+            <para><anchor id="deprecated_1_deprecated000010"/>Use <computeroutput><ref refid="struct_logger_1a9da0f55730ac4331ade9150bda054649" kindref="member">write()</ref></computeroutput> instead</para>
+            <para><anchor id="deprecated_1_deprecated000011"/>Second deprecation message  </para>
           </listitem>
           <varlistentry>
             <term>Member <ref refid="struct_logger_1abc41bfb031d896170c7675fa96a6b30c" kindref="member">Logger::Logger</ref>  ()</term>

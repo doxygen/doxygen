@@ -65,6 +65,7 @@ typedef yyguts_t *yyscan_t;
 #include "util.h"
 #include "trace.h"
 #include "stringutil.h"
+#include "markdown.h"
 
 // forward declarations
 static bool handleBrief(yyscan_t yyscanner,const QCString &, const StringVector &);
@@ -5203,30 +5204,57 @@ bool CommentScanner::isCommand(const QCString &cmdName)
   return (docCmdMap.find(cmdName.str()) != docCmdMap.end());
 }
 
-void CommentScanner::addDeprecatedDocs(Entry *current,int lineNr)
+void CommentScanner::addDeprecatedDocs(Entry *current,const QCString &fileName,int line,OutlineParserInterface *parser)
 {
   static reg::Ex deprecated_re(R"(deprecated\s*(\(\s*\"([^\"]*)\"\s*\))?)");
   reg::Match match;
   std::string attr = current->attributes.str();
-  if (!current->spec.isDeprDoc() && reg::search(attr,match,deprecated_re))
+  if (reg::search(attr,match,deprecated_re))
   {
     QCString docs;
     if (match.size()==3) // deprecated attribute with documentation
     {
-      docs = match[2].str().c_str();
+      Markdown markdown(fileName,line);
+      QCString rawDoc = match[2].str();
+      QCString processedDoc = Config_getBool(MARKDOWN_SUPPORT) ? markdown.process(rawDoc,line) : rawDoc;
+      std::shared_ptr<Entry> docEntry = std::make_shared<Entry>();
+      GuardedSectionStack guards;
+      bool newEntryNeeded = false;
+      Protection prot = Protection::Public;
+      int position=0;
+      parseCommentBlock(parser,
+                        docEntry.get(),
+                        processedDoc,
+                        fileName,
+                        line,
+                        false, // isBrief
+                        false, // isAutoBriefOn
+                        false, // isInbody
+                        prot,
+                        position,
+                        newEntryNeeded,
+                        Config_getBool(MARKDOWN_SUPPORT), // markdownSupport
+                        &guards);
+      docs = docEntry->doc;
+      //printf("rawDoc='%s' processedDoc='%s' docs='%s'\n",qPrint(rawDoc),qPrint(processedDoc),qPrint(docs));
     }
     else // deprecated attribute without documentation
     {
       current->spec.setDeprAttr(true);
     }
-    addXRefItemToEntry(current,
-                       docs,
-                       "deprecated",
-                       theTranslator->trDeprecated(),
-                       theTranslator->trDeprecatedList(),
-                       true,  // append
-                       false, // inBody
-                       lineNr);
+    if (!docs.isEmpty() || !current->spec.isDeprDoc()) // attribute has docs
+                                                       // or no @deprecated command found in comment yet
+    {
+      // add new deprecated xref item to the documentation of this entry
+      addXRefItemToEntry(current,
+                         docs,
+                         "deprecated",
+                         theTranslator->trDeprecated(),
+                         theTranslator->trDeprecatedList(),
+                         false,  // append
+                         false,  // inBody
+                         line);
+    }
   }
   else
   {

@@ -3643,7 +3643,10 @@ NONLopt [^\n]*
                                           *yyextra->pCopyC11AttributeString += *yytext;
                                         }
 <CopyC11Attribute>"]]"                  { /* end of the attribute list */
-                                          CommentScanner::addDeprecatedDocs(yyextra->current.get(), yyextra->yyLineNr);
+                                          yyextra->commentScanner.addDeprecatedDocs(yyextra->current.get(),
+                                                                                    yyextra->fileName,
+                                                                                    yyextra->yyLineNr,
+                                                                                    yyextra->thisParser);
                                           BEGIN(yyextra->lastC11AttributeContext);
                                         }
 
@@ -8589,8 +8592,8 @@ static void handleParametersCommentBlocks(yyscan_t yyscanner,ArgumentList &al)
       while (yyextra->commentScanner.parseCommentBlock(
              yyextra->thisParser,
              yyextra->current.get(),
-             processedDoc,     // text
-             yyextra->fileName,         // file
+             processedDoc,      // text
+             yyextra->fileName, // file
              lineNr,
              FALSE,
              FALSE,
