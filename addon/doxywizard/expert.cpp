@@ -79,7 +79,7 @@ static QString displayDocs(const QString &id,const QString &docs)
 
 void Expert::setHeader(const char *header)
 {
-  m_header = SA(header);
+  m_header = QString::fromStdString(header);
 }
 
 void Expert::add(const char *name,const char *docs)
