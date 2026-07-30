@@ -17,7 +17,7 @@ Doxygen (www.doxygen.org) 所使用的设置。
 \verbatim
       TAG += value [value, ...]
 \endverbatim
-包含空格的值应放在引号(\" \")之间。
+包含空格的值应放在引号(" ")之间。
 <br>
 注意：<br>
 使用 Doxygen 将使用的配置文件与模板配置文件进行比较：

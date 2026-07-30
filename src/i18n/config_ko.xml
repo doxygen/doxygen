@@ -17,7 +17,7 @@ Doxygen (www.doxygen.org) 에서 사용할 설정을 설명합니다.
 \verbatim
       TAG += value [value, ...]
 \endverbatim
-공백을 포함하는 값은 따옴표(\" \")로 묶어야 합니다.
+공백을 포함하는 값은 따옴표(" ")로 묶어야 합니다.
 <br>
 참고:<br>
 Doxygen을 사용하여 사용된 설정 파일을 템플릿 설정 파일과 비교합니다:

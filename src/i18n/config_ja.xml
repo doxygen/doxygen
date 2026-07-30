@@ -17,7 +17,7 @@ Doxygen (www.doxygen.org) で使用される設定を記述します。
 \verbatim
       TAG += value [value, ...]
 \endverbatim
-空白を含む値は、引用符(\" \")で囲む必要があります。
+空白を含む値は、引用符(" ")で囲む必要があります。
 <br>
 注意:<br>
 Doxygen を使用して、使用した設定ファイルをテンプレート設定ファイルと比較します:
