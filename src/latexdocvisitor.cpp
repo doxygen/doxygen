@@ -108,7 +108,7 @@ static void insertDimension(TextStream &t, QCString dimension, const char *orien
   t << dimension;
 }
 
-static void visitPreStart(TextStream &t, bool hasCaption, QCString name,  QCString width,  QCString height, bool inlineImage = FALSE)
+static void visitPreStart(TextStream &t, bool hasCaption, QCString name,  QCString width,  QCString height, bool inlineImage = false)
 {
     if (inlineImage)
     {
@@ -187,7 +187,7 @@ static void visitPreStart(TextStream &t, bool hasCaption, QCString name,  QCStri
 
 
 
-static void visitPostEnd(TextStream &t, bool hasCaption, bool inlineImage = FALSE)
+static void visitPostEnd(TextStream &t, bool hasCaption, bool inlineImage = false)
 {
     if (inlineImage)
     {
@@ -217,8 +217,8 @@ void LatexDocVisitor::visitCaption(const DocNodeList &children)
 
 LatexDocVisitor::LatexDocVisitor(TextStream &t,OutputCodeList &ci,LatexCodeGenerator &lcg,
                                  const QCString &langExt, int hierarchyLevel)
-  : m_t(t), m_ci(ci), m_lcg(lcg), m_insidePre(FALSE),
-    m_insideItem(FALSE), m_hide(FALSE),
+  : m_t(t), m_ci(ci), m_lcg(lcg), m_insidePre(false),
+    m_insideItem(false), m_hide(false),
     m_langExt(langExt), m_hierarchyLevel(hierarchyLevel)
 {
 }
@@ -290,7 +290,7 @@ void LatexDocVisitor::operator()(const DocSymbol &s)
   }
   else
   {
-    err("LaTeX: non supported HTML-entity found: {}\n",HtmlEntityMapper::instance().html(s.symbol(),TRUE));
+    err("LaTeX: non supported HTML-entity found: {}\n",HtmlEntityMapper::instance().html(s.symbol(),true));
   }
 }
 
@@ -391,11 +391,11 @@ void LatexDocVisitor::operator()(const DocStyleChange &s)
       if (s.enable())
       {
         m_t << "\n\\begin{DoxyPre}";
-        m_insidePre=TRUE;
+        m_insidePre=true;
       }
       else
       {
-        m_insidePre=FALSE;
+        m_insidePre=false;
         m_t << "\\end{DoxyPre}\n";
       }
       break;
@@ -612,7 +612,7 @@ void LatexDocVisitor::operator()(const DocIncOperator &op)
   {
     if (!m_hide) m_ci.startCodeFragment("DoxyCodeInclude");
     pushHidden(m_hide);
-    m_hide = TRUE;
+    m_hide = true;
   }
   QCString locLangExt = getFileNameExtension(op.includeFileName());
   if (locLangExt.isEmpty()) locLangExt = m_langExt;
@@ -639,7 +639,7 @@ void LatexDocVisitor::operator()(const DocIncOperator &op)
                                          );
     }
     pushHidden(m_hide);
-    m_hide=TRUE;
+    m_hide=true;
   }
   if (op.isLast())
   {
@@ -831,11 +831,11 @@ void LatexDocVisitor::operator()(const DocSimpleSect &s)
       break;
     case DocSimpleSect::Author:
       m_t << "\\begin{DoxyAuthor}{";
-      filter(theTranslator->trAuthor(TRUE,TRUE));
+      filter(theTranslator->trAuthor(true,true));
       break;
     case DocSimpleSect::Authors:
       m_t << "\\begin{DoxyAuthor}{";
-      filter(theTranslator->trAuthor(TRUE,FALSE));
+      filter(theTranslator->trAuthor(true,false));
       break;
     case DocSimpleSect::Version:
       m_t << "\\begin{DoxyVersion}{";
@@ -896,9 +896,9 @@ void LatexDocVisitor::operator()(const DocSimpleSect &s)
 
   if (s.title())
   {
-    m_insideItem=TRUE;
+    m_insideItem=true;
     std::visit(*this,*s.title());
-    m_insideItem=FALSE;
+    m_insideItem=false;
   }
   m_t << "}\n";
   incIndentLevel();
@@ -1170,9 +1170,9 @@ void LatexDocVisitor::operator()(const DocHtmlDescTitle &dt)
 {
   if (m_hide) return;
   m_t << "\n\\item[{\\parbox[t]{\\linewidth}{";
-  m_insideItem=TRUE;
+  m_insideItem=true;
   visitChildren(dt);
-  m_insideItem=FALSE;
+  m_insideItem=false;
   m_t << "}}]";
 }
 
@@ -1577,7 +1577,7 @@ void LatexDocVisitor::operator()(const DocLink &lnk)
 void LatexDocVisitor::operator()(const DocRef &ref)
 {
   if (m_hide) return;
-  // when ref.isSubPage()==TRUE we use ref.file() for HTML and
+  // when ref.isSubPage()==true we use ref.file() for HTML and
   // ref.anchor() for LaTeX/RTF
   if (ref.isSubPage())
   {
@@ -1753,13 +1753,13 @@ void LatexDocVisitor::operator()(const DocParamList &pl)
     if (useTable) m_t << " & ";
   }
   m_t << "{\\em ";
-  bool first=TRUE;
+  bool first=true;
   for (const auto &param : pl.parameters())
   {
-    if (!first) m_t << ","; else first=FALSE;
-    m_insideItem=TRUE;
+    if (!first) m_t << ","; else first=false;
+    m_insideItem=true;
     std::visit(*this,param);
-    m_insideItem=FALSE;
+    m_insideItem=false;
   }
   m_t << "}";
   if (useTable)
@@ -1800,9 +1800,9 @@ void LatexDocVisitor::operator()(const DocXRefItem &x)
   {
     m_t << "\\textbf{ ";
   }
-  m_insideItem=TRUE;
+  m_insideItem=true;
   filter(x.title());
-  m_insideItem=FALSE;
+  m_insideItem=false;
   if (pdfHyperlinks && !anonymousEnum)
   {
     m_t << "}";

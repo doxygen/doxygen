@@ -259,7 +259,7 @@ static QCString escapeSpecialChars(const QCString &s)
 {
   AUTO_TRACE("s={}",Trace::trunc(s));
   if (s.isEmpty()) return s;
-  bool insideQuote=FALSE;
+  bool insideQuote=false;
   QCString result;
   const char *p=s.data();
   char c=0, pc='\0';
@@ -1067,7 +1067,7 @@ int Markdown::Private::processHtmlTagWrite(std::string_view data,size_t offset,b
   QCString tagName(data.substr(1,i-1));
   if (tagName.lower()=="pre") // found <pre> tag
   {
-    bool insideStr=FALSE;
+    bool insideStr=false;
     while (i+6<size)
     {
       char c=data[i];
@@ -1085,11 +1085,11 @@ int Markdown::Private::processHtmlTagWrite(std::string_view data,size_t offset,b
       }
       else if (insideStr && c=='"')
       {
-        if (data[i-1]!='\\') insideStr=FALSE;
+        if (data[i-1]!='\\') insideStr=false;
       }
       else if (c=='"')
       {
-        insideStr=TRUE;
+        insideStr=true;
       }
       i++;
     }
@@ -1115,16 +1115,16 @@ int Markdown::Private::processHtmlTagWrite(std::string_view data,size_t offset,b
       else if (data[i]==' ') // <bla attr=...
       {
         i++;
-        bool insideAttr=FALSE;
+        bool insideAttr=false;
         while (i<size)
         {
           if (!insideAttr && data[i]=='"')
           {
-            insideAttr=TRUE;
+            insideAttr=true;
           }
           else if (data[i]=='"' && data[i-1]!='\\')
           {
-            insideAttr=FALSE;
+            insideAttr=false;
           }
           else if (!insideAttr && data[i]=='>') // found end of tag
           {
@@ -1248,13 +1248,13 @@ int Markdown::Private::processLink(const std::string_view data,size_t offset)
   QCString content;
   QCString link;
   QCString title;
-  bool isImageLink = FALSE;
-  bool isImageInline = FALSE;
-  bool isToc = FALSE;
+  bool isImageLink = false;
+  bool isImageInline = false;
+  bool isToc = false;
   size_t i=1;
   if (data[0]=='!')
   {
-    isImageLink = TRUE;
+    isImageLink = true;
     if (size<2 || data[1]!='[')
     {
       return 0;
@@ -1324,7 +1324,7 @@ int Markdown::Private::processLink(const std::string_view data,size_t offset)
   }
   if (whiteSpace && i<size && (data[i]=='(' || data[i]=='[')) return 0;
 
-  bool explicitTitle=FALSE;
+  bool explicitTitle=false;
   if (i<size && data[i]=='(') // inline link
   {
     i++;
@@ -1405,7 +1405,7 @@ int Markdown::Private::processLink(const std::string_view data,size_t offset)
       if (data[titleEnd]==c) // found it
       {
         title = data.substr(titleStart,titleEnd-titleStart);
-        explicitTitle=TRUE;
+        explicitTitle=true;
         while (i<size)
         {
           if (data[i]==' ')i++; // remove space after the closing quote and the closing bracket
@@ -1472,12 +1472,12 @@ int Markdown::Private::processLink(const std::string_view data,size_t offset)
     {
       link  = lr_it->second.link;
       title = lr_it->second.title;
-      explicitTitle=TRUE;
+      explicitTitle=true;
       i=contentEnd;
     }
     else if (content=="TOC")
     {
-      isToc=TRUE;
+      isToc=true;
       i=contentEnd;
     }
     else
@@ -2254,9 +2254,9 @@ static size_t computeIndentExcludingListMarkers(std::string_view data)
   size_t i=0;
   const size_t size=data.size();
   size_t indent=0;
-  bool isDigit=FALSE;
-  bool isLi=FALSE;
-  bool listMarkerSkipped=FALSE;
+  bool isDigit=false;
+  bool isLi=false;
+  bool listMarkerSkipped=false;
   while (i<size &&
          (data[i]==' ' ||                                    // space
           (!listMarkerSkipped &&                             // first list marker
@@ -2278,7 +2278,7 @@ static size_t computeIndentExcludingListMarkers(std::string_view data)
         {
           if (j+1<size && data[j+1]==' ') // valid list marker
           {
-            listMarkerSkipped=TRUE;
+            listMarkerSkipped=true;
             indent+=j+1-i;
             i=j+1;
             break;
@@ -2295,17 +2295,17 @@ static size_t computeIndentExcludingListMarkers(std::string_view data)
     {
       i+=3; // skip over <li>
       indent+=3;
-      listMarkerSkipped=TRUE;
+      listMarkerSkipped=true;
     }
     else if (data[i]=='-' && size>=2 && i+2<size && data[i+1]=='#' && data[i+2]==' ')
     { // case "-# "
-      listMarkerSkipped=TRUE; // only a single list marker is accepted
+      listMarkerSkipped=true; // only a single list marker is accepted
       i++; // skip over #
       indent++;
     }
     else if (data[i]!=' ' && i+1<size && data[i+1]==' ')
     { // case "- " or "+ " or "* "
-      listMarkerSkipped=TRUE; // only a single list marker is accepted
+      listMarkerSkipped=true; // only a single list marker is accepted
     }
     if (data[i]!=' ' && !listMarkerSkipped)
     { // end of indent
@@ -2366,7 +2366,7 @@ static bool isFencedCodeBlock(std::string_view data,size_t refIndent,
   auto isAlphaNChar = [ ](char c) { return (c>='A' && c<='Z') || (c>='a' && c<='z') || (c>='0' && c<='9') || (c=='+'); };
   auto isLangChar   = [&](char c) { return c==dot || isAlphaChar(c); };
   // rules: at least 3 ~~~, end of the block same amount of ~~~'s, otherwise
-  // return FALSE
+  // return false
   size_t i=0;
   size_t indent=0;
   int startTildes=0;
@@ -2379,7 +2379,7 @@ static bool isFencedCodeBlock(std::string_view data,size_t refIndent,
   if (indent>=refIndent+4)
   {
     AUTO_TRACE_EXIT("result=false: content is part of code block indent={} refIndent={}",indent,refIndent);
-    return FALSE;
+    return false;
   } // part of code block
   char tildaChar='~';
   if (i<size && data[i]=='`') tildaChar='`';
@@ -2391,7 +2391,7 @@ static bool isFencedCodeBlock(std::string_view data,size_t refIndent,
   if (startTildes<3)
   {
     AUTO_TRACE_EXIT("result=false: no fence marker found #tildes={}",startTildes);
-    return FALSE;
+    return false;
   } // not enough tildes
   // skip whitespace
   while (i<size && data[i]==' ') { i++; }
@@ -2513,8 +2513,8 @@ static bool isCodeBlock(std::string_view data, size_t offset,size_t &indent)
     // Note that the offset is negative so we need to rewrap the string view
     if (!isEmptyLine(std::string_view(data.data()+nl_pos[1],nl_pos[0]-nl_pos[1]-1)))
     {
-      AUTO_TRACE_EXIT("result={}",FALSE);
-      return FALSE;
+      AUTO_TRACE_EXIT("result={}",false);
+      return false;
     }
 
     // determine the indent of line -2
@@ -2536,7 +2536,7 @@ static bool isCodeBlock(std::string_view data, size_t offset,size_t &indent)
     if (nl==1 && !isEmptyLine(std::string_view(data.data()-offset,offset-1)))
     {
       AUTO_TRACE_EXIT("result=false");
-      return FALSE;
+      return false;
     }
     //printf(">isCodeBlock global indent %d>=%d+4=%d nl=%d\n",
     //    indent0,indent,indent0>=indent+4,nl);
@@ -2602,7 +2602,7 @@ static size_t findTableColumns(std::string_view data,size_t &start,size_t &end,s
   return eol;
 }
 
-/** Returns TRUE iff data points to the start of a table block */
+/** Returns true iff data points to the start of a table block */
 static bool isTableBlock(std::string_view data)
 {
   AUTO_TRACE("data='{}'",Trace::trunc(data));
@@ -2613,7 +2613,7 @@ static bool isTableBlock(std::string_view data)
   if (i>=data.size() || cc0<1)
   {
     AUTO_TRACE_EXIT("result=false: no |'s in the header");
-    return FALSE;
+    return false;
   }
 
   size_t cc1 = 0;
@@ -2625,14 +2625,14 @@ static bool isTableBlock(std::string_view data)
     if (data[j]!=':' && data[j]!='-' && data[j]!='|' && data[j]!=' ')
     {
       AUTO_TRACE_EXIT("result=false: invalid character '{}'",data[j]);
-      return FALSE; // invalid characters in table separator
+      return false; // invalid characters in table separator
     }
     j++;
   }
   if (cc1!=cc0) // number of columns should be same as previous line
   {
     AUTO_TRACE_EXIT("result=false: different number of columns as previous line {}!={}",cc1,cc0);
-    return FALSE;
+    return false;
   }
 
   i+=ret; // goto next line
@@ -2665,21 +2665,21 @@ size_t Markdown::Private::writeTableBlock(std::string_view data)
   {
     if (!startFound)
     {
-      if (data[j]==':') { leftMarker=TRUE; startFound=TRUE; }
-      if (data[j]=='-') startFound=TRUE;
+      if (data[j]==':') { leftMarker=true; startFound=true; }
+      if (data[j]=='-') startFound=true;
       //printf("  data[%d]=%c startFound=%d\n",j,data[j],startFound);
     }
-    if      (data[j]=='-') rightMarker=FALSE;
-    else if (data[j]==':') rightMarker=TRUE;
+    if      (data[j]=='-') rightMarker=false;
+    else if (data[j]==':') rightMarker=true;
     if (j<=end+i && (data[j]=='|' && (j==0 || data[j-1]!='\\')))
     {
       if (k<columns)
       {
         columnAlignment[k] = markersToAlignment(leftMarker,rightMarker);
         //printf("column[%d] alignment=%d\n",k,columnAlignment[k]);
-        leftMarker=FALSE;
-        rightMarker=FALSE;
-        startFound=FALSE;
+        leftMarker=false;
+        rightMarker=false;
+        startFound=false;
       }
       k++;
     }
@@ -2872,7 +2872,7 @@ void Markdown::Private::writeOneLineHeaderOrRuler(std::string_view data)
   {
     out+="<hr>\n";
   }
-  else if ((level=isAtxHeader(data,header,id,TRUE)))
+  else if ((level=isAtxHeader(data,header,id,true)))
   {
     QCString hTag;
     if (!id.isEmpty())
@@ -3534,7 +3534,7 @@ QCString Markdown::Private::processBlocks(std::string_view data,const size_t ind
           i++;
         }
       }
-      else if ((level=isHeaderline(data.substr(i),TRUE))>0)
+      else if ((level=isHeaderline(data.substr(i),true))>0)
       {
         //printf("Found header at %d-%d\n",i,end);
         while (pi<data.size() && data[pi]==' ') pi++;
@@ -3711,7 +3711,7 @@ QCString Markdown::extractPageTitle(QCString &docs, QCString &id, int &prepend, 
     // second line form end1..end2
     size_t end2=end1+1;
     while (end2<size && data[end2-1]!='\n') end2++;
-    if (prv->isHeaderline(data.substr(end1),FALSE))
+    if (prv->isHeaderline(data.substr(end1),false))
     {
       title = data.substr(i,end1-i-1);
       docs+="\n\n"+docs_org.mid(end2);
@@ -3721,7 +3721,7 @@ QCString Markdown::extractPageTitle(QCString &docs, QCString &id, int &prepend, 
       return title;
     }
   }
-  if (i<end1 && prv->isAtxHeader(data.substr(i,end1-i),title,id,FALSE,&isIdGenerated)>0)
+  if (i<end1 && prv->isAtxHeader(data.substr(i,end1-i),title,id,false,&isIdGenerated)>0)
   {
     docs+="\n";
     docs+=docs_org.mid(end1);
@@ -3940,9 +3940,9 @@ void MarkdownOutlineParser::parseInput(const QCString &fileName,
         processedDocs,
         fileName,
         lineNr,
-        FALSE,     // isBrief
-        FALSE,     // javadoc autobrief
-        FALSE,     // inBodyDocs
+        false,     // isBrief
+        false,     // javadoc autobrief
+        false,     // inBodyDocs
         prot,      // protection
         position,
         needsEntry,

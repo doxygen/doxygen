@@ -111,7 +111,7 @@ static void findXRefSymbols(FileDef *fd)
 
   // parse the source code
   intf->parseCode(parseList, QCString(), fileToString(fd->absFilePath()), lang,
-                  FALSE, CodeParserOptions().setFileDef(fd));
+                  false, CodeParserOptions().setFileDef(fd));
 }
 
 static bool ignoreStaticExternalCall(const MemberDef *context, const MemberDef *md) {
@@ -461,29 +461,29 @@ int main(int argc,char **argv) {
 
   Config_updateString(OUTPUT_DIRECTORY,tmpdir.str().c_str());
   // enable HTML (fake) output to omit warning about missing output format
-  Config_updateBool(GENERATE_HTML,TRUE);
+  Config_updateBool(GENERATE_HTML,true);
   // disable latex output
-  Config_updateBool(GENERATE_LATEX,FALSE);
+  Config_updateBool(GENERATE_LATEX,false);
   // be quiet
-  Config_updateBool(QUIET,TRUE);
+  Config_updateBool(QUIET,true);
   // turn off warnings
-  Config_updateBool(WARNINGS,FALSE);
-  Config_updateBool(WARN_IF_UNDOCUMENTED,FALSE);
-  Config_updateBool(WARN_IF_DOC_ERROR,FALSE);
-  Config_updateBool(WARN_IF_UNDOC_ENUM_VAL,FALSE);
+  Config_updateBool(WARNINGS,false);
+  Config_updateBool(WARN_IF_UNDOCUMENTED,false);
+  Config_updateBool(WARN_IF_DOC_ERROR,false);
+  Config_updateBool(WARN_IF_UNDOC_ENUM_VAL,false);
   // Extract as much as possible
-  Config_updateBool(EXTRACT_ALL,TRUE);
-  Config_updateBool(EXTRACT_STATIC,TRUE);
-  Config_updateBool(EXTRACT_PRIVATE,TRUE);
-  Config_updateBool(EXTRACT_LOCAL_METHODS,TRUE);
-  Config_updateBool(EXTRACT_PACKAGE,TRUE);
+  Config_updateBool(EXTRACT_ALL,true);
+  Config_updateBool(EXTRACT_STATIC,true);
+  Config_updateBool(EXTRACT_PRIVATE,true);
+  Config_updateBool(EXTRACT_LOCAL_METHODS,true);
+  Config_updateBool(EXTRACT_PACKAGE,true);
   // Extract source browse information, needed
   // to make doxygen gather the cross reference info
-  Config_updateBool(SOURCE_BROWSER,TRUE);
+  Config_updateBool(SOURCE_BROWSER,true);
   // find functions call between modules
-  Config_updateBool(CALL_GRAPH,TRUE);
+  Config_updateBool(CALL_GRAPH,true);
   // loop recursive over input files
-  Config_updateBool(RECURSIVE,TRUE);
+  Config_updateBool(RECURSIVE,true);
   // add file extensions
   Config_updateList(FILE_PATTERNS, { "*.cc", "*.cxx", "*.cpp", "*.java",
                                      "*.py", "*.pyw", "*.cs", "*.c", "*.h", "*.hh", "*.hpp"});

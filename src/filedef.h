@@ -117,7 +117,7 @@ class FileDef : public DefinitionMutable, public Definition
     /*! Returns the name as it is used in the documentation */
     virtual const QCString &docName() const = 0;
 
-    /*! Returns TRUE if this file is a source file. */
+    /*! Returns true if this file is a source file. */
     virtual bool isSource() const = 0;
 
     virtual bool isDocumentationFile() const = 0;

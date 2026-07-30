@@ -31,7 +31,7 @@ class DefinitionImpl
         Definition *def,
         const QCString &defFileName,int defLine,int defColumn,
         const QCString &name,const char *b=nullptr,const char *d=nullptr,
-        bool isSymbol=TRUE);
+        bool isSymbol=true);
     ~DefinitionImpl();
     DefinitionImpl(const DefinitionImpl &d);
     DefinitionImpl &operator=(const DefinitionImpl &d);
@@ -48,7 +48,7 @@ class DefinitionImpl
     QCString documentation() const;
     int docLine() const;
     QCString docFile() const;
-    QCString briefDescription(bool abbreviate=FALSE) const;
+    QCString briefDescription(bool abbreviate=false) const;
     QCString briefDescriptionAsTooltip() const;
     int briefLine() const;
     QCString inbodyDocumentation() const;
@@ -90,7 +90,7 @@ class DefinitionImpl
     void setName(const QCString &name);
     void setId(const QCString &name);
     void setDefFile(const QCString& df,int defLine,int defColumn);
-    void setDocumentation(const QCString &d,const QCString &docFile,int docLine,bool stripWhiteSpace=TRUE);
+    void setDocumentation(const QCString &d,const QCString &docFile,int docLine,bool stripWhiteSpace=true);
     void setBriefDescription(const QCString &b,const QCString &briefFile,int briefLine);
     void setInbodyDocumentation(const QCString &d,const QCString &docFile,int docLine);
     void setReference(const QCString &r);
@@ -156,14 +156,14 @@ class DefinitionMixin : public Base
     DefinitionMixin(
         const QCString &defFileName,int defLine,int defColumn,
         const QCString &name,const char *b=nullptr,const char *d=nullptr,
-        bool isSymbol=TRUE) : m_impl(this,defFileName,defLine,defColumn,name,b,d,isSymbol) {}
+        bool isSymbol=true) : m_impl(this,defFileName,defLine,defColumn,name,b,d,isSymbol) {}
     DefinitionMixin(const DefinitionMixin &other) : Base(other), m_impl(other.m_impl) {}
     DefinitionMixin &operator=(const DefinitionMixin &other) { if (this!=&other) { m_impl = other.m_impl; }; return *this; }
     DefinitionMixin(DefinitionMixin &&) = delete;
     DefinitionMixin &operator=(DefinitionMixin &&) = delete;
    ~DefinitionMixin() override = default;
 
-    bool isAlias() const override { return FALSE; }
+    bool isAlias() const override { return false; }
 
     //======== Definition
     const QCString &name() const override { return m_impl.name(); }
@@ -176,7 +176,7 @@ class DefinitionMixin : public Base
     QCString documentation() const override { return m_impl.documentation(); }
     int docLine() const override { return m_impl.docLine(); }
     QCString docFile() const override { return m_impl.docFile(); }
-    QCString briefDescription(bool abbreviate=FALSE) const override { return m_impl.briefDescription(abbreviate); }
+    QCString briefDescription(bool abbreviate=false) const override { return m_impl.briefDescription(abbreviate); }
     QCString briefDescriptionAsTooltip() const override { return m_impl.briefDescriptionAsTooltip(); }
     int briefLine() const override { return m_impl.briefLine(); }
     QCString inbodyDocumentation() const override { return m_impl.inbodyDocumentation(); }
@@ -221,7 +221,7 @@ class DefinitionMixin : public Base
     void setId(const QCString &name) override { m_impl.setId(name); }
     void setDefFile(const QCString& df,int defLine,int defColumn) override
     { m_impl.setDefFile(df,defLine,defColumn); }
-    void setDocumentation(const QCString &doc,const QCString &docFile,int docLine,bool stripWhiteSpace=TRUE) override
+    void setDocumentation(const QCString &doc,const QCString &docFile,int docLine,bool stripWhiteSpace=true) override
     { m_impl.setDocumentation(doc,docFile,docLine,stripWhiteSpace); }
     void setBriefDescription(const QCString &brief,const QCString &briefFile,int briefLine) override
     { m_impl.setBriefDescription(brief,briefFile,briefLine); }
@@ -343,7 +343,7 @@ class DefinitionAliasMixin : public Base
     void deinit() { m_impl.deinit(); }
 
 
-    bool isAlias() const override { return TRUE; }
+    bool isAlias() const override { return true; }
 
     //======== Definition
     const QCString &name() const override
@@ -366,7 +366,7 @@ class DefinitionAliasMixin : public Base
     { return m_alias->docLine(); }
     QCString docFile() const override
     { return m_alias->docFile(); }
-    QCString briefDescription(bool abbreviate=FALSE) const override
+    QCString briefDescription(bool abbreviate=false) const override
     { return m_alias->briefDescription(abbreviate); }
     QCString briefDescriptionAsTooltip() const override
     { return m_alias->briefDescriptionAsTooltip(); }

@@ -57,10 +57,10 @@ namespace Config
   void init();
 
   /*! Writes a template configuration to stream \a t. If \a shortList
-   *  is \c TRUE the description of each configuration option will
+   *  is \c true the description of each configuration option will
    *  be omitted.
    */
-  void writeTemplate(TextStream &t,bool shortList,bool updateOnly=FALSE);
+  void writeTemplate(TextStream &t,bool shortList,bool updateOnly=false);
 
   /*! Writes a the differences between the current configuration and the
    *  template configuration to stream \a t.
@@ -78,14 +78,14 @@ namespace Config
   void writeXSDDoxyfile(TextStream &t);
 
   /*! Parses a configuration file with name \a fn.
-   *  \returns TRUE if successful, FALSE if the file could not be
+   *  \returns true if successful, false if the file could not be
    *  opened or read.
    */
-  bool parse(const QCString &fileName,bool update=FALSE, CompareMode compareMode = CompareMode::Full);
+  bool parse(const QCString &fileName,bool update=false, CompareMode compareMode = CompareMode::Full);
 
   /*! Post processed the parsed data. Replaces raw string values by the actual values.
    *  and replaces environment variables.
-   *  \param clearHeaderAndFooter set to TRUE when writing header and footer templates.
+   *  \param clearHeaderAndFooter set to true when writing header and footer templates.
    *  \param compareMode signals if we in Doxyfile compare (`-x` or `-x_noenv`) mode are or not.
    *   Influences setting of the default value and replacement of environment variables and CMake type replacement variables.
    */

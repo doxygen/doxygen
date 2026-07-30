@@ -170,7 +170,7 @@ void ConfigOption::writeStringValue(TextStream &t,const QCString &s,bool initSpa
 
 void ConfigOption::writeStringList(TextStream &t,const StringVector &l)
 {
-  bool first=TRUE;
+  bool first=true;
   for (const auto &p : l)
   {
     if (!first) t << " \\\n";
@@ -183,7 +183,7 @@ void ConfigOption::writeStringList(TextStream &t,const StringVector &l)
       s = s.mid(1,s.length()-2);
     }
     writeStringValue(t,s,true,wasQuoted);
-    first=FALSE;
+    first=false;
   }
 }
 
@@ -416,7 +416,7 @@ bool ConfigList::isDefault()
 
 void ConfigList::compareDoxyfile(TextStream &t, Config::CompareMode)
 {
-  if (!isDefault()) writeTemplate(t,TRUE,TRUE);
+  if (!isDefault()) writeTemplate(t,true,true);
 }
 
 void ConfigList::writeXMLDoxyfile(TextStream &t)
@@ -462,7 +462,7 @@ void ConfigEnum::writeTemplate(TextStream &t,bool sl,bool)
 
 void ConfigEnum::compareDoxyfile(TextStream &t, Config::CompareMode)
 {
-  if (!isDefault()) writeTemplate(t,TRUE,TRUE);
+  if (!isDefault()) writeTemplate(t,true,true);
 }
 
 void ConfigEnum::writeXMLDoxyfile(TextStream &t)
@@ -501,7 +501,7 @@ void ConfigString::writeTemplate(TextStream &t,bool sl,bool)
 
 void ConfigString::compareDoxyfile(TextStream &t, Config::CompareMode)
 {
-  if (!isDefault()) writeTemplate(t,TRUE,TRUE);
+  if (!isDefault()) writeTemplate(t,true,true);
 }
 
 void ConfigString::writeXMLDoxyfile(TextStream &t)
@@ -549,7 +549,7 @@ void ConfigInt::writeTemplate(TextStream &t,bool sl,bool upd)
 
 void ConfigInt::compareDoxyfile(TextStream &t,Config::CompareMode compareMode)
 {
-  if (!isDefault() || ((compareMode == Config::CompareMode::CompressedNoEnv) && containsEnvVar(m_valueString))) writeTemplate(t,TRUE,TRUE);
+  if (!isDefault() || ((compareMode == Config::CompareMode::CompressedNoEnv) && containsEnvVar(m_valueString))) writeTemplate(t,true,true);
 }
 
 void ConfigInt::writeXMLDoxyfile(TextStream &t)
@@ -596,7 +596,7 @@ void ConfigBool::writeTemplate(TextStream &t,bool sl,bool upd)
 
 void ConfigBool::compareDoxyfile(TextStream &t,Config::CompareMode compareMode)
 {
-  if (!isDefault() || ((compareMode == Config::CompareMode::CompressedNoEnv) && containsEnvVar(m_valueString))) writeTemplate(t,TRUE,TRUE);
+  if (!isDefault() || ((compareMode == Config::CompareMode::CompressedNoEnv) && containsEnvVar(m_valueString))) writeTemplate(t,true,true);
 }
 
 void ConfigBool::writeXMLDoxyfile(TextStream &t)
@@ -648,7 +648,7 @@ static StringVector     *g_list = nullptr;
 static QCString          g_listStr;
 static StringVector      g_includePathList;
 static std::vector< std::unique_ptr<ConfigFileState> > g_includeStack;
-static bool              g_configUpdate = FALSE;
+static bool              g_configUpdate = false;
 static QCString          g_encoding;
 static ConfigImpl       *g_config = nullptr;
 static Config::CompareMode g_compareMode = Config::CompareMode::Full;
@@ -1621,9 +1621,9 @@ bool ConfigImpl::parseString(const QCString &fn,const QCString &str,bool update)
   BEGIN( Start );
   g_configUpdate = update;
   configimplYYlex();
-  g_configUpdate = FALSE;
+  g_configUpdate = false;
   g_inputString = 0;
-  return TRUE;
+  return true;
 }
 
 bool ConfigImpl::parse(const QCString &fn,bool update)
@@ -1957,29 +1957,29 @@ void Config::checkAndCorrect(bool quiet, const bool check)
 
   //------------------------
   // check EXTENSION_MAPPING
-  checkList(Config_getList(EXTENSION_MAPPING),"EXTENSION_MAPPING",TRUE,TRUE);
+  checkList(Config_getList(EXTENSION_MAPPING),"EXTENSION_MAPPING",true,true);
 
   //------------------------
   // check FILTER_PATTERNS
-  checkList(Config_getList(FILTER_PATTERNS),"FILTER_PATTERNS",TRUE,TRUE);
+  checkList(Config_getList(FILTER_PATTERNS),"FILTER_PATTERNS",true,true);
 
   //------------------------
   // check FILTER_SOURCE_PATTERNS
-  checkList(Config_getList(FILTER_SOURCE_PATTERNS),"FILTER_SOURCE_PATTERNS",FALSE,FALSE);
+  checkList(Config_getList(FILTER_SOURCE_PATTERNS),"FILTER_SOURCE_PATTERNS",false,false);
 
   //------------------------
   // check INPUT_FILE_ENCODING
-  checkList(Config_getList(INPUT_FILE_ENCODING),"INPUT_FILE_ENCODING",TRUE,TRUE);
+  checkList(Config_getList(INPUT_FILE_ENCODING),"INPUT_FILE_ENCODING",true,true);
 
   //------------------------
   // check TAGFILES
-  checkList(Config_getList(TAGFILES),"TAGFILES",FALSE,TRUE);
+  checkList(Config_getList(TAGFILES),"TAGFILES",false,true);
 
   //------------------------
   // check EXTRA_SEARCH_MAPPINGS
   if (Config_getBool(SEARCHENGINE) && Config_getBool(GENERATE_HTML))
   {
-    checkList(Config_getList(EXTRA_SEARCH_MAPPINGS),"EXTRA_SEARCH_MAPPING",TRUE,TRUE);
+    checkList(Config_getList(EXTRA_SEARCH_MAPPINGS),"EXTRA_SEARCH_MAPPING",true,true);
   }
 
   int numThreads = Config_getInt(NUM_PROC_THREADS);
@@ -2091,7 +2091,7 @@ void Config::checkAndCorrect(bool quiet, const bool check)
     }
     else
     {
-      diaPath=dp.dirPath(TRUE)+"/";
+      diaPath=dp.dirPath(true)+"/";
 #if defined(_WIN32) // convert slashes
       size_t i=0,l=diaPath.length();
       for (i=0;i<l;i++) if (diaPath.at(i)=='/') diaPath.at(i)='\\';
@@ -2186,7 +2186,7 @@ void Config::checkAndCorrect(bool quiet, const bool check)
   {
     // don't show inline info for Java output, since Java has no inline
     // concept.
-    Config_updateBool(INLINE_INFO,FALSE);
+    Config_updateBool(INLINE_INFO,false);
   }
 
   //------------------------
@@ -2205,7 +2205,7 @@ void Config::checkAndCorrect(bool quiet, const bool check)
     {
       err("When using DOT_IMAGE_FORMAT with {} the INTERACTIVE_SVG option should be disabled. I'll adjust it for you.\n",
           Config_getEnumAsString(DOT_IMAGE_FORMAT));
-      Config_updateBool(INTERACTIVE_SVG,FALSE);
+      Config_updateBool(INTERACTIVE_SVG,false);
     }
   }
 
@@ -2237,12 +2237,12 @@ void Config::checkAndCorrect(bool quiet, const bool check)
     {
       ConfigOption * dep = Config::instance()->get(depName);
       if (dep->kind()==ConfigOption::O_Bool &&
-          ConfigImpl_getBool("depName")==FALSE) // dependent option is disabled
+          ConfigImpl_getBool("depName")==false) // dependent option is disabled
       {
         if (option->kind()==ConfigOption::O_Bool)
         {
           printf("disabling option %s\n",qPrint(option->name()));
-          ConfigImpl_getBool("option->name("))=FALSE; // also disable this option
+          ConfigImpl_getBool("option->name("))=false; // also disable this option
         }
       }
     }
@@ -2363,7 +2363,7 @@ void Config::writeTemplate(TextStream &t,bool shortList,bool update)
 
 void Config::compareDoxyfile(TextStream &t,Config::CompareMode compareMode)
 {
-  postProcess(FALSE, compareMode);
+  postProcess(false, compareMode);
   ConfigImpl::instance()->compareDoxyfile(t, compareMode);
 }
 

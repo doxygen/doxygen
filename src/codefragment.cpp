@@ -277,7 +277,7 @@ void CodeFragmentManager::parseCodeFragment(OutputCodeList & codeOutList,
     bool needs2PassParsing =
         Doxygen::parseSourcesNeeded &&                // we need to parse (filtered) sources for cross-references
         !filterSourceFiles &&                         // but user wants to show sources as-is
-        !getFileFilter(fileName,TRUE).isEmpty();     // and there is a filter used while parsing
+        !getFileFilter(fileName,true).isEmpty();     // and there is a filter used while parsing
     codeFragment->fileContents = readTextFileByName(fileName);
     //printf("fileContents=[%s]\n",qPrint(codeFragment->fileContents));
     if (needs2PassParsing)

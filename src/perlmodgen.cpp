@@ -381,7 +381,7 @@ class PerlModDocVisitor final : public DocVisitor
 };
 
 PerlModDocVisitor::PerlModDocVisitor(PerlModOutput &output)
-  : m_output(output), m_textmode(false), m_textblockstart(FALSE)
+  : m_output(output), m_textmode(false), m_textblockstart(false)
 {
   m_output.openList("doc");
 }
@@ -559,7 +559,7 @@ void PerlModDocVisitor::operator()(const DocSymbol &sy)
   }
   else
   {
-    err("perl: non supported HTML-entity found: {}\n",HtmlEntityMapper::instance().html(sy.symbol(),TRUE));
+    err("perl: non supported HTML-entity found: {}\n",HtmlEntityMapper::instance().html(sy.symbol(),true));
   }
 }
 
@@ -632,7 +632,7 @@ void PerlModDocVisitor::operator()(const DocVerbatim &s)
     case DocVerbatim::Code:
 #if 0
       m_output.add("<programlisting>");
-      parseCode(m_ci,s->context(),s->text(),FALSE,0);
+      parseCode(m_ci,s->context(),s->text(),false,0);
       m_output.add("</programlisting>");
       return;
 #endif
@@ -706,7 +706,7 @@ void PerlModDocVisitor::operator()(const DocIncOperator &)
   }
   if (op.type()!=DocIncOperator::Skip)
   {
-    parseCode(m_ci,op.context(),op.text(),FALSE,0);
+    parseCode(m_ci,op.context(),op.text(),false,0);
   }
   if (op.isLast())
   {

@@ -53,7 +53,7 @@ struct FTVNode
   FTVNode(bool dir,const QCString &r,const QCString &f,const QCString &a,
           const QCString &n,bool sepIndex,bool navIndex,const Definition *df,
           const QCString &nameAsHtml_)
-    : isLast(TRUE), isDir(dir), ref(r), file(f), anchor(a), name(n), nameAsHtml(nameAsHtml_),
+    : isLast(true), isDir(dir), ref(r), file(f), anchor(a), name(n), nameAsHtml(nameAsHtml_),
       separateIndex(sepIndex), addToNavIndex(navIndex), def(df) {}
   int computeTreeDepth(int level) const;
   int numNodesAtLevel(int level,int maxLevel) const;
@@ -173,7 +173,7 @@ void FTVHelp::decContentsDepth()
 }
 
 /*! Add a list item to the contents file.
- *  \param isDir TRUE if the item is a directory, FALSE if it is a text
+ *  \param isDir true if the item is a directory, false if it is a text
  *  \param name the name of the item.
  *  \param nameAsHtml the name of the item in HTML format.
  *  \param ref  the URL of to the item.
@@ -198,7 +198,7 @@ void FTVHelp::addContentsItem(bool isDir,
   auto &nl = p->indentNodes[p->indent];
   if (!nl.empty())
   {
-    nl.back()->isLast=FALSE;
+    nl.back()->isLast=false;
   }
   auto newNode = std::make_shared<FTVNode>(isDir,ref,file,anchor,name,separateIndex,addToNavIndex,def,nameAsHtml);
   nl.push_back(newNode);
@@ -213,7 +213,7 @@ void FTVHelp::addContentsItem(bool isDir,
   }
 }
 
-static QCString node2URL(const FTVNodePtr &n,bool overruleFile=FALSE,bool srcLink=FALSE)
+static QCString node2URL(const FTVNodePtr &n,bool overruleFile=false,bool srcLink=false)
 {
   QCString url = n->file;
   if (!url.isEmpty() && url.at(0)=='!')  // relative URL
@@ -282,7 +282,7 @@ void FTVHelp::Private::generateLink(TextStream &t,const FTVNodePtr &n)
 {
   //printf("FTVHelp::generateLink(ref=%s,file=%s,anchor=%s\n",
   //    qPrint(n->ref),qPrint(n->file),qPrint(n->anchor));
-  bool setTarget = FALSE;
+  bool setTarget = false;
   bool nameAsHtml = !n->nameAsHtml.isEmpty();
   QCString text = nameAsHtml ? n->nameAsHtml : convertToHtml(n->name);
   if (n->file.isEmpty()) // no link
@@ -295,7 +295,7 @@ void FTVHelp::Private::generateLink(TextStream &t,const FTVNodePtr &n)
     {
       t << "<a class=\"elRef\" ";
       QCString result = externalLinkTarget();
-      if (result != "") setTarget = TRUE;
+      if (result != "") setTarget = true;
       t << result;
     }
     else // local link
@@ -303,7 +303,7 @@ void FTVHelp::Private::generateLink(TextStream &t,const FTVNodePtr &n)
       t << "<a class=\"el\" ";
     }
     t << "href=\"";
-    t << externalRef("",n->ref,TRUE);
+    t << externalRef("",n->ref,true);
     t << node2URL(n);
     if (!setTarget)
     {
@@ -327,7 +327,7 @@ void FTVHelp::Private::generateLink(TextStream &t,const FTVNodePtr &n)
 
 static void generateBriefDoc(TextStream &t,const Definition *def)
 {
-  QCString brief = def->briefDescription(TRUE);
+  QCString brief = def->briefDescription(true);
   //printf("*** %p: generateBriefDoc(%s)='%s'\n",def,qPrint(def->name()),qPrint(brief));
   if (!brief.isEmpty())
   {
@@ -547,9 +547,9 @@ static QCString pathToNode(const FTVNodePtr &leaf,const FTVNodePtr &n)
 static bool dupOfParent(const FTVNodePtr &n)
 {
   auto parent = n->parent.lock();
-  if (!parent) return FALSE;
-  if (n->file==parent->file) return TRUE;
-  return FALSE;
+  if (!parent) return false;
+  if (n->file==parent->file) return true;
+  return false;
 }
 
 static void generateJSLink(TextStream &t,const FTVNodePtr &n)
@@ -564,7 +564,7 @@ static void generateJSLink(TextStream &t,const FTVNodePtr &n)
   else // link into other page
   {
     t << "\"" << link << "\", \"";
-    t << externalRef("",n->ref,TRUE);
+    t << externalRef("",n->ref,true);
     t << node2URL(n);
     t << "\", ";
   }
@@ -620,19 +620,19 @@ static bool generateJSTree(NavIndexEntryList &navIndex,TextStream &t,
   QCString indentStr;
   indentStr.fill(' ',level*2);
 
-  bool found=FALSE;
+  bool found=false;
   for (const auto &n : nl)
   {
     // terminate previous entry
     if (!first) t << ",\n";
-    first=FALSE;
+    first=false;
 
     // start entry
     if (!found)
     {
       t << "[\n";
     }
-    found=TRUE;
+    found=true;
 
     if (n->addToNavIndex) // add entry to the navigation index
     {
@@ -644,11 +644,11 @@ static bool generateJSTree(NavIndexEntryList &navIndex,TextStream &t,
         bool doc = fileVisibleInIndex(fd,src);
         if (doc)
         {
-          navIndex.emplace_back(node2URL(n,TRUE,FALSE),pathToNode(n,n));
+          navIndex.emplace_back(node2URL(n,true,false),pathToNode(n,n));
         }
         if (src)
         {
-          navIndex.emplace_back(node2URL(n,TRUE,TRUE),pathToNode(n,n));
+          navIndex.emplace_back(node2URL(n,true,true),pathToNode(n,n));
         }
       }
       else
@@ -681,7 +681,7 @@ static bool generateJSTree(NavIndexEntryList &navIndex,TextStream &t,
     }
     else // show items in this file
     {
-      bool firstChild=TRUE;
+      bool firstChild=true;
       t << indentStr << "  [ ";
       generateJSLink(t,n);
       bool emptySection = !generateJSTree(navIndex,t,n->children,level+1,firstChild);
@@ -784,7 +784,7 @@ static void generateJSNavTree(const FTVNodes &nodeList)
     // related page index is written as a child of index.html, so add this as well
     navIndex.emplace_back("pages"+Doxygen::htmlFileExtension,"");
 
-    bool first=TRUE;
+    bool first=true;
     generateJSTree(navIndex,t,nodeList,1,first);
     generateJSTreeFiles(navIndex,t,nodeList);
 
@@ -808,7 +808,7 @@ static void generateJSNavTree(const FTVNodes &nodeList)
       t << "[\n";
       tsidx << "var NAVTREEINDEX" << subIndex << " =\n";
       tsidx << "{\n";
-      first=TRUE;
+      first=true;
       auto it = navIndex.begin();
       while (it!=navIndex.end())
       {
@@ -821,7 +821,7 @@ static void generateJSNavTree(const FTVNodes &nodeList)
           }
           else
           {
-            first=FALSE;
+            first=false;
           }
           t << "\"" << e.url << "\"";
         }
@@ -847,8 +847,8 @@ static void generateJSNavTree(const FTVNodes &nodeList)
       tsidx << "};\n";
       t << "\n];\n";
     }
-    t << "\nconst SYNCONMSG = '"  << theTranslator->trPanelSynchronisationTooltip(FALSE) << "';";
-    t << "\nconst SYNCOFFMSG = '" << theTranslator->trPanelSynchronisationTooltip(TRUE)  << "';";
+    t << "\nconst SYNCONMSG = '"  << theTranslator->trPanelSynchronisationTooltip(false) << "';";
+    t << "\nconst SYNCOFFMSG = '" << theTranslator->trPanelSynchronisationTooltip(true)  << "';";
     t << "\nconst LISTOFALLMEMBERS = '" << theTranslator->trListOfAllMembers() << "';";
   }
 

@@ -36,9 +36,9 @@ class DotDirDeps final : public DotGraph
                         const QCString &path,
                         const QCString &fileName,
                         const QCString &relPath,
-                        bool writeImageMap=TRUE,
+                        bool writeImageMap=true,
                         int graphId=-1,
-                        bool linkRelations=TRUE);
+                        bool linkRelations=true);
 
   protected:
     QCString getBaseName() const override;

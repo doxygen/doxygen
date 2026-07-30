@@ -109,7 +109,7 @@ static bool resetPDFSize(const int width,const int height, const QCString &base)
   if (!thisDir.rename(patchFile.str(),tmpName.str()))
   {
     err("Failed to rename file {} to {}!\n",patchFile,tmpName);
-    return FALSE;
+    return false;
   }
   std::ifstream fi = Portable::openInputStream(tmpName);
   std::ofstream t  = Portable::openOutputStream(patchFile);
@@ -117,13 +117,13 @@ static bool resetPDFSize(const int width,const int height, const QCString &base)
   {
     err("problem opening file {} for patching!\n",tmpName);
     thisDir.rename(tmpName.str(),patchFile.str());
-    return FALSE;
+    return false;
   }
   if (!t.is_open())
   {
     err("problem opening file {} for patching!\n",patchFile);
     thisDir.rename(tmpName.str(),patchFile.str());
-    return FALSE;
+    return false;
   }
   std::string line;
   while (getline(fi,line)) // foreach line
@@ -140,7 +140,7 @@ static bool resetPDFSize(const int width,const int height, const QCString &base)
   t.close();
   // remove temporary file
   thisDir.remove(tmpName.str());
-  return TRUE;
+  return true;
 }
 
 bool DotRunner::readBoundingBox(const QCString &fileName,int *width,int *height,bool isEps)
@@ -277,7 +277,7 @@ DotRunner::DotRunner()
 
 bool DotRunner::run(const DotJobs &dotJobs)
 {
-  if (dotJobs.empty()) return TRUE;
+  if (dotJobs.empty()) return true;
 
   // Group jobs by format, then by directory so we can cd once per group
   std::map<std::string, std::map<std::string, std::vector<const DotJob*>>> byFormatAndDir;
@@ -379,7 +379,7 @@ bool DotRunner::run(const DotJobs &dotJobs)
             }
             prev+=cmd.numDotFiles;
             int exitCode;
-            if ((exitCode = Portable::system(m_dotExe, cmd.arguments, FALSE)) != 0)
+            if ((exitCode = Portable::system(m_dotExe, cmd.arguments, false)) != 0)
             {
               err_full(cmd.firstJob->srcFile, 1,
                   "Problems running dot: exit code={}, command='{}', dir='{}', arguments='{}'",
@@ -401,7 +401,7 @@ bool DotRunner::run(const DotJobs &dotJobs)
             auto process = [this,cmd,locDirStr]() -> size_t
             {
               int exitCode;
-              if ((exitCode = Portable::system(m_dotExe, cmd.arguments, FALSE)) != 0)
+              if ((exitCode = Portable::system(m_dotExe, cmd.arguments, false)) != 0)
               {
                 err_full(cmd.firstJob->srcFile, 1,
                     "Problems running dot: exit code={}, command='{}', dir='{}', arguments='{}'",
@@ -457,7 +457,7 @@ bool DotRunner::run(const DotJobs &dotJobs)
         if (format.startsWith("pdf"))
         {
           int width=0, height=0;
-          if (!readBoundingBox(output, &width, &height, FALSE))
+          if (!readBoundingBox(output, &width, &height, false))
           {
             ok = false;
             continue;
@@ -472,7 +472,7 @@ bool DotRunner::run(const DotJobs &dotJobs)
             // Re-run dot for just this one file
             QCString rerunArgs = QCString("-T") + format + " -O \"" + job->relDotName + "\"";
             int exitCode;
-            if ((exitCode = Portable::system(m_dotExe, rerunArgs, FALSE)) != 0)
+            if ((exitCode = Portable::system(m_dotExe, rerunArgs, false)) != 0)
             {
               err_full(job->srcFile, 1,
                        "Problems running dot: exit code={}, command='{}', dir='{}', arguments='{}'",

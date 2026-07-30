@@ -71,7 +71,7 @@ struct VHDLOutlineParser::Private
 //-------------------------------------------------------
 
   Entry*                  oldEntry = nullptr;
-  bool                    varr = FALSE;
+  bool                    varr = false;
   QCString                varName;
   EntryList               libUse;
   EntryList               lineEntry;
@@ -149,12 +149,12 @@ void VHDLOutlineParser::parseInput(const QCString &fileName,const char *fileBuf,
 
   if (xilinx_ucf)
   {
-    VhdlDocGen::parseUCF(fileBuf,root.get(),p->yyFileName,FALSE);
+    VhdlDocGen::parseUCF(fileBuf,root.get(),p->yyFileName,false);
     return;
   }
   if (altera_qsf)
   {
-    VhdlDocGen::parseUCF(fileBuf,root.get(),p->yyFileName,TRUE);
+    VhdlDocGen::parseUCF(fileBuf,root.get(),p->yyFileName,true);
     return;
   }
   p->yyLineNr=1;
@@ -200,7 +200,7 @@ void VHDLOutlineParser::initEntry(Entry *e)
   e->lang     = SrcLangExt::VHDL;
   if (p->str_doc.pending)
   {
-    p->str_doc.pending=FALSE;
+    p->str_doc.pending=false;
     p->oldEntry=nullptr; // prevents endless recursion
     p->iDocLine=p->str_doc.iDocLine;
     handleCommentBlock(p->str_doc.doc,p->str_doc.brief);
@@ -384,7 +384,7 @@ int VHDLOutlineParser::checkInlineCode(QCString &doc)
 void VHDLOutlineParser::handleCommentBlock(const QCString &doc1, bool brief)
 {
   int position = 0;
-  bool needsEntry = FALSE;
+  bool needsEntry = false;
   VhdlParser::SharedState *s = &p->shared;
   QCString doc = doc1;
 
@@ -411,7 +411,7 @@ void VHDLOutlineParser::handleCommentBlock(const QCString &doc1, bool brief)
     p->str_doc.doc = doc;
     p->str_doc.iDocLine = p->iDocLine;
     p->str_doc.brief = brief;
-    p->str_doc.pending = TRUE;
+    p->str_doc.pending = true;
     return;
   }
 
@@ -441,7 +441,7 @@ void VHDLOutlineParser::handleCommentBlock(const QCString &doc1, bool brief)
       lineNr,       // line of block start
       brief,
       0,
-      FALSE,
+      false,
       protection,
       position,
       needsEntry,
@@ -456,7 +456,7 @@ void VHDLOutlineParser::handleCommentBlock(const QCString &doc1, bool brief)
   {
     if (p->varr)
     {
-      p->varr = FALSE;
+      p->varr = false;
       s->current->name = p->varName;
       s->current->section = EntryType::makeVariableDoc();
       p->varName = "";
@@ -470,7 +470,7 @@ void VHDLOutlineParser::handleCommentBlock(const QCString &doc1, bool brief)
 void VHDLOutlineParser::parsePrototype(const QCString &text)
 {
   p->varName=text;
-  p->varr=TRUE;
+  p->varr=true;
 }
 
 void VHDLOutlineParser::addCompInst(const QCString &n, const QCString &instName, const QCString &comp,int iLine)
@@ -606,9 +606,9 @@ bool VHDLOutlineParser::isFuncProcProced()
       s->currP==VhdlSpecifier::PROCESS
      )
   {
-    return TRUE;
+    return true;
   }
-  return FALSE;
+  return false;
 }
 
 void VHDLOutlineParser::pushLabel( QCString &label,QCString & val)
@@ -684,14 +684,14 @@ void VHDLOutlineParser::mapLibPackage( Entry* root)
   {
     if (addLibUseClause(rt->name))
     {
-      bool bFound=FALSE;
+      bool bFound=false;
       for (const auto &current : root->children())
       {
         if (VhdlDocGen::isVhdlClass(current.get()))
         {
           if (current->startLine > rt->startLine)
           {
-            bFound=TRUE;
+            bFound=true;
             current->copyToSubEntry(rt);
             break;
           }
@@ -711,10 +711,10 @@ bool VHDLOutlineParser::addLibUseClause(const QCString &type)
 
   if (showIEEESTD) // all standard packages and libraries will not be shown
   {
-    if (type.lower().stripPrefix("ieee")) return FALSE;
-    if (type.lower().stripPrefix("std")) return FALSE;
+    if (type.lower().stripPrefix("ieee")) return false;
+    if (type.lower().stripPrefix("std")) return false;
   }
-  return TRUE;
+  return true;
 }
 
 int VHDLOutlineParser::getLine()
@@ -798,7 +798,7 @@ void VHDLOutlineParser::oneLineComment(QCString qcs)
     qcs=qcs.right(qcs.length()-3-j);
     if (!checkMultiComment(qcs,p->iDocLine))
     {
-      handleCommentBlock(qcs,TRUE);
+      handleCommentBlock(qcs,true);
     }
 }
 

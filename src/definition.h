@@ -104,19 +104,19 @@ class Definition
     /*! Used for syntax highlighting symbol class */
     virtual CodeSymbolType codeSymbolType() const = 0;
 
-    /*! Returns TRUE if this is an alias of another definition */
+    /*! Returns true if this is an alias of another definition */
     virtual bool isAlias() const = 0;
 
     /*! Returns the name of the definition */
     virtual const QCString &name() const = 0;
 
-    /*! Returns TRUE iff this definition has an artificially generated name
+    /*! Returns true iff this definition has an artificially generated name
      * (typically starting with a @) that is used for nameless definitions
      */
     virtual bool isAnonymous() const = 0;
 
     /*! Returns the name of the definition as it appears in the output */
-    virtual QCString displayName(bool includeScope=TRUE) const = 0;
+    virtual QCString displayName(bool includeScope=true) const = 0;
 
     /*! Returns the local name without any scope qualifiers. */
     virtual const QCString &localName() const = 0;
@@ -155,7 +155,7 @@ class Definition
     virtual QCString docFile() const = 0;
 
     /*! Returns the brief description of this definition. This can include commands. */
-    virtual QCString briefDescription(bool abbreviate=FALSE) const = 0;
+    virtual QCString briefDescription(bool abbreviate=false) const = 0;
 
     /*! Returns a plain text version of the brief description suitable for use
      *  as a tool tip.
@@ -192,42 +192,42 @@ class Definition
     /*! returns the column number at which the definition was found */
     virtual int getDefColumn() const = 0;
 
-    /*! Returns TRUE iff the definition is documented
+    /*! Returns true iff the definition is documented
      *  (which could be generated documentation)
      *  @see hasUserDocumentation()
      */
     virtual bool hasDocumentation() const = 0;
 
-    /*! Returns TRUE iff the definition is documented by the user. */
+    /*! Returns true iff the definition is documented by the user. */
     virtual bool hasUserDocumentation() const = 0;
 
-    /*! Returns TRUE iff it is possible to link to this item within this
+    /*! Returns true iff it is possible to link to this item within this
      *  project.
      */
     virtual bool isLinkableInProject() const = 0;
 
-    /*! Returns TRUE iff it is possible to link to this item. This can
+    /*! Returns true iff it is possible to link to this item. This can
      *  be a link to another project imported via a tag file.
      */
     virtual bool isLinkable() const = 0;
 
-    /*! Returns TRUE iff the name is part of this project and
+    /*! Returns true iff the name is part of this project and
      *  may appear in the output
      */
     virtual bool isVisibleInProject() const = 0;
 
-    /*! Returns TRUE iff the name may appear in the output */
+    /*! Returns true iff the name may appear in the output */
     virtual bool isVisible() const = 0;
 
-    /*! Returns TRUE iff this item is supposed to be hidden from the output. */
+    /*! Returns true iff this item is supposed to be hidden from the output. */
     virtual bool isHidden() const = 0;
 
-    /*! Returns TRUE if this entity was artificially introduced, for
+    /*! Returns true if this entity was artificially introduced, for
      *  instance because it is used to show a template instantiation relation.
      */
     virtual bool isArtificial() const = 0;
 
-    /*! Returns TRUE iff this entity was exported from a C++20 module. */
+    /*! Returns true iff this entity was exported from a C++20 module. */
     virtual bool isExported() const = 0;
 
     /*! If this definition was imported via a tag file, this function
@@ -237,7 +237,7 @@ class Definition
      */
     virtual QCString getReference() const = 0;
 
-    /*! Returns TRUE if this definition is imported via a tag file. */
+    /*! Returns true if this definition is imported via a tag file. */
     virtual bool isReference() const = 0;
 
     /*! Convenience method to return a resolved external link */
@@ -281,7 +281,7 @@ class Definition
     virtual bool hasSources() const = 0;
 
 
-    /** returns TRUE if this class has a brief description */
+    /** returns true if this class has a brief description */
     virtual bool hasBriefDescription() const = 0;
 
     virtual QCString id() const = 0;
@@ -324,7 +324,7 @@ class DefinitionMutable
     virtual void setDefFile(const QCString& df,int defLine,int defColumn) = 0;
 
     /*! Sets the documentation of this definition to \a d. */
-    virtual void setDocumentation(const QCString &d,const QCString &docFile,int docLine,bool stripWhiteSpace=TRUE) = 0;
+    virtual void setDocumentation(const QCString &d,const QCString &docFile,int docLine,bool stripWhiteSpace=true) = 0;
 
     /*! Sets the brief description of this definition to \a b.
      *  A dot is added to the sentence if not available.
@@ -401,7 +401,7 @@ DefinitionMutable   *toDefinitionMutable(Definition *d);
 
 /** Reads a fragment from file \a fileName starting with line \a startLine
  *  and ending with line \a endLine. The result is returned as a string
- *  via \a result. The function returns TRUE if successful and FALSE
+ *  via \a result. The function returns true if successful and false
  *  in case of an error.
  */
 bool readCodeFragment(const QCString &fileName,bool isMacro,

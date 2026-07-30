@@ -125,10 +125,10 @@ struct SymbolModifiers
   QCString bindVar;
 
   SymbolModifiers() : type(), returnName(), protection(NONE_P), direction(NONE_D),
-    optional(FALSE), protect(FALSE), dimension(), allocatable(FALSE),
-    external(FALSE), intrinsic(FALSE), parameter(FALSE),
-    pointer(FALSE), target(FALSE), save(FALSE), deferred(FALSE), nonoverridable(FALSE),
-    nopass(FALSE), pass(FALSE), contiguous(FALSE), volat(FALSE), value(FALSE), passVar(),
+    optional(false), protect(false), dimension(), allocatable(false),
+    external(false), intrinsic(false), parameter(false),
+    pointer(false), target(false), save(false), deferred(false), nonoverridable(false),
+    nopass(false), pass(false), contiguous(false), volat(false), value(false), passVar(),
     bindVar() {}
 
   SymbolModifiers& operator|=(const SymbolModifiers &mdfs);
@@ -237,7 +237,7 @@ static void handleCommentBlock(yyscan_t yyscanner,const QCString &doc,bool brief
 static void subrHandleCommentBlock(yyscan_t yyscanner,const QCString &doc,bool brief);
 static void subrHandleCommentBlockResult(yyscan_t yyscanner,const QCString &doc,bool brief);
 static void addCurrentEntry(yyscan_t yyscanner,bool case_insens);
-static void addModule(yyscan_t yyscanner,const QCString &name=QCString(), bool isModule=FALSE);
+static void addModule(yyscan_t yyscanner,const QCString &name=QCString(), bool isModule=false);
 static void addSubprogram(yyscan_t yyscanner,const QCString &text);
 static void addInterface(yyscan_t yyscanner,QCString name, InterfaceType type);
 static Argument *getParameter(yyscan_t yyscanner,const QCString &name);
@@ -247,7 +247,7 @@ static void pushBlockState(yyscan_t yyscanner,const QCString &text);
 static void popBlockState(yyscan_t yyscanner);
 
 static void startScope(yyscan_t yyscanner,Entry *scope);
-static bool endScope(yyscan_t yyscanner,Entry *scope, bool isGlobalRoot=FALSE);
+static bool endScope(yyscan_t yyscanner,Entry *scope, bool isGlobalRoot=false);
 static void copyEntry(std::shared_ptr<Entry> dest, const std::shared_ptr<Entry> &src);
 static void resolveModuleProcedures(yyscan_t yyscanner,Entry *current_root);
 static void resolveTypeBoundProcedures(Entry *scope);
@@ -387,7 +387,7 @@ FILEMASK  {VFILEMASK}|{HFILEMASK}
                                           yyextra->lineCountPrepass ++;
                                         }
 <*>^.*\n                                { // prepass: look for line continuations
-                                          yyextra->functionLine = FALSE;
+                                          yyextra->functionLine = false;
 
                                           DBG_CTX((stderr, "---%s", yytext));
 
@@ -662,12 +662,12 @@ FILEMASK  {VFILEMASK}|{HFILEMASK}
                                           popBlockState(yyscanner);
                                         }
 <Module>{ID}                            {
-                                          addModule(yyscanner, QCString(yytext), TRUE);
+                                          addModule(yyscanner, QCString(yytext), true);
                                           pushBlockState(yyscanner,QCString("module ")+yytext);
                                           BEGIN(ModuleBody);
                                         }
 <Program>{ID}                           {
-                                          addModule(yyscanner, QCString(yytext), FALSE);
+                                          addModule(yyscanner, QCString(yytext), false);
                                           pushBlockState(yyscanner,QCString("program ")+yytext);
                                           BEGIN(ModuleBody);
                                         }
@@ -1053,7 +1053,7 @@ private                                 {
                                               if (!yyextra->argType.isEmpty()) parameter->type=yyextra->argType.stripWhiteSpace();
                                               if (!yyextra->docBlock.isEmpty())
                                               {
-                                                subrHandleCommentBlock(yyscanner,yyextra->docBlock,TRUE);
+                                                subrHandleCommentBlock(yyscanner,yyextra->docBlock,true);
                                               }
                                             }
                                             // save, it may be function return type
@@ -1094,7 +1094,7 @@ private                                 {
                                                   yyextra->current_root->type += "function";
                                                   if (!yyextra->docBlock.isEmpty())
                                                   {
-                                                    subrHandleCommentBlockResult(yyscanner,yyextra->docBlock,TRUE);
+                                                    subrHandleCommentBlockResult(yyscanner,yyextra->docBlock,true);
                                                   }
                                                 }
                                                 else
@@ -1365,10 +1365,10 @@ private                                 {
                                           if (yyextra->vtype != V_IGNORE)
                                           {
                                             yyextra->current->docLine  = yyextra->lineNr;
-                                            yyextra->docBlockJavaStyle = FALSE;
+                                            yyextra->docBlockJavaStyle = false;
                                             yyextra->docBlock.clear();
                                             yyextra->docBlockJavaStyle = Config_getBool(JAVADOC_AUTOBRIEF);
-                                            startCommentBlock(yyscanner,FALSE);
+                                            startCommentBlock(yyscanner,false);
                                             yy_push_state(DocBackLine,yyscanner);
                                           }
                                           else
@@ -1412,17 +1412,17 @@ private                                 {
                                             {
                                               yyextra->current = yyextra->last_entry;
                                             }
-                                            handleCommentBlock(yyscanner,stripIndentation(yyextra->docBlock),TRUE);
+                                            handleCommentBlock(yyscanner,stripIndentation(yyextra->docBlock),true);
                                             // switch back
                                             yyextra->current = std::move(tmp_entry);
                                           }
                                           else if (yyextra->vtype == V_PARAMETER)
                                           {
-                                            subrHandleCommentBlock(yyscanner,yyextra->docBlock,TRUE);
+                                            subrHandleCommentBlock(yyscanner,yyextra->docBlock,true);
                                           }
                                           else if (yyextra->vtype == V_RESULT)
                                           {
-                                            subrHandleCommentBlockResult(yyscanner,yyextra->docBlock,TRUE);
+                                            subrHandleCommentBlockResult(yyscanner,yyextra->docBlock,true);
                                           }
                                           pop_state(yyscanner);
                                           yyextra->docBlock.clear();
@@ -1434,11 +1434,11 @@ private                                 {
 <Start,SubprogBody,ModuleBody,TypedefBody,InterfaceBody,ModuleBodyContains,SubprogBodyContains,TypedefBodyContains,FEnum>"!>"  {
                                           yy_push_state(YY_START,yyscanner);
                                           yyextra->current->docLine  = yyextra->lineNr;
-                                          yyextra->docBlockJavaStyle = FALSE;
-                                          if (YY_START==SubprogBody) yyextra->docBlockInBody = TRUE;
+                                          yyextra->docBlockJavaStyle = false;
+                                          if (YY_START==SubprogBody) yyextra->docBlockInBody = true;
                                           yyextra->docBlock.clear();
                                           yyextra->docBlockJavaStyle = Config_getBool(JAVADOC_AUTOBRIEF);
-                                          startCommentBlock(yyscanner,FALSE);
+                                          startCommentBlock(yyscanner,false);
                                           BEGIN(DocBlock);
                                           //cout << "start DocBlock " << endl;
                                         }
@@ -1557,7 +1557,7 @@ private                                 {
                                           //cout <<"3=========> comment block : "<< yyextra->docBlock << endl;
                                           yyextra->colNr -= 1;
                                           unput(*yytext);
-                                          handleCommentBlock(yyscanner,stripIndentation(yyextra->docBlock),TRUE);
+                                          handleCommentBlock(yyscanner,stripIndentation(yyextra->docBlock),true);
                                           pop_state(yyscanner);
                                         }
 <DocBlock>.                             { // command block
@@ -1880,14 +1880,14 @@ const char* prepassFixedForm(const char* contents, int *hasContLine,int fixedCom
   int skipped = 0;
   char prevQuote = '\0';
   char thisQuote = '\0';
-  bool emptyLabel=TRUE;
-  bool commented=FALSE;
-  bool inSingle=FALSE;
-  bool inDouble=FALSE;
-  bool inBackslash=FALSE;
-  bool fullCommentLine=TRUE;
-  bool artificialComment=FALSE;
-  bool spaces=TRUE;
+  bool emptyLabel=true;
+  bool commented=false;
+  bool inSingle=false;
+  bool inDouble=false;
+  bool inBackslash=false;
+  bool fullCommentLine=true;
+  bool artificialComment=false;
+  bool spaces=true;
   int newContentsSize = (int)strlen(contents)+3; // \000, \n (when necessary) and one spare character (to avoid reallocation)
   char* newContents = (char*)malloc(newContentsSize);
   int curLine = 1;
@@ -1903,15 +1903,15 @@ const char* prepassFixedForm(const char* contents, int *hasContLine,int fixedCom
       if (c == '!' && spaces)
       {
         newContents[j++] = c;
-        artificialComment = FALSE;
-        spaces = FALSE;
+        artificialComment = false;
+        spaces = false;
         skipped = 0;
         continue;
       }
       else if (c == ' ' || c == '\t') continue;
       else
       {
-        spaces = FALSE;
+        spaces = false;
         skipped++;
         continue;
       }
@@ -1945,12 +1945,12 @@ const char* prepassFixedForm(const char* contents, int *hasContLine,int fixedCom
             hasContLine[curLine - 1] = 1;
           }
         }
-        artificialComment=FALSE;
-        spaces=TRUE;
-        fullCommentLine=TRUE;
+        artificialComment=false;
+        spaces=true;
+        fullCommentLine=true;
         column=0;
-        emptyLabel=TRUE;
-        commented=FALSE;
+        emptyLabel=true;
+        commented=false;
         newContents[j]=c;
         prevQuote = thisQuote;
         curLine++;
@@ -1981,7 +1981,7 @@ const char* prepassFixedForm(const char* contents, int *hasContLine,int fixedCom
         if ((column <= fixedCommentAfter) && (column!=6) && !commented)
         {
           // we have some special cases in respect to strings and escaped string characters
-          fullCommentLine=FALSE;
+          fullCommentLine=false;
           newContents[j]=c;
           if (c == '\\')
           {
@@ -2009,7 +2009,7 @@ const char* prepassFixedForm(const char* contents, int *hasContLine,int fixedCom
             break;
           }
         }
-        inBackslash = FALSE;
+        inBackslash = false;
         // fallthrough
       case '#':
       case 'C':
@@ -2018,20 +2018,20 @@ const char* prepassFixedForm(const char* contents, int *hasContLine,int fixedCom
       case '!':
         if ((column <= fixedCommentAfter) && (column!=6))
         {
-          emptyLabel=FALSE;
+          emptyLabel=false;
           if (column==1)
           {
             newContents[j]='!';
-            commented = TRUE;
+            commented = true;
           }
           else if ((c == '!') && !inDouble && !inSingle)
           {
             newContents[j]=c;
-            commented = TRUE;
+            commented = true;
           }
           else
           {
-            if (!commented) fullCommentLine=FALSE;
+            if (!commented) fullCommentLine=false;
             newContents[j]=c;
           }
           break;
@@ -2044,7 +2044,7 @@ const char* prepassFixedForm(const char* contents, int *hasContLine,int fixedCom
         }
         else if (column==6 && emptyLabel)
         { // continuation
-          if (!commented) fullCommentLine=FALSE;
+          if (!commented) fullCommentLine=false;
           if (c != '0')
           { // 0 not allowed as continuation character, see f95 standard paragraph 3.3.2.3
             newContents[j]=' ';
@@ -2084,21 +2084,21 @@ const char* prepassFixedForm(const char* contents, int *hasContLine,int fixedCom
           {
             // I'm not a possible start of doxygen comment
             newContents[j]=' ';
-            artificialComment = TRUE;
-            spaces=TRUE;
+            artificialComment = true;
+            spaces=true;
             skipped = 0;
           }
           else
           {
             newContents[j]=c;
-            commented = TRUE;
+            commented = true;
           }
         }
         else
         {
-          if (!commented) fullCommentLine=FALSE;
+          if (!commented) fullCommentLine=false;
           newContents[j]=c;
-          emptyLabel=FALSE;
+          emptyLabel=false;
         }
         break;
     }
@@ -2313,67 +2313,67 @@ SymbolModifiers& SymbolModifiers::operator|=(QCString mdfStringArg)
   }
   else if (mdfString=="protected")
   {
-    newMdf.protect = TRUE;
+    newMdf.protect = true;
   }
   else if (mdfString=="optional")
   {
-    newMdf.optional = TRUE;
+    newMdf.optional = true;
   }
   else if (mdfString=="allocatable")
   {
-    newMdf.allocatable = TRUE;
+    newMdf.allocatable = true;
   }
   else if (mdfString=="external")
   {
-    newMdf.external = TRUE;
+    newMdf.external = true;
   }
   else if (mdfString=="intrinsic")
   {
-    newMdf.intrinsic = TRUE;
+    newMdf.intrinsic = true;
   }
   else if (mdfString=="parameter")
   {
-    newMdf.parameter = TRUE;
+    newMdf.parameter = true;
   }
   else if (mdfString=="pointer")
   {
-    newMdf.pointer = TRUE;
+    newMdf.pointer = true;
   }
   else if (mdfString=="target")
   {
-    newMdf.target = TRUE;
+    newMdf.target = true;
   }
   else if (mdfString=="save")
   {
-    newMdf.save = TRUE;
+    newMdf.save = true;
   }
   else if (mdfString=="nopass")
   {
-    newMdf.nopass = TRUE;
+    newMdf.nopass = true;
   }
   else if (mdfString=="deferred")
   {
-    newMdf.deferred = TRUE;
+    newMdf.deferred = true;
   }
   else if (mdfString=="non_overridable")
   {
-    newMdf.nonoverridable = TRUE;
+    newMdf.nonoverridable = true;
   }
   else if (mdfString=="contiguous")
   {
-    newMdf.contiguous = TRUE;
+    newMdf.contiguous = true;
   }
   else if (mdfString=="volatile")
   {
-    newMdf.volat = TRUE;
+    newMdf.volat = true;
   }
   else if (mdfString=="value")
   {
-    newMdf.value = TRUE;
+    newMdf.value = true;
   }
   else if (mdfString.contains("pass"))
   {
-    newMdf.pass = TRUE;
+    newMdf.pass = true;
     if (mdfString.contains("("))
       newMdf.passVar = extractFromParens(mdfString);
     else
@@ -2400,7 +2400,7 @@ SymbolModifiers& SymbolModifiers::operator|=(QCString mdfStringArg)
 //}
 
 /*! Find argument with given name in \a subprog entry. */
-static Argument *findArgument(Entry* subprog, QCString name, bool byTypeName = FALSE)
+static Argument *findArgument(Entry* subprog, QCString name, bool byTypeName = false)
 {
   QCString cname(name.lower());
   for (Argument &arg : subprog->argList)
@@ -2552,7 +2552,7 @@ static void applyModifiers(Entry *ent, const SymbolModifiers& mdfs)
   if (mdfs.nonoverridable)
     ent->spec.setFinal(true);
   if (mdfs.nopass)
-    ent->isStatic = TRUE;
+    ent->isStatic = true;
   if (mdfs.deferred)
     ent->virt = Specifier::Pure;
 }
@@ -2583,11 +2583,11 @@ static bool endScope(yyscan_t yyscanner,Entry *scope, bool isGlobalRoot)
   if (yyextra->global_scope == scope)
   {
     yyextra->global_scope = nullptr;
-    return TRUE;
+    return true;
   }
   if (yyextra->global_scope == INVALID_ENTRY)
   {
-    return TRUE;
+    return true;
   }
   //cout<<"end scope: "<<scope->name<<endl;
   if (yyextra->current_root->parent() || isGlobalRoot)
@@ -2598,7 +2598,7 @@ static bool endScope(yyscan_t yyscanner,Entry *scope, bool isGlobalRoot)
   {
     fprintf(stderr,"parse error in end <scopename>\n");
     scanner_abort(yyscanner);
-    return FALSE;
+    return false;
   }
 
   // create new current with possibly different defaults...
@@ -2673,7 +2673,7 @@ static bool endScope(yyscan_t yyscanner,Entry *scope, bool isGlobalRoot)
       yyextra->modifiers.erase(scope);
       scope->parent()->removeSubEntry(scope);
       scope = nullptr;
-      return TRUE;
+      return true;
     }
   }
   if (!scope->section.isFunction())
@@ -2704,7 +2704,7 @@ static bool endScope(yyscan_t yyscanner,Entry *scope, bool isGlobalRoot)
   // resolve procedures in types
   resolveTypeBoundProcedures(scope);
 
-  return TRUE;
+  return true;
 }
 
 /*! search for types with type bound procedures (e.g. methods)
@@ -3065,13 +3065,13 @@ static void handleCommentBlock(yyscan_t yyscanner,const QCString &doc,bool brief
   bool hideInBodyDocs = Config_getBool(HIDE_IN_BODY_DOCS);
   if (yyextra->docBlockInBody && hideInBodyDocs)
   {
-    yyextra->docBlockInBody = FALSE;
+    yyextra->docBlockInBody = false;
     return;
   }
   DBG_CTX((stderr,"call parseCommentBlock [%s]\n",qPrint(doc)));
   int lineNr = brief ? yyextra->current->briefLine : yyextra->current->docLine;
   int position=0;
-  bool needsEntry = FALSE;
+  bool needsEntry = false;
   Markdown markdown(yyextra->fileName,lineNr);
   GuardedSectionStack guards;
   QCString strippedDoc = stripIndentation(doc);
@@ -3082,8 +3082,8 @@ static void handleCommentBlock(yyscan_t yyscanner,const QCString &doc,bool brief
         processedDoc, // text
         yyextra->fileName, // file
         lineNr,
-        yyextra->docBlockInBody ? FALSE : brief,
-        yyextra->docBlockInBody ? FALSE : yyextra->docBlockJavaStyle,
+        yyextra->docBlockInBody ? false : brief,
+        yyextra->docBlockInBody ? false : yyextra->docBlockJavaStyle,
         yyextra->docBlockInBody,
         yyextra->defaultProtection,
         position,
@@ -3098,7 +3098,7 @@ static void handleCommentBlock(yyscan_t yyscanner,const QCString &doc,bool brief
   DBG_CTX((stderr,"parseCommentBlock position=%d [%s]  needsEntry=%d\n",position,doc.data()+position,needsEntry));
 
   if (needsEntry) addCurrentEntry(yyscanner,false);
-  yyextra->docBlockInBody = FALSE;
+  yyextra->docBlockInBody = false;
 }
 
 //----------------------------------------------------------------------------
@@ -3312,7 +3312,7 @@ static void parseMain(yyscan_t yyscanner, const QCString &fileName,const char *f
 
   if (yyextra->global_scope && yyextra->global_scope != INVALID_ENTRY)
   {
-    endScope(yyscanner,yyextra->current_root, TRUE); // TRUE - global root
+    endScope(yyscanner,yyextra->current_root, true); // true - global root
   }
 
   //debugCompounds(rt); //debug
@@ -3381,10 +3381,10 @@ void FortranOutlineParser::parsePrototype(const QCString &text)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)p->yyscanner;
   pushBuffer(p->yyscanner,text);
-  yyextra->parsingPrototype = TRUE;
+  yyextra->parsingPrototype = true;
   BEGIN(Prototype);
   fortranscannerYYlex(p->yyscanner);
-  yyextra->parsingPrototype = FALSE;
+  yyextra->parsingPrototype = false;
   popBuffer(p->yyscanner);
 }
 
@@ -3409,11 +3409,11 @@ static void scanner_abort(yyscan_t yyscanner)
   // empty the stack
   while (!yyextra->blockStack.empty()) yyextra->blockStack.pop();
 
-  bool start=FALSE;
+  bool start=false;
 
   for (const auto &ce : yyextra->global_root->children())
   {
-     if (ce == yyextra->file_root) start=TRUE;
+     if (ce == yyextra->file_root) start=true;
      if (start) ce->reset();
   }
 

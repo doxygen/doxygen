@@ -37,7 +37,7 @@ class DotClassGraph final : public DotGraph
     int numNodes() const;
     QCString writeGraph(TextStream &t,GraphOutputFormat gf,EmbeddedOutputFormat ef,
         const QCString &path, const QCString &fileName, const QCString &relPath,
-        bool TBRank=TRUE,bool imageMap=TRUE,int graphId=-1);
+        bool TBRank=true,bool imageMap=true,int graphId=-1);
 
     void writeXML(TextStream &t);
     void writeDocbook(TextStream &t);

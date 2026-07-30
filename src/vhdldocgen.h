@@ -268,7 +268,7 @@ class FlowChart
     static void endDot(TextStream &t);
     static void codify(TextStream &t,const QCString &str);
     static void writeShape(TextStream &t,const FlowChart &fl);
-    static void writeEdge(TextStream &t,int fl_from,int fl_to,int i,bool bFrom=FALSE,bool bTo=FALSE);
+    static void writeEdge(TextStream &t,int fl_from,int fl_to,int i,bool bFrom=false,bool bTo=false);
     static void writeEdge(TextStream &t,const FlowChart &fl_from,const FlowChart &fl_to,int i);
     static void writeFlowLinks(TextStream &t);
 
@@ -280,7 +280,7 @@ class FlowChart
     static size_t findNode(size_t index,int stamp,int type);
     static size_t findNode(size_t index,int type);
     static size_t findNextLoop(size_t j,int stamp);
-    static size_t findPrevLoop(size_t j,int stamp,bool endif=FALSE);
+    static size_t findPrevLoop(size_t j,int stamp,bool endif=false);
     static size_t findLabel(size_t j,const QCString &);
     static void delFlowList();
     static const char* getNodeType(int c);

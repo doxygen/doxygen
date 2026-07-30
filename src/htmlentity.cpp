@@ -345,7 +345,7 @@ HtmlEntityMapper &HtmlEntityMapper::instance()
 /*! @brief Access routine to the UTF8 code of the HTML entity
  *
  * @param symb Code of the requested HTML entity
- * @param useInPrintf If TRUE the result will be escaped such that it can be
+ * @param useInPrintf If true the result will be escaped such that it can be
  *                    used in a printf string pattern
  * @return the UTF8 code of the HTML entity,
  *         in case the UTF code is unknown \c nullptr is returned.
@@ -365,7 +365,7 @@ const char *HtmlEntityMapper::utf8(HtmlEntityMapper::SymType symb,bool useInPrin
 /*! @brief Access routine to the html code of the HTML entity
  *
  * @param symb        Code of the requested HTML entity
- * @param useInPrintf If TRUE the result will be escaped such that it can be
+ * @param useInPrintf If true the result will be escaped such that it can be
  *                    used in a printf string pattern
  * @return the html representation of the HTML entity,
  *         in case the html code is unknown \c nullptr is returned.

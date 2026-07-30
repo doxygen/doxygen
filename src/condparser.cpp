@@ -46,7 +46,7 @@ bool CondParser::parse(const QCString &fileName,int lineNr,const QCString &expr)
   getToken();
   if (m_tokenType==DELIMITER && m_token.isEmpty())
   {
-    // empty expression: answer==FALSE
+    // empty expression: answer==false
   }
   else if (m_err.isEmpty())
   {
@@ -217,7 +217,7 @@ bool CondParser::parseLevel3()
       if (m_tokenType!=DELIMITER || m_token!=")")
       {
         m_err="Parenthesis ) missing";
-        return FALSE;
+        return false;
       }
       getToken();
       return ans;
@@ -245,12 +245,12 @@ bool CondParser::parseVar()
       if (m_token.isEmpty())
       {
         m_err="Unexpected end of expression";
-        return FALSE;
+        return false;
       }
       else
       {
         m_err="Value expected";
-        return FALSE;
+        return false;
       }
       break;
   }
@@ -270,7 +270,7 @@ bool CondParser::evalOperator(int opId, bool lhs, bool rhs)
   }
 
   m_err = "Internal error unknown operator: id="+QCString().setNum(opId);
-  return FALSE;
+  return false;
 }
 
 /**

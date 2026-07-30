@@ -35,7 +35,7 @@ class VHDLOutlineParser final : public OutlineParserInterface
                     const std::shared_ptr<Entry> &root,
                     ClangTUParser *clangParser) override;
 
-    bool needsPreprocessing(const QCString &) const override { return TRUE; }
+    bool needsPreprocessing(const QCString &) const override { return true; }
     void parsePrototype(const QCString &text) override;
 
 

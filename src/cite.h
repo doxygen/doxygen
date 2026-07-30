@@ -100,7 +100,7 @@ class CitationManager
     /** clears the database */
     void clear();
 
-    /** return TRUE if there are no citations.
+    /** return true if there are no citations.
      */
     bool isEmpty() const;
 

@@ -514,9 +514,9 @@ class OutputList
     { foreach(&OutputGenIntf::startMemberGroup); }
     void endMemberGroup(bool last)
     { foreach(&OutputGenIntf::endMemberGroup,last); }
-    void insertMemberAlign(bool templ=FALSE)
+    void insertMemberAlign(bool templ=false)
     { foreach(&OutputGenIntf::insertMemberAlign,templ); }
-    void insertMemberAlignLeft(OutputGenerator::MemberItemType typ=OutputGenerator::MemberItemType::Normal, bool templ=FALSE)
+    void insertMemberAlignLeft(OutputGenerator::MemberItemType typ=OutputGenerator::MemberItemType::Normal, bool templ=false)
     { foreach(&OutputGenIntf::insertMemberAlignLeft,typ,templ); }
     void writeRuler()
     { foreach(&OutputGenIntf::writeRuler); }
@@ -667,9 +667,9 @@ class OutputList
     { foreach(&OutputGenIntf::endGroupCollaboration,g); }
     void writeGraphicalHierarchy(DotGfxHierarchyTable &g)
     { foreach(&OutputGenIntf::writeGraphicalHierarchy,g); }
-    void startTextBlock(bool dense=FALSE)
+    void startTextBlock(bool dense=false)
     { foreach(&OutputGenIntf::startTextBlock,dense); }
-    void endTextBlock(bool paraBreak=FALSE)
+    void endTextBlock(bool paraBreak=false)
     { foreach(&OutputGenIntf::endTextBlock,paraBreak); }
     void lastIndexPage()
     { foreach(&OutputGenIntf::lastIndexPage); }

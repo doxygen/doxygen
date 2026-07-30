@@ -69,11 +69,11 @@ bool ResourceMgr::writeCategory(const QCString &categoryName,const QCString &tar
       if (!ok)
       {
         err("Failed to write resource '{}' to directory '{}'\n",res.name,targetDir);
-        return FALSE;
+        return false;
       }
     }
   }
-  return TRUE;
+  return true;
 }
 
 bool ResourceMgr::copyResourceAs(const QCString &name,const QCString &targetDir,const QCString &targetName,bool append) const
@@ -95,7 +95,7 @@ bool ResourceMgr::copyResourceAs(const QCString &name,const QCString &targetDir,
           }
           if (ok)
           {
-            return TRUE;
+            return true;
           }
         }
         break;
@@ -107,7 +107,7 @@ bool ResourceMgr::copyResourceAs(const QCString &name,const QCString &targetDir,
             QCString buf(res->size, QCString::ExplicitSize);
             memcpy(buf.rawData(),res->data,res->size);
             t << replaceColorMarkers(buf);
-            return TRUE;
+            return true;
           }
         }
     }
@@ -116,7 +116,7 @@ bool ResourceMgr::copyResourceAs(const QCString &name,const QCString &targetDir,
   {
     err("requested resource '{}' not compiled in!\n",name);
   }
-  return FALSE;
+  return false;
 }
 
 bool ResourceMgr::copyResource(const QCString &name,const QCString &targetDir) const

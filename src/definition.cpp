@@ -95,10 +95,10 @@ class DefinitionImpl::Private
     ResettableOnce qualifiedNameOnce;
     QCString ref;   // reference to external documentation
 
-    bool hidden = FALSE;
-    bool isArtificial = FALSE;
-    bool isAnonymous = FALSE;
-    bool isExported = FALSE;
+    bool hidden = false;
+    bool isArtificial = false;
+    bool isAnonymous = false;
+    bool isExported = false;
 
     Definition *outerScope = nullptr;  // not owner
 
@@ -151,9 +151,9 @@ void DefinitionImpl::Private::init(const QCString &df, const QCString &n)
   sourceRefsDict.clear();
   requirementRefs.clear();
   outerScope      = Doxygen::globalScope;
-  hidden          = FALSE;
-  isArtificial    = FALSE;
-  isExported      = FALSE;
+  hidden          = false;
+  isArtificial    = false;
+  isExported      = false;
   lang            = SrcLangExt::Unknown;
 }
 
@@ -169,13 +169,13 @@ void DefinitionImpl::setDefFile(const QCString &df,int defLine,int defCol)
 static bool matchExcludedSymbols(const QCString &name)
 {
   const StringVector &exclSyms = Config_getList(EXCLUDE_SYMBOLS);
-  if (exclSyms.empty()) return FALSE; // nothing specified
+  if (exclSyms.empty()) return false; // nothing specified
   const std::string &symName = name.str();
   for (const auto &pat : exclSyms)
   {
     QCString pattern = pat;
-    bool forceStart=FALSE;
-    bool forceEnd=FALSE;
+    bool forceStart=false;
+    bool forceEnd=false;
     if (pattern.at(0)=='^')
     {
       pattern    = pattern.mid(1);
@@ -200,7 +200,7 @@ static bool matchExcludedSymbols(const QCString &name)
            )
         {
           //printf("--> name=%s pattern=%s match at %d\n",qPrint(symName),qPrint(pattern),i);
-          return TRUE;
+          return true;
         }
       }
     }
@@ -218,13 +218,13 @@ static bool matchExcludedSymbols(const QCString &name)
            )
         {
           //printf("--> name=%s pattern=%s match at %d\n",qPrint(symName),qPrint(pattern),i);
-          return TRUE;
+          return true;
         }
       }
     }
   }
   //printf("--> name=%s: no match\n",name);
-  return FALSE;
+  return false;
 }
 
 static void addToMap(const QCString &name,Definition *d)
@@ -261,10 +261,10 @@ DefinitionImpl::DefinitionImpl(Definition *def,
   p->isSymbol = isSymbol;
   if (isSymbol) addToMap(name,def);
   _setBriefDescription(b,df,dl);
-  _setDocumentation(d,df,dl,TRUE,FALSE);
+  _setDocumentation(d,df,dl,true,false);
   if (matchExcludedSymbols(name))
   {
-    p->hidden = TRUE;
+    p->hidden = true;
   }
 }
 
@@ -341,15 +341,15 @@ void DefinitionImpl::addSectionsToDefinition(const std::vector<const SectionInfo
 bool DefinitionImpl::hasSections() const
 {
   //printf("DefinitionImpl::hasSections(%s) #sections=%zu\n",qPrint(name()), p->sectionRefs.size());
-  if (p->sectionRefs.empty()) return FALSE;
+  if (p->sectionRefs.empty()) return false;
   for (const SectionInfo *si : p->sectionRefs)
   {
     if (si->type().isSection())
     {
-      return TRUE;
+      return true;
     }
   }
-  return FALSE;
+  return false;
 }
 
 void DefinitionImpl::writeDocAnchorsToTagFile(TextStream &tagFile) const
@@ -390,11 +390,11 @@ bool DefinitionImpl::_docsAlreadyAdded(const QCString &doc,QCString &sigList)
   if (sigList.find(sigStr)==-1) // new docs, add signature to prevent re-adding it
   {
     sigList+=QCString(":")+sigStr;
-    return FALSE;
+    return false;
   }
   else
   {
-    return TRUE;
+    return true;
   }
 }
 
@@ -448,7 +448,7 @@ void DefinitionImpl::_setDocumentation(const QCString &d,const QCString &docFile
 void DefinitionImpl::setDocumentation(const QCString &d,const QCString &docFile,int docLine,bool stripWhiteSpace)
 {
   if (d.isEmpty()) return;
-  _setDocumentation(d,docFile,docLine,stripWhiteSpace,FALSE);
+  _setDocumentation(d,docFile,docLine,stripWhiteSpace,false);
 }
 
 void DefinitionImpl::_setBriefDescription(const QCString &b,const QCString &briefFile,int briefLine)
@@ -479,7 +479,7 @@ void DefinitionImpl::_setBriefDescription(const QCString &b,const QCString &brie
     if (p->brief && !p->brief->doc.isEmpty())
     {
        //printf("adding to details\n");
-       _setDocumentation(brief,briefFile,briefLine,FALSE,TRUE);
+       _setDocumentation(brief,briefFile,briefLine,false,true);
     }
     else
     {
@@ -565,7 +565,7 @@ class FilterCache
     bool getFileContents(const QCString &fileName,size_t startLine,size_t endLine, std::string &str)
     {
       bool filterSourceFiles = Config_getBool(FILTER_SOURCE_FILES);
-      QCString filter = getFileFilter(fileName,TRUE);
+      QCString filter = getFileFilter(fileName,true);
       bool usePipe = !filter.isEmpty() && filterSourceFiles;
       return usePipe ? getFileContentsPipe(fileName,filter,startLine,endLine,str)
                      : getFileContentsDisk(fileName,startLine,endLine,str);
@@ -755,7 +755,7 @@ FilterCache &FilterCache::instance()
 
 /*! Reads a fragment of code from file \a fileName starting at
  * line \a startLine and ending at line \a endLine (inclusive). The fragment is
- * stored in \a result. If FALSE is returned the code fragment could not be
+ * stored in \a result. If false is returned the code fragment could not be
  * found.
  *
  * The file is scanned for a opening bracket ('{') from \a startLine onward
@@ -768,7 +768,7 @@ bool readCodeFragment(const QCString &fileName,bool isMacro,
                       int &startLine,int &endLine,QCString &result)
 {
   bool filterSourceFiles = Config_getBool(FILTER_SOURCE_FILES);
-  QCString filter = getFileFilter(fileName,TRUE);
+  QCString filter = getFileFilter(fileName,true);
   bool usePipe = !filter.isEmpty() && filterSourceFiles;
   int tabSize = Config_getInt(TAB_SIZE);
   SrcLangExt lang = getLanguageFromFileName(fileName);
@@ -837,19 +837,19 @@ bool readCodeFragment(const QCString &fileName,bool isMacro,
       if (c==':')
       {
         cn=*p++;
-        if (cn!=':') found=TRUE;
+        if (cn!=':') found=true;
       }
       else if (c=='=')
       {
         cn=*p++;
         if (cn=='>') // C# Expression body
         {
-          found=TRUE;
+          found=true;
         }
       }
       else if (c=='{')
       {
-        found=TRUE;
+        found=true;
       }
       else if (c==0)
       {
@@ -1180,12 +1180,12 @@ void DefinitionImpl::_writeSourceRefList(OutputList &ol,const QCString &scopeNam
 
 void DefinitionImpl::writeSourceReffedBy(OutputList &ol,const QCString &scopeName) const
 {
-  _writeSourceRefList(ol,scopeName,theTranslator->trReferencedBy(),p->sourceRefByDict,FALSE);
+  _writeSourceRefList(ol,scopeName,theTranslator->trReferencedBy(),p->sourceRefByDict,false);
 }
 
 void DefinitionImpl::writeSourceRefs(OutputList &ol,const QCString &scopeName) const
 {
-  _writeSourceRefList(ol,scopeName,theTranslator->trReferences(),p->sourceRefsDict,TRUE);
+  _writeSourceRefList(ol,scopeName,theTranslator->trReferences(),p->sourceRefsDict,true);
 }
 
 void DefinitionImpl::writeRequirementRefs(OutputList &ol) const
@@ -1599,10 +1599,10 @@ QCString DefinitionImpl::docFile() const
 // strips w from s iff s starts with w
 static bool stripWord(QCString &s,QCString w)
 {
-  bool success=FALSE;
+  bool success=false;
   if (s.left(w.length())==w)
   {
-    success=TRUE;
+    success=true;
     s=s.right(s.length()-w.length());
   }
   return success;

@@ -61,7 +61,7 @@ void DotCallGraph::buildGraph(DotNode *n,const MemberDef *md,int distance)
         QCString tooltip = rmd->briefDescriptionAsTooltip();
         DotNode *bn = new DotNode(
             this,
-            linkToText(rmd->getLanguage(),name,FALSE),
+            linkToText(rmd->getLanguage(),name,false),
             tooltip,
             uniqueId,
             0 //distance
@@ -104,11 +104,11 @@ void DotCallGraph::determineTruncatedNodes(DotNodeDeque &queue)
     queue.pop_front();
     if (n->isVisible() && n->isTruncated()==DotNode::Unknown)
     {
-      bool truncated = FALSE;
+      bool truncated = false;
       for (const auto &dn : n->children())
       {
         if (!dn->isVisible())
-          truncated = TRUE;
+          truncated = true;
         else
           queue.push_back(dn);
       }
@@ -134,10 +134,10 @@ DotCallGraph::DotCallGraph(const MemberDef *md,bool inverse)
   }
   QCString tooltip = md->briefDescriptionAsTooltip();
   m_startNode = new DotNode(this,
-    linkToText(md->getLanguage(),name,FALSE),
+    linkToText(md->getLanguage(),name,false),
     tooltip,
     uniqueId,
-    TRUE     // root node
+    true     // root node
   );
   m_startNode->setDistance(0);
   m_usedNodes.emplace(uniqueId.str(),m_startNode);
@@ -169,7 +169,7 @@ void DotCallGraph::computeTheGraph()
     GraphType::CallGraph,
     m_graphFormat,
     m_inverse ? "RL" : "LR",
-    FALSE,
+    false,
     m_inverse,
     m_startNode->label(),
     m_theGraph);
@@ -216,9 +216,9 @@ bool DotCallGraph::isTrivial(const MemberDef *md,bool inverse)
   {
     if (rmd->isCallable())
     {
-      return FALSE;
+      return false;
     }
   }
-  return TRUE;
+  return true;
 }
 

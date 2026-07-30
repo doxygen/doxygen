@@ -89,7 +89,7 @@ class TextGeneratorOLImpl final : public TextGeneratorIntf
 //--------------------------------------------------------------------
 
 QCString langToString(SrcLangExt lang);
-QCString getLanguageSpecificSeparator(SrcLangExt lang,bool classScope=FALSE);
+QCString getLanguageSpecificSeparator(SrcLangExt lang,bool classScope=false);
 
 //--------------------------------------------------------------------
 
@@ -153,7 +153,7 @@ void linkifyText(const TextGeneratorIntf &ol,
                  const LinkifyTextOptions &options
                 );
 
-QCString fileToString(const QCString &name,bool filter=FALSE,bool isSourceCode=FALSE);
+QCString fileToString(const QCString &name,bool filter=false,bool isSourceCode=false);
 
 struct GetDefInput
 {
@@ -190,9 +190,9 @@ bool resolveRef(/* in */  const QCString &scName,
                 /* out */ const Definition **resContext,
                 /* out */ const MemberDef  **resMember,
                 /* in */  SrcLangExt lang,
-                /* in */  bool lookForSpecializations = TRUE,
+                /* in */  bool lookForSpecializations = true,
                 /* in */  const FileDef *currentFile = nullptr,
-                /* in */  bool checkScope = FALSE
+                /* in */  bool checkScope = false
                );
 
 bool resolveLink(/* in */  const QCString &scName,
@@ -216,7 +216,7 @@ bool matchArguments2(const Definition *srcScope,const FileDef *srcFileScope,cons
                      bool checkCV,SrcLangExt lang
                     );
 
-void mergeArguments(ArgumentList &,ArgumentList &,bool forceNameOverwrite=FALSE);
+void mergeArguments(ArgumentList &,ArgumentList &,bool forceNameOverwrite=false);
 
 bool matchTemplateArguments(const ArgumentList &srcAl,const ArgumentList &dstAl);
 
@@ -268,7 +268,7 @@ QCString removeRedundantWhiteSpace(const QCString &s);
 QCString inlineArgListToDoc(const ArgumentList &al);
 QCString inlineTemplateArgListToDoc(const ArgumentList &al);
 
-QCString argListToString(const ArgumentList &al,bool useCanonicalType=FALSE,bool showDefVals=TRUE);
+QCString argListToString(const ArgumentList &al,bool useCanonicalType=false,bool showDefVals=true);
 
 QCString tempArgListToString(const ArgumentList &al,SrcLangExt lang,bool includeDefaults=true);
 
@@ -307,13 +307,13 @@ QCString removeAnonymousScopes(const QCString &s);
 
 QCString replaceAnonymousScopes(const QCString &s,const QCString &replacement=QCString());
 
-QCString convertNameToFile(const QCString &name,bool allowDots=FALSE,bool allowUnderscore=FALSE);
+QCString convertNameToFile(const QCString &name,bool allowDots=false,bool allowUnderscore=false);
 
 QCString generateAnonymousAnchor(const QCString &fileName,int count);
 
 void extractNamespaceName(const QCString &scopeName,
                           QCString &className,QCString &namespaceName,
-                          bool allowEmptyClass=FALSE);
+                          bool allowEmptyClass=false);
 
 QCString insertTemplateSpecifierInScope(const QCString &scope,const QCString &templ);
 
@@ -348,7 +348,7 @@ QCString substituteTemplateArgumentsInString(
        const ArgumentList *actualArgs);
 
 QCString stripTemplateSpecifiersFromScope(const QCString &fullName,
-                                          bool parentOnly=TRUE,
+                                          bool parentOnly=true,
                                           QCString *lastScopeStripped=nullptr,
                                           QCString scopeName=QCString(),
                                           bool allowArtificial=true);
@@ -377,13 +377,13 @@ PageDef *addRelatedPage(const QCString &name,
                         const RefItemVector &sli = RefItemVector(),
                         GroupDef *gd=nullptr,
                         const TagInfo *tagInfo=nullptr,
-                        bool xref=FALSE,
+                        bool xref=false,
                         SrcLangExt lang=SrcLangExt::Unknown
                        );
 
 bool getCaseSenseNames();
 
-QCString escapeCharsInString(const QCString &name,bool allowDots,bool allowUnderscore=FALSE);
+QCString escapeCharsInString(const QCString &name,bool allowDots,bool allowUnderscore=false);
 QCString unescapeCharsInString(const QCString &s);
 
 void addGroupListToTitle(OutputList &ol,const Definition *d);
@@ -442,7 +442,7 @@ QCString convertCharEntitiesToUTF8(const QCString &s);
 void stackTrace();
 
 bool readInputFile(const QCString &fileName,std::string &contents,
-                   bool filter=TRUE,bool isSourceCode=FALSE);
+                   bool filter=true,bool isSourceCode=false);
 QCString filterTitle(const QCString &title);
 
 bool patternMatch(const FileInfo &fi,const StringVector &patList);

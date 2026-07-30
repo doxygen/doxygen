@@ -333,7 +333,7 @@ class LatexGenerator final : public OutputGenerator, public OutputGenIntf
 
 void writeExtraLatexPackages(TextStream &t);
 void writeLatexSpecialFormulaChars(TextStream &t);
-QCString convertToLaTeX(const QCString &s,bool insideTabbing,bool keepSpaces=FALSE);
+QCString convertToLaTeX(const QCString &s,bool insideTabbing,bool keepSpaces=false);
 
 void filterLatexString(TextStream &t,const QCString &str,
                        bool insideTabbing,

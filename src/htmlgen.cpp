@@ -423,7 +423,7 @@ static QCString substituteHtmlKeywords(const QCString &file,
                      "\"/>";
       // OPENSEARCH_PROVIDER }
     }
-    searchBox = getSearchBox(serverBasedSearch, relPath, FALSE);
+    searchBox = getSearchBox(serverBasedSearch, relPath, false);
   }
 
   if (mathJax && !isSource)
@@ -934,7 +934,7 @@ void HtmlCodeGenerator::writeLineNumber(const QCString &ref,const QCString &file
   if (!m_lineOpen)
   {
     *m_t << "<div class=\"line\">";
-    m_lineOpen = TRUE;
+    m_lineOpen = true;
   }
 
   if (writeLineAnchor) *m_t << "<a id=\"" << lineAnchor << "\" name=\"" << lineAnchor << "\"></a>";
@@ -1083,7 +1083,7 @@ void HtmlCodeGenerator::startCodeLine(int)
   if (!m_lineOpen)
   {
     *m_t << "<div class=\"line\">";
-    m_lineOpen = TRUE;
+    m_lineOpen = true;
   }
 }
 
@@ -1099,7 +1099,7 @@ void HtmlCodeGenerator::endCodeLine()
   if (m_lineOpen)
   {
     *m_t << "</div>\n";
-    m_lineOpen = FALSE;
+    m_lineOpen = false;
   }
 }
 
@@ -1861,7 +1861,7 @@ void HtmlGenerator::startIndexItem(const QCString &ref,const QCString &f)
       m_t << "<a class=\"el\" ";
     }
     m_t << "href=\"";
-    m_t << externalRef(m_relPath,ref,TRUE);
+    m_t << externalRef(m_relPath,ref,true);
     if (!f.isEmpty())
     {
       QCString fn=f;
@@ -2012,7 +2012,7 @@ void HtmlGenerator::endSection(const QCString &,SectionType type)
 
 void HtmlGenerator::docify(const QCString &str)
 {
-  docify_(str,FALSE);
+  docify_(str,false);
 }
 
 void HtmlGenerator::docify_(const QCString &str,bool inHtmlComment)
@@ -2189,7 +2189,7 @@ void HtmlGenerator::startMemberItem(const QCString &anchor,MemberItemType type,c
   if (m_emptySection)
   {
     m_t << "<table class=\"memberdecls\">\n";
-    m_emptySection=FALSE;
+    m_emptySection=false;
   }
   m_t << "<tr class=\"memitem:" << convertToId(anchor);
   if (!inheritId.isEmpty())
@@ -2267,7 +2267,7 @@ void HtmlGenerator::startMemberDescription(const QCString &anchor,const QCString
   if (m_emptySection)
   {
     m_t << "<table class=\"memberdecls\">\n";
-    m_emptySection=FALSE;
+    m_emptySection=false;
   }
   m_t << "<tr class=\"memdesc:" << anchor;
   if (!inheritId.isEmpty())
@@ -2290,7 +2290,7 @@ void HtmlGenerator::endMemberDescription()
 void HtmlGenerator::startMemberSections()
 {
   DBG_HTML(m_t << "<!-- startMemberSections -->\n")
-  m_emptySection=TRUE; // we postpone writing <table> until we actually
+  m_emptySection=true; // we postpone writing <table> until we actually
                        // write a row to prevent empty tables, which
                        // are not valid XHTML!
 }
@@ -2310,12 +2310,12 @@ void HtmlGenerator::startMemberHeader(const QCString &anchor, int typ)
   if (!m_emptySection)
   {
     m_t << "</table>";
-    m_emptySection=TRUE;
+    m_emptySection=true;
   }
   if (m_emptySection)
   {
     m_t << "<table class=\"memberdecls\">\n";
-    m_emptySection=FALSE;
+    m_emptySection=false;
   }
   m_t << "<tr class=\"heading\"><td colspan=\"" << typ << "\"><h2";
   if (!anchor.isEmpty())
@@ -2341,7 +2341,7 @@ void HtmlGenerator::startMemberSubtitle()
   if (m_emptySection)
   {
     m_t << "<table class=\"memberdecls\">\n";
-    m_emptySection=FALSE;
+    m_emptySection=false;
   }
   m_t << "<tr><td class=\"ititle\" colspan=\"2\">";
 }
@@ -2572,7 +2572,7 @@ void HtmlGenerator::endDotGraph(DotClassGraph &g)
   endSectionSummary(m_t);
   startSectionContent(m_t,m_sectionCount);
 
-  g.writeGraph(m_t,GraphOutputFormat::BITMAP,EmbeddedOutputFormat::Html,dir(),fileName(),m_relPath,TRUE,TRUE,m_sectionCount);
+  g.writeGraph(m_t,GraphOutputFormat::BITMAP,EmbeddedOutputFormat::Html,dir(),fileName(),m_relPath,true,true,m_sectionCount);
   if (generateLegend && !umlLook)
   {
     QCString url = m_relPath+"graph_legend"+Doxygen::htmlFileExtension;
@@ -2604,7 +2604,7 @@ void HtmlGenerator::endInclDepGraph(DotInclDepGraph &g)
   endSectionSummary(m_t);
   startSectionContent(m_t,m_sectionCount);
 
-  g.writeGraph(m_t,GraphOutputFormat::BITMAP,EmbeddedOutputFormat::Html,dir(),fileName(),m_relPath,TRUE,m_sectionCount);
+  g.writeGraph(m_t,GraphOutputFormat::BITMAP,EmbeddedOutputFormat::Html,dir(),fileName(),m_relPath,true,m_sectionCount);
 
   endSectionContent(m_t);
   m_sectionCount++;
@@ -2622,7 +2622,7 @@ void HtmlGenerator::endGroupCollaboration(DotGroupCollaboration &g)
   endSectionSummary(m_t);
   startSectionContent(m_t,m_sectionCount);
 
-  g.writeGraph(m_t,GraphOutputFormat::BITMAP,EmbeddedOutputFormat::Html,dir(),fileName(),m_relPath,TRUE,m_sectionCount);
+  g.writeGraph(m_t,GraphOutputFormat::BITMAP,EmbeddedOutputFormat::Html,dir(),fileName(),m_relPath,true,m_sectionCount);
 
   endSectionContent(m_t);
   m_sectionCount++;
@@ -2640,7 +2640,7 @@ void HtmlGenerator::endCallGraph(DotCallGraph &g)
   endSectionSummary(m_t);
   startSectionContent(m_t,m_sectionCount);
 
-  g.writeGraph(m_t,GraphOutputFormat::BITMAP,EmbeddedOutputFormat::Html,dir(),fileName(),m_relPath,TRUE,m_sectionCount);
+  g.writeGraph(m_t,GraphOutputFormat::BITMAP,EmbeddedOutputFormat::Html,dir(),fileName(),m_relPath,true,m_sectionCount);
 
   endSectionContent(m_t);
   m_sectionCount++;
@@ -2658,7 +2658,7 @@ void HtmlGenerator::endDirDepGraph(DotDirDeps &g)
   endSectionSummary(m_t);
   startSectionContent(m_t,m_sectionCount);
 
-  g.writeGraph(m_t,GraphOutputFormat::BITMAP,EmbeddedOutputFormat::Html,dir(),fileName(),m_relPath,TRUE,m_sectionCount);
+  g.writeGraph(m_t,GraphOutputFormat::BITMAP,EmbeddedOutputFormat::Html,dir(),fileName(),m_relPath,true,m_sectionCount);
 
   endSectionContent(m_t);
   m_sectionCount++;
@@ -2797,7 +2797,7 @@ void HtmlGenerator::writeDoc(const IDocNodeAST *ast,const Definition *ctx,const 
 
 //---------------- helpers for index generation -----------------------------
 
-static void startQuickIndexList(TextStream &t,bool topLevel=TRUE)
+static void startQuickIndexList(TextStream &t,bool topLevel=true)
 {
   if (!Config_getBool(DISABLE_INDEX))
   {
@@ -2858,9 +2858,9 @@ static bool quickLinkVisible(LayoutNavEntry::Kind kind)
   bool showFiles = Config_getBool(SHOW_FILES);
   switch (kind)
   {
-    case LayoutNavEntry::MainPage:           return TRUE;
-    case LayoutNavEntry::User:               return TRUE;
-    case LayoutNavEntry::UserGroup:          return TRUE;
+    case LayoutNavEntry::MainPage:           return true;
+    case LayoutNavEntry::User:               return true;
+    case LayoutNavEntry::UserGroup:          return true;
     case LayoutNavEntry::Pages:              return index.numIndexedPages()>0;
     case LayoutNavEntry::Topics:             return index.numDocumentedGroups()>0;
     case LayoutNavEntry::Modules:            return index.numDocumentedModules()>0;
@@ -2892,9 +2892,9 @@ static bool quickLinkVisible(LayoutNavEntry::Kind kind)
     case LayoutNavEntry::ExceptionHierarchy: return index.numHierarchyExceptions()>0;
     case LayoutNavEntry::None:             // should never happen, means not properly initialized
       assert(kind != LayoutNavEntry::None);
-      return FALSE;
+      return false;
   }
-  return FALSE;
+  return false;
 }
 
 static void renderQuickLinksAsTree(TextStream &t,const QCString &relPath,LayoutNavEntry *root)
@@ -2955,7 +2955,7 @@ static void renderQuickLinksAsTabs(TextStream &t,const QCString &relPath,
               (!entry->children().empty() ||
                (entry->kind()==kind && !highlightParent)
               ),
-              TRUE,relPath);
+              true,relPath);
           t << fixSpaces(entry->title());
           endQuickIndexItem(t,url);
         }
@@ -3123,7 +3123,7 @@ static void writeDefaultQuickLinks(TextStream &t,
     if (!hlEntry && altKind!=LayoutNavEntry::None) { hlEntry=root->find(altKind); kind=altKind; }
     if (!hlEntry) // highlighted item not found in the index! -> just show the level 1 index...
     {
-      highlightParent=TRUE;
+      highlightParent=true;
       hlEntry = root->children().front().get();
       if (hlEntry==nullptr)
       {
@@ -3401,7 +3401,7 @@ void HtmlGenerator::writeExternalSearchPage()
       << "\"" << theTranslator->trSearchResults(2) << "\"];\n";
     t << "const serverUrl=\"" << Config_getString(SEARCHENGINE_URL) << "\";\n";
     t << "const tagMap = {\n";
-    bool first=TRUE;
+    bool first=true;
     // add search mappings
     const StringVector &extraSearchMappings = Config_getList(EXTRA_SEARCH_MAPPINGS);
     for (const auto &ml : extraSearchMappings)
@@ -3416,7 +3416,7 @@ void HtmlGenerator::writeExternalSearchPage()
         {
           if (!first) t << ",\n";
           t << "  \"" << tagName << "\": \"" << destName << "\"";
-          first=FALSE;
+          first=false;
         }
       }
     }
@@ -3524,7 +3524,7 @@ void HtmlGenerator::startInlineHeader()
   if (m_emptySection)
   {
     m_t << "<table class=\"memberdecls memberdecls-inline\">\n";
-    m_emptySection=FALSE;
+    m_emptySection=false;
   }
   m_t << "<tr><th colspan=\"2\"><h3>";
 }
@@ -3663,7 +3663,7 @@ void HtmlGenerator::writeInheritedSectionTitle(
   {
     classLink+= externalLinkTarget();
     classLink += " href=\"";
-    classLink+= externalRef(m_relPath,ref,TRUE);
+    classLink+= externalRef(m_relPath,ref,true);
   }
   else
   {
@@ -3673,7 +3673,7 @@ void HtmlGenerator::writeInheritedSectionTitle(
   QCString fn = file;
   addHtmlExtensionIfMissing(fn);
   classLink=classLink+fn+a;
-  classLink+=QCString("\">")+convertToHtml(name,FALSE)+"</a>";
+  classLink+=QCString("\">")+convertToHtml(name,false)+"</a>";
   m_t << "<tr class=\"inherit_header " << id << "\">";
   if (dynamicSections)
   {
@@ -3684,7 +3684,7 @@ void HtmlGenerator::writeInheritedSectionTitle(
   {
     m_t << "<td colspan=\"2\">";
   }
-  m_t << theTranslator->trInheritedFrom(convertToHtml(title,FALSE),classLink)
+  m_t << theTranslator->trInheritedFrom(convertToHtml(title,false),classLink)
     << "</td></tr>\n";
 }
 

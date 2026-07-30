@@ -231,7 +231,7 @@ void DocParser::checkArgumentName()
     int number = reg::match(aName.view(),re_digits) ? std::atoi(aName.data()) : -1;
     if (lang==SrcLangExt::Fortran) aName=aName.lower();
     //printf("aName='%s'\n",qPrint(aName));
-    bool found=FALSE;
+    bool found=false;
     int position=1;
     for (const Argument &a : al)
     {
@@ -383,7 +383,7 @@ void DocParser::checkUnOrMultipleDocumentedParams()
       }
       if (!undocParams.empty() && Config_getBool(WARN_IF_INCOMPLETE_DOC))
       {
-        bool first=TRUE;
+        bool first=true;
         QCString errMsg = "The following parameter";
         if (undocParams.size()>1) errMsg+="s";
         errMsg+=QCString(" of ")+
@@ -396,7 +396,7 @@ void DocParser::checkUnOrMultipleDocumentedParams()
           if (lang==SrcLangExt::Fortran) argName = argName.lower();
           argName=argName.stripWhiteSpace();
           if (!first) errMsg+="\n";
-          first=FALSE;
+          first=false;
           errMsg+="  parameter '"+argName+"'";
         }
         warn_incomplete_doc(context.memberDef->docFile(), context.memberDef->docLine(), "{}", errMsg);
@@ -433,8 +433,8 @@ void DocParser::checkUnOrMultipleDocumentedParams()
  *  context (g_parserContext.context). The resulting documentation string is
  *  put in pDoc, the definition in which the documentation was found is
  *  put in pDef.
- *  @retval TRUE if name was found.
- *  @retval FALSE if name was not found.
+ *  @retval true if name was found.
+ *  @retval false if name was not found.
  */
 bool DocParser::findDocsForMemberOrCompound(const QCString &commandName,
                                             QCString *pDoc,
@@ -585,7 +585,7 @@ bool DocParser::findDocsForMemberOrCompound(const QCString &commandName,
   } while (scopeOffset>=0);
 
   AUTO_TRACE_EXIT("not found");
-  return FALSE;
+  return false;
 }
 
 //---------------------------------------------------------------------------
@@ -685,7 +685,7 @@ void DocParser::handleStyleEnter(DocNodeVariant *parent,DocNodeList &children,
           DocStyleChange::Style s,const QCString &tagName,const HtmlAttribList *attribs)
 {
   AUTO_TRACE("tagName={}",tagName);
-  children.append<DocStyleChange>(this,parent,context.nodeStack.size(),s,tagName,TRUE,
+  children.append<DocStyleChange>(this,parent,context.nodeStack.size(),s,tagName,true,
                                   context.fileName,tokenizer.getLineNr(),attribs);
   context.styleStack.push(&children.back());
   context.inCodeStyle = s==DocStyleChange::Style::Typewriter;
@@ -731,7 +731,7 @@ void DocParser::handleStyleLeave(DocNodeVariant *parent,DocNodeList &children,
   {
     children.append<DocStyleChange>(
           this,parent,context.nodeStack.size(),s,
-          topStyleChange(context.styleStack).tagName(),FALSE);
+          topStyleChange(context.styleStack).tagName(),false);
     context.styleStack.pop();
   }
   if (s==DocStyleChange::Style::Typewriter)
@@ -755,7 +755,7 @@ void DocParser::handlePendingStyleCommands(DocNodeVariant *parent,DocNodeList &c
     { // there are unclosed style modifiers in the paragraph
       AUTO_TRACE_ADD("unclosed style {} at position {}",sc->styleString(),sc->position());
       children.append<DocStyleChange>(this,parent,context.nodeStack.size(),
-                                           sc->style(),sc->tagName(),FALSE);
+                                           sc->style(),sc->tagName(),false);
       context.initialStyleStack.push(context.styleStack.top());
       context.styleStack.pop();
       sc = !context.styleStack.empty() ? &std::get<DocStyleChange>(*context.styleStack.top()) : nullptr;
@@ -787,7 +787,7 @@ Token DocParser::handleAHref(DocNodeVariant *parent,DocNodeList &children,
     {
       if (!opt.value.isEmpty())
       {
-        children.append<DocAnchor>(this,parent,opt.value,TRUE);
+        children.append<DocAnchor>(this,parent,opt.value,true);
         break; // stop looking for other tag attribs
       }
       else
@@ -805,10 +805,10 @@ Token DocParser::handleAHref(DocNodeVariant *parent,DocNodeList &children,
       if (opt.value.at(0) != '#') relPath = context.relPath;
       children.append<DocHRef>(this, parent, attrList,
                                opt.value, relPath,
-                               convertNameToFile(context.fileName, FALSE, TRUE));
-      context.insideHtmlLink=TRUE;
+                               convertNameToFile(context.fileName, false, true));
+      context.insideHtmlLink=true;
       retval = children.get_last<DocHRef>()->parse();
-      context.insideHtmlLink=FALSE;
+      context.insideHtmlLink=false;
       tokenizer.setStatePara();
       break;
     }
@@ -853,7 +853,7 @@ void DocParser::handleLinkedWord(DocNodeVariant *parent,DocNodeList &children,bo
                        [&w](const auto &ignore) { return w.startsWith(ignore); }
                       )!=list.end();
   };
-  QCString name = linkToText(context.lang,context.token->name,TRUE);
+  QCString name = linkToText(context.lang,context.token->name,true);
   AUTO_TRACE("word={}",name);
   if (!context.autolinkSupport || ignoreAutoLinkFlag || ignoreWord(context.token->name)) // no autolinking -> add as normal word
   {
@@ -873,14 +873,14 @@ void DocParser::handleLinkedWord(DocNodeVariant *parent,DocNodeList &children,bo
   bool inSeeBlock = context.inSeeBlock || context.inCodeStyle;
   //printf("handleLinkedWord(%s) context.context=%s\n",qPrint(context.token->name),qPrint(context.context));
   if (!context.insideHtmlLink &&
-      (resolveRef(context.context,context.token->name,inSeeBlock,&compound,&member,lang,TRUE,fd,TRUE)
+      (resolveRef(context.context,context.token->name,inSeeBlock,&compound,&member,lang,true,fd,true)
        || (!context.context.isEmpty() &&  // also try with global scope
-           resolveRef(QCString(),context.token->name,inSeeBlock,&compound,&member,lang,FALSE,nullptr,TRUE))
+           resolveRef(QCString(),context.token->name,inSeeBlock,&compound,&member,lang,false,nullptr,true))
       )
      )
   {
     //printf("ADD %s = %p (linkable?=%d typeLinkOnly=%d)\n",
-    //    qPrint(context.token->name),(void*)member,member ? member->isLinkable() : FALSE, typeLinkOnly);
+    //    qPrint(context.token->name),(void*)member,member ? member->isLinkable() : false, typeLinkOnly);
     if (member && member->isLinkable())
     {
       if (!typeLinkOnly || context.token->name.startsWith("#") ||
@@ -889,7 +889,7 @@ void DocParser::handleLinkedWord(DocNodeVariant *parent,DocNodeList &children,bo
         AUTO_TRACE_ADD("resolved reference as member link");
         if (member->isObjCMethod())
         {
-          bool localLink = context.memberDef ? member->getClassDef()==context.memberDef->getClassDef() : FALSE;
+          bool localLink = context.memberDef ? member->getClassDef()==context.memberDef->getClassDef() : false;
           name = member->objCMethodName(localLink,inSeeBlock);
         }
         children.append<DocLinkedWord>(
@@ -1064,7 +1064,7 @@ void DocParser::handleAnchor(DocNodeVariant *parent,DocNodeList &children)
       return;
     }
   }
-  children.append<DocAnchor>(this,parent,context.token->name,FALSE);
+  children.append<DocAnchor>(this,parent,context.token->name,false);
 }
 
 void DocParser::handleCite(DocNodeVariant *parent,DocNodeList &children)
@@ -1467,8 +1467,8 @@ void DocParser::handleILine(char cmdChar,const QCString &cmdName)
  * @param children   The list of child nodes to which the node representing
  *                   the token can be added.
  * @param handleWord Indicates if word token should be processed
- * @retval TRUE      The token was handled.
- * @retval FALSE     The token was not handled.
+ * @retval true      The token was handled.
+ * @retval false     The token was not handled.
  */
 bool DocParser::defaultHandleToken(DocNodeVariant *parent,Token &tok, DocNodeList &children,bool handleWord)
 {
@@ -1547,9 +1547,9 @@ reparsetoken:
           break;
         case CommandType::CMD_EMPHASIS:
           {
-            children.append<DocStyleChange>(this,parent,context.nodeStack.size(),DocStyleChange::Italic,tokenName,TRUE);
+            children.append<DocStyleChange>(this,parent,context.nodeStack.size(),DocStyleChange::Italic,tokenName,true);
             tok=handleStyleArgument(parent,children,tokenName);
-            children.append<DocStyleChange>(this,parent,context.nodeStack.size(),DocStyleChange::Italic,tokenName,FALSE);
+            children.append<DocStyleChange>(this,parent,context.nodeStack.size(),DocStyleChange::Italic,tokenName,false);
             if (!tok.is(TokenRetval::TK_WORD)) children.append<DocWhiteSpace>(this,parent," ");
             if (tok.is(TokenRetval::TK_NEWPARA)) goto handlepara;
             else if (tok.is_any_of(TokenRetval::TK_WORD,TokenRetval::TK_HTMLTAG))
@@ -1561,9 +1561,9 @@ reparsetoken:
           break;
         case CommandType::CMD_BOLD:
           {
-            children.append<DocStyleChange>(this,parent,context.nodeStack.size(),DocStyleChange::Bold,tokenName,TRUE);
+            children.append<DocStyleChange>(this,parent,context.nodeStack.size(),DocStyleChange::Bold,tokenName,true);
             tok=handleStyleArgument(parent,children,tokenName);
-            children.append<DocStyleChange>(this,parent,context.nodeStack.size(),DocStyleChange::Bold,tokenName,FALSE);
+            children.append<DocStyleChange>(this,parent,context.nodeStack.size(),DocStyleChange::Bold,tokenName,false);
             if (!tok.is(TokenRetval::TK_WORD)) children.append<DocWhiteSpace>(this,parent," ");
             if (tok.is(TokenRetval::TK_NEWPARA)) goto handlepara;
             else if (tok.is_any_of(TokenRetval::TK_WORD,TokenRetval::TK_HTMLTAG))
@@ -1575,9 +1575,9 @@ reparsetoken:
           break;
         case CommandType::CMD_CODE:
           {
-            children.append<DocStyleChange>(this,parent,context.nodeStack.size(),DocStyleChange::Code,tokenName,TRUE);
+            children.append<DocStyleChange>(this,parent,context.nodeStack.size(),DocStyleChange::Code,tokenName,true);
             tok=handleStyleArgument(parent,children,tokenName);
-            children.append<DocStyleChange>(this,parent,context.nodeStack.size(),DocStyleChange::Code,tokenName,FALSE);
+            children.append<DocStyleChange>(this,parent,context.nodeStack.size(),DocStyleChange::Code,tokenName,false);
             if (!tok.is(TokenRetval::TK_WORD)) children.append<DocWhiteSpace>(this,parent," ");
             if (tok.is(TokenRetval::TK_NEWPARA)) goto handlepara;
             else if (tok.is_any_of(TokenRetval::TK_WORD,TokenRetval::TK_HTMLTAG))
@@ -1705,7 +1705,7 @@ reparsetoken:
           handleIFile(tok.command_to_char(),tokenName);
           break;
         default:
-          return FALSE;
+          return false;
       }
       break;
     case TokenRetval::TK_HTMLTAG:
@@ -1784,7 +1784,7 @@ reparsetoken:
             }
 	    break;
           default:
-            return FALSE;
+            return false;
             break;
         }
       }
@@ -1798,7 +1798,7 @@ reparsetoken:
         }
         else
         {
-          return FALSE;
+          return false;
         }
       }
       break;
@@ -1816,7 +1816,7 @@ handlepara:
         handleLinkedWord(parent,children);
       }
       else
-        return FALSE;
+        return false;
       break;
     case TokenRetval::TK_WORD:
       if (handleWord)
@@ -1824,7 +1824,7 @@ handlepara:
         children.append<DocWord>(this,parent,context.token->name);
       }
       else
-        return FALSE;
+        return false;
       break;
     case TokenRetval::TK_URL:
       if (context.insideHtmlLink)
@@ -1837,9 +1837,9 @@ handlepara:
       }
       break;
     default:
-      return FALSE;
+      return false;
   }
-  return TRUE;
+  return true;
 }
 
 //---------------------------------------------------------------------------
@@ -1847,7 +1847,7 @@ handlepara:
 void DocParser::handleImg(DocNodeVariant *parent, DocNodeList &children,const HtmlAttribList &tagHtmlAttribs)
 {
   AUTO_TRACE();
-  bool found=FALSE;
+  bool found=false;
   size_t index=0;
   for (const auto &opt : tagHtmlAttribs)
   {
@@ -1863,7 +1863,7 @@ void DocParser::handleImg(DocNodeVariant *parent, DocNodeList &children,const Ht
             this,parent,attrList,
             findAndCopyImage(opt.value,t,false),
             t,opt.value);
-      found = TRUE;
+      found = true;
     }
     ++index;
   }
@@ -1886,21 +1886,21 @@ Token DocParser::internalValidatingParseDoc(DocNodeVariant *parent,DocNodeList &
   tokenizer.init(doc.data(),context.fileName,context.markdownSupport,context.insideHtmlLink);
 
   // first parse any number of paragraphs
-  bool isFirst=TRUE;
+  bool isFirst=true;
   DocPara *lastPar=!children.empty() ? std::get_if<DocPara>(&children.back()): nullptr;
   if (lastPar)
   { // last child item was a paragraph
-    isFirst=FALSE;
+    isFirst=false;
   }
   do
   {
     children.append<DocPara>(this,parent);
     DocPara *par  = children.get_last<DocPara>();
-    if (isFirst) { par->markFirst(); isFirst=FALSE; }
+    if (isFirst) { par->markFirst(); isFirst=false; }
     retval=par->parse();
     if (!par->isEmpty())
     {
-      if (lastPar) lastPar->markLast(FALSE);
+      if (lastPar) lastPar->markLast(false);
       lastPar=par;
     }
     else
@@ -1944,9 +1944,9 @@ static QCString extractCopyDocId(const char *data, size_t &j, size_t len)
 {
   size_t s=j;
   int round=0;
-  bool insideDQuote=FALSE;
-  bool insideSQuote=FALSE;
-  bool found=FALSE;
+  bool insideDQuote=false;
+  bool insideSQuote=false;
+  bool found=false;
   while (j<len && !found)
   {
     if (!insideSQuote && !insideDQuote)
@@ -1955,8 +1955,8 @@ static QCString extractCopyDocId(const char *data, size_t &j, size_t len)
       {
         case '(': round++; break;
         case ')': round--; break;
-        case '"': insideDQuote=TRUE; break;
-        case '\'': insideSQuote=TRUE; break;
+        case '"': insideDQuote=true; break;
+        case '\'': insideSQuote=true; break;
         case '\\': // fall through, begin of command
         case '@':  // fall through, begin of command
         case '\t': // fall through
@@ -1972,14 +1972,14 @@ static QCString extractCopyDocId(const char *data, size_t &j, size_t len)
     {
       if (data[j]=='\'' && (j==0 || data[j]!='\\'))
       {
-        insideSQuote=FALSE;
+        insideSQuote=false;
       }
     }
     else if (insideDQuote) // look for double quote end
     {
       if (data[j]=='"' && (j==0 || data[j]!='\\'))
       {
-        insideDQuote=FALSE;
+        insideDQuote=false;
       }
     }
     if (!found) j++;
@@ -2022,8 +2022,8 @@ static size_t isCopyBriefOrDetailsCmd(const char *data, size_t i,size_t len,bool
   size_t j=0;
   if (i==0 || (data[i-1]!='@' && data[i-1]!='\\')) // not an escaped command
   {
-    CHECK_FOR_COMMAND("copybrief",brief=TRUE);    // @copybrief or \copybrief
-    CHECK_FOR_COMMAND("copydetails",brief=FALSE); // @copydetails or \copydetails
+    CHECK_FOR_COMMAND("copybrief",brief=true);    // @copybrief or \copybrief
+    CHECK_FOR_COMMAND("copydetails",brief=false); // @copydetails or \copydetails
   }
   return j;
 }
@@ -2084,7 +2084,7 @@ QCString DocParser::processCopyDoc(const char *data,size_t &len)
     char c = data[i];
     if (c=='@' || c=='\\') // look for a command
     {
-      bool isBrief=TRUE;
+      bool isBrief=true;
       size_t j=isCopyBriefOrDetailsCmd(data,i,len,isBrief);
       if (j>0)
       {
@@ -2263,17 +2263,17 @@ IDocNodeASTPtr validatingParseDoc(IDocParser &parserIntf,
   while (!parser->context.nodeStack.empty()) parser->context.nodeStack.pop();
   while (!parser->context.styleStack.empty()) parser->context.styleStack.pop();
   while (!parser->context.initialStyleStack.empty()) parser->context.initialStyleStack.pop();
-  parser->context.inSeeBlock = FALSE;
-  parser->context.inCodeStyle = FALSE;
-  parser->context.xmlComment = FALSE;
-  parser->context.insideHtmlLink = FALSE;
+  parser->context.inSeeBlock = false;
+  parser->context.inCodeStyle = false;
+  parser->context.xmlComment = false;
+  parser->context.insideHtmlLink = false;
   parser->context.includeFileText = "";
   parser->context.includeFileOffset = 0;
   parser->context.includeFileLength = 0;
   parser->context.isExample = options.isExample();
   parser->context.exampleName = options.exampleName();
-  parser->context.hasParamCommand = FALSE;
-  parser->context.hasReturnCommand = FALSE;
+  parser->context.hasParamCommand = false;
+  parser->context.hasReturnCommand = false;
   parser->context.retvalsFound.clear();
   parser->context.paramsFound.clear();
   parser->context.markdownSupport = options.markdownSupport();
@@ -2345,17 +2345,17 @@ IDocNodeASTPtr validatingParseTitle(IDocParser &parserIntf,const QCString &fileN
   while (!parser->context.nodeStack.empty()) parser->context.nodeStack.pop();
   while (!parser->context.styleStack.empty()) parser->context.styleStack.pop();
   while (!parser->context.initialStyleStack.empty()) parser->context.initialStyleStack.pop();
-  parser->context.inSeeBlock = FALSE;
-  parser->context.inCodeStyle = FALSE;
-  parser->context.xmlComment = FALSE;
-  parser->context.insideHtmlLink = FALSE;
+  parser->context.inSeeBlock = false;
+  parser->context.inCodeStyle = false;
+  parser->context.xmlComment = false;
+  parser->context.insideHtmlLink = false;
   parser->context.includeFileText = "";
   parser->context.includeFileOffset = 0;
   parser->context.includeFileLength = 0;
-  parser->context.isExample = FALSE;
+  parser->context.isExample = false;
   parser->context.exampleName = "";
-  parser->context.hasParamCommand = FALSE;
-  parser->context.hasReturnCommand = FALSE;
+  parser->context.hasParamCommand = false;
+  parser->context.hasReturnCommand = false;
   parser->context.retvalsFound.clear();
   parser->context.paramsFound.clear();
   parser->context.searchUrl="";
@@ -2399,23 +2399,23 @@ IDocNodeASTPtr validatingParseText(IDocParser &parserIntf,const QCString &input)
   while (!parser->context.nodeStack.empty()) parser->context.nodeStack.pop();
   while (!parser->context.styleStack.empty()) parser->context.styleStack.pop();
   while (!parser->context.initialStyleStack.empty()) parser->context.initialStyleStack.pop();
-  parser->context.inSeeBlock = FALSE;
-  parser->context.inCodeStyle = FALSE;
-  parser->context.xmlComment = FALSE;
-  parser->context.insideHtmlLink = FALSE;
+  parser->context.inSeeBlock = false;
+  parser->context.inCodeStyle = false;
+  parser->context.xmlComment = false;
+  parser->context.insideHtmlLink = false;
   parser->context.includeFileText = "";
   parser->context.includeFileOffset = 0;
   parser->context.includeFileLength = 0;
-  parser->context.isExample = FALSE;
+  parser->context.isExample = false;
   parser->context.exampleName = "";
-  parser->context.hasParamCommand = FALSE;
-  parser->context.hasReturnCommand = FALSE;
+  parser->context.hasParamCommand = false;
+  parser->context.hasReturnCommand = false;
   parser->context.retvalsFound.clear();
   parser->context.paramsFound.clear();
   parser->context.searchUrl="";
   parser->context.lang = SrcLangExt::Unknown;
   parser->context.markdownSupport = Config_getBool(MARKDOWN_SUPPORT);
-  parser->context.autolinkSupport = FALSE;
+  parser->context.autolinkSupport = false;
 
 
   auto ast = std::make_unique<DocNodeAST>(DocText(parser));

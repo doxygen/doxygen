@@ -101,7 +101,7 @@ class DocNode
     /*! Sets a new parent for this node. */
     void setParent(DocNodeVariant *parent) { m_parent = parent; }
 
-    /*! Returns TRUE iff this node is inside a preformatted section */
+    /*! Returns true iff this node is inside a preformatted section */
     bool isPreformatted() const { return m_insidePre; }
 
   protected:
@@ -378,7 +378,7 @@ class DocVerbatim final : public DocNode
     enum Type { Code, HtmlOnly, ManOnly, LatexOnly, RtfOnly, XmlOnly, Verbatim, Dot, Msc, DocbookOnly, PlantUML, Mermaid, JavaDocCode, JavaDocLiteral };
     DocVerbatim(DocParser *parser,DocNodeVariant *parent,const QCString &context,
                 const QCString &text, Type t,bool isExample,
-                const QCString &exampleFile,bool isBlock=FALSE,const QCString &lang=QCString());
+                const QCString &exampleFile,bool isBlock=false,const QCString &lang=QCString());
     Type type() const            { return p->type; }
     QCString text() const        { return p->text; }
     QCString context() const     { return p->context; }
@@ -480,7 +480,7 @@ class DocIncOperator final : public DocNode
     DocIncOperator(DocParser *parser,DocNodeVariant *parent,Type t,const QCString &pat,
                    const QCString &context,bool stripCodeComments,bool isExample,const QCString &exampleFile)
     : DocNode(parser,parent), m_type(t), m_pattern(pat), m_context(context),
-      m_isFirst(FALSE), m_isLast(FALSE), m_stripCodeComments(stripCodeComments),
+      m_isFirst(false), m_isLast(false), m_stripCodeComments(stripCodeComments),
       m_isExample(isExample), m_exampleFile(exampleFile) {}
     Type type() const           { return m_type; }
     const char *typeAsString() const
@@ -501,8 +501,8 @@ class DocIncOperator final : public DocNode
     QCString context() const     { return m_context; }
     bool isFirst() const         { return m_isFirst; }
     bool isLast() const          { return m_isLast; }
-    void markFirst(bool v=TRUE)  { m_isFirst = v; }
-    void markLast(bool v=TRUE)   { m_isLast = v; }
+    void markFirst(bool v=true)  { m_isFirst = v; }
+    void markLast(bool v=true)   { m_isLast = v; }
     bool stripCodeComments() const { return m_stripCodeComments; }
     bool isExample() const       { return m_isExample; }
     QCString exampleFile() const { return m_exampleFile; }
@@ -643,7 +643,7 @@ class DocImage final : public DocCompoundNode
   public:
     enum Type { Html, Latex, Rtf, DocBook, Xml };
     DocImage(DocParser *parser,DocNodeVariant *parent,const HtmlAttribList &attribs,
-             const QCString &name,Type t,const QCString &url=QCString(), bool inlineImage = TRUE);
+             const QCString &name,Type t,const QCString &url=QCString(), bool inlineImage = true);
     Type type() const           { return p->type; }
     QCString name() const       { return p->name; }
     bool hasCaption() const     { return !children().empty(); }
@@ -768,7 +768,7 @@ class DocLink final : public DocCompoundNode
 {
   public:
     DocLink(DocParser *parser,DocNodeVariant *parent,const QCString &target);
-    QCString parse(bool,bool isXmlLink=FALSE);
+    QCString parse(bool,bool isXmlLink=false);
     QCString file() const       { return m_file; }
     QCString relPath() const    { return m_relPath; }
     QCString ref() const        { return m_ref; }
@@ -1071,7 +1071,7 @@ class DocParamSect final : public DocCompoundNode
        In=1, Out=2, InOut=3, Unspecified=0
     };
     DocParamSect(DocParser *parser,DocNodeVariant *parent,Type t)
-      : DocCompoundNode(parser,parent), m_type(t), m_hasInOutSpecifier(FALSE), m_hasTypeSpecifier(FALSE)
+      : DocCompoundNode(parser,parent), m_type(t), m_hasInOutSpecifier(false), m_hasTypeSpecifier(false)
     {}
     Token parse(const QCString &cmdName,bool xmlContext,Direction d);
     Type type() const          { return m_type; }
@@ -1091,15 +1091,15 @@ class DocPara final : public DocCompoundNode
     DocPara(DocParser *parser,DocNodeVariant *parent);
     Token parse();
     bool isEmpty() const        { return children().empty(); }
-    void markFirst(bool v=TRUE) { m_isFirst=v; }
-    void markLast(bool v=TRUE)  { m_isLast=v; }
+    void markFirst(bool v=true) { m_isFirst=v; }
+    void markLast(bool v=true)  { m_isLast=v; }
     bool isFirst() const        { return m_isFirst; }
     bool isLast() const         { return m_isLast; }
 
     Token handleCommand(char cmdChar,const QCString &cmdName);
     Token handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &tagHtmlAttribs);
     Token handleHtmlEndTag(const QCString &tagName);
-    Token handleSimpleSection(DocSimpleSect::Type t,bool xmlContext=FALSE);
+    Token handleSimpleSection(DocSimpleSect::Type t,bool xmlContext=false);
     Token handleXRefItem();
     Token handleParamSection(const QCString &cmdName,DocParamSect::Type t, bool xmlContext, int direction);
     void handleIncludeOperator(const QCString &cmdName,DocIncOperator::Type t);
@@ -1136,8 +1136,8 @@ class DocParamList final : public DocNode
     const DocNodeList &paragraphs() const { return m_paragraphs; }
     DocParamSect::Type type() const { return m_type; }
     DocParamSect::Direction direction() const { return m_dir; }
-    void markFirst(bool b=TRUE)     { m_isFirst=b; }
-    void markLast(bool b=TRUE)      { m_isLast=b; }
+    void markFirst(bool b=true)     { m_isFirst=b; }
+    void markLast(bool b=true)      { m_isLast=b; }
     bool isFirst() const            { return m_isFirst; }
     bool isLast() const             { return m_isLast; }
     Token parse(const QCString &cmdName);
@@ -1205,8 +1205,8 @@ class DocHtmlCell final : public DocCompoundNode
     bool isHeading() const      { return m_isHeading; }
     bool isFirst() const        { return m_isFirst; }
     bool isLast() const         { return m_isLast; }
-    void markFirst(bool v=TRUE) { m_isFirst=v; }
-    void markLast(bool v=TRUE)  { m_isLast=v; }
+    void markFirst(bool v=true) { m_isFirst=v; }
+    void markLast(bool v=true)  { m_isLast=v; }
     const HtmlAttribList &attribs() const { return m_attribs; }
     Token parse();
     Token parseXml();

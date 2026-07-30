@@ -50,8 +50,8 @@ void MemberGroup::insertMember(MemberDef *md)
   if (inSameSection && firstMd &&
       firstMd->getSectionList(m_container)!=md->getSectionList(m_container))
   {
-    //printf("inSameSection=FALSE\n");
-    inSameSection=FALSE;
+    //printf("inSameSection=false\n");
+    inSameSection=false;
   }
   else if (inDeclSection==nullptr)
   {
@@ -88,7 +88,7 @@ void MemberGroup::writeDeclarations(OutputList &ol,
 {
   //printf("MemberGroup::writeDeclarations() %s\n",qPrint(grpHeader));
   QCString ldoc = doc;
-  memberList->writeDeclarations(ol,cd,nd,fd,gd,mod,grpHeader,ldoc,FALSE,showInline);
+  memberList->writeDeclarations(ol,cd,nd,fd,gd,mod,grpHeader,ldoc,false,showInline);
 }
 
 void MemberGroup::writePlainDeclarations(OutputList &ol,bool inGroup,

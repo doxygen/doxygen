@@ -257,9 +257,9 @@ def parseOption(node, mode):
     print("  //----")
     if type == 'bool':
         if defval == '1':
-            enabled = "TRUE"
+            enabled = "true"
         else:
-            enabled = "FALSE"
+            enabled = "false"
         print("  cb = cfg->addBool(")
         print("             \"%s\"," % (name))
         rng = len(docC)
@@ -1225,9 +1225,9 @@ def main():
         print("")
         print("void ConfigValues::init()")
         print("{")
-        print("  static bool first = TRUE;")
+        print("  static bool first = true;")
         print("  if (!first) return;")
-        print("  first = FALSE;")
+        print("  first = false;")
         print("")
         for n in elem.childNodes:
             if n.nodeType == Node.ELEMENT_NODE and n.nodeName == "group":

@@ -129,7 +129,7 @@ class FileDefImpl final : public DefinitionMixin<FileDef>
     CodeSymbolType codeSymbolType() const override { return CodeSymbolType::Default; }
     const QCString &name() const override;
 
-    QCString displayName(bool=TRUE) const override { return localName(); }
+    QCString displayName(bool=true) const override { return localName(); }
     QCString fileName() const override { return m_fileName; }
     QCString getOutputFileBase() const override;
     QCString anchor() const override { return QCString(); }
@@ -602,7 +602,7 @@ void FileDefImpl::writeIncludeFiles(OutputList &ol)
 {
   if (!m_includeList.empty())
   {
-    ol.startTextBlock(TRUE);
+    ol.startTextBlock(true);
     for (const auto &ii : m_includeList)
     {
       const FileDef *fd=ii.fileDef;
@@ -652,7 +652,7 @@ void FileDefImpl::writeIncludeGraph(OutputList &ol)
   if (Config_getBool(HAVE_DOT) && m_hasIncludeGraph /*&& Config_getBool(INCLUDE_GRAPH)*/)
   {
     //printf("Graph for file %s\n",qPrint(name()));
-    DotInclDepGraph incDepGraph(this,FALSE);
+    DotInclDepGraph incDepGraph(this,false);
     if (incDepGraph.isTooBig())
     {
        warn_uncond("Include graph for '{}' not generated, too many nodes ({}), threshold is {}. Consider increasing DOT_GRAPH_MAX_NODES.\n",
@@ -666,7 +666,7 @@ void FileDefImpl::writeIncludeGraph(OutputList &ol)
       ol.parseText(theTranslator->trInclDepGraph(name()));
       ol.endInclDepGraph(incDepGraph);
       ol.enableAll();
-      ol.endTextBlock(TRUE);
+      ol.endTextBlock(true);
     }
     //incDepGraph.writeGraph(Config_getString(HTML_OUTPUT),fd->getOutputFileBase());
   }
@@ -677,7 +677,7 @@ void FileDefImpl::writeIncludedByGraph(OutputList &ol)
   if (Config_getBool(HAVE_DOT) && m_hasIncludedByGraph /*&& Config_getBool(INCLUDED_BY_GRAPH)*/)
   {
     //printf("Graph for file %s\n",qPrint(name()));
-    DotInclDepGraph incDepGraph(this,TRUE);
+    DotInclDepGraph incDepGraph(this,true);
     if (incDepGraph.isTooBig())
     {
        warn_uncond("Included by graph for '{}' not generated, too many nodes ({}), threshold is {}. Consider increasing DOT_GRAPH_MAX_NODES.\n",
@@ -691,7 +691,7 @@ void FileDefImpl::writeIncludedByGraph(OutputList &ol)
       ol.parseText(theTranslator->trInclByDepGraph());
       ol.endInclDepGraph(incDepGraph);
       ol.enableAll();
-      ol.endTextBlock(TRUE);
+      ol.endTextBlock(true);
     }
     //incDepGraph.writeGraph(Config_getString(HTML_OUTPUT),fd->getOutputFileBase());
   }
@@ -723,13 +723,13 @@ void FileDefImpl::writeNamespaceDeclarations(OutputList &ol,const QCString &titl
 void FileDefImpl::writeClassDeclarations(OutputList &ol,const QCString &title,const ClassLinkedRefMap &list)
 {
   // write list of classes
-  list.writeDeclaration(ol,nullptr,title,FALSE);
+  list.writeDeclaration(ol,nullptr,title,false);
 }
 
 void FileDefImpl::writeConcepts(OutputList &ol,const QCString &title)
 {
   // write list of classes
-  m_concepts.writeDeclaration(ol,title,FALSE);
+  m_concepts.writeDeclaration(ol,title,false);
 }
 
 void FileDefImpl::writeInlineClasses(OutputList &ol)
@@ -760,7 +760,7 @@ void FileDefImpl::startMemberDocumentation(OutputList &ol)
   if (Config_getBool(SEPARATE_MEMBER_PAGES))
   {
     ol.disable(OutputType::Html);
-    Doxygen::suppressDocWarnings = TRUE;
+    Doxygen::suppressDocWarnings = true;
   }
 }
 
@@ -769,7 +769,7 @@ void FileDefImpl::endMemberDocumentation(OutputList &ol)
   if (Config_getBool(SEPARATE_MEMBER_PAGES))
   {
     ol.enable(OutputType::Html);
-    Doxygen::suppressDocWarnings = FALSE;
+    Doxygen::suppressDocWarnings = false;
   }
 }
 
@@ -791,7 +791,7 @@ void FileDefImpl::writeAuthorSection(OutputList &ol)
   ol.pushGeneratorState();
   ol.disableAllBut(OutputType::Man);
   ol.startGroupHeader();
-  ol.parseText(theTranslator->trAuthor(TRUE,TRUE));
+  ol.parseText(theTranslator->trAuthor(true,true));
   ol.endGroupHeader();
   ol.parseText(theTranslator->trGeneratedAutomatically(Config_getString(PROJECT_NAME)));
   ol.popGeneratorState();
@@ -801,7 +801,7 @@ void FileDefImpl::writeSummaryLinks(OutputList &ol) const
 {
   ol.pushGeneratorState();
   ol.disableAllBut(OutputType::Html);
-  bool first=TRUE;
+  bool first=true;
   SrcLangExt lang=getLanguage();
   for (const auto &lde : LayoutDocManager::instance().docEntries(LayoutDocManager::File))
   {
@@ -810,37 +810,37 @@ void FileDefImpl::writeSummaryLinks(OutputList &ol) const
     {
       QCString label = "nested-classes";
       ol.writeSummaryLink(QCString(),label,ls->title(lang),first);
-      first=FALSE;
+      first=false;
     }
     else if (lde->kind()==LayoutDocEntry::FileInterfaces && m_interfaces.declVisible() && ls)
     {
       QCString label = "interfaces";
       ol.writeSummaryLink(QCString(),label,ls->title(lang),first);
-      first=FALSE;
+      first=false;
     }
     else if (lde->kind()==LayoutDocEntry::FileStructs && m_structs.declVisible() && ls)
     {
       QCString label = "structs";
       ol.writeSummaryLink(QCString(),label,ls->title(lang),first);
-      first=FALSE;
+      first=false;
     }
     else if (lde->kind()==LayoutDocEntry::FileExceptions && m_exceptions.declVisible() && ls)
     {
       QCString label = "exceptions";
       ol.writeSummaryLink(QCString(),label,ls->title(lang),first);
-      first=FALSE;
+      first=false;
     }
     else if (lde->kind()==LayoutDocEntry::FileNamespaces && m_namespaces.declVisible(false) && ls)
     {
       QCString label = "namespaces";
       ol.writeSummaryLink(QCString(),label,ls->title(lang),first);
-      first=FALSE;
+      first=false;
     }
     else if (lde->kind()==LayoutDocEntry::FileConcepts && m_concepts.declVisible() && ls)
     {
       QCString label = "concepts";
       ol.writeSummaryLink(QCString(),label,ls->title(lang),first);
-      first=FALSE;
+      first=false;
     }
     else if (lde->kind()==LayoutDocEntry::MemberDecl)
     {
@@ -851,7 +851,7 @@ void FileDefImpl::writeSummaryLinks(OutputList &ol) const
         if (ml && ml->declVisible())
         {
           ol.writeSummaryLink(QCString(),ml->listType().toLabel(),lmd->title(lang),first);
-          first=FALSE;
+          first=false;
         }
       }
     }
@@ -1232,13 +1232,13 @@ void FileDefImpl::writeSourceBody(OutputList &ol,[[maybe_unused]] ClangTUParser 
     bool needs2PassParsing =
         Doxygen::parseSourcesNeeded &&                // we need to parse (filtered) sources for cross-references
         !filterSourceFiles &&                         // but user wants to show sources as-is
-        !getFileFilter(absFilePath(),TRUE).isEmpty(); // and there is a filter used while parsing
+        !getFileFilter(absFilePath(),true).isEmpty(); // and there is a filter used while parsing
 
     if (needs2PassParsing)
     {
       // parse code for cross-references only (see bug707641)
       intf->parseCode(devNullList,QCString(),
-                       fileToString(absFilePath(),TRUE,TRUE),
+                       fileToString(absFilePath(),true,true),
                        getLanguage(),
                        Config_getBool(STRIP_CODE_COMMENTS),
                        CodeParserOptions()
@@ -1247,7 +1247,7 @@ void FileDefImpl::writeSourceBody(OutputList &ol,[[maybe_unused]] ClangTUParser 
     }
     size_t indent = 0;
     intf->parseCode(codeOL,QCString(),
-        detab(fileToString(absFilePath(),filterSourceFiles,TRUE),indent),
+        detab(fileToString(absFilePath(),filterSourceFiles,true),indent),
         getLanguage(),      // lang
         Config_getBool(STRIP_CODE_COMMENTS),
         CodeParserOptions()
@@ -1285,7 +1285,7 @@ void FileDefImpl::parseSource([[maybe_unused]] ClangTUParser *clangParser)
     size_t indent = 0;
     intf->parseCode(
             devNullList,QCString(),
-            detab(fileToString(absFilePath(),filterSourceFiles,TRUE),indent),
+            detab(fileToString(absFilePath(),filterSourceFiles,true),indent),
             getLanguage(),
             Config_getBool(STRIP_CODE_COMMENTS),
             CodeParserOptions()
@@ -1601,7 +1601,7 @@ void FileDefImpl::addIncludedByDependency(const FileDef *fd,const QCString &incN
 
 bool FileDefImpl::isIncluded(const QCString &name) const
 {
-  if (name.isEmpty()) return FALSE;
+  if (name.isEmpty()) return false;
   return m_includeMap.find(name.str())!=m_includeMap.end();
 }
 
@@ -1621,7 +1621,7 @@ void FileDefImpl::addListReferences()
 {
   addRefItem(xrefListItems(),
              getOutputFileBase(),
-             theTranslator->trFile(TRUE,TRUE),
+             theTranslator->trFile(true,true),
              getOutputFileBase(),name(),
              QCString(),
              nullptr
@@ -1775,13 +1775,13 @@ void FileDefImpl::sortMemberLists()
 {
   for (auto &ml : m_memberLists)
   {
-    if (ml->needsSorting()) { ml->sort(); ml->setNeedsSorting(FALSE); }
+    if (ml->needsSorting()) { ml->sort(); ml->setNeedsSorting(false); }
   }
 
   for (const auto &mg : m_memberGroups)
   {
     MemberList &mlg = const_cast<MemberList&>(mg->members());
-    if (mlg.needsSorting()) { mlg.sort(); mlg.setNeedsSorting(FALSE); }
+    if (mlg.needsSorting()) { mlg.sort(); mlg.setNeedsSorting(false); }
   }
 
   std::stable_sort(m_includedByList.begin(),m_includedByList.end(),

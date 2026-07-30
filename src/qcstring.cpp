@@ -196,7 +196,7 @@ QCString QCString::simplifyWhiteSpace() const
   const char *from  = data();
   char *to    = result.rawData();
   char *first = to;
-  while ( TRUE )
+  while ( true )
   {
     while ( *from && qisspace(*from) )
       from++;
@@ -235,7 +235,7 @@ short QCString::toShort(bool *ok, int base) const
 {
   long v = toLong( ok, base );
   if ( ok && *ok && (v < -32768 || v > 32767) ) {
-    *ok = FALSE;
+    *ok = false;
     v = 0;
   }
   return static_cast<short>(v);
@@ -245,7 +245,7 @@ uint16_t QCString::toUShort(bool *ok,int base) const
 {
   unsigned long v = toULong( ok, base );
   if ( ok && *ok && (v > 65535) ) {
-    *ok = FALSE;
+    *ok = false;
     v = 0;
   }
   return static_cast<uint16_t>(v);
@@ -268,7 +268,7 @@ long QCString::toLong(bool *ok,int base) const
   long val=0;
   int l = static_cast<int>(length());
   const long max_mult = INT_MAX / base;
-  bool is_ok = FALSE;
+  bool is_ok = false;
   int neg = 0;
   if ( !p )
     goto bye;
@@ -330,7 +330,7 @@ long QCString::toLong(bool *ok,int base) const
   }
   if ( !l )
   {
-    is_ok = TRUE;
+    is_ok = true;
   }
 bye:
   if ( ok )
@@ -346,7 +346,7 @@ unsigned long QCString::toULong(bool *ok,int base) const
   unsigned long val=0;
   int l = static_cast<int>(length());
   const unsigned long max_mult = 429496729;		// UINT_MAX/10, rounded down
-  bool is_ok = FALSE;
+  bool is_ok = false;
   if ( !p )
   {
     goto bye;
@@ -401,7 +401,7 @@ unsigned long QCString::toULong(bool *ok,int base) const
   }
   if ( !l )
   {
-    is_ok = TRUE;
+    is_ok = true;
   }
 bye:
   if ( ok )
@@ -417,7 +417,7 @@ uint64_t QCString::toUInt64(bool *ok,int base) const
   uint64_t val=0;
   int l = static_cast<int>(length());
   const uint64_t max_mult = 1844674407370955161ULL;  // ULLONG_MAX/10, rounded down
-  bool is_ok = FALSE;
+  bool is_ok = false;
   if ( !p )
   {
     goto bye;
@@ -472,7 +472,7 @@ uint64_t QCString::toUInt64(bool *ok,int base) const
   }
   if ( !l )
   {
-    is_ok = TRUE;
+    is_ok = true;
   }
 bye:
   if ( ok )

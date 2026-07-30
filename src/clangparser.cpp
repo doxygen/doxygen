@@ -90,8 +90,8 @@ class ClangTUParser::Private
     // state while parsing sources
     const MemberDef  *currentMemberDef=nullptr;
     uint32_t          currentLine=0;
-    bool              searchForBody=FALSE;
-    bool              insideBody=FALSE;
+    bool              searchForBody=false;
+    bool              insideBody=false;
     uint32_t          bracketCount=0;
 };
 
@@ -235,7 +235,7 @@ void ClangTUParser::parse()
   p->sources.resize(numUnsavedFiles);
   p->ufs.resize(numUnsavedFiles);
   size_t refIndent = 0;
-  p->sources[0]      = detab(fileToString(fileName,filterSourceFiles,TRUE),refIndent);
+  p->sources[0]      = detab(fileToString(fileName,filterSourceFiles,true),refIndent);
   p->ufs[0].Filename = qstrdup(fileName.data());
   p->ufs[0].Contents = p->sources[0].data();
   p->ufs[0].Length   = p->sources[0].length();
@@ -246,7 +246,7 @@ void ClangTUParser::parse()
           ++it, i++)
   {
     p->fileMapping.emplace(std::make_pair(*it,static_cast<uint32_t>(i)));
-    p->sources[i]      = detab(fileToString(QCString(*it),filterSourceFiles,TRUE),refIndent);
+    p->sources[i]      = detab(fileToString(QCString(*it),filterSourceFiles,true),refIndent);
     p->ufs[i].Filename = qstrdup(it->c_str());
     p->ufs[i].Contents = p->sources[i].data();
     p->ufs[i].Length   = p->sources[i].length();
@@ -375,7 +375,7 @@ std::string ClangTUParser::lookup(uint32_t line,const char *symbol)
       l = getCurrentTokenLine();
     }
   }
-  bool found=FALSE;
+  bool found=false;
   while (l<=line && p->curToken<p->numTokens && !found)
   {
     CXString tokenString = clang_getTokenSpelling(p->tu, p->tokens[p->curToken]);
@@ -423,7 +423,7 @@ std::string ClangTUParser::lookup(uint32_t line,const char *symbol)
         AUTO_TRACE_ADD("found full match {} usr='{}'",symbol,clang_getCString(usr));
         result = clang_getCString(usr);
         clang_disposeString(usr);
-        found=TRUE;
+        found=true;
       }
       else // reset token cursor to start of the search
       {
@@ -526,8 +526,8 @@ void ClangTUParser::writeLineNumber(OutputCodeList &ol,const FileDef *fd,uint32_
     {
       if (p->currentMemberDef!=md) // new member, start search for body
       {
-        p->searchForBody=TRUE;
-        p->insideBody=FALSE;
+        p->searchForBody=true;
+        p->insideBody=false;
         p->bracketCount=0;
       }
       p->currentMemberDef=md;
@@ -563,7 +563,7 @@ void ClangTUParser::writeLineNumber(OutputCodeList &ol,const FileDef *fd,uint32_
   {
     QCString lineAnchor;
     lineAnchor.sprintf("l%05d",line);
-    Doxygen::searchIndex.setCurrentDoc(fd,lineAnchor,TRUE);
+    Doxygen::searchIndex.setCurrentDoc(fd,lineAnchor,true);
   }
 
   //printf("writeLineNumber(%d) g_searchForBody=%d\n",line,g_searchForBody);
@@ -576,7 +576,7 @@ void ClangTUParser::codifyLines(OutputCodeList &ol,const FileDef *fd,const char 
   const char *p=text,*sp=p;
   char c = 0;
   bool inlineCodeFragment = false;
-  bool done=FALSE;
+  bool done=false;
   while (!done)
   {
     sp=p;
@@ -596,7 +596,7 @@ void ClangTUParser::codifyLines(OutputCodeList &ol,const FileDef *fd,const char 
     else
     {
       ol.codify(sp);
-      done=TRUE;
+      done=true;
     }
   }
   if (fontClass) ol.endFontClass();
@@ -618,7 +618,7 @@ void ClangTUParser::writeMultiLineCodeLink(OutputCodeList &ol,
    tooltip = d->briefDescriptionAsTooltip();
   }
   bool inlineCodeFragment = false;
-  bool done=FALSE;
+  bool done=false;
   const char *p=text;
   while (!done)
   {
@@ -638,7 +638,7 @@ void ClangTUParser::writeMultiLineCodeLink(OutputCodeList &ol,
     {
       //printf("writeCodeLink(%s,%s,%s,%s)\n",ref,file,anchor,sp);
       ol.writeCodeLink(d->codeSymbolType(),ref,file,anchor,sp,tooltip);
-      done=TRUE;
+      done=true;
     }
   }
 }
@@ -771,13 +771,13 @@ void ClangTUParser::detectFunctionBody(const char *s)
 
   if (p->searchForBody && (qstrcmp(s,":")==0 || qstrcmp(s,"{")==0)) // start of 'body' (: is for constructor)
   {
-    p->searchForBody=FALSE;
-    p->insideBody=TRUE;
+    p->searchForBody=false;
+    p->insideBody=true;
   }
   else if (p->searchForBody && qstrcmp(s,";")==0) // declaration only
   {
-    p->searchForBody=FALSE;
-    p->insideBody=FALSE;
+    p->searchForBody=false;
+    p->insideBody=false;
   }
   if (p->insideBody && qstrcmp(s,"{")==0) // increase scoping level
   {
@@ -788,7 +788,7 @@ void ClangTUParser::detectFunctionBody(const char *s)
     p->bracketCount--;
     if (p->bracketCount<=0) // got outside of function body
     {
-      p->insideBody=FALSE;
+      p->insideBody=false;
       p->bracketCount=0;
     }
   }
@@ -800,8 +800,8 @@ void ClangTUParser::writeSources(OutputCodeList &ol,const FileDef *fd)
   // (re)set global parser state
   p->currentMemberDef=nullptr;
   p->currentLine=0;
-  p->searchForBody=FALSE;
-  p->insideBody=FALSE;
+  p->searchForBody=false;
+  p->insideBody=false;
   p->bracketCount=0;
   p->foldStack.clear();
 
@@ -893,7 +893,7 @@ void ClangTUParser::writeSources(OutputCodeList &ol,const FileDef *fd)
               linkIdentifier(ol,fd,line,column,s,i);
               if (Doxygen::searchIndex.enabled())
               {
-                Doxygen::searchIndex.addWord(s,FALSE);
+                Doxygen::searchIndex.addWord(s,false);
               }
             }
             else

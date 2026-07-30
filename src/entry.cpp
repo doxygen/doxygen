@@ -39,7 +39,7 @@ Entry::Entry() : section(EntryType::makeEmpty()), program(static_cast<size_t>(0)
   mGrpId = -1;
   hasTagInfo = false;
   relatesType = RelatesType::Simple;
-  hidden = FALSE;
+  hidden = false;
   groupDocType = GROUPDOC_NORMAL;
   reset();
 }

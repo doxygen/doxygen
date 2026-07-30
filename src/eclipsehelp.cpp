@@ -42,7 +42,7 @@ struct EclipseHelp::Private
     if (endtag)
     {
       tocstream << "/>\n";
-      endtag = FALSE;
+      endtag = false;
     }
   }
   void openedTag()
@@ -50,7 +50,7 @@ struct EclipseHelp::Private
     if (endtag)
     {
       tocstream << ">\n";
-      endtag = FALSE;
+      endtag = false;
       ++openTags;
     }
   }
@@ -186,7 +186,7 @@ void EclipseHelp::addContentsItem(
         p->indent();
         p->tocstream << "<topic label=\"" << convertToXML(name) << "\"";
         p->tocstream << " href=\"" << convertToXML(p->pathprefix) << &file[1] << "\"";
-        p->endtag = TRUE;
+        p->endtag = true;
 	break;
 
       default:
@@ -198,7 +198,7 @@ void EclipseHelp::addContentsItem(
           p->tocstream << "#" << anchor;
         }
         p->tocstream << "\"";
-        p->endtag = TRUE;
+        p->endtag = true;
 	break;
     }
   }
@@ -206,7 +206,7 @@ void EclipseHelp::addContentsItem(
   {
     p->indent();
     p->tocstream << "<topic label=\"" << convertToXML(name) << "\"";
-    p->endtag = TRUE;
+    p->endtag = true;
   }
 }
 

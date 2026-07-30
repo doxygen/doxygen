@@ -120,7 +120,7 @@ static QCString replaceRef(const QCString &buf,const QCString &relPath,
 {
   // search for href="...", store ... part in link
   QCString href = "href";
-  //bool isXLink=FALSE;
+  //bool isXLink=false;
   int len = 6;
   int indexS = buf.find("href=\""), indexE = 0;
   bool targetAlreadySet = buf.find("target=")!=-1;
@@ -129,7 +129,7 @@ static QCString replaceRef(const QCString &buf,const QCString &relPath,
     indexS-=6;
     len+=6;
     href.prepend("xlink:");
-    //isXLink=TRUE;
+    //isXLink=true;
   }
   if (indexS>=0 && (indexE=buf.find('"',indexS+len))!=-1)
   {
@@ -145,7 +145,7 @@ static QCString replaceRef(const QCString &buf,const QCString &relPath,
         auto dfAst  { createRef( *parser.get(), link.mid(5), context ) };
         auto dfAstImpl = dynamic_cast<const DocNodeAST*>(dfAst.get());
         const DocRef *df = std::get_if<DocRef>(&dfAstImpl->root);
-        result+=externalRef(relPath,df->ref(),TRUE);
+        result+=externalRef(relPath,df->ref(),true);
         if (!df->file().isEmpty())
         {
           QCString fn = df->file();
@@ -176,7 +176,7 @@ static QCString replaceRef(const QCString &buf,const QCString &relPath,
           if (!result.isEmpty())targetAlreadySet=true;
         }
         result+= href+"=\"";
-        result+=externalRef(relPath,ref,TRUE);
+        result+=externalRef(relPath,ref,true);
         result+= url + "\"";
       }
       else // should not happen, but handle properly anyway
@@ -205,11 +205,11 @@ static QCString replaceRef(const QCString &buf,const QCString &relPath,
 *  \param mapName the name of the map file.
 *  \param relPath the relative path to the root of the output directory
 *                 (used in case CREATE_SUBDIRS is enabled).
-*  \param urlOnly if FALSE the url field in the map contains an external
+*  \param urlOnly if false the url field in the map contains an external
 *                 references followed by a $ and then the URL.
 *  \param context the context (file, class, or namespace) in which the
 *                 map file was found
-*  \returns TRUE if successful.
+*  \returns true if successful.
 */
 bool DotFilePatcher::convertMapFile(TextStream &t,const QCString &mapName,
                     const QCString &relPath, bool urlOnly,
@@ -221,7 +221,7 @@ bool DotFilePatcher::convertMapFile(TextStream &t,const QCString &mapName,
     err("problems opening map file {} for inclusion in the docs!\n"
       "If you installed Graphviz/dot after a previous failing run, \n"
       "try deleting the output directory and rerun doxygen.\n",mapName);
-    return FALSE;
+    return false;
   }
   std::string line;
   while (getline(f,line)) // foreach line
@@ -250,7 +250,7 @@ bool DotFilePatcher::convertMapFile(TextStream &t,const QCString &mapName,
       }
     }
   }
-  return TRUE;
+  return true;
 }
 
 DotFilePatcher::DotFilePatcher(const QCString &patchFile)
@@ -318,7 +318,7 @@ bool DotFilePatcher::run() const
   if (!thisDir.rename(m_patchFile.str(),tmpName.str()))
   {
     err("Failed to rename file {} to {}!\n",m_patchFile,tmpName);
-    return FALSE;
+    return false;
   }
   std::ifstream fi = Portable::openInputStream(tmpName);
   std::ofstream fo = Portable::openOutputStream(m_patchFile);
@@ -326,19 +326,19 @@ bool DotFilePatcher::run() const
   {
     err("problem opening file {} for patching!\n",tmpName);
     thisDir.rename(tmpName.str(),m_patchFile.str());
-    return FALSE;
+    return false;
   }
   if (!fo.is_open())
   {
     err("problem opening file {} for patching!\n",m_patchFile);
     thisDir.rename(tmpName.str(),m_patchFile.str());
-    return FALSE;
+    return false;
   }
   TextStream t(&fo);
   int width=0,height=0;
-  bool insideHeader=FALSE;
-  bool replacedHeader=FALSE;
-  bool useNagivation=FALSE;
+  bool insideHeader=false;
+  bool replacedHeader=false;
+  bool useNagivation=false;
   std::string lineStr;
   static const reg::Ex reSVG(R"([\[<]!-- SVG [0-9]+)");
   static const reg::Ex reMAP(R"(<!-- MAP [0-9]+)");
@@ -405,8 +405,8 @@ bool DotFilePatcher::run() const
             t << line;
           }
           line="";
-          insideHeader=FALSE;
-          replacedHeader=TRUE;
+          insideHeader=false;
+          replacedHeader=true;
         }
       }
       if (!insideHeader || !useNagivation) // copy SVG and replace refs,
@@ -479,7 +479,7 @@ bool DotFilePatcher::run() const
         if (!writeVecGfxFigure(t,map.label,map.mapFile))
         {
           err("problem writing FIG {} figure!\n",mapId);
-          return FALSE;
+          return false;
         }
       }
       else // error invalid map id!
@@ -513,12 +513,12 @@ bool DotFilePatcher::run() const
     if (!fi.is_open())
     {
       err("problem opening file {} for reading!\n",tmpName);
-      return FALSE;
+      return false;
     }
     if (!fo.is_open())
     {
       err("problem opening file {} for writing!\n",orgName);
-      return FALSE;
+      return false;
     }
     t.setStream(&fo);
     while (getline(fi,lineStr)) // foreach line
@@ -533,7 +533,7 @@ bool DotFilePatcher::run() const
   }
   // remove temporary file
   thisDir.remove(tmpName.str());
-  return TRUE;
+  return true;
 }
 
 //---------------------------------------------------------------------------------------------
@@ -542,7 +542,7 @@ bool DotFilePatcher::run() const
 // extract size from a dot generated SVG file
 static bool readSVGSize(const QCString &fileName,int *width,int *height)
 {
-  bool found=FALSE;
+  bool found=false;
   std::ifstream f = Portable::openInputStream(fileName);
   if (!f.is_open())
   {
@@ -576,14 +576,14 @@ static void writeSVGNotSupported(TextStream &out)
 }
 
 /// Check if a reference to a SVG figure can be written and do so if possible.
-/// Returns FALSE if not possible (for instance because the SVG file is not yet generated).
+/// Returns false if not possible (for instance because the SVG file is not yet generated).
 bool DotFilePatcher::writeSVGFigureLink(TextStream &out,const QCString &relPath,
                         const QCString &baseName,const QCString &absImgName)
 {
   int width=600,height=600;
   if (!readSVGSize(absImgName,&width,&height))
   {
-    return FALSE;
+    return false;
   }
   if (width==-1)
   {
@@ -613,7 +613,7 @@ bool DotFilePatcher::writeSVGFigureLink(TextStream &out,const QCString &relPath,
     out << "</div>";
   }
 
-  return TRUE;
+  return true;
 }
 
 bool DotFilePatcher::writeVecGfxFigure(TextStream &out,const QCString &baseName,
@@ -622,18 +622,18 @@ bool DotFilePatcher::writeVecGfxFigure(TextStream &out,const QCString &baseName,
   int width=400,height=550;
   if (Config_getBool(USE_PDFLATEX))
   {
-    if (!DotRunner::readBoundingBox(figureName+".pdf",&width,&height,FALSE))
+    if (!DotRunner::readBoundingBox(figureName+".pdf",&width,&height,false))
     {
       //printf("writeVecGfxFigure()=0\n");
-      return FALSE;
+      return false;
     }
   }
   else
   {
-    if (!DotRunner::readBoundingBox(figureName+".eps",&width,&height,TRUE))
+    if (!DotRunner::readBoundingBox(figureName+".eps",&width,&height,true))
     {
       //printf("writeVecGfxFigure()=0\n");
-      return FALSE;
+      return false;
     }
   }
   //printf("Got PDF/EPS size %d,%d\n",width,height);
@@ -665,5 +665,5 @@ bool DotFilePatcher::writeVecGfxFigure(TextStream &out,const QCString &baseName,
          "\\end{figure}\n";
 
   //printf("writeVecGfxFigure()=1\n");
-  return TRUE;
+  return true;
 }

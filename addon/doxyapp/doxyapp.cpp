@@ -137,7 +137,7 @@ static void findXRefSymbols(FileDef *fd)
                 QCString(),
                 fileToString(fd->absFilePath()),
                 lang,
-                FALSE,
+                false,
                 CodeParserOptions()
                 .setFileDef(fd));
 }
@@ -373,26 +373,26 @@ int main(int argc,char **argv)
   // we need a place to put intermediate files
   Config_updateString(OUTPUT_DIRECTORY, tempdir.c_str());
   // disable html output
-  Config_updateBool(GENERATE_HTML,FALSE);
+  Config_updateBool(GENERATE_HTML,false);
   // disable latex output
-  Config_updateBool(GENERATE_LATEX,FALSE);
+  Config_updateBool(GENERATE_LATEX,false);
   // be quiet
-  Config_updateBool(QUIET,TRUE);
+  Config_updateBool(QUIET,true);
   // turn off warnings
-  Config_updateBool(WARNINGS,FALSE);
-  Config_updateBool(WARN_IF_UNDOCUMENTED,FALSE);
-  Config_updateBool(WARN_IF_DOC_ERROR,FALSE);
-  Config_updateBool(WARN_IF_UNDOC_ENUM_VAL,FALSE);
+  Config_updateBool(WARNINGS,false);
+  Config_updateBool(WARN_IF_UNDOCUMENTED,false);
+  Config_updateBool(WARN_IF_DOC_ERROR,false);
+  Config_updateBool(WARN_IF_UNDOC_ENUM_VAL,false);
   // Extract as much as possible
-  Config_updateBool(EXTRACT_ALL,TRUE);
-  Config_updateBool(EXTRACT_STATIC,TRUE);
-  Config_updateBool(EXTRACT_PRIVATE,TRUE);
-  Config_updateBool(EXTRACT_LOCAL_METHODS,TRUE);
+  Config_updateBool(EXTRACT_ALL,true);
+  Config_updateBool(EXTRACT_STATIC,true);
+  Config_updateBool(EXTRACT_PRIVATE,true);
+  Config_updateBool(EXTRACT_LOCAL_METHODS,true);
   // Extract source browse information, needed
   // to make doxygen gather the cross reference info
-  Config_updateBool(SOURCE_BROWSER,TRUE);
+  Config_updateBool(SOURCE_BROWSER,true);
   // In case of a directory take all files on directory and its subdirectories
-  Config_updateBool(RECURSIVE,TRUE);
+  Config_updateBool(RECURSIVE,true);
 
   // set the input
   Config_updateList(INPUT,inputList);

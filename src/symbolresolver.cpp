@@ -303,7 +303,7 @@ const ClassDef *SymbolResolver::Private::getResolvedTypeRec(
   QCString explicitScopePart;
   QCString strippedTemplateParams;
   QCString scopeName=scope!=Doxygen::globalScope ? scope->name() : QCString();
-  QCString name=stripTemplateSpecifiersFromScope(n,TRUE,&strippedTemplateParams,scopeName);
+  QCString name=stripTemplateSpecifiersFromScope(n,true,&strippedTemplateParams,scopeName);
   std::unique_ptr<ArgumentList> actTemplParams;
   if (!strippedTemplateParams.isEmpty()) // template part that was stripped
   {
@@ -461,7 +461,7 @@ const Definition *SymbolResolver::Private::getResolvedSymbolRec(
   QCString explicitScopePart;
   QCString strippedTemplateParams;
   QCString scopeName=scope!=Doxygen::globalScope ? scope->name() : QCString();
-  QCString name=stripTemplateSpecifiersFromScope(n,TRUE,&strippedTemplateParams,scopeName);
+  QCString name=stripTemplateSpecifiersFromScope(n,true,&strippedTemplateParams,scopeName);
   std::unique_ptr<ArgumentList> actTemplParams;
   if (!strippedTemplateParams.isEmpty()) // template part that was stripped
   {
@@ -1057,7 +1057,7 @@ const ClassDef *SymbolResolver::Private::newResolveTypedef(
         if (pTemplSpec) *pTemplSpec = type.mid(i);
       }
       result = getResolvedTypeRec(cache,visitedKeys,md->getOuterScope(),
-           stripTemplateSpecifiersFromScope(type.left(i),FALSE),nullptr,nullptr,pResolvedType);
+           stripTemplateSpecifiersFromScope(type.left(i),false),nullptr,nullptr,pResolvedType);
     }
   }
 
@@ -1139,7 +1139,7 @@ int SymbolResolver::Private::isAccessibleFromWithExpScope(
          itemScope &&
          itemScope->definitionType()==Definition::TypeClass &&
          newScope->definitionType()==Definition::TypeClass &&
-         (toClassDef(newScope))->isBaseClass(toClassDef(itemScope),TRUE);
+         (toClassDef(newScope))->isBaseClass(toClassDef(itemScope),true);
 
     bool enumValueWithinEnum =
          item->definitionType()==Definition::TypeMember &&
@@ -1486,7 +1486,7 @@ int SymbolResolver::Private::isAccessibleFrom(VisitedKeys &visitedKeys,
       (itemIsClass &&                                                      // a nested class
        itemScope && itemScope->definitionType()==Definition::TypeClass &&  // inside a base
        scope->definitionType()==Definition::TypeClass &&                   // class of scope
-       (toClassDef(scope))->isBaseClass(toClassDef(itemScope),TRUE)
+       (toClassDef(scope))->isBaseClass(toClassDef(itemScope),true)
       );
   bool enumValueOfStrongEnum =
       (itemIsMember &&
@@ -1511,7 +1511,7 @@ int SymbolResolver::Private::isAccessibleFrom(VisitedKeys &visitedKeys,
              itemScope &&
              itemScope->definitionType()==Definition::TypeClass &&
              scope->definitionType()==Definition::TypeClass &&
-             (distanceToBase=toClassDef(scope)->isBaseClass(toClassDef(itemScope),TRUE))>0
+             (distanceToBase=toClassDef(scope)->isBaseClass(toClassDef(itemScope),true))>0
             )
     {
       result+=distanceToBase; // penalty if member is accessible via a base class

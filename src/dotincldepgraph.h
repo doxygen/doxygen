@@ -36,7 +36,7 @@ class DotInclDepGraph final : public DotGraph
 
     QCString writeGraph(TextStream &t, GraphOutputFormat gf, EmbeddedOutputFormat ef,
                         const QCString &path,const QCString &fileName,const QCString &relPath,
-                        bool writeImageMap=TRUE,int graphId=-1);
+                        bool writeImageMap=true,int graphId=-1);
     bool isTrivial() const;
     bool isTooBig() const;
     int numNodes() const;

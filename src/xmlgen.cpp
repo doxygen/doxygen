@@ -214,7 +214,7 @@ void XMLCodeGenerator::codify(const QCString &text)
   if (!m_hide && m_insideCodeLine && !m_insideSpecialHL && m_normalHLNeedStartTag)
   {
     *m_t << "<highlight class=\"normal\">";
-    m_normalHLNeedStartTag=FALSE;
+    m_normalHLNeedStartTag=false;
   }
   writeXMLCodeString(m_hide,*m_t,text,m_col,m_stripIndentAmount);
 }
@@ -249,7 +249,7 @@ void XMLCodeGenerator::writeCodeLink(CodeSymbolType,
   if (m_insideCodeLine && !m_insideSpecialHL && m_normalHLNeedStartTag)
   {
     *m_t << "<highlight class=\"normal\">";
-    m_normalHLNeedStartTag=FALSE;
+    m_normalHLNeedStartTag=false;
   }
   writeXMLLink(*m_t,ref,file,anchor,name,tooltip);
   m_col+=name.length();
@@ -290,7 +290,7 @@ void XMLCodeGenerator::startCodeLine(int)
     }
   }
   *m_t << ">";
-  m_insideCodeLine=TRUE;
+  m_insideCodeLine=true;
   m_col=0;
 }
 
@@ -301,7 +301,7 @@ void XMLCodeGenerator::endCodeLine()
   if (!m_insideSpecialHL && !m_normalHLNeedStartTag)
   {
     *m_t << "</highlight>";
-    m_normalHLNeedStartTag=TRUE;
+    m_normalHLNeedStartTag=true;
   }
   if (m_insideCodeLine)
   {
@@ -310,7 +310,7 @@ void XMLCodeGenerator::endCodeLine()
   m_lineNumber = -1;
   m_refId.clear();
   m_external.clear();
-  m_insideCodeLine=FALSE;
+  m_insideCodeLine=false;
 }
 
 void XMLCodeGenerator::startFontClass(const QCString &colorClass)
@@ -320,10 +320,10 @@ void XMLCodeGenerator::startFontClass(const QCString &colorClass)
   if (m_insideCodeLine && !m_insideSpecialHL && !m_normalHLNeedStartTag)
   {
     *m_t << "</highlight>";
-    m_normalHLNeedStartTag=TRUE;
+    m_normalHLNeedStartTag=true;
   }
   *m_t << "<highlight class=\"" << colorClass << "\">"; // non DocBook
-  m_insideSpecialHL=TRUE;
+  m_insideSpecialHL=true;
 }
 
 void XMLCodeGenerator::endFontClass()
@@ -331,7 +331,7 @@ void XMLCodeGenerator::endFontClass()
   if (m_hide) return;
   XML_DB(("(endFontClass)\n"));
   *m_t << "</highlight>"; // non DocBook
-  m_insideSpecialHL=FALSE;
+  m_insideSpecialHL=false;
 }
 
 void XMLCodeGenerator::writeCodeAnchor(const QCString &)
@@ -532,7 +532,7 @@ static void stripQualifiers(QCString &typeStr)
     else if (typeStr.stripPrefix("constinit ")) {}
     else if (typeStr.stripPrefix("virtual "))   {}
     else if (typeStr=="virtual") typeStr="";
-    else done=TRUE;
+    else done=true;
   }
 }
 
@@ -1902,7 +1902,7 @@ static void generateXMLForFile(FileDef *fd,TextStream &ti)
     t << "</includedby>\n";
   }
 
-  DotInclDepGraph incDepGraph(fd,FALSE);
+  DotInclDepGraph incDepGraph(fd,false);
   if (!incDepGraph.isTrivial())
   {
     t << "    <incdepgraph>\n";
@@ -1910,7 +1910,7 @@ static void generateXMLForFile(FileDef *fd,TextStream &ti)
     t << "    </incdepgraph>\n";
   }
 
-  DotInclDepGraph invIncDepGraph(fd,TRUE);
+  DotInclDepGraph invIncDepGraph(fd,true);
   if (!invIncDepGraph.isTrivial())
   {
     t << "    <invincdepgraph>\n";
@@ -2466,7 +2466,7 @@ void generateXML()
     for (const auto &pd : *Doxygen::pageLinkedMap)
     {
       msg("Generating XML output for page {}\n",pd->name());
-      generateXMLForPage(pd.get(),t,FALSE);
+      generateXMLForPage(pd.get(),t,false);
     }
     for (const auto &req : RequirementManager::instance().requirements())
     {
@@ -2489,12 +2489,12 @@ void generateXML()
     for (const auto &pd : *Doxygen::exampleLinkedMap)
     {
       msg("Generating XML output for example {}\n",pd->name());
-      generateXMLForPage(pd.get(),t,TRUE);
+      generateXMLForPage(pd.get(),t,true);
     }
     if (Doxygen::mainPage)
     {
       msg("Generating XML output for the main page\n");
-      generateXMLForPage(Doxygen::mainPage.get(),t,FALSE);
+      generateXMLForPage(Doxygen::mainPage.get(),t,false);
     }
 
     //t << "  </compoundlist>\n";

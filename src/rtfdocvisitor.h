@@ -127,8 +127,8 @@ class RTFDocVisitor final : public DocVisitor
     void incIndentLevel();
     void decIndentLevel();
 
-    void includePicturePreRTF(const QCString &name, bool isTypeRTF, bool hasCaption, bool inlineImage = FALSE);
-    void includePicturePostRTF(bool isTypeRTF, bool hasCaption, bool inlineImage = FALSE);
+    void includePicturePreRTF(const QCString &name, bool isTypeRTF, bool hasCaption, bool inlineImage = false);
+    void includePicturePostRTF(bool isTypeRTF, bool hasCaption, bool inlineImage = false);
     void writeDotFile(const QCString &fileName, bool hasCaption,const QCString &srcFile,int srcLine,bool newFile = true);
     void writeMscFile(const QCString &fileName, bool hasCaption,const QCString &srcFile,int srcLine,bool newFile = true);
     void writeDiaFile(const QCString &fileName, bool hasCaption,const QCString &srcFile,int srcLine,bool newFile = true);

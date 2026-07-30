@@ -30,12 +30,6 @@
 
 #include "utf8.h"
 
-#ifndef FALSE
-#define FALSE false
-#endif
-#ifndef TRUE
-#define TRUE true
-#endif
 #define ASSERT(x)  if ( !(x) )\
 	fprintf(stderr,"ASSERT: \"%s\" in %s (%d)\n",#x,__FILE__,__LINE__)
 
@@ -163,7 +157,7 @@ class QCString
 
     QCString &operator=( const std::string &s) { m_rep = s; return *this; }
 
-    /** Returns TRUE iff the string is empty */
+    /** Returns true iff the string is empty */
     bool isEmpty() const { return m_rep.empty(); }
 
     /** Returns the length of the string, not counting the 0-terminator. Equivalent to size(). */
@@ -203,26 +197,26 @@ class QCString
 
     QCString &sprintf( const char *format, ... );
 
-    int	find( char c, int index=0, bool cs=TRUE ) const;
-    int	find( const char *str, int index=0, bool cs=TRUE ) const;
-    int	find( const std::string &str, int index=0, bool cs=TRUE ) const;
-    int find( const QCString &str, int index=0, bool cs=TRUE ) const;
+    int	find( char c, int index=0, bool cs=true ) const;
+    int	find( const char *str, int index=0, bool cs=true ) const;
+    int	find( const std::string &str, int index=0, bool cs=true ) const;
+    int find( const QCString &str, int index=0, bool cs=true ) const;
 
-    int	findRev( char c, int index=-1, bool cs=TRUE) const;
-    int	findRev( const char *str, int index=-1, bool cs=TRUE) const;
+    int	findRev( char c, int index=-1, bool cs=true) const;
+    int	findRev( const char *str, int index=-1, bool cs=true) const;
 
-    int	contains( char c, bool cs=TRUE ) const;
-    int	contains( const char *str, bool cs=TRUE ) const;
+    int	contains( char c, bool cs=true ) const;
+    int	contains( const char *str, bool cs=true ) const;
 
     bool stripPrefix(const QCString &prefix)
     {
-      if (prefix.isEmpty() || m_rep.empty()) return FALSE;
+      if (prefix.isEmpty() || m_rep.empty()) return false;
       if (m_rep.rfind(prefix.data(),0)==0) // string starts with prefix
       {
         m_rep.erase(0,prefix.length());
-        return TRUE;
+        return true;
       }
-      return FALSE;
+      return false;
     }
 
     bool stripPrefix(const char *prefix)

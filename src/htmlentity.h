@@ -95,8 +95,8 @@ class HtmlEntityMapper
                   };
     static HtmlEntityMapper &instance();
     SymType name2sym(const QCString &symName) const;
-    const char *utf8(SymType symb,bool useInPrintf=FALSE) const;
-    const char *html(SymType symb,bool useInPrintf=FALSE) const;
+    const char *utf8(SymType symb,bool useInPrintf=false) const;
+    const char *html(SymType symb,bool useInPrintf=false) const;
     const char *xml(SymType symb) const;
     const char *docbook(SymType symb) const;
     const char *latex(SymType symb) const;

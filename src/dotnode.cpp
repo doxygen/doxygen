@@ -117,7 +117,7 @@ QCString escapeTooltip(const QCString &tooltip)
 static void writeBoxMemberList(TextStream &t,
   char prot,const MemberList *ml,const ClassDef *scope,
   bool &lineWritten,
-  bool isStatic=FALSE,const StringUnorderedSet *skipNames=nullptr)
+  bool isStatic=false,const StringUnorderedSet *skipNames=nullptr)
 {
   constexpr auto tr_start = "<TR><TD VALIGN=\"top\" CELLPADDING=\"1\" CELLSPACING=\"0\">";
   constexpr auto tr_mid   = "</TD><TD VALIGN=\"top\" ALIGN=\"LEFT\" CELLPADDING=\"1\" CELLSPACING=\"0\">";
@@ -372,7 +372,7 @@ void DotNode::removeParent(DotNode *n)
 void DotNode::deleteNode(DotNodeRefVector &deletedList)
 {
   if (m_deleted) return; // avoid recursive loops in case the graph has cycles
-  m_deleted=TRUE;
+  m_deleted=true;
   // delete all parent nodes of this node
   for (const auto &pn : m_parents)
   {
@@ -452,33 +452,33 @@ void DotNode::writeLabel(TextStream &t, GraphType gt) const
     {
       bool lineWritten = false;
       t << sep;
-      writeBoxMemberList(t,'+',m_classDef->getMemberList(MemberListType::PubAttribs()),m_classDef,lineWritten,FALSE,&arrowNames);
-      writeBoxMemberList(t,'+',m_classDef->getMemberList(MemberListType::PubStaticAttribs()),m_classDef,lineWritten,TRUE,&arrowNames);
-      writeBoxMemberList(t,'+',m_classDef->getMemberList(MemberListType::Properties()),m_classDef,lineWritten,FALSE,&arrowNames);
-      writeBoxMemberList(t,'~',m_classDef->getMemberList(MemberListType::PacAttribs()),m_classDef,lineWritten,FALSE,&arrowNames);
-      writeBoxMemberList(t,'~',m_classDef->getMemberList(MemberListType::PacStaticAttribs()),m_classDef,lineWritten,TRUE,&arrowNames);
-      writeBoxMemberList(t,'#',m_classDef->getMemberList(MemberListType::ProAttribs()),m_classDef,lineWritten,FALSE,&arrowNames);
-      writeBoxMemberList(t,'#',m_classDef->getMemberList(MemberListType::ProStaticAttribs()),m_classDef,lineWritten,TRUE,&arrowNames);
+      writeBoxMemberList(t,'+',m_classDef->getMemberList(MemberListType::PubAttribs()),m_classDef,lineWritten,false,&arrowNames);
+      writeBoxMemberList(t,'+',m_classDef->getMemberList(MemberListType::PubStaticAttribs()),m_classDef,lineWritten,true,&arrowNames);
+      writeBoxMemberList(t,'+',m_classDef->getMemberList(MemberListType::Properties()),m_classDef,lineWritten,false,&arrowNames);
+      writeBoxMemberList(t,'~',m_classDef->getMemberList(MemberListType::PacAttribs()),m_classDef,lineWritten,false,&arrowNames);
+      writeBoxMemberList(t,'~',m_classDef->getMemberList(MemberListType::PacStaticAttribs()),m_classDef,lineWritten,true,&arrowNames);
+      writeBoxMemberList(t,'#',m_classDef->getMemberList(MemberListType::ProAttribs()),m_classDef,lineWritten,false,&arrowNames);
+      writeBoxMemberList(t,'#',m_classDef->getMemberList(MemberListType::ProStaticAttribs()),m_classDef,lineWritten,true,&arrowNames);
       if (Config_getBool(EXTRACT_PRIVATE))
       {
-        writeBoxMemberList(t,'-',m_classDef->getMemberList(MemberListType::PriAttribs()),m_classDef,lineWritten,FALSE,&arrowNames);
-        writeBoxMemberList(t,'-',m_classDef->getMemberList(MemberListType::PriStaticAttribs()),m_classDef,lineWritten,TRUE,&arrowNames);
+        writeBoxMemberList(t,'-',m_classDef->getMemberList(MemberListType::PriAttribs()),m_classDef,lineWritten,false,&arrowNames);
+        writeBoxMemberList(t,'-',m_classDef->getMemberList(MemberListType::PriStaticAttribs()),m_classDef,lineWritten,true,&arrowNames);
       }
       if (!lineWritten) t << empty_line;
       t << sep;
       lineWritten = false;
       writeBoxMemberList(t,'+',m_classDef->getMemberList(MemberListType::PubMethods()),m_classDef,lineWritten);
-      writeBoxMemberList(t,'+',m_classDef->getMemberList(MemberListType::PubStaticMethods()),m_classDef,lineWritten,TRUE);
+      writeBoxMemberList(t,'+',m_classDef->getMemberList(MemberListType::PubStaticMethods()),m_classDef,lineWritten,true);
       writeBoxMemberList(t,'+',m_classDef->getMemberList(MemberListType::PubSlots()),m_classDef,lineWritten);
       writeBoxMemberList(t,'~',m_classDef->getMemberList(MemberListType::PacMethods()),m_classDef,lineWritten);
-      writeBoxMemberList(t,'~',m_classDef->getMemberList(MemberListType::PacStaticMethods()),m_classDef,lineWritten,TRUE);
+      writeBoxMemberList(t,'~',m_classDef->getMemberList(MemberListType::PacStaticMethods()),m_classDef,lineWritten,true);
       writeBoxMemberList(t,'#',m_classDef->getMemberList(MemberListType::ProMethods()),m_classDef,lineWritten);
-      writeBoxMemberList(t,'#',m_classDef->getMemberList(MemberListType::ProStaticMethods()),m_classDef,lineWritten,TRUE);
+      writeBoxMemberList(t,'#',m_classDef->getMemberList(MemberListType::ProStaticMethods()),m_classDef,lineWritten,true);
       writeBoxMemberList(t,'#',m_classDef->getMemberList(MemberListType::ProSlots()),m_classDef,lineWritten);
       if (Config_getBool(EXTRACT_PRIVATE))
       {
         writeBoxMemberList(t,'-',m_classDef->getMemberList(MemberListType::PriMethods()),m_classDef,lineWritten);
-        writeBoxMemberList(t,'-',m_classDef->getMemberList(MemberListType::PriStaticMethods()),m_classDef,lineWritten,TRUE);
+        writeBoxMemberList(t,'-',m_classDef->getMemberList(MemberListType::PriStaticMethods()),m_classDef,lineWritten,true);
         writeBoxMemberList(t,'-',m_classDef->getMemberList(MemberListType::PriSlots()),m_classDef,lineWritten);
       }
       if (m_classDef->getLanguage()!=SrcLangExt::Fortran)
@@ -487,7 +487,7 @@ void DotNode::writeLabel(TextStream &t, GraphType gt) const
         {
           if (!mg->members().empty())
           {
-            writeBoxMemberList(t,'*',&mg->members(),m_classDef,lineWritten,FALSE,&arrowNames);
+            writeBoxMemberList(t,'*',&mg->members(),m_classDef,lineWritten,false,&arrowNames);
           }
         }
       }
@@ -662,7 +662,7 @@ void DotNode::write(TextStream &t,
   if (m_written) return; // node already written to the output
   if (!m_visible) return; // node is not visible
   writeBox(t,gt,format,m_truncated==Truncated);
-  m_written=TRUE;
+  m_written=true;
   if (toChildren)
   {
     auto it = m_edgeInfo.begin();
@@ -692,11 +692,11 @@ void DotNode::write(TextStream &t,
           format,
           pn,
           &pn->edgeInfo()[index],
-          FALSE,
+          false,
           backArrows
         );
       }
-      pn->write(t,gt,format,TRUE,FALSE,backArrows);
+      pn->write(t,gt,format,true,false,backArrows);
     }
   }
   //printf("end DotNode::write(%d) name=%s\n",distance,qPrint(m_label));
@@ -886,7 +886,7 @@ void DotNode::writeDEF(TextStream &t) const
 
 void DotNode::clearWriteFlag()
 {
-  m_written=FALSE;
+  m_written=false;
   for (const auto &pn : m_parents)  if (pn->isWritten()) pn->clearWriteFlag();
   for (const auto &cn : m_children) if (cn->isWritten()) cn->clearWriteFlag();
 }

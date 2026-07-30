@@ -54,7 +54,7 @@ void ClassLinkedRefMap::writeDeclaration(OutputList &ol,const ClassDef::Compound
                                       const QCString &header,bool localNames) const
 {
   bool extractPrivate = Config_getBool(EXTRACT_PRIVATE);
-  bool found=FALSE;
+  bool found=false;
   for (const auto &cd : *this)
   {
     //printf("  ClassLinkedRefMap::writeDeclaration for %s\n",cd->name().data());
@@ -79,7 +79,7 @@ void ClassLinkedRefMap::writeDocumentation(OutputList &ol,const Definition * con
   bool inlineSimpleClasses = Config_getBool(INLINE_SIMPLE_STRUCTS);
   if (!inlineGroupedClasses && !inlineSimpleClasses) return;
 
-  bool found=FALSE;
+  bool found=false;
 
   for (const auto &cd : *this)
   {
@@ -102,7 +102,7 @@ void ClassLinkedRefMap::writeDocumentation(OutputList &ol,const Definition * con
         ol.parseText(fortranOpt?theTranslator->trTypeDocumentation():
             theTranslator->trClassDocumentation());
         ol.endGroupHeader();
-        found=TRUE;
+        found=true;
       }
       cd->writeInlineDocumentation(ol);
     }

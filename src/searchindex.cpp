@@ -86,8 +86,8 @@ void SearchIndex::setCurrentDoc(const Definition *ctx,const QCString &anchor,boo
   {
     const MemberDef *md = toMemberDef(ctx);
     name.prepend((md->getLanguage()==SrcLangExt::Fortran  ?
-                 theTranslator->trSubprogram(TRUE,TRUE) :
-                 theTranslator->trMember(TRUE,TRUE))+" ");
+                 theTranslator->trSubprogram(true,true) :
+                 theTranslator->trMember(true,true))+" ");
   }
   else // compound type
   {
@@ -104,11 +104,11 @@ void SearchIndex::setCurrentDoc(const Definition *ctx,const QCString &anchor,boo
           const PageDef *pd = toPageDef(ctx);
           if (pd->hasTitle())
           {
-            name = theTranslator->trPage(TRUE,TRUE)+" "+pd->title();
+            name = theTranslator->trPage(true,true)+" "+pd->title();
           }
           else
           {
-            name = theTranslator->trPage(TRUE,TRUE)+" "+pd->name();
+            name = theTranslator->trPage(true,true)+" "+pd->name();
           }
         }
         break;
@@ -126,11 +126,11 @@ void SearchIndex::setCurrentDoc(const Definition *ctx,const QCString &anchor,boo
           }
           else if (lang==SrcLangExt::Fortran)
           {
-            name.prepend(theTranslator->trModule(TRUE,TRUE)+" ");
+            name.prepend(theTranslator->trModule(true,true)+" ");
           }
           else
           {
-            name.prepend(theTranslator->trNamespace(TRUE,TRUE)+" ");
+            name.prepend(theTranslator->trNamespace(true,true)+" ");
           }
         }
         break;
@@ -139,17 +139,17 @@ void SearchIndex::setCurrentDoc(const Definition *ctx,const QCString &anchor,boo
           const GroupDef *gd = toGroupDef(ctx);
           if (!gd->groupTitle().isEmpty())
           {
-            name = theTranslator->trGroup(TRUE,TRUE)+" "+gd->groupTitle();
+            name = theTranslator->trGroup(true,true)+" "+gd->groupTitle();
           }
           else
           {
-            name.prepend(theTranslator->trGroup(TRUE,TRUE)+" ");
+            name.prepend(theTranslator->trGroup(true,true)+" ");
           }
         }
         break;
       case Definition::TypeModule:
         {
-          name.prepend(theTranslator->trModule(TRUE,TRUE)+" ");
+          name.prepend(theTranslator->trModule(true,true)+" ");
         }
         break;
       default:
@@ -206,14 +206,14 @@ void SearchIndex::addWordRec(const QCString &word,bool hiPriority,bool recurse)
     it = m_words.emplace( wStr.str(), static_cast<int>(m_index[idx].size())-1 ).first;
   }
   m_index[idx][it->second].addUrlIndex(m_urlIndex,hiPriority);
-  bool found=FALSE;
+  bool found=false;
   if (!recurse) // the first time we check if we can strip the prefix
   {
     int i=getPrefixIndex(word);
     if (i>0)
     {
-      addWordRec(word.data()+i,hiPriority,TRUE);
-      found=TRUE;
+      addWordRec(word.data()+i,hiPriority,true);
+      found=true;
     }
   }
   if (!found) // no prefix stripped
@@ -227,7 +227,7 @@ void SearchIndex::addWordRec(const QCString &word,bool hiPriority,bool recurse)
     }
     if (word[i]!=0 && i>=1)
     {
-      addWordRec(word.data()+i+1,hiPriority,TRUE);
+      addWordRec(word.data()+i+1,hiPriority,true);
     }
   }
 }
@@ -235,7 +235,7 @@ void SearchIndex::addWordRec(const QCString &word,bool hiPriority,bool recurse)
 void SearchIndex::addWord(const QCString &word,bool hiPriority)
 {
   std::lock_guard<std::mutex> lock(g_searchIndexMutex);
-  addWordRec(word,hiPriority,FALSE);
+  addWordRec(word,hiPriority,false);
 }
 
 static void writeInt(std::ostream &f,size_t index)

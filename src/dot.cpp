@@ -133,26 +133,26 @@ bool DotManager::run()
     }
   }
 
-  bool setPath=FALSE;
+  bool setPath=false;
   if (Config_getBool(GENERATE_HTML))
   {
     setDotFontPath(Config_getString(HTML_OUTPUT));
-    setPath=TRUE;
+    setPath=true;
   }
   else if (Config_getBool(GENERATE_LATEX))
   {
     setDotFontPath(Config_getString(LATEX_OUTPUT));
-    setPath=TRUE;
+    setPath=true;
   }
   else if (Config_getBool(GENERATE_RTF))
   {
     setDotFontPath(Config_getString(RTF_OUTPUT));
-    setPath=TRUE;
+    setPath=true;
   }
   else if (Config_getBool(GENERATE_DOCBOOK))
   {
     setDotFontPath(Config_getString(DOCBOOK_OUTPUT));
-    setPath=TRUE;
+    setPath=true;
   }
 
   bool ok = m_runner.run(m_jobs);
@@ -162,7 +162,7 @@ bool DotManager::run()
     unsetDotFontPath();
   }
 
-  if (!ok) return FALSE;
+  if (!ok) return false;
 
   // patch the output file and insert the maps and figures
   size_t i=1;
@@ -175,7 +175,7 @@ bool DotManager::run()
     if (fp.second.isSVGFile())
     {
       msg("Patching output file {}/{}\n",i,numFilePatchers);
-      if (!fp.second.run()) return FALSE;
+      if (!fp.second.run()) return false;
       i++;
     }
   }
@@ -184,11 +184,11 @@ bool DotManager::run()
     if (!fp.second.isSVGFile())
     {
       msg("Patching output file {}/{}\n",i,numFilePatchers);
-      if (!fp.second.run()) return FALSE;
+      if (!fp.second.run()) return false;
       i++;
     }
   }
-  return TRUE;
+  return true;
 }
 
 //--------------------------------------------------------------------
@@ -225,7 +225,7 @@ void writeDotGraphFromFile(const QCString &inFile,const QCString &outDir,
     }
   }
 
-  if (Portable::system(Doxygen::verifiedDotPath, dotArgs, FALSE) != 0)
+  if (Portable::system(Doxygen::verifiedDotPath, dotArgs, false) != 0)
   {
     return;
   }
@@ -265,7 +265,7 @@ void writeDotImageMapFromFile(TextStream &t,
   QCString absOutFile = d.absPath()+"/"+mapName;
 
   QCString dotArgs = QCString("-T" MAP_CMD " -o \"") + absOutFile + "\" \"" + inFile + "\"";
-  if (Portable::system(Doxygen::verifiedDotPath, dotArgs, FALSE) != 0)
+  if (Portable::system(Doxygen::verifiedDotPath, dotArgs, false) != 0)
   {
     return;
   }
@@ -277,7 +277,7 @@ void writeDotImageMapFromFile(TextStream &t,
     if (newFile)
     {
       DotFilePatcher patcher(svgName);
-      patcher.addSVGConversion("",TRUE,context,TRUE,graphId);
+      patcher.addSVGConversion("",true,context,true,graphId);
       patcher.run();
     }
   }
@@ -286,7 +286,7 @@ void writeDotImageMapFromFile(TextStream &t,
     TextStream tt;
     t << "<img src=\"" << relPath << imgName << "\" alt=\""
       << imgName << "\" border=\"0\" usemap=\"#" << mapName << "\"/>\n";
-    DotFilePatcher::convertMapFile(tt, absOutFile, relPath ,TRUE, context);
+    DotFilePatcher::convertMapFile(tt, absOutFile, relPath ,true, context);
     if (!tt.empty())
     {
       t << "<map name=\"" << mapName << "\" id=\"" << mapName << "\">";

@@ -50,7 +50,7 @@ void DotGfxHierarchyTable::computeTheGraph()
   {
     if (node->subgraphId()==m_rootSubgraphNode->subgraphId())
     {
-      node->write(md5stream,GraphType::Hierarchy,GraphOutputFormat::BITMAP,FALSE,TRUE,TRUE);
+      node->write(md5stream,GraphType::Hierarchy,GraphOutputFormat::BITMAP,false,true,true);
     }
   }
   writeGraphFooter(md5stream);
@@ -59,7 +59,7 @@ void DotGfxHierarchyTable::computeTheGraph()
 
 QCString DotGfxHierarchyTable::getMapLabel() const
 {
-  return escapeCharsInString(m_rootSubgraphNode->label(),FALSE);
+  return escapeCharsInString(m_rootSubgraphNode->label(),false);
 }
 
 void DotGfxHierarchyTable::createGraph(DotNode *n,TextStream &out,
@@ -67,9 +67,9 @@ void DotGfxHierarchyTable::createGraph(DotNode *n,TextStream &out,
 {
   m_rootSubgraphNode = n;
   m_graphId = id;
-  m_noDivTag = TRUE;
-  m_zoomable = FALSE;
-  DotGraph::writeGraph(out, GraphOutputFormat::BITMAP, EmbeddedOutputFormat::Html, path, fileName, "", TRUE, 0);
+  m_noDivTag = true;
+  m_zoomable = false;
+  DotGraph::writeGraph(out, GraphOutputFormat::BITMAP, EmbeddedOutputFormat::Html, path, fileName, "", true, 0);
 }
 
 void DotGfxHierarchyTable::writeGraph(TextStream &out,
@@ -235,17 +235,17 @@ DotGfxHierarchyTable::DotGfxHierarchyTable(const QCString &prefix,ClassDef::Comp
   // m_usedNodes now contains all nodes in the graph
 
   // color the graph into a set of independent subgraphs
-  bool done=FALSE;
+  bool done=false;
   int curColor=0;
   while (!done) // there are still nodes to color
   {
-    done=TRUE; // we are done unless there are still uncolored nodes
+    done=true; // we are done unless there are still uncolored nodes
     for (auto n : m_rootNodes)
     {
       if (n->subgraphId()==-1) // not yet colored
       {
         //printf("Starting at node %s (%p): %d\n",qPrint(n->label()),n,curColor);
-        done=FALSE; // still uncolored nodes
+        done=false; // still uncolored nodes
         n->setSubgraphId(curColor);
         n->markAsVisible();
         n->colorConnectedNodes(curColor);

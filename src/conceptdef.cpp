@@ -566,7 +566,7 @@ void ConceptDefImpl::writeAuthorSection(OutputList &ol) const
   ol.pushGeneratorState();
   ol.disableAllBut(OutputType::Man);
   ol.startGroupHeader();
-  ol.parseText(theTranslator->trAuthor(TRUE,TRUE));
+  ol.parseText(theTranslator->trAuthor(true,true));
   ol.endGroupHeader();
   ol.parseText(theTranslator->trGeneratedAutomatically(Config_getString(PROJECT_NAME)));
   ol.popGeneratorState();
@@ -722,7 +722,7 @@ void ConceptDefImpl::writeDeclarationLink(OutputList &ol,bool &found,const QCStr
       }
       ol.endMemberHeader();
       ol.startMemberList();
-      found=TRUE;
+      found=true;
     }
     ol.startMemberDeclaration();
     QCString cname = displayName(!localNames);
@@ -805,7 +805,7 @@ bool ConceptLinkedRefMap::declVisible() const
 
 void ConceptLinkedRefMap::writeDeclaration(OutputList &ol,const QCString &header,bool localNames) const
 {
-  bool found=FALSE;
+  bool found=false;
   for (const auto &cd : *this)
   {
     cd->writeDeclarationLink(ol,found,header,localNames);

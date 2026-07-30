@@ -892,7 +892,7 @@ static bool bindIntParameter(SqlStmt &s,const char *name,int value)
   return true;
 }
 
-static int step(SqlStmt &s,bool getRowId=FALSE, bool select=FALSE)
+static int step(SqlStmt &s,bool getRowId=false, bool select=false)
 {
   int rowid=-1;
   int rc = sqlite3_step(s.stmt);
@@ -910,7 +910,7 @@ static int step(SqlStmt &s,bool getRowId=FALSE, bool select=FALSE)
   return rowid;
 }
 
-static int insertPath(QCString name, bool local=TRUE, bool found=TRUE, int type=1)
+static int insertPath(QCString name, bool local=true, bool found=true, int type=1)
 {
   int rowid=-1;
   if (name==nullptr) return rowid;
@@ -918,14 +918,14 @@ static int insertPath(QCString name, bool local=TRUE, bool found=TRUE, int type=
   name = stripFromPath(name);
 
   bindTextParameter(path_select,":name",name.data());
-  rowid=step(path_select,TRUE,TRUE);
+  rowid=step(path_select,true,true);
   if (rowid==0)
   {
     bindTextParameter(path_insert,":name",name.data());
     bindIntParameter(path_insert,":type",type);
     bindIntParameter(path_insert,":local",local?1:0);
     bindIntParameter(path_insert,":found",found?1:0);
-    rowid=step(path_insert,TRUE);
+    rowid=step(path_insert,true);
   }
   return rowid;
 }
@@ -953,16 +953,16 @@ struct Refid insertRefid(const QCString &refid)
   Refid ret;
   ret.rowid=-1;
   ret.refid=refid;
-  ret.created = FALSE;
+  ret.created = false;
   if (refid.isEmpty()) return ret;
 
   bindTextParameter(refid_select,":refid",refid);
-  ret.rowid=step(refid_select,TRUE,TRUE);
+  ret.rowid=step(refid_select,true,true);
   if (ret.rowid==0)
   {
     bindTextParameter(refid_insert,":refid",refid);
-    ret.rowid=step(refid_insert,TRUE);
-    ret.created = TRUE;
+    ret.rowid=step(refid_insert,true);
+    ret.created = true;
   }
 
   return ret;
@@ -971,7 +971,7 @@ struct Refid insertRefid(const QCString &refid)
 static bool memberdefExists(struct Refid refid)
 {
   bindIntParameter(memberdef_exists,":rowid",refid.rowid);
-  int test = step(memberdef_exists,TRUE,TRUE);
+  int test = step(memberdef_exists,true,true);
   return test ? true : false;
 }
 
@@ -979,14 +979,14 @@ static bool memberdefIncomplete(struct Refid refid, const MemberDef* md)
 {
   bindIntParameter(memberdef_incomplete,":rowid",refid.rowid);
   bindIntParameter(memberdef_incomplete,":new_inline",md->isInline());
-  int test = step(memberdef_incomplete,TRUE,TRUE);
+  int test = step(memberdef_incomplete,true,true);
   return test ? true : false;
 }
 
 static bool compounddefExists(struct Refid refid)
 {
   bindIntParameter(compounddef_exists,":rowid",refid.rowid);
-  int test = step(compounddef_exists,TRUE,TRUE);
+  int test = step(compounddef_exists,true,true);
   return test ? true : false;
 }
 
@@ -1083,9 +1083,9 @@ static void insertMemberFunctionParams(int memberdef_id, const MemberDef *md, co
         bindTextParameter(param_insert,":defval",a.defval);
       }
 
-      int param_id=step(param_select,TRUE,TRUE);
+      int param_id=step(param_select,true,true);
       if (param_id==0) {
-        param_id=step(param_insert,TRUE);
+        param_id=step(param_insert,true);
       }
       if (param_id==-1) {
           DBG_CTX(("error INSERT params failed\n"));
@@ -1111,7 +1111,7 @@ static void insertMemberDefineParams(int memberdef_id,const MemberDef *md, const
       for (const Argument &a : md->argumentList())
       {
         bindTextParameter(param_insert,":defname",a.type);
-        int param_id=step(param_insert,TRUE);
+        int param_id=step(param_insert,true);
         if (param_id==-1) {
           continue;
         }
@@ -1141,13 +1141,13 @@ static void associateMember(const MemberDef *md, struct Refid member_refid, stru
 
 static void stripQualifiers(QCString &typeStr)
 {
-  bool done=FALSE;
+  bool done=false;
   while (!done)
   {
     if      (typeStr.stripPrefix("static "));
     else if (typeStr.stripPrefix("virtual "));
     else if (typeStr=="virtual") typeStr="";
-    else done=TRUE;
+    else done=true;
   }
 }
 
@@ -1394,7 +1394,7 @@ static void writeTemplateArgumentList(const ArgumentList &al,
       bindTextParameter(param_select,":defval",a.defval);
       bindTextParameter(param_insert,":defval",a.defval);
     }
-    if (!step(param_select,TRUE,TRUE))
+    if (!step(param_select,true,true))
       step(param_insert);
   }
 }
@@ -1632,7 +1632,7 @@ static void generateSqlite3ForMember(const MemberDef *md, struct Refid scope_ref
     getSQLDesc(memberdef_update,":detaileddescription",md->documentation(),md);
     getSQLDesc(memberdef_update,":inbodydescription",md->inbodyDocumentation(),md);
 
-    step(memberdef_update,TRUE);
+    step(memberdef_update,true);
 
     // don't think we need to repeat params; should have from first encounter
 
@@ -1742,7 +1742,7 @@ static void generateSqlite3ForMember(const MemberDef *md, struct Refid scope_ref
 
     bindIntParameter(reimplements_insert,":memberdef_rowid", refid.rowid);
     bindIntParameter(reimplements_insert,":reimplemented_rowid", reimplemented_refid.rowid);
-    step(reimplements_insert,TRUE);
+    step(reimplements_insert,true);
   }
 
   LinkifyTextOptions options;
@@ -1841,7 +1841,7 @@ static void generateSqlite3ForMember(const MemberDef *md, struct Refid scope_ref
     }
   }
 
-  int memberdef_id=step(memberdef_insert,TRUE);
+  int memberdef_id=step(memberdef_insert,true);
 
   if (isFunc)
   {
@@ -2249,7 +2249,7 @@ static void generateSqlite3ForFile(const FileDef *fd)
     }
     else // can't find file
     {
-      dst_id = insertPath(ii.includeName,isLocal,FALSE);
+      dst_id = insertPath(ii.includeName,isLocal,false);
     }
 
     DBG_CTX(("-----> FileDef includeInfo for %s\n", qPrint(ii.includeName)));
@@ -2265,7 +2265,7 @@ static void generateSqlite3ForFile(const FileDef *fd)
     bindIntParameter(incl_select,":local",isLocal);
     bindIntParameter(incl_select,":src_id",src_id);
     bindIntParameter(incl_select,":dst_id",dst_id);
-    if (step(incl_select,TRUE,TRUE)==0) {
+    if (step(incl_select,true,true)==0) {
       bindIntParameter(incl_insert,":local",isLocal);
       bindIntParameter(incl_insert,":src_id",src_id);
       bindIntParameter(incl_insert,":dst_id",dst_id);
@@ -2298,13 +2298,13 @@ static void generateSqlite3ForFile(const FileDef *fd)
     }
     else // can't find file
     {
-      src_id = insertPath(ii.includeName,isLocal,FALSE);
+      src_id = insertPath(ii.includeName,isLocal,false);
     }
 
     bindIntParameter(incl_select,":local",isLocal);
     bindIntParameter(incl_select,":src_id",src_id);
     bindIntParameter(incl_select,":dst_id",dst_id);
-    if (step(incl_select,TRUE,TRUE)==0) {
+    if (step(incl_select,true,true)==0) {
       bindIntParameter(incl_insert,":local",isLocal);
       bindIntParameter(incl_insert,":src_id",src_id);
       bindIntParameter(incl_insert,":dst_id",dst_id);
@@ -2428,7 +2428,7 @@ static void generateSqlite3ForDir(const DirDef *dd)
   bindTextParameter(compounddef_insert,":name",dd->displayName());
   bindTextParameter(compounddef_insert,":kind","dir");
 
-  int file_id = insertPath(dd->getDefFileName(),TRUE,TRUE,2);
+  int file_id = insertPath(dd->getDefFileName(),true,true,2);
   bindIntParameter(compounddef_insert,":file_id",file_id);
 
   /*
@@ -2659,7 +2659,7 @@ void generateSqlite3()
   for (const auto &pd : *Doxygen::pageLinkedMap)
   {
     msg("Generating Sqlite3 output for page {}\n",pd->name());
-    generateSqlite3ForPage(pd.get(),FALSE);
+    generateSqlite3ForPage(pd.get(),false);
   }
 
   // + dirs
@@ -2673,14 +2673,14 @@ void generateSqlite3()
   for (const auto &pd : *Doxygen::exampleLinkedMap)
   {
     msg("Generating Sqlite3 output for example {}\n",pd->name());
-    generateSqlite3ForPage(pd.get(),TRUE);
+    generateSqlite3ForPage(pd.get(),true);
   }
 
   // + main page
   if (Doxygen::mainPage)
   {
     msg("Generating Sqlite3 output for the main page\n");
-    generateSqlite3ForPage(Doxygen::mainPage.get(),FALSE);
+    generateSqlite3ForPage(Doxygen::mainPage.get(),false);
   }
 
   // TODO: copied from initializeSchema; not certain if we should say/do more

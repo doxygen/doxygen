@@ -205,7 +205,7 @@ DB_VIS_C
   }
   else
   {
-    err("DocBook: non supported HTML-entity found: {}\n",HtmlEntityMapper::instance().html(s.symbol(),TRUE));
+    err("DocBook: non supported HTML-entity found: {}\n",HtmlEntityMapper::instance().html(s.symbol(),true));
   }
 }
 
@@ -284,12 +284,12 @@ DB_VIS_C
       if (s.enable())
       {
         m_t << "<literallayout>";
-        m_insidePre=TRUE;
+        m_insidePre=true;
       }
       else
       {
         m_t << "</literallayout>";
-        m_insidePre=FALSE;
+        m_insidePre=false;
       }
       break;
       /* There is no equivalent Docbook tag for rendering Small text */
@@ -499,7 +499,7 @@ DB_VIS_C
       m_t << "<programlisting linenumbering=\"unnumbered\">";
     }
     pushHidden(m_hide);
-    m_hide = TRUE;
+    m_hide = true;
   }
   QCString locLangExt = getFileNameExtension(op.includeFileName());
   if (locLangExt.isEmpty()) locLangExt = m_langExt;
@@ -527,7 +527,7 @@ DB_VIS_C
                                        );
     }
     pushHidden(m_hide);
-    m_hide=TRUE;
+    m_hide=true;
   }
   if (op.isLast())
   {
@@ -687,21 +687,21 @@ DB_VIS_C
     case DocSimpleSect::Author:
       if (m_insidePre)
       {
-        m_t << "<formalpara><title>" << theTranslator->trAuthor(TRUE, TRUE) << "</title>\n";
+        m_t << "<formalpara><title>" << theTranslator->trAuthor(true, true) << "</title>\n";
       }
       else
       {
-        m_t << "<formalpara><title>" << DocbookGenerator::convertToDocbook(theTranslator->trAuthor(TRUE, TRUE)) << "</title>\n";
+        m_t << "<formalpara><title>" << DocbookGenerator::convertToDocbook(theTranslator->trAuthor(true, true)) << "</title>\n";
       }
       break;
     case DocSimpleSect::Authors:
       if (m_insidePre)
       {
-        m_t << "<formalpara><title>" << theTranslator->trAuthor(TRUE, FALSE) << "</title>\n";
+        m_t << "<formalpara><title>" << theTranslator->trAuthor(true, false) << "</title>\n";
       }
       else
       {
-        m_t << "<formalpara><title>" << DocbookGenerator::convertToDocbook(theTranslator->trAuthor(TRUE, FALSE)) << "</title>\n";
+        m_t << "<formalpara><title>" << DocbookGenerator::convertToDocbook(theTranslator->trAuthor(true, false)) << "</title>\n";
       }
       break;
     case DocSimpleSect::Version:

@@ -86,11 +86,11 @@ class IndexList
   public:
     /** disable the indices */
     void disable()
-    { m_enabled = FALSE; }
+    { m_enabled = false; }
 
     /** enable the indices */
     void enable()
-    { m_enabled = TRUE; }
+    { m_enabled = true; }
 
     /** Add an index generator to the list, using a syntax similar to std::make_unique<T>() */
     template<class T,class... As>
@@ -110,7 +110,7 @@ class IndexList
     { if (m_enabled) foreach_locked(&IndexIntf::decContentsDepth); }
 
     void addContentsItem(bool isDir, const QCString &name, const QCString &ref,
-                         const QCString &file, const QCString &anchor,bool separateIndex=FALSE,bool addToNavIndex=FALSE,
+                         const QCString &file, const QCString &anchor,bool separateIndex=false,bool addToNavIndex=false,
                          const Definition *def=nullptr, const QCString &nameAsHtml = QCString())
     { if (m_enabled) foreach_locked(&IndexIntf::addContentsItem,isDir,name,ref,file,anchor,separateIndex,addToNavIndex,def,nameAsHtml); }
 

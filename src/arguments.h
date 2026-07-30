@@ -25,7 +25,7 @@
  */
 struct Argument
 {
-  /*! return TRUE if this argument is documentation and the argument has a
+  /*! return true if this argument is documentation and the argument has a
    *  non empty name.
    */
   bool hasDocumentation(bool allowEmptyName=false) const
@@ -80,13 +80,13 @@ class ArgumentList
     void reset()
     {
       clear();
-      m_constSpecifier = FALSE;
-      m_volatileSpecifier = FALSE;
-      m_pureSpecifier = FALSE;
+      m_constSpecifier = false;
+      m_volatileSpecifier = false;
+      m_pureSpecifier = false;
       m_trailingReturnType.clear();
-      m_isDeleted = FALSE;
+      m_isDeleted = false;
       m_refQualifier = RefQualifierType::None;
-      m_noParameters = FALSE;
+      m_noParameters = false;
     }
 
     // make vector accessible
@@ -129,19 +129,19 @@ class ArgumentList
   private:
     std::vector<Argument> m_args;
     /*! Does the member modify the state of the class? */
-    bool m_constSpecifier = FALSE;
+    bool m_constSpecifier = false;
     /*! Is the member volatile? */
-    bool m_volatileSpecifier = FALSE;
+    bool m_volatileSpecifier = false;
     /*! Is this a pure virtual member? */
-    bool m_pureSpecifier = FALSE;
+    bool m_pureSpecifier = false;
     /*! C++11 style Trailing return type? */
     QCString m_trailingReturnType;
     /*! method with =delete */
-    bool m_isDeleted = FALSE;
+    bool m_isDeleted = false;
     /*! C++11 ref qualifier */
     RefQualifierType m_refQualifier = RefQualifierType::None;
     /*! is it an explicit empty list */
-    bool m_noParameters = FALSE;
+    bool m_noParameters = false;
 };
 
 using ArgumentLists = std::vector<ArgumentList>;

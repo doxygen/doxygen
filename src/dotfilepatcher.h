@@ -42,7 +42,7 @@ class DotFilePatcher
     bool isSVGFile() const;
 
     static bool convertMapFile(TextStream &t,const QCString &mapName,
-                               const QCString &relPath, bool urlOnly=FALSE,
+                               const QCString &relPath, bool urlOnly=false,
                                const QCString &context=QCString());
 
     static bool writeSVGFigureLink(TextStream &out,const QCString &relPath,

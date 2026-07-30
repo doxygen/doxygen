@@ -68,7 +68,7 @@ struct lexscannerYY_state
   int              lastRawStringContext = 0;
   int              curlyCount = 0;
 
-  bool             insideCode = FALSE;
+  bool             insideCode = false;
   QCString         delimiter;
   QCString         docBlockName;
   size_t           fencedSize = 0;
@@ -620,11 +620,11 @@ NONLopt [^\n]*
 <Comment>{CCS}             { yyextra->cCodeBuffer += yytext ; }
 <Comment>{CPPC}             { yyextra->cCodeBuffer += yytext ; }
 <Comment>{CMD}("code"|"verbatim"|"iliteral") {
-                            yyextra->insideCode=TRUE;
+                            yyextra->insideCode=true;
                             yyextra->cCodeBuffer += yytext ;
                           }
 <Comment>{CMD}("endcode"|"endverbatim"|"endiliteral") {
-                            yyextra->insideCode=FALSE;
+                            yyextra->insideCode=false;
                             yyextra->cCodeBuffer += yytext ;
                           }
 <Comment>[^ \.\t\r\n\/\*]+ { yyextra->cCodeBuffer += yytext ; }
@@ -725,28 +725,28 @@ NONLopt [^\n]*
                               yyextra->docBlockName.at(1)=')';
                             }
                             yyextra->fencedSize=0;
-                            yyextra->nestedComment=FALSE;
+                            yyextra->nestedComment=false;
                             BEGIN(DocCopyBlock);
                           }
 <DocBlock>{B}*"<"{PRE}">" {
                             yyextra->cCodeBuffer += yytext;
                             yyextra->docBlockName="<pre>";
                             yyextra->fencedSize=0;
-                            yyextra->nestedComment=FALSE;
+                            yyextra->nestedComment=false;
                             BEGIN(DocCopyBlock);
                           }
 <DocBlock>{CMD}"startuml"/[^a-z_A-Z0-9\-] { // verbatim type command (which could contain nested comments!)
                             yyextra->cCodeBuffer += yytext;
                             yyextra->docBlockName="uml";
                             yyextra->fencedSize=0;
-                            yyextra->nestedComment=FALSE;
+                            yyextra->nestedComment=false;
                             BEGIN(DocCopyBlock);
                           }
 <DocBlock>{CMD}("verbatim"|"iliteral"|"latexonly"|"htmlonly"|"xmlonly"|"manonly"|"rtfonly"|"docbookonly"|"dot"|"msc"|"mermaid"|"code")/[^a-z_A-Z0-9\-] { // verbatim command (which could contain nested comments!)
                             yyextra->cCodeBuffer += yytext;
                             yyextra->docBlockName=&yytext[1];
                             yyextra->fencedSize=0;
-                            yyextra->nestedComment=FALSE;
+                            yyextra->nestedComment=false;
                             BEGIN(DocCopyBlock);
                           }
 <DocBlock>^({B}*"*"+)?{B}{0,3}"~~~"[~]* {
@@ -754,7 +754,7 @@ NONLopt [^\n]*
                             QCString pat = substitute(yytext,"*"," ");
                             yyextra->docBlockName="~~~";
                             yyextra->fencedSize=pat.stripWhiteSpace().length();
-                            yyextra->nestedComment=FALSE;
+                            yyextra->nestedComment=false;
                             BEGIN(DocCopyBlock);
                           }
 <DocBlock>^({B}*"*"+)?{B}{0,3}"```"[`]* {
@@ -762,7 +762,7 @@ NONLopt [^\n]*
                             QCString pat = substitute(yytext,"*"," ");
                             yyextra->docBlockName="```";
                             yyextra->fencedSize=pat.stripWhiteSpace().length();
-                            yyextra->nestedComment=FALSE;
+                            yyextra->nestedComment=false;
                             BEGIN(DocCopyBlock);
                           }
 <DocBlock>{B}*"<code>"    {
@@ -877,11 +877,11 @@ NONLopt [^\n]*
 <DocCopyBlock>{CCS}|{CCE}|{CPPC} {
                             if (yytext[1]=='*')
                             {
-                              yyextra->nestedComment=TRUE;
+                              yyextra->nestedComment=true;
                             }
                             else if (yytext[0]=='*')
                             {
-                              yyextra->nestedComment=FALSE;
+                              yyextra->nestedComment=false;
                             }
                             yyextra->cCodeBuffer += yytext;
                           }

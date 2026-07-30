@@ -78,7 +78,7 @@ static bool convertMapFile(TextStream &t,const QCString &mapName,const QCString 
         {
           link = true;
           t << "<area href=\"";
-          t << externalRef(relPath,df->ref(),TRUE);
+          t << externalRef(relPath,df->ref(),true);
         }
         if (!df->file().isEmpty())
         {

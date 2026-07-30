@@ -26,7 +26,7 @@ DotGroupCollaboration::DotGroupCollaboration(const GroupDef* gd)
 {
   QCString tmp_url = gd->getReference()+"$"+gd->getOutputFileBase();
   QCString tooltip = gd->briefDescriptionAsTooltip();
-  m_rootNode = new DotNode(this, gd->groupTitle(), tooltip, tmp_url, TRUE );
+  m_rootNode = new DotNode(this, gd->groupTitle(), tooltip, tmp_url, true );
   m_rootNode->markAsVisible();
   m_usedNodes.emplace(gd->name().str(), m_rootNode);
 
@@ -227,7 +227,7 @@ void DotGroupCollaboration::computeTheGraph()
   // write other nodes.
   for (const auto &[name,node] : m_usedNodes)
   {
-    node->write(md5stream,GraphType::Inheritance,m_graphFormat,TRUE,FALSE,FALSE);
+    node->write(md5stream,GraphType::Inheritance,m_graphFormat,true,false,false);
   }
 
   // write edges
@@ -243,7 +243,7 @@ void DotGroupCollaboration::computeTheGraph()
 
 QCString DotGroupCollaboration::getMapLabel() const
 {
-  return escapeCharsInString(m_baseName, FALSE);
+  return escapeCharsInString(m_baseName, false);
 }
 
 QCString DotGroupCollaboration::writeGraph( TextStream &t,
@@ -290,12 +290,12 @@ void DotGroupCollaboration::Edge::write( TextStream &t ) const
     //t << "</TABLE>>";
 
     t << "label=\"";
-    bool first=TRUE;
+    bool first=true;
     int count=0;
     const int maxLabels = 10;
     for (const auto &link : links)
     {
-      if (first) first=FALSE; else t << "\\n";
+      if (first) first=false; else t << "\\n";
       t << DotNode::convertLabel(link.label);
       count++;
     }
