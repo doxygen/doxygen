@@ -1,5 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
 <doxygenconfig lang="简体中文">
+  <header>
+    <docs filter="doxywizard,doxyfile">
+      <![CDATA[
+此文件描述了项目文档系统
+Doxygen (www.doxygen.org) 所使用的设置。
+<br>
+双井号(##)后面的所有文本都被视为注释，并放置在
+其前面的标签之前。<br>
+单井号(#)后面的所有文本都被视为注释，并将被忽略。
+格式如下：
+\verbatim
+      TAG = value [value, ...]
+\endverbatim
+对于列表，也可以使用以下方式追加项目：
+\verbatim
+      TAG += value [value, ...]
+\endverbatim
+包含空格的值应放在引号(\" \")之间。
+<br>
+注意：<br>
+使用 Doxygen 将使用的配置文件与模板配置文件进行比较：
+\verbatim
+      doxygen -x [configFile]
+\endverbatim
+使用 Doxygen 将使用的配置文件与模板配置文件进行比较，
+且不替换环境变量或 CMake 类型的替换变量：
+\verbatim
+      doxygen -x_noenv [configFile]
+\endverbatim
+]]>
+    </docs>
+  </header>
   <group name="Project" trname="项目" docs="与项目相关的配置选项">
     <option type="string" id="DOXYFILE_ENCODING" format="string" defval="UTF-8">
       <docs>

@@ -1,5 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
 <doxygenconfig lang="한국어">
+  <header>
+    <docs filter="doxywizard,doxyfile">
+      <![CDATA[
+이 파일은 프로젝트에 대해 문서화 시스템
+Doxygen (www.doxygen.org) 에서 사용할 설정을 설명합니다.
+<br>
+이중 해시(##) 뒤의 모든 텍스트는 주석으로 간주되어
+앞에 있는 태그 앞에 배치됩니다.<br>
+단일 해시(#) 뒤의 모든 텍스트는 주석으로 간주되어 무시됩니다.
+형식은 다음과 같습니다:
+\verbatim
+      TAG = value [value, ...]
+\endverbatim
+목록의 경우, 다음을 사용하여 항목을 추가할 수도 있습니다:
+\verbatim
+      TAG += value [value, ...]
+\endverbatim
+공백을 포함하는 값은 따옴표(\" \")로 묶어야 합니다.
+<br>
+참고:<br>
+Doxygen을 사용하여 사용된 설정 파일을 템플릿 설정 파일과 비교합니다:
+\verbatim
+      doxygen -x [configFile]
+\endverbatim
+환경 변수나 CMake 형식의 대체 변수를 바꾸지 않고, Doxygen을 사용하여
+사용된 설정 파일을 템플릿 설정 파일과 비교합니다:
+\verbatim
+      doxygen -x_noenv [configFile]
+\endverbatim
+]]>
+    </docs>
+  </header>
   <group name="Project" trname="프로젝트" docs="프로젝트 관련 구성 옵션">
     <option type="string" id="DOXYFILE_ENCODING" format="string" defval="UTF-8">
       <docs>

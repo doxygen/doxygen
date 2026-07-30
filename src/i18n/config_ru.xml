@@ -1,5 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
 <doxygenconfig lang="Русский">
+  <header>
+    <docs filter="doxywizard,doxyfile">
+      <![CDATA[
+Этот файл описывает настройки, используемые системой документирования
+Doxygen (www.doxygen.org) для проекта.
+<br>
+Весь текст после двойной решётки (##) считается комментарием и помещается
+перед тегом, которому он предшествует.<br>
+Весь текст после одинарной решётки (#) считается комментарием и будет проигнорирован.
+Формат следующий:
+\verbatim
+      TAG = value [value, ...]
+\endverbatim
+Для списков элементы также можно добавлять с помощью:
+\verbatim
+      TAG += value [value, ...]
+\endverbatim
+Значения, содержащие пробелы, следует заключать в кавычки (\" \").
+<br>
+Примечание:<br>
+Используйте Doxygen для сравнения используемого файла конфигурации с шаблонным файлом конфигурации:
+\verbatim
+      doxygen -x [configFile]
+\endverbatim
+Используйте Doxygen для сравнения используемого файла конфигурации с шаблонным файлом конфигурации
+без замены переменных окружения или переменных подстановки типа CMake:
+\verbatim
+      doxygen -x_noenv [configFile]
+\endverbatim
+]]>
+    </docs>
+  </header>
   <group name="Project" trname="Проект" docs="Параметры конфигурации, связанные с проектом">
     <option type="string" id="DOXYFILE_ENCODING" format="string" defval="UTF-8">
       <docs>

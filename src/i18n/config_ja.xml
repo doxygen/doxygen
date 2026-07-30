@@ -1,5 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
 <doxygenconfig lang="日本語">
+  <header>
+    <docs filter="doxywizard,doxyfile">
+      <![CDATA[
+このファイルは、プロジェクトのドキュメント生成システム
+Doxygen (www.doxygen.org) で使用される設定を記述します。
+<br>
+二重のハッシュ(##)の後のすべてのテキストはコメントとみなされ、
+それが先行するタグの前に配置されます。<br>
+単一のハッシュ(#)の後のすべてのテキストはコメントとみなされ、無視されます。
+書式は次のとおりです:
+\verbatim
+      TAG = value [value, ...]
+\endverbatim
+リストの場合、次のようにして項目を追加することもできます:
+\verbatim
+      TAG += value [value, ...]
+\endverbatim
+空白を含む値は、引用符(\" \")で囲む必要があります。
+<br>
+注意:<br>
+Doxygen を使用して、使用した設定ファイルをテンプレート設定ファイルと比較します:
+\verbatim
+      doxygen -x [configFile]
+\endverbatim
+環境変数や CMake タイプの置換変数を置き換えずに、Doxygen を使用して
+使用した設定ファイルをテンプレート設定ファイルと比較します:
+\verbatim
+      doxygen -x_noenv [configFile]
+\endverbatim
+]]>
+    </docs>
+  </header>
   <group name="Project" trname="プロジェクト" docs="プロジェクト関連の設定オプション">
     <option type="string" id="DOXYFILE_ENCODING" format="string" defval="UTF-8">
       <docs>
