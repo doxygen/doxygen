@@ -1,5 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
 <doxygenconfig lang="Français">
+  <header>
+    <docs filter="doxywizard,doxyfile">
+      <![CDATA[
+Ce fichier décrit les paramètres à utiliser par le système de documentation
+Doxygen (www.doxygen.org) pour un projet.
+<br>
+Tout le texte suivant un double dièse (##) est considéré comme un commentaire et est placé
+devant la balise qu'il précède.<br>
+Tout le texte suivant un simple dièse (#) est considéré comme un commentaire et sera ignoré.
+Le format est :
+\verbatim
+      TAG = value [value, ...]
+\endverbatim
+Pour les listes, des éléments peuvent également être ajoutés en utilisant :
+\verbatim
+      TAG += value [value, ...]
+\endverbatim
+Les valeurs contenant des espaces doivent être placées entre guillemets (\" \").
+<br>
+Remarque :<br>
+Utilisez Doxygen pour comparer le fichier de configuration utilisé avec le fichier de configuration modèle :
+\verbatim
+      doxygen -x [configFile]
+\endverbatim
+Utilisez Doxygen pour comparer le fichier de configuration utilisé avec le fichier de configuration modèle
+sans remplacer les variables d'environnement ou les variables de substitution de type CMake :
+\verbatim
+      doxygen -x_noenv [configFile]
+\endverbatim
+]]>
+    </docs>
+  </header>
   <group name="Project" trname="Projet" docs="Options de configuration relatives au projet">
     <option type="string" id="DOXYFILE_ENCODING" format="string" defval="UTF-8">
       <docs>

@@ -590,8 +590,9 @@ const Definition *SymbolResolver::Private::getResolvedSymbolRec(
           return true;
         }
         if (emd &&
-            emd->isStatic() &&
-            emd->getFileDef()!=m_fileScope)
+            emd->isStatic() &&              // a static function or variable
+            emd->getClassDef()==nullptr &&  // not a class member
+            emd->getFileDef()!=m_fileScope) // defined in a different file
         {
           // skip lookup for static members that are not in the current file scope
           return true;
