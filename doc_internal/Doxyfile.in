@@ -121,6 +121,7 @@ INPUT                  = @CMAKE_CURRENT_SOURCE_DIR@/doxygen.md \
                          @CMAKE_CURRENT_SOURCE_DIR@/releases.md \
                          @PROJECT_BINARY_DIR@/doc_internal/tags_history.md \
                          @PROJECT_BINARY_DIR@/doc_internal/translator_report.md \
+                         @PROJECT_BINARY_DIR@/doc_internal/translator_i18n.md \
                          @CMAKE_CURRENT_SOURCE_DIR@/../src \
                          @CMAKE_CURRENT_SOURCE_DIR@/../vhdlparser \
                          @CMAKE_CURRENT_SOURCE_DIR@/../libxml
