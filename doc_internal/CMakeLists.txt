@@ -56,6 +56,12 @@ add_custom_command(
         WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/doc_internal
 )
 
+add_custom_command(
+    COMMAND ${Python_EXECUTABLE} ${CMAKE_SOURCE_DIR}/src/configgen.py -report ${CMAKE_SOURCE_DIR}/src/config.xml  ${CMAKE_SOURCE_DIR}/src/i18n > ${PROJECT_BINARY_DIR}/doc_internal/translator_i18n.md
+    DEPENDS ${CMAKE_SOURCE_DIR}/src/configgen.py  ${CMAKE_SOURCE_DIR}/src/config.xml
+    OUTPUT ${PROJECT_BINARY_DIR}/doc_internal/translator_i18n.md
+)
+
 add_custom_target(docs_internal
         COMMENT "Generating HTML internal documentation."
         COMMAND ${CMAKE_COMMAND} -E env VERSION=${VERSION} ${DOXYGEN_EXECUTABLE}
@@ -63,4 +69,5 @@ add_custom_target(docs_internal
         DEPENDS ${PROJECT_BINARY_DIR}/doc_internal/commands_history.md
         DEPENDS ${PROJECT_BINARY_DIR}/doc_internal/tags_history.md
         DEPENDS ${PROJECT_BINARY_DIR}/doc_internal/translator_report.md
+        DEPENDS ${PROJECT_BINARY_DIR}/doc_internal/translator_i18n.md
         )

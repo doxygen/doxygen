@@ -761,20 +761,30 @@ def syncWarnings(typ, existing, language):
 
     return(True)
 
-def syncLocalizedConfig(elem, configFile, translationsDir, autoSync=False):
+def syncLocalizedConfig(elem, configFile, translationsDir, autoSync=False, report=False):
     """Sync localized config_xx.xml files with original config.xml.
 
     Args:
         elem: The root element of config.xml
         translationsDir: Path to translations directory
         autoSync: If True, automatically sync; if False, only report differences
+        report: If True, if False, only report differences but for doxygen markdown file
     """
     import os
     import shutil
 
+    if report:
+        print("@page pg_trans_confi Translator configuration report")
+        print("```")
+
+    if report:
+        prt_configFile = os.path.basename(configFile)
+    else:
+        prt_configFile = configFile
+
     existingOptions, existingOptionsWithElements, existingMessages, existingAttrib, existingValues = collectOptions(elem)
-    print("Found %d active options in %s" % (len(existingOptions), configFile))
-    print("Found %d active messages in %s" % (len(existingMessages), configFile))
+    print("Found %d active options in %s" % (len(existingOptions), prt_configFile))
+    print("Found %d active messages in %s" % (len(existingMessages), prt_configFile))
 
     translationFiles = sorted(glob.glob("%s/config_*.xml" % translationsDir))
     if not translationFiles:
@@ -782,18 +792,23 @@ def syncLocalizedConfig(elem, configFile, translationsDir, autoSync=False):
 
     for configFile in translationFiles:
 
+        if report:
+            prt_configFile = os.path.basename(configFile)
+        else:
+            prt_configFile = configFile
+
         if not os.path.exists(configFile):
-            print("Skipping %s: translation config file not found" % configFile)
+            print("Skipping %s: translation config file not found" % prt_configFile)
             continue
 
-        print("Processing %s..." % configFile)
+        print("Processing %s..." % prt_configFile)
 
         try:
             with io.open(configFile, 'r', encoding='utf8') as f:
                 content = f.read()
             langDoc = xml.dom.minidom.parseString(content)
         except Exception as e:
-            print("  Error parsing %s: %s" % (configFile, e))
+            print("  Error parsing %s: %s" % (prt_configFile, e))
             continue
 
         langOptions, langOptionsWithElements, langMessages, langAttrib, langValues = collectOptions(langDoc)
@@ -892,6 +907,7 @@ def syncLocalizedConfig(elem, configFile, translationsDir, autoSync=False):
 
         if not (valuesError or bothError):
             print("  OK - all %s are synchronized" % "values")
+
 
         if autoSync and (optionsError or messagesError or attribError or valuesError or bothError):
             print("  Auto-syncing...")
@@ -1075,11 +1091,14 @@ def syncLocalizedConfig(elem, configFile, translationsDir, autoSync=False):
             print("  Backup saved to: %s" % backupFile)
             print("  File updated: %s" % configFile)
 
-    print("\nSync %s!" % ("complete" if not autoSync else "and update complete"))
+    if report:
+        print("```")
+    else:
+        print("\nSync %s!" % ("complete" if not autoSync else "and update complete"))
 
 def main():
-    if len(sys.argv)<3 or (sys.argv[1] not in ['-doc','-cpp','-wiz','-wizswitch','-maph','-maps','-sync','-auto']):
-        sys.exit('Usage: %s -doc|-cpp|-wiz|-wizswitch|-maph|-maps|-sync|-auto config.xml [translations_dir]' % sys.argv[0])
+    if len(sys.argv)<3 or (sys.argv[1] not in ['-doc','-cpp','-wiz','-wizswitch','-maph','-maps','-sync','-report','-auto']):
+        sys.exit('Usage: %s -doc|-cpp|-wiz|-wizswitch|-maph|-maps|-sync|-report|-auto config.xml [translations_dir]' % sys.argv[0])
     try:
         configFile = sys.argv[2]
         if sys.version_info.major == 2:
@@ -1340,12 +1359,12 @@ def main():
         print("};")
         print("")
         print("#endif")
-    elif sys.argv[1] == "-sync" or sys.argv[1] == "-auto":
+    elif sys.argv[1] == "-sync" or sys.argv[1] == "-report" or sys.argv[1] == "-auto":
         if len(sys.argv) < 4:
             translationsDir = 'i18n'
         else:
             translationsDir = sys.argv[3]
-        syncLocalizedConfig(elem, configFile, translationsDir, sys.argv[1] == "-auto")
+        syncLocalizedConfig(elem, configFile, translationsDir, sys.argv[1] == "-auto", sys.argv[1] == "-report")
 
 if __name__ == '__main__':
     main()
