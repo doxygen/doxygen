@@ -49,7 +49,8 @@ class SymbolResolver
     const ClassDef *resolveClass(const Definition *scope,
                                  const QCString &name,
                                  bool maybeUnlinkable=false,
-                                 bool mayBeHidden=false);
+                                 bool mayBeHidden=false,
+                                 int templateArity=-1);
 
     /** Wrapper around resolveClass that returns a mutable interface to
      *  the class object or a nullptr if the symbol is immutable.
@@ -57,9 +58,10 @@ class SymbolResolver
     ClassDefMutable *resolveClassMutable(const Definition *scope,
                                          const QCString &name,
                                          bool mayBeUnlinkable=false,
-                                         bool mayBeHidden=false)
+                                         bool mayBeHidden=false,
+                                         int templateArity=-1)
     {
-      return toClassDefMutable(const_cast<ClassDef*>(resolveClass(scope,name,mayBeUnlinkable,mayBeHidden)));
+      return toClassDefMutable(const_cast<ClassDef*>(resolveClass(scope,name,mayBeUnlinkable,mayBeHidden,templateArity)));
     }
 
     /** Find the symbool definition matching name within the scope set.

@@ -1229,6 +1229,7 @@ int SymbolResolver::Private::isAccessibleFromWithExpScope(
       if (accessibleViaUsingNamespace(visitedKeys,locVisitedNamespaceKeys,nscope->getUsedNamespaces(),item,explicitScopePart))
       {
         AUTO_TRACE_ADD("found in used class");
+        result=1;
         goto done;
       }
     }
@@ -1240,6 +1241,7 @@ int SymbolResolver::Private::isAccessibleFromWithExpScope(
         if (accessibleViaUsingNamespace(visitedKeys,locVisitedNamespaceKeys,m_fileScope->getUsedNamespaces(),item,explicitScopePart))
         {
           AUTO_TRACE_ADD("found in used namespace");
+          result=1;
           goto done;
         }
       }
@@ -1541,6 +1543,7 @@ int SymbolResolver::Private::isAccessibleFrom(VisitedKeys &visitedKeys,
       if (accessibleViaUsingNamespace(visitedKeys,visitedNamespaceKeys,m_fileScope->getUsedNamespaces(),item))
       {
         AUTO_TRACE_ADD("found via used namespace");
+        result=1;
         goto done;
       }
     }
@@ -1562,6 +1565,7 @@ int SymbolResolver::Private::isAccessibleFrom(VisitedKeys &visitedKeys,
       if (accessibleViaUsingNamespace(visitedKeys,visitedNamespaceKeys,nscope->getUsedNamespaces(),item,QCString()))
       {
         AUTO_TRACE_ADD("found via used namespace");
+        result=1;
         goto done;
       }
     }
@@ -1577,6 +1581,7 @@ int SymbolResolver::Private::isAccessibleFrom(VisitedKeys &visitedKeys,
       if (accessibleViaUsingNamespace(visitedKeys,visitedNamespaceKeys,nfile->getUsedNamespaces(),item,QCString()))
       {
         AUTO_TRACE_ADD("found via used namespace");
+        result=1;
         goto done;
       }
     }
@@ -1690,10 +1695,11 @@ SymbolResolver::~SymbolResolver()
 const ClassDef *SymbolResolver::resolveClass(const Definition *scope,
                                              const QCString &name,
                                              bool mayBeUnlinkable,
-                                             bool mayBeHidden)
+                                             bool mayBeHidden,
+                                             int templateArity)
 {
-  AUTO_TRACE("scope={} name={} mayBeUnlinkable={} mayBeHidden={}",
-      scope?scope->name():QCString(), name, mayBeUnlinkable, mayBeHidden);
+  AUTO_TRACE("scope={} name={} mayBeUnlinkable={} mayBeHidden={} templateArity={}",
+      scope?scope->name():QCString(), name, mayBeUnlinkable, mayBeHidden, templateArity);
   p->reset();
 
   auto lang = scope ? scope->getLanguage() :
@@ -1719,6 +1725,13 @@ const ClassDef *SymbolResolver::resolveClass(const Definition *scope,
   {
     VisitedKeys visitedKeys;
     QCString lookupName = lang==SrcLangExt::CSharp ? mangleCSharpGenericName(name) : name;
+    
+    // In C#, templates (generics) depend on arity, thus lookup name needs to be adjusted to include arity information
+    if (lang==SrcLangExt::CSharp && templateArity>0)
+    {
+      lookupName = name + "-" + QCString().setNum(templateArity) + "-g";
+    }
+
     AUTO_TRACE_ADD("lookup={}",lookupName);
     result = p->getResolvedTypeRec(getTypeLookupCache(),visitedKeys,scope,lookupName,&p->typeDef,&p->templateSpec,&p->resolvedType);
     if (result==nullptr) // for nested classes imported via tag files, the scope may not
