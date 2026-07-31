@@ -151,9 +151,11 @@ void ClangTUParser::parse()
     // easier to parse the argument list). If we pass this "--" to clang_parseTranslationUnit below,
     // it returns an error. To avoid this, we remove the file name argument (and the "--" if present)
     // from argv and pass the file name separately.
+    qstrfree(argv.back());
     argv.pop_back(); // remove file name
-    if (std::string(argv[argv.size() - 1]) == "--") {
+    if (argv.size()>0 && qstrcmp(argv[argv.size() - 1],"--")==0) {
       // remove '--' from argv
+      qstrfree(argv.back());
       argv.pop_back();
     }
 
@@ -301,7 +303,7 @@ ClangTUParser::~ClangTUParser()
   }
   for (size_t i=0;i<p->numFiles;i++)
   {
-    delete[] p->ufs[i].Filename;
+    qstrfree(p->ufs[i].Filename);
   }
   p->ufs.clear();
   p->sources.clear();
