@@ -56,11 +56,28 @@ add_custom_command(
         WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/doc_internal
 )
 
-add_custom_command(
-    COMMAND ${Python_EXECUTABLE} ${CMAKE_SOURCE_DIR}/src/configgen.py -report ${CMAKE_SOURCE_DIR}/src/config.xml  ${CMAKE_SOURCE_DIR}/src/i18n > ${PROJECT_BINARY_DIR}/doc_internal/translator_i18n.md
-    DEPENDS ${CMAKE_SOURCE_DIR}/src/configgen.py  ${CMAKE_SOURCE_DIR}/src/config.xml
-    OUTPUT ${PROJECT_BINARY_DIR}/doc_internal/translator_i18n.md
+set(TRANSLATOR_I18N_MD ${PROJECT_BINARY_DIR}/doc_internal/translator_i18n.md)
+set(DOC_CONFIG_TRANSLATIONS_DIR ${CMAKE_SOURCE_DIR}/src/i18n)
+file(GLOB_RECURSE DOC_CONFIG_TRANSLATION_FILES CONFIGURE_DEPENDS "${DOC_CONFIG_TRANSLATIONS_DIR}/config_*.xml")
+
+set(
+    DOC_CONFIG_TRANSLATION_FILES_STAMP
+    ${TRANSLATOR_I18N_MD}_stamp
 )
+string(REPLACE ";" "\n" DOC_CONFIG_TRANSLATION_FILES_CONTENT "${DOC_CONFIG_TRANSLATION_FILES}")
+file(
+    CONFIGURE
+    OUTPUT ${DOC_CONFIG_TRANSLATION_FILES_STAMP}
+    CONTENT "${DOC_CONFIG_TRANSLATION_FILES_CONTENT}\n"
+)
+
+add_custom_command(
+    COMMAND ${Python_EXECUTABLE} ${CMAKE_SOURCE_DIR}/src/configgen.py -report ${CMAKE_SOURCE_DIR}/src/config.xml ${DOC_CONFIG_TRANSLATIONS_DIR} > ${TRANSLATOR_I18N_MD}
+    DEPENDS ${CMAKE_SOURCE_DIR}/src/configgen.py  ${CMAKE_SOURCE_DIR}/src/config.xml ${DOC_CONFIG_TRANSLATION_FILES} ${DOC_CONFIG_TRANSLATION_FILES_STAMP}
+    OUTPUT ${TRANSLATOR_I18N_MD}
+)
+#set_source_files_properties(${TRANSLATOR_I18N_MD} PROPERTIES GENERATED 1)
+add_custom_target(TRANSLATOR_FILE ALL DEPENDS ${TRANSLATOR_I18N_MD})
 
 add_custom_target(docs_internal
         COMMENT "Generating HTML internal documentation."
@@ -69,5 +86,5 @@ add_custom_target(docs_internal
         DEPENDS ${PROJECT_BINARY_DIR}/doc_internal/commands_history.md
         DEPENDS ${PROJECT_BINARY_DIR}/doc_internal/tags_history.md
         DEPENDS ${PROJECT_BINARY_DIR}/doc_internal/translator_report.md
-        DEPENDS ${PROJECT_BINARY_DIR}/doc_internal/translator_i18n.md
         )
+add_dependencies(docs_internal TRANSLATOR_FILE)
