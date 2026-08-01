@@ -17,7 +17,7 @@ Bei Listen können Einträge auch angehängt werden mit:
 \verbatim
       TAG += value [value, ...]
 \endverbatim
-Werte, die Leerzeichen enthalten, sollten in Anführungszeichen gesetzt werden (\" \").
+Werte, die Leerzeichen enthalten, sollten in Anführungszeichen gesetzt werden (" ").
 <br>
 Hinweis:<br>
 Verwenden Sie Doxygen, um die verwendete Konfigurationsdatei mit der Vorlagen-Konfigurationsdatei zu vergleichen:
