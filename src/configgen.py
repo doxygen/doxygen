@@ -717,13 +717,20 @@ def parseGenerator(node):
                     doc += n1.nodeValue.rstrip("\r\n").lstrip("\r\n")
             messages[name] = doc
 
-def collectOptions(elem):
-    """Collect all option IDs from config.xml."""
+def collectOptions(elem, mode):
+    """Collect all information from config....xml."""
     options = set()
     messages = set()
     optionsWithElems = {}
     attrib = {}
     values = set()
+    head_docs = []
+
+    for header in elem.getElementsByTagName('header'):
+        for doc in header.getElementsByTagName('docs'):
+            if getFilter(doc, mode):
+                head_docs.append(doc)
+
     for group in elem.getElementsByTagName('group'):
         for option in group.getElementsByTagName('option'):
             optionId = option.getAttribute('id')
@@ -734,12 +741,13 @@ def collectOptions(elem):
                 attrib[optionId] = sorted(option.attributes.items())
                 if option.getElementsByTagName('value'):
                     values.add(optionId)
+
     for generator in elem.getElementsByTagName('generator'):
         for message in generator.getElementsByTagName('message'):
             messageId = message.getAttribute('name')
             messages.add(messageId)
 
-    return (options,optionsWithElems,messages,attrib,values)
+    return (options,optionsWithElems,messages,attrib,values,head_docs)
 
 def syncWarnings(typ, existing, language):
     missing = existing - language
@@ -773,6 +781,8 @@ def syncLocalizedConfig(elem, configFile, translationsDir, autoSync=False, repor
     import os
     import shutil
 
+    mode = "doxyfile"
+
     if report:
         print("@page pg_trans_confi Translator configuration report")
         print("```")
@@ -782,7 +792,7 @@ def syncLocalizedConfig(elem, configFile, translationsDir, autoSync=False, repor
     else:
         prt_configFile = configFile
 
-    existingOptions, existingOptionsWithElements, existingMessages, existingAttrib, existingValues = collectOptions(elem)
+    existingOptions, existingOptionsWithElements, existingMessages, existingAttrib, existingValues, existingHeader = collectOptions(elem, mode)
     print("Found %d active options in %s" % (len(existingOptions), prt_configFile))
     print("Found %d active messages in %s" % (len(existingMessages), prt_configFile))
 
@@ -811,7 +821,16 @@ def syncLocalizedConfig(elem, configFile, translationsDir, autoSync=False, repor
             print("  Error parsing %s: %s" % (prt_configFile, e))
             continue
 
-        langOptions, langOptionsWithElements, langMessages, langAttrib, langValues = collectOptions(langDoc)
+        langOptions, langOptionsWithElements, langMessages, langAttrib, langValues, headerDocs = collectOptions(langDoc, mode)
+
+        headerError = len(existingHeader) - len(headerDocs)
+
+        if not headerError:
+            print("  OK - header documentation is synchronized")
+        elif headerError < 0:
+            print("  Extra header documentation in translation")
+        else:
+            print("  Header documentation not (all) has been translated")
 
         optionsError = syncWarnings('Options', existingOptions, langOptions)
         messagesError = syncWarnings('Messages', existingMessages, langMessages)
@@ -909,10 +928,22 @@ def syncLocalizedConfig(elem, configFile, translationsDir, autoSync=False, repor
             print("  OK - all %s are synchronized" % "values")
 
 
-        if autoSync and (optionsError or messagesError or attribError or valuesError or bothError):
+        if autoSync and (optionsError or messagesError or attribError or valuesError or bothError or headerError):
             print("  Auto-syncing...")
 
             rootElement = langDoc.documentElement
+
+            if headerError < 0:
+                print("    Extra header documentation in translation")
+                print("      Leaving translated file unchanged (unknown what to remove)")
+            elif headerError > 0:
+                for header in rootElement.getElementsByTagName('header'):
+                  head = header
+                  break;
+                for doc in existingHeader:
+                    head.appendChild(doc)
+                print("  Header documentation not (all) has been translated")
+                print("      Added all original headers containing filter: %s" % mode)
 
             missingOptions = existingOptions - langOptions
             extraOptions = langOptions - existingOptions
