@@ -937,16 +937,32 @@ def syncLocalizedConfig(elem, configFile, translationsDir, autoSync=False, repor
                 print("    Extra header documentation in translation")
                 print("      Leaving translated file unchanged (unknown what to remove)")
             elif headerError > 0:
+                head = None
                 for header in rootElement.getElementsByTagName('header'):
                   head = header
                   break;
+                if not head:
+                    # add header element
+                    head = langDoc.createElement("header")
+                    langDoc.childNodes[0].appendChild(head)
+
                 for doc in existingHeader:
                     head.appendChild(doc)
-                print("  Header documentation not (all) has been translated")
+                print("    Header documentation not (all) has been translated")
                 print("      Added all original headers containing filter: %s" % mode)
 
             missingOptions = existingOptions - langOptions
             extraOptions = langOptions - existingOptions
+
+            parentGroupNew = None
+            for group in langDoc.getElementsByTagName('group'):
+                parentGroupNew = group
+                break
+
+            if not parentGroupNew:
+                # add group element
+                parentGroupNew = langDoc.createElement("group")
+                langDoc.childNodes[0].appendChild(parentGroupNew)
 
             for optionId in extraOptions:
                 optionElem = langOptionsWithElements[optionId]
@@ -989,12 +1005,13 @@ def syncLocalizedConfig(elem, configFile, translationsDir, autoSync=False, repor
                 print("    Removed all values of: %s" % optionId)
 
             for optionId in missingAllValues:
-                existingElem = existingOptionsWithElements[optionId]
-                langElem = langOptionsWithElements[optionId]
-                for valueElem in existingElem.getElementsByTagName('value'):
-                    importedElem = langDoc.importNode(valueElem, True)
-                    langElem.appendChild(importedElem)
-                print("    Added all values for: %s" % optionId)
+                if optionId in langOptionsWithElements:
+                    existingElem = existingOptionsWithElements[optionId]
+                    langElem = langOptionsWithElements[optionId]
+                    for valueElem in existingElem.getElementsByTagName('value'):
+                        importedElem = langDoc.importNode(valueElem, True)
+                        langElem.appendChild(importedElem)
+                    print("    Added all values for: %s" % optionId)
 
             # handle bothValue errors
             for optionId in bothError:
@@ -1087,8 +1104,14 @@ def syncLocalizedConfig(elem, configFile, translationsDir, autoSync=False, repor
             missingMessages = existingMessages - langMessages
             extraMessages = langMessages - existingMessages
 
+            parentGeneratorNew = None
             for generator in langDoc.getElementsByTagName('generator'):
                 parentGeneratorNew = generator
+
+            if not parentGeneratorNew:
+                    # add generator element
+                    parentGeneratorNew = langDoc.createElement("generator")
+                    langDoc.childNodes[0].appendChild(parentGeneratorNew)
 
             for messageId in extraMessages:
                 for message in parentGeneratorNew.getElementsByTagName('message'):
