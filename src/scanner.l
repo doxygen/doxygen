@@ -777,7 +777,7 @@ NONLopt [^\n]*
                                         }
   /*
 <FindMembers>{B}*"property"{BN}+        {
-                                          if (!yyextra->current->type.isEmpty())
+                                          if (!yyextra->current->type.empty())
                                           {
                                             REJECT;
                                           }
@@ -827,7 +827,7 @@ NONLopt [^\n]*
                                           yyextra->roundCount=0;
                                         }
 <ObjCMethod>{ID}                        { // found method name
-                                          if (yyextra->current->type.isEmpty())
+                                          if (yyextra->current->type.empty())
                                           {
                                             yyextra->current->type += "id";
                                           }
@@ -865,7 +865,7 @@ NONLopt [^\n]*
 <ObjCParams>({ID})?{BN}*":"             { // Keyword of parameter
                                           QCString keyw = yytext;
                                           keyw=keyw.left(keyw.length()-1).stripWhiteSpace(); // strip :
-                                          if (keyw.isEmpty())
+                                          if (keyw.empty())
                                           {
                                             yyextra->current->name += " :";
                                           }
@@ -873,7 +873,7 @@ NONLopt [^\n]*
                                           {
                                             yyextra->current->name += keyw+":";
                                           }
-                                          if (yyextra->current->argList.back().type.isEmpty())
+                                          if (yyextra->current->argList.back().type.empty())
                                           {
                                             yyextra->current->argList.back().type="id";
                                           }
@@ -923,7 +923,7 @@ NONLopt [^\n]*
                                           yyextra->current->argList.back().type+=QCString(yytext).stripWhiteSpace();
                                         }
 <ObjCMethod,ObjCParams>";"              { // end of method declaration
-                                          if (!yyextra->current->argList.empty() && yyextra->current->argList.back().type.isEmpty())
+                                          if (!yyextra->current->argList.empty() && yyextra->current->argList.back().type.empty())
                                           {
                                             yyextra->current->argList.back().type="id";
                                           }
@@ -941,7 +941,7 @@ NONLopt [^\n]*
                                           //printf("Type=%s Name=%s args=%s\n",
                                           //    qPrint(yyextra->current->type),qPrint(yyextra->current->name),qPrint(argListToString(yyextra->current->argList))
                                           //    );
-                                          if (!yyextra->current->argList.empty() && yyextra->current->argList.back().type.isEmpty())
+                                          if (!yyextra->current->argList.empty() && yyextra->current->argList.back().type.empty())
                                           {
                                             yyextra->current->argList.back().type="id";
                                           }
@@ -1122,7 +1122,7 @@ NONLopt [^\n]*
                                         }
 <FindMembers>{B}*"module"{BN}*";"       { // global module section
                                           if (!yyextra->insideCpp) REJECT;
-                                          if (!yyextra->current->type.isEmpty() || !yyextra->current->name.isEmpty()) REJECT;
+                                          if (!yyextra->current->type.empty() || !yyextra->current->name.empty()) REJECT;
                                           //printf("Implementation module unit\n");
                                           lineCount(yyscanner);
                                           BEGIN( FindMembers );
@@ -1147,7 +1147,7 @@ NONLopt [^\n]*
                                         }
 <ModuleName>{MODULE_ID}{BN}*":"{BN}*{MODULE_ID} { // module partition name, e.g. A.B:C.D'
                                           QCString name = yytext;
-                                          int i = name.find(':');
+                                          size_t i = name.find(':');
                                           QCString partition = name.mid(i+1).stripWhiteSpace();
                                           name = name.left(i).stripWhiteSpace();
                                           ModuleManager::instance().createModuleDef(yyextra->fileName,
@@ -1209,7 +1209,7 @@ NONLopt [^\n]*
                                         }
 <ModuleImport>{MODULE_ID}?{BN}*":"{BN}*{MODULE_ID} { // module partition import
                                           QCString name = yytext; // can be 'M:P' or ':P'
-                                          int i = name.find(':');
+                                          size_t i = name.find(':');
                                           QCString partition = name.mid(i+1).stripWhiteSpace();
                                           name = name.left(i).stripWhiteSpace();
                                           ModuleManager::instance().addImport(yyextra->fileName,
@@ -1599,9 +1599,9 @@ NONLopt [^\n]*
 <FindMembers>{B}*{TYPEDEFPREFIX}"class{" |
 <FindMembers>{B}*{TYPEDEFPREFIX}"class"{BN}+ {
                                           QCString decl = yytext;
-                                          yyextra->isTypedef=decl.find("typedef")!=-1;
-                                          bool isConst=decl.find("const")!=-1;
-                                          bool isVolatile=decl.find("volatile")!=-1;
+                                          yyextra->isTypedef = decl.find("typedef") !=QCString::npos;
+                                          bool isConst       = decl.find("const")   !=QCString::npos;
+                                          bool isVolatile    = decl.find("volatile")!=QCString::npos;
                                           yyextra->current->section = EntryType::makeClass();
                                           addType(yyscanner);
                                           if (yyextra->insidePHP && yyextra->current->spec.isAbstract())
@@ -1711,9 +1711,9 @@ NONLopt [^\n]*
 <FindMembers>{B}*{TYPEDEFPREFIX}"struct"/{BN}+ {
                                           if (yyextra->insideJava) REJECT;
                                           QCString decl = yytext;
-                                          yyextra->isTypedef=decl.find("typedef")!=-1;
-                                          bool isConst=decl.find("const")!=-1;
-                                          bool isVolatile=decl.find("volatile")!=-1;
+                                          yyextra->isTypedef = decl.find("typedef") !=QCString::npos;
+                                          bool isConst       = decl.find("const")   !=QCString::npos;
+                                          bool isVolatile    = decl.find("volatile")!=QCString::npos;
                                           yyextra->current->section = EntryType::makeClass() ;
                                           TypeSpecifier spec = yyextra->current->spec;
                                           yyextra->current->spec = TypeSpecifier().setStruct(true).
@@ -1794,9 +1794,9 @@ NONLopt [^\n]*
 <FindMembers>{B}*{TYPEDEFPREFIX}"union"{BN}+ {
                                           if (yyextra->insideJava) REJECT;
                                           QCString decl=yytext;
-                                          yyextra->isTypedef=decl.find("typedef")!=-1;
-                                          bool isConst=decl.find("const")!=-1;
-                                          bool isVolatile=decl.find("volatile")!=-1;
+                                          yyextra->isTypedef = decl.find("typedef") !=QCString::npos;
+                                          bool isConst       = decl.find("const")   !=QCString::npos;
+                                          bool isVolatile    = decl.find("volatile")!=QCString::npos;
                                           yyextra->current->section = EntryType::makeClass();
                                           yyextra->current->spec = TypeSpecifier().setUnion(true);
                                           // bug 582676: can be a struct nested in an interface so keep yyextra->insideObjC state
@@ -1823,9 +1823,9 @@ NONLopt [^\n]*
 <FindMembers>{B}*{TYPEDEFPREFIX}{IDLATTR}?"enum"({BN}+("class"|"struct"))?"{" |
 <FindMembers>{B}*{TYPEDEFPREFIX}{IDLATTR}?"enum"({BN}+("class"|"struct"))?{BN}+ { // for IDL: typedef [something] enum
                                           QCString text=yytext;
-                                          yyextra->isTypedef    = text.find("typedef")!=-1;
-                                          bool isStrongEnum =  text.find("class")!=-1 || yyextra->insideCS;
-                                          bool isEnumSytruct = text.find("struct")!=-1;
+                                          yyextra->isTypedef = text.find("typedef")!=QCString::npos;
+                                          bool isStrongEnum  = text.find("class")  !=QCString::npos || yyextra->insideCS;
+                                          bool isEnumSytruct = text.find("struct") !=QCString::npos;
                                           if (yyextra->insideJava)
                                           {
                                             yyextra->current->section = EntryType::makeClass();
@@ -1968,7 +1968,7 @@ NONLopt [^\n]*
                                         }
 <PHPUseAs>{ID}                          {
                                           //printf("PHP: adding use as relation: %s->%s\n",yytext,qPrint(yyextra->aliasName));
-                                          if (!yyextra->aliasName.isEmpty())
+                                          if (!yyextra->aliasName.empty())
                                           {
                                             std::string aliasValue = removeRedundantWhiteSpace(substitute(yyextra->aliasName,"\\","::")).str();
                                             Doxygen::namespaceAliasMap.emplace(yytext,NamespaceAliasInfo(aliasValue));
@@ -2574,13 +2574,13 @@ NONLopt [^\n]*
                                           {
                                             // C++11 decltype(x)
                                             addType(yyscanner);
-                                            if (!yyextra->current->type.isEmpty()) yyextra->current->type+=' ';
+                                            if (!yyextra->current->type.empty()) yyextra->current->type+=' ';
                                             yyextra->current->type+=yytext;
                                             BEGIN(DeclType);
                                           }
                                           else if (yyextra->insideSlice && qstrcmp(yytext,"optional")==0)
                                           {
-                                            if (yyextra->current->type.isEmpty())
+                                            if (yyextra->current->type.empty())
                                             {
                                               yyextra->current->type = "optional";
                                             }
@@ -2635,7 +2635,7 @@ NONLopt [^\n]*
                                               }
                                               else if (yyextra->current->name.startsWith("inline "))
                                               {
-                                                if (yyextra->current->type.isEmpty())
+                                                if (yyextra->current->type.empty())
                                                 {
                                                   yyextra->current->type="inline";
                                                 }
@@ -2647,7 +2647,7 @@ NONLopt [^\n]*
                                               }
                                               else if (yyextra->current->name.startsWith("constexpr "))
                                               {
-                                                if (yyextra->current->type.isEmpty())
+                                                if (yyextra->current->type.empty())
                                                 {
                                                   yyextra->current->type="constexpr";
                                                 }
@@ -2659,7 +2659,7 @@ NONLopt [^\n]*
                                               }
                                               else if (yyextra->current->name.startsWith("consteval "))
                                               {
-                                                if (yyextra->current->type.isEmpty())
+                                                if (yyextra->current->type.empty())
                                                 {
                                                   yyextra->current->type="consteval";
                                                 }
@@ -2671,7 +2671,7 @@ NONLopt [^\n]*
                                               }
                                               else if (yyextra->current->name.startsWith("constinit "))
                                               {
-                                                if (yyextra->current->type.isEmpty())
+                                                if (yyextra->current->type.empty())
                                                 {
                                                   yyextra->current->type="constinit";
                                                 }
@@ -2683,7 +2683,7 @@ NONLopt [^\n]*
                                               }
                                               else if (yyextra->current->name.startsWith("const "))
                                               {
-                                                if (yyextra->current->type.isEmpty())
+                                                if (yyextra->current->type.empty())
                                                 {
                                                   yyextra->current->type="const";
                                                 }
@@ -2695,7 +2695,7 @@ NONLopt [^\n]*
                                               }
                                               else if (yyextra->current->name.startsWith("volatile "))
                                               {
-                                                if (yyextra->current->type.isEmpty())
+                                                if (yyextra->current->type.empty())
                                                 {
                                                   yyextra->current->type="volatile";
                                                 }
@@ -2707,7 +2707,7 @@ NONLopt [^\n]*
                                               }
                                               else if (yyextra->current->name.startsWith("typedef "))
                                               {
-                                                if (yyextra->current->type.isEmpty())
+                                                if (yyextra->current->type.empty())
                                                 {
                                                   yyextra->current->type="typedef";
                                                 }
@@ -2813,7 +2813,7 @@ NONLopt [^\n]*
                                         }
 <FindConceptParts>^[ \t]*{CCS}[!*]      { // start of a special comment inside Concept definition
                                           QCString text(yytext);
-                                          int indent = text.find('/');
+                                          size_t indent = text.find('/');
                                           //printf("## startLine=%d startColumn=%d\n",yyextra->current->startLine,indent);
                                           if (!yyextra->current->initializer.empty())
                                           {
@@ -2833,7 +2833,7 @@ NONLopt [^\n]*
                                             initEntry(yyscanner);
                                           }
                                           QCString line(yytext);
-                                          int indent = line.find('/');
+                                          size_t indent = line.find('/');
                                           yyextra->current->section = EntryType::makeConceptDocPart();
                                           yyextra->current->startLine = yyextra->yyLineNr;
                                           yyextra->current->startColumn = indent;
@@ -2844,7 +2844,7 @@ NONLopt [^\n]*
                                         }
 <FindConceptCxxDocs>^[ \t]*{CPPC}.*\n   {
                                           QCString line(yytext);
-                                          int p = line.find('/');
+                                          size_t p = line.find('/');
                                           if (line.at(p+2)=='!' || line.at(p+2)=='/') p++;
                                           yyextra->current->initializer << line.mid(p+2);
                                           yyextra->yyLineNr++;
@@ -3093,7 +3093,7 @@ NONLopt [^\n]*
                                             yyextra->docBlockInBody    = false;
                                             yyextra->docBlockAutoBrief = ( yytext[yyleng-2]=='*' && Config_getBool(JAVADOC_AUTOBRIEF) ) ||
                                                                          ( yytext[yyleng-2]=='!' && Config_getBool(QT_AUTOBRIEF) );
-                                            if (YY_START==MemberSpec && yyextra->memspecEntry && yyextra->memspecEntry->briefFile.isEmpty()) // see issue #10900
+                                            if (YY_START==MemberSpec && yyextra->memspecEntry && yyextra->memspecEntry->briefFile.empty()) // see issue #10900
                                             {
                                               if (yytext[yyleng-3]=='/')
                                               {
@@ -3970,8 +3970,8 @@ NONLopt [^\n]*
                                         }
 <GCopyCurly>^"#"{B}+[0-9]+{B}+"\""[^\"\n]+"\""{B}+"2"{B}*\n? { // end of included file marker
                                           QCString line = yytext;
-                                          int s = line.find(' ');
-                                          int e = line.find('"',s);
+                                          size_t s = line.find(' ');
+                                          size_t e = line.find('"',s);
                                           yyextra->yyLineNr = line.mid(s,e-s).toInt();
                                           if (yytext[yyleng-1]=='\n')
                                           {
@@ -4074,7 +4074,7 @@ NONLopt [^\n]*
 
 
 <FindMembers>":"                        {
-                                          if (yyextra->current->type.isEmpty() &&
+                                          if (yyextra->current->type.empty() &&
                                               yyextra->current->name=="enum") // see bug 69041, C++11 style anon enum: 'enum : unsigned int {...}'
                                           {
                                             yyextra->current->section = EntryType::makeEnum();
@@ -4084,7 +4084,7 @@ NONLopt [^\n]*
                                           }
                                           else
                                           {
-                                            if (yyextra->current->type.isEmpty()) // anonymous padding field, e.g. "int :7;"
+                                            if (yyextra->current->type.empty()) // anonymous padding field, e.g. "int :7;"
                                             {
                                               addType(yyscanner);
                                               yyextra->current->name.sprintf("__pad%d__",yyextra->padCount++);
@@ -4132,7 +4132,7 @@ NONLopt [^\n]*
                                             yyextra->current_root->moveToSubEntryAndRefresh( yyextra->current ) ;
                                             initEntry(yyscanner);
                                           }
-                                          else if (!yyextra->current->name.isEmpty() && !yyextra->current->section.isEnum())
+                                          else if (!yyextra->current->name.empty() && !yyextra->current->section.isEnum())
                                           {
                                             yyextra->current->type=yyextra->current->type.simplifyWhiteSpace();
                                             yyextra->current->args=removeRedundantWhiteSpace(yyextra->current->args);
@@ -4180,7 +4180,7 @@ NONLopt [^\n]*
                                             BEGIN( SliceMetadata );
                                           }
                                           else if (!yyextra->insideCS &&
-                                              (yyextra->current->name.isEmpty() ||
+                                              (yyextra->current->name.empty() ||
                                                yyextra->current->name=="typedef"
                                               )
                                              ) // IDL function property
@@ -4201,7 +4201,7 @@ NONLopt [^\n]*
                                             BEGIN( IDLAttribute );
                                           }
                                           else if (yyextra->insideCS &&
-                                                  yyextra->current->name.isEmpty())
+                                                  yyextra->current->name.empty())
                                           {
                                             yyextra->squareCount=1;
                                             yyextra->lastSquareContext = YY_START;
@@ -4358,7 +4358,7 @@ NONLopt [^\n]*
                                            yyextra->idlProp = yytext;
                                         }
 <IDLProp>{BN}*{ID}{BN}*","              {  // Rare: Another parameter ([propput] HRESULT Item(int index, [in] Type theRealProperty);)
-                                          if (yyextra->current->args.isEmpty())
+                                          if (yyextra->current->args.empty())
                                             yyextra->current->args = "(";
                                           else
                                             yyextra->current->args += ", ";
@@ -4379,7 +4379,7 @@ NONLopt [^\n]*
                                           yyextra->current->fileName   = yyextra->fileName;
                                           yyextra->current->type                = yyextra->idlProp;
                                           yyextra->current->args       = yyextra->current->args.simplifyWhiteSpace();
-                                          if (!yyextra->current->args.isEmpty())
+                                          if (!yyextra->current->args.empty())
                                             yyextra->current->args += ")";
                                           yyextra->current->name       = yyextra->current->name.stripWhiteSpace();
                                           yyextra->current->section = EntryType::makeVariable();
@@ -4453,7 +4453,7 @@ NONLopt [^\n]*
 <FindFields>";"                         {
                                           if (yyextra->insideJava)  // yyextra->last enum field in Java class
                                           {
-                                            if (!yyextra->current->name.isEmpty())
+                                            if (!yyextra->current->name.empty())
                                             {
                                               yyextra->current->fileName   = yyextra->fileName;
                                               yyextra->current->startLine  = yyextra->yyLineNr;
@@ -4480,7 +4480,7 @@ NONLopt [^\n]*
                                           //printf("adding '%s' '%s' '%s' to enum '%s' (mGrpId=%d)\n",
                                           //     qPrint(yyextra->current->type), qPrint(yyextra->current->name),
                                           //     qPrint(yyextra->current->args), qPrint(yyextra->current_root->name),yyextra->current->mGrpId);
-                                          if (!yyextra->current->name.isEmpty())
+                                          if (!yyextra->current->name.empty())
                                           {
                                             yyextra->current->fileName   = yyextra->fileName;
                                             if (yyextra->current_root->section.isEnum() || yyextra->current_root->spec.isEnum())
@@ -4675,7 +4675,6 @@ NONLopt [^\n]*
                                             if (yyextra->current->section.isNamespace() && yyextra->current->type == "namespace")
                                             {
                                               //printf("namespace %s\n",qPrint(yyextra->current->name));
-                                              int split_point;
                                               // save documentation values
                                               QCString doc       = yyextra->current->doc;
                                               int      docLine   = yyextra->current->docLine;
@@ -4698,7 +4697,8 @@ NONLopt [^\n]*
                                               yyextra->current->anchors.clear();
                                               yyextra->current->sli.clear();
                                               yyextra->current->rqli.clear();
-                                              while ((split_point = yyextra->current->name.find("::")) != -1)
+                                              size_t split_point;
+                                              while ((split_point = yyextra->current->name.find("::")) != QCString::npos)
                                               {
                                                 std::shared_ptr<Entry> new_current = std::make_shared<Entry>(*yyextra->current);
                                                 yyextra->current->program.str(std::string());
@@ -4709,7 +4709,7 @@ NONLopt [^\n]*
                                                   yyextra->current->name = yyextra->current->name.mid(7);
                                                   yyextra->current->spec.setInline(true);
                                                 }
-                                                if (!yyextra->current_root->name.isEmpty()) yyextra->current->name.prepend(yyextra->current_root->name+"::");
+                                                if (!yyextra->current_root->name.empty()) yyextra->current->name.prepend(yyextra->current_root->name+"::");
 
                                                 yyextra->current_root->moveToSubEntryAndKeep(yyextra->current);
                                                 yyextra->current_root = yyextra->current;
@@ -4735,11 +4735,11 @@ NONLopt [^\n]*
                                             }
                                             QCString rn = yyextra->current_root->name;
                                             //printf("cn='%s' rn='%s' yyextra->isTypedef=%d\n",qPrint(cn),qPrint(rn),yyextra->isTypedef);
-                                            if (!cn.isEmpty() && !rn.isEmpty())
+                                            if (!cn.empty() && !rn.empty())
                                             {
                                               prependScope(yyscanner);
                                             }
-                                            if (yyextra->isTypedef && cn.isEmpty())
+                                            if (yyextra->isTypedef && cn.empty())
                                             {
                                               //printf("Typedef Name\n");
                                               BEGIN( TypedefName );
@@ -4803,7 +4803,7 @@ NONLopt [^\n]*
                                             yyextra->current->endBodyLine = yyextra->yyLineNr;
                                             QCString &cn = yyextra->current->name;
                                             QCString rn = yyextra->current_root->name;
-                                            if (!cn.isEmpty() && !rn.isEmpty())
+                                            if (!cn.empty() && !rn.empty())
                                             {
                                               prependScope(yyscanner);
                                             }
@@ -4850,13 +4850,12 @@ NONLopt [^\n]*
                                         }
 <MemberSpec>([*&]*{BN}*)*{ID}{BN}*("["[^\]\n]*"]")* { // the [] part could be improved.
                                           lineCount(yyscanner);
-                                          int i=0,l=(int)yyleng,j;
+                                          int i=0,l=(int)yyleng;
                                           while (i<l && (!isId(yytext[i]))) i++;
                                           yyextra->msName = QCString(yytext).right(l-i).stripWhiteSpace();
-                                          j=yyextra->msName.find("[");
-                                          if (j!=-1)
+                                          if (size_t j=yyextra->msName.find("[") ; j!=QCString::npos)
                                           {
-                                            yyextra->msArgs=yyextra->msName.right(yyextra->msName.length()-j);
+                                            yyextra->msArgs=yyextra->msName.mid(j);
                                             yyextra->msName=yyextra->msName.left(j);
                                           }
                                           yyextra->msType=QCString(yytext).left(i);
@@ -4891,7 +4890,7 @@ NONLopt [^\n]*
                                         }
 <MemberSpec>[,;]                        {
                                           //printf("msName=%s\n",qPrint(yyextra->msName));
-                                          if (yyextra->msName.isEmpty() && !yyextra->current->name.isEmpty())
+                                          if (yyextra->msName.empty() && !yyextra->current->name.empty())
                                           {
                                             // see if the compound does not have a name or is yyextra->inside another
                                             // anonymous compound. If so we insert a
@@ -4901,11 +4900,11 @@ NONLopt [^\n]*
                                             while (p)
                                             {
                                               // only look for class scopes, not namespace scopes
-                                              if (p->section.isCompound() && !p->name.isEmpty())
+                                              if (p->section.isCompound() && !p->name.empty())
                                               {
                                                 //printf("Trying scope '%s'\n",qPrint(p->name));
-                                                int i=p->name.findRev("::");
-                                                int pi = (i==-1) ? 0 : i+2;
+                                                size_t i=p->name.rfind("::");
+                                                int pi = i==QCString::npos ? 0 : i+2;
                                                 if (p->name.at(pi)=='@')
                                                 {
                                                   // anonymous compound yyextra->inside -> insert dummy variable name
@@ -4919,7 +4918,7 @@ NONLopt [^\n]*
                                             }
                                           }
                                           //printf("yyextra->msName=%s yyextra->current->name=%s\n",qPrint(yyextra->msName),qPrint(yyextra->current->name));
-                                          if (!yyextra->msName.isEmpty()
+                                          if (!yyextra->msName.empty()
                                               /*&& yyextra->msName!=yyextra->current->name*/) // skip typedef T {} T;, removed due to bug608493
                                           {
                                             bool typedefHidesStruct = Config_getBool(TYPEDEF_HIDES_STRUCT);
@@ -4928,7 +4927,7 @@ NONLopt [^\n]*
                                             if (typedefHidesStruct &&
                                                 yyextra->isTypedef &&
                                                 ((yyextra->current->spec.isStruct() || yyextra->current->spec.isUnion()) || yyextra->current->section.isEnum()) &&
-                                                yyextra->msType.stripWhiteSpace().isEmpty() &&
+                                                yyextra->msType.stripWhiteSpace().empty() &&
                                                 yyextra->memspecEntry)
                                             {
                                               yyextra->memspecEntry->name=yyextra->msName;
@@ -4980,14 +4979,14 @@ NONLopt [^\n]*
                                           }
                                           if (*yytext==';') // end of a struct/class ...
                                           {
-                                            if (!yyextra->isTypedef && yyextra->msName.isEmpty() &&
+                                            if (!yyextra->isTypedef && yyextra->msName.empty() &&
                                                  yyextra->memspecEntry && yyextra->current->section.isCompound())
                                             { // case where a class/struct has a doc block after it
-                                              if (!yyextra->current->doc.isEmpty())
+                                              if (!yyextra->current->doc.empty())
                                               {
                                                 yyextra->memspecEntry->doc += yyextra->current->doc;
                                               }
-                                              if (!yyextra->current->brief.isEmpty())
+                                              if (!yyextra->current->brief.empty())
                                               {
                                                 yyextra->memspecEntry->brief += yyextra->current->brief;
                                               }
@@ -5189,7 +5188,7 @@ NONLopt [^\n]*
                                             yyextra->current->bodyColumn = yyextra->yyColNr;
                                             BEGIN( GetCallType );
                                           }
-                                          else if (!yyextra->current->name.isEmpty()) // normal function
+                                          else if (!yyextra->current->name.empty()) // normal function
                                           {
                                             yyextra->current->args = yytext;
                                             yyextra->current->bodyLine = yyextra->yyLineNr;
@@ -5210,7 +5209,7 @@ NONLopt [^\n]*
                                           BEGIN( FuncPtr );
                                         }
 <FindMembers>"("                        {
-                                          if (!yyextra->current->name.isEmpty())
+                                          if (!yyextra->current->name.empty())
                                           {
                                             yyextra->current->args = yytext;
                                             yyextra->current->bodyLine = yyextra->yyLineNr;
@@ -5370,7 +5369,7 @@ NONLopt [^\n]*
                                             text=text.stripWhiteSpace();
                                             yyextra->lastCommentInArgContext=YY_START;
                                             yyextra->fullArgString+=text;
-                                            if (text.find("//")!=-1)
+                                            if (text.find("//")!=QCString::npos)
                                               BEGIN( CopyArgCommentLine );
                                             else
                                               BEGIN( CopyArgComment );
@@ -5793,7 +5792,7 @@ NONLopt [^\n]*
                                           {
                                             // c++20 trailing requires clause
                                             yyextra->requiresContext = YY_START;
-                                            if (!yyextra->current->req.isEmpty())
+                                            if (!yyextra->current->req.empty())
                                             {
                                               yyextra->current->req+=" && ";
                                             }
@@ -5931,27 +5930,27 @@ NONLopt [^\n]*
                                           static const reg::Ex re(R"(\([^)]*[*&][^)]*\))"); // e.g. (...*...)
                                           reg::Match match;
                                           std::string type = yyextra->current->type.str();
-                                          int ti=-1;
+                                          size_t ti=QCString::npos;
                                           if (reg::search(type,match,re))
                                           {
-                                            ti = (int)match.position();
+                                            ti = match.position();
                                           }
-                                          if (ti!=-1)
+                                          if (ti!=QCString::npos)
                                           {
-                                           int di = yyextra->current->type.find("decltype(");
-                                           if (di!=-1 && di<ti) // decltype(...(...*...) -> normal return type
+                                           if (size_t di = yyextra->current->type.find("decltype(");
+                                                      di!=QCString::npos && di<ti) // decltype(...(...*...) -> normal return type
                                            {
-                                             ti=-1;
+                                             ti = QCString::npos;
                                            }
                                           }
-                                          int ts=yyextra->current->type.find('<');
-                                          int te=yyextra->current->type.findRev('>');
+                                          size_t ts=yyextra->current->type.find('<');
+                                          size_t te=yyextra->current->type.rfind('>');
 
                                           // bug677315: A<int(void *, char *)> get(); is not a function pointer
                                           bool startsWithTypedef = yyextra->current->type.startsWith("typedef ");
-                                          bool isFunction = ti==-1 || // not a (...*...) pattern
-                                                            (ts!=-1 && ts<te && ts<ti && ti<te); // (...*...) is part of a template argument list
-                                          bool isVariable = !yyextra->current->type.isEmpty() &&
+                                          bool isFunction = ti==QCString::npos || // not a (...*...) pattern
+                                                            (ts!=QCString::npos && te!=QCString::npos && ts<te && ts<ti && ti<te); // (...*...) is part of a template argument list
+                                          bool isVariable = !yyextra->current->type.empty() &&
                                                 (!isFunction || startsWithTypedef);
 
                                           //printf("type=%s ts=%d te=%d ti=%d isFunction=%d\n",
@@ -6297,13 +6296,13 @@ NONLopt [^\n]*
                                           {
                                             // in UNO IDL a service or singleton may be defined
                                             // completely like this: "service Foo : XFoo;"
-                                            if (!yyextra->current->name.isEmpty() && !yyextra->current_root->name.isEmpty())
+                                            if (!yyextra->current->name.empty() && !yyextra->current_root->name.empty())
                                             {
                                               prependScope(yyscanner);
                                             }
                                             yyextra->current->name = yyextra->current->name.stripWhiteSpace();
                                             // there can be only one base class here
-                                            if (!yyextra->baseName.isEmpty())
+                                            if (!yyextra->baseName.empty())
                                             {
                                               yyextra->current->extends.emplace_back(
                                                 yyextra->baseName,Protection::Public,Specifier::Normal);
@@ -6410,7 +6409,7 @@ NONLopt [^\n]*
                                             //printf("template class declaration for %s!\n",qPrint(yyextra->current->name));
                                             QCString rn = yyextra->current_root->name;
                                             //printf("cn='%s' rn='%s' yyextra->isTypedef=%d\n",qPrint(cn),qPrint(rn),yyextra->isTypedef);
-                                            if (!yyextra->current->name.isEmpty() && !rn.isEmpty())
+                                            if (!yyextra->current->name.empty() && !rn.empty())
                                             {
                                               prependScope(yyscanner);
                                             }
@@ -6721,7 +6720,7 @@ NONLopt [^\n]*
                                           BEGIN( CSConstraintName );
                                         }
 <CSConstraintType>({ID}".")*{ID}("<"{ID}">")?("()")?  {
-                                          if (yyextra->current->typeConstr.back().type.isEmpty())
+                                          if (yyextra->current->typeConstr.back().type.empty())
                                               // first type constraint for this parameter
                                           {
                                             yyextra->current->typeConstr.back().type=yytext;
@@ -6858,7 +6857,7 @@ NONLopt [^\n]*
                                           yyextra->current->bodyLine  = yyextra->yyLineNr;
                                           yyextra->current->bodyColumn = yyextra->yyColNr;
                                           yyextra->current->name = removeRedundantWhiteSpace(yyextra->current->name);
-                                          if (yyextra->current->name.isEmpty() && !yyextra->isTypedef) // anonymous compound
+                                          if (yyextra->current->name.empty() && !yyextra->isTypedef) // anonymous compound
                                           {
                                             if (yyextra->current->section.isNamespace()) // allow reopening of anonymous namespaces
                                             {
@@ -7074,7 +7073,7 @@ NONLopt [^\n]*
                                             yyextra->current->args += ',' ;
                                           }
                                           yyextra->current->name = removeRedundantWhiteSpace(yyextra->current->name);
-                                          if (!yyextra->baseName.isEmpty())
+                                          if (!yyextra->baseName.empty())
                                           {
                                             yyextra->current->extends.emplace_back(
                                               yyextra->baseName,yyextra->baseProt,yyextra->baseVirt
@@ -7126,7 +7125,7 @@ NONLopt [^\n]*
                                           yyextra->current->bodyLine  = yyextra->yyLineNr;
                                           yyextra->current->bodyColumn = yyextra->yyColNr;
                                           yyextra->current->name = removeRedundantWhiteSpace(yyextra->current->name);
-                                          if (!yyextra->baseName.isEmpty())
+                                          if (!yyextra->baseName.empty())
                                           {
                                             yyextra->current->extends.emplace_back(
                                                yyextra->baseName,yyextra->baseProt,yyextra->baseVirt
@@ -7179,7 +7178,7 @@ NONLopt [^\n]*
 
 <FindMembers,FindFields,MemberSpec,FuncQual,SkipCurly,Operator,ClassVar,SkipInits,SkipC11Inits,ReadExpressionBody,Bases,OldStyleArgs>({CPPC}{B}*)?{CCS}"!" {
                                           //printf("Start doc block at %d\n",yyextra->yyLineNr);
-                                          if (!yyextra->current->doc.isEmpty())
+                                          if (!yyextra->current->doc.empty())
                                           {
                                             yyextra->current->doc+="\n\n";
                                           }
@@ -7296,7 +7295,7 @@ NONLopt [^\n]*
                                           indent.fill(' ',computeIndent(yytext,yyextra->column));
                                           yyextra->docBlock.str(indent.str());
 
-                                          startCommentBlock(yyscanner,yyextra->current->brief.isEmpty());
+                                          startCommentBlock(yyscanner,yyextra->current->brief.empty());
                                           BEGIN( DocLine );
                                         }
 <FindMembers,FindFields,MemberSpec,SkipCurly,ReadExpressionBody,FuncQual,Operator,ClassVar,Bases,OldStyleArgs>{CPPC}"/"/[^/] {
@@ -7311,7 +7310,7 @@ NONLopt [^\n]*
                                           QCString indent;
                                           indent.fill(' ',computeIndent(yytext,yyextra->column));
                                           yyextra->docBlock.str(indent.str());
-                                          startCommentBlock(yyscanner,yyextra->current->brief.isEmpty());
+                                          startCommentBlock(yyscanner,yyextra->current->brief.empty());
                                           BEGIN( DocLine );
                                         }
 <FindMembers>"extern"{BN}*"\""[^\"]+"\""{BN}*("{")?  {
@@ -7324,8 +7323,8 @@ NONLopt [^\n]*
                                             yyextra->externLinkage=false;
                                           }
                                           else if (yyextra->insideCS &&
-                                              !yyextra->current->name.isEmpty() &&
-                                              !yyextra->current->type.isEmpty())
+                                              !yyextra->current->name.empty() &&
+                                              !yyextra->current->type.empty())
                                           { 
                                             if (yyextra->current->mtype == MethodTypes::Event)
                                             {
@@ -7354,7 +7353,7 @@ NONLopt [^\n]*
                                           else
                                           {
                                             if ((yyextra->insideJava || yyextra->insideCS || yyextra->insideD) &&
-                                                yyextra->current->name.isEmpty()
+                                                yyextra->current->name.empty()
                                                )
                                             {
                                               // static Java initializer
@@ -7507,17 +7506,17 @@ NONLopt [^\n]*
                                            lineCount(yyscanner);
                                         }
 <DocLine>{B}*{CPPC}"/"[/]+{Bopt}/"\n"         { // ignore marker line (see bug700345)
-                                          handleCommentBlock(yyscanner,yyextra->docBlock.str(),yyextra->current->brief.isEmpty());
+                                          handleCommentBlock(yyscanner,yyextra->docBlock.str(),yyextra->current->brief.empty());
                                           BEGIN( yyextra->docBlockContext );
                                         }
 <DocLine>{NONLopt}/"\n"{B}*{CPPC}[!/]{B}*{CMD}"}"    { // next line is an end group marker, see bug 752712
                                           yyextra->docBlock << yytext;
-                                          handleCommentBlock(yyscanner,yyextra->docBlock.str(),yyextra->current->brief.isEmpty());
+                                          handleCommentBlock(yyscanner,yyextra->docBlock.str(),yyextra->current->brief.empty());
                                           BEGIN( yyextra->docBlockContext );
                                         }
 <DocLine>{NONLopt}/"\n"                    { // whole line
                                           yyextra->docBlock << yytext;
-                                          handleCommentBlock(yyscanner,yyextra->docBlock.str(),yyextra->current->brief.isEmpty());
+                                          handleCommentBlock(yyscanner,yyextra->docBlock.str(),yyextra->current->brief.empty());
                                           BEGIN( yyextra->docBlockContext );
                                         }
 
@@ -8003,9 +8002,9 @@ NONLopt [^\n]*
 <*>\?                                   {
                                           if (yyextra->insideCS && (YY_START != SkipRound) && (YY_START != CSAccessorDecl))
                                           {
-                                            if (yyextra->current->type.isEmpty())
+                                            if (yyextra->current->type.empty())
                                             {
-                                              if (yyextra->current->name.isEmpty())
+                                              if (yyextra->current->name.empty())
                                                 yyextra->current->name="?";
                                               else
                                                 yyextra->current->name+="?";
@@ -8167,14 +8166,14 @@ static void addType(yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   size_t tl=yyextra->current->type.length();
-  if( tl>0 && !yyextra->current->name.isEmpty() && yyextra->current->type.at(tl-1)!='.')
+  if( tl>0 && !yyextra->current->name.empty() && yyextra->current->type.at(tl-1)!='.')
   {
     yyextra->current->type += ' ' ;
   }
   yyextra->current->type += yyextra->current->name;
   yyextra->current->name.clear() ;
   tl=yyextra->current->type.length();
-  if( tl>0 && !yyextra->current->args.isEmpty() && yyextra->current->type.at(tl-1)!='.')
+  if( tl>0 && !yyextra->current->args.empty() && yyextra->current->type.at(tl-1)!='.')
   {
     yyextra->current->type += ' ' ;
   }
@@ -8245,15 +8244,15 @@ static bool endVerbatimBlock(yyscan_t yyscanner,const QCString &blockName,size_t
 static bool startOfRequiresExpression(const QCString &req)
 {
   QCString r = req.stripWhiteSpace();
-  return r.isEmpty() || r.endsWith("&&") || r.endsWith("||") || r.endsWith("and") || r.endsWith("or");
+  return r.empty() || r.endsWith("&&") || r.endsWith("||") || r.endsWith("and") || r.endsWith("or");
 }
 
 //-----------------------------------------------------------------
 
 static bool nameIsOperator(QCString &name)
 {
-  int i=name.find("operator");
-  if (i==-1) return false;
+  size_t i=name.find("operator");
+  if (i==QCString::npos) return false;
   if (i==0 && !isId(name.at(8))) return true; // case operator ::X
   if (i>0 && !isId(name.at(i-1)) && !isId(name.at(i+8))) return true; // case X::operator
   return false; // case TEXToperatorTEXT
@@ -8310,7 +8309,7 @@ static bool checkForKnRstyleC(yyscan_t yyscanner)
   {
     // in K&R style argument do not have a type, but doxygen expects a type
     // so it will think the argument has no name
-    if (a.type.isEmpty() || !a.name.isEmpty()) return false;
+    if (a.type.empty() || !a.name.empty()) return false;
   }
   return true;
 }
@@ -8322,11 +8321,11 @@ static void setJavaProtection(yyscan_t yyscanner)
   {
     QCString text=yytext;
     yyextra->current->protection = Protection::Public;
-    if (text.find("protected")!=-1)
+    if (text.find("protected")!=QCString::npos)
       yyextra->current->protection = Protection::Protected;
-    else if (text.find("private")!=-1)
+    else if (text.find("private")!=QCString::npos)
       yyextra->current->protection = Protection::Private;
-    else if (text.find("package")!=-1)
+    else if (text.find("package")!=QCString::npos)
       yyextra->current->protection = Protection::Package;
   }
 }
@@ -8336,7 +8335,7 @@ static void splitKnRArg(yyscan_t yyscanner,QCString &oldStyleArgPtr,QCString &ol
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   int si = static_cast<int>(yyextra->current->args.length());
-  if (yyextra->oldStyleArgType.isEmpty()) // new argument
+  if (yyextra->oldStyleArgType.empty()) // new argument
   {
     std::string args = yyextra->current->args.str();
     static const reg::Ex re(R"(\([^)]*\).*)"); // find first (...)
@@ -8432,11 +8431,11 @@ static void addKnRArgInfo(yyscan_t yyscanner,const QCString &type,const QCString
       a.type=type.stripWhiteSpace();
       a.type.stripPrefix("register ");
       a.name=name.stripWhiteSpace();
-      if (!brief.isEmpty() && !docs.isEmpty())
+      if (!brief.empty() && !docs.empty())
       {
         a.docs=brief+"\n\n"+docs;
       }
-      else if (!brief.isEmpty())
+      else if (!brief.empty())
       {
         a.docs=brief;
       }
@@ -8454,7 +8453,7 @@ void fixArgumentListForJavaScript(ArgumentList &al)
 {
   for (Argument &a : al)
   {
-    if (!a.type.isEmpty() && a.name.isEmpty())
+    if (!a.type.empty() && a.name.empty())
     { // a->type is actually the (typeless) parameter name, so move it
       a.name=a.type;
       a.type.clear();
@@ -8568,9 +8567,9 @@ static void handleParametersCommentBlocks(yyscan_t yyscanner,ArgumentList &al)
   for (Argument &a : al)
   {
     AUTO_TRACE_ADD("Param '{}' docs='{}'",a.name,Trace::trunc(a.docs));
-    if (!a.docs.isEmpty())
+    if (!a.docs.empty())
     {
-      if  (a.name.isEmpty() && a.type == "...") a.name= "...";
+      if  (a.name.empty() && a.type == "...") a.name= "...";
       int position=0;
       bool needsEntry;
 
@@ -8664,7 +8663,8 @@ static void parseCompounds(yyscan_t yyscanner,const std::shared_ptr<Entry> &rt)
         ce->groups = rt->groups;
       }
 
-      int ni=ce->name.findRev("::"); if (ni==-1) ni=0; else ni+=2;
+      size_t ni=ce->name.rfind("::");
+      if (ni==QCString::npos) ni=0; else ni+=2;
       // set default protection based on the compound type
       if ( ce->section.isClass() ) // class
       {
@@ -8696,7 +8696,7 @@ static void parseCompounds(yyscan_t yyscanner,const std::shared_ptr<Entry> &rt)
       {
         yyextra->current->protection = yyextra->protection = ce->protection;
       }
-      else if (!ce->name.isEmpty() && ce->name.at(ni)=='@') // unnamed union or namespace
+      else if (!ce->name.empty() && ce->name.at(ni)=='@') // unnamed union or namespace
       {
         if (ce->section.isNamespace() ) // unnamed namespace
         {
@@ -8770,7 +8770,7 @@ static void parseConcepts(yyscan_t yyscanner,const std::shared_ptr<Entry> &rt)
       QCString indent;
       indent.fill(' ',std::max(0,ce->startColumn-1));
       QCString templArgs;
-      if (!ce->args.isEmpty())
+      if (!ce->args.empty())
       {
         templArgs=indent+"template"+ce->args+"\n";
       }
@@ -8890,7 +8890,7 @@ static void parsePrototype(yyscan_t yyscanner,const QCString &text)
 {
   AUTO_TRACE("text='{}'",Trace::trunc(text));
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  if (text.isEmpty())
+  if (text.empty())
   {
     warn(yyextra->fileName,yyextra->yyLineNr,"Empty prototype found!");
     return;
@@ -8919,7 +8919,7 @@ static void parsePrototype(yyscan_t yyscanner,const QCString &text)
   scannerYYlex(yyscanner);
 
   yyextra->current->name = yyextra->current->name.stripWhiteSpace();
-  if (yyextra->current->section.isMemberDoc() && yyextra->current->args.isEmpty())
+  if (yyextra->current->section.isMemberDoc() && yyextra->current->args.empty())
   {
     yyextra->current->section = EntryType::makeVariableDoc();
   }

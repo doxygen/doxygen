@@ -299,13 +299,13 @@ const ClassDef *SymbolResolver::Private::getResolvedTypeRec(
            QCString *pResolvedType)
 {
   AUTO_TRACE("scope={} name={}",scope->name(),n);
-  if (n.isEmpty()) return nullptr;
+  if (n.empty()) return nullptr;
   QCString explicitScopePart;
   QCString strippedTemplateParams;
   QCString scopeName=scope!=Doxygen::globalScope ? scope->name() : QCString();
   QCString name=stripTemplateSpecifiersFromScope(n,true,&strippedTemplateParams,scopeName);
   std::unique_ptr<ArgumentList> actTemplParams;
-  if (!strippedTemplateParams.isEmpty()) // template part that was stripped
+  if (!strippedTemplateParams.empty()) // template part that was stripped
   {
     actTemplParams = stringToArgumentList(scope->getLanguage(),strippedTemplateParams);
   }
@@ -321,7 +321,7 @@ const ClassDef *SymbolResolver::Private::getResolvedTypeRec(
     name=name.mid(qualifierIndex+2);
   }
 
-  if (name.isEmpty())
+  if (name.empty())
   {
     AUTO_TRACE_EXIT("empty name");
     return nullptr; // empty name
@@ -457,13 +457,13 @@ const Definition *SymbolResolver::Private::getResolvedSymbolRec(
 {
   AUTO_TRACE("scope={} name={} args={} checkCV={} insideCode={}",
       scope->name(),n,args,checkCV,insideCode);
-  if (n.isEmpty()) return nullptr;
+  if (n.empty()) return nullptr;
   QCString explicitScopePart;
   QCString strippedTemplateParams;
   QCString scopeName=scope!=Doxygen::globalScope ? scope->name() : QCString();
   QCString name=stripTemplateSpecifiersFromScope(n,true,&strippedTemplateParams,scopeName);
   std::unique_ptr<ArgumentList> actTemplParams;
-  if (!strippedTemplateParams.isEmpty()) // template part that was stripped
+  if (!strippedTemplateParams.empty()) // template part that was stripped
   {
     actTemplParams = stringToArgumentList(scope->getLanguage(),strippedTemplateParams);
   }
@@ -481,15 +481,16 @@ const Definition *SymbolResolver::Private::getResolvedSymbolRec(
   AUTO_TRACE_ADD("qualifierIndex={} name={} explicitScopePart={} strippedTemplateParams={}",
                  qualifierIndex,name,explicitScopePart,strippedTemplateParams);
 
-  if (name.isEmpty())
+  if (name.empty())
   {
     AUTO_TRACE_EXIT("empty name qualifierIndex={}",qualifierIndex);
     return nullptr; // empty name
   }
 
-  int i=0;
+  size_t i=0;
   const auto &range1 = Doxygen::symbolMap->find(name);
-  const auto &range  = (range1.empty() && (i=name.find('<'))!=-1) ? Doxygen::symbolMap->find(name.left(i)) : range1;
+  const auto &range  = (range1.empty() && (i=name.find('<'))!=QCString::npos) ?
+                       Doxygen::symbolMap->find(name.left(i)) : range1;
   if (range.empty())
   {
     AUTO_TRACE_ADD("no symbols with name '{}' (including unspecialized)",name);
@@ -584,7 +585,7 @@ const Definition *SymbolResolver::Private::getResolvedSymbolRec(
             emd->isEnumValue() &&
             emd->getEnumScope() &&
             emd->getEnumScope()->isStrong() &&
-            explicitScopePart.isEmpty())
+            explicitScopePart.empty())
         {
           // skip lookup for strong enum values without explicit scope, see issue #11799
           return true;
@@ -747,7 +748,7 @@ void SymbolResolver::Private::getResolvedType(
         if (md->isTypedef()) // d is a typedef
         {
           QCString args=md->argsString();
-          if (args.isEmpty()) // do not expand "typedef t a[4];"
+          if (args.empty()) // do not expand "typedef t a[4];"
           {
             // we found a symbol at this distance, but if it didn't
             // resolve to a class, we still have to make sure that
@@ -850,7 +851,7 @@ void SymbolResolver::Private::getResolvedSymbol(
   AccessStack accessStack;
   // test accessibility of definition within scope.
   int distance = isAccessibleFromWithExpScope(visitedKeys,visitedNamespaces,accessStack,scope,d,explicitScopePart+strippedTemplateParams);
-  if (distance==-1 && !strippedTemplateParams.isEmpty())
+  if (distance==-1 && !strippedTemplateParams.empty())
   {
     distance = isAccessibleFromWithExpScope(visitedKeys,visitedNamespaces,accessStack,scope,d,explicitScopePart);
   }
@@ -858,7 +859,7 @@ void SymbolResolver::Private::getResolvedSymbol(
   if (distance!=-1) // definition is accessible
   {
     // see if we are dealing with a class or a typedef
-    if (args.isEmpty() && !forceCallable && d->definitionType()==Definition::TypeClass) // d is a class
+    if (args.empty() && !forceCallable && d->definitionType()==Definition::TypeClass) // d is a class
     {
       const ClassDef *cd = toClassDef(d);
       if (!cd->isTemplateArgument()) // skip classes that
@@ -909,7 +910,7 @@ void SymbolResolver::Private::getResolvedSymbol(
 
       bool match = true;
       AUTO_TRACE_ADD("member={} args={} isCallable()={}",md->name(),argListToString(md->argumentList()),md->isCallable());
-      if (md->isCallable() && !args.isEmpty())
+      if (md->isCallable() && !args.empty())
       {
         QCString actArgs;
         if (md->isArtificial() && md->formalTemplateArguments()) // for members of an instantiated template we need to replace
@@ -1039,19 +1040,19 @@ const ClassDef *SymbolResolver::Private::newResolveTypedef(
   if (result==nullptr)
   {
     // try unspecialized version if type is template
-    int si=type.findRev("::");
-    int i=type.find('<');
-    if (si==-1 && i!=-1) // typedef of a template => try the unspecialized version
+    size_t si = type.rfind("::");
+    size_t i  = type.find('<');
+    if (si==QCString::npos && i!=QCString::npos) // typedef of a template => try the unspecialized version
     {
       if (pTemplSpec) *pTemplSpec = type.mid(i);
       result = getResolvedTypeRec(cache,visitedKeys,md->getOuterScope(),type.left(i),nullptr,nullptr,pResolvedType);
     }
-    else if (si!=-1) // A::B
+    else if (si!=QCString::npos) // A::B
     {
       i=type.find('<',si);
-      if (i==-1) // Something like A<T>::B => lookup A::B
+      if (i==QCString::npos) // Something like A<T>::B => lookup A::B
       {
-        i=static_cast<int>(type.length());
+        i=type.length();
       }
       else // Something like A<T>::B<S> => lookup A::B, spec=<S>
       {
@@ -1114,7 +1115,7 @@ int SymbolResolver::Private::isAccessibleFromWithExpScope(
   int result=0; // assume we found it
   AUTO_TRACE("scope={} item={} explictScopePart={}",
       scope?scope->name():QCString(), item?item->name():QCString(), explicitScopePart);
-  if (explicitScopePart.isEmpty())
+  if (explicitScopePart.empty())
   {
     // handle degenerate case where there is no explicit scope.
     result = isAccessibleFrom(visitedKeys,accessStack,scope,item);
@@ -1388,7 +1389,7 @@ bool SymbolResolver::Private::accessibleViaUsingNamespace(
   for (const auto &und : nl) // check used namespaces for the class
   {
     AUTO_TRACE_ADD("trying via used namespace '{}'",und->name());
-    const Definition *sc = explicitScopePart.isEmpty() ? und : followPath(visitedKeys,und,explicitScopePart);
+    const Definition *sc = explicitScopePart.empty() ? und : followPath(visitedKeys,und,explicitScopePart);
     if (sc && item->getOuterScope()==sc)
     {
       AUTO_TRACE_EXIT("true");
@@ -1423,7 +1424,7 @@ bool SymbolResolver::Private::accessibleViaUsingDefinition(VisitedKeys &visitedK
   for (const auto &ud : dl)
   {
     AUTO_TRACE_ADD("trying via used definition '{}'",ud->name());
-    const Definition *sc = explicitScopePart.isEmpty() ? ud : followPath(visitedKeys,ud,explicitScopePart);
+    const Definition *sc = explicitScopePart.empty() ? ud : followPath(visitedKeys,ud,explicitScopePart);
     if (sc && sc==item)
     {
       AUTO_TRACE_EXIT("true");
@@ -1609,7 +1610,7 @@ QCString SymbolResolver::Private::substTypedef(
 {
   AUTO_TRACE("scope={} name={}",scope?scope->name():QCString(), name);
   QCString result=name;
-  if (name.isEmpty()) return result;
+  if (name.empty()) return result;
 
   auto &range = Doxygen::symbolMap->find(name);
   if (range.empty())
@@ -1705,7 +1706,7 @@ const ClassDef *SymbolResolver::resolveClass(const Definition *scope,
        scope->definitionType()!=Definition::TypeNamespace
       ) ||
       (name.stripWhiteSpace().startsWith("::")) ||
-      ((lang==SrcLangExt::Java || lang==SrcLangExt::CSharp) && QCString(name).find("::")!=-1)
+      ((lang==SrcLangExt::Java || lang==SrcLangExt::CSharp) && QCString(name).find("::")!=QCString::npos)
      )
   {
     scope=Doxygen::globalScope;

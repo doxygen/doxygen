@@ -104,7 +104,7 @@ double Portable::getSysElapsedTime()
 
 int Portable::system(const QCString &command,const QCString &args,bool commandHasConsole)
 {
-  if (command.isEmpty()) return 1;
+  if (command.empty()) return 1;
   AutoTimeKeeper timeKeeper;
 
 #if defined(_WIN32) && !defined(__CYGWIN__)
@@ -114,7 +114,7 @@ int Portable::system(const QCString &command,const QCString &args,bool commandHa
   QCString fullCmd=command;
 #endif
   fullCmd=fullCmd.stripWhiteSpace();
-  if (fullCmd.at(0)!='"' && fullCmd.find(' ')!=-1)
+  if (fullCmd.at(0)!='"' && fullCmd.find(' ')!=QCString::npos)
   {
     // add quotes around command as it contains spaces and is not quoted already
     fullCmd="\""+fullCmd+"\"";
@@ -286,7 +286,7 @@ void loadEnvironment()
 void Portable::setenv(const QCString &name,const QCString &value)
 {
 #if defined(_WIN32) && !defined(__CYGWIN__)
-    SetEnvironmentVariable(name.data(),!value.isEmpty() ? value.data() : "");
+    SetEnvironmentVariable(name.data(),!value.empty() ? value.data() : "");
 #else
     if(!environmentLoaded) // if the environment variables are not loaded already...
     {                                 // ...call loadEnvironment to store them in class
@@ -304,7 +304,7 @@ void Portable::unsetenv(const QCString &variable)
     SetEnvironmentVariable(variable.data(),nullptr);
 #else
     /* Some systems don't have unsetenv(), so we do it ourselves */
-    if (variable.isEmpty() || variable.find('=')!=-1)
+    if (variable.empty() || variable.find('=')!=QCString::npos)
     {
       return; // not properly formatted
     }
@@ -397,9 +397,9 @@ static bool ExistsOnPath(const QCString &fileName)
   QCString paths = Portable::getenv("PATH");
   char listSep = Portable::pathListSeparator()[0];
   char pathSep = Portable::pathSeparator()[0];
-  int strt = 0;
-  int idx;
-  while ((idx = paths.find(listSep,strt)) != -1)
+  size_t strt = 0;
+  size_t idx;
+  while ((idx = paths.find(listSep,strt)) != QCString::npos)
   {
     QCString locFile(paths.mid(strt,idx-strt));
     locFile += pathSep;
@@ -410,7 +410,7 @@ static bool ExistsOnPath(const QCString &fileName)
   }
   // to be sure the last path component is checked as well
   QCString locFile(paths.mid(strt));
-  if (!locFile.isEmpty())
+  if (!locFile.empty())
   {
     locFile += pathSep;
     locFile += fileName;
@@ -525,7 +525,7 @@ void Portable::correctPath(const StringVector &extraPaths)
     first=false;
     result += substitute(path,"/","\\");
   }
-  if (!result.isEmpty() && !p.isEmpty()) result+=';';
+  if (!result.empty() && !p.empty()) result+=';';
   result += substitute(p,"/","\\");
 #else
   for (const auto &path : extraPaths)
@@ -534,7 +534,7 @@ void Portable::correctPath(const StringVector &extraPaths)
     first=false;
     result += path;
   }
-  if (!result.isEmpty() && !p.isEmpty()) result+=':';
+  if (!result.empty() && !p.empty()) result+=':';
   result += p;
 #endif
   if (result!=p) Portable::setenv("PATH",result.data());
@@ -622,7 +622,7 @@ const char *Portable::devNull()
 
 size_t Portable::recodeUtf8StringToW(const QCString &inputStr,uint16_t **outBuf)
 {
-  if (inputStr.isEmpty() || outBuf==nullptr) return 0; // empty input or invalid output
+  if (inputStr.empty() || outBuf==nullptr) return 0; // empty input or invalid output
   void *handle = portable_iconv_open("UTF-16LE","UTF-8");
   if (handle==reinterpret_cast<void *>(-1)) return 0; // invalid encoding
   size_t len = inputStr.length();

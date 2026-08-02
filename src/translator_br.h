@@ -292,7 +292,7 @@ class TranslatorBrazilian : public Translator
      */
     QCString trGeneratedAutomatically(const QCString &s) override
     { QCString result="Gerado automaticamente por Doxygen";
-      if (!s.isEmpty()) result+=" para "+s;
+      if (!s.empty()) result+=" para "+s;
       result+=" a partir do código fonte.";
       return result;
     }
@@ -489,7 +489,7 @@ class TranslatorBrazilian : public Translator
 
     /*! This is used in HTML as the title of index.html. */
     QCString trDocumentation(const QCString &projName) override
-    { return "Documentação" + (!projName.isEmpty()? " de " + projName : ""); }
+    { return "Documentação" + (!projName.empty()? " de " + projName : ""); }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * index of all groups.
@@ -646,7 +646,7 @@ class TranslatorBrazilian : public Translator
     QCString trGeneratedAt(const QCString &date,const QCString &projName) override
     {
       QCString result="Gerado em "+date;
-      if (!projName.isEmpty()) result+=" para "+projName;
+      if (!projName.empty()) result+=" para "+projName;
       result+=" por";
       return result;
     }
@@ -2737,7 +2737,7 @@ class TranslatorBrazilian : public Translator
         case NamespaceMemberHighlight::Total: // for completeness
           break;
       }
-      result+=(pluralResult.isEmpty() ? singularResult+"s" : pluralResult);
+      result+=(pluralResult.empty() ? singularResult+"s" : pluralResult);
       result+=" do namespace ";
       if (!extractAll) result+=" documentado";
       result+=" com links para ";
@@ -2800,7 +2800,7 @@ class TranslatorBrazilian : public Translator
         case ModuleMemberHighlight::Total: // for completeness
           break;
       }
-      result+=(pluralResult.isEmpty() ? singularResult+"s" : pluralResult);
+      result+=(pluralResult.empty() ? singularResult+"s" : pluralResult);
       result+="do módulo ";
       if (!extractAll) result+="documentado ";
       result+=" com links para ";

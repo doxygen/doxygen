@@ -152,7 +152,7 @@ class TranslatorRomanian : public TranslatorAdapter_1_8_15
      */
     QCString trGeneratedAutomatically(const QCString &s) override
     { QCString result="Generat automat de Doxygen";
-      if (!s.isEmpty()) result+=" pentru "+s;
+      if (!s.empty()) result+=" pentru "+s;
       result+=" din codul sursă.";
       return result;
     }
@@ -359,7 +359,7 @@ class TranslatorRomanian : public TranslatorAdapter_1_8_15
 
     /*! This is used in HTML as the title of index.html. */
     QCString trDocumentation(const QCString &projName) override
-    { return (!projName.isEmpty()?projName + " " : "") + "Documentaţie"; }
+    { return (!projName.empty()?projName + " " : "") + "Documentaţie"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * index of all groups.
@@ -519,7 +519,7 @@ class TranslatorRomanian : public TranslatorAdapter_1_8_15
     QCString trGeneratedAt(const QCString &date,const QCString &projName) override
     {
       QCString result="Generat "+date;
-      if (!projName.isEmpty()) result+=" pentru "+projName;
+      if (!projName.empty()) result+=" pentru "+projName;
       result+=" de către";
       return result;
     }

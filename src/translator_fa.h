@@ -173,7 +173,7 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
      */
     QCString trGeneratedAutomatically(const QCString &s) override
     { QCString result="تولید شده توسط نرم افزار دی اکسیژن ";
-      if (!s.isEmpty()) result+=" برای "+s;
+      if (!s.empty()) result+=" برای "+s;
       result+=" از کد برنامه ";
       return result;
     }
@@ -347,7 +347,7 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
 
     /*! This is used in HTML as the title of index.html. */
     QCString trDocumentation(const QCString &projName) override
-    { return "مستندات" + (!projName.isEmpty()?" " + projName : ""); }
+    { return "مستندات" + (!projName.empty()?" " + projName : ""); }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * index of all groups.
@@ -510,7 +510,7 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
     QCString trGeneratedAt(const QCString &date,const QCString &projName) override
     {
       QCString result = HtmlDivEnd + HtmlRightToLeft + QCString("توليد شده در ") +date ;
-      if (!projName.isEmpty()) result+=" برای "+projName;
+      if (!projName.empty()) result+=" برای "+projName;
       result+=" توسط";
       return result;
     }

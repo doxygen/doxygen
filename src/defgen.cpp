@@ -42,7 +42,7 @@
 static inline void writeDEFString(TextStream &t,const QCString &s)
 {
   t << '\'';
-  if (!s.isEmpty())
+  if (!s.empty())
   {
     const char* p=s.data();
     char c = 0;
@@ -126,36 +126,36 @@ static void generateDEFForMember(const MemberDef *md,
         ++defIt;
       }
       t << memPrefix << "param = {\n";
-      if (!a.attrib.isEmpty())
+      if (!a.attrib.empty())
       {
         t << fcnPrefix << "attributes = ";
         writeDEFString(t,a.attrib);
         t << ";\n";
       }
-      if (!a.type.isEmpty())
+      if (!a.type.empty())
       {
         t << fcnPrefix << "type = <<_EnD_oF_dEf_TeXt_\n"
           << a.type << "\n_EnD_oF_dEf_TeXt_;\n";
       }
-      if (!a.name.isEmpty())
+      if (!a.name.empty())
       {
         t << fcnPrefix << "declname = ";
         writeDEFString(t,a.name);
         t << ";\n";
       }
-      if (defArg && !defArg->name.isEmpty() && defArg->name!=a.name)
+      if (defArg && !defArg->name.empty() && defArg->name!=a.name)
       {
         t << fcnPrefix << "defname = ";
         writeDEFString(t,defArg->name);
         t << ";\n";
       }
-      if (!a.array.isEmpty())
+      if (!a.array.empty())
       {
         t << fcnPrefix << "array = ";
         writeDEFString(t,a.array);
         t << ";\n";
       }
-      if (!a.defval.isEmpty())
+      if (!a.defval.empty())
       {
         t << fcnPrefix << "defval = <<_EnD_oF_dEf_TeXt_\n"
           << a.defval << "\n_EnD_oF_dEf_TeXt_;\n";
@@ -175,7 +175,7 @@ static void generateDEFForMember(const MemberDef *md,
     }
   }
 
-  if (!md->initializer().isEmpty())
+  if (!md->initializer().empty())
   {
     t << memPrefix << "initializer = <<_EnD_oF_dEf_TeXt_\n"
       << md->initializer() << "\n_EnD_oF_dEf_TeXt_;\n";
@@ -186,7 +186,7 @@ static void generateDEFForMember(const MemberDef *md,
     for (const auto &emd : md->enumFieldList())
     {
       t << memPrefix << "enum = { enum-name = " << emd->name() << ';';
-      if (!emd->initializer().isEmpty())
+      if (!emd->initializer().empty())
       {
         t << " enum-value = ";
         writeDEFString(t,emd->initializer());
@@ -222,7 +222,7 @@ static void generateDEFForMember(const MemberDef *md,
 
       QCString scope = rmd->getScopeString();
       QCString name = rmd->name();
-      if (!scope.isEmpty() && scope!=def->name())
+      if (!scope.empty() && scope!=def->name())
       {
         name.prepend(scope+"::");
       }
@@ -248,7 +248,7 @@ static void generateDEFForMember(const MemberDef *md,
 
       QCString scope = rmd->getScopeString();
       QCString name = rmd->name();
-      if (!scope.isEmpty() && scope!=def->name())
+      if (!scope.empty() && scope!=def->name())
       {
         name.prepend(scope+"::");
       }
@@ -298,7 +298,7 @@ static void generateDEFForClass(const ClassDef *cd,TextStream &t)
   // - examples
 
   if (cd->isReference()) return; // skip external references.
-  if (cd->name().find('@')!=-1) return; // skip anonymous compounds.
+  if (cd->name().find('@')!=QCString::npos) return; // skip anonymous compounds.
   if (cd->isImplicitTemplateInstance()) return; // skip generated template instances.
 
   t << cd->compoundTypeString() << " = {\n";

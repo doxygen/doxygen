@@ -160,7 +160,7 @@ class TranslatorEnglish : public Translator
      */
     QCString trGeneratedAutomatically(const QCString &s) override
     { QCString result="Generated automatically by Doxygen";
-      if (!s.isEmpty()) result+=" for "+s;
+      if (!s.empty()) result+=" for "+s;
       result+=" from the source code.";
       return result;
     }
@@ -366,7 +366,7 @@ class TranslatorEnglish : public Translator
 
     /*! This is used in HTML as the title of index.html. */
     QCString trDocumentation(const QCString &projName) override
-    { return (!projName.isEmpty()?projName + " " : "") + "Documentation"; }
+    { return (!projName.empty()?projName + " " : "") + "Documentation"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * index of all groups.
@@ -523,7 +523,7 @@ class TranslatorEnglish : public Translator
     QCString trGeneratedAt(const QCString &date,const QCString &projName) override
     {
       QCString result="Generated on "+date;
-      if (!projName.isEmpty()) result+=" for "+projName;
+      if (!projName.empty()) result+=" for "+projName;
       result+=" by";
       return result;
     }
@@ -2528,7 +2528,7 @@ class TranslatorEnglish : public Translator
         case NamespaceMemberHighlight::Total: // for completeness
           break;
       }
-      result+=(pluralResult.isEmpty() ? singularResult+"s" : pluralResult);
+      result+=(pluralResult.empty() ? singularResult+"s" : pluralResult);
       result+=" with links to ";
       if (extractAll)
         result+="the namespace documentation for each " + singularResult + ":";
@@ -2584,7 +2584,7 @@ class TranslatorEnglish : public Translator
         case ModuleMemberHighlight::Total: // for completeness
           break;
       }
-      result+=(pluralResult.isEmpty() ? singularResult+"s" : pluralResult);
+      result+=(pluralResult.empty() ? singularResult+"s" : pluralResult);
       result+=" with links to ";
       if (extractAll)
         result+="the module documentation for each " + singularResult + ":";

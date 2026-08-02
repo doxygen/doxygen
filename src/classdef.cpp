@@ -76,9 +76,9 @@ static QCString makeQualifiedNameWithTemplateParameters(const ClassDef *cd,
 
   SrcLangExt lang = cd->getLanguage();
   QCString scopeSeparator = getLanguageSpecificSeparator(lang);
-  if (!scName.isEmpty()) scName+=scopeSeparator;
+  if (!scName.empty()) scName+=scopeSeparator;
 
-  bool isSpecialization = cd->localName().find('<')!=-1;
+  bool isSpecialization = cd->localName().find('<')!=QCString::npos;
   QCString clName = cd->className();
   scName+=clName;
   if (lang!=SrcLangExt::CSharp && !cd->templateArguments().empty())
@@ -118,8 +118,8 @@ static QCString makeDisplayName(const ClassDef *cd,bool includeScope)
   {
     if (cd->tagLessReference())
     {
-      int idx=cd->name().findRev("::");
-      if (includeScope || idx==-1)
+      size_t idx=cd->name().rfind("::");
+      if (includeScope || idx==QCString::npos)
       {
         n=cd->name();
       }
@@ -820,7 +820,7 @@ ClassDefImpl::ClassDefImpl(
   m_compType = ct;
   m_isJavaEnum = isJavaEnum;
   QCString compTypeString = getCompoundTypeString(getLanguage(),ct,isJavaEnum);
-  if (!fName.isEmpty())
+  if (!fName.empty())
   {
     m_fileName=stripExtension(fName);
   }
@@ -863,7 +863,7 @@ ClassDefImpl::ClassDefImpl(
   m_memberListFileName = convertNameToFile(compTypeString+name()+"-members");
   m_collabFileName = convertNameToFile(m_fileName+"_coll_graph");
   m_inheritFileName = convertNameToFile(m_fileName+"_inherit_graph");
-  if (lref.isEmpty())
+  if (lref.empty())
   {
     m_fileName = convertNameToFile(m_fileName);
   }
@@ -1192,7 +1192,7 @@ void ClassDefImpl::internalInsertMember(MemberDef *md,
                   addMemberToList(MemberListType::PubTypes(),md,true);
                   isSimple=!md->isEnumerate() &&
                            !md->isEnumValue() &&
-                           md->typeString().find(")(")==-1; // func ptr typedef
+                           md->typeString().find(")(")==QCString::npos; // func ptr typedef
                   break;
                 case Protection::Private:
                   addMemberToList(MemberListType::PriTypes(),md,true);
@@ -1441,7 +1441,7 @@ void ClassDefImpl::setIncludeFile(FileDef *fd,
 {
   //printf("ClassDefImpl::setIncludeFile(%p,%s,%d,%d)\n",fd,includeName,local,force);
   if (!m_incInfo) m_incInfo = std::make_unique<IncludeInfo>();
-  if ((!includeName.isEmpty() && m_incInfo->includeName.isEmpty()) ||
+  if ((!includeName.empty() && m_incInfo->includeName.empty()) ||
       (fd!=nullptr && m_incInfo->fileDef==nullptr)
      )
   {
@@ -1450,7 +1450,7 @@ void ClassDefImpl::setIncludeFile(FileDef *fd,
     m_incInfo->includeName = includeName;
     m_incInfo->kind        = local ? IncludeKind::IncludeLocal : IncludeKind::IncludeSystem;
   }
-  if (force && !includeName.isEmpty())
+  if (force && !includeName.empty())
   {
     m_incInfo->includeName = includeName;
     m_incInfo->kind        = local ? IncludeKind::IncludeLocal : IncludeKind::IncludeSystem;
@@ -1487,14 +1487,14 @@ static void searchTemplateSpecs(/*in*/  const Definition *d,
       searchTemplateSpecs(d->getOuterScope(),result,name,lang);
     }
     const ClassDef *cd=toClassDef(d);
-    if (!name.isEmpty()) name+="::";
+    if (!name.empty()) name+="::";
     QCString clName = d->localName();
     if (clName.endsWith("-p"))
     {
       clName = clName.left(clName.length()-2);
     }
     name+=clName;
-    bool isSpecialization = d->localName().find('<')!=-1;
+    bool isSpecialization = d->localName().find('<')!=QCString::npos;
     if (!cd->templateArguments().empty())
     {
       result.push_back(cd->templateArguments());
@@ -1529,7 +1529,7 @@ void ClassDefImpl::writeTemplateSpec(OutputList &ol,const Definition *d,
         linkifyText(TextGeneratorOLImpl(ol), // out
           a.type,                            // text
           LinkifyTextOptions().setScope(d).setFileScope(getFileDef()).setSelf(this));
-        if (!a.name.isEmpty())
+        if (!a.name.empty())
         {
           ol.docify(" ");
           ol.docify(a.name);
@@ -1545,7 +1545,7 @@ void ClassDefImpl::writeTemplateSpec(OutputList &ol,const Definition *d,
       ol.docify(">");
       ol.lineBreak();
     }
-    if (!m_requiresClause.isEmpty())
+    if (!m_requiresClause.empty())
     {
       ol.docify("requires ");
       linkifyText(TextGeneratorOLImpl(ol), // out
@@ -1603,7 +1603,7 @@ void ClassDefImpl::writeDetailedDocumentationBody(OutputList &ol) const
   }
 
   // repeat brief description
-  if (!briefDescription().isEmpty() && repeatBrief)
+  if (!briefDescription().empty() && repeatBrief)
   {
     ol.generateDoc(briefFile(),
                    briefLine(),
@@ -1612,8 +1612,8 @@ void ClassDefImpl::writeDetailedDocumentationBody(OutputList &ol) const
                    briefDescription(),
                    DocOptions());
   }
-  if (!briefDescription().isEmpty() && repeatBrief &&
-      !documentation().isEmpty())
+  if (!briefDescription().empty() && repeatBrief &&
+      !documentation().empty())
   {
     ol.pushGeneratorState();
     ol.disable(OutputType::Html);
@@ -1621,7 +1621,7 @@ void ClassDefImpl::writeDetailedDocumentationBody(OutputList &ol) const
     ol.popGeneratorState();
   }
   // write documentation
-  if (!documentation().isEmpty())
+  if (!documentation().empty())
   {
     ol.generateDoc(docFile(),
                    docLine(),
@@ -1660,8 +1660,8 @@ bool ClassDefImpl::hasDetailedDescription() const
 {
   bool repeatBrief = Config_getBool(REPEAT_BRIEF);
   bool sourceBrowser = Config_getBool(SOURCE_BROWSER);
-  return ((!briefDescription().isEmpty() && repeatBrief) ||
-          (!documentation().isEmpty() || m_tempArgs.hasTemplateDocumentation()) ||
+  return ((!briefDescription().empty() && repeatBrief) ||
+          (!documentation().empty() || m_tempArgs.hasTemplateDocumentation()) ||
           (sourceBrowser && getStartBodyLine()!=-1 && getBodyDef()) ||
           hasRequirementRefs());
 }
@@ -1679,10 +1679,10 @@ void ClassDefImpl::writeDetailedDescription(OutputList &ol, const QCString &/*pa
 
     ol.pushGeneratorState();
       ol.disableAllBut(OutputType::Html);
-      ol.writeAnchor(QCString(),anchor.isEmpty() ? QCString("details") : anchor);
+      ol.writeAnchor(QCString(),anchor.empty() ? QCString("details") : anchor);
     ol.popGeneratorState();
 
-    if (!anchor.isEmpty())
+    if (!anchor.empty())
     {
       ol.pushGeneratorState();
       ol.disable(OutputType::Html);
@@ -1769,7 +1769,7 @@ void ClassDefImpl::showUsedFiles(OutputList &ol) const
     }
 
     QCString fname = fd->name();
-    if (!fd->getVersion().isEmpty()) // append version if available
+    if (!fd->getVersion().empty()) // append version if available
     {
       fname += " (" + fd->getVersion() + ")";
     }
@@ -2024,7 +2024,7 @@ void ClassDefImpl::writeIncludeFilesForSlice(OutputList &ol) const
               qstricmp(abs.left(prefix.length()).data(), prefix.data()) == 0) // case insensitive compare
           {
             length = prefix.length();
-            potential = abs.right(abs.length() - prefix.length());
+            potential = abs.mid(prefix.length());
           }
         }
       }
@@ -2035,7 +2035,7 @@ void ClassDefImpl::writeIncludeFilesForSlice(OutputList &ol) const
       }
     }
 
-    if (nm.isEmpty())
+    if (nm.empty())
     {
       nm = m_incInfo->includeName;
     }
@@ -2060,7 +2060,7 @@ void ClassDefImpl::writeIncludeFilesForSlice(OutputList &ol) const
   // Write a summary of the Slice definition including metadata.
   ol.startParagraph();
   ol.startTypewriter();
-  if (!m_metaData.isEmpty())
+  if (!m_metaData.empty())
   {
     ol.docify(m_metaData);
     ol.lineBreak();
@@ -2144,12 +2144,12 @@ void ClassDefImpl::writeIncludeFiles(OutputList &ol) const
   if (m_incInfo /*&& Config_getBool(SHOW_HEADERFILE)*/)
   {
     SrcLangExt lang = getLanguage();
-    QCString nm=m_incInfo->includeName.isEmpty() ?
+    QCString nm=m_incInfo->includeName.empty() ?
       (m_incInfo->fileDef ?
        m_incInfo->fileDef->docName() : QCString()
       ) :
       m_incInfo->includeName;
-    if (!nm.isEmpty())
+    if (!nm.empty())
     {
       ol.startParagraph();
       ol.startTypewriter();
@@ -2346,19 +2346,19 @@ void ClassDefImpl::writeTagFile(TextStream &tagFile) const
   QCString fn = getOutputFileBase();
   addHtmlExtensionIfMissing(fn);
   tagFile << "    <filename>" << convertToXML(fn) << "</filename>\n";
-  if (!anchor().isEmpty())
+  if (!anchor().empty())
   {
     tagFile << "    <anchor>" << convertToXML(anchor()) << "</anchor>\n";
   }
   QCString idStr = id();
-  if (!idStr.isEmpty())
+  if (!idStr.empty())
   {
     tagFile << "    <clangid>" << convertToXML(idStr) << "</clangid>\n";
   }
   for (const Argument &a : m_tempArgs)
   {
     tagFile << "    <templarg>" << convertToXML(a.type);
-    if (!a.name.isEmpty())
+    if (!a.name.empty())
     {
       tagFile << " " << convertToXML(a.name);
     }
@@ -2570,12 +2570,12 @@ void ClassDefImpl::writeMoreLink(OutputList &ol,const QCString &anchor) const
   ol.disableAllBut(OutputType::Html);
   ol.docify(" ");
   ol.startTextLink(getOutputFileBase(),
-      anchor.isEmpty() ? QCString("details") : anchor);
+      anchor.empty() ? QCString("details") : anchor);
   ol.parseText(theTranslator->trMore());
   ol.endTextLink();
   ol.popGeneratorState();
 
-  if (!anchor.isEmpty())
+  if (!anchor.empty())
   {
     ol.pushGeneratorState();
     // LaTeX + RTF
@@ -2646,7 +2646,7 @@ void ClassDefImpl::writeDeclarationLink(OutputList &ol,bool &found,const QCStrin
       {
         ol.startMemberHeader("nested-classes");
       }
-      if (!header.isEmpty())
+      if (!header.empty())
       {
         ol.parseText(header);
       }
@@ -2668,7 +2668,7 @@ void ClassDefImpl::writeDeclarationLink(OutputList &ol,bool &found,const QCStrin
     QCString ctype = compoundTypeString();
     QCString cname = displayName(!localNames);
     QCString anc = anchor();
-    if (anc.isEmpty()) anc = cname; else anc.prepend(cname+"_");
+    if (anc.empty()) anc = cname; else anc.prepend(cname+"_");
     ol.startMemberItem(anc,OutputGenerator::MemberItemType::Normal);
 
     if (lang!=SrcLangExt::VHDL) // for VHDL we swap the name and the type
@@ -2704,7 +2704,7 @@ void ClassDefImpl::writeDeclarationLink(OutputList &ol,bool &found,const QCStrin
     ol.endMemberItem(OutputGenerator::MemberItemType::Normal);
 
     // add the brief description if available
-    if (!briefDescription().isEmpty() && Config_getBool(BRIEF_MEMBER_DESC))
+    if (!briefDescription().empty() && Config_getBool(BRIEF_MEMBER_DESC))
     {
       auto parser { createDocParser() };
       auto ast    { validatingParseDoc(*parser.get(),
@@ -2716,7 +2716,7 @@ void ClassDefImpl::writeDeclarationLink(OutputList &ol,bool &found,const QCStrin
                                        DocOptions()
                                        .setSingleLine(true))
                   };
-      if (!ast->isEmpty())
+      if (!ast->empty())
       {
         ol.startMemberDescription(anchor());
         ol.writeDoc(ast.get(),this,nullptr);
@@ -3209,7 +3209,7 @@ void ClassDefImpl::writeMemberList(OutputList &ol) const
       //printf("%s: Member %s of class %s md->protection()=%d mi->prot=%d prot=%d inherited=%d\n",
       //    qPrint(name()),qPrint(md->name()),qPrint(cd->name()),md->protection(),mi->prot,prot,mi->inherited);
 
-      if (cd && !md->name().isEmpty() && !md->isAnonymous())
+      if (cd && !md->name().empty() && !md->isAnonymous())
       {
         bool memberWritten=false;
         if (cd->isLinkable() && md->isLinkable())
@@ -3253,7 +3253,7 @@ void ClassDefImpl::writeMemberList(OutputList &ol) const
                 md->anchor(),name);
 
             if ( md->isFunction() || md->isSignal() || md->isSlot() ||
-                (md->isFriend() && !md->argsString().isEmpty()))
+                (md->isFriend() && !md->argsString().empty()))
               ol.docify(md->argsString());
             else if (md->isEnumerate())
               ol.parseText(" "+theTranslator->trEnumName());
@@ -3438,7 +3438,7 @@ void ClassDefImpl::addTypeConstraint(const QCString &typeConstraint,const QCStri
 {
   //printf("addTypeConstraint(%s,%s)\n",qPrint(type),qPrint(typeConstraint));
   bool hideUndocRelation = Config_getBool(HIDE_UNDOC_RELATIONS);
-  if (typeConstraint.isEmpty() || type.isEmpty()) return;
+  if (typeConstraint.empty() || type.empty()) return;
   SymbolResolver resolver(getFileDef());
   ClassDefMutable *cd = resolver.resolveClassMutable(this,typeConstraint);
   if (cd==nullptr && !hideUndocRelation)
@@ -3481,17 +3481,17 @@ void ClassDefImpl::addTypeConstraints()
 {
   for (const Argument &a : m_tempArgs)
   {
-    if (!a.typeConstraint.isEmpty())
+    if (!a.typeConstraint.empty())
     {
       QCString typeConstraint;
-      int i=0,p=0;
-      while ((i=a.typeConstraint.find('&',p))!=-1) // typeConstraint="A &I" for C<T extends A & I>
+      size_t i=0,p=0;
+      while ((i=a.typeConstraint.find('&',p))!=QCString::npos) // typeConstraint="A &I" for C<T extends A & I>
       {
         typeConstraint = a.typeConstraint.mid(p,i-p).stripWhiteSpace();
         addTypeConstraint(typeConstraint,a.type);
         p=i+1;
       }
-      typeConstraint = a.typeConstraint.right(a.typeConstraint.length()-p).stripWhiteSpace();
+      typeConstraint = a.typeConstraint.mid(p).stripWhiteSpace();
       addTypeConstraint(typeConstraint,a.type);
     }
   }
@@ -3667,7 +3667,7 @@ int ClassDefImpl::isBaseClass(const ClassDef *bcd, bool followInstances,const QC
     {
       ccd=ccd->templateMaster();
     }
-    if (ccd==bcd && (templSpec.isEmpty() || templSpec==bclass.templSpecifiers))
+    if (ccd==bcd && (templSpec.empty() || templSpec==bclass.templSpecifiers))
     {
       distance=1;
       break; // no shorter path possible
@@ -3801,7 +3801,8 @@ void ClassDefImpl::mergeMembersFromBaseClasses(bool mergeVirtualBaseClass)
                   //    qPrint(dstMd->name()),
                   //    qPrint(dstMi->scopePath().left(dstMi->scopePath().find("::")+2)));
 
-                  QCString scope=dstMi->scopePath().left(dstMi->scopePath().find(sep)+sepLen);
+                  size_t scopeSepPos = dstMi->scopePath().find(sep);
+                  QCString scope = dstMi->scopePath().left(scopeSepPos!=QCString::npos ? scopeSepPos+sepLen : 0);
                   if (scope!=dstMi->ambiguityResolutionScope().left(scope.length()))
                   {
                     dstMi->setAmbiguityResolutionScope(scope+dstMi->ambiguityResolutionScope());
@@ -3830,7 +3831,8 @@ void ClassDefImpl::mergeMembersFromBaseClasses(bool mergeVirtualBaseClass)
                   //    qPrint(dstMd->name()),
                   //    qPrint(dstMi->scopePath().left(dstMi->scopePath().find("::")+2)));
 
-                  QCString scope=dstMi->scopePath().left(dstMi->scopePath().find(sep)+sepLen);
+                  size_t scopeSepPos = dstMi->scopePath().find(sep);
+                  QCString scope = dstMi->scopePath().left(scopeSepPos!=QCString::npos ? scopeSepPos+sepLen : 0);
                   if (scope!=dstMi->ambiguityResolutionScope().left(scope.length()))
                   {
                     dstMi->setAmbiguityResolutionScope(dstMi->ambiguityResolutionScope()+scope);
@@ -4505,7 +4507,7 @@ QCString ClassDefImpl::qualifiedNameWithTemplateParameters(
 
 QCString ClassDefImpl::className() const
 {
-  QCString name = m_className.isEmpty() ? localName() : m_className;
+  QCString name = m_className.empty() ? localName() : m_className;
   auto lang = getLanguage();
   if (lang==SrcLangExt::CSharp)
   {
@@ -5355,9 +5357,9 @@ bool ClassDefImpl::containsOverload(const MemberDef *md) const
 bool ClassDefImpl::isExtension() const
 {
   QCString n = name();
-  int si = n.find('(');
-  int ei = n.find(')');
-  bool b = ei>si && n.mid(si+1,ei-si-1).stripWhiteSpace().isEmpty();
+  size_t si = n.find('(');
+  size_t ei = n.find(')');
+  bool b = si!=QCString::npos && ei!=QCString::npos && ei>si && n.mid(si+1,ei-si-1).stripWhiteSpace().empty();
   return b;
 }
 
@@ -5497,7 +5499,7 @@ ClassDefMutable *toClassDefMutable(Definition *d)
  */
 ClassDef *getClass(const QCString &n)
 {
-  if (n.isEmpty()) return nullptr;
+  if (n.empty()) return nullptr;
   return Doxygen::classLinkedMap->find(n);
 }
 

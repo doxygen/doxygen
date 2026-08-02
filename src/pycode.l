@@ -881,7 +881,7 @@ static const ClassDef *stripClassName(yyscan_t yyscanner,const QCString &s,Defin
   {
     QCString clName=className+templSpec;
     const ClassDef *cd=nullptr;
-    if (!yyextra->classScope.isEmpty())
+    if (!yyextra->classScope.empty())
     {
       cd=yyextra->symbolResolver.resolveClass(d,yyextra->classScope+"::"+clName,true);
     }
@@ -1059,7 +1059,7 @@ static void writeMultiLineCodeLink(yyscan_t yyscanner,
                   const QCString &text)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  if (text.isEmpty()) return;
+  if (text.empty()) return;
   bool sourceTooltips = Config_getBool(SOURCE_TOOLTIPS);
   yyextra->tooltipManager.addTooltip(d);
   QCString ref  = d->getReference();
@@ -1134,7 +1134,7 @@ static void endFontClass(yyscan_t yyscanner,bool specialComment)
 static void codifyLines(yyscan_t yyscanner,const QCString &text)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  if (text.isEmpty()) return;
+  if (text.empty()) return;
   //printf("codifyLines(%d,\"%s\")\n",yyextra->yyLineNr,text);
   const char *p=text.data(),*sp=p;
   char c=0;
@@ -1192,8 +1192,8 @@ static bool getLinkInScope(yyscan_t yyscanner,
       }
       //printf("d->getReference()='%s' d->getOutputBase()='%s' name='%s' member name='%s'\n",qPrint(d->getReference()),qPrint(d->getOutputFileBase()),qPrint(d->name()),qPrint(md->name()));
 
-      writeMultiLineCodeLink(yyscanner,ol,result.md, !text.isEmpty() ? text : memberText);
-      addToSearchIndex(yyscanner,!text.isEmpty() ? text : memberText);
+      writeMultiLineCodeLink(yyscanner,ol,result.md, !text.empty() ? text : memberText);
+      addToSearchIndex(yyscanner,!text.empty() ? text : memberText);
       return true;
     }
   }
@@ -1213,9 +1213,9 @@ static bool getLink(yyscan_t yyscanner,
   QCString c=className;
   if (!getLinkInScope(yyscanner,c,m,memberName,ol,text))
   {
-    if (!yyextra->curClassName.isEmpty())
+    if (!yyextra->curClassName.empty())
     {
-      if (!c.isEmpty()) c.prepend("::");
+      if (!c.empty()) c.prepend("::");
       c.prepend(yyextra->curClassName);
       return getLinkInScope(yyscanner,c,m,memberName,ol,text);
     }
@@ -1239,7 +1239,7 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
   QCString className=clName;
 
   // Don't do anything for empty text
-  if (className.isEmpty()) return;
+  if (className.empty()) return;
 
   DBG_CTX((stderr,"generateClassOrGlobalLink(className=%s)\n",qPrint(className)));
 
@@ -1304,11 +1304,11 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
   }
   else // not a class, maybe a global member
   {
-    int scopeEnd = className.findRev(".");
-    if (scopeEnd!=-1 && !typeOnly) // name with explicit scope
+    size_t scopeEnd = className.rfind(".");
+    if (scopeEnd!=QCString::npos && !typeOnly) // name with explicit scope
     {
       QCString scope = substitute(className.left(scopeEnd),".","::");
-      QCString locName = className.right(className.length()-scopeEnd-1);
+      QCString locName = className.mid(scopeEnd+1);
       ClassDef *mcd = getClass(scope);
       DBG_CTX((stderr,"scope=%s locName=%s mcd=%p\n",qPrint(scope),qPrint(locName),mcd));
       if (mcd)
@@ -1379,14 +1379,14 @@ static void generateFunctionLink(yyscan_t yyscanner,
   QCString locScope=yyextra->classScope;
   QCString locFunc=removeRedundantWhiteSpace(funcName);
   DBG_CTX((stdout,"*** locScope=%s locFunc=%s\n",qPrint(locScope),qPrint(locFunc)));
-  int i=locFunc.findRev("::");
-  if (i>0)
+  size_t i=locFunc.rfind("::");
+  if (i!=QCString::npos && i>0)
   {
     locScope=locFunc.left(i);
-    locFunc=locFunc.right(locFunc.length()-i-2).stripWhiteSpace();
+    locFunc=locFunc.mid(i+2).stripWhiteSpace();
   }
   //printf("generateFunctionLink(%s) classScope='%s'\n",qPrint(locFunc),qPrint(locScope));
-  if (!locScope.isEmpty())
+  if (!locScope.empty())
   {
     auto it = yyextra->codeClassMap.find(locScope.str());
     if (it!=yyextra->codeClassMap.end())
@@ -1537,7 +1537,7 @@ void PythonCodeParser::parseCode(OutputCodeList &codeOutIntf,
   //printf("***parseCode(%s)\n",qPrint(input));
 
   codeOutIntf.stripCodeComments(stripCodeComments);
-  if (input.isEmpty()) return;
+  if (input.empty()) return;
   DebugLex debugLex(Debug::Lex_pycode, __FILE__, options.fileDef() ? qPrint(options.fileDef()->fileName()): nullptr);
   yyextra->fileName      = options.fileDef() ? options.fileDef()->fileName():"";
   yyextra->code          = &codeOutIntf;
@@ -1560,7 +1560,7 @@ void PythonCodeParser::parseCode(OutputCodeList &codeOutIntf,
   if (yyextra->exampleBlock && options.fileDef()==nullptr)
   {
     // create a dummy filedef for the example
-    yyextra->exampleFileDef = createFileDef("",(!options.exampleName().isEmpty()?qPrint(options.exampleName()):"generated"));
+    yyextra->exampleFileDef = createFileDef("",(!options.exampleName().empty()?qPrint(options.exampleName()):"generated"));
     yyextra->sourceFileDef = yyextra->exampleFileDef.get();
   }
   if (yyextra->sourceFileDef)

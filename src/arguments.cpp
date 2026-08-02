@@ -45,7 +45,7 @@ void ArgumentList::appendTrailingReturnType(const QCString &s)
 
 void ArgumentList::finishTrailingReturnType()
 {
-  if (!m_trailingReturnType.isEmpty())
+  if (!m_trailingReturnType.empty())
   {
     m_trailingReturnType = " "+removeRedundantWhiteSpace(m_trailingReturnType);
   }

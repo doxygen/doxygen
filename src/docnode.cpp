@@ -183,7 +183,7 @@ DocWord::DocWord(DocParser *parser,DocNodeVariant *parent,const QCString &word) 
       DocNode(parser,parent), m_word(word)
 {
   //printf("new word %s url=%s\n",qPrint(word),qPrint(parser->context.searchUrl));
-  if (Doxygen::searchIndex.enabled() && !parser->context.searchUrl.isEmpty())
+  if (Doxygen::searchIndex.enabled() && !parser->context.searchUrl.empty())
   {
     Doxygen::searchIndex.addWord(word,false);
   }
@@ -200,7 +200,7 @@ DocLinkedWord::DocLinkedWord(DocParser *parser,DocNodeVariant *parent,const QCSt
 {
   //printf("DocLinkedWord: new word %s url=%s tooltip='%s'\n",
   //    qPrint(word),qPrint(parser->context.searchUrl),qPrint(tooltip));
-  if (Doxygen::searchIndex.enabled() && !parser->context.searchUrl.isEmpty())
+  if (Doxygen::searchIndex.enabled() && !parser->context.searchUrl.empty())
   {
     Doxygen::searchIndex.addWord(word,false);
   }
@@ -210,7 +210,7 @@ DocLinkedWord::DocLinkedWord(DocParser *parser,DocNodeVariant *parent,const QCSt
 
 DocAnchor::DocAnchor(DocParser *parser,DocNodeVariant *parent,const QCString &id,bool newAnchor) : DocNode(parser,parent)
 {
-  if (id.isEmpty())
+  if (id.empty())
   {
     warn_doc_error(parser->context.fileName,parser->tokenizer.getLineNr(),"Empty anchor label");
     return;
@@ -305,7 +305,7 @@ void DocInclude::parse()
       // check here for the existence of the blockId inside the file, so we
       // only generate the warning once.
       int count = 0;
-      if (!m_blockId.isEmpty() && (count=m_text.contains(m_blockId.data()))!=2)
+      if (!m_blockId.empty() && (count=m_text.contains(m_blockId.data()))!=2)
       {
         warn_doc_error(parser()->context.fileName,
                        parser()->tokenizer.getLineNr(),
@@ -320,7 +320,7 @@ void DocInclude::parse()
 
 void DocIncOperator::parse()
 {
-  if (parser()->context.includeFileName.isEmpty())
+  if (parser()->context.includeFileName.empty())
   {
     warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),
                    "No previous '\\include' or '\\dontinclude' command for '\\{}' present",
@@ -354,7 +354,7 @@ void DocIncOperator::parse()
         }
         o++;
       }
-      if (parser()->context.includeFileText.mid(so,o-so).find(m_pattern)!=-1)
+      if (parser()->context.includeFileText.mid(so,o-so).find(m_pattern)!=QCString::npos)
       {
         m_line  = il;
         m_text = parser()->context.includeFileText.mid(so,o-so);
@@ -384,7 +384,7 @@ void DocIncOperator::parse()
           }
           o++;
         }
-        if (parser()->context.includeFileText.mid(so,o-so).find(m_pattern)!=-1)
+        if (parser()->context.includeFileText.mid(so,o-so).find(m_pattern)!=QCString::npos)
         {
           m_line  = il;
           m_text = parser()->context.includeFileText.mid(so,o-so);
@@ -417,7 +417,7 @@ void DocIncOperator::parse()
           }
           o++;
         }
-        if (parser()->context.includeFileText.mid(so,o-so).find(m_pattern)!=-1)
+        if (parser()->context.includeFileText.mid(so,o-so).find(m_pattern)!=QCString::npos)
         {
         found = true;
           break;
@@ -448,7 +448,7 @@ void DocIncOperator::parse()
           }
           o++;
         }
-        if (parser()->context.includeFileText.mid(so,o-so).find(m_pattern)!=-1)
+        if (parser()->context.includeFileText.mid(so,o-so).find(m_pattern)!=QCString::npos)
         {
           m_line  = il;
           m_text = parser()->context.includeFileText.mid(bo,o-bo);
@@ -500,7 +500,7 @@ bool DocXRefItem::parse()
       //printf("DocXRefItem: file=%s anchor=%s title=%s\n",
       //    qPrint(m_file),qPrint(m_anchor),qPrint(m_title));
 
-      if (!item->text().isEmpty())
+      if (!item->text().empty())
       {
         DocParser::AutoSaveContext saveContext(*parser());
         parser()->internalValidatingParseDoc(thisVariant(),children(),item->text());
@@ -517,7 +517,7 @@ DocFormula::DocFormula(DocParser *parser,DocNodeVariant *parent,int id) : DocNod
       m_relPath(parser->context.relPath)
 {
   const Formula *formula = FormulaManager::instance().findFormula(id);
-  if (formula && !formula->text().isEmpty())
+  if (formula && !formula->text().empty())
   {
     m_id = id;
     m_name.sprintf("form_%d",m_id);
@@ -555,7 +555,7 @@ void DocSecRefItem::parse()
   parser()->tokenizer.setStatePara();
   parser()->handlePendingStyleCommands(thisVariant(),children());
 
-  if (!m_target.isEmpty())
+  if (!m_target.empty())
   {
     const SectionInfo *sec = SectionManager::instance().find(m_target);
     if (sec==nullptr && parser()->context.lang==SrcLangExt::Markdown) // lookup as markdown file
@@ -674,10 +674,10 @@ void DocSecRefList::parse()
 DocInternalRef::DocInternalRef(DocParser *parser,DocNodeVariant *parent,const QCString &ref)
   : DocCompoundNode(parser,parent), m_relPath(parser->context.relPath)
 {
-  int i=ref.find('#');
-  if (i!=-1)
+  size_t i=ref.find('#');
+  if (i!=QCString::npos)
   {
-    m_anchor = ref.right(static_cast<int>(ref.length())-i-1);
+    m_anchor = ref.mid(i+1);
     m_file   = ref.left(i);
   }
   else
@@ -712,11 +712,11 @@ DocRef::DocRef(DocParser *parser,DocNodeVariant *parent,const QCString &target,c
   const Definition  *compound = nullptr;
   QCString anchor;
   AUTO_TRACE("target='{}',context='{}'",target,context);
-  ASSERT(!target.isEmpty());
+  ASSERT(!target.empty());
   m_relPath = parser->context.relPath;
   auto lang = parser->context.lang;
   const SectionInfo *sec = SectionManager::instance().find(parser->context.prefix+target);
-  if (sec==nullptr && !parser->context.prefix.isEmpty())
+  if (sec==nullptr && !parser->context.prefix.empty())
   {
     sec = SectionManager::instance().find(target);
   }
@@ -734,7 +734,7 @@ DocRef::DocRef(DocParser *parser,DocNodeVariant *parent,const QCString &target,c
       pd = Doxygen::pageLinkedMap->find(target);
     }
     m_text         = sec->title();
-    if (m_text.isEmpty()) m_text = sec->label();
+    if (m_text.empty()) m_text = sec->label();
 
     m_ref          = sec->ref();
     m_file         = stripKnownExtensions(sec->fileName());
@@ -793,9 +793,9 @@ DocRef::DocRef(DocParser *parser,DocNodeVariant *parent,const QCString &target,c
     m_anchor = anchor;
     if (compound && compound->isLinkable()) // ref to compound
     {
-      if (anchor.isEmpty() &&                                  /* compound link */
+      if (anchor.empty() &&                                  /* compound link */
           compound->definitionType()==Definition::TypeGroup && /* is group */
-          !toGroupDef(compound)->groupTitle().isEmpty()        /* with title */
+          !toGroupDef(compound)->groupTitle().empty()        /* with title */
          )
       {
         m_text=(toGroupDef(compound))->groupTitle(); // use group's title as link
@@ -810,8 +810,8 @@ DocRef::DocRef(DocParser *parser,DocNodeVariant *parent,const QCString &target,c
       }
       else if (Config_getBool(HIDE_SCOPE_NAMES))
       {
-        int funcPos = m_text.find('(');
-        if (funcPos!=-1) // see issue #11834
+        size_t funcPos = m_text.find('(');
+        if (funcPos!=QCString::npos) // see issue #11834
         {
           m_text=stripScope(m_text.left(funcPos))+m_text.mid(funcPos);
         }
@@ -911,7 +911,7 @@ void DocRef::parse(char cmdChar,const QCString &cmdName)
     tok=parser()->tokenizer.lex();
   }
 
-  if (children().empty() && !m_text.isEmpty())
+  if (children().empty() && !m_text.empty())
   {
     QCString text = m_text;
     if (parser()->context.insideHtmlLink)
@@ -939,14 +939,14 @@ DocCite::DocCite(DocParser *parser,DocNodeVariant *parent,const QCString &target
 {
   size_t numBibFiles = Config_getList(CITE_BIB_FILES).size();
   //printf("DocCite::DocCite(target=%s)\n",qPrint(target));
-  ASSERT(!target.isEmpty());
+  ASSERT(!target.empty());
   m_relPath = parser->context.relPath;
   const CitationManager &ct = CitationManager::instance();
   const CiteInfo *cite = ct.find(target);
   //printf("cite=%p text='%s' numBibFiles=%d\n",cite,cite?qPrint(cite->text):"<null>",numBibFiles);
   m_option = opt;
   m_target = target;
-  if (numBibFiles>0 && cite && !cite->text().isEmpty()) // ref to citation
+  if (numBibFiles>0 && cite && !cite->text().empty()) // ref to citation
   {
     m_ref          = "";
     m_anchor       = ct.anchorPrefix()+cite->label();
@@ -1000,9 +1000,9 @@ DocLink::DocLink(DocParser *parser,DocNodeVariant *parent,const QCString &target
   QCString anchor;
   m_refText = target;
   m_relPath = parser->context.relPath;
-  if (!m_refText.isEmpty() && m_refText.at(0)=='#')
+  if (!m_refText.empty() && m_refText.at(0)=='#')
   {
-    m_refText = m_refText.right(m_refText.length()-1);
+    m_refText = m_refText.mid(1);
   }
   if (resolveLink(parser->context.context,stripKnownExtensions(target),
                   parser->context.inSeeBlock,&compound,anchor,
@@ -1077,16 +1077,16 @@ QCString DocLink::parse(bool isJavaLink,bool isXmlLink)
           if (isJavaLink) // special case to detect closing }
           {
             QCString w = parser()->context.token->name;
-            int p = 0;
+            size_t p = 0;
             if (w=="}")
             {
               goto endlink;
             }
-            else if ((p=w.find('}'))!=-1)
+            else if ((p=w.find('}'))!=QCString::npos)
             {
-              int l = static_cast<int>(w.length());
+              size_t l = w.length();
               children().append<DocWord>(parser(),thisVariant(),w.left(p));
-              if (p<l-1) // something left after the } (for instance a .)
+              if (l>1 && p<l-1) // something left after the } (for instance a .)
               {
                 result=w.right(l-p-1);
               }
@@ -1361,10 +1361,10 @@ DocImage::DocImage(DocParser *parser,DocNodeVariant *parent,const HtmlAttribList
 
 bool DocImage::isSVG() const
 {
-  QCString  locName = p->url.isEmpty() ? p->name : p->url;
-  int len = static_cast<int>(locName.length());
-  int fnd = locName.find('?'); // ignore part from ? until end
-  if (fnd==-1) fnd=len;
+  QCString  locName = p->url.empty() ? p->name : p->url;
+  size_t len = locName.length();
+  size_t fnd = locName.find('?'); // ignore part from ? until end
+  if (fnd==QCString::npos) fnd=len;
   return fnd>=4 && locName.mid(fnd-4,4)==".svg";
 }
 
@@ -1631,7 +1631,7 @@ Token DocInternal::parse(int level)
     DocPara *par  = children().get_last<DocPara>();
     if (isFirst) { par->markFirst(); isFirst=false; }
     retval=par->parse();
-    if (!par->isEmpty())
+    if (!par->empty())
     {
       if (lastPar) lastPar->markLast(false);
       lastPar=par;
@@ -1779,7 +1779,7 @@ DocHtmlCaption::DocHtmlCaption(DocParser *parser,DocNodeVariant *parent,const Ht
   m_hasCaptionId = false;
   for (const auto &opt : attribs)
   {
-    if (opt.name=="id" && !opt.value.isEmpty()) // interpret id attribute as an anchor
+    if (opt.name=="id" && !opt.value.empty()) // interpret id attribute as an anchor
     {
       const SectionInfo *sec = SectionManager::instance().find(opt.value);
       if (sec)
@@ -2543,7 +2543,7 @@ Token DocHtmlDescTitle::parse()
                       children().append<DocLink>(parser(),thisVariant(),parser()->context.token->name);
                       DocLink *lnk  = children().get_last<DocLink>();
                       QCString leftOver = lnk->parse(isJavaLink);
-                      if (!leftOver.isEmpty())
+                      if (!leftOver.empty())
                       {
                         children().append<DocWord>(parser(),thisVariant(),leftOver);
                       }
@@ -3032,7 +3032,7 @@ Token DocAutoListItem::parse()
     DocPara *par = children().get_last<DocPara>();
     if (isFirst) { par->markFirst(); isFirst=false; }
     retval=par->parse();
-    if (!par->isEmpty())
+    if (!par->empty())
     {
       if (lastPar) lastPar->markLast(false);
       lastPar=par;
@@ -3310,8 +3310,8 @@ Token DocParamList::parse(const QCString &cmdName)
   {
     if (m_type==DocParamSect::Param)
     {
-      int typeSeparator = context.token->name.find('#'); // explicit type position
-      if (typeSeparator!=-1)
+      size_t typeSeparator = context.token->name.find('#'); // explicit type position
+      if (typeSeparator!=QCString::npos)
       {
         parser()->handleParameterType(thisVariant(),m_paramTypes,context.token->name.left(typeSeparator));
         context.token->name = context.token->name.mid(typeSeparator+1);
@@ -3392,7 +3392,7 @@ Token DocParamList::parseXml(const QCString &paramName)
     m_paragraphs.append<DocPara>(parser(),thisVariant());
     DocPara *par =  m_paragraphs.get_last<DocPara>();
     retval = par->parse();
-    if (par->isEmpty()) // avoid adding an empty paragraph for the whitespace
+    if (par->empty()) // avoid adding an empty paragraph for the whitespace
                         // after </para> and before </param>
     {
       m_paragraphs.pop_back();
@@ -3652,7 +3652,7 @@ void DocPara::handleDoxyConfig(char cmdChar,const QCString &cmdName)
         // nothing to show here
         break;
     }
-    if (!optionValue.isEmpty())
+    if (!optionValue.empty())
     {
       children().append<DocWord>(parser(),thisVariant(),optionValue);
     }
@@ -3716,8 +3716,8 @@ void DocPara::handleShowDate(char cmdChar,const QCString &cmdName)
 
   QCString specDateRaw = tok.is(TokenRetval::TK_WORD) ? parser()->context.token->name : QCString();
   QCString specDate    = specDateRaw.stripWhiteSpace();
-  bool specDateOnlyWS  = !specDateRaw.isEmpty() && specDate.isEmpty();
-  if (!specDate.isEmpty() && !tok.is_any_of(TokenRetval::TK_WORD,TokenRetval::TK_NONE,TokenRetval::TK_EOF))
+  bool specDateOnlyWS  = !specDateRaw.empty() && specDate.empty();
+  if (!specDate.empty() && !tok.is_any_of(TokenRetval::TK_WORD,TokenRetval::TK_NONE,TokenRetval::TK_EOF))
   {
     warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"invalid <date_time> argument for command '{:c}{}'",
       cmdChar,cmdName);
@@ -3728,7 +3728,7 @@ void DocPara::handleShowDate(char cmdChar,const QCString &cmdName)
   std::tm dat{};
   int specFormat=0;
   QCString err = dateTimeFromString(specDate,dat,specFormat);
-  if (!err.isEmpty())
+  if (!err.empty())
   {
     warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"invalid <date_time> argument for command '{:c}{}': {}",
       cmdChar,cmdName,err);
@@ -3892,7 +3892,7 @@ void DocPara::handleLink(const QCString &cmdName,bool isJavaLink)
                                            DocStyleChange::Code,cmdName,false);
   }
   QCString leftOver = lnk->parse(isJavaLink);
-  if (!leftOver.isEmpty())
+  if (!leftOver.empty())
   {
     children().append<DocWord>(parser(),thisVariant(),leftOver);
   }
@@ -4057,7 +4057,7 @@ Token DocPara::handleStartCode()
   AUTO_TRACE();
   Token retval = parser()->tokenizer.lex();
   QCString lang = parser()->context.token->name;
-  if (!lang.isEmpty() && lang.at(0)!='.')
+  if (!lang.empty() && lang.at(0)!='.')
   {
     lang="."+lang;
   }
@@ -4415,10 +4415,10 @@ Token DocPara::handleCommand(char cmdChar, const QCString &cmdName)
         parser()->tokenizer.lex();
 
         QCString fullMatch = parser()->context.token->verb;
-        int idx = fullMatch.find('{');
-        int idxEnd = fullMatch.find("}",idx+1);
+        size_t idx    = fullMatch.find('{');
+        size_t idxEnd = idx!=QCString::npos ? fullMatch.find("}",idx+1) : QCString::npos;
         StringVector optList;
-        if (idx != -1) // options present
+        if (idx!=QCString::npos && idxEnd!=QCString::npos) // options present
         {
            QCString optStr = fullMatch.mid(idx+1,idxEnd-idx-1).stripWhiteSpace();
            optList = split(optStr.str(),",");
@@ -4431,7 +4431,7 @@ Token DocPara::handleCommand(char cmdChar, const QCString &cmdName)
              {
                t = DocVerbatim::JavaDocCode;
              }
-             else if (!locOpt.isEmpty())
+             else if (!locOpt.empty())
              {
                warn(parser()->context.fileName,parser()->tokenizer.getLineNr(), "Unknown option '{}' for '\\iliteral'",opt);
              }
@@ -4537,11 +4537,11 @@ Token DocPara::handleCommand(char cmdChar, const QCString &cmdName)
         parser()->tokenizer.lex();
         QCString fullMatch = parser()->context.token->sectionId;
         QCString sectionId = "";
-        int idx = fullMatch.find('{');
-        int idxEnd = fullMatch.find("}",idx+1);
+        size_t idx    = fullMatch.find('{');
+        size_t idxEnd = idx!=QCString::npos ? fullMatch.find("}",idx+1) : QCString::npos;
         StringVector optList;
         QCString engine;
-        if (idx != -1) // options present
+        if (idx!=QCString::npos && idxEnd!=QCString::npos) // options present
         {
            QCString optStr = fullMatch.mid(idx+1,idxEnd-idx-1).stripWhiteSpace();
            optList = split(optStr.str(),",");
@@ -4553,7 +4553,7 @@ Token DocPara::handleCommand(char cmdChar, const QCString &cmdName)
              locOpt = locOpt.stripWhiteSpace().lower();
              if (g_plantumlEngine.find(locOpt.str())!=g_plantumlEngine.end())
              {
-               if (!engine.isEmpty())
+               if (!engine.empty())
                {
                  warn(parser()->context.fileName,parser()->tokenizer.getLineNr(), "Multiple definition of engine for '\\startuml'");
                }
@@ -4562,7 +4562,7 @@ Token DocPara::handleCommand(char cmdChar, const QCString &cmdName)
              }
              if (!found)
              {
-               if (sectionId.isEmpty())
+               if (sectionId.empty())
                {
                  sectionId = opt;
                }
@@ -4577,9 +4577,9 @@ Token DocPara::handleCommand(char cmdChar, const QCString &cmdName)
         {
           sectionId = parser()->context.token->sectionId;
         }
-        if (engine.isEmpty()) engine = "uml";
+        if (engine.empty()) engine = "uml";
 
-        if (sectionId.isEmpty())
+        if (sectionId.empty())
         {
           parser()->tokenizer.setStatePlantUMLOpt();
           retval = parser()->tokenizer.lex();
@@ -4610,15 +4610,15 @@ Token DocPara::handleCommand(char cmdChar, const QCString &cmdName)
         }
         else if (engine == "uml")
         {
-          int i = trimmedVerb.find('\n');
-          QCString firstLine = i==-1 ? trimmedVerb : trimmedVerb.left(i);
+          size_t i = trimmedVerb.find('\n');
+          QCString firstLine = i==QCString::npos ? trimmedVerb : trimmedVerb.left(i);
           if (firstLine.stripWhiteSpace() == "ditaa") dv->setUseBitmap(true);
         }
         dv->setText(trimmedVerb);
         dv->setWidth(width);
         dv->setHeight(height);
         dv->setLocation(parser()->context.fileName,parser()->tokenizer.getLineNr());
-        if (jarPath.isEmpty())
+        if (jarPath.empty())
         {
           warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"ignoring \\startuml command because PLANTUML_JAR_PATH is not set");
           children().pop_back();
@@ -4636,9 +4636,9 @@ Token DocPara::handleCommand(char cmdChar, const QCString &cmdName)
         parser()->tokenizer.lex();
         QCString fullMatch = parser()->context.token->sectionId;
         QCString sectionId = "";
-        int idx = fullMatch.find('{');
-        int idxEnd = fullMatch.find("}",idx+1);
-        if (idx != -1) // options present
+        size_t idx = fullMatch.find('{');
+        size_t idxEnd = idx!=QCString::npos ? fullMatch.find("}",idx+1) : QCString::npos;
+        if (idx!=QCString::npos && idxEnd!=QCString::npos) // options present
         {
            sectionId = fullMatch.mid(idx+1,idxEnd-idx-1).stripWhiteSpace();
         }
@@ -4647,7 +4647,7 @@ Token DocPara::handleCommand(char cmdChar, const QCString &cmdName)
           sectionId = parser()->context.token->sectionId;
         }
 
-        if (sectionId.isEmpty())
+        if (sectionId.empty())
         {
           parser()->tokenizer.setStateMermaidOpt();
           retval = parser()->tokenizer.lex();
@@ -5205,7 +5205,7 @@ Token DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &
         QCString paramName;
         if (findAttribute(tagHtmlAttribs,"name",&paramName))
         {
-          if (paramName.isEmpty())
+          if (paramName.empty())
           {
             if (Config_getBool(WARN_NO_PARAMDOC))
             {
@@ -5309,7 +5309,7 @@ Token DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &
             children().append<DocLink>(parser(),thisVariant(),cref);
             DocLink *lnk  = children().get_last<DocLink>();
             QCString leftOver = lnk->parse(false,true);
-            if (!leftOver.isEmpty())
+            if (!leftOver.empty())
             {
               children().append<DocWord>(parser(),thisVariant(),leftOver);
             }
@@ -5993,7 +5993,7 @@ Token DocSection::parse()
   Token retval = Token::make_RetVal_OK();
   auto ns = AutoNodeStack(parser(),thisVariant());
 
-  if (!m_id.isEmpty())
+  if (!m_id.empty())
   {
     const SectionInfo *sec = SectionManager::instance().find(m_id);
     if (sec)
@@ -6001,7 +6001,7 @@ Token DocSection::parse()
       m_file   = sec->fileName();
       m_anchor = sec->label();
       QCString titleStr = sec->title();
-      if (titleStr.isEmpty()) titleStr = sec->label();
+      if (titleStr.empty()) titleStr = sec->label();
       m_title = createDocNode<DocTitle>(parser(),thisVariant());
       DocTitle *title = &std::get<DocTitle>(*m_title);
       title->parseFromString(thisVariant(),titleStr);
@@ -6017,7 +6017,7 @@ Token DocSection::parse()
     DocPara *par  = children().get_last<DocPara>();
     if (isFirst) { par->markFirst(); isFirst=false; }
     retval=par->parse();
-    if (!par->isEmpty())
+    if (!par->empty())
     {
       if (lastPar) lastPar->markLast(false);
       lastPar = par;
@@ -6288,7 +6288,7 @@ void DocRoot::parse()
       DocPara *par  = children().get_last<DocPara>();
       if (isFirst) { par->markFirst(); isFirst=false; }
       retval=par->parse();
-      if (par->isEmpty() && par->attribs().empty())
+      if (par->empty() && par->attribs().empty())
       {
         children().pop_back();
       }
@@ -6309,7 +6309,7 @@ void DocRoot::parse()
         }
         while (retval==t)
         {
-          if (!parser()->context.token->sectionId.isEmpty())
+          if (!parser()->context.token->sectionId.empty())
           {
             const SectionInfo *sec=SectionManager::instance().find(parser()->context.token->sectionId);
             if (sec)
@@ -6356,7 +6356,7 @@ void DocRoot::parse()
   // then parse any number of level1 sections
   while (retval.is(TokenRetval::RetVal_Section))
   {
-    if (!parser()->context.token->sectionId.isEmpty())
+    if (!parser()->context.token->sectionId.empty())
     {
       const SectionInfo *sec=SectionManager::instance().find(parser()->context.token->sectionId);
       if (sec)

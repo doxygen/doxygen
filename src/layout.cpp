@@ -80,7 +80,7 @@ static bool elemIsVisible(const XMLHandlers::Attributes &attrib,bool defVal=true
 {
   QCString visible = XMLHandlers::value(attrib,"visible");
   //printf("visible_attribute=%s\n",qPrint(visible));
-  if (visible.isEmpty()) return defVal;
+  if (visible.empty()) return defVal;
   if (visible.at(0)=='$' && visible.length()>1)
   {
     QCString id = visible.mid(1);
@@ -165,17 +165,17 @@ QCString LayoutNavEntry::url() const
     auto dfAst  { createRef( *parser.get(), url.mid(5).stripWhiteSpace(), context ) };
     auto dfAstImpl = dynamic_cast<const DocNodeAST*>(dfAst.get());
     const DocRef *df = std::get_if<DocRef>(&dfAstImpl->root);
-    if (!df->file().isEmpty() || !df->anchor().isEmpty())
+    if (!df->file().empty() || !df->anchor().empty())
     {
       found = true;
       url=externalRef(relPath,df->ref(),true);
-      if (!df->file().isEmpty())
+      if (!df->file().empty())
       {
         QCString fn = df->file();
         addHtmlExtensionIfMissing(fn);
         url += fn;
       }
-      if (!df->anchor().isEmpty())
+      if (!df->anchor().empty())
       {
         url += "#" + df->anchor();
       }
@@ -228,7 +228,7 @@ class LayoutParser
       QCString userTitle = XMLHandlers::value(attrib,"title");
       //printf("startSectionEntry: title='%s' userTitle='%s'\n",
       //    qPrint(title),qPrint(userTitle));
-      if (userTitle.isEmpty())  userTitle = title;
+      if (userTitle.empty())  userTitle = title;
       if (m_part!=LayoutDocManager::Undefined)
       {
         m_layoutDocManager.addEntry(m_part,std::make_unique<LayoutDocEntrySection>(k,id,userTitle,isVisible));
@@ -241,8 +241,8 @@ class LayoutParser
     {
       QCString userTitle     = XMLHandlers::value(attrib,"title");
       QCString userSubscript = XMLHandlers::value(attrib,"subtitle");
-      if (userTitle.isEmpty())     userTitle     = title;
-      if (userSubscript.isEmpty()) userSubscript = subscript;
+      if (userTitle.empty())     userTitle     = title;
+      if (userSubscript.empty()) userSubscript = subscript;
       bool isVisible = m_visible && elemIsVisible(attrib);
       if (m_part!=LayoutDocManager::Undefined)
       {
@@ -254,7 +254,7 @@ class LayoutParser
                              const QCString &title,const QCString &)
     {
       QCString userTitle = XMLHandlers::value(attrib,"title");
-      if (userTitle.isEmpty()) userTitle = title;
+      if (userTitle.empty()) userTitle = title;
       //printf("memberdef: %s\n",qPrint(userTitle));
       bool isVisible = m_visible && elemIsVisible(attrib);
       if (m_part!=LayoutDocManager::Undefined)
@@ -557,7 +557,7 @@ class LayoutParser
       if (mapping[i].typeStr==nullptr)
       {
         QCString fileName = m_locator->fileName();
-        if (type.isEmpty())
+        if (type.empty())
         {
           warn_layout(fileName,m_locator->lineNr(),"an entry tag within a navindex has no type attribute! Check your layout file!");
         }
@@ -572,28 +572,28 @@ class LayoutParser
       QCString baseFile = mapping[i].baseFile;
       QCString title = XMLHandlers::value(attrib,"title");
       bool isVisible = m_visible && elemIsVisible(attrib);
-      if (title.isEmpty()) // use default title
+      if (title.empty()) // use default title
       {
         title = mapping[i].mainName; // use title for main row
-        if (m_rootNav!=m_layoutDocManager.rootNavEntry() && !mapping[i].subName.isEmpty())
+        if (m_rootNav!=m_layoutDocManager.rootNavEntry() && !mapping[i].subName.empty())
         {
           title = mapping[i].subName; // if this is a child of another row, use the subName if available
                                       // this is mainly done to get compatible naming with older versions.
         }
       }
       QCString intro = XMLHandlers::value(attrib,"intro");
-      if (intro.isEmpty()) // use default intro text
+      if (intro.empty()) // use default intro text
       {
         intro = mapping[i].intro;
       }
       QCString url = XMLHandlers::value(attrib,"url");
-      if (mapping[i].kind==LayoutNavEntry::User && !url.isEmpty())
+      if (mapping[i].kind==LayoutNavEntry::User && !url.empty())
       {
         baseFile=url;
       }
       else if (kind==LayoutNavEntry::UserGroup)
       {
-        if (!url.isEmpty())
+        if (!url.empty())
         {
           if (url == "[none]")
           {
@@ -648,8 +648,7 @@ class LayoutParser
     void endMemberDef(const std::string &id)
     {
       QCString scopeOrg = m_scope;
-      int i=m_scope.findRev("memberdef/");
-      if (i!=-1)
+      if (size_t i=m_scope.rfind("memberdef/"); i!=QCString::npos)
       {
         m_scope=m_scope.left(i);
         bool isVisible = true;
@@ -680,8 +679,7 @@ class LayoutParser
 
     void endMemberDecl(const std::string &id)
     {
-      int i=m_scope.findRev("memberdecl/");
-      if (i!=-1)
+      if (size_t i=m_scope.rfind("memberdecl/"); i!=QCString::npos)
       {
         m_scope=m_scope.left(i);
         bool isVisible = true;
@@ -1377,7 +1375,7 @@ void LayoutParser::endElement( const std::string &name )
   //printf("endElement [%s]::[%s]\n",qPrint(m_scope),qPrint(name));
   auto it=g_elementHandlers.end();
 
-  if (!m_scope.isEmpty() && m_scope.right(name.length()+1)==name+"/")
+  if (!m_scope.empty() && m_scope.right(name.length()+1)==name+"/")
   { // element ends current scope
     it = g_elementHandlers.find(m_scope.left(m_scope.length()-1).str());
   }
@@ -1757,19 +1755,19 @@ void writeDefaultLayoutFile(const QCString &fileName)
 // where the number is a value of SrcLangExt in decimal notation (i.e. 16=Java, 8=IDL).
 QCString extractLanguageSpecificTitle(const QCString &input,SrcLangExt lang)
 {
-  int s=0,e=input.find('|');
-  if (e==-1) return input; // simple title case
+  size_t s=0,e=input.find('|');
+  if (e==QCString::npos) return input; // simple title case
   int e1=e;
-  while (e!=-1) // look for 'number=title' pattern separated by '|'
+  while (e!=QCString::npos) // look for 'number=title' pattern separated by '|'
   {
     s=e+1;
     e=input.find('|',s);
-    int i=input.find('=',s);
-    assert(i>s);
+    size_t i=input.find('=',s);
+    assert(i!=QCString::npos && i>s);
     SrcLangExt key= static_cast<SrcLangExt>(input.mid(s,i-s).toUInt());
     if (key==lang) // found matching key
     {
-      if (e==-1) e=static_cast<int>(input.length());
+      if (e==QCString::npos) e=input.length();
       return input.mid(i+1,e-i-1);
     }
   }

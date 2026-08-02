@@ -197,7 +197,7 @@ void ManDocVisitor::operator()(const DocVerbatim &s)
 {
   if (m_hide) return;
   QCString lang = m_langExt;
-  if (!s.language().isEmpty()) // explicit language setting
+  if (!s.language().empty()) // explicit language setting
   {
     lang = s.language();
   }
@@ -346,7 +346,7 @@ void ManDocVisitor::operator()(const DocInclude &inc)
 void ManDocVisitor::operator()(const DocIncOperator &op)
 {
   QCString locLangExt = getFileNameExtension(op.includeFileName());
-  if (locLangExt.isEmpty()) locLangExt = m_langExt;
+  if (locLangExt.empty()) locLangExt = m_langExt;
   SrcLangExt langExt = getLanguageFromFileName(locLangExt);
   //printf("DocIncOperator: type=%d first=%d, last=%d text='%s'\n",
   //    op.type(),op.isFirst(),op.isLast(),qPrint(op.text()));
@@ -367,7 +367,7 @@ void ManDocVisitor::operator()(const DocIncOperator &op)
     if (!m_hide)
     {
       std::unique_ptr<FileDef> fd;
-      if (!op.includeFileName().isEmpty())
+      if (!op.includeFileName().empty())
       {
         FileInfo cfi( op.includeFileName().str() );
         fd = createFileDef( cfi.dirPath(), cfi.fileName() );
@@ -421,7 +421,7 @@ void ManDocVisitor::operator()(const DocCite &cite)
   m_t << "\\fB";
   auto opt = cite.option();
   QCString txt;
-  if (!cite.file().isEmpty())
+  if (!cite.file().empty())
   {
     txt = cite.getText();
     filter(txt, false, true);
@@ -936,7 +936,7 @@ void ManDocVisitor::operator()(const DocParamList &pl)
 void ManDocVisitor::operator()(const DocXRefItem &x)
 {
   if (m_hide) return;
-  if (x.title().isEmpty()) return;
+  if (x.title().empty()) return;
   if (!m_firstCol)
   {
     m_t << "\n";
@@ -947,7 +947,7 @@ void ManDocVisitor::operator()(const DocXRefItem &x)
   m_t << "\\fP\n";
   m_t << ".RS 4\n";
   visitChildren(x);
-  if (x.title().isEmpty()) return;
+  if (x.title().empty()) return;
   if (!m_firstCol) m_t << "\n";
   m_t << ".RE\n";
   m_t << ".PP\n";
@@ -994,7 +994,7 @@ void ManDocVisitor::operator()(const DocParBlock &pb)
 
 void ManDocVisitor::filter(const QCString &str, const bool retainNewline, const bool citeEntry)
 {
-  if (!str.isEmpty())
+  if (!str.empty())
   {
     const char *p=str.data();
     char c=0;

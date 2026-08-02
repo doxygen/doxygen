@@ -149,7 +149,7 @@ class TranslatorGreek : public Translator
      */
     QCString trGeneratedAutomatically(const QCString &s) override
     { QCString result="Δημιουργήθηκε αυτόματα από το Doxygen";
-      if (!s.isEmpty()) result+=" για "+s;
+      if (!s.empty()) result+=" για "+s;
       result+=" από τον πηγαίο κώδικα.";
       return result;
     }
@@ -346,7 +346,7 @@ class TranslatorGreek : public Translator
 
     /*! This is used in HTML as the title of index.html. */
     QCString trDocumentation(const QCString &projName) override
-    { return (!projName.isEmpty()?projName + " " : "") + "Τεκμηρίωση"; }
+    { return (!projName.empty()?projName + " " : "") + "Τεκμηρίωση"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * index of all groups.
@@ -503,7 +503,7 @@ class TranslatorGreek : public Translator
     QCString trGeneratedAt(const QCString &date,const QCString &projName) override
     {
       QCString result="Δημιουργήθηκε στις "+date;
-      if (!projName.isEmpty()) result+=" για "+projName;
+      if (!projName.empty()) result+=" για "+projName;
       result+=" από";
       return result;
     }

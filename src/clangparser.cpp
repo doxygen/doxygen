@@ -651,7 +651,7 @@ void ClangTUParser::linkInclude(OutputCodeList &ol,const FileDef *fd,
   QCString incName = text;
   incName = incName.mid(1,incName.length()-2); // strip ".." or  <..>
   FileDef *ifd=nullptr;
-  if (!incName.isEmpty())
+  if (!incName.empty())
   {
     FileName *fn = Doxygen::inputNameLinkedMap->find(incName);
     if (fn)
@@ -930,7 +930,7 @@ class ClangParser::Private
       QCString clangCompileDatabase = Config_getString(CLANG_DATABASE_PATH);
       // load a clang compilation database (https://clang.llvm.org/docs/JSONCompilationDatabase.html)
       db = clang::tooling::CompilationDatabase::loadFromDirectory(clangCompileDatabase.data(), error);
-      if (!clangCompileDatabase.isEmpty() && clangCompileDatabase!="0" && db==nullptr)
+      if (!clangCompileDatabase.empty() && clangCompileDatabase!="0" && db==nullptr)
       {
           // user specified a path, but DB file was not found
           err("{} using clang compilation database path of: \"{}\"\n", error, clangCompileDatabase);

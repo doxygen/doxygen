@@ -51,7 +51,7 @@ class IDocNodeAST
   public:
     ABSTRACT_BASE_CLASS(IDocNodeAST)
 
-    virtual bool isEmpty() const = 0;
+    virtual bool empty() const = 0;
 };
 
 using IDocNodeASTPtr = std::unique_ptr<IDocNodeAST>;

@@ -55,7 +55,7 @@ static bool checkWarnMessage(QCString result)
 
 static void format_warn(const QCString &file,int line,const QCString &text)
 {
-  QCString fileSubst = file.isEmpty() ? "<unknown>" : file;
+  QCString fileSubst = file.empty() ? "<unknown>" : file;
   QCString lineSubst; lineSubst.setNum(line);
   QCString versionSubst;
   // substitute markers by actual values
@@ -213,7 +213,7 @@ void term_(fmt::string_view fmt, fmt::format_args args)
 
 QCString warn_line(const QCString &file,int line)
 {
-  QCString fileSubst = file.isEmpty() ? "<unknown>" : file;
+  QCString fileSubst = file.empty() ? "<unknown>" : file;
   QCString lineSubst; lineSubst.setNum(line);
   return  substitute(
             substitute(
@@ -239,14 +239,14 @@ void initWarningFormat()
   g_warnLineFormat = Config_getString(WARN_LINE_FORMAT);
   g_warnBehavior   = Config_getEnum(WARN_AS_ERROR);
   g_warnlogFile    = Config_getString(WARN_LOGFILE);
-  if (g_warnlogFile.isEmpty() && g_warnBehavior == WARN_AS_ERROR_t::FAIL_ON_WARNINGS_PRINT)
+  if (g_warnlogFile.empty() && g_warnBehavior == WARN_AS_ERROR_t::FAIL_ON_WARNINGS_PRINT)
   {
     uint32_t pid = Portable::pid();
     g_warnlogFile.sprintf("doxygen_warnings_temp_%d.tmp",pid);
     g_warnlogTemp = true;
   }
 
-  if (!g_warnlogFile.isEmpty())
+  if (!g_warnlogFile.empty())
   {
     if (g_warnlogFile == "-")
     {

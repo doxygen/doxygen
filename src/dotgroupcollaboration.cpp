@@ -49,7 +49,7 @@ static void makeURL(const Definition *def,QCString &url)
   QCString fn = def->getOutputFileBase();
   addHtmlExtensionIfMissing(fn);
   url = def->getReference()+"$"+fn;
-  if (!def->anchor().isEmpty())
+  if (!def->anchor().empty())
   {
     url+="#"+def->anchor();
   }
@@ -174,7 +174,7 @@ DotGroupCollaboration::Edge* DotGroupCollaboration::addEdge(
     it = m_edges.end()-1;
   }
 
-  if (!_label.isEmpty()) // add label
+  if (!_label.empty()) // add label
   {
     (*it)->links.emplace_back(_label,_url);
   }
@@ -283,7 +283,7 @@ void DotGroupCollaboration::Edge::write( TextStream &t ) const
     //for (const auto &link : links)
     //{
     //  t << "<TR><TD";
-    //  if ( !link.url.isEmpty() )
+    //  if ( !link.url.empty() )
     //    t << " HREF=\"" << link.url << "\"";
     //  t << ">" << DotNode::convertLabel(link->label) << "</TD></TR>";
     //}

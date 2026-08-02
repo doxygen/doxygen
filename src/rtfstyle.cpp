@@ -308,8 +308,7 @@ bool StyleData::setStyle(const QCString &command, const QCString &styleName)
   }
   m_index = static_cast<int>(std::stoul(match[1].str()));
 
-  int index = command.find("\\sbasedon");
-  if (index!=-1)
+  if (size_t index = command.find("\\sbasedon"); index!=QCString::npos)
   {
     m_reference  = command.left(index);
     m_definition = command.mid(index);

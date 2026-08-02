@@ -330,7 +330,7 @@ void HtmlDocVisitor::writeObfuscatedMailAddress(const QCString &url)
   else
   {
     m_t << "<a href=\"mai'+'lto:";
-    if (!url.isEmpty())
+    if (!url.empty())
     {
       const char *p = url.data();
       uint32_t size=3;
@@ -534,7 +534,7 @@ void HtmlDocVisitor::operator()(const DocVerbatim &s)
 {
   if (m_hide) return;
   QCString lang = m_langExt;
-  if (!s.language().isEmpty()) // explicit language setting
+  if (!s.language().empty()) // explicit language setting
   {
     lang = s.language();
   }
@@ -596,7 +596,7 @@ void HtmlDocVisitor::operator()(const DocVerbatim &s)
                                           ".dot",                                            // extension
                                           s.text(),                                          // contents
                                           exists);
-        if (!fileName.isEmpty())
+        if (!fileName.empty())
         {
           m_t << "<div class=\"dotgraph\">\n";
           writeDotFile(fileName,s.relPath(),s.context(),s.srcFile(),s.srcLine(),!exists);
@@ -616,7 +616,7 @@ void HtmlDocVisitor::operator()(const DocVerbatim &s)
                                           ".msc",                                            // extension
                                           "msc {"+s.text()+"}",                              // contents
                                           exists);
-        if (!fileName.isEmpty())
+        if (!fileName.empty())
         {
           m_t << "<div class=\"mscgraph\">\n";
           writeMscFile(fileName,s.relPath(),s.context(),s.srcFile(),s.srcLine(),!exists);
@@ -783,7 +783,7 @@ void HtmlDocVisitor::operator()(const DocIncOperator &op)
     m_hide=true;
   }
   QCString locLangExt = getFileNameExtension(op.includeFileName());
-  if (locLangExt.isEmpty()) locLangExt = m_langExt;
+  if (locLangExt.empty()) locLangExt = m_langExt;
   SrcLangExt langExt = getLanguageFromFileName(locLangExt);
   if (op.type()!=DocIncOperator::Skip)
   {
@@ -791,7 +791,7 @@ void HtmlDocVisitor::operator()(const DocIncOperator &op)
     if (!m_hide)
     {
       std::unique_ptr<FileDef> fd;
-      if (!op.includeFileName().isEmpty())
+      if (!op.includeFileName().empty())
       {
         FileInfo cfi( op.includeFileName().str() );
         fd = createFileDef( cfi.dirPath(), cfi.fileName() );
@@ -839,14 +839,14 @@ void HtmlDocVisitor::operator()(const DocFormula &f)
   {
     QCString text = f.text();
     bool closeInline = false;
-    if (!bDisplay && !text.isEmpty() && text.at(0)=='$' &&
+    if (!bDisplay && !text.empty() && text.at(0)=='$' &&
                       text.at(text.length()-1)=='$')
     {
       closeInline=true;
       text = text.mid(1,text.length()-2);
       m_t << "\\(";
     }
-    else if (!bDisplay && !text.isEmpty())
+    else if (!bDisplay && !text.empty())
     {
       closeInline=true;
       m_t << "\\(";
@@ -964,7 +964,7 @@ void HtmlDocVisitor::operator()(const DocCite &cite)
 {
   if (m_hide) return;
   auto opt = cite.option();
-  if (!cite.file().isEmpty())
+  if (!cite.file().empty())
   {
     if (!opt.noCite()) startLink(cite.ref(),cite.file(),cite.relPath(),cite.anchor());
     filter(cite.getText(), false, true);
@@ -1522,14 +1522,14 @@ void HtmlDocVisitor::operator()(const DocHtmlTable &t)
   if (t.caption())
   {
     QCString anc = std::get<DocHtmlCaption>(*t.caption()).anchor();
-    if (!anc.isEmpty())
+    if (!anc.empty())
     {
       m_t << "<a class=\"anchor\" id=\"" << anc << "\"></a>\n";
     }
   }
 
   QCString attrs = t.attribs().toString();
-  if (attrs.isEmpty())
+  if (attrs.empty())
   {
     m_t << "<table class=\"doxtable\">\n";
   }
@@ -1649,15 +1649,15 @@ void HtmlDocVisitor::operator()(const DocImage &img)
     QCString baseName=stripPath(img.name());
     if (!inlineImage) m_t << "<div class=\"image\">\n";
     QCString sizeAttribs;
-    if (!img.width().isEmpty())
+    if (!img.width().empty())
     {
       sizeAttribs+=" width=\""+img.width()+"\"";
     }
-    if (!img.height().isEmpty()) // link to local file
+    if (!img.height().empty()) // link to local file
     {
       sizeAttribs+=" height=\""+img.height()+"\"";
     }
-    // 16 cases: url.isEmpty() | typeSVG | inlineImage | img.hasCaption()
+    // 16 cases: url.empty() | typeSVG | inlineImage | img.hasCaption()
 
     HtmlAttribList attribs = img.attribs();
     if (typeSVG)
@@ -1667,7 +1667,7 @@ void HtmlDocVisitor::operator()(const DocImage &img)
     QCString alt;
     QCString attrs = attribs.toString(&alt);
     QCString src;
-    if (url.isEmpty())
+    if (url.empty())
     {
       src = img.relPath()+img.name();
     }
@@ -1754,7 +1754,7 @@ void HtmlDocVisitor::operator()(const DocDotFile &df)
                                       ".dot",                                                     // extension
                                       inBuf,                                                      // contents
                                       exists);
-    if (!fileName.isEmpty())
+    if (!fileName.empty())
     {
       m_t << "<div class=\"dotgraph\">\n";
       writeDotFile(fileName,df.relPath(),df.context(),df.srcFile(),df.srcLine(),!exists);
@@ -1785,7 +1785,7 @@ void HtmlDocVisitor::operator()(const DocMscFile &df)
                                       ".msc",                                                     // extension
                                       inBuf,                                                      // contents
                                       exists);
-    if (!fileName.isEmpty())
+    if (!fileName.empty())
     {
       m_t << "<div class=\"mscgraph\">\n";
       writeMscFile(fileName,df.relPath(),df.context(),df.srcFile(),df.srcLine(),!exists);
@@ -1816,7 +1816,7 @@ void HtmlDocVisitor::operator()(const DocDiaFile &df)
                                       ".dia",                                                     // extension
                                       inBuf,                                                      // contents
                                       exists);
-    if (!fileName.isEmpty())
+    if (!fileName.empty())
     {
       m_t << "<div class=\"diagraph\">\n";
       writeDiaFile(fileName,df.relPath(),df.context(),df.srcFile(),df.srcLine(),!exists);
@@ -1931,7 +1931,7 @@ void HtmlDocVisitor::operator()(const DocLink &lnk)
 void HtmlDocVisitor::operator()(const DocRef &ref)
 {
   if (m_hide) return;
-  if (!ref.file().isEmpty())
+  if (!ref.file().empty())
   {
     // when ref.isSubPage()==true we use ref.file() for HTML and
     // ref.anchor() for LaTeX/RTF
@@ -1939,20 +1939,20 @@ void HtmlDocVisitor::operator()(const DocRef &ref)
   }
   if (!ref.hasLinkText()) filter(ref.targetTitle());
   visitChildren(ref);
-  if (!ref.file().isEmpty()) endLink();
+  if (!ref.file().empty()) endLink();
   //m_t << " ";
 }
 
 void HtmlDocVisitor::operator()(const DocSecRefItem &ref)
 {
   if (m_hide) return;
-  if (!ref.file().isEmpty())
+  if (!ref.file().empty())
   {
     m_t << "<li>";
     startLink(ref.ref(),ref.file(),ref.relPath(),ref.isSubPage() ? QCString() : ref.anchor());
   }
   visitChildren(ref);
-  if (!ref.file().isEmpty())
+  if (!ref.file().empty())
   {
     endLink();
     m_t << "</li>\n";
@@ -2070,7 +2070,7 @@ void HtmlDocVisitor::operator()(const DocParamList &pl)
 void HtmlDocVisitor::operator()(const DocXRefItem &x)
 {
   if (m_hide) return;
-  if (x.title().isEmpty()) return;
+  if (x.title().empty()) return;
 
   forceEndParagraph(x);
   bool anonymousEnum = x.file()=="@";
@@ -2090,7 +2090,7 @@ void HtmlDocVisitor::operator()(const DocXRefItem &x)
   if (!anonymousEnum) m_t << "</a>";
   m_t << "</b></dt><dd>";
   visitChildren(x);
-  if (x.title().isEmpty()) return;
+  if (x.title().empty()) return;
   m_t << "</dd></dl>\n";
   forceStartParagraph(x);
 }
@@ -2155,7 +2155,7 @@ void HtmlDocVisitor::operator()(const DocParBlock &pb)
 
 void HtmlDocVisitor::filter(const QCString &str, bool retainNewline, bool citeEntry)
 {
-  if (str.isEmpty()) return;
+  if (str.empty()) return;
   const char *p=str.data();
   while (*p)
   {
@@ -2196,7 +2196,7 @@ void HtmlDocVisitor::filter(const QCString &str, bool retainNewline, bool citeEn
 /// assume that the outer quoting will be using the double quote &quot;
 QCString HtmlDocVisitor::filterQuotedCdataAttr(const QCString &str)
 {
-  if (str.isEmpty()) return str;
+  if (str.empty()) return str;
   QCString result;
   result.reserve(str.length()+8);
   const char *p=str.data();
@@ -2246,7 +2246,7 @@ void HtmlDocVisitor::startLink(const QCString &ref,const QCString &file,
                                const QCString &tooltip)
 {
   //printf("HtmlDocVisitor: file=%s anchor=%s\n",qPrint(file),qPrint(anchor));
-  if (!ref.isEmpty()) // link to entity imported via tag file
+  if (!ref.empty()) // link to entity imported via tag file
   {
     m_t << "<a class=\"elRef\" ";
     m_t << externalLinkTarget();
@@ -2263,7 +2263,7 @@ void HtmlDocVisitor::startLink(const QCString &ref,const QCString &file,
                        fn,
                        anchor);
   m_t << "\"";
-  if (!tooltip.isEmpty()) m_t << " title=\"" << convertToHtml(tooltip) << "\"";
+  if (!tooltip.empty()) m_t << " title=\"" << convertToHtml(tooltip) << "\"";
   m_t << ">";
 }
 

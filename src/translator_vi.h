@@ -165,7 +165,7 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
      */
     QCString trGeneratedAutomatically(const QCString &s) override
     { QCString result="Được tạo ra bởi Doxygen";
-      if (!s.isEmpty()) result+=" cho "+s;
+      if (!s.empty()) result+=" cho "+s;
       result+=" từ mã nguồn.";
       return result;
     }
@@ -363,7 +363,7 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
 
     /*! This is used in HTML as the title of index.html. */
     QCString trDocumentation(const QCString &projName) override
-    { return (!projName.isEmpty()?projName + " " : "") + "Thông tin"; }
+    { return (!projName.empty()?projName + " " : "") + "Thông tin"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * index of all groups.
@@ -520,7 +520,7 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
     QCString trGeneratedAt(const QCString &date,const QCString &projName) override
     {
       QCString result="Được biên soạn vào "+date;
-      if (!projName.isEmpty()) result+=" cho mã nguồn dự án "+projName;
+      if (!projName.empty()) result+=" cho mã nguồn dự án "+projName;
       result+=" bởi";
       return result;
     }

@@ -98,7 +98,7 @@ static EdgeProperties umlEdgeProps =
 
 QCString escapeTooltip(const QCString &tooltip)
 {
-  if (tooltip.isEmpty()) return tooltip;
+  if (tooltip.empty()) return tooltip;
   QCString result;
   const char *p=tooltip.data();
   char c = 0;
@@ -197,7 +197,7 @@ QCString DotNode::convertLabel(const QCString &l, LabelStyle style)
 {
   QCString bBefore("\\_/<({[: =-+@%#~?$"); // break before character set
   QCString bAfter(">]),:;|");              // break after  character set
-  if (l.isEmpty()) return QCString();
+  if (l.empty()) return QCString();
   QCString result;
   char pc=0;
   uint32_t idx = 0;
@@ -313,7 +313,7 @@ QCString DotNode::convertLabel(const QCString &l, LabelStyle style)
 
 static QCString stripProtectionPrefix(const QCString &s)
 {
-  if (!s.isEmpty() && (s[0]=='-' || s[0]=='+' || s[0]=='~' || s[0]=='#'))
+  if (!s.empty() && (s[0]=='-' || s[0]=='+' || s[0]=='~' || s[0]=='#'))
   {
     return s.mid(1);
   }
@@ -424,12 +424,12 @@ void DotNode::writeLabel(TextStream &t, GraphType gt) const
     // for each edge
     for (const auto &ei : m_edgeInfo)
     {
-      if (!ei.label().isEmpty()) // labels joined by \n
+      if (!ei.label().empty()) // labels joined by \n
       {
-        int i=0;
-        int p=0;
+        size_t i=0;
+        size_t p=0;
         QCString lab;
-        while ((i=ei.label().find('\n',p))!=-1)
+        while ((i=ei.label().find('\n',p))!=QCString::npos)
         {
           lab = stripProtectionPrefix(ei.label().mid(p,i-p));
           arrowNames.insert(lab.str());
@@ -513,17 +513,17 @@ void DotNode::writeLabel(TextStream &t, GraphType gt) const
 
 void DotNode::writeUrl(TextStream &t) const
 {
-  if (m_url.isEmpty() || m_url == DotNode::placeholderUrl) return;
-  int tagPos = m_url.findRev('$');
+  if (m_url.empty() || m_url == DotNode::placeholderUrl) return;
+  size_t tagPos = m_url.rfind('$');
   t << ",URL=\"";
   QCString noTagURL = m_url;
-  if (tagPos!=-1)
+  if (tagPos!=QCString::npos)
   {
     t << m_url.left(tagPos);
     noTagURL = m_url.mid(tagPos);
   }
-  int anchorPos = noTagURL.findRev('#');
-  if (anchorPos==-1)
+  size_t anchorPos = noTagURL.rfind('#');
+  if (anchorPos==QCString::npos)
   {
     addHtmlExtensionIfMissing(noTagURL);
     t << noTagURL << "\"";
@@ -532,7 +532,7 @@ void DotNode::writeUrl(TextStream &t) const
   {
     QCString fn = noTagURL.left(anchorPos);
     addHtmlExtensionIfMissing(fn);
-    t << fn << noTagURL.right(noTagURL.length() - anchorPos) << "\"";
+    t << fn << noTagURL.mid(anchorPos) << "\"";
   }
 }
 
@@ -569,9 +569,9 @@ void DotNode::writeBox(TextStream &t,
   }
   else
   {
-    labCol = m_url.isEmpty() ? "grey60" :  // non link
+    labCol = m_url.empty() ? "grey60" :  // non link
     (hasNonReachableChildren ? "red" : "grey40");
-    fillCol = m_url.isEmpty() ? "#E0E0E0" :
+    fillCol = m_url.empty() ? "#E0E0E0" :
     (hasNonReachableChildren ? "#FFF0F0" : "white");
   }
   t << "  Node" << m_number << " [";
@@ -589,7 +589,7 @@ void DotNode::writeBox(TextStream &t,
     t << ", style=\"filled\"";
     writeUrl(t);
   }
-  if (!m_tooltip.isEmpty())
+  if (!m_tooltip.empty())
   {
     t << ",tooltip=\"" << escapeTooltip(m_tooltip) << "\"";
   }
@@ -631,7 +631,7 @@ void DotNode::writeArrow(TextStream &t,
   t << "color=\"" << eProps->edgeColorMap[ei->color()] << "\",";
   t << "style=\"" << eProps->edgeStyleMap[ei->style()] << "\"";
   t << ",tooltip=\" \""; // space in tooltip is required otherwise still something like 'Node0 -> Node1' is used
-  if (!ei->label().isEmpty())
+  if (!ei->label().empty())
   {
     t << ",label=" << convertLabel(ei->label(),LabelStyle::Table) << " ,fontcolor=\"grey\" ";
   }
@@ -706,11 +706,11 @@ void DotNode::writeXML(TextStream &t,bool isClassGraph) const
 {
   t << "      <node id=\"" << m_number << "\">\n";
   t << "        <label>" << convertToXML(m_label) << "</label>\n";
-  if (!m_url.isEmpty())
+  if (!m_url.empty())
   {
     QCString url(m_url);
-    int dollarPos = url.find('$');
-    if (dollarPos!=-1)
+    size_t dollarPos = url.find('$');
+    if (dollarPos!=QCString::npos)
     {
       t << "        <link refid=\"" << convertToXML(url.mid(dollarPos+1)) << "\"";
       if (dollarPos>0)
@@ -743,11 +743,11 @@ void DotNode::writeXML(TextStream &t,bool isClassGraph) const
       t << "include";
     }
     t << "\">\n";
-    if (!edgeInfo.label().isEmpty())
+    if (!edgeInfo.label().empty())
     {
-      int p=0;
-      int ni=0;
-      while ((ni=edgeInfo.label().find('\n',p))!=-1)
+      size_t p=0;
+      size_t ni=0;
+      while ((ni=edgeInfo.label().find('\n',p))!=QCString::npos)
       {
         t << "          <edgelabel>"
           << convertToXML(edgeInfo.label().mid(p,ni-p))
@@ -768,11 +768,10 @@ void DotNode::writeDocbook(TextStream &t,bool isClassGraph) const
 {
   t << "      <node id=\"" << m_number << "\">\n";
   t << "        <label>" << convertToXML(m_label) << "</label>\n";
-  if (!m_url.isEmpty())
+  if (!m_url.empty())
   {
     QCString url(m_url);
-    int dollarPos = url.find('$');
-    if (dollarPos!=-1)
+    if (size_t dollarPos = url.find('$'); dollarPos!=QCString::npos)
     {
       t << "        <link refid=\"" << convertToXML(url.mid(dollarPos+1)) << "\"";
       if (dollarPos>0)
@@ -805,11 +804,11 @@ void DotNode::writeDocbook(TextStream &t,bool isClassGraph) const
       t << "include";
     }
     t << "\">\n";
-    if (!edgeInfo.label().isEmpty())
+    if (!edgeInfo.label().empty())
     {
-      int p=0;
-      int ni=0;
-      while ((ni=edgeInfo.label().find('\n',p))!=-1)
+      size_t p=0;
+      size_t ni=0;
+      while ((ni=edgeInfo.label().find('\n',p))!=QCString::npos)
       {
         t << "          <edgelabel>"
           << convertToXML(edgeInfo.label().mid(p,ni-p))
@@ -817,7 +816,7 @@ void DotNode::writeDocbook(TextStream &t,bool isClassGraph) const
         p=ni+1;
       }
       t << "          <edgelabel>"
-        << convertToXML(edgeInfo.label().right(edgeInfo.label().length()-p))
+        << convertToXML(edgeInfo.label().mid(p))
         << "</edgelabel>\n";
     }
     t << "        </childnode>\n";
@@ -835,11 +834,10 @@ void DotNode::writeDEF(TextStream &t) const
   t << nodePrefix << "id    = " << m_number << ";\n";
   t << nodePrefix << "label = '" << m_label << "';\n";
 
-  if (!m_url.isEmpty())
+  if (!m_url.empty())
   {
     QCString url(m_url);
-    int dollarPos = url.find('$');
-    if (dollarPos!=-1)
+    if (size_t dollarPos = url.find('$'); dollarPos!=QCString::npos)
     {
       t << nodePrefix << "link = {\n" << "  "
         << nodePrefix << "link-id = '" << url.mid(dollarPos+1) << "';\n";
@@ -871,7 +869,7 @@ void DotNode::writeDEF(TextStream &t) const
     }
     t << ";\n";
 
-    if (!edgeInfo.label().isEmpty())
+    if (!edgeInfo.label().empty())
     {
       t << "          edgelabel = <<_EnD_oF_dEf_TeXt_\n"
         << edgeInfo.label() << "\n"

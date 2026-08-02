@@ -77,7 +77,7 @@ void EclipseHelp::initialize()
 
   // -- write the opening tag
   QCString title = Config_getString(PROJECT_NAME);
-  if (title.isEmpty())
+  if (title.empty())
   {
     title = "Doxygen generated documentation";
   }
@@ -172,7 +172,7 @@ void EclipseHelp::addContentsItem(
 {
   // -- write the topic tag
   p->closedTag();
-  if (!file.isEmpty())
+  if (!file.empty())
   {
     QCString fn = file;
     addHtmlExtensionIfMissing(fn);
@@ -193,7 +193,7 @@ void EclipseHelp::addContentsItem(
         p->indent();
         p->tocstream << "<topic label=\"" << convertToXML(name) << "\"";
         p->tocstream << " href=\"" << convertToXML(p->pathprefix) << fn;
-        if (!anchor.isEmpty())
+        if (!anchor.empty())
         {
           p->tocstream << "#" << anchor;
         }

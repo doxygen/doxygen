@@ -67,7 +67,7 @@ void RefList::generatePage()
   bool first=true;
   for (const std::unique_ptr<RefItem> &item : m_entries)
   {
-    if (item->name().isEmpty()) continue;
+    if (item->name().empty()) continue;
     cnt++;
     bool startNewGroup = item->group()!=lastGroup;
     if (startNewGroup)
@@ -94,7 +94,7 @@ void RefList::generatePage()
       QCString escapedTitle = substitute(item->title(),"\\","\\\\");
       doc += " \""+escapedTitle+"\" ";
       // write declaration in case a function with arguments
-      if (!item->args().isEmpty())
+      if (!item->args().empty())
       {
         // escape @'s in argument list, needed for Java annotations (see issue #6208)
         // escape \'s in argument list (see issue #6533)

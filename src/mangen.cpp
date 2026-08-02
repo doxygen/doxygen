@@ -41,7 +41,7 @@ static QCString getExtension()
    * in case number missing, just place a 3 in front of it
    */
   QCString ext = Config_getString(MAN_EXTENSION);
-  if (ext.isEmpty())
+  if (ext.empty())
   {
     ext = "3";
   }
@@ -69,7 +69,7 @@ static QCString getExtension()
 static QCString getSubdir()
 {
   QCString dir = Config_getString(MAN_SUBDIR);
-  if (dir.isEmpty())
+  if (dir.empty())
   {
     dir = "man" + getExtension();
   }
@@ -80,7 +80,7 @@ static QCString docifyToString(const QCString &str)
 {
   QCString result;
   result.reserve(str.length());
-  if (!str.isEmpty())
+  if (!str.empty())
   {
     const char *p=str.data();
     char c=0;
@@ -139,7 +139,7 @@ void ManCodeGenerator::writeCodeLink(CodeSymbolType,
                                  const QCString &)
 {
   if (m_hide) return;
-  if (!name.isEmpty())
+  if (!name.empty())
   {
     const char *p=name.data();
     char c=0;
@@ -163,7 +163,7 @@ void ManCodeGenerator::codify(const QCString &str)
 {
   const int tabSize = Config_getInt(TAB_SIZE);
   const size_t stripAmount = m_stripIndentAmount;
-  if (!str.isEmpty())
+  if (!str.empty())
   {
     char c;
     const char *p=str.data();
@@ -296,7 +296,7 @@ void ManGenerator::cleanup()
 static QCString buildFileName(const QCString &name)
 {
   QCString fileName;
-  if (name.isEmpty()) return "noname";
+  if (name.empty()) return "noname";
 
   const char *p=name.data();
   char c = 0;
@@ -361,9 +361,9 @@ void ManGenerator::endTitleHead(const QCString &,const QCString &name)
     case TIMESTAMP_t::NO:
       break;
   }
-  if (!Config_getString(PROJECT_NUMBER).isEmpty())
+  if (!Config_getString(PROJECT_NUMBER).empty())
     m_t << "Version " << Config_getString(PROJECT_NUMBER) << "\" \"";
-  if (Config_getString(PROJECT_NAME).isEmpty())
+  if (Config_getString(PROJECT_NAME).empty())
     m_t << "Doxygen";
   else
     m_t << Config_getString(PROJECT_NAME);
@@ -458,7 +458,7 @@ void ManGenerator::endMemberHeader()
 
 void ManGenerator::docify(const QCString &str)
 {
-  if (!str.isEmpty())
+  if (!str.empty())
   {
     const char *p=str.data();
     char c=0;
@@ -528,8 +528,10 @@ void ManGenerator::startDoxyAnchor(const QCString &,const QCString &manName,
     // the name of the link file is derived from the name of the anchor:
     // - truncate after an (optional) ::
     QCString baseName = name;
-    int i=baseName.findRev("::");
-    if (i!=-1) baseName=baseName.right(baseName.length()-i-2);
+    if (size_t i=baseName.rfind("::"); i!=QCString::npos)
+    {
+      baseName=baseName.mid(i+2);
+    }
 
     //printf("Converting man link '%s'->'%s'->'%s'\n",
     //       name,qPrint(baseName),qPrint(buildFileName(baseName)));

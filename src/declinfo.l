@@ -137,7 +137,7 @@ ID	([$a-z_A-Z\x80-\xFF][$a-z_A-Z0-9\x80-\xFF]*)|(@[0-9]+)
 				  yyextra->name += removeRedundantWhiteSpace(yytext);
   				}
 <Start>"anonymous_namespace{"[^}]+"}" { // anonymous namespace
- 				  if (!yyextra->scope.isEmpty())
+ 				  if (!yyextra->scope.empty())
 				  {
 				    yyextra->scope+=QCString("::")+yytext;
 				  }
@@ -155,9 +155,9 @@ ID	([$a-z_A-Z\x80-\xFF][$a-z_A-Z0-9\x80-\xFF]*)|(@[0-9]+)
 				  yyextra->name += removeRedundantWhiteSpace(yytext);
   				}
 <Start>{B}*"::"{B}*		{ // found a yyextra->scope specifier
- 				  if (!yyextra->scope.isEmpty() && !yyextra->scope.endsWith("::"))
+ 				  if (!yyextra->scope.empty() && !yyextra->scope.endsWith("::"))
 				  {
-                                    if (!yyextra->name.isEmpty()) yyextra->scope+="::"+yyextra->name; // add yyextra->name to yyextra->scope
+                                    if (!yyextra->name.empty()) yyextra->scope+="::"+yyextra->name; // add yyextra->name to yyextra->scope
 				  }
 				  else
 				  {
@@ -282,9 +282,9 @@ static void addType(yyscan_t yyscanner)
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   //printf("addType() yyextra->type='%s' yyextra->scope='%s' yyextra->name='%s'\n",
   //       qPrint(yyextra->type),qPrint(yyextra->scope),qPrint(yyextra->name));
-  if (yyextra->name.isEmpty() && yyextra->scope.isEmpty()) return;
-  if (!yyextra->type.isEmpty()) yyextra->type+=" ";
-  if (!yyextra->scope.isEmpty()) yyextra->type+=yyextra->scope+"::";
+  if (yyextra->name.empty() && yyextra->scope.empty()) return;
+  if (!yyextra->type.empty()) yyextra->type+=" ";
+  if (!yyextra->scope.empty()) yyextra->type+=yyextra->scope+"::";
   yyextra->type+=yyextra->name;
   yyextra->scope.clear();
   yyextra->name.clear();
@@ -295,12 +295,12 @@ static void addTypeName(yyscan_t yyscanner)
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   //printf("addTypeName() yyextra->type='%s' yyextra->scope='%s' yyextra->name='%s'\n",
   //       qPrint(yyextra->type),qPrint(yyextra->scope),qPrint(yyextra->name));
-  if (yyextra->name.isEmpty() || 
+  if (yyextra->name.empty() || 
       yyextra->name.at(yyextra->name.length()-1)==':')  // end of Objective-C keyword => append to yyextra->name not yyextra->type
   {
     return;
   }
-  if (!yyextra->type.isEmpty()) yyextra->type+=' ';
+  if (!yyextra->type.empty()) yyextra->type+=' ';
   yyextra->type+=yyextra->name;
   yyextra->name.clear();
 }
@@ -325,7 +325,7 @@ static struct declinfoYY_state g_declinfo_extra;
 void parseFuncDecl(const QCString &decl,const SrcLangExt lang,QCString &cl,QCString &t,
                    QCString &n,QCString &a,QCString &ftl,QCString &exc)
 {
-  if (decl.isEmpty())
+  if (decl.empty())
   {
     return;
   }
@@ -361,31 +361,30 @@ void parseFuncDecl(const QCString &decl,const SrcLangExt lang,QCString &cl,QCStr
   //printf("yyextra->type='%s' class='%s' yyextra->name='%s' yyextra->args='%s'\n",
   //        qPrint(yyextra->type),qPrint(yyextra->scope),qPrint(yyextra->name),qPrint(yyextra->args));
 
-  int nb = yyextra->name.findRev('[');
-  if (nb!=-1 && yyextra->args.isEmpty()) // correct for [] in yyextra->name ambiguity (due to Java return yyextra->type allowing [])
+  if (size_t nb = yyextra->name.rfind('[') ; nb!=QCString::npos && yyextra->args.empty()) // correct for [] in yyextra->name ambiguity (due to Java return yyextra->type allowing [])
   {
-    yyextra->args.prepend(yyextra->name.right(yyextra->name.length()-nb));
+    yyextra->args.prepend(yyextra->name.mid(nb));
     yyextra->name=yyextra->name.left(nb);
   }
 
   cl=yyextra->scope;
   n=removeRedundantWhiteSpace(yyextra->name);
-  int il=n.find('<'), ir=n.findRev('>');
-  if (il!=-1 && ir!=-1 && n.at(il+1)!='=')
+  size_t il=n.find('<'), ir=n.rfind('>');
+  if (il!=QCString::npos && ir!=QCString::npos && n.at(il+1)!='=')
     // prevent <=>
-    // TODO: handle cases like where n="operator<< <T>" 
+    // TODO: handle cases like where n="operator<< <T>"
   {
-    ftl=removeRedundantWhiteSpace(n.right(n.length()-il));
+    ftl=removeRedundantWhiteSpace(n.mid(il));
     n=n.left(il);
   }
-  
+
   //ctl=yyextra->classTempList.copy();
   //ftl=yyextra->funcTempList.copy();
   t=removeRedundantWhiteSpace(yyextra->type);
   a=removeRedundantWhiteSpace(yyextra->args);
   exc=removeRedundantWhiteSpace(yyextra->exceptionString);
-  
-  if (!t.isEmpty() && !t.startsWith("decltype") && t.at(t.length()-1)==')') // for function pointers
+
+  if (!t.empty() && !t.startsWith("decltype") && t.at(t.length()-1)==')') // for function pointers
   {
     a.prepend(")");
     t=t.left(t.length()-1);

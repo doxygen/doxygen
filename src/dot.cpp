@@ -41,14 +41,14 @@ static std::mutex g_dotManagerMutex;
 
 static void setDotFontPath(const QCString &path)
 {
-  ASSERT(g_dotFontPath.isEmpty());
+  ASSERT(g_dotFontPath.empty());
   g_dotFontPath = Portable::getenv("DOTFONTPATH");
   QCString newFontPath = Config_getString(DOT_FONTPATH);
-  if (!newFontPath.isEmpty() && !path.isEmpty())
+  if (!newFontPath.empty() && !path.empty())
   {
     newFontPath.prepend(path+Portable::pathListSeparator());
   }
-  else if (newFontPath.isEmpty() && !path.isEmpty())
+  else if (newFontPath.empty() && !path.empty())
   {
     newFontPath=path;
   }
@@ -62,7 +62,7 @@ static void setDotFontPath(const QCString &path)
 
 static void unsetDotFontPath()
 {
-  if (g_dotFontPath.isEmpty())
+  if (g_dotFontPath.empty())
   {
     Portable::unsetenv("DOTFONTPATH");
   }

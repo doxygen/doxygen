@@ -65,7 +65,7 @@ int genericCompareMembers(const MemberDef *c1,const MemberDef *c2)
     cmp = qstricmp_sort(c1->qualifiedName(),c2->qualifiedName());
   }
   // then on argument list
-  if (cmp==0 && !c1->argsString().isEmpty() && !c2->argsString().isEmpty())
+  if (cmp==0 && !c1->argsString().empty() && !c2->argsString().empty())
   {
     cmp = qstricmp_sort(c1->argsString(),c2->argsString());
   }
@@ -158,8 +158,8 @@ std::pair<int,int> MemberList::countDecMembers(const ClassDef *inheritedFrom) co
         case MemberType::Dictionary: numDecMembers++;
                                      break;
         case MemberType::Define:      if (Config_getBool(EXTRACT_ALL) ||
-                                         !md->argsString().isEmpty() ||
-                                         !md->initializer().isEmpty() ||
+                                         !md->argsString().empty() ||
+                                         !md->initializer().empty() ||
                                          md->hasDocumentation()
                                         ) numDecMembers++;
                                      break;
@@ -220,8 +220,7 @@ void MemberList::setAnonymousEnumType()
     if (md->isBriefSectionVisible())
     {
       QCString name(md->name());
-      int i=name.findRev("::");
-      if (i!=-1) name=name.right(name.length()-i-2);
+      if (size_t i=name.rfind("::"); i!=QCString::npos) name=name.mid(i+2);
       if (md->memberType()==MemberType::Enumeration && name[0]=='@')
       {
         for (const auto &vmd : md->enumFieldList())
@@ -230,7 +229,7 @@ void MemberList::setAnonymousEnumType()
           if (vmdm)
           {
             QCString vtype=vmd->typeString();
-            if ((vtype.find(name))!=-1)
+            if ((vtype.find(name))!=QCString::npos)
             {
               vmdm->setAnonymousEnumType(md);
             }
@@ -249,14 +248,13 @@ int MemberList::countEnumValues(const MemberDef *md) const
 {
   int numEnumValues=0;
   QCString name(md->name());
-  int i=name.findRev("::");
-  if (i!=-1) name=name.right(name.length()-i-2);
+  if (size_t i=name.rfind("::"); i!=QCString::npos) name=name.mid(i+2);
   if (name[0]=='@')
   {
     for (const auto &vmd : m_members)
     {
       QCString vtype=vmd->typeString();
-      if ((vtype.find(name))!=-1)
+      if ((vtype.find(name))!=QCString::npos)
       {
         numEnumValues++;
       }
@@ -415,7 +413,7 @@ void MemberList::writePlainDeclarations(OutputList &ol, bool inGroup,
                 ol.endDoxyAnchor(md->getOutputFileBase(),md->anchor());
               }
               ol.endMemberItem(OutputGenerator::MemberItemType::Normal);
-              if (!md->briefDescription().isEmpty() && Config_getBool(BRIEF_MEMBER_DESC))
+              if (!md->briefDescription().empty() && Config_getBool(BRIEF_MEMBER_DESC))
               {
                 auto parser { createDocParser() };
                 auto ast    { validatingParseDoc(*parser.get(),
@@ -428,7 +426,7 @@ void MemberList::writePlainDeclarations(OutputList &ol, bool inGroup,
                                                  .setIndexWords(true)
                                                  .setSingleLine(true))
                             };
-                if (!ast->isEmpty())
+                if (!ast->empty())
                 {
                   ol.startMemberDescription(md->anchor(),inheritId);
                   ol.writeDoc(ast.get(),cd,md);
@@ -528,7 +526,7 @@ void MemberList::writeDeclarations(OutputList &ol,
     {
       inheritId = substitute(lt.toLabel(),"-","_")+"_"+
                   stripPath(cd->getOutputFileBase());
-      if (showSectionTitle && !title.isEmpty())
+      if (showSectionTitle && !title.empty())
       {
         ol.writeInheritedSectionTitle(inheritId,cd->getReference(),
                                       cd->getOutputFileBase(),
@@ -538,7 +536,7 @@ void MemberList::writeDeclarations(OutputList &ol,
   }
   else if (num>numEnumValues)
   {
-    if (!title.isEmpty())
+    if (!title.empty())
     {
       if (showInline)
       {
@@ -558,7 +556,7 @@ void MemberList::writeDeclarations(OutputList &ol,
         ol.endMemberHeader();
       }
     }
-    if (!subtitle.stripWhiteSpace().isEmpty())
+    if (!subtitle.stripWhiteSpace().empty())
     {
       ol.startMemberSubtitle();
       ol.generateDoc("[generated]", -1, ctx, nullptr, subtitle, DocOptions());
@@ -587,8 +585,8 @@ void MemberList::writeDeclarations(OutputList &ol,
     int groupId=0;
     for (const auto &mg : m_memberGroupRefList)
     {
-      bool hasHeader=!mg->header().isEmpty();
-      if (inheritId.isEmpty())
+      bool hasHeader=!mg->header().empty();
+      if (inheritId.empty())
       {
         QCString groupAnchor = QCString(listType().toLabel())+"-"+QCString().setNum(groupId++);
         //printf("mg->header=%s hasHeader=%d\n",qPrint(mg->header()),hasHeader);
@@ -598,7 +596,7 @@ void MemberList::writeDeclarations(OutputList &ol,
           ol.parseText(mg->header());
         }
         ol.endMemberGroupHeader(hasHeader);
-        if (!mg->documentation().isEmpty())
+        if (!mg->documentation().empty())
         {
           //printf("Member group has docs!\n");
           ol.startMemberGroupDocs();
@@ -614,7 +612,7 @@ void MemberList::writeDeclarations(OutputList &ol,
       }
       //printf("--- mg->writePlainDeclarations ---\n");
       mg->writePlainDeclarations(ol,inGroup,cd,nd,fd,gd,mod,0,inheritedFrom,inheritId);
-      if (inheritId.isEmpty())
+      if (inheritId.empty())
       {
         ol.endMemberGroup(hasHeader);
       }
@@ -643,7 +641,7 @@ void MemberList::writeDocumentation(OutputList &ol,
   if (numDocMembers()==0) return;
   if (!showEnumValues && numDocMembers()<=numDocEnumValues()) return;
 
-  if (!title.isEmpty())
+  if (!title.empty())
   {
     ol.pushGeneratorState();
       ol.disable(OutputType::Html);

@@ -258,7 +258,7 @@ class PrintDocVisitor
       indent_leaf();
       auto opt = cite.option();
       QCString txt;
-      if (!cite.file().isEmpty())
+      if (!cite.file().empty())
       {
         txt = cite.getText();
       }

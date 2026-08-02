@@ -447,7 +447,7 @@ class DocInclude final : public DocNode
       m_isExample(isExample), m_isBlock(isBlock), m_trimLeft(trimLeft),
       m_exampleFile(exampleFile), m_blockId(blockId) {}
     QCString file() const        { return m_file; }
-    QCString extension() const   { int i=m_file.findRev('.'); return i!=-1 ? m_file.mid(i) : QCString(); }
+    QCString extension() const   { size_t i=m_file.rfind('.'); return i!=QCString::npos ? m_file.mid(i) : QCString(); }
     Type type() const            { return m_type; }
     QCString text() const        { return m_text; }
     QCString context() const     { return m_context; }
@@ -611,7 +611,7 @@ class DocTitle final : public DocCompoundNode
     void parse();
     void parseFromString(DocNodeVariant *,const QCString &title);
     bool hasTitle() const { return !children().empty(); }
-    bool isEmpty() const  { return !hasTitle(); }
+    bool empty() const  { return !hasTitle(); }
 
   private:
 };
@@ -1090,7 +1090,7 @@ class DocPara final : public DocCompoundNode
   public:
     DocPara(DocParser *parser,DocNodeVariant *parent);
     Token parse();
-    bool isEmpty() const        { return children().empty(); }
+    bool empty() const          { return children().empty(); }
     void markFirst(bool v=true) { m_isFirst=v; }
     void markLast(bool v=true)  { m_isLast=v; }
     bool isFirst() const        { return m_isFirst; }
@@ -1310,7 +1310,7 @@ class DocText final : public DocCompoundNode
   public:
     DocText(DocParser *parser) : DocCompoundNode(parser,nullptr) {}
     void parse();
-    bool isEmpty() const    { return children().empty(); }
+    bool empty() const { return children().empty(); }
 };
 
 /** Root node of documentation tree */
@@ -1322,7 +1322,7 @@ class DocRoot final : public DocCompoundNode
     void parse();
     bool indent() const { return m_indent; }
     bool singleLine() const { return m_singleLine; }
-    bool isEmpty() const { return children().empty(); }
+    bool empty() const { return children().empty(); }
 
   private:
     bool m_indent = false;
@@ -1477,19 +1477,19 @@ class DocNodeAST final: public IDocNodeAST
     {
       std::get_if<DocNode>(&root)->setThisVariant(&root);
     }
-    bool isEmpty() const override
+    bool empty() const override
     {
       if (std::holds_alternative<DocRoot>(root))
       {
-        return std::get<DocRoot>(root).isEmpty();
+        return std::get<DocRoot>(root).empty();
       }
       else if (std::holds_alternative<DocText>(root))
       {
-        return std::get<DocText>(root).isEmpty();
+        return std::get<DocText>(root).empty();
       }
       else if (std::holds_alternative<DocTitle>(root))
       {
-        return std::get<DocTitle>(root).isEmpty();
+        return std::get<DocTitle>(root).empty();
       }
       return false;
     }

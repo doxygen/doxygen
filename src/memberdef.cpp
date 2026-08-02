@@ -996,16 +996,16 @@ static QCString addTemplateNames(const QCString &s,const QCString &n,const QCStr
 {
   QCString result;
   QCString clRealName=n;
-  int p=0,i=0;
-  if ((i=clRealName.find('<'))!=-1)
+  size_t p=0,i=0;
+  if ((i=clRealName.find('<'))!=QCString::npos)
   {
     clRealName=clRealName.left(i); // strip template specialization
   }
-  if ((i=clRealName.findRev("::"))!=-1)
+  if ((i=clRealName.rfind("::"))!=QCString::npos)
   {
-    clRealName=clRealName.right(clRealName.length()-i-2);
+    clRealName=clRealName.mid(i+2);
   }
-  while ((i=s.find(clRealName,p))!=-1)
+  while ((i=s.find(clRealName,p))!=QCString::npos)
   {
     result+=s.mid(p,i-p);
     size_t j=clRealName.length()+i;
@@ -1019,9 +1019,9 @@ static QCString addTemplateNames(const QCString &s,const QCString &n,const QCStr
       //printf("Adding %s\n",qPrint(clRealName));
       result+=clRealName;
     }
-    p=i+static_cast<int>(clRealName.length());
+    p=i+clRealName.length();
   }
-  result+=s.right(s.length()-p);
+  result+=s.mid(p);
   //printf("addTemplateNames(%s,%s,%s)=%s\n",qPrint(s),qPrint(n),qPrint(t),qPrint(result));
   return result;
 }
@@ -1088,9 +1088,9 @@ static bool writeDefArgumentList(OutputList &ol,const Definition *scope,const Me
   if (scope)
   {
     cName=scope->name();
-    int il=cName.find('<');
-    int ir=cName.findRev('>');
-    if (il!=-1 && ir!=-1 && ir>il)
+    size_t il=cName.find('<');
+    size_t ir=cName.rfind('>');
+    if (il!=QCString::npos && ir!=QCString::npos && ir>il)
     {
       cName=cName.mid(il,ir-il+1);
       //printf("1. cName=%s\n",qPrint(cName));
@@ -1130,7 +1130,7 @@ static bool writeDefArgumentList(OutputList &ol,const Definition *scope,const Me
       }
     }
 
-    if (!a.attrib.isEmpty() && !md->isObjCMethod()) // argument has an IDL attribute
+    if (!a.attrib.empty() && !md->isObjCMethod()) // argument has an IDL attribute
     {
       ol.docify(a.attrib+" ");
     }
@@ -1138,30 +1138,30 @@ static bool writeDefArgumentList(OutputList &ol,const Definition *scope,const Me
     QCString atype = a.type;
     if (sep!="::") { atype=substitute(atype,"::",sep); }
 
-    int funcPtrPos=-1;
+    size_t funcPtrPos=QCString::npos;
     {
       if (md->isObjCMethod()) { atype.prepend("("); atype.append(")"); }
       if (atype!="...")
       {
-        if (!cName.isEmpty() && scope && scope!=Doxygen::globalScope)
+        if (!cName.empty() && scope && scope!=Doxygen::globalScope)
         {
           atype=addTemplateNames(atype,scope->name(),cName);
         }
         // 1. split ...*)(... -> '*' + name + ')(...'
         // 2. split ...*[some thing])(... -> '*' + name + '[some thing])(...'
-        int starPos = atype.find('*');               // find pointer
-        if (starPos==-1) starPos = atype.find('&'); // can also be reference
+        size_t starPos = atype.find('*');                       // find pointer
+        if (starPos==QCString::npos) starPos = atype.find('&'); // can also be reference
         funcPtrPos = atype.find(")(");
-        if (starPos!=-1 && funcPtrPos>starPos)
+        if (starPos!=QCString::npos && funcPtrPos!=QCString::npos && funcPtrPos>starPos)
         {
           funcPtrPos=starPos+1;
         }
         else
         {
-          funcPtrPos=-1;
+          funcPtrPos=QCString::npos;
         }
         linkifyText(TextGeneratorOLImpl(ol),
-                    funcPtrPos==-1 ? atype : atype.left(funcPtrPos),
+                    funcPtrPos==QCString::npos ? atype : atype.left(funcPtrPos),
                     options);
       }
     }
@@ -1184,31 +1184,31 @@ static bool writeDefArgumentList(OutputList &ol,const Definition *scope,const Me
     {
       ol.docify(atype);
     }
-    else if (!a.name.isEmpty()) // argument has a name
+    else if (!a.name.empty()) // argument has a name
     {
       ol.docify(a.name);
     }
     if (!isDefine)
     {
-      if (funcPtrPos!=-1)
+      if (funcPtrPos!=QCString::npos)
       {
         ol.writeNonBreakableSpace(1);
       }
       ol.endParameterName();
     }
     ol.startParameterExtra();
-    if (funcPtrPos!=-1)
+    if (funcPtrPos!=QCString::npos)
     {
       linkifyText(TextGeneratorOLImpl(ol),atype.mid(funcPtrPos),options);
     }
-    if (!a.array.isEmpty())
+    if (!a.array.empty())
     {
       ol.docify(a.array);
     }
-    if (!a.defval.isEmpty()) // write the default value
+    if (!a.defval.empty()) // write the default value
     {
       QCString n=a.defval;
-      if (scope && scope!=Doxygen::globalScope && !cName.isEmpty())
+      if (scope && scope!=Doxygen::globalScope && !cName.empty())
       {
         n=addTemplateNames(n,scope->name(),cName);
       }
@@ -1249,7 +1249,7 @@ static bool writeDefArgumentList(OutputList &ol,const Definition *scope,const Me
     ol.startParameterExtra();
   }
   ol.endParameterExtra(true,defArgList.size()<2,!md->isObjCMethod());
-  if (!md->extraTypeChars().isEmpty())
+  if (!md->extraTypeChars().empty())
   {
     ol.docify(md->extraTypeChars());
   }
@@ -1269,7 +1269,7 @@ static bool writeDefArgumentList(OutputList &ol,const Definition *scope,const Me
   {
     ol.docify(" &&");
   }
-  if (!defArgList.trailingReturnType().isEmpty())
+  if (!defArgList.trailingReturnType().empty())
   {
     linkifyText(TextGeneratorOLImpl(ol), defArgList.trailingReturnType(), options);
   }
@@ -1281,14 +1281,14 @@ static void writeExceptionListImpl(
 {
   // this is ordinary exception spec - there must be a '('
   //printf("exception='%s'\n",qPrint(exception));
-  int index = exception.find('(');
+  size_t index = exception.find('(');
   LinkifyTextOptions options;
   options.setScope(cd).setFileScope(md->getBodyDef()).setSelf(md);
-  if (index!=-1)
+  if (index!=QCString::npos)
   {
     ol.exceptionEntry(exception.left(index),false);
     ++index; // paren in second column so skip it here
-    for (int comma = exception.find(',', index); comma!=-1; )
+    for (size_t comma = exception.find(',', index); comma!=QCString::npos; )
     {
       ++comma; // include comma
       linkifyText(TextGeneratorOLImpl(ol),exception.mid(index,comma-index),options);
@@ -1296,8 +1296,7 @@ static void writeExceptionListImpl(
       index=comma;
       comma = exception.find(',', index);
     }
-    int close = exception.find(')', index);
-    if (close!=-1)
+    if (size_t close = exception.find(')', index); close!=QCString::npos)
     {
       QCString type=removeRedundantWhiteSpace(exception.mid(index,close-index));
       linkifyText(TextGeneratorOLImpl(ol),type,options);
@@ -1319,16 +1318,16 @@ static void writeExceptionListImpl(
 static void writeExceptionList(OutputList &ol, const ClassDef *cd, const MemberDef *md)
 {
   QCString exception = md->excpString().stripWhiteSpace();
-  if ('{'==exception.at(0))
+  if (exception.at(0)=='{')
   {
     // this is an UNO IDL attribute - need special handling
-    int index = exception.find(';');
-    int oldIndex = 1;
-    while (-1 != index) // there should be no more than 2 (set / get)
+    size_t index = exception.find(';');
+    size_t oldIndex = 1;
+    while (index!=QCString::npos) // there should be no more than 2 (set / get)
     {
       // omit '{' and ';' -> "set raises (...)"
       writeExceptionListImpl(ol,cd,md,exception.mid(oldIndex,index-oldIndex));
-      oldIndex=index+1;
+      oldIndex = index+1;
       index = exception.find(';',oldIndex);
     }
     // the rest is now just '}' - omit that
@@ -1377,7 +1376,7 @@ void MemberDefImpl::init(Definition *d,
   m_type=removeRedundantWhiteSpace(m_type);
   m_args=a;
   m_args=removeRedundantWhiteSpace(m_args);
-  if (m_type.isEmpty()) m_decl=d->name()+m_args; else m_decl=m_type+" "+d->name()+m_args;
+  if (m_type.empty()) m_decl=d->name()+m_args; else m_decl=m_type+" "+d->name()+m_args;
 
   m_memberGroup=nullptr;
   m_virt=v;
@@ -1406,7 +1405,7 @@ void MemberDefImpl::init(Definition *d,
   // copy function definition arguments (if any)
   m_defArgList = al;
   // convert function declaration arguments (if any)
-  if (!m_args.isEmpty())
+  if (!m_args.empty())
   {
     m_declArgList = *stringToArgumentList(d->getLanguage(),m_args,&m_extraTypeChars);
     //printf("setDeclArgList %s to %s const=%d\n",qPrint(args),
@@ -1661,7 +1660,7 @@ QCString MemberDefImpl::sourceRefName() const
   QCString n  = name();
   QCString s = getScopeString();
 
-  if (!s.isEmpty())
+  if (!s.empty())
   {
     n.prepend(s+"::");
   }
@@ -1690,7 +1689,7 @@ QCString MemberDefImpl::getOutputFileBase() const
   const ClassDef *classDef = getClassDef();
   const ModuleDef *moduleDef = getModuleDef();
   const GroupDef *groupDef = getGroupDef();
-  if (!m_explicitOutputFileBase.isEmpty())
+  if (!m_explicitOutputFileBase.empty())
   {
     return m_explicitOutputFileBase;
   }
@@ -1723,7 +1722,7 @@ QCString MemberDefImpl::getOutputFileBase() const
     baseName=moduleDef->getOutputFileBase();
   }
 
-  if (baseName.isEmpty())
+  if (baseName.empty())
   {
     warn(getDefFileName(),getDefLine(),
        "Internal inconsistency: member {} does not belong to any container!",name()
@@ -1747,7 +1746,7 @@ QCString MemberDefImpl::getOutputFileBase() const
 QCString MemberDefImpl::getReference() const
 {
   QCString ref = DefinitionMixin::getReference();
-  if (!ref.isEmpty())
+  if (!ref.empty())
   {
     return ref;
   }
@@ -1798,7 +1797,7 @@ QCString MemberDefImpl::anchor() const
     {
       result=m_groupMember->anchor();
     }
-    else if (getReference().isEmpty())
+    else if (getReference().empty())
     {
       result.prepend("g");
     }
@@ -2059,7 +2058,7 @@ bool MemberDefImpl::isBriefSectionVisible() const
   // hide members with no detailed description and brief descriptions
   // explicitly disabled.
   bool visibleIfEnabled = !(hideUndocMembers &&
-                            documentation().isEmpty() &&
+                            documentation().empty() &&
                             !briefMemberDesc &&
                             !repeatBrief
                            );
@@ -2175,12 +2174,12 @@ void MemberDefImpl::_writeTemplatePrefix(OutputList &ol, const Definition *def,
   {
     Argument a = *it;
     linkifyText(TextGeneratorOLImpl(ol),a.type,options);
-    if (!a.name.isEmpty())
+    if (!a.name.empty())
     {
       ol.docify(" ");
       ol.docify(a.name);
     }
-    if (!a.defval.isEmpty())
+    if (!a.defval.empty())
     {
       ol.docify(" = ");
       ol.docify(a.defval);
@@ -2189,7 +2188,7 @@ void MemberDefImpl::_writeTemplatePrefix(OutputList &ol, const Definition *def,
     if (it!=al.end()) ol.docify(", ");
   }
   ol.docify("> ");
-  if (writeReqClause && !m_requiresClause.isEmpty())
+  if (writeReqClause && !m_requiresClause.empty())
   {
     ol.lineBreak();
     ol.docify("requires ");
@@ -2201,16 +2200,16 @@ void MemberDefImpl::_writeTemplatePrefix(OutputList &ol, const Definition *def,
 
 static QCString combineArgsAndException(QCString args,QCString exception)
 {
-  if (exception.isEmpty()) return args;                      // no exception, nothing to combine args
-  int pos   = args.findRev(')');
-  int eqPos = pos!=-1 ? args.find('=',pos) : -1;             // look for '=' in '(args) = something'
-  if (eqPos==-1) return args+" "+exception;                  // append exception at the end
+  if (exception.empty()) return args;                      // no exception, nothing to combine args
+  size_t pos = args.rfind(')');
+  size_t eqPos = pos!=QCString::npos ? args.find('=',pos) : QCString::npos; // look for '=' in '(args) = something'
+  if (eqPos==QCString::npos) return args+" "+exception;      // append exception at the end
   return args.left(eqPos)+" "+exception+" "+args.mid(eqPos); // insert exception before =
 }
 
 bool MemberDefImpl::_isAnonymousBitField() const
 {
-  return !m_bitfields.isEmpty() && name().startsWith("__pad"); // anonymous bitfield
+  return !m_bitfields.empty() && name().startsWith("__pad"); // anonymous bitfield
 }
 
 void MemberDefImpl::writeDeclaration(OutputList &ol,
@@ -2266,13 +2265,13 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
   bool detailsVisible = hasDetailedDescription();
   bool writeAnchor = (inGroup || getGroupDef()==nullptr) &&     // only write anchors for member that have no details and are
                      !detailsVisible && !m_fromAnnMemb &&           // rendered inside the group page or are not grouped at all
-                     inheritId.isEmpty();
+                     inheritId.empty();
 
   if (writeAnchor)
   {
     QCString doxyArgs=argsString();
     QCString doxyName=name();
-    if (!cname.isEmpty())
+    if (!cname.empty())
     {
       doxyName.prepend(cdname+getLanguageSpecificSeparator(getLanguage()));
     }
@@ -2341,13 +2340,13 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
     static const reg::Ex ar(R"([\w@:]*@\d+[\w@:]*)"); // anonymous type marker(s) including scope
     reg::Match amatch;
     reg::search(stype,amatch,ar);
-    int ai = static_cast<int>(amatch.position());
-    int al = static_cast<int>(amatch.length());
+    size_t ai = amatch.position();
+    size_t al = amatch.length();
     const MemberDef *amd = getAnonymousEnumType();
     if (annoClassDef && amd==nullptr) // type is an anonymous compound
     {
       ol.writeObjectLink(annoClassDef->getReference(),annoClassDef->getOutputFileBase(),
-                         annoClassDef->anchor(),ltype.left(ai)+ltype.right(ltype.length()-ai-al));
+                         annoClassDef->anchor(),ltype.left(ai)+ltype.mid(ai+al));
     }
     else if (amd) // type is an anonymous enum
     {
@@ -2358,13 +2357,13 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
         else if (amd->isStrong()) typePlaceholder.prepend(" class");
       }
       ol.writeObjectLink(amd->getReference(),amd->getOutputFileBase(),
-                         amd->anchor(),ltype.left(ai)+typePlaceholder+ltype.right(ltype.length()-ai-al));
+                         amd->anchor(),ltype.left(ai)+typePlaceholder+ltype.mid(ai+al));
     }
     else // fallback if anonymous type is not found
     {
-      int i = static_cast<int>(match.position());
-      int l = static_cast<int>(match.length());
-      ltype = ltype.left(i) + " { ... } " + removeAnonymousScopes(ltype.right(ltype.length()-i-l));
+      size_t i = match.position();
+      size_t l = match.length();
+      ltype = ltype.left(i) + " { ... } " + removeAnonymousScopes(ltype.mid(i+l));
       linkifyText(TextGeneratorOLImpl(ol), ltype, options);
     }
   }
@@ -2382,11 +2381,11 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
     linkifyText(TextGeneratorOLImpl(ol),ltype,options);
   }
   bool htmlOn = ol.isEnabled(OutputType::Html);
-  if (htmlOn && !ltype.isEmpty())
+  if (htmlOn && !ltype.empty())
   {
     ol.disable(OutputType::Html);
   }
-  if (!ltype.isEmpty()) ol.docify(" ");
+  if (!ltype.empty()) ol.docify(" ");
   if (htmlOn)
   {
     ol.enable(OutputType::Html);
@@ -2417,7 +2416,7 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
                                 extractPrivateVirtual && hasDocumentation()
                              ));
     //printf("Member name=`%s gd=%p md->groupDef=%p inGroup=%d isLinkable()=%d hasDocumentation=%d\n",qPrint(name()),gd,getGroupDef(),inGroup,isLinkable(),hasDocumentation());
-    if (!name().isEmpty() && // name valid
+    if (!name().empty() && // name valid
         (hasDetailedDescription() || isReference()) && // has docs
         visibleIfPrivate &&
         !(isStatic() && getClassDef()==nullptr && !extractStatic) // hidden due to static-ness
@@ -2458,7 +2457,7 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
   }
 
   // *** write arguments
-  if (!argsString().isEmpty() && !isObjCMethod())
+  if (!argsString().empty() && !isObjCMethod())
   {
     if (!isDefine() && !isTypedef()) ol.writeString(" ");
     linkifyText(TextGeneratorOLImpl(ol), // out
@@ -2475,12 +2474,12 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
   }
 
   // *** write bitfields
-  if (!m_bitfields.isEmpty()) // add bitfields
+  if (!m_bitfields.empty()) // add bitfields
   {
     linkifyText(TextGeneratorOLImpl(ol),m_bitfields,options);
   }
   else if (hasOneLineInitializer()
-      //!init.isEmpty() && initLines==0 && // one line initializer
+      //!init.empty() && initLines==0 && // one line initializer
       //((maxInitLines>0 && userInitLines==-1) || userInitLines>0) // enabled by default or explicitly
           ) // add initializer
   {
@@ -2581,7 +2580,7 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
   }
 
   // write brief description
-  if (!briefDescription().isEmpty() &&
+  if (!briefDescription().empty() &&
       Config_getBool(BRIEF_MEMBER_DESC)
      )
   {
@@ -2596,7 +2595,7 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
                                      .setIndexWords(inheritedFrom==nullptr)
                                      .setSingleLine(true))
                 };
-    if (!ast->isEmpty())
+    if (!ast->empty())
     {
       ol.startMemberDescription(anchor(),inheritId);
       ol.writeDoc(ast.get(),getOuterScope()?getOuterScope():d,this);
@@ -2655,15 +2654,15 @@ bool MemberDefImpl::hasDetailedDescription() const
            // extract all is enabled
            extractAll ||
            // has detailed docs
-           !documentation().isEmpty() ||
+           !documentation().empty() ||
            // has inbody docs
-           !inbodyDocumentation().isEmpty() ||
+           !inbodyDocumentation().empty() ||
            // is an enum with values that are documented
            (isEnumerate() && hasDocumentedEnumValues()) ||
            // is documented enum value
-           (m_mtype==MemberType::EnumValue && !briefDescription().isEmpty()) ||
+           (m_mtype==MemberType::EnumValue && !briefDescription().empty()) ||
            // has brief description that is part of the detailed description
-           (!briefDescription().isEmpty() &&           // has brief docs
+           (!briefDescription().empty() &&           // has brief docs
             (alwaysDetailedSec &&                      // they are visible in
              (repeatBrief ||                           // detailed section or
               !briefMemberDesc                         // they are explicitly not
@@ -2688,7 +2687,7 @@ bool MemberDefImpl::hasDetailedDescription() const
     // _writeReimplementedBy           -> _countReimplementedBy()>0
     // _writeExamples                  -> hasExamples()
     // _writeTypeConstraints           -> m_typeConstraints.hasParameters()
-    // writeSourceDef                  -> !getSourceFileBase().isEmpty();
+    // writeSourceDef                  -> !getSourceFileBase().empty();
     // writeInlineCode                 -> hasInlineSource() && hasSources()
     // writeSourceRefs                 -> hasReferencesRelation() && hasSourceRefs()
     // writeSourceReffedBy             -> hasReferencedByRelation() && hasSourceReffedBy()
@@ -2706,7 +2705,7 @@ bool MemberDefImpl::hasDetailedDescription() const
            // type constraints
            m_typeConstraints.hasParameters() ||
            // has source definition
-           !getSourceFileBase().isEmpty() ||
+           !getSourceFileBase().empty() ||
            // has inline sources
            (inlineSources && hasSources()) ||
            // has references
@@ -2983,8 +2982,7 @@ void MemberDefImpl::_writeReimplements(OutputList &ol) const
       {
         reimplFromLine = theTranslator->trImplementedFromList(1);
       }
-      int markerPos = reimplFromLine.find("@0");
-      if (markerPos!=-1) // should always pass this.
+      if (size_t markerPos = reimplFromLine.find("@0"); markerPos!=QCString::npos) // should always pass this.
       {
         ol.parseText(reimplFromLine.left(markerPos)); //text left from marker
         if (bmd->isLinkable()) // replace marker with link
@@ -3115,7 +3113,7 @@ void MemberDefImpl::_writeCategoryRelation(OutputList &ol) const
     QCString file;
     QCString anc;
     QCString name;
-    int i=-1;
+    size_t i=QCString::npos;
     if (m_categoryRelation && m_categoryRelation->isLinkable())
     {
       if (m_category)
@@ -3133,7 +3131,7 @@ void MemberDefImpl::_writeCategoryRelation(OutputList &ol) const
         name = getClassDef()->categoryOf()->displayName();
       }
       i=text.find("@0");
-      if (i!=-1)
+      if (i!=QCString::npos)
       {
         const MemberDef *md = m_categoryRelation;
         ref  = md->getReference();
@@ -3141,7 +3139,7 @@ void MemberDefImpl::_writeCategoryRelation(OutputList &ol) const
         anc  = md->anchor();
       }
     }
-    if (i!=-1 && !name.isEmpty())
+    if (i!=QCString::npos && !name.empty())
     {
       ol.startParagraph();
       ol.parseText(text.left(i));
@@ -3189,7 +3187,7 @@ void MemberDefImpl::_writeEnumValues(OutputList &ol,const Definition *container,
       {
         if (fmd->isLinkable())
         {
-          if (!fmd->initializer().isEmpty())
+          if (!fmd->initializer().empty())
           {
             hasInits = true;
             break;
@@ -3224,7 +3222,7 @@ void MemberDefImpl::_writeEnumValues(OutputList &ol,const Definition *container,
         if (hasInits)
         {
           ol.startDescTableInit();
-          if (!fmd->initializer().isEmpty())
+          if (!fmd->initializer().empty())
           {
             QCString initStr = fmd->initializer().stripWhiteSpace();
             if (initStr.startsWith("=")) initStr = initStr.mid(1).stripWhiteSpace();
@@ -3240,8 +3238,8 @@ void MemberDefImpl::_writeEnumValues(OutputList &ol,const Definition *container,
         }
         ol.startDescTableData();
 
-        bool hasBrief = !fmd->briefDescription().isEmpty();
-        bool hasDetails = !fmd->documentation().isEmpty();
+        bool hasBrief = !fmd->briefDescription().empty();
+        bool hasDetails = !fmd->documentation().empty();
 
         if (hasBrief)
         {
@@ -3286,7 +3284,7 @@ QCString MemberDefImpl::displayDefinition() const
     if (isAnonymous())
     {
       ldef = title = "anonymous enum";
-      if (!m_enumBaseType.isEmpty())
+      if (!m_enumBaseType.empty())
       {
         ldef+=" : "+m_enumBaseType;
       }
@@ -3330,18 +3328,15 @@ QCString MemberDefImpl::displayDefinition() const
   if (cd && cd->isObjectiveC())
   {
     // strip scope name
-    int ep = ldef.find("::");
-    if (ep!=-1)
+    if (size_t ep = ldef.find("::"); ep!=QCString::npos)
     {
-      int sp=ldef.findRev(' ',ep);
-      if (sp!=-1)
+      if (size_t sp=ldef.rfind(' ',ep); sp!=QCString::npos)
       {
         ldef=ldef.left(sp+1)+ldef.mid(ep+2);
       }
     }
     // strip keywords
-    int dp = ldef.find(':');
-    if (dp!=-1)
+    if (size_t dp = ldef.find(':'); dp!=QCString::npos)
     {
       ldef=ldef.left(dp+1);
     }
@@ -3382,7 +3377,7 @@ void MemberDefImpl::_writeGroupInclude(OutputList &ol,bool inGroup) const
       nm = fd->name();
     }
   }
-  if (!nm.isEmpty())
+  if (!nm.empty())
   {
     ol.startParagraph();
     ol.startTypewriter();
@@ -3496,7 +3491,7 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
   // get member name
   QCString doxyName=name();
   // prepend scope if there is any. TODO: make this optional for C only docs
-  if (!scopeName.isEmpty())
+  if (!scopeName.empty())
   {
     doxyName.prepend(scopeName+sep);
   }
@@ -3524,7 +3519,7 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
         if (isEnumStruct()) ldef.append(" struct");
         else if (isStrong()) ldef.append(" class");
       }
-      if (!m_enumBaseType.isEmpty())
+      if (!m_enumBaseType.empty())
       {
         ldef+=" : "+m_enumBaseType;
       }
@@ -3558,8 +3553,7 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
   {
     // Remove the container scope from the member name.
     QCString prefix = scName + sep;
-    int pos = ldef.findRev(prefix.data());
-    if(pos != -1)
+    if (size_t pos = ldef.rfind(prefix); pos != QCString::npos)
     {
       ldef.remove(pos, prefix.length());
     }
@@ -3627,7 +3621,7 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
         {
           ol.docify(prefix);
           QCString annTypeName = annoClassDef->displayName(true);
-          if (suffix.isEmpty())
+          if (suffix.empty())
           {
             suffix=" "+localName();
           }
@@ -3666,7 +3660,7 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
     ol.startMemberDoc(ciname,name(),memAnchor,title,memCount,memTotal,showInline);
     ol.addLabel(cfname, memAnchor);
 
-    if (!m_metaData.isEmpty() && getLanguage()==SrcLangExt::Slice)
+    if (!m_metaData.empty() && getLanguage()==SrcLangExt::Slice)
     {
       ol.startMemberDocPrefixItem();
       ol.docify(m_metaData);
@@ -3727,11 +3721,9 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
     if (cd && cd->isObjectiveC())
     {
       // strip scope name
-      int ep = ldef.find("::");
-      if (ep!=-1)
+      if (size_t ep = ldef.find("::"); ep!=QCString::npos)
       {
-        int sp=ldef.findRev(' ',ep);
-        if (sp!=-1)
+        if (size_t sp=ldef.rfind(' ',ep); sp!=QCString::npos)
         {
           ldef=ldef.left(sp+1)+ldef.mid(ep+2);
         } else {
@@ -3739,8 +3731,7 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
         }
       }
       // strip keywords
-      int dp = ldef.find(':');
-      if (dp!=-1)
+      if (size_t dp = ldef.find(':'); dp!=QCString::npos)
       {
         ldef=ldef.left(dp+1);
       }
@@ -3765,8 +3756,8 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
     else if (lang==SrcLangExt::Slice)
     {
       // Eliminate the self-reference.
-      int pos = ldef.findRev(' ');
-      if (pos<0) pos=0;
+      size_t pos = ldef.rfind(' ');
+      if (pos==QCString::npos) pos=0;
       if (pos>0)
       {
         linkifyText(TextGeneratorOLImpl(ol),ldef.left(pos),options);
@@ -3804,7 +3795,7 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
         linkifyText(TextGeneratorOLImpl(ol),m_initializer,options);
       }
     }
-    if (!excpString().isEmpty()) // add exception list
+    if (!excpString().empty()) // add exception list
     {
       writeExceptionList(ol,cd,this);
       hasParameterList=true; // call endParameterList below
@@ -3871,7 +3862,7 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
 
   /* write brief description */
   QCString brief = briefDescription();
-  if (!brief.isEmpty() &&
+  if (!brief.empty() &&
       (Config_getBool(REPEAT_BRIEF) ||
        !Config_getBool(BRIEF_MEMBER_DESC)
       )
@@ -3890,8 +3881,8 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
 
   /* write detailed description */
   QCString detailed = documentation();
-  if (!detailed.isEmpty() ||
-      !inbodyDocumentation().isEmpty())
+  if (!detailed.empty() ||
+      !inbodyDocumentation().empty())
   {
     // write vhdl inline code with or without option INLINE_SOURCE
     if (optVhdl && VhdlDocGen::isMisc(this))
@@ -3910,7 +3901,7 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
                      .setIndexWords(true));
     }
 
-    if (!inbodyDocumentation().isEmpty())
+    if (!inbodyDocumentation().empty())
     {
       ol.generateDoc(inbodyFile(),
                      inbodyLine(),
@@ -3921,9 +3912,9 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
                      .setIndexWords(true));
     }
   }
-  else if (!brief.isEmpty() && (Config_getBool(REPEAT_BRIEF) || !Config_getBool(BRIEF_MEMBER_DESC)))
+  else if (!brief.empty() && (Config_getBool(REPEAT_BRIEF) || !Config_getBool(BRIEF_MEMBER_DESC)))
   {
-    if (!inbodyDocumentation().isEmpty())
+    if (!inbodyDocumentation().empty())
     {
       ol.generateDoc(inbodyFile(),
                      inbodyLine(),
@@ -4046,11 +4037,11 @@ void MemberDefImpl::writeMemberDocSimple(OutputList &ol, const Definition *conta
 
   ol.startInlineMemberName();
   ol.docify(doxyName);
-  if (isVariable() && !argsString().isEmpty() && !isObjCMethod() && !isFunctionPtr())
+  if (isVariable() && !argsString().empty() && !isObjCMethod() && !isFunctionPtr())
   {
     linkifyText(TextGeneratorOLImpl(ol),argsString(),LinkifyTextOptions(options).setArgumentList(&m_defArgList));
   }
-  if (!m_bitfields.isEmpty()) // add bitfields
+  if (!m_bitfields.empty()) // add bitfields
   {
     linkifyText(TextGeneratorOLImpl(ol),m_bitfields,options);
   }
@@ -4067,7 +4058,7 @@ void MemberDefImpl::writeMemberDocSimple(OutputList &ol, const Definition *conta
   QCString detailed        = documentation();
 
   /* write brief description */
-  if (!brief.isEmpty())
+  if (!brief.empty())
   {
     ol.generateDoc(briefFile(),
                    briefLine(),
@@ -4078,9 +4069,9 @@ void MemberDefImpl::writeMemberDocSimple(OutputList &ol, const Definition *conta
   }
 
   /* write detailed description */
-  if (!detailed.isEmpty())
+  if (!detailed.empty())
   {
-    if (!brief.isEmpty())
+    if (!brief.empty())
     {
       ol.disable(OutputType::Html);
       ol.lineBreak();
@@ -4148,7 +4139,7 @@ void MemberDefImpl::warnIfUndocumented() const
   //    hasUserDocumentation(),isFriendClass(),protectionLevelVisible(m_prot),isReference(),isDeleted());
   if ((!hasUserDocumentation() && !extractAll) &&
       !isFriendClass() &&
-      name().find('@')==-1 && d && d->name().find('@')==-1 &&
+      name().find('@')==QCString::npos && d && d->name().find('@')==QCString::npos &&
       !_isAnonymousBitField() &&
       protectionLevelVisible(m_prot) &&
       !isReference() && !isDeleted()
@@ -4234,11 +4225,11 @@ void MemberDefImpl::detectUndocumentedParams(bool hasParamCommand,bool hasReturn
       for (auto it = al.begin(); it!=al.end() && allDoc; ++it)
       {
         const Argument &a = *it;
-        if (!a.name.isEmpty() && a.type!="void" && a.name!="..." &&
+        if (!a.name.empty() && a.type!="void" && a.name!="..." &&
             !(isPython && (a.name=="self" || a.name=="cls"))
            )
         {
-          allDoc = !a.docs.isEmpty();
+          allDoc = !a.docs.empty();
         }
         //printf("a.type=%s a.name=%s doc=%s\n",
         //        qPrint(a.type),qPrint(a.name),qPrint(a.docs));
@@ -4249,11 +4240,11 @@ void MemberDefImpl::detectUndocumentedParams(bool hasParamCommand,bool hasReturn
         for (auto it = al.begin(); it!=al.end() && allDoc; ++it)
         {
           const Argument &a = *it;
-          if (!a.name.isEmpty() && a.type!="void" && a.name!="..." &&
+          if (!a.name.empty() && a.type!="void" && a.name!="..." &&
               !(isPython && (a.name=="self" || a.name=="cls"))
              )
           {
-            allDoc = !a.docs.isEmpty();
+            allDoc = !a.docs.empty();
           }
           //printf("a.name=%s doc=%s\n",qPrint(a.name),qPrint(a.docs));
         }
@@ -4275,13 +4266,13 @@ void MemberDefImpl::warnIfUndocumentedParams() const
 {
   QCString returnType = typeString();
   bool isFortran = getLanguage()==SrcLangExt::Fortran;
-  bool isFortranSubroutine = isFortran && returnType.find("subroutine")!=-1;
+  bool isFortranSubroutine = isFortran && returnType.find("subroutine")!=QCString::npos;
 
   bool isVoidReturn =   returnType=="void" || returnType.endsWith(" void");
   if (!isVoidReturn && (returnType=="auto" || returnType.endsWith(" auto")))
   {
     const ArgumentList &defArgList=isDocsForDefinition() ?  argumentList() : declArgumentList();
-    if (!defArgList.trailingReturnType().isEmpty())
+    if (!defArgList.trailingReturnType().empty())
     {
       QCString strippedTrailingReturn = stripTrailingReturn(defArgList.trailingReturnType());
       isVoidReturn = (strippedTrailingReturn=="void") || (strippedTrailingReturn.endsWith(" void"));
@@ -4302,7 +4293,7 @@ void MemberDefImpl::warnIfUndocumentedParams() const
           qualifiedName());
     }
     if (!m_hasDocumentedReturnType &&
-        hasDocumentation() && !returnType.isEmpty() &&
+        hasDocumentation() && !returnType.empty() &&
         !( // not one of the cases where nothing is returned
           isVoidReturn        || // void return type
           isFortranSubroutine || // fortran subroutine
@@ -4333,8 +4324,7 @@ bool MemberDefImpl::isDocumentedFriendClass() const
 {
   ClassDef *fcd=nullptr;
   QCString baseName=name();
-  int i=baseName.find('<');
-  if (i!=-1) baseName=baseName.left(i);
+  if (size_t i=baseName.find('<'); i!=QCString::npos) baseName=baseName.left(i);
   return (isFriendClass() &&
          (fcd=getClass(baseName)) && fcd->isLinkable());
 }
@@ -4369,7 +4359,7 @@ QCString MemberDefImpl::getScopeString() const
 void MemberDefImpl::setAnchor()
 {
   QCString memAnchor = name();
-  if (!m_args.isEmpty()) memAnchor+=m_args;
+  if (!m_args.empty()) memAnchor+=m_args;
   if (m_memSpec.isAlias()) // this is for backward compatibility
   {
     memAnchor.prepend(" =  "+m_initializer);
@@ -4388,7 +4378,7 @@ void MemberDefImpl::setAnchor()
     buf[19]='\0';
     memAnchor.prepend(buf);
   }
-  if (!m_requiresClause.isEmpty())
+  if (!m_requiresClause.empty())
   {
     memAnchor+=" "+m_requiresClause;
   }
@@ -4500,7 +4490,7 @@ bool MemberDefImpl::hasOneLineInitializer() const
   //    qPrint(name()),qPrint(m_initializer),m_initLines,
   //    m_maxInitLines,m_userInitLines);
   bool isFuncLikeMacro = m_mtype==MemberType::Define && m_defArgList.hasParameters();
-  return !m_initializer.isEmpty() && m_initLines==0 && // one line initializer
+  return !m_initializer.empty() && m_initLines==0 && // one line initializer
          !isFuncLikeMacro &&
          ((m_maxInitLines>0 && m_userInitLines==-1) || m_userInitLines>0); // enabled by default or explicitly
 }
@@ -4510,7 +4500,7 @@ bool MemberDefImpl::hasMultiLineInitializer() const
   //printf("initLines=%d userInitLines=%d maxInitLines=%d\n",
   //    initLines,userInitLines,maxInitLines);
   bool isFuncLikeMacro = m_mtype==MemberType::Define && m_defArgList.hasParameters();
-  return (m_initLines>0 || (!m_initializer.isEmpty() && isFuncLikeMacro)) &&
+  return (m_initLines>0 || (!m_initializer.empty() && isFuncLikeMacro)) &&
          ((m_initLines<m_maxInitLines && m_userInitLines==-1) // implicitly enabled
           || m_initLines<m_userInitLines // explicitly enabled
          );
@@ -4653,7 +4643,7 @@ void MemberDefImpl::writeTagFile(TextStream &tagFile,bool useQualifiedName,bool 
   tagFile << "      <anchorfile>" << convertToXML(fn) << "</anchorfile>\n";
   tagFile << "      <anchor>" << convertToXML(anchor()) << "</anchor>\n";
   QCString idStr = id();
-  if (!idStr.isEmpty())
+  if (!idStr.empty())
   {
     tagFile << "      <clangid>" << convertToXML(idStr) << "</clangid>\n";
   }
@@ -4667,7 +4657,7 @@ void MemberDefImpl::writeTagFile(TextStream &tagFile,bool useQualifiedName,bool 
         tagFile << "      <enumvalue file=\"" << convertToXML(fn);
         tagFile << "\" anchor=\"" << convertToXML(fmd->anchor());
         idStr = fmd->id();
-        if (!idStr.isEmpty())
+        if (!idStr.empty())
         {
           tagFile << "\" clangid=\"" << convertToXML(idStr);
         }
@@ -4703,8 +4693,8 @@ void MemberDefImpl::_computeIsConstructor()
     else // for other languages
     {
       QCString locName = getClassDef()->localName();
-      int i=locName.find('<');
-      if (i==-1) // not a template class
+      size_t i=locName.find('<');
+      if (i==QCString::npos) // not a template class
       {
         m_isConstructorCached = name()==locName ? 2 : 1;
       }
@@ -4752,8 +4742,8 @@ void MemberDefImpl::_computeIsDestructor()
   else // other languages
   {
     isDestructor =
-           (name().find('~')!=-1 || name().find('!')!=-1)  // The ! is for C++/CLI
-           && name().find("operator")==-1;
+           (name().find('~')!=QCString::npos || name().find('!')!=QCString::npos)  // The ! is for C++/CLI
+           && name().find("operator")==QCString::npos;
   }
   m_isDestructorCached = isDestructor ? 2 : 1;
 }
@@ -4785,8 +4775,7 @@ void MemberDefImpl::writeEnumDeclaration(OutputList &typeDecl,
   }
 
   QCString n = name();
-  int i=n.findRev("::");
-  if (i!=-1) n=n.right(n.length()-i-2); // strip scope (TODO: is this needed?)
+  if (size_t i=n.rfind("::"); i!=QCString::npos) n=n.mid(i+2); // strip scope (TODO: is this needed?)
   if (n[0]!='@') // not an anonymous enum
   {
     if (isLinkableInProject() || hasDocumentedEnumValues())
@@ -4802,7 +4791,7 @@ void MemberDefImpl::writeEnumDeclaration(OutputList &typeDecl,
     }
     typeDecl.writeChar(' ');
   }
-  if (!m_enumBaseType.isEmpty())
+  if (!m_enumBaseType.empty())
   {
     typeDecl.writeChar(':');
     typeDecl.writeChar(' ');
@@ -5222,7 +5211,8 @@ bool MemberDefImpl::isFunction() const
 
 bool MemberDefImpl::isFunctionPtr() const
 {
-  return m_mtype==MemberType::Variable && QCString(argsString()).find(")(")!=-1;
+  return m_mtype==MemberType::Variable &&
+         QCString(argsString()).find(")(")!=QCString::npos;
 }
 
 bool MemberDefImpl::isDefine() const
@@ -5619,32 +5609,32 @@ void MemberDefImpl::resolveUnnamedParameters(const MemberDef *md)
     Argument &defA = *defIt;
     const Argument &decAS = *decSrc;
     const Argument &defAS = *defSrc;
-    if (decA.name.isEmpty())
+    if (decA.name.empty())
     {
-      if (!defA.name.isEmpty())
+      if (!defA.name.empty())
       {
         decA.name = defA.name;
       }
-      else if (!decAS.name.isEmpty())
+      else if (!decAS.name.empty())
       {
         decA.name = decAS.name;
       }
-      else if (!defAS.name.isEmpty())
+      else if (!defAS.name.empty())
       {
         decA.name = defAS.name;
       }
     }
-    if (defA.name.isEmpty())
+    if (defA.name.empty())
     {
-      if (!decA.name.isEmpty())
+      if (!decA.name.empty())
       {
         defA.name = decA.name;
       }
-      else if (!decAS.name.isEmpty())
+      else if (!decAS.name.empty())
       {
         defA.name = decAS.name;
       }
-      else if (!defAS.name.isEmpty())
+      else if (!defAS.name.empty())
       {
         defA.name = defAS.name;
       }
@@ -6100,7 +6090,7 @@ void MemberDefImpl::copyArgumentNames(const MemberDef *bmd)
     {
       Argument &argDst       = *dstIt;
       const Argument &argSrc = *srcIt;
-      if (!argSrc.name.isEmpty())
+      if (!argSrc.name.empty())
       {
         argDst.name = argSrc.name;
       }
@@ -6120,7 +6110,7 @@ void MemberDefImpl::copyArgumentNames(const MemberDef *bmd)
     {
       Argument &argDst       = *dstIt;
       const Argument &argSrc = *srcIt;
-      if (!argSrc.name.isEmpty())
+      if (!argSrc.name.empty())
       {
         argDst.name = argSrc.name;
       }
@@ -6172,22 +6162,22 @@ static void transferArgumentDocumentation(ArgumentList &decAl,ArgumentList &defA
   {
     Argument &decA = *decIt;
     Argument &defA = *defIt;
-    if (decA.docs.isEmpty() && !defA.docs.isEmpty())
+    if (decA.docs.empty() && !defA.docs.empty())
     {
       decA.docs = defA.docs;
     }
-    else if (defA.docs.isEmpty() && !decA.docs.isEmpty())
+    else if (defA.docs.empty() && !decA.docs.empty())
     {
       defA.docs = decA.docs;
     }
     //printf("transferArgumentDocumentation(%s<->%s)\n",qPrint(decA.name),qPrint(defA.name));
     if (Config_getBool(RESOLVE_UNNAMED_PARAMS))
     {
-      if (decA.name.isEmpty() && !defA.name.isEmpty())
+      if (decA.name.empty() && !defA.name.empty())
       {
         decA.name = defA.name;
       }
-      else if (defA.name.isEmpty() && !decA.name.isEmpty())
+      else if (defA.name.empty() && !decA.name.empty())
       {
         defA.name = decA.name;
       }
@@ -6235,11 +6225,11 @@ void combineDeclarationAndDefinition(MemberDefMutable *mdec,MemberDefMutable *md
       QCString mdecBriefFile = mdec->briefFile();
       int mdefBriefLine      = mdef->briefLine();
       int mdecBriefLine      = mdec->briefLine();
-      if (!mdef->isDocTransferDone() && !mdecBrief.isEmpty())
+      if (!mdef->isDocTransferDone() && !mdecBrief.empty())
       {
         mdef->setBriefDescription(mdecBrief,mdecBriefFile,mdecBriefLine);
       }
-      if (!mdec->isDocTransferDone() && !mdefBrief.isEmpty())
+      if (!mdec->isDocTransferDone() && !mdefBrief.empty())
       {
         mdec->setBriefDescription(mdefBrief,mdefBriefFile,mdefBriefLine);
       }
@@ -6253,7 +6243,7 @@ void combineDeclarationAndDefinition(MemberDefMutable *mdec,MemberDefMutable *md
       int mdecLine        = mdec->docLine();
       bool mdefDocsForDef = mdef->isDocsForDefinition();
       bool mdecDocsForDef = mdec->isDocsForDefinition();
-      if (!mdec->isDocTransferDone() && !mdefDocs.isEmpty())
+      if (!mdec->isDocTransferDone() && !mdefDocs.empty())
       {
         //printf("transferring docs mdef->mdec (%s->%s)\n",mdef->argsString(),mdec->argsString());
         mdec->setDocumentation(mdefDocs,mdefFile,mdefLine);
@@ -6265,7 +6255,7 @@ void combineDeclarationAndDefinition(MemberDefMutable *mdec,MemberDefMutable *md
           mdec->moveArgumentList(std::move(mdefAlComb));
         }
       }
-      if (!mdef->isDocTransferDone() && !mdecDocs.isEmpty())
+      if (!mdef->isDocTransferDone() && !mdecDocs.empty())
       {
         //printf("transferring docs mdec->mdef (%s->%s)\n",mdec->argsString(),mdef->argsString());
         mdef->setDocumentation(mdecDocs,mdecFile,mdecLine);
@@ -6285,11 +6275,11 @@ void combineDeclarationAndDefinition(MemberDefMutable *mdec,MemberDefMutable *md
       QCString mdecInbodyFile = mdec->inbodyFile();
       int mdefInbodyLine      = mdef->inbodyLine();
       int mdecInbodyLine      = mdec->inbodyLine();
-      if (!mdec->isDocTransferDone() && !mdefInbodyDocs.isEmpty())
+      if (!mdec->isDocTransferDone() && !mdefInbodyDocs.empty())
       {
         mdec->setInbodyDocumentation(mdefInbodyDocs,mdefInbodyFile,mdefInbodyLine);
       }
-      if (!mdef->isDocTransferDone() && !mdecInbodyDocs.isEmpty())
+      if (!mdef->isDocTransferDone() && !mdecInbodyDocs.empty())
       {
         mdef->setInbodyDocumentation(mdecInbodyDocs,mdecInbodyFile,mdecInbodyLine);
       }

@@ -167,7 +167,7 @@ class TranslatorChinesetraditional : public Translator
      */
     QCString trGeneratedAutomatically(const QCString &s) override
     { QCString result="本文件由Doxygen";
-      if (!s.isEmpty()) result+=" 自 "+s;
+      if (!s.empty()) result+=" 自 "+s;
       result+=" 的原始碼中自動產生.";
       return result;
     }
@@ -361,7 +361,7 @@ class TranslatorChinesetraditional : public Translator
 
     /*! This is used in HTML as the title of index.html. */
     QCString trDocumentation(const QCString &projName) override
-    { return (!projName.isEmpty()?projName + " " : "") + "說明文件"; }
+    { return (!projName.empty()?projName + " " : "") + "說明文件"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * index of all groups.
@@ -524,7 +524,7 @@ class TranslatorChinesetraditional : public Translator
     QCString trGeneratedAt(const QCString &date,const QCString &projName) override
     {
       QCString result="產生日期:"+date;
-      if (!projName.isEmpty()) result+=", 專案:"+projName;
+      if (!projName.empty()) result+=", 專案:"+projName;
       result+=", 產生器:";
       return result;
     }

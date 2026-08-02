@@ -150,7 +150,7 @@ class TranslatorTurkish : public TranslatorAdapter_1_7_5
      */
     QCString trGeneratedAutomatically(const QCString &s) override
     { QCString result="Doxygen tarafından";
-      if (!s.isEmpty()) result+=s+" için ";
+      if (!s.empty()) result+=s+" için ";
       result+=" kaynak koddan otomatik üretilmiştir.";
       return result;
     }
@@ -344,7 +344,7 @@ class TranslatorTurkish : public TranslatorAdapter_1_7_5
 
     /*! This is used in HTML as the title of index.html. */
     QCString trDocumentation(const QCString &projName) override
-    { return (!projName.isEmpty()?projName + " " : "") + "Dokümantasyonu"; }
+    { return (!projName.empty()?projName + " " : "") + "Dokümantasyonu"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * index of all groups.
@@ -501,7 +501,7 @@ class TranslatorTurkish : public TranslatorAdapter_1_7_5
     QCString trGeneratedAt(const QCString &date,const QCString &projName) override
     {
       QCString result=projName+" için "+date;
-      if (!projName.isEmpty()) result+=" tarihinde ";
+      if (!projName.empty()) result+=" tarihinde ";
       result+=" üreten: ";
       return result;
     }

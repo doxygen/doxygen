@@ -81,7 +81,7 @@ inline void writeDocbookString(TextStream &t,const QCString &s)
 
 inline void writeDocbookCodeString(bool hide,TextStream &t,const QCString &str, size_t &col, size_t stripIndentAmount)
 {
-  if (str.isEmpty()) return;
+  if (str.empty()) return;
   const int tabSize = Config_getInt(TAB_SIZE);
   const char *s = str.data();
   char c=0;
@@ -139,7 +139,7 @@ static void addIndexTerm(TextStream &t, QCString prim, QCString sec = "")
   t << "<indexterm><primary>";
   t << DocbookGenerator::convertToDocbook(prim);
   t << "</primary>";
-  if (!sec.isEmpty())
+  if (!sec.empty())
   {
     t << "<secondary>";
     t << DocbookGenerator::convertToDocbook(sec);
@@ -151,7 +151,7 @@ void writeDocbookLink(TextStream &t,const QCString & /*extRef*/,const QCString &
     const QCString &anchorId,const QCString & text,const QCString & /*tooltip*/)
 {
   t << "<link linkend=\"_" << stripPath(compoundId);
-  if (!anchorId.isEmpty()) t << "_1" << anchorId;
+  if (!anchorId.empty()) t << "_1" << anchorId;
   t << "\"";
   t << ">";
   writeDocbookString(t,text);
@@ -272,11 +272,11 @@ void DocbookCodeGenerator::writeLineNumber(const QCString &ref,const QCString &f
     QCString lineNumber;
     lineNumber.sprintf("%05d",l);
 
-    if (!m_sourceFileName.isEmpty())
+    if (!m_sourceFileName.empty())
     {
       writeCodeLinkLine(CodeSymbolType::Default,ref,m_sourceFileName,anchor,lineNumber,QCString(),writeLineAnchor);
     }
-    if (!fileName.isEmpty())
+    if (!fileName.empty())
     {
       writeCodeLink(CodeSymbolType::Default,ref,fileName,anchor,lineNumber,QCString());
     }
@@ -417,7 +417,7 @@ DB_GEN_C
 
   m_t << "<?xml version='1.0' encoding='UTF-8' standalone='no'?>\n";
   m_t << "<" << fileType << " xmlns=\"http://docbook.org/ns/docbook\" version=\"5.0\" xmlns:xlink=\"http://www.w3.org/1999/xlink\"";
-  if (!pageName.isEmpty()) m_t << " xml:id=\"_" <<  stripPath(pageName) << "\"";
+  if (!pageName.empty()) m_t << " xml:id=\"_" <<  stripPath(pageName) << "\"";
   m_t << " xml:lang=\"" << theTranslator->trISOLang() << "\"";
   m_t << ">\n";
 }
@@ -775,9 +775,9 @@ static QCString objectLinkToString(const QCString &, const QCString &f,
 {
 DB_GEN_C
   QCString result;
-  if (!anchor.isEmpty())
+  if (!anchor.empty())
   {
-    if (!f.isEmpty()) result += "<link linkend=\"_" + stripPath(f) + "_1" + anchor + "\">";
+    if (!f.empty()) result += "<link linkend=\"_" + stripPath(f) + "_1" + anchor + "\">";
     else   result += "<link linkend=\"_" + anchor + "\">";
   }
   else
@@ -917,7 +917,7 @@ DB_GEN_C2("m_inLevel " << m_inLevel)
     m_t << "<computeroutput>[" << memCount << "/" << memTotal << "]</computeroutput>";
   }
   m_t << "</title>\n";
-  if (!memname.isEmpty() && memname[0]!='@')
+  if (!memname.empty() && memname[0]!='@')
   {
     addIndexTerm(m_t,memname,clname);
     addIndexTerm(m_t,clname,memname);
@@ -937,7 +937,7 @@ void DocbookGenerator::endTitleHead(const QCString &,const QCString &name)
 {
 DB_GEN_C
   m_t << "</title>\n";
-  if (!name.isEmpty()) addIndexTerm(m_t, name);
+  if (!name.empty()) addIndexTerm(m_t, name);
 }
 void DocbookGenerator::startDoxyAnchor(const QCString &fName,const QCString &,
                                  const QCString &anchor,const QCString &,
@@ -949,7 +949,7 @@ DB_GEN_C
     if (!m_firstMember) closeSection();
     m_firstMember = false;
   }
-  if (!anchor.isEmpty())
+  if (!anchor.empty())
   {
     m_t << "<anchor xml:id=\"_" << stripPath(fName) << "_1" << anchor << "\"/>";
   }
@@ -1070,7 +1070,7 @@ DB_GEN_C
 void DocbookGenerator::exceptionEntry(const QCString &prefix,bool closeBracket)
 {
 DB_GEN_C
-  if (!prefix.isEmpty())
+  if (!prefix.empty())
   {
     m_t << " " << prefix << "(";
   }
@@ -1165,7 +1165,7 @@ DB_GEN_C
     title = theTranslator->trCompoundMembers();
   }
   m_t << "<table frame=\"all\">\n";
-  if (!title.isEmpty()) m_t << "<title>" << convertToDocbook(title) << "</title>\n";
+  if (!title.empty()) m_t << "<title>" << convertToDocbook(title) << "</title>\n";
   m_t << "    <tgroup cols=\"" << ncols << "\" align=\"left\" colsep=\"1\" rowsep=\"1\">\n";
   for (int i = 0; i < ncols; i++)
   {
@@ -1225,7 +1225,7 @@ void DocbookGenerator::startDescTable(const QCString &title,bool hasInits)
 DB_GEN_C
   int ncols = (hasInits?3:2);
   m_t << "<informaltable frame=\"all\">\n";
-  if (!title.isEmpty()) m_t << "<title>" << convertToDocbook(title) << "</title>\n";
+  if (!title.empty()) m_t << "<title>" << convertToDocbook(title) << "</title>\n";
   m_t << "    <tgroup cols=\"" << ncols << "\" align=\"left\" colsep=\"1\" rowsep=\"1\">\n";
   int i = 1;
   m_t << "      <colspec colname='c" << i++ << "'/>\n";
@@ -1386,7 +1386,7 @@ DB_GEN_C
 void DocbookGenerator::openSection(const QCString &attr)
 {
    m_t << "<section";
-   if (!attr.isEmpty()) m_t << " " << attr;
+   if (!attr.empty()) m_t << " " << attr;
    m_t << ">\n";
    m_openSectionCount++;
 }
@@ -1483,7 +1483,7 @@ static constexpr auto hex="0123456789ABCDEF";
 /*! Converts a string to an DocBook-encoded string */
 QCString DocbookGenerator::convertToDocbook(const QCString &s, bool retainNewline, bool /* citeEntry */)
 {
-  if (s.isEmpty()) return s;
+  if (s.empty()) return s;
   QCString result;
   result.reserve(s.length()+32);
   const char *p = s.data();

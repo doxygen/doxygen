@@ -190,7 +190,7 @@ class TranslatorItalian : public TranslatorAdapter_1_8_15
     QCString trGeneratedAutomatically(const QCString &s) override
     {
       QCString result="Generato automaticamente da Doxygen";
-      if (!s.isEmpty()) result+=" per "+s;
+      if (!s.empty()) result+=" per "+s;
       result+=" a partire dal codice sorgente.";
       return result;
     }
@@ -373,7 +373,7 @@ class TranslatorItalian : public TranslatorAdapter_1_8_15
 
     /*! This is used in HTML as the title of index.html. */
     QCString trDocumentation(const QCString &projName) override
-    { return (!projName.isEmpty()?projName + " " : "") + "Documentazione"; }
+    { return (!projName.empty()?projName + " " : "") + "Documentazione"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * index of all groups.
@@ -517,7 +517,7 @@ class TranslatorItalian : public TranslatorAdapter_1_8_15
     QCString trGeneratedAt(const QCString &date,const QCString &projName) override
     {
       QCString result="Generato "+date;
-      if (!projName.isEmpty()) result+=" per "+projName;
+      if (!projName.empty()) result+=" per "+projName;
       result+=" da";
       return result;
     }

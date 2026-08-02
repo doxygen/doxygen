@@ -72,7 +72,7 @@ void TextDocVisitor::operator()(const DocEmoji &s)
 
 void TextDocVisitor::operator()(const DocCite &cite)
 {
-  if (!cite.file().isEmpty())
+  if (!cite.file().empty())
   {
     QCString anchor = cite.anchor();
     QCString anchorPrefix = CitationManager::instance().anchorPrefix();
@@ -87,7 +87,7 @@ void TextDocVisitor::operator()(const DocCite &cite)
 
 void TextDocVisitor::filter(const QCString &str)
 {
-  if (str.isEmpty()) return;
+  if (str.empty()) return;
   //printf("TextDocVisitor::filter(%s)\n",str);
   const char *p=str.data();
   while (*p)

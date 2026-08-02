@@ -160,7 +160,7 @@ class TranslatorChinese : public Translator
     QCString trGeneratedAutomatically(const QCString &s) override
     { QCString result;
       result = "由" CN_SPC "Doyxgen" CN_SPC "通过分析" CN_SPC;
-      if (!s.isEmpty()) result += (s+CN_SPC "的" CN_SPC);
+      if (!s.empty()) result += (s+CN_SPC "的" CN_SPC);
       result+= "源代码自动生成.";
       return result;
     }
@@ -346,7 +346,7 @@ class TranslatorChinese : public Translator
 
     /*! This is used in HTML as the title of index.html. */
     QCString trDocumentation(const QCString &projName) override
-    { return (!projName.isEmpty()?projName + " " : "") + "文档"; }
+    { return (!projName.empty()?projName + " " : "") + "文档"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * index of all groups.
@@ -500,7 +500,7 @@ class TranslatorChinese : public Translator
     QCString trGeneratedAt(const QCString &date,const QCString &projName) override
     {
       QCString result="生成于" CN_SPC+date;
-      if (!projName.isEmpty()) result+=CN_SPC ", 为" CN_SPC+projName;
+      if (!projName.empty()) result+=CN_SPC ", 为" CN_SPC+projName;
       result+="使用" CN_SPC;
       return result;
     }

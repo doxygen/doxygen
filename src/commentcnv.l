@@ -1109,7 +1109,7 @@ SLASHopt [/]*
 <CComment,CNComment>{CMD}"~"[a-z_A-Z-]* { // language switch command
                                      if (yyextra->lang!=SrcLangExt::Markdown) REJECT;
                                      QCString langId = QCString(yytext).mid(2);
-                                     if (!langId.isEmpty() &&
+                                     if (!langId.empty() &&
                                               qstricmp(Config_getEnumAsString(OUTPUT_LANGUAGE),langId)!=0)
                                      { // enable language specific section
                                        if (!Config_isAvailableEnum(OUTPUT_LANGUAGE,langId))
@@ -1126,12 +1126,12 @@ SLASHopt [/]*
   				   }
 <SkipLang>{CMD}"~"[a-zA-Z-]*       { /* language switch */
                                      QCString langId(&yytext[2]);
-                                     if (!langId.isEmpty() && !Config_isAvailableEnum(OUTPUT_LANGUAGE,langId))
+                                     if (!langId.empty() && !Config_isAvailableEnum(OUTPUT_LANGUAGE,langId))
                                      {
                                         warn(yyextra->fileName,yyextra->lineNr,
                                         "non supported language '{}' specified in '{}'",langId,QCString(yytext).stripWhiteSpace());
                                      }
-                                     else if (langId.isEmpty() ||
+                                     else if (langId.empty() ||
                                          qstricmp(Config_getEnumAsString(OUTPUT_LANGUAGE),langId)==0)
                                      { // enable language specific section
                                        BEGIN(CComment);
@@ -1775,18 +1775,18 @@ static void handleCondSectionId(yyscan_t yyscanner,const char *expression)
 static QCString extractBlock(const QCString &text,const QCString &marker,int &blockPos)
 {
   QCString result;
-  int p=0,i=-1;
-  bool found=false;
+  size_t p=0, i = QCString::npos;
+  bool found = false;
 
   // find the character positions of the markers
-  int m1 = text.find(marker);
-  if (m1==-1) return result;
-  int m2 = text.find(marker,m1+static_cast<int>(marker.length()));
-  if (m2==-1) return result;
+  size_t m1 = text.find(marker);
+  if (m1==QCString::npos) return result;
+  size_t m2 = text.find(marker,m1+marker.length());
+  if (m2==QCString::npos) return result;
 
   // find start and end line positions for the markers
-  int l1=-1,l2=-1;
-  while (!found && (i=text.find('\n',p))!=-1)
+  size_t l1=QCString::npos, l2=QCString::npos;
+  while (!found && (i=text.find('\n',p))!=QCString::npos)
   {
     found = (p<=m1 && m1<i); // found the line with the start marker
     p=i+1;
@@ -1796,7 +1796,7 @@ static QCString extractBlock(const QCString &text,const QCString &marker,int &bl
   int lp=i;
   if (found)
   {
-    while ((i=text.find('\n',p))!=-1)
+    while ((i=text.find('\n',p))!=QCString::npos)
     {
       if (p<=m2 && m2<i) // found the line with the end marker
       {
@@ -1807,7 +1807,7 @@ static QCString extractBlock(const QCString &text,const QCString &marker,int &bl
       lp=i;
     }
   }
-  if (l2==-1) // marker at last line without newline (see bug706874)
+  if (l2==QCString::npos) // marker at last line without newline (see bug706874)
   {
     l2=lp;
   }
@@ -1880,7 +1880,7 @@ static bool readIncludeFile(yyscan_t yyscanner,const QCString &inc,const QCStrin
   bool ambig = false;
   QCString absFileName = findFilePath(inc,ambig);
   FileInfo fi(absFileName.str());
-  if (!absFileName.isEmpty() && fi.exists() && fi.isFile())
+  if (!absFileName.empty() && fi.exists() && fi.isFile())
   {
     if (ambig)
     {
@@ -1896,7 +1896,7 @@ static bool readIncludeFile(yyscan_t yyscanner,const QCString &inc,const QCStrin
 
     if (alreadyProcessed)
     {
-      if (!blockId.isEmpty())
+      if (!blockId.empty())
       {
         warn_doc_error(yyextra->fileName,yyextra->lineNr,"recursive usage of '\\snippet{{doc}}' block with name '{}' and file name '{}', skipping",
              blockId,absFileName);
@@ -1911,12 +1911,12 @@ static bool readIncludeFile(yyscan_t yyscanner,const QCString &inc,const QCStrin
     auto fs = std::make_unique<commentcnv_FileState>();
     if (!readInputFile(absFileName,fs->fileBuf,false))
     {
-      warn_doc_error(yyextra->fileName,yyextra->lineNr,"\\{}{{doc}} file '{}' could not be read",blockId.isEmpty()?"include":"snippet",absFileName);
+      warn_doc_error(yyextra->fileName,yyextra->lineNr,"\\{}{{doc}} file '{}' could not be read",blockId.empty()?"include":"snippet",absFileName);
       fs.reset();
       return false;
     }
     int lineNr=1;
-    if (!blockId.isEmpty())
+    if (!blockId.empty())
     {
       QCString incText { fs->fileBuf };
       int count = incText.contains(blockId.data());
@@ -1930,7 +1930,7 @@ static bool readIncludeFile(yyscan_t yyscanner,const QCString &inc,const QCStrin
       int blockPos = 0;
       incText = extractBlock(incText, blockId, blockPos);
       fs->fileBuf.clear();
-      if (!incText.isEmpty())
+      if (!incText.empty())
       {
         fs->fileBuf.append(incText.str());
       }
@@ -1944,7 +1944,7 @@ static bool readIncludeFile(yyscan_t yyscanner,const QCString &inc,const QCStrin
     {
       lineStr+="\\iraise " + std::to_string(yyextra->raiseLevel)+" ";
     }
-    if (!yyextra->raiseLabel.isEmpty())
+    if (!yyextra->raiseLabel.empty())
     {
       lineStr+="\\iprefix \"" + yyextra->raiseLabel + "\" ";
     }
@@ -1973,7 +1973,7 @@ static bool readIncludeFile(yyscan_t yyscanner,const QCString &inc,const QCStrin
   }
   else
   {
-    warn_doc_error(yyextra->fileName,yyextra->lineNr,"\\{}{{doc}} file '{}' not found",blockId.isEmpty()?"include":"snippet",inc);
+    warn_doc_error(yyextra->fileName,yyextra->lineNr,"\\{}{{doc}} file '{}' not found",blockId.empty()?"include":"snippet",inc);
     return false;
   }
   return true;

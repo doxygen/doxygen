@@ -251,7 +251,7 @@ XILINX      "INST"|"NET"|"PIN"|"BLKNM"|"BUFG"|"COLLAPSE"|"CPLD"|"COMPGRP"|"CONFI
                                         QCString s1=t1;
                                         s1=s1.stripWhiteSpace();
 
-                                        //         if (!yyextra->PortMapComp.isEmpty())
+                                        //         if (!yyextra->PortMapComp.empty())
                                         generateMemLink(yyscanner,*yyextra->code,yyextra->PortMapComp,s1);
                                         while (index++<t1.size())
                                         {
@@ -608,29 +608,29 @@ XILINX      "INST"|"NET"|"PIN"|"BLKNM"|"BUFG"|"COLLAPSE"|"CPLD"|"COMPGRP"|"CONFI
 
 <Bases>{MAPCOMPONENT1}|{MAPCOMPONENT2}|{MAPCOMPONENT3}|{MAPCOMPONENT4}  { // found port or generic map
                                       QCString tt(yytext);
-                                      int j=tt.find('.');
+                                      size_t j=tt.find('.');
 
-                                      if (j>0)
+                                      if (j!=QCString::npos && j>0)
                                       {
                                         QCString left=tt.left(j+1);
                                         codifyLines(yyscanner,left);
-                                        tt=tt.right(tt.length()-j-1);
+                                        tt=tt.mid(j+1);
                                         left=VhdlDocGen::getIndexWord(tt,0);
-                                        if (!left.isEmpty())
+                                        if (!left.empty())
                                         {
-                                          j=left.find('(',false);
-                                          if (j>=0)
+                                          j=left.find('(');
+                                          if (j!=QCString::npos)
                                           {
                                             QCString name=left.left(j);
                                             generateClassOrGlobalLink(yyscanner,*yyextra->code,name);
                                             yyextra->PortMapComp=name;
-                                            name=tt.right(tt.length()-name.length());
+                                            name=tt.mid(name.length());
                                             codifyLines(yyscanner,name);
                                           }
                                           else
                                           {
                                             generateClassOrGlobalLink(yyscanner,*yyextra->code,left);
-                                            tt.stripPrefix(left); //=tt.right(tt.length()-left.length()-1);
+                                            tt.stripPrefix(left);
 
                                             yyextra->PortMapComp=left;
                                             codifyLines(yyscanner,tt);
@@ -897,8 +897,8 @@ XILINX      "INST"|"NET"|"PIN"|"BLKNM"|"BUFG"|"COLLAPSE"|"CPLD"|"COMPGRP"|"CONFI
                                     }
 <*>\n{TEXTT}                        { // found normal or special comment on its own line
                                       QCString text(yytext);
-                                      int i=text.find("--");
-                                      bool isSpecialComment = i!=-1 && yytext[i+2]=='!';
+                                      size_t i=text.find("--");
+                                      bool isSpecialComment = i!=QCString::npos && yytext[i+2]=='!';
                                       if (isSpecialComment && YY_START!=CopyComment)
                                       {
                                         startFontClass(yyscanner,"comment",true);
@@ -915,8 +915,8 @@ XILINX      "INST"|"NET"|"PIN"|"BLKNM"|"BUFG"|"COLLAPSE"|"CPLD"|"COMPGRP"|"CONFI
                                     }
 <*>{TEXTT}                          { // found normal or special comment after something
                                       QCString text(yytext);
-                                      int i=text.find("--");
-                                      bool isSpecialComment = i!=-1 && yytext[i+2]=='!';
+                                      size_t i=text.find("--");
+                                      bool isSpecialComment = i!=QCString::npos && yytext[i+2]=='!';
                                       if (isSpecialComment)
                                       {
                                         startFontClass(yyscanner,"comment",true);
@@ -967,7 +967,7 @@ static void setCurrentDoc(yyscan_t yyscanner,const QCString &anchor)
 static bool checkVhdlString(yyscan_t yyscanner,QCString &name)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  if (name.isEmpty()) return false;
+  if (name.empty()) return false;
 
   size_t len=name.length();
   if (len>2 && name.at(0)=='"' && name.at(len-1)=='"')
@@ -1065,7 +1065,7 @@ static void startCodeLine(yyscan_t yyscanner)
     {
       yyextra->currentDefinition = d;
       yyextra->currentMemberDef = yyextra->sourceFileDef->getSourceMember(yyextra->yyLineNr);
-      if (!yyextra->tempComp.isEmpty() && yyextra->currentMemberDef )
+      if (!yyextra->tempComp.empty() && yyextra->currentMemberDef )
       {
         //ClassDef *cf=VhdlDocGen::getClass(yyextra->tempComp);
         QCString nn=yyextra->currentMemberDef->name();
@@ -1151,7 +1151,7 @@ static void writeWord(yyscan_t yyscanner,const QCString &word,const QCString &cu
   QCString temp;
   QCString tclass(curr_class);
   QCString ttt(word);
-  if (ttt.isEmpty()) return;
+  if (ttt.empty()) return;
   for (unsigned int j=0;j<ttt.length();j++)
   {
     char c=ttt.at(j);
@@ -1164,7 +1164,7 @@ static void writeWord(yyscan_t yyscanner,const QCString &word,const QCString &cu
           //if (VhdlDocGen::findKeyWord(temp))
           // writeFont(yyscanner,"vhdlkeyword",temp);
           //printf("writeWord: %s\n",qPrint(temp));
-          if (!tclass.isEmpty())
+          if (!tclass.empty())
           {
             if (!classLink)
             {
@@ -1199,11 +1199,11 @@ static void writeWord(yyscan_t yyscanner,const QCString &word,const QCString &cu
     }
   } // for
 
-  if (!temp.isEmpty())
+  if (!temp.empty())
   {
     if (!writeColoredWord(yyscanner,temp))
     {
-      if (!tclass.isEmpty())
+      if (!tclass.empty())
       {
         if (!classLink)
         {
@@ -1239,7 +1239,7 @@ static void writeWord(yyscan_t yyscanner,const QCString &word,const QCString &cu
 static void codifyLines(yyscan_t yyscanner,const QCString &text,const QCString &cl,bool classlink,bool comment)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  if (text.isEmpty()) return;
+  if (text.empty()) return;
   //printf("codifyLines(%d,\"%s\")\n",yyextra->yyLineNr,text);
   const char *p=text.data(),*sp=p;
   char c;
@@ -1287,7 +1287,7 @@ static void writeMultiLineCodeLink(yyscan_t yyscanner,OutputCodeList &ol,
                   const QCString &text)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  if (text.isEmpty()) return;
+  if (text.empty()) return;
   bool sourceTooltips = Config_getBool(SOURCE_TOOLTIPS);
   yyextra->tooltipManager.addTooltip(d);
   QCString ref  = d->getReference();
@@ -1340,8 +1340,8 @@ static void generateFuncLink(yyscan_t yyscanner,OutputCodeList &ol,const MemberD
 
 static void generateMemLink(yyscan_t yyscanner,OutputCodeList &ol,QCString &clName,QCString& memberName)
 {
-  if (memberName.isEmpty()) return;
-  if (clName.isEmpty())
+  if (memberName.empty()) return;
+  if (clName.empty())
   {
     codifyLines(yyscanner,memberName);
 
@@ -1380,14 +1380,14 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,OutputCodeList &ol,
 {
   QCString className=clName;
 
-  if (className.isEmpty()) return;
+  if (className.empty()) return;
 
   ClassDef *cd=nullptr;
   //MemberDef *md=nullptr;
   //bool isLocal=false;
   className.stripPrefix("_");
   cd = getClass(className);
-  if (!cd && !curr_class.isEmpty())
+  if (!cd && !curr_class.empty())
   {
     QCString cls = curr_class;
     QCString suffix = "::";
@@ -1489,7 +1489,7 @@ static void startFontClass(yyscan_t yyscanner,const char *s,bool specialComment)
 static void writeFont(yyscan_t yyscanner,const char *s,const QCString &text,bool specialComment)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  if (s==nullptr || text.isEmpty()) return;
+  if (s==nullptr || text.empty()) return;
   //printf("writeFont(yyscanner,%d,\"%s\")\n",yyextra->yyLineNr,text);
   startFontClass(yyscanner,s,specialComment);
   yyextra->code->codify(text);
@@ -1509,7 +1509,7 @@ static void appStringLower(QCString& qcs,const char* text)
 static void codifyMapLines(yyscan_t yyscanner,const QCString &text)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  if (text.isEmpty()) return;
+  if (text.empty()) return;
   QCString temp;
   //bool dot=false;
   int wordCounter=0;
@@ -1527,9 +1527,9 @@ static void codifyMapLines(yyscan_t yyscanner,const QCString &text)
         temp+=c;
     }
     if (c=='\0') return;
-    if (!temp.isEmpty()) wordCounter++;
+    if (!temp.empty()) wordCounter++;
 
-    if (!temp.isEmpty())
+    if (!temp.empty())
     {
       // different kinds of component instantiations
       // xxx:yyy (generic/port) map(
@@ -1570,7 +1570,7 @@ static void writeFuncProto(yyscan_t yyscanner)
   QCString name,ret;
   VhdlDocGen::parseFuncProto(yyextra->funcProto,name,ret,false);
 
-  if (name.isEmpty())
+  if (name.empty())
   {
     codifyLines(yyscanner,yyextra->funcProto,yyextra->currClass);
     return;
@@ -1660,7 +1660,7 @@ void VHDLCodeParser::parseCode(OutputCodeList &od,
   yyscan_t yyscanner = p->yyscanner;
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   //printf("***parseCode() exBlock=%d exName=%s fd=%p\n",exBlock,exName,fd);
-  if (s.isEmpty()) return;
+  if (s.empty()) return;
   DebugLex debugLex(Debug::Lex_vhdlcode, __FILE__, options.fileDef() ? qPrint(options.fileDef()->fileName()): nullptr);
   yyextra->fileName      = options.fileDef() ? options.fileDef()->fileName():"";
   if (options.memberDef())
@@ -1699,7 +1699,7 @@ void VHDLCodeParser::parseCode(OutputCodeList &od,
   yyextra->currentDefinition = nullptr;
   yyextra->currentMemberDef  = nullptr;
   yyextra->vhdlMember        = nullptr;
-  if (!yyextra->exampleName.isEmpty())
+  if (!yyextra->exampleName.empty())
   {
     yyextra->exampleFile = convertNameToFile(yyextra->exampleName+"-example");
   }

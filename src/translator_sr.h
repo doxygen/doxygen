@@ -138,7 +138,7 @@ class TranslatorSerbian : public TranslatorAdapter_1_6_0
      */
     QCString trGeneratedAutomatically(const QCString &s) override
     { QCString result="Napravljeno automatski korišćenjem alata Doxygen";
-      if (!s.isEmpty()) result+=" za projekat " + s;
+      if (!s.empty()) result+=" za projekat " + s;
       result+=" od izvornog koda.";
       return result;
     }
@@ -333,7 +333,7 @@ class TranslatorSerbian : public TranslatorAdapter_1_6_0
 
     /*! This is used in HTML as the title of index.html. */
     QCString trDocumentation(const QCString &projName) override
-    { return (!projName.isEmpty()?projName + " " : "") + "Dokumentacija"; }
+    { return (!projName.empty()?projName + " " : "") + "Dokumentacija"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * index of all groups.
@@ -490,7 +490,7 @@ class TranslatorSerbian : public TranslatorAdapter_1_6_0
     QCString trGeneratedAt(const QCString &date,const QCString &projName) override
     {
       QCString result="[" + date + "] Napravljeno automatski ";
-      if (!projName.isEmpty()) result+=" za projekat " + projName;
+      if (!projName.empty()) result+=" za projekat " + projName;
 	  result+=" upotrebom ";
       return result;
     }

@@ -34,7 +34,7 @@ class DocGroup
     void open(Entry *e,const QCString &,int,bool implicit=false);
     void close(Entry *e,const QCString &fileName,int line,bool foundInline,bool implicit=false);
     void initGroupInfo(Entry *e);
-    bool isEmpty() const;
+    bool empty() const;
     void clearHeader();
     void appendHeader(const char);
     void addDocs(Entry *e);

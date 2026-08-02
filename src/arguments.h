@@ -30,12 +30,12 @@ struct Argument
    */
   bool hasDocumentation(bool allowEmptyName=false) const
   {
-    return (allowEmptyName || !name.isEmpty()) && !docs.isEmpty();
+    return (allowEmptyName || !name.empty()) && !docs.empty();
   }
 
   bool hasTemplateDocumentation() const
   {
-    return (!name.isEmpty() || !type.isEmpty()) && !docs.isEmpty();
+    return (!name.empty() || !type.empty()) && !docs.empty();
   }
 
   QCString attrib;   /*!< Argument's attribute (IDL only) */

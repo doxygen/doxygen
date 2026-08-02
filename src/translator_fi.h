@@ -400,7 +400,7 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
 
     /*! This is used in HTML as the title of index.html. */
     QCString trDocumentation(const QCString &projName) override
-    { return (!projName.isEmpty()?projName + " " : "") + "Dokumentaatio"; } // "Documentation"
+    { return (!projName.empty()?projName + " " : "") + "Dokumentaatio"; } // "Documentation"
 
     /*! This is used in LaTeX as the title of the chapter with the
      * index of all groups.
@@ -561,7 +561,7 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
         // Generated on $date for $project by:
         // -> Generated for $project on $date by:
       QCString result="Generoinut ";
-      if (!projName.isEmpty()) result+="projektille "+projName+" ";
+      if (!projName.empty()) result+="projektille "+projName+" ";
       result+=date+" ";
       return result;
     }

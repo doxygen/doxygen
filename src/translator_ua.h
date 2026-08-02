@@ -116,7 +116,7 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
      */
     QCString trGeneratedAutomatically(const QCString &s) override
     { QCString result="Автоматично створено за допомогою Doxygen";
-      if (!s.isEmpty()) result+=QCString(" для ")+s;
+      if (!s.empty()) result+=QCString(" для ")+s;
       result+=" з тексту програми.";
       return result;
     }
@@ -292,7 +292,7 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
 
     /*! This is used in HTML as the title of index.html. */
     QCString trDocumentation(const QCString &projName) override
-    { return (!projName.isEmpty()?projName + " " : "") + "Документація"; }
+    { return (!projName.empty()?projName + " " : "") + "Документація"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * index of all groups.
@@ -453,7 +453,7 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
     QCString trGeneratedAt(const QCString &date,const QCString &projName) override
     {
       QCString result="Документація ";
-      if (!projName.isEmpty()) result+=QCString("до ")+projName;
+      if (!projName.empty()) result+=QCString("до ")+projName;
       result+=QCString(" створена ")+date;
       result+=" системою";
       return result;

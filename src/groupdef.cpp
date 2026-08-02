@@ -188,7 +188,7 @@ GroupDefImpl::GroupDefImpl(const QCString &df,int dl,const QCString &na,const QC
                    const QCString &refFileName) : DefinitionMixin(df,dl,1,na),
                     m_allMemberList(MemberListType::AllMembersList(),MemberListContainer::Group)
 {
-  if (!refFileName.isEmpty())
+  if (!refFileName.empty())
   {
     m_fileName=stripExtension(refFileName);
   }
@@ -210,7 +210,7 @@ GroupDefImpl::~GroupDefImpl()
 
 void GroupDefImpl::setGroupTitleLocal( const QCString &t )
 {
-  if ( !t.isEmpty())
+  if ( !t.empty())
   {
     m_title = t;
     m_titleAsText = parseCommentAsText(this,nullptr,t,docFile(),docLine());
@@ -813,7 +813,7 @@ void GroupDefImpl::writeDetailedDescription(OutputList &ol,const QCString &title
 
     // repeat brief description
     ol.startTextBlock();
-    if (!briefDescription().isEmpty() && Config_getBool(REPEAT_BRIEF))
+    if (!briefDescription().empty() && Config_getBool(REPEAT_BRIEF))
     {
       ol.generateDoc(briefFile(),
                      briefLine(),
@@ -823,8 +823,8 @@ void GroupDefImpl::writeDetailedDescription(OutputList &ol,const QCString &title
                      DocOptions());
     }
     // write separator between brief and details
-    if (!briefDescription().isEmpty() && Config_getBool(REPEAT_BRIEF) &&
-        !documentation().isEmpty())
+    if (!briefDescription().empty() && Config_getBool(REPEAT_BRIEF) &&
+        !documentation().empty())
     {
       ol.pushGeneratorState();
       ol.disable(OutputType::Man);
@@ -837,7 +837,7 @@ void GroupDefImpl::writeDetailedDescription(OutputList &ol,const QCString &title
     }
 
     // write detailed documentation
-    if (!documentation().isEmpty())
+    if (!documentation().empty())
     {
       ol.generateDoc(docFile(),
                      docLine(),
@@ -849,7 +849,7 @@ void GroupDefImpl::writeDetailedDescription(OutputList &ol,const QCString &title
     }
 
     // write inbody documentation
-    if (!inbodyDocumentation().isEmpty())
+    if (!inbodyDocumentation().empty())
     {
       ol.generateDoc(inbodyFile(),
                      inbodyLine(),
@@ -879,7 +879,7 @@ void GroupDefImpl::writeBriefDescription(OutputList &ol)
                                      .setIndexWords(true)
                                      .setSingleLine(true))
                 };
-    if (!ast->isEmpty())
+    if (!ast->empty())
     {
       ol.startParagraph();
       ol.pushGeneratorState();
@@ -945,13 +945,13 @@ void GroupDefImpl::writeFiles(OutputList &ol,const QCString &title)
       if (!fd->hasDocumentation()) continue;
       ol.startMemberDeclaration();
       QCString anc = fd->anchor();
-      if (anc.isEmpty()) anc=fd->docName(); else anc.prepend(fd->docName()+"_");
+      if (anc.empty()) anc=fd->docName(); else anc.prepend(fd->docName()+"_");
       ol.startMemberItem(anc,OutputGenerator::MemberItemType::Normal);
       ol.docify(theTranslator->trFile(false,true)+" ");
       ol.insertMemberAlign();
       ol.writeObjectLink(fd->getReference(),fd->getOutputFileBase(),QCString(),fd->docName());
       ol.endMemberItem(OutputGenerator::MemberItemType::Normal);
-      if (!fd->briefDescription().isEmpty() && Config_getBool(BRIEF_MEMBER_DESC))
+      if (!fd->briefDescription().empty() && Config_getBool(BRIEF_MEMBER_DESC))
       {
         ol.startMemberDescription(fd->getOutputFileBase());
         ol.generateDoc(briefFile(),
@@ -996,12 +996,12 @@ void GroupDefImpl::writeNestedGroups(OutputList &ol,const QCString &title)
         if (!gd->hasDocumentation()) continue;
         ol.startMemberDeclaration();
         QCString anc = gd->anchor();
-        if (anc.isEmpty()) anc=gd->name(); else anc.prepend(gd->name()+"_");
+        if (anc.empty()) anc=gd->name(); else anc.prepend(gd->name()+"_");
         ol.startMemberItem(anc,OutputGenerator::MemberItemType::Normal);
         ol.insertMemberAlign();
         ol.writeObjectLink(gd->getReference(),gd->getOutputFileBase(),QCString(),gd->groupTitleAsText());
         ol.endMemberItem(OutputGenerator::MemberItemType::Normal);
-        if (!gd->briefDescription().isEmpty() && Config_getBool(BRIEF_MEMBER_DESC))
+        if (!gd->briefDescription().empty() && Config_getBool(BRIEF_MEMBER_DESC))
         {
           ol.startMemberDescription(gd->getOutputFileBase());
           ol.generateDoc(briefFile(),
@@ -1034,13 +1034,13 @@ void GroupDefImpl::writeDirs(OutputList &ol,const QCString &title)
       if (!dd->hasDocumentation()) continue;
       ol.startMemberDeclaration();
       QCString anc = dd->anchor();
-      if (anc.isEmpty()) anc=dd->shortName(); else anc.prepend(dd->shortName()+"_");
+      if (anc.empty()) anc=dd->shortName(); else anc.prepend(dd->shortName()+"_");
       ol.startMemberItem(anc,OutputGenerator::MemberItemType::Normal);
       ol.parseText(theTranslator->trDir(false,true));
       ol.insertMemberAlign();
       ol.writeObjectLink(dd->getReference(),dd->getOutputFileBase(),QCString(),dd->shortName());
       ol.endMemberItem(OutputGenerator::MemberItemType::Normal);
-      if (!dd->briefDescription().isEmpty() && Config_getBool(BRIEF_MEMBER_DESC))
+      if (!dd->briefDescription().empty() && Config_getBool(BRIEF_MEMBER_DESC))
       {
         ol.startMemberDescription(dd->getOutputFileBase());
         ol.generateDoc(briefFile(),
@@ -1090,7 +1090,7 @@ void GroupDefImpl::writePageDocumentation(OutputList &ol)
     if (!pd->isReference())
     {
       const SectionInfo *si=nullptr;
-      if (pd->hasTitle() && !pd->name().isEmpty() &&
+      if (pd->hasTitle() && !pd->name().empty() &&
           (si=SectionManager::instance().find(pd->name()))!=nullptr)
       {
         ol.startSection(si->label(),si->title(),SectionType::Subsection);
@@ -1265,7 +1265,7 @@ void GroupDefImpl::writeDocumentation(OutputList &ol)
   ol.pushGeneratorState();
   ol.disableAllBut(OutputType::Man);
   ol.endTitleHead(getOutputFileBase(),name());
-  if (!m_titleAsText.isEmpty())
+  if (!m_titleAsText.empty())
   {
     ol.writeString(" - ");
     ol.parseText(m_titleAsText);
@@ -1501,7 +1501,7 @@ void addClassToGroups(const Entry *root,ClassDef *cd)
   for (const Grouping &g : root->groups)
   {
     GroupDef *gd=nullptr;
-    if (!g.groupname.isEmpty()) gd=Doxygen::groupLinkedMap->find(g.groupname);
+    if (!g.groupname.empty()) gd=Doxygen::groupLinkedMap->find(g.groupname);
     if (gd && gd->addClass(cd))
     {
       ClassDefMutable *cdm = toClassDefMutable(cd);
@@ -1572,7 +1572,7 @@ void addNamespaceToGroups(const Entry *root,NamespaceDef *nd)
   for (const Grouping &g : root->groups)
   {
     GroupDef *gd=nullptr;
-    if (!g.groupname.isEmpty()) gd=Doxygen::groupLinkedMap->find(g.groupname);
+    if (!g.groupname.empty()) gd=Doxygen::groupLinkedMap->find(g.groupname);
     //printf("group '%s' gd=%p\n",qPrint(g.groupname),(void*)gd);
     if (gd && gd->addNamespace(nd))
     {
@@ -1662,7 +1662,7 @@ void addMemberToGroups(const Entry *root,MemberDef *md)
   for (const Grouping &g : root->groups)
   {
     GroupDef *gd=nullptr;
-    if (!g.groupname.isEmpty()) gd=Doxygen::groupLinkedMap->find(g.groupname);
+    if (!g.groupname.empty()) gd=Doxygen::groupLinkedMap->find(g.groupname);
     if (gd && g.pri >= pri)
     {
       if (fgd && gd!=fgd && g.pri==pri)
@@ -1713,11 +1713,11 @@ void addMemberToGroups(const Entry *root,MemberDef *md)
       {
         if (md->getGroupPri()==pri)
         {
-          if (!root->doc.isEmpty() && !md->getGroupHasDocs())
+          if (!root->doc.empty() && !md->getGroupHasDocs())
           {
             moveit = true;
           }
-          else if (!root->doc.isEmpty() && md->getGroupHasDocs())
+          else if (!root->doc.empty() && md->getGroupHasDocs())
           {
             warn(md->getGroupFileName(),md->getGroupStartLine(),
                 "Member documentation for {} found several times in {} groups!\n"
@@ -1750,7 +1750,7 @@ void addMemberToGroups(const Entry *root,MemberDef *md)
         if (mdm)
         {
           //printf("insertMember successful\n");
-          mdm->setGroupDef(fgd,pri,root->fileName,root->startLine,!root->doc.isEmpty());
+          mdm->setGroupDef(fgd,pri,root->fileName,root->startLine,!root->doc.empty());
           ClassDefMutable *cdm = toClassDefMutable(const_cast<ClassDef*>(mdm->getClassDefOfAnonymousType()));
           if (cdm)
           {
@@ -2061,9 +2061,9 @@ void GroupDefImpl::updateLanguage(const Definition *d)
 bool GroupDefImpl::hasDetailedDescription() const
 {
   bool repeatBrief = Config_getBool(REPEAT_BRIEF);
-  return ((!briefDescription().isEmpty() && repeatBrief) ||
-         !documentation().isEmpty() ||
-         !inbodyDocumentation().isEmpty() ||
+  return ((!briefDescription().empty() && repeatBrief) ||
+         !documentation().empty() ||
+         !inbodyDocumentation().empty() ||
          hasRequirementRefs());
 }
 

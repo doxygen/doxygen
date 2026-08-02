@@ -279,14 +279,14 @@ std::unique_ptr<FileDef> createFileDef(const QCString &p,const QCString &n,const
 */
 FileDefImpl::FileDefImpl(const QCString &p,const QCString &nm,
                  const QCString &lref,const QCString &dn)
-   : DefinitionMixin(p+nm,1,1,nm,nullptr,nullptr,!p.isEmpty())
+   : DefinitionMixin(p+nm,1,1,nm,nullptr,nullptr,!p.empty())
 {
   m_path=removeLongPathMarker(p);
   m_filePath=p+nm;
   m_fileName=nm;
 
   setReference(lref);
-  setDiskNameLocal(!dn.isEmpty() ? dn : nm);
+  setDiskNameLocal(!dn.empty() ? dn : nm);
   m_isSource          = guessSection(nm).isSource();
   m_docname           = nm;
   m_dir               = nullptr;
@@ -365,8 +365,8 @@ bool FileDefImpl::hasDetailedDescription() const
 {
   bool repeatBrief = Config_getBool(REPEAT_BRIEF);
   bool sourceBrowser = Config_getBool(SOURCE_BROWSER);
-  return ((!briefDescription().isEmpty() && repeatBrief) ||
-          !documentation().stripWhiteSpace().isEmpty() || // avail empty section
+  return ((!briefDescription().empty() && repeatBrief) ||
+          !documentation().stripWhiteSpace().empty() || // avail empty section
           (sourceBrowser && getStartBodyLine()!=-1 && getBodyDef()) ||
           hasRequirementRefs()
          );
@@ -487,7 +487,7 @@ void FileDefImpl::writeDetailedDescription(OutputList &ol,const QCString &title)
     ol.endGroupHeader();
 
     ol.startTextBlock();
-    if (!briefDescription().isEmpty() && Config_getBool(REPEAT_BRIEF))
+    if (!briefDescription().empty() && Config_getBool(REPEAT_BRIEF))
     {
       ol.generateDoc(briefFile(),
                      briefLine(),
@@ -496,8 +496,8 @@ void FileDefImpl::writeDetailedDescription(OutputList &ol,const QCString &title)
                      briefDescription(),
                      DocOptions());
     }
-    if (!briefDescription().isEmpty() && Config_getBool(REPEAT_BRIEF) &&
-        !documentation().isEmpty())
+    if (!briefDescription().empty() && Config_getBool(REPEAT_BRIEF) &&
+        !documentation().empty())
     {
       ol.pushGeneratorState();
         ol.disable(OutputType::Man);
@@ -508,7 +508,7 @@ void FileDefImpl::writeDetailedDescription(OutputList &ol,const QCString &title)
         ol.writeString("\n\n");
       ol.popGeneratorState();
     }
-    if (!documentation().isEmpty())
+    if (!documentation().empty())
     {
       ol.generateDoc(docFile(),
                      docLine(),
@@ -523,8 +523,7 @@ void FileDefImpl::writeDetailedDescription(OutputList &ol,const QCString &title)
     {
       ol.startParagraph("definition");
       QCString refText = theTranslator->trDefinedInSourceFile();
-      int fileMarkerPos = refText.find("@0");
-      if (fileMarkerPos!=-1) // should always pass this.
+      if (size_t fileMarkerPos = refText.find("@0"); fileMarkerPos!=QCString::npos) // should always pass this.
       {
         ol.parseText(refText.left(fileMarkerPos)); //text left from marker 1
         ol.writeObjectLink(QCString(),getSourceFileBase(),QCString(),name());
@@ -557,7 +556,7 @@ void FileDefImpl::writeBriefDescription(OutputList &ol)
                                      .setIndexWords(true)
                                      .setSingleLine(true))
                 };
-    if (!ast->isEmpty())
+    if (!ast->empty())
     {
       ol.startParagraph();
       ol.pushGeneratorState();
@@ -571,7 +570,7 @@ void FileDefImpl::writeBriefDescription(OutputList &ol)
       ol.enable(OutputType::RTF);
 
       if (Config_getBool(REPEAT_BRIEF) ||
-          !documentation().stripWhiteSpace().isEmpty()
+          !documentation().stripWhiteSpace().empty()
          )
       {
         ol.disableAllBut(OutputType::Html);
@@ -885,7 +884,7 @@ void FileDefImpl::writeDocumentation(OutputList &ol)
   //printf("WriteDocumentation diskname=%s\n",qPrint(diskname));
 
   QCString versionTitle;
-  if (!m_fileVersion.isEmpty())
+  if (!m_fileVersion.empty())
   {
     versionTitle=" ("+m_fileVersion+")";
   }
@@ -952,7 +951,7 @@ void FileDefImpl::writeDocumentation(OutputList &ol)
 
   ol.startContents();
 
-  if (!m_fileVersion.isEmpty())
+  if (!m_fileVersion.empty())
   {
     ol.disableAllBut(OutputType::Html);
     ol.startProjectNumber();
@@ -1158,7 +1157,7 @@ void FileDefImpl::writeSourceHeader(OutputList &ol)
 {
   bool generateTreeView  = Config_getBool(GENERATE_TREEVIEW);
   QCString title = m_docname;
-  if (!m_fileVersion.isEmpty())
+  if (!m_fileVersion.empty())
   {
     title+=" ("+m_fileVersion+")";
   }
@@ -1232,7 +1231,7 @@ void FileDefImpl::writeSourceBody(OutputList &ol,[[maybe_unused]] ClangTUParser 
     bool needs2PassParsing =
         Doxygen::parseSourcesNeeded &&                // we need to parse (filtered) sources for cross-references
         !filterSourceFiles &&                         // but user wants to show sources as-is
-        !getFileFilter(absFilePath(),true).isEmpty(); // and there is a filter used while parsing
+        !getFileFilter(absFilePath(),true).empty(); // and there is a filter used while parsing
 
     if (needs2PassParsing)
     {
@@ -1533,7 +1532,7 @@ void FileDefImpl::addIncludeDependency(const FileDef *fd,const QCString &incName
 {
   //printf("FileDefImpl::addIncludeDependency(%p,%s,%d)\n",(void*)fd,qPrint(incName),kind);
   QCString iName = fd ? fd->absFilePath() : incName;
-  if (!iName.isEmpty() && m_includeMap.find(iName.str())==m_includeMap.end())
+  if (!iName.empty() && m_includeMap.find(iName.str())==m_includeMap.end())
   {
     m_includeList.emplace_back(fd,incName,kind);
     m_includeMap.emplace(iName.str(),&m_includeList.back());
@@ -1592,7 +1591,7 @@ void FileDefImpl::addIncludedByDependency(const FileDef *fd,const QCString &incN
 {
   //printf("FileDefImpl::addIncludedByDependency(%p,%s,%d)\n",fd,incName,local);
   QCString iName = fd ? fd->absFilePath() : incName;
-  if (!iName.isEmpty() && m_includedByMap.find(iName.str())==m_includedByMap.end())
+  if (!iName.empty() && m_includedByMap.find(iName.str())==m_includedByMap.end())
   {
     m_includedByList.emplace_back(fd,incName,kind);
     m_includedByMap.emplace(iName.str(),&m_includedByList.back());
@@ -1601,7 +1600,7 @@ void FileDefImpl::addIncludedByDependency(const FileDef *fd,const QCString &incN
 
 bool FileDefImpl::isIncluded(const QCString &name) const
 {
-  if (name.isEmpty()) return false;
+  if (name.empty()) return false;
   return m_includeMap.find(name.str())!=m_includeMap.end();
 }
 
@@ -1690,15 +1689,16 @@ bool FileDefImpl::isDocumentationFile() const
   static const std::unordered_set<std::string> docExtensions =
   { "doc", "txt", "dox", "md", "markdown" };
 
-  int lastDot = name().findRev('.');
-  return (lastDot!=-1 && docExtensions.find(name().mid(lastDot+1).str())!=docExtensions.end()) ||
-         getLanguageFromFileName(getFileNameExtension(name())) == SrcLangExt::Markdown;
+  size_t lastDot = name().rfind('.');
+  return (lastDot!=QCString::npos &&
+          docExtensions.find(name().mid(lastDot+1).str())!=docExtensions.end()) ||
+          getLanguageFromFileName(getFileNameExtension(name())) == SrcLangExt::Markdown;
 }
 
 void FileDefImpl::acquireFileVersion()
 {
   QCString vercmd = Config_getString(FILE_VERSION_FILTER);
-  if (!vercmd.isEmpty() && !m_filePath.isEmpty() && !isReference() &&
+  if (!vercmd.empty() && !m_filePath.empty() && !isReference() &&
       m_filePath!="generated" && m_filePath!="graph_legend.dox")
   {
     msg("Version of {} : ",m_filePath);
@@ -1718,7 +1718,7 @@ void FileDefImpl::acquireFileVersion()
     {
       buf[numRead]='\0';
       m_fileVersion=QCString(buf,numRead).stripWhiteSpace();
-      if (!m_fileVersion.isEmpty())
+      if (!m_fileVersion.empty())
       {
         msg("{}\n",m_fileVersion);
         return;

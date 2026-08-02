@@ -1150,7 +1150,7 @@ QCString element_association() :  {QCString s,s1;}
 {
 [LOOKAHEAD(choices() <ARROW_T>) s=choices() <ARROW_T> ]  s1=expression()
  {
-if(!s.isEmpty())
+if(!s.empty())
  return s+"=>"+s1;
 return s1;
  }
@@ -1881,7 +1881,7 @@ QCString ifunc():{QCString s,s1,s2,s3;Token *t=nullptr;Token *t1=nullptr;Token *
    QCString q;
    if(t!=nullptr) q=t->image;
    if(t2!=nullptr) s3="<>";
-   if (!s3.isEmpty())
+   if (!s3.empty())
    {
      s3.prepend(" is ");
    }
@@ -2072,7 +2072,7 @@ QCString loop_statement() :  {QCString s,s1,s2,s3;}
 [ s=identifier() <COLON_T> {s+=":";} ]
     [ s1=iteration_scheme()  ]
       {
-       if(s1.isEmpty())
+       if(s1.empty())
         FlowChart::addFlowChart(FlowChart::LOOP_NO,QCString(),"infinite");
        }
       <LOOP_T>
@@ -2366,7 +2366,7 @@ QCString pathname_element ():{QCString s,s1;}
 {
   s=identifier() [<LPAREN_T> s1=expression()  <RPAREN_T>]
   {
-    if(!s1.isEmpty())
+    if(!s1.empty())
      return s+"("+s1+")";
 
     return s;
@@ -2545,7 +2545,7 @@ void process_statement() : {QCString s,s1,s2;Token *tok=nullptr;Token *tok1=null
  [ <LPAREN_T>  (s1=sensitivity_list() ) <RPAREN_T>] [ LOOKAHEAD(1)<IS_T> ]
         s2=process_declarative_part()
              {
-              if (!s2.isEmpty())
+              if (!s2.empty())
                 FlowChart::addFlowChart(FlowChart::VARIABLE_NO,s2,QCString());
                 FlowChart::addFlowChart(FlowChart::BEGIN_NO,"BEGIN",QCString());
               }
@@ -2554,7 +2554,7 @@ void process_statement() : {QCString s,s1,s2;Token *tok=nullptr;Token *tok1=null
         <END_T> [ <POSTPONED_T> ]
          <PROCESS_T> [ identifier() ] <SEMI_T>
         {
-          if(s.isEmpty())
+          if(s.empty())
             m_sharedState->currName=VhdlDocGen::getProcessNumber();
           else
             m_sharedState->currName=s;
@@ -3086,7 +3086,7 @@ void subprogram_body() : {QCString s;}
 
  s=subprogram_declarative_part()
    {
-      if (!s.isEmpty())
+      if (!s.empty())
       {
         FlowChart::addFlowChart(FlowChart::VARIABLE_NO,s,QCString());
       }

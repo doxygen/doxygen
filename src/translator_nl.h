@@ -89,7 +89,7 @@ class TranslatorDutch : public Translator
     { return ", inclusief alle overgeërfde members."; }
     QCString trGeneratedAutomatically(const QCString &s) override
     { QCString result="Automatisch gegenereerd door Doxygen";
-      if (!s.isEmpty()) result+=" voor "+s;
+      if (!s.empty()) result+=" voor "+s;
       result+=" uit de programmatekst.";
       return result;
     }
@@ -243,7 +243,7 @@ class TranslatorDutch : public Translator
     { return "Hieronder volgt de lijst met alle modules:"; }
 
     QCString trDocumentation(const QCString &projName) override
-    { return (!projName.isEmpty()?projName + " " : "") + "Documentatie"; }
+    { return (!projName.empty()?projName + " " : "") + "Documentatie"; }
     QCString trModuleIndex() override
     { return "Module Index"; }
     QCString trHierarchicalIndex() override
@@ -321,7 +321,7 @@ class TranslatorDutch : public Translator
     QCString trGeneratedAt(const QCString &date,const QCString &projName) override
     {
       QCString result="Gegenereerd op "+date;
-      if (!projName.isEmpty()) result+=" voor "+projName;
+      if (!projName.empty()) result+=" voor "+projName;
       result+=" door";
       return result;
     }

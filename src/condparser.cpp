@@ -35,7 +35,7 @@
  */
 bool CondParser::parse(const QCString &fileName,int lineNr,const QCString &expr)
 {
-  if (expr.isEmpty()) return false;
+  if (expr.empty()) return false;
   m_expr      = expr;
   m_tokenType = NOTHING;
 
@@ -44,15 +44,15 @@ bool CondParser::parse(const QCString &fileName,int lineNr,const QCString &expr)
 
   bool answer=false;
   getToken();
-  if (m_tokenType==DELIMITER && m_token.isEmpty())
+  if (m_tokenType==DELIMITER && m_token.empty())
   {
     // empty expression: answer==false
   }
-  else if (m_err.isEmpty())
+  else if (m_err.empty())
   {
     answer = parseLevel1();
   }
-  if (!m_err.isEmpty())
+  if (!m_err.empty())
   {
     warn(fileName,lineNr,"problem evaluating expression '{}': {}", expr, m_err);
   }
@@ -242,7 +242,7 @@ bool CondParser::parseVar()
 
     default:
       // syntax error or unexpected end of expression
-      if (m_token.isEmpty())
+      if (m_token.empty())
       {
         m_err="Unexpected end of expression";
         return false;

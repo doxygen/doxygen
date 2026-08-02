@@ -191,7 +191,7 @@ static uint32_t virtToMask(Specifier p)
 
 static QCString convertToPSString(const QCString &s)
 {
-  if (s.isEmpty()) return s;
+  if (s.empty()) return s;
   QCString result;
   result.reserve(s.length()+8);
   const char *p=s.data();
@@ -265,7 +265,7 @@ static void writeMapArea(TextStream &t,const ClassDef *cd,QCString relPath,
   {
     QCString ref=cd->getReference();
     t << "<area ";
-    if (!ref.isEmpty())
+    if (!ref.empty())
     {
       t << externalLinkTarget(true);
     }
@@ -274,13 +274,13 @@ static void writeMapArea(TextStream &t,const ClassDef *cd,QCString relPath,
     QCString fn = cd->getOutputFileBase();
     addHtmlExtensionIfMissing(fn);
     t << fn;
-    if (!cd->anchor().isEmpty())
+    if (!cd->anchor().empty())
     {
       t << "#" << cd->anchor();
     }
     t << "\" ";
     QCString tooltip = cd->briefDescriptionAsTooltip();
-    if (!tooltip.isEmpty())
+    if (!tooltip.empty())
     {
       t << "title=\"" << convertToHtml(tooltip) << "\" ";
     }
@@ -300,7 +300,7 @@ DiagramItem::DiagramItem(DiagramItem *p,uint32_t number,const ClassDef *cd,
 QCString DiagramItem::label() const
 {
   QCString result;
-  if (!m_templSpec.isEmpty())
+  if (!m_templSpec.empty())
   {
     // we use classDef->name() here and not displayName() in order
     // to get the name used in the inheritance relation.

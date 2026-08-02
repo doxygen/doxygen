@@ -88,7 +88,7 @@ QCString SearchTerm::termEncoded() const
 //! for the start of each word in the simplified title string.
 static void splitSearchTokens(QCString &title,IntVector &indices)
 {
-  if (title.isEmpty()) return;
+  if (title.empty()) return;
 
   // simplify title to contain only words with single space as separator
   size_t di=0;
@@ -138,14 +138,14 @@ static void splitSearchTokens(QCString &title,IntVector &indices)
 
   // create a list of start positions within title for
   // each unique word in order of appearance
-  int p=0,i=0;
-  while ((i=title.find(' ',p))!=-1)
+  size_t p=0,i=0;
+  while ((i=title.find(' ',p))!=QCString::npos)
   {
     std::string word = title.mid(p,i-p).str();
     indices.push_back(p);
     p = i+1;
   }
-  if (p<static_cast<int>(title.length()))
+  if (p<title.length())
   {
     std::string word = title.mid(p).str();
     indices.push_back(p);
@@ -226,7 +226,7 @@ static void addMemberToSearchIndex(const MemberDef *md)
      )
   {
     const QCString &n = md->name();
-    if (!n.isEmpty())
+    if (!n.empty())
     {
       bool isFriendToHide = hideFriendCompounds &&
         (md->typeString()=="friend class" ||
@@ -286,7 +286,7 @@ static void addMemberToSearchIndex(const MemberDef *md)
      )
   {
     const QCString &n = md->name();
-    if (!n.isEmpty())
+    if (!n.empty())
     {
       g_searchIndexInfo[SEARCH_INDEX_ALL].add(SearchTerm(n,md));
 
@@ -673,14 +673,14 @@ static void writeJavasScriptSearchDataPage(const QCString &baseName,const QCStri
     QCString ref = d ? d->getReference()      : si ? si->ref()      : QCString();
     addHtmlExtensionIfMissing(fn);
     QCString extRef = externalRef("../",ref,true)+fn;
-    if (!anchor.isEmpty())
+    if (!anchor.empty())
     {
       extRef+="#"+anchor;
     }
     ti << "'" << convertToJSString(extRef,true,true) << "',";
 
     bool extLinksInWindow = Config_getBool(EXT_LINKS_IN_WINDOW);
-    if (!extLinksInWindow || ref.isEmpty())
+    if (!extLinksInWindow || ref.empty())
     {
       ti << "1,";
     }
@@ -744,7 +744,7 @@ static void writeJavasScriptSearchDataPage(const QCString &baseName,const QCStri
                 if (fd==nullptr) fd = md->resolveAlias()->getFileDef();
                 if (fd)
                 {
-                  if (!prefix.isEmpty()) prefix+=":&#160;";
+                  if (!prefix.empty()) prefix+=":&#160;";
                   name = prefix + convertToXML(fd->localName());
                   found = true;
                 }

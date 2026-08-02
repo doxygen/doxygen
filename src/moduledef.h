@@ -48,7 +48,7 @@ struct ImportInfo
   QCString qualifiedName() const
   {
     QCString result=importName;
-    if (!partitionName.isEmpty())
+    if (!partitionName.empty())
     {
       result+=":"+partitionName;
     }

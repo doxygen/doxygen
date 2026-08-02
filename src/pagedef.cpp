@@ -179,7 +179,7 @@ void PageDefImpl::addSectionsToIndex()
         }
       }
       QCString title = si->title();
-      if (title.isEmpty()) title = si->label();
+      if (title.empty()) title = si->label();
       title = parseCommentAsText(this,nullptr,title,si->fileName(),si->lineNr());
       QCString titleAsHtml = parseCommentAsHtml(this,nullptr,si->title(),si->fileName(),si->lineNr());
       // determine if there is a next level inside this item, but be aware of the anchor and table section references.
@@ -339,7 +339,7 @@ void PageDefImpl::writeDocumentation(OutputList &ol)
   else
     title = m_title;
 
-  if (!title.isEmpty() && !name().isEmpty() && si!=nullptr)
+  if (!title.empty() && !name().empty() && si!=nullptr)
   {
     ol.startPageDoc(si->title());
     ol.startHeaderSection();
@@ -404,7 +404,7 @@ void PageDefImpl::writeDocumentation(OutputList &ol)
 void PageDefImpl::writePageDocumentation(OutputList &ol) const
 {
   ol.startTextBlock();
-  QCString docStr = (briefDescription().isEmpty()?"":briefDescription()+"\n\n")+documentation()+inbodyDocumentation();
+  QCString docStr = (briefDescription().empty()?"":briefDescription()+"\n\n")+documentation()+inbodyDocumentation();
   if (hasBriefDescription() && !SectionManager::instance().find(name()))
   {
     ol.pushGeneratorState();
@@ -492,12 +492,12 @@ bool PageDefImpl::showLineNo() const
 
 bool PageDefImpl::hasTitle() const
 {
-  return !m_title.isEmpty() && m_title.lower()!="notitle";
+  return !m_title.empty() && m_title.lower()!="notitle";
 }
 
 void PageDefImpl::setTitle(const QCString &title)
 {
-  if (!title.isEmpty())
+  if (!title.empty())
   {
     m_title = title;
     m_titleAsText = parseCommentAsText(this,nullptr,title,docFile(),docLine());

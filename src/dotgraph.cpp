@@ -68,12 +68,12 @@ static bool deliverablesPresent(const QCString &file1,const QCString &file2)
 {
   bool file1Ok = true;
   bool file2Ok = true;
-  if (!file1.isEmpty())
+  if (!file1.empty())
   {
     FileInfo fi(file1.str());
     file1Ok = (fi.exists() && fi.size()>0);
   }
-  if (!file2.isEmpty())
+  if (!file2.empty())
   {
     FileInfo fi(file2.str());
     file2Ok = (fi.exists() && fi.size()>0);
@@ -271,7 +271,7 @@ void DotGraph::generateCode(TextStream &t)
 void DotGraph::writeGraphHeader(TextStream &t,const QCString &title)
 {
   t << "digraph ";
-  if (title.isEmpty())
+  if (title.empty())
   {
     t << "\"Dot Graph\"";
   }
@@ -288,7 +288,7 @@ void DotGraph::writeGraphHeader(TextStream &t,const QCString &title)
   t << " // LATEX_PDF_SIZE\n"; // write placeholder for LaTeX PDF bounding box size replacement
   t << "  bgcolor=\"transparent\";\n";
   QCString c = Config_getString(DOT_COMMON_ATTR);
-  if (!c.isEmpty()) c += ",";
+  if (!c.empty()) c += ",";
   t << "  edge [" << c << Config_getString(DOT_EDGE_ATTR) << "];\n";
   t << "  node [" << c << Config_getString(DOT_NODE_ATTR) << "];\n";
 }
@@ -310,7 +310,7 @@ void DotGraph::computeGraph(DotNode *root,
   //printf("computeMd5Signature\n");
   TextStream md5stream;
   writeGraphHeader(md5stream,title);
-  if (!rank.isEmpty())
+  if (!rank.empty())
   {
     md5stream << "  rankdir=\"" << rank << "\";\n";
   }

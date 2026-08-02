@@ -418,7 +418,7 @@ void startFile(OutputList &ol,const QCString &name,bool isSource,const QCString 
   {
     ol.endQuickIndices();
   }
-  ol.writeSplitBar(!altSidebarName.isEmpty() ? altSidebarName : name, allMembersFile);
+  ol.writeSplitBar(!altSidebarName.empty() ? altSidebarName : name, allMembersFile);
   if (quickLinksAfterSplitbar)
   {
     ol.writeQuickLinks(hli,name);
@@ -1507,7 +1507,7 @@ static void writeSingleFileIndex(OutputList &ol,const FileDef *fd)
       path=stripFromPath(fd->getPath());
     }
     QCString fullName=fd->name();
-    if (!path.isEmpty())
+    if (!path.empty())
     {
       if (path.at(path.length()-1)!='/') fullName.prepend("/");
       fullName.prepend(path);
@@ -1540,7 +1540,7 @@ static void writeSingleFileIndex(OutputList &ol,const FileDef *fd)
       ol.popGeneratorState();
     }
     ol.endIndexKey();
-    bool hasBrief = !fd->briefDescription().isEmpty();
+    bool hasBrief = !fd->briefDescription().empty();
     ol.startIndexValue(hasBrief);
     if (hasBrief)
     {
@@ -1611,7 +1611,7 @@ static void writeFileIndex(OutputList &ol)
 
   startFile(ol,"files",false,QCString(),title,HighlightedItem::Files);
   startTitle(ol,QCString());
-  //if (!Config_getString(PROJECT_NAME).isEmpty())
+  //if (!Config_getString(PROJECT_NAME).empty())
   //{
   //  title.prepend(Config_getString(PROJECT_NAME)+" ");
   //}
@@ -1649,7 +1649,7 @@ static void writeFileIndex(OutputList &ol)
       for (const auto &fd : *fn)
       {
         QCString path=fd->getPath();
-        if (path.isEmpty()) path="[external]";
+        if (path.empty()) path="[external]";
         auto it = pathMap.find(path.str());
         if (it!=pathMap.end()) // existing path -> append
         {
@@ -1909,7 +1909,7 @@ static void writeNamespaceTreeElement(const NamespaceDef *nd,FTVHelp *ftv,
       if (addToIndex)
       {
         Doxygen::indexList->addContentsItem(isDir,nd->localName(),ref,file,QCString(),
-            hasChildren && !file.isEmpty(),nd->partOfGroups().empty());
+            hasChildren && !file.empty(),nd->partOfGroups().empty());
       }
       if (addToIndex && isDir)
       {
@@ -2098,7 +2098,7 @@ static void writeNamespaceIndex(OutputList &ol)
       }
       ol.endIndexKey();
 
-      bool hasBrief = !nd->briefDescription().isEmpty();
+      bool hasBrief = !nd->briefDescription().empty();
       ol.startIndexValue(hasBrief);
       if (hasBrief)
       {
@@ -2222,7 +2222,7 @@ static void writeAnnotatedClassList(OutputList &ol,ClassDef::CompoundType ct)
       }
       ol.writeObjectLink(QCString(),cd->getOutputFileBase(),cd->anchor(),cd->displayName());
       ol.endIndexKey();
-      bool hasBrief = !cd->briefDescription().isEmpty();
+      bool hasBrief = !cd->briefDescription().empty();
       ol.startIndexValue(hasBrief);
       if (hasBrief)
       {
@@ -2254,7 +2254,7 @@ inline bool isId1(int c)
 
 static QCString letterToLabel(const QCString &startLetter)
 {
-  if (startLetter.isEmpty()) return startLetter;
+  if (startLetter.empty()) return startLetter;
   const char *p = startLetter.data();
   char c = *p;
   QCString result;
@@ -2411,7 +2411,7 @@ static void writeAlphabeticalClassList(OutputList &ol, ClassDef::CompoundType ct
 
         ol.writeObjectLink(cd->getReference(),
             cd->getOutputFileBase(),cd->anchor(),cname);
-        if (!namesp.isEmpty())
+        if (!namesp.empty())
         {
           ol.writeString(" (");
           NamespaceDef *nd = getResolvedNamespace(namesp);
@@ -2813,7 +2813,7 @@ static void writeMemberList(OutputList &ol,bool useSections,const std::string &p
       int startIndex = getPrefixIndex(name);
       if (name.data()+startIndex!=prevName) // new entry
       {
-        if ((prevName.isEmpty() ||
+        if ((prevName.empty() ||
             tolower(name.at(startIndex))!=tolower(prevName.at(0))) &&
             useSections) // new section
         {
@@ -3940,7 +3940,7 @@ static void writeExampleIndex(OutputList &ol)
   {
     ol.startItemListItem();
     QCString n=pd->getOutputFileBase();
-    if (!pd->title().isEmpty())
+    if (!pd->title().empty())
     {
       ol.writeObjectLink(QCString(),n,QCString(),pd->title());
       if (addToIndex)
@@ -4004,7 +4004,7 @@ static void writePages(PageDef *pd,FTVHelp *ftv,bool reuseRoot = false)
   {
     QCString pageTitle, pageTitleAsHtml;
 
-    if (pd->title().isEmpty())
+    if (pd->title().empty())
       pageTitle=pd->name();
     else
       pageTitle = parseCommentAsText(pd,nullptr,pd->title(),pd->getDefFileName(),pd->getDefLine());
@@ -4146,12 +4146,12 @@ void writeGraphInfo(OutputList &ol)
   endTitle(ol,QCString(),QCString());
   ol.startContents();
   QCString legendDocs = theTranslator->trLegendDocs();
-  int s = legendDocs.find("<center>");
-  int e = legendDocs.find("</center>");
+  size_t s = legendDocs.find("<center>");
+  size_t e = legendDocs.find("</center>");
   QCString imgExt = getDotImageExtension();
-  if (imgExt=="svg" && s!=-1 && e!=-1)
+  if (imgExt=="svg" && s!=QCString::npos && e!=QCString::npos)
   {
-    legendDocs = legendDocs.left(s+8) + "[!-- " + "SVG 0 --]" + legendDocs.mid(e);
+    legendDocs = legendDocs.left(s+8) + "[!-- SVG 0 --]" + legendDocs.mid(e);
     //printf("legendDocs=%s\n",qPrint(legendDocs));
   }
 
@@ -4358,11 +4358,11 @@ static void writeGroupTreeNode(OutputList &ol, const GroupDef *gd, int level, FT
         for (const auto &pd : gd->getPages())
         {
           const SectionInfo *si=nullptr;
-          if (!pd->name().isEmpty()) si=SectionManager::instance().find(pd->name());
+          if (!pd->name().empty()) si=SectionManager::instance().find(pd->name());
           hasSubPages = pd->hasSubPages();
           bool hasSections = pd->hasSections();
           QCString pageTitle;
-          if (pd->title().isEmpty())
+          if (pd->title().empty())
              pageTitle=pd->name();
           else
              pageTitle = parseCommentAsText(pd,nullptr,pd->title(),pd->getDefFileName(),pd->getDefLine());
@@ -4807,7 +4807,7 @@ static void writeConceptIndex(OutputList &ol)
       ol.writeObjectLink(QCString(),cd->getOutputFileBase(),QCString(),cd->displayName());
       ol.endIndexKey();
 
-      bool hasBrief = !cd->briefDescription().isEmpty();
+      bool hasBrief = !cd->briefDescription().empty();
       ol.startIndexValue(hasBrief);
       if (hasBrief)
       {
@@ -4916,7 +4916,7 @@ static void writeIndex(OutputList &ol)
   ol.pushGeneratorState();
 
   QCString projPrefix;
-  if (!projectName.isEmpty())
+  if (!projectName.empty())
   {
     projPrefix=projectName+" ";
   }
@@ -4950,7 +4950,7 @@ static void writeIndex(OutputList &ol)
   if (Doxygen::mainPage)
   {
     bool hasSubs = Doxygen::mainPage->hasSubPages() || Doxygen::mainPage->hasSections();
-    bool hasTitle = !projectName.isEmpty() && mainPageHasTitle() && qstricmp(title,projectName)!=0;
+    bool hasTitle = !projectName.empty() && mainPageHasTitle() && qstricmp(title,projectName)!=0;
     //printf("** mainPage title=%s hasTitle=%d hasSubs=%d\n",qPrint(title),hasTitle,hasSubs);
     if (hasTitle) // to avoid duplicate entries in the treeview
     {
@@ -4986,7 +4986,7 @@ static void writeIndex(OutputList &ol)
   bool headerWritten=false;
   if (Doxygen::mainPage)
   {
-    if (!Doxygen::mainPage->title().isEmpty())
+    if (!Doxygen::mainPage->title().empty())
     {
       if (Doxygen::mainPage->title().lower() != "notitle")
         ol.startPageDoc(Doxygen::mainPage->title());
@@ -4996,7 +4996,7 @@ static void writeIndex(OutputList &ol)
     else
       ol.startPageDoc(projectName);
   }
-  if (Doxygen::mainPage && !Doxygen::mainPage->title().isEmpty())
+  if (Doxygen::mainPage && !Doxygen::mainPage->title().empty())
   {
     if (Doxygen::mainPage->title().lower()!="notitle")
     {
@@ -5014,7 +5014,7 @@ static void writeIndex(OutputList &ol)
   }
   else
   {
-    if (!projectName.isEmpty())
+    if (!projectName.empty())
     {
       ol.startHeaderSection();
       ol.startTitleHead(QCString());
@@ -5096,7 +5096,7 @@ static void writeIndex(OutputList &ol)
   ol.disable(OutputType::Latex);
   ol.disable(OutputType::Docbook);
 
-  if (projPrefix.isEmpty())
+  if (projPrefix.empty())
   {
     ol.parseText(theTranslator->trReferenceManual());
   }
@@ -5105,7 +5105,7 @@ static void writeIndex(OutputList &ol)
     ol.parseText(projPrefix);
   }
 
-  if (!Config_getString(PROJECT_NUMBER).isEmpty())
+  if (!Config_getString(PROJECT_NUMBER).empty())
   {
     ol.startProjectNumber();
     ol.generateDoc(defFileName,
@@ -5569,7 +5569,7 @@ static void writeIndexHierarchyEntries(OutputList &ol,const LayoutNavEntryList &
             // prepend a ! or ^ marker to the URL to avoid tampering with it
             QCString url = correctURL(lne->url(),"!"); // add ! to relative URL
             bool isRelative=url.at(0)=='!';
-            if (!url.isEmpty() && !isRelative) // absolute URL
+            if (!url.empty() && !isRelative) // absolute URL
             {
               url.prepend("^"); // prepend ^ to absolute URL
             }
@@ -5581,7 +5581,7 @@ static void writeIndexHierarchyEntries(OutputList &ol,const LayoutNavEntryList &
           if (addToIndex)
           {
             QCString url = correctURL(lne->url(),"!"); // add ! to relative URL
-            if (!url.isEmpty())
+            if (!url.empty())
             {
               if (url=="!") // result of a "[none]" url
               {

@@ -48,19 +48,19 @@ void DocSets::initialize()
 {
   // -- get config options
   QCString projectName = Config_getString(PROJECT_NAME);
-  if (projectName.isEmpty()) projectName="root";
+  if (projectName.empty()) projectName="root";
   QCString bundleId = Config_getString(DOCSET_BUNDLE_ID);
-  if (bundleId.isEmpty()) bundleId="org.doxygen.Project";
+  if (bundleId.empty()) bundleId="org.doxygen.Project";
   QCString feedName = Config_getString(DOCSET_FEEDNAME);
-  if (feedName.isEmpty()) feedName="FeedName";
+  if (feedName.empty()) feedName="FeedName";
   QCString feedURL = Config_getString(DOCSET_FEEDURL);
-  if (feedURL.isEmpty()) feedURL="FeedUrl";
+  if (feedURL.empty()) feedURL="FeedUrl";
   QCString publisherId = Config_getString(DOCSET_PUBLISHER_ID);
-  if (publisherId.isEmpty()) publisherId="PublisherId";
+  if (publisherId.empty()) publisherId="PublisherId";
   QCString publisherName = Config_getString(DOCSET_PUBLISHER_NAME);
-  if (publisherName.isEmpty()) publisherName="PublisherName";
+  if (publisherName.empty()) publisherName="PublisherName";
   QCString projectNumber = Config_getString(PROJECT_NUMBER);
-  if (projectNumber.isEmpty()) projectNumber="ProjectNumber";
+  if (projectNumber.empty()) projectNumber="ProjectNumber";
 
   // -- write Makefile
   {
@@ -242,7 +242,7 @@ void DocSets::addContentsItem(bool /*isDir*/,
     p->indentStack.top()=false;
     p->nts << p->indent() << " <Node>\n";
     p->nts << p->indent() << "  <Name>" << convertToXML(name) << "</Name>\n";
-    if (!file.isEmpty() && file[0]=='^') // URL marker
+    if (!file.empty() && file[0]=='^') // URL marker
     {
       p->nts << p->indent() << "  <URL>" << convertToXML(&file[1])
             << "</URL>\n";
@@ -250,18 +250,18 @@ void DocSets::addContentsItem(bool /*isDir*/,
     else // relative file
     {
       p->nts << p->indent() << "  <Path>";
-      if (!file.isEmpty() && file[0]=='!') // user specified file
+      if (!file.empty() && file[0]=='!') // user specified file
       {
         p->nts << convertToXML(&file[1]);
       }
-      else if (!file.isEmpty()) // doxygen generated file
+      else if (!file.empty()) // doxygen generated file
       {
         QCString fn = file;
         addHtmlExtensionIfMissing(fn);
         p->nts << fn;
       }
       p->nts << "</Path>\n";
-      if (!file.isEmpty() && !anchor.isEmpty())
+      if (!file.empty() && !anchor.empty())
       {
         p->nts << p->indent() << "  <Anchor>" << anchor << "</Anchor>\n";
       }
@@ -475,15 +475,15 @@ void DocSets::writeToken(TextStream &t,
   QCString name = d->name();
   if (name.endsWith("-p"))  name=name.left(name.length()-2);
   t << "      <Name>" << convertToXML(name) << "</Name>\n";
-  if (!lang.isEmpty())
+  if (!lang.empty())
   {
     t << "      <APILanguage>" << lang << "</APILanguage>\n";
   }
-  if (!type.isEmpty())
+  if (!type.empty())
   {
     t << "      <Type>" << type << "</Type>\n";
   }
-  if (!scope.isEmpty())
+  if (!scope.empty())
   {
     t << "      <Scope>" << convertToXML(scope) << "</Scope>\n";
   }
@@ -491,16 +491,16 @@ void DocSets::writeToken(TextStream &t,
   QCString fn = d->getOutputFileBase();
   addHtmlExtensionIfMissing(fn);
   t << "    <Path>" << fn << "</Path>\n";
-  if (!anchor.isEmpty())
+  if (!anchor.empty())
   {
     t << "    <Anchor>" << anchor << "</Anchor>\n";
   }
   QCString tooltip = d->briefDescriptionAsTooltip();
-  if (!tooltip.isEmpty())
+  if (!tooltip.empty())
   {
     t << "    <Abstract>" << convertToXML(tooltip) << "</Abstract>\n";
   }
-  if (!decl.isEmpty())
+  if (!decl.empty())
   {
     t << "    <DeclaredIn>" << convertToXML(decl) << "</DeclaredIn>\n";
   }

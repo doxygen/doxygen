@@ -69,16 +69,16 @@ bool Htags::execute(const QCString &htmldir)
   QCString commandLine = " -g -s -a -n ";
   if (!quiet)   commandLine += "-v ";
   if (warnings) commandLine += "-w ";
-  if (!htagsOptions.isEmpty())
+  if (!htagsOptions.empty())
   {
     commandLine += ' ';
     commandLine += htagsOptions;
   }
-  if (!projectName.isEmpty())
+  if (!projectName.empty())
   {
     commandLine += "-t \"";
     commandLine += projectName;
-    if (!projectNumber.isEmpty())
+    if (!projectNumber.empty())
     {
       commandLine += '-';
       commandLine += projectNumber;
@@ -129,13 +129,12 @@ bool Htags::loadFilemap(const QCString &htmlDir)
       {
         QCString line(lineStr);
         //printf("Read line: %s",qPrint(line));
-        int sep = line.find('\t');
-        if (sep!=-1)
+        if (size_t sep = line.find('\t'); sep!=QCString::npos)
         {
           QCString key   = line.left(sep).stripWhiteSpace();
           QCString value = line.mid(sep+1).stripWhiteSpace();
-          int ext=value.findRev('.');
-          if (ext!=-1) value=value.left(ext); // strip extension
+          size_t ext=value.rfind('.');
+          if (ext!=QCString::npos) value=value.left(ext); // strip extension
           g_symbolMap.emplace(key.str(),value.str());
           //printf("Key/Value=(%s,%s)\n",qPrint(key),qPrint(value));
         }
@@ -163,7 +162,7 @@ QCString Htags::path2URL(const QCString &path)
   {
     symName = symName.mid(dl+1);
   }
-  if (!symName.isEmpty())
+  if (!symName.empty())
   {
     auto it = g_symbolMap.find(symName.str());
     //printf("path2URL=%s symName=%s result=%p\n",qPrint(path),qPrint(symName),result);

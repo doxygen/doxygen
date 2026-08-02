@@ -207,7 +207,7 @@ void PerlModOutput::decIndent()
 
 void PerlModOutput::iaddQuoted(const QCString &str)
 {
-  if (str.isEmpty()) return;
+  if (str.empty()) return;
   const char *s = str.data();
   char c = 0;
   while ((c = *s++) != 0)
@@ -396,7 +396,7 @@ void PerlModDocVisitor::finish()
 void PerlModDocVisitor::addLink(const QCString &,const QCString &file,const QCString &anchor)
 {
   QCString link = file;
-  if (!anchor.isEmpty())
+  if (!anchor.empty())
     (link += "_1") += anchor;
   m_output.addFieldQuotedString("link", link);
 }
@@ -749,7 +749,7 @@ void PerlModDocVisitor::operator()(const DocCite &cite)
   openItem("cite");
   auto opt = cite.option();
   QCString txt;
-  if (!cite.file().isEmpty())
+  if (!cite.file().empty())
   {
     txt = cite.getText();
   }
@@ -1093,16 +1093,16 @@ void PerlModDocVisitor::operator()(const DocImage &img)
   int i;
   if ((i=baseName.findRev('/'))!=-1 || (i=baseName.findRev('\\'))!=-1)
   {
-    baseName=baseName.right(baseName.length()-i-1);
+    baseName=baseName.mid(i+1);
   }
   m_output.add(" name=\""); m_output.add(baseName); m_output.add("\"");
-  if (!img.width().isEmpty())
+  if (!img.width().empty())
   {
     m_output.add(" width=\"");
     m_output.addQuoted(img.width());
     m_output.add("\"");
   }
-  else if (!img.height().isEmpty())
+  else if (!img.height().empty())
   {
     m_output.add(" height=\"");
     m_output.addQuoted(img.height());
@@ -1303,11 +1303,11 @@ void PerlModDocVisitor::operator()(const DocXRefItem &x)
   m_output.add("</xreftitle>");
   m_output.add("<xrefdescription>");
 #endif
-  if (x.title().isEmpty()) return;
+  if (x.title().empty()) return;
   openItem("xrefitem");
   openSubBlock("content");
   visitChildren(x);
-  if (x.title().isEmpty()) return;
+  if (x.title().empty()) return;
   closeSubBlock();
   closeItem();
 #if 0
@@ -1357,12 +1357,12 @@ static void addTemplateArgumentList(const ArgumentList &al,PerlModOutput &output
   for (const Argument &a : al)
   {
     output.openHash();
-    if (!a.type.isEmpty())
+    if (!a.type.empty())
       output.addFieldQuotedString("type", a.type);
-    if (!a.name.isEmpty())
+    if (!a.name.empty())
       output.addFieldQuotedString("declaration_name", a.name)
 	.addFieldQuotedString("definition_name", a.name);
-    if (!a.defval.isEmpty())
+    if (!a.defval.empty())
       output.addFieldQuotedString("default", a.defval);
     output.closeHash();
   }
@@ -1388,7 +1388,7 @@ static void addPerlModDocBlock(PerlModOutput &output,
 			    const QCString &text)
 {
   QCString stext = text.stripWhiteSpace();
-  if (stext.isEmpty())
+  if (stext.empty())
   {
     output.addField(name).add("{}");
   }
@@ -1504,7 +1504,7 @@ void PerlModGenerator::generatePerlModForMember(const MemberDef *md,const Defini
 
   bool isFortran = md->getLanguage()==SrcLangExt::Fortran;
   name = md->name();
-  if (md->isAnonymous()) name = "__unnamed" + name.right(name.length() - 1)+"__";
+  if (md->isAnonymous()) name = "__unnamed" + name.mid(1)+"__";
 
   m_output.openHash()
     .addFieldQuotedString("kind", memType)
@@ -1540,24 +1540,24 @@ void PerlModGenerator::generatePerlModForMember(const MemberDef *md,const Defini
         }
 	m_output.openHash();
 
-	if (!a.name.isEmpty())
+	if (!a.name.empty())
 	  m_output.addFieldQuotedString("declaration_name", a.name);
 
-	if (defArg && !defArg->name.isEmpty() && defArg->name!=a.name)
+	if (defArg && !defArg->name.empty() && defArg->name!=a.name)
 	  m_output.addFieldQuotedString("definition_name", defArg->name);
 
-        if (isFortran && defArg && !defArg->type.isEmpty())
+        if (isFortran && defArg && !defArg->type.empty())
 	  m_output.addFieldQuotedString("type", defArg->type);
-	else if (!a.type.isEmpty())
+	else if (!a.type.empty())
 	  m_output.addFieldQuotedString("type", a.type);
 
-	if (!a.array.isEmpty())
+	if (!a.array.empty())
 	  m_output.addFieldQuotedString("array", a.array);
 
-	if (!a.defval.isEmpty())
+	if (!a.defval.empty())
 	  m_output.addFieldQuotedString("default_value", a.defval);
 
-	if (!a.attrib.isEmpty())
+	if (!a.attrib.empty())
 	  m_output.addFieldQuotedString("attributes", a.attrib);
 
 	m_output.closeHash();
@@ -1582,10 +1582,10 @@ void PerlModGenerator::generatePerlModForMember(const MemberDef *md,const Defini
     m_output.addFieldQuotedString("arguments", md->argsString());
   }
 
-  if (!md->initializer().isEmpty())
+  if (!md->initializer().empty())
     m_output.addFieldQuotedString("initializer", md->initializer());
 
-  if (!md->excpString().isEmpty())
+  if (!md->excpString().empty())
     m_output.addFieldQuotedString("exceptions", md->excpString());
 
   if (md->memberType()==MemberType::Enumeration) // enum
@@ -1600,7 +1600,7 @@ void PerlModGenerator::generatePerlModForMember(const MemberDef *md,const Defini
 	m_output.openHash()
 	  .addFieldQuotedString("name", emd->name());
 
-	if (!emd->initializer().isEmpty())
+	if (!emd->initializer().empty())
 	  m_output.addFieldQuotedString("initializer", emd->initializer());
 
 	addPerlModDocBlock(m_output,"brief",emd->briefFile(),emd->briefLine(),emd->getOuterScope(),emd,emd->briefDescription());
@@ -1613,7 +1613,7 @@ void PerlModGenerator::generatePerlModForMember(const MemberDef *md,const Defini
     }
   }
 
-  if (md->memberType() == MemberType::Variable && !md->bitfieldString().isEmpty())
+  if (md->memberType() == MemberType::Variable && !md->bitfieldString().empty())
   {
     QCString bitfield = md->bitfieldString();
     if (bitfield.at(0) == ':') bitfield = bitfield.mid(1);
@@ -1647,7 +1647,7 @@ void PerlModGenerator::generatePerlModSection(const Definition *d,
 
   m_output.openHash(name);
 
-  if (!header.isEmpty())
+  if (!header.empty())
     m_output.addFieldQuotedString("header", header);
 
   m_output.openList("members");
@@ -1674,7 +1674,7 @@ void PerlModGenerator::addListOfAllMembers(const ClassDef *cd)
         .addFieldQuotedString("virtualness", getVirtualnessName(md->virtualness()))
         .addFieldQuotedString("protection", getProtectionName(mi->prot()));
 
-      if (!mi->ambiguityResolutionScope().isEmpty())
+      if (!mi->ambiguityResolutionScope().empty())
         m_output.addFieldQuotedString("ambiguity_scope", mi->ambiguityResolutionScope());
 
       m_output.addFieldQuotedString("scope", mcd->name())
@@ -1692,7 +1692,7 @@ void PerlModGenerator::generatePerlUserDefinedSection(const Definition *d, const
     for (const auto &mg : mgl)
     {
       m_output.openHash();
-      if (!mg->header().isEmpty())
+      if (!mg->header().empty())
       {
         m_output.addFieldQuotedString("header", mg->header());
       }
@@ -1717,8 +1717,8 @@ void PerlModGenerator::addIncludeInfo(const IncludeInfo *ii)
   if (ii)
   {
     QCString nm = ii->includeName;
-    if (nm.isEmpty() && ii->fileDef) nm = ii->fileDef->docName();
-    if (!nm.isEmpty())
+    if (nm.empty() && ii->fileDef) nm = ii->fileDef->docName();
+    if (!nm.empty())
     {
       m_output.openHash("includes");
       m_output.addFieldBoolean("local", ii->kind==IncludeKind::IncludeLocal || ii->kind==IncludeKind::ImportLocal)

@@ -3624,7 +3624,7 @@ QCString VhdlParser::element_association() {QCString s,s1;
     if (!hasError) {
     s1 = expression();
     }
-if(!s.isEmpty())
+if(!s.empty())
  return s+"=>"+s1;
 return s1;
 assert(false);
@@ -7074,7 +7074,7 @@ QCString VhdlParser::ifunc() {QCString s,s1,s2,s3;Token *t=nullptr;Token *t1=nul
 QCString q;
    if(t!=nullptr) q=t->image;
    if(t2!=nullptr) s3="<>";
-   if (!s3.isEmpty())
+   if (!s3.empty())
    {
      s3.prepend(" is ");
    }
@@ -7706,7 +7706,7 @@ s+=":";
     }
     }
     if (!hasError) {
-if(s1.isEmpty())
+if(s1.empty())
         FlowChart::addFlowChart(FlowChart::LOOP_NO,QCString(),"infinite");
     }
     if (!hasError) {
@@ -9152,7 +9152,7 @@ QCString VhdlParser::pathname_element() {QCString s,s1;
       ;
     }
     }
-if(!s1.isEmpty())
+if(!s1.empty())
      return s+"("+s1+")";
 
     return s;
@@ -9923,7 +9923,7 @@ m_sharedState->currP=VhdlSpecifier::PROCESS;
     s2 = process_declarative_part();
     }
     if (!hasError) {
-if (!s2.isEmpty())
+if (!s2.empty())
                 FlowChart::addFlowChart(FlowChart::VARIABLE_NO,s2,QCString());
                 FlowChart::addFlowChart(FlowChart::BEGIN_NO,"BEGIN",QCString());
     }
@@ -9969,7 +9969,7 @@ if (!s2.isEmpty())
     if (!hasError) {
     jj_consume_token(SEMI_T);
     }
-if(s.isEmpty())
+if(s.empty())
             m_sharedState->currName=VhdlDocGen::getProcessNumber();
           else
             m_sharedState->currName=s;
@@ -12619,7 +12619,7 @@ void VhdlParser::subprogram_body() {QCString s;
     s = subprogram_declarative_part();
     }
     if (!hasError) {
-if (!s.isEmpty())
+if (!s.empty())
       {
         FlowChart::addFlowChart(FlowChart::VARIABLE_NO,s,QCString());
       }

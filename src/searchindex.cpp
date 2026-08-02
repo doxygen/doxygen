@@ -79,7 +79,7 @@ void SearchIndex::setCurrentDoc(const Definition *ctx,const QCString &anchor,boo
   QCString url=isSourceFile ? (toFileDef(ctx))->getSourceFileBase() : ctx->getOutputFileBase();
   url+=Config_getString(HTML_FILE_EXTENSION);
   QCString baseUrl = url;
-  if (!anchor.isEmpty()) url+=QCString("#")+anchor;
+  if (!anchor.empty()) url+=QCString("#")+anchor;
   if (!isSourceFile) baseUrl=url;
   QCString name=ctx->qualifiedName();
   if (ctx->definitionType()==Definition::TypeMember)
@@ -137,7 +137,7 @@ void SearchIndex::setCurrentDoc(const Definition *ctx,const QCString &anchor,boo
       case Definition::TypeGroup:
         {
           const GroupDef *gd = toGroupDef(ctx);
-          if (!gd->groupTitle().isEmpty())
+          if (!gd->groupTitle().empty())
           {
             name = theTranslator->trGroup(true,true)+" "+gd->groupTitle();
           }
@@ -193,7 +193,7 @@ static int charsToIndex(const QCString &word)
 
 void SearchIndex::addWordRec(const QCString &word,bool hiPriority,bool recurse)
 {
-  if (word.isEmpty()) return;
+  if (word.empty()) return;
   QCString wStr = QCString(word).lower();
   //printf("SearchIndex::addWord(%s,%d) wStr=%s\n",word,hiPriority,qPrint(wStr));
   int idx=charsToIndex(wStr);
@@ -452,7 +452,7 @@ void SearchIndexExternal::setCurrentDoc(const Definition *ctx,const QCString &an
   QCString extId = stripPath(Config_getString(EXTERNAL_SEARCH_ID));
   QCString url = isSourceFile ? (toFileDef(ctx))->getSourceFileBase() : ctx->getOutputFileBase();
   addHtmlExtensionIfMissing(url);
-  if (!anchor.isEmpty()) url+=QCString("#")+anchor;
+  if (!anchor.empty()) url+=QCString("#")+anchor;
   QCString key = extId+";"+url;
 
   auto it = m_docEntries.find(key.str());
@@ -468,7 +468,7 @@ void SearchIndexExternal::setCurrentDoc(const Definition *ctx,const QCString &an
     else if (ctx->definitionType()==Definition::TypeGroup)
     {
       const GroupDef *gd = toGroupDef(ctx);
-      if (!gd->groupTitle().isEmpty())
+      if (!gd->groupTitle().empty())
       {
         e.name = filterTitle(gd->groupTitle());
       }
@@ -492,9 +492,9 @@ void SearchIndexExternal::setCurrentDoc(const Definition *ctx,const QCString &an
 void SearchIndexExternal::addWord(const QCString &word,bool hiPriority)
 {
   std::lock_guard<std::mutex> lock(g_searchIndexMutex);
-  if (word.isEmpty() || !isId(word[0]) || m_current==nullptr) return;
+  if (word.empty() || !isId(word[0]) || m_current==nullptr) return;
   QCString &text = hiPriority ? m_current->importantText : m_current->normalText;
-  if (!text.isEmpty()) text+=' ';
+  if (!text.empty()) text+=' ';
   text+=word;
   //printf("addWord %s\n",word);
 }
@@ -511,11 +511,11 @@ void SearchIndexExternal::write(const QCString &fileName)
       t << "  <doc>\n";
       t << "    <field name=\"type\">"     << doc.type << "</field>\n";
       t << "    <field name=\"name\">"     << convertToXML(doc.name) << "</field>\n";
-      if (!doc.args.isEmpty())
+      if (!doc.args.empty())
       {
         t << "    <field name=\"args\">"     << convertToXML(doc.args) << "</field>\n";
       }
-      if (!doc.extId.isEmpty())
+      if (!doc.extId.empty())
       {
         t << "    <field name=\"tag\">"      << convertToXML(doc.extId)  << "</field>\n";
       }

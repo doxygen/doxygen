@@ -466,7 +466,7 @@ void HtmlEntityMapper::writeXMLSchema(TextStream &t)
   for (size_t i=0;i<g_htmlEntities.size();i++)
   {
     QCString bareName = g_htmlEntities[i].xml;
-    if (!bareName.isEmpty() && bareName.at(0)=='<' && bareName.endsWith("/>"))
+    if (!bareName.empty() && bareName.at(0)=='<' && bareName.endsWith("/>"))
     {
       bareName = bareName.mid(1,bareName.length()-3); // strip < and />
       t << "      <xsd:element name=\"" << bareName << "\" type=\"docEmptyType\" />\n";

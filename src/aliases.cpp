@@ -74,7 +74,7 @@ static void addValidAliasToMap(std::string_view alias)
     aliasName  = m[1].str();
     aliasValue = alias.substr(i);
     //printf("Alias: found name='%s' value='%s'\n",qPrint(name),qPrint(aliasValue));
-    if (m[2].length()>0) // alias with parameters
+    if (!m[2].empty()) // alias with parameters
     {
       separator=",";
       size_t b = m[2].position();   // index of '{'

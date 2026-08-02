@@ -103,8 +103,8 @@ static void startFonts(const QCString& q, const char *keyword,OutputList& ol)
 static QCString splitString(QCString& str,char c)
 {
   QCString n=str;
-  int i=str.find(c);
-  if (i>0)
+  size_t i=str.find(c);
+  if (i!=QCString::npos && i>0)
   {
     n=str.left(i);
     str=str.remove(0,i+1);
@@ -198,7 +198,7 @@ const char* VhdlDocGen::findKeyWord(const QCString& kw)
 
 ClassDef *VhdlDocGen::getClass(const QCString &name)
 {
-  if (name.isEmpty()) return nullptr;
+  if (name.empty()) return nullptr;
   return Doxygen::classLinkedMap->find(QCString(name).stripWhiteSpace());
 }
 
@@ -532,8 +532,8 @@ void VhdlDocGen::findAllArchitectures(std::vector<QCString>& qll,const ClassDef 
   for (const auto &citer : *Doxygen::classLinkedMap)
   {
     QCString className=citer->className();
-    int pos = -1;
-    if (cd != citer.get() && (pos=className.find('-'))!=-1)
+    size_t pos = QCString::npos;
+    if (cd != citer.get() && (pos=className.find('-'))!=QCString::npos)
     {
       QCString postfix=className.mid(pos+1);
       if (qstricmp(cd->className(),postfix)==0)
@@ -573,7 +573,7 @@ void VhdlDocGen::writeVhdlLink(const ClassDef* ccd ,OutputList& ol,QCString& typ
   nn.stripPrefix("_");
   ol.writeObjectLink(ccd->getReference(),ccd->getOutputFileBase(),QCString(),nn);
 
-  if (!behav.isEmpty())
+  if (!behav.empty())
   {
     behav.prepend("  ");
     ol.startBold();
@@ -591,7 +591,7 @@ void VhdlDocGen::writeVhdlLink(const ClassDef* ccd ,OutputList& ol,QCString& typ
 void VhdlDocGen::prepareComment(QCString& qcs)
 {
   qcs=qcs.stripWhiteSpace();
-  if (qcs.isEmpty()) return;
+  if (qcs.empty()) return;
 
   const char* sc="--!";
   if (qcs.startsWith(sc)) qcs = qcs.mid(qstrlen(sc));
@@ -633,11 +633,11 @@ void VhdlDocGen::parseFuncProto(const QCString &text,QCString& name,QCString& re
   QCString s1(text);
   QCString temp;
 
-  int index=s1.find("(");
-  if (index<0) index=0;
-  int end=s1.findRev(")");
+  size_t index=s1.find('(');
+  if (index==QCString::npos) index=0;
+  size_t end=s1.rfind(')');
 
-  if ((end-index)>0)
+  if (end!=QCString::npos && end>index)
   {
     temp=s1.mid(index+1,(end-index-1));
     //getFuncParams(qlist,temp);
@@ -655,18 +655,18 @@ void VhdlDocGen::parseFuncProto(const QCString &text,QCString& name,QCString& re
   else
   {
     s1=s1.stripWhiteSpace();
-    int i=s1.find('(');
-    int s=s1.find(' ');
-    if (s==-1) s=s1.find('\t');
-    if (i==-1 || i<s)
+    size_t i=s1.find('(');
+    size_t s=s1.find(' ');
+    if (s==QCString::npos) s=s1.find('\t');
+    if (i==QCString::npos || (s!=QCString::npos && (i==QCString::npos || i<s)))
       s1=VhdlDocGen::getIndexWord(s1,1);
     else // s<i, s=start of name, i=end of name
       s1=s1.mid(s,(i-s));
 
     name=s1.stripWhiteSpace();
   }
-  index=s1.findRev("return",-1,false);
-  if (index !=-1)
+  index=s1.rfind_insensitive("return");
+  if (index!=QCString::npos)
   {
     ret=s1.mid(index+6,s1.length());
     ret=ret.stripWhiteSpace();
@@ -712,8 +712,8 @@ QCString VhdlDocGen::getProtectionName(int prot)
 
 bool VhdlDocGen::deleteCharRev(QCString &s,char c)
 {
-  int index=s.findRev(c,-1,false);
-  if (index > -1)
+  size_t index=s.rfind_insensitive(c);
+  if (index!=QCString::npos)
   {
     s = s.remove(index,1);
     return true;
@@ -723,11 +723,11 @@ bool VhdlDocGen::deleteCharRev(QCString &s,char c)
 
 void VhdlDocGen::deleteAllChars(QCString &s,char c)
 {
-  int index=s.findRev(c,-1,false);
-  while (index > -1)
+  size_t index=s.rfind_insensitive(c);
+  while (index!=QCString::npos)
   {
     s = s.remove(index,1);
-    index=s.findRev(c,-1,false);
+    index=s.rfind_insensitive(c);
   }
 }
 
@@ -806,10 +806,10 @@ void VhdlDocGen::writeFormatString(const QCString& s,OutputList&ol,const MemberD
 
       QCString st=temp.remove(0,j+1);
       find=st;
-      if (!find.isEmpty() && find.at(0)=='"')
+      if (!find.empty() && find.at(0)=='"')
       {
-        int ii=find.find('"',2);
-        if (ii>1)
+        size_t ii=find.find('"',2);
+        if (ii!=QCString::npos && ii>1)
         {
           QCString com=find.left(ii+1);
           startFonts(com,"keyword",ol);
@@ -984,7 +984,7 @@ void VhdlDocGen::writeFunctionProto(OutputList& ol,const ArgumentList &al,const 
     {
       VhdlDocGen::formatString(QCString("generic "),ol,mdef);
     }
-    if (!att.isEmpty())
+    if (!att.empty())
     {
       const char *str=VhdlDocGen::findKeyWord(att);
       att+=" ";
@@ -1006,7 +1006,7 @@ void VhdlDocGen::writeFunctionProto(OutputList& ol,const ArgumentList &al,const 
     else
       startFonts(w,"vhdlchar",ol);
 
-    if (!arg.attrib.isEmpty())
+    if (!arg.attrib.empty())
       startFonts(arg.attrib,"vhdlchar",ol);
 
     sem=true;
@@ -1019,7 +1019,7 @@ void VhdlDocGen::writeFunctionProto(OutputList& ol,const ArgumentList &al,const 
   ol.startBold();
   ol.docify(" )");
   QCString exp=mdef->excpString();
-  if (!exp.isEmpty())
+  if (!exp.empty())
   {
     ol.insertMemberAlign();
     ol.startBold();
@@ -1237,8 +1237,8 @@ void VhdlDocGen::correctMemberProperties(MemberDefMutable *md)
 
   if (md->getVhdlSpecifiers()==VhdlSpecifier::UCF_CONST)
   {
-    int mm=md->name().findRev('_');
-    if (mm>0)
+    size_t mm=md->name().rfind('_');
+    if (mm!=QCString::npos && mm>0)
     {
       md->setName(md->name().left(mm));
     }
@@ -1436,7 +1436,7 @@ void VhdlDocGen::writeVHDLDeclaration(MemberDefMutable* mdef,OutputList &ol,
   if (!detailsVisible)
   {
     QCString doxyName=mdef->name();
-    if (!cname.isEmpty()) doxyName.prepend(cname+"::");
+    if (!cname.empty()) doxyName.prepend(cname+"::");
     QCString doxyArgs=mdef->argsString();
     ol.startDoxyAnchor(cfname,cname,mdef->anchor(),doxyName,doxyArgs);
     ol.addLabel(cfname,mdef->anchor());
@@ -1637,11 +1637,11 @@ void VhdlDocGen::writeVHDLDeclaration(MemberDefMutable* mdef,OutputList &ol,
   }
 
   bool htmlOn = ol.isEnabled(OutputType::Html);
-  if (htmlOn && /*Config_getBool(HTML_ALIGN_MEMBERS) &&*/ !ltype.isEmpty())
+  if (htmlOn && /*Config_getBool(HTML_ALIGN_MEMBERS) &&*/ !ltype.empty())
   {
     ol.disable(OutputType::Html);
   }
-  if (!ltype.isEmpty()) ol.docify(" ");
+  if (!ltype.empty()) ol.docify(" ");
 
   if (htmlOn)
   {
@@ -1654,7 +1654,7 @@ void VhdlDocGen::writeVHDLDeclaration(MemberDefMutable* mdef,OutputList &ol,
   }
 
   ol.endMemberItem(memType);
-  if (!mdef->briefDescription().isEmpty() &&   Config_getBool(BRIEF_MEMBER_DESC) /* && !annMemb */)
+  if (!mdef->briefDescription().empty() &&   Config_getBool(BRIEF_MEMBER_DESC) /* && !annMemb */)
   {
     QCString s=mdef->briefDescription();
     ol.startMemberDescription(mdef->anchor(), QCString(), mm == VhdlSpecifier::PORT);
@@ -1749,14 +1749,14 @@ void VhdlDocGen::writeVHDLDeclarations(const MemberList* ml,OutputList &ol,
 {
   if (!membersHaveSpecificType(ml,type)) return;
 
-  if (!title.isEmpty())
+  if (!title.empty())
   {
     ol.startMemberHeader(convertToId(title),type == VhdlSpecifier::PORT ? 3 : 2);
     ol.parseText(title);
     ol.endMemberHeader();
     ol.docify(" ");
   }
-  if (!subtitle.isEmpty())
+  if (!subtitle.empty())
   {
     ol.startMemberSubtitle();
     ol.generateDoc("[generated]",
@@ -1777,7 +1777,7 @@ void VhdlDocGen::writeVHDLDeclarations(const MemberList* ml,OutputList &ol,
     if (membersHaveSpecificType(&mg->members(),type))
     {
       //printf("mg->header=%s\n",qPrint(mg->header()));
-      bool hasHeader=!mg->header().isEmpty();
+      bool hasHeader=!mg->header().empty();
       QCString groupAnchor = QCString(ml->listType().toLabel())+"-"+QCString().setNum(groupId++);
       ol.startMemberGroupHeader(groupAnchor,hasHeader);
       if (hasHeader)
@@ -1785,7 +1785,7 @@ void VhdlDocGen::writeVHDLDeclarations(const MemberList* ml,OutputList &ol,
         ol.parseText(mg->header());
       }
       ol.endMemberGroupHeader(hasHeader);
-      if (!mg->documentation().isEmpty())
+      if (!mg->documentation().empty())
       {
         //printf("Member group has docs!\n");
         ol.startMemberGroupDocs();
@@ -1853,15 +1853,12 @@ void VhdlDocGen::writeSource(const MemberDef* mdef,OutputList& ol,const QCString
 
   QCString codeFragment=mdef->documentation();
 
-  if (cname.isEmpty())
+  if (cname.empty())
   {
     writeLink(mdef,ol);
-    int fi=0;
+    size_t fi=0;
     int j=0;
-    do
-    {
-     fi=codeFragment.find("\n",++fi);
-    } while(fi>=0 && j++ <3);
+    do { fi=codeFragment.find('\n',++fi); } while (fi!=QCString::npos && j++ <3);
 
     // show only the first four lines
     if (j==4)
@@ -1891,7 +1888,7 @@ void VhdlDocGen::writeSource(const MemberDef* mdef,OutputList& ol,const QCString
   codeOL.endCodeFragment("DoxyCode");
   ol.popGeneratorState();
 
-  if (cname.isEmpty()) return;
+  if (cname.empty()) return;
 
   MemberDefMutable *mdm = toMemberDefMutable(const_cast<MemberDef*>(mdef));
   if (mdm)
@@ -1906,22 +1903,11 @@ void VhdlDocGen::writeSource(const MemberDef* mdef,OutputList& ol,const QCString
 
 QCString VhdlDocGen::convertFileNameToClassName(const QCString &name)
 {
-
   QCString n=name;
   n=n.remove(0,6);
-
-  int i=0;
-
-  while((i=n.find("__"))>0)
-  {
-    n=n.remove(i,1);
-  }
-
-  while((i=n.find("_1"))>0)
-  {
-    n=n.replace(i,2,":");
-  }
-
+  size_t i=0;
+  while ((i=n.find("__"))!=QCString::npos && i>0) n=n.remove(i,1);
+  while ((i=n.find("_1"))!=QCString::npos && i>0) n=n.replace(i,2,":");
   return n;
 }
 
@@ -1932,16 +1918,16 @@ void VhdlDocGen::parseUCF(const QCString &input,Entry* entity,const QCString &fi
   QCString comment("#!");
   QCString brief;
 
-  while (!ucFile.isEmpty())
+  while (!ucFile.empty())
   {
-    int i=ucFile.find("\n");
-    if (i<0) break;
+    size_t i=ucFile.find('\n');
+    if (i==QCString::npos) break;
     lineNo++;
     QCString temp=ucFile.left(i);
     temp=temp.stripWhiteSpace();
     bool bb=temp.stripPrefix("//");
 
-    if (!temp.isEmpty())
+    if (!temp.empty())
     {
       if (temp.stripPrefix(comment) )
       {
@@ -1952,8 +1938,8 @@ void VhdlDocGen::parseUCF(const QCString &input,Entry* entity,const QCString &fi
       {
         if (altera)
         {
-          int in=temp.find("-name");
-          if (in>0)
+          size_t in=temp.find("-name");
+          if (in!=QCString::npos && in>0)
           {
             temp=temp.remove(0,in+5);
           }
@@ -1970,7 +1956,7 @@ void VhdlDocGen::parseUCF(const QCString &input,Entry* entity,const QCString &fi
           QCString ff=temp.left(in);
           temp.stripPrefix(ff);
           ff.append("#");
-          if (!temp.isEmpty())
+          if (!temp.empty())
           {
             initUCF(entity,ff,temp,lineNo,fileName,brief);
           }
@@ -1985,7 +1971,7 @@ void VhdlDocGen::parseUCF(const QCString &input,Entry* entity,const QCString &fi
 static void initUCF(Entry* root,const QCString &type,QCString &qcs,
                     int line,const QCString &fileName,QCString & brief)
 {
-  if (qcs.isEmpty())return;
+  if (qcs.empty())return;
   QCString n;
 
   VhdlDocGen::deleteAllChars(qcs,';');
@@ -2018,7 +2004,7 @@ static void initUCF(Entry* root,const QCString &type,QCString &qcs,
   current->lang=  SrcLangExt::VHDL ;
 
   // adding dummy name for constraints like VOLTAGE=5,TEMPERATURE=20 C
-  if (n.isEmpty())
+  if (n.empty())
   {
     n="dummy";
     n+=VhdlDocGen::getRecordNumber();
@@ -2027,7 +2013,7 @@ static void initUCF(Entry* root,const QCString &type,QCString &qcs,
   current->name= n+"_";
   current->name.append(VhdlDocGen::getRecordNumber());
 
-  if (!brief.isEmpty())
+  if (!brief.empty())
   {
     current->brief=brief;
     current->briefLine=line;
@@ -2079,8 +2065,7 @@ QCString VhdlDocGen::parseForConfig(QCString & entity,QCString & arch)
   }
   QCString label(ql[0]);
   entity = ql[1];
-  int index = entity.findRev(".");
-  if (index!=-1)
+  if (size_t index = entity.rfind('.'); index!=QCString::npos)
   {
     entity.remove(0,index+1);
   }
@@ -2099,7 +2084,7 @@ QCString VhdlDocGen::parseForConfig(QCString & entity,QCString & arch)
 
 //        use (configuration|entity|open) work.test [(cellfor)];
 
-QCString  VhdlDocGen::parseForBinding(QCString & entity,QCString & arch)
+QCString VhdlDocGen::parseForBinding(QCString &entity, QCString &arch)
 {
   static const reg::Ex exp(R"([()\s])");
 
@@ -2117,8 +2102,7 @@ QCString  VhdlDocGen::parseForBinding(QCString & entity,QCString & arch)
 
   std::string label=ql[0];
   entity = ql[1];
-  int index=entity.findRev(".");
-  if (index!=-1)
+  if (size_t index=entity.rfind('.'); index!=QCString::npos)
   {
     entity.remove(0,index+1);
   }
@@ -2176,7 +2160,7 @@ void VhdlDocGen::computeVhdlComponentRelations()
       entity=cur->includeName+" "+cur->type;
       QCString rr=VhdlDocGen::parseForBinding(entity,arch);
     }
-    else if (cur->includeName.isEmpty())
+    else if (cur->includeName.empty())
     {
       entity=cur->type;
     }
@@ -2246,7 +2230,7 @@ ferr:
       "");
   auto mmd = toMemberDefMutable(md.get());
 
-  if (!ar->getOutputFileBase().isEmpty())
+  if (!ar->getOutputFileBase().empty())
   {
     TagInfo tg;
     tg.anchor = nullptr;
@@ -2273,8 +2257,7 @@ ferr:
 
 void  VhdlDocGen::writeRecordUnit(QCString &/* largs */,QCString & ltype,OutputList& ol ,MemberDefMutable *mdef)
 {
-  int i=mdef->name().find('~');
-  if (i>0)
+  if (size_t i=mdef->name().find('~'); i!=QCString::npos && i>0)
   {
     //sets the real record member name
     mdef->setName(mdef->name().left(i));
@@ -2283,7 +2266,7 @@ void  VhdlDocGen::writeRecordUnit(QCString &/* largs */,QCString & ltype,OutputL
   writeLink(mdef,ol);
   ol.startBold();
   ol.insertMemberAlign();
-  if (!ltype.isEmpty())
+  if (!ltype.empty())
   {
     VhdlDocGen::formatString(ltype,ol,mdef);
   }
@@ -2370,15 +2353,15 @@ void VhdlDocGen::addBaseClass(ClassDef* cd,ClassDef *ent)
     if (ccd==ent)
     {
       QCString n = bcd.usedName;
-      int i = n.find('(');
-      if(i<0)
+      size_t i = n.find('(');
+      if (i==QCString::npos)
       {
         bcd.usedName.append("(2)");
         return;
       }
       static const reg::Ex reg(R"(\d+)");
       QCString s=n.left(i);
-      QCString r=n.right(n.length()-i);
+      QCString r=n.mid(i);
       std::string t=r.str();
       VhdlDocGen::deleteAllChars(r,')');
       VhdlDocGen::deleteAllChars(r,'(');
@@ -2558,7 +2541,7 @@ std::vector<FlowChart> flowList;
 static std::map<std::string,int> g_keyMap;
 #endif
 
-void alignText(QCString & q)
+static void alignText(QCString & q)
 {
   if (q.length()<=80) return;
 
@@ -2574,8 +2557,11 @@ void alignText(QCString & q)
 
   while (str.length()>80)
   {
-    int j=std::max(str.findRev(' ',80),str.findRev('|',80));
-    if (j<=0)
+    size_t j0 = str.rfind(' ',80);
+    size_t j1 = str.rfind('|',80);
+    size_t j =  j0!=QCString::npos && j1!=QCString::npos ? std::max(j0,j1) :
+                j0!=QCString::npos ? j0 : j1;
+    if (j==QCString::npos || j==0)
     {
       temp+=str;
       q=temp;
@@ -2849,7 +2835,7 @@ void FlowChart::buildCommentNodes(TextStream & t)
 
 void FlowChart::codify(TextStream &t,const QCString &str)
 {
-  if (!str.isEmpty())
+  if (!str.empty())
   {
     const char *p=str.data();
     while (*p)
@@ -2904,12 +2890,12 @@ void FlowChart::addFlowChart(int type,const QCString &text,const QCString &exp, 
   QCString expression(exp);
 
 
-  if (!text.isEmpty())
+  if (!text.empty())
   {
     typeString=substitute(typeString,";","\n");
   }
 
-  if (!exp.isEmpty())
+  if (!exp.empty())
   {
     expression=substitute(expression,"\"","\\\"");
   }
@@ -2918,7 +2904,7 @@ void FlowChart::addFlowChart(int type,const QCString &text,const QCString &exp, 
   {
   // Ignore the empty section of the VHDL variable definition.
   // This is section between `process` and `begin` keywords, where any source text is missing, probably a bug in the VHDL source parser.
-    if(text.isEmpty()) return;
+    if(text.empty()) return;
 
     flowList.insert(flowList.begin(),FlowChart(type,typeString,expression,label));
     flowList.front().line=1; // TODO: use getLine(); of the parser
@@ -3114,7 +3100,7 @@ void FlowChart::writeFlowChart()
    printFlowTree();
 #endif
 
-  if (!Config_getString(PLANTUML_JAR_PATH).isEmpty())
+  if (!Config_getString(PLANTUML_JAR_PATH).empty())
   {
     printUmlTree();
     delFlowList();
@@ -3164,7 +3150,7 @@ void FlowChart::writeShape(TextStream &t,const FlowChart &fl)
 
   bool dec=(fl.type & DECLN);
   bool exit=(fl.type & EXITNEXT);
-  if (exit && !fl.exp.isEmpty())
+  if (exit && !fl.exp.empty())
   {
     dec=true;
   }
@@ -3179,7 +3165,7 @@ void FlowChart::writeShape(TextStream &t,const FlowChart &fl)
     QCString kl;
     if (exit) kl=fl.text+"  ";
 
-    if (!fl.label.isEmpty())
+    if (!fl.label.empty())
     {
       kl+=fl.label+":"+exp+var;
     }
@@ -3209,7 +3195,7 @@ void FlowChart::writeShape(TextStream &t,const FlowChart &fl)
   }
   else
   {
-    if (fl.text.isEmpty()) return;
+    if (fl.text.empty()) return;
     bool isVar=(fl.type & FlowChart::VARIABLE_NO);
     QCString q=fl.text;
 
@@ -3218,9 +3204,9 @@ void FlowChart::writeShape(TextStream &t,const FlowChart &fl)
       q+=" "+fl.label;
     }
 
-    int z=q.findRev("\n");
+    size_t z=q.rfind('\n');
 
-    if (z==static_cast<int>(q.length())-1)
+    if (z!=QCString::npos && z==q.length()-1)
     {
       q=q.remove(z,2);
     }
@@ -3365,7 +3351,7 @@ size_t FlowChart::findLabel(size_t index,const QCString &label)
   for (size_t j=index;j>0;j--)
   {
     const FlowChart &flo = flowList[j];
-    if ((flo.type & LOOP) && !flo.label.isEmpty() && qstricmp(flo.label,label)==0)
+    if ((flo.type & LOOP) && !flo.label.empty() && qstricmp(flo.label,label)==0)
     {
       return j;
     }
@@ -3546,11 +3532,11 @@ void FlowChart::writeFlowLinks(TextStream &t)
     {
       size_t z = 0;
       bool b = kind==NEXT_NO;
-      if (!fll.exp.isEmpty())
+      if (!fll.exp.empty())
       {
         writeEdge(t,fll,flowList[j+1],1);
       }
-      if (!fll.label.isEmpty())
+      if (!fll.label.empty())
       {
         z=findLabel(j,fll.label);
         if (b)

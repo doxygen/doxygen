@@ -49,7 +49,7 @@ class CitePosition
 static QCString getBibFile(const QCString &inFile)
 {
   QCString name = inFile;
-  if (!name.isEmpty() && !name.endsWith(".bib")) name+=".bib";
+  if (!name.empty() && !name.endsWith(".bib")) name+=".bib";
   return name;
 }
 
@@ -112,7 +112,7 @@ void CitationManager::clear()
   p->entries.clear();
 }
 
-bool CitationManager::isEmpty() const
+bool CitationManager::empty() const
 {
   size_t numFiles = Config_getList(CITE_BIB_FILES).size();
   return (numFiles==0 || p->entries.empty());
@@ -131,7 +131,7 @@ QCString CitationManager::anchorPrefix() const
 void CitationManager::insertCrossReferencesForBibFile(const QCString &bibFile)
 {
   // sanity checks
-  if (bibFile.isEmpty())
+  if (bibFile.empty())
   {
     return;
   }
@@ -155,15 +155,15 @@ void CitationManager::insertCrossReferencesForBibFile(const QCString &bibFile)
   int lineCount = 0;
   while (getline(f,lineStr))
   {
-    int i = -1;
+    size_t i = QCString::npos;
     QCString line(lineStr);
     lineCount++;
     if (line.stripWhiteSpace().startsWith("@"))
     {
       // assumption entry like: "@book { name," or "@book { name" (spaces optional)
-      int j = line.find('{');
+      size_t j = line.find('{');
       // when no {, go hunting for it
-      while (j==-1 && getline(f,lineStr))
+      while (j==QCString::npos && getline(f,lineStr))
       {
         line = lineStr;
         lineCount++;
@@ -171,25 +171,25 @@ void CitationManager::insertCrossReferencesForBibFile(const QCString &bibFile)
       }
       // search for the name
       citeName = "";
-      if (!f.eof() && j!=-1) // to prevent something like "@manual ," and no { found
+      if (!f.eof() && j!=QCString::npos) // to prevent something like "@manual ," and no { found
       {
-        int k = line.find(',',j);
+        size_t k = line.find(',',j);
         j++;
         // found a line "@....{.....,...." or "@.....{....."
         //                     ^=j  ^=k               ^=j   k=-1
-        while (!f.eof() && citeName.isEmpty())
+        while (!f.eof() && citeName.empty())
         {
-          if (k!=-1)
+          if (k!=QCString::npos)
           {
-            citeName = line.mid(static_cast<size_t>(j),static_cast<size_t>(k-j));
+            citeName = line.mid(j,k-j);
           }
           else
           {
-            citeName = line.mid(static_cast<size_t>(j));
+            citeName = line.mid(j);
           }
           citeName = citeName.stripWhiteSpace();
           j = 0;
-          if (citeName.isEmpty() && getline(f,lineStr))
+          if (citeName.empty() && getline(f,lineStr))
           {
             line = lineStr;
             lineCount++;
@@ -198,7 +198,7 @@ void CitationManager::insertCrossReferencesForBibFile(const QCString &bibFile)
         }
       }
       //printf("citeName = #%s#\n",qPrint(citeName));
-      if (!citeName.isEmpty())
+      if (!citeName.empty())
       {
         std::string lCiteName = citeName.lower().str();
         auto it = p->citePosition.find(lCiteName);
@@ -213,13 +213,13 @@ void CitationManager::insertCrossReferencesForBibFile(const QCString &bibFile)
         }
       }
     }
-    else if ((i=line.find("crossref"))!=-1 && !citeName.isEmpty()) /* assumption cross reference is on one line and the only item */
+    else if ((i=line.find("crossref"))!=QCString::npos && !citeName.empty()) /* assumption cross reference is on one line and the only item */
     {
-      int j = line.find('{',i);
-      int k = line.find('}',i);
-      if (j>i && k>j)
+      size_t j = line.find('{',i);
+      size_t k = line.find('}',i);
+      if (j!=QCString::npos && k!=QCString::npos && j>i && k>j)
       {
-        QCString crossrefName = line.mid(static_cast<size_t>(j+1),static_cast<uint32_t>(k-j-1));
+        QCString crossrefName = line.mid(j+1,k-j-1);
         // check if the reference with the cross reference is used
         // insert cross reference when cross reference has not yet been added.
         if (find(citeName) && !find(crossrefName)) // not found yet
@@ -235,7 +235,7 @@ static const std::string g_formulaMarker = "CITE_FORMULA_";
 
 QCString CitationManager::getFormulas(const QCString &s)
 {
-  if (s.isEmpty()) return s;
+  if (s.empty()) return s;
   QCString result;
   result.reserve(s.length()+32);
   QCString formula;
@@ -310,11 +310,11 @@ QCString CitationManager::getFormulas(const QCString &s)
 
 QCString CitationManager::replaceFormulas(const QCString &s)
 {
-  if (s.isEmpty()) return s;
+  if (s.empty()) return s;
   QCString t;
-  int pos=0;
-  int i = -1;
-  while ((i=s.find(g_formulaMarker,pos))!=-1)
+  size_t pos=0;
+  size_t i = QCString::npos;
+  while ((i=s.find(g_formulaMarker,pos))!=QCString::npos)
   {
     t += s.mid(pos,i-pos);
     int markerSize = static_cast<int>( g_formulaMarker.length());
@@ -333,7 +333,7 @@ void CitationManager::generatePage()
   //printf("** CitationManager::generatePage() count=%d\n",m_ordering.count());
 
   // do not generate an empty citations page
-  if (isEmpty()) return; // nothing to cite
+  if (empty()) return; // nothing to cite
 
   bool citeDebug = Debug::isFlagSet(Debug::Cite);
 
@@ -387,14 +387,14 @@ void CitationManager::generatePage()
     err("Failed to create temporary output directory '{}', skipping citations\n",bibOutputDir);
     return;
   }
-  int i = 0;
+  size_t i = 0;
   for (const auto &bibdata : citeDataList)
   {
     QCString bibFile = getBibFile(bibdata);
     FileInfo fi(bibFile.str());
     if (fi.exists())
     {
-      if (!bibFile.isEmpty())
+      if (!bibFile.empty())
       {
         ++i;
         std::ifstream f_org = Portable::openInputStream(bibFile);
@@ -455,31 +455,27 @@ void CitationManager::generatePage()
       QCString line(lineStr);
       //printf("pos=%d s=%d line=[%s]\n",pos,s,qPrint(line));
 
-      if      (line.find("<!-- BEGIN BIBLIOGRAPHY")!=-1) insideBib=true;
-      else if (line.find("<!-- END BIBLIOGRAPH")!=-1)    insideBib=false;
+      if      (line.find("<!-- BEGIN BIBLIOGRAPHY")!=QCString::npos) insideBib=true;
+      else if (line.find("<!-- END BIBLIOGRAPH")!=QCString::npos)    insideBib=false;
       // determine text to use at the location of the @cite command
-      if (insideBib && ((i=line.find("name=\"CITEREF_"))!=-1 || (i=line.find("name=\"#CITEREF_"))!=-1))
+      if (insideBib && ((i=line.find("name=\"CITEREF_"))!=QCString::npos || (i=line.find("name=\"#CITEREF_"))!=QCString::npos))
       {
-        int j=line.find("\">[");
-        int j1=line.find("<!--[");
-        int k=line.find("]<!--");
-        int k1=line.find("]-->");
-        if (j!=-1 && k!=-1)
+        size_t j=line.find("\">[");
+        size_t j1=line.find("<!--[");
+        size_t k=line.find("]<!--");
+        size_t k1=line.find("]-->");
+        if (j!=QCString::npos && k!=QCString::npos)
         {
-          size_t ui=static_cast<size_t>(i);
-          size_t uj0=static_cast<size_t>(j);
-          size_t uj=static_cast<size_t>(j1);
-          size_t uk=static_cast<size_t>(k1);
-          QCString label = line.mid(ui+14,uj0-ui-14);
-          StringVector optList = split(line.mid(uj+5,uk-uj-5).str(),",");
-          QCString number = optList[0];
+          QCString label       = line.mid(i+14,j-i-14);
+          StringVector optList = split(line.mid(j1+5,k1-j1-5).str(),",");
+          QCString number      = optList[0];
           QCString shortAuthor = optList[1];
           QCString year;
           if (optList.size() == 3)
           {
             year = optList[2];
           }
-          line = line.left(ui+14) + label + line.right(line.length()-uj0);
+          line = line.left(i+14) + label + line.mid(j);
           auto it = p->entries.find(label.lower().str());
           //printf("label='%s' number='%s' => %p\n",qPrint(label),qPrint(number),it->second.get());
           if (it!=p->entries.end())
@@ -539,7 +535,7 @@ void CitationManager::generatePage()
       FileInfo fi(bibFile.str());
       if (fi.exists())
       {
-        if (!bibFile.isEmpty())
+        if (!bibFile.empty())
         {
           // bug_700510, multiple times the same name were overwriting; creating new names
           // also for names with spaces
@@ -581,7 +577,7 @@ QCString CitationManager::latexBibFiles()
   {
     QCString bibFile = getBibFile(bibdata);
     FileInfo fi(bibFile.str());
-    if (fi.exists() && !bibFile.isEmpty())
+    if (fi.exists() && !bibFile.empty())
     {
       if (i) result += ",";
       i++;

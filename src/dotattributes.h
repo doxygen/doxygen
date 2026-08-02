@@ -59,7 +59,7 @@ class DotAttributes
           while (pos<len && s[pos]!=',' && s[pos]!=';' && !qisspace(s[pos])) pos++;
         }
         QCString value;
-        if (inpValue.isEmpty())
+        if (inpValue.empty())
         {
           value = m_input.mid(startPos,pos-startPos);
         }
@@ -72,9 +72,9 @@ class DotAttributes
       }
       else // append new attribute
       {
-        if (!inpValue.isEmpty())
+        if (!inpValue.empty())
         {
-          if (!m_input.isEmpty()) m_input+=",";
+          if (!m_input.empty()) m_input+=",";
           m_input+=key+"="+inpValue.quoted();
         }
       }

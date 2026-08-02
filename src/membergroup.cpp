@@ -213,9 +213,9 @@ void MemberGroup::distributeMemberGroupDocumentation()
   {
     //printf("checking md=%s\n",qPrint(md->name()));
     // find the first member of the group with documentation
-    if (!smd->documentation().isEmpty()       ||
-        !smd->briefDescription().isEmpty()    ||
-        !smd->inbodyDocumentation().isEmpty()
+    if (!smd->documentation().empty()       ||
+        !smd->briefDescription().empty()    ||
+        !smd->inbodyDocumentation().empty()
        )
     {
       //printf("found it!\n");
@@ -229,9 +229,9 @@ void MemberGroup::distributeMemberGroupDocumentation()
     for (const auto &iomd : *memberList)
     {
       MemberDefMutable *omd = toMemberDefMutable(iomd);
-      if (omd && md!=omd && omd->documentation().isEmpty() &&
-                            omd->briefDescription().isEmpty() &&
-                            omd->inbodyDocumentation().isEmpty()
+      if (omd && md!=omd && omd->documentation().empty() &&
+                            omd->briefDescription().empty() &&
+                            omd->inbodyDocumentation().empty()
          )
       {
         //printf("Copying documentation to member %s\n",qPrint(omd->name()));

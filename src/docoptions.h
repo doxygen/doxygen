@@ -40,7 +40,7 @@ struct DocOptions
 
     /// Associate this comment block with a given example
     DocOptions &setExample(const QCString &name)
-    { m_isExample=!name.isEmpty(); m_exampleName = name; return *this; }
+    { m_isExample=!name.empty(); m_exampleName = name; return *this; }
 
     /// Select if this is for a single line, so without starting a new paragraph at the end.
     DocOptions &setSingleLine(bool b)

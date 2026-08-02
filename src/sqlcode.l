@@ -417,7 +417,7 @@ void SQLCodeParser::parseCode(OutputCodeList &codeOutIntf,
   yyscan_t yyscanner = p->yyscanner;
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
 
-  if (input.isEmpty()) return;
+  if (input.empty()) return;
 
   DebugLex debugLex(Debug::Lex_sqlcode, __FILE__, options.fileDef() ? qPrint(options.fileDef()->fileName()): nullptr);
   yyextra->fileName          = options.fileDef() ? options.fileDef()->fileName():"";
@@ -438,7 +438,7 @@ void SQLCodeParser::parseCode(OutputCodeList &codeOutIntf,
   if (options.isExample() && options.fileDef()==0)
   {
     // create a dummy filedef for the example
-    yyextra->exampleFileDef = createFileDef(QCString(),!options.exampleName().isEmpty() ? options.exampleName() : QCString("generated"));
+    yyextra->exampleFileDef = createFileDef(QCString(),!options.exampleName().empty() ? options.exampleName() : QCString("generated"));
     yyextra->sourceFileDef = yyextra->exampleFileDef.get();
   }
 

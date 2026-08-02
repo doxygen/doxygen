@@ -136,7 +136,7 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
      */
     QCString trGeneratedAutomatically(const QCString &s) override
     { QCString result="Automaties gegenereer deur Doxygen";
-      if (!s.isEmpty()) result+=" vir "+s;
+      if (!s.empty()) result+=" vir "+s;
       result+=" van die bron kode af.";
       return result;
     }
@@ -332,7 +332,7 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
 
     /*! This is used in HTML as the title of index.html. */
     QCString trDocumentation(const QCString &projName) override
-    { return (!projName.isEmpty()?projName + " " : "") + "Dokumentasie"; }
+    { return (!projName.empty()?projName + " " : "") + "Dokumentasie"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * index of all groups.
@@ -489,7 +489,7 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
     QCString trGeneratedAt(const QCString &date,const QCString &projName) override
     {
       QCString result="Gegenereer op "+date;
-      if (!projName.isEmpty()) result+=" vir "+projName;
+      if (!projName.empty()) result+=" vir "+projName;
       result+=" deur";
       return result;
     }

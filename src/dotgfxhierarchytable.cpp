@@ -27,7 +27,7 @@
 QCString DotGfxHierarchyTable::getBaseName() const
 {
   QCString baseName;
-  if (m_prefix.isEmpty())
+  if (m_prefix.empty())
     baseName.sprintf("inherit_graph_%d", m_graphId);
   else
     baseName.sprintf("%sinherit_graph_%d",qPrint(m_prefix), m_graphId);
@@ -143,7 +143,7 @@ void DotGfxHierarchyTable::addHierarchy(DotNode *n,const ClassDef *cd,ClassDefSe
         if (bClass->isLinkable() && !bClass->isHidden())
         {
           tmp_url=bClass->getReference()+"$"+bClass->getOutputFileBase();
-          if (!bClass->anchor().isEmpty())
+          if (!bClass->anchor().empty())
           {
             tmp_url+="#"+bClass->anchor();
           }
@@ -199,7 +199,7 @@ void DotGfxHierarchyTable::addClassList(const ClassLinkedMap &cl,ClassDefSet &vi
       if (cd->isLinkable() && !cd->isHidden())
       {
         tmp_url=cd->getReference()+"$"+cd->getOutputFileBase();
-        if (!cd->anchor().isEmpty())
+        if (!cd->anchor().empty())
         {
           tmp_url+="#"+cd->anchor();
         }

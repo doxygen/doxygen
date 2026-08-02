@@ -257,7 +257,7 @@ class TranslatorSpanish : public Translator
      */
     QCString trGeneratedAutomatically(const QCString &s) override
     { QCString result="Generado automáticamente por Doxygen";
-      if (!s.isEmpty()) result+=" para "+s;
+      if (!s.empty()) result+=" para "+s;
       result+=" del código fuente.";
       return result;
     }
@@ -461,7 +461,7 @@ class TranslatorSpanish : public Translator
 
     /*! This is used in HTML as the title of index.html. */
     QCString trDocumentation(const QCString &projName) override
-    { return "Documentación" + (!projName.isEmpty()? " de " + projName : ""); }
+    { return "Documentación" + (!projName.empty()? " de " + projName : ""); }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * index of all groups.
@@ -618,7 +618,7 @@ class TranslatorSpanish : public Translator
     QCString trGeneratedAt(const QCString &date,const QCString &projName) override
     {
       QCString result="Generado el "+date;
-      if (!projName.isEmpty()) result+=" para "+projName;
+      if (!projName.empty()) result+=" para "+projName;
       result+=" por";
       return result;
     }
@@ -2699,7 +2699,7 @@ class TranslatorSpanish : public Translator
         case NamespaceMemberHighlight::Total: // for completeness
           break;
       }
-      result+=(pluralResult.isEmpty() ? singularResult+"s" : pluralResult);
+      result+=(pluralResult.empty() ? singularResult+"s" : pluralResult);
 
       result+="del espacio de nombres ";
       if (!extractAll) result+=(masculine ? "documentados " : "documentadas ");
@@ -2772,7 +2772,7 @@ class TranslatorSpanish : public Translator
         case ModuleMemberHighlight::Total: // for completeness
           break;
       }
-      result+=(pluralResult.isEmpty() ? singularResult+"s" : pluralResult);
+      result+=(pluralResult.empty() ? singularResult+"s" : pluralResult);
       result+=" del módulo ";
       if (!extractAll) result+=(masculine ? "documentados " : "documentadas ");
       result+="con enlaces ";

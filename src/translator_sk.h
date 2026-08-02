@@ -126,7 +126,7 @@ class TranslatorSlovak : public TranslatorAdapter_1_8_15
     QCString trGeneratedAutomatically(const QCString &s) override
     { QCString result("Generované automaticky programom Doxygen "
                       "zo zdrojových textov");
-      if (!s.isEmpty())
+      if (!s.empty())
           result+=" projektu "+s;
       result+=".";
       return result;
@@ -333,7 +333,7 @@ class TranslatorSlovak : public TranslatorAdapter_1_8_15
 
     /*! This is used in HTML as the title of index.html. */
     QCString trDocumentation(const QCString &projName) override
-    { return (!projName.isEmpty()?projName + " " : "") + "Dokumentácia"; }
+    { return (!projName.empty()?projName + " " : "") + "Dokumentácia"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * index of all groups.
@@ -477,7 +477,7 @@ class TranslatorSlovak : public TranslatorAdapter_1_8_15
     QCString trGeneratedAt(const QCString &date,const QCString &projName) override
     {
       QCString result="Generované "+date;
-      if (!projName.isEmpty()) result+=" pre projekt "+projName;
+      if (!projName.empty()) result+=" pre projekt "+projName;
       result+=" programom";
       return result;
     }

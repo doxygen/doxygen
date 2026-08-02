@@ -189,7 +189,7 @@ std::string argumentData(const Argument &argument) {
   std::string data = "";
   if (argument.type.size() > 1)
     data = sanitizeString(argument.type.data());
-  else if (!argument.name.isEmpty())
+  else if (!argument.name.empty())
     data = sanitizeString(argument.name.data());
   return data;
 }
@@ -452,9 +452,9 @@ int main(int argc,char **argv) {
   // we need a place to put intermediate files
   std::ostringstream tmpdir;
   unsigned int pid = Portable::pid();
-  if (!Portable::getenv("TMP").isEmpty())
+  if (!Portable::getenv("TMP").empty())
     tmpdir << Portable::getenv("TMP") << "/doxyparse-" << pid;
-  else if (!Portable::getenv("TEMP").isEmpty())
+  else if (!Portable::getenv("TEMP").empty())
     tmpdir << Portable::getenv("TEMP") << "/doxyparse-" << pid;
   else
     tmpdir << "doxyparse-" << pid;
@@ -521,7 +521,7 @@ int main(int argc,char **argv) {
 
   Dir thisDir;
   // remove temporary files
-  if (!Doxygen::filterDBFileName.isEmpty()) thisDir.remove(Doxygen::filterDBFileName.str());
+  if (!Doxygen::filterDBFileName.empty()) thisDir.remove(Doxygen::filterDBFileName.str());
 
   // clean up after us
   thisDir.rmdir(Config_getString(OUTPUT_DIRECTORY).str());

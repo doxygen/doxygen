@@ -28,7 +28,7 @@ void DotClassGraph::addClass(const ClassDef *cd,DotNode *n,EdgeInfo::Colors colo
 {
   if (Config_getBool(HIDE_UNDOC_CLASSES) && !cd->isLinkable()) return;
 
-  EdgeInfo::Styles edgeStyle = (!label.isEmpty() || color==EdgeInfo::Orange || color==EdgeInfo::Orange2) ? EdgeInfo::Dashed : EdgeInfo::Solid;
+  EdgeInfo::Styles edgeStyle = (!label.empty() || color==EdgeInfo::Orange || color==EdgeInfo::Orange2) ? EdgeInfo::Dashed : EdgeInfo::Solid;
   QCString className;
   QCString fullName;
   if (cd->isAnonymous())
@@ -37,12 +37,12 @@ void DotClassGraph::addClass(const ClassDef *cd,DotNode *n,EdgeInfo::Colors colo
     className+=label;
     fullName = className;
   }
-  else if (!usedName.isEmpty()) // name is a typedef
+  else if (!usedName.empty()) // name is a typedef
   {
     className=usedName;
     fullName = className;
   }
-  else if (!templSpec.isEmpty()) // name has a template part
+  else if (!templSpec.empty()) // name has a template part
   {
     className=insertTemplateSpecifierInScope(cd->displayName(),templSpec);
     fullName =insertTemplateSpecifierInScope(cd->name(),templSpec);
@@ -79,7 +79,7 @@ void DotClassGraph::addClass(const ClassDef *cd,DotNode *n,EdgeInfo::Colors colo
     if (cd->isLinkable() && !cd->isHidden())
     {
       tmp_url=cd->getReference()+"$"+cd->getOutputFileBase();
-      if (!cd->anchor().isEmpty())
+      if (!cd->anchor().empty())
       {
         tmp_url+="#"+cd->anchor();
       }
@@ -321,7 +321,7 @@ DotClassGraph::DotClassGraph(const ClassDef *cd,GraphType t)
   if (cd->isLinkable() && !cd->isHidden())
   {
     tmp_url=cd->getReference()+"$"+cd->getOutputFileBase();
-    if (!cd->anchor().isEmpty())
+    if (!cd->anchor().empty())
     {
       tmp_url+="#"+cd->anchor();
     }

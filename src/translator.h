@@ -788,7 +788,7 @@ class Translator
     QCString p_latexCommandName(const QCString &latexCmd)
     {
       QCString latex_command = Config_getString(LATEX_CMD_NAME);
-      if (latex_command.isEmpty()) latex_command = "latex";
+      if (latex_command.empty()) latex_command = "latex";
       if (Config_getBool(USE_PDFLATEX))
       {
         if (latex_command == "latex") latex_command = latexCmd;

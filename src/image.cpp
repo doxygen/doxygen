@@ -262,7 +262,7 @@ void Image::writeChar(uint32_t x,uint32_t y,char c,uint8_t fg)
 
 void Image::writeString(uint32_t x,uint32_t y,const QCString &s,uint8_t fg)
 {
-  if (!s.isEmpty())
+  if (!s.empty())
   {
     const char *ps = s.data();
     char c = 0;
@@ -277,7 +277,7 @@ void Image::writeString(uint32_t x,uint32_t y,const QCString &s,uint8_t fg)
 uint32_t Image::stringLength(const QCString &s)
 {
   uint32_t w=0;
-  if (!s.isEmpty())
+  if (!s.empty())
   {
     const char *ps = s.data();
     char c = 0;

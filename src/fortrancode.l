@@ -1036,7 +1036,7 @@ static void codifyLines(yyscan_t yyscanner,const QCString &text)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   //printf("codifyLines(%d,\"%s\")\n",yyextra->yyLineNr,text);
-  if (text.isEmpty()) return;
+  if (text.empty()) return;
   const char *p=text.data(),*sp=p;
   char c = 0;
   bool done=false;
@@ -1109,7 +1109,7 @@ static void writeMultiLineCodeLink(yyscan_t yyscanner,OutputCodeList &ol,
 static bool getFortranNamespaceDefs(const QCString &mname,
                                NamespaceDef *&cd)
 {
-  if (mname.isEmpty()) return false; /* empty name => nothing to link */
+  if (mname.empty()) return false; /* empty name => nothing to link */
 
   // search for module
   if ((cd=Doxygen::namespaceLinkedMap->find(mname))) return true;
@@ -1128,7 +1128,7 @@ static bool getFortranNamespaceDefs(const QCString &mname,
 static bool getFortranTypeDefs(const QCString &tname, const QCString &moduleName,
                                ClassDef *&cd, const UseMap &useMap)
 {
-  if (tname.isEmpty()) return false; /* empty name => nothing to link */
+  if (tname.empty()) return false; /* empty name => nothing to link */
 
   //cout << "=== search for type: " << tname << endl;
 
@@ -1138,7 +1138,7 @@ static bool getFortranTypeDefs(const QCString &tname, const QCString &moduleName
     //cout << "=== type found in global module" << endl;
     return true;
   }
-  else if (!moduleName.isEmpty() && (cd=Doxygen::classLinkedMap->find(moduleName+"::"+tname)))
+  else if (!moduleName.empty() && (cd=Doxygen::classLinkedMap->find(moduleName+"::"+tname)))
   {
     //cout << "=== type found in local module" << endl;
     return true;
@@ -1171,7 +1171,7 @@ static MemberDef *getFortranDefs(yyscan_t yyscanner,const QCString &memberName, 
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   MemberDef *potentialMd = nullptr;
-  if (memberName.isEmpty()) return nullptr; /* empty name => nothing to link */
+  if (memberName.empty()) return nullptr; /* empty name => nothing to link */
 
   // look in local variables
   for (auto it = yyextra->scopeStack.rbegin(); it!=yyextra->scopeStack.rend(); ++it)
@@ -1287,8 +1287,8 @@ static bool getLink(yyscan_t yyscanner,const UseMap &useMap, // dictionary with 
       {
         addDocCrossReference(yyextra->currentMemberDef,md);
       }
-      writeMultiLineCodeLink(yyscanner,ol,md,!text.isEmpty() ? text : memberText);
-      addToSearchIndex(yyscanner, !text.isEmpty() ? text : memberText);
+      writeMultiLineCodeLink(yyscanner,ol,md,!text.empty() ? text : memberText);
+      addToSearchIndex(yyscanner, !text.empty() ? text : memberText);
       return true;
     }
   }
@@ -1486,7 +1486,7 @@ void FortranCodeParser::parseCode(OutputCodeList & codeOutIntf,
 {
   yyscan_t yyscanner = p->yyscanner;
   struct yyguts_t *yyg = (struct yyguts_t*)p->yyscanner;
-  if (input.isEmpty()) return;
+  if (input.empty()) return;
   DebugLex debugLex(Debug::Lex_fortrancode, __FILE__, options.fileDef() ? qPrint(options.fileDef()->fileName()): nullptr);
   codeOutIntf.stripCodeComments(stripCodeComments);
   yyextra->code               = &codeOutIntf;
@@ -1525,7 +1525,7 @@ void FortranCodeParser::parseCode(OutputCodeList & codeOutIntf,
   }
   yyextra->currentDefinition = nullptr;
   yyextra->currentMemberDef = nullptr;
-  if (!yyextra->exampleName.isEmpty())
+  if (!yyextra->exampleName.empty())
   {
     yyextra->exampleFile = convertNameToFile(yyextra->exampleName+"-example");
   }

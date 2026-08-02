@@ -51,9 +51,9 @@ class HtmlAttribList final : public std::vector<HtmlAttrib>
       QCString result;
       for (const auto &att : *this)
       {
-        if (!att.value.isEmpty())  // ignore attribute without values as they
-                                   // are not XHTML compliant, with the exception
-                                   // of the alt attribute with the img tag
+        if (!att.value.empty())  // ignore attribute without values as they
+                                 // are not XHTML compliant, with the exception
+                                 // of the alt attribute with the img tag
         {
           if (att.name=="alt" && pAltValue) // optionally return the value of alt separately
                                             // need to convert <img> to <object> for SVG images,

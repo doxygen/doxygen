@@ -265,8 +265,8 @@ bool DotRunner::readBoundingBox(const QCString &fileName,int *width,int *height,
 
 static QCString getBaseNameOfOutput(const QCString &output)
 {
-  int index = output.findRev('.');
-  if (index < 0) return output;
+  size_t index = output.rfind('.');
+  if (index==QCString::npos) return output;
   return output.left(index);
 }
 
@@ -505,7 +505,7 @@ bool DotRunner::run(const DotJobs &dotJobs)
   {
     if (!processed.insert((job.absPath + job.relDotName).str()).second) continue;
 
-    if (!job.md5Hash.isEmpty())
+    if (!job.md5Hash.empty())
     {
       QCString md5Name = job.absPath + getBaseNameOfOutput(job.relDotName) + ".md5";
       FILE *f = Portable::fopen(md5Name, "w");

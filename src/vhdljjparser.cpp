@@ -80,7 +80,7 @@ struct VHDLOutlineParser::Private
   VHDLDocInfo             str_doc;
   VhdlParser::SharedState shared;
   QCString                forL;
-  int code = 0;
+  size_t                  code = 0;
 
 };
 
@@ -136,7 +136,7 @@ void VHDLOutlineParser::parseInput(const QCString &fileName,const char *fileBuf,
 
  // fprintf(stderr,"\n ============= %s\n ==========\n",fileBuf);
 
-  bool inLine = fileName.isEmpty();
+  bool inLine = fileName.empty();
 
   if (!inLine) msg("Parsing file {}...\n",fileName);
 
@@ -185,7 +185,7 @@ void VHDLOutlineParser::lineCount()
 
 void VHDLOutlineParser::lineCount(const QCString &text)
 {
-  if (!text.isEmpty())
+  if (!text.empty())
   {
     for (const char* c=text.data() ; *c ; ++c )
     {
@@ -279,17 +279,17 @@ int VHDLOutlineParser::checkInlineCode(QCString &doc)
   static const reg::Ex cbriefRe(R"([\\@]brief)");
 
   // helper to simulate behavior of QString.find(const QRegExp &re,int pos)
-  auto findRe = [](const QCString &str,const reg::Ex &re,int pos=0) -> int
+  auto findRe = [](const QCString &str,const reg::Ex &re,int pos=0) -> size_t
   {
     if ((int)str.length()<pos) return -1;
     reg::Match match;
     if (reg::search(str.str(),match,re,pos)) // match found
     {
-      return (int)match.position();
+      return match.position();
     }
     else // not found
     {
-      return -1;
+      return QCString::npos;
     }
   };
   auto replaceRe = [](const QCString &str,const reg::Ex &re,const QCString &replacement) -> QCString
@@ -297,23 +297,23 @@ int VHDLOutlineParser::checkInlineCode(QCString &doc)
     return reg::replace(str.str(), re, replacement.str());
   };
 
-  int index = findRe(doc,csRe);
+  size_t index = findRe(doc,csRe);
 
-  if (findRe(doc,cendRe)!=-1)
+  if (findRe(doc,cendRe)!=QCString::npos)
     return 1;
 
-  if (index < 0)
+  if (index==QCString::npos)
     return index;
 
   VhdlParser::SharedState *s = &p->shared;
   p->strComment += doc;
   p->code = findRe(p->inputString,csRe, p->code + 1);
-  int com = p->inputString.find(p->strComment.data());
-  int ref = findRe(p->inputString,cendRe, p->code + 1);
-  int len = static_cast<int>(p->strComment.size());
+  size_t com = p->inputString.find(p->strComment);
+  size_t ref = findRe(p->inputString,cendRe, p->code + 1);
+  size_t len = p->strComment.size();
 
-  int ll = com + len;
-  int diff = ref - ll - 3;
+  size_t ll = com + len;
+  int diff = static_cast<int>(ref) - static_cast<int>(ll) - 3;
   QCString code = p->inputString.mid(ll, diff);
   int iLine = 0;
   code = stripLeadingAndTrailingEmptyLines(code, iLine);
@@ -327,13 +327,13 @@ int VHDLOutlineParser::checkInlineCode(QCString &doc)
   {
     QCString qcs(qcs_);
     qcs = qcs.simplifyWhiteSpace();
-    if (findRe(qcs,csRe)!=-1)
+    if (findRe(qcs,csRe)!=QCString::npos)
     {
-      int i = qcs.find('{');
-      int j = qcs.find('}');
-      if (i > 0 && j > 0 && j > i)
+      size_t i = qcs.find('{');
+      size_t j = qcs.find('}');
+      if (i!=QCString::npos && j!=QCString::npos && i>0 && j > i)
       {
-        na = qcs.mid(i + 1, (j - i - 1));
+        na = qcs.mid(i+1, j-i-1);
       }
       continue;
     }
@@ -345,7 +345,7 @@ int VHDLOutlineParser::checkInlineCode(QCString &doc)
   VhdlDocGen::prepareComment(co);
 
   Entry gBlock;
-  if (!na.isEmpty())
+  if (!na.empty())
     gBlock.name = na;
   else
     gBlock.name = "misc" + VhdlDocGen::getRecordNumber();
@@ -388,7 +388,7 @@ void VHDLOutlineParser::handleCommentBlock(const QCString &doc1, bool brief)
   VhdlParser::SharedState *s = &p->shared;
   QCString doc = doc1;
 
-  if (doc.isEmpty())
+  if (doc.empty())
     return;
 
   if (checkMultiComment(doc, p->yyLineNr))
@@ -404,7 +404,7 @@ void VHDLOutlineParser::handleCommentBlock(const QCString &doc1, bool brief)
 
   Protection protection = Protection::Public;
   VhdlDocGen::prepareComment(doc);
-  if (doc.isEmpty()) return;
+  if (doc.empty()) return;
 
   if (p->oldEntry == s->current.get())
   {
@@ -488,10 +488,10 @@ void VHDLOutlineParser::addCompInst(const QCString &n, const QCString &instName,
     s->current->args=s->lastCompound->name;             // architecture name
   }
   s->current->includeName=comp;                    // component/entity/configuration
-  int u=s->genLabels.find("|",1);
-  if (u>0)
+  size_t u=s->genLabels.find('|',1);
+  if (u!=QCString::npos && u>0)
   {
-    s->current->write=s->genLabels.right(s->genLabels.length()-u);
+    s->current->write=s->genLabels.mid(u);
     s->current->read=s->genLabels.left(u);
   }
   //printf  (" \n genlabel: [%s]  inst: [%s]  name: [%s] %d\n",n,instName,comp,iLine);
@@ -536,7 +536,7 @@ void VHDLOutlineParser::addVhdlType(const QCString &n,int startLine,EntryType se
     s->current->section=section;
     s->current->vhdlSpec=spec;
     s->current->fileName=p->yyFileName;
-    if (s->current->args.isEmpty())
+    if (s->current->args.empty())
     {
       s->current->args=args;
     }
@@ -584,7 +584,7 @@ void VHDLOutlineParser::createFunction(const QCString &impure,VhdlSpecifier spec
     s->current->args=fname;
     s->current->name=impure;
     VhdlDocGen::deleteAllChars(s->current->args,' ');
-    if (!fname.isEmpty())
+    if (!fname.empty())
     {
       StringVector q1=split(fname.str(),",");
       for (const auto &name : q1)
@@ -619,8 +619,8 @@ void VHDLOutlineParser::pushLabel( QCString &label,QCString & val)
 
 QCString VHDLOutlineParser::popLabel(QCString & q)
 {
-  int i=q.findRev("|");
-  if (i<0) return QCString();
+  size_t i=q.rfind('|');
+  if (i==QCString::npos) return QCString();
   q = q.left(i);
   return q;
 }
@@ -637,13 +637,13 @@ void VHDLOutlineParser::addProto(const QCString &s1,const QCString &s2,const QCS
   {
     Argument arg;
     arg.name=n;
-    if (!s3.isEmpty())
+    if (!s3.empty())
     {
       arg.type=s3;
     }
     arg.type+=" ";
     arg.type+=s4;
-    if (!s6.isEmpty())
+    if (!s6.empty())
     {
       arg.type+=s6;
     }
@@ -794,8 +794,7 @@ void VHDLOutlineParser::setMultCommentLine()
 
 void VHDLOutlineParser::oneLineComment(QCString qcs)
 {
-    int j=qcs.find("--!");
-    qcs=qcs.right(qcs.length()-3-j);
+    if (size_t j=qcs.find("--!"); j!=QCString::npos) qcs=qcs.mid(j+3);
     if (!checkMultiComment(qcs,p->iDocLine))
     {
       handleCommentBlock(qcs,true);

@@ -560,7 +560,7 @@ FILEMASK  {VFILEMASK}|{HFILEMASK}
 
                                           // extract generic name
                                           QCString name = QCString(yytext).stripWhiteSpace();
-                                          name = name.right(name.length() - 9).stripWhiteSpace().lower();
+                                          name = name.mid(9).stripWhiteSpace().lower();
                                           addInterface(yyscanner,name, yyextra->ifType);
                                           startScope(yyscanner,yyextra->last_entry.get());
                                         }
@@ -780,7 +780,7 @@ private                                 {
                                           yyextra->current->section  = EntryType::makeFunction();
                                           yyextra->current->name     = name;
                                           // check for procedure(name)
-                                          if (yyextra->current->type.find('(') != -1)
+                                          if (yyextra->current->type.find('(')!=QCString::npos)
                                           {
                                             yyextra->current->args = extractFromParens(yyextra->current->type).stripWhiteSpace();
                                           }
@@ -795,8 +795,8 @@ private                                 {
                                         }
 {BS}"=>"[^(\n|\!)]*                     { /* Specific bindings come after the ID. */
                                           QCString tmp = yytext;
-                                          int i = tmp.find("=>");
-                                          if (i!=-1)
+                                          size_t i = tmp.find("=>");
+                                          if (i!=QCString::npos)
                                           {
                                             tmp.remove(0, i+2);
                                           }
@@ -806,8 +806,8 @@ private                                 {
                                             // duplicate entries for each overloaded variant
                                             // (parse through medhod1,method2, methodN, ...
                                             //printf("Parsing through %s for generic method %s.\n", tmp.data(), last_entry->name.data());
-                                            i = tmp.find(",");
-                                            while (i>0)
+                                            i = tmp.find(',');
+                                            while (i!=QCString::npos && i>0)
                                             {
                                               copyEntry(yyextra->current, yyextra->last_entry);
                                               yyextra->current->name = yyextra->last_entry->name;
@@ -816,7 +816,7 @@ private                                 {
                                               //printf("Found %s.\n", last_entry->args.data());
                                               addCurrentEntry(yyscanner,true);
                                               tmp = tmp.remove(0,i+1).stripWhiteSpace();
-                                              i = tmp.find(",");
+                                              i = tmp.find(',');
                                             }
                                           }
                                           //printf("Target function: %s\n", tmp.data());
@@ -1022,7 +1022,7 @@ private                                 {
                                           yyextra->argName= name;
 
                                           yyextra->vtype= V_IGNORE;
-                                          if (!yyextra->argType.isEmpty() && !yyextra->current_root->section.isFunction())
+                                          if (!yyextra->argType.empty() && !yyextra->current_root->section.isFunction())
                                           { // new variable entry
                                             yyextra->vtype = V_VARIABLE;
                                             yyextra->current->section = EntryType::makeVariable();
@@ -1044,14 +1044,14 @@ private                                 {
                                               addCurrentEntry(yyscanner,true);
                                             }
                                           }
-                                          else if (!yyextra->argType.isEmpty())
+                                          else if (!yyextra->argType.empty())
                                           { // declaration of parameter list: add type for corr. parameter
                                             Argument *parameter = getParameter(yyscanner,yyextra->argName);
                                             if (parameter)
                                             {
                                               yyextra->vtype= V_PARAMETER;
-                                              if (!yyextra->argType.isEmpty()) parameter->type=yyextra->argType.stripWhiteSpace();
-                                              if (!yyextra->docBlock.isEmpty())
+                                              if (!yyextra->argType.empty()) parameter->type=yyextra->argType.stripWhiteSpace();
+                                              if (!yyextra->docBlock.empty())
                                               {
                                                 subrHandleCommentBlock(yyscanner,yyextra->docBlock,true);
                                               }
@@ -1066,10 +1066,10 @@ private                                 {
                                               if ((yyextra->current_root->name.lower() == yyextra->argName.lower()) ||
                                                   (yyextra->modifiers[yyextra->current_root->parent()][yyextra->current_root->name.lower().str()].returnName.lower() == yyextra->argName.lower()))
                                               {
-                                                int strt = yyextra->current_root->type.find("function");
+                                                size_t strt = yyextra->current_root->type.find("function");
                                                 QCString lft;
                                                 QCString rght;
-                                                if (strt != -1)
+                                                if (strt != QCString::npos)
                                                 {
                                                   yyextra->vtype = V_RESULT;
                                                   lft = "";
@@ -1092,7 +1092,7 @@ private                                 {
                                                   }
                                                   if (yyextra->current_root->type.length() > 0) yyextra->current_root->type += " ";
                                                   yyextra->current_root->type += "function";
-                                                  if (!yyextra->docBlock.isEmpty())
+                                                  if (!yyextra->docBlock.empty())
                                                   {
                                                     subrHandleCommentBlockResult(yyscanner,yyextra->docBlock,true);
                                                   }
@@ -1352,7 +1352,7 @@ private                                 {
                                           if (yyextra->functionLine)
                                           {
                                             QCString result= yytext;
-                                            result= result.right(result.length()-result.find("(")-1);
+                                            result= result.mid(result.find('(')+1);
                                             result= result.stripWhiteSpace();
                                             yyextra->modifiers[yyextra->current_root->parent()][yyextra->current_root->name.lower().str()].returnName = result;
                                           }
@@ -2192,9 +2192,7 @@ void resolveModuleProcedures(yyscan_t yyscanner,Entry *current_root)
       // remove scope from name
       QCString name = cf->name;
       {
-        int end = name.findRev(":");
-        if (end != -1) 
-          name.remove(0, end+1);
+        if (size_t end = name.rfind(':') ; end!=QCString::npos) name.remove(0, end+1);
       }
 
       procMap.emplace(name.str(), cf);
@@ -2218,13 +2216,11 @@ void resolveModuleProcedures(yyscan_t yyscanner,Entry *current_root)
 static QCString extractFromParens(const QCString &name)
 {
   QCString extracted = name;
-  int start = extracted.find("(");
-  if (start != -1)
+  if (size_t start = extracted.find('('); start!=QCString::npos)
   {
     extracted.remove(0, start+1);
   }
-  int end = extracted.findRev(")");
-  if (end != -1)
+  if (size_t end = extracted.rfind(')'); end!=QCString::npos)
   {
     size_t length = extracted.length();
     extracted.remove(end, length);
@@ -2263,7 +2259,7 @@ SymbolModifiers& SymbolModifiers::operator|=(const SymbolModifiers &mdfs)
   if (mdfs.protection!=NONE_P) protection = mdfs.protection;
   if (mdfs.direction!=NONE_D) direction = mdfs.direction;
   optional |= mdfs.optional;
-  if (!mdfs.dimension.isEmpty()) dimension = mdfs.dimension;
+  if (!mdfs.dimension.empty()) dimension = mdfs.dimension;
   allocatable |= mdfs.allocatable;
   external |= mdfs.external;
   intrinsic |= mdfs.intrinsic;
@@ -2290,15 +2286,15 @@ SymbolModifiers& SymbolModifiers::operator|=(QCString mdfStringArg)
   QCString mdfString = mdfStringArg.lower();
   SymbolModifiers newMdf;
 
-  if (mdfString.find("dimension")==0)
+  if (mdfString.startsWith("dimension"))
   {
     newMdf.dimension=mdfString;
   }
   else if (mdfString.contains("intent"))
   {
     QCString tmp = extractFromParens(mdfString);
-    bool isin = tmp.contains("in")!=0;
-    bool isout = tmp.contains("out")!=0;
+    bool isin = tmp.find("in")!=QCString::npos;
+    bool isout = tmp.find("out")!=QCString::npos;
     if (isin && isout) newMdf.direction = SymbolModifiers::INOUT;
     else if (isin) newMdf.direction = SymbolModifiers::IN;
     else if (isout) newMdf.direction = SymbolModifiers::OUT;
@@ -2393,7 +2389,7 @@ SymbolModifiers& SymbolModifiers::operator|=(QCString mdfStringArg)
 //ostream& operator<<(ostream& out, const SymbolModifiers& mdfs)
 //{
 //  out<<mdfs.protection<<", "<<mdfs.direction<<", "<<mdfs.optional<<
-//    ", "<<(mdfs.dimension.isEmpty() ? "" : mdfs.dimension.latin1())<<
+//    ", "<<(mdfs.dimension.empty() ? "" : mdfs.dimension.latin1())<<
 //    ", "<<mdfs.allocatable<<", "<<mdfs.external<<", "<<mdfs.intrinsic;
 //
 //  return out;
@@ -2419,114 +2415,114 @@ static Argument *findArgument(Entry* subprog, QCString name, bool byTypeName = f
 /*! Apply yyextra->modifiers stored in \a mdfs to the \a typeName string. */
 static QCString applyModifiers(QCString typeName, const SymbolModifiers& mdfs)
 {
-  if (!mdfs.dimension.isEmpty())
+  if (!mdfs.dimension.empty())
   {
-    if (!typeName.isEmpty()) typeName += ", ";
+    if (!typeName.empty()) typeName += ", ";
     typeName += mdfs.dimension;
   }
   if (mdfs.direction!=SymbolModifiers::NONE_D)
   {
-    if (!typeName.isEmpty()) typeName += ", ";
+    if (!typeName.empty()) typeName += ", ";
     typeName += directionStrs[mdfs.direction];
   }
   if (mdfs.optional)
   {
-    if (!typeName.isEmpty()) typeName += ", ";
+    if (!typeName.empty()) typeName += ", ";
     typeName += "optional";
   }
   if (mdfs.allocatable)
   {
-    if (!typeName.isEmpty()) typeName += ", ";
+    if (!typeName.empty()) typeName += ", ";
     typeName += "allocatable";
   }
   if (mdfs.external)
   {
     if (!typeName.contains("external"))
     {
-      if (!typeName.isEmpty()) typeName += ", ";
+      if (!typeName.empty()) typeName += ", ";
       typeName += "external";
     }
   }
   if (mdfs.intrinsic)
   {
-    if (!typeName.isEmpty()) typeName += ", ";
+    if (!typeName.empty()) typeName += ", ";
     typeName += "intrinsic";
   }
   if (mdfs.parameter)
   {
-    if (!typeName.isEmpty()) typeName += ", ";
+    if (!typeName.empty()) typeName += ", ";
     typeName += "parameter";
   }
   if (mdfs.pointer)
   {
-    if (!typeName.isEmpty()) typeName += ", ";
+    if (!typeName.empty()) typeName += ", ";
     typeName += "pointer";
   }
   if (mdfs.target)
   {
-    if (!typeName.isEmpty()) typeName += ", ";
+    if (!typeName.empty()) typeName += ", ";
     typeName += "target";
   }
   if (mdfs.save)
   {
-    if (!typeName.isEmpty()) typeName += ", ";
+    if (!typeName.empty()) typeName += ", ";
     typeName += "save";
   }
   if (mdfs.deferred)
   {
-    if (!typeName.isEmpty()) typeName += ", ";
+    if (!typeName.empty()) typeName += ", ";
     typeName += "deferred";
   }
   if (mdfs.nonoverridable)
   {
-    if (!typeName.isEmpty()) typeName += ", ";
+    if (!typeName.empty()) typeName += ", ";
     typeName += "non_overridable";
   }
   if (mdfs.nopass)
   {
-    if (!typeName.isEmpty()) typeName += ", ";
+    if (!typeName.empty()) typeName += ", ";
     typeName += "nopass";
   }
   if (mdfs.pass)
   {
-    if (!typeName.isEmpty()) typeName += ", ";
+    if (!typeName.empty()) typeName += ", ";
     typeName += "pass";
-    if (!mdfs.passVar.isEmpty())
+    if (!mdfs.passVar.empty())
       typeName += "(" + mdfs.passVar + ")";
   }
-  if (!mdfs.bindVar.isEmpty())
+  if (!mdfs.bindVar.empty())
   {
-    if (!typeName.isEmpty()) typeName += ", ";
+    if (!typeName.empty()) typeName += ", ";
     typeName += mdfs.bindVar;
   }
   if (mdfs.protection == SymbolModifiers::PUBLIC)
   {
-    if (!typeName.isEmpty()) typeName += ", ";
+    if (!typeName.empty()) typeName += ", ";
     typeName += "public";
   }
   else if (mdfs.protection == SymbolModifiers::PRIVATE)
   {
-    if (!typeName.isEmpty()) typeName += ", ";
+    if (!typeName.empty()) typeName += ", ";
     typeName += "private";
   }
   if (mdfs.protect)
   {
-    if (!typeName.isEmpty()) typeName += ", ";
+    if (!typeName.empty()) typeName += ", ";
     typeName += "protected";
   }
   if (mdfs.contiguous)
   {
-    if (!typeName.isEmpty()) typeName += ", ";
+    if (!typeName.empty()) typeName += ", ";
     typeName += "contiguous";
   }
   if (mdfs.volat)
   {
-    if (!typeName.isEmpty()) typeName += ", ";
+    if (!typeName.empty()) typeName += ", ";
     typeName += "volatile";
   }
   if (mdfs.value)
   {
-    if (!typeName.isEmpty()) typeName += ", ";
+    if (!typeName.empty()) typeName += ", ";
     typeName += "value";
   }
 
@@ -2646,17 +2642,13 @@ static bool endScope(yyscan_t yyscanner,Entry *scope, bool isGlobalRoot)
 
         // remove prefix
         QCString name = ce->name.lower();
-        int ii = name.findRev(":");
-        if (ii != -1)
-        {
-          name.remove(0, ii+1);
-        }
+        if (size_t ii = name.rfind(':'); ii!=QCString::npos) name.remove(0, ii+1);
         Argument *arg = findArgument(scope->parent(), name);
         if (arg)
         {
           // set type of dummy procedure argument to interface
           arg->type = "external " + ce->type + "(";
-          for (unsigned int i=0; i<ce->argList.size(); i++)
+          for (size_t i=0; i<ce->argList.size(); i++)
           {
             if (i > 0)
             {
@@ -2691,9 +2683,7 @@ static bool endScope(yyscan_t yyscanner,Entry *scope, bool isGlobalRoot)
       // remove prefix for variable names
       if (ce->section.isVariable() || ce->section.isFunction())
       {
-        int end = ce->name.findRev(":");
-        if (end != -1) 
-          ce->name.remove(0, end+1);
+        if (size_t end = ce->name.rfind(':'); end!=QCString::npos) ce->name.remove(0, end+1);
       }
     }
   }
@@ -2759,13 +2749,13 @@ static void resolveTypeBoundProcedures(Entry *scope)
         std::shared_ptr<Entry> proc = procMap[implName.str()];
         ct->args = proc->args;
         ct->argList = ArgumentList(proc->argList);
-        if (ct->brief.isEmpty())
+        if (ct->brief.empty())
         {
           ct->brief = proc->brief;
           ct->briefLine = proc->briefLine;
           ct->briefFile = proc->briefFile;
         }
-        if (ct->doc.isEmpty())
+        if (ct->doc.empty())
         {
           ct->doc = proc->doc;
           ct->docLine = proc->docLine;
@@ -2805,13 +2795,13 @@ static void resolveTypeBoundProcedures(Entry *scope)
         std::shared_ptr<Entry> proc = interfMap[implName.str()];
         ct->args = proc->args;
         ct->argList = ArgumentList(proc->argList);
-        if (ct->brief.isEmpty())
+        if (ct->brief.empty())
         {
           ct->brief = proc->brief;
           ct->briefLine = proc->briefLine;
           ct->briefFile = proc->briefFile;
         }
-        if (ct->doc.isEmpty())
+        if (ct->doc.empty())
         {
           ct->doc = proc->doc;
           ct->docLine = proc->docLine;
@@ -2839,13 +2829,13 @@ static void resolveTypeBoundProcedures(Entry *scope)
           std::shared_ptr<Entry> method = methodMap[methodName.str()];
           ct->args = method->args;
           ct->argList = ArgumentList(method->argList);
-          if (ct->brief.isEmpty())
+          if (ct->brief.empty())
           {
             ct->brief = method->brief;
             ct->briefLine = method->briefLine;
             ct->briefFile = method->briefFile;
           }
-          if (ct->doc.isEmpty())
+          if (ct->doc.empty())
           {
             ct->doc = method->doc;
             ct->docLine = method->docLine;
@@ -2924,15 +2914,18 @@ static void addModule(yyscan_t yyscanner,const QCString &name, bool isModule)
   else
     yyextra->current->section = EntryType::makeFunction();
 
-  if (!name.isEmpty())
+  if (!name.empty())
   {
     yyextra->current->name = name;
   }
   else
   {
     QCString fname = yyextra->fileName;
-    int index = std::max(fname.findRev('/'), fname.findRev('\\'));
-    fname = fname.right(fname.length()-index-1);
+    size_t index1 = fname.rfind('/');
+    size_t index2 = fname.rfind('\\');
+    size_t index = index1!=QCString::npos && index2!=QCString::npos ? std::max(index1,index2) : 
+                   index1!=QCString::npos ? index1 : index2;
+    if (index!=QCString::npos) fname = fname.mid(index+1);
     if (yyextra->mainPrograms) fname += "__" + QCString().setNum(yyextra->mainPrograms);
     yyextra->mainPrograms++;
     fname = fname.prepend("__").append("__");
@@ -2955,7 +2948,7 @@ static void addSubprogram(yyscan_t yyscanner,const QCString &text)
   yyextra->subrCurrent.push_back(yyextra->current);
   yyextra->current->section = EntryType::makeFunction();
   QCString subtype = text; subtype=subtype.lower().stripWhiteSpace();
-  yyextra->functionLine = (subtype.find("function") != -1);
+  yyextra->functionLine = subtype.find("function")!=QCString::npos;
   yyextra->current->type += " " + subtype;
   yyextra->current->type = yyextra->current->type.stripWhiteSpace();
   if (yyextra->ifType == IF_ABSTRACT)
@@ -3027,7 +3020,7 @@ static void addInterface(yyscan_t yyscanner,QCString name, InterfaceType type)
 static Argument *getParameter(yyscan_t yyscanner,const QCString &name)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  // std::cout<<"addFortranParameter(): "<<name<<" DOCS:"<<(docs.isEmpty()?QCString("null"):docs)<<"\n";
+  // std::cout<<"addFortranParameter(): "<<name<<" DOCS:"<<(docs.empty()?QCString("null"):docs)<<"\n";
   Argument *ret = nullptr;
   for (Argument &a:yyextra->current_root->argList)
   {
@@ -3130,10 +3123,10 @@ static void subrHandleCommentBlock(yyscan_t yyscanner,const QCString &doc,bool b
         (directionParam[dir1] == directionParam[SymbolModifiers::IN]))
     {
       // strip direction
-      loc_doc = loc_doc.right(loc_doc.length()-(int)strlen(directionParam[SymbolModifiers::IN]));
+      loc_doc = loc_doc.mid(strlen(directionParam[SymbolModifiers::IN]));
       loc_doc.stripWhiteSpace();
       // in case of empty documentation or (now) just name, consider it as no documentation
-      if (!loc_doc.isEmpty() && (loc_doc.lower() != yyextra->argName.lower()))
+      if (!loc_doc.empty() && (loc_doc.lower() != yyextra->argName.lower()))
       {
         handleCommentBlock(yyscanner,QCString("\n\n@param ") + directionParam[SymbolModifiers::IN] + " " +
                          yyextra->argName + " " + loc_doc,brief);
@@ -3154,9 +3147,9 @@ static void subrHandleCommentBlock(yyscan_t yyscanner,const QCString &doc,bool b
     if ((directionParam[dir1] == directionParam[SymbolModifiers::NONE_D]) ||
         (directionParam[dir1] == directionParam[SymbolModifiers::OUT]))
     {
-      loc_doc = loc_doc.right(loc_doc.length()-(int)strlen(directionParam[SymbolModifiers::OUT]));
+      loc_doc = loc_doc.mid(strlen(directionParam[SymbolModifiers::OUT]));
       loc_doc.stripWhiteSpace();
-      if (loc_doc.isEmpty() || (loc_doc.lower() == yyextra->argName.lower()))
+      if (loc_doc.empty() || (loc_doc.lower() == yyextra->argName.lower()))
       {
         yyextra->current = tmp_entry;
         return;
@@ -3178,9 +3171,9 @@ static void subrHandleCommentBlock(yyscan_t yyscanner,const QCString &doc,bool b
     if ((directionParam[dir1] == directionParam[SymbolModifiers::NONE_D]) ||
         (directionParam[dir1] == directionParam[SymbolModifiers::INOUT]))
     {
-      loc_doc = loc_doc.right(loc_doc.length()-(int)strlen(directionParam[SymbolModifiers::INOUT]));
+      loc_doc = loc_doc.mid(strlen(directionParam[SymbolModifiers::INOUT]));
       loc_doc.stripWhiteSpace();
-      if (!loc_doc.isEmpty() && (loc_doc.lower() != yyextra->argName.lower()))
+      if (!loc_doc.empty() && (loc_doc.lower() != yyextra->argName.lower()))
       {
         handleCommentBlock(yyscanner,QCString("\n\n@param ") + directionParam[SymbolModifiers::INOUT] + " " +
                            yyextra->argName + " " + loc_doc,brief);
@@ -3195,7 +3188,7 @@ static void subrHandleCommentBlock(yyscan_t yyscanner,const QCString &doc,bool b
     }
   }
   // analogous to the [in] case; here no direction specified
-  else if (!loc_doc.isEmpty() && (loc_doc.lower() != yyextra->argName.lower()))
+  else if (!loc_doc.empty() && (loc_doc.lower() != yyextra->argName.lower()))
   {
     handleCommentBlock(yyscanner,QCString("\n\n@param ") + directionParam[dir1] + " " +
                        yyextra->argName + " " + loc_doc,brief);
@@ -3225,7 +3218,7 @@ static void subrHandleCommentBlockResult(yyscan_t yyscanner,const QCString &doc,
       loc_doc.stripPrefix("@return")
      ) loc_doc = loc_doc.stripWhiteSpace();
 
-  if (!loc_doc.isEmpty() && (loc_doc.lower() != yyextra->argName.lower()))
+  if (!loc_doc.empty() && (loc_doc.lower() != yyextra->argName.lower()))
   {
     handleCommentBlock(yyscanner,QCString("\n\n@returns ") + loc_doc,brief);
   }

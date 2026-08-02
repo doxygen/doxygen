@@ -142,7 +142,7 @@ void Crawlmap::addContentsItem(bool, const QCString &, const QCString & ref,
                                bool ,bool ,
                                const Definition *, const QCString &)
 {
-  if (!file.isEmpty() && ref.isEmpty())      // made file optional param and
+  if (!file.empty() && ref.empty())      // made file optional param and
                                              // don't place links in crawl file imported
                                              // by tags
   {
@@ -157,7 +157,7 @@ void Crawlmap::addContentsItem(bool, const QCString &, const QCString & ref,
       addHtmlExtensionIfMissing(currFile);
       QCString currAnc = anchor;
       link += currFile.data();
-      if (!currAnc.isEmpty())
+      if (!currAnc.empty())
       {
         link += "#";
         link += currAnc.str();
@@ -170,7 +170,7 @@ void Crawlmap::addContentsItem(bool, const QCString &, const QCString & ref,
 static QCString makeFileName(const QCString & withoutExtension)
 {
   QCString result=withoutExtension;
-  if (!result.isEmpty())
+  if (!result.empty())
   {
     if (result.at(0)=='!') // relative URL -> strip marker
     {
@@ -186,9 +186,9 @@ static QCString makeFileName(const QCString & withoutExtension)
 
 static QCString makeRef(const QCString & withoutExtension, const QCString & anchor)
 {
-  if (withoutExtension.isEmpty()) return QCString();
+  if (withoutExtension.empty()) return QCString();
   QCString result = makeFileName(withoutExtension);
-  if (anchor.isEmpty()) return result;
+  if (anchor.empty()) return result;
   return result+"#"+anchor;
 }
 
@@ -197,9 +197,9 @@ void Crawlmap::addIndexItem(const Definition *context, const MemberDef *md,
 {
   if (context && md) // member
   {
-    if (sectionAnchor.isEmpty() && !md->hasDocumentation()) return;
+    if (sectionAnchor.empty() && !md->hasDocumentation()) return;
     QCString cfname  = md->getOutputFileBase();
-    QCString anchor  = !sectionAnchor.isEmpty() ? sectionAnchor : md->anchor();
+    QCString anchor  = !sectionAnchor.empty() ? sectionAnchor : md->anchor();
     QCString ref     = makeRef(cfname, anchor);
     p->crawlLinks.push_back(ref.str());
   }

@@ -125,7 +125,7 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
     { return ", uključujući naslijeđene članove."; }
     QCString trGeneratedAutomatically(const QCString &s) override
     { QCString result="napravljeno automatski Doxygen-om";
-      if (!s.isEmpty()) result+=" za "+s;
+      if (!s.empty()) result+=" za "+s;
       result+=" iz programskog koda.";
       return result;
     }
@@ -226,7 +226,7 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
     { return "Popis svih modula:"; }
 
     QCString trDocumentation(const QCString &projName) override
-    { return (!projName.isEmpty()?projName + " " : "") + "Dokumentacija"; }
+    { return (!projName.empty()?projName + " " : "") + "Dokumentacija"; }
     QCString trModuleIndex() override
     { return "Kazalo modula"; }
     QCString trHierarchicalIndex() override
@@ -293,7 +293,7 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
     QCString trGeneratedAt(const QCString &date,const QCString &projName) override
     {
       QCString result="Napravljeno "+date;
-      if (!projName.isEmpty()) result+=" projekt: "+projName;
+      if (!projName.empty()) result+=" projekt: "+projName;
       result+=" generator: ";
       return result;
     }

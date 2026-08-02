@@ -982,7 +982,7 @@ static void handleCCode(yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
 
-  if (yyextra->cCodeBuffer.isEmpty()) return;
+  if (yyextra->cCodeBuffer.empty()) return;
   yyextra->cOutlineParser.parseInput(yyextra->fileName,
                                      yyextra->cCodeBuffer.data(),
                                      yyextra->current_root,

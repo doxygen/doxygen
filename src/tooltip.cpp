@@ -59,15 +59,14 @@ void TooltipManager::addTooltip(const Definition *d)
   if (!sourceTooltips) return;
 
   QCString id = d->getOutputFileBase();
-  int i=id.findRev('/');
-  if (i!=-1)
+  if (size_t i=id.rfind('/'); i!=QCString::npos)
   {
-    id = id.right(id.length()-i-1); // strip path (for CREATE_SUBDIRS=YES)
+    id = id.mid(i+1); // strip path (for CREATE_SUBDIRS=YES)
   }
   // In case an extension is present translate this extension to something understood by the tooltip handler
   // otherwise extend t with a translated htmlFileExtension.
   QCString currentExtension = getFileNameExtension(id);
-  if (currentExtension.isEmpty())
+  if (currentExtension.empty())
   {
     id += escapeId(Doxygen::htmlFileExtension);
   }
@@ -77,7 +76,7 @@ void TooltipManager::addTooltip(const Definition *d)
   }
 
   QCString anc = d->anchor();
-  if (!anc.isEmpty())
+  if (!anc.empty())
   {
     id+="_"+anc;
   }

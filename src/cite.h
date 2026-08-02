@@ -102,7 +102,7 @@ class CitationManager
 
     /** return true if there are no citations.
      */
-    bool isEmpty() const;
+    bool empty() const;
 
     /** lists the bibtex cite files in a comma separated list
      */

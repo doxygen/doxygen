@@ -75,12 +75,12 @@ QCString MermaidManager::writeMermaidSource(const QCString &outDirArg, const QCS
   QCString baseName;
 
   // strip any trailing slashes and backslashes
-  while (!outDir.isEmpty() && (outDir.at(outDir.length()-1)=='/' || outDir.at(outDir.length()-1)=='\\'))
+  while (!outDir.empty() && (outDir.at(outDir.length()-1)=='/' || outDir.at(outDir.length()-1)=='\\'))
   {
     outDir = outDir.left(outDir.length()-1);
   }
 
-  if (fileName.isEmpty())
+  if (fileName.empty())
   {
     std::lock_guard<std::mutex> lock(g_mermaidMutex);
     baseName = outDir + "/inline_mermaid_" + QCString().setNum(g_mermaidIndex++);
@@ -88,8 +88,7 @@ QCString MermaidManager::writeMermaidSource(const QCString &outDirArg, const QCS
   else
   {
     baseName = fileName;
-    int i = baseName.findRev('.');
-    if (i != -1) baseName = baseName.left(i);
+    if (size_t i = baseName.rfind('.'); i!=QCString::npos) baseName = baseName.left(i);
     baseName.prepend(outDir + "/");
   }
 
@@ -119,8 +118,7 @@ void MermaidManager::generateMermaidOutput(const QCString &baseName, const QCStr
 {
   if (!toIndex) return;
   QCString imgName = baseName;
-  int i = imgName.findRev('/');
-  if (i != -1)
+  if (size_t i = imgName.rfind('/'); i!=QCString::npos)
   {
     imgName = imgName.mid(i + 1);
   }
@@ -134,7 +132,7 @@ static void runMermaid(const MermaidManager::DiagramList &diagrams)
   if (diagrams.empty()) return;
 
   QCString mmdc = Config_getString(MERMAID_PATH);
-  if (!mmdc.isEmpty() && mmdc.at(mmdc.length()-1) != '/' && mmdc.at(mmdc.length()-1) != '\\')
+  if (!mmdc.empty() && mmdc.at(mmdc.length()-1) != '/' && mmdc.at(mmdc.length()-1) != '\\')
   {
     mmdc += "/";
   }
@@ -157,7 +155,7 @@ static void runMermaid(const MermaidManager::DiagramList &diagrams)
   for (const auto &diagram : diagrams)
   {
     //printf("content=%s\n",qPrint(mc.content));
-    if (diagram.info.content.isEmpty()) continue;
+    if (diagram.info.content.empty()) continue;
 
     QCString ext = MermaidManager::imageExtension(diagram.imageFormat);
 
@@ -180,7 +178,7 @@ static void runMermaid(const MermaidManager::DiagramList &diagrams)
     args += "-q -i \"" + inputFile + "\" ";
     args += "-o \"" + outputFile + "\" ";
 
-    if (!mermaidConfigFile.isEmpty())
+    if (!mermaidConfigFile.empty())
     {
       args += "-c \"" + mermaidConfigFile + "\" ";
     }

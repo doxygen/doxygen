@@ -104,7 +104,7 @@ class VariableContext
     const ScopedTypeVariant *findVariable(const QCString &name)
     {
       const ScopedTypeVariant *result = nullptr;
-      if (name.isEmpty()) return result;
+      if (name.empty()) return result;
 
       // search from inner to outer scope
       auto it = std::rbegin(m_scopes);

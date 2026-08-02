@@ -89,7 +89,7 @@ static QCString convertToComment(const QCString &s, const QCString &u)
 {
   //printf("convertToComment(%s)=%s\n",qPrint(s),qPrint(u));
   QCString result;
-  if (!s.isEmpty())
+  if (!s.empty())
   {
     QCString tmp=s.stripWhiteSpace();
     const char *p=tmp.data();
@@ -116,9 +116,9 @@ static QCString convertToComment(const QCString &s, const QCString &u)
       result+='\n';
     }
   }
-  if (!u.isEmpty())
+  if (!u.empty())
   {
-    if (!result.isEmpty()) result+='\n';
+    if (!result.empty()) result+='\n';
     result+= u;
   }
   return result;
@@ -142,7 +142,7 @@ void ConfigOption::writeStringValue(TextStream &t,const QCString &s,bool initSpa
   bool needsEscaping=wasQuoted;
   // convert the string back to it original g_encoding
   QCString se = configStringRecode(s,"UTF-8",m_encoding);
-  if (se.isEmpty()) return;
+  if (se.empty()) return;
   const char *p=se.data();
   if (p)
   {
@@ -194,7 +194,7 @@ std::unique_ptr<ConfigImpl> ConfigImpl::m_instance;
 
 void ConfigInt::convertStrToVal(Config::CompareMode compareMode)
 {
-  if (!m_valueString.isEmpty())
+  if (!m_valueString.empty())
   {
     if (compareMode == Config::CompareMode::CompressedNoEnv)
     {
@@ -218,7 +218,7 @@ static bool convertStringToBool(const QCString &str,bool &isValid)
 {
   isValid=false;
   QCString val = str.stripWhiteSpace().lower();
-  if (!val.isEmpty())
+  if (!val.empty())
   {
     if (val=="yes" || val=="true" || val=="1" || val=="all")
     {
@@ -236,7 +236,7 @@ static bool convertStringToBool(const QCString &str,bool &isValid)
 
 void ConfigBool::convertStrToVal(Config::CompareMode compareMode)
 {
-  if (!m_valueString.stripWhiteSpace().isEmpty())
+  if (!m_valueString.stripWhiteSpace().empty())
   {
     if (compareMode == Config::CompareMode::CompressedNoEnv)
     {
@@ -258,7 +258,7 @@ void ConfigBool::convertStrToVal(Config::CompareMode compareMode)
 
 void ConfigEnum::convertStrToVal(Config::CompareMode compareMode)
 {
-  if (m_value.isEmpty())
+  if (m_value.empty())
   {
     m_value = m_defValue;
     return;
@@ -373,7 +373,7 @@ void ConfigList::writeTemplate(TextStream &t,bool sl,bool)
     t << convertToComment(m_doc, m_userComment);
     t << "\n";
   }
-  else if (!m_userComment.isEmpty())
+  else if (!m_userComment.empty())
   {
     t << convertToComment("", m_userComment);
   }
@@ -385,7 +385,7 @@ void ConfigList::writeTemplate(TextStream &t,bool sl,bool)
 bool ConfigList::isDefault()
 {
   auto get_stripped = [](const std::string &s)             { return QCString(s).stripWhiteSpace(); };
-  auto is_not_empty = [get_stripped](const std::string &s) { return !get_stripped(s).isEmpty();            };
+  auto is_not_empty = [get_stripped](const std::string &s) { return !get_stripped(s).empty();            };
   size_t defCnt = std::count_if(       m_value.begin(),       m_value.end(),is_not_empty);
   size_t valCnt = std::count_if(m_defaultValue.begin(),m_defaultValue.end(),is_not_empty);
   if ( valCnt != defCnt)
@@ -451,7 +451,7 @@ void ConfigEnum::writeTemplate(TextStream &t,bool sl,bool)
     t << convertToComment(m_doc, m_userComment);
     t << "\n";
   }
-  else if (!m_userComment.isEmpty())
+  else if (!m_userComment.empty())
   {
     t << convertToComment("", m_userComment);
   }
@@ -490,7 +490,7 @@ void ConfigString::writeTemplate(TextStream &t,bool sl,bool)
     t << convertToComment(m_doc, m_userComment);
     t << "\n";
   }
-  else if (!m_userComment.isEmpty())
+  else if (!m_userComment.empty())
   {
     t << convertToComment("", m_userComment);
   }
@@ -531,12 +531,12 @@ void ConfigInt::writeTemplate(TextStream &t,bool sl,bool upd)
     t << convertToComment(m_doc, m_userComment);
     t << "\n";
   }
-  else if (!m_userComment.isEmpty())
+  else if (!m_userComment.empty())
   {
     t << convertToComment("", m_userComment);
   }
   t << m_name << m_spaces.left(MAX_OPTION_LENGTH-m_name.length()) << "=";
-  if (upd && !m_valueString.isEmpty())
+  if (upd && !m_valueString.empty())
   {
     writeStringValue(t,m_valueString);
   }
@@ -577,13 +577,13 @@ void ConfigBool::writeTemplate(TextStream &t,bool sl,bool upd)
     t << convertToComment(m_doc, m_userComment);
     t << "\n";
   }
-  else if (!m_userComment.isEmpty())
+  else if (!m_userComment.empty())
   {
     t << convertToComment("", m_userComment);
   }
   QCString spaces = m_spaces.left(MAX_OPTION_LENGTH-m_name.length());
   t << m_name << spaces << "=";
-  if (upd && !m_valueString.isEmpty())
+  if (upd && !m_valueString.empty())
   {
     writeStringValue(t,m_valueString);
   }
@@ -692,7 +692,7 @@ static QCString configStringRecode(
     const QCString &inputEncoding,
     const QCString &outputEncoding)
 {
-  if (inputEncoding.isEmpty() || outputEncoding.isEmpty() || inputEncoding==outputEncoding) return str;
+  if (inputEncoding.empty() || outputEncoding.empty() || inputEncoding==outputEncoding) return str;
   size_t inputSize=str.length();
   size_t outputSize=inputSize*4;
   QCString output(outputSize, QCString::ExplicitSize);
@@ -838,7 +838,7 @@ static void processList()
   // helper to push elemStr to the list and clear it
   auto addElem = [&elemStr,&wasQuote]()
   {
-    if (!elemStr.isEmpty())
+    if (!elemStr.empty())
     {
       QCString e = configStringRecode(elemStr,g_encoding,"UTF-8");
       //printf("Processed list element '%s'\n",qPrint(e));
@@ -924,7 +924,7 @@ static void processList()
 
 static FILE *tryPath(const QCString &path,const QCString &fileName)
 {
-  QCString absName=(!path.isEmpty() ? path+"/"+fileName : fileName);
+  QCString absName=(!path.empty() ? path+"/"+fileName : fileName);
   FileInfo fi(absName.str());
   if (fi.exists() && fi.isFile())
   {
@@ -940,7 +940,7 @@ static void substEnvVarsInString(QCString &s);
 
 static FILE *findFile(const QCString &fileName)
 {
-  if (fileName.isEmpty())
+  if (fileName.empty())
   {
     return 0;
   }
@@ -1319,7 +1319,7 @@ REGEX_w [a-z_A-Z0-9\x80-\xFF]
 void ConfigImpl::writeTemplate(TextStream &t,bool sl,bool upd)
 {
   /* print first lines of user comment that were at the beginning of the file, might have special meaning for editors */
-  if (!m_startComment.isEmpty())
+  if (!m_startComment.empty())
   {
     t << takeStartComment() << "\n";
   }
@@ -1333,7 +1333,7 @@ void ConfigImpl::writeTemplate(TextStream &t,bool sl,bool upd)
     option->writeTemplate(t,sl,upd);
   }
   /* print last lines of user comment that were at the end of the file */
-  if (!m_userComment.isEmpty())
+  if (!m_userComment.empty())
   {
     t << "\n";
     t << takeUserComment();
@@ -1349,7 +1349,7 @@ void ConfigImpl::compareDoxyfile(TextStream &t,Config::CompareMode compareMode)
     option->m_userComment = "";
     option->compareDoxyfile(t,compareMode);
   }
-  if (!m_storeRepl.isEmpty())
+  if (!m_storeRepl.empty())
   {
     t << "\n";
     t << takeStoreRepl() << "\n";
@@ -1408,7 +1408,7 @@ static bool containsEnvVar(QCString &str)
 
 static void substEnvVarsInString(QCString &str)
 {
-  if (str.isEmpty()) return;
+  if (str.empty()) return;
   auto replace = [](const std::string &s, const reg::Ex &re) -> std::string
   {
     reg::Iterator it(s,re);
@@ -1447,7 +1447,7 @@ static void substEnvVarsInStrList(StringVector &sl)
     }
     else
     {
-      wasQuoted = (result.find(' ')!=-1) || (result.find('\t')!=-1) || (result.find('"')!=-1);
+      wasQuoted = (result.find(' ')!=QCString::npos) || (result.find('\t')!=QCString::npos) || (result.find('"')!=QCString::npos);
     }
     // here we strip the quote again
     substEnvVarsInString(result);
@@ -1506,7 +1506,7 @@ static void substEnvVarsInStrList(StringVector &sl)
     }
     else // just goto the next element in the list
     {
-      if (!result.isEmpty()) results.push_back(result.str());
+      if (!result.empty()) results.push_back(result.str());
     }
   }
   sl = results;
@@ -1558,7 +1558,7 @@ void ConfigImpl::init()
   for (const auto &option : m_options)
   {
     QCString depName = option->dependsOn();
-    if (!depName.isEmpty())
+    if (!depName.empty())
     {
       ConfigOption * opt = ConfigImpl::instance()->get(depName);
       if (opt==0)
@@ -1577,7 +1577,7 @@ ConfigImpl::ConfigImpl()
 
 static QCString configFileToString(const QCString &name)
 {
-  if (name.isEmpty()) return QCString();
+  if (name.empty()) return QCString();
 
   auto stream2string = [](std::istream &in) -> std::string
   {
@@ -1679,22 +1679,22 @@ static void checkList(const StringVector &list,const char *name, bool equalRequi
   {
     QCString item = s;
     item=item.stripWhiteSpace();
-    int i=item.find('=');
-    if (i==-1 && equalRequired)
+    size_t i=item.find('=');
+    if (i==QCString::npos && equalRequired)
     {
       err("Illegal format for option {}, no equal sign ('=') specified for item '{}'\n",name,item);
     }
-    if (i!=-1)
+    if (i!=QCString::npos)
     {
       QCString myName=item.left(i).stripWhiteSpace();
-      if (myName.isEmpty())
+      if (myName.empty())
       {
         err("Illegal format for option {}, no name specified for item '{}'\n",name,item);
       }
       else if (valueRequired)
       {
-        QCString myValue=item.right(item.length()-i-1).stripWhiteSpace();
-        if (myValue.isEmpty())
+        QCString myValue=item.mid(i+1).stripWhiteSpace();
+        if (myValue.empty())
         {
           err("Illegal format for option {}, no value specified for item '{}'\n",name,item);
         }
@@ -1767,15 +1767,15 @@ void Config::checkAndCorrect(bool quiet, const bool check)
   //------------------------
   // check WARN_FORMAT
   QCString warnFormat = Config_getString(WARN_FORMAT);
-  if (warnFormat.find("$file")==-1)
+  if (warnFormat.find("$file")==QCString::npos)
   {
     warn_uncond("warning format does not contain a $file tag!\n");
   }
-  if (warnFormat.find("$line")==-1)
+  if (warnFormat.find("$line")==QCString::npos)
   {
     warn_uncond("warning format does not contain a $line tag!\n");
   }
-  if (warnFormat.find("$text")==-1)
+  if (warnFormat.find("$text")==QCString::npos)
   {
     warn_uncond("warning format does not contain a $text tag!\n");
   }
@@ -1784,7 +1784,7 @@ void Config::checkAndCorrect(bool quiet, const bool check)
   // check and correct PAPER_TYPE
   QCString paperType = Config_getEnumAsString(PAPER_TYPE);
   paperType=paperType.lower().stripWhiteSpace();
-  if (paperType.isEmpty() || paperType=="a4wide")
+  if (paperType.empty() || paperType=="a4wide")
   {
     // use a4
     Config_updateEnum(PAPER_TYPE,PAPER_TYPE_t::a4);
@@ -1819,7 +1819,7 @@ void Config::checkAndCorrect(bool quiet, const bool check)
   //------------------------
   // Test to see if HTML header is valid
   QCString headerFile = Config_getString(HTML_HEADER);
-  if (check && !headerFile.isEmpty())
+  if (check && !headerFile.empty())
   {
     FileInfo fi(headerFile.str());
     if (!fi.exists())
@@ -1832,7 +1832,7 @@ void Config::checkAndCorrect(bool quiet, const bool check)
   //------------------------
   // Test to see if HTML footer is valid
   QCString footerFile = Config_getString(HTML_FOOTER);
-  if (check && !footerFile.isEmpty())
+  if (check && !footerFile.empty())
   {
     FileInfo fi(footerFile.str());
     if (!fi.exists())
@@ -1871,7 +1871,7 @@ void Config::checkAndCorrect(bool quiet, const bool check)
     }
 
     QCString mathJaxCodefile = Config_getString(MATHJAX_CODEFILE);
-    if (check && !mathJaxCodefile.isEmpty())
+    if (check && !mathJaxCodefile.empty())
     {
       FileInfo fi(mathJaxCodefile.str());
       if (!fi.exists())
@@ -1881,7 +1881,7 @@ void Config::checkAndCorrect(bool quiet, const bool check)
       }
     }
     QCString path = Config_getString(MATHJAX_RELPATH);
-    if (path.isEmpty())
+    if (path.empty())
     {
       path = "https://cdn.jsdelivr.net/npm/mathjax@";
       switch (mathjaxVersion)
@@ -1902,7 +1902,7 @@ void Config::checkAndCorrect(bool quiet, const bool check)
   //------------------------
   // Test to see if LaTeX header is valid
   QCString latexHeaderFile = Config_getString(LATEX_HEADER);
-  if (check && !latexHeaderFile.isEmpty())
+  if (check && !latexHeaderFile.empty())
   {
     FileInfo fi(latexHeaderFile.str());
     if (!fi.exists())
@@ -1915,7 +1915,7 @@ void Config::checkAndCorrect(bool quiet, const bool check)
   //------------------------
   // Test to see if LaTeX footer is valid
   QCString latexFooterFile = Config_getString(LATEX_FOOTER);
-  if (check && !latexFooterFile.isEmpty())
+  if (check && !latexFooterFile.empty())
   {
     FileInfo fi(latexFooterFile.str());
     if (!fi.exists())
@@ -1946,8 +1946,8 @@ void Config::checkAndCorrect(bool quiet, const bool check)
     {
       QCString predef = s;
       predef=predef.stripWhiteSpace();
-      int i_equals=predef.find('=');
-      int i_obrace=predef.find('(');
+      size_t i_equals=predef.find('=');
+      size_t i_obrace=predef.find('(');
       if ((i_obrace==0) || (i_equals==0) || (i_equals==1 && predef.at(i_equals-1)==':'))
       {
         err("Illegal PREDEFINED format '{}', no define name specified\n",predef);
@@ -2048,7 +2048,7 @@ void Config::checkAndCorrect(bool quiet, const bool check)
   //------------------------
   // check plantuml path
   QCString plantumlJarPath = Config_getString(PLANTUML_JAR_PATH);
-  if (!plantumlJarPath.isEmpty())
+  if (!plantumlJarPath.empty())
   {
     FileInfo pu(plantumlJarPath.str());
     if (pu.exists() && pu.isDir()) // PLANTUML_JAR_PATH is directory
@@ -2080,7 +2080,7 @@ void Config::checkAndCorrect(bool quiet, const bool check)
   //------------------------
   // check dia path
   QCString diaPath = Config_getString(DIA_PATH);
-  if (!diaPath.isEmpty())
+  if (!diaPath.empty())
   {
     QCString diaExe = diaPath+"/dia"+Portable::commandExtension();
     FileInfo dp(diaExe.str());
@@ -2132,7 +2132,7 @@ void Config::checkAndCorrect(bool quiet, const bool check)
       !Config_getBool(GENERATE_RTF)     &&
       !Config_getBool(GENERATE_DOCBOOK) &&
       !Config_getBool(GENERATE_AUTOGEN_DEF) &&
-      Config_getString(GENERATE_TAGFILE).isEmpty()
+      Config_getString(GENERATE_TAGFILE).empty()
      )
   {
     warn_uncond("No output formats selected! Set at least one of the main GENERATE_* options to YES.\n");
@@ -2149,7 +2149,7 @@ void Config::checkAndCorrect(bool quiet, const bool check)
   //------------------------
   // check sitemap creation requirements
   if (!Config_getBool(GENERATE_HTML) &&
-      !Config_getString(SITEMAP_URL).isEmpty())
+      !Config_getString(SITEMAP_URL).empty())
   {
     warn_uncond("Setting SITEMAP_URL requires GENERATE_HTML=YES.\n");
   }
@@ -2162,13 +2162,13 @@ void Config::checkAndCorrect(bool quiet, const bool check)
     {
       warn_uncond("GENERATE_QHP=YES requires GENERATE_HTML=YES.\n");
     }
-    if (Config_getString(QHP_NAMESPACE).isEmpty())
+    if (Config_getString(QHP_NAMESPACE).empty())
     {
       err("GENERATE_QHP=YES requires QHP_NAMESPACE to be set. Using 'org.doxygen.doc' as default!.\n");
       Config_updateString(QHP_NAMESPACE,"org.doxygen.doc");
     }
 
-    if (Config_getString(QHP_VIRTUAL_FOLDER).isEmpty())
+    if (Config_getString(QHP_VIRTUAL_FOLDER).empty())
     {
       err("GENERATE_QHP=YES requires QHP_VIRTUAL_FOLDER to be set. Using 'doc' as default!\n");
       Config_updateString(QHP_VIRTUAL_FOLDER,"doc");
@@ -2233,7 +2233,7 @@ void Config::checkAndCorrect(bool quiet, const bool check)
   for (const auto &option : m_options)
   {
     QCString depName = option->dependsOn(); // option has a dependency
-    if (!depName.isEmpty())
+    if (!depName.empty())
     {
       ConfigOption * dep = Config::instance()->get(depName);
       if (dep->kind()==ConfigOption::O_Bool &&
@@ -2277,7 +2277,7 @@ void Config::updateObsolete()
       QCString &classGraphValue  = *classGraphOpt_->valueRef();
       bool isValid1=true, isValid2=true;
       bool bClassDiagrams = convertStringToBool(classDiagramValue,isValid1);
-      bool bHaveDot       = haveDotValue.isEmpty() ? false : convertStringToBool(haveDotValue,     isValid2);
+      bool bHaveDot       = haveDotValue.empty() ? false : convertStringToBool(haveDotValue,     isValid2);
       if (isValid1 && isValid2 && !bClassDiagrams && !bHaveDot && classGraphValue.lower()=="yes")
       {
         warn_uncond("Changing CLASS_GRAPH option to TEXT because obsolete option CLASS_DIAGRAM was found and set to NO.\n");

@@ -58,7 +58,7 @@ void CodeFragmentManager::Private::FragmentInfo::findBlockMarkers()
 {
   AUTO_TRACE("findBlockMarkers() size={}",fileContents.size());
   // give fileContents and a list of candidate [XYZ] labels with/without trim left flag (from commentscan?)
-  if (fileContents.length()==0) return;
+  if (fileContents.empty()) return;
 
   // find the potential snippet blocks (can also be other array like stuff in the file)
   const char *s=fileContents.data();
@@ -277,7 +277,7 @@ void CodeFragmentManager::parseCodeFragment(OutputCodeList & codeOutList,
     bool needs2PassParsing =
         Doxygen::parseSourcesNeeded &&                // we need to parse (filtered) sources for cross-references
         !filterSourceFiles &&                         // but user wants to show sources as-is
-        !getFileFilter(fileName,true).isEmpty();     // and there is a filter used while parsing
+        !getFileFilter(fileName,true).empty();     // and there is a filter used while parsing
     codeFragment->fileContents = readTextFileByName(fileName);
     //printf("fileContents=[%s]\n",qPrint(codeFragment->fileContents));
     if (needs2PassParsing)
@@ -293,7 +293,7 @@ void CodeFragmentManager::parseCodeFragment(OutputCodeList & codeOutList,
                       );
     }
     codeFragment->findBlockMarkers();
-    if (codeFragment->fileContents.length()>0) // parse the normal version
+    if (!codeFragment->fileContents.empty()) // parse the normal version
     {
       intf->parseCode(codeFragment->recorderCodeList,
           scopeName,
@@ -316,7 +316,7 @@ void CodeFragmentManager::parseCodeFragment(OutputCodeList & codeOutList,
     int endLine   = marker->lines[1];
     int indent    = marker->indent;
     AUTO_TRACE_ADD("replay(start={},end={},indent={}) fileContentsTrimLeft.empty()={}",
-        startLine,endLine,indent,codeFragment->fileContentsTrimLeft.isEmpty());
+        startLine,endLine,indent,codeFragment->fileContentsTrimLeft.empty());
     auto recorder = codeFragment->recorderCodeList.get<OutputCodeRecorder>(OutputType::Recorder);
     recorder->replay(codeOutList,
                     startLine+1,

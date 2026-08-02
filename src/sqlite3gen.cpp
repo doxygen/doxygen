@@ -849,7 +849,7 @@ class TextGeneratorSqlite3Impl final : public TextGeneratorIntf
                   ) const override
     {
       std::string rs = file.str();
-      if (!anchor.isEmpty())
+      if (!anchor.empty())
       {
         rs+="_1";
         rs+=anchor.str();
@@ -954,7 +954,7 @@ struct Refid insertRefid(const QCString &refid)
   ret.rowid=-1;
   ret.refid=refid;
   ret.created = false;
-  if (refid.isEmpty()) return ret;
+  if (refid.empty()) return ret;
 
   bindTextParameter(refid_select,":refid",refid);
   ret.rowid=step(refid_select,true,true);
@@ -1040,12 +1040,12 @@ static void insertMemberFunctionParams(int memberdef_id, const MemberDef *md, co
         ++defIt;
       }
 
-      if (!a.attrib.isEmpty())
+      if (!a.attrib.empty())
       {
         bindTextParameter(param_select,":attributes",a.attrib);
         bindTextParameter(param_insert,":attributes",a.attrib);
       }
-      if (!a.type.isEmpty())
+      if (!a.type.empty())
       {
         StringVector list;
         linkifyText(TextGeneratorSqlite3Impl(list),a.type,options);
@@ -1060,22 +1060,22 @@ static void insertMemberFunctionParams(int memberdef_id, const MemberDef *md, co
         bindTextParameter(param_select,":type",a.type);
         bindTextParameter(param_insert,":type",a.type);
       }
-      if (!a.name.isEmpty())
+      if (!a.name.empty())
       {
         bindTextParameter(param_select,":declname",a.name);
         bindTextParameter(param_insert,":declname",a.name);
       }
-      if (defArg && !defArg->name.isEmpty() && defArg->name!=a.name)
+      if (defArg && !defArg->name.empty() && defArg->name!=a.name)
       {
         bindTextParameter(param_select,":defname",defArg->name);
         bindTextParameter(param_insert,":defname",defArg->name);
       }
-      if (!a.array.isEmpty())
+      if (!a.array.empty())
       {
         bindTextParameter(param_select,":array",a.array);
         bindTextParameter(param_insert,":array",a.array);
       }
-      if (!a.defval.isEmpty())
+      if (!a.defval.empty())
       {
         StringVector list;
         linkifyText(TextGeneratorSqlite3Impl(list),a.defval,options);
@@ -1375,20 +1375,20 @@ static void writeTemplateArgumentList(const ArgumentList &al,
 {
   for (const Argument &a : al)
   {
-    if (!a.type.isEmpty())
+    if (!a.type.empty())
     {
 //#warning linkifyText(TextGeneratorXMLImpl(t),a.type,LinkifyTextOptions().setScope(scope).setFileScope(fileScope));
       bindTextParameter(param_select,":type",a.type);
       bindTextParameter(param_insert,":type",a.type);
     }
-    if (!a.name.isEmpty())
+    if (!a.name.empty())
     {
       bindTextParameter(param_select,":declname",a.name);
       bindTextParameter(param_insert,":declname",a.name);
       bindTextParameter(param_select,":defname",a.name);
       bindTextParameter(param_insert,":defname",a.name);
     }
-    if (!a.defval.isEmpty())
+    if (!a.defval.empty())
     {
 //#warning linkifyText(TextGeneratorXMLImpl(t),a.defval,LinkifyTextOptions().setScope(scope).setFileScope(fileScope));
       bindTextParameter(param_select,":defval",a.defval);
@@ -1420,7 +1420,7 @@ QCString getSQLDocBlock(const Definition *scope,
   const QCString &fileName,
   int lineNr)
 {
-  if (doc.isEmpty()) return "";
+  if (doc.empty()) return "";
 
   TextStream t;
   auto parser { createDocParser() };
@@ -1693,7 +1693,7 @@ static void generateSqlite3ForMember(const MemberDef *md, struct Refid scope_ref
     bindIntParameter(memberdef_insert,":maybevoid",md->isMaybeVoid());
     bindIntParameter(memberdef_insert,":maybedefault",md->isMaybeDefault());
     bindIntParameter(memberdef_insert,":maybeambiguous",md->isMaybeAmbiguous());
-    if (!md->bitfieldString().isEmpty())
+    if (!md->bitfieldString().empty())
     {
       QCString bitfield = md->bitfieldString();
       if (bitfield.at(0)==':') bitfield=bitfield.mid(1);
@@ -1761,17 +1761,17 @@ static void generateSqlite3ForMember(const MemberDef *md, struct Refid scope_ref
     stripQualifiers(typeStr);
     StringVector list;
     linkifyText(TextGeneratorSqlite3Impl(list),typeStr,options);
-    if (!typeStr.isEmpty())
+    if (!typeStr.empty())
     {
       bindTextParameter(memberdef_insert,":type",typeStr);
     }
 
-    if (!md->definition().isEmpty())
+    if (!md->definition().empty())
     {
       bindTextParameter(memberdef_insert,":definition",md->definition());
     }
 
-    if (!md->argsString().isEmpty())
+    if (!md->argsString().empty())
     {
       bindTextParameter(memberdef_insert,":argsstring",md->argsString());
     }
@@ -1803,7 +1803,7 @@ static void generateSqlite3ForMember(const MemberDef *md, struct Refid scope_ref
     }
   }
 
-  if ( !md->getScopeString().isEmpty() )
+  if ( !md->getScopeString().empty() )
   {
     bindTextParameter(memberdef_insert,":scope",md->getScopeString());
   }
@@ -1848,7 +1848,7 @@ static void generateSqlite3ForMember(const MemberDef *md, struct Refid scope_ref
     insertMemberFunctionParams(memberdef_id,md,def);
   }
   else if (md->memberType()==MemberType::Define &&
-          !md->argsString().isEmpty())
+          !md->argsString().empty())
   {
     insertMemberDefineParams(memberdef_id,md,def);
   }
@@ -1971,8 +1971,8 @@ static void generateSqlite3ForClass(const ClassDef *cd)
   if (ii)
   {
     QCString nm = ii->includeName;
-    if (nm.isEmpty() && ii->fileDef) nm = ii->fileDef->docName();
-    if (!nm.isEmpty())
+    if (nm.empty() && ii->fileDef) nm = ii->fileDef->docName();
+    if (!nm.empty())
     {
       int header_id=-1;
       if (ii->fileDef)
@@ -2504,7 +2504,7 @@ static void generateSqlite3ForPage(const PageDef *pd,bool isExample)
     {
       title = si->title();
     }
-    if (title.isEmpty())
+    if (title.empty())
     {
       title = pd->title();
     }

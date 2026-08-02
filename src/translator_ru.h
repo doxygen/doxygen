@@ -123,7 +123,7 @@ class TranslatorRussian : public Translator
      */
     QCString trGeneratedAutomatically(const QCString &s) override
     { QCString result="Автоматически создано Doxygen";
-      if (!s.isEmpty()) result+=QCString(" для ")+s;
+      if (!s.empty()) result+=QCString(" для ")+s;
       result+=" из исходного текста.";
       return result;
     }
@@ -300,7 +300,7 @@ class TranslatorRussian : public Translator
 
     /*! This is used in HTML as the title of index.html. */
     QCString trDocumentation(const QCString &projName) override
-    { return (!projName.isEmpty()?projName + " " : "") + "Документация"; }
+    { return (!projName.empty()?projName + " " : "") + "Документация"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * index of all groups.
@@ -461,7 +461,7 @@ class TranslatorRussian : public Translator
     QCString trGeneratedAt(const QCString &date,const QCString &projName) override
     {
       QCString result="Документация ";
-      if (!projName.isEmpty()) result+=QCString("по ")+projName;
+      if (!projName.empty()) result+=QCString("по ")+projName;
       result+=QCString(". Последние изменения: ")+date;
       result+=". Создано системой";
       return result;

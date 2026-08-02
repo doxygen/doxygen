@@ -205,7 +205,7 @@ class ConfigString final : public ConfigOption
     void writeXSDDoxyfile(TextStream &t) override;
     void substEnvVars() override;
     void init() override { m_value = m_defValue; }
-    void emptyValueToDefault() override { if (m_value.isEmpty()) m_value=m_defValue; }
+    void emptyValueToDefault() override { if (m_value.empty()) m_value=m_defValue; }
     bool isDefault() override { return m_value.stripWhiteSpace() == m_defValue.stripWhiteSpace(); }
 
   private:

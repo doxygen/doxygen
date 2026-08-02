@@ -372,7 +372,7 @@ NONLopt [^\n]*
                          }
 <RulesRoundQuest>{nl}    {
                            yyextra->rulesPatternBuffer += yytext;
-                           if (!yyextra->rulesPatternBuffer.isEmpty())
+                           if (!yyextra->rulesPatternBuffer.empty())
                            {
                              startFontClass(yyscanner,"stringliteral");
                              codifyLines(yyscanner,yyextra->rulesPatternBuffer.data());
@@ -427,7 +427,7 @@ NONLopt [^\n]*
                            yyextra->rulesPatternBuffer += yytext;
                         }
 <RulesPattern>{ws}+"|"  {
-                           if (!yyextra->rulesPatternBuffer.isEmpty())
+                           if (!yyextra->rulesPatternBuffer.empty())
                            {
                              startFontClass(yyscanner,"stringliteral");
                              codifyLines(yyscanner,yyextra->rulesPatternBuffer);
@@ -447,7 +447,7 @@ NONLopt [^\n]*
                          }
 <RulesPattern>({ws}|{nl}) {
                            unput(*yytext);
-                           if (!yyextra->rulesPatternBuffer.isEmpty())
+                           if (!yyextra->rulesPatternBuffer.empty())
                            {
                              startFontClass(yyscanner,"stringliteral");
                              codifyLines(yyscanner,yyextra->rulesPatternBuffer);
@@ -462,7 +462,7 @@ NONLopt [^\n]*
                            yyextra->rulesPatternBuffer += yytext;
                          }
 <RulesPattern>{CCS}       {
-                           if (!yyextra->rulesPatternBuffer.isEmpty())
+                           if (!yyextra->rulesPatternBuffer.empty())
                            {
                              startFontClass(yyscanner,"stringliteral");
                              codifyLines(yyscanner,yyextra->rulesPatternBuffer);
@@ -1053,7 +1053,7 @@ static void nextCodeLine(yyscan_t yyscanner)
 static void codifyLines(yyscan_t yyscanner,const QCString &text)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  if (text.isEmpty()) return;
+  if (text.empty()) return;
   const char *p=text.data(),*sp=p;
   bool done=false;
   while (!done)
@@ -1138,7 +1138,7 @@ static void lineCount(yyscan_t yyscanner)
 static void handleCCode(yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  if (yyextra->CCodeBuffer.isEmpty()) return;
+  if (yyextra->CCodeBuffer.empty()) return;
 
   yyextra->ccodeParser.setInsideCodeLine(yyextra->insideCodeLine);
   yyextra->ccodeParser.parseCode(*yyextra->code,
@@ -1202,7 +1202,7 @@ void LexCodeParser::parseCode(OutputCodeList &codeOutIntf,
   yyscan_t yyscanner = p->yyscanner;
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
 
-  if (input.isEmpty()) return;
+  if (input.empty()) return;
 
   DebugLex debugLex(Debug::Lex_lexcode, __FILE__, options.fileDef() ? qPrint(options.fileDef()->fileName()) : nullptr);
 
@@ -1228,7 +1228,7 @@ void LexCodeParser::parseCode(OutputCodeList &codeOutIntf,
   if (options.isExample() && options.fileDef()==nullptr)
   {
     // create a dummy filedef for the example
-    yyextra->exampleFileDef = createFileDef(QCString(),!options.exampleName().isEmpty() ? options.exampleName() : QCString("generated"));
+    yyextra->exampleFileDef = createFileDef(QCString(),!options.exampleName().empty() ? options.exampleName() : QCString("generated"));
     yyextra->sourceFileDef = yyextra->exampleFileDef.get();
   }
 

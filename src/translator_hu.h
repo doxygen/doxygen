@@ -177,7 +177,7 @@ class TranslatorHungarian : public TranslatorAdapter_1_8_15
      */
     QCString trGeneratedAutomatically(const QCString &s) override
     { QCString result="Ezt a dokumentációt a Doxygen készítette ";
-      if (!s.isEmpty()) result+=QCString(" a") + zed(s[0])+s+" projekthez";
+      if (!s.empty()) result+=QCString(" a") + zed(s[0])+s+" projekthez";
       result+=" a forráskódból.";
       return result;
     }
@@ -376,7 +376,7 @@ class TranslatorHungarian : public TranslatorAdapter_1_8_15
 
     /*! This is used in HTML as the title of index.html. */
     QCString trDocumentation(const QCString &projName) override
-    { return (!projName.isEmpty()?projName + " " : "") + "Dokumentáció"; }
+    { return (!projName.empty()?projName + " " : "") + "Dokumentáció"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * index of all groups.
@@ -533,7 +533,7 @@ class TranslatorHungarian : public TranslatorAdapter_1_8_15
     QCString trGeneratedAt(const QCString &date,const QCString &projName) override
     {
       QCString result="";
-      if (!projName.isEmpty()) result+="Projekt: "+projName;
+      if (!projName.empty()) result+="Projekt: "+projName;
       result+=" Készült: "+date+" Készítette: ";
       return result;
     }

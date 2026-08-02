@@ -152,7 +152,7 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
      */
     QCString trGeneratedAutomatically(const QCString &s) override
     { QCString result="Generat automàticament per Doxygen";
-      if (!s.isEmpty()) result+=" per a "+s;
+      if (!s.empty()) result+=" per a "+s;
       result+=" a partir del codi font.";
       return result;
     }
@@ -350,7 +350,7 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
 
     /*! This is used in HTML as the title of index.html. */
     QCString trDocumentation(const QCString &projName) override
-    { return (!projName.isEmpty()?projName + " " : "") + ": Documentació"; }
+    { return (!projName.empty()?projName + " " : "") + ": Documentació"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * index of all groups.
@@ -507,7 +507,7 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
     QCString trGeneratedAt(const QCString &date,const QCString &projName) override
     {
       QCString result="Generat a "+date;
-      if (!projName.isEmpty()) result+=" per a "+projName;
+      if (!projName.empty()) result+=" per a "+projName;
       result+=" per";
       return result;
     }

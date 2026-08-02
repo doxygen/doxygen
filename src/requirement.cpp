@@ -152,7 +152,7 @@ void RequirementManager::addRequirement(Entry *e)
       // done in commentscan.l in the comment block containing the @requirement command
       SectionManager::instance().add(e->name,"requirements",1,title,SectionType::Anchor,1);
     }
-    if (!e->brief.isEmpty())
+    if (!e->brief.empty())
     {
       doc.prepend(e->brief+"\n<p>");
     }
@@ -204,7 +204,7 @@ void RequirementManager::generatePage()
     doc += req->id();
     doc += " ";
     doc += "<span class=\"req_id\">";
-    if (QCString tagFile = req->getTagFile(); !tagFile.isEmpty())
+    if (QCString tagFile = req->getTagFile(); !tagFile.empty())
     {
       //printf("tagFile=%s extPage=%s\n",qPrint(tagFile),qPrint(req->getExtPage()));
       doc += "<a href=\"";
@@ -358,13 +358,13 @@ void RequirementManager::writeRef(OutputList &ol,const RequirementRef &ref)
   if (const RequirementIntf *req = RequirementManager::instance().find(ref.reqId()); req!=nullptr)
   {
     QCString title = ref.reqId();
-    if (!ref.title().isEmpty())
+    if (!ref.title().empty())
     {
       title +=" (";
       title += parseCommentAsText(p->reqPageDef,nullptr,ref.title(),ref.file(),ref.line());
       title +=")";
     }
-    else if (!req->title().isEmpty())
+    else if (!req->title().empty())
     {
       title += " (";
       title += req->title();

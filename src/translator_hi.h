@@ -259,7 +259,7 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
     QCString trGeneratedAutomatically(const QCString &s) override
     {
       QCString result = "स्रोत संकेत-लिपि से ";
-      if (!s.isEmpty())
+      if (!s.empty())
         result += s + " के लिए ";
       result += "डॉक्सिजन द्वारा स्वचालित रूप से उत्पन्न किया गया।";
       return result;
@@ -425,7 +425,7 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
 
     /*! This is used in HTML as the title of index.html. */
     QCString trDocumentation(const QCString &projName) override
-    { return (!projName.isEmpty()?projName + " " : "") + "दस्तावेज़ीकरण"; }
+    { return (!projName.empty()?projName + " " : "") + "दस्तावेज़ीकरण"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * index of all groups.
@@ -568,7 +568,7 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
     QCString trGeneratedAt(const QCString &date,const QCString &projName) override
     {
       QCString result;
-      if (!projName.isEmpty())
+      if (!projName.empty())
         result += projName + " के लिए ";
       result += date + " पर उतपन्न किया गया: ";
       return result;

@@ -169,7 +169,7 @@ void OutputList::generateDoc(const QCString &fileName,int startLine,
                   const Definition *ctx,const MemberDef * md,
                   const QCString &docStr,const DocOptions &options)
 {
-  if (docStr.isEmpty()) return;
+  if (docStr.empty()) return;
 
   auto count=std::count_if(m_outputGenList.begin(),m_outputGenList.end(),
                            [](const auto &e) { return e.enabled; });

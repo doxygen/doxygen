@@ -113,10 +113,9 @@ QCString DocParser::findAndCopyImage(const QCString &fileName, DocImage::Type ty
     if (infi.exists())
     {
       result = fileName;
-      int i = result.findRev('/');
-      if (i!=-1 || (i=result.findRev('\\'))!=-1)
+      if (size_t i = result.rfind('/') ; i!=QCString::npos || (i=result.rfind('\\'))!=QCString::npos)
       {
-	result = result.right(static_cast<int>(result.length())-i-1);
+	result = result.mid(i+1);
       }
       //printf("fileName=%s result=%s\n",fileName,qPrint(result));
       QCString outputDir;
@@ -246,7 +245,7 @@ void DocParser::checkArgumentName()
       {
         if (!sameName) // replace positional argument with real name or -
         {
-          context.token->name = argName.isEmpty() ? "-" : argName;
+          context.token->name = argName.empty() ? "-" : argName;
         }
 	context.paramsFound.insert(aName.str());
 	found=true;
@@ -262,7 +261,7 @@ void DocParser::checkArgumentName()
     {
       //printf("member type=%d\n",context.memberDef->memberType());
       QCString scope=context.memberDef->getScopeString();
-      if (!scope.isEmpty()) scope+="::"; else scope="";
+      if (!scope.empty()) scope+="::"; else scope="";
       QCString inheritedFrom = "";
       QCString docFile = context.memberDef->docFile();
       int docLine = context.memberDef->docLine();
@@ -312,7 +311,7 @@ void DocParser::checkRetvalName()
 {
   QCString name = context.token->name;
   if (!Config_getBool(WARN_IF_DOC_ERROR)) return;
-  if (context.memberDef==nullptr || name.isEmpty()) return; // not a member or no valid name
+  if (context.memberDef==nullptr || name.empty()) return; // not a member or no valid name
   if (context.retvalsFound.count(name.str())==1) // only report the first double entry
   {
      warn_doc_error(context.memberDef->getDefFileName(),
@@ -356,11 +355,11 @@ void DocParser::checkUnOrMultipleDocumentedParams()
         {
           // allow undocumented this (for C++23 deducing this), see issue #11123
         }
-        else if (!argName.isEmpty())
+        else if (!argName.empty())
         {
           size_t count_named      = context.paramsFound.count(argName.str());
           size_t count_positional = context.paramsFound.count(std::to_string(position));
-          if (count_named==0 && count_positional==0 && a.docs.isEmpty())
+          if (count_named==0 && count_positional==0 && a.docs.empty())
           {
             undocParams.push_back(a);
           }
@@ -446,7 +445,7 @@ bool DocParser::findDocsForMemberOrCompound(const QCString &commandName,
   *pBrief="";
   *pDef=nullptr;
   QCString cmdArg=commandName;
-  if (cmdArg.isEmpty())
+  if (cmdArg.empty())
   {
     AUTO_TRACE_EXIT("empty");
     return false;
@@ -492,9 +491,9 @@ bool DocParser::findDocsForMemberOrCompound(const QCString &commandName,
       cmdArg.startsWith("anonymous_namespace{")
       )
   {
-    size_t rightBracePos = cmdArg.find("}", static_cast<int>(qstrlen("anonymous_namespace{")));
+    size_t rightBracePos = cmdArg.find("}", qstrlen("anonymous_namespace{"));
     QCString leftPart = cmdArg.left(rightBracePos + 1);
-    QCString rightPart = cmdArg.right(cmdArg.size() - rightBracePos - 1);
+    QCString rightPart = cmdArg.mid(rightBracePos + 1);
     rightPart = substitute(rightPart, ".", "::");
     cmdArg = leftPart + rightPart;
   }
@@ -505,8 +504,8 @@ bool DocParser::findDocsForMemberOrCompound(const QCString &commandName,
 
   int l=static_cast<int>(cmdArg.length());
 
-  int funcStart=cmdArg.find('(');
-  if (funcStart==-1)
+  size_t funcStart=cmdArg.find('(');
+  if (funcStart==QCString::npos)
   {
     funcStart=l;
   }
@@ -514,9 +513,9 @@ bool DocParser::findDocsForMemberOrCompound(const QCString &commandName,
   {
     // Check for the case of operator() and the like.
     // beware of scenarios like operator()((foo)bar)
-    int secondParen = cmdArg.find('(', funcStart+1);
-    int leftParen   = cmdArg.find(')', funcStart+1);
-    if (leftParen!=-1 && secondParen!=-1)
+    size_t secondParen = cmdArg.find('(', funcStart+1);
+    size_t leftParen   = cmdArg.find(')', funcStart+1);
+    if (leftParen!=QCString::npos && secondParen!=QCString::npos)
     {
       if (leftParen<secondParen)
       {
@@ -529,7 +528,7 @@ bool DocParser::findDocsForMemberOrCompound(const QCString &commandName,
   QCString args=cmdArg.right(l-funcStart);
   // try if the link is to a member
   GetDefInput input(
-      context.context.find('.')==-1 ? context.context : QCString(), // find('.') is a hack to detect files
+      context.context.find('.')==QCString::npos ? context.context : QCString(), // find('.') is a hack to detect files
       name,
       args);
   input.checkCV=true;
@@ -579,8 +578,8 @@ bool DocParser::findDocsForMemberOrCompound(const QCString &commandName,
     }
     else
     {
-      scopeOffset = context.context.findRev("::",scopeOffset-1);
-      if (scopeOffset==-1) scopeOffset=0;
+      size_t o = context.context.rfind("::",scopeOffset-1);
+      scopeOffset = o!=QCString::npos ? static_cast<int>(o) : 0;
     }
   } while (scopeOffset>=0);
 
@@ -785,7 +784,7 @@ Token DocParser::handleAHref(DocNodeVariant *parent,DocNodeList &children,
   {
     if (opt.name=="name" || opt.name=="id") // <a name=label> or <a id=label> tag
     {
-      if (!opt.value.isEmpty())
+      if (!opt.value.empty())
       {
         children.append<DocAnchor>(this,parent,opt.value,true);
         break; // stop looking for other tag attribs
@@ -874,7 +873,7 @@ void DocParser::handleLinkedWord(DocNodeVariant *parent,DocNodeList &children,bo
   //printf("handleLinkedWord(%s) context.context=%s\n",qPrint(context.token->name),qPrint(context.context));
   if (!context.insideHtmlLink &&
       (resolveRef(context.context,context.token->name,inSeeBlock,&compound,&member,lang,true,fd,true)
-       || (!context.context.isEmpty() &&  // also try with global scope
+       || (!context.context.empty() &&  // also try with global scope
            resolveRef(QCString(),context.token->name,inSeeBlock,&compound,&member,lang,false,nullptr,true))
       )
      )
@@ -996,22 +995,22 @@ void DocParser::handleParameterType(DocNodeVariant *parent,DocNodeList &children
   QCString name = context.token->name; // save token name
   AUTO_TRACE("name={}",name);
   QCString name1;
-  int p=0, i=0, ii=0;
-  while ((i=paramTypes.find('|',p))!=-1)
+  size_t p=0, i=0, ii=0;
+  while ((i=paramTypes.find('|',p))!=QCString::npos)
   {
     name1 = paramTypes.mid(p,i-p);
     ii=name1.find('[');
-    context.token->name=ii!=-1 ? name1.mid(0,ii) : name1; // take part without []
+    context.token->name=ii!=QCString::npos ? name1.mid(0,ii) : name1; // take part without []
     handleLinkedWord(parent,children);
-    if (ii!=-1) children.append<DocWord>(this,parent,name1.mid(ii)); // add [] part
+    if (ii!=QCString::npos) children.append<DocWord>(this,parent,name1.mid(ii)); // add [] part
     p=i+1;
     children.append<DocSeparator>(this,parent,"|");
   }
   name1 = paramTypes.mid(p);
   ii=name1.find('[');
-  context.token->name=ii!=-1 ? name1.mid(0,ii) : name1;
+  context.token->name=ii!=QCString::npos ? name1.mid(0,ii) : name1;
   handleLinkedWord(parent,children);
-  if (ii!=-1) children.append<DocWord>(this,parent,name1.mid(ii));
+  if (ii!=QCString::npos) children.append<DocWord>(this,parent,name1.mid(ii));
   context.token->name = name; // restore original token name
 }
 
@@ -1321,7 +1320,7 @@ void DocParser::handleImage(DocNodeVariant *parent, DocNodeList &children)
           }
           else if (locOptLow.startsWith("anchor:"))
           {
-            if (!anchorStr.isEmpty())
+            if (!anchorStr.empty())
             {
                warn_doc_error(context.fileName,tokenizer.getLineNr(),
                   "multiple use of option 'anchor' for 'image' command, ignoring: '{}'",
@@ -1387,7 +1386,7 @@ void DocParser::handleImage(DocNodeVariant *parent, DocNodeList &children)
     warn_doc_error(context.fileName,tokenizer.getLineNr(),"unexpected token {} as the argument of \\image", tok.to_string());
     return;
   }
-  if (!anchorStr.isEmpty())
+  if (!anchorStr.empty())
   {
     children.append<DocAnchor>(this,parent,anchorStr,true);
   }
@@ -1852,7 +1851,7 @@ void DocParser::handleImg(DocNodeVariant *parent, DocNodeList &children,const Ht
   for (const auto &opt : tagHtmlAttribs)
   {
     AUTO_TRACE_ADD("option name={} value='{}'",opt.name,opt.value);
-    if (opt.name=="src" && !opt.value.isEmpty())
+    if (opt.name=="src" && !opt.value.empty())
     {
       // copy attributes
       HtmlAttribList attrList = tagHtmlAttribs;
@@ -1881,7 +1880,7 @@ Token DocParser::internalValidatingParseDoc(DocNodeVariant *parent,DocNodeList &
   AUTO_TRACE();
   Token retval = Token::make_RetVal_OK();
 
-  if (doc.isEmpty()) return retval;
+  if (doc.empty()) return retval;
 
   tokenizer.init(doc.data(),context.fileName,context.markdownSupport,context.insideHtmlLink);
 
@@ -1898,7 +1897,7 @@ Token DocParser::internalValidatingParseDoc(DocNodeVariant *parent,DocNodeList &
     DocPara *par  = children.get_last<DocPara>();
     if (isFirst) { par->markFirst(); isFirst=false; }
     retval=par->parse();
-    if (!par->isEmpty())
+    if (!par->empty())
     {
       if (lastPar) lastPar->markLast(false);
       lastPar=par;
@@ -1921,7 +1920,7 @@ void DocParser::readTextFileByName(const QCString &file,QCString &text)
   AUTO_TRACE("file={} text={}",file,text);
   bool ambig = false;
   QCString filePath = findFilePath(file,ambig);
-  if (!filePath.isEmpty())
+  if (!filePath.empty())
   {
     size_t indent = 0;
     text = detab(fileToString(filePath,Config_getBool(FILTER_SOURCE_FILES)),indent);
@@ -2294,7 +2293,7 @@ IDocNodeASTPtr validatingParseDoc(IDocParser &parserIntf,
   parser->tokenizer.setLineNr(startLine);
   size_t ioLen = input.length();
   QCString inpStr = parser->processCopyDoc(input.data(),ioLen);
-  if (inpStr.isEmpty() || inpStr.at(inpStr.length()-1)!='\n')
+  if (inpStr.empty() || inpStr.at(inpStr.length()-1)!='\n')
   {
     inpStr+='\n';
   }
@@ -2365,7 +2364,7 @@ IDocNodeASTPtr validatingParseTitle(IDocParser &parserIntf,const QCString &fileN
 
   auto ast = std::make_unique<DocNodeAST>(DocTitle(parser,nullptr));
 
-  if (!input.isEmpty())
+  if (!input.empty())
   {
     // build abstract syntax tree from title string
     std::get<DocTitle>(ast->root).parseFromString(nullptr,input);
@@ -2420,7 +2419,7 @@ IDocNodeASTPtr validatingParseText(IDocParser &parserIntf,const QCString &input)
 
   auto ast = std::make_unique<DocNodeAST>(DocText(parser));
 
-  if (!input.isEmpty())
+  if (!input.empty())
   {
     parser->tokenizer.setLineNr(1);
     parser->tokenizer.init(input.data(),parser->context.fileName,
@@ -2444,7 +2443,7 @@ IDocNodeASTPtr createRef(IDocParser &parserIntf,const QCString &target,const QCS
   DocParser *parser = dynamic_cast<DocParser*>(&parserIntf);
   assert(parser!=nullptr);
   if (parser==nullptr) return nullptr;
-  if (!srcFile.isEmpty())
+  if (!srcFile.empty())
   {
     parser->context.fileName = srcFile;
     parser->tokenizer.setFileName(srcFile);

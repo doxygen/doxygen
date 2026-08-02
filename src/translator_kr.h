@@ -171,7 +171,7 @@ class TranslatorKorean : public Translator
      */
     QCString trGeneratedAutomatically(const QCString &s) override
     { QCString result="소스 코드로부터 ";
-      if (!s.isEmpty()) result+=s+"를 위해 ";
+      if (!s.empty()) result+=s+"를 위해 ";
       result+="Doxygen에 의해 자동으로 생성됨.";
       return result;
     }
@@ -371,7 +371,7 @@ class TranslatorKorean : public Translator
 
     /*! This is used in HTML as the title of index.html. */
     QCString trDocumentation(const QCString &projName) override
-    { return (!projName.isEmpty()?projName + " " : "") + "문서화"; }
+    { return (!projName.empty()?projName + " " : "") + "문서화"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * index of all groups.
@@ -528,7 +528,7 @@ class TranslatorKorean : public Translator
     QCString trGeneratedAt(const QCString &date,const QCString &projName) override
     {
       QCString result="생성시간 : "+date;
-      if (!projName.isEmpty()) result+=", 프로젝트명 : "+projName;
+      if (!projName.empty()) result+=", 프로젝트명 : "+projName;
       result+=", 생성자 : ";
       return result;
     }

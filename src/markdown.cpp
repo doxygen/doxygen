@@ -240,7 +240,7 @@ inline size_t isNewline(std::string_view data)
 static QCString escapeDoubleQuotes(const QCString &s)
 {
   AUTO_TRACE("s={}",Trace::trunc(s));
-  if (s.isEmpty()) return s;
+  if (s.empty()) return s;
   QCString result;
   const char *p=s.data();
   char c=0, pc='\0';
@@ -258,7 +258,7 @@ static QCString escapeDoubleQuotes(const QCString &s)
 static QCString escapeSpecialChars(const QCString &s)
 {
   AUTO_TRACE("s={}",Trace::trunc(s));
-  if (s.isEmpty()) return s;
+  if (s.empty()) return s;
   bool insideQuote=false;
   QCString result;
   const char *p=s.data();
@@ -347,8 +347,7 @@ static QCString getFilteredImageAttributes(std::string_view fmt, const QCString 
   for (const auto &attr_ : attrList)
   {
     QCString attr = QCString(attr_).stripWhiteSpace();
-    int i = attr.find(':');
-    if (i>0) // has format
+    if (size_t i = attr.find(':'); i!=QCString::npos && i>0) // has format
     {
       QCString format = attr.left(i).stripWhiteSpace().lower();
       if (format == fmt) // matching format
@@ -804,7 +803,7 @@ size_t Markdown::Private::findEmphasisChar(std::string_view data, char c, size_t
     else if (data[i]=='@' || data[i]=='\\')
     { // skip over blocks that should not be processed
       QCString endBlockName = isBlockCommand(data.substr(i),i);
-      if (!endBlockName.isEmpty())
+      if (!endBlockName.empty())
       {
         i++;
         size_t l = endBlockName.length();
@@ -1215,13 +1214,13 @@ void Markdown::Private::writeMarkdownImage(
   out+=fmt;
   out+=" ";
   out+=link.mid(fd ? 0 : 5);
-  if (!explicitTitle && !content.isEmpty())
+  if (!explicitTitle && !content.empty())
   {
     out+=" \"";
     out+=escapeDoubleQuotes(content);
     out+="\"";
   }
-  else if ((content.isEmpty() || explicitTitle) && !title.isEmpty())
+  else if ((content.empty() || explicitTitle) && !title.empty())
   {
     out+=" \"";
     out+=escapeDoubleQuotes(title);
@@ -1231,7 +1230,7 @@ void Markdown::Private::writeMarkdownImage(
   {
     out+=" ";// so the line break will not be part of the image name
   }
-  if (!attributes.isEmpty())
+  if (!attributes.empty())
   {
     out+=" ";
     out+=attributes;
@@ -1309,7 +1308,7 @@ int Markdown::Private::processLink(const std::string_view data,size_t offset)
   size_t contentEnd=i;
   content = data.substr(contentStart,contentEnd-contentStart);
   //printf("processLink: content={%s}\n",qPrint(content));
-  if (!isImageLink && content.isEmpty()) { return 0; } // no link text
+  if (!isImageLink && content.empty()) { return 0; } // no link text
   i++; // skip over ]
 
   bool whiteSpace = false;
@@ -1367,7 +1366,7 @@ int Markdown::Private::processLink(const std::string_view data,size_t offset)
     link = data.substr(linkStart,i-linkStart);
     link = link.stripWhiteSpace();
     //printf("processLink: link={%s}\n",qPrint(link));
-    if (link.isEmpty()) { return 0; }
+    if (link.empty()) { return 0; }
     if (uriFormat && link.at(link.length()-1)=='>') link=link.left(link.length()-1);
 
     // optional title
@@ -1443,7 +1442,7 @@ int Markdown::Private::processLink(const std::string_view data,size_t offset)
     link = data.substr(linkStart,i-linkStart);
     //printf("processLink: link={%s}\n",qPrint(link));
     link = link.stripWhiteSpace();
-    if (link.isEmpty()) // shortcut link
+    if (link.empty()) // shortcut link
     {
       link=content;
     }
@@ -1463,7 +1462,7 @@ int Markdown::Private::processLink(const std::string_view data,size_t offset)
     }
     i++;
   }
-  else if (i<size && data[i]!=':' && !content.isEmpty()) // minimal link ref notation [some id]
+  else if (i<size && data[i]!=':' && !content.empty()) // minimal link ref notation [some id]
   {
     QCString content_lower = content.lower();
     auto lr_it = linkRefs.find(content_lower.str());
@@ -1567,7 +1566,7 @@ int Markdown::Private::processLink(const std::string_view data,size_t offset)
   {
     bool ambig = false;
     FileDef *fd=nullptr;
-    if (link.find("@ref ")!=-1 || link.find("\\ref ")!=-1 ||
+    if (link.find("@ref ")!=QCString::npos || link.find("\\ref ")!=QCString::npos ||
         (fd=findFileDef(Doxygen::imageNameLinkedMap,link,ambig)))
         // assume doxygen symbol link or local image link
     {
@@ -1585,7 +1584,7 @@ int Markdown::Private::processLink(const std::string_view data,size_t offset)
       out+="\" alt=\"";
       out+=content;
       out+="\"";
-      if (!title.isEmpty())
+      if (!title.empty())
       {
         out+=" title=\"";
         out+=substitute(title.simplifyWhiteSpace(),"\"","&quot;");
@@ -1597,11 +1596,13 @@ int Markdown::Private::processLink(const std::string_view data,size_t offset)
   else
   {
     SrcLangExt lang = getLanguageFromFileName(link);
-    int lp=-1;
-    if ((lp=link.find("@ref "))!=-1 || (lp=link.find("\\ref "))!=-1 || (lang==SrcLangExt::Markdown && !isURL(link)))
+    size_t lp=-1;
+    if ((lp = link.find("@ref "))!=QCString::npos ||
+        (lp = link.find("\\ref "))!=QCString::npos ||
+        (lang==SrcLangExt::Markdown && !isURL(link)))
         // assume doxygen symbol link
     {
-      if (lp==-1) // link to markdown page
+      if (lp==QCString::npos) // link to markdown page
       {
         out+="@ref \"";
         if (!(Portable::isAbsolutePath(link) || isURL(link)))
@@ -1630,7 +1631,7 @@ int Markdown::Private::processLink(const std::string_view data,size_t offset)
         out+=link;
       }
       out+=" \"";
-      if (explicitTitle && !title.isEmpty())
+      if (explicitTitle && !title.empty())
       {
         out+=substitute(title,"\"","&quot;");
       }
@@ -1640,7 +1641,9 @@ int Markdown::Private::processLink(const std::string_view data,size_t offset)
       }
       out+="\"";
     }
-    else if ((lp=link.find('#'))!=-1 || link.find('/')!=-1 || link.find('.')!=-1)
+    else if ((lp = link.find('#'))!=QCString::npos ||
+             (lp = link.find('/'))!=QCString::npos ||
+             (lp = link.find('.'))!=QCString::npos)
     { // file/url link
       bool isRef = false;
       if (lp==0 || (lp>0 && !isURL(link) && Config_getEnum(MARKDOWN_ID_STYLE)==MARKDOWN_ID_STYLE_t::GITHUB))
@@ -1658,7 +1661,7 @@ int Markdown::Private::processLink(const std::string_view data,size_t offset)
         out+=link;
         out+="\"";
         for (int ii = 0; ii < nlTotal; ii++) out+="\n";
-        if (!title.isEmpty())
+        if (!title.empty())
         {
           out+=" title=\"";
           out+=substitute(title.simplifyWhiteSpace(),"\"","&quot;");
@@ -1671,12 +1674,12 @@ int Markdown::Private::processLink(const std::string_view data,size_t offset)
 
       content = content.simplifyWhiteSpace();
       bool foundNameRef = false;
-      if (!content.isEmpty() && (content.at(0)=='#' || content.at(0)=='@'))
+      if (!content.empty() && (content.at(0)=='#' || content.at(0)=='@'))
       {
         size_t endOfId=1;
         while (endOfId<content.length() && isId(content.at(endOfId))) endOfId++;
         QCString user = content.mid(1,endOfId-1);
-        if (!user.isEmpty() && (content.at(0)=='#' || (!CommentScanner::isCommand(user) && Mappers::cmdMapper->map(user)==CommandType::UNKNOWN)))
+        if (!user.empty() && (content.at(0)=='#' || (!CommentScanner::isCommand(user) && Mappers::cmdMapper->map(user)==CommandType::UNKNOWN)))
         {
           // assume @name or #name instead of command
           out+='@';
@@ -1837,7 +1840,7 @@ int Markdown::Private::processSpecialCommand(std::string_view data, size_t offse
   const size_t size = data.size();
   size_t i=1;
   QCString endBlockName = isBlockCommand(data,offset);
-  if (!endBlockName.isEmpty())
+  if (!endBlockName.empty())
   {
     AUTO_TRACE_ADD("endBlockName={}",endBlockName);
     size_t l = endBlockName.length();
@@ -2011,7 +2014,7 @@ static size_t isLinkRef(std::string_view data, QCString &refid, QCString &link, 
   while (i<size && data[i]!='\n' && data[i]!=']') i++;
   if (i>=size || data[i]!=']') { return 0; }
   refid = data.substr(refIdStart,i-refIdStart);
-  if (refid.isEmpty()) { return 0; }
+  if (refid.empty()) { return 0; }
   AUTO_TRACE_ADD("refid found {}",refid);
   //printf("  isLinkRef: found refid='%s'\n",qPrint(refid));
   i++;
@@ -2192,7 +2195,7 @@ int Markdown::Private::isAtxHeader(std::string_view data,
   // store result
   header = data.substr(i,end-i);
   id = extractTitleId(header, level, pIsIdGenerated);
-  if (!id.isEmpty()) // strip #'s between title and id
+  if (!id.empty()) // strip #'s between title and id
   {
     int idx=static_cast<int>(header.length())-1;
     while (idx>=0 && (header.at(idx)=='#' || header.at(idx)==' ')) idx--;
@@ -2708,7 +2711,7 @@ size_t Markdown::Private::writeTableBlock(std::string_view data)
     m++;
     // do the column span test before stripping white space
     // || is spanning columns, | | is not
-    headerContents[k].colSpan = headerContents[k].cellText.isEmpty();
+    headerContents[k].colSpan = headerContents[k].cellText.empty();
     headerContents[k].cellText = headerContents[k].cellText.stripWhiteSpace();
   }
   tableContents.push_back(headerContents);
@@ -2728,7 +2731,7 @@ size_t Markdown::Private::writeTableBlock(std::string_view data)
       {
         // do the column span test before stripping white space
         // || is spanning columns, | | is not
-        rowContents[k].colSpan = rowContents[k].cellText.isEmpty();
+        rowContents[k].colSpan = rowContents[k].cellText.empty();
         rowContents[k].cellText = rowContents[k].cellText.stripWhiteSpace();
         k++;
       } // if (j<=end+i && (data[j]=='|' && (j==0 || data[j-1]!='\\')))
@@ -2740,7 +2743,7 @@ size_t Markdown::Private::writeTableBlock(std::string_view data)
     } // while (j<=end+i)
     // do the column span test before stripping white space
     // || is spanning columns, | | is not
-    rowContents[k].colSpan  = rowContents[k].cellText.isEmpty();
+    rowContents[k].colSpan  = rowContents[k].cellText.empty();
     rowContents[k].cellText = rowContents[k].cellText.stripWhiteSpace();
     tableContents.push_back(rowContents);
 
@@ -2875,7 +2878,7 @@ void Markdown::Private::writeOneLineHeaderOrRuler(std::string_view data)
   else if ((level=isAtxHeader(data,header,id,true)))
   {
     QCString hTag;
-    if (!id.isEmpty())
+    if (!id.empty())
     {
       switch (level)
       {
@@ -3166,7 +3169,7 @@ size_t Markdown::Private::findEndOfLine(std::string_view data,size_t offset)
     {
       QCString endBlockName = isBlockCommand(data.substr(end-1),end-1);
       end++;
-      if (!endBlockName.isEmpty())
+      if (!endBlockName.empty())
       {
         size_t l = endBlockName.length();
         for (;end+l+1<size;end++) // search for end of block marker
@@ -3358,7 +3361,7 @@ QCString Markdown::Private::processQuotations(std::string_view data,size_t refIn
           if (addNewLines) out+='\n';
         };
 
-        if (!Config_getString(PLANTUML_JAR_PATH).isEmpty() && lang=="plantuml")
+        if (!Config_getString(PLANTUML_JAR_PATH).empty() && lang=="plantuml")
         {
           addSpecialCommand("startuml","enduml");
         }
@@ -3503,7 +3506,7 @@ QCString Markdown::Private::processBlocks(std::string_view data,const size_t ind
       //printf("isHeaderLine(%s)=%d\n",QCString(data+i).left(size-i).data(),level);
       QCString endBlockName;
       if (data[i]=='@' || data[i]=='\\') endBlockName = isBlockCommand(data.substr(i),i);
-      if (!endBlockName.isEmpty())
+      if (!endBlockName.empty())
       {
         // handle previous line
         if (isLinkRef(data.substr(pi,i-pi),id,link,title))
@@ -3541,9 +3544,9 @@ QCString Markdown::Private::processBlocks(std::string_view data,const size_t ind
         QCString header = data.substr(pi,i-pi-1);
         id = extractTitleId(header, level);
         //printf("header='%s' is='%s'\n",qPrint(header),qPrint(id));
-        if (!header.isEmpty())
+        if (!header.empty())
         {
-          if (!id.isEmpty())
+          if (!id.empty())
           {
             out+=level==1?"@section ":"@subsection ";
             out+=id;
@@ -3740,7 +3743,7 @@ QCString Markdown::extractPageTitle(QCString &docs, QCString &id, int &prepend, 
 
 QCString Markdown::process(const QCString &input, int &startNewlines, bool fromParseInput)
 {
-  if (input.isEmpty()) return input;
+  if (input.empty()) return input;
   size_t refIndent=0;
 
   // for replace tabs by spaces
@@ -3794,8 +3797,7 @@ QCString markdownFileNameToId(const QCString &fileName)
   AUTO_TRACE("fileName={}",fileName);
   QCString absFileName = FileInfo(fileName.str()).absFilePath();
   QCString baseFn = stripFromPath(absFileName);
-  int i = baseFn.findRev('.');
-  if (i!=-1) baseFn = baseFn.left(i);
+  if (size_t i = baseFn.rfind('.'); i!=QCString::npos) baseFn = baseFn.left(i);
   QCString baseName = escapeCharsInString(baseFn,false,false);
   //printf("markdownFileNameToId(%s)=md_%s\n",qPrint(fileName),qPrint(baseName));
   QCString res = "md_"+baseName;
@@ -3842,21 +3844,21 @@ void MarkdownOutlineParser::parseInput(const QCString &fileName,
     generatedId = id;
     id = "";
   }
-  int indentLevel=title.isEmpty() ? 0 : -1;
+  int indentLevel=title.empty() ? 0 : -1;
   markdown.setIndentLevel(indentLevel);
   FileInfo fi(fileName.str());
   QCString fn      = fi.fileName();
   QCString titleFn = stripExtensionGeneral(fn,getFileNameExtension(fn));
   QCString mdfileAsMainPage = Config_getString(USE_MDFILE_AS_MAINPAGE);
   QCString mdFileNameId = markdownFileNameToId(fileName);
-  bool wasEmpty = id.isEmpty();
+  bool wasEmpty = id.empty();
   if (wasEmpty) id = mdFileNameId;
   QCString relFileName = stripFromPath(fileName);
   bool isSubdirDocs = Config_getBool(IMPLICIT_DIR_DOCS) && relFileName.lower().endsWith("/readme.md");
   switch (isExplicitPage(docs))
   {
     case ExplicitPageResult::notExplicit:
-      if (!mdfileAsMainPage.isEmpty() &&
+      if (!mdfileAsMainPage.empty() &&
           (fi.absFilePath()==FileInfo(mdfileAsMainPage.str()).absFilePath()) // file reference with path
          )
       {
@@ -3865,13 +3867,13 @@ void MarkdownOutlineParser::parseInput(const QCString &fileName,
       }
       else if (id=="mainpage" || id=="index")
       {
-        if (title.isEmpty()) title = titleFn;
+        if (title.empty()) title = titleFn;
         docs.prepend("@ianchor{" + title + "} " + id + "\\ilinebr ");
         docs.prepend("@mainpage "+title+"\\ilinebr ");
       }
       else if (isSubdirDocs)
       {
-        if (!generatedId.isEmpty() && !title.isEmpty())
+        if (!generatedId.empty() && !title.empty())
         {
           docs.prepend("@section " + generatedId + " " + title + "\\ilinebr ");
         }
@@ -3879,7 +3881,7 @@ void MarkdownOutlineParser::parseInput(const QCString &fileName,
       }
       else
       {
-        if (title.isEmpty())
+        if (title.empty())
         {
           title = titleFn;
           prepend = 0;
@@ -3888,7 +3890,7 @@ void MarkdownOutlineParser::parseInput(const QCString &fileName,
         {
           docs.prepend("@ianchor{" + title + "} " + id + "\\ilinebr @ianchor{" + relFileName + "} " + mdFileNameId + "\\ilinebr ");
         }
-        else if (!generatedId.isEmpty())
+        else if (!generatedId.empty())
         {
           docs.prepend("@ianchor " +  generatedId + "\\ilinebr ");
         }
@@ -3917,7 +3919,7 @@ void MarkdownOutlineParser::parseInput(const QCString &fileName,
                  newLabel+                                     // new label
                  match[2].str()+                               // part between orgLabel and \n
                  "\\ilinebr @ianchor{" + orgTitle + "} "+orgLabel+"\n"+           // add original anchor plus \n of above
-                 docs.right(docs.length()-match.length());     // add remainder of docs
+                 docs.mid(match.length());                     // add remainder of docs
         }
       }
       break;

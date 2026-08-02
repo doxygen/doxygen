@@ -276,9 +276,9 @@ NamespaceDefImpl::NamespaceDefImpl(const QCString &df,int dl,int dc,
    DefinitionMixin(df,dl,dc,name)
   ,m_isPublished(isPublished)
 {
-  if (!fName.isEmpty())
+  if (!fName.empty())
   {
-    if (!lref.isEmpty())
+    if (!lref.empty())
     {
       fileName = stripExtension(fName);
     }
@@ -317,11 +317,7 @@ NamespaceDefImpl::NamespaceDefImpl(const QCString &df,int dl,int dc,
 void NamespaceDefImpl::updateLocalName()
 {
   QCString locName=name();
-  int i=locName.findRev("::");
-  if (i!=-1)
-  {
-    locName=locName.mid(i+2);
-  }
+  if (size_t i=locName.rfind("::"); i!=QCString::npos) locName=locName.mid(i+2);
   setLocalName(locName);
 }
 
@@ -593,8 +589,8 @@ void NamespaceDefImpl::computeAnchors()
 bool NamespaceDefImpl::hasDetailedDescription() const
 {
   bool repeatBrief = Config_getBool(REPEAT_BRIEF);
-  return ((!briefDescription().isEmpty() && repeatBrief) ||
-          !documentation().isEmpty());
+  return ((!briefDescription().empty() && repeatBrief) ||
+          !documentation().empty());
 }
 
 void NamespaceDefImpl::writeTagFile(TextStream &tagFile)
@@ -605,7 +601,7 @@ void NamespaceDefImpl::writeTagFile(TextStream &tagFile)
   tagFile << "    <name>" << convertToXML(name()) << "</name>\n";
   tagFile << "    <filename>" << fn << "</filename>\n";
   QCString idStr = id();
-  if (!idStr.isEmpty())
+  if (!idStr.empty())
   {
     tagFile << "    <clangid>" << convertToXML(idStr) << "</clangid>\n";
   }
@@ -695,7 +691,7 @@ void NamespaceDefImpl::writeDetailedDescription(OutputList &ol,const QCString &t
     ol.endGroupHeader();
 
     ol.startTextBlock();
-    if (!briefDescription().isEmpty() && Config_getBool(REPEAT_BRIEF))
+    if (!briefDescription().empty() && Config_getBool(REPEAT_BRIEF))
     {
       ol.generateDoc(briefFile(),
                      briefLine(),
@@ -704,8 +700,8 @@ void NamespaceDefImpl::writeDetailedDescription(OutputList &ol,const QCString &t
                      briefDescription(),
                      DocOptions());
     }
-    if (!briefDescription().isEmpty() && Config_getBool(REPEAT_BRIEF) &&
-        !documentation().isEmpty())
+    if (!briefDescription().empty() && Config_getBool(REPEAT_BRIEF) &&
+        !documentation().empty())
     {
       ol.pushGeneratorState();
         ol.disable(OutputType::Man);
@@ -716,7 +712,7 @@ void NamespaceDefImpl::writeDetailedDescription(OutputList &ol,const QCString &t
         ol.writeString("\n\n");
       ol.popGeneratorState();
     }
-    if (!documentation().isEmpty())
+    if (!documentation().empty())
     {
       ol.generateDoc(docFile(),
                      docLine(),
@@ -746,7 +742,7 @@ void NamespaceDefImpl::writeBriefDescription(OutputList &ol)
                                      .setIndexWords(true)
                                      .setSingleLine(true))
                  };
-    if (!ast->isEmpty())
+    if (!ast->empty())
     {
       ol.startParagraph();
       ol.pushGeneratorState();
@@ -776,7 +772,7 @@ void NamespaceDefImpl::writeBriefDescription(OutputList &ol)
   {
     ol.startParagraph();
     ol.startTypewriter();
-    if (!metaData.isEmpty())
+    if (!metaData.empty())
     {
       ol.docify(metaData);
       ol.lineBreak();
@@ -1429,7 +1425,7 @@ void NamespaceLinkedRefMap::writeDeclaration(OutputList &ol,const QCString &titl
       ol.startMemberDeclaration();
       QCString name = localName ? nd->localName() : nd->displayName();
       QCString anc = nd->anchor();
-      if (anc.isEmpty()) anc=name; else anc.prepend(name+"_");
+      if (anc.empty()) anc=name; else anc.prepend(name+"_");
       ol.startMemberItem(anc,OutputGenerator::MemberItemType::Normal);
       QCString ct = nd->compoundTypeString();
       ol.docify(ct);
@@ -1437,7 +1433,7 @@ void NamespaceLinkedRefMap::writeDeclaration(OutputList &ol,const QCString &titl
       ol.insertMemberAlign();
       ol.writeObjectLink(nd->getReference(),nd->getOutputFileBase(),QCString(),name);
       ol.endMemberItem(OutputGenerator::MemberItemType::Normal);
-      if (!nd->briefDescription().isEmpty() && Config_getBool(BRIEF_MEMBER_DESC))
+      if (!nd->briefDescription().empty() && Config_getBool(BRIEF_MEMBER_DESC))
       {
         ol.startMemberDescription(nd->getOutputFileBase());
         ol.generateDoc(nd->briefFile(),
@@ -1485,7 +1481,7 @@ bool needsSorting(const Container &container)
   for (const auto &c : container)
   {
     QCString name = c->getDefFileName();
-    if (!prev.isEmpty() && prev!=name)
+    if (!prev.empty() && prev!=name)
     {
       allSame = false;
       break;
@@ -1585,8 +1581,8 @@ bool NamespaceDefImpl::isVisibleInHierarchy() const
 
 bool NamespaceDefImpl::isLinkableInProject() const
 {
-  int i = name().findRev("::");
-  if (i==-1) i=0; else i+=2;
+  size_t i = name().rfind("::");
+  if (i==QCString::npos) i=0; else i+=2;
   bool extractAnonNs = Config_getBool(EXTRACT_ANON_NSPACES);
   bool hideUndoc     = Config_getBool(HIDE_UNDOC_NAMESPACES);
   if (extractAnonNs &&                             // extract anonymous ns
@@ -1595,7 +1591,7 @@ bool NamespaceDefImpl::isLinkableInProject() const
   {
     return true;
   }
-  return !name().isEmpty() && name().at(i)!='@' && // not anonymous
+  return !name().empty() && name().at(i)!='@' && // not anonymous
     (hasDocumentation() || !hideUndoc || getLanguage()==SrcLangExt::CSharp) &&  // documented
     !isReference() &&      // not an external reference
     !isHidden() &&         // not hidden
@@ -1845,7 +1841,7 @@ void replaceNamespaceAliases(QCString &name)
 NamespaceDef *getResolvedNamespace(const QCString &name)
 {
   //printf("> getResolvedNamespace(%s)\n",qPrint(name));
-  if (name.isEmpty()) return nullptr;
+  if (name.empty()) return nullptr;
   StringSet namespacesTried;
   auto ns = getResolvedNamespaceRec(namespacesTried,NamespaceAliasInfo(name.str()));
   //printf("< getResolvedNamespace(%s)=%s\n",qPrint(name),ns?qPrint(ns->qualifiedName()):"nullptr");

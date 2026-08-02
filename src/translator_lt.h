@@ -142,7 +142,7 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
      */
     QCString trGeneratedAutomatically(const QCString &s) override
     { QCString result="Automatiškai sugeneruota Doxygen įrankiu";
-      if (!s.isEmpty()) result+=" "+s;
+      if (!s.empty()) result+=" "+s;
       result+=" iš programos kodo.";
       return result;
     }
@@ -340,7 +340,7 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
 
     /*! This is used in HTML as the title of index.html. */
     QCString trDocumentation(const QCString &projName) override
-    { return (!projName.isEmpty()?projName + " " : "") + "Dokumentacija"; }
+    { return (!projName.empty()?projName + " " : "") + "Dokumentacija"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * index of all groups.
@@ -497,7 +497,7 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
     QCString trGeneratedAt(const QCString &date,const QCString &projName) override
     {
       QCString result="Sugeneruota "+date;/*FIXME*/
-      if (!projName.isEmpty()) result+=" "+projName;/*FIXME*/
+      if (!projName.empty()) result+=" "+projName;/*FIXME*/
       result+=" ";/*FIXME*/
       return result;
     }

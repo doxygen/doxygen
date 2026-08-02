@@ -126,7 +126,7 @@ void DefinitionImpl::Private::setDefFileName(const QCString &df)
   defFileName = df;
   FileInfo fi(df.data());
   QCString ext = fi.extension(false);
-  if (!ext.isEmpty()) defFileExt = "." + ext;
+  if (!ext.empty()) defFileExt = "." + ext;
 }
 
 void DefinitionImpl::Private::init(const QCString &df, const QCString &n)
@@ -186,7 +186,7 @@ static bool matchExcludedSymbols(const QCString &name)
       pattern  = pattern.left(pattern.length() - 1);
       forceEnd = true;
     }
-    if (pattern.find('*')!=-1) // wildcard mode
+    if (pattern.find('*')!=QCString::npos) // wildcard mode
     {
       const reg::Ex re(substitute(pattern,"*",".*").str());
       reg::Match match;
@@ -204,7 +204,7 @@ static bool matchExcludedSymbols(const QCString &name)
         }
       }
     }
-    else if (!pattern.isEmpty()) // match words
+    else if (!pattern.empty()) // match words
     {
       size_t i = symName.find(pattern.str());
       if (i!=std::string::npos) // we have a match!
@@ -233,7 +233,7 @@ static void addToMap(const QCString &name,Definition *d)
   QCString symbolName = name;
   int index=computeQualifiedIndex(symbolName);
   if (!vhdlOpt && index!=-1) symbolName=symbolName.mid(index+2);
-  if (!symbolName.isEmpty())
+  if (!symbolName.empty())
   {
     //printf("adding symbol %s\n",qPrint(symbolName));
     Doxygen::symbolMap->add(symbolName,d);
@@ -293,16 +293,16 @@ DefinitionImpl::~DefinitionImpl()
 
 void DefinitionImpl::setName(const QCString &name)
 {
-  if (name.isEmpty()) return;
+  if (name.empty()) return;
   p->name = name;
-  p->isAnonymous = p->name.isEmpty() ||
+  p->isAnonymous = p->name.empty() ||
                    p->name.at(0)=='@' ||
-                   p->name.find("::@")!=-1;
+                   p->name.find("::@")!=QCString::npos;
 }
 
 void DefinitionImpl::setId(const QCString &id)
 {
-  if (id.isEmpty()) return;
+  if (id.empty()) return;
   p->id = id;
   if (Doxygen::clangUsrMap)
   {
@@ -359,14 +359,14 @@ void DefinitionImpl::writeDocAnchorsToTagFile(TextStream &tagFile) const
     //printf("%s: writeDocAnchorsToTagFile(%d)\n",qPrint(name()),p->sectionRef.size());
     for (const SectionInfo *si : p->sectionRefs)
     {
-      if (!si->generated() && si->ref().isEmpty() && !AnchorGenerator::instance().isGenerated(si->label().str()))
+      if (!si->generated() && si->ref().empty() && !AnchorGenerator::instance().isGenerated(si->label().str()))
       {
         //printf("write an entry!\n");
         if (p->def->definitionType()==Definition::TypeMember) tagFile << "  ";
         QCString fn = si->fileName();
         addHtmlExtensionIfMissing(fn);
         tagFile << "    <docanchor file=\"" << fn << "\"";
-        if (!si->title().isEmpty())
+        if (!si->title().empty())
         {
           tagFile << " title=\"" << convertToXML(si->title()) << "\"";
         }
@@ -387,7 +387,7 @@ bool DefinitionImpl::_docsAlreadyAdded(const QCString &doc,QCString &sigList)
   MD5SigToString(md5_sig,sigStr);
   //printf("%s:_docsAlreadyAdded doc='%s' sig='%s' docSigs='%s'\n",
   //    qPrint(name()),qPrint(doc),qPrint(sigStr),qPrint(sigList));
-  if (sigList.find(sigStr)==-1) // new docs, add signature to prevent re-adding it
+  if (sigList.find(sigStr)==QCString::npos) // new docs, add signature to prevent re-adding it
   {
     sigList+=QCString(":")+sigStr;
     return false;
@@ -402,7 +402,7 @@ void DefinitionImpl::_setDocumentation(const QCString &d,const QCString &docFile
                                    bool stripWhiteSpace,bool atTop)
 {
   //printf("%s::setDocumentation(%s,%s,%d,%d)\n",qPrint(name()),d,docFile,docLine,stripWhiteSpace);
-  if (d.isEmpty()) return;
+  if (d.empty()) return;
   QCString doc = d;
   if (stripWhiteSpace)
   {
@@ -420,7 +420,7 @@ void DefinitionImpl::_setDocumentation(const QCString &d,const QCString &docFile
       p->details = std::make_optional<DocInfo>();
     }
     DocInfo &details = p->details.value();
-    if (details.doc.isEmpty()) // fresh detailed description
+    if (details.doc.empty()) // fresh detailed description
     {
       details.doc = doc;
     }
@@ -447,7 +447,7 @@ void DefinitionImpl::_setDocumentation(const QCString &d,const QCString &docFile
 
 void DefinitionImpl::setDocumentation(const QCString &d,const QCString &docFile,int docLine,bool stripWhiteSpace)
 {
-  if (d.isEmpty()) return;
+  if (d.empty()) return;
   _setDocumentation(d,docFile,docLine,stripWhiteSpace,false);
 }
 
@@ -457,7 +457,7 @@ void DefinitionImpl::_setBriefDescription(const QCString &b,const QCString &brie
   brief = brief.stripWhiteSpace();
   brief = stripLeadingAndTrailingEmptyLines(brief,briefLine);
   brief = brief.stripWhiteSpace();
-  if (brief.isEmpty()) return;
+  if (brief.empty()) return;
   size_t bl = brief.length();
   if (bl>0)
   {
@@ -476,7 +476,7 @@ void DefinitionImpl::_setBriefDescription(const QCString &b,const QCString &brie
 
   if (!_docsAlreadyAdded(brief,p->briefSignatures))
   {
-    if (p->brief && !p->brief->doc.isEmpty())
+    if (p->brief && !p->brief->doc.empty())
     {
        //printf("adding to details\n");
        _setDocumentation(brief,briefFile,briefLine,false,true);
@@ -510,7 +510,7 @@ void DefinitionImpl::_setBriefDescription(const QCString &b,const QCString &brie
 
 void DefinitionImpl::setBriefDescription(const QCString &b,const QCString &briefFile,int briefLine)
 {
-  if (b.isEmpty()) return;
+  if (b.empty()) return;
   _setBriefDescription(b,briefFile,briefLine);
 }
 
@@ -523,7 +523,7 @@ void DefinitionImpl::_setInbodyDocumentation(const QCString &doc,const QCString 
       p->inbodyDocs = std::make_optional<DocInfo>();
     }
     DocInfo &inbodyDocs = p->inbodyDocs.value();
-    if (inbodyDocs.doc.isEmpty()) // fresh inbody docs
+    if (inbodyDocs.doc.empty()) // fresh inbody docs
     {
       inbodyDocs.doc  = doc;
       inbodyDocs.file = inbodyFile;
@@ -538,7 +538,7 @@ void DefinitionImpl::_setInbodyDocumentation(const QCString &doc,const QCString 
 
 void DefinitionImpl::setInbodyDocumentation(const QCString &d,const QCString &inbodyFile,int inbodyLine)
 {
-  if (d.isEmpty()) return;
+  if (d.empty()) return;
   _setInbodyDocumentation(d,inbodyFile,inbodyLine);
 }
 
@@ -566,7 +566,7 @@ class FilterCache
     {
       bool filterSourceFiles = Config_getBool(FILTER_SOURCE_FILES);
       QCString filter = getFileFilter(fileName,true);
-      bool usePipe = !filter.isEmpty() && filterSourceFiles;
+      bool usePipe = !filter.empty() && filterSourceFiles;
       return usePipe ? getFileContentsPipe(fileName,filter,startLine,endLine,str)
                      : getFileContentsDisk(fileName,startLine,endLine,str);
     }
@@ -769,7 +769,7 @@ bool readCodeFragment(const QCString &fileName,bool isMacro,
 {
   bool filterSourceFiles = Config_getBool(FILTER_SOURCE_FILES);
   QCString filter = getFileFilter(fileName,true);
-  bool usePipe = !filter.isEmpty() && filterSourceFiles;
+  bool usePipe = !filter.empty() && filterSourceFiles;
   int tabSize = Config_getInt(TAB_SIZE);
   SrcLangExt lang = getLanguageFromFileName(fileName);
   const int blockSize = 4096;
@@ -899,11 +899,11 @@ bool readCodeFragment(const QCString &fileName,bool isMacro,
       } while (*p);
 
       // strip stuff after closing bracket
-      int newLineIndex = result.findRev('\n');
-      int braceIndex   = result.findRev('}');
-      if (braceIndex > newLineIndex)
+      size_t newLineIndex = result.rfind('\n');
+      size_t braceIndex   = result.rfind('}');
+      if (newLineIndex!=QCString::npos && braceIndex!=QCString::npos && braceIndex > newLineIndex)
       {
-        result.resize(static_cast<size_t>(braceIndex+1));
+        result.resize(braceIndex+1);
       }
       endLine=lineNr-1;
     }
@@ -929,7 +929,7 @@ bool readCodeFragment(const QCString &fileName,bool isMacro,
 
     }
   }
-  if (!result.isEmpty() && result.at(result.length()-1)!='\n') result += "\n";
+  if (!result.empty() && result.at(result.length()-1)!='\n') result += "\n";
   //printf("readCodeFragment(%d-%d)=%s\n",startLine,endLine,qPrint(result));
   return found;
 }
@@ -971,12 +971,12 @@ void DefinitionImpl::writeSourceDef(OutputList &ol) const
 {
   //printf("DefinitionImpl::writeSourceRef %d %p\n",bodyLine,bodyDef);
   QCString fn = getSourceFileBase();
-  if (!fn.isEmpty())
+  if (!fn.empty())
   {
     QCString refText = theTranslator->trDefinedAtLineInSourceFile();
-    int lineMarkerPos = refText.find("@0");
-    int fileMarkerPos = refText.find("@1");
-    if (lineMarkerPos!=-1 && fileMarkerPos!=-1) // should always pass this.
+    size_t lineMarkerPos = refText.find("@0");
+    size_t fileMarkerPos = refText.find("@1");
+    if (lineMarkerPos!=QCString::npos && fileMarkerPos!=QCString::npos) // should always pass this.
     {
       QCString lineStr;
       lineStr.sprintf("%d",p->body->defLine);
@@ -992,7 +992,7 @@ void DefinitionImpl::writeSourceDef(OutputList &ol) const
         // write file link
         ol.writeObjectLink(QCString(),fn,QCString(),p->body->fileDef->name());
         // write text right from file marker
-        ol.parseText(refText.right(refText.length()-static_cast<size_t>(fileMarkerPos)-2));
+        ol.parseText(refText.mid(fileMarkerPos+2));
       }
       else // file marker before line marker
       {
@@ -1005,7 +1005,7 @@ void DefinitionImpl::writeSourceDef(OutputList &ol) const
         // write line link
         ol.writeObjectLink(QCString(),fn,anchorStr,lineStr);
         // write text right from linePos marker
-        ol.parseText(refText.right(refText.length()-static_cast<size_t>(lineMarkerPos)-2));
+        ol.parseText(refText.mid(lineMarkerPos+2));
       }
       ol.endParagraph();
     }
@@ -1128,7 +1128,7 @@ void DefinitionImpl::_writeSourceRefList(OutputList &ol,const QCString &scopeNam
         QCString scope=md->getScopeString();
         QCString name=md->name();
         //printf("class=%p scope=%s scopeName=%s\n",md->getClassDef(),qPrint(scope),scopeName);
-        if (!scope.isEmpty() && scope!=scopeName)
+        if (!scope.empty() && scope!=scopeName)
         {
           name.prepend(scope+getLanguageSpecificSeparator(p->lang));
         }
@@ -1235,9 +1235,9 @@ bool DefinitionImpl::hasDocumentation() const
   bool extractAll    = Config_getBool(EXTRACT_ALL);
   //bool sourceBrowser = Config_getBool(SOURCE_BROWSER);
   bool hasDocs =
-         (p->details    && !p->details->doc.isEmpty())    || // has detailed docs
-         (p->brief      && !p->brief->doc.isEmpty())      || // has brief description
-         (p->inbodyDocs && !p->inbodyDocs->doc.isEmpty()) || // has inbody docs
+         (p->details    && !p->details->doc.empty())    || // has detailed docs
+         (p->brief      && !p->brief->doc.empty())      || // has brief description
+         (p->inbodyDocs && !p->inbodyDocs->doc.empty()) || // has inbody docs
          extractAll //||                   // extract everything
   //       (sourceBrowser && p->body &&
   //        p->body->startLine!=-1 && p->body->fileDef)
@@ -1248,9 +1248,9 @@ bool DefinitionImpl::hasDocumentation() const
 bool DefinitionImpl::hasUserDocumentation() const
 {
   bool hasDocs =
-         (p->details    && !p->details->doc.isEmpty()) ||
-         (p->brief      && !p->brief->doc.isEmpty())   ||
-         (p->inbodyDocs && !p->inbodyDocs->doc.isEmpty());
+         (p->details    && !p->details->doc.empty()) ||
+         (p->brief      && !p->brief->doc.empty())   ||
+         (p->inbodyDocs && !p->inbodyDocs->doc.empty());
   return hasDocs;
 }
 
@@ -1398,9 +1398,9 @@ QCString DefinitionImpl::pathFragment() const
   }
   if (p->def->isLinkable())
   {
-    if (!result.isEmpty()) result+="/";
+    if (!result.empty()) result+="/";
     if (p->def->definitionType()==Definition::TypeGroup &&
-        !toGroupDef(p->def)->groupTitle().isEmpty())
+        !toGroupDef(p->def)->groupTitle().empty())
     {
       result+=toGroupDef(p->def)->groupTitle();
     }
@@ -1447,7 +1447,7 @@ QCString DefinitionImpl::navigationPathAsString() const
     QCString fn = p->def->getOutputFileBase();
     addHtmlExtensionIfMissing(fn);
     if (p->def->definitionType()==Definition::TypeGroup &&
-        !toGroupDef(p->def)->groupTitle().isEmpty())
+        !toGroupDef(p->def)->groupTitle().empty())
     {
       QCString title = parseCommentAsHtml(p->def,nullptr,toGroupDef(p->def)->groupTitle(),
                                           p->def->getDefFileName(),p->def->getDefLine());
@@ -1468,7 +1468,7 @@ QCString DefinitionImpl::navigationPathAsString() const
         name = name.left(name.length()-2);
       }
       result+="<a href=\"$relpath^"+fn;
-      if (!p->def->anchor().isEmpty()) result+="#"+p->def->anchor();
+      if (!p->def->anchor().empty()) result+="#"+p->def->anchor();
       result+="\">"+convertToHtml(name)+"</a>";
     }
     else
@@ -1519,7 +1519,7 @@ void DefinitionImpl::writeToc(OutputList &ol, const LocalToc &localToc) const
         const MemberDef *md     = p->def->definitionType()==Definition::TypeMember ? toMemberDef(p->def) : nullptr;
         const Definition *scope = p->def->definitionType()==Definition::TypeMember ? p->def->getOuterScope() : p->def;
         QCString docTitle = si->title();
-        if (docTitle.isEmpty()) docTitle = si->label();
+        if (docTitle.empty()) docTitle = si->label();
         ol.generateDoc(docFile(),
                        getStartBodyLine(),
                        scope,
@@ -1590,8 +1590,8 @@ int DefinitionImpl::docLine() const
 
 QCString DefinitionImpl::docFile() const
 {
-  if (p->details && !p->details->file.isEmpty()) return p->details->file;
-  else if (p->brief && !p->brief->file.isEmpty()) return p->brief->file;
+  if (p->details && !p->details->file.empty()) return p->details->file;
+  else if (p->brief && !p->brief->file.empty()) return p->brief->file;
   else  return "<" + p->name + ">";
 }
 
@@ -1603,7 +1603,7 @@ static bool stripWord(QCString &s,QCString w)
   if (s.left(w.length())==w)
   {
     success=true;
-    s=s.right(s.length()-w.length());
+    s=s.mid(w.length());
   }
   return success;
 }
@@ -1613,12 +1613,11 @@ static bool stripWord(QCString &s,QCString w)
 static QCString abbreviate(const QCString &s,const QCString &name)
 {
   QCString scopelessName=name;
-  int i=scopelessName.findRev("::");
-  if (i!=-1) scopelessName=scopelessName.mid(i+2);
+  if (size_t i=scopelessName.rfind("::"); i!=QCString::npos) scopelessName=scopelessName.mid(i+2);
   QCString result=s;
   result=result.stripWhiteSpace();
   // strip trailing .
-  if (!result.isEmpty() && result.at(result.length()-1)=='.')
+  if (!result.empty() && result.at(result.length()-1)=='.')
     result=result.left(result.length()-1);
 
   // strip any predefined prefix
@@ -1631,7 +1630,7 @@ static QCString abbreviate(const QCString &s,const QCString &name)
   }
 
   // capitalize first character
-  if (!result.isEmpty())
+  if (!result.empty())
   {
     char c = result[0];
     if (c >= 'a' && c <= 'z') result[0] += 'A' - 'a';
@@ -1653,7 +1652,7 @@ QCString DefinitionImpl::briefDescription(bool abbr) const
 
 void DefinitionImpl::computeTooltip()
 {
-  if (p->brief && p->brief->tooltip.isEmpty() && !p->brief->doc.isEmpty())
+  if (p->brief && p->brief->tooltip.empty() && !p->brief->doc.empty())
   {
     const MemberDef *md = p->def->definitionType()==Definition::TypeMember ? toMemberDef(p->def) : nullptr;
     const Definition *scope = p->def->definitionType()==Definition::TypeMember ? p->def->getOuterScope() : p->def;
@@ -1674,7 +1673,7 @@ int DefinitionImpl::briefLine() const
 
 QCString DefinitionImpl::briefFile() const
 {
-  return p->brief && !p->brief->file.isEmpty() ? p->brief->file : QCString("<"+p->name+">");
+  return p->brief && !p->brief->file.empty() ? p->brief->file : QCString("<"+p->name+">");
 }
 
 //----------------------
@@ -1691,7 +1690,7 @@ int DefinitionImpl::inbodyLine() const
 
 QCString DefinitionImpl::inbodyFile() const
 {
-  return p->inbodyDocs && !p->inbodyDocs->file.isEmpty() ? p->inbodyDocs->file : QCString("<"+p->name+">");
+  return p->inbodyDocs && !p->inbodyDocs->file.empty() ? p->inbodyDocs->file : QCString("<"+p->name+">");
 }
 
 
@@ -1739,7 +1738,7 @@ QCString DefinitionImpl::getReference() const
 
 bool DefinitionImpl::isReference() const
 {
-  return !p->ref.isEmpty();
+  return !p->ref.empty();
 }
 
 int DefinitionImpl::getStartDefLine() const
@@ -1885,20 +1884,20 @@ QCString DefinitionImpl::_symbolName() const
 bool DefinitionImpl::hasBriefDescription() const
 {
   bool briefMemberDesc = Config_getBool(BRIEF_MEMBER_DESC);
-  return !briefDescription().isEmpty() && briefMemberDesc;
+  return !briefDescription().empty() && briefMemberDesc;
 }
 
 QCString DefinitionImpl::externalReference(const QCString &relPath) const
 {
   QCString ref = getReference();
-  if (!ref.isEmpty())
+  if (!ref.empty())
   {
     auto it = Doxygen::tagDestinationMap.find(ref.str());
     if (it!=Doxygen::tagDestinationMap.end())
     {
       QCString result(it->second);
       size_t l = result.length();
-      if (!relPath.isEmpty() && l>0 && result.at(0)=='.')
+      if (!relPath.empty() && l>0 && result.at(0)=='.')
       { // relative path -> prepend relPath.
         result.prepend(relPath);
         l+=relPath.length();

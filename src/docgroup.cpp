@@ -62,12 +62,12 @@ void DocGroup::enterCompound(const QCString &fileName,int line,const QCString &n
   m_memberGroupRelates.clear();
   m_memberGroupDocs.clear();
   m_compoundName = name;
-  int i = m_compoundName.find('(');
-  if (i!=-1)
+  size_t i = m_compoundName.find('(');
+  if (i!=QCString::npos)
   {
     m_compoundName=m_compoundName.left(i); // strip category (Obj-C)
   }
-  if (m_compoundName.isEmpty())
+  if (m_compoundName.empty())
   {
     m_compoundName=fileName;
   }
@@ -94,7 +94,7 @@ int DocGroup::findExistingGroup(const MemberGroupInfo *info)
   for (const auto &[groupId,groupInfo] : Doxygen::memberGroupInfoMap)
   {
     if (m_compoundName==groupInfo->compoundName &&  // same file or scope
-	!groupInfo->header.isEmpty() &&             // not a nameless group
+	!groupInfo->header.empty() &&             // not a nameless group
 	qstricmp(groupInfo->header,info->header)==0  // same header name
        )
     {
@@ -208,7 +208,7 @@ void DocGroup::addDocs(Entry *e)
   {
     m_memberGroupDocs=e->brief.stripWhiteSpace();
     e->doc = stripLeadingAndTrailingEmptyLines(e->doc,e->docLine);
-    if (!m_memberGroupDocs.isEmpty() && !e->doc.isEmpty())
+    if (!m_memberGroupDocs.empty() && !e->doc.empty())
     {
       m_memberGroupDocs+="\n\n";
     }
@@ -231,7 +231,7 @@ void DocGroup::addDocs(Entry *e)
   }
 }
 
-bool DocGroup::isEmpty() const
+bool DocGroup::empty() const
 {
   return (m_memberGroupId==DOX_NOGROUP);
 }

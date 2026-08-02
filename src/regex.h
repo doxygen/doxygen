@@ -125,6 +125,9 @@ class SubMatch
     /** Returns the length of the matching part. */
     size_t length()      const { return m_len; }
 
+    /** Returns true if the match is empty (no match). */
+    bool empty()         const { return m_len==0; }
+
     /** Returns the matching part as a string */
     std::string str()    const { return std::string{m_str.substr(m_pos,m_len)}; }
 

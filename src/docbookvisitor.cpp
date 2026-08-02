@@ -52,7 +52,7 @@
 
 static QCString filterId(const QCString &s)
 {
-  if (s.isEmpty()) return s;
+  if (s.empty()) return s;
   QCString result;
   result.reserve(s.length()+8);
   const char *p=s.data();
@@ -114,15 +114,15 @@ void DocbookDocVisitor::visitPreStart(TextStream &t,
   t << "        <mediaobject>\n";
   t << "            <imageobject>\n";
   t << "                <imagedata";
-  if (!width.isEmpty())
+  if (!width.empty())
   {
     t << " width=\"" << DocbookGenerator::convertToDocbook(width) << "\"";
   }
   else
   {
-    if (!height.isEmpty() && !inlineImage) t << " width=\"50%\"";
+    if (!height.empty() && !inlineImage) t << " width=\"50%\"";
   }
-  if (!height.isEmpty())
+  if (!height.empty())
   {
     t << " depth=\"" << DocbookGenerator::convertToDocbook(height) << "\"";
   }
@@ -311,7 +311,7 @@ void DocbookDocVisitor::operator()(const DocVerbatim &s)
 DB_VIS_C
   if (m_hide) return;
   QCString lang = m_langExt;
-  if (!s.language().isEmpty()) // explicit language setting
+  if (!s.language().empty()) // explicit language setting
   {
     lang = s.language();
   }
@@ -363,7 +363,7 @@ DB_VIS_C
                                           ".dot",                                               // extension
                                           s.text(),                                             // contents
                                           exists);
-        if (!fileName.isEmpty())
+        if (!fileName.empty())
         {
           writeDotFile(fileName, s, !exists);
         }
@@ -378,7 +378,7 @@ DB_VIS_C
                                           ".msc",                                               // extension
                                           "msc {"+s.text()+"}",                                 // contents
                                           exists);
-        if (!fileName.isEmpty())
+        if (!fileName.empty())
         {
           writeMscFile(fileName,s,!exists);
         }
@@ -502,7 +502,7 @@ DB_VIS_C
     m_hide = true;
   }
   QCString locLangExt = getFileNameExtension(op.includeFileName());
-  if (locLangExt.isEmpty()) locLangExt = m_langExt;
+  if (locLangExt.empty()) locLangExt = m_langExt;
   SrcLangExt langExt = getLanguageFromFileName(locLangExt);
   if (op.type()!=DocIncOperator::Skip)
   {
@@ -510,7 +510,7 @@ DB_VIS_C
     if (!m_hide)
     {
       std::unique_ptr<FileDef> fd;
-      if (!op.includeFileName().isEmpty())
+      if (!op.includeFileName().empty())
       {
         FileInfo cfi( op.includeFileName().str() );
         fd = createFileDef( cfi.dirPath(), cfi.fileName() );
@@ -575,7 +575,7 @@ void DocbookDocVisitor::operator()(const DocCite &cite)
 DB_VIS_C
   if (m_hide) return;
   auto opt = cite.option();
-  if (!cite.file().isEmpty())
+  if (!cite.file().empty())
   {
     if (!opt.noCite()) startLink(cite.file(),filterId(cite.anchor()));
 
@@ -904,7 +904,7 @@ void DocbookDocVisitor::operator()(const DocSection &s)
 DB_VIS_C
   if (m_hide) return;
   m_t << "<section xml:id=\"_" <<  stripPath(s.file());
-  if (!s.anchor().isEmpty()) m_t << "_1" << s.anchor();
+  if (!s.anchor().empty()) m_t << "_1" << s.anchor();
   m_t << "\">\n";
   if (s.title())
   {
@@ -983,7 +983,7 @@ DB_VIS_C
     if (value>0 || isFirst)
     {
       m_t << "<orderedlist";
-      if (!type.isEmpty()) m_t << type.data();
+      if (!type.empty()) m_t << type.data();
       if (value>0)         m_t << " startingnumber=\"" << value << "\"";
       m_t << ">\n";
     }
@@ -1141,7 +1141,7 @@ void DocbookDocVisitor::operator()(const DocHtmlCaption &c)
 DB_VIS_C
   if (m_hide) return;
   m_t << "<caption>";
-  if (!c.file().isEmpty())
+  if (!c.file().empty())
   {
     m_t << "<anchor xml:id=\"_" <<  stripPath(c.file()) << "_1" << filterId(c.anchor()) << "\"/>";
   }
@@ -1243,7 +1243,7 @@ DB_VIS_C
                                       ".dot",                                                        // extension
                                       inBuf,                                                         // contents
                                       exists);
-    if (!fileName.isEmpty())
+    if (!fileName.empty())
     {
       startDotFile(fileName,df.relPath(),df.width(),df.height(),df.hasCaption(),df.children(),df.srcFile(),df.srcLine(),!exists);
       visitChildren(df);
@@ -1264,7 +1264,7 @@ DB_VIS_C
                                       ".msc",                                                        // extension
                                       inBuf,                                                         // contents
                                       exists);
-    if (!fileName.isEmpty())
+    if (!fileName.empty())
     {
       startMscFile(fileName,df.relPath(),df.width(),df.height(),df.hasCaption(),df.children(),df.srcFile(),df.srcLine(),!exists);
       visitChildren(df);
@@ -1285,7 +1285,7 @@ DB_VIS_C
                                       ".dia",                                                        // extension
                                       inBuf,                                                         // contents
                                       exists);
-    if (!fileName.isEmpty())
+    if (!fileName.empty())
     {
       startDiaFile(fileName,df.relPath(),df.width(),df.height(),df.hasCaption(),df.children(),df.srcFile(),df.srcLine(),!exists);
       visitChildren(df);
@@ -1334,12 +1334,12 @@ DB_VIS_C
   }
   else
   {
-    if (!ref.file().isEmpty()) startLink(ref.file(),ref.anchor());
+    if (!ref.file().empty()) startLink(ref.file(),ref.anchor());
   }
 
   if (!ref.hasLinkText()) filter(ref.targetTitle());
   visitChildren(ref);
-  if (!ref.file().isEmpty()) endLink();
+  if (!ref.file().empty()) endLink();
 }
 
 void DocbookDocVisitor::operator()(const DocSecRefItem &ref)
@@ -1481,7 +1481,7 @@ void DocbookDocVisitor::operator()(const DocXRefItem &x)
 {
 DB_VIS_C
   if (m_hide) return;
-  if (x.title().isEmpty()) return;
+  if (x.title().empty()) return;
   m_t << "<para><link linkend=\"_";
   m_t << stripPath(x.file()) << "_1" << x.anchor();
   m_t << "\">";
@@ -1489,7 +1489,7 @@ DB_VIS_C
   m_t << "</link>";
   m_t << " ";
   visitChildren(x);
-  if (x.title().isEmpty()) return;
+  if (x.title().empty()) return;
   m_t << "</para>";
 }
 
@@ -1543,9 +1543,9 @@ void DocbookDocVisitor::startLink(const QCString &file,const QCString &anchor)
 {
 DB_VIS_C
   m_t << "<link linkend=\"_" << stripPath(file);
-  if (!anchor.isEmpty())
+  if (!anchor.empty())
   {
-    if (!file.isEmpty()) m_t << "_1";
+    if (!file.empty()) m_t << "_1";
     m_t << anchor;
   }
   m_t << "\">";

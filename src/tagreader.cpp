@@ -421,7 +421,7 @@ class TagFileParser
       {
         m_curMember.isStatic = true;
       }
-      if (!typeStr.isEmpty())
+      if (!typeStr.empty())
       {
         m_curMember.type = typeStr;
       }
@@ -1444,7 +1444,7 @@ void TagFileParser::buildMemberList(const std::shared_ptr<Entry> &ce,const std::
     me->type       = tmi.type;
     me->name       = tmi.name;
     me->args       = tmi.arglist;
-    if (!me->args.isEmpty())
+    if (!me->args.empty())
     {
       me->argList = *stringToArgumentList(SrcLangExt::Cpp,me->args);
     }

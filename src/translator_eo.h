@@ -154,7 +154,7 @@ class TranslatorEsperanto : public TranslatorAdapter_1_8_4
      */
     QCString trGeneratedAutomatically(const QCString &s) override
     { QCString result="Generita aŭtomate de Doxygen";
-      if (!s.isEmpty()) result+=" por "+s;
+      if (!s.empty()) result+=" por "+s;
       result+=" el la fontkodo.";
       return result;
     }
@@ -352,7 +352,7 @@ class TranslatorEsperanto : public TranslatorAdapter_1_8_4
 
     /*! This is used in HTML as the title of index.html. */
     QCString trDocumentation(const QCString &projName) override
-    { return (!projName.isEmpty()?projName + " " : "") + "Dokumentado"; }
+    { return (!projName.empty()?projName + " " : "") + "Dokumentado"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * index of all groups.
@@ -509,7 +509,7 @@ class TranslatorEsperanto : public TranslatorAdapter_1_8_4
     QCString trGeneratedAt(const QCString &date,const QCString &projName) override
     {
       QCString result="Generita la "+date;
-      if (!projName.isEmpty()) result+=" por "+projName;
+      if (!projName.empty()) result+=" por "+projName;
       result+=" de";
       return result;
     }

@@ -216,12 +216,12 @@ void FTVHelp::addContentsItem(bool isDir,
 static QCString node2URL(const FTVNodePtr &n,bool overruleFile=false,bool srcLink=false)
 {
   QCString url = n->file;
-  if (!url.isEmpty() && url.at(0)=='!')  // relative URL
+  if (!url.empty() && url.at(0)=='!')  // relative URL
   {
     // remove leading !
     url = url.mid(1);
   }
-  else if (!url.isEmpty() && url.at(0)=='^') // absolute URL
+  else if (!url.empty() && url.at(0)=='^') // absolute URL
   {
     // skip, keep ^ in the output
   }
@@ -240,7 +240,7 @@ static QCString node2URL(const FTVNodePtr &n,bool overruleFile=false,bool srcLin
       }
     }
     addHtmlExtensionIfMissing(url);
-    if (!n->anchor.isEmpty()) url+="#"+n->anchor;
+    if (!n->anchor.empty()) url+="#"+n->anchor;
   }
   return url;
 }
@@ -283,15 +283,15 @@ void FTVHelp::Private::generateLink(TextStream &t,const FTVNodePtr &n)
   //printf("FTVHelp::generateLink(ref=%s,file=%s,anchor=%s\n",
   //    qPrint(n->ref),qPrint(n->file),qPrint(n->anchor));
   bool setTarget = false;
-  bool nameAsHtml = !n->nameAsHtml.isEmpty();
+  bool nameAsHtml = !n->nameAsHtml.empty();
   QCString text = nameAsHtml ? n->nameAsHtml : convertToHtml(n->name);
-  if (n->file.isEmpty()) // no link
+  if (n->file.empty()) // no link
   {
     t << "<b>" << text << "</b>";
   }
   else // link into other frame
   {
-    if (!n->ref.isEmpty()) // link to entity imported via tag file
+    if (!n->ref.empty()) // link to entity imported via tag file
     {
       t << "<a class=\"elRef\" ";
       QCString result = externalLinkTarget();
@@ -318,7 +318,7 @@ void FTVHelp::Private::generateLink(TextStream &t,const FTVNodePtr &n)
     }
     t << text;
     t << "</a>";
-    if (!n->ref.isEmpty())
+    if (!n->ref.empty())
     {
       t << "&#160;[external]";
     }
@@ -329,7 +329,7 @@ static void generateBriefDoc(TextStream &t,const Definition *def)
 {
   QCString brief = def->briefDescription(true);
   //printf("*** %p: generateBriefDoc(%s)='%s'\n",def,qPrint(def->name()),qPrint(brief));
-  if (!brief.isEmpty())
+  if (!brief.empty())
   {
     auto parser { createDocParser() };
     auto ast    { validatingParseDoc(*parser.get(),
@@ -554,10 +554,10 @@ static bool dupOfParent(const FTVNodePtr &n)
 
 static void generateJSLink(TextStream &t,const FTVNodePtr &n)
 {
-  bool nameAsHtml = !n->nameAsHtml.isEmpty();
+  bool nameAsHtml = !n->nameAsHtml.empty();
   QCString link = nameAsHtml ? convertToJSString(n->nameAsHtml,true) : convertToJSString(n->name);
   link = substitute(link,"\n","");
-  if (n->file.isEmpty()) // no link
+  if (n->file.empty()) // no link
   {
     t << "\"" << link << "\", null, ";
   }
@@ -573,8 +573,8 @@ static void generateJSLink(TextStream &t,const FTVNodePtr &n)
 static QCString convertFileId2Var(const QCString &fileId)
 {
   QCString varId = fileId;
-  int i=varId.findRev('/');
-  if (i>=0) varId = varId.mid(i+1);
+  size_t i=varId.rfind('/');
+  if (i!=QCString::npos) varId = varId.mid(i+1);
   if (isdigit(varId[0])) varId.prepend("_");
 
   return substitute(varId,"-","_");
@@ -664,7 +664,7 @@ static bool generateJSTree(NavIndexEntryList &navIndex,TextStream &t,
       if (!n->children.empty()) // write children to separate file for dynamic loading
       {
         QCString fileId = n->file;
-        if (!n->anchor.isEmpty())
+        if (!n->anchor.empty())
         {
           fileId+="_"+n->anchor;
         }
@@ -701,7 +701,7 @@ static void generateJSTreeFiles(NavIndexEntryList &navIndex,TextStream &t,const 
   auto getVarName = [](const FTVNodePtr n)
   {
     QCString                  fileId = n->file;
-    if (!n->anchor.isEmpty()) fileId+="_"+n->anchor;
+    if (!n->anchor.empty()) fileId+="_"+n->anchor;
     if (dupOfParent(n))       fileId+="_dup";
     return fileId;
   };
@@ -761,7 +761,7 @@ static void generateJSNavTree(const FTVNodes &nodeList)
     t << "[\n";
     t << "  [ ";
     QCString projName = Config_getString(PROJECT_NAME);
-    if (projName.isEmpty())
+    if (projName.empty())
     {
       if (mainPageHasTitle()) // Use title of main page as root
       {
@@ -796,7 +796,7 @@ static void generateJSNavTree(const FTVNodes &nodeList)
 
     // write the navigation index (and sub-indices)
     std::stable_sort(navIndex.begin(),navIndex.end(),[](const auto &n1,const auto &n2)
-        { return !n1.url.isEmpty() && (n2.url.isEmpty() || (n1.url<n2.url)); });
+        { return !n1.url.empty() && (n2.url.empty() || (n1.url<n2.url)); });
 
     int subIndex=0;
     int elemCount=0;

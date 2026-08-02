@@ -128,8 +128,7 @@ DirDefImpl::DirDefImpl(const QCString &path) : DefinitionMixin(path,1,1,path)
   { // strip trailing /
     m_shortName = m_shortName.left(m_shortName.length()-1);
   }
-  int pi=m_shortName.findRev('/');
-  if (pi!=-1)
+  if (size_t pi=m_shortName.rfind('/'); pi!=QCString::npos)
   { // remove everything till the last /
     m_shortName = m_shortName.mid(pi+1);
   }
@@ -249,7 +248,7 @@ void DirDefImpl::writeDetailedDescription(OutputList &ol,const QCString &title)
 
     // repeat brief description
     ol.startTextBlock();
-    if (!briefDescription().isEmpty() && Config_getBool(REPEAT_BRIEF))
+    if (!briefDescription().empty() && Config_getBool(REPEAT_BRIEF))
     {
       ol.generateDoc(briefFile(),
                      briefLine(),
@@ -259,8 +258,8 @@ void DirDefImpl::writeDetailedDescription(OutputList &ol,const QCString &title)
                      DocOptions());
     }
     // separator between brief and details
-    if (!briefDescription().isEmpty() && Config_getBool(REPEAT_BRIEF) &&
-        !documentation().isEmpty())
+    if (!briefDescription().empty() && Config_getBool(REPEAT_BRIEF) &&
+        !documentation().empty())
     {
       ol.pushGeneratorState();
         ol.disable(OutputType::Man);
@@ -273,7 +272,7 @@ void DirDefImpl::writeDetailedDescription(OutputList &ol,const QCString &title)
     }
 
     // write documentation
-    if (!documentation().isEmpty())
+    if (!documentation().empty())
     {
       ol.generateDoc(docFile(),
                      docLine(),
@@ -303,7 +302,7 @@ void DirDefImpl::writeBriefDescription(OutputList &ol)
                                      DocOptions()
                                      .setIndexWords(true))
                 };
-    if (!ast->isEmpty())
+    if (!ast->empty())
     {
       ol.startParagraph();
       ol.pushGeneratorState();
@@ -317,7 +316,7 @@ void DirDefImpl::writeBriefDescription(OutputList &ol)
       ol.enable(OutputType::RTF);
 
       if (Config_getBool(REPEAT_BRIEF) ||
-          !documentation().isEmpty()
+          !documentation().empty()
          )
       {
         ol.disableAllBut(OutputType::Html);
@@ -384,7 +383,7 @@ void DirDefImpl::writeSubDirList(OutputList &ol)
       {
         ol.startMemberDeclaration();
         QCString anc=dd->anchor();
-        if (anc.isEmpty()) anc=dd->shortName(); else anc.prepend(dd->shortName()+"_");
+        if (anc.empty()) anc=dd->shortName(); else anc.prepend(dd->shortName()+"_");
         ol.startMemberItem(anc,OutputGenerator::MemberItemType::Normal);
         {
           ol.pushGeneratorState();
@@ -398,7 +397,7 @@ void DirDefImpl::writeSubDirList(OutputList &ol)
         ol.insertMemberAlign();
         ol.writeObjectLink(dd->getReference(),dd->getOutputFileBase(),QCString(),dd->shortName());
         ol.endMemberItem(OutputGenerator::MemberItemType::Normal);
-        if (!dd->briefDescription().isEmpty() && Config_getBool(BRIEF_MEMBER_DESC))
+        if (!dd->briefDescription().empty() && Config_getBool(BRIEF_MEMBER_DESC))
         {
           ol.startMemberDescription(dd->getOutputFileBase());
           ol.generateDoc(briefFile(),
@@ -452,7 +451,7 @@ void DirDefImpl::writeFileList(OutputList &ol)
       {
         ol.startMemberDeclaration();
         QCString anc = fd->anchor();
-        if (anc.isEmpty()) anc=fd->displayName(); else anc.prepend(fd->displayName()+"_");
+        if (anc.empty()) anc=fd->displayName(); else anc.prepend(fd->displayName()+"_");
         ol.startMemberItem(anc,OutputGenerator::MemberItemType::Normal);
         {
           ol.pushGeneratorState();
@@ -484,7 +483,7 @@ void DirDefImpl::writeFileList(OutputList &ol)
           ol.endBold();
         }
         ol.endMemberItem(OutputGenerator::MemberItemType::Normal);
-        if (!fd->briefDescription().isEmpty() && Config_getBool(BRIEF_MEMBER_DESC))
+        if (!fd->briefDescription().empty() && Config_getBool(BRIEF_MEMBER_DESC))
         {
           ol.startMemberDescription(fd->getOutputFileBase());
           ol.generateDoc(briefFile(),
@@ -529,7 +528,7 @@ QCString DirDefImpl::shortTitle() const
 bool DirDefImpl::hasDetailedDescription() const
 {
   bool repeatBrief = Config_getBool(REPEAT_BRIEF);
-  return (!briefDescription().isEmpty() && repeatBrief) || !documentation().isEmpty() || hasRequirementRefs();
+  return (!briefDescription().empty() && repeatBrief) || !documentation().empty() || hasRequirementRefs();
 }
 
 void DirDefImpl::writeTagFile(TextStream &tagFile)
@@ -918,9 +917,9 @@ bool DirDefImpl::matchPath(const QCString &path,const StringVector &l)
 DirDef *DirDefImpl::mergeDirectoryInTree(const QCString &path)
 {
   AUTO_TRACE("path={}",path);
-  int p=0,i=0;
+  size_t p=0,i=0;
   DirDef *dir=nullptr;
-  while ((i=path.find('/',p))!=-1)
+  while ((i=path.find('/',p))!=QCString::npos)
   {
     QCString part=path.left(i+1);
     if (!matchPath(part,Config_getList(STRIP_FROM_PATH)) && (part!="/" && part!="//" && part!="//?/"))
@@ -1048,18 +1047,18 @@ static void computeCommonDirPrefix()
   {
     // start will full path of first dir
     path=removeLongPathMarker((*it)->name());
-    int i=path.findRev('/',static_cast<int>(path.length())-2);
-    path=path.left(i+1);
+    size_t i = path.length()>=2 ? path.rfind('/',path.length()-2) : QCString::npos;
     bool done=false;
-    if (i==-1)
+    if (i==QCString::npos)
     {
       path="";
     }
     else
     {
+      path=path.left(i+1);
       while (!done)
       {
-        int l = static_cast<int>(path.length());
+        size_t l = path.length();
         size_t count=0;
         for (const auto &dir : *Doxygen::dirLinkedMap)
         {
@@ -1069,8 +1068,8 @@ static void computeCommonDirPrefix()
           {
             if (dirName.left(l)!=path) // dirName does not start with path
             {
-              i = l>=2 ? path.findRev('/',l-2) : -1;
-              if (i==-1) // no unique prefix -> stop
+              i = l>=2 ? path.rfind('/',l-2) : QCString::npos;
+              if (i==QCString::npos) // no unique prefix -> stop
               {
                 path="";
                 done=true;
@@ -1085,9 +1084,9 @@ static void computeCommonDirPrefix()
           else // dir is shorter than path -> take path of dir as new start
           {
             path=dir->name();
-            l=static_cast<int>(path.length());
-            i=path.findRev('/',l-2);
-            if (i==-1) // no unique prefix -> stop
+            l = path.length();
+            i = l>=2 ? path.rfind('/',l-2) : QCString::npos;
+            if (i==QCString::npos) // no unique prefix -> stop
             {
               path="";
               done=true;
@@ -1124,7 +1123,7 @@ void buildDirectories()
   {
     for (const auto &fd : *fn)
     {
-      if (fd->getReference().isEmpty())
+      if (fd->getReference().empty())
       {
         DirDef *dir=Doxygen::dirLinkedMap->find(fd->getPath());
         if (dir==nullptr) // new directory
@@ -1144,8 +1143,8 @@ void buildDirectories()
   for (const auto &dir : *Doxygen::dirLinkedMap)
   {
     QCString name = dir->name();
-    int i=name.findRev('/',static_cast<int>(name.length())-2);
-    if (i>0)
+    size_t i = name.length()>=2 ? name.rfind('/',name.length()-2) : QCString::npos;
+    if (i!=QCString::npos && i>0)
     {
       DirDef *parent = Doxygen::dirLinkedMap->find(name.left(i+1));
       //if (parent==0) parent=root;

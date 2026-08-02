@@ -224,7 +224,7 @@ class ParserManager
      */
     bool registerExtension(const QCString &extension, const QCString &parserName)
     {
-      if (parserName.isEmpty() || extension.isEmpty()) return false;
+      if (parserName.empty() || extension.empty()) return false;
 
       const auto &parserIt = m_parsers.find(parserName.str());
       if (parserIt == m_parsers.end()) return false;
@@ -276,7 +276,7 @@ class ParserManager
     ParserPair &getParsers(const QCString &extension)
     {
       QCString ext = extension.lower();
-      if (ext.isEmpty()) ext=".no_extension";
+      if (ext.empty()) ext=".no_extension";
       auto it = m_extensions.find(ext.data());
       if (it==m_extensions.end() && ext.length()>4)
       {

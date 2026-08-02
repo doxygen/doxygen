@@ -98,7 +98,7 @@ class XRefDummyCodeGenerator : public OutputCodeIntf
               context->name().data());
           }
         }
-        if (ctx.isEmpty()) // it is something else (class, or namespace member, ...)
+        if (ctx.empty()) // it is something else (class, or namespace member, ...)
         {
           ctx.sprintf("in %s",context->name().data());
         }
@@ -215,7 +215,7 @@ static void lookupSymbol(const Definition *d)
 
 static void lookupSymbols(const QCString &sym)
 {
-  if (!sym.isEmpty())
+  if (!sym.empty())
   {
     auto range = Doxygen::symbolMap->find(sym);
     bool found=false;

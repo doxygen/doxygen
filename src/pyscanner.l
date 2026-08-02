@@ -674,33 +674,33 @@ ID        [a-z_A-Z%]+{IDSYM}*
                       }
 
    {INTNUMBER}        { // integer value
-                        if (yyextra->current->type.isEmpty()) yyextra->current->type = "int";
+                        if (yyextra->current->type.empty()) yyextra->current->type = "int";
                         yyextra->current->initializer << yytext;
                       }
    {FLOATNUMBER}      { // floating point value
-                        if (yyextra->current->type.isEmpty()) yyextra->current->type = "float";
+                        if (yyextra->current->type.empty()) yyextra->current->type = "float";
                         yyextra->current->initializer << yytext;
                       }
    {BOOL}             { // boolean value
-                        if (yyextra->current->type.isEmpty()) yyextra->current->type = "bool";
+                        if (yyextra->current->type.empty()) yyextra->current->type = "bool";
                         yyextra->current->initializer << yytext;
                       }
    {STRINGPREFIX}?"'" { // string
-                        if (yyextra->current->type.isEmpty()) yyextra->current->type = "str";
+                        if (yyextra->current->type.empty()) yyextra->current->type = "str";
                         yyextra->current->initializer << yytext;
                         yyextra->copyString=&yyextra->current->initializer;
                         yyextra->stringContext=YY_START;
                         BEGIN( SingleQuoteString );
                       }
    {STRINGPREFIX}?"\"" { // string
-                        if (yyextra->current->type.isEmpty()) yyextra->current->type = "str";
+                        if (yyextra->current->type.empty()) yyextra->current->type = "str";
                         yyextra->current->initializer << yytext;
                         yyextra->copyString=&yyextra->current->initializer;
                         yyextra->stringContext=YY_START;
                         BEGIN( DoubleQuoteString );
                       }
    {TRIDOUBLEQUOTE}   { // start of a comment block
-                        if (yyextra->current->type.isEmpty()) yyextra->current->type = "str";
+                        if (yyextra->current->type.empty()) yyextra->current->type = "str";
                         yyextra->current->initializer << yytext;
                         yyextra->doubleQuote=true;
                         yyextra->copyString=&yyextra->current->initializer;
@@ -709,7 +709,7 @@ ID        [a-z_A-Z%]+{IDSYM}*
                       }
 
    {TRISINGLEQUOTE}   { // start of a comment block
-                        if (yyextra->current->type.isEmpty()) yyextra->current->type = "str";
+                        if (yyextra->current->type.empty()) yyextra->current->type = "str";
                         yyextra->current->initializer << yytext;
                         yyextra->doubleQuote=false;
                         yyextra->copyString=&yyextra->current->initializer;
@@ -752,7 +752,7 @@ ID        [a-z_A-Z%]+{IDSYM}*
                       }
    {IDENTIFIER}       {
                         // do something based on the type of the IDENTIFIER
-                        if (yyextra->current->type.isEmpty())
+                        if (yyextra->current->type.empty())
                         {
                           for (const auto &child : yyextra->current_root->children())
                           {
@@ -950,7 +950,7 @@ ID        [a-z_A-Z%]+{IDSYM}*
                         }
 
     ","                 {
-                          if (!yyextra->argType.isEmpty())
+                          if (!yyextra->argType.empty())
                           {
                             Argument a;
                             a.name = "";
@@ -979,7 +979,7 @@ ID        [a-z_A-Z%]+{IDSYM}*
                           BEGIN(FunctionParamDefVal);
                         }
      ")"                {
-                          if (!yyextra->argType.isEmpty())
+                          if (!yyextra->argType.empty())
                           {
                             Argument a;
                             a.name = "";
@@ -1290,7 +1290,7 @@ ID        [a-z_A-Z%]+{IDSYM}*
 }
 
 <ClassDec>{IDENTIFIER} {
-                         if (yyextra->current->type.isEmpty())
+                         if (yyextra->current->type.empty())
                          {
                              yyextra->current->type = "class";
                          }
@@ -1519,7 +1519,7 @@ ID        [a-z_A-Z%]+{IDSYM}*
                               QCString actualDoc=yyextra->docBlock;
                               if (!yyextra->docBlockSpecial) // legacy unformatted docstring
                               {
-                                if (!actualDoc.isEmpty())
+                                if (!actualDoc.empty())
                                 {
                                   stripIndentationVerbatim(actualDoc,yyextra->commentIndent);
                                   actualDoc.prepend("@iverbatim\n");
@@ -1534,7 +1534,7 @@ ID        [a-z_A-Z%]+{IDSYM}*
                               QCString actualDoc=yyextra->docBlock;
                               if (!yyextra->docBlockSpecial) // legacy unformatted docstring
                               {
-                                if (!actualDoc.isEmpty())
+                                if (!actualDoc.empty())
                                 {
                                   stripIndentationVerbatim(actualDoc,yyextra->commentIndent);
                                   actualDoc.prepend("@iverbatim\n");
@@ -1869,7 +1869,7 @@ static void initEntry(yyscan_t yyscanner)
 static void newEntry(yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  if (yyextra->current->name.isEmpty())
+  if (yyextra->current->name.empty())
   {
     initEntry(yyscanner);
     return;
@@ -1882,19 +1882,19 @@ static void newEntry(yyscan_t yyscanner)
       //printf("candidate %s<->%s section=%s!\n",qPrint(v->name),qPrint(yyextra->current->name), qPrint(v->section.to_string()));
       if (v->name==yyextra->current->name && v->section==yyextra->current->section) // name is already added, don't add it again
       {
-        if (v->doc.isEmpty() && !yyextra->current->doc.isEmpty())
+        if (v->doc.empty() && !yyextra->current->doc.empty())
         {
           v->doc       = yyextra->current->doc;
           v->docLine   = yyextra->current->docLine;
           v->docFile   = yyextra->current->docFile;
         }
-        if (v->brief.isEmpty() && !yyextra->current->brief.isEmpty())
+        if (v->brief.empty() && !yyextra->current->brief.empty())
         {
           v->brief     = yyextra->current->brief;
           v->briefLine = yyextra->current->briefLine;
           v->briefFile = yyextra->current->briefFile;
         }
-        if (v->type.isEmpty() && !yyextra->current->type.isEmpty())
+        if (v->type.empty() && !yyextra->current->type.empty())
         {
           //printf("copying type '%s' from '%s' to '%s'\n",qPrint(yyextra->current->type),qPrint(yyextra->current->name),qPrint(v->name));
           v->type      = yyextra->current->type;
@@ -1938,7 +1938,7 @@ static void addEntry(yyscan_t yyscanner)
 static void setProtection(yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  if (!yyextra->current->name.isEmpty() && yyextra->current->name.at(0)=='_')
+  if (!yyextra->current->name.empty() && yyextra->current->name.at(0)=='_')
   {
     if (yyextra->current->name.at(1)=='_') // mark as private
     {
@@ -2034,11 +2034,11 @@ static QCString findPackageScopeFromPath(yyscan_t yyscanner,const QCString &path
   FileInfo pf(path.str()+"/__init__.py"); // found package initialization file
   if (pf.exists())
   {
-    int i=path.findRev('/');
-    if (i!=-1)
+    size_t i=path.rfind('/');
+    if (i!=QCString::npos)
     {
       QCString scope = findPackageScopeFromPath(yyscanner,path.left(i));
-      if (!scope.isEmpty())
+      if (!scope.empty())
       {
         scope+="::";
       }
@@ -2052,7 +2052,7 @@ static QCString findPackageScopeFromPath(yyscan_t yyscanner,const QCString &path
 
 static QCString findPackageScope(yyscan_t yyscanner,const QCString &fileName)
 {
-  if (fileName.isEmpty()) return fileName;
+  if (fileName.empty()) return fileName;
   FileInfo fi(fileName.str());
   return findPackageScopeFromPath(yyscanner,fi.dirPath(true));
 }
@@ -2112,11 +2112,11 @@ static void handleCommentBlock(yyscan_t yyscanner,const QCString &doc,bool brief
   // TODO: Fix me
   yyextra->docBlockInBody=false;
 
-  if (!yyextra->current->doc.isEmpty())
+  if (!yyextra->current->doc.empty())
   {
     yyextra->current->doc=yyextra->current->doc.stripWhiteSpace()+"\n\n";
   }
-  if (yyextra->docBlockInBody && yyextra->previous && !yyextra->previous->doc.isEmpty())
+  if (yyextra->docBlockInBody && yyextra->previous && !yyextra->previous->doc.empty())
   {
     yyextra->previous->doc=yyextra->previous->doc.stripWhiteSpace()+"\n\n";
   }
@@ -2347,7 +2347,7 @@ static void parseMain(yyscan_t yyscanner, const QCString &fileName,const char *f
   QCString baseName=fi.baseName();
   if (baseName!="__init__") // package initializer file is not a package itself
   {
-    if (!yyextra->moduleScope.isEmpty())
+    if (!yyextra->moduleScope.empty())
     {
       yyextra->moduleScope+="::";
     }
@@ -2356,13 +2356,19 @@ static void parseMain(yyscan_t yyscanner, const QCString &fileName,const char *f
 
   // add namespaces for each scope
   QCString scope = yyextra->moduleScope;
-  int startPos = 0;
-  int pos = 0;
+  size_t startPos = 0;
+  size_t pos = 0;
   do
   {
     pos = scope.find("::",startPos);
-    startPos=pos+2;
-    if (pos==-1) pos=(int)scope.length();
+    if (pos==QCString::npos)
+    {
+      startPos = pos = scope.length();
+    }
+    else
+    {
+      startPos = pos+2;
+    }
     yyextra->current            = std::make_shared<Entry>();
     initEntry(yyscanner);
     yyextra->current->name      = scope.left(pos);
@@ -2373,7 +2379,7 @@ static void parseMain(yyscan_t yyscanner, const QCString &fileName,const char *f
     yyextra->current->bodyLine  = yyextra->yyLineNr;
     yyextra->current_root       = yyextra->current;
     rt->moveToSubEntryAndRefresh(yyextra->current);
-  } while (pos<(int)scope.length());
+  } while (pos<scope.length());
 
   initParser(yyscanner);
 
@@ -2400,7 +2406,7 @@ static void parsePrototype(yyscan_t yyscanner,const QCString &text)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   //printf("**** parsePrototype(%s) begin\n",qPrint(text));
-  if (text.isEmpty())
+  if (text.empty())
   {
     warn(yyextra->fileName,yyextra->yyLineNr,"Empty prototype found!");
     return;
@@ -2426,7 +2432,7 @@ static void parsePrototype(yyscan_t yyscanner,const QCString &text)
   yyextra->lexInit=true;
 
   yyextra->current->name = yyextra->current->name.stripWhiteSpace();
-  if (yyextra->current->section.isMemberDoc() && yyextra->current->args.isEmpty())
+  if (yyextra->current->section.isMemberDoc() && yyextra->current->args.empty())
   {
     yyextra->current->section = EntryType::makeVariableDoc();
   }

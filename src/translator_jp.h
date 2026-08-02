@@ -184,7 +184,7 @@ class TranslatorJapanese : public Translator
      */
     QCString trGeneratedAutomatically(const QCString &s) override
     { QCString result = "Doxygen により";
-      if (!s.isEmpty()) result=" "+s+"の";
+      if (!s.empty()) result=" "+s+"の";
       result+="ソースコードから抽出しました。";
       return result;
     }
@@ -389,7 +389,7 @@ class TranslatorJapanese : public Translator
 
     /*! This is used in HTML as the title of index.html. */
     QCString trDocumentation(const QCString &projName) override
-    { return (!projName.isEmpty()?projName + " " : "") + "詳解"; }
+    { return (!projName.empty()?projName + " " : "") + "詳解"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * index of all groups.
@@ -544,7 +544,7 @@ class TranslatorJapanese : public Translator
     QCString trGeneratedAt(const QCString &date,const QCString &projName) override
     {
       QCString result = date+"作成";
-      if (!projName.isEmpty()) result+=" - " + projName;
+      if (!projName.empty()) result+=" - " + projName;
       result+=" / 構成: ";
       return result;
     }

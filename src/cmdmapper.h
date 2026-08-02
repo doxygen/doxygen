@@ -255,7 +255,7 @@ class Mapper
   public:
     T map(const QCString &n) const
     {
-      if (n.isEmpty()) return T::UNKNOWN;
+      if (n.empty()) return T::UNKNOWN;
       QCString name = n;
       if (!m_cs) name=name.lower();
       auto it = m_map.find(name.str());

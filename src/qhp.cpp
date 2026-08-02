@@ -162,15 +162,15 @@ static QCString getFullProjectName()
 {
   QCString projectName = Config_getString(PROJECT_NAME);
   QCString versionText = Config_getString(PROJECT_NUMBER);
-  if (projectName.isEmpty()) projectName="Root";
-  if (!versionText.isEmpty()) projectName+=" "+versionText;
+  if (projectName.empty()) projectName="Root";
+  if (!versionText.empty()) projectName+=" "+versionText;
   return projectName;
 }
 
 static QCString makeFileName(const QCString & withoutExtension)
 {
   QCString result=withoutExtension;
-  if (!result.isEmpty())
+  if (!result.empty())
   {
     if (result.at(0)=='!') // relative URL -> strip marker
     {
@@ -187,9 +187,9 @@ static QCString makeFileName(const QCString & withoutExtension)
 static QCString makeRef(const QCString & withoutExtension, const QCString & anchor)
 {
   //printf("QHP::makeRef(%s,%s)\n",withoutExtension,anchor);
-  if (withoutExtension.isEmpty()) return QCString();
+  if (withoutExtension.empty()) return QCString();
   QCString result = makeFileName(withoutExtension);
-  if (anchor.isEmpty()) return result;
+  if (anchor.empty()) return result;
   return result+"#"+anchor;
 }
 
@@ -228,7 +228,7 @@ void Qhp::initialize()
 
   // Add custom filter
   QCString filterName = Config_getString(QHP_CUST_FILTER_NAME);
-  if (!filterName.isEmpty())
+  if (!filterName.empty())
   {
     writeIndent(p->doc,1);
     p->doc << "<customFilter name=\"" << convertToXML(filterName) << "\">\n";
@@ -326,9 +326,9 @@ void Qhp::addContentsItem(bool /* isDir */, const QCString & name, const QCStrin
   */
 
   QCString f = file;
-  if (!f.isEmpty() && f.at(0)=='^') return; // absolute URL not supported
+  if (!f.empty() && f.at(0)=='^') return; // absolute URL not supported
 
-  if (f.isEmpty())
+  if (f.empty())
   {
     f = "doxygen_blank";
     addHtmlExtensionIfMissing(f);
@@ -374,12 +374,12 @@ void Qhp::addIndexItem(const Definition *context,const MemberDef *md,
 
   if (context && md) // member
   {
-    if (sectionAnchor.isEmpty() && !md->hasDocumentation()) return;
+    if (sectionAnchor.empty() && !md->hasDocumentation()) return;
     QCString cfname  = md->getOutputFileBase();
     QCString argStr  = md->argsString();
     QCString level1  = context->name();
-    QCString level2  = !word.isEmpty() ? word : md->name();
-    QCString anchor  = !sectionAnchor.isEmpty() ? sectionAnchor : md->anchor();
+    QCString level2  = !word.empty() ? word : md->name();
+    QCString anchor  = !sectionAnchor.empty() ? sectionAnchor : md->anchor();
     QCString ref;
 
     // <keyword name="foo" id="MyApplication::foo" ref="doc.html#foo"/>
@@ -394,7 +394,7 @@ void Qhp::addIndexItem(const Definition *context,const MemberDef *md,
   {
     // <keyword name="Foo" id="Foo" ref="doc.html#Foo"/>
     QCString contRef = context->getOutputFileBase();
-    QCString level1  = !word.isEmpty() ? word : context->name();
+    QCString level1  = !word.empty() ? word : context->name();
     QCString ref = makeRef(contRef,sectionAnchor);
     writeIndent(p->index,3);
     p->index << "<keyword name=\"" << convertToXML(level1) << "\""
@@ -426,7 +426,7 @@ void Qhp::addStyleSheetFile(const QCString &fileName)
 QCString Qhp::getQchFileName()
 {
   QCString const & qchFile = Config_getString(QCH_FILE);
-  if (!qchFile.isEmpty())
+  if (!qchFile.empty())
   {
     return qchFile;
   }
@@ -435,7 +435,7 @@ QCString Qhp::getQchFileName()
   QCString const & versionText = Config_getString(PROJECT_NUMBER);
 
   return QCString("../qch/")
-      + (projectName.isEmpty() ? QCString("index") : projectName)
-      + (versionText.isEmpty() ? QCString("") : QCString("-") + versionText)
+      + (projectName.empty() ? QCString("index") : projectName)
+      + (versionText.empty() ? QCString("") : QCString("-") + versionText)
       + QCString(".qch");
 }

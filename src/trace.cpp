@@ -21,7 +21,7 @@ std::shared_ptr<spdlog::logger> g_tracer;
 
 void initTracing(const QCString &logFile, bool timing)
 {
-  if (!logFile.isEmpty())
+  if (!logFile.empty())
   {
     std::vector<spdlog::sink_ptr> sinks;
     if (logFile=="stdout")

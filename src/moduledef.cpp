@@ -73,7 +73,7 @@ class ModuleDefImpl final : public DefinitionMixin<ModuleDef>
     Type moduleType() const override { return m_type; }
     QCString partitionName() const override { return m_partitionName; }
     void writeDocumentation(OutputList &ol) override;
-    bool isPrimaryInterface() const override { return m_type==Type::Interface && m_partitionName.isEmpty(); }
+    bool isPrimaryInterface() const override { return m_type==Type::Interface && m_partitionName.empty(); }
     MemberList *getMemberList(MemberListType lt) const override;
     const MemberLists &getMemberLists() const override { return m_memberLists; }
     const MemberGroupList &getMemberGroups() const override { return m_memberGroups; }
@@ -148,7 +148,7 @@ QCString ModuleDefImpl::getOutputFileBase() const
 QCString ModuleDefImpl::qualifiedName() const
 {
   QCString result=name();
-  if (!m_partitionName.isEmpty())
+  if (!m_partitionName.empty())
   {
     result+=":"+m_partitionName;
   }
@@ -555,7 +555,7 @@ void ModuleDefImpl::writeDetailedDescription(OutputList &ol,const QCString &titl
     ol.endGroupHeader();
 
     ol.startTextBlock();
-    if (!briefDescription().isEmpty() && Config_getBool(REPEAT_BRIEF))
+    if (!briefDescription().empty() && Config_getBool(REPEAT_BRIEF))
     {
       ol.generateDoc(briefFile(),
                      briefLine(),
@@ -564,8 +564,8 @@ void ModuleDefImpl::writeDetailedDescription(OutputList &ol,const QCString &titl
                      briefDescription(),
                      DocOptions());
     }
-    if (!briefDescription().isEmpty() && Config_getBool(REPEAT_BRIEF) &&
-        !documentation().isEmpty())
+    if (!briefDescription().empty() && Config_getBool(REPEAT_BRIEF) &&
+        !documentation().empty())
     {
       ol.pushGeneratorState();
         ol.disable(OutputType::Man);
@@ -576,7 +576,7 @@ void ModuleDefImpl::writeDetailedDescription(OutputList &ol,const QCString &titl
         ol.writeString("\n\n");
       ol.popGeneratorState();
     }
-    if (!documentation().isEmpty())
+    if (!documentation().empty())
     {
       ol.generateDoc(docFile(),
                      docLine(),
@@ -605,7 +605,7 @@ void ModuleDefImpl::writeBriefDescription(OutputList &ol)
                                      .setIndexWords(true)
                                      .setSingleLine(true))
                 };
-    if (!ast->isEmpty())
+    if (!ast->empty())
     {
       ol.startParagraph();
       ol.pushGeneratorState();
@@ -667,7 +667,7 @@ void ModuleDefImpl::writeAuthorSection(OutputList &ol)
 bool ModuleDefImpl::hasDetailedDescription() const
 {
   bool repeatBrief = Config_getBool(REPEAT_BRIEF);
-  return (!briefDescription().isEmpty() && repeatBrief) || !documentation().isEmpty();
+  return (!briefDescription().empty() && repeatBrief) || !documentation().empty();
 }
 
 void ModuleDefImpl::countMembers()
@@ -807,12 +807,12 @@ void ModuleDefImpl::sortMemberLists()
     {
       if (m->moduleType()==ModuleDef::Type::Interface)
       {
-        if (m->partitionName().isEmpty()) return 0;  // primary interface unit
+        if (m->partitionName().empty()) return 0;  // primary interface unit
         return 1;                                    // partition interface unit
       }
       else
       {
-        if (!m->partitionName().isEmpty()) return 2;  // partition implementation unit
+        if (!m->partitionName().empty()) return 2;  // partition implementation unit
         return 3;                                    // implementation unit
       }
     };
@@ -885,7 +885,7 @@ void ModuleDefImpl::writeDeclarationLink(OutputList &ol,bool &found,const QCStri
     if (!found) // first module
     {
       ol.startMemberHeader("modules");
-      if (!header.isEmpty())
+      if (!header.empty())
       {
         ol.parseText(header);
       }
@@ -900,7 +900,7 @@ void ModuleDefImpl::writeDeclarationLink(OutputList &ol,bool &found,const QCStri
     ol.startMemberDeclaration();
     QCString cname = displayName(!localNames);
     QCString anc = anchor();
-    if (anc.isEmpty()) anc=cname; else anc.prepend(cname+"_");
+    if (anc.empty()) anc=cname; else anc.prepend(cname+"_");
     ol.startMemberItem(anc,OutputGenerator::MemberItemType::Normal);
     ol.writeString("module ");
     ol.insertMemberAlign();
@@ -920,7 +920,7 @@ void ModuleDefImpl::writeDeclarationLink(OutputList &ol,bool &found,const QCStri
     }
     ol.endMemberItem(OutputGenerator::MemberItemType::Normal);
     // add the brief description if available
-    if (!briefDescription().isEmpty() && Config_getBool(BRIEF_MEMBER_DESC))
+    if (!briefDescription().empty() && Config_getBool(BRIEF_MEMBER_DESC))
     {
       auto parser { createDocParser() };
       auto ast    { validatingParseDoc(*parser.get(),
@@ -932,7 +932,7 @@ void ModuleDefImpl::writeDeclarationLink(OutputList &ol,bool &found,const QCStri
                                        DocOptions()
                                        .setSingleLine(true))
                    };
-      if (!ast->isEmpty())
+      if (!ast->empty())
       {
         ol.startMemberDescription(anchor());
         ol.writeDoc(ast.get(),this,nullptr);
@@ -973,7 +973,7 @@ void ModuleDefImpl::writeExports(OutputList &ol,const QCString &title)
           ol.endBold();
         }
         ol.endMemberItem(OutputGenerator::MemberItemType::Normal);
-        if (mod && !mod->briefDescription().isEmpty() && Config_getBool(BRIEF_MEMBER_DESC))
+        if (mod && !mod->briefDescription().empty() && Config_getBool(BRIEF_MEMBER_DESC))
         {
           ol.startMemberDescription(mod->getOutputFileBase());
           ol.generateDoc(briefFile(),
@@ -1009,7 +1009,7 @@ void ModuleDefImpl::writeFiles(OutputList &ol,const QCString &title)
         ol.startMemberDeclaration();
         QCString fname = fd->displayName();
         QCString anc = fd->anchor();
-        if (anc.isEmpty()) anc=fname; else anc.prepend(fname+"_");
+        if (anc.empty()) anc=fname; else anc.prepend(fname+"_");
         ol.startMemberItem(anc,OutputGenerator::MemberItemType::Normal);
         ol.docify(theTranslator->trFile(false,true)+" ");
         ol.insertMemberAlign();
@@ -1029,7 +1029,7 @@ void ModuleDefImpl::writeFiles(OutputList &ol,const QCString &title)
           ol.endBold();
         }
         ol.endMemberItem(OutputGenerator::MemberItemType::Normal);
-        if (!fd->briefDescription().isEmpty() && Config_getBool(BRIEF_MEMBER_DESC))
+        if (!fd->briefDescription().empty() && Config_getBool(BRIEF_MEMBER_DESC))
         {
           ol.startMemberDescription(fd->getOutputFileBase());
           ol.generateDoc(briefFile(),
@@ -1189,7 +1189,7 @@ void ModuleDefImpl::writeTagFile(TextStream &tagFile) const
   }
 #endif
   QCString idStr = id();
-  if (!idStr.isEmpty())
+  if (!idStr.empty())
   {
     tagFile << "    <clangid>" << convertToXML(idStr) << "</clangid>\n";
   }
@@ -1324,7 +1324,7 @@ void ModuleManager::addImport(const QCString &moduleFile,int line,const QCString
   if (mod) // import inside a module
   {
     AUTO_TRACE_ADD("in module");
-    toModuleDefImpl(mod)->addImport(line,importName.isEmpty()?mod->name():importName,partitionName,isExported);
+    toModuleDefImpl(mod)->addImport(line,importName.empty()?mod->name():importName,partitionName,isExported);
   }
   else // import outside of a module
   {
@@ -1390,7 +1390,7 @@ void ModuleManager::resolvePartitionsRecursively(ModuleDef *intfMod, ModuleDef *
     {
       AUTO_TRACE_ADD("partitionFileName={} importName={} partitionName={}",
           partitionFileName,importInfo.importName,importInfo.partitionName);
-      if (importInfo.importName==intfMod->name() && !importInfo.partitionName.isEmpty() &&
+      if (importInfo.importName==intfMod->name() && !importInfo.partitionName.empty() &&
           importInfo.exported) // that is an exported partition of this module
       {
         auto it = p->moduleNameMap.find(importInfo.importName.str());
@@ -1428,7 +1428,7 @@ void ModuleManager::resolvePartitions()
   AUTO_TRACE();
   for (auto &mod : p->moduleFileMap) // foreach module
   {
-    if (mod->moduleType()==ModuleDef::Type::Interface && mod->partitionName().isEmpty())
+    if (mod->moduleType()==ModuleDef::Type::Interface && mod->partitionName().empty())
     { // that is a primary interface
       resolvePartitionsRecursively(mod.get(),mod.get());
     }
@@ -1596,8 +1596,8 @@ ModuleLinkedMap &ModuleManager::modules()
 void ModuleManager::addDocs(const Entry *root)
 {
   AUTO_TRACE("file={} module={}",root->fileName,root->name);
-  if (root->doc.isEmpty() && root->brief.isEmpty()) return;
-  if (root->name.find(':')!=-1)
+  if (root->doc.empty() && root->brief.empty()) return;
+  if (root->name.find(':')!=QCString::npos)
   {
     warn(root->fileName,root->startLine,"Ignoring documentation for module partition {}. Please place documentation at the primary module name",
         root->name);

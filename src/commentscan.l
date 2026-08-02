@@ -753,8 +753,8 @@ STopt  [^\n@\\]*
                                         }
 <Comment>"<"{DETAILEDHTML}{ATTR}">"     { // HTML command that ends a brief description
                                           QCString htmlOpenTag(yytext);
-                                          int spacePos = htmlOpenTag.find(' '); // check for optional attributes
-                                          if (spacePos==-1) spacePos=yyleng-1;
+                                          size_t spacePos = htmlOpenTag.find(' '); // check for optional attributes
+                                          if (spacePos==QCString::npos) spacePos=yyleng-1;
                                           QCString htmlTagName = htmlOpenTag.mid(1,spacePos-1);
                                           //printf("found open tag '%s'\n",qPrint(htmlTagName));
                                           yyextra->htmlContextStack.emplace_back(htmlTagName,yyextra->inContext);
@@ -851,13 +851,13 @@ STopt  [^\n@\\]*
 <HtmlA>{ANCHTML}                        { // only labels that can be converted to doxygen anchor
                                           yyextra->htmlAnchorStr += yytext;
                                           QCString tag(yytext);
-                                          int s=tag.find("=");
+                                          size_t s=tag.find("=");
                                           char c=tag[s+1];
                                           QCString id;
                                           if (c=='\'' || c=='"') // valid start
                                           {
-                                            int e=tag.find(c,s+2);
-                                            if (e!=-1) // found matching end
+                                            size_t e=tag.find(c,s+2);
+                                            if (e!=QCString::npos) // found matching end
                                             {
                                               id=tag.mid(s+2,e-s-2); // extract id
                                               addAnchor(yyscanner,id);
@@ -868,7 +868,7 @@ STopt  [^\n@\\]*
                                             id=tag.mid(s+1);
                                             addAnchor(yyscanner,id);
                                           }
-                                          if (!id.isEmpty() && !yyextra->htmlAnchor)
+                                          if (!id.empty() && !yyextra->htmlAnchor)
                                           {
                                             // only use first analogous to what is in docparser
                                             addOutput(yyscanner,"@anchor ");
@@ -932,14 +932,14 @@ STopt  [^\n@\\]*
                                         }
 <Comment>"<"{CAPTION}{ATTR}">"          {
                                           QCString tag(yytext);
-                                          int s=tag.find("id=");
-                                          if (s!=-1) // command has id attribute
+                                          size_t s=tag.find("id=");
+                                          if (s!=QCString::npos) // command has id attribute
                                           {
                                             char c=tag[s+3];
                                             if (c=='\'' || c=='"') // valid start
                                             {
-                                              int e=tag.find(c,s+4);
-                                              if (e!=-1) // found matching end
+                                              size_t e=tag.find(c,s+4);
+                                              if (e!=QCString::npos) // found matching end
                                               {
                                                 QCString id=tag.mid(s+4,e-s-4); // extract id
                                                 addAnchor(yyscanner,id);
@@ -991,13 +991,13 @@ STopt  [^\n@\\]*
 <Comment>{B}*{CMD}[a-z_A-Z]+{B}*        { // potentially interesting command
                                           // the {B}* in the front was added for bug620924
                                           QCString fullMatch = yytext;
-                                          int idx = fullMatch.find('{');
+                                          size_t idx = fullMatch.find('{');
                                           /* handle `f{` command as special case */
                                           if ((idx > 1) && (yytext[idx-1] == 'f') && (yytext[idx-2] == '\\' || yytext[idx-2] =='@')) REJECT;
-                                          int idxEnd = fullMatch.find("}",idx+1);
+                                          size_t idxEnd = fullMatch.find('}',idx+1);
                                           QCString cmdName;
                                           StringVector optList;
-                                          if (idx == -1) // no options
+                                          if (idx == QCString::npos) // no options
                                           {
                                             cmdName = fullMatch.stripWhiteSpace().mid(1); // to remove {CMD}
                                           }
@@ -1051,7 +1051,7 @@ STopt  [^\n@\\]*
                                         }
 <Comment>{B}*{CMD}"~"[a-z_A-Z-]*        { // language switch command
                                           QCString langId = QCString(yytext).stripWhiteSpace().mid(2);
-                                          if (!langId.isEmpty() &&
+                                          if (!langId.empty() &&
                                               qstricmp(Config_getEnumAsString(OUTPUT_LANGUAGE),langId)!=0)
                                           { // enable language specific section
                                             if (!Config_isAvailableEnum(OUTPUT_LANGUAGE,langId))
@@ -1564,7 +1564,7 @@ STopt  [^\n@\\]*
 <GroupDocArg2>{DOCNL}+                  {
                                           yyextra->current->type = yyextra->current->type.stripWhiteSpace();
                                           if ( yyextra->current->groupDocType==Entry::GROUPDOC_NORMAL &&
-                                               yyextra->current->type.isEmpty()
+                                               yyextra->current->type.empty()
                                              ) // defgroup requires second argument
                                           {
                                               warn(yyextra->fileName,yyextra->lineNr,
@@ -1600,15 +1600,15 @@ STopt  [^\n@\\]*
                                                                // "@page label Title" as
                                                                // "@page md_label Title\ilinebr @ianchor{Title} label"
                                           QCString text = yytext;
-                                          int start = text.find('{');
-                                          int end   = text.find('}',start+1);
+                                          size_t start = text.find('{');
+                                          size_t end   = text.find('}',start+1);
                                           yyextra->current->name = text.mid(end+2);
-                                          int istart = yyextra->current->name.find("\\ilinebr");
-                                          if (istart != -1)
+                                          size_t istart = yyextra->current->name.find("\\ilinebr");
+                                          if (istart != QCString::npos)
                                           {
                                             QCString rest =  yyextra->current->name.mid(istart);
                                             unput_string(rest,rest.length());
-                                            yyextra->current->name = yyextra->current->name.mid(0,istart);
+                                            yyextra->current->name = yyextra->current->name.left(istart);
                                           }
                                           yyextra->current->args = text.mid(start+1,end-start-1);
                                           //printf("name='%s' title='%s'\n",qPrint(yyextra->current->name),qPrint(yyextra->current->args));
@@ -1962,7 +1962,7 @@ STopt  [^\n@\\]*
                                               QCString optStripped = QCString(opt_).stripWhiteSpace();
                                               std::string opt = optStripped.lower().str();
                                               QCString result = fileInfoLookup(fi,opt);
-                                              if (!result.isEmpty())
+                                              if (!result.empty())
                                               {
                                                 if (hasOption) // oops: already found an option
                                                 {
@@ -1996,7 +1996,7 @@ STopt  [^\n@\\]*
                                         }
 <SectionLabel>{DOCNL}                   {
                                           yyextra->sectionTitle.clear();
-                                          if (yyextra->sectionLabel.isEmpty())
+                                          if (yyextra->sectionLabel.empty())
                                           { // missing argument
                                             warn(yyextra->fileName,yyextra->lineNr,
                                               "\\section command has no label"
@@ -2013,7 +2013,7 @@ STopt  [^\n@\\]*
                                           BEGIN( Comment );
                                         }
 <SectionLabel>.                         { // invalid character for section label
-                                          if (yyextra->sectionLabel.isEmpty())
+                                          if (yyextra->sectionLabel.empty())
                                           {
                                             warn(yyextra->fileName,yyextra->lineNr,
                                               "Invalid or missing section label"
@@ -2083,13 +2083,13 @@ STopt  [^\n@\\]*
 <SectionTitle>{B}*{CMD}[a-z_A-Z]+"{"[^}]*"}"{B}*  |
 <SectionTitle>{B}*{CMD}[a-z_A-Z]+{B}*   { // handling command in section title
                                           QCString fullMatch = yytext;
-                                          int idx = fullMatch.find('{');
+                                          size_t idx = fullMatch.find('{');
                                           /* handle `f{` command as special case */
                                           if ((idx > 1) && (yytext[idx-1] == 'f') && (yytext[idx-2] == '\\' || yytext[idx-2] =='@')) REJECT;
-                                          int idxEnd = fullMatch.find("}",idx+1);
+                                          size_t idxEnd = fullMatch.find("}",idx+1);
                                           QCString cmdName;
                                           StringVector optList;
-                                          if (idx == -1) // no options
+                                          if (idx == QCString::npos) // no options
                                           {
                                             cmdName = fullMatch.stripWhiteSpace().mid(1); // to remove {CMD}
                                           }
@@ -2139,7 +2139,7 @@ STopt  [^\n@\\]*
                                                     yyextra->sectionTitle+=fullMatch.left(i);
                                                     addOutput(yyscanner,fullMatch.left(i));
                                                     handleFileInfoSection(yyscanner,cmdName,optList);
-                                                    if (idxEnd == -1)
+                                                    if (idxEnd == QCString::npos)
                                                     {
                                                       yyextra->sectionTitle+=fullMatch.mid(i+9);
                                                       addOutput(yyscanner,fullMatch.mid(i+9));
@@ -2528,7 +2528,7 @@ STopt  [^\n@\\]*
                                           BEGIN(Comment);
                                         }
 <GuardParamEnd>{B}*                     {
-                                          if (!yyextra->spaceBeforeIf.isEmpty()) // needed for 665313 in combination with bug620924
+                                          if (!yyextra->spaceBeforeIf.empty()) // needed for 665313 in combination with bug620924
                                           {
                                             addOutput(yyscanner,yyextra->spaceBeforeIf);
                                           }
@@ -2807,7 +2807,7 @@ STopt  [^\n@\\]*
 <FnParam>{DOCNL}                        { // end of argument
                                           if (yyextra->braceCount==0)
                                           {
-                                            if (yyextra->functionProto.stripWhiteSpace().isEmpty())
+                                            if (yyextra->functionProto.stripWhiteSpace().empty())
                                             {
                                               warn(yyextra->fileName,yyextra->lineNr,
                                                    "missing argument after '\\{}'.",yyextra->currentCmd
@@ -2847,7 +2847,7 @@ STopt  [^\n@\\]*
 
 <OverloadParam>{DOCNL}                  { // end of argument
                                           if (*yytext=='\n') yyextra->lineNr++;
-                                          if (yyextra->functionProto.stripWhiteSpace().isEmpty())
+                                          if (yyextra->functionProto.stripWhiteSpace().empty())
                                           { // plain overload command
                                             addOutput(yyscanner,getOverloadDocs());
                                             addOutput(yyscanner,'\n');
@@ -2914,12 +2914,12 @@ STopt  [^\n@\\]*
 
 <SkipLang>{CMD}"~"[a-zA-Z-]*            { /* language switch */
                                           QCString langId(&yytext[2]);
-                                          if (!langId.isEmpty() && !Config_isAvailableEnum(OUTPUT_LANGUAGE,langId))
+                                          if (!langId.empty() && !Config_isAvailableEnum(OUTPUT_LANGUAGE,langId))
                                           {
                                              warn(yyextra->fileName,yyextra->lineNr,
                                              "non supported language '{}' specified in '{}'",langId,QCString(yytext).stripWhiteSpace());
                                           }
-                                          else if (langId.isEmpty() ||
+                                          else if (langId.empty() ||
                                               qstricmp(Config_getEnumAsString(OUTPUT_LANGUAGE),langId)==0)
                                           { // enable language specific section
                                             BEGIN(Comment);
@@ -3034,8 +3034,8 @@ STopt  [^\n@\\]*
                                         }
 
  /*
-<*>.  { fprintf(stderr,"Lex scanner %s %sdefault rule for state %s: #%s#\n", __FILE__,!yyextra->fileName.isEmpty() ? ("(" + yyextra->fileName +") ").data(): "",stateToString(YY_START),yytext);}
-<*>\n  { fprintf(stderr,"Lex scanner %s %sdefault rule newline for state %s.\n", __FILE__, !yyextra->fileName.isEmpty() ? ("(" + yyextra->fileName +") ").data(): "",stateToString(YY_START));}
+<*>.  { fprintf(stderr,"Lex scanner %s %sdefault rule for state %s: #%s#\n", __FILE__,!yyextra->fileName.empty() ? ("(" + yyextra->fileName +") ").data(): "",stateToString(YY_START),yytext);}
+<*>\n  { fprintf(stderr,"Lex scanner %s %sdefault rule newline for state %s.\n", __FILE__, !yyextra->fileName.empty() ? ("(" + yyextra->fileName +") ").data(): "",stateToString(YY_START));}
  */
 
 %%
@@ -3335,7 +3335,7 @@ static bool handleName(yyscan_t yyscanner,const QCString &, const StringVector &
   {
     yyextra->docGroup.clearHeader();
     BEGIN( NameParam );
-    if (!yyextra->docGroup.isEmpty()) // end of previous member group
+    if (!yyextra->docGroup.empty()) // end of previous member group
     {
       yyextra->docGroup.close(yyextra->current,yyextra->fileName,yyextra->lineNr,true,true);
     }
@@ -3396,7 +3396,7 @@ static bool handleParBlock(yyscan_t yyscanner,const QCString &, const StringVect
     warn(yyextra->fileName,yyextra->lineNr,
         "found \\parblock command while already in a parblock!");
   }
-  if (!yyextra->spaceBeforeCmd.isEmpty())
+  if (!yyextra->spaceBeforeCmd.empty())
   {
     addOutput(yyscanner,yyextra->spaceBeforeCmd);
     yyextra->spaceBeforeCmd.clear();
@@ -3423,7 +3423,7 @@ static bool handleEndParBlock(yyscan_t yyscanner,const QCString &, const StringV
 static bool handleRelated(yyscan_t yyscanner,const QCString &cmd, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  if (!yyextra->current->relates.isEmpty())
+  if (!yyextra->current->relates.empty())
   {
     warn(yyextra->fileName,yyextra->lineNr,
         "found multiple \\relates, \\relatesalso or \\memberof commands in a comment block, using last definition");
@@ -3437,7 +3437,7 @@ static bool handleRelated(yyscan_t yyscanner,const QCString &cmd, const StringVe
 static bool handleRelatedAlso(yyscan_t yyscanner,const QCString &cmd, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  if (!yyextra->current->relates.isEmpty())
+  if (!yyextra->current->relates.empty())
   {
     warn(yyextra->fileName,yyextra->lineNr,
         "found multiple \\relates, \\relatesalso or \\memberof commands in a comment block, using last definition");
@@ -3451,7 +3451,7 @@ static bool handleRelatedAlso(yyscan_t yyscanner,const QCString &cmd, const Stri
 static bool handleMemberOf(yyscan_t yyscanner,const QCString &cmd, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  if (!yyextra->current->relates.isEmpty())
+  if (!yyextra->current->relates.empty())
   {
     warn(yyextra->fileName,yyextra->lineNr,
         "found multiple \\relates, \\relatesalso or \\memberof commands in a comment block, using last definition");
@@ -3533,7 +3533,7 @@ static bool handleSubpage(yyscan_t yyscanner,const QCString &s, const StringVect
     warn(yyextra->fileName,yyextra->lineNr,
         "found \\subpage command in a comment block that is not marked as a page!");
   }
-  if (!yyextra->spaceBeforeCmd.isEmpty())
+  if (!yyextra->spaceBeforeCmd.empty())
   {
     addOutput(yyscanner,yyextra->spaceBeforeCmd);
     yyextra->spaceBeforeCmd.clear();
@@ -3587,7 +3587,7 @@ static bool handleImage(yyscan_t yyscanner,const QCString &s, const StringVector
 static bool handleCite(yyscan_t yyscanner,const QCString &s, const StringVector &optList)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  if (!yyextra->spaceBeforeCmd.isEmpty())
+  if (!yyextra->spaceBeforeCmd.empty())
   {
     addOutput(yyscanner,yyextra->spaceBeforeCmd);
     yyextra->spaceBeforeCmd.clear();
@@ -3607,7 +3607,7 @@ static bool handleCite(yyscan_t yyscanner,const QCString &s, const StringVector 
 static bool handleFormatBlock(yyscan_t yyscanner,const QCString &s, const StringVector &optList)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  if (!yyextra->spaceBeforeCmd.isEmpty())
+  if (!yyextra->spaceBeforeCmd.empty())
   {
     addOutput(yyscanner,yyextra->spaceBeforeCmd);
     yyextra->spaceBeforeCmd.clear();
@@ -3675,7 +3675,7 @@ static QCString fileInfoLookup(const FileInfo &fi,const std::string &optionName)
 static bool handleFileInfoResult(yyscan_t yyscanner,const QCString &, const StringVector &optList, bool isSection)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  if (!yyextra->spaceBeforeCmd.isEmpty())
+  if (!yyextra->spaceBeforeCmd.empty())
   {
     if (isSection) yyextra->sectionTitle+=yyextra->spaceBeforeCmd;
     addOutput(yyscanner,yyextra->spaceBeforeCmd);
@@ -3688,7 +3688,7 @@ static bool handleFileInfoResult(yyscan_t yyscanner,const QCString &, const Stri
     QCString optStripped = QCString(opt_).stripWhiteSpace();
     std::string opt = optStripped.lower().str();
     QCString result = fileInfoLookup(fi,opt);
-    if (!result.isEmpty())
+    if (!result.empty())
     {
       if (!first)
       {
@@ -3728,7 +3728,7 @@ static bool handleFileInfoResult(yyscan_t yyscanner,const QCString &, const Stri
 static bool handleLineInfo(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  if (!yyextra->spaceBeforeCmd.isEmpty())
+  if (!yyextra->spaceBeforeCmd.empty())
   {
     addOutput(yyscanner,yyextra->spaceBeforeCmd);
     yyextra->spaceBeforeCmd.clear();
@@ -3877,7 +3877,7 @@ static bool handleEndIf(yyscan_t yyscanner,const QCString &, const StringVector 
   {
     yyextra->guards->pop();
   }
-  if (!yyextra->spaceBeforeCmd.isEmpty())
+  if (!yyextra->spaceBeforeCmd.empty())
   {
     addOutput(yyscanner,yyextra->spaceBeforeCmd);
     yyextra->spaceBeforeCmd.clear();
@@ -4062,7 +4062,7 @@ static bool handleInheritanceGraph(yyscan_t yyscanner,const QCString &, const St
   for (const auto &opt_ : optList)
   {
     QCString opt = QCString(opt_).stripWhiteSpace().lower();
-    if (!opt.isEmpty())
+    if (!opt.empty())
     {
       if (opt == "yes")
       {
@@ -4144,7 +4144,7 @@ static bool handleInternal(yyscan_t yyscanner,const QCString &, const StringVect
   {
     // make sure some whitespace before a \internal command
     // is not treated as "documentation"
-    if (yyextra->current->doc.stripWhiteSpace().isEmpty())
+    if (yyextra->current->doc.stripWhiteSpace().empty())
     {
       yyextra->current->doc.clear();
     }
@@ -4226,11 +4226,11 @@ static bool handleToc(yyscan_t yyscanner,const QCString &, const StringVector &o
     {
       QCString opt = QCString(opt_).stripWhiteSpace().lower();
       int level = SectionType::MaxLevel;
-      int i = opt.find(':');
-      if (i>0)  // found ':' but not on position 0 what would mean just a level
+      size_t i = opt.find(':');
+      if (i!=QCString::npos && i>0)  // found ':' but not on position 0 what would mean just a level
       {
         char dum=0;
-        if (sscanf(opt.right(opt.length() - i - 1).data(),"%d%c",&level,&dum) != 1)
+        if (sscanf(opt.mid(i+1).data(),"%d%c",&level,&dum) != 1)
         {
           warn(yyextra->fileName,yyextra->lineNr,"Unknown option:level specified with \\tableofcontents: '{}'",
               qPrint(QCString(opt_).stripWhiteSpace()));
@@ -4242,7 +4242,7 @@ static bool handleToc(yyscan_t yyscanner,const QCString &, const StringVector &o
           opt = opt.left(i).stripWhiteSpace();
         }
       }
-      if (!opt.isEmpty())
+      if (!opt.empty())
       {
         if (opt == "html")
         {
@@ -4295,13 +4295,13 @@ static bool handleExtends(yyscan_t yyscanner,const QCString &cmd, const StringVe
 static bool handleCopyBrief(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  if (yyextra->current->brief.stripWhiteSpace().isEmpty() && yyextra->current->doc.stripWhiteSpace().isEmpty())
+  if (yyextra->current->brief.stripWhiteSpace().empty() && yyextra->current->doc.stripWhiteSpace().empty())
   { // if we don't have a brief or detailed description yet,
     // then the @copybrief should end up in the brief description.
     // otherwise it will be copied inline (see bug691315 & bug700788)
     setOutput(yyscanner,OutputBrief);
   }
-  if (!yyextra->spaceBeforeCmd.isEmpty())
+  if (!yyextra->spaceBeforeCmd.empty())
   {
     addOutput(yyscanner,yyextra->spaceBeforeCmd);
     yyextra->spaceBeforeCmd.clear();
@@ -4314,7 +4314,7 @@ static bool handleCopyDetails(yyscan_t yyscanner,const QCString &, const StringV
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   setOutput(yyscanner,OutputDoc);
-  if (!yyextra->spaceBeforeCmd.isEmpty())
+  if (!yyextra->spaceBeforeCmd.empty())
   {
     addOutput(yyscanner,yyextra->spaceBeforeCmd);
     yyextra->spaceBeforeCmd.clear();
@@ -4326,13 +4326,13 @@ static bool handleCopyDetails(yyscan_t yyscanner,const QCString &, const StringV
 static bool handleCopyDoc(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  if (yyextra->current->brief.stripWhiteSpace().isEmpty() && yyextra->current->doc.stripWhiteSpace().isEmpty())
+  if (yyextra->current->brief.stripWhiteSpace().empty() && yyextra->current->doc.stripWhiteSpace().empty())
   { // if we don't have a brief or detailed description yet,
     // then the @copybrief should end up in the brief description.
     // otherwise it will be copied inline (see bug691315 & bug700788)
     setOutput(yyscanner,OutputBrief);
   }
-  if (!yyextra->spaceBeforeCmd.isEmpty())
+  if (!yyextra->spaceBeforeCmd.empty())
   {
     addOutput(yyscanner,yyextra->spaceBeforeCmd);
     yyextra->spaceBeforeCmd.clear();
@@ -4442,7 +4442,7 @@ static void addXRefItemToEntry(Entry *current, const QCString &docs,
                         const QCString &listName,const QCString &itemTitle,
                         const QCString &listTitle,bool append,bool inBody,int lineNr)
 {
-  if (listName.isEmpty()) return;
+  if (listName.empty()) return;
   //printf("addXRefItem(listName=%s,itemTitle=%s,listTitle=%s,append=%d,inbody=%d)\n",
   //    qPrint(listName),qPrint(itemTitle),qPrint(listTitle),append,inBody);
 
@@ -4493,7 +4493,7 @@ static void addXRefItemToEntry(Entry *current, const QCString &docs,
       const SectionInfo *si = sm.find(anchorLabel);
       if (si)
       {
-        if (!si->ref().isEmpty()) // we are from a tag file
+        if (!si->ref().empty()) // we are from a tag file
         {
           si = sm.replace(anchorLabel,listName,lineNr,"",SectionType::Anchor,0);
           current->anchors.push_back(si);
@@ -4534,7 +4534,7 @@ static void addXRefItem(yyscan_t yyscanner,
 // make label match LABELID pattern
 static void escapeLabel(QCString &label)
 {
-  if (label.isEmpty()) return;
+  if (label.empty()) return;
   char c = label[0];
   if (!((c>='a' && c<='z') || (c>='A' && c<='Z') || c=='_' || c<0))
   {
@@ -4592,7 +4592,7 @@ static void addSection(yyscan_t yyscanner, bool addYYtext)
   const SectionInfo *si = sm.find(yyextra->sectionLabel);
   if (si)
   {
-    if (!si->ref().isEmpty()) // we are from a tag file
+    if (!si->ref().empty()) // we are from a tag file
     {
       // create a new section element
       if (addYYtext) yyextra->sectionTitle+=yytext;
@@ -4754,8 +4754,8 @@ static inline void setOutput(yyscan_t yyscanner,OutputContext ctx)
       if (oldContext!=yyextra->inContext)
       {
         stripTrailingWhiteSpace(yyextra->current->doc);
-        if (yyextra->current->doc.isEmpty()) yyextra->current->docLine = yyextra->lineNr;
-        if (yyextra->current->docFile.isEmpty())
+        if (yyextra->current->doc.empty()) yyextra->current->docLine = yyextra->lineNr;
+        if (yyextra->current->docFile.empty())
         {
           yyextra->current->docFile = yyextra->fileName;
           yyextra->current->docLine = yyextra->lineNr;
@@ -4767,15 +4767,15 @@ static inline void setOutput(yyscan_t yyscanner,OutputContext ctx)
       {
         if (oldContext!=yyextra->inContext)
         {
-          if (yyextra->current->brief.isEmpty()) yyextra->current->briefLine = yyextra->lineNr;
-          if (yyextra->current->briefFile.isEmpty())
+          if (yyextra->current->brief.empty()) yyextra->current->briefLine = yyextra->lineNr;
+          if (yyextra->current->briefFile.empty())
           {
             yyextra->current->briefFile = yyextra->fileName;
             yyextra->current->briefLine = yyextra->lineNr;
           }
         }
         bool foundMatch = false;
-        if (yyextra->current->brief.stripWhiteSpace().isEmpty()) // we only want one brief
+        if (yyextra->current->brief.stripWhiteSpace().empty()) // we only want one brief
           // description even if multiple
           // are given...
         {
@@ -4807,7 +4807,7 @@ static inline void setOutput(yyscan_t yyscanner,OutputContext ctx)
         }
         else
         {
-          if (!yyextra->current->doc.isEmpty()) // when appending parts add a new line
+          if (!yyextra->current->doc.empty()) // when appending parts add a new line
           {
             yyextra->current->doc += "\n";
           }
@@ -4836,7 +4836,7 @@ static void addAnchor(yyscan_t yyscanner,const QCString &anchor, const QCString 
   const SectionInfo *si = sm.find(anchor);
   if (si)
   {
-    if (!si->ref().isEmpty()) // we are from a tag file
+    if (!si->ref().empty()) // we are from a tag file
     {
       si = sm.replace(anchor,yyextra->fileName,yyextra->lineNr,QCString(),SectionType::Anchor,0);
       yyextra->current->anchors.push_back(si);
@@ -4907,7 +4907,7 @@ static void endBrief(yyscan_t yyscanner)
     // found some brief description and not just whitespace
     yyextra->briefEndsAtDot=false;
     setOutput(yyscanner,OutputDoc);
-    if (yyextra->current->doc.stripWhiteSpace().isEmpty())
+    if (yyextra->current->doc.stripWhiteSpace().empty())
     {
       yyextra->current->docLine = yyextra->lineNr;
       yyextra->current->doc = "";
@@ -5001,7 +5001,7 @@ bool CommentScanner::parseCommentBlock(/* in */     OutlineParserInterface *pars
   yyextra->langParser     = parser;
   yyextra->current        = curEntry;
   yyextra->current->docLine = (lineNr > 1 ? lineNr : 1);
-  if (comment.isEmpty()) return false; // avoid empty strings
+  if (comment.empty()) return false; // avoid empty strings
   yyextra->inputString    = comment;
   yyextra->inputString.append(" ");
   yyextra->inputPosition  = position;
@@ -5016,7 +5016,7 @@ bool CommentScanner::parseCommentBlock(/* in */     OutlineParserInterface *pars
   yyextra->inBody         = isInbody;
   yyextra->markdownSupport= markdownSupport;
   yyextra->outputXRef.clear();
-  if (!isBrief && !isAutoBriefOn && !yyextra->current->doc.isEmpty())
+  if (!isBrief && !isAutoBriefOn && !yyextra->current->doc.empty())
   { // add newline separator between detailed comment blocks
     yyextra->current->doc += '\n';
   }
@@ -5028,8 +5028,8 @@ bool CommentScanner::parseCommentBlock(/* in */     OutlineParserInterface *pars
   yyextra->spaceBeforeIf.clear();
   yyextra->htmlContextStack.clear();
 
-  DebugLex debugLex(Debug::Lex_commentscan, __FILE__, !fileName.isEmpty() ? qPrint(fileName): nullptr);
-  if (!yyextra->current->inbodyDocs.isEmpty() && isInbody) // separate in body fragments
+  DebugLex debugLex(Debug::Lex_commentscan, __FILE__, !fileName.empty() ? qPrint(fileName): nullptr);
+  if (!yyextra->current->inbodyDocs.empty() && isInbody) // separate in body fragments
   {
     char cmd[30];
     qsnprintf(cmd,30,"\n\n\\iline %d \\ilinebr ",lineNr);
@@ -5059,14 +5059,14 @@ bool CommentScanner::parseCommentBlock(/* in */     OutlineParserInterface *pars
   yyextra->current->doc=stripLeadingAndTrailingEmptyLines(yyextra->current->doc,yyextra->current->docLine);
   yyextra->current->brief=stripLeadingAndTrailingEmptyLines(yyextra->current->brief,yyextra->current->docLine);
 
-  if (yyextra->current->section.isFileDoc() && yyextra->current->doc.isEmpty())
+  if (yyextra->current->section.isFileDoc() && yyextra->current->doc.empty())
   {
     // to allow a comment block with just a @file command.
     yyextra->current->doc="\n\n";
   }
 
   if (yyextra->current->section.isMemberGrp() &&
-      yyextra->docGroup.isEmpty()) // @name section but no group started yet
+      yyextra->docGroup.empty()) // @name section but no group started yet
   {
     yyextra->docGroup.open(yyextra->current,yyextra->fileName,yyextra->lineNr,true);
   }
@@ -5110,7 +5110,7 @@ static void handleGuard(yyscan_t yyscanner,const QCString &expr)
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   CondParser prs;
   bool sectionEnabled = false;
-  if (!expr.isEmpty())
+  if (!expr.empty())
   {
     sectionEnabled=prs.parse(yyextra->fileName,yyextra->lineNr,expr.stripWhiteSpace());
   }
@@ -5242,7 +5242,7 @@ void CommentScanner::addDeprecatedDocs(Entry *current,const QCString &fileName,i
     {
       current->spec.setDeprAttr(true);
     }
-    if (!docs.isEmpty() || !current->spec.isDeprDoc()) // attribute has docs
+    if (!docs.empty() || !current->spec.isDeprDoc()) // attribute has docs
                                                        // or no @deprecated command found in comment yet
     {
       // add new deprecated xref item to the documentation of this entry

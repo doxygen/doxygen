@@ -74,19 +74,19 @@ static bool convertMapFile(TextStream &t,const QCString &mapName,const QCString 
         auto dfAst  { createRef( *parser.get(), url, context, srcFile, srcLine) };
         auto dfAstImpl = dynamic_cast<const DocNodeAST*>(dfAst.get());
         const DocRef *df = std::get_if<DocRef>(&dfAstImpl->root);
-        if (!df->file().isEmpty() || !df->anchor().isEmpty())
+        if (!df->file().empty() || !df->anchor().empty())
         {
           link = true;
           t << "<area href=\"";
           t << externalRef(relPath,df->ref(),true);
         }
-        if (!df->file().isEmpty())
+        if (!df->file().empty())
         {
           QCString fn = df->file();
           addHtmlExtensionIfMissing(fn);
           t << fn;
         }
-        if (!df->anchor().isEmpty())
+        if (!df->anchor().empty())
         {
           t << "#" << df->anchor();
         }
@@ -113,7 +113,7 @@ static bool do_mscgen_generate(const QCString& inFile,const QCString& outFile,ms
                                const QCString &srcFile,int srcLine)
 {
   auto mscgen_tool = Config_getString(MSCGEN_TOOL).stripWhiteSpace();
-  if (!mscgen_tool.isEmpty()) // use external mscgen tool
+  if (!mscgen_tool.empty()) // use external mscgen tool
   {
     QCString type;
     switch (msc_format)
@@ -202,10 +202,13 @@ void writeMscGraphFromFile(const QCString &inFile,const QCString &outDir,
     }
   }
 
-  int i=std::max(imgName.findRev('/'),imgName.findRev('\\'));
-  if (i!=-1) // strip path
+  size_t i0 = imgName.rfind('/');
+  size_t i1 = imgName.rfind('\\');
+  size_t i  = i0!=QCString::npos && i1!=QCString::npos ? std::max(i0,i1) :
+              i0!=QCString::npos ? i0 : i1;
+  if (i!=QCString::npos) // strip path
   {
-    imgName=imgName.right(imgName.length()-i-1);
+    imgName=imgName.mid(i+1);
   }
   if (toIndex) Doxygen::indexList->addImageFile(imgName);
 
@@ -257,7 +260,7 @@ void writeMscImageMapFromFile(TextStream &t,const QCString &inFile,
       t << "unknown";
   }
   QCString imap = getMscImageMapFromFile(inFile,outDir,relPath,context,format==MscOutputFormat::SVG,srcFile,srcLine);
-  if (!imap.isEmpty())
+  if (!imap.empty())
   {
     t << "\" alt=\""
       << baseName << "\" border=\"0\" usemap=\"#" << mapName << "\"/>\n";

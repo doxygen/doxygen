@@ -49,7 +49,7 @@ class HtmlHelpRecoder
     void initialize()
     {
       QCString str = Config_getString(CHM_INDEX_ENCODING);
-      if (str.isEmpty()) str = "CP1250"; // use safe and likely default
+      if (str.empty()) str = "CP1250"; // use safe and likely default
       m_fromUtf8 = portable_iconv_open(str.data(),"UTF-8");
       if (m_fromUtf8==m_iconv_null)
       {
@@ -154,13 +154,13 @@ void HtmlHelpIndex::addItem(const QCString &level1,const QCString &level2,
 {
   static const reg::Ex re(R"(@\d+)");
   QCString key = substitute(level1,"?","&quest;");
-  if (!level2.isEmpty()) key+= "?" + substitute(level2,"?","&quest;");
+  if (!level2.empty()) key+= "?" + substitute(level2,"?","&quest;");
   if (reg::search(key.str(),re)) // skip anonymous stuff
   {
     return;
   }
   QCString key_anchor = key;
-  if (!anchor.isEmpty())
+  if (!anchor.empty())
   {
     key_anchor += anchor;
   }
@@ -171,7 +171,7 @@ static QCString field2URL(const IndexField *f,bool checkReversed)
 {
   QCString result = f->url;
   addHtmlExtensionIfMissing(result);
-  if (!f->anchor.isEmpty() && (!checkReversed || f->reversed))
+  if (!f->anchor.empty() && (!checkReversed || f->reversed))
   {
     result+="#"+f->anchor;
   }
@@ -243,11 +243,10 @@ void HtmlHelpIndex::writeFields(std::ostream &t)
   {
     auto &f = *it;
     QCString level1,level2;
-    int i = f->name.find('?');
-    if (i!=-1)
+    if (size_t i = f->name.find('?'); i!=QCString::npos)
     {
       level1 = f->name.left(i);
-      level2 = f->name.right(f->name.length()-i-1);
+      level2 = f->name.mid(i+1);
     }
     else
     {
@@ -270,8 +269,8 @@ void HtmlHelpIndex::writeFields(std::ostream &t)
       if (it_next!=std::end(m_map))
       {
         auto &fnext = *it_next;
-        int j = fnext->name.find('?');
-        if (j<0) j=0;
+        size_t j = fnext->name.find('?');
+        if (j==QCString::npos) j=0;
         nextLevel1 = fnext->name.left(j);
       }
       if (!(level1 == prevLevel1 || level1 == nextLevel1))
@@ -281,7 +280,7 @@ void HtmlHelpIndex::writeFields(std::ostream &t)
       prevLevel1 = level1;
       // </Antony>
 
-      if (level2.isEmpty())
+      if (level2.empty())
       {
         t << "  <LI><OBJECT type=\"text/sitemap\">";
         t << "<param name=\"Local\" value=\"" << field2URL(f.get(),false);
@@ -308,12 +307,12 @@ void HtmlHelpIndex::writeFields(std::ostream &t)
         }
       }
     }
-    if (!level2Started && !level2.isEmpty())
+    if (!level2Started && !level2.empty())
     { // start new list at level 2
       t << "  <UL>\n";
       level2Started=true;
     }
-    else if (level2Started && level2.isEmpty())
+    else if (level2Started && level2.empty())
     { // end list at level 2
       t << "  </UL>\n";
       level2Started=false;
@@ -413,7 +412,7 @@ void HtmlHelp::Private::createProjectFile()
 
     QCString indexName="index"+Doxygen::htmlFileExtension;
     t << "[OPTIONS]\n";
-    if (!Config_getString(CHM_FILE).isEmpty())
+    if (!Config_getString(CHM_FILE).empty())
     {
       t << "Compiled file=" << Config_getString(CHM_FILE) << "\n";
     }
@@ -555,7 +554,7 @@ void HtmlHelp::addContentsItem(bool isDir,
   for (int i=0; i<p->dc; i++) p->cts << "  ";
   p->cts << "<LI><OBJECT type=\"text/sitemap\">";
   p->cts << "<param name=\"Name\" value=\"" << convertToHtml(p->recoder.recode(name),true) << "\">";
-  if (!file.isEmpty())      // made file optional param - KPW
+  if (!file.empty())      // made file optional param - KPW
   {
     if (file[0]=='!' || file[0]=='^') // special markers for user defined URLs
     {
@@ -571,13 +570,13 @@ void HtmlHelp::addContentsItem(bool isDir,
       addHtmlExtensionIfMissing(currFile);
       QCString currAnc = anchor;
       p->cts << "<param name=\"Local\" value=\"";
-      if (!ref.isEmpty()) p->cts << externalRef("",ref,true);
+      if (!ref.empty()) p->cts << externalRef("",ref,true);
       p->cts << currFile;
-      if (p->prevFile == currFile && p->prevAnc.isEmpty() && currAnc.isEmpty())
+      if (p->prevFile == currFile && p->prevAnc.empty() && currAnc.empty())
       {
         currAnc = "top";
       }
-      if (!currAnc.isEmpty()) p->cts << "#" << currAnc;
+      if (!currAnc.empty()) p->cts << "#" << currAnc;
       p->cts << "\">";
       p->prevFile = currFile;
       p->prevAnc = currAnc;
@@ -602,18 +601,18 @@ void HtmlHelp::addIndexItem(const Definition *context,const MemberDef *md,
 {
   if (context && md)
   {
-    if (sectionAnchor.isEmpty() && !md->hasDocumentation()) return;
+    if (sectionAnchor.empty() && !md->hasDocumentation()) return;
     QCString cfname  = md->getOutputFileBase();
     QCString argStr  = md->argsString();
     QCString level1  = context->name();
     QCString level2  = md->name() + argStr;
-    QCString anchor  = !sectionAnchor.isEmpty() ? sectionAnchor : md->anchor();
+    QCString anchor  = !sectionAnchor.empty() ? sectionAnchor : md->anchor();
     p->index.addItem(level1,level2,cfname,anchor,true,false);
     p->index.addItem(level2,level1,cfname,anchor,true,true);
   }
   else if (context)
   {
-    QCString level1  = !word.isEmpty() ? word : context->name();
+    QCString level1  = !word.empty() ? word : context->name();
     p->index.addItem(level1,QCString(),context->getOutputFileBase(),sectionAnchor,true,false);
   }
 }

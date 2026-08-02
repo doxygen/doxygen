@@ -273,7 +273,7 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
      */
     QCString trGeneratedAutomatically(const QCString &s) override
     { QCString result="Automatiskt skapad av Doxygen";
-      if (!s.isEmpty()) result+=" för "+s;
+      if (!s.empty()) result+=" för "+s;
       result+=" från källkoden.";
       return result;
     }
@@ -472,7 +472,7 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
 
     /*! This is used in HTML as the title of index.html. */
     QCString trDocumentation(const QCString &projName) override
-    { return (!projName.isEmpty()?projName + " " : "") + "Dokumentation"; }
+    { return (!projName.empty()?projName + " " : "") + "Dokumentation"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * index of all groups.
@@ -629,7 +629,7 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
     QCString trGeneratedAt(const QCString &date,const QCString &projName) override
     {
       QCString result="Skapad "+date;
-      if (!projName.isEmpty()) result+=" för "+projName;
+      if (!projName.empty()) result+=" för "+projName;
       result+=" av";
       return result;
     }

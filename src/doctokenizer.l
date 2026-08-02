@@ -108,13 +108,13 @@ static void processSection(yyscan_t yyscanner);
 
 QCString extractPartAfterNewLine(const QCString &text)
 {
-  int nl1 = text.find('\n');
-  int nl2 = text.find("\\ilinebr");
-  if (nl1!=-1 && nl1<nl2)
+  size_t nl1 = text.find('\n');
+  size_t nl2 = text.find("\\ilinebr");
+  if (nl1!=QCString::npos && nl2!=QCString::npos && nl1<nl2)
   {
     return text.mid(nl1+1);
   }
-  if (nl2!=-1)
+  if (nl2!=QCString::npos)
   {
     if (text.at(nl2+8)==' ') nl2++; // skip space after \\ilinebr
     return text.mid(nl2+8);
@@ -343,8 +343,8 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          if (yyextra->insideHtmlLink || yyextra->insidePre) REJECT;
                          lineCount(yytext,yyleng);
                          QCString text(yytext);
-                         uint32_t dashPos = static_cast<uint32_t>(text.findRev('-'));
-                         assert(dashPos!=static_cast<uint32_t>(-1));
+                         size_t dashPos = text.rfind('-');
+                         assert(dashPos!=QCString::npos);
                          yyextra->token.isEnumList = text.at(dashPos+1)=='#';
                          yyextra->token.isCheckedList = false;
                          yyextra->token.id         = -1;
@@ -353,11 +353,11 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                        }
 <St_Para>^{CLISTITEM}  { /* checkbox item */
                          QCString text=yytext;
-                         int dashPos = text.findRev('-');
+                         size_t dashPos = text.rfind('-');
                          yyextra->token.isEnumList = false;
                          yyextra->token.isCheckedList = true;
-                         if (text.find('x') != -1) yyextra->token.id = DocAutoList::Checked_x;
-                         else if (text.find('X') != -1) yyextra->token.id = DocAutoList::Checked_X;
+                         if      (text.find('x') != QCString::npos) yyextra->token.id = DocAutoList::Checked_x;
+                         else if (text.find('X') != QCString::npos) yyextra->token.id = DocAutoList::Checked_X;
                          else yyextra->token.id = DocAutoList::Unchecked;
                          yyextra->token.indent     = computeIndent(yytext,dashPos);
                          return Token::make_TK_LISTITEM();
@@ -413,8 +413,8 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          if (yyextra->insideHtmlLink || yyextra->insidePre) REJECT;
                          lineCount(yytext,yyleng);
                          QCString text=extractPartAfterNewLine(yytext);
-                         uint32_t dashPos = static_cast<uint32_t>(text.findRev('-'));
-                         assert(dashPos!=static_cast<uint32_t>(-1));
+                         size_t dashPos = text.rfind('-');
+                         assert(dashPos!=QCString::npos);
                          yyextra->token.isEnumList = text.at(dashPos+1)=='#';
                          yyextra->token.isCheckedList = false;
                          yyextra->token.id         = -1;
@@ -423,12 +423,12 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                        }
 <St_Para>{BLANK}*\n{CLISTITEM}   { /* checkbox item on next line */
                          QCString text=yytext;
-                         text=text.right(text.length()-text.find('\n')-1);
-                         int dashPos = text.findRev('-');
+                         text=text.mid(text.find('\n')+1);
+                         size_t dashPos = text.rfind('-');
                          yyextra->token.isEnumList = false;
                          yyextra->token.isCheckedList = true;
-                         if (text.find('x') != -1) yyextra->token.id = DocAutoList::Checked_x;
-                         else if (text.find('X') != -1) yyextra->token.id = DocAutoList::Checked_X;
+                         if      (text.find('x') != QCString::npos) yyextra->token.id = DocAutoList::Checked_x;
+                         else if (text.find('X') != QCString::npos) yyextra->token.id = DocAutoList::Checked_X;
                          else yyextra->token.id = DocAutoList::Unchecked;
                          yyextra->token.indent     = computeIndent(text.data(),dashPos);
                          return Token::make_TK_LISTITEM();
@@ -484,15 +484,15 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
 <St_Para>^{ENDLIST}       { /* end list */
                          if (yyextra->insideHtmlLink || yyextra->insidePre) REJECT;
                          lineCount(yytext,yyleng);
-                         size_t dotPos = static_cast<size_t>(QCString(yytext).findRev('.'));
-                         yyextra->token.indent     = computeIndent(yytext,dotPos);
+                         size_t dotPos = QCString(yytext).rfind('.');
+                         yyextra->token.indent = computeIndent(yytext,dotPos);
                          return Token::make_TK_ENDLIST();
                        }
 <St_Para>{BLANK}*(\n|"\\ilinebr"){ENDLIST}      { /* end list on next line */
                          if (yyextra->insideHtmlLink || yyextra->insidePre) REJECT;
                          lineCount(yytext,yyleng);
                          QCString text=extractPartAfterNewLine(yytext);
-                         size_t dotPos = static_cast<size_t>(text.findRev('.'));
+                         size_t dotPos = text.rfind('.');
                          yyextra->token.indent = computeIndent(text.data(),dotPos);
                          return Token::make_TK_ENDLIST();
                        }
@@ -540,8 +540,8 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
 <St_Para>{PARAMIO}     { /* param [in,out] command */
                          yyextra->token.name = "param";
                          QCString s(yytext);
-                         bool isIn  = s.find("in")!=-1;
-                         bool isOut = s.find("out")!=-1;
+                         bool isIn  = s.find("in") !=QCString::npos;
+                         bool isOut = s.find("out")!=QCString::npos;
                          if (isIn)
                          {
                            if (isOut)
@@ -598,11 +598,11 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                        }
 <St_Para>{RCSID} { /* RCS tag */
                          QCString tagName(yytext+1);
-                         int index=tagName.find(':');
-                         if (index<0) index=0; // should never happen
+                         size_t index=tagName.find(':');
+                         if (index==QCString::npos) index=0; // should never happen
                          yyextra->token.name = tagName.left(index);
-                         int text_begin = index+2;
-                         int text_end = static_cast<int>(tagName.length())-1;
+                         size_t text_begin = index+2;
+                         size_t text_end = tagName.length()-1;
                          if (tagName[text_begin-1]==':') /* check for Subversion fixed-length keyword */
                          {
                            ++text_begin;
@@ -671,7 +671,7 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
 <St_Para,St_Text>[\-+0-9] |
 <St_Para,St_Text>{WORD1} |
 <St_Para,St_Text>{WORD2} { /* function call */
-                         if (QCString(yytext).find("\\ilinebr")!=-1) REJECT; // see issue #8311
+                         if (QCString(yytext).find("\\ilinebr")!=QCString::npos) REJECT; // see issue #8311
                          lineCount(yytext,yyleng);
                          if (yytext[0]=='%') // strip % if present
                            yyextra->token.name = &yytext[1];
@@ -755,13 +755,13 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                        }
 <St_CodeOpt>{BLANK}*"{"(".")?{CODEID}"}" {
                          yyextra->token.name = yytext;
-                         int i=yyextra->token.name.find('{'); /* } to keep vi happy */
+                         size_t i=yyextra->token.name.find('{'); /* } to keep vi happy */
                          yyextra->token.name = yyextra->token.name.mid(i+1,yyextra->token.name.length()-i-2);
                          BEGIN(St_Code);
                        }
 <St_iCodeOpt>{BLANK}*"{"(".")?{CODEID}"}" {
                          yyextra->token.name = yytext;
-                         int i=yyextra->token.name.find('{'); /* } to keep vi happy */
+                         size_t i=yyextra->token.name.find('{'); /* } to keep vi happy */
                          yyextra->token.name = yyextra->token.name.mid(i+1,yyextra->token.name.length()-i-2);
                          BEGIN(St_iCode);
                        }
@@ -1033,7 +1033,7 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
 <St_TitleN>[\-+0-9]    |
 <St_TitleN>{WORD1}     |
 <St_TitleN>{WORD2}     { /* word */
-                         if (QCString(yytext).find("\\ilinebr")!=-1) REJECT; // see issue #8311
+                         if (QCString(yytext).find("\\ilinebr")!=QCString::npos) REJECT; // see issue #8311
                          lineCount(yytext,yyleng);
                          if (yytext[0]=='%') // strip % if present
                            yyextra->token.name = &yytext[1];
@@ -1074,8 +1074,8 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                        }
 <St_TitleA>{BLANK}*{ID}{BLANK}*"="{BLANK}* { // title attribute
                          yyextra->token.name = yytext;
-                         int pos = yyextra->token.name.find('=');
-                         if (pos<0) pos=0; // should never happen
+                         size_t pos = yyextra->token.name.find('=');
+                         if (pos==QCString::npos) pos=0; // should never happen
                          yyextra->token.name = yyextra->token.name.left(pos).stripWhiteSpace();
                          BEGIN(St_TitleV);
                        }
@@ -1271,10 +1271,10 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
 <St_Param>({PHPTYPE}{BLANK}*("["{BLANK}*"]")*{BLANK}*"|"{BLANK}*)*{PHPTYPE}{BLANK}*("["{BLANK}*"]")*{WS}+("&")?"$"{LABELID} {
                          lineCount(yytext,yyleng);
                          QCString params(yytext);
-                         int j = params.find('&');
-                         int i = params.find('$');
-                         if (i<0) i=0; // should never happen
-                         if (j<i && j>=0) i=j;
+                         size_t j = params.find('&');
+                         size_t i = params.find('$');
+                         if (i==QCString::npos) i=0; // should never happen
+                         if (j!=QCString::npos && j<i) i=j;
                          QCString types = params.left(i).stripWhiteSpace();
                          yyextra->token.name = types+"#"+params.mid(i);
                          return Token::make_TK_WORD();
@@ -1447,14 +1447,14 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
 <St_Sections>"<"{CAPTION}({WS}+{ATTRIB})*">" {
                                       lineCount(yytext,yyleng);
                                       QCString tag(yytext);
-                                      int s=tag.find("id=");
-                                      if (s!=-1) // command has id attribute
+                                      size_t s=tag.find("id=");
+                                      if (s!=QCString::npos) // command has id attribute
                                       {
                                         char c=tag[s+3];
                                         if (c=='\'' || c=='"') // valid start
                                         {
-                                          int e=tag.find(c,s+4);
-                                          if (e!=-1) // found matching end
+                                          size_t e=tag.find(c,s+4);
+                                          if (e!=QCString::npos) // found matching end
                                           {
                                             yyextra->secType = SectionType::Table;
                                             yyextra->secLabel=tag.mid(s+4,e-s-4); // extract id
@@ -1845,7 +1845,7 @@ void DocTokenizer::findSections(const QCString &input,const Definition *d,
   yyscan_t yyscanner = p->yyscanner;
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
 
-  if (input.isEmpty()) return;
+  if (input.empty()) return;
   DebugLex debugLex(Debug::Lex_doctokenizer, __FILE__, qPrint(fileName));
   yyextra->inputString = input.data();
   //printf("parsing --->'%s'<---\n",input);

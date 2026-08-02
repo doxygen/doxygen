@@ -29,7 +29,7 @@
 std::tm getCurrentDateTime()
 {
   QCString sourceDateEpoch = Portable::getenv("SOURCE_DATE_EPOCH");
-  if (!sourceDateEpoch.isEmpty()) // see https://reproducible-builds.org/specs/source-date-epoch/
+  if (!sourceDateEpoch.empty()) // see https://reproducible-builds.org/specs/source-date-epoch/
   {
     bool ok = false;
     uint64_t epoch = sourceDateEpoch.toUInt64(&ok);
@@ -134,7 +134,7 @@ QCString dateTimeFromString(const QCString &spec,std::tm &dt,int &format)
 {
   // for an empty spec field return the current date and time
   dt = getCurrentDateTime();
-  if (spec.isEmpty())
+  if (spec.empty())
   {
     format = SF_Date | SF_Time | SF_Seconds;
     return QCString();

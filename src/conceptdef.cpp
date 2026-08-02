@@ -164,9 +164,9 @@ std::unique_ptr<ConceptDef> createConceptDefAlias(const Definition *newScope,con
 ConceptDefImpl::ConceptDefImpl(const QCString &fileName,int startLine,int startColumn,
     const QCString &name,const QCString &tagRef,const QCString &tagFile) : DefinitionMixin(fileName,startLine,startColumn,name)
 {
-  if (!tagFile.isEmpty())
+  if (!tagFile.empty())
   {
-    if (!tagRef.isEmpty())
+    if (!tagRef.empty())
     {
       m_fileName = stripExtension(tagFile);
     }
@@ -200,8 +200,8 @@ bool ConceptDefImpl::hasDetailedDescription() const
 {
   bool repeatBrief = Config_getBool(REPEAT_BRIEF);
   bool sourceBrowser = Config_getBool(SOURCE_BROWSER);
-  return ((!briefDescription().isEmpty() && repeatBrief) ||
-          !documentation().isEmpty() ||
+  return ((!briefDescription().empty() && repeatBrief) ||
+          !documentation().empty() ||
           (sourceBrowser && getStartBodyLine()!=-1 && getBodyDef())) ||
           hasRequirementRefs();
 }
@@ -242,7 +242,7 @@ bool ConceptDefImpl::isLinkable() const
 void ConceptDefImpl::setIncludeFile(FileDef *fd,const QCString &incName,bool local,bool force)
 {
   if (!m_incInfo) m_incInfo = std::make_unique<IncludeInfo>();
-  if ((!incName.isEmpty() && m_incInfo->includeName.isEmpty()) ||
+  if ((!incName.empty() && m_incInfo->includeName.empty()) ||
       (fd!=nullptr && m_incInfo->fileDef==nullptr)
      )
   {
@@ -250,7 +250,7 @@ void ConceptDefImpl::setIncludeFile(FileDef *fd,const QCString &incName,bool loc
     m_incInfo->includeName = incName;
     m_incInfo->kind        = local ? IncludeKind::IncludeLocal : IncludeKind::IncludeSystem;
   }
-  if (force && !incName.isEmpty())
+  if (force && !incName.empty())
   {
     m_incInfo->includeName = incName;
     m_incInfo->kind        = local ? IncludeKind::IncludeLocal : IncludeKind::IncludeSystem;
@@ -339,7 +339,7 @@ void ConceptDefImpl::writeTagFile(TextStream &tagFile)
   addHtmlExtensionIfMissing(fn);
   tagFile << "    <filename>" << convertToXML(fn) << "</filename>\n";
   QCString idStr = id();
-  if (!idStr.isEmpty())
+  if (!idStr.empty())
   {
     tagFile << "    <clangid>" << convertToXML(idStr) << "</clangid>\n";
   }
@@ -362,7 +362,7 @@ void ConceptDefImpl::writeBriefDescription(OutputList &ol) const
                                      .setIndexWords(true)
                                      .setSingleLine(true))
                 };
-    if (!ast->isEmpty())
+    if (!ast->empty())
     {
       ol.startParagraph();
       ol.pushGeneratorState();
@@ -393,12 +393,12 @@ void ConceptDefImpl::writeIncludeFiles(OutputList &ol) const
 {
   if (m_incInfo)
   {
-    QCString nm=m_incInfo->includeName.isEmpty() ?
+    QCString nm=m_incInfo->includeName.empty() ?
       (m_incInfo->fileDef ?
        m_incInfo->fileDef->docName() : QCString()
       ) :
       m_incInfo->includeName;
-    if (!nm.isEmpty())
+    if (!nm.empty())
     {
       ol.startParagraph();
       ol.startTypewriter();
@@ -434,7 +434,7 @@ static QCString templateSpec(const ArgumentList &al)
   {
     if (!first) t << ", ";
     t << a.type;
-    if (!a.name.isEmpty())
+    if (!a.name.empty())
     {
       t << " " << a.name;
     }
@@ -524,7 +524,7 @@ void ConceptDefImpl::writeDetailedDescription(OutputList &ol,const QCString &tit
 
     ol.startTextBlock();
     // repeat brief description
-    if (!briefDescription().isEmpty() && repeatBrief)
+    if (!briefDescription().empty() && repeatBrief)
     {
       ol.generateDoc(briefFile(),
                      briefLine(),
@@ -533,8 +533,8 @@ void ConceptDefImpl::writeDetailedDescription(OutputList &ol,const QCString &tit
                      briefDescription(),
                      DocOptions());
     }
-    if (!briefDescription().isEmpty() && repeatBrief &&
-        !documentation().isEmpty())
+    if (!briefDescription().empty() && repeatBrief &&
+        !documentation().empty())
     {
       ol.pushGeneratorState();
       ol.disable(OutputType::Html);
@@ -543,7 +543,7 @@ void ConceptDefImpl::writeDetailedDescription(OutputList &ol,const QCString &tit
     }
 
     // write documentation
-    if (!documentation().isEmpty())
+    if (!documentation().empty())
     {
       ol.generateDoc(docFile(),
                      docLine(),
@@ -712,7 +712,7 @@ void ConceptDefImpl::writeDeclarationLink(OutputList &ol,bool &found,const QCStr
     if (!found) // first concept
     {
       ol.startMemberHeader("concepts");
-      if (!header.isEmpty())
+      if (!header.empty())
       {
         ol.parseText(header);
       }
@@ -727,7 +727,7 @@ void ConceptDefImpl::writeDeclarationLink(OutputList &ol,bool &found,const QCStr
     ol.startMemberDeclaration();
     QCString cname = displayName(!localNames);
     QCString anc=anchor();
-    if (anc.isEmpty()) anc=cname; else anc.prepend(cname+"_");
+    if (anc.empty()) anc=cname; else anc.prepend(cname+"_");
     ol.startMemberItem(anc,OutputGenerator::MemberItemType::Normal);
     ol.writeString("concept ");
     ol.insertMemberAlign();
@@ -747,7 +747,7 @@ void ConceptDefImpl::writeDeclarationLink(OutputList &ol,bool &found,const QCStr
     }
     ol.endMemberItem(OutputGenerator::MemberItemType::Normal);
     // add the brief description if available
-    if (!briefDescription().isEmpty() && Config_getBool(BRIEF_MEMBER_DESC))
+    if (!briefDescription().empty() && Config_getBool(BRIEF_MEMBER_DESC))
     {
       auto parser { createDocParser() };
       auto ast    { validatingParseDoc(*parser.get(),
@@ -759,7 +759,7 @@ void ConceptDefImpl::writeDeclarationLink(OutputList &ol,bool &found,const QCStr
                                        DocOptions()
                                        .setSingleLine(true))
                   };
-      if (!ast->isEmpty())
+      if (!ast->empty())
       {
         ol.startMemberDescription(anchor());
         ol.writeDoc(ast.get(),this,nullptr);
@@ -870,7 +870,7 @@ ConceptDefMutable *toConceptDefMutable(Definition *d)
 
 ConceptDef *getConcept(const QCString &n)
 {
-  if (n.isEmpty()) return nullptr;
+  if (n.empty()) return nullptr;
   return Doxygen::conceptLinkedMap->find(n);
 }
 

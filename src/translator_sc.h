@@ -155,7 +155,7 @@ class TranslatorSerbianCyrillic : public TranslatorAdapter_1_6_0
      */
     QCString trGeneratedAutomatically(const QCString &s) override
     { QCString result="Аутоматски направљено помоћу Doxygen-а";
-      if (!s.isEmpty()) result+=" за "+s;
+      if (!s.empty()) result+=" за "+s;
       result+=" из изворног кода.";
       return result;
     }
@@ -353,7 +353,7 @@ class TranslatorSerbianCyrillic : public TranslatorAdapter_1_6_0
 
     /*! This is used in HTML as the title of index.html. */
     QCString trDocumentation(const QCString &projName) override
-    { return (!projName.isEmpty()?projName + " " : "") + "Документација"; }
+    { return (!projName.empty()?projName + " " : "") + "Документација"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * index of all groups.
@@ -510,7 +510,7 @@ class TranslatorSerbianCyrillic : public TranslatorAdapter_1_6_0
     QCString trGeneratedAt(const QCString &date,const QCString &projName) override
     {
       QCString result="Направљено "+date;
-      if (!projName.isEmpty()) result+=" за "+projName;
+      if (!projName.empty()) result+=" за "+projName;
       result+=" помоћу";
       return result;
     }

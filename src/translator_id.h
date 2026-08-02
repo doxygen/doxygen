@@ -135,7 +135,7 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
      */
     QCString trGeneratedAutomatically(const QCString &s) override
     { QCString result="Dibangkitkan secara otomatis oleh Doxygen";
-      if (!s.isEmpty()) result+=" untuk "+s;
+      if (!s.empty()) result+=" untuk "+s;
       result+=" dari kode sumber.";
       return result;
     }
@@ -332,7 +332,7 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
 
     /*! This is used in HTML as the title of index.html. */
     QCString trDocumentation(const QCString &projName) override
-    { return (!projName.isEmpty()?projName + " " : "") + "Dokumentasi"; }
+    { return (!projName.empty()?projName + " " : "") + "Dokumentasi"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * index of all groups.
@@ -489,7 +489,7 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
     QCString trGeneratedAt(const QCString &date,const QCString &projName) override
     {
       QCString result="Dibangkitkan pada tanggal "+date;
-      if (!projName.isEmpty()) result+=" untuk "+projName;
+      if (!projName.empty()) result+=" untuk "+projName;
       result+=" oleh";
       return result;
     }

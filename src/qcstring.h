@@ -157,8 +157,8 @@ class QCString
 
     QCString &operator=( const std::string &s) { m_rep = s; return *this; }
 
-    /** Returns true iff the string is empty */
-    bool isEmpty() const { return m_rep.empty(); }
+    /** Returns true iff the string is empty (std::string compatible alias for isEmpty()) */
+    bool empty() const { return m_rep.empty(); }
 
     /** Returns the length of the string, not counting the 0-terminator. Equivalent to size(). */
     size_t length() const { return m_rep.size(); }
@@ -169,18 +169,122 @@ class QCString
     /** Returns a pointer to the contents of the string in the form of a 0-terminated C string */
     const char *data() const { return m_rep.c_str(); }
 
+    /** Returns a pointer to the contents of the string in the form of a 0-terminated C string */
+    const char *c_str() const { return m_rep.c_str(); }
+
     std::string_view view() const { return m_rep; }
 
     /** Returns a writable pointer to the data.
      */
     char *rawData() { return &m_rep[0]; }
 
+    using value_type             = std::string::value_type;
+    using size_type               = std::string::size_type;
+    using reference               = std::string::reference;
+    using const_reference         = std::string::const_reference;
+    using iterator                = std::string::iterator;
+    using const_iterator          = std::string::const_iterator;
+    using reverse_iterator        = std::string::reverse_iterator;
+    using const_reverse_iterator  = std::string::const_reverse_iterator;
+
+    /** value used to indicate 'not found' or 'to the end of the string', matching std::string::npos */
+    static constexpr size_t npos = std::string::npos;
+
+    iterator begin() { return m_rep.begin(); }
+    const_iterator begin() const { return m_rep.begin(); }
+    const_iterator cbegin() const { return m_rep.cbegin(); }
+    iterator end() { return m_rep.end(); }
+    const_iterator end() const { return m_rep.end(); }
+    const_iterator cend() const { return m_rep.cend(); }
+
+    reverse_iterator rbegin() { return m_rep.rbegin(); }
+    const_reverse_iterator rbegin() const { return m_rep.rbegin(); }
+    const_reverse_iterator crbegin() const { return m_rep.crbegin(); }
+    reverse_iterator rend() { return m_rep.rend(); }
+    const_reverse_iterator rend() const { return m_rep.rend(); }
+    const_reverse_iterator crend() const { return m_rep.crend(); }
+
+    /** Returns a reference to the first character. Undefined behavior if the string is empty. */
+    char &front() { return m_rep.front(); }
+    const char &front() const { return m_rep.front(); }
+
+    /** Returns a reference to the last character. Undefined behavior if the string is empty. */
+    char &back() { return m_rep.back(); }
+    const char &back() const { return m_rep.back(); }
+
+    void push_back( char c ) { m_rep.push_back(c); }
+    void pop_back() { m_rep.pop_back(); }
+
+    size_t capacity() const { return m_rep.capacity(); }
+    size_t max_size() const { return m_rep.max_size(); }
+    void shrink_to_fit() { m_rep.shrink_to_fit(); }
+
     void resize( size_t newlen) { m_rep.resize(newlen); }
+
+    /** Resizes the string to \a newlen characters, filling any new characters with \a c */
+    void resize( size_t newlen, char c ) { m_rep.resize(newlen,c); }
 
     void clear() { m_rep.clear(); }
 
     /** Reserve space for \a size bytes without changing the string contents */
     void reserve( size_t size ) { m_rep.reserve(size); }
+
+    /** Swaps the contents of this string with \a other */
+    void swap( QCString &other ) { m_rep.swap(other.m_rep); }
+
+    /** Returns a substring of length \a count starting at \a pos */
+    QCString substr( size_t pos=0, size_t count=npos ) const { return QCString(m_rep.substr(pos,count)); }
+
+    /** Copies (up to) \a count characters into \a dest, starting at \a pos. Returns the number of characters copied. */
+    size_t copy( char *dest, size_t count, size_t pos=0 ) const { return m_rep.copy(dest,count,pos); }
+
+    int compare( const QCString &s ) const { return m_rep.compare(s.str()); }
+    int compare( const char *s ) const { return m_rep.compare(s?s:""); }
+    int compare( const std::string &s ) const { return m_rep.compare(s); }
+
+    QCString &erase( size_t index=0, size_t count=npos )
+    {
+      m_rep.erase(index,count);
+      return *this;
+    }
+
+    QCString &assign( const char *s ) { return operator=(s); }
+    QCString &assign( const QCString &s ) { m_rep = s.str(); return *this; }
+    QCString &assign( const std::string &s ) { return operator=(s); }
+    QCString &assign( std::string_view s ) { return operator=(s); }
+
+    size_t find( char c, size_t pos=0 ) const { return m_rep.find(c,pos); }
+    size_t find( const char *s, size_t pos=0 ) const { return s?m_rep.find(s,pos):npos; }
+    size_t find( const QCString &s, size_t pos=0 ) const { return m_rep.find(s.str(),pos); }
+    size_t find( const std::string &s, size_t pos=0 ) const { return m_rep.find(s,pos); }
+
+    size_t rfind( char c, size_t pos=npos ) const { return m_rep.rfind(c,pos); }
+    size_t rfind( const char *s, size_t pos=npos ) const { return s?m_rep.rfind(s,pos):npos; }
+    size_t rfind( const QCString &s, size_t pos=npos ) const { return m_rep.rfind(s.str(),pos); }
+    size_t rfind( const std::string &s, size_t pos=npos ) const { return m_rep.rfind(s,pos); }
+
+    size_t rfind_insensitive( char c, size_t pos=npos) const;
+    size_t rfind_insensitive( const char *str, size_t pos=npos) const;
+
+    size_t find_first_of( char c, size_t pos=0 ) const { return m_rep.find_first_of(c,pos); }
+    size_t find_first_of( const char *s, size_t pos=0 ) const { return s?m_rep.find_first_of(s,pos):npos; }
+    size_t find_first_of( const QCString &s, size_t pos=0 ) const { return m_rep.find_first_of(s.str(),pos); }
+    size_t find_first_of( const std::string &s, size_t pos=0 ) const { return m_rep.find_first_of(s,pos); }
+
+    size_t find_last_of( char c, size_t pos=npos ) const { return m_rep.find_last_of(c,pos); }
+    size_t find_last_of( const char *s, size_t pos=npos ) const { return s?m_rep.find_last_of(s,pos):npos; }
+    size_t find_last_of( const QCString &s, size_t pos=npos ) const { return m_rep.find_last_of(s.str(),pos); }
+    size_t find_last_of( const std::string &s, size_t pos=npos ) const { return m_rep.find_last_of(s,pos); }
+
+    size_t find_first_not_of( char c, size_t pos=0 ) const { return m_rep.find_first_not_of(c,pos); }
+    size_t find_first_not_of( const char *s, size_t pos=0 ) const { return s?m_rep.find_first_not_of(s,pos):npos; }
+    size_t find_first_not_of( const QCString &s, size_t pos=0 ) const { return m_rep.find_first_not_of(s.str(),pos); }
+    size_t find_first_not_of( const std::string &s, size_t pos=0 ) const { return m_rep.find_first_not_of(s,pos); }
+
+    size_t find_last_not_of( char c, size_t pos=npos ) const { return m_rep.find_last_not_of(c,pos); }
+    size_t find_last_not_of( const char *s, size_t pos=npos ) const { return s?m_rep.find_last_not_of(s,pos):npos; }
+    size_t find_last_not_of( const QCString &s, size_t pos=npos ) const { return m_rep.find_last_not_of(s.str(),pos); }
+    size_t find_last_not_of( const std::string &s, size_t pos=npos ) const { return m_rep.find_last_not_of(s,pos); }
 
     /** Fills a string with a predefined character
      *  @param[in] c the character used to fill the string with.
@@ -197,20 +301,12 @@ class QCString
 
     QCString &sprintf( const char *format, ... );
 
-    int	find( char c, int index=0, bool cs=true ) const;
-    int	find( const char *str, int index=0, bool cs=true ) const;
-    int	find( const std::string &str, int index=0, bool cs=true ) const;
-    int find( const QCString &str, int index=0, bool cs=true ) const;
-
-    int	findRev( char c, int index=-1, bool cs=true) const;
-    int	findRev( const char *str, int index=-1, bool cs=true) const;
-
     int	contains( char c, bool cs=true ) const;
     int	contains( const char *str, bool cs=true ) const;
 
     bool stripPrefix(const QCString &prefix)
     {
-      if (prefix.isEmpty() || m_rep.empty()) return false;
+      if (prefix.empty() || m_rep.empty()) return false;
       if (m_rep.rfind(prefix.data(),0)==0) // string starts with prefix
       {
         m_rep.erase(0,prefix.length());
@@ -236,10 +332,10 @@ class QCString
              *this;
     }
 
-    QCString mid( size_t index, size_t len=static_cast<size_t>(-1) ) const
+    QCString mid( size_t index, size_t len=npos ) const
     {
       size_t slen = m_rep.size();
-      if (len==static_cast<uint32_t>(-1)) len = slen-index;
+      if (len==npos) len = slen-index;
       return m_rep.empty() || index>slen || len==0 ? QCString() :
              QCString(m_rep.substr(index,len));
     }
@@ -515,7 +611,7 @@ class QCString
 
     bool startsWith( const QCString &s ) const
     {
-      if (m_rep.empty() || s.isEmpty()) return s.isEmpty();
+      if (m_rep.empty() || s.empty()) return s.empty();
       return m_rep.rfind(s.str(),0)==0; // looking "backward" starting and ending at index 0
     }
 
@@ -689,7 +785,7 @@ inline const char *qPrint(const char *s)
 
 inline const char *qPrint(const QCString &s)
 {
-  if (!s.isEmpty()) return s.data(); else return "";
+  if (!s.empty()) return s.data(); else return "";
 }
 
 inline const char *qPrint(const std::string &s)
@@ -784,6 +880,22 @@ inline std::ostream& operator<<(std::ostream& os, const QCString& s)
 {
     os << s.str();
     return os;
+}
+
+inline void swap(QCString &s1, QCString &s2)
+{
+  s1.swap(s2);
+}
+
+namespace std
+{
+  template<> struct hash<QCString>
+  {
+    size_t operator()(const QCString &s) const
+    {
+      return hash<std::string>{}(s.str());
+    }
+  };
 }
 
 #endif // QCSTRING_H

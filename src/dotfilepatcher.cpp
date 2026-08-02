@@ -122,16 +122,16 @@ static QCString replaceRef(const QCString &buf,const QCString &relPath,
   QCString href = "href";
   //bool isXLink=false;
   int len = 6;
-  int indexS = buf.find("href=\""), indexE = 0;
-  bool targetAlreadySet = buf.find("target=")!=-1;
-  if (indexS>5 && buf.find("xlink:href=\"")!=-1) // XLink href (for SVG)
+  size_t indexS = buf.find("href=\""), indexE = 0;
+  bool targetAlreadySet = buf.find("target=")!=QCString::npos;
+  if (indexS>5 && buf.find("xlink:href=\"")!=QCString::npos) // XLink href (for SVG)
   {
     indexS-=6;
     len+=6;
     href.prepend("xlink:");
     //isXLink=true;
   }
-  if (indexS>=0 && (indexE=buf.find('"',indexS+len))!=-1)
+  if (indexS!=QCString::npos && (indexE=buf.find('"',indexS+len))!=QCString::npos)
   {
     QCString link = buf.mid(indexS+len,indexE-indexS-len);
     QCString result;
@@ -146,13 +146,13 @@ static QCString replaceRef(const QCString &buf,const QCString &relPath,
         auto dfAstImpl = dynamic_cast<const DocNodeAST*>(dfAst.get());
         const DocRef *df = std::get_if<DocRef>(&dfAstImpl->root);
         result+=externalRef(relPath,df->ref(),true);
-        if (!df->file().isEmpty())
+        if (!df->file().empty())
         {
           QCString fn = df->file();
           addHtmlExtensionIfMissing(fn);
           result += fn;
         }
-        if (!df->anchor().isEmpty())
+        if (!df->anchor().empty())
         {
           result += "#" + df->anchor();
         }
@@ -165,15 +165,15 @@ static QCString replaceRef(const QCString &buf,const QCString &relPath,
     }
     else // ref$url (external ref via tag file), or $url (local ref)
     {
-      int marker = link.find('$');
-      if (marker!=-1)
+      size_t marker = link.find('$');
+      if (marker!=QCString::npos)
       {
         QCString ref = link.left(marker);
         QCString url = link.mid(marker+1);
-        if (!ref.isEmpty())
+        if (!ref.empty())
         {
           result = externalLinkTarget(true);
-          if (!result.isEmpty())targetAlreadySet=true;
+          if (!result.empty())targetAlreadySet=true;
         }
         result+= href+"=\"";
         result+=externalRef(relPath,ref,true);
@@ -184,7 +184,7 @@ static QCString replaceRef(const QCString &buf,const QCString &relPath,
         result = href+"=\"" + link + "\"";
       }
     }
-    if (!target.isEmpty() && !targetAlreadySet)
+    if (!target.empty() && !targetAlreadySet)
     {
       result+=" target=\""+target+"\"";
     }
@@ -232,17 +232,16 @@ bool DotFilePatcher::convertMapFile(TextStream &t,const QCString &mapName,
       QCString replBuf = replaceRef(buf,relPath,urlOnly,context);
       // in dot version 7.0.2 the alt attribute is, incorrectly, removed.
       // see https://gitlab.com/graphviz/graphviz/-/issues/265
-      int indexA = replBuf.find("alt=");
-      if (indexA == -1)
+      if (size_t indexA = replBuf.find("alt="); indexA==QCString::npos)
       {
-        replBuf = replBuf.left(5) + " alt=\"\"" + replBuf.right(replBuf.length() - 5);
+        replBuf = replBuf.left(5) + " alt=\"\"" + replBuf.mid(5);
       }
 
       // strip id="..." from replBuf since the id's are not needed and not unique.
-      int indexS = replBuf.find("id=\""), indexE = 0;
-      if (indexS>0 && (indexE=replBuf.find('"',indexS+4))!=-1)
+      if (size_t indexS = replBuf.find("id=\""), indexE = 0;
+          indexS!=QCString::npos && indexS>0 && (indexE=replBuf.find('"',indexS+4))!=QCString::npos)
       {
-        t << replBuf.left(indexS-1) << replBuf.right(replBuf.length() - indexE - 1);
+        t << replBuf.left(indexS-1) << replBuf.mid(indexE+1);
       }
       else
       {
@@ -359,7 +358,7 @@ bool DotFilePatcher::run() const
     {
       if (interactiveSVG)
       {
-        if (line.find("<svg")!=-1 && !replacedHeader)
+        if (line.find("<svg")!=QCString::npos && !replacedHeader)
         {
           int count = sscanf(line.data(),"<svg width=\"%dpt\" height=\"%dpt\"",&width,&height);
           if (count != 2) count = sscanf(line.data(),"<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" width=\"%d\" height=\"%d\"",&width,&height);
@@ -367,7 +366,7 @@ bool DotFilePatcher::run() const
           useNagivation = count==2 && (width>500 || height>450);
           insideHeader = count==2;
         }
-        else if (insideHeader && !replacedHeader && line.find("<g id=\"graph")!=-1)
+        else if (insideHeader && !replacedHeader && line.find("<g id=\"graph")!=QCString::npos)
         {
           if (useNagivation)
           {
@@ -417,7 +416,7 @@ bool DotFilePatcher::run() const
         t << replaceRef(line,map.relPath,map.urlOnly,map.context,"_top");
       }
     }
-    else if (line.find("SVG")!=-1 && (i=findIndex(line.str(),reSVG))!=-1)
+    else if (line.find("SVG")!=QCString::npos && (i=findIndex(line.str(),reSVG))!=-1)
     {
       //printf("Found marker at %d\n",i);
       int mapId=-1;
@@ -425,7 +424,10 @@ bool DotFilePatcher::run() const
       int n = sscanf(line.data()+i+1,"!-- SVG %d",&mapId);
       if (n==1 && mapId>=0 && mapId<static_cast<int>(m_maps.size()))
       {
-        int e = std::max(line.find("--]"),line.find("-->"));
+        size_t e0 = line.find("--]");
+        size_t e1 = line.find("-->");
+        size_t e = e0!=QCString::npos && e1!=QCString::npos ? std::max(e0,e1) :
+                   e0!=QCString::npos ? e0 : e1;
         const Map &map = m_maps.at(mapId);
         //printf("DotFilePatcher::writeSVGFigure: file=%s zoomable=%d\n",
         //  qPrint(m_patchFile),map.zoomable);
@@ -433,7 +435,7 @@ bool DotFilePatcher::run() const
         {
           err("Problem extracting size from SVG file {}\n",map.mapFile);
         }
-        if (e!=-1) t << line.mid(e+3);
+        if (e!=QCString::npos) t << line.mid(e+3);
       }
       else // error invalid map id!
       {
@@ -441,7 +443,7 @@ bool DotFilePatcher::run() const
         t << line.mid(i);
       }
     }
-    else if (line.find("MAP")!=-1 && (i=findIndex(line.str(),reMAP))!=-1)
+    else if (line.find("MAP")!=QCString::npos && (i=findIndex(line.str(),reMAP))!=-1)
     {
       int mapId=-1;
       t << line.left(i);
@@ -466,7 +468,7 @@ bool DotFilePatcher::run() const
         t << line.mid(i);
       }
     }
-    else if (line.find("FIG")!=-1 && (i=findIndex(line.str(),reFIG))!=-1)
+    else if (line.find("FIG")!=QCString::npos && (i=findIndex(line.str(),reFIG))!=-1)
     {
       int mapId=-1;
       int n = sscanf(line.data()+i+2,"FIG %d",&mapId);

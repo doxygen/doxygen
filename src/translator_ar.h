@@ -144,7 +144,7 @@ class TranslatorArabic : public TranslatorAdapter_1_4_6
      */
     QCString trGeneratedAutomatically(const QCString &s) override
     { QCString result="تم تكوينها آليا بواسطة Doxygen";
-      if (!s.isEmpty()) result+=" لـ "+s;
+      if (!s.empty()) result+=" لـ "+s;
       result+=" من ملفات المصدر.";
       return result;
     }
@@ -338,7 +338,7 @@ class TranslatorArabic : public TranslatorAdapter_1_4_6
 
     /*! This is used in HTML as the title of index.html. */
     QCString trDocumentation(const QCString &projName) override
-    { return (!projName.isEmpty()?projName + " " : "") + "التوثيق"; }
+    { return (!projName.empty()?projName + " " : "") + "التوثيق"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * index of all groups.
@@ -501,7 +501,7 @@ class TranslatorArabic : public TranslatorAdapter_1_4_6
     QCString trGeneratedAt(const QCString &date,const QCString &projName) override
     {
       QCString result="Generated on "+date;
-      if (!projName.isEmpty()) result+=" for "+projName;
+      if (!projName.empty()) result+=" for "+projName;
       result+=" by";
       return result;
     }

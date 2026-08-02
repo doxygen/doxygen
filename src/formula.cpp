@@ -205,7 +205,7 @@ void FormulaManager::createLatexFile(const QCString &fileName,Format format,Mode
     writeLatexSpecialFormulaChars(t);
 
     QCString macroFile = Config_getString(FORMULA_MACROFILE);
-    if (!macroFile.isEmpty())
+    if (!macroFile.empty())
     {
       FileInfo fi(macroFile.str());
       QCString stripMacroFile = fi.fileName();
@@ -255,8 +255,9 @@ static bool createDVIFile(const QCString &fileName)
     }
     // check the log file if we need to run latex again to resolve references
     QCString logFile = fileToString(fileName+".log");
-    if (logFile.isEmpty() ||
-        (logFile.find("Rerun to get cross-references right")==-1 && logFile.find("Rerun LaTeX")==-1))
+    if (logFile.empty() ||
+        (logFile.find("Rerun to get cross-references right")==QCString::npos &&
+         logFile.find("Rerun LaTeX")==QCString::npos))
     {
       break;
     }
@@ -303,8 +304,7 @@ static bool extractBoundingBox(const QCString &formBase,
   if (fi.exists())
   {
     QCString eps = fileToString(formBase+"_tmp.epsi");
-    int i = eps.find("%%BoundingBox:");
-    if (i!=-1)
+    if (size_t i = eps.find("%%BoundingBox:"); i!=QCString::npos)
     {
       sscanf(eps.data()+i,"%%%%BoundingBox:%d %d %d %d",x1,y1,x2,y2);
     }
@@ -313,8 +313,7 @@ static bool extractBoundingBox(const QCString &formBase,
       err("Couldn't extract bounding box from {}_tmp.epsi\n",formBase);
       return false;
     }
-    i = eps.find("%%HiResBoundingBox:");
-    if (i!=-1)
+    if (size_t i = eps.find("%%HiResBoundingBox:"); i!=QCString::npos)
     {
       sscanf(eps.data()+i,"%%%%HiResBoundingBox:%lf %lf %lf %lf",x1hi,y1hi,x2hi,y2hi);
     }
@@ -644,7 +643,7 @@ void FormulaManager::generateImages(const QCString &path,bool toIndex,Format for
 
   QCString macroFile = Config_getString(FORMULA_MACROFILE);
   QCString stripMacroFile;
-  if (!macroFile.isEmpty())
+  if (!macroFile.empty())
   {
     FileInfo fi(macroFile.str());
     macroFile=fi.absFilePath();
@@ -655,7 +654,7 @@ void FormulaManager::generateImages(const QCString &path,bool toIndex,Format for
   Dir::setCurrent(d.absPath());
   Dir thisDir;
 
-  if (!macroFile.isEmpty())
+  if (!macroFile.empty())
   {
     copyFile(macroFile,stripMacroFile);
   }

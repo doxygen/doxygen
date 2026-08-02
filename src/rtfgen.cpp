@@ -82,7 +82,7 @@ static QCString docifyToString(const QCString &str)
 {
   QCString result;
   result.reserve(str.length());
-  if (!str.isEmpty())
+  if (!str.empty())
   {
     const char *p=str.data();
     while (*p)
@@ -122,14 +122,14 @@ void RTFCodeGenerator::writeCodeLink(CodeSymbolType,
 {
   m_col+=name.length();
   if (m_hide) return;
-  if (ref.isEmpty() && Config_getBool(RTF_HYPERLINKS))
+  if (ref.empty() && Config_getBool(RTF_HYPERLINKS))
   {
     QCString refName;
-    if (!f.isEmpty())
+    if (!f.empty())
     {
       refName+=stripPath(f);
     }
-    if (!anchor.isEmpty())
+    if (!anchor.empty())
     {
       refName+='_';
       refName+=anchor;
@@ -155,7 +155,7 @@ void RTFCodeGenerator::codify(const QCString &str)
   // note that RTF does not have a "verbatim", so "\n" means
   // nothing... add a "newParagraph()";
   const int tabSize = Config_getInt(TAB_SIZE);
-  if (!str.isEmpty())
+  if (!str.empty())
   {
     char c;
     const char *p=str.data();
@@ -246,12 +246,12 @@ void RTFCodeGenerator::writeLineNumber(const QCString &ref,const QCString &fileN
     lineNumber.sprintf("%05d",l);
 
     QCString lineAnchor;
-    if (!m_sourceFileName.isEmpty())
+    if (!m_sourceFileName.empty())
     {
       lineAnchor.sprintf("_l%05d",l);
       lineAnchor.prepend(stripExtensionGeneral(stripPath(m_sourceFileName), ".rtf"));
     }
-    bool showTarget = rtfHyperlinks && !lineAnchor.isEmpty() && writeLineAnchor;
+    bool showTarget = rtfHyperlinks && !lineAnchor.empty() && writeLineAnchor;
     if (showTarget)
     {
         *m_t << "{\\bkmkstart ";
@@ -261,7 +261,7 @@ void RTFCodeGenerator::writeLineNumber(const QCString &ref,const QCString &fileN
         *m_t << rtfFormatBmkStr(lineAnchor);
         *m_t << "}\n";
     }
-    if (!fileName.isEmpty())
+    if (!fileName.empty())
     {
       writeCodeLink(CodeSymbolType::Default,ref,fileName,anchor,lineNumber,QCString());
     }
@@ -484,18 +484,18 @@ void RTFGenerator::init()
 
   // overwrite some (or all) definitions from file
   QCString rtfStyleSheetFile = Config_getString(RTF_STYLESHEET_FILE);
-  if (!rtfStyleSheetFile.isEmpty())
+  if (!rtfStyleSheetFile.empty())
   {
     loadStylesheet(rtfStyleSheetFile, rtf_Style);
   }
 
   // If user has defined an extension file, load its contents.
   QCString rtfExtensionsFile = Config_getString(RTF_EXTENSIONS_FILE);
-  if (!rtfExtensionsFile.isEmpty())
+  if (!rtfExtensionsFile.empty())
   {
     loadExtensions(rtfExtensionsFile);
 
-    if (!rtf_logoFilename.isEmpty())
+    if (!rtf_logoFilename.empty())
     {
       FileInfo fi(rtf_logoFilename.str());
       if (!fi.exists())
@@ -752,13 +752,13 @@ void RTFGenerator::startIndexSection(IndexSection is)
       break;
     case IndexSection::isTitlePageAuthor:
       m_t << "}\n";
-      if (!rtf_subject.isEmpty())      m_t << "{\\subject "  << rtf_subject      << "}\n";
-      if (!rtf_comments.isEmpty())     m_t << "{\\comment "  << rtf_comments     << "}\n";
-      if (!rtf_company.isEmpty())      m_t << "{\\company "  << rtf_company      << "}\n";
-      if (!rtf_author.isEmpty())       m_t << "{\\author "   << rtf_author       << "}\n";
-      if (!rtf_manager.isEmpty())      m_t << "{\\manager "  << rtf_manager      << "}\n";
-      if (!rtf_documentType.isEmpty()) m_t << "{\\category " << rtf_documentType << "}\n";
-      if (!rtf_keywords.isEmpty())     m_t << "{\\keywords " << rtf_keywords     << "}\n";
+      if (!rtf_subject.empty())      m_t << "{\\subject "  << rtf_subject      << "}\n";
+      if (!rtf_comments.empty())     m_t << "{\\comment "  << rtf_comments     << "}\n";
+      if (!rtf_company.empty())      m_t << "{\\company "  << rtf_company      << "}\n";
+      if (!rtf_author.empty())       m_t << "{\\author "   << rtf_author       << "}\n";
+      if (!rtf_manager.empty())      m_t << "{\\manager "  << rtf_manager      << "}\n";
+      if (!rtf_documentType.empty()) m_t << "{\\category " << rtf_documentType << "}\n";
+      if (!rtf_keywords.empty())     m_t << "{\\keywords " << rtf_keywords     << "}\n";
       m_t << "{\\comment ";
       break;
     case IndexSection::isMainPage:
@@ -933,7 +933,7 @@ void RTFGenerator::endIndexSection(IndexSection is)
   switch (is)
   {
     case IndexSection::isTitlePageStart:
-      if (!rtf_title.isEmpty())
+      if (!rtf_title.empty())
         // User has overridden document title in extensions file
         m_t << "}" << rtf_title;
       else
@@ -956,18 +956,18 @@ void RTFGenerator::endIndexSection(IndexSection is)
         m_t << rtf_Style_Reset << rtf_Style["SubTitle"].reference() << "\n"; // set to title style
 
         m_t << "\\vertalc\\qc\\par\\par\\par\\par\\par\\par\\par\n";
-        if (!rtf_logoFilename.isEmpty())
+        if (!rtf_logoFilename.empty())
         {
           m_t << "{\\field\\flddirty {\\*\\fldinst INCLUDEPICTURE \"" << rtf_logoFilename;
           m_t << "\" \\\\d \\\\*MERGEFORMAT} {\\fldrslt IMAGE }}\\par\\par\n";
         }
-        if (!rtf_company.isEmpty())
+        if (!rtf_company.empty())
         {
           m_t << rtf_company << "\\par\\par\n";
         }
 
         m_t << rtf_Style_Reset << rtf_Style["Title"].reference() << "\n"; // set to title style
-        if (!rtf_title.isEmpty())
+        if (!rtf_title.empty())
         {
           // User has overridden document title in extensions file
           m_t << "{\\field\\fldedit {\\*\\fldinst TITLE \\\\*MERGEFORMAT}{\\fldrslt " << rtf_title << "}}\\par\n";
@@ -986,18 +986,18 @@ void RTFGenerator::endIndexSection(IndexSection is)
 
         m_t << rtf_Style_Reset << rtf_Style["SubTitle"].reference() << "\n"; // set to title style
         m_t << "\\par\n";
-        if (!rtf_documentType.isEmpty())
+        if (!rtf_documentType.empty())
         {
           m_t << rtf_documentType << "\\par\n";
         }
-        if (!rtf_documentId.isEmpty())
+        if (!rtf_documentId.empty())
         {
           m_t << rtf_documentId << "\\par\n";
         }
         m_t << "\\par\\par\\par\\par\\par\\par\\par\\par\\par\\par\\par\\par\n";
 
         m_t << rtf_Style_Reset << rtf_Style["SubTitle"].reference() << "\n"; // set to subtitle style
-        if (!rtf_author.isEmpty())
+        if (!rtf_author.empty())
         {
           m_t << "{\\field\\fldedit {\\*\\fldinst AUTHOR \\\\*MERGEFORMAT}{\\fldrslt "<< rtf_author << " }}\\par\n";
         }
@@ -1425,7 +1425,7 @@ void RTFGenerator::startIndexItem(const QCString &,const QCString &)
 void RTFGenerator::endIndexItem(const QCString &ref,const QCString &fn)
 {
   DBG_RTF(m_t << "{\\comment (endIndexItem)}\n")
-  if (ref.isEmpty() && !fn.isEmpty())
+  if (ref.empty() && !fn.empty())
   {
     m_t << "\\tab ";
     writeRTFReference(fn);
@@ -1443,8 +1443,8 @@ void RTFGenerator::writeStartAnnoItem(const QCString &,const QCString &f,
 {
   DBG_RTF(m_t << "{\\comment (writeStartAnnoItem)}\n")
   m_t << "{\\b ";
-  if (!path.isEmpty()) docify(path);
-  if (!f.isEmpty() && Config_getBool(RTF_HYPERLINKS))
+  if (!path.empty()) docify(path);
+  if (!f.empty() && Config_getBool(RTF_HYPERLINKS))
   {
     m_t << "{\\field {\\*\\fldinst { HYPERLINK  \\\\l \"";
     m_t << rtfFormatBmkStr(stripPath(f));
@@ -1485,7 +1485,7 @@ void RTFGenerator::endIndexValue(const QCString &name,bool hasBrief)
   DBG_RTF(m_t << "{\\comment (endIndexValue)}\n")
   if (hasBrief) m_t << ")";
   m_t << "} ";
-  if (!name.isEmpty())
+  if (!name.empty())
   {
     m_t << "\\tab ";
     writeRTFReference(name);
@@ -1520,11 +1520,11 @@ void RTFGenerator::startTextLink(const QCString &f,const QCString &anchor)
   if (Config_getBool(RTF_HYPERLINKS))
   {
     QCString ref;
-    if (!f.isEmpty())
+    if (!f.empty())
     {
       ref+=stripPath(f);
     }
-    if (!anchor.isEmpty())
+    if (!anchor.empty())
     {
       ref+='_';
       ref+=anchor;
@@ -1549,14 +1549,14 @@ static QCString objectLinkToString(const QCString &ref,    const QCString &f,
                                    const QCString &anchor, const QCString &text)
 {
   QCString result;
-  if (ref.isEmpty() && Config_getBool(RTF_HYPERLINKS))
+  if (ref.empty() && Config_getBool(RTF_HYPERLINKS))
   {
     QCString refName;
-    if (!f.isEmpty())
+    if (!f.empty())
     {
       refName+=stripPath(f);
     }
-    if (!anchor.isEmpty())
+    if (!anchor.empty())
     {
       refName+='_';
       refName+=anchor;
@@ -1595,11 +1595,11 @@ void RTFGenerator::startPageRef()
 void RTFGenerator::endPageRef(const QCString &clname, const QCString &anchor)
 {
   QCString ref;
-  if (!clname.isEmpty())
+  if (!clname.empty())
   {
     ref+=clname;
   }
-  if (!anchor.isEmpty())
+  if (!anchor.empty())
   {
     ref+='_';
     ref+=anchor;
@@ -1623,7 +1623,7 @@ void RTFGenerator::endTitleHead(const QCString &fileName,const QCString &name)
 {
   DBG_RTF(m_t << "{\\comment endTitleHead}\n")
   m_t << "\\par " << rtf_Style_Reset << "\n";
-  if (!name.isEmpty())
+  if (!name.empty())
   {
     // make table of contents entry
     int level = 2 + m_hierarchyLevel;
@@ -1634,7 +1634,7 @@ void RTFGenerator::endTitleHead(const QCString &fileName,const QCString &name)
     // make an index entry
     addIndexItem(name,QCString());
   }
-  if (!fileName.isEmpty())
+  if (!fileName.empty())
   {
     writeAnchor(fileName,QCString());
   }
@@ -1676,7 +1676,7 @@ void RTFGenerator::startMemberDoc(const QCString &clname,
     bool showInline)
 {
   DBG_RTF(m_t << "{\\comment startMemberDoc}\n")
-  if (!memname.isEmpty() && memname[0]!='@')
+  if (!memname.empty() && memname[0]!='@')
   {
     addIndexItem(memname,clname);
     addIndexItem(clname,memname);
@@ -1719,11 +1719,11 @@ void RTFGenerator::startDoxyAnchor(const QCString &,const QCString &,
 void RTFGenerator::endDoxyAnchor(const QCString &fName,const QCString &anchor)
 {
   QCString ref;
-  if (!fName.isEmpty())
+  if (!fName.empty())
   {
     ref+=stripPath(fName);
   }
-  if (!anchor.isEmpty())
+  if (!anchor.empty())
   {
     ref+='_';
     ref+=anchor;
@@ -1746,11 +1746,11 @@ void RTFGenerator::addLabel(const QCString &,const QCString &)
 
 void RTFGenerator::addIndexItem(const QCString &s1,const QCString &s2)
 {
-  if (!s1.isEmpty())
+  if (!s1.empty())
   {
     m_t << "{\\xe \\v ";
     docify(s1);
-    if (!s2.isEmpty())
+    if (!s2.empty())
     {
       m_t << "\\:";
       docify(s2);
@@ -1843,7 +1843,7 @@ void RTFGenerator::endSection(const QCString &lab,SectionType)
 
 void RTFGenerator::docify(const QCString &str)
 {
-  if (str.isEmpty()) return;
+  if (str.empty()) return;
   m_t << docifyToString(str);
   m_omitParagraph = false;
 }
@@ -1893,15 +1893,15 @@ void RTFGenerator::endMemberItem(MemberItemType)
 void RTFGenerator::writeAnchor(const QCString &fileName,const QCString &name)
 {
   QCString anchor;
-  if (!fileName.isEmpty())
+  if (!fileName.empty())
   {
     anchor+=stripPath(fileName);
   }
-  if (!fileName.isEmpty() && !name.isEmpty())
+  if (!fileName.empty() && !name.empty())
   {
     anchor+='_';
   }
-  if (!name.isEmpty())
+  if (!name.empty())
   {
     anchor+=name;
   }
@@ -2191,7 +2191,7 @@ static void encodeForOutput(TextStream &t,const QCString &s)
   static std::vector<char> enc;
   if (l*4>enc.size()) enc.resize(l*4); // worst case
   encoding.sprintf("CP%s",qPrint(theTranslator->trRTFansicp()));
-  if (!encoding.isEmpty())
+  if (!encoding.empty())
   {
     // convert from UTF-8 back to the output encoding
     void *cd = portable_iconv_open(encoding.data(),"UTF-8");
@@ -2592,7 +2592,7 @@ void RTFGenerator::endExamples()
 void RTFGenerator::startParameterType(bool first,const QCString &key)
 {
   DBG_RTF(m_t << "{\\comment (startParameterType)}\n")
-  if (!first && !key.isEmpty())
+  if (!first && !key.empty())
   {
     m_t << " " << key << " ";
   }
@@ -2607,7 +2607,7 @@ void RTFGenerator::endParameterType()
 void RTFGenerator::exceptionEntry(const QCString &prefix,bool closeBracket)
 {
   DBG_RTF(m_t << "{\\comment (exceptionEntry)}\n")
-  if (!prefix.isEmpty())
+  if (!prefix.empty())
   {
     m_t << " " << prefix << "(";
   }

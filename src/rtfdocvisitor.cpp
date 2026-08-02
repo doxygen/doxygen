@@ -311,7 +311,7 @@ void RTFDocVisitor::operator()(const DocVerbatim &s)
   if (m_hide) return;
   DBG_RTF("{\\comment RTFDocVisitor::visit(DocVerbatim)}\n");
   QCString lang = m_langExt;
-  if (!s.language().isEmpty()) // explicit language setting
+  if (!s.language().empty()) // explicit language setting
   {
     lang = s.language();
   }
@@ -363,7 +363,7 @@ void RTFDocVisitor::operator()(const DocVerbatim &s)
                                           ".dot",                                           // extension
                                           s.text(),                                         // contents
                                           exists);
-        if (!fileName.isEmpty())
+        if (!fileName.empty())
         {
           writeDotFile(fileName, s.hasCaption(), s.srcFile(), s.srcLine(), !exists);
           visitChildren(s);
@@ -378,7 +378,7 @@ void RTFDocVisitor::operator()(const DocVerbatim &s)
                                           ".msc",                                           // extension
                                           "msc {"+s.text()+"}",                             // contents
                                           exists);
-        if (!fileName.isEmpty())
+        if (!fileName.empty())
         {
           writeMscFile(fileName, s.hasCaption(), s.srcFile(), s.srcLine(), !exists);
           visitChildren(s);
@@ -424,15 +424,15 @@ void RTFDocVisitor::operator()(const DocAnchor &anc)
   if (m_hide) return;
   DBG_RTF("{\\comment RTFDocVisitor::visit(DocAnchor)}\n");
   QCString anchor;
-  if (!anc.file().isEmpty())
+  if (!anc.file().empty())
   {
     anchor+=stripPath(anc.file());
   }
-  if (!anc.file().isEmpty() && !anc.anchor().isEmpty())
+  if (!anc.file().empty() && !anc.anchor().empty())
   {
     anchor+="_";
   }
-  if (!anc.anchor().isEmpty())
+  if (!anc.anchor().empty())
   {
     anchor+=anc.anchor();
   }
@@ -527,7 +527,7 @@ void RTFDocVisitor::operator()(const DocIncOperator &op)
   //    op.type(),op.isFirst(),op.isLast(),qPrint(op.text()));
   DBG_RTF("{\\comment RTFDocVisitor::visit(DocIncOperator)}\n");
   QCString locLangExt = getFileNameExtension(op.includeFileName());
-  if (locLangExt.isEmpty()) locLangExt = m_langExt;
+  if (locLangExt.empty()) locLangExt = m_langExt;
   SrcLangExt langExt = getLanguageFromFileName(locLangExt);
   if (op.isFirst())
   {
@@ -546,7 +546,7 @@ void RTFDocVisitor::operator()(const DocIncOperator &op)
     if (!m_hide)
     {
       std::unique_ptr<FileDef> fd = nullptr;
-      if (!op.includeFileName().isEmpty())
+      if (!op.includeFileName().empty())
       {
         FileInfo cfi( op.includeFileName().str() );
         fd = createFileDef( cfi.dirPath(), cfi.fileName() );
@@ -619,7 +619,7 @@ void RTFDocVisitor::operator()(const DocCite &cite)
   if (m_hide) return;
   DBG_RTF("{\\comment RTFDocVisitor::operator()(const DocCite &)}\n");
   auto opt = cite.option();
-  if (!cite.file().isEmpty())
+  if (!cite.file().empty())
   {
     if (!opt.noCite()) startLink(cite.ref(),cite.file(),cite.anchor());
 
@@ -1010,7 +1010,7 @@ void RTFDocVisitor::operator()(const DocHtmlTable &t)
   {
     const DocHtmlCaption &c = std::get<DocHtmlCaption>(*t.caption());
     m_t << "\\pard \\qc \\b";
-    if (!c.file().isEmpty())
+    if (!c.file().empty())
     {
       m_t << "{\\bkmkstart " << rtfFormatBmkStr(stripPath(c.file())+"_"+c.anchor()) << "}\n";
       m_t << "{\\bkmkend " << rtfFormatBmkStr(stripPath(c.file())+"_"+c.anchor()) << "}\n";
@@ -1268,7 +1268,7 @@ void RTFDocVisitor::operator()(const DocDotFile &df)
                                       ".dot",                                                    // extension
                                       inBuf,                                                     // contents
                                       exists);
-    if (!fileName.isEmpty())
+    if (!fileName.empty())
     {
       writeDotFile(fileName, df.hasCaption(), df.srcFile(), df.srcLine(), !exists);
       visitChildren(df);
@@ -1287,7 +1287,7 @@ void RTFDocVisitor::operator()(const DocMscFile &df)
                                       ".msc",                                                    // extension
                                       inBuf,                                                     // contents
                                       exists);
-    if (!fileName.isEmpty())
+    if (!fileName.empty())
     {
       writeMscFile(fileName, df.hasCaption(), df.srcFile(), df.srcLine(), !exists);
       visitChildren(df);
@@ -1307,7 +1307,7 @@ void RTFDocVisitor::operator()(const DocDiaFile &df)
                                       ".dia",                                                    // extension
                                       inBuf,                                                     // contents
                                       exists);
-    if (!fileName.isEmpty())
+    if (!fileName.empty())
     {
       writeDiaFile(fileName, df.hasCaption(), df.srcFile(), df.srcLine(), !exists);
       visitChildren(df);
@@ -1373,11 +1373,11 @@ void RTFDocVisitor::operator()(const DocRef &ref)
   }
   else
   {
-    if (!ref.file().isEmpty()) startLink(ref.ref(),ref.file(),ref.anchor());
+    if (!ref.file().empty()) startLink(ref.ref(),ref.file(),ref.anchor());
   }
   if (!ref.hasLinkText()) filter(ref.targetTitle());
   visitChildren(ref);
-  if (!ref.file().isEmpty()) endLink(ref.ref());
+  if (!ref.file().empty()) endLink(ref.ref());
   //m_t << " ";
 }
 
@@ -1585,7 +1585,7 @@ void RTFDocVisitor::operator()(const DocParamList &pl)
 void RTFDocVisitor::operator()(const DocXRefItem &x)
 {
   if (m_hide) return;
-  if (x.title().isEmpty()) return;
+  if (x.title().empty()) return;
   bool anonymousEnum = x.file()=="@";
   DBG_RTF("{\\comment RTFDocVisitor::operator()(const DocXRefItem &)}\n");
   if (!m_lastIsPara)
@@ -1599,15 +1599,15 @@ void RTFDocVisitor::operator()(const DocXRefItem &x)
   if (Config_getBool(RTF_HYPERLINKS) && !anonymousEnum)
   {
     QCString refName;
-    if (!x.file().isEmpty())
+    if (!x.file().empty())
     {
       refName+=stripPath(x.file());
     }
-    if (!x.file().isEmpty() && !x.anchor().isEmpty())
+    if (!x.file().empty() && !x.anchor().empty())
     {
       refName+="_";
     }
-    if (!x.anchor().isEmpty())
+    if (!x.anchor().empty())
     {
       refName+=x.anchor();
     }
@@ -1635,7 +1635,7 @@ void RTFDocVisitor::operator()(const DocXRefItem &x)
   m_t << rtf_Style_Reset << getStyle("DescContinue");
   m_lastIsPara=false;
   visitChildren(x);
-  if (x.title().isEmpty()) return;
+  if (x.title().empty()) return;
   DBG_RTF("{\\comment RTFDocVisitor::visitPost(DocXRefItem)}\n");
   m_t << "\\par\n";
   decIndentLevel();
@@ -1695,7 +1695,7 @@ void RTFDocVisitor::operator()(const DocParBlock &pb)
 
 void RTFDocVisitor::filter(const QCString &str,bool verbatim, const bool citeEntry)
 {
-  if (!str.isEmpty())
+  if (!str.empty())
   {
     const char *p=str.data();
     while (*p)
@@ -1727,18 +1727,18 @@ void RTFDocVisitor::filter(const QCString &str,bool verbatim, const bool citeEnt
 
 void RTFDocVisitor::startLink(const QCString &ref,const QCString &file,const QCString &anchor)
 {
-  if (ref.isEmpty() && Config_getBool(RTF_HYPERLINKS))
+  if (ref.empty() && Config_getBool(RTF_HYPERLINKS))
   {
     QCString refName;
-    if (!file.isEmpty())
+    if (!file.empty())
     {
       refName+=stripPath(file);
     }
-    if (!file.isEmpty() && !anchor.isEmpty())
+    if (!file.empty() && !anchor.empty())
     {
       refName+='_';
     }
-    if (!anchor.isEmpty())
+    if (!anchor.empty())
     {
       refName+=anchor;
     }
@@ -1757,7 +1757,7 @@ void RTFDocVisitor::startLink(const QCString &ref,const QCString &file,const QCS
 
 void RTFDocVisitor::endLink(const QCString &ref)
 {
-  if (ref.isEmpty() && Config_getBool(RTF_HYPERLINKS))
+  if (ref.empty() && Config_getBool(RTF_HYPERLINKS))
   {
     m_t << "}}}";
   }

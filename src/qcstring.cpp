@@ -40,109 +40,37 @@ QCString &QCString::sprintf( const char *format, ... )
   return *this;
 }
 
-int QCString::find( char c, int index, bool cs ) const
-{
-  if (index<0 || index>=static_cast<int>(length())) return -1; // index outside string
-  const char *pos = nullptr;
-  if (cs)
-  {
-    pos = strchr(data()+index,c);
-  }
-  else
-  {
-    pos = data()+index;
-    c = toLowerChar(c);
-    while (*pos && toLowerChar(*pos)!=c) pos++;
-    if (!*pos && c) pos=nullptr; // not found
-  }
-  return pos ? static_cast<int>(pos - data()) : -1;
-}
-
-int QCString::find( const char *str, int index, bool cs ) const
-{
-  int l = static_cast<int>(length());
-  if (index<0 || index>=l) return -1; // index outside string
-  if (!str)  return -1;               // no string to search for
-  if (!*str) return index;           // empty string matching at index
-  const char *pos = nullptr;
-  if (cs) // case sensitive
-  {
-    pos = strstr(data()+index,str);
-  }
-  else // case insensitive
-  {
-    pos = data();
-    int len = qstrlen(str);
-    while (*pos)
-    {
-      if (qstrnicmp(pos,str,len)==0) break;
-      pos++;
-    }
-    if (!*pos) pos = nullptr; // not found
-  }
-  return pos ? static_cast<int>(pos - data()) : -1;
-}
-
-int QCString::find( const std::string &str, int index, bool cs ) const
-{
-  return find(str.c_str(),index,cs);
-}
-
-int QCString::find( const QCString &str, int index, bool cs ) const
-{
-  return find(str.data(),index,cs);
-}
-
-int QCString::findRev( char c, int index, bool cs) const
+size_t QCString::rfind_insensitive( char c, size_t index) const
 {
   const char *b = data();
   const char *pos = nullptr;
-  int len = static_cast<int>(length());
+  size_t len = length();
   if (len==0) return -1; // empty string
-  if (index<0) // start from end
+  if (index==npos) // start from end
   {
-    if (cs)
-    {
-      pos = strrchr(b,c);
-      return pos ? static_cast<int>(pos - b) : -1;
-    }
     index=len;
   }
   else if (index>len) // bad index
   {
-    return -1;
+    return QCString::npos;
   }
   pos = b+index;
-  if (cs)
-  {
-    while ( pos>=b && *pos!=c) pos--;
-  }
-  else
-  {
-    c = toLowerChar(c);
-    while ( pos>=b && toLowerChar(*pos)!=c) pos--;
-  }
-  return pos>=b ? static_cast<int>(pos - b) : -1;
+  c = toLowerChar(c);
+  while ( pos>=b && toLowerChar(*pos)!=c) pos--;
+  return pos>=b ? static_cast<size_t>(pos-b) : QCString::npos;
 }
 
-int QCString::findRev( const char *str, int index, bool cs) const
+size_t QCString::rfind_insensitive( const char *str, size_t index) const
 {
-  int slen = static_cast<int>(qstrlen(str));
-  int len = static_cast<int>(length());
-  if (index<0) index = len-slen; // start from end
-  else if (index>len) return -1; // bad index
-  else if (index+slen>len) index=len-slen; // str would be too long
-  if (index<0) return -1; // no match possible
+  size_t slen = qstrlen(str);
+  size_t len  = length();
+  if (slen>len) return QCString::npos; // length of search string is longer than this string
+  if (index==QCString::npos) index = len-slen; // start from end
+  else if (index>len) return QCString::npos; // bad index
+  else if (index+slen>len) index = len-slen; // str would be too long
   const char *pos = data()+index;
-  if (cs) // case sensitive
-  {
-    for (int i=index; i>=0; i--) if (qstrncmp(pos--,str,slen)==0) return i;
-  }
-  else // case insensitive
-  {
-    for (int i=index; i>=0; i--) if (qstrnicmp(pos,str,slen)==0) return i;
-  }
-  return -1;
+  for (int i=index; i>=0; i--) if (qstrnicmp(pos--,str,slen)==0) return i;
+  return QCString::npos;
 }
 
 int QCString::contains( char c, bool cs ) const
@@ -189,7 +117,7 @@ int QCString::contains( const char *str, bool cs ) const
 
 QCString QCString::simplifyWhiteSpace() const
 {
-  if ( isEmpty() )                            // nothing to do
+  if ( empty() )                            // nothing to do
     return *this;
 
   QCString result( length(), ExplicitSize );
@@ -570,7 +498,7 @@ int qstrnicmp( const char *s1, const char *s2, size_t len )
 /// substitute all occurrences of \a src in \a s by \a dst
 QCString substitute(const QCString &s,const QCString &src,const QCString &dst)
 {
-  if (s.isEmpty() || src.isEmpty()) return s;
+  if (s.empty() || src.empty()) return s;
   const char *q = nullptr, *p = nullptr;
   size_t srcLen = src.length();
   size_t dstLen = dst.length();
@@ -611,7 +539,7 @@ QCString substitute(const QCString &s,const QCString &src,const QCString &dst)
 /// number of consecutive \a src
 QCString substitute(const QCString &s,const QCString &src,const QCString &dst,int skip_seq)
 {
-  if (s.isEmpty() || src.isEmpty()) return s;
+  if (s.empty() || src.empty()) return s;
   const char *p = nullptr, *q = nullptr;
   size_t srcLen = src.length();
   size_t dstLen = dst.length();
@@ -666,7 +594,7 @@ QCString substitute(const QCString &s,const QCString &src,const QCString &dst,in
 
 QCString QCString::stripLeadingAndTrailingEmptyLines() const
 {
-  if (isEmpty()) return QCString();
+  if (empty()) return QCString();
   const std::string &s = m_rep;
   int end=static_cast<int>(s.length());
   int start=0,p=0;

@@ -152,7 +152,7 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
      */
     QCString trGeneratedAutomatically(const QCString &s) override
     { QCString result="Generert automatisk av Doxygen";
-      if (!s.isEmpty()) result+=" for "+s;
+      if (!s.empty()) result+=" for "+s;
       result+=" fra kildekoden.";
       return result;
     }
@@ -350,7 +350,7 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
 
     /*! This is used in HTML as the title of index.html. */
     QCString trDocumentation(const QCString &projName) override
-    { return (!projName.isEmpty()?projName + " " : "") + "Dokumentasjon"; }
+    { return (!projName.empty()?projName + " " : "") + "Dokumentasjon"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * index of all groups.
@@ -513,7 +513,7 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
     QCString trGeneratedAt(const QCString &date,const QCString &projName) override
     {
       QCString result="Generert "+date;
-      if (!projName.isEmpty()) result+=" for "+projName;
+      if (!projName.empty()) result+=" for "+projName;
       result+=" av";
       return result;
     }

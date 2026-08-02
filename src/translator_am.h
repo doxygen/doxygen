@@ -118,7 +118,7 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
      */
     QCString trGeneratedAutomatically(const QCString &s) override
     { QCString result="Ավտոմատ ստեղծված է ելքային կոդից, Doxygen-ի միջոցով, ";
-      if (!s.isEmpty()) result+=s+" համար:";
+      if (!s.empty()) result+=s+" համար:";
       return result;
     }
 
@@ -300,7 +300,7 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
 
     /*! This is used in HTML as the title of index.html. */
     QCString trDocumentation(const QCString &projName) override
-    { return (!projName.isEmpty()?projName + " " : "") + " - Փաստագրություն"; }
+    { return (!projName.empty()?projName + " " : "") + " - Փաստագրություն"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * index of all groups.
@@ -460,7 +460,7 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
     QCString trGeneratedAt(const QCString &date,const QCString &projName) override
     {
       QCString result=QCString("Ստեղծվել է ")+date;
-      if (!projName.isEmpty()) result+=projName+" -ի համար,";
+      if (!projName.empty()) result+=projName+" -ի համար,";
       result+=" հետևյալ համակարգով.";
       return result;
     }

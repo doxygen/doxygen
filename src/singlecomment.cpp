@@ -105,11 +105,11 @@ void generateHtmlForComment(const std::string &fn,const std::string &text)
   // 3. Pass result through docparser
   for (const auto &child : root->children())
   {
-    if (!child->brief.isEmpty())
+    if (!child->brief.empty())
     {
       generateHtmlOutput(fn,child->brief);
     }
-    if (!child->doc.isEmpty())
+    if (!child->doc.empty())
     {
       generateHtmlOutput(fn,child->doc);
     }

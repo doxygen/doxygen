@@ -38,7 +38,7 @@ void FileCodeParser::parseCode(OutputCodeList &codeOutIntf,
     {
       codeOutIntf.writeLineNumber(QCString(),QCString(),QCString(),lineNr,!options.inlineFragment());
     }
-    if (!lineStr.isEmpty()) codeOutIntf.codify(lineStr.data());
+    if (!lineStr.empty()) codeOutIntf.codify(lineStr.data());
     codeOutIntf.endCodeLine();
     lineNr++;
     i=j+1;

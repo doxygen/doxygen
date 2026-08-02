@@ -164,7 +164,7 @@ CPPC  "/\/"
                                           {
                                             yyextra->curArgTypeName+=yytext;
                                           }
-                                          else if (yyextra->curArgTypeName.stripWhiteSpace().isEmpty())
+                                          else if (yyextra->curArgTypeName.stripWhiteSpace().empty())
 					  {
 					    yyextra->curArgAttrib=yytext; // for M$-IDL
 					  }
@@ -208,12 +208,12 @@ CPPC  "/\/"
 					  BEGIN( ReadFuncArgType );
 					}
 <ReadFuncArgPtr>")"			{ // redundant braces detected / remove them
-					  int i=yyextra->curArgTypeName.findRev('(');
-                                          int l=static_cast<int>(yyextra->curArgTypeName.length());
-					  if (i!=-1)
+					  size_t i=yyextra->curArgTypeName.rfind('(');
+                                          size_t l=yyextra->curArgTypeName.length();
+					  if (i!=QCString::npos)
                                           {
 					    yyextra->curArgTypeName=yyextra->curArgTypeName.left(i)+
-					                   yyextra->curArgTypeName.right(l-i-1);
+					                            yyextra->curArgTypeName.right(l-i-1);
                                           }
 					  yyextra->curArgTypeName+=yyextra->curArgName;
 					  BEGIN( ReadFuncArgType );
@@ -382,13 +382,13 @@ CPPC  "/\/"
 					  yyextra->lastDocContext=YY_START;
 					  yyextra->lastDocChar=*yytext;  
 					  QCString text(yytext);
-					  if (text.find("//")!=-1)
+					  if (text.find("//")!=QCString::npos)
 					    BEGIN( ReadDocLine );
 					  else
 					    BEGIN( ReadDocBlock );
   					}
 <ReadFuncArgType,ReadFuncArgDef>[,)>]	{
-  					  if (*yytext==')' && yyextra->curArgTypeName.stripWhiteSpace().isEmpty())
+  					  if (*yytext==')' && yyextra->curArgTypeName.stripWhiteSpace().empty())
 					  {
 					    yyextra->curArgTypeName+=*yytext;
 					    BEGIN(FuncQual);
@@ -412,8 +412,9 @@ CPPC  "/\/"
 					      a.array.clear();
 					      if (i==l-1 && yyextra->curArgTypeName.at(i)==')') // function argument
 					      {
-						int bi=yyextra->curArgTypeName.find('(');
-						int fi=bi-1;
+						size_t bis=yyextra->curArgTypeName.find('(');
+						int bi = bis!=QCString::npos ? static_cast<int>(bis) : -1;
+						int fi = bi-1;
 						//printf("func arg fi=%d\n",fi);
 						while (fi>=0 && (isId(yyextra->curArgTypeName.at(fi)) || yyextra->curArgTypeName.at(fi)==':')) fi--;
 						if (fi>=0)
@@ -457,7 +458,7 @@ CPPC  "/\/"
 					      {
 						a.type = removeRedundantWhiteSpace(yyextra->curArgTypeName);  
 					      }
-                                              if (!a.type.isEmpty() && a.type.at(0)=='$') // typeless PHP name?
+                                              if (!a.type.empty() && a.type.at(0)=='$') // typeless PHP name?
                                               {
                                                 a.name = a.type;
                                                 a.type = "";
@@ -468,9 +469,10 @@ CPPC  "/\/"
 					      if (alen>2 && a.array.at(0)=='(' && 
 						            a.array.at(alen-1)==')') // fix-up for int *(a[10])
 					      {
-						i=a.array.find('[')-1;
+						size_t pi=a.array.find('[');
+                                                i = pi!=QCString::npos ? static_cast<int>(pi-1) : -1;
 						a.array = a.array.mid(1,alen-2);
-						if (i>0 && a.name.isEmpty())
+						if (i>0 && a.name.empty())
 						{
 						  a.name  = a.array.left(i).stripWhiteSpace();
 						  a.array = a.array.mid(i);
@@ -826,7 +828,7 @@ static bool nameIsActuallyPartOfType(QCString &name)
 std::unique_ptr<ArgumentList> stringToArgumentList(SrcLangExt lang, const QCString &argsString,QCString *extraTypeChars)
 {
   std::unique_ptr<ArgumentList> al = std::make_unique<ArgumentList>();
-  if (argsString.isEmpty()) return al;
+  if (argsString.empty()) return al;
 
   yyscan_t yyscanner;
   defargsYY_state extra(argsString.data(),al,lang);
