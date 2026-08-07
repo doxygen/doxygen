@@ -6,4 +6,5 @@
 *.ico binary
 *.jpg binary
 *.png binary
-*.lib binary 
+*.lib binary
+*.woff2 binary 
