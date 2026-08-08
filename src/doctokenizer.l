@@ -183,7 +183,7 @@ BLANKopt  {BLANK}*
 ID        [$a-z_A-Z\x80-\xFF][$a-z_A-Z0-9\x80-\xFF]*
 LABELID   [a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF\-]*
 REQID     [a-z_A-Z0-9\x80-\xFF\-]+
-CODEID    [a-zA-Z][a-zA-Z0-9+]*
+CODEID    [a-zA-Z][a-zA-Z0-9_+-]*
 PHPTYPE   [?]?[\\:a-z_A-Z0-9\x80-\xFF\-]+
 CITESCHAR [a-z_A-Z0-9\x80-\xFF\-\?]
 CITEECHAR [a-z_A-Z0-9\x80-\xFF\-\+:\/\?]
