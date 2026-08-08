@@ -53,30 +53,30 @@ class XRefDummyCodeGenerator : public OutputCodeIntf
     // and cross-linked version of the source code, but who needs that anyway ;-)
     OutputType type() const override { return OutputType::Extension; }
     std::unique_ptr<OutputCodeIntf> clone() override { return std::make_unique<XRefDummyCodeGenerator>(m_fd); }
-    void codify(const QCString &) override {}
+    void codify(const DString &) override {}
     void stripCodeComments(bool) override {}
     void startSpecialComment() override {}
     void endSpecialComment() override {}
     void setStripIndentAmount(size_t) override {}
-    void writeCodeLink(CodeSymbolType,const QCString &,const QCString &,const QCString &,const QCString &,const QCString &) override  {}
-    void writeLineNumber(const QCString &,const QCString &,const QCString &,int,bool) override {}
-    virtual void writeTooltip(const QCString &,const DocLinkInfo &,
-                              const QCString &,const QCString &,const SourceLinkInfo &,
+    void writeCodeLink(CodeSymbolType,const DString &,const DString &,const DString &,const DString &,const DString &) override  {}
+    void writeLineNumber(const DString &,const DString &,const DString &,int,bool) override {}
+    virtual void writeTooltip(const DString &,const DocLinkInfo &,
+                              const DString &,const DString &,const SourceLinkInfo &,
                               const SourceLinkInfo &) override {}
     void startCodeLine(int) override {}
     void endCodeLine() override {}
-    void startFontClass(const QCString &) override {}
+    void startFontClass(const DString &) override {}
     void endFontClass() override {}
-    void writeCodeAnchor(const QCString &) override {}
-    void startCodeFragment(const QCString &) override {}
-    void endCodeFragment(const QCString &) override {}
-    void startFold(int,const QCString &,const QCString &) override {}
+    void writeCodeAnchor(const DString &) override {}
+    void startCodeFragment(const DString &) override {}
+    void endCodeFragment(const DString &) override {}
+    void startFold(int,const DString &,const DString &) override {}
     void endFold() override {}
 
     // here we are presented with the symbols found by the code parser
     void linkableSymbol(int l, const char *sym,Definition *symDef,Definition *context)
     {
-      QCString ctx;
+      DString ctx;
       if (context) // the context of the symbol is known
       {
         if (context->definitionType()==Definition::TypeMember) // it is inside a member
@@ -134,7 +134,7 @@ static void findXRefSymbols(FileDef *fd)
 
   // parse the source code
   intf->parseCode(xrefList,
-                QCString(),
+                DString(),
                 fileToString(fd->absFilePath()),
                 lang,
                 false,
@@ -213,7 +213,7 @@ static void lookupSymbol(const Definition *d)
   }
 }
 
-static void lookupSymbols(const QCString &sym)
+static void lookupSymbols(const DString &sym)
 {
   if (!sym.empty())
   {
@@ -270,7 +270,7 @@ static void locateSymbols()
       if (def == Doxygen::globalScope || def->name().at(0) == '@')
         continue;
 
-      QCString args = "";
+      DString args = "";
       if (def->definitionType() == Definition::TypeMember)
       {
         const auto *md = dynamic_cast<MemberDef*>(def);
@@ -430,7 +430,7 @@ int main(int argc,char **argv)
   {
     printf("> Type a symbol name or\n> .list for a list of symbols or\n> .quit to exit\n> ");
     (void)fgets(cmd,256,stdin);
-    QCString s(cmd);
+    DString s(cmd);
     if (s.at(s.length()-1)=='\n') s=s.left(s.length()-1); // strip trailing \n
     if (s==".list")
       listSymbols();
