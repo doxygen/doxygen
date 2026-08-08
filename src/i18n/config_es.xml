@@ -17,7 +17,7 @@ Para las listas, los elementos también se pueden añadir usando:
 \verbatim
       TAG += value [value, ...]
 \endverbatim
-Los valores que contienen espacios deben colocarse entre comillas (\" \").
+Los valores que contienen espacios deben colocarse entre comillas (" ").
 <br>
 Nota:<br>
 Use Doxygen para comparar el archivo de configuración utilizado con el archivo de configuración de plantilla:

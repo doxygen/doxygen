@@ -17,7 +17,7 @@ Pour les listes, des éléments peuvent également être ajoutés en utilisant :
 \verbatim
       TAG += value [value, ...]
 \endverbatim
-Les valeurs contenant des espaces doivent être placées entre guillemets (\" \").
+Les valeurs contenant des espaces doivent être placées entre guillemets (" ").
 <br>
 Remarque :<br>
 Utilisez Doxygen pour comparer le fichier de configuration utilisé avec le fichier de configuration modèle :

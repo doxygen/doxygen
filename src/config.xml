@@ -85,7 +85,7 @@ For lists, items can also be appended using:
 \verbatim
       TAG += value [value, ...]
 \endverbatim
-Values that contain spaces should be placed between quotes (\" \").
+Values that contain spaces should be placed between quotes (" ").
 <br>
 Note:<br>
 Use Doxygen to compare the used configuration file with the template configuration file:
