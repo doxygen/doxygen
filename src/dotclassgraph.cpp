@@ -24,13 +24,13 @@
 #include "util.h"
 
 void DotClassGraph::addClass(const ClassDef *cd,DotNode *n,EdgeInfo::Colors color,
-  const QCString &label,const QCString &usedName,const QCString &templSpec,bool base,int distance)
+  const DString &label,const DString &usedName,const DString &templSpec,bool base,int distance)
 {
   if (Config_getBool(HIDE_UNDOC_CLASSES) && !cd->isLinkable()) return;
 
   EdgeInfo::Styles edgeStyle = (!label.empty() || color==EdgeInfo::Orange || color==EdgeInfo::Orange2) ? EdgeInfo::Dashed : EdgeInfo::Solid;
-  QCString className;
-  QCString fullName;
+  DString className;
+  DString fullName;
   if (cd->isAnonymous())
   {
     className="anonymous:";
@@ -73,9 +73,9 @@ void DotClassGraph::addClass(const ClassDef *cd,DotNode *n,EdgeInfo::Colors colo
   }
   else // new class
   {
-    QCString displayName=className;
+    DString displayName=className;
     if (Config_getBool(HIDE_SCOPE_NAMES)) displayName=stripScope(displayName);
-    QCString tmp_url;
+    DString tmp_url;
     if (cd->isLinkable() && !cd->isHidden())
     {
       tmp_url=cd->getReference()+"$"+cd->getOutputFileBase();
@@ -84,7 +84,7 @@ void DotClassGraph::addClass(const ClassDef *cd,DotNode *n,EdgeInfo::Colors colo
         tmp_url+="#"+cd->anchor();
       }
     }
-    QCString tooltip = cd->briefDescriptionAsTooltip();
+    DString tooltip = cd->briefDescriptionAsTooltip();
     DotNode *bn = new DotNode(this,
       displayName,
       tooltip,
@@ -227,9 +227,9 @@ bool DotClassGraph::determineVisibleNodes(DotNode *rootNode,
                                       // left to right order.
 }
 
-static QCString joinLabels(const StringSet &ss)
+static DString joinLabels(const StringSet &ss)
 {
-  QCString label;
+  DString label;
   int count=1;
   int maxLabels = Config_getInt(UML_MAX_EDGE_LABELS);
   auto it = std::begin(ss), e = std::end(ss);
@@ -261,7 +261,7 @@ void DotClassGraph::buildGraph(const ClassDef *cd,DotNode *n,bool base,int dista
     {
       //printf("-------- inheritance relation %s->%s templ='%s'\n",
       //            qPrint(cd->name()),qPrint(bcd->classDef->name()),qPrint(bcd->templSpecifiers));
-      addClass(bcd.classDef,n,EdgeInfo::protectionToColor(bcd.prot),QCString(),bcd.usedName,bcd.templSpecifiers,base,distance);
+      addClass(bcd.classDef,n,EdgeInfo::protectionToColor(bcd.prot),DString(),bcd.usedName,bcd.templSpecifiers,base,distance);
     }
   }
   if (m_graphType == GraphType::Collaboration)
@@ -273,7 +273,7 @@ void DotClassGraph::buildGraph(const ClassDef *cd,DotNode *n,bool base,int dista
     for (const auto &ucd : list)
     {
       //printf("addClass: %s templSpec=%s\n",qPrint(ucd.classDef->name()),qPrint(ucd.templSpecifiers));
-      addClass(ucd.classDef,n,EdgeInfo::Purple,joinLabels(ucd.accessors),QCString(),
+      addClass(ucd.classDef,n,EdgeInfo::Purple,joinLabels(ucd.accessors),DString(),
           ucd.templSpecifiers,base,distance);
     }
   }
@@ -282,8 +282,8 @@ void DotClassGraph::buildGraph(const ClassDef *cd,DotNode *n,bool base,int dista
     for (const auto &ccd : cd->templateTypeConstraints())
     {
       //printf("addClass: %s\n",qPrint(ccd.classDef->name()));
-      addClass(ccd.classDef,n,EdgeInfo::Orange2,joinLabels(ccd.accessors),QCString(),
-        QCString(),true,distance);
+      addClass(ccd.classDef,n,EdgeInfo::Orange2,joinLabels(ccd.accessors),DString(),
+        DString(),true,distance);
     }
   }
 
@@ -299,7 +299,7 @@ void DotClassGraph::buildGraph(const ClassDef *cd,DotNode *n,bool base,int dista
         for (const auto &ti : templMaster->getTemplateInstances())
         if (ti.classDef==cd)
         {
-          addClass(templMaster,n,EdgeInfo::Orange,ti.templSpec,QCString(),QCString(),true,distance);
+          addClass(templMaster,n,EdgeInfo::Orange,ti.templSpec,DString(),DString(),true,distance);
         }
       }
     }
@@ -307,7 +307,7 @@ void DotClassGraph::buildGraph(const ClassDef *cd,DotNode *n,bool base,int dista
     {
       for (const auto &ti : cd->getTemplateInstances())
       {
-        addClass(ti.classDef,n,EdgeInfo::Orange,ti.templSpec,QCString(),QCString(),false,distance);
+        addClass(ti.classDef,n,EdgeInfo::Orange,ti.templSpec,DString(),DString(),false,distance);
       }
     }
   }
@@ -317,7 +317,7 @@ DotClassGraph::DotClassGraph(const ClassDef *cd,GraphType t)
 {
   //printf("--------------- DotClassGraph::DotClassGraph '%s'\n",qPrint(cd->displayName()));
   m_graphType = t;
-  QCString tmp_url="";
+  DString tmp_url="";
   if (cd->isLinkable() && !cd->isHidden())
   {
     tmp_url=cd->getReference()+"$"+cd->getOutputFileBase();
@@ -326,8 +326,8 @@ DotClassGraph::DotClassGraph(const ClassDef *cd,GraphType t)
       tmp_url+="#"+cd->anchor();
     }
   }
-  QCString className = cd->displayName();
-  QCString tooltip = cd->briefDescriptionAsTooltip();
+  DString className = cd->displayName();
+  DString tooltip = cd->briefDescriptionAsTooltip();
   m_startNode = new DotNode(this,
     className,
     tooltip,
@@ -379,7 +379,7 @@ DotClassGraph::~DotClassGraph()
   DotNode::deleteNodes(m_startNode);
 }
 
-QCString DotClassGraph::getBaseName() const
+DString DotClassGraph::getBaseName() const
 {
   switch (m_graphType)
   {
@@ -410,9 +410,9 @@ void DotClassGraph::computeTheGraph()
   );
 }
 
-QCString DotClassGraph::getMapLabel() const
+DString DotClassGraph::getMapLabel() const
 {
-  QCString mapName;
+  DString mapName;
   switch (m_graphType)
   {
   case GraphType::Collaboration:
@@ -429,7 +429,7 @@ QCString DotClassGraph::getMapLabel() const
   return escapeCharsInString(m_startNode->label(),false)+"_"+escapeCharsInString(mapName,false);
 }
 
-QCString DotClassGraph::getImgAltText() const
+DString DotClassGraph::getImgAltText() const
 {
   switch (m_graphType)
   {
@@ -446,12 +446,12 @@ QCString DotClassGraph::getImgAltText() const
   return "";
 }
 
-QCString DotClassGraph::writeGraph(TextStream &out,
+DString DotClassGraph::writeGraph(TextStream &out,
   GraphOutputFormat graphFormat,
   EmbeddedOutputFormat textFormat,
-  const QCString &path,
-  const QCString &fileName,
-  const QCString &relPath,
+  const DString &path,
+  const DString &fileName,
+  const DString &relPath,
   bool /*isTBRank*/,
   bool generateImageMap,
   int graphId)

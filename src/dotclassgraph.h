@@ -35,8 +35,8 @@ class DotClassGraph final : public DotGraph
     bool isTrivial() const;
     bool isTooBig() const;
     int numNodes() const;
-    QCString writeGraph(TextStream &t,GraphOutputFormat gf,EmbeddedOutputFormat ef,
-        const QCString &path, const QCString &fileName, const QCString &relPath,
+    DString writeGraph(TextStream &t,GraphOutputFormat gf,EmbeddedOutputFormat ef,
+        const DString &path, const DString &fileName, const DString &relPath,
         bool TBRank=true,bool imageMap=true,int graphId=-1);
 
     void writeXML(TextStream &t);
@@ -44,24 +44,24 @@ class DotClassGraph final : public DotGraph
     void writeDEF(TextStream &t);
 
   protected:
-    QCString getBaseName() const override;
-    QCString getMapLabel() const override;
+    DString getBaseName() const override;
+    DString getMapLabel() const override;
     void computeTheGraph() override;
-    QCString getImgAltText() const override;
+    DString getImgAltText() const override;
 
   private:
     void buildGraph(const ClassDef *cd,DotNode *n,bool base,int distance);
     bool determineVisibleNodes(DotNode *rootNode,int maxNodes,bool includeParents);
     void determineTruncatedNodes(DotNodeDeque &queue,bool includeParents);
-    void addClass(const ClassDef *cd,DotNode *n,EdgeInfo::Colors color,const QCString &label,
-        const QCString &usedName,const QCString &templSpec,
+    void addClass(const ClassDef *cd,DotNode *n,EdgeInfo::Colors color,const DString &label,
+        const DString &usedName,const DString &templSpec,
         bool base,int distance);
 
     DotNode        *   m_startNode;
     DotNodeMap         m_usedNodes;
     GraphType          m_graphType;
-    QCString           m_collabFileName;
-    QCString           m_inheritFileName;
+    DString           m_collabFileName;
+    DString           m_inheritFileName;
     bool               m_lrRank;
 };
 

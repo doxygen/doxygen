@@ -19,7 +19,7 @@
 #include <iostream>
 #include <map>
 
-#include "qcstring.h"
+#include "dstring.h"
 #include "dir.h"
 #include "construct.h"
 
@@ -46,53 +46,53 @@ class DotGraph
     /** returns the edge number. */
     int getNextEdgeNumber() { return ++m_curEdgeNumber; }
 
-    QCString writeGraph(TextStream &t,
+    DString writeGraph(TextStream &t,
                         GraphOutputFormat gf,
                         EmbeddedOutputFormat ef,
-                        const QCString &path,
-                        const QCString &fileName,
-                        const QCString &relPath,
+                        const DString &path,
+                        const DString &fileName,
+                        const DString &relPath,
                         bool writeImageMap=true,
                         int graphId=-1
                        );
 
-    static void writeGraphHeader(TextStream& t, const QCString& title = QCString());
+    static void writeGraphHeader(TextStream& t, const DString& title = DString());
     static void writeGraphFooter(TextStream& t);
     static void computeGraph(DotNode* root,
                              GraphType gt,
                              GraphOutputFormat format,
-                             const QCString& rank, // either "LR", "RL", or ""
+                             const DString& rank, // either "LR", "RL", or ""
                              bool renderParents,
                              bool backArrows,
-                             const QCString& title,
-                             QCString& graphStr
+                             const DString& title,
+                             DString& graphStr
                             );
 
-    virtual QCString getBaseName() const = 0;
-    virtual QCString absMapName()  const { return m_absPath + m_baseName + ".map"; }
-    virtual QCString getMapLabel() const = 0;
-    virtual QCString getImgAltText() const { return ""; }
+    virtual DString getBaseName() const = 0;
+    virtual DString absMapName()  const { return m_absPath + m_baseName + ".map"; }
+    virtual DString getMapLabel() const = 0;
+    virtual DString getImgAltText() const { return ""; }
 
     virtual void computeTheGraph() = 0;
 
-    QCString absBaseName() const { return m_absPath + m_baseName; }
-    QCString absDotName()  const { return m_absPath + m_baseName + ".dot"; }
-    QCString imgName()     const;
-    QCString absImgName()  const { return m_absPath + imgName(); }
-    QCString relImgName()  const { return m_relPath + imgName(); }
+    DString absBaseName() const { return m_absPath + m_baseName; }
+    DString absDotName()  const { return m_absPath + m_baseName + ".dot"; }
+    DString imgName()     const;
+    DString absImgName()  const { return m_absPath + imgName(); }
+    DString relImgName()  const { return m_relPath + imgName(); }
 
     // the following variables are used while writing the graph to a .dot file
     GraphOutputFormat      m_graphFormat = GraphOutputFormat::BITMAP;
     EmbeddedOutputFormat   m_textFormat = EmbeddedOutputFormat::Html;
     Dir                    m_dir;
-    QCString               m_fileName;
-    QCString               m_relPath;
+    DString               m_fileName;
+    DString               m_relPath;
     bool                   m_generateImageMap = false;
     int                    m_graphId = 0;
 
-    QCString               m_absPath;
-    QCString               m_baseName;
-    QCString               m_theGraph;
+    DString               m_absPath;
+    DString               m_baseName;
+    DString               m_theGraph;
     bool                   m_regenerate = false;
     bool                   m_doNotAddImageToIndex = false;
     bool                   m_noDivTag = false;

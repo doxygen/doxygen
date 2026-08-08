@@ -33,7 +33,7 @@
  * - On error, an error message is returned.
  * - On success, the result of the expression is either "1" or "0".
  */
-bool CondParser::parse(const QCString &fileName,int lineNr,const QCString &expr)
+bool CondParser::parse(const DString &fileName,int lineNr,const DString &expr)
 {
   if (expr.empty()) return false;
   m_expr      = expr;
@@ -87,7 +87,7 @@ static bool isAlphaNumSpec(const char c)
  * returns the id of the given operator
  * returns -1 if the operator is not recognized
  */
-int CondParser::getOperatorId(const QCString &opName)
+int CondParser::getOperatorId(const DString &opName)
 {
   // level 2
   if (opName=="&&") { return AND; }
@@ -161,7 +161,7 @@ void CondParser::getToken()
   {
     m_token += *m_e++;
   }
-  m_err = QCString("Syntax error in part '")+m_token+"'";
+  m_err = DString("Syntax error in part '")+m_token+"'";
   return;
 }
 
@@ -269,14 +269,14 @@ bool CondParser::evalOperator(int opId, bool lhs, bool rhs)
     case OR:  return lhs || rhs;
   }
 
-  m_err = "Internal error unknown operator: id="+QCString().setNum(opId);
+  m_err = "Internal error unknown operator: id="+DString().setNum(opId);
   return false;
 }
 
 /**
  * evaluate a variable
  */
-bool CondParser::evalVariable(const QCString &varName)
+bool CondParser::evalVariable(const DString &varName)
 {
   const StringVector &list = Config_getList(ENABLED_SECTIONS);
   return std::find(list.begin(),list.end(),varName.str())!=list.end();

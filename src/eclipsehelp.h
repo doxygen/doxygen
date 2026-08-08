@@ -26,7 +26,7 @@
 
 #include <memory>
 
-#include "qcstring.h"
+#include "dstring.h"
 #include "construct.h"
 #include "indexlist.h"
 
@@ -52,14 +52,14 @@ class EclipseHelp final : public IndexIntf
     virtual void finalize();
     virtual void incContentsDepth();
     virtual void decContentsDepth();
-    virtual void addContentsItem(bool isDir, const QCString &name, const QCString &ref,
-                                 const QCString &file, const QCString &anchor,bool separateIndex,bool addToNavIndex,
-                                 const Definition *def, const QCString &nameAsHtml);
+    virtual void addContentsItem(bool isDir, const DString &name, const DString &ref,
+                                 const DString &file, const DString &anchor,bool separateIndex,bool addToNavIndex,
+                                 const Definition *def, const DString &nameAsHtml);
     virtual void addIndexItem(const Definition *context,const MemberDef *md,
-                              const QCString &sectionAnchor,const QCString &title);
-    virtual void addIndexFile(const QCString &name);
-    virtual void addImageFile(const QCString &name);
-    virtual void addStyleSheetFile(const QCString &name);
+                              const DString &sectionAnchor,const DString &title);
+    virtual void addIndexFile(const DString &name);
+    virtual void addImageFile(const DString &name);
+    virtual void addStyleSheetFile(const DString &name);
 
   private:
     struct Private;

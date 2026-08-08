@@ -19,7 +19,7 @@
 #include <string>
 #include <unordered_map>
 
-#include "qcstring.h"
+#include "dstring.h"
 #include "linkedmap.h"
 #include "construct.h"
 
@@ -57,8 +57,8 @@ class SectionType
 class SectionInfo
 {
   public:
-    SectionInfo(const QCString &label, const QCString &fileName, int lineNr,
-                const QCString &title, SectionType type, int level,const QCString &ref) :
+    SectionInfo(const DString &label, const DString &fileName, int lineNr,
+                const DString &title, SectionType type, int level,const DString &ref) :
         m_label(label), m_title(title), m_type(type), m_ref(ref),
         m_lineNr(lineNr), m_fileName(fileName), m_level(level)
     {
@@ -66,33 +66,33 @@ class SectionInfo
     }
 
     // getters
-    QCString    label()      const { return m_label;      }
-    QCString    title()      const { return m_title;      }
+    DString    label()       const { return m_label;      }
+    DString    title()       const { return m_title;      }
     SectionType type()       const { return m_type;       }
-    QCString    ref()        const { return m_ref;        }
+    DString    ref()         const { return m_ref;        }
     int         lineNr()     const { return m_lineNr;     }
-    QCString    fileName()   const { return m_fileName;   }
+    DString    fileName()    const { return m_fileName;   }
     bool        generated()  const { return m_generated;  }
     int         level()      const { return m_level;      }
     Definition *definition() const { return m_definition; }
 
     // setters
-    void setFileName(const QCString &fn) { m_fileName   = fn; }
+    void setFileName(const DString &fn)  { m_fileName   = fn; }
     void setType(SectionType t)          { m_type       = t;  }
     void setGenerated(bool b)            { m_generated  = b;  }
     void setDefinition(Definition *d)    { m_definition = d;  }
-    void setTitle(const QCString &t)     { m_title      = t;  }
+    void setTitle(const DString &t)      { m_title      = t;  }
     void setLevel(int l)                 { m_level      = l;  }
-    void setReference(const QCString &r) { m_ref        = r;  }
+    void setReference(const DString &r)  { m_ref        = r;  }
     void setLineNr(int l)                { m_lineNr     = l;  }
 
   private:
-    QCString    m_label;
-    QCString    m_title;
+    DString     m_label;
+    DString     m_title;
     SectionType m_type;
-    QCString    m_ref;
+    DString     m_ref;
     int         m_lineNr;
-    QCString    m_fileName;
+    DString     m_fileName;
     bool        m_generated = false;
     int         m_level;
     Definition *m_definition = nullptr;
@@ -107,7 +107,7 @@ class SectionRefs
 
     //! Returns a constant pointer to the section info given a section label or nullptr
     //! if no section with the given label can be found.
-    const SectionInfo *find(const QCString &label) const
+    const SectionInfo *find(const DString &label) const
     {
       auto it = m_lookup.find(label.str());
       return it!=m_lookup.end() ? it->second : nullptr;
@@ -145,8 +145,8 @@ class SectionManager final : public LinkedMap<SectionInfo>
 
     //! Add a new section
     //! Return a non-owning pointer to the newly added section
-    SectionInfo *add(const QCString &label, const QCString &fileName, int lineNr,
-                     const QCString &title, SectionType type, int level,const QCString &ref=QCString())
+    SectionInfo *add(const DString &label, const DString &fileName, int lineNr,
+                     const DString &title, SectionType type, int level,const DString &ref=DString())
     {
       //printf("SectionManager::add(%s,%s,%d,%s)\n",qPrint(label),qPrint(fileName),lineNr,qPrint(title));
       return LinkedMap<SectionInfo>::add(label.data(),fileName,lineNr,title,type,level,ref);
@@ -154,8 +154,8 @@ class SectionManager final : public LinkedMap<SectionInfo>
 
     //! Replace an existing section with a new one
     //! Return a non-owning pointer to the newly added section
-    SectionInfo *replace(const QCString &label, const QCString &fileName, int lineNr,
-                         const QCString &title, SectionType type, int level,const QCString &ref=QCString())
+    SectionInfo *replace(const DString &label, const DString &fileName, int lineNr,
+                         const DString &title, SectionType type, int level,const DString &ref=DString())
     {
       //printf("SectionManager::replace(%s,%s,%d,%s)\n",qPrint(label),qPrint(fileName),lineNr,qPrint(title));
       SectionInfo *si = LinkedMap<SectionInfo>::find(label.data());

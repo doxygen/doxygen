@@ -52,49 +52,49 @@ class DocbookCodeGenerator final : public OutputCodeIntf
 
     OutputType type() const override { return OutputType::Docbook; }
     std::unique_ptr<OutputCodeIntf> clone() override { return std::make_unique<DocbookCodeGenerator>(m_t); }
-    void codify(const QCString &text) override;
+    void codify(const DString &text) override;
     void stripCodeComments(bool b) override;
     void startSpecialComment() override;
     void endSpecialComment() override;
     void setStripIndentAmount(size_t amount) override;
     void writeCodeLink(CodeSymbolType type,
-        const QCString &ref,const QCString &file,
-        const QCString &anchor,const QCString &name,
-        const QCString &tooltip) override;
-    void writeTooltip(const QCString &, const DocLinkInfo &, const QCString &,
-                      const QCString &, const SourceLinkInfo &, const SourceLinkInfo &
+        const DString &ref,const DString &file,
+        const DString &anchor,const DString &name,
+        const DString &tooltip) override;
+    void writeTooltip(const DString &, const DocLinkInfo &, const DString &,
+                      const DString &, const SourceLinkInfo &, const SourceLinkInfo &
                      ) override;
     void startCodeLine(int) override;
     void endCodeLine() override;
-    void startFontClass(const QCString &colorClass) override;
+    void startFontClass(const DString &colorClass) override;
     void endFontClass() override;
-    void writeCodeAnchor(const QCString &) override;
-    void writeLineNumber(const QCString &extRef,const QCString &compId,
-        const QCString &anchorId,int l, bool writeLineAnchor) override;
-    void startCodeFragment(const QCString &style) override;
-    void endCodeFragment(const QCString &style) override;
-    void startFold(int,const QCString &,const QCString &) override {}
+    void writeCodeAnchor(const DString &) override;
+    void writeLineNumber(const DString &extRef,const DString &compId,
+        const DString &anchorId,int l, bool writeLineAnchor) override;
+    void startCodeFragment(const DString &style) override;
+    void endCodeFragment(const DString &style) override;
+    void startFold(int,const DString &,const DString &) override {}
     void endFold() override {}
 
-    void setRelativePath(const QCString &path) { m_relPath = path; }
-    void setSourceFileName(const QCString &sourceFileName) { m_sourceFileName = sourceFileName; }
-    QCString sourceFileName() { return m_sourceFileName; }
+    void setRelativePath(const DString &path) { m_relPath = path; }
+    void setSourceFileName(const DString &sourceFileName) { m_sourceFileName = sourceFileName; }
+    DString sourceFileName() { return m_sourceFileName; }
     void finish();
 
   private:
     void writeCodeLinkLine(CodeSymbolType type,
-        const QCString &ref,const QCString &file,
-        const QCString &anchor,const QCString &name,
-        const QCString &tooltip, bool);
+        const DString &ref,const DString &file,
+        const DString &anchor,const DString &name,
+        const DString &tooltip, bool);
     TextStream *m_t;
-    QCString    m_refId;
-    QCString    m_external;
+    DString    m_refId;
+    DString    m_external;
     int         m_lineNumber = -1;
     size_t      m_col = 0;
     bool        m_insideCodeLine = false;
     bool        m_insideSpecialHL = false;
-    QCString    m_relPath;
-    QCString    m_sourceFileName;
+    DString    m_relPath;
+    DString    m_sourceFileName;
     bool        m_stripCodeComments = false;
     bool        m_hide = false;
     size_t      m_stripIndentAmount = 0;
@@ -112,8 +112,8 @@ class DocbookGenerator final : public OutputGenerator, public OutputGenIntf
 
     static void init();
 
-    //void setCurrentDoc(const Definition *,const QCString &,bool) override {DB_GEN_EMPTY}
-    //void addWord(const QCString &,bool) override {DB_GEN_EMPTY}
+    //void setCurrentDoc(const Definition *,const DString &,bool) override {DB_GEN_EMPTY}
+    //void addWord(const DString &,bool) override {DB_GEN_EMPTY}
 
     //--------------------------------------
 
@@ -122,19 +122,19 @@ class DocbookGenerator final : public OutputGenerator, public OutputGenIntf
     void addCodeGen(OutputCodeList &list) override;
     void cleanup() override;
     void writeDoc(const IDocNodeAST *node,const Definition *ctx,const MemberDef *md,int id,int sectionLevel) override;
-    void startFile(const QCString &name,bool isSource,const QCString &manName,const QCString &title,int id,int hierarchyLevel) override;
+    void startFile(const DString &name,bool isSource,const DString &manName,const DString &title,int id,int hierarchyLevel) override;
     void endFile() override;
 
     void writeSearchInfo() override {DB_GEN_EMPTY}
-    void writeFooter(const QCString &) override {DB_GEN_NEW}
+    void writeFooter(const DString &) override {DB_GEN_NEW}
     void startIndexSection(IndexSection) override;
     void endIndexSection(IndexSection) override;
-    void writePageLink(const QCString &,bool) override;
+    void writePageLink(const DString &,bool) override;
     void startProjectNumber() override {DB_GEN_NEW}
     void endProjectNumber() override {DB_GEN_NEW}
     void writeStyleInfo(int) override {DB_GEN_EMPTY}
-    void startTitleHead(const QCString &) override;
-    void endTitleHead(const QCString &fileName,const QCString &name) override;
+    void startTitleHead(const DString &) override;
+    void endTitleHead(const DString &fileName,const DString &name) override;
     void startIndexListItem() override {DB_GEN_NEW}
     void endIndexListItem() override {DB_GEN_NEW}
     void startIndexList() override {DB_GEN_NEW}
@@ -142,20 +142,20 @@ class DocbookGenerator final : public OutputGenerator, public OutputGenIntf
     void startIndexKey() override {DB_GEN_NEW}
     void endIndexKey() override {DB_GEN_NEW}
     void startIndexValue(bool) override {DB_GEN_NEW}
-    void endIndexValue(const QCString &,bool) override {DB_GEN_NEW}
+    void endIndexValue(const DString &,bool) override {DB_GEN_NEW}
     void startItemList() override {DB_GEN_EMPTY}
     void endItemList() override {DB_GEN_EMPTY}
 
-    void startIndexItem(const QCString &,const QCString &) override {DB_GEN_NEW}
-    void endIndexItem(const QCString &,const QCString &) override {DB_GEN_NEW}
+    void startIndexItem(const DString &,const DString &) override {DB_GEN_NEW}
+    void endIndexItem(const DString &,const DString &) override {DB_GEN_NEW}
     void startItemListItem() override {DB_GEN_EMPTY}
     void endItemListItem() override {DB_GEN_EMPTY}
-    void docify(const QCString &text) override;
+    void docify(const DString &text) override;
     void writeChar(char) override;
-    void writeString(const QCString &) override;
-    void startParagraph(const QCString &) override;
+    void writeString(const DString &) override;
+    void startParagraph(const DString &) override;
     void endParagraph() override;
-    void writeObjectLink(const QCString &,const QCString &,const QCString &,const QCString &) override;
+    void writeObjectLink(const DString &,const DString &,const DString &,const DString &) override;
     void startBold() override;
     void endBold() override;
     void startTypewriter() override;
@@ -171,14 +171,14 @@ class DocbookGenerator final : public OutputGenerator, public OutputGenIntf
     void endSmall() override {DB_GEN_NEW}
     void startExamples() override;
     void endExamples() override;
-    void writeAnchor(const QCString &,const QCString &) override {DB_GEN_EMPTY}
-    void startSection(const QCString &,const QCString &,SectionType) override;
-    void endSection(const QCString &,SectionType) override;
-    void lineBreak(const QCString &) override;
-    void addIndexItem(const QCString &,const QCString &) override;
+    void writeAnchor(const DString &,const DString &) override {DB_GEN_EMPTY}
+    void startSection(const DString &,const DString &,SectionType) override;
+    void endSection(const DString &,SectionType) override;
+    void lineBreak(const DString &) override;
+    void addIndexItem(const DString &,const DString &) override;
     void writeNonBreakableSpace(int) override;
 
-    void startDescTable(const QCString &title,bool hasInits) override;
+    void startDescTable(const DString &title,bool hasInits) override;
     void endDescTable() override;
     void startDescTableRow() override;
     void endDescTableRow() override;
@@ -188,18 +188,18 @@ class DocbookGenerator final : public OutputGenerator, public OutputGenIntf
     void endDescTableInit() override;
     void startDescTableData() override;
     void endDescTableData() override;
-    void startTextLink(const QCString &,const QCString &) override {DB_GEN_NEW}
+    void startTextLink(const DString &,const DString &) override {DB_GEN_NEW}
     void endTextLink() override {DB_GEN_NEW}
     void startPageRef() override {DB_GEN_NEW}
-    void endPageRef(const QCString &,const QCString &) override {DB_GEN_NEW}
+    void endPageRef(const DString &,const DString &) override {DB_GEN_NEW}
 
-    void startGroupHeader(const QCString &,int) override;
+    void startGroupHeader(const DString &,int) override;
     void endGroupHeader(int) override;
     void startMemberSections() override {DB_GEN_EMPTY}
     void endMemberSections() override {DB_GEN_EMPTY}
     void startHeaderSection() override {DB_GEN_EMPTY}
     void endHeaderSection() override {DB_GEN_EMPTY}
-    void startMemberHeader(const QCString &anchor, int typ) override;
+    void startMemberHeader(const DString &anchor, int typ) override;
     void endMemberHeader() override;
     void startMemberSubtitle() override {DB_GEN_EMPTY}
     void endMemberSubtitle() override {DB_GEN_EMPTY}
@@ -211,13 +211,13 @@ class DocbookGenerator final : public OutputGenerator, public OutputGenIntf
     void endInlineHeader() override {DB_GEN_NEW}
     void startAnonTypeScope(int) override {DB_GEN_EMPTY}
     void endAnonTypeScope(int) override {DB_GEN_EMPTY}
-    void startMemberItem(const QCString &,MemberItemType,const QCString &) override;
+    void startMemberItem(const DString &,MemberItemType,const DString &) override;
     void endMemberItem(MemberItemType) override;
     void startMemberTemplateParams() override;
-    void endMemberTemplateParams(const QCString &,const QCString &) override;
+    void endMemberTemplateParams(const DString &,const DString &) override;
     void startCompoundTemplateParams() override;
     void endCompoundTemplateParams() override;
-    void startMemberGroupHeader(const QCString &,bool) override;
+    void startMemberGroupHeader(const DString &,bool) override;
     void endMemberGroupHeader(bool) override;
     void startMemberGroupDocs() override {DB_GEN_EMPTY}
     void endMemberGroupDocs() override {DB_GEN_EMPTY}
@@ -225,29 +225,29 @@ class DocbookGenerator final : public OutputGenerator, public OutputGenIntf
     void endMemberGroup(bool) override;
     void insertMemberAlign(bool) override {DB_GEN_EMPTY}
     void insertMemberAlignLeft(MemberItemType,bool) override {DB_GEN_EMPTY}
-    void startMemberDoc(const QCString &,const QCString &,
-                        const QCString &,const QCString &,int,int,bool) override;
+    void startMemberDoc(const DString &,const DString &,
+                        const DString &,const DString &,int,int,bool) override;
     void endMemberDoc(bool) override;
-    void startDoxyAnchor(const QCString &fName,const QCString &manName,
-                         const QCString &anchor,const QCString &name,
-                         const QCString &args) override;
-    void endDoxyAnchor(const QCString &fileName,const QCString &anchor) override;
-    void addLabel(const QCString &,const QCString &) override;
+    void startDoxyAnchor(const DString &fName,const DString &manName,
+                         const DString &anchor,const DString &name,
+                         const DString &args) override;
+    void endDoxyAnchor(const DString &fileName,const DString &anchor) override;
+    void addLabel(const DString &,const DString &) override;
     void writeLatexSpacing() override {DB_GEN_EMPTY}
-    void writeStartAnnoItem(const QCString &,const QCString &,
-                            const QCString &,const QCString &) override {DB_GEN_NEW}
-    void startMemberDescription(const QCString &,const QCString &,bool) override {DB_GEN_EMPTY}
+    void writeStartAnnoItem(const DString &,const DString &,
+                            const DString &,const DString &) override {DB_GEN_NEW}
+    void startMemberDescription(const DString &,const DString &,bool) override {DB_GEN_EMPTY}
     void endMemberDescription() override {DB_GEN_EMPTY}
     void startMemberDeclaration() override {DB_GEN_EMPTY}
-    void endMemberDeclaration(const QCString &,const QCString &) override {DB_GEN_EMPTY}
-    void writeInheritedSectionTitle(const QCString &,const QCString &,
-                                    const QCString &,const QCString &,
-                                    const QCString &,const QCString &) override;
+    void endMemberDeclaration(const DString &,const DString &) override {DB_GEN_EMPTY}
+    void writeInheritedSectionTitle(const DString &,const DString &,
+                                    const DString &,const DString &,
+                                    const DString &,const DString &) override;
     void startIndent() override {DB_GEN_EMPTY}
     void endIndent() override {DB_GEN_EMPTY}
     void writeSynopsis() override {DB_GEN_EMPTY}
     void startClassDiagram() override;
-    void endClassDiagram(const ClassDiagram &,const QCString &,const QCString &) override;
+    void endClassDiagram(const ClassDiagram &,const DString &,const DString &) override;
     void startDotGraph() override;
     void endDotGraph(DotClassGraph &g) override;
     void startInclDepGraph() override;
@@ -261,15 +261,15 @@ class DocbookGenerator final : public OutputGenerator, public OutputGenIntf
     void writeGraphicalHierarchy(DotGfxHierarchyTable &) override {DB_GEN_NEW}
     void startQuickIndices() override {DB_GEN_EMPTY}
     void endQuickIndices() override {DB_GEN_EMPTY}
-    void writeSplitBar(const QCString &,const QCString &) override {DB_GEN_EMPTY}
-    void writeNavigationPath(const QCString &) override {DB_GEN_NEW}
+    void writeSplitBar(const DString &,const DString &) override {DB_GEN_EMPTY}
+    void writeNavigationPath(const DString &) override {DB_GEN_NEW}
     void writeLogo() override {DB_GEN_NEW}
-    void writeQuickLinks(HighlightedItem,const QCString &,bool) override {DB_GEN_EMPTY}
-    void writeSummaryLink(const QCString &,const QCString &,const QCString &,bool) override {DB_GEN_EMPTY}
+    void writeQuickLinks(HighlightedItem,const DString &,bool) override {DB_GEN_EMPTY}
+    void writeSummaryLink(const DString &,const DString &,const DString &,bool) override {DB_GEN_EMPTY}
     void writePageOutline() override {DB_GEN_EMPTY}
     void startContents() override {DB_GEN_EMPTY}
     void endContents() override {DB_GEN_EMPTY}
-    void startPageDoc(const QCString &) override {DB_GEN_EMPTY}
+    void startPageDoc(const DString &) override {DB_GEN_EMPTY}
     void endPageDoc() override {DB_GEN_EMPTY}
     void startTextBlock(bool) override;
     void endTextBlock(bool) override;
@@ -278,7 +278,7 @@ class DocbookGenerator final : public OutputGenerator, public OutputGenIntf
     void endMemberDocPrefixItem() override;
     void startMemberDocName(bool) override;
     void endMemberDocName() override;
-    void startParameterType(bool,const QCString &) override {DB_GEN_EMPTY}
+    void startParameterType(bool,const DString &) override {DB_GEN_EMPTY}
     void endParameterType() override {DB_GEN_EMPTY}
     void startParameterName(bool) override;
     void endParameterName() override;
@@ -288,9 +288,9 @@ class DocbookGenerator final : public OutputGenerator, public OutputGenIntf
     void endParameterDefVal() override;
     void startParameterList(bool) override;
     void endParameterList() override;
-    void exceptionEntry(const QCString &,bool) override;
+    void exceptionEntry(const DString &,bool) override;
 
-    void startConstraintList(const QCString &) override;
+    void startConstraintList(const DString &) override;
     void startConstraintParam() override;
     void endConstraintParam() override;
     void startConstraintType() override;
@@ -309,7 +309,7 @@ class DocbookGenerator final : public OutputGenerator, public OutputGenIntf
     void endInlineMemberDoc() override;
 
     void startLabels() override;
-    void writeLabel(const QCString &,bool) override;
+    void writeLabel(const DString &,bool) override;
     void endLabels() override;
 
     void startLocalToc(int level) override;
@@ -317,19 +317,19 @@ class DocbookGenerator final : public OutputGenerator, public OutputGenIntf
     void startTocEntry(const SectionInfo *si) override;
     void endTocEntry(const SectionInfo *si) override;
 
-    void startPlainFile(const QCString &name) override { OutputGenerator::startPlainFile(name); }
+    void startPlainFile(const DString &name) override { OutputGenerator::startPlainFile(name); }
     void endPlainFile() override { OutputGenerator::endPlainFile(); }
 
     void startEmbeddedDoc(int) override {}
     void endEmbeddedDoc() override {}
-    static QCString convertToDocbook(const QCString &s, bool retainNewline = false, bool citeEntry = false);
+    static DString convertToDocbook(const DString &s, bool retainNewline = false, bool citeEntry = false);
 
 private:
-    void openSection(const QCString &attr=QCString());
+    void openSection(const DString &attr=DString());
     void closeSection();
     void closeAllSections();
 
-    QCString relPath;
+    DString relPath;
     std::unique_ptr<OutputCodeList>  m_codeList;
     DocbookCodeGenerator *m_codeGen = nullptr;
     bool m_denseText = false;
@@ -342,7 +342,7 @@ private:
     int m_inLevel = -1;
     bool m_firstMember = false;
     int m_openSectionCount = 0;
-    QCString m_pageLinks;
+    DString m_pageLinks;
 
     struct TocState
     {

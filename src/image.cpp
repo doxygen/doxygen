@@ -260,7 +260,7 @@ void Image::writeChar(uint32_t x,uint32_t y,char c,uint8_t fg)
   }
 }
 
-void Image::writeString(uint32_t x,uint32_t y,const QCString &s,uint8_t fg)
+void Image::writeString(uint32_t x,uint32_t y,const DString &s,uint8_t fg)
 {
   if (!s.empty())
   {
@@ -274,7 +274,7 @@ void Image::writeString(uint32_t x,uint32_t y,const QCString &s,uint8_t fg)
   }
 }
 
-uint32_t Image::stringLength(const QCString &s)
+uint32_t Image::stringLength(const DString &s)
 {
   uint32_t w=0;
   if (!s.empty())
@@ -343,7 +343,7 @@ void Image::fillRect(uint32_t x,uint32_t y,uint32_t width,uint32_t height,uint8_
         setPixel(xp,yp,8);
 }
 
-bool Image::save(const QCString &fileName)
+bool Image::save(const DString &fileName)
 {
   uint8_t* buffer = nullptr;
   size_t bufferSize = 0;
@@ -457,7 +457,7 @@ ColoredImage::ColoredImage(uint32_t width,uint32_t height,
 
 ColoredImage::~ColoredImage() = default;
 
-bool ColoredImage::save(const QCString &fileName)
+bool ColoredImage::save(const DString &fileName)
 {
   uint8_t *buffer = nullptr;
   size_t bufferSize = 0;

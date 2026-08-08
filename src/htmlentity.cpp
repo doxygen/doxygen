@@ -455,7 +455,7 @@ const HtmlEntityMapper::PerlSymb *HtmlEntityMapper::perl(HtmlEntityMapper::SymTy
  * @return the code for the requested HTML entity name,
  *         in case the requested HTML item does not exist `HtmlEntityMapper::Sym_unknown` is returned.
  */
-HtmlEntityMapper::SymType HtmlEntityMapper::name2sym(const QCString &symName) const
+HtmlEntityMapper::SymType HtmlEntityMapper::name2sym(const DString &symName) const
 {
   auto it = m_name2sym.find(symName.str());
   return it!=m_name2sym.end() ? it->second : HtmlEntityMapper::Sym_Unknown;
@@ -465,7 +465,7 @@ void HtmlEntityMapper::writeXMLSchema(TextStream &t)
 {
   for (size_t i=0;i<g_htmlEntities.size();i++)
   {
-    QCString bareName = g_htmlEntities[i].xml;
+    DString bareName = g_htmlEntities[i].xml;
     if (!bareName.empty() && bareName.at(0)=='<' && bareName.endsWith("/>"))
     {
       bareName = bareName.mid(1,bareName.length()-3); // strip < and />

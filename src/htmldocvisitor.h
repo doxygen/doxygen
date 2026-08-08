@@ -18,7 +18,7 @@
 
 #include "docvisitor.h"
 #include "docnode.h"
-#include "qcstring.h"
+#include "dstring.h"
 
 class Definition;
 class MemberDef;
@@ -29,7 +29,7 @@ class TextStream;
 class HtmlDocVisitor final : public DocVisitor
 {
   public:
-    HtmlDocVisitor(TextStream &t,OutputCodeList &ci,const Definition *ctx,const QCString &fn = QCString());
+    HtmlDocVisitor(TextStream &t,OutputCodeList &ci,const Definition *ctx,const DString &fn = DString());
 
     //--------------------------------------
     // visitor functions for leaf nodes
@@ -117,23 +117,23 @@ class HtmlDocVisitor final : public DocVisitor
     // helper functions
     //--------------------------------------
 
-    void writeObfuscatedMailAddress(const QCString &url);
-    void filter(const QCString &str, bool retainNewline = false, bool citeEntry = false);
-    QCString filterQuotedCdataAttr(const QCString &str);
-    void startLink(const QCString &ref,const QCString &file,
-                   const QCString &relPath,const QCString &anchor,
-                   const QCString &tooltip = "");
+    void writeObfuscatedMailAddress(const DString &url);
+    void filter(const DString &str, bool retainNewline = false, bool citeEntry = false);
+    DString filterQuotedCdataAttr(const DString &str);
+    void startLink(const DString &ref,const DString &file,
+                   const DString &relPath,const DString &anchor,
+                   const DString &tooltip = "");
     void endLink();
-    void writeDotFile(const QCString &fileName,const QCString &relPath,const QCString &context,
-                      const QCString &srcFile,int srcLine, bool newFile = true);
-    void writeMscFile(const QCString &fileName,const QCString &relPath,const QCString &context,
-                      const QCString &srcFile,int srcLine, bool newFile = true);
-    void writeDiaFile(const QCString &fileName,const QCString &relPath,const QCString &context,
-                      const QCString &srcFile,int srcLine, bool newFile = true);
-    void writePlantUMLFile(const QCString &fileName,const QCString &relPath,const QCString &context,
-                           const QCString &srcFile,int srcLine);
-    void writeMermaidFile(const QCString &fileName,const QCString &relPath,const QCString &context,
-                          const QCString &srcFile,int srcLine);
+    void writeDotFile(const DString &fileName,const DString &relPath,const DString &context,
+                      const DString &srcFile,int srcLine, bool newFile = true);
+    void writeMscFile(const DString &fileName,const DString &relPath,const DString &context,
+                      const DString &srcFile,int srcLine, bool newFile = true);
+    void writeDiaFile(const DString &fileName,const DString &relPath,const DString &context,
+                      const DString &srcFile,int srcLine, bool newFile = true);
+    void writePlantUMLFile(const DString &fileName,const DString &relPath,const DString &context,
+                           const DString &srcFile,int srcLine);
+    void writeMermaidFile(const DString &fileName,const DString &relPath,const DString &context,
+                          const DString &srcFile,int srcLine);
 
     template<class DocNode>
     void forceEndParagraph(const DocNode &n);
@@ -150,8 +150,8 @@ class HtmlDocVisitor final : public DocVisitor
     bool m_hide = false;
     bool m_insideTitle = false;
     const Definition *m_ctx;
-    QCString m_fileName;
-    QCString m_langExt;
+    DString m_fileName;
+    DString m_langExt;
 };
 
 #endif

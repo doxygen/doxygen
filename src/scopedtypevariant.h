@@ -20,7 +20,7 @@
 #include <vector>
 #include <variant>
 
-#include "qcstring.h"
+#include "dstring.h"
 #include "definition.h"
 
 //! Class representing a local class definition found while
@@ -28,10 +28,10 @@
 class LocalDef
 {
   public:
-    void insertBaseClass(const QCString &name) { m_baseClasses.push_back(name); }
-    std::vector<QCString> baseClasses() const { return m_baseClasses; }
+    void insertBaseClass(const DString &name) { m_baseClasses.push_back(name); }
+    std::vector<DString> baseClasses() const { return m_baseClasses; }
   private:
-    std::vector<QCString> m_baseClasses;
+    std::vector<DString> m_baseClasses;
 };
 
 //-----------------------------------------------------------------------------
@@ -50,17 +50,17 @@ class ScopedTypeVariant
     using GlobalDef = const Definition *;
     using Variant = std::variant<DummyDef,LocalDef,GlobalDef>;
     explicit ScopedTypeVariant(GlobalDef d = nullptr)
-      : m_name(d ? d->name() : QCString()), m_variant(d ? Variant(d) : Variant(DummyDef())) {}
-    explicit ScopedTypeVariant(const QCString &name)
+      : m_name(d ? d->name() : DString()), m_variant(d ? Variant(d) : Variant(DummyDef())) {}
+    explicit ScopedTypeVariant(const DString &name)
       : m_name(name), m_variant(LocalDef()) {}
-    QCString name() const               { return m_name; }
+    DString name() const               { return m_name; }
     LocalDef *localDef()                { return std::get_if<LocalDef>(&m_variant); }
     const LocalDef *localDef() const    { return std::get_if<LocalDef>(&m_variant); }
     const Definition *globalDef() const { auto pp = std::get_if<GlobalDef>(&m_variant); return pp ? *pp : nullptr; }
     bool isDummy() const                { return std::holds_alternative<DummyDef>(m_variant); }
 
   private:
-    QCString m_name;
+    DString m_name;
     Variant m_variant;
 };
 
@@ -96,12 +96,12 @@ class VariableContext
     {
       m_scopes.clear();
     }
-    void addVariable(const QCString &name,ScopedTypeVariant stv)
+    void addVariable(const DString &name,ScopedTypeVariant stv)
     {
       Scope *scope = m_scopes.empty() ? &m_globalScope : &m_scopes.back();
       scope->emplace(name.str(),std::move(stv)); // add it to a list
     }
-    const ScopedTypeVariant *findVariable(const QCString &name)
+    const ScopedTypeVariant *findVariable(const DString &name)
     {
       const ScopedTypeVariant *result = nullptr;
       if (name.empty()) return result;
@@ -141,9 +141,9 @@ class CallContext
   public:
     struct Ctx
     {
-      Ctx(const QCString &name_,const QCString &type_, int bracketCount_) : name(name_), type(type_), bracketCount(bracketCount_) {}
-      QCString name;
-      QCString type;
+      Ctx(const DString &name_,const DString &type_, int bracketCount_) : name(name_), type(type_), bracketCount(bracketCount_) {}
+      DString name;
+      DString type;
       int bracketCount;
       ScopedTypeVariant stv;
     };
@@ -157,11 +157,11 @@ class CallContext
       Ctx &ctx = m_stvList.back();
       ctx.stv=stv;
     }
-    void pushScope(const QCString &name_,const QCString &type_, int bracketCount_)
+    void pushScope(const DString &name_,const DString &type_, int bracketCount_)
     {
       m_stvList.emplace_back(name_,type_,bracketCount_);
     }
-    void popScope(QCString &name_,QCString &type_, int &bracketCount_)
+    void popScope(DString &name_,DString &type_, int &bracketCount_)
     {
       if (m_stvList.size()>1)
       {
@@ -175,7 +175,7 @@ class CallContext
     void clear()
     {
       m_stvList.clear();
-      m_stvList.emplace_back(QCString(),QCString(),0);
+      m_stvList.emplace_back(DString(),DString(),0);
     }
     const ScopedTypeVariant getScope() const
     {

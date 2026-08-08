@@ -21,7 +21,7 @@
 #include <string>
 #include <unordered_map>
 
-#include "qcstring.h"
+#include "dstring.h"
 #include "containers.h"
 
 class FileDef;
@@ -30,10 +30,10 @@ class FileDef;
 class Define
 {
   public:
-    QCString name;
-    QCString definition;
-    QCString fileName;
-    QCString args;
+    DString name;
+    DString definition;
+    DString fileName;
+    DString args;
     FileDef *fileDef = nullptr;
     int lineNr = 1;
     int columnNr = 1;

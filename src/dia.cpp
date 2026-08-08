@@ -25,11 +25,11 @@
 
 static const int maxCmdLine = 40960;
 
-void writeDiaGraphFromFile(const QCString &inFile,const QCString &outDir,
-                           const QCString &outFile,DiaOutputFormat format,
-                           const QCString &srcFile,int srcLine,bool toIndex)
+void writeDiaGraphFromFile(const DString &inFile,const DString &outDir,
+                           const DString &outFile,DiaOutputFormat format,
+                           const DString &srcFile,int srcLine,bool toIndex)
 {
-  QCString absOutFile = outDir;
+  DString absOutFile = outDir;
   absOutFile+=Portable::pathSeparator();
   absOutFile+=outFile;
 
@@ -38,9 +38,9 @@ void writeDiaGraphFromFile(const QCString &inFile,const QCString &outDir,
   // go to the html output directory (i.e. path)
   Dir::setCurrent(outDir.str());
   //printf("Going to dir %s\n",Dir::currentDirPath().c_str());
-  QCString diaExe = Config_getString(DIA_PATH)+"dia"+Portable::commandExtension();
-  QCString diaArgs;
-  QCString extension;
+  DString diaExe = Config_getString(DIA_PATH)+"dia"+Portable::commandExtension();
+  DString diaArgs;
+  DString extension;
   diaArgs+="-n ";
   if (format==DiaOutputFormat::BITMAP)
   {
@@ -70,7 +70,7 @@ void writeDiaGraphFromFile(const QCString &inFile,const QCString &outDir,
   }
   if ( (format==DiaOutputFormat::EPS) && (Config_getBool(USE_PDFLATEX)) )
   {
-    QCString epstopdfArgs(maxCmdLine, QCString::ExplicitSize);
+    DString epstopdfArgs(maxCmdLine, DString::ExplicitSize);
     epstopdfArgs.sprintf("\"%s.eps\" --outfile=\"%s.pdf\"",
                          qPrint(outFile),qPrint(outFile));
     if (Portable::system("epstopdf",epstopdfArgs)!=0)

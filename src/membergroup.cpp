@@ -29,8 +29,8 @@
 #include "entry.h"
 #include "md5.h"
 
-MemberGroup::MemberGroup(const Definition *container,int id,const QCString &hdr,
-                         const QCString &d,const QCString &docFile,int docLine,
+MemberGroup::MemberGroup(const Definition *container,int id,const DString &hdr,
+                         const DString &d,const DString &docFile,int docLine,
                          MemberListContainer con)
   : m_container(container),
     memberList(std::make_unique<MemberList>(MemberListType::MemberGroup(),con)),
@@ -87,27 +87,27 @@ void MemberGroup::writeDeclarations(OutputList &ol,
                bool showInline) const
 {
   //printf("MemberGroup::writeDeclarations() %s\n",qPrint(grpHeader));
-  QCString ldoc = doc;
+  DString ldoc = doc;
   memberList->writeDeclarations(ol,cd,nd,fd,gd,mod,grpHeader,ldoc,false,showInline);
 }
 
 void MemberGroup::writePlainDeclarations(OutputList &ol,bool inGroup,
                const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,const ModuleDef *mod,
-               int indentLevel,const ClassDef *inheritedFrom,const QCString &inheritId
+               int indentLevel,const ClassDef *inheritedFrom,const DString &inheritId
               ) const
 {
   //printf("MemberGroup::writePlainDeclarations() memberList->count()=%d\n",memberList->count());
   memberList->writePlainDeclarations(ol,inGroup,cd,nd,fd,gd,mod,indentLevel,inheritedFrom,inheritId);
 }
 
-void MemberGroup::writeDocumentation(OutputList &ol,const QCString &scopeName,
+void MemberGroup::writeDocumentation(OutputList &ol,const DString &scopeName,
                const Definition *container,bool showEnumValues,bool showInline) const
 {
   //printf("MemberGroup::writeDocumentation() %s\n",qPrint(grpHeader));
-  memberList->writeDocumentation(ol,scopeName,container,QCString(),memberList->listType().toLabel(),showEnumValues,showInline);
+  memberList->writeDocumentation(ol,scopeName,container,DString(),memberList->listType().toLabel(),showEnumValues,showInline);
 }
 
-void MemberGroup::writeDocumentationPage(OutputList &ol,const QCString &scopeName,
+void MemberGroup::writeDocumentationPage(OutputList &ol,const DString &scopeName,
                const DefinitionMutable *container) const
 {
   memberList->writeDocumentationPage(ol,scopeName,container);
@@ -120,7 +120,7 @@ void MemberGroup::setAnonymousEnumType()
 
 void MemberGroup::addGroupedInheritedMembers(OutputList &ol,const ClassDef *cd,
                MemberListType lt,
-               const ClassDef *inheritedFrom,const QCString &inheritId) const
+               const ClassDef *inheritedFrom,const DString &inheritId) const
 {
   //printf("** addGroupedInheritedMembers()\n");
   for (const auto &md : *memberList)

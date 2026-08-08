@@ -19,7 +19,7 @@
 #include <memory>
 
 #include "indexlist.h"
-#include "qcstring.h"
+#include "dstring.h"
 #include "construct.h"
 
 class TextStream;
@@ -44,26 +44,26 @@ class DocSets final : public IndexIntf
     void incContentsDepth();
     void decContentsDepth();
     void addContentsItem(bool isDir,
-                         const QCString &name,
-                         const QCString &ref,
-                         const QCString &file,
-                         const QCString &anchor,
+                         const DString &name,
+                         const DString &ref,
+                         const DString &file,
+                         const DString &anchor,
                          bool separateIndex,
                          bool addToNavIndex,
                          const Definition *def,
-                         const QCString &nameAsHtml
+                         const DString &nameAsHtml
                         );
     void addIndexItem(const Definition *context,const MemberDef *md,
-                      const QCString &sectionAnchor,const QCString &title);
-    void addIndexFile(const QCString &name);
-    void addImageFile(const QCString &) {}
-    void addStyleSheetFile(const QCString &) {}
+                      const DString &sectionAnchor,const DString &title);
+    void addIndexFile(const DString &name);
+    void addImageFile(const DString &) {}
+    void addStyleSheetFile(const DString &) {}
 
   private:
     void writeToken(TextStream &t, const Definition *d,
-                    const QCString &type, const QCString &lang,
-                    const QCString &scope=QCString(), const QCString &anchor=QCString(),
-                    const QCString &decl=QCString());
+                    const DString &type, const DString &lang,
+                    const DString &scope=DString(), const DString &anchor=DString(),
+                    const DString &decl=DString());
     struct Private;
     std::unique_ptr<Private> p;
 

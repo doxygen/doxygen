@@ -30,7 +30,7 @@
 #include <array>
 #include <variant>
 
-#include "qcstring.h"
+#include "dstring.h"
 
 class Definition;
 
@@ -43,18 +43,18 @@ void finalizeSearchIndexer();
 
 struct SIData_CurrentDoc
 {
-  SIData_CurrentDoc(const Definition *d,const QCString &a,bool b)
+  SIData_CurrentDoc(const Definition *d,const DString &a,bool b)
     : ctx(d), anchor(a), isSourceFile(b) {}
   const Definition *ctx = nullptr;
-  QCString anchor;
+  DString anchor;
   bool isSourceFile;
 };
 
 struct SIData_Word
 {
-  SIData_Word(const QCString &w,bool b)
+  SIData_Word(const DString &w,bool b)
     : word(w), hiPrio(b) {}
-  QCString word;
+  DString word;
   bool hiPrio;
 };
 
@@ -65,9 +65,9 @@ class SearchIndex
 {
     struct URL
     {
-      URL(const QCString &n,const QCString &u) : name(n), url(u) {}
-      QCString name;
-      QCString url;
+      URL(const DString &n,const DString &u) : name(n), url(u) {}
+      DString name;
+      DString url;
     };
 
     struct URLInfo
@@ -81,23 +81,23 @@ class SearchIndex
     {
       public:
         using URLInfoMap = std::unordered_map<int,URLInfo>;
-        IndexWord(const QCString &word) : m_word(word) {}
+        IndexWord(const DString &word) : m_word(word) {}
         void addUrlIndex(int,bool);
         URLInfoMap urls() const { return m_urls; }
-        QCString word() const { return m_word; }
+        DString word() const { return m_word; }
 
       private:
-        QCString    m_word;
+        DString    m_word;
         URLInfoMap  m_urls;
     };
 
   public:
     SearchIndex();
-    void setCurrentDoc(const Definition *ctx,const QCString &anchor,bool isSourceFile);
-    void addWord(const QCString &word,bool hiPriority);
-    void write(const QCString &file);
+    void setCurrentDoc(const Definition *ctx,const DString &anchor,bool isSourceFile);
+    void addWord(const DString &word,bool hiPriority);
+    void write(const DString &file);
   private:
-    void addWordRec(const QCString &word,bool hiPrio,bool recurse);
+    void addWordRec(const DString &word,bool hiPrio,bool recurse);
     std::unordered_map<std::string,int> m_words;
     std::vector< std::vector< IndexWord> > m_index;
     std::unordered_map<std::string,int> m_url2IdMap;
@@ -113,20 +113,20 @@ class SearchIndexExternal
 {
     struct SearchDocEntry
     {
-      QCString type;
-      QCString name;
-      QCString args;
-      QCString extId;
-      QCString url;
-      QCString importantText;
-      QCString normalText;
+      DString type;
+      DString name;
+      DString args;
+      DString extId;
+      DString url;
+      DString importantText;
+      DString normalText;
     };
 
   public:
     SearchIndexExternal();
-    void setCurrentDoc(const Definition *ctx,const QCString &anchor,bool isSourceFile);
-    void addWord(const QCString &word,bool hiPriority);
-    void write(const QCString &file);
+    void setCurrentDoc(const Definition *ctx,const DString &anchor,bool isSourceFile);
+    void addWord(const DString &word,bool hiPriority);
+    void write(const DString &file);
   private:
     std::map<std::string,SearchDocEntry> m_docEntries;
     SearchDocEntry *m_current = nullptr;
@@ -144,7 +144,7 @@ class SearchIndexIntf
     SearchIndexIntf() : m_kind(Disabled) {}
     bool enabled() const { return m_kind!=Disabled; }
 
-    void setCurrentDoc(const Definition *ctx,const QCString &anchor,bool isSourceFile)
+    void setCurrentDoc(const Definition *ctx,const DString &anchor,bool isSourceFile)
     {
       if (std::holds_alternative<SearchIndex>(m_variant))
       {
@@ -155,7 +155,7 @@ class SearchIndexIntf
         std::get<SearchIndexExternal>(m_variant).setCurrentDoc(ctx,anchor,isSourceFile);
       }
     }
-    void addWord(const QCString &word,bool hiPriority)
+    void addWord(const DString &word,bool hiPriority)
     {
       if (std::holds_alternative<SearchIndex>(m_variant))
       {
@@ -166,7 +166,7 @@ class SearchIndexIntf
         std::get<SearchIndexExternal>(m_variant).addWord(word,hiPriority);
       }
     }
-    void write(const QCString &file)
+    void write(const DString &file)
     {
       if (std::holds_alternative<SearchIndex>(m_variant))
       {

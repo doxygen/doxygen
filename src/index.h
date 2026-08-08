@@ -19,7 +19,7 @@
 #include <memory>
 #include <vector>
 #include <map>
-#include "qcstring.h"
+#include "dstring.h"
 #include "construct.h"
 
 class Definition;
@@ -223,14 +223,14 @@ class Index
 
 void writeGraphInfo(OutputList &ol);
 void writeIndexHierarchy(OutputList &ol);
-void startTitle(OutputList &ol,const QCString &fileName,const DefinitionMutable *def=nullptr);
-void endTitle(OutputList &ol,const QCString &fileName,const QCString &name);
-void startFile(OutputList &ol,const QCString &name,bool isSource,const QCString &manName,
-               const QCString &title,HighlightedItem hli=HighlightedItem::None,
-               bool additionalIndices=false,const QCString &altSidebarName=QCString(), int hierarchyLevel=0,
-               const QCString &allMembersFile=QCString());
+void startTitle(OutputList &ol,const DString &fileName,const DefinitionMutable *def=nullptr);
+void endTitle(OutputList &ol,const DString &fileName,const DString &name);
+void startFile(OutputList &ol,const DString &name,bool isSource,const DString &manName,
+               const DString &title,HighlightedItem hli=HighlightedItem::None,
+               bool additionalIndices=false,const DString &altSidebarName=DString(), int hierarchyLevel=0,
+               const DString &allMembersFile=DString());
 void endFile(OutputList &ol,bool skipNavIndex=false,bool skipEndContents=false,
-             const QCString &navPath=QCString());
+             const DString &navPath=DString());
 void endFileWithNavPath(OutputList &ol,const DefinitionMutable *d,bool showPageNavigation=true);
 
 #endif

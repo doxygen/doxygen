@@ -18,7 +18,7 @@
 
 #include <memory>
 
-#include "qcstring.h"
+#include "dstring.h"
 #include "filedef.h"
 
 #include "dotnode.h"
@@ -34,8 +34,8 @@ class DotInclDepGraph final : public DotGraph
     ~DotInclDepGraph() override;
     NON_COPYABLE(DotInclDepGraph)
 
-    QCString writeGraph(TextStream &t, GraphOutputFormat gf, EmbeddedOutputFormat ef,
-                        const QCString &path,const QCString &fileName,const QCString &relPath,
+    DString writeGraph(TextStream &t, GraphOutputFormat gf, EmbeddedOutputFormat ef,
+                        const DString &path,const DString &fileName,const DString &relPath,
                         bool writeImageMap=true,int graphId=-1);
     bool isTrivial() const;
     bool isTooBig() const;
@@ -44,20 +44,20 @@ class DotInclDepGraph final : public DotGraph
     void writeDocbook(TextStream &t);
 
   protected:
-    QCString getBaseName() const override;
-    QCString getMapLabel() const override;
+    DString getBaseName() const override;
+    DString getMapLabel() const override;
     void computeTheGraph() override;
 
   private:
-    QCString diskName() const;
+    DString diskName() const;
     void buildGraph(DotNode *n,const FileDef *fd,int distance);
     void determineVisibleNodes(DotNodeDeque &queue,int &maxNodes);
     void determineTruncatedNodes(DotNodeDeque &queue);
 
     DotNode        *m_startNode;
     DotNodeMap      m_usedNodes;
-    QCString        m_inclDepFileName;
-    QCString        m_inclByDepFileName;
+    DString        m_inclDepFileName;
+    DString        m_inclByDepFileName;
     bool            m_inverse;
 };
 

@@ -29,8 +29,8 @@
 
 static const int maxCmdLine = 40960;
 
-static bool convertMapFile(TextStream &t,const QCString &mapName,const QCString &relPath,
-                           const QCString &context,const QCString &srcFile,int srcLine)
+static bool convertMapFile(TextStream &t,const DString &mapName,const DString &relPath,
+                           const DString &context,const DString &srcFile,int srcLine)
 {
   std::ifstream f = Portable::openInputStream(mapName);
   if (!f.is_open())
@@ -54,7 +54,7 @@ static bool convertMapFile(TextStream &t,const QCString &mapName,const QCString 
       // obtain the url and the coordinates in the order used by graphviz-1.5
       sscanf(line.c_str(),"rect %s %d,%d %d,%d",url,&x1,&y1,&x2,&y2);
 
-      if (qstrcmp(url,"\\ref")==0 || qstrcmp(url,"@ref")==0)
+      if (dstrcmp(url,"\\ref")==0 || dstrcmp(url,"@ref")==0)
       {
         isRef = true;
         sscanf(line.c_str(),"rect %s %s %d,%d %d,%d",ref,url,&x1,&y1,&x2,&y2);
@@ -82,7 +82,7 @@ static bool convertMapFile(TextStream &t,const QCString &mapName,const QCString 
         }
         if (!df->file().empty())
         {
-          QCString fn = df->file();
+          DString fn = df->file();
           addHtmlExtensionIfMissing(fn);
           t << fn;
         }
@@ -109,13 +109,13 @@ static bool convertMapFile(TextStream &t,const QCString &mapName,const QCString 
   return true;
 }
 
-static bool do_mscgen_generate(const QCString& inFile,const QCString& outFile,mscgen_format_t msc_format,
-                               const QCString &srcFile,int srcLine)
+static bool do_mscgen_generate(const DString& inFile,const DString& outFile,mscgen_format_t msc_format,
+                               const DString &srcFile,int srcLine)
 {
   auto mscgen_tool = Config_getString(MSCGEN_TOOL).stripWhiteSpace();
   if (!mscgen_tool.empty()) // use external mscgen tool
   {
-    QCString type;
+    DString type;
     switch (msc_format)
     {
       case mscgen_format_png:
@@ -154,17 +154,17 @@ static bool do_mscgen_generate(const QCString& inFile,const QCString& outFile,ms
   return true;
 }
 
-void writeMscGraphFromFile(const QCString &inFile,const QCString &outDir,
-                           const QCString &outFile,MscOutputFormat format,
-                           const QCString &srcFile,int srcLine,bool toIndex
+void writeMscGraphFromFile(const DString &inFile,const DString &outDir,
+                           const DString &outFile,MscOutputFormat format,
+                           const DString &srcFile,int srcLine,bool toIndex
                           )
 {
-  QCString absOutFile = outDir;
+  DString absOutFile = outDir;
   absOutFile+=Portable::pathSeparator();
   absOutFile+=outFile;
 
   mscgen_format_t msc_format = mscgen_format_png;
-  QCString imgName = absOutFile;
+  DString imgName = absOutFile;
   switch (format)
   {
     case MscOutputFormat::BITMAP:
@@ -189,7 +189,7 @@ void writeMscGraphFromFile(const QCString &inFile,const QCString &outDir,
 
   if ( (format==MscOutputFormat::EPS) && (Config_getBool(USE_PDFLATEX)) )
   {
-    QCString epstopdfArgs(maxCmdLine, QCString::ExplicitSize);
+    DString epstopdfArgs(maxCmdLine, DString::ExplicitSize);
     epstopdfArgs.sprintf("\"%s.eps\" --outfile=\"%s.pdf\"",
                          qPrint(absOutFile),qPrint(absOutFile));
     if (Portable::system("epstopdf",epstopdfArgs)!=0)
@@ -204,9 +204,9 @@ void writeMscGraphFromFile(const QCString &inFile,const QCString &outDir,
 
   size_t i0 = imgName.rfind('/');
   size_t i1 = imgName.rfind('\\');
-  size_t i  = i0!=QCString::npos && i1!=QCString::npos ? std::max(i0,i1) :
-              i0!=QCString::npos ? i0 : i1;
-  if (i!=QCString::npos) // strip path
+  size_t i  = i0!=DString::npos && i1!=DString::npos ? std::max(i0,i1) :
+              i0!=DString::npos ? i0 : i1;
+  if (i!=DString::npos) // strip path
   {
     imgName=imgName.mid(i+1);
   }
@@ -214,11 +214,11 @@ void writeMscGraphFromFile(const QCString &inFile,const QCString &outDir,
 
 }
 
-static QCString getMscImageMapFromFile(const QCString& inFile, const QCString& /* outDir */,
-                                const QCString& relPath,const QCString& context,
-                                bool writeSVGMap,const QCString &srcFile,int srcLine)
+static DString getMscImageMapFromFile(const DString& inFile, const DString& /* outDir */,
+                                const DString& relPath,const DString& context,
+                                bool writeSVGMap,const DString &srcFile,int srcLine)
 {
-  QCString outFile = inFile + ".map";
+  DString outFile = inFile + ".map";
 
   if (!do_mscgen_generate(inFile,outFile,
                             writeSVGMap ? mscgen_format_svgmap : mscgen_format_pngmap,
@@ -233,17 +233,17 @@ static QCString getMscImageMapFromFile(const QCString& inFile, const QCString& /
   return t.str();
 }
 
-void writeMscImageMapFromFile(TextStream &t,const QCString &inFile,
-                              const QCString &outDir,
-                              const QCString &relPath,
-                              const QCString &baseName,
-                              const QCString &context,
+void writeMscImageMapFromFile(TextStream &t,const DString &inFile,
+                              const DString &outDir,
+                              const DString &relPath,
+                              const DString &baseName,
+                              const DString &context,
 			      MscOutputFormat format,
-                              const QCString &srcFile,
+                              const DString &srcFile,
                               int srcLine
  			    )
 {
-  QCString mapName = baseName+".map";
+  DString mapName = baseName+".map";
   t << "<img src=\"" << relPath << baseName << ".";
   switch (format)
   {
@@ -259,7 +259,7 @@ void writeMscImageMapFromFile(TextStream &t,const QCString &inFile,
     default:
       t << "unknown";
   }
-  QCString imap = getMscImageMapFromFile(inFile,outDir,relPath,context,format==MscOutputFormat::SVG,srcFile,srcLine);
+  DString imap = getMscImageMapFromFile(inFile,outDir,relPath,context,format==MscOutputFormat::SVG,srcFile,srcLine);
   if (!imap.empty())
   {
     t << "\" alt=\""

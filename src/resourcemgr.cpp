@@ -52,13 +52,13 @@ void ResourceMgr::registerResources(std::initializer_list<Resource> resources)
   }
 }
 
-bool ResourceMgr::writeCategory(const QCString &categoryName,const QCString &targetDir) const
+bool ResourceMgr::writeCategory(const DString &categoryName,const DString &targetDir) const
 {
   for (auto &[name,res] : p->resources)
   {
     if (res.category==categoryName)
     {
-      QCString pathName = targetDir+"/"+res.name;
+      DString pathName = targetDir+"/"+res.name;
       std::ofstream f = Portable::openOutputStream(pathName);
       bool ok=false;
       if (f.is_open())
@@ -76,9 +76,9 @@ bool ResourceMgr::writeCategory(const QCString &categoryName,const QCString &tar
   return true;
 }
 
-bool ResourceMgr::copyResourceAs(const QCString &name,const QCString &targetDir,const QCString &targetName,bool append) const
+bool ResourceMgr::copyResourceAs(const DString &name,const DString &targetDir,const DString &targetName,bool append) const
 {
-  QCString pathName = targetDir+"/"+targetName;
+  DString pathName = targetDir+"/"+targetName;
   const Resource *res = get(name);
   if (res)
   {
@@ -104,7 +104,7 @@ bool ResourceMgr::copyResourceAs(const QCString &name,const QCString &targetDir,
           std::ofstream t = Portable::openOutputStream(pathName,append);
           if (t.is_open())
           {
-            QCString buf(res->size, QCString::ExplicitSize);
+            DString buf(res->size, DString::ExplicitSize);
             memcpy(buf.rawData(),res->data,res->size);
             t << replaceColorMarkers(buf);
             return true;
@@ -119,30 +119,30 @@ bool ResourceMgr::copyResourceAs(const QCString &name,const QCString &targetDir,
   return false;
 }
 
-bool ResourceMgr::copyResource(const QCString &name,const QCString &targetDir) const
+bool ResourceMgr::copyResource(const DString &name,const DString &targetDir) const
 {
   return copyResourceAs(name,targetDir,name);
 }
 
-const Resource *ResourceMgr::get(const QCString &name) const
+const Resource *ResourceMgr::get(const DString &name) const
 {
   auto it = p->resources.find(name.str());
   if (it!=p->resources.end()) return &it->second;
   return nullptr;
 }
 
-QCString ResourceMgr::getAsString(const QCString &name) const
+DString ResourceMgr::getAsString(const DString &name) const
 {
   const Resource *res = get(name);
   if (res)
   {
-    QCString result(res->size, QCString::ExplicitSize);
+    DString result(res->size, DString::ExplicitSize);
     memcpy(result.rawData(),res->data,res->size);
     return result;
   }
   else
   {
-    return QCString();
+    return DString();
   }
 }
 

@@ -165,9 +165,9 @@ void OutputList::popGeneratorState()
   syncEnabled();
 }
 
-void OutputList::generateDoc(const QCString &fileName,int startLine,
+void OutputList::generateDoc(const DString &fileName,int startLine,
                   const Definition *ctx,const MemberDef * md,
-                  const QCString &docStr,const DocOptions &options)
+                  const DString &docStr,const DocOptions &options)
 {
   if (docStr.empty()) return;
 
@@ -189,14 +189,14 @@ void OutputList::generateDoc(const QCString &fileName,int startLine,
   if (ast && count>0) writeDoc(ast.get(),ctx,md,options.sectionLevel());
 }
 
-void OutputList::startFile(const QCString &name,bool isSource,const QCString &manName,const QCString &title, int hierarchyLevel)
+void OutputList::startFile(const DString &name,bool isSource,const DString &manName,const DString &title, int hierarchyLevel)
 {
   newId();
   m_codeGenList.setId(m_id);
   foreach(&OutputGenIntf::startFile,name,isSource,manName,title,m_id,hierarchyLevel);
 }
 
-void OutputList::parseText(const QCString &textStr)
+void OutputList::parseText(const DString &textStr)
 {
 
   auto count=std::count_if(m_outputGenList.begin(),m_outputGenList.end(),
@@ -228,7 +228,7 @@ void OutputCodeRecorder::startNewLine(int lineNr)
   }
 }
 
-void OutputCodeRecorder::codify(const QCString &s)
+void OutputCodeRecorder::codify(const DString &s)
 {
   m_calls.emplace_back([]() { return true; },
                        [=](OutputCodeList *ol) { ol->codify(s); },
@@ -255,9 +255,9 @@ void OutputCodeRecorder::endSpecialComment()
 }
 
 void OutputCodeRecorder::writeCodeLink(CodeSymbolType type,
-                   const QCString &ref,const QCString &file,
-                   const QCString &anchor,const QCString &name,
-                   const QCString &tooltip)
+                   const DString &ref,const DString &file,
+                   const DString &anchor,const DString &name,
+                   const DString &tooltip)
 {
   m_calls.emplace_back([](){ return true; },
                        [=](OutputCodeList *ol) { ol->writeCodeLink(type,ref,file,anchor,name,tooltip); },
@@ -265,7 +265,7 @@ void OutputCodeRecorder::writeCodeLink(CodeSymbolType type,
                       );
 }
 
-void OutputCodeRecorder::writeLineNumber(const QCString &ref,const QCString &file,const QCString &anchor,
+void OutputCodeRecorder::writeLineNumber(const DString &ref,const DString &file,const DString &anchor,
                      int lineNumber, bool writeLineAnchor)
 {
   startNewLine(lineNumber);
@@ -275,8 +275,8 @@ void OutputCodeRecorder::writeLineNumber(const QCString &ref,const QCString &fil
                       );
 }
 
-void OutputCodeRecorder::writeTooltip(const QCString &id, const DocLinkInfo &docInfo, const QCString &decl,
-                  const QCString &desc, const SourceLinkInfo &defInfo, const SourceLinkInfo &declInfo)
+void OutputCodeRecorder::writeTooltip(const DString &id, const DocLinkInfo &docInfo, const DString &decl,
+                  const DString &desc, const SourceLinkInfo &defInfo, const SourceLinkInfo &declInfo)
 {
   m_calls.emplace_back([](){ return true; },
                        [=](OutputCodeList *ol) { ol->writeTooltip(id,docInfo,decl,desc,defInfo,declInfo); },
@@ -301,7 +301,7 @@ void OutputCodeRecorder::endCodeLine()
                       );
 }
 
-void OutputCodeRecorder::startFontClass(const QCString &c)
+void OutputCodeRecorder::startFontClass(const DString &c)
 {
   m_calls.emplace_back([]() { return true; },
                        [=](OutputCodeList *ol) { ol->startFontClass(c); },
@@ -317,7 +317,7 @@ void OutputCodeRecorder::endFontClass()
                       );
 }
 
-void OutputCodeRecorder::writeCodeAnchor(const QCString &name)
+void OutputCodeRecorder::writeCodeAnchor(const DString &name)
 {
   m_calls.emplace_back([]() { return true; },
                        [=](OutputCodeList *ol){ ol->writeCodeAnchor(name); },
@@ -325,15 +325,15 @@ void OutputCodeRecorder::writeCodeAnchor(const QCString &name)
                       );
 }
 
-void OutputCodeRecorder::startCodeFragment(const QCString &style)
+void OutputCodeRecorder::startCodeFragment(const DString &style)
 {
 }
 
-void OutputCodeRecorder::endCodeFragment(const QCString &style)
+void OutputCodeRecorder::endCodeFragment(const DString &style)
 {
 }
 
-void OutputCodeRecorder::startFold(int lineNr,const QCString &startMarker,const QCString &endMarker)
+void OutputCodeRecorder::startFold(int lineNr,const DString &startMarker,const DString &endMarker)
 {
   m_calls.emplace_back([]() { return true; },
                        [=](OutputCodeList *ol) { ol->startFold(lineNr,startMarker,endMarker); },

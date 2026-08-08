@@ -24,9 +24,9 @@
 #include "dir.h"
 #include "vhdldocgen.h"
 
-QCString DotGfxHierarchyTable::getBaseName() const
+DString DotGfxHierarchyTable::getBaseName() const
 {
-  QCString baseName;
+  DString baseName;
   if (m_prefix.empty())
     baseName.sprintf("inherit_graph_%d", m_graphId);
   else
@@ -57,13 +57,13 @@ void DotGfxHierarchyTable::computeTheGraph()
   m_theGraph = md5stream.str();
 }
 
-QCString DotGfxHierarchyTable::getMapLabel() const
+DString DotGfxHierarchyTable::getMapLabel() const
 {
   return escapeCharsInString(m_rootSubgraphNode->label(),false);
 }
 
 void DotGfxHierarchyTable::createGraph(DotNode *n,TextStream &out,
-  const QCString &path,const QCString &fileName,int id)
+  const DString &path,const DString &fileName,int id)
 {
   m_rootSubgraphNode = n;
   m_graphId = id;
@@ -73,7 +73,7 @@ void DotGfxHierarchyTable::createGraph(DotNode *n,TextStream &out,
 }
 
 void DotGfxHierarchyTable::writeGraph(TextStream &out,
-  const QCString &path,const QCString &fileName)
+  const DString &path,const DString &fileName)
 {
   //printf("DotGfxHierarchyTable::writeGraph(%s)\n",name);
   //printf("m_rootNodes=%p count=%d\n",m_rootNodes,m_rootNodes->count());
@@ -92,7 +92,7 @@ void DotGfxHierarchyTable::writeGraph(TextStream &out,
 
   int count=0;
   std::stable_sort(m_rootSubgraphs.begin(),m_rootSubgraphs.end(),
-            [](auto n1,auto n2) { return qstricmp_sort(n1->label(),n2->label())<0; });
+            [](auto n1,auto n2) { return dstricmp_sort(n1->label(),n2->label())<0; });
   for (auto n : m_rootSubgraphs)
   {
     out << "<tr><td>";
@@ -139,7 +139,7 @@ void DotGfxHierarchyTable::addHierarchy(DotNode *n,const ClassDef *cd,ClassDefSe
       }
       else
       {
-        QCString tmp_url="";
+        DString tmp_url="";
         if (bClass->isLinkable() && !bClass->isHidden())
         {
           tmp_url=bClass->getReference()+"$"+bClass->getOutputFileBase();
@@ -148,7 +148,7 @@ void DotGfxHierarchyTable::addHierarchy(DotNode *n,const ClassDef *cd,ClassDefSe
             tmp_url+="#"+bClass->anchor();
           }
         }
-        QCString tooltip = bClass->briefDescriptionAsTooltip();
+        DString tooltip = bClass->briefDescriptionAsTooltip();
         auto bn = std::make_unique<DotNode>(this,
             bClass->displayName(),
             tooltip,
@@ -195,7 +195,7 @@ void DotGfxHierarchyTable::addClassList(const ClassLinkedMap &cl,ClassDefSet &vi
       cd->isVisibleInHierarchy()
       ) // root node in the forest
     {
-      QCString tmp_url="";
+      DString tmp_url="";
       if (cd->isLinkable() && !cd->isHidden())
       {
         tmp_url=cd->getReference()+"$"+cd->getOutputFileBase();
@@ -205,7 +205,7 @@ void DotGfxHierarchyTable::addClassList(const ClassLinkedMap &cl,ClassDefSet &vi
         }
       }
       //printf("Inserting root class %s\n",qPrint(cd->name()));
-      QCString tooltip = cd->briefDescriptionAsTooltip();
+      DString tooltip = cd->briefDescriptionAsTooltip();
       auto n = std::make_unique<DotNode>(this,
         cd->displayName(),
         tooltip,
@@ -223,7 +223,7 @@ void DotGfxHierarchyTable::addClassList(const ClassLinkedMap &cl,ClassDefSet &vi
   }
 }
 
-DotGfxHierarchyTable::DotGfxHierarchyTable(const QCString &prefix,ClassDef::CompoundType ct)
+DotGfxHierarchyTable::DotGfxHierarchyTable(const DString &prefix,ClassDef::CompoundType ct)
   : m_prefix(prefix)
   , m_classType(ct)
 {

@@ -19,7 +19,7 @@
 #include <memory>
 #include <string>
 
-#include "qcstring.h"
+#include "dstring.h"
 #include "containers.h"
 
 class Dir;
@@ -28,13 +28,13 @@ class Dir;
 class Formula
 {
   public:
-    Formula(const QCString &text,int id,int width=-1,int height=-1)
+    Formula(const DString &text,int id,int width=-1,int height=-1)
       : m_text(text), m_id(id), m_width(width), m_height(height) {}
 
     int width() const     { return m_width;  }
     int height() const    { return m_height; }
     int id() const        { return m_id;     }
-    QCString text() const { return m_text;   }
+    DString text() const { return m_text;   }
     bool isCached() const { return m_cached && !m_forceRegen; }
     bool isCachedDark() const { return m_cached && !m_forceRegen; }
     void setWidth(int width)    { m_width  = width;  }
@@ -45,7 +45,7 @@ class Formula
     void setCached(bool cached) { m_cached = cached; m_forceRegen = m_forceRegen || !cached; }
     void setCachedDark(bool cached) { m_cachedDark = cached; m_forceRegen = m_forceRegen || !cached; }
 
-    QCString m_text;
+    DString m_text;
     int m_id;
     int m_width;
     int m_height;
@@ -62,14 +62,14 @@ class FormulaManager
 
     //! @name repository functions
     //! @{
-    void initFromRepository(const QCString &dir);
+    void initFromRepository(const DString &dir);
     void checkRepositories();
     //! @}
 
     //! @name formula functions
     //! @{
     void           clear();
-    int            addFormula(const QCString &formulaText,int width=-1,int height=-1);
+    int            addFormula(const DString &formulaText,int width=-1,int height=-1);
     const Formula *findFormula(int formulaId) const;
     bool           hasFormulas() const;
     //! @}
@@ -79,12 +79,12 @@ class FormulaManager
     enum class Format { Bitmap, Vector };
     enum class HighDPI { On, Off };
     enum class Mode { Dark, Light };
-    void generateImages(const QCString &outputDir,bool toIndex,Format format,HighDPI hd = HighDPI::Off);
+    void generateImages(const DString &outputDir,bool toIndex,Format format,HighDPI hd = HighDPI::Off);
     //! @}
 
   private:
     void createFormulasTexFile(Dir &d,Format format,HighDPI hd,Mode mode,bool toIndex);
-    void createLatexFile(const QCString &fileName,Format format,Mode mode,IntVector &formulasToGenerate,bool toIndex);
+    void createLatexFile(const DString &fileName,Format format,Mode mode,IntVector &formulasToGenerate,bool toIndex);
     FormulaManager();
     struct Private;
     std::unique_ptr<Private> p;

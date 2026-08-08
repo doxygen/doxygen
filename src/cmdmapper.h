@@ -19,7 +19,7 @@
 #include <unordered_map>
 #include <string>
 #include <memory>
-#include "qcstring.h"
+#include "dstring.h"
 
 template<typename T>
 using CommandMap = std::unordered_map< std::string, T >;
@@ -253,18 +253,18 @@ template<typename T>
 class Mapper
 {
   public:
-    T map(const QCString &n) const
+    T map(const DString &n) const
     {
       if (n.empty()) return T::UNKNOWN;
-      QCString name = n;
+      DString name = n;
       if (!m_cs) name=name.lower();
       auto it = m_map.find(name.str());
       return it!=m_map.end() ? it->second : T::UNKNOWN;
     }
 
-    QCString find(const T n) const
+    DString find(const T n) const
     {
-      QCString result;
+      DString result;
       for (const auto &[name,id] : m_map)
       {
         T curVal = id;

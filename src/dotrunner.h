@@ -18,7 +18,7 @@
 
 #include <vector>
 
-#include "qcstring.h"
+#include "dstring.h"
 #include "dotjob.h"
 
 /** Helper class to run dot from doxygen. Holds a queue of jobs, each
@@ -36,10 +36,10 @@ class DotRunner
      */
     bool run(const DotJobs &jobs);
 
-    static bool readBoundingBox(const QCString &fileName, int* width, int* height, bool isEps);
+    static bool readBoundingBox(const DString &fileName, int* width, int* height, bool isEps);
 
   private:
-    QCString            m_dotExe;
+    DString            m_dotExe;
 };
 
 #endif

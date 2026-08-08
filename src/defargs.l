@@ -82,15 +82,15 @@ struct defargsYY_state
   std::unique_ptr<ArgumentList> &argList;
   SrcLangExt       lang;
   int              inputPosition = 0;
-  QCString        *copyArgValue = nullptr;
-  QCString         curArgTypeName;
-  QCString         curArgDefValue;
-  QCString         curArgName;
-  QCString         curArgDocs;
-  QCString         curArgAttrib;
-  QCString         curArgArray;
-  QCString         curTypeConstraint;
-  QCString         extraTypeChars;
+  DString        *copyArgValue = nullptr;
+  DString         curArgTypeName;
+  DString         curArgDefValue;
+  DString         curArgName;
+  DString         curArgDocs;
+  DString         curArgAttrib;
+  DString         curArgArray;
+  DString         curTypeConstraint;
+  DString         extraTypeChars;
   int              argRoundCount = 0;
   int              argSquareCount = 0;
   int              argSharpCount = 0;
@@ -99,13 +99,13 @@ struct defargsYY_state
   int              lastDocContext = 0;
   int              lastDocChar = 0;
   int              lastExtendsContext = 0;
-  QCString         delimiter;
+  DString         delimiter;
 };
 
 [[maybe_unused]] static const char *stateToString(int state);
 
 static int yyread(yyscan_t yyscanner,char *buf,int max_size);
-static bool nameIsActuallyPartOfType(QCString &name);
+static bool nameIsActuallyPartOfType(DString &name);
 
 /* -----------------------------------------------------------------
  */
@@ -210,7 +210,7 @@ CPPC  "/\/"
 <ReadFuncArgPtr>")"			{ // redundant braces detected / remove them
 					  size_t i=yyextra->curArgTypeName.rfind('(');
                                           size_t l=yyextra->curArgTypeName.length();
-					  if (i!=QCString::npos)
+					  if (i!=DString::npos)
                                           {
 					    yyextra->curArgTypeName=yyextra->curArgTypeName.left(i)+
 					                            yyextra->curArgTypeName.right(l-i-1);
@@ -381,8 +381,8 @@ CPPC  "/\/"
 <ReadFuncArgType,ReadFuncArgDef>[,)>]{B}*({CCS}[*!]|{CPPC}[/!])"<" {
 					  yyextra->lastDocContext=YY_START;
 					  yyextra->lastDocChar=*yytext;  
-					  QCString text(yytext);
-					  if (text.find("//")!=QCString::npos)
+					  DString text(yytext);
+					  if (text.find("//")!=DString::npos)
 					    BEGIN( ReadDocLine );
 					  else
 					    BEGIN( ReadDocBlock );
@@ -413,7 +413,7 @@ CPPC  "/\/"
 					      if (i==l-1 && yyextra->curArgTypeName.at(i)==')') // function argument
 					      {
 						size_t bis=yyextra->curArgTypeName.find('(');
-						int bi = bis!=QCString::npos ? static_cast<int>(bis) : -1;
+						int bi = bis!=DString::npos ? static_cast<int>(bis) : -1;
 						int fi = bi-1;
 						//printf("func arg fi=%d\n",fi);
 						while (fi>=0 && (isId(yyextra->curArgTypeName.at(fi)) || yyextra->curArgTypeName.at(fi)==':')) fi--;
@@ -470,7 +470,7 @@ CPPC  "/\/"
 						            a.array.at(alen-1)==')') // fix-up for int *(a[10])
 					      {
 						size_t pi=a.array.find('[');
-                                                i = pi!=QCString::npos ? static_cast<int>(pi-1) : -1;
+                                                i = pi!=DString::npos ? static_cast<int>(pi-1) : -1;
 						a.array = a.array.mid(1,alen-2);
 						if (i>0 && a.name.empty())
 						{
@@ -515,7 +515,7 @@ CPPC  "/\/"
                                            }
                                         }
 <ReadFuncArgType,ReadFuncArgPtr>"$"?{ID} { 
-  					  QCString name(yytext);
+  					  DString name(yytext);
 					  if (YY_START==ReadFuncArgType && yyextra->curArgArray=="[]") // Java style array
 					  {
 					    yyextra->curArgTypeName+=" []";
@@ -581,7 +581,7 @@ CPPC  "/\/"
                                           BEGIN(FuncQual);
 					}
 <FuncQual>"->"                          { // C++11 trailing return type
-                                          yyextra->argList->setTrailingReturnType(QCString(" -> "));
+                                          yyextra->argList->setTrailingReturnType(DString(" -> "));
                                           BEGIN(TrailingReturn);
                                         }
 <TrailingReturn>{B}/("final"|"override"){B}*  {
@@ -803,7 +803,7 @@ const char * KeywordHash::find (const char *str, size_t len)
     {
       const char *s = wordlist[key];
 
-      if (*str == *s && !qstrcmp (str + 1, s + 1))
+      if (*str == *s && !dstrcmp (str + 1, s + 1))
         return s;
     }
   }
@@ -813,7 +813,7 @@ const char * KeywordHash::find (const char *str, size_t len)
 //--- end gperf generated code ----------------------------------------------------------
 
 /* bug_520975 */
-static bool nameIsActuallyPartOfType(QCString &name)
+static bool nameIsActuallyPartOfType(DString &name)
 {
   return KeywordHash::find(name.data(),name.length())!=nullptr;
 }
@@ -825,7 +825,7 @@ static bool nameIsActuallyPartOfType(QCString &name)
  *              for complex types are written to
  */
  
-std::unique_ptr<ArgumentList> stringToArgumentList(SrcLangExt lang, const QCString &argsString,QCString *extraTypeChars)
+std::unique_ptr<ArgumentList> stringToArgumentList(SrcLangExt lang, const DString &argsString,DString *extraTypeChars)
 {
   std::unique_ptr<ArgumentList> al = std::make_unique<ArgumentList>();
   if (argsString.empty()) return al;

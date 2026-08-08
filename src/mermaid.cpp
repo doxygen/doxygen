@@ -40,7 +40,7 @@ MermaidManager::MermaidManager()
 {
 }
 
-QCString MermaidManager::imageExtension(ImageFormat format)
+DString MermaidManager::imageExtension(ImageFormat format)
 {
   switch (format)
   {
@@ -67,12 +67,12 @@ MermaidManager::ImageFormat MermaidManager::convertToImageFormat(OutputFormat ou
   return ImageFormat::PNG;
 }
 
-QCString MermaidManager::writeMermaidSource(const QCString &outDirArg, const QCString &fileName,
-                                            const QCString &content, ImageFormat imageFormat,
-                                            const QCString &srcFile, int srcLine)
+DString MermaidManager::writeMermaidSource(const DString &outDirArg, const DString &fileName,
+                                            const DString &content, ImageFormat imageFormat,
+                                            const DString &srcFile, int srcLine)
 {
-  QCString outDir(outDirArg);
-  QCString baseName;
+  DString outDir(outDirArg);
+  DString baseName;
 
   // strip any trailing slashes and backslashes
   while (!outDir.empty() && (outDir.at(outDir.length()-1)=='/' || outDir.at(outDir.length()-1)=='\\'))
@@ -83,16 +83,16 @@ QCString MermaidManager::writeMermaidSource(const QCString &outDirArg, const QCS
   if (fileName.empty())
   {
     std::lock_guard<std::mutex> lock(g_mermaidMutex);
-    baseName = outDir + "/inline_mermaid_" + QCString().setNum(g_mermaidIndex++);
+    baseName = outDir + "/inline_mermaid_" + DString().setNum(g_mermaidIndex++);
   }
   else
   {
     baseName = fileName;
-    if (size_t i = baseName.rfind('.'); i!=QCString::npos) baseName = baseName.left(i);
+    if (size_t i = baseName.rfind('.'); i!=DString::npos) baseName = baseName.left(i);
     baseName.prepend(outDir + "/");
   }
 
-  QCString mmdName = baseName + ".mmd";
+  DString mmdName = baseName + ".mmd";
 
   Debug::print(Debug::Mermaid, 0, "*** writeMermaidSource baseName: {}\n", baseName);
   Debug::print(Debug::Mermaid, 0, "*** writeMermaidSource mmdName: {}\n", mmdName);
@@ -113,12 +113,12 @@ QCString MermaidManager::writeMermaidSource(const QCString &outDirArg, const QCS
   return baseName;
 }
 
-void MermaidManager::generateMermaidOutput(const QCString &baseName, const QCString &/*outDir*/,
+void MermaidManager::generateMermaidOutput(const DString &baseName, const DString &/*outDir*/,
                                            ImageFormat imageFormat, bool toIndex)
 {
   if (!toIndex) return;
-  QCString imgName = baseName;
-  if (size_t i = imgName.rfind('/'); i!=QCString::npos)
+  DString imgName = baseName;
+  if (size_t i = imgName.rfind('/'); i!=DString::npos)
   {
     imgName = imgName.mid(i + 1);
   }
@@ -131,23 +131,23 @@ static void runMermaid(const MermaidManager::DiagramList &diagrams)
   //printf("runMermaidContent for %zu images\n",contentList.size());
   if (diagrams.empty()) return;
 
-  QCString mmdc = Config_getString(MERMAID_PATH);
+  DString mmdc = Config_getString(MERMAID_PATH);
   if (!mmdc.empty() && mmdc.at(mmdc.length()-1) != '/' && mmdc.at(mmdc.length()-1) != '\\')
   {
     mmdc += "/";
   }
   mmdc += "mmdc";
 
-  QCString mermaidConfigFile = Config_getString(MERMAID_CONFIG_FILE);
+  DString mermaidConfigFile = Config_getString(MERMAID_CONFIG_FILE);
 
   struct MermaidCmd
   {
-    MermaidCmd(const QCString &mmdc_,const QCString &args_,const QCString &ext_,const QCString &srcFile_,int srcLine_) :
+    MermaidCmd(const DString &mmdc_,const DString &args_,const DString &ext_,const DString &srcFile_,int srcLine_) :
       mmdc(mmdc_), args(args_), ext(ext_), srcFile(srcFile_), srcLine(srcLine_) {}
-    QCString mmdc;
-    QCString args;
-    QCString ext;
-    QCString srcFile;
+    DString mmdc;
+    DString args;
+    DString ext;
+    DString srcFile;
     int srcLine;
   };
   std::vector<MermaidCmd> mermaidCmds;
@@ -157,16 +157,16 @@ static void runMermaid(const MermaidManager::DiagramList &diagrams)
     //printf("content=%s\n",qPrint(mc.content));
     if (diagram.info.content.empty()) continue;
 
-    QCString ext = MermaidManager::imageExtension(diagram.imageFormat);
+    DString ext = MermaidManager::imageExtension(diagram.imageFormat);
 
-    QCString inputFile  = diagram.info.baseName + ".mmd";
-    QCString outputFile = diagram.info.baseName + "." + ext;
+    DString inputFile  = diagram.info.baseName + ".mmd";
+    DString outputFile = diagram.info.baseName + "." + ext;
 
     // Check if content has changed since last run (caching)
     FileInfo fi(outputFile.str());
     if (fi.exists())
     {
-      QCString cachedContent = fileToString(inputFile);
+      DString cachedContent = fileToString(inputFile);
       if (cachedContent == diagram.info.content)
       {
         continue;
@@ -174,7 +174,7 @@ static void runMermaid(const MermaidManager::DiagramList &diagrams)
     }
 
     // Build the mmdc command arguments
-    QCString args;
+    DString args;
     args += "-q -i \"" + inputFile + "\" ";
     args += "-o \"" + outputFile + "\" ";
 

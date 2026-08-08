@@ -21,7 +21,7 @@
 #include <memory>
 #include <mutex>
 
-#include "qcstring.h"
+#include "dstring.h"
 #include "construct.h"
 
 class Definition;
@@ -39,20 +39,20 @@ class IndexIntf
     virtual void incContentsDepth() = 0;
     virtual void decContentsDepth() = 0;
     virtual void addContentsItem(bool isDir,
-                         const QCString &name,
-                         const QCString &ref,
-                         const QCString &file,
-                         const QCString &anchor,
+                         const DString &name,
+                         const DString &ref,
+                         const DString &file,
+                         const DString &anchor,
                          bool separateIndex,
                          bool addToNavIndex,
                          const Definition *def,
-                         const QCString &nameAsHtml
+                         const DString &nameAsHtml
                         ) = 0;
     virtual void addIndexItem(const Definition *context,const MemberDef *md,
-                      const QCString &sectionAnchor,const QCString &title) = 0;
-    virtual void addIndexFile(const QCString &name) = 0;
-    virtual void addImageFile(const QCString &) = 0;
-    virtual void addStyleSheetFile(const QCString &) = 0;
+                      const DString &sectionAnchor,const DString &title) = 0;
+    virtual void addIndexFile(const DString &name) = 0;
+    virtual void addImageFile(const DString &) = 0;
+    virtual void addStyleSheetFile(const DString &) = 0;
 };
 
 /** \brief A list of index interfaces.
@@ -109,21 +109,21 @@ class IndexList
     void decContentsDepth()
     { if (m_enabled) foreach_locked(&IndexIntf::decContentsDepth); }
 
-    void addContentsItem(bool isDir, const QCString &name, const QCString &ref,
-                         const QCString &file, const QCString &anchor,bool separateIndex=false,bool addToNavIndex=false,
-                         const Definition *def=nullptr, const QCString &nameAsHtml = QCString())
+    void addContentsItem(bool isDir, const DString &name, const DString &ref,
+                         const DString &file, const DString &anchor,bool separateIndex=false,bool addToNavIndex=false,
+                         const Definition *def=nullptr, const DString &nameAsHtml = DString())
     { if (m_enabled) foreach_locked(&IndexIntf::addContentsItem,isDir,name,ref,file,anchor,separateIndex,addToNavIndex,def,nameAsHtml); }
 
-    void addIndexItem(const Definition *context,const MemberDef *md,const QCString &sectionAnchor=QCString(),const QCString &title=QCString())
+    void addIndexItem(const Definition *context,const MemberDef *md,const DString &sectionAnchor=DString(),const DString &title=DString())
     { if (m_enabled) foreach_locked(&IndexIntf::addIndexItem,context,md,sectionAnchor,title); }
 
-    void addIndexFile(const QCString &name)
+    void addIndexFile(const DString &name)
     { if (m_enabled) foreach_locked(&IndexIntf::addIndexFile,name); }
 
-    void addImageFile(const QCString &name)
+    void addImageFile(const DString &name)
     { if (m_enabled) foreach_locked(&IndexIntf::addImageFile,name); }
 
-    void addStyleSheetFile(const QCString &name)
+    void addStyleSheetFile(const DString &name)
     { if (m_enabled) foreach_locked(&IndexIntf::addStyleSheetFile,name); }
 
   private:

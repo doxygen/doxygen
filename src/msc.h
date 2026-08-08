@@ -16,24 +16,24 @@
 #ifndef MSC_H
 #define MSC_H
 
-class QCString;
+class DString;
 class TextStream;
 
 enum class MscOutputFormat { BITMAP, EPS, SVG };
 
-void writeMscGraphFromFile(const QCString &inFile,const QCString &outDir,
-                           const QCString &outFile,MscOutputFormat format,
-                           const QCString &srcFile,int srcLine,bool toIndex);
+void writeMscGraphFromFile(const DString &inFile,const DString &outDir,
+                           const DString &outFile,MscOutputFormat format,
+                           const DString &srcFile,int srcLine,bool toIndex);
 
-QCString getMscImageMapFromFile(const QCString &inFile, const QCString &outDir,
-                                const QCString &relPath,const QCString &context,
-                                const QCString &srcFile,int srcLine);
+DString getMscImageMapFromFile(const DString &inFile, const DString &outDir,
+                                const DString &relPath,const DString &context,
+                                const DString &srcFile,int srcLine);
 
-void writeMscImageMapFromFile(TextStream &t,const QCString &inFile,
-                              const QCString &outDir, const QCString &relPath,
-                              const QCString &baseName, const QCString &context,
+void writeMscImageMapFromFile(TextStream &t,const DString &inFile,
+                              const DString &outDir, const DString &relPath,
+                              const DString &baseName, const DString &context,
 			      MscOutputFormat format,
-                              const QCString &srcFile,int srcLine
+                              const DString &srcFile,int srcLine
  			    );
 
 #endif

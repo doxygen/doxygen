@@ -396,9 +396,9 @@ def parseGroupMapEnums(node):
                         if value:
                             print("  %s," % (escape(value)))
                 print("};\n")
-                print("inline {0}_t {1}_str2enum(const QCString &s)".format(name,name))
+                print("inline {0}_t {1}_str2enum(const DString &s)".format(name,name))
                 print("{")
-                print("  QCString lc = s.lower();")
+                print("  DString lc = s.lower();")
                 print("  static const std::unordered_map<std::string,{0}_t> map =".format(name))
                 print("  {")
                 for nv in n.childNodes:
@@ -410,7 +410,7 @@ def parseGroupMapEnums(node):
                 print("  auto it = map.find(lc.str());")
                 print("  return it!=map.end() ? it->second : {0}_t::{1};".format(name,escape(defval)))
                 print("}\n")
-                print("inline QCString {0}_enum2str({1}_t v)".format(name,name))
+                print("inline DString {0}_enum2str({1}_t v)".format(name,name))
                 print("{")
                 print("  switch(v)")
                 print("  {")
@@ -424,7 +424,7 @@ def parseGroupMapEnums(node):
                 print("}")
 
 def parseGroupMapGetter(node):
-    map = { 'bool':'bool', 'string':'const QCString &', 'int':'int', 'list':'const StringVector &' }
+    map = { 'bool':'bool', 'string':'const DString &', 'int':'int', 'list':'const StringVector &' }
     for n in node.childNodes:
         if n.nodeType == Node.ELEMENT_NODE:
             setting = n.getAttribute('setting')
@@ -434,14 +434,14 @@ def parseGroupMapGetter(node):
             name = n.getAttribute('id')
             if type=='enum':
                 print("    %-22s %-30s const                  { return %s(m_%s); }" % (name+'_t',name+'()',name+'_str2enum',name))
-                print("    %-22s %-30s const                  { return m_%s; }" % ('const QCString &',name+'_str()',name))
+                print("    %-22s %-30s const                  { return m_%s; }" % ('const DString &',name+'_str()',name))
             elif type in map:
                 print("    %-22s %-30s const                  { return m_%s; }" % (map[type],name+'()',name))
             if len(setting) > 0:
                 print("#endif")
 
 def parseGroupMapSetter(node):
-    map = { 'bool':'bool', 'string':'const QCString &', 'int':'int', 'list':'const StringVector &' }
+    map = { 'bool':'bool', 'string':'const DString &', 'int':'int', 'list':'const StringVector &' }
     for n in node.childNodes:
         if n.nodeType == Node.ELEMENT_NODE:
             setting = n.getAttribute('setting')
@@ -465,12 +465,12 @@ def parseGroupMapAvailable(node):
             if type=='enum':
                 if len(setting) > 0:
                     print("#if %s" % (setting))
-                print("    %-22s isAvailable_%-41s { return v.lower() == %s_enum2str(%s_str2enum(v)).lower(); }" % ('bool',name+'(QCString v)',name,name))
+                print("    %-22s isAvailable_%-41s { return v.lower() == %s_enum2str(%s_str2enum(v)).lower(); }" % ('bool',name+'(DString v)',name,name))
                 if len(setting) > 0:
                     print("#endif")
 
 def parseGroupMapVar(node):
-    map = { 'bool':'bool', 'string':'QCString', 'enum':'QCString', 'int':'int', 'list':'StringVector' }
+    map = { 'bool':'bool', 'string':'DString', 'enum':'DString', 'int':'int', 'list':'StringVector' }
     for n in node.childNodes:
         if n.nodeType == Node.ELEMENT_NODE:
             setting = n.getAttribute('setting')
@@ -1166,7 +1166,7 @@ def main():
         print("")
         print("#include <string>")
         print("#include <unordered_map>")
-        print("#include \"qcstring.h\"")
+        print("#include \"dstring.h\"")
         print("#include \"containers.h\"")
         print("#include \"settings.h\"")
         for n in elem.childNodes:
@@ -1194,25 +1194,25 @@ def main():
         print("      using Enum2BoolMap = std::unordered_map<std::string,bool>;")
         print("      Info(Type t,bool         ConfigValues::*b) : type(t), value(b) {}")
         print("      Info(Type t,int          ConfigValues::*i) : type(t), value(i) {}")
-        print("      Info(Type t,QCString     ConfigValues::*s, const Enum2BoolMap &boolMap = {}) : type(t), value(s), m_boolMap(boolMap) {}")
+        print("      Info(Type t,DString     ConfigValues::*s, const Enum2BoolMap &boolMap = {}) : type(t), value(s), m_boolMap(boolMap) {}")
         print("      Info(Type t,StringVector ConfigValues::*l) : type(t), value(l) {}")
         print("      Type type;")
         print("      union Item")
         print("      {")
         print("        Item(bool         ConfigValues::*v) : b(v) {}")
         print("        Item(int          ConfigValues::*v) : i(v) {}")
-        print("        Item(QCString     ConfigValues::*v) : s(v) {}")
+        print("        Item(DString     ConfigValues::*v) : s(v) {}")
         print("        Item(StringVector ConfigValues::*v) : l(v) {}")
         print("        bool         ConfigValues::*b;")
         print("        int          ConfigValues::*i;")
-        print("        QCString     ConfigValues::*s;")
+        print("        DString     ConfigValues::*s;")
         print("        StringVector ConfigValues::*l;")
         print("      } value;")
         print("      bool getBooleanRepresentation() const;")
         print("    private:")
         print("      Enum2BoolMap m_boolMap;")
         print("    };")
-        print("    const Info *get(const QCString &tag) const;")
+        print("    const Info *get(const DString &tag) const;")
         print("")
         print("  private:")
         for n in elem.childNodes:
@@ -1230,7 +1230,7 @@ def main():
         print("#include \"configimpl.h\"")
         print("#include <unordered_map>")
         print("")
-        print("const ConfigValues::Info *ConfigValues::get(const QCString &tag) const")
+        print("const ConfigValues::Info *ConfigValues::get(const DString &tag) const")
         print("{")
         print("  static const std::unordered_map< std::string, Info > configMap =")
         print("  {")

@@ -73,25 +73,25 @@ void ConfigImpl::config_warn_(fmt::string_view fmt, fmt::format_args args)
   fmt::print(stderr,"{}{}",warning_str,fmt::vformat(fmt,args));
 }
 
-static QCString configStringRecode(
-    const QCString &str,
-    const QCString &fromEncoding,
-    const QCString &toEncoding);
+static DString configStringRecode(
+    const DString &str,
+    const DString &fromEncoding,
+    const DString &toEncoding);
 
-static bool containsEnvVar(QCString &str);
+static bool containsEnvVar(DString &str);
 
 #define MAX_INCLUDE_DEPTH 10
 #define YY_NEVER_INTERACTIVE 1
 
 /* -----------------------------------------------------------------
  */
-static QCString convertToComment(const QCString &s, const QCString &u)
+static DString convertToComment(const DString &s, const DString &u)
 {
   //printf("convertToComment(%s)=%s\n",qPrint(s),qPrint(u));
-  QCString result;
+  DString result;
   if (!s.empty())
   {
-    QCString tmp=s.stripWhiteSpace();
+    DString tmp=s.stripWhiteSpace();
     const char *p=tmp.data();
     char c = 0;
     if (p)
@@ -136,12 +136,12 @@ void ConfigOption::writeIntValue(TextStream &t,int i,bool initSpace)
   t << i;
 }
 
-void ConfigOption::writeStringValue(TextStream &t,const QCString &s,bool initSpace, bool wasQuoted)
+void ConfigOption::writeStringValue(TextStream &t,const DString &s,bool initSpace, bool wasQuoted)
 {
   char c = 0;
   bool needsEscaping=wasQuoted;
   // convert the string back to it original g_encoding
-  QCString se = configStringRecode(s,"UTF-8",m_encoding);
+  DString se = configStringRecode(s,"UTF-8",m_encoding);
   if (se.empty()) return;
   const char *p=se.data();
   if (p)
@@ -174,7 +174,7 @@ void ConfigOption::writeStringList(TextStream &t,const StringVector &l)
   for (const auto &p : l)
   {
     if (!first) t << " \\\n";
-    QCString s = p;
+    DString s = p;
     if (!first)
       t << "                        ";
     bool wasQuoted = ((s.at(0)=='"') && (s.at(s.length()-1)=='"'));
@@ -214,10 +214,10 @@ void ConfigInt::convertStrToVal(Config::CompareMode compareMode)
   }
 }
 
-static bool convertStringToBool(const QCString &str,bool &isValid)
+static bool convertStringToBool(const DString &str,bool &isValid)
 {
   isValid=false;
-  QCString val = str.stripWhiteSpace().lower();
+  DString val = str.stripWhiteSpace().lower();
   if (!val.empty())
   {
     if (val=="yes" || val=="true" || val=="1" || val=="all")
@@ -267,7 +267,7 @@ void ConfigEnum::convertStrToVal(Config::CompareMode compareMode)
   {
      if (containsEnvVar(m_value)) return;
   }
-  QCString val = m_value.stripWhiteSpace().lower();
+  DString val = m_value.stripWhiteSpace().lower();
   for (const auto &s : m_valueRange)
   {
     if (s.lower() == val)
@@ -282,7 +282,7 @@ void ConfigEnum::convertStrToVal(Config::CompareMode compareMode)
   m_value = m_defValue;
 }
 
-QCString &ConfigImpl::getString(const char *fileName,int num,const char *name) const
+DString &ConfigImpl::getString(const char *fileName,int num,const char *name) const
 {
   auto it = m_dict.find(name);
   if (it==m_dict.end())
@@ -310,7 +310,7 @@ StringVector &ConfigImpl::getList(const char *fileName,int num,const char *name)
   return *(dynamic_cast<ConfigList *>(it->second))->valueRef();
 }
 
-QCString &ConfigImpl::getEnum(const char *fileName,int num,const char *name) const
+DString &ConfigImpl::getEnum(const char *fileName,int num,const char *name) const
 {
   auto it = m_dict.find(name);
   if (it==m_dict.end())
@@ -384,7 +384,7 @@ void ConfigList::writeTemplate(TextStream &t,bool sl,bool)
 
 bool ConfigList::isDefault()
 {
-  auto get_stripped = [](const std::string &s)             { return QCString(s).stripWhiteSpace(); };
+  auto get_stripped = [](const std::string &s)             { return DString(s).stripWhiteSpace(); };
   auto is_not_empty = [get_stripped](const std::string &s) { return !get_stripped(s).empty();            };
   size_t defCnt = std::count_if(       m_value.begin(),       m_value.end(),is_not_empty);
   size_t valCnt = std::count_if(m_defaultValue.begin(),m_defaultValue.end(),is_not_empty);
@@ -428,7 +428,7 @@ void ConfigList::writeXMLDoxyfile(TextStream &t)
   t << "\n";
   for (const auto &p : m_value)
   {
-    QCString s = p;
+    DString s = p;
     t << "    <value>";
     t << "<![CDATA[";
     writeStringValue(t,s,false);
@@ -581,7 +581,7 @@ void ConfigBool::writeTemplate(TextStream &t,bool sl,bool upd)
   {
     t << convertToComment("", m_userComment);
   }
-  QCString spaces = m_spaces.left(MAX_OPTION_LENGTH-m_name.length());
+  DString spaces = m_spaces.left(MAX_OPTION_LENGTH-m_name.length());
   t << m_name << spaces << "=";
   if (upd && !m_valueString.empty())
   {
@@ -635,24 +635,24 @@ struct ConfigFileState
   FILE *filePtr = nullptr;
   YY_BUFFER_STATE oldState;
   YY_BUFFER_STATE newState;
-  QCString fileName;
+  DString fileName;
 };
 
 static const char       *g_inputString = nullptr;
 static int               g_inputPosition = 0;
 static int               g_yyLineNr = 1;
-static QCString          g_yyFileName;
-static QCString          g_cmd;
-static QCString         *g_string = nullptr;
+static DString          g_yyFileName;
+static DString          g_cmd;
+static DString         *g_string = nullptr;
 static StringVector     *g_list = nullptr;
-static QCString          g_listStr;
+static DString          g_listStr;
 static StringVector      g_includePathList;
 static std::vector< std::unique_ptr<ConfigFileState> > g_includeStack;
 static bool              g_configUpdate = false;
-static QCString          g_encoding;
+static DString          g_encoding;
 static ConfigImpl       *g_config = nullptr;
 static Config::CompareMode g_compareMode = Config::CompareMode::Full;
-static QCString          g_localStoreRepl;
+static DString          g_localStoreRepl;
 
 #define unput_string(yytext,yyleng) do { for (int i=(int)yyleng-1;i>=0;i--) unput(yytext[i]); } while(0)
 /* -----------------------------------------------------------------
@@ -687,15 +687,15 @@ static int yyread(char *buf,int max_size)
 }
 
 
-static QCString configStringRecode(
-    const QCString &str,
-    const QCString &inputEncoding,
-    const QCString &outputEncoding)
+static DString configStringRecode(
+    const DString &str,
+    const DString &inputEncoding,
+    const DString &outputEncoding)
 {
   if (inputEncoding.empty() || outputEncoding.empty() || inputEncoding==outputEncoding) return str;
   size_t inputSize=str.length();
   size_t outputSize=inputSize*4;
-  QCString output(outputSize, QCString::ExplicitSize);
+  DString output(outputSize, DString::ExplicitSize);
   void *cd = portable_iconv_open(outputEncoding.data(),inputEncoding.data());
   if (cd==reinterpret_cast<void *>(-1))
   {
@@ -729,7 +729,7 @@ static void checkEncoding()
   g_encoding = *option->valueRef();
 }
 
-static QCString stripComment(const QCString &s)
+static DString stripComment(const DString &s)
 {
   // check if there is a comment at the end of the string
   bool insideQuote=false;
@@ -757,10 +757,10 @@ static QCString stripComment(const QCString &s)
   return s;
 }
 
-static void processStoreRepl(QCString &storeReplStr)
+static void processStoreRepl(DString &storeReplStr)
 {
   // strip leading and trailing whitespace
-  QCString s = stripComment(storeReplStr.stripWhiteSpace());
+  DString s = stripComment(storeReplStr.stripWhiteSpace());
   // recode the string
   storeReplStr=configStringRecode(s,g_encoding,"UTF-8");
 }
@@ -768,7 +768,7 @@ static void processStoreRepl(QCString &storeReplStr)
 static void processString()
 {
   // strip leading and trailing whitespace
-  QCString s = stripComment(g_string->stripWhiteSpace());
+  DString s = stripComment(g_string->stripWhiteSpace());
   size_t l = s.length();
 
   // remove surrounding quotes if present (and not escaped)
@@ -781,7 +781,7 @@ static void processString()
 
   // check for invalid and/or escaped quotes
   bool warned=false;
-  QCString result;
+  DString result;
   for (size_t i=0;i<l;i++)
   {
     char c = s.at(i);
@@ -829,10 +829,10 @@ static void processList()
 {
   bool allowCommaAsSeparator = g_cmd!="PREDEFINED";
 
-  QCString s = stripComment(g_listStr.stripWhiteSpace());
+  DString s = stripComment(g_listStr.stripWhiteSpace());
   size_t l = s.length();
 
-  QCString elemStr;
+  DString elemStr;
   bool wasQuote=false;
 
   // helper to push elemStr to the list and clear it
@@ -840,7 +840,7 @@ static void processList()
   {
     if (!elemStr.empty())
     {
-      QCString e = configStringRecode(elemStr,g_encoding,"UTF-8");
+      DString e = configStringRecode(elemStr,g_encoding,"UTF-8");
       //printf("Processed list element '%s'\n",qPrint(e));
       if (wasQuote) e = "\""+e+"\"";
       wasQuote = false;
@@ -922,9 +922,9 @@ static void processList()
   }
 }
 
-static FILE *tryPath(const QCString &path,const QCString &fileName)
+static FILE *tryPath(const DString &path,const DString &fileName)
 {
-  QCString absName=(!path.empty() ? path+"/"+fileName : fileName);
+  DString absName=(!path.empty() ? path+"/"+fileName : fileName);
   FileInfo fi(absName.str());
   if (fi.exists() && fi.isFile())
   {
@@ -936,9 +936,9 @@ static FILE *tryPath(const QCString &path,const QCString &fileName)
 }
 
 static void substEnvVarsInStrList(StringVector &sl);
-static void substEnvVarsInString(QCString &s);
+static void substEnvVarsInString(DString &s);
 
-static FILE *findFile(const QCString &fileName)
+static FILE *findFile(const DString &fileName)
 {
   if (fileName.empty())
   {
@@ -946,7 +946,7 @@ static FILE *findFile(const QCString &fileName)
   }
   if (Portable::isAbsolutePath(fileName))
   {
-    return tryPath(QCString(), fileName);
+    return tryPath(DString(), fileName);
   }
   substEnvVarsInStrList(g_includePathList);
   for (const auto &s : g_includePathList)
@@ -958,14 +958,14 @@ static FILE *findFile(const QCString &fileName)
   return tryPath(".",fileName);
 }
 
-static void readIncludeFile(const QCString &incName)
+static void readIncludeFile(const DString &incName)
 {
   if (g_includeStack.size()==MAX_INCLUDE_DEPTH) {
     ConfigImpl::config_term("maximum include depth ({:d}) reached, {} is not included. Aborting...\n",
         MAX_INCLUDE_DEPTH,incName);
   }
 
-  QCString inc = incName;
+  DString inc = incName;
   substEnvVarsInString(inc);
   inc = inc.stripWhiteSpace();
   size_t incLen = inc.length();
@@ -1399,14 +1399,14 @@ static const reg::Ex reEnvVarExt(R"(\$\((\a[\w.-]*\(\a[\w.-]*\))\))"); // e.g. $
 static const reg::Ex reEnvVarCMake(R"(@\a\w*@)");                      // CMake type replacement (@...@)
 static const reg::Ex reEnvVar1CMake(R"(\${\a\w*})");                   // CMake type replacement (${...})
 
-static bool containsEnvVar(QCString &str)
+static bool containsEnvVar(DString &str)
 {
   reg::Match m;
   std::string s = str.str();
   return reg::search(s,m,reEnvVar) || reg::search(s,m,reEnvVarExt) || reg::search(s,m,reEnvVarCMake) || reg::search(s,m,reEnvVar1CMake);
 }
 
-static void substEnvVarsInString(QCString &str)
+static void substEnvVarsInString(DString &str)
 {
   if (str.empty()) return;
   auto replace = [](const std::string &s, const reg::Ex &re) -> std::string
@@ -1422,7 +1422,7 @@ static void substEnvVarsInString(QCString &str)
       size_t l = match.length();
       result+=s.substr(p,i-p);
       std::string matchContents = match[1].str();
-      QCString env=Portable::getenv(matchContents); // get content of $(..) match
+      DString env=Portable::getenv(matchContents); // get content of $(..) match
       substEnvVarsInString(env); // recursively expand variables if needed.
       result+=env.str();
       p=i+l;
@@ -1431,7 +1431,7 @@ static void substEnvVarsInString(QCString &str)
     return result;
   };
 
-  str = QCString(replace(replace(str.str(),reEnvVar),reEnvVarExt)).stripWhiteSpace();
+  str = DString(replace(replace(str.str(),reEnvVar),reEnvVarExt)).stripWhiteSpace();
 }
 
 static void substEnvVarsInStrList(StringVector &sl)
@@ -1439,7 +1439,7 @@ static void substEnvVarsInStrList(StringVector &sl)
   StringVector results;
   for (const auto &s : sl)
   {
-    QCString result = s;
+    DString result = s;
     bool wasQuoted = ((result.at(0)=='"') && (result.at(result.length()-1)=='"'));
     if (wasQuoted)
     {
@@ -1447,7 +1447,7 @@ static void substEnvVarsInStrList(StringVector &sl)
     }
     else
     {
-      wasQuoted = (result.find(' ')!=QCString::npos) || (result.find('\t')!=QCString::npos) || (result.find('"')!=QCString::npos);
+      wasQuoted = (result.find(' ')!=DString::npos) || (result.find('\t')!=DString::npos) || (result.find('"')!=DString::npos);
     }
     // here we strip the quote again
     substEnvVarsInString(result);
@@ -1557,7 +1557,7 @@ void ConfigImpl::init()
   // sanity check if all depends relations are valid
   for (const auto &option : m_options)
   {
-    QCString depName = option->dependsOn();
+    DString depName = option->dependsOn();
     if (!depName.empty())
     {
       ConfigOption * opt = ConfigImpl::instance()->get(depName);
@@ -1575,9 +1575,9 @@ ConfigImpl::ConfigImpl()
   addConfigOptions(this);
 }
 
-static QCString configFileToString(const QCString &name)
+static DString configFileToString(const DString &name)
 {
-  if (name.empty()) return QCString();
+  if (name.empty()) return DString();
 
   auto stream2string = [](std::istream &in) -> std::string
   {
@@ -1606,7 +1606,7 @@ static QCString configFileToString(const QCString &name)
   }
 }
 
-bool ConfigImpl::parseString(const QCString &fn,const QCString &str,bool update)
+bool ConfigImpl::parseString(const DString &fn,const DString &str,bool update)
 {
 #ifdef FLEX_DEBUG
   configimplYYset_debug(Debug::isFlagSet(Debug::Lex_configimpl)?1:0);
@@ -1626,7 +1626,7 @@ bool ConfigImpl::parseString(const QCString &fn,const QCString &str,bool update)
   return true;
 }
 
-bool ConfigImpl::parse(const QCString &fn,bool update)
+bool ConfigImpl::parse(const DString &fn,bool update)
 {
   g_encoding = "UTF-8";
   DebugLex debugLex(Debug::Lex_configimpl, __FILE__, qPrint(fn));
@@ -1655,9 +1655,9 @@ static void cleanUpPaths(StringVector &str)
   }
 }
 
-static bool checkFileName(const QCString &s,const char *optionName)
+static bool checkFileName(const DString &s,const char *optionName)
 {
-  QCString val = s.stripWhiteSpace().lower();
+  DString val = s.stripWhiteSpace().lower();
   if ((val=="yes" || val=="true"  || val=="1" || val=="all") ||
       (val=="no"  || val=="false" || val=="0" || val=="none"))
   {
@@ -1677,23 +1677,23 @@ static void checkList(const StringVector &list,const char *name, bool equalRequi
 {
   for (const auto &s: list)
   {
-    QCString item = s;
+    DString item = s;
     item=item.stripWhiteSpace();
     size_t i=item.find('=');
-    if (i==QCString::npos && equalRequired)
+    if (i==DString::npos && equalRequired)
     {
       err("Illegal format for option {}, no equal sign ('=') specified for item '{}'\n",name,item);
     }
-    if (i!=QCString::npos)
+    if (i!=DString::npos)
     {
-      QCString myName=item.left(i).stripWhiteSpace();
+      DString myName=item.left(i).stripWhiteSpace();
       if (myName.empty())
       {
         err("Illegal format for option {}, no name specified for item '{}'\n",name,item);
       }
       else if (valueRequired)
       {
-        QCString myValue=item.mid(i+1).stripWhiteSpace();
+        DString myValue=item.mid(i+1).stripWhiteSpace();
         if (myValue.empty())
         {
           err("Illegal format for option {}, no value specified for item '{}'\n",name,item);
@@ -1717,7 +1717,7 @@ static void adjustBoolSetting(const char *depOption, const char *optionName,bool
   }
 }
 
-static void adjustStringSetting(const char *depOption, const char *optionName,const QCString &expectedValue)
+static void adjustStringSetting(const char *depOption, const char *optionName,const DString &expectedValue)
 {
   // lookup option by name
   const ConfigValues::Info *option = ConfigValues::instance().get(optionName);
@@ -1766,23 +1766,23 @@ void Config::checkAndCorrect(bool quiet, const bool check)
   Config_updateBool(QUIET,quiet || Config_getBool(QUIET));
   //------------------------
   // check WARN_FORMAT
-  QCString warnFormat = Config_getString(WARN_FORMAT);
-  if (warnFormat.find("$file")==QCString::npos)
+  DString warnFormat = Config_getString(WARN_FORMAT);
+  if (warnFormat.find("$file")==DString::npos)
   {
     warn_uncond("warning format does not contain a $file tag!\n");
   }
-  if (warnFormat.find("$line")==QCString::npos)
+  if (warnFormat.find("$line")==DString::npos)
   {
     warn_uncond("warning format does not contain a $line tag!\n");
   }
-  if (warnFormat.find("$text")==QCString::npos)
+  if (warnFormat.find("$text")==DString::npos)
   {
     warn_uncond("warning format does not contain a $text tag!\n");
   }
 
   //------------------------
   // check and correct PAPER_TYPE
-  QCString paperType = Config_getEnumAsString(PAPER_TYPE);
+  DString paperType = Config_getEnumAsString(PAPER_TYPE);
   paperType=paperType.lower().stripWhiteSpace();
   if (paperType.empty() || paperType=="a4wide")
   {
@@ -1818,7 +1818,7 @@ void Config::checkAndCorrect(bool quiet, const bool check)
 
   //------------------------
   // Test to see if HTML header is valid
-  QCString headerFile = Config_getString(HTML_HEADER);
+  DString headerFile = Config_getString(HTML_HEADER);
   if (check && !headerFile.empty())
   {
     FileInfo fi(headerFile.str());
@@ -1831,7 +1831,7 @@ void Config::checkAndCorrect(bool quiet, const bool check)
 
   //------------------------
   // Test to see if HTML footer is valid
-  QCString footerFile = Config_getString(HTML_FOOTER);
+  DString footerFile = Config_getString(HTML_FOOTER);
   if (check && !footerFile.empty())
   {
     FileInfo fi(footerFile.str());
@@ -1870,7 +1870,7 @@ void Config::checkAndCorrect(bool quiet, const bool check)
         break;
     }
 
-    QCString mathJaxCodefile = Config_getString(MATHJAX_CODEFILE);
+    DString mathJaxCodefile = Config_getString(MATHJAX_CODEFILE);
     if (check && !mathJaxCodefile.empty())
     {
       FileInfo fi(mathJaxCodefile.str());
@@ -1880,7 +1880,7 @@ void Config::checkAndCorrect(bool quiet, const bool check)
             "does not exist\n",mathJaxCodefile);
       }
     }
-    QCString path = Config_getString(MATHJAX_RELPATH);
+    DString path = Config_getString(MATHJAX_RELPATH);
     if (path.empty())
     {
       path = "https://cdn.jsdelivr.net/npm/mathjax@";
@@ -1901,7 +1901,7 @@ void Config::checkAndCorrect(bool quiet, const bool check)
 
   //------------------------
   // Test to see if LaTeX header is valid
-  QCString latexHeaderFile = Config_getString(LATEX_HEADER);
+  DString latexHeaderFile = Config_getString(LATEX_HEADER);
   if (check && !latexHeaderFile.empty())
   {
     FileInfo fi(latexHeaderFile.str());
@@ -1914,7 +1914,7 @@ void Config::checkAndCorrect(bool quiet, const bool check)
 
   //------------------------
   // Test to see if LaTeX footer is valid
-  QCString latexFooterFile = Config_getString(LATEX_FOOTER);
+  DString latexFooterFile = Config_getString(LATEX_FOOTER);
   if (check && !latexFooterFile.empty())
   {
     FileInfo fi(latexFooterFile.str());
@@ -1944,7 +1944,7 @@ void Config::checkAndCorrect(bool quiet, const bool check)
     const StringVector &predefList = Config_getList(PREDEFINED);
     for (const auto &s : predefList)
     {
-      QCString predef = s;
+      DString predef = s;
       predef=predef.stripWhiteSpace();
       size_t i_equals=predef.find('=');
       size_t i_obrace=predef.find('(');
@@ -2013,7 +2013,7 @@ void Config::checkAndCorrect(bool quiet, const bool check)
       size_t eqPos = s.find('=');
       if (eqPos!=std::string::npos) // tag command contains a destination
       {
-        QCString url = QCString(s.substr(eqPos+1)).stripWhiteSpace().lower();
+        DString url = DString(s.substr(eqPos+1)).stripWhiteSpace().lower();
         validUrl = url.startsWith("http:") || url.startsWith("https:") ||
                    url.startsWith("ms-its:");
       }
@@ -2047,13 +2047,13 @@ void Config::checkAndCorrect(bool quiet, const bool check)
 
   //------------------------
   // check plantuml path
-  QCString plantumlJarPath = Config_getString(PLANTUML_JAR_PATH);
+  DString plantumlJarPath = Config_getString(PLANTUML_JAR_PATH);
   if (!plantumlJarPath.empty())
   {
     FileInfo pu(plantumlJarPath.str());
     if (pu.exists() && pu.isDir()) // PLANTUML_JAR_PATH is directory
     {
-      QCString plantumlJar = plantumlJarPath+Portable::pathSeparator()+"plantuml.jar";
+      DString plantumlJar = plantumlJarPath+Portable::pathSeparator()+"plantuml.jar";
       FileInfo jar(plantumlJar.str());
       if (jar.exists() && jar.isFile())
       {
@@ -2079,10 +2079,10 @@ void Config::checkAndCorrect(bool quiet, const bool check)
 
   //------------------------
   // check dia path
-  QCString diaPath = Config_getString(DIA_PATH);
+  DString diaPath = Config_getString(DIA_PATH);
   if (!diaPath.empty())
   {
-    QCString diaExe = diaPath+"/dia"+Portable::commandExtension();
+    DString diaExe = diaPath+"/dia"+Portable::commandExtension();
     FileInfo dp(diaExe.str());
     if (!dp.exists() || !dp.isFile())
     {
@@ -2232,7 +2232,7 @@ void Config::checkAndCorrect(bool quiet, const bool check)
   // disable any boolean options that depend on disabled options
   for (const auto &option : m_options)
   {
-    QCString depName = option->dependsOn(); // option has a dependency
+    DString depName = option->dependsOn(); // option has a dependency
     if (!depName.empty())
     {
       ConfigOption * dep = Config::instance()->get(depName);
@@ -2251,7 +2251,7 @@ void Config::checkAndCorrect(bool quiet, const bool check)
 
 }
 
-static void updateAttribute(DotAttributes& attr, QCString name, ConfigObsolete* value)
+static void updateAttribute(DotAttributes& attr, DString name, ConfigObsolete* value)
 {
   attr.updateValue(name,*value->valueStringRef());
 }
@@ -2272,9 +2272,9 @@ void Config::updateObsolete()
     if (classDiagramsOpt_ && haveDotOpt_ && classGraphOpt_ &&
         classDiagramsOpt_->isPresent() && classDiagramsOpt_->orgType()==ConfigOption::O_Bool)
     {
-      QCString classDiagramValue = *classDiagramsOpt_->valueStringRef();
-      QCString haveDotValue      = *haveDotOpt_->valueStringRef();
-      QCString &classGraphValue  = *classGraphOpt_->valueRef();
+      DString classDiagramValue = *classDiagramsOpt_->valueStringRef();
+      DString haveDotValue      = *haveDotOpt_->valueStringRef();
+      DString &classGraphValue  = *classGraphOpt_->valueRef();
       bool isValid1=true, isValid2=true;
       bool bClassDiagrams = convertStringToBool(classDiagramValue,isValid1);
       bool bHaveDot       = haveDotValue.empty() ? false : convertStringToBool(haveDotValue,     isValid2);
@@ -2297,8 +2297,8 @@ void Config::updateObsolete()
     if (htmlTimestamp_ && timestampOpt_ &&
         htmlTimestamp_->isPresent() && htmlTimestamp_->orgType()==ConfigOption::O_Bool)
     {
-      QCString &timestampValue  = *timestampOpt_->valueRef();
-      QCString htmlTimestampValue = *htmlTimestamp_->valueStringRef();
+      DString &timestampValue  = *timestampOpt_->valueRef();
+      DString htmlTimestampValue = *htmlTimestamp_->valueStringRef();
       bool isValid=true;
       bool bTimestamp = convertStringToBool(htmlTimestampValue,isValid);
       if (isValid && bTimestamp)
@@ -2316,8 +2316,8 @@ void Config::updateObsolete()
     if (latexTimestamp_ && timestampOpt_ &&
         latexTimestamp_->isPresent() && latexTimestamp_->orgType()==ConfigOption::O_Bool)
     {
-      QCString &timestampValue  = *timestampOpt_->valueRef();
-      QCString latexTimestampValue = *latexTimestamp_->valueStringRef();
+      DString &timestampValue  = *timestampOpt_->valueRef();
+      DString latexTimestampValue = *latexTimestamp_->valueStringRef();
       bool isValid=true;
       bool bTimestamp = convertStringToBool(latexTimestampValue,isValid);
       if (isValid && bTimestamp) timestampValue = "YES";
@@ -2338,7 +2338,7 @@ void Config::updateObsolete()
   auto commonAttrOpt = dynamic_cast<ConfigString*>(ConfigImpl::instance()->get("DOT_COMMON_ATTR"));
   if (commonAttrOpt)
   {
-    QCString& commonAttrStr = *commonAttrOpt->valueRef();
+    DString& commonAttrStr = *commonAttrOpt->valueRef();
     DotAttributes commonAttr(commonAttrStr);
     updateAttribute(commonAttr, "fontname", fontname);
     updateAttribute(commonAttr, "fontsize", fontsize);
@@ -2348,7 +2348,7 @@ void Config::updateObsolete()
   auto edgeAttrOpt = dynamic_cast<ConfigString*>(ConfigImpl::instance()->get("DOT_EDGE_ATTR"));
   if (edgeAttrOpt)
   {
-    QCString& edgeAttrStr = *edgeAttrOpt->valueRef();
+    DString& edgeAttrStr = *edgeAttrOpt->valueRef();
     DotAttributes edgeAttr(edgeAttrStr);
     updateAttribute(edgeAttr, "labelfontname", fontname);
     updateAttribute(edgeAttr, "labelfontsize", fontsize);
@@ -2377,7 +2377,7 @@ void Config::writeXSDDoxyfile(TextStream &t)
   ConfigImpl::instance()->writeXSDDoxyfile(t);
 }
 
-bool Config::parse(const QCString &fileName,bool update, Config::CompareMode compareMode)
+bool Config::parse(const DString &fileName,bool update, Config::CompareMode compareMode)
 {
   g_compareMode = compareMode;
   bool parseRes = ConfigImpl::instance()->parse(fileName,update);

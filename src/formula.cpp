@@ -56,7 +56,7 @@ FormulaManager &FormulaManager::instance()
   return fm;
 }
 
-void FormulaManager::initFromRepository(const QCString &dir)
+void FormulaManager::initFromRepository(const DString &dir)
 {
   std::ifstream f = Portable::openInputStream(dir+"/formula.repository");
   if (f.is_open())
@@ -137,7 +137,7 @@ void FormulaManager::initFromRepository(const QCString &dir)
 
       if (formula) // if an entry in the repository exists also check if there is a generated image
       {
-        QCString formImgName;
+        DString formImgName;
         formImgName.sprintf("form_%d",formula->id());
         FileInfo fiPng((dir+"/"+formImgName+".png").str());
         FileInfo fiSvg((dir+"/"+formImgName+".svg").str());
@@ -180,10 +180,10 @@ void FormulaManager::checkRepositories()
   }
 }
 
-void FormulaManager::createLatexFile(const QCString &fileName,Format format,Mode mode,IntVector &formulasToGenerate,bool toIndex)
+void FormulaManager::createLatexFile(const DString &fileName,Format format,Mode mode,IntVector &formulasToGenerate,bool toIndex)
 {
   // generate a latex file containing one formula per page.
-  QCString texName=fileName+".tex";
+  DString texName=fileName+".tex";
   std::ofstream f = Portable::openOutputStream(texName);
   if (f.is_open())
   {
@@ -204,11 +204,11 @@ void FormulaManager::createLatexFile(const QCString &fileName,Format format,Mode
     writeExtraLatexPackages(t);
     writeLatexSpecialFormulaChars(t);
 
-    QCString macroFile = Config_getString(FORMULA_MACROFILE);
+    DString macroFile = Config_getString(FORMULA_MACROFILE);
     if (!macroFile.empty())
     {
       FileInfo fi(macroFile.str());
-      QCString stripMacroFile = fi.fileName();
+      DString stripMacroFile = fi.fileName();
       t << "\\input{" << stripMacroFile << "}\n";
     }
 
@@ -227,7 +227,7 @@ void FormulaManager::createLatexFile(const QCString &fileName,Format format,Mode
         t << formula->text() << "\n\\pagebreak\n\n";
         formulasToGenerate.push_back(id);
       }
-      QCString resultName;
+      DString resultName;
       resultName.sprintf("form_%d%s.%s",id, mode==Mode::Light?"":"_dark", format==Format::Vector?"svg":"png");
       if (toIndex) Doxygen::indexList->addImageFile(resultName);
     }
@@ -237,16 +237,16 @@ void FormulaManager::createLatexFile(const QCString &fileName,Format format,Mode
   }
 }
 
-static bool createDVIFile(const QCString &fileName)
+static bool createDVIFile(const DString &fileName)
 {
-  QCString latexCmd = "latex";
+  DString latexCmd = "latex";
   const size_t argsLen = 4096;
   char args[argsLen];
   int rerunCount=1;
   while (rerunCount<8)
   {
     //printf("Running latex...\n");
-    qsnprintf(args,argsLen,"-interaction=batchmode %s >%s",qPrint(fileName),Portable::devNull());
+    snprintf(args,argsLen,"-interaction=batchmode %s >%s",qPrint(fileName),Portable::devNull());
     if ((Portable::system(latexCmd,args)!=0) || (Portable::system(latexCmd,args)!=0))
     {
       err("Problems running latex. Check your installation or look "
@@ -254,10 +254,10 @@ static bool createDVIFile(const QCString &fileName)
       return false;
     }
     // check the log file if we need to run latex again to resolve references
-    QCString logFile = fileToString(fileName+".log");
+    DString logFile = fileToString(fileName+".log");
     if (logFile.empty() ||
-        (logFile.find("Rerun to get cross-references right")==QCString::npos &&
-         logFile.find("Rerun LaTeX")==QCString::npos))
+        (logFile.find("Rerun to get cross-references right")==DString::npos &&
+         logFile.find("Rerun LaTeX")==DString::npos))
     {
       break;
     }
@@ -266,13 +266,13 @@ static bool createDVIFile(const QCString &fileName)
   return true;
 }
 
-static bool createPostscriptFile(const QCString &fileName,const QCString &formBase,int pageIndex)
+static bool createPostscriptFile(const DString &fileName,const DString &formBase,int pageIndex)
 {
   const size_t argsLen = 4096;
   char args[argsLen];
   // run dvips to convert the page with number pageIndex to an
   // postscript file.
-  qsnprintf(args,argsLen,"-q -D 600 -n 1 -p %d -o %s_tmp.ps %s.dvi",pageIndex,qPrint(formBase),qPrint(fileName));
+  snprintf(args,argsLen,"-q -D 600 -n 1 -p %d -o %s_tmp.ps %s.dvi",pageIndex,qPrint(formBase),qPrint(fileName));
   if (Portable::system("dvips",args)!=0)
   {
     err("Problems running dvips. Check your installation!\n");
@@ -281,12 +281,12 @@ static bool createPostscriptFile(const QCString &fileName,const QCString &formBa
   return true;
 }
 
-static bool createEPSbboxFile(const QCString &formBase)
+static bool createEPSbboxFile(const DString &formBase)
 {
   const size_t argsLen = 4096;
   char args[argsLen];
   // extract the bounding box for the postscript file
-  qsnprintf(args,argsLen,"-q -dBATCH -dNOPAUSE -P- -dNOSAFER -sDEVICE=bbox %s_tmp.ps 2>%s_tmp.epsi",
+  snprintf(args,argsLen,"-q -dBATCH -dNOPAUSE -P- -dNOSAFER -sDEVICE=bbox %s_tmp.ps 2>%s_tmp.epsi",
       qPrint(formBase),qPrint(formBase));
   if (Portable::system(Portable::ghostScriptCommand(),args)!=0)
   {
@@ -296,15 +296,15 @@ static bool createEPSbboxFile(const QCString &formBase)
   return true;
 }
 
-static bool extractBoundingBox(const QCString &formBase,
+static bool extractBoundingBox(const DString &formBase,
             int *x1,int *y1,int *x2,int *y2,
             double *x1hi,double *y1hi,double *x2hi,double *y2hi)
 {
   FileInfo fi((formBase+"_tmp.epsi").str());
   if (fi.exists())
   {
-    QCString eps = fileToString(formBase+"_tmp.epsi");
-    if (size_t i = eps.find("%%BoundingBox:"); i!=QCString::npos)
+    DString eps = fileToString(formBase+"_tmp.epsi");
+    if (size_t i = eps.find("%%BoundingBox:"); i!=DString::npos)
     {
       sscanf(eps.data()+i,"%%%%BoundingBox:%d %d %d %d",x1,y1,x2,y2);
     }
@@ -313,7 +313,7 @@ static bool extractBoundingBox(const QCString &formBase,
       err("Couldn't extract bounding box from {}_tmp.epsi\n",formBase);
       return false;
     }
-    if (size_t i = eps.find("%%HiResBoundingBox:"); i!=QCString::npos)
+    if (size_t i = eps.find("%%HiResBoundingBox:"); i!=DString::npos)
     {
       sscanf(eps.data()+i,"%%%%HiResBoundingBox:%lf %lf %lf %lf",x1hi,y1hi,x2hi,y2hi);
     }
@@ -345,12 +345,12 @@ static double updateFormulaSize(Formula *formula,int x1,int y1,int x2,int y2)
   return scaleFactor;
 }
 
-static bool createCroppedPDF(const QCString &formBase,int x1,int y1,int x2,int y2)
+static bool createCroppedPDF(const DString &formBase,int x1,int y1,int x2,int y2)
 {
   const size_t argsLen = 4096;
   char args[argsLen];
   // crop the image to its bounding box
-  qsnprintf(args,argsLen,"-q -dBATCH -dNOPAUSE -P- -dNOSAFER -sDEVICE=pdfwrite"
+  snprintf(args,argsLen,"-q -dBATCH -dNOPAUSE -P- -dNOSAFER -sDEVICE=pdfwrite"
               " -o %s_tmp.pdf -c \"[/CropBox [%d %d %d %d] /PAGES pdfmark\" -f %s_tmp.ps",
       qPrint(formBase),x1,y1,x2,y2,qPrint(formBase));
   if (Portable::system(Portable::ghostScriptCommand(),args)!=0)
@@ -361,12 +361,12 @@ static bool createCroppedPDF(const QCString &formBase,int x1,int y1,int x2,int y
   return true;
 }
 
-static bool createCroppedEPS(const QCString &formBase)
+static bool createCroppedEPS(const DString &formBase)
 {
   const size_t argsLen = 4096;
   char args[argsLen];
   // crop the image to its bounding box
-  qsnprintf(args,argsLen,"-q -dBATCH -dNOPAUSE -P- -dNOSAFER -sDEVICE=eps2write"
+  snprintf(args,argsLen,"-q -dBATCH -dNOPAUSE -P- -dNOSAFER -sDEVICE=eps2write"
               " -o %s_tmp.eps -f %s_tmp.ps",qPrint(formBase),qPrint(formBase));
   if (Portable::system(Portable::ghostScriptCommand(),args)!=0)
   {
@@ -376,11 +376,11 @@ static bool createCroppedEPS(const QCString &formBase)
   return true;
 }
 
-static bool createSVGFromPDF(const QCString &formBase,const QCString &outFile)
+static bool createSVGFromPDF(const DString &formBase,const DString &outFile)
 {
   const size_t argsLen = 4096;
   char args[argsLen];
-  qsnprintf(args,argsLen,"%s_tmp.pdf %s",qPrint(formBase),qPrint(outFile));
+  snprintf(args,argsLen,"%s_tmp.pdf %s",qPrint(formBase),qPrint(outFile));
   if (Portable::system("pdf2svg",args)!=0)
   {
     err("Problems running pdf2svg. Check your installation!\n");
@@ -389,7 +389,7 @@ static bool createSVGFromPDF(const QCString &formBase,const QCString &outFile)
   return true;
 }
 
-static bool createSVGFromPDFviaInkscape(const Dir &thisDir,const QCString &formBase,const QCString &outFile)
+static bool createSVGFromPDFviaInkscape(const Dir &thisDir,const DString &formBase,const DString &outFile)
 {
   const size_t argsLen = 4096;
   char args[argsLen];
@@ -401,11 +401,11 @@ static bool createSVGFromPDFviaInkscape(const Dir &thisDir,const QCString &formB
   }
   else if (inkscapeVersion == 0)
   {
-    qsnprintf(args,argsLen,"-l %s -z %s_tmp.pdf 2>%s",qPrint(outFile),qPrint(formBase),Portable::devNull());
+    snprintf(args,argsLen,"-l %s -z %s_tmp.pdf 2>%s",qPrint(outFile),qPrint(formBase),Portable::devNull());
   }
   else // inkscapeVersion >= 1
   {
-    qsnprintf(args,argsLen,"--export-type=svg --export-filename=%s %s_tmp.pdf 2>%s",qPrint(outFile),qPrint(formBase),Portable::devNull());
+    snprintf(args,argsLen,"--export-type=svg --export-filename=%s %s_tmp.pdf 2>%s",qPrint(outFile),qPrint(formBase),Portable::devNull());
   }
   if (Portable::system("inkscape",args)!=0)
   {
@@ -416,7 +416,7 @@ static bool createSVGFromPDFviaInkscape(const Dir &thisDir,const QCString &formB
 }
 
 
-static bool updateEPSBoundingBox(const QCString &formBase,
+static bool updateEPSBoundingBox(const DString &formBase,
                                  int x1,int y1,int x2,int y2,
                                  double x1hi,double y1hi,double x2hi,double y2hi)
 {
@@ -454,11 +454,11 @@ static bool updateEPSBoundingBox(const QCString &formBase,
   return true;
 }
 
-static bool createPNG(const QCString &formBase,const QCString &outFile,double scaleFactor)
+static bool createPNG(const DString &formBase,const DString &outFile,double scaleFactor)
 {
   const size_t argsLen = 4096;
   char args[argsLen];
-  qsnprintf(args,argsLen,"-q -dNOSAFER -dBATCH -dNOPAUSE -dEPSCrop -sDEVICE=pngalpha -dGraphicsAlphaBits=4 -dTextAlphaBits=4 "
+  snprintf(args,argsLen,"-q -dNOSAFER -dBATCH -dNOPAUSE -dEPSCrop -sDEVICE=pngalpha -dGraphicsAlphaBits=4 -dTextAlphaBits=4 "
                "-r%d -sOutputFile=%s %s_tmp_corr.eps",static_cast<int>(scaleFactor*72),qPrint(outFile),qPrint(formBase));
   if (Portable::system(Portable::ghostScriptCommand(),args)!=0)
   {
@@ -468,15 +468,15 @@ static bool createPNG(const QCString &formBase,const QCString &outFile,double sc
   return true;
 }
 
-static StringVector generateFormula(const Dir &thisDir,const QCString &formulaFileName,Formula *formula,int pageNum,int pageIndex,
+static StringVector generateFormula(const Dir &thisDir,const DString &formulaFileName,Formula *formula,int pageNum,int pageIndex,
                                     FormulaManager::Format format,FormulaManager::HighDPI hd,FormulaManager::Mode mode)
 {
   StringVector tempFiles;
-  QCString outputFile;
+  DString outputFile;
   outputFile.sprintf("form_%d%s.%s",pageNum, mode==FormulaManager::Mode::Light?"":"_dark", format==FormulaManager::Format::Vector?"svg":"png");
   msg("Generating image {} for formula\n",outputFile);
 
-  QCString formBase;
+  DString formBase;
   formBase.sprintf("_form%d%s",pageNum,mode==FormulaManager::Mode::Light?"":"_dark");
 
   if (!createPostscriptFile(formulaFileName,formBase,pageIndex)) return tempFiles;
@@ -492,7 +492,7 @@ static StringVector generateFormula(const Dir &thisDir,const QCString &formulaFi
   else // for dark images the bounding box is wrong (includes the black) so
        // use the bounding box of the light image instead.
   {
-    QCString formBaseLight;
+    DString formBaseLight;
     formBaseLight.sprintf("_form%d",pageNum);
     if (!extractBoundingBox(formBaseLight,&x1,&y1,&x2,&y2,&x1hi,&y1hi,&x2hi,&y2hi)) return tempFiles;
   }
@@ -551,7 +551,7 @@ static StringVector generateFormula(const Dir &thisDir,const QCString &formulaFi
 void FormulaManager::createFormulasTexFile(Dir &thisDir,Format format,HighDPI hd,Mode mode,bool toIndex)
 {
   IntVector formulasToGenerate;
-  QCString formulaFileName = mode==Mode::Light ? "_formulas" : "_formulas_dark";
+  DString formulaFileName = mode==Mode::Light ? "_formulas" : "_formulas_dark";
   createLatexFile(formulaFileName,format,mode,formulasToGenerate,toIndex);
 
   if (!formulasToGenerate.empty()) // there are new formulas
@@ -631,7 +631,7 @@ void FormulaManager::createFormulasTexFile(Dir &thisDir,Format format,HighDPI hd
   }
 }
 
-void FormulaManager::generateImages(const QCString &path,bool toIndex,Format format,HighDPI hd)
+void FormulaManager::generateImages(const DString &path,bool toIndex,Format format,HighDPI hd)
 {
   Dir d(path.str());
   // store the original directory
@@ -641,8 +641,8 @@ void FormulaManager::generateImages(const QCString &path,bool toIndex,Format for
   }
   std::string oldDir = Dir::currentDirPath();
 
-  QCString macroFile = Config_getString(FORMULA_MACROFILE);
-  QCString stripMacroFile;
+  DString macroFile = Config_getString(FORMULA_MACROFILE);
+  DString stripMacroFile;
   if (!macroFile.empty())
   {
     FileInfo fi(macroFile.str());
@@ -687,7 +687,7 @@ void FormulaManager::clear()
   p->formulaIdMap.clear();
 }
 
-int FormulaManager::addFormula(const QCString &formulaText,int width,int height)
+int FormulaManager::addFormula(const DString &formulaText,int width,int height)
 {
   Formula *formula = p->formulas.find(formulaText);
   if (formula) // same formula already stored
@@ -734,9 +734,9 @@ static int determineInkscapeVersion(const Dir &thisDir)
   static int inkscapeVersion = -2;
   if (inkscapeVersion == -2) // initial one time version check
   {
-    QCString inkscapeVersionFile = "inkscape_version" ;
+    DString inkscapeVersionFile = "inkscape_version" ;
     inkscapeVersion = -1;
-    QCString args = "-z --version >"+inkscapeVersionFile+" 2>"+Portable::devNull();
+    DString args = "-z --version >"+inkscapeVersionFile+" 2>"+Portable::devNull();
     if (Portable::system("inkscape",args)!=0)
     {
       // looks like the old syntax gave problems, lets try the new syntax

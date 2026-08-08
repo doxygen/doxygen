@@ -70,18 +70,18 @@ SearchIndex::SearchIndex()
   m_index.resize(numIndexEntries);
 }
 
-void SearchIndex::setCurrentDoc(const Definition *ctx,const QCString &anchor,bool isSourceFile)
+void SearchIndex::setCurrentDoc(const Definition *ctx,const DString &anchor,bool isSourceFile)
 {
   if (ctx==nullptr) return;
   std::lock_guard<std::mutex> lock(g_searchIndexMutex);
   assert(!isSourceFile || ctx->definitionType()==Definition::TypeFile);
   //printf("SearchIndex::setCurrentDoc(%s,%s,%s)\n",name,baseName,anchor);
-  QCString url=isSourceFile ? (toFileDef(ctx))->getSourceFileBase() : ctx->getOutputFileBase();
+  DString url=isSourceFile ? (toFileDef(ctx))->getSourceFileBase() : ctx->getOutputFileBase();
   url+=Config_getString(HTML_FILE_EXTENSION);
-  QCString baseUrl = url;
-  if (!anchor.empty()) url+=QCString("#")+anchor;
+  DString baseUrl = url;
+  if (!anchor.empty()) url+=DString("#")+anchor;
   if (!isSourceFile) baseUrl=url;
-  QCString name=ctx->qualifiedName();
+  DString name=ctx->qualifiedName();
   if (ctx->definitionType()==Definition::TypeMember)
   {
     const MemberDef *md = toMemberDef(ctx);
@@ -92,7 +92,7 @@ void SearchIndex::setCurrentDoc(const Definition *ctx,const QCString &anchor,boo
   else // compound type
   {
     SrcLangExt lang = ctx->getLanguage();
-    QCString sep = getLanguageSpecificSeparator(lang);
+    DString sep = getLanguageSpecificSeparator(lang);
     if (sep!="::")
     {
       name = substitute(name,"::",sep);
@@ -171,7 +171,7 @@ void SearchIndex::setCurrentDoc(const Definition *ctx,const QCString &anchor,boo
   }
 }
 
-static int charsToIndex(const QCString &word)
+static int charsToIndex(const DString &word)
 {
   if (word.length()<2) return -1;
 
@@ -191,10 +191,10 @@ static int charsToIndex(const QCString &word)
   return c1*256+c2;
 }
 
-void SearchIndex::addWordRec(const QCString &word,bool hiPriority,bool recurse)
+void SearchIndex::addWordRec(const DString &word,bool hiPriority,bool recurse)
 {
   if (word.empty()) return;
-  QCString wStr = QCString(word).lower();
+  DString wStr = DString(word).lower();
   //printf("SearchIndex::addWord(%s,%d) wStr=%s\n",word,hiPriority,qPrint(wStr));
   int idx=charsToIndex(wStr);
   if (idx<0 || idx>=static_cast<int>(m_index.size())) return;
@@ -232,7 +232,7 @@ void SearchIndex::addWordRec(const QCString &word,bool hiPriority,bool recurse)
   }
 }
 
-void SearchIndex::addWord(const QCString &word,bool hiPriority)
+void SearchIndex::addWord(const DString &word,bool hiPriority)
 {
   std::lock_guard<std::mutex> lock(g_searchIndexMutex);
   addWordRec(word,hiPriority,false);
@@ -246,14 +246,14 @@ static void writeInt(std::ostream &f,size_t index)
   f.put(static_cast<int>(index&0xff));
 }
 
-static void writeString(std::ostream &f,const QCString &s)
+static void writeString(std::ostream &f,const DString &s)
 {
   size_t l = s.length();
   for (size_t i=0;i<l;i++) f.put(s[i]);
   f.put(0);
 }
 
-void SearchIndex::write(const QCString &fileName)
+void SearchIndex::write(const DString &fileName)
 {
   size_t size=4; // for the header
   size+=4*numIndexEntries; // for the index
@@ -387,7 +387,7 @@ SearchIndexExternal::SearchIndexExternal()
 {
 }
 
-static QCString definitionToName(const Definition *ctx)
+static DString definitionToName(const Definition *ctx)
 {
   if (ctx && ctx->definitionType()==Definition::TypeMember)
   {
@@ -446,20 +446,20 @@ static QCString definitionToName(const Definition *ctx)
   return "unknown";
 }
 
-void SearchIndexExternal::setCurrentDoc(const Definition *ctx,const QCString &anchor,bool isSourceFile)
+void SearchIndexExternal::setCurrentDoc(const Definition *ctx,const DString &anchor,bool isSourceFile)
 {
   std::lock_guard<std::mutex> lock(g_searchIndexMutex);
-  QCString extId = stripPath(Config_getString(EXTERNAL_SEARCH_ID));
-  QCString url = isSourceFile ? (toFileDef(ctx))->getSourceFileBase() : ctx->getOutputFileBase();
+  DString extId = stripPath(Config_getString(EXTERNAL_SEARCH_ID));
+  DString url = isSourceFile ? (toFileDef(ctx))->getSourceFileBase() : ctx->getOutputFileBase();
   addHtmlExtensionIfMissing(url);
-  if (!anchor.empty()) url+=QCString("#")+anchor;
-  QCString key = extId+";"+url;
+  if (!anchor.empty()) url+=DString("#")+anchor;
+  DString key = extId+";"+url;
 
   auto it = m_docEntries.find(key.str());
   if (it == m_docEntries.end())
   {
     SearchDocEntry e;
-    e.type = isSourceFile ? QCString("source") : definitionToName(ctx);
+    e.type = isSourceFile ? DString("source") : definitionToName(ctx);
     e.name = ctx->qualifiedName();
     if (ctx->definitionType()==Definition::TypeMember)
     {
@@ -489,17 +489,17 @@ void SearchIndexExternal::setCurrentDoc(const Definition *ctx,const QCString &an
   m_current = &it->second;
 }
 
-void SearchIndexExternal::addWord(const QCString &word,bool hiPriority)
+void SearchIndexExternal::addWord(const DString &word,bool hiPriority)
 {
   std::lock_guard<std::mutex> lock(g_searchIndexMutex);
   if (word.empty() || !isId(word[0]) || m_current==nullptr) return;
-  QCString &text = hiPriority ? m_current->importantText : m_current->normalText;
+  DString &text = hiPriority ? m_current->importantText : m_current->normalText;
   if (!text.empty()) text+=' ';
   text+=word;
   //printf("addWord %s\n",word);
 }
 
-void SearchIndexExternal::write(const QCString &fileName)
+void SearchIndexExternal::write(const DString &fileName)
 {
   std::ofstream t = Portable::openOutputStream(fileName);
   if (t.is_open())

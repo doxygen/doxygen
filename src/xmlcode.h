@@ -22,7 +22,7 @@
 class OutputCodeList;
 class FileDef;
 class MemberDef;
-class QCString;
+class DString;
 class Definition;
 
 /** XML scanner. Only support syntax highlighting of code at the moment.
@@ -35,8 +35,8 @@ class XMLCodeParser final : public CodeParserInterface
     NON_COPYABLE(XMLCodeParser)
 
     void parseCode(OutputCodeList &codeOutIntf,
-                   const QCString &scopeName,
-                   const QCString &input,
+                   const DString &scopeName,
+                   const DString &input,
                    SrcLangExt,
                    bool stripCodeComments,
                    const CodeParserOptions &options

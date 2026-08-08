@@ -27,7 +27,7 @@
 
 class FileDef;
 class MemberDef;
-class QCString;
+class DString;
 class Definition;
 
 class PythonCodeParser final : public CodeParserInterface
@@ -38,8 +38,8 @@ class PythonCodeParser final : public CodeParserInterface
     NON_COPYABLE(PythonCodeParser)
 
     void parseCode(OutputCodeList &codeOutIntf,
-                   const QCString &scopeName,
-                   const QCString &input,
+                   const DString &scopeName,
+                   const DString &input,
                    SrcLangExt lang,
                    bool stripCodeComments,
                    const CodeParserOptions &options

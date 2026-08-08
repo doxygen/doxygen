@@ -24,7 +24,7 @@
 #include "entry.h"
 #include "outputlist.h"
 
-static void generateHtmlOutput(const QCString &fileName,const QCString &doc)
+static void generateHtmlOutput(const DString &fileName,const DString &doc)
 {
   //printf("------\n%s\n------\n",qPrint(doc));
   auto parser { createDocParser() };
@@ -53,7 +53,7 @@ static void generateHtmlOutput(const QCString &fileName,const QCString &doc)
 
 void generateHtmlForComment(const std::string &fn,const std::string &text)
 {
-  QCString fileName = "index.html";
+  DString fileName = "index.html";
   std::shared_ptr<Entry> root = std::make_shared<Entry>();
 
   // 1. Pass input through commentcnv
@@ -70,7 +70,7 @@ void generateHtmlForComment(const std::string &fn,const std::string &text)
   bool needsEntry=false;
   GuardedSectionStack guards;
   Markdown markdown(fileName,1,0);
-  QCString processedDocs = markdown.process(convBuf.data(),lineNr,true);
+  DString processedDocs = markdown.process(convBuf.data(),lineNr,true);
   std::shared_ptr<Entry> current = std::make_shared<Entry>();
   current->lang = SrcLangExt::Markdown;
   current->fileName = fn;
@@ -92,7 +92,7 @@ void generateHtmlForComment(const std::string &fn,const std::string &text)
   {
     if (needsEntry)
     {
-      QCString docFile = current->docFile;
+      DString docFile = current->docFile;
       root->moveToSubEntryAndRefresh(current);
       current->lang = SrcLangExt::Markdown;
       current->docFile = docFile;

@@ -33,16 +33,16 @@
 struct Requirement : RequirementIntf
 {
   public:
-    Requirement(const QCString &id_,const QCString &file_,int line_,const QCString &title_,const QCString &doc_,const QCString &tagFile_,const QCString &extPage_) :
+    Requirement(const DString &id_,const DString &file_,int line_,const DString &title_,const DString &doc_,const DString &tagFile_,const DString &extPage_) :
       m_id(id_), m_file(file_), m_line(line_), m_title(title_), m_doc(doc_), m_tagFile(tagFile_), m_extPage(extPage_) {}
-    QCString id()                const override { return m_id;       }
-    QCString file()              const override { return m_file;     }
+    DString id()                const override { return m_id;       }
+    DString file()              const override { return m_file;     }
     int      line()              const override { return m_line;     }
-    QCString title()             const override { return m_title;    }
-    QCString doc()               const override { return m_doc;      }
-    QCString getTagFile()        const override { return m_tagFile;  }
-    QCString getExtPage()        const override { return m_extPage;  }
-    QCString getOutputFileBase() const override { return ::convertNameToFile("requirements",false,true); }
+    DString title()             const override { return m_title;    }
+    DString doc()               const override { return m_doc;      }
+    DString getTagFile()        const override { return m_tagFile;  }
+    DString getExtPage()        const override { return m_extPage;  }
+    DString getOutputFileBase() const override { return ::convertNameToFile("requirements",false,true); }
     const DefinitionVector &satisfiedBy() const override { return m_satisfiedBy; }
     const DefinitionVector &verifiedBy()  const override { return m_verifiedBy;  }
 
@@ -51,8 +51,8 @@ struct Requirement : RequirementIntf
       auto comp = [](const Definition *c1,const Definition *c2)
       {
         return Config_getBool(SORT_BY_SCOPE_NAME)                   ?
-          qstricmp_sort(c1->qualifiedName(), c2->qualifiedName())<0 :
-          qstricmp_sort(c1->name(), c2->name())<0;
+          dstricmp_sort(c1->qualifiedName(), c2->qualifiedName())<0 :
+          dstricmp_sort(c1->name(), c2->name())<0;
       };
       std::stable_sort(m_satisfiedBy.begin(), m_satisfiedBy.end(), comp);
       std::stable_sort(m_verifiedBy.begin(),  m_verifiedBy.end(),  comp);
@@ -75,13 +75,13 @@ struct Requirement : RequirementIntf
     }
 
   private:
-    QCString         m_id;
-    QCString         m_file;
+    DString         m_id;
+    DString         m_file;
     int              m_line;
-    QCString         m_title;
-    QCString         m_doc;
-    QCString         m_tagFile;
-    QCString         m_extPage;
+    DString         m_title;
+    DString         m_doc;
+    DString         m_tagFile;
+    DString         m_extPage;
     DefinitionVector m_satisfiedBy;
     DefinitionVector m_verifiedBy;
 };
@@ -110,8 +110,8 @@ const PageDef *RequirementManager::requirementsPage() const
 
 void RequirementManager::addRequirement(Entry *e)
 {
-  QCString tagFile;
-  QCString extPage;
+  DString tagFile;
+  DString extPage;
   if (!Config_getBool(GENERATE_REQUIREMENTS)) // still record the requirement, so we can refer to it.
   {
     if (e->tagInfo())
@@ -132,7 +132,7 @@ void RequirementManager::addRequirement(Entry *e)
     {
       p->reqPageDef = addRelatedPage("requirements",                      // name
           theTranslator->trRequirements(),     // ptitle
-          QCString(),                          // doc
+          DString(),                          // doc
           "requirements",                      // fileName
           1,                                   // docLine
           1                                    // startLine
@@ -140,8 +140,8 @@ void RequirementManager::addRequirement(Entry *e)
     }
     //printf("requirement ID=%s title='%s' file=%s line=%d brief='%s' doc='%s'\n",
     //    qPrint(e->name), qPrint(e->type), qPrint(e->fileName), e->startLine, qPrint(e->brief), qPrint(e->doc));
-    QCString title = parseCommentAsText(p->reqPageDef,nullptr,e->type,e->fileName,e->startLine);
-    QCString doc = e->doc;
+    DString title = parseCommentAsText(p->reqPageDef,nullptr,e->type,e->fileName,e->startLine);
+    DString doc = e->doc;
     if (e->tagInfo())
     {
       //printf("External requirement %s title=%s fileName=%s tagName=%s anchor=%s\n",
@@ -183,8 +183,8 @@ void RequirementManager::generatePage()
   if (!Config_getBool(GENERATE_REQUIREMENTS) || p->requirements.empty()) return;
   std::vector<const SectionInfo*> anchors;
   std::stable_sort(p->requirements.begin(),p->requirements.end(),
-                   [](const auto &left,const auto &right) { return qstricmp(left->id(),right->id()) < 0; });
-  QCString doc = "<table class=\"doxtable reqlist\">";
+                   [](const auto &left,const auto &right) { return dstricmp(left->id(),right->id()) < 0; });
+  DString doc = "<table class=\"doxtable reqlist\">";
   doc.reserve(10*1024); // prevent too many reallocs
   doc += "<tr><th>";
   doc += theTranslator->trRequirementID();
@@ -199,16 +199,16 @@ void RequirementManager::generatePage()
       anchors.push_back(si);
     }
     doc += "<tr><td valign=\"top\">";
-    doc += " \\ifile \""+req->file()+"\" \\iline "+QCString().setNum(req->line())+" ";
+    doc += " \\ifile \""+req->file()+"\" \\iline "+DString().setNum(req->line())+" ";
     doc += "\\anchor ";
     doc += req->id();
     doc += " ";
     doc += "<span class=\"req_id\">";
-    if (QCString tagFile = req->getTagFile(); !tagFile.empty())
+    if (DString tagFile = req->getTagFile(); !tagFile.empty())
     {
       //printf("tagFile=%s extPage=%s\n",qPrint(tagFile),qPrint(req->getExtPage()));
       doc += "<a href=\"";
-      doc += createHtmlUrl(QCString(),tagFile,true,false,req->getExtPage(),req->id());
+      doc += createHtmlUrl(DString(),tagFile,true,false,req->getExtPage(),req->id());
       doc +="\">"+req->id()+"</a>";
     }
     else
@@ -223,7 +223,7 @@ void RequirementManager::generatePage()
     req->sortReferences();
     auto symToString = [](const Definition *sym)
     {
-      QCString symName = sym->qualifiedName();
+      DString symName = sym->qualifiedName();
       if (sym->definitionType()==Definition::TypeMember)
       {
         const MemberDef *md = toMemberDef(sym);
@@ -271,17 +271,17 @@ void RequirementManager::generatePage()
   doc += " \\ifile \"requirements\" \\iline 1\n";
 
   auto writeMissingRef = [&doc,&anchors](const RequirementPtrVector &reqs,
-                                         const char *label,const QCString &section,const QCString &text)
+                                         const char *label,const DString &section,const DString &text)
   {
     if (!reqs.empty())
     {
       SectionManager &sm = SectionManager::instance();
-      const SectionInfo *si = sm.add(QCString("missing_")+label,"requirements",1,section,SectionType::Section,1);
+      const SectionInfo *si = sm.add(DString("missing_")+label,"requirements",1,section,SectionType::Section,1);
       anchors.push_back(si);
       doc += "\\htmlonly <div class=\"missing_";
       doc += label;
       doc += "\">\\endhtmlonly\n";
-      doc += QCString("@section missing_")+label+" "+section+"\n"+text+"\n";
+      doc += DString("@section missing_")+label+" "+section+"\n"+text+"\n";
       doc += "\\htmlonly </div>\\endhtmlonly\n";
     }
   };
@@ -298,7 +298,7 @@ void RequirementManager::generatePage()
                      writeMarkerList(theTranslator->trWriteList(numMissingSatisfied).str(),
                        numMissingSatisfied,
                        [&missingSatisfiedRef](size_t entryIndex) {
-                         QCString id = missingSatisfiedRef[entryIndex]->id();
+                         DString id = missingSatisfiedRef[entryIndex]->id();
                          return "@ref "+id + " \""+id+"\"";
                        })));
   }
@@ -314,7 +314,7 @@ void RequirementManager::generatePage()
                      writeMarkerList(theTranslator->trWriteList(numMissingVerified).str(),
                        numMissingVerified,
                        [&missingVerifiedRef](size_t entryIndex) {
-                         QCString id = missingVerifiedRef[entryIndex]->id();
+                         DString id = missingVerifiedRef[entryIndex]->id();
                          return "@ref "+id + " \""+id+"\"";
                        })));
   }
@@ -324,7 +324,7 @@ void RequirementManager::generatePage()
   p->reqPageDef->addSectionsToDefinition(anchors);
 }
 
-const RequirementIntf *RequirementManager::find(const QCString &reqId) const
+const RequirementIntf *RequirementManager::find(const DString &reqId) const
 {
   return p->requirements.find(reqId);
 }
@@ -357,7 +357,7 @@ void RequirementManager::writeRef(OutputList &ol,const RequirementRef &ref)
   if (!Config_getBool(GENERATE_REQUIREMENTS)) return;
   if (const RequirementIntf *req = RequirementManager::instance().find(ref.reqId()); req!=nullptr)
   {
-    QCString title = ref.reqId();
+    DString title = ref.reqId();
     if (!ref.title().empty())
     {
       title +=" (";
@@ -374,7 +374,7 @@ void RequirementManager::writeRef(OutputList &ol,const RequirementRef &ref)
     {
       title = ref.reqId();
     }
-    ol.writeObjectLink(QCString(),req->getOutputFileBase(),ref.reqId(),title);
+    ol.writeObjectLink(DString(),req->getOutputFileBase(),ref.reqId(),title);
   }
   else
   {
@@ -392,7 +392,7 @@ void RequirementManager::writeTagFile(TextStream &tagFile)
       tagFile << "  <compound kind=\"requirement\">\n";
       tagFile << "    <id>" << req->id() << "</id>\n";
       tagFile << "    <title>" << convertToXML(req->title()) << "</title>\n";
-      QCString fn = req->getOutputFileBase();
+      DString fn = req->getOutputFileBase();
       addHtmlExtensionIfMissing(fn);
       tagFile << "    <filename>" << fn << "</filename>\n";
       tagFile << "  </compound>\n";
@@ -409,14 +409,14 @@ void splitRequirementRefs(const RequirementRefs &inputReqRefs,RequirementRefs &s
         [](const auto &left,const auto &right)
         { return  left.reqId()< right.reqId() ||
         (left.reqId()==right.reqId() &&
-         qstricmp(left.title(),right.title())<0);
+         dstricmp(left.title(),right.title())<0);
         });
 
     // filter out duplicates
     auto last = std::unique(uniqueRefs.begin(),uniqueRefs.end(),
         [](const auto &left,const auto &right)
         { return left.reqId()==right.reqId() &&
-        qstricmp(left.title(),right.title())==0;
+        dstricmp(left.title(),right.title())==0;
         });
 
     // remove unused part

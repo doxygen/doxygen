@@ -31,15 +31,15 @@
 #include "fileinfo.h"
 #include "portable.h"
 
-//QCString DotGraph::DOT_FONTNAME; // will be initialized in initDot
+//DString DotGraph::DOT_FONTNAME; // will be initialized in initDot
 //int DotGraph::DOT_FONTSIZE;      // will be initialized in initDot
 
 /*! Checks if a file "baseName".md5 exists. If so the contents
 *  are compared with \a md5. If equal false is returned.
 *  The .md5 is created or updated after successful creation of the output file.
 */
-static bool sameMd5Signature(const QCString &baseName,
-                             const QCString &md5)
+static bool sameMd5Signature(const DString &baseName,
+                             const DString &md5)
 {
   bool same = false;
   char md5stored[33];
@@ -64,7 +64,7 @@ static bool sameMd5Signature(const QCString &baseName,
   return same;
 }
 
-static bool deliverablesPresent(const QCString &file1,const QCString &file2)
+static bool deliverablesPresent(const DString &file1,const DString &file2)
 {
   bool file1Ok = true;
   bool file2Ok = true;
@@ -81,8 +81,8 @@ static bool deliverablesPresent(const QCString &file1,const QCString &file2)
   return file1Ok && file2Ok;
 }
 
-static bool insertMapFile(TextStream &out,const QCString &mapFile,
-                          const QCString &relPath,const QCString &mapLabel)
+static bool insertMapFile(TextStream &out,const DString &mapFile,
+                          const DString &relPath,const DString &mapLabel)
 {
   FileInfo fi(mapFile.str());
   if (fi.exists() && fi.size()>0) // reuse existing map file
@@ -102,7 +102,7 @@ static bool insertMapFile(TextStream &out,const QCString &mapFile,
 
 //--------------------------------------------------------------------
 
-QCString DotGraph::imgName() const
+DString DotGraph::imgName() const
 {
   return m_baseName + ((m_graphFormat == GraphOutputFormat::BITMAP) ?
                       ("." + getDotImageExtension()) : (Config_getBool(USE_PDFLATEX) ? ".pdf" : ".eps"));
@@ -110,13 +110,13 @@ QCString DotGraph::imgName() const
 
 std::mutex g_dotIndexListMutex;
 
-QCString DotGraph::writeGraph(
+DString DotGraph::writeGraph(
         TextStream& t,            // output stream for the code file (html, ...)
         GraphOutputFormat gf,     // bitmap(png/svg) or ps(eps/pdf)
         EmbeddedOutputFormat ef,  // html, latex, ...
-        const QCString &path,     // output folder
-        const QCString &fileName, // name of the code file (for code patcher)
-        const QCString &relPath,  // output folder relative to code file
+        const DString &path,     // output folder
+        const DString &fileName, // name of the code file (for code patcher)
+        const DString &relPath,  // output folder relative to code file
         bool generateImageMap,    // in case of bitmap, shall there be code generated?
         int graphId)              // number of this graph in the current code, used in svg code
 {
@@ -164,7 +164,7 @@ bool DotGraph::prepareDotFile()
 
   if (sameMd5Signature(absBaseName(), sigStr) &&
       deliverablesPresent(absImgName(),
-                          m_graphFormat == GraphOutputFormat::BITMAP && m_generateImageMap ? absMapName() : QCString()
+                          m_graphFormat == GraphOutputFormat::BITMAP && m_generateImageMap ? absMapName() : DString()
                          )
      )
   {
@@ -206,7 +206,7 @@ bool DotGraph::prepareDotFile()
 
 void DotGraph::generateCode(TextStream &t)
 {
-  QCString imgExt = getDotImageExtension();
+  DString imgExt = getDotImageExtension();
   if (m_graphFormat==GraphOutputFormat::BITMAP && m_textFormat==EmbeddedOutputFormat::DocBook)
   {
     t << "<para>\n";
@@ -232,7 +232,7 @@ void DotGraph::generateCode(TextStream &t)
         {
           DotManager::instance()->
                createFilePatcher(absImgName())->
-               addSVGConversion(m_relPath,false,QCString(),m_zoomable,m_graphId);
+               addSVGConversion(m_relPath,false,DString(),m_zoomable,m_graphId);
         }
         int mapId = DotManager::instance()->
                createFilePatcher(m_fileName)->
@@ -251,7 +251,7 @@ void DotGraph::generateCode(TextStream &t)
       {
         int mapId = DotManager::instance()->
           createFilePatcher(m_fileName)->
-          addMap(absMapName(), m_relPath, m_urlOnly, QCString(), getMapLabel());
+          addMap(absMapName(), m_relPath, m_urlOnly, DString(), getMapLabel());
         t << "<!-- MAP " << mapId << " -->\n";
       }
     }
@@ -268,7 +268,7 @@ void DotGraph::generateCode(TextStream &t)
   }
 }
 
-void DotGraph::writeGraphHeader(TextStream &t,const QCString &title)
+void DotGraph::writeGraphHeader(TextStream &t,const DString &title)
 {
   t << "digraph ";
   if (title.empty())
@@ -287,7 +287,7 @@ void DotGraph::writeGraphHeader(TextStream &t,const QCString &title)
   }
   t << " // LATEX_PDF_SIZE\n"; // write placeholder for LaTeX PDF bounding box size replacement
   t << "  bgcolor=\"transparent\";\n";
-  QCString c = Config_getString(DOT_COMMON_ATTR);
+  DString c = Config_getString(DOT_COMMON_ATTR);
   if (!c.empty()) c += ",";
   t << "  edge [" << c << Config_getString(DOT_EDGE_ATTR) << "];\n";
   t << "  node [" << c << Config_getString(DOT_NODE_ATTR) << "];\n";
@@ -301,11 +301,11 @@ void DotGraph::writeGraphFooter(TextStream &t)
 void DotGraph::computeGraph(DotNode *root,
                             GraphType gt,
                             GraphOutputFormat format,
-                            const QCString &rank, // either "LR", "RL", or ""
+                            const DString &rank, // either "LR", "RL", or ""
                             bool renderParents,
                             bool backArrows,
-                            const QCString &title,
-                            QCString &graphStr)
+                            const DString &title,
+                            DString &graphStr)
 {
   //printf("computeMd5Signature\n");
   TextStream md5stream;

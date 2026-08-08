@@ -27,37 +27,37 @@ class OutputCodeList;
 class LatexCodeGenerator final : public OutputCodeIntf
 {
   public:
-    LatexCodeGenerator(TextStream *t,const QCString &relPath,const QCString &sourceFile);
+    LatexCodeGenerator(TextStream *t,const DString &relPath,const DString &sourceFile);
     LatexCodeGenerator(TextStream *t);
     void setTextStream(TextStream *t) { m_t = t; }
 
     OutputType type() const override { return OutputType::Latex; }
     std::unique_ptr<OutputCodeIntf> clone() override { return std::make_unique<LatexCodeGenerator>(*this); }
-    void codify(const QCString &text) override;
+    void codify(const DString &text) override;
     void stripCodeComments(bool b) override;
     void startSpecialComment() override;
     void endSpecialComment() override;
     void setStripIndentAmount(size_t amount) override;
     void writeCodeLink(CodeSymbolType type,
-                       const QCString &ref,const QCString &file,
-                       const QCString &anchor,const QCString &name,
-                       const QCString &tooltip) override;
-    void writeTooltip(const QCString &,
+                       const DString &ref,const DString &file,
+                       const DString &anchor,const DString &name,
+                       const DString &tooltip) override;
+    void writeTooltip(const DString &,
                       const DocLinkInfo &,
-                      const QCString &,
-                      const QCString &,
+                      const DString &,
+                      const DString &,
                       const SourceLinkInfo &,
                       const SourceLinkInfo &
                      ) override  {}
-    void writeLineNumber(const QCString &,const QCString &,const QCString &,int,bool) override;
+    void writeLineNumber(const DString &,const DString &,const DString &,int,bool) override;
     void startCodeLine(int) override;
     void endCodeLine() override;
-    void startFontClass(const QCString &) override;
+    void startFontClass(const DString &) override;
     void endFontClass() override;
-    void writeCodeAnchor(const QCString &) override {}
-    void startCodeFragment(const QCString &style) override;
-    void endCodeFragment(const QCString &style) override;
-    void startFold(int,const QCString &,const QCString &) override {}
+    void writeCodeAnchor(const DString &) override {}
+    void startCodeFragment(const DString &style) override;
+    void endCodeFragment(const DString &style) override;
+    void startFold(int,const DString &,const DString &) override {}
     void endFold() override {}
 
     // extra methods not part of CodeOutputInterface
@@ -65,21 +65,21 @@ class LatexCodeGenerator final : public OutputCodeIntf
     void decUsedTableLevel() { m_usedTableLevel--; }
     int usedTableLevel() const { return m_usedTableLevel; }
 
-    void setRelativePath(const QCString &path);
-    void setSourceFileName(const QCString &sourceFileName);
+    void setRelativePath(const DString &path);
+    void setSourceFileName(const DString &sourceFileName);
     void setInsideTabbing(bool b) { m_insideTabbing=b; }
     bool insideTabbing() const { return m_insideTabbing; }
 
   private:
-    void _writeCodeLink(const QCString &className,
-                        const QCString &ref,const QCString &file,
-                        const QCString &anchor,const QCString &name,
-                        const QCString &tooltip);
-    void docify(const QCString &str);
+    void _writeCodeLink(const DString &className,
+                        const DString &ref,const DString &file,
+                        const DString &anchor,const DString &name,
+                        const DString &tooltip);
+    void docify(const DString &str);
     bool m_streamSet = false;
     TextStream *m_t;
-    QCString m_relPath;
-    QCString m_sourceFileName;
+    DString m_relPath;
+    DString m_sourceFileName;
     size_t m_col = 0;
     bool m_doxyCodeLineOpen = false;
     int m_usedTableLevel = 0;
@@ -113,26 +113,26 @@ class LatexGenerator final : public OutputGenerator, public OutputGenIntf
     void addCodeGen(OutputCodeList &list) override;
     void cleanup() override;
     void writeDoc(const IDocNodeAST *node,const Definition *ctx,const MemberDef *,int id,int sectionLevel) override;
-    void startFile(const QCString &name,bool isSource,const QCString &manName,const QCString &title,int id,int hierarchyLevel) override;
+    void startFile(const DString &name,bool isSource,const DString &manName,const DString &title,int id,int hierarchyLevel) override;
     void endFile() override;
 
     void writeSearchInfo() override {}
-    void writeFooter(const QCString &) override {}
+    void writeFooter(const DString &) override {}
 
-    void startPageDoc(const QCString &) override {}
+    void startPageDoc(const DString &) override {}
     void endPageDoc() override {}
     void startIndexSection(IndexSection) override;
     void endIndexSection(IndexSection) override;
-    void writePageLink(const QCString &,bool) override;
+    void writePageLink(const DString &,bool) override;
     void startProjectNumber() override;
     void endProjectNumber() override {}
     void writeStyleInfo(int part) override;
-    void startTitleHead(const QCString &) override;
-    void endTitleHead(const QCString &,const QCString &name) override;
+    void startTitleHead(const DString &) override;
+    void endTitleHead(const DString &,const DString &name) override;
 
-    void startParagraph(const QCString &classDef) override;
+    void startParagraph(const DString &classDef) override;
     void endParagraph() override;
-    void writeString(const QCString &text) override;
+    void writeString(const DString &text) override;
     void startIndexListItem() override {}
     void endIndexListItem() override {}
     void startIndexList() override { m_t << "\\begin{DoxyCompactList}\n"; }
@@ -140,20 +140,20 @@ class LatexGenerator final : public OutputGenerator, public OutputGenIntf
     void startIndexKey() override;
     void endIndexKey() override;
     void startIndexValue(bool) override;
-    void endIndexValue(const QCString &,bool) override;
+    void endIndexValue(const DString &,bool) override;
     void startItemList() override { m_t << "\\begin{DoxyCompactItemize}\n"; }
     void endItemList() override { m_t << "\\end{DoxyCompactItemize}\n"; }
-    void startIndexItem(const QCString &ref,const QCString &file) override;
-    void endIndexItem(const QCString &ref,const QCString &file) override;
-    void docify(const QCString &text) override;
-    void writeObjectLink(const QCString &ref,const QCString &file,
-                         const QCString &anchor,const QCString &name) override;
+    void startIndexItem(const DString &ref,const DString &file) override;
+    void endIndexItem(const DString &ref,const DString &file) override;
+    void docify(const DString &text) override;
+    void writeObjectLink(const DString &ref,const DString &file,
+                         const DString &anchor,const DString &name) override;
 
-    void startTextLink(const QCString &,const QCString &) override;
+    void startTextLink(const DString &,const DString &) override;
     void endTextLink() override;
     void startTypewriter() override { m_t << "{\\ttfamily "; }
     void endTypewriter() override { m_t << "}";      }
-    void startGroupHeader(const QCString &,int) override;
+    void startGroupHeader(const DString &,int) override;
     void endGroupHeader(int) override;
     void startItemListItem() override { m_t << "\\item \n"; }
     void endItemListItem() override {}
@@ -162,7 +162,7 @@ class LatexGenerator final : public OutputGenerator, public OutputGenIntf
     void endMemberSections() override {}
     void startHeaderSection() override {}
     void endHeaderSection() override {}
-    void startMemberHeader(const QCString &,int) override;
+    void startMemberHeader(const DString &,int) override;
     void endMemberHeader() override;
     void startMemberSubtitle() override {}
     void endMemberSubtitle() override {}
@@ -174,14 +174,14 @@ class LatexGenerator final : public OutputGenerator, public OutputGenIntf
     void endInlineHeader() override;
     void startAnonTypeScope(int) override;
     void endAnonTypeScope(int) override;
-    void startMemberItem(const QCString &,MemberItemType,const QCString &) override;
+    void startMemberItem(const DString &,MemberItemType,const DString &) override;
     void endMemberItem(MemberItemType) override;
     void startMemberTemplateParams() override;
-    void endMemberTemplateParams(const QCString &,const QCString &) override;
+    void endMemberTemplateParams(const DString &,const DString &) override;
     void startCompoundTemplateParams() override { m_t << "\\subsubsection*{";}
     void endCompoundTemplateParams() override { m_t << "}\n"; }
 
-    void startMemberGroupHeader(const QCString &,bool) override;
+    void startMemberGroupHeader(const DString &,bool) override;
     void endMemberGroupHeader(bool) override;
     void startMemberGroupDocs() override;
     void endMemberGroupDocs() override;
@@ -192,58 +192,58 @@ class LatexGenerator final : public OutputGenerator, public OutputGenIntf
     void insertMemberAlignLeft(MemberItemType,bool) override {}
 
     void writeRuler() override { m_t << "\n\n"; }
-    void writeAnchor(const QCString &fileName,const QCString &name) override;
+    void writeAnchor(const DString &fileName,const DString &name) override;
     void startEmphasis() override { m_t << "{\\em ";  }
     void endEmphasis() override { m_t << "}"; }
     void startBold() override { m_t << "{\\bfseries "; }
     void endBold() override { m_t << "}"; }
-    void lineBreak(const QCString &style=QCString()) override;
-    void startMemberDoc(const QCString &,const QCString &,const QCString &,const QCString &,int,int,bool) override;
+    void lineBreak(const DString &style=DString()) override;
+    void startMemberDoc(const DString &,const DString &,const DString &,const DString &,int,int,bool) override;
     void endMemberDoc(bool) override;
-    void startDoxyAnchor(const QCString &,const QCString &,const QCString &,const QCString &,const QCString &) override;
-    void endDoxyAnchor(const QCString &,const QCString &) override;
-    void addLabel(const QCString &,const QCString &) override;
+    void startDoxyAnchor(const DString &,const DString &,const DString &,const DString &,const DString &) override;
+    void endDoxyAnchor(const DString &,const DString &) override;
+    void addLabel(const DString &,const DString &) override;
     void writeChar(char c) override;
     void writeLatexSpacing() override { m_t << "\\hspace{0.3cm}"; }
-    void writeStartAnnoItem(const QCString &type,const QCString &file,
-                            const QCString &path,const QCString &name) override;
+    void writeStartAnnoItem(const DString &type,const DString &file,
+                            const DString &path,const DString &name) override;
     void startCenter() override { m_t << "\\begin{center}\n"; }
     void endCenter() override { m_t << "\\end{center}\n"; }
     void startSmall() override { m_t << "\\footnotesize "; }
     void endSmall() override { m_t << "\\normalsize "; }
-    void startMemberDescription(const QCString &,const QCString &,bool) override;
+    void startMemberDescription(const DString &,const DString &,bool) override;
     void endMemberDescription() override;
     void startMemberDeclaration() override {}
-    void endMemberDeclaration(const QCString &,const QCString &) override {}
-    void writeInheritedSectionTitle(const QCString &,const QCString &,const QCString &,
-                      const QCString &,const QCString &,const QCString &) override;
+    void endMemberDeclaration(const DString &,const DString &) override {}
+    void writeInheritedSectionTitle(const DString &,const DString &,const DString &,
+                      const DString &,const DString &,const DString &) override;
     void startExamples() override;
     void endExamples() override;
     void startDescForItem() override { m_t << "\\par\n"; }
     void endDescForItem() override {}
-    void startSection(const QCString &,const QCString &,SectionType) override;
-    void endSection(const QCString &,SectionType) override;
-    void addIndexItem(const QCString &,const QCString &) override;
+    void startSection(const DString &,const DString &,SectionType) override;
+    void endSection(const DString &,SectionType) override;
+    void addIndexItem(const DString &,const DString &) override;
     void startIndent() override {}
     void endIndent() override {}
     void writeSynopsis() override {}
     void startClassDiagram() override;
-    void endClassDiagram(const ClassDiagram &,const QCString &,const QCString &) override;
+    void endClassDiagram(const ClassDiagram &,const DString &,const DString &) override;
     void startPageRef() override;
-    void endPageRef(const QCString &,const QCString &) override;
+    void endPageRef(const DString &,const DString &) override;
     void startQuickIndices() override {}
     void endQuickIndices() override {}
-    void writeSplitBar(const QCString &,const QCString &) override {}
-    void writeNavigationPath(const QCString &) override {}
+    void writeSplitBar(const DString &,const DString &) override {}
+    void writeNavigationPath(const DString &) override {}
     void writeLogo() override {}
-    void writeQuickLinks(HighlightedItem,const QCString &,bool) override {}
-    void writeSummaryLink(const QCString &,const QCString &,const QCString &,bool) override {}
+    void writeQuickLinks(HighlightedItem,const DString &,bool) override {}
+    void writeSummaryLink(const DString &,const DString &,const DString &,bool) override {}
     void writePageOutline() override {}
     void startContents() override {}
     void endContents() override {}
     void writeNonBreakableSpace(int) override;
 
-    void startDescTable(const QCString &title,const bool hasInits) override;
+    void startDescTable(const DString &title,const bool hasInits) override;
     void endDescTable() override;
     void startDescTableRow() override;
     void endDescTableRow() override;
@@ -274,7 +274,7 @@ class LatexGenerator final : public OutputGenerator, public OutputGenIntf
     void endMemberDocPrefixItem() override { m_t << "\\\\\n"; }
     void startMemberDocName(bool) override {}
     void endMemberDocName() override {}
-    void startParameterType(bool,const QCString &) override;
+    void startParameterType(bool,const DString &) override;
     void endParameterType() override;
     void startParameterName(bool) override;
     void endParameterName() override;
@@ -284,9 +284,9 @@ class LatexGenerator final : public OutputGenerator, public OutputGenIntf
     void endParameterDefVal() override { endTypewriter(); }
     void startParameterList(bool) override;
     void endParameterList() override;
-    void exceptionEntry(const QCString &,bool) override;
+    void exceptionEntry(const DString &,bool) override;
 
-    void startConstraintList(const QCString &) override;
+    void startConstraintList(const DString &) override;
     void startConstraintParam() override;
     void endConstraintParam() override;
     void startConstraintType() override;
@@ -305,7 +305,7 @@ class LatexGenerator final : public OutputGenerator, public OutputGenIntf
     void endInlineMemberDoc() override;
 
     void startLabels() override;
-    void writeLabel(const QCString &l,bool isLast) override;
+    void writeLabel(const DString &l,bool isLast) override;
     void endLabels() override;
 
     void startLocalToc(int level) override;
@@ -313,7 +313,7 @@ class LatexGenerator final : public OutputGenerator, public OutputGenIntf
     void startTocEntry(const SectionInfo *) override {}
     void endTocEntry(const SectionInfo *) override {}
 
-    void startPlainFile(const QCString &name) override { OutputGenerator::startPlainFile(name); }
+    void startPlainFile(const DString &name) override { OutputGenerator::startPlainFile(name); }
     void endPlainFile() override { OutputGenerator::endPlainFile(); }
 
     void startEmbeddedDoc(int) override;
@@ -322,7 +322,7 @@ class LatexGenerator final : public OutputGenerator, public OutputGenIntf
   private:
     bool m_firstDescItem = true;
     bool m_disableLinks = false;
-    QCString m_relPath;
+    DString m_relPath;
     int m_indent = 0;
     bool m_templateMemberItem = false;
     std::unique_ptr<OutputCodeList> m_codeList;
@@ -333,9 +333,9 @@ class LatexGenerator final : public OutputGenerator, public OutputGenIntf
 
 void writeExtraLatexPackages(TextStream &t);
 void writeLatexSpecialFormulaChars(TextStream &t);
-QCString convertToLaTeX(const QCString &s,bool insideTabbing,bool keepSpaces=false);
+DString convertToLaTeX(const DString &s,bool insideTabbing,bool keepSpaces=false);
 
-void filterLatexString(TextStream &t,const QCString &str,
+void filterLatexString(TextStream &t,const DString &str,
                        bool insideTabbing,
                        bool insidePre,
                        bool insideItem,
@@ -343,11 +343,11 @@ void filterLatexString(TextStream &t,const QCString &str,
                        bool keepSpaces,
                        const bool retainNewline = false);
 
-QCString latexEscapeLabelName(const QCString &s);
-QCString latexEscapeIndexChars(const QCString &s);
-QCString latexEscapePDFString(const QCString &s);
-QCString latexFilterURL(const QCString &s);
-void latexWriteIndexItem(TextStream &t,const QCString &r1,const QCString &s2 = "");
+DString latexEscapeLabelName(const DString &s);
+DString latexEscapeIndexChars(const DString &s);
+DString latexEscapePDFString(const DString &s);
+DString latexFilterURL(const DString &s);
+void latexWriteIndexItem(TextStream &t,const DString &r1,const DString &s2 = "");
 
 
 #endif

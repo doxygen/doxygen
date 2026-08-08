@@ -20,7 +20,7 @@
 #define HTMLHELP_H
 
 #include <memory>
-#include "qcstring.h"
+#include "dstring.h"
 #include "construct.h"
 #include "indexlist.h"
 
@@ -70,27 +70,27 @@ class HtmlHelp final : public IndexIntf
     void incContentsDepth();
     void decContentsDepth();
     void addContentsItem(bool isDir,
-                         const QCString &name,
-                         const QCString &ref,
-                         const QCString &file,
-                         const QCString &anchor,
+                         const DString &name,
+                         const DString &ref,
+                         const DString &file,
+                         const DString &anchor,
                          bool separateIndex,
                          bool addToNavIndex,
                          const Definition *def,
-                         const QCString &nameAsHtml);
+                         const DString &nameAsHtml);
     void addIndexItem(const Definition *context,const MemberDef *md,
-                      const QCString &sectionAnchor, const QCString &title);
-    void addIndexFile(const QCString &name);
-    void addImageFile(const QCString &);
-    void addStyleSheetFile(const QCString &);
+                      const DString &sectionAnchor, const DString &title);
+    void addIndexFile(const DString &name);
+    void addImageFile(const DString &);
+    void addStyleSheetFile(const DString &);
 
-    static inline const QCString hhcFileName = "index.hhc";
-    static inline const QCString hhkFileName = "index.hhk";
-    static inline const QCString hhpFileName = "index.hhp";
+    static inline const DString hhcFileName = "index.hhc";
+    static inline const DString hhkFileName = "index.hhk";
+    static inline const DString hhpFileName = "index.hhp";
   private:
     class Private;
     std::unique_ptr<Private> p;
-    QCString recode(const QCString &s);
+    DString recode(const DString &s);
 
 };
 

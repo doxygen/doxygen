@@ -20,18 +20,18 @@
 #include "message.h"
 #include "regex.h"
 
-QCString rtf_title;
-QCString rtf_subject;
-QCString rtf_comments;
-QCString rtf_company;
-QCString rtf_logoFilename;
-QCString rtf_author;
-QCString rtf_manager;
-QCString rtf_documentType;
-QCString rtf_documentId;
-QCString rtf_keywords;
+DString rtf_title;
+DString rtf_subject;
+DString rtf_comments;
+DString rtf_company;
+DString rtf_logoFilename;
+DString rtf_author;
+DString rtf_manager;
+DString rtf_documentType;
+DString rtf_documentId;
+DString rtf_keywords;
 
-static std::map<std::string,QCString &> g_styleMap =
+static std::map<std::string,DString &> g_styleMap =
 {
   { "Title",        rtf_title        },
   { "Subject",      rtf_subject      },
@@ -283,7 +283,7 @@ Rtf_Table_Default rtf_Table_Default[] =
 
 static const reg::Ex s_clause(R"(\\s(\d+)\s*)"); // match, e.g. '\s30' and capture '30'
 
-StyleData::StyleData(const QCString &reference, const QCString &definition)
+StyleData::StyleData(const DString &reference, const DString &definition)
 {
   reg::Match match;
   if (reg::search(reference.str(),match,s_clause))
@@ -298,7 +298,7 @@ StyleData::StyleData(const QCString &reference, const QCString &definition)
   m_definition = definition;
 }
 
-bool StyleData::setStyle(const QCString &command, const QCString &styleName)
+bool StyleData::setStyle(const DString &command, const DString &styleName)
 {
   reg::Match match;
   if (!reg::search(command.str(),match,s_clause))
@@ -308,7 +308,7 @@ bool StyleData::setStyle(const QCString &command, const QCString &styleName)
   }
   m_index = static_cast<int>(std::stoul(match[1].str()));
 
-  if (size_t index = command.find("\\sbasedon"); index!=QCString::npos)
+  if (size_t index = command.find("\\sbasedon"); index!=DString::npos)
   {
     m_reference  = command.left(index);
     m_definition = command.mid(index);
@@ -318,7 +318,7 @@ bool StyleData::setStyle(const QCString &command, const QCString &styleName)
 }
 
 
-void loadStylesheet(const QCString &name, StyleDataMap& map)
+void loadStylesheet(const DString &name, StyleDataMap& map)
 {
   std::ifstream file(name.str());
   if (!file.is_open())
@@ -337,8 +337,8 @@ void loadStylesheet(const QCString &name, StyleDataMap& map)
     reg::Match match;
     if (reg::search(line,match,assignment_splitter))
     {
-      QCString key   = match.prefix().str();
-      QCString value = match.suffix().str();
+      DString key   = match.prefix().str();
+      DString value = match.suffix().str();
       auto it = map.find(key.str());
       if (it!=map.end())
       {
@@ -360,7 +360,7 @@ void loadStylesheet(const QCString &name, StyleDataMap& map)
 
 StyleDataMap rtf_Style;
 
-void loadExtensions(const QCString &name)
+void loadExtensions(const DString &name)
 {
   std::ifstream file(name.str());
   if (!file.is_open())

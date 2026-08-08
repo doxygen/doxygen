@@ -20,21 +20,21 @@
 #include <string>
 #include <cstdint>
 
-#include "qcstring.h"
+#include "dstring.h"
 
 // used for table column width calculation
 const int rtf_pageWidth = 8748;
 
-extern QCString rtf_title;
-extern QCString rtf_subject;
-extern QCString rtf_comments;
-extern QCString rtf_company;
-extern QCString rtf_logoFilename;
-extern QCString rtf_author;
-extern QCString rtf_manager;
-extern QCString rtf_documentType;
-extern QCString rtf_documentId;
-extern QCString rtf_keywords;
+extern DString rtf_title;
+extern DString rtf_subject;
+extern DString rtf_comments;
+extern DString rtf_company;
+extern DString rtf_logoFilename;
+extern DString rtf_author;
+extern DString rtf_manager;
+extern DString rtf_documentType;
+extern DString rtf_documentId;
+extern DString rtf_keywords;
 
 struct Rtf_Style_Default
 {
@@ -64,23 +64,23 @@ struct StyleData
 
   public:
     StyleData() = default;
-    StyleData(const QCString &reference, const QCString &definition);
-    bool setStyle(const QCString &command, const QCString &styleName);
-    QCString reference() const { return m_reference; }
-    QCString definition() const { return m_definition; }
+    StyleData(const DString &reference, const DString &definition);
+    bool setStyle(const DString &command, const DString &styleName);
+    DString reference() const { return m_reference; }
+    DString definition() const { return m_definition; }
     uint32_t index() const { return m_index; }
 
   private:
     uint32_t m_index = 0; // index in style-sheet, i.e. number in s-clause
-    QCString m_reference;    // everything required to apply the style
-    QCString m_definition;   // additional tags like \snext and style name
+    DString m_reference;    // everything required to apply the style
+    DString m_definition;   // additional tags like \snext and style name
 };
 
 using StyleDataMap = std::map<std::string,StyleData>;
 
 extern StyleDataMap rtf_Style;
 
-void loadExtensions(const QCString &name);
-void loadStylesheet(const QCString &name, StyleDataMap& map);
+void loadExtensions(const DString &name);
+void loadStylesheet(const DString &name, StyleDataMap& map);
 
 #endif

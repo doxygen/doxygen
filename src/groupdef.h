@@ -53,9 +53,9 @@ class GroupDef : public DefinitionMutable, public Definition
   public:
     ABSTRACT_BASE_CLASS(GroupDef)
 
-    virtual QCString groupTitle() const = 0;
-    virtual QCString groupTitleAsText() const = 0;
-    virtual void setGroupTitle( const QCString &newtitle ) = 0;
+    virtual DString groupTitle() const = 0;
+    virtual DString groupTitleAsText() const = 0;
+    virtual void setGroupTitle( const DString &newtitle ) = 0;
     virtual bool hasGroupTitle( ) const = 0;
     virtual void addFile(FileDef *def) = 0;
     virtual bool containsFile(const FileDef *def) const = 0;
@@ -114,8 +114,8 @@ class GroupDef : public DefinitionMutable, public Definition
     virtual void overrideGroupGraph(bool e) = 0;
 };
 
-std::unique_ptr<GroupDef> createGroupDef(const QCString &fileName,int line,const QCString &name,
-                                         const QCString &title,const QCString &refFileName=QCString());
+std::unique_ptr<GroupDef> createGroupDef(const DString &fileName,int line,const DString &name,
+                                         const DString &title,const DString &refFileName=DString());
 
 // --- Cast functions
 

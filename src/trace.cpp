@@ -19,7 +19,7 @@
 
 std::shared_ptr<spdlog::logger> g_tracer;
 
-void initTracing(const QCString &logFile, bool timing)
+void initTracing(const DString &logFile, bool timing)
 {
   if (!logFile.empty())
   {

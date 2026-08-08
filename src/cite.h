@@ -19,7 +19,7 @@
 
 #include <memory>
 
-#include "qcstring.h"
+#include "dstring.h"
 #include "construct.h"
 
 class CiteInfoOption
@@ -70,10 +70,10 @@ struct CiteInfo
 {
   ABSTRACT_BASE_CLASS(CiteInfo)
 
-  virtual QCString label() const = 0;
-  virtual QCString text() const = 0;
-  virtual QCString shortAuthor() const = 0;
-  virtual QCString year() const = 0;
+  virtual DString label() const = 0;
+  virtual DString text() const = 0;
+  virtual DString shortAuthor() const = 0;
+  virtual DString year() const = 0;
 };
 
 /**
@@ -87,12 +87,12 @@ class CitationManager
     static CitationManager &instance();
 
     /** Insert a citation identified by \a label into the database */
-    void insert(const QCString &label);
+    void insert(const DString &label);
 
     /** Return the citation info for a given \a label.
      *  Ownership of the info stays with the manager.
      */
-    const CiteInfo *find(const QCString &label) const;
+    const CiteInfo *find(const DString &label) const;
 
     /** Generate the citations page */
     void generatePage();
@@ -106,19 +106,19 @@ class CitationManager
 
     /** lists the bibtex cite files in a comma separated list
      */
-    QCString latexBibFiles();
+    DString latexBibFiles();
 
-    QCString fileName() const;
-    QCString anchorPrefix() const;
+    DString fileName() const;
+    DString anchorPrefix() const;
 
   private:
     /** Create the database, with an expected maximum of \a size entries */
     CitationManager();
    ~CitationManager() = default;
     NON_COPYABLE(CitationManager)
-    void insertCrossReferencesForBibFile(const QCString &bibFile);
-    QCString getFormulas(const QCString &s);
-    QCString replaceFormulas(const QCString &s);
+    void insertCrossReferencesForBibFile(const DString &bibFile);
+    DString getFormulas(const DString &s);
+    DString replaceFormulas(const DString &s);
     struct Private;
     std::unique_ptr<Private> p;
 };

@@ -49,23 +49,23 @@ class OutputCodeDefer final : public OutputCodeIntf
     OutputCodeDefer(OutputCodeGen *codeGen) : m_codeGen(codeGen) {}
     OutputType type() const override { return m_codeGen->type(); }
     std::unique_ptr<OutputCodeIntf> clone() override { return std::make_unique<OutputCodeDefer>(*this); }
-    void codify(const QCString &s) override { m_codeGen->codify(s); }
+    void codify(const DString &s) override { m_codeGen->codify(s); }
     void stripCodeComments(bool b) override { m_codeGen->stripCodeComments(b); }
     void startSpecialComment() override { m_codeGen->startSpecialComment(); }
     void endSpecialComment() override { m_codeGen->endSpecialComment(); }
     void setStripIndentAmount(size_t amount) override { m_codeGen->setStripIndentAmount(amount); }
     void writeCodeLink(CodeSymbolType type,
-                       const QCString &ref,const QCString &file,
-                       const QCString &anchor,const QCString &name,
-                       const QCString &tooltip) override
+                       const DString &ref,const DString &file,
+                       const DString &anchor,const DString &name,
+                       const DString &tooltip) override
     { m_codeGen->writeCodeLink(type,ref,file,anchor,name,tooltip); }
 
-    void writeLineNumber(const QCString &ref,const QCString &file,const QCString &anchor,
+    void writeLineNumber(const DString &ref,const DString &file,const DString &anchor,
                          int lineNumber, bool writeLineAnchor) override
     { m_codeGen->writeLineNumber(ref,file,anchor,lineNumber,writeLineAnchor); }
 
-    void writeTooltip(const QCString &id, const DocLinkInfo &docInfo, const QCString &decl,
-                      const QCString &desc, const SourceLinkInfo &defInfo, const SourceLinkInfo &declInfo) override
+    void writeTooltip(const DString &id, const DocLinkInfo &docInfo, const DString &decl,
+                      const DString &desc, const SourceLinkInfo &defInfo, const SourceLinkInfo &declInfo) override
     { m_codeGen->writeTooltip(id,docInfo,decl,desc,defInfo,declInfo); }
 
     void startCodeLine(int lineNr) override
@@ -74,22 +74,22 @@ class OutputCodeDefer final : public OutputCodeIntf
     void endCodeLine() override
     { m_codeGen->endCodeLine(); }
 
-    void startFontClass(const QCString &c) override
+    void startFontClass(const DString &c) override
     { m_codeGen->startFontClass(c); }
 
     void endFontClass() override
     { m_codeGen->endFontClass(); }
 
-    void writeCodeAnchor(const QCString &name) override
+    void writeCodeAnchor(const DString &name) override
     { m_codeGen->writeCodeAnchor(name); }
 
-    void startCodeFragment(const QCString &style) override
+    void startCodeFragment(const DString &style) override
     { m_codeGen->startCodeFragment(style); }
 
-    void endCodeFragment(const QCString &style) override
+    void endCodeFragment(const DString &style) override
     { m_codeGen->endCodeFragment(style); }
 
-    void startFold(int lineNr,const QCString &startMarker,const QCString &endMarker) override
+    void startFold(int lineNr,const DString &startMarker,const DString &endMarker) override
     { m_codeGen->startFold(lineNr,startMarker,endMarker); }
 
     void endFold() override
@@ -113,28 +113,28 @@ class OutputCodeRecorder final : public OutputCodeIntf
 {
   public:
     OutputType type() const override { return OutputType::Recorder; }
-    void codify(const QCString &s) override;
+    void codify(const DString &s) override;
     void stripCodeComments(bool) override {}
     void startSpecialComment() override;
     void endSpecialComment() override;
     void setStripIndentAmount(size_t) override {}
     std::unique_ptr<OutputCodeIntf> clone() override { return std::make_unique<OutputCodeRecorder>(*this); }
     void writeCodeLink(CodeSymbolType type,
-                       const QCString &ref,const QCString &file,
-                       const QCString &anchor,const QCString &name,
-                       const QCString &tooltip) override;
-    void writeLineNumber(const QCString &ref,const QCString &file,const QCString &anchor,
+                       const DString &ref,const DString &file,
+                       const DString &anchor,const DString &name,
+                       const DString &tooltip) override;
+    void writeLineNumber(const DString &ref,const DString &file,const DString &anchor,
                          int lineNumber, bool writeLineAnchor) override;
-    void writeTooltip(const QCString &id, const DocLinkInfo &docInfo, const QCString &decl,
-                      const QCString &desc, const SourceLinkInfo &defInfo, const SourceLinkInfo &declInfo) override;
+    void writeTooltip(const DString &id, const DocLinkInfo &docInfo, const DString &decl,
+                      const DString &desc, const SourceLinkInfo &defInfo, const SourceLinkInfo &declInfo) override;
     void startCodeLine(int) override;
     void endCodeLine() override;
-    void startFontClass(const QCString &c) override;
+    void startFontClass(const DString &c) override;
     void endFontClass() override;
-    void writeCodeAnchor(const QCString &name) override;
-    void startCodeFragment(const QCString &style) override;
-    void endCodeFragment(const QCString &style) override;
-    void startFold(int lineNr,const QCString &startMarker,const QCString &endMarker) override;
+    void writeCodeAnchor(const DString &name) override;
+    void startCodeFragment(const DString &style) override;
+    void endCodeFragment(const DString &style) override;
+    void startFold(int lineNr,const DString &startMarker,const DString &endMarker) override;
     void endFold() override;
 
     void replay(OutputCodeList &ol,int startLine,int endLine,bool showLineNumbers,bool stripComment,size_t stripIndentAmount);
@@ -232,7 +232,7 @@ class OutputCodeList
 
     // ---- OutputCodeIntf forwarding
 
-    void codify(const QCString &s)
+    void codify(const DString &s)
     { foreach(&OutputCodeIntf::codify,s); }
 
     void stripCodeComments(bool b)
@@ -248,17 +248,17 @@ class OutputCodeList
     { foreach(&OutputCodeIntf::setStripIndentAmount,amount); }
 
     void writeCodeLink(CodeSymbolType type,
-                       const QCString &ref,const QCString &file,
-                       const QCString &anchor,const QCString &name,
-                       const QCString &tooltip)
+                       const DString &ref,const DString &file,
+                       const DString &anchor,const DString &name,
+                       const DString &tooltip)
     { foreach(&OutputCodeIntf::writeCodeLink,type,ref,file,anchor,name,tooltip); }
 
-    void writeLineNumber(const QCString &ref,const QCString &file,const QCString &anchor,
+    void writeLineNumber(const DString &ref,const DString &file,const DString &anchor,
                          int lineNumber, bool writeLineAnchor)
     { foreach(&OutputCodeIntf::writeLineNumber,ref,file,anchor,lineNumber,writeLineAnchor); }
 
-    void writeTooltip(const QCString &id, const DocLinkInfo &docInfo, const QCString &decl,
-                      const QCString &desc, const SourceLinkInfo &defInfo, const SourceLinkInfo &declInfo)
+    void writeTooltip(const DString &id, const DocLinkInfo &docInfo, const DString &decl,
+                      const DString &desc, const SourceLinkInfo &defInfo, const SourceLinkInfo &declInfo)
     { foreach(&OutputCodeIntf::writeTooltip,id,docInfo,decl,desc,defInfo,declInfo); }
 
     void startCodeLine(int lineNr)
@@ -267,22 +267,22 @@ class OutputCodeList
     void endCodeLine()
     { foreach(&OutputCodeIntf::endCodeLine); }
 
-    void startFontClass(const QCString &c)
+    void startFontClass(const DString &c)
     { foreach(&OutputCodeIntf::startFontClass,c); }
 
     void endFontClass()
     { foreach(&OutputCodeIntf::endFontClass); }
 
-    void writeCodeAnchor(const QCString &name)
+    void writeCodeAnchor(const DString &name)
     { foreach(&OutputCodeIntf::writeCodeAnchor,name); }
 
-    void startCodeFragment(const QCString &style)
+    void startCodeFragment(const DString &style)
     { foreach(&OutputCodeIntf::startCodeFragment,style); }
 
-    void endCodeFragment(const QCString &style)
+    void endCodeFragment(const DString &style)
     { foreach(&OutputCodeIntf::endCodeFragment,style); }
 
-    void startFold(int lineNr, const QCString &startMarker, const QCString &endMarker)
+    void startFold(int lineNr, const DString &startMarker, const DString &endMarker)
     { foreach(&OutputCodeIntf::startFold,lineNr,startMarker,endMarker); }
 
     void endFold()
@@ -369,12 +369,12 @@ class OutputList
     void pushGeneratorState();
     void popGeneratorState();
 
-    void generateDoc(const QCString &fileName,int startLine,
-                     const Definition *ctx,const MemberDef *md,const QCString &docStr,
+    void generateDoc(const DString &fileName,int startLine,
+                     const Definition *ctx,const MemberDef *md,const DString &docStr,
                      const DocOptions &options);
 
-    void startFile(const QCString &name, bool isSource,const QCString &manName,const QCString &title, int hierarchyLevel=0);
-    void parseText(const QCString &textStr);
+    void startFile(const DString &name, bool isSource,const DString &manName,const DString &title, int hierarchyLevel=0);
+    void parseText(const DString &textStr);
 
     //////////////////////////////////////////////////
     // OutputGenIntf implementation
@@ -386,7 +386,7 @@ class OutputList
     { foreach(&OutputGenIntf::startIndexSection,is); }
     void endIndexSection(IndexSection is)
     { foreach(&OutputGenIntf::endIndexSection,is); }
-    void writePageLink(const QCString &name,bool first)
+    void writePageLink(const DString &name,bool first)
     { foreach(&OutputGenIntf::writePageLink,name,first); }
     void startProjectNumber()
     { foreach(&OutputGenIntf::startProjectNumber); }
@@ -396,19 +396,19 @@ class OutputList
     { foreach(&OutputGenIntf::writeStyleInfo,part); }
     void writeSearchInfo()
     { foreach(&OutputGenIntf::writeSearchInfo); }
-    void writeFooter(const QCString &navPath)
+    void writeFooter(const DString &navPath)
     { foreach(&OutputGenIntf::writeFooter,navPath); }
     void endFile()
     { foreach(&OutputGenIntf::endFile); }
-    void startTitleHead(const QCString &fileName)
+    void startTitleHead(const DString &fileName)
     { foreach(&OutputGenIntf::startTitleHead,fileName); }
-    void endTitleHead(const QCString &fileName,const QCString &name)
+    void endTitleHead(const DString &fileName,const DString &name)
     { foreach(&OutputGenIntf::endTitleHead,fileName,name); }
-    void startParagraph(const QCString &classDef=QCString())
+    void startParagraph(const DString &classDef=DString())
     { foreach(&OutputGenIntf::startParagraph,classDef); }
     void endParagraph()
     { foreach(&OutputGenIntf::endParagraph); }
-    void writeString(const QCString &text)
+    void writeString(const DString &text)
     { foreach(&OutputGenIntf::writeString,text); }
     void startIndexListItem()
     { foreach(&OutputGenIntf::startIndexListItem); }
@@ -424,33 +424,33 @@ class OutputList
     { foreach(&OutputGenIntf::endIndexKey); }
     void startIndexValue(bool b)
     { foreach(&OutputGenIntf::startIndexValue,b); }
-    void endIndexValue(const QCString &name,bool b)
+    void endIndexValue(const DString &name,bool b)
     { foreach(&OutputGenIntf::endIndexValue,name,b); }
     void startItemList()
     { foreach(&OutputGenIntf::startItemList); }
     void endItemList()
     { foreach(&OutputGenIntf::endItemList); }
-    void startIndexItem(const QCString &ref,const QCString &file)
+    void startIndexItem(const DString &ref,const DString &file)
     { foreach(&OutputGenIntf::startIndexItem,ref,file); }
-    void endIndexItem(const QCString &ref,const QCString &file)
+    void endIndexItem(const DString &ref,const DString &file)
     { foreach(&OutputGenIntf::endIndexItem,ref,file); }
-    void docify(const QCString &s)
+    void docify(const DString &s)
     { foreach(&OutputGenIntf::docify,s); }
-    void writeObjectLink(const QCString &ref,const QCString &file,
-                         const QCString &anchor, const QCString &name)
+    void writeObjectLink(const DString &ref,const DString &file,
+                         const DString &anchor, const DString &name)
     { foreach(&OutputGenIntf::writeObjectLink,ref,file,anchor,name); }
-    void startTextLink(const QCString &file,const QCString &anchor)
+    void startTextLink(const DString &file,const DString &anchor)
     { foreach(&OutputGenIntf::startTextLink,file,anchor); }
     void endTextLink()
     { foreach(&OutputGenIntf::endTextLink); }
-    void writeStartAnnoItem(const QCString &type,const QCString &file,
-                            const QCString &path,const QCString &name)
+    void writeStartAnnoItem(const DString &type,const DString &file,
+                            const DString &path,const DString &name)
     { foreach(&OutputGenIntf::writeStartAnnoItem,type,file,path,name); }
     void startTypewriter()
     { foreach(&OutputGenIntf::startTypewriter); }
     void endTypewriter()
     { foreach(&OutputGenIntf::endTypewriter); }
-    void startGroupHeader(const QCString &id=QCString(),int extraLevels=0)
+    void startGroupHeader(const DString &id=DString(),int extraLevels=0)
     { foreach(&OutputGenIntf::startGroupHeader,id,extraLevels); }
     void endGroupHeader(int extraLevels=0)
     { foreach(&OutputGenIntf::endGroupHeader,extraLevels); }
@@ -466,7 +466,7 @@ class OutputList
     { foreach(&OutputGenIntf::startHeaderSection); }
     void endHeaderSection()
     { foreach(&OutputGenIntf::endHeaderSection); }
-    void startMemberHeader(const QCString &anchor, int typ = 2)
+    void startMemberHeader(const DString &anchor, int typ = 2)
     { foreach(&OutputGenIntf::startMemberHeader,anchor,typ); }
     void endMemberHeader()
     { foreach(&OutputGenIntf::endMemberHeader); }
@@ -490,19 +490,19 @@ class OutputList
     { foreach(&OutputGenIntf::startAnonTypeScope,i1); }
     void endAnonTypeScope(int i1)
     { foreach(&OutputGenIntf::endAnonTypeScope,i1); }
-    void startMemberItem(const QCString &anchor,OutputGenerator::MemberItemType type,const QCString &id=QCString())
+    void startMemberItem(const DString &anchor,OutputGenerator::MemberItemType type,const DString &id=DString())
     { foreach(&OutputGenIntf::startMemberItem,anchor,type,id); }
     void endMemberItem(OutputGenerator::MemberItemType type)
     { foreach(&OutputGenIntf::endMemberItem,type); }
     void startMemberTemplateParams()
     { foreach(&OutputGenIntf::startMemberTemplateParams); }
-    void endMemberTemplateParams(const QCString &anchor,const QCString &inheritId)
+    void endMemberTemplateParams(const DString &anchor,const DString &inheritId)
     { foreach(&OutputGenIntf::endMemberTemplateParams,anchor,inheritId); }
     void startCompoundTemplateParams()
     { foreach(&OutputGenIntf::startCompoundTemplateParams); }
     void endCompoundTemplateParams()
     { foreach(&OutputGenIntf::endCompoundTemplateParams); }
-    void startMemberGroupHeader(const QCString &id,bool b)
+    void startMemberGroupHeader(const DString &id,bool b)
     { foreach(&OutputGenIntf::startMemberGroupHeader,id,b); }
     void endMemberGroupHeader(bool b)
     { foreach(&OutputGenIntf::endMemberGroupHeader,b); }
@@ -520,7 +520,7 @@ class OutputList
     { foreach(&OutputGenIntf::insertMemberAlignLeft,typ,templ); }
     void writeRuler()
     { foreach(&OutputGenIntf::writeRuler); }
-    void writeAnchor(const QCString &fileName,const QCString &name)
+    void writeAnchor(const DString &fileName,const DString &name)
     { foreach(&OutputGenIntf::writeAnchor,fileName,name); }
     void startEmphasis()
     { foreach(&OutputGenIntf::startEmphasis); }
@@ -528,19 +528,19 @@ class OutputList
     { foreach(&OutputGenIntf::endEmphasis); }
     void writeChar(char c)
     { foreach(&OutputGenIntf::writeChar,c); }
-    void startMemberDoc(const QCString &clName,const QCString &memName,
-                        const QCString &anchor,const QCString &title,
+    void startMemberDoc(const DString &clName,const DString &memName,
+                        const DString &anchor,const DString &title,
                         int memCount,int memTotal,bool showInline)
     { foreach(&OutputGenIntf::startMemberDoc,clName,memName,anchor,title,memCount,memTotal,showInline); }
     void endMemberDoc(bool hasArgs)
     { foreach(&OutputGenIntf::endMemberDoc,hasArgs); }
-    void startDoxyAnchor(const QCString &fName,const QCString &manName,
-                         const QCString &anchor, const QCString &name,
-                         const QCString &args)
+    void startDoxyAnchor(const DString &fName,const DString &manName,
+                         const DString &anchor, const DString &name,
+                         const DString &args)
     { foreach(&OutputGenIntf::startDoxyAnchor,fName,manName,anchor,name,args); }
-    void endDoxyAnchor(const QCString &fn,const QCString &anchor)
+    void endDoxyAnchor(const DString &fn,const DString &anchor)
     { foreach(&OutputGenIntf::endDoxyAnchor,fn,anchor); }
-    void addLabel(const QCString &fName,const QCString &anchor)
+    void addLabel(const DString &fName,const DString &anchor)
     { foreach(&OutputGenIntf::addLabel,fName,anchor); }
     void writeLatexSpacing()
     { foreach(&OutputGenIntf::writeLatexSpacing); }
@@ -556,23 +556,23 @@ class OutputList
     { foreach(&OutputGenIntf::startSmall); }
     void endSmall()
     { foreach(&OutputGenIntf::endSmall); }
-    void lineBreak(const QCString &style=QCString())
+    void lineBreak(const DString &style=DString())
     { foreach(&OutputGenIntf::lineBreak,style); }
     void startBold()
     { foreach(&OutputGenIntf::startBold); }
     void endBold()
     { foreach(&OutputGenIntf::endBold); }
-    void startMemberDescription(const QCString &anchor,const QCString &inheritId=QCString(), bool typ = false)
+    void startMemberDescription(const DString &anchor,const DString &inheritId=DString(), bool typ = false)
     { foreach(&OutputGenIntf::startMemberDescription,anchor,inheritId, typ); }
     void endMemberDescription()
     { foreach(&OutputGenIntf::endMemberDescription); }
     void startMemberDeclaration()
     { foreach(&OutputGenIntf::startMemberDeclaration); }
-    void endMemberDeclaration(const QCString &anchor,const QCString &inheritId)
+    void endMemberDeclaration(const DString &anchor,const DString &inheritId)
     { foreach(&OutputGenIntf::endMemberDeclaration,anchor,inheritId); }
-    void writeInheritedSectionTitle(const QCString &id,   const QCString &ref,
-                                    const QCString &file, const QCString &anchor,
-                                    const QCString &title,const QCString &name)
+    void writeInheritedSectionTitle(const DString &id,   const DString &ref,
+                                    const DString &file, const DString &anchor,
+                                    const DString &title,const DString &name)
     { foreach(&OutputGenIntf::writeInheritedSectionTitle,id,ref,
                                     file,anchor,title,name); }
     void startExamples()
@@ -583,35 +583,35 @@ class OutputList
     { foreach(&OutputGenIntf::startIndent); }
     void endIndent()
     { foreach(&OutputGenIntf::endIndent); }
-    void startSection(const QCString &lab,const QCString &title,SectionType t)
+    void startSection(const DString &lab,const DString &title,SectionType t)
     { foreach(&OutputGenIntf::startSection,lab,title,t); }
-    void endSection(const QCString &lab,SectionType t)
+    void endSection(const DString &lab,SectionType t)
     { foreach(&OutputGenIntf::endSection,lab,t); }
-    void addIndexItem(const QCString &s1,const QCString &s2)
+    void addIndexItem(const DString &s1,const DString &s2)
     { foreach(&OutputGenIntf::addIndexItem,s1,s2); }
     void writeSynopsis()
     { foreach(&OutputGenIntf::writeSynopsis); }
     void startClassDiagram()
     { foreach(&OutputGenIntf::startClassDiagram); }
-    void endClassDiagram(const ClassDiagram &d,const QCString &f,const QCString &n)
+    void endClassDiagram(const ClassDiagram &d,const DString &f,const DString &n)
     { foreach(&OutputGenIntf::endClassDiagram,d,f,n); }
     void startPageRef()
     { foreach(&OutputGenIntf::startPageRef); }
-    void endPageRef(const QCString &c,const QCString &a)
+    void endPageRef(const DString &c,const DString &a)
     { foreach(&OutputGenIntf::endPageRef,c,a); }
     void startQuickIndices()
     { foreach(&OutputGenIntf::startQuickIndices); }
     void endQuickIndices()
     { foreach(&OutputGenIntf::endQuickIndices); }
-    void writeSplitBar(const QCString &name,const QCString &allMembersFile)
+    void writeSplitBar(const DString &name,const DString &allMembersFile)
     { foreach(&OutputGenIntf::writeSplitBar,name,allMembersFile); }
-    void writeNavigationPath(const QCString &s)
+    void writeNavigationPath(const DString &s)
     { foreach(&OutputGenIntf::writeNavigationPath,s); }
     void writeLogo()
     { foreach(&OutputGenIntf::writeLogo); }
-    void writeQuickLinks(HighlightedItem hli,const QCString &file,bool extraTabs=false)
+    void writeQuickLinks(HighlightedItem hli,const DString &file,bool extraTabs=false)
     { foreach(&OutputGenIntf::writeQuickLinks,hli,file,extraTabs); }
-    void writeSummaryLink(const QCString &file,const QCString &anchor,const QCString &title,bool first)
+    void writeSummaryLink(const DString &file,const DString &anchor,const DString &title,bool first)
     { foreach(&OutputGenIntf::writeSummaryLink,file,anchor,title,first); }
     void writePageOutline()
     { foreach(&OutputGenIntf::writePageOutline); }
@@ -619,13 +619,13 @@ class OutputList
     { foreach(&OutputGenIntf::startContents); }
     void endContents()
     { foreach(&OutputGenIntf::endContents); }
-    void startPageDoc(const QCString &pageTitle)
+    void startPageDoc(const DString &pageTitle)
     { foreach(&OutputGenIntf::startPageDoc, pageTitle); }
     void endPageDoc()
     { foreach(&OutputGenIntf::endPageDoc); }
     void writeNonBreakableSpace(int num)
     { foreach(&OutputGenIntf::writeNonBreakableSpace,num); }
-    void startDescTable(const QCString &title,const bool hasInits)
+    void startDescTable(const DString &title,const bool hasInits)
     { foreach(&OutputGenIntf::startDescTable,title,hasInits); }
     void endDescTable()
     { foreach(&OutputGenIntf::endDescTable); }
@@ -681,7 +681,7 @@ class OutputList
     { foreach(&OutputGenIntf::startMemberDocName,align); }
     void endMemberDocName()
     { foreach(&OutputGenIntf::endMemberDocName); }
-    void startParameterType(bool first,const QCString &key)
+    void startParameterType(bool first,const DString &key)
     { foreach(&OutputGenIntf::startParameterType,first,key); }
     void endParameterType()
     { foreach(&OutputGenIntf::endParameterType); }
@@ -701,9 +701,9 @@ class OutputList
     { foreach(&OutputGenIntf::startParameterList,openBracket); }
     void endParameterList()
     { foreach(&OutputGenIntf::endParameterList); }
-    void exceptionEntry(const QCString &prefix,bool closeBracket)
+    void exceptionEntry(const DString &prefix,bool closeBracket)
     { foreach(&OutputGenIntf::exceptionEntry,prefix,closeBracket); }
-    void startConstraintList(const QCString &header)
+    void startConstraintList(const DString &header)
     { foreach(&OutputGenIntf::startConstraintList,header); }
     void startConstraintParam()
     { foreach(&OutputGenIntf::startConstraintParam); }
@@ -737,7 +737,7 @@ class OutputList
     { foreach(&OutputGenIntf::endInlineMemberDoc); }
     void startLabels()
     { foreach(&OutputGenIntf::startLabels); }
-    void writeLabel(const QCString &l,bool isLast)
+    void writeLabel(const DString &l,bool isLast)
     { foreach(&OutputGenIntf::writeLabel,l,isLast); }
     void endLabels()
     { foreach(&OutputGenIntf::endLabels); }
@@ -751,7 +751,7 @@ class OutputList
     { foreach(&OutputGenIntf::endTocEntry,si); }
     void cleanup()
     { foreach(&OutputGenIntf::cleanup); }
-    void startPlainFile(const QCString &name)
+    void startPlainFile(const DString &name)
     { foreach(&OutputGenIntf::startPlainFile,name); }
     void endPlainFile()
     { foreach(&OutputGenIntf::endPlainFile); }

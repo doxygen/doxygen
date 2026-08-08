@@ -24,35 +24,35 @@ class XMLCodeGenerator final : public OutputCodeIntf
 
     OutputType type() const override { return OutputType::XML; }
 
-    void codify(const QCString &text) override;
+    void codify(const DString &text) override;
     void stripCodeComments(bool b) override;
     void startSpecialComment() override;
     void endSpecialComment() override;
     void setStripIndentAmount(size_t amount) override;
     std::unique_ptr<OutputCodeIntf> clone() override { return std::make_unique<XMLCodeGenerator>(*this); }
     void writeCodeLink(CodeSymbolType type,
-                       const QCString &ref,const QCString &file,
-                       const QCString &anchor,const QCString &name,
-                       const QCString &tooltip) override;
-    void writeTooltip(const QCString &, const DocLinkInfo &, const QCString &,
-                      const QCString &, const SourceLinkInfo &, const SourceLinkInfo &
+                       const DString &ref,const DString &file,
+                       const DString &anchor,const DString &name,
+                       const DString &tooltip) override;
+    void writeTooltip(const DString &, const DocLinkInfo &, const DString &,
+                      const DString &, const SourceLinkInfo &, const SourceLinkInfo &
                      ) override;
     void startCodeLine(int) override;
     void endCodeLine() override;
-    void startFontClass(const QCString &colorClass) override;
+    void startFontClass(const DString &colorClass) override;
     void endFontClass() override;
-    void writeCodeAnchor(const QCString &) override;
-    void writeLineNumber(const QCString &extRef,const QCString &compId,
-                         const QCString &anchorId,int l,bool writeLineAnchor) override;
-    void startCodeFragment(const QCString &) override;
-    void endCodeFragment(const QCString &) override;
-    void startFold(int,const QCString &,const QCString &) override {}
+    void writeCodeAnchor(const DString &) override;
+    void writeLineNumber(const DString &extRef,const DString &compId,
+                         const DString &anchorId,int l,bool writeLineAnchor) override;
+    void startCodeFragment(const DString &) override;
+    void endCodeFragment(const DString &) override;
+    void startFold(int,const DString &,const DString &) override {}
     void endFold() override {}
 
   private:
     TextStream *m_t;
-    QCString m_refId;
-    QCString m_external;
+    DString m_refId;
+    DString m_external;
     int m_lineNumber = -1;
     bool m_isMemberRef = false;
     size_t m_col = 0;

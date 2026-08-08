@@ -40,8 +40,8 @@ struct CodeFragmentManager::Private
 
   struct FragmentInfo
   {
-    QCString fileContents;
-    QCString fileContentsTrimLeft;
+    DString fileContents;
+    DString fileContentsTrimLeft;
     FragmentInfo() { recorderCodeList.add<OutputCodeRecorder>(); }
     void findBlockMarkers();
     OutputCodeList recorderCodeList;
@@ -119,13 +119,13 @@ void CodeFragmentManager::Private::FragmentInfo::findBlockMarkers()
         // so we need to advance startPos with 2 to be at the start of line2, unless we are already at the first line.
         startPos+=2;
       }
-      //printf("result=[%s]\n",qPrint(QCString(startPos).left(20)));
+      //printf("result=[%s]\n",qPrint(DString(startPos).left(20)));
     }
     else
     {
       //printf("gotoLine(pos=%p,start=%d,target=%d) forward\n",(void*)startPos,startLine,targetLine);
       while (startLine<targetLine && (cc=*startPos++)) { if (cc=='\n') startLine++; }
-      //printf("result=[%s]\n",qPrint(QCString(startPos).left(20)));
+      //printf("result=[%s]\n",qPrint(DString(startPos).left(20)));
     }
     return startPos;
   };
@@ -192,7 +192,7 @@ CodeFragmentManager &CodeFragmentManager::instance()
   return m;
 }
 
-static QCString readTextFileByName(const QCString &file)
+static DString readTextFileByName(const DString &file)
 {
   AUTO_TRACE("file={}",file);
   if (Portable::isAbsolutePath(file))
@@ -234,14 +234,14 @@ static QCString readTextFileByName(const QCString &file)
   {
     err("included file {} is not found. Check your EXAMPLE_PATH\n",file);
   }
-  return QCString();
+  return DString();
 }
 
 
 void CodeFragmentManager::parseCodeFragment(OutputCodeList & codeOutList,
-                                            const QCString & fileName,
-                                            const QCString & blockId,
-                                            const QCString & scopeName,
+                                            const DString &  fileName,
+                                            const DString &  blockId,
+                                            const DString &  scopeName,
                                             bool             showLineNumbers,
                                             bool             trimLeft,
                                             bool             stripCodeComments

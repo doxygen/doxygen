@@ -31,18 +31,18 @@ class ClassLinkedMap;
 class DotGfxHierarchyTable final : public DotGraph
 {
   public:
-    DotGfxHierarchyTable(const QCString &prefix="",ClassDef::CompoundType ct=ClassDef::Class);
+    DotGfxHierarchyTable(const DString &prefix="",ClassDef::CompoundType ct=ClassDef::Class);
    ~DotGfxHierarchyTable() override = default;
     NON_COPYABLE(DotGfxHierarchyTable)
 
-    void createGraph(DotNode *rootNode,TextStream &t,const QCString &path,
-                     const QCString &fileName,int id);
-    void writeGraph(TextStream &t,const QCString &path, const QCString &fileName);
+    void createGraph(DotNode *rootNode,TextStream &t,const DString &path,
+                     const DString &fileName,int id);
+    void writeGraph(TextStream &t,const DString &path, const DString &fileName);
     const std::vector<DotNode*> subGraphs() const { return m_rootSubgraphs; }
 
   protected:
-    QCString getBaseName() const override;
-    QCString getMapLabel() const override;
+    DString getBaseName() const override;
+    DString getMapLabel() const override;
     void computeTheGraph() override;
 
   private:
@@ -51,7 +51,7 @@ class DotGfxHierarchyTable final : public DotGraph
 
     using DotNodeMap = std::unordered_multimap< std::string, std::unique_ptr<DotNode> >;
     int                    m_graphId;
-    QCString               m_prefix;
+    DString               m_prefix;
     ClassDef::CompoundType m_classType;
     std::vector<DotNode*>  m_rootNodes;
     DotNodeMap             m_usedNodes;

@@ -43,7 +43,7 @@
 //#define DBG_RTF(x) m_t << x
 #define DBG_RTF(x) do {} while(0)
 
-static QCString align(const DocHtmlCell &cell)
+static DString align(const DocHtmlCell &cell)
 {
   for (const auto &attr : cell.attribs())
   {
@@ -58,19 +58,19 @@ static QCString align(const DocHtmlCell &cell)
 }
 
 RTFDocVisitor::RTFDocVisitor(TextStream &t,OutputCodeList &ci,
-                             const QCString &langExt, int hierarchyLevel)
+                             const DString &langExt, int hierarchyLevel)
   : m_t(t), m_ci(ci), m_langExt(langExt), m_hierarchyLevel(hierarchyLevel)
 {
 }
 
-QCString RTFDocVisitor::getStyle(const QCString &name)
+DString RTFDocVisitor::getStyle(const DString &name)
 {
-  QCString n = name + QCString().setNum(indentLevel());
+  DString n = name + DString().setNum(indentLevel());
   StyleData &sd = rtf_Style[n.str()];
   return sd.reference();
 }
 
-QCString RTFDocVisitor::getListTable(const int id)
+DString RTFDocVisitor::getListTable(const int id)
 {
   for (int i=0 ; rtf_Table_Default[i].definition ; i++ )
   {
@@ -310,7 +310,7 @@ void RTFDocVisitor::operator()(const DocVerbatim &s)
 {
   if (m_hide) return;
   DBG_RTF("{\\comment RTFDocVisitor::visit(DocVerbatim)}\n");
-  QCString lang = m_langExt;
+  DString lang = m_langExt;
   if (!s.language().empty()) // explicit language setting
   {
     lang = s.language();
@@ -388,7 +388,7 @@ void RTFDocVisitor::operator()(const DocVerbatim &s)
       break;
     case DocVerbatim::PlantUML:
       {
-        QCString rtfOutput = Config_getString(RTF_OUTPUT);
+        DString rtfOutput = Config_getString(RTF_OUTPUT);
         auto baseNameVector = PlantumlManager::instance().writePlantUMLSource(
                        rtfOutput,s.exampleFile(),s.text(),PlantumlManager::PUML_BITMAP,
                        s.engine(),s.srcFile(),s.srcLine(),true);
@@ -423,7 +423,7 @@ void RTFDocVisitor::operator()(const DocAnchor &anc)
 {
   if (m_hide) return;
   DBG_RTF("{\\comment RTFDocVisitor::visit(DocAnchor)}\n");
-  QCString anchor;
+  DString anchor;
   if (!anc.file().empty())
   {
     anchor+=stripPath(anc.file());
@@ -526,7 +526,7 @@ void RTFDocVisitor::operator()(const DocIncOperator &op)
   //printf("DocIncOperator: type=%d first=%d, last=%d text='%s'\n",
   //    op.type(),op.isFirst(),op.isLast(),qPrint(op.text()));
   DBG_RTF("{\\comment RTFDocVisitor::visit(DocIncOperator)}\n");
-  QCString locLangExt = getFileNameExtension(op.includeFileName());
+  DString locLangExt = getFileNameExtension(op.includeFileName());
   if (locLangExt.empty()) locLangExt = m_langExt;
   SrcLangExt langExt = getLanguageFromFileName(locLangExt);
   if (op.isFirst())
@@ -852,7 +852,7 @@ void RTFDocVisitor::operator()(const DocSection &s)
   m_t << "{\\bkmkend " << rtfFormatBmkStr(stripPath(s.file())+"_"+s.anchor()) << "}\n";
   m_t << "{{" // start section
       << rtf_Style_Reset;
-  QCString heading;
+  DString heading;
   int level = std::min(s.level()+2+m_hierarchyLevel,4);
   if (level <= 0)
     level = 1;
@@ -1091,7 +1091,7 @@ void RTFDocVisitor::operator()(const DocHRef &href)
     if (href.url().startsWith("#"))
     {
       // when starting with # so a local link
-      QCString cite;
+      DString cite;
       cite = href.file() + "_" + href.url().right(href.url().length()-1);
       m_t << "{\\field "
                "{\\*\\fldinst "
@@ -1168,7 +1168,7 @@ void RTFDocVisitor::operator()(const DocHtmlHeader &header)
   DBG_RTF("{\\comment RTFDocVisitor::operator()(const DocHtmlHeader &)}\n");
   m_t << "{" // start section
       << rtf_Style_Reset;
-  QCString heading;
+  DString heading;
   int level = std::clamp(header.level()+m_hierarchyLevel,SectionType::MinLevel,SectionType::MaxLevel);
   heading.sprintf("Heading%d",level);
   // set style
@@ -1183,7 +1183,7 @@ void RTFDocVisitor::operator()(const DocHtmlHeader &header)
   m_lastIsPara=true;
 }
 
-void RTFDocVisitor::includePicturePreRTF(const QCString &name, bool isTypeRTF, bool hasCaption, bool inlineImage)
+void RTFDocVisitor::includePicturePreRTF(const DString &name, bool isTypeRTF, bool hasCaption, bool inlineImage)
 {
   if (isTypeRTF)
   {
@@ -1320,12 +1320,12 @@ void RTFDocVisitor::operator()(const DocPlantUmlFile &df)
 {
   DBG_RTF("{\\comment RTFDocVisitor::operator()(const DocPlantUmlFile &)}\n");
   if (!Config_getBool(DOT_CLEANUP)) copyFile(df.file(),Config_getString(RTF_OUTPUT)+"/"+stripPath(df.file()));
-  QCString rtfOutput = Config_getString(RTF_OUTPUT);
+  DString rtfOutput = Config_getString(RTF_OUTPUT);
   std::string inBuf;
   readInputFile(df.file(),inBuf);
   auto baseNameVector = PlantumlManager::instance().writePlantUMLSource(
-                       rtfOutput,QCString(),inBuf,PlantumlManager::PUML_BITMAP,
-                       QCString(),df.srcFile(),df.srcLine(),false);
+                       rtfOutput,DString(),inBuf,PlantumlManager::PUML_BITMAP,
+                       DString(),df.srcFile(),df.srcLine(),false);
   for(const auto &baseName: baseNameVector)
   {
     writePlantUMLFile(baseName, df.hasCaption());
@@ -1345,7 +1345,7 @@ void RTFDocVisitor::operator()(const DocMermaidFile &df)
   auto outputFormat = MermaidManager::OutputFormat::RTF;
   auto imageFormat  = MermaidManager::convertToImageFormat(outputFormat);
   auto baseName     = MermaidManager::instance().writeMermaidSource(
-                        rtfOutput,QCString(),inBuf,imageFormat,
+                        rtfOutput,DString(),inBuf,imageFormat,
                         df.srcFile(),df.srcLine());
   writeMermaidFile(baseName, df.hasCaption());
   visitChildren(df);
@@ -1369,7 +1369,7 @@ void RTFDocVisitor::operator()(const DocRef &ref)
   // ref.anchor() for LaTeX/RTF
   if (ref.isSubPage())
   {
-    startLink(ref.ref(),QCString(),ref.anchor());
+    startLink(ref.ref(),DString(),ref.anchor());
   }
   else
   {
@@ -1598,7 +1598,7 @@ void RTFDocVisitor::operator()(const DocXRefItem &x)
   m_t << "{" << rtf_Style["Heading5"].reference() << "\n";
   if (Config_getBool(RTF_HYPERLINKS) && !anonymousEnum)
   {
-    QCString refName;
+    DString refName;
     if (!x.file().empty())
     {
       refName+=stripPath(x.file());
@@ -1693,7 +1693,7 @@ void RTFDocVisitor::operator()(const DocParBlock &pb)
 //    return s;
 //}
 
-void RTFDocVisitor::filter(const QCString &str,bool verbatim, const bool citeEntry)
+void RTFDocVisitor::filter(const DString &str,bool verbatim, const bool citeEntry)
 {
   if (!str.empty())
   {
@@ -1725,11 +1725,11 @@ void RTFDocVisitor::filter(const QCString &str,bool verbatim, const bool citeEnt
   }
 }
 
-void RTFDocVisitor::startLink(const QCString &ref,const QCString &file,const QCString &anchor)
+void RTFDocVisitor::startLink(const DString &ref,const DString &file,const DString &anchor)
 {
   if (ref.empty() && Config_getBool(RTF_HYPERLINKS))
   {
-    QCString refName;
+    DString refName;
     if (!file.empty())
     {
       refName+=stripPath(file);
@@ -1755,7 +1755,7 @@ void RTFDocVisitor::startLink(const QCString &ref,const QCString &file,const QCS
   m_lastIsPara=false;
 }
 
-void RTFDocVisitor::endLink(const QCString &ref)
+void RTFDocVisitor::endLink(const DString &ref)
 {
   if (ref.empty() && Config_getBool(RTF_HYPERLINKS))
   {
@@ -1768,43 +1768,43 @@ void RTFDocVisitor::endLink(const QCString &ref)
   m_lastIsPara=false;
 }
 
-void RTFDocVisitor::writeDotFile(const QCString &filename, bool hasCaption,
-                                 const QCString &srcFile, int srcLine, bool newFile)
+void RTFDocVisitor::writeDotFile(const DString &filename, bool hasCaption,
+                                 const DString &srcFile, int srcLine, bool newFile)
 {
-  QCString baseName=makeBaseName(filename,".dot");
-  QCString outDir = Config_getString(RTF_OUTPUT);
+  DString baseName=makeBaseName(filename,".dot");
+  DString outDir = Config_getString(RTF_OUTPUT);
   if (newFile) writeDotGraphFromFile(filename,outDir,baseName,GraphOutputFormat::BITMAP,srcFile,srcLine,false);
-  QCString imgExt = getDotImageExtension();
+  DString imgExt = getDotImageExtension();
   includePicturePreRTF(baseName + "." + imgExt, true, hasCaption);
 }
 
-void RTFDocVisitor::writeMscFile(const QCString &fileName, bool hasCaption,
-                                 const QCString &srcFile, int srcLine, bool newFile)
+void RTFDocVisitor::writeMscFile(const DString &fileName, bool hasCaption,
+                                 const DString &srcFile, int srcLine, bool newFile)
 {
-  QCString baseName=makeBaseName(fileName,".msc");
-  QCString outDir = Config_getString(RTF_OUTPUT);
+  DString baseName=makeBaseName(fileName,".msc");
+  DString outDir = Config_getString(RTF_OUTPUT);
   if (newFile) writeMscGraphFromFile(fileName,outDir,baseName,MscOutputFormat::BITMAP,srcFile,srcLine,false);
   includePicturePreRTF(baseName + ".png", true, hasCaption);
 }
 
-void RTFDocVisitor::writeDiaFile(const QCString &fileName, bool hasCaption,
-                                 const QCString &srcFile, int srcLine, bool newFile)
+void RTFDocVisitor::writeDiaFile(const DString &fileName, bool hasCaption,
+                                 const DString &srcFile, int srcLine, bool newFile)
 {
-  QCString baseName=makeBaseName(fileName,".dia");
-  QCString outDir = Config_getString(RTF_OUTPUT);
+  DString baseName=makeBaseName(fileName,".dia");
+  DString outDir = Config_getString(RTF_OUTPUT);
   if (newFile) writeDiaGraphFromFile(fileName,outDir,baseName,DiaOutputFormat::BITMAP,srcFile,srcLine,false);
   includePicturePreRTF(baseName + ".png", true, hasCaption);
 }
 
-void RTFDocVisitor::writePlantUMLFile(const QCString &fileName, bool hasCaption)
+void RTFDocVisitor::writePlantUMLFile(const DString &fileName, bool hasCaption)
 {
-  QCString baseName=makeBaseName(fileName,".pu");
-  QCString outDir = Config_getString(RTF_OUTPUT);
+  DString baseName=makeBaseName(fileName,".pu");
+  DString outDir = Config_getString(RTF_OUTPUT);
   PlantumlManager::instance().generatePlantUMLOutput(fileName,outDir,PlantumlManager::PUML_BITMAP,false);
   includePicturePreRTF(baseName + ".png", true, hasCaption);
 }
 
-void RTFDocVisitor::writeMermaidFile(const QCString &fileName, bool hasCaption)
+void RTFDocVisitor::writeMermaidFile(const DString &fileName, bool hasCaption)
 {
   if (Config_getBool(MERMAID_RENDER_MODE)==MERMAID_RENDER_MODE_t::CLIENT_SIDE) return;
   auto baseName     = makeBaseName(fileName,".mmd");

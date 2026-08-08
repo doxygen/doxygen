@@ -18,7 +18,7 @@
 
 #include <memory>
 
-#include "qcstring.h"
+#include "dstring.h"
 #include "construct.h"
 
 class CodeParserInterface;
@@ -33,7 +33,7 @@ class DocVisitor
     DocVisitor();
     virtual ~DocVisitor();
     NON_COPYABLE(DocVisitor)
-    CodeParserInterface &getCodeParser(const QCString &langExt);
+    CodeParserInterface &getCodeParser(const DString &langExt);
     void pushHidden(bool hide);
     bool popHidden();
 };

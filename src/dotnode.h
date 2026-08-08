@@ -34,12 +34,12 @@ class EdgeInfo
   public:
     enum Colors { Blue=0, Green=1, Red=2, Purple=3, Grey=4, Orange=5, Orange2=6 };
     enum Styles { Solid=0, Dashed=1 };
-    EdgeInfo(Colors color,Styles style,const QCString &lab,const QCString &url,int labColor)
+    EdgeInfo(Colors color,Styles style,const DString &lab,const DString &url,int labColor)
         : m_color(color), m_style(style), m_label(lab), m_url(url), m_labColor(labColor) {}
     int color() const      { return m_color; }
     int style() const      { return m_style; }
-    QCString label() const { return m_label; }
-    QCString url() const   { return m_url; }
+    DString label() const { return m_label; }
+    DString url() const   { return m_url; }
     int labelColor() const { return m_labColor; }
     static constexpr Colors protectionToColor(Protection prot)
     {
@@ -55,8 +55,8 @@ class EdgeInfo
   private:
     int m_color;
     int m_style;
-    QCString m_label;
-    QCString m_url;
+    DString m_label;
+    DString m_url;
     int m_labColor;
 };
 
@@ -70,8 +70,8 @@ class DotNode
     enum class LabelStyle { Plain, List, Table };
     static constexpr auto placeholderUrl = "-";
     static void deleteNodes(DotNode* node);
-    static QCString convertLabel(const QCString&, LabelStyle=LabelStyle::Plain);
-    DotNode(DotGraph *graph,const QCString &lab,const QCString &tip,const QCString &url,
+    static DString convertLabel(const DString&, LabelStyle=LabelStyle::Plain);
+    DotNode(DotGraph *graph,const DString &lab,const DString &tip,const DString &url,
         bool rootNode=false,const ClassDef *cd=nullptr);
 
     enum TruncState { Unknown, Truncated, Untruncated };
@@ -79,8 +79,8 @@ class DotNode
     void addChild(DotNode *n,
                   EdgeInfo::Colors edgeColor=EdgeInfo::Purple,
                   EdgeInfo::Styles edgeStyle=EdgeInfo::Solid,
-                  const QCString &edgeLab=QCString(),
-                  const QCString &edgeURL=QCString(),
+                  const DString &edgeLab=DString(),
+                  const DString &edgeURL=DString(),
                   int edgeLabCol=-1);
     void addParent(DotNode *n);
     void deleteNode(DotNodeRefVector &deletedList);
@@ -100,7 +100,7 @@ class DotNode
     void writeArrow(TextStream &t,GraphType gt,GraphOutputFormat f,const DotNode *cn,
                     const EdgeInfo *ei,bool topDown, bool pointBack=true) const;
 
-    QCString label() const         { return m_label; }
+    DString label() const         { return m_label; }
     int  number() const            { return m_number; }
     bool isVisible() const         { return m_visible; }
     TruncState isTruncated() const { return m_truncated; }
@@ -128,9 +128,9 @@ class DotNode
   private:
     DotGraph        *m_graph;
     int              m_number;
-    QCString         m_label;                //!< label text
-    QCString         m_tooltip;              //!< node's tooltip
-    QCString         m_url;                  //!< url of the node (format: remote$local)
+    DString         m_label;                //!< label text
+    DString         m_tooltip;              //!< node's tooltip
+    DString         m_url;                  //!< url of the node (format: remote$local)
     DotNodeRefVector m_parents;              //!< list of parent nodes (incoming arrows)
     DotNodeRefVector m_children;             //!< list of child nodes (outgoing arrows)
     EdgeInfoVector   m_edgeInfo;             //!< edge info for each child
@@ -154,6 +154,6 @@ class DotNodeDeque final : public std::deque<DotNode*>
 {
 };
 
-QCString escapeTooltip(const QCString &tooltip);
+DString escapeTooltip(const DString &tooltip);
 
 #endif

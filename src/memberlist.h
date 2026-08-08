@@ -90,7 +90,7 @@ class MemberVector
     {
       return std::find(m_members.begin(),m_members.end(),md)!=m_members.end();
     }
-    const MemberDef *find(const QCString &name) const
+    const MemberDef *find(const DString &name) const
     {
       auto it = std::find_if(m_members.begin(),m_members.end(),[name=name](auto &el) { return el->name()==name; });
       if (it != m_members.end())
@@ -99,11 +99,11 @@ class MemberVector
       }
       return nullptr;
     }
-    MemberDef *find(const QCString &name)
+    MemberDef *find(const DString &name)
     {
       return const_cast<MemberDef *>(static_cast<const MemberVector *>(this)->find(name));
     }
-    const MemberDef *findRev(const QCString &name) const
+    const MemberDef *findRev(const DString &name) const
     {
       auto it = std::find_if(m_members.rbegin(),m_members.rend(),[name=name](auto &el) { return el->name()==name; });
       if (it != m_members.rend())
@@ -112,7 +112,7 @@ class MemberVector
       }
       return nullptr;
     }
-    MemberDef *findRev(const QCString &name)
+    MemberDef *findRev(const DString &name)
     {
       return const_cast<MemberDef *>(static_cast<const MemberVector *>(this)->findRev(name));
     }
@@ -144,18 +144,18 @@ class MemberList final : public MemberVector
     int countInheritableMembers(const ClassDef *inheritedFrom) const;
     void writePlainDeclarations(OutputList &ol,bool inGroup,
                const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd, const GroupDef *gd,const ModuleDef *mod,
-               int indentLevel,const ClassDef *inheritedFrom,const QCString &inheritId) const;
+               int indentLevel,const ClassDef *inheritedFrom,const DString &inheritId) const;
     void writeDeclarations(OutputList &ol,
                const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,const ModuleDef *mod,
-               const QCString &title,const QCString &subtitle,
+               const DString &title,const DString &subtitle,
                bool showEnumValues=false,bool showInline=false,
                const ClassDef *inheritedFrom=nullptr,MemberListType lt=MemberListType::PubMethods(),bool showSectionTitle=true) const;
-    void writeDocumentation(OutputList &ol,const QCString &scopeName,
-               const Definition *container,const QCString &title, const QCString &anchor,
+    void writeDocumentation(OutputList &ol,const DString &scopeName,
+               const Definition *container,const DString &title, const DString &anchor,
                bool showEnumValues=false,bool showInline=false) const;
     void writeSimpleDocumentation(OutputList &ol,const Definition *container) const;
     void writeDocumentationPage(OutputList &ol,
-               const QCString &scopeName, const DefinitionMutable *container, int hierarchyLevel=0) const;
+               const DString &scopeName, const DefinitionMutable *container, int hierarchyLevel=0) const;
     void writeTagFile(TextStream &,bool useQualifiedName=false,bool showNamespaceMembers=true);
     bool declVisible() const;
     void addMemberGroup(MemberGroup *mg);

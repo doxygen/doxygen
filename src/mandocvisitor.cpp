@@ -31,7 +31,7 @@
 #include "cite.h"
 
 ManDocVisitor::ManDocVisitor(TextStream &t,OutputCodeList &ci,
-                             const QCString &langExt)
+                             const DString &langExt)
   : m_t(t), m_ci(ci), m_insidePre(false), m_hide(false), m_firstCol(false),
     m_indent(0), m_langExt(langExt)
 {
@@ -196,7 +196,7 @@ void ManDocVisitor::operator()(const DocStyleChange &s)
 void ManDocVisitor::operator()(const DocVerbatim &s)
 {
   if (m_hide) return;
-  QCString lang = m_langExt;
+  DString lang = m_langExt;
   if (!s.language().empty()) // explicit language setting
   {
     lang = s.language();
@@ -345,7 +345,7 @@ void ManDocVisitor::operator()(const DocInclude &inc)
 
 void ManDocVisitor::operator()(const DocIncOperator &op)
 {
-  QCString locLangExt = getFileNameExtension(op.includeFileName());
+  DString locLangExt = getFileNameExtension(op.includeFileName());
   if (locLangExt.empty()) locLangExt = m_langExt;
   SrcLangExt langExt = getLanguageFromFileName(locLangExt);
   //printf("DocIncOperator: type=%d first=%d, last=%d text='%s'\n",
@@ -420,7 +420,7 @@ void ManDocVisitor::operator()(const DocCite &cite)
   if (m_hide) return;
   m_t << "\\fB";
   auto opt = cite.option();
-  QCString txt;
+  DString txt;
   if (!cite.file().empty())
   {
     txt = cite.getText();
@@ -459,7 +459,7 @@ void ManDocVisitor::operator()(const DocAutoList &l)
 void ManDocVisitor::operator()(const DocAutoListItem &li)
 {
   if (m_hide) return;
-  QCString ws;
+  DString ws;
   if (m_indent>0) ws.fill(' ',2*(m_indent-1));
   if (!m_firstCol) m_t << "\n";
   m_t << ".IP \"" << ws;
@@ -597,7 +597,7 @@ void ManDocVisitor::operator()(const DocSimpleList &l)
 void ManDocVisitor::operator()(const DocSimpleListItem &li)
 {
   if (m_hide) return;
-  QCString ws;
+  DString ws;
   if (m_indent>0) ws.fill(' ',2*(m_indent-1));
   if (!m_firstCol) m_t << "\n";
   m_t << ".IP \"" << ws << "\\(bu\" " << m_indent << "\n";
@@ -658,7 +658,7 @@ void ManDocVisitor::operator()(const DocHtmlList &l)
 void ManDocVisitor::operator()(const DocHtmlListItem &li)
 {
   if (m_hide) return;
-  QCString ws;
+  DString ws;
   if (m_indent>0) ws.fill(' ',2*(m_indent-1));
   if (!m_firstCol) m_t << "\n";
   m_t << ".IP \"" << ws;
@@ -860,7 +860,7 @@ void ManDocVisitor::operator()(const DocRef &ref)
 void ManDocVisitor::operator()(const DocSecRefItem &ref)
 {
   if (m_hide) return;
-  QCString ws;
+  DString ws;
   if (m_indent>0) ws.fill(' ',2*(m_indent-1));
   if (!m_firstCol) m_t << "\n";
   m_t << ".IP \"" << ws << "\\(bu\" " << (2*m_indent) << "\n";
@@ -992,7 +992,7 @@ void ManDocVisitor::operator()(const DocParBlock &pb)
   visitChildren(pb);
 }
 
-void ManDocVisitor::filter(const QCString &str, const bool retainNewline, const bool citeEntry)
+void ManDocVisitor::filter(const DString &str, const bool retainNewline, const bool citeEntry)
 {
   if (!str.empty())
   {

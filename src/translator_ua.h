@@ -23,19 +23,19 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
 {
   public:
     /*! Used for identification of the language. */
-    QCString idLanguage() override
+    DString idLanguage() override
     { return "ukrainian"; }
 
     /* Used to get the command(s) for the language support. */
-    QCString latexLanguageSupportCommand() override
+    DString latexLanguageSupportCommand() override
     {
       return "\\usepackage[T2A]{fontenc}\n\\usepackage[ukrainian]{babel}\n";
     }
-    QCString trISOLang() override
+    DString trISOLang() override
     {
       return "uk";
     }
-    QCString getLanguageString() override
+    DString getLanguageString() override
     {
       return "0x422 Ukrainian";
     }
@@ -43,35 +43,35 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
     // --- Language translation methods -------------------
 
     /*! used in the compound documentation before a list of related functions. */
-    QCString trRelatedFunctions() override
+    DString trRelatedFunctions() override
     { return "Споріднені фукції"; }
 
     /*! subscript for the related functions. */
-    QCString trRelatedSubscript() override
+    DString trRelatedSubscript() override
     { return "(не методи компонент)"; }
 
     /*! header that is put before the detailed description of files, classes and namespaces. */
-    QCString trDetailedDescription() override
+    DString trDetailedDescription() override
     { return "Детальний опис"; }
 
     /*! header that is used when the summary tag is missing inside the details tag */
-    QCString trDetails() override
+    DString trDetails() override
     { return "Подробиці"; }
 
     /*! header that is put before the list of typedefs. */
-    QCString trMemberTypedefDocumentation() override
+    DString trMemberTypedefDocumentation() override
     { return "Опис типів користувача"; }
 
     /*! header that is put before the list of enumerations. */
-    QCString trMemberEnumerationDocumentation() override
+    DString trMemberEnumerationDocumentation() override
     { return "Опис переліків користувача"; }
 
     /*! header that is put before the list of member functions. */
-    QCString trMemberFunctionDocumentation() override
+    DString trMemberFunctionDocumentation() override
     { return "Опис методів компонент"; }
 
     /*! header that is put before the list of member attributes. */
-    QCString trMemberDataDocumentation() override
+    DString trMemberDataDocumentation() override
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
@@ -84,53 +84,53 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
     }
 
     /*! this is the text of a link put after brief descriptions. */
-    QCString trMore() override
+    DString trMore() override
     { return "Детальніше..."; }
 
     /*! put in the class documentation */
     /* Isn't used when optimization for C is on. */
-    QCString trListOfAllMembers() override
+    DString trListOfAllMembers() override
     {
       return  "Список всіх елементів" ;
     }
 
     /*! used as the title of the "list of all members" page of a class */
     /* Isn't used when optimization for C is on. */
-    QCString trMemberList() override
+    DString trMemberList() override
     {
       return  "Cписок елементів" ;
     }
 
     /*! this is the first part of a sentence that is followed by a class name */
     /* Isn't used when optimization for C is on. */
-    QCString trThisIsTheListOfAllMembers() override
+    DString trThisIsTheListOfAllMembers() override
     { return "Повний список елементів"; }
 
     /*! this is the remainder of the sentence after the class name */
     /* Isn't used when optimization for C is on. */
-    QCString trIncludingInheritedMembers() override
+    DString trIncludingInheritedMembers() override
     { return ", включаючи всі успадковані елементи"; }
 
     /*! this is put at the author sections at the bottom of man pages.
      *  parameter s is name of the project name.
      */
-    QCString trGeneratedAutomatically(const QCString &s) override
-    { QCString result="Автоматично створено за допомогою Doxygen";
-      if (!s.empty()) result+=QCString(" для ")+s;
+    DString trGeneratedAutomatically(const DString &s) override
+    { DString result="Автоматично створено за допомогою Doxygen";
+      if (!s.empty()) result+=DString(" для ")+s;
       result+=" з тексту програми.";
       return result;
     }
 
     /*! put after an enum name in the list of all members */
-    QCString trEnumName() override
+    DString trEnumName() override
     { return "Перелік"; }
 
     /*! put after an enum value in the list of all members */
-    QCString trEnumValue() override
+    DString trEnumValue() override
     { return "Елемент переліку"; }
 
     /*! put after an undocumented member in the list of all members */
-    QCString trDefinedIn() override
+    DString trDefinedIn() override
     { return "визначено в "; }
 
     // quick reference sections
@@ -138,15 +138,15 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
     /*! This is put above each page as a link to the list of all groups of
      *  compounds or files (see the \\group command).
      */
-    QCString trModules() override
+    DString trModules() override
     { return "Програмні модулі"; }
 
     /*! This is put above each page as a link to the class hierarchy */
-    QCString trClassHierarchy() override
+    DString trClassHierarchy() override
     { return "Ієрархія класів"; }
 
     /*! This is put above each page as a link to the list of annotated classes */
-    QCString trCompoundList() override
+    DString trCompoundList() override
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
@@ -159,11 +159,11 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
     }
 
     /*! This is put above each page as a link to the list of documented files */
-    QCString trFileList() override
+    DString trFileList() override
     { return "Файли"; }
 
     /*! This is put above each page as a link to all members of compounds. */
-    QCString trCompoundMembers() override
+    DString trCompoundMembers() override
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
@@ -177,40 +177,40 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
 
     /*! This is put above each page as a link to all members of files. */
     /*??*/
-    QCString trFileMembers() override
+    DString trFileMembers() override
     {
       return  "Елементи файлу" ;
     }
 
     /*! This is put above each page as a link to all related pages. */
-    QCString trRelatedPages() override
+    DString trRelatedPages() override
     /* ?? Вариант перевода "См. также: " более удачный, но не в заголовке,
      как в данном случае. */
     { return "Додаткова інформація"; }
 
     /*! This is put above each page as a link to all examples. */
-    QCString trExamples() override
+    DString trExamples() override
     { return "Приклади"; }
 
     /*! This is put above each page as a link to the search engine. */
-    QCString trSearch() override
+    DString trSearch() override
     { return "Пошук"; }
 
     /*! This is an introduction to the class hierarchy. */
-    QCString trClassHierarchyDescription() override
+    DString trClassHierarchyDescription() override
     { return "Список успадкувань впорядковано наближено до алфавіту"; }
 
     /*! This is an introduction to the list with all files. */
-    QCString trFileListDescription(bool extractAll) override
+    DString trFileListDescription(bool extractAll) override
     {
-      QCString result="Повний список ";
+      DString result="Повний список ";
       if (!extractAll) result+="документованих ";
       result+="файлів.";
       return result;
     }
 
     /*! This is an introduction to the annotated compound list. */
-    QCString trCompoundListDescription() override
+    DString trCompoundListDescription() override
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
@@ -227,9 +227,9 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
     }
 
     /*! This is an introduction to the page with all class members. */
-    QCString trCompoundMembersDescription(bool extractAll) override
+    DString trCompoundMembersDescription(bool extractAll) override
     {
-        QCString result="Список всіх ";
+        DString result="Список всіх ";
         if(!extractAll) result+="документоаних ";
         if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
           result+="елементів структур даних з посиланням на ";
@@ -254,9 +254,9 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
     }
 
     /*! This is an introduction to the page with all file members. */
-    QCString trFileMembersDescription(bool extractAll) override
+    DString trFileMembersDescription(bool extractAll) override
     {
-      QCString result="Список всіх ";
+      DString result="Список всіх ";
       if (!extractAll) result+="документованих ";
 
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
@@ -277,39 +277,39 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
     }
 
     /*! This is an introduction to the page with the list of all examples */
-    QCString trExamplesDescription() override
+    DString trExamplesDescription() override
     { return "Повний список прикладів."; }
 
     /*! This is an introduction to the page with the list of related pages */
-    QCString trRelatedPagesDescription() override
+    DString trRelatedPagesDescription() override
     { return "Повний список додаткових описів."; }
 
     /*! This is an introduction to the page with the list of class/file groups */
-    QCString trModulesDescription() override
+    DString trModulesDescription() override
     { return "Повний список модулів."; }
 
     // index titles (the project name is prepended for these)
 
     /*! This is used in HTML as the title of index.html. */
-    QCString trDocumentation(const QCString &projName) override
+    DString trDocumentation(const DString &projName) override
     { return (!projName.empty()?projName + " " : "") + "Документація"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * index of all groups.
      */
-    QCString trModuleIndex() override
+    DString trModuleIndex() override
     { return "Алфавітний покажчик модулів"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * class hierarchy.
      */
-    QCString trHierarchicalIndex() override
+    DString trHierarchicalIndex() override
     { return "Ієрархічний покажчик класів"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * annotated compound index.
      */
-    QCString trCompoundIndex() override
+    DString trCompoundIndex() override
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
@@ -324,19 +324,19 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
     /*! This is used in LaTeX as the title of the chapter with the
      * list of all files.
      */
-    QCString trFileIndex() override
+    DString trFileIndex() override
     { return  "Покажчик файлв" ; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all groups.
      */
-    QCString trModuleDocumentation() override
+    DString trModuleDocumentation() override
     { return "Програмні Модулі"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all classes, structs and unions.
      */
-    QCString trClassDocumentation() override
+    DString trClassDocumentation() override
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
@@ -355,83 +355,83 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all files.
      */
-    QCString trFileDocumentation() override
+    DString trFileDocumentation() override
     { return "Файли"; }
 
     /*! This is used in LaTeX as the title of the document */
-    QCString trReferenceManual() override
+    DString trReferenceManual() override
     { return "Довідковий посібник"; }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of defines
      */
-    QCString trDefines() override
+    DString trDefines() override
     { return "Макровизначення"; }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of typedefs
      */
-    QCString trTypedefs() override
+    DString trTypedefs() override
     { return "Визначення типів"; }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of enumerations
      */
-    QCString trEnumerations() override
+    DString trEnumerations() override
     { return "Переліки"; }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of (global) functions
      */
-    QCString trFunctions() override
+    DString trFunctions() override
     { return "Функції"; }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of (global) variables
      */
-    QCString trVariables() override
+    DString trVariables() override
     { return "Змінні"; }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of (global) variables
      */
-    QCString trEnumerationValues() override
+    DString trEnumerationValues() override
     { return "Елементи переліків"; }
 
     /*! This is used in the documentation of a file before the list of
      *  documentation blocks for defines
      */
-    QCString trDefineDocumentation() override
+    DString trDefineDocumentation() override
     { return "Опис макровизначень"; }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for typedefs
      */
-    QCString trTypedefDocumentation() override
+    DString trTypedefDocumentation() override
     { return "Опис визначень типів"; }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for enumeration types
      */
-    QCString trEnumerationTypeDocumentation() override
+    DString trEnumerationTypeDocumentation() override
     { return "Опис переліків"; }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for functions
      */
-    QCString trFunctionDocumentation() override
+    DString trFunctionDocumentation() override
     { return "Опис функцій"; }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for variables
      */
-    QCString trVariableDocumentation() override
+    DString trVariableDocumentation() override
     { return "Опис змінних"; }
 
     /*! This is used in the documentation of a file/namespace/group before
      *  the list of links to documented compounds
      */
-    QCString trCompounds() override
+    DString trCompounds() override
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
@@ -450,51 +450,51 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
     /*! This is used in the standard footer of each page and indicates when
      *  the page was generated
      */
-    QCString trGeneratedAt(const QCString &date,const QCString &projName) override
+    DString trGeneratedAt(const DString &date,const DString &projName) override
     {
-      QCString result="Документація ";
-      if (!projName.empty()) result+=QCString("до ")+projName;
-      result+=QCString(" створена ")+date;
+      DString result="Документація ";
+      if (!projName.empty()) result+=DString("до ")+projName;
+      result+=DString(" створена ")+date;
       result+=" системою";
       return result;
     }
 
     /*! this text is put before a class diagram */
-    QCString trClassDiagram(const QCString &clName) override
+    DString trClassDiagram(const DString &clName) override
     {
-      return QCString("Схема успадкувань для ")+clName;
+      return DString("Схема успадкувань для ")+clName;
     }
 
     /*! this text is generated when the \\warning command is used. */
-    QCString trWarning() override
+    DString trWarning() override
     { return "Застереження"; }
 
     /*! this text is generated when the \\version command is used. */
-    QCString trVersion() override
+    DString trVersion() override
     { return "Версія"; }
 
     /*! this text is generated when the \\date command is used. */
-    QCString trDate() override
+    DString trDate() override
     { return "Дата"; }
 
     /*! this text is generated when the \\return command is used. */
-    QCString trReturns() override
+    DString trReturns() override
     { return "Повертає"; }
 
     /*! this text is generated when the \\sa command is used. */
-    QCString trSeeAlso() override
+    DString trSeeAlso() override
     { return "Див. також"; }
 
     /*! this text is generated when the \\param command is used. */
-    QCString trParameters() override
+    DString trParameters() override
     { return "Аргументи"; }
 
     /*! this text is generated when the \\exception command is used. */
-    QCString trExceptions() override
+    DString trExceptions() override
     { return "Обробка виняткових ситуацій"; }
 
     /*! this text is used in the title page of a LaTeX document. */
-    QCString trGeneratedBy() override
+    DString trGeneratedBy() override
     { return "Створено системою"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -502,13 +502,13 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
 //////////////////////////////////////////////////////////////////////////
 
     /*! used as the title of page containing all the index of all namespaces. */
-    QCString trNamespaceList() override
+    DString trNamespaceList() override
     { return "Простір імен"; }
 
     /*! used as an introduction to the namespace list */
-    QCString trNamespaceListDescription(bool extractAll) override
+    DString trNamespaceListDescription(bool extractAll) override
     {
-      QCString result="Повний список ";
+      DString result="Повний список ";
       if (!extractAll) result+="документованих ";
       result+="просторів імен.";
       return result;
@@ -517,7 +517,7 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
     /*! used in the class documentation as a header before the list of all
      *  friends of a class
      */
-    QCString trFriends() override
+    DString trFriends() override
     { return "Дружні класи"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -527,7 +527,7 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
     /*! used in the class documentation as a header before the list of all
      * related classes
      */
-    QCString trRelatedFunctionDocumentation() override
+    DString trRelatedFunctionDocumentation() override
       { return "Документация до дружніх класів та відповідних функцій"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -535,11 +535,11 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
 //////////////////////////////////////////////////////////////////////////
 
     /*! used as the title of the HTML page of a class/struct/union */
-    QCString trCompoundReference(const QCString &clName,
+    DString trCompoundReference(const DString &clName,
                                  ClassDef::CompoundType compType,
                                  bool isTemplate) override
     {
-      QCString result;
+      DString result;
       if (isTemplate)
       {
         result="Шаблон ";
@@ -574,44 +574,44 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
     }
 
     /*! used as the title of the HTML page of a file */
-    QCString trFileReference(const QCString &fileName) override
+    DString trFileReference(const DString &fileName) override
     {
-      return QCString("Файл ")+fileName;
+      return DString("Файл ")+fileName;
     }
 
     /*! used as the title of the HTML page of a namespace */
-    QCString trNamespaceReference(const QCString &namespaceName) override
+    DString trNamespaceReference(const DString &namespaceName) override
     {
-      return QCString("Простір імен ")+namespaceName;
+      return DString("Простір імен ")+namespaceName;
     }
 
-    QCString trPublicMembers() override
+    DString trPublicMembers() override
     { return "Загальнодоступні елементи"; }
-    QCString trPublicSlots() override
+    DString trPublicSlots() override
     { return "Загальнодоступні слоти"; }
-    QCString trSignals() override
+    DString trSignals() override
     { return "Сигнали"; }
-    QCString trStaticPublicMembers() override
+    DString trStaticPublicMembers() override
     { return "Загальнодоступні статичні елементи"; }
-    QCString trProtectedMembers() override
+    DString trProtectedMembers() override
     { return "Захищені елементи"; }
-    QCString trProtectedSlots() override
+    DString trProtectedSlots() override
     { return "Захищені слоти"; }
-    QCString trStaticProtectedMembers() override
+    DString trStaticProtectedMembers() override
     { return "Захищені статичні елементи"; }
-    QCString trPrivateMembers() override
+    DString trPrivateMembers() override
     { return "Приватні елементи"; }
-    QCString trPrivateSlots() override
+    DString trPrivateSlots() override
     { return "Приватні слоти"; }
-    QCString trStaticPrivateMembers() override
+    DString trStaticPrivateMembers() override
     { return "Приватні статичні елементи"; }
 
     /*! this function is used to produce a comma-separated list of items.
      *  use generateMarker(i) to indicate where item i should be put.
      */
-    QCString trWriteList(int numEntries) override
+    DString trWriteList(int numEntries) override
     {
-      QCString result;
+      DString result;
       // the inherits list contain `numEntries' classes
       for (int i=0;i<numEntries;i++)
       {
@@ -633,7 +633,7 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
     /*! used in class documentation to produce a list of base classes,
      *  if class diagrams are disabled.
      */
-    QCString trInheritsList(int numEntries) override
+    DString trInheritsList(int numEntries) override
     {
       return "Успадковує клас "+trWriteList(numEntries)+".";
     }
@@ -641,7 +641,7 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
     /*! used in class documentation to produce a list of super classes,
      *  if class diagrams are disabled.
      */
-    QCString trInheritedByList(int numEntries) override
+    DString trInheritedByList(int numEntries) override
     {
       return "Успадковано класами "+trWriteList(numEntries)+".";
     }
@@ -649,7 +649,7 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
     /*! used in member documentation blocks to produce a list of
      *  members that are hidden by this one.
      */
-    QCString trReimplementedFromList(int numEntries) override
+    DString trReimplementedFromList(int numEntries) override
     {
       return "Переозначення з "+trWriteList(numEntries)+".";
     }
@@ -657,19 +657,19 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
     /*! used in member documentation blocks to produce a list of
      *  all member that overwrite the implementation of this member.
      */
-    QCString trReimplementedInList(int numEntries) override
+    DString trReimplementedInList(int numEntries) override
     {
       return "Переозначається в "+trWriteList(numEntries)+".";
     }
 
     /*! This is put above each page as a link to all members of namespaces. */
-    QCString trNamespaceMembers() override
+    DString trNamespaceMembers() override
     { return "Елементи простору імен"; }
 
     /*! This is an introduction to the page with all namespace members */
-    QCString trNamespaceMemberDescription(bool extractAll) override
+    DString trNamespaceMemberDescription(bool extractAll) override
     {
-      QCString result="Повний список ";
+      DString result="Повний список ";
       if (!extractAll) result+="документованих ";
       result+="елеметів простору імен з посиланням ";
       if (extractAll)
@@ -682,13 +682,13 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
     /*! This is used in LaTeX as the title of the chapter with the
      *  index of all namespaces.
      */
-    QCString trNamespaceIndex() override
+    DString trNamespaceIndex() override
     { return "Алфавітний покажчик простору імен"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all namespaces.
      */
-    QCString trNamespaceDocumentation() override
+    DString trNamespaceDocumentation() override
     { return "Опис простору імен"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -698,7 +698,7 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
     /*! This is used in the documentation before the list of all
      *  namespaces in a file.
      */
-    QCString trNamespaces() override
+    DString trNamespaces() override
     { return  "Простори імен" ; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -708,11 +708,11 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
     /*! This is put at the bottom of a class documentation page and is
      *  followed by a list of files that were used to generate the page.
      */
-    QCString trGeneratedFromFiles(ClassDef::CompoundType compType,
+    DString trGeneratedFromFiles(ClassDef::CompoundType compType,
         bool single) override
     { // here s is one of " Class", " Struct" or " Union"
       // single is true implies a single file
-      QCString result="Документація  ";
+      DString result="Документація  ";
       switch(compType)
       {
         case ClassDef::Class:
@@ -749,29 +749,29 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
 //////////////////////////////////////////////////////////////////////////
 
     /*! This is used as the heading text for the retval command. */
-    QCString trReturnValues() override
+    DString trReturnValues() override
     { return "Значення, що повертаються"; }
 
     /*! This is in the (quick) index as a link to the main page (index.html)
      */
-    QCString trMainPage() override
+    DString trMainPage() override
     { return "Титульна сторінка"; }
 
     /*! This is used in references to page that are put in the LaTeX
      *  documentation. It should be an abbreviation of the word page.
      */
-    QCString trPageAbbreviation() override
+    DString trPageAbbreviation() override
     { return "стор."; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-991106
 //////////////////////////////////////////////////////////////////////////
 
-    QCString trDefinedAtLineInSourceFile() override
+    DString trDefinedAtLineInSourceFile() override
     {
       return "Див. визначення в файлі @1, рядок @0";
     }
-    QCString trDefinedInSourceFile() override
+    DString trDefinedInSourceFile() override
     {
       return "Див. визначення в файлі @0";
     }
@@ -780,7 +780,7 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
 // new since 0.49-991205
 //////////////////////////////////////////////////////////////////////////
 
-    QCString trDeprecated() override
+    DString trDeprecated() override
     {
       return "Не рекомендовано";
     }
@@ -790,68 +790,68 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
 //////////////////////////////////////////////////////////////////////////
 
     /*! this text is put before a collaboration diagram */
-    QCString trCollaborationDiagram(const QCString &clName) override
+    DString trCollaborationDiagram(const DString &clName) override
     {
       return "Діаграма зв'язків класу "+clName+":";
     }
     /*! this text is put before an include dependency graph */
-    QCString trInclDepGraph(const QCString &fName) override
+    DString trInclDepGraph(const DString &fName) override
     {
-      return QCString("Діаграма включених заголовочних файлів для ")+fName+":";
+      return DString("Діаграма включених заголовочних файлів для ")+fName+":";
     }
     /*! header that is put before the list of constructor/destructors. */
-    QCString trConstructorDocumentation() override
+    DString trConstructorDocumentation() override
     {
       return "Конструктор(и)";
     }
     /*! Used in the file documentation to point to the corresponding sources. */
-    QCString trGotoSourceCode() override
+    DString trGotoSourceCode() override
     {
       return "Див. вихідні тексти.";
     }
     /*! Used in the file sources to point to the corresponding documentation. */
-    QCString trGotoDocumentation() override
+    DString trGotoDocumentation() override
     {
       return "Див. документацію.";
     }
     /*! Text for the \\pre command */
-    QCString trPrecondition() override
+    DString trPrecondition() override
     {
       return "Передумови";
     }
     /*! Text for the \\post command */
-    QCString trPostcondition() override
+    DString trPostcondition() override
     {
       return "Післяумови";
     }
     /*! Text for the \\invariant command */
-    QCString trInvariant() override
+    DString trInvariant() override
     {
       return "Інваріант";
     }
     /*! Text shown before a multi-line variable/enum initialization */
-    QCString trInitialValue() override
+    DString trInitialValue() override
     {
       return "Початкові значення";
     }
     /*! Text used the source code in the file index */
-    QCString trCode() override
+    DString trCode() override
     {
       return "Вихідні тексти";
     }
-    QCString trGraphicalHierarchy() override
+    DString trGraphicalHierarchy() override
     {
       return "Графічна ієрархія класів";
     }
-    QCString trGotoGraphicalHierarchy() override
+    DString trGotoGraphicalHierarchy() override
     {
       return "див. графічну ієрархію";
     }
-    QCString trGotoTextualHierarchy() override
+    DString trGotoTextualHierarchy() override
     {
       return "див. текстову ієрархію";
     }
-    QCString trPageIndex() override
+    DString trPageIndex() override
     {
       return "Алфавітний покажчик тематичних описів";
     }
@@ -860,15 +860,15 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
 // new since 1.1.0
 //////////////////////////////////////////////////////////////////////////
 
-    QCString trNote() override
+    DString trNote() override
     {
       return "Нотатки";
     }
-    QCString trPublicTypes() override
+    DString trPublicTypes() override
     {
       return "Загальнодоступні типи";
     }
-    QCString trPublicAttribs() override
+    DString trPublicAttribs() override
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
@@ -879,31 +879,31 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
         return  "Загальнодоступні атрибути" ;
       }
     }
-    QCString trStaticPublicAttribs() override
+    DString trStaticPublicAttribs() override
     {
       return "Статичні загальнодоступні данні";
     }
-    QCString trProtectedTypes() override
+    DString trProtectedTypes() override
     {
       return "Захищені типи";
     }
-    QCString trProtectedAttribs() override
+    DString trProtectedAttribs() override
     {
       return "Захищені дані";
     }
-    QCString trStaticProtectedAttribs() override
+    DString trStaticProtectedAttribs() override
     {
       return "Статичні захищені дані";
     }
-    QCString trPrivateTypes() override
+    DString trPrivateTypes() override
     {
       return "Приватні типи";
     }
-    QCString trPrivateAttribs() override
+    DString trPrivateAttribs() override
     {
       return "Приватні дані";
     }
-    QCString trStaticPrivateAttribs() override
+    DString trStaticPrivateAttribs() override
     {
       return "Приватні статичні дані";
     }
@@ -914,13 +914,13 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
 //////////////////////////////////////////////////////////////////////////
 
     /*! Used as a marker that is put before a todo item */
-    QCString trTodo() override
+    DString trTodo() override
     /*??*/
     {
       return "Необхідно зробити";
     }
     /*! Used as the header of the todo list */
-    QCString trTodoList() override
+    DString trTodoList() override
     /*??*/
     {
       return "Список завдань";
@@ -930,23 +930,23 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
 // new since 1.1.4
 //////////////////////////////////////////////////////////////////////////
 
-    QCString trReferencedBy() override
+    DString trReferencedBy() override
     {
       return "Вживається в";
     }
-    QCString trRemarks() override
+    DString trRemarks() override
     {
       return "Прим.";
     }
-    QCString trAttention() override
+    DString trAttention() override
     {
       return "Увага";
     }
-    QCString trInclByDepGraph() override
+    DString trInclByDepGraph() override
     {
       return "Граф файлів, які включають цей файл:";
     }
-    QCString trSince() override
+    DString trSince() override
     /*??*/
     {
       return "Починаючи з";
@@ -957,12 +957,12 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
 //////////////////////////////////////////////////////////////////////////
 
     /*! title of the graph legend page */
-    QCString trLegendTitle() override
+    DString trLegendTitle() override
     {
       return "Легенда";
     }
     /*! page explaining how the dot graph's should be interpreted */
-    QCString trLegendDocs() override
+    DString trLegendDocs() override
     {
       return
         "Позначення, що використовуються у графах.<p>\n"
@@ -1021,7 +1021,7 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
         "</ul>\n";
     }
     /*! text for the link to the legend page */
-    QCString trLegend() override
+    DString trLegend() override
     {
       return "див. легенду";
     }
@@ -1031,12 +1031,12 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
 //////////////////////////////////////////////////////////////////////////
 
     /*! Used as a marker that is put before a test item */
-    QCString trTest() override
+    DString trTest() override
     {
       return "Тест";
     }
     /*! Used as the header of the test list */
-    QCString trTestList() override
+    DString trTestList() override
     {
       return "Список тестів";
     }
@@ -1046,12 +1046,12 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
 //////////////////////////////////////////////////////////////////////////
 
     /*! Used as a section header for IDL properties */
-    QCString trProperties() override
+    DString trProperties() override
     {
       return "Властивості";
     }
     /*! Used as a section header for IDL property documentation */
-    QCString trPropertyDocumentation() override
+    DString trPropertyDocumentation() override
     {
       return "Повний список властивостей";
     }
@@ -1061,7 +1061,7 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
 //////////////////////////////////////////////////////////////////////////
 
     /*! Used for Java classes in the summary section of Java packages */
-    QCString trClasses() override
+    DString trClasses() override
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
@@ -1073,22 +1073,22 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
       }
     }
     /*! Used as the title of a Java package */
-    QCString trPackage(const QCString &name) override
+    DString trPackage(const DString &name) override
     {
-      return QCString("Пакет ")+name;
+      return DString("Пакет ")+name;
     }
     /*! The description of the package index page */
-    QCString trPackageListDescription() override
+    DString trPackageListDescription() override
     {
       return "Повний список документованих пакетів.";
     }
     /*! The link name in the Quick links header for each page */
-    QCString trPackages() override
+    DString trPackages() override
     {
       return "Пакети";
     }
     /*! Text shown before a multi-line define */
-    QCString trDefineValue() override
+    DString trDefineValue() override
     {
       return "Макровизначення:";
     }
@@ -1098,12 +1098,12 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
 //////////////////////////////////////////////////////////////////////////
 
     /*! Used as a marker that is put before a \\bug item */
-    QCString trBug() override
+    DString trBug() override
     {
       return "Дефект";
     }
     /*! Used as the header of the bug list */
-    QCString trBugList() override
+    DString trBugList() override
     {
       return "Список дефектів";
     }
@@ -1112,17 +1112,17 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
 // new since 1.2.6
 //////////////////////////////////////////////////////////////////////////
     /*! Used as ansicpg for RTF file */
-    QCString trRTFansicp() override
+    DString trRTFansicp() override
     {
       return "1251";
     }
     /*! Used as ansicpg for RTF fcharset */
-    QCString trRTFCharSet() override
+    DString trRTFCharSet() override
     {
       return "204";
     }
     /*! Used as header RTF general index */
-    QCString trRTFGeneralIndex() override
+    DString trRTFGeneralIndex() override
     {
       return "Предметний покажчик";
     }
@@ -1131,11 +1131,11 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    QCString trClass(bool first_capital, bool singular) override
+    DString trClass(bool first_capital, bool singular) override
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
-        QCString result((first_capital ? "Структури даних" : "структури даних"));
+        DString result((first_capital ? "Структури даних" : "структури даних"));
         return result;
       }
       else
@@ -1148,7 +1148,7 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    QCString trFile(bool first_capital, bool singular) override
+    DString trFile(bool first_capital, bool singular) override
     {
       return createNoun(first_capital, singular, "файл", "и");
     }
@@ -1157,7 +1157,7 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    QCString trNamespace(bool first_capital, bool singular) override
+    DString trNamespace(bool first_capital, bool singular) override
     {
       return createNoun(first_capital, singular, "прост", "ори імен", "ір імен");
     }
@@ -1166,7 +1166,7 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    QCString trGroup(bool first_capital, bool singular) override
+    DString trGroup(bool first_capital, bool singular) override
     {
       return createNoun(first_capital, singular, "груп", "и", "а");
     }
@@ -1175,7 +1175,7 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    QCString trPage(bool first_capital, bool singular) override
+    DString trPage(bool first_capital, bool singular) override
     {
       return createNoun(first_capital, singular, "сторінк", "и", "а");
     }
@@ -1184,7 +1184,7 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    QCString trMember(bool first_capital, bool singular) override
+    DString trMember(bool first_capital, bool singular) override
     {
       return createNoun(first_capital, singular, "елемент", "и");
     }
@@ -1193,7 +1193,7 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    QCString trGlobal(bool first_capital, bool singular) override
+    DString trGlobal(bool first_capital, bool singular) override
     {
       return createNoun(first_capital, singular, "глобальн", "і", "ий");
     }
@@ -1204,7 +1204,7 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
 
     /*! This text is generated when the \\author command is used and
      *  for the author section in man pages. */
-    QCString trAuthor(bool first_capital, bool singular) override
+    DString trAuthor(bool first_capital, bool singular) override
     {
       return createNoun(first_capital, singular, "автор", "и");
     }
@@ -1215,7 +1215,7 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
 
     /*! This text is put before the list of members referenced by a member
      */
-    QCString trReferences() override
+    DString trReferences() override
     {
       return "Використовує";
     }
@@ -1227,7 +1227,7 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
     /*! used in member documentation blocks to produce a list of
      *  members that are implemented by this one.
      */
-    QCString trImplementedFromList(int numEntries) override
+    DString trImplementedFromList(int numEntries) override
     {
       return "Реалізує " + trWriteList(numEntries) + ".";
     }
@@ -1235,7 +1235,7 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
     /*! used in member documentation blocks to produce a list of
      *  all members that implement this abstract member.
      */
-    QCString trImplementedInList(int numEntries) override
+    DString trImplementedInList(int numEntries) override
     {
       return "Реалізує в " + trWriteList(numEntries) + ".";
     }
@@ -1247,7 +1247,7 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
     /*! used in RTF documentation as a heading for the Table
      *  of Contents.
      */
-    QCString trRTFTableOfContents() override
+    DString trRTFTableOfContents() override
     {
       return "Зміст";
     }
@@ -1259,7 +1259,7 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
     /*! Used as the header of the list of item that have been
      *  flagged deprecated
      */
-    QCString trDeprecatedList() override
+    DString trDeprecatedList() override
     {
       return "Застарілі елементи";
     }
@@ -1271,13 +1271,13 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
     /*! Used as a header for declaration section of the events found in
      * a C# program
      */
-    QCString trEvents() override
+    DString trEvents() override
     {
       return "Події";
     }
 
     /*! Header used for the documentation section of a class' events. */
-    QCString trEventDocumentation() override
+    DString trEventDocumentation() override
     {
       return "Документація подій";
     }
@@ -1288,7 +1288,7 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
 
     /*! Used as a heading for a list of Java class types with package scope.
      */
-    QCString trPackageTypes() override
+    DString trPackageTypes() override
     {
       return "Типи пакетів";
     }
@@ -1296,11 +1296,11 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
     /*! Used as a heading for a list of Java class functions with package
      * scope.
      */
-    QCString trPackageFunctions() override
+    DString trPackageFunctions() override
     {
       return "Функції пакетів";
     }
-    QCString trPackageMembers() override
+    DString trPackageMembers() override
     {
       return "Елементи пакетів";
     }
@@ -1308,7 +1308,7 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
     /*! Used as a heading for a list of static Java class functions with
      *  package scope.
      */
-    QCString trStaticPackageFunctions() override
+    DString trStaticPackageFunctions() override
     {
       return "Статичні функцію пакетів";
     }
@@ -1316,7 +1316,7 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
     /*! Used as a heading for a list of Java class variables with package
      * scope.
      */
-    QCString trPackageAttribs() override
+    DString trPackageAttribs() override
     {
       return "Атрибути пакетів";
     }
@@ -1324,7 +1324,7 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
     /*! Used as a heading for a list of static Java class variables with
      * package scope.
      */
-    QCString trStaticPackageAttribs() override
+    DString trStaticPackageAttribs() override
     {
       return "Статичні атрибути пакетів";
     }
@@ -1336,12 +1336,12 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
     /*! Used in the quick index of a class/file/namespace member list page
      *  to link to the unfiltered list of all members.
      */
-    QCString trAll() override
+    DString trAll() override
     {
       return "Всі";
     }
     /*! Put in front of the call graph for a function. */
-    QCString trCallGraph() override
+    DString trCallGraph() override
     {
       return "Граф всіх викликів цієї функції:";
     }
@@ -1353,7 +1353,7 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
     /*! This string is used as the title for the page listing the search
      *  results.
      */
-    QCString trSearchResultsTitle() override
+    DString trSearchResultsTitle() override
     {
       return "Результати пошуку";
     }
@@ -1365,7 +1365,7 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
      *  value 2 represents 2 or more matches. HTML markup is allowed inside
      *  the returned string.
      */
-    QCString trSearchResults(int numDocuments) override
+    DString trSearchResults(int numDocuments) override
     {
       if (numDocuments==0)
       {
@@ -1384,7 +1384,7 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
     /*! This string is put before the list of matched words, for each search
      *  result. What follows is the list of words that matched the query.
      */
-    QCString trSearchMatches() override
+    DString trSearchMatches() override
     {
       return "Відповідність:";
     }
@@ -1395,7 +1395,7 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
 
     /*! This is used in HTML as the title of page with source code for file filename
      */
-    QCString trSourceFile(const QCString& filename) override
+    DString trSourceFile(const DString& filename) override
     {
       return "Текст програми "+filename;
     }
@@ -1407,31 +1407,31 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
     /*! This is used as the name of the chapter containing the directory
      *  hierarchy.
      */
-    QCString trDirIndex() override
+    DString trDirIndex() override
     { return "Дерево каталогів"; }
 
     /*! This is used as the name of the chapter containing the documentation
      *  of the directories.
      */
-    QCString trDirDocumentation() override
+    DString trDirDocumentation() override
     { return "Документація каталогів"; }
 
     /*! This is used as the title of the directory index and also in the
      *  Quick links of a HTML page, to link to the directory hierarchy.
      */
-    QCString trDirectories() override
+    DString trDirectories() override
     { return "Каталоги"; }
 
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.
      */
-    QCString trDirReference(const QCString &dirName) override
-    { QCString result="Довідник каталогу "; result+=dirName; return result; }
+    DString trDirReference(const DString &dirName) override
+    { DString result="Довідник каталогу "; result+=dirName; return result; }
 
     /*! This returns the word directory with or without starting capital
      *  (\a first_capital) and in singular or plural form (\a singular).
      */
-    QCString trDir(bool first_capital, bool singular) override
+    DString trDir(bool first_capital, bool singular) override
     {
       return createNoun(first_capital, singular, "каталог", "и");
     }
@@ -1443,7 +1443,7 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
     /*! This text is added to the documentation when the \\overload command
      *  is used for a overloaded function.
      */
-    QCString trOverloadText() override
+    DString trOverloadText() override
     {
        return "Це перезавантажуваний метод, "
               "ввкдкний для зручності. Він відрізняється від "
@@ -1455,7 +1455,7 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
 //////////////////////////////////////////////////////////////////////////
 
     /*! This is used to introduce a caller (or called-by) graph */
-    QCString trCallerGraph() override
+    DString trCallerGraph() override
     {
       return "Граф викликів для цієї функції:";
     }
@@ -1463,7 +1463,7 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for enumeration values
      */
-    QCString trEnumerationValueDocumentation() override
+    DString trEnumerationValueDocumentation() override
     { return "Документація переліку"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1471,25 +1471,25 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
 //////////////////////////////////////////////////////////////////////////
 
     /*! header that is put before the list of member subprograms (Fortran). */
-    QCString trMemberFunctionDocumentationFortran() override
+    DString trMemberFunctionDocumentationFortran() override
     { return "Документація функції/підпрограми"; }
 
     /*! This is put above each page as a link to the list of annotated data types (Fortran). */
-    QCString trCompoundListFortran() override
+    DString trCompoundListFortran() override
     { return "Список типів даних"; }
 
     /*! This is put above each page as a link to all members of compounds (Fortran). */
-    QCString trCompoundMembersFortran() override
+    DString trCompoundMembersFortran() override
     { return "Поля даних"; }
 
     /*! This is an introduction to the annotated compound list (Fortran). */
-    QCString trCompoundListDescriptionFortran() override
+    DString trCompoundListDescriptionFortran() override
     { return "Типи даних з коротким описом:"; }
 
     /*! This is an introduction to the page with all data types (Fortran). */
-    QCString trCompoundMembersDescriptionFortran(bool extractAll) override
+    DString trCompoundMembersDescriptionFortran(bool extractAll) override
     {
-      QCString result="Список усіх ";
+      DString result="Список усіх ";
       if (!extractAll)
       {
         result+="задокументованих ";
@@ -1510,52 +1510,52 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
     /*! This is used in LaTeX as the title of the chapter with the
      * annotated compound index (Fortran).
      */
-    QCString trCompoundIndexFortran() override
+    DString trCompoundIndexFortran() override
     { return "Список типів даних"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all data types (Fortran).
      */
-    QCString trTypeDocumentation() override
+    DString trTypeDocumentation() override
     { return "Документація типів даних"; }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of (global) subprograms (Fortran).
      */
-    QCString trSubprograms() override
+    DString trSubprograms() override
     { return "Функції/підпрограми"; }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for subprograms (Fortran)
      */
-    QCString trSubprogramDocumentation() override
+    DString trSubprogramDocumentation() override
     { return "Документація функцій/підпрограм"; }
 
     /*! This is used in the documentation of a file/namespace/group before
      *  the list of links to documented compounds (Fortran)
      */
-     QCString trDataTypes() override
+     DString trDataTypes() override
     { return "Типи даних"; }
 
     /*! used as the title of page containing all the index of all modules (Fortran). */
-    QCString trModulesList() override
+    DString trModulesList() override
     { return "Список модулів"; }
 
     /*! used as an introduction to the modules list (Fortran) */
-    QCString trModulesListDescription(bool extractAll) override
+    DString trModulesListDescription(bool extractAll) override
     {
-      QCString result="Список усіх ";
+      DString result="Список усіх ";
       if (!extractAll) result+="задокументованих ";
       result+="модулів з коротким описом:";
       return result;
     }
 
     /*! used as the title of the HTML page of a module/type (Fortran) */
-    QCString trCompoundReferenceFortran(const QCString &clName,
+    DString trCompoundReferenceFortran(const DString &clName,
                                     ClassDef::CompoundType compType,
                                     bool isTemplate) override
     {
-      QCString result=clName;
+      DString result=clName;
       if (isTemplate)
       {
 	switch(compType)
@@ -1588,21 +1588,21 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
       return result;
     }
     /*! used as the title of the HTML page of a module (Fortran) */
-    QCString trModuleReference(const QCString &namespaceName) override
+    DString trModuleReference(const DString &namespaceName) override
     {
-      QCString result=namespaceName;
+      DString result=namespaceName;
       result+=" Модуль";
       return result;
     }
 
     /*! This is put above each page as a link to all members of modules. (Fortran) */
-    QCString trModulesMembers() override
+    DString trModulesMembers() override
     { return "Елементи модуля"; }
 
     /*! This is an introduction to the page with all modules members (Fortran) */
-    QCString trModulesMemberDescription(bool extractAll) override
+    DString trModulesMemberDescription(bool extractAll) override
     {
-      QCString result="Список усіх ";
+      DString result="Список усіх ";
       if (!extractAll) result+="задокументованих ";
       result+="елементів модулів з посиланнями на ";
       if (extractAll)
@@ -1619,14 +1619,14 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
     /*! This is used in LaTeX as the title of the chapter with the
      *  index of all modules (Fortran).
      */
-    QCString trModulesIndex() override
+    DString trModulesIndex() override
     { return "Алфавітний покажчик модулів"; }
 
     /*! This is used for translation of the word that will possibly
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    QCString trModule(bool first_capital, bool singular) override
+    DString trModule(bool first_capital, bool singular) override
     {
       return createNoun(first_capital, singular, "модул", "і", "ь");
     }
@@ -1634,11 +1634,11 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
     /*! This is put at the bottom of a module documentation page and is
      *  followed by a list of files that were used to generate the page.
      */
-    QCString trGeneratedFromFilesFortran(ClassDef::CompoundType compType,
+    DString trGeneratedFromFilesFortran(ClassDef::CompoundType compType,
         bool single) override
     {
       // single is true implies a single file
-      QCString result="Документацію для ";
+      DString result="Документацію для ";
       switch(compType)
       {
         case ClassDef::Class:      result+="цього модуля"; break;
@@ -1659,7 +1659,7 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    QCString trType(bool first_capital, bool singular) override
+    DString trType(bool first_capital, bool singular) override
     {
       return createNoun(first_capital, singular, "тип", "и");
     }
@@ -1668,13 +1668,13 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    QCString trSubprogram(bool first_capital, bool singular) override
+    DString trSubprogram(bool first_capital, bool singular) override
     {
       return createNoun(first_capital, singular, "підпрограм", "и", "а");
     }
 
     /*! C# Type Constraint list */
-    QCString trTypeConstraints() override
+    DString trTypeConstraints() override
     {
       return "Обмеження типу";
     }
@@ -1684,31 +1684,31 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
 //////////////////////////////////////////////////////////////////////////
 
     /*! directory relation for \a name */
-    QCString trDirRelation(const QCString &name) override
+    DString trDirRelation(const DString &name) override
     {
       return "Зв'язок з "+name;
     }
 
     /*! Loading message shown when loading search results */
-    QCString trLoading() override
+    DString trLoading() override
     {
       return "Завантаження...";
     }
 
     /*! Label used for search results in the global namespace */
-    QCString trGlobalNamespace() override
+    DString trGlobalNamespace() override
     {
       return "Глобальний простір імен";
     }
 
     /*! Message shown while searching */
-    QCString trSearching() override
+    DString trSearching() override
     {
       return "Пошук...";
     }
 
     /*! Text shown when no search results are found */
-    QCString trNoMatches() override
+    DString trNoMatches() override
     {
       return "Нічого не знайдено";
     }
@@ -1721,7 +1721,7 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
      *  table is shown. The heading for the first column mentions the
      *  source file that has a relation to another file.
      */
-    QCString trFileIn(const QCString &name) override
+    DString trFileIn(const DString &name) override
     {
       return "Файл у "+name;
     }
@@ -1730,7 +1730,7 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
      *  table is shown. The heading for the second column mentions the
      *  destination file that is included.
      */
-    QCString trIncludesFileIn(const QCString &name) override
+    DString trIncludesFileIn(const DString &name) override
     {
       return "Включає файли в "+name;
     }
@@ -1745,13 +1745,13 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
      *  @param seconds Seconds within the minute: 0..59
      *  @param includeTime Include time in the result string?
      */
-    QCString trDateTime(int year,int month,int day,int dayOfWeek,
+    DString trDateTime(int year,int month,int day,int dayOfWeek,
                                 int hour,int minutes,int seconds,
                                 DateTimeType includeTime) override
     {
       static const char *days[]   = { "Понеділок","Вівторок","Середа","Четвер","П'ятниця","Субота","Неділя" };
       static const char *months[] = { "січня","лютого","березня","квітня","травня","червня","липня","серпня","вересня","жотня","листопада","грудня" };
-      QCString sdate;
+      DString sdate;
       if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Date)
       {
         sdate.sprintf("%s, %d %s %d",days[dayOfWeek-1],day,months[month-1],year);
@@ -1759,27 +1759,27 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
       if (includeTime == DateTimeType::DateTime) sdate += " ";
       if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Time)
       {
-        QCString stime;
+        DString stime;
         stime.sprintf("%.2d:%.2d:%.2d",hour,minutes,seconds);
         sdate+=stime;
       }
       return sdate;
     }
-    QCString trDayOfWeek(int dayOfWeek, bool, bool full) override
+    DString trDayOfWeek(int dayOfWeek, bool, bool full) override
     {
       static const char *days_short[]   = { "Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Нд" };
       static const char *days_full[]    = { "понеділок", "вівторок", "середа", "четвер", "п'ятниця", "субота", "неділя" };
-      QCString text  = full? days_full[dayOfWeek-1] : days_short[dayOfWeek-1];
+      DString text  = full? days_full[dayOfWeek-1] : days_short[dayOfWeek-1];
       return text;
     }
-    QCString trMonth(int month, bool, bool full) override
+    DString trMonth(int month, bool, bool full) override
     {
       static const char *months_short[] = { "Січ", "Лют", "Бер", "Кві", "Тра", "Чер", "Лип", "Сер", "Вер", "Жов", "Лис", "Гру" };
       static const char *months_full[]  = { "січень", "лютий", "березень", "квітень", "травень", "червень", "липень", "серпень", "вересень", "жовтень", "листопад", "грудень" };
-      QCString text  = full? months_full[month-1] : months_short[month-1];
+      DString text  = full? months_full[month-1] : months_short[month-1];
       return text;
     }
-    QCString trDayPeriod(bool period) override
+    DString trDayPeriod(bool period) override
     {
       static const char *dayPeriod[] = { "дп", "пп" };
       return dayPeriod[period?1:0];
@@ -1790,53 +1790,53 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
 //////////////////////////////////////////////////////////////////////////
 
     /*! Header for the page with bibliographic citations */
-    QCString trCiteReferences() override
+    DString trCiteReferences() override
     { return "Бібліографічні посилання"; }
 
     /*! Text for copyright paragraph */
-    QCString trCopyright() override
+    DString trCopyright() override
     { return "Копірайт"; }
 
     /*! Header for the graph showing the directory dependencies */
-    QCString trDirDepGraph(const QCString &name) override
-    { return QCString("Граф залежностей каталогу для ")+name+":"; }
+    DString trDirDepGraph(const DString &name) override
+    { return DString("Граф залежностей каталогу для ")+name+":"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 1.8.0
 //////////////////////////////////////////////////////////////////////////
 
     /*! Detail level selector shown for hierarchical indices */
-    QCString trDetailLevel() override
+    DString trDetailLevel() override
     { return "рівень елемента"; }
 
     /*! Section header for list of template parameters */
-    QCString trTemplateParameters() override
+    DString trTemplateParameters() override
     { return "Параметри шаблона"; }
 
     /*! Used in dot graph when UML_LOOK is enabled and there are many fields */
-    QCString trAndMore(const QCString &number) override
+    DString trAndMore(const DString &number) override
     { return "і ще  "+number+"..."; }
 
     /*! Used file list for a Java enum */
-    QCString trEnumGeneratedFromFiles(bool single) override
-    { QCString result = "Документацію для цього переліку булозгенеровано з ";
+    DString trEnumGeneratedFromFiles(bool single) override
+    { DString result = "Документацію для цього переліку булозгенеровано з ";
     	    result += (single? "наступного файла": "наступних файлів");
       result+=":";
       return result;
     }
 
     /*! Header of a Java enum page (Java enums are represented as classes). */
-    QCString trEnumReference(const QCString &name) override
+    DString trEnumReference(const DString &name) override
     { return name+" Перелік"; }
 
     /*! Used for a section containing inherited members */
-    QCString trInheritedFrom(const QCString &members,const QCString &what) override
+    DString trInheritedFrom(const DString &members,const DString &what) override
     { return members+" успадковано з "+what; }
 
     /*! Header of the sections with inherited members specific for the
      *  base class(es)
      */
-    QCString trAdditionalInheritedMembers() override
+    DString trAdditionalInheritedMembers() override
     { return "Додаткові успадковані елементи"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1847,9 +1847,9 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
      *  navigation tree in the HTML output when GENERATE_TREEVIEW is
      *  enabled. This tooltip explains the meaning of the button.
      */
-    QCString trPanelSynchronisationTooltip(bool enable) override
+    DString trPanelSynchronisationTooltip(bool enable) override
     {
-      QCString opt = enable ? "дозволити" : "заборонити";
+      DString opt = enable ? "дозволити" : "заборонити";
       return "клацніть мишкою, щоб "+opt+" синхронізацію панелі";
     }
 
@@ -1857,7 +1857,7 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
      *  a category. Note that the @1 marker is required and is replaced
      *  by a link.
      */
-    QCString trProvidedByCategory() override
+    DString trProvidedByCategory() override
     {
       return "Забезпечено категорією @0.";
     }
@@ -1866,7 +1866,7 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
      *  Note that the @1 marker is required and is replaced by a link to
      *  the class method.
      */
-    QCString trExtendsClass() override
+    DString trExtendsClass() override
     {
       return "Розширює клас @0.";
     }
@@ -1874,7 +1874,7 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
     /*! Used as the header of a list of class methods in Objective-C.
      *  These are similar to static public member functions in C++.
      */
-    QCString trClassMethods() override
+    DString trClassMethods() override
     {
       return "Методи класу";
     }
@@ -1882,14 +1882,14 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
     /*! Used as the header of a list of instance methods in Objective-C.
      *  These are similar to public member functions in C++.
      */
-    QCString trInstanceMethods() override
+    DString trInstanceMethods() override
     {
       return "Методи об'єкта";
     }
 
     /*! Used as the header of the member functions of an Objective-C class.
      */
-    QCString trMethodDocumentation() override
+    DString trMethodDocumentation() override
     {
       return "Документація метода";
     }

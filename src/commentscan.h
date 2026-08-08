@@ -96,8 +96,8 @@ class CommentScanner
      */
     bool parseCommentBlock(OutlineParserInterface *parser,
                            Entry *curEntry,
-                           const QCString &comment,
-                           const QCString &fileName,
+                           const DString &comment,
+                           const DString &fileName,
                            int  &lineNr,
                            bool isBrief,
                            bool isJavadocStyle,
@@ -109,14 +109,14 @@ class CommentScanner
                            GuardedSectionStack *guards
                           );
     void initGroupInfo(Entry *entry);
-    void enterFile(const QCString &fileName,int lineNr);
-    void leaveFile(const QCString &fileName,int lineNr);
-    void enterCompound(const QCString &fileName,int line,const QCString &name);
-    void leaveCompound(const QCString &fileName,int line,const QCString &name);
-    void open(Entry *e,const QCString &fileName,int line,bool implicit=false);
-    void close(Entry *e,const QCString &fileName,int line,bool foundInline,bool implicit=false);
-    static bool isCommand(const QCString &cmdName);
-    void addDeprecatedDocs(Entry *current,const QCString &fileName,int line,OutlineParserInterface *parser);
+    void enterFile(const DString &fileName,int lineNr);
+    void leaveFile(const DString &fileName,int lineNr);
+    void enterCompound(const DString &fileName,int line,const DString &name);
+    void leaveCompound(const DString &fileName,int line,const DString &name);
+    void open(Entry *e,const DString &fileName,int line,bool implicit=false);
+    void close(Entry *e,const DString &fileName,int line,bool foundInline,bool implicit=false);
+    static bool isCommand(const DString &cmdName);
+    void addDeprecatedDocs(Entry *current,const DString &fileName,int line,OutlineParserInterface *parser);
   private:
     struct Private;
     std::unique_ptr<Private> p;

@@ -18,8 +18,8 @@
 #include "outputlist.h"
 
 void FileCodeParser::parseCode(OutputCodeList &codeOutIntf,
-               const QCString &,    // scopeName
-               const QCString &     input,
+               const DString &,    // scopeName
+               const DString &     input,
                SrcLangExt,          // lang
                bool,                // stripCodeComments
                const CodeParserOptions &options
@@ -32,11 +32,11 @@ void FileCodeParser::parseCode(OutputCodeList &codeOutIntf,
   {
     size_t j=i;
     while (j<length && input[j]!='\n') j++;
-    QCString lineStr = input.mid(i,j-i);
+    DString lineStr = input.mid(i,j-i);
     codeOutIntf.startCodeLine(lineNr);
     if (options.fileDef() && options.showLineNumbers())
     {
-      codeOutIntf.writeLineNumber(QCString(),QCString(),QCString(),lineNr,!options.inlineFragment());
+      codeOutIntf.writeLineNumber(DString(),DString(),DString(),lineNr,!options.inlineFragment());
     }
     if (!lineStr.empty()) codeOutIntf.codify(lineStr.data());
     codeOutIntf.endCodeLine();

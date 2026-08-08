@@ -20,7 +20,7 @@
 #include <fmt/compile.h>
 
 #include "types.h"
-#include "qcstring.h"
+#include "dstring.h"
 
 enum class WarningType
 {
@@ -32,12 +32,12 @@ enum class WarningType
 };
 
 void msg_(fmt::string_view fmt, fmt::format_args args);
-void warn_(WarningType type, const QCString &file, int line, fmt::string_view fmt, fmt::format_args args);
+void warn_(WarningType type, const DString &file, int line, fmt::string_view fmt, fmt::format_args args);
 void warn_uncond_(fmt::string_view fmt, fmt::format_args args);
 void err_(fmt::string_view fmt, fmt::format_args args);
-void err_full_(const QCString &file, int line, fmt::string_view fmt, fmt::format_args args);
+void err_full_(const DString &file, int line, fmt::string_view fmt, fmt::format_args args);
 void term_(fmt::string_view fmt, fmt::format_args args);
-QCString warn_line(const QCString &file, int line);
+DString warn_line(const DString &file, int line);
 void initWarningFormat();
 void warn_flush();
 void finishWarnExit();
@@ -49,7 +49,7 @@ void err_fmt(fmt::format_string<Args...> fmt, Args&&... args)
 }
 
 template<typename ...Args>
-void err_full_fmt(const QCString &file, int line, fmt::format_string<Args...> fmt,Args&&... args)
+void err_full_fmt(const DString &file, int line, fmt::format_string<Args...> fmt,Args&&... args)
 {
   err_full_(file,line,fmt,fmt::make_format_args(args...));
 }
@@ -67,7 +67,7 @@ void msg_fmt(fmt::format_string<Args...> fmt, Args&&... args)
 }
 
 template<typename ...Args>
-void warn_fmt(WarningType type, const QCString &file, int line, fmt::format_string<Args...> fmt,Args&&... args)
+void warn_fmt(WarningType type, const DString &file, int line, fmt::format_string<Args...> fmt,Args&&... args)
 {
   warn_(type,file,line,fmt,fmt::make_format_args(args...));
 }
@@ -144,10 +144,10 @@ constexpr bool has_newline_at_end(const char (&str)[N])
 namespace fmt { template<typename T> struct formatter {}; }
 #endif
 
-//! adds support for formatting QCString
-template<> struct fmt::formatter<QCString> : formatter<std::string>
+//! adds support for formatting DString
+template<> struct fmt::formatter<DString> : formatter<std::string>
 {
-  auto format(const QCString &c, format_context& ctx) const {
+  auto format(const DString &c, format_context& ctx) const {
     return formatter<std::string>::format(c.str(), ctx);
   }
 };

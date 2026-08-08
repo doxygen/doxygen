@@ -25,7 +25,7 @@ void DotInclDepGraph::buildGraph(DotNode *n,const FileDef *fd,int distance)
   for (const auto &ii : includeFiles)
   {
     const FileDef *bfd = ii.fileDef;
-    QCString in = ii.includeName;
+    DString in = ii.includeName;
     //printf(">>>> in='%s' bfd=%p\n",qPrint(ii->includeName),bfd);
     bool doc=true,src=false;
     if (bfd)
@@ -36,7 +36,7 @@ void DotInclDepGraph::buildGraph(DotNode *n,const FileDef *fd,int distance)
     }
     if (doc || src || !Config_getBool(HIDE_UNDOC_RELATIONS))
     {
-      QCString url="";
+      DString url="";
       if (bfd) url=bfd->getOutputFileBase();
       if (!doc && src)
       {
@@ -52,11 +52,11 @@ void DotInclDepGraph::buildGraph(DotNode *n,const FileDef *fd,int distance)
       }
       else
       {
-        QCString tmp_url;
-        QCString tooltip;
+        DString tmp_url;
+        DString tooltip;
         if (bfd)
         {
-          tmp_url=doc || src ? bfd->getReference()+"$"+url : QCString();
+          tmp_url=doc || src ? bfd->getReference()+"$"+url : DString();
           tooltip = bfd->briefDescriptionAsTooltip();
         }
         DotNode *bn = new DotNode(this,
@@ -126,8 +126,8 @@ DotInclDepGraph::DotInclDepGraph(const FileDef *fd,bool inverse)
   ASSERT(fd!=nullptr);
   m_inclDepFileName   = fd->includeDependencyGraphFileName();
   m_inclByDepFileName = fd->includedByDependencyGraphFileName();
-  QCString tmp_url=fd->getReference()+"$"+fd->getOutputFileBase();
-  QCString tooltip = fd->briefDescriptionAsTooltip();
+  DString tmp_url=fd->getReference()+"$"+fd->getOutputFileBase();
+  DString tooltip = fd->briefDescriptionAsTooltip();
   m_startNode = new DotNode(this,
                             fd->docName(),
                             tooltip,
@@ -151,7 +151,7 @@ DotInclDepGraph::~DotInclDepGraph()
   DotNode::deleteNodes(m_startNode);
 }
 
-QCString DotInclDepGraph::getBaseName() const
+DString DotInclDepGraph::getBaseName() const
 {
   if (m_inverse)
   {
@@ -169,7 +169,7 @@ void DotInclDepGraph::computeTheGraph()
                m_inverse, m_startNode->label(), m_theGraph);
 }
 
-QCString DotInclDepGraph::getMapLabel() const
+DString DotInclDepGraph::getMapLabel() const
 {
   if (m_inverse)
   {
@@ -181,12 +181,12 @@ QCString DotInclDepGraph::getMapLabel() const
   }
 }
 
-QCString DotInclDepGraph::writeGraph(TextStream &out,
+DString DotInclDepGraph::writeGraph(TextStream &out,
                                      GraphOutputFormat graphFormat,
                                      EmbeddedOutputFormat textFormat,
-                                     const QCString &path,
-                                     const QCString &fileName,
-                                     const QCString &relPath,
+                                     const DString &path,
+                                     const DString &fileName,
+                                     const DString &relPath,
                                      bool generateImageMap,
                                      int graphId)
 {

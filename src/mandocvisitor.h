@@ -22,7 +22,7 @@
 #include <iostream>
 #include <array>
 
-#include "qcstring.h"
+#include "dstring.h"
 #include "docvisitor.h"
 #include "docnode.h"
 
@@ -33,7 +33,7 @@ class TextStream;
 class ManDocVisitor final : public DocVisitor
 {
   public:
-    ManDocVisitor(TextStream &t,OutputCodeList &ci,const QCString &langExt);
+    ManDocVisitor(TextStream &t,OutputCodeList &ci,const DString &langExt);
 
     //--------------------------------------
     // visitor functions for leaf nodes
@@ -118,7 +118,7 @@ class ManDocVisitor final : public DocVisitor
     // helper functions
     //--------------------------------------
 
-    void filter(const QCString &str, const bool retainNewline = false, const bool citeEntry = false);
+    void filter(const DString &str, const bool retainNewline = false, const bool citeEntry = false);
 
     //--------------------------------------
     // state variables
@@ -130,7 +130,7 @@ class ManDocVisitor final : public DocVisitor
     bool m_hide;
     bool m_firstCol;
     int  m_indent;
-    QCString m_langExt;
+    DString m_langExt;
 
     struct ManListItemInfo
     {

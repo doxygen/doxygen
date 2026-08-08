@@ -20,7 +20,7 @@
 #include <vector>
 
 #include "construct.h"
-#include "qcstring.h"
+#include "dstring.h"
 
 class Definition;
 class MemberDef;
@@ -36,19 +36,19 @@ enum class RequirementRefType { Satisfies, Verifies };
 class RequirementRef
 {
   public:
-    RequirementRef(RequirementRefType type,const QCString &reqId,const QCString &title,const QCString &file,int line)
+    RequirementRef(RequirementRefType type,const DString &reqId,const DString &title,const DString &file,int line)
       : m_type(type), m_reqId(reqId), m_title(title), m_file(file), m_line(line) {}
     RequirementRefType  type()  const { return m_type;  }
-    QCString            reqId() const { return m_reqId; }
-    QCString            title() const { return m_title; }
-    QCString            file()  const { return m_file;  }
+    DString            reqId() const { return m_reqId; }
+    DString            title() const { return m_title; }
+    DString            file()  const { return m_file;  }
     int                 line()  const { return m_line;  }
 
   private:
     RequirementRefType m_type;
-    QCString           m_reqId;
-    QCString           m_title;
-    QCString           m_file;
+    DString           m_reqId;
+    DString           m_title;
+    DString           m_file;
     int                m_line;
 };
 
@@ -62,14 +62,14 @@ class RequirementIntf
   public:
     using DefinitionVector = std::vector<const Definition *>;
     ABSTRACT_BASE_CLASS(RequirementIntf)
-    virtual QCString id()                const = 0;
-    virtual QCString file()              const = 0;
+    virtual DString id()                const = 0;
+    virtual DString file()              const = 0;
     virtual int      line()              const = 0;
-    virtual QCString title()             const = 0;
-    virtual QCString doc()               const = 0;
-    virtual QCString getTagFile()        const = 0;
-    virtual QCString getExtPage()        const = 0;
-    virtual QCString getOutputFileBase() const = 0;
+    virtual DString title()             const = 0;
+    virtual DString doc()               const = 0;
+    virtual DString getTagFile()        const = 0;
+    virtual DString getExtPage()        const = 0;
+    virtual DString getOutputFileBase() const = 0;
     virtual const DefinitionVector &satisfiedBy() const = 0;
     virtual const DefinitionVector &verifiedBy()  const = 0;
 };
@@ -84,7 +84,7 @@ class RequirementManager
     void generatePage();
     void writeTagFile(TextStream &tagFile);
     void addRequirementRefsForSymbol(const Definition *symbol);
-    const RequirementIntf *find(const QCString &reqId) const;
+    const RequirementIntf *find(const DString &reqId) const;
     void writeRef(OutputList &ol,const RequirementRef &ref);
     bool hasRequirements() const;
     RequirementIntfList requirements() const;

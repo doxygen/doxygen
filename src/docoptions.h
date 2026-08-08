@@ -17,7 +17,7 @@
 #define DOCOPTIONS_H
 
 #include "config.h"
-#include "qcstring.h"
+#include "dstring.h"
 
 struct DocOptions
 {
@@ -25,7 +25,7 @@ struct DocOptions
     // === getters for optional params
     bool indexWords()        const { return m_indexWords;      }
     bool isExample()         const { return m_isExample;       }
-    QCString exampleName()   const { return m_exampleName;     }
+    DString exampleName()   const { return m_exampleName;     }
     bool singleLine()        const { return m_singleLine;      }
     bool linkFromIndex()     const { return m_linkFromIndex;   }
     bool markdownSupport()   const { return m_markdownSupport; }
@@ -39,7 +39,7 @@ struct DocOptions
     { m_indexWords=b; return *this; }
 
     /// Associate this comment block with a given example
-    DocOptions &setExample(const QCString &name)
+    DocOptions &setExample(const DString &name)
     { m_isExample=!name.empty(); m_exampleName = name; return *this; }
 
     /// Select if this is for a single line, so without starting a new paragraph at the end.
@@ -68,7 +68,7 @@ struct DocOptions
     // optional params with defaults
     bool m_indexWords = false;
     bool m_isExample = false;
-    QCString m_exampleName;
+    DString m_exampleName;
     bool m_singleLine = false;
     bool m_linkFromIndex = false;
     bool m_markdownSupport = Config_getBool(MARKDOWN_SUPPORT);

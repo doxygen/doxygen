@@ -18,7 +18,7 @@
 
 #include <memory>
 
-#include "qcstring.h"
+#include "dstring.h"
 #include "construct.h"
 
 class OutputCodeList;
@@ -31,9 +31,9 @@ class CodeFragmentManager
   public:
     static CodeFragmentManager &instance();
     void parseCodeFragment(OutputCodeList &codeOutList,
-                   const QCString &fileName,  // -> input
-                   const QCString &blockId,
-                   const QCString &scopeName,
+                   const DString &fileName,  // -> input
+                   const DString &blockId,
+                   const DString &scopeName,
                    bool showLineNumbers,
                    bool trimLeft,
                    bool stripCodeComments

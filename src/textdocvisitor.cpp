@@ -74,8 +74,8 @@ void TextDocVisitor::operator()(const DocCite &cite)
 {
   if (!cite.file().empty())
   {
-    QCString anchor = cite.anchor();
-    QCString anchorPrefix = CitationManager::instance().anchorPrefix();
+    DString anchor = cite.anchor();
+    DString anchorPrefix = CitationManager::instance().anchorPrefix();
     anchor = anchor.mid(anchorPrefix.length()); // strip prefix
     m_t << anchor;
   }
@@ -85,7 +85,7 @@ void TextDocVisitor::operator()(const DocCite &cite)
   }
 }
 
-void TextDocVisitor::filter(const QCString &str)
+void TextDocVisitor::filter(const DString &str)
 {
   if (str.empty()) return;
   //printf("TextDocVisitor::filter(%s)\n",str);

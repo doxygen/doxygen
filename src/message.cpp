@@ -29,13 +29,13 @@
 #include "md5.h"
 
 // globals
-static QCString        g_warnFormat;
-static QCString        g_warnLineFormat;
+static DString        g_warnFormat;
+static DString        g_warnLineFormat;
 static const char *    g_warningStr = "warning: ";
 static const char *    g_errorStr = "error: ";
 static FILE *          g_warnFile = stderr;
 static WARN_AS_ERROR_t g_warnBehavior = WARN_AS_ERROR_t::NO;
-static QCString        g_warnlogFile;
+static DString        g_warnlogFile;
 static bool            g_warnlogTemp = false;
 static std::atomic_bool g_warnStat = false;
 static std::mutex      g_mutex;
@@ -43,7 +43,7 @@ static std::unordered_set<std::string> g_warnHash;
 
 //-----------------------------------------------------------------------------------------
 
-static bool checkWarnMessage(QCString result)
+static bool checkWarnMessage(DString result)
 {
   uint8_t md5_sig[16];
   char sigStr[33];
@@ -53,13 +53,13 @@ static bool checkWarnMessage(QCString result)
   return g_warnHash.insert(sigStr).second;
 }
 
-static void format_warn(const QCString &file,int line,const QCString &text)
+static void format_warn(const DString &file,int line,const DString &text)
 {
-  QCString fileSubst = file.empty() ? "<unknown>" : file;
-  QCString lineSubst; lineSubst.setNum(line);
-  QCString versionSubst;
+  DString fileSubst = file.empty() ? "<unknown>" : file;
+  DString lineSubst; lineSubst.setNum(line);
+  DString versionSubst;
   // substitute markers by actual values
-  QCString msgText =
+  DString msgText =
       substitute(
         substitute(
           substitute(
@@ -103,7 +103,7 @@ static void handle_warn_as_error()
   {
     {
       std::unique_lock<std::mutex> lock(g_mutex);
-      QCString msgText = " (warning treated as error, aborting now)\n";
+      DString msgText = " (warning treated as error, aborting now)\n";
       fwrite(msgText.data(),1,msgText.length(),g_warnFile);
       if (g_warnFile != stderr && !Config_getBool(QUIET))
       {
@@ -118,7 +118,7 @@ static void handle_warn_as_error()
 
 //-----------------------------------------------------------------------------------------
 
-static void do_warn(const QCString &file, int line, const char *prefix, fmt::string_view fmt, fmt::format_args args)
+static void do_warn(const DString &file, int line, const char *prefix, fmt::string_view fmt, fmt::format_args args)
 {
   format_warn(file,line,prefix+fmt::vformat(fmt,args));
   handle_warn_as_error();
@@ -141,7 +141,7 @@ void msg_(fmt::string_view fmt, fmt::format_args args)
 
 //-----------------------------------------------------------------------------------------
 
-void warn_(WarningType type, const QCString &file, int line, fmt::string_view fmt, fmt::format_args args)
+void warn_(WarningType type, const DString &file, int line, fmt::string_view fmt, fmt::format_args args)
 {
   bool enabled = false;
   switch (type)
@@ -182,7 +182,7 @@ void err_(fmt::string_view fmt, fmt::format_args args)
 
 //-----------------------------------------------------------------------------------------
 
-void err_full_(const QCString &file, int line, fmt::string_view fmt, fmt::format_args args)
+void err_full_(const DString &file, int line, fmt::string_view fmt, fmt::format_args args)
 {
   format_warn(file,line,g_errorStr+fmt::vformat(fmt,args));
 }
@@ -211,10 +211,10 @@ void term_(fmt::string_view fmt, fmt::format_args args)
 
 //-----------------------------------------------------------------------------------------
 
-QCString warn_line(const QCString &file,int line)
+DString warn_line(const DString &file,int line)
 {
-  QCString fileSubst = file.empty() ? "<unknown>" : file;
-  QCString lineSubst; lineSubst.setNum(line);
+  DString fileSubst = file.empty() ? "<unknown>" : file;
+  DString lineSubst; lineSubst.setNum(line);
   return  substitute(
             substitute(
               g_warnLineFormat,

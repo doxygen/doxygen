@@ -72,7 +72,7 @@ std::string AnchorGenerator::generate(const std::string &label)
       std::string charStr = getUTF8CharAt(label,pos);
       uint32_t cUnicode   = getUnicodeForUTF8CharAt(label,pos);
       char c = charStr[0];
-      if (qisspace(c) || c=='-')
+      if (disspace(c) || c=='-')
       {
         result+='-';
       }
@@ -134,5 +134,5 @@ int AnchorGenerator::reserve(const std::string &anchor)
 bool AnchorGenerator::looksGenerated(const std::string &anchor)
 {
   return Config_getEnum(MARKDOWN_ID_STYLE)==MARKDOWN_ID_STYLE_t::DOXYGEN &&
-         QCString(anchor).startsWith(prefix);
+         DString(anchor).startsWith(prefix);
 }

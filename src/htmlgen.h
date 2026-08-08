@@ -25,65 +25,65 @@ class OutputCodeList;
 class HtmlCodeGenerator final : public OutputCodeIntf
 {
   public:
-    HtmlCodeGenerator(TextStream *t,const QCString &relPath);
+    HtmlCodeGenerator(TextStream *t,const DString &relPath);
     HtmlCodeGenerator(TextStream *t);
 
     void setTextStream(TextStream *t) { m_t = t; }
-    void setFileName(const QCString fileName) { m_fileName = fileName; }
-    QCString fileName() { return m_fileName; }
+    void setFileName(const DString fileName) { m_fileName = fileName; }
+    DString fileName() { return m_fileName; }
 
     OutputType type() const override { return OutputType::Html; }
     std::unique_ptr<OutputCodeIntf> clone() override { return std::make_unique<HtmlCodeGenerator>(*this); }
-    void codify(const QCString &text) override;
+    void codify(const DString &text) override;
     void stripCodeComments(bool b) override;
     void startSpecialComment() override;
     void endSpecialComment() override;
     void setStripIndentAmount(size_t amount) override;
     void writeCodeLink(CodeSymbolType type,
-                       const QCString &ref,const QCString &file,
-                       const QCString &anchor,const QCString &name,
-                       const QCString &tooltip) override;
-    void writeTooltip(const QCString &id,
+                       const DString &ref,const DString &file,
+                       const DString &anchor,const DString &name,
+                       const DString &tooltip) override;
+    void writeTooltip(const DString &id,
                       const DocLinkInfo &docInfo,
-                      const QCString &decl,
-                      const QCString &desc,
+                      const DString &decl,
+                      const DString &desc,
                       const SourceLinkInfo &defInfo,
                       const SourceLinkInfo &declInfo
                      ) override;
-    void writeLineNumber(const QCString &,const QCString &,const QCString &,int, bool) override;
+    void writeLineNumber(const DString &,const DString &,const DString &,int, bool) override;
     void startCodeLine(int) override;
     void endCodeLine() override;
-    void startFontClass(const QCString &s) override;
+    void startFontClass(const DString &s) override;
     void endFontClass() override;
-    void writeCodeAnchor(const QCString &anchor) override;
-    void startCodeFragment(const QCString &style) override;
-    void endCodeFragment(const QCString &) override;
-    void startFold(int,const QCString &,const QCString &) override;
+    void writeCodeAnchor(const DString &anchor) override;
+    void startCodeFragment(const DString &style) override;
+    void endCodeFragment(const DString &) override;
+    void startFold(int,const DString &,const DString &) override;
     void endFold() override;
 
-    void setRelativePath(const QCString &path);
+    void setRelativePath(const DString &path);
   private:
-    void _writeCodeLink(const QCString &className,
-                        const QCString &ref,const QCString &file,
-                        const QCString &anchor,const QCString &name,
-                        const QCString &tooltip);
+    void _writeCodeLink(const DString &className,
+                        const DString &ref,const DString &file,
+                        const DString &anchor,const DString &name,
+                        const DString &tooltip);
     void _startOpenLine();
-    //void docify(const QCString &str);
+    //void docify(const DString &str);
     TextStream *m_t;
     size_t m_col = 0;
-    QCString m_relPath;
-    QCString m_fileName;
+    DString m_relPath;
+    DString m_fileName;
     bool m_lineOpen = false;
     bool m_stripCodeComments = false;
     bool m_hide = false;
     struct LineInfo
     {
       LineInfo() {}
-      LineInfo(const QCString &r,const QCString &f,const QCString &a,int l,bool wa)
+      LineInfo(const DString &r,const DString &f,const DString &a,int l,bool wa)
         : ref(r), fileName(f), anchor(a), line(l), writeAnchor(wa) {}
-      QCString ref;
-      QCString fileName;
-      QCString anchor;
+      DString ref;
+      DString fileName;
+      DString anchor;
       int line = -1;
       bool writeAnchor = false;
     };
@@ -104,16 +104,16 @@ class HtmlGenerator final : public OutputGenerator, public OutputGenIntf
 
     static void init();
     static void writeStyleSheetFile(TextStream &t);
-    static void writeHeaderFile(TextStream &t, const QCString &cssname);
+    static void writeHeaderFile(TextStream &t, const DString &cssname);
     static void writeFooterFile(TextStream &t);
     static void writeTabData();
-    static void writeSearchInfoStatic(TextStream &t,const QCString &relPath);
-    static void writeSearchData(const QCString &dir);
+    static void writeSearchInfoStatic(TextStream &t,const DString &relPath);
+    static void writeSearchData(const DString &dir);
     static void writeSearchPage();
     static void writeExternalSearchPage();
-    static QCString writeLogoAsString(const QCString &path);
-    static QCString writeSplitBarAsString(const QCString &name,const QCString &relpath,const QCString &allMembersFile);
-    static QCString getNavTreeCss();
+    static DString writeLogoAsString(const DString &path);
+    static DString writeSplitBarAsString(const DString &name,const DString &relpath,const DString &allMembersFile);
+    static DString getNavTreeCss();
     void clearBuffer();
 
     //---------------------------------------------------------------------
@@ -123,24 +123,24 @@ class HtmlGenerator final : public OutputGenerator, public OutputGenIntf
     void addCodeGen(OutputCodeList &list) override;
     void cleanup() override;
     void writeDoc(const IDocNodeAST *node,const Definition *,const MemberDef *,int id,int sectionLevel) override;
-    void startFile(const QCString &name,bool isSource,const QCString &manName,const QCString &title,int id, int hierarchyLevel) override;
+    void startFile(const DString &name,bool isSource,const DString &manName,const DString &title,int id, int hierarchyLevel) override;
     void endFile() override;
 
-    void writeFooter(const QCString &navPath) override;
+    void writeFooter(const DString &navPath) override;
     void writeSearchInfo() override;
 
     void startIndexSection(IndexSection) override {}
     void endIndexSection(IndexSection) override {}
-    void writePageLink(const QCString &,bool) override {}
+    void writePageLink(const DString &,bool) override {}
     void startProjectNumber() override;
     void endProjectNumber() override;
     void writeStyleInfo(int part) override;
-    void startTitleHead(const QCString &) override;
-    void endTitleHead(const QCString &,const QCString &) override;
+    void startTitleHead(const DString &) override;
+    void endTitleHead(const DString &,const DString &) override;
 
-    void startParagraph(const QCString &classDef) override;
+    void startParagraph(const DString &classDef) override;
     void endParagraph() override;
-    void writeString(const QCString &text) override;
+    void writeString(const DString &text) override;
     void startIndexListItem() override;
     void endIndexListItem() override;
     void startIndexList() override;
@@ -148,21 +148,21 @@ class HtmlGenerator final : public OutputGenerator, public OutputGenIntf
     void startIndexKey() override;
     void endIndexKey() override;
     void startIndexValue(bool) override;
-    void endIndexValue(const QCString &,bool) override;
+    void endIndexValue(const DString &,bool) override;
     void startItemList() override  { m_t << "<ul>\n"; }
     void endItemList() override    { m_t << "</ul>\n"; }
-    void startIndexItem(const QCString &ref,const QCString &file) override;
-    void endIndexItem(const QCString &ref,const QCString &file) override;
-    void docify(const QCString &text) override;
+    void startIndexItem(const DString &ref,const DString &file) override;
+    void endIndexItem(const DString &ref,const DString &file) override;
+    void docify(const DString &text) override;
 
-    void writeObjectLink(const QCString &ref,const QCString &file,
-                         const QCString &anchor,const QCString &name) override;
+    void writeObjectLink(const DString &ref,const DString &file,
+                         const DString &anchor,const DString &name) override;
 
-    void startTextLink(const QCString &file,const QCString &anchor) override;
+    void startTextLink(const DString &file,const DString &anchor) override;
     void endTextLink() override;
     void startTypewriter() override { m_t << "<code>"; }
     void endTypewriter() override   { m_t << "</code>"; }
-    void startGroupHeader(const QCString &,int) override;
+    void startGroupHeader(const DString &,int) override;
     void endGroupHeader(int) override;
     void startItemListItem() override { m_t << "<li>"; }
     void endItemListItem() override { m_t << "</li>\n"; }
@@ -171,7 +171,7 @@ class HtmlGenerator final : public OutputGenerator, public OutputGenIntf
     void endMemberSections() override;
     void startHeaderSection() override;
     void endHeaderSection() override;
-    void startMemberHeader(const QCString &, int) override;
+    void startMemberHeader(const DString &, int) override;
     void endMemberHeader() override;
     void startMemberSubtitle() override;
     void endMemberSubtitle() override;
@@ -183,14 +183,14 @@ class HtmlGenerator final : public OutputGenerator, public OutputGenIntf
     void endInlineHeader() override;
     void startAnonTypeScope(int) override {}
     void endAnonTypeScope(int) override {}
-    void startMemberItem(const QCString &anchor,MemberItemType,const QCString &inheritId) override;
+    void startMemberItem(const DString &anchor,MemberItemType,const DString &inheritId) override;
     void endMemberItem(MemberItemType) override;
     void startMemberTemplateParams() override;
-    void endMemberTemplateParams(const QCString &anchor,const QCString &inheritId) override;
+    void endMemberTemplateParams(const DString &anchor,const DString &inheritId) override;
     void startCompoundTemplateParams() override;
     void endCompoundTemplateParams() override;
 
-    void startMemberGroupHeader(const QCString &,bool) override;
+    void startMemberGroupHeader(const DString &,bool) override;
     void endMemberGroupHeader(bool) override;
     void startMemberGroupDocs() override;
     void endMemberGroupDocs() override;
@@ -199,16 +199,16 @@ class HtmlGenerator final : public OutputGenerator, public OutputGenIntf
 
     void insertMemberAlign(bool) override;
     void insertMemberAlignLeft(MemberItemType,bool) override;
-    void startMemberDescription(const QCString &anchor,const QCString &inheritId, bool typ) override;
+    void startMemberDescription(const DString &anchor,const DString &inheritId, bool typ) override;
     void endMemberDescription() override;
     void startMemberDeclaration() override {}
-    void endMemberDeclaration(const QCString &anchor,const QCString &inheritId) override;
-    void writeInheritedSectionTitle(const QCString &id,   const QCString &ref,
-                                    const QCString &file, const QCString &anchor,
-                                    const QCString &title,const QCString &name) override;
+    void endMemberDeclaration(const DString &anchor,const DString &inheritId) override;
+    void writeInheritedSectionTitle(const DString &id,   const DString &ref,
+                                    const DString &file, const DString &anchor,
+                                    const DString &title,const DString &name) override;
 
     void writeRuler() override    { m_t << "<hr/>"; }
-    void writeAnchor(const QCString &,const QCString &name)
+    void writeAnchor(const DString &,const DString &name)
                         override  { m_t << "<a name=\"" << name <<"\" id=\"" << name << "\"></a>"; }
     void startEmphasis() override { m_t << "<em>";  }
     void endEmphasis() override   { m_t << "</em>"; }
@@ -216,51 +216,51 @@ class HtmlGenerator final : public OutputGenerator, public OutputGenIntf
     void endBold() override       { m_t << "</b>"; }
     void startDescForItem() override { m_t << "<dd>"; }
     void endDescForItem() override   { m_t << "</dd>\n"; }
-    void lineBreak(const QCString &style) override;
+    void lineBreak(const DString &style) override;
     void writeChar(char c) override;
-    void startMemberDoc(const QCString &clName, const QCString &memName,
-                        const QCString &anchor, const QCString &title,
+    void startMemberDoc(const DString &clName, const DString &memName,
+                        const DString &anchor, const DString &title,
                         int memCount, int memTotal, bool showInline) override;
     void endMemberDoc(bool) override;
-    void startDoxyAnchor(const QCString &fName,const QCString &manName,
-                         const QCString &anchor,const QCString &name,
-                         const QCString &args) override;
-    void endDoxyAnchor(const QCString &fName,const QCString &anchor) override;
-    void addLabel(const QCString &,const QCString &) override;
+    void startDoxyAnchor(const DString &fName,const DString &manName,
+                         const DString &anchor,const DString &name,
+                         const DString &args) override;
+    void endDoxyAnchor(const DString &fName,const DString &anchor) override;
+    void addLabel(const DString &,const DString &) override;
     void writeLatexSpacing() override {}
-    void writeStartAnnoItem(const QCString &type,const QCString &file,
-                            const QCString &path,const QCString &name) override;
+    void writeStartAnnoItem(const DString &type,const DString &file,
+                            const DString &path,const DString &name) override;
     void startCenter() override        { m_t << "<center>\n"; }
     void endCenter() override          { m_t << "</center>\n"; }
     void startSmall() override         { m_t << "<small>\n"; }
     void endSmall() override           { m_t << "</small>\n"; }
     void startExamples() override;
     void endExamples() override;
-    void startSection(const QCString &,const QCString &,SectionType) override;
-    void endSection(const QCString &,SectionType) override;
-    void addIndexItem(const QCString &,const QCString &) override;
+    void startSection(const DString &,const DString &,SectionType) override;
+    void endSection(const DString &,SectionType) override;
+    void addIndexItem(const DString &,const DString &) override;
     void startIndent() override;
     void endIndent() override;
     void writeSynopsis() override {}
     void startClassDiagram() override;
-    void endClassDiagram(const ClassDiagram &,const QCString &,const QCString &) override;
+    void endClassDiagram(const ClassDiagram &,const DString &,const DString &) override;
     void startPageRef() override {}
-    void endPageRef(const QCString &,const QCString &) override {}
+    void endPageRef(const DString &,const DString &) override {}
     void startQuickIndices() override {}
     void endQuickIndices() override;
-    void writeSplitBar(const QCString &name,const QCString &allMembersFile) override;
-    void writeNavigationPath(const QCString &s) override;
+    void writeSplitBar(const DString &name,const DString &allMembersFile) override;
+    void writeNavigationPath(const DString &s) override;
     void writeLogo() override;
-    void writeQuickLinks(HighlightedItem hli,const QCString &file,bool extraTabs) override;
-    void writeSummaryLink(const QCString &file,const QCString &anchor,const QCString &title,bool first) override;
+    void writeQuickLinks(HighlightedItem hli,const DString &file,bool extraTabs) override;
+    void writeSummaryLink(const DString &file,const DString &anchor,const DString &title,bool first) override;
     void writePageOutline() override;
     void startContents() override;
     void endContents() override;
-    void startPageDoc(const QCString &pageTitle) override;
+    void startPageDoc(const DString &pageTitle) override;
     void endPageDoc() override;
     void writeNonBreakableSpace(int) override;
 
-    void startDescTable(const QCString &title,const bool hasInits) override;
+    void startDescTable(const DString &title,const bool hasInits) override;
     void endDescTable() override;
     void startDescTableRow() override;
     void endDescTableRow() override;
@@ -291,7 +291,7 @@ class HtmlGenerator final : public OutputGenerator, public OutputGenIntf
     void endMemberDocPrefixItem() override;
     void startMemberDocName(bool) override;
     void endMemberDocName() override;
-    void startParameterType(bool first,const QCString &key) override;
+    void startParameterType(bool first,const DString &key) override;
     void endParameterType() override;
     void startParameterName(bool) override;
     void endParameterName() override;
@@ -301,9 +301,9 @@ class HtmlGenerator final : public OutputGenerator, public OutputGenIntf
     void endParameterDefVal() override;
     void startParameterList(bool) override;
     void endParameterList() override;
-    void exceptionEntry(const QCString &,bool) override;
+    void exceptionEntry(const DString &,bool) override;
 
-    void startConstraintList(const QCString &) override;
+    void startConstraintList(const DString &) override;
     void startConstraintParam() override;
     void endConstraintParam() override;
     void startConstraintType() override;
@@ -322,7 +322,7 @@ class HtmlGenerator final : public OutputGenerator, public OutputGenIntf
     void endInlineMemberDoc() override;
 
     void startLabels() override;
-    void writeLabel(const QCString &l,bool isLast) override;
+    void writeLabel(const DString &l,bool isLast) override;
     void endLabels() override;
 
     void startLocalToc(int level) override;
@@ -330,7 +330,7 @@ class HtmlGenerator final : public OutputGenerator, public OutputGenIntf
     void startTocEntry(const SectionInfo *si) override;
     void endTocEntry(const SectionInfo *si) override;
 
-    void startPlainFile(const QCString &name) override { OutputGenerator::startPlainFile(name); }
+    void startPlainFile(const DString &name) override { OutputGenerator::startPlainFile(name); }
     void endPlainFile() override { OutputGenerator::endPlainFile(); }
 
     void startEmbeddedDoc(int) override;
@@ -339,12 +339,12 @@ class HtmlGenerator final : public OutputGenerator, public OutputGenIntf
   private:
     void startTitle() { m_t << "<div class=\"title\">"; }
     void endTitle() { m_t << "</div>"; }
-    static void writePageFooter(TextStream &t,const QCString &,const QCString &,const QCString &);
-    void docify_(const QCString &text,bool inHtmlComment);
+    static void writePageFooter(TextStream &t,const DString &,const DString &,const DString &);
+    void docify_(const DString &text,bool inHtmlComment);
 
-    QCString                        m_lastTitle;
-    QCString                        m_lastFile;
-    QCString                        m_relPath;
+    DString                        m_lastTitle;
+    DString                        m_lastFile;
+    DString                        m_relPath;
     int                             m_sectionCount = 0;
     bool                            m_emptySection = false;
     std::unique_ptr<OutputCodeList> m_codeList;
@@ -358,8 +358,8 @@ class HtmlGenerator final : public OutputGenerator, public OutputGenIntf
       int maxLevel = 0;
       BoolVector inLi;
       void writeIndent(TextStream &t) { for (int i=0;i<indent*2;i++) t << " "; }
-      void incIndent(TextStream &t,const QCString &text) { writeIndent(t); t << text << "\n"; indent++; }
-      void decIndent(TextStream &t,const QCString &text) { indent--; writeIndent(t); t << text << "\n"; }
+      void incIndent(TextStream &t,const DString &text) { writeIndent(t); t << text << "\n"; indent++; }
+      void decIndent(TextStream &t,const DString &text) { indent--; writeIndent(t); t << text << "\n"; }
     };
     TocState m_tocState;
 };

@@ -17,18 +17,18 @@
 #define DOTJOB_H
 
 #include <vector>
-#include "qcstring.h"
+#include "dstring.h"
 
 struct DotJob
 {
-  DotJob(const QCString &ap, const QCString &rdn, const QCString &f, const QCString &m,
-      const QCString &s, size_t sz, bool genMap = false)
+  DotJob(const DString &ap, const DString &rdn, const DString &f, const DString &m,
+      const DString &s, size_t sz, bool genMap = false)
     : absPath(ap), relDotName(rdn), format(f), md5Hash(m), srcFile(s), size(sz), generateImageMap(genMap) {}
-  QCString absPath;
-  QCString relDotName;
-  QCString format;
-  QCString md5Hash;
-  QCString srcFile;
+  DString absPath;
+  DString relDotName;
+  DString format;
+  DString md5Hash;
+  DString srcFile;
   size_t size;
   bool generateImageMap;
 };

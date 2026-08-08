@@ -53,11 +53,11 @@
 class MemberDefImpl final : public DefinitionMixin<MemberDefMutable>
 {
   public:
-    MemberDefImpl(const QCString &defFileName,int defLine,int defColumn,
-              const QCString &type,const QCString &name,const QCString &args,
-              const QCString &excp,Protection prot,Specifier virt,bool stat,
+    MemberDefImpl(const DString &defFileName,int defLine,int defColumn,
+              const DString &type,const DString &name,const DString &args,
+              const DString &excp,Protection prot,Specifier virt,bool stat,
               Relationship related,MemberType t,const ArgumentList &tal,
-              const ArgumentList &al,const QCString &metaData);
+              const ArgumentList &al,const DString &metaData);
    ~MemberDefImpl() override = default;
     NON_COPYABLE(MemberDefImpl)
 
@@ -67,22 +67,22 @@ class MemberDefImpl final : public DefinitionMixin<MemberDefMutable>
     CodeSymbolType codeSymbolType() const override;
     std::unique_ptr<MemberDef> deepCopy() const override;
     void moveTo(Definition *) override;
-    QCString getOutputFileBase() const override;
-    QCString getReference() const override;
-    QCString anchor() const override;
-    QCString declaration() const override;
-    QCString definition() const override;
-    QCString typeString() const override;
-    QCString argsString() const override;
-    QCString excpString() const override;
-    QCString bitfieldString() const override;
-    QCString extraTypeChars() const override;
-    const QCString &initializer() const override;
+    DString getOutputFileBase() const override;
+    DString getReference() const override;
+    DString anchor() const override;
+    DString declaration() const override;
+    DString definition() const override;
+    DString typeString() const override;
+    DString argsString() const override;
+    DString excpString() const override;
+    DString bitfieldString() const override;
+    DString extraTypeChars() const override;
+    const DString &initializer() const override;
     int initializerLines() const override;
     TypeSpecifier getMemberSpecifiers() const override;
     VhdlSpecifier getVhdlSpecifiers() const override;
     const MemberList *getSectionList(const Definition *) const override;
-    QCString displayDefinition() const override;
+    DString displayDefinition() const override;
     const ClassDef *getClassDef() const override;
           ClassDef *getClassDef() override;
     const FileDef  *getFileDef() const override;
@@ -92,18 +92,18 @@ class MemberDefImpl final : public DefinitionMixin<MemberDefMutable>
     const GroupDef *getGroupDef() const override;
           GroupDef *getGroupDef() override;
     const ModuleDef *getModuleDef() const override;
-    QCString getReadAccessor() const override;
-    QCString getWriteAccessor() const override;
+    DString getReadAccessor() const override;
+    DString getWriteAccessor() const override;
     Grouping::GroupPri_t getGroupPri() const override;
-    QCString getGroupFileName() const override;
+    DString getGroupFileName() const override;
     int getGroupStartLine() const override;
     bool getGroupHasDocs() const override;
-    QCString qualifiedName() const override;
-    QCString objCMethodName(bool localLink,bool showStatic) const override;
+    DString qualifiedName() const override;
+    DString objCMethodName(bool localLink,bool showStatic) const override;
     Protection protection() const override;
     Specifier virtualness(int count=0) const override;
     MemberType memberType() const override;
-    QCString memberTypeName() const override;
+    DString memberTypeName() const override;
     bool isSignal() const override;
     bool isSlot() const override;
     bool isVariable() const override;
@@ -209,8 +209,8 @@ class MemberDefImpl final : public DefinitionMixin<MemberDefMutable>
     bool isDocsForDefinition() const override;
     const MemberDef *getEnumScope() const override;
     const MemberVector &enumFieldList() const override;
-    void setEnumBaseType(const QCString &type) override;
-    QCString enumBaseType() const override;
+    void setEnumBaseType(const DString &type) override;
+    DString enumBaseType() const override;
     bool hasExamples() const override;
     const ExampleList &getExamples() const override;
     bool isPrototype() const override;
@@ -231,57 +231,57 @@ class MemberDefImpl final : public DefinitionMixin<MemberDefMutable>
     bool hasEnumValues() const override;
     bool hasInlineSource() const override;
     bool isDocTransferDone() const override;
-    QCString sourceRefName() const override;
+    DString sourceRefName() const override;
     const MemberDef *templateMaster() const override;
-    QCString getScopeString() const override;
+    DString getScopeString() const override;
     const ClassDef *getClassDefOfAnonymousType() const override;
     bool isTypedefValCached() const override;
     const ClassDef *getCachedTypedefVal() const override;
-    QCString getCachedTypedefTemplSpec() const override;
-    QCString getCachedResolvedTypedef() const override;
+    DString getCachedTypedefTemplSpec() const override;
+    DString getCachedResolvedTypedef() const override;
     MemberDef *memberDefinition() const override;
     MemberDef *memberDeclaration() const override;
     const MemberDef *inheritsDocsFrom() const override;
     const MemberDef *getGroupAlias() const override;
     ClassDef *category() const override;
     const MemberDef *categoryRelation() const override;
-    QCString displayName(bool=true) const override;
-    QCString getDeclType() const override;
+    DString displayName(bool=true) const override;
+    DString getDeclType() const override;
     StringVector getLabels(const Definition *container) const override;
     const ArgumentList &typeConstraints() const override;
-    QCString requiresClause() const override;
-    QCString documentation() const override;
-    QCString briefDescription(bool abbr=false) const override;
-    QCString fieldType() const override;
+    DString requiresClause() const override;
+    DString documentation() const override;
+    DString briefDescription(bool abbr=false) const override;
+    DString fieldType() const override;
     bool isReference() const override;
-    QCString getDeclFileName() const override;
+    DString getDeclFileName() const override;
     int getDeclLine() const override;
     int getDeclColumn() const override;
-    QCString anonymousMemberPrefix() const override;
+    DString anonymousMemberPrefix() const override;
     void setMemberType(MemberType t) override;
-    void setDefinition(const QCString &d) override;
+    void setDefinition(const DString &d) override;
     void setFileDef(FileDef *fd) override;
     void setAnchor() override;
     void setProtection(Protection p) override;
     void setMemberSpecifiers(TypeSpecifier s) override;
     void setVhdlSpecifiers(VhdlSpecifier s) override;
     void mergeMemberSpecifiers(TypeSpecifier s) override;
-    void setInitializer(const QCString &i) override;
-    void setBitfields(const QCString &s) override;
+    void setInitializer(const DString &i) override;
+    void setBitfields(const DString &s) override;
     void setMaxInitLines(int lines) override;
     void setMemberClass(ClassDef *cd) override;
     void setSectionList(const Definition *container,const MemberList *sl) override;
     void setGroupDef(GroupDef *gd,Grouping::GroupPri_t pri,
-                     const QCString &fileName,int startLine,bool hasDocs,
+                     const DString &fileName,int startLine,bool hasDocs,
                      MemberDef *member=nullptr) override;
-    void setReadAccessor(const QCString &r) override;
-    void setWriteAccessor(const QCString &w) override;
+    void setReadAccessor(const DString &r) override;
+    void setWriteAccessor(const DString &w) override;
     void setTemplateSpecialization(bool b) override;
     void makeRelated() override;
     void makeForeign() override;
     void setInheritsDocsFrom(const MemberDef *md) override;
     void setTagInfo(const TagInfo *i) override;
-    void setArgsString(const QCString &as) override;
+    void setArgsString(const DString &as) override;
     void setReimplements(MemberDef *md) override;
     void insertReimplementedBy(MemberDef *md) override;
     void setRelatedAlso(ClassDef *cd) override;
@@ -290,15 +290,15 @@ class MemberDefImpl final : public DefinitionMixin<MemberDefMutable>
     void setEnumClassScope(ClassDef *cd) override;
     void setDocumentedEnumValues(bool value) override;
     void setAnonymousEnumType(const MemberDef *md) override;
-    bool addExample(const QCString &anchor,const QCString &name,const QCString &file) override;
-    void setPrototype(bool p,const QCString &df,int line, int column) override;
-    void setExplicitExternal(bool b,const QCString &df,int line,int column) override;
-    void setDeclFile(const QCString &df,int line,int column) override;
+    bool addExample(const DString &anchor,const DString &name,const DString &file) override;
+    void setPrototype(bool p,const DString &df,int line, int column) override;
+    void setExplicitExternal(bool b,const DString &df,int line,int column) override;
+    void setDeclFile(const DString &df,int line,int column) override;
     void moveArgumentList(std::unique_ptr<ArgumentList> al) override;
     void moveDeclArgumentList(std::unique_ptr<ArgumentList> al) override;
     void setDefinitionTemplateParameterLists(const ArgumentLists &lists) override;
     void setTypeConstraints(const ArgumentList &al) override;
-    void setType(const QCString &t) override;
+    void setType(const DString &t) override;
     void setNamespace(NamespaceDef *nd) override;
     void setMemberGroup(MemberGroup *grp) override;
     void setMemberGroupId(int id) override;
@@ -318,7 +318,7 @@ class MemberDefImpl final : public DefinitionMixin<MemberDefMutable>
     void addRequirementReferences(const Definition *) override;
     void setDocsForDefinition(bool b) override;
     void setGroupAlias(const MemberDef *md) override;
-    void cacheTypedefVal(const ClassDef *val,const QCString &templSpec,const QCString &resolvedType) override;
+    void cacheTypedefVal(const ClassDef *val,const DString &templSpec,const DString &resolvedType) override;
     void invalidateTypedefValCache() override;
     void invalidateCachedArgumentTypes() override;
     void setMemberDefinition(MemberDef *md) override;
@@ -326,19 +326,19 @@ class MemberDefImpl final : public DefinitionMixin<MemberDefMutable>
     void copyArgumentNames(const MemberDef *bmd) override;
     void setCategory(ClassDef *) override;
     void setCategoryRelation(const MemberDef *) override;
-    void setDocumentation(const QCString &d,const QCString &docFile,int docLine,bool stripWhiteSpace=true) override;
-    void setBriefDescription(const QCString &b,const QCString &briefFile,int briefLine) override;
-    void setInbodyDocumentation(const QCString &d,const QCString &inbodyFile,int inbodyLine) override;
+    void setDocumentation(const DString &d,const DString &docFile,int docLine,bool stripWhiteSpace=true) override;
+    void setBriefDescription(const DString &b,const DString &briefFile,int briefLine) override;
+    void setInbodyDocumentation(const DString &d,const DString &inbodyFile,int inbodyLine) override;
     void setHidden(bool b) override;
     void setDocTransferDone() override;
     void setExplicitInherited(bool b) override;
-    void setRequiresClause(const QCString &req) override;
+    void setRequiresClause(const DString &req) override;
     void incrementFlowKeyWordCount() override;
     void writeDeclaration(OutputList &ol,
                    const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,const ModuleDef *mod,
-                   bool inGroup, int indentLevel,const ClassDef *inheritFrom=nullptr,const QCString &inheritId=QCString()) const override;
+                   bool inGroup, int indentLevel,const ClassDef *inheritFrom=nullptr,const DString &inheritId=DString()) const override;
     void writeDocumentation(const MemberList *ml,int memCount,int memTotal,OutputList &ol,
-                            const QCString &scopeName,const Definition *container,
+                            const DString &scopeName,const Definition *container,
                             bool inGroup,bool showEnumValues=false,bool
                             showInline=false) const override;
     void writeMemberDocSimple(OutputList &ol,const Definition *container) const override;
@@ -369,7 +369,7 @@ class MemberDefImpl final : public DefinitionMixin<MemberDefMutable>
     void _computeIsConstructor();
     void _computeIsDestructor();
     void _writeGroupInclude(OutputList &ol,bool inGroup) const;
-    void _writeMultiLineInitializer(OutputList &ol,const QCString &scopeName) const;
+    void _writeMultiLineInitializer(OutputList &ol,const DString &scopeName) const;
     void _writeCallGraph(OutputList &ol) const;
     void _writeCallerGraph(OutputList &ol) const;
     void _writeReimplements(OutputList &ol) const;
@@ -379,8 +379,8 @@ class MemberDefImpl final : public DefinitionMixin<MemberDefMutable>
     void _writeExamples(OutputList &ol) const;
     void _writeTypeConstraints(OutputList &ol) const;
     void _writeEnumValues(OutputList &ol,const Definition *container,
-                          const QCString &cfname,const QCString &ciname,
-                          const QCString &cname) const;
+                          const DString &cfname,const DString &ciname,
+                          const DString &cname) const;
     void _writeCategoryRelation(OutputList &ol) const;
     void _writeTagData(const DefType) const;
     void _writeTemplatePrefix(OutputList &ol, const Definition *def,
@@ -390,10 +390,10 @@ class MemberDefImpl final : public DefinitionMixin<MemberDefMutable>
     bool _isAnonymousBitField() const;
 
 
-    void init(Definition *def,const QCString &t,const QCString &a,const QCString &e,
+    void init(Definition *def,const DString &t,const DString &a,const DString &e,
               Protection p,Specifier v,bool s,Relationship r,
               MemberType mt,const ArgumentList &tal,
-              const ArgumentList &al,const QCString &meta
+              const ArgumentList &al,const DString &meta
              );
 
     uint8_t m_isLinkableCached;    // 0 = not cached, 1=false, 2=true
@@ -419,22 +419,22 @@ class MemberDefImpl final : public DefinitionMixin<MemberDefMutable>
 
     ExampleList m_examples;     // a dictionary of all examples for quick access
 
-    QCString m_type;            // return actual type
-    QCString m_args;            // function arguments/variable array specifiers
-    QCString m_def;             // member definition in code (fully qualified name)
-    QCString m_anc;             // HTML anchor name
+    DString m_type;            // return actual type
+    DString m_args;            // function arguments/variable array specifiers
+    DString m_def;             // member definition in code (fully qualified name)
+    DString m_anc;             // HTML anchor name
     Specifier m_virt = Specifier::Normal;  // normal/virtual/pure virtual
     Protection m_prot = Protection::Public; // protection type [Public/Protected/Private]
-    QCString m_decl;            // member declaration in class
+    DString m_decl;            // member declaration in class
 
-    QCString m_bitfields;       // struct member bitfields
-    QCString m_read;            // property read accessor
-    QCString m_write;           // property write accessor
-    QCString m_exception;       // exceptions that can be thrown
-    QCString m_initializer;     // initializer
-    QCString m_extraTypeChars;  // extra type info found after the argument list
-    QCString m_enumBaseType;    // base type of the enum (C++11)
-    QCString m_requiresClause;  // requires clause (C++20)
+    DString m_bitfields;       // struct member bitfields
+    DString m_read;            // property read accessor
+    DString m_write;           // property write accessor
+    DString m_exception;       // exceptions that can be thrown
+    DString m_initializer;     // initializer
+    DString m_extraTypeChars;  // extra type info found after the argument list
+    DString m_enumBaseType;    // base type of the enum (C++11)
+    DString m_requiresClause;  // requires clause (C++20)
     int m_initLines = 0;            // number of lines in the initializer
     bool m_docTransferDone = false;
 
@@ -456,7 +456,7 @@ class MemberDefImpl final : public DefinitionMixin<MemberDefMutable>
     ArgumentLists m_defTmpArgLists; // lists of template argument lists
                                          // (for template functions in nested template classes)
 
-    QCString m_metaData;        // Slice metadata.
+    DString m_metaData;        // Slice metadata.
 
     const ClassDef *m_anonymousType = nullptr; // if the member has an anonymous compound
                                    // as its type then this is computed by
@@ -469,20 +469,20 @@ class MemberDefImpl final : public DefinitionMixin<MemberDefMutable>
     MemberGroup *m_memberGroup = nullptr; // group's member definition
     GroupDef *m_group = nullptr;          // group in which this member is in
     Grouping::GroupPri_t m_grouppri = Grouping::GROUPING_AUTO_DEF; // priority of this definition
-    QCString m_groupFileName;   // file where this grouping was defined
+    DString m_groupFileName;   // file where this grouping was defined
     int m_groupStartLine = 0;       // line  "      "      "     "     "
     MemberDef *m_groupMember = nullptr;
 
     bool m_isTypedefValCached = false;
     const ClassDef *m_cachedTypedefValue = nullptr;
-    QCString m_cachedTypedefTemplSpec;
-    QCString m_cachedResolvedType;
+    DString m_cachedTypedefTemplSpec;
+    DString m_cachedResolvedType;
 
     // documentation inheritance
     const MemberDef *m_docProvider = nullptr;
 
     // to store the output file base from tag files
-    QCString m_explicitOutputFileBase;
+    DString m_explicitOutputFileBase;
     bool m_explicitInherited = false;
 
     // to store extra qualifiers
@@ -500,7 +500,7 @@ class MemberDefImpl final : public DefinitionMixin<MemberDefMutable>
     bool m_docEnumValues = false;       // is an enum with documented enum values.
 
     bool m_annScope = false;    // member is part of an anonymous scope
-    QCString m_anonymousPrefix;
+    DString m_anonymousPrefix;
     mutable bool m_hasDetailedDescriptionCached = false;
     mutable bool m_detailedDescriptionCachedValue = false;
                                       // const member.
@@ -518,18 +518,18 @@ class MemberDefImpl final : public DefinitionMixin<MemberDefMutable>
                                       // false => block is put before declaration.
     ClassDef *m_category = nullptr;
     const MemberDef *m_categoryRelation = nullptr;
-    QCString m_declFileName;
+    DString m_declFileName;
     int m_declLine = -1;
     int m_declColumn = -1;
     int m_numberOfFlowKW = 0;
     int m_redefineCount = 0;
 };
 
-std::unique_ptr<MemberDef> createMemberDef(const QCString &defFileName,int defLine,int defColumn,
-              const QCString &type,const QCString &name,const QCString &args,
-              const QCString &excp,Protection prot,Specifier virt,bool stat,
+std::unique_ptr<MemberDef> createMemberDef(const DString &defFileName,int defLine,int defColumn,
+              const DString &type,const DString &name,const DString &args,
+              const DString &excp,Protection prot,Specifier virt,bool stat,
               Relationship related,MemberType t,const ArgumentList &tal,
-              const ArgumentList &al,const QCString &metaData)
+              const ArgumentList &al,const DString &metaData)
 {
   return std::make_unique<MemberDefImpl>(defFileName,defLine,defColumn,type,name,args,excp,prot,virt,
                            stat,related,t,tal,al,metaData);
@@ -557,31 +557,31 @@ class MemberDefAliasImpl final : public DefinitionAliasMixin<MemberDef>
     }
     void moveTo(Definition *) override {}
 
-    const QCString &name() const override
+    const DString &name() const override
     { return getMdAlias()->name(); }
     CodeSymbolType codeSymbolType() const override
     { return getMdAlias()->codeSymbolType(); }
-    QCString getOutputFileBase() const override
+    DString getOutputFileBase() const override
     { return getMdAlias()->getOutputFileBase(); }
-    QCString getReference() const override
+    DString getReference() const override
     { return getMdAlias()->getReference(); }
-    QCString anchor() const override
+    DString anchor() const override
     { return getMdAlias()->anchor(); }
-    QCString declaration() const override
+    DString declaration() const override
     { return getMdAlias()->declaration(); }
-    QCString definition() const override
+    DString definition() const override
     { return getMdAlias()->definition(); }
-    QCString typeString() const override
+    DString typeString() const override
     { return getMdAlias()->typeString(); }
-    QCString argsString() const override
+    DString argsString() const override
     { return getMdAlias()->argsString(); }
-    QCString excpString() const override
+    DString excpString() const override
     { return getMdAlias()->excpString(); }
-    QCString bitfieldString() const override
+    DString bitfieldString() const override
     { return getMdAlias()->bitfieldString(); }
-    QCString extraTypeChars() const override
+    DString extraTypeChars() const override
     { return getMdAlias()->extraTypeChars(); }
-    const QCString &initializer() const override
+    const DString &initializer() const override
     { return getMdAlias()->initializer(); }
     int initializerLines() const override
     { return getMdAlias()->initializerLines(); }
@@ -591,7 +591,7 @@ class MemberDefAliasImpl final : public DefinitionAliasMixin<MemberDef>
     { return getMdAlias()->getVhdlSpecifiers(); }
     const MemberList *getSectionList(const Definition *container) const override
     { return getMdAlias()->getSectionList(container); }
-    QCString displayDefinition() const override
+    DString displayDefinition() const override
     { return getMdAlias()->displayDefinition(); }
 
     const ClassDef *getClassDef() const override
@@ -612,9 +612,9 @@ class MemberDefAliasImpl final : public DefinitionAliasMixin<MemberDef>
           NamespaceDef* getNamespaceDef() override
     { return getMdAlias()->getNamespaceDef(); }
 
-    QCString getReadAccessor() const override
+    DString getReadAccessor() const override
     { return getMdAlias()->getReadAccessor(); }
-    QCString getWriteAccessor() const override
+    DString getWriteAccessor() const override
     { return getMdAlias()->getWriteAccessor(); }
     const GroupDef *getGroupDef() const override
     { return getMdAlias()->getGroupDef(); }
@@ -622,15 +622,15 @@ class MemberDefAliasImpl final : public DefinitionAliasMixin<MemberDef>
     { return getMdAlias()->getGroupDef(); }
     Grouping::GroupPri_t getGroupPri() const override
     { return getMdAlias()->getGroupPri(); }
-    QCString getGroupFileName() const override
+    DString getGroupFileName() const override
     { return getMdAlias()->getGroupFileName(); }
     int getGroupStartLine() const override
     { return getMdAlias()->getGroupStartLine(); }
     bool getGroupHasDocs() const override
     { return getMdAlias()->getGroupHasDocs(); }
-    QCString qualifiedName() const override
+    DString qualifiedName() const override
     { return getMdAlias()->qualifiedName(); }
-    QCString objCMethodName(bool localLink,bool showStatic) const override
+    DString objCMethodName(bool localLink,bool showStatic) const override
     { return getMdAlias()->objCMethodName(localLink,showStatic); }
     Protection protection() const override
     { return getMdAlias()->protection(); }
@@ -638,7 +638,7 @@ class MemberDefAliasImpl final : public DefinitionAliasMixin<MemberDef>
     { return getMdAlias()->virtualness(); }
     MemberType memberType() const override
     { return getMdAlias()->memberType(); }
-    QCString memberTypeName() const override
+    DString memberTypeName() const override
     { return getMdAlias()->memberTypeName(); }
     bool isSignal() const override
     { return getMdAlias()->isSignal(); }
@@ -850,7 +850,7 @@ class MemberDefAliasImpl final : public DefinitionAliasMixin<MemberDef>
     { return getMdAlias()->getEnumScope(); }
     const MemberVector &enumFieldList() const override
     { return getMdAlias()->enumFieldList(); }
-    QCString enumBaseType() const override
+    DString enumBaseType() const override
     { return getMdAlias()->enumBaseType(); }
     bool hasExamples() const override
     { return getMdAlias()->hasExamples(); }
@@ -890,7 +890,7 @@ class MemberDefAliasImpl final : public DefinitionAliasMixin<MemberDef>
     { return getMdAlias()->hasInlineSource(); }
     bool isDocTransferDone() const override
     { return getMdAlias()->isDocTransferDone(); }
-    QCString sourceRefName() const override
+    DString sourceRefName() const override
     { return getMdAlias()->sourceRefName(); }
     bool hasEnumValues() const override
     { return getMdAlias()->hasEnumValues(); }
@@ -898,7 +898,7 @@ class MemberDefAliasImpl final : public DefinitionAliasMixin<MemberDef>
     { return getMdAlias()->getQualifiers(); }
     const MemberDef *templateMaster() const override
     { return getMdAlias()->templateMaster(); }
-    QCString getScopeString() const override
+    DString getScopeString() const override
     { return getMdAlias()->getScopeString(); }
     const ClassDef *getClassDefOfAnonymousType() const override
     { return getMdAlias()->getClassDefOfAnonymousType(); }
@@ -906,9 +906,9 @@ class MemberDefAliasImpl final : public DefinitionAliasMixin<MemberDef>
     { return getMdAlias()->isTypedefValCached(); }
     const ClassDef *getCachedTypedefVal() const override
     { return getMdAlias()->getCachedTypedefVal(); }
-    QCString getCachedTypedefTemplSpec() const override
+    DString getCachedTypedefTemplSpec() const override
     { return getMdAlias()->getCachedTypedefTemplSpec(); }
-    QCString getCachedResolvedTypedef() const override
+    DString getCachedResolvedTypedef() const override
     { return getMdAlias()->getCachedResolvedTypedef(); }
     MemberDef *memberDefinition() const override
     { return getMdAlias()->memberDefinition(); }
@@ -922,35 +922,35 @@ class MemberDefAliasImpl final : public DefinitionAliasMixin<MemberDef>
     { return getMdAlias()->category(); }
     const MemberDef *categoryRelation() const override
     { return getMdAlias()->categoryRelation(); }
-    QCString displayName(bool b=true) const override
+    DString displayName(bool b=true) const override
     { return getMdAlias()->displayName(b); }
-    QCString getDeclType() const override
+    DString getDeclType() const override
     { return getMdAlias()->getDeclType(); }
     StringVector getLabels(const Definition *container) const override
     { return getMdAlias()->getLabels(container); }
     const ArgumentList &typeConstraints() const override
     { return getMdAlias()->typeConstraints(); }
-    QCString documentation() const override
+    DString documentation() const override
     { return getMdAlias()->documentation(); }
-    QCString briefDescription(bool /* abbr=false */) const override
+    DString briefDescription(bool /* abbr=false */) const override
     { return getMdAlias()->briefDescription(); }
-    QCString fieldType() const override
+    DString fieldType() const override
     { return getMdAlias()->fieldType(); }
     bool isReference() const override
     { return getMdAlias()->isReference(); }
-    QCString getDeclFileName() const override
+    DString getDeclFileName() const override
     { return getMdAlias()->getDeclFileName(); }
     int getDeclLine() const override
     { return getMdAlias()->getDeclLine(); }
     int getDeclColumn() const override
     { return getMdAlias()->getDeclColumn(); }
-    QCString requiresClause() const override
+    DString requiresClause() const override
     { return getMdAlias()->requiresClause(); }
     bool visibleInIndex() const override
     { return getMdAlias()->visibleInIndex(); }
     int redefineCount() const override
     { return getMdAlias()->redefineCount(); }
-    QCString anonymousMemberPrefix() const override
+    DString anonymousMemberPrefix() const override
     { return getMdAlias()->anonymousMemberPrefix(); }
 
     void warnIfUndocumented() const override {}
@@ -963,7 +963,7 @@ class MemberDefAliasImpl final : public DefinitionAliasMixin<MemberDef>
 
     void writeDeclaration(OutputList &ol,
                    const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,const ModuleDef *mod,
-                   bool inGroup, int indentLevel, const ClassDef *inheritFrom=nullptr,const QCString &inheritId=QCString()) const override
+                   bool inGroup, int indentLevel, const ClassDef *inheritFrom=nullptr,const DString &inheritId=DString()) const override
     {
       getMdAlias()->writeDeclaration(ol,cd,nd,fd,gd,mod,inGroup,indentLevel,inheritFrom,inheritId);
     }
@@ -992,20 +992,20 @@ std::unique_ptr<MemberDef> createMemberDefAlias(const Definition *newScope,const
 
 //-----------------------------------------------------------------------------
 
-static QCString addTemplateNames(const QCString &s,const QCString &n,const QCString &t)
+static DString addTemplateNames(const DString &s,const DString &n,const DString &t)
 {
-  QCString result;
-  QCString clRealName=n;
+  DString result;
+  DString clRealName=n;
   size_t p=0,i=0;
-  if ((i=clRealName.find('<'))!=QCString::npos)
+  if ((i=clRealName.find('<'))!=DString::npos)
   {
     clRealName=clRealName.left(i); // strip template specialization
   }
-  if ((i=clRealName.rfind("::"))!=QCString::npos)
+  if ((i=clRealName.rfind("::"))!=DString::npos)
   {
     clRealName=clRealName.mid(i+2);
   }
-  while ((i=s.find(clRealName,p))!=QCString::npos)
+  while ((i=s.find(clRealName,p))!=DString::npos)
   {
     result+=s.mid(p,i-p);
     size_t j=clRealName.length()+i;
@@ -1084,13 +1084,13 @@ static bool writeDefArgumentList(OutputList &ol,const Definition *scope,const Me
   ol.startParameterList(!md->isObjCMethod());
   //printf("===> name=%s isDefine=%d\n",qPrint(md->name()),md->isDefine());
 
-  QCString cName;
+  DString cName;
   if (scope)
   {
     cName=scope->name();
     size_t il=cName.find('<');
     size_t ir=cName.rfind('>');
-    if (il!=QCString::npos && ir!=QCString::npos && ir>il)
+    if (il!=DString::npos && ir!=DString::npos && ir>il)
     {
       cName=cName.mid(il,ir-il+1);
       //printf("1. cName=%s\n",qPrint(cName));
@@ -1108,7 +1108,7 @@ static bool writeDefArgumentList(OutputList &ol,const Definition *scope,const Me
   }
   //printf("~~~ %s cName=%s\n",qPrint(md->name()),qPrint(cName));
 
-  QCString sep = getLanguageSpecificSeparator(md->getLanguage(),true);
+  DString sep = getLanguageSpecificSeparator(md->getLanguage(),true);
 
   LinkifyTextOptions options;
   options.setScope(scope).setFileScope(md->getBodyDef()).setSelf(md);
@@ -1121,7 +1121,7 @@ static bool writeDefArgumentList(OutputList &ol,const Definition *scope,const Me
     Argument a = *alIt;
     if (isDefine || first)
     {
-      ol.startParameterType(first,QCString());
+      ol.startParameterType(first,DString());
       paramTypeStarted=true;
       if (isDefine)
       {
@@ -1135,10 +1135,10 @@ static bool writeDefArgumentList(OutputList &ol,const Definition *scope,const Me
       ol.docify(a.attrib+" ");
     }
 
-    QCString atype = a.type;
+    DString atype = a.type;
     if (sep!="::") { atype=substitute(atype,"::",sep); }
 
-    size_t funcPtrPos=QCString::npos;
+    size_t funcPtrPos=DString::npos;
     {
       if (md->isObjCMethod()) { atype.prepend("("); atype.append(")"); }
       if (atype!="...")
@@ -1150,18 +1150,18 @@ static bool writeDefArgumentList(OutputList &ol,const Definition *scope,const Me
         // 1. split ...*)(... -> '*' + name + ')(...'
         // 2. split ...*[some thing])(... -> '*' + name + '[some thing])(...'
         size_t starPos = atype.find('*');                       // find pointer
-        if (starPos==QCString::npos) starPos = atype.find('&'); // can also be reference
+        if (starPos==DString::npos) starPos = atype.find('&'); // can also be reference
         funcPtrPos = atype.find(")(");
-        if (starPos!=QCString::npos && funcPtrPos!=QCString::npos && funcPtrPos>starPos)
+        if (starPos!=DString::npos && funcPtrPos!=DString::npos && funcPtrPos>starPos)
         {
           funcPtrPos=starPos+1;
         }
         else
         {
-          funcPtrPos=QCString::npos;
+          funcPtrPos=DString::npos;
         }
         linkifyText(TextGeneratorOLImpl(ol),
-                    funcPtrPos==QCString::npos ? atype : atype.left(funcPtrPos),
+                    funcPtrPos==DString::npos ? atype : atype.left(funcPtrPos),
                     options);
       }
     }
@@ -1190,14 +1190,14 @@ static bool writeDefArgumentList(OutputList &ol,const Definition *scope,const Me
     }
     if (!isDefine)
     {
-      if (funcPtrPos!=QCString::npos)
+      if (funcPtrPos!=DString::npos)
       {
         ol.writeNonBreakableSpace(1);
       }
       ol.endParameterName();
     }
     ol.startParameterExtra();
-    if (funcPtrPos!=QCString::npos)
+    if (funcPtrPos!=DString::npos)
     {
       linkifyText(TextGeneratorOLImpl(ol),atype.mid(funcPtrPos),options);
     }
@@ -1207,7 +1207,7 @@ static bool writeDefArgumentList(OutputList &ol,const Definition *scope,const Me
     }
     if (!a.defval.empty()) // write the default value
     {
-      QCString n=a.defval;
+      DString n=a.defval;
       if (scope && scope!=Doxygen::globalScope && !cName.empty())
       {
         n=addTemplateNames(n,scope->name(),cName);
@@ -1223,7 +1223,7 @@ static bool writeDefArgumentList(OutputList &ol,const Definition *scope,const Me
       if (!md->isObjCMethod()) ol.docify(", "); // there are more arguments
       if (!isDefine)
       {
-        QCString key;
+        DString key;
         if (md->isObjCMethod() && a.attrib.length()>=2)
         {
           //printf("Found parameter keyword %s\n",a.qPrint(attrib));
@@ -1277,30 +1277,30 @@ static bool writeDefArgumentList(OutputList &ol,const Definition *scope,const Me
 }
 
 static void writeExceptionListImpl(
-        OutputList &ol, const ClassDef *cd, const MemberDef *md, QCString const& exception)
+        OutputList &ol, const ClassDef *cd, const MemberDef *md, DString const& exception)
 {
   // this is ordinary exception spec - there must be a '('
   //printf("exception='%s'\n",qPrint(exception));
   size_t index = exception.find('(');
   LinkifyTextOptions options;
   options.setScope(cd).setFileScope(md->getBodyDef()).setSelf(md);
-  if (index!=QCString::npos)
+  if (index!=DString::npos)
   {
     ol.exceptionEntry(exception.left(index),false);
     ++index; // paren in second column so skip it here
-    for (size_t comma = exception.find(',', index); comma!=QCString::npos; )
+    for (size_t comma = exception.find(',', index); comma!=DString::npos; )
     {
       ++comma; // include comma
       linkifyText(TextGeneratorOLImpl(ol),exception.mid(index,comma-index),options);
-      ol.exceptionEntry(QCString(),false);
+      ol.exceptionEntry(DString(),false);
       index=comma;
       comma = exception.find(',', index);
     }
-    if (size_t close = exception.find(')', index); close!=QCString::npos)
+    if (size_t close = exception.find(')', index); close!=DString::npos)
     {
-      QCString type=removeRedundantWhiteSpace(exception.mid(index,close-index));
+      DString type=removeRedundantWhiteSpace(exception.mid(index,close-index));
       linkifyText(TextGeneratorOLImpl(ol),type,options);
-      ol.exceptionEntry(QCString(),true);
+      ol.exceptionEntry(DString(),true);
     }
     else
     {
@@ -1317,13 +1317,13 @@ static void writeExceptionListImpl(
 
 static void writeExceptionList(OutputList &ol, const ClassDef *cd, const MemberDef *md)
 {
-  QCString exception = md->excpString().stripWhiteSpace();
+  DString exception = md->excpString().stripWhiteSpace();
   if (exception.at(0)=='{')
   {
     // this is an UNO IDL attribute - need special handling
     size_t index = exception.find(';');
     size_t oldIndex = 1;
-    while (index!=QCString::npos) // there should be no more than 2 (set / get)
+    while (index!=DString::npos) // there should be no more than 2 (set / get)
     {
       // omit '{' and ';' -> "set raises (...)"
       writeExceptionListImpl(ol,cd,md,exception.mid(oldIndex,index-oldIndex));
@@ -1343,10 +1343,10 @@ static void writeExceptionList(OutputList &ol, const ClassDef *cd, const MemberD
 //-----------------------------------------------------------------------------
 
 void MemberDefImpl::init(Definition *d,
-                     const QCString &t,const QCString &a,const QCString &e,
+                     const DString &t,const DString &a,const DString &e,
                      Protection p,Specifier v,bool s,Relationship r,
                      MemberType mt,const ArgumentList &tal,
-                     const ArgumentList &al,const QCString &meta
+                     const ArgumentList &al,const DString &meta
                     )
 {
   m_classDef=nullptr;
@@ -1452,10 +1452,10 @@ void MemberDefImpl::init(Definition *d,
  * \param meta Slice metadata.
  */
 
-MemberDefImpl::MemberDefImpl(const QCString &df,int dl,int dc,
-                     const QCString &t,const QCString &na,const QCString &a,const QCString &e,
+MemberDefImpl::MemberDefImpl(const DString &df,int dl,int dc,
+                     const DString &t,const DString &na,const DString &a,const DString &e,
                      Protection p,Specifier v,bool s,Relationship r,MemberType mt,
-                     const ArgumentList &tal,const ArgumentList &al,const QCString &meta
+                     const ArgumentList &tal,const ArgumentList &al,const DString &meta
                     ) : DefinitionMixin(df,dl,dc,removeRedundantWhiteSpace(na))
 {
   //printf("MemberDefImpl::MemberDef(%s)\n",qPrint(na));
@@ -1644,7 +1644,7 @@ void MemberDefImpl::insertEnumField(MemberDef *md)
   m_enumFields.push_back(md);
 }
 
-bool MemberDefImpl::addExample(const QCString &anchor,const QCString &nameStr, const QCString &file)
+bool MemberDefImpl::addExample(const DString &anchor,const DString &nameStr, const DString &file)
 {
   //printf("%s::addExample(%s,%s,%s)\n",qPrint(name()),anchor,nameStr,file);
   return m_examples.inSort(Example(anchor,nameStr,file));
@@ -1655,10 +1655,10 @@ bool MemberDefImpl::hasExamples() const
   return !m_examples.empty();
 }
 
-QCString MemberDefImpl::sourceRefName() const
+DString MemberDefImpl::sourceRefName() const
 {
-  QCString n  = name();
-  QCString s = getScopeString();
+  DString n  = name();
+  DString s = getScopeString();
 
   if (!s.empty())
   {
@@ -1675,11 +1675,11 @@ QCString MemberDefImpl::sourceRefName() const
   return n;
 }
 
-QCString MemberDefImpl::getOutputFileBase() const
+DString MemberDefImpl::getOutputFileBase() const
 {
   bool separateMemberPages = Config_getBool(SEPARATE_MEMBER_PAGES);
   bool inlineSimpleClasses = Config_getBool(INLINE_SIMPLE_STRUCTS);
-  QCString baseName;
+  DString baseName;
 
   //printf("Member: %s: templateMaster=%p group=%p classDef=%p nspace=%p fileDef=%p\n",
   //    qPrint(name()),m_templateMaster,m_group,m_classDef,
@@ -1743,9 +1743,9 @@ QCString MemberDefImpl::getOutputFileBase() const
   return baseName;
 }
 
-QCString MemberDefImpl::getReference() const
+DString MemberDefImpl::getReference() const
 {
-  QCString ref = DefinitionMixin::getReference();
+  DString ref = DefinitionMixin::getReference();
   if (!ref.empty())
   {
     return ref;
@@ -1782,9 +1782,9 @@ QCString MemberDefImpl::getReference() const
   return "";
 }
 
-QCString MemberDefImpl::anchor() const
+DString MemberDefImpl::anchor() const
 {
-  QCString result=m_anc;
+  DString result=m_anc;
   if (m_groupAlias)     return m_groupAlias->anchor();
   if (m_templateMaster) return m_templateMaster->anchor();
   if (m_enumScope && m_enumScope!=this) // avoid recursion for C#'s public enum E { E, F }
@@ -1884,13 +1884,13 @@ void MemberDefImpl::_computeLinkableInProject()
   return; // linkable!
 }
 
-void MemberDefImpl::setDocumentation(const QCString &d,const QCString &docFile,int docLine,bool stripWhiteSpace)
+void MemberDefImpl::setDocumentation(const DString &d,const DString &docFile,int docLine,bool stripWhiteSpace)
 {
   DefinitionMixin::setDocumentation(d,docFile,docLine,stripWhiteSpace);
   m_isLinkableCached = 0;
 }
 
-void MemberDefImpl::setBriefDescription(const QCString &b,const QCString &briefFile,int briefLine)
+void MemberDefImpl::setBriefDescription(const DString &b,const DString &briefFile,int briefLine)
 {
   DefinitionMixin::setBriefDescription(b,briefFile,briefLine);
   m_isLinkableCached = 0;
@@ -1906,7 +1906,7 @@ void MemberDefImpl::setExplicitInherited(bool b)
   m_explicitInherited = b;
 }
 
-void MemberDefImpl::setInbodyDocumentation(const QCString &d,const QCString &inbodyFile,int inbodyLine)
+void MemberDefImpl::setInbodyDocumentation(const DString &d,const DString &inbodyFile,int inbodyLine)
 {
   DefinitionMixin::setInbodyDocumentation(d,inbodyFile,inbodyLine);
   m_isLinkableCached = 0;
@@ -1953,8 +1953,8 @@ void MemberDefImpl::writeLink(OutputList &ol,
 {
   SrcLangExt lang = getLanguage();
   bool hideScopeNames     = Config_getBool(HIDE_SCOPE_NAMES);
-  QCString sep = getLanguageSpecificSeparator(lang,true);
-  QCString n = name();
+  DString sep = getLanguageSpecificSeparator(lang,true);
+  DString n = name();
   const ClassDef *classDef = getClassDef();
   const NamespaceDef *nspace = getNamespaceDef();
   if (!hideScopeNames)
@@ -2015,7 +2015,7 @@ const ClassDef *MemberDefImpl::getClassDefOfAnonymousType() const
   return m_anonymousType;
 }
 
-QCString MemberDefImpl::anonymousMemberPrefix() const
+DString MemberDefImpl::anonymousMemberPrefix() const
 {
   return m_anonymousPrefix;
 }
@@ -2117,10 +2117,10 @@ bool MemberDefImpl::isBriefSectionVisible() const
   return visible;
 }
 
-QCString MemberDefImpl::getDeclType() const
+DString MemberDefImpl::getDeclType() const
 {
   SrcLangExt lang = getLanguage();
-  QCString ltype(m_type);
+  DString ltype(m_type);
   if (lang==SrcLangExt::Cpp && isEnumerate() && isStrong())
   {
     if (isEnumStruct())
@@ -2198,12 +2198,12 @@ void MemberDefImpl::_writeTemplatePrefix(OutputList &ol, const Definition *def,
   }
 }
 
-static QCString combineArgsAndException(QCString args,QCString exception)
+static DString combineArgsAndException(DString args,DString exception)
 {
   if (exception.empty()) return args;                      // no exception, nothing to combine args
   size_t pos = args.rfind(')');
-  size_t eqPos = pos!=QCString::npos ? args.find('=',pos) : QCString::npos; // look for '=' in '(args) = something'
-  if (eqPos==QCString::npos) return args+" "+exception;      // append exception at the end
+  size_t eqPos = pos!=DString::npos ? args.find('=',pos) : DString::npos; // look for '=' in '(args) = something'
+  if (eqPos==DString::npos) return args+" "+exception;      // append exception at the end
   return args.left(eqPos)+" "+exception+" "+args.mid(eqPos); // insert exception before =
 }
 
@@ -2214,7 +2214,7 @@ bool MemberDefImpl::_isAnonymousBitField() const
 
 void MemberDefImpl::writeDeclaration(OutputList &ol,
                const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,const ModuleDef *mod,
-               bool inGroup, int indentLevel, const ClassDef *inheritedFrom,const QCString &inheritId) const
+               bool inGroup, int indentLevel, const ClassDef *inheritedFrom,const DString &inheritId) const
 {
   //printf("> %s MemberDefImpl::writeDeclaration() inGroup=%d inheritId=%s\n",qPrint(qualifiedName()),inGroup,qPrint(inheritId));
 
@@ -2244,9 +2244,9 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
     return; // should not happen
   }
 
-  QCString cname  = d->name();
-  QCString cdname = d->displayName();
-  QCString cfname = getOutputFileBase();
+  DString cname  = d->name();
+  DString cdname = d->displayName();
+  DString cfname = getOutputFileBase();
 
   // search for the last anonymous scope in the member type
   const ClassDef *annoClassDef=getClassDefOfAnonymousType();
@@ -2258,7 +2258,7 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
   OutputGenerator::MemberItemType anonType = isAnonType ? OutputGenerator::MemberItemType::AnonymousStart :
                               !m_tArgList.empty() ? OutputGenerator::MemberItemType::Templated      :
                                                           OutputGenerator::MemberItemType::Normal;
-  ol.startMemberItem(annoClassDef ? QCString() : anchor(), anonType, inheritId);
+  ol.startMemberItem(annoClassDef ? DString() : anchor(), anonType, inheritId);
 
 
   // If there is no detailed description we need to write the anchor here.
@@ -2269,8 +2269,8 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
 
   if (writeAnchor)
   {
-    QCString doxyArgs=argsString();
-    QCString doxyName=name();
+    DString doxyArgs=argsString();
+    DString doxyName=name();
     if (!cname.empty())
     {
       doxyName.prepend(cdname+getLanguageSpecificSeparator(getLanguage()));
@@ -2307,7 +2307,7 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
 
 
   // *** write type
-  QCString ltype(m_type);
+  DString ltype(m_type);
   auto lang = getLanguage();
   if (isTypedef() && lang != SrcLangExt::Slice)
   {
@@ -2350,7 +2350,7 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
     }
     else if (amd) // type is an anonymous enum
     {
-      QCString typePlaceholder = " { ... } ";
+      DString typePlaceholder = " { ... } ";
       if (lang==SrcLangExt::Cpp)
       {
         if (amd->isEnumStruct()) typePlaceholder.prepend(" struct");
@@ -2973,7 +2973,7 @@ void MemberDefImpl::_writeReimplements(OutputList &ol) const
     if (bcd->isLinkable())
     {
       ol.startParagraph();
-      QCString reimplFromLine;
+      DString reimplFromLine;
       if (bmd->virtualness()!=Specifier::Pure && bcd->compoundType()!=ClassDef::Interface)
       {
         reimplFromLine = theTranslator->trReimplementedFromList(1);
@@ -2982,7 +2982,7 @@ void MemberDefImpl::_writeReimplements(OutputList &ol) const
       {
         reimplFromLine = theTranslator->trImplementedFromList(1);
       }
-      if (size_t markerPos = reimplFromLine.find("@0"); markerPos!=QCString::npos) // should always pass this.
+      if (size_t markerPos = reimplFromLine.find("@0"); markerPos!=DString::npos) // should always pass this.
       {
         ol.parseText(reimplFromLine.left(markerPos)); //text left from marker
         if (bmd->isLinkable()) // replace marker with link
@@ -3002,7 +3002,7 @@ void MemberDefImpl::_writeReimplements(OutputList &ol) const
         else
         {
           ol.writeObjectLink(bcd->getReference(),bcd->getOutputFileBase(),
-              QCString(),bcd->displayName());
+              DString(),bcd->displayName());
           if (bcd->isLinkableInProject()/* && !Config_getBool(PDF_HYPERLINKS)*/ )
           {
             writePageRef(ol,bcd->getOutputFileBase(),bcd->anchor());
@@ -3077,7 +3077,7 @@ void MemberDefImpl::_writeReimplementedBy(OutputList &ol) const
       }
     };
 
-    QCString reimplInLine;
+    DString reimplInLine;
     if (m_virt==Specifier::Pure || (getClassDef() && getClassDef()->compoundType()==ClassDef::Interface))
     {
       reimplInLine = theTranslator->trImplementedInList(static_cast<int>(count));
@@ -3108,12 +3108,12 @@ void MemberDefImpl::_writeCategoryRelation(OutputList &ol) const
     //    qPrint(m_classDef->name()),
     //    m_classDef->categoryOf() ? qPrint(m_classDef->categoryOf()->name()) : "<none>"
     //    );
-    QCString text;
-    QCString ref;
-    QCString file;
-    QCString anc;
-    QCString name;
-    size_t i=QCString::npos;
+    DString text;
+    DString ref;
+    DString file;
+    DString anc;
+    DString name;
+    size_t i=DString::npos;
     if (m_categoryRelation && m_categoryRelation->isLinkable())
     {
       if (m_category)
@@ -3131,7 +3131,7 @@ void MemberDefImpl::_writeCategoryRelation(OutputList &ol) const
         name = getClassDef()->categoryOf()->displayName();
       }
       i=text.find("@0");
-      if (i!=QCString::npos)
+      if (i!=DString::npos)
       {
         const MemberDef *md = m_categoryRelation;
         ref  = md->getReference();
@@ -3139,7 +3139,7 @@ void MemberDefImpl::_writeCategoryRelation(OutputList &ol) const
         anc  = md->anchor();
       }
     }
-    if (i!=QCString::npos && !name.empty())
+    if (i!=DString::npos && !name.empty())
     {
       ol.startParagraph();
       ol.parseText(text.left(i));
@@ -3172,8 +3172,8 @@ void MemberDefImpl::_writeTypeConstraints(OutputList &ol) const
 }
 
 void MemberDefImpl::_writeEnumValues(OutputList &ol,const Definition *container,
-                                 const QCString &cfname,const QCString &ciname,
-                                 const QCString &cname) const
+                                 const DString &cfname,const DString &ciname,
+                                 const DString &cname) const
 {
   // For enum, we also write the documented enum values
   if (isEnumerate())
@@ -3224,7 +3224,7 @@ void MemberDefImpl::_writeEnumValues(OutputList &ol,const Definition *container,
           ol.startDescTableInit();
           if (!fmd->initializer().empty())
           {
-            QCString initStr = fmd->initializer().stripWhiteSpace();
+            DString initStr = fmd->initializer().stripWhiteSpace();
             if (initStr.startsWith("=")) initStr = initStr.mid(1).stripWhiteSpace();
             ol.disableAllBut(OutputType::Man);
             ol.writeString("(");
@@ -3275,10 +3275,10 @@ void MemberDefImpl::_writeEnumValues(OutputList &ol,const Definition *container,
 // match from the start of the scope until the last marker
 static const reg::Ex reAnonymous(R"([\w:@]*@\d+)");
 
-QCString MemberDefImpl::displayDefinition() const
+DString MemberDefImpl::displayDefinition() const
 {
-  QCString ldef = definition();
-  QCString title = name();
+  DString ldef = definition();
+  DString title = name();
   if (isEnumerate())
   {
     if (isAnonymous())
@@ -3328,15 +3328,15 @@ QCString MemberDefImpl::displayDefinition() const
   if (cd && cd->isObjectiveC())
   {
     // strip scope name
-    if (size_t ep = ldef.find("::"); ep!=QCString::npos)
+    if (size_t ep = ldef.find("::"); ep!=DString::npos)
     {
-      if (size_t sp=ldef.rfind(' ',ep); sp!=QCString::npos)
+      if (size_t sp=ldef.rfind(' ',ep); sp!=DString::npos)
       {
         ldef=ldef.left(sp+1)+ldef.mid(ep+2);
       }
     }
     // strip keywords
-    if (size_t dp = ldef.find(':'); dp!=QCString::npos)
+    if (size_t dp = ldef.find(':'); dp!=DString::npos)
     {
       ldef=ldef.left(dp+1);
     }
@@ -3354,7 +3354,7 @@ QCString MemberDefImpl::displayDefinition() const
     if (isStatic()) ldef.prepend("+ "); else ldef.prepend("- ");
   }
   SrcLangExt lang = getLanguage();
-  QCString sep = getLanguageSpecificSeparator(lang,true);
+  DString sep = getLanguageSpecificSeparator(lang,true);
   return substitute(ldef,"::",sep);
 }
 
@@ -3365,7 +3365,7 @@ void MemberDefImpl::_writeGroupInclude(OutputList &ol,bool inGroup) const
   bool showGroupedMembInc = Config_getBool(SHOW_GROUPED_MEMB_INC);
   bool forceLocalIncludes = Config_getBool(FORCE_LOCAL_INCLUDES);
   const FileDef *fd = getFileDef();
-  QCString nm;
+  DString nm;
   if (inGroup && fd && showGroupedMembInc)
   {
     if (!Config_getList(STRIP_FROM_INC_PATH).empty())
@@ -3410,7 +3410,7 @@ void MemberDefImpl::_writeGroupInclude(OutputList &ol,bool inGroup) const
   }
 }
 
-void MemberDefImpl::_writeMultiLineInitializer(OutputList &ol,const QCString &scopeName) const
+void MemberDefImpl::_writeMultiLineInitializer(OutputList &ol,const DString &scopeName) const
 {
     //printf("md=%s initLines=%d init='%s'\n",qPrint(name()),initLines,qPrint(init));
     ol.startBold();
@@ -3419,7 +3419,7 @@ void MemberDefImpl::_writeMultiLineInitializer(OutputList &ol,const QCString &sc
     else
       ol.parseText(theTranslator->trInitialValue());
     ol.endBold();
-    QCString langCorrected = getDefFileExtension();
+    DString langCorrected = getDefFileExtension();
     SrcLangExt srcLangExt = getLanguageFromFileName(getDefFileExtension());
     if (srcLangExt == SrcLangExt::Lex)
     {
@@ -3447,7 +3447,7 @@ void MemberDefImpl::_writeMultiLineInitializer(OutputList &ol,const QCString &sc
 void MemberDefImpl::writeDocumentation(const MemberList *ml,
                                    int memCount,int memTotal,
                                    OutputList &ol,
-                                   const QCString &scName,
+                                   const DString &scName,
                                    const Definition *container,
                                    bool inGroup,
                                    bool  /* showEnumValues */,
@@ -3466,11 +3466,11 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
   SrcLangExt lang = getLanguage();
   //printf("member=%s lang=%d\n",qPrint(name()),lang);
   bool optVhdl = lang==SrcLangExt::VHDL;
-  QCString sep = getLanguageSpecificSeparator(lang,true);
+  DString sep = getLanguageSpecificSeparator(lang,true);
 
-  QCString scopeName = scName;
-  QCString memAnchor = anchor();
-  QCString ciname = container->displayName();
+  DString scopeName = scName;
+  DString memAnchor = anchor();
+  DString ciname = container->displayName();
   const Definition *scopedContainer = container; // see bug 753608
   if (container->definitionType()==TypeGroup)
   {
@@ -3485,20 +3485,20 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
     memAnchor.prepend("file_");
   }
 
-  QCString cname   = container->name();
-  QCString cfname  = getOutputFileBase();
+  DString cname   = container->name();
+  DString cfname  = getOutputFileBase();
 
   // get member name
-  QCString doxyName=name();
+  DString doxyName=name();
   // prepend scope if there is any. TODO: make this optional for C only docs
   if (!scopeName.empty())
   {
     doxyName.prepend(scopeName+sep);
   }
-  QCString doxyArgs=argsString();
+  DString doxyArgs=argsString();
 
-  QCString ldef = definition();
-  QCString title = name();
+  DString ldef = definition();
+  DString title = name();
   if (m_toAnnMemb)
   {
      title.prepend(m_toAnnMemb->anonymousMemberPrefix());
@@ -3552,8 +3552,8 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
   if (lang == SrcLangExt::Slice)
   {
     // Remove the container scope from the member name.
-    QCString prefix = scName + sep;
-    if (size_t pos = ldef.rfind(prefix); pos != QCString::npos)
+    DString prefix = scName + sep;
+    if (size_t pos = ldef.rfind(prefix); pos != DString::npos)
     {
       ldef.remove(pos, prefix.length());
     }
@@ -3586,8 +3586,8 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
         ol.startDoxyAnchor(cfname, cname, memAnchor, doxyName, doxyArgs);
         ol.startMemberDoc(ciname,name(),memAnchor,name(),memCount,memTotal,showInline);
         ol.addLabel(cfname, memAnchor);
-        QCString prefix = match.prefix().str();
-        QCString suffix = match.suffix().str();
+        DString prefix = match.prefix().str();
+        DString suffix = match.suffix().str();
         linkifyText(TextGeneratorOLImpl(ol),prefix,options);
         vmd->writeEnumDeclaration(ol,getClassDef(),getNamespaceDef(),getFileDef(),getGroupDef(),getModuleDef());
         linkifyText(TextGeneratorOLImpl(ol),suffix,options);
@@ -3599,7 +3599,7 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
     if (!found) // anonymous compound
     {
       const ClassDef *annoClassDef=getClassDefOfAnonymousType();
-      QCString typeName;
+      DString typeName;
       if (annoClassDef) typeName=annoClassDef->compoundTypeString();
       ol.startDoxyAnchor(cfname, cname, memAnchor, doxyName, doxyArgs);
       ol.startMemberDoc(ciname,name(),memAnchor,title,memCount,memTotal,showInline);
@@ -3612,15 +3612,15 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
         static const reg::Ex ar(R"([\w@:]*@\d+[\w@:]*)");
         reg::Match amatch;
         reg::search(sdef,amatch,ar);
-        QCString prefix = amatch.prefix().str();
-        QCString suffix = removeAnonymousScopes(amatch.suffix().str());
+        DString prefix = amatch.prefix().str();
+        DString suffix = removeAnonymousScopes(amatch.suffix().str());
         //printf("writeDocumentation(): anonymous compound in definition: sdef='%s' prefix='%s' suffix='%s' annoClassDef=%p\n",
         //    qPrint(sdef), qPrint(prefix),qPrint(suffix),(void*)annoClassDef);
         const MemberDef *amd = getAnonymousEnumType();
         if (annoClassDef && amd==nullptr)
         {
           ol.docify(prefix);
-          QCString annTypeName = annoClassDef->displayName(true);
+          DString annTypeName = annoClassDef->displayName(true);
           if (suffix.empty())
           {
             suffix=" "+localName();
@@ -3631,7 +3631,7 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
         }
         else if (amd) // type is an anonymous enum
         {
-          QCString typePlaceholder = " { ... } ";
+          DString typePlaceholder = " { ... } ";
           if (lang==SrcLangExt::Cpp)
           {
             if (amd->isEnumStruct()) typePlaceholder.prepend(" struct");
@@ -3721,9 +3721,9 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
     if (cd && cd->isObjectiveC())
     {
       // strip scope name
-      if (size_t ep = ldef.find("::"); ep!=QCString::npos)
+      if (size_t ep = ldef.find("::"); ep!=DString::npos)
       {
-        if (size_t sp=ldef.rfind(' ',ep); sp!=QCString::npos)
+        if (size_t sp=ldef.rfind(' ',ep); sp!=DString::npos)
         {
           ldef=ldef.left(sp+1)+ldef.mid(ep+2);
         } else {
@@ -3731,7 +3731,7 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
         }
       }
       // strip keywords
-      if (size_t dp = ldef.find(':'); dp!=QCString::npos)
+      if (size_t dp = ldef.find(':'); dp!=DString::npos)
       {
         ldef=ldef.left(dp+1);
       }
@@ -3757,7 +3757,7 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
     {
       // Eliminate the self-reference.
       size_t pos = ldef.rfind(' ');
-      if (pos==QCString::npos) pos=0;
+      if (pos==DString::npos) pos=0;
       if (pos>0)
       {
         linkifyText(TextGeneratorOLImpl(ol),ldef.left(pos),options);
@@ -3780,13 +3780,13 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
       if (isTypeAlias())
       {
         ol.docify(" = ");
-        QCString init = m_initializer.simplifyWhiteSpace();
+        DString init = m_initializer.simplifyWhiteSpace();
         linkifyText(TextGeneratorOLImpl(ol),init,options);
       }
       else if (!isDefine())
       {
         ol.docify(" ");
-        QCString init = m_initializer.simplifyWhiteSpace();
+        DString init = m_initializer.simplifyWhiteSpace();
         linkifyText(TextGeneratorOLImpl(ol),init,options);
       }
       else
@@ -3861,7 +3861,7 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
   if (hasMultiLineInitializer()) _writeMultiLineInitializer(ol,scopeName);
 
   /* write brief description */
-  QCString brief = briefDescription();
+  DString brief = briefDescription();
   if (!brief.empty() &&
       (Config_getBool(REPEAT_BRIEF) ||
        !Config_getBool(BRIEF_MEMBER_DESC)
@@ -3880,7 +3880,7 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
   }
 
   /* write detailed description */
-  QCString detailed = documentation();
+  DString detailed = documentation();
   if (!detailed.empty() ||
       !inbodyDocumentation().empty())
   {
@@ -3958,7 +3958,7 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
   _writeCategoryRelation(ol);
   _writeExamples(ol);
   _writeTypeConstraints(ol);
-  QCString scopeStr = getScopeString();
+  DString scopeStr = getScopeString();
   writeSourceDef(ol);
   writeInlineCode(ol,scopeStr);
   if (hasReferencesRelation()) writeSourceRefs(ol,scopeStr);
@@ -3978,9 +3978,9 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
 
 // strip scope and field name from the type
 // example: "struct N<K::J>::S.v.c" will become "struct v"
-static QCString simplifyTypeForTable(const QCString &s)
+static DString simplifyTypeForTable(const DString &s)
 {
-  QCString ts=removeAnonymousScopes(s);
+  DString ts=removeAnonymousScopes(s);
   if (ts.endsWith("::")) ts = ts.left(ts.length()-2);
   static const reg::Ex re1(R"(\a\w*::)");       // non-template version
   static const reg::Ex re2(R"(\a\w*<[^>]*>::)"); // template version
@@ -3994,9 +3994,9 @@ static QCString simplifyTypeForTable(const QCString &s)
   return t;
 }
 
-QCString MemberDefImpl::fieldType() const
+DString MemberDefImpl::fieldType() const
 {
-  QCString type = m_type;
+  DString type = m_type;
   if (isTypedef() && getLanguage() != SrcLangExt::Slice) type.prepend("typedef ");
   return simplifyTypeForTable(type);
 }
@@ -4004,11 +4004,11 @@ QCString MemberDefImpl::fieldType() const
 void MemberDefImpl::writeMemberDocSimple(OutputList &ol, const Definition *container) const
 {
   Definition *scope  = getOuterScope();
-  QCString doxyName  = name();
-  QCString doxyArgs  = argsString();
-  QCString memAnchor = anchor();
-  QCString cfname    = getOutputFileBase();
-  QCString cname;
+  DString doxyName  = name();
+  DString doxyArgs  = argsString();
+  DString memAnchor = anchor();
+  DString cfname    = getOutputFileBase();
+  DString cname;
   if (scope) cname   = scope->name();
   if (doxyName.at(0)=='@')
   {
@@ -4025,7 +4025,7 @@ void MemberDefImpl::writeMemberDocSimple(OutputList &ol, const Definition *conta
     ol.startDoxyAnchor(cfname,cname,memAnchor,doxyName,doxyArgs);
     ol.addLabel(cfname,memAnchor);
 
-    QCString ts = fieldType();
+    DString ts = fieldType();
 
     if (isFunctionPtr())
         ts = m_type + m_args;
@@ -4054,8 +4054,8 @@ void MemberDefImpl::writeMemberDocSimple(OutputList &ol, const Definition *conta
 
   ol.startInlineMemberDoc();
 
-  QCString brief           = briefDescription();
-  QCString detailed        = documentation();
+  DString brief           = briefDescription();
+  DString detailed        = documentation();
 
   /* write brief description */
   if (!brief.empty())
@@ -4087,7 +4087,7 @@ void MemberDefImpl::writeMemberDocSimple(OutputList &ol, const Definition *conta
   ol.endInlineMemberDoc();
 }
 
-QCString MemberDefImpl::memberTypeName() const
+DString MemberDefImpl::memberTypeName() const
 {
   if (m_mtype == MemberType::Define)
   {
@@ -4111,7 +4111,7 @@ void MemberDefImpl::warnIfUndocumented() const
   const FileDef      *fd = getFileDef();
   const GroupDef     *gd = getGroupDef();
   const Definition *d=nullptr;
-  QCString t;
+  DString t;
   if (cd)
   {
     t=cd->compoundTypeString();
@@ -4139,14 +4139,14 @@ void MemberDefImpl::warnIfUndocumented() const
   //    hasUserDocumentation(),isFriendClass(),protectionLevelVisible(m_prot),isReference(),isDeleted());
   if ((!hasUserDocumentation() && !extractAll) &&
       !isFriendClass() &&
-      name().find('@')==QCString::npos && d && d->name().find('@')==QCString::npos &&
+      name().find('@')==DString::npos && d && d->name().find('@')==DString::npos &&
       !_isAnonymousBitField() &&
       protectionLevelVisible(m_prot) &&
       !isReference() && !isDeleted()
      )
   {
     SrcLangExt lang = getLanguage();
-    QCString sep = getLanguageSpecificSeparator(lang,true);
+    DString sep = getLanguageSpecificSeparator(lang,true);
     warn_undoc(getDefFileName(),getDefLine(),"Member {}{} ({}) of {} {} is not documented.",
          name(),argsString(),memberTypeName(),t,
          substitute(d->name(),"::",sep));
@@ -4164,7 +4164,7 @@ void MemberDefImpl::warnIfUndocumented() const
       if (!fmd->isLinkableInProject())
       {
         SrcLangExt lang = getLanguage();
-        QCString sep = getLanguageSpecificSeparator(lang,true);
+        DString sep = getLanguageSpecificSeparator(lang,true);
         warn(fmd->getDefFileName(),fmd->getDefLine(), "Documentation for enum member '{}{}{}' is missing.",
              qualifiedName(),sep,fmd->name());
       }
@@ -4183,9 +4183,9 @@ bool MemberDefImpl::visibleInIndex() const
      );
 }
 
-static QCString stripTrailingReturn(const QCString &trailRet)
+static DString stripTrailingReturn(const DString &trailRet)
 {
-  QCString ret = trailRet;
+  DString ret = trailRet;
 
   ret = ret.stripWhiteSpace();
   if (ret.startsWith("->"))
@@ -4264,9 +4264,9 @@ void MemberDefImpl::detectUndocumentedParams(bool hasParamCommand,bool hasReturn
 
 void MemberDefImpl::warnIfUndocumentedParams() const
 {
-  QCString returnType = typeString();
+  DString returnType = typeString();
   bool isFortran = getLanguage()==SrcLangExt::Fortran;
-  bool isFortranSubroutine = isFortran && returnType.find("subroutine")!=QCString::npos;
+  bool isFortranSubroutine = isFortran && returnType.find("subroutine")!=DString::npos;
 
   bool isVoidReturn =   returnType=="void" || returnType.endsWith(" void");
   if (!isVoidReturn && (returnType=="auto" || returnType.endsWith(" auto")))
@@ -4274,7 +4274,7 @@ void MemberDefImpl::warnIfUndocumentedParams() const
     const ArgumentList &defArgList=isDocsForDefinition() ?  argumentList() : declArgumentList();
     if (!defArgList.trailingReturnType().empty())
     {
-      QCString strippedTrailingReturn = stripTrailingReturn(defArgList.trailingReturnType());
+      DString strippedTrailingReturn = stripTrailingReturn(defArgList.trailingReturnType());
       isVoidReturn = (strippedTrailingReturn=="void") || (strippedTrailingReturn.endsWith(" void"));
     }
   }
@@ -4323,8 +4323,8 @@ void MemberDefImpl::warnIfUndocumentedParams() const
 bool MemberDefImpl::isDocumentedFriendClass() const
 {
   ClassDef *fcd=nullptr;
-  QCString baseName=name();
-  if (size_t i=baseName.find('<'); i!=QCString::npos) baseName=baseName.left(i);
+  DString baseName=name();
+  if (size_t i=baseName.find('<'); i!=DString::npos) baseName=baseName.left(i);
   return (isFriendClass() &&
          (fcd=getClass(baseName)) && fcd->isLinkable());
 }
@@ -4347,9 +4347,9 @@ void MemberDefImpl::setMemberGroup(MemberGroup *grp)
   m_memberGroup = grp;
 }
 
-QCString MemberDefImpl::getScopeString() const
+DString MemberDefImpl::getScopeString() const
 {
-  QCString result;
+  DString result;
   if (isStrong()) result=name();
   else if (getClassDef()) result=getClassDef()->displayName();
   else if (getNamespaceDef()) result=getNamespaceDef()->displayName();
@@ -4358,7 +4358,7 @@ QCString MemberDefImpl::getScopeString() const
 
 void MemberDefImpl::setAnchor()
 {
-  QCString memAnchor = name();
+  DString memAnchor = name();
   if (!m_args.empty()) memAnchor+=m_args;
   if (m_memSpec.isAlias()) // this is for backward compatibility
   {
@@ -4374,7 +4374,7 @@ void MemberDefImpl::setAnchor()
   if (m_tArgList.hasParameters())
   {
     char buf[20];
-    qsnprintf(buf,20,"%d:",static_cast<int>(m_tArgList.size()));
+    snprintf(buf,20,"%d:",static_cast<int>(m_tArgList.size()));
     buf[19]='\0';
     memAnchor.prepend(buf);
   }
@@ -4385,7 +4385,7 @@ void MemberDefImpl::setAnchor()
   if (m_redefineCount>0)
   {
     char buf[20];
-    qsnprintf(buf,20,":%d",m_redefineCount);
+    snprintf(buf,20,":%d",m_redefineCount);
     buf[19]='\0';
     memAnchor.append(buf);
   }
@@ -4395,11 +4395,11 @@ void MemberDefImpl::setAnchor()
   char sigStr[33];
   MD5Buffer(memAnchor.data(),static_cast<unsigned int>(memAnchor.length()),md5_sig);
   MD5SigToString(md5_sig,sigStr);
-  m_anc = QCString("a")+sigStr;
+  m_anc = DString("a")+sigStr;
 }
 
 void MemberDefImpl::setGroupDef(GroupDef *gd,Grouping::GroupPri_t pri,
-                            const QCString &fileName,int startLine,
+                            const DString &fileName,int startLine,
                             bool hasDocs,MemberDef *member)
 {
   //printf("%s MemberDefImpl::setGroupDef(%s)\n",qPrint(name()),qPrint(gd->name()));
@@ -4457,7 +4457,7 @@ std::unique_ptr<MemberDef> MemberDefImpl::createTemplateInstanceMember(
        substituteTemplateArgumentsInString(actualArgList->trailingReturnType(),formalArgs,actualArgs.get()));
   }
 
-  QCString methodName=name();
+  DString methodName=name();
   if (methodName.startsWith("operator ")) // conversion operator
   {
     methodName=substituteTemplateArgumentsInString(methodName,formalArgs,actualArgs.get());
@@ -4506,7 +4506,7 @@ bool MemberDefImpl::hasMultiLineInitializer() const
          );
 }
 
-void MemberDefImpl::setInitializer(const QCString &initializer)
+void MemberDefImpl::setInitializer(const DString &initializer)
 {
   size_t indent=0;
   m_initializer=detab(initializer,indent);
@@ -4525,7 +4525,7 @@ void MemberDefImpl::addListReference(const Definition *)
   bool optimizeOutputForC = Config_getBool(OPTIMIZE_OUTPUT_FOR_C);
   SrcLangExt lang = getLanguage();
   if (!isLinkableInProject()) return;
-  QCString memLabel;
+  DString memLabel;
   if (optimizeOutputForC)
   {
     memLabel=theTranslator->trGlobal(true,true);
@@ -4538,12 +4538,12 @@ void MemberDefImpl::addListReference(const Definition *)
   {
     memLabel=theTranslator->trMember(true,true);
   }
-  QCString memName = name();
+  DString memName = name();
   Definition *pd=getOuterScope();
-  QCString pdName = pd->definitionType()==Definition::TypeClass ?
+  DString pdName = pd->definitionType()==Definition::TypeClass ?
                     (toClassDef(pd))->displayName() : pd->name();
-  QCString sep = getLanguageSpecificSeparator(lang,true);
-  QCString memArgs;
+  DString sep = getLanguageSpecificSeparator(lang,true);
+  DString memArgs;
   if (!isRelated())
   {
     if (isObjCMethod())
@@ -4633,16 +4633,16 @@ void MemberDefImpl::writeTagFile(TextStream &tagFile,bool useQualifiedName,bool 
     tagFile << "\" static=\"yes";
   }
   tagFile << "\">\n";
-  if (typeString()!=QCString("@"))
+  if (typeString()!=DString("@"))
   {
     tagFile << "      <type>" << convertToXML(typeString()) << "</type>\n";
   }
-  QCString fn = getOutputFileBase();
+  DString fn = getOutputFileBase();
   addHtmlExtensionIfMissing(fn);
   tagFile << "      <name>" << convertToXML(useQualifiedName ? qualifiedName() : name()) << "</name>\n";
   tagFile << "      <anchorfile>" << convertToXML(fn) << "</anchorfile>\n";
   tagFile << "      <anchor>" << convertToXML(anchor()) << "</anchor>\n";
-  QCString idStr = id();
+  DString idStr = id();
   if (!idStr.empty())
   {
     tagFile << "      <clangid>" << convertToXML(idStr) << "</clangid>\n";
@@ -4692,9 +4692,9 @@ void MemberDefImpl::_computeIsConstructor()
     }
     else // for other languages
     {
-      QCString locName = getClassDef()->localName();
+      DString locName = getClassDef()->localName();
       size_t i=locName.find('<');
-      if (i==QCString::npos) // not a template class
+      if (i==DString::npos) // not a template class
       {
         m_isConstructorCached = name()==locName ? 2 : 1;
       }
@@ -4742,8 +4742,8 @@ void MemberDefImpl::_computeIsDestructor()
   else // other languages
   {
     isDestructor =
-           (name().find('~')!=QCString::npos || name().find('!')!=QCString::npos)  // The ! is for C++/CLI
-           && name().find("operator")==QCString::npos;
+           (name().find('~')!=DString::npos || name().find('!')!=DString::npos)  // The ! is for C++/CLI
+           && name().find("operator")==DString::npos;
   }
   m_isDestructorCached = isDestructor ? 2 : 1;
 }
@@ -4774,8 +4774,8 @@ void MemberDefImpl::writeEnumDeclaration(OutputList &typeDecl,
     return;
   }
 
-  QCString n = name();
-  if (size_t i=n.rfind("::"); i!=QCString::npos) n=n.mid(i+2); // strip scope (TODO: is this needed?)
+  DString n = name();
+  if (size_t i=n.rfind("::"); i!=DString::npos) n=n.mid(i+2); // strip scope (TODO: is this needed?)
   if (n[0]!='@') // not an anonymous enum
   {
     if (isLinkableInProject() || hasDocumentedEnumValues())
@@ -4898,7 +4898,7 @@ void MemberDefImpl::setTypeConstraints(const ArgumentList &al)
   m_typeConstraints = al;
 }
 
-void MemberDefImpl::setType(const QCString &t)
+void MemberDefImpl::setType(const DString &t)
 {
   m_type = t;
 }
@@ -4962,11 +4962,11 @@ bool MemberDefImpl::isCSharpProperty() const
   return false;
 }
 
-QCString MemberDefImpl::qualifiedName() const
+DString MemberDefImpl::qualifiedName() const
 {
   if (isObjCMethod())
   {
-    QCString qm;
+    DString qm;
     if (isStatic()) qm="+"; else qm="-";
     qm+="[";
     qm+=getClassDef()->name()+" ";
@@ -4997,9 +4997,9 @@ void MemberDefImpl::setTagInfo(const TagInfo *ti)
   }
 }
 
-QCString MemberDefImpl::objCMethodName(bool localLink,bool showStatic) const
+DString MemberDefImpl::objCMethodName(bool localLink,bool showStatic) const
 {
-  QCString qm;
+  DString qm;
   if (showStatic)
   {
     if (isStatic()) qm="+ "; else qm="- ";
@@ -5014,42 +5014,42 @@ QCString MemberDefImpl::objCMethodName(bool localLink,bool showStatic) const
   return qm;
 }
 
-QCString MemberDefImpl::declaration() const
+DString MemberDefImpl::declaration() const
 {
   return m_decl;
 }
 
-QCString MemberDefImpl::definition() const
+DString MemberDefImpl::definition() const
 {
   return m_def;
 }
 
-QCString MemberDefImpl::extraTypeChars() const
+DString MemberDefImpl::extraTypeChars() const
 {
   return m_extraTypeChars;
 }
 
-QCString MemberDefImpl::typeString() const
+DString MemberDefImpl::typeString() const
 {
   return m_type;
 }
 
-QCString MemberDefImpl::argsString() const
+DString MemberDefImpl::argsString() const
 {
   return m_args;
 }
 
-QCString MemberDefImpl::excpString() const
+DString MemberDefImpl::excpString() const
 {
   return m_exception;
 }
 
-QCString MemberDefImpl::bitfieldString() const
+DString MemberDefImpl::bitfieldString() const
 {
   return m_bitfields;
 }
 
-const QCString &MemberDefImpl::initializer() const
+const DString &MemberDefImpl::initializer() const
 {
   return m_initializer;
 }
@@ -5109,12 +5109,12 @@ NamespaceDef* MemberDefImpl::getNamespaceDef()
   return m_nspace;
 }
 
-QCString MemberDefImpl::getReadAccessor() const
+DString MemberDefImpl::getReadAccessor() const
 {
   return m_read;
 }
 
-QCString MemberDefImpl::getWriteAccessor() const
+DString MemberDefImpl::getWriteAccessor() const
 {
   return m_write;
 }
@@ -5139,7 +5139,7 @@ Grouping::GroupPri_t MemberDefImpl::getGroupPri() const
   return m_grouppri;
 }
 
-QCString MemberDefImpl::getGroupFileName() const
+DString MemberDefImpl::getGroupFileName() const
 {
   return m_groupFileName;
 }
@@ -5212,7 +5212,7 @@ bool MemberDefImpl::isFunction() const
 bool MemberDefImpl::isFunctionPtr() const
 {
   return m_mtype==MemberType::Variable &&
-         QCString(argsString()).find(")(")!=QCString::npos;
+         DString(argsString()).find(")(")!=DString::npos;
 }
 
 bool MemberDefImpl::isDefine() const
@@ -5743,12 +5743,12 @@ const ClassDef *MemberDefImpl::getCachedTypedefVal() const
   return m_cachedTypedefValue;
 }
 
-QCString MemberDefImpl::getCachedTypedefTemplSpec() const
+DString MemberDefImpl::getCachedTypedefTemplSpec() const
 {
   return m_cachedTypedefTemplSpec;
 }
 
-QCString MemberDefImpl::getCachedResolvedTypedef() const
+DString MemberDefImpl::getCachedResolvedTypedef() const
 {
   //printf("MemberDefImpl::getCachedResolvedTypedef()=%s\n",qPrint(m_cachedResolvedType));
   return m_cachedResolvedType;
@@ -5774,7 +5774,7 @@ const MemberDef *MemberDefImpl::getGroupAlias() const
   return m_groupAlias;
 }
 
-QCString MemberDefImpl::getDeclFileName() const
+DString MemberDefImpl::getDeclFileName() const
 {
   return m_declFileName;
 }
@@ -5798,7 +5798,7 @@ void MemberDefImpl::setMemberType(MemberType t)
   m_isLinkableCached = 0;
 }
 
-void MemberDefImpl::setDefinition(const QCString &d)
+void MemberDefImpl::setDefinition(const DString &d)
 {
   m_def=d;
 }
@@ -5854,9 +5854,9 @@ void MemberDefImpl::addQualifiers(const StringVector &qualifiers)
   }
 }
 
-void MemberDefImpl::setBitfields(const QCString &s)
+void MemberDefImpl::setBitfields(const DString &s)
 {
-  m_bitfields = QCString(s).simplifyWhiteSpace();
+  m_bitfields = DString(s).simplifyWhiteSpace();
 }
 
 void MemberDefImpl::setMaxInitLines(int lines)
@@ -5867,12 +5867,12 @@ void MemberDefImpl::setMaxInitLines(int lines)
   }
 }
 
-void MemberDefImpl::setReadAccessor(const QCString &r)
+void MemberDefImpl::setReadAccessor(const DString &r)
 {
   m_read=r;
 }
 
-void MemberDefImpl::setWriteAccessor(const QCString &w)
+void MemberDefImpl::setWriteAccessor(const DString &w)
 {
   m_write=w;
 }
@@ -5899,7 +5899,7 @@ void MemberDefImpl::setInheritsDocsFrom(const MemberDef *md)
   m_docProvider = md;
 }
 
-void MemberDefImpl::setArgsString(const QCString &as)
+void MemberDefImpl::setArgsString(const DString &as)
 {
   m_args = as;
 }
@@ -5926,7 +5926,7 @@ void MemberDefImpl::setAnonymousEnumType(const MemberDef *md)
   m_annEnumType = md;
 }
 
-void MemberDefImpl::setPrototype(bool p,const QCString &df,int line,int column)
+void MemberDefImpl::setPrototype(bool p,const DString &df,int line,int column)
 {
   m_proto=p;
   if (p)
@@ -5939,7 +5939,7 @@ void MemberDefImpl::setPrototype(bool p,const QCString &df,int line,int column)
   }
 }
 
-void MemberDefImpl::setExplicitExternal(bool b,const QCString &df,int line,int column)
+void MemberDefImpl::setExplicitExternal(bool b,const DString &df,int line,int column)
 {
   m_explExt=b;
   if (b)
@@ -5952,7 +5952,7 @@ void MemberDefImpl::setExplicitExternal(bool b,const QCString &df,int line,int c
   }
 }
 
-void MemberDefImpl::setDeclFile(const QCString &df,int line,int column)
+void MemberDefImpl::setDeclFile(const DString &df,int line,int column)
 {
   m_declFileName = df;
   m_declLine = line;
@@ -6050,27 +6050,27 @@ void MemberDefImpl::setCategoryRelation(const MemberDef *md)
   m_categoryRelation = md;
 }
 
-void MemberDefImpl::setEnumBaseType(const QCString &type)
+void MemberDefImpl::setEnumBaseType(const DString &type)
 {
   m_enumBaseType = type;
 }
 
-QCString MemberDefImpl::enumBaseType() const
+DString MemberDefImpl::enumBaseType() const
 {
   return m_enumBaseType;
 }
 
-void MemberDefImpl::setRequiresClause(const QCString &req)
+void MemberDefImpl::setRequiresClause(const DString &req)
 {
   m_requiresClause = req;
 }
 
-QCString MemberDefImpl::requiresClause() const
+DString MemberDefImpl::requiresClause() const
 {
   return m_requiresClause;
 }
 
-void MemberDefImpl::cacheTypedefVal(const ClassDef*val, const QCString & templSpec, const QCString &resolvedType)
+void MemberDefImpl::cacheTypedefVal(const ClassDef*val, const DString & templSpec, const DString &resolvedType)
 {
   m_isTypedefValCached=true;
   m_cachedTypedefValue=val;
@@ -6147,7 +6147,7 @@ int MemberDefImpl::numberOfFlowKeyWords() const
 
 //----------------
 
-QCString MemberDefImpl::displayName(bool) const
+DString MemberDefImpl::displayName(bool) const
 {
   return DefinitionMixin::name();
 }
@@ -6219,10 +6219,10 @@ void combineDeclarationAndDefinition(MemberDefMutable *mdec,MemberDefMutable *md
       transferArgumentDocumentation(mdecAl,mdefAl);
 
       // copy brief description between definition and declaration
-      QCString mdefBrief     = mdef->briefDescription();
-      QCString mdecBrief     = mdec->briefDescription();
-      QCString mdefBriefFile = mdef->briefFile();
-      QCString mdecBriefFile = mdec->briefFile();
+      DString mdefBrief     = mdef->briefDescription();
+      DString mdecBrief     = mdec->briefDescription();
+      DString mdefBriefFile = mdef->briefFile();
+      DString mdecBriefFile = mdec->briefFile();
       int mdefBriefLine      = mdef->briefLine();
       int mdecBriefLine      = mdec->briefLine();
       if (!mdef->isDocTransferDone() && !mdecBrief.empty())
@@ -6235,10 +6235,10 @@ void combineDeclarationAndDefinition(MemberDefMutable *mdec,MemberDefMutable *md
       }
 
       // copy detailed description between definition and declaration
-      QCString mdefDocs   = mdef->documentation();
-      QCString mdecDocs   = mdec->documentation();
-      QCString mdefFile   = mdef->docFile();
-      QCString mdecFile   = mdec->docFile();
+      DString mdefDocs   = mdef->documentation();
+      DString mdecDocs   = mdec->documentation();
+      DString mdefFile   = mdef->docFile();
+      DString mdecFile   = mdec->docFile();
       int mdefLine        = mdef->docLine();
       int mdecLine        = mdec->docLine();
       bool mdefDocsForDef = mdef->isDocsForDefinition();
@@ -6269,10 +6269,10 @@ void combineDeclarationAndDefinition(MemberDefMutable *mdec,MemberDefMutable *md
       }
 
       // copy inbody documentation between definition and declaration
-      QCString mdefInbodyDocs = mdef->inbodyDocumentation();
-      QCString mdecInbodyDocs = mdec->inbodyDocumentation();
-      QCString mdefInbodyFile = mdef->inbodyFile();
-      QCString mdecInbodyFile = mdec->inbodyFile();
+      DString mdefInbodyDocs = mdef->inbodyDocumentation();
+      DString mdecInbodyDocs = mdec->inbodyDocumentation();
+      DString mdefInbodyFile = mdef->inbodyFile();
+      DString mdecInbodyFile = mdec->inbodyFile();
       int mdefInbodyLine      = mdef->inbodyLine();
       int mdecInbodyLine      = mdec->inbodyLine();
       if (!mdec->isDocTransferDone() && !mdefInbodyDocs.empty())
@@ -6341,7 +6341,7 @@ void combineDeclarationAndDefinition(MemberDefMutable *mdec,MemberDefMutable *md
   }
 }
 
-QCString MemberDefImpl::briefDescription(bool abbr) const
+DString MemberDefImpl::briefDescription(bool abbr) const
 {
   if (m_templateMaster)
   {
@@ -6353,7 +6353,7 @@ QCString MemberDefImpl::briefDescription(bool abbr) const
   }
 }
 
-QCString MemberDefImpl::documentation() const
+DString MemberDefImpl::documentation() const
 {
   if (m_templateMaster)
   {
@@ -6471,7 +6471,7 @@ void addDocCrossReference(const MemberDef *s,const MemberDef *d)
       src->isCallable()
      )
   {
-    QCString sourceRefName = src->sourceRefName();
+    DString sourceRefName = src->sourceRefName();
     MemberDefMutable *mdDef = toMemberDefMutable(dst->memberDefinition());
     MemberDefMutable *mdDecl = toMemberDefMutable(dst->memberDeclaration());
 
@@ -6492,7 +6492,7 @@ void addDocCrossReference(const MemberDef *s,const MemberDef *d)
       src->isCallable()
      )
   {
-    QCString sourceRefName = dst->sourceRefName();
+    DString sourceRefName = dst->sourceRefName();
     MemberDefMutable *mdDef = toMemberDefMutable(src->memberDefinition());
     MemberDefMutable *mdDecl = toMemberDefMutable(src->memberDeclaration());
 

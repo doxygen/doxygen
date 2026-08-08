@@ -21,7 +21,7 @@
 #include "definition.h"
 #include "config.h"
 
-RefList::RefList(const QCString &listName, const QCString &pageTitle, const QCString &secTitle) :
+RefList::RefList(const DString &listName, const DString &pageTitle, const DString &secTitle) :
        m_listName(listName), m_fileName(convertNameToFile(listName,false,true)),
        m_pageTitle(pageTitle), m_secTitle(secTitle)
 {
@@ -58,12 +58,12 @@ void RefList::generatePage()
 
   std::stable_sort(m_entries.begin(),m_entries.end(),
             [](const std::unique_ptr<RefItem> &left,const std::unique_ptr<RefItem> &right)
-            { return qstricmp_sort(left->title(),right->title()) < 0; });
+            { return dstricmp_sort(left->title(),right->title()) < 0; });
   //RefItem *item;
-  QCString doc;
+  DString doc;
   int cnt = 0;
   doc += "<dl class=\"reflist\">";
-  QCString lastGroup;
+  DString lastGroup;
   bool first=true;
   for (const std::unique_ptr<RefItem> &item : m_entries)
   {
@@ -91,7 +91,7 @@ void RefList::generatePage()
       doc += " \\_internalref ";
       doc += item->name();
       // escape \'s in title, see issue #5901
-      QCString escapedTitle = substitute(item->title(),"\\","\\\\");
+      DString escapedTitle = substitute(item->title(),"\\","\\\\");
       doc += " \""+escapedTitle+"\" ";
       // write declaration in case a function with arguments
       if (!item->args().empty())

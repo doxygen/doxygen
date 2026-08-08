@@ -37,17 +37,17 @@ class ModuleDef;
 
 struct ImportInfo
 {
-  ImportInfo(ModuleDef *def,const QCString &name,int l,const QCString &pName,bool isExported=false)
+  ImportInfo(ModuleDef *def,const DString &name,int l,const DString &pName,bool isExported=false)
     : moduleDef(def), importName(name), line(l), partitionName(pName), exported(isExported) {}
 
   ModuleDef     *moduleDef;
-  QCString       importName;
+  DString       importName;
   int            line;
-  QCString       partitionName;
+  DString       partitionName;
   bool           exported;
-  QCString qualifiedName() const
+  DString qualifiedName() const
   {
-    QCString result=importName;
+    DString result=importName;
     if (!partitionName.empty())
     {
       result+=":"+partitionName;
@@ -72,7 +72,7 @@ class ModuleDef : public DefinitionMutable, public Definition
       Implementation
     };
     virtual Type moduleType() const = 0;
-    virtual QCString partitionName() const = 0;
+    virtual DString partitionName() const = 0;
     virtual void writeDocumentation(OutputList &ol) = 0;
     virtual bool isPrimaryInterface() const = 0;
     virtual MemberList *getMemberList(MemberListType lt) const = 0;
@@ -100,7 +100,7 @@ class ModuleLinkedRefMap final : public LinkedRefMap<ModuleDef>
 {
   public:
     bool declVisible() const;
-    void writeDeclaration(OutputList &ol,const QCString &header,bool localNames) const;
+    void writeDeclaration(OutputList &ol,const DString &header,bool localNames) const;
 };
 
 class ModuleList final : public std::vector<ModuleDef *>
@@ -111,16 +111,16 @@ class ModuleManager
 {
   public:
     static ModuleManager &instance();
-    void createModuleDef(const QCString &fileName, int line, int column, bool exported,
-                         const QCString &moduleName, const QCString &partitionName=QCString());
+    void createModuleDef(const DString &fileName, int line, int column, bool exported,
+                         const DString &moduleName, const DString &partitionName=DString());
     void clear();
-    void addHeader(const QCString &moduleFile,int line,const QCString &headerName,bool isSystem);
-    void addImport(const QCString &moduleFile,int line,const QCString &importName,bool isExported,const QCString &partitionName=QCString());
+    void addHeader(const DString &moduleFile,int line,const DString &headerName,bool isSystem);
+    void addImport(const DString &moduleFile,int line,const DString &importName,bool isExported,const DString &partitionName=DString());
     void addClassToModule    (const Entry *root,ClassDef *cd);
     void addConceptToModule  (const Entry *root,ConceptDef *cd);
     void addMemberToModule   (const Entry *root,MemberDef *md);
     void addDocs(const Entry *root);
-    void addTagInfo(const QCString &moduleFile,const QCString &tagName,const QCString &clangId);
+    void addTagInfo(const DString &moduleFile,const DString &tagName,const DString &clangId);
     void addListReferences();
     void addRequirementReferences();
     void addMembersToMemberGroup();
@@ -136,7 +136,7 @@ class ModuleManager
     int numDocumentedModules() const;
     ModuleLinkedMap &modules();
     const ModuleLinkedMap &modules() const;
-    ModuleDef *getPrimaryInterface(const QCString &moduleName) const;
+    ModuleDef *getPrimaryInterface(const DString &moduleName) const;
 
   private:
     ModuleManager();

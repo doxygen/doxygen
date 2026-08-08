@@ -31,8 +31,8 @@ class MemberName
     using reverse_iterator = typename Vec::reverse_iterator;
     using const_reverse_iterator = typename Vec::const_reverse_iterator;
 
-    MemberName(const QCString &name) : m_name(name) {}
-    QCString memberName() const { return m_name; }
+    MemberName(const DString &name) : m_name(name) {}
+    DString memberName() const { return m_name; }
 
     iterator begin()                       { return m_members.begin();   }
     iterator end()                         { return m_members.end();     }
@@ -54,7 +54,7 @@ class MemberName
     void push_back(Ptr &&p)                { m_members.push_back(std::move(p)); }
 
   private:
-    QCString m_name;
+    DString m_name;
     Vec m_members;
 };
 
@@ -62,7 +62,7 @@ class MemberName
 class MemberNameLinkedMap final : public LinkedMap<MemberName>
 {
   public:
-    MemberName::Ptr take(const QCString &key,const MemberDef *value)
+    MemberName::Ptr take(const DString &key,const MemberDef *value)
     {
       MemberName::Ptr result;
       MemberName *mn = find(key);
@@ -96,14 +96,14 @@ class MemberInfo
     Protection prot() const                     { return m_prot;      }
     Specifier  virt() const                     { return m_virt;      }
     bool       inherited() const                { return m_inherited; }
-    QCString   scopePath() const                { return m_scopePath; }
-    QCString   ambiguityResolutionScope() const { return m_ambiguityResolutionScope; }
+    DString   scopePath() const                { return m_scopePath; }
+    DString   ambiguityResolutionScope() const { return m_ambiguityResolutionScope; }
     const ClassDef  *ambigClass() const         { return m_ambigClass; }
     bool       virtualBaseClass() const         { return m_virtBaseClass; }
 
     // setters
-    void setAmbiguityResolutionScope(const QCString &s) { m_ambiguityResolutionScope = s; }
-    void setScopePath(const QCString &s)                { m_scopePath = s; }
+    void setAmbiguityResolutionScope(const DString &s) { m_ambiguityResolutionScope = s; }
+    void setScopePath(const DString &s)                { m_scopePath = s; }
     void setAmbigClass(const ClassDef *cd)              { m_ambigClass = cd; }
 
   private:
@@ -111,8 +111,8 @@ class MemberInfo
     Protection     m_prot;
     Specifier      m_virt;
     bool           m_inherited;
-    QCString       m_scopePath;
-    QCString       m_ambiguityResolutionScope;
+    DString       m_scopePath;
+    DString       m_ambiguityResolutionScope;
     const ClassDef *m_ambigClass = nullptr;
     bool           m_virtBaseClass;
 };
@@ -125,8 +125,8 @@ class MemberNameInfo
     using iterator = typename Vec::iterator;
     using const_iterator = typename Vec::const_iterator;
 
-    MemberNameInfo(const QCString &name) : m_name(name) {}
-    QCString memberName() const { return m_name; }
+    MemberNameInfo(const DString &name) : m_name(name) {}
+    DString memberName() const { return m_name; }
 
     iterator begin()                       { return m_members.begin();   }
     iterator end()                         { return m_members.end();     }
@@ -142,7 +142,7 @@ class MemberNameInfo
     iterator erase(iterator pos)           { return m_members.erase(pos); }
 
   private:
-    QCString m_name;
+    DString m_name;
     Vec m_members;
 };
 

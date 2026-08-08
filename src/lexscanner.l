@@ -52,7 +52,7 @@ typedef yyguts_t *yyscan_t;
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
 
-#define repeatChar(chr, cnt) QCString().fill(chr,cnt)
+#define repeatChar(chr, cnt) DString().fill(chr,cnt)
 
 struct lexscannerYY_state
 {
@@ -69,19 +69,19 @@ struct lexscannerYY_state
   int              curlyCount = 0;
 
   bool             insideCode = false;
-  QCString         delimiter;
-  QCString         docBlockName;
+  DString         delimiter;
+  DString         docBlockName;
   size_t           fencedSize = 0;
   bool             nestedComment = false;
 
-  QCString         prefix = "yy";
+  DString         prefix = "yy";
   bool             reentrant = false;
   bool             bison_bridge = false;
   bool             bison_locations = false;
-  QCString         cCodeBuffer;
+  DString         cCodeBuffer;
   int              roundCount = 0;
 
-  QCString         fileName;
+  DString         fileName;
   ClangTUParser   *clangParser = nullptr;
 
   std::shared_ptr<Entry> current;
@@ -522,7 +522,7 @@ NONLopt [^\n]*
                           }
 <SkipCurly>{B}*{RAWBEGIN}  {
                             char *p=yytext;
-                            while (*p && qisspace(*p)) p++;
+                            while (*p && disspace(*p)) p++;
                             yyextra->delimiter = extractBeginRawStringDelimiter(p);
                             yyextra->lastRawStringContext = YY_START;
                             yyextra->cCodeBuffer += yytext;
@@ -751,7 +751,7 @@ NONLopt [^\n]*
                           }
 <DocBlock>^({B}*"*"+)?{B}{0,3}"~~~"[~]* {
                             yyextra->cCodeBuffer += yytext;
-                            QCString pat = substitute(yytext,"*"," ");
+                            DString pat = substitute(yytext,"*"," ");
                             yyextra->docBlockName="~~~";
                             yyextra->fencedSize=pat.stripWhiteSpace().length();
                             yyextra->nestedComment=false;
@@ -759,7 +759,7 @@ NONLopt [^\n]*
                           }
 <DocBlock>^({B}*"*"+)?{B}{0,3}"```"[`]* {
                             yyextra->cCodeBuffer += yytext;
-                            QCString pat = substitute(yytext,"*"," ");
+                            DString pat = substitute(yytext,"*"," ");
                             yyextra->docBlockName="```";
                             yyextra->fencedSize=pat.stripWhiteSpace().length();
                             yyextra->nestedComment=false;
@@ -857,7 +857,7 @@ NONLopt [^\n]*
                           }
 <DocCopyBlock>^({B}*"*"+)?{B}{0,3}"~~~"[~]* {
                             yyextra->cCodeBuffer += yytext;
-                            QCString pat = substitute(yytext,"*"," ");
+                            DString pat = substitute(yytext,"*"," ");
                             if (yyextra->docBlockName == "~~~" && yyextra->fencedSize==pat.stripWhiteSpace().length())
                             {
                               BEGIN(DocBlock);
@@ -865,7 +865,7 @@ NONLopt [^\n]*
                           }
 <DocCopyBlock>^({B}*"*"+)?{B}{0,3}"```"[`]* {
                             yyextra->cCodeBuffer += yytext;
-                            QCString pat = substitute(yytext,"*"," ");
+                            DString pat = substitute(yytext,"*"," ");
                             if (yyextra->docBlockName == "```" && yyextra->fencedSize==pat.stripWhiteSpace().length())
                             {
                               BEGIN(DocBlock);
@@ -940,7 +940,7 @@ static int yyread(yyscan_t yyscanner,char *buf,int max_size)
 //-----------------------------------------------------------------------------
 
 static void parseMain(yyscan_t yyscanner,
-                      const QCString &fileName,
+                      const DString &fileName,
                       const char *fileBuf,
                       const std::shared_ptr<Entry> &rt,
                       ClangTUParser *clangParser)
@@ -1011,7 +1011,7 @@ LexOutlineParser::~LexOutlineParser()
   lexscannerYYlex_destroy(p->yyscanner);
 }
 
-void LexOutlineParser::parseInput(const QCString &fileName,
+void LexOutlineParser::parseInput(const DString &fileName,
                                   const char *fileBuf,
                                   const std::shared_ptr<Entry> &root,
                                   ClangTUParser *clangParser)

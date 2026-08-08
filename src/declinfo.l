@@ -56,18 +56,18 @@ struct declinfoYY_state
 {
      const char  *inputString;
      int          inputPosition;
-     QCString     scope;
-     QCString     className;
-     QCString     classTempList;
-     QCString     funcTempList;
-     QCString     type;
-     QCString     name;
-     QCString     args;
+     DString     scope;
+     DString     className;
+     DString     classTempList;
+     DString     funcTempList;
+     DString     type;
+     DString     name;
+     DString     args;
      int          sharpCount;
      int          roundCount;
      bool         classTempListFound;
      bool         funcTempListFound;
-     QCString     exceptionString;
+     DString     exceptionString;
      bool         insideObjC;
      bool         insidePHP;
      bool         insidePython;
@@ -139,7 +139,7 @@ ID	([$a-z_A-Z\x80-\xFF][$a-z_A-Z0-9\x80-\xFF]*)|(@[0-9]+)
 <Start>"anonymous_namespace{"[^}]+"}" { // anonymous namespace
  				  if (!yyextra->scope.empty())
 				  {
-				    yyextra->scope+=QCString("::")+yytext;
+				    yyextra->scope+=DString("::")+yytext;
 				  }
 				  else
 				  {
@@ -179,7 +179,7 @@ ID	([$a-z_A-Z\x80-\xFF][$a-z_A-Z0-9\x80-\xFF]*)|(@[0-9]+)
                                   if (yyextra->insidePHP) REJECT;
                                   if (yyextra->insidePython) REJECT;
   				  addType(yyscanner);
-				  QCString text(yytext);
+				  DString text(yytext);
 				  yyextra->type+=text.stripWhiteSpace();
   				}
 <Start>{B}*")"			{
@@ -322,8 +322,8 @@ static int yyread(char *buf,int max_size, yyscan_t yyscanner)
 static yyscan_t g_yyscanner;
 static struct declinfoYY_state g_declinfo_extra;
 
-void parseFuncDecl(const QCString &decl,const SrcLangExt lang,QCString &cl,QCString &t,
-                   QCString &n,QCString &a,QCString &ftl,QCString &exc)
+void parseFuncDecl(const DString &decl,const SrcLangExt lang,DString &cl,DString &t,
+                   DString &n,DString &a,DString &ftl,DString &exc)
 {
   if (decl.empty())
   {
@@ -361,7 +361,7 @@ void parseFuncDecl(const QCString &decl,const SrcLangExt lang,QCString &cl,QCStr
   //printf("yyextra->type='%s' class='%s' yyextra->name='%s' yyextra->args='%s'\n",
   //        qPrint(yyextra->type),qPrint(yyextra->scope),qPrint(yyextra->name),qPrint(yyextra->args));
 
-  if (size_t nb = yyextra->name.rfind('[') ; nb!=QCString::npos && yyextra->args.empty()) // correct for [] in yyextra->name ambiguity (due to Java return yyextra->type allowing [])
+  if (size_t nb = yyextra->name.rfind('[') ; nb!=DString::npos && yyextra->args.empty()) // correct for [] in yyextra->name ambiguity (due to Java return yyextra->type allowing [])
   {
     yyextra->args.prepend(yyextra->name.mid(nb));
     yyextra->name=yyextra->name.left(nb);
@@ -370,7 +370,7 @@ void parseFuncDecl(const QCString &decl,const SrcLangExt lang,QCString &cl,QCStr
   cl=yyextra->scope;
   n=removeRedundantWhiteSpace(yyextra->name);
   size_t il=n.find('<'), ir=n.rfind('>');
-  if (il!=QCString::npos && ir!=QCString::npos && n.at(il+1)!='=')
+  if (il!=DString::npos && ir!=DString::npos && n.at(il+1)!='=')
     // prevent <=>
     // TODO: handle cases like where n="operator<< <T>"
   {
@@ -399,12 +399,12 @@ void parseFuncDecl(const QCString &decl,const SrcLangExt lang,QCString &cl,QCStr
 #if 0
 void dumpDecl(const char *s)
 {
-  QCString yyextra->className;
-  QCString classTNames;
-  QCString yyextra->type;
-  QCString yyextra->name;
-  QCString yyextra->args;
-  QCString funcTNames;
+  DString yyextra->className;
+  DString classTNames;
+  DString yyextra->type;
+  DString yyextra->name;
+  DString yyextra->args;
+  DString funcTNames;
   msg("-----------------------------------------\n");
   parseFuncDecl(s,yyextra->className,classTNames,yyextra->type,yyextra->name,yyextra->args,funcTNames);
   msg("yyextra->type='{}' class='{}' classTempl='{}' yyextra->name='{}' "

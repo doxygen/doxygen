@@ -19,7 +19,7 @@
 #include <map>
 #include <vector>
 
-#include "qcstring.h"
+#include "dstring.h"
 #include "dotgraph.h" // only for GraphOutputFormat
 #include "dotfilepatcher.h"
 #include "dotrunner.h"
@@ -35,7 +35,7 @@ class DotManager
   public:
     static DotManager *instance();
     void addJob(const DotJob &newJob);
-    DotFilePatcher *createFilePatcher(const QCString &fileName);
+    DotFilePatcher *createFilePatcher(const DString &fileName);
     bool needToRun() const { return m_jobs.size()+m_filePatchers.size()>0; }
     bool run();
 
@@ -50,13 +50,13 @@ class DotManager
 
 };
 
-void writeDotGraphFromFile(const QCString &inFile,const QCString &outDir,
-                           const QCString &outFile,GraphOutputFormat format,
-                           const QCString &srcFile,int srcLine,bool toIndex);
+void writeDotGraphFromFile(const DString &inFile,const DString &outDir,
+                           const DString &outFile,GraphOutputFormat format,
+                           const DString &srcFile,int srcLine,bool toIndex);
 void writeDotImageMapFromFile(TextStream &t,
-                              const QCString &inFile, const QCString& outDir,
-                              const QCString &relPath,const QCString& baseName,
-                              const QCString &context,int graphId,
-                              const QCString &srcFile,int srcLine,bool newFile);
+                              const DString &inFile, const DString& outDir,
+                              const DString &relPath,const DString& baseName,
+                              const DString &context,int graphId,
+                              const DString &srcFile,int srcLine,bool newFile);
 
 #endif // DOT_H

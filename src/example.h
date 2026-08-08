@@ -19,7 +19,7 @@
 #include <algorithm>
 #include <vector>
 
-#include "qcstring.h"
+#include "dstring.h"
 
 class ClassDef;
 class MemberName;
@@ -27,10 +27,10 @@ class MemberName;
 /** Data associated with an example. */
 struct Example
 {
-  Example(const QCString &a,const QCString &n,const QCString &f) : anchor(a), name(n), file(f) {}
-  QCString anchor;
-  QCString name;
-  QCString file;
+  Example(const DString &a,const DString &n,const DString &f) : anchor(a), name(n), file(f) {}
+  DString anchor;
+  DString name;
+  DString file;
 };
 
 class ExampleList final : public std::vector<Example>

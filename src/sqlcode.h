@@ -21,7 +21,7 @@
 
 class FileDef;
 class MemberDef;
-class QCString;
+class DString;
 class Definition;
 
 /** SQL scanner. Only support syntax highlighting of code at the moment.
@@ -34,8 +34,8 @@ class SQLCodeParser final : public CodeParserInterface
     NON_COPYABLE(SQLCodeParser)
 
     void parseCode(OutputCodeList &codeOutIntf,
-                   const QCString &scopeName,
-                   const QCString &input,
+                   const DString &scopeName,
+                   const DString &input,
                    SrcLangExt,
                    bool stripCodeComments,
                    const CodeParserOptions &options

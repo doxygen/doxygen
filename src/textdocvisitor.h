@@ -19,7 +19,7 @@
 #ifndef TEXTDOCVISITOR_H
 #define TEXTDOCVISITOR_H
 
-#include "qcstring.h"
+#include "dstring.h"
 #include "docvisitor.h"
 #include "docnode.h"
 #include "textstream.h"
@@ -109,7 +109,7 @@ class TextDocVisitor final : public DocVisitor
 
   private:
 
-    void filter(const QCString &str);
+    void filter(const DString &str);
 
     TextStream &m_t;
 };

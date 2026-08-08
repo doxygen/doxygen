@@ -27,7 +27,7 @@
 #include <functional>
 #include <variant>
 
-#include "qcstring.h"
+#include "dstring.h"
 #include "utf8.h"
 
 #define NUM_SEARCH_INDICES 22
@@ -35,19 +35,19 @@
 class SectionInfo;
 class Definition;
 
-//QCString searchId(const Definition *d);
-QCString searchName(const Definition *d);
+//DString searchId(const Definition *d);
+DString searchName(const Definition *d);
 
 //! Searchable term
 struct SearchTerm
 {
   using LinkInfo = std::variant<std::monostate,const Definition *,const SectionInfo *>;
-  SearchTerm(const QCString &w,const Definition *d)  : word(w.str()), info(d)  { makeTitle(); }
-  SearchTerm(const QCString &w,const SectionInfo *s) : word(w.str()), info(s)  { makeTitle(); }
-  QCString word;                 //!< lower case word that is indexed (e.g. name of a symbol, or word from a title)
-  QCString title;                //!< title to show in the output for this search result
+  SearchTerm(const DString &w,const Definition *d)  : word(w.str()), info(d)  { makeTitle(); }
+  SearchTerm(const DString &w,const SectionInfo *s) : word(w.str()), info(s)  { makeTitle(); }
+  DString word;                 //!< lower case word that is indexed (e.g. name of a symbol, or word from a title)
+  DString title;                //!< title to show in the output for this search result
   LinkInfo info;                 //!< definition to link to
-  QCString termEncoded() const;  //!< encoded version of the search term
+  DString termEncoded() const;  //!< encoded version of the search term
 private:
   void makeTitle();
 };
@@ -62,8 +62,8 @@ using SearchIndexMap  = std::map<std::string,SearchIndexList>; // key is startin
 struct SearchIndexInfo
 {
   void add(const SearchTerm &term);
-  QCString name;
-  std::function<QCString()> getText;
+  DString name;
+  std::function<DString()> getText;
   SearchIndexMap symbolMap;
 };
 

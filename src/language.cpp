@@ -121,6 +121,6 @@ void setTranslator(OUTPUT_LANGUAGE_t langName)
     case OUTPUT_LANGUAGE_t::Vietnamese:          theTranslator = new TranslatorVietnamese; break;
   }
 
-  QCString msg = theTranslator->updateNeededMessage();
+  DString msg = theTranslator->updateNeededMessage();
   if (!msg.empty()) ConfigImpl::config_warn("{}", qPrint(msg));
 }

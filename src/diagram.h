@@ -20,7 +20,7 @@
 #define DIAGRAM_H
 
 #include <memory>
-#include "qcstring.h"
+#include "dstring.h"
 #include "construct.h"
 
 class ClassDef;
@@ -33,10 +33,10 @@ class ClassDiagram
     ClassDiagram(const ClassDef *root);
    ~ClassDiagram();
     NON_COPYABLE(ClassDiagram)
-    void writeFigure(TextStream &t,const QCString &path,
-                     const QCString &file) const;
-    void writeImage(TextStream &t,const QCString &path,const QCString &relPath,
-                     const QCString &file,bool generateMap,bool toIndex) const;
+    void writeFigure(TextStream &t,const DString &path,
+                     const DString &file) const;
+    void writeImage(TextStream &t,const DString &path,const DString &relPath,
+                     const DString &file,bool generateMap,bool toIndex) const;
   private:
     struct Private;
     std::unique_ptr<Private> p;

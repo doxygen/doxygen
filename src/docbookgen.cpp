@@ -58,7 +58,7 @@
 // debug to stdout
 //#define Docbook_DB(x) printf x
 // debug inside output
-//#define Docbook_DB(x) QCString __t;__t.sprintf x;m_t << __t
+//#define Docbook_DB(x) DString __t;__t.sprintf x;m_t << __t
 
 #if 0
 #define DB_GEN_C DB_GEN_C1(m_t)
@@ -74,12 +74,12 @@
 
 //------------------
 
-inline void writeDocbookString(TextStream &t,const QCString &s)
+inline void writeDocbookString(TextStream &t,const DString &s)
 {
   t << DocbookGenerator::convertToDocbook(s);
 }
 
-inline void writeDocbookCodeString(bool hide,TextStream &t,const QCString &str, size_t &col, size_t stripIndentAmount)
+inline void writeDocbookCodeString(bool hide,TextStream &t,const DString &str, size_t &col, size_t stripIndentAmount)
 {
   if (str.empty()) return;
   const int tabSize = Config_getInt(TAB_SIZE);
@@ -134,7 +134,7 @@ inline void writeDocbookCodeString(bool hide,TextStream &t,const QCString &str, 
   }
 }
 
-static void addIndexTerm(TextStream &t, QCString prim, QCString sec = "")
+static void addIndexTerm(TextStream &t, DString prim, DString sec = "")
 {
   t << "<indexterm><primary>";
   t << DocbookGenerator::convertToDocbook(prim);
@@ -147,8 +147,8 @@ static void addIndexTerm(TextStream &t, QCString prim, QCString sec = "")
   }
   t << "</indexterm>\n";
 }
-void writeDocbookLink(TextStream &t,const QCString & /*extRef*/,const QCString &compoundId,
-    const QCString &anchorId,const QCString & text,const QCString & /*tooltip*/)
+void writeDocbookLink(TextStream &t,const DString & /*extRef*/,const DString &compoundId,
+    const DString &anchorId,const DString & text,const DString & /*tooltip*/)
 {
   t << "<link linkend=\"_" << stripPath(compoundId);
   if (!anchorId.empty()) t << "_1" << anchorId;
@@ -162,7 +162,7 @@ DocbookCodeGenerator::DocbookCodeGenerator(TextStream *t) : m_t(t)
 {
 }
 
-void DocbookCodeGenerator::codify(const QCString &text)
+void DocbookCodeGenerator::codify(const DString &text)
 {
   Docbook_DB(("(codify \"%s\")\n",text));
   writeDocbookCodeString(m_hide,*m_t,text,m_col,static_cast<size_t>(m_stripIndentAmount));
@@ -189,9 +189,9 @@ void DocbookCodeGenerator::setStripIndentAmount(size_t amount)
 }
 
 void DocbookCodeGenerator::writeCodeLink(CodeSymbolType,
-    const QCString &ref,const QCString &file,
-    const QCString &anchor,const QCString &name,
-    const QCString &tooltip)
+    const DString &ref,const DString &file,
+    const DString &anchor,const DString &name,
+    const DString &tooltip)
 {
   if (m_hide) return;
   Docbook_DB(("(writeCodeLink)\n"));
@@ -200,9 +200,9 @@ void DocbookCodeGenerator::writeCodeLink(CodeSymbolType,
 }
 
 void DocbookCodeGenerator::writeCodeLinkLine(CodeSymbolType,
-    const QCString &,const QCString &file,
-    const QCString &,const QCString &name,
-    const QCString &,bool writeLineAnchor)
+    const DString &,const DString &file,
+    const DString &,const DString &name,
+    const DString &,bool writeLineAnchor)
 {
   if (m_hide) return;
   Docbook_DB(("(writeCodeLinkLine)\n"));
@@ -214,8 +214,8 @@ void DocbookCodeGenerator::writeCodeLinkLine(CodeSymbolType,
   m_col+=name.length();
 }
 
-void DocbookCodeGenerator::writeTooltip(const QCString &, const DocLinkInfo &, const QCString &,
-                  const QCString &, const SourceLinkInfo &, const SourceLinkInfo &
+void DocbookCodeGenerator::writeTooltip(const DString &, const DocLinkInfo &, const DString &,
+                  const DString &, const SourceLinkInfo &, const SourceLinkInfo &
                  )
 {
   Docbook_DB(("(writeToolTip)\n"));
@@ -240,7 +240,7 @@ void DocbookCodeGenerator::endCodeLine()
   m_insideCodeLine=false;
 }
 
-void DocbookCodeGenerator::startFontClass(const QCString &colorClass)
+void DocbookCodeGenerator::startFontClass(const DString &colorClass)
 {
   if (m_hide) return;
   Docbook_DB(("(startFontClass)\n"));
@@ -256,29 +256,29 @@ void DocbookCodeGenerator::endFontClass()
   m_insideSpecialHL=false;
 }
 
-void DocbookCodeGenerator::writeCodeAnchor(const QCString &)
+void DocbookCodeGenerator::writeCodeAnchor(const DString &)
 {
   Docbook_DB(("(writeCodeAnchor)\n"));
 }
 
-void DocbookCodeGenerator::writeLineNumber(const QCString &ref,const QCString &fileName,
-    const QCString &anchor,int l,bool writeLineAnchor)
+void DocbookCodeGenerator::writeLineNumber(const DString &ref,const DString &fileName,
+    const DString &anchor,int l,bool writeLineAnchor)
 {
   if (m_hide) return;
   Docbook_DB(("(writeLineNumber)\n"));
   m_insideCodeLine = true;
   if (Config_getBool(SOURCE_BROWSER))
   {
-    QCString lineNumber;
+    DString lineNumber;
     lineNumber.sprintf("%05d",l);
 
     if (!m_sourceFileName.empty())
     {
-      writeCodeLinkLine(CodeSymbolType::Default,ref,m_sourceFileName,anchor,lineNumber,QCString(),writeLineAnchor);
+      writeCodeLinkLine(CodeSymbolType::Default,ref,m_sourceFileName,anchor,lineNumber,DString(),writeLineAnchor);
     }
     if (!fileName.empty())
     {
-      writeCodeLink(CodeSymbolType::Default,ref,fileName,anchor,lineNumber,QCString());
+      writeCodeLink(CodeSymbolType::Default,ref,fileName,anchor,lineNumber,DString());
     }
     else
     {
@@ -298,13 +298,13 @@ void DocbookCodeGenerator::finish()
   endCodeLine();
 }
 
-void DocbookCodeGenerator::startCodeFragment(const QCString &)
+void DocbookCodeGenerator::startCodeFragment(const DString &)
 {
 DB_GEN_C1(*m_t)
   *m_t << "<programlisting linenumbering=\"unnumbered\">";
 }
 
-void DocbookCodeGenerator::endCodeFragment(const QCString &)
+void DocbookCodeGenerator::endCodeFragment(const DString &)
 {
 DB_GEN_C1(*m_t)
   bool wasHidden = m_hide;
@@ -374,7 +374,7 @@ void DocbookGenerator::addCodeGen(OutputCodeList &list)
 
 void DocbookGenerator::init()
 {
-  QCString dir=Config_getString(DOCBOOK_OUTPUT);
+  DString dir=Config_getString(DOCBOOK_OUTPUT);
   Dir d(dir.str());
   if (!d.exists() && !d.mkdir(dir.str()))
   {
@@ -385,18 +385,18 @@ void DocbookGenerator::init()
 }
 void DocbookGenerator::cleanup()
 {
-  QCString dname = Config_getString(DOCBOOK_OUTPUT);
+  DString dname = Config_getString(DOCBOOK_OUTPUT);
   Dir d(dname.str());
   clearSubDirs(d);
 }
 
 
-void DocbookGenerator::startFile(const QCString &name,bool,const QCString &,const QCString &,int,int)
+void DocbookGenerator::startFile(const DString &name,bool,const DString &,const DString &,int,int)
 {
 DB_GEN_C
-  QCString fileName=name;
-  QCString pageName;
-  QCString fileType="section";
+  DString fileName=name;
+  DString pageName;
+  DString fileType="section";
   if (fileName == "refman")
   {
     fileName="index";
@@ -413,7 +413,7 @@ DB_GEN_C
   startPlainFile(fileName);
   m_codeGen->setRelativePath(relPath);
   m_codeGen->setSourceFileName(stripPath(fileName));
-  m_pageLinks = QCString();
+  m_pageLinks = DString();
 
   m_t << "<?xml version='1.0' encoding='UTF-8' standalone='no'?>\n";
   m_t << "<" << fileType << " xmlns=\"http://docbook.org/ns/docbook\" version=\"5.0\" xmlns:xlink=\"http://www.w3.org/1999/xlink\"";
@@ -432,8 +432,8 @@ DB_GEN_C
   // Write page links only after all sections have been closed to avoid bugs
   m_t << m_pageLinks;
 
-  QCString fileType="section";
-  QCString fileName= m_codeGen->sourceFileName();
+  DString fileType="section";
+  DString fileName= m_codeGen->sourceFileName();
   if (fileName == "index.xml")
   {
     fileType="book";
@@ -454,7 +454,7 @@ DB_GEN_C2("IndexSection " << is)
   {
     case IndexSection::isTitlePageStart:
       {
-        QCString dbk_projectName = Config_getString(PROJECT_NAME);
+        DString dbk_projectName = Config_getString(PROJECT_NAME);
         m_t << "    <info>\n";
         m_t << "    <title>" << convertToDocbook(dbk_projectName) << "</title>\n";
         m_t << "    </info>\n";
@@ -545,7 +545,7 @@ DB_GEN_C2("IndexSection " << is)
       {
         if (Doxygen::mainPage)
         {
-          writePageLink(QCString("mainpage"), true);
+          writePageLink(DString("mainpage"), true);
         }
       }
       break;
@@ -712,10 +712,10 @@ DB_GEN_C2("IndexSection " << is)
       break;
   }
 }
-void DocbookGenerator::writePageLink(const QCString &name, bool first)
+void DocbookGenerator::writePageLink(const DString &name, bool first)
 {
 DB_GEN_C
-  QCString link;
+  DString link;
   link.sprintf("    <xi:include href=\"%s.xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>\n",
                name.data());
   if (first)
@@ -731,12 +731,12 @@ DB_GEN_C
   auto astImpl = dynamic_cast<const DocNodeAST*>(ast);
   if (astImpl && sectionLevel<=m_tocState.maxLevel)
   {
-    DocbookDocVisitor visitor(m_t,*m_codeList,ctx?ctx->getDefFileExtension():QCString());
+    DocbookDocVisitor visitor(m_t,*m_codeList,ctx?ctx->getDefFileExtension():DString());
     std::visit(visitor,astImpl->root);
   }
 }
 
-void DocbookGenerator::startParagraph(const QCString &)
+void DocbookGenerator::startParagraph(const DString &)
 {
 DB_GEN_C
   m_t << "<para>\n";
@@ -747,12 +747,12 @@ void DocbookGenerator::endParagraph()
 DB_GEN_C
   m_t << "</para>\n";
 }
-void DocbookGenerator::writeString(const QCString &text)
+void DocbookGenerator::writeString(const DString &text)
 {
 DB_GEN_C
   m_t << text;
 }
-void DocbookGenerator::startMemberHeader(const QCString &,int)
+void DocbookGenerator::startMemberHeader(const DString &,int)
 {
 DB_GEN_C
   m_t << "<simplesect>\n";
@@ -765,16 +765,16 @@ void DocbookGenerator::endMemberHeader()
 DB_GEN_C
   m_t << "    </title>\n";
 }
-void DocbookGenerator::docify(const QCString &str)
+void DocbookGenerator::docify(const DString &str)
 {
 DB_GEN_C
   m_t << convertToDocbook(str);
 }
-static QCString objectLinkToString(const QCString &, const QCString &f,
-                                   const QCString &anchor, const QCString &text)
+static DString objectLinkToString(const DString &, const DString &f,
+                                   const DString &anchor, const DString &text)
 {
 DB_GEN_C
-  QCString result;
+  DString result;
   if (!anchor.empty())
   {
     if (!f.empty()) result += "<link linkend=\"_" + stripPath(f) + "_1" + anchor + "\">";
@@ -788,8 +788,8 @@ DB_GEN_C
   result += "</link>";
   return result;
 }
-void DocbookGenerator::writeObjectLink(const QCString &ref, const QCString &f,
-                                     const QCString &anchor, const QCString &text)
+void DocbookGenerator::writeObjectLink(const DString &ref, const DString &f,
+                                     const DString &anchor, const DString &text)
 {
 DB_GEN_C
   m_t << objectLinkToString(ref,f,anchor,text);
@@ -810,7 +810,7 @@ DB_GEN_C
   if (m_inSimpleSect[m_levelListItem]) m_t << "</simplesect>\n";
   m_inSimpleSect[m_levelListItem] = false;
 }
-void DocbookGenerator::startMemberItem(const QCString &,MemberItemType,const QCString &)
+void DocbookGenerator::startMemberItem(const DString &,MemberItemType,const DString &)
 {
 DB_GEN_C
   if (m_inListItem[m_levelListItem]) m_t << "</listitem>\n";
@@ -832,7 +832,7 @@ void DocbookGenerator::endBold()
 DB_GEN_C
   m_t << "</emphasis>";
 }
-void DocbookGenerator::startGroupHeader(const QCString &,int extraIndentLevel)
+void DocbookGenerator::startGroupHeader(const DString &,int extraIndentLevel)
 {
 DB_GEN_C2("m_inLevel " << m_inLevel)
 DB_GEN_C2("extraIndentLevel " << extraIndentLevel)
@@ -873,7 +873,7 @@ void DocbookGenerator::writeNonBreakableSpace(int n)
 DB_GEN_C
   for (int i=0;i<n;i++) m_t << "&#160;";
 }
-void DocbookGenerator::lineBreak(const QCString &)
+void DocbookGenerator::lineBreak(const DString &)
 {
 DB_GEN_C
   m_t << "<?linebreak?>";
@@ -906,7 +906,7 @@ DB_GEN_C
     m_t << "</programlisting>";
   }
 }
-void DocbookGenerator::startMemberDoc(const QCString &clname, const QCString &memname, const QCString &, const QCString &title,
+void DocbookGenerator::startMemberDoc(const DString &clname, const DString &memname, const DString &, const DString &title,
                                       int memCount, int memTotal, bool)
 {
 DB_GEN_C2("m_inLevel " << m_inLevel)
@@ -928,20 +928,20 @@ void DocbookGenerator::endMemberDoc(bool)
 DB_GEN_C
   m_t << "</computeroutput></para>";
 }
-void DocbookGenerator::startTitleHead(const QCString &)
+void DocbookGenerator::startTitleHead(const DString &)
 {
 DB_GEN_C
   m_t << "<title>";
 }
-void DocbookGenerator::endTitleHead(const QCString &,const QCString &name)
+void DocbookGenerator::endTitleHead(const DString &,const DString &name)
 {
 DB_GEN_C
   m_t << "</title>\n";
   if (!name.empty()) addIndexTerm(m_t, name);
 }
-void DocbookGenerator::startDoxyAnchor(const QCString &fName,const QCString &,
-                                 const QCString &anchor,const QCString &,
-                                 const QCString &)
+void DocbookGenerator::startDoxyAnchor(const DString &fName,const DString &,
+                                 const DString &anchor,const DString &,
+                                 const DString &)
 {
 DB_GEN_C
   if (!m_inListItem[m_levelListItem] && !m_descTable && !m_simpleTable)
@@ -954,11 +954,11 @@ DB_GEN_C
     m_t << "<anchor xml:id=\"_" << stripPath(fName) << "_1" << anchor << "\"/>";
   }
 }
-void DocbookGenerator::endDoxyAnchor(const QCString &,const QCString &)
+void DocbookGenerator::endDoxyAnchor(const DString &,const DString &)
 {
 DB_GEN_C
 }
-void DocbookGenerator::addLabel(const QCString &,const QCString &)
+void DocbookGenerator::addLabel(const DString &,const DString &)
 {
 DB_GEN_C
 }
@@ -971,7 +971,7 @@ void DocbookGenerator::endMemberDocName()
 {
 DB_GEN_C
 }
-void DocbookGenerator::startMemberGroupHeader(const QCString &,bool)
+void DocbookGenerator::startMemberGroupHeader(const DString &,bool)
 {
 DB_GEN_C
   m_t << "<simplesect><title>";
@@ -996,7 +996,7 @@ DB_GEN_C
   m_t << "<para>";
 }
 
-void DocbookGenerator::endClassDiagram(const ClassDiagram &d, const QCString &fileName,const QCString &)
+void DocbookGenerator::endClassDiagram(const ClassDiagram &d, const DString &fileName,const DString &)
 {
 DB_GEN_C
   m_t << "    <informalfigure>\n";
@@ -1015,7 +1015,7 @@ void  DocbookGenerator::startLabels()
 DB_GEN_C
 }
 
-void  DocbookGenerator::writeLabel(const QCString &l,bool isLast)
+void  DocbookGenerator::writeLabel(const DString &l,bool isLast)
 {
 DB_GEN_C
   m_t << "<computeroutput>[" << l << "]</computeroutput>";
@@ -1067,7 +1067,7 @@ void DocbookGenerator::endMemberDocPrefixItem()
 DB_GEN_C
   m_t << "</computeroutput>";
 }
-void DocbookGenerator::exceptionEntry(const QCString &prefix,bool closeBracket)
+void DocbookGenerator::exceptionEntry(const DString &prefix,bool closeBracket)
 {
 DB_GEN_C
   if (!prefix.empty())
@@ -1125,25 +1125,25 @@ void DocbookGenerator::startMemberTemplateParams()
 DB_GEN_C
 }
 
-void DocbookGenerator::endMemberTemplateParams(const QCString &,const QCString &)
+void DocbookGenerator::endMemberTemplateParams(const DString &,const DString &)
 {
 DB_GEN_C
   m_t << "</para>";
   m_t << "<para>";
 }
-void DocbookGenerator::startSection(const QCString &lab,const QCString &,SectionType)
+void DocbookGenerator::startSection(const DString &lab,const DString &,SectionType)
 {
 DB_GEN_C
   openSection("xml:id=\"_" + stripPath(lab) + "\"");
   m_t << "<title>";
 }
-void DocbookGenerator::endSection(const QCString &,SectionType)
+void DocbookGenerator::endSection(const DString &,SectionType)
 {
 DB_GEN_C
   m_t << "</title>";
   closeSection();
 }
-void DocbookGenerator::addIndexItem(const QCString &prim,const QCString &sec)
+void DocbookGenerator::addIndexItem(const DString &prim,const DString &sec)
 {
 DB_GEN_C
   addIndexTerm(m_t, prim, sec);
@@ -1153,7 +1153,7 @@ void DocbookGenerator::startMemberDocSimple(bool isEnum)
 {
 DB_GEN_C
   int ncols=0;
-  QCString title;
+  DString title;
   if (isEnum)
   {
     ncols = 2;
@@ -1220,7 +1220,7 @@ DB_GEN_C
   m_t << "</entry></row>\n";
 }
 
-void DocbookGenerator::startDescTable(const QCString &title,bool hasInits)
+void DocbookGenerator::startDescTable(const DString &title,bool hasInits)
 {
 DB_GEN_C
   int ncols = (hasInits?3:2);
@@ -1314,7 +1314,7 @@ DB_GEN_C
 void DocbookGenerator::endInclDepGraph(DotInclDepGraph &g)
 {
 DB_GEN_C
-  QCString fn = g.writeGraph(m_t,GraphOutputFormat::BITMAP,EmbeddedOutputFormat::DocBook,dir(),fileName(),relPath,false);
+  DString fn = g.writeGraph(m_t,GraphOutputFormat::BITMAP,EmbeddedOutputFormat::DocBook,dir(),fileName(),relPath,false);
 }
 void DocbookGenerator::startCallGraph()
 {
@@ -1323,7 +1323,7 @@ DB_GEN_C
 void DocbookGenerator::endCallGraph(DotCallGraph &g)
 {
 DB_GEN_C
-  QCString fn = g.writeGraph(m_t,GraphOutputFormat::BITMAP,EmbeddedOutputFormat::DocBook,dir(),fileName(),relPath,false);
+  DString fn = g.writeGraph(m_t,GraphOutputFormat::BITMAP,EmbeddedOutputFormat::DocBook,dir(),fileName(),relPath,false);
 }
 void DocbookGenerator::startDirDepGraph()
 {
@@ -1332,7 +1332,7 @@ DB_GEN_C
 void DocbookGenerator::endDirDepGraph(DotDirDeps &g)
 {
 DB_GEN_C
-  QCString fn = g.writeGraph(m_t,GraphOutputFormat::BITMAP,EmbeddedOutputFormat::DocBook,dir(),fileName(),relPath,false);
+  DString fn = g.writeGraph(m_t,GraphOutputFormat::BITMAP,EmbeddedOutputFormat::DocBook,dir(),fileName(),relPath,false);
 }
 void DocbookGenerator::startMemberDocList()
 {
@@ -1343,7 +1343,7 @@ void DocbookGenerator::endMemberDocList()
 DB_GEN_C
   m_inGroup = true;
 }
-void DocbookGenerator::startConstraintList(const QCString &header)
+void DocbookGenerator::startConstraintList(const DString &header)
 {
 DB_GEN_C
   m_t << "<simplesect><title>";
@@ -1383,7 +1383,7 @@ DB_GEN_C
   m_t << "</simplesect>\n";
 }
 
-void DocbookGenerator::openSection(const QCString &attr)
+void DocbookGenerator::openSection(const DString &attr)
 {
    m_t << "<section";
    if (!attr.empty()) m_t << " " << attr;
@@ -1406,9 +1406,9 @@ void DocbookGenerator::closeAllSections()
 }
 
 void DocbookGenerator::writeInheritedSectionTitle(
-                  const QCString &/*id*/,const QCString &ref,
-                  const QCString &file,  const QCString &anchor,
-                  const QCString &title, const QCString &name)
+                  const DString &/*id*/,const DString &ref,
+                  const DString &file,  const DString &anchor,
+                  const DString &title, const DString &name)
 {
 DB_GEN_C
   m_t << theTranslator->trInheritedFrom(convertToDocbook(title), objectLinkToString(ref, file, anchor, name));
@@ -1458,7 +1458,7 @@ void DocbookGenerator::startTocEntry(const SectionInfo *si)
     }
     if (nextLevel <= m_tocState.maxLevel)
     {
-      QCString label = convertToDocbook(si->label());
+      DString label = convertToDocbook(si->label());
       m_t << "      <tocentry>";
     }
   }
@@ -1481,10 +1481,10 @@ void DocbookGenerator::endTocEntry(const SectionInfo *si)
 static constexpr auto hex="0123456789ABCDEF";
 
 /*! Converts a string to an DocBook-encoded string */
-QCString DocbookGenerator::convertToDocbook(const QCString &s, bool retainNewline, bool /* citeEntry */)
+DString DocbookGenerator::convertToDocbook(const DString &s, bool retainNewline, bool /* citeEntry */)
 {
   if (s.empty()) return s;
-  QCString result;
+  DString result;
   result.reserve(s.length()+32);
   const char *p = s.data();
   char c = 0;

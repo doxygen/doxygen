@@ -96,10 +96,10 @@ static EdgeProperties umlEdgeProps =
   umlEdgeColorMap, umlArrowStyleMap, umlEdgeStyleMap
 };
 
-QCString escapeTooltip(const QCString &tooltip)
+DString escapeTooltip(const DString &tooltip)
 {
   if (tooltip.empty()) return tooltip;
-  QCString result;
+  DString result;
   const char *p=tooltip.data();
   char c = 0;
   while ((c=*p++))
@@ -150,14 +150,14 @@ static void writeBoxMemberList(TextStream &t,
         int numFields = Config_getInt(UML_LIMIT_NUM_FIELDS);
         if (numFields>0 && (totalCount>numFields*3/2 && count>=numFields))
         {
-          t << tr_start << tr_mid << theTranslator->trAndMore(QCString().sprintf("%d",totalCount-count)) << tr_end;
+          t << tr_start << tr_mid << theTranslator->trAndMore(DString().sprintf("%d",totalCount-count)) << tr_end;
           lineWritten = true;
           break;
         }
         else
         {
           t << tr_start << prot << tr_mid;
-          QCString label;
+          DString label;
           if (dotUmlDetails==DOT_UML_DETAILS_t::YES)
           {
             label+=mma->typeString();
@@ -193,19 +193,19 @@ static void writeBoxMemberList(TextStream &t,
   }
 }
 
-QCString DotNode::convertLabel(const QCString &l, LabelStyle style)
+DString DotNode::convertLabel(const DString &l, LabelStyle style)
 {
-  QCString bBefore("\\_/<({[: =-+@%#~?$"); // break before character set
-  QCString bAfter(">]),:;|");              // break after  character set
-  if (l.empty()) return QCString();
-  QCString result;
+  DString bBefore("\\_/<({[: =-+@%#~?$"); // break before character set
+  DString bAfter(">]),:;|");              // break after  character set
+  if (l.empty()) return DString();
+  DString result;
   char pc=0;
   uint32_t idx = 0;
   int charsLeft=static_cast<int>(l.length());
   int sinceLast=0;
   int foldLen = Config_getInt(DOT_WRAP_THRESHOLD); // ideal text length
-  QCString br;
-  QCString br1;
+  DString br;
+  DString br1;
   if (style==LabelStyle::Table)
   {
     result += "<<TABLE CELLBORDER=\"0\" BORDER=\"0\"><TR><TD VALIGN=\"top\" ALIGN=\"LEFT\" CELLPADDING=\"1\" CELLSPACING=\"0\">";
@@ -311,7 +311,7 @@ QCString DotNode::convertLabel(const QCString &l, LabelStyle style)
   return result;
 }
 
-static QCString stripProtectionPrefix(const QCString &s)
+static DString stripProtectionPrefix(const DString &s)
 {
   if (!s.empty() && (s[0]=='-' || s[0]=='+' || s[0]=='~' || s[0]=='#'))
   {
@@ -323,7 +323,7 @@ static QCString stripProtectionPrefix(const QCString &s)
   }
 }
 
-DotNode::DotNode(DotGraph *graph,const QCString &lab,const QCString &tip, const QCString &url,
+DotNode::DotNode(DotGraph *graph,const DString &lab,const DString &tip, const DString &url,
   bool isRoot,const ClassDef *cd)
   : m_graph(graph)
   , m_number(graph->getNextNodeNumber())
@@ -338,8 +338,8 @@ DotNode::DotNode(DotGraph *graph,const QCString &lab,const QCString &tip, const 
 void DotNode::addChild(DotNode *n,
   EdgeInfo::Colors edgeColor,
   EdgeInfo::Styles edgeStyle,
-  const QCString &edgeLab,
-  const QCString &edgeURL,
+  const DString &edgeLab,
+  const DString &edgeURL,
   int edgeLabCol
 )
 {
@@ -428,8 +428,8 @@ void DotNode::writeLabel(TextStream &t, GraphType gt) const
       {
         size_t i=0;
         size_t p=0;
-        QCString lab;
-        while ((i=ei.label().find('\n',p))!=QCString::npos)
+        DString lab;
+        while ((i=ei.label().find('\n',p))!=DString::npos)
         {
           lab = stripProtectionPrefix(ei.label().mid(p,i-p));
           arrowNames.insert(lab.str());
@@ -516,21 +516,21 @@ void DotNode::writeUrl(TextStream &t) const
   if (m_url.empty() || m_url == DotNode::placeholderUrl) return;
   size_t tagPos = m_url.rfind('$');
   t << ",URL=\"";
-  QCString noTagURL = m_url;
-  if (tagPos!=QCString::npos)
+  DString noTagURL = m_url;
+  if (tagPos!=DString::npos)
   {
     t << m_url.left(tagPos);
     noTagURL = m_url.mid(tagPos);
   }
   size_t anchorPos = noTagURL.rfind('#');
-  if (anchorPos==QCString::npos)
+  if (anchorPos==DString::npos)
   {
     addHtmlExtensionIfMissing(noTagURL);
     t << noTagURL << "\"";
   }
   else // insert extensiom before anchor
   {
-    QCString fn = noTagURL.left(anchorPos);
+    DString fn = noTagURL.left(anchorPos);
     addHtmlExtensionIfMissing(fn);
     t << fn << noTagURL.mid(anchorPos) << "\"";
   }
@@ -575,7 +575,7 @@ void DotNode::writeBox(TextStream &t,
     (hasNonReachableChildren ? "#FFF0F0" : "white");
   }
   t << "  Node" << m_number << " [";
-  t << "id=\"Node" << QCString().sprintf("%06d",m_number) << "\",";
+  t << "id=\"Node" << DString().sprintf("%06d",m_number) << "\",";
   writeLabel(t,gt);
   t << ",height=0.2,width=0.4";
   if (m_isRoot)
@@ -621,12 +621,12 @@ void DotNode::writeArrow(TextStream &t,
   t << " [";
 
   const EdgeProperties *eProps = Config_getBool(UML_LOOK) ? &umlEdgeProps : &normalEdgeProps;
-  QCString aStyle = eProps->arrowStyleMap[ei->color()];
+  DString aStyle = eProps->arrowStyleMap[ei->color()];
   bool umlUseArrow = aStyle=="odiamond";
 
   t << "id=\"edge" << m_graph->getNextEdgeNumber() <<
-       "_Node" << QCString().sprintf("%06d",m_number) <<
-       "_Node" << QCString().sprintf("%06d",cn->number()) << "\",";
+       "_Node" << DString().sprintf("%06d",m_number) <<
+       "_Node" << DString().sprintf("%06d",cn->number()) << "\",";
   if (pointBack && !umlUseArrow) t << "dir=\"back\",";
   t << "color=\"" << eProps->edgeColorMap[ei->color()] << "\",";
   t << "style=\"" << eProps->edgeStyleMap[ei->style()] << "\"";
@@ -708,9 +708,9 @@ void DotNode::writeXML(TextStream &t,bool isClassGraph) const
   t << "        <label>" << convertToXML(m_label) << "</label>\n";
   if (!m_url.empty())
   {
-    QCString url(m_url);
+    DString url(m_url);
     size_t dollarPos = url.find('$');
-    if (dollarPos!=QCString::npos)
+    if (dollarPos!=DString::npos)
     {
       t << "        <link refid=\"" << convertToXML(url.mid(dollarPos+1)) << "\"";
       if (dollarPos>0)
@@ -747,7 +747,7 @@ void DotNode::writeXML(TextStream &t,bool isClassGraph) const
     {
       size_t p=0;
       size_t ni=0;
-      while ((ni=edgeInfo.label().find('\n',p))!=QCString::npos)
+      while ((ni=edgeInfo.label().find('\n',p))!=DString::npos)
       {
         t << "          <edgelabel>"
           << convertToXML(edgeInfo.label().mid(p,ni-p))
@@ -770,8 +770,8 @@ void DotNode::writeDocbook(TextStream &t,bool isClassGraph) const
   t << "        <label>" << convertToXML(m_label) << "</label>\n";
   if (!m_url.empty())
   {
-    QCString url(m_url);
-    if (size_t dollarPos = url.find('$'); dollarPos!=QCString::npos)
+    DString url(m_url);
+    if (size_t dollarPos = url.find('$'); dollarPos!=DString::npos)
     {
       t << "        <link refid=\"" << convertToXML(url.mid(dollarPos+1)) << "\"";
       if (dollarPos>0)
@@ -808,7 +808,7 @@ void DotNode::writeDocbook(TextStream &t,bool isClassGraph) const
     {
       size_t p=0;
       size_t ni=0;
-      while ((ni=edgeInfo.label().find('\n',p))!=QCString::npos)
+      while ((ni=edgeInfo.label().find('\n',p))!=DString::npos)
       {
         t << "          <edgelabel>"
           << convertToXML(edgeInfo.label().mid(p,ni-p))
@@ -836,8 +836,8 @@ void DotNode::writeDEF(TextStream &t) const
 
   if (!m_url.empty())
   {
-    QCString url(m_url);
-    if (size_t dollarPos = url.find('$'); dollarPos!=QCString::npos)
+    DString url(m_url);
+    if (size_t dollarPos = url.find('$'); dollarPos!=DString::npos)
     {
       t << nodePrefix << "link = {\n" << "  "
         << nodePrefix << "link-id = '" << url.mid(dollarPos+1) << "';\n";

@@ -58,21 +58,21 @@ int genericCompareMembers(const MemberDef *c1,const MemberDef *c2)
       return 1;
   }
   // sort on name, first case in-sensitive
-  int cmp = qstricmp_sort(c1->name(),c2->name());
+  int cmp = dstricmp_sort(c1->name(),c2->name());
   // then on qualified name
   if (cmp==0)
   {
-    cmp = qstricmp_sort(c1->qualifiedName(),c2->qualifiedName());
+    cmp = dstricmp_sort(c1->qualifiedName(),c2->qualifiedName());
   }
   // then on argument list
   if (cmp==0 && !c1->argsString().empty() && !c2->argsString().empty())
   {
-    cmp = qstricmp_sort(c1->argsString(),c2->argsString());
+    cmp = dstricmp_sort(c1->argsString(),c2->argsString());
   }
   // then on file in which the item is defined
   if (cmp==0)
   {
-    cmp = qstricmp_sort(c1->getDefFileName(),c2->getDefFileName());
+    cmp = dstricmp_sort(c1->getDefFileName(),c2->getDefFileName());
   }
   // then on line number at which the member is defined
   if (cmp==0)
@@ -219,8 +219,8 @@ void MemberList::setAnonymousEnumType()
   {
     if (md->isBriefSectionVisible())
     {
-      QCString name(md->name());
-      if (size_t i=name.rfind("::"); i!=QCString::npos) name=name.mid(i+2);
+      DString name(md->name());
+      if (size_t i=name.rfind("::"); i!=DString::npos) name=name.mid(i+2);
       if (md->memberType()==MemberType::Enumeration && name[0]=='@')
       {
         for (const auto &vmd : md->enumFieldList())
@@ -228,8 +228,8 @@ void MemberList::setAnonymousEnumType()
           MemberDefMutable *vmdm = toMemberDefMutable(vmd);
           if (vmdm)
           {
-            QCString vtype=vmd->typeString();
-            if ((vtype.find(name))!=QCString::npos)
+            DString vtype=vmd->typeString();
+            if ((vtype.find(name))!=DString::npos)
             {
               vmdm->setAnonymousEnumType(md);
             }
@@ -247,14 +247,14 @@ void MemberList::setAnonymousEnumType()
 int MemberList::countEnumValues(const MemberDef *md) const
 {
   int numEnumValues=0;
-  QCString name(md->name());
-  if (size_t i=name.rfind("::"); i!=QCString::npos) name=name.mid(i+2);
+  DString name(md->name());
+  if (size_t i=name.rfind("::"); i!=DString::npos) name=name.mid(i+2);
   if (name[0]=='@')
   {
     for (const auto &vmd : m_members)
     {
-      QCString vtype=vmd->typeString();
-      if ((vtype.find(name))!=QCString::npos)
+      DString vtype=vmd->typeString();
+      if ((vtype.find(name))!=DString::npos)
       {
         numEnumValues++;
       }
@@ -313,7 +313,7 @@ bool MemberList::declVisible() const
 
 void MemberList::writePlainDeclarations(OutputList &ol, bool inGroup,
                        const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd, const GroupDef *gd,const ModuleDef *mod,
-                       int indentLevel, const ClassDef *inheritedFrom,const QCString &inheritId
+                       int indentLevel, const ClassDef *inheritedFrom,const DString &inheritId
                       ) const
 {
   //printf("----- writePlainDeclaration() ----\n");
@@ -379,14 +379,14 @@ void MemberList::writePlainDeclarations(OutputList &ol, bool inGroup,
               bool detailsLinkable = md->hasDetailedDescription();
               if (!detailsLinkable)
               {
-                ol.startDoxyAnchor(md->getOutputFileBase(),QCString(),md->anchor(),md->name(),QCString());
+                ol.startDoxyAnchor(md->getOutputFileBase(),DString(),md->anchor(),md->name(),DString());
                 ol.addLabel(md->getOutputFileBase(),md->anchor());
               }
               if (md->isSliceLocal())
               {
                 ol.writeString("local ");
               }
-              QCString enumType = "enum ";
+              DString enumType = "enum ";
               if (md->getLanguage()==SrcLangExt::Cpp && md->isStrong())
               {
                 if (md->isEnumStruct())
@@ -502,12 +502,12 @@ void MemberList::writePlainDeclarations(OutputList &ol, bool inGroup,
  */
 void MemberList::writeDeclarations(OutputList &ol,
              const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,const ModuleDef *mod,
-             const QCString &title,const QCString &subtitle, bool /*showEnumValues*/,
+             const DString &title,const DString &subtitle, bool /*showEnumValues*/,
              bool showInline,const ClassDef *inheritedFrom,MemberListType lt,bool showSectionTitle) const
 {
   //printf("----- writeDeclaration() this=%p ---- inheritedFrom=%p\n",this,inheritedFrom);
   bool optimizeVhdl = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
-  QCString inheritId;
+  DString inheritId;
 
   const Definition  *ctx =  cd;
   if (ctx==nullptr &&  nd) ctx =  nd;
@@ -588,7 +588,7 @@ void MemberList::writeDeclarations(OutputList &ol,
       bool hasHeader=!mg->header().empty();
       if (inheritId.empty())
       {
-        QCString groupAnchor = QCString(listType().toLabel())+"-"+QCString().setNum(groupId++);
+        DString groupAnchor = DString(listType().toLabel())+"-"+DString().setNum(groupId++);
         //printf("mg->header=%s hasHeader=%d\n",qPrint(mg->header()),hasHeader);
         ol.startMemberGroupHeader(groupAnchor,hasHeader);
         if (hasHeader)
@@ -628,8 +628,8 @@ void MemberList::writeDeclarations(OutputList &ol,
 }
 
 void MemberList::writeDocumentation(OutputList &ol,
-                     const QCString &scopeName, const Definition *container,
-                     const QCString &title,const QCString &anchor,
+                     const DString &scopeName, const Definition *container,
+                     const DString &title,const DString &anchor,
                      bool showEnumValues,bool showInline) const
 {
   if (numDocMembers()==-1)
@@ -721,7 +721,7 @@ void MemberList::writeSimpleDocumentation(OutputList &ol,
 
 // separate member pages
 void MemberList::writeDocumentationPage(OutputList &ol,
-                     const QCString &scopeName, const DefinitionMutable *container, int hierarchyLevel) const
+                     const DString &scopeName, const DefinitionMutable *container, int hierarchyLevel) const
 {
   bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
 
@@ -753,8 +753,8 @@ void MemberList::writeDocumentationPage(OutputList &ol,
       auto it = overloadInfo.find(md->name().str());
       uint32_t overloadCount = it->second.total;
       uint32_t &count = it->second.count;
-      QCString diskName=md->getOutputFileBase();
-      QCString title=md->qualifiedName();
+      DString diskName=md->getOutputFileBase();
+      DString title=md->qualifiedName();
       startFile(ol,diskName,false,md->name(),title,HighlightedItem::None,!generateTreeView,diskName, hierarchyLevel);
       if (!generateTreeView)
       {

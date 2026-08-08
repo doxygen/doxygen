@@ -12,7 +12,7 @@
 
 #include <string>
 
-#include "qcstring.h"
+#include "dstring.h"
 #include "containers.h"
 #include "vhdljjparser.h"
 #include "vhdldocgen.h"
@@ -36,14 +36,14 @@ using namespace vhdl::parser;
 
 struct VHDLDocInfo
 {
-  QCString doc;
+  DString doc;
   bool brief;
   bool pending = false;
   int iDocLine = 1;
 };
 
 
-static bool isConstraintFile(const QCString &fileName,const QCString &ext)
+static bool isConstraintFile(const DString &fileName,const DString &ext)
 {
   return fileName.right(ext.length())==ext;
 }
@@ -55,37 +55,37 @@ static EntryList g_instFiles;
 
 struct VHDLOutlineParser::Private
 {
-  void parseVhdlfile(const QCString &fileName,const QCString &inputBuffer,bool inLine);
+  void parseVhdlfile(const DString &fileName,const DString &inputBuffer,bool inLine);
 
   VHDLOutlineParser      *thisParser = nullptr;
   VhdlParser             *vhdlParser = nullptr;
   CommentScanner          commentScanner;
 
-  QCString                yyFileName;
+  DString                yyFileName;
   int                     yyLineNr      = 1;
   IntVector               lineParse;
   int                     iDocLine      = -1;
-  QCString                inputString;
+  DString                inputString;
   Entry*                  gBlock        = nullptr;
   Entry*                  previous      = nullptr;
 //-------------------------------------------------------
 
   Entry*                  oldEntry = nullptr;
   bool                    varr = false;
-  QCString                varName;
+  DString                varName;
   EntryList               libUse;
   EntryList               lineEntry;
-  QCString                strComment;
+  DString                strComment;
   int                     iCodeLen;
   VHDLDocInfo             str_doc;
   VhdlParser::SharedState shared;
-  QCString                forL;
+  DString                forL;
   size_t                  code = 0;
 
 };
 
-void VHDLOutlineParser::Private::parseVhdlfile(const QCString &fileName,
-                                               const QCString &inputBuffer,bool inLine)
+void VHDLOutlineParser::Private::parseVhdlfile(const DString &fileName,
+                                               const DString &inputBuffer,bool inLine)
 {
   CharStream *stream = new CharStream(reinterpret_cast<const JJChar*>(inputBuffer.data()), (int)inputBuffer.size(), 1, 1);
   VhdlParserTokenManager *tokenManager = new VhdlParserTokenManager(stream);
@@ -127,7 +127,7 @@ VHDLOutlineParser::~VHDLOutlineParser()
 {
 }
 
-void VHDLOutlineParser::parseInput(const QCString &fileName,const char *fileBuf,
+void VHDLOutlineParser::parseInput(const DString &fileName,const char *fileBuf,
                                    const std::shared_ptr<Entry> &root, ClangTUParser *)
 {
   VhdlParser::SharedState *s = &p->shared;
@@ -183,7 +183,7 @@ void VHDLOutlineParser::lineCount()
   p->yyLineNr++;
 }
 
-void VHDLOutlineParser::lineCount(const QCString &text)
+void VHDLOutlineParser::lineCount(const DString &text)
 {
   if (!text.empty())
   {
@@ -254,32 +254,32 @@ static int idCounter;
 *	end;
 */
 
-QCString VHDLOutlineParser::getNameID()
+DString VHDLOutlineParser::getNameID()
 {
-  return QCString().setNum(idCounter++);
+  return DString().setNum(idCounter++);
 }
 
-void VHDLOutlineParser::handleFlowComment(const QCString &doc)
+void VHDLOutlineParser::handleFlowComment(const DString &doc)
 {
   lineCount(doc);
 
   if (VhdlDocGen::getFlowMember())
   {
-    QCString qcs(doc);
+    DString qcs(doc);
     qcs=qcs.stripWhiteSpace();
     qcs.stripPrefix("--#");
-    FlowChart::addFlowChart(FlowChart::COMMENT_NO,QCString(),QCString(),qcs);
+    FlowChart::addFlowChart(FlowChart::COMMENT_NO,DString(),DString(),qcs);
   }
 }
 
-int VHDLOutlineParser::checkInlineCode(QCString &doc)
+int VHDLOutlineParser::checkInlineCode(DString &doc)
 {
   static const reg::Ex csRe(R"([\\@]code)");
   static const reg::Ex cendRe(R"(\s*[\\@]endcode)");
   static const reg::Ex cbriefRe(R"([\\@]brief)");
 
   // helper to simulate behavior of QString.find(const QRegExp &re,int pos)
-  auto findRe = [](const QCString &str,const reg::Ex &re,int pos=0) -> size_t
+  auto findRe = [](const DString &str,const reg::Ex &re,int pos=0) -> size_t
   {
     if ((int)str.length()<pos) return -1;
     reg::Match match;
@@ -289,20 +289,20 @@ int VHDLOutlineParser::checkInlineCode(QCString &doc)
     }
     else // not found
     {
-      return QCString::npos;
+      return DString::npos;
     }
   };
-  auto replaceRe = [](const QCString &str,const reg::Ex &re,const QCString &replacement) -> QCString
+  auto replaceRe = [](const DString &str,const reg::Ex &re,const DString &replacement) -> DString
   {
     return reg::replace(str.str(), re, replacement.str());
   };
 
   size_t index = findRe(doc,csRe);
 
-  if (findRe(doc,cendRe)!=QCString::npos)
+  if (findRe(doc,cendRe)!=DString::npos)
     return 1;
 
-  if (index==QCString::npos)
+  if (index==DString::npos)
     return index;
 
   VhdlParser::SharedState *s = &p->shared;
@@ -314,24 +314,24 @@ int VHDLOutlineParser::checkInlineCode(QCString &doc)
 
   size_t ll = com + len;
   int diff = static_cast<int>(ref) - static_cast<int>(ll) - 3;
-  QCString code = p->inputString.mid(ll, diff);
+  DString code = p->inputString.mid(ll, diff);
   int iLine = 0;
   code = stripLeadingAndTrailingEmptyLines(code, iLine);
   int val = code.contains('\n');
   VhdlDocGen::prepareComment(p->strComment);
   StringVector ql = split(p->strComment.str(),"\n");
 
-  QCString co;
-  QCString na;
+  DString co;
+  DString na;
   for (const auto &qcs_ : ql)
   {
-    QCString qcs(qcs_);
+    DString qcs(qcs_);
     qcs = qcs.simplifyWhiteSpace();
-    if (findRe(qcs,csRe)!=QCString::npos)
+    if (findRe(qcs,csRe)!=DString::npos)
     {
       size_t i = qcs.find('{');
       size_t j = qcs.find('}');
-      if (i!=QCString::npos && j!=QCString::npos && i>0 && j > i)
+      if (i!=DString::npos && j!=DString::npos && i>0 && j > i)
       {
         na = qcs.mid(i+1, j-i-1);
       }
@@ -381,12 +381,12 @@ int VHDLOutlineParser::checkInlineCode(QCString &doc)
   return 1;
 }
 
-void VHDLOutlineParser::handleCommentBlock(const QCString &doc1, bool brief)
+void VHDLOutlineParser::handleCommentBlock(const DString &doc1, bool brief)
 {
   int position = 0;
   bool needsEntry = false;
   VhdlParser::SharedState *s = &p->shared;
-  QCString doc = doc1;
+  DString doc = doc1;
 
   if (doc.empty())
     return;
@@ -431,7 +431,7 @@ void VHDLOutlineParser::handleCommentBlock(const QCString &doc1, bool brief)
   Markdown markdown(p->yyFileName,p->iDocLine);
   int lineNr = p->iDocLine;
   GuardedSectionStack guards;
-  QCString processedDoc = Config_getBool(MARKDOWN_SUPPORT) ? markdown.process(doc,lineNr) : doc;
+  DString processedDoc = Config_getBool(MARKDOWN_SUPPORT) ? markdown.process(doc,lineNr) : doc;
 
    while (p->commentScanner.parseCommentBlock(
       p->thisParser,
@@ -467,13 +467,13 @@ void VHDLOutlineParser::handleCommentBlock(const QCString &doc1, bool brief)
   p->strComment.clear();
 }
 
-void VHDLOutlineParser::parsePrototype(const QCString &text)
+void VHDLOutlineParser::parsePrototype(const DString &text)
 {
   p->varName=text;
   p->varr=true;
 }
 
-void VHDLOutlineParser::addCompInst(const QCString &n, const QCString &instName, const QCString &comp,int iLine)
+void VHDLOutlineParser::addCompInst(const DString &n, const DString &instName, const DString &comp,int iLine)
 {
   VhdlParser::SharedState *s = &p->shared;
   s->current->vhdlSpec=VhdlSpecifier::INSTANTIATION;
@@ -489,7 +489,7 @@ void VHDLOutlineParser::addCompInst(const QCString &n, const QCString &instName,
   }
   s->current->includeName=comp;                    // component/entity/configuration
   size_t u=s->genLabels.find('|',1);
-  if (u!=QCString::npos && u>0)
+  if (u!=DString::npos && u>0)
   {
     s->current->write=s->genLabels.mid(u);
     s->current->read=s->genLabels.left(u);
@@ -515,8 +515,8 @@ void VHDLOutlineParser::addCompInst(const QCString &n, const QCString &instName,
   }
 }
 
-void VHDLOutlineParser::addVhdlType(const QCString &n,int startLine,EntryType section,
-    VhdlSpecifier spec,const QCString &args,const QCString &type,Protection prot)
+void VHDLOutlineParser::addVhdlType(const DString &n,int startLine,EntryType section,
+    VhdlSpecifier spec,const DString &args,const DString &type,Protection prot)
 {
   VhdlParser::SharedState *s = &p->shared;
   if (isFuncProcProced() || VhdlDocGen::getFlowMember())  return;
@@ -552,7 +552,7 @@ void VHDLOutlineParser::addVhdlType(const QCString &n,int startLine,EntryType se
   }
 }
 
-void VHDLOutlineParser::createFunction(const QCString &impure,VhdlSpecifier spec,const QCString &fname)
+void VHDLOutlineParser::createFunction(const DString &impure,VhdlSpecifier spec,const DString &fname)
 {
   VhdlParser::SharedState *s = &p->shared;
   s->current->vhdlSpec=spec;
@@ -611,24 +611,24 @@ bool VHDLOutlineParser::isFuncProcProced()
   return false;
 }
 
-void VHDLOutlineParser::pushLabel( QCString &label,QCString & val)
+void VHDLOutlineParser::pushLabel( DString &label,DString & val)
 {
   label+="|";
   label+=val;
 }
 
-QCString VHDLOutlineParser::popLabel(QCString & q)
+DString VHDLOutlineParser::popLabel(DString & q)
 {
   size_t i=q.rfind('|');
-  if (i==QCString::npos) return QCString();
+  if (i==DString::npos) return DString();
   q = q.left(i);
   return q;
 }
 
 
 
-void VHDLOutlineParser::addProto(const QCString &s1,const QCString &s2,const QCString &s3,
-                                 const QCString &s4,const QCString &/*s5*/,const QCString &s6)
+void VHDLOutlineParser::addProto(const DString &s1,const DString &s2,const DString &s3,
+                                 const DString &s4,const DString &/*s5*/,const DString &s6)
 {
   VhdlParser::SharedState *s = &p->shared;
   StringVector ql=split(s2.str(),",");
@@ -705,7 +705,7 @@ void VHDLOutlineParser::mapLibPackage( Entry* root)
   }// for
 }//MapLib
 
-bool VHDLOutlineParser::addLibUseClause(const QCString &type)
+bool VHDLOutlineParser::addLibUseClause(const DString &type)
 {
   bool showIEEESTD=Config_getBool(FORCE_LOCAL_INCLUDES);
 
@@ -744,7 +744,7 @@ void VHDLOutlineParser::createFlow()
   {
     return;
   }
-  QCString q,ret;
+  DString q,ret;
 
   if (s->currP==VhdlSpecifier::FUNCTION)
   {
@@ -766,7 +766,7 @@ void VHDLOutlineParser::createFlow()
 
   q.prepend(VhdlDocGen::getFlowMember()->name());
 
-  FlowChart::addFlowChart(FlowChart::START_NO,q,QCString());
+  FlowChart::addFlowChart(FlowChart::START_NO,q,DString());
 
   if (s->currP==VhdlSpecifier::FUNCTION)
   {
@@ -781,7 +781,7 @@ void VHDLOutlineParser::createFlow()
     ret="end process ";
   }
 
-  FlowChart::addFlowChart(FlowChart::END_NO,ret,QCString());
+  FlowChart::addFlowChart(FlowChart::END_NO,ret,DString());
   //  FlowChart::printFlowList();
   FlowChart::writeFlowChart();
   s->currP=VhdlSpecifier::UNKNOWN;
@@ -792,9 +792,9 @@ void VHDLOutlineParser::setMultCommentLine()
   p->iDocLine=p->yyLineNr;
 }
 
-void VHDLOutlineParser::oneLineComment(QCString qcs)
+void VHDLOutlineParser::oneLineComment(DString qcs)
 {
-    if (size_t j=qcs.find("--!"); j!=QCString::npos) qcs=qcs.mid(j+3);
+    if (size_t j=qcs.find("--!"); j!=DString::npos) qcs=qcs.mid(j+3);
     if (!checkMultiComment(qcs,p->iDocLine))
     {
       handleCommentBlock(qcs,true);
@@ -802,7 +802,7 @@ void VHDLOutlineParser::oneLineComment(QCString qcs)
 }
 
 
-bool VHDLOutlineParser::checkMultiComment(QCString& qcs,int line)
+bool VHDLOutlineParser::checkMultiComment(DString& qcs,int line)
 {
   VhdlParser::SharedState *s = &p->shared;
   insertEntryAtLine(s->current_root,line);
@@ -858,10 +858,10 @@ void VHDLOutlineParser::error_skipto(int kind)
   // "if"/"while".
 }
 
-QCString filter2008VhdlComment(const QCString &s)
+DString filter2008VhdlComment(const DString &s)
 {
   if (s.length()<4) return s;
-  QCString result;
+  DString result;
   result.reserve(s.length());
   const char *p=s.data()+3; // skip /*!
   char c='\0';

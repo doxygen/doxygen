@@ -28,7 +28,7 @@
 
 std::tm getCurrentDateTime()
 {
-  QCString sourceDateEpoch = Portable::getenv("SOURCE_DATE_EPOCH");
+  DString sourceDateEpoch = Portable::getenv("SOURCE_DATE_EPOCH");
   if (!sourceDateEpoch.empty()) // see https://reproducible-builds.org/specs/source-date-epoch/
   {
     bool ok = false;
@@ -59,7 +59,7 @@ std::tm getCurrentDateTime()
   return *localtime(&time);
 }
 
-QCString dateToString(DateTimeType includeTime)
+DString dateToString(DateTimeType includeTime)
 {
   auto current = getCurrentDateTime();
   return theTranslator->trDateTime(current.tm_year + 1900,
@@ -72,10 +72,10 @@ QCString dateToString(DateTimeType includeTime)
                                    includeTime);
 }
 
-QCString yearToString()
+DString yearToString()
 {
   auto current = getCurrentDateTime();
-  return QCString().setNum(current.tm_year+1900);
+  return DString().setNum(current.tm_year+1900);
 }
 
 struct SpecFormat
@@ -130,14 +130,14 @@ static void determine_weekday( std::tm& tm )
   }
 }
 
-QCString dateTimeFromString(const QCString &spec,std::tm &dt,int &format)
+DString dateTimeFromString(const DString &spec,std::tm &dt,int &format)
 {
   // for an empty spec field return the current date and time
   dt = getCurrentDateTime();
   if (spec.empty())
   {
     format = SF_Date | SF_Time | SF_Seconds;
-    return QCString();
+    return DString();
   }
 
   // find a matching pattern
@@ -153,7 +153,7 @@ QCString dateTimeFromString(const QCString &spec,std::tm &dt,int &format)
         const DateTimeField &dtf = g_assignValues[i+fmt.offset];
         if (value<dtf.minVal || value>dtf.maxVal) // check if the value is in the expected range
         {
-          return QCString().sprintf("value for %s is %d which is outside of the value range [%d..%d]",
+          return DString().sprintf("value for %s is %d which is outside of the value range [%d..%d]",
               dtf.name, value, dtf.minVal, dtf.maxVal);
         }
         dtf.assigner(dt,value);
@@ -163,7 +163,7 @@ QCString dateTimeFromString(const QCString &spec,std::tm &dt,int &format)
       {
         determine_weekday(dt);
       }
-      return QCString();
+      return DString();
     }
   }
 
@@ -171,18 +171,18 @@ QCString dateTimeFromString(const QCString &spec,std::tm &dt,int &format)
   return "invalid or non representable date/time argument";
 }
 
-QCString formatDateTime(const QCString &format,const std::tm &dt,int &formatUsed)
+DString formatDateTime(const DString &format,const std::tm &dt,int &formatUsed)
 {
   formatUsed = 0;
   auto getYear      = [](const std::tm &dat) { return dat.tm_year+1900;    };
   auto getMonth     = [](const std::tm &dat) { return dat.tm_mon+1;        };
   auto getDay       = [](const std::tm &dat) { return dat.tm_mday;         };
   auto getDayOfWeek = [](const std::tm &dat) { return (dat.tm_wday+6)%7+1; };
-  QCString result;
+  DString result;
   result.reserve(256);
   auto addInt = [&result](const char *fmt,int value) {
     char tmp[50];
-    qsnprintf(tmp,50,fmt,value);
+    snprintf(tmp,50,fmt,value);
     result+=tmp;
   };
   char c = 0;
@@ -190,7 +190,7 @@ QCString formatDateTime(const QCString &format,const std::tm &dt,int &formatUsed
   const char *fmt_zero     = "%02d";
   const char *fmt_nonzero  = "%d";
   const char *fmt_selected = nullptr;
-  if (p==nullptr) return QCString();
+  if (p==nullptr) return DString();
   while ((c=*p++))
   {
     char nc = *p;

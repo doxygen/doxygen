@@ -29,8 +29,8 @@ class DefinitionImpl
   public:
     DefinitionImpl(
         Definition *def,
-        const QCString &defFileName,int defLine,int defColumn,
-        const QCString &name,const char *b=nullptr,const char *d=nullptr,
+        const DString &defFileName,int defLine,int defColumn,
+        const DString &name,const char *b=nullptr,const char *d=nullptr,
         bool isSymbol=true);
     ~DefinitionImpl();
     DefinitionImpl(const DefinitionImpl &d);
@@ -38,25 +38,25 @@ class DefinitionImpl
     DefinitionImpl(DefinitionImpl &&d) = delete;
     DefinitionImpl &operator=(DefinitionImpl &&d) = delete;
 
-    const QCString &name() const;
+    const DString &name() const;
     bool isAnonymous() const;
-    const QCString &localName() const;
-    QCString qualifiedName() const;
-    QCString symbolName() const;
-    QCString getSourceFileBase() const;
-    QCString getSourceAnchor() const;
-    QCString documentation() const;
+    const DString &localName() const;
+    DString qualifiedName() const;
+    DString symbolName() const;
+    DString getSourceFileBase() const;
+    DString getSourceAnchor() const;
+    DString documentation() const;
     int docLine() const;
-    QCString docFile() const;
-    QCString briefDescription(bool abbreviate=false) const;
-    QCString briefDescriptionAsTooltip() const;
+    DString docFile() const;
+    DString briefDescription(bool abbreviate=false) const;
+    DString briefDescriptionAsTooltip() const;
     int briefLine() const;
-    QCString inbodyDocumentation() const;
-    QCString inbodyFile() const;
+    DString inbodyDocumentation() const;
+    DString inbodyFile() const;
     int inbodyLine() const;
-    QCString briefFile() const;
-    QCString getDefFileName() const;
-    QCString getDefFileExtension() const;
+    DString briefFile() const;
+    DString getDefFileName() const;
+    DString getDefFileExtension() const;
     int getDefLine() const;
     int getDefColumn() const;
     bool hasDocumentation() const;
@@ -66,9 +66,9 @@ class DefinitionImpl
     bool isHidden() const;
     bool isArtificial() const;
     bool isExported() const;
-    QCString getReference() const;
+    DString getReference() const;
     bool isReference() const;
-    QCString externalReference(const QCString &relPath) const;
+    DString externalReference(const DString &relPath) const;
     int getStartDefLine() const;
     int getStartBodyLine() const;
     int getEndBodyLine() const;
@@ -78,27 +78,27 @@ class DefinitionImpl
     bool isLinkableViaGroup() const;
     const RefItemVector &xrefListItems() const;
     const RequirementRefs &requirementReferences() const;
-    const Definition *findInnerCompound(const QCString &name) const;
+    const Definition *findInnerCompound(const DString &name) const;
     Definition *getOuterScope() const;
     const MemberVector &getReferencesMembers() const;
     const MemberVector &getReferencedByMembers() const;
     bool hasSections() const;
     bool hasSources() const;
     bool hasBriefDescription() const;
-    QCString id() const;
+    DString id() const;
     const SectionRefs &getSectionRefs() const;
-    void setName(const QCString &name);
-    void setId(const QCString &name);
-    void setDefFile(const QCString& df,int defLine,int defColumn);
-    void setDocumentation(const QCString &d,const QCString &docFile,int docLine,bool stripWhiteSpace=true);
-    void setBriefDescription(const QCString &b,const QCString &briefFile,int briefLine);
-    void setInbodyDocumentation(const QCString &d,const QCString &docFile,int docLine);
-    void setReference(const QCString &r);
+    void setName(const DString &name);
+    void setId(const DString &name);
+    void setDefFile(const DString& df,int defLine,int defColumn);
+    void setDocumentation(const DString &d,const DString &docFile,int docLine,bool stripWhiteSpace=true);
+    void setBriefDescription(const DString &b,const DString &briefFile,int briefLine);
+    void setInbodyDocumentation(const DString &d,const DString &docFile,int docLine);
+    void setReference(const DString &r);
     void addSectionsToDefinition(const std::vector<const SectionInfo*> &anchorList);
     void setBodySegment(int defLine,int bls,int ble);
     void setBodyDef(const FileDef *fd);
-    void addSourceReferencedBy(MemberDef *d,const QCString &sourceRefName);
-    void addSourceReferences(MemberDef *d,const QCString &sourceRefName);
+    void addSourceReferencedBy(MemberDef *d,const DString &sourceRefName);
+    void addSourceReferences(MemberDef *d,const DString &sourceRefName);
     void setRefItems(const RefItemVector &sli);
     void setRequirementReferences(const RequirementRefs &rqli);
     void mergeRefItems(Definition *d);
@@ -111,37 +111,37 @@ class DefinitionImpl
     void setExported(bool b);
     void setLanguage(SrcLangExt lang);
     void writeSourceDef(OutputList &ol) const;
-    void writeInlineCode(OutputList &ol,const QCString &scopeName) const;
+    void writeInlineCode(OutputList &ol,const DString &scopeName) const;
     bool hasSourceRefs() const;
     bool hasSourceReffedBy() const;
-    void writeSourceRefs(OutputList &ol,const QCString &scopeName) const;
-    void writeSourceReffedBy(OutputList &ol,const QCString &scopeName) const;
+    void writeSourceRefs(OutputList &ol,const DString &scopeName) const;
+    void writeSourceReffedBy(OutputList &ol,const DString &scopeName) const;
     bool hasRequirementRefs() const;
     void writeRequirementRefs(OutputList &ol) const;
     void makePartOfGroup(GroupDef *gd);
     void writeNavigationPath(OutputList &ol) const;
-    QCString navigationPathAsString() const;
+    DString navigationPathAsString() const;
     void writeQuickMemberLinks(OutputList &,const MemberDef *) const;
     void writeSummaryLinks(OutputList &) const;
     void writePageNavigation(OutputList &ol) const;
-    QCString pathFragment() const;
+    DString pathFragment() const;
     void writeDocAnchorsToTagFile(TextStream &) const;
-    void setLocalName(const QCString &name);
+    void setLocalName(const DString &name);
     void writeToc(OutputList &ol, const LocalToc &lt) const;
     void computeTooltip();
-    void _setSymbolName(const QCString &name);
-    QCString _symbolName() const;
+    void _setSymbolName(const DString &name);
+    DString _symbolName() const;
 
 
   private:
 
-    int  _getXRefListId(const QCString &listName) const;
-    void _writeSourceRefList(OutputList &ol,const QCString &scopeName,const QCString &text,
+    int  _getXRefListId(const DString &listName) const;
+    void _writeSourceRefList(OutputList &ol,const DString &scopeName,const DString &text,
                        const std::unordered_map<std::string,MemberDef *> &members,bool) const;
-    void _setBriefDescription(const QCString &b,const QCString &briefFile,int briefLine);
-    void _setDocumentation(const QCString &d,const QCString &docFile,int docLine,bool stripWhiteSpace,bool atTop);
-    void _setInbodyDocumentation(const QCString &d,const QCString &docFile,int docLine);
-    bool _docsAlreadyAdded(const QCString &doc,QCString &sigList);
+    void _setBriefDescription(const DString &b,const DString &briefFile,int briefLine);
+    void _setDocumentation(const DString &d,const DString &docFile,int docLine,bool stripWhiteSpace,bool atTop);
+    void _setInbodyDocumentation(const DString &d,const DString &docFile,int docLine);
+    bool _docsAlreadyAdded(const DString &doc,DString &sigList);
 
     // PIMPL idiom
     class Private;
@@ -154,8 +154,8 @@ class DefinitionMixin : public Base
   public:
     /*! Create a new definition */
     DefinitionMixin(
-        const QCString &defFileName,int defLine,int defColumn,
-        const QCString &name,const char *b=nullptr,const char *d=nullptr,
+        const DString &defFileName,int defLine,int defColumn,
+        const DString &name,const char *b=nullptr,const char *d=nullptr,
         bool isSymbol=true) : m_impl(this,defFileName,defLine,defColumn,name,b,d,isSymbol) {}
     DefinitionMixin(const DefinitionMixin &other) : Base(other), m_impl(other.m_impl) {}
     DefinitionMixin &operator=(const DefinitionMixin &other) { if (this!=&other) { m_impl = other.m_impl; }; return *this; }
@@ -166,25 +166,25 @@ class DefinitionMixin : public Base
     bool isAlias() const override { return false; }
 
     //======== Definition
-    const QCString &name() const override { return m_impl.name(); }
+    const DString &name() const override { return m_impl.name(); }
     bool isAnonymous() const override { return m_impl.isAnonymous(); }
-    const QCString &localName() const override { return m_impl.localName(); }
-    QCString qualifiedName() const override { return m_impl.qualifiedName(); }
-    QCString symbolName() const override { return m_impl.symbolName(); }
-    QCString getSourceFileBase() const override { return m_impl.getSourceFileBase(); }
-    QCString getSourceAnchor() const override { return m_impl.getSourceAnchor(); }
-    QCString documentation() const override { return m_impl.documentation(); }
+    const DString &localName() const override { return m_impl.localName(); }
+    DString qualifiedName() const override { return m_impl.qualifiedName(); }
+    DString symbolName() const override { return m_impl.symbolName(); }
+    DString getSourceFileBase() const override { return m_impl.getSourceFileBase(); }
+    DString getSourceAnchor() const override { return m_impl.getSourceAnchor(); }
+    DString documentation() const override { return m_impl.documentation(); }
     int docLine() const override { return m_impl.docLine(); }
-    QCString docFile() const override { return m_impl.docFile(); }
-    QCString briefDescription(bool abbreviate=false) const override { return m_impl.briefDescription(abbreviate); }
-    QCString briefDescriptionAsTooltip() const override { return m_impl.briefDescriptionAsTooltip(); }
+    DString docFile() const override { return m_impl.docFile(); }
+    DString briefDescription(bool abbreviate=false) const override { return m_impl.briefDescription(abbreviate); }
+    DString briefDescriptionAsTooltip() const override { return m_impl.briefDescriptionAsTooltip(); }
     int briefLine() const override { return m_impl.briefLine(); }
-    QCString inbodyDocumentation() const override { return m_impl.inbodyDocumentation(); }
-    QCString inbodyFile() const override { return m_impl.inbodyFile(); }
+    DString inbodyDocumentation() const override { return m_impl.inbodyDocumentation(); }
+    DString inbodyFile() const override { return m_impl.inbodyFile(); }
     int inbodyLine() const override { return m_impl.inbodyLine(); }
-    QCString briefFile() const override { return m_impl.briefFile(); }
-    QCString getDefFileName() const override { return m_impl.getDefFileName(); }
-    QCString getDefFileExtension() const override { return m_impl.getDefFileExtension(); }
+    DString briefFile() const override { return m_impl.briefFile(); }
+    DString getDefFileName() const override { return m_impl.getDefFileName(); }
+    DString getDefFileExtension() const override { return m_impl.getDefFileExtension(); }
     int getDefLine() const override { return m_impl.getDefLine(); }
     int getDefColumn() const override { return m_impl.getDefColumn(); }
     bool hasDocumentation() const override { return m_impl.hasDocumentation(); }
@@ -194,9 +194,9 @@ class DefinitionMixin : public Base
     bool isHidden() const override { return m_impl.isHidden(); }
     bool isArtificial() const override { return m_impl.isArtificial(); }
     bool isExported() const override { return m_impl.isExported(); }
-    QCString getReference() const override { return m_impl.getReference(); }
+    DString getReference() const override { return m_impl.getReference(); }
     bool isReference() const override { return m_impl.isReference(); }
-    QCString externalReference(const QCString &relPath) const override { return m_impl.externalReference(relPath); }
+    DString externalReference(const DString &relPath) const override { return m_impl.externalReference(relPath); }
     int getStartDefLine() const override { return m_impl.getStartDefLine(); }
     int getStartBodyLine() const override { return m_impl.getStartBodyLine(); }
     int getEndBodyLine() const override { return m_impl.getEndBodyLine(); }
@@ -206,28 +206,28 @@ class DefinitionMixin : public Base
     bool isLinkableViaGroup() const override { return m_impl.isLinkableViaGroup(); }
     const RefItemVector &xrefListItems() const override { return m_impl.xrefListItems(); }
     const RequirementRefs &requirementReferences() const override { return m_impl.requirementReferences(); }
-    const Definition *findInnerCompound(const QCString &name) const override { return m_impl.findInnerCompound(name); }
+    const Definition *findInnerCompound(const DString &name) const override { return m_impl.findInnerCompound(name); }
     Definition *getOuterScope() const override { return m_impl.getOuterScope(); }
     const MemberVector &getReferencesMembers() const override { return m_impl.getReferencesMembers(); }
     const MemberVector &getReferencedByMembers() const override { return m_impl.getReferencedByMembers(); }
     bool hasSections() const override { return m_impl.hasSections(); }
     bool hasSources() const override { return m_impl.hasSources(); }
     bool hasBriefDescription() const override { return m_impl.hasBriefDescription(); }
-    QCString id() const override { return m_impl.id(); }
+    DString id() const override { return m_impl.id(); }
     const SectionRefs &getSectionRefs() const override { return m_impl.getSectionRefs(); }
 
     //======== DefinitionMutable
-    void setName(const QCString &name) override { m_impl.setName(name); }
-    void setId(const QCString &name) override { m_impl.setId(name); }
-    void setDefFile(const QCString& df,int defLine,int defColumn) override
+    void setName(const DString &name) override { m_impl.setName(name); }
+    void setId(const DString &name) override { m_impl.setId(name); }
+    void setDefFile(const DString& df,int defLine,int defColumn) override
     { m_impl.setDefFile(df,defLine,defColumn); }
-    void setDocumentation(const QCString &doc,const QCString &docFile,int docLine,bool stripWhiteSpace=true) override
+    void setDocumentation(const DString &doc,const DString &docFile,int docLine,bool stripWhiteSpace=true) override
     { m_impl.setDocumentation(doc,docFile,docLine,stripWhiteSpace); }
-    void setBriefDescription(const QCString &brief,const QCString &briefFile,int briefLine) override
+    void setBriefDescription(const DString &brief,const DString &briefFile,int briefLine) override
     { m_impl.setBriefDescription(brief,briefFile,briefLine); }
-    void setInbodyDocumentation(const QCString &doc,const QCString &docFile,int docLine) override
+    void setInbodyDocumentation(const DString &doc,const DString &docFile,int docLine) override
     { m_impl.setInbodyDocumentation(doc,docFile,docLine); }
-    void setReference(const QCString &r) override
+    void setReference(const DString &r) override
     { m_impl.setReference(r); }
     void addSectionsToDefinition(const std::vector<const SectionInfo*> &anchorList) override
     { m_impl.addSectionsToDefinition(anchorList); }
@@ -235,9 +235,9 @@ class DefinitionMixin : public Base
     { m_impl.setBodySegment(defLine,bls,ble); }
     void setBodyDef(const FileDef *fd) override
     { m_impl.setBodyDef(fd); }
-    void addSourceReferencedBy(MemberDef *md,const QCString &sourceRefName) override
+    void addSourceReferencedBy(MemberDef *md,const DString &sourceRefName) override
     { m_impl.addSourceReferencedBy(md,sourceRefName); }
-    void addSourceReferences(MemberDef *md,const QCString &sourceRefName) override
+    void addSourceReferences(MemberDef *md,const DString &sourceRefName) override
     { m_impl.addSourceReferences(md,sourceRefName); }
     void setRefItems(const RefItemVector &sli) override
     { m_impl.setRefItems(sli); }
@@ -263,15 +263,15 @@ class DefinitionMixin : public Base
     { m_impl.setLanguage(lang); }
     void writeSourceDef(OutputList &ol) const override
     { m_impl.writeSourceDef(ol); }
-    void writeInlineCode(OutputList &ol,const QCString &scopeName) const override
+    void writeInlineCode(OutputList &ol,const DString &scopeName) const override
     { m_impl.writeInlineCode(ol,scopeName); }
     bool hasSourceRefs() const override
     { return m_impl.hasSourceRefs(); }
     bool hasSourceReffedBy() const override
     { return m_impl.hasSourceReffedBy(); }
-    void writeSourceRefs(OutputList &ol,const QCString &scopeName) const override
+    void writeSourceRefs(OutputList &ol,const DString &scopeName) const override
     { m_impl.writeSourceRefs(ol,scopeName); }
-    void writeSourceReffedBy(OutputList &ol,const QCString &scopeName) const override
+    void writeSourceReffedBy(OutputList &ol,const DString &scopeName) const override
     { m_impl.writeSourceReffedBy(ol,scopeName); }
     bool hasRequirementRefs() const override
     { return m_impl.hasRequirementRefs(); }
@@ -281,7 +281,7 @@ class DefinitionMixin : public Base
     { m_impl.makePartOfGroup(gd); }
     void writeNavigationPath(OutputList &ol) const override
     { m_impl.writeNavigationPath(ol); }
-    QCString navigationPathAsString() const override
+    DString navigationPathAsString() const override
     { return m_impl.navigationPathAsString(); }
     void writeQuickMemberLinks(OutputList &ol,const MemberDef *md) const override
     { m_impl.writeQuickMemberLinks(ol,md); }
@@ -289,19 +289,19 @@ class DefinitionMixin : public Base
     { m_impl.writeSummaryLinks(ol); }
     void writePageNavigation(OutputList &ol) const override
     { m_impl.writePageNavigation(ol); }
-    QCString pathFragment() const override
+    DString pathFragment() const override
     { return m_impl.pathFragment(); }
     void writeDocAnchorsToTagFile(TextStream &fs) const override
     { m_impl.writeDocAnchorsToTagFile(fs); }
-    void setLocalName(const QCString &name) override
+    void setLocalName(const DString &name) override
     { m_impl.setLocalName(name); }
     void writeToc(OutputList &ol, const LocalToc &lt) const override
     { m_impl.writeToc(ol,lt); }
     void computeTooltip() override
     { m_impl.computeTooltip(); }
-    void _setSymbolName(const QCString &name) override
+    void _setSymbolName(const DString &name) override
     { m_impl._setSymbolName(name); }
-    QCString _symbolName() const override
+    DString _symbolName() const override
     { return m_impl._symbolName(); }
 
   private:
@@ -321,13 +321,13 @@ class DefinitionAliasImpl
 
     void init();
     void deinit();
-    const QCString &name() const;
-    QCString qualifiedName() const;
+    const DString &name() const;
+    DString qualifiedName() const;
   private:
     Definition *m_def;
     const Definition *m_scope;
-    QCString m_symbolName;
-    QCString m_qualifiedName;
+    DString m_symbolName;
+    DString m_qualifiedName;
 };
 
 template<class Base>
@@ -346,43 +346,43 @@ class DefinitionAliasMixin : public Base
     bool isAlias() const override { return true; }
 
     //======== Definition
-    const QCString &name() const override
+    const DString &name() const override
     { return m_impl.name(); }
     bool isAnonymous() const override
     { return m_alias->isAnonymous(); }
-    const QCString &localName() const override
+    const DString &localName() const override
     { return m_alias->localName(); }
-    QCString qualifiedName() const override
+    DString qualifiedName() const override
     { return m_impl.qualifiedName(); }
-    QCString symbolName() const override
+    DString symbolName() const override
     { return m_alias->symbolName(); }
-    QCString getSourceFileBase() const override
+    DString getSourceFileBase() const override
     { return m_alias->getSourceFileBase(); }
-    QCString getSourceAnchor() const override
+    DString getSourceAnchor() const override
     { return m_alias->getSourceAnchor(); }
-    QCString documentation() const override
+    DString documentation() const override
     { return m_alias->documentation(); }
     int docLine() const override
     { return m_alias->docLine(); }
-    QCString docFile() const override
+    DString docFile() const override
     { return m_alias->docFile(); }
-    QCString briefDescription(bool abbreviate=false) const override
+    DString briefDescription(bool abbreviate=false) const override
     { return m_alias->briefDescription(abbreviate); }
-    QCString briefDescriptionAsTooltip() const override
+    DString briefDescriptionAsTooltip() const override
     { return m_alias->briefDescriptionAsTooltip(); }
     int briefLine() const override
     { return m_alias->briefLine(); }
-    QCString inbodyDocumentation() const override
+    DString inbodyDocumentation() const override
     { return m_alias->inbodyDocumentation(); }
-    QCString inbodyFile() const override
+    DString inbodyFile() const override
     { return m_alias->inbodyFile(); }
     int inbodyLine() const override
     { return m_alias->inbodyLine(); }
-    QCString briefFile() const override
+    DString briefFile() const override
     { return m_alias->briefFile(); }
-    QCString getDefFileName() const override
+    DString getDefFileName() const override
     { return m_alias->getDefFileName(); }
-    QCString getDefFileExtension() const override
+    DString getDefFileExtension() const override
     { return m_alias->getDefFileExtension(); }
     int getDefLine() const override
     { return m_alias->getDefLine(); }
@@ -402,11 +402,11 @@ class DefinitionAliasMixin : public Base
     { return m_alias->isArtificial(); }
     bool isExported() const override
     { return m_alias->isExported(); }
-    QCString getReference() const override
+    DString getReference() const override
     { return m_alias->getReference(); }
     bool isReference() const override
     { return m_alias->isReference(); }
-    QCString externalReference(const QCString &relPath) const override
+    DString externalReference(const DString &relPath) const override
     { return m_alias->externalReference(relPath); }
     int getStartDefLine() const override
     { return m_alias->getStartDefLine(); }
@@ -426,7 +426,7 @@ class DefinitionAliasMixin : public Base
     { return m_alias->xrefListItems(); }
     const RequirementRefs &requirementReferences() const override
     { return m_alias->requirementReferences(); }
-    const Definition *findInnerCompound(const QCString &name) const override
+    const Definition *findInnerCompound(const DString &name) const override
     { return m_alias->findInnerCompound(name); }
     Definition *getOuterScope() const override
     { return const_cast<Definition*>(m_scope); }
@@ -440,13 +440,13 @@ class DefinitionAliasMixin : public Base
     { return m_alias->hasSources(); }
     bool hasBriefDescription() const override
     { return m_alias->hasBriefDescription(); }
-    QCString id() const override
+    DString id() const override
     { return m_alias->id(); }
     const SectionRefs &getSectionRefs() const override
     { return m_alias->getSectionRefs(); }
-    QCString navigationPathAsString() const override
+    DString navigationPathAsString() const override
     { return m_alias->navigationPathAsString(); }
-    QCString pathFragment() const override
+    DString pathFragment() const override
     { return m_alias->pathFragment(); }
 
   protected:
@@ -458,12 +458,12 @@ class DefinitionAliasMixin : public Base
     DefinitionMutable *toDefinitionMutable_() override { return nullptr; }
     const DefinitionImpl *toDefinitionImpl_() const override { return nullptr; }
 
-    void _setSymbolName(const QCString &name) override { m_symbolName = name; }
-    QCString _symbolName() const override { return m_symbolName; }
+    void _setSymbolName(const DString &name) override { m_symbolName = name; }
+    DString _symbolName() const override { return m_symbolName; }
     DefinitionAliasImpl m_impl;
     const Definition *m_scope;
     const Definition *m_alias;
-    QCString m_symbolName;
+    DString m_symbolName;
 };
 
 #endif

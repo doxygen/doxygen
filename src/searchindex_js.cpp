@@ -59,7 +59,7 @@ void SearchTerm::makeTitle()
   }
 }
 
-QCString SearchTerm::termEncoded() const
+DString SearchTerm::termEncoded() const
 {
   TextStream t;
 
@@ -86,7 +86,7 @@ QCString SearchTerm::termEncoded() const
 
 //! helper function to simplify the given title string, and fill a list of start positions
 //! for the start of each word in the simplified title string.
-static void splitSearchTokens(QCString &title,IntVector &indices)
+static void splitSearchTokens(DString &title,IntVector &indices)
 {
   if (title.empty()) return;
 
@@ -139,7 +139,7 @@ static void splitSearchTokens(QCString &title,IntVector &indices)
   // create a list of start positions within title for
   // each unique word in order of appearance
   size_t p=0,i=0;
-  while ((i=title.find(' ',p))!=QCString::npos)
+  while ((i=title.find(' ',p))!=DString::npos)
   {
     std::string word = title.mid(p,i-p).str();
     indices.push_back(p);
@@ -225,7 +225,7 @@ static void addMemberToSearchIndex(const MemberDef *md)
       )
      )
   {
-    const QCString &n = md->name();
+    const DString &n = md->name();
     if (!n.empty())
     {
       bool isFriendToHide = hideFriendCompounds &&
@@ -285,7 +285,7 @@ static void addMemberToSearchIndex(const MemberDef *md)
       )
      )
   {
-    const QCString &n = md->name();
+    const DString &n = md->name();
     if (!n.empty())
     {
       g_searchIndexInfo[SEARCH_INDEX_ALL].add(SearchTerm(n,md));
@@ -335,7 +335,7 @@ void createJavaScriptSearchIndex()
   {
     if (cd->isLinkable())
     {
-      QCString n = cd->localName();
+      DString n = cd->localName();
       g_searchIndexInfo[SEARCH_INDEX_ALL].add(SearchTerm(n,cd.get()));
       if (Config_getBool(OPTIMIZE_OUTPUT_SLICE))
       {
@@ -368,7 +368,7 @@ void createJavaScriptSearchIndex()
   {
     if (nd->isLinkable())
     {
-      QCString n = nd->name();
+      DString n = nd->name();
       g_searchIndexInfo[SEARCH_INDEX_ALL].add(SearchTerm(n,nd.get()));
       g_searchIndexInfo[SEARCH_INDEX_NAMESPACES].add(SearchTerm(n,nd.get()));
     }
@@ -379,7 +379,7 @@ void createJavaScriptSearchIndex()
   {
     if (cd->isLinkable())
     {
-      QCString n = cd->localName();
+      DString n = cd->localName();
       g_searchIndexInfo[SEARCH_INDEX_ALL].add(SearchTerm(n,cd.get()));
       g_searchIndexInfo[SEARCH_INDEX_CONCEPTS].add(SearchTerm(n,cd.get()));
     }
@@ -390,7 +390,7 @@ void createJavaScriptSearchIndex()
   {
     if (mod->isLinkable() && mod->isPrimaryInterface())
     {
-      QCString n = mod->name();
+      DString n = mod->name();
       g_searchIndexInfo[SEARCH_INDEX_ALL].add(SearchTerm(n,mod.get()));
       g_searchIndexInfo[SEARCH_INDEX_MODULES].add(SearchTerm(n,mod.get()));
     }
@@ -401,7 +401,7 @@ void createJavaScriptSearchIndex()
   {
     for (const auto &fd : *fn)
     {
-      QCString n = fd->name();
+      DString n = fd->name();
       if (fd->isLinkable())
       {
         g_searchIndexInfo[SEARCH_INDEX_ALL].add(SearchTerm(n,fd.get()));
@@ -441,7 +441,7 @@ void createJavaScriptSearchIndex()
   {
     if (gd->isLinkable())
     {
-      QCString title(filterTitle(gd->groupTitle()).str());
+      DString title(filterTitle(gd->groupTitle()).str());
       IntVector tokenIndices;
       splitSearchTokens(title,tokenIndices);
       for (int index : tokenIndices)
@@ -457,7 +457,7 @@ void createJavaScriptSearchIndex()
   {
     if (pd->isLinkable())
     {
-      QCString title(filterTitle(pd->title()).str());
+      DString title(filterTitle(pd->title()).str());
       IntVector tokenIndices;
       splitSearchTokens(title,tokenIndices);
       for (int index : tokenIndices)
@@ -471,7 +471,7 @@ void createJavaScriptSearchIndex()
   // main page
   if (Doxygen::mainPage)
   {
-    QCString title(filterTitle(Doxygen::mainPage->title()).str());
+    DString title(filterTitle(Doxygen::mainPage->title()).str());
     IntVector tokenIndices;
     splitSearchTokens(title,tokenIndices);
     for (int index : tokenIndices)
@@ -487,7 +487,7 @@ void createJavaScriptSearchIndex()
   {
     if (sectionInfo->level()>0) // level 0 is for page titles
     {
-      QCString title = filterTitle(sectionInfo->title());
+      DString title = filterTitle(sectionInfo->title());
       IntVector tokenIndices;
       splitSearchTokens(title,tokenIndices);
       //printf("split(%s)=(%s) %zu\n",qPrint(sectionInfo->title()),qPrint(title),tokenIndices.size());
@@ -513,14 +513,14 @@ void createJavaScriptSearchIndex()
                 symList.end(),
                 [](const auto &t1,const auto &t2)
                 {
-                  int    eq =    qstricmp_sort(t1.word,t2.word);             // search term first
-                  return eq==0 ? qstricmp_sort(t1.title,t2.title)<0 : eq<0;  // then full title
+                  int    eq =    dstricmp_sort(t1.word,t2.word);             // search term first
+                  return eq==0 ? dstricmp_sort(t1.title,t2.title)<0 : eq<0;  // then full title
                 });
     }
   }
 }
 
-static void writeJavascriptSearchData(const QCString &searchDirName)
+static void writeJavascriptSearchData(const DString &searchDirName)
 {
   std::ofstream t = Portable::openOutputStream(searchDirName+"/searchdata.js");
   if (t.is_open())
@@ -582,7 +582,7 @@ static void writeJavascriptSearchData(const QCString &searchDirName)
   }
 }
 
-static void writeJavasScriptSearchDataPage(const QCString &baseName,const QCString &dataFileName,const SearchIndexList &list)
+static void writeJavasScriptSearchDataPage(const DString &baseName,const DString &dataFileName,const SearchIndexList &list)
 {
   auto isDef = [](const SearchTerm::LinkInfo &info)
   {
@@ -625,7 +625,7 @@ static void writeJavasScriptSearchDataPage(const QCString &baseName,const QCStri
   bool firstEntry=true;
 
   int childCount=0;
-  QCString lastWord;
+  DString lastWord;
   const Definition *prevScope = nullptr;
   for (auto it = list.begin(); it!=list.end();)
   {
@@ -634,14 +634,14 @@ static void writeJavasScriptSearchDataPage(const QCString &baseName,const QCStri
     const Definition *d             = getDef(info);
     const SectionInfo *si           = getSection(info);
     assert(d || si); // either d or si should be valid
-    QCString word                   = term.word;
-    QCString id                     = term.termEncoded();
+    DString word                   = term.word;
+    DString id                     = term.termEncoded();
     ++it;
     const Definition *scope         = d ? d->getOuterScope() : nullptr;
     const SearchTerm::LinkInfo next = it!=list.end() ? it->info : SearchTerm::LinkInfo();
     const Definition *nextScope     = isDef(next) ? getDef(next)->getOuterScope() : nullptr;
     const MemberDef  *md            = toMemberDef(d);
-    QCString         anchor         = d ? d->anchor() : si ? si->label() : QCString();
+    DString         anchor         = d ? d->anchor() : si ? si->label() : DString();
 
     if (word!=lastWord) // this item has a different search word
     {
@@ -669,10 +669,10 @@ static void writeJavasScriptSearchDataPage(const QCString &baseName,const QCStri
     {
       ti << "],[";
     }
-    QCString fn  = d ? d->getOutputFileBase() : si ? si->fileName() : QCString();
-    QCString ref = d ? d->getReference()      : si ? si->ref()      : QCString();
+    DString fn  = d ? d->getOutputFileBase() : si ? si->fileName() : DString();
+    DString ref = d ? d->getReference()      : si ? si->ref()      : DString();
     addHtmlExtensionIfMissing(fn);
-    QCString extRef = externalRef("../",ref,true)+fn;
+    DString extRef = externalRef("../",ref,true)+fn;
     if (!anchor.empty())
     {
       extRef+="#"+anchor;
@@ -714,7 +714,7 @@ static void writeJavasScriptSearchDataPage(const QCString &baseName,const QCStri
       bool found=false;
       bool overloadedFunction = ((prevScope!=nullptr && scope==prevScope) || (scope && scope==nextScope)) &&
                                  md && md->isCallable();
-      QCString prefix;
+      DString prefix;
       if (md) prefix=convertToXML(md->localName());
       if (overloadedFunction) // overloaded member function
       {
@@ -725,7 +725,7 @@ static void writeJavasScriptSearchDataPage(const QCString &baseName,const QCStri
       {
         prefix+="()"; // only to show it is a callable symbol
       }
-      QCString name;
+      DString name;
       if (d)
       {
         switch (d->definitionType())
@@ -754,7 +754,7 @@ static void writeJavasScriptSearchDataPage(const QCString &baseName,const QCStri
               // member in class or namespace scope
             {
               SrcLangExt lang = md->getLanguage();
-              QCString sep = getLanguageSpecificSeparator(lang);
+              DString sep = getLanguageSpecificSeparator(lang);
               name = convertToXML(d->getOuterScope()->qualifiedName()) + sep + prefix;
               found = true;
             }
@@ -796,7 +796,7 @@ static void writeJavasScriptSearchDataPage(const QCString &baseName,const QCStri
 void writeJavaScriptSearchIndex()
 {
   // write index files
-  QCString searchDirName = Config_getString(HTML_OUTPUT)+"/search";
+  DString searchDirName = Config_getString(HTML_OUTPUT)+"/search";
 
   std::size_t numThreads = static_cast<std::size_t>(Config_getInt(NUM_PROC_THREADS));
   if (numThreads>1) // multi threaded version
@@ -808,9 +808,9 @@ void writeJavaScriptSearchIndex()
       int p=0;
       for (const auto &[letter,symList] : sii.symbolMap)
       {
-        QCString baseName;
+        DString baseName;
         baseName.sprintf("%s_%x",sii.name.data(),p);
-        QCString dataFileName = searchDirName + "/"+baseName+".js";
+        DString dataFileName = searchDirName + "/"+baseName+".js";
         auto &list = symList;
         auto processFile = [p,baseName,dataFileName,&list]()
         {
@@ -831,9 +831,9 @@ void writeJavaScriptSearchIndex()
       int p=0;
       for (const auto &[letter,symList] : sii.symbolMap)
       {
-        QCString baseName;
+        DString baseName;
         baseName.sprintf("%s_%x",sii.name.data(),p);
-        QCString dataFileName = searchDirName + "/"+baseName+".js";
+        DString dataFileName = searchDirName + "/"+baseName+".js";
         writeJavasScriptSearchDataPage(baseName,dataFileName,symList);
         p++;
       }

@@ -35,14 +35,14 @@ static std::unordered_map<std::string,std::string> g_symbolMap;
  *  \retval true success
  *  \retval false an error has occurred.
  */
-bool Htags::execute(const QCString &htmldir)
+bool Htags::execute(const DString &htmldir)
 {
   const StringVector &inputSource = Config_getList(INPUT);
   bool quiet = Config_getBool(QUIET);
   bool warnings = Config_getBool(WARNINGS);
-  QCString htagsOptions = ""; //Config_getString(HTAGS_OPTIONS);
-  QCString projectName = Config_getString(PROJECT_NAME);
-  QCString projectNumber = Config_getString(PROJECT_NUMBER);
+  DString htagsOptions = ""; //Config_getString(HTAGS_OPTIONS);
+  DString projectName = Config_getString(PROJECT_NAME);
+  DString projectNumber = Config_getString(PROJECT_NUMBER);
 
   if (inputSource.empty())
   {
@@ -66,7 +66,7 @@ bool Htags::execute(const QCString &htmldir)
   /*
    * Construct command line for htags(1).
    */
-  QCString commandLine = " -g -s -a -n ";
+  DString commandLine = " -g -s -a -n ";
   if (!quiet)   commandLine += "-v ";
   if (warnings) commandLine += "-w ";
   if (!htagsOptions.empty())
@@ -104,9 +104,9 @@ bool Htags::execute(const QCString &htmldir)
  *  \retval true success
  *  \retval false error
  */
-bool Htags::loadFilemap(const QCString &htmlDir)
+bool Htags::loadFilemap(const DString &htmlDir)
 {
-  QCString fileMapName = htmlDir+"/HTML/FILEMAP";
+  DString fileMapName = htmlDir+"/HTML/FILEMAP";
   FileInfo fi(fileMapName.str());
   /*
    * Construct FILEMAP dictionary.
@@ -127,14 +127,14 @@ bool Htags::loadFilemap(const QCString &htmlDir)
       std::string lineStr;
       while (getline(f,lineStr))
       {
-        QCString line(lineStr);
+        DString line(lineStr);
         //printf("Read line: %s",qPrint(line));
-        if (size_t sep = line.find('\t'); sep!=QCString::npos)
+        if (size_t sep = line.find('\t'); sep!=DString::npos)
         {
-          QCString key   = line.left(sep).stripWhiteSpace();
-          QCString value = line.mid(sep+1).stripWhiteSpace();
+          DString key   = line.left(sep).stripWhiteSpace();
+          DString value = line.mid(sep+1).stripWhiteSpace();
           size_t ext=value.rfind('.');
-          if (ext!=QCString::npos) value=value.left(ext); // strip extension
+          if (ext!=DString::npos) value=value.left(ext); // strip extension
           g_symbolMap.emplace(key.str(),value.str());
           //printf("Key/Value=(%s,%s)\n",qPrint(key),qPrint(value));
         }
@@ -153,10 +153,10 @@ bool Htags::loadFilemap(const QCString &htmlDir)
  *  \param path path name
  *  \returns URL nullptr: not found.
  */
-QCString Htags::path2URL(const QCString &path)
+DString Htags::path2URL(const DString &path)
 {
-  QCString url,symName=path;
-  QCString dir = g_inputDir.absPath();
+  DString url,symName=path;
+  DString dir = g_inputDir.absPath();
   size_t dl=dir.length();
   if (symName.length()>dl+1)
   {
@@ -168,7 +168,7 @@ QCString Htags::path2URL(const QCString &path)
     //printf("path2URL=%s symName=%s result=%p\n",qPrint(path),qPrint(symName),result);
     if (it!=g_symbolMap.end())
     {
-      url = QCString("HTML/"+it->second);
+      url = DString("HTML/"+it->second);
     }
   }
   return url;

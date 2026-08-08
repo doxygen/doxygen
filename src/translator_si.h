@@ -24,222 +24,222 @@
 class TranslatorSlovene : public TranslatorAdapter_1_4_6
 {
   public:
-    QCString idLanguage() override
+    DString idLanguage() override
     { return "slovene"; }
     /*! Used to get the command(s) for the language support. This method
      *  was designed for languages which do not prefer babel package.
      *  If this methods returns empty string, then the latexBabelPackage()
      *  method is used to generate the command for using the babel package.
      */
-    QCString latexLanguageSupportCommand() override
+    DString latexLanguageSupportCommand() override
     { return "\\usepackage[slovene]{babel}\n"; }
-    QCString trISOLang() override
+    DString trISOLang() override
     { return "sl"; }
-    QCString getLanguageString() override
+    DString getLanguageString() override
     {
       return "0x424 Slovenian";
     }
-    QCString trRelatedFunctions() override
+    DString trRelatedFunctions() override
     { return "Povezane funkcije"; }
-    QCString trRelatedSubscript() override
+    DString trRelatedSubscript() override
     { return "(To niso metode.)"; }
-    QCString trDetailedDescription() override
+    DString trDetailedDescription() override
     { return "Podroben opis"; }
-    QCString trDetails() override
+    DString trDetails() override
     { return "Podrobnosti"; }
 
-    QCString trMemberTypedefDocumentation() override
+    DString trMemberTypedefDocumentation() override
     { return "Opis uporabniško definiranih tipov"; }
-    QCString trMemberEnumerationDocumentation() override
+    DString trMemberEnumerationDocumentation() override
     { return "Opis komponent  naštevnih tipov"; }
-/*     QCString trEnumerationValueDocumentation() */
+/*     DString trEnumerationValueDocumentation() */
 /*     { return "Opis vrednosti naštevnih tipov (enum) "; } */
-    QCString trMemberFunctionDocumentation() override
+    DString trMemberFunctionDocumentation() override
     { return "Opis metod"; }
-    QCString trMemberDataDocumentation() override
+    DString trMemberDataDocumentation() override
     { return "Opis atributov"; }
-    QCString trMore() override
+    DString trMore() override
     { return "..."; }
-    QCString trListOfAllMembers() override
+    DString trListOfAllMembers() override
     { return "Seznam vseh metod / atributov"; }
-    QCString trMemberList() override
+    DString trMemberList() override
     { return " - seznam metod in atributov."; }
-    QCString trThisIsTheListOfAllMembers() override
+    DString trThisIsTheListOfAllMembers() override
     { return "Seznam metod razreda"; }
-    QCString trIncludingInheritedMembers() override
+    DString trIncludingInheritedMembers() override
     { return ", vključujoč dedovane metode in atribute."; }
-    QCString trGeneratedAutomatically(const QCString &s) override
-    { QCString result="zgenerirano z Doxygen-om";
+    DString trGeneratedAutomatically(const DString &s) override
+    { DString result="zgenerirano z Doxygen-om";
       if (!s.empty()) result+=" za "+s;
       result+=" iz izvorne kode.";
       return result;
     }
-    QCString trEnumName() override
+    DString trEnumName() override
     { return "naštevno ime"; }
-    QCString trEnumValue() override
+    DString trEnumValue() override
     { return "naštevna vrednost"; }
-    QCString trDefinedIn() override
+    DString trDefinedIn() override
     { return "definirano v"; }
-    QCString trModules() override
+    DString trModules() override
     { return "moduli"; }
-    QCString trClassHierarchy() override
+    DString trClassHierarchy() override
     { return "dedovalna hierarhija"; }
-    QCString trCompoundList() override
+    DString trCompoundList() override
     { return "kratek opis razredov"; }
-    QCString trFileList() override
+    DString trFileList() override
     { return "seznam datotek"; }
-    QCString trCompoundMembers() override
+    DString trCompoundMembers() override
     { return "metode in atributi"; }
-    QCString trFileMembers() override
+    DString trFileMembers() override
     { return "komponente v datotekah"; }
-    QCString trRelatedPages() override
+    DString trRelatedPages() override
     { return "dodatni opisi"; }
-    QCString trExamples() override
+    DString trExamples() override
     { return "Primeri"; }
-    QCString trSearch() override
+    DString trSearch() override
     { return "Išči"; }
-    QCString trClassHierarchyDescription() override
+    DString trClassHierarchyDescription() override
       { return "Hierarhično drevo je (okvirno) sortirano po abecedi. ";
     }
-    QCString trFileListDescription(bool extractAll) override
+    DString trFileListDescription(bool extractAll) override
     {
-      QCString result="Seznam vseh ";
+      DString result="Seznam vseh ";
       if (!extractAll) result+="dokumentiranih ";
       result+="datotek s kratkim opisom:";
       return result;
     }
-    QCString trCompoundListDescription() override
+    DString trCompoundListDescription() override
     { return "Seznam razredov, množic in struktur "
              "s kratkim opisom :";
     }
-    QCString trCompoundMembersDescription(bool extractAll) override
+    DString trCompoundMembersDescription(bool extractAll) override
     {
-      QCString result="Seznam vseh ";
+      DString result="Seznam vseh ";
       if (!extractAll) result+="dokumentiranih ";
       result+="metod in atributov s povezavami na ";
       if (extractAll) result+="opis posamezne metode in/ali atributa:";
       else result+="opis razreda :";
       return result;
     }
-    QCString trFileMembersDescription(bool extractAll) override
+    DString trFileMembersDescription(bool extractAll) override
     {
-      QCString result="Seznam ";
+      DString result="Seznam ";
       if (!extractAll) result+="dokumentiranih ";
       result+="entitet v datotekah ";
       if (extractAll) result+="skupaj z opisom datoteke v kateri se nahajajo:";
       else result+="s povezavami na datoteke v katerih se nahajajo:";
       return result;
     }
-    QCString trExamplesDescription() override
+    DString trExamplesDescription() override
     { return "Seznam primerov :"; }
-    QCString trRelatedPagesDescription() override
+    DString trRelatedPagesDescription() override
     { return "Seznam strani z dodatnimi opisi:"; }
-    QCString trModulesDescription() override
+    DString trModulesDescription() override
     { return "Seznam modulov:"; }
-    QCString trDocumentation(const QCString &projName) override
+    DString trDocumentation(const DString &projName) override
     { return (!projName.empty()?projName + " " : "") + "Dokumentacija"; }
-    QCString trModuleIndex() override
+    DString trModuleIndex() override
     { return "seznam modulov"; }
-    QCString trHierarchicalIndex() override
+    DString trHierarchicalIndex() override
     { return "Hierarhični indeks"; }
-    QCString trCompoundIndex() override
+    DString trCompoundIndex() override
     { return "abecedni seznam"; }
-    QCString trFileIndex() override
+    DString trFileIndex() override
     { return "seznam datotek"; }
-    QCString trModuleDocumentation() override
+    DString trModuleDocumentation() override
     { return "Dokumentacija modulov"; }
-    QCString trClassDocumentation() override
+    DString trClassDocumentation() override
     { return "Opis razreda"; }
-    QCString trFileDocumentation() override
+    DString trFileDocumentation() override
     { return "Opis datoteke"; }
-    QCString trReferenceManual() override
+    DString trReferenceManual() override
     { return "Priročnik"; }
 
-    QCString trDefines() override
+    DString trDefines() override
     { return "Makro deklaracije"; }
-    QCString trTypedefs() override
+    DString trTypedefs() override
     { return "Uporabniško definirani tipi"; }
-    QCString trEnumerations() override
+    DString trEnumerations() override
     { return "Naštevni tipi"; }
-    QCString trFunctions() override
+    DString trFunctions() override
     { return "Funkcije"; }
-    QCString trVariables() override
+    DString trVariables() override
     { return "Spremenljivke"; }
-    QCString trEnumerationValues() override
+    DString trEnumerationValues() override
     { return "Vrednosti naštevnih tipov"; }
-    QCString trDefineDocumentation() override
+    DString trDefineDocumentation() override
     { return "Opis makro definicije"; }
-    QCString trTypedefDocumentation() override
+    DString trTypedefDocumentation() override
     { return "Opis uporabniško definiranega tipa"; }
-    QCString trEnumerationTypeDocumentation() override
+    DString trEnumerationTypeDocumentation() override
     { return "Opis naštevnega (enum) tipa"; }
-    QCString trFunctionDocumentation() override
+    DString trFunctionDocumentation() override
     { return "Opis funkcije"; }
-    QCString trVariableDocumentation() override
+    DString trVariableDocumentation() override
     { return "Opis spremenljivke"; }
-    QCString trCompounds() override
+    DString trCompounds() override
     { return "Strukture"; }
-    QCString trGeneratedAt(const QCString &date,const QCString &projName) override
+    DString trGeneratedAt(const DString &date,const DString &projName) override
     {
-      QCString result="Generirano "+date;
+      DString result="Generirano "+date;
       if (!projName.empty()) result+=" projekt: "+projName;
       result+=" generator: ";
       return result;
     }
-    QCString trClassDiagram(const QCString &clName) override
+    DString trClassDiagram(const DString &clName) override
     {
       return "Diagram razredov za "+clName;
     }
-    QCString trWarning() override
+    DString trWarning() override
     { return "Opozorilo"; }
-    QCString trVersion() override
+    DString trVersion() override
     { return "Verzija"; }
-    QCString trDate() override
+    DString trDate() override
     { return "Datum"; }
-    QCString trReturns() override
+    DString trReturns() override
     { return "Rezultat(i)"; }
-    QCString trSeeAlso() override
+    DString trSeeAlso() override
     { return "Glej"; }
-    QCString trParameters() override
+    DString trParameters() override
     { return "Parametri"; }
-    QCString trExceptions() override
+    DString trExceptions() override
     { return "Prekinitve"; }
-    QCString trGeneratedBy() override
+    DString trGeneratedBy() override
     { return "Izdelano s pomočjo"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990307
 //////////////////////////////////////////////////////////////////////////
 
-    QCString trNamespaceList() override
+    DString trNamespaceList() override
     { return "imenski prostori"; }
-    QCString trNamespaceListDescription(bool extractAll) override
+    DString trNamespaceListDescription(bool extractAll) override
     {
-      QCString result="Seznam ";
+      DString result="Seznam ";
       if (!extractAll) result+="dokumentiranih ";
       result+="imenskih prostorov z opisom:";
       return result;
     }
-    QCString trFriends() override
+    DString trFriends() override
     { return "Prijatelji (Friends) "; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990405
 //////////////////////////////////////////////////////////////////////////
 
-    QCString trRelatedFunctionDocumentation() override
+    DString trRelatedFunctionDocumentation() override
     { return "Podatki o poveznih funkcijah"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990425
 //////////////////////////////////////////////////////////////////////////
 
-    QCString trCompoundReference(const QCString &clName,
+    DString trCompoundReference(const DString &clName,
                                     ClassDef::CompoundType compType,
                                     bool /*isTemplate*/) override
       // used as the title of the HTML page of a class/struct/union
     {
-      QCString result="";
+      DString result="";
       switch(compType)
       {
         case ClassDef::Class:  result+=" Razred "; break;
@@ -255,50 +255,50 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
 
       return result;
     }
-    QCString trFileReference(const QCString &fileName) override
+    DString trFileReference(const DString &fileName) override
       // used as the title of the HTML page of a file
     {
-      QCString result="Datoteka ";
+      DString result="Datoteka ";
 	  result+=fileName;
 	  return result;
     }
-    QCString trNamespaceReference(const QCString &namespaceName) override
+    DString trNamespaceReference(const DString &namespaceName) override
       // used as the title of the HTML page of a namespace
     {
-      QCString result ="Imenski prostor ";
+      DString result ="Imenski prostor ";
 	  result+=namespaceName;
 
       return result;
     }
 
     // these are for the member sections of a class, struct or union
-    QCString trPublicMembers() override
+    DString trPublicMembers() override
     { return "Javne metode"; }
-    QCString trPublicSlots() override
+    DString trPublicSlots() override
     { return "Public slotovi"; }
-    QCString trSignals() override
+    DString trSignals() override
     { return "Programske prekinitve"; }
-    QCString trStaticPublicMembers() override
+    DString trStaticPublicMembers() override
     { return "Statične javne metode in atributi"; }
-    QCString trProtectedMembers() override
+    DString trProtectedMembers() override
     { return "Zaščitene metode in atributi"; }
-    QCString trProtectedSlots() override
+    DString trProtectedSlots() override
     { return "Zaščiteni sloti"; }
-    QCString trStaticProtectedMembers() override
+    DString trStaticProtectedMembers() override
     { return "Statične zaščitene metode in atributi"; }
-    QCString trPrivateMembers() override
+    DString trPrivateMembers() override
     { return "Skrite metode in atributi"; }
-    QCString trPrivateSlots() override
+    DString trPrivateSlots() override
     { return "Skriti slotovi"; }
-    QCString trStaticPrivateMembers() override
+    DString trStaticPrivateMembers() override
     { return "Statične skrite metode in atributi"; }
     // end of member sections
 
-    QCString trWriteList(int numEntries) override
+    DString trWriteList(int numEntries) override
     {
       // this function is used to produce a comma-separated list of items.
       // use generateMarker(i) to indicate where item i should be put.
-      QCString result;
+      DString result;
       // the inherits list contain `numEntries' classes
       for (int i=0;i<numEntries;i++)
       {
@@ -317,38 +317,38 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
       return result;
     }
 
-    QCString trInheritsList(int numEntries) override
+    DString trInheritsList(int numEntries) override
       // used in class documentation to produce a list of base classes,
       // if class diagrams are disabled.
     {
       return "Deduje od "+trWriteList(numEntries)+".";
     }
-    QCString trInheritedByList(int numEntries) override
+    DString trInheritedByList(int numEntries) override
       // used in class documentation to produce a list of super classes,
       // if class diagrams are disabled.
     {
       return "Naslijeðena u "+trWriteList(numEntries)+".";
     }
-    QCString trReimplementedFromList(int numEntries) override
+    DString trReimplementedFromList(int numEntries) override
       // used in member documentation blocks to produce a list of
       // members that are hidden by this one.
     {
       return "Skrije implementacijo iz "+trWriteList(numEntries)+".";
     }
-    QCString trReimplementedInList(int numEntries) override
+    DString trReimplementedInList(int numEntries) override
     {
       // used in member documentation blocks to produce a list of
       // all member that overwrite the implementation of this member.
       return "Metodo skrijejo implementacije v razredih "+trWriteList(numEntries)+".";
     }
 
-    QCString trNamespaceMembers() override
+    DString trNamespaceMembers() override
       // This is put above each page as a link to all members of namespaces.
     { return "elementi imenskega prostora"; }
-    QCString trNamespaceMemberDescription(bool extractAll) override
+    DString trNamespaceMemberDescription(bool extractAll) override
       // This is an introduction to the page with all namespace members
     {
-      QCString result="Seznam vseh ";
+      DString result="Seznam vseh ";
       if (!extractAll) result+="dokumentiranih ";
       result+="elementov imenskega prostora s povezavami na ";
       if (extractAll)
@@ -357,11 +357,11 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
         result+="imenski prostor, ki mu pripadajo:";
       return result;
     }
-    QCString trNamespaceIndex() override
+    DString trNamespaceIndex() override
       // This is used in LaTeX as the title of the chapter with the
       // index of all namespaces.
     { return "Indeks imenskih prostorov"; }
-    QCString trNamespaceDocumentation() override
+    DString trNamespaceDocumentation() override
       // This is used in LaTeX as the title of the chapter containing
       // the documentation of all namespaces.
     { return "Podatki o imenskih prostorih"; }
@@ -372,7 +372,7 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
     /*! This is used in the documentation before the list of all
      *  namespaces in a file.
      */
-    QCString trNamespaces() override
+    DString trNamespaces() override
     { return "Imenski prostori"; }
 
 
@@ -383,11 +383,11 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
     /*! This is put at the bottom of a class documentation page and is
      *  followed by a list of files that were used to generate the page.
      */
-    QCString trGeneratedFromFiles(ClassDef::CompoundType compType,
+    DString trGeneratedFromFiles(ClassDef::CompoundType compType,
         bool single) override
     { // here s is one of " Class", " Struct" or " Union"
       // single is true implies a single file
-      QCString result="Opis ";
+      DString result="Opis ";
       switch(compType)
       {
         case ClassDef::Class:      result+="razreda"; break;
@@ -411,29 +411,29 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
 //////////////////////////////////////////////////////////////////////////
 
     /*! This is used as the heading text for the retval command. */
-    QCString trReturnValues() override
+    DString trReturnValues() override
     { return "Povratna vrednost"; }
 
     /*! This is in the (quick) index as a link to the main page (index.html)
      */
-    QCString trMainPage() override
+    DString trMainPage() override
     { return "prva stran"; }
 
     /*! This is used in references to page that are put in the LaTeX
      *  documentation. It should be an abbreviation of the word page.
      */
-    QCString trPageAbbreviation() override
+    DString trPageAbbreviation() override
     { return "str."; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-991106
 //////////////////////////////////////////////////////////////////////////
 
-    QCString trDefinedAtLineInSourceFile() override
+    DString trDefinedAtLineInSourceFile() override
     {
       return "Definirano v @0 vrstici datoteke @1.";
     }
-    QCString trDefinedInSourceFile() override
+    DString trDefinedInSourceFile() override
     {
       return "Definirano v datoteki @0.";
     }
@@ -442,7 +442,7 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
 // new since 0.49-991205
 //////////////////////////////////////////////////////////////////////////
 
-    QCString trDeprecated() override
+    DString trDeprecated() override
     {
       return "Zastarelo";
     }
@@ -452,12 +452,12 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
 //////////////////////////////////////////////////////////////////////////
 
     /*! this text is put before a collaboration diagram */
-    QCString trCollaborationDiagram(const QCString &clName) override
+    DString trCollaborationDiagram(const DString &clName) override
     {
       return "Kolaboracijski diagram razreda "+clName+":";
     }
     /*! this text is put before an include dependency graph */
-    QCString trInclDepGraph(const QCString &fName) override
+    DString trInclDepGraph(const DString &fName) override
     {
       return "Graf prikazuje seznam datotek, "
           "ki jih datoteka \""+fName+"\" "
@@ -468,58 +468,58 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
 ;
     }
     /*! header that is put before the list of constructor/destructors. */
-    QCString trConstructorDocumentation() override
+    DString trConstructorDocumentation() override
     {
       return "Opis konstruktorjev in destruktorjev ";
     }
     /*! Used in the file documentation to point to the corresponding sources. */
-    QCString trGotoSourceCode() override
+    DString trGotoSourceCode() override
     {
       return "izvorna koda";
     }
     /*! Used in the file sources to point to the corresponding documentation. */
-    QCString trGotoDocumentation() override
+    DString trGotoDocumentation() override
     {
       return "dokumenacija tekoče datoteke.";
     }
     /*! Text for the \pre command */
-    QCString trPrecondition() override
+    DString trPrecondition() override
     {
       return "Predpogoji (preconditions)";
     }
     /*! Text for the \post command */
-    QCString trPostcondition() override
+    DString trPostcondition() override
     {
       return "Naknadni pogoji (posconditions)";
     }
     /*! Text for the \invariant command */
-    QCString trInvariant() override
+    DString trInvariant() override
     {
       return "Invarianta";
     }
     /*! Text shown before a multi-line variable/enum initialization */
-    QCString trInitialValue() override
+    DString trInitialValue() override
     {
       return "Začetna vrednost / definicija :";
     }
     /*! Text used the source code in the file index */
-    QCString trCode() override
+    DString trCode() override
     {
       return "koda";
     }
-    QCString trGraphicalHierarchy() override
+    DString trGraphicalHierarchy() override
     {
       return "Hierarhija razredov v grafični obliki";
     }
-    QCString trGotoGraphicalHierarchy() override
+    DString trGotoGraphicalHierarchy() override
     {
       return "Dedovalna hierarhija v grafični obliki";
     }
-    QCString trGotoTextualHierarchy() override
+    DString trGotoTextualHierarchy() override
     {
       return "Dedovalna hierarhija v tekstovni obliki";
     }
-    QCString trPageIndex() override
+    DString trPageIndex() override
     {
       return "Indeks strani";
     }
@@ -528,43 +528,43 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
 // new since 1.1.0
 //////////////////////////////////////////////////////////////////////////
 
-    QCString trNote() override
+    DString trNote() override
     {
       return "Opomba";
     }
-    QCString trPublicTypes() override
+    DString trPublicTypes() override
     {
       return "Javni tipi";
     }
-    QCString trPublicAttribs() override
+    DString trPublicAttribs() override
     {
       return "Javni atributi";
     }
-    QCString trStaticPublicAttribs() override
+    DString trStaticPublicAttribs() override
     {
       return "Statični javni atributi";
     }
-    QCString trProtectedTypes() override
+    DString trProtectedTypes() override
     {
       return "Zaščiteni tipi";
     }
-    QCString trProtectedAttribs() override
+    DString trProtectedAttribs() override
     {
       return "Zaščiteni atributi";
     }
-    QCString trStaticProtectedAttribs() override
+    DString trStaticProtectedAttribs() override
     {
       return "Statični zaščiteni tipi";
     }
-    QCString trPrivateTypes() override
+    DString trPrivateTypes() override
     {
       return "Skriti tipi";
     }
-    QCString trPrivateAttribs() override
+    DString trPrivateAttribs() override
     {
       return "Skriti atributi";
     }
-    QCString trStaticPrivateAttribs() override
+    DString trStaticPrivateAttribs() override
     {
       return "Statični skriti atributi";
     }
@@ -573,12 +573,12 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
 //////////////////////////////////////////////////////////////////////////
 
     /*! Used as a marker that is put before a todo item */
-    QCString trTodo() override
+    DString trTodo() override
     {
       return "TODO";
     }
     /*! Used as the header of the todo list */
-    QCString trTodoList() override
+    DString trTodoList() override
     {
       return "Seznam nedokončanih opravil";
     }
@@ -587,19 +587,19 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
 // new since 1.1.4
 //////////////////////////////////////////////////////////////////////////
 
-    QCString trReferencedBy() override
+    DString trReferencedBy() override
     {
       return "Uporabniki entitete:  ";
     }
-    QCString trRemarks() override
+    DString trRemarks() override
     {
       return "Opomba";
     }
-    QCString trAttention() override
+    DString trAttention() override
     {
       return "Pozor";
     }
-    QCString trInclByDepGraph() override
+    DString trInclByDepGraph() override
     {
       return "Graf prikazuje datoteke, ki posredno ali neposredno "
              "vključujejo tekočo datoteko. Pravokotniki simbolizirajo datoteke, "
@@ -611,7 +611,7 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
 	     "le posredno. "
 	;
     }
-    QCString trSince() override
+    DString trSince() override
     {
       return "Od";
     }
@@ -621,14 +621,14 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
 //////////////////////////////////////////////////////////////////////////
 
     /*! title of the graph legend page */
-    QCString trLegendTitle() override
+    DString trLegendTitle() override
     {
       return "Legenda grafa";
     }
     /*! page explaining how the dot graph's should be interpreted
      *  The %A in the text below are to prevent link to classes called "A".
      */
-    QCString trLegendDocs() override
+    DString trLegendDocs() override
     {
       return
         "Tekoča stran pojasnjuje način interpretacije grafov, ki jih izriše "
@@ -688,7 +688,7 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
         "</ul>\n";
     }
     /*! text for the link to the legend page */
-    QCString trLegend() override
+    DString trLegend() override
     {
       return "legenda";
     }
@@ -698,12 +698,12 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
 //////////////////////////////////////////////////////////////////////////
 
     /*! Used as a marker that is put before a test item */
-    QCString trTest() override
+    DString trTest() override
     {
       return "Test";
     }
     /*! Used as the header of the test list */
-    QCString trTestList() override
+    DString trTestList() override
     {
       return "Test List";
     }
@@ -713,12 +713,12 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
 //////////////////////////////////////////////////////////////////////////
 
     /*! Used as a section header for IDL properties */
-    QCString trProperties() override
+    DString trProperties() override
     {
       return "IDL Lastnosti";
     }
     /*! Used as a section header for IDL property documentation */
-    QCString trPropertyDocumentation() override
+    DString trPropertyDocumentation() override
     {
       return "Opis IDL lastnosti";
     }
@@ -728,12 +728,12 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
 //////////////////////////////////////////////////////////////////////////
 
     /*! Used for Java interfaces in the summary section of Java packages */
-/*     QCString trInterfaces() override */
+/*     DString trInterfaces() override */
 /*     { */
 /*       return "Vmesniki"; */
 /*     } */
     /*! Used for Java classes in the summary section of Java packages */
-    QCString trClasses() override
+    DString trClasses() override
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
@@ -745,22 +745,22 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
       }
     }
     /*! Used as the title of a Java package */
-    QCString trPackage(const QCString &name) override
+    DString trPackage(const DString &name) override
     {
       return "JAVA paket "+name;
     }
     /*! The description of the package index page */
-    QCString trPackageListDescription() override
+    DString trPackageListDescription() override
     {
       return "Seznam JAVA paketov in njihovih kratkih opisov v primeru, da obstajajo:";
     }
     /*! The link name in the Quick links header for each page */
-    QCString trPackages() override
+    DString trPackages() override
     {
       return "JAVA paketi";
     }
     /*! Text shown before a multi-line define */
-    QCString trDefineValue() override
+    DString trDefineValue() override
     {
       return "Vrednost:";
     }
@@ -770,12 +770,12 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
 //////////////////////////////////////////////////////////////////////////
 
     /*! Used as a marker that is put before a \\bug item */
-    QCString trBug() override
+    DString trBug() override
     {
       return "Programska napaka";
     }
     /*! Used as the header of the bug list */
-    QCString trBugList() override
+    DString trBugList() override
     {
       return "Seznam programskih napak";
     }
@@ -809,7 +809,7 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
      * </pre>
      *
      */
-    QCString trRTFansicp() override
+    DString trRTFansicp() override
     {
       return "1250";
     }
@@ -818,13 +818,13 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
     /*! Used as ansicpg for RTF fcharset
      *  \see trRTFansicp() for a table of possible values.
      */
-    QCString trRTFCharSet() override
+    DString trRTFCharSet() override
     {
       return "0";
     }
 
     /*! Used as header RTF general index */
-    QCString trRTFGeneralIndex() override
+    DString trRTFGeneralIndex() override
     {
       return "Indeks";
     }
@@ -833,7 +833,7 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    QCString trClass(bool first_capital, bool singular) override
+    DString trClass(bool first_capital, bool singular) override
     {
       return createNoun(first_capital, singular, "razred", "i");
     }
@@ -842,7 +842,7 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    QCString trFile(bool first_capital, bool singular) override
+    DString trFile(bool first_capital, bool singular) override
     {
       return createNoun(first_capital, singular, "datotek", "e", "a");
     }
@@ -851,7 +851,7 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    QCString trNamespace(bool first_capital, bool singular) override
+    DString trNamespace(bool first_capital, bool singular) override
     {
       return createNoun(first_capital, singular, "imenski prostor", "i");
     }
@@ -860,7 +860,7 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    QCString trGroup(bool first_capital, bool singular) override
+    DString trGroup(bool first_capital, bool singular) override
     {
       return createNoun(first_capital, singular, "skupina", "s");
     }
@@ -869,7 +869,7 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    QCString trPage(bool first_capital, bool singular) override
+    DString trPage(bool first_capital, bool singular) override
     {
       return createNoun(first_capital, singular, "stran", "i");
     }
@@ -878,7 +878,7 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    QCString trMember(bool first_capital, bool singular) override
+    DString trMember(bool first_capital, bool singular) override
     {
       return createNoun(first_capital, singular, "element", "i");
     }
@@ -887,7 +887,7 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    QCString trGlobal(bool first_capital, bool singular) override
+    DString trGlobal(bool first_capital, bool singular) override
     {
       return createNoun(first_capital, singular, "global", "s");
     }
@@ -898,7 +898,7 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
 
     /*! This text is generated when the \\author command is used and
      *  for the author section in man pages. */
-    QCString trAuthor(bool first_capital, bool singular) override
+    DString trAuthor(bool first_capital, bool singular) override
     {
       return createNoun(first_capital, singular, "avtor", "ji");
     }
@@ -908,7 +908,7 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
 
     /*! This text is put before the list of members referenced by a member
      */
-    QCString trReferences() override
+    DString trReferences() override
     {
       return "Reference";
     }
@@ -919,7 +919,7 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
     /*! used in member documentation blocks to produce a list of
      *  members that are implemented by this one.
      */
-    QCString trImplementedFromList(int numEntries) override
+    DString trImplementedFromList(int numEntries) override
     {
       return "Implementira "+trWriteList(numEntries)+".";
     }
@@ -927,7 +927,7 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
     /*! used in member documentation blocks to produce a list of
      *  all members that implement this abstract member.
      */
-    QCString trImplementedInList(int numEntries) override
+    DString trImplementedInList(int numEntries) override
     {
       return "Implementirano v "+trWriteList(numEntries)+".";
     }
@@ -939,7 +939,7 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
     /*! used in RTF documentation as a heading for the Table
      *  of Contents.
      */
-    QCString trRTFTableOfContents() override
+    DString trRTFTableOfContents() override
     {
       return "Vsebina";
     }
@@ -951,7 +951,7 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
     /*! Used as the header of the list of item that have been
      *  flagged deprecated
      */
-    QCString trDeprecatedList() override
+    DString trDeprecatedList() override
     {
       return "Seznam opuščenih";
     }
@@ -963,12 +963,12 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
     /*! Used as a header for declaration section of the events found in
      * a C# program
      */
-    QCString trEvents() override
+    DString trEvents() override
     {
       return "Dogodki";
     }
     /*! Header used for the documentation section of a class' events. */
-    QCString trEventDocumentation() override
+    DString trEventDocumentation() override
     {
       return "Opisi dogodkov";
     }
@@ -979,39 +979,39 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
 
     /*! Used as a heading for a list of Java class types with package scope.
      */
-    QCString trPackageTypes() override
+    DString trPackageTypes() override
     {
       return "Tipi paketov";
     }
     /*! Used as a heading for a list of Java class functions with package
      * scope.
      */
-    QCString trPackageFunctions() override
+    DString trPackageFunctions() override
     {
       return "Funkcije paketa";   /* don't know the context */
     }
-    QCString trPackageMembers() override
+    DString trPackageMembers() override
     {
       return "Elemente paketa";   /* don't know the context */
     }
     /*! Used as a heading for a list of static Java class functions with
      *  package scope.
      */
-    QCString trStaticPackageFunctions() override
+    DString trStaticPackageFunctions() override
     {
       return "Statične funkcije paketa";
     }
     /*! Used as a heading for a list of Java class variables with package
      * scope.
      */
-    QCString trPackageAttribs() override
+    DString trPackageAttribs() override
     {
       return "Atributi paketa";
     }
     /*! Used as a heading for a list of static Java class variables with
      * package scope.
      */
-    QCString trStaticPackageAttribs() override
+    DString trStaticPackageAttribs() override
     {
       return "Statični atributi paketa";
     }
@@ -1023,12 +1023,12 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
     /*! Used in the quick index of a class/file/namespace member list page
      *  to link to the unfiltered list of all members.
      */
-    QCString trAll() override
+    DString trAll() override
     {
       return "Vse";
     }
     /*! Put in front of the call graph for a function. */
-    QCString trCallGraph() override
+    DString trCallGraph() override
     {
       return "Graf klicev tekoče funkcije:";
     }
@@ -1040,7 +1040,7 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
     /*! This string is used as the title for the page listing the search
      *  results.
      */
-    QCString trSearchResultsTitle() override
+    DString trSearchResultsTitle() override
     {
       return "Rezultat(i) iskanja";
     }
@@ -1052,7 +1052,7 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
      *  value 2 represents 2 or more matches. HTML markup is allowed inside
      *  the returned string.
      */
-    QCString trSearchResults(int numDocuments) override
+    DString trSearchResults(int numDocuments) override
     {
       if (numDocuments==0)
       {
@@ -1075,7 +1075,7 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
     /*! This string is put before the list of matched words, for each search
      *  result. What follows is the list of words that matched the query.
      */
-    QCString trSearchMatches() override
+    DString trSearchMatches() override
     {
       return "Zadetki:";
     }
@@ -1086,7 +1086,7 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
 
     /*! This is used in HTML as the title of page with source code for file filename
      */
-    QCString trSourceFile(const QCString& filename) override
+    DString trSourceFile(const DString& filename) override
     {
       return filename + " izvorna koda";
     }
@@ -1098,26 +1098,26 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
     /*! This is used as the name of the chapter containing the directory
      *  hierarchy.
      */
-    QCString trDirIndex() override
+    DString trDirIndex() override
     { return "Hierarhija imenikov"; }
 
     /*! This is used as the name of the chapter containing the documentation
      *  of the directories.
      */
-    QCString trDirDocumentation() override
+    DString trDirDocumentation() override
     { return "Opisi imenikov"; }
 
     /*! This is used as the title of the directory index and also in the
      *  Quick links of an HTML page, to link to the directory hierarchy.
      */
-    QCString trDirectories() override
+    DString trDirectories() override
     { return "Imeniki"; }
 
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.
      */
-    QCString trDirReference(const QCString &dirName) override
-    { QCString result=dirName;
+    DString trDirReference(const DString &dirName) override
+    { DString result=dirName;
       result+=" imeniške reference"; /* not sure for context */
       return result;
     }
@@ -1125,7 +1125,7 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
     /*! This returns the word directory with or without starting capital
      *  (\a first_capital) and in singular or plural form (\a singular).
      */
-    QCString trDir(bool first_capital, bool singular) override
+    DString trDir(bool first_capital, bool singular) override
     {
       return createNoun(first_capital, singular, "imenik", "i");
     }
@@ -1137,30 +1137,30 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
     /*! This text is added to the documentation when the \\overload command
      *  is used for a overloaded function.
      */
-    QCString trOverloadText() override
+    DString trOverloadText() override
     {
       return "To je ponovno definirana metoda, " /* don't know Slovene expresion for overloaded */
              "podana je zaradi priročnosti. Metoda se od predhodnje razlikuje "
              "samo v številu in/ali tipu formalnih argumentov.";
     }
 
-    QCString trDayOfWeek(int dayOfWeek, bool first_capital, bool full) override
+    DString trDayOfWeek(int dayOfWeek, bool first_capital, bool full) override
     {
       static const char *days_short[]   = { "pon.", "tor.", "sre.", "čet.", "pet.", "sob.", "ned." };
       static const char *days_full[]    = { "ponedeljek", "torek", "sreda", "četrtek", "petek", "sobota", "nedelja" };
-      QCString text  = full? days_full[dayOfWeek-1] : days_short[dayOfWeek-1];
+      DString text  = full? days_full[dayOfWeek-1] : days_short[dayOfWeek-1];
       if (first_capital) return text.mid(0,1).upper()+text.mid(1);
       else return text;
     }
-    QCString trMonth(int month, bool first_capital, bool full) override
+    DString trMonth(int month, bool first_capital, bool full) override
     {
       static const char *months_short[] = { "jan.", "feb.", "mar.", "apr.", "maj", "jun.", "jul.", "avg.", "sep.", "okt.", "nov.", "dec." };
       static const char *months_full[]  = { "januar", "februar", "marec", "april", "maj", "junij", "julij", "avgust", "september", "oktober", "november", "december" };
-      QCString text  = full? months_full[month-1] : months_short[month-1];
+      DString text  = full? months_full[month-1] : months_short[month-1];
       if (first_capital) return text.mid(0,1).upper()+text.mid(1);
       else return text;
     }
-    QCString trDayPeriod(bool period) override
+    DString trDayPeriod(bool period) override
     {
       static const char *dayPeriod[] = { "dop.", "pop." };
       return dayPeriod[period?1:0];

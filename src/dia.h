@@ -18,14 +18,14 @@
 #ifndef DIA_H
 #define DIA_H
 
-class QCString;
+class DString;
 
 enum class DiaOutputFormat { BITMAP , EPS };
 
 
-void writeDiaGraphFromFile(const QCString &inFile,const QCString &outDir,
-                           const QCString &outFile,DiaOutputFormat format,
-                           const QCString &srcFile,int srcLine,bool toIndex);
+void writeDiaGraphFromFile(const DString &inFile,const DString &outDir,
+                           const DString &outFile,DiaOutputFormat format,
+                           const DString &srcFile,int srcLine,bool toIndex);
 
 #endif
 

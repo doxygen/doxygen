@@ -81,7 +81,7 @@ namespace Config
    *  \returns true if successful, false if the file could not be
    *  opened or read.
    */
-  bool parse(const QCString &fileName,bool update=false, CompareMode compareMode = CompareMode::Full);
+  bool parse(const DString &fileName,bool update=false, CompareMode compareMode = CompareMode::Full);
 
   /*! Post processed the parsed data. Replaces raw string values by the actual values.
    *  and replaces environment variables.

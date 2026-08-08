@@ -23,7 +23,7 @@
 #include <variant>
 #include <type_traits>
 
-#include "qcstring.h"
+#include "dstring.h"
 #include "docvisitor.h"
 #include "docparser.h"
 #include "htmlattrib.h"
@@ -152,11 +152,11 @@ class DocCompoundNode : public DocNode
 class DocWord final : public DocNode
 {
   public:
-    DocWord(DocParser *parser,DocNodeVariant *parent,const QCString &word);
-    QCString word() const { return m_word; }
+    DocWord(DocParser *parser,DocNodeVariant *parent,const DString &word);
+    DString word() const { return m_word; }
 
   private:
-    QCString  m_word;
+    DString  m_word;
 };
 
 /** Node representing a word that can be linked to something
@@ -164,36 +164,36 @@ class DocWord final : public DocNode
 class DocLinkedWord final : public DocNode
 {
   public:
-    DocLinkedWord(DocParser *parser,DocNodeVariant *parent,const QCString &word,
-                  const QCString &ref,const QCString &file,
-                  const QCString &anchor,const QCString &tooltip);
-    QCString word() const       { return m_word; }
-    QCString file() const       { return m_file; }
-    QCString relPath() const    { return m_relPath; }
-    QCString ref() const        { return m_ref; }
-    QCString anchor() const     { return m_anchor; }
-    QCString tooltip() const    { return m_tooltip; }
+    DocLinkedWord(DocParser *parser,DocNodeVariant *parent,const DString &word,
+                  const DString &ref,const DString &file,
+                  const DString &anchor,const DString &tooltip);
+    DString word() const       { return m_word; }
+    DString file() const       { return m_file; }
+    DString relPath() const    { return m_relPath; }
+    DString ref() const        { return m_ref; }
+    DString anchor() const     { return m_anchor; }
+    DString tooltip() const    { return m_tooltip; }
 
   private:
-    QCString  m_word;
-    QCString  m_ref;
-    QCString  m_file;
-    QCString  m_relPath;
-    QCString  m_anchor;
-    QCString  m_tooltip;
+    DString  m_word;
+    DString  m_ref;
+    DString  m_file;
+    DString  m_relPath;
+    DString  m_anchor;
+    DString  m_tooltip;
 };
 
 /** Node representing a URL (or email address) */
 class DocURL final : public DocNode
 {
   public:
-    DocURL(DocParser *parser,DocNodeVariant *parent,const QCString &url,bool isEmail) :
+    DocURL(DocParser *parser,DocNodeVariant *parent,const DString &url,bool isEmail) :
       DocNode(parser,parent), m_url(url), m_isEmail(isEmail) {}
-    QCString url() const        { return m_url; }
+    DString url() const        { return m_url; }
     bool isEmail() const       { return m_isEmail; }
 
   private:
-    QCString  m_url;
+    DString  m_url;
     bool m_isEmail = false;
 };
 
@@ -228,15 +228,15 @@ class DocHorRuler final : public DocNode
 class DocAnchor final : public DocNode
 {
   public:
-    DocAnchor(DocParser *parser,DocNodeVariant *parent,const QCString &id,bool newAnchor);
-    QCString anchor() const    { return m_anchor; }
-    QCString file() const      { return m_file; }
+    DocAnchor(DocParser *parser,DocNodeVariant *parent,const DString &id,bool newAnchor);
+    DString anchor() const    { return m_anchor; }
+    DString file() const      { return m_file; }
 
     const HtmlAttribList &attribs() const { return m_attribs; }
 
   private:
-    QCString  m_anchor;
-    QCString  m_file;
+    DString  m_anchor;
+    DString  m_file;
     HtmlAttribList m_attribs;
 };
 
@@ -244,21 +244,21 @@ class DocAnchor final : public DocNode
 class DocCite final : public DocNode
 {
   public:
-    DocCite(DocParser *parser,DocNodeVariant *parent,const QCString &target,const QCString &context, CiteInfoOption opt);
-    QCString file() const        { return m_file; }
-    QCString relPath() const     { return m_relPath; }
-    QCString ref() const         { return m_ref; }
-    QCString anchor() const      { return m_anchor; }
-    QCString target() const      { return m_target; }
+    DocCite(DocParser *parser,DocNodeVariant *parent,const DString &target,const DString &context, CiteInfoOption opt);
+    DString file() const        { return m_file; }
+    DString relPath() const     { return m_relPath; }
+    DString ref() const         { return m_ref; }
+    DString anchor() const      { return m_anchor; }
+    DString target() const      { return m_target; }
     CiteInfoOption option() const  { return m_option; }
-    QCString getText() const;
+    DString getText() const;
 
   private:
-    QCString   m_file;
-    QCString   m_relPath;
-    QCString   m_ref;
-    QCString   m_anchor;
-    QCString   m_target;
+    DString   m_file;
+    DString   m_relPath;
+    DString   m_ref;
+    DString   m_anchor;
+    DString   m_target;
     CiteInfoOption m_option;
 };
 
@@ -288,15 +288,15 @@ class DocStyleChange final : public DocNode
                };
 
     DocStyleChange(DocParser *parser,DocNodeVariant *parent,size_t position,Style s,
-                   const QCString &tagName,bool enable, const HtmlAttribList *attribs=nullptr)
+                   const DString &tagName,bool enable, const HtmlAttribList *attribs=nullptr)
       : DocNode(parser,parent), m_position(position), m_style(s), m_enable(enable)
     {
       if (attribs) m_attribs=*attribs;
       m_tagName = tagName.lower();
     }
     DocStyleChange(DocParser *parser,DocNodeVariant *parent,size_t position,Style s,
-                   const QCString &tagName,bool enable,
-                   const QCString &fileName,int lineNr,
+                   const DString &tagName,bool enable,
+                   const DString &fileName,int lineNr,
                    const HtmlAttribList *attribs=nullptr)
       : DocNode(parser,parent), m_position(position), m_style(s), m_enable(enable),
         m_fileName(fileName), m_lineNr(lineNr)
@@ -309,8 +309,8 @@ class DocStyleChange final : public DocNode
     bool enable() const                   { return m_enable; }
     size_t position() const               { return m_position; }
     const HtmlAttribList &attribs() const { return m_attribs; }
-    QCString tagName() const              { return m_tagName; }
-    QCString fileName() const             { return m_fileName; }
+    DString tagName() const               { return m_tagName; }
+    DString fileName() const              { return m_fileName; }
     int lineNr() const                    { return m_lineNr; }
 
   private:
@@ -318,8 +318,8 @@ class DocStyleChange final : public DocNode
     Style    m_style = Bold;
     bool     m_enable = false;
     HtmlAttribList m_attribs;
-    QCString m_tagName;
-    QCString m_fileName;
+    DString m_tagName;
+    DString m_fileName;
     int      m_lineNr = -1;
 };
 
@@ -330,7 +330,7 @@ class DocSymbol final : public DocNode
     DocSymbol(DocParser *parser,DocNodeVariant *parent,HtmlEntityMapper::SymType s)
       : DocNode(parser,parent), m_symbol(s) {}
     HtmlEntityMapper::SymType symbol() const     { return m_symbol; }
-    static HtmlEntityMapper::SymType decodeSymbol(const QCString &symName);
+    static HtmlEntityMapper::SymType decodeSymbol(const DString &symName);
 
   private:
     HtmlEntityMapper::SymType  m_symbol = HtmlEntityMapper::Sym_Unknown;
@@ -340,12 +340,12 @@ class DocSymbol final : public DocNode
 class DocEmoji final : public DocNode
 {
   public:
-    DocEmoji(DocParser *parser,DocNodeVariant *parent,const QCString &symName);
-    QCString name() const      { return m_symName; }
+    DocEmoji(DocParser *parser,DocNodeVariant *parent,const DString &symName);
+    DString name() const       { return m_symName; }
     int index() const          { return m_index; }
 
   private:
-    QCString m_symName;
+    DString m_symName;
     int m_index = 0;
 };
 
@@ -353,22 +353,22 @@ class DocEmoji final : public DocNode
 class DocWhiteSpace final : public DocNode
 {
   public:
-    DocWhiteSpace(DocParser *parser,DocNodeVariant *parent,const QCString &chars)
+    DocWhiteSpace(DocParser *parser,DocNodeVariant *parent,const DString &chars)
       : DocNode(parser,parent), m_chars(chars) {}
-    QCString chars() const     { return m_chars; }
+    DString chars() const { return m_chars; }
   private:
-    QCString  m_chars;
+    DString  m_chars;
 };
 
 /** Node representing a separator */
 class DocSeparator final : public DocNode
 {
   public:
-    DocSeparator(DocParser *parser,DocNodeVariant *parent,const QCString &chars)
+    DocSeparator(DocParser *parser,DocNodeVariant *parent,const DString &chars)
       : DocNode(parser,parent), m_chars(chars) {}
-    QCString chars() const     { return m_chars; }
+    DString chars() const { return m_chars; }
   private:
-    QCString  m_chars;
+    DString  m_chars;
 };
 
 /** Node representing a verbatim, unparsed text fragment */
@@ -376,54 +376,54 @@ class DocVerbatim final : public DocNode
 {
   public:
     enum Type { Code, HtmlOnly, ManOnly, LatexOnly, RtfOnly, XmlOnly, Verbatim, Dot, Msc, DocbookOnly, PlantUML, Mermaid, JavaDocCode, JavaDocLiteral };
-    DocVerbatim(DocParser *parser,DocNodeVariant *parent,const QCString &context,
-                const QCString &text, Type t,bool isExample,
-                const QCString &exampleFile,bool isBlock=false,const QCString &lang=QCString());
+    DocVerbatim(DocParser *parser,DocNodeVariant *parent,const DString &context,
+                const DString &text, Type t,bool isExample,
+                const DString &exampleFile,bool isBlock=false,const DString &lang=DString());
     Type type() const            { return p->type; }
-    QCString text() const        { return p->text; }
-    QCString context() const     { return p->context; }
+    DString text() const         { return p->text; }
+    DString context() const      { return p->context; }
     bool isExample() const       { return p->isExample; }
-    QCString exampleFile() const { return p->exampleFile; }
-    QCString relPath() const     { return p->relPath; }
-    QCString language() const    { return p->lang; }
+    DString exampleFile() const  { return p->exampleFile; }
+    DString relPath() const      { return p->relPath; }
+    DString language() const     { return p->lang; }
     bool isBlock() const         { return p->isBlock; }
     bool hasCaption() const      { return !p->children.empty(); }
-    QCString width() const       { return p->width; }
-    QCString height() const      { return p->height; }
-    QCString engine() const      { return p->engine; }
+    DString width() const        { return p->width; }
+    DString height() const       { return p->height; }
+    DString engine() const       { return p->engine; }
     bool useBitmap() const       { return p->useBitmap; }
     const DocNodeList &children() const { return p->children; }
     DocNodeList &children()      { return p->children; }
-    QCString srcFile() const     { return p->srcFile; }
+    DString srcFile() const      { return p->srcFile; }
     int srcLine() const          { return p->srcLine; }
-    void setText(const QCString &t)   { p->text=t;   }
-    void setWidth(const QCString &w)  { p->width=w;  }
-    void setHeight(const QCString &h) { p->height=h; }
-    void setEngine(const QCString &e) { p->engine=e; }
+    void setText(const DString &t)    { p->text=t;   }
+    void setWidth(const DString &w)   { p->width=w;  }
+    void setHeight(const DString &h)  { p->height=h; }
+    void setEngine(const DString &e)  { p->engine=e; }
     void setUseBitmap(const bool &u)  { p->useBitmap=u; }
-    void setLocation(const QCString &file,int line) { p->srcFile=file; p->srcLine=line; }
+    void setLocation(const DString &file,int line) { p->srcFile=file; p->srcLine=line; }
 
   private:
     struct Private
     {
-      Private(const QCString &context_,const QCString &text_, Type type_, bool isExample_,
-              const QCString &exampleFile_, const QCString &relPath_,const QCString &lang_, bool isBlock_)
+      Private(const DString &context_,const DString &text_, Type type_, bool isExample_,
+              const DString &exampleFile_, const DString &relPath_,const DString &lang_, bool isBlock_)
         : context(context_),         text(text_),       type(type_),       isExample(isExample_),
           exampleFile(exampleFile_), relPath(relPath_), lang(lang_), isBlock(isBlock_) {}
-      QCString  context;
-      QCString  text;
+      DString   context;
+      DString   text;
       Type      type = Code;
       bool      isExample;
-      QCString  exampleFile;
-      QCString  relPath;
-      QCString  lang;
+      DString   exampleFile;
+      DString   relPath;
+      DString   lang;
       bool      isBlock;
-      QCString  width;
-      QCString  height;
-      QCString  engine;
+      DString   width;
+      DString   height;
+      DString   engine;
       bool      useBitmap=false; // some PlantUML engines cannot output data in EPS format so bitmap format is required
       DocNodeList children;
-      QCString  srcFile;
+      DString   srcFile;
       int       srcLine = -1;
     };
     std::unique_ptr<Private> p;
@@ -438,38 +438,38 @@ class DocInclude final : public DocNode
 	      IncWithLines, Snippet , SnippetWithLines,
 	      DontIncWithLines, RtfInclude, ManInclude, DocbookInclude, XmlInclude
             };
-    DocInclude(DocParser *parser,DocNodeVariant *parent,const QCString &file,
-               const QCString &context, Type t, bool stripCodeComments,
-               bool isExample,const QCString &exampleFile,
-               const QCString &blockId, bool isBlock, bool trimLeft)
+    DocInclude(DocParser *parser,DocNodeVariant *parent,const DString &file,
+               const DString &context, Type t, bool stripCodeComments,
+               bool isExample,const DString &exampleFile,
+               const DString &blockId, bool isBlock, bool trimLeft)
     : DocNode(parser,parent), m_file(file), m_context(context), m_type(t),
       m_stripCodeComments(stripCodeComments),
       m_isExample(isExample), m_isBlock(isBlock), m_trimLeft(trimLeft),
       m_exampleFile(exampleFile), m_blockId(blockId) {}
-    QCString file() const        { return m_file; }
-    QCString extension() const   { size_t i=m_file.rfind('.'); return i!=QCString::npos ? m_file.mid(i) : QCString(); }
-    Type type() const            { return m_type; }
-    QCString text() const        { return m_text; }
-    QCString context() const     { return m_context; }
-    QCString blockId() const     { return m_blockId; }
+    DString file() const        { return m_file; }
+    DString extension() const   { size_t i=m_file.rfind('.'); return i!=DString::npos ? m_file.mid(i) : DString(); }
+    Type type() const           { return m_type; }
+    DString text() const        { return m_text; }
+    DString context() const     { return m_context; }
+    DString blockId() const     { return m_blockId; }
     bool stripCodeComments() const { return m_stripCodeComments; }
-    bool isExample() const       { return m_isExample; }
-    QCString exampleFile() const { return m_exampleFile; }
-    bool isBlock() const         { return m_isBlock; }
-    bool trimLeft() const        { return m_trimLeft; }
+    bool isExample() const      { return m_isExample; }
+    DString exampleFile() const { return m_exampleFile; }
+    bool isBlock() const        { return m_isBlock; }
+    bool trimLeft() const       { return m_trimLeft; }
     void parse();
 
   private:
-    QCString  m_file;
-    QCString  m_context;
-    QCString  m_text;
+    DString  m_file;
+    DString  m_context;
+    DString  m_text;
     Type      m_type;
     bool      m_stripCodeComments;
     bool      m_isExample;
     bool      m_isBlock;
     bool      m_trimLeft;
-    QCString  m_exampleFile;
-    QCString  m_blockId;
+    DString  m_exampleFile;
+    DString  m_blockId;
 };
 
 /** Node representing a include/dontinclude operator block */
@@ -477,8 +477,8 @@ class DocIncOperator final : public DocNode
 {
   public:
     enum Type { Line, SkipLine, Skip, Until };
-    DocIncOperator(DocParser *parser,DocNodeVariant *parent,Type t,const QCString &pat,
-                   const QCString &context,bool stripCodeComments,bool isExample,const QCString &exampleFile)
+    DocIncOperator(DocParser *parser,DocNodeVariant *parent,Type t,const DString &pat,
+                   const DString &context,bool stripCodeComments,bool isExample,const DString &exampleFile)
     : DocNode(parser,parent), m_type(t), m_pattern(pat), m_context(context),
       m_isFirst(false), m_isLast(false), m_stripCodeComments(stripCodeComments),
       m_isExample(isExample), m_exampleFile(exampleFile) {}
@@ -496,32 +496,32 @@ class DocIncOperator final : public DocNode
     }
     int line() const             { return m_line; }
     bool showLineNo() const      { return m_showLineNo; }
-    QCString text() const        { return m_text; }
-    QCString pattern() const     { return m_pattern; }
-    QCString context() const     { return m_context; }
+    DString text() const         { return m_text; }
+    DString pattern() const      { return m_pattern; }
+    DString context() const      { return m_context; }
     bool isFirst() const         { return m_isFirst; }
     bool isLast() const          { return m_isLast; }
     void markFirst(bool v=true)  { m_isFirst = v; }
     void markLast(bool v=true)   { m_isLast = v; }
     bool stripCodeComments() const { return m_stripCodeComments; }
     bool isExample() const       { return m_isExample; }
-    QCString exampleFile() const { return m_exampleFile; }
-    QCString includeFileName() const { return m_includeFileName; }
+    DString exampleFile() const  { return m_exampleFile; }
+    DString includeFileName() const { return m_includeFileName; }
     void parse();
 
   private:
     Type     m_type = Line;
     int      m_line = 0;
     bool     m_showLineNo = false;
-    QCString  m_text;
-    QCString  m_pattern;
-    QCString  m_context;
+    DString  m_text;
+    DString  m_pattern;
+    DString  m_context;
     bool     m_isFirst = false;
     bool     m_isLast = false;
     bool     m_stripCodeComments = true;
     bool     m_isExample = false;
-    QCString  m_exampleFile;
-    QCString m_includeFileName;
+    DString  m_exampleFile;
+    DString m_includeFileName;
 };
 
 /** Node representing an item of a cross-referenced list */
@@ -529,10 +529,10 @@ class DocFormula final : public DocNode
 {
   public:
     DocFormula(DocParser *parser,DocNodeVariant *parent,int id);
-    QCString name() const       { return m_name; }
-    QCString text() const       { return m_text; }
-    QCString relPath() const    { return m_relPath; }
-    int id() const              { return m_id; }
+    DString name() const       { return m_name; }
+    DString text() const       { return m_text; }
+    DString relPath() const    { return m_relPath; }
+    int id() const             { return m_id; }
     bool isInline() const
     {
       if (m_text.length()>1 && m_text.at(0)=='\\' && m_text.at(1)=='[') return false;
@@ -541,9 +541,9 @@ class DocFormula final : public DocNode
     }
 
   private:
-    QCString  m_name;
-    QCString  m_text;
-    QCString  m_relPath;
+    DString  m_name;
+    DString  m_text;
+    DString  m_relPath;
     int      m_id = 0;
 };
 
@@ -556,10 +556,10 @@ class DocIndexEntry final : public DocNode
     Token parse();
     const Definition *scope() const    { return m_scope;  }
     const MemberDef *member() const    { return m_member; }
-    QCString entry() const        { return m_entry;  }
+    DString entry() const              { return m_entry;  }
 
   private:
-    QCString     m_entry;
+    DString     m_entry;
     const Definition *m_scope = nullptr;
     const MemberDef  *m_member = nullptr;
 };
@@ -609,7 +609,7 @@ class DocTitle final : public DocCompoundNode
   public:
     DocTitle(DocParser *parser,DocNodeVariant *parent) : DocCompoundNode(parser,parent) {}
     void parse();
-    void parseFromString(DocNodeVariant *,const QCString &title);
+    void parseFromString(DocNodeVariant *,const DString &title);
     bool hasTitle() const { return !children().empty(); }
     bool empty() const  { return !hasTitle(); }
 
@@ -620,21 +620,21 @@ class DocTitle final : public DocCompoundNode
 class DocXRefItem final : public DocCompoundNode
 {
   public:
-    DocXRefItem(DocParser *parser,DocNodeVariant *parent,int id,const QCString &key);
-    QCString file() const       { return m_file; }
-    QCString anchor() const     { return m_anchor; }
-    QCString title() const      { return m_title; }
-    QCString relPath() const    { return m_relPath; }
-    QCString key() const        { return m_key; }
+    DocXRefItem(DocParser *parser,DocNodeVariant *parent,int id,const DString &key);
+    DString file() const       { return m_file; }
+    DString anchor() const     { return m_anchor; }
+    DString title() const      { return m_title; }
+    DString relPath() const    { return m_relPath; }
+    DString key() const        { return m_key; }
     bool parse();
 
   private:
     int      m_id = 0;
-    QCString  m_key;
-    QCString  m_file;
-    QCString  m_anchor;
-    QCString  m_title;
-    QCString  m_relPath;
+    DString  m_key;
+    DString  m_file;
+    DString  m_anchor;
+    DString  m_title;
+    DString  m_relPath;
 };
 
 /** Node representing an image */
@@ -643,15 +643,15 @@ class DocImage final : public DocCompoundNode
   public:
     enum Type { Html, Latex, Rtf, DocBook, Xml };
     DocImage(DocParser *parser,DocNodeVariant *parent,const HtmlAttribList &attribs,
-             const QCString &name,Type t,const QCString &url=QCString(), bool inlineImage = true);
-    Type type() const           { return p->type; }
-    QCString name() const       { return p->name; }
-    bool hasCaption() const     { return !children().empty(); }
-    QCString width() const      { return p->width; }
-    QCString height() const     { return p->height; }
-    QCString relPath() const    { return p->relPath; }
-    QCString url() const        { return p->url; }
-    bool isInlineImage() const  { return p->inlineImage; }
+             const DString &name,Type t,const DString &url=DString(), bool inlineImage = true);
+    Type type() const          { return p->type; }
+    DString name() const       { return p->name; }
+    bool hasCaption() const    { return !children().empty(); }
+    DString width() const      { return p->width; }
+    DString height() const     { return p->height; }
+    DString relPath() const    { return p->relPath; }
+    DString url() const        { return p->url; }
+    bool isInlineImage() const { return p->inlineImage; }
     bool isSVG() const;
     const HtmlAttribList &attribs() const { return p->attribs; }
     void parse();
@@ -659,17 +659,17 @@ class DocImage final : public DocCompoundNode
   private:
     struct Private
     {
-      Private(const HtmlAttribList &attribs_,const QCString &name_,Type type_,
-              const QCString &relPath_, const QCString &url_,bool inlineImage_)
+      Private(const HtmlAttribList &attribs_,const DString &name_,Type type_,
+              const DString &relPath_, const DString &url_,bool inlineImage_)
         : attribs(attribs_), name(name_), type(type_),
           relPath(relPath_), url(url_),   inlineImage(inlineImage_) {}
       HtmlAttribList attribs;
-      QCString  name;
+      DString  name;
       Type      type = Html;
-      QCString  width;
-      QCString  height;
-      QCString  relPath;
-      QCString  url;
+      DString  width;
+      DString  height;
+      DString  relPath;
+      DString  url;
       bool      inlineImage;
     };
     std::unique_ptr<Private> p;
@@ -678,31 +678,31 @@ class DocImage final : public DocCompoundNode
 class DocDiagramFileBase : public DocCompoundNode
 {
   public:
-    DocDiagramFileBase(DocParser *parser, DocNodeVariant *parent,const QCString &name,
-                       const QCString &context, const QCString &srcFile,int srcLine)
+    DocDiagramFileBase(DocParser *parser, DocNodeVariant *parent,const DString &name,
+                       const DString &context, const DString &srcFile,int srcLine)
     : DocCompoundNode(parser,parent), p(std::make_unique<Private>(name, context, srcFile, srcLine)) {}
-    QCString name() const      { return p->name; }
-    QCString file() const      { return p->file; }
-    QCString relPath() const   { return p->relPath; }
-    bool hasCaption() const    { return !children().empty(); }
-    QCString width() const     { return p->width; }
-    QCString height() const    { return p->height; }
-    QCString context() const   { return p->context; }
-    QCString srcFile() const   { return p->srcFile; }
-    int srcLine() const        { return p->srcLine; }
+    DString name() const      { return p->name; }
+    DString file() const      { return p->file; }
+    DString relPath() const   { return p->relPath; }
+    bool hasCaption() const   { return !children().empty(); }
+    DString width() const     { return p->width; }
+    DString height() const    { return p->height; }
+    DString context() const   { return p->context; }
+    DString srcFile() const   { return p->srcFile; }
+    int srcLine() const       { return p->srcLine; }
 
   protected:
     struct Private
     {
-      Private(const QCString &name_,const QCString &context_,const QCString &srcFile_,int srcLine_)
+      Private(const DString &name_,const DString &context_,const DString &srcFile_,int srcLine_)
         : name(name_), context(context_), srcFile(srcFile_), srcLine(srcLine_) {}
-      QCString  name;
-      QCString  file;
-      QCString  relPath;
-      QCString  width;
-      QCString  height;
-      QCString  context;
-      QCString  srcFile;
+      DString  name;
+      DString  file;
+      DString  relPath;
+      DString  width;
+      DString  height;
+      DString  context;
+      DString  srcFile;
       int       srcLine;
     };
     std::unique_ptr<Private> p;
@@ -712,8 +712,8 @@ class DocDiagramFileBase : public DocCompoundNode
 class DocDotFile final : public DocDiagramFileBase
 {
   public:
-    DocDotFile(DocParser *parser,DocNodeVariant *parent,const QCString &name,const QCString &context,
-               const QCString &srcFile,int srcLine);
+    DocDotFile(DocParser *parser,DocNodeVariant *parent,const DString &name,const DString &context,
+               const DString &srcFile,int srcLine);
     bool parse();
 };
 
@@ -721,8 +721,8 @@ class DocDotFile final : public DocDiagramFileBase
 class DocMscFile final : public DocDiagramFileBase
 {
   public:
-    DocMscFile(DocParser *parser,DocNodeVariant *parent,const QCString &name,const QCString &context,
-               const QCString &srcFile,int srcLine);
+    DocMscFile(DocParser *parser,DocNodeVariant *parent,const DString &name,const DString &context,
+               const DString &srcFile,int srcLine);
     bool parse();
 };
 
@@ -730,8 +730,8 @@ class DocMscFile final : public DocDiagramFileBase
 class DocDiaFile final : public DocDiagramFileBase
 {
   public:
-    DocDiaFile(DocParser *parser,DocNodeVariant *parent,const QCString &name,const QCString &context,
-               const QCString &srcFile,int srcLine);
+    DocDiaFile(DocParser *parser,DocNodeVariant *parent,const DString &name,const DString &context,
+               const DString &srcFile,int srcLine);
     bool parse();
 };
 
@@ -739,8 +739,8 @@ class DocDiaFile final : public DocDiagramFileBase
 class DocPlantUmlFile final : public DocDiagramFileBase
 {
   public:
-    DocPlantUmlFile(DocParser *parser,DocNodeVariant *parent,const QCString &name,const QCString &context,
-               const QCString &srcFile,int srcLine);
+    DocPlantUmlFile(DocParser *parser,DocNodeVariant *parent,const DString &name,const DString &context,
+               const DString &srcFile,int srcLine);
     bool parse();
 };
 
@@ -748,8 +748,8 @@ class DocPlantUmlFile final : public DocDiagramFileBase
 class DocMermaidFile final : public DocDiagramFileBase
 {
   public:
-    DocMermaidFile(DocParser *parser,DocNodeVariant *parent,const QCString &name,const QCString &context,
-               const QCString &srcFile,int srcLine);
+    DocMermaidFile(DocParser *parser,DocNodeVariant *parent,const DString &name,const DString &context,
+               const DString &srcFile,int srcLine);
     bool parse();
 };
 
@@ -767,85 +767,85 @@ class DocVhdlFlow final : public DocCompoundNode
 class DocLink final : public DocCompoundNode
 {
   public:
-    DocLink(DocParser *parser,DocNodeVariant *parent,const QCString &target);
-    QCString parse(bool,bool isXmlLink=false);
-    QCString file() const       { return m_file; }
-    QCString relPath() const    { return m_relPath; }
-    QCString ref() const        { return m_ref; }
-    QCString anchor() const     { return m_anchor; }
+    DocLink(DocParser *parser,DocNodeVariant *parent,const DString &target);
+    DString parse(bool,bool isXmlLink=false);
+    DString file() const       { return m_file; }
+    DString relPath() const    { return m_relPath; }
+    DString ref() const        { return m_ref; }
+    DString anchor() const     { return m_anchor; }
 
   private:
-    QCString  m_file;
-    QCString  m_relPath;
-    QCString  m_ref;
-    QCString  m_anchor;
-    QCString  m_refText;
+    DString  m_file;
+    DString  m_relPath;
+    DString  m_ref;
+    DString  m_anchor;
+    DString  m_refText;
 };
 
 /** Node representing a reference to some item */
 class DocRef final : public DocCompoundNode
 {
   public:
-    DocRef(DocParser *parser,DocNodeVariant *parent,const QCString &target,const QCString &context);
-    void parse(char cmdChar,const QCString &cmdName);
-    QCString file() const         { return m_file; }
-    QCString relPath() const      { return m_relPath; }
-    QCString ref() const          { return m_ref; }
-    QCString anchor() const       { return m_anchor; }
-    QCString targetTitle() const  { return m_text; }
+    DocRef(DocParser *parser,DocNodeVariant *parent,const DString &target,const DString &context);
+    void parse(char cmdChar,const DString &cmdName);
+    DString file() const         { return m_file; }
+    DString relPath() const      { return m_relPath; }
+    DString ref() const          { return m_ref; }
+    DString anchor() const       { return m_anchor; }
+    DString targetTitle() const  { return m_text; }
     SectionType sectionType() const { return m_sectionType; }
-    bool hasLinkText() const      { return !children().empty(); }
-    bool refToAnchor() const      { return m_refType==Anchor; }
-    bool refToSection() const     { return m_refType==Section; }
-    bool refToTable() const       { return m_refType==Table; }
-    bool isSubPage() const        { return m_isSubPage; }
+    bool hasLinkText() const     { return !children().empty(); }
+    bool refToAnchor() const     { return m_refType==Anchor; }
+    bool refToSection() const    { return m_refType==Section; }
+    bool refToTable() const      { return m_refType==Table; }
+    bool isSubPage() const       { return m_isSubPage; }
 
   private:
     RefType    m_refType = Unknown;
     SectionType m_sectionType = SectionType::Anchor;
     bool       m_isSubPage = false;
-    QCString   m_file;
-    QCString   m_relPath;
-    QCString   m_ref;
-    QCString   m_anchor;
-    QCString   m_text;
+    DString   m_file;
+    DString   m_relPath;
+    DString   m_ref;
+    DString   m_anchor;
+    DString   m_text;
 };
 
 /** Node representing an internal reference to some item */
 class DocInternalRef final : public DocCompoundNode
 {
   public:
-    DocInternalRef(DocParser *parser,DocNodeVariant *parent,const QCString &target);
+    DocInternalRef(DocParser *parser,DocNodeVariant *parent,const DString &target);
     void parse();
-    QCString file() const         { return m_file; }
-    QCString relPath() const      { return m_relPath; }
-    QCString anchor() const       { return m_anchor; }
+    DString file() const         { return m_file; }
+    DString relPath() const      { return m_relPath; }
+    DString anchor() const       { return m_anchor; }
 
   private:
-    QCString   m_file;
-    QCString   m_relPath;
-    QCString   m_anchor;
+    DString   m_file;
+    DString   m_relPath;
+    DString   m_anchor;
 };
 
 /** Node representing a Hypertext reference */
 class DocHRef final : public DocCompoundNode
 {
   public:
-    DocHRef(DocParser *parser,DocNodeVariant *parent,const HtmlAttribList &attribs,const QCString &url,
-           const QCString &relPath, const QCString &file)
+    DocHRef(DocParser *parser,DocNodeVariant *parent,const HtmlAttribList &attribs,const DString &url,
+           const DString &relPath, const DString &file)
     : DocCompoundNode(parser,parent), m_attribs(attribs), m_url(url),
       m_relPath(relPath), m_file(file) {}
     Token parse();
-    QCString url() const        { return m_url; }
-    QCString file() const       { return m_file; }
-    QCString relPath() const    { return m_relPath; }
+    DString url() const        { return m_url; }
+    DString file() const       { return m_file; }
+    DString relPath() const    { return m_relPath; }
     const HtmlAttribList &attribs() const { return m_attribs; }
 
   private:
     HtmlAttribList m_attribs;
-    QCString   m_url;
-    QCString   m_relPath;
-    QCString   m_file;
+    DString   m_url;
+    DString   m_relPath;
+    DString   m_file;
 };
 
 /** Node Html summary */
@@ -922,45 +922,45 @@ class DocHtmlDescList final : public DocCompoundNode
 class DocSection final : public DocCompoundNode
 {
   public:
-    DocSection(DocParser *parser,DocNodeVariant *parent,int level,const QCString &id) :
+    DocSection(DocParser *parser,DocNodeVariant *parent,int level,const DString &id) :
       DocCompoundNode(parser,parent), m_level(level), m_id(id) {}
-    int level() const           { return m_level; }
+    int level() const          { return m_level; }
     const DocNodeVariant *title() const { return m_title.get(); }
-    QCString anchor() const     { return m_anchor; }
-    QCString id() const         { return m_id; }
-    QCString file() const       { return m_file; }
+    DString anchor() const     { return m_anchor; }
+    DString id() const         { return m_id; }
+    DString file() const       { return m_file; }
     Token parse();
 
   private:
     int       m_level = 0;
-    QCString  m_id;
+    DString  m_id;
     std::unique_ptr<DocNodeVariant> m_title;
-    QCString  m_anchor;
-    QCString  m_file;
+    DString  m_anchor;
+    DString  m_file;
 };
 
 /** Node representing a reference to a section */
 class DocSecRefItem final : public DocCompoundNode
 {
   public:
-    DocSecRefItem(DocParser *parser,DocNodeVariant *parent,const QCString &target);
-    QCString target() const      { return m_target; }
-    QCString file() const        { return m_file; }
-    QCString anchor() const      { return m_anchor; }
-    QCString relPath() const     { return m_relPath; }
-    QCString ref() const         { return m_ref; }
-    bool refToTable() const      { return m_refType==Table; }
-    bool isSubPage() const       { return m_isSubPage; }
+    DocSecRefItem(DocParser *parser,DocNodeVariant *parent,const DString &target);
+    DString target() const      { return m_target; }
+    DString file() const        { return m_file; }
+    DString anchor() const      { return m_anchor; }
+    DString relPath() const     { return m_relPath; }
+    DString ref() const         { return m_ref; }
+    bool refToTable() const     { return m_refType==Table; }
+    bool isSubPage() const      { return m_isSubPage; }
     void parse();
 
   private:
-    QCString   m_target;
+    DString   m_target;
     RefType    m_refType = Unknown;
     bool       m_isSubPage = false;
-    QCString   m_file;
-    QCString   m_relPath;
-    QCString   m_ref;
-    QCString   m_anchor;
+    DString   m_file;
+    DString   m_relPath;
+    DString   m_ref;
+    DString   m_anchor;
 };
 
 /** Node representing a list of section references */
@@ -1011,7 +1011,7 @@ class DocHtmlList final : public DocCompoundNode
     enum Type { Unordered, Ordered };
     DocHtmlList(DocParser *parser,DocNodeVariant *parent,const HtmlAttribList &attribs,Type t) :
       DocCompoundNode(parser,parent), m_type(t), m_attribs(attribs) {}
-    Type type() const          { return m_type; }
+    Type type() const { return m_type; }
     const HtmlAttribList &attribs() const { return m_attribs; }
     Token parse();
     Token parseXml();
@@ -1032,12 +1032,12 @@ class DocSimpleSect final : public DocCompoundNode
        User, Rcs
     };
     DocSimpleSect(DocParser *parser,DocNodeVariant *parent,Type t);
-    Type type() const       { return m_type; }
-    QCString typeString() const;
+    Type type() const { return m_type; }
+    DString typeString() const;
     Token parse(bool userTitle,bool needsSeparator);
     Token parseRcs();
     Token parseXml();
-    void appendLinkWord(const QCString &word);
+    void appendLinkWord(const DString &word);
     bool hasTitle() const;
     const DocNodeVariant *title() const { return m_title.get(); }
 
@@ -1073,8 +1073,8 @@ class DocParamSect final : public DocCompoundNode
     DocParamSect(DocParser *parser,DocNodeVariant *parent,Type t)
       : DocCompoundNode(parser,parent), m_type(t), m_hasInOutSpecifier(false), m_hasTypeSpecifier(false)
     {}
-    Token parse(const QCString &cmdName,bool xmlContext,Direction d);
-    Type type() const          { return m_type; }
+    Token parse(const DString &cmdName,bool xmlContext,Direction d);
+    Type type() const              { return m_type; }
     bool hasInOutSpecifier() const { return m_hasInOutSpecifier; }
     bool hasTypeSpecifier() const  { return m_hasTypeSpecifier; }
 
@@ -1096,26 +1096,26 @@ class DocPara final : public DocCompoundNode
     bool isFirst() const        { return m_isFirst; }
     bool isLast() const         { return m_isLast; }
 
-    Token handleCommand(char cmdChar,const QCString &cmdName);
-    Token handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &tagHtmlAttribs);
-    Token handleHtmlEndTag(const QCString &tagName);
+    Token handleCommand(char cmdChar,const DString &cmdName);
+    Token handleHtmlStartTag(const DString &tagName,const HtmlAttribList &tagHtmlAttribs);
+    Token handleHtmlEndTag(const DString &tagName);
     Token handleSimpleSection(DocSimpleSect::Type t,bool xmlContext=false);
     Token handleXRefItem();
-    Token handleParamSection(const QCString &cmdName,DocParamSect::Type t, bool xmlContext, int direction);
-    void handleIncludeOperator(const QCString &cmdName,DocIncOperator::Type t);
-    template<class T> void handleFile(const QCString &cmdName);
-    void handleInclude(const QCString &cmdName,DocInclude::Type t);
-    void handleLink(const QCString &cmdName,bool isJavaLink);
-    void handleDoxyConfig(char cmdChar,const QCString &cmdName);
-    void handleEmoji(char cmdChar,const QCString &cmdName);
-    void handleSection(char cmdChar,const QCString &cmdName);
+    Token handleParamSection(const DString &cmdName,DocParamSect::Type t, bool xmlContext, int direction);
+    void handleIncludeOperator(const DString &cmdName,DocIncOperator::Type t);
+    template<class T> void handleFile(const DString &cmdName);
+    void handleInclude(const DString &cmdName,DocInclude::Type t);
+    void handleLink(const DString &cmdName,bool isJavaLink);
+    void handleDoxyConfig(char cmdChar,const DString &cmdName);
+    void handleEmoji(char cmdChar,const DString &cmdName);
+    void handleSection(char cmdChar,const DString &cmdName);
     void handleInheritDoc();
     void handleVhdlFlow();
-    void handleShowDate(char cmdChar,const QCString &cmdName);
+    void handleShowDate(char cmdChar,const DString &cmdName);
     Token handleStartCode();
     Token handleHtmlHeader(const HtmlAttribList &tagHtmlAttribs,int level);
 
-    bool injectToken(Token tok,const QCString &tokText);
+    bool injectToken(Token tok,const DString &tokText);
     const HtmlAttribList &attribs() const { return m_attribs; }
     void setAttribs(const HtmlAttribList &attribs) { m_attribs = attribs; }
 
@@ -1140,8 +1140,8 @@ class DocParamList final : public DocNode
     void markLast(bool b=true)      { m_isLast=b; }
     bool isFirst() const            { return m_isFirst; }
     bool isLast() const             { return m_isLast; }
-    Token parse(const QCString &cmdName);
-    Token parseXml(const QCString &paramName);
+    Token parse(const DString &cmdName);
+    Token parseXml(const DString &paramName);
 
   private:
     DocNodeList             m_paragraphs;
@@ -1236,14 +1236,14 @@ class DocHtmlCaption final : public DocCompoundNode
     const HtmlAttribList &attribs() const { return m_attribs; }
     Token parse();
     bool hasCaptionId() const { return m_hasCaptionId; }
-    QCString file() const     { return m_file;         }
-    QCString anchor() const   { return m_anchor;       }
+    DString file() const     { return m_file;         }
+    DString anchor() const   { return m_anchor;       }
 
   private:
     HtmlAttribList m_attribs;
     bool           m_hasCaptionId = false;
-    QCString       m_file;
-    QCString       m_anchor;
+    DString       m_file;
+    DString       m_anchor;
 };
 
 /** Node representing a HTML table row */

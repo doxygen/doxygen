@@ -16,7 +16,7 @@
 
 #include <memory>
 
-#include "qcstring.h"
+#include "dstring.h"
 #include "construct.h"
 #include "indexlist.h"
 
@@ -34,21 +34,21 @@ class Qhp final : public IndexIntf
     void finalize();
     void incContentsDepth();
     void decContentsDepth();
-    void addContentsItem(bool isDir, const QCString & name, const QCString & ref,
-                         const QCString & file, const QCString & anchor,
+    void addContentsItem(bool isDir, const DString & name, const DString & ref,
+                         const DString & file, const DString & anchor,
                          bool separateIndex, bool addToNavIndex,
-                         const Definition *def, const QCString &);
+                         const Definition *def, const DString &);
     void addIndexItem(const Definition *context, const MemberDef *md,
-                      const QCString &sectionAnchor, const QCString &title);
-    void addIndexFile(const QCString & name);
-    void addImageFile(const QCString & name);
-    void addStyleSheetFile(const QCString & name);
+                      const DString &sectionAnchor, const DString &title);
+    void addIndexFile(const DString & name);
+    void addImageFile(const DString & name);
+    void addStyleSheetFile(const DString & name);
 
-    static inline const QCString qhpFileName = "index.qhp";
-    static QCString getQchFileName();
+    static inline const DString qhpFileName = "index.qhp";
+    static DString getQchFileName();
 
   private:
-    void addFile(const QCString &);
+    void addFile(const DString &);
     class Private;
     std::unique_ptr<Private> p;
 };

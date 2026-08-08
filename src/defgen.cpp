@@ -39,7 +39,7 @@
 
 #define DEF_DB(x)
 
-static inline void writeDEFString(TextStream &t,const QCString &s)
+static inline void writeDEFString(TextStream &t,const DString &s)
 {
   t << '\'';
   if (!s.empty())
@@ -59,9 +59,9 @@ static inline void writeDEFString(TextStream &t,const QCString &s)
 static void generateDEFForMember(const MemberDef *md,
     TextStream &t,
     const Definition *def,
-    const QCString &prefix)
+    const DString &prefix)
 {
-  QCString memPrefix;
+  DString memPrefix;
 
   // + declaration
   // - reimplements
@@ -76,7 +76,7 @@ static void generateDEFForMember(const MemberDef *md,
 
   if (md->memberType()==MemberType::EnumValue) return;
 
-  QCString scopeName;
+  DString scopeName;
   if (md->getClassDef())
     scopeName=md->getClassDef()->name();
   else if (md->getNamespaceDef())
@@ -89,7 +89,7 @@ static void generateDEFForMember(const MemberDef *md,
 
   if (md->memberType() == MemberType::EnumValue) ASSERT(0);
   bool isFunc=to_isFunction(md->memberType());
-  QCString memType = to_string_lower(md->memberType());
+  DString memType = to_string_lower(md->memberType());
 
   t << memPrefix << "kind = '" << memType << "';\n";
   t << memPrefix << "id   = '"
@@ -103,7 +103,7 @@ static void generateDEFForMember(const MemberDef *md,
       md->memberType()!=MemberType::Enumeration
      )
   {
-    QCString typeStr = replaceAnonymousScopes(md->typeString());
+    DString typeStr = replaceAnonymousScopes(md->typeString());
     t << memPrefix << "type = <<_EnD_oF_dEf_TeXt_\n" << typeStr << "\n"
       << "_EnD_oF_dEf_TeXt_;\n";
   }
@@ -114,7 +114,7 @@ static void generateDEFForMember(const MemberDef *md,
   {
     const ArgumentList &defAl = md->argumentList();
     ArgumentList declAl = *stringToArgumentList(md->getLanguage(),md->argsString());
-    QCString fcnPrefix = "  " + memPrefix + "param-";
+    DString fcnPrefix = "  " + memPrefix + "param-";
 
     auto defIt = defAl.begin();
     for (const Argument &a : declAl)
@@ -166,7 +166,7 @@ static void generateDEFForMember(const MemberDef *md,
   else if (  md->memberType()==MemberType::Define
       && md->argsString()!=nullptr)
   {
-    QCString defPrefix = "  " + memPrefix + "def-";
+    DString defPrefix = "  " + memPrefix + "def-";
     for (const Argument &a : md->argumentList())
     {
       t << memPrefix << "param  = {\n";
@@ -205,7 +205,7 @@ static void generateDEFForMember(const MemberDef *md,
 
   //printf("md->getReferencesMembers()=%p\n",md->getReferencesMembers());
 
-  QCString refPrefix = "  " + memPrefix + "ref-";
+  DString refPrefix = "  " + memPrefix + "ref-";
   auto refList = md->getReferencesMembers();
   for (const auto &rmd : refList)
   {
@@ -220,8 +220,8 @@ static void generateDEFForMember(const MemberDef *md,
       t << refPrefix << "line = '"
         << rmd->getStartBodyLine() << "';\n";
 
-      QCString scope = rmd->getScopeString();
-      QCString name = rmd->name();
+      DString scope = rmd->getScopeString();
+      DString name = rmd->name();
       if (!scope.empty() && scope!=def->name())
       {
         name.prepend(scope+"::");
@@ -246,8 +246,8 @@ static void generateDEFForMember(const MemberDef *md,
       t << refPrefix << "line = '"
         << rmd->getStartBodyLine() << "';\n";
 
-      QCString scope = rmd->getScopeString();
-      QCString name = rmd->name();
+      DString scope = rmd->getScopeString();
+      DString name = rmd->name();
       if (!scope.empty() && scope!=def->name())
       {
         name.prepend(scope+"::");
@@ -266,7 +266,7 @@ static void generateDEFForMember(const MemberDef *md,
 static void generateDEFClassSection(const ClassDef *cd,
     TextStream &t,
     const MemberList *ml,
-    const QCString &kind)
+    const DString &kind)
 {
   if (cd && ml && !ml->empty())
   {
@@ -298,7 +298,7 @@ static void generateDEFForClass(const ClassDef *cd,TextStream &t)
   // - examples
 
   if (cd->isReference()) return; // skip external references.
-  if (cd->name().find('@')!=QCString::npos) return; // skip anonymous compounds.
+  if (cd->name().find('@')!=DString::npos) return; // skip anonymous compounds.
   if (cd->isImplicitTemplateInstance()) return; // skip generated template instances.
 
   t << cd->compoundTypeString() << " = {\n";
@@ -388,7 +388,7 @@ static void generateDEFForClass(const ClassDef *cd,TextStream &t)
 static void generateDEFSection(const Definition *d,
     TextStream &t,
     const MemberList *ml,
-    const QCString &kind)
+    const DString &kind)
 {
   if (ml && !ml->empty())
   {
@@ -463,7 +463,7 @@ static void generateDEFForFile(const FileDef *fd,TextStream &t)
 
 void generateDEF()
 {
-  QCString outputDirectory = Config_getString(OUTPUT_DIRECTORY)+"/def";
+  DString outputDirectory = Config_getString(OUTPUT_DIRECTORY)+"/def";
   Dir defDir(outputDirectory.str());
   if (!defDir.exists() && !defDir.mkdir(outputDirectory.str()))
   {
@@ -471,7 +471,7 @@ void generateDEF()
     return;
   }
 
-  QCString fileName=outputDirectory+"/doxygen.def";
+  DString fileName=outputDirectory+"/doxygen.def";
   std::ofstream f = Portable::openOutputStream(fileName);
   if (!f.is_open())
   {

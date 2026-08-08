@@ -33,12 +33,12 @@ bool ArgumentList::hasTemplateDocumentation() const
 }
 
 /*! Sets the trailing return type for a method */
-void ArgumentList::setTrailingReturnType(const QCString &s)
+void ArgumentList::setTrailingReturnType(const DString &s)
 {
   m_trailingReturnType = s;
 }
 
-void ArgumentList::appendTrailingReturnType(const QCString &s)
+void ArgumentList::appendTrailingReturnType(const DString &s)
 {
   m_trailingReturnType += s;
 }

@@ -30,21 +30,21 @@ class DotDirDeps final : public DotGraph
     NON_COPYABLE(DotDirDeps)
 
     bool isTrivial() const;
-    QCString writeGraph(TextStream &out,
+    DString writeGraph(TextStream &out,
                         GraphOutputFormat gf,
                         EmbeddedOutputFormat ef,
-                        const QCString &path,
-                        const QCString &fileName,
-                        const QCString &relPath,
+                        const DString &path,
+                        const DString &fileName,
+                        const DString &relPath,
                         bool writeImageMap=true,
                         int graphId=-1,
                         bool linkRelations=true);
 
   protected:
-    QCString getBaseName() const override;
-    QCString getMapLabel() const override;
+    DString getBaseName() const override;
+    DString getMapLabel() const override;
     void computeTheGraph() override;
-    QCString getImgAltText() const override;
+    DString getImgAltText() const override;
 
   private:
     const DirDef *m_dir = nullptr;

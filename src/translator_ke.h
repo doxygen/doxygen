@@ -31,17 +31,17 @@
 class TranslatorKoreanEn : public TranslatorEnglish
 {
   public:
-    QCString idLanguage() override
+    DString idLanguage() override
     { return "korean-en"; }
-    QCString latexLanguageSupportCommand() override
+    DString latexLanguageSupportCommand() override
     {
       return "\\usepackage{kotex}\n";
     }
-    QCString trRTFansicp() override
+    DString trRTFansicp() override
     {
       return "949";
     }
-    QCString latexCommandName() override
+    DString latexCommandName() override
     {
       return p_latexCommandName("xelatex");
     }
@@ -49,16 +49,16 @@ class TranslatorKoreanEn : public TranslatorEnglish
     /*! Used as ansicpg for RTF fcharset
      *  \see trRTFansicp() for a table of possible values.
      */
-    QCString trRTFCharSet() override
+    DString trRTFCharSet() override
     {
       return "129";
     }
 
-    QCString trISOLang() override
+    DString trISOLang() override
     {
       return "ko";
     }
-    QCString getLanguageString() override
+    DString getLanguageString() override
     {
       return "0x412 Korean";
     }

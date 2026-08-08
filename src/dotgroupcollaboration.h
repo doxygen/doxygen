@@ -32,16 +32,16 @@ class DotGroupCollaboration final : public DotGraph
    ~DotGroupCollaboration() override;
     NON_COPYABLE(DotGroupCollaboration)
 
-    QCString writeGraph(TextStream &t, GraphOutputFormat gf,EmbeddedOutputFormat ef,
-                        const QCString &path,const QCString &fileName,const QCString &relPath,
+    DString writeGraph(TextStream &t, GraphOutputFormat gf,EmbeddedOutputFormat ef,
+                        const DString &path,const DString &fileName,const DString &relPath,
                         bool writeImageMap=true,int graphId=-1);
     bool isTrivial() const;
     bool isTooBig() const;
     int numNodes() const;
 
   protected:
-    QCString getBaseName() const override;
-    QCString getMapLabel() const override;
+    DString getBaseName() const override;
+    DString getMapLabel() const override;
     void computeTheGraph() override;
 
   private :
@@ -58,9 +58,9 @@ class DotGroupCollaboration final : public DotGraph
 
     struct Link
     {
-      Link(const QCString &lab,const QCString &u) : label(lab), url(u) {}
-      QCString label;
-      QCString url;
+      Link(const DString &lab,const DString &u) : label(lab), url(u) {}
+      DString label;
+      DString url;
     };
 
     struct Edge
@@ -77,15 +77,15 @@ class DotGroupCollaboration final : public DotGraph
     };
 
     void buildGraph(const GroupDef* gd);
-    void addCollaborationMember(const Definition* def, QCString& url, EdgeType eType );
+    void addCollaborationMember(const Definition* def, DString& url, EdgeType eType );
     void addMemberList( class MemberList* ml );
-    void writeGraphHeader(TextStream &t,const QCString &title) const;
+    void writeGraphHeader(TextStream &t,const DString &title) const;
     Edge* addEdge( DotNode* _pNStart, DotNode* _pNEnd, EdgeType _eType,
-        const QCString& _label, const QCString& _url );
+        const DString& _label, const DString& _url );
 
     DotNode        *m_rootNode;
     DotNodeMap      m_usedNodes;
-    QCString        m_diskName;
+    DString        m_diskName;
     std::vector< std::unique_ptr<Edge> >     m_edges;
 };
 

@@ -20,21 +20,21 @@
 #include <string>
 
 #include "regex.h"
-#include "qcstring.h"
+#include "dstring.h"
 
 //! Class representing an attribute list of a dot graph object.
 class DotAttributes
 {
   public:
     //! Creates an instance of a DotAttribute list given its initial string representation
-    DotAttributes(const QCString &input) : m_input(input) {}
+    DotAttributes(const DString &input) : m_input(input) {}
 
     //! Return the string representation of the attribute list
-    QCString str() const { return m_input; }
+    DString str() const { return m_input; }
 
     //! update a given attribute with a new value.
     //! If the attribute is not found a new attribute will be appended.
-    void updateValue(const QCString &key,const QCString &inpValue)
+    void updateValue(const DString &key,const DString &inpValue)
     {
       // look for key\s*=
       const std::string regStr = key.str()+R"(\s*=)";
@@ -46,7 +46,7 @@ class DotAttributes
         size_t len      = s.length();
         size_t startPos = match.position()+match.length(); // position after =
         size_t pos      = startPos;
-        while (pos<len && qisspace(s[pos])) pos++;
+        while (pos<len && disspace(s[pos])) pos++;
         if (pos<len && s[pos]=='"') // quoted value, search for end quote, ignoring escaped quotes
         {
           char pc=s[pos];
@@ -56,9 +56,9 @@ class DotAttributes
         }
         else // unquoted value, search for attribute separator (space,comma, or semicolon)
         {
-          while (pos<len && s[pos]!=',' && s[pos]!=';' && !qisspace(s[pos])) pos++;
+          while (pos<len && s[pos]!=',' && s[pos]!=';' && !disspace(s[pos])) pos++;
         }
-        QCString value;
+        DString value;
         if (inpValue.empty())
         {
           value = m_input.mid(startPos,pos-startPos);
@@ -81,7 +81,7 @@ class DotAttributes
     }
 
   private:
-    QCString m_input;
+    DString m_input;
 };
 
 #endif // DOTATTRIBUTES_H

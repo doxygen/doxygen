@@ -66,18 +66,18 @@ constexpr uint32_t IncludeKind_ImportMask = IncludeKind::ImportSystemObjC | Incl
                                             IncludeKind::ImportLocal      | IncludeKind::ImportModule;
 constexpr uint32_t IncludeKind_ObjCMask   = IncludeKind::ImportSystemObjC | IncludeKind::ImportLocalObjC;
 
-QCString includeStatement(SrcLangExt lang,IncludeKind kind);
-QCString includeOpen(SrcLangExt lang,IncludeKind kind);
-QCString includeClose(SrcLangExt lang,IncludeKind kind);
+DString includeStatement(SrcLangExt lang,IncludeKind kind);
+DString includeOpen(SrcLangExt lang,IncludeKind kind);
+DString includeClose(SrcLangExt lang,IncludeKind kind);
 
 /** Class representing the data associated with a \#include statement. */
 struct IncludeInfo
 {
   IncludeInfo() {}
-  IncludeInfo(const FileDef *fd,const QCString &in,IncludeKind k)
+  IncludeInfo(const FileDef *fd,const DString &in,IncludeKind k)
     : fileDef(fd), includeName(in), kind(k) {}
   const FileDef *fileDef = nullptr;
-  QCString includeName;
+  DString includeName;
   IncludeKind kind = IncludeKind::IncludeSystem;
 };
 
@@ -102,20 +102,20 @@ class FileDef : public DefinitionMutable, public Definition
     // ----------------------------------------------------------------------
 
     /*! Returns the unique file name (this may include part of the path). */
-    virtual QCString fileName() const = 0;
+    virtual DString fileName() const = 0;
 
     /*! Returns the name of the verbatim copy of this file (if any). */
-    virtual QCString includeName() const = 0;
+    virtual DString includeName() const = 0;
 
-    virtual QCString includeDependencyGraphFileName() const = 0;
+    virtual DString includeDependencyGraphFileName() const = 0;
 
-    virtual QCString includedByDependencyGraphFileName() const = 0;
+    virtual DString includedByDependencyGraphFileName() const = 0;
 
     /*! Returns the absolute path including the file name. */
-    virtual QCString absFilePath() const = 0;
+    virtual DString absFilePath() const = 0;
 
     /*! Returns the name as it is used in the documentation */
-    virtual const QCString &docName() const = 0;
+    virtual const DString &docName() const = 0;
 
     /*! Returns true if this file is a source file. */
     virtual bool isSource() const = 0;
@@ -126,12 +126,12 @@ class FileDef : public DefinitionMutable, public Definition
     virtual const MemberDef *getSourceMember(int lineNr) const = 0;
 
     /*! Returns the absolute path of this file. */
-    virtual QCString getPath() const = 0;
+    virtual DString getPath() const = 0;
 
     /*! Returns version of this file. */
-    virtual QCString getVersion() const = 0;
+    virtual DString getVersion() const = 0;
 
-    virtual bool isIncluded(const QCString &name) const = 0;
+    virtual bool isIncluded(const DString &name) const = 0;
 
     virtual DirDef *getDirDef() const = 0;
     virtual ModuleDef *getModuleDef() const = 0;
@@ -150,9 +150,9 @@ class FileDef : public DefinitionMutable, public Definition
     virtual const ConceptLinkedRefMap &getConcepts() const = 0;
     virtual const ClassLinkedRefMap &getClasses() const = 0;
 
-    virtual QCString title() const = 0;
+    virtual DString title() const = 0;
     virtual bool hasDetailedDescription() const = 0;
-    virtual QCString fileVersion() const = 0;
+    virtual DString fileVersion() const = 0;
 
     virtual bool subGrouping() const = 0;
 
@@ -172,7 +172,7 @@ class FileDef : public DefinitionMutable, public Definition
     virtual void writeSourceBody(OutputList &ol,ClangTUParser *clangParser) = 0;
     virtual void writeSourceFooter(OutputList &ol) = 0;
     virtual void parseSource(ClangTUParser *clangParser) = 0;
-    virtual void setDiskName(const QCString &name) = 0;
+    virtual void setDiskName(const DString &name) = 0;
 
     virtual void insertMember(MemberDef *md) = 0;
     virtual void insertClass(ClassDef *cd) = 0;
@@ -191,8 +191,8 @@ class FileDef : public DefinitionMutable, public Definition
     virtual bool generateSourceFile() const = 0;
     virtual void sortMemberLists() = 0;
 
-    virtual void addIncludeDependency(const FileDef *fd,const QCString &incName,IncludeKind kind) = 0;
-    virtual void addIncludedByDependency(const FileDef *fd,const QCString &incName,IncludeKind kind) = 0;
+    virtual void addIncludeDependency(const FileDef *fd,const DString &incName,IncludeKind kind) = 0;
+    virtual void addIncludedByDependency(const FileDef *fd,const DString &incName,IncludeKind kind) = 0;
 
     virtual void addMembersToMemberGroup() = 0;
     virtual void distributeMemberGroupDocumentation() = 0;
@@ -210,7 +210,7 @@ class FileDef : public DefinitionMutable, public Definition
     virtual void overrideIncludedByGraph(bool e) = 0;
 };
 
-std::unique_ptr<FileDef> createFileDef(const QCString &p,const QCString &n,const QCString &ref=QCString(),const QCString &dn=QCString());
+std::unique_ptr<FileDef> createFileDef(const DString &p,const DString &n,const DString &ref=DString(),const DString &dn=DString());
 
 
 // --- Cast functions
@@ -226,8 +226,8 @@ class FileList final : public std::vector<const FileDef *>
 
 struct FilesInDir
 {
-  FilesInDir(const QCString &p) : path(p) {}
-  QCString path;
+  FilesInDir(const DString &p) : path(p) {}
+  DString path;
   std::vector<const FileDef *> files;
 };
 

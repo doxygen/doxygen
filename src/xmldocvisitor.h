@@ -21,19 +21,19 @@
 
 #include <iostream>
 
-#include "qcstring.h"
+#include "dstring.h"
 #include "docvisitor.h"
 #include "docnode.h"
 #include "textstream.h"
 
 class OutputCodeList;
-class QCString;
+class DString;
 
 /*! @brief Concrete visitor implementation for XML output. */
 class XmlDocVisitor final : public DocVisitor
 {
   public:
-    XmlDocVisitor(TextStream &t,OutputCodeList &ci,const QCString &langExt);
+    XmlDocVisitor(TextStream &t,OutputCodeList &ci,const DString &langExt);
 
     //--------------------------------------
     // visitor functions for leaf nodes
@@ -118,9 +118,9 @@ class XmlDocVisitor final : public DocVisitor
     // helper functions
     //--------------------------------------
 
-    void filter(const QCString &str, const bool keepEntities = false, const bool citeEntry = false);
-    void startLink(const QCString &ref,const QCString &file,
-                   const QCString &anchor);
+    void filter(const DString &str, const bool keepEntities = false, const bool citeEntry = false);
+    void startLink(const DString &ref,const DString &file,
+                   const DString &anchor);
     void endLink();
 
     //--------------------------------------
@@ -131,7 +131,7 @@ class XmlDocVisitor final : public DocVisitor
     OutputCodeList &m_ci;
     bool m_insidePre = false;
     bool m_hide = false;
-    QCString m_langExt;
+    DString m_langExt;
     int m_sectionLevel;
 };
 

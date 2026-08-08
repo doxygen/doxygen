@@ -3510,14 +3510,14 @@ void  VhdlParserTokenManager::SkipLexicalActions(Token *matchedToken){
       case 6 : {
          image.append(input_stream->GetSuffix(jjimageLen + (lengthOfMatch = jjmatchedPos + 1)));
     {
-    QCString doc = image;
+    DString doc = image;
      int count=doc.contains("--!");
      parser->outlineParser()->setMultCommentLine();
     parser->outlineParser()->lineCount(image);
     if (count == 1)
       parser->outlineParser()->oneLineComment(doc);
     else
-      parser->outlineParser()->handleCommentBlock(QCString(image),false); ;
+      parser->outlineParser()->handleCommentBlock(DString(image),false); ;
     }
          break;
        }
@@ -3534,9 +3534,9 @@ void  VhdlParserTokenManager::SkipLexicalActions(Token *matchedToken){
       case 9 : {
          image.append(input_stream->GetSuffix(jjimageLen + (lengthOfMatch = jjmatchedPos + 1)));
    {
-     QCString q = filter2008VhdlComment(image);
+     DString q = filter2008VhdlComment(image);
      parser->outlineParser()->lineCount(image);
-     parser->outlineParser()->handleCommentBlock(QCString(q),true);image.clear();
+     parser->outlineParser()->handleCommentBlock(DString(q),true);image.clear();
    }
          break;
        }

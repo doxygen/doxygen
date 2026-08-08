@@ -29,31 +29,31 @@ class ManCodeGenerator final : public OutputCodeIntf
 
     OutputType type() const override { return OutputType::Man; }
     std::unique_ptr<OutputCodeIntf> clone() override { return std::make_unique<ManCodeGenerator>(*this); }
-    void codify(const QCString &text) override;
+    void codify(const DString &text) override;
     void stripCodeComments(bool b) override;
     void startSpecialComment() override;
     void endSpecialComment() override;
     void setStripIndentAmount(size_t amount) override;
     void writeCodeLink(CodeSymbolType type,
-                       const QCString &ref,const QCString &file,
-                       const QCString &anchor,const QCString &name,
-                       const QCString &tooltip) override;
-    void writeTooltip(const QCString &,
+                       const DString &ref,const DString &file,
+                       const DString &anchor,const DString &name,
+                       const DString &tooltip) override;
+    void writeTooltip(const DString &,
                       const DocLinkInfo &,
-                      const QCString &,
-                      const QCString &,
+                      const DString &,
+                      const DString &,
                       const SourceLinkInfo &,
                       const SourceLinkInfo &
                      ) override {}
-    void writeLineNumber(const QCString &,const QCString &,const QCString &,int l, bool) override;
+    void writeLineNumber(const DString &,const DString &,const DString &,int l, bool) override;
     void startCodeLine(int) override {}
     void endCodeLine() override { codify("\n"); m_col=0; }
-    void startFontClass(const QCString &) override {}
+    void startFontClass(const DString &) override {}
     void endFontClass() override {}
-    void writeCodeAnchor(const QCString &) override {}
-    void startCodeFragment(const QCString &style) override;
-    void endCodeFragment(const QCString &) override;
-    void startFold(int,const QCString &,const QCString &) override {}
+    void writeCodeAnchor(const DString &) override {}
+    void startCodeFragment(const DString &style) override;
+    void endCodeFragment(const DString &) override;
+    void startFold(int,const DString &,const DString &) override {}
     void endFold() override {}
 
   private:
@@ -86,26 +86,26 @@ class ManGenerator final : public OutputGenerator, public OutputGenIntf
     void addCodeGen(OutputCodeList &list) override;
     void cleanup() override;
     void writeDoc(const IDocNodeAST *ast,const Definition *,const MemberDef *,int,int) override;
-    void startFile(const QCString &name,bool isSource,const QCString &manName,const QCString &title,int id, int hierarchyLevel) override;
+    void startFile(const DString &name,bool isSource,const DString &manName,const DString &title,int id, int hierarchyLevel) override;
     void endFile() override;
 
     void writeSearchInfo() override {}
-    void writeFooter(const QCString &) override {}
+    void writeFooter(const DString &) override {}
 
-    void startPageDoc(const QCString &) override {}
+    void startPageDoc(const DString &) override {}
     void endPageDoc() override {}
     void startIndexSection(IndexSection) override {}
     void endIndexSection(IndexSection) override {}
-    void writePageLink(const QCString &,bool) override {}
+    void writePageLink(const DString &,bool) override {}
     void startProjectNumber() override {}
     void endProjectNumber() override {}
     void writeStyleInfo(int) override {}
-    void startTitleHead(const QCString &) override {}
-    void endTitleHead(const QCString &,const QCString &) override;
+    void startTitleHead(const DString &) override {}
+    void endTitleHead(const DString &,const DString &) override;
 
-    void startParagraph(const QCString &classDef) override;
+    void startParagraph(const DString &classDef) override;
     void endParagraph() override;
-    void writeString(const QCString &text) override;
+    void writeString(const DString &text) override;
     void startIndexListItem() override {}
     void endIndexListItem() override {}
     void startIndexList() override {}
@@ -113,25 +113,25 @@ class ManGenerator final : public OutputGenerator, public OutputGenIntf
     void startIndexKey() override {}
     void endIndexKey() override {}
     void startIndexValue(bool) override {}
-    void endIndexValue(const QCString &,bool) override {}
+    void endIndexValue(const DString &,bool) override {}
     void startItemList() override {}
     void endItemList() override { newParagraph(); }
-    void startIndexItem(const QCString &ref,const QCString &file) override;
-    void endIndexItem(const QCString &ref,const QCString &file) override;
-    void docify(const QCString &text) override;
-    void writeObjectLink(const QCString &ref,const QCString &file,
-                         const QCString &anchor,const QCString &name) override;
-    void startTextLink(const QCString &,const QCString &) override {}
+    void startIndexItem(const DString &ref,const DString &file) override;
+    void endIndexItem(const DString &ref,const DString &file) override;
+    void docify(const DString &text) override;
+    void writeObjectLink(const DString &ref,const DString &file,
+                         const DString &anchor,const DString &name) override;
+    void startTextLink(const DString &,const DString &) override {}
     void endTextLink() override {}
     void startTypewriter() override { m_t << "\\fR"; m_firstCol=false; }
     void endTypewriter() override { m_t << "\\fP"; m_firstCol=false; }
-    void startGroupHeader(const QCString &,int) override;
+    void startGroupHeader(const DString &,int) override;
     void endGroupHeader(int) override;
     void startMemberSections() override {}
     void endMemberSections() override {}
     void startHeaderSection() override {}
     void endHeaderSection() override;
-    void startMemberHeader(const QCString &,int) override;
+    void startMemberHeader(const DString &,int) override;
     void endMemberHeader() override;
     void insertMemberAlign(bool) override {}
     void insertMemberAlignLeft(MemberItemType,bool) override {}
@@ -147,14 +147,14 @@ class ManGenerator final : public OutputGenerator, public OutputGenIntf
     void endInlineHeader() override;
     void startAnonTypeScope(int) override;
     void endAnonTypeScope(int) override;
-    void startMemberItem(const QCString &,MemberItemType,const QCString &) override;
+    void startMemberItem(const DString &,MemberItemType,const DString &) override;
     void endMemberItem(MemberItemType) override;
     void startMemberTemplateParams() override {}
-    void endMemberTemplateParams(const QCString &,const QCString &) override {}
+    void endMemberTemplateParams(const DString &,const DString &) override {}
     void startCompoundTemplateParams() override;
     void endCompoundTemplateParams() override;
 
-    void startMemberGroupHeader(const QCString &,bool) override;
+    void startMemberGroupHeader(const DString &,bool) override;
     void endMemberGroupHeader(bool) override;
     void startMemberGroupDocs() override;
     void endMemberGroupDocs() override;
@@ -162,61 +162,61 @@ class ManGenerator final : public OutputGenerator, public OutputGenIntf
     void endMemberGroup(bool) override;
 
     void writeRuler() override {}
-    void writeAnchor(const QCString &,const QCString &) override {}
+    void writeAnchor(const DString &,const DString &) override {}
     void startEmphasis() override { m_t << "\\fI"; m_firstCol=false; }
     void endEmphasis() override { m_t << "\\fP"; m_firstCol=false; }
     void startBold() override { m_t << "\\fB"; m_firstCol=false; }
     void endBold() override { m_t << "\\fP"; m_firstCol=false; }
     void startBoldEmphasis() { m_t << "\\f(BI"; m_firstCol=false; }
     void endBoldEmphasis() { m_t << "\\fP"; m_firstCol=false; }
-    void lineBreak(const QCString &) override { m_t << "\n.br\n"; }
+    void lineBreak(const DString &) override { m_t << "\n.br\n"; }
     void writeChar(char c) override;
-    void startMemberDoc(const QCString &,const QCString &,const QCString &,const QCString &,int,int,bool) override;
+    void startMemberDoc(const DString &,const DString &,const DString &,const DString &,int,int,bool) override;
     void endMemberDoc(bool) override;
-    void startDoxyAnchor(const QCString &,const QCString &,const QCString &,const QCString &,const QCString &) override;
-    void endDoxyAnchor(const QCString &,const QCString &) override {}
-    void addLabel(const QCString &,const QCString &) override;
+    void startDoxyAnchor(const DString &,const DString &,const DString &,const DString &,const DString &) override;
+    void endDoxyAnchor(const DString &,const DString &) override {}
+    void addLabel(const DString &,const DString &) override;
     void writeLatexSpacing() override {}
 
-    void writeStartAnnoItem(const QCString &type,const QCString &file,
-                            const QCString &path,const QCString &name) override;
+    void writeStartAnnoItem(const DString &type,const DString &file,
+                            const DString &path,const DString &name) override;
     void startCenter() override {}
     void endCenter() override {}
     void startSmall() override {}
     void endSmall() override {}
-    void startMemberDescription(const QCString &,const QCString &,bool) override { m_t << "\n.RI \""; m_firstCol=false; }
+    void startMemberDescription(const DString &,const DString &,bool) override { m_t << "\n.RI \""; m_firstCol=false; }
     void endMemberDescription() override { m_t << "\""; m_firstCol=false; }
     void startMemberDeclaration() override {}
-    void endMemberDeclaration(const QCString &,const QCString &) override {}
-    void writeInheritedSectionTitle(const QCString &,const QCString &,const QCString &,
-                      const QCString &,const QCString &,const QCString &) override;
+    void endMemberDeclaration(const DString &,const DString &) override {}
+    void writeInheritedSectionTitle(const DString &,const DString &,const DString &,
+                      const DString &,const DString &,const DString &) override;
     void startExamples() override;
     void endExamples() override;
     void startDescForItem() override;
     void endDescForItem() override;
-    void startSection(const QCString &,const QCString &,SectionType) override;
-    void endSection(const QCString &,SectionType) override;
-    void addIndexItem(const QCString &,const QCString &) override {}
+    void startSection(const DString &,const DString &,SectionType) override;
+    void endSection(const DString &,SectionType) override;
+    void addIndexItem(const DString &,const DString &) override {}
     void startIndent() override {}
     void endIndent() override {}
     void writeSynopsis() override;
     void startClassDiagram() override {}
-    void endClassDiagram(const ClassDiagram &,const QCString &,const QCString &) override {}
+    void endClassDiagram(const ClassDiagram &,const DString &,const DString &) override {}
     void startPageRef() override {}
-    void endPageRef(const QCString &,const QCString &) override {}
+    void endPageRef(const DString &,const DString &) override {}
     void startQuickIndices() override {}
     void endQuickIndices() override {}
-    void writeSplitBar(const QCString &,const QCString &) override {}
-    void writeNavigationPath(const QCString &) override {}
+    void writeSplitBar(const DString &,const DString &) override {}
+    void writeNavigationPath(const DString &) override {}
     void writeLogo() override {}
-    void writeQuickLinks(HighlightedItem,const QCString &,bool) override {}
-    void writeSummaryLink(const QCString &,const QCString &,const QCString &,bool) override {}
+    void writeQuickLinks(HighlightedItem,const DString &,bool) override {}
+    void writeSummaryLink(const DString &,const DString &,const DString &,bool) override {}
     void writePageOutline() override {}
     void startContents() override {}
     void endContents() override {}
     void writeNonBreakableSpace(int n) override { for (int i=0;i<n;i++) m_t << " "; }
 
-    void startDescTable(const QCString &title,const bool hasInits) override;
+    void startDescTable(const DString &title,const bool hasInits) override;
     void endDescTable() override;
     void startDescTableTitle() override { startItemListItem(); startBoldEmphasis(); endItemListItem(); }
     void endDescTableTitle() override { endBoldEmphasis(); }
@@ -247,7 +247,7 @@ class ManGenerator final : public OutputGenerator, public OutputGenIntf
     void endMemberDocPrefixItem() override {}
     void startMemberDocName(bool) override {}
     void endMemberDocName() override {}
-    void startParameterType(bool,const QCString &) override {}
+    void startParameterType(bool,const DString &) override {}
     void endParameterType() override;
     void startParameterName(bool) override {}
     void endParameterName() override {}
@@ -257,9 +257,9 @@ class ManGenerator final : public OutputGenerator, public OutputGenIntf
     void endParameterDefVal() override { endTypewriter(); }
     void startParameterList(bool) override;
     void endParameterList() override {}
-    void exceptionEntry(const QCString &,bool) override {}
+    void exceptionEntry(const DString &,bool) override {}
 
-    void startConstraintList(const QCString &) override;
+    void startConstraintList(const DString &) override;
     void startConstraintParam() override;
     void endConstraintParam() override;
     void startConstraintType() override;
@@ -278,7 +278,7 @@ class ManGenerator final : public OutputGenerator, public OutputGenIntf
     void endInlineMemberDoc() override;
 
     void startLabels() override;
-    void writeLabel(const QCString &l,bool isLast) override;
+    void writeLabel(const DString &l,bool isLast) override;
     void endLabels() override;
 
     void startLocalToc(int) override {}
@@ -286,7 +286,7 @@ class ManGenerator final : public OutputGenerator, public OutputGenIntf
     void startTocEntry(const SectionInfo *) override {}
     void endTocEntry(const SectionInfo *) override {}
 
-    void startPlainFile(const QCString &name) override { OutputGenerator::startPlainFile(name); }
+    void startPlainFile(const DString &name) override { OutputGenerator::startPlainFile(name); }
     void endPlainFile() override { OutputGenerator::endPlainFile(); }
 
     void startEmbeddedDoc(int) override {}

@@ -24,7 +24,7 @@
 #include <fstream>
 #include <type_traits>
 
-#include "qcstring.h"
+#include "dstring.h"
 #include "construct.h"
 
 /** @brief Text streaming class that buffers data.
@@ -113,8 +113,8 @@ class TextStream final
       return static_cast<TextStream&>(*this);
     }
 
-    /** Adds a QCString to the stream */
-    TextStream &operator<<( const QCString &s )
+    /** Adds a DString to the stream */
+    TextStream &operator<<( const DString &s )
     {
       m_buffer+=s.str();
       return static_cast<TextStream&>(*this);

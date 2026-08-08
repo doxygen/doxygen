@@ -93,8 +93,8 @@ static void visitCaption(XmlDocVisitor &visitor, const DocNodeList &children)
 
 static void visitPreStart(TextStream &t, const char *cmd, bool doCaption,
                           XmlDocVisitor &visitor, const DocNodeList &children,
-                          const QCString &name, bool writeType, DocImage::Type type, const QCString &width,
-                          const QCString &height, const QCString engine = QCString(), const QCString &alt = QCString(), bool inlineImage = false)
+                          const DString &name, bool writeType, DocImage::Type type, const DString &width,
+                          const DString &height, const DString engine = DString(), const DString &alt = DString(), bool inlineImage = false)
 {
   t << "<" << cmd;
   if (writeType)
@@ -148,7 +148,7 @@ static void visitPostEnd(TextStream &t, const char *cmd)
   t << "</" << cmd << ">\n";
 }
 
-XmlDocVisitor::XmlDocVisitor(TextStream &t,OutputCodeList &ci,const QCString &langExt)
+XmlDocVisitor::XmlDocVisitor(TextStream &t,OutputCodeList &ci,const DString &langExt)
   : m_t(t), m_ci(ci), m_insidePre(false), m_hide(false),
     m_langExt(langExt), m_sectionLevel(0)
 {
@@ -205,7 +205,7 @@ void XmlDocVisitor::operator()(const DocEmoji &s)
   const char *res = EmojiEntityMapper::instance().name(s.index());
   if (res)
   {
-    QCString name=res;
+    DString name=res;
     name = name.mid(1,name.length()-2);
     m_t << "<emoji name=\"" << name << "\" unicode=\"";
     filter(EmojiEntityMapper::instance().unicode(s.index()));
@@ -306,7 +306,7 @@ void XmlDocVisitor::operator()(const DocStyleChange &s)
 void XmlDocVisitor::operator()(const DocVerbatim &s)
 {
   if (m_hide) return;
-  QCString lang = m_langExt;
+  DString lang = m_langExt;
   if (!s.language().empty()) // explicit language setting
   {
     lang = s.language();
@@ -376,22 +376,22 @@ void XmlDocVisitor::operator()(const DocVerbatim &s)
       m_t << s.text();
       break;
     case DocVerbatim::Dot:
-      visitPreStart(m_t, "dot", s.hasCaption(), *this, s.children(), QCString(""), false, DocImage::Html, s.width(), s.height());
+      visitPreStart(m_t, "dot", s.hasCaption(), *this, s.children(), DString(""), false, DocImage::Html, s.width(), s.height());
       filter(s.text());
       visitPostEnd(m_t, "dot");
       break;
     case DocVerbatim::Msc:
-      visitPreStart(m_t, "msc", s.hasCaption(), *this, s.children(),  QCString(""), false, DocImage::Html, s.width(), s.height());
+      visitPreStart(m_t, "msc", s.hasCaption(), *this, s.children(),  DString(""), false, DocImage::Html, s.width(), s.height());
       filter(s.text());
       visitPostEnd(m_t, "msc");
       break;
     case DocVerbatim::PlantUML:
-      visitPreStart(m_t, "plantuml", s.hasCaption(), *this, s.children(),  QCString(""), false, DocImage::Html, s.width(), s.height(), s.engine());
+      visitPreStart(m_t, "plantuml", s.hasCaption(), *this, s.children(),  DString(""), false, DocImage::Html, s.width(), s.height(), s.engine());
       filter(s.text());
       visitPostEnd(m_t, "plantuml");
       break;
     case DocVerbatim::Mermaid:
-      visitPreStart(m_t, "mermaid", s.hasCaption(), *this, s.children(), QCString(""), false, DocImage::Html, s.width(), s.height());
+      visitPreStart(m_t, "mermaid", s.hasCaption(), *this, s.children(), DString(""), false, DocImage::Html, s.width(), s.height());
       filter(s.text());
       visitPostEnd(m_t, "mermaid");
       break;
@@ -513,7 +513,7 @@ void XmlDocVisitor::operator()(const DocIncOperator &op)
     pushHidden(m_hide);
     m_hide = true;
   }
-  QCString locLangExt = getFileNameExtension(op.includeFileName());
+  DString locLangExt = getFileNameExtension(op.includeFileName());
   if (locLangExt.empty()) locLangExt = m_langExt;
   SrcLangExt langExt = getLanguageFromFileName(locLangExt);
   if (op.type()!=DocIncOperator::Skip)
@@ -705,7 +705,7 @@ void XmlDocVisitor::operator()(const DocSection &s)
 {
   if (m_hide) return;
   int orgSectionLevel = m_sectionLevel;
-  QCString sectId = s.file();
+  DString sectId = s.file();
   if (!s.anchor().empty()) sectId += "_1"+s.anchor();
   while (m_sectionLevel+1<s.level()) // fix missing intermediate levels
   {
@@ -940,8 +940,8 @@ void XmlDocVisitor::operator()(const DocImage &img)
 {
   if (m_hide) return;
 
-  QCString url = img.url();
-  QCString baseName;
+  DString url = img.url();
+  DString baseName;
   if (url.empty())
   {
     baseName = img.relPath()+img.name();
@@ -953,9 +953,9 @@ void XmlDocVisitor::operator()(const DocImage &img)
   HtmlAttribList attribs = img.attribs();
   auto it = std::find_if(attribs.begin(),attribs.end(),
                          [](const auto &att) { return att.name=="alt"; });
-  QCString altValue = it!=attribs.end() ? it->value : "";
+  DString altValue = it!=attribs.end() ? it->value : "";
   visitPreStart(m_t, "image", false, *this, img.children(), baseName, true,
-                img.type(), img.width(), img.height(), QCString(),
+                img.type(), img.width(), img.height(), DString(),
                 altValue, img.isInlineImage());
 
   // copy the image to the output dir
@@ -1027,7 +1027,7 @@ void XmlDocVisitor::operator()(const DocRef &ref)
   if (m_hide) return;
   if (!ref.file().empty())
   {
-    startLink(ref.ref(),ref.file(),ref.isSubPage() ? QCString() : ref.anchor());
+    startLink(ref.ref(),ref.file(),ref.isSubPage() ? DString() : ref.anchor());
   }
   if (!ref.hasLinkText()) filter(ref.targetTitle());
   visitChildren(ref);
@@ -1149,7 +1149,7 @@ void XmlDocVisitor::operator()(const DocXRefItem &x)
 void XmlDocVisitor::operator()(const DocInternalRef &ref)
 {
   if (m_hide) return;
-  startLink(QCString(),ref.file(),ref.anchor());
+  startLink(DString(),ref.file(),ref.anchor());
   visitChildren(ref);
   endLink();
   m_t << " ";
@@ -1181,12 +1181,12 @@ void XmlDocVisitor::operator()(const DocParBlock &pb)
 }
 
 
-void XmlDocVisitor::filter(const QCString &str, const bool keepEntities, const bool citeEntry)
+void XmlDocVisitor::filter(const DString &str, const bool keepEntities, const bool citeEntry)
 {
   m_t << convertToXML(str, keepEntities, citeEntry);
 }
 
-void XmlDocVisitor::startLink(const QCString &ref,const QCString &file,const QCString &anchor)
+void XmlDocVisitor::startLink(const DString &ref,const DString &file,const DString &anchor)
 {
   //printf("XmlDocVisitor: file=%s anchor=%s\n",qPrint(file),qPrint(anchor));
   m_t << "<ref refid=\"" << file;

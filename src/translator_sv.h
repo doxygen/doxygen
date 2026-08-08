@@ -165,7 +165,7 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
 {
   public:
 
-    QCString idLanguage() override
+    DString idLanguage() override
     { return "swedish"; }
 
     /*! Used to get the LaTeX command(s) for the language support.
@@ -182,16 +182,16 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
      * The English LaTeX does not use such commands.  Because of this
      * the empty string is returned in this implementation.
      */
-    QCString latexLanguageSupportCommand() override
+    DString latexLanguageSupportCommand() override
     {
       return "\\usepackage[swedish]{babel}\n";
     }
 
-    QCString trISOLang() override
+    DString trISOLang() override
     {
       return "sv";
     }
-    QCString getLanguageString() override
+    DString getLanguageString() override
     {
       return "0x41D Swedish";
     }
@@ -199,31 +199,31 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
     // --- Language translation methods -------------------
 
     /*! used in the compound documentation before a list of related functions. */
-    QCString trRelatedFunctions() override
+    DString trRelatedFunctions() override
     { return "Besläktade funktioner"; }
 
     /*! subscript for the related functions. */
-    QCString trRelatedSubscript() override
+    DString trRelatedSubscript() override
     { return "(Observera att dessa inte är medlemsfunktioner)"; }
 
     /*! header that is put before the detailed description of files, classes and namespaces. */
-    QCString trDetailedDescription() override
+    DString trDetailedDescription() override
     { return "Detaljerad beskrivning"; }
 
     /*! header that is used when the summary tag is missing inside the details tag */
-    QCString trDetails() override
+    DString trDetails() override
     { return "Detaljer"; }
 
     /*! header that is put before the list of typedefs. */
-    QCString trMemberTypedefDocumentation() override
+    DString trMemberTypedefDocumentation() override
     { return "Dokumentation av typdefinierade medlemmar"; }
 
     /*! header that is put before the list of enumerations. */
-    QCString trMemberEnumerationDocumentation() override
+    DString trMemberEnumerationDocumentation() override
     { return "Dokumentation av egenuppräknande medlemmar"; }
 
     /*! header that is put before the list of member functions. */
-    QCString trMemberFunctionDocumentation() override
+    DString trMemberFunctionDocumentation() override
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
       {
@@ -236,7 +236,7 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
     }
 
     /*! header that is put before the list of member attributes. */
-    QCString trMemberDataDocumentation() override
+    DString trMemberDataDocumentation() override
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
@@ -249,45 +249,45 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
     }
 
     /*! this is the text of a link put after brief descriptions. */
-    QCString trMore() override
+    DString trMore() override
     { return "Mer..."; }
 
     /*! put in the class documentation */
-    QCString trListOfAllMembers() override
+    DString trListOfAllMembers() override
     { return "Lista över alla medlemmar"; }
 
     /*! used as the title of the "list of all members" page of a class */
-    QCString trMemberList() override
+    DString trMemberList() override
     { return "Medlemslista"; }
 
     /*! this is the first part of a sentence that is followed by a class name */
-    QCString trThisIsTheListOfAllMembers() override
+    DString trThisIsTheListOfAllMembers() override
     { return "Det här är en fullständig lista över medlemmar för"; }
 
     /*! this is the remainder of the sentence after the class name */
-    QCString trIncludingInheritedMembers() override
+    DString trIncludingInheritedMembers() override
     { return " med alla ärvda medlemmar."; }
 
     /*! this is put at the author sections at the bottom of man pages.
      *  parameter s is name of the project name.
      */
-    QCString trGeneratedAutomatically(const QCString &s) override
-    { QCString result="Automatiskt skapad av Doxygen";
+    DString trGeneratedAutomatically(const DString &s) override
+    { DString result="Automatiskt skapad av Doxygen";
       if (!s.empty()) result+=" för "+s;
       result+=" från källkoden.";
       return result;
     }
 
     /*! put after an enum name in the list of all members */
-    QCString trEnumName() override
+    DString trEnumName() override
     { return "enum-namn"; }
 
     /*! put after an enum value in the list of all members */
-    QCString trEnumValue() override
+    DString trEnumValue() override
     { return "enum-värde"; }
 
     /*! put after an undocumented member in the list of all members */
-    QCString trDefinedIn() override
+    DString trDefinedIn() override
     { return "definierad i"; }
 
     // quick reference sections
@@ -295,15 +295,15 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
     /*! This is put above each page as a link to the list of all groups of
      *  compounds or files (see the \\group command).
      */
-    QCString trModules() override
+    DString trModules() override
     { return "Moduler"; }
 
     /*! This is put above each page as a link to the class hierarchy */
-    QCString trClassHierarchy() override
+    DString trClassHierarchy() override
     { return "Klasshierarki"; }
 
     /*! This is put above each page as a link to the list of annotated classes */
-    QCString trCompoundList() override
+    DString trCompoundList() override
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
@@ -316,11 +316,11 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
     }
 
     /*! This is put above each page as a link to the list of documented files */
-    QCString trFileList() override
+    DString trFileList() override
     { return "Fillista"; }
 
     /*! This is put above each page as a link to all members of compounds. */
-    QCString trCompoundMembers() override
+    DString trCompoundMembers() override
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
@@ -333,7 +333,7 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
     }
 
     /*! This is put above each page as a link to all members of files. */
-    QCString trFileMembers() override
+    DString trFileMembers() override
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
@@ -346,34 +346,34 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
     }
 
     /*! This is put above each page as a link to all related pages. */
-    QCString trRelatedPages() override
+    DString trRelatedPages() override
     { return "Relaterade sidor"; }
 
     /*! This is put above each page as a link to all examples. */
-    QCString trExamples() override
+    DString trExamples() override
     { return "Exempel"; }
 
     /*! This is put above each page as a link to the search engine. */
-    QCString trSearch() override
+    DString trSearch() override
     { return "Sök"; }
 
     /*! This is an introduction to the class hierarchy. */
-    QCString trClassHierarchyDescription() override
+    DString trClassHierarchyDescription() override
     { return "Denna lista över arv är grovt, men inte helt, "
              "sorterad i alfabetisk ordning:";
     }
 
     /*! This is an introduction to the list with all files. */
-    QCString trFileListDescription(bool extractAll) override
+    DString trFileListDescription(bool extractAll) override
     {
-      QCString result="Här följer en lista över alla ";
+      DString result="Här följer en lista över alla ";
       if (!extractAll) result+="dokumenterade ";
       result+="filer, med en kort beskrivning:";
       return result;
     }
 
     /*! This is an introduction to the annotated compound list. */
-    QCString trCompoundListDescription() override
+    DString trCompoundListDescription() override
     {
 
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
@@ -392,9 +392,9 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
     }
 
     /*! This is an introduction to the page with all class members. */
-    QCString trCompoundMembersDescription(bool extractAll) override
+    DString trCompoundMembersDescription(bool extractAll) override
     {
-      QCString result="Här är en lista över alla ";
+      DString result="Här är en lista över alla ";
       if (!extractAll)
       {
         result+="dokumenterade ";
@@ -434,9 +434,9 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
     }
 
     /*! This is an introduction to the page with all file members. */
-    QCString trFileMembersDescription(bool extractAll) override
+    DString trFileMembersDescription(bool extractAll) override
     {
-      QCString result="Här följer en lista över alla ";
+      DString result="Här följer en lista över alla ";
       if (!extractAll) result+="dokumenterade ";
 
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
@@ -457,39 +457,39 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
     }
 
     /*! This is an introduction to the page with the list of all examples */
-    QCString trExamplesDescription() override
+    DString trExamplesDescription() override
     { return "Här följer en lista med alla exempel:"; }
 
     /*! This is an introduction to the page with the list of related pages */
-    QCString trRelatedPagesDescription() override
+    DString trRelatedPagesDescription() override
     { return "Här följer en lista över alla relaterade dokumentationssidor:";}
 
     /*! This is an introduction to the page with the list of class/file groups */
-    QCString trModulesDescription() override
+    DString trModulesDescription() override
     { return "Här följer en lista över alla moduler:"; }
 
     // index titles (the project name is prepended for these)
 
     /*! This is used in HTML as the title of index.html. */
-    QCString trDocumentation(const QCString &projName) override
+    DString trDocumentation(const DString &projName) override
     { return (!projName.empty()?projName + " " : "") + "Dokumentation"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * index of all groups.
      */
-    QCString trModuleIndex() override
+    DString trModuleIndex() override
     { return "Modulindex"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * class hierarchy.
      */
-    QCString trHierarchicalIndex() override
+    DString trHierarchicalIndex() override
     { return "Hierarkiskt index"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * annotated compound index.
      */
-    QCString trCompoundIndex() override
+    DString trCompoundIndex() override
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
@@ -504,19 +504,19 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
     /*! This is used in LaTeX as the title of the chapter with the
      * list of all files.
      */
-    QCString trFileIndex() override
+    DString trFileIndex() override
     { return "Filindex"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all groups.
      */
-    QCString trModuleDocumentation() override
+    DString trModuleDocumentation() override
     { return "Moduldokumentation"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all classes, structs and unions.
      */
-    QCString trClassDocumentation() override
+    DString trClassDocumentation() override
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
@@ -535,83 +535,83 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all files.
      */
-    QCString trFileDocumentation() override
+    DString trFileDocumentation() override
     { return "Fildokumentation"; }
 
     /*! This is used in LaTeX as the title of the document */
-    QCString trReferenceManual() override
+    DString trReferenceManual() override
     { return "Referensmanual"; }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of defines
      */
-    QCString trDefines() override
+    DString trDefines() override
     { return "Makron"; }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of typedefs
      */
-    QCString trTypedefs() override
+    DString trTypedefs() override
     { return "Typdefinitioner"; }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of enumerations
      */
-    QCString trEnumerations() override
+    DString trEnumerations() override
     { return "Egenuppräknande typer"; }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of (global) functions
      */
-    QCString trFunctions() override
+    DString trFunctions() override
     { return "Funktioner"; }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of (global) variables
      */
-    QCString trVariables() override
+    DString trVariables() override
     { return "Variabler"; }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of (global) variables
      */
-    QCString trEnumerationValues() override
+    DString trEnumerationValues() override
     { return "Egenuppräknade typers värden"; }
 
     /*! This is used in the documentation of a file before the list of
      *  documentation blocks for defines
      */
-    QCString trDefineDocumentation() override
+    DString trDefineDocumentation() override
     { return "Dokumentation över makrodefinitioner"; }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for typedefs
      */
-    QCString trTypedefDocumentation() override
+    DString trTypedefDocumentation() override
     { return "Dokumentation över typdefinitioner"; }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for enumeration types
      */
-    QCString trEnumerationTypeDocumentation() override
+    DString trEnumerationTypeDocumentation() override
     { return "Dokumentation över egenuppräknande typer"; }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for functions
      */
-    QCString trFunctionDocumentation() override
+    DString trFunctionDocumentation() override
     { return "Dokumentation över funktioner"; }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for variables
      */
-    QCString trVariableDocumentation() override
+    DString trVariableDocumentation() override
     { return "Dokumentation över variabler"; }
 
     /*! This is used in the documentation of a file/namespace/group before
      *  the list of links to documented compounds
      */
-    QCString trCompounds() override
+    DString trCompounds() override
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
@@ -626,50 +626,50 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
     /*! This is used in the standard footer of each page and indicates when
      *  the page was generated
      */
-    QCString trGeneratedAt(const QCString &date,const QCString &projName) override
+    DString trGeneratedAt(const DString &date,const DString &projName) override
     {
-      QCString result="Skapad "+date;
+      DString result="Skapad "+date;
       if (!projName.empty()) result+=" för "+projName;
       result+=" av";
       return result;
     }
 
     /*! this text is put before a class diagram */
-    QCString trClassDiagram(const QCString &clName) override
+    DString trClassDiagram(const DString &clName) override
     {
       return "Klassdiagram för "+clName;
     }
 
     /*! this text is generated when the \\warning command is used. */
-    QCString trWarning() override
+    DString trWarning() override
     { return "Varning"; }
 
     /*! this text is generated when the \\version command is used. */
-    QCString trVersion() override
+    DString trVersion() override
     { return "Version"; }
 
     /*! this text is generated when the \\date command is used. */
-    QCString trDate() override
+    DString trDate() override
     { return "Datum"; }
 
     /*! this text is generated when the \\return command is used. */
-    QCString trReturns() override
+    DString trReturns() override
     { return "Returnerar"; }
 
     /*! this text is generated when the \\sa command is used. */
-    QCString trSeeAlso() override
+    DString trSeeAlso() override
     { return "Se även"; }
 
     /*! this text is generated when the \\param command is used. */
-    QCString trParameters() override
+    DString trParameters() override
     { return "Parametrar"; }
 
     /*! this text is generated when the \\exception command is used. */
-    QCString trExceptions() override
+    DString trExceptions() override
     { return "Undantag"; }
 
     /*! this text is used in the title page of a LaTeX document. */
-    QCString trGeneratedBy() override
+    DString trGeneratedBy() override
     { return "Skapad av"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -677,13 +677,13 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
 //////////////////////////////////////////////////////////////////////////
 
     /*! used as the title of page containing all the index of all namespaces. */
-    QCString trNamespaceList() override
+    DString trNamespaceList() override
     { return "Namnrymdslista"; }
 
     /*! used as an introduction to the namespace list */
-    QCString trNamespaceListDescription(bool extractAll) override
+    DString trNamespaceListDescription(bool extractAll) override
     {
-      QCString result="Här är en lista över alla ";
+      DString result="Här är en lista över alla ";
       if (!extractAll) result+="dokumenterade ";
       result+="namnrymder med en kort beskrivning:";
       return result;
@@ -692,14 +692,14 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
     /*! used in the class documentation as a header before the list of all
      *  friends of a class
      */
-    QCString trFriends() override
+    DString trFriends() override
     { return "Vänner"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990405
 //////////////////////////////////////////////////////////////////////////
 
-    QCString trRelatedFunctionDocumentation() override
+    DString trRelatedFunctionDocumentation() override
     { return "Dokumenation av vänners och relaterade funktioner"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -707,11 +707,11 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
 //////////////////////////////////////////////////////////////////////////
 
     /*! used as the title of the HTML page of a class/struct/union */
-    QCString trCompoundReference(const QCString &clName,
+    DString trCompoundReference(const DString &clName,
                                     ClassDef::CompoundType compType,
                                     bool isTemplate) override
     {
-      QCString result=clName;
+      DString result=clName;
       switch(compType)
       {
         case ClassDef::Class:  result+=" klass"; break;
@@ -729,50 +729,50 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
     }
 
     /*! used as the title of the HTML page of a file */
-    QCString trFileReference(const QCString &fileName) override
+    DString trFileReference(const DString &fileName) override
     {
-      QCString result=fileName;
+      DString result=fileName;
       result+=" filreferens";
       return result;
     }
 
     /*! used as the title of the HTML page of a namespace */
-    QCString trNamespaceReference(const QCString &namespaceName) override
+    DString trNamespaceReference(const DString &namespaceName) override
     {
-      QCString result=namespaceName;
+      DString result=namespaceName;
       result+=" namnrymdreferens";
       return result;
     }
 
-    QCString trPublicMembers() override
+    DString trPublicMembers() override
     { return "Publika medlemsfunktioner"; }
-    QCString trPublicSlots() override
+    DString trPublicSlots() override
     { return "Publika slots"; }
-    QCString trSignals() override
+    DString trSignals() override
     { return "Signaler"; }
-    QCString trStaticPublicMembers() override
+    DString trStaticPublicMembers() override
     { return "Statiska publika medlemmsfunktioner"; }
-    QCString trProtectedMembers() override
+    DString trProtectedMembers() override
     { return "Skyddade medlemmsfunktioner"; }
-    QCString trProtectedSlots() override
+    DString trProtectedSlots() override
     { return "Skyddade slots"; }
-    QCString trStaticProtectedMembers() override
+    DString trStaticProtectedMembers() override
     { return "Statiska skyddade medlemmsfunktioner"; }
-    QCString trPrivateMembers() override
+    DString trPrivateMembers() override
     { return "Privata medlemmsfunktioner"; }
-    QCString trPrivateSlots() override
+    DString trPrivateSlots() override
     { return "Privata slots"; }
-    QCString trStaticPrivateMembers() override
+    DString trStaticPrivateMembers() override
     { return "Statiska privata medlemmsfunktioner"; }
 
     /*! this function is used to produce a comma-separated list of items.
      *  use generateMarker(i) to indicate where item i should be put.
      */
-    QCString trWriteList(int numEntries) override
+    DString trWriteList(int numEntries) override
     {
       // this function is used to produce a comma-separated list of items.
       // use generateMarker(i) to indicate where item i should be put.
-      QCString result;
+      DString result;
       // the inherits list contain `numEntries' classes
       for (int i=0;i<numEntries;i++)
       {
@@ -794,7 +794,7 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
     /*! used in class documentation to produce a list of base classes,
      *  if class diagrams are disabled.
      */
-    QCString trInheritsList(int numEntries) override
+    DString trInheritsList(int numEntries) override
       // used in class documentation to produce a list of base classes,
       // if class diagrams are disabled.
     {
@@ -804,7 +804,7 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
     /*! used in class documentation to produce a list of super classes,
      *  if class diagrams are disabled.
      */
-    QCString trInheritedByList(int numEntries) override
+    DString trInheritedByList(int numEntries) override
       // used in class documentation to produce a list of super classes,
       // if class diagrams are disabled.
     {
@@ -814,7 +814,7 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
     /*! used in member documentation blocks to produce a list of
      *  members that are hidden by this one.
      */
-    QCString trReimplementedFromList(int numEntries) override
+    DString trReimplementedFromList(int numEntries) override
       // used in member documentation blocks to produce a list of
       // members that are hidden by this one.
     {
@@ -824,7 +824,7 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
     /*! used in member documentation blocks to produce a list of
      *  all member that overwrite the implementation of this member.
      */
-    QCString trReimplementedInList(int numEntries) override
+    DString trReimplementedInList(int numEntries) override
     {
       // used in member documentation blocks to produce a list of
       // all member that overwrite the implementation of this member.
@@ -832,13 +832,13 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
     }
 
     /*! This is put above each page as a link to all members of namespaces. */
-    QCString trNamespaceMembers() override
+    DString trNamespaceMembers() override
     { return "Namnrymdsmedlemmar"; }
 
     /*! This is an introduction to the page with all namespace members */
-    QCString trNamespaceMemberDescription(bool extractAll) override
+    DString trNamespaceMemberDescription(bool extractAll) override
     {
-      QCString result="Här är en lista över alla ";
+      DString result="Här är en lista över alla ";
       if (!extractAll) result+="dokumenterade ";
       result+="namnrymdsmedlemmar med länkar till ";
       if (extractAll)
@@ -850,13 +850,13 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
     /*! This is used in LaTeX as the title of the chapter with the
      *  index of all namespaces.
      */
-    QCString trNamespaceIndex() override
+    DString trNamespaceIndex() override
     { return "Namnrymdsindex"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all namespaces.
      */
-    QCString trNamespaceDocumentation() override
+    DString trNamespaceDocumentation() override
       { return "Namnrymd-dokumentation"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -866,7 +866,7 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
     /*! This is used in the documentation before the list of all
      *  namespaces in a file.
      */
-    QCString trNamespaces() override
+    DString trNamespaces() override
     { return "Namnrymder"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -876,12 +876,12 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
     /*! This is put at the bottom of a class documentation page and is
      *  followed by a list of files that were used to generate the page.
      */
-    QCString trGeneratedFromFiles(ClassDef::CompoundType compType,
+    DString trGeneratedFromFiles(ClassDef::CompoundType compType,
         bool single) override
     { // here s is one of " Class", " Struct" or " Union"
       // single is true implies a single file
       bool vhdlOpt = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
-      QCString result="Dokumentationen för ";
+      DString result="Dokumentationen för ";
       switch(compType)
       {
         case ClassDef::Class:      result+=vhdlOpt? "denna designenhets":"denna klass"; break;
@@ -903,29 +903,29 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
 //////////////////////////////////////////////////////////////////////////
 
     /*! This is used as the heading text for the retval command. */
-    QCString trReturnValues() override
+    DString trReturnValues() override
     { return "Returvärden"; }
 
     /*! This is in the (quick) index as a link to the main page (index.html)
      */
-    QCString trMainPage() override
+    DString trMainPage() override
     { return "Huvudsida"; }
 
     /*! This is used in references to page that are put in the LaTeX
      *  documentation. It should be an abbreviation of the word page.
      */
-    QCString trPageAbbreviation() override
+    DString trPageAbbreviation() override
     { return "s."; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-991003
 //////////////////////////////////////////////////////////////////////////
 
-    QCString trDefinedAtLineInSourceFile() override
+    DString trDefinedAtLineInSourceFile() override
     {
       return "Definition på rad @0 i filen @1.";
     }
-    QCString trDefinedInSourceFile() override
+    DString trDefinedInSourceFile() override
     {
       return "Definition i filen @0.";
     }
@@ -934,7 +934,7 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
 // new since 0.49-991205
 //////////////////////////////////////////////////////////////////////////
 
-    QCString trDeprecated() override
+    DString trDeprecated() override
     {
       return "Obsolet";
     }
@@ -944,68 +944,68 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
 //////////////////////////////////////////////////////////////////////////
 
     /*! this text is put before a collaboration diagram */
-    QCString trCollaborationDiagram(const QCString &clName) override
+    DString trCollaborationDiagram(const DString &clName) override
     {
       return "Samarbetsdiagram för "+clName+":";
     }
     /*! this text is put before an include dependency graph */
-    QCString trInclDepGraph(const QCString &fName) override
+    DString trInclDepGraph(const DString &fName) override
     {
       return "Include-beroendediagram för "+fName+":";
     }
     /*! header that is put before the list of constructor/destructors. */
-    QCString trConstructorDocumentation() override
+    DString trConstructorDocumentation() override
     {
       return "Dokumentation av konstruktorer och destruktorer";
     }
     /*! Used in the file documentation to point to the corresponding sources. */
-    QCString trGotoSourceCode() override
+    DString trGotoSourceCode() override
     {
       return "Gå till denna fils källkod.";
     }
     /*! Used in the file sources to point to the corresponding documentation. */
-    QCString trGotoDocumentation() override
+    DString trGotoDocumentation() override
     {
       return "Gå till denna fils dokumentation.";
     }
     /*! Text for the \\pre command */
-    QCString trPrecondition() override
+    DString trPrecondition() override
     {
       return "Precondition";
     }
     /*! Text for the \\post command */
-    QCString trPostcondition() override
+    DString trPostcondition() override
     {
       return "Postcondition";
     }
     /*! Text for the \\invariant command */
-    QCString trInvariant() override
+    DString trInvariant() override
     {
       return "Invariant";
     }
     /*! Text shown before a multi-line variable/enum initialization */
-    QCString trInitialValue() override
+    DString trInitialValue() override
     {
       return "Begynnelsevärde:";
     }
     /*! Text used the source code in the file index */
-    QCString trCode() override
+    DString trCode() override
     {
       return "källkod";
     }
-    QCString trGraphicalHierarchy() override
+    DString trGraphicalHierarchy() override
     {
       return "Grafisk klasshierarki";
     }
-    QCString trGotoGraphicalHierarchy() override
+    DString trGotoGraphicalHierarchy() override
     {
       return "Gå till den grafiska klasshierarkin";
     }
-    QCString trGotoTextualHierarchy() override
+    DString trGotoTextualHierarchy() override
     {
       return "Gå till den textbaserade klasshierarkin";
     }
-    QCString trPageIndex() override
+    DString trPageIndex() override
     {
       return "Sidindex";
     }
@@ -1014,15 +1014,15 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
 // new since 1.1.0
 //////////////////////////////////////////////////////////////////////////
 
-    QCString trNote() override
+    DString trNote() override
     {
       return "Notera";
     }
-    QCString trPublicTypes() override
+    DString trPublicTypes() override
     {
       return "Publika typer";
     }
-    QCString trPublicAttribs() override
+    DString trPublicAttribs() override
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
@@ -1033,31 +1033,31 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
         return "Publika attribut";
       }
     }
-    QCString trStaticPublicAttribs() override
+    DString trStaticPublicAttribs() override
     {
       return "Statiska publika attribut";
     }
-    QCString trProtectedTypes() override
+    DString trProtectedTypes() override
     {
       return "Skyddade typer";
     }
-    QCString trProtectedAttribs() override
+    DString trProtectedAttribs() override
     {
       return "Skyddade attribut";
     }
-    QCString trStaticProtectedAttribs() override
+    DString trStaticProtectedAttribs() override
     {
       return "Statiska skyddade attribut";
     }
-    QCString trPrivateTypes() override
+    DString trPrivateTypes() override
     {
       return "Privata typer";
     }
-    QCString trPrivateAttribs() override
+    DString trPrivateAttribs() override
     {
       return "Privata attribut";
     }
-    QCString trStaticPrivateAttribs() override
+    DString trStaticPrivateAttribs() override
     {
       return "Statiska privata attribut";
     }
@@ -1067,12 +1067,12 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
 //////////////////////////////////////////////////////////////////////////
 
     /*! Used as a marker that is put before a \\todo item */
-    QCString trTodo() override
+    DString trTodo() override
     {
       return "Att-göra";
     }
     /*! Used as the header of the todo list */
-    QCString trTodoList() override
+    DString trTodoList() override
     {
       return "Att göra-lista";
     }
@@ -1081,24 +1081,24 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
 // new since 1.1.4
 //////////////////////////////////////////////////////////////////////////
 
-    QCString trReferencedBy() override
+    DString trReferencedBy() override
     {
       return "Refererad av";
     }
-    QCString trRemarks() override
+    DString trRemarks() override
     {
       return "Lägg märke till";
     }
-    QCString trAttention() override
+    DString trAttention() override
     {
       return "Observera";
     }
-    QCString trInclByDepGraph() override
+    DString trInclByDepGraph() override
     {
       return "Den här grafen visar vilka filer som direkt eller "
              "indirekt inkluderar denna filen:";
     }
-    QCString trSince() override
+    DString trSince() override
     {
       return "Sedan";
     }
@@ -1108,14 +1108,14 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
 //////////////////////////////////////////////////////////////////////////
 
     /*! title of the graph legend page */
-    QCString trLegendTitle() override
+    DString trLegendTitle() override
     {
       return "Grafförklaring";
     }
     /*! page explaining how the dot graph's should be interpreted
      *  The %A in the text below are to prevent link to classes called "A".
      */
-    QCString trLegendDocs() override
+    DString trLegendDocs() override
     {
       return
         "Den här sidan förklarar hur man ska tolka de grafer som doxygen "
@@ -1180,7 +1180,7 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
         "</ul>\n";
     }
     /*! text for the link to the legend page */
-    QCString trLegend() override
+    DString trLegend() override
     {
       return "förklaring";
     }
@@ -1190,12 +1190,12 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
 //////////////////////////////////////////////////////////////////////////
 
     /*! Used as a marker that is put before a test item */
-    QCString trTest() override
+    DString trTest() override
     {
       return "Test";
     }
     /*! Used as the header of the test list */
-    QCString trTestList() override
+    DString trTestList() override
     {
       return "Testlista";
     }
@@ -1205,12 +1205,12 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
 //////////////////////////////////////////////////////////////////////////
 
     /*! Used as a section header for IDL properties */
-    QCString trProperties() override
+    DString trProperties() override
     {
       return "Egenskaper";
     }
     /*! Used as a section header for IDL property documentation */
-    QCString trPropertyDocumentation() override
+    DString trPropertyDocumentation() override
     {
       return "Egenskapsdokumentation";
     }
@@ -1220,7 +1220,7 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
 //////////////////////////////////////////////////////////////////////////
 
     /*! Used for Java classes in the summary section of Java packages */
-    QCString trClasses() override
+    DString trClasses() override
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
@@ -1232,23 +1232,23 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
       }
     }
     /*! Used as the title of a Java package */
-    QCString trPackage(const QCString &name) override
+    DString trPackage(const DString &name) override
     {
       return "Paket "+name;
     }
     /*! The description of the package index page */
-    QCString trPackageListDescription() override
+    DString trPackageListDescription() override
     {
       return "Här är en lista över paketen med en kort beskrivning "
              "(om sådan finns):";
     }
     /*! The link name in the Quick links header for each page */
-    QCString trPackages() override
+    DString trPackages() override
     {
       return "Paket";
     }
     /*! Text shown before a multi-line define */
-    QCString trDefineValue() override
+    DString trDefineValue() override
     {
       return "Värde:";
     }
@@ -1258,12 +1258,12 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
 //////////////////////////////////////////////////////////////////////////
 
     /*! Used as a marker that is put before a \\bug item */
-    QCString trBug() override
+    DString trBug() override
     {
       return "Bugg";
     }
     /*! Used as the header of the bug list */
-    QCString trBugList() override
+    DString trBugList() override
     {
       return "Bugglista";
     }
@@ -1282,7 +1282,7 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
      * ANSI_CHARSET              0 (x00)            1252
      * </pre>
      */
-    QCString trRTFansicp() override
+    DString trRTFansicp() override
     {
       return "1252";
     }
@@ -1291,13 +1291,13 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
     /*! Used as ansicpg for RTF fcharset
      *  \see trRTFansicp() for a table of possible values.
      */
-    QCString trRTFCharSet() override
+    DString trRTFCharSet() override
     {
       return "0";
     }
 
     /*! Used as header RTF general index */
-    QCString trRTFGeneralIndex() override
+    DString trRTFGeneralIndex() override
     {
       return "Index";
     }
@@ -1306,7 +1306,7 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    QCString trClass(bool first_capital, bool singular) override
+    DString trClass(bool first_capital, bool singular) override
     {
       return createNoun(first_capital, singular, "klass", "er");
     }
@@ -1315,7 +1315,7 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    QCString trFile(bool first_capital, bool singular) override
+    DString trFile(bool first_capital, bool singular) override
     {
       return createNoun(first_capital, singular, "fil", "er");
     }
@@ -1324,7 +1324,7 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    QCString trNamespace(bool first_capital, bool singular) override
+    DString trNamespace(bool first_capital, bool singular) override
     {
       return createNoun(first_capital, singular, "namnrymd", "er");
     }
@@ -1333,7 +1333,7 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    QCString trGroup(bool first_capital, bool singular) override
+    DString trGroup(bool first_capital, bool singular) override
     {
       return createNoun(first_capital, singular, "grupp", "er");
     }
@@ -1342,7 +1342,7 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    QCString trPage(bool first_capital, bool singular) override
+    DString trPage(bool first_capital, bool singular) override
     {
       return createNoun(first_capital, singular, "sid", "or", "a");
     }
@@ -1351,7 +1351,7 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    QCString trMember(bool first_capital, bool singular) override
+    DString trMember(bool first_capital, bool singular) override
     {
       return createNoun(first_capital, singular, "medlem", "mar");
     }
@@ -1360,7 +1360,7 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    QCString trGlobal(bool first_capital, bool singular) override
+    DString trGlobal(bool first_capital, bool singular) override
     {
       return createNoun(first_capital, singular, "global", "er");
     }
@@ -1371,7 +1371,7 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
 
     /*! This text is generated when the \\author command is used and
      *  for the author section in man pages. */
-    QCString trAuthor(bool first_capital, bool /*singular*/) override
+    DString trAuthor(bool first_capital, bool /*singular*/) override
     {
       return createNoun(first_capital, false, "författare", "");
     }
@@ -1382,7 +1382,7 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
 
     /*! This text is put before the list of members referenced by a member
      */
-    QCString trReferences() override
+    DString trReferences() override
     {
       return "Referenser";
     }
@@ -1394,7 +1394,7 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
     /*! used in member documentation blocks to produce a list of
      *  members that are implemented by this one.
      */
-    QCString trImplementedFromList(int numEntries) override
+    DString trImplementedFromList(int numEntries) override
     {
       return "Implementerar "+trWriteList(numEntries)+".";
     }
@@ -1402,7 +1402,7 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
     /*! used in member documentation blocks to produce a list of
      *  all members that implement this abstract member.
      */
-    QCString trImplementedInList(int numEntries) override
+    DString trImplementedInList(int numEntries) override
     {
       return "Implementerad i "+trWriteList(numEntries)+".";
     }
@@ -1414,7 +1414,7 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
     /*! used in RTF documentation as a heading for the Table
      *  of Contents.
      */
-    QCString trRTFTableOfContents() override
+    DString trRTFTableOfContents() override
     {
       return "Innehållsförteckning";
     }
@@ -1426,7 +1426,7 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
     /*! Used as the header of the list of item that have been
      *  flagged deprecated
      */
-    QCString trDeprecatedList() override
+    DString trDeprecatedList() override
     {
       return "Lista över föråldrade";
     }
@@ -1438,12 +1438,12 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
     /*! Used as a header for declaration section of the events found in
      * a C# program
      */
-    QCString trEvents() override
+    DString trEvents() override
     {
       return "Händelser";
     }
     /*! Header used for the documentation section of a class' events. */
-    QCString trEventDocumentation() override
+    DString trEventDocumentation() override
     {
       return "Händelsedokumentation";
     }
@@ -1454,39 +1454,39 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
 
     /*! Used as a heading for a list of Java class types with package scope.
      */
-    QCString trPackageTypes() override
+    DString trPackageTypes() override
     {
       return "Pakettyper";
     }
     /*! Used as a heading for a list of Java class functions with package
      * scope.
      */
-    QCString trPackageFunctions() override
+    DString trPackageFunctions() override
     {
       return "Paketfunktioner";
     }
-    QCString trPackageMembers() override
+    DString trPackageMembers() override
     {
       return "Paketmedlemmar";
     }
     /*! Used as a heading for a list of static Java class functions with
      *  package scope.
      */
-    QCString trStaticPackageFunctions() override
+    DString trStaticPackageFunctions() override
     {
       return "Statiska paketfunktioner";
     }
     /*! Used as a heading for a list of Java class variables with package
      * scope.
      */
-    QCString trPackageAttribs() override
+    DString trPackageAttribs() override
     {
       return "Paketattribut";
     }
     /*! Used as a heading for a list of static Java class variables with
      * package scope.
      */
-    QCString trStaticPackageAttribs() override
+    DString trStaticPackageAttribs() override
     {
       return "Statiska paketattribut";
     }
@@ -1498,12 +1498,12 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
     /*! Used in the quick index of a class/file/namespace member list page
      *  to link to the unfiltered list of all members.
      */
-    QCString trAll() override
+    DString trAll() override
     {
       return "Alla";
     }
     /*! Put in front of the call graph for a function. */
-    QCString trCallGraph() override
+    DString trCallGraph() override
     {
       return "Här är anropsdiagrammet för den här funktionen:";
     }
@@ -1515,7 +1515,7 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
     /*! This string is used as the title for the page listing the search
      *  results.
      */
-    QCString trSearchResultsTitle() override
+    DString trSearchResultsTitle() override
     {
       return "Sökresultat";
     }
@@ -1527,7 +1527,7 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
      *  value 2 represents 2 or more matches. HTML markup is allowed inside
      *  the returned string.
      */
-    QCString trSearchResults(int numDocuments) override
+    DString trSearchResults(int numDocuments) override
     {
       if (numDocuments==0)
       {
@@ -1546,7 +1546,7 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
     /*! This string is put before the list of matched words, for each search
      *  result. What follows is the list of words that matched the query.
      */
-    QCString trSearchMatches() override
+    DString trSearchMatches() override
     {
       return "Träffar:";
     }
@@ -1557,7 +1557,7 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
 
     /*! This is used in HTML as the title of page with source code for file filename
      */
-    QCString trSourceFile(const QCString& filename) override
+    DString trSourceFile(const DString& filename) override
     {
       return "Källkodsfilen " + filename;
     }
@@ -1569,31 +1569,31 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
     /*! This is used as the name of the chapter containing the directory
      *  hierarchy.
      */
-    QCString trDirIndex() override
+    DString trDirIndex() override
     { return "Katalogstruktur"; }
 
     /*! This is used as the name of the chapter containing the documentation
      *  of the directories.
      */
-    QCString trDirDocumentation() override
+    DString trDirDocumentation() override
     { return "Katalogdokumentation"; }
 
     /*! This is used as the title of the directory index and also in the
      *  Quick links of an HTML page, to link to the directory hierarchy.
      */
-    QCString trDirectories() override
+    DString trDirectories() override
     { return "Kataloger"; }
 
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.
      */
-    QCString trDirReference(const QCString &dirName) override
-    { QCString result=dirName; result+=" Katalogreferens"; return result; }
+    DString trDirReference(const DString &dirName) override
+    { DString result=dirName; result+=" Katalogreferens"; return result; }
 
     /*! This returns the word directory with or without starting capital
      *  (\a first_capital) and in singular or plural form (\a singular).
      */
-    QCString trDir(bool first_capital, bool singular) override
+    DString trDir(bool first_capital, bool singular) override
     {
       return createNoun(first_capital, singular, "katalog", "er");
     }
@@ -1605,7 +1605,7 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
     /*! This text is added to the documentation when the \\overload command
      *  is used for a overloaded function.
      */
-    QCString trOverloadText() override
+    DString trOverloadText() override
     {
       return "Det här är en överlagrad medlemsfunktion "
              "tillhandahållen för bekvämlighet. Den enda som "
@@ -1618,7 +1618,7 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
 //////////////////////////////////////////////////////////////////////////
 
     /*! This is used to introduce a caller (or called-by) graph */
-    QCString trCallerGraph() override
+    DString trCallerGraph() override
     {
       return "Här är anropsgrafen för denna funktion:";
     }
@@ -1626,7 +1626,7 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for enumeration values
      */
-    QCString trEnumerationValueDocumentation() override
+    DString trEnumerationValueDocumentation() override
     { return "Uppräknings-dokumentation"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1634,25 +1634,25 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
 //////////////////////////////////////////////////////////////////////////
 
     /*! header that is put before the list of member subprograms (Fortran). */
-    QCString trMemberFunctionDocumentationFortran() override
+    DString trMemberFunctionDocumentationFortran() override
     { return "Dokumentation för memlemsfunktion/subrutin"; }
 
     /*! This is put above each page as a link to the list of annotated data types (Fortran). */
-    QCString trCompoundListFortran() override
+    DString trCompoundListFortran() override
     { return "Datatyplista"; }
 
     /*! This is put above each page as a link to all members of compounds (Fortran). */
-    QCString trCompoundMembersFortran() override
+    DString trCompoundMembersFortran() override
     { return "Datafält"; }
 
     /*! This is an introduction to the annotated compound list (Fortran). */
-    QCString trCompoundListDescriptionFortran() override
+    DString trCompoundListDescriptionFortran() override
     { return "Här är datatyperna med en kort beskrivning:"; }
 
     /*! This is an introduction to the page with all data types (Fortran). */
-    QCString trCompoundMembersDescriptionFortran(bool extractAll) override
+    DString trCompoundMembersDescriptionFortran(bool extractAll) override
     {
-      QCString result="Här är en lista över alla ";
+      DString result="Här är en lista över alla ";
       if (!extractAll)
       {
         result+="dokumenterade ";
@@ -1673,52 +1673,52 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
     /*! This is used in LaTeX as the title of the chapter with the
      * annotated compound index (Fortran).
      */
-    QCString trCompoundIndexFortran() override
+    DString trCompoundIndexFortran() override
     { return "Datatypsindex"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all data types (Fortran).
      */
-    QCString trTypeDocumentation() override
+    DString trTypeDocumentation() override
     { return "Datatypsdokumentation"; }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of (global) subprograms (Fortran).
      */
-    QCString trSubprograms() override
+    DString trSubprograms() override
     { return "Funktioner/subrutiner"; }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for subprograms (Fortran)
      */
-    QCString trSubprogramDocumentation() override
+    DString trSubprogramDocumentation() override
     { return "Dokumentation för funktion/subrutin"; }
 
     /*! This is used in the documentation of a file/namespace/group before
      *  the list of links to documented compounds (Fortran)
      */
-     QCString trDataTypes() override
+     DString trDataTypes() override
     { return "Datatyper"; }
 
     /*! used as the title of page containing all the index of all modules (Fortran). */
-    QCString trModulesList() override
+    DString trModulesList() override
     { return "Modullista"; }
 
     /*! used as an introduction to the modules list (Fortran) */
-    QCString trModulesListDescription(bool extractAll) override
+    DString trModulesListDescription(bool extractAll) override
     {
-      QCString result="Här är en lista över alla ";
+      DString result="Här är en lista över alla ";
       if (!extractAll) result+="dokumenterade ";
       result+="moduler med en kort beskrivning:";
       return result;
     }
 
     /*! used as the title of the HTML page of a module/type (Fortran) */
-    QCString trCompoundReferenceFortran(const QCString &clName,
+    DString trCompoundReferenceFortran(const DString &clName,
                                     ClassDef::CompoundType compType,
                                     bool isTemplate) override
     {
-      QCString result=clName;
+      DString result=clName;
       switch(compType)
       {
         case ClassDef::Class:      result+=" Modul"; break;
@@ -1735,21 +1735,21 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
       return result;
     }
     /*! used as the title of the HTML page of a module (Fortran) */
-    QCString trModuleReference(const QCString &namespaceName) override
+    DString trModuleReference(const DString &namespaceName) override
     {
-      QCString result=namespaceName;
+      DString result=namespaceName;
       result+=" Modulreferens";
       return result;
     }
 
     /*! This is put above each page as a link to all members of modules. (Fortran) */
-    QCString trModulesMembers() override
+    DString trModulesMembers() override
     { return "Modulmedlemmar"; }
 
     /*! This is an introduction to the page with all modules members (Fortran) */
-    QCString trModulesMemberDescription(bool extractAll) override
+    DString trModulesMemberDescription(bool extractAll) override
     {
-      QCString result="Här är en lista över alla ";
+      DString result="Här är en lista över alla ";
       if (!extractAll) result+="documented ";
       result+="modulmedlemmar med länkar till ";
       if (extractAll)
@@ -1766,14 +1766,14 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
     /*! This is used in LaTeX as the title of the chapter with the
      *  index of all modules (Fortran).
      */
-    QCString trModulesIndex() override
+    DString trModulesIndex() override
     { return "Modulindex"; }
 
     /*! This is used for translation of the word that will possibly
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    QCString trModule(bool first_capital, bool singular) override
+    DString trModule(bool first_capital, bool singular) override
     {
       return createNoun(first_capital, singular, "modul", "er");
     }
@@ -1781,11 +1781,11 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
     /*! This is put at the bottom of a module documentation page and is
      *  followed by a list of files that were used to generate the page.
      */
-    QCString trGeneratedFromFilesFortran(ClassDef::CompoundType compType,
+    DString trGeneratedFromFilesFortran(ClassDef::CompoundType compType,
         bool single) override
     {
       // single is true implies a single file
-      QCString result="Dokumentationen för ";
+      DString result="Dokumentationen för ";
       switch(compType)
       {
         case ClassDef::Class:      result+="denna modul"; break;
@@ -1806,7 +1806,7 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    QCString trType(bool first_capital, bool singular) override
+    DString trType(bool first_capital, bool singular) override
     {
       return createNoun(first_capital, singular, "typ", "er");
     }
@@ -1815,13 +1815,13 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    QCString trSubprogram(bool first_capital, bool /*singular*/) override
+    DString trSubprogram(bool first_capital, bool /*singular*/) override
     {
       return createNoun(first_capital, false, "underprogram", "");
     }
 
     /*! C# Type Constraint list */
-    QCString trTypeConstraints() override
+    DString trTypeConstraints() override
     {
       return "Typbegränsningar";
     }
@@ -1831,31 +1831,31 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
 //////////////////////////////////////////////////////////////////////////
 
     /*! directory relation for \a name */
-    QCString trDirRelation(const QCString &name) override
+    DString trDirRelation(const DString &name) override
     {
       return name+" Relation";
     }
 
     /*! Loading message shown when loading search results */
-    QCString trLoading() override
+    DString trLoading() override
     {
       return "Laddar...";
     }
 
     /*! Label used for search results in the global namespace */
-    QCString trGlobalNamespace() override
+    DString trGlobalNamespace() override
     {
       return "Global namnrymd";
     }
 
     /*! Message shown while searching */
-    QCString trSearching() override
+    DString trSearching() override
     {
       return "Söker...";
     }
 
     /*! Text shown when no search results are found */
-    QCString trNoMatches() override
+    DString trNoMatches() override
     {
       return "Inga träffar";
     }
@@ -1868,7 +1868,7 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
      *  table is shown. The heading for the first column mentions the
      *  source file that has a relation to another file.
      */
-    QCString trFileIn(const QCString &name) override
+    DString trFileIn(const DString &name) override
     {
       return "Fil i "+name;
     }
@@ -1877,7 +1877,7 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
      *  table is shown. The heading for the second column mentions the
      *  destination file that is included.
      */
-    QCString trIncludesFileIn(const QCString &name) override
+    DString trIncludesFileIn(const DString &name) override
     {
       return "Inkluderar fil i "+name;
     }
@@ -1892,13 +1892,13 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
      *  @param seconds Seconds within the minute: 0..59
      *  @param includeTime Include time in the result string?
      */
-    QCString trDateTime(int year,int month,int day,int dayOfWeek,
+    DString trDateTime(int year,int month,int day,int dayOfWeek,
                                 int hour,int minutes,int seconds,
                                 DateTimeType includeTime) override
     {
       static const char *days[]   = { "Mån","Tis","Ons","Tor","Fre","Lör","Sön" };
       static const char *months[] = { "Jan","Feb","Mar","Apr","Maj","Jun","Jul","Aug","Sep","Okt","Nov","Dec" };
-      QCString sdate;
+      DString sdate;
       if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Date)
       {
         sdate.sprintf("%s %d %s %d",days[dayOfWeek-1],day,months[month-1],year);
@@ -1906,29 +1906,29 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
       if (includeTime == DateTimeType::DateTime) sdate += " ";
       if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Time)
       {
-        QCString stime;
+        DString stime;
         stime.sprintf("%.2d:%.2d:%.2d",hour,minutes,seconds);
         sdate+=stime;
       }
       return sdate;
     }
-    QCString trDayOfWeek(int dayOfWeek, bool first_capital, bool full) override
+    DString trDayOfWeek(int dayOfWeek, bool first_capital, bool full) override
     {
       static const char *days_short[]   = { "mån", "tis", "ons", "tor", "fre", "lör", "sön" };
       static const char *days_full[]    = { "måndag", "tisdag", "onsdag", "torsdag", "fredag", "lördag", "söndag" };
-      QCString text  = full? days_full[dayOfWeek-1] : days_short[dayOfWeek-1];
+      DString text  = full? days_full[dayOfWeek-1] : days_short[dayOfWeek-1];
       if (first_capital) return text.mid(0,1).upper()+text.mid(1);
       else return text;
     }
-    QCString trMonth(int month, bool first_capital, bool full) override
+    DString trMonth(int month, bool first_capital, bool full) override
     {
       static const char *months_short[] = { "jan", "feb", "mar", "apr", "maj", "jun", "jul", "aug", "sep", "okt", "nov", "dec" };
       static const char *months_full[]  = { "januari", "februari", "mars", "april", "maj", "juni", "juli", "augusti", "september", "oktober", "november", "december" };
-      QCString text  = full? months_full[month-1] : months_short[month-1];
+      DString text  = full? months_full[month-1] : months_short[month-1];
       if (first_capital) return text.mid(0,1).upper()+text.mid(1);
       else return text;
     }
-    QCString trDayPeriod(bool period) override
+    DString trDayPeriod(bool period) override
     {
       static const char *dayPeriod[] = { "fm", "em" };
       return dayPeriod[period?1:0];
@@ -1939,53 +1939,53 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
 //////////////////////////////////////////////////////////////////////////
 
     /*! Header for the page with bibliographic citations */
-    QCString trCiteReferences() override
+    DString trCiteReferences() override
     { return "Bibliografiska Referenser"; }
 
     /*! Text for copyright paragraph */
-    QCString trCopyright() override
+    DString trCopyright() override
     { return "Copyright"; }
 
     /*! Header for the graph showing the directory dependencies */
-    QCString trDirDepGraph(const QCString &name) override
-    { return QCString("Katalogberoendegraf för ")+name+":"; }
+    DString trDirDepGraph(const DString &name) override
+    { return DString("Katalogberoendegraf för ")+name+":"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 1.8.0
 //////////////////////////////////////////////////////////////////////////
 
     /*! Detail level selector shown for hierarchical indices */
-    QCString trDetailLevel() override
+    DString trDetailLevel() override
     { return "detaljnivå"; }
 
     /*! Section header for list of template parameters */
-    QCString trTemplateParameters() override
+    DString trTemplateParameters() override
     { return "Mall-parametrar"; }
 
     /*! Used in dot graph when UML_LOOK is enabled and there are many fields */
-    QCString trAndMore(const QCString &number) override
+    DString trAndMore(const DString &number) override
     { return "och "+number+" flera..."; }
 
     /*! Used file list for a Java enum */
-    QCString trEnumGeneratedFromFiles(bool single) override
-    { QCString result = "Dokumentationen för denna enum var genererad från föjlande fil";
+    DString trEnumGeneratedFromFiles(bool single) override
+    { DString result = "Dokumentationen för denna enum var genererad från föjlande fil";
       if (!single) result += "er";
       result+=":";
       return result;
     }
 
     /*! Header of a Java enum page (Java enums are represented as classes). */
-    QCString trEnumReference(const QCString &name) override
+    DString trEnumReference(const DString &name) override
     { return name+" Enum-referens"; }
 
     /*! Used for a section containing inherited members */
-    QCString trInheritedFrom(const QCString &members,const QCString &what) override
+    DString trInheritedFrom(const DString &members,const DString &what) override
     { return members+" ärvd ifrån "+what; }
 
     /*! Header of the sections with inherited members specific for the
      *  base class(es)
      */
-    QCString trAdditionalInheritedMembers() override
+    DString trAdditionalInheritedMembers() override
     { return "Ytterliga ärvda medlemmar"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1996,9 +1996,9 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
      *  navigation tree in the HTML output when GENERATE_TREEVIEW is
      *  enabled. This tooltip explains the meaning of the button.
      */
-    QCString trPanelSynchronisationTooltip(bool enable) override
+    DString trPanelSynchronisationTooltip(bool enable) override
     {
-      QCString opt = enable ? "aktivera" : "inaktivera";
+      DString opt = enable ? "aktivera" : "inaktivera";
       return "klicka för att "+opt+" panelsynkronisering";
     }
 
@@ -2006,7 +2006,7 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
      *  a category. Note that the @1 marker is required and is replaced
      *  by a link.
      */
-    QCString trProvidedByCategory() override
+    DString trProvidedByCategory() override
     {
       return "Tillhandahålls av kategori @0.";
     }
@@ -2015,7 +2015,7 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
      *  Note that the @1 marker is required and is replaced by a link to
      *  the class method.
      */
-    QCString trExtendsClass() override
+    DString trExtendsClass() override
     {
       return "Utökar klass @0.";
     }
@@ -2023,7 +2023,7 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
     /*! Used as the header of a list of class methods in Objective-C.
      *  These are similar to static public member functions in C++.
      */
-    QCString trClassMethods() override
+    DString trClassMethods() override
     {
       return "Klassmetoder";
     }
@@ -2031,14 +2031,14 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
     /*! Used as the header of a list of instance methods in Objective-C.
      *  These are similar to public member functions in C++.
      */
-    QCString trInstanceMethods() override
+    DString trInstanceMethods() override
     {
       return "Instansmetoder";
     }
 
     /*! Used as the header of the member functions of an Objective-C class.
      */
-    QCString trMethodDocumentation() override
+    DString trMethodDocumentation() override
     {
       return "Metoddokumentation";
     }
@@ -2048,52 +2048,52 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
 //////////////////////////////////////////////////////////////////////////
 
     /** old style UNO IDL services: implemented interfaces */
-    QCString trInterfaces() override
+    DString trInterfaces() override
     { return "Exporterade interface"; }
 
     /** old style UNO IDL services: inherited services */
-    QCString trServices() override
+    DString trServices() override
     { return "Inkuderade tjänster"; }
 
     /** UNO IDL constant groups */
-    QCString trConstantGroups() override
+    DString trConstantGroups() override
     { return "Konstantgrupper"; }
 
     /** UNO IDL constant groups */
-    QCString trConstantGroupReference(const QCString &namespaceName) override
+    DString trConstantGroupReference(const DString &namespaceName) override
     {
-      QCString result=namespaceName;
+      DString result=namespaceName;
       result+=" Referens till konstantgrupp";
       return result;
     }
     /** UNO IDL service page title */
-    QCString trServiceReference(const QCString &sName) override
+    DString trServiceReference(const DString &sName) override
     {
-      QCString result=sName;
+      DString result=sName;
       result+=" Tjänstereferens";
       return result;
     }
     /** UNO IDL singleton page title */
-    QCString trSingletonReference(const QCString &sName) override
+    DString trSingletonReference(const DString &sName) override
     {
-      QCString result=sName;
+      DString result=sName;
       result+=" Singleton-referens";
       return result;
     }
     /** UNO IDL service page */
-    QCString trServiceGeneratedFromFiles(bool single) override
+    DString trServiceGeneratedFromFiles(bool single) override
     {
       // single is true implies a single file
-      QCString result="Dokumentationen för denna tjänst "
+      DString result="Dokumentationen för denna tjänst "
                                 "genererades från följande fil";
       if (single) result+=":"; else result+="er:";
       return result;
     }
     /** UNO IDL singleton page */
-    QCString trSingletonGeneratedFromFiles(bool single) override
+    DString trSingletonGeneratedFromFiles(bool single) override
     {
       // single is true implies a single file
-      QCString result="Dokumentationen för denna singleton "
+      DString result="Dokumentationen för denna singleton "
                                 "genererades från följande fil";
       if (single) result+=":"; else result+="er:";
       return result;
@@ -2104,34 +2104,34 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
 //////////////////////////////////////////////////////////////////////////
 
     /** VHDL design unit hierarchy */
-    QCString trDesignUnitHierarchy() override
+    DString trDesignUnitHierarchy() override
     { return "Designenhetshirarki"; }
     /** VHDL design unit list */
-    QCString trDesignUnitList() override
+    DString trDesignUnitList() override
     { return "Designenhetslista"; }
     /** VHDL design unit members */
-    QCString trDesignUnitMembers() override
+    DString trDesignUnitMembers() override
     { return "Designenhetsmedlemmar"; }
     /** VHDL design unit list description
      * Original: Here is a list of all design unit members with links to
      *           the Entities they belong to:
      */
-    QCString trDesignUnitListDescription() override
+    DString trDesignUnitListDescription() override
     {
         return "Här är en lista av alla designenhetsmedlemmar med länkar till "
                "entiteterna som de hör till:";
     }
     /** VHDL design unit index */
-    QCString trDesignUnitIndex() override
+    DString trDesignUnitIndex() override
     { return "Designenhetsindex"; }
     /** VHDL design units */
-    QCString trDesignUnits() override
+    DString trDesignUnits() override
     { return "Designenheter"; }
     /** VHDL functions/procedures/processes */
-    QCString trFunctionAndProc() override
+    DString trFunctionAndProc() override
     { return "Funktioner/Procedurer/Processer"; }
     /** VHDL type */
-    QCString trVhdlType(VhdlSpecifier type,bool single) override
+    DString trVhdlType(VhdlSpecifier type,bool single) override
     {
       switch(type)
       {
@@ -2212,114 +2212,114 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
           return "Klass";
       }
     }
-    QCString trCustomReference(const QCString &name) override
+    DString trCustomReference(const DString &name) override
     { return name+"referens"; }
 
     /* Slice */
-    QCString trConstants() override
+    DString trConstants() override
     {
         return "Konstanter";
     }
-    QCString trConstantDocumentation() override
+    DString trConstantDocumentation() override
     {
         return "Konstantdokumentation";
     }
-    QCString trSequences() override
+    DString trSequences() override
     {
         return "Sekvenser";
     }
-    QCString trSequenceDocumentation() override
+    DString trSequenceDocumentation() override
     {
         return "Sekvensdokumentation";
     }
-    QCString trDictionaries() override
+    DString trDictionaries() override
     {
         return "Uppslagsverk";
     }
-    QCString trDictionaryDocumentation() override
+    DString trDictionaryDocumentation() override
     {
         return "Uppslagsverksdokumentation";
     }
-    QCString trSliceInterfaces() override
+    DString trSliceInterfaces() override
     {
         return "Gränssnitt";
     }
-    QCString trInterfaceIndex() override
+    DString trInterfaceIndex() override
     {
         return "Gränssnittsindex";
     }
-    QCString trInterfaceList() override
+    DString trInterfaceList() override
     {
         return "Gränssnittslist";
     }
     /** Original: Here are the interfaces with brief descriptions: */
-    QCString trInterfaceListDescription() override
+    DString trInterfaceListDescription() override
     {
         return "Här är gränssnitten med en kort beskrivning";
     }
-    QCString trInterfaceHierarchy() override
+    DString trInterfaceHierarchy() override
     {
         return "Gränssnittshirarkin";
     }
     /** Original: This inheritance list is sorted roughly, but not completely, alphabetically: */
-    QCString trInterfaceHierarchyDescription() override
+    DString trInterfaceHierarchyDescription() override
     {
         return "Denna arvslista är grovt sorterad, men inte helt, i alfabetisk ordning:";
     }
-    QCString trInterfaceDocumentation() override
+    DString trInterfaceDocumentation() override
     {
         return "Gränssnittsdokumentation";
     }
-    QCString trStructs() override
+    DString trStructs() override
     {
         return "Strukturer";
     }
-    QCString trStructIndex() override
+    DString trStructIndex() override
     {
         return "Strukturindex";
     }
-    QCString trStructList() override
+    DString trStructList() override
     {
         return "Strukturlist";
     }
     /** Original: Here are the structs with brief descriptions: */
-    QCString trStructListDescription() override
+    DString trStructListDescription() override
     {
         return "Här är strukturerna med en kort beskrivning:";
     }
-    QCString trStructDocumentation() override
+    DString trStructDocumentation() override
     {
         return "Strukturdokumentation";
     }
-    QCString trExceptionIndex() override
+    DString trExceptionIndex() override
     {
         return "Undantagsindex";
     }
-    QCString trExceptionList() override
+    DString trExceptionList() override
     {
         return "Undantagslista";
     }
     /** Original: Here are the exceptions with brief descriptions: */
-    QCString trExceptionListDescription() override
+    DString trExceptionListDescription() override
     {
         return "Här är undantagen med en kort beskrivning:";
     }
-    QCString trExceptionHierarchy() override
+    DString trExceptionHierarchy() override
     {
         return "Undantagshirarki";
     }
     /** Original:  This inheritance list is sorted roughly, but not completely, alphabetically: */
-    QCString trExceptionHierarchyDescription() override
+    DString trExceptionHierarchyDescription() override
     {
         return "Denna arvslista är grovt sorterad, men inte helt, i alfabetisk ordning:";
     }
-    QCString trExceptionDocumentation() override
+    DString trExceptionDocumentation() override
     {
         return "Undantagsdokumentation";
     }
-    QCString trCompoundReferenceSlice(const QCString &clName, ClassDef::CompoundType compType, bool isLocal) override
+    DString trCompoundReferenceSlice(const DString &clName, ClassDef::CompoundType compType, bool isLocal) override
     {
-      QCString result=clName;
+      DString result=clName;
       if (isLocal) result+=" Lokal";
       switch(compType)
       {
@@ -2335,19 +2335,19 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
       result+="referens";
       return result;
     }
-    QCString trOperations() override
+    DString trOperations() override
     {
         return "Operationer";
     }
-    QCString trOperationDocumentation() override
+    DString trOperationDocumentation() override
     {
         return "Operationsdokumentation";
     }
-    QCString trDataMembers() override
+    DString trDataMembers() override
     {
         return "Datamedlemmar";
     }
-    QCString trDataMemberDocumentation() override
+    DString trDataMemberDocumentation() override
     {
         return "Datamedlemsdokumentation";
     }
@@ -2357,7 +2357,7 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
 //////////////////////////////////////////////////////////////////////////
 
     /** VHDL design unit documentation */
-    QCString trDesignUnitDocumentation() override
+    DString trDesignUnitDocumentation() override
     { return "Designenhetsdokumentation"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -2365,41 +2365,41 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
 //////////////////////////////////////////////////////////////////////////
 
     /** C++20 concept */
-    QCString trConcept(bool first_capital, bool /* singular */) override
+    DString trConcept(bool first_capital, bool /* singular */) override
     {
       return createNoun(first_capital, false, "koncept", "");
     }
     /*! used as the title of the HTML page of a C++20 concept page */
-    QCString trConceptReference(const QCString &conceptName) override
+    DString trConceptReference(const DString &conceptName) override
     {
-      QCString result=conceptName;
+      DString result=conceptName;
       result+=" Konceptreferens";
       return result;
     }
 
     /*! used as the title of page containing all the index of all concepts. */
-    QCString trConceptList() override
+    DString trConceptList() override
     { return "Konceptlista"; }
 
     /*! used as the title of chapter containing the index listing all concepts. */
-    QCString trConceptIndex() override
+    DString trConceptIndex() override
     { return "Konceptindex"; }
 
     /*! used as the title of chapter containing all information about concepts. */
-    QCString trConceptDocumentation() override
+    DString trConceptDocumentation() override
     { return "Konceptdokumentation"; }
 
     /*! used as an introduction to the concept list */
-    QCString trConceptListDescription(bool extractAll) override
+    DString trConceptListDescription(bool extractAll) override
     {
-      QCString result="Här är listan över alla ";
+      DString result="Här är listan över alla ";
       if (!extractAll) result+="dokumenterade ";
       result+="koncept med en kort beskrivning:";
       return result;
     }
 
     /*! used to introduce the definition of the C++20 concept */
-    QCString trConceptDefinition() override
+    DString trConceptDefinition() override
     {
       return "Konceptdefinition";
     }
@@ -2408,14 +2408,14 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
 // new since 1.9.4
 //////////////////////////////////////////////////////////////////////////
 
-    QCString trPackageList() override
+    DString trPackageList() override
     { return "Paketlista"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 1.9.6
 //////////////////////////////////////////////////////////////////////////
 
-    QCString trFlowchart() override
+    DString trFlowchart() override
     { return "Flödesdiagram:"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -2423,9 +2423,9 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
 //////////////////////////////////////////////////////////////////////////
 
     /*! the compound type as used for the xrefitems */
-    QCString trCompoundType(ClassDef::CompoundType compType, SrcLangExt lang) override
+    DString trCompoundType(ClassDef::CompoundType compType, SrcLangExt lang) override
     {
-      QCString result;
+      DString result;
       switch(compType)
       {
         case ClassDef::Class:

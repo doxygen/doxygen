@@ -61,12 +61,12 @@
 //#define DBG_HTML(x) x;
 #define DBG_HTML(x)
 
-static QCString g_header;
-static QCString g_header_file;
-static QCString g_footer_file;
-static QCString g_footer;
-static QCString g_mathjax_code;
-static QCString g_latex_macro;
+static DString g_header;
+static DString g_header_file;
+static DString g_footer_file;
+static DString g_footer;
+static DString g_mathjax_code;
+static DString g_latex_macro;
 static bool g_build_date = false;
 static constexpr auto hex="0123456789ABCDEF";
 
@@ -74,7 +74,7 @@ static const SelectionMarkerInfo htmlMarkerInfo = { '<', "<!--BEGIN ",10,"<!--EN
 
 // note: this is only active if DISABLE_INDEX=YES, if DISABLE_INDEX is disabled, this
 // part will be rendered inside menu.js
-static void writeClientSearchBox(TextStream &t,const QCString &relPath)
+static void writeClientSearchBox(TextStream &t,const DString &relPath)
 {
   t << "        <div id=\"MSearchBox\" class=\"MSearchBoxInactive\">\n";
   t << "        <span class=\"left\">\n";
@@ -91,7 +91,7 @@ static void writeClientSearchBox(TextStream &t,const QCString &relPath)
 
 // note: this is only active if DISABLE_INDEX=YES. if DISABLE_INDEX is disabled, this
 // part will be rendered inside menu.js
-static void writeServerSearchBox(TextStream &t,const QCString &relPath,bool highlightSearch)
+static void writeServerSearchBox(TextStream &t,const DString &relPath,bool highlightSearch)
 {
   bool externalSearch = Config_getBool(EXTERNAL_SEARCH);
   t << "        <div id=\"MSearchBox\" class=\"MSearchBoxInactive\">\n";
@@ -140,20 +140,20 @@ static void writeServerSearchBox(TextStream &t,const QCString &relPath,bool high
 /// ```
 ///        cmd: ["{replacement}",nr]
 /// ```
-static QCString getConvertLatexMacro()
+static DString getConvertLatexMacro()
 {
-  QCString macrofile = Config_getString(FORMULA_MACROFILE);
+  DString macrofile = Config_getString(FORMULA_MACROFILE);
   if (macrofile.empty()) return "";
-  QCString s = fileToString(macrofile);
+  DString s = fileToString(macrofile);
   macrofile = FileInfo(macrofile.str()).absFilePath();
   size_t size = s.length();
-  QCString result;
+  DString result;
   result.reserve(size+8);
   const char *data = s.data();
   int line = 1;
   int cnt = 0;
   size_t i = 0;
-  QCString nr;
+  DString nr;
   while (i < size)
   {
     nr = "";
@@ -291,7 +291,7 @@ static QCString getConvertLatexMacro()
   return result;
 }
 
-static QCString getSearchBox(bool serverSide, QCString relPath, bool highlightSearch)
+static DString getSearchBox(bool serverSide, DString relPath, bool highlightSearch)
 {
   TextStream t;
   if (serverSide)
@@ -305,24 +305,24 @@ static QCString getSearchBox(bool serverSide, QCString relPath, bool highlightSe
   return t.str();
 }
 
-static QCString substituteHtmlKeywords(const QCString &file,
-                                       const QCString &str,
-                                       const QCString &title,
-                                       const QCString &relPath,
-                                       const QCString &navPath=QCString(),
+static DString substituteHtmlKeywords(const DString &file,
+                                       const DString &str,
+                                       const DString &title,
+                                       const DString &relPath,
+                                       const DString &navPath=DString(),
                                        bool isSource = false)
 {
   // Build CSS/JavaScript tags depending on treeview, search engine settings
-  QCString cssFile;
-  QCString generatedBy;
-  QCString treeViewCssJs;
-  QCString searchCssJs;
-  QCString searchBox;
-  QCString mathJaxJs;
-  QCString mermaidJs;
-  QCString extraCssText;
+  DString cssFile;
+  DString generatedBy;
+  DString treeViewCssJs;
+  DString searchCssJs;
+  DString searchBox;
+  DString mathJaxJs;
+  DString mermaidJs;
+  DString extraCssText;
 
-  QCString projectName = Config_getString(PROJECT_NAME);
+  DString projectName = Config_getString(PROJECT_NAME);
   bool treeView = Config_getBool(GENERATE_TREEVIEW);
   bool dynamicSections = Config_getBool(HTML_DYNAMIC_SECTIONS) ||
                          (Config_getBool(SOURCE_BROWSER) && Config_getBool(SOURCE_TOOLTIPS));
@@ -368,7 +368,7 @@ static QCString substituteHtmlKeywords(const QCString &file,
   {
     if (!fileName.empty())
     {
-      QCString htmlStyleSheet = fileName;
+      DString htmlStyleSheet = fileName;
       if (htmlStyleSheet.startsWith("http:") || htmlStyleSheet.startsWith("https:"))
       {
         extraCssText += "<link href=\""+htmlStyleSheet+"\" rel=\"stylesheet\" type=\"text/css\"/>\n";
@@ -419,7 +419,7 @@ static QCString substituteHtmlKeywords(const QCString &file,
       searchCssJs += "<link rel=\"search\" href=\"" + relPath +
                      "search_opensearch.php?v=opensearch.xml\" "
                      "type=\"application/opensearchdescription+xml\" title=\"" +
-                     (hasProjectName ? projectName : QCString("Doxygen")) +
+                     (hasProjectName ? projectName : DString("Doxygen")) +
                      "\"/>";
       // OPENSEARCH_PROVIDER }
     }
@@ -429,7 +429,7 @@ static QCString substituteHtmlKeywords(const QCString &file,
   if (mathJax && !isSource)
   {
     auto mathJaxVersion = Config_getEnum(MATHJAX_VERSION);
-    QCString path = Config_getString(MATHJAX_RELPATH);
+    DString path = Config_getString(MATHJAX_RELPATH);
     if (path.empty() || path.startsWith("..")) // relative path
     {
       path.prepend(relPath);
@@ -471,10 +471,10 @@ static QCString substituteHtmlKeywords(const QCString &file,
       mathJaxJs += "\n    }\n";
     };
 
-    auto writeMathJaxScript = [&path,&mathJaxJs](const QCString &pathPostfix,
+    auto writeMathJaxScript = [&path,&mathJaxJs](const DString &pathPostfix,
                                                  std::function<void(const StringVector&)> writePackages)
     {
-      QCString mathJaxFormat = Config_getEnumAsString(MATHJAX_FORMAT);
+      DString mathJaxFormat = Config_getEnumAsString(MATHJAX_FORMAT);
       mathJaxJs += "<script type=\"text/javascript\">\n"
         "window.MathJax = {\n"
         "  options: {\n"
@@ -540,14 +540,14 @@ static QCString substituteHtmlKeywords(const QCString &file,
         break;
       case MATHJAX_VERSION_t::MathJax_2:
         {
-          QCString mathJaxFormat = Config_getEnumAsString(MATHJAX_FORMAT);
+          DString mathJaxFormat = Config_getEnumAsString(MATHJAX_FORMAT);
           mathJaxJs = "<script type=\"text/x-mathjax-config\">\n"
                       "MathJax.Hub.Config({\n"
                       "  extensions: [\"tex2jax.js\"";
           const StringVector &mathJaxExtensions = Config_getList(MATHJAX_EXTENSIONS);
           for (const auto &s : mathJaxExtensions)
           {
-            mathJaxJs+= ", \""+QCString(s)+".js\"";
+            mathJaxJs+= ", \""+DString(s)+".js\"";
           }
           if (mathJaxFormat.empty())
           {
@@ -575,7 +575,7 @@ static QCString substituteHtmlKeywords(const QCString &file,
     }
   }
 
-  QCString darkModeJs;
+  DString darkModeJs;
   if (Config_getEnum(HTML_COLORSTYLE)==HTML_COLORSTYLE_t::TOGGLE)
   {
     darkModeJs="<script type=\"text/javascript\" src=\"$relpath^darkmode_toggle.js\"></script>\n";
@@ -583,7 +583,7 @@ static QCString substituteHtmlKeywords(const QCString &file,
 
   if (MermaidManager::instance().hasInlineDiagrams())
   {
-    QCString mermaidJsUrl = Config_getString(MERMAID_JS_URL);
+    DString mermaidJsUrl = Config_getString(MERMAID_JS_URL);
     mermaidJs =  "<script type=\"module\">\n"
                  "import mermaid from '" + mermaidJsUrl + "';\n";
     switch(Config_getEnum(HTML_COLORSTYLE))
@@ -656,7 +656,7 @@ static QCString substituteHtmlKeywords(const QCString &file,
   }
 
   // first substitute generic keywords
-  QCString result = substituteKeywords(file,str,title,
+  DString result = substituteKeywords(file,str,title,
         convertToHtml(Config_getString(PROJECT_NAME)),
         convertToHtml(Config_getString(PROJECT_NUMBER)),
         convertToHtml(Config_getString(PROJECT_BRIEF)));
@@ -665,21 +665,21 @@ static QCString substituteHtmlKeywords(const QCString &file,
   result = substituteKeywords(file,result,
   {
     // keyword           value getter
-    { "$datetime",       [&]() -> QCString { return "<span class=\"datetime\"></span>"; } },
-    { "$date",           [&]() -> QCString { return "<span class=\"date\"></span>";     } },
-    { "$time",           [&]() -> QCString { return "<span class=\"time\"></span>";     } },
-    { "$year",           [&]() -> QCString { return "<span class=\"year\"></span>";     } },
-    { "$navpath",        [&]() -> QCString { return navPath;        } },
-    { "$stylesheet",     [&]() -> QCString { return cssFile;        } },
-    { "$treeview",       [&]() -> QCString { return treeViewCssJs;  } },
-    { "$searchbox",      [&]() -> QCString { return searchBox;      } },
-    { "$search",         [&]() -> QCString { return searchCssJs;    } },
-    { "$mathjax",        [&]() -> QCString { return mathJaxJs;      } },
-    { "$mermaidjs",      [&]() -> QCString { return mermaidJs;      } },
-    { "$darkmode",       [&]() -> QCString { return darkModeJs;     } },
-    { "$generatedby",    [&]() -> QCString { return generatedBy;    } },
-    { "$extrastylesheet",[&]() -> QCString { return extraCssText;   } },
-    { "$relpath$",       [&]() -> QCString { return relPath;        } } //<-- obsolete: for backwards compatibility only
+    { "$datetime",       [&]() -> DString { return "<span class=\"datetime\"></span>"; } },
+    { "$date",           [&]() -> DString { return "<span class=\"date\"></span>";     } },
+    { "$time",           [&]() -> DString { return "<span class=\"time\"></span>";     } },
+    { "$year",           [&]() -> DString { return "<span class=\"year\"></span>";     } },
+    { "$navpath",        [&]() -> DString { return navPath;        } },
+    { "$stylesheet",     [&]() -> DString { return cssFile;        } },
+    { "$treeview",       [&]() -> DString { return treeViewCssJs;  } },
+    { "$searchbox",      [&]() -> DString { return searchBox;      } },
+    { "$search",         [&]() -> DString { return searchCssJs;    } },
+    { "$mathjax",        [&]() -> DString { return mathJaxJs;      } },
+    { "$mermaidjs",      [&]() -> DString { return mermaidJs;      } },
+    { "$darkmode",       [&]() -> DString { return darkModeJs;     } },
+    { "$generatedby",    [&]() -> DString { return generatedBy;    } },
+    { "$extrastylesheet",[&]() -> DString { return extraCssText;   } },
+    { "$relpath$",       [&]() -> DString { return relPath;        } } //<-- obsolete: for backwards compatibility only
   });
 
   result = substitute(result,"$relpath^",relPath); //<-- must be done after the previous substitutions
@@ -713,19 +713,19 @@ static QCString substituteHtmlKeywords(const QCString &file,
 static StringUnorderedMap g_lightMap;
 static StringUnorderedMap g_darkMap;
 
-static void fillColorStyleMap(const QCString &definitions,StringUnorderedMap &map)
+static void fillColorStyleMap(const DString &definitions,StringUnorderedMap &map)
 {
   size_t p=0,i=0;
-  while ((i=definitions.find('\n',p))!=QCString::npos)
+  while ((i=definitions.find('\n',p))!=DString::npos)
   {
-    QCString line = definitions.mid(p,i-p);
+    DString line = definitions.mid(p,i-p);
     if (line.startsWith("--"))
     {
       size_t separator = line.find(':');
-      assert(separator!=QCString::npos);
+      assert(separator!=DString::npos);
       std::string key = line.left(separator).str();
       size_t semi = line.rfind(';');
-      assert(semi!=QCString::npos);
+      assert(semi!=DString::npos);
       std::string value = line.mid(separator+1,semi-separator-1).stripWhiteSpace().str();
       map.emplace(key,value);
       //printf("var(%s)=%s\n",qPrint(key),qPrint(value));
@@ -748,18 +748,18 @@ static void fillColorStyleMaps()
   }
 }
 
-static QCString replaceVariables(const QCString &input)
+static DString replaceVariables(const DString &input)
 {
-  auto doReplacements = [&input](const StringUnorderedMap &mapping) -> QCString
+  auto doReplacements = [&input](const StringUnorderedMap &mapping) -> DString
   {
-    QCString result;
+    DString result;
     result.reserve(input.length());
     size_t p=0,i=0;
-    while ((i=input.find("var(",p))!=QCString::npos)
+    while ((i=input.find("var(",p))!=DString::npos)
     {
       result+=input.mid(p,i-p);
       size_t j=input.find(")",i+4);
-      assert(j!=QCString::npos);
+      assert(j!=DString::npos);
       auto it = mapping.find(input.mid(i+4,j-i-4).str()); // find variable
       if (it==mapping.end())
       {                            // should be found
@@ -801,18 +801,18 @@ HtmlCodeGenerator::HtmlCodeGenerator(TextStream *t) : m_t(t)
   //printf("%p:HtmlCodeGenerator()\n",(void*)this);
 }
 
-HtmlCodeGenerator::HtmlCodeGenerator(TextStream *t,const QCString &relPath)
+HtmlCodeGenerator::HtmlCodeGenerator(TextStream *t,const DString &relPath)
   : m_t(t), m_relPath(relPath)
 {
   //printf("%p:HtmlCodeGenerator()\n",(void*)this);
 }
 
-void HtmlCodeGenerator::setRelativePath(const QCString &path)
+void HtmlCodeGenerator::setRelativePath(const DString &path)
 {
   m_relPath = path;
 }
 
-void HtmlCodeGenerator::codify(const QCString &str)
+void HtmlCodeGenerator::codify(const DString &str)
 {
   if (!str.empty())
   {
@@ -919,16 +919,16 @@ void HtmlCodeGenerator::setStripIndentAmount(size_t amount)
   m_stripIndentAmount = amount;
 }
 
-void HtmlCodeGenerator::writeLineNumber(const QCString &ref,const QCString &filename,
-                                    const QCString &anchor,int l,bool writeLineAnchor)
+void HtmlCodeGenerator::writeLineNumber(const DString &ref,const DString &filename,
+                                    const DString &anchor,int l,bool writeLineAnchor)
 {
   m_lastLineInfo = LineInfo(ref,filename,anchor,l,writeLineAnchor);
   if (m_hide) return;
   const int maxLineNrStr = 10;
   char lineNumber[maxLineNrStr];
   char lineAnchor[maxLineNrStr];
-  qsnprintf(lineNumber,maxLineNrStr,"%5d",l);
-  qsnprintf(lineAnchor,maxLineNrStr,"l%05d",l);
+  snprintf(lineNumber,maxLineNrStr,"%5d",l);
+  snprintf(lineAnchor,maxLineNrStr,"l%05d",l);
 
   //printf("writeLineNumber open=%d\n",m_lineOpen);
   if (!m_lineOpen)
@@ -941,7 +941,7 @@ void HtmlCodeGenerator::writeLineNumber(const QCString &ref,const QCString &file
   *m_t << "<span class=\"lineno\">";
   if (!filename.empty())
   {
-    _writeCodeLink("line",ref,filename,anchor,lineNumber,QCString());
+    _writeCodeLink("line",ref,filename,anchor,lineNumber,DString());
   }
   else
   {
@@ -952,13 +952,13 @@ void HtmlCodeGenerator::writeLineNumber(const QCString &ref,const QCString &file
 }
 
 void HtmlCodeGenerator::writeCodeLink(CodeSymbolType type,
-                                      const QCString &ref,const QCString &f,
-                                      const QCString &anchor, const QCString &name,
-                                      const QCString &tooltip)
+                                      const DString &ref,const DString &f,
+                                      const DString &anchor, const DString &name,
+                                      const DString &tooltip)
 {
   if (m_hide) return;
   const char *hl = codeSymbolType2Str(type);
-  QCString hlClass = "code";
+  DString hlClass = "code";
   if (hl)
   {
     hlClass+=" hl_";
@@ -967,10 +967,10 @@ void HtmlCodeGenerator::writeCodeLink(CodeSymbolType type,
   _writeCodeLink(hlClass,ref,f,anchor,name,tooltip);
 }
 
-void HtmlCodeGenerator::_writeCodeLink(const QCString &className,
-                                      const QCString &ref,const QCString &f,
-                                      const QCString &anchor, const QCString &name,
-                                      const QCString &tooltip)
+void HtmlCodeGenerator::_writeCodeLink(const DString &className,
+                                      const DString &ref,const DString &f,
+                                      const DString &anchor, const DString &name,
+                                      const DString &tooltip)
 {
   m_col+=name.length();
   if (m_hide) return;
@@ -984,7 +984,7 @@ void HtmlCodeGenerator::_writeCodeLink(const QCString &className,
     *m_t << "<a class=\"" << className << "\" ";
   }
   *m_t << "href=\"";
-  QCString fn = f;
+  DString fn = f;
   addHtmlExtensionIfMissing(fn);
   *m_t << createHtmlUrl(m_relPath,ref,true,
                         fileName()==fn,fn,anchor);
@@ -995,8 +995,8 @@ void HtmlCodeGenerator::_writeCodeLink(const QCString &className,
   *m_t << "</a>";
 }
 
-void HtmlCodeGenerator::writeTooltip(const QCString &id, const DocLinkInfo &docInfo,
-                                     const QCString &decl, const QCString &desc,
+void HtmlCodeGenerator::writeTooltip(const DString &id, const DocLinkInfo &docInfo,
+                                     const DString &decl, const DString &desc,
                                      const SourceLinkInfo &defInfo,
                                      const SourceLinkInfo &declInfo)
 {
@@ -1006,7 +1006,7 @@ void HtmlCodeGenerator::writeTooltip(const QCString &id, const DocLinkInfo &docI
   if (!docInfo.url.empty())
   {
     *m_t << "<a href=\"";
-    QCString fn = docInfo.url;
+    DString fn = docInfo.url;
     addHtmlExtensionIfMissing(fn);
     *m_t << createHtmlUrl(m_relPath,docInfo.ref,true,
                           fileName()==fn,fn,docInfo.anchor);
@@ -1039,7 +1039,7 @@ void HtmlCodeGenerator::writeTooltip(const QCString &id, const DocLinkInfo &docI
     if (!defInfo.url.empty())
     {
       *m_t << "<a href=\"";
-      QCString fn = defInfo.url;
+      DString fn = defInfo.url;
       addHtmlExtensionIfMissing(fn);
       *m_t << createHtmlUrl(m_relPath,defInfo.ref,true,
                             fileName()==fn,fn,defInfo.anchor);
@@ -1058,7 +1058,7 @@ void HtmlCodeGenerator::writeTooltip(const QCString &id, const DocLinkInfo &docI
     if (!declInfo.url.empty())
     {
       *m_t << "<a href=\"";
-      QCString fn = declInfo.url;
+      DString fn = declInfo.url;
       addHtmlExtensionIfMissing(fn);
       *m_t << createHtmlUrl(m_relPath,declInfo.ref,true,
                             fileName()==fn,fn,declInfo.anchor);
@@ -1103,7 +1103,7 @@ void HtmlCodeGenerator::endCodeLine()
   }
 }
 
-void HtmlCodeGenerator::startFontClass(const QCString &s)
+void HtmlCodeGenerator::startFontClass(const DString &s)
 {
   if (m_hide) return;
   *m_t << "<span class=\"" << s << "\">";
@@ -1115,18 +1115,18 @@ void HtmlCodeGenerator::endFontClass()
   *m_t << "</span>";
 }
 
-void HtmlCodeGenerator::writeCodeAnchor(const QCString &anchor)
+void HtmlCodeGenerator::writeCodeAnchor(const DString &anchor)
 {
   if (m_hide) return;
   *m_t << "<a id=\"" << anchor << "\" name=\"" << anchor << "\"></a>";
 }
 
-void HtmlCodeGenerator::startCodeFragment(const QCString &)
+void HtmlCodeGenerator::startCodeFragment(const DString &)
 {
   *m_t << "<div class=\"fragment\">";
 }
 
-void HtmlCodeGenerator::endCodeFragment(const QCString &)
+void HtmlCodeGenerator::endCodeFragment(const DString &)
 {
   //printf("endCodeFragment hide=%d open=%d\n",m_hide,m_lineOpen);
   bool wasHidden = m_hide;
@@ -1138,7 +1138,7 @@ void HtmlCodeGenerator::endCodeFragment(const QCString &)
   *m_t << "</div><!-- fragment -->";
 }
 
-void HtmlCodeGenerator::startFold(int lineNr,const QCString &startMarker,const QCString &endMarker)
+void HtmlCodeGenerator::startFold(int lineNr,const DString &startMarker,const DString &endMarker)
 {
   //printf("startFold open=%d\n",m_lineOpen);
   if (m_lineOpen) // if we have a hidden comment in a code fold, we need to end the line
@@ -1147,7 +1147,7 @@ void HtmlCodeGenerator::startFold(int lineNr,const QCString &startMarker,const Q
   }
   const int maxLineNrStr = 10;
   char lineNumber[maxLineNrStr];
-  qsnprintf(lineNumber,maxLineNrStr,"%05d",lineNr);
+  snprintf(lineNumber,maxLineNrStr,"%05d",lineNr);
   *m_t << "<div class=\"foldopen\" id=\"foldopen" << lineNumber <<
           "\" data-start=\"" << startMarker <<
           "\" data-end=\"" << endMarker <<
@@ -1236,7 +1236,7 @@ void HtmlGenerator::addCodeGen(OutputCodeList &list)
   list.add<HtmlCodeGeneratorDefer>(m_codeGen);
 }
 
-static bool hasDateReplacement(const QCString &str)
+static bool hasDateReplacement(const DString &str)
 {
   return (str.contains("$datetime",false) ||
           str.contains("$date",false) ||
@@ -1247,7 +1247,7 @@ static bool hasDateReplacement(const QCString &str)
 
 void HtmlGenerator::init()
 {
-  QCString dname = Config_getString(HTML_OUTPUT);
+  DString dname = Config_getString(HTML_OUTPUT);
   Dir d(dname.str());
   if (!d.exists() && !d.mkdir(dname.str()))
   {
@@ -1260,7 +1260,7 @@ void HtmlGenerator::init()
     g_header=fileToString(g_header_file);
     g_build_date = (g_build_date || hasDateReplacement(g_header));
     //printf("g_header='%s'\n",qPrint(g_header));
-    QCString result = substituteHtmlKeywords(g_header_file,g_header,QCString(),QCString());
+    DString result = substituteHtmlKeywords(g_header_file,g_header,DString(),DString());
     checkBlocks(result,Config_getString(HTML_HEADER),htmlMarkerInfo);
   }
   else
@@ -1268,7 +1268,7 @@ void HtmlGenerator::init()
     g_header_file="header.html";
     g_header = ResourceMgr::instance().getAsString(g_header_file);
     g_build_date = (g_build_date || hasDateReplacement(g_header));
-    QCString result = substituteHtmlKeywords(g_header_file,g_header,QCString(),QCString());
+    DString result = substituteHtmlKeywords(g_header_file,g_header,DString(),DString());
     checkBlocks(result,"<default header.html>",htmlMarkerInfo);
   }
 
@@ -1278,7 +1278,7 @@ void HtmlGenerator::init()
     g_footer=fileToString(g_footer_file);
     g_build_date = (g_build_date || hasDateReplacement(g_footer));
     //printf("g_footer='%s'\n",qPrint(g_footer));
-    QCString result = substituteHtmlKeywords(g_footer_file,g_footer,QCString(),QCString());
+    DString result = substituteHtmlKeywords(g_footer_file,g_footer,DString(),DString());
     checkBlocks(result,Config_getString(HTML_FOOTER),htmlMarkerInfo);
   }
   else
@@ -1286,7 +1286,7 @@ void HtmlGenerator::init()
     g_footer_file = "footer.html";
     g_footer = ResourceMgr::instance().getAsString(g_footer_file);
     g_build_date = (g_build_date || hasDateReplacement(g_footer));
-    QCString result = substituteHtmlKeywords(g_footer_file,g_footer,QCString(),QCString());
+    DString result = substituteHtmlKeywords(g_footer_file,g_footer,DString(),DString());
     checkBlocks(result,"<default footer.html>",htmlMarkerInfo);
   }
 
@@ -1307,7 +1307,7 @@ void HtmlGenerator::init()
   ResourceMgr &mgr = ResourceMgr::instance();
 
   {
-    QCString tabsCss;
+    DString tabsCss;
     if (Config_getBool(HTML_DYNAMIC_MENUS))
     {
       tabsCss = mgr.getAsString("tabs.css");
@@ -1403,7 +1403,7 @@ void HtmlGenerator::init()
 
 void HtmlGenerator::cleanup()
 {
-  QCString dname = Config_getString(HTML_OUTPUT);
+  DString dname = Config_getString(HTML_OUTPUT);
   Dir d(dname.str());
   clearSubDirs(d);
 }
@@ -1412,24 +1412,24 @@ void HtmlGenerator::cleanup()
 void HtmlGenerator::writeTabData()
 {
   Doxygen::indexList->addStyleSheetFile("tabs.css");
-  QCString dname=Config_getString(HTML_OUTPUT);
+  DString dname=Config_getString(HTML_OUTPUT);
   ResourceMgr &mgr = ResourceMgr::instance();
   mgr.copyResource("doxygen.svg",dname);
   Doxygen::indexList->addImageFile("doxygen.svg");
 }
 
-void HtmlGenerator::writeSearchData(const QCString &dname)
+void HtmlGenerator::writeSearchData(const DString &dname)
 {
   //bool serverBasedSearch = Config_getBool(SERVER_BASED_SEARCH);
   //writeImgData(dname,serverBasedSearch ? search_server_data : search_client_data);
   ResourceMgr &mgr = ResourceMgr::instance();
 
-  QCString searchDirName = dname;
+  DString searchDirName = dname;
   std::ofstream f = Portable::openOutputStream(searchDirName+"/search.css");
   if (f.is_open())
   {
     TextStream t(&f);
-    QCString searchCss;
+    DString searchCss;
     // the position of the search box depends on a number of settings.
     // Insert the right piece of CSS code depending on which options are selected
     if (Config_getBool(GENERATE_TREEVIEW) && Config_getBool(FULL_SIDEBAR))
@@ -1507,7 +1507,7 @@ static void writeDefaultStyleSheet(TextStream &t)
     t << "}\n\n";
   }
 
-  QCString cssStr = ResourceMgr::instance().getAsString("doxygen.css");
+  DString cssStr = ResourceMgr::instance().getAsString("doxygen.css");
   bool hasFullSidebar = Config_getBool(FULL_SIDEBAR) && Config_getBool(GENERATE_TREEVIEW);
   if (hasFullSidebar)
   {
@@ -1527,7 +1527,7 @@ static void writeDefaultStyleSheet(TextStream &t)
 
     if (addTimestamp)
     {
-      QCString timeStampStr;
+      DString timeStampStr;
       switch (Config_getEnum(TIMESTAMP))
       {
         case TIMESTAMP_t::YES:
@@ -1586,7 +1586,7 @@ void HtmlGenerator::writeStyleSheetFile(TextStream &t)
   writeDefaultStyleSheet(t);
 }
 
-void HtmlGenerator::writeHeaderFile(TextStream &t, const QCString & /*cssname*/)
+void HtmlGenerator::writeHeaderFile(TextStream &t, const DString & /*cssname*/)
 {
   t << "<!-- HTML header for doxygen " << getDoxygenVersion() << "-->\n";
   t << ResourceMgr::instance().getAsString("header.html");
@@ -1600,12 +1600,12 @@ void HtmlGenerator::writeFooterFile(TextStream &t)
 
 static std::mutex g_indexLock;
 
-void HtmlGenerator::startFile(const QCString &name,bool isSource,const QCString &,
-                              const QCString &title,int /*id*/, int /*hierarchyLevel*/)
+void HtmlGenerator::startFile(const DString &name,bool isSource,const DString &,
+                              const DString &title,int /*id*/, int /*hierarchyLevel*/)
 {
   //printf("HtmlGenerator::startFile(%s)\n",qPrint(name));
   m_relPath = relativePathToRoot(name);
-  QCString fileName = name;
+  DString fileName = name;
   addHtmlExtensionIfMissing(fileName);
   m_lastTitle=title;
 
@@ -1618,7 +1618,7 @@ void HtmlGenerator::startFile(const QCString &name,bool isSource,const QCString 
   }
 
   m_lastFile = fileName;
-  m_t << substituteHtmlKeywords(g_header_file,g_header,convertToHtml(filterTitle(title)),m_relPath,QCString(),isSource);
+  m_t << substituteHtmlKeywords(g_header_file,g_header,convertToHtml(filterTitle(title)),m_relPath,DString(),isSource);
 
   m_t << "<!-- " << theTranslator->trGeneratedBy() << " Doxygen "
       << getDoxygenVersion() << " -->\n";
@@ -1639,7 +1639,7 @@ void HtmlGenerator::startFile(const QCString &name,bool isSource,const QCString 
   m_sectionCount=0;
 }
 
-void HtmlGenerator::writeSearchInfoStatic(TextStream &t,const QCString &)
+void HtmlGenerator::writeSearchInfoStatic(TextStream &t,const DString &)
 {
   bool searchEngine      = Config_getBool(SEARCHENGINE);
   bool serverBasedSearch = Config_getBool(SERVER_BASED_SEARCH);
@@ -1672,9 +1672,9 @@ void HtmlGenerator::writeSearchInfo()
 }
 
 
-QCString HtmlGenerator::writeLogoAsString(const QCString &path)
+DString HtmlGenerator::writeLogoAsString(const DString &path)
 {
-  QCString result;
+  DString result;
   switch (Config_getEnum(TIMESTAMP))
   {
     case TIMESTAMP_t::NO:
@@ -1699,13 +1699,13 @@ void HtmlGenerator::writeLogo()
   m_t << writeLogoAsString(m_relPath);
 }
 
-void HtmlGenerator::writePageFooter(TextStream &t,const QCString &lastTitle,
-                              const QCString &relPath,const QCString &navPath)
+void HtmlGenerator::writePageFooter(TextStream &t,const DString &lastTitle,
+                              const DString &relPath,const DString &navPath)
 {
   t << substituteHtmlKeywords(g_footer_file,g_footer,convertToHtml(lastTitle),relPath,navPath);
 }
 
-void HtmlGenerator::writeFooter(const QCString &navPath)
+void HtmlGenerator::writeFooter(const DString &navPath)
 {
   writePageFooter(m_t,m_lastTitle,m_relPath,navPath);
 }
@@ -1740,7 +1740,7 @@ void HtmlGenerator::writeStyleInfo(int part)
     }
     else // write user defined style sheet
     {
-      QCString cssName=Config_getString(HTML_STYLESHEET);
+      DString cssName=Config_getString(HTML_STYLESHEET);
       if (!cssName.startsWith("http:") && !cssName.startsWith("https:"))
       {
         FileInfo cssfi(cssName.str());
@@ -1751,7 +1751,7 @@ void HtmlGenerator::writeStyleInfo(int part)
         else
         {
           // convert style sheet to string
-          QCString fileStr = fileToString(cssName);
+          DString fileStr = fileToString(cssName);
           // write the string into the output dir
           startPlainFile(cssfi.fileName());
           m_t << fileStr;
@@ -1803,22 +1803,22 @@ void HtmlGenerator::writeStyleInfo(int part)
   }
 }
 
-void HtmlGenerator::startDoxyAnchor(const QCString &,const QCString &,
-                                    const QCString &anchor, const QCString &,
-                                    const QCString &)
+void HtmlGenerator::startDoxyAnchor(const DString &,const DString &,
+                                    const DString &anchor, const DString &,
+                                    const DString &)
 {
   m_t << "<a id=\"" << anchor << "\" name=\"" << anchor << "\"></a>";
 }
 
-void HtmlGenerator::endDoxyAnchor(const QCString &,const QCString &)
+void HtmlGenerator::endDoxyAnchor(const DString &,const DString &)
 {
 }
 
-void HtmlGenerator::addLabel(const QCString &,const QCString &)
+void HtmlGenerator::addLabel(const DString &,const DString &)
 {
 }
 
-void HtmlGenerator::startParagraph(const QCString &classDef)
+void HtmlGenerator::startParagraph(const DString &classDef)
 {
   if (!classDef.empty())
     m_t << "\n<p class=\"" << classDef << "\">";
@@ -1831,7 +1831,7 @@ void HtmlGenerator::endParagraph()
   m_t << "</p>\n";
 }
 
-void HtmlGenerator::writeString(const QCString &text)
+void HtmlGenerator::writeString(const DString &text)
 {
   m_t << text;
 }
@@ -1846,7 +1846,7 @@ void HtmlGenerator::endIndexListItem()
   m_t << "</li>\n";
 }
 
-void HtmlGenerator::startIndexItem(const QCString &ref,const QCString &f)
+void HtmlGenerator::startIndexItem(const DString &ref,const DString &f)
 {
   //printf("HtmlGenerator::startIndexItem(%s,%s)\n",ref,f);
   if (!ref.empty() || !f.empty())
@@ -1864,7 +1864,7 @@ void HtmlGenerator::startIndexItem(const QCString &ref,const QCString &f)
     m_t << externalRef(m_relPath,ref,true);
     if (!f.empty())
     {
-      QCString fn=f;
+      DString fn=f;
       addHtmlExtensionIfMissing(fn);
       m_t << fn;
     }
@@ -1876,7 +1876,7 @@ void HtmlGenerator::startIndexItem(const QCString &ref,const QCString &f)
   }
 }
 
-void HtmlGenerator::endIndexItem(const QCString &ref,const QCString &f)
+void HtmlGenerator::endIndexItem(const DString &ref,const DString &f)
 {
   //printf("HtmlGenerator::endIndexItem(%s,%s,%s)\n",ref,f,name);
   if (!ref.empty() || !f.empty())
@@ -1889,20 +1889,20 @@ void HtmlGenerator::endIndexItem(const QCString &ref,const QCString &f)
   }
 }
 
-void HtmlGenerator::writeStartAnnoItem(const QCString &,const QCString &f,
-                                       const QCString &path,const QCString &name)
+void HtmlGenerator::writeStartAnnoItem(const DString &,const DString &f,
+                                       const DString &path,const DString &name)
 {
   m_t << "<li>";
   if (!path.empty()) docify(path);
-  QCString fn = f;
+  DString fn = f;
   addHtmlExtensionIfMissing(fn);
   m_t << "<a class=\"el\" href=\"" << fn << "\">";
   docify(name);
   m_t << "</a> ";
 }
 
-void HtmlGenerator::writeObjectLink(const QCString &ref,const QCString &f,
-                                    const QCString &anchor, const QCString &name)
+void HtmlGenerator::writeObjectLink(const DString &ref,const DString &f,
+                                    const DString &anchor, const DString &name)
 {
   if (!ref.empty())
   {
@@ -1914,7 +1914,7 @@ void HtmlGenerator::writeObjectLink(const QCString &ref,const QCString &f,
     m_t << "<a class=\"el\" ";
   }
   m_t << "href=\"";
-  QCString fn = f;
+  DString fn = f;
   addHtmlExtensionIfMissing(fn);
   m_t << createHtmlUrl(m_relPath,ref,true,
                        fileName() == Config_getString(HTML_OUTPUT)+"/"+fn,
@@ -1925,10 +1925,10 @@ void HtmlGenerator::writeObjectLink(const QCString &ref,const QCString &f,
   m_t << "</a>";
 }
 
-void HtmlGenerator::startTextLink(const QCString &f,const QCString &anchor)
+void HtmlGenerator::startTextLink(const DString &f,const DString &anchor)
 {
   m_t << "<a href=\"";
-  QCString fn = f;
+  DString fn = f;
   addHtmlExtensionIfMissing(fn);
   m_t << createHtmlUrl(m_relPath,"",true,
                        fileName() == Config_getString(HTML_OUTPUT)+"/"+fn,
@@ -1942,7 +1942,7 @@ void HtmlGenerator::endTextLink()
   m_t << "</a>";
 }
 
-void HtmlGenerator::startGroupHeader(const QCString &id,int extraIndentLevel)
+void HtmlGenerator::startGroupHeader(const DString &id,int extraIndentLevel)
 {
   if (extraIndentLevel==2)
   {
@@ -1979,7 +1979,7 @@ void HtmlGenerator::endGroupHeader(int extraIndentLevel)
   }
 }
 
-void HtmlGenerator::startSection(const QCString &lab,const QCString &,SectionType type)
+void HtmlGenerator::startSection(const DString &lab,const DString &,SectionType type)
 {
   switch(type.level())
   {
@@ -1995,7 +1995,7 @@ void HtmlGenerator::startSection(const QCString &lab,const QCString &,SectionTyp
   m_t << "<a id=\"" << lab << "\" name=\"" << lab << "\"></a>";
 }
 
-void HtmlGenerator::endSection(const QCString &,SectionType type)
+void HtmlGenerator::endSection(const DString &,SectionType type)
 {
   switch(type.level())
   {
@@ -2010,12 +2010,12 @@ void HtmlGenerator::endSection(const QCString &,SectionType type)
   }
 }
 
-void HtmlGenerator::docify(const QCString &str)
+void HtmlGenerator::docify(const DString &str)
 {
   docify_(str,false);
 }
 
-void HtmlGenerator::docify_(const QCString &str,bool inHtmlComment)
+void HtmlGenerator::docify_(const DString &str,bool inHtmlComment)
 {
   if (!str.empty())
   {
@@ -2063,7 +2063,7 @@ void HtmlGenerator::writeChar(char c)
 //--- helper function for dynamic sections -------------------------
 
 static void startSectionHeader(TextStream &t,
-                               const QCString &relPath,int sectionCount)
+                               const DString &relPath,int sectionCount)
 {
   //t << "<!-- startSectionHeader -->";
   bool dynamicSections = Config_getBool(HTML_DYNAMIC_SECTIONS);
@@ -2135,7 +2135,7 @@ void HtmlGenerator::startClassDiagram()
 }
 
 void HtmlGenerator::endClassDiagram(const ClassDiagram &d,
-                                const QCString &fileName,const QCString &name)
+                                const DString &fileName,const DString &name)
 {
   endSectionHeader(m_t);
   startSectionSummary(m_t,m_sectionCount);
@@ -2182,7 +2182,7 @@ void HtmlGenerator::endMemberList()
 //  0 = single column right aligned
 //  1 = double column left aligned
 //  2 = single column left aligned
-void HtmlGenerator::startMemberItem(const QCString &anchor,MemberItemType type,const QCString &inheritId)
+void HtmlGenerator::startMemberItem(const DString &anchor,MemberItemType type,const DString &inheritId)
 {
   DBG_HTML(m_t << "<!-- startMemberItem() -->\n")
   bool dynamicSections = Config_getBool(HTML_DYNAMIC_SECTIONS);
@@ -2219,7 +2219,7 @@ void HtmlGenerator::startMemberTemplateParams()
 {
 }
 
-void HtmlGenerator::endMemberTemplateParams(const QCString &anchor,const QCString &inheritId)
+void HtmlGenerator::endMemberTemplateParams(const DString &anchor,const DString &inheritId)
 {
   bool dynamicSections = Config_getBool(HTML_DYNAMIC_SECTIONS);
   m_t << "</td></tr>\n";
@@ -2260,7 +2260,7 @@ void HtmlGenerator::insertMemberAlignLeft(MemberItemType type, bool initTag)
   }
 }
 
-void HtmlGenerator::startMemberDescription(const QCString &anchor,const QCString &inheritId, bool typ)
+void HtmlGenerator::startMemberDescription(const DString &anchor,const DString &inheritId, bool typ)
 {
   DBG_HTML(m_t << "<!-- startMemberDescription -->\n")
   bool dynamicSections = Config_getBool(HTML_DYNAMIC_SECTIONS);
@@ -2304,7 +2304,7 @@ void HtmlGenerator::endMemberSections()
   }
 }
 
-void HtmlGenerator::startMemberHeader(const QCString &anchor, int typ)
+void HtmlGenerator::startMemberHeader(const DString &anchor, int typ)
 {
   DBG_HTML(m_t << "<!-- startMemberHeader -->\n")
   if (!m_emptySection)
@@ -2377,7 +2377,7 @@ void HtmlGenerator::startIndexValue(bool)
   //m_t << "<td class=\"indexvalue\">";
 }
 
-void HtmlGenerator::endIndexValue(const QCString &,bool)
+void HtmlGenerator::endIndexValue(const DString &,bool)
 {
   //m_t << "</td></tr>\n";
 }
@@ -2392,8 +2392,8 @@ void HtmlGenerator::endMemberDocList()
   DBG_HTML(m_t << "<!-- endMemberDocList -->\n";)
 }
 
-void HtmlGenerator::startMemberDoc( const QCString &/* clName */, const QCString &/* memName */,
-                                    const QCString &anchor, const QCString &title,
+void HtmlGenerator::startMemberDoc( const DString &/* clName */, const DString &/* memName */,
+                                    const DString &anchor, const DString &title,
                                     int memCount, int memTotal, bool /* showInline */)
 {
   DBG_HTML(m_t << "<!-- startMemberDoc -->\n";)
@@ -2445,7 +2445,7 @@ void HtmlGenerator::startParameterList(bool openBracket)
   m_t << "</td>\n";
 }
 
-void HtmlGenerator::startParameterType(bool first,const QCString &key)
+void HtmlGenerator::startParameterType(bool first,const DString &key)
 {
   if (first)
   {
@@ -2528,7 +2528,7 @@ void HtmlGenerator::endParameterList()
   m_t << "        </tr>\n";
 }
 
-void HtmlGenerator::exceptionEntry(const QCString &prefix,bool closeBracket)
+void HtmlGenerator::exceptionEntry(const DString &prefix,bool closeBracket)
 {
   DBG_HTML(m_t << "<!-- exceptionEntry -->\n";)
   if (!closeBracket)
@@ -2575,7 +2575,7 @@ void HtmlGenerator::endDotGraph(DotClassGraph &g)
   g.writeGraph(m_t,GraphOutputFormat::BITMAP,EmbeddedOutputFormat::Html,dir(),fileName(),m_relPath,true,true,m_sectionCount);
   if (generateLegend && !umlLook)
   {
-    QCString url = m_relPath+"graph_legend"+Doxygen::htmlFileExtension;
+    DString url = m_relPath+"graph_legend"+Doxygen::htmlFileExtension;
     m_t << "<center><span class=\"legend\">[";
     bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
     m_t << "<a ";
@@ -2669,7 +2669,7 @@ void HtmlGenerator::writeGraphicalHierarchy(DotGfxHierarchyTable &g)
   g.writeGraph(m_t,dir(),fileName());
 }
 
-void HtmlGenerator::startMemberGroupHeader(const QCString &id,bool)
+void HtmlGenerator::startMemberGroupHeader(const DString &id,bool)
 {
   m_t << "<tr id=\"" << id << "\" class=\"groupHeader\"><td colspan=\"2\"><div class=\"groupHeader\">";
 }
@@ -2710,7 +2710,7 @@ void HtmlGenerator::endIndent()
   m_t << "\n</div>\n" << "</div>\n";
 }
 
-void HtmlGenerator::addIndexItem(const QCString &,const QCString &)
+void HtmlGenerator::addIndexItem(const DString &,const DString &)
 {
 }
 
@@ -2722,7 +2722,7 @@ void HtmlGenerator::writeNonBreakableSpace(int n)
   }
 }
 
-void HtmlGenerator::startDescTable(const QCString &title,const bool hasInits)
+void HtmlGenerator::startDescTable(const DString &title,const bool hasInits)
 {
   m_t << "<table class=\"fieldtable\">\n"
       << "<tr><th colspan=\"" << (hasInits?3:2) << "\">" << title << "</th></tr>";
@@ -2830,9 +2830,9 @@ static void endQuickIndexList(TextStream &t)
   }
 }
 
-static void startQuickIndexItem(TextStream &t,const QCString &l,
+static void startQuickIndexItem(TextStream &t,const DString &l,
                                 bool hl,bool /*compact*/,
-                                const QCString &relPath)
+                                const DString &relPath)
 {
   t << "      <li";
   if (hl)
@@ -2844,7 +2844,7 @@ static void startQuickIndexItem(TextStream &t,const QCString &l,
   t << "<span>";
 }
 
-static void endQuickIndexItem(TextStream &t,const QCString &l)
+static void endQuickIndexItem(TextStream &t,const DString &l)
 {
   t << "</span>";
   if (!l.empty()) t << "</a>";
@@ -2897,7 +2897,7 @@ static bool quickLinkVisible(LayoutNavEntry::Kind kind)
   return false;
 }
 
-static void renderQuickLinksAsTree(TextStream &t,const QCString &relPath,LayoutNavEntry *root)
+static void renderQuickLinksAsTree(TextStream &t,const DString &relPath,LayoutNavEntry *root)
 
 {
   int count=0;
@@ -2912,7 +2912,7 @@ static void renderQuickLinksAsTree(TextStream &t,const QCString &relPath,LayoutN
     {
       if (entry->visible() && quickLinkVisible(entry->kind()))
       {
-        QCString url = entry->url();
+        DString url = entry->url();
         t << "<li><a href=\"" << relPath << url << "\"><span>";
         t << fixSpaces(entry->title());
         t << "</span></a>\n";
@@ -2926,7 +2926,7 @@ static void renderQuickLinksAsTree(TextStream &t,const QCString &relPath,LayoutN
 }
 
 
-static void renderQuickLinksAsTabs(TextStream &t,const QCString &relPath,
+static void renderQuickLinksAsTabs(TextStream &t,const DString &relPath,
                              LayoutNavEntry *hlEntry,LayoutNavEntry::Kind kind,
                              bool highlightParent,bool highlightSearch)
 {
@@ -2949,7 +2949,7 @@ static void renderQuickLinksAsTabs(TextStream &t,const QCString &relPath,
       {
         if (entry->visible() && quickLinkVisible(entry->kind()))
         {
-          QCString url = entry->url();
+          DString url = entry->url();
           startQuickIndexItem(t,url,
               entry.get()==hlEntry  &&
               (!entry->children().empty() ||
@@ -3008,8 +3008,8 @@ static void renderQuickLinksAsTabs(TextStream &t,const QCString &relPath,
 
 static void writeDefaultQuickLinks(TextStream &t,
                                    HighlightedItem hli,
-                                   const QCString &file,
-                                   const QCString &relPath,
+                                   const DString &file,
+                                   const DString &relPath,
                                    bool extraTabs)
 {
   bool serverBasedSearch = Config_getBool(SERVER_BASED_SEARCH);
@@ -3083,7 +3083,7 @@ static void writeDefaultQuickLinks(TextStream &t,
 
   if (!disableIndex && dynamicMenus)
   {
-    QCString searchPage;
+    DString searchPage;
     if (externalSearch)
     {
       searchPage = "search" + Doxygen::htmlFileExtension;
@@ -3119,7 +3119,7 @@ static void writeDefaultQuickLinks(TextStream &t,
   else if (!disableIndex) // && !Config_getBool(HTML_DYNAMIC_MENUS)
   {
     // find highlighted index item
-    LayoutNavEntry *hlEntry = root->find(kind,kind==LayoutNavEntry::UserGroup ? file : QCString());
+    LayoutNavEntry *hlEntry = root->find(kind,kind==LayoutNavEntry::UserGroup ? file : DString());
     if (!hlEntry && altKind!=LayoutNavEntry::None) { hlEntry=root->find(altKind); kind=altKind; }
     if (!hlEntry) // highlighted item not found in the index! -> just show the level 1 index...
     {
@@ -3165,18 +3165,18 @@ void HtmlGenerator::endQuickIndices()
   }
 }
 
-QCString HtmlGenerator::writeSplitBarAsString(const QCString &name,const QCString &relpath,const QCString &allMembersFile)
+DString HtmlGenerator::writeSplitBarAsString(const DString &name,const DString &relpath,const DString &allMembersFile)
 {
   bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
-  QCString result;
+  DString result;
   // write split bar
   if (generateTreeView)
   {
-    QCString fn = name;
+    DString fn = name;
     addHtmlExtensionIfMissing(fn);
     if (!Config_getBool(FULL_SIDEBAR))
     {
-      result += QCString(
+      result += DString(
         "<div id=\"side-nav\" class=\"ui-resizable side-nav-resizable\">\n");
     }
     result+=
@@ -3199,12 +3199,12 @@ QCString HtmlGenerator::writeSplitBarAsString(const QCString &name,const QCStrin
   return result;
 }
 
-void HtmlGenerator::writeSplitBar(const QCString &name,const QCString &allMembersFile)
+void HtmlGenerator::writeSplitBar(const DString &name,const DString &allMembersFile)
 {
   m_t << writeSplitBarAsString(name,m_relPath,allMembersFile);
 }
 
-void HtmlGenerator::writeNavigationPath(const QCString &s)
+void HtmlGenerator::writeNavigationPath(const DString &s)
 {
   m_t << substitute(s,"$relpath^",m_relPath);
 }
@@ -3219,7 +3219,7 @@ void HtmlGenerator::endContents()
   m_t << "</div><!-- contents -->\n";
 }
 
-void HtmlGenerator::startPageDoc(const QCString &/* pageTitle */)
+void HtmlGenerator::startPageDoc(const DString &/* pageTitle */)
 {
   m_t << "<div>";
 }
@@ -3229,7 +3229,7 @@ void HtmlGenerator::endPageDoc()
   m_t << "</div><!-- PageDoc -->\n";
 }
 
-void HtmlGenerator::writeQuickLinks(HighlightedItem hli,const QCString &file,bool extraTabs)
+void HtmlGenerator::writeQuickLinks(HighlightedItem hli,const DString &file,bool extraTabs)
 {
   writeDefaultQuickLinks(m_t,hli,file,m_relPath,extraTabs);
 }
@@ -3241,11 +3241,11 @@ void HtmlGenerator::writeSearchPage()
   bool generateTreeView        = Config_getBool(GENERATE_TREEVIEW);
   bool fullSidebar             = Config_getBool(FULL_SIDEBAR);
   bool quickLinksAfterSplitbar = !disableIndex && generateTreeView && fullSidebar;
-  QCString projectName         = Config_getString(PROJECT_NAME);
-  QCString htmlOutput          = Config_getString(HTML_OUTPUT);
+  DString projectName         = Config_getString(PROJECT_NAME);
+  DString htmlOutput          = Config_getString(HTML_OUTPUT);
 
   // OPENSEARCH_PROVIDER {
-  QCString configFileName = htmlOutput+"/search_config.php";
+  DString configFileName = htmlOutput+"/search_config.php";
   std::ofstream f = Portable::openOutputStream(configFileName);
   if (f.is_open())
   {
@@ -3276,7 +3276,7 @@ void HtmlGenerator::writeSearchPage()
   ResourceMgr::instance().copyResource("search_opensearch.php",htmlOutput);
   // OPENSEARCH_PROVIDER }
 
-  QCString fileName = htmlOutput+"/search.php";
+  DString fileName = htmlOutput+"/search.php";
   f = Portable::openOutputStream(fileName);
   if (f.is_open())
   {
@@ -3292,16 +3292,16 @@ void HtmlGenerator::writeSearchPage()
 
     if (!disableIndex && !quickLinksAfterSplitbar)
     {
-      writeDefaultQuickLinks(t,HighlightedItem::Search,QCString(),QCString(),false);
+      writeDefaultQuickLinks(t,HighlightedItem::Search,DString(),DString(),false);
     }
     if (generateTreeView)
     {
       t << "</div><!-- top -->\n";
     }
-    t << writeSplitBarAsString("search.php",QCString(),QCString());
+    t << writeSplitBarAsString("search.php",DString(),DString());
     if (quickLinksAfterSplitbar)
     {
-      writeDefaultQuickLinks(t,HighlightedItem::Search,QCString(),QCString(),false);
+      writeDefaultQuickLinks(t,HighlightedItem::Search,DString(),DString(),false);
     }
     t << "<!-- generated -->\n";
 
@@ -3321,7 +3321,7 @@ void HtmlGenerator::writeSearchPage()
   }
   f.close();
 
-  QCString scriptName = htmlOutput+"/search/search.js";
+  DString scriptName = htmlOutput+"/search/search.js";
   f = Portable::openOutputStream(scriptName);
   if (f.is_open())
   {
@@ -3340,8 +3340,8 @@ void HtmlGenerator::writeExternalSearchPage()
   bool generateTreeView        = Config_getBool(GENERATE_TREEVIEW);
   bool fullSidebar             = Config_getBool(FULL_SIDEBAR);
   bool quickLinksAfterSplitbar = !disableIndex && generateTreeView && fullSidebar;
-  QCString dname               = Config_getString(HTML_OUTPUT);
-  QCString fileName            = dname+"/search"+Doxygen::htmlFileExtension;
+  DString dname               = Config_getString(HTML_OUTPUT);
+  DString fileName            = dname+"/search"+Doxygen::htmlFileExtension;
   std::ofstream f = Portable::openOutputStream(fileName);
   if (f.is_open())
   {
@@ -3357,16 +3357,16 @@ void HtmlGenerator::writeExternalSearchPage()
 
     if (!disableIndex && !quickLinksAfterSplitbar)
     {
-      writeDefaultQuickLinks(t,HighlightedItem::Search,QCString(),QCString(),false);
+      writeDefaultQuickLinks(t,HighlightedItem::Search,DString(),DString(),false);
     }
     if (generateTreeView)
     {
       t << "</div><!-- top -->\n";
     }
-    t << writeSplitBarAsString("search.php",QCString(),QCString());
+    t << writeSplitBarAsString("search.php",DString(),DString());
     if (quickLinksAfterSplitbar)
     {
-      writeDefaultQuickLinks(t,HighlightedItem::Search,QCString(),QCString(),false);
+      writeDefaultQuickLinks(t,HighlightedItem::Search,DString(),DString(),false);
     }
 
     t << "<div class=\"header\">\n";
@@ -3390,7 +3390,7 @@ void HtmlGenerator::writeExternalSearchPage()
   }
   f.close();
 
-  QCString scriptName = dname+"/search/search.js";
+  DString scriptName = dname+"/search/search.js";
   f = Portable::openOutputStream(scriptName);
   if (f.is_open())
   {
@@ -3406,11 +3406,11 @@ void HtmlGenerator::writeExternalSearchPage()
     const StringVector &extraSearchMappings = Config_getList(EXTRA_SEARCH_MAPPINGS);
     for (const auto &ml : extraSearchMappings)
     {
-      QCString mapLine(ml);
-      if (size_t eqPos = mapLine.find('='); eqPos!=QCString::npos) // tag command contains a destination
+      DString mapLine(ml);
+      if (size_t eqPos = mapLine.find('='); eqPos!=DString::npos) // tag command contains a destination
       {
-        QCString tagName = mapLine.left(eqPos).stripWhiteSpace();
-        QCString destName = mapLine.mid(eqPos+1).stripWhiteSpace();
+        DString tagName = mapLine.left(eqPos).stripWhiteSpace();
+        DString destName = mapLine.mid(eqPos+1).stripWhiteSpace();
         if (!tagName.empty())
         {
           if (!first) t << ",\n";
@@ -3439,7 +3439,7 @@ void HtmlGenerator::writeExternalSearchPage()
   }
 }
 
-void HtmlGenerator::startConstraintList(const QCString &header)
+void HtmlGenerator::startConstraintList(const DString &header)
 {
   m_t << "<div class=\"typeconstraint\">\n";
   m_t << "<dl><dt><b>" << header << "</b></dt><dd>\n";
@@ -3484,7 +3484,7 @@ void HtmlGenerator::endConstraintList()
   m_t << "</div>\n";
 }
 
-void HtmlGenerator::lineBreak(const QCString &style)
+void HtmlGenerator::lineBreak(const DString &style)
 {
   if (!style.empty())
   {
@@ -3501,13 +3501,13 @@ void HtmlGenerator::startHeaderSection()
   m_t << "<div class=\"header\">\n";
 }
 
-void HtmlGenerator::startTitleHead(const QCString &)
+void HtmlGenerator::startTitleHead(const DString &)
 {
   m_t << "  <div class=\"headertitle\">";
   startTitle();
 }
 
-void HtmlGenerator::endTitleHead(const QCString &,const QCString &)
+void HtmlGenerator::endTitleHead(const DString &,const DString &)
 {
   endTitle();
   m_t << "</div>\n";
@@ -3602,13 +3602,13 @@ void HtmlGenerator::startLabels()
   m_t << "<span class=\"mlabels\">";
 }
 
-void HtmlGenerator::writeLabel(const QCString &label,bool /*isLast*/)
+void HtmlGenerator::writeLabel(const DString &label,bool /*isLast*/)
 {
   DBG_HTML(m_t << "<!-- writeLabel(" << label << ") -->\n";)
 
   auto convertLabelToClass = [](const std::string &lab) {
-    QCString input = convertUTF8ToLower(lab);
-    QCString result;
+    DString input = convertUTF8ToLower(lab);
+    DString result;
     size_t l=input.length();
     result.reserve(l);
 
@@ -3649,15 +3649,15 @@ void HtmlGenerator::endLabels()
 }
 
 void HtmlGenerator::writeInheritedSectionTitle(
-                  const QCString &id,    const QCString &ref,
-                  const QCString &file,  const QCString &anchor,
-                  const QCString &title, const QCString &name)
+                  const DString &id,    const DString &ref,
+                  const DString &file,  const DString &anchor,
+                  const DString &title, const DString &name)
 {
   DBG_HTML(m_t << "<!-- writeInheritedSectionTitle -->\n";)
   bool dynamicSections = Config_getBool(HTML_DYNAMIC_SECTIONS);
-  QCString a = anchor;
+  DString a = anchor;
   if (!a.empty()) a.prepend("#");
-  QCString classLink = QCString("<a class=\"el\" ");
+  DString classLink = DString("<a class=\"el\" ");
   if (!ref.empty())
   {
     classLink+= externalLinkTarget();
@@ -3669,10 +3669,10 @@ void HtmlGenerator::writeInheritedSectionTitle(
     classLink += "href=\"";
     classLink+=m_relPath;
   }
-  QCString fn = file;
+  DString fn = file;
   addHtmlExtensionIfMissing(fn);
   classLink=classLink+fn+a;
-  classLink+=QCString("\">")+convertToHtml(name,false)+"</a>";
+  classLink+=DString("\">")+convertToHtml(name,false)+"</a>";
   m_t << "<tr class=\"inherit_header " << id << "\">";
   if (dynamicSections)
   {
@@ -3687,7 +3687,7 @@ void HtmlGenerator::writeInheritedSectionTitle(
     << "</td></tr>\n";
 }
 
-void HtmlGenerator::writeSummaryLink(const QCString &file,const QCString &anchor,const QCString &title,bool first)
+void HtmlGenerator::writeSummaryLink(const DString &file,const DString &anchor,const DString &title,bool first)
 {
   if (first)
   {
@@ -3700,7 +3700,7 @@ void HtmlGenerator::writeSummaryLink(const QCString &file,const QCString &anchor
   m_t << "<a href=\"";
   if (!file.empty())
   {
-    QCString fn = file;
+    DString fn = file;
     addHtmlExtensionIfMissing(fn);
     m_t << m_relPath << fn;
   }
@@ -3725,11 +3725,11 @@ void HtmlGenerator::writePageOutline()
   m_t << "</div><!-- page-nav -->\n";
 }
 
-void HtmlGenerator::endMemberDeclaration(const QCString &anchor,const QCString &inheritId)
+void HtmlGenerator::endMemberDeclaration(const DString &anchor,const DString &inheritId)
 {
 }
 
-QCString HtmlGenerator::getNavTreeCss()
+DString HtmlGenerator::getNavTreeCss()
 {
   ResourceMgr &mgr = ResourceMgr::instance();
   return replaceVariables(mgr.getAsString("navtree.css"));
@@ -3773,7 +3773,7 @@ void HtmlGenerator::startTocEntry(const SectionInfo *si)
           m_tocState.incIndent(m_t,"<ul>");
           char cs[2] = { static_cast<char>('0'+l+1), 0 };
           const char *empty = (l!=nextLevel-1) ? " empty" : "";
-          m_tocState.incIndent(m_t,"<li class=\"level" + QCString(cs) + empty + "\">");
+          m_tocState.incIndent(m_t,"<li class=\"level" + DString(cs) + empty + "\">");
         }
       }
     }
@@ -3792,9 +3792,9 @@ void HtmlGenerator::startTocEntry(const SectionInfo *si)
       {
         m_tocState.decIndent(m_t,"</li>");
         char cs[2] = { static_cast<char>('0'+nextLevel), 0 };
-        m_tocState.incIndent(m_t,"<li class=\"level" + QCString(cs) + "\">");
+        m_tocState.incIndent(m_t,"<li class=\"level" + DString(cs) + "\">");
       }
-      QCString label = si->label();
+      DString label = si->label();
       m_tocState.writeIndent(m_t);
       m_t  << "<a href=\"#"+label+"\">";
     }

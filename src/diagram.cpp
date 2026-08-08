@@ -41,8 +41,8 @@ class DiagramItem
 {
   public:
     DiagramItem(DiagramItem *p,uint32_t number,const ClassDef *cd,
-                Protection prot,Specifier virt,const QCString &ts);
-    QCString label() const;
+                Protection prot,Specifier virt,const DString &ts);
+    DString label() const;
     DiagramItem *parentItem() { return m_parent; }
     DiagramItemList getChildren() { return m_children; }
     void move(int dx,int dy) { m_x=static_cast<uint32_t>(m_x+dx); m_y=static_cast<uint32_t>(m_y+dy); }
@@ -67,7 +67,7 @@ class DiagramItem
     uint32_t m_num;
     Protection m_prot;
     Specifier m_virt;
-    QCString m_templSpec;
+    DString m_templSpec;
     bool m_inList = false;
     const ClassDef *m_classDef;
 };
@@ -82,7 +82,7 @@ class DiagramRow
     using reverse_iterator = typename Vec::reverse_iterator;
     DiagramRow(TreeDiagram *d,uint32_t l) : m_diagram(d), m_level(l) {}
     void insertClass(DiagramItem *parent,const ClassDef *cd,bool doBases,
-                     Protection prot,Specifier virt,const QCString &ts);
+                     Protection prot,Specifier virt,const DString &ts);
 
     DiagramItem *item(int index) { return m_items.at(index).get(); }
     uint32_t numItems() const { return static_cast<uint32_t>(m_items.size()); }
@@ -112,7 +112,7 @@ class TreeDiagram
                    bool doBase,bool bitmap,
                    uint32_t baseRows,uint32_t superRows,
                    uint32_t cellWidth,uint32_t cellHeight,
-                   QCString relPath="",
+                   DString relPath="",
                    bool generateMap=true);
     void drawConnectors(TextStream &t,Image *image,
                    bool doBase,bool bitmap,
@@ -166,7 +166,7 @@ static uint8_t protToColor(Protection p)
   return 0;
 }
 
-static QCString protToString(Protection p)
+static DString protToString(Protection p)
 {
   switch(p)
   {
@@ -175,7 +175,7 @@ static QCString protToString(Protection p)
     case Protection::Protected: return "dashed";
     case Protection::Private:   return "dotted";
   }
-  return QCString();
+  return DString();
 }
 
 static uint32_t virtToMask(Specifier p)
@@ -189,10 +189,10 @@ static uint32_t virtToMask(Specifier p)
   return 0;
 }
 
-static QCString convertToPSString(const QCString &s)
+static DString convertToPSString(const DString &s)
 {
   if (s.empty()) return s;
-  QCString result;
+  DString result;
   result.reserve(s.length()+8);
   const char *p=s.data();
   char c=0;
@@ -258,12 +258,12 @@ static void writeVectorBox(TextStream &t,DiagramItem *di,
   if (di->virtualness()==Specifier::Virtual) t << "solid\n";
 }
 
-static void writeMapArea(TextStream &t,const ClassDef *cd,QCString relPath,
+static void writeMapArea(TextStream &t,const ClassDef *cd,DString relPath,
                          uint32_t x,uint32_t y,uint32_t w,uint32_t h)
 {
   if (cd->isLinkable())
   {
-    QCString ref=cd->getReference();
+    DString ref=cd->getReference();
     t << "<area ";
     if (!ref.empty())
     {
@@ -271,7 +271,7 @@ static void writeMapArea(TextStream &t,const ClassDef *cd,QCString relPath,
     }
     t << "href=\"";
     t << externalRef(relPath,ref,true);
-    QCString fn = cd->getOutputFileBase();
+    DString fn = cd->getOutputFileBase();
     addHtmlExtensionIfMissing(fn);
     t << fn;
     if (!cd->anchor().empty())
@@ -279,7 +279,7 @@ static void writeMapArea(TextStream &t,const ClassDef *cd,QCString relPath,
       t << "#" << cd->anchor();
     }
     t << "\" ";
-    QCString tooltip = cd->briefDescriptionAsTooltip();
+    DString tooltip = cd->briefDescriptionAsTooltip();
     if (!tooltip.empty())
     {
       t << "title=\"" << convertToHtml(tooltip) << "\" ";
@@ -292,19 +292,19 @@ static void writeMapArea(TextStream &t,const ClassDef *cd,QCString relPath,
 //-----------------------------------------------------------------------------
 
 DiagramItem::DiagramItem(DiagramItem *p,uint32_t number,const ClassDef *cd,
-                         Protection pr,Specifier vi,const QCString &ts)
+                         Protection pr,Specifier vi,const DString &ts)
   : m_parent(p), m_num(number), m_prot(pr), m_virt(vi), m_templSpec(ts), m_classDef(cd)
 {
 }
 
-QCString DiagramItem::label() const
+DString DiagramItem::label() const
 {
-  QCString result;
+  DString result;
   if (!m_templSpec.empty())
   {
     // we use classDef->name() here and not displayName() in order
     // to get the name used in the inheritance relation.
-    QCString n = m_classDef->name();
+    DString n = m_classDef->name();
     if (n.endsWith("-p"))
     {
       n = n.left(n.length()-2);
@@ -346,7 +346,7 @@ void DiagramItem::addChild(DiagramItem *di)
 //---------------------------------------------------------------------------
 
 void DiagramRow::insertClass(DiagramItem *parent,const ClassDef *cd,bool doBases,
-                             Protection prot,Specifier virt,const QCString &ts)
+                             Protection prot,Specifier virt,const DString &ts)
 {
   auto di = std::make_unique<DiagramItem>(parent, m_diagram->row(m_level)->numItems(),
                                           cd,prot,virt,ts);
@@ -379,7 +379,7 @@ void DiagramRow::insertClass(DiagramItem *parent,const ClassDef *cd,bool doBases
       {
         row->insertClass(di_ptr,ccd,doBases,bcd.prot,
             doBases ? bcd.virt            : Specifier::Normal,
-            doBases ? bcd.templSpecifiers : QCString());
+            doBases ? bcd.templSpecifiers : DString());
       }
     }
   }
@@ -392,7 +392,7 @@ TreeDiagram::TreeDiagram(const ClassDef *root,bool doBases)
   auto row = std::make_unique<DiagramRow>(this,0);
   DiagramRow *row_ptr = row.get();
   m_rows.push_back(std::move(row));
-  row_ptr->insertClass(nullptr,root,doBases,Protection::Public,Specifier::Normal,QCString());
+  row_ptr->insertClass(nullptr,root,doBases,Protection::Public,Specifier::Normal,DString());
 }
 
 void TreeDiagram::moveChildren(DiagramItem *root,int dx)
@@ -585,7 +585,7 @@ void TreeDiagram::drawBoxes(TextStream &t,Image *image,
                             bool doBase,bool bitmap,
                             uint32_t baseRows,uint32_t superRows,
                             uint32_t cellWidth,uint32_t cellHeight,
-                            QCString relPath,
+                            DString relPath,
                             bool generateMap)
 {
   auto it = m_rows.begin();
@@ -1062,8 +1062,8 @@ ClassDiagram::ClassDiagram(const ClassDef *root) : p(std::make_unique<Private>(r
 
 ClassDiagram::~ClassDiagram() = default;
 
-void ClassDiagram::writeFigure(TextStream &output,const QCString &path,
-                               const QCString &fileName) const
+void ClassDiagram::writeFigure(TextStream &output,const DString &path,
+                               const DString &fileName) const
 {
   uint32_t baseRows=p->base.computeRows();
   uint32_t superRows=p->super.computeRows();
@@ -1102,8 +1102,8 @@ void ClassDiagram::writeFigure(TextStream &output,const QCString &path,
 
   //printf("writeFigure rows=%d cols=%d\n",rows,cols);
 
-  QCString epsBaseName=QCString(path)+"/"+fileName;
-  QCString epsName=epsBaseName+".eps";
+  DString epsBaseName=DString(path)+"/"+fileName;
+  DString epsName=epsBaseName+".eps";
   std::ofstream f = Portable::openOutputStream(epsName);
   if (!f.is_open())
   {
@@ -1341,7 +1341,7 @@ void ClassDiagram::writeFigure(TextStream &output,const QCString &path,
 
   if (Config_getBool(USE_PDFLATEX))
   {
-    QCString epstopdfArgs(4096, QCString::ExplicitSize);
+    DString epstopdfArgs(4096, DString::ExplicitSize);
     epstopdfArgs.sprintf("\"%s.eps\" --outfile=\"%s.pdf\"",
                    qPrint(epsBaseName),qPrint(epsBaseName));
     //printf("Converting eps using '%s'\n",qPrint(epstopdfArgs));
@@ -1358,8 +1358,8 @@ void ClassDiagram::writeFigure(TextStream &output,const QCString &path,
 }
 
 
-void ClassDiagram::writeImage(TextStream &t,const QCString &path,
-                              const QCString &relPath,const QCString &fileName,
+void ClassDiagram::writeImage(TextStream &t,const DString &path,
+                              const DString &relPath,const DString &fileName,
                               bool generateMap,bool toIndex) const
 {
   uint32_t baseRows=p->base.computeRows();
@@ -1386,7 +1386,7 @@ void ClassDiagram::writeImage(TextStream &t,const QCString &path,
   p->super.drawConnectors(t,&image,false,true,baseRows,superRows,cellWidth,cellHeight);
 
 #define IMAGE_EXT ".png"
-  image.save(QCString(path)+"/"+fileName+IMAGE_EXT);
-  if (toIndex) Doxygen::indexList->addImageFile(QCString(fileName)+IMAGE_EXT);
+  image.save(DString(path)+"/"+fileName+IMAGE_EXT);
+  if (toIndex) Doxygen::indexList->addImageFile(DString(fileName)+IMAGE_EXT);
 }
 

@@ -13,7 +13,7 @@
  *
  */
 
-#include "qcstring.h"
+#include "dstring.h"
 
 #include <limits.h>
 #include <stdlib.h>
@@ -26,7 +26,7 @@ inline char toLowerChar(char c)
   return c>='A' && c<='Z' ? c|0x20 : c;
 }
 
-QCString &QCString::sprintf( const char *format, ... )
+DString &DString::sprintf( const char *format, ... )
 {
   va_list ap;
   va_start( ap, format );
@@ -40,7 +40,7 @@ QCString &QCString::sprintf( const char *format, ... )
   return *this;
 }
 
-size_t QCString::rfind_insensitive( char c, size_t index) const
+size_t DString::rfind_insensitive( char c, size_t index) const
 {
   const char *b = data();
   const char *pos = nullptr;
@@ -52,28 +52,28 @@ size_t QCString::rfind_insensitive( char c, size_t index) const
   }
   else if (index>len) // bad index
   {
-    return QCString::npos;
+    return DString::npos;
   }
   pos = b+index;
   c = toLowerChar(c);
   while ( pos>=b && toLowerChar(*pos)!=c) pos--;
-  return pos>=b ? static_cast<size_t>(pos-b) : QCString::npos;
+  return pos>=b ? static_cast<size_t>(pos-b) : DString::npos;
 }
 
-size_t QCString::rfind_insensitive( const char *str, size_t index) const
+size_t DString::rfind_insensitive( const char *str, size_t index) const
 {
-  size_t slen = qstrlen(str);
+  size_t slen = dstrlen(str);
   size_t len  = length();
-  if (slen>len) return QCString::npos; // length of search string is longer than this string
-  if (index==QCString::npos) index = len-slen; // start from end
-  else if (index>len) return QCString::npos; // bad index
+  if (slen>len) return DString::npos; // length of search string is longer than this string
+  if (index==DString::npos) index = len-slen; // start from end
+  else if (index>len) return DString::npos; // bad index
   else if (index+slen>len) index = len-slen; // str would be too long
   const char *pos = data()+index;
-  for (int i=index; i>=0; i--) if (qstrnicmp(pos--,str,slen)==0) return i;
-  return QCString::npos;
+  for (int i=index; i>=0; i--) if (dstrnicmp(pos--,str,slen)==0) return i;
+  return DString::npos;
 }
 
-int QCString::contains( char c, bool cs ) const
+int DString::contains( char c, bool cs ) const
 {
   if (length()==0) return 0;
   int count=0;
@@ -94,41 +94,41 @@ int QCString::contains( char c, bool cs ) const
   return count;
 }
 
-int QCString::contains( const char *str, bool cs ) const
+int DString::contains( const char *str, bool cs ) const
 {
   if (str==nullptr || length()==0) return 0;
   int count=0;
   const char *pos = data();
-  int len = qstrlen(str);
+  int len = dstrlen(str);
   while (*pos)
   {
     if (cs)
     {
-      if (qstrncmp(pos,str,len)==0) count++;
+      if (dstrncmp(pos,str,len)==0) count++;
     }
     else
     {
-      if (qstrnicmp(pos,str,len)==0) count++;
+      if (dstrnicmp(pos,str,len)==0) count++;
     }
     pos++;
   }
   return count;
 }
 
-QCString QCString::simplifyWhiteSpace() const
+DString DString::simplifyWhiteSpace() const
 {
   if ( empty() )                            // nothing to do
     return *this;
 
-  QCString result( length(), ExplicitSize );
+  DString result( length(), ExplicitSize );
   const char *from  = data();
   char *to    = result.rawData();
   char *first = to;
   while ( true )
   {
-    while ( *from && qisspace(*from) )
+    while ( *from && disspace(*from) )
       from++;
-    while ( *from && !qisspace(*from) )
+    while ( *from && !disspace(*from) )
       *to++ = *from++;
     if ( *from )
       *to++ = 0x20;                       // ' '
@@ -142,7 +142,7 @@ QCString QCString::simplifyWhiteSpace() const
   return result;
 }
 
-QCString &QCString::replace( size_t index, size_t len, const char *s)
+DString &DString::replace( size_t index, size_t len, const char *s)
 {
   remove( index, len );
   insert( index, s );
@@ -159,7 +159,7 @@ static bool ok_in_base( char c, int base )
                (c >= 'A' && c < char('A'+base-10));
 }
 
-short QCString::toShort(bool *ok, int base) const
+short DString::toShort(bool *ok, int base) const
 {
   long v = toLong( ok, base );
   if ( ok && *ok && (v < -32768 || v > 32767) ) {
@@ -169,7 +169,7 @@ short QCString::toShort(bool *ok, int base) const
   return static_cast<short>(v);
 }
 
-uint16_t QCString::toUShort(bool *ok,int base) const
+uint16_t DString::toUShort(bool *ok,int base) const
 {
   unsigned long v = toULong( ok, base );
   if ( ok && *ok && (v > 65535) ) {
@@ -179,18 +179,18 @@ uint16_t QCString::toUShort(bool *ok,int base) const
   return static_cast<uint16_t>(v);
 }
 
-int QCString::toInt(bool *ok, int base) const
+int DString::toInt(bool *ok, int base) const
 {
   return static_cast<int>(toLong( ok, base ));
 }
 
-uint32_t QCString::toUInt(bool *ok,int base) const
+uint32_t DString::toUInt(bool *ok,int base) const
 {
   return static_cast<uint32_t>(toULong( ok, base ));
 }
 
 
-long QCString::toLong(bool *ok,int base) const
+long DString::toLong(bool *ok,int base) const
 {
   const char *p = data();
   long val=0;
@@ -200,7 +200,7 @@ long QCString::toLong(bool *ok,int base) const
   int neg = 0;
   if ( !p )
     goto bye;
-  while ( l && qisspace(*p) )			// skip leading space
+  while ( l && disspace(*p) )			// skip leading space
   {
     l--;
     p++;
@@ -251,7 +251,7 @@ long QCString::toLong(bool *ok,int base) const
   {
     val = -val;
   }
-  while ( l && qisspace(*p) )			// skip trailing space
+  while ( l && disspace(*p) )			// skip trailing space
   {
     l--;
     p++;
@@ -268,7 +268,7 @@ bye:
   return is_ok ? val : 0;
 }
 
-unsigned long QCString::toULong(bool *ok,int base) const
+unsigned long DString::toULong(bool *ok,int base) const
 {
   const char *p = data();
   unsigned long val=0;
@@ -279,7 +279,7 @@ unsigned long QCString::toULong(bool *ok,int base) const
   {
     goto bye;
   }
-  while ( l && qisspace(*p) )			// skip leading space
+  while ( l && disspace(*p) )			// skip leading space
   {
     l--;
     p++;
@@ -322,7 +322,7 @@ unsigned long QCString::toULong(bool *ok,int base) const
     p++;
   }
 
-  while ( l && qisspace(*p) )			// skip trailing space
+  while ( l && disspace(*p) )			// skip trailing space
   {
     l--;
     p++;
@@ -339,7 +339,7 @@ bye:
   return is_ok ? val : 0;
 }
 
-uint64_t QCString::toUInt64(bool *ok,int base) const
+uint64_t DString::toUInt64(bool *ok,int base) const
 {
   const char *p = data();
   uint64_t val=0;
@@ -350,7 +350,7 @@ uint64_t QCString::toUInt64(bool *ok,int base) const
   {
     goto bye;
   }
-  while ( l && qisspace(*p) )		 	   // skip leading space
+  while ( l && disspace(*p) )		 	   // skip leading space
   {
     l--;
     p++;
@@ -393,7 +393,7 @@ uint64_t QCString::toUInt64(bool *ok,int base) const
     p++;
   }
 
-  while ( l && qisspace(*p) )			// skip trailing space
+  while ( l && disspace(*p) )			// skip trailing space
   {
     l--;
     p++;
@@ -412,42 +412,19 @@ bye:
 
 //-------------------------------------------------
 
-void *qmemmove( void *dst, const void *src, size_t len )
-{
-  if ( dst > src )
-  {
-    char *d = static_cast<char *>(dst) + len - 1;
-    const char *s = static_cast<const char *>(src) + len - 1;
-    while ( len-- )
-    {
-      *d-- = *s--;
-    }
-  }
-  else if ( dst < src )
-  {
-    char *d = static_cast<char *>(dst);
-    const char *s = static_cast<const char *>(src);
-    while ( len-- )
-    {
-      *d++ = *s++;
-    }
-  }
-  return dst;
-}
-
-char *qstrdup( const char *str )
+char *dstrdup( const char *str )
 {
   if ( !str ) return nullptr;
-  char *dst = new char[qstrlen(str)+1];
+  char *dst = new char[dstrlen(str)+1];
   return strcpy( dst, str );
 }
 
-void qstrfree( const char *str )
+void dstrfree( const char *str )
 {
   delete [](str);
 }
 
-char *qstrncpy( char *dst, const char *src, size_t len )
+char *dstrncpy( char *dst, const char *src, size_t len )
 {
   if ( !src ) return nullptr;
   strncpy( dst, src, len );
@@ -455,7 +432,7 @@ char *qstrncpy( char *dst, const char *src, size_t len )
   return dst;
 }
 
-int qstricmp( const char *s1, const char *s2 )
+int dstricmp( const char *s1, const char *s2 )
 {
   if ( !s1 || !s2 )
   {
@@ -473,7 +450,7 @@ int qstricmp( const char *s1, const char *s2 )
   return res;
 }
 
-int qstrnicmp( const char *s1, const char *s2, size_t len )
+int dstrnicmp( const char *s1, const char *s2, size_t len )
 {
   if ( !s1 || !s2 )
   {
@@ -496,7 +473,7 @@ int qstrnicmp( const char *s1, const char *s2, size_t len )
 }
 
 /// substitute all occurrences of \a src in \a s by \a dst
-QCString substitute(const QCString &s,const QCString &src,const QCString &dst)
+DString substitute(const DString &s,const DString &src,const DString &dst)
 {
   if (s.empty() || src.empty()) return s;
   const char *q = nullptr, *p = nullptr;
@@ -513,7 +490,7 @@ QCString substitute(const QCString &s,const QCString &src,const QCString &dst)
   {
     resLen = s.length();
   }
-  QCString result(resLen, QCString::ExplicitSize);
+  DString result(resLen, DString::ExplicitSize);
   char *r = result.rawData();
   for (p = s.data(); (q=strstr(p,src.data()))!=nullptr; p=q+srcLen)
   {
@@ -526,7 +503,7 @@ QCString substitute(const QCString &s,const QCString &src,const QCString &dst)
   }
   if (r)
   {
-    qstrcpy(r,p);
+    dstrcpy(r,p);
   }
   //printf("substitute(%s,%s,%s)->%s\n",s,src,dst,result.data());
   return result;
@@ -537,7 +514,7 @@ QCString substitute(const QCString &s,const QCString &src,const QCString &dst)
 /// each consecutive sequence of \a src where the number consecutive
 /// \a src matches \a skip_seq; if \a skip_seq is negative, skip any
 /// number of consecutive \a src
-QCString substitute(const QCString &s,const QCString &src,const QCString &dst,int skip_seq)
+DString substitute(const DString &s,const DString &src,const DString &dst,int skip_seq)
 {
   if (s.empty() || src.empty()) return s;
   const char *p = nullptr, *q = nullptr;
@@ -554,7 +531,7 @@ QCString substitute(const QCString &s,const QCString &src,const QCString &dst,in
   {
     resLen = s.length();
   }
-  QCString result(resLen, QCString::ExplicitSize);
+  DString result(resLen, DString::ExplicitSize);
   char *r = result.rawData();
   for (p = s.data(); (q=strstr(p,src.data()))!=nullptr; p=q+srcLen)
   {
@@ -562,7 +539,7 @@ QCString substitute(const QCString &s,const QCString &src,const QCString &dst,in
     int seq = 0, skip = 0;
     if (skip_seq)
     {
-      for (const char *n=q+srcLen; qstrncmp(n,src.data(),srcLen)==0; seq=1+skip, n+=srcLen)
+      for (const char *n=q+srcLen; dstrncmp(n,src.data(),srcLen)==0; seq=1+skip, n+=srcLen)
         ++skip; // number of consecutive src after the current one
 
       // verify the allowed number of consecutive src to skip
@@ -586,15 +563,15 @@ QCString substitute(const QCString &s,const QCString &src,const QCString &dst,in
     if (dstLen>0) memcpy(r,dst.data(),dstLen);
     r+=dstLen;
   }
-  qstrcpy(r,p);
+  dstrcpy(r,p);
   result.resize(strlen(result.data()));
   //printf("substitute(%s,%s,%s)->%s\n",s,src,dst,result.data());
   return result;
 }
 
-QCString QCString::stripLeadingAndTrailingEmptyLines() const
+DString DString::stripLeadingAndTrailingEmptyLines() const
 {
-  if (empty()) return QCString();
+  if (empty()) return DString();
   const std::string &s = m_rep;
   int end=static_cast<int>(s.length());
   int start=0,p=0;

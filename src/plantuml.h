@@ -20,19 +20,19 @@
 #include <string>
 
 #include "containers.h"
-#include "qcstring.h"
+#include "dstring.h"
 
 #define DIVIDE_COUNT            4
 #define MIN_PLANTUML_COUNT      8
 
-class QCString;
+class DString;
 struct PlantumlContent
 {
-  PlantumlContent(const QCString &content_, const QCString &outDir_, const QCString &srcFile_, int srcLine_)
+  PlantumlContent(const DString &content_, const DString &outDir_, const DString &srcFile_, int srcLine_)
      : content(content_), outDir(outDir_), srcFile(srcFile_), srcLine(srcLine_) {}
-  QCString content;
-  QCString outDir;
-  QCString srcFile;
+  DString content;
+  DString outDir;
+  DString srcFile;
   int srcLine;
 };
 
@@ -67,9 +67,9 @@ class PlantumlManager
      *   from the `\planumlfile` command (`false`)
      *  @returns The names of the generated files.
      */
-    StringVector writePlantUMLSource(const QCString &outDirArg,const QCString &fileName,
-                                     const QCString &content, OutputFormat format,
-                                     const QCString &engine,const QCString &srcFile,
+    StringVector writePlantUMLSource(const DString &outDirArg,const DString &fileName,
+                                     const DString &content, OutputFormat format,
+                                     const DString &engine,const DString &srcFile,
                                      int srcLine,bool inlineCode);
 
     /** Convert a PlantUML file to an image.
@@ -78,7 +78,7 @@ class PlantumlManager
      *  @param[in] format   the image format to generate.
      *  @param[in] toIndex  add the file to the index lists for htmlhelp / qhc etc.
      */
-    void generatePlantUMLOutput(const QCString &baseName,const QCString &outDir,OutputFormat format,bool toIndex);
+    void generatePlantUMLOutput(const DString &baseName,const DString &outDir,OutputFormat format,bool toIndex);
 
     using FilesMap   = std::map< std::string, StringVector    >;
     using ContentMap = std::map< std::string, PlantumlContent >;
@@ -86,13 +86,13 @@ class PlantumlManager
     PlantumlManager();
     void insert(const std::string &key,
                 const std::string &value,
-                const QCString &outDir,
+                const DString &outDir,
                 OutputFormat format,
-                const QCString &puContent,
-                const QCString &srcFile,
+                const DString &puContent,
+                const DString &srcFile,
                 int srcLine);
-    void generatePlantUmlFileNames(const QCString &fileName,OutputFormat format,const QCString &outDir,
-                                                    QCString &baseName,QCString &puName,QCString &imgName);
+    void generatePlantUmlFileNames(const DString &fileName,OutputFormat format,const DString &outDir,
+                                                    DString &baseName,DString &puName,DString &imgName);
 
     FilesMap   m_pngPlantumlFiles;
     FilesMap   m_svgPlantumlFiles;

@@ -53,7 +53,7 @@ class PerlModOutputStream
     PerlModOutputStream(std::ostream &t) : m_t(&t) { }
 
     void add(char c);
-    void add(const QCString &s);
+    void add(const DString &s);
     void add(int n);
     void add(unsigned int n);
 };
@@ -63,7 +63,7 @@ void PerlModOutputStream::add(char c)
   *m_t << c;
 }
 
-void PerlModOutputStream::add(const QCString &s)
+void PerlModOutputStream::add(const DString &s)
 {
   *m_t << s;
 }
@@ -98,7 +98,7 @@ public:
   inline void setPerlModOutputStream(PerlModOutputStream *os) { m_stream = os; }
 
   //inline PerlModOutput &openSave() { iopenSave(); return *this; }
-  //inline PerlModOutput &closeSave(QCString &s) { icloseSave(s); return *this; }
+  //inline PerlModOutput &closeSave(DString &s) { icloseSave(s); return *this; }
 
   inline PerlModOutput &continueBlock()
   {
@@ -111,12 +111,12 @@ public:
   }
 
   inline PerlModOutput &add(char c) { m_stream->add(c); return *this; }
-  inline PerlModOutput &add(const QCString &s) { m_stream->add(s); return *this; }
-  inline PerlModOutput &add(QCString &s) { m_stream->add(s); return *this; }
+  inline PerlModOutput &add(const DString &s) { m_stream->add(s); return *this; }
+  inline PerlModOutput &add(DString &s) { m_stream->add(s); return *this; }
   inline PerlModOutput &add(int n) { m_stream->add(n); return *this; }
   inline PerlModOutput &add(unsigned int n) { m_stream->add(n); return *this; }
 
-  PerlModOutput &addQuoted(const QCString &s) { iaddQuoted(s); return *this; }
+  PerlModOutput &addQuoted(const DString &s) { iaddQuoted(s); return *this; }
 
   inline PerlModOutput &indent()
   {
@@ -127,41 +127,41 @@ public:
     return *this;
   }
 
-  inline PerlModOutput &open(char c, const QCString &s = QCString()) { iopen(c, s); return *this; }
+  inline PerlModOutput &open(char c, const DString &s = DString()) { iopen(c, s); return *this; }
   inline PerlModOutput &close(char c = 0) { iclose(c); return *this; }
 
-  inline PerlModOutput &addField(const QCString &s) { iaddField(s); return *this; }
-  inline PerlModOutput &addFieldQuotedChar(const QCString &field, char content)
+  inline PerlModOutput &addField(const DString &s) { iaddField(s); return *this; }
+  inline PerlModOutput &addFieldQuotedChar(const DString &field, char content)
   {
     iaddFieldQuotedChar(field, content); return *this;
   }
-  inline PerlModOutput &addFieldQuotedString(const QCString &field, const QCString &content)
+  inline PerlModOutput &addFieldQuotedString(const DString &field, const DString &content)
   {
     iaddFieldQuotedString(field, content); return *this;
   }
-  inline PerlModOutput &addFieldBoolean(const QCString &field, bool content)
+  inline PerlModOutput &addFieldBoolean(const DString &field, bool content)
   {
     return addFieldQuotedString(field, content ? "yes" : "no");
   }
-  inline PerlModOutput &openList(const QCString &s = QCString()) { open('[', s); return *this; }
+  inline PerlModOutput &openList(const DString &s = DString()) { open('[', s); return *this; }
   inline PerlModOutput &closeList() { close(']'); return *this; }
-  inline PerlModOutput &openHash(const QCString &s = QCString() ) { open('{', s); return *this; }
+  inline PerlModOutput &openHash(const DString &s = DString() ) { open('{', s); return *this; }
   inline PerlModOutput &closeHash() { close('}'); return *this; }
 
 protected:
 
   //void iopenSave();
-  //void icloseSave(QCString &);
+  //void icloseSave(DString &);
 
   void incIndent();
   void decIndent();
 
-  void iaddQuoted(const QCString &);
-  void iaddFieldQuotedChar(const QCString &, char);
-  void iaddFieldQuotedString(const QCString &, const QCString &);
-  void iaddField(const QCString &);
+  void iaddQuoted(const DString &);
+  void iaddFieldQuotedChar(const DString &, char);
+  void iaddFieldQuotedString(const DString &, const DString &);
+  void iaddField(const DString &);
 
-  void iopen(char, const QCString &);
+  void iopen(char, const DString &);
   void iclose(char);
 
 private:
@@ -180,7 +180,7 @@ private:
 //  m_stream = new PerlModOutputStream();
 //}
 
-//void PerlModOutput::icloseSave(QCString &s)
+//void PerlModOutput::icloseSave(DString &s)
 //{
 //  s = m_stream->m_s;
 //  delete m_stream;
@@ -205,7 +205,7 @@ void PerlModOutput::decIndent()
     m_spaces[m_indentation * 2] = 0;
 }
 
-void PerlModOutput::iaddQuoted(const QCString &str)
+void PerlModOutput::iaddQuoted(const DString &str)
 {
   if (str.empty()) return;
   const char *s = str.data();
@@ -220,14 +220,14 @@ void PerlModOutput::iaddQuoted(const QCString &str)
   }
 }
 
-void PerlModOutput::iaddField(const QCString &s)
+void PerlModOutput::iaddField(const DString &s)
 {
   continueBlock();
   m_stream->add(s);
   m_stream->add(m_pretty ? " => " : "=>");
 }
 
-void PerlModOutput::iaddFieldQuotedChar(const QCString &field, char content)
+void PerlModOutput::iaddFieldQuotedChar(const DString &field, char content)
 {
   iaddField(field);
   m_stream->add('\'');
@@ -237,7 +237,7 @@ void PerlModOutput::iaddFieldQuotedChar(const QCString &field, char content)
   m_stream->add('\'');
 }
 
-void PerlModOutput::iaddFieldQuotedString(const QCString &field, const QCString &content)
+void PerlModOutput::iaddFieldQuotedString(const DString &field, const DString &content)
 {
   if (content == nullptr)
     return;
@@ -247,7 +247,7 @@ void PerlModOutput::iaddFieldQuotedString(const QCString &field, const QCString 
   m_stream->add('\'');
 }
 
-void PerlModOutput::iopen(char c, const QCString &s)
+void PerlModOutput::iopen(char c, const DString &s)
 {
   if (s != nullptr)
     iaddField(s);
@@ -358,16 +358,16 @@ class PerlModDocVisitor final : public DocVisitor
     // helper functions
     //--------------------------------------
 
-    void addLink(const QCString &ref, const QCString &file,
-        const QCString &anchor);
+    void addLink(const DString &ref, const DString &file,
+        const DString &anchor);
 
     void enterText();
     void leaveText();
 
-    void openItem(const QCString &);
+    void openItem(const DString &);
     void closeItem();
-    void singleItem(const QCString &);
-    void openSubBlock(const QCString & = QCString());
+    void singleItem(const DString &);
+    void openSubBlock(const DString & = DString());
     void closeSubBlock();
 
     //--------------------------------------
@@ -377,7 +377,7 @@ class PerlModDocVisitor final : public DocVisitor
     PerlModOutput &m_output;
     bool m_textmode;
     bool m_textblockstart;
-    QCString m_other;
+    DString m_other;
 };
 
 PerlModDocVisitor::PerlModDocVisitor(PerlModOutput &output)
@@ -393,15 +393,15 @@ void PerlModDocVisitor::finish()
     .add(m_other);
 }
 
-void PerlModDocVisitor::addLink(const QCString &,const QCString &file,const QCString &anchor)
+void PerlModDocVisitor::addLink(const DString &,const DString &file,const DString &anchor)
 {
-  QCString link = file;
+  DString link = file;
   if (!anchor.empty())
     (link += "_1") += anchor;
   m_output.addFieldQuotedString("link", link);
 }
 
-void PerlModDocVisitor::openItem(const QCString &name)
+void PerlModDocVisitor::openItem(const DString &name)
 {
   leaveText();
   m_output.openHash().addFieldQuotedString("type", name);
@@ -432,13 +432,13 @@ void PerlModDocVisitor::leaveText()
     .closeHash();
 }
 
-void PerlModDocVisitor::singleItem(const QCString &name)
+void PerlModDocVisitor::singleItem(const DString &name)
 {
   openItem(name);
   closeItem();
 }
 
-void PerlModDocVisitor::openSubBlock(const QCString &s)
+void PerlModDocVisitor::openSubBlock(const DString &s)
 {
   leaveText();
   m_output.openList(s);
@@ -466,7 +466,7 @@ void PerlModDocVisitor::closeSubBlock()
   // Using a secondary text stream will corrupt the perl file. Instead of
   // printing doc => [ data => [] ], it will print doc => [] data => [].
   /*
-  QCString other;
+  DString other;
   leaveText();
   m_output.closeSave(other);
   m_other += other;
@@ -663,7 +663,7 @@ void PerlModDocVisitor::operator()(const DocVerbatim &s)
 
 void PerlModDocVisitor::operator()(const DocAnchor &anc)
 {
-  QCString anchor = anc.file() + "_1" + anc.anchor();
+  DString anchor = anc.file() + "_1" + anc.anchor();
   openItem("anchor");
   m_output.addFieldQuotedString("id", anchor);
   closeItem();
@@ -722,8 +722,8 @@ void PerlModDocVisitor::operator()(const DocIncOperator &)
 void PerlModDocVisitor::operator()(const DocFormula &f)
 {
   openItem("formula");
-  QCString id;
-  id += QCString().setNum(f.id());
+  DString id;
+  id += DString().setNum(f.id());
   m_output.addFieldQuotedString("id", id).addFieldQuotedString("content", f.text());
   closeItem();
 }
@@ -748,7 +748,7 @@ void PerlModDocVisitor::operator()(const DocCite &cite)
 {
   openItem("cite");
   auto opt = cite.option();
-  QCString txt;
+  DString txt;
   if (!cite.file().empty())
   {
     txt = cite.getText();
@@ -891,7 +891,7 @@ void PerlModDocVisitor::operator()(const DocSimpleListItem &li)
 
 void PerlModDocVisitor::operator()(const DocSection &s)
 {
-  QCString sect = QCString().sprintf("sect%d",s.level());
+  DString sect = DString().sprintf("sect%d",s.level());
   openItem(sect);
   //m_output.addFieldQuotedString("title", s.title());
   if (s.title())
@@ -1089,7 +1089,7 @@ void PerlModDocVisitor::operator()(const DocImage &img)
   }
   m_output.add("\"");
 
-  QCString baseName=img.name();
+  DString baseName=img.name();
   int i;
   if ((i=baseName.findRev('/'))!=-1 || (i=baseName.findRev('\\'))!=-1)
   {
@@ -1244,7 +1244,7 @@ void PerlModDocVisitor::operator()(const DocParamList &pl)
   m_output.openHash().openList("parameters");
   for (const auto &param : pl.parameters())
   {
-    QCString name;
+    DString name;
     const DocWord *word = std::get_if<DocWord>(&param);
     const DocLinkedWord *linkedWord = std::get_if<DocLinkedWord>(&param);
     if (word)
@@ -1256,7 +1256,7 @@ void PerlModDocVisitor::operator()(const DocParamList &pl)
       name = linkedWord->word();
     }
 
-    QCString dir = "";
+    DString dir = "";
     const DocParamSect *sect = std::get_if<DocParamSect>(pl.parent());
     if (sect && sect->hasInOutSpecifier())
     {
@@ -1319,7 +1319,7 @@ void PerlModDocVisitor::operator()(const DocXRefItem &x)
 void PerlModDocVisitor::operator()(const DocInternalRef &ref)
 {
   openItem("ref");
-  addLink(QCString(),ref.file(),ref.anchor());
+  addLink(DString(),ref.file(),ref.anchor());
   openSubBlock("content");
   visitChildren(ref);
   closeSubBlock();
@@ -1350,7 +1350,7 @@ void PerlModDocVisitor::operator()(const DocParBlock &pb)
 }
 
 
-static void addTemplateArgumentList(const ArgumentList &al,PerlModOutput &output,const QCString &)
+static void addTemplateArgumentList(const ArgumentList &al,PerlModOutput &output,const DString &)
 {
   if (!al.hasParameters()) return;
   output.openList("template_parameters");
@@ -1380,14 +1380,14 @@ static void addTemplateList(const ConceptDef *cd,PerlModOutput &output)
 }
 
 static void addPerlModDocBlock(PerlModOutput &output,
-			    const QCString &name,
-			    const QCString &fileName,
+			    const DString &name,
+			    const DString &fileName,
 			    int lineNr,
 			    const Definition *scope,
 			    const MemberDef *md,
-			    const QCString &text)
+			    const DString &text)
 {
-  QCString stext = text.stripWhiteSpace();
+  DString stext = text.stripWhiteSpace();
   if (stext.empty())
   {
     output.addField(name).add("{}");
@@ -1425,10 +1425,10 @@ static const char *getVirtualnessName(Specifier virt)
   return to_string_lower(virt);
 }
 
-static QCString pathDoxyfile;
-static QCString pathDoxyExec;
+static DString pathDoxyfile;
+static DString pathDoxyExec;
 
-void setPerlModDoxyfile(const QCString &qs)
+void setPerlModDoxyfile(const DString &qs)
 {
   pathDoxyfile = qs;
   pathDoxyExec = Dir::currentDirPath();
@@ -1440,25 +1440,25 @@ public:
 
   PerlModOutput m_output;
 
-  QCString pathDoxyStructurePM;
-  QCString pathDoxyDocsTex;
-  QCString pathDoxyFormatTex;
-  QCString pathDoxyLatexTex;
-  QCString pathDoxyLatexDVI;
-  QCString pathDoxyLatexPDF;
-  QCString pathDoxyStructureTex;
-  QCString pathDoxyDocsPM;
-  QCString pathDoxyLatexPL;
-  QCString pathDoxyLatexStructurePL;
-  QCString pathDoxyRules;
-  QCString pathMakefile;
+  DString pathDoxyStructurePM;
+  DString pathDoxyDocsTex;
+  DString pathDoxyFormatTex;
+  DString pathDoxyLatexTex;
+  DString pathDoxyLatexDVI;
+  DString pathDoxyLatexPDF;
+  DString pathDoxyStructureTex;
+  DString pathDoxyDocsPM;
+  DString pathDoxyLatexPL;
+  DString pathDoxyLatexStructurePL;
+  DString pathDoxyRules;
+  DString pathMakefile;
 
   inline PerlModGenerator(bool pretty) : m_output(pretty) { }
 
   void generatePerlModForMember(const MemberDef *md, const Definition *);
   void generatePerlUserDefinedSection(const Definition *d, const MemberGroupList &mgl);
   void generatePerlModSection(const Definition *d, MemberList *ml,
-			      const QCString &name, const QCString &header=QCString());
+			      const DString &name, const DString &header=DString());
   void addListOfAllMembers(const ClassDef *cd);
   void addIncludeInfo(const IncludeInfo *ii);
   void generatePerlModForClass(const ClassDef *cd);
@@ -1469,7 +1469,7 @@ public:
   void generatePerlModForGroup(const GroupDef *gd);
   void generatePerlModForPage(PageDef *pi);
 
-  bool createOutputFile(std::ofstream &f, const QCString &s);
+  bool createOutputFile(std::ofstream &f, const DString &s);
   bool createOutputDir(Dir &perlModDir);
   bool generateDoxyLatexTex();
   bool generateDoxyFormatTex();
@@ -1498,8 +1498,8 @@ void PerlModGenerator::generatePerlModForMember(const MemberDef *md,const Defini
   // - template arguments
   //     (templateArguments(), definitionTemplateParameterLists())
 
-  QCString memType = to_string_lower(md->memberType());
-  QCString name;
+  DString memType = to_string_lower(md->memberType());
+  DString name;
   bool isFunc=to_isFunction(md->memberType());
 
   bool isFortran = md->getLanguage()==SrcLangExt::Fortran;
@@ -1615,7 +1615,7 @@ void PerlModGenerator::generatePerlModForMember(const MemberDef *md,const Defini
 
   if (md->memberType() == MemberType::Variable && !md->bitfieldString().empty())
   {
-    QCString bitfield = md->bitfieldString();
+    DString bitfield = md->bitfieldString();
     if (bitfield.at(0) == ':') bitfield = bitfield.mid(1);
     m_output.addFieldQuotedString("bitfield", bitfield);
   }
@@ -1641,7 +1641,7 @@ void PerlModGenerator::generatePerlModForMember(const MemberDef *md,const Defini
 }
 
 void PerlModGenerator::generatePerlModSection(const Definition *d,
-					      MemberList *ml,const QCString &name,const QCString &header)
+					      MemberList *ml,const DString &name,const DString &header)
 {
   if (ml==nullptr) return; // empty list
 
@@ -1716,7 +1716,7 @@ void PerlModGenerator::addIncludeInfo(const IncludeInfo *ii)
 {
   if (ii)
   {
-    QCString nm = ii->includeName;
+    DString nm = ii->includeName;
     if (nm.empty() && ii->fileDef) nm = ii->fileDef->docName();
     if (!nm.empty())
     {
@@ -2230,7 +2230,7 @@ bool PerlModGenerator::generatePerlModOutput()
   return true;
 }
 
-bool PerlModGenerator::createOutputFile(std::ofstream &f, const QCString &s)
+bool PerlModGenerator::createOutputFile(std::ofstream &f, const DString &s)
 {
   f = Portable::openOutputStream(s);
   if (!f.is_open())
@@ -2443,7 +2443,7 @@ bool PerlModGenerator::generateDoxyRules()
     return false;
 
   bool perlmodLatex = Config_getBool(PERLMOD_LATEX);
-  QCString prefix = Config_getString(PERLMOD_MAKEVAR_PREFIX);
+  DString prefix = Config_getString(PERLMOD_MAKEVAR_PREFIX);
 
   doxyRulesStream <<
     prefix << "DOXY_EXEC_PATH = " << pathDoxyExec << "\n" <<
@@ -2539,7 +2539,7 @@ bool PerlModGenerator::generateMakefile()
     return false;
 
   bool perlmodLatex = Config_getBool(PERLMOD_LATEX);
-  QCString prefix = Config_getString(PERLMOD_MAKEVAR_PREFIX);
+  DString prefix = Config_getString(PERLMOD_MAKEVAR_PREFIX);
 
   makefileStream <<
     ".PHONY: default clean" << (perlmodLatex ? " pdf" : "") << "\n"
@@ -2916,7 +2916,7 @@ void PerlModGenerator::generate()
 
   bool perlmodLatex = Config_getBool(PERLMOD_LATEX);
 
-  QCString perlModAbsPath = perlModDir.absPath();
+  DString perlModAbsPath = perlModDir.absPath();
   pathDoxyDocsPM = perlModAbsPath + "/DoxyDocs.pm";
   pathDoxyStructurePM = perlModAbsPath + "/DoxyStructure.pm";
   pathMakefile = perlModAbsPath + "/Makefile";

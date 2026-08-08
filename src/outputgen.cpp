@@ -24,12 +24,12 @@
 #include "message.h"
 #include "portable.h"
 
-OutputGenerator::OutputGenerator(const QCString &dir) : m_t(nullptr), m_dir(dir)
+OutputGenerator::OutputGenerator(const DString &dir) : m_t(nullptr), m_dir(dir)
 {
   //printf("OutputGenerator::OutputGenerator()\n");
 }
 
-void OutputGenerator::startPlainFile(const QCString &name)
+void OutputGenerator::startPlainFile(const DString &name)
 {
   //printf("startPlainFile(%s)\n",qPrint(name));
   m_fileName=m_dir+"/"+name;
@@ -49,12 +49,12 @@ void OutputGenerator::endPlainFile()
   m_fileName.clear();
 }
 
-QCString OutputGenerator::dir() const
+DString OutputGenerator::dir() const
 {
   return m_dir;
 }
 
-QCString OutputGenerator::fileName() const
+DString OutputGenerator::fileName() const
 {
   return m_fileName;
 }

@@ -23,7 +23,7 @@
 class OutputCodeList;
 class FileDef;
 class MemberDef;
-class QCString;
+class DString;
 class Definition;
 
 class FortranCodeParser : public CodeParserInterface
@@ -34,8 +34,8 @@ class FortranCodeParser : public CodeParserInterface
     NON_COPYABLE(FortranCodeParser)
 
     void parseCode(OutputCodeList &codeOutIntf,
-                   const QCString &scopeName,
-                   const QCString &input,
+                   const DString &scopeName,
+                   const DString &input,
                    SrcLangExt lang,
                    bool stripCodeComments,
                    const CodeParserOptions &options

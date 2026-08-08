@@ -32,25 +32,25 @@
 class TranslatorJapaneseEn : public TranslatorEnglish
 {
   public:
-    QCString idLanguage() override
+    DString idLanguage() override
     { return "japanese-en"; }
-    QCString latexLanguageSupportCommand() override
+    DString latexLanguageSupportCommand() override
     {
       return "\\usepackage{CJKutf8}\n";
     }
-    QCString latexFontenc() override
+    DString latexFontenc() override
     {
       return "";
     }
-    QCString latexDocumentPre() override
+    DString latexDocumentPre() override
     {
       return "\\begin{CJK}{UTF8}{min}\n";
     }
-    QCString latexDocumentPost() override
+    DString latexDocumentPost() override
     {
       return "\\end{CJK}\n";
     }
-    QCString trRTFansicp() override
+    DString trRTFansicp() override
     {
       return "932";
     }
@@ -58,16 +58,16 @@ class TranslatorJapaneseEn : public TranslatorEnglish
     /*! Used as ansicpg for RTF fcharset
      *  \see trRTFansicp() for a table of possible values.
      */
-    QCString trRTFCharSet() override
+    DString trRTFCharSet() override
     {
       return "128";
     }
 
-    QCString trISOLang() override
+    DString trISOLang() override
     {
       return "ja";
     }
-    QCString getLanguageString() override
+    DString getLanguageString() override
     {
       return "0x411 Japanese";
     }

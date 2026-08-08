@@ -23,7 +23,7 @@
 #include <memory>
 
 #include "htmlattrib.h"
-#include "qcstring.h"
+#include "dstring.h"
 #include "construct.h"
 
 #define TOKEN_SPECIFICATIONS \
@@ -135,10 +135,10 @@ class Token
 struct TokenInfo
 {
   // command token
-  QCString name;
+  DString name;
 
   // command text (RCS tag)
-  QCString text;
+  DString text;
 
   // comment blocks
 
@@ -148,14 +148,14 @@ struct TokenInfo
   int indent = 0;
 
   // sections
-  QCString sectionId;
+  DString sectionId;
 
   // simple section
-  QCString simpleSectName;
-  QCString simpleSectText;
+  DString simpleSectName;
+  DString simpleSectText;
 
   // verbatim fragment
-  QCString verb;
+  DString verb;
 
   // xrefitem
   int id = -1;
@@ -164,10 +164,10 @@ struct TokenInfo
   HtmlAttribList attribs;
   bool endTag = false;
   bool emptyTag = false;
-  QCString attribsStr;
+  DString attribsStr;
 
   // whitespace
-  QCString chars;
+  DString chars;
 
   // url
   bool isEMailAddr = false;
@@ -198,19 +198,19 @@ class DocTokenizer
     TokenInfo *token();
     [[maybe_unused]] TokenInfo *resetToken();
 
-    void setFileName(const QCString &fileName);
-    QCString getFileName() const;
+    void setFileName(const DString &fileName);
+    DString getFileName() const;
     void setLineNr(int lineno);
     int getLineNr() const;
 
     // operations on the scanner
-    void findSections(const QCString &input,const Definition *d,
-        const QCString &fileName);
-    void init(const char *input,const QCString &fileName,
+    void findSections(const DString &input,const Definition *d,
+        const DString &fileName);
+    void init(const char *input,const DString &fileName,
               bool markdownSupport, bool insideHtmlLink);
     void cleanup();
     Token  lex();
-    void unputString(const QCString &tag);
+    void unputString(const DString &tag);
     void setStatePara();
     void setStateTitle();
     void setStateTitleAttrValue();
@@ -243,7 +243,7 @@ class DocTokenizer
     void setStateSkipTitle();
     void setStateAnchor();
     void setInsidePre(bool b);
-    void pushBackHtmlTag(const QCString &tag);
+    void pushBackHtmlTag(const DString &tag);
     void setStateSnippet();
     void startAutoList();
     void endAutoList();

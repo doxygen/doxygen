@@ -18,24 +18,24 @@
 
 #include <memory>
 
-#include "qcstring.h"
+#include "dstring.h"
 #include "parserintf.h"
 
 class Entry;
 
 /** processes string \a s and converts markdown into doxygen/html commands. */
-//QCString processMarkdown(const QCString &fileName,const int lineNr,Entry *e,const QCString &s);
-QCString markdownFileNameToId(const QCString &fileName);
+//DString processMarkdown(const DString &fileName,const int lineNr,Entry *e,const DString &s);
+DString markdownFileNameToId(const DString &fileName);
 
 /// Helper class to process markdown formatted text
 class Markdown
 {
   public:
-    Markdown(const QCString &fileName,int lineNr,int indentLevel=0);
+    Markdown(const DString &fileName,int lineNr,int indentLevel=0);
    ~Markdown();
     NON_COPYABLE(Markdown)
-    QCString process(const QCString &input, int &startNewlines, bool fromParseInput = false);
-    QCString extractPageTitle(QCString &docs, QCString &id, int &prepend, bool &isIdGenerated);
+    DString process(const DString &input, int &startNewlines, bool fromParseInput = false);
+    DString extractPageTitle(DString &docs, DString &id, int &prepend, bool &isIdGenerated);
     void setIndentLevel(int level);
 
   private:
@@ -53,12 +53,12 @@ class MarkdownOutlineParser final : public OutlineParserInterface
     MarkdownOutlineParser();
    ~MarkdownOutlineParser() override;
     NON_COPYABLE(MarkdownOutlineParser)
-    void parseInput(const QCString &fileName,
+    void parseInput(const DString &fileName,
                     const char *fileBuf,
                     const std::shared_ptr<Entry> &root,
                     ClangTUParser *clangParser) override;
-    bool needsPreprocessing(const QCString &) const override { return false; }
-    void parsePrototype(const QCString &text) override;
+    bool needsPreprocessing(const DString &) const override { return false; }
+    void parsePrototype(const DString &text) override;
   private:
     struct Private;
     std::unique_ptr<Private> p;

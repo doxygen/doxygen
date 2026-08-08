@@ -20,11 +20,11 @@
 #include "config.h"
 #include "util.h"
 
-static QCString getUniqueId(const MemberDef *md)
+static DString getUniqueId(const MemberDef *md)
 {
   const MemberDef *def = md->memberDefinition();
   if (def==nullptr) def = md;
-  QCString result = def->getReference()+"$"+
+  DString result = def->getReference()+"$"+
          def->getOutputFileBase()+"#"+
          def->anchor();
   return result;
@@ -37,7 +37,7 @@ void DotCallGraph::buildGraph(DotNode *n,const MemberDef *md,int distance)
   {
     if (rmd->isCallable())
     {
-      QCString uniqueId = getUniqueId(rmd);
+      DString uniqueId = getUniqueId(rmd);
       auto it = m_usedNodes.find(uniqueId.str());
       if (it!=m_usedNodes.end()) // file is already a node in the graph
       {
@@ -48,7 +48,7 @@ void DotCallGraph::buildGraph(DotNode *n,const MemberDef *md,int distance)
       }
       else
       {
-        QCString name;
+        DString name;
         if (Config_getBool(HIDE_SCOPE_NAMES))
         {
           name  = rmd->getOuterScope()==m_scope ?
@@ -58,7 +58,7 @@ void DotCallGraph::buildGraph(DotNode *n,const MemberDef *md,int distance)
         {
           name = rmd->qualifiedName();
         }
-        QCString tooltip = rmd->briefDescriptionAsTooltip();
+        DString tooltip = rmd->briefDescriptionAsTooltip();
         DotNode *bn = new DotNode(
             this,
             linkToText(rmd->getLanguage(),name,false),
@@ -122,8 +122,8 @@ DotCallGraph::DotCallGraph(const MemberDef *md,bool inverse)
   m_inverse = inverse;
   m_diskName = md->getOutputFileBase()+"_"+md->anchor();
   m_scope    = md->getOuterScope();
-  QCString uniqueId = getUniqueId(md);
-  QCString name;
+  DString uniqueId = getUniqueId(md);
+  DString name;
   if (Config_getBool(HIDE_SCOPE_NAMES))
   {
     name = md->name();
@@ -132,7 +132,7 @@ DotCallGraph::DotCallGraph(const MemberDef *md,bool inverse)
   {
     name = md->qualifiedName();
   }
-  QCString tooltip = md->briefDescriptionAsTooltip();
+  DString tooltip = md->briefDescriptionAsTooltip();
   m_startNode = new DotNode(this,
     linkToText(md->getLanguage(),name,false),
     tooltip,
@@ -157,7 +157,7 @@ DotCallGraph::~DotCallGraph()
   DotNode::deleteNodes(m_startNode);
 }
 
-QCString DotCallGraph::getBaseName() const
+DString DotCallGraph::getBaseName() const
 {
   return m_diskName + (m_inverse ? "_icgraph" : "_cgraph");
 }
@@ -175,18 +175,18 @@ void DotCallGraph::computeTheGraph()
     m_theGraph);
 }
 
-QCString DotCallGraph::getMapLabel() const
+DString DotCallGraph::getMapLabel() const
 {
   return m_baseName;
 }
 
-QCString DotCallGraph::writeGraph(
+DString DotCallGraph::writeGraph(
         TextStream &out,
         GraphOutputFormat graphFormat,
         EmbeddedOutputFormat textFormat,
-        const QCString &path,
-        const QCString &fileName,
-        const QCString &relPath,bool generateImageMap,
+        const DString &path,
+        const DString &fileName,
+        const DString &relPath,bool generateImageMap,
         int graphId)
 {
   m_doNotAddImageToIndex = textFormat!=EmbeddedOutputFormat::Html;

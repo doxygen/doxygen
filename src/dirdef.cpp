@@ -37,18 +37,18 @@
 class DirDefImpl final : public DefinitionMixin<DirDef>
 {
   public:
-    DirDefImpl(const QCString &path);
+    DirDefImpl(const DString &path);
    ~DirDefImpl() override;
     NON_COPYABLE(DirDefImpl)
 
     DefType definitionType() const override { return TypeDir; }
     CodeSymbolType codeSymbolType() const override { return CodeSymbolType::Default; }
-    QCString getOutputFileBase() const override;
-    QCString anchor() const override { return QCString(); }
+    DString getOutputFileBase() const override;
+    DString anchor() const override { return DString(); }
     bool isLinkableInProject() const override;
     bool isLinkable() const override;
-    QCString displayName(bool=true) const override { return m_dispName; }
-    const QCString shortName() const override { return m_shortName; }
+    DString displayName(bool=true) const override { return m_dispName; }
+    const DString shortName() const override { return m_shortName; }
     void addSubDir(DirDef *subdir) override;
     const FileList &getFiles() const override { return m_fileList; }
     void addFile(FileDef *fd) override;
@@ -60,12 +60,12 @@ class DirDefImpl final : public DefinitionMixin<DirDef>
     const UsedDirLinkedMap &usedDirs() const override { return m_usedDirs; }
     bool isParentOf(const DirDef *dir) const override;
     bool depGraphIsTrivial() const override;
-    QCString shortTitle() const override;
+    DString shortTitle() const override;
     bool hasDetailedDescription() const override;
     void writeDocumentation(OutputList &ol) override;
     void writePageNavigation(OutputList &ol) const override;
     void writeTagFile(TextStream &t) override;
-    void setDiskName(const QCString &name) override { m_diskName = name; }
+    void setDiskName(const DString &name) override { m_diskName = name; }
     void sort() override;
     void setParent(DirDef *parent) override;
     void setDirIndex(int index) override;
@@ -81,11 +81,11 @@ class DirDefImpl final : public DefinitionMixin<DirDef>
     void overrideDirectoryGraph(bool e) override;
 
   public:
-    static DirDef *mergeDirectoryInTree(const QCString &path);
+    static DirDef *mergeDirectoryInTree(const DString &path);
 
   private:
 
-    void writeDetailedDescription(OutputList &ol,const QCString &title);
+    void writeDetailedDescription(OutputList &ol,const DString &title);
     void writeBriefDescription(OutputList &ol);
     void writeDirectoryGraph(OutputList &ol);
     void writeSubDirList(OutputList &ol);
@@ -93,13 +93,13 @@ class DirDefImpl final : public DefinitionMixin<DirDef>
     void startMemberDeclarations(OutputList &ol);
     void endMemberDeclarations(OutputList &ol);
 
-    static DirDef *createNewDir(const QCString &path);
-    static bool matchPath(const QCString &path,const StringVector &l);
+    static DirDef *createNewDir(const DString &path);
+    static bool matchPath(const DString &path,const StringVector &l);
 
     DirList m_subdirs;
-    QCString m_dispName;
-    QCString m_shortName;
-    QCString m_diskName;
+    DString m_dispName;
+    DString m_shortName;
+    DString m_diskName;
     FileList m_fileList;                 // list of files in the group
     int m_dirIndex = -1;
     int m_level;
@@ -108,7 +108,7 @@ class DirDefImpl final : public DefinitionMixin<DirDef>
     bool m_hasDirectoryGraph = false;
 };
 
-DirDef *createDirDef(const QCString &path)
+DirDef *createDirDef(const DString &path)
 {
   return new DirDefImpl(path);
 }
@@ -117,7 +117,7 @@ DirDef *createDirDef(const QCString &path)
 //----------------------------------------------------------------------
 // method implementation
 
-DirDefImpl::DirDefImpl(const QCString &path) : DefinitionMixin(path,1,1,path)
+DirDefImpl::DirDefImpl(const DString &path) : DefinitionMixin(path,1,1,path)
 {
   bool fullPathNames = Config_getBool(FULL_PATH_NAMES);
   // get display name (stripping the paths mentioned in STRIP_FROM_PATH)
@@ -128,7 +128,7 @@ DirDefImpl::DirDefImpl(const QCString &path) : DefinitionMixin(path,1,1,path)
   { // strip trailing /
     m_shortName = m_shortName.left(m_shortName.length()-1);
   }
-  if (size_t pi=m_shortName.rfind('/'); pi!=QCString::npos)
+  if (size_t pi=m_shortName.rfind('/'); pi!=DString::npos)
   { // remove everything till the last /
     m_shortName = m_shortName.mid(pi+1);
   }
@@ -188,7 +188,7 @@ void DirDefImpl::sort()
   std::stable_sort(m_fileList.begin(), m_fileList.end(), compareFileDefs);
 }
 
-static QCString encodeDirName(const QCString &anchor)
+static DString encodeDirName(const DString &anchor)
 {
   AUTO_TRACE();
   // convert to md5 hash
@@ -200,7 +200,7 @@ static QCString encodeDirName(const QCString &anchor)
   return sigStr;
 
   // old algorithm
-//  QCString result;
+//  DString result;
 
 //  int l = anchor.length(),i;
 //  for (i=0;i<l;i++)
@@ -222,14 +222,14 @@ static QCString encodeDirName(const QCString &anchor)
 //  return result;
 }
 
-QCString DirDefImpl::getOutputFileBase() const
+DString DirDefImpl::getOutputFileBase() const
 {
-  QCString dir = "dir_"+encodeDirName(m_diskName);
+  DString dir = "dir_"+encodeDirName(m_diskName);
   AUTO_TRACE("diskName={} result={}",m_diskName,dir);
   return dir;
 }
 
-void DirDefImpl::writeDetailedDescription(OutputList &ol,const QCString &title)
+void DirDefImpl::writeDetailedDescription(OutputList &ol,const DString &title)
 {
   AUTO_TRACE();
   if (hasDetailedDescription())
@@ -240,7 +240,7 @@ void DirDefImpl::writeDetailedDescription(OutputList &ol,const QCString &title)
     ol.popGeneratorState();
     ol.pushGeneratorState();
       ol.disableAllBut(OutputType::Html);
-      ol.writeAnchor(QCString(),"details");
+      ol.writeAnchor(DString(),"details");
     ol.popGeneratorState();
     ol.startGroupHeader("details");
     ol.parseText(title);
@@ -320,7 +320,7 @@ void DirDefImpl::writeBriefDescription(OutputList &ol)
          )
       {
         ol.disableAllBut(OutputType::Html);
-        ol.startTextLink(QCString(),"details");
+        ol.startTextLink(DString(),"details");
         ol.parseText(theTranslator->trMore());
         ol.endTextLink();
       }
@@ -382,7 +382,7 @@ void DirDefImpl::writeSubDirList(OutputList &ol)
       if (dd->hasDocumentation() || !dd->getFiles().empty())
       {
         ol.startMemberDeclaration();
-        QCString anc=dd->anchor();
+        DString anc=dd->anchor();
         if (anc.empty()) anc=dd->shortName(); else anc.prepend(dd->shortName()+"_");
         ol.startMemberItem(anc,OutputGenerator::MemberItemType::Normal);
         {
@@ -395,7 +395,7 @@ void DirDefImpl::writeSubDirList(OutputList &ol)
           ol.popGeneratorState();
         }
         ol.insertMemberAlign();
-        ol.writeObjectLink(dd->getReference(),dd->getOutputFileBase(),QCString(),dd->shortName());
+        ol.writeObjectLink(dd->getReference(),dd->getOutputFileBase(),DString(),dd->shortName());
         ol.endMemberItem(OutputGenerator::MemberItemType::Normal);
         if (!dd->briefDescription().empty() && Config_getBool(BRIEF_MEMBER_DESC))
         {
@@ -410,7 +410,7 @@ void DirDefImpl::writeSubDirList(OutputList &ol)
                          .setLinkFromIndex(true));
           ol.endMemberDescription();
         }
-        ol.endMemberDeclaration(dd->anchor(),QCString());
+        ol.endMemberDeclaration(dd->anchor(),DString());
       }
     }
 
@@ -450,7 +450,7 @@ void DirDefImpl::writeFileList(OutputList &ol)
       if (doc || src)
       {
         ol.startMemberDeclaration();
-        QCString anc = fd->anchor();
+        DString anc = fd->anchor();
         if (anc.empty()) anc=fd->displayName(); else anc.prepend(fd->displayName()+"_");
         ol.startMemberItem(anc,OutputGenerator::MemberItemType::Normal);
         {
@@ -459,7 +459,7 @@ void DirDefImpl::writeFileList(OutputList &ol)
           bool genSrc = fd->generateSourceFile();
           if (genSrc)
           {
-            ol.startTextLink(fd->includeName(),QCString());
+            ol.startTextLink(fd->includeName(),DString());
           }
           ol.writeString("<span class=\"icondoc\"><div class=\"doc-icon\"></div></span>");
           if (genSrc)
@@ -474,7 +474,7 @@ void DirDefImpl::writeFileList(OutputList &ol)
         ol.insertMemberAlign();
         if (fd->isLinkable())
         {
-          ol.writeObjectLink(fd->getReference(),fd->getOutputFileBase(),QCString(),fd->displayName());
+          ol.writeObjectLink(fd->getReference(),fd->getOutputFileBase(),DString(),fd->displayName());
         }
         else
         {
@@ -496,7 +496,7 @@ void DirDefImpl::writeFileList(OutputList &ol)
                          .setLinkFromIndex(true));
           ol.endMemberDescription();
         }
-        ol.endMemberDeclaration(fd->anchor(),QCString());
+        ol.endMemberDeclaration(fd->anchor(),DString());
       }
     }
     ol.endMemberList();
@@ -513,7 +513,7 @@ void DirDefImpl::endMemberDeclarations(OutputList &ol)
   ol.endMemberSections();
 }
 
-QCString DirDefImpl::shortTitle() const
+DString DirDefImpl::shortTitle() const
 {
   if (Config_getBool(HIDE_COMPOUND_REFERENCE))
   {
@@ -536,7 +536,7 @@ void DirDefImpl::writeTagFile(TextStream &tagFile)
   tagFile << "  <compound kind=\"dir\">\n";
   tagFile << "    <name>" << convertToXML(displayName()) << "</name>\n";
   tagFile << "    <path>" << convertToXML(stripFromPath(name())) << "</path>\n";
-  QCString fn=getOutputFileBase();
+  DString fn=getOutputFileBase();
   addHtmlExtensionIfMissing(fn);
   tagFile << "    <filename>" << fn << "</filename>\n";
   for (const auto &lde : LayoutDocManager::instance().docEntries(LayoutDocManager::Directory))
@@ -575,7 +575,7 @@ void DirDefImpl::writeDocumentation(OutputList &ol)
   bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
   ol.pushGeneratorState();
 
-  QCString title;
+  DString title;
   if (Config_getBool(HIDE_COMPOUND_REFERENCE))
   {
     title=m_dispName;
@@ -790,10 +790,10 @@ void DirDefImpl::findSectionsInDocumentation()
 
 void DirDefImpl::addListReferences()
 {
-  QCString name = getOutputFileBase();
+  DString name = getOutputFileBase();
   addRefItem(xrefListItems(), name,
              theTranslator->trDir(true,true),
-             name,displayName(),QCString(),nullptr);
+             name,displayName(),DString(),nullptr);
 }
 
 void DirDefImpl::addRequirementReferences()
@@ -827,7 +827,7 @@ void DirDefImpl::computeDependencies()
 
   std::stable_sort(m_usedDirs.begin(),m_usedDirs.end(),
             [](const auto &u1,const auto &u2)
-            { return qstricmp_sort(u1->dir()->getOutputFileBase(),u2->dir()->getOutputFileBase())<0; });
+            { return dstricmp_sort(u1->dir()->getOutputFileBase(),u2->dir()->getOutputFileBase())<0; });
 
   for (const auto& usedDirectory : m_usedDirs)
   {
@@ -871,19 +871,19 @@ void UsedDir::sort()
             m_filePairs.end(),
             [](const auto &left,const auto &right)
             {
-              int orderHi = qstricmp_sort(left->source()->name(),right->source()->name());
+              int orderHi = dstricmp_sort(left->source()->name(),right->source()->name());
               if (orderHi!=0) return orderHi<0;
-              int orderLo = qstricmp_sort(left->destination()->name(),right->destination()->name());
+              int orderLo = dstricmp_sort(left->destination()->name(),right->destination()->name());
               return orderLo<0;
             });
 }
 
-FilePair *UsedDir::findFilePair(const QCString &name)
+FilePair *UsedDir::findFilePair(const DString &name)
 {
   return m_filePairs.find(name);
 }
 
-DirDef *DirDefImpl::createNewDir(const QCString &path)
+DirDef *DirDefImpl::createNewDir(const DString &path)
 {
   AUTO_TRACE();
   ASSERT(path!=nullptr);
@@ -898,12 +898,12 @@ DirDef *DirDefImpl::createNewDir(const QCString &path)
   return dir;
 }
 
-bool DirDefImpl::matchPath(const QCString &path,const StringVector &l)
+bool DirDefImpl::matchPath(const DString &path,const StringVector &l)
 {
   for (const auto &s : l)
   {
     std::string prefix = s.substr(0,path.length());
-    if (qstricmp_sort(prefix.c_str(),path)==0) // case insensitive compare
+    if (dstricmp_sort(prefix.c_str(),path)==0) // case insensitive compare
     {
       return true;
     }
@@ -914,14 +914,14 @@ bool DirDefImpl::matchPath(const QCString &path,const StringVector &l)
 /*! strip part of \a path if it matches
  *  one of the paths in the Config_getList(STRIP_FROM_PATH) list
  */
-DirDef *DirDefImpl::mergeDirectoryInTree(const QCString &path)
+DirDef *DirDefImpl::mergeDirectoryInTree(const DString &path)
 {
   AUTO_TRACE("path={}",path);
   size_t p=0,i=0;
   DirDef *dir=nullptr;
-  while ((i=path.find('/',p))!=QCString::npos)
+  while ((i=path.find('/',p))!=DString::npos)
   {
-    QCString part=path.left(i+1);
+    DString part=path.left(i+1);
     if (!matchPath(part,Config_getList(STRIP_FROM_PATH)) && (part!="/" && part!="//" && part!="//?/"))
     {
       dir=createNewDir(removeLongPathMarker(part));
@@ -943,7 +943,7 @@ bool DirDefImpl::hasDirectoryGraph() const
 
 //----------------------------------------------------------------------
 
-QCString FilePair::key(const FileDef *srcFd,const FileDef *dstFd)
+DString FilePair::key(const FileDef *srcFd,const FileDef *dstFd)
 {
   return srcFd->getOutputFileBase()+";"+dstFd->getOutputFileBase();
 }
@@ -957,7 +957,7 @@ static void writePartialDirPath(OutputList &ol,const DirDef *root,const DirDef *
     writePartialDirPath(ol,root,target->parent());
     ol.writeString("&#160;/&#160;");
   }
-  ol.writeObjectLink(target->getReference(),target->getOutputFileBase(),QCString(),target->shortName());
+  ol.writeObjectLink(target->getReference(),target->getOutputFileBase(),DString(),target->shortName());
 }
 
 static void writePartialFilePath(OutputList &ol,const DirDef *root,const FileDef *fd)
@@ -969,7 +969,7 @@ static void writePartialFilePath(OutputList &ol,const DirDef *root,const FileDef
   }
   if (fd->isLinkable())
   {
-    ol.writeObjectLink(fd->getReference(),fd->getOutputFileBase(),QCString(),fd->name());
+    ol.writeObjectLink(fd->getReference(),fd->getOutputFileBase(),DString(),fd->name());
   }
   else
   {
@@ -985,9 +985,9 @@ void DirRelation::writeDocumentation(OutputList &ol)
   ol.pushGeneratorState();
   ol.disableAllBut(OutputType::Html);
 
-  QCString shortTitle=theTranslator->trDirRelation(
+  DString shortTitle=theTranslator->trDirRelation(
                       (m_src->shortName()+" &rarr; "+m_dst->dir()->shortName()));
-  QCString title=theTranslator->trDirRelation(
+  DString title=theTranslator->trDirRelation(
                  (m_src->displayName()+" -> "+m_dst->dir()->shortName()));
   AUTO_TRACE("title={}",title);
   startFile(ol,getOutputFileBase(),false,getOutputFileBase(),
@@ -1041,15 +1041,15 @@ void DirRelation::writeDocumentation(OutputList &ol)
 static void computeCommonDirPrefix()
 {
   AUTO_TRACE();
-  QCString path;
+  DString path;
   auto it = Doxygen::dirLinkedMap->begin();
   if (!Doxygen::dirLinkedMap->empty()) // we have at least one dir
   {
     // start will full path of first dir
     path=removeLongPathMarker((*it)->name());
-    size_t i = path.length()>=2 ? path.rfind('/',path.length()-2) : QCString::npos;
+    size_t i = path.length()>=2 ? path.rfind('/',path.length()-2) : DString::npos;
     bool done=false;
-    if (i==QCString::npos)
+    if (i==DString::npos)
     {
       path="";
     }
@@ -1062,14 +1062,14 @@ static void computeCommonDirPrefix()
         size_t count=0;
         for (const auto &dir : *Doxygen::dirLinkedMap)
         {
-          QCString dirName = removeLongPathMarker(dir->name());
+          DString dirName = removeLongPathMarker(dir->name());
           //printf("dirName='%s' (l=%d) path='%s' (l=%d)\n",qPrint(dirName),dirName.length(),qPrint(path),path.length());
           if (dirName.length()>path.length())
           {
             if (dirName.left(l)!=path) // dirName does not start with path
             {
-              i = l>=2 ? path.rfind('/',l-2) : QCString::npos;
-              if (i==QCString::npos) // no unique prefix -> stop
+              i = l>=2 ? path.rfind('/',l-2) : DString::npos;
+              if (i==DString::npos) // no unique prefix -> stop
               {
                 path="";
                 done=true;
@@ -1085,8 +1085,8 @@ static void computeCommonDirPrefix()
           {
             path=dir->name();
             l = path.length();
-            i = l>=2 ? path.rfind('/',l-2) : QCString::npos;
-            if (i==QCString::npos) // no unique prefix -> stop
+            i = l>=2 ? path.rfind('/',l-2) : DString::npos;
+            if (i==DString::npos) // no unique prefix -> stop
             {
               path="";
               done=true;
@@ -1109,7 +1109,7 @@ static void computeCommonDirPrefix()
   }
   for (const auto &dir : *Doxygen::dirLinkedMap)
   {
-    QCString diskName = dir->name().right(dir->name().length()-path.length());
+    DString diskName = dir->name().right(dir->name().length()-path.length());
     dir->setDiskName(diskName);
     AUTO_TRACE_ADD("set disk name: {} -> {}",dir->name(),diskName);
   }
@@ -1142,9 +1142,9 @@ void buildDirectories()
   // compute relations between directories => introduce container dirs.
   for (const auto &dir : *Doxygen::dirLinkedMap)
   {
-    QCString name = dir->name();
-    size_t i = name.length()>=2 ? name.rfind('/',name.length()-2) : QCString::npos;
-    if (i!=QCString::npos && i>0)
+    DString name = dir->name();
+    size_t i = name.length()>=2 ? name.rfind('/',name.length()-2) : DString::npos;
+    if (i!=DString::npos && i>0)
     {
       DirDef *parent = Doxygen::dirLinkedMap->find(name.left(i+1));
       //if (parent==0) parent=root;
@@ -1168,12 +1168,12 @@ void buildDirectories()
             Doxygen::dirLinkedMap->end(),
             [](const auto &d1,const auto &d2)
             {
-              QCString s1 = d1->shortName(), s2 = d2->shortName();
-              int i = qstricmp_sort(s1,s2);
+              DString s1 = d1->shortName(), s2 = d2->shortName();
+              int i = dstricmp_sort(s1,s2);
               if (i==0) // if sort name are equal, sort on full path
               {
-                QCString n1 = d1->name(), n2 = d2->name();
-                int n = qstricmp_sort(n1,n2);
+                DString n1 = d1->name(), n2 = d2->name();
+                int n = dstricmp_sort(n1,n2);
                 return n < 0;
               }
               return i < 0;
@@ -1230,7 +1230,7 @@ void generateDirDocs(OutputList &ol)
 
 bool compareDirDefs(const DirDef *item1, const DirDef *item2)
 {
-  return qstricmp_sort(item1->shortName(),item2->shortName()) < 0;
+  return dstricmp_sort(item1->shortName(),item2->shortName()) < 0;
 }
 
 // --- Cast functions

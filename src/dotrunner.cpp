@@ -73,7 +73,7 @@
 
 // since dot silently reproduces the input file when it does not
 // support the PNG format, we need to check the result.
-static void checkPngResult(const QCString &imgName)
+static void checkPngResult(const DString &imgName)
 {
   FILE *f = Portable::fopen(imgName,"rb");
   if (!f)
@@ -101,10 +101,10 @@ static void checkPngResult(const QCString &imgName)
   fclose(f);
 }
 
-static bool resetPDFSize(const int width,const int height, const QCString &base)
+static bool resetPDFSize(const int width,const int height, const DString &base)
 {
-  QCString tmpName   = base+".tmp";
-  QCString patchFile = base+".dot";
+  DString tmpName   = base+".tmp";
+  DString patchFile = base+".dot";
   Dir thisDir;
   if (!thisDir.rename(patchFile.str(),tmpName.str()))
   {
@@ -143,7 +143,7 @@ static bool resetPDFSize(const int width,const int height, const QCString &base)
   return true;
 }
 
-bool DotRunner::readBoundingBox(const QCString &fileName,int *width,int *height,bool isEps)
+bool DotRunner::readBoundingBox(const DString &fileName,int *width,int *height,bool isEps)
 {
   std::ifstream f = Portable::openInputStream(fileName);
   if (!f.is_open())
@@ -263,10 +263,10 @@ bool DotRunner::readBoundingBox(const QCString &fileName,int *width,int *height,
 
 //---------------------------------------------------------------------------------
 
-static QCString getBaseNameOfOutput(const QCString &output)
+static DString getBaseNameOfOutput(const DString &output)
 {
   size_t index = output.rfind('.');
-  if (index==QCString::npos) return output;
+  if (index==DString::npos) return output;
   return output.left(index);
 }
 
@@ -291,7 +291,7 @@ bool DotRunner::run(const DotJobs &dotJobs)
   size_t prev=0;
   for (const auto &[fmtStr, byDir] : byFormatAndDir)
   {
-    QCString format = QCString(fmtStr);
+    DString format = DString(fmtStr);
 
     for (const auto &[dirStr, jobs] : byDir)
     {
@@ -312,8 +312,8 @@ bool DotRunner::run(const DotJobs &dotJobs)
       // helper to keep track of dot command to run later
       struct CommandArgument
       {
-        CommandArgument(const QCString &args) : arguments(args) {}
-        QCString arguments;
+        CommandArgument(const DString &args) : arguments(args) {}
+        DString arguments;
         size_t numDotFiles = 0;
         const DotJob *firstJob = nullptr;
       };
@@ -324,7 +324,7 @@ bool DotRunner::run(const DotJobs &dotJobs)
       bool hasImageMap = std::any_of(jobs.begin(),jobs.end(),[](const auto &j) { return j->generateImageMap; });
 
       // each dot command has a command arguments of the form: -Tformat -O basename1.dot basename2.dot ...
-      QCString baseArgs = QCString("-T") + format;
+      DString baseArgs = DString("-T") + format;
       if (hasImageMap) // if any image needs a map we generate one for all images
       {
         baseArgs += " -Tcmapx";
@@ -342,7 +342,7 @@ bool DotRunner::run(const DotJobs &dotJobs)
       for (size_t i : indices)
       {
         const auto &job = jobs[i];
-        QCString fileArg = QCString(" ") + job->relDotName;
+        DString fileArg = DString(" ") + job->relDotName;
         auto &cmd = partialCommands[index];
         if (cmd.numDotFiles<batchSize && cmd.arguments.length()+fileArg.length()<maxArgLen) // still room in this batch
         {
@@ -432,9 +432,9 @@ bool DotRunner::run(const DotJobs &dotJobs)
       // Rename to remove the .dot infix, producing absPath + baseName + "." + format.
       for (const auto *job : jobs)
       {
-        QCString base   = job->absPath + getBaseNameOfOutput(job->relDotName);
-        QCString dotOutput = job->absPath + job->relDotName + "." + format;
-        QCString output = base + "." + format;
+        DString base   = job->absPath + getBaseNameOfOutput(job->relDotName);
+        DString dotOutput = job->absPath + job->relDotName + "." + format;
+        DString output = base + "." + format;
         Dir d;
         if (!d.rename(dotOutput.str(), output.str()))
         {
@@ -444,8 +444,8 @@ bool DotRunner::run(const DotJobs &dotJobs)
         }
         if (job->generateImageMap)
         {
-          QCString dotMapOutput = job->absPath + job->relDotName + ".cmapx";
-          QCString mapOutput = base + ".map";
+          DString dotMapOutput = job->absPath + job->relDotName + ".cmapx";
+          DString mapOutput = base + ".map";
           if (!d.rename(dotMapOutput.str(), mapOutput.str()))
           {
             err("Failed to rename {} to {}!\n", dotMapOutput, mapOutput);
@@ -470,7 +470,7 @@ bool DotRunner::run(const DotJobs &dotJobs)
               continue;
             }
             // Re-run dot for just this one file
-            QCString rerunArgs = QCString("-T") + format + " -O \"" + job->relDotName + "\"";
+            DString rerunArgs = DString("-T") + format + " -O \"" + job->relDotName + "\"";
             int exitCode;
             if ((exitCode = Portable::system(m_dotExe, rerunArgs, false)) != 0)
             {
@@ -507,7 +507,7 @@ bool DotRunner::run(const DotJobs &dotJobs)
 
     if (!job.md5Hash.empty())
     {
-      QCString md5Name = job.absPath + getBaseNameOfOutput(job.relDotName) + ".md5";
+      DString md5Name = job.absPath + getBaseNameOfOutput(job.relDotName) + ".md5";
       FILE *f = Portable::fopen(md5Name, "w");
       if (f)
       {

@@ -17,22 +17,22 @@
 
 #include <vector>
 
-#include "qcstring.h"
+#include "dstring.h"
 #include "util.h"
 
 /*! \brief Class representing a HTML attribute. */
 struct HtmlAttrib
 {
-  HtmlAttrib(const QCString &n,const QCString &v) : name(n), value(v) {}
-  QCString name;
-  QCString value;
+  HtmlAttrib(const DString &n,const DString &v) : name(n), value(v) {}
+  DString name;
+  DString value;
 };
 
 /*! \brief Class representing a list of HTML attributes. */
 class HtmlAttribList final : public std::vector<HtmlAttrib>
 {
   public:
-    void mergeAttribute(const QCString &optName,const QCString &optValue)
+    void mergeAttribute(const DString &optName,const DString &optValue)
     {
       auto it = std::find_if(begin(),end(),
                            [&optName](const auto &opt) { return opt.name==optName; });
@@ -46,9 +46,9 @@ class HtmlAttribList final : public std::vector<HtmlAttrib>
       }
     }
 
-    QCString toString(QCString *pAltValue = nullptr) const
+    DString toString(DString *pAltValue = nullptr) const
     {
-      QCString result;
+      DString result;
       for (const auto &att : *this)
       {
         if (!att.value.empty())  // ignore attribute without values as they

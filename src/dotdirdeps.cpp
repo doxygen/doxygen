@@ -61,7 +61,7 @@ class DotDirPropertyBuilder
 typedef std::vector< std::pair< std::unique_ptr<DirRelation>, bool> > DirRelations;
 
 /** Returns a DOT color name according to the directory depth. */
-static QCString getDirectoryBackgroundColor(int depthIndex)
+static DString getDirectoryBackgroundColor(int depthIndex)
 {
   int hue   = Config_getInt(HTML_COLORSTYLE_HUE);
   int sat   = Config_getInt(HTML_COLORSTYLE_SAT);
@@ -136,7 +136,7 @@ static std::string getDirectoryBorderStyle(const DotDirProperty &property)
 
 static TextStream &common_attributes(TextStream &t, const DirDef *const dir, const DotDirProperty &prop)
 {
-  QCString url = dir->getOutputFileBase();
+  DString url = dir->getOutputFileBase();
   addHtmlExtensionIfMissing(url);
   return t <<
     "style=\""   << getDirectoryBorderStyle(prop) << "\", "
@@ -219,7 +219,7 @@ static void addDependencies(DirRelations &dependencies,const DirDef *const srcDi
     const auto dstDir = usedDirectory->dir();
     if (!dstDir->isParentOf(srcDir) && (isLeaf || usedDirectory->hasDirectSrcDeps()))
     {
-      QCString relationName;
+      DString relationName;
       relationName.sprintf("dir_%06d_%06d", srcDir->dirIndex(), dstDir->dirIndex());
       bool directRelation = isLeaf ? usedDirectory->hasDirectDstDeps() : usedDirectory->hasDirectDeps();
       dependencies.emplace_back(
@@ -389,7 +389,7 @@ void writeDotDirDepGraph(TextStream &t,const DirDef *dd,bool linkRelations)
         t << " [headlabel=\"" << nrefs << "\", labeldistance=1.5";
         if (linkRelations)
         {
-          QCString fn = relationName;
+          DString fn = relationName;
           addHtmlExtensionIfMissing(fn);
           t << " headhref=\"" << fn << "\"";
           t << " href=\"" << fn << "\"";
@@ -408,7 +408,7 @@ DotDirDeps::~DotDirDeps()
 {
 }
 
-QCString DotDirDeps::getBaseName() const
+DString DotDirDeps::getBaseName() const
 {
   return m_dir->getOutputFileBase()+"_dep";
 
@@ -425,18 +425,18 @@ void DotDirDeps::computeTheGraph()
   m_theGraph = md5stream.str();
 }
 
-QCString DotDirDeps::getMapLabel() const
+DString DotDirDeps::getMapLabel() const
 {
   return escapeCharsInString(m_baseName,false);
 }
 
-QCString DotDirDeps::getImgAltText() const
+DString DotDirDeps::getImgAltText() const
 {
   return convertToXML(m_dir->displayName());
 }
 
-QCString DotDirDeps::writeGraph(TextStream &out, GraphOutputFormat graphFormat, EmbeddedOutputFormat textFormat,
-                                const QCString &path, const QCString &fileName, const QCString &relPath, bool generateImageMap,
+DString DotDirDeps::writeGraph(TextStream &out, GraphOutputFormat graphFormat, EmbeddedOutputFormat textFormat,
+                                const DString &path, const DString &fileName, const DString &relPath, bool generateImageMap,
                                 int graphId, bool linkRelations)
 {
   m_linkRelations = linkRelations;

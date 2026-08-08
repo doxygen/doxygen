@@ -158,22 +158,22 @@ class TranslatorGerman : public Translator
      * (e.g. "czech", "japanese", "russian", etc.). It should be equal to
      * the identification used in language.cpp.
      */
-    QCString idLanguage() override
+    DString idLanguage() override
     { return "german"; }
 
     /*! Used to get the LaTeX command(s) for the language support. This method
      *  was designed for languages which do wish to use a babel package.
      */
-    QCString latexLanguageSupportCommand() override
+    DString latexLanguageSupportCommand() override
     {
       return "\\usepackage[ngerman]{babel}\n";
     }
 
-    QCString trISOLang() override
+    DString trISOLang() override
     {
       return "de";
     }
-    QCString getLanguageString() override
+    DString getLanguageString() override
     {
       return "0x407 German";
     }
@@ -181,35 +181,35 @@ class TranslatorGerman : public Translator
     // --- Language translation methods -------------------
 
     /*! used in the compound documentation before a list of related functions. */
-    QCString trRelatedFunctions() override
+    DString trRelatedFunctions() override
     { return "Verwandte Funktionen"; }
 
     /*! subscript for the related functions. */
-    QCString trRelatedSubscript() override
+    DString trRelatedSubscript() override
     { return "(Es handelt sich hierbei nicht um Elementfunktionen.)"; }
 
     /*! header that is put before the detailed description of files, classes and namespaces. */
-    QCString trDetailedDescription() override
+    DString trDetailedDescription() override
     { return "Ausführliche Beschreibung"; }
 
     /*! header that is used when the summary tag is missing inside the details tag */
-    QCString trDetails() override
+    DString trDetails() override
     { return "Details"; }
 
     /*! header that is put before the list of typedefs. */
-    QCString trMemberTypedefDocumentation() override
+    DString trMemberTypedefDocumentation() override
     { return "Dokumentation der benutzerdefinierten Datentypen"; }
 
     /*! header that is put before the list of enumerations. */
-    QCString trMemberEnumerationDocumentation() override
+    DString trMemberEnumerationDocumentation() override
     { return "Dokumentation der Aufzählungstypen"; }
 
     /*! header that is put before the list of member functions. */
-    QCString trMemberFunctionDocumentation() override
+    DString trMemberFunctionDocumentation() override
     { return "Dokumentation der Elementfunktionen"; }
 
     /*! header that is put before the list of member attributes. */
-    QCString trMemberDataDocumentation() override
+    DString trMemberDataDocumentation() override
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
@@ -222,45 +222,45 @@ class TranslatorGerman : public Translator
     }
 
     /*! this is the text of a link put after brief descriptions. */
-    QCString trMore() override
+    DString trMore() override
     { return "Mehr ..."; }
 
     /*! put in the class documentation */
-    QCString trListOfAllMembers() override
+    DString trListOfAllMembers() override
     { return "Aufstellung aller Elemente"; }
 
     /*! used as the title of the "list of all members" page of a class */
-    QCString trMemberList() override
+    DString trMemberList() override
     { return "Elementverzeichnis"; }
 
     /*! this is the first part of a sentence that is followed by a class name */
-    QCString trThisIsTheListOfAllMembers() override
+    DString trThisIsTheListOfAllMembers() override
     { return "Vollständige Aufstellung aller Elemente für"; }
 
     /*! this is the remainder of the sentence after the class name */
-    QCString trIncludingInheritedMembers() override
+    DString trIncludingInheritedMembers() override
     { return " einschließlich aller geerbten Elemente."; }
 
     /*! this is put at the author sections at the bottom of man pages.
      *  parameter s is name of the project name.
      */
-    QCString trGeneratedAutomatically(const QCString &s) override
-    { QCString result="Automatisch erzeugt von Doxygen";
+    DString trGeneratedAutomatically(const DString &s) override
+    { DString result="Automatisch erzeugt von Doxygen";
       if (!s.empty()) result+=" für "+s;
       result+=" aus dem Quellcode.";
       return result;
     }
 
     /*! put after an enum name in the list of all members */
-    QCString trEnumName() override
+    DString trEnumName() override
     { return "enum-Bezeichner"; }
 
     /*! put after an enum value in the list of all members */
-    QCString trEnumValue() override
+    DString trEnumValue() override
     { return "enum-Wert"; }
 
     /*! put after an undocumented member in the list of all members */
-    QCString trDefinedIn() override
+    DString trDefinedIn() override
     { return "Definiert in"; }
 
     // quick reference sections
@@ -268,15 +268,15 @@ class TranslatorGerman : public Translator
     /*! This is put above each page as a link to the list of all groups of
      *  compounds or files (see the \\group command).
      */
-    QCString trModules() override
+    DString trModules() override
     { return "Module"; }
 
     /*! This is put above each page as a link to the class hierarchy */
-    QCString trClassHierarchy() override
+    DString trClassHierarchy() override
     { return "Klassenhierarchie"; }
 
     /*! This is put above each page as a link to the list of annotated classes */
-    QCString trCompoundList() override
+    DString trCompoundList() override
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
@@ -289,11 +289,11 @@ class TranslatorGerman : public Translator
     }
 
     /*! This is put above each page as a link to the list of documented files */
-    QCString trFileList() override
+    DString trFileList() override
     { return "Auflistung der Dateien"; }
 
     /*! This is put above each page as a link to all members of compounds. */
-    QCString trCompoundMembers() override
+    DString trCompoundMembers() override
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
@@ -306,7 +306,7 @@ class TranslatorGerman : public Translator
     }
 
     /*! This is put above each page as a link to all members of files. */
-    QCString trFileMembers() override
+    DString trFileMembers() override
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
@@ -319,19 +319,19 @@ class TranslatorGerman : public Translator
     }
 
     /*! This is put above each page as a link to all related pages. */
-    QCString trRelatedPages() override
+    DString trRelatedPages() override
     { return "Zusätzliche Informationen"; }
 
     /*! This is put above each page as a link to all examples. */
-    QCString trExamples() override
+    DString trExamples() override
     { return "Beispiele"; }
 
     /*! This is put above each page as a link to the search engine. */
-    QCString trSearch() override
+    DString trSearch() override
     { return "Suchen"; }
 
     /*! This is an introduction to the class hierarchy. */
-    QCString trClassHierarchyDescription() override
+    DString trClassHierarchyDescription() override
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
       {
@@ -346,16 +346,16 @@ class TranslatorGerman : public Translator
     }
 
     /*! This is an introduction to the list with all files. */
-    QCString trFileListDescription(bool extractAll) override
+    DString trFileListDescription(bool extractAll) override
     {
-      QCString result="Hier folgt die Aufzählung aller ";
+      DString result="Hier folgt die Aufzählung aller ";
       if (!extractAll) result+="dokumentierten ";
       result+="Dateien mit einer Kurzbeschreibung:";
       return result;
     }
 
     /*! This is an introduction to the annotated compound list. */
-    QCString trCompoundListDescription() override
+    DString trCompoundListDescription() override
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
@@ -374,9 +374,9 @@ class TranslatorGerman : public Translator
     }
 
     /*! This is an introduction to the page with all class members. */
-    QCString trCompoundMembersDescription(bool extractAll) override
+    DString trCompoundMembersDescription(bool extractAll) override
     {
-      QCString result="Hier folgt die Aufzählung aller ";
+      DString result="Hier folgt die Aufzählung aller ";
       if (!extractAll)
       {
         result+="dokumentierten ";
@@ -416,9 +416,9 @@ class TranslatorGerman : public Translator
     }
 
     /*! This is an introduction to the page with all file members. */
-    QCString trFileMembersDescription(bool extractAll) override
+    DString trFileMembersDescription(bool extractAll) override
     {
-      QCString result="Hier folgt die Aufzählung aller ";
+      DString result="Hier folgt die Aufzählung aller ";
       if (!extractAll) result+="dokumentierten ";
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
@@ -437,39 +437,39 @@ class TranslatorGerman : public Translator
     }
 
     /*! This is an introduction to the page with the list of all examples */
-    QCString trExamplesDescription() override
+    DString trExamplesDescription() override
     { return "Hier folgt eine Liste mit allen Beispielen:"; }
 
     /*! This is an introduction to the page with the list of related pages */
-    QCString trRelatedPagesDescription() override
+    DString trRelatedPagesDescription() override
     { return "Hier folgt eine Liste mit zusammengehörigen Themengebieten:"; }
 
     /*! This is an introduction to the page with the list of class/file groups */
-    QCString trModulesDescription() override
+    DString trModulesDescription() override
     { return "Hier folgt die Aufzählung aller Module:"; }
 
     // index titles (the project name is prepended for these)
 
     /*! This is used in HTML as the title of index.html. */
-    QCString trDocumentation(const QCString &projName) override
+    DString trDocumentation(const DString &projName) override
     { return (!projName.empty()?projName + " " : "") + "Dokumentation"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * index of all groups.
      */
-    QCString trModuleIndex() override
+    DString trModuleIndex() override
     { return "Modul-Verzeichnis"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * class hierarchy.
      */
-    QCString trHierarchicalIndex() override
+    DString trHierarchicalIndex() override
     { return "Hierarchie-Verzeichnis"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * annotated compound index.
      */
-    QCString trCompoundIndex() override
+    DString trCompoundIndex() override
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
     return "Datenstruktur-Verzeichnis";
@@ -480,19 +480,19 @@ class TranslatorGerman : public Translator
     /*! This is used in LaTeX as the title of the chapter with the
      * list of all files.
      */
-    QCString trFileIndex() override
+    DString trFileIndex() override
     { return "Datei-Verzeichnis"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all groups.
      */
-    QCString trModuleDocumentation() override
+    DString trModuleDocumentation() override
     { return "Modul-Dokumentation"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all classes, structs and unions.
      */
-    QCString trClassDocumentation() override
+    DString trClassDocumentation() override
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
@@ -511,83 +511,83 @@ class TranslatorGerman : public Translator
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all files.
      */
-    QCString trFileDocumentation() override
+    DString trFileDocumentation() override
     { return "Datei-Dokumentation"; }
 
     /*! This is used in LaTeX as the title of the document */
-    QCString trReferenceManual() override
+    DString trReferenceManual() override
     { return "Nachschlagewerk"; }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of defines
      */
-    QCString trDefines() override
+    DString trDefines() override
     { return "Makrodefinitionen"; }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of typedefs
      */
-    QCString trTypedefs() override
+    DString trTypedefs() override
     { return "Typdefinitionen"; }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of enumerations
      */
-    QCString trEnumerations() override
+    DString trEnumerations() override
     { return "Aufzählungen"; }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of (global) functions
      */
-    QCString trFunctions() override
+    DString trFunctions() override
     { return "Funktionen"; }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of (global) variables
      */
-    QCString trVariables() override
+    DString trVariables() override
     { return "Variablen"; }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of (global) variables
      */
-    QCString trEnumerationValues() override
+    DString trEnumerationValues() override
     { return "Aufzählungswerte"; }
 
     /*! This is used in the documentation of a file before the list of
      *  documentation blocks for defines
      */
-    QCString trDefineDocumentation() override
+    DString trDefineDocumentation() override
     { return "Makro-Dokumentation"; }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for typedefs
      */
-    QCString trTypedefDocumentation() override
+    DString trTypedefDocumentation() override
     { return "Dokumentation der benutzerdefinierten Typen"; }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for enumeration types
      */
-    QCString trEnumerationTypeDocumentation() override
+    DString trEnumerationTypeDocumentation() override
     { return "Dokumentation der Aufzählungstypen"; }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for functions
      */
-    QCString trFunctionDocumentation() override
+    DString trFunctionDocumentation() override
     { return "Dokumentation der Funktionen"; }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for variables
      */
-    QCString trVariableDocumentation() override
+    DString trVariableDocumentation() override
     { return "Variablen-Dokumentation"; }
 
     /*! This is used in the documentation of a file/namespace/group before
      *  the list of links to documented compounds
      */
-    QCString trCompounds() override
+    DString trCompounds() override
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
@@ -602,50 +602,50 @@ class TranslatorGerman : public Translator
     /*! This is used in the standard footer of each page and indicates when
      *  the page was generated
      */
-    QCString trGeneratedAt(const QCString &date,const QCString &projName) override
+    DString trGeneratedAt(const DString &date,const DString &projName) override
     {
-      QCString result="Erzeugt am "+date;
+      DString result="Erzeugt am "+date;
       if (!projName.empty()) result+=" für "+projName;
       result+=" von";
       return result;
     }
 
     /*! this text is put before a class diagram */
-    QCString trClassDiagram(const QCString &clName) override
+    DString trClassDiagram(const DString &clName) override
     {
       return "Klassendiagramm für "+clName+":";
     }
 
     /*! this text is generated when the \\warning command is used. */
-    QCString trWarning() override
+    DString trWarning() override
     { return "Warnung"; }
 
     /*! this text is generated when the \\version command is used. */
-    QCString trVersion() override
+    DString trVersion() override
     { return "Version"; }
 
     /*! this text is generated when the \\date command is used. */
-    QCString trDate() override
+    DString trDate() override
     { return "Datum"; }
 
     /*! this text is generated when the \\return command is used. */
-    QCString trReturns() override
+    DString trReturns() override
     { return "Rückgabe"; }
 
     /*! this text is generated when the \\sa command is used. */
-    QCString trSeeAlso() override
+    DString trSeeAlso() override
     { return "Siehe auch"; }
 
     /*! this text is generated when the \\param command is used. */
-    QCString trParameters() override
+    DString trParameters() override
     { return "Parameter"; }
 
     /*! this text is generated when the \\exception command is used. */
-    QCString trExceptions() override
+    DString trExceptions() override
     { return "Ausnahmebehandlung"; }
 
     /*! this text is used in the title page of a LaTeX document. */
-    QCString trGeneratedBy() override
+    DString trGeneratedBy() override
     { return "Erzeugt von"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -653,13 +653,13 @@ class TranslatorGerman : public Translator
 //////////////////////////////////////////////////////////////////////////
 
     /*! used as the title of page containing all the index of all namespaces. */
-    QCString trNamespaceList() override
+    DString trNamespaceList() override
     { return "Liste aller Namensbereiche"; }
 
     /*! used as an introduction to the namespace list */
-    QCString trNamespaceListDescription(bool extractAll) override
+    DString trNamespaceListDescription(bool extractAll) override
     {
-      QCString result="Liste aller ";
+      DString result="Liste aller ";
       if (!extractAll) result+="dokumentierten ";
       result+="Namensbereiche mit Kurzbeschreibung:";
       return result;
@@ -668,7 +668,7 @@ class TranslatorGerman : public Translator
     /*! used in the class documentation as a header before the list of all
      *  friends of a class
      */
-    QCString trFriends() override
+    DString trFriends() override
     { return "Freundbeziehungen"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -678,7 +678,7 @@ class TranslatorGerman : public Translator
     /*! used in the class documentation as a header before the list of all
      * related classes
      */
-    QCString trRelatedFunctionDocumentation() override
+    DString trRelatedFunctionDocumentation() override
     { return "Freundbeziehungen und Funktionsdokumentation"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -686,11 +686,11 @@ class TranslatorGerman : public Translator
 //////////////////////////////////////////////////////////////////////////
 
     /*! used as the title of the HTML page of a class/struct/union */
-    QCString trCompoundReference(const QCString &clName,
+    DString trCompoundReference(const DString &clName,
                                  ClassDef::CompoundType compType,
                                  bool isTemplate) override
     {
-      QCString result=clName+" ";
+      DString result=clName+" ";
       if (isTemplate) result+="Template-";
       switch(compType)
       {
@@ -708,57 +708,57 @@ class TranslatorGerman : public Translator
     }
 
     /*! used as the title of the HTML page of a file */
-    QCString trFileReference(const QCString &fileName) override
+    DString trFileReference(const DString &fileName) override
     {
-      QCString result=fileName;
+      DString result=fileName;
       result+="-Dateireferenz";
       return result;
     }
 
     /*! used as the title of the HTML page of a namespace */
-    QCString trNamespaceReference(const QCString &namespaceName) override
+    DString trNamespaceReference(const DString &namespaceName) override
     {
-      QCString result=namespaceName;
+      DString result=namespaceName;
       result+="-Namensbereichsreferenz";
       return result;
     }
 
-    QCString trPublicMembers() override
+    DString trPublicMembers() override
     { return "Öffentliche Methoden"; }
 
-    QCString trPublicSlots() override
+    DString trPublicSlots() override
     { return "Öffentliche Slots"; }
 
-    QCString trSignals() override
+    DString trSignals() override
     { return "Signale"; }
 
-    QCString trStaticPublicMembers() override
+    DString trStaticPublicMembers() override
     { return "Öffentliche, statische Methoden"; }
 
-    QCString trProtectedMembers() override
+    DString trProtectedMembers() override
     { return "Geschützte Methoden"; }
 
-    QCString trProtectedSlots() override
+    DString trProtectedSlots() override
     { return "Geschützte Slots"; }
 
-    QCString trStaticProtectedMembers() override
+    DString trStaticProtectedMembers() override
     { return "Geschützte, statische Methoden"; }
 
-    QCString trPrivateMembers() override
+    DString trPrivateMembers() override
     { return "Private Methoden"; }
 
-    QCString trPrivateSlots() override
+    DString trPrivateSlots() override
     { return "Private Slots"; }
 
-    QCString trStaticPrivateMembers() override
+    DString trStaticPrivateMembers() override
     { return "Private, statische Methoden"; }
 
     /*! this function is used to produce a comma-separated list of items.
      *  use generateMarker(i) to indicate where item i should be put.
      */
-    QCString trWriteList(int numEntries) override
+    DString trWriteList(int numEntries) override
     {
-      QCString result;
+      DString result;
       // the inherits list contain `numEntries' classes
       for (int i=0;i<numEntries;i++)
       {
@@ -780,7 +780,7 @@ class TranslatorGerman : public Translator
     /*! used in class documentation to produce a list of base classes,
      *  if class diagrams are disabled.
      */
-    QCString trInheritsList(int numEntries) override
+    DString trInheritsList(int numEntries) override
     {
       return "Abgeleitet von "+trWriteList(numEntries)+".";
     }
@@ -788,7 +788,7 @@ class TranslatorGerman : public Translator
     /*! used in class documentation to produce a list of super classes,
      *  if class diagrams are disabled.
      */
-    QCString trInheritedByList(int numEntries) override
+    DString trInheritedByList(int numEntries) override
     {
       return "Basisklasse für "+trWriteList(numEntries)+".";
     }
@@ -796,7 +796,7 @@ class TranslatorGerman : public Translator
     /*! used in member documentation blocks to produce a list of
      *  members that are hidden by this one.
      */
-    QCString trReimplementedFromList(int numEntries) override
+    DString trReimplementedFromList(int numEntries) override
     {
       return "Erneute Implementation von "+trWriteList(numEntries)+".";
     }
@@ -804,19 +804,19 @@ class TranslatorGerman : public Translator
     /*! used in member documentation blocks to produce a list of
      *  all member that overwrite the implementation of this member.
      */
-    QCString trReimplementedInList(int numEntries) override
+    DString trReimplementedInList(int numEntries) override
     {
       return "Erneute Implementation in "+trWriteList(numEntries)+".";
     }
 
     /*! This is put above each page as a link to all members of namespaces. */
-    QCString trNamespaceMembers() override
+    DString trNamespaceMembers() override
     { return "Elemente eines Namensbereiches"; }
 
     /*! This is an introduction to the page with all namespace members */
-    QCString trNamespaceMemberDescription(bool extractAll) override
+    DString trNamespaceMemberDescription(bool extractAll) override
     {
-      QCString result="Hier folgt die Aufzählung aller ";
+      DString result="Hier folgt die Aufzählung aller ";
       if (!extractAll) result+="dokumentierten ";
       result+="Namensbereichselemente mit Verweisen auf ";
       if (extractAll)
@@ -829,13 +829,13 @@ class TranslatorGerman : public Translator
     /*! This is used in LaTeX as the title of the chapter with the
      *  index of all namespaces.
      */
-    QCString trNamespaceIndex() override
+    DString trNamespaceIndex() override
     { return "Verzeichnis der Namensbereiche"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all namespaces.
      */
-    QCString trNamespaceDocumentation() override
+    DString trNamespaceDocumentation() override
     { return "Dokumentation der Namensbereiche"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -845,7 +845,7 @@ class TranslatorGerman : public Translator
     /*! This is used in the documentation before the list of all
      *  namespaces in a file.
      */
-    QCString trNamespaces() override
+    DString trNamespaces() override
     { return "Namensbereiche"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -855,11 +855,11 @@ class TranslatorGerman : public Translator
     /*! This is put at the bottom of a class documentation page and is
      *  followed by a list of files that were used to generate the page.
      */
-    QCString trGeneratedFromFiles(ClassDef::CompoundType compType,
+    DString trGeneratedFromFiles(ClassDef::CompoundType compType,
         bool single) override
     { // single is true implies a single file
       bool vhdlOpt = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
-      QCString result="Die Dokumentation für diese";
+      DString result="Die Dokumentation für diese";
       switch(compType)
       {
         case ClassDef::Class:      result+=vhdlOpt?" Entwurfseinheiten":" Klasse"; break;
@@ -881,30 +881,30 @@ class TranslatorGerman : public Translator
 //////////////////////////////////////////////////////////////////////////
 
     /*! This is used as the heading text for the retval command. */
-    QCString trReturnValues() override
+    DString trReturnValues() override
     { return "Rückgabewerte"; }
 
     /*! This is in the (quick) index as a link to the main page (index.html)
      */
-    QCString trMainPage() override
+    DString trMainPage() override
     { return "Hauptseite"; }
 
     /*! This is used in references to page that are put in the LaTeX
      *  documentation. It should be an abbreviation of the word page.
      */
-    QCString trPageAbbreviation() override
+    DString trPageAbbreviation() override
     { return "S."; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-991003
 //////////////////////////////////////////////////////////////////////////
 
-    QCString trDefinedAtLineInSourceFile() override
+    DString trDefinedAtLineInSourceFile() override
     {
       return "Definiert in Zeile @0 der Datei @1.";
     }
 
-    QCString trDefinedInSourceFile() override
+    DString trDefinedInSourceFile() override
     {
       return "Definiert in Datei @0.";
     }
@@ -913,7 +913,7 @@ class TranslatorGerman : public Translator
 // new since 0.49-991205
 //////////////////////////////////////////////////////////////////////////
 
-    QCString trDeprecated() override
+    DString trDeprecated() override
     {
       return "Veraltet";
     }
@@ -923,81 +923,81 @@ class TranslatorGerman : public Translator
 //////////////////////////////////////////////////////////////////////////
 
     /*! this text is put before a collaboration diagram */
-    QCString trCollaborationDiagram(const QCString &clName) override
+    DString trCollaborationDiagram(const DString &clName) override
     {
       return "Zusammengehörigkeiten von "+clName+":";
     }
 
     /*! this text is put before an include dependency graph */
-    QCString trInclDepGraph(const QCString &fName) override
+    DString trInclDepGraph(const DString &fName) override
     {
       return "Include-Abhängigkeitsdiagramm für "+fName+":";
     }
 
     /*! header that is put before the list of constructor/destructors. */
-    QCString trConstructorDocumentation() override
+    DString trConstructorDocumentation() override
     {
       return "Beschreibung der Konstruktoren und Destruktoren";
     }
 
     /*! Used in the file documentation to point to the corresponding sources. */
-    QCString trGotoSourceCode() override
+    DString trGotoSourceCode() override
     {
       return "gehe zum Quellcode dieser Datei";
     }
 
     /*! Used in the file sources to point to the corresponding documentation. */
-    QCString trGotoDocumentation() override
+    DString trGotoDocumentation() override
     {
       return "gehe zur Dokumentation dieser Datei";
     }
 
     /*! Text for the \\pre command */
-    QCString trPrecondition() override
+    DString trPrecondition() override
     {
       return "Vorbedingung";
     }
 
     /*! Text for the \\post command */
-    QCString trPostcondition() override
+    DString trPostcondition() override
     {
       return "Nachbedingung";
     }
 
     /*! Text for the \\invariant command */
-    QCString trInvariant() override
+    DString trInvariant() override
     {
       return "Invariante";
     }
 
     /*! Text shown before a multi-line variable/enum initialization */
-    QCString trInitialValue() override
+    DString trInitialValue() override
     {
       return "Initialisierung:";
     }
 
     /*! Text used the source code in the file index */
-    QCString trCode() override
+    DString trCode() override
     {
       return "code";
     }
 
-    QCString trGraphicalHierarchy() override
+    DString trGraphicalHierarchy() override
     {
       return "Grafische Darstellung der Klassenhierarchie";
     }
 
-    QCString trGotoGraphicalHierarchy() override
+    DString trGotoGraphicalHierarchy() override
     {
       return "gehe zur grafischen Darstellung der Klassenhierarchie";
     }
 
-    QCString trGotoTextualHierarchy() override
+    DString trGotoTextualHierarchy() override
     {
       return "gehe zur textbasierten Darstellung der Klassenhierarchie";
     }
 
-    QCString trPageIndex() override
+    DString trPageIndex() override
     {
       return "Seitenindex";
     }
@@ -1007,17 +1007,17 @@ class TranslatorGerman : public Translator
 //////////////////////////////////////////////////////////////////////////
 
     //RK: had to change here because of the new command \remark
-    QCString trNote() override
+    DString trNote() override
     {
       return "Zu beachten";
     }
 
-    QCString trPublicTypes() override
+    DString trPublicTypes() override
     {
       return "Öffentliche Typen";
     }
 
-    QCString trPublicAttribs() override
+    DString trPublicAttribs() override
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
@@ -1029,37 +1029,37 @@ class TranslatorGerman : public Translator
       }
     }
 
-    QCString trStaticPublicAttribs() override
+    DString trStaticPublicAttribs() override
     {
       return "Statische öffentliche Attribute";
     }
 
-    QCString trProtectedTypes() override
+    DString trProtectedTypes() override
     {
       return "Geschützte Typen";
     }
 
-    QCString trProtectedAttribs() override
+    DString trProtectedAttribs() override
     {
       return "Geschützte Attribute";
     }
 
-    QCString trStaticProtectedAttribs() override
+    DString trStaticProtectedAttribs() override
     {
       return "Statische, geschützte Attribute";
     }
 
-    QCString trPrivateTypes() override
+    DString trPrivateTypes() override
     {
       return "Private Typen";
     }
 
-    QCString trPrivateAttribs() override
+    DString trPrivateAttribs() override
     {
       return "Private Attribute";
     }
 
-    QCString trStaticPrivateAttribs() override
+    DString trStaticPrivateAttribs() override
     {
       return "Statische, private Attribute";
     }
@@ -1069,13 +1069,13 @@ class TranslatorGerman : public Translator
 //////////////////////////////////////////////////////////////////////////
 
     /*! Used as a marker that is put before a \\todo item */
-    QCString trTodo() override
+    DString trTodo() override
     {
       return "Noch zu erledigen";
     }
 
     /*! Used as the header of the todo list */
-    QCString trTodoList() override
+    DString trTodoList() override
     {
       return "Ausstehende Aufgaben";
     }
@@ -1084,28 +1084,28 @@ class TranslatorGerman : public Translator
 // new since 1.1.4
 //////////////////////////////////////////////////////////////////////////
 
-    QCString trReferencedBy() override
+    DString trReferencedBy() override
     {
       return "Wird benutzt von";
     }
 
-    QCString trRemarks() override
+    DString trRemarks() override
     {
       return "Bemerkungen";
     }
 
-    QCString trAttention() override
+    DString trAttention() override
     {
       return "Achtung";
     }
 
-    QCString trInclByDepGraph() override
+    DString trInclByDepGraph() override
     {
       return "Dieser Graph zeigt, welche Datei direkt oder "
              "indirekt diese Datei enthält:";
     }
 
-    QCString trSince() override
+    DString trSince() override
     {
       return "Seit";
     }
@@ -1115,7 +1115,7 @@ class TranslatorGerman : public Translator
 //////////////////////////////////////////////////////////////////////////
 
     /*! title of the graph legend page */
-    QCString trLegendTitle() override
+    DString trLegendTitle() override
     {
       return "Erklärung des Graphen";
     }
@@ -1123,7 +1123,7 @@ class TranslatorGerman : public Translator
     /*! page explaining how the dot graph's should be interpreted
      *  The %A in the text below are to prevent link to classes called "A".
      */
-    QCString trLegendDocs() override
+    DString trLegendDocs() override
     {
       return
         "Diese Seite erklärt die Interpretation der von doxygen "
@@ -1193,7 +1193,7 @@ class TranslatorGerman : public Translator
     }
 
     /*! text for the link to the legend page */
-    QCString trLegend() override
+    DString trLegend() override
     {
       return "Legende";
     }
@@ -1203,13 +1203,13 @@ class TranslatorGerman : public Translator
 //////////////////////////////////////////////////////////////////////////
 
     /*! Used as a marker that is put before a test item */
-    QCString trTest() override
+    DString trTest() override
     {
       return "Test";
     }
 
     /*! Used as the header of the test list */
-    QCString trTestList() override
+    DString trTestList() override
     {
       return "Test-Liste";
     }
@@ -1219,13 +1219,13 @@ class TranslatorGerman : public Translator
 //////////////////////////////////////////////////////////////////////////
 
     /*! Used as a section header for IDL properties */
-    QCString trProperties() override
+    DString trProperties() override
     {
       return "Propertys";
     }
 
     /*! Used as a section header for IDL property documentation */
-    QCString trPropertyDocumentation() override
+    DString trPropertyDocumentation() override
     {
       return "Dokumentation der Propertys";
     }
@@ -1235,7 +1235,7 @@ class TranslatorGerman : public Translator
 //////////////////////////////////////////////////////////////////////////
 
     /*! Used for Java classes in the summary section of Java packages */
-    QCString trClasses() override
+    DString trClasses() override
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
@@ -1248,26 +1248,26 @@ class TranslatorGerman : public Translator
     }
 
     /*! Used as the title of a Java package */
-    QCString trPackage(const QCString &name) override
+    DString trPackage(const DString &name) override
     {
       return "Paket "+name;
     }
 
 
     /*! The description of the package index page */
-    QCString trPackageListDescription() override
+    DString trPackageListDescription() override
     {
       return "Hier folgen die Pakete mit einer Kurzbeschreibung (wenn verfügbar):";
     }
 
     /*! The link name in the Quick links header for each page */
-    QCString trPackages() override
+    DString trPackages() override
     {
       return "Pakete";
     }
 
     /*! Text shown before a multi-line define */
-    QCString trDefineValue() override
+    DString trDefineValue() override
     {
       return "Wert:";
     }
@@ -1277,13 +1277,13 @@ class TranslatorGerman : public Translator
 //////////////////////////////////////////////////////////////////////////
 
     /*! Used as a marker that is put before a \\bug item */
-    QCString trBug() override
+    DString trBug() override
     {
       return "Fehler";
     }
 
     /*! Used as the header of the bug list */
-    QCString trBugList() override
+    DString trBugList() override
     {
       return "Liste der bekannten Fehler";
     }
@@ -1293,7 +1293,7 @@ class TranslatorGerman : public Translator
 //////////////////////////////////////////////////////////////////////////
 
     /*! Used as ansicpg for RTF file. See translator_en.h for details. */
-    QCString trRTFansicp() override
+    DString trRTFansicp() override
     {
       return "1252";
     }
@@ -1301,13 +1301,13 @@ class TranslatorGerman : public Translator
     /*! Used as ansicpg for RTF fcharset
      *  \see trRTFansicp() for a table of possible values.
      */
-    QCString trRTFCharSet() override
+    DString trRTFCharSet() override
     {
       return "0";
     }
 
     /*! Used as header RTF general index */
-    QCString trRTFGeneralIndex() override
+    DString trRTFGeneralIndex() override
     {
       return "Index";
     }
@@ -1320,7 +1320,7 @@ class TranslatorGerman : public Translator
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    QCString trClass(bool, bool singular) override
+    DString trClass(bool, bool singular) override
     {
       return createNoun(true, singular, "Klasse", "n");
     }
@@ -1329,7 +1329,7 @@ class TranslatorGerman : public Translator
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    QCString trFile(bool, bool singular) override
+    DString trFile(bool, bool singular) override
     {
       return createNoun(true, singular, "Datei", "en");
     }
@@ -1338,7 +1338,7 @@ class TranslatorGerman : public Translator
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    QCString trNamespace(bool, bool singular) override
+    DString trNamespace(bool, bool singular) override
     {
       return createNoun(true, singular, "Namensbereich", "e");
     }
@@ -1347,7 +1347,7 @@ class TranslatorGerman : public Translator
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    QCString trGroup(bool, bool singular) override
+    DString trGroup(bool, bool singular) override
     {
       return createNoun(true, singular, "Gruppe", "n");
     }
@@ -1356,7 +1356,7 @@ class TranslatorGerman : public Translator
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    QCString trPage(bool, bool singular) override
+    DString trPage(bool, bool singular) override
     {
       return createNoun(true, singular, "Seite", "n");
     }
@@ -1365,7 +1365,7 @@ class TranslatorGerman : public Translator
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    QCString trMember(bool, bool singular) override
+    DString trMember(bool, bool singular) override
     {
       return createNoun(true, singular, "Element", "e");
     }
@@ -1374,7 +1374,7 @@ class TranslatorGerman : public Translator
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    QCString trGlobal(bool, bool singular) override
+    DString trGlobal(bool, bool singular) override
     {
       return createNoun(true, singular, "Global", ""); // FIXME
     }
@@ -1386,7 +1386,7 @@ class TranslatorGerman : public Translator
     /*! This text is generated when the \\author command is used and
      *  for the author section in man pages.
      */
-    QCString trAuthor(bool, bool singular) override
+    DString trAuthor(bool, bool singular) override
     {
       return createNoun(true, singular, "Autor", "en");
     }
@@ -1397,7 +1397,7 @@ class TranslatorGerman : public Translator
 
     /*! This text is put before the list of members referenced by a member
      */
-    QCString trReferences() override
+    DString trReferences() override
     {
       return "Benutzt";
     }
@@ -1409,7 +1409,7 @@ class TranslatorGerman : public Translator
     /*! used in member documentation blocks to produce a list of
      *  members that are implemented by this one.
      */
-    QCString trImplementedFromList(int numEntries) override
+    DString trImplementedFromList(int numEntries) override
     {
       return "Implementiert " + trWriteList(numEntries) + ".";
     }
@@ -1417,7 +1417,7 @@ class TranslatorGerman : public Translator
     /*! used in member documentation blocks to produce a list of
      *  all members that implement this abstract member.
      */
-    QCString trImplementedInList(int numEntries) override
+    DString trImplementedInList(int numEntries) override
     {
       return "Implementiert in " + trWriteList(numEntries) + ".";
     }
@@ -1429,7 +1429,7 @@ class TranslatorGerman : public Translator
     /*! used in RTF documentation as a heading for the Table
      *  of Contents.
      */
-    QCString trRTFTableOfContents() override
+    DString trRTFTableOfContents() override
     {
       return "Inhaltsverzeichnis";
     }
@@ -1441,7 +1441,7 @@ class TranslatorGerman : public Translator
     /*! Used as the header of the list of item that have been
      *  flagged deprecated
      */
-    QCString trDeprecatedList() override
+    DString trDeprecatedList() override
     {
       return "Veraltete Elemente";
     }
@@ -1453,13 +1453,13 @@ class TranslatorGerman : public Translator
     /*! Used as a header for declaration section of the events found in
      * a C# program
      */
-    QCString trEvents() override
+    DString trEvents() override
     {
       return "Ereignisse";
     }
 
     /*! Header used for the documentation section of a class' events. */
-    QCString trEventDocumentation() override
+    DString trEventDocumentation() override
     {
       return "Ereignisdokumentation";
     }
@@ -1470,7 +1470,7 @@ class TranslatorGerman : public Translator
 
     /*! Used as a heading for a list of Java class types with package scope.
      */
-    QCString trPackageTypes() override
+    DString trPackageTypes() override
     {
       return "Pakettypen";
     }
@@ -1478,11 +1478,11 @@ class TranslatorGerman : public Translator
     /*! Used as a heading for a list of Java class functions with package
      * scope.
      */
-    QCString trPackageFunctions() override
+    DString trPackageFunctions() override
     {
       return "Paketfunktionen";
     }
-    QCString trPackageMembers() override
+    DString trPackageMembers() override
     {
       return "Paketelemente";
     }
@@ -1490,7 +1490,7 @@ class TranslatorGerman : public Translator
     /*! Used as a heading for a list of static Java class functions with
      *  package scope.
      */
-    QCString trStaticPackageFunctions() override
+    DString trStaticPackageFunctions() override
     {
       return "Statische Paketfunktionen";
     }
@@ -1498,7 +1498,7 @@ class TranslatorGerman : public Translator
     /*! Used as a heading for a list of Java class variables with package
      * scope.
      */
-    QCString trPackageAttribs() override
+    DString trPackageAttribs() override
     {
       return "Paketattribute";
     }
@@ -1506,7 +1506,7 @@ class TranslatorGerman : public Translator
     /*! Used as a heading for a list of static Java class variables with
      * package scope.
      */
-    QCString trStaticPackageAttribs() override
+    DString trStaticPackageAttribs() override
     {
       return "Statische Paketattribute";
     }
@@ -1518,12 +1518,12 @@ class TranslatorGerman : public Translator
     /*! Used in the quick index of a class/file/namespace member list page
      *  to link to the unfiltered list of all members.
      */
-    QCString trAll() override
+    DString trAll() override
     {
       return "Alle";
     }
     /*! Put in front of the call graph for a function. */
-    QCString trCallGraph() override
+    DString trCallGraph() override
     {
       return "Hier ist ein Graph, der zeigt, was diese Funktion aufruft:";
     }
@@ -1535,7 +1535,7 @@ class TranslatorGerman : public Translator
     /*! This string is used as the title for the page listing the search
      *  results.
      */
-    QCString trSearchResultsTitle() override
+    DString trSearchResultsTitle() override
     {
       return "Suchergebnisse";
     }
@@ -1547,7 +1547,7 @@ class TranslatorGerman : public Translator
      *  value 2 represents 2 or more matches. HTML markup is allowed inside
      *  the returned string.
      */
-    QCString trSearchResults(int numDocuments) override
+    DString trSearchResults(int numDocuments) override
     {
       if (numDocuments==0)
       {
@@ -1566,7 +1566,7 @@ class TranslatorGerman : public Translator
     /*! This string is put before the list of matched words, for each search
      *  result. What follows is the list of words that matched the query.
      */
-    QCString trSearchMatches() override
+    DString trSearchMatches() override
     {
       return "Treffer:";
     }
@@ -1577,7 +1577,7 @@ class TranslatorGerman : public Translator
 
     /*! This is used in HTML as the title of page with source code for file filename
      */
-    QCString trSourceFile(const QCString& filename) override
+    DString trSourceFile(const DString& filename) override
     {
       return filename + " Quellcode";
     }
@@ -1589,31 +1589,31 @@ class TranslatorGerman : public Translator
     /*! This is used as the name of the chapter containing the directory
      *  hierarchy.
      */
-    QCString trDirIndex() override
+    DString trDirIndex() override
     { return "Verzeichnishierarchie"; }
 
     /*! This is used as the name of the chapter containing the documentation
      *  of the directories.
      */
-    QCString trDirDocumentation() override
+    DString trDirDocumentation() override
     { return "Verzeichnisdokumentation"; }
 
     /*! This is used as the title of the directory index and also in the
      *  Quick links of an HTML page, to link to the directory hierarchy.
      */
-    QCString trDirectories() override
+    DString trDirectories() override
     { return "Verzeichnisse"; }
 
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.
      */
-    QCString trDirReference(const QCString &dirName) override
-    { QCString result=dirName; result+="-Verzeichnisreferenz"; return result; }
+    DString trDirReference(const DString &dirName) override
+    { DString result=dirName; result+="-Verzeichnisreferenz"; return result; }
 
     /*! This returns the word directory with or without starting capital
      *  (\a first_capital) and in singular or plural form (\a singular).
      */
-    QCString trDir(bool, bool singular) override
+    DString trDir(bool, bool singular) override
     {
       return createNoun(true, singular, "Verzeichnis", "se");
     }
@@ -1625,7 +1625,7 @@ class TranslatorGerman : public Translator
     /*! This text is added to the documentation when the \\overload command
      *  is used for a overloaded function.
      */
-    QCString trOverloadText() override
+    DString trOverloadText() override
     {
        return "Dies ist eine überladene Methode, die der Bequemlichkeit "
               "wegen bereitgestellt wird. Sie unterscheidet sich von der "
@@ -1637,7 +1637,7 @@ class TranslatorGerman : public Translator
 //////////////////////////////////////////////////////////////////////////
 
     /*! This is used to introduce a caller (or called-by) graph */
-    QCString trCallerGraph() override
+    DString trCallerGraph() override
     {
       return "Hier ist ein Graph der zeigt, wo diese Funktion aufgerufen wird:";
     }
@@ -1645,7 +1645,7 @@ class TranslatorGerman : public Translator
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for enumeration values
      */
-    QCString trEnumerationValueDocumentation() override
+    DString trEnumerationValueDocumentation() override
     { return "Dokumentation der Aufzählungswerte"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1653,25 +1653,25 @@ class TranslatorGerman : public Translator
 //////////////////////////////////////////////////////////////////////////
 
     /*! header that is put before the list of member subprograms (Fortran). */
-    QCString trMemberFunctionDocumentationFortran() override
+    DString trMemberFunctionDocumentationFortran() override
     { return "Elementfunktionen/Unterroutinen-Dokumentation"; }
 
     /*! This is put above each page as a link to the list of annotated data types (Fortran). */
-    QCString trCompoundListFortran() override
+    DString trCompoundListFortran() override
     { return "Datentyp-Liste"; }
 
     /*! This is put above each page as a link to all members of compounds (Fortran). */
-    QCString trCompoundMembersFortran() override
+    DString trCompoundMembersFortran() override
     { return "Datenfelder"; }
 
     /*! This is an introduction to the annotated compound list (Fortran). */
-    QCString trCompoundListDescriptionFortran() override
+    DString trCompoundListDescriptionFortran() override
       { return "Hier folgen die Datentypen mit Kurzbeschreibungen:"; }
 
     /*! This is an introduction to the page with all data types (Fortran). */
-    QCString trCompoundMembersDescriptionFortran(bool extractAll) override
+    DString trCompoundMembersDescriptionFortran(bool extractAll) override
     {
-      QCString result="Hier folgt eine Liste aller ";
+      DString result="Hier folgt eine Liste aller ";
       if (!extractAll)
       {
         result+="dokumentierten ";
@@ -1692,52 +1692,52 @@ class TranslatorGerman : public Translator
     /*! This is used in LaTeX as the title of the chapter with the
      * annotated compound index (Fortran).
      */
-    QCString trCompoundIndexFortran() override
+    DString trCompoundIndexFortran() override
     { return "Datentyp-Index"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all data types (Fortran).
      */
-    QCString trTypeDocumentation() override
+    DString trTypeDocumentation() override
     { return "Datentyp-Dokumentation"; }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of (global) subprograms (Fortran).
      */
-    QCString trSubprograms() override
+    DString trSubprograms() override
     { return "Funktionen/Unterroutinen"; }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for subprograms (Fortran)
      */
-    QCString trSubprogramDocumentation() override
+    DString trSubprogramDocumentation() override
     { return "Funktionen/Unterroutinen-Dokumentation"; }
 
     /*! This is used in the documentation of a file/namespace/group before
      *  the list of links to documented compounds (Fortran)
      */
-     QCString trDataTypes() override
+     DString trDataTypes() override
     { return "Datentypen"; }
 
     /*! used as the title of page containing all the index of all modules (Fortran). */
-    QCString trModulesList() override
+    DString trModulesList() override
     { return "Modulliste"; }
 
     /*! used as an introduction to the modules list (Fortran) */
-    QCString trModulesListDescription(bool extractAll) override
+    DString trModulesListDescription(bool extractAll) override
     {
-      QCString result="Hier folgt eine Liste aller ";
+      DString result="Hier folgt eine Liste aller ";
       if (!extractAll) result+="dokumentierten ";
       result+="Module mit ihren Kurzbeschreibungen:";
       return result;
     }
 
     /*! used as the title of the HTML page of a module/type (Fortran) */
-    QCString trCompoundReferenceFortran(const QCString &clName,
+    DString trCompoundReferenceFortran(const DString &clName,
                                     ClassDef::CompoundType compType,
                                     bool isTemplate) override
     {
-      QCString result=clName;
+      DString result=clName;
       result += "-";
       switch(compType)
       {
@@ -1755,21 +1755,21 @@ class TranslatorGerman : public Translator
       return result;
     }
     /*! used as the title of the HTML page of a module (Fortran) */
-    QCString trModuleReference(const QCString &namespaceName) override
+    DString trModuleReference(const DString &namespaceName) override
     {
-      QCString result=namespaceName;
+      DString result=namespaceName;
       result+="-Modul-Referenz";
       return result;
     }
 
     /*! This is put above each page as a link to all members of modules. (Fortran) */
-    QCString trModulesMembers() override
+    DString trModulesMembers() override
     { return "Modul-Elemente"; }
 
     /*! This is an introduction to the page with all modules members (Fortran) */
-    QCString trModulesMemberDescription(bool extractAll) override
+    DString trModulesMemberDescription(bool extractAll) override
     {
-      QCString result="Hier folgt eine Liste aller ";
+      DString result="Hier folgt eine Liste aller ";
       if (!extractAll) result+="dokumentierten ";
       result+="Modulelemente mit Links ";
       if (extractAll)
@@ -1786,14 +1786,14 @@ class TranslatorGerman : public Translator
     /*! This is used in LaTeX as the title of the chapter with the
      *  index of all modules (Fortran).
      */
-    QCString trModulesIndex() override
+    DString trModulesIndex() override
     { return "Modul-Index"; }
 
     /*! This is used for translation of the word that will possibly
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    QCString trModule(bool /*first_capital*/, bool singular) override
+    DString trModule(bool /*first_capital*/, bool singular) override
     {
       return createNoun(true, singular, "Modul", "e");
     }
@@ -1801,11 +1801,11 @@ class TranslatorGerman : public Translator
     /*! This is put at the bottom of a module documentation page and is
      *  followed by a list of files that were used to generate the page.
      */
-    QCString trGeneratedFromFilesFortran(ClassDef::CompoundType compType,
+    DString trGeneratedFromFilesFortran(ClassDef::CompoundType compType,
         bool single) override
     {
       // single is true implies a single file
-      QCString result="Die Dokumentation für ";
+      DString result="Die Dokumentation für ";
       switch(compType)
       {
         case ClassDef::Class:      result+="dieses Modul"; break;
@@ -1828,7 +1828,7 @@ class TranslatorGerman : public Translator
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    QCString trType(bool /*first_capital*/, bool singular) override
+    DString trType(bool /*first_capital*/, bool singular) override
     {
       return createNoun(true, singular, "Typ", "en");
     }
@@ -1837,13 +1837,13 @@ class TranslatorGerman : public Translator
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    QCString trSubprogram(bool /*first_capital*/, bool singular) override
+    DString trSubprogram(bool /*first_capital*/, bool singular) override
     {
       return createNoun(true, singular, "Unterprogramm", "e");
     }
 
     /*! C# Type Constraint list */
-    QCString trTypeConstraints() override
+    DString trTypeConstraints() override
     {
       return "Type Constraints";
     }
@@ -1853,31 +1853,31 @@ class TranslatorGerman : public Translator
 //////////////////////////////////////////////////////////////////////////
 
     /*! directory relation for \a name */
-    QCString trDirRelation(const QCString &name) override
+    DString trDirRelation(const DString &name) override
     {
       return "Bezug " + name;
     }
 
     /*! Loading message shown when loading search results */
-    QCString trLoading() override
+    DString trLoading() override
     {
       return "Lade ...";
     }
 
     /*! Label used for search results in the global namespace */
-    QCString trGlobalNamespace() override
+    DString trGlobalNamespace() override
     {
       return "Globaler Namensbereich";
     }
 
     /*! Message shown while searching */
-    QCString trSearching() override
+    DString trSearching() override
     {
       return "Suche ...";
     }
 
     /*! Text shown when no search results are found */
-    QCString trNoMatches() override
+    DString trNoMatches() override
     {
       return "Keine Treffer";
     }
@@ -1890,7 +1890,7 @@ class TranslatorGerman : public Translator
      *  table is shown. The heading for the first column mentions the
      *  source file that has a relation to another file.
      */
-    QCString trFileIn(const QCString &name) override
+    DString trFileIn(const DString &name) override
     {
       return "Datei in "+name;
     }
@@ -1899,7 +1899,7 @@ class TranslatorGerman : public Translator
      *  table is shown. The heading for the second column mentions the
      *  destination file that is included.
      */
-    QCString trIncludesFileIn(const QCString &name) override
+    DString trIncludesFileIn(const DString &name) override
     {
       return "Include-Dateien in "+name;
     }
@@ -1914,13 +1914,13 @@ class TranslatorGerman : public Translator
      *  @param seconds Seconds within the minute: 0..59
      *  @param includeTime Include time in the result string?
      */
-    QCString trDateTime(int year,int month,int day,int dayOfWeek,
+    DString trDateTime(int year,int month,int day,int dayOfWeek,
                                 int hour,int minutes,int seconds,
                                 DateTimeType includeTime) override
     {
       static const char *days[]   = { "Mon","Die","Mit","Don","Fre","Sam","Son" };
       static const char *months[] = { "Jan","Feb","Mär","Apr","Mai","Jun","Jul","Aug","Sep","Okt","Nov","Dez" };
-      QCString sdate;
+      DString sdate;
       if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Date)
       {
         sdate.sprintf("%s %s %d %d",days[dayOfWeek-1],months[month-1],day,year);
@@ -1928,27 +1928,27 @@ class TranslatorGerman : public Translator
       if (includeTime == DateTimeType::DateTime) sdate += " ";
       if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Time)
       {
-        QCString stime;
+        DString stime;
         stime.sprintf("%.2d:%.2d:%.2d",hour,minutes,seconds);
         sdate+=stime;
       }
       return sdate;
     }
-    QCString trDayOfWeek(int dayOfWeek, bool, bool full) override
+    DString trDayOfWeek(int dayOfWeek, bool, bool full) override
     {
       static const char *days_short[]   = { "Mo", "Di", "Mi", "Do", "Fr", "Sa", "So" };
       static const char *days_full[]    = { "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag" };
-      QCString text  = full? days_full[dayOfWeek-1] : days_short[dayOfWeek-1];
+      DString text  = full? days_full[dayOfWeek-1] : days_short[dayOfWeek-1];
       return text;
     }
-    QCString trMonth(int month, bool, bool full) override
+    DString trMonth(int month, bool, bool full) override
     {
       static const char *months_short[] = { "Jan", "Feb", "Mrz", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez" };
       static const char *months_full[]  = { "Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember" };
-      QCString text  = full? months_full[month-1] : months_short[month-1];
+      DString text  = full? months_full[month-1] : months_short[month-1];
       return text;
     }
-    QCString trDayPeriod(bool period) override
+    DString trDayPeriod(bool period) override
     {
       static const char *dayPeriod[] = { "AM", "PM" };
       return dayPeriod[period?1:0];
@@ -1959,36 +1959,36 @@ class TranslatorGerman : public Translator
 //////////////////////////////////////////////////////////////////////////
 
     /*! Header for the page with bibliographic citations */
-    QCString trCiteReferences() override
+    DString trCiteReferences() override
     { return "Literaturverzeichnis"; }
 
     /*! Text for copyright paragraph */
-    QCString trCopyright() override
+    DString trCopyright() override
     { return "Copyright"; }
 
     /*! Header for the graph showing the directory dependencies */
-    QCString trDirDepGraph(const QCString &name) override
-    { return QCString("Diagramm der Verzeichnisabhängigkeiten für ")+name+":"; }
+    DString trDirDepGraph(const DString &name) override
+    { return DString("Diagramm der Verzeichnisabhängigkeiten für ")+name+":"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 1.8.0
 //////////////////////////////////////////////////////////////////////////
 
     /*! Detail level selector shown for hierarchical indices */
-    QCString trDetailLevel() override
+    DString trDetailLevel() override
     { return "Detailebene"; }
 
     /*! Section header for list of template parameters */
-    QCString trTemplateParameters() override
+    DString trTemplateParameters() override
     { return "Template-Parameter"; }
 
     /*! Used in dot graph when UML_LOOK is enabled and there are many fields */
-    QCString trAndMore(const QCString &number) override
+    DString trAndMore(const DString &number) override
     { return "und "+number+" mehr ..."; }
 
     /*! Used file list for a Java enum */
-    QCString trEnumGeneratedFromFiles(bool single) override
-    { QCString result = "Die Dokumentation für diesen enum wurde aus ";
+    DString trEnumGeneratedFromFiles(bool single) override
+    { DString result = "Die Dokumentation für diesen enum wurde aus ";
       if (single)
         result += "der folgenden Datei";
       else
@@ -1998,17 +1998,17 @@ class TranslatorGerman : public Translator
     }
 
     /*! Header of a Java enum page (Java enums are represented as classes). */
-    QCString trEnumReference(const QCString &name) override
+    DString trEnumReference(const DString &name) override
     { return name+" Enum-Referenz"; }
 
     /*! Used for a section containing inherited members */
-    QCString trInheritedFrom(const QCString &members,const QCString &what) override
+    DString trInheritedFrom(const DString &members,const DString &what) override
     { return members+" geerbt von "+what; }
 
     /*! Header of the sections with inherited members specific for the
      *  base class(es)
      */
-    QCString trAdditionalInheritedMembers() override
+    DString trAdditionalInheritedMembers() override
     { return "Weitere Geerbte Elemente"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -2019,9 +2019,9 @@ class TranslatorGerman : public Translator
      *  navigation tree in the HTML output when GENERATE_TREEVIEW is
      *  enabled. This tooltip explains the meaning of the button.
      */
-    QCString trPanelSynchronisationTooltip(bool enable) override
+    DString trPanelSynchronisationTooltip(bool enable) override
     {
-      QCString opt = enable ? "einzuschalten" : "auszuschalten";
+      DString opt = enable ? "einzuschalten" : "auszuschalten";
       return "Klicken um Panelsynchronisation "+opt;
     }
 
@@ -2029,7 +2029,7 @@ class TranslatorGerman : public Translator
      *  a category. Note that the @1 marker is required and is replaced
      *  by a link.
      */
-    QCString trProvidedByCategory() override
+    DString trProvidedByCategory() override
     {
       return "Bestandteil der Kategorie @0.";
     }
@@ -2038,7 +2038,7 @@ class TranslatorGerman : public Translator
      *  Note that the @1 marker is required and is replaced by a link to
      *  the class method.
      */
-    QCString trExtendsClass() override
+    DString trExtendsClass() override
     {
       return "Erweitert Klasse @0.";
     }
@@ -2046,7 +2046,7 @@ class TranslatorGerman : public Translator
     /*! Used as the header of a list of class methods in Objective-C.
      *  These are similar to static public member functions in C++.
      */
-    QCString trClassMethods() override
+    DString trClassMethods() override
     {
       return "Klassenmethoden";
     }
@@ -2054,14 +2054,14 @@ class TranslatorGerman : public Translator
     /*! Used as the header of a list of instance methods in Objective-C.
      *  These are similar to public member functions in C++.
      */
-    QCString trInstanceMethods() override
+    DString trInstanceMethods() override
     {
       return "Instanzmethoden";
     }
 
     /*! Used as the header of the member functions of an Objective-C class.
      */
-    QCString trMethodDocumentation() override
+    DString trMethodDocumentation() override
     {
       return "Methodendokumentation";
     }
@@ -2071,54 +2071,54 @@ class TranslatorGerman : public Translator
 //////////////////////////////////////////////////////////////////////////
 
     /** old style UNO IDL services: implemented interfaces */
-    QCString trInterfaces() override
+    DString trInterfaces() override
     { return "Exportierte Interfaces"; }
 
     /** old style UNO IDL services: inherited services */
-    QCString trServices() override
+    DString trServices() override
     { return "Eingebundene Dienste"; }
 
     /** UNO IDL constant groups */
-    QCString trConstantGroups() override
+    DString trConstantGroups() override
     { return "Konstante Gruppen"; }
 
     /** UNO IDL constant groups */
-    QCString trConstantGroupReference(const QCString &namespaceName) override
+    DString trConstantGroupReference(const DString &namespaceName) override
     {
-      QCString result=namespaceName;
+      DString result=namespaceName;
       result+=" Konstantengruppen-Referenz";
       return result;
     }
 
     /** UNO IDL service page title */
-    QCString trServiceReference(const QCString &sName) override
+    DString trServiceReference(const DString &sName) override
     {
-      QCString result=sName;
+      DString result=sName;
       result+=" Dienstreferenz";
       return result;
     }
 
     /** UNO IDL singleton page title */
-    QCString trSingletonReference(const QCString &sName) override
+    DString trSingletonReference(const DString &sName) override
     {
-      QCString result=sName;
+      DString result=sName;
       result+=" Singleton-Referenz";
       return result;
     }
 
     /** UNO IDL service page */
-    QCString trServiceGeneratedFromFiles(bool single) override
+    DString trServiceGeneratedFromFiles(bool single) override
     {
-      QCString result="Die Dokumentation für diesen Dienst "
+      DString result="Die Dokumentation für diesen Dienst "
                                 "wurde generiert aus ";
       if (single) result+="folgender Datei: "; else result+="folgenden Dateien: ";
       return result;
     }
 
     /** UNO IDL singleton page */
-    QCString trSingletonGeneratedFromFiles(bool single) override
+    DString trSingletonGeneratedFromFiles(bool single) override
     {
-      QCString result="Die Dokumentation für diesen Singleton wurde generiert aus ";
+      DString result="Die Dokumentation für diesen Singleton wurde generiert aus ";
       if (single) result+="folgender Datei:"; else result+="folgenden Dateien:";
       return result;
     }
@@ -2128,31 +2128,31 @@ class TranslatorGerman : public Translator
 //////////////////////////////////////////////////////////////////////////
 
     /** VHDL design unit hierarchy */
-    QCString trDesignUnitHierarchy() override
+    DString trDesignUnitHierarchy() override
     { return "Entwurfseinheiten-Hierarchie"; }
     /** VHDL design unit list */
-    QCString trDesignUnitList() override
+    DString trDesignUnitList() override
     { return "Auflistung der Entwurfseinheiten"; }
     /** VHDL design unit members */
-    QCString trDesignUnitMembers() override
+    DString trDesignUnitMembers() override
     { return "Entwurfseinheiten-Elemente"; }
     /** VHDL design unit list description */
-    QCString trDesignUnitListDescription() override
+    DString trDesignUnitListDescription() override
     {
         return "Hier folgt die Aufzählung aller Entwurfseinheiten und deren "
                "Elemente mit einer Kurzbeschreibung:";
     }
     /** VHDL design unit index */
-    QCString trDesignUnitIndex() override
+    DString trDesignUnitIndex() override
     { return "Entwurfseinheiten-Verzeichnis"; }
     /** VHDL design units */
-    QCString trDesignUnits() override
+    DString trDesignUnits() override
     { return "Entwurfseinheiten"; }
     /** VHDL functions/procedures/processes */
-    QCString trFunctionAndProc() override
+    DString trFunctionAndProc() override
     { return "Funktionen/Prozeduren/Prozesse"; }
     /** VHDL type */
-    QCString trVhdlType(VhdlSpecifier type,bool single) override
+    DString trVhdlType(VhdlSpecifier type,bool single) override
     {
       switch(type)
       {
@@ -2237,7 +2237,7 @@ class TranslatorGerman : public Translator
           return "Klasse";
       }
     }
-    QCString trCustomReference(const QCString &name) override
+    DString trCustomReference(const DString &name) override
     { return name+"-Referenz"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -2245,84 +2245,84 @@ class TranslatorGerman : public Translator
 //////////////////////////////////////////////////////////////////////////
 
     /** VHDL design unit documentation */
-    QCString trDesignUnitDocumentation() override
+    DString trDesignUnitDocumentation() override
     { return "Entwurfseinheiten-Dokumentation"; }
 
-    QCString trConstants() override
+    DString trConstants() override
     { return "Konstanten"; }
 
-    QCString trConstantDocumentation() override
+    DString trConstantDocumentation() override
     { return "Konstanten Dokumentation"; }
 
-    QCString trSequences() override
+    DString trSequences() override
     { return "Sequenzen"; }
 
-    QCString trSequenceDocumentation() override
+    DString trSequenceDocumentation() override
     { return "Sequenzen Dokumentation"; }
 
-    QCString trDictionaries() override
+    DString trDictionaries() override
     { return "Wörterbücher"; }
 
-    QCString trDictionaryDocumentation() override
+    DString trDictionaryDocumentation() override
     { return "Wörterbuch Dokumentation"; }
 
-    QCString trSliceInterfaces() override
+    DString trSliceInterfaces() override
     { return "Schnittstellen"; }
 
-    QCString trInterfaceIndex() override
+    DString trInterfaceIndex() override
     { return "Schnittstellen-Verzeichnis"; }
 
-    QCString trInterfaceList() override
+    DString trInterfaceList() override
     { return "Liste aller Schnittstellen"; }
 
-    QCString trInterfaceListDescription() override
+    DString trInterfaceListDescription() override
     { return "Hier folgen die Schnittstellen mit Kurzbeschreibung:"; }
 
-    QCString trInterfaceHierarchy() override
+    DString trInterfaceHierarchy() override
     { return "Schnittstellenhierarchie"; }
 
-    QCString trInterfaceHierarchyDescription() override
+    DString trInterfaceHierarchyDescription() override
     { return "Die Liste aller Schnittstellen ist, mit Einschränkungen, alphabetisch sortiert:"; }
 
-    QCString trInterfaceDocumentation() override
+    DString trInterfaceDocumentation() override
     { return "Schnittstellen Dokumentation"; }
 
-    QCString trStructs() override
+    DString trStructs() override
     { return "Strukturen"; }
 
-    QCString trStructIndex() override
+    DString trStructIndex() override
     { return "Strukturen-Verzeichnis"; }
 
-    QCString trStructList() override
+    DString trStructList() override
     { return "Liste aller Strukturen"; }
 
-    QCString trStructListDescription() override
+    DString trStructListDescription() override
     { return "Hier sind alle Strukturen mit Kurzbeschreibung:"; }
 
-    QCString trStructDocumentation() override
+    DString trStructDocumentation() override
     { return "Strukturen Dokumentation"; }
 
-    QCString trExceptionIndex() override
+    DString trExceptionIndex() override
     { return "Ausnahmen-Verzeichnis"; }
 
-    QCString trExceptionList() override
+    DString trExceptionList() override
     { return "Liste aller Ausnahmen"; }
 
-    QCString trExceptionListDescription() override
+    DString trExceptionListDescription() override
     { return "Hier folgen alle Ausnahmen mit Kurzbeschreibung:"; }
 
-    QCString trExceptionHierarchy() override
+    DString trExceptionHierarchy() override
     { return "Ausnahmen Hierarchie"; }
 
-    QCString trExceptionHierarchyDescription() override
+    DString trExceptionHierarchyDescription() override
     { return "Die Liste der Ausnahmen ist, mit Einschränkungen, alphabetisch sortiert:"; }
 
-    QCString trExceptionDocumentation() override
+    DString trExceptionDocumentation() override
     { return "Ausnahmen Dokumentation"; }
 
-    QCString trCompoundReferenceSlice(const QCString &clName, ClassDef::CompoundType compType, bool isLocal) override
+    DString trCompoundReferenceSlice(const DString &clName, ClassDef::CompoundType compType, bool isLocal) override
     {
-      QCString result=clName;
+      DString result=clName;
       if (isLocal) result+=" Lokal";
       switch(compType)
       {
@@ -2338,16 +2338,16 @@ class TranslatorGerman : public Translator
       result+=" Referenz";
       return result;
     }
-    QCString trOperations() override
+    DString trOperations() override
     { return "Operationen"; }
 
-    QCString trOperationDocumentation() override
+    DString trOperationDocumentation() override
     { return "Operationen Dokumentation"; }
 
-    QCString trDataMembers() override
+    DString trDataMembers() override
     { return "Data Members"; }
 
-    QCString trDataMemberDocumentation() override
+    DString trDataMemberDocumentation() override
     { return "Data Member Dokumentation"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -2355,41 +2355,41 @@ class TranslatorGerman : public Translator
 //////////////////////////////////////////////////////////////////////////
 
     /** C++20 concept */
-    QCString trConcept(bool first_capital, bool singular) override
+    DString trConcept(bool first_capital, bool singular) override
     {
       return createNoun(first_capital, singular, "Konzept", "Konzepte");
     }
     /*! used as the title of the HTML page of a C++20 concept page */
-    QCString trConceptReference(const QCString &conceptName) override
+    DString trConceptReference(const DString &conceptName) override
     {
-      QCString result=conceptName;
+      DString result=conceptName;
       result+=" Konzept Referenz";
       return result;
     }
 
     /*! used as the title of page containing all the index of all concepts. */
-    QCString trConceptList() override
+    DString trConceptList() override
     { return "Konzept Liste"; }
 
     /*! used as the title of chapter containing the index listing all concepts. */
-    QCString trConceptIndex() override
+    DString trConceptIndex() override
     { return "Konzept Index"; }
 
     /*! used as the title of chapter containing all information about concepts. */
-    QCString trConceptDocumentation() override
+    DString trConceptDocumentation() override
     { return "Konzept Dokumentation"; }
 
     /*! used as an introduction to the concept list */
-    QCString trConceptListDescription(bool extractAll) override
+    DString trConceptListDescription(bool extractAll) override
     {
-      QCString result="Hier folgt eine Lister aller ";
+      DString result="Hier folgt eine Lister aller ";
       if (!extractAll) result+="dokumentierten ";
       result+="Konzepte mit Kurzbeschreibungen:";
       return result;
     }
 
     /*! used to introduce the definition of the C++20 concept */
-    QCString trConceptDefinition() override
+    DString trConceptDefinition() override
     {
       return "Konzept-Definition";
     }
@@ -2398,7 +2398,7 @@ class TranslatorGerman : public Translator
 // new since 1.9.4
 //////////////////////////////////////////////////////////////////////////
 
-    QCString trPackageList() override
+    DString trPackageList() override
     { return "Paket-Liste"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -2408,7 +2408,7 @@ class TranslatorGerman : public Translator
     /*! This is used for translation of the word that will be
      *  followed by a single name of the VHDL process flowchart.
      */
-    QCString trFlowchart() override
+    DString trFlowchart() override
     { return "Flußdiagram:"; }
 
     /*! Please translate also updated body of the method
@@ -2423,14 +2423,14 @@ class TranslatorGerman : public Translator
      *
      *  Supersedes trRelatedFunctions
      */
-    QCString trRelatedSymbols() override
+    DString trRelatedSymbols() override
     { return "Zugehörige Symbole"; }
 
     /*! subscript for the related symbols
      *
      *  Supersedes trRelatedSubscript
      */
-    QCString trRelatedSymbolsSubscript() override
+    DString trRelatedSymbolsSubscript() override
     { return "(Hinweis: diese Symbole sind keine Funktionen.)"; }
 
     /*! used in the class documentation as a header before the list of all
@@ -2438,13 +2438,13 @@ class TranslatorGerman : public Translator
      *
      * Supersedes trRelatedFunctionDocumentation
      */
-    QCString trRelatedSymbolDocumentation() override
+    DString trRelatedSymbolDocumentation() override
     { return "Freunde und bezugnehmende Symbol-Dokumentation"; }
 
     /*! the compound type as used for the xrefitems */
-    QCString trCompoundType(ClassDef::CompoundType compType, SrcLangExt lang) override
+    DString trCompoundType(ClassDef::CompoundType compType, SrcLangExt lang) override
     {
-      QCString result;
+      DString result;
       switch(compType)
       {
         case ClassDef::Class:
@@ -2464,10 +2464,10 @@ class TranslatorGerman : public Translator
       return result;
     }
 
-    QCString trFileMembersDescriptionTotal(FileMemberHighlight::Enum hl) override
+    DString trFileMembersDescriptionTotal(FileMemberHighlight::Enum hl) override
     {
       bool extractAll = Config_getBool(EXTRACT_ALL);
-      QCString result="Hier ist eine Lister aller ";
+      DString result="Hier ist eine Lister aller ";
       if (!extractAll) result+="documented ";
 
       switch (hl)
@@ -2516,10 +2516,10 @@ class TranslatorGerman : public Translator
         result+="die Dokumentation";
       return result;
     }
-    QCString trCompoundMembersDescriptionTotal(ClassMemberHighlight::Enum hl) override
+    DString trCompoundMembersDescriptionTotal(ClassMemberHighlight::Enum hl) override
     {
       bool extractAll = Config_getBool(EXTRACT_ALL);
-      QCString result="Hier ist eine Liste aller ";
+      DString result="Hier ist eine Liste aller ";
       if (!extractAll)
       {
         result+="dokumentierter ";
@@ -2589,18 +2589,18 @@ class TranslatorGerman : public Translator
       }
       return result;
     }
-    QCString trNamespaceMembersDescriptionTotal(NamespaceMemberHighlight::Enum hl) override
+    DString trNamespaceMembersDescriptionTotal(NamespaceMemberHighlight::Enum hl) override
     {
       bool extractAll = Config_getBool(EXTRACT_ALL);
 
-      QCString result           = "Hier folgt eine Liste mit Verweisen auf die Namensraum-Dokumentation für ";
-      QCString result_singular1 = result + "jede dokumentierte";
-      QCString result_singular2 = result + "jedes dokumentiertes";
-      QCString result_singular3 = result + "jeder dokumentierten";
-      QCString result_plural    = result + "alle dokumentierten";
+      DString result           = "Hier folgt eine Liste mit Verweisen auf die Namensraum-Dokumentation für ";
+      DString result_singular1 = result + "jede dokumentierte";
+      DString result_singular2 = result + "jedes dokumentiertes";
+      DString result_singular3 = result + "jeder dokumentierten";
+      DString result_plural    = result + "alle dokumentierten";
 
-      QCString singularResult = "";
-      QCString pluralResult   = "";
+      DString singularResult = "";
+      DString pluralResult   = "";
 
       switch (hl)
       {
@@ -2647,30 +2647,30 @@ class TranslatorGerman : public Translator
 
       return result;
     }
-    QCString trDefinition() override  { return "Definition";}
-    QCString trDeclaration() override { return "Deklaration";}
+    DString trDefinition() override  { return "Definition";}
+    DString trDeclaration() override { return "Deklaration";}
 
 //////////////////////////////////////////////////////////////////////////
 // new since 1.10.0 added by paule32
 //////////////////////////////////////////////////////////////////////////
 
-    QCString trTopics() override
+    DString trTopics() override
     { return "Themen"; }
-    QCString trTopicDocumentation() override
+    DString trTopicDocumentation() override
     { return "Themen Dokumentation"; }
-    QCString trTopicList() override
+    DString trTopicList() override
     { return "Themen-Liste"; }
-    QCString trTopicIndex() override
+    DString trTopicIndex() override
     { return "Themen Index"; }
-    QCString trTopicListDescription() override
+    DString trTopicListDescription() override
     { return "Es folgt eine Liste der Themen mit einer Kurzbeschreibung"; }
-    QCString trModuleMembersDescriptionTotal(ModuleMemberHighlight::Enum hl) override
+    DString trModuleMembersDescriptionTotal(ModuleMemberHighlight::Enum hl) override
     {
       bool extractAll = Config_getBool(EXTRACT_ALL);
-      QCString result = "Zusammengefaßt ";
+      DString result = "Zusammengefaßt ";
 
-      QCString singularResult = result + "bezieht sich das Modul auf: ";
-      QCString pluralResult   = result + "beziehen sich die Module auf: ";
+      DString singularResult = result + "bezieht sich das Modul auf: ";
+      DString pluralResult   = result + "beziehen sich die Module auf: ";
 
       switch (hl)
       {
@@ -2713,7 +2713,7 @@ class TranslatorGerman : public Translator
 
       return result;
     }
-    QCString trExportedModules() override
+    DString trExportedModules() override
     {
       return "Exportierte Module";
     }
@@ -2722,14 +2722,14 @@ class TranslatorGerman : public Translator
 // new since 1.10.0
 //////////////////////////////////////////////////////////////////////////
 
-    QCString trCopyToClipboard() override
+    DString trCopyToClipboard() override
     {
       return "In die Zwischenablage kopieren";
     }
 //////////////////////////////////////////////////////////////////////////
 // new since 1.11.0
 //////////////////////////////////////////////////////////////////////////
-    QCString trImportant() override
+    DString trImportant() override
     {
       return "Wichtig";
     }
@@ -2739,50 +2739,50 @@ class TranslatorGerman : public Translator
 //////////////////////////////////////////////////////////////////////////
 
     // the title of the requirements overview page
-    QCString trRequirements() override
+    DString trRequirements() override
     {
       return "Anforderungen";
     }
     // table header for the column with the requirements IDs
-    QCString trRequirementID() override
+    DString trRequirementID() override
     {
       return "ID";
     }
     // indicates a symbol implements (satisfies) a requirement
-    QCString trSatisfies(bool singular) override
+    DString trSatisfies(bool singular) override
     {
       return createNoun(true,singular,"Erfüllt anforderung","en");
     }
     // indicates a requirement is satisfied (implemented) by one or more symbols
-    QCString trSatisfiedBy(const QCString &list) override
+    DString trSatisfiedBy(const DString &list) override
     {
       return "Wird erfüllt durch "+list+".";
     }
-    QCString trUnsatisfiedRequirements() override
+    DString trUnsatisfiedRequirements() override
     {
       return "Nicht erfüllte Anforderungen";
     }
-    QCString trUnsatisfiedRequirementsText(bool singular,const QCString &list) override
+    DString trUnsatisfiedRequirementsText(bool singular,const DString &list) override
     {
       return singular ?
         "Die Anforderung "+list+" hat keine 'erfüllt'-Beziehung." :
         "Die Anforderungen "+list+" haben keine 'erfüllt'-Beziehung.";
     }
     // indicates a symbol verifies (tests) a requirement
-    QCString trVerifies(bool singular) override
+    DString trVerifies(bool singular) override
     {
       return createNoun(true,singular,"Verifiziert anforderung","en");
     }
     // indicates a requirement is verified (tested) by one or more symbols
-    QCString trVerifiedBy(const QCString &list) override
+    DString trVerifiedBy(const DString &list) override
     {
       return "Wird verifiziert durch "+list+".";
     }
-    QCString trUnverifiedRequirements() override
+    DString trUnverifiedRequirements() override
     {
       return "Nicht verifizierte Anforderungen";
     }
-    QCString trUnverifiedRequirementsText(bool singular,const QCString &list) override
+    DString trUnverifiedRequirementsText(bool singular,const DString &list) override
     {
       return singular ?
         "Die Anforderung "+list+" hat keine 'verifiziert'-Beziehung." :

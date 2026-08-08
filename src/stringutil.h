@@ -98,7 +98,7 @@ template <size_t N>
 bool literal_at(const char *data,const char (&str)[N])
 {
   size_t len = N-1; // exclude 0 terminator
-  return data!=nullptr && data[0]==str[0] && qstrncmp(data+1,str+1,len-1)==0;
+  return data!=nullptr && data[0]==str[0] && dstrncmp(data+1,str+1,len-1)==0;
 }
 
 /// returns true iff \a data points to a substring that matches string literal \a str
@@ -106,7 +106,7 @@ template <size_t N>
 bool literal_at(std::string_view data,const char (&str)[N])
 {
   size_t len = N-1; // exclude 0 terminator
-  return len<=data.size() && data[0]==str[0] && qstrncmp(data.data()+1,str+1,len-1)==0;
+  return len<=data.size() && data[0]==str[0] && dstrncmp(data.data()+1,str+1,len-1)==0;
 }
 
 #endif // STRINGUTIL_H

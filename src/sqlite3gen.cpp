@@ -844,8 +844,8 @@ class TextGeneratorSqlite3Impl final : public TextGeneratorIntf
     {
       DBG_CTX(("writeBreak\n"));
     }
-    void writeLink(const QCString & /*extRef*/,const QCString &file,
-                   const QCString &anchor,std::string_view /*text*/
+    void writeLink(const DString & /*extRef*/,const DString &file,
+                   const DString &anchor,std::string_view /*text*/
                   ) const override
     {
       std::string rs = file.str();
@@ -862,7 +862,7 @@ class TextGeneratorSqlite3Impl final : public TextGeneratorIntf
 };
 
 
-static bool bindTextParameter(SqlStmt &s,const char *name,const QCString &value)
+static bool bindTextParameter(SqlStmt &s,const char *name,const DString &value)
 {
   int idx = sqlite3_bind_parameter_index(s.stmt, name);
   if (idx==0) {
@@ -910,7 +910,7 @@ static int step(SqlStmt &s,bool getRowId=false, bool select=false)
   return rowid;
 }
 
-static int insertPath(QCString name, bool local=true, bool found=true, int type=1)
+static int insertPath(DString name, bool local=true, bool found=true, int type=1)
 {
   int rowid=-1;
   if (name==nullptr) return rowid;
@@ -944,11 +944,11 @@ static void recordMetadata()
 
 struct Refid {
   int rowid;
-  QCString refid;
+  DString refid;
   bool created;
 };
 
-struct Refid insertRefid(const QCString &refid)
+struct Refid insertRefid(const DString &refid)
 {
   Refid ret;
   ret.rowid=-1;
@@ -1013,8 +1013,8 @@ static bool insertMemberReference(struct Refid src_refid, struct Refid dst_refid
 
 static void insertMemberReference(const MemberDef *src, const MemberDef *dst, const char *context)
 {
-  QCString qdst_refid = dst->getOutputFileBase() + "_1" + dst->anchor();
-  QCString qsrc_refid = src->getOutputFileBase() + "_1" + src->anchor();
+  DString qdst_refid = dst->getOutputFileBase() + "_1" + dst->anchor();
+  DString qsrc_refid = src->getOutputFileBase() + "_1" + src->anchor();
 
   struct Refid src_refid = insertRefid(qsrc_refid);
   struct Refid dst_refid = insertRefid(qdst_refid);
@@ -1052,7 +1052,7 @@ static void insertMemberFunctionParams(int memberdef_id, const MemberDef *md, co
 
         for (const auto &s : list)
         {
-          QCString qsrc_refid = md->getOutputFileBase() + "_1" + md->anchor();
+          DString qsrc_refid = md->getOutputFileBase() + "_1" + md->anchor();
           struct Refid src_refid = insertRefid(qsrc_refid);
           struct Refid dst_refid = insertRefid(s);
           insertMemberReference(src_refid,dst_refid, "argument");
@@ -1139,7 +1139,7 @@ static void associateMember(const MemberDef *md, struct Refid member_refid, stru
   }
 }
 
-static void stripQualifiers(QCString &typeStr)
+static void stripQualifiers(DString &typeStr)
 {
   bool done=false;
   while (!done)
@@ -1414,10 +1414,10 @@ static void writeTemplateList(const ConceptDef *cd)
   writeTemplateArgumentList(cd->getTemplateParameterList(),cd,cd->getFileDef());
 }
 
-QCString getSQLDocBlock(const Definition *scope,
+DString getSQLDocBlock(const Definition *scope,
   const Definition *def,
-  const QCString &doc,
-  const QCString &fileName,
+  const DString &doc,
+  const DString &fileName,
   int lineNr)
 {
   if (doc.empty()) return "";
@@ -1439,13 +1439,13 @@ QCString getSQLDocBlock(const Definition *scope,
     xmlCodeList.add<XMLCodeGenerator>(&t);
     // create a parse tree visitor for XML
     XmlDocVisitor visitor(t,xmlCodeList,
-        scope ? scope->getDefFileExtension() : QCString(""));
+        scope ? scope->getDefFileExtension() : DString(""));
     std::visit(visitor,astImpl->root);
   }
   return convertCharEntitiesToUTF8(t.str());
 }
 
-static void getSQLDesc(SqlStmt &s,const char *col,const QCString &value,const Definition *def)
+static void getSQLDesc(SqlStmt &s,const char *col,const DString &value,const Definition *def)
 {
   bindTextParameter(
     s,
@@ -1460,7 +1460,7 @@ static void getSQLDesc(SqlStmt &s,const char *col,const QCString &value,const De
   );
 }
 
-static void getSQLDescCompound(SqlStmt &s,const char *col,const QCString &value,const Definition *def)
+static void getSQLDescCompound(SqlStmt &s,const char *col,const DString &value,const Definition *def)
 {
   bindTextParameter(
     s,
@@ -1570,10 +1570,10 @@ static void generateSqlite3ForMember(const MemberDef *md, struct Refid scope_ref
   if (md->memberType()==MemberType::EnumValue) return;
   if (md->isHidden()) return;
 
-  QCString memType;
+  DString memType;
 
   // memberdef
-  QCString qrefid = md->getOutputFileBase() + "_1" + md->anchor();
+  DString qrefid = md->getOutputFileBase() + "_1" + md->anchor();
   struct Refid refid = insertRefid(qrefid);
 
   associateMember(md, refid, scope_refid);
@@ -1695,7 +1695,7 @@ static void generateSqlite3ForMember(const MemberDef *md, struct Refid scope_ref
     bindIntParameter(memberdef_insert,":maybeambiguous",md->isMaybeAmbiguous());
     if (!md->bitfieldString().empty())
     {
-      QCString bitfield = md->bitfieldString();
+      DString bitfield = md->bitfieldString();
       if (bitfield.at(0)==':') bitfield=bitfield.mid(1);
       bindTextParameter(memberdef_insert,":bitfield",bitfield.stripWhiteSpace());
     }
@@ -1736,7 +1736,7 @@ static void generateSqlite3ForMember(const MemberDef *md, struct Refid scope_ref
   const MemberDef *rmd = md->reimplements();
   if (rmd)
   {
-    QCString qreimplemented_refid = rmd->getOutputFileBase() + "_1" + rmd->anchor();
+    DString qreimplemented_refid = rmd->getOutputFileBase() + "_1" + rmd->anchor();
 
     struct Refid reimplemented_refid = insertRefid(qreimplemented_refid);
 
@@ -1757,7 +1757,7 @@ static void generateSqlite3ForMember(const MemberDef *md, struct Refid scope_ref
     {
       writeMemberTemplateLists(md);
     }
-    QCString typeStr = md->typeString();
+    DString typeStr = md->typeString();
     stripQualifiers(typeStr);
     StringVector list;
     linkifyText(TextGeneratorSqlite3Impl(list),typeStr,options);
@@ -1795,7 +1795,7 @@ static void generateSqlite3ForMember(const MemberDef *md, struct Refid scope_ref
               qPrint(s),
               qPrint(md->getBodyDef()->getDefFileName()),
               md->getStartBodyLine()));
-        QCString qsrc_refid = md->getOutputFileBase() + "_1" + md->anchor();
+        DString qsrc_refid = md->getOutputFileBase() + "_1" + md->anchor();
         struct Refid src_refid = insertRefid(qsrc_refid);
         struct Refid dst_refid = insertRefid(s);
         insertMemberReference(src_refid,dst_refid, "initializer");
@@ -1871,8 +1871,8 @@ static void generateSqlite3Section( const Definition *d,
                       const MemberList *ml,
                       struct Refid scope_refid,
                       const char * /*kind*/,
-                      const QCString & /*header*/=QCString(),
-                      const QCString & /*documentation*/=QCString())
+                      const DString & /*header*/=DString(),
+                      const DString & /*documentation*/=DString())
 {
   if (ml==nullptr) return;
   for (const auto &md : *ml)
@@ -1894,7 +1894,7 @@ static void associateAllClassMembers(const ClassDef *cd, struct Refid scope_refi
     for (auto &mi : *mni)
     {
       const MemberDef *md = mi->memberDef();
-      QCString qrefid = md->getOutputFileBase() + "_1" + md->anchor();
+      DString qrefid = md->getOutputFileBase() + "_1" + md->anchor();
       associateMember(md, insertRefid(qrefid), scope_refid);
     }
   }
@@ -1970,7 +1970,7 @@ static void generateSqlite3ForClass(const ClassDef *cd)
   const IncludeInfo *ii=cd->includeInfo();
   if (ii)
   {
-    QCString nm = ii->includeName;
+    DString nm = ii->includeName;
     if (nm.empty() && ii->fileDef) nm = ii->fileDef->docName();
     if (!nm.empty())
     {
@@ -2229,7 +2229,7 @@ static void generateSqlite3ForFile(const FileDef *fd)
   {
     int src_id=insertPath(fd->absFilePath(),!fd->isReference());
     int dst_id=0;
-    QCString dst_path;
+    DString dst_path;
     bool isLocal = (ii.kind & IncludeKind_LocalMask)!=0;
 
     if(ii.fileDef) // found file
@@ -2237,7 +2237,7 @@ static void generateSqlite3ForFile(const FileDef *fd)
       if(ii.fileDef->isReference())
       {
         // strip tagfile from path
-        QCString tagfile = ii.fileDef->getReference();
+        DString tagfile = ii.fileDef->getReference();
         dst_path = ii.fileDef->absFilePath();
         dst_path.stripPrefix(tagfile+":");
       }
@@ -2278,7 +2278,7 @@ static void generateSqlite3ForFile(const FileDef *fd)
   {
     int dst_id=insertPath(fd->absFilePath(),!fd->isReference());
     int src_id=0;
-    QCString src_path;
+    DString src_path;
     bool isLocal = (ii.kind & IncludeKind_LocalMask)!=0;
 
     if(ii.fileDef) // found file
@@ -2286,7 +2286,7 @@ static void generateSqlite3ForFile(const FileDef *fd)
       if(ii.fileDef->isReference())
       {
         // strip tagfile from path
-        QCString tagfile = ii.fileDef->getReference();
+        DString tagfile = ii.fileDef->getReference();
         src_path = ii.fileDef->absFilePath();
         src_path.stripPrefix(tagfile+":");
       }
@@ -2469,7 +2469,7 @@ static void generateSqlite3ForPage(const PageDef *pd,bool isExample)
 
   // TODO: do we more special handling if isExample?
 
-  QCString qrefid = pd->getOutputFileBase();
+  DString qrefid = pd->getOutputFileBase();
   if (pd->getGroupDef())
   {
     qrefid+="_"+pd->name();
@@ -2485,7 +2485,7 @@ static void generateSqlite3ForPage(const PageDef *pd,bool isExample)
   // + name
   bindTextParameter(compounddef_insert,":name",pd->name());
 
-  QCString title;
+  DString title;
   if (pd==Doxygen::mainPage.get()) // main page is special
   {
     if (mainPageHasTitle())
@@ -2535,7 +2535,7 @@ static void generateSqlite3ForPage(const PageDef *pd,bool isExample)
 static sqlite3* openDbConnection()
 {
 
-  QCString outputDirectory = Config_getString(SQLITE3_OUTPUT);
+  DString outputDirectory = Config_getString(SQLITE3_OUTPUT);
   sqlite3 *db = nullptr;
 
   int rc = sqlite3_initialize();

@@ -31,22 +31,22 @@
 class PageDefImpl final : public DefinitionMixin<PageDef>
 {
   public:
-    PageDefImpl(const QCString &f,int l,const QCString &n,const QCString &d,const QCString &t);
+    PageDefImpl(const DString &f,int l,const DString &n,const DString &d,const DString &t);
     ~PageDefImpl() override;
     NON_COPYABLE(PageDefImpl)
 
-    void setFileName(const QCString &name) override;
+    void setFileName(const DString &name) override;
     void setLocalToc(const LocalToc &tl) override;
     void setShowLineNo(bool) override;
     DefType definitionType() const override { return TypePage; }
     CodeSymbolType codeSymbolType() const override { return CodeSymbolType::Default; }
     bool isLinkableInProject() const override { return /*hasDocumentation() &&*/ !isReference(); }
     bool isLinkable() const override { return isLinkableInProject() || isReference(); }
-    QCString getOutputFileBase() const override;
-    QCString anchor() const override { return QCString(); }
+    DString getOutputFileBase() const override;
+    DString anchor() const override { return DString(); }
     void findSectionsInDocumentation() override;
-    QCString title() const override { return m_title; }
-    QCString titleAsText() const override;
+    DString title() const override { return m_title; }
+    DString titleAsText() const override;
     const GroupDef * getGroupDef() const override;
     const PageLinkedRefMap &getSubPages() const override { return m_subPages; }
     void addInnerCompound(Definition *d) override;
@@ -58,9 +58,9 @@ class PageDefImpl final : public DefinitionMixin<PageDef>
     LocalToc localToc() const override { return m_localToc; }
     void setPageScope(Definition *d) override { m_pageScope = d; }
     Definition *getPageScope() const override { return m_pageScope; }
-    QCString displayName(bool=true) const override { return hasTitle() ? m_title : DefinitionMixin::name(); }
+    DString displayName(bool=true) const override { return hasTitle() ? m_title : DefinitionMixin::name(); }
     bool showLineNo() const override;
-    void setTitle(const QCString &title) override;
+    void setTitle(const DString &title) override;
     void writeDocumentation(OutputList &ol) override;
     void writeTagFile(TextStream &) override;
     void setNestingLevel(int l) override;
@@ -71,9 +71,9 @@ class PageDefImpl final : public DefinitionMixin<PageDef>
     void addRequirementReferences() override;
 
   private:
-    QCString m_fileName;
-    QCString m_title;
-    QCString m_titleAsText;
+    DString m_fileName;
+    DString m_title;
+    DString m_titleAsText;
     PageLinkedRefMap m_subPages;                 // list of pages in the group
     Definition *m_pageScope;
     int m_nestingLevel;
@@ -81,15 +81,15 @@ class PageDefImpl final : public DefinitionMixin<PageDef>
     bool m_showLineNo;
 };
 
-std::unique_ptr<PageDef> createPageDef(const QCString &f,int l,const QCString &n,const QCString &d,const QCString &t)
+std::unique_ptr<PageDef> createPageDef(const DString &f,int l,const DString &n,const DString &d,const DString &t)
 {
   return std::make_unique<PageDefImpl>(f,l,n,d,t);
 }
 
 //------------------------------------------------------------------------------------------
 
-PageDefImpl::PageDefImpl(const QCString &f,int l,const QCString &n,
-                 const QCString &d,const QCString &t)
+PageDefImpl::PageDefImpl(const DString &f,int l,const DString &n,
+                 const DString &d,const DString &t)
  : DefinitionMixin(f,l,1,n)
 {
   setDocumentation(d,f,l);
@@ -116,7 +116,7 @@ const GroupDef *PageDefImpl::getGroupDef() const
   return !partOfGroups().empty() ? partOfGroups().front() : nullptr;
 }
 
-QCString PageDefImpl::getOutputFileBase() const
+DString PageDefImpl::getOutputFileBase() const
 {
   if (getGroupDef())
     return getGroupDef()->getOutputFileBase();
@@ -124,7 +124,7 @@ QCString PageDefImpl::getOutputFileBase() const
     return m_fileName;
 }
 
-void PageDefImpl::setFileName(const QCString &name)
+void PageDefImpl::setFileName(const DString &name)
 {
   m_fileName = name;
 }
@@ -178,10 +178,10 @@ void PageDefImpl::addSectionsToIndex()
           Doxygen::indexList->decContentsDepth();
         }
       }
-      QCString title = si->title();
+      DString title = si->title();
       if (title.empty()) title = si->label();
       title = parseCommentAsText(this,nullptr,title,si->fileName(),si->lineNr());
-      QCString titleAsHtml = parseCommentAsHtml(this,nullptr,si->title(),si->fileName(),si->lineNr());
+      DString titleAsHtml = parseCommentAsHtml(this,nullptr,si->title(),si->fileName(),si->lineNr());
       // determine if there is a next level inside this item, but be aware of the anchor and table section references.
       auto it_next = std::next(it);
       bool isDir = (it_next!=sectionRefs.end()) ?  ((*it_next)->type().isSection() && (*it_next)->type().level() > nextLevel) : false;
@@ -206,14 +206,14 @@ void PageDefImpl::addSectionsToIndex()
 
 void PageDefImpl::addListReferences()
 {
-  QCString name = getOutputFileBase();
+  DString name = getOutputFileBase();
   if (getGroupDef())
   {
     name = getGroupDef()->getOutputFileBase();
   }
   addRefItem(xrefListItems(),name,
              theTranslator->trPage(true,true),
-             name,title(),QCString(),nullptr);
+             name,title(),DString(),nullptr);
 }
 
 void PageDefImpl::addRequirementReferences()
@@ -240,7 +240,7 @@ void PageDefImpl::writeTagFile(TextStream &tagFile)
   }
   if (!found) // not one of the generated related pages
   {
-    QCString fn = getOutputFileBase();
+    DString fn = getOutputFileBase();
     addHtmlExtensionIfMissing(fn);
     tagFile << "  <compound kind=\"page\">\n";
     tagFile << "    <name>" << name() << "</name>\n";
@@ -248,7 +248,7 @@ void PageDefImpl::writeTagFile(TextStream &tagFile)
     tagFile << "    <filename>" << fn << "</filename>\n";
     for (const auto &subPage : m_subPages)
     {
-      QCString sfn = subPage->getOutputFileBase();
+      DString sfn = subPage->getOutputFileBase();
       addHtmlExtensionIfMissing(sfn);
       tagFile << "    <subpage>" << sfn << "</subpage>\n";
     }
@@ -269,7 +269,7 @@ void PageDefImpl::writeDocumentation(OutputList &ol)
   }
 
   //outputList->disable(OutputType::Man);
-  QCString pageName,manPageName;
+  DString pageName,manPageName;
   pageName    = escapeCharsInString(name(),false,true);
   manPageName = escapeCharsInString(name(),true,true);
 
@@ -282,11 +282,11 @@ void PageDefImpl::writeDocumentation(OutputList &ol)
   //2.{
   ol.disableAllBut(OutputType::Man);
   startFile(ol,getOutputFileBase(),false,manPageName,titleAsText(),HighlightedItem::Pages,!generateTreeView,
-            QCString() /* altSidebarName */, hierarchyLevel);
+            DString() /* altSidebarName */, hierarchyLevel);
   ol.enableAll();
   ol.disable(OutputType::Man);
   startFile(ol,getOutputFileBase(),false,pageName,titleAsText(),HighlightedItem::Pages,!generateTreeView,
-            QCString() /* altSidebarName */, hierarchyLevel);
+            DString() /* altSidebarName */, hierarchyLevel);
   ol.popGeneratorState();
   //2.}
 
@@ -333,7 +333,7 @@ void PageDefImpl::writeDocumentation(OutputList &ol)
   ol.pushGeneratorState();
   //2.{
   ol.disable(OutputType::Man);
-  QCString title;
+  DString title;
   if (this == Doxygen::mainPage.get() && !hasTitle())
     title = theTranslator->trMainPage();
   else
@@ -404,7 +404,7 @@ void PageDefImpl::writeDocumentation(OutputList &ol)
 void PageDefImpl::writePageDocumentation(OutputList &ol) const
 {
   ol.startTextBlock();
-  QCString docStr = (briefDescription().empty()?"":briefDescription()+"\n\n")+documentation()+inbodyDocumentation();
+  DString docStr = (briefDescription().empty()?"":briefDescription()+"\n\n")+documentation()+inbodyDocumentation();
   if (hasBriefDescription() && !SectionManager::instance().find(name()))
   {
     ol.pushGeneratorState();
@@ -495,7 +495,7 @@ bool PageDefImpl::hasTitle() const
   return !m_title.empty() && m_title.lower()!="notitle";
 }
 
-void PageDefImpl::setTitle(const QCString &title)
+void PageDefImpl::setTitle(const DString &title)
 {
   if (!title.empty())
   {
@@ -509,7 +509,7 @@ void PageDefImpl::setTitle(const QCString &title)
   }
 }
 
-QCString PageDefImpl::titleAsText() const
+DString PageDefImpl::titleAsText() const
 {
   return m_titleAsText;
 }

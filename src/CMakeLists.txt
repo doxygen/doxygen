@@ -260,6 +260,7 @@ add_library(doxymain STATIC
     dotnode.cpp
     dotrunner.cpp
     doxygen.cpp
+    dstring.cpp
     eclipsehelp.cpp
     emoji.cpp
     entry.cpp
@@ -295,7 +296,6 @@ add_library(doxymain STATIC
     pagedef.cpp
     perlmodgen.cpp
     plantuml.cpp
-    qcstring.cpp
     qhp.cpp
     reflist.cpp
     regex.cpp

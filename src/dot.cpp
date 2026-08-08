@@ -35,15 +35,15 @@
 
 //--------------------------------------------------------------------
 
-static QCString g_dotFontPath;
+static DString g_dotFontPath;
 
 static std::mutex g_dotManagerMutex;
 
-static void setDotFontPath(const QCString &path)
+static void setDotFontPath(const DString &path)
 {
   ASSERT(g_dotFontPath.empty());
   g_dotFontPath = Portable::getenv("DOTFONTPATH");
-  QCString newFontPath = Config_getString(DOT_FONTPATH);
+  DString newFontPath = Config_getString(DOT_FONTPATH);
   if (!newFontPath.empty() && !path.empty())
   {
     newFontPath.prepend(path+Portable::pathListSeparator());
@@ -104,7 +104,7 @@ void DotManager::addJob(const DotJob &newJob)
   m_jobs.push_back(newJob);
 }
 
-DotFilePatcher *DotManager::createFilePatcher(const QCString &fileName)
+DotFilePatcher *DotManager::createFilePatcher(const DString &fileName)
 {
   std::lock_guard<std::mutex> lock(g_dotManagerMutex);
   auto patcher = m_filePatchers.find(fileName.str());
@@ -193,9 +193,9 @@ bool DotManager::run()
 
 //--------------------------------------------------------------------
 
-void writeDotGraphFromFile(const QCString &inFile,const QCString &outDir,
-                           const QCString &outFile,GraphOutputFormat format,
-                           const QCString &srcFile,int srcLine,bool toIndex)
+void writeDotGraphFromFile(const DString &inFile,const DString &outDir,
+                           const DString &outFile,GraphOutputFormat format,
+                           const DString &srcFile,int srcLine,bool toIndex)
 {
   Dir d(outDir.str());
   if (!d.exists())
@@ -203,25 +203,25 @@ void writeDotGraphFromFile(const QCString &inFile,const QCString &outDir,
     term("Output dir {} does not exist!\n",outDir);
   }
 
-  QCString imgExt = getDotImageExtension();
-  QCString imgName = outFile+"."+imgExt;
-  QCString absImgName = d.absPath()+"/"+imgName;
-  QCString absOutFile = d.absPath()+"/"+outFile;
+  DString imgExt = getDotImageExtension();
+  DString imgName = outFile+"."+imgExt;
+  DString absImgName = d.absPath()+"/"+imgName;
+  DString absOutFile = d.absPath()+"/"+outFile;
 
-  QCString dotArgs;
+  DString dotArgs;
   if (format==GraphOutputFormat::BITMAP)
   {
-    dotArgs = QCString("-T") + Config_getEnumAsString(DOT_IMAGE_FORMAT) + " -o \"" + absImgName + "\" \"" + inFile + "\"";
+    dotArgs = DString("-T") + Config_getEnumAsString(DOT_IMAGE_FORMAT) + " -o \"" + absImgName + "\" \"" + inFile + "\"";
   }
   else // format==GraphOutputFormat::EPS
   {
     if (Config_getBool(USE_PDFLATEX))
     {
-      dotArgs = QCString("-Tpdf -o \"") + absOutFile + ".pdf\" \"" + inFile + "\"";
+      dotArgs = DString("-Tpdf -o \"") + absOutFile + ".pdf\" \"" + inFile + "\"";
     }
     else
     {
-      dotArgs = QCString("-Teps -o \"") + absOutFile + ".eps\" \"" + inFile + "\"";
+      dotArgs = DString("-Teps -o \"") + absOutFile + ".eps\" \"" + inFile + "\"";
     }
   }
 
@@ -247,10 +247,10 @@ void writeDotGraphFromFile(const QCString &inFile,const QCString &outDir,
  *  \param newFile signal whether or not the file has been generated before (value `false`) or not.
  */
 void writeDotImageMapFromFile(TextStream &t,
-                            const QCString &inFile, const QCString &outDir,
-                            const QCString &relPath, const QCString &baseName,
-                            const QCString &context,int graphId,
-                            const QCString &srcFile,int srcLine, bool newFile)
+                            const DString &inFile, const DString &outDir,
+                            const DString &relPath, const DString &baseName,
+                            const DString &context,int graphId,
+                            const DString &srcFile,int srcLine, bool newFile)
 {
 
   Dir d(outDir.str());
@@ -259,12 +259,12 @@ void writeDotImageMapFromFile(TextStream &t,
     term("Output dir {} does not exist!\n",outDir);
   }
 
-  QCString mapName = baseName+".cmapx";
-  QCString imgExt = getDotImageExtension();
-  QCString imgName = baseName+"."+imgExt;
-  QCString absOutFile = d.absPath()+"/"+mapName;
+  DString mapName = baseName+".cmapx";
+  DString imgExt = getDotImageExtension();
+  DString imgName = baseName+"."+imgExt;
+  DString absOutFile = d.absPath()+"/"+mapName;
 
-  QCString dotArgs = QCString("-T" MAP_CMD " -o \"") + absOutFile + "\" \"" + inFile + "\"";
+  DString dotArgs = DString("-T" MAP_CMD " -o \"") + absOutFile + "\" \"" + inFile + "\"";
   if (Portable::system(Doxygen::verifiedDotPath, dotArgs, false) != 0)
   {
     return;
@@ -272,7 +272,7 @@ void writeDotImageMapFromFile(TextStream &t,
 
   if (imgExt=="svg") // vector graphics
   {
-    QCString svgName = outDir+"/"+baseName+".svg";
+    DString svgName = outDir+"/"+baseName+".svg";
     DotFilePatcher::writeSVGFigureLink(t,relPath,baseName,svgName);
     if (newFile)
     {

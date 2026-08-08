@@ -21,17 +21,17 @@
 #include "containers.h"
 #include "docvisitor.h"
 #include "docnode.h"
-#include "qcstring.h"
+#include "dstring.h"
 
 class OutputCodeList;
-class QCString;
+class DString;
 class TextStream;
 
 /*! @brief Concrete visitor implementation for Docbook output. */
 class DocbookDocVisitor final : public DocVisitor
 {
   public:
-    DocbookDocVisitor(TextStream &t,OutputCodeList &ci,const QCString &langExt);
+    DocbookDocVisitor(TextStream &t,OutputCodeList &ci,const DString &langExt);
     //-----------------------------------------
     template<class T>
     void visitChildren(const T &t)
@@ -111,41 +111,41 @@ class DocbookDocVisitor final : public DocVisitor
     //--------------------------------------
     // helper functions
     //--------------------------------------
-    void filter(const QCString &str, bool retainNewLine = false, bool citeEntry = false);
-    void startLink(const QCString &file,
-    const QCString &anchor);
+    void filter(const DString &str, bool retainNewLine = false, bool citeEntry = false);
+    void startLink(const DString &file,
+    const DString &anchor);
     void endLink();
-    void startMscFile(const QCString &fileName,const QCString &relPath, const QCString &width,
-                      const QCString &height, bool hasCaption,const DocNodeList &children,
-                      const QCString &srcFile, int srcLine, bool newFile = true);
+    void startMscFile(const DString &fileName,const DString &relPath, const DString &width,
+                      const DString &height, bool hasCaption,const DocNodeList &children,
+                      const DString &srcFile, int srcLine, bool newFile = true);
     void endMscFile(bool hasCaption);
-    void writeMscFile(const QCString &fileName, const DocVerbatim &s, bool newFile = true);
-    void startDiaFile(const QCString &fileName,const QCString &relPath, const QCString &width,
-                      const QCString &height, bool hasCaption,const DocNodeList &children,
-                      const QCString &srcFile, int srcLine, bool newFile = true);
+    void writeMscFile(const DString &fileName, const DocVerbatim &s, bool newFile = true);
+    void startDiaFile(const DString &fileName,const DString &relPath, const DString &width,
+                      const DString &height, bool hasCaption,const DocNodeList &children,
+                      const DString &srcFile, int srcLine, bool newFile = true);
     void endDiaFile(bool hasCaption);
-    void writeDiaFile(const QCString &fileName, const DocVerbatim &s);
-    void startDotFile(const QCString &fileName,const QCString &relPath, const QCString &width,
-                      const QCString &height, bool hasCaption,const DocNodeList &children,
-                      const QCString &srcFile, int srcLine, bool newFile = true);
+    void writeDiaFile(const DString &fileName, const DocVerbatim &s);
+    void startDotFile(const DString &fileName,const DString &relPath, const DString &width,
+                      const DString &height, bool hasCaption,const DocNodeList &children,
+                      const DString &srcFile, int srcLine, bool newFile = true);
     void endDotFile(bool hasCaption);
-    void writeDotFile(const QCString &fileName, const DocVerbatim &s, bool newFile = true);
-    void writePlantUMLFile(const QCString &fileName, const DocVerbatim &s);
-    void startPlantUmlFile(const QCString &fileName,const QCString &relPath, const QCString &width,
-                      const QCString &height, bool hasCaption,const DocNodeList &children,
-                      const QCString &srcFile, int srcLine);
+    void writeDotFile(const DString &fileName, const DocVerbatim &s, bool newFile = true);
+    void writePlantUMLFile(const DString &fileName, const DocVerbatim &s);
+    void startPlantUmlFile(const DString &fileName,const DString &relPath, const DString &width,
+                      const DString &height, bool hasCaption,const DocNodeList &children,
+                      const DString &srcFile, int srcLine);
     void endPlantUmlFile(bool hasCaption);
-    void writeMermaidFile(const QCString &fileName, const DocVerbatim &s);
-    void startMermaidFile(const QCString &fileName,const QCString &relPath, const QCString &width,
-                      const QCString &height, bool hasCaption,const DocNodeList &children,
-                      const QCString &srcFile, int srcLine);
+    void writeMermaidFile(const DString &fileName, const DocVerbatim &s);
+    void startMermaidFile(const DString &fileName,const DString &relPath, const DString &width,
+                      const DString &height, bool hasCaption,const DocNodeList &children,
+                      const DString &srcFile, int srcLine);
     void endMermaidFile(bool hasCaption);
     void visitPreStart(TextStream &t,
                    const DocNodeList &children,
                    bool hasCaption,
-                   const QCString &name,
-                   const QCString &width,
-                   const QCString &height,
+                   const DString &name,
+                   const DString &width,
+                   const DString &height,
                    bool inlineImage = false);
     void visitPostEnd(TextStream &t, bool hasCaption, bool inlineImage = false);
     void visitCaption(const DocNodeList &children);
@@ -157,7 +157,7 @@ class DocbookDocVisitor final : public DocVisitor
     bool m_insidePre = false;
     bool m_hide = false;
     BoolStack m_enabled;
-    QCString m_langExt;
+    DString m_langExt;
     int m_colCnt = 0;
     BoolStack m_bodySet; // it is possible to have tables without a header, needs to be an array as we can have tables in tables
 };

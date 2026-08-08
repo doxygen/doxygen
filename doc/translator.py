@@ -567,7 +567,7 @@ class Transl:
                 if tokenId == 'virtual':
                     prototype = tokenStr  # but not to unified prototype
                     status = 3
-                elif tokenId == 'id' and tokenStr == 'QCString' and backStatus == 3:
+                elif tokenId == 'id' and tokenStr == 'DString' and backStatus == 3:
                     status = 4
                 elif tokenId == 'comment':
                     pass
@@ -909,11 +909,11 @@ class Transl:
 
                         assert(uniPrototype not in self.prototypeDic)
                         # Insert new dictionary item, unless they have a default in translator.h
-                        if (not (prototype=="QCString latexDocumentPost()" or
-                                 prototype=="QCString latexDocumentPre()" or
-                                 prototype=="QCString latexCommandName()" or
-                                 prototype=="QCString latexFont()" or
-                                 prototype=="QCString latexFontenc()" or
+                        if (not (prototype=="DString latexDocumentPost()" or
+                                 prototype=="DString latexDocumentPre()" or
+                                 prototype=="DString latexCommandName()" or
+                                 prototype=="DString latexFont()" or
+                                 prototype=="DString latexFontenc()" or
                                  prototype=="bool needsPunctuation()")):
                             self.prototypeDic[uniPrototype] = prototype
                         status = 2      # body consumed

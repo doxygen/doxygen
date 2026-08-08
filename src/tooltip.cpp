@@ -46,9 +46,9 @@ TooltipManager::~TooltipManager()
 {
 }
 
-static QCString escapeId(const QCString &s)
+static DString escapeId(const DString &s)
 {
-  QCString res=s;
+  DString res=s;
   for (size_t i=0;i<res.length();i++) if (!isId(res[i])) res[i]='_';
   return res;
 }
@@ -58,14 +58,14 @@ void TooltipManager::addTooltip(const Definition *d)
   bool sourceTooltips = Config_getBool(SOURCE_TOOLTIPS);
   if (!sourceTooltips) return;
 
-  QCString id = d->getOutputFileBase();
-  if (size_t i=id.rfind('/'); i!=QCString::npos)
+  DString id = d->getOutputFileBase();
+  if (size_t i=id.rfind('/'); i!=DString::npos)
   {
     id = id.mid(i+1); // strip path (for CREATE_SUBDIRS=YES)
   }
   // In case an extension is present translate this extension to something understood by the tooltip handler
   // otherwise extend t with a translated htmlFileExtension.
-  QCString currentExtension = getFileNameExtension(id);
+  DString currentExtension = getFileNameExtension(id);
   if (currentExtension.empty())
   {
     id += escapeId(Doxygen::htmlFileExtension);
@@ -75,7 +75,7 @@ void TooltipManager::addTooltip(const Definition *d)
     id = stripExtensionGeneral(id,currentExtension) + escapeId(currentExtension);
   }
 
-  QCString anc = d->anchor();
+  DString anc = d->anchor();
   if (!anc.empty())
   {
     id+="_"+anc;
@@ -131,7 +131,7 @@ void TooltipManager::writeTooltips(OutputCodeList &ol)
         defInfo.anchor  = d->getSourceAnchor();
       }
       SourceLinkInfo declInfo; // TODO: fill in...
-      QCString decl;
+      DString decl;
       if (d->definitionType()==Definition::TypeMember)
       {
         const MemberDef *md = toMemberDef(d);

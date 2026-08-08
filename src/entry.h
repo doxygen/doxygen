@@ -90,9 +90,9 @@ class CommandOverrides
 struct BaseInfo
 {
   /*! Creates an object representing an inheritance relation */
-  BaseInfo(const QCString &n,Protection p,Specifier v) :
+  BaseInfo(const DString &n,Protection p,Specifier v) :
     name(n),prot(p),virt(v) {}
-  QCString   name; //!< the name of the base class
+  DString    name; //!< the name of the base class
   Protection prot; //!< inheritance type
   Specifier  virt; //!< virtualness
 };
@@ -102,9 +102,9 @@ struct BaseInfo
  */
 struct TagInfo
 {
-  QCString tagName;
-  QCString fileName;
-  QCString anchor;
+  DString tagName;
+  DString fileName;
+  DString anchor;
 };
 
 /** Represents an unstructured piece of information, about an
@@ -171,8 +171,8 @@ class Entry
 
     // identification
     EntryType    section;     //!< entry type (see Sections);
-    QCString	 type;        //!< member type
-    QCString	 name;        //!< member name
+    DString	 type;        //!< member type
+    DString	 name;        //!< member name
     bool         hasTagInfo;  //!< is tag info valid
     TagInfo      tagInfoData; //!< tag file info data
     const TagInfo *tagInfo() const { return hasTagInfo ? &tagInfoData : nullptr; }
@@ -190,30 +190,30 @@ class Entry
     bool exported;            //!< is the symbol exported from a C++20 module
     CommandOverrides commandOverrides; //!< store info for commands whose default can be overridden
     Specifier    virt;        //!< virtualness of the entry
-    QCString     args;        //!< member argument string
-    QCString     bitfields;   //!< member's bit fields
-    QCString     attributes;  //!< member's attributes (e.g. [[nodiscard]])
+    DString      args;        //!< member argument string
+    DString      bitfields;   //!< member's bit fields
+    DString      attributes;  //!< member's attributes (e.g. [[nodiscard]])
     ArgumentList argList;     //!< member arguments as a list
     ArgumentLists tArgLists;  //!< template argument declarations
     TextStream   program;     //!< the program text
     TextStream   initializer; //!< initial value (for variables)
-    QCString     includeFile; //!< include file (2 arg of \\class, must be unique)
-    QCString     includeName; //!< include name (3 arg of \\class)
-    QCString     doc;         //!< documentation block (partly parsed)
+    DString      includeFile; //!< include file (2 arg of \\class, must be unique)
+    DString      includeName; //!< include name (3 arg of \\class)
+    DString      doc;         //!< documentation block (partly parsed)
     int          docLine;     //!< line number at which the documentation was found
-    QCString     docFile;     //!< file in which the documentation was found
-    QCString     brief;       //!< brief description (doc block)
+    DString      docFile;     //!< file in which the documentation was found
+    DString      brief;       //!< brief description (doc block)
     int          briefLine;   //!< line number at which the brief desc. was found
-    QCString     briefFile;   //!< file in which the brief desc. was found
-    QCString     inbodyDocs;  //!< documentation inside the body of a function
+    DString      briefFile;   //!< file in which the brief desc. was found
+    DString      inbodyDocs;  //!< documentation inside the body of a function
     int          inbodyLine;  //!< line number at which the body doc was found
-    QCString     inbodyFile;  //!< file in which the body doc was found
-    QCString     relates;     //!< related class (doc block)
+    DString      inbodyFile;  //!< file in which the body doc was found
+    DString      relates;     //!< related class (doc block)
     RelatesType  relatesType; //!< how relates is handled
-    QCString     read;        //!< property read accessor
-    QCString     write;       //!< property write accessor
-    QCString     inside;      //!< name of the class in which documents are found
-    QCString     exception;   //!< throw specification
+    DString      read;        //!< property read accessor
+    DString      write;       //!< property write accessor
+    DString      inside;      //!< name of the class in which documents are found
+    DString      exception;   //!< throw specification
     ArgumentList typeConstr;  //!< where clause (C#) for type constraints
     int          bodyLine;    //!< line number of the body in the source
     int          bodyColumn;  //!< column of the body in the source
@@ -222,7 +222,7 @@ class Entry
     std::vector<BaseInfo> extends; //!< list of base classes
     std::vector<Grouping> groups;  //!< list of groups this entry belongs to
     std::vector<const SectionInfo*> anchors; //!< list of anchors defined in this entry
-    QCString	fileName;     //!< file this entry was extracted from
+    DString	fileName;     //!< file this entry was extracted from
     int		startLine;    //!< start line of entry in the source
     int		startColumn;  //!< start column of entry in the source
     RefItemVector sli;        //!< special lists (test/todo/bug/deprecated/..) this entry is in
@@ -231,10 +231,10 @@ class Entry
     bool        hidden;       //!< does this represent an entity that is hidden from the output
     bool        artificial;   //!< Artificially introduced item
     GroupDocType groupDocType;
-    QCString    id;           //!< libclang id
+    DString     id;           //!< libclang id
     LocalToc    localToc;
-    QCString    metaData;     //!< Slice metadata
-    QCString    req;          //!< C++20 requires clause
+    DString     metaData;     //!< Slice metadata
+    DString     req;          //!< C++20 requires clause
     std::vector<std::string> qualifiers;  //!< qualifiers specified with the qualifier command
 
     /// return the command name used to define GROUPDOC_SEC

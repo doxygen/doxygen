@@ -17,7 +17,7 @@
 #define DATETIME_H
 
 #include <ctime>
-#include "qcstring.h"
+#include "dstring.h"
 
 /** @brief Date and time related functions. */
 
@@ -57,7 +57,7 @@ enum class DateTimeType { DateTime,
  *  @returns An empty string if the spec has a supported format,
  *  or an error message if the format is invalid.
  */
-QCString dateTimeFromString(const QCString &spec,std::tm &dt,int &format);
+DString dateTimeFromString(const DString &spec,std::tm &dt,int &format);
 
 
 /** Return a string representation for a given std::tm value that is formatted according to the
@@ -67,17 +67,17 @@ QCString dateTimeFromString(const QCString &spec,std::tm &dt,int &format);
  *  @param[out] formatUsed A bitwise OR of `SF_Date`, `SF_Time` and `SF_Seconds` representing the
  *                         the types of markers found in the format string.
  */
-QCString formatDateTime(const QCString &format,const std::tm &dt,int &formatUsed);
+DString formatDateTime(const DString &format,const std::tm &dt,int &formatUsed);
 
 /** Returns the filled in std::tm for the current date and time */
 std::tm getCurrentDateTime();
 
 /** Returns the current year as a string */
-QCString yearToString();
+DString yearToString();
 
 /** Returns the current date, when \c includeTime is set also the time is provided.
  *  @param[in] includeTime include the time in the output
  */
-QCString dateToString(DateTimeType includeTime);
+DString dateToString(DateTimeType includeTime);
 
 #endif

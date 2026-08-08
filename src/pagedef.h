@@ -28,15 +28,15 @@ class PageDef : public DefinitionMutable, public Definition
     ABSTRACT_BASE_CLASS(PageDef)
 
     // setters
-    virtual void setFileName(const QCString &name) = 0;
+    virtual void setFileName(const DString &name) = 0;
     virtual void setLocalToc(const LocalToc &tl) = 0;
     virtual void setShowLineNo(bool) = 0;
-    virtual void setTitle(const QCString &title) = 0;
+    virtual void setTitle(const DString &title) = 0;
 
     // getters
     virtual void findSectionsInDocumentation() = 0;
-    virtual QCString title() const = 0;
-    virtual QCString titleAsText() const = 0;
+    virtual DString title() const = 0;
+    virtual DString titleAsText() const = 0;
     virtual const GroupDef *getGroupDef() const = 0;
     virtual const PageLinkedRefMap &getSubPages() const = 0;
     virtual bool visibleInIndex() const = 0;
@@ -59,7 +59,7 @@ class PageDef : public DefinitionMutable, public Definition
 
 };
 
-std::unique_ptr<PageDef> createPageDef(const QCString &f,int l,const QCString &n,const QCString &d,const QCString &t);
+std::unique_ptr<PageDef> createPageDef(const DString &f,int l,const DString &n,const DString &d,const DString &t);
 
 // --- Cast functions
 
