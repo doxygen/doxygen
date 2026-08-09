@@ -1052,7 +1052,7 @@ void DefinitionImpl::writeInlineCode(OutputList &ol,const DString &scopeName) co
   {
     thisMd = toMemberDef(p->def);
   }
-  bool inlineSources = thisMd && thisMd->hasInlineSource();
+  bool inlineSources = thisMd && thisMd->hasInlineSource() && thisMd->initializer().isEmpty();
   //printf("Source Fragment %s: %d-%d\n",qPrint(name()),
   //        p->body->startLine,p->body->endLine);
   if (inlineSources && hasSources())
