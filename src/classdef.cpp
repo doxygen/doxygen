@@ -1170,7 +1170,8 @@ void ClassDefImpl::internalInsertMember(MemberDef *md,
                   {
                     addMemberToList(MemberListType::PubAttribs(),md,true);
                     const int MAX_CELL_SIZE=60;
-                    isSimple=md->typeString().length()+md->name().length()+md->argsString().length()<=MAX_CELL_SIZE;
+                    size_t typeLen = removeAnonymousScopes(md->typeString()).length();
+                    isSimple = typeLen + md->name().length() + md->argsString().length() <= MAX_CELL_SIZE;
                   }
                   break;
                 case Protection::Private:
@@ -1225,7 +1226,7 @@ void ClassDefImpl::internalInsertMember(MemberDef *md,
     {
       m_isSimple = false;
     }
-    //printf("adding %s simple=%d total_simple=%d\n",qPrint(name()),isSimple,m_isSimple);
+    //printf("adding %s simple=%d total_simple=%d\n",qPrint(md->qualifiedName()),isSimple,m_isSimple);
 
     /*******************************************************/
     /* insert member in the detailed documentation section */
@@ -4448,7 +4449,7 @@ void ClassDefImpl::addMembersToTemplateInstance(const ClassDef *cd,const Argumen
       }
     }
   }
-  // also instantatie members for nested classes
+  // also instantiate members for nested classes
   for (const auto &innerCd : cd->getClasses())
   {
     ClassDefMutable *ncd = toClassDefMutable(m_innerClasses.find(innerCd->localName()));
@@ -5275,10 +5276,10 @@ bool ClassDefImpl::isEmbeddedInOuterScope() const
              )
            );
   //printf("%s::isEmbeddedInOuterScope(): inlineGroupedClasses=%d "
-  //       "inlineSimpleClasses=%d partOfGroups()=%p m_isSimple=%d "
+  //       "inlineSimpleClasses=%d partOfGroups()=%d m_isSimple=%d "
   //       "getOuterScope()=%s b1=%d b2=%d\n",
   //    qPrint(name()),inlineGroupedClasses,inlineSimpleClasses,
-  //    partOfGroups().pointer(),m_isSimple,getOuterScope()?qPrint(getOuterScope()->name()):"<none>",b1,b2);
+  //    !partOfGroups().empty(),m_isSimple,getOuterScope()?qPrint(getOuterScope()->name()):"<none>",b1,b2);
   return b1 || b2;  // either reason will do
 }
 

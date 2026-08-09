@@ -1792,7 +1792,7 @@ void FileDefImpl::sortMemberLists()
     auto classComp = [](const ClassLinkedRefMap::Ptr &c1,const ClassLinkedRefMap::Ptr &c2)
     {
       return Config_getBool(SORT_BY_SCOPE_NAME)          ?
-        dstricmp_sort(c1->name(),      c2->name())<0     :
+        dstricmp_sort(c1->displayName(), c2->displayName())<0     :
         dstricmp_sort(c1->className(), c2->className())<0;
     };
 

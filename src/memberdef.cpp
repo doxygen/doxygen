@@ -2254,9 +2254,9 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
   ol.startMemberDeclaration();
 
   // start a new member declaration
-  bool isAnonType = annoClassDef || m_fromAnnMemb || m_annEnumType;
+  bool isAnonType = m_fromAnnMemb;
   OutputGenerator::MemberItemType anonType = isAnonType ? OutputGenerator::MemberItemType::AnonymousStart :
-                              !m_tArgList.empty() ? OutputGenerator::MemberItemType::Templated      :
+                                    !m_tArgList.empty() ? OutputGenerator::MemberItemType::Templated      :
                                                           OutputGenerator::MemberItemType::Normal;
   ol.startMemberItem(annoClassDef ? DString() : anchor(), anonType, inheritId);
 
@@ -2380,15 +2380,13 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
     }
     linkifyText(TextGeneratorOLImpl(ol),ltype,options);
   }
-  bool htmlOn = ol.isEnabled(OutputType::Html);
-  if (htmlOn && !ltype.empty())
+
+  if (!ltype.empty())
   {
+    ol.pushGeneratorState();
     ol.disable(OutputType::Html);
-  }
-  if (!ltype.empty()) ol.docify(" ");
-  if (htmlOn)
-  {
-    ol.enable(OutputType::Html);
+    ol.docify(" ");
+    ol.popGeneratorState();
   }
 
   if (m_fromAnnMemb)
@@ -4025,12 +4023,35 @@ void MemberDefImpl::writeMemberDocSimple(OutputList &ol, const Definition *conta
     ol.startDoxyAnchor(cfname,cname,memAnchor,doxyName,doxyArgs);
     ol.addLabel(cfname,memAnchor);
 
-    DString ts = fieldType();
-
-    if (isFunctionPtr())
+    bool written=false;
+    const ClassDef *annoClassDef=getClassDefOfAnonymousType();
+    if (annoClassDef)
+    {
+      static const reg::Ex ar(R"([\w@:]*@\d+[\w@:]*)"); // anonymous type marker(s) including scope
+      reg::Match amatch;
+      std::string stype = m_type.str();
+      if (reg::search(stype,amatch,ar))
+      {
+        size_t ai = amatch.position();
+        size_t al = amatch.length();
+        ol.writeObjectLink(annoClassDef->getReference(),annoClassDef->getOutputFileBase(),
+                           annoClassDef->anchor(),m_type.left(ai)+m_type.mid(ai+al));
+        written=true;
+      }
+    }
+    if (!written)
+    {
+      DString ts;
+      if (isFunctionPtr())
+      {
         ts = m_type + m_args;
-
-    linkifyText(TextGeneratorOLImpl(ol),ts,options);
+      }
+      else
+      {
+        ts = fieldType();
+      }
+      linkifyText(TextGeneratorOLImpl(ol),ts,options);
+    }
     ol.endDoxyAnchor(cfname,memAnchor);
     ol.endInlineMemberType();
   }
