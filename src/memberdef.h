@@ -230,11 +230,6 @@ class MemberDef : public Definition
     virtual int getMemberGroupId() const = 0;
     virtual MemberGroup *getMemberGroup() const = 0;
 
-    virtual bool fromAnonymousScope() const = 0;
-    virtual MemberDef *fromAnonymousMember() const = 0;
-    virtual MemberDef *toAnonymousMember() const = 0;
-    virtual DString anonymousMemberPrefix() const = 0;
-
     // callgraph related members
     virtual bool hasCallGraph() const = 0;
     virtual bool hasCallerGraph() const = 0;
@@ -379,8 +374,6 @@ class MemberDefMutable : public DefinitionMutable, public MemberDef
     virtual void makeImplementationDetail() = 0;
 
     // anonymous scope members
-    virtual void setFromAnonymousMember(MemberDef *m) = 0;
-    virtual void setToAnonymousMember(MemberDef *m) = 0;
     virtual void setClassDefOfAnonymousType(const ClassDef *cd) = 0;
 
     virtual void overrideCallGraph(bool e) = 0;
@@ -440,9 +433,6 @@ class MemberDefMutable : public DefinitionMutable, public MemberDef
                  showInline=false) const = 0;
     virtual void writeMemberDocSimple(OutputList &ol,const Definition *container) const = 0;
     virtual void writeTagFile(TextStream &,bool useQualifiedName,bool showNamespaceMembers) const = 0;
-
-    // write helpers
-    virtual void setFromAnonymousScope(bool b) = 0;
 };
 
 

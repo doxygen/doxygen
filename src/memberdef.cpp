@@ -221,9 +221,6 @@ class MemberDefImpl final : public DefinitionMixin<MemberDefMutable>
     std::optional<ArgumentList> formalTemplateArguments() const override;
     int getMemberGroupId() const override;
     MemberGroup *getMemberGroup() const override;
-    bool fromAnonymousScope() const override;
-    MemberDef *fromAnonymousMember() const override;
-    MemberDef *toAnonymousMember() const override;
     bool hasCallGraph() const override;
     bool hasCallerGraph() const override;
     bool hasReferencesRelation() const override;
@@ -257,7 +254,6 @@ class MemberDefImpl final : public DefinitionMixin<MemberDefMutable>
     DString getDeclFileName() const override;
     int getDeclLine() const override;
     int getDeclColumn() const override;
-    DString anonymousMemberPrefix() const override;
     void setMemberType(MemberType t) override;
     void setDefinition(const DString &d) override;
     void setFileDef(FileDef *fd) override;
@@ -303,9 +299,6 @@ class MemberDefImpl final : public DefinitionMixin<MemberDefMutable>
     void setMemberGroup(MemberGroup *grp) override;
     void setMemberGroupId(int id) override;
     void makeImplementationDetail() override;
-    void setFromAnonymousScope(bool b) override;
-    void setFromAnonymousMember(MemberDef *m) override;
-    void setToAnonymousMember(MemberDef *m) override;
     void overrideCallGraph(bool e) override;
     void overrideCallerGraph(bool e) override;
     void overrideReferencedByRelation(bool e) override;
@@ -443,8 +436,6 @@ class MemberDefImpl final : public DefinitionMixin<MemberDefMutable>
     MemberType m_mtype = MemberType::Define; // returns the kind of member
     int m_maxInitLines = 0;         // when the initializer will be displayed
     int m_userInitLines = 0;        // result of explicit \hideinitializer or \showinitializer
-    MemberDef  *m_fromAnnMemb = nullptr;
-    MemberDef  *m_toAnnMemb = nullptr;
 
     ArgumentList m_defArgList;    // argument list of this member definition
     ArgumentList m_declArgList;   // argument list of this member declaration
@@ -499,8 +490,6 @@ class MemberDefImpl final : public DefinitionMixin<MemberDefMutable>
     bool m_proto = false;               // is it a prototype?
     bool m_docEnumValues = false;       // is an enum with documented enum values.
 
-    bool m_annScope = false;    // member is part of an anonymous scope
-    DString m_anonymousPrefix;
     mutable bool m_hasDetailedDescriptionCached = false;
     mutable bool m_detailedDescriptionCachedValue = false;
                                       // const member.
@@ -872,12 +861,6 @@ class MemberDefAliasImpl final : public DefinitionAliasMixin<MemberDef>
     { return getMdAlias()->getMemberGroupId(); }
     MemberGroup *getMemberGroup() const override
     { return m_memberGroup; }
-    bool fromAnonymousScope() const override
-    { return getMdAlias()->fromAnonymousScope(); }
-    MemberDef *fromAnonymousMember() const override
-    { return getMdAlias()->fromAnonymousMember(); }
-    MemberDef *toAnonymousMember() const override
-    { return getMdAlias()->toAnonymousMember(); }
     bool hasCallGraph() const override
     { return getMdAlias()->hasCallGraph(); }
     bool hasCallerGraph() const override
@@ -950,8 +933,6 @@ class MemberDefAliasImpl final : public DefinitionAliasMixin<MemberDef>
     { return getMdAlias()->visibleInIndex(); }
     int redefineCount() const override
     { return getMdAlias()->redefineCount(); }
-    DString anonymousMemberPrefix() const override
-    { return getMdAlias()->anonymousMemberPrefix(); }
 
     void warnIfUndocumented() const override {}
     void warnIfUndocumentedParams() const override {}
@@ -1386,11 +1367,8 @@ void MemberDefImpl::init(Definition *d,
   m_mtype=mt;
   m_exception=e;
   m_proto=false;
-  m_annScope=false;
   m_memSpec=TypeSpecifier();
   m_vhdlSpec=VhdlSpecifier::UNKNOWN;
-  m_fromAnnMemb=nullptr;
-  m_toAnnMemb=nullptr;
   m_annEnumType=nullptr;
   m_groupAlias=nullptr;
   m_explExt=false;
@@ -1505,8 +1483,6 @@ std::unique_ptr<MemberDef> MemberDefImpl::deepCopy() const
   result->m_vhdlSpec                       = m_vhdlSpec                       ;
   result->m_maxInitLines                   = m_maxInitLines                   ;
   result->m_userInitLines                  = m_userInitLines                  ;
-  result->m_fromAnnMemb                    = m_fromAnnMemb                    ;
-  result->m_toAnnMemb                      = m_toAnnMemb                      ;
   result->m_defArgList                     = m_defArgList                     ;
   result->m_declArgList                    = m_declArgList                    ;
   result->m_tArgList                       = m_tArgList                       ;
@@ -1537,8 +1513,6 @@ std::unique_ptr<MemberDef> MemberDefImpl::deepCopy() const
   result->m_isDMember                      = m_isDMember                      ;
   result->m_proto                          = m_proto                          ;
   result->m_docEnumValues                  = m_docEnumValues                  ;
-  result->m_annScope                       = m_annScope                       ;
-  result->m_anonymousPrefix                = m_anonymousPrefix                ;
   result->m_hasDetailedDescriptionCached   = m_hasDetailedDescriptionCached   ;
   result->m_detailedDescriptionCachedValue = m_detailedDescriptionCachedValue ;
   result->m_hasCallGraph                   = m_hasCallGraph                   ;
@@ -2015,12 +1989,6 @@ const ClassDef *MemberDefImpl::getClassDefOfAnonymousType() const
   return m_anonymousType;
 }
 
-DString MemberDefImpl::anonymousMemberPrefix() const
-{
-  return m_anonymousPrefix;
-}
-
-
 /*! This methods returns true iff the brief section (also known as
  *  declaration section) is visible in the documentation.
  */
@@ -2103,16 +2071,16 @@ bool MemberDefImpl::isBriefSectionVisible() const
 
   //printf("visibleIfStatic=%d visibleIfDocumented=%d visibleIfEnabled=%d "
   //       "visibleIfPrivate=%d visibleIfNotDefaultCDTor=%d "
-  //       "visibleIfFriendCompound=%d !annScope=%d\n",
+  //       "visibleIfFriendCompound=%d\n",
   //       visibleIfStatic,visibleIfDocumented,
   //       visibleIfEnabled,visibleIfPrivate,visibleIfNotDefaultCDTor,
-  //       visibleIfFriendCompound,!m_annScope);
+  //       visibleIfFriendCompound);
 
   bool visible = visibleIfStatic     && visibleIfDocumented      &&
                  visibleIfEnabled    && visibleIfPrivate         &&
                  /*visibleIfDocVirtual &&*/ visibleIfNotDefaultCDTor &&
                  visibleIfFriendCompound &&
-                 !m_annScope && !isHidden();
+                 !isHidden();
   //printf("MemberDefImpl::isBriefSectionVisible() %d\n",visible);
   return visible;
 }
@@ -2254,17 +2222,15 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
   ol.startMemberDeclaration();
 
   // start a new member declaration
-  bool isAnonType = m_fromAnnMemb;
-  OutputGenerator::MemberItemType anonType = isAnonType ? OutputGenerator::MemberItemType::AnonymousStart :
-                                    !m_tArgList.empty() ? OutputGenerator::MemberItemType::Templated      :
-                                                          OutputGenerator::MemberItemType::Normal;
+  OutputGenerator::MemberItemType anonType = !m_tArgList.empty() ? OutputGenerator::MemberItemType::Templated      :
+                                                                   OutputGenerator::MemberItemType::Normal;
   ol.startMemberItem(annoClassDef ? DString() : anchor(), anonType, inheritId);
 
 
   // If there is no detailed description we need to write the anchor here.
   bool detailsVisible = hasDetailedDescription();
   bool writeAnchor = (inGroup || getGroupDef()==nullptr) &&     // only write anchors for member that have no details and are
-                     !detailsVisible && !m_fromAnnMemb &&           // rendered inside the group page or are not grouped at all
+                     !detailsVisible &&                         // rendered inside the group page or are not grouped at all
                      inheritId.empty();
 
   if (writeAnchor)
@@ -2289,7 +2255,7 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
     ol.popGeneratorState();
   }
 
-  if (annoClassDef || m_fromAnnMemb)
+  if (annoClassDef)
   {
     for (int j=0;j<indentLevel;j++)
     {
@@ -2300,9 +2266,9 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
   // *** write template lists
   if (m_tArgList.hasParameters() && getLanguage()==SrcLangExt::Cpp)
   {
-    if (!isAnonType) ol.startMemberTemplateParams();
+     ol.startMemberTemplateParams();
     _writeTemplatePrefix(ol,d,m_tArgList);
-    if (!isAnonType) ol.endMemberTemplateParams(anchor(),inheritId);
+     ol.endMemberTemplateParams(anchor(),inheritId);
   }
 
 
@@ -2389,24 +2355,13 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
     ol.popGeneratorState();
   }
 
-  if (m_fromAnnMemb)
-  {
-    ol.pushGeneratorState();
-    ol.disableAllBut(OutputType::Html);
-    ol.writeNonBreakableSpace(3);
-    ol.popGeneratorState();
-  }
-  else
-  {
-    ol.insertMemberAlign(m_tArgList.hasParameters());
-  }
+  ol.insertMemberAlign(m_tArgList.hasParameters());
 
   // *** write name
   if (!isAnonymous() && !_isAnonymousBitField()) // hide anonymous stuff
   {
     bool extractPrivateVirtual = Config_getBool(EXTRACT_PRIV_VIRTUAL);
     bool extractStatic  = Config_getBool(EXTRACT_STATIC);
-    MemberDefMutable *annMemb = toMemberDefMutable(m_fromAnnMemb);
     bool visibleIfPrivate = (protectionLevelVisible(protection()) ||
                              m_mtype==MemberType::Friend ||
                              (m_prot==Protection::Private &&
@@ -2420,23 +2375,10 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
         !(isStatic() && getClassDef()==nullptr && !extractStatic) // hidden due to static-ness
        )
     {
-      if (annMemb)
-      {
-        //printf("anchor=%s ann_anchor=%s\n",anchor(),annMemb->anchor());
-        annMemb->writeLink(ol,
-            annMemb->getClassDef(),
-            annMemb->getNamespaceDef(),
-            annMemb->getFileDef(),
-            annMemb->getGroupDef(),
-            annMemb->getModuleDef());
-      }
-      else
-      {
-        //printf("writeLink %s->%d\n",qPrint(name),hasDocumentation());
-        const ClassDef *rcd = cd;
-        if (isReference() && getClassDef()) rcd = getClassDef();
-        writeLink(ol,rcd,nd,fd,gd,mod);
-      }
+      //printf("writeLink %s->%d\n",qPrint(name),hasDocumentation());
+      const ClassDef *rcd = cd;
+      if (isReference() && getClassDef()) rcd = getClassDef();
+      writeLink(ol,rcd,nd,fd,gd,mod);
     }
     else if (isDocumentedFriendClass())
       // if the member is an undocumented friend declaration for some class,
@@ -2466,7 +2408,7 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
                    combineArgsAndException(argsString(),excpString()), // text
                 LinkifyTextOptions(options)
                 .setArgumentList(&m_defArgList)
-                .setAutoBreak(m_fromAnnMemb!=nullptr)
+                .setAutoBreak(false)
                 .setIndentLevel(indentLevel)
                );
   }
@@ -2604,13 +2546,6 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
           ol.pushGeneratorState();
           ol.disableAllBut(OutputType::Html);
           ol.docify(" ");
-          MemberDefMutable *annMemb = toMemberDefMutable(m_fromAnnMemb);
-          if (annMemb)
-          {
-            ol.startTextLink(annMemb->getOutputFileBase(),annMemb->anchor());
-            ol.parseText(theTranslator->trMore());
-            ol.endTextLink();
-          }
           ol.popGeneratorState();
         }
       }
@@ -3497,10 +3432,6 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
 
   DString ldef = definition();
   DString title = name();
-  if (m_toAnnMemb)
-  {
-     title.prepend(m_toAnnMemb->anonymousMemberPrefix());
-  }
 
   //printf("member '%s' def='%s'\n",qPrint(name()),qPrint(ldef));
   if (isEnumerate())
@@ -5683,11 +5614,6 @@ MemberGroup *MemberDefImpl::getMemberGroup() const
   return m_memberGroup;
 }
 
-bool MemberDefImpl::fromAnonymousScope() const
-{
-  return m_annScope;
-}
-
 bool MemberDefImpl::hasCallGraph() const
 {
   return m_hasCallGraph;
@@ -5988,31 +5914,6 @@ void MemberDefImpl::setMemberGroupId(int id)
 void MemberDefImpl::makeImplementationDetail()
 {
   m_implOnly=true;
-}
-
-void MemberDefImpl::setFromAnonymousScope(bool b)
-{
-  m_annScope=b;
-}
-
-void MemberDefImpl::setFromAnonymousMember(MemberDef *m)
-{
-  m_fromAnnMemb=m;
-}
-
-void MemberDefImpl::setToAnonymousMember(MemberDef *m)
-{
-  m_toAnnMemb=m;
-}
-
-MemberDef *MemberDefImpl::fromAnonymousMember() const
-{
-  return m_fromAnnMemb;
-}
-
-MemberDef *MemberDefImpl::toAnonymousMember() const
-{
-  return m_toAnnMemb;
 }
 
 void MemberDefImpl::setTemplateMaster(const MemberDef *mt)

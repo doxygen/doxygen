@@ -2595,8 +2595,6 @@ static MemberDef *addVariableToClass(
     const DString &type,
     const DString &name,
     const DString &args,
-    bool fromAnnScope,
-    MemberDef *fromAnnMemb,
     Protection prot,
     Relationship related)
 {
@@ -2608,8 +2606,8 @@ static MemberDef *addVariableToClass(
     qualScope = substitute(qualScope,"::",".");
     scopeSeparator=".";
   }
-  AUTO_TRACE("class variable: file='{}' type='{}' scope='{}' name='{}' args='{}' prot={} mtype={} lang={} ann={} init='{}'",
-      root->fileName, type, qualScope, name, args, root->protection, mtype, lang, fromAnnScope, root->initializer.str());
+  AUTO_TRACE("class variable: file='{}' type='{}' scope='{}' name='{}' args='{}' prot={} mtype={} lang={} init='{}'",
+      root->fileName, type, qualScope, name, args, root->protection, mtype, lang, root->initializer.str());
 
   DString def;
   if (!type.empty())
@@ -2719,17 +2717,6 @@ static MemberDef *addVariableToClass(
   mmd->setDefinition(def);
   mmd->setBitfields(root->bitfields);
   mmd->addSectionsToDefinition(root->anchors);
-  mmd->setFromAnonymousScope(fromAnnScope);
-  mmd->setFromAnonymousMember(fromAnnMemb);
-  if (fromAnnMemb)
-  {
-    MemberDefMutable *fromAnnMmd = toMemberDefMutable(fromAnnMemb);
-    if (fromAnnMmd)
-    {
-      fromAnnMmd->setToAnonymousMember(mmd);
-    }
-  }
-  //md->setIndentDepth(indentDepth);
   mmd->setBodySegment(root->startLine,root->bodyLine,root->endBodyLine);
   mmd->setInitializer(root->initializer.str());
   mmd->setMaxInitLines(root->initLines);
@@ -2777,9 +2764,7 @@ static MemberDef *addVariableToFile(
     const DString &scope,
     const DString &type,
     const DString &name,
-    const DString &args,
-    bool fromAnnScope,
-    MemberDef *fromAnnMemb)
+    const DString &args)
 {
   AUTO_TRACE("global variable: file='{}' type='{}' scope='{}' name='{}' args='{}' prot={} mtype={} lang={} init='{}'",
       root->fileName, type, scope, name, args, root->protection, mtype, root->lang, root->initializer.str());
@@ -2970,16 +2955,6 @@ static MemberDef *addVariableToFile(
   mmd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
   mmd->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
   mmd->addSectionsToDefinition(root->anchors);
-  mmd->setFromAnonymousScope(fromAnnScope);
-  mmd->setFromAnonymousMember(fromAnnMemb);
-  if (fromAnnMemb)
-  {
-    MemberDefMutable *fromAnnMmd = toMemberDefMutable(fromAnnMemb);
-    if (fromAnnMmd)
-    {
-      fromAnnMmd->setToAnonymousMember(mmd);
-    }
-  }
   mmd->setInitializer(root->initializer.str());
   mmd->setMaxInitLines(root->initLines);
   mmd->setMemberGroupId(root->mGrpId);
@@ -3435,8 +3410,6 @@ static void addVariable(const Entry *root,int isFuncPtr=-1)
             type,   // type value as string
             name,   // name of the member
             args,   // arguments as string
-            false,  // from Anonymous scope
-            nullptr,      // anonymous member
             Protection::Public,   // protection
             Relationship::Member  // related to a class
             );
@@ -3487,12 +3460,9 @@ static void addVariable(const Entry *root,int isFuncPtr=-1)
   if (cd==nullptr && classScope!=scope) cd=getClassMutable(classScope);
   if (cd)
   {
-    MemberDef *md=nullptr;
-
     // if cd is an anonymous (=tag less) scope we insert the member
     // into a non-anonymous parent scope as well. This is needed to
     // be able to refer to it using \var or \fn
-
 
     Relationship relationship = isMemberOf ? Relationship::Foreign :
       isRelated  ? Relationship::Related :
@@ -3504,15 +3474,13 @@ static void addVariable(const Entry *root,int isFuncPtr=-1)
         type,   // type value as string
         name,   // name of the member
         args,   // arguments as string
-        false,  // from anonymous scope
-        md,     // from anonymous member
         root->protection,
         relationship
         );
   }
   else if (!name.empty()) // global variable
   {
-    addVariableToFile(root,mtype,scope,type,name,args,false,/*nullptr,*/nullptr);
+    addVariableToFile(root,mtype,scope,type,name,args);
   }
 
 }
