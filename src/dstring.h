@@ -886,4 +886,4 @@ namespace std
   };
 }
 
-#endif // QCSTRING_H
+#endif // DSTRING_H
