@@ -363,7 +363,7 @@ static DString substituteHtmlKeywords(const DString &file,
   }
 
   extraCssText = "";
-  const StringVector &extraCssFile = Config_getList(HTML_EXTRA_STYLESHEET);
+  StringVector extraCssFile = Config_getList(HTML_EXTRA_STYLESHEET);
   for (const auto &fileName : extraCssFile)
   {
     if (!fileName.empty())
@@ -482,7 +482,7 @@ static DString substituteHtmlKeywords(const DString &file,
         "    processHtmlClass: 'tex2jax_process'\n"
         "  }";
       // MACRO / EXT
-      const StringVector &mathJaxExtensions = Config_getList(MATHJAX_EXTENSIONS);
+      StringVector mathJaxExtensions = Config_getList(MATHJAX_EXTENSIONS);
       if (!mathJaxExtensions.empty() || !g_latex_macro.empty())
       {
         mathJaxJs+= ",\n";
@@ -544,7 +544,7 @@ static DString substituteHtmlKeywords(const DString &file,
           mathJaxJs = "<script type=\"text/x-mathjax-config\">\n"
                       "MathJax.Hub.Config({\n"
                       "  extensions: [\"tex2jax.js\"";
-          const StringVector &mathJaxExtensions = Config_getList(MATHJAX_EXTENSIONS);
+          StringVector mathJaxExtensions = Config_getList(MATHJAX_EXTENSIONS);
           for (const auto &s : mathJaxExtensions)
           {
             mathJaxJs+= ", \""+DString(s)+".js\"";
@@ -1760,7 +1760,7 @@ void HtmlGenerator::writeStyleInfo(int part)
         Doxygen::indexList->addStyleSheetFile(cssfi.fileName());
       }
     }
-    const StringVector &extraCssFiles = Config_getList(HTML_EXTRA_STYLESHEET);
+    StringVector extraCssFiles = Config_getList(HTML_EXTRA_STYLESHEET);
     for (const auto &fileName : extraCssFiles)
     {
       if (!fileName.empty())
@@ -3403,7 +3403,7 @@ void HtmlGenerator::writeExternalSearchPage()
     t << "const tagMap = {\n";
     bool first=true;
     // add search mappings
-    const StringVector &extraSearchMappings = Config_getList(EXTRA_SEARCH_MAPPINGS);
+    StringVector extraSearchMappings = Config_getList(EXTRA_SEARCH_MAPPINGS);
     for (const auto &ml : extraSearchMappings)
     {
       DString mapLine(ml);

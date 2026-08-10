@@ -2004,7 +2004,7 @@ void ClassDefImpl::writeIncludeFilesForSlice(OutputList &ol) const
   if (m_incInfo)
   {
     DString nm;
-    const StringVector &paths = Config_getList(STRIP_FROM_PATH);
+    StringVector paths = Config_getList(STRIP_FROM_PATH);
     if (!paths.empty() && m_incInfo->fileDef)
     {
       DString abs = m_incInfo->fileDef->absFilePath();

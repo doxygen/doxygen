@@ -847,7 +847,7 @@ void DocParser::handleLinkedWord(DocNodeVariant *parent,DocNodeList &children,bo
 {
   // helper to check if word w starts with any of the words in AUTOLINK_IGNORE_WORDS
   auto ignoreWord = [](const DString &w) -> bool {
-    const auto &list = Config_getList(AUTOLINK_IGNORE_WORDS);
+    auto list = Config_getList(AUTOLINK_IGNORE_WORDS);
     return std::find_if(list.begin(), list.end(),
                        [&w](const auto &ignore) { return w.startsWith(ignore); }
                       )!=list.end();

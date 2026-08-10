@@ -424,7 +424,7 @@ def parseGroupMapEnums(node):
                 print("}")
 
 def parseGroupMapGetter(node):
-    map = { 'bool':'bool', 'string':'const DString &', 'int':'int', 'list':'const StringVector &' }
+    map = { 'bool':'bool', 'string':'DString', 'int':'int', 'list':'StringVector' }
     for n in node.childNodes:
         if n.nodeType == Node.ELEMENT_NODE:
             setting = n.getAttribute('setting')
@@ -434,14 +434,15 @@ def parseGroupMapGetter(node):
             name = n.getAttribute('id')
             if type=='enum':
                 print("    %-22s %-30s const                  { return %s(m_%s); }" % (name+'_t',name+'()',name+'_str2enum',name))
-                print("    %-22s %-30s const                  { return m_%s; }" % ('const DString &',name+'_str()',name))
+                print("    %-22s %-30s const                  { return m_%s; }" % ('DString ',name+'_str()',name))
             elif type in map:
                 print("    %-22s %-30s const                  { return m_%s; }" % (map[type],name+'()',name))
             if len(setting) > 0:
                 print("#endif")
 
 def parseGroupMapSetter(node):
-    map = { 'bool':'bool', 'string':'const DString &', 'int':'int', 'list':'const StringVector &' }
+    update_map = { 'bool':'bool', 'string':'const DString &', 'int':'int', 'list':'const StringVector &' }
+    return_map = { 'bool':'bool', 'string':'DString', 'int':'int', 'list':'StringVector' }
     for n in node.childNodes:
         if n.nodeType == Node.ELEMENT_NODE:
             setting = n.getAttribute('setting')
@@ -451,8 +452,8 @@ def parseGroupMapSetter(node):
             name = n.getAttribute('id')
             if type=='enum':
                 print("    [[maybe_unused]] %-22s update_%-46s { m_%s = %s(v); return v; }" % (name+'_t',name+'('+name+'_t '+' v)',name,name+'_enum2str'))
-            elif type in map:
-                print("    [[maybe_unused]] %-22s update_%-46s { m_%s = v; return m_%s; }" % (map[type],name+'('+map[type]+' v)',name,name))
+            elif type in update_map:
+                print("    [[maybe_unused]] %-22s update_%-46s { m_%s = v; return m_%s; }" % (return_map[type],name+'('+update_map[type]+' v)',name,name))
             if len(setting) > 0:
                 print("#endif")
 

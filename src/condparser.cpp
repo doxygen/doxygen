@@ -278,7 +278,7 @@ bool CondParser::evalOperator(int opId, bool lhs, bool rhs)
  */
 bool CondParser::evalVariable(const DString &varName)
 {
-  const StringVector &list = Config_getList(ENABLED_SECTIONS);
+  StringVector list = Config_getList(ENABLED_SECTIONS);
   return std::find(list.begin(),list.end(),varName.str())!=list.end();
 }
 

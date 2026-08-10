@@ -425,14 +425,14 @@ void Qhp::addStyleSheetFile(const DString &fileName)
 
 DString Qhp::getQchFileName()
 {
-  DString const & qchFile = Config_getString(QCH_FILE);
+  DString qchFile = Config_getString(QCH_FILE);
   if (!qchFile.empty())
   {
     return qchFile;
   }
 
-  DString const & projectName = Config_getString(PROJECT_NAME);
-  DString const & versionText = Config_getString(PROJECT_NUMBER);
+  DString projectName = Config_getString(PROJECT_NAME);
+  DString versionText = Config_getString(PROJECT_NUMBER);
 
   return DString("../qch/")
       + (projectName.empty() ? DString("index") : projectName)

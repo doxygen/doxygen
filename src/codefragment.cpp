@@ -204,7 +204,7 @@ static DString readTextFileByName(const DString &file)
       return detab(fileToString(file,Config_getBool(FILTER_SOURCE_FILES)),indent);
     }
   }
-  const StringVector &examplePathList = Config_getList(EXAMPLE_PATH);
+  StringVector examplePathList = Config_getList(EXAMPLE_PATH);
   for (const auto &s : examplePathList)
   {
     std::string absFileName = s+(Portable::pathSeparator()+file).str();

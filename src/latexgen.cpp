@@ -738,7 +738,7 @@ void LatexGenerator::startProjectNumber()
 static DString extraLatexStyleSheet()
 {
   DString result;
-  const StringVector &extraLatexStyles = Config_getList(LATEX_EXTRA_STYLESHEET);
+  StringVector extraLatexStyles = Config_getList(LATEX_EXTRA_STYLESHEET);
   for (const auto &fileName : extraLatexStyles)
   {
     if (!fileName.empty())
@@ -2292,7 +2292,7 @@ void LatexGenerator::endEmbeddedDoc()
 void writeExtraLatexPackages(TextStream &t)
 {
   // User-specified packages
-  const StringVector &extraPackages = Config_getList(EXTRA_PACKAGES);
+  StringVector extraPackages = Config_getList(EXTRA_PACKAGES);
   if (!extraPackages.empty())
   {
     t << "% Packages requested by user\n";

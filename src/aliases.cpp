@@ -160,9 +160,9 @@ static std::string escapeAlias(std::string_view value)
 
 void readAliases()
 {
+  StringVector aliases = Config_getList(ALIASES);
   // add aliases to a dictionary
-  const StringVector &aliasList = Config_getList(ALIASES);
-  for (const auto &al : aliasList)
+  for (const auto &al : aliases)
   {
     addValidAliasToMap(al);
   }

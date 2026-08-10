@@ -37,7 +37,7 @@ static std::unordered_map<std::string,std::string> g_symbolMap;
  */
 bool Htags::execute(const DString &htmldir)
 {
-  const StringVector &inputSource = Config_getList(INPUT);
+  StringVector inputSource = Config_getList(INPUT);
   bool quiet = Config_getBool(QUIET);
   bool warnings = Config_getBool(WARNINGS);
   DString htagsOptions = ""; //Config_getString(HTAGS_OPTIONS);

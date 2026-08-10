@@ -94,7 +94,7 @@ class DirDefImpl final : public DefinitionMixin<DirDef>
     void endMemberDeclarations(OutputList &ol);
 
     static DirDef *createNewDir(const DString &path);
-    static bool matchPath(const DString &path,const StringVector &l);
+    static bool matchPath(const DString &path);
 
     DirList m_subdirs;
     DString m_dispName;
@@ -898,8 +898,9 @@ DirDef *DirDefImpl::createNewDir(const DString &path)
   return dir;
 }
 
-bool DirDefImpl::matchPath(const DString &path,const StringVector &l)
+bool DirDefImpl::matchPath(const DString &path)
 {
+  StringVector l = Config_getList(STRIP_FROM_PATH);
   for (const auto &s : l)
   {
     std::string prefix = s.substr(0,path.length());
@@ -922,7 +923,7 @@ DirDef *DirDefImpl::mergeDirectoryInTree(const DString &path)
   while ((i=path.find('/',p))!=DString::npos)
   {
     DString part=path.left(i+1);
-    if (!matchPath(part,Config_getList(STRIP_FROM_PATH)) && (part!="/" && part!="//" && part!="//?/"))
+    if (!matchPath(part) && (part!="/" && part!="//" && part!="//?/"))
     {
       dir=createNewDir(removeLongPathMarker(part));
     }

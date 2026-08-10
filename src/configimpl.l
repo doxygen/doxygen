@@ -1673,7 +1673,7 @@ void Config::init()
   ConfigImpl::instance()->init();
 }
 
-static void checkList(const StringVector &list,const char *name, bool equalRequired,bool valueRequired)
+static inline void checkList(StringVector list,const char *name, bool equalRequired,bool valueRequired)
 {
   for (const auto &s: list)
   {
@@ -1927,7 +1927,7 @@ void Config::checkAndCorrect(bool quiet, const bool check)
 
   //------------------------
   // check include path
-  const StringVector &includePath = Config_getList(INCLUDE_PATH);
+  StringVector includePath = Config_getList(INCLUDE_PATH);
   for (const auto &s : includePath)
   {
     FileInfo fi(s);
@@ -1941,7 +1941,7 @@ void Config::checkAndCorrect(bool quiet, const bool check)
   // check PREDEFINED
   if (Config_getBool(ENABLE_PREPROCESSING))
   {
-    const StringVector &predefList = Config_getList(PREDEFINED);
+    StringVector predefList = Config_getList(PREDEFINED);
     for (const auto &s : predefList)
     {
       DString predef = s;
@@ -2005,7 +2005,7 @@ void Config::checkAndCorrect(bool quiet, const bool check)
     adjustStringSetting(depOption, "HTML_FILE_EXTENSION", ".html");
     adjustStringSetting(depOption, "MERMAID_RENDER_MODE", "CLI");
     adjustColorStyleSetting(depOption);
-    const StringVector &tagFileList = Config_getList(TAGFILES);
+    StringVector tagFileList = Config_getList(TAGFILES);
     StringVector filteredTagFileList;
     for (const auto &s : tagFileList)
     {
@@ -2173,7 +2173,7 @@ void Config::checkAndCorrect(bool quiet, const bool check)
       err("GENERATE_QHP=YES requires QHP_VIRTUAL_FOLDER to be set. Using 'doc' as default!\n");
       Config_updateString(QHP_VIRTUAL_FOLDER,"doc");
     }
-    const StringVector &tagFileList = Config_getList(TAGFILES);
+    StringVector tagFileList = Config_getList(TAGFILES);
     if (!tagFileList.empty())
     {
       err("When enabling GENERATE_QHP the TAGFILES option should be empty. I'll adjust it for you.\n");

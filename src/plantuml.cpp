@@ -259,7 +259,7 @@ static void runPlantumlContent(const PlantumlManager::FilesMap &plantumlFiles,
   DString pumlType = "";
   DString pumlOutDir = "";
 
-  const StringVector &pumlIncludePathList = Config_getList(PLANTUML_INCLUDE_PATH);
+  StringVector pumlIncludePathList = Config_getList(PLANTUML_INCLUDE_PATH);
   {
     auto it = pumlIncludePathList.begin();
     if (it!=pumlIncludePathList.end())

@@ -338,7 +338,7 @@ void CitationManager::generatePage()
   bool citeDebug = Debug::isFlagSet(Debug::Cite);
 
   // 0. add cross references from the bib files to the cite dictionary
-  const StringVector &citeDataList = Config_getList(CITE_BIB_FILES);
+  StringVector citeDataList = Config_getList(CITE_BIB_FILES);
   for (const auto &bibdata : citeDataList)
   {
     DString bibFile = getBibFile(bibdata);
@@ -571,7 +571,7 @@ void CitationManager::generatePage()
 DString CitationManager::latexBibFiles()
 {
   DString result;
-  const StringVector &citeDataList = Config_getList(CITE_BIB_FILES);
+  StringVector citeDataList = Config_getList(CITE_BIB_FILES);
   int i = 0;
   for (const auto &bibdata : citeDataList)
   {

@@ -168,7 +168,7 @@ void DefinitionImpl::setDefFile(const DString &df,int defLine,int defCol)
 
 static bool matchExcludedSymbols(const DString &name)
 {
-  const StringVector &exclSyms = Config_getList(EXCLUDE_SYMBOLS);
+  StringVector exclSyms = Config_getList(EXCLUDE_SYMBOLS);
   if (exclSyms.empty()) return false; // nothing specified
   const std::string &symName = name.str();
   for (const auto &pat : exclSyms)
@@ -1621,7 +1621,7 @@ static DString abbreviate(const DString &s,const DString &name)
     result=result.left(result.length()-1);
 
   // strip any predefined prefix
-  const StringVector &briefDescAbbrev = Config_getList(ABBREVIATE_BRIEF);
+  StringVector briefDescAbbrev = Config_getList(ABBREVIATE_BRIEF);
   for (const auto &p : briefDescAbbrev)
   {
     DString str = substitute(p,"$name",scopelessName); // replace $name with entity name

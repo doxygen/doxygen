@@ -2335,7 +2335,7 @@ static std::unique_ptr<FileState> checkAndOpenFile(yyscan_t yyscanner,const DStr
   FileInfo fi(fileName.str());
   if (fi.exists() && fi.isFile())
   {
-    const StringVector &exclPatterns = Config_getList(EXCLUDE_PATTERNS);
+    StringVector exclPatterns = Config_getList(EXCLUDE_PATTERNS);
     if (patternMatch(fi,exclPatterns)) return nullptr;
 
     DString absName = fi.absFilePath();
@@ -4133,7 +4133,7 @@ static void initPredefined(yyscan_t yyscanner,const DString &fileName)
   YY_EXTRA_TYPE state = preYYget_extra(yyscanner);
 
   // add predefined macros
-  const StringVector &predefList = Config_getList(PREDEFINED);
+  StringVector predefList = Config_getList(PREDEFINED);
   for (const auto &ds : predefList)
   {
     size_t i_equals=ds.find('=');

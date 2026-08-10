@@ -116,8 +116,8 @@ void ClangTUParser::parse()
   bool clangAssistedParsing = Config_getBool(CLANG_ASSISTED_PARSING);
   bool clangIncludeInputPaths = Config_getBool(CLANG_ADD_INC_PATHS);
   bool filterSourceFiles = Config_getBool(FILTER_SOURCE_FILES);
-  const StringVector &includePath = Config_getList(INCLUDE_PATH);
-  const StringVector &clangOptions = Config_getList(CLANG_OPTIONS);
+  StringVector includePath = Config_getList(INCLUDE_PATH);
+  StringVector clangOptions = Config_getList(CLANG_OPTIONS);
   if (!clangAssistedParsing) return;
   //printf("ClangParser::start(%s)\n",fileName);
   assert(p->index==nullptr);

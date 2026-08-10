@@ -295,7 +295,7 @@ DString removeLongPathMarker(DString path)
   return path;
 }
 
-static DString stripFromPath(const DString &p,const StringVector &l)
+static inline DString stripFromPath(const DString &p,StringVector l)
 {
   // look at all the strings in the list and strip the longest match
   DString potential;
@@ -1421,8 +1421,8 @@ DString getFileFilter(const DString &name,bool isSourceCode)
   // sanity check
   if (name.empty()) return "";
 
-  const StringVector& filterSrcList = Config_getList(FILTER_SOURCE_PATTERNS);
-  const StringVector& filterList    = Config_getList(FILTER_PATTERNS);
+  StringVector filterSrcList = Config_getList(FILTER_SOURCE_PATTERNS);
+  StringVector filterList    = Config_getList(FILTER_PATTERNS);
 
   DString filterName;
   bool found=false;
@@ -2734,7 +2734,8 @@ static const DirDef *resolveDirLink(const DString &linkRef)
   //printf("resolveDirLink(%s) -> %s\n",qPrint(linkRef),dd?qPrint(dd->name()):"<none>");
   if (dd==nullptr)
   {
-    for (const auto &path : Config_getList(STRIP_FROM_PATH))
+    StringVector stripPaths = Config_getList(STRIP_FROM_PATH);
+    for (const auto &path : stripPaths)
     {
       FileInfo fi(path+linkRef.str());
       //printf("  trying to strip path '%s' from linkRef '%s' fi='%s'\n",qPrint(path),qPrint(linkRef),qPrint(fi.absFilePath()));
@@ -3025,7 +3026,7 @@ DString findFilePath(const DString &file,bool &ambig)
   }
   if (!found)
   {
-    const StringVector &examplePathList = Config_getList(EXAMPLE_PATH);
+    StringVector examplePathList = Config_getList(EXAMPLE_PATH);
     for (const auto &s : examplePathList)
     {
       std::string absFileName = s+(Portable::pathSeparator()+file).str();
@@ -3270,7 +3271,7 @@ int getPrefixIndex(const DString &name)
 {
   if (name.empty()) return 0;
   int result=0;
-  const StringVector &sl = Config_getList(IGNORE_PREFIX);
+  StringVector sl = Config_getList(IGNORE_PREFIX);
   for (const auto &s : sl)
   {
     const char *ps=s.c_str();
@@ -3649,7 +3650,7 @@ DString determineAbsoluteIncludeName(const DString &curFile,const DString &incFi
     }
     else if (searchIncludes) // search in INCLUDE_PATH as well
     {
-      const StringVector &includePath = Config_getList(INCLUDE_PATH);
+      StringVector includePath = Config_getList(INCLUDE_PATH);
       for (const auto &incPath : includePath)
       {
         FileInfo fi3(incPath);

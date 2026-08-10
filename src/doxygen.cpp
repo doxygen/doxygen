@@ -10476,7 +10476,7 @@ static void readTagFile(const std::shared_ptr<Entry> &root,const DString &tagLin
 //----------------------------------------------------------------------------
 static void copyLatexStyleSheet()
 {
-  const StringVector &latexExtraStyleSheet = Config_getList(LATEX_EXTRA_STYLESHEET);
+  StringVector latexExtraStyleSheet = Config_getList(LATEX_EXTRA_STYLESHEET);
   for (const auto &sheet : latexExtraStyleSheet)
   {
     std::string fileName = sheet;
@@ -10530,7 +10530,7 @@ static void copyStyleSheet()
       }
     }
   }
-  const StringVector &htmlExtraStyleSheet = Config_getList(HTML_EXTRA_STYLESHEET);
+  StringVector htmlExtraStyleSheet = Config_getList(HTML_EXTRA_STYLESHEET);
   for (const auto &sheet : htmlExtraStyleSheet)
   {
     DString fileName(sheet);
@@ -10608,7 +10608,7 @@ static void copyIcon(const DString &outputOption, bool toIndex)
   }
 }
 
-static void copyExtraFiles(const StringVector &files,const DString &filesOption,const DString &outputOption, bool toIndex)
+static inline void copyExtraFiles(StringVector files,const DString &filesOption,const DString &outputOption, bool toIndex)
 {
   for (const auto &fileName : files)
   {
@@ -10753,7 +10753,7 @@ static std::shared_ptr<Entry> parseFile(OutlineParserInterface &parser,
       parser.needsPreprocessing(extension))
   {
     Preprocessor preprocessor;
-    const StringVector &includePath = Config_getList(INCLUDE_PATH);
+    StringVector includePath = Config_getList(INCLUDE_PATH);
     for (const auto &s : includePath)
     {
       std::string absPath = FileInfo(s).absFilePath();
@@ -12033,7 +12033,7 @@ void adjustConfiguration()
    *            Add custom extension mappings
    **************************************************************************/
 
-  const StringVector &extMaps = Config_getList(EXTENSION_MAPPING);
+  StringVector extMaps = Config_getList(EXTENSION_MAPPING);
   for (const auto &mapping : extMaps)
   {
     DString mapStr = mapping;
@@ -12079,7 +12079,7 @@ void adjustConfiguration()
   }
 
   // check and split INPUT_FILE_ENCODING
-  const StringVector &fileEncod = Config_getList(INPUT_FILE_ENCODING);
+  StringVector fileEncod = Config_getList(INPUT_FILE_ENCODING);
   for (const auto &mapping : fileEncod)
   {
     DString mapStr = mapping;
@@ -12112,7 +12112,7 @@ void adjustConfiguration()
   }
 
   // add predefined macro name to a dictionary
-  const StringVector &expandAsDefinedList =Config_getList(EXPAND_AS_DEFINED);
+  StringVector expandAsDefinedList = Config_getList(EXPAND_AS_DEFINED);
   for (const auto &s : expandAsDefinedList)
   {
     Doxygen::expandAsDefinedSet.insert(s);
@@ -12266,19 +12266,19 @@ void searchInputFiles()
 {
   StringUnorderedSet killSet;
 
-  const StringVector &exclPatterns = Config_getList(EXCLUDE_PATTERNS);
+  StringVector exclPatterns = Config_getList(EXCLUDE_PATTERNS);
   bool alwaysRecursive = Config_getBool(RECURSIVE);
   StringUnorderedSet excludeNameSet;
 
   // gather names of all files in the include path
   g_s.begin("Searching for include files...\n");
   killSet.clear();
-  const StringVector &includePathList = Config_getList(INCLUDE_PATH);
+  StringVector includePathList = Config_getList(INCLUDE_PATH);
   for (const auto &s : includePathList)
   {
     size_t plSize = Config_getList(INCLUDE_FILE_PATTERNS).size();
-    const StringVector &pl = plSize==0 ? Config_getList(FILE_PATTERNS) :
-                                         Config_getList(INCLUDE_FILE_PATTERNS);
+    StringVector pl = plSize==0 ? Config_getList(FILE_PATTERNS) :
+                                  Config_getList(INCLUDE_FILE_PATTERNS);
     readFileOrDirectory(s,                             // s
                         Doxygen::includeNameLinkedMap, // fnDict
                         nullptr,                       // exclSet
@@ -12294,13 +12294,14 @@ void searchInputFiles()
 
   g_s.begin("Searching for example files...\n");
   killSet.clear();
-  const StringVector &examplePathList = Config_getList(EXAMPLE_PATH);
+  StringVector examplePathList = Config_getList(EXAMPLE_PATH);
   for (const auto &s : examplePathList)
   {
+    StringVector patterns = Config_getList(EXAMPLE_PATTERNS);
     readFileOrDirectory(s,                                                      // s
                         Doxygen::exampleNameLinkedMap,                          // fnDict
                         nullptr,                                                // exclSet
-                        &Config_getList(EXAMPLE_PATTERNS),                      // patList
+                        &patterns,                                              // patList
                         nullptr,                                                // exclPatList
                         nullptr,                                                // resultList
                         nullptr,                                                // resultSet
@@ -12312,7 +12313,7 @@ void searchInputFiles()
 
   g_s.begin("Searching for images...\n");
   killSet.clear();
-  const StringVector &imagePathList=Config_getList(IMAGE_PATH);
+  StringVector imagePathList=Config_getList(IMAGE_PATH);
   for (const auto &s : imagePathList)
   {
     readFileOrDirectory(s,                                // s
@@ -12330,7 +12331,7 @@ void searchInputFiles()
 
   g_s.begin("Searching for dot files...\n");
   killSet.clear();
-  const StringVector &dotFileList=Config_getList(DOTFILE_DIRS);
+  StringVector dotFileList=Config_getList(DOTFILE_DIRS);
   for (const auto &s : dotFileList)
   {
     readFileOrDirectory(s,                              // s
@@ -12348,7 +12349,7 @@ void searchInputFiles()
 
   g_s.begin("Searching for msc files...\n");
   killSet.clear();
-  const StringVector &mscFileList=Config_getList(MSCFILE_DIRS);
+  StringVector mscFileList=Config_getList(MSCFILE_DIRS);
   for (const auto &s : mscFileList)
   {
     readFileOrDirectory(s,                               // s
@@ -12366,7 +12367,7 @@ void searchInputFiles()
 
   g_s.begin("Searching for dia files...\n");
   killSet.clear();
-  const StringVector &diaFileList=Config_getList(DIAFILE_DIRS);
+  StringVector diaFileList=Config_getList(DIAFILE_DIRS);
   for (const auto &s : diaFileList)
   {
     readFileOrDirectory(s,                                 // s
@@ -12384,7 +12385,7 @@ void searchInputFiles()
 
   g_s.begin("Searching for plantuml files...\n");
   killSet.clear();
-  const StringVector &plantUmlFileList=Config_getList(PLANTUMLFILE_DIRS);
+  StringVector plantUmlFileList=Config_getList(PLANTUMLFILE_DIRS);
   for (const auto &s : plantUmlFileList)
   {
     readFileOrDirectory(s,                                 // s
@@ -12402,7 +12403,7 @@ void searchInputFiles()
 
   g_s.begin("Searching for mermaid files...\n");
   killSet.clear();
-  const StringVector &mermaidFileList=Config_getList(MERMAIDFILE_DIRS);
+  StringVector mermaidFileList=Config_getList(MERMAIDFILE_DIRS);
   for (const auto &s : mermaidFileList)
   {
     readFileOrDirectory(s,                                 // s
@@ -12419,13 +12420,14 @@ void searchInputFiles()
   g_s.end();
 
   g_s.begin("Searching for files to exclude\n");
-  const StringVector &excludeList = Config_getList(EXCLUDE);
+  StringVector excludeList = Config_getList(EXCLUDE);
   for (const auto &s : excludeList)
   {
+    StringVector filePatterns = Config_getList(FILE_PATTERNS);
     readFileOrDirectory(s,                                  // s
                         nullptr,                            // fnDict
                         nullptr,                            // exclSet
-                        &Config_getList(FILE_PATTERNS),     // patList
+                        &filePatterns,                      // patList
                         nullptr,                            // exclPatList
                         nullptr,                            // resultList
                         &excludeNameSet,                    // resultSet
@@ -12441,7 +12443,7 @@ void searchInputFiles()
   g_s.begin("Searching INPUT for files to process...\n");
   killSet.clear();
   Doxygen::inputPaths.clear();
-  const StringVector &inputList=Config_getList(INPUT);
+  StringVector inputList=Config_getList(INPUT);
   for (const auto &s : inputList)
   {
     DString path = s;
@@ -12451,11 +12453,12 @@ void searchInputFiles()
       // strip trailing slashes
       if (path.at(l-1)=='\\' || path.at(l-1)=='/') path=path.left(l-1);
 
+      StringVector filePatterns = Config_getList(FILE_PATTERNS);
       readFileOrDirectory(
           path,                               // s
           Doxygen::inputNameLinkedMap,        // fnDict
           &excludeNameSet,                    // exclSet
-          &Config_getList(FILE_PATTERNS),     // patList
+          &filePatterns,                      // patList
           &exclPatterns,                      // exclPatList
           &g_inputFiles,                      // resultList
           nullptr,                            // resultSet
@@ -12754,7 +12757,7 @@ void parseInput()
   if (!g_singleComment)
   {
     msg("Reading and parsing tag files\n");
-    const StringVector &tagFileList = Config_getList(TAGFILES);
+    StringVector tagFileList = Config_getList(TAGFILES);
     for (const auto &s : tagFileList)
     {
       readTagFile(root,s.c_str());
