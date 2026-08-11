@@ -3461,8 +3461,8 @@ void HtmlGenerator::writeExternalSearchPage()
     t << "  if (query) {\n";
     t << "    searchFor(query,0,20);\n";
     t << "  } else {\n";
-    t << "    const results = document.getElementById('results');\n";
-    t << "    results.innerHtml = '<p>" << theTranslator->trSearchResults(0) << "</p>';\n";
+    t << "    const results = document.getElementById('searchresults');\n";
+    t << "    results.innerHTML = '<p>" << theTranslator->trSearchResults(0) << "</p>';\n";
     t << "  }\n";
     t << "});\n";
   }

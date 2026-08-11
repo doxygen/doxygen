@@ -104,23 +104,48 @@ function capitalize(s) {
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
+let jsonpRequestCounter = 0;
+
+function getJSONP(url, params, callback) {
+  const callbackName = '__doxygenSearchCb' + (jsonpRequestCounter++);
+  const query = Object.keys(params).map(key =>
+      encodeURIComponent(key) + '=' + encodeURIComponent(params[key])).join('&');
+  const script = document.createElement('script');
+  const parent = document.body || document.head || document.documentElement;
+  let done = false;
+  const cleanup = () => {
+    if (done) return;
+    done = true;
+    delete window[callbackName];
+    if (script.parentNode) script.parentNode.removeChild(script);
+  };
+  window[callbackName] = function(data) {
+    cleanup();
+    callback(data);
+  };
+  script.onerror = cleanup;
+  script.src = url + (url.indexOf('?') >= 0 ? '&' : '?') + (query ? query + '&' : '') + 'cb=' + callbackName;
+  parent.appendChild(script);
+  setTimeout(cleanup, 30000);
+}
+
 function searchFor(query,page,count) {
-  $.getJSON(serverUrl+"?cb=?", {
+  getJSONP(serverUrl, {
     n:count,
     p:page,
     q:query
   },
   function(data) {
-    const results = $('#searchresults');
-    $('#MSearchField').val(query);
+    const results = document.getElementById('searchresults');
+    document.getElementById('MSearchField').value = query;
     if (data.hits>0) {
       if (data.hits==1) {
-        results.html('<p>'+searchResultsText[1]+'</p>');
+        results.innerHTML = '<p>'+searchResultsText[1]+'</p>';
       } else {
-        results.html('<p>'+searchResultsText[2].replace(/\$num/,data.hits)+'</p>');
+        results.innerHTML = '<p>'+searchResultsText[2].replace(/\$num/,data.hits)+'</p>';
       }
       let r='<table>';
-      $.each(data.items, function(i,item){
+      data.items.forEach(function(item,i){
         let prefix = tagMap[item.tag];
         if (prefix) prefix+='/'; else prefix='';
 
@@ -132,7 +157,7 @@ function searchFor(query,page,count) {
           const l=item.url.match(/[1-9][0-9]*$/);
           if (l) r+=' at line '+parseInt(l[0]);
         }
-        
+
         for (let i=0;i<item.fragments.length;i++) {
           r+='<tr><td></td><td>'+item.fragments[i]+'</td></tr>';
         }
@@ -165,9 +190,9 @@ function searchFor(query,page,count) {
         }
         r+='</div>';
       }
-      results.append(r);
+      results.insertAdjacentHTML('beforeend', r);
     } else {
-      results.html('<p>'+searchResultsText[0]+'</p>');
+      results.innerHTML = '<p>'+searchResultsText[0]+'</p>';
     }
   });
 }
