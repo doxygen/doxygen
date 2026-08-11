@@ -65,15 +65,24 @@ let jsonpRequestCounter = 0;
 function getJSONP(url, params, callback) {
   const callbackName = '__doxygenSearchCb' + (jsonpRequestCounter++);
   const query = Object.keys(params).map(key =>
-      encodeURIComponent(key)+'='+encodeURIComponent(params[key])).join('&');
+      encodeURIComponent(key) + '=' + encodeURIComponent(params[key])).join('&');
   const script = document.createElement('script');
-  window[callbackName] = function(data) {
+  const parent = document.body || document.head || document.documentElement;
+  let done = false;
+  const cleanup = () => {
+    if (done) return;
+    done = true;
     delete window[callbackName];
-    script.parentNode.removeChild(script);
+    if (script.parentNode) script.parentNode.removeChild(script);
+  };
+  window[callbackName] = function(data) {
+    cleanup();
     callback(data);
   };
-  script.src = url+(url.indexOf('?')>=0 ? '&' : '?')+query+'&cb='+callbackName;
-  document.body.appendChild(script);
+  script.onerror = cleanup;
+  script.src = url + (url.indexOf('?') >= 0 ? '&' : '?') + (query ? query + '&' : '') + 'cb=' + callbackName;
+  parent.appendChild(script);
+  setTimeout(cleanup, 30000);
 }
 
 function searchFor(query,page,count) {
