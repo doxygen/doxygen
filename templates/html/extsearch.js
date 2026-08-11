@@ -54,43 +54,44 @@ const entityMap = {
   "/": '&#x2F;'
 };
 
+// see https://github.com/doxygen/doxygen/pull/10661 for a script to create a minimal font for just these icons.
 const iconMap = {
-  "source": "code",
-  "function": "data_object",
-  "slot": "location_chip",
-  "signal": "data_alert",
-  "variable": "variables",
-  "typedef": "numbers",
-  "enum": "data_array",
-  "enumvalue": "data_array",
-  "property": "list_alt",
-  "event": "overview",
-  "related": "read_more",
-  "friend": "contact_page",
-  "define": "numbers",
-  "file": "description",
-  "namespace": "clarify",
-  "concept": "quick_phrases",
-  "group": "full_coverage",
-  "package": "folder_zip",
-  "page": "article",
-  "dir": "folder",
-  "module": "grid_view",
-  "constants": "pin",
-  "library": "book_5",
-  "type": "type_specimen",
-  "union": "join",
-  "interface": "login",
-  "protocol category": "handshake",
-  "exception": "warning",
-  "class": "category",
-  "struct": "foundation",
-  "service": "settings_applications",
-  "singleton": "looks_one"
+  "source":            "E86F", // code
+  "function":          "F1FC", // data_object
+  "slot":              "F850", // location_chip
+  "signal":            "F2A4", // data_alert
+  "variable":          "E273", // variables
+  "typedef":           "EAC7", // numbers
+  "enum":              "F1FF", // data_array
+  "enumvalue":         "F1FF", // data_array
+  "property":          "E241", // list_alt
+  "event":             "E4A7", // overview
+  "related":           "E5D2", // read_more
+  "friend":            "E0D0", // contact_page
+  "define":            "EAC7", // numbers
+  "file":              "E873", // description
+  "namespace":         "F0C5", // clarify
+  "concept":           "F1DA", // quick_phrases
+  "group":             "EB12", // full_coverage
+  "package":           "E2C6", // folder_zip
+  "page":              "E88E", // article
+  "dir":               "E2C7", // folder
+  "module":            "E9B0", // grid_view
+  "constants":         "F045", // pin
+  "library":           "EB39", // book_5
+  "type":              "E8F0", // type_specimen
+  "union":             "F84F", // join
+  "interface":         "EA77", // login
+  "protocol category": "EBCB", // handshake
+  "exception":         "E002", // warning
+  "class":             "E574", // category
+  "struct":            "F200", // foundation
+  "service":           "E8B9", // settings_applications
+  "singleton":         "E400", // looks_one
 };
 
-function getIcon(t) {
-  return iconMap[t] || "asterisk";
+function getIconCode(t) {
+  return iconMap[t] || "F525"; // asterisk
 }
 
 function escapeHtml(s) {
@@ -124,7 +125,7 @@ function searchFor(query,page,count) {
         if (prefix) prefix+='/'; else prefix='';
 
         r+='<tr class="searchresult" title="'+capitalize(escapeHtml(item.type))+'">'+
-           '<td align="right"><span class="material-symbols-outlined">'+getIcon(item.type)+'</span></td>'+
+           '<td align="right"><span class="material-symbols-outlined">&#x'+getIconCode(item.type)+';</span></td>'+
            '<td><a href="'+escapeHtml(prefix+item.url)+
                 '">'+escapeHtml(item.name)+'</a>';
         if (item.type=="source") {

@@ -407,30 +407,32 @@ static DString substituteHtmlKeywords(const DString &file,
     if (!serverBasedSearch)
     {
       searchCssJs += "<script type=\"text/javascript\" src=\"$relpath^search/searchdata.js\"></script>\n";
-    } else {
-      searchCssJs += "<style type=\"text/css\">"
-        "@font-face {"
-        "  font-family: 'Material Symbols Outlined';"
-        "  font-style: normal;"
-        "  font-weight: 400;"
-        "  src: url($relpath^MaterialSymbolsOutlined_FILL_GRAD_opsz_wght.woff2) format('woff2');"
-        "}"
-        ".material-symbols-outlined {"
-        "  font-family: 'Material Symbols Outlined';"
-        "  font-weight: normal;"
-        "  font-style: normal;"
-        "  font-size: 24px;"
-        "  line-height: 1;"
-        "  letter-spacing: normal;"
-        "  text-transform: none;"
-        "  display: inline-block;"
-        "  white-space: nowrap;"
-        "  word-wrap: normal;"
-        "  direction: ltr;"
-        "  -moz-font-feature-settings: 'liga';"
-        "  -moz-osx-font-smoothing: grayscale;"
-        "}"
-       "</style>";
+    }
+    else
+    {
+      searchCssJs += "<style type=\"text/css\">\n"
+        "@font-face {\n"
+        "  font-family: 'Material Symbols Outlined';\n"
+        "  font-style: normal;\n"
+        "  font-weight: 400;\n"
+        "  src: url($relpath^MaterialSymbolsOutlined.min.woff2) format('woff2');\n"
+        "}\n"
+        ".material-symbols-outlined {\n"
+        "  font-family: 'Material Symbols Outlined';\n"
+        "  font-weight: normal;\n"
+        "  font-style: normal;\n"
+        "  font-size: 24px;\n"
+        "  line-height: 1;\n"
+        "  letter-spacing: normal;\n"
+        "  text-transform: none;\n"
+        "  display: inline-block;\n"
+        "  white-space: nowrap;\n"
+        "  word-wrap: normal;\n"
+        "  direction: ltr;\n"
+        "  -moz-font-feature-settings: 'liga';\n"
+        "  -moz-osx-font-smoothing: grayscale;\n"
+        "}\n"
+       "</style>\n";
     }
     searchCssJs += "<script type=\"text/javascript\" src=\"$relpath^search/search.js\"></script>\n";
 
@@ -1440,10 +1442,13 @@ void HtmlGenerator::writeTabData()
   ResourceMgr &mgr = ResourceMgr::instance();
   mgr.copyResource("doxygen.svg",dname);
   Doxygen::indexList->addImageFile("doxygen.svg");
-  mgr.copyResource("MaterialSymbolsOutlined_FILL_GRAD_opsz_wght.woff2",dname);
-  Doxygen::indexList->addImageFile("MaterialSymbolsOutlined_FILL_GRAD_opsz_wght.woff2");
-  mgr.copyResource("MaterialSymbolsOutlined_LICENSE.txt",dname);
-  Doxygen::indexList->addImageFile("MaterialSymbolsOutlined_LICENSE.txt");
+  if (Config_getBool(SEARCHENGINE) && Config_getBool(SERVER_BASED_SEARCH))
+  {
+    mgr.copyResource("MaterialSymbolsOutlined.min.woff2",dname);
+    Doxygen::indexList->addImageFile("MaterialSymbolsOutlined.min.woff2");
+    mgr.copyResource("MaterialSymbolsOutlined_LICENSE.txt",dname);
+    Doxygen::indexList->addImageFile("MaterialSymbolsOutlined_LICENSE.txt");
+  }
 }
 
 void HtmlGenerator::writeSearchData(const DString &dname)
