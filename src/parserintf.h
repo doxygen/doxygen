@@ -253,8 +253,7 @@ class ParserManager
      */
     std::unique_ptr<CodeParserInterface> getCodeParser(const DString &extension)
     {
-      auto factory = getCodeParserFactory(extension);
-      return factory();
+      return getCodeParserFactory(extension)();
     }
 
     /** Get the factory for create code parser objects with a given \a extension. */

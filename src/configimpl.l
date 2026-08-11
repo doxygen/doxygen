@@ -2386,7 +2386,7 @@ bool Config::parse(const DString &fileName,bool update, Config::CompareMode comp
   // Internally we use the default format UTF-8 and
   // when updating etc. the output is in this format as well and not in the read format
   ConfigString *option = dynamic_cast<ConfigString*>(g_config->get("DOXYFILE_ENCODING"));
-  option->init();
+  if (option) option->init();
 
   return parseRes;
 }

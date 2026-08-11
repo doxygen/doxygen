@@ -3328,7 +3328,7 @@ static void parseMain(yyscan_t yyscanner, const DString &fileName,const char *fi
 
 //----------------------------------------------------------------------------
 
-struct FortranOutlineParser::Private
+struct FortranOutlineParser::Private final
 {
   yyscan_t yyscanner;
   fortranscannerYY_state extra;
@@ -3340,6 +3340,10 @@ struct FortranOutlineParser::Private
     fortranscannerYYset_debug(Debug::isFlagSet(Debug::Lex_fortranscanner) ? 1 : 0,yyscanner);
 #endif
   }
+ ~Private()
+  {
+    fortranscannerYYlex_destroy(yyscanner);
+  }
 };
 
 FortranOutlineParser::FortranOutlineParser(FortranFormat format)
@@ -3347,10 +3351,7 @@ FortranOutlineParser::FortranOutlineParser(FortranFormat format)
 {
 }
 
-FortranOutlineParser::~FortranOutlineParser()
-{
-  fortranscannerYYlex_destroy(p->yyscanner);
-}
+FortranOutlineParser::~FortranOutlineParser() = default;
 
 void FortranOutlineParser::parseInput(const DString &fileName,
                                       const char *fileBuf,

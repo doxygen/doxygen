@@ -1811,7 +1811,7 @@ static DString extractBlock(const DString &text,const DString &marker,int &block
   {
     l2=lp;
   }
-  return l2>l1 ? text.mid(l1,l2-l1) : DString();
+  return l1!=DString::npos && l2!=DString::npos && l2>l1 ? text.mid(l1,l2-l1) : DString();
 }
 
 static void insertCommentStart(yyscan_t yyscanner)

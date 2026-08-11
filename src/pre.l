@@ -2926,7 +2926,7 @@ static bool replaceFunctionMacro(yyscan_t yyscanner,const DString &expr,DString 
       (argCount>=def->nargs-1 && def->varArgs)) // variadic macro with at least as many
                                                 // params as the non-variadic part (see bug731985)
   {
-    uint32_t k=0;
+    size_t k=0;
     // substitution of all formal arguments
     DString resExpr;
     DString d=def->definition.stripWhiteSpace();
@@ -2952,7 +2952,7 @@ static bool replaceFunctionMacro(yyscan_t yyscanner,const DString &expr,DString 
         {
           DString key="@";
           bool hash=false;
-          int l=k-1;
+          int l=static_cast<int>(k)-1;
           // search for ## backward
           if (l>=0 && d.at(l)=='"') l--;
           while (l>=0 && d.at(l)==' ') l--;
@@ -3673,12 +3673,12 @@ static void addMacroDefinition(yyscan_t yyscanner)
 
   DString litText = state->defLitText;
   size_t l=litText.find('\n');
-  if (l>0 && litText.left(l).stripWhiteSpace()=="\\")
+  if (l!=DString::npos && l>0 && litText.left(l).stripWhiteSpace()=="\\")
   {
     // strip first line if it only contains a slash
     litText = litText.mid(l+1);
   }
-  else if (l>0)
+  else if (l!=DString::npos && l>0)
   {
     // align the items on the first line with the items on the second line
     int k=l+1;

@@ -139,7 +139,7 @@ class ManDocVisitor final : public DocVisitor
     };
     static const int maxIndentLevels = 13;
 
-    std::array<ManListItemInfo,maxIndentLevels> m_listItemInfo;
+    std::array<ManListItemInfo,maxIndentLevels> m_listItemInfo {};
 };
 
 #endif

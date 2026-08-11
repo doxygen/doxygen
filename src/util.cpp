@@ -284,15 +284,20 @@ DString generateMarker(int id)
   return result;
 }
 
-DString removeLongPathMarker(DString path)
+DString removeLongPathMarker(const DString &path)
 {
+  DString result;
 #if defined(_WIN32)
   if (path.startsWith("//?/")) // strip leading "\\?\" part from path
   {
-    path=path.mid(4);
+    result = path.mid(4);
   }
+  else
 #endif
-  return path;
+  {
+    result = path;
+  }
+  return result;
 }
 
 static inline DString stripFromPath(const DString &p,StringVector l)

@@ -3366,7 +3366,7 @@ static void generateFunctionLink(yyscan_t yyscanner,OutputCodeList &ol,const DSt
   DString funcWithFullScope=locFunc;
   DString fullScope=locScope;
   DBG_CTX((stderr,"*** locScope=%s locFunc=%s\n",qPrint(locScope),qPrint(locFunc)));
-  int len=2;
+  size_t len=2;
   size_t i=locFunc.rfind("::");
   if (yyextra->currentMemberDef && yyextra->currentMemberDef->resolveAlias()->getClassDef() &&
       funcName==yyextra->currentMemberDef->localName() &&

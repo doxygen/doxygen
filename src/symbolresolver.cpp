@@ -1872,6 +1872,9 @@ void SymbolResolver::showCacheUsage()
   mergeStatistics(g_typeCacheStatistics,getTypeLookupCache());
   mergeStatistics(g_symbolCacheStatistics,getSymbolLookupCache());
 
+  std::lock_guard lock1(g_typeCacheStatistics.mutex);
+  std::lock_guard lock2(g_symbolCacheStatistics.mutex);
+
   msg("type lookup cache used {}/{} hits={} misses={}\n",
       g_typeCacheStatistics.size,
       g_typeCacheStatistics.capacity,

@@ -3327,7 +3327,7 @@ void MemberDefImpl::_writeGroupInclude(OutputList &ol,bool inGroup) const
 
     if (isIDLorJava || forceLocalIncludes) ol.docify("\""); else ol.docify("<");
 
-    if (fd->isLinkable())
+    if (fd && fd->isLinkable())
     {
       ol.writeObjectLink(fd->getReference(),fd->getOutputFileBase(),fd->anchor(),nm);
     }

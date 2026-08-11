@@ -410,7 +410,7 @@ DString determineAbsoluteIncludeName(const DString &curFile,const DString &incFi
 void createSubDirs(const Dir &d);
 void clearSubDirs(const Dir &d);
 
-DString removeLongPathMarker(DString path);
+DString removeLongPathMarker(const DString &path);
 DString stripPath(const DString &s);
 
 bool containsWord(const DString &s,const char *word);
