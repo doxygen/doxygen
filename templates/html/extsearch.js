@@ -60,23 +60,39 @@ function escapeHtml(s) {
   });
 }
 
+let jsonpRequestCounter = 0;
+
+function getJSONP(url, params, callback) {
+  const callbackName = '__doxygenSearchCb' + (jsonpRequestCounter++);
+  const query = Object.keys(params).map(key =>
+      encodeURIComponent(key)+'='+encodeURIComponent(params[key])).join('&');
+  const script = document.createElement('script');
+  window[callbackName] = function(data) {
+    delete window[callbackName];
+    script.parentNode.removeChild(script);
+    callback(data);
+  };
+  script.src = url+(url.indexOf('?')>=0 ? '&' : '?')+query+'&cb='+callbackName;
+  document.body.appendChild(script);
+}
+
 function searchFor(query,page,count) {
-  $.getJSON(serverUrl+"?cb=?", {
+  getJSONP(serverUrl, {
     n:count,
     p:page,
     q:query
   },
   function(data) {
-    const results = $('#searchresults');
-    $('#MSearchField').val(query);
+    const results = document.getElementById('searchresults');
+    document.getElementById('MSearchField').value = query;
     if (data.hits>0) {
       if (data.hits==1) {
-        results.html('<p>'+searchResultsText[1]+'</p>');
+        results.innerHTML = '<p>'+searchResultsText[1]+'</p>';
       } else {
-        results.html('<p>'+searchResultsText[2].replace(/\$num/,data.hits)+'</p>');
+        results.innerHTML = '<p>'+searchResultsText[2].replace(/\$num/,data.hits)+'</p>';
       }
       let r='<table>';
-      $.each(data.items, function(i,item){
+      data.items.forEach(function(item,i){
         let prefix = tagMap[item.tag];
         if (prefix) prefix+='/'; else prefix='';
         r+='<tr class="searchresult">'+
@@ -121,9 +137,9 @@ function searchFor(query,page,count) {
         }
         r+='</div>';
       }
-      results.append(r);
+      results.insertAdjacentHTML('beforeend', r);
     } else {
-      results.html('<p>'+searchResultsText[0]+'</p>');
+      results.innerHTML = '<p>'+searchResultsText[0]+'</p>';
     }
   });
 }
