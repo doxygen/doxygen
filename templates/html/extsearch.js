@@ -55,40 +55,41 @@ const entityMap = {
 };
 
 // see https://github.com/doxygen/doxygen/pull/10661 for a script to create a minimal font for just these icons.
+
 const iconMap = {
-  "source":            "E86F", // code
-  "function":          "F1FC", // data_object
-  "slot":              "F850", // location_chip
-  "signal":            "F2A4", // data_alert
-  "variable":          "E273", // variables
-  "typedef":           "EAC7", // numbers
-  "enum":              "F1FF", // data_array
-  "enumvalue":         "F1FF", // data_array
-  "property":          "E241", // list_alt
-  "event":             "E4A7", // overview
-  "related":           "E5D2", // read_more
-  "friend":            "E0D0", // contact_page
-  "define":            "EAC7", // numbers
-  "file":              "E873", // description
-  "namespace":         "F0C5", // clarify
-  "concept":           "F1DA", // quick_phrases
-  "group":             "EB12", // full_coverage
-  "package":           "E2C6", // folder_zip
-  "page":              "E88E", // article
-  "dir":               "E2C7", // folder
-  "module":            "E9B0", // grid_view
-  "constants":         "F045", // pin
-  "library":           "EB39", // book_5
-  "type":              "E8F0", // type_specimen
-  "union":             "F84F", // join
-  "interface":         "EA77", // login
-  "protocol category": "EBCB", // handshake
-  "exception":         "E002", // warning
-  "class":             "E574", // category
-  "struct":            "F200", // foundation
-  "service":           "E8B9", // settings_applications
-  "singleton":         "E400", // looks_one
-};
+    "source": "E86F",             // code
+    "function": "EAD3",           // data_object
+    "slot": "F850",               // location_chip
+    "signal": "F7F6",             // data_alert
+    "variable": "F851",           // variables
+    "typedef": "EAC7",            // numbers
+    "enum": "EAD1",               // data_array
+    "enumvalue": "EAD1",          // data_array
+    "property": "E0EE",           // list_alt
+    "event": "E4A7",              // overview
+    "related": "EF6D",            // read_more
+    "friend": "F22E",             // contact_page
+    "define": "EAC7",             // numbers
+    "file": "E873",               // description
+    "namespace": "F0BF",          // clarify
+    "concept": "E7D1",            // quick_phrases
+    "group": "EB12",              // full_coverage
+    "package": "EB2C",            // folder_zip
+    "page": "EF42",               // article
+    "dir": "E2C7",                // folder
+    "module": "E9B0",             // grid_view
+    "constants": "F045",          // pin
+    "library": "F53B",            // book_5
+    "type": "F8F0",               // type_specimen
+    "union": "F84F",              // join
+    "interface": "EA77",          // login
+    "protocol category": "EBCB",  // handshake
+    "exception": "E002",          // warning
+    "class": "E574",              // category
+    "struct": "F200",             // foundation
+    "service": "E8B9",            // settings_applications
+    "singleton": "E400",          // looks_one
+}
 
 function getIconCode(t) {
   return iconMap[t] || "F525"; // asterisk
