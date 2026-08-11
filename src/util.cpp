@@ -7041,16 +7041,6 @@ void cleanupInlineGraph()
   }
 }
 
-// Detect: T << DString using SFINAE (Substitution Failure Is Not An Error)
-template <typename T, typename = void>
-struct has_insertion_op : std::false_type {};
-
-template <typename T>
-struct has_insertion_op< T, std::void_t<decltype(std::declval<T&>() << std::declval<const DString &>())> > : std::true_type {};
-
-template <typename T>
-inline constexpr bool has_insertion_op_v = has_insertion_op<T>::value;
-
 template<class T>
 const char *writeHtmlEntity(T &result, const char *s, HtmlEntityMapperFunc &&mapper, const char *fallback)
 {
@@ -7068,25 +7058,11 @@ const char *writeHtmlEntity(T &result, const char *s, HtmlEntityMapperFunc &&map
     HtmlEntityMapper::SymType res = HtmlEntityMapper::instance().name2sym(DString(s).left(cnt));
     if (res!=HtmlEntityMapper::Sym_Unknown)
     {
-      if constexpr (has_insertion_op_v<T>)
-      {
-        result << mapper(res);
-      }
-      else
-      {
-        result += mapper(res);
-      }
+      result += mapper(res);
       return q+1;
     }
   }
-  if constexpr (has_insertion_op_v<T>)
-  {
-    result << fallback;
-  }
-  else
-  {
-    result += fallback;
-  }
+  result += fallback;
   return s+1;
 }
 

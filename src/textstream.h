@@ -82,77 +82,79 @@ class TextStream final
     TextStream &operator<<( char c)
     {
       m_buffer+=c;
-      return static_cast<TextStream&>(*this);
+      return *this;
     }
+
+
     /** Adds an unsigned character to the stream */
     TextStream &operator<<( unsigned char c)
     {
       m_buffer+=c;
-      return static_cast<TextStream&>(*this);
+      return *this;
     }
 
     /** Adds an unsigned character string to the stream */
-    TextStream &operator<<( unsigned char *s)
+    TextStream &operator<<( const unsigned char *s)
     {
       if (s)
       {
-        unsigned char *p = s;
-        while(*p)
+        const unsigned char *p = s;
+        while (*p)
         {
           m_buffer+=*p;
           p++;
         }
       }
-      return static_cast<TextStream&>(*this);
+      return *this;
     }
 
     /** Adds a C-style string to the stream */
     TextStream &operator<<( const char *s)
     {
       if (s) m_buffer+=s;
-      return static_cast<TextStream&>(*this);
+      return *this;
     }
 
     /** Adds a DString to the stream */
     TextStream &operator<<( const DString &s )
     {
       m_buffer+=s.str();
-      return static_cast<TextStream&>(*this);
+      return *this;
     }
 
     /** Adds a std::string to the stream */
     TextStream &operator<<( const std::string &s )
     {
       m_buffer+=s;
-      return static_cast<TextStream&>(*this);
+      return *this;
     }
 
     /** Adds a signed short integer to the stream */
     TextStream &operator<<( signed short i)
     {
       output_int32(i,i<0);
-      return static_cast<TextStream&>(*this);
+      return *this;
     }
 
     /** Adds a unsigned short integer to the stream */
     TextStream &operator<<( unsigned short i)
     {
       output_int32(i,false);
-      return static_cast<TextStream&>(*this);
+      return *this;
     }
 
     /** Adds a signed integer to the stream */
     TextStream &operator<<( signed int i)
     {
       output_int32(i,i<0);
-      return static_cast<TextStream&>(*this);
+      return *this;
     }
 
     /** Adds a unsigned integer to the stream */
     TextStream &operator<<( unsigned int i)
     {
       output_int32(i,false);
-      return static_cast<TextStream&>(*this);
+      return *this;
     }
 
     /** Adds a size_t integer to the stream.
@@ -164,22 +166,36 @@ class TextStream final
     TextStream &operator<<( T i)
     {
       output_int32(static_cast<uint32_t>(i),false);
-      return static_cast<TextStream&>(*this);
+      return *this;
     }
 
     /** Adds a float to the stream */
     TextStream &operator<<( float f)
     {
       output_double(static_cast<double>(f));
-      return static_cast<TextStream&>(*this);
+      return *this;
     }
 
     /** Adds a double to the stream */
     TextStream &operator<<( double d)
     {
       output_double(d);
-      return static_cast<TextStream&>(*this);
+      return *this;
     }
+
+    // also allow += instead of << for convenience
+    void operator+=( char c)                 { *this << c; }
+    void operator+=( unsigned char c)        { *this << c; }
+    void operator+=( const unsigned char *s) { *this << s; }
+    void operator+=( const char *s)          { *this << s; }
+    void operator+=( const DString &s)       { *this << s; }
+    void operator+=( const std::string &s)   { *this << s; }
+    void operator+=( signed short i)         { *this << i; }
+    void operator+=( unsigned short i)       { *this << i; }
+    void operator+=( signed int i)           { *this << i; }
+    void operator+=( unsigned int i)         { *this << i; }
+    void operator+=( float f)                { *this << f; }
+    void operator+=( double d)               { *this << d; }
 
     /** Adds a array of character to the stream
      *  @param buf the character buffer
