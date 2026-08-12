@@ -329,7 +329,7 @@ static DString getConfig(const DString &fileName,int lineNr, const DString &expr
         return error_str;
       default:
         warn(fileName,lineNr,
-             "Unknown error occurence '{}', ignored", expr);
+             "Unknown error occurrence '{}', ignored", expr);
         return error_str;
     }
   }
