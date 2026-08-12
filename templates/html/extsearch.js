@@ -54,10 +54,55 @@ const entityMap = {
   "/": '&#x2F;'
 };
 
+// see https://github.com/doxygen/doxygen/pull/10661 for a script to create a minimal font for just these icons.
+
+const iconMap = {
+    "source": "E86F",             // code
+    "function": "EAD3",           // data_object
+    "slot": "F850",               // location_chip
+    "signal": "F7F6",             // data_alert
+    "variable": "F851",           // variables
+    "typedef": "EAC7",            // numbers
+    "enum": "EAD1",               // data_array
+    "enumvalue": "EAD1",          // data_array
+    "property": "E0EE",           // list_alt
+    "event": "E4A7",              // overview
+    "related": "EF6D",            // read_more
+    "friend": "F22E",             // contact_page
+    "define": "EAC7",             // numbers
+    "file": "E873",               // description
+    "namespace": "F0BF",          // clarify
+    "concept": "E7D1",            // quick_phrases
+    "group": "EB12",              // full_coverage
+    "package": "EB2C",            // folder_zip
+    "page": "EF42",               // article
+    "dir": "E2C7",                // folder
+    "module": "E9B0",             // grid_view
+    "constants": "F045",          // pin
+    "library": "F53B",            // book_5
+    "type": "F8F0",               // type_specimen
+    "union": "F84F",              // join
+    "interface": "EA77",          // login
+    "protocol category": "EBCB",  // handshake
+    "exception": "E002",          // warning
+    "class": "E574",              // category
+    "struct": "F200",             // foundation
+    "service": "E8B9",            // settings_applications
+    "singleton": "E400",          // looks_one
+}
+
+function getIconCode(t) {
+  return iconMap[t] || "F525"; // asterisk
+}
+
 function escapeHtml(s) {
   return String(s).replace(/[&<>"'/]/g, function (s) {
     return entityMap[s];
   });
+}
+
+function capitalize(s) {
+  return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
 let jsonpRequestCounter = 0;
@@ -104,16 +149,16 @@ function searchFor(query,page,count) {
       data.items.forEach(function(item,i){
         let prefix = tagMap[item.tag];
         if (prefix) prefix+='/'; else prefix='';
-        r+='<tr class="searchresult">'+
-           '<td align="right">'+(data.first+i+1)+'.</td>'+
-           '<td>'+escapeHtml(item.type)+'&#160;'+
-                '<a href="'+escapeHtml(prefix+item.url)+
+
+        r+='<tr class="searchresult" title="'+capitalize(escapeHtml(item.type))+'">'+
+           '<td align="right"><span class="material-symbols-outlined">&#x'+getIconCode(item.type)+';</span></td>'+
+           '<td><a href="'+escapeHtml(prefix+item.url)+
                 '">'+escapeHtml(item.name)+'</a>';
         if (item.type=="source") {
           const l=item.url.match(/[1-9][0-9]*$/);
           if (l) r+=' at line '+parseInt(l[0]);
         }
-        r+='</td>';
+
         for (let i=0;i<item.fragments.length;i++) {
           r+='<tr><td></td><td>'+item.fragments[i]+'</td></tr>';
         }
