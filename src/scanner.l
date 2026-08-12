@@ -4765,8 +4765,16 @@ NONLopt [^\n]*
                                               else
                                               {
                                                 yyextra->memspecEntry = yyextra->current;
-                                                yyextra->current_root->moveToSubEntryAndRefresh( yyextra->current ) ;
-                                                yyextra->current = std::make_shared<Entry>(*yyextra->memspecEntry);
+                                                if (yyextra->isTypedef)
+                                                {
+                                                  yyextra->current_root->moveToSubEntryAndKeep( yyextra->current ) ;
+                                                  yyextra->current = std::make_shared<Entry>(*yyextra->current);
+                                                }
+                                                else
+                                                {
+                                                  yyextra->current_root->moveToSubEntryAndRefresh( yyextra->current ) ;
+                                                  yyextra->current = std::make_shared<Entry>(*yyextra->memspecEntry);
+                                                }
                                                 if (yyextra->current->section.isNamespace() ||
                                                     yyextra->current->spec.isInterface() ||
                                                     yyextra->insideJava || yyextra->insidePHP || yyextra->insideCS || yyextra->insideD || yyextra->insideJS ||
@@ -4781,9 +4789,11 @@ NONLopt [^\n]*
                                                 }
                                                 else
                                                 {
-                                                  // enabled the next two lines for bug 623424
-                                                  yyextra->current->doc.clear();
-                                                  yyextra->current->brief.clear();
+                                                  if (!yyextra->isTypedef)  // for a typedef we do not reset the documentation
+                                                  {
+                                                    yyextra->current->doc.clear();
+                                                    yyextra->current->brief.clear();
+                                                  }
                                                   BEGIN( MemberSpec ) ;
                                                 }
                                               }
