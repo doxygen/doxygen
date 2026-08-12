@@ -634,6 +634,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 MODULE_ID ({ID}".")*{ID}
 LINENR    {Bopt}[1-9][0-9]*
 IFILELINE  ("\\ifile \""[^"]*"\" \\iline "[0-9]+" "("iprefix \""[^"]*"\" ")?("iraise "[0-9]+" ")?)
+DOXYCFG   [A-Z][A-Z_0-9]*
 
   // C start comment 
 CCS   "/\*"
@@ -2503,7 +2504,10 @@ STopt  [^\n@\\]*
                                           unput(*yytext);
                                           BEGIN(GuardParam);
                                         }
-<GuardParam>{B}*[a-z_A-Z0-9.\-]+        { // parameter of if/ifnot yyextra->guards
+<GuardParam>{B}*{CMD}doxyconfig{B}+{DOXYCFG} {
+                                          handleGuard(yyscanner,yytext);
+                                        }
+<GuardParam>{B}*[a-z_A-Z0-9.\-]+({B}*{CMD}doxyconfig{B}+{DOXYCFG})? { // parameter of if/ifnot yyextra->guards
                                           handleGuard(yyscanner,yytext);
                                         }
 <GuardParam>{DOCNL}                     { // end of argument

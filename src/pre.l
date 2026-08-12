@@ -391,6 +391,7 @@ EscapeRulesCharOpen  "\\["|"\\<"|"\\{"|"\\("|"\\\""|"\\ "|"\\\\"
 EscapeRulesCharClose "\\]"|"\\>"|"\\}"|"\\)"
 EscapeRulesChar      {EscapeRulesCharOpen}|{EscapeRulesCharClose}
 CHARCE    "[:"[^:]*":]"
+DOXYCFG   [A-Z][A-Z_0-9]*
 
   // C start comment
 CCS   "/\*"
@@ -1636,7 +1637,7 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
                                           yyextra->condCtx=YY_START;
                                           BEGIN(CondLineC);
                                         }
-<CondLineC,CondLineCpp>[!()&| \ta-z_A-Z0-9\x80-\xFF.\-]+      {
+<CondLineC,CondLineCpp>([!()&| \ta-z_A-Z0-9\x80-\xFF.\-]|{CMD}"doxyconfig")+ {
                                           startCondSection(yyscanner,yytext);
                                           if (yyextra->skip)
                                           {
@@ -1656,6 +1657,9 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
                                           {
                                             BEGIN(yyextra->condCtx);
                                           }
+                                        }
+CondLine>{B}*{CMD}doxyconfig{B}+{DOXYCFG} {
+                                          startCondSection(yyscanner,yytext);
                                         }
 <CondLineC,CondLineCpp>.                { // non-guard character
                                           unput(*yytext);
