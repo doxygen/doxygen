@@ -351,7 +351,6 @@ static DString resolveConfig(const DString &fileName,int lineNr, const DString &
   DString loc_expr;
   signed char c = 0;
   const char *p=expr.data();
-  size_t len = expr.length();
   while ((c=*p++)!=0)
   {
     switch(c)
