@@ -151,12 +151,12 @@ DirDefImpl::~DirDefImpl()
 
 bool DirDefImpl::isLinkableInProject() const
 {
-  return !isReference() && hasDocumentation();
+  return !isReference();
 }
 
 bool DirDefImpl::isLinkable() const
 {
-  return isReference() || isLinkableInProject();
+  return true;
 }
 
 void DirDefImpl::addSubDir(DirDef *subdir)
