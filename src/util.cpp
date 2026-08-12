@@ -2952,7 +2952,7 @@ FileDef *findFileDef(const FileNameLinkedMap *fnMap,const DString &n,bool &ambig
   size_t sp0 = name.rfind('/');
   size_t sp1 = name.rfind('\\');
   size_t slashPos = sp0!=DString::npos && sp1!=DString::npos ? std::max(sp0,sp1) :
-                    sp0!=DString::npos ? sp0 : sp1;
+                    sp0!=DString::npos ? sp0 : sp1!=DString::npos ? sp1 : 0;
   if (slashPos!=DString::npos)
   {
     path=removeLongPathMarker(name.left(slashPos+1));
@@ -3066,7 +3066,7 @@ DString showFileDefMatches(const FileNameLinkedMap *fnMap,const DString &n)
   size_t sp0 = name.rfind('/');
   size_t sp1 = name.rfind('\\');
   size_t slashPos = sp0!=DString::npos && sp1!=DString::npos ? std::max(sp0,sp1) :
-                    sp0!=DString::npos ? sp0 : sp1;
+                    sp0!=DString::npos ? sp0 : sp1!=DString::npos ? sp1 : 0;
   if (slashPos!=DString::npos)
   {
     path=removeLongPathMarker(name.left(slashPos+1));
