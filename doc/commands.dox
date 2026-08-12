@@ -1658,7 +1658,15 @@ Section indicators
   The section between \c \\cond and \ref cmdendcond "\\endcond" can be included by
   adding its section label to the \ref cfg_enabled_sections "ENABLED_SECTIONS"
   configuration option. If the section label is omitted, the section will
-  be excluded from processing unconditionally. The section label can be a
+  be excluded from processing unconditionally.
+  Besides literal section labels you can also use the
+  \ref cmddoxyconfig "\\doxyconfig" command as section label or as end part of a section label.
+  The section label created with the \ref cmddoxyconfig "\\doxyconfig" command has to be in the
+  \ref cfg_enabled_sections "ENABLED_SECTIONS" to be effective.
+  Note the section-label `YES` this always evaluates to `true` and the section-label
+  `NO` always evaluates to `false`.
+
+  The section label can be a
   logical expression build of section labels, round brackets, && (AND), || (OR) and ! (NOT).
   If you use an expression you need to wrap it in round brackets, i.e
   <tt>\\cond (!LABEL1 && LABEL2)</tt>.
@@ -1960,7 +1968,13 @@ ALIASES += warnNoDoc{1}="\raisewarning Incomplete documentation: \1"
   with a matching \ref cmdendif "\\endif" command. A conditional section is
   disabled by default. To enable it you must put the
   section-label after the \ref cfg_enabled_sections "ENABLED_SECTIONS"
-  tag in the configuration file.
+  tag in the configuration file. Besides literal section labels you can also use the 
+  \ref cmddoxyconfig "\\doxyconfig" command as section label or as end part of a section label.
+  The section label created with the \ref cmddoxyconfig "\\doxyconfig" command has to be in the
+  \ref cfg_enabled_sections "ENABLED_SECTIONS" to be effective.
+  Note the section-label `YES` this always evaluates to `true` and the section-label
+  `NO` always evaluates to `false`.
+
 
   The section label can be a logical expression
   build of section names, round brackets, && (AND), || (OR) and ! (NOT).

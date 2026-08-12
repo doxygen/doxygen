@@ -232,6 +232,8 @@ HFILEMASK {FILEICHAR}*("."{FILEICHAR}+)+{FILECHARS}*
 VFILEMASK {FILECHARS}("."{FILECHARS})*
 FILEMASK  {VFILEMASK}|{HFILEMASK}
 
+DOXYCFG   [A-Z][A-Z_0-9]*
+
 B         [ \t]
 
 OPTS      "{"[^}]*"}"{B}*
@@ -1352,8 +1354,11 @@ SLASHopt [/]*
 					 }
 				       }
     				     }
-				    }
-<CondLine>[!()&| \ta-z_A-Z0-9.\-]+ {
+				   }
+<CondLine>{B}*{CMD}doxyconfig{B}+{DOXYCFG} {
+                                     handleCondSectionId(yyscanner,yytext);
+				   }
+<CondLine>([!()&| \ta-z_A-Z0-9.\-]|{CMD}"doxyconfig")+ {
                                      handleCondSectionId(yyscanner,yytext);
   				   }
 <CComment,ReadLine,IncludeFile>{CMD}"cond"{WSopt}/\n {

@@ -23,9 +23,14 @@
 
 #include "condparser.h"
 #include "config.h"
+#include "configimpl.h"
+#include "configoptions.h"
 #include "message.h"
 
 // declarations
+static DString error_str = "doxyconfig_error";
+static DString resolveConfig(const DString &fileName,int lineNr, const DString &expr);
+static DString getConfig(const DString &fileName,int lineNr, const DString &expr);
 
 /**
  * parses and evaluates the given expression.
@@ -36,8 +41,8 @@
 bool CondParser::parse(const DString &fileName,int lineNr,const DString &expr)
 {
   if (expr.empty()) return false;
-  m_expr      = expr;
   m_tokenType = NOTHING;
+  m_expr = resolveConfig(fileName, lineNr, expr);
 
   // initialize all variables
   m_e = m_expr.data();    // let m_e point to the start of the expression
@@ -278,7 +283,102 @@ bool CondParser::evalOperator(int opId, bool lhs, bool rhs)
  */
 bool CondParser::evalVariable(const DString &varName)
 {
+  if (varName == "YES") return true;
+  if (varName == "NO") return false;
   StringVector list = Config_getList(ENABLED_SECTIONS);
   return std::find(list.begin(),list.end(),varName.str())!=list.end();
 }
 
+static DString getConfig(const DString &fileName,int lineNr, const DString &expr)
+{
+  if (expr.empty())
+  {
+    return error_str;
+  }
+  ConfigOption * opt = ConfigImpl::instance()->get(expr);
+  if (opt)
+  {
+    switch (opt->kind())
+    {
+      case ConfigOption::O_Bool:
+        return((static_cast<ConfigBool*>(opt)->valueRef())? "YES" : "NO");
+      case ConfigOption::O_String:
+        // due to the fact that there can be any character in the string
+        warn(fileName,lineNr,
+             "String setting '{}' not possible in conditional statement, ignored", expr);
+        return error_str;
+      case ConfigOption::O_Enum:
+        return(*(static_cast<ConfigEnum*>(opt)->valueRef()));
+      case ConfigOption::O_Int:
+        return (DString().setNum(*(static_cast<ConfigInt*>(opt)->valueRef())));
+      case ConfigOption::O_List:
+        warn(fileName,lineNr,
+             "List setting '{}' not possible in conditional statement, ignored", expr);
+        return error_str;
+      case ConfigOption::O_Obsolete:
+        warn(fileName,lineNr,
+             "Obsolete setting '{}' not possible in conditional statement, ignored", expr);
+        return error_str;
+      case ConfigOption::O_Disabled:
+        warn(fileName,lineNr,
+             "Disabled setting '{}' not possible in conditional statement, ignored", expr);
+        return error_str;
+      case ConfigOption::O_Info:
+        warn(fileName,lineNr,
+             "Info setting '{}' not possible in conditional statement, ignored", expr);
+        return error_str;
+      default:
+        warn(fileName,lineNr,
+             "Unknown error occurence '{}', ignored", expr);
+        return error_str;
+    }
+  }
+  else
+  {
+    warn(fileName,lineNr,
+         "Unknown setting '{}' not possible in conditional statement, ignored", expr);
+    return error_str;
+  }
+}
+
+static DString resolveConfig(const DString &fileName,int lineNr, const DString &expr)
+{
+  if (expr.empty())
+  {
+    return "";
+  }
+
+  DString loc_expr;
+  signed char c = 0;
+  const char *p=expr.data();
+  size_t len = expr.length();
+  while ((c=*p++)!=0)
+  {
+    switch(c)
+    {
+      case '\\':
+      case '@':
+        if (*p == 'd' && DString(p).startsWith("doxyconfig"))
+        {
+          p+=10; // skip doxyconfig
+          while (*p==' ' || *p=='\t') {p++;}
+          DString bufConfig;
+          while ((c=*p++)!=0)
+          {
+             if ((c>='A' && c<='Z') || (c>='0' && c<='9') || c=='_') bufConfig += c;
+             else
+             {
+               break;
+             }
+          }
+          p--;
+          loc_expr += getConfig(fileName, lineNr, bufConfig);
+        }
+        break;
+      default:
+        loc_expr += c;
+        break;
+    }
+  }
+  return loc_expr;
+}
