@@ -288,6 +288,7 @@ struct preYY_state
   bool               insideCS       = false; // C# has simpler preprocessor
   bool               insideFtn      = false;
   bool               isSource       = false;
+  bool               isFixedFormFtn = false;
 
   yy_size_t          fenceSize      = 0;
   char               fenceChar      = ' ';
@@ -532,6 +533,15 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
 <IDLquote>.                             {
                                           outputArray(yyscanner,yytext,yyleng);
                                         }
+<Start>^[Cc*].*                         {
+                                          if (getLanguageFromFileName(yyextra->fileName)!=SrcLangExt::Fortran) REJECT;
+                                          if (!yyextra->isFixedFormFtn) REJECT;
+                                          outputArray(yyscanner,yytext,yyleng);
+                                        }
+<Start>^{Bopt}"!".*                     {
+                                          if (getLanguageFromFileName(yyextra->fileName)!=SrcLangExt::Fortran) REJECT;
+                                          outputArray(yyscanner,yytext,yyleng);
+                                        }
 <Start>^{Bopt}/[^#]                     {
                                           outputArray(yyscanner,yytext,yyleng);
                                           BEGIN(CopyLine);
@@ -623,6 +633,10 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
                                           if (getLanguageFromFileName(yyextra->fileName)!=SrcLangExt::CSharp) REJECT;
                                           outputArray(yyscanner,yytext,yyleng);
                                           BEGIN( CopyStringCs );
+                                        }
+<CopyLine,LexCopyLine>"!".*             {
+                                          if (getLanguageFromFileName(yyextra->fileName)!=SrcLangExt::Fortran) REJECT;
+                                          outputArray(yyscanner,yytext,yyleng);
                                         }
 <CopyLine,LexCopyLine>\"                {
                                           outputChar(yyscanner,*yytext);
@@ -2277,6 +2291,12 @@ static void setFileName(yyscan_t yyscanner,const DString &name)
   state->insideIDL = getLanguageFromFileName(state->fileName)==SrcLangExt::IDL;
   state->insideCS = getLanguageFromFileName(state->fileName)==SrcLangExt::CSharp;
   state->insideFtn = getLanguageFromFileName(state->fileName)==SrcLangExt::Fortran;
+  state->isFixedFormFtn = false;
+  if (state->insideFtn)
+  {
+    FortranFormat fmt = convertFileNameFortranParserCode(state->fileName);
+    state->isFixedFormFtn = recognizeFixedForm(DString(state->inputBuf->data()),fmt);
+  }
   EntryType section = guessSection(state->fileName);
   state->isSource = section.isHeader() || section.isSource();
 }
