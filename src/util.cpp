@@ -4972,7 +4972,7 @@ void addHtmlExtensionIfMissing(DString &fName)
   size_t i_fs = fName.rfind('/');
   size_t i_bs = fName.rfind('\\');
   size_t p    = i_fs!=DString::npos && i_bs!=DString::npos ? std::max(i_fs, i_bs) :
-                i_fs!=DString::npos ? i_fs : i_bs;
+                i_fs!=DString::npos ? i_fs : i_bs!=DString::npos ? i_bs : 0;
   size_t i    = fName.find('.',p); // search for . after path part
   if (i==DString::npos)
   {
