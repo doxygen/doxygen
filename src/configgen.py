@@ -1,7 +1,7 @@
 #!/usr/bin/env python
-# python script to generate configoptions.cpp and config.doc from config.xml
+# python script to generate variour configuration related files from config.xml
 #
-# Copyright (C) 1997-2015 by Dimitri van Heesch.
+# Copyright (C) 1997-2026 by Dimitri van Heesch.
 #
 # Permission to use, copy, modify, and distribute this software and its
 # documentation under the terms of the GNU General Public License is hereby
@@ -140,7 +140,7 @@ def addValues(var, node):
     for n in node.childNodes:
         if n.nodeName == "value" and n.nodeType == Node.ELEMENT_NODE:
             name = n.getAttribute('name')
-            print("  %s->addValue(\"%s\");" % (var, name))
+            print(f"  {var}->addValue(\"{name}\");")
 
 
 def getFilter(node, mode):
@@ -153,14 +153,14 @@ def parseHeader(node, objName, mode):
         if n.nodeType == Node.ELEMENT_NODE and n.nodeName == "docs" and getFilter(n, mode):
             doc += parseDocs(n)
     docC = transformDocs(doc)
-    print("  %s->setHeader(" % (objName))
+    print(f"  {objName}->setHeader(")
     rng = len(docC)
     for i in range(rng):
         line = docC[i]
         if i != rng - 1:  # since we go from 0 to rng-1
-            print("              \"%s\\n\"" % (line))
+            print(f"              \"{line}\\n\"")
         else:
-            print("              \"%s\"" % (line))
+            print(f"              \"{line}\"")
     print("             );")
 
 
@@ -254,7 +254,7 @@ def parseOption(node, mode):
     orgtype = node.getAttribute('orgtype')
     docC = prepCDocs(node, mode)
     if len(setting) > 0:
-        print("#if %s" % (setting))
+        print(f"#if {setting}")
     print("  //----")
     if type == 'bool':
         if defval == '1':
@@ -262,31 +262,32 @@ def parseOption(node, mode):
         else:
             enabled = "false"
         print("  cb = cfg->addBool(")
-        print("             \"%s\"," % (name))
+        print(f"             \"{name}\",")
         rng = len(docC)
         for i in range(rng):
             line = docC[i]
             if i != rng - 1:  # since we go from 0 to rng-1
-                print("              \"%s\\n\"" % (line))
+                print(f"              \"{line}\\n\"")
             else:
-                print("              \"%s\"," % (line))
-        print("              %s" % (enabled))
+                print(f"              \"{line}\",")
+        print(f"              {enabled}")
         print("             );")
         if depends != '':
-            print("  cb->addDependency(\"%s\");" % (depends))
+            print(f"  cb->addDependency(\"{depends}\");")
     elif type == 'string':
         print("  cs = cfg->addString(")
-        print("              \"%s\"," % (name))
+        print(f"              \"{name}\",")
         rng = len(docC)
         for i in range(rng):
             line = docC[i]
             if i != rng - 1:  # since we go from 0 to rng-1
-                print("              \"%s\\n\"" % (line))
+                print(f"              \"{line}\\n\"")
             else:
-                print("              \"%s\"" % (line))
+                print(f"              \"{line}\"")
         print("             );")
         if defval != '':
-            print("  cs->setDefaultValue(\"%s\");" % (defval.replace('\\','\\\\')))
+            escapedDefval = defval.replace('\\','\\\\')
+            print(f"  cs->setDefaultValue(\"{escapedDefval}\");")
         if format == 'file':
             print("  cs->setWidgetType(ConfigString::File);")
         elif format == 'image':
@@ -296,49 +297,49 @@ def parseOption(node, mode):
         elif format == 'filedir':
             print("  cs->setWidgetType(ConfigString::FileAndDir);")
         if depends != '':
-            print("  cs->addDependency(\"%s\");" % (depends))
+            print(f"  cs->addDependency(\"{depends}\");")
     elif type == 'enum':
         print("  ce = cfg->addEnum(")
-        print("              \"%s\"," % (name))
+        print(f"              \"{name}\",")
         rng = len(docC)
         for i in range(rng):
             line = docC[i]
             if i != rng - 1:  # since we go from 0 to rng-1
-                print("              \"%s\\n\"" % (line))
+                print(f"              \"{line}\\n\"")
             else:
-                print("              \"%s\"," % (line))
-        print("              \"%s\"" % (defval))
+                print(f"              \"{line}\",")
+        print(f"              \"{defval}\"")
         print("             );")
         addValues("ce", node)
         if depends != '':
-            print("  ce->addDependency(\"%s\");" % (depends))
+            print(f"  ce->addDependency(\"{depends}\");")
     elif type == 'int':
         minval = node.getAttribute('minval')
         maxval = node.getAttribute('maxval')
         print("  ci = cfg->addInt(")
-        print("              \"%s\"," % (name))
+        print(f"              \"{name}\",")
         rng = len(docC)
         for i in range(rng):
             line = docC[i]
             if i != rng - 1:  # since we go from 0 to rng-1
-                print("              \"%s\\n\"" % (line))
+                print(f"              \"{line}\\n\"")
             else:
-                print("              \"%s\"," % (line))
-        print("              %s,%s,%s" % (minval, maxval, defval))
+                print(f"              \"{line}\",")
+        print(f"              {minval},{maxval},{defval}")
         print("             );")
         if depends != '':
-            print("  ci->addDependency(\"%s\");" % (depends))
+            print(f"  ci->addDependency(\"{depends}\");")
     elif type == 'list':
         print("  cl = cfg->addList(")
-        print("              \"%s\"," % (name))
+        print(f"              \"{name}\",")
         rng = len(docC)
         for i in range(rng):
             line = docC[i]
             try:
                 if i != rng - 1:  # since we go from 0 to rng-1
-                    print("              \"%s\\n\"" % (line))
+                    print(f"              \"{line}\\n\"")
                 else:
-                    print("              \"%s\"" % (line))
+                    print(f"              \"{line}\"")
             except Exception as inst:
                 sys.stdout = sys.stderr
                 print("")
@@ -347,7 +348,7 @@ def parseOption(node, mode):
         print("             );")
         addValues("cl", node)
         if depends != '':
-            print("  cl->addDependency(\"%s\");" % (depends))
+            print(f"  cl->addDependency(\"{depends}\");")
         if format == 'file':
             print("  cl->setWidgetType(ConfigList::File);")
         elif format == 'dir':
@@ -355,10 +356,10 @@ def parseOption(node, mode):
         elif format == 'filedir':
             print("  cl->setWidgetType(ConfigList::FileAndDir);")
     elif type == 'obsolete':
-        print("  cfg->addObsolete(\"%s\",ConfigOption::O_%s);" % (name,orgtype.capitalize()))
+        print(f"  cfg->addObsolete(\"{name}\",ConfigOption::O_{orgtype.capitalize()});")
     if len(setting) > 0:
         print("#else")
-        print("  cfg->addDisabled(\"%s\");" % (name))
+        print(f"  cfg->addDisabled(\"{name}\");")
         print("#endif")
 
 
@@ -367,12 +368,10 @@ def parseGroups(node, mode):
     doc = node.getAttribute('docs')
     setting = node.getAttribute('setting')
     if len(setting) > 0:
-        print("#if %s" % (setting))
-    print("%s%s" % ("  //-----------------------------------------",
-                    "----------------------------------"))
-    print("  cfg->addInfo(\"%s\",\"%s\");" % (name, doc))
-    print("%s%s" % ("  //-----------------------------------------",
-                    "----------------------------------"))
+        print(f"#if {setting}")
+    print("  //---------------------------------------------------------------------------")
+    print(f"  cfg->addInfo(\"{name}\",\"{doc}\");")
+    print("  //---------------------------------------------------------------------------")
     if len(setting) > 0:
         print("#endif")
     print("")
@@ -389,29 +388,29 @@ def parseGroupMapEnums(node):
             name   = n.getAttribute('id')
             defval = n.getAttribute('defval')
             if type=='enum':
-                print("\nenum class %s_t" % (name))
+                print(f"\nenum class {name}_t")
                 print("{")
                 for nv in n.childNodes:
                     if nv.nodeName == "value":
                         value = nv.getAttribute('name')
                         if value:
-                            print("  %s," % (escape(value)))
+                            print(f"  {escape(value)},")
                 print("};\n")
-                print("inline {0}_t {1}_str2enum(const DString &s)".format(name,name))
+                print(f"inline {name}_t {name}_str2enum(const DString &s)")
                 print("{")
                 print("  DString lc = s.lower();")
-                print("  static const std::unordered_map<std::string,{0}_t> map =".format(name))
+                print(f"  static const std::unordered_map<std::string,{name}_t> map =")
                 print("  {")
                 for nv in n.childNodes:
                     if nv.nodeName == "value":
                         value = nv.getAttribute('name')
                         if value:
-                            print("    {{ \"{0}\", {1}_t::{2} }},".format(value.lower(),name,escape(value)))
+                            print(f"    {{ \"{value.lower()}\", {name}_t::{escape(value)} }},")
                 print("  };")
                 print("  auto it = map.find(lc.str());")
-                print("  return it!=map.end() ? it->second : {0}_t::{1};".format(name,escape(defval)))
+                print(f"  return it!=map.end() ? it->second : {name}_t::{escape(defval)};")
                 print("}\n")
-                print("inline DString {0}_enum2str({1}_t v)".format(name,name))
+                print(f"inline DString {name}_enum2str({name}_t v)")
                 print("{")
                 print("  switch(v)")
                 print("  {")
@@ -419,9 +418,9 @@ def parseGroupMapEnums(node):
                     if nv.nodeName == "value":
                         value = nv.getAttribute('name')
                         if value:
-                            print("    case {0}_t::{1}: return \"{2}\";".format(name,escape(value),value))
+                            print(f"    case {name}_t::{escape(value)}: return \"{value}\";")
                 print("  }")
-                print("  return \"{0}\";".format(defval))
+                print(f"  return \"{defval}\";")
                 print("}")
 
 def parseGroupMapGetter(node):
@@ -430,14 +429,14 @@ def parseGroupMapGetter(node):
         if n.nodeType == Node.ELEMENT_NODE:
             setting = n.getAttribute('setting')
             if len(setting) > 0:
-                print("#if %s" % (setting))
+                print(f"#if {setting}")
             type = n.getAttribute('type')
             name = n.getAttribute('id')
             if type=='enum':
-                print("    %-22s %-30s const                  { return %s(m_%s); }" % (name+'_t',name+'()',name+'_str2enum',name))
-                print("    %-22s %-30s const                  { return m_%s; }" % ('DString ',name+'_str()',name))
+                print(f"    {name+'_t':<22} {name+'()':<30} const                  {{ return {name}_str2enum(m_{name}); }}")
+                print(f"    {'DString ':<22} {name+'_str()':<30} const                  {{ return m_{name}; }}")
             elif type in map:
-                print("    %-22s %-30s const                  { return m_%s; }" % (map[type],name+'()',name))
+                print(f"    {map[type]:<22} {name+'()':<30} const                  {{ return m_{name}; }}")
             if len(setting) > 0:
                 print("#endif")
 
@@ -448,13 +447,13 @@ def parseGroupMapSetter(node):
         if n.nodeType == Node.ELEMENT_NODE:
             setting = n.getAttribute('setting')
             if len(setting) > 0:
-                print("#if %s" % (setting))
+                print(f"#if {setting}")
             type = n.getAttribute('type')
             name = n.getAttribute('id')
             if type=='enum':
-                print("    [[maybe_unused]] %-22s update_%-46s { m_%s = %s(v); return v; }" % (name+'_t',name+'('+name+'_t '+' v)',name,name+'_enum2str'))
+                print(f"    [[maybe_unused]] {name+'_t':<22} update_{name+'('+name+'_t '+' v)':<46} {{ m_{name} = {name}_enum2str(v); return v; }}")
             elif type in update_map:
-                print("    [[maybe_unused]] %-22s update_%-46s { m_%s = v; return m_%s; }" % (return_map[type],name+'('+update_map[type]+' v)',name,name))
+                print(f"    [[maybe_unused]] {return_map[type]:<22} update_{name+'('+update_map[type]+' v)':<46} {{ m_{name} = v; return m_{name}; }}")
             if len(setting) > 0:
                 print("#endif")
 
@@ -466,8 +465,8 @@ def parseGroupMapAvailable(node):
             name = n.getAttribute('id')
             if type=='enum':
                 if len(setting) > 0:
-                    print("#if %s" % (setting))
-                print("    %-22s isAvailable_%-41s { return v.lower() == %s_enum2str(%s_str2enum(v)).lower(); }" % ('bool',name+'(DString v)',name,name))
+                    print(f"#if {setting}")
+                print(f"    {'bool':<22} isAvailable_{name+'(DString v)':<41} {{ return v.lower() == {name}_enum2str({name}_str2enum(v)).lower(); }}")
                 if len(setting) > 0:
                     print("#endif")
 
@@ -477,11 +476,11 @@ def parseGroupMapVar(node):
         if n.nodeType == Node.ELEMENT_NODE:
             setting = n.getAttribute('setting')
             if len(setting) > 0:
-                print("#if %s" % (setting))
+                print(f"#if {setting}")
             type = n.getAttribute('type')
             name = n.getAttribute('id')
             if type in map:
-                print("    %-12s m_%s;" % (map[type],name))
+                print(f"    {map[type]:<12} m_{name};")
             if len(setting) > 0:
                 print("#endif")
 
@@ -491,11 +490,11 @@ def parseGroupInit(node):
         if n.nodeType == Node.ELEMENT_NODE:
             setting = n.getAttribute('setting')
             if len(setting) > 0:
-                print("#if %s" % (setting))
+                print(f"#if {setting}")
             type = n.getAttribute('type')
             name = n.getAttribute('id')
             if type in map:
-                print("  %-25s = ConfigImpl::instance()->get%s(__FILE__,__LINE__,\"%s\");" % ('m_'+name,map[type],name))
+                print(f"  {'m_'+name:<25} = ConfigImpl::instance()->get{map[type]}(__FILE__,__LINE__,\"{name}\");")
             if len(setting) > 0:
                 print("#endif")
 
@@ -518,15 +517,15 @@ def parseGroupMapInit(node):
         if n.nodeType == Node.ELEMENT_NODE:
             setting = n.getAttribute('setting')
             if len(setting) > 0:
-                print("#if %s" % (setting))
+                print(f"#if {setting}")
             type = n.getAttribute('type')
             name = n.getAttribute('id')
             if type in map:
                 if type == "enum":
                     mappingStr = "{%s}" % (', '.join(getEnum2BoolMapping(n)))
-                    print("    { %-26s Info{ %-13s &ConfigValues::m_%-23s %s}}," % ('\"'+name+'\",','Info::'+map[type]+',',name+",", mappingStr))
+                    print(f"    {{ {'\"'+name+'\",':<26} Info{{ {'Info::'+map[type]+',':<13} &ConfigValues::m_{name+',':<23} {mappingStr}}}}},")
                 else:
-                    print("    { %-26s Info{ %-13s &ConfigValues::m_%-24s}}," % ('\"'+name+'\",','Info::'+map[type]+',',name))
+                    print(f"    {{ {'\"'+name+'\",':<26} Info{{ {'Info::'+map[type]+',':<13} &ConfigValues::m_{name:<24}}}}},")
             if len(setting) > 0:
                 print("#endif")
 
@@ -538,14 +537,14 @@ def parseGroupCDocs(node, mode):
             docC = prepCDocs(n, mode)
             if type != 'obsolete':
                 print("  doc->add(")
-                print("              \"%s\"," % (name))
+                print(f"              \"{name}\",")
                 rng = len(docC)
                 for i in range(rng):
                     line = docC[i]
                     if i != rng - 1:  # since we go from 0 to rng-1
-                        print("              \"%s\\n\"" % (line))
+                        print(f"              \"{line}\\n\"")
                     else:
-                        print("              \"%s\"" % (line))
+                        print(f"              \"{line}\"")
                 print("          );")
 
 def parseOptionDoc(node, first, mode):
@@ -562,14 +561,14 @@ def parseOptionDoc(node, first, mode):
             if n.nodeType == Node.ELEMENT_NODE and n.nodeName == "docs" and getFilter(n, mode):
                 doc += parseDocs(n)
         if first:
-            print(" \\anchor cfg_%s" % (name.lower()))
+            print(f" \\anchor cfg_{name.lower()}")
             print("<dl>")
             print("")
-            print("<dt>\\c %s <dd>" % (name))
+            print(f"<dt>\\c {name} <dd>")
         else:
-            print(" \\anchor cfg_%s" % (name.lower()))
-            print("<dt>\\c %s <dd>" % (name))
-        print(" \\addindex %s" % (name))
+            print(f" \\anchor cfg_{name.lower()}")
+            print(f"<dt>\\c {name} <dd>")
+        print(f" \\addindex {name}")
         print(doc)
         if type == 'enum':
             values = collectValues(node)
@@ -579,11 +578,11 @@ def parseOptionDoc(node, first, mode):
             for i in range(rng):
                 val = values[i]
                 if i == rng - 2:
-                    print("%s%s" % (val,messages['andtxt']))
+                    print(f"{val}{messages['andtxt']}")
                 elif i == rng - 1:
-                    print("%s." % (val))
+                    print(f"{val}.")
                 else:
-                    print("%s, " % (val))
+                    print(f"{val}, ")
             if defval != "":
                 print("")
                 print("")
@@ -608,11 +607,11 @@ def parseOptionDoc(node, first, mode):
                 for i in range(rng):
                     val = values[i]
                     if i == rng - 2:
-                        print("%s%s" % (val,messages['andtxt']))
+                        print(f"{val}{messages['andtxt']}")
                     elif i == rng - 1:
-                        print("%s." % (val))
+                        print(f"{val}.")
                     else:
-                        print("%s, " % (val))
+                        print(f"{val}, ")
             print("")
         elif type == 'string':
             if format == 'dir':
@@ -659,7 +658,7 @@ def parseOptionDoc(node, first, mode):
 def parseGroupsDoc(node, mode):
     name = node.getAttribute('name')
     doc = node.getAttribute('docs')
-    print("\\section config_%s %s" % (name.lower(), doc))
+    print(f"\\section config_{name.lower()} {doc}")
     # Start of list has been moved to the first option for better
     # anchor placement
     #  print "<dl>"
@@ -756,17 +755,17 @@ def syncWarnings(typ, existing, language):
     extra = language - existing
 
     if missing:
-        print("  Missing %d %s: %s" % (len(missing), typ, ', '.join(sorted(list(missing))[:5])))
+        print(f"  Missing {len(missing)} {typ}: {', '.join(sorted(list(missing))[:5])}")
         if len(missing) > 5:
-            print("  ... and %d more" % (len(missing) - 5))
+            print(f"  ... and {len(missing) - 5} more")
 
     if extra:
-        print("  Extra %d %s (not in original): %s" % (len(extra), typ, ', '.join(sorted(list(extra))[:5])))
+        print(f"  Extra {len(extra)} {typ} (not in original): {', '.join(sorted(list(extra))[:5])}")
         if len(extra) > 5:
-             print("  ... and %d more" % (len(extra) - 5))
+             print(f"  ... and {len(extra) - 5} more")
 
     if not missing and not extra:
-        print("  OK - all %s are synchronized" % typ)
+        print(f"  OK - all {typ} are synchronized")
         return(False)
 
     return(True)
@@ -795,12 +794,12 @@ def syncLocalizedConfig(elem, configFile, translationsDir, autoSync=False, repor
         prt_configFile = configFile
 
     existingOptions, existingOptionsWithElements, existingMessages, existingAttrib, existingValues, existingHeader = collectOptions(elem, mode)
-    print("Found %d active options in %s" % (len(existingOptions), prt_configFile))
-    print("Found %d active messages in %s" % (len(existingMessages), prt_configFile))
+    print(f"Found {len(existingOptions)} active options in {prt_configFile}")
+    print(f"Found {len(existingMessages)} active messages in {prt_configFile}")
 
     translationFiles = sorted(glob.glob("%s/config_*.xml" % translationsDir))
     if not translationFiles:
-        print("No translation config file in %s" % translationsDir)
+        print(f"No translation config file in {translationsDir}")
 
     for configFile in translationFiles:
 
@@ -810,17 +809,17 @@ def syncLocalizedConfig(elem, configFile, translationsDir, autoSync=False, repor
             prt_configFile = configFile
 
         if not os.path.exists(configFile):
-            print("Skipping %s: translation config file not found" % prt_configFile)
+            print(f"Skipping {prt_configFile}: translation config file not found")
             continue
 
-        print("Processing %s..." % prt_configFile)
+        print(f"Processing {prt_configFile}...")
 
         try:
             with io.open(configFile, 'r', encoding='utf8') as f:
                 content = f.read()
             langDoc = xml.dom.minidom.parseString(content)
         except Exception as e:
-            print("  Error parsing %s: %s" % (prt_configFile, e))
+            print(f"  Error parsing {prt_configFile}: {e}")
             continue
 
         langOptions, langOptionsWithElements, langMessages, langAttrib, langValues, headerDocs = collectOptions(langDoc, mode)
@@ -846,13 +845,13 @@ def syncLocalizedConfig(elem, configFile, translationsDir, autoSync=False, repor
             extraAttrib = set(langAttrib[optionId]) - set(existingAttrib[optionId])
             if missingAttrib:
                 attribError.add(optionId)
-                print("  Missing %d %s for %s" % (len(missingAttrib), "attributes", optionId))
+                print(f"  Missing {len(missingAttrib)} attributes for {optionId}")
 
             if extraAttrib:
                 attribError.add(optionId)
-                print("  Extra %d %s for %s" % (len(extraAttrib), "attributes", optionId))
+                print(f"  Extra {len(extraAttrib)} attributes for {optionId}")
         if not attribError:
-            print("  OK - all %s are synchronized" % "attributes")
+            print("  OK - all attributes are synchronized")
 
         # values handling
         valuesError = False
@@ -861,16 +860,16 @@ def syncLocalizedConfig(elem, configFile, translationsDir, autoSync=False, repor
         # language options that should have values
         missingAllValues = existingValues - langValues
         if missingAllValues:
-            print("  Missing %d %s: %s" % (len(missingAllValues), "all values", ', '.join(sorted(list(missingAllValues))[:5])))
+            print(f"  Missing {len(missingAllValues)} all values: {', '.join(sorted(list(missingAllValues))[:5])}")
             if len(missingAllValues) > 5:
-                print("  ... and %d more" % (len(missingAllValues) - 5))
+                print(f"  ... and {len(missingAllValues) - 5} more")
             valuesError = True
         # language options that should have no values
         extraAllValues = langValues - existingValues
         if extraAllValues:
-            print("  Extra %d %s: %s" % (len(extraAllValues), "all values", ', '.join(sorted(list(extraAllValues))[:5])))
+            print(f"  Extra {len(extraAllValues)} all values: {', '.join(sorted(list(extraAllValues))[:5])}")
             if len(extraAllValues) > 5:
-                print("  ... and %d more" % (len(extraAllValues) - 5))
+                print(f"  ... and {len(extraAllValues) - 5} more")
             valuesError = True
 
         # both have values, some further investigations
@@ -890,10 +889,10 @@ def syncLocalizedConfig(elem, configFile, translationsDir, autoSync=False, repor
             missingLen = len(missingValues)
             extraLen = len(langValues - optValues)
             if missingLen:
-                print("  Missing %d %s for %s" % (missingLen, "values", optionId))
+                print(f"  Missing {missingLen} values for {optionId}")
                 bothError.add(optionId)
             if extraLen:
-                print("  Extra %d %s for %s" % (extraLen, "values", optionId))
+                print(f"  Extra {extraLen} values for {optionId}")
                 bothError.add(optionId)
             # both have value elements
             bothName = optValues - missingValues
@@ -924,10 +923,10 @@ def syncLocalizedConfig(elem, configFile, translationsDir, autoSync=False, repor
                         bothError.add(optionId)
                         toCorrect = True
                 if toCorrect:
-                    print("  Differences in attributes for %s with name %s for %s" % ("value", name, optionId))
+                    print(f"  Differences in attributes for value with name {name} for {optionId}")
 
         if not (valuesError or bothError):
-            print("  OK - all %s are synchronized" % "values")
+            print("  OK - all values are synchronized")
 
 
         if autoSync and (optionsError or messagesError or attribError or valuesError or bothError or headerError):
@@ -951,7 +950,7 @@ def syncLocalizedConfig(elem, configFile, translationsDir, autoSync=False, repor
                 for doc in existingHeader:
                     head.appendChild(doc)
                 print("    Header documentation not (all) has been translated")
-                print("      Added all original headers containing filter: %s" % mode)
+                print(f"      Added all original headers containing filter: {mode}")
 
             missingOptions = existingOptions - langOptions
             extraOptions = langOptions - existingOptions
@@ -970,7 +969,7 @@ def syncLocalizedConfig(elem, configFile, translationsDir, autoSync=False, repor
                 optionElem = langOptionsWithElements[optionId]
                 parentGroup = optionElem.parentNode
                 parentGroup.removeChild(optionElem)
-                print("    Removed: %s" % optionId)
+                print(f"    Removed: {optionId}")
 
             for optionId in missingOptions:
                 optionElem = existingOptionsWithElements[optionId]
@@ -988,7 +987,7 @@ def syncLocalizedConfig(elem, configFile, translationsDir, autoSync=False, repor
 
                 if parentGroupNew:
                     parentGroupNew.appendChild(importedElem)
-                    print("    Added: %s" % optionId)
+                    print(f"    Added: {optionId}")
 
             # handle option attributes
             for optionId in attribError:
@@ -1004,7 +1003,7 @@ def syncLocalizedConfig(elem, configFile, translationsDir, autoSync=False, repor
                 optionElem = langOptionsWithElements[optionId]
                 for valueElem in optionElem.getElementsByTagName('value'):
                     optionElem.removeChild(valueElem)
-                print("    Removed all values of: %s" % optionId)
+                print(f"    Removed all values of: {optionId}")
 
             for optionId in missingAllValues:
                 if optionId in langOptionsWithElements:
@@ -1013,7 +1012,7 @@ def syncLocalizedConfig(elem, configFile, translationsDir, autoSync=False, repor
                     for valueElem in existingElem.getElementsByTagName('value'):
                         importedElem = langDoc.importNode(valueElem, True)
                         langElem.appendChild(importedElem)
-                    print("    Added all values for: %s" % optionId)
+                    print(f"    Added all values for: {optionId}")
 
             # handle bothValue errors
             for optionId in bothError:
@@ -1035,13 +1034,13 @@ def syncLocalizedConfig(elem, configFile, translationsDir, autoSync=False, repor
                             if allVal.getAttribute('name') == miss:
                                 importedElem = langDoc.importNode(allVal, True)
                                 langElem.appendChild(importedElem)
-                                print("    Added: value %s of %s" % (miss,optionId))
+                                print(f"    Added: value {miss} of {optionId}")
                 if extra:
                     for extr in extra:
                         for allVal in langElem.getElementsByTagName('value'):
                             if allVal.getAttribute('name') == extr:
                                 langElem.removeChild(allVal)
-                                print("    Removed: value %s of %s" % (extr,optionId))
+                                print(f"    Removed: value {extr} of {optionId}")
 
                 # both have value elements
                 bothName = optValues - missing
@@ -1119,7 +1118,7 @@ def syncLocalizedConfig(elem, configFile, translationsDir, autoSync=False, repor
                 for message in parentGeneratorNew.getElementsByTagName('message'):
                     if messageId == message.getAttribute('name'):
                         parentGeneratorNew.removeChild(message)
-                        print("    Removed: %s" % messageId)
+                        print(f"    Removed: {messageId}")
 
             for generator in elem.getElementsByTagName('generator'):
                 parentGenerator = generator
@@ -1129,7 +1128,7 @@ def syncLocalizedConfig(elem, configFile, translationsDir, autoSync=False, repor
                     if messageId == message.getAttribute('name'):
                         importedElem = langDoc.importNode(message, True)
                         parentGeneratorNew.appendChild(importedElem)
-                        print("    Added: %s" % messageId)
+                        print(f"    Added: {messageId}")
 
             backupFile = configFile + ".bak"
             shutil.copy2(configFile, backupFile)
@@ -1144,13 +1143,13 @@ def syncLocalizedConfig(elem, configFile, translationsDir, autoSync=False, repor
                 f.write("\n".join(filteredLines))
                 f.write("\n")
 
-            print("  Backup saved to: %s" % backupFile)
-            print("  File updated: %s" % configFile)
+            print(f"  Backup saved to: {backupFile}")
+            print(f"  File updated: {configFile}")
 
     if report:
         print("```")
     else:
-        print("\nSync %s!" % ("complete" if not autoSync else "and update complete"))
+        print(f"\nSync {'complete' if not autoSync else 'and update complete'}!")
 
 def main():
     modes = ['-doc','-cpp','-wiz','-wizswitch','-maph','-maps','-sync','-report','-auto']
@@ -1189,8 +1188,8 @@ def main():
     if mode == "-doc":
         mode = "documentation"
         print("/* WARNING: This file is generated!")
-        print(" * Do not edit this file, but edit %s instead and run" % configFile)
-        print(" * python configgen.py -doc %s to regenerate this file!" % configFile)
+        print(f" * Do not edit this file, but edit {configFile} instead and run")
+        print(f" * python configgen.py -doc {configFile} to regenerate this file!")
         print(" */")
         # process header
         foundHeader = False
@@ -1200,7 +1199,7 @@ def main():
                 foundHeader = True
                 parseHeaderDoc(n, mode)
         if not foundHeader:
-            print("/*! \\page %s"%re.sub(".xml",'',os.path.basename(configFile)))
+            print(f"/*! \\page {re.sub('.xml','',os.path.basename(configFile))}")
         # generate list with all commands
         commandsList = ()
         for n in elem.childNodes:
@@ -1208,7 +1207,7 @@ def main():
                 commandsList = parseGroupsList(n, commandsList)
         print("\\secreflist")
         for x in sorted(commandsList):
-            print("\\refitem cfg_%s %s" % (x.lower(), x))
+            print(f"\\refitem cfg_{x.lower()} {x}")
         print("\\endsecreflist")
         # process groups and options
         for n in elem.childNodes:
@@ -1223,8 +1222,8 @@ def main():
             print("*/")
     elif mode == "-maph":
         print("/* WARNING: This file is generated!")
-        print(" * Do not edit this file, but edit %s instead and run" % configFile)
-        print(" * python configgen.py -maph %s to regenerate this file!" % configFile)
+        print(f" * Do not edit this file, but edit {configFile} instead and run")
+        print(f" * python configgen.py -maph {configFile} to regenerate this file!")
         print(" */")
         print("#ifndef CONFIGVALUES_H")
         print("#define CONFIGVALUES_H")
@@ -1288,8 +1287,8 @@ def main():
         print("#endif")
     elif mode == "-maps":
         print("/* WARNING: This file is generated!")
-        print(" * Do not edit this file, but edit %s instead and run" % configFile)
-        print(" * python configgen.py -maps %s to regenerate this file!" % configFile)
+        print(f" * Do not edit this file, but edit {configFile} instead and run")
+        print(f" * python configgen.py -maps {configFile} to regenerate this file!")
         print(" */")
         print("#include \"configvalues.h\"")
         print("#include \"configimpl.h\"")
@@ -1353,8 +1352,8 @@ def main():
     elif mode == "-cpp":
         mode = "doxyfile"
         print("/* WARNING: This file is generated!")
-        print(" * Do not edit this file, but edit %s instead and run" % configFile)
-        print(" * python configgen.py -cpp %s to regenerate this file!" % configFile)
+        print(f" * Do not edit this file, but edit {configFile} instead and run")
+        print(f" * python configgen.py -cpp {configFile} to regenerate this file!")
         print(" */")
         print("")
         print("#include \"configoptions.h\"")
@@ -1384,14 +1383,14 @@ def main():
         locale = re.sub('.*config', '', configFile)
         locale = re.sub('.xml', '', locale)
         print("/* WARNING: This file is generated!")
-        print(" * Do not edit this file, but edit %s instead and run" % configFile)
-        print(" * python configgen.py -wiz %s to regenerate this file!" % configFile)
+        print(f" * Do not edit this file, but edit {configFile} instead and run")
+        print(f" * python configgen.py -wiz {configFile} to regenerate this file!")
         print(" */")
         print("#include \"configdoc.h\"")
         print("#include \"docintf.h\"")
         print("")
 
-        print("void addConfigDocs{0}(DocIntf *doc)".format(locale))
+        print(f"void addConfigDocs{locale}(DocIntf *doc)")
         print("{")
         for n in elem.childNodes:
             if n.nodeType == Node.ELEMENT_NODE and n.nodeName == "header":
@@ -1409,7 +1408,7 @@ def main():
         for x in files:
             locale = re.sub('.*config', '', x)
             locale = re.sub('.xml', '', locale)
-            print("void addConfigDocs{0}(DocIntf *doc);".format(locale))
+            print(f"void addConfigDocs{locale}(DocIntf *doc);")
         print("")
         print("static const std::unordered_map<std::string,LangFunc> langNames =")
         print("{")
@@ -1420,7 +1419,7 @@ def main():
             if not locale:
                 print('  { "en", addConfigDocs},')
             else:
-                print('  {1} "{0}", addConfigDocs_{0}{2},'.format(locale,'{','}'))
+                print(f'  {{ "{locale}", addConfigDocs_{locale}}},')
         print("};")
         print("")
         print("#endif")
