@@ -1276,7 +1276,7 @@ DString argListToString(const ArgumentList &al,bool useCanonicalType,bool showDe
     }
     if (!a.name.empty() || !a.array.empty())
     {
-      result+= type1+" "+a.name+type2+a.array;
+      result+= type1+" "+a.name+type2+(useCanonicalType && !a.canType.isEmpty()?"":a.array);
     }
     else
     {
