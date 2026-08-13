@@ -10,7 +10,7 @@
 <ul>
 <li>Doxywizard's GUI and config option documentation are now translated to 8 addition languages (next to English):
     German, French, Spanish, Russian, Korean, Chinese, Taiwanese, and Japanese. <br/>
-    From the menu one can switch between languages (doing so will relaunch the application).<br>
+    From the menu one can switch between languages (doing so will relaunch the application).<br/>
     Via the wizard the Doxyfile can also be generated in 8 different languages next to English.</li>
 <li>The expert panel of Doxywizard now has a search field to quickly search for and filter configuration options.
 [<a href="https://github.com/doxygen/doxygen/commit/c92e5b2a0542c09622efdceb563085a8861c90fb">view</a>],
