@@ -1798,7 +1798,7 @@ static DString extractBlock(const DString &text,const DString &marker,int &block
   }
   l1=p;
   blockPos=p;
-  int lp=i;
+  size_t lp=i;
   if (found)
   {
     while ((i=text.find('\n',p))!=DString::npos)
