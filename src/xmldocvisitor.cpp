@@ -963,7 +963,7 @@ void XmlDocVisitor::operator()(const DocImage &img)
   bool ambig;
   if (url.empty() && (fd=findFileDef(Doxygen::imageNameLinkedMap,img.name(),ambig)))
   {
-    copyFile(fd->absFilePath(),Config_getString(XML_OUTPUT)+"/"+baseName);
+    copyFile(fd->absFilePath(),Config_getString(XML_OUTPUT)+"/"+img->name());
   }
   visitChildren(img);
   visitPostEnd(m_t, "image");
