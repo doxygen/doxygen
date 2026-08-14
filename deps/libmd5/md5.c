@@ -94,7 +94,7 @@ MD5Init(struct MD5Context *ctx)
  * of bytes.
  */
 void
-MD5Update(struct MD5Context *ctx, md5byte const *buf, unsigned len)
+MD5Update(struct MD5Context *ctx, md5byte const *buf, size_t len)
 {
 	/* Update byte count */
 
@@ -266,7 +266,7 @@ MD5Transform(UWORD32 buf[4], UWORD32 const in[16])
 
 #endif
 
-void MD5Buffer (const char *buf,unsigned int len,unsigned char sig[16])
+void MD5Buffer (const char *buf,size_t len,unsigned char sig[16])
 {
   struct MD5Context md5;
   MD5Init(&md5);
