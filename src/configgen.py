@@ -521,11 +521,12 @@ def parseGroupMapInit(node):
             type = n.getAttribute('type')
             name = n.getAttribute('id')
             if type in map:
+                quotedName = '"'+name+'",'
                 if type == "enum":
                     mappingStr = "{%s}" % (', '.join(getEnum2BoolMapping(n)))
-                    print(f"    {{ {'\"'+name+'\",':<26} Info{{ {'Info::'+map[type]+',':<13} &ConfigValues::m_{name+',':<23} {mappingStr}}}}},")
+                    print(f"    {{ {quotedName:<26} Info{{ {'Info::'+map[type]+',':<13} &ConfigValues::m_{name+',':<23} {mappingStr}}}}},")
                 else:
-                    print(f"    {{ {'\"'+name+'\",':<26} Info{{ {'Info::'+map[type]+',':<13} &ConfigValues::m_{name:<24}}}}},")
+                    print(f"    {{ {quotedName:<26} Info{{ {'Info::'+map[type]+',':<13} &ConfigValues::m_{name:<24}}}}},")
             if len(setting) > 0:
                 print("#endif")
 
