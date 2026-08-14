@@ -23,6 +23,7 @@ def main():
     for line in inputFile:
         # fix literal strings
         line = re.sub(message_re,'message += reinterpret_cast<const JJChar*>(\\1)',line)
+        line = line.replace("virtual void   setParser(void* parser) {};", "virtual void   setParser(void* parser) {}");
         # fix missing return statements
         outputFile.write(line.replace("assert(false);","assert(false);return DString();"))
 

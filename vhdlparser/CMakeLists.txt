@@ -21,8 +21,10 @@ if (JAVACC_FOUND)
     else()
         add_custom_command(
 	    COMMAND ${JAVACC_EXECUTABLE} ${JAVACC_FLAGS} -OUTPUT_DIRECTORY=${PROJECT_SOURCE_DIR}/vhdlparser ${PROJECT_SOURCE_DIR}/vhdlparser/vhdlparser.jj
+	    COMMAND ${Python_EXECUTABLE} ${PROJECT_SOURCE_DIR}/vhdlparser/vhdl_adj.py ${PROJECT_SOURCE_DIR}/vhdlparser/TokenManager.h ${GENERATED_SRC}/TokenManager_adj.h
+            COMMAND ${CMAKE_COMMAND} -E copy ${GENERATED_SRC}/TokenManager_adj.h  ${PROJECT_SOURCE_DIR}/vhdlparser/TokenManager.h
             DEPENDS ${PROJECT_SOURCE_DIR}/vhdlparser/vhdlparser.jj
-            OUTPUT ${PROJECT_SOURCE_DIR}/vhdlparser/CharStream.cc ${PROJECT_SOURCE_DIR}/vhdlparser/CharStream.h ${PROJECT_SOURCE_DIR}/vhdlparser/ErrorHandler.h ${PROJECT_SOURCE_DIR}/vhdlparser/ParseException.cc ${PROJECT_SOURCE_DIR}/vhdlparser/ParseException.h ${PROJECT_SOURCE_DIR}/vhdlparser/Token.cc ${PROJECT_SOURCE_DIR}/vhdlparser/Token.h ${PROJECT_SOURCE_DIR}/vhdlparser/TokenManager.h ${PROJECT_SOURCE_DIR}/vhdlparser/TokenMgrError.cc ${PROJECT_SOURCE_DIR}/vhdlparser/TokenMgrError.h ${PROJECT_SOURCE_DIR}/vhdlparser/VhdlParser.cc ${PROJECT_SOURCE_DIR}/vhdlparser/VhdlParser.h ${PROJECT_SOURCE_DIR}/vhdlparser/VhdlParserConstants.h ${PROJECT_SOURCE_DIR}/vhdlparser/VhdlParserTokenManager.cc ${PROJECT_SOURCE_DIR}/vhdlparser/VhdlParserTokenManager.h
+            OUTPUT ${PROJECT_SOURCE_DIR}/vhdlparser/CharStream.cc ${PROJECT_SOURCE_DIR}/vhdlparser/CharStream.h ${PROJECT_SOURCE_DIR}/vhdlparser/ErrorHandler.h ${PROJECT_SOURCE_DIR}/vhdlparser/ParseException.cc ${PROJECT_SOURCE_DIR}/vhdlparser/ParseException.h ${PROJECT_SOURCE_DIR}/vhdlparser/Token.cc ${PROJECT_SOURCE_DIR}/vhdlparser/Token.h ${PROJECT_SOURCE_DIR}/vhdlparser/TokenManager.h ${PROJECT_SOURCE_DIR}/vhdlparser/TokenMgrError.cc ${PROJECT_SOURCE_DIR}/vhdlparser/TokenMgrError.h ${PROJECT_SOURCE_DIR}/vhdlparser/VhdlParser.cc ${PROJECT_SOURCE_DIR}/vhdlparser/VhdlParser.h ${PROJECT_SOURCE_DIR}/vhdlparser/VhdlParserConstants.h ${PROJECT_SOURCE_DIR}/vhdlparser/VhdlParserTokenManager.cc ${PROJECT_SOURCE_DIR}/vhdlparser/VhdlParserTokenManager.h ${PROJECT_SOURCE_DIR}/vhdlparser/vhdl_adj.py
         )
     endif()
 endif()
