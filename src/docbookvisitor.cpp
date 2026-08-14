@@ -36,7 +36,6 @@
 #include "portable.h"
 #include "codefragment.h"
 #include "cite.h"
-#include "md5.h"
 
 #if 0
 #define DB_VIS_C DB_VIS_C1(m_t)

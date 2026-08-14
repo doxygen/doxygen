@@ -27,7 +27,6 @@
 #include "doxygen.h"
 #include "docparser.h"
 #include "entry.h"
-#include "md5.h"
 
 MemberGroup::MemberGroup(const Definition *container,int id,const DString &hdr,
                          const DString &d,const DString &docFile,int docLine,

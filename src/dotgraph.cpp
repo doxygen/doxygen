@@ -19,7 +19,7 @@
 #include "config.h"
 #include "doxygen.h"
 #include "indexlist.h"
-#include "md5.h"
+#include "md5hash.h"
 #include "message.h"
 #include "util.h"
 
@@ -153,12 +153,8 @@ bool DotGraph::prepareDotFile()
     term("Output dir {} does not exist!\n", m_dir.path());
   }
 
-  char sigStr[33];
-  uint8_t md5_sig[16];
   // calculate md5
-  MD5Buffer(m_theGraph.data(), static_cast<unsigned int>(m_theGraph.length()), md5_sig);
-  // convert result to a string
-  MD5SigToString(md5_sig, sigStr);
+  DString sigStr = md5str(m_theGraph.view());
 
   // already queued files are processed again in case the output format has changed
 

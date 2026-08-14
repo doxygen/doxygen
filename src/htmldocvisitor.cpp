@@ -40,7 +40,6 @@
 #include "portable.h"
 #include "codefragment.h"
 #include "cite.h"
-#include "md5.h"
 
 static const int NUM_HTML_LIST_TYPES = 4;
 static const char g_types[][NUM_HTML_LIST_TYPES] = {"1", "a", "i", "A"};

@@ -18,7 +18,7 @@
 #include <assert.h>
 #include <mutex>
 
-#include "md5.h"
+#include "md5hash.h"
 #include "memberdef.h"
 #include "membername.h"
 #include "doxygen.h"
@@ -4343,11 +4343,7 @@ void MemberDefImpl::setAnchor()
   }
 
   // convert to md5 hash
-  uint8_t md5_sig[16];
-  char sigStr[33];
-  MD5Buffer(memAnchor.data(),static_cast<unsigned int>(memAnchor.length()),md5_sig);
-  MD5SigToString(md5_sig,sigStr);
-  m_anc = DString("a")+sigStr;
+  m_anc = "a"+md5str(memAnchor.view());
 }
 
 void MemberDefImpl::setGroupDef(GroupDef *gd,Grouping::GroupPri_t pri,

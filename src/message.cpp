@@ -26,7 +26,7 @@
 #include "doxygen.h"
 #include "fileinfo.h"
 #include "dir.h"
-#include "md5.h"
+#include "md5hash.h"
 
 // globals
 static DString        g_warnFormat;
@@ -43,14 +43,9 @@ static std::unordered_set<std::string> g_warnHash;
 
 //-----------------------------------------------------------------------------------------
 
-static bool checkWarnMessage(DString result)
+static bool checkWarnMessage(const std::string_view &msg)
 {
-  uint8_t md5_sig[16];
-  char sigStr[33];
-  MD5Buffer(result.data(),result.length(),md5_sig);
-  MD5SigToString(md5_sig,sigStr);
-
-  return g_warnHash.insert(sigStr).second;
+  return g_warnHash.insert(md5str(msg).str()).second;
 }
 
 static void format_warn(const DString &file,int line,const DString &text)
@@ -82,7 +77,7 @@ static void format_warn(const DString &file,int line,const DString &text)
   {
     std::unique_lock<std::mutex> lock(g_mutex);
     // print resulting message
-    if (checkWarnMessage(msgText)) fwrite(msgText.data(),1,msgText.length(),g_warnFile);
+    if (checkWarnMessage(msgText.view())) fwrite(msgText.data(),1,msgText.length(),g_warnFile);
   }
   if (g_warnBehavior == WARN_AS_ERROR_t::YES)
   {

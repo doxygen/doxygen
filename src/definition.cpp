@@ -25,7 +25,7 @@
 #include <cassert>
 
 #include "anchor.h"
-#include "md5.h"
+#include "md5hash.h"
 #include "regex.h"
 #include "config.h"
 #include "definitionimpl.h"
@@ -378,13 +378,10 @@ void DefinitionImpl::writeDocAnchorsToTagFile(TextStream &tagFile) const
 
 bool DefinitionImpl::_docsAlreadyAdded(const DString &doc,DString &sigList)
 {
-  uint8_t md5_sig[16];
-  char sigStr[33];
   // to avoid mismatches due to differences in indenting, we first remove
   // double whitespaces...
   DString docStr = doc.simplifyWhiteSpace();
-  MD5Buffer(docStr.data(),static_cast<unsigned int>(docStr.length()),md5_sig);
-  MD5SigToString(md5_sig,sigStr);
+  DString sigStr = md5str(docStr.view());
   //printf("%s:_docsAlreadyAdded doc='%s' sig='%s' docSigs='%s'\n",
   //    qPrint(name()),qPrint(doc),qPrint(sigStr),qPrint(sigList));
   if (sigList.find(sigStr)==DString::npos) // new docs, add signature to prevent re-adding it

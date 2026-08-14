@@ -38,7 +38,6 @@
 #include "portable.h"
 #include "codefragment.h"
 #include "cite.h"
-#include "md5.h"
 
 //#define DBG_RTF(x) m_t << x
 #define DBG_RTF(x) do {} while(0)

@@ -41,7 +41,6 @@
 #include "regex.h"
 #include "portable.h"
 #include "codefragment.h"
-#include "md5.h"
 
 static const int g_maxLevels = 7;
 static const std::array<const char *,g_maxLevels> g_secLabels =

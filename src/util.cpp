@@ -30,7 +30,7 @@
 #include <cinttypes>
 #include <sstream>
 
-#include "md5.h"
+#include "md5hash.h"
 
 #include "regex.h"
 #include "util.h"
@@ -3301,11 +3301,7 @@ DString convertNameToFile(const DString &name,bool allowDots,bool allowUnderscor
     if (resultLen>=128) // prevent names that cannot be created!
     {
       // third algorithm based on MD5 hash
-      uint8_t md5_sig[16];
-      char sigStr[33];
-      MD5Buffer(result.data(),static_cast<unsigned int>(resultLen),md5_sig);
-      MD5SigToString(md5_sig,sigStr);
-      result=result.left(128-32)+sigStr;
+      result=result.left(128-32)+md5str(result.view());
     }
   }
   if (createSubdirs)
@@ -3315,8 +3311,7 @@ DString convertNameToFile(const DString &name,bool allowDots,bool allowUnderscor
     int createSubdirsBitmaskL2 = (1<<createSubdirsLevel)-1;
 
     // compute md5 hash to determine sub directory to use
-    uint8_t md5_sig[16];
-    MD5Buffer(result.data(),static_cast<unsigned int>(result.length()),md5_sig);
+    auto md5_sig = md5hash(result.view());
     l1Dir = md5_sig[14] & 0xf;
     l2Dir = md5_sig[15] & createSubdirsBitmaskL2;
 
@@ -3329,13 +3324,11 @@ DString convertNameToFile(const DString &name,bool allowDots,bool allowUnderscor
 DString generateAnonymousAnchor(const DString &fileName,int count)
 {
   DString fn = stripFromPath(fileName)+":"+DString().setNum(count);
-  const int sig_size=16;
-  uint8_t md5_sig[sig_size];
-  MD5Buffer(fn.data(),static_cast<unsigned int>(fn.length()),md5_sig);
-  char result[sig_size*3+2];
+  auto md5_sig = md5hash(fn.view());
+  char result[md5_sig.size()*3+2];
   char *p = result;
   *p++='@';
-  for (int i=0;i<sig_size;i++)
+  for (size_t i=0;i<md5_sig.size();i++)
   {
     static const char oct[]="01234567";
     uint8_t byte = md5_sig[i];
@@ -6580,12 +6573,7 @@ DString getProjectId()
 {
   DString projectCookie = Config_getString(HTML_PROJECT_COOKIE);
   if (projectCookie.empty()) return DString();
-  uint8_t md5_sig[16];
-  char sigStr[34];
-  MD5Buffer(projectCookie.data(),static_cast<unsigned int>(projectCookie.length()),md5_sig);
-  MD5SigToString(md5_sig,sigStr);
-  sigStr[32]='_'; sigStr[33]=0;
-  return sigStr;
+  return md5str(projectCookie.view())+"_";
 }
 
 //! Return the index of the last :: in the string \a name that is still before the first <
@@ -6725,12 +6713,7 @@ static StringUnorderedSet writeFileContents_set;
  */
 DString writeFileContents(const DString &baseName,const DString &extension,const DString &content,bool &exists)
 {
-  uint8_t md5_sig[16];
-  char sigStr[33];
-  MD5Buffer(content.data(),static_cast<unsigned int>(content.length()),md5_sig);
-  MD5SigToString(md5_sig,sigStr);
-
-  DString fileName = baseName + sigStr + extension;
+  DString fileName = baseName + md5str(content.view()) + extension;
   { // ==== start atomic section
     std::lock_guard lock(writeFileContents_lock);
     auto it=writeFileContents_set.find(fileName.str());

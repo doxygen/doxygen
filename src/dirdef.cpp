@@ -16,7 +16,7 @@
 #include <algorithm>
 
 #include "dirdef.h"
-#include "md5.h"
+#include "md5hash.h"
 #include "filename.h"
 #include "doxygen.h"
 #include "util.h"
@@ -192,34 +192,9 @@ static DString encodeDirName(const DString &anchor)
 {
   AUTO_TRACE();
   // convert to md5 hash
-  uint8_t md5_sig[16];
-  char sigStr[33];
-  MD5Buffer(anchor.data(),static_cast<unsigned int>(anchor.length()),md5_sig);
-  MD5SigToString(md5_sig,sigStr);
+  DString sigStr = md5str(anchor.view());
   AUTO_TRACE_EXIT("result={}",sigStr);
   return sigStr;
-
-  // old algorithm
-//  DString result;
-
-//  int l = anchor.length(),i;
-//  for (i=0;i<l;i++)
-//  {
-//    char c = anchor.at(i);
-//    if ((c>='a' && c<='z') || (c>='A' && c<='Z') || (c>='0' && c<='9'))
-//    {
-//      result+=c;
-//    }
-//    else
-//    {
-//      static char hexStr[]="0123456789ABCDEF";
-//      char escChar[]={ '_', 0, 0, 0 };
-//      escChar[1]=hexStr[c>>4];
-//      escChar[2]=hexStr[c&0xf];
-//      result+=escChar;
-//    }
-//  }
-//  return result;
 }
 
 DString DirDefImpl::getOutputFileBase() const
