@@ -34,6 +34,7 @@
 #include "xmlgen.h"
 #include "devnullgen.h"
 #include "docoptions.h"
+#include "linkifytext.h"
 
 class OutputCodeList;
 
@@ -307,7 +308,6 @@ class OutputCodeList
 };
 
 //-------------------------------------------------------------------------------------------
-
 
 /** Class representing a list of output generators that are written to in parallel.
  */
@@ -782,5 +782,22 @@ class OutputList
     int m_id;
 
 };
+
+//-------------------------------------------------------------------------------------------
+
+/** Implements TextGeneratorIntf for an OutputDocInterface stream. */
+class TextGeneratorOLImpl final : public TextGeneratorIntf
+{
+  public:
+    TextGeneratorOLImpl(OutputList &ol);
+    void writeString(std::string_view s,bool keepSpaces) const override;
+    void writeBreak(int indent) const override;
+    void writeLink(const DString &extRef,const DString &file,
+                   const DString &anchor,std::string_view text
+                  ) const override;
+  private:
+    OutputList &m_ol;
+};
+
 
 #endif

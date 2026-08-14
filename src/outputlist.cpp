@@ -212,6 +212,52 @@ void OutputList::parseText(const DString &textStr)
   if (ast && count>0) writeDoc(ast.get(),nullptr,nullptr);
 }
 
+//------------------------------------------------------------------------
+// TextGeneratorOLImpl implementation
+//------------------------------------------------------------------------
+
+TextGeneratorOLImpl::TextGeneratorOLImpl(OutputList &ol) : m_ol(ol)
+{
+}
+
+void TextGeneratorOLImpl::writeString(std::string_view s,bool keepSpaces) const
+{
+  if (s.empty()) return;
+  //printf("TextGeneratorOlImpl::writeString('%s',%d)\n",s,keepSpaces);
+  if (keepSpaces)
+  {
+    for (char c : s)
+    {
+      if (c == ' ')
+      {
+        m_ol.writeNonBreakableSpace(1);
+      }
+      else
+      {
+        m_ol.docify(std::string_view(&c, 1));
+      }
+    }
+  }
+  else
+  {
+    m_ol.docify(s);
+  }
+}
+
+void TextGeneratorOLImpl::writeBreak(int indent) const
+{
+  m_ol.lineBreak("typebreak");
+  for (int i = 0; i < indent; ++i) m_ol.writeNonBreakableSpace(3);
+}
+
+void TextGeneratorOLImpl::writeLink(const DString &extRef,const DString &file,
+                                    const DString &anchor,std::string_view text
+                                   ) const
+{
+  //printf("TextGeneratorOlImpl::writeLink('%s')\n",text);
+  m_ol.writeObjectLink(extRef,file,anchor,text);
+}
+
 //--------------------------------------------------------------------------
 
 void OutputCodeRecorder::startNewLine(int lineNr)
