@@ -29,21 +29,21 @@
 #include "md5hash.h"
 
 // globals
-static DString        g_warnFormat;
-static DString        g_warnLineFormat;
-static const char *    g_warningStr = "warning: ";
-static const char *    g_errorStr = "error: ";
-static FILE *          g_warnFile = stderr;
-static WARN_AS_ERROR_t g_warnBehavior = WARN_AS_ERROR_t::NO;
-static DString        g_warnlogFile;
-static bool            g_warnlogTemp = false;
+static DString          g_warnFormat;
+static DString          g_warnLineFormat;
+static const char *     g_warningStr = "warning: ";
+static const char *     g_errorStr = "error: ";
+static FILE *           g_warnFile = stderr;
+static WARN_AS_ERROR_t  g_warnBehavior = WARN_AS_ERROR_t::NO;
+static DString          g_warnlogFile;
+static bool             g_warnlogTemp = false;
 static std::atomic_bool g_warnStat = false;
-static std::mutex      g_mutex;
+static std::mutex       g_mutex;
 static std::unordered_set<std::string> g_warnHash;
 
 //-----------------------------------------------------------------------------------------
 
-static bool checkWarnMessage(const std::string_view &msg)
+static bool checkWarnMessage(std::string_view msg)
 {
   return g_warnHash.insert(md5str(msg).str()).second;
 }
