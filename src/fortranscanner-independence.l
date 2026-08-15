@@ -789,10 +789,27 @@ private                                 {
                                           yyextra->current->startLine  = yyextra->lineNr;
                                           addCurrentEntry(yyscanner,true);
                                         }
+{BS}"=>"[^(\n|\!)]*                     {
+                                          /*
+                                           * Specific bindings come after the ID.
+                                           *
+                                           * Do not store the specific binding target as args for generic
+                                           * type-bound bindings.  It is not a callable argument list.
+                                           */
+                                          if (yyextra->last_entry &&
+                                              yyextra->last_entry->type.lower() != "generic")
+                                          {
+                                            QCString args = yytext;
+                                            yyextra->last_entry->args = args.lower();
+                                          }
+                                        }
+/*
 {BS}"=>"[^(\n|\!)]*                     { // Specific bindings come after the ID.
                                           QCString args = yytext;
-                                          yyextra->last_entry->args = args.lower();
+                                          // yyextra->last_entry->args = args.lower();
+                                          yyextra->last_entry->args = args;
                                         }
+*/
 "\n"                                    {
                                           yyextra->currentModifiers = SymbolModifiers();
                                           newLine(yyscanner);
@@ -2307,88 +2324,6 @@ static bool endScope(yyscan_t yyscanner,Entry *scope, bool isGlobalRoot)
     return FALSE;
   }
 
-  /*
-   * Fortran type-bound generic bindings can be split across lines:
-   *
-   *   generic :: foo => foo_i
-   *   generic :: foo => foo_r
-   *
-   * They define one generic binding named "foo".  Doxygen 1.9.3 creates
-   * one Entry per line while parsing the Type Bound Procedures block, so
-   * remove duplicate generic bindings when the derived-type scope closes.
-   */
-  if (scope->section == Entry::CLASS_SEC)
-  {
-    std::map<std::string,Entry*> seenGenericBindings;
-    std::map<std::string,bool> genericBindingTargets;
-    std::vector<Entry*> duplicateGenericBindings;
-    std::vector<Entry*> hiddenGenericTargets;
-
-    for (const auto &ce : scope->children())
-    {
-      if (ce->section == Entry::FUNCTION_SEC &&
-          ce->type.lower() == "generic")
-      {
-        std::string args = ce->args.str();
-        std::string::size_type p = args.find("=>");
-        if (p != std::string::npos)
-        {
-          std::string name;
-          for (std::string::size_type i=p+2; i<args.length(); i++)
-          {
-            char c = args[i];
-            if ((c>='a' && c<='z') || (c>='A' && c<='Z') || c=='_' ||
-                (c>='0' && c<='9' && !name.empty()))
-            {
-              if (c>='A' && c<='Z') c += 'a'-'A';
-              name += c;
-            }
-            else if (!name.empty())
-            {
-              genericBindingTargets[name] = true;
-              name.clear();
-            }
-          }
-          if (!name.empty()) genericBindingTargets[name] = true;
-        }
-
-        std::string key = ce->name.lower().str();
-        if (seenGenericBindings.find(key) == seenGenericBindings.end())
-        {
-          seenGenericBindings[key] = ce.get();
-
-          /* The specific target after "=>" is not a callable argument list. */
-          ce->args = QCString();
-          ce->argList.clear();
-        }
-        else
-        {
-          duplicateGenericBindings.push_back(ce.get());
-        }
-      }
-    }
-
-    for (const auto &ce : scope->children())
-    {
-      if (ce->section == Entry::FUNCTION_SEC &&
-          ce->type.lower() != "generic" &&
-          genericBindingTargets.find(ce->name.lower().str()) != genericBindingTargets.end())
-      {
-        hiddenGenericTargets.push_back(ce.get());
-      }
-    }
-
-    for (Entry *e : hiddenGenericTargets)
-    {
-      scope->removeSubEntry(e);
-    }
-
-    for (Entry *e : duplicateGenericBindings)
-    {
-      scope->removeSubEntry(e);
-    }
-  }
-
   // update variables or subprogram arguments with yyextra->modifiers
   std::map<std::string,SymbolModifiers>& mdfsMap = yyextra->modifiers[scope];
 
@@ -2512,17 +2447,59 @@ static void initEntry(yyscan_t yyscanner)
 
 /**
   adds yyextra->current entry to yyextra->current_root and creates new yyextra->current
+
+static void addCurrentEntry(yyscan_t yyscanner,bool case_insens)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  //if (case_insens) yyextra->current->name = yyextra->current->name.lower();
+  if (case_insens) yyextra->current->name = yyextra->current->name;
+  //printf("===Adding entry %s to %s\n", qPrint(yyextra->current->name), qPrint(yyextra->current_root->name));
+  yyextra->last_entry = yyextra->current;
+  yyextra->current_root->moveToSubEntryAndRefresh(yyextra->current);
+  initEntry(yyscanner);
+}
 */
 static void addCurrentEntry(yyscan_t yyscanner,bool case_insens)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+
+  if (case_insens)
+  {
+    yyextra->current->name = yyextra->current->name.lower();
+  }
+
   /*
-   * Your local tree had case preservation here.  If you want stock
-   * Doxygen 1.9.3 behavior, replace the next line with:
-   *   if (case_insens) yyextra->current->name = yyextra->current->name.lower();
+   * Fortran type-bound generic binding:
+   *
+   *   generic :: foo => foo_i
+   *   generic :: foo => foo_r
+   *
+   * These lines define one generic binding named "foo", not two
+   * documented members.  Doxygen 1.9.3 creates one FUNCTION_SEC entry
+   * per line, so suppress duplicate generic entries here.
    */
-  if (case_insens) yyextra->current->name = yyextra->current->name;
-  //printf("===Adding entry %s to %s\n", qPrint(yyextra->current->name), qPrint(yyextra->current_root->name));
+  if (yyextra->current_root &&
+      yyextra->current->section == Entry::FUNCTION_SEC &&
+      yyextra->current->type.lower() == "generic")
+  {
+    for (const auto &ce : yyextra->current_root->children())
+    {
+      if (ce->section == Entry::FUNCTION_SEC &&
+          ce->type.lower() == "generic" &&
+          ce->name.lower() == yyextra->current->name.lower())
+      {
+        /*
+         * Drop the duplicate, but still refresh yyextra->current exactly
+         * as moveToSubEntryAndRefresh() normally does.
+         */
+        yyextra->last_entry.reset();
+        yyextra->current = std::make_shared<Entry>();
+        initEntry(yyscanner);
+        return;
+      }
+    }
+  }
+
   yyextra->last_entry = yyextra->current;
   yyextra->current_root->moveToSubEntryAndRefresh(yyextra->current);
   initEntry(yyscanner);
