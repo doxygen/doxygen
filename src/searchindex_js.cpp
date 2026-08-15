@@ -86,7 +86,7 @@ DString SearchTerm::termEncoded() const
 
 //! helper function to simplify the given title string, and fill a list of start positions
 //! for the start of each word in the simplified title string.
-static void splitSearchTokens(DString &title,IntVector &indices)
+static void splitSearchTokens(DString &title,Size_tVector &indices)
 {
   if (title.empty()) return;
 
@@ -442,9 +442,9 @@ void createJavaScriptSearchIndex()
     if (gd->isLinkable())
     {
       DString title(filterTitle(gd->groupTitle()).str());
-      IntVector tokenIndices;
+      Size_tVector tokenIndices;
       splitSearchTokens(title,tokenIndices);
-      for (int index : tokenIndices)
+      for (size_t index : tokenIndices)
       {
         g_searchIndexInfo[SEARCH_INDEX_ALL].add(SearchTerm(title.mid(index),gd.get()));
         g_searchIndexInfo[SEARCH_INDEX_GROUPS].add(SearchTerm(title.mid(index),gd.get()));
@@ -458,9 +458,9 @@ void createJavaScriptSearchIndex()
     if (pd->isLinkable())
     {
       DString title(filterTitle(pd->title()).str());
-      IntVector tokenIndices;
+      Size_tVector tokenIndices;
       splitSearchTokens(title,tokenIndices);
-      for (int index : tokenIndices)
+      for (size_t index : tokenIndices)
       {
         g_searchIndexInfo[SEARCH_INDEX_ALL].add(SearchTerm(title.mid(index),pd.get()));
         g_searchIndexInfo[SEARCH_INDEX_PAGES].add(SearchTerm(title.mid(index),pd.get()));
@@ -472,9 +472,9 @@ void createJavaScriptSearchIndex()
   if (Doxygen::mainPage)
   {
     DString title(filterTitle(Doxygen::mainPage->title()).str());
-    IntVector tokenIndices;
+    Size_tVector tokenIndices;
     splitSearchTokens(title,tokenIndices);
-    for (int index : tokenIndices)
+    for (size_t index : tokenIndices)
     {
       g_searchIndexInfo[SEARCH_INDEX_ALL].add(SearchTerm(title.mid(index),Doxygen::mainPage.get()));
       g_searchIndexInfo[SEARCH_INDEX_PAGES].add(SearchTerm(title.mid(index),Doxygen::mainPage.get()));
@@ -488,10 +488,10 @@ void createJavaScriptSearchIndex()
     if (sectionInfo->level()>0) // level 0 is for page titles
     {
       DString title = filterTitle(sectionInfo->title());
-      IntVector tokenIndices;
+      Size_tVector tokenIndices;
       splitSearchTokens(title,tokenIndices);
       //printf("split(%s)=(%s) %zu\n",qPrint(sectionInfo->title()),qPrint(title),tokenIndices.size());
-      for (int index : tokenIndices)
+      for (size_t index : tokenIndices)
       {
         g_searchIndexInfo[SEARCH_INDEX_ALL].add(SearchTerm(title.mid(index),sectionInfo.get()));
         g_searchIndexInfo[SEARCH_INDEX_PAGES].add(SearchTerm(title.mid(index),sectionInfo.get()));
