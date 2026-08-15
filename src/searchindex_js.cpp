@@ -86,7 +86,7 @@ DString SearchTerm::termEncoded() const
 
 //! helper function to simplify the given title string, and fill a list of start positions
 //! for the start of each word in the simplified title string.
-static void splitSearchTokens(DString &title,Size_tVector &indices)
+static void splitSearchTokens(DString &title,SizeVector &indices)
 {
   if (title.empty()) return;
 
@@ -442,7 +442,7 @@ void createJavaScriptSearchIndex()
     if (gd->isLinkable())
     {
       DString title(filterTitle(gd->groupTitle()).str());
-      Size_tVector tokenIndices;
+      SizeVector tokenIndices;
       splitSearchTokens(title,tokenIndices);
       for (size_t index : tokenIndices)
       {
@@ -458,7 +458,7 @@ void createJavaScriptSearchIndex()
     if (pd->isLinkable())
     {
       DString title(filterTitle(pd->title()).str());
-      Size_tVector tokenIndices;
+      SizeVector tokenIndices;
       splitSearchTokens(title,tokenIndices);
       for (size_t index : tokenIndices)
       {
@@ -472,7 +472,7 @@ void createJavaScriptSearchIndex()
   if (Doxygen::mainPage)
   {
     DString title(filterTitle(Doxygen::mainPage->title()).str());
-    Size_tVector tokenIndices;
+    SizeVector tokenIndices;
     splitSearchTokens(title,tokenIndices);
     for (size_t index : tokenIndices)
     {
@@ -488,7 +488,7 @@ void createJavaScriptSearchIndex()
     if (sectionInfo->level()>0) // level 0 is for page titles
     {
       DString title = filterTitle(sectionInfo->title());
-      Size_tVector tokenIndices;
+      SizeVector tokenIndices;
       splitSearchTokens(title,tokenIndices);
       //printf("split(%s)=(%s) %zu\n",qPrint(sectionInfo->title()),qPrint(title),tokenIndices.size());
       for (size_t index : tokenIndices)

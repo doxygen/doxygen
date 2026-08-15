@@ -36,6 +36,6 @@ using BoolStack          = std::stack<bool>;
 using BoolVector         = std::vector<bool>;
 using IntMap             = std::map<std::string,int>;
 using IntVector          = std::vector<int>;
-using Size_tVector       = std::vector<size_t>;
+using SizeVector         = std::vector<size_t>;
 
 #endif
