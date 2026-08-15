@@ -99,7 +99,7 @@ MD5Update(struct MD5Context *ctx, md5byte const *buf, size_t len)
 	/* Update byte count */
 
 	UWORD32 t = ctx->bytes[0];
-	if ((ctx->bytes[0] = t + len) < t)
+	if ((ctx->bytes[0] = t + (UWORD32)len) < t)
 		ctx->bytes[1]++;	/* Carry from low to high */
 
 	t = 64 - (t & 0x3f);	/* Space available in ctx->in (at least 1) */
