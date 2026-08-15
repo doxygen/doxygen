@@ -713,12 +713,12 @@ inline bool qisspace(char c)
 QString quoted(QString &inpValue)
 {
   std::string rep =  inpValue.toStdString();
-  size_t start=0, sl=rep.size(), end=sl-1;
+  qsizetype start=0, sl=rep.size(), end=sl-1;
   while (start<sl  && qisspace(rep[start])) start++; // skip over leading whitespace
   if (start==sl) return QString(); // only whitespace
   while (end>start && qisspace(rep[end]))   end--;   // skip over trailing whitespace
   bool needsQuotes=false;
-  size_t i=start;
+  qsizetype i=start;
   if (i<end && rep[i]!='"') // stripped string has at least non-whitespace unquoted character
   {
     while (i<end && !needsQuotes) // check if the to be quoted part has at least one whitespace character
@@ -744,9 +744,9 @@ static void updateAttribute(InputString *attr, const char *key, QString &inpValu
   QRegularExpressionMatch match = re.match(attrValue);
   if (match.hasMatch()) // replace existing attribute
   {
-    size_t len      = s.length();
-    size_t startPos = match.capturedStart()+match.capturedLength(); // position after =
-    size_t pos      = startPos;
+    qsizetype len      = s.length();
+    qsizetype startPos = match.capturedStart()+match.capturedLength(); // position after =
+    qsizetype pos      = startPos;
     while (pos<len && qisspace(s[pos])) pos++;
     if (pos<len && s[pos]=='"') // quoted value, search for end quote, ignoring escaped quotes
     {
