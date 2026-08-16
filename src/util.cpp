@@ -5748,7 +5748,7 @@ DString stripIndentation(const DString &s,bool skipFirstLine)
 
 // strip up to \a indentationLevel spaces from each line in \a doc (excluding the first line
 //  when skipFirstLine is set to true)
-void stripIndentationVerbatim(DString &doc,const int indentationLevel, bool skipFirstLine)
+void stripIndentationVerbatim(DString &doc,size_t indentationLevel, bool skipFirstLine)
 {
   //printf("stripIndentationVerbatim(level=%d):\n%s\n------\n",indentationLevel,qPrint(doc));
   if (indentationLevel <= 0 || doc.empty()) return; // nothing to strip
@@ -5759,7 +5759,7 @@ void stripIndentationVerbatim(DString &doc,const int indentationLevel, bool skip
   const char *src = doc.data();
   char *dst = doc.rawData();
   bool insideIndent = !skipFirstLine; // skip the initial line from stripping
-  int cnt = 0;
+  size_t cnt = 0;
   if (!skipFirstLine) cnt = indentationLevel;
   while ((c=*src++))
   {

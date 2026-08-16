@@ -1757,7 +1757,7 @@ DString extractLanguageSpecificTitle(const DString &input,SrcLangExt lang)
 {
   size_t s=0,e=input.find('|');
   if (e==DString::npos) return input; // simple title case
-  int e1=e;
+  size_t e1=e;
   while (e!=DString::npos) // look for 'number=title' pattern separated by '|'
   {
     s=e+1;

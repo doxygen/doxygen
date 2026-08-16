@@ -411,7 +411,7 @@ DString processMarkup(const DString &s);
 bool protectionLevelVisible(Protection prot);
 
 DString stripIndentation(const DString &s,bool skipFirstLine=false);
-void stripIndentationVerbatim(DString &doc,const int indentationLevel, bool skipFirstLine=true);
+void stripIndentationVerbatim(DString &doc,size_t indentationLevel, bool skipFirstLine=true);
 
 DString getDotImageExtension();
 
