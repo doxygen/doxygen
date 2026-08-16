@@ -3705,7 +3705,7 @@ static void addMacroDefinition(yyscan_t yyscanner)
   else if (l!=DString::npos && l>0)
   {
     // align the items on the first line with the items on the second line
-    int k=l+1;
+    size_t k=l+1;
     const char *p=litText.data()+k;
     char c = 0;
     while ((c=*p++) && (c==' ' || c=='\t')) k++;
