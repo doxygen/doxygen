@@ -4914,7 +4914,7 @@ NONLopt [^\n]*
                                               {
                                                 //printf("Trying scope '%s'\n",qPrint(p->name));
                                                 size_t i=p->name.rfind("::");
-                                                int pi = i==DString::npos ? 0 : i+2;
+                                                size_t pi = i==DString::npos ? 0 : i+2;
                                                 if (p->name.at(pi)=='@')
                                                 {
                                                   // anonymous compound yyextra->inside -> insert dummy variable name

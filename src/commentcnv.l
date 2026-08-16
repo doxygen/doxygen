@@ -1777,7 +1777,7 @@ static void handleCondSectionId(yyscan_t yyscanner,const char *expression)
  *  Full lines are returned, excluding the lines on which the markers appear.
  *  \sa routine lineBlock
  */
-static DString extractBlock(const DString &text,const DString &marker,int &blockPos)
+static DString extractBlock(const DString &text,const DString &marker,size_t &blockPos)
 {
   DString result;
   size_t p=0, i = DString::npos;
@@ -1932,7 +1932,7 @@ static bool readIncludeFile(yyscan_t yyscanner,const DString &inc,const DString 
         return false;
       }
       lineNr = lineBlock(incText, blockId);
-      int blockPos = 0;
+      size_t blockPos = 0;
       incText = extractBlock(incText, blockId, blockPos);
       fs->fileBuf.clear();
       if (!incText.empty())
