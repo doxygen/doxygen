@@ -3219,6 +3219,21 @@ static void addMethodToClass(const Entry *root,ClassDefMutable *cd,
   QCString name=removeRedundantWhiteSpace(rname);
   if (name.left(2)=="::") name=name.right(name.length()-2);
 
+  /*
+   * A Fortran generic member whose name is identical to the enclosing
+   * derived type is a constructor interface.  Normalize its displayed
+   * member type here, immediately before the MemberDef is created.
+   *
+   * Doing this here is intentional: this is the value that is copied into
+   * MemberDef::typeString() and subsequently rendered in the Public Member
+   * Functions table.
+   */
+  if (root->lang==SrcLangExt_Fortran && type.lower()=="generic" && cd &&
+      name.lower()==cd->localName().lower())
+  {
+    type="constructor";
+  }
+
   MemberType mtype;
   if (isFriend)                 mtype=MemberType_Friend;
   else if (root->mtype==Signal) mtype=MemberType_Signal;

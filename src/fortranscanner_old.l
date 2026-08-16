@@ -242,7 +242,6 @@ static void scanner_abort(yyscan_t yyscanner);
 static void startScope(yyscan_t yyscanner,Entry *scope);
 static bool endScope(yyscan_t yyscanner,Entry *scope, bool isGlobalRoot=FALSE);
 static void resolveModuleProcedures(yyscan_t yyscanner,Entry *current_root);
-static void foldGenericInterfacesIntoDerivedTypes(Entry *scope);
 static void truncatePrepass(yyscan_t yyscanner,int index);
 static void pushBuffer(yyscan_t yyscanner,const QCString &buffer);
 static void popBuffer(yyscan_t yyscanner);
@@ -656,7 +655,6 @@ SCOPENAME ({ID}{BS}"::"{BS})*
                                         }
 <Start,ModuleBody,ModuleBodyContains>"end"({BS}(module|program)({BS_}{ID})?)?{BS}/(\n|!|;) { // end module
                                           resolveModuleProcedures(yyscanner,yyextra->current_root);
-                                          foldGenericInterfacesIntoDerivedTypes(yyextra->current_root);
                                           if (!endScope(yyscanner,yyextra->current_root))
                                           {
                                             yyterminate();
@@ -1899,58 +1897,6 @@ void resolveModuleProcedures(yyscan_t yyscanner,Entry *current_root)
     } // for procedures in yyextra->current module
   } // for all interface module procedures
   yyextra->moduleProcedures.clear();
-}
-
-
-/** Make a generic interface with the same name as a derived type a member of that type. */
-static void foldGenericInterfacesIntoDerivedTypes(Entry *scope)
-{
-  if (scope == 0) return;
-
-  std::map<std::string,Entry *> derivedTypes;
-  std::vector<std::shared_ptr<Entry> > interfaces;
-
-  for (const auto &entry : scope->children())
-  {
-    if (entry->section != Entry::CLASS_SEC) continue;
-
-    if (entry->spec & Entry::Struct)
-    {
-      derivedTypes[entry->name.str()] = entry.get();
-    }
-    else if ((entry->spec & Entry::Interface) && entry->type.lower() == "generic")
-    {
-      interfaces.push_back(entry);
-    }
-  }
-
-  for (const auto &iface : interfaces)
-  {
-    auto it = derivedTypes.find(iface->name.str());
-    if (it == derivedTypes.end()) continue;
-
-    Entry *typeEntry = it->second;
-    std::vector<std::shared_ptr<Entry> > members(iface->children().begin(),iface->children().end());
-
-    for (const auto &member : members)
-    {
-      iface->removeSubEntry(member.get());
-    }
-    scope->removeSubEntry(iface.get());
-
-    iface->section = Entry::FUNCTION_SEC;
-    int i = iface->name.findRev(':');
-    if (i != -1) iface->name = iface->name.mid(i+1);
-    iface->args.resize(0);
-    iface->argList.clear();
-    iface->spec &= ~Entry::Interface;
-
-    typeEntry->moveToSubEntryAndKeep(iface);
-    for (const auto &member : members)
-    {
-      typeEntry->moveToSubEntryAndKeep(member);
-    }
-  }
 }
 
 /*! Extracts string which resides within parentheses of provided string. */
