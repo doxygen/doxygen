@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright (C) 1997-2021 by Dimitri van Heesch.
+ * Copyright (C) 1997-2026 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -57,12 +57,16 @@ class Definition;
 class FileInfo;
 class Dir;
 
-
-DString langToString(SrcLangExt lang);
+/** Returns the scope separator to use given the programming language \a lang */
 DString getLanguageSpecificSeparator(SrcLangExt lang,bool classScope=false);
 
+/*! reads a file with name \a name and returns it as a string. If \a filter
+ *  is true the file will be filtered by any user specified input filter.
+ *  If \a name is "-" the string will be read from standard input.
+ */
 DString fileToString(const DString &name,bool filter=false,bool isSourceCode=false);
 
+/** Helper to pass the input parameters to getDefs() */
 struct GetDefInput
 {
   GetDefInput(const DString &scName,const DString &memName,const DString &a) :
@@ -76,6 +80,7 @@ struct GetDefInput
   bool insideCode = false;
 };
 
+/** Helper to pass the result parameters from getDefs() */
 struct GetDefResult
 {
   bool found = false;
@@ -90,8 +95,16 @@ struct GetDefResult
 
 GetDefResult getDefs(const GetDefInput &input);
 
+/*! looks for a filter for the file \a name.  Returns the name of the filter
+ *  if there is a match for the file name, otherwise an empty string.
+ *  In case \a inSourceCode is true then first the source filter list is
+ *  considered.
+ */
 DString getFileFilter(const DString &name,bool isSourceCode);
 
+/*! Returns a symbol definition (compound and/or member) given its name and context.
+ *  @post return value true implies *resContext!=0 or *resMember!=0
+ */
 bool resolveRef(/* in */  const DString &scName,
                 /* in */  const DString &name,
                 /* in */  bool inSeeBlock,
@@ -103,6 +116,9 @@ bool resolveRef(/* in */  const DString &scName,
                 /* in */  bool checkScope = false
                );
 
+/*! Returns an symbol definition given its name and context for an explicitly linked symbol.
+ *  @post return value true implies *resContext!=0
+ */
 bool resolveLink(/* in */  const DString &scName,
                  /* in */  const DString &lr,
                  /* in */  bool inSeeBlock,
@@ -112,23 +128,27 @@ bool resolveLink(/* in */  const DString &scName,
                  /* in */  const DString &prefix=DString()
                 );
 
-void generateFileRef(OutputList &ol,const DString &,
-                             const DString &linkTxt=DString());
+//----------------------------------------------------------------
 
-void writePageRef(OutputList &ol,const DString &cn,const DString &mn);
-
-//DString getCanonicalTemplateSpec(const Definition *d,const FileDef *fs,const DString& spec);
-
+/*! Compares two parameter lists \a srcAl and \a dstAl and returns true if they match. */
 bool matchArguments2(const Definition *srcScope,const FileDef *srcFileScope,const DString &srcReturnType,const ArgumentList *srcAl,
                      const Definition *dstScope,const FileDef *dstFileScope,const DString &dstReturnType,const ArgumentList *dstAl,
                      bool checkCV,SrcLangExt lang
                     );
 
-void mergeArguments(ArgumentList &,ArgumentList &,bool forceNameOverwrite=false);
+/*! Merges the information of two parameter lists (typically a declaration and a definition).
+ *  Missing information is added to either list.
+ *  The name of parameter of srcAl is only overwritten if \a forceNameOverwrite is true.
+ */
+void mergeArguments(ArgumentList &srcAl,ArgumentList &dstAl,bool forceNameOverwrite=false);
 
+/** Returns true if the template parameter lists \a srcAl and \a dstAl match.
+ *  The lists are considered to match if they have the same number of parameters and
+ *  each matching parameter in \a srcAl and \a dstAl has the same constraints (or at least one parameter has no constraints).
+ */
 bool matchTemplateArguments(const ArgumentList &srcAl,const ArgumentList &dstAl);
 
-DString substituteClassNames(const DString &s);
+//----------------------------------------------------------------
 
 struct SelectionBlock
 {
@@ -152,12 +172,15 @@ struct SelectionMarkerInfo
 DString selectBlocks(const DString& s,const SelectionBlockList &blockList, const SelectionMarkerInfo &markerInfo);
 void checkBlocks(const DString& s,const DString fileName, const SelectionMarkerInfo &markerInfo);
 
-DString removeEmptyLines(const DString &s);
-
+//----------------------------------------------------------------
 
 FileDef *findFileDef(const FileNameLinkedMap *fnMap, const DString &n, bool &ambig);
 DString findFilePath(const DString &file, bool &ambig);
 
+/** Returns a list of file definitions in \a fnMap that match the file name \a n.
+ *  The list is returned as a string with each file definition separated by a newline character.
+ *  Used for error messages.
+ */
 DString showFileDefMatches(const FileNameLinkedMap *fnMap,const DString &n);
 
 EntryType guessSection(const DString &name);
@@ -194,6 +217,8 @@ bool rightScopeMatch(const DString &scope, const DString &name);
 
 bool leftScopeMatch(const DString &scope, const DString &name);
 
+//---------------------------------------------------------------
+
 struct KeywordSubstitution
 {
   const char *keyword;
@@ -208,6 +233,8 @@ DString substituteKeywords(const DString &file,const DString &s,const KeywordSub
 
 DString substituteKeywords(const DString &file,const DString &s,const DString &title,
          const DString &projName,const DString &projNum,const DString &projBrief);
+
+//---------------------------------------------------------------
 
 int getPrefixIndex(const DString &name);
 
@@ -363,22 +390,11 @@ DString createHtmlUrl(const DString &relPath,
                        const DString &targetFileName,
                        const DString &anchor);
 DString externalRef(const DString &relPath,const DString &ref,bool href);
-int nextUtf8CharPosition(const DString &utf8Str,uint32_t len,uint32_t startPos);
 
 void writeMarkerList(OutputList &ol,const std::string &markerText,size_t numMarkers,
                      std::function<void(size_t)> replaceFunc);
 DString writeMarkerList(const std::string &markerText,size_t numMarkers,
                      std::function<DString(size_t)> replaceFunc);
-
-/** Data associated with a HSV colored image. */
-struct ColoredImgDataItem
-{
-  const char *name;
-  unsigned short width;
-  unsigned short height;
-  const unsigned char *content;
-  const unsigned char *alpha;
-};
 
 DString replaceColorMarkers(const DString &str);
 
@@ -413,17 +429,8 @@ void convertProtectionLevel(
 bool mainPageHasTitle();
 bool openOutputFile(const DString &outFile,std::ofstream &f);
 
-StringVector split(const std::string &s,const std::string &delimiter);
-StringVector split(const std::string &s,const reg::Ex &delimiter);
-int findIndex(const StringVector &sv,const std::string &s);
-int findIndex(const std::string &s,const reg::Ex &re);
-std::string join(const StringVector &s,const std::string &delimiter);
-
 bool recognizeFixedForm(const DString &contents, FortranFormat format);
 FortranFormat convertFileNameFortranParserCode(DString fn);
-
-DString integerToAlpha(int n, bool upper=true);
-DString integerToRoman(int n, bool upper=true);
 
 DString getEncoding(const FileInfo &fi);
 

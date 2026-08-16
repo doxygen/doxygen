@@ -29,6 +29,7 @@
 #include "entry.h"
 #include "doxygen.h"
 #include "util.h"
+#include "stringutil.h"
 #include "message.h"
 #include "defargs.h"
 #include "arguments.h"

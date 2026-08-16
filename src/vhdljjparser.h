@@ -16,6 +16,7 @@
 #include "vhdldocgen.h"
 #include "config.h"
 #include "util.h"
+#include "stringutil.h"
 
 enum  class VhdlSection { UNKNOWN = 0, GEN_SEC=0x1, PARAM_SEC,CONTEXT_SEC,PROTECTED_SEC } ;
 //void  parserVhdlfile(const char* inputBuffer);

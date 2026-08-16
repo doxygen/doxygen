@@ -353,7 +353,7 @@ bool DotFilePatcher::run() const
     }
     DString line = lineStr+'\n';
     //printf("line=[%s]\n",qPrint(line.stripWhiteSpace()));
-    int i = 0;
+    size_t i = 0;
     if (isSVGFile)
     {
       if (interactiveSVG)
@@ -416,7 +416,7 @@ bool DotFilePatcher::run() const
         t << replaceRef(line,map.relPath,map.urlOnly,map.context,"_top");
       }
     }
-    else if (line.find("SVG")!=DString::npos && (i=findIndex(line.str(),reSVG))!=-1)
+    else if (line.find("SVG")!=DString::npos && (i=findIndex(line.str(),reSVG))!=std::string::npos)
     {
       //printf("Found marker at %d\n",i);
       int mapId=-1;
@@ -443,7 +443,7 @@ bool DotFilePatcher::run() const
         t << line.mid(i);
       }
     }
-    else if (line.find("MAP")!=DString::npos && (i=findIndex(line.str(),reMAP))!=-1)
+    else if (line.find("MAP")!=DString::npos && (i=findIndex(line.str(),reMAP))!=std::string::npos)
     {
       int mapId=-1;
       t << line.left(i);
@@ -468,7 +468,7 @@ bool DotFilePatcher::run() const
         t << line.mid(i);
       }
     }
-    else if (line.find("FIG")!=DString::npos && (i=findIndex(line.str(),reFIG))!=-1)
+    else if (line.find("FIG")!=DString::npos && (i=findIndex(line.str(),reFIG))!=std::string::npos)
     {
       int mapId=-1;
       int n = sscanf(line.data()+i+2,"FIG %d",&mapId);

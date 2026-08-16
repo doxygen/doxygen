@@ -681,16 +681,16 @@ void ManDocVisitor::operator()(const DocHtmlListItem &li)
         m_t << m_listItemInfo[indent].number;
         break;
       case 'a':
-        m_t << integerToAlpha(m_listItemInfo[indent].number,false);
+        m_t << DString::integerToAlpha(m_listItemInfo[indent].number,false);
         break;
       case 'A':
-        m_t << integerToAlpha(m_listItemInfo[indent].number);
+        m_t << DString::integerToAlpha(m_listItemInfo[indent].number);
         break;
       case 'i':
-        m_t << integerToRoman(m_listItemInfo[indent].number,false);
+        m_t << DString::integerToRoman(m_listItemInfo[indent].number,false);
         break;
       case 'I':
-        m_t << integerToRoman(m_listItemInfo[indent].number);
+        m_t << DString::integerToRoman(m_listItemInfo[indent].number);
         break;
       default:
         m_t << m_listItemInfo[indent].number;

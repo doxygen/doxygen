@@ -774,12 +774,12 @@ void VhdlDocGen::writeFormatString(const DString& s,OutputList&ol,const MemberDe
   char buf[2];
   buf[1]='\0';
 
-  int j = findIndex(temp.str(),reg);
+  size_t j = findIndex(temp.str(),reg);
 
   ol.startBold();
-  if (j>=0)
+  if (j!=std::string::npos)
   {
-    while (j>=0)
+    while (j!=std::string::npos)
     {
       find=find.left(j);
       buf[0]=temp[j];
@@ -1951,8 +1951,8 @@ void VhdlDocGen::parseUCF(const DString &input,Entry* entity,const DString &file
         else
         {
           static const reg::Ex ee(R"([\s=])");
-          int in=findIndex(temp.str(),ee);
-          if (in<0) in=0;
+          size_t in=findIndex(temp.str(),ee);
+          if (in==std::string::npos) in=0;
           DString ff=temp.left(in);
           temp.stripPrefix(ff);
           ff.append("#");
@@ -1978,8 +1978,8 @@ static void initUCF(Entry* root,const DString &type,DString &qcs,
   qcs=qcs.stripWhiteSpace();
 
   static const reg::Ex reg(R"([\s=])");
-  int i = findIndex(qcs.str(),reg);
-  if (i<0) return;
+  size_t i = findIndex(qcs.str(),reg);
+  if (i==std::string::npos) return;
   if (i==0)
   {
     n=type;
@@ -2090,7 +2090,7 @@ DString VhdlDocGen::parseForBinding(DString &entity, DString &arch)
 
   auto ql = split(entity.str(),exp);
 
-  if (findIndex(ql,"open")!=-1)
+  if (findIndex(ql,"open")!=std::string::npos)
   {
     return "open";
   }

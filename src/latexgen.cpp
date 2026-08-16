@@ -20,6 +20,7 @@
 #include "message.h"
 #include "doxygen.h"
 #include "util.h"
+#include "stringutil.h"
 #include "diagram.h"
 #include "language.h"
 #include "version.h"
@@ -911,7 +912,7 @@ static DString substituteLatexKeywords(const DString &file,
     { "PROJECT_NUMBER",    !projectNumber.empty()               }
   },latexMarkerInfo);
 
-  result = removeEmptyLines(result);
+  result = removeEmptyLines(result.str());
 
   return result;
 }

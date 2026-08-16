@@ -19,13 +19,14 @@
 #include "config.h"
 #include "dstring.h"
 
+/// @brief Helper class to pass options when calling OutputList::generateDoc()
 struct DocOptions
 {
   public:
     // === getters for optional params
     bool indexWords()        const { return m_indexWords;      }
     bool isExample()         const { return m_isExample;       }
-    DString exampleName()   const { return m_exampleName;     }
+    DString exampleName()    const { return m_exampleName;     }
     bool singleLine()        const { return m_singleLine;      }
     bool linkFromIndex()     const { return m_linkFromIndex;   }
     bool markdownSupport()   const { return m_markdownSupport; }

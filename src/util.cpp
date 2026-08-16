@@ -209,22 +209,6 @@ done:
   return newScope;
 }
 
-void writePageRef(OutputList &ol,const DString &cn,const DString &mn)
-{
-  ol.pushGeneratorState();
-
-  ol.disable(OutputType::Html);
-  ol.disable(OutputType::Man);
-  ol.disable(OutputType::Docbook);
-  if (Config_getBool(PDF_HYPERLINKS)) ol.disable(OutputType::Latex);
-  if (Config_getBool(RTF_HYPERLINKS)) ol.disable(OutputType::RTF);
-  ol.startPageRef();
-  ol.docify(theTranslator->trPageAbbreviation());
-  ol.endPageRef(cn,mn);
-
-  ol.popGeneratorState();
-}
-
 /*! Generate a place holder for a position in a list. Used for
  *  translators to be able to specify different elements orders
  *  depending on whether text flows from left to right or visa versa.
@@ -1140,11 +1124,6 @@ static DString getFilterFromList(const DString &name,const StringVector &filterL
   return "";
 }
 
-/*! looks for a filter for the file \a name.  Returns the name of the filter
- *  if there is a match for the file name, otherwise an empty string.
- *  In case \a inSourceCode is true then first the source filter list is
- *  considered.
- */
 DString getFileFilter(const DString &name,bool isSourceCode)
 {
   // sanity check
@@ -1213,10 +1192,6 @@ bool transcodeCharacterStringToUTF8(std::string &input, const char *inputEncodin
   return ok;
 }
 
-/*! reads a file with name \a name and returns it as a string. If \a filter
- *  is true the file will be filtered by any user specified input filter.
- *  If \a name is "-" the string will be read from standard input.
- */
 DString fileToString(const DString &name,bool filter,bool isSourceCode)
 {
   if (name.empty()) return DString();
@@ -2172,9 +2147,6 @@ static bool isLowerCase(DString &s)
   return true;
 }
 
-/*! Returns an object to reference to given its name and context
- *  @post return value true implies *resContext!=0 or *resMember!=0
- */
 bool resolveRef(/* in */  const DString &scName,
     /* in */  const DString &name,
     /* in */  bool inSeeBlock,
@@ -2613,21 +2585,6 @@ bool resolveLink(/* in */ const DString &scName,
     AUTO_TRACE_EXIT("member? res={}",res);
     return res;
   }
-}
-
-
-void generateFileRef(OutputList &ol,const DString &name,const DString &text)
-{
-  //printf("generateFileRef(%s,%s)\n",name,text);
-  DString linkText = text.empty() ? text : name;
-  //FileInfo *fi;
-  bool ambig = false;
-  FileDef *fd = findFileDef(Doxygen::inputNameLinkedMap,name,ambig);
-  if (fd && fd->isLinkable())
-    // link to documented input file
-    ol.writeObjectLink(fd->getReference(),fd->getOutputFileBase(),DString(),linkText);
-  else
-    ol.docify(linkText);
 }
 
 //----------------------------------------------------------------------
@@ -5648,13 +5605,6 @@ int lineBlock(const DString &text,const DString &marker)
   return result;
 }
 
-/** Returns a string representation of \a lang. */
-DString langToString(SrcLangExt lang)
-{
-  return to_string(lang);
-}
-
-/** Returns the scope separator to use given the programming language \a lang */
 DString getLanguageSpecificSeparator(SrcLangExt lang,bool classScope)
 {
   if (lang==SrcLangExt::Java || lang==SrcLangExt::CSharp || lang==SrcLangExt::VHDL || lang==SrcLangExt::Python)
@@ -5670,6 +5620,7 @@ DString getLanguageSpecificSeparator(SrcLangExt lang,bool classScope)
     return "::";
   }
 }
+
 /** Checks whether the given url starts with a supported protocol */
 bool isURL(const DString &url)
 {
@@ -5680,6 +5631,7 @@ bool isURL(const DString &url)
   size_t colonPos = loc_url.find(':');
   return colonPos!=DString::npos && schemes.find(loc_url.left(colonPos).str())!=schemes.end();
 }
+
 /** Corrects URL \a url according to the relative path \a relPath.
  *  Returns the corrected URL. For absolute URLs no correction will be done.
  */
@@ -6344,139 +6296,6 @@ void checkBlocks(const DString &s, const DString fileName,const SelectionMarkerI
 }
 
 
-DString removeEmptyLines(const DString &s)
-{
-  std::string out;
-  out.reserve(s.length());
-  const char *p=s.data();
-  if (p)
-  {
-    char c = 0;
-    while ((c=*p++))
-    {
-      if (c=='\n')
-      {
-        const char *e = p;
-        while (*e==' ' || *e=='\t') e++;
-        if (*e=='\n')
-        {
-          p=e;
-        }
-        else out+=c;
-      }
-      else
-      {
-        out+=c;
-      }
-    }
-  }
-  //printf("removeEmptyLines(%s)=%s\n",qPrint(s),qPrint(out));
-  return out;
-}
-
-/// split input string \a s by string delimiter \a delimiter.
-/// returns a vector of non-empty strings that are between the delimiters
-StringVector split(const std::string &s,const std::string &delimiter)
-{
-  StringVector result;
-  size_t prev = 0, pos = 0, len = s.length();
-  do
-  {
-    pos = s.find(delimiter, prev);
-    if (pos == std::string::npos) pos = len;
-    if (pos>prev) result.push_back(s.substr(prev,pos-prev));
-    prev = pos + delimiter.length();
-  }
-  while (pos<len && prev<len);
-  return result;
-}
-
-/// split input string \a s by regular expression delimiter \a delimiter.
-/// returns a vector of non-empty strings that are between the delimiters
-StringVector split(const std::string &s,const reg::Ex &delimiter)
-{
-  StringVector result;
-  reg::Iterator iter(s, delimiter);
-  reg::Iterator end;
-  size_t p=0;
-  for ( ; iter != end; ++iter)
-  {
-    const auto &match = *iter;
-    size_t i=match.position();
-    size_t l=match.length();
-    if (i>p) result.push_back(s.substr(p,i-p));
-    p=i+l;
-  }
-  if (p<s.length()) result.push_back(s.substr(p));
-  return result;
-}
-
-/// find the index of a string in a vector of strings, returns -1 if the string could not be found
-int findIndex(const StringVector &sv,const std::string &s)
-{
-  auto it = std::find(sv.begin(),sv.end(),s);
-  return it!=sv.end() ? static_cast<int>(it-sv.begin()) : -1;
-}
-
-/// find the index of the first occurrence of pattern \a re in a string \a s
-/// returns -1 if the pattern could not be found
-int findIndex(const std::string &s,const reg::Ex &re)
-{
-  reg::Match match;
-  return reg::search(s,match,re) ? static_cast<int>(match.position()) : -1;
-}
-
-/// create a string where the string in the vector are joined by the given delimiter
-std::string join(const StringVector &sv,const std::string &delimiter)
-{
-  std::string result;
-  bool first=true;
-  for (const auto &s : sv)
-  {
-    if (!first) result+=delimiter;
-    first=false;
-    result+=s;
-  }
-  return result;
-}
-
-DString integerToAlpha(int n, bool upper)
-{
-  DString result;
-  int residual = n;
-
-  char modVal[2];
-  modVal[1] = 0;
-  while (residual > 0)
-  {
-    modVal[0] = (upper ? 'A': 'a') + (residual-1)%26;
-    result = modVal + result;
-    residual = (residual-1) / 26;
-  }
-  return result;
-}
-
-DString integerToRoman(int n, bool upper)
-{
-  static const char *str_romans_upper[] = {  "M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I" };
-  static const char *str_romans_lower[] = {  "m", "cm", "d", "cd", "c", "xc", "l", "xl", "x", "ix", "v", "iv", "i" };
-  static const int values[]             = { 1000,  900, 500,  400, 100,   90,  50,   40,  10,    9,   5,    4,   1 };
-  static const char **str_romans = upper ? str_romans_upper : str_romans_lower;
-
-  DString result;
-  int residual = n;
-
-  for (int i = 0; i < 13; ++i)
-  {
-    while (residual - values[i] >= 0)
-    {
-      result += str_romans[i];
-      residual -= values[i];
-    }
-  }
-
-  return result;
-}
 
 DString detab(const DString &s,size_t &refIndent)
 {

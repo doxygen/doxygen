@@ -693,6 +693,9 @@ class DString
       return m_rep[i];
     }
 
+    static DString integerToAlpha(int n, bool upper=true);
+    static DString integerToRoman(int n, bool upper=true);
+
   private:
     std::string m_rep;
 };

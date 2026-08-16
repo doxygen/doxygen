@@ -21,6 +21,7 @@
 #include "portable.h"
 #include "resourcemgr.h"
 #include "util.h"
+#include "stringutil.h"
 #include "debug.h"
 #include "fileinfo.h"
 #include "dir.h"

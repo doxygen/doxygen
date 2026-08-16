@@ -1503,7 +1503,7 @@ static void generateXMLForClass(const ClassDef *cd,TextStream &ti)
   t << "  <compounddef id=\""
     << classOutputFileBase(cd) << "\" kind=\""
     << cd->compoundTypeString() << "\" language=\""
-    << langToString(cd->getLanguage()) << "\" prot=\"";
+    << to_string(cd->getLanguage()) << "\" prot=\"";
   t << to_string_lower(cd->protection());
   if (cd->isFinal()) t << "\" final=\"yes";
   if (cd->isSealed()) t << "\" sealed=\"yes";
@@ -1795,7 +1795,7 @@ static void generateXMLForNamespace(const NamespaceDef *nd,TextStream &ti)
     << "\" kind=\"namespace\" "
     << (nd->isInline()?"inline=\"yes\" ":"")
     << "language=\""
-    << langToString(nd->getLanguage()) << "\">\n";
+    << to_string(nd->getLanguage()) << "\">\n";
   t << "    <compoundname>";
   DString nameStr = nd->name();
   writeXMLString(t,nameStr);
@@ -1871,7 +1871,7 @@ static void generateXMLForFile(FileDef *fd,TextStream &ti)
   writeXMLHeader(t);
   t << "  <compounddef id=\"" << fd->getOutputFileBase()
     << "\" kind=\"file\" language=\""
-    << langToString(fd->getLanguage()) << "\">\n";
+    << to_string(fd->getLanguage()) << "\">\n";
   t << "    <compoundname>";
   writeXMLString(t,fd->name());
   t << "</compoundname>\n";

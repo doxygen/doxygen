@@ -23,6 +23,7 @@
 #include "doxygen.h"
 #include "cite.h"
 #include "util.h"
+#include "stringutil.h"
 #include "formula.h"
 #include "markdown.h"
 #include "pagedef.h"
@@ -1185,8 +1186,8 @@ bool DocMscFile::parse()
     if (ambig)
     {
       warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"included msc file name '{}' is ambiguous.\n"
-           "Possible candidates:\n{}",qPrint(p->name),
-           qPrint(showFileDefMatches(Doxygen::mscFileNameLinkedMap,p->name))
+           "Possible candidates:\n{}",p->name,
+           showFileDefMatches(Doxygen::mscFileNameLinkedMap,p->name)
           );
     }
   }

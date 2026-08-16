@@ -48,6 +48,7 @@ typedef yyguts_t *yyscan_t;
 #include "message.h"
 #include "outputlist.h"
 #include "util.h"
+#include "stringutil.h"
 #include "membername.h"
 #include "searchindex.h"
 #include "vhdldocgen.h"
@@ -366,11 +367,14 @@ XILINX      "INST"|"NET"|"PIN"|"BLKNM"|"BUFG"|"COLLAPSE"|"CPLD"|"COMPGRP"|"CONFI
                                       tt.stripWhiteSpace();
                                       static const reg::Ex regg(R"(\s+)"); // any number of whitespace
                                       auto ql = split(tt.str(),regg);
-                                      int index=findIndex(ql,"if")+1;
-                                      index+=findIndex(ql,"case")+1;
-                                      index+=findIndex(ql,"loop")+1;
-                                      index+=findIndex(ql,"generate")+1;
-                                      if (index==0)
+                                      size_t index1=findIndex(ql,"if");
+                                      size_t index2=findIndex(ql,"case");
+                                      size_t index3=findIndex(ql,"loop");
+                                      size_t index4=findIndex(ql,"generate");
+                                      if (index1==std::string::npos &&
+                                          index2==std::string::npos &&
+                                          index3==std::string::npos &&
+                                          index4==std::string::npos)
                                       {
                                         BEGIN(Bases);
                                       }

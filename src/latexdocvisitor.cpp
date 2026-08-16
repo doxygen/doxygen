@@ -1105,7 +1105,7 @@ void LatexDocVisitor::operator()(const DocHtmlListItem &l)
         int val = opt.value.toInt(&ok);
         if (ok)
         {
-          m_t << "\n\\setcounter{DoxyEnumerate" << integerToRoman(indentLevel()+1,false) << "}{" << (val - 1) << "}";
+          m_t << "\n\\setcounter{DoxyEnumerate" << DString::integerToRoman(indentLevel()+1,false) << "}{" << (val - 1) << "}";
         }
       }
     }

@@ -729,7 +729,7 @@ static DString substituteHtmlKeywords(const DString &file,
     { "HTML_DYNAMIC_SECTIONS", dynamicSections},
   },htmlMarkerInfo);
 
-  result = removeEmptyLines(result);
+  result = removeEmptyLines(result.str());
 
   return result;
 }

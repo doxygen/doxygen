@@ -1900,7 +1900,7 @@ static void buildNamespaceList(const Entry *root)
           tagName     = tagInfo->tagName;
           tagFileName = tagInfo->fileName;
         }
-        AUTO_TRACE_ADD("new namespace {} lang={} tagName={}",fullName,langToString(root->lang),tagName);
+        AUTO_TRACE_ADD("new namespace {} lang={} tagName={}",fullName,root->lang,tagName);
         // add namespace to the list
         NamespaceDefMutable *nd = toNamespaceDefMutable(
             Doxygen::namespaceLinkedMap->add(fullName,
@@ -2109,7 +2109,7 @@ static void findUsingDirectives(const Entry *root)
       }
       else // unknown namespace, but add it anyway.
       {
-        AUTO_TRACE_ADD("new unknown namespace {} lang={} hidden={}",name,langToString(root->lang),root->hidden);
+        AUTO_TRACE_ADD("new unknown namespace {} lang={} hidden={}",name,root->lang,root->hidden);
         // add namespace to the list
         nd = toNamespaceDefMutable(
             Doxygen::namespaceLinkedMap->add(name,

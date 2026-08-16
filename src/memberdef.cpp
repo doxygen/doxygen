@@ -973,6 +973,25 @@ std::unique_ptr<MemberDef> createMemberDefAlias(const Definition *newScope,const
 
 //-----------------------------------------------------------------------------
 
+static void writePageRef(OutputList &ol,const DString &cn,const DString &mn)
+{
+  ol.pushGeneratorState();
+
+  ol.disable(OutputType::Html);
+  ol.disable(OutputType::Man);
+  ol.disable(OutputType::Docbook);
+  if (Config_getBool(PDF_HYPERLINKS)) ol.disable(OutputType::Latex);
+  if (Config_getBool(RTF_HYPERLINKS)) ol.disable(OutputType::RTF);
+  ol.startPageRef();
+  ol.docify(theTranslator->trPageAbbreviation());
+  ol.endPageRef(cn,mn);
+
+  ol.popGeneratorState();
+}
+
+
+//-----------------------------------------------------------------------------
+
 static DString addTemplateNames(const DString &s,const DString &n,const DString &t)
 {
   DString result;

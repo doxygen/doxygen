@@ -930,16 +930,16 @@ void RTFDocVisitor::operator()(const DocHtmlListItem &l)
         m_t << m_listItemInfo[level].number;
         break;
       case 'a':
-        m_t << integerToAlpha(m_listItemInfo[level].number,false);
+        m_t << DString::integerToAlpha(m_listItemInfo[level].number,false);
         break;
       case 'A':
-        m_t << integerToAlpha(m_listItemInfo[level].number);
+        m_t << DString::integerToAlpha(m_listItemInfo[level].number);
         break;
       case 'i':
-        m_t << integerToRoman(m_listItemInfo[level].number,false);
+        m_t << DString::integerToRoman(m_listItemInfo[level].number,false);
         break;
       case 'I':
-        m_t << integerToRoman(m_listItemInfo[level].number);
+        m_t << DString::integerToRoman(m_listItemInfo[level].number);
         break;
       default:
         m_t << m_listItemInfo[level].number;

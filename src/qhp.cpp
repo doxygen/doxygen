@@ -27,6 +27,7 @@
 #include "qhp.h"
 #include "textstream.h"
 #include "util.h"
+#include "stringutil.h"
 #include "portable.h"
 #include "language.h"
 #include "version.h"
