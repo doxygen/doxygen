@@ -358,7 +358,7 @@ DB_VIS_C
       {
         m_t << "<para>\n";
         bool exists = false;
-        auto fileName = writeFileContents(Config_getString(DOCBOOK_OUTPUT)+"/inline_dotgraph_", // baseName
+        auto fileName = writeInlineGraph(Config_getString(DOCBOOK_OUTPUT)+"/inline_dotgraph_", // baseName
                                           ".dot",                                               // extension
                                           s.text(),                                             // contents
                                           exists);
@@ -373,7 +373,7 @@ DB_VIS_C
       {
         m_t << "<para>\n";
         bool exists = false;
-        auto fileName = writeFileContents(Config_getString(DOCBOOK_OUTPUT)+"/inline_mscgraph_", // baseName
+        auto fileName = writeInlineGraph(Config_getString(DOCBOOK_OUTPUT)+"/inline_mscgraph_", // baseName
                                           ".msc",                                               // extension
                                           "msc {"+s.text()+"}",                                 // contents
                                           exists);
@@ -1238,9 +1238,9 @@ DB_VIS_C
   std::string inBuf;
   if (readInputFile(df.file(),inBuf))
   {
-    auto fileName = writeFileContents(Config_getString(DOCBOOK_OUTPUT)+"/"+stripPath(df.file())+"_", // baseName
-                                      ".dot",                                                        // extension
-                                      inBuf,                                                         // contents
+    auto fileName = writeInlineGraph(Config_getString(DOCBOOK_OUTPUT)+"/"+stripPath(df.file())+"_", // baseName
+                                     ".dot",                                                        // extension
+                                     inBuf,                                                         // contents
                                       exists);
     if (!fileName.empty())
     {
@@ -1259,9 +1259,9 @@ DB_VIS_C
   std::string inBuf;
   if (readInputFile(df.file(),inBuf))
   {
-    auto fileName = writeFileContents(Config_getString(DOCBOOK_OUTPUT)+"/"+stripPath(df.file())+"_", // baseName
-                                      ".msc",                                                        // extension
-                                      inBuf,                                                         // contents
+    auto fileName = writeInlineGraph(Config_getString(DOCBOOK_OUTPUT)+"/"+stripPath(df.file())+"_", // baseName
+                                     ".msc",                                                        // extension
+                                     inBuf,                                                         // contents
                                       exists);
     if (!fileName.empty())
     {
@@ -1280,9 +1280,9 @@ DB_VIS_C
   std::string inBuf;
   if (readInputFile(df.file(),inBuf))
   {
-    auto fileName = writeFileContents(Config_getString(DOCBOOK_OUTPUT)+"/"+stripPath(df.file())+"_", // baseName
-                                      ".dia",                                                        // extension
-                                      inBuf,                                                         // contents
+    auto fileName = writeInlineGraph(Config_getString(DOCBOOK_OUTPUT)+"/"+stripPath(df.file())+"_", // baseName
+                                     ".dia",                                                        // extension
+                                     inBuf,                                                         // contents
                                       exists);
     if (!fileName.empty())
     {

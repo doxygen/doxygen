@@ -13501,7 +13501,7 @@ void generateOutput()
   }
 
   g_outputList->cleanup();
-  cleanupInlineGraph();
+  cleanupInlineGraphs();
 
   SymbolResolver::showCacheUsage();
 

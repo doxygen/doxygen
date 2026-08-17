@@ -18,6 +18,7 @@
 #include "htmlentity.h"
 #include "message.h"
 #include "textstream.h"
+#include "regex.h"
 
 //! @brief Structure defining all HTML4 entities, doxygen extensions and doxygen commands representing special symbols.
 //! @details In case an entity does not exist a nullptr is given for the entity. The first column contains the symbolic code
@@ -489,3 +490,45 @@ void HtmlEntityMapper::validate()
     i++;
   }
 }
+
+DString HtmlEntityMapper::convertCharEntitiesToUTF8(const DString &str) const
+{
+  if (str.empty()) return DString();
+
+  std::string s = str.data();
+  static const reg::Ex re(R"(&\a\w*;)");
+  reg::Iterator it(s,re);
+  reg::Iterator end;
+
+  DString result;
+  result.reserve(str.length()+32);
+  size_t p=0, i=0, l=0;
+  for (; it!=end ; ++it)
+  {
+    const auto &match = *it;
+    p = match.position();
+    l = match.length();
+    if (p>i)
+    {
+      result+=s.substr(i,p-i);
+    }
+    DString entity(match.str());
+    SymType symType = name2sym(entity);
+    const char *code=nullptr;
+    if (symType!=Sym_Unknown && (code=utf8(symType)))
+    {
+      result+=code;
+    }
+    else
+    {
+      result+=entity;
+    }
+    i=p+l;
+  }
+  result+=s.substr(i);
+  //printf("convertCharEntitiesToUTF8(%s)->%s\n",qPrint(s),qPrint(result));
+  return result;
+}
+
+
+

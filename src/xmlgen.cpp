@@ -2103,7 +2103,7 @@ void generateXMLForRequirements(PageDef *pd,TextStream &ti)
         t << "\" tagfile=\"" << convertToXML(stripFromPath(tagFile)) << "\" page=\"" << convertToXML(req->getExtPage());
       }
       t << "\">\n";
-      t << "        <title>" << convertToXML(filterTitle(convertCharEntitiesToUTF8(req->title()))) << "</title>\n";
+      t << "        <title>" << convertToXML(filterTitle(HtmlEntityMapper::instance().convertCharEntitiesToUTF8(req->title()))) << "</title>\n";
       t << "        <location file=\"" << convertToXML(stripFromPath(req->file())) << "\" line=\"" << req->line() << "\"/>\n" ;
       writeDefsForReq(req->satisfiedBy(),"satisfiedby");
       writeDefsForReq(req->verifiedBy(),"verifiedby");
@@ -2167,13 +2167,13 @@ static void generateXMLForPage(PageDef *pd,TextStream &ti,bool isExample)
     DString title;
     if (mainPageHasTitle())
     {
-      title = filterTitle(convertCharEntitiesToUTF8(Doxygen::mainPage->title()));
+      title = filterTitle(HtmlEntityMapper::instance().convertCharEntitiesToUTF8(Doxygen::mainPage->title()));
     }
     else
     {
       title = Config_getString(PROJECT_NAME);
     }
-    t << "    <title>" << convertToXML(convertCharEntitiesToUTF8(title))
+    t << "    <title>" << convertToXML(HtmlEntityMapper::instance().convertCharEntitiesToUTF8(title))
       << "</title>\n";
   }
   else
@@ -2181,7 +2181,7 @@ static void generateXMLForPage(PageDef *pd,TextStream &ti,bool isExample)
     const SectionInfo *si = SectionManager::instance().find(pd->name());
     if (si)
     {
-      t << "    <title>" << convertToXML(filterTitle(convertCharEntitiesToUTF8(si->title())))
+      t << "    <title>" << convertToXML(filterTitle(HtmlEntityMapper::instance().convertCharEntitiesToUTF8(si->title())))
         << "</title>\n";
     }
   }
@@ -2300,7 +2300,7 @@ static void generateXMLForRequirement(const RequirementIntf *req,TextStream &ti)
   writeXMLHeader(t);
   t << "  <compounddef id=\"" << pageName << "\" kind=\"requirement\">\n";
   t << "    <compoundname>" << convertToXML(req->id()) << "</compoundname>\n";
-  t << "    <title>" << convertToXML(filterTitle(convertCharEntitiesToUTF8(req->title()))) << "</title>\n";
+  t << "    <title>" << convertToXML(filterTitle(HtmlEntityMapper::instance().convertCharEntitiesToUTF8(req->title()))) << "</title>\n";
   t << "    <detaileddescription>\n";
   writeXMLDocBlock(t,req->file(),req->line(),RequirementManager::instance().requirementsPage(),nullptr,req->doc());
   t << "    </detaileddescription>\n";

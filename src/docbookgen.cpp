@@ -1502,7 +1502,11 @@ DString DocbookGenerator::convertToDocbook(const DString &s, bool retainNewline,
       case '<':  result+="&lt;";   break;
       case '>':  result+="&gt;";   break;
       case '&':  // possibility to have a special symbol
-        p = writeHtmlEntity(result, p-1, [](HtmlEntityMapper::SymType symType) { return HtmlEntityMapper::instance().docbook(symType); }, "&amp;");
+        p = HtmlEntityMapper::instance().writeHtmlEntity(
+            result,
+            p-1,
+            [](HtmlEntityMapper::SymType symType) { return HtmlEntityMapper::instance().docbook(symType); },
+            "&amp;");
         break;
       case '\'': result+="&apos;"; break;
       case '"':  result+="&quot;"; break;

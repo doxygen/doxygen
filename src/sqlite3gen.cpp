@@ -1442,7 +1442,7 @@ DString getSQLDocBlock(const Definition *scope,
         scope ? scope->getDefFileExtension() : DString(""));
     std::visit(visitor,astImpl->root);
   }
-  return convertCharEntitiesToUTF8(t.str());
+  return HtmlEntityMapper::instance().convertCharEntitiesToUTF8(t.str());
 }
 
 static void getSQLDesc(SqlStmt &s,const char *col,const DString &value,const Definition *def)
@@ -2490,7 +2490,7 @@ static void generateSqlite3ForPage(const PageDef *pd,bool isExample)
   {
     if (mainPageHasTitle())
     {
-      title = filterTitle(convertCharEntitiesToUTF8(Doxygen::mainPage->title()));
+      title = filterTitle(HtmlEntityMapper::instance().convertCharEntitiesToUTF8(Doxygen::mainPage->title()));
     }
     else
     {

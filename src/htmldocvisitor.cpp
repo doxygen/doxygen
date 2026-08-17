@@ -591,10 +591,10 @@ void HtmlDocVisitor::operator()(const DocVerbatim &s)
         forceEndParagraph(s);
 
         bool exists = false;
-        auto fileName = writeFileContents(Config_getString(HTML_OUTPUT)+"/inline_dotgraph_", // baseName
-                                          ".dot",                                            // extension
-                                          s.text(),                                          // contents
-                                          exists);
+        auto fileName = writeInlineGraph(Config_getString(HTML_OUTPUT)+"/inline_dotgraph_", // baseName
+                                         ".dot",                                            // extension
+                                         s.text(),                                          // contents
+                                         exists);
         if (!fileName.empty())
         {
           m_t << "<div class=\"dotgraph\">\n";
@@ -611,10 +611,10 @@ void HtmlDocVisitor::operator()(const DocVerbatim &s)
         forceEndParagraph(s);
 
         bool exists = false;
-        auto fileName = writeFileContents(Config_getString(HTML_OUTPUT)+"/inline_mscgraph_", // baseName
-                                          ".msc",                                            // extension
-                                          "msc {"+s.text()+"}",                              // contents
-                                          exists);
+        auto fileName = writeInlineGraph(Config_getString(HTML_OUTPUT)+"/inline_mscgraph_", // baseName
+                                         ".msc",                                            // extension
+                                         "msc {"+s.text()+"}",                              // contents
+                                         exists);
         if (!fileName.empty())
         {
           m_t << "<div class=\"mscgraph\">\n";
@@ -1749,10 +1749,10 @@ void HtmlDocVisitor::operator()(const DocDotFile &df)
   std::string inBuf;
   if (readInputFile(df.file(),inBuf))
   {
-    auto fileName = writeFileContents(Config_getString(HTML_OUTPUT)+"/"+stripPath(df.file())+"_", // baseName
-                                      ".dot",                                                     // extension
-                                      inBuf,                                                      // contents
-                                      exists);
+    auto fileName = writeInlineGraph(Config_getString(HTML_OUTPUT)+"/"+stripPath(df.file())+"_", // baseName
+                                     ".dot",                                                     // extension
+                                     inBuf,                                                      // contents
+                                     exists);
     if (!fileName.empty())
     {
       m_t << "<div class=\"dotgraph\">\n";
@@ -1780,9 +1780,9 @@ void HtmlDocVisitor::operator()(const DocMscFile &df)
   std::string inBuf;
   if (readInputFile(df.file(),inBuf))
   {
-    auto fileName = writeFileContents(Config_getString(HTML_OUTPUT)+"/"+stripPath(df.file())+"_", // baseName
-                                      ".msc",                                                     // extension
-                                      inBuf,                                                      // contents
+    auto fileName = writeInlineGraph(Config_getString(HTML_OUTPUT)+"/"+stripPath(df.file())+"_", // baseName
+                                     ".msc",                                                     // extension
+                                     inBuf,                                                      // contents
                                       exists);
     if (!fileName.empty())
     {
@@ -1811,10 +1811,10 @@ void HtmlDocVisitor::operator()(const DocDiaFile &df)
   std::string inBuf;
   if (readInputFile(df.file(),inBuf))
   {
-    auto fileName = writeFileContents(Config_getString(HTML_OUTPUT)+"/"+stripPath(df.file())+"_", // baseName
-                                      ".dia",                                                     // extension
-                                      inBuf,                                                      // contents
-                                      exists);
+    auto fileName = writeInlineGraph(Config_getString(HTML_OUTPUT)+"/"+stripPath(df.file())+"_", // baseName
+                                     ".dia",                                                     // extension
+                                     inBuf,                                                      // contents
+                                     exists);
     if (!fileName.empty())
     {
       m_t << "<div class=\"diagraph\">\n";
@@ -2166,7 +2166,11 @@ void HtmlDocVisitor::filter(const DString &str, bool retainNewline, bool citeEnt
       case '>':  m_t << "&gt;"; break;
       case '&':  // possibility to have a special symbol
         if (!citeEntry) {m_t << "&amp;"; break;}
-        p = writeHtmlEntity(m_t, p-1, [](HtmlEntityMapper::SymType symType) { return HtmlEntityMapper::instance().html(symType); }, "&amp;");
+        p = HtmlEntityMapper::instance().writeHtmlEntity(
+            m_t,
+            p-1,
+            [](HtmlEntityMapper::SymType symType) { return HtmlEntityMapper::instance().html(symType); },
+            "&amp;");
         break;
       case '\\':
         if ((*p == '(') || (*p == ')') || (*p == '[') || (*p == ']'))

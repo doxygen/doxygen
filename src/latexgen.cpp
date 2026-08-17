@@ -2428,7 +2428,11 @@ void filterLatexString(TextStream &t,const DString &str,
         case '^':  processEntity(t,pdfHyperlinks,"$^\\wedge$","\\string^");    break;
         case '&':  {
                      // possibility to have a special symbol
-                     p = writeHtmlEntity(t, p-1, [](HtmlEntityMapper::SymType symType) { return HtmlEntityMapper::instance().latex(symType); }, "\\&");
+                     p = HtmlEntityMapper::instance().writeHtmlEntity(
+                         t,
+                         p-1,
+                         [](HtmlEntityMapper::SymType symType) { return HtmlEntityMapper::instance().latex(symType); },
+                         "\\&");
                    }
                    break;
         case '*':  processEntity(t,pdfHyperlinks,"$\\ast$","*");    break;

@@ -458,10 +458,10 @@ void LatexDocVisitor::operator()(const DocVerbatim &s)
     case DocVerbatim::Dot:
       {
         bool exists = false;
-        auto fileName = writeFileContents(Config_getString(LATEX_OUTPUT)+"/inline_dotgraph_", // baseName
-                                          ".dot",                                             // extension
-                                          s.text(),                                           // contents
-                                          exists);
+        auto fileName = writeInlineGraph(Config_getString(LATEX_OUTPUT)+"/inline_dotgraph_", // baseName
+                                         ".dot",                                             // extension
+                                         s.text(),                                           // contents
+                                         exists);
         if (!fileName.empty())
         {
           startDotFile(fileName,s.width(),s.height(),s.hasCaption(),s.srcFile(),s.srcLine(),!exists);
@@ -473,10 +473,10 @@ void LatexDocVisitor::operator()(const DocVerbatim &s)
     case DocVerbatim::Msc:
       {
         bool exists = false;
-        auto fileName = writeFileContents(Config_getString(LATEX_OUTPUT)+"/inline_mscgraph_", // baseName
-                                          ".msc",                                             // extension
-                                          "msc {"+s.text()+"}",                               // contents
-                                          exists);
+        auto fileName = writeInlineGraph(Config_getString(LATEX_OUTPUT)+"/inline_mscgraph_", // baseName
+                                         ".msc",                                             // extension
+                                         "msc {"+s.text()+"}",                               // contents
+                                         exists);
         if (!fileName.empty())
         {
           writeMscFile(fileName, s, !exists);
@@ -1493,10 +1493,10 @@ void LatexDocVisitor::operator()(const DocDotFile &df)
   std::string inBuf;
   if (readInputFile(df.file(),inBuf))
   {
-    auto fileName = writeFileContents(Config_getString(LATEX_OUTPUT)+"/"+stripPath(df.file())+"_", // baseName
-                                      ".dot",                                                      // extension
-                                      inBuf,                                                       // contents
-                                      exists);
+    auto fileName = writeInlineGraph(Config_getString(LATEX_OUTPUT)+"/"+stripPath(df.file())+"_", // baseName
+                                     ".dot",                                                      // extension
+                                     inBuf,                                                       // contents
+                                     exists);
     if (!fileName.empty())
     {
       startDotFile(fileName,df.width(),df.height(),df.hasCaption(),df.srcFile(),df.srcLine(),!exists);
@@ -1513,8 +1513,8 @@ void LatexDocVisitor::operator()(const DocMscFile &df)
   std::string inBuf;
   if (readInputFile(df.file(),inBuf))
   {
-    auto fileName = writeFileContents(Config_getString(LATEX_OUTPUT)+"/"+stripPath(df.file())+"_", // baseName
-                                      ".msc",                                                      // extension
+    auto fileName = writeInlineGraph(Config_getString(LATEX_OUTPUT)+"/"+stripPath(df.file())+"_", // baseName
+                                     ".msc",                                                      // extension
                                       inBuf,                                                      // contents
                                       exists);
     if (!fileName.empty())
@@ -1533,8 +1533,8 @@ void LatexDocVisitor::operator()(const DocDiaFile &df)
   std::string inBuf;
   if (readInputFile(df.file(),inBuf))
   {
-    auto fileName = writeFileContents(Config_getString(LATEX_OUTPUT)+"/"+stripPath(df.file())+"_", // baseName
-                                      ".dia",                                                      // extension
+    auto fileName = writeInlineGraph(Config_getString(LATEX_OUTPUT)+"/"+stripPath(df.file())+"_", // baseName
+                                     ".dia",                                                      // extension
                                       inBuf,                                                      // contents
                                       exists);
     if (!fileName.empty())

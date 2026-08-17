@@ -1009,7 +1009,11 @@ void ManDocVisitor::filter(const DString &str, const bool retainNewline, const b
         case '\n': if (retainNewline || !insideDoubleQuote) m_t << c; break;
         case '&':  // possibility to have a special symbol
           if (!citeEntry) { m_t << c; break;}
-          p = writeHtmlEntity(m_t, p-1, [](HtmlEntityMapper::SymType symType) { return HtmlEntityMapper::instance().man(symType); }, "&");
+          p = HtmlEntityMapper::instance().writeHtmlEntity(
+              m_t,
+              p-1,
+              [](HtmlEntityMapper::SymType symType) { return HtmlEntityMapper::instance().man(symType); },
+              "&");
           break;
         default: m_t << c; break;
       }

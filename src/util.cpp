@@ -861,30 +861,6 @@ void writeExamples(OutputList &ol,const ExampleList &list)
   ol.writeString(".");
 }
 
-
-DString inlineArgListToDoc(const ArgumentList &al)
-{
-  DString paramDocs;
-  if (al.hasDocumentation(true))
-  {
-    for (const Argument &a : al)
-    {
-      if (a.hasDocumentation(true))
-      {
-        DString docsWithoutDir = a.docs;
-        DString direction = extractDirection(docsWithoutDir);
-        DString name = a.name;
-        if (name.empty())
-        {
-          name = "-";
-        }
-        paramDocs+=" \\ilinebr @param"+direction+" "+name+" "+docsWithoutDir;
-      }
-    }
-  }
-  return paramDocs;
-}
-
 DString inlineTemplateArgListToDoc(const ArgumentList &al)
 {
   DString paramDocs;
@@ -3000,25 +2976,6 @@ DString convertNameToFile(const DString &name,bool allowDots,bool allowUnderscor
   return result;
 }
 
-DString generateAnonymousAnchor(const DString &fileName,int count)
-{
-  DString fn = stripFromPath(fileName)+":"+DString().setNum(count);
-  auto md5_sig = md5hash(fn.view());
-  char result[md5_sig.size()*3+2];
-  char *p = result;
-  *p++='@';
-  for (size_t i=0;i<md5_sig.size();i++)
-  {
-    static const char oct[]="01234567";
-    uint8_t byte = md5_sig[i];
-    *p++=oct[(byte>>6)&7];
-    *p++=oct[(byte>>3)&7];
-    *p++=oct[(byte>>0)&7];
-  }
-  *p='\0';
-  return result;
-}
-
 DString relativePathToRoot(const DString &name)
 {
   DString result;
@@ -3383,7 +3340,11 @@ DString convertToXML(const DString &s, bool keepEntities, const bool citeEntry)
                  }
                  else if (citeEntry)
                  {
-                   p = writeHtmlEntity(result, p-1, [](HtmlEntityMapper::SymType symType) { return HtmlEntityMapper::instance().xml(symType); }, "&amp;");
+                   p = HtmlEntityMapper::instance().writeHtmlEntity(
+                       result,
+                       p-1,
+                       [](HtmlEntityMapper::SymType symType) { return HtmlEntityMapper::instance().xml(symType); },
+                       "&amp;");
                  }
                  else
                  {
@@ -3485,46 +3446,7 @@ DString convertToJSString(const DString &s,bool keepEntities,bool singleQuotes)
       default:   result+=c;   break;
     }
   }
-  return keepEntities ? result : convertCharEntitiesToUTF8(result);
-}
-
-DString convertCharEntitiesToUTF8(const DString &str)
-{
-  if (str.empty()) return DString();
-
-  std::string s = str.data();
-  static const reg::Ex re(R"(&\a\w*;)");
-  reg::Iterator it(s,re);
-  reg::Iterator end;
-
-  DString result;
-  result.reserve(str.length()+32);
-  size_t p=0, i=0, l=0;
-  for (; it!=end ; ++it)
-  {
-    const auto &match = *it;
-    p = match.position();
-    l = match.length();
-    if (p>i)
-    {
-      result+=s.substr(i,p-i);
-    }
-    DString entity(match.str());
-    HtmlEntityMapper::SymType symType = HtmlEntityMapper::instance().name2sym(entity);
-    const char *code=nullptr;
-    if (symType!=HtmlEntityMapper::Sym_Unknown && (code=HtmlEntityMapper::instance().utf8(symType)))
-    {
-      result+=code;
-    }
-    else
-    {
-      result+=entity;
-    }
-    i=p+l;
-  }
-  result+=s.substr(i);
-  //printf("convertCharEntitiesToUTF8(%s)->%s\n",qPrint(s),qPrint(result));
-  return result;
+  return keepEntities ? result : HtmlEntityMapper::instance().convertCharEntitiesToUTF8(result);
 }
 
 void addMembersToMemberGroup(MemberList *ml,
@@ -4806,7 +4728,7 @@ DString parseCommentAsText(const Definition *scope,const MemberDef *md,
     TextDocVisitor visitor(t);
     std::visit(visitor,astImpl->root);
   }
-  DString result = convertCharEntitiesToUTF8(t.str()).stripWhiteSpace();
+  DString result = HtmlEntityMapper::instance().convertCharEntitiesToUTF8(t.str()).stripWhiteSpace();
   int i=0;
   int charCnt=0;
   int l=static_cast<int>(result.length());
@@ -5586,7 +5508,7 @@ uint32_t getUtf8CodeToUpper( const DString& s, int idx )
  *  The input \a docs string can start with e.g. "[in]", "[in, out]", "[inout]", "[out,in]"...
  *  @returns either "[in,out]", "[in]", or "[out]" or the empty string.
  */
-DString extractDirection(DString &docs)
+static DString extractDirection(DString &docs)
 {
   std::string s = docs.str();
   static const reg::Ex re(R"(\[([ inout,]+)\])");
@@ -5621,6 +5543,30 @@ DString extractDirection(DString &docs)
   }
   return "";
 }
+
+DString inlineArgListToDoc(const ArgumentList &al)
+{
+  DString paramDocs;
+  if (al.hasDocumentation(true))
+  {
+    for (const Argument &a : al)
+    {
+      if (a.hasDocumentation(true))
+      {
+        DString docsWithoutDir = a.docs;
+        DString direction = extractDirection(docsWithoutDir);
+        DString name = a.name;
+        if (name.empty())
+        {
+          name = "-";
+        }
+        paramDocs+=" \\ilinebr @param"+direction+" "+name+" "+docsWithoutDir;
+      }
+    }
+  }
+  return paramDocs;
+}
+
 
 //-----------------------------------------------------------
 
@@ -6217,18 +6163,12 @@ DString extractEndRawStringDelimiter(const char *rawEnd)
   return text.mid(1,text.length()-2); // text=)xyz" -> delimiter=xyz
 }
 
+//----------------------------------------------------------------------------------------------------------
+
 static std::mutex         writeFileContents_lock;
 static StringUnorderedSet writeFileContents_set;
 
-/** Thread-safe function to write a string to a file.
- *  The contents will be used to create a hash that will be used to make the name unique.
- *  @param[in] baseName the base name of the file to write including path.
- *  @param[in] extension the file extension to use.
- *  @param[in] content the data to write to the file
- *  @param[out] exists is set to true if the file was already written before.
- *  @returns the name of the file written or an empty string in case of an error.
- */
-DString writeFileContents(const DString &baseName,const DString &extension,const DString &content,bool &exists)
+DString writeInlineGraph(const DString &baseName,const DString &extension,const DString &content,bool &exists)
 {
   DString fileName = baseName + md5str(content.view()) + extension;
   { // ==== start atomic section
@@ -6253,8 +6193,7 @@ DString writeFileContents(const DString &baseName,const DString &extension,const
   return fileName;
 }
 
-
-void cleanupInlineGraph()
+void cleanupInlineGraphs()
 {
   if (Config_getBool(DOT_CLEANUP))
   {
@@ -6264,33 +6203,4 @@ void cleanupInlineGraph()
     }
   }
 }
-
-template<class T>
-const char *writeHtmlEntity(T &result, const char *s, HtmlEntityMapperFunc &&mapper, const char *fallback)
-{
-  assert(s!=nullptr);
-  assert(s[0]=='&');
-  const char *q = s+1;
-  size_t cnt = 2; // we have to count & and ; as well
-  while ((*q >= 'a' && *q <= 'z') || (*q >= 'A' && *q <= 'Z') || (*q >= '0' && *q <= '9'))
-  {
-    cnt++;
-    q++;
-  }
-  if (*q == ';') // valid entity name
-  {
-    HtmlEntityMapper::SymType res = HtmlEntityMapper::instance().name2sym(DString(s).left(cnt));
-    if (res!=HtmlEntityMapper::Sym_Unknown)
-    {
-      result += mapper(res);
-      return q+1;
-    }
-  }
-  result += fallback;
-  return s+1;
-}
-
-// explicit instantiations
-template const char *writeHtmlEntity<DString>(DString& t, const char *s, HtmlEntityMapperFunc &&mapper, const char *fallback);
-template const char *writeHtmlEntity<TextStream>(TextStream& t, const char *s, HtmlEntityMapperFunc &&mapper, const char *fallback);
 

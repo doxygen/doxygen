@@ -57,8 +57,10 @@ class Definition;
 class FileInfo;
 class Dir;
 
-/** Returns the scope separator to use given the programming language \a lang */
+/*! Returns the scope separator to use given the programming language \a lang */
 DString getLanguageSpecificSeparator(SrcLangExt lang,bool classScope=false);
+
+//----------------------------------------------------------------
 
 /*! reads a file with name \a name and returns it as a string. If \a filter
  *  is true the file will be filtered by any user specified input filter.
@@ -66,7 +68,26 @@ DString getLanguageSpecificSeparator(SrcLangExt lang,bool classScope=false);
  */
 DString fileToString(const DString &name,bool filter=false,bool isSourceCode=false);
 
-/** Helper to pass the input parameters to getDefs() */
+//! read a file name \a fileName and optionally filter and transcode it
+bool readInputFile(const DString &fileName,std::string &contents,
+                   bool filter=true,bool isSourceCode=false);
+
+/*! Thread-safe function to write a string representing an inline graph to a file.
+ *  The contents will be used to create a hash that will be used to make the name unique.
+ *  @param[in] baseName the base name of the file to write including path.
+ *  @param[in] extension the file extension to use.
+ *  @param[in] content the data to write to the file
+ *  @param[out] exists is set to true if the file was already written before.
+ *  @returns the name of the file written or an empty string in case of an error.
+ */
+DString writeInlineGraph(const DString &baseName,const DString &extension,const DString &content,bool &exists);
+
+/*! Deletes all graph files written with writeInlineGraph() */
+void cleanupInlineGraphs();
+
+//----------------------------------------------------------------
+
+/*! Helper to pass the input parameters to getDefs() */
 struct GetDefInput
 {
   GetDefInput(const DString &scName,const DString &memName,const DString &a) :
@@ -80,7 +101,7 @@ struct GetDefInput
   bool insideCode = false;
 };
 
-/** Helper to pass the result parameters from getDefs() */
+/*! Helper to pass the result parameters from getDefs() */
 struct GetDefResult
 {
   bool found = false;
@@ -142,7 +163,7 @@ bool matchArguments2(const Definition *srcScope,const FileDef *srcFileScope,cons
  */
 void mergeArguments(ArgumentList &srcAl,ArgumentList &dstAl,bool forceNameOverwrite=false);
 
-/** Returns true if the template parameter lists \a srcAl and \a dstAl match.
+/*! Returns true if the template parameter lists \a srcAl and \a dstAl match.
  *  The lists are considered to match if they have the same number of parameters and
  *  each matching parameter in \a srcAl and \a dstAl has the same constraints (or at least one parameter has no constraints).
  */
@@ -219,8 +240,6 @@ DString removeAnonymousScopes(const DString &s);
 DString replaceAnonymousScopes(const DString &s,const DString &replacement=DString());
 
 DString convertNameToFile(const DString &name,bool allowDots=false,bool allowUnderscore=false);
-
-DString generateAnonymousAnchor(const DString &fileName,int count);
 
 void extractNamespaceName(const DString &scopeName,
                           DString &className,DString &namespaceName,
@@ -324,12 +343,14 @@ bool findAndRemoveWord(DString &s,const char *word);
 
 DString stripLeadingAndTrailingEmptyLines(const DString &s,int &docLine);
 
+//---------------------------------------------------------------
 bool updateLanguageMapping(const DString &extension,const DString &parser);
 SrcLangExt getLanguageFromFileName(const DString& fileName, SrcLangExt defLang=SrcLangExt::Cpp);
 SrcLangExt getLanguageFromCodeLang(DString &fileName);
 DString getFileNameExtension(const DString &fn);
 void initDefaultExtensionMapping();
 void addCodeOnlyMappings();
+//---------------------------------------------------------------
 
 bool checkIfTypedef(const Definition *scope,const FileDef *fileScope,const DString &n);
 
@@ -342,12 +363,8 @@ DString recodeString(const DString &str,const char *fromEncoding,const char *toE
 
 void writeTypeConstraints(OutputList &ol,const Definition *d,const ArgumentList &al);
 
-DString convertCharEntitiesToUTF8(const DString &s);
-
 void stackTrace();
 
-bool readInputFile(const DString &fileName,std::string &contents,
-                   bool filter=true,bool isSourceCode=false);
 DString filterTitle(const DString &title);
 
 bool patternMatch(const FileInfo &fi,const StringVector &patList);
@@ -361,12 +378,14 @@ DString createHtmlUrl(const DString &relPath,
                        const DString &anchor);
 DString externalRef(const DString &relPath,const DString &ref,bool href);
 
+//---------------------------------------------------------------
 void writeMarkerList(OutputList &ol,const std::string &markerText,size_t numMarkers,
                      std::function<void(size_t)> replaceFunc);
 DString writeMarkerList(const std::string &markerText,size_t numMarkers,
                      std::function<DString(size_t)> replaceFunc);
 
 DString replaceColorMarkers(const DString &str);
+//---------------------------------------------------------------
 
 bool copyFile(const DString &src,const DString &dest);
 
@@ -386,8 +405,6 @@ void stripIndentationVerbatim(DString &doc,size_t indentationLevel, bool skipFir
 DString getDotImageExtension();
 
 bool fileVisibleInIndex(const FileDef *fd,bool &genSourceFile);
-
-DString extractDirection(DString &docs);
 
 void convertProtectionLevel(
                    MemberListType inListType,
@@ -420,21 +437,5 @@ DString demangleCSharpGenericName(const DString &name,const DString &templArgs);
 
 DString extractBeginRawStringDelimiter(const char *rawStart);
 DString extractEndRawStringDelimiter(const char *rawEnd);
-
-DString writeFileContents(const DString &baseName,const DString &extension,const DString &content,bool &exists);
-void cleanupInlineGraph();
-
-using HtmlEntityMapperFunc = std::function<DString(HtmlEntityMapper::SymType)>;
-
-/*! Writes an HTML entity for the current symbol and advances the input pointer.
- *  \tparam T Type of the output sink used to write encoded output.
- *  \param t Output target receiving the encoded entity or fallback text.
- *  \param s Pointer to the start of a potential HTML entity in the input text.
- *  \param mapper Callback that maps a entity symbol type to its HTML entity string.
- *  \param fallback Fallback string written when no entity mapping is available.
- *  \return Pointer to the position after the processed HTML entity in the input text.
- */
-template<class T>
-const char *writeHtmlEntity(T& t, const char *s, HtmlEntityMapperFunc &&mapper, const char *fallback);
 
 #endif

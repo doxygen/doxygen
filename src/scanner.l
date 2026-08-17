@@ -52,7 +52,7 @@ typedef yyguts_t *yyscan_t;
 #include "moduledef.h"
 #include "stringutil.h"
 #include "filename.h"
-
+#include "md5hash.h"
 #include "clangparser.h"
 #include "markdown.h"
 #include "regex.h"
@@ -256,6 +256,7 @@ static void storeClangId(yyscan_t yyscanner,const char *id);
 static void startVerbatimBlock(yyscan_t yyscanner,const DString &blockName,size_t fencedSize=0,bool codeBlock=false);
 static bool endVerbatimBlock(yyscan_t yyscanner,const DString &blockName,size_t fencedSize=0);
 static bool containsWord(const DString &str,const char *word);
+static DString generateAnonymousAnchor(const DString &fileName,int count);
 
 
 /* ----------------------------------------------------------------- */
@@ -8125,6 +8126,24 @@ static bool containsWord(const DString &str,const char *word)
   return false;
 }
 
+static DString generateAnonymousAnchor(const DString &fileName,int count)
+{
+  DString fn = stripFromPath(fileName)+":"+DString().setNum(count);
+  auto md5_sig = md5hash(fn.view());
+  char result[md5_sig.size()*3+2];
+  char *p = result;
+  *p++='@';
+  for (size_t i=0;i<md5_sig.size();i++)
+  {
+    static const char oct[]="01234567";
+    uint8_t byte = md5_sig[i];
+    *p++=oct[(byte>>6)&7];
+    *p++=oct[(byte>>3)&7];
+    *p++=oct[(byte>>0)&7];
+  }
+  *p='\0';
+  return result;
+}
 
 static void storeClangId(yyscan_t yyscanner,const char *id)
 {

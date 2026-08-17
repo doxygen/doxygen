@@ -358,10 +358,10 @@ void RTFDocVisitor::operator()(const DocVerbatim &s)
     case DocVerbatim::Dot:
       {
         bool exists = false;
-        auto fileName = writeFileContents(Config_getString(RTF_OUTPUT)+"/inline_dotgraph_", // baseName
-                                          ".dot",                                           // extension
-                                          s.text(),                                         // contents
-                                          exists);
+        auto fileName = writeInlineGraph(Config_getString(RTF_OUTPUT)+"/inline_dotgraph_", // baseName
+                                         ".dot",                                           // extension
+                                         s.text(),                                         // contents
+                                         exists);
         if (!fileName.empty())
         {
           writeDotFile(fileName, s.hasCaption(), s.srcFile(), s.srcLine(), !exists);
@@ -373,10 +373,10 @@ void RTFDocVisitor::operator()(const DocVerbatim &s)
     case DocVerbatim::Msc:
       {
         bool exists = false;
-        auto fileName = writeFileContents(Config_getString(RTF_OUTPUT)+"/inline_mscgraph_", // baseName
-                                          ".msc",                                           // extension
-                                          "msc {"+s.text()+"}",                             // contents
-                                          exists);
+        auto fileName = writeInlineGraph(Config_getString(RTF_OUTPUT)+"/inline_mscgraph_", // baseName
+                                         ".msc",                                           // extension
+                                         "msc {"+s.text()+"}",                             // contents
+                                         exists);
         if (!fileName.empty())
         {
           writeMscFile(fileName, s.hasCaption(), s.srcFile(), s.srcLine(), !exists);
@@ -1263,10 +1263,10 @@ void RTFDocVisitor::operator()(const DocDotFile &df)
   std::string inBuf;
   if (readInputFile(df.file(),inBuf))
   {
-    auto fileName = writeFileContents(Config_getString(RTF_OUTPUT)+"/"+stripPath(df.file())+"_", // baseName
-                                      ".dot",                                                    // extension
-                                      inBuf,                                                     // contents
-                                      exists);
+    auto fileName = writeInlineGraph(Config_getString(RTF_OUTPUT)+"/"+stripPath(df.file())+"_", // baseName
+                                     ".dot",                                                    // extension
+                                     inBuf,                                                     // contents
+                                     exists);
     if (!fileName.empty())
     {
       writeDotFile(fileName, df.hasCaption(), df.srcFile(), df.srcLine(), !exists);
@@ -1282,10 +1282,10 @@ void RTFDocVisitor::operator()(const DocMscFile &df)
   std::string inBuf;
   if (readInputFile(df.file(),inBuf))
   {
-    auto fileName = writeFileContents(Config_getString(RTF_OUTPUT)+"/"+stripPath(df.file())+"_", // baseName
-                                      ".msc",                                                    // extension
-                                      inBuf,                                                     // contents
-                                      exists);
+    auto fileName = writeInlineGraph(Config_getString(RTF_OUTPUT)+"/"+stripPath(df.file())+"_", // baseName
+                                     ".msc",                                                    // extension
+                                     inBuf,                                                     // contents
+                                     exists);
     if (!fileName.empty())
     {
       writeMscFile(fileName, df.hasCaption(), df.srcFile(), df.srcLine(), !exists);
@@ -1302,10 +1302,10 @@ void RTFDocVisitor::operator()(const DocDiaFile &df)
   std::string inBuf;
   if (readInputFile(df.file(),inBuf))
   {
-    auto fileName = writeFileContents(Config_getString(RTF_OUTPUT)+"/"+stripPath(df.file())+"_", // baseName
-                                      ".dia",                                                    // extension
-                                      inBuf,                                                     // contents
-                                      exists);
+    auto fileName = writeInlineGraph(Config_getString(RTF_OUTPUT)+"/"+stripPath(df.file())+"_", // baseName
+                                     ".dia",                                                    // extension
+                                     inBuf,                                                     // contents
+                                     exists);
     if (!fileName.empty())
     {
       writeDiaFile(fileName, df.hasCaption(), df.srcFile(), df.srcLine(), !exists);
@@ -1707,7 +1707,11 @@ void RTFDocVisitor::filter(const DString &str,bool verbatim, const bool citeEntr
         case '\\': m_t << "\\\\";           break;
         case '&':  // possibility to have a special symbol
           if (!citeEntry) { m_t << c; break;}
-          p = writeHtmlEntity( m_t, p-1, [](HtmlEntityMapper::SymType symType) { return HtmlEntityMapper::instance().rtf(symType); }, "&");
+          p = HtmlEntityMapper::instance().writeHtmlEntity(
+              m_t,
+              p-1,
+              [](HtmlEntityMapper::SymType symType) { return HtmlEntityMapper::instance().rtf(symType); },
+              "&");
           break;
         case '\n': if (verbatim)
                    {
