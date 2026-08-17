@@ -404,8 +404,6 @@ FortranFormat convertFileNameFortranParserCode(DString fn);
 
 DString getEncoding(const FileInfo &fi);
 
-inline DString fixSpaces(const DString &s) { return substitute(s," ","&#160;"); }
-
 DString detab(const DString &s,size_t &refIndent);
 
 DString getProjectId();

@@ -114,6 +114,7 @@ class HtmlGenerator final : public OutputGenerator, public OutputGenIntf
     static DString writeLogoAsString(const DString &path);
     static DString writeSplitBarAsString(const DString &name,const DString &relpath,const DString &allMembersFile);
     static DString getNavTreeCss();
+    static DString fixSpaces(const DString &s);
     void clearBuffer();
 
     //---------------------------------------------------------------------

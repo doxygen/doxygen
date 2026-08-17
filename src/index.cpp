@@ -3251,7 +3251,7 @@ static void writeClassMemberIndexFiltered(OutputList &ol, ClassMemberHighlight::
         // index item for global member list
         startQuickIndexItem(ol,
             getCmhlInfo(0)->fname+Doxygen::htmlFileExtension,hl==ClassMemberHighlight::All,true,first);
-        ol.writeString(fixSpaces(getCmhlInfo(0)->title));
+        ol.writeString(HtmlGenerator::fixSpaces(getCmhlInfo(0)->title));
         endQuickIndexItem(ol);
 
         // index items per category member lists
@@ -3260,7 +3260,7 @@ static void writeClassMemberIndexFiltered(OutputList &ol, ClassMemberHighlight::
           if (index.numDocumentedClassMembers(static_cast<ClassMemberHighlight::Enum>(i))>0)
           {
             startQuickIndexItem(ol,getCmhlInfo(i)->fname+Doxygen::htmlFileExtension,hl==i,true,first);
-            ol.writeString(fixSpaces(getCmhlInfo(i)->title));
+            ol.writeString(HtmlGenerator::fixSpaces(getCmhlInfo(i)->title));
             //printf("multiPageIndex=%d first=%d fileName=%s file=%s title=%s\n",
             //    multiPageIndex,first,qPrint(fileName),getCmhlInfo(i)->fname,qPrint(getCmhlInfo(i)->title));
             endQuickIndexItem(ol);
@@ -3443,7 +3443,7 @@ static void writeFileMemberIndexFiltered(OutputList &ol, FileMemberHighlight::En
         // index item for all file member lists
         startQuickIndexItem(ol,
             getFmhlInfo(0)->fname+Doxygen::htmlFileExtension,hl==FileMemberHighlight::All,true,first);
-        ol.writeString(fixSpaces(getFmhlInfo(0)->title));
+        ol.writeString(HtmlGenerator::fixSpaces(getFmhlInfo(0)->title));
         endQuickIndexItem(ol);
 
         // index items for per category member lists
@@ -3453,7 +3453,7 @@ static void writeFileMemberIndexFiltered(OutputList &ol, FileMemberHighlight::En
           {
             startQuickIndexItem(ol,
                 getFmhlInfo(i)->fname+Doxygen::htmlFileExtension,hl==i,true,first);
-            ol.writeString(fixSpaces(getFmhlInfo(i)->title));
+            ol.writeString(HtmlGenerator::fixSpaces(getFmhlInfo(i)->title));
             endQuickIndexItem(ol);
           }
         }
@@ -3631,7 +3631,7 @@ static void writeNamespaceMemberIndexFiltered(OutputList &ol,
         // index item for all namespace member lists
         startQuickIndexItem(ol,
             getNmhlInfo(0)->fname+Doxygen::htmlFileExtension,hl==NamespaceMemberHighlight::All,true,first);
-        ol.writeString(fixSpaces(getNmhlInfo(0)->title));
+        ol.writeString(HtmlGenerator::fixSpaces(getNmhlInfo(0)->title));
         endQuickIndexItem(ol);
 
         // index items per category member lists
@@ -3641,7 +3641,7 @@ static void writeNamespaceMemberIndexFiltered(OutputList &ol,
           {
             startQuickIndexItem(ol,
                 getNmhlInfo(i)->fname+Doxygen::htmlFileExtension,hl==i,true,first);
-            ol.writeString(fixSpaces(getNmhlInfo(i)->title));
+            ol.writeString(HtmlGenerator::fixSpaces(getNmhlInfo(i)->title));
             endQuickIndexItem(ol);
           }
         }
@@ -3808,7 +3808,7 @@ static void writeModuleMemberIndexFiltered(OutputList &ol,
         // index item for all namespace member lists
         startQuickIndexItem(ol,
             getMmhlInfo(0)->fname+Doxygen::htmlFileExtension,hl==ModuleMemberHighlight::All,true,first);
-        ol.writeString(fixSpaces(getMmhlInfo(0)->title));
+        ol.writeString(HtmlGenerator::fixSpaces(getMmhlInfo(0)->title));
         endQuickIndexItem(ol);
 
         // index items per category member lists
@@ -3818,7 +3818,7 @@ static void writeModuleMemberIndexFiltered(OutputList &ol,
           {
             startQuickIndexItem(ol,
                 getMmhlInfo(i)->fname+Doxygen::htmlFileExtension,hl==i,true,first);
-            ol.writeString(fixSpaces(getMmhlInfo(i)->title));
+            ol.writeString(HtmlGenerator::fixSpaces(getMmhlInfo(i)->title));
             endQuickIndexItem(ol);
           }
         }
@@ -4886,7 +4886,7 @@ static void writeUserGroupStubPage(OutputList &ol,LayoutNavEntry *lne)
         if (entry->visible())
         {
           ol.writeString("<li><a href=\""+entry->url()+"\"><span>"+
-              fixSpaces(entry->title())+"</span></a></li>\n");
+              HtmlGenerator::fixSpaces(entry->title())+"</span></a></li>\n");
         }
       }
       ol.writeString("</ul>\n");

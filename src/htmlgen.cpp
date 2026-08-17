@@ -2955,7 +2955,7 @@ static void renderQuickLinksAsTree(TextStream &t,const DString &relPath,LayoutNa
       {
         DString url = entry->url();
         t << "<li><a href=\"" << relPath << url << "\"><span>";
-        t << fixSpaces(entry->title());
+        t << HtmlGenerator::fixSpaces(entry->title());
         t << "</span></a>\n";
         // recursive into child list
         renderQuickLinksAsTree(t,relPath,entry.get());
@@ -2997,7 +2997,7 @@ static void renderQuickLinksAsTabs(TextStream &t,const DString &relPath,
                (entry->kind()==kind && !highlightParent)
               ),
               true,relPath);
-          t << fixSpaces(entry->title());
+          t << HtmlGenerator::fixSpaces(entry->title());
           endQuickIndexItem(t,url);
         }
       }
@@ -3774,6 +3774,11 @@ DString HtmlGenerator::getNavTreeCss()
 {
   ResourceMgr &mgr = ResourceMgr::instance();
   return replaceVariables(mgr.getAsString("navtree.css"));
+}
+
+DString HtmlGenerator::fixSpaces(const DString &s)
+{
+  return substitute(s," ","&#160;");
 }
 
 void HtmlGenerator::startLocalToc(int level)

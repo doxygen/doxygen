@@ -66,7 +66,7 @@ DString SearchTerm::termEncoded() const
   for (size_t i=0;i<word.length();i++)
   {
     char c = word.at(i);
-    if (c>=128 || c<0 || isalnum(c))
+    if (c<0 || isalnum(c))
     {
       t << word.at(i);
     }

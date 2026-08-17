@@ -8721,7 +8721,7 @@ static void generateFileSources()
               {
                 StringVector moreFiles;
                 bool ambig = false;
-                FileDef *ifd=Doxygne::inputNameLinkedMap->findFileDef(incFile,ambig);
+                FileDef *ifd=Doxygen::inputNameLinkedMap->findFileDef(incFile,ambig);
                 if (ifd && !ifd->isReference())
                 {
                   processSourceFile(ifd,*g_outputList,clangParser.get());
