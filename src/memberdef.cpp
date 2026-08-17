@@ -509,7 +509,7 @@ class MemberDefImpl final : public DefinitionMixin<MemberDefMutable>
     const MemberDef *m_categoryRelation = nullptr;
     DString m_declFileName;
     int m_declLine = -1;
-    size_t m_declColumn = -1;
+    size_t m_declColumn = 1;
     int m_numberOfFlowKW = 0;
     int m_redefineCount = 0;
 };

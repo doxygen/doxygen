@@ -398,7 +398,7 @@ void VHDLOutlineParser::handleCommentBlock(const DString &doc1, bool brief)
     return;
   }
 
-  if (checkInlineCode(doc) > 0)
+  if (checkInlineCode(doc) != DString::npos)
   {
     return;
   }
