@@ -274,7 +274,7 @@ class MemberDef : public Definition
 
     virtual DString getDeclFileName() const = 0;
     virtual int getDeclLine() const = 0;
-    virtual int getDeclColumn() const = 0;
+    virtual size_t getDeclColumn() const = 0;
 
     virtual std::unique_ptr<MemberDef> createTemplateInstanceMember(const ArgumentList &formalArgs,
                const std::unique_ptr<ArgumentList> &actualArgs) const = 0;
@@ -354,9 +354,9 @@ class MemberDefMutable : public DefinitionMutable, public MemberDef
     virtual bool addExample(const DString &anchor,const DString &name,const DString &file) = 0;
 
     // prototype related members
-    virtual void setPrototype(bool p,const DString &df,int line, int column) = 0;
-    virtual void setExplicitExternal(bool b,const DString &df,int line,int column) = 0;
-    virtual void setDeclFile(const DString &df,int line,int column) = 0;
+    virtual void setPrototype(bool p,const DString &df,int line, size_t column) = 0;
+    virtual void setExplicitExternal(bool b,const DString &df,int line,size_t column) = 0;
+    virtual void setDeclFile(const DString &df,int line,size_t column) = 0;
 
     // argument related members
     virtual void moveArgumentList(std::unique_ptr<ArgumentList> al) = 0;
@@ -447,7 +447,7 @@ MemberDefMutable     *toMemberDefMutable(Definition *d);
 
 
 /** Factory method to create a new instance of a MemberDef */
-std::unique_ptr<MemberDef> createMemberDef(const DString &defFileName,int defLine,int defColumn,
+std::unique_ptr<MemberDef> createMemberDef(const DString &defFileName,int defLine,size_t defColumn,
               const DString &type,const DString &name,const DString &args,
               const DString &excp,Protection prot,Specifier virt,bool stat,
               Relationship related,MemberType t,const ArgumentList &tal,

@@ -111,8 +111,8 @@ struct scannerYY_state
   std::shared_ptr<Entry> memspecEntry;
   int              yyLineNr     = 1 ;
   int              yyBegLineNr  = 1 ;
-  int              yyColNr      = 1 ;
-  int              yyBegColNr   = 1 ;
+  size_t           yyColNr      = 1 ;
+  size_t           yyBegColNr   = 1 ;
   DString         fileName;
   MethodTypes      mtype = MethodTypes::Method;
   bool             isStatic = false;
@@ -228,7 +228,7 @@ struct scannerYY_state
 //-----------------------------------------------------------------------------
 
 // forward declarations for stateless functions
-static inline int computeIndent(const char *s,int startIndent);
+static inline size_t computeIndent(const char *s,size_t startIndent);
 static inline void initMethodProtection(yyscan_t yyscanner,Protection prot);
 static DString stripQuotes(const char *s);
 static DString stripFuncPtr(const DString &type);
@@ -3278,7 +3278,7 @@ NONLopt [^\n]*
                                           yyextra->current->bodyLine = yyextra->yyLineNr;
                                           yyextra->current->bodyColumn = yyextra->yyColNr;
                                           yyextra->current->initializer.str(" ");
-                                          for (int ii = 2 ; ii <  yyextra->yyColNr; ii++)
+                                          for (size_t ii = 2 ; ii <  yyextra->yyColNr; ii++)
                                             yyextra->current->initializer << " ";
                                           yyextra->current->initializer << "=";
                                           yyextra->lastInitializerContext = YY_START;
@@ -8161,9 +8161,9 @@ static void lineCount(yyscan_t yyscanner)
   //printf("lineCount()=%d\n",yyextra->column);
 }
 
-static inline int computeIndent(const char *s,int startIndent)
+static inline size_t computeIndent(const char *s,size_t startIndent)
 {
-  int col=startIndent;
+  size_t col=startIndent;
   int tabSize=Config_getInt(TAB_SIZE);
   const char *p=s;
   char c;
@@ -8794,7 +8794,7 @@ static void parseConcepts(yyscan_t yyscanner,const std::shared_ptr<Entry> &rt)
 
       // hack to reconstruct what was in the code before the concept expression
       DString indent;
-      indent.fill(' ',std::max(0,ce->startColumn-1));
+      indent.fill(' ',ce->startColumn?ce->startColumn-1:0);
       DString templArgs;
       if (!ce->args.empty())
       {

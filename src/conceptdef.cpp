@@ -31,7 +31,7 @@
 class ConceptDefImpl final : public DefinitionMixin<ConceptDefMutable>
 {
   public:
-    ConceptDefImpl(const DString &fileName,int startLine,int startColumn,
+    ConceptDefImpl(const DString &fileName,int startLine,size_t startColumn,
                    const DString &name,const DString &tagRef=DString(),const DString &tagFile=DString());
    ~ConceptDefImpl() override;
     NON_COPYABLE(ConceptDefImpl)
@@ -68,8 +68,8 @@ class ConceptDefImpl final : public DefinitionMixin<ConceptDefMutable>
     void setInitializer(const DString &init) override;
     void findSectionsInDocumentation() override;
     void setGroupId(int id) override;
-    void addDocPart(const DString &doc,int lineNr,int colNr) override;
-    void addCodePart(const DString &code,int lineNr,int colNr) override;
+    void addDocPart(const DString &doc,int lineNr,size_t colNr) override;
+    void addCodePart(const DString &code,int lineNr,size_t colNr) override;
     void addListReferences() override;
     void addRequirementReferences() override;
 
@@ -94,7 +94,7 @@ class ConceptDefImpl final : public DefinitionMixin<ConceptDefMutable>
 };
 
 std::unique_ptr<ConceptDef> createConceptDef(
-             const DString &fileName,int startLine,int startColumn,
+             const DString &fileName,int startLine,size_t startColumn,
              const DString &name, const DString &tagRef,const DString &tagFile)
 {
   return std::make_unique<ConceptDefImpl>(fileName,startLine,startColumn,name,tagRef,tagFile);
@@ -161,7 +161,7 @@ std::unique_ptr<ConceptDef> createConceptDefAlias(const Definition *newScope,con
 
 //------------------------------------------------------------------------------------
 
-ConceptDefImpl::ConceptDefImpl(const DString &fileName,int startLine,int startColumn,
+ConceptDefImpl::ConceptDefImpl(const DString &fileName,int startLine,size_t startColumn,
     const DString &name,const DString &tagRef,const DString &tagFile) : DefinitionMixin(fileName,startLine,startColumn,name)
 {
   if (!tagFile.empty())
@@ -777,12 +777,12 @@ void ConceptDefImpl::findSectionsInDocumentation()
   docFindSections(inbodyDocumentation(),this,docFile());
 }
 
-void ConceptDefImpl::addDocPart(const DString &doc,int lineNr,int colNr)
+void ConceptDefImpl::addDocPart(const DString &doc,int lineNr,size_t colNr)
 {
   m_parts.emplace_back(PartType::Doc,doc,lineNr,colNr);
 }
 
-void ConceptDefImpl::addCodePart(const DString &code,int lineNr,int colNr)
+void ConceptDefImpl::addCodePart(const DString &code,int lineNr,size_t colNr)
 {
   m_parts.emplace_back(PartType::Code,code,lineNr,colNr);
 }

@@ -54,7 +54,7 @@ static DString makeDisplayName(const NamespaceDef *nd,bool includeScope)
 class NamespaceDefImpl final : public DefinitionMixin<NamespaceDefMutable>
 {
   public:
-    NamespaceDefImpl(const DString &defFileName,int defLine,int defColumn,
+    NamespaceDefImpl(const DString &defFileName,int defLine,size_t defColumn,
                  const DString &name,const DString &ref=DString(),
                  const DString &refFile=DString(),const DString &type=DString(),
                  bool isPublished=false);
@@ -170,7 +170,7 @@ class NamespaceDefImpl final : public DefinitionMixin<NamespaceDefMutable>
     bool                  m_inline = false;
 };
 
-std::unique_ptr<NamespaceDef> createNamespaceDef(const DString &defFileName,int defLine,int defColumn,
+std::unique_ptr<NamespaceDef> createNamespaceDef(const DString &defFileName,int defLine,size_t defColumn,
                  const DString &name,const DString &ref,
                  const DString &refFile,const DString &type,
                  bool isPublished)
@@ -269,7 +269,7 @@ std::unique_ptr<NamespaceDef> createNamespaceDefAlias(const Definition *newScope
 
 //------------------------------------------------------------------
 
-NamespaceDefImpl::NamespaceDefImpl(const DString &df,int dl,int dc,
+NamespaceDefImpl::NamespaceDefImpl(const DString &df,int dl,size_t dc,
                            const DString &name,const DString &lref,
                            const DString &fName, const DString &type,
                            bool isPublished) :

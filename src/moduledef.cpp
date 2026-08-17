@@ -49,9 +49,9 @@ using HeaderInfoVector = std::vector<HeaderInfo>;
 class ModuleDefImpl final : public DefinitionMixin<ModuleDef>
 {
   public:
-    ModuleDefImpl(const DString &fileName,int startLine,int startColom,
+    ModuleDefImpl(const DString &fileName,int startLine,size_t startColumn,
                   const DString &name, Type type, const DString &partitionName)
-      : DefinitionMixin<ModuleDef>(fileName,startLine,startColom,name,nullptr,nullptr,true),
+      : DefinitionMixin<ModuleDef>(fileName,startLine,startColumn,name,nullptr,nullptr,true),
         m_type(type), m_partitionName(partitionName) {}
 
     // --- Definition
@@ -1268,7 +1268,7 @@ ModuleManager::ModuleManager() : p(std::make_unique<Private>())
 {
 }
 
-void ModuleManager::createModuleDef(const DString &fileName,int line,int column,bool exported,
+void ModuleManager::createModuleDef(const DString &fileName,int line,size_t column,bool exported,
                                     const DString &moduleName,const DString &partitionName)
 {
   AUTO_TRACE("{}:{}: Found module name='{}' partition='{}' exported='{}'",

@@ -31,11 +31,11 @@ class ConceptDef : public Definition
     enum class PartType { Code, Doc };
     struct Part
     {
-      Part(PartType t,const DString &s,int ln,int col) : type(t), content(s), lineNr(ln), colNr(col) {}
+      Part(PartType t,const DString &s,int ln,size_t col) : type(t), content(s), lineNr(ln), colNr(col) {}
       PartType type;
       DString content;
       int lineNr;
-      int colNr;
+      size_t colNr;
     };
     using Parts = std::vector<Part>;
 
@@ -70,12 +70,12 @@ class ConceptDefMutable : public DefinitionMutable, public ConceptDef
     virtual void setModuleDef(ModuleDef *mod) = 0;
     virtual void addListReferences() = 0;
     virtual void addRequirementReferences() = 0;
-    virtual void addDocPart(const DString &doc,int lineNr,int colNr) = 0;
-    virtual void addCodePart(const DString &code,int lineNr,int colNr) = 0;
+    virtual void addDocPart(const DString &doc,int lineNr,size_t colNr) = 0;
+    virtual void addCodePart(const DString &code,int lineNr,size_t colNr) = 0;
 };
 
 std::unique_ptr<ConceptDef> createConceptDef(
-    const DString &fileName,int startLine,int startColumn,const DString &name,
+    const DString &fileName,int startLine,size_t startColumn,const DString &name,
     const DString &tagRef=DString(),const DString &tagFile=DString());
 
 std::unique_ptr<ConceptDef> createConceptDefAlias(const Definition *newScope,const ConceptDef *cd);

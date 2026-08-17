@@ -53,7 +53,7 @@
 class MemberDefImpl final : public DefinitionMixin<MemberDefMutable>
 {
   public:
-    MemberDefImpl(const DString &defFileName,int defLine,int defColumn,
+    MemberDefImpl(const DString &defFileName,int defLine,size_t defColumn,
               const DString &type,const DString &name,const DString &args,
               const DString &excp,Protection prot,Specifier virt,bool stat,
               Relationship related,MemberType t,const ArgumentList &tal,
@@ -253,7 +253,7 @@ class MemberDefImpl final : public DefinitionMixin<MemberDefMutable>
     bool isReference() const override;
     DString getDeclFileName() const override;
     int getDeclLine() const override;
-    int getDeclColumn() const override;
+    size_t getDeclColumn() const override;
     void setMemberType(MemberType t) override;
     void setDefinition(const DString &d) override;
     void setFileDef(FileDef *fd) override;
@@ -287,9 +287,9 @@ class MemberDefImpl final : public DefinitionMixin<MemberDefMutable>
     void setDocumentedEnumValues(bool value) override;
     void setAnonymousEnumType(const MemberDef *md) override;
     bool addExample(const DString &anchor,const DString &name,const DString &file) override;
-    void setPrototype(bool p,const DString &df,int line, int column) override;
-    void setExplicitExternal(bool b,const DString &df,int line,int column) override;
-    void setDeclFile(const DString &df,int line,int column) override;
+    void setPrototype(bool p,const DString &df,int line, size_t column) override;
+    void setExplicitExternal(bool b,const DString &df,int line,size_t column) override;
+    void setDeclFile(const DString &df,int line,size_t column) override;
     void moveArgumentList(std::unique_ptr<ArgumentList> al) override;
     void moveDeclArgumentList(std::unique_ptr<ArgumentList> al) override;
     void setDefinitionTemplateParameterLists(const ArgumentLists &lists) override;
@@ -509,12 +509,12 @@ class MemberDefImpl final : public DefinitionMixin<MemberDefMutable>
     const MemberDef *m_categoryRelation = nullptr;
     DString m_declFileName;
     int m_declLine = -1;
-    int m_declColumn = -1;
+    size_t m_declColumn = -1;
     int m_numberOfFlowKW = 0;
     int m_redefineCount = 0;
 };
 
-std::unique_ptr<MemberDef> createMemberDef(const DString &defFileName,int defLine,int defColumn,
+std::unique_ptr<MemberDef> createMemberDef(const DString &defFileName,int defLine,size_t defColumn,
               const DString &type,const DString &name,const DString &args,
               const DString &excp,Protection prot,Specifier virt,bool stat,
               Relationship related,MemberType t,const ArgumentList &tal,
@@ -925,7 +925,7 @@ class MemberDefAliasImpl final : public DefinitionAliasMixin<MemberDef>
     { return getMdAlias()->getDeclFileName(); }
     int getDeclLine() const override
     { return getMdAlias()->getDeclLine(); }
-    int getDeclColumn() const override
+    size_t getDeclColumn() const override
     { return getMdAlias()->getDeclColumn(); }
     DString requiresClause() const override
     { return getMdAlias()->requiresClause(); }
@@ -1449,7 +1449,7 @@ void MemberDefImpl::init(Definition *d,
  * \param meta Slice metadata.
  */
 
-MemberDefImpl::MemberDefImpl(const DString &df,int dl,int dc,
+MemberDefImpl::MemberDefImpl(const DString &df,int dl,size_t dc,
                      const DString &t,const DString &na,const DString &a,const DString &e,
                      Protection p,Specifier v,bool s,Relationship r,MemberType mt,
                      const ArgumentList &tal,const ArgumentList &al,const DString &meta
@@ -5746,7 +5746,7 @@ int MemberDefImpl::getDeclLine() const
   return m_declLine;
 }
 
-int MemberDefImpl::getDeclColumn() const
+size_t MemberDefImpl::getDeclColumn() const
 {
   return m_declColumn;
 }
@@ -5888,7 +5888,7 @@ void MemberDefImpl::setAnonymousEnumType(const MemberDef *md)
   m_annEnumType = md;
 }
 
-void MemberDefImpl::setPrototype(bool p,const DString &df,int line,int column)
+void MemberDefImpl::setPrototype(bool p,const DString &df,int line,size_t column)
 {
   m_proto=p;
   if (p)
@@ -5901,7 +5901,7 @@ void MemberDefImpl::setPrototype(bool p,const DString &df,int line,int column)
   }
 }
 
-void MemberDefImpl::setExplicitExternal(bool b,const DString &df,int line,int column)
+void MemberDefImpl::setExplicitExternal(bool b,const DString &df,int line,size_t column)
 {
   m_explExt=b;
   if (b)
@@ -5914,7 +5914,7 @@ void MemberDefImpl::setExplicitExternal(bool b,const DString &df,int line,int co
   }
 }
 
-void MemberDefImpl::setDeclFile(const DString &df,int line,int column)
+void MemberDefImpl::setDeclFile(const DString &df,int line,size_t column)
 {
   m_declFileName = df;
   m_declLine = line;

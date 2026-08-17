@@ -98,9 +98,9 @@ struct commentcnvYY_state
   const std::string *inBuf;
   std::string &outBuf;
   int      inBufPos = 0;
-  int      col = 0;
-  int      blockHeadCol = 0;        // column at which the start of a special comment block was found
-  int      insertCommentCol = 0;    // column at which an include or snippet command was found
+  size_t   col = 0;
+  size_t   blockHeadCol = 0;        // column at which the start of a special comment block was found
+  size_t   insertCommentCol = 0;    // column at which an include or snippet command was found
   bool     mlBrief = false;
   int      readLineCtx = 0;
   int      includeCtx = 0;
@@ -1394,7 +1394,7 @@ SLASHopt [/]*
 				     BEGIN( ReadAliasArgs );
   				   }
 <ReadAliasArgs>^[ \t]*"*"          {
-                                     int indent=computeIndent(yytext)-1;
+                                     size_t indent=computeIndent(yytext)-1;
                                      if (indent>yyextra->blockHeadCol) // assume part of block marker
                                      {
                                        yyextra->aliasString+=yytext;
@@ -1823,9 +1823,9 @@ static DString extractBlock(const DString &text,const DString &marker,size_t &bl
 static void insertCommentStart(yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  int startCol=yyextra->blockHeadCol;
-  int contentCol=yyextra->insertCommentCol;
-  int markerSpace=contentCol-startCol;
+  size_t startCol=yyextra->blockHeadCol;
+  size_t contentCol=yyextra->insertCommentCol;
+  size_t markerSpace=contentCol-startCol;
   //printf("insertCommentStart startCol=%d contentCol=%d mlBrief=%d insertCppCommentMarker=%d\n",
   //    yyextra->blockHeadCol,yyextra->insertCommentCol,yyextra->mlBrief,yyextra->insertCppCommentMarker);
   std::string marker;
@@ -1862,12 +1862,12 @@ static void insertCommentStart(yyscan_t yyscanner)
   {
     marker="* ";
   }
-  int i=0;
+  size_t i=0;
   for (;i<startCol;i++)
   {
     copyToOutput(yyscanner," ");
   }
-  if (static_cast<int>(marker.length())<=markerSpace && !yyextra->firstIncludeLine)
+  if (marker.length()<=markerSpace && !yyextra->firstIncludeLine)
   {
     copyToOutput(yyscanner,marker);
     i+=static_cast<int>(marker.length());
@@ -2085,7 +2085,7 @@ static void replaceComment(yyscan_t yyscanner,int offset)
   }
   else
   {
-    int i=computeIndent(&yytext[offset]);
+    size_t i=computeIndent(&yytext[offset]);
     //printf("i=%d blockHeadCol=%d\n",i,yyextra->blockHeadCol);
     if (i==yyextra->blockHeadCol || i+1==yyextra->blockHeadCol)
     {
@@ -2094,7 +2094,11 @@ static void replaceComment(yyscan_t yyscanner,int offset)
     else
     {
       copyToOutput(yyscanner," */");
-      for (i=(int)yyleng-1;i>=0;i--) unput(yytext[i]);
+      for (i = yyleng; i>0; )
+      {
+        --i;
+        unput(yytext[i]);
+      }
       yyextra->inSpecialComment=false;
       BEGIN(Scan);
     }

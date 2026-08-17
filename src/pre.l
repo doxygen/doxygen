@@ -245,7 +245,7 @@ struct preYY_state
 {
   int                yyLineNr       = 1;
   int                yyMLines       = 1;
-  int                yyColNr        = 1;
+  size_t             yyColNr        = 1;
   DString           fileName;
   FileDef           *yyFileDef      = nullptr;
   FileDef           *inputFileDef   = nullptr;

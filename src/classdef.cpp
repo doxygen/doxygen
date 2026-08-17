@@ -196,7 +196,7 @@ static DString getCompoundTypeString(SrcLangExt lang,ClassDef::CompoundType comp
 class ClassDefImpl final : public DefinitionMixin<ClassDefMutable>
 {
   public:
-    ClassDefImpl(const DString &fileName,int startLine,int startColumn,
+    ClassDefImpl(const DString &fileName,int startLine,size_t startColumn,
              const DString &name,CompoundType ct,
              const DString &ref=DString(),const DString &fName=DString(),
              bool isSymbol=true,bool isJavaEnum=false);
@@ -286,7 +286,7 @@ class ClassDefImpl final : public DefinitionMixin<ClassDefMutable>
     bool containsOverload(const MemberDef *md) const override;
     bool isImplicitTemplateInstance() const override;
 
-    ClassDef *insertTemplateInstance(const DString &fileName,int startLine,int startColumn,
+    ClassDef *insertTemplateInstance(const DString &fileName,int startLine,size_t startColumn,
                                 const DString &templSpec,bool &freshInstance) override;
     void insertBaseClass(ClassDef *,const DString &name,Protection p,Specifier s,const DString &t=DString()) override;
     void insertSubClass(ClassDef *,Protection p,Specifier s,const DString &t=DString()) override;
@@ -571,7 +571,7 @@ class ClassDefImpl final : public DefinitionMixin<ClassDefMutable>
 };
 
 std::unique_ptr<ClassDef> createClassDef(
-             const DString &fileName,int startLine,int startColumn,
+             const DString &fileName,int startLine,size_t startColumn,
              const DString &name,ClassDef::CompoundType ct,
              const DString &ref,const DString &fName,
              bool isSymbol,bool isJavaEnum)
@@ -809,7 +809,7 @@ std::unique_ptr<ClassDef> createClassDefAlias(const Definition *newScope,const C
 
 // constructs a new class definition
 ClassDefImpl::ClassDefImpl(
-    const DString &defFileName,int defLine,int defColumn,
+    const DString &defFileName,int defLine,size_t defColumn,
     const DString &nm,CompoundType ct,
     const DString &lref,const DString &fName,
     bool isSymbol,bool isJavaEnum)
@@ -4330,7 +4330,7 @@ const Definition *ClassDefImpl::findInnerCompound(const DString &name) const
 }
 
 ClassDef *ClassDefImpl::insertTemplateInstance(const DString &fileName,
-    int startLine, int startColumn, const DString &templSpec,bool &freshInstance)
+    int startLine, size_t startColumn, const DString &templSpec,bool &freshInstance)
 {
   freshInstance = false;
   auto it = std::find_if(m_templateInstances.begin(),
