@@ -111,7 +111,7 @@ class ModuleManager
 {
   public:
     static ModuleManager &instance();
-    void createModuleDef(const DString &fileName, int line, int column, bool exported,
+    void createModuleDef(const DString &fileName, int line, size_t column, bool exported,
                          const DString &moduleName, const DString &partitionName=DString());
     void clear();
     void addHeader(const DString &moduleFile,int line,const DString &headerName,bool isSystem);

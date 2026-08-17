@@ -29,7 +29,7 @@ class DefinitionImpl
   public:
     DefinitionImpl(
         Definition *def,
-        const DString &defFileName,int defLine,int defColumn,
+        const DString &defFileName,int defLine,size_t defColumn,
         const DString &name,const char *b=nullptr,const char *d=nullptr,
         bool isSymbol=true);
     ~DefinitionImpl();
@@ -58,7 +58,7 @@ class DefinitionImpl
     DString getDefFileName() const;
     DString getDefFileExtension() const;
     int getDefLine() const;
-    int getDefColumn() const;
+    size_t getDefColumn() const;
     bool hasDocumentation() const;
     bool hasUserDocumentation() const;
     bool isVisibleInProject() const;
@@ -89,7 +89,7 @@ class DefinitionImpl
     const SectionRefs &getSectionRefs() const;
     void setName(const DString &name);
     void setId(const DString &name);
-    void setDefFile(const DString& df,int defLine,int defColumn);
+    void setDefFile(const DString& df,int defLine,size_t defColumn);
     void setDocumentation(const DString &d,const DString &docFile,int docLine,bool stripWhiteSpace=true);
     void setBriefDescription(const DString &b,const DString &briefFile,int briefLine);
     void setInbodyDocumentation(const DString &d,const DString &docFile,int docLine);
@@ -154,7 +154,7 @@ class DefinitionMixin : public Base
   public:
     /*! Create a new definition */
     DefinitionMixin(
-        const DString &defFileName,int defLine,int defColumn,
+        const DString &defFileName,int defLine,size_t defColumn,
         const DString &name,const char *b=nullptr,const char *d=nullptr,
         bool isSymbol=true) : m_impl(this,defFileName,defLine,defColumn,name,b,d,isSymbol) {}
     DefinitionMixin(const DefinitionMixin &other) : Base(other), m_impl(other.m_impl) {}
@@ -186,7 +186,7 @@ class DefinitionMixin : public Base
     DString getDefFileName() const override { return m_impl.getDefFileName(); }
     DString getDefFileExtension() const override { return m_impl.getDefFileExtension(); }
     int getDefLine() const override { return m_impl.getDefLine(); }
-    int getDefColumn() const override { return m_impl.getDefColumn(); }
+    size_t getDefColumn() const override { return m_impl.getDefColumn(); }
     bool hasDocumentation() const override { return m_impl.hasDocumentation(); }
     bool hasUserDocumentation() const override { return m_impl.hasUserDocumentation(); }
     bool isVisibleInProject() const override { return m_impl.isVisibleInProject(); }
@@ -219,7 +219,7 @@ class DefinitionMixin : public Base
     //======== DefinitionMutable
     void setName(const DString &name) override { m_impl.setName(name); }
     void setId(const DString &name) override { m_impl.setId(name); }
-    void setDefFile(const DString& df,int defLine,int defColumn) override
+    void setDefFile(const DString& df,int defLine,size_t defColumn) override
     { m_impl.setDefFile(df,defLine,defColumn); }
     void setDocumentation(const DString &doc,const DString &docFile,int docLine,bool stripWhiteSpace=true) override
     { m_impl.setDocumentation(doc,docFile,docLine,stripWhiteSpace); }
@@ -386,7 +386,7 @@ class DefinitionAliasMixin : public Base
     { return m_alias->getDefFileExtension(); }
     int getDefLine() const override
     { return m_alias->getDefLine(); }
-    int getDefColumn() const override
+    size_t getDefColumn() const override
     { return m_alias->getDefColumn(); }
     bool hasDocumentation() const override
     { return m_alias->hasDocumentation(); }

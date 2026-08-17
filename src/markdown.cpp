@@ -1597,7 +1597,7 @@ int Markdown::Private::processLink(const std::string_view data,size_t offset)
   else
   {
     SrcLangExt lang = getLanguageFromFileName(link);
-    size_t lp=-1;
+    size_t lp=DString::npos;
     if ((lp = link.find("@ref "))!=DString::npos ||
         (lp = link.find("\\ref "))!=DString::npos ||
         (lang==SrcLangExt::Markdown && !isURL(link)))

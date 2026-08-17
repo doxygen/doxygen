@@ -410,7 +410,7 @@ class ClassDefMutable : public DefinitionMutable, public ClassDef
     // --- helpers ----
     //-----------------------------------------------------------------------------------
 
-    virtual ClassDef *insertTemplateInstance(const DString &fileName,int startLine,int startColumn,
+    virtual ClassDef *insertTemplateInstance(const DString &fileName,int startLine,size_t startColumn,
                                 const DString &templSpec,bool &freshInstance) = 0;
 
     //-----------------------------------------------------------------------------------
@@ -450,7 +450,7 @@ class ClassDefMutable : public DefinitionMutable, public ClassDef
 
 /** Factory method to create a new ClassDef object */
 std::unique_ptr<ClassDef> createClassDef(
-             const DString &fileName,int startLine,int startColumn,
+             const DString &fileName,int startLine,size_t startColumn,
              const DString &name,ClassDef::CompoundType ct,
              const DString &ref=DString(),const DString &fName=DString(),
              bool isSymbol=true,bool isJavaEnum=false);

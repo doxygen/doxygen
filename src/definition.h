@@ -190,7 +190,7 @@ class Definition
     virtual int getDefLine() const = 0;
 
     /*! returns the column number at which the definition was found */
-    virtual int getDefColumn() const = 0;
+    virtual size_t getDefColumn() const = 0;
 
     /*! Returns true iff the definition is documented
      *  (which could be generated documentation)
@@ -321,7 +321,7 @@ class DefinitionMutable
     virtual void setId(const DString &name) = 0;
 
     /*! Set a new file name and position */
-    virtual void setDefFile(const DString& df,int defLine,int defColumn) = 0;
+    virtual void setDefFile(const DString& df,int defLine,size_t defColumn) = 0;
 
     /*! Sets the documentation of this definition to \a d. */
     virtual void setDocumentation(const DString &d,const DString &docFile,int docLine,bool stripWhiteSpace=true) = 0;

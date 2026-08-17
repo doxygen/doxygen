@@ -892,6 +892,11 @@ static bool bindIntParameter(SqlStmt &s,const char *name,int value)
   return true;
 }
 
+static bool bindIntParameter(SqlStmt &s,const char *name,size_t value)
+{
+  return bindIntParameter(s,name,static_cast<int>(value));
+}
+
 static int step(SqlStmt &s,bool getRowId=false, bool select=false)
 {
   int rowid=-1;

@@ -67,7 +67,7 @@ class VHDLOutlineParser final : public OutlineParserInterface
     bool checkMultiComment(DString& qcs,int line);
     void insertEntryAtLine(std::shared_ptr<Entry> ce,int line);
     DString getNameID();
-    int checkInlineCode(DString & doc);
+    size_t checkInlineCode(DString & doc);
   private:
     struct Private;
     std::unique_ptr<Private> p;

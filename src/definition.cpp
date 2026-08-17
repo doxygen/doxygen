@@ -114,7 +114,7 @@ class DefinitionImpl::Private
     bool isSymbol;
     DString symbolName;
     int defLine;
-    int defColumn;
+    size_t defColumn;
 
     MemberVector referencesMembers;    // cache for getReferencesMembers()
     MemberVector referencedByMembers;  // cache for getReferencedByMembers()
@@ -157,7 +157,7 @@ void DefinitionImpl::Private::init(const DString &df, const DString &n)
   lang            = SrcLangExt::Unknown;
 }
 
-void DefinitionImpl::setDefFile(const DString &df,int defLine,int defCol)
+void DefinitionImpl::setDefFile(const DString &df,int defLine,size_t defCol)
 {
   p->setDefFileName(df);
   p->defLine = defLine;
@@ -248,7 +248,7 @@ static void removeFromMap(const DString &name,Definition *d)
 }
 
 DefinitionImpl::DefinitionImpl(Definition *def,
-                       const DString &df,int dl,int dc,
+                       const DString &df,int dl,size_t dc,
                        const DString &name,const char *b,
                        const char *d,bool isSymbol)
   : p(std::make_unique<Private>())
@@ -1921,7 +1921,7 @@ int DefinitionImpl::getDefLine() const
   return p->defLine;
 }
 
-int DefinitionImpl::getDefColumn() const
+size_t DefinitionImpl::getDefColumn() const
 {
   return p->defColumn;
 }

@@ -306,7 +306,7 @@ class RTFGenerator final : public OutputGenerator, public OutputGenIntf
     void startPlainFile(const DString &name) override { OutputGenerator::startPlainFile(name); }
     void endPlainFile() override { OutputGenerator::endPlainFile(); }
 
-    void startEmbeddedDoc(int) override {}
+    void startEmbeddedDoc(size_t) override {}
     void endEmbeddedDoc() override {}
 
   private:
@@ -331,7 +331,7 @@ class RTFGenerator final : public OutputGenerator, public OutputGenIntf
 
     bool m_bstartedBody = false;  // has startbody been called yet?
     bool m_omitParagraph = false; // should a the next paragraph command be ignored?
-    int  m_numCols = 0; // number of columns in a table
+    size_t  m_numCols = 0; // number of columns in a table
     DString m_relPath;
     int  m_hierarchyLevel = 0;
 

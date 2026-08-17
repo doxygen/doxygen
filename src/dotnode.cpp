@@ -340,7 +340,7 @@ void DotNode::addChild(DotNode *n,
   EdgeInfo::Styles edgeStyle,
   const DString &edgeLab,
   const DString &edgeURL,
-  int edgeLabCol
+  int edgeLabColor
 )
 {
   m_children.push_back(n);
@@ -349,7 +349,7 @@ void DotNode::addChild(DotNode *n,
       edgeStyle,
       edgeLab,
       edgeURL,
-      edgeLabCol==-1 ? edgeColor : edgeLabCol);
+      edgeLabColor==-1 ? edgeColor : edgeLabColor);
 }
 
 void DotNode::addParent(DotNode *n)

@@ -280,10 +280,10 @@ class DString
      *  @note the string will be resized to contain \a len characters. The contents of the
      *  string will be lost.
      */
-    DString fill( char c, int len = -1 )
+    DString fill( char c, size_t len)
     {
-      int l = len==-1 ? static_cast<int>(m_rep.size()) : len;
-      m_rep = std::string(l,c);
+      //int l = len==-1 ? static_cast<int>(m_rep.size()) : len;
+      m_rep = std::string(len,c);
       return *this;
     }
 

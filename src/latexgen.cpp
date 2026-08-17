@@ -2286,7 +2286,7 @@ void LatexGenerator::startLocalToc(int level)
   m_t << "\\localtableofcontents\n";
 }
 
-void LatexGenerator::startEmbeddedDoc(int indent)
+void LatexGenerator::startEmbeddedDoc(size_t indent)
 {
   m_t << "\\begin{DoxyEmbeddedDoc}[" << indent << "]\n";
 }

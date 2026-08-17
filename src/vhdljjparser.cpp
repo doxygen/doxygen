@@ -273,16 +273,16 @@ void VHDLOutlineParser::handleFlowComment(const DString &doc)
   }
 }
 
-int VHDLOutlineParser::checkInlineCode(DString &doc)
+size_t VHDLOutlineParser::checkInlineCode(DString &doc)
 {
   static const reg::Ex csRe(R"([\\@]code)");
   static const reg::Ex cendRe(R"(\s*[\\@]endcode)");
   static const reg::Ex cbriefRe(R"([\\@]brief)");
 
   // helper to simulate behavior of QString.find(const QRegExp &re,int pos)
-  auto findRe = [](const DString &str,const reg::Ex &re,int pos=0) -> size_t
+  auto findRe = [](const DString &str,const reg::Ex &re,size_t pos=0) -> size_t
   {
-    if ((int)str.length()<pos) return -1;
+    if (str.length()<pos) return DString::npos;
     reg::Match match;
     if (reg::search(str.str(),match,re,pos)) // match found
     {
@@ -398,7 +398,7 @@ void VHDLOutlineParser::handleCommentBlock(const DString &doc1, bool brief)
     return;
   }
 
-  if (checkInlineCode(doc) > 0)
+  if (checkInlineCode(doc) != DString::npos)
   {
     return;
   }

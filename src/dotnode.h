@@ -81,7 +81,7 @@ class DotNode
                   EdgeInfo::Styles edgeStyle=EdgeInfo::Solid,
                   const DString &edgeLab=DString(),
                   const DString &edgeURL=DString(),
-                  int edgeLabCol=-1);
+                  int edgeLabColor=-1);
     void addParent(DotNode *n);
     void deleteNode(DotNodeRefVector &deletedList);
     void removeChild(DotNode *n);
