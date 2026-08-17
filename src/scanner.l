@@ -51,6 +51,7 @@ typedef yyguts_t *yyscan_t;
 #include "arguments.h"
 #include "moduledef.h"
 #include "stringutil.h"
+#include "filename.h"
 
 #include "clangparser.h"
 #include "markdown.h"
@@ -254,6 +255,7 @@ static void setJavaProtection(yyscan_t yyscanner);
 static void storeClangId(yyscan_t yyscanner,const char *id);
 static void startVerbatimBlock(yyscan_t yyscanner,const DString &blockName,size_t fencedSize=0,bool codeBlock=false);
 static bool endVerbatimBlock(yyscan_t yyscanner,const DString &blockName,size_t fencedSize=0);
+static bool containsWord(const DString &str,const char *word);
 
 
 /* ----------------------------------------------------------------- */
@@ -1991,7 +1993,7 @@ NONLopt [^\n]*
                                           yyextra->current->name=removeRedundantWhiteSpace(substitute(scope.left(scope.length()-1),".","::"));
                                           yyextra->current->fileName = yyextra->fileName;
                                           bool ambig = false;
-                                          FileDef *incFd = findFileDef(Doxygen::inputNameLinkedMap,yyextra->fileName,ambig);
+                                          FileDef *incFd = Doxygen::inputNameLinkedMap->findFileDef(yyextra->fileName,ambig);
                                           if (incFd)
                                           {
                                             incFd->addIncludeDependency(nullptr,scope,IncludeKind::ImportModule);
@@ -2007,8 +2009,8 @@ NONLopt [^\n]*
                                           yyextra->current->name=removeRedundantWhiteSpace(substitute(scope,".","::"));
                                           yyextra->current->fileName = yyextra->fileName;
                                           bool ambig = false;
-                                          FileDef *fromFd = findFileDef(Doxygen::inputNameLinkedMap,yyextra->fileName,ambig);
-                                          FileDef *toFd = findFileDef(Doxygen::inputNameLinkedMap,scope,ambig);
+                                          FileDef *fromFd = Doxygen::inputNameLinkedMap->findFileDef(yyextra->fileName,ambig);
+                                          FileDef *toFd = Doxygen::inputNameLinkedMap->findFileDef(scope,ambig);
                                           if (fromFd)
                                           {
                                             fromFd->addIncludeDependency(toFd,scope,IncludeKind::ImportModule);
@@ -2034,8 +2036,8 @@ NONLopt [^\n]*
 <IDLImport>"\""[^"]*"\""                {
                                           DString fileName(&yytext[1],yyleng-2);
                                           bool ambig = false;
-                                          FileDef *fromFd = findFileDef(Doxygen::inputNameLinkedMap,yyextra->fileName,ambig);
-                                          FileDef *toFd = findFileDef(Doxygen::inputNameLinkedMap,fileName,ambig);
+                                          FileDef *fromFd = Doxygen::inputNameLinkedMap->findFileDef(yyextra->fileName,ambig);
+                                          FileDef *toFd = Doxygen::inputNameLinkedMap->findFileDef(fileName,ambig);
                                           if (fromFd)
                                           {
                                             fromFd->addIncludeDependency(toFd,fileName,IncludeKind::ImportModule);
@@ -8110,6 +8112,20 @@ static void initEntry(yyscan_t yyscanner)
 
 //-----------------------------------------------------------------------------
 
+/** returns \c true iff string \a s contains word \a w */
+static bool containsWord(const DString &str,const char *word)
+{
+  if (str.empty() || word==nullptr) return false;
+  static const reg::Ex re(R"(\a+)");
+  std::string s = str.str();
+  for (reg::Iterator it(s,re) ; it!=reg::Iterator() ; ++it)
+  {
+    if (it->str()==word) return true;
+  }
+  return false;
+}
+
+
 static void storeClangId(yyscan_t yyscanner,const char *id)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
@@ -8839,7 +8855,7 @@ static void parseMain(yyscan_t yyscanner,
   yyextra->commentScanner.enterFile(yyextra->fileName,yyextra->yyLineNr);
   yyextra->current = std::make_shared<Entry>();
   //printf("yyextra->current=%p yyextra->current_root=%p\n",yyextra->current,yyextra->current_root);
-  EntryType sec=guessSection(yyextra->fileName);
+  EntryType sec=EntryType::guessSection(yyextra->fileName);
   if (!sec.isEmpty())
   {
     yyextra->current->name    = yyextra->fileName;

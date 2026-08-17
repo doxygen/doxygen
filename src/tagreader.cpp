@@ -1662,7 +1662,7 @@ void TagFileParser::buildLists(const std::shared_ptr<Entry> &root)
     if (tfi)
     {
       std::shared_ptr<Entry> fe = std::make_shared<Entry>();
-      fe->section = guessSection(tfi->name);
+      fe->section = EntryType::guessSection(tfi->name);
       fe->name     = tfi->name;
       addDocAnchors(fe,tfi->docAnchors);
       fe->tagInfoData.tagName  = m_tagName;

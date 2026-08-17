@@ -52,6 +52,7 @@ typedef yyguts_t *yyscan_t;
 #include "stringutil.h"
 #include "regex.h"
 #include "section.h"
+#include "filename.h"
 
 #include <assert.h>
 
@@ -1883,14 +1884,14 @@ static bool readIncludeFile(yyscan_t yyscanner,const DString &inc,const DString 
   //printf("readIncludeFile(inc=%s,blockId=%s)\n",qPrint(inc),qPrint(blockId));
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   bool ambig = false;
-  DString absFileName = findFilePath(inc,ambig);
+  DString absFileName = findExampleFilePath(inc,ambig);
   FileInfo fi(absFileName.str());
   if (!absFileName.empty() && fi.exists() && fi.isFile())
   {
     if (ambig)
     {
       warn_doc_error(yyextra->fileName,yyextra->lineNr,"included file name '{}' is ambiguous"
-	  "Possible candidates:\n{}",inc, showFileDefMatches(Doxygen::exampleNameLinkedMap,inc));
+	  "Possible candidates:\n{}",inc, Doxygen::exampleNameLinkedMap->showFileDefMatches(inc));
     }
     bool alreadyProcessed = std::any_of(
       yyextra->includeStack.begin(),

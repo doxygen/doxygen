@@ -287,7 +287,7 @@ FileDefImpl::FileDefImpl(const DString &p,const DString &nm,
 
   setReference(lref);
   setDiskNameLocal(!dn.empty() ? dn : nm);
-  m_isSource          = guessSection(nm).isSource();
+  m_isSource          = EntryType::guessSection(nm).isSource();
   m_docname           = nm;
   m_dir               = nullptr;
   if (Config_getBool(FULL_PATH_NAMES))
@@ -1610,7 +1610,7 @@ bool FileDefImpl::generateSourceFile() const
   bool verbatimHeaders = Config_getBool(VERBATIM_HEADERS);
   return !isReference() &&
          (sourceBrowser ||
-           (verbatimHeaders && (guessSection(name()).isHeader() || !m_includedByMap.empty()))
+           (verbatimHeaders && (EntryType::guessSection(name()).isHeader() || !m_includedByMap.empty()))
          ) &&
          !isDocumentationFile();
 }

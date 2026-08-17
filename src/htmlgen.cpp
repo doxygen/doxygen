@@ -681,31 +681,39 @@ static DString substituteHtmlKeywords(const DString &file,
     treeViewCssJs+="<script type=\"text/javascript\" src=\"$relpath^cookie.js\"></script>\n";
   }
 
-  // first substitute generic keywords
-  DString result = substituteKeywords(file,str,title,
-        convertToHtml(Config_getString(PROJECT_NAME)),
-        convertToHtml(Config_getString(PROJECT_NUMBER)),
-        convertToHtml(Config_getString(PROJECT_BRIEF)));
+  DString projName = convertToHtml(Config_getString(PROJECT_NAME)),
 
-  // then do the HTML specific keywords
-  result = substituteKeywords(file,result,
+  // first substitute generic keywords then do the HTML specific keywords
+  result = substituteKeywords(file,str,
   {
     // keyword           value getter
-    { "$datetime",       [&]() -> DString { return "<span class=\"datetime\"></span>"; } },
-    { "$date",           [&]() -> DString { return "<span class=\"date\"></span>";     } },
-    { "$time",           [&]() -> DString { return "<span class=\"time\"></span>";     } },
-    { "$year",           [&]() -> DString { return "<span class=\"year\"></span>";     } },
-    { "$navpath",        [&]() -> DString { return navPath;        } },
-    { "$stylesheet",     [&]() -> DString { return cssFile;        } },
-    { "$treeview",       [&]() -> DString { return treeViewCssJs;  } },
-    { "$searchbox",      [&]() -> DString { return searchBox;      } },
-    { "$search",         [&]() -> DString { return searchCssJs;    } },
-    { "$mathjax",        [&]() -> DString { return mathJaxJs;      } },
-    { "$mermaidjs",      [&]() -> DString { return mermaidJs;      } },
-    { "$darkmode",       [&]() -> DString { return darkModeJs;     } },
-    { "$generatedby",    [&]() -> DString { return generatedBy;    } },
-    { "$extrastylesheet",[&]() -> DString { return extraCssText;   } },
-    { "$relpath$",       [&]() -> DString { return relPath;        } } //<-- obsolete: for backwards compatibility only
+    { "$title",          [&]() { return !title.empty() ? title : projName;               } },
+    { "$doxygenversion", [&]() { return getDoxygenVersion();                             } },
+    { "$projectname",    [&]() { return projName;                                        } },
+    { "$projectnumber",  [&]() { return convertToHtml(Config_getString(PROJECT_NUMBER)); } },
+    { "$projectbrief",   [&]() { return convertToHtml(Config_getString(PROJECT_BRIEF));  } },
+    { "$projectlogo",    [&]() { return stripPath(projectLogoFile());                    } },
+    { "$logosize",       [&]() { return projectLogoSize();                               } },
+    { "$projecticon",    [&]() { return stripPath(Config_getString(PROJECT_ICON));       } },
+    { "$langISO",        [&]() { return theTranslator->trISOLang();                      } },
+    { "$showdate",       [&](const DString &fmt) { return showDate(fmt);                 } },
+
+    // keyword           value getter
+    { "$datetime",       [&]() -> DString { return "<span class=\"datetime\"></span>";   } },
+    { "$date",           [&]() -> DString { return "<span class=\"date\"></span>";       } },
+    { "$time",           [&]() -> DString { return "<span class=\"time\"></span>";       } },
+    { "$year",           [&]() -> DString { return "<span class=\"year\"></span>";       } },
+    { "$navpath",        [&]() -> DString { return navPath;                              } },
+    { "$stylesheet",     [&]() -> DString { return cssFile;                              } },
+    { "$treeview",       [&]() -> DString { return treeViewCssJs;                        } },
+    { "$searchbox",      [&]() -> DString { return searchBox;                            } },
+    { "$search",         [&]() -> DString { return searchCssJs;                          } },
+    { "$mathjax",        [&]() -> DString { return mathJaxJs;                            } },
+    { "$mermaidjs",      [&]() -> DString { return mermaidJs;                            } },
+    { "$darkmode",       [&]() -> DString { return darkModeJs;                           } },
+    { "$generatedby",    [&]() -> DString { return generatedBy;                          } },
+    { "$extrastylesheet",[&]() -> DString { return extraCssText;                         } },
+    { "$relpath$",       [&]() -> DString { return relPath;                              } } //<-- obsolete: for backwards compatibility only
   });
 
   result = substitute(result,"$relpath^",relPath); //<-- must be done after the previous substitutions

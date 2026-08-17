@@ -507,7 +507,7 @@ static void buildFileList(const Entry *root)
      )
   {
     bool ambig = false;
-    FileDef *fd=findFileDef(Doxygen::inputNameLinkedMap,root->name,ambig);
+    FileDef *fd=Doxygen::inputNameLinkedMap->findFileDef(root->name,ambig);
     if (!fd || ambig)
     {
       bool save_ambig = ambig;
@@ -523,7 +523,7 @@ static void buildFileList(const Entry *root)
       {
         fn = fn.left(newIndex)+"/"+root->name;
       }
-      fd=findFileDef(Doxygen::inputNameLinkedMap,fn,ambig);
+      fd=Doxygen::inputNameLinkedMap->findFileDef(fn,ambig);
       if (!fd) ambig = save_ambig;
     }
     //printf("**************** root->name=%s fd=%p\n",qPrint(root->name),(void*)fd);
@@ -570,7 +570,7 @@ static void buildFileList(const Entry *root)
       if (ambig) // name is ambiguous
       {
         text+="matches the following input files:\n";
-        text+=showFileDefMatches(Doxygen::inputNameLinkedMap,root->name);
+        text+=Doxygen::inputNameLinkedMap->showFileDefMatches(root->name);
         text+="\n";
         text+="Please use a more specific name by "
           "including a (larger) part of the path!";
@@ -615,7 +615,7 @@ static void addIncludeFile(DefMutable *cd,FileDef *ifd,const Entry *root)
     // see if we need to include a verbatim copy of the header file
     //printf("root->includeFile=%s\n",qPrint(root->includeFile));
     if (!includeFile.empty() &&
-        (fd=findFileDef(Doxygen::inputNameLinkedMap,includeFile,ambig))==nullptr
+        (fd=Doxygen::inputNameLinkedMap->findFileDef(includeFile,ambig))==nullptr
        )
     { // explicit request
       DString text;
@@ -626,7 +626,7 @@ static void addIncludeFile(DefMutable *cd,FileDef *ifd,const Entry *root)
       if (ambig) // name is ambiguous
       {
         text+="matches the following input files:\n";
-        text+=showFileDefMatches(Doxygen::inputNameLinkedMap,root->includeFile);
+        text+=Doxygen::inputNameLinkedMap->showFileDefMatches(root->includeFile);
         text+="\n";
         text+="Please use a more specific name by "
             "including a (larger) part of the path!";
@@ -639,7 +639,7 @@ static void addIncludeFile(DefMutable *cd,FileDef *ifd,const Entry *root)
     }
     else if (includeFile.empty() && ifd &&
         // see if the file extension makes sense
-        guessSection(ifd->name()).isHeader())
+        EntryType::guessSection(ifd->name()).isHeader())
     { // implicit assumption
       fd=ifd;
     }
@@ -5432,7 +5432,7 @@ static void warnUndocumentedNamespaces()
   {
     if (!nd->hasDocumentation())
     {
-      if ((guessSection(nd->getDefFileName()).isHeader() ||
+      if ((EntryType::guessSection(nd->getDefFileName()).isHeader() ||
            nd->getLanguage() == SrcLangExt::Fortran) &&     // Fortran doesn't have header files.
           !Config_getBool(HIDE_UNDOC_NAMESPACES)            // undocumented namespaces are visible
          )
@@ -5460,7 +5460,7 @@ static void computeClassRelations()
     if ((cd==nullptr || (!cd->hasDocumentation() && !cd->isReference())) && numMembers>0 && !bName.endsWith("::"))
     {
       if (!root->name.empty() && root->name.find('@')==DString::npos && // normal name
-          (guessSection(root->fileName).isHeader() ||
+          (EntryType::guessSection(root->fileName).isHeader() ||
            Config_getBool(EXTRACT_LOCAL_CLASSES)) && // not defined in source file
            protectionLevelVisible(root->protection) && // hidden by protection
            !Config_getBool(HIDE_UNDOC_CLASSES) // undocumented class are visible
@@ -5720,7 +5720,7 @@ static void addMemberDocs(const Entry *root,
   }
   if (over_load)  // the \overload keyword was used
   {
-    DString doc=getOverloadDocs();
+    DString doc=theTranslator->trOverloadText();;
     if (!root->doc.empty())
     {
       doc+="<p>";
@@ -6736,7 +6736,7 @@ static void addOverloaded(const Entry *root,MemberName *mn,
     mmd->setDefinition(funcDecl);
     applyMemberOverrideOptions(root,mmd);
     mmd->addQualifiers(root->qualifiers);
-    DString doc=getOverloadDocs();
+    DString doc=theTranslator->trOverloadText();
     doc+="<p>";
     doc+=root->doc;
     mmd->setDocumentation(doc,root->docFile,root->docLine);
@@ -8721,7 +8721,7 @@ static void generateFileSources()
               {
                 StringVector moreFiles;
                 bool ambig = false;
-                FileDef *ifd=findFileDef(Doxygen::inputNameLinkedMap,incFile,ambig);
+                FileDef *ifd=Doxygne::inputNameLinkedMap->findFileDef(incFile,ambig);
                 if (ifd && !ifd->isReference())
                 {
                   processSourceFile(ifd,*g_outputList,clangParser.get());
@@ -10817,7 +10817,7 @@ static void parseFilesMultiThreading(const std::shared_ptr<Entry> &root)
     {
       bool ambig = false;
       DString qs = s;
-      FileDef *fd=findFileDef(Doxygen::inputNameLinkedMap,qs,ambig);
+      FileDef *fd=Doxygen::inputNameLinkedMap->findFileDef(qs,ambig);
       ASSERT(fd!=nullptr);
       if (fd->isSource() && !fd->isReference() && fd->getLanguage()==SrcLangExt::Cpp) // this is a source file
       {
@@ -10825,7 +10825,7 @@ static void parseFilesMultiThreading(const std::shared_ptr<Entry> &root)
         auto processFile = [qs,&filesToProcess,&processedFilesLock,&processedFiles]() {
           bool ambig_l = false;
           std::vector< std::shared_ptr<Entry> > roots;
-          FileDef *fd_l = findFileDef(Doxygen::inputNameLinkedMap,qs,ambig_l);
+          FileDef *fd_l = Doxygen::inputNameLinkedMap->findFileDef(qs,ambig_l);
           auto clangParser = ClangParser::instance()->createTUParser(fd_l);
           auto parser = getParserForFile(qs);
           auto fileRoot { parseFile(*parser.get(),fd_l,qs,clangParser.get(),true) };
@@ -10846,7 +10846,7 @@ static void parseFilesMultiThreading(const std::shared_ptr<Entry> &root)
               }
               if (qincFile!=qs && needsToBeProcessed)
               {
-                FileDef *ifd=findFileDef(Doxygen::inputNameLinkedMap,qincFile,ambig_l);
+                FileDef *ifd=Doxygen::inputNameLinkedMap->findFileDef(qincFile,ambig_l);
                 if (ifd && !ifd->isReference())
                 {
                   //printf("  Processing %s in same translation unit as %s\n",incFile,qPrint(s));
@@ -10882,7 +10882,7 @@ static void parseFilesMultiThreading(const std::shared_ptr<Entry> &root)
           bool ambig = false;
           DString qs = s;
           std::vector< std::shared_ptr<Entry> > roots;
-          FileDef *fd=findFileDef(Doxygen::inputNameLinkedMap,qs,ambig);
+          FileDef *fd=Doxygen::inputNameLinkedMap->findFileDef(qs,ambig);
           auto parser { getParserForFile(qs) };
           bool useClang = getLanguageFromFileName(qs)==SrcLangExt::Cpp;
           if (useClang)
@@ -10925,7 +10925,7 @@ static void parseFilesMultiThreading(const std::shared_ptr<Entry> &root)
       auto processFile = [s]() {
         bool ambig = false;
         DString qs = s;
-        FileDef *fd=findFileDef(Doxygen::inputNameLinkedMap,qs,ambig);
+        FileDef *fd=Doxygen::inputNameLinkedMap->findFileDef(qs,ambig);
         auto parser = getParserForFile(qs);
         auto fileRoot = parseFile(*parser.get(),fd,qs,nullptr,true);
         return fileRoot;
@@ -10962,7 +10962,7 @@ static void parseFilesSingleThreading(const std::shared_ptr<Entry> &root)
     {
       bool ambig = false;
       DString qs =s;
-      FileDef *fd=findFileDef(Doxygen::inputNameLinkedMap,qs,ambig);
+      FileDef *fd=Doxygen::inputNameLinkedMap->findFileDef(qs,ambig);
       ASSERT(fd!=nullptr);
       if (fd->isSource() && !fd->isReference() && getLanguageFromFileName(qs)==SrcLangExt::Cpp) // this is a source file
       {
@@ -10980,7 +10980,7 @@ static void parseFilesSingleThreading(const std::shared_ptr<Entry> &root)
           if (filesToProcess.find(incFile)!=filesToProcess.end() && // file need to be processed
               processedFiles.find(incFile)==processedFiles.end())   // and is not processed already
           {
-            FileDef *ifd=findFileDef(Doxygen::inputNameLinkedMap,incFile,ambig);
+            FileDef *ifd=Doxygen::inputNameLinkedMap->findFileDef(incFile,ambig);
             if (ifd && !ifd->isReference())
             {
               //printf("  Processing %s in same translation unit as %s\n",qPrint(incFile),qPrint(qs));
@@ -10999,7 +10999,7 @@ static void parseFilesSingleThreading(const std::shared_ptr<Entry> &root)
       {
         bool ambig = false;
         DString qs = s;
-        FileDef *fd=findFileDef(Doxygen::inputNameLinkedMap,qs,ambig);
+        FileDef *fd=Doxygen::inputNameLinkedMap->findFileDef(qs,ambig);
         if (getLanguageFromFileName(qs)==SrcLangExt::Cpp) // not yet processed
         {
           auto clangParser = ClangParser::instance()->createTUParser(fd);
@@ -11024,7 +11024,7 @@ static void parseFilesSingleThreading(const std::shared_ptr<Entry> &root)
     {
       bool ambig = false;
       DString qs = s;
-      FileDef *fd=findFileDef(Doxygen::inputNameLinkedMap,qs,ambig);
+      FileDef *fd=Doxygen::inputNameLinkedMap->findFileDef(qs,ambig);
       ASSERT(fd!=nullptr);
       std::unique_ptr<OutlineParserInterface> parser { getParserForFile(qs) };
       std::shared_ptr<Entry> fileRoot = parseFile(*parser.get(),fd,qs,nullptr,true);
@@ -12507,7 +12507,7 @@ static void checkMarkdownMainfile()
       return;
     }
     bool ambig = false;
-    if (findFileDef(Doxygen::inputNameLinkedMap,fi.absFilePath(),ambig)==nullptr)
+    if (Doxygen::inputNameLinkedMap->findFileDef(fi.absFilePath(),ambig)==nullptr)
     {
       warn_uncond("Specified markdown mainpage '{}' has not been defined as input file\n",mdfileAsMainPage);
       return;

@@ -878,6 +878,26 @@ inline void swap(DString &s1, DString &s2)
   s1.swap(s2);
 }
 
+/** Returns true if \a c is a valid character for an identifier.
+ *  Valid characters are: letters, digits, underscore, dollar sign and any character with a value >= 128.
+ */
+inline bool isId(int c)
+{
+  return c=='_' || c>=128 || c<0 || isalnum(c) || c=='$';
+}
+
+/*! Returns a place holder for a position in a list. Used for
+ *  translators to be able to specify different elements orders
+ *  depending on whether text flows from left to right or visa versa.
+ */
+inline DString generateMarker(int id)
+{
+  const int maxMarkerStrLen = 20;
+  char result[maxMarkerStrLen];
+  snprintf(result,maxMarkerStrLen,"@%d",id);
+  return result;
+}
+
 namespace std
 {
   template<> struct hash<DString>

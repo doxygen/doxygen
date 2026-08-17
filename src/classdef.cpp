@@ -850,7 +850,7 @@ ClassDefImpl::ClassDefImpl(
 
   // we cannot use getLanguage at this point, as setLanguage has not been called.
   SrcLangExt lang = getLanguageFromFileName(defFileName);
-  if ((lang==SrcLangExt::Cpp || lang==SrcLangExt::ObjC) && guessSection(defFileName).isSource())
+  if ((lang==SrcLangExt::Cpp || lang==SrcLangExt::ObjC) && EntryType::guessSection(defFileName).isSource())
   {
     m_isLocal=true;
   }

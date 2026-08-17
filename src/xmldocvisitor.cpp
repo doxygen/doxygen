@@ -961,7 +961,7 @@ void XmlDocVisitor::operator()(const DocImage &img)
   // copy the image to the output dir
   FileDef *fd = nullptr;
   bool ambig;
-  if (url.empty() && (fd=findFileDef(Doxygen::imageNameLinkedMap,img.name(),ambig)))
+  if (url.empty() && (fd=Doxygen::imageNameLinkedMap->findFileDef(img.name(),ambig)))
   {
     copyFile(fd->absFilePath(),Config_getString(XML_OUTPUT)+"/"+baseName);
   }

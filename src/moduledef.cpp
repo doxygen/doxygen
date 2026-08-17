@@ -30,6 +30,7 @@
 #include "classdef.h"
 #include "textstream.h"
 #include "trace.h"
+#include "filename.h"
 
 class ModuleDefImpl;
 
@@ -1447,7 +1448,7 @@ void ModuleManager::resolvePartitions()
 
     // also link the ModuleDef and FileDef together
     bool ambig = false;
-    FileDef *fd = findFileDef(Doxygen::inputNameLinkedMap,mod->getDefFileName(),ambig);
+    FileDef *fd = Doxygen::inputNameLinkedMap->findFileDef(mod->getDefFileName(),ambig);
     if (fd)
     {
       fd->setModuleDef(mod.get());
@@ -1482,7 +1483,7 @@ void ModuleManager::resolveImports()
     for (const auto &importInfo : importInfoList)
     {
       bool ambig = false;
-      FileDef *fd = findFileDef(Doxygen::inputNameLinkedMap,fileName,ambig);
+      FileDef *fd = Doxygen::inputNameLinkedMap->findFileDef(fileName,ambig);
       AUTO_TRACE_ADD("externalImport name={} fd={}",fileName,(void*)fd);
       if (fd)
       {
@@ -1499,12 +1500,12 @@ void ModuleManager::resolveImports()
   for (const auto &headerInfo : p->headers)
   {
     bool ambig = false;
-    FileDef *fd = findFileDef(Doxygen::inputNameLinkedMap,headerInfo.fileName,ambig);
+    FileDef *fd = Doxygen::inputNameLinkedMap->findFileDef(headerInfo.fileName,ambig);
     AUTO_TRACE_ADD("header name={} fd={}",headerInfo.fileName,(void*)fd);
     if (fd)
     {
       DString resolvedHeader = determineAbsoluteIncludeName(headerInfo.fileName,headerInfo.headerName);
-      FileDef *importFd = findFileDef(Doxygen::inputNameLinkedMap,resolvedHeader,ambig);
+      FileDef *importFd = Doxygen::inputNameLinkedMap->findFileDef(resolvedHeader,ambig);
       fd->addIncludeDependency(importFd, headerInfo.headerName,
                                headerInfo.isSystem ? IncludeKind::ImportSystem : IncludeKind::ImportLocal);
       if (importFd)

@@ -209,18 +209,6 @@ done:
   return newScope;
 }
 
-/*! Generate a place holder for a position in a list. Used for
- *  translators to be able to specify different elements orders
- *  depending on whether text flows from left to right or visa versa.
- */
-DString generateMarker(int id)
-{
-  const int maxMarkerStrLen = 20;
-  char result[maxMarkerStrLen];
-  snprintf(result,maxMarkerStrLen,"@%d",id);
-  return result;
-}
-
 DString removeLongPathMarker(const DString &path)
 {
   DString result;
@@ -271,45 +259,6 @@ DString stripFromPath(const DString &path)
 DString stripFromIncludePath(const DString &path)
 {
   return stripFromPath(path,Config_getList(STRIP_FROM_INC_PATH));
-}
-
-/*! try to determine if \a name is a source or a header file name by looking
- * at the extension. A number of variations is allowed in both upper and
- * lower case) If anyone knows or uses another extension please let me know :-)
- */
-EntryType guessSection(const DString &name)
-{
-  DString n=name.lower();
-  static const std::unordered_set<std::string> sourceExt = {
-     "c","cc","cxx","cpp","c++","cppm","ccm","cxxm","c++m",   // C/C++
-     "java",                       // Java
-     "cs",                         // C#
-     "m","mm",                     // Objective-C
-     "ii","ixx","ipp","i++","inl", // C/C++ inline
-     "xml","lex","sql"             // others
-  };
-  static const std::unordered_set<std::string> headerExt = {
-     "h", "hh", "hxx", "hpp", "h++", "ixx", // C/C++ header
-     "idl", "ddl", "pidl", "ice"    // IDL like
-  };
-  size_t lastDot = n.rfind('.');
-  if (lastDot!=DString::npos)
-  {
-    DString extension = n.mid(lastDot+1); // part after the last dot
-    if (sourceExt.find(extension.str())!=sourceExt.end())
-    {
-      return EntryType::makeSource();
-    }
-    if (headerExt.find(extension.str())!=headerExt.end())
-    {
-      return EntryType::makeHeader();
-    }
-  }
-  else
-  {
-    if (getLanguageFromFileName(name,SrcLangExt::Unknown) == SrcLangExt::Cpp) return EntryType::makeHeader();
-  }
-  return EntryType::makeEmpty();
 }
 
 DString resolveTypeDef(const Definition *context,const DString &qualifiedName,
@@ -2374,7 +2323,7 @@ bool resolveRef(/* in */  const DString &scName,
   else if (tsName.find('.')!=DString::npos) // maybe a link to a file
   {
     bool ambig = false;
-    const FileDef *fd=findFileDef(Doxygen::inputNameLinkedMap,tsName,ambig);
+    const FileDef *fd=Doxygen::inputNameLinkedMap->findFileDef(tsName,ambig);
     if (fd && !ambig)
     {
       *resContext=fd;
@@ -2522,7 +2471,7 @@ bool resolveLink(/* in */ const DString &scName,
     AUTO_TRACE_EXIT("group");
     return true;
   }
-  else if ((fd=findFileDef(Doxygen::inputNameLinkedMap,linkRef,ambig)) // file link
+  else if ((fd=Doxygen::inputNameLinkedMap->findFileDef(linkRef,ambig)) // file link
       && fd->isLinkable())
   {
     *resContext=fd;
@@ -2589,114 +2538,8 @@ bool resolveLink(/* in */ const DString &scName,
 
 //----------------------------------------------------------------------
 
-/** Cache element for the file name to FileDef mapping cache. */
-struct FindFileCacheElem
-{
-  FindFileCacheElem(FileDef *fd,bool ambig) : fileDef(fd), isAmbig(ambig) {}
-  FileDef *fileDef;
-  bool isAmbig;
-};
 
-static Cache<std::string,FindFileCacheElem> g_findFileDefCache(5000);
-
-static std::mutex g_findFileDefMutex;
-
-FileDef *findFileDef(const FileNameLinkedMap *fnMap,const DString &n,bool &ambig)
-{
-  ambig=false;
-  if (n.empty()) return nullptr;
-
-
-  const int maxAddrSize = 20;
-  char addr[maxAddrSize];
-  snprintf(addr,maxAddrSize,"%p:",reinterpret_cast<const void*>(fnMap));
-  DString key = addr;
-  key+=n;
-
-  std::lock_guard<std::mutex> lock(g_findFileDefMutex);
-  FindFileCacheElem *cachedResult = g_findFileDefCache.find(key.str());
-  //printf("key=%s cachedResult=%p\n",qPrint(key),cachedResult);
-  if (cachedResult)
-  {
-    ambig = cachedResult->isAmbig;
-    //printf("cached: fileDef=%p\n",cachedResult->fileDef);
-    return cachedResult->fileDef;
-  }
-  else
-  {
-    cachedResult = g_findFileDefCache.insert(key.str(),FindFileCacheElem(nullptr,false));
-  }
-
-  DString name=Dir::cleanDirPath(n.str());
-  DString path;
-  if (name.empty()) return nullptr;
-  size_t sp0 = name.rfind('/');
-  size_t sp1 = name.rfind('\\');
-  size_t slashPos = sp0!=DString::npos && sp1!=DString::npos ? std::max(sp0,sp1) :
-                    sp0!=DString::npos ? sp0 : sp1;
-  if (slashPos!=DString::npos)
-  {
-    path=removeLongPathMarker(name.left(slashPos+1));
-    name=name.mid(slashPos+1);
-  }
-  if (name.empty()) return nullptr;
-  const FileName *fn = fnMap->find(name);
-  if (fn)
-  {
-    //printf("fn->size()=%zu\n",fn->size());
-    if (fn->size()==1)
-    {
-      const std::unique_ptr<FileDef> &fd = fn->front();
-      bool isSamePath = Portable::fileSystemIsCaseSensitive() ?
-                 fd->getPath().right(path.length())==path :
-                 fd->getPath().right(path.length()).lower()==path.lower();
-      if (path.empty() || isSamePath)
-      {
-        cachedResult->fileDef = fd.get();
-        return fd.get();
-      }
-    }
-    else // file name alone is ambiguous
-    {
-      int count=0;
-      FileDef *lastMatch=nullptr;
-      DString pathStripped = stripFromIncludePath(path);
-      for (const auto &fd_p : *fn)
-      {
-        FileDef *fd = fd_p.get();
-        DString fdStripPath = stripFromIncludePath(fd->getPath());
-        if (fdStripPath == pathStripped)
-        {
-          // if the stripped paths are equal, we have a perfect match
-          count = 1;
-          lastMatch=fd;
-          break;
-        }
-        if (path.empty() ||
-            (!pathStripped.empty() && fdStripPath.endsWith(pathStripped)) ||
-            (pathStripped.empty() && fdStripPath.empty()))
-        {
-          count++;
-          lastMatch=fd;
-        }
-      }
-
-      ambig=(count>1);
-      cachedResult->isAmbig = ambig;
-      cachedResult->fileDef = lastMatch;
-      return lastMatch;
-    }
-  }
-  else
-  {
-    //printf("not found!\n");
-  }
-  return nullptr;
-}
-
-//----------------------------------------------------------------------
-
-DString findFilePath(const DString &file,bool &ambig)
+DString findExampleFilePath(const DString &file,bool &ambig)
 {
   ambig=false;
   DString result;
@@ -2728,50 +2571,11 @@ DString findFilePath(const DString &file,bool &ambig)
   if (!found)
   {
     // as a fallback we also look in the exampleNameDict
-    FileDef *fd = findFileDef(Doxygen::exampleNameLinkedMap,file,ambig);
+    FileDef *fd = Doxygen::exampleNameLinkedMap->findFileDef(file,ambig);
     if (fd && !ambig)
     {
       result=fd->absFilePath();
     }
-  }
-  return result;
-}
-
-//----------------------------------------------------------------------
-
-DString showFileDefMatches(const FileNameLinkedMap *fnMap,const DString &n)
-{
-  DString result;
-  DString name=Dir::cleanDirPath(n.str());
-  DString path;
-  size_t sp0 = name.rfind('/');
-  size_t sp1 = name.rfind('\\');
-  size_t slashPos = sp0!=DString::npos && sp1!=DString::npos ? std::max(sp0,sp1) :
-                    sp0!=DString::npos ? sp0 : sp1;
-  if (slashPos!=DString::npos)
-  {
-    path=removeLongPathMarker(name.left(slashPos+1));
-    name=name.mid(slashPos+1);
-  }
-  const FileName *fn=fnMap->find(name);
-  if (fn)
-  {
-    bool first = true;
-    DString pathStripped = stripFromIncludePath(path);
-    for (const auto &fd_p : *fn)
-    {
-      FileDef *fd = fd_p.get();
-      DString fdStripPath = stripFromIncludePath(fd->getPath());
-      if (path.empty() ||
-          (!pathStripped.empty() && fdStripPath.endsWith(pathStripped)) ||
-          (pathStripped.empty() && fdStripPath.empty()))
-      {
-        if (!first) result += "\n";
-        else first = false;
-        result+="  "+fd->absFilePath();
-      }
-    }
-
   }
   return result;
 }
@@ -2851,7 +2655,7 @@ DString substituteKeywords(const DString &file, const DString &s,const KeywordSu
   return substRes;
 }
 
-static DString showDate(const DString &fmt)
+DString showDate(const DString &fmt)
 {
    // get the current date and time
   std::tm dat{};
@@ -2883,7 +2687,7 @@ DString projectLogoFile()
   return projectLogo;
 }
 
-static DString projectLogoSize()
+DString projectLogoSize()
 {
   DString sizeVal;
   DString projectLogo = Config_getString(PROJECT_LOGO);
@@ -2928,24 +2732,6 @@ static DString projectLogoSize()
   return sizeVal;
 }
 
-DString substituteKeywords(const DString &file,const DString &s,const DString &title,
-         const DString &projName,const DString &projNum,const DString &projBrief)
-{
-  return substituteKeywords(file,s,
-  {
-    // keyword          value getter
-    { "$title",           [&]() { return !title.empty() ? title : projName;       } },
-    { "$doxygenversion",  [&]() { return getDoxygenVersion();                       } },
-    { "$projectname",     [&]() { return projName;                                  } },
-    { "$projectnumber",   [&]() { return projNum;                                   } },
-    { "$projectbrief",    [&]() { return projBrief;                                 } },
-    { "$projectlogo",     [&]() { return stripPath(projectLogoFile());              } },
-    { "$logosize",        [&]() { return projectLogoSize();                         } },
-    { "$projecticon",     [&]() { return stripPath(Config_getString(PROJECT_ICON)); } },
-    { "$langISO",         [&]() { return theTranslator->trISOLang();                } },
-    { "$showdate",        [&](const DString &fmt) { return showDate(fmt);          } }
-  });
-}
 
 //----------------------------------------------------------------------
 
@@ -2981,71 +2767,7 @@ int getPrefixIndex(const DString &name)
 
 //----------------------------------------------------------------------------
 
-//----------------------------------------------------------------------
-
-#if 0
-// copies the next UTF8 character from input stream into buffer ids
-// returns the size of the character in bytes (or 0 if it is invalid)
-// the character itself will be copied as a UTF-8 encoded string to ids.
-int getUtf8Char(const char *input,char ids[MAX_UTF8_CHAR_SIZE],CaseModifier modifier)
-{
-  int inputLen=1;
-  const unsigned char uc = (unsigned char)*input;
-  bool validUTF8Char = false;
-  if (uc <= 0xf7)
-  {
-    const char* pt = input+1;
-    int l = 0;
-    if ((uc&0x80)==0x00)
-    {
-      switch (modifier)
-      {
-        case CaseModifier::None:    ids[0]=*input;                break;
-        case CaseModifier::ToUpper: ids[0]=(char)toupper(*input); break;
-        case CaseModifier::ToLower: ids[0]=(char)tolower(*input); break;
-      }
-      l=1; // 0xxx.xxxx => normal single byte ascii character
-    }
-    else
-    {
-      ids[ 0 ] = *input;
-      if ((uc&0xE0)==0xC0)
-      {
-        l=2; // 110x.xxxx: >=2 byte character
-      }
-      if ((uc&0xF0)==0xE0)
-      {
-        l=3; // 1110.xxxx: >=3 byte character
-      }
-      if ((uc&0xF8)==0xF0)
-      {
-        l=4; // 1111.0xxx: >=4 byte character
-      }
-    }
-    validUTF8Char = l>0;
-    for (int m=1; m<l && validUTF8Char; ++m)
-    {
-      unsigned char ct = (unsigned char)*pt;
-      if (ct==0 || (ct&0xC0)!=0x80) // invalid unicode character
-      {
-        validUTF8Char=false;
-      }
-      else
-      {
-        ids[ m ] = *pt++;
-      }
-    }
-    if (validUTF8Char) // got a valid unicode character
-    {
-      ids[ l ] = 0;
-      inputLen=l;
-    }
-  }
-  return inputLen;
-}
-#endif
-
-bool getCaseSenseNames()
+bool useCaseSenseNames()
 {
   auto caseSenseNames = Config_getEnum(CASE_SENSE_NAMES);
 
@@ -3057,7 +2779,7 @@ bool getCaseSenseNames()
 DString escapeCharsInString(const DString &name,bool allowDots,bool allowUnderscore)
 {
   if (name.empty()) return name;
-  bool caseSenseNames = getCaseSenseNames();
+  bool caseSenseNames = useCaseSenseNames();
   bool allowUnicodeNames = Config_getBool(ALLOW_UNICODE_NAMES);
   DString result;
   result.reserve(name.length()+8);
@@ -3144,7 +2866,7 @@ DString escapeCharsInString(const DString &name,bool allowDots,bool allowUndersc
 DString unescapeCharsInString(const DString &s)
 {
   if (s.empty()) return s;
-  bool caseSenseNames = getCaseSenseNames();
+  bool caseSenseNames = useCaseSenseNames();
   DString result;
   result.reserve(s.length());
   const char *p = s.data();
@@ -3803,17 +3525,6 @@ DString convertCharEntitiesToUTF8(const DString &str)
   result+=s.substr(i);
   //printf("convertCharEntitiesToUTF8(%s)->%s\n",qPrint(s),qPrint(result));
   return result;
-}
-
-/*! Returns the standard string that is generated when the \\overload
- * command is used.
- */
-DString getOverloadDocs()
-{
-  return theTranslator->trOverloadText();
-  //"This is an overloaded member function, "
-  //       "provided for convenience. It differs from the above "
-  //       "function only in what argument(s) it accepts.";
 }
 
 void addMembersToMemberGroup(MemberList *ml,
@@ -4688,19 +4399,6 @@ DString makeBaseName(const DString &name, const DString &ext)
   return stripExtensionGeneral(stripPath(name), ext);
 }
 
-/** returns \c true iff string \a s contains word \a w */
-bool containsWord(const DString &str,const char *word)
-{
-  if (str.empty() || word==nullptr) return false;
-  static const reg::Ex re(R"(\a+)");
-  std::string s = str.str();
-  for (reg::Iterator it(s,re) ; it!=reg::Iterator() ; ++it)
-  {
-    if (it->str()==word) return true;
-  }
-  return false;
-}
-
 /** removes occurrences of whole \a word from \a sentence,
  *  while keeps internal spaces and reducing multiple sequences of spaces.
  *  Example: sentence=` cat+ catfish cat cat concat cat`, word=`cat` returns: `+ catfish concat`
@@ -5376,7 +5074,7 @@ bool genericPatternMatch(const FileInfo &fi,
                          PatternElem &elem,
                          PatternGet getter)
 {
-  bool caseSenseNames = getCaseSenseNames();
+  bool caseSenseNames = useCaseSenseNames();
   bool found = false;
 
   if (!patList.empty())

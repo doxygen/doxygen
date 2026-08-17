@@ -879,6 +879,8 @@ class EntryType
     friend inline bool operator==(const EntryType &t1,const EntryType &t2) { return t1.m_type==t2.m_type; }
     friend inline bool operator!=(const EntryType &t1,const EntryType &t2) { return !(operator==(t1,t2)); }
 
+    static EntryType guessSection(const DString &name);
+
   private:
     enum TypeName
     {

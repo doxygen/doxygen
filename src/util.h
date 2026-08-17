@@ -174,25 +174,8 @@ void checkBlocks(const DString& s,const DString fileName, const SelectionMarkerI
 
 //----------------------------------------------------------------
 
-FileDef *findFileDef(const FileNameLinkedMap *fnMap, const DString &n, bool &ambig);
-DString findFilePath(const DString &file, bool &ambig);
-
-/** Returns a list of file definitions in \a fnMap that match the file name \a n.
- *  The list is returned as a string with each file definition separated by a newline character.
- *  Used for error messages.
- */
-DString showFileDefMatches(const FileNameLinkedMap *fnMap,const DString &n);
-
-EntryType guessSection(const DString &name);
-
-inline bool isId(int c)
-{
-  return c=='_' || c>=128 || c<0 || isalnum(c) || c=='$';
-}
-inline bool isIdJS(int c)
-{
-  return c>=128 || c<0 || isalnum(c);
-}
+DString findExampleFilePath(const DString &file, bool &ambig);
+void writeExamples(OutputList &ol,const ExampleList &el);
 
 DString removeRedundantWhiteSpace(const DString &s);
 
@@ -202,10 +185,6 @@ DString inlineTemplateArgListToDoc(const ArgumentList &al);
 DString argListToString(const ArgumentList &al,bool useCanonicalType=false,bool showDefVals=true);
 
 DString tempArgListToString(const ArgumentList &al,SrcLangExt lang,bool includeDefaults=true);
-
-DString generateMarker(int id);
-
-void writeExamples(OutputList &ol,const ExampleList &el);
 
 DString stripAnonymousNamespaceScope(const DString &s);
 
@@ -230,9 +209,6 @@ struct KeywordSubstitution
 using KeywordSubstitutionList = std::vector<KeywordSubstitution>;
 
 DString substituteKeywords(const DString &file,const DString &s,const KeywordSubstitutionList &keywords);
-
-DString substituteKeywords(const DString &file,const DString &s,const DString &title,
-         const DString &projName,const DString &projNum,const DString &projBrief);
 
 //---------------------------------------------------------------
 
@@ -262,8 +238,6 @@ DString convertToHtml(const DString &s,bool keepEntities=true);
 DString convertToXML(const DString &s, bool keepEntities=false, bool citeEntry = false);
 
 DString convertToJSString(const DString &s,bool keepEntities=false,bool singleQuotes=false);
-
-DString getOverloadDocs();
 
 void addMembersToMemberGroup(/* in,out */ MemberList *ml,
                              /* in,out */ MemberGroupList *pMemberGroups,
@@ -316,7 +290,8 @@ PageDef *addRelatedPage(const DString &name,
                         SrcLangExt lang=SrcLangExt::Unknown
                        );
 
-bool getCaseSenseNames();
+/** Returns true if the names of the symbols can be case sensitive. */
+bool useCaseSenseNames();
 
 DString escapeCharsInString(const DString &name,bool allowDots,bool allowUnderscore=false);
 DString unescapeCharsInString(const DString &s);
@@ -326,11 +301,8 @@ void addGroupListToTitle(OutputList &ol,const Definition *d);
 DString linkToText(SrcLangExt lang,const DString &link,bool ignoreDots);
 
 bool checkExtension(const DString &fName, const DString &ext);
-
 void addHtmlExtensionIfMissing(DString &fName);
-
 DString stripExtensionGeneral(const DString &fName, const DString &ext);
-
 DString stripExtension(const DString &fName);
 
 DString makeBaseName(const DString &name, const DString &ext);
@@ -347,8 +319,6 @@ void clearSubDirs(const Dir &d);
 
 DString removeLongPathMarker(const DString &path);
 DString stripPath(const DString &s);
-
-bool containsWord(const DString &s,const char *word);
 
 bool findAndRemoveWord(DString &s,const char *word);
 
@@ -440,6 +410,8 @@ DString detab(const DString &s,size_t &refIndent);
 
 DString getProjectId();
 DString projectLogoFile();
+DString projectLogoSize();
+DString showDate(const DString &fmt);
 
 void mergeMemberOverrideOptions(MemberDefMutable *md1,MemberDefMutable *md2);
 

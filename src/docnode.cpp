@@ -41,6 +41,7 @@
 #include "anchor.h"
 #include "aliases.h"
 #include "requirement.h"
+#include "filename.h"
 
 #if !ENABLE_DOCPARSER_TRACING
 #undef  AUTO_TRACE
@@ -1136,10 +1137,10 @@ bool DocDotFile::parse()
   parser()->defaultHandleTitleAndSize(CommandType::CMD_DOTFILE,thisVariant(),children(),p->width,p->height);
 
   bool ambig = false;
-  FileDef *fd = findFileDef(Doxygen::dotFileNameLinkedMap,p->name,ambig);
+  FileDef *fd = Doxygen::dotFileNameLinkedMap->findFileDef(p->name,ambig);
   if (fd==nullptr && !p->name.endsWith(".dot")) // try with .dot extension as well
   {
-    fd = findFileDef(Doxygen::dotFileNameLinkedMap,p->name+".dot",ambig);
+    fd = Doxygen::dotFileNameLinkedMap->findFileDef(p->name+".dot",ambig);
   }
   if (fd)
   {
@@ -1149,7 +1150,7 @@ bool DocDotFile::parse()
     {
       warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"included dot file name '{}' is ambiguous.\n"
            "Possible candidates:\n{}",p->name,
-           showFileDefMatches(Doxygen::dotFileNameLinkedMap,p->name)
+           Doxygen::dotFileNameLinkedMap->showFileDefMatches(p->name)
           );
     }
   }
@@ -1174,10 +1175,10 @@ bool DocMscFile::parse()
   parser()->defaultHandleTitleAndSize(CommandType::CMD_MSCFILE,thisVariant(),children(),p->width,p->height);
 
   bool ambig = false;
-  FileDef *fd = findFileDef(Doxygen::mscFileNameLinkedMap,p->name,ambig);
+  FileDef *fd = Doxygen::mscFileNameLinkedMap->findFileDef(p->name,ambig);
   if (fd==nullptr && !p->name.endsWith(".msc")) // try with .msc extension as well
   {
-    fd = findFileDef(Doxygen::mscFileNameLinkedMap,p->name+".msc",ambig);
+    fd = Doxygen::mscFileNameLinkedMap->findFileDef(p->name+".msc",ambig);
   }
   if (fd)
   {
@@ -1187,7 +1188,7 @@ bool DocMscFile::parse()
     {
       warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"included msc file name '{}' is ambiguous.\n"
            "Possible candidates:\n{}",p->name,
-           showFileDefMatches(Doxygen::mscFileNameLinkedMap,p->name)
+           Doxygen::mscFileNameLinkedMap->showFileDefMatches(p->name)
           );
     }
   }
@@ -1214,10 +1215,10 @@ bool DocDiaFile::parse()
   parser()->defaultHandleTitleAndSize(CommandType::CMD_DIAFILE,thisVariant(),children(),p->width,p->height);
 
   bool ambig = false;
-  FileDef *fd = findFileDef(Doxygen::diaFileNameLinkedMap,p->name,ambig);
+  FileDef *fd = Doxygen::diaFileNameLinkedMap->findFileDef(p->name,ambig);
   if (fd==nullptr && !p->name.endsWith(".dia")) // try with .dia extension as well
   {
-    fd = findFileDef(Doxygen::diaFileNameLinkedMap,p->name+".dia",ambig);
+    fd = Doxygen::diaFileNameLinkedMap->findFileDef(p->name+".dia",ambig);
   }
   if (fd)
   {
@@ -1227,7 +1228,7 @@ bool DocDiaFile::parse()
     {
       warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"included dia file name '{}' is ambiguous.\n"
            "Possible candidates:\n{}",p->name,
-           showFileDefMatches(Doxygen::diaFileNameLinkedMap,p->name)
+           Doxygen::diaFileNameLinkedMap->showFileDefMatches(p->name)
           );
     }
   }
@@ -1253,13 +1254,13 @@ bool DocPlantUmlFile::parse()
   parser()->defaultHandleTitleAndSize(CommandType::CMD_PLANTUMLFILE,thisVariant(),children(),p->width,p->height);
 
   bool ambig = false;
-  FileDef *fd = findFileDef(Doxygen::plantUmlFileNameLinkedMap,p->name,ambig);
+  FileDef *fd = Doxygen::plantUmlFileNameLinkedMap->findFileDef(p->name,ambig);
   if (fd==nullptr && !p->name.endsWith(".puml")) // try with .puml extension as well
   {
-    fd = findFileDef(Doxygen::plantUmlFileNameLinkedMap,p->name+".puml",ambig);
+    fd = Doxygen::plantUmlFileNameLinkedMap->findFileDef(p->name+".puml",ambig);
     if (fd==nullptr && !p->name.endsWith(".pu")) // try with .pu extension as well
     {
-      fd = findFileDef(Doxygen::plantUmlFileNameLinkedMap,p->name+".pu",ambig);
+      fd = Doxygen::plantUmlFileNameLinkedMap->findFileDef(p->name+".pu",ambig);
     }
   }
   if (fd)
@@ -1270,7 +1271,7 @@ bool DocPlantUmlFile::parse()
     {
       warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"included uml file name '{}' is ambiguous.\n"
            "Possible candidates:\n{}",p->name,
-           showFileDefMatches(Doxygen::plantUmlFileNameLinkedMap,p->name)
+           Doxygen::plantUmlFileNameLinkedMap->showFileDefMatches(p->name)
           );
     }
   }
@@ -1297,10 +1298,10 @@ bool DocMermaidFile::parse()
   parser()->defaultHandleTitleAndSize(CommandType::CMD_MERMAIDFILE,thisVariant(),children(),p->width,p->height);
 
   bool ambig = false;
-  FileDef *fd = findFileDef(Doxygen::mermaidFileNameLinkedMap,p->name,ambig);
+  FileDef *fd = Doxygen::mermaidFileNameLinkedMap->findFileDef(p->name,ambig);
   if (fd==nullptr && !p->name.endsWith(".mmd")) // try with .mmd extension as well
   {
-    fd = findFileDef(Doxygen::mermaidFileNameLinkedMap,p->name+".mmd",ambig);
+    fd = Doxygen::mermaidFileNameLinkedMap->findFileDef(p->name+".mmd",ambig);
   }
   if (fd)
   {
@@ -1310,7 +1311,7 @@ bool DocMermaidFile::parse()
     {
       warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"included mermaid file name '{}' is ambiguous.\n"
            "Possible candidates:\n{}",p->name,
-           showFileDefMatches(Doxygen::mermaidFileNameLinkedMap,p->name)
+           Doxygen::mermaidFileNameLinkedMap->showFileDefMatches(p->name)
           );
     }
   }

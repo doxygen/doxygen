@@ -266,6 +266,7 @@ add_library(doxymain STATIC
     entry.cpp
     filedef.cpp
     fileinfo.cpp
+    filename.cpp
     fileparser.cpp
     formula.cpp
     ftvhelp.cpp
@@ -315,6 +316,7 @@ add_library(doxymain STATIC
     tagreader.cpp
     textdocvisitor.cpp
     tooltip.cpp
+    types.cpp
     utf8.cpp
     util.cpp
     vhdldocgen.cpp

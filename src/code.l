@@ -500,7 +500,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           bool found = false;
                                           bool ambig = false;
                                           DString absIncFileName = determineAbsoluteIncludeName(yyextra->absFileName,yytext);
-                                          const FileDef *fd=findFileDef(Doxygen::inputNameLinkedMap,absIncFileName,ambig);
+                                          const FileDef *fd=Doxygen::inputNameLinkedMap->findFileDef(absIncFileName,ambig);
                                           //printf("looking for include %s -> %s fd=%p\n",yytext,qPrint(absPath),fd);
                                           if (fd && fd->isLinkable())
                                           {

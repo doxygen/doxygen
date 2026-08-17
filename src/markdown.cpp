@@ -55,6 +55,7 @@
 #include "trace.h"
 #include "anchor.h"
 #include "stringutil.h"
+#include "filename.h"
 
 #if !ENABLE_MARKDOWN_TRACING
 #undef  AUTO_TRACE
@@ -1567,7 +1568,7 @@ int Markdown::Private::processLink(const std::string_view data,size_t offset)
     bool ambig = false;
     FileDef *fd=nullptr;
     if (link.find("@ref ")!=DString::npos || link.find("\\ref ")!=DString::npos ||
-        (fd=findFileDef(Doxygen::imageNameLinkedMap,link,ambig)))
+        (fd=Doxygen::imageNameLinkedMap->findFileDef(link,ambig)))
         // assume doxygen symbol link or local image link
     {
       // check if different handling is needed per format

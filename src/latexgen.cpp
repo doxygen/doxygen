@@ -864,16 +864,24 @@ static DString substituteLatexKeywords(const DString &file,
   }
 
   DString projectNumber = Config_getString(PROJECT_NUMBER);
+  DString projName      = convertToLaTeX(Config_getString(PROJECT_NAME), false);
+  DString projBrief     = convertToLaTeX(Config_getString(PROJECT_BRIEF),false);
 
-  // first substitute generic keywords
-  DString result = substituteKeywords(file,str,title,
-        convertToLaTeX(Config_getString(PROJECT_NAME),false),
-        convertToLaTeX(projectNumber,false),
-        convertToLaTeX(Config_getString(PROJECT_BRIEF),false));
-
-  // additional LaTeX only keywords
-  result = substituteKeywords(file,result,
+  // first substitute generic keywords then the LaTeX only keywords
+  DString result = substituteKeywords(file,str,
   {
+    // keyword                     value getter
+    { "$title",                    [&]() { return !title.empty() ? title : projName;            } },
+    { "$doxygenversion",           [&]() { return getDoxygenVersion();                          } },
+    { "$projectname",              [&]() { return projName;                                     } },
+    { "$projectnumber",            [&]() { return convertToLaTeX(projectNumber,false);          } },
+    { "$projectbrief",             [&]() { return projBrief;                                    } },
+    { "$projectlogo",              [&]() { return stripPath(projectLogoFile());                 } },
+    { "$logosize",                 [&]() { return projectLogoSize();                            } },
+    { "$projecticon",              [&]() { return stripPath(Config_getString(PROJECT_ICON));    } },
+    { "$langISO",                  [&]() { return theTranslator->trISOLang();                   } },
+    { "$showdate",                 [&](const DString &fmt) { return showDate(fmt);              } },
+
     // keyword                     value getter
     { "$datetime",                 [&]() { return dateToString(DateTimeType::DateTime);         } },
     { "$date",                     [&]() { return dateToString(DateTimeType::Date);             } },
@@ -903,10 +911,10 @@ static DString substituteLatexKeywords(const DString &file,
   {
     // marker              is enabled
     { "CITATIONS_PRESENT", !CitationManager::instance().empty() },
-    { "COMPACT_LATEX",     compactLatex                           },
-    { "PDF_HYPERLINKS",    pdfHyperlinks                          },
-    { "USE_PDFLATEX",      usePdfLatex                            },
-    { "TIMESTAMP",         timeStamp!=TIMESTAMP_t::NO             },
+    { "COMPACT_LATEX",     compactLatex                         },
+    { "PDF_HYPERLINKS",    pdfHyperlinks                        },
+    { "USE_PDFLATEX",      usePdfLatex                          },
+    { "TIMESTAMP",         timeStamp!=TIMESTAMP_t::NO           },
     { "LATEX_FONTENC",     !latexFontenc.empty()                },
     { "FORMULA_MACROFILE", !formulaMacrofile.empty()            },
     { "PROJECT_NUMBER",    !projectNumber.empty()               }

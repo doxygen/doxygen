@@ -1218,7 +1218,7 @@ DB_VIS_C
     visitPostEnd(m_t, img.hasCaption(),img.isInlineImage());
     DString file;
     bool ambig = false;
-    FileDef *fd=findFileDef(Doxygen::imageNameLinkedMap, baseName, ambig);
+    FileDef *fd=Doxygen::imageNameLinkedMap->findFileDef( baseName, ambig);
     if (fd)
     {
       file=fd->absFilePath();

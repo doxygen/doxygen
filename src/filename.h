@@ -55,7 +55,7 @@ class FileNameFn
     std::string searchKey(const std::string &input) const
     {
       std::string key = input;
-      if (!getCaseSenseNames())
+      if (!useCaseSenseNames())
       {
         key = convertUTF8ToLower(key);
       }
@@ -67,6 +67,18 @@ class FileNameFn
 class FileNameLinkedMap final : public LinkedMap<FileName,FileNameFn,FileNameFn,
                                            std::unordered_multimap<std::string,FileName*,FileNameFn,FileNameFn> >
 {
+  public:
+    /** Returns the file definition in \a fnMap that matches the file name \a n.
+     *  If there are multiple matches, ambig is set to true and the first match is returned.
+     *  If there are no matches, ambig is set to false and nullptr is returned.
+     */
+    FileDef *findFileDef(const DString &n,bool &ambig) const;
+
+    /** Returns a list of file definitions in \a fnMap that match the file name \a n.
+     *  The list is returned as a string with each file definition separated by a newline character.
+     *  Used for error messages.
+     */
+    DString showFileDefMatches(const DString &n) const;
 };
 
 #endif

@@ -28,6 +28,7 @@
 #include "filedef.h"
 #include "portable.h"
 #include "message.h"
+#include "filename.h"
 
 struct CodeFragmentManager::Private
 {
@@ -218,13 +219,13 @@ static DString readTextFileByName(const DString &file)
 
   // as a fallback we also look in the exampleNameDict
   bool ambig=false;
-  FileDef *fd = findFileDef(Doxygen::exampleNameLinkedMap,file,ambig);
+  FileDef *fd = Doxygen::exampleNameLinkedMap->findFileDef(file,ambig);
   if (fd)
   {
     if (ambig)
     {
       err("included file name '{}' is ambiguous.\nPossible candidates:\n{}\n",file,
-           showFileDefMatches(Doxygen::exampleNameLinkedMap,file)
+           Doxygen::exampleNameLinkedMap->showFileDefMatches(file)
           );
     }
     size_t indent = 0;

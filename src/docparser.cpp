@@ -39,6 +39,7 @@
 #include "indexlist.h"
 #include "trace.h"
 #include "stringutil.h"
+#include "filename.h"
 
 #if !ENABLE_DOCPARSER_TRACING
 #undef  AUTO_TRACE
@@ -97,7 +98,7 @@ DString DocParser::findAndCopyImage(const DString &fileName, DocImage::Type type
 {
   DString result;
   bool ambig = false;
-  FileDef *fd = findFileDef(Doxygen::imageNameLinkedMap,fileName,ambig);
+  FileDef *fd = Doxygen::imageNameLinkedMap->findFileDef(fileName,ambig);
   //printf("Search for %s\n",fileName);
   if (fd)
   {
@@ -105,7 +106,7 @@ DString DocParser::findAndCopyImage(const DString &fileName, DocImage::Type type
     {
       warn_doc_error(context.fileName,tokenizer.getLineNr(),
           "image file name '{}' is ambiguous.\n"
-          "Possible candidates:\n{}", fileName,showFileDefMatches(Doxygen::imageNameLinkedMap,fileName));
+          "Possible candidates:\n{}", fileName,Doxygen::imageNameLinkedMap->showFileDefMatches(fileName));
     }
 
     DString inputFile = fd->absFilePath();
@@ -473,7 +474,7 @@ bool DocParser::findDocsForMemberOrCompound(const DString &commandName,
     return true;
   }
   bool ambig = false;
-  fd = findFileDef(Doxygen::inputNameLinkedMap,cmdArg,ambig);
+  fd = Doxygen::inputNameLinkedMap->findFileDef(cmdArg,ambig);
   if (fd && !ambig) // file
   {
     *pDoc=fd->documentation();
@@ -867,7 +868,7 @@ void DocParser::handleLinkedWord(DocNodeVariant *parent,DocNodeList &children,bo
   size_t len = context.token->name.length();
   ClassDef *cd=nullptr;
   bool ambig = false;
-  FileDef *fd = findFileDef(Doxygen::inputNameLinkedMap,context.fileName,ambig);
+  FileDef *fd = Doxygen::inputNameLinkedMap->findFileDef(context.fileName,ambig);
   auto lang = context.lang;
   bool inSeeBlock = context.inSeeBlock || context.inCodeStyle;
   //printf("handleLinkedWord(%s) context.context=%s\n",qPrint(context.token->name),qPrint(context.context));
@@ -1919,7 +1920,7 @@ void DocParser::readTextFileByName(const DString &file,DString &text)
 {
   AUTO_TRACE("file={} text={}",file,text);
   bool ambig = false;
-  DString filePath = findFilePath(file,ambig);
+  DString filePath = findExampleFilePath(file,ambig);
   if (!filePath.empty())
   {
     size_t indent = 0;
@@ -1927,7 +1928,7 @@ void DocParser::readTextFileByName(const DString &file,DString &text)
     if (ambig)
     {
       warn_doc_error(context.fileName,tokenizer.getLineNr(),"included file name '{}' is ambiguous"
-          "Possible candidates:\n{}",file, showFileDefMatches(Doxygen::exampleNameLinkedMap,file));
+          "Possible candidates:\n{}",file, Doxygen::exampleNameLinkedMap->showFileDefMatches(file));
     }
   }
   else

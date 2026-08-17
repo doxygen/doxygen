@@ -62,6 +62,7 @@ typedef yyguts_t *yyscan_t;
 #include "fileinfo.h"
 #include "trace.h"
 #include "stringutil.h"
+#include "filename.h"
 
 #define YY_NO_UNISTD_H 1
 
@@ -2280,10 +2281,10 @@ static void setFileName(yyscan_t yyscanner,const DString &name)
   bool ambig = false;
   FileInfo fi(name.str());
   state->fileName=fi.absFilePath();
-  state->yyFileDef=findFileDef(Doxygen::inputNameLinkedMap,state->fileName,ambig);
+  state->yyFileDef=Doxygen::inputNameLinkedMap->findFileDef(state->fileName,ambig);
   if (state->yyFileDef==nullptr) // if this is not an input file check if it is an include file
   {
-    state->yyFileDef=findFileDef(Doxygen::includeNameLinkedMap,state->fileName,ambig);
+    state->yyFileDef=Doxygen::includeNameLinkedMap->findFileDef(state->fileName,ambig);
   }
   //printf("setFileName(%s) state->fileName=%s state->yyFileDef=%p\n",
   //    name,qPrint(state->fileName),state->yyFileDef);
@@ -2297,7 +2298,7 @@ static void setFileName(yyscan_t yyscanner,const DString &name)
     FortranFormat fmt = convertFileNameFortranParserCode(state->fileName);
     state->isFixedFormFtn = recognizeFixedForm(DString(state->inputBuf->data()),fmt);
   }
-  EntryType section = guessSection(state->fileName);
+  EntryType section = EntryType::guessSection(state->fileName);
   state->isSource = section.isHeader() || section.isSource();
 }
 
@@ -2466,7 +2467,7 @@ static std::unique_ptr<FileState> findFile(yyscan_t yyscanner, const DString &fi
     }
   }
   bool ambig = false;
-  FileDef *fd=findFileDef(Doxygen::inputNameLinkedMap,fileName,ambig);
+  FileDef *fd=Doxygen::inputNameLinkedMap->findFileDef(fileName,ambig);
   if (fd && !ambig) // fallback in case the file is uniquely named in the input, use that one
   {
     auto fs = checkAndOpenFile(yyscanner,fd->absFilePath(),alreadyProcessed);
@@ -3869,7 +3870,7 @@ static void readIncludeFile(yyscan_t yyscanner,const DString &inc)
         if (ii==nullptr)
         {
           bool ambig = false;
-          FileDef *incFd = findFileDef(Doxygen::inputNameLinkedMap,absIncFileName,ambig);
+          FileDef *incFd = Doxygen::inputNameLinkedMap->findFileDef(absIncFileName,ambig);
           state->includeRelations.add(
               absIncFileName,
               oldFileDef,
@@ -3924,7 +3925,7 @@ static void readIncludeFile(yyscan_t yyscanner,const DString &inc)
         if (ii==nullptr)
         {
           bool ambig = false;
-          FileDef *incFd = findFileDef(Doxygen::inputNameLinkedMap,absIncFileName,ambig);
+          FileDef *incFd = Doxygen::inputNameLinkedMap->findFileDef(absIncFileName,ambig);
           ii = state->includeRelations.add(absIncFileName,
               oldFileDef,
               ambig ? nullptr : incFd,
@@ -4343,7 +4344,7 @@ void Preprocessor::processFile(const DString &fileName,const std::string &input,
 
   BEGIN( Start );
 
-  state->expectGuard = guessSection(fileName).isHeader();
+  state->expectGuard = EntryType::guessSection(fileName).isHeader();
   state->guardName.clear();
   state->lastGuardName.clear();
   state->guardExpr.clear();

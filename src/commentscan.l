@@ -2853,7 +2853,7 @@ STopt  [^\n@\\]*
                                           if (*yytext=='\n') yyextra->lineNr++;
                                           if (yyextra->functionProto.stripWhiteSpace().empty())
                                           { // plain overload command
-                                            addOutput(yyscanner,getOverloadDocs());
+                                            addOutput(yyscanner,theTranslator->trOverloadText());
                                             addOutput(yyscanner,'\n');
                                           }
                                           else // overload declaration
@@ -5051,7 +5051,7 @@ bool CommentScanner::parseCommentBlock(/* in */     OutlineParserInterface *pars
 
   if (YY_START==OverloadParam) // comment ended with \overload
   {
-    addOutput(yyscanner,getOverloadDocs());
+    addOutput(yyscanner,theTranslator->trOverloadText());
   }
 
   if (yyextra->insideParBlock)
