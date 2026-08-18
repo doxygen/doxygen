@@ -1899,7 +1899,7 @@ NONLopt [^\n]*
                                           lineCount(yyscanner);
                                           yyextra->current->name += *yytext ;
                                         }
-<Operator>"<"({B}*{ID}{B}*(","{B}*{BN})*{B}*)?">" { /* skip guided templ specifiers */ 
+<Operator>"<"({B}*{ID}{B}*(","{B}*{BN})*{B}*)?">" { /* skip guided templ specifiers */
                                           if (!yyextra->current->type.startsWith("friend "))
                                           {
                                             yyextra->current->name += yytext;
@@ -4803,7 +4803,7 @@ NONLopt [^\n]*
                                             }
                                           }
                                         }
-<ReadBody>"}"{BN}+"typedef"{BN}+        { 
+<ReadBody>"}"{BN}+"typedef"{BN}+        {
                                           lineCount(yyscanner);
                                           if ( yyextra->curlyCount>0 )
                                           {
@@ -6447,7 +6447,7 @@ NONLopt [^\n]*
                                                                                                              : EntryType::makeIncludedService();
 //                                          yyextra->current->section = EntryType::makeMemberDoc();
                                             yyextra->current->spec.setInterface(false).setService(false);
-                                                     // FIXME: horrible: Interface == Gettable, so need to clear it - actually we're mixing values from 
+                                                     // FIXME: horrible: Interface == Gettable, so need to clear it - actually we're mixing values from
                                                      // different enums in this case...
                                                      // granted only Optional and Interface are actually valid in this context but urgh...
                                             yyextra->current_root->moveToSubEntryAndRefresh(yyextra->current);
@@ -7338,7 +7338,7 @@ NONLopt [^\n]*
                                           else if (yyextra->insideCS &&
                                               !yyextra->current->name.empty() &&
                                               !yyextra->current->type.empty())
-                                          { 
+                                          {
                                             if (yyextra->current->mtype == MethodTypes::Event)
                                             {
                                               yyextra->mtype = MethodTypes::Event;
@@ -7787,7 +7787,7 @@ NONLopt [^\n]*
                                           yyextra->docBlock << pat;
                                         }
 <DocCopyBlock>"```"                     { // backtick + end marker
-                                          if (yyextra->docBlockName=="``") 
+                                          if (yyextra->docBlockName=="``")
                                           {
                                             yyextra->docBlock << "`";
                                             endVerbatimBlock(yyscanner,"``",2);
@@ -7825,7 +7825,7 @@ NONLopt [^\n]*
                                         }
 <DocCopyBlock>\"                        {
                                           yyextra->docBlock << yytext;
-                                          if (yyextra->docBlockName=="code" || yyextra->docBlockName=="iliteral") 
+                                          if (yyextra->docBlockName=="code" || yyextra->docBlockName=="iliteral")
                                             // to support end of comment character sequences inside
                                             // a string literal of a code block, see #6737
                                           {

@@ -424,7 +424,7 @@ void XmlDocVisitor::operator()(const DocInclude &inc)
                                            .setExample(inc.isExample(),inc.exampleFile())
                                            .setFileDef(fd.get())
                                            .setInlineFragment(true)
-					   );
+                                                 );
          m_t << "</programlisting>";
       }
       break;
@@ -438,7 +438,7 @@ void XmlDocVisitor::operator()(const DocInclude &inc)
                                         .setExample(inc.isExample(),inc.exampleFile())
                                         .setInlineFragment(true)
                                         .setShowLineNumbers(false)
-				       );
+                                              );
       m_t << "</programlisting>";
       break;
     case DocInclude::DontInclude:

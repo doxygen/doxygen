@@ -1,14 +1,14 @@
 /*---------------- Search Box positioning */
 
 #MSearchBox {
-	margin: 5px;
+  margin: 5px;
 }
 
 #MSearchSelect {
-	width: 16px !important;
+  width: 16px !important;
 }
 
 dark-mode-toggle {
-        padding-top: 10px !important;
-	margin-left: 2px !important;
+  padding-top: 10px !important;
+  margin-left: 2px !important;
 }

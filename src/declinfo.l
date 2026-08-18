@@ -1,12 +1,12 @@
 /******************************************************************************
  *
- * 
+ *
  *
  * Copyright (C) 1997-2015 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -31,7 +31,7 @@ typedef yyguts_t *yyscan_t;
 %{
 
 /*
- *	includes
+ * includes
  */
 #include <stdio.h>
 //#include <iostream.h>
@@ -50,7 +50,7 @@ typedef yyguts_t *yyscan_t;
 
 /* -----------------------------------------------------------------
  *
- *	statics
+ * statics
  */
 struct declinfoYY_state
 {
@@ -81,8 +81,8 @@ static int yyread(char *buf,int max_size, yyscan_t yyscanner);
 
 /* -----------------------------------------------------------------
  */
-#undef	YY_INPUT
-#define	YY_INPUT(buf,result,max_size) result=yyread(buf,max_size,yyscanner);
+#undef  YY_INPUT
+#define YY_INPUT(buf,result,max_size) result=yyread(buf,max_size,yyscanner);
 
 // otherwise the filename would be the name of the converted file (*.cpp instead of *.l)
 static inline const char *getLexerFILE() {return __FILE__;}
@@ -92,133 +92,133 @@ static inline const char *getLexerFILE() {return __FILE__;}
 
 B       [ \t]
 Bopt    {B}*
-ID	([$a-z_A-Z\x80-\xFF][$a-z_A-Z0-9\x80-\xFF]*)|(@[0-9]+)
+ID      ([$a-z_A-Z\x80-\xFF][$a-z_A-Z0-9\x80-\xFF]*)|(@[0-9]+)
 
 %x  Start
-%x	Template
-%x	ReadArgs
-%x	Operator
-%x	DeclType
+%x  Template
+%x  ReadArgs
+%x  Operator
+%x  DeclType
 %x  ReadExceptions
 
 %%
 
-<Start>"operator"/({B}*"["{B}*"]")* 	{ // operator rule must be before {ID} rule
-  				  yyextra->name += yytext;
-  				  BEGIN(Operator);
-  				}
+<Start>"operator"/({B}*"["{B}*"]")* { // operator rule must be before {ID} rule
+                                  yyextra->name += yytext;
+                                  BEGIN(Operator);
+                                }
 <Start>{ID}({B}*"*")?{B}*"("{B}*"^"{B}*")"{B}*"(" { // Objective-C 2.0 block return type
-  				  if (!yyextra->insideObjC) 
-				  {
-				    REJECT;
-				  }
-				  else
-				  {
-  				    addType(yyscanner);
-				    yyextra->type += yytext;
-				  }
+                                  if (!yyextra->insideObjC)
+                                  {
+                                    REJECT;
+                                  }
+                                  else
+                                  {
+                                    addType(yyscanner);
+                                    yyextra->type += yytext;
+                                  }
                                 }
 <Start>{ID}{B}*"("{B}*{ID}{B}*")" { // Objective-C class categories
-  				  if (!yyextra->insideObjC) 
-				  {
-				    REJECT;
-				  }
-				  else 
-				  {
-				    yyextra->name += yytext;
-				  }
-  				}
-<Start>([~!]{B}*)?{ID}{B}*"["{B}*"]" { // PHP
-  				  if (!yyextra->insidePHP)
-				  {
-				    REJECT;
-				  }
-  				  addTypeName(yyscanner);
-				  yyextra->name += removeRedundantWhiteSpace(yytext);
-  				}
-<Start>"anonymous_namespace{"[^}]+"}" { // anonymous namespace
- 				  if (!yyextra->scope.empty())
-				  {
-				    yyextra->scope+=DString("::")+yytext;
-				  }
-				  else
-				  {
-  				    yyextra->scope = yytext;
-				  }
+                                  if (!yyextra->insideObjC)
+                                  {
+                                    REJECT;
+                                  }
+                                  else
+                                  {
+                                    yyextra->name += yytext;
+                                  }
                                 }
-<Start>([~!]{B}*)?{ID}/({B}*"["{B}*"]")* { // the []'s are for Java, 
+<Start>([~!]{B}*)?{ID}{B}*"["{B}*"]" { // PHP
+                                  if (!yyextra->insidePHP)
+                                  {
+                                    REJECT;
+                                  }
+                                  addTypeName(yyscanner);
+                                  yyextra->name += removeRedundantWhiteSpace(yytext);
+                                }
+<Start>"anonymous_namespace{"[^}]+"}" { // anonymous namespace
+                                  if (!yyextra->scope.empty())
+                                  {
+                                    yyextra->scope+=DString("::")+yytext;
+                                  }
+                                  else
+                                  {
+                                    yyextra->scope = yytext;
+                                  }
+                                }
+<Start>([~!]{B}*)?{ID}/({B}*"["{B}*"]")* { // the []'s are for Java,
                                         // the / was add to deal with multi-
                                         // dimensional C++ arrays like A[][15]
                                         // the leading ~ is for a destructor
                                         // the leading ! is for a C++/CLI finalizer (see bug 456475 and 635198)
-  				  addTypeName(yyscanner);
-				  yyextra->name += removeRedundantWhiteSpace(yytext);
-  				}
-<Start>{B}*"::"{B}*		{ // found a yyextra->scope specifier
- 				  if (!yyextra->scope.empty() && !yyextra->scope.endsWith("::"))
-				  {
+                                  addTypeName(yyscanner);
+                                  yyextra->name += removeRedundantWhiteSpace(yytext);
+                                }
+<Start>{B}*"::"{B}*             { // found a yyextra->scope specifier
+                                    if (!yyextra->scope.empty() && !yyextra->scope.endsWith("::"))
+                                  {
                                     if (!yyextra->name.empty()) yyextra->scope+="::"+yyextra->name; // add yyextra->name to yyextra->scope
-				  }
-				  else
-				  {
-  				    yyextra->scope = yyextra->name; // yyextra->scope becomes yyextra->name
-				  }
-				  yyextra->name.clear();
-  				}
-<Start>{B}*":"			{ // Objective-C argument separator
-  				  yyextra->name+=yytext;
-  				}
-<Start>[*&]+			{
-  				  addType(yyscanner);
-  				  yyextra->type+=yytext;
-  				}
-<Start>{B}+			{
-  				  addType(yyscanner);
-  				}
-<Start>{B}*"("({ID}"::")*{B}*[&*]({B}*("const"|"volatile"){B}+)?	{
+                                  }
+                                  else
+                                  {
+                                    yyextra->scope = yyextra->name; // yyextra->scope becomes yyextra->name
+                                  }
+                                  yyextra->name.clear();
+                                }
+<Start>{B}*":"                  { // Objective-C argument separator
+                                  yyextra->name+=yytext;
+                                }
+<Start>[*&]+                    {
+                                  addType(yyscanner);
+                                  yyextra->type+=yytext;
+                                }
+<Start>{B}+                     {
+                                  addType(yyscanner);
+                                }
+<Start>{B}*"("({ID}"::")*{B}*[&*]({B}*("const"|"volatile"){B}+)? {
                                   if (yyextra->insidePHP) REJECT;
                                   if (yyextra->insidePython) REJECT;
-  				  addType(yyscanner);
-				  DString text(yytext);
-				  yyextra->type+=text.stripWhiteSpace();
-  				}
-<Start>{B}*")"			{
-  				  yyextra->type+=")";
-  				}
-<Start>{B}*"decltype"/{B}*"("	{
-					  yyextra->roundCount=0;
-					  yyextra->type="decltype";
-					  BEGIN(DeclType);
-					}
-<DeclType>{B}*"("	{
-						++yyextra->roundCount;
-						yyextra->type+="(";
-					}
-<DeclType>{B}*")"	{
-						yyextra->type+=")";
-						if (--yyextra->roundCount == 0) {
-							BEGIN(Start);
-						}
-					}
-<DeclType>.	{
-						yyextra->type+=yytext;
-					}
-<Start>{B}*"("			{ // TODO: function pointers
-						yyextra->args+="(";
-						BEGIN(ReadArgs);
-					}
-<Start>{B}*"["			{
-  				  yyextra->args+="[";
-				  BEGIN(ReadArgs);
-  				}
-<Start>{B}*"<"			{
-  				  yyextra->name+="<";
-				  yyextra->sharpCount=0;
+                                  addType(yyscanner);
+                                  DString text(yytext);
+                                  yyextra->type+=text.stripWhiteSpace();
+                                }
+<Start>{B}*")"                  {
+                                  yyextra->type+=")";
+                                }
+<Start>{B}*"decltype"/{B}*"("   {
                                   yyextra->roundCount=0;
-  				  BEGIN(Template);
-  				}
-<Template>"<<"			{ yyextra->name+="<<"; }
-<Template>">>"			{ yyextra->name+=">>"; }
+                                  yyextra->type="decltype";
+                                  BEGIN(DeclType);
+                                }
+<DeclType>{B}*"("               {
+                                  ++yyextra->roundCount;
+                                  yyextra->type+="(";
+                                }
+<DeclType>{B}*")"               {
+                                  yyextra->type+=")";
+                                  if (--yyextra->roundCount == 0) {
+                                    BEGIN(Start);
+                                  }
+                                }
+<DeclType>.                     {
+                                  yyextra->type+=yytext;
+                                }
+<Start>{B}*"("                  { // TODO: function pointers
+                                  yyextra->args+="(";
+                                  BEGIN(ReadArgs);
+                                }
+<Start>{B}*"["                  {
+                                  yyextra->args+="[";
+                                  BEGIN(ReadArgs);
+                                }
+<Start>{B}*"<"                  {
+                                  yyextra->name+="<";
+                                  yyextra->sharpCount=0;
+                                  yyextra->roundCount=0;
+                                  BEGIN(Template);
+                                }
+<Template>"<<"                  { yyextra->name+="<<"; }
+<Template>">>"                  { yyextra->name+=">>"; }
 <Template>"("                   { yyextra->name+="(";
                                   yyextra->roundCount++;
                                 }
@@ -228,15 +228,15 @@ ID	([$a-z_A-Z\x80-\xFF][$a-z_A-Z0-9\x80-\xFF]*)|(@[0-9]+)
                                     yyextra->roundCount--;
                                   }
                                 }
-<Template>"<"			{
-  				  yyextra->name+="<";
+<Template>"<"                   {
+                                  yyextra->name+="<";
                                   if (yyextra->roundCount==0)
                                   {
-  				    yyextra->sharpCount++;
+                                    yyextra->sharpCount++;
                                   }
-  				}
-<Template>">"			{
-  				  yyextra->name+=">";
+                                }
+<Template>">"                   {
+                                  yyextra->name+=">";
                                   if (yyextra->roundCount==0)
                                   {
                                     if (yyextra->sharpCount)
@@ -246,32 +246,32 @@ ID	([$a-z_A-Z\x80-\xFF][$a-z_A-Z0-9\x80-\xFF]*)|(@[0-9]+)
                                       BEGIN(Start);
                                     }
                                   }
-  				}
-<Template>.			{
-  				  yyextra->name+=*yytext;
-  				}
-<Operator>{B}*"("{B}*")"{B}*"<>"{Bopt}/"("	{
-  				  yyextra->name+="() <>";
-				  BEGIN(ReadArgs);
-  				}
-<Operator>{B}*"("{B}*")"{Bopt}/"("	{
-  				  yyextra->name+="()";
-				  BEGIN(ReadArgs);
-  				}
+                                }
+<Template>.                     {
+                                  yyextra->name+=*yytext;
+                                }
+<Operator>{B}*"("{B}*")"{B}*"<>"{Bopt}/"(" {
+                                  yyextra->name+="() <>";
+                                  BEGIN(ReadArgs);
+                                }
+<Operator>{B}*"("{B}*")"{Bopt}/"(" {
+                                  yyextra->name+="()";
+                                  BEGIN(ReadArgs);
+                                }
 <Operator>[^(]*{B}*("<>"{B}*)?/"(" {
-  				  yyextra->name+=yytext;
-				  BEGIN(ReadArgs);
-  				}
-<ReadArgs>"throw"{B}*"("	{
-  				  yyextra->exceptionString="throw(";
-				  BEGIN(ReadExceptions);
-  				}
-<ReadArgs>.			{
-  				  yyextra->args+=*yytext;
-  				}
-<ReadExceptions>.		{
-  				  yyextra->exceptionString+=*yytext;
-  				}
+                                  yyextra->name+=yytext;
+                                  BEGIN(ReadArgs);
+                                }
+<ReadArgs>"throw"{B}*"("        {
+                                  yyextra->exceptionString="throw(";
+                                  BEGIN(ReadExceptions);
+                                }
+<ReadArgs>.                     {
+                                  yyextra->args+=*yytext;
+                                }
+<ReadExceptions>.               {
+                                  yyextra->exceptionString+=*yytext;
+                                }
 <*>.
 <*>\n
 
@@ -295,7 +295,7 @@ static void addTypeName(yyscan_t yyscanner)
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   //printf("addTypeName() yyextra->type='%s' yyextra->scope='%s' yyextra->name='%s'\n",
   //       qPrint(yyextra->type),qPrint(yyextra->scope),qPrint(yyextra->name));
-  if (yyextra->name.empty() || 
+  if (yyextra->name.empty() ||
       yyextra->name.at(yyextra->name.length()-1)==':')  // end of Objective-C keyword => append to yyextra->name not yyextra->type
   {
     return;
@@ -409,9 +409,9 @@ void dumpDecl(const char *s)
   parseFuncDecl(s,yyextra->className,classTNames,yyextra->type,yyextra->name,yyextra->args,funcTNames);
   msg("yyextra->type='{}' class='{}' classTempl='{}' yyextra->name='{}' "
          "funcTemplateNames='{}' yyextra->args='{}'\n",
-	    yyextra->type,yyextra->className,classTNames,
-	    yyextra->name,funcTNames,yyextra->args
-	);
+         yyextra->type,yyextra->className,classTNames,
+         yyextra->name,funcTNames,yyextra->args
+     );
 }
 
 // some test code
@@ -425,7 +425,7 @@ int main()
   dumpDecl("yyextra->name< T > :: operator << (int bla)");
   dumpDecl("yyextra->name< T > :: operator << <> (int bla)");
   dumpDecl("yyextra->className::func()");
-  dumpDecl("void ( * yyextra->Name < T > :: bla ) ( int, char * )"); 
+  dumpDecl("void ( * yyextra->Name < T > :: bla ) ( int, char * )");
 }
 #endif
 

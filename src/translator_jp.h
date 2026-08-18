@@ -1145,7 +1145,7 @@ class TranslatorJapanese : public Translator
       return "パッケージ";
     }
 
-	    /*! Text shown before a multi-line define */
+    /*! Text shown before a multi-line define */
     DString trDefineValue() override
     {
       return "値:";

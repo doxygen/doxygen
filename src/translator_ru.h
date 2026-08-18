@@ -662,9 +662,9 @@ class TranslatorRussian : public Translator
     {
       DString result="Переопределяет метод";
       if(numEntries>1)
-	result+="ы предков";
+        result+="ы предков";
       else
-	result+=" предка";
+        result+=" предка";
       return result+" "+trWriteList(numEntries)+".";
     }
 
@@ -1508,7 +1508,7 @@ class TranslatorRussian : public Translator
       result+="членов типа со ссылками ";
       if (!extractAll)
       {
-	result+="на документацию для каждого члена:";
+        result+="на документацию для каждого члена:";
       }
       else
       {
@@ -1568,32 +1568,32 @@ class TranslatorRussian : public Translator
       DString result=clName;
       if (isTemplate)
       {
-	switch(compType)
-	{
-	  case ClassDef::Class:      result+=" Модуль"; break;
-	  case ClassDef::Struct:     result+=" Тип"; break;
-	  case ClassDef::Union:      result+=" Объединение"; break;
-	  case ClassDef::Interface:  result+=" Интерфейс"; break;
-	  case ClassDef::Protocol:   result+=" Протокол"; break;
-	  case ClassDef::Category:   result+=" Категория"; break;
-	  case ClassDef::Exception:  result+=" Исключение"; break;
+        switch(compType)
+        {
+          case ClassDef::Class:      result+=" Модуль"; break;
+          case ClassDef::Struct:     result+=" Тип"; break;
+          case ClassDef::Union:      result+=" Объединение"; break;
+          case ClassDef::Interface:  result+=" Интерфейс"; break;
+          case ClassDef::Protocol:   result+=" Протокол"; break;
+          case ClassDef::Category:   result+=" Категория"; break;
+          case ClassDef::Exception:  result+=" Исключение"; break;
           default: break;
-	}
+        }
       }
       else
       {
-	result+=" Шаблон ";
-	switch(compType)
-	{
-	  case ClassDef::Class:      result+="модуля"; break;
-	  case ClassDef::Struct:     result+="типа"; break;
-	  case ClassDef::Union:      result+="объединения"; break;
-	  case ClassDef::Interface:  result+="интерфейса"; break;
-	  case ClassDef::Protocol:   result+="протокола"; break;
-	  case ClassDef::Category:   result+="категории"; break;
-	  case ClassDef::Exception:  result+="исключения"; break;
+        result+=" Шаблон ";
+        switch(compType)
+        {
+          case ClassDef::Class:      result+="модуля"; break;
+          case ClassDef::Struct:     result+="типа"; break;
+          case ClassDef::Union:      result+="объединения"; break;
+          case ClassDef::Interface:  result+="интерфейса"; break;
+          case ClassDef::Protocol:   result+="протокола"; break;
+          case ClassDef::Category:   result+="категории"; break;
+          case ClassDef::Exception:  result+="исключения"; break;
           default: break;
-	}
+        }
       }
       return result;
     }

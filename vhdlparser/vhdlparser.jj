@@ -520,7 +520,7 @@ DString array_type_definition ():  { DString s;}
   s=constraint_array_definition()  {return s;}
   |
    s=unconstraint_array_definition() {return s;}
-  
+
 }
 
 DString assertion() :  {DString s,s1,s2;Token *t=nullptr;Token *t1=nullptr;}
@@ -898,7 +898,7 @@ LOOKAHEAD(concurrent_procedure_call_statement())
 concurrent_procedure_call_statement()
 
 | <VHDL2008TOOLDIR>
- 
+
 }
 
 DString condition() :  {DString s;}
@@ -1060,7 +1060,7 @@ void context_item() :  {}
  library_clause()
 | use_clause()
 
-| context_ref() 
+| context_ref()
 }
 
 DString context_ref() : {DString s, s1;}
@@ -1504,9 +1504,9 @@ DString full_type_declaration() :  { std::shared_ptr<Entry> tmpEntry;DString s,s
     outlineParser()->addVhdlType(s,outlineParser()->getLine(),
                                  EntryType::makeVariable(),VhdlSpecifier::RECORD,DString(),DString(),Protection::Public);
   }
- 
+
   s2=type_definition()
-  
+
   <SEMI_T>
   {
      if (s2.contains("#")) {
@@ -1523,7 +1523,7 @@ DString full_type_declaration() :  { std::shared_ptr<Entry> tmpEntry;DString s,s
       tmpEntry->vhdlSpec=VhdlSpecifier::TYPE;
       tmpEntry->type=s2;
     }
-   
+
     tmpEntry.reset();
     return "type "+s+" is "+s2+";";
   }
@@ -2144,7 +2144,7 @@ DString name() :  {DString s,s1;}
    |s=external_name() [LOOKAHEAD(name_ext1()) s1=name_ext1(){ s+=s1;}] {  return s; }
    | s=identifier() [LOOKAHEAD(name_ext1()) s1=name_ext1(){ s+=s1;}] {  return s; }
   )
- 
+
 }
 
 
@@ -2173,7 +2173,7 @@ DString name_ext1() : {DString s,s1,s2;}
   <LPAREN_T> s1=expression() {s+="(";s+=s1;} (LOOKAHEAD(1) <COMMA_T>  s1=expression(){s+=",";s+=s1;})*  <RPAREN_T> { s+=")";return s;}
 
  )
- 
+
  }
 
  DString test_att_name() : {DString s,s1;}
@@ -2300,7 +2300,7 @@ void package_declaration():  {DString s;}
                           outlineParser()->addVhdlType(s,outlineParser()->getLine(PACKAGE_T),
                                             EntryType::makeClass(),VhdlSpecifier::PACKAGE,DString(),DString(),Protection::Package);
                           }
-    package_header()  
+    package_header()
     package_declarative_part()
 <END_T> [ <PACKAGE_T>] [ name() ] <SEMI_T>
 { m_sharedState->lastEntity=nullptr;m_sharedState->lastCompound=nullptr; m_sharedState->genLabels.clear(); }
@@ -2322,7 +2322,7 @@ subprogram_declaration()
 | file_declaration()
 | alias_declaration()
 | component_declaration()
-| mode_view_declaration() 
+| mode_view_declaration()
 |
 LOOKAHEAD(attribute_declaration())
  attribute_declaration()
@@ -2405,7 +2405,7 @@ DString physical_type_definition() : {DString s,s1,s2;Token *t=nullptr;}
 
 void physical_incomplete_type_definition() :  {}
 {
-  
+
     <UNITS_T> <BOX_T>
 }
 
@@ -2537,7 +2537,7 @@ void process_statement() : {DString s,s1,s2;Token *tok=nullptr;Token *tok1=nullp
 [ s=identifier() <COLON_T> ]
 [ <POSTPONED_T> ] tok1=<PROCESS_T>
  {
-	m_sharedState->currP=VhdlSpecifier::PROCESS;
+    m_sharedState->currP=VhdlSpecifier::PROCESS;
     m_sharedState->current->startLine=tok1->beginLine;
     m_sharedState->current->bodyLine=tok1->beginLine;
  }
@@ -2560,7 +2560,7 @@ void process_statement() : {DString s,s1,s2;Token *tok=nullptr;Token *tok1=nullp
             m_sharedState->currName=s;
           m_sharedState->current->name=m_sharedState->currName;
           m_sharedState->tempEntry=m_sharedState->current;
-		  m_sharedState->tempEntry->type="";
+          m_sharedState->tempEntry->type="";
           m_sharedState->current->endBodyLine=outlineParser()->getLine();
           m_sharedState->currP=VhdlSpecifier::UNKNOWN;
           if(tok!=nullptr)
@@ -2798,7 +2798,7 @@ s=enumeration_type_definition(){ return s;}
 
 void scalar_incomplete_type_definition() :  {}
 {
-  
+
     <BOX_T>
 }
 
@@ -2814,7 +2814,7 @@ s=identifier() t1=<EQU_T> s1=physical_literal() <SEMI_T>
 {
    outlineParser()->addVhdlType(s,t1->beginLine,
                                 EntryType::makeVariable(),VhdlSpecifier::UNITS,
-                                DString(),s1,Protection::Public);  
+                                DString(),s1,Protection::Public);
    return s+"="+s1; }
 }
 
@@ -2893,8 +2893,8 @@ void sel_wave_list() : {}
 DString sensitivity_list() :  {DString s,s1;Token* tok=nullptr;}
 {
   tok=<ALL_T> { if(tok!=nullptr) return "all" ;}
-  | 
- s=name() (<COMMA_T> s1=name(){s+=",";s+=s1;} )* { return s;}
+  |
+  s=name() (<COMMA_T> s1=name(){s+=",";s+=s1;} )* { return s;}
 }
 
 DString sequence_of_statements() : {DString s,s1;}
@@ -3092,7 +3092,7 @@ void subprogram_body() : {DString s;}
       }
       FlowChart::addFlowChart(FlowChart::BEGIN_NO,"BEGIN",DString());
     }
- 
+
 <BEGIN_T>
 subprogram_statement_part()
 <END_T> [ subprogram_kind() ] [ designator() ] <SEMI_T>

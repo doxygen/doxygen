@@ -42,22 +42,21 @@
 class TranslatorPersian : public TranslatorAdapter_1_7_5
 {
   private:
-  	/** Converts english digits of an input string to persian equivalents.
-	 */
-	DString convertDigitsToFarsi(DString str)
-	{
-		DString output;
-		const char * PersianDigits[] = { "۰", "۱", "۲", "۳", "۴", "۵", "۶", "۷", "۸", "۹" };
-		for(unsigned i=0; i<str.length(); i++)
-		{
-			if (str.at(i) >= '0' && str.at(i) <= '9')
-				output += PersianDigits[ str.at(i) - '0' ];
-			else
-				output += str.at(i);
-		}
+    /** Converts english digits of an input string to persian equivalents.  */
+    DString convertDigitsToFarsi(DString str)
+    {
+      DString output;
+      const char * PersianDigits[] = { "۰", "۱", "۲", "۳", "۴", "۵", "۶", "۷", "۸", "۹" };
+      for(unsigned i=0; i<str.length(); i++)
+      {
+        if (str.at(i) >= '0' && str.at(i) <= '9')
+          output += PersianDigits[ str.at(i) - '0' ];
+        else
+          output += str.at(i);
+      }
 
-		return output;
-	}
+      return output;
+    }
 
   public:
 

@@ -1378,7 +1378,7 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
       else
       {
         return "Було знайдено <b>$num</b> документів відповідно до вашого запиту. "
-	       "Найкращі відповідності показано спочатку.";
+               "Найкращі відповідності показано спочатку.";
       }
     }
     /*! This string is put before the list of matched words, for each search
@@ -1558,32 +1558,32 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
       DString result=clName;
       if (isTemplate)
       {
-	switch(compType)
-	{
-	  case ClassDef::Class:      result+=" Модуль"; break;
-	  case ClassDef::Struct:     result+=" Тип"; break;
-	  case ClassDef::Union:      result+=" Об'єднання"; break;
-	  case ClassDef::Interface:  result+=" Інтерфейс"; break;
-	  case ClassDef::Protocol:   result+=" Протокол"; break;
-	  case ClassDef::Category:   result+=" Категорія"; break;
-	  case ClassDef::Exception:  result+=" Виняток"; break;
+        switch(compType)
+        {
+          case ClassDef::Class:      result+=" Модуль"; break;
+          case ClassDef::Struct:     result+=" Тип"; break;
+          case ClassDef::Union:      result+=" Об'єднання"; break;
+          case ClassDef::Interface:  result+=" Інтерфейс"; break;
+          case ClassDef::Protocol:   result+=" Протокол"; break;
+          case ClassDef::Category:   result+=" Категорія"; break;
+          case ClassDef::Exception:  result+=" Виняток"; break;
           default: break;
-	}
+        }
       }
       else
       {
-	result+=" Шаблон ";
-	switch(compType)
-	{
-	  case ClassDef::Class:      result+="модуля"; break;
-	  case ClassDef::Struct:     result+="типу"; break;
-	  case ClassDef::Union:      result+="об'єднання"; break;
-	  case ClassDef::Interface:  result+="інтерфейсу"; break;
-	  case ClassDef::Protocol:   result+="протоколу"; break;
-	  case ClassDef::Category:   result+="категорії"; break;
-	  case ClassDef::Exception:  result+="винятка"; break;
+        result+=" Шаблон ";
+        switch(compType)
+        {
+          case ClassDef::Class:      result+="модуля"; break;
+          case ClassDef::Struct:     result+="типу"; break;
+          case ClassDef::Union:      result+="об'єднання"; break;
+          case ClassDef::Interface:  result+="інтерфейсу"; break;
+          case ClassDef::Protocol:   result+="протоколу"; break;
+          case ClassDef::Category:   result+="категорії"; break;
+          case ClassDef::Exception:  result+="винятка"; break;
           default: break;
-	}
+        }
       }
       return result;
     }
@@ -1820,7 +1820,7 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
     /*! Used file list for a Java enum */
     DString trEnumGeneratedFromFiles(bool single) override
     { DString result = "Документацію для цього переліку булозгенеровано з ";
-    	    result += (single? "наступного файла": "наступних файлів");
+      result += (single? "наступного файла": "наступних файлів");
       result+=":";
       return result;
     }

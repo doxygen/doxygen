@@ -1624,7 +1624,7 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
                                           }
                                         }
 <SkipCond>{CMD}{CMD}"cond"[ \t]+        {}// escaped cond command
-<SkipCond>{CMD}"cond"/\n                |  
+<SkipCond>{CMD}"cond"/\n                |
 <SkipCond>{CMD}"cond"[ \t]+             { // cond command in a skipped cond section, this section has to be skipped as well
                                           // but has to be recorded to match the endcond command
                                           startCondSection(yyscanner," ");
@@ -1778,7 +1778,7 @@ CondLine>{B}*{CMD}doxyconfig{B}+{DOXYCFG} {
                                           }
                                         }
 <SkipCondVerbatim>^({B}*"*"+)?{B}{0,3}"~~~"[~]*                 {
-                                          if (yyextra->fenceSize==getFenceSize(yytext,yyleng) &&  yyextra->fenceChar=='~') 
+                                          if (yyextra->fenceSize==getFenceSize(yytext,yyleng) &&  yyextra->fenceChar=='~')
                                           {
                                             BEGIN(SkipCond);
                                           }
@@ -1852,7 +1852,7 @@ CondLine>{B}*{CMD}doxyconfig{B}+{DOXYCFG} {
                                           outputChar(yyscanner,'\n');
                                         }
 <SkipCondVerbatim>.                     { }
-<SkipCComment,SkipVerbatim>.            { 
+<SkipCComment,SkipVerbatim>.            {
                                           outputChar(yyscanner,*yytext);
                                         }
 <CopyCComment>[^*a-z_A-Z\x80-\xFF\n]*[^*a-z_A-Z\x80-\xFF\\\n] {

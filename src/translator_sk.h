@@ -121,7 +121,7 @@ class TranslatorSlovak : public TranslatorAdapter_1_8_15
     { return ", vrátane všetkých zdedených členov."; }
 
     /*! this is put at the author sections at the bottom of man pages.
-     *	parameter s is name of the project name.
+     *  parameter s is name of the project name.
      */
     DString trGeneratedAutomatically(const DString &s) override
     { DString result("Generované automaticky programom Doxygen "
@@ -147,7 +147,7 @@ class TranslatorSlovak : public TranslatorAdapter_1_8_15
     // quick reference sections
 
     /*! This is put above each page as a link to the list of all groups of
-     *	compounds or files (see the \\group command).
+     *  compounds or files (see the \\group command).
      */
     DString trModules() override
     { return "Moduly"; }
@@ -369,19 +369,19 @@ class TranslatorSlovak : public TranslatorAdapter_1_8_15
     { return "Register súborov"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
-     *	the documentation of all groups.
+     *  the documentation of all groups.
      */
     DString trModuleDocumentation() override
     { return "Dokumentácia modulov"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
-     *	the documentation of all classes, structs and unions.
+     *  the documentation of all classes, structs and unions.
      */
     DString trClassDocumentation() override
     { return "Dokumentácia tried"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
-     *	the documentation of all files.
+     *  the documentation of all files.
      */
     DString trFileDocumentation() override
     { return "Dokumentácia súborov"; }
@@ -391,73 +391,73 @@ class TranslatorSlovak : public TranslatorAdapter_1_8_15
     { return "Referenčná príručka"; }
 
     /*! This is used in the documentation of a file as a header before the
-     *	list of defines
+     *  list of defines
      */
     DString trDefines() override
     { return "Definícia makier"; }
 
     /*! This is used in the documentation of a file as a header before the
-     *	list of typedefs
+     *  list of typedefs
      */
     DString trTypedefs() override
     { return "Definícia typov"; }
 
     /*! This is used in the documentation of a file as a header before the
-     *	list of enumerations
+     *  list of enumerations
      */
     DString trEnumerations() override
     { return "Enumerácie"; }
 
     /*! This is used in the documentation of a file as a header before the
-     *	list of (global) functions
+     *  list of (global) functions
      */
     DString trFunctions() override
     { return "Funkcie"; }
 
     /*! This is used in the documentation of a file as a header before the
-     *	list of (global) variables
+     *  list of (global) variables
      */
     DString trVariables() override
     { return "Premenné"; }
 
     /*! This is used in the documentation of a file as a header before the
-     *	list of (global) variables
+     *  list of (global) variables
      */
     DString trEnumerationValues() override
     { return "Hodnoty enumerácií"; }
 
     /*! This is used in the documentation of a file before the list of
-     *	documentation blocks for defines
+     *  documentation blocks for defines
      */
     DString trDefineDocumentation() override
     { return "Dokumentácia k definíciám makier"; }
 
     /*! This is used in the documentation of a file/namespace before the list
-     *	of documentation blocks for typedefs
+     *  of documentation blocks for typedefs
      */
     DString trTypedefDocumentation() override
     { return "Dokumentácia definícií typov"; }
 
     /*! This is used in the documentation of a file/namespace before the list
-     *	of documentation blocks for enumeration types
+     *  of documentation blocks for enumeration types
      */
     DString trEnumerationTypeDocumentation() override
     { return "Dokumentácia enumeračných typov"; }
 
     /*! This is used in the documentation of a file/namespace before the list
-     *	of documentation blocks for functions
+     *  of documentation blocks for functions
      */
     DString trFunctionDocumentation() override
     { return "Dokumentácia funkcií"; }
 
     /*! This is used in the documentation of a file/namespace before the list
-     *	of documentation blocks for variables
+     *  of documentation blocks for variables
      */
     DString trVariableDocumentation() override
     { return "Dokumentácia premenných"; }
 
     /*! This is used in the documentation of a file/namespace/group before
-     *	the list of links to documented compounds
+     *  the list of links to documented compounds
      */
     DString trCompounds() override
     {
@@ -472,7 +472,7 @@ class TranslatorSlovak : public TranslatorAdapter_1_8_15
     }
 
     /*! This is used in the standard footer of each page and indicates when
-     *	the page was generated
+     *  the page was generated
      */
     DString trGeneratedAt(const DString &date,const DString &projName) override
     {
@@ -536,7 +536,7 @@ class TranslatorSlovak : public TranslatorAdapter_1_8_15
     }
 
     /*! used in the class documentation as a header before the list of all
-     *	friends of a class
+     *  friends of a class
      */
     DString trFriends() override
     { return "Priatelia (friends)"; }
@@ -564,9 +564,9 @@ class TranslatorSlovak : public TranslatorAdapter_1_8_15
       if (isTemplate) result+="šablóny ";
       switch(compType)
       {
-        case ClassDef::Class:	   result+="triedy "; break;
-        case ClassDef::Struct:	   result+="štruktúry "; break;
-        case ClassDef::Union:	   result+="unionu "; break;
+        case ClassDef::Class:      result+="triedy "; break;
+        case ClassDef::Struct:     result+="štruktúry "; break;
+        case ClassDef::Union:      result+="unionu "; break;
         case ClassDef::Interface:  result+="rozhrania "; break;
         case ClassDef::Protocol:   result+="protokol "; break;
         case ClassDef::Category:   result+="kategória "; break;
@@ -616,7 +616,7 @@ class TranslatorSlovak : public TranslatorAdapter_1_8_15
     { return "Statické privátne metódy"; }
 
     /*! this function is used to produce a comma-separated list of items.
-     *	use generateMarker(i) to indicate where item i should be put.
+     *  use generateMarker(i) to indicate where item i should be put.
      */
     DString trWriteList(int numEntries) override
     {
@@ -632,7 +632,7 @@ class TranslatorSlovak : public TranslatorAdapter_1_8_15
         {
           if (i<numEntries-2) // not the fore last entry
             result+=", ";
-          else				  // the fore last entry
+          else                // the fore last entry
             result+=" a ";
         }
       }
@@ -640,7 +640,7 @@ class TranslatorSlovak : public TranslatorAdapter_1_8_15
     }
 
     /*! used in class documentation to produce a list of base classes,
-     *	if class diagrams are disabled.
+     *  if class diagrams are disabled.
      */
     DString trInheritsList(int numEntries) override
     {
@@ -651,7 +651,7 @@ class TranslatorSlovak : public TranslatorAdapter_1_8_15
     }
 
     /*! used in class documentation to produce a list of super classes,
-     *	if class diagrams are disabled.
+     *  if class diagrams are disabled.
      */
     DString trInheritedByList(int numEntries) override
     {
@@ -662,7 +662,7 @@ class TranslatorSlovak : public TranslatorAdapter_1_8_15
     }
 
     /*! used in member documentation blocks to produce a list of
-     *	members that are hidden by this one.
+     *  members that are hidden by this one.
      */
     DString trReimplementedFromList(int numEntries) override
     {
@@ -673,7 +673,7 @@ class TranslatorSlovak : public TranslatorAdapter_1_8_15
     }
 
     /*! used in member documentation blocks to produce a list of
-     *	all member that overwrite the implementation of this member.
+     *  all member that overwrite the implementation of this member.
      */
     DString trReimplementedInList(int numEntries) override
     {
@@ -701,13 +701,13 @@ class TranslatorSlovak : public TranslatorAdapter_1_8_15
       return result;
     }
     /*! This is used in LaTeX as the title of the chapter with the
-     *	index of all namespaces.
+     *  index of all namespaces.
      */
     DString trNamespaceIndex() override
     { return "Register priestorov mien"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
-     *	the documentation of all namespaces.
+     *  the documentation of all namespaces.
      */
     DString trNamespaceDocumentation() override
     { return "Dokumentácia priestorov mien"; }
@@ -717,7 +717,7 @@ class TranslatorSlovak : public TranslatorAdapter_1_8_15
 //////////////////////////////////////////////////////////////////////////
 
     /*! This is used in the documentation before the list of all
-     *	namespaces in a file.
+     *  namespaces in a file.
      */
     DString trNamespaces() override
     { return "Priestory mien"; }
@@ -727,7 +727,7 @@ class TranslatorSlovak : public TranslatorAdapter_1_8_15
 //////////////////////////////////////////////////////////////////////////
 
     /*! This is put at the bottom of a class documentation page and is
-     *	followed by a list of files that were used to generate the page.
+     *  followed by a list of files that were used to generate the page.
      */
     DString trGeneratedFromFiles(ClassDef::CompoundType compType,
         bool single) override
@@ -736,9 +736,9 @@ class TranslatorSlovak : public TranslatorAdapter_1_8_15
       DString result="Dokumentácia pre ";
       switch(compType)
       {
-        case ClassDef::Class:	   result+="túto triedu"; break;
-        case ClassDef::Struct:	   result+="túto štruktúru (struct)"; break;
-        case ClassDef::Union:	   result+="tento union"; break;
+        case ClassDef::Class:      result+="túto triedu"; break;
+        case ClassDef::Struct:     result+="túto štruktúru (struct)"; break;
+        case ClassDef::Union:      result+="tento union"; break;
         case ClassDef::Interface:  result+="toto rozhranie"; break;
         case ClassDef::Protocol:   result+="protokol"; break;
         case ClassDef::Category:   result+="kategória"; break;
@@ -747,7 +747,7 @@ class TranslatorSlovak : public TranslatorAdapter_1_8_15
       }
       result+=" bola generovaná z ";
       if (single) result+="nasledujúceho súboru:";
-      else		  result+="nasledujúcich súborov:";
+      else        result+="nasledujúcich súborov:";
       return result;
     }
 
@@ -765,7 +765,7 @@ class TranslatorSlovak : public TranslatorAdapter_1_8_15
     { return "Hlavná stránka"; }
 
     /*! This is used in references to page that are put in the LaTeX
-     *	documentation. It should be an abbreviation of the word page.
+     *  documentation. It should be an abbreviation of the word page.
      */
     DString trPageAbbreviation() override
     { return "s."; }
@@ -1001,7 +1001,7 @@ class TranslatorSlovak : public TranslatorAdapter_1_8_15
         "                  public Templ<int>\n"
         "{\n"
         "  private:\n"
-        "	 Used *m_usedClass;\n"
+        "   Used *m_usedClass;\n"
         "};\n"
         "\\endcode\n"
         "K vyššie uvedenému bude vygenerovaný nasledujúci graf:"
@@ -1140,8 +1140,8 @@ class TranslatorSlovak : public TranslatorAdapter_1_8_15
     }
 
     /*! This is used for translation of the word that will possibly
-     *	be followed by a single name or by a list of names
-     *	of the category.
+     *  be followed by a single name or by a list of names
+     *  of the category.
      */
     DString trClass(bool first_capital, bool singular) override
     {
@@ -1149,8 +1149,8 @@ class TranslatorSlovak : public TranslatorAdapter_1_8_15
     }
 
     /*! This is used for translation of the word that will possibly
-     *	be followed by a single name or by a list of names
-     *	of the category.
+     *  be followed by a single name or by a list of names
+     *  of the category.
      */
     DString trFile(bool first_capital, bool singular) override
     {
@@ -1158,8 +1158,8 @@ class TranslatorSlovak : public TranslatorAdapter_1_8_15
     }
 
     /*! This is used for translation of the word that will possibly
-     *	be followed by a single name or by a list of names
-     *	of the category.
+     *  be followed by a single name or by a list of names
+     *  of the category.
      */
     DString trNamespace(bool first_capital, bool singular) override
     {
@@ -1167,8 +1167,8 @@ class TranslatorSlovak : public TranslatorAdapter_1_8_15
     }
 
     /*! This is used for translation of the word that will possibly
-     *	be followed by a single name or by a list of names
-     *	of the category.
+     *  be followed by a single name or by a list of names
+     *  of the category.
      */
     DString trGroup(bool first_capital, bool singular) override
     {
@@ -1176,8 +1176,8 @@ class TranslatorSlovak : public TranslatorAdapter_1_8_15
     }
 
     /*! This is used for translation of the word that will possibly
-     *	be followed by a single name or by a list of names
-     *	of the category.
+     *  be followed by a single name or by a list of names
+     *  of the category.
      */
     DString trPage(bool first_capital, bool singular) override
     {
@@ -1185,8 +1185,8 @@ class TranslatorSlovak : public TranslatorAdapter_1_8_15
     }
 
     /*! This is used for translation of the word that will possibly
-     *	be followed by a single name or by a list of names
-     *	of the category.
+     *  be followed by a single name or by a list of names
+     *  of the category.
      */
     DString trMember(bool first_capital, bool singular) override
     {
@@ -1194,8 +1194,8 @@ class TranslatorSlovak : public TranslatorAdapter_1_8_15
     }
 
     /*! This is used for translation of the word that will possibly
-     *	be followed by a single name or by a list of names
-     *	of the category.
+     *  be followed by a single name or by a list of names
+     *  of the category.
      */
     DString trGlobal(bool first_capital, bool singular) override
     {
@@ -1207,7 +1207,7 @@ class TranslatorSlovak : public TranslatorAdapter_1_8_15
 //////////////////////////////////////////////////////////////////////////
 
     /*! This text is generated when the \\author command is used and
-     *	for the author section in man pages. */
+     *  for the author section in man pages. */
     DString trAuthor(bool first_capital, bool singular) override
     {
       return createNoun(first_capital, singular, "autor", "i");
@@ -1229,7 +1229,7 @@ class TranslatorSlovak : public TranslatorAdapter_1_8_15
 //////////////////////////////////////////////////////////////////////////
 
     /*! used in member documentation blocks to produce a list of
-     *	members that are implemented by this one.
+     *  members that are implemented by this one.
      */
     DString trImplementedFromList(int numEntries) override
     {
@@ -1237,7 +1237,7 @@ class TranslatorSlovak : public TranslatorAdapter_1_8_15
     }
 
     /*! used in member documentation blocks to produce a list of
-     *	all members that implement this member.
+     *  all members that implement this member.
      */
     DString trImplementedInList(int numEntries) override
     {
@@ -1249,7 +1249,7 @@ class TranslatorSlovak : public TranslatorAdapter_1_8_15
 //////////////////////////////////////////////////////////////////////////
 
     /*! used in RTF documentation as a heading for the Table
-     *	of Contents.
+     *  of Contents.
      */
     DString trRTFTableOfContents() override
     {
@@ -1261,7 +1261,7 @@ class TranslatorSlovak : public TranslatorAdapter_1_8_15
 //////////////////////////////////////////////////////////////////////////
 
     /*! Used as the header of the list of item that have been
-     *	flagged deprecated
+     *  flagged deprecated
      */
     DString trDeprecatedList() override
     {

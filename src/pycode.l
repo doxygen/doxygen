@@ -1244,8 +1244,8 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
   DBG_CTX((stderr,"generateClassOrGlobalLink(className=%s)\n",qPrint(className)));
 
   const ScopedTypeVariant *lcd = nullptr;
-  const ClassDef *cd=nullptr;             // Class def that we may find 
-  const MemberDef *md=nullptr;            // Member def that we may find 
+  const ClassDef *cd=nullptr;             // Class def that we may find
+  const MemberDef *md=nullptr;            // Member def that we may find
   //bool isLocal=false;
 
   if ((lcd=yyextra->theVarContext.findVariable(className))==nullptr) // not a local variable

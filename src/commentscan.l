@@ -636,7 +636,7 @@ LINENR    {Bopt}[1-9][0-9]*
 IFILELINE  ("\\ifile \""[^"]*"\" \\iline "[0-9]+" "("iprefix \""[^"]*"\" ")?("iraise "[0-9]+" ")?)
 DOXYCFG   [A-Z][A-Z_0-9]*
 
-  // C start comment 
+  // C start comment
 CCS   "/\*"
   // C end comment
 CCE   "*\/"
@@ -1266,7 +1266,7 @@ STopt  [^\n@\\]*
                                           if (*yytext=='\n')
                                           {
                                             yyextra->lineNr++;
-                                            addOutput(yyscanner," \\iline "+DString().setNum(yyextra->lineNr)+" "); 
+                                            addOutput(yyscanner," \\iline "+DString().setNum(yyextra->lineNr)+" ");
                                           }
                                         }
 <HtmlComment>[^\\\n\-]+                 { // ignore unimportant characters
@@ -2653,7 +2653,7 @@ STopt  [^\n@\\]*
                                         }
 <SkipGuardedSection>[^ \\@\n]+          { // skip non-special characters
                                         }
-<SkipGuardedSection>{CMD}{CMD}          | 
+<SkipGuardedSection>{CMD}{CMD}          |
 <SkipGuardedSection>.                   { // any other character
                                         }
 

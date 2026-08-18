@@ -9975,7 +9975,7 @@ if(s.empty())
             m_sharedState->currName=s;
           m_sharedState->current->name=m_sharedState->currName;
           m_sharedState->tempEntry=m_sharedState->current;
-                  m_sharedState->tempEntry->type="";
+          m_sharedState->tempEntry->type="";
           m_sharedState->current->endBodyLine=outlineParser()->getLine();
           m_sharedState->currP=VhdlSpecifier::UNKNOWN;
           if(tok!=nullptr)

@@ -238,10 +238,10 @@ void writeMscImageMapFromFile(TextStream &t,const DString &inFile,
                               const DString &relPath,
                               const DString &baseName,
                               const DString &context,
-			      MscOutputFormat format,
+                              MscOutputFormat format,
                               const DString &srcFile,
                               int srcLine
- 			    )
+                             )
 {
   DString mapName = baseName+".map";
   t << "<img src=\"" << relPath << baseName << ".";

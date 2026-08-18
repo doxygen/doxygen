@@ -2076,11 +2076,11 @@ void HtmlGenerator::docify_(const DString &str,bool inHtmlComment)
                      { m_t << "&lt;"; p++; }
                    else if (*p=='>')
                      { m_t << "&gt;"; p++; }
-		   else if (*p=='[')
+                   else if (*p=='[')
                      { m_t << "\\&zwj;["; p++; }
                    else if (*p==']')
                      { m_t << "\\&zwj;]"; p++; }
-		   else if (*p=='(')
+                   else if (*p=='(')
                      { m_t << "\\&zwj;("; p++; }
                    else if (*p==')')
                      { m_t << "\\&zwj;)"; p++; }

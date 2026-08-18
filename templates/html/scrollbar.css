@@ -8,16 +8,16 @@
 }
 
 ::-webkit-scrollbar {
-        background-color: var(--scrollbar-background-color);
-        height: 12px;
-        width: 12px;
+    background-color: var(--scrollbar-background-color);
+    height: 12px;
+    width: 12px;
 }
 ::-webkit-scrollbar-thumb {
-        border-radius: 6px;
-        box-shadow: inset 0 0 12px 12px var(--scrollbar-thumb-color);
-        border: solid 2px transparent;
+    border-radius: 6px;
+    box-shadow: inset 0 0 12px 12px var(--scrollbar-thumb-color);
+    border: solid 2px transparent;
 }
 ::-webkit-scrollbar-corner {
-        background-color: var(--scrollbar-background-color);
+    background-color: var(--scrollbar-background-color);
 }
 

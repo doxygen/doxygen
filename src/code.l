@@ -322,11 +322,11 @@ FLOAT_NUMBER {FLOAT_DECIMAL}|{FLOAT_HEXADECIMAL}
 NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
   //- end: NUMBER ---------------------------------------------------------------------------
 
-  // C start comment 
+  // C start comment
 CCS   "/\*"
   // C end comment
 CCE   "*\/"
-  // Cpp comment 
+  // Cpp comment
 CPPC  "/\/"
 
   // ENDIDopt
@@ -1749,7 +1749,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                             unput(*yytext);
                                             BEGIN(CallEnd);
                                           }
-                                          else 
+                                          else
                                           {
                                             yyextra->code->codify(yytext);
                                           }
@@ -2091,7 +2091,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           codifyLines(yyscanner,yytext);
                                           BEGIN(SkipComment);
                                         }
-<*>^{B}*{CCS}"*"[*]+/[^/]               { 
+<*>^{B}*{CCS}"*"[*]+/[^/]               {
                                           // check is to prevent getting stuck in skipping C++ comments
                                           if (YY_START != SkipComment && YY_START != SkipCxxComment)
                                           {
@@ -2477,7 +2477,7 @@ static void startCodeLine(yyscan_t yyscanner)
   }
   DBG_CTX((stderr,"startCodeLine(%d)\n",yyextra->yyLineNr));
   yyextra->code->startCodeLine(yyextra->yyLineNr);
-  yyextra->insideCodeLine = true;  
+  yyextra->insideCodeLine = true;
   if (yyextra->currentFontClass)
   {
     yyextra->code->startFontClass(yyextra->currentFontClass);

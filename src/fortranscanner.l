@@ -220,7 +220,7 @@ struct fortranscannerYY_state
 
   int fixedCommentAfter = 72;
   //! counter for the number of main programs in this file
-  int mainPrograms      = 0; 
+  int mainPrograms      = 0;
   int curIndent         = 0;
 };
 
@@ -590,7 +590,7 @@ FILEMASK  {VFILEMASK}|{HFILEMASK}
                                           }
 
                                           yyextra->current->section = EntryType::makeFunction();
-                                          yyextra->current->name = name; 
+                                          yyextra->current->name = name;
                                           yyextra->moduleProcedures.push_back(yyextra->current);
                                           addCurrentEntry(yyscanner,true);
                                         }
@@ -1610,7 +1610,7 @@ private                                 {
                                           }
                                           else
                                           {
-                                            DString indent; 
+                                            DString indent;
                                             indent.fill(' ',computeIndent(yytext) + 2);
                                             yyextra->docBlock += indent;
                                           }
@@ -2180,7 +2180,7 @@ void resolveModuleProcedures(yyscan_t yyscanner,Entry *current_root)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   if (yyextra->moduleProcedures.empty()) return;
- 
+
   // build up map of available functions
   std::map<std::string,std::shared_ptr<Entry>> procMap;
   {
@@ -2923,7 +2923,7 @@ static void addModule(yyscan_t yyscanner,const DString &name, bool isModule)
     DString fname = yyextra->fileName;
     size_t index1 = fname.rfind('/');
     size_t index2 = fname.rfind('\\');
-    size_t index = index1!=DString::npos && index2!=DString::npos ? std::max(index1,index2) : 
+    size_t index = index1!=DString::npos && index2!=DString::npos ? std::max(index1,index2) :
                    index1!=DString::npos ? index1 : index2;
     if (index!=DString::npos) fname = fname.mid(index+1);
     if (yyextra->mainPrograms) fname += "__" + DString().setNum(yyextra->mainPrograms);

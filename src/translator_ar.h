@@ -239,7 +239,7 @@ class TranslatorArabic : public TranslatorAdapter_1_4_6
     {
       DString result="هذه قائمة بكل الملفات";
       if (!extractAll) result+="الموثقة ";
-	  result+="مع وصف مختصر :";
+      result+="مع وصف مختصر :";
       return result;
     }
 
@@ -254,7 +254,7 @@ class TranslatorArabic : public TranslatorAdapter_1_4_6
       else
       {
         return "هذه هي الفئات ، البناءات ،"
-			"الإتحادات والواجهات مع وصف مختصر:";
+              "الإتحادات والواجهات مع وصف مختصر:";
       }
     }
 
@@ -271,7 +271,7 @@ class TranslatorArabic : public TranslatorAdapter_1_4_6
       {
         result+="أعضاء الفئة";
       }
-	  if (!extractAll)
+     if (!extractAll)
       {
         result+=" الموثقة ";
       }
@@ -758,7 +758,7 @@ class TranslatorArabic : public TranslatorAdapter_1_4_6
         default: break;
       }
       result+=" تم تكوينه من ";
-	  if (single) result+="هذا الملف:"; else result+="هذه الملفات:";
+      if (single) result+="هذا الملف:"; else result+="هذه الملفات:";
       return result;
     }
 
@@ -850,7 +850,7 @@ class TranslatorArabic : public TranslatorAdapter_1_4_6
     /*! Text shown before a multi-line variable/enum initialization */
     DString trInitialValue() override
     {
-		return "قيمة مبدئية:";
+      return "قيمة مبدئية:";
     }
     /*! Text used the source code in the file index */
     DString trCode() override
@@ -1106,7 +1106,7 @@ class TranslatorArabic : public TranslatorAdapter_1_4_6
     /*! The description of the package index page */
     DString trPackageListDescription() override
     {
-		return "هذه هي الحزم مع وصف مختصر لكل منها )إن وجد( :";
+      return "هذه هي الحزم مع وصف مختصر لكل منها )إن وجد( :";
     }
     /*! The link name in the Quick links header for each page */
     DString trPackages() override
@@ -1116,7 +1116,7 @@ class TranslatorArabic : public TranslatorAdapter_1_4_6
     /*! Text shown before a multi-line define */
     DString trDefineValue() override
     {
-		return "القيمة:";
+      return "القيمة:";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1402,7 +1402,7 @@ class TranslatorArabic : public TranslatorAdapter_1_4_6
     /*! Put in front of the call graph for a function. */
     DString trCallGraph() override
     {
-		return "هذا هو رسم الاستدعاء لهذه الدالة:";
+      return "هذا هو رسم الاستدعاء لهذه الدالة:";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1445,7 +1445,7 @@ class TranslatorArabic : public TranslatorAdapter_1_4_6
      */
     DString trSearchMatches() override
     {
-		return "يتطابق مع:";
+      return "يتطابق مع:";
     }
 
 //////////////////////////////////////////////////////////////////////////

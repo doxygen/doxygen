@@ -335,7 +335,7 @@ const MemberDef* VhdlDocGen::findMemberDef(ClassDef* cd,const DString& key,Membe
     return nullptr;
   }
   //int l=ml->count();
-  //	fprintf(stderr,"\n loading entity %s %s: %d",qPrint(cd->symbolName()),qPrint(keyType),l);
+  //fprintf(stderr,"\n loading entity %s %s: %d",qPrint(cd->symbolName()),qPrint(keyType),l);
 
   for (const auto &md : *ml)
   {
@@ -1116,8 +1116,8 @@ bool VhdlDocGen::writeFuncProcDocu(
     ol.enable(OutputType::Man);
     if (!VhdlDocGen::isProcess(md))
     {
-     // startFonts(arg.type,"vhdlkeyword",ol);
-		VhdlDocGen::writeFormatString(arg.type,ol,md);
+      // startFonts(arg.type,"vhdlkeyword",ol);
+      VhdlDocGen::writeFormatString(arg.type,ol,md);
     }
     ol.disable(OutputType::Man);
     ol.endEmphasis();
@@ -1324,7 +1324,7 @@ bool VhdlDocGen::writeVHDLTypeDocumentation(const MemberDef* mdef, const Definit
     if (c || brec || largs.stripPrefix("units"))
     {
       if (c)
-	  largs=ttype;
+        largs=ttype;
       VhdlDocGen::writeRecUnitDocu(mdef,ol,largs);
       return hasParams;
     }

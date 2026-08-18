@@ -59,23 +59,23 @@
 }
 
 .tablist li.current {
-	position: relative;
+    position: relative;
 }
 
-.tablist li.current a:after {   
-	content: '';
-	position: absolute;
-	left: 15px;
-	right: 15px;
-	top: 35px;
-	height: 1px;
-	display: block;
-	background-color: var(--nav-menu-active-color);
-	border: 1px solid var(--nav-menu-active-color);
-	border-radius: 2px 2px 0px 0px;
+.tablist li.current a:after {
+    content: '';
+    position: absolute;
+    left: 15px;
+    right: 15px;
+    top: 35px;
+    height: 1px;
+    display: block;
+    background-color: var(--nav-menu-active-color);
+    border: 1px solid var(--nav-menu-active-color);
+    border-radius: 2px 2px 0px 0px;
 }
 
 #navrow4 .tablist li.current a:after {
-	left: 5px;
-	right: 5px;
+    left: 5px;
+    right: 5px;
 }

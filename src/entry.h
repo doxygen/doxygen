@@ -171,8 +171,8 @@ class Entry
 
     // identification
     EntryType    section;     //!< entry type (see Sections);
-    DString	 type;        //!< member type
-    DString	 name;        //!< member name
+    DString      type;        //!< member type
+    DString      name;        //!< member name
     bool         hasTagInfo;  //!< is tag info valid
     TagInfo      tagInfoData; //!< tag file info data
     const TagInfo *tagInfo() const { return hasTagInfo ? &tagInfoData : nullptr; }
@@ -222,8 +222,8 @@ class Entry
     std::vector<BaseInfo> extends; //!< list of base classes
     std::vector<Grouping> groups;  //!< list of groups this entry belongs to
     std::vector<const SectionInfo*> anchors; //!< list of anchors defined in this entry
-    DString	fileName;     //!< file this entry was extracted from
-    int		startLine;    //!< start line of entry in the source
+    DString     fileName;     //!< file this entry was extracted from
+    int         startLine;    //!< start line of entry in the source
     size_t      startColumn;  //!< start column of entry in the source
     RefItemVector sli;        //!< special lists (test/todo/bug/deprecated/..) this entry is in
     RequirementRefs rqli;     //!< references to requirements

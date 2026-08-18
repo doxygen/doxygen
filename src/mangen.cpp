@@ -522,7 +522,7 @@ void ManGenerator::startDoxyAnchor(const DString &,const DString &manName,
     // something to be done?
     if( !Config_getBool(MAN_LINKS) )
     {
-	return; // no
+      return; // no
     }
 
     // the name of the link file is derived from the name of the anchor:

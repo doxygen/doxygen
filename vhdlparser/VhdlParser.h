@@ -2831,7 +2831,7 @@ void parseInline();
     return false;
   }
 
- inline bool jj_3R_sensitivity_list_2897_12_622()
+ inline bool jj_3R_sensitivity_list_2897_13_622()
  {
     if (jj_done) return true;
     if (jj_scan_token(COMMA_T)) return true;
@@ -2888,14 +2888,14 @@ void parseInline();
     return false;
   }
 
- inline bool jj_3R_sensitivity_list_2897_2_512()
+ inline bool jj_3R_sensitivity_list_2897_3_512()
  {
     if (jj_done) return true;
     if (jj_3R_name_2142_2_73()) return true;
     Token * xsp;
     while (true) {
       xsp = jj_scanpos;
-      if (jj_3R_sensitivity_list_2897_12_622()) { jj_scanpos = xsp; break; }
+      if (jj_3R_sensitivity_list_2897_13_622()) { jj_scanpos = xsp; break; }
     }
     return false;
   }
@@ -2928,7 +2928,7 @@ void parseInline();
     xsp = jj_scanpos;
     if (jj_3R_sensitivity_list_2895_3_511()) {
     jj_scanpos = xsp;
-    if (jj_3R_sensitivity_list_2897_2_512()) return true;
+    if (jj_3R_sensitivity_list_2897_3_512()) return true;
     }
     return false;
   }
@@ -11112,7 +11112,7 @@ void parseInline();
   }
 
 
-public: 
+public:
   void setErrorHandler(ErrorHandler *eh) {
     if (errorHandler) delete errorHandler;
     errorHandler = eh;
@@ -11125,7 +11125,7 @@ public:
   /** Next token. */
   Token        *jj_nt = nullptr;
 
-private: 
+private:
   int           jj_ntk;
   JJCalls       jj_2_rtns[169];
   bool          jj_rescan;
@@ -11139,11 +11139,11 @@ private:
   int           jj_la1[388];
   ErrorHandler *errorHandler = nullptr;
 
-protected: 
+protected:
   bool          hasError;
 
-  Token *head; 
-public: 
+  Token *head;
+public:
   VhdlParser(TokenManager *tokenManager);
   virtual ~VhdlParser();
 void ReInit(TokenManager* tokenManager);
@@ -11162,7 +11162,7 @@ protected:
   /** Generate ParseException. */
   virtual void  parseError();
 private:
-  int  indent;	// trace indentation
+  int  indent;        // trace indentation
   bool trace = false; // trace enabled if true
 
 public:

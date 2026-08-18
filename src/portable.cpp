@@ -164,7 +164,7 @@ int Portable::system(const DString &command,const DString &args,bool commandHasC
   if (pid==-1)
   {
     perror("fork error");
-	  return -1;
+    return -1;
   }
   if (pid==0)
   {
@@ -444,7 +444,7 @@ const char *Portable::ghostScriptCommand()
         for (int i = 0; i < sizeof(gsExec) / sizeof(*gsExec); i++)
         {
             if (ExistsOnPath(gsExec[i]))
-	    {
+            {
                 gsexe = gsExec[i];
                 return gsexe;
             }

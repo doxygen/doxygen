@@ -542,7 +542,7 @@ void LatexDocVisitor::operator()(const DocInclude &inc)
                                                   .setExample(inc.isExample(), inc.exampleFile())
                                                   .setFileDef(fd.get())
                                                   .setInlineFragment(true)
-       				                 );
+                                                 );
         m_ci.endCodeFragment("DoxyCodeInclude");
       }
       break;

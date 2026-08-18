@@ -250,8 +250,8 @@ class TranslatorRomanian : public TranslatorAdapter_1_8_15
     {
       DString result="Lista tuturor ";
       result+="fişierelor";
-	  if (!extractAll) result+=" documentate";
-	  result+=", cu scurte descrieri:";
+      if (!extractAll) result+=" documentate";
+      result+=", cu scurte descrieri:";
       return result;
     }
 
@@ -269,7 +269,7 @@ class TranslatorRomanian : public TranslatorAdapter_1_8_15
       else
       {
         return "Lista claselor, structurilor, uniunilor şi interfeţelor"
-		", cu scurte descrieri:";
+               ", cu scurte descrieri:";
       }
 
     }
@@ -288,7 +288,7 @@ class TranslatorRomanian : public TranslatorAdapter_1_8_15
       else
       {
         result+="membrilor ";
-	  if (!extractAll) result+="documentaţi ";
+        if (!extractAll) result+="documentaţi ";
         result+="din toate clasele ";
       }
       result+=", cu legături către ";
@@ -325,13 +325,13 @@ class TranslatorRomanian : public TranslatorAdapter_1_8_15
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         result+="funcţiilor, variabilelor, definiţiilor, enumerărilor şi definiţiilor de tip";
-	  if (!extractAll) result+=" documentate";
+        if (!extractAll) result+=" documentate";
       }
       else
       {
         result+="membrilor ";
-	  if (!extractAll) result+="documentaţi ";
-	  result+="din toate fişierele";
+        if (!extractAll) result+="documentaţi ";
+        result+="din toate fişierele";
       }
       result+=", cu legături către ";
       if (extractAll)
@@ -573,8 +573,8 @@ class TranslatorRomanian : public TranslatorAdapter_1_8_15
     {
       DString result="Lista tuturor ";
       result+="namespace-urilor ";
-	  if (!extractAll) result+="documentate ";
-	  result+=", cu scurte descrieri:";
+      if (!extractAll) result+="documentate ";
+      result+=", cu scurte descrieri:";
       return result;
     }
 
@@ -603,7 +603,7 @@ class TranslatorRomanian : public TranslatorAdapter_1_8_15
                                     ClassDef::CompoundType compType,
                                     bool isTemplate) override
     {
-	  DString result="Referinţă la ";
+      DString result="Referinţă la ";
       switch(compType)
       {
         case ClassDef::Class:      result+="clasa "; break;
@@ -724,7 +724,7 @@ class TranslatorRomanian : public TranslatorAdapter_1_8_15
     {
       DString result="Lista tuturor membrilor ";
       if (!extractAll) result+="documentaţi ";
-	  result+="din toate namespace-urile, cu legături către ";
+      result+="din toate namespace-urile, cu legături către ";
 
       if (extractAll)
         result+="documentaţia namespace-ului pentru fiecare membru în parte:";
@@ -981,7 +981,7 @@ class TranslatorRomanian : public TranslatorAdapter_1_8_15
     DString trInclByDepGraph() override
     {
       return "Acest graf arată care fişiere includ, "
-		  "direct sau indirect, acest fişier:";
+             "direct sau indirect, acest fişier:";
     }
     DString trSince() override
     {
@@ -1002,7 +1002,7 @@ class TranslatorRomanian : public TranslatorAdapter_1_8_15
     {
       return
         "Această pagină arată modul în care trebuie să interpretaţi "
-		"grafurile generate de doxygen.<p>\n"
+        "grafurile generate de doxygen.<p>\n"
         "Consideraţi următorul exemplu:\n"
         "\\code\n"
         "/*! Clasă invizibilă, tăiată din cauza depăşirii spaţiului */\n"
@@ -1624,14 +1624,14 @@ class TranslatorRomanian : public TranslatorAdapter_1_8_15
         default: break;
       }
       if (isTemplate) result+="(Template) ";
-	  result+=clName;
+        result+=clName;
       return result;
     }
     /*! used as the title of the HTML page of a module (Fortran) */
     DString trModuleReference(const DString &namespaceName) override
     {
       DString result="Referinţă la Modulul ";
-	  result += namespaceName;
+      result += namespaceName;
       return result;
     }
 

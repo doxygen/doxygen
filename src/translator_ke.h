@@ -16,12 +16,12 @@
  */
 
 //
-//	Update:
+// Update:
 //
 // 2004.12.22 (SooYoung Jung: jung5000@gmail.com)
-//	- LaTex and RTF were not generated correctly.
-// 	  Corrected trRTFansicp and trRTFCharSet.
-// 	  It was wrong.
+// - LaTex and RTF were not generated correctly.
+//   Corrected trRTFansicp and trRTFCharSet.
+//   It was wrong.
 //
 //
 

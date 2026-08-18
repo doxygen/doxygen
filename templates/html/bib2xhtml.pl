@@ -21,108 +21,108 @@
 
 use Getopt::Std;
 use open IO => ':crlf';
-$label_styles{'numbered'} = 	$LABEL_NUMBERED = 	2;
+$label_styles{'numbered'} = $LABEL_NUMBERED = 2;
 $list_start[$LABEL_NUMBERED] = 'dl class="citelist"';
 $list_end[$LABEL_NUMBERED] = "/dl";
 @tmpfiles = ();
 sub html_ent {
-	s/\\i\b/i/g;
-	s/\\\'(\001\d+)\{([AEIOUaeiou])\1\}/&$2acute;/gs;
-	s/\\\'([AEIOUaeiou])/&$1acute;/g;
-	s/\\\`(\001\d+)\{([AEIOUaeiou])\1\}/&$2grave;/gs;
-	s/\\\`([AEIOUaeiou])/&$1grave;/g;
-	s/\\\"(\001\d+)\{([AEIOUaeiouy])\1\}/&$2uml;/gs;
-	s/\\\"([AEIOUaeiouy])/&$1uml;/g;
-	s/\\\~(\001\d+)\{([ANOano])\1\}/&$2tilde;/gs;
-	s/\\\~([ANOano])/&$1tilde;/g;
-	s/\\\^(\001\d+)\{([AEIOUaeiou])\1\}/&$2circ;/gs;
-	s/\\\^([AEIOUaeiou])/&$1circ;/g;
-	s/\\c(\001\d+)\{([Cc])\1\}/&$2cedil;/gs;
-	s/\\u(\001\d+)\{(.)\1\}/$2/gs;
-	s/\\v(\001\d+)\{(.)\1\}/$2/gs;
-	s/\\([lL])\b/$1/g;
-	s/\\\=(\001\d+)\{(.)\1\}/$2/gs;
-	s/\\\=(.)/$1/g;
-	s/\\\.(\001\d+)\{(.)\1\}/$2/gs;
-	s/\\\.(.)/$1/g;
-	s/\\([Oo])\b\s*/&$1slash;/g;
-	s/\\AA\b\s*/&Aring;/g;
-	s/\\aa\b\s*/&aring;/g;
-	s/\\AE\b\s*/&AElig;/g;
-	s/\\ae\b\s*/&aelig;/g;
-	s/\\ss\b\s*/&szlig;/g;
-	s/\\S\b\s*/&sect;/g;
-	s/\\P\b\s*/&para;/g;
-	s/\\pounds\b\s*/&pound;/g;
-	s/\?\`/&iquest;/g;
-	s/\!\`/&iexcl;/g;
-	s/\-\-\-/&mdash;/g;
-	s/([^\!])\-\-([^\>])/$1&ndash;$2/g;
-	s/(CITEREF_[^\!]+)&ndash;([^\>])/$1--$2/g;
-	s/(CITEREF_[^\!]+)&mdash;([^\>])/$1---$2/g;
-	s/\\([aA]lpha)\b/&$1;/g;
-	s/\\([bB]eta)\b/&$1;/g;
-	s/\\([gG]amma)\b/&$1;/g;
-	s/\\([dD]elta)\b/&$1;/g;
-	s/\\varepsilon\b/&epsilon;/g;
-	s/\\([eE]psilon)\b/&$1;/g;
-	s/\\([zZ]eta)\b/&$1;/g;
-	s/\\([eE]ta)\b/&$1;/g;
-	s/\\([tT]heta)\b/&$1;/g;
-	s/\\vartheta\b/&theta;/g;
-	s/\\([iI]ota)\b/&$1;/g;
-	s/\\([kK]appa)\b/&$1;/g;
-	s/\\([lL]ambda)\b/&$1;/g;
-	s/\\([mM]u)\b/&$1;/g;
-	s/\\([nN]u)\b/&$1;/g;
-	s/\\([xX]i)\b/&$1;/g;
-	s/\\([oO]micron)\b/&$1;/g;
-	s/\\([pP]i)\b/&$1;/g;
-	s/\\varpi\b/&pi;/g;
-	s/\\([rR]ho)\b/&$1;/g;
-	s/\\varrho\b/&rho;/g;
-	s/\\([sS]igma)\b/&$1;/g;
-	s/\\varsigma\b/&sigmaf;/g;
-	s/\\([tT]au)\b/&$1;/g;
-	s/\\([uU]psilon)\b/&$1;/g;
-	s/\\([pP]hi)\b/&$1;/g;
-	s/\\varphi\b/&phi;/g;
-	s/\\([cC]hi)\b/&$1;/g;
-	s/\\([pP]si)\b/&$1;/g;
-	s/\\([oO]mega)\b/&$1;/g;
-	s/\\S\b/&sect;/g;
-	s/^\\circ\b/&deg;/g;
-	s/\\infty\b/&infin;/g;
-	s/\\emptyset\b/&empty;/g;
-	s/\\pm\b/&plusmn;/g;
-	s/\\times\b/&times;/g;
-	s/\\cdot\b/&sdot;/g;
-	s/\\partial\b/&part;/g;
-	s/\\nabla\b/&nabla;/g;
-	s/\\surd\b/&radic;/g;
-	s/\\perp\b/&perp;/g;
-	s/\\sum\b/&sum;/g;
-	s/\\int\b/&int;/g;
-	s/\\prod\b/&prod;/g;
-	s/\\sim\b/&sim;/g;
-	s/\\approx\b/&asymp;/g;
-	s/\\ne\b/&ne;/g;
-	s/\\equiv\b/&equiv;/g;
-	s/\\propto\b/&prop;/g;
-	s/\\le\b/&le;/g;
-	s/\\ge\b/&ge;/g;
-	s/\\leftarrow\b/&larr;/g;
-	s/\\rightarrow\b/&rarr;/g;
-	s/\\in\b/&isin;/g;
-	s/\\notin\b/&notin;/g;
-	s/\\lceil\b/&lceil;/g;
-	s/\\rceil\b/&rceil;/g;
-	s/\\lfloor\b/&lfloor;/g;
-	s/\\rfloor\b/&rfloor;/g;
-	s/``/&ldquo;/g;
-	s/''/&rdquo;/g;
-	s/`/&lsquo;/g;
-	s/'/&rsquo;/g;
+        s/\\i\b/i/g;
+        s/\\\'(\001\d+)\{([AEIOUaeiou])\1\}/&$2acute;/gs;
+        s/\\\'([AEIOUaeiou])/&$1acute;/g;
+        s/\\\`(\001\d+)\{([AEIOUaeiou])\1\}/&$2grave;/gs;
+        s/\\\`([AEIOUaeiou])/&$1grave;/g;
+        s/\\\"(\001\d+)\{([AEIOUaeiouy])\1\}/&$2uml;/gs;
+        s/\\\"([AEIOUaeiouy])/&$1uml;/g;
+        s/\\\~(\001\d+)\{([ANOano])\1\}/&$2tilde;/gs;
+        s/\\\~([ANOano])/&$1tilde;/g;
+        s/\\\^(\001\d+)\{([AEIOUaeiou])\1\}/&$2circ;/gs;
+        s/\\\^([AEIOUaeiou])/&$1circ;/g;
+        s/\\c(\001\d+)\{([Cc])\1\}/&$2cedil;/gs;
+        s/\\u(\001\d+)\{(.)\1\}/$2/gs;
+        s/\\v(\001\d+)\{(.)\1\}/$2/gs;
+        s/\\([lL])\b/$1/g;
+        s/\\\=(\001\d+)\{(.)\1\}/$2/gs;
+        s/\\\=(.)/$1/g;
+        s/\\\.(\001\d+)\{(.)\1\}/$2/gs;
+        s/\\\.(.)/$1/g;
+        s/\\([Oo])\b\s*/&$1slash;/g;
+        s/\\AA\b\s*/&Aring;/g;
+        s/\\aa\b\s*/&aring;/g;
+        s/\\AE\b\s*/&AElig;/g;
+        s/\\ae\b\s*/&aelig;/g;
+        s/\\ss\b\s*/&szlig;/g;
+        s/\\S\b\s*/&sect;/g;
+        s/\\P\b\s*/&para;/g;
+        s/\\pounds\b\s*/&pound;/g;
+        s/\?\`/&iquest;/g;
+        s/\!\`/&iexcl;/g;
+        s/\-\-\-/&mdash;/g;
+        s/([^\!])\-\-([^\>])/$1&ndash;$2/g;
+        s/(CITEREF_[^\!]+)&ndash;([^\>])/$1--$2/g;
+        s/(CITEREF_[^\!]+)&mdash;([^\>])/$1---$2/g;
+        s/\\([aA]lpha)\b/&$1;/g;
+        s/\\([bB]eta)\b/&$1;/g;
+        s/\\([gG]amma)\b/&$1;/g;
+        s/\\([dD]elta)\b/&$1;/g;
+        s/\\varepsilon\b/&epsilon;/g;
+        s/\\([eE]psilon)\b/&$1;/g;
+        s/\\([zZ]eta)\b/&$1;/g;
+        s/\\([eE]ta)\b/&$1;/g;
+        s/\\([tT]heta)\b/&$1;/g;
+        s/\\vartheta\b/&theta;/g;
+        s/\\([iI]ota)\b/&$1;/g;
+        s/\\([kK]appa)\b/&$1;/g;
+        s/\\([lL]ambda)\b/&$1;/g;
+        s/\\([mM]u)\b/&$1;/g;
+        s/\\([nN]u)\b/&$1;/g;
+        s/\\([xX]i)\b/&$1;/g;
+        s/\\([oO]micron)\b/&$1;/g;
+        s/\\([pP]i)\b/&$1;/g;
+        s/\\varpi\b/&pi;/g;
+        s/\\([rR]ho)\b/&$1;/g;
+        s/\\varrho\b/&rho;/g;
+        s/\\([sS]igma)\b/&$1;/g;
+        s/\\varsigma\b/&sigmaf;/g;
+        s/\\([tT]au)\b/&$1;/g;
+        s/\\([uU]psilon)\b/&$1;/g;
+        s/\\([pP]hi)\b/&$1;/g;
+        s/\\varphi\b/&phi;/g;
+        s/\\([cC]hi)\b/&$1;/g;
+        s/\\([pP]si)\b/&$1;/g;
+        s/\\([oO]mega)\b/&$1;/g;
+        s/\\S\b/&sect;/g;
+        s/^\\circ\b/&deg;/g;
+        s/\\infty\b/&infin;/g;
+        s/\\emptyset\b/&empty;/g;
+        s/\\pm\b/&plusmn;/g;
+        s/\\times\b/&times;/g;
+        s/\\cdot\b/&sdot;/g;
+        s/\\partial\b/&part;/g;
+        s/\\nabla\b/&nabla;/g;
+        s/\\surd\b/&radic;/g;
+        s/\\perp\b/&perp;/g;
+        s/\\sum\b/&sum;/g;
+        s/\\int\b/&int;/g;
+        s/\\prod\b/&prod;/g;
+        s/\\sim\b/&sim;/g;
+        s/\\approx\b/&asymp;/g;
+        s/\\ne\b/&ne;/g;
+        s/\\equiv\b/&equiv;/g;
+        s/\\propto\b/&prop;/g;
+        s/\\le\b/&le;/g;
+        s/\\ge\b/&ge;/g;
+        s/\\leftarrow\b/&larr;/g;
+        s/\\rightarrow\b/&rarr;/g;
+        s/\\in\b/&isin;/g;
+        s/\\notin\b/&notin;/g;
+        s/\\lceil\b/&lceil;/g;
+        s/\\rceil\b/&rceil;/g;
+        s/\\lfloor\b/&lfloor;/g;
+        s/\\rfloor\b/&rfloor;/g;
+        s/``/&ldquo;/g;
+        s/''/&rdquo;/g;
+        s/`/&lsquo;/g;
+        s/'/&rsquo;/g;
 }
 $bdebug = 0;
 foreach (@ARGV) {
@@ -197,14 +197,14 @@ $nentry = 0;
 loop:
 while (<BBLFILE>) {
     if (($nentry == 0) && (m/^#/)) {
-	if ((m/#\s*label-style:\s*(\S+)/) && (! defined $label_style)) {
-	    $label_style = $label_styles{$1};
-	    if (! defined $label_style) {
-		print STDERR "label style unknown: \n";
-		next loop;
-	    }
-	}
-	next loop;
+        if ((m/#\s*label-style:\s*(\S+)/) && (! defined $label_style)) {
+            $label_style = $label_styles{$1};
+            if (! defined $label_style) {
+                print STDERR "label style unknown: \n";
+                next loop;
+            }
+        }
+        next loop;
     }
     $nentry++;
     ($bcite, $blabel) = m:<dt><a\s+name=\"([^\"]*)\">\[([^\]]*)\]</a></dt><dd>:;
@@ -228,26 +228,26 @@ while (<BBLFILE>) {
     s/\\\$/\004/g;
     s/\n  / /g;
     {
-	local ($c, $l, $z) = (0, 0, ());
-	s/([\{\}])/join("","\001",($1 eq "\{" ? $z[$l++]=$c++ : $z[--$l]),$1)/ge;
+        local ($c, $l, $z) = (0, 0, ());
+        s/([\{\}])/join("","\001",($1 eq "\{" ? $z[$l++]=$c++ : $z[--$l]),$1)/ge;
     }
     s/\%\n//g;
     s/(\.(<\/cite>|<\/a>|\')+)\./$1/g;
     s:(<dt><a\s+name=\"[^\"]*\">)\[([^\]]*)\](</a></dt><dd>):$1\[$nentry\]<!--\[$nentry,$2\]-->$3:;
     while (m/(\\(cite(label)?)(\001\d+)\{([^\001]+)\4\})/) {
-	$old = $1;
-	$cmd = $2;
-	$doxref = defined($3);
-	$bcite = $5;
-	if (! defined $bibcite{$bcite}) {
-	    $blabel = " [" . $bcite . "]";
-	} elsif ($doxref) {
-	    $blabel = " <a href=\"#$bcite\">[" . $bibnum{$bcite} . "]<\/a>";
-	} else {
-	    $blabel = " [" . $bibcite{$bcite} . "]";
-	}
-	$old =~ s/(\W)/\\$1/g;
-	s/\s*$old/$blabel/g;
+        $old = $1;
+        $cmd = $2;
+        $doxref = defined($3);
+        $bcite = $5;
+        if (! defined $bibcite{$bcite}) {
+            $blabel = " [" . $bcite . "]";
+        } elsif ($doxref) {
+            $blabel = " <a href=\"#$bcite\">[" . $bibnum{$bcite} . "]<\/a>";
+        } else {
+            $blabel = " [" . $bibcite{$bcite} . "]";
+        }
+        $old =~ s/(\W)/\\$1/g;
+        s/\s*$old/$blabel/g;
     }
     s/In (<a href=\"[^\"]*\">)([^\[]+) \[(\2)/In $1\[$2/;
     s/\\htmladdnormallink(foot)?(\001\d+)\{([^\001]+)\2\}(\001\d+)\{([^\001]+)\4\}/<a href="$5">$3<\/a>/gs;
@@ -256,13 +256,13 @@ while (<BBLFILE>) {
     s/\005/&amp;/g;
     html_ent();
     while (m/\\char([\'\"]?[0-9a-fA-F]+)/) {
-	$o = $r = $1;
-	if ($r =~ s/^\'//) {
-	    $r = oct($r);
-	} elsif ($r =~ s/^\"//) {
-	    $r = hex($r);
-	}
-	s/\\char$o\s*/&#$r;/g;
+        $o = $r = $1;
+        if ($r =~ s/^\'//) {
+            $r = oct($r);
+        } elsif ($r =~ s/^\"//) {
+            $r = hex($r);
+        }
+        s/\\char$o\s*/&#$r;/g;
     }
     s/{\\etalchar\001(\d+)\{(.)}\001\1\}/$2/g;
     s/\\par\b/<p \/>/g;

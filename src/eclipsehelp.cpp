@@ -180,14 +180,14 @@ void EclipseHelp::addContentsItem(
     {
       case '^':
         // URL not supported by eclipse toc.xml
-	break;
+        break;
 
       case '!':
         p->indent();
         p->tocstream << "<topic label=\"" << convertToXML(name) << "\"";
         p->tocstream << " href=\"" << convertToXML(p->pathprefix) << &file[1] << "\"";
         p->endtag = true;
-	break;
+        break;
 
       default:
         p->indent();
@@ -199,7 +199,7 @@ void EclipseHelp::addContentsItem(
         }
         p->tocstream << "\"";
         p->endtag = true;
-	break;
+        break;
     }
   }
   else
