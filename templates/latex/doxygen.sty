@@ -220,7 +220,7 @@
 
 % Used by @example, @include, @includelineno and @dontinclude
 \newenvironment{DoxyCodeInclude}[1]{%
-	\DoxyCode{#1}%
+  \DoxyCode{#1}%
 }{%
   \endDoxyCode%
 }
@@ -582,7 +582,7 @@
 
 % Used for parameters within a detailed function description
 \newenvironment{DoxyParamCaption}{%
-  \renewcommand{\item}[3][]{\\ \hspace*{2.0cm} ##1 {\em ##2}##3}% 
+  \renewcommand{\item}[3][]{\\ \hspace*{2.0cm} ##1 {\em ##2}##3}%
 }{%
 }
 
@@ -835,8 +835,8 @@
 \newcommand\doxysubparagraph{\@startsection{subparagraph}{9}{\parindent}%
                                      {-3.25ex\@plus -1ex \@minus -.2ex}%
                                      {1.5ex \@plus .2ex}%
-                                     {\raggedright\normalfont\normalsize\bfseries}}    
-                                  
+                                     {\raggedright\normalfont\normalsize\bfseries}}
+
 \newcommand\l@subsubsubsection{\@dottedtocline{4}{10.0em}{7.8em}}
 \newcommand\l@subsubsubsubsection{\@dottedtocline{5}{13.0em}{9.4em}}
 \newcommand\l@subsubsubsubsubsection{\@dottedtocline{6}{15.0em}{11em}}

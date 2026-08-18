@@ -1,17 +1,17 @@
-	% $Id: html-btxbst.doc 1.5 2010/12/08 19:02:34 dds Exp $
-	% 
-	% This file is either "html-btxbst.doc" or was derived from
-	% "html-btxbst.doc" using cpp.  "html-btxbst.doc" itself was edited
-	% from "btxbst.doc" and "named.bst".
-	% The following copyright information is from btxbst.doc:
-	% version 0.99b for BibTeX versions 0.99a or later, LaTeX version 2.09.
-	% Copyright (C) 1985, all rights reserved.
-	% Copying of this file is authorized only if either
-	% (1) you make absolutely no changes to your copy, including name, or
-	% (2) if you do make changes, you name it something other than
-	% btxbst.doc, plain.bst, unsrt.bst, alpha.bst, and abbrv.bst.
-	% This restriction helps ensure that all standard styles are identical.
-	% The file btxbst.doc has the documentation for this style.
+ % $Id: html-btxbst.doc 1.5 2010/12/08 19:02:34 dds Exp $
+ %
+ % This file is either "html-btxbst.doc" or was derived from
+ % "html-btxbst.doc" using cpp.  "html-btxbst.doc" itself was edited
+ % from "btxbst.doc" and "named.bst".
+ % The following copyright information is from btxbst.doc:
+ % version 0.99b for BibTeX versions 0.99a or later, LaTeX version 2.09.
+ % Copyright (C) 1985, all rights reserved.
+ % Copying of this file is authorized only if either
+ % (1) you make absolutely no changes to your copy, including name, or
+ % (2) if you do make changes, you name it something other than
+ % btxbst.doc, plain.bst, unsrt.bst, alpha.bst, and abbrv.bst.
+ % This restriction helps ensure that all standard styles are identical.
+ % The file btxbst.doc has the documentation for this style.
  % "named" style (sorted keys of the form [name, year])
  % Some code for this was taken from "named.bst".
 
@@ -66,14 +66,14 @@ FUNCTION {output.nonnull}
   output.state mid.sentence =
     { ", " * write$ }
     { output.state after.block =
-	{ add.period$ write$
-	  newline$
-	}
-	{ output.state before.all =
-	    'write$
-	    { add.period$ " " * write$ }
-	  if$
-	}
+        { add.period$ write$
+          newline$
+        }
+        { output.state before.all =
+            'write$
+            { add.period$ " " * write$ }
+          if$
+        }
       if$
       mid.sentence 'output.state :=
     }
@@ -100,11 +100,11 @@ FUNCTION {output.bibitem}
 { newline$
   author empty$
     { editor empty$
-	{ organization empty$
-	    'skip$
-	    { "<!-- Authors: " organization purify$ * " -->" * write$ newline$ }
+        { organization empty$
+            'skip$
+            { "<!-- Authors: " organization purify$ * " -->" * write$ newline$ }
           if$
-	} 
+        }
         { "<!-- Authors: " editor purify$ * " -->" * write$ newline$ }
       if$
     }
@@ -154,8 +154,8 @@ FUNCTION {new.sentence}
 { output.state after.block =
     'skip$
     { output.state before.all =
-	'skip$
-	{ after.sentence 'output.state := }
+        'skip$
+        { after.sentence 'output.state := }
       if$
     }
   if$
@@ -185,9 +185,9 @@ FUNCTION {str.to.int}
   #0
     { s empty$ not }
     { % Multiply the number on the top of the stack by 10 = 1010 binary
-      duplicate$ +			% x2
-      duplicate$			% x2 x2
-      duplicate$ + duplicate$ +		% x2 x8
+      duplicate$ +                      % x2
+      duplicate$                        % x2 x2
+      duplicate$ + duplicate$ +         % x2 x8
       +
       s #1 #1 substring$ chr.to.int$ #48 - + % #48 is ascii for '0'
       s #2 global.max$ substring$ 's :=
@@ -247,11 +247,11 @@ FUNCTION {add.link} % title
   t empty$
     { "" }
     { url empty$
-	{ html empty$
-	    { t }
-	    { "<a href=" quote$ * html * quote$ * ">" * t * "</a>" * }
-	  if$ }
-	{ "<a href=" quote$ * url * quote$ * ">" * t * "</a>" * }
+               { html empty$
+            { t }
+            { "<a href=" quote$ * html * quote$ * ">" * t * "</a>" * }
+          if$ }
+        { "<a href=" quote$ * url * quote$ * ">" * t * "</a>" * }
       if$
     }
   if$
@@ -281,20 +281,20 @@ FUNCTION {format.names}
     { s nameptr "{ff~}{vv~}{ll}{, jj}" format.name$ 't :=
       "\bibxhtmlname{" t * "}" * 't :=
       nameptr #1 >
-	{ namesleft #1 >
-	    { ", " * t * }
-	    { numnames #2 >
-		{ "," * }
-		'skip$
-	      if$
-	      t "others" =
-		{ " et~al." * }
-		{ " and " * t * }
-	      if$
-	    }
-	  if$
-	}
-	't
+        { namesleft #1 >
+            { ", " * t * }
+            { numnames #2 >
+                { "," * }
+                'skip$
+              if$
+              t "others" =
+                { " et~al." * }
+                { " and " * t * }
+              if$
+            }
+          if$
+        }
+        't
       if$
       nameptr #1 + 'nameptr :=
       namesleft #1 - 'namesleft :=
@@ -315,8 +315,8 @@ FUNCTION {format.editors}
     { "" }
     { editor format.names
       editor num.names$ #1 >
-	{ ", editors" * }
-	{ ", editor" * }
+        { ", editors" * }
+        { ", editor" * }
       if$
     }
   if$
@@ -335,21 +335,21 @@ FUNCTION {n.dashify}
   ""
     { t empty$ not }
     { t #1 #1 substring$ "-" =
-	{ t #1 #2 substring$ "--" = not
-	    { "--" *
-	      t #2 global.max$ substring$ 't :=
-	    }
-	    {   { t #1 #1 substring$ "-" = }
-		{ "-" *
-		  t #2 global.max$ substring$ 't :=
-		}
-	      while$
-	    }
-	  if$
-	}
-	{ t #1 #1 substring$ *
-	  t #2 global.max$ substring$ 't :=
-	}
+        { t #1 #2 substring$ "--" = not
+            { "--" *
+              t #2 global.max$ substring$ 't :=
+            }
+            {   { t #1 #1 substring$ "-" = }
+                { "-" *
+                  t #2 global.max$ substring$ 't :=
+                }
+              while$
+            }
+          if$
+        }
+        { t #1 #1 substring$ *
+          t #2 global.max$ substring$ 't :=
+        }
       if$
     }
   while$
@@ -358,15 +358,15 @@ FUNCTION {n.dashify}
 FUNCTION {format.date}
 { year empty$
     { month empty$
-	{ "" }
-	{ "there's a month but no year in " cite$ * warning$
-	  month
-	}
+        { "" }
+        { "there's a month but no year in " cite$ * warning$
+          month
+        }
       if$
     }
     { month empty$
-	'year
-	{ month " " * year * }
+        'year
+        { month " " * year * }
       if$
     }
   if$
@@ -397,8 +397,8 @@ FUNCTION {format.bvolume}
     { "" }
     { "volume" volume tie.or.space.connect
       series empty$
-	'skip$
-	{ " of " * series emphasize * }
+        'skip$
+        { " of " * series emphasize * }
       if$
       "volume and number" number either.or.check
     }
@@ -408,17 +408,17 @@ FUNCTION {format.bvolume}
 FUNCTION {format.number.series}
 { volume empty$
     { number empty$
-	{ series field.or.null }
-	{ output.state mid.sentence =
-	    { "number" }
-	    { "Number" }
-	  if$
-	  number tie.or.space.connect
-	  series empty$
-	    { "there's a number but no series in " cite$ * warning$ }
-	    { " in " * series * }
-	  if$
-	}
+        { series field.or.null }
+        { output.state mid.sentence =
+            { "number" }
+            { "Number" }
+          if$
+          number tie.or.space.connect
+          series empty$
+            { "there's a number but no series in " cite$ * warning$ }
+            { " in " * series * }
+          if$
+        }
       if$
     }
     { "" }
@@ -429,8 +429,8 @@ FUNCTION {format.edition}
 { edition empty$
     { "" }
     { output.state mid.sentence =
-	{ edition "l" change.case$ " edition" * }
-	{ edition "t" change.case$ " edition" * }
+        { edition "l" change.case$ " edition" * }
+        { edition "t" change.case$ " edition" * }
       if$
     }
   if$
@@ -450,8 +450,8 @@ FUNCTION {multi.page.check}
       swap$ duplicate$ "," =
       swap$ "+" =
       or or
-	{ #1 'multiresult := }
-	{ t #2 global.max$ substring$ 't := }
+        { #1 'multiresult := }
+        { t #2 global.max$ substring$ 't := }
       if$
     }
   while$
@@ -462,8 +462,8 @@ FUNCTION {format.pages}
 { pages empty$
     { "" }
     { pages multi.page.check
-	{ "pages" pages n.dashify tie.or.space.connect }
-	{ "page" pages tie.or.space.connect }
+        { "pages" pages n.dashify tie.or.space.connect }
+        { "page" pages tie.or.space.connect }
       if$
     }
   if$
@@ -475,16 +475,16 @@ FUNCTION {format.vol.num.pages}
     'skip$
     { "(" number * ")" * *
       volume empty$
-	{ "there's a number but no volume in " cite$ * warning$ }
-	'skip$
+        { "there's a number but no volume in " cite$ * warning$ }
+        'skip$
       if$
     }
   if$
   pages empty$
     'skip$
     { duplicate$ empty$
-	{ pop$ format.pages }
-	{ ":" * pages n.dashify * }
+        { pop$ format.pages }
+        { ":" * pages n.dashify * }
       if$
     }
   if$
@@ -494,13 +494,13 @@ FUNCTION {format.chapter.pages}
 { chapter empty$
     'format.pages
     { type empty$
-	{ "chapter" }
-	{ type "l" change.case$ }
+        { "chapter" }
+        { type "l" change.case$ }
       if$
       chapter tie.or.space.connect
       pages empty$
-	'skip$
-	{ ", " * format.pages * }
+        'skip$
+        { ", " * format.pages * }
       if$
     }
   if$
@@ -510,8 +510,8 @@ FUNCTION {format.in.ed.booktitle}
 { booktitle empty$
     { "" }
     { editor empty$
-	{ "In " booktitle emphasize * }
-	{ "In " format.editors * ", " * booktitle emphasize * }
+        { "In " booktitle emphasize * }
+        { "In " format.editors * ", " * booktitle emphasize * }
       if$
     }
   if$
@@ -552,10 +552,10 @@ FUNCTION {format.article.crossref}
   "In <a href=" quote$ * "#" * "CITEREF_" * crossref * quote$ * ">" *
   key empty$
     { journal empty$
-	{ "need key or journal for " cite$ * " to crossref " * crossref *
-	  warning$
-	  ""
-	}
+        { "need key or journal for " cite$ * " to crossref " * crossref *
+          warning$
+          ""
+        }
         { "<cite>" * journal * "</cite>" * }
       if$
     }
@@ -570,12 +570,12 @@ FUNCTION {format.crossref.editor}
   #2 >
     { pop$ " et~al." * }
     { #2 <
-	'skip$
-	{ editor #2 "{ff }{vv }{ll}{ jj}" format.name$ "others" =
-	    { " et~al." * }
-	    { " and " * editor #2 "{vv~}{ll}" format.name$ * }
-	  if$
-	}
+        'skip$
+        { editor #2 "{ff }{vv }{ll}{ jj}" format.name$ "others" =
+            { " et~al." * }
+            { " and " * editor #2 "{vv~}{ll}" format.name$ * }
+          if$
+        }
       if$
     }
   if$
@@ -595,15 +595,15 @@ FUNCTION {format.book.crossref}
   editor field.or.null author field.or.null =
   or
     { key empty$
-	{ series empty$
-	    { "need editor, key, or series for " cite$ * " to crossref " *
-	      crossref * warning$
-	      "" *
-	    }
+        { series empty$
+            { "need editor, key, or series for " cite$ * " to crossref " *
+              crossref * warning$
+              "" *
+            }
             { "<cite>" * series * "</cite>" * }
-	  if$
-	}
-	{ key * }
+          if$
+        }
+        { key * }
       if$
     }
     { format.crossref.editor * }
@@ -618,14 +618,14 @@ FUNCTION {format.incoll.inproc.crossref}
   editor field.or.null author field.or.null =
   or
     { key empty$
-	{ booktitle empty$
-	    { "need editor, key, or booktitle for " cite$ * " to crossref " *
-	      crossref * warning$
-	      ""
-	    }
+        { booktitle empty$
+            { "need editor, key, or booktitle for " cite$ * " to crossref " *
+              crossref * warning$
+              ""
+            }
             { "<cite>" * booktitle * "</cite>" * }
-	  if$
-	}
+          if$
+        }
         { key * }
       if$
     }
@@ -660,8 +660,8 @@ FUNCTION {book}
     { format.editors "author and editor" output.check }
     { format.authors output.nonnull
       crossref missing$
-	{ "author and editor" editor either.or.check }
-	'skip$
+        { "author and editor" editor either.or.check }
+        'skip$
       if$
     }
   if$
@@ -706,8 +706,8 @@ FUNCTION {inbook}
     { format.editors "author and editor" output.check }
     { format.authors output.nonnull
       crossref missing$
-	{ "author and editor" editor either.or.check }
-	'skip$
+        { "author and editor" editor either.or.check }
+        'skip$
       if$
     }
   if$
@@ -772,17 +772,17 @@ FUNCTION {inproceedings}
       format.number.series output
       format.pages output
       address empty$
-	{ organization publisher new.sentence.checkb
-	  organization output
-	  publisher output
-	  format.date "year" output.check
-	}
-	{ address output.nonnull
-	  format.date "year" output.check
-	  new.sentence
-	  organization output
-	  publisher output
-	}
+        { organization publisher new.sentence.checkb
+          organization output
+          publisher output
+          format.date "year" output.check
+        }
+        { address output.nonnull
+          format.date "year" output.check
+          new.sentence
+          organization output
+          publisher output
+        }
       if$
     }
     { format.incoll.inproc.crossref output.nonnull
@@ -800,10 +800,10 @@ FUNCTION {manual}
 { output.bibitem
   author empty$
     { organization empty$
-	'skip$
-	{ organization output.nonnull
-	  address output
-	}
+        'skip$
+        { organization output.nonnull
+          address output
+        }
       if$
     }
     { format.authors output.nonnull }
@@ -812,10 +812,10 @@ FUNCTION {manual}
   format.btitle "title" output.check
   author empty$
     { organization empty$
-	{ address new.block.checka
-	  address output
-	}
-	'skip$
+        { address new.block.checka
+          address output
+        }
+        'skip$
       if$
     }
     { organization address new.block.checkb
@@ -886,10 +886,10 @@ FUNCTION {proceedings}
   format.number.series output
   address empty$
     { editor empty$
-	{ publisher new.sentence.checka }
-	{ organization publisher new.sentence.checkb
-	  organization output
-	}
+        { publisher new.sentence.checka }
+        { organization publisher new.sentence.checkb
+          organization output
+        }
       if$
       publisher output
       format.date "year" output.check
@@ -898,8 +898,8 @@ FUNCTION {proceedings}
       format.date "year" output.check
       new.sentence
       editor empty$
-	'skip$
-	{ organization output }
+        'skip$
+        { organization output }
       if$
       publisher output
     }
@@ -1037,8 +1037,8 @@ FUNCTION {format.lab.names}
 FUNCTION {author.key.label}
 { author empty$
     { key empty$
-	{ cite$ #1 #3 substring$ }
-	{ key }
+        { cite$ #1 #3 substring$ }
+        { key }
       if$
     }
     { author format.lab.names }
@@ -1048,12 +1048,12 @@ FUNCTION {author.key.label}
 FUNCTION {author.editor.key.label}
 { author empty$
     { editor empty$
-	{ key empty$
-	    { cite$ #1 #3 substring$ }
-	    { key }
-	  if$
-	}
-	{ editor format.lab.names }
+        { key empty$
+            { cite$ #1 #3 substring$ }
+            { key }
+          if$
+        }
+        { editor format.lab.names }
       if$
     }
     { author format.lab.names }
@@ -1063,12 +1063,12 @@ FUNCTION {author.editor.key.label}
 FUNCTION {author.key.organization.label}
 { author empty$
     { key empty$
-	{ organization empty$
-	    { cite$ #1 #3 substring$ }
-	    { "The " #4 organization chop.word #3 text.prefix$ }
-	  if$
-	}
-	{ key }
+        { organization empty$
+            { cite$ #1 #3 substring$ }
+            { "The " #4 organization chop.word #3 text.prefix$ }
+          if$
+        }
+        { key }
       if$
     }
     { author format.lab.names }
@@ -1078,12 +1078,12 @@ FUNCTION {author.key.organization.label}
 FUNCTION {editor.key.organization.label}
 { editor empty$
     { key empty$
-	{ organization empty$
-	    { cite$ #1 #3 substring$ }
-	    { "The " #4 organization chop.word #3 text.prefix$ }
-	  if$
-	}
-	{ key }
+        { organization empty$
+            { cite$ #1 #3 substring$ }
+            { "The " #4 organization chop.word #3 text.prefix$ }
+          if$
+        }
+        { key }
       if$
     }
     { editor format.lab.names }
@@ -1092,29 +1092,29 @@ FUNCTION {editor.key.organization.label}
 
 FUNCTION {month.to.int}
 {
-	"l" change.case$ #3 text.prefix$
-	's :=
-	s "jan" = { #1 }  {
-	s "feb" = { #2 }  {
-	s "mar" = { #3 }  {
-	s "apr" = { #4 }  {
-	s "may" = { #5 }  {
-	s "jun" = { #6 }  {
-	s "jul" = { #7 }  {
-	s "aug" = { #8 }  {
-	s "sep" = { #9 }  {
-	s "oct" = { #10 } {
-	s "nov" = { #11 } {
+    "l" change.case$ #3 text.prefix$
+    's :=
+    s "jan" = { #1 }  {
+    s "feb" = { #2 }  {
+    s "mar" = { #3 }  {
+    s "apr" = { #4 }  {
+    s "may" = { #5 }  {
+    s "jun" = { #6 }  {
+    s "jul" = { #7 }  {
+    s "aug" = { #8 }  {
+    s "sep" = { #9 }  {
+    s "oct" = { #10 } {
+    s "nov" = { #11 } {
     s "dec" = { #12 } { #13 }  % 13 if nothing matches
     if$}if$}if$}if$}if$}if$}if$}if$}if$}if$}if$}if$
 }
 
-INTEGERS { done c } 
+INTEGERS { done c }
 FUNCTION { get.day }
 { month field.or.null 's :=
-  
+
   % Strip out month name
-  #0 'done := 
+  #0 'done :=
   { s "" = not done not and }
   { s #1 #1 substring$ " " = 'done :=
     s #2 global.max$ substring$ 's :=
@@ -1162,12 +1162,12 @@ FUNCTION {calc.label}
   or
     'author.editor.key.label
     { type$ "proceedings" =
-	'editor.key.organization.label
-	{ type$ "manual" =
-	    'author.key.organization.label
-	    'author.key.label
-	  if$
-	}
+        'editor.key.organization.label
+        { type$ "manual" =
+            'author.key.organization.label
+            'author.key.label
+          if$
+        }
       if$
     }
   if$
@@ -1181,11 +1181,11 @@ FUNCTION {calc.label}
   'label :=
 
   year field.or.null purify$
-  #-1 #4 substring$ 
-  sortify.fourdigit 
+  #-1 #4 substring$
+  sortify.fourdigit
   "  " *
   month field.or.null month.to.int int.to.str$ sortify.twodigit *
-  "  " *  
+  "  " *
   get.day int.to.str$ sortify.twodigit *
   "  " *
   * sortify 'sort.label :=
@@ -1199,13 +1199,13 @@ FUNCTION {sort.format.names}
   numnames 'namesleft :=
     { namesleft #0 > }
     { nameptr #1 >
-	{ "   " * }
-	'skip$
+        { "   " * }
+        'skip$
       if$
       s nameptr "{vv{ } }{ll{ }}{  ff{ }}{  jj{ }}" format.name$ 't :=
       nameptr numnames = t "others" = and
-	{ "et al." * }
-	{ t sortify * }
+        { "et al." * }
+        { t sortify * }
       if$
       nameptr #1 + 'nameptr :=
       namesleft #1 - 'namesleft :=
@@ -1227,10 +1227,10 @@ FUNCTION {sort.format.title}
 FUNCTION {author.sort}
 { author empty$
     { key empty$
-	{ "to sort, need author or key in " cite$ * warning$
-	  ""
-	}
-	{ key sortify }
+        { "to sort, need author or key in " cite$ * warning$
+          ""
+        }
+        { key sortify }
       if$
     }
     { author sort.format.names }
@@ -1240,14 +1240,14 @@ FUNCTION {author.sort}
 FUNCTION {author.editor.sort}
 { author empty$
     { editor empty$
-	{ key empty$
-	    { "to sort, need author, editor, or key in " cite$ * warning$
-	      ""
-	    }
-	    { key sortify }
-	  if$
-	}
-	{ editor sort.format.names }
+        { key empty$
+            { "to sort, need author, editor, or key in " cite$ * warning$
+              ""
+            }
+            { key sortify }
+          if$
+        }
+        { editor sort.format.names }
       if$
     }
     { author sort.format.names }
@@ -1257,14 +1257,14 @@ FUNCTION {author.editor.sort}
 FUNCTION {author.organization.sort}
 { author empty$
     { organization empty$
-	{ key empty$
-	    { "to sort, need author, organization, or key in " cite$ * warning$
-	      ""
-	    }
-	    { key sortify }
-	  if$
-	}
-	{ "The " #4 organization chop.word sortify }
+        { key empty$
+            { "to sort, need author, organization, or key in " cite$ * warning$
+              ""
+            }
+            { key sortify }
+          if$
+        }
+        { "The " #4 organization chop.word sortify }
       if$
     }
     { author sort.format.names }
@@ -1274,14 +1274,14 @@ FUNCTION {author.organization.sort}
 FUNCTION {editor.organization.sort}
 { editor empty$
     { organization empty$
-	{ key empty$
-	    { "to sort, need editor, organization, or key in " cite$ * warning$
-	      ""
-	    }
-	    { key sortify }
-	  if$
-	}
-	{ "The " #4 organization chop.word sortify }
+        { key empty$
+            { "to sort, need editor, organization, or key in " cite$ * warning$
+              ""
+            }
+            { key sortify }
+          if$
+        }
+        { "The " #4 organization chop.word sortify }
       if$
     }
     { editor sort.format.names }
@@ -1298,12 +1298,12 @@ FUNCTION {presort}
   or
     'author.editor.sort
     { type$ "proceedings" =
-	'editor.organization.sort
-	{ type$ "manual" =
-	    'author.organization.sort
-	    'author.sort
-	  if$
-	}
+        'editor.organization.sort
+        { type$ "manual" =
+            'author.organization.sort
+            'author.sort
+          if$
+        }
       if$
     }
   if$
