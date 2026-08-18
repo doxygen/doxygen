@@ -69,7 +69,11 @@ size_t DString::rfind_insensitive( const char *str, size_t index) const
   else if (index>len) return DString::npos; // bad index
   else if (index+slen>len) index = len-slen; // str would be too long
   const char *pos = data()+index;
-  for (int i=index; i>=0; i--) if (dstrnicmp(pos--,str,slen)==0) return i;
+  for (size_t i=index+1; i>0; ) 
+  {
+    --i;
+    if (dstrnicmp(pos--,str,slen)==0) return i;
+  }  
   return DString::npos;
 }
 
