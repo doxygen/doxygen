@@ -259,14 +259,14 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
       // used as the title of the HTML page of a file
     {
       DString result="Datoteka ";
-	  result+=fileName;
-	  return result;
+      result+=fileName;
+      return result;
     }
     DString trNamespaceReference(const DString &namespaceName) override
       // used as the title of the HTML page of a namespace
     {
       DString result ="Imenski prostor ";
-	  result+=namespaceName;
+      result+=namespaceName;
 
       return result;
     }
@@ -462,10 +462,10 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
       return "Graf prikazuje seznam datotek, "
           "ki jih datoteka \""+fName+"\" "
           "direktno ali indirektno vključuje. Pravokotniki ponazarjajo datoteke, puščice "
-	  "predstavljajo relacije med njimi. "
-	  "črn pravokotnik ponazarja datoteko "+fName+". Puščice A->B ponazarjajo "
-	  "usmerjeno relacijo \"A vključuje B\"."
-;
+          "predstavljajo relacije med njimi. "
+          "črn pravokotnik ponazarja datoteko "+fName+". Puščice A->B ponazarjajo "
+          "usmerjeno relacijo \"A vključuje B\"."
+      ;
     }
     /*! header that is put before the list of constructor/destructors. */
     DString trConstructorDocumentation() override
@@ -604,12 +604,12 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
       return "Graf prikazuje datoteke, ki posredno ali neposredno "
              "vključujejo tekočo datoteko. Pravokotniki simbolizirajo datoteke, "
              "puščice pa relacije med datotekami. Tekoča datoteka je prikazana "
-	     "kot pravokotnik s črno podlago, ostale pa kot pravokotnik brez podlage. "
-	     "Smer puščice A->B definira relacijo \"A vključuje B\". "
-	     "Vse datoteke, ki torej mejijo na tekočo (t.j. obstaja povezava med črnim in "
-	     "praznim pravokotnikom), jo direktno vključujejo, medtem, ko jo ostale vključujejo "
-	     "le posredno. "
-	;
+             "kot pravokotnik s črno podlago, ostale pa kot pravokotnik brez podlage. "
+             "Smer puščice A->B definira relacijo \"A vključuje B\". "
+             "Vse datoteke, ki torej mejijo na tekočo (t.j. obstaja povezava med črnim in "
+             "praznim pravokotnikom), jo direktno vključujejo, medtem, ko jo ostale vključujejo "
+             "le posredno. "
+       ;
     }
     DString trSince() override
     {

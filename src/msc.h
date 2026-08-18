@@ -32,9 +32,9 @@ DString getMscImageMapFromFile(const DString &inFile, const DString &outDir,
 void writeMscImageMapFromFile(TextStream &t,const DString &inFile,
                               const DString &outDir, const DString &relPath,
                               const DString &baseName, const DString &context,
-			      MscOutputFormat format,
+                              MscOutputFormat format,
                               const DString &srcFile,int srcLine
- 			    );
+                             );
 
 #endif
 

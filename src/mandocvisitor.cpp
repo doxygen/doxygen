@@ -297,7 +297,7 @@ void ManDocVisitor::operator()(const DocInclude &inc)
                                                .setExample(inc.isExample(),inc.exampleFile())
                                                .setInlineFragment(true)
                                                .setShowLineNumbers(false)
-				              );
+                                              );
       m_t << ".fi\n";
       m_t << ".PP\n";
       m_firstCol=true;

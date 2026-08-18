@@ -435,8 +435,8 @@ class DocInclude final : public DocNode
 {
   public:
   enum Type { Include, DontInclude, VerbInclude, HtmlInclude, LatexInclude,
-	      IncWithLines, Snippet , SnippetWithLines,
-	      DontIncWithLines, RtfInclude, ManInclude, DocbookInclude, XmlInclude
+              IncWithLines, Snippet , SnippetWithLines,
+              DontIncWithLines, RtfInclude, ManInclude, DocbookInclude, XmlInclude
             };
     DocInclude(DocParser *parser,DocNodeVariant *parent,const DString &file,
                const DString &context, Type t, bool stripCodeComments,

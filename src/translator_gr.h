@@ -28,22 +28,22 @@
  * Αν παρατηρήσετε σφάλματα ΠΑΡΑΚΑΛΩ ΠΟΛΥ επικοινωνήστε μαζί μου.
  */
 
-/*	English to Greek keyword dictionary
-	(Many words have more clear meaning in English than Greek)
-	template -> πρότυπο
-	instance -> υπόσταση
-	module -> υπομονάδα
-	interface -> διεπαφή (ενναλλακτικά μπορεί να χρησιμοποιηθεί: διασύνδεση)
-	singleton -> μονοσύνολο
-	service -> υπηρεσία
-	exception -> εξαίρεση
-	namespace -> χώρος ονομάτων
-	enumeration -> απαρίθμηση
-	concept -> έννοια
-	signal -> σήμα
-	instantiation -> ενσάρκωση
-	definition -> ορισμός
- 	declaration -> δήλωση
+/* English to Greek keyword dictionary
+   (Many words have more clear meaning in English than Greek)
+   template -> πρότυπο
+   instance -> υπόσταση
+   module -> υπομονάδα
+   interface -> διεπαφή (ενναλλακτικά μπορεί να χρησιμοποιηθεί: διασύνδεση)
+   singleton -> μονοσύνολο
+   service -> υπηρεσία
+   exception -> εξαίρεση
+   namespace -> χώρος ονομάτων
+   enumeration -> απαρίθμηση
+   concept -> έννοια
+   signal -> σήμα
+   instantiation -> ενσάρκωση
+   definition -> ορισμός
+   declaration -> δήλωση
 */
 
 
@@ -1209,7 +1209,7 @@ class TranslatorGreek : public Translator
     DString trNamespace(bool first_capital, bool singular) override
     {
       return createNoun(first_capital, singular, "χ", "ώροι", "ώρος") +
-	     " ονομάτων";
+             " ονομάτων";
     }
 
     /*! This is used for translation of the word that will possibly
@@ -2195,7 +2195,7 @@ class TranslatorGreek : public Translator
     {
       DString result="Τεκμηρίωση ";
       if (isLocal)
-		result+=compType == ClassDef::Protocol ? "Τοπικού " : "Τοπικής ";
+        result+=compType == ClassDef::Protocol ? "Τοπικού " : "Τοπικής ";
       switch(compType)
       {
         case ClassDef::Class:      result+="Κλάσης "; break;

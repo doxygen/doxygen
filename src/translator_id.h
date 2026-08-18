@@ -222,7 +222,7 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
     /*! This is an introduction to the class hierarchy. */
     DString trClassHierarchyDescription() override
     { return "Hierarki kelas ini diurutkan kurang-lebih"
-	" berdasarkan abjad:";
+             " berdasarkan abjad:";
     }
 
     /*! This is an introduction to the list with all files. */
@@ -949,8 +949,8 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
     DString trInclByDepGraph() override
     {
       return "Bagan ini menunjukkan file-file yang memuat"
-	" atau menggunakan file ini baik secara langsung maupun"
-	" tidak langsung:";
+             " atau menggunakan file ini baik secara langsung maupun"
+             " tidak langsung:";
     }
     DString trSince() override
     {
@@ -1472,8 +1472,8 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
     DString trOverloadText() override
     {
       return "Ini adalah fungsi anggota yang di-overload"
-	" untuk kemudahan. Perbedaannya dengan fungsi di atas"
-	" hanya pada parameter-parameter yang diterima.";
+             " untuk kemudahan. Perbedaannya dengan fungsi di atas"
+             " hanya pada parameter-parameter yang diterima.";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1660,7 +1660,7 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
       }
       result+=" ini dibangkitkan dari file";
       if (!single) result+="-file ";
-	  result+="berikut:";
+      result+="berikut:";
       return result;
     }
     /*! This is used for translation of the word that will possibly

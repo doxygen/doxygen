@@ -526,7 +526,7 @@ void GroupDefImpl::removeMember(MemberDef *md)
     switch(md->memberType())
     {
       case MemberType::Variable:
-	removeMemberFromList(MemberListType::DecVarMembers(),md);
+        removeMemberFromList(MemberListType::DecVarMembers(),md);
         removeMemberFromList(MemberListType::DocVarMembers(),md);
         break;
       case MemberType::Function:

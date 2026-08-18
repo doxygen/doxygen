@@ -25,7 +25,7 @@
 //  - Initial translation to Macedonian.
 //
 // 2008/05/22
-//	- Translation for 1.5.4.
+//  - Translation for 1.5.4.
 //
 //
 

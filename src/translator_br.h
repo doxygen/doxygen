@@ -37,15 +37,15 @@
  * 20220911:
  *  - Updated to 1.9.6;
  * 20220525:
- * 	- Updated to 1.9.4;
+ *  - Updated to 1.9.4;
  * 20211003:
  *  - Updated to 1.9.3;
  * 20200112:
- * 	- Updated to 1.9.1;
+ *  - Updated to 1.9.1;
  * 20190203:
- *	- Slice methods added;
+ *  - Slice methods added;
  * 20180612:
- *	- Updated to 1.8.15;
+ *  - Updated to 1.8.15;
  * 20170123:
  *  - Full translation revision;
  *  - trLegendDocs() is now synchronized with the English version;
@@ -63,11 +63,11 @@
  *  - Copyright year updated;
  *  - Translation updates suggested by Fernando Carijó added;
  * 20080709:
- *	- References to MAX_DOT_GRAPH_HEIGHT removed from trLegendDocs().
+ *  - References to MAX_DOT_GRAPH_HEIGHT removed from trLegendDocs().
  * 20080206:
  *  - Method trTypeContraints() renamed to trTypeConstraints().
  * 20071216:
- * 	- New methods since 1.5.4 updated.
+ *   - New methods since 1.5.4 updated.
  * Previous history removed from this version.
  */
 #ifndef TRANSLATOR_BR_H
@@ -157,14 +157,14 @@ namespace PortugueseTranslatorUtils
       switch (hl)
       {
         case ModuleMemberHighlight::All:
-	case ModuleMemberHighlight::EnumValues:
+        case ModuleMemberHighlight::EnumValues:
           return true;
-	case ModuleMemberHighlight::Functions:
-	case ModuleMemberHighlight::Variables:
-	case ModuleMemberHighlight::Typedefs:
-	case ModuleMemberHighlight::Enums:
+        case ModuleMemberHighlight::Functions:
+        case ModuleMemberHighlight::Variables:
+        case ModuleMemberHighlight::Typedefs:
+        case ModuleMemberHighlight::Enums:
           return false;
-	default:
+        default:
           return true;
       }
     }
@@ -1201,7 +1201,7 @@ class TranslatorBrazilian : public Translator
         "</p>\n"
         "<ul>\n"
         "<li>Uma caixa cinza denota a estrutura ou a classe que gerou"
-	"este grafo.</li>\n"
+        "este grafo.</li>\n"
         "<li>Uma caixa com a borda preta denota uma estrutura ou classe documentada.</li>\n"
         "<li>Uma caixa com a borda cinza denota uma estrutura ou classe não documentada.</li>\n"
         "<li>Uma caixa com a borda vermelha denota uma estrutura ou classe na"
@@ -1650,9 +1650,9 @@ class TranslatorBrazilian : public Translator
      */
     DString trDirReference(const DString &dirName) override
     {
-        DString result = "Referência do diretório ";
-     	result += dirName;
-     	return result;
+      DString result = "Referência do diretório ";
+      result += dirName;
+      return result;
     }
 
     /*! This returns the word directory with or without starting capital
@@ -1673,8 +1673,8 @@ class TranslatorBrazilian : public Translator
     DString trOverloadText() override
     {
        return "Esse é um método provido por conveniência. "
-       		"Ele difere do método acima apenas na lista de "
-       		"argumentos que devem ser utilizados.";
+              "Ele difere do método acima apenas na lista de "
+              "argumentos que devem ser utilizados.";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1864,9 +1864,9 @@ class TranslatorBrazilian : public Translator
 
       result+=" foi gerada a partir do";
       if (single)
-    	result+=" seguinte arquivo:";
+        result+=" seguinte arquivo:";
       else
-    	result+="s seguintes arquivos:";
+        result+="s seguintes arquivos:";
 
       return result;
     }
@@ -2205,7 +2205,7 @@ class TranslatorBrazilian : public Translator
     DString trDesignUnitListDescription() override
     {
         return "Esta é uma lista de todos os membros de unidades de design "
-        		"com ligações para as entidades às quais pertencem:";
+               "com ligações para as entidades às quais pertencem:";
     }
     /** VHDL design unit index */
     DString trDesignUnitIndex() override

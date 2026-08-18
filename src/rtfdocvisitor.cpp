@@ -171,8 +171,8 @@ void RTFDocVisitor::operator()(const DocEmoji &s)
         case '&': case '#': case 'x':
           break;
         case ';':
-	  val1 = val;
-	  val = 0xd800 + ( ( val1 - 0x10000 ) & 0xffc00 ) / 0x400 - 0x10000;
+          val1 = val;
+          val = 0xd800 + ( ( val1 - 0x10000 ) & 0xffc00 ) / 0x400 - 0x10000;
           m_t << "\\u" << val << "?";
           val = 0xdC00 + ( ( val1 - 0x10000 ) & 0x3ff ) - 0x10000 ;
           m_t << "\\u" << val << "?";

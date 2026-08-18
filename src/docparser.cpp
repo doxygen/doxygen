@@ -116,32 +116,32 @@ DString DocParser::findAndCopyImage(const DString &fileName, DocImage::Type type
       result = fileName;
       if (size_t i = result.rfind('/') ; i!=DString::npos || (i=result.rfind('\\'))!=DString::npos)
       {
-	result = result.mid(i+1);
+        result = result.mid(i+1);
       }
       //printf("fileName=%s result=%s\n",fileName,qPrint(result));
       DString outputDir;
       switch(type)
       {
         case DocImage::Html:
-	  if (!Config_getBool(GENERATE_HTML)) return result;
-	  outputDir = Config_getString(HTML_OUTPUT);
-	  break;
+          if (!Config_getBool(GENERATE_HTML)) return result;
+          outputDir = Config_getString(HTML_OUTPUT);
+          break;
         case DocImage::Latex:
-	  if (!Config_getBool(GENERATE_LATEX)) return result;
-	  outputDir = Config_getString(LATEX_OUTPUT);
-	  break;
+          if (!Config_getBool(GENERATE_LATEX)) return result;
+          outputDir = Config_getString(LATEX_OUTPUT);
+          break;
         case DocImage::DocBook:
-	  if (!Config_getBool(GENERATE_DOCBOOK)) return result;
-	  outputDir = Config_getString(DOCBOOK_OUTPUT);
-	  break;
+          if (!Config_getBool(GENERATE_DOCBOOK)) return result;
+          outputDir = Config_getString(DOCBOOK_OUTPUT);
+          break;
         case DocImage::Rtf:
-	  if (!Config_getBool(GENERATE_RTF)) return result;
-	  outputDir = Config_getString(RTF_OUTPUT);
-	  break;
+          if (!Config_getBool(GENERATE_RTF)) return result;
+          outputDir = Config_getString(RTF_OUTPUT);
+          break;
         case DocImage::Xml:
-	  if (!Config_getBool(GENERATE_XML)) return result;
-	  outputDir = Config_getString(XML_OUTPUT);
-	  break;
+          if (!Config_getBool(GENERATE_XML)) return result;
+          outputDir = Config_getString(XML_OUTPUT);
+          break;
       }
       DString outputFile = outputDir+"/"+result;
       FileInfo outfi(outputFile.str());
@@ -163,11 +163,11 @@ DString DocParser::findAndCopyImage(const DString &fileName, DocImage::Type type
     else
     {
       warn_doc_error(context.fileName,tokenizer.getLineNr(),
-	  "could not open image {}",fileName);
+                     "could not open image {}",fileName);
     }
 
     if (type==DocImage::Latex && Config_getBool(USE_PDFLATEX) &&
-	fd->name().endsWith(".eps")
+        fd->name().endsWith(".eps")
        )
     { // we have an .eps image in pdflatex mode => convert it to a pdf.
       DString outputDir = Config_getString(LATEX_OUTPUT);
@@ -175,10 +175,10 @@ DString DocParser::findAndCopyImage(const DString &fileName, DocImage::Type type
       DString epstopdfArgs(4096, DString::ExplicitSize);
       epstopdfArgs.sprintf("\"%s/%s.eps\" --outfile=\"%s/%s.pdf\"",
                            qPrint(outputDir), qPrint(baseName),
-			   qPrint(outputDir), qPrint(baseName));
+                           qPrint(outputDir), qPrint(baseName));
       if (Portable::system("epstopdf",epstopdfArgs)!=0)
       {
-	err("Problems running epstopdf. Check your TeX installation!\n");
+        err("Problems running epstopdf. Check your TeX installation!\n");
       }
       else
       {
@@ -194,7 +194,7 @@ DString DocParser::findAndCopyImage(const DString &fileName, DocImage::Type type
     {
       warn_doc_error(context.fileName,tokenizer.getLineNr(),
            "image file {} is not found in IMAGE_PATH: "
-	   "assuming external image.",fileName
+           "assuming external image.",fileName
           );
     }
   }
@@ -213,7 +213,7 @@ void DocParser::checkArgumentName()
   if (context.memberDef==nullptr) return; // not a member
   std::string name = context.token->name.str();
   const ArgumentList &al=context.memberDef->isDocsForDefinition() ?
-	                 context.memberDef->argumentList() :
+                         context.memberDef->argumentList() :
                          context.memberDef->declArgumentList();
   SrcLangExt lang      = context.memberDef->getLanguage();
   context.numParameters = static_cast<int>(al.size());
@@ -248,9 +248,9 @@ void DocParser::checkArgumentName()
         {
           context.token->name = argName.empty() ? "-" : argName;
         }
-	context.paramsFound.insert(aName.str());
-	found=true;
-	break;
+        context.paramsFound.insert(aName.str());
+        found=true;
+        break;
       }
       else if (aName==".") // replace . by - in the output
       {
@@ -631,7 +631,7 @@ Token DocParser::handleStyleArgument(DocNodeVariant *parent,DocNodeList &childre
   if (!tok.is(TokenRetval::TK_WHITESPACE))
   {
     warn_doc_error(context.fileName,tokenizer.getLineNr(),"expected whitespace after \\{} command",
-	saveCmdName);
+                   saveCmdName);
     return tok;
   }
   tok = tokenizer.lex();
@@ -667,7 +667,7 @@ Token DocParser::handleStyleArgument(DocNodeVariant *parent,DocNodeList &childre
           }
           break;
         default:
-	  errorHandleDefaultToken(parent,tok,children,"\\" + saveCmdName + " command");
+          errorHandleDefaultToken(parent,tok,children,"\\" + saveCmdName + " command");
           break;
       }
       break;
@@ -1554,7 +1554,7 @@ reparsetoken:
             if (tok.is(TokenRetval::TK_NEWPARA)) goto handlepara;
             else if (tok.is_any_of(TokenRetval::TK_WORD,TokenRetval::TK_HTMLTAG))
             {
-	      AUTO_TRACE_ADD("CommandType::CMD_EMPHASIS: reparsing");
+              AUTO_TRACE_ADD("CommandType::CMD_EMPHASIS: reparsing");
               goto reparsetoken;
             }
           }
@@ -1568,7 +1568,7 @@ reparsetoken:
             if (tok.is(TokenRetval::TK_NEWPARA)) goto handlepara;
             else if (tok.is_any_of(TokenRetval::TK_WORD,TokenRetval::TK_HTMLTAG))
             {
-	      AUTO_TRACE_ADD("CommandType::CMD_BOLD: reparsing");
+              AUTO_TRACE_ADD("CommandType::CMD_BOLD: reparsing");
               goto reparsetoken;
             }
           }
@@ -1582,7 +1582,7 @@ reparsetoken:
             if (tok.is(TokenRetval::TK_NEWPARA)) goto handlepara;
             else if (tok.is_any_of(TokenRetval::TK_WORD,TokenRetval::TK_HTMLTAG))
             {
-	      AUTO_TRACE_ADD("CommandType::CMD_CODE: reparsing");
+              AUTO_TRACE_ADD("CommandType::CMD_CODE: reparsing");
               goto reparsetoken;
             }
           }
@@ -1782,7 +1782,7 @@ reparsetoken:
             {
               handleImg(parent,children,context.token->attribs);
             }
-	    break;
+            break;
           default:
             return false;
             break;
@@ -2140,7 +2140,7 @@ DString DocParser::processCopyDoc(const char *data,size_t &len)
           else
           {
             warn_doc_error(context.fileName,tokenizer.getLineNr(),
-	         "Found recursive @copy{} or @copydoc relation for argument '{}'.",
+                 "Found recursive @copy{} or @copydoc relation for argument '{}'.",
                  isBrief?"brief":"details",id);
           }
         }

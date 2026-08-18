@@ -72,7 +72,7 @@ namespace Config
    */
   void writeXMLDoxyfile(TextStream &t);
 
-  /*! Writes all possible setting ids to an XSD file for validation 
+  /*! Writes all possible setting ids to an XSD file for validation
    *  through the stream \a t.
    */
   void writeXSDDoxyfile(TextStream &t);

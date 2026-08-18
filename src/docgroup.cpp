@@ -94,8 +94,8 @@ int DocGroup::findExistingGroup(const MemberGroupInfo *info)
   for (const auto &[groupId,groupInfo] : Doxygen::memberGroupInfoMap)
   {
     if (m_compoundName==groupInfo->compoundName &&  // same file or scope
-	!groupInfo->header.empty() &&             // not a nameless group
-	dstricmp(groupInfo->header,info->header)==0  // same header name
+        !groupInfo->header.empty() &&               // not a nameless group
+        dstricmp(groupInfo->header,info->header)==0 // same header name
        )
     {
       //printf("Found it!\n");
@@ -109,7 +109,7 @@ void DocGroup::open(Entry *e,const DString &,int, bool implicit)
 {
   if (!implicit) m_openCount++;
   //printf("==> openGroup(name=%s,sec=%x) m_autoGroupStack=%zu\n",
-  //  	qPrint(e->name),e->section,m_autoGroupStack.size());
+  //       qPrint(e->name),e->section,m_autoGroupStack.size());
   if (e->section.isGroupDoc()) // auto group
   {
     m_autoGroupStack.emplace_back(e->name,e->groupingPri());
@@ -196,8 +196,8 @@ void DocGroup::initGroupInfo(Entry *e)
   if (!m_autoGroupStack.empty())
   {
     //printf("Appending group %s to %s: count=%zu entry=%p\n",
-    //	qPrint(m_autoGroupStack.back().groupname),
-    //    qPrint(e->name),e->groups.size(),(void*)e);
+    //       qPrint(m_autoGroupStack.back().groupname),
+    //       qPrint(e->name),e->groups.size(),(void*)e);
     e->groups.emplace_back(m_autoGroupStack.back());
   }
 }

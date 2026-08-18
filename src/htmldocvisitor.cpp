@@ -631,7 +631,7 @@ void HtmlDocVisitor::operator()(const DocVerbatim &s)
         forceEndParagraph(s);
         DString htmlOutput = Config_getString(HTML_OUTPUT);
         DString imgExt = getDotImageExtension();
-        PlantumlManager::OutputFormat format = PlantumlManager::PUML_BITMAP;	// default : PUML_BITMAP
+        PlantumlManager::OutputFormat format = PlantumlManager::PUML_BITMAP; // default : PUML_BITMAP
         if (imgExt=="svg")
         {
           format = PlantumlManager::PUML_SVG;
@@ -1841,7 +1841,7 @@ void HtmlDocVisitor::operator()(const DocPlantUmlFile &df)
   forceEndParagraph(df);
   DString htmlOutput = Config_getString(HTML_OUTPUT);
   DString imgExt = getDotImageExtension();
-  PlantumlManager::OutputFormat format = PlantumlManager::PUML_BITMAP;	// default : PUML_BITMAP
+  PlantumlManager::OutputFormat format = PlantumlManager::PUML_BITMAP; // default : PUML_BITMAP
   if (imgExt=="svg")
   {
     format = PlantumlManager::PUML_SVG;

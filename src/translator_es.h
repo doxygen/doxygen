@@ -1843,13 +1843,13 @@ class TranslatorSpanish : public Translator
       DString result="La documentación de est";
       switch(compType)
       {
-    	case ClassDef::Class:      result+="e módulo"; break;
-    	case ClassDef::Struct:     result+="e tipo"; break;
-    	case ClassDef::Union:      result+="a unión"; break;
-    	case ClassDef::Interface:  result+="a interface"; break;
-    	case ClassDef::Protocol:   result+="e protocolo"; break;
-    	case ClassDef::Category:   result+="a categoría"; break;
-    	case ClassDef::Exception:  result+="a excepción"; break;
+        case ClassDef::Class:      result+="e módulo"; break;
+        case ClassDef::Struct:     result+="e tipo"; break;
+        case ClassDef::Union:      result+="a unión"; break;
+        case ClassDef::Interface:  result+="a interface"; break;
+        case ClassDef::Protocol:   result+="e protocolo"; break;
+        case ClassDef::Category:   result+="a categoría"; break;
+        case ClassDef::Exception:  result+="a excepción"; break;
         default: break;
       }
       result+=" está generada de";

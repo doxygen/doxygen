@@ -231,11 +231,11 @@ void VHDLOutlineParser::newEntry()
     {
       if (s->lastEntity)
       {
-	s->lastEntity->moveToSubEntryAndRefresh(s->current);
+        s->lastEntity->moveToSubEntryAndRefresh(s->current);
       }
       else
       {
-	s->current_root->moveToSubEntryAndRefresh(s->current);
+        s->current_root->moveToSubEntryAndRefresh(s->current);
       }
     }
   }
@@ -247,12 +247,12 @@ static int idCounter;
 /** returns a unique id for each record member.
 *
 *  type first_rec is record
-*		RE: data_type;
-*	end;
+*    RE: data_type;
+*  end;
 *
 * type second_rec is record
-*		RE: data_type;
-*	end;
+*    RE: data_type;
+*  end;
 */
 
 DString VHDLOutlineParser::getNameID()

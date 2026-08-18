@@ -42,20 +42,20 @@
  * 20220911:
  *  - Updated to 1.9.6;
  * 20220525:
- * 	- Updated to 1.9.4;
+ *  - Updated to 1.9.4;
  * 20211003:
  *  - Updated to 1.9.3;
  * 20200112:
- * 	- Updated to 1.9.1;
+ *  - Updated to 1.9.1;
  * 20190203:
- *	- Slice methods added;
+ *  - Slice methods added;
  * 20180612:
- *	- Updated to 1.8.15;
+ *  - Updated to 1.8.15;
  * 20131129:
  *  - Updated to 1.8.5;
  *  - Translation in the method trFileMembers() fixed;
  * 20110628:
- *	- Updated to 1.7.5;
+ *  - Updated to 1.7.5;
  *      - All obsolete methods have been removed;
  * 20110428
  *   - Updated to doxygen 1.6.3 using the Brazilian Portuguese as the base.
@@ -1518,8 +1518,8 @@ class TranslatorPortuguese : public Translator
     DString trDirReference(const DString &dirName) override
     {
         DString result = "Referência do diretório ";
-     	result += dirName;
-     	return result;
+        result += dirName;
+        return result;
     }
 
     /*! This returns the word directory with or without starting capital
@@ -1539,8 +1539,8 @@ class TranslatorPortuguese : public Translator
     DString trOverloadText() override
     {
        return "Este é um método provido por conveniência. "
-       		"Ele difere do método acima apenas na lista de "
-       		"argumentos que devem ser utilizados.";
+              "Ele difere do método acima apenas na lista de "
+              "argumentos que devem ser utilizados.";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1729,9 +1729,9 @@ class TranslatorPortuguese : public Translator
 
       result+=" foi gerada a partir do";
       if (single)
-    	result+=" seguinte ficheiro:";
+        result+=" seguinte ficheiro:";
       else
-    	result+="s seguintes ficheiros:";
+        result+="s seguintes ficheiros:";
 
       return result;
     }
@@ -2072,7 +2072,7 @@ class TranslatorPortuguese : public Translator
     DString trDesignUnitListDescription() override
     {
         return "Esta é uma lista de todos os membros de unidades de design "
-        		"com ligações para as entidades às quais pertencem:";
+               "com ligações para as entidades às quais pertencem:";
     }
     /** VHDL design unit index */
     DString trDesignUnitIndex() override

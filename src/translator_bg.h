@@ -716,8 +716,9 @@ class TranslatorBulgarian : public TranslatorAdapter_1_9_4
 
     /*! This is put above each page as a link to all members of namespaces. */
     DString trNamespaceMembers() override
-    { return "Членове Именни пространства";
-	}
+    {
+      return "Членове Именни пространства";
+    }
 
     /*! This is an introduction to the page with all namespace members */
     DString trNamespaceMemberDescription(bool extractAll) override
@@ -1861,7 +1862,7 @@ class TranslatorBulgarian : public TranslatorAdapter_1_9_4
     /*! Used file list for a Java enum */
     DString trEnumGeneratedFromFiles(bool single) override
     { DString result = "Документацията за това изброяване е генерирана от ";
-	  if (single) result+="следният файл:"; else result+="следните файлове:";
+      if (single) result+="следният файл:"; else result+="следните файлове:";
       result+=":";
       return result;
     }

@@ -140,25 +140,25 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
     DString trClassHierarchy() override
     { return "Stablo klasa"; }
     DString trCompoundList() override
-	{
-		if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
-		{
-			return "Sve strukture";
-		}
-		else
-		{
-			return "Sve klase";
-		}
-	}
+    {
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+      {
+        return "Sve strukture";
+      }
+      else
+      {
+        return "Sve klase";
+      }
+    }
     DString trFileList() override
     { return "Popis datoteka"; }
     DString trCompoundMembers() override
-	{
-		if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
-			return "Svi članovi struktura";
-		else
-			return "Svi članovi klasa";
-	}
+    {
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+        return "Svi članovi struktura";
+      else
+        return "Svi članovi klasa";
+    }
     DString trFileMembers() override
     { return "članovi klasa u datoteci"; }
     DString trRelatedPages() override
@@ -180,42 +180,42 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
     }
     DString trCompoundListDescription() override
     { return "Popis svih klasa, unija i struktura "
-		  "s kratkim opisom :";
+             "s kratkim opisom :";
     }
     DString trCompoundMembersDescription(bool extractAll) override
     {
       DString result="Popis svih ";
       if (!extractAll)
-		  result+="dokumentiranih ";
+        result+="dokumentiranih ";
 
-	  if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
-		  result+="članova klasa s linkovima na ";
-	  else
-		  result+="članova struktura s linkovima na ";
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+        result+="članova klasa s linkovima na ";
+      else
+        result+="članova struktura s linkovima na ";
 
       if (!extractAll)
-	  {
-		  result+="dokumentaciju svakog člana:";
+      {
+        result+="dokumentaciju svakog člana:";
       }
-	  else
-	  {
-		  if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
-			  result+="dokumentaciju klase :";
-		  else
-			  result +="dokumentaciju strukture";
-	  }
+      else
+      {
+        if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+          result+="dokumentaciju klase :";
+        else
+          result +="dokumentaciju strukture";
+      }
       return result;
     }
     DString trFileMembersDescription(bool extractAll) override
     {
       DString result="Popis svih ";
       if (!extractAll)
-		  result+="dokumentiranih ";
+        result+="dokumentiranih ";
       result+="članova s linkovima na ";
       if (extractAll)
-		  result+="dokumentaciju datoteke u kojima se nalaze:";
+        result+="dokumentaciju datoteke u kojima se nalaze:";
       else
-		  result+="datoteke u kojima se nalaze:";
+        result+="datoteke u kojima se nalaze:";
       return result;
     }
     DString trExamplesDescription() override
@@ -239,7 +239,7 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
       }
       else
       {
-	return "Skupno kazalo ";
+        return "Skupno kazalo ";
       }
     }
     DString trFileIndex() override
@@ -512,7 +512,7 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
         default: break;
       }
       result+=" je napravljena iz " + trFile(false, single) + ": ";
-	  return result;
+      return result;
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1064,72 +1064,72 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
     {
       return "Statički atributi u paketu";
     }
-	//////////////////////////////////////////////////////////////////////////
-	// new since 1.3.1
-	//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.3.1
+    //////////////////////////////////////////////////////////////////////////
 
-	/*! Used in the quick index of a class/file/namespace member list page
-	*  to link to the unfiltered list of all members.
-	*/
-	DString trAll() override
-	{
-		return "Sve";
-	}
-	/*! Put in front of the call graph for a function. */
-	DString trCallGraph() override
-	{
-		return "Ovo je dijagram poziva za ovu funkciju:";
-	}
+    /*! Used in the quick index of a class/file/namespace member list page
+     *  to link to the unfiltered list of all members.
+     */
+    DString trAll() override
+    {
+      return "Sve";
+    }
+    /*! Put in front of the call graph for a function. */
+    DString trCallGraph() override
+    {
+      return "Ovo je dijagram poziva za ovu funkciju:";
+    }
 
-	//////////////////////////////////////////////////////////////////////////
-	// new since 1.3.3
-	//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.3.3
+    //////////////////////////////////////////////////////////////////////////
 
-	/*! This string is used as the title for the page listing the search
-	*  results.
-	*/
-	DString trSearchResultsTitle() override
-	{
-		return "Rezultati pretrage";
-	}
-	/*! This string is put just before listing the search results. The
-	*  text can be different depending on the number of documents found.
-	*  Inside the text you can put the special marker $num to insert
-	*  the number representing the actual number of search results.
-	*  The @a numDocuments parameter can be either 0, 1 or 2, where the
-	*  value 2 represents 2 or more matches. HTML markup is allowed inside
-	*  the returned string.
-	*/
-	DString trSearchResults(int numDocuments) override
-	{
-		if (numDocuments==0)
-		{
-			return "Nema dokumenta koji odgovaraju vašem upitu";
-		}
-		else if (numDocuments==1)
-		{
-			return "Nađen <b>1</b> dokument koji odgovara vašem upitu.";
-		}
-		else if (numDocuments<5)
-		{
-			// Croatian (AFAIK all Slavic languages except Macedonian and Bulgarian)
-            // have different plural form for 2,3,4.
-			return "Nađena <b>$num</b> dokumenta koji odgovaraju vašem upitu."
-				"Najbolji su prikazani prvi.";
-		}
-		else
-		{
-			return "Nađeno <b>$num</b> dokumenata koji odgovaraju vašem upitu."
-				"Najbolji su prikazani prvi.";
-		}
-	}
-	/*! This string is put before the list of matched words, for each search
-	*  result. What follows is the list of words that matched the query.
-	*/
-	DString trSearchMatches() override
-	{
-		return "Pronađeno:";
-	}
+    /*! This string is used as the title for the page listing the search
+     *  results.
+     */
+    DString trSearchResultsTitle() override
+    {
+      return "Rezultati pretrage";
+    }
+    /*! This string is put just before listing the search results. The
+     *  text can be different depending on the number of documents found.
+     *  Inside the text you can put the special marker $num to insert
+     *  the number representing the actual number of search results.
+     *  The @a numDocuments parameter can be either 0, 1 or 2, where the
+     *  value 2 represents 2 or more matches. HTML markup is allowed inside
+     *  the returned string.
+     */
+    DString trSearchResults(int numDocuments) override
+    {
+      if (numDocuments==0)
+      {
+        return "Nema dokumenta koji odgovaraju vašem upitu";
+      }
+      else if (numDocuments==1)
+      {
+        return "Nađen <b>1</b> dokument koji odgovara vašem upitu.";
+      }
+      else if (numDocuments<5)
+      {
+        // Croatian (AFAIK all Slavic languages except Macedonian and Bulgarian)
+        // have different plural form for 2,3,4.
+        return "Nađena <b>$num</b> dokumenta koji odgovaraju vašem upitu."
+               "Najbolji su prikazani prvi.";
+      }
+      else
+      {
+        return "Nađeno <b>$num</b> dokumenata koji odgovaraju vašem upitu."
+               "Najbolji su prikazani prvi.";
+      }
+    }
+    /*! This string is put before the list of matched words, for each search
+     *  result. What follows is the list of words that matched the query.
+     */
+    DString trSearchMatches() override
+    {
+      return "Pronađeno:";
+    }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 1.3.8

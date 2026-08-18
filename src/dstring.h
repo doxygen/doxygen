@@ -27,7 +27,7 @@
 #include "utf8.h"
 
 #define ASSERT(x)  if ( !(x) )\
-	fprintf(stderr,"ASSERT: \"%s\" in %s (%d)\n",#x,__FILE__,__LINE__)
+        fprintf(stderr,"ASSERT: \"%s\" in %s (%d)\n",#x,__FILE__,__LINE__)
 
 
 /*****************************************************************************
@@ -289,8 +289,8 @@ class DString
 
     DString &sprintf( const char *format, ... );
 
-    int	contains( char c, bool cs=true ) const;
-    int	contains( const char *str, bool cs=true ) const;
+    int contains( char c, bool cs=true ) const;
+    int contains( const char *str, bool cs=true ) const;
 
     bool stripPrefix(const DString &prefix)
     {
@@ -532,7 +532,7 @@ class DString
 
     short         toShort(  bool *ok=nullptr, int base=10 ) const;
     uint16_t      toUShort( bool *ok=nullptr, int base=10 ) const;
-    int	          toInt(    bool *ok=nullptr, int base=10 ) const;
+    int           toInt(    bool *ok=nullptr, int base=10 ) const;
     uint32_t      toUInt(   bool *ok=nullptr, int base=10 ) const;
     long          toLong(   bool *ok=nullptr, int base=10 ) const;
     unsigned long toULong(  bool *ok=nullptr, int base=10 ) const;

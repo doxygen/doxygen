@@ -491,7 +491,7 @@ class TranslatorSerbian : public TranslatorAdapter_1_6_0
     {
       DString result="[" + date + "] Napravljeno automatski ";
       if (!projName.empty()) result+=" za projekat " + projName;
-	  result+=" upotrebom ";
+      result+=" upotrebom ";
       return result;
     }
 

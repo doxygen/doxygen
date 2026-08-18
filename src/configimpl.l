@@ -1172,7 +1172,7 @@ REGEX_w [a-z_A-Z0-9\x80-\xFF]
                                                case ConfigOption::O_Disabled:
                                                  ConfigImpl::config_warn("Tag '{}' at line {} of file {} belongs to an option that was not enabled at compile time.\n"
                                                             "To avoid this warning please remove this line from your configuration "
-                                                            "file, upgrade it using \"doxygen -u\", or recompile doxygen with this feature enabled.\n", 
+                                                            "file, upgrade it using \"doxygen -u\", or recompile doxygen with this feature enabled.\n",
                                                             g_cmd,g_yyLineNr,g_yyFileName);
                                                  BEGIN(SkipInvalid);
                                                  break;

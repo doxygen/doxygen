@@ -69,11 +69,11 @@ size_t DString::rfind_insensitive( const char *str, size_t index) const
   else if (index>len) return DString::npos; // bad index
   else if (index+slen>len) index = len-slen; // str would be too long
   const char *pos = data()+index;
-  for (size_t i=index+1; i>0; ) 
+  for (size_t i=index+1; i>0; )
   {
     --i;
     if (dstrnicmp(pos--,str,slen)==0) return i;
-  }  
+  }
   return DString::npos;
 }
 
@@ -156,11 +156,11 @@ DString &DString::replace( size_t index, size_t len, const char *s)
 static bool ok_in_base( char c, int base )
 {
     if ( base <= 10 )
-	return c>='0' && c<='9' && (c-'0') < base;
+      return c>='0' && c<='9' && (c-'0') < base;
     else
-	return (c>='0' && c<='9') ||
-               (c >= 'a' && c < char('a'+base-10)) ||
-               (c >= 'A' && c < char('A'+base-10));
+      return (c>='0' && c<='9') ||
+             (c >= 'a' && c < char('a'+base-10)) ||
+             (c >= 'A' && c < char('A'+base-10));
 }
 
 short DString::toShort(bool *ok, int base) const
@@ -204,7 +204,7 @@ long DString::toLong(bool *ok,int base) const
   int neg = 0;
   if ( !p )
     goto bye;
-  while ( l && disspace(*p) )			// skip leading space
+  while ( l && disspace(*p) )  // skip leading space
   {
     l--;
     p++;
@@ -255,7 +255,7 @@ long DString::toLong(bool *ok,int base) const
   {
     val = -val;
   }
-  while ( l && disspace(*p) )			// skip trailing space
+  while ( l && disspace(*p) )  // skip trailing space
   {
     l--;
     p++;
@@ -277,13 +277,13 @@ unsigned long DString::toULong(bool *ok,int base) const
   const char *p = data();
   unsigned long val=0;
   int l = static_cast<int>(length());
-  const unsigned long max_mult = 429496729;		// UINT_MAX/10, rounded down
+  const unsigned long max_mult = 429496729;  // UINT_MAX/10, rounded down
   bool is_ok = false;
   if ( !p )
   {
     goto bye;
   }
-  while ( l && disspace(*p) )			// skip leading space
+  while ( l && disspace(*p) )  // skip leading space
   {
     l--;
     p++;
@@ -326,7 +326,7 @@ unsigned long DString::toULong(bool *ok,int base) const
     p++;
   }
 
-  while ( l && disspace(*p) )			// skip trailing space
+  while ( l && disspace(*p) )  // skip trailing space
   {
     l--;
     p++;
@@ -354,7 +354,7 @@ uint64_t DString::toUInt64(bool *ok,int base) const
   {
     goto bye;
   }
-  while ( l && disspace(*p) )		 	   // skip leading space
+  while ( l && disspace(*p) )  // skip leading space
   {
     l--;
     p++;
@@ -397,7 +397,7 @@ uint64_t DString::toUInt64(bool *ok,int base) const
     p++;
   }
 
-  while ( l && disspace(*p) )			// skip trailing space
+  while ( l && disspace(*p) )  // skip trailing space
   {
     l--;
     p++;
