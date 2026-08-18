@@ -3096,6 +3096,41 @@ EXTRA_SEARCH_MAPPINGS = tagname1=loc1 tagname2=loc2 ...
 ]]>
       </docs>
     </option>
+    <option type='bool' id='LATEX_USE_LISTINGS' defval='0' depends='GENERATE_LATEX'>
+      <docs>
+<![CDATA[
+ When the \c LATEX_USE_LISTINGS tag is set to \c YES, ordinary code blocks are
+ emitted as \c lstlisting environments instead of Doxygen's \c DoxyCode
+ environments. This leaves syntax highlighting to the LaTeX \c listings package
+ and preserves the source text without Doxygen's LaTeX escaping.
+
+ This option is disabled by default. When enabled, the user must load and configure
+ the \c listings package, for example by using a custom LaTeX header or an extra
+ stylesheet. Code blocks in tables continue to use the standard \c DoxyCode
+ backend because \c lstlisting environments cannot be used reliably in table cells.
+
+ The language from a Markdown fence is passed to \c listings when it is a safe
+ identifier. The special language \c none, and an empty language, do not set a
+ language option. Doxygen does not translate fence language names: the selected
+ name must be supported by the installed \c listings package. Markdown fences for
+ \c mermaid, \c msc, \c dot (when Graphviz is enabled), and \c plantuml (when
+ \ref cfg_plantuml_jar_path "PLANTUML_JAR_PATH" is set) are special diagram blocks;
+ they retain their existing diagram handling. Other code constructs, such as included
+ snippets and generated source listings, also retain the standard backend.
+]]>
+      </docs>
+    </option>
+    <option type='string' id='LATEX_LISTINGS_STYLE' format='string' defval='' depends='LATEX_USE_LISTINGS'>
+      <docs>
+<![CDATA[
+ The \c LATEX_LISTINGS_STYLE tag specifies the \c listings style to use when
+ \ref cfg_latex_use_listings "LATEX_USE_LISTINGS" is enabled. For example,
+ setting this tag to \c MyStyle emits \c style=MyStyle in each \c lstlisting
+ environment. The style must be defined by the user's LaTeX configuration. If
+ this tag is left empty, no \c style option is emitted.
+]]>
+      </docs>
+    </option>
     <option type='enum' id='PAPER_TYPE' defval='a4' depends='GENERATE_LATEX'>
       <docs>
 <![CDATA[

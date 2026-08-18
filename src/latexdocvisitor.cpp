@@ -19,6 +19,7 @@
 // standard includes
 #include <algorithm>
 #include <array>
+#include <cctype>
 
 // other includes
 #include "cite.h"
@@ -58,6 +59,15 @@ static const std::array<const char *,g_maxLevels> g_secLabels =
 
 static const char *g_paragraphLabel = "doxyparagraph";
 static const char *g_subparagraphLabel = "doxysubparagraph";
+
+static bool isListingsIdentifier(const DString &value)
+{
+  if (value.empty()) return false;
+  return std::all_of(value.begin(),value.end(),[](unsigned char c)
+  {
+    return std::isalnum(c) || c=='+' || c=='-' || c=='_';
+  });
+}
 
 const char *LatexDocVisitor::getSectionName(int level) const
 {
@@ -423,11 +433,41 @@ void LatexDocVisitor::operator()(const DocVerbatim &s)
   {
     case DocVerbatim::Code:
       {
-        m_ci.startCodeFragment("DoxyCode");
-        getCodeParser(lang).parseCode(m_ci,s.context(),s.text(),langExt,
-                                      Config_getBool(STRIP_CODE_COMMENTS),
-                                      CodeParserOptions().setExample(s.isExample(),s.exampleFile()));
-        m_ci.endCodeFragment("DoxyCode");
+        if (Config_getBool(LATEX_USE_LISTINGS) && !isTableNested(s.parent()))
+        {
+          DString style = Config_getString(LATEX_LISTINGS_STYLE);
+          DString language = s.language();
+          if (!language.empty() && language.at(0)=='.') language=language.mid(1);
+          m_t << "\n\\begin{lstlisting}";
+          if (isListingsIdentifier(style) ||
+              (!language.empty() && language != "none" && isListingsIdentifier(language)))
+          {
+            m_t << "[";
+            bool hasOption = false;
+            if (isListingsIdentifier(style))
+            {
+              m_t << "style=" << style;
+              hasOption = true;
+            }
+            if (!language.empty() && language != "none" && isListingsIdentifier(language))
+            {
+              if (hasOption) m_t << ",";
+              m_t << "language=" << language;
+            }
+            m_t << "]";
+          }
+          m_t << "\n" << s.text();
+          if (!s.text().empty() && s.text().back() != '\n') m_t << "\n";
+          m_t << "\\end{lstlisting}\n";
+        }
+        else
+        {
+          m_ci.startCodeFragment("DoxyCode");
+          getCodeParser(lang).parseCode(m_ci,s.context(),s.text(),langExt,
+                                        Config_getBool(STRIP_CODE_COMMENTS),
+                                        CodeParserOptions().setExample(s.isExample(),s.exampleFile()));
+          m_ci.endCodeFragment("DoxyCode");
+        }
       }
       break;
     case DocVerbatim::JavaDocLiteral:
@@ -2138,4 +2178,3 @@ void LatexDocVisitor::decIndentLevel()
     m_indentLevel--;
   }
 }
-
