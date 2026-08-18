@@ -23,13 +23,13 @@ add_executable(doxyindexer
 )
 
 target_link_libraries(doxyindexer
-	              PRIVATE
+                      PRIVATE
                       ${XAPIAN_LIBRARIES}
                       ${ZLIB_LIBRARIES}
                       ${EXTRA_LIBS}
                       ${COVERAGE_LINKER_FLAGS}
                       doxygen_version
-		      xml
+                      xml
 )
 
 add_executable(doxysearch.cgi
@@ -38,7 +38,7 @@ add_executable(doxysearch.cgi
 )
 
 target_link_libraries(doxysearch.cgi
-	              PRIVATE
+                      PRIVATE
                       doxygen_version
                       ${XAPIAN_LIBRARIES}
                       ${ZLIB_LIBRARIES}

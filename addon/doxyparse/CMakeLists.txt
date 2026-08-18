@@ -1,11 +1,11 @@
 find_package(Iconv)
 
 include_directories(
-	${PROJECT_SOURCE_DIR}/src
-	${PROJECT_SOURCE_DIR}/libversion
-	${GENERATED_SRC}
-	${Iconv_INCLUDE_DIRS}
-	${CLANG_INCLUDEDIR}
+        ${PROJECT_SOURCE_DIR}/src
+        ${PROJECT_SOURCE_DIR}/libversion
+        ${GENERATED_SRC}
+        ${Iconv_INCLUDE_DIRS}
+        ${CLANG_INCLUDEDIR}
 )
 
 add_executable(doxyparse
