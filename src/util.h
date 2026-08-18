@@ -169,7 +169,7 @@ void mergeArguments(ArgumentList &srcAl,ArgumentList &dstAl,bool forceNameOverwr
  */
 bool matchTemplateArguments(const ArgumentList &srcAl,const ArgumentList &dstAl);
 
-/*! Returns a represention of \a name where all known types have been normalized to their canonical form.
+/*! Returns a representation of \a name where all known types have been normalized to their canonical form.
  *  The normalization is done in the context of \a context and using the formal arguments in \a formalArgs.
  */
 DString normalizeNonTemplateArgumentsInString(
