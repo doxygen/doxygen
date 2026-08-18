@@ -1,0 +1,10 @@
+// objective: test that the default LaTeX code backend remains DoxyCode when LATEX_USE_LISTINGS is unset
+// config: GENERATE_LATEX = YES
+// config: LATEX_OUTPUT = $TESTOUTDIR/latex
+// latexcheck: index.tex:\begin{DoxyCode}{0}\n\DoxyCodeLine{\textcolor{keywordtype}{int}\ foo;}\n\n\end{DoxyCode}
+/** \mainpage Default LaTeX code backend
+
+```c
+int foo;
+```
+*/

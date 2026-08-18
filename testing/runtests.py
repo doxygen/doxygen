@@ -227,7 +227,8 @@ class Tester:
                         sys.exit(1)
                     print(cfg[0], file=f)
 
-        if 'check' not in self.config or not self.config['check']:
+        if (('check' not in self.config or not self.config['check']) and
+            ('latexcheck' not in self.config or not self.config['latexcheck'])):
             print('Test doesn\'t specify any files to check')
             sys.exit(1)
 
@@ -530,6 +531,23 @@ class Tester:
                     failed_qhp=True
             if not failed_html and not failed_qhp and not self.args.keep:
                 shutil.rmtree(html_output,ignore_errors=True)
+
+        if 'latexcheck' in self.config:
+            latex_output='%s/%slatex' % (self.test_out,
+                                          'out/' if (self.args.xml or self.args.xmlxsd) else '')
+            for check in self.config['latexcheck']:
+                filename, expected = check.split(':', 1)
+                expected = expected.replace(r'\n', '\n')
+                check_file='%s/%s' % (latex_output,filename)
+                if not os.path.isfile(check_file):
+                    msg += ('Non-existing LaTeX file %s after \'latexcheck:\' statement' % check_file,)
+                    failed_latex=True
+                    break
+                with xopen(check_file, 'r') as f:
+                    if expected not in f.read():
+                        msg += ('Expected LaTeX output not found in %s: %s' % (check_file, expected),)
+                        failed_latex=True
+                        break
         if (self.args.pdf):
             failed_latex=False
             latex_output='%s/latex' % self.test_out

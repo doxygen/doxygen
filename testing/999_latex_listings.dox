@@ -1,0 +1,23 @@
+// objective: test exact Markdown code block output with the optional LaTeX listings backend
+// config: GENERATE_LATEX = YES
+// config: LATEX_OUTPUT = $TESTOUTDIR/latex
+// config: LATEX_USE_LISTINGS = YES
+// config: LATEX_LISTINGS_STYLE = MyStyle
+// latexcheck: index.tex:\begin{lstlisting}[style=MyStyle,language=c]\nint foo = 1;\n\end{lstlisting}
+// latexcheck: index.tex:\begin{lstlisting}[style=MyStyle,language=yaml]\nname: example\n\end{lstlisting}
+// latexcheck: index.tex:\begin{lstlisting}[style=MyStyle]\n-option1 -option2-foo\nraw _ % # $ & { } ~ ^ \\\n\end{lstlisting}
+/** \mainpage LaTeX listings
+
+```c
+int foo = 1;
+```
+
+```yaml
+name: example
+```
+
+```none
+-option1 -option2-foo
+raw _ % # $ & { } ~ ^ \\
+```
+*/

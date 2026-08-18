@@ -1,0 +1,16 @@
+// objective: test LaTeX listings output without LATEX_LISTINGS_STYLE
+// config: GENERATE_LATEX = YES
+// config: LATEX_OUTPUT = $TESTOUTDIR/latex
+// config: LATEX_USE_LISTINGS = YES
+// latexcheck: index.tex:\begin{lstlisting}[language=c]\nint foo = 1;\n\end{lstlisting}
+// latexcheck: index.tex:\begin{lstlisting}\nplain text\n\end{lstlisting}
+/** \mainpage LaTeX listings default style
+
+```c
+int foo = 1;
+```
+
+```none
+plain text
+```
+*/
