@@ -117,7 +117,6 @@ class HtmlEntityMapper
 
     /*! Writes an HTML entity for the current symbol and advances the input pointer.
      *  \tparam T Type of the output sink used to write encoded output.
-     *  \param t Output target receiving the encoded entity or fallback text.
      *  \param s Pointer to the start of a potential HTML entity in the input text.
      *  \param mapper Callback that maps a entity symbol type to its HTML entity string.
      *  \param fallback Fallback string written when no entity mapping is available.
