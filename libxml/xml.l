@@ -76,21 +76,21 @@ static std::string processData(yyscan_t yyscanner,const char *txt,yy_size_t len)
 
 %}
 
-NL		(\r\n|\r|\n)
-SP		[ \t\r\n]+
-OPEN		{SP}?"<"
+NL              (\r\n|\r|\n)
+SP              [ \t\r\n]+
+OPEN            {SP}?"<"
 OPENSPECIAL     {SP}?"<?"
-CLOSE		">"{NL}?
+CLOSE           ">"{NL}?
 CLOSESPECIAL    "?>"{NL}?
-NAMESTART	[:A-Za-z\200-\377_]
-NAMECHAR	[:A-Za-z\200-\377_0-9.-]
-NAME		{NAMESTART}{NAMECHAR}*
-ESC		"&#"[0-9]+";"|"&#x"[0-9a-fA-F]+";"
-COLON		":"
-PCDATA		[^<]+
-COMMENT		{OPEN}"!--"
+NAMESTART       [:A-Za-z\200-\377_]
+NAMECHAR        [:A-Za-z\200-\377_0-9.-]
+NAME            {NAMESTART}{NAMECHAR}*
+ESC             "&#"[0-9]+";"|"&#x"[0-9a-fA-F]+";"
+COLON           ":"
+PCDATA          [^<]+
+COMMENT         {OPEN}"!--"
 COMMENTEND      "--"{CLOSE}
-STRING		\"([^"&]|{ESC})*\"|\'([^'&]|{ESC})*\'
+STRING          \"([^"&]|{ESC})*\"|\'([^'&]|{ESC})*\'
 DOCTYPE         {SP}?"<!DOCTYPE"{SP}
 CDATA           {SP}?"<![CDATA["
 ENDCDATA        "]]>"
