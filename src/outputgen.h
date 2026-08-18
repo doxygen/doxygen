@@ -323,7 +323,7 @@ class OutputGenIntf
     virtual void cleanup() = 0;
     virtual void startPlainFile(const DString &name) = 0;
     virtual void endPlainFile() = 0;
-    virtual void startEmbeddedDoc(int) = 0;
+    virtual void startEmbeddedDoc(size_t) = 0;
     virtual void endEmbeddedDoc() = 0;
 };
 

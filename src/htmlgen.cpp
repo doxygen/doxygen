@@ -3625,7 +3625,7 @@ void HtmlGenerator::endInlineMemberDoc()
   m_t << "</td></tr>\n";
 }
 
-void HtmlGenerator::startEmbeddedDoc(int indent)
+void HtmlGenerator::startEmbeddedDoc(size_t indent)
 {
   DBG_HTML(m_t << "<!-- startEmbeddedDoc -->\n";)
   m_t << "<div class=\"embeddoc indent-" << indent << "\">";

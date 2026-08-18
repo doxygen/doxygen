@@ -334,7 +334,7 @@ class HtmlGenerator final : public OutputGenerator, public OutputGenIntf
     void startPlainFile(const DString &name) override { OutputGenerator::startPlainFile(name); }
     void endPlainFile() override { OutputGenerator::endPlainFile(); }
 
-    void startEmbeddedDoc(int) override;
+    void startEmbeddedDoc(size_t) override;
     void endEmbeddedDoc() override;
 
   private:

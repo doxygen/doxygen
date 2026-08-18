@@ -34,7 +34,7 @@ struct CodeFragmentManager::Private
 {
   struct BlockMarker
   {
-    int indent=0;
+    size_t indent=0;
     std::string key;
     std::vector<int> lines;
   };
@@ -130,7 +130,7 @@ void CodeFragmentManager::Private::FragmentInfo::findBlockMarkers()
     }
     return startPos;
   };
-  static auto lineIndent = [](const char *&ss, int orgCol) -> int
+  static auto lineIndent = [](const char *&ss, size_t orgCol) -> size_t
   {
     int tabSize=Config_getInt(TAB_SIZE);
     int col = 0;
@@ -159,8 +159,8 @@ void CodeFragmentManager::Private::FragmentInfo::findBlockMarkers()
     const char *e = gotoLine(startBuf,s,marker.lines[0]+1,lineNr);
 
     const char *ss = s;
-    int minIndent=100000;
-    int indent = minIndent;
+    size_t minIndent=100000;
+    size_t indent = minIndent;
     while (ss<e)
     {
       indent = lineIndent(ss, indent);
@@ -315,7 +315,7 @@ void CodeFragmentManager::parseCodeFragment(OutputCodeList & codeOutList,
     const auto &marker = blockKv->second;
     int startLine = marker->lines[0];
     int endLine   = marker->lines[1];
-    int indent    = marker->indent;
+    size_t indent = marker->indent;
     AUTO_TRACE_ADD("replay(start={},end={},indent={}) fileContentsTrimLeft.empty()={}",
         startLine,endLine,indent,codeFragment->fileContentsTrimLeft.empty());
     auto recorder = codeFragment->recorderCodeList.get<OutputCodeRecorder>(OutputType::Recorder);
@@ -324,7 +324,7 @@ void CodeFragmentManager::parseCodeFragment(OutputCodeList & codeOutList,
                     endLine,
                     showLineNumbers,
                     stripCodeComments,
-                    trimLeft ? static_cast<size_t>(indent) : 0
+                    trimLeft ? indent : 0
                    );
   }
   else

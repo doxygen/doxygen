@@ -128,7 +128,7 @@ class NamespaceDefMutable : public DefinitionMutable, public NamespaceDef
 };
 
 /** Factory method to create new NamespaceDef instance */
-std::unique_ptr<NamespaceDef> createNamespaceDef(const DString &defFileName,int defLine,int defColumn,
+std::unique_ptr<NamespaceDef> createNamespaceDef(const DString &defFileName,int defLine,size_t defColumn,
                  const DString &name,const DString &ref=DString(),
                  const DString &refFile=DString(),const DString &type=DString(),
                  bool isPublished=false);

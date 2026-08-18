@@ -755,7 +755,7 @@ class OutputList
     { foreach(&OutputGenIntf::startPlainFile,name); }
     void endPlainFile()
     { foreach(&OutputGenIntf::endPlainFile); }
-    void startEmbeddedDoc(int indent)
+    void startEmbeddedDoc(size_t indent)
     { foreach(&OutputGenIntf::startEmbeddedDoc,indent); }
     void endEmbeddedDoc()
     { foreach(&OutputGenIntf::endEmbeddedDoc); }

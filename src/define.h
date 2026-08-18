@@ -36,7 +36,7 @@ class Define
     DString args;
     FileDef *fileDef = nullptr;
     int lineNr = 1;
-    int columnNr = 1;
+    size_t columnNr = 1;
     int nargs = -1;
     bool undef = false;
     bool varArgs = false;
