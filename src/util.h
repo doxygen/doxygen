@@ -169,6 +169,25 @@ void mergeArguments(ArgumentList &srcAl,ArgumentList &dstAl,bool forceNameOverwr
  */
 bool matchTemplateArguments(const ArgumentList &srcAl,const ArgumentList &dstAl);
 
+/*! Returns a represention of \a name where all known types have been normalized to their canonical form.
+ *  The normalization is done in the context of \a context and using the formal arguments in \a formalArgs.
+ */
+DString normalizeNonTemplateArgumentsInString(
+       const DString &name,
+       const Definition *context,
+       const ArgumentList &formalArgs);
+
+/*! Substitutes any occurrence of a formal argument from argument list
+ *  \a formalArgs in \a name by the corresponding actual argument in
+ *  argument list \a actualArgs. The result after substitution
+ *  is returned as a string. The argument \a name is used to
+ *  prevent recursive substitution.
+ */
+DString substituteTemplateArgumentsInString(
+       const DString &name,
+       const ArgumentList &formalArgs,
+       const ArgumentList *actualArgs);
+
 //----------------------------------------------------------------
 
 struct SelectionBlock
@@ -241,39 +260,25 @@ DString replaceAnonymousScopes(const DString &s,const DString &replacement=DStri
 
 DString convertNameToFile(const DString &name,bool allowDots=false,bool allowUnderscore=false);
 
-void extractNamespaceName(const DString &scopeName,
-                          DString &className,DString &namespaceName,
-                          bool allowEmptyClass=false);
-
 DString insertTemplateSpecifierInScope(const DString &scope,const DString &templ);
 
 DString stripScope(const DString &name);
 
 DString convertToId(const DString &s);
-DString correctId(const DString &s);
-
 DString convertToHtml(const DString &s,bool keepEntities=true);
-
 DString convertToXML(const DString &s, bool keepEntities=false, bool citeEntry = false);
-
 DString convertToJSString(const DString &s,bool keepEntities=false,bool singleQuotes=false);
 
 void addMembersToMemberGroup(/* in,out */ MemberList *ml,
                              /* in,out */ MemberGroupList *pMemberGroups,
                              /* in */     const Definition *context);
 
+void extractNamespaceName(const DString &scopeName,
+                          DString &className,DString &namespaceName,
+                          bool allowEmptyClass=false);
+
 int extractClassNameFromType(const DString &type,int &pos,
                               DString &name,DString &templSpec,SrcLangExt=SrcLangExt::Unknown);
-
-DString normalizeNonTemplateArgumentsInString(
-       const DString &name,
-       const Definition *context,
-       const ArgumentList &formalArgs);
-
-DString substituteTemplateArgumentsInString(
-       const DString &name,
-       const ArgumentList &formalArgs,
-       const ArgumentList *actualArgs);
 
 DString stripTemplateSpecifiersFromScope(const DString &fullName,
                                           bool parentOnly=true,

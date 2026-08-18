@@ -240,10 +240,11 @@ void DotGraph::generateCode(TextStream &t)
     else // add link to bitmap file with image map
     {
       if (!m_noDivTag) t << "<div class=\"center\">";
-      t << "<img src=\"" << relImgName() << "\" border=\"0\" usemap=\"#" << correctId(getMapLabel()) << "\" loading=\"lazy\" alt=\"" << getImgAltText() << "\"/>";
+      t << "<img src=\"" << relImgName() << "\" border=\"0\" usemap=\"#"
+        << DotFilePatcher::mapLabelToId(getMapLabel()) << "\" loading=\"lazy\" alt=\"" << getImgAltText() << "\"/>";
       if (!m_noDivTag) t << "</div>";
       t << "\n";
-      if (m_regenerate || !insertMapFile(t, absMapName(), m_relPath, correctId(getMapLabel())))
+      if (m_regenerate || !insertMapFile(t, absMapName(), m_relPath, DotFilePatcher::mapLabelToId(getMapLabel())))
       {
         int mapId = DotManager::instance()->
           createFilePatcher(m_fileName)->

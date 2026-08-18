@@ -3295,16 +3295,6 @@ DString convertToId(const DString &s)
   return result;
 }
 
-/*! Some strings have been corrected but the requirement regarding the fact
- *  that an id cannot have a digit at the first position. To overcome problems
- *  with double labels we always place an "a" in front
- */
-DString correctId(const DString &s)
-{
-  if (s.empty()) return s;
-  return "a" + s;
-}
-
 /*! Converts a string to an XML-encoded string */
 DString convertToXML(const DString &s, bool keepEntities, const bool citeEntry)
 {
@@ -3711,12 +3701,6 @@ DString normalizeNonTemplateArgumentsInString(
 }
 
 
-/*! Substitutes any occurrence of a formal argument from argument list
- *  \a formalArgs in \a name by the corresponding actual argument in
- *  argument list \a actualArgs. The result after substitution
- *  is returned as a string. The argument \a name is used to
- *  prevent recursive substitution.
- */
 DString substituteTemplateArgumentsInString(
     const DString &nm,
     const ArgumentList &formalArgs,

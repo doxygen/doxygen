@@ -18,6 +18,7 @@
 #include <unordered_map>
 #include <string>
 #include <cassert>
+#include <functional>
 
 #include "dstring.h"
 #include "construct.h"

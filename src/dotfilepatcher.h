@@ -51,6 +51,13 @@ class DotFilePatcher
     static bool writeVecGfxFigure(TextStream& out, const DString& baseName,
                                   const DString& figureName);
 
+    /*! To adhere to the requirement that an id cannot have a digit at the first position always place an "a" in front */
+    static DString mapLabelToId(const DString &mapLabel)
+    {
+      if (mapLabel.empty()) return mapLabel;
+      return "a" + mapLabel;
+    }
+
   private:
     struct Map
     {

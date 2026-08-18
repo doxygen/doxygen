@@ -457,7 +457,7 @@ bool DotFilePatcher::run() const
         convertMapFile(tt,map.mapFile,map.relPath,map.urlOnly,map.context);
         if (!tt.empty())
         {
-          t << "<map name=\"" << correctId(map.label) << "\" id=\"" << correctId(map.label) << "\">\n";
+          t << "<map name=\"" << mapLabelToId(map.label) << "\" id=\"" << mapLabelToId(map.label) << "\">\n";
           t << tt.str();
           t << "</map>\n";
         }
@@ -669,3 +669,4 @@ bool DotFilePatcher::writeVecGfxFigure(TextStream &out,const DString &baseName,
   //printf("writeVecGfxFigure()=1\n");
   return true;
 }
+
