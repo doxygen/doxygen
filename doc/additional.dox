@@ -95,7 +95,7 @@ but this might become annoying over time as we build up our manual, instead we'l
 INPUT                  = manual/
 \endcode
 
-And set 
+And set
 
 \code
 RECURSIVE              = YES

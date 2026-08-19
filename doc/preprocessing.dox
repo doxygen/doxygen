@@ -141,7 +141,7 @@ PREDEFINED           = "DECLARE_INTERFACE(name)=class name" \
                        "PURE= = 0" \
                        THIS_= \
                        THIS= \
-		       __cplusplus
+               	       __cplusplus
 \endverbatim
 
 we can make sure that the proper result is fed to Doxygen's parser:

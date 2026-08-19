@@ -733,8 +733,8 @@ Go to the <a href="commands.html">next</a> section or return to the
       <docs>
 <![CDATA[
   This tag specifies a list of words that, when matching the start of a word in the documentation,
-  will suppress auto links generation, if it is enabled via AUTOLINK_SUPPORT. 
-  This list does not affect links explicitly created using \# or 
+  will suppress auto links generation, if it is enabled via AUTOLINK_SUPPORT.
+  This list does not affect links explicitly created using \# or
   the \ref cmdlink "\\link" or \ref cmdref "\\ref" commands.
 ]]>
       </docs>
@@ -883,7 +883,7 @@ Go to the <a href="commands.html">next</a> section or return to the
     <option type='enum' id='TIMESTAMP' defval='NO'>
       <docs>
 <![CDATA[
- If the \c TIMESTAMP tag is set different from \c NO then 
+ If the \c TIMESTAMP tag is set different from \c NO then
  each generated page will contain the date or date and time when the page
  was generated. Setting this to \c NO can help when comparing the output of
  multiple runs.
@@ -1395,7 +1395,7 @@ FILE_VERSION_FILTER = "cleartool desc -fmt \%Vn"
       <docs>
 <![CDATA[
  The \c EXTERNAL_TOOL_PATH tag can be used to extend the search path (PATH environment variable)
- so that external tools such as \c latex and \c gs can be found. 
+ so that external tools such as \c latex and \c gs can be found.
  \note Directories specified with EXTERNAL_TOOL_PATH are added in front of the path already specified by
  the PATH variable, and are added in the order specified.
  \note This option is particularly useful for macOS version 14 (Sonoma) and higher,
@@ -2025,7 +2025,7 @@ to disable this feature.
     <option type='list' id='IGNORE_PREFIX' format='string' depends='ALPHABETICAL_INDEX'>
       <docs>
 <![CDATA[
- The \c IGNORE_PREFIX tag can be used to specify a prefix 
+ The \c IGNORE_PREFIX tag can be used to specify a prefix
  (or a list of prefixes) that should be ignored while generating the index headers.
  The \c IGNORE_PREFIX tag works for classes, function and member names.
  The entity will be placed in the alphabetical list under the first letter of the entity name that remains
@@ -2560,7 +2560,7 @@ The \c DOCSET_PUBLISHER_NAME tag identifies the documentation publisher.
  generated documentation will be placed on the server by the user during the deployment
  of the documentation.
  The generated sitemap is called `sitemap.xml` and placed on the directory specified by
- \ref cfg_html_output "HTML_OUTPUT". In case no \c SITEMAP_URL is specified no 
+ \ref cfg_html_output "HTML_OUTPUT". In case no \c SITEMAP_URL is specified no
  sitemap is generated.
  For information about the sitemap protocol see https://www.sitemaps.org
 ]]>
@@ -2872,7 +2872,7 @@ obfuscate email addresses.
       <docs>
 <![CDATA[
  The \c MATHJAX_EXTENSIONS tag can be used to specify one or more MathJax extension
- names that should be enabled during MathJax rendering. 
+ names that should be enabled during MathJax rendering.
 For example for MathJax version 2 (see https://docs.mathjax.org/en/v2.7/tex.html):
 \verbatim
 MATHJAX_EXTENSIONS     = TeX/AMSmath TeX/AMSsymbols
@@ -3706,7 +3706,7 @@ If set to \c NO, Doxygen will warn if a database file is already found and not m
  contain include files that are not input files but should be processed by
  the preprocessor.
 
- Note that the \c INCLUDE_PATH is not recursive, so the setting of \ref cfg_recursive "RECURSIVE" 
+ Note that the \c INCLUDE_PATH is not recursive, so the setting of \ref cfg_recursive "RECURSIVE"
  has no effect here.
 ]]>
       </docs>
@@ -3797,8 +3797,8 @@ where `loc1` and `loc2` can be relative or absolute paths or URLs.
     <option type='bool' id='ALLEXTERNALS' defval='0'>
       <docs>
 <![CDATA[
- If the \c ALLEXTERNALS tag is set to \c YES, all external classes and namespaces 
- will be listed in the class and namespace index. 
+ If the \c ALLEXTERNALS tag is set to \c YES, all external classes and namespaces
+ will be listed in the class and namespace index.
  If set to \c NO, only the inherited external classes will be listed.
 ]]>
       </docs>
@@ -3859,10 +3859,10 @@ where `loc1` and `loc2` can be relative or absolute paths or URLs.
 <![CDATA[
  The \c DOT_BATCH_SIZE specifies the number of \c dot graphs Doxygen is
  allowed to compile in a single invocation of \c dot. When set to \c 1 Doxygen will
- invoke \c dot for each graph separately, which can cause significant process creation overhead 
+ invoke \c dot for each graph separately, which can cause significant process creation overhead
  especially on systems with many CPU cores. Together with \c DOT_NUM_THREADS this setting can be used to
  optimise the dot processing speed for a particular system. Doxygen will try to give each
- thread a balanced batch of work. If the total number of graphs to process 
+ thread a balanced batch of work. If the total number of graphs to process
  exceeds `DOT_NUM_THREADS * DOT_BATCH_SIZE` then additional batches will be created for \c dot to process.
 ]]>
       </docs>

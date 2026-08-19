@@ -4,7 +4,7 @@ Doxygen provides a number of ways to create lists of items.
 
 <b>Using dashes</b>
 
-By putting a number of column-aligned minus (`-`) signs at the start of a 
+By putting a number of column-aligned minus (`-`) signs at the start of a
 line, a bullet list will automatically be generated. Instead of the minus
 sign also plus (`+`) or asterisk (`*`) can be used.
 
@@ -19,7 +19,7 @@ Nesting of lists is allowed and is based on indentation of the items.<p>
 Here is an example:
 
 \verbatim
-  /*! 
+  /*!
    *  A list of events:
    *    - mouse events
    *         -# mouse move event
@@ -50,15 +50,15 @@ Here is an example:
        - checkbox list
             - [ ] unchecked
             - [x] checked
-     
+
      More text here.
 
-If you use tabs for indentation within lists, please make sure 
-that \ref cfg_tab_size "TAB_SIZE" in the configuration file is set to 
+If you use tabs for indentation within lists, please make sure
+that \ref cfg_tab_size "TAB_SIZE" in the configuration file is set to
 the correct tab size.
 
-You can end a list by starting a new paragraph or 
-by putting a dot (`.`) on an empty line at the same indentation level as the 
+You can end a list by starting a new paragraph or
+by putting a dot (`.`) on an empty line at the same indentation level as the
 list you would like to end.
 
 Here is an example that speaks for itself:
@@ -70,7 +70,7 @@ Here is an example that speaks for itself:
  *   - sub item 1
  *     - sub sub item 1
  *     - sub sub item 2
- *     . 
+ *     .
  *     The dot above ends the sub sub item list.
  *
  *     More text for the first sub item
@@ -91,11 +91,11 @@ Here is an example that speaks for itself:
 <b>Using HTML commands</b>
 
 If you like you can also use HTML commands inside the documentation
-blocks. 
+blocks.
 
 Here is the above example with HTML commands:
 \verbatim
-  /*! 
+  /*!
    *  A list of events:
    *  <ul>
    *  <li> mouse events
@@ -106,7 +106,7 @@ Here is the above example with HTML commands:
    *     <li>mouse double click event
    *     </ol>
    *  <li> keyboard events
-   *     <ol>     
+   *     <ol>
    *     <li>key down event
    *     <li>key up event
    *     </ol>
@@ -121,7 +121,7 @@ Here is the above example with HTML commands:
 
 For compatibility with the Qt Software's internal documentation tool qdoc and
 with KDoc, Doxygen has two commands that can be used to create simple
-unnested lists. 
+unnested lists.
 
 See \ref cmdarg "\\arg" and \ref cmdli "\\li" for more info.
 

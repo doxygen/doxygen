@@ -1968,7 +1968,7 @@ ALIASES += warnNoDoc{1}="\raisewarning Incomplete documentation: \1"
   with a matching \ref cmdendif "\\endif" command. A conditional section is
   disabled by default. To enable it you must put the
   section-label after the \ref cfg_enabled_sections "ENABLED_SECTIONS"
-  tag in the configuration file. Besides literal section labels you can also use the 
+  tag in the configuration file. Besides literal section labels you can also use the
   \ref cmddoxyconfig "\\doxyconfig" command as section label or as end part of a section label.
   The section label created with the \ref cmddoxyconfig "\\doxyconfig" command has to be in the
   \ref cfg_enabled_sections "ENABLED_SECTIONS" to be effective.
@@ -2141,7 +2141,7 @@ ALIASES  = "english=\if english" \
   Note that it is also possible to put whitespace between the command and the \<dir\>.
   When a parameter is both input and output, [in,out] is used as attribute.
   Here is an example for the function \c memcpy:
-  \code	
+  \code
 /*!
  * Copies bytes from a source memory area to a destination memory area,
  * where both areas may not overlap.
@@ -2161,8 +2161,8 @@ void memcpy(void *dest, const void *src, size_t n);
   sectioning command is encountered. See section \ref cmdfn "\\fn" for an
   example.
 
-  The parameter name is normally the name given in the function signature. 
-  For unnamed parameters, a positional index can also be used 
+  The parameter name is normally the name given in the function signature.
+  For unnamed parameters, a positional index can also be used
   (starting with 1 for the first parameter).
   \code
 /** Base */
@@ -2196,9 +2196,9 @@ void foo(int, int)
 }
   \endcode
 
-  Both ordinal position (numeric) and dash (-) parameter names are 
-  rendered as a dash in the output, unless a later definition or 
-  overriding method provides the actual parameter names, 
+  Both ordinal position (numeric) and dash (-) parameter names are
+  rendered as a dash in the output, unless a later definition or
+  overriding method provides the actual parameter names,
   as is the case in the \c Derived class in the example above.
 
   Note that you can also document multiple parameters with a single
@@ -4477,7 +4477,7 @@ class Receiver
 
   \addindex \\\.
   This command writes a dot (`.`) to the output. This can be useful to
-  prevent ending a brief description when \ref cfg_javadoc_autobrief "JAVADOC_AUTOBRIEF" 
+  prevent ending a brief description when \ref cfg_javadoc_autobrief "JAVADOC_AUTOBRIEF"
   or \ref cfg_qt_autobrief "QT_AUTOBRIEF" is enabled
   or to prevent starting a numbered list when the dot follows a number at
   the start of a line.
@@ -4487,7 +4487,7 @@ class Receiver
 
   \addindex \\\?
   This command writes a question mark (`?`) to the output. This can be useful to
-  prevent ending a brief description when \ref cfg_javadoc_autobrief "JAVADOC_AUTOBRIEF" 
+  prevent ending a brief description when \ref cfg_javadoc_autobrief "JAVADOC_AUTOBRIEF"
   or \ref cfg_qt_autobrief "QT_AUTOBRIEF" is enabled.
 
 <hr>
@@ -4495,7 +4495,7 @@ class Receiver
 
   \addindex \\\!
   This command writes a exclamation mark (`!`) to the output. This can be useful to
-  prevent ending a brief description when \ref cfg_javadoc_autobrief "JAVADOC_AUTOBRIEF" 
+  prevent ending a brief description when \ref cfg_javadoc_autobrief "JAVADOC_AUTOBRIEF"
   or \ref cfg_qt_autobrief "QT_AUTOBRIEF" is enabled.
 
 <hr>

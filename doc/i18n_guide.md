@@ -6,8 +6,8 @@ This document provides detailed instructions on how to manage multi-language sup
 
 \section i18n_overview Overview
 
-Doxywizard uses Qt's internationalization (i18n) framework, 
-implementing multi-language support through the `QCoreApplication::translate()` function and Qt Linguist tools. 
+Doxywizard uses Qt's internationalization (i18n) framework,
+implementing multi-language support through the `QCoreApplication::translate()` function and Qt Linguist tools.
 Translation files use XML format `.ts` files, which are compiled into `.qm` files and embedded in the application resources.
 
 \section i18n_file_structure Translation File Structure
@@ -61,12 +61,12 @@ src/translations/
 
 These config files are directly included by Doxywizard and used to show the translated documentation for each option.
 
-Note that obsolete options and documentation in `config.xml` that is meant for the manual or 
+Note that obsolete options and documentation in `config.xml` that is meant for the manual or
 Doxyfile are not included in the `config_xx.xml` translation files.
 
 \subsection i18n_config_sync Syncing Localized Config Files
 
-When the original `config.xml` is updated (options added or removed), you need to sync the localized config files. 
+When the original `config.xml` is updated (options added or removed), you need to sync the localized config files.
 The `configgen.py` with option `-sync` provides two modes:
 
 **Report Mode (default)**: Only reports differences without modifying files:

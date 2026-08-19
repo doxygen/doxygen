@@ -26,9 +26,9 @@ option.
 
 The format of the configuration file (options and types) is defined
 by the file `config.xml`. As part of the build process,
-the python script `configgen.py` will create the files `configoptions.cpp`, 
+the python script `configgen.py` will create the files `configoptions.cpp`,
 `configvalues.h` and `configvalues.cpp` from this, which serves as the input
-for the configuration file parser that is invoked using Config::parse(). 
+for the configuration file parser that is invoked using Config::parse().
 The script `configgen.py` will also create the documentation for the
 configuration items, creating the file
 `config.doc`.
@@ -155,10 +155,10 @@ following values (each option has to be preceded by `-d`):
     Gives the output of the output as result of the filter command (when a filter
     command is specified)
   - `cite`<br>
-    Retains the temporary files as created and used for the non LaTeX output results of the 
+    Retains the temporary files as created and used for the non LaTeX output results of the
     generation of the bibliographical references.
   - `fortranfixed2free`<br>
-    Shows the result of the conversion of Fortran fixed formatted files to Fortran free formatted 
+    Shows the result of the conversion of Fortran fixed formatted files to Fortran free formatted
     files as done by doxygen.
   - `plantuml`<br>
     Shows information about the plantuml process run and the used input / output filenames, the content of the
@@ -169,7 +169,7 @@ following values (each option has to be preceded by `-d`):
       this option the original files are retained.
   - `qhp`<br>
     - The qhp file is created with indentation for better readability (normally no indentation so the file is smaller).
-    - When the setting `QHG_LOCATION` is pointing to the `qhelpgenerator` besides generating the `qch` file 
+    - When the setting `QHG_LOCATION` is pointing to the `qhelpgenerator` besides generating the `qch` file
       also some extra checks are done by means of the `-c` flag of the `qhelpgenerator`.
   - `tag`<br>
     Shows the results of reading the tag files.

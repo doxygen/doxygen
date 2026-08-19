@@ -46,7 +46,7 @@ class DarkModeToggle extends HTMLElement {
             DarkModeToggle.onSystemPreferenceChanged()
         })
         // Update the color scheme when the tab is made visible again.
-        // It is possible that the appearance was changed in another tab 
+        // It is possible that the appearance was changed in another tab
         // while this tab was in the background.
         document.addEventListener("visibilitychange", visibilityState => {
             if (document.visibilityState === 'visible') {
@@ -114,7 +114,7 @@ class DarkModeToggle extends HTMLElement {
             })
             DarkModeToggle.setDarkModeVisibility(DarkModeToggle.darkModeEnabled)
         };
-        
+
         // Mimic jQuery's ready() behavior: execute immediately if DOM is already loaded,
         // otherwise wait for DOMContentLoaded
         if (document.readyState === 'loading') {

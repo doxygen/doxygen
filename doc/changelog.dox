@@ -317,7 +317,7 @@ Added support for documenting unnamed parameters [<a href="https://github.com/do
 
 <h3>Features</h3>
 <ul>
-<li>Add support for specifying requirements. See <a href="requirements.html">this page</a> for details. 
+<li>Add support for specifying requirements. See <a href="requirements.html">this page</a> for details.
 [<a href="https://github.com/doxygen/doxygen/commit/7cbd535947f12a679a7d62c20f8924d624b450ce">view</a>],
 [<a href="https://github.com/doxygen/doxygen/commit/a8b2cc3cdf7964d06fc7b473d627e6b8974a6091">view</a>],
 [<a href="https://github.com/doxygen/doxygen/commit/11fcdddf221407af847cbe7785f095bd93a13539">view</a>],
