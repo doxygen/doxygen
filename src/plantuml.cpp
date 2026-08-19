@@ -237,6 +237,20 @@ PlantumlManager::PlantumlManager()
 {
 }
 
+bool PlantumlManager::isEnabled()
+{
+  return !Config_getString(PLANTUML_JAR_PATH).empty() ||
+         !Config_getString(PLANTUML_TOOL).empty();
+}
+
+/** Returns the java executable used to run the PlantUML jar file. */
+static DString javaExecutable()
+{
+  DString javaPath = Config_getString(PLANTUML_JAVA_PATH);
+  if (!javaPath.empty()) return javaPath;
+  return "java";
+}
+
 static void runPlantumlContent(const PlantumlManager::FilesMap &plantumlFiles,
                                const PlantumlManager::ContentMap &plantumlContent,
                                PlantumlManager::OutputFormat format)
@@ -253,14 +267,16 @@ static void runPlantumlContent(const PlantumlManager::FilesMap &plantumlFiles,
   int exitCode = 0;
   DString plantumlJarPath = Config_getString(PLANTUML_JAR_PATH);
   DString plantumlConfigFile = Config_getString(PLANTUML_CFG_FILE);
+  DString plantumlTool = Config_getString(PLANTUML_TOOL);
+  bool useJar = plantumlTool.empty(); // no PlantUML executable given, so run the jar file via java
 
-  DString pumlExe = Config_getString(PLANTUML_JAVA_PATH);
-  if (pumlExe.empty()) pumlExe = "java";
+  DString pumlExe = useJar ? javaExecutable() : plantumlTool;
   DString pumlArgs = "";
   DString pumlType = "";
   DString pumlOutDir = "";
 
   StringVector pumlIncludePathList = Config_getList(PLANTUML_INCLUDE_PATH);
+  if (useJar)
   {
     auto it = pumlIncludePathList.begin();
     if (it!=pumlIncludePathList.end())
@@ -275,9 +291,23 @@ static void runPlantumlContent(const PlantumlManager::FilesMap &plantumlFiles,
       pumlArgs += it->c_str();
       ++it;
     }
+    if (!pumlIncludePathList.empty()) pumlArgs += "\" ";
+    pumlArgs += "-Djava.awt.headless=true -jar \""+plantumlJarPath+"\" ";
   }
-  if (!pumlIncludePathList.empty()) pumlArgs += "\" ";
-  pumlArgs += "-Djava.awt.headless=true -jar \""+plantumlJarPath+"\" ";
+  else if (!pumlIncludePathList.empty())
+  {
+    // a PlantUML executable does not take java system properties, but PlantUML also
+    // accepts the include path via the environment.
+    DString includePath;
+    bool first = true;
+    for (const auto &path : pumlIncludePathList)
+    {
+      if (!first) includePath += Portable::pathListSeparator();
+      includePath += path.c_str();
+      first = false;
+    }
+    Portable::setenv("PLANTUML_INCLUDE_PATH",includePath);
+  }
   if (!plantumlConfigFile.empty())
   {
     pumlArgs += "-config \"";
@@ -355,8 +385,8 @@ static void runPlantumlContent(const PlantumlManager::FilesMap &plantumlFiles,
 
       if ((exitCode=Portable::system(pumlExe.data(),pumlArguments.data(),true))!=0)
       {
-        err_full(nb.srcFile,nb.srcLine,"Problems running PlantUML. Verify that the command '{} -jar \"{}\" -h' works from the command line. Exit code: {}.",
-            pumlExe,plantumlJarPath,exitCode);
+        err_full(nb.srcFile,nb.srcLine,"Problems running PlantUML. Verify that the command '{} -h' works from the command line. Exit code: {}.",
+            useJar ? pumlExe+" -jar \""+plantumlJarPath+"\"" : pumlExe,exitCode);
       }
 
       if ( (format==PlantumlManager::PUML_EPS) && (Config_getBool(USE_PDFLATEX)) )

@@ -4219,6 +4219,7 @@ to be found in the default search path.
  If left blank, it is assumed PlantUML is not used or
  called during a preprocessing step. Doxygen will generate a warning when it encounters a
  \ref cmdstartuml "\\startuml" command in this case and will not generate output for the diagram.
+ <br>Note that this tag is not used when \ref cfg_plantuml_tool "PLANTUML_TOOL" is set.
 ]]>
       </docs>
     </option>
@@ -4229,8 +4230,22 @@ to be found in the default search path.
  \c java executable that is used to run the jar file given via
  \ref cfg_plantuml_jar_path "PLANTUML_JAR_PATH".
  If left blank, the \c java executable is searched for in the default search path.
- <br>Note that this tag is only used when
- \ref cfg_plantuml_jar_path "PLANTUML_JAR_PATH" is set.
+ <br>Note that this tag is not used when \ref cfg_plantuml_tool "PLANTUML_TOOL" is set.
+]]>
+      </docs>
+    </option>
+    <option type='string' id='PLANTUML_TOOL' format='file' defval=''>
+      <docs>
+<![CDATA[
+ The \c PLANTUML_TOOL tag can be used to specify a PlantUML executable, e.g. a
+ PlantUML native image or a script wrapping PlantUML, that is run instead of the jar
+ file given via \ref cfg_plantuml_jar_path "PLANTUML_JAR_PATH". As such an executable
+ does not need a Java runtime environment, the tags
+ \ref cfg_plantuml_jar_path "PLANTUML_JAR_PATH" and
+ \ref cfg_plantuml_java_path "PLANTUML_JAVA_PATH" are not used in this case.
+ <br>Note that the paths given via
+ \ref cfg_plantuml_include_path "PLANTUML_INCLUDE_PATH" are passed to the executable
+ by means of the \c PLANTUML_INCLUDE_PATH environment variable.
 ]]>
       </docs>
     </option>

@@ -45,6 +45,11 @@ class PlantumlManager
 
     static PlantumlManager &instance();
 
+    /** Returns true if doxygen has been configured to run PlantUML, i.e. when
+     *  PLANTUML_JAR_PATH or PLANTUML_TOOL has been set.
+     */
+    static bool isEnabled();
+
     bool needToRun() const
     {
       return !m_pngPlantumlContent.empty() ||
