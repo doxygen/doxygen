@@ -853,22 +853,6 @@ function initNavTree(toroot,relpath,allMembersFile) {
     const content = document.createElement('ul');
     content.className = 'page-outline';
 
-    var entityMap = {
-      '&': '&amp;',
-      '<': '&lt;',
-      '>': '&gt;',
-      '"': '&quot;',
-      "'": '&#39;',
-      '/': '&#x2F;',
-      '`': '&#x60;',
-      '=': '&#x3D;'
-    };
-    function escapeHtml (string) {
-      return String(string).replace(/[&<>"'`=\/]/g, function (s) {
-        return entityMap[s];
-      });
-    }
-
     // for ClassDef/GroupDef/ModuleDef/ConceptDef/DirDef
     const groupSections = [];
     let currentGroup = null;
@@ -943,7 +927,7 @@ function initNavTree(toroot,relpath,allMembersFile) {
             span2.style.paddingLeft = parseInt(ulStack.length*16)+'px';
             const ahref = document.createElement('a');
             ahref.setAttribute('href', '#'+id);
-            ahref.textContent = escapeHtml(text);
+            ahref.textContent = text;
             div2.appendChild(span2);
             div2.appendChild(ahref);
             li2.appendChild(div2);
@@ -986,7 +970,7 @@ function initNavTree(toroot,relpath,allMembersFile) {
             span2.style.paddingLeft = parseInt(ulStack.length*16)+'px';
             const ahref = document.createElement('a');
             ahref.setAttribute('href', id);
-            ahref.textContent = escapeHtml(name);
+            ahref.textContent = name;
             div2.appendChild(span2);
             div2.appendChild(ahref);
             li2.appendChild(div2);
