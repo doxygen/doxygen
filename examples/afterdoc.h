@@ -3,8 +3,8 @@
 class Afterdoc_Test
 {
   public:
-    /** An enum type. 
-     *  The documentation block cannot be put after the enum! 
+    /** An enum type.
+     *  The documentation block cannot be put after the enum
      */
     enum EnumType
     {
@@ -12,7 +12,7 @@ class Afterdoc_Test
       int EVal2      /**< enum value 2 */
     };
     void member();   //!< a member function.
-    
+
   protected:
     int value;       /*!< an integer value */
 };
