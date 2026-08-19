@@ -254,7 +254,8 @@ static void runPlantumlContent(const PlantumlManager::FilesMap &plantumlFiles,
   DString plantumlJarPath = Config_getString(PLANTUML_JAR_PATH);
   DString plantumlConfigFile = Config_getString(PLANTUML_CFG_FILE);
 
-  DString pumlExe = "java";
+  DString pumlExe = Config_getString(PLANTUML_JAVA_PATH);
+  if (pumlExe.empty()) pumlExe = "java";
   DString pumlArgs = "";
   DString pumlType = "";
   DString pumlOutDir = "";
@@ -354,8 +355,8 @@ static void runPlantumlContent(const PlantumlManager::FilesMap &plantumlFiles,
 
       if ((exitCode=Portable::system(pumlExe.data(),pumlArguments.data(),true))!=0)
       {
-        err_full(nb.srcFile,nb.srcLine,"Problems running PlantUML. Verify that the command 'java -jar \"{}\" -h' works from the command line. Exit code: {}.",
-            plantumlJarPath,exitCode);
+        err_full(nb.srcFile,nb.srcLine,"Problems running PlantUML. Verify that the command '{} -jar \"{}\" -h' works from the command line. Exit code: {}.",
+            pumlExe,plantumlJarPath,exitCode);
       }
 
       if ( (format==PlantumlManager::PUML_EPS) && (Config_getBool(USE_PDFLATEX)) )
