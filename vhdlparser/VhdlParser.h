@@ -11112,7 +11112,7 @@ void parseInline();
   }
 
 
-public:
+public: 
   void setErrorHandler(ErrorHandler *eh) {
     if (errorHandler) delete errorHandler;
     errorHandler = eh;
@@ -11125,7 +11125,7 @@ public:
   /** Next token. */
   Token        *jj_nt = nullptr;
 
-private:
+private: 
   int           jj_ntk;
   JJCalls       jj_2_rtns[169];
   bool          jj_rescan;
@@ -11139,11 +11139,11 @@ private:
   int           jj_la1[388];
   ErrorHandler *errorHandler = nullptr;
 
-protected:
+protected: 
   bool          hasError;
 
-  Token *head;
-public:
+  Token *head; 
+public: 
   VhdlParser(TokenManager *tokenManager);
   virtual ~VhdlParser();
 void ReInit(TokenManager* tokenManager);
@@ -11162,7 +11162,7 @@ protected:
   /** Generate ParseException. */
   virtual void  parseError();
 private:
-  int  indent;        // trace indentation
+  int  indent;	// trace indentation
   bool trace = false; // trace enabled if true
 
 public:
