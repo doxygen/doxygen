@@ -15,7 +15,7 @@ class Include_Test
  *  \until {
  *  First we create an object \c t of the Include_Test class.
  *  \skipline Include_Test
- *  Then we call the example member function 
+ *  Then we call the example member function
  *  \line example
  *  After that our little test routine ends.
  *  \line }

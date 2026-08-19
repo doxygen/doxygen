@@ -46,7 +46,7 @@ class C5 {};
 
 /** @ingroup group1 group2 group3 group4
  *  namespace N1 is in four groups
- *  @sa @link group1 The first group@endlink, group2, group3, group4 
+ *  @sa @link group1 The first group@endlink, group2, group3, group4
  *
  *  Also see @ref mypage2
  */
@@ -73,7 +73,7 @@ namespace N1 {};
 /** @} */ // end of group5
 
 /** @addtogroup group1
- *  
+ *
  *  More documentation for the first group.
  *  @{
  */

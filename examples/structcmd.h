@@ -1,18 +1,18 @@
 /*! \file structcmd.h
     \brief A Documented file.
-    
+
     Details.
 */
 
 /*! \def MAX(a,b)
     \brief A macro that returns the maximum of \a a and \a b.
-   
+
     Details.
 */
 
 /*! \var typedef unsigned int UINT32
     \brief A type definition for a .
-    
+
     Details.
 */
 
