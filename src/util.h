@@ -149,6 +149,9 @@ bool resolveLink(/* in */  const DString &scName,
                  /* in */  const DString &prefix=DString()
                 );
 
+DString resolveTypeDef(const Definition *d,const DString &name,
+                       const Definition **typedefContext=nullptr);
+
 //----------------------------------------------------------------
 
 /*! Compares two parameter lists \a srcAl and \a dstAl and returns true if they match. */
@@ -188,6 +191,24 @@ DString substituteTemplateArgumentsInString(
        const ArgumentList &formalArgs,
        const ArgumentList *actualArgs);
 
+/*! Returns a documentation string combining the inline documentation for each parameter in the list \a al. */
+DString inlineArgListToDoc(const ArgumentList &al);
+
+/*! Returns a documentation string combining the inline documentation for each template parameter in the list \a al. */
+DString inlineTemplateArgListToDoc(const ArgumentList &al);
+
+/*! Returns a string representation of the parameter list \a al.
+ *  If \a useCanonicalType is true then the canonical type is used for each argument.
+ *  If \a showDefVals is true then default values are included in the string representation.
+ */
+DString argListToString(const ArgumentList &al,bool useCanonicalType=false,bool showDefVals=true);
+
+/*! Returns a string representation of the template parameter list \a al.
+ *  The \a lang parameter is used to determine the correct syntax for the template parameters.
+ *  If \a includeDefaults is true then default values are included in the string representation.
+ */
+DString tempArgListToString(const ArgumentList &al,SrcLangExt lang,bool includeDefaults=true);
+
 //----------------------------------------------------------------
 
 struct SelectionBlock
@@ -219,13 +240,6 @@ void writeExamples(OutputList &ol,const ExampleList &el);
 
 DString removeRedundantWhiteSpace(const DString &s);
 
-DString inlineArgListToDoc(const ArgumentList &al);
-DString inlineTemplateArgListToDoc(const ArgumentList &al);
-
-DString argListToString(const ArgumentList &al,bool useCanonicalType=false,bool showDefVals=true);
-
-DString tempArgListToString(const ArgumentList &al,SrcLangExt lang,bool includeDefaults=true);
-
 DString stripAnonymousNamespaceScope(const DString &s);
 
 DString stripFromPath(const DString &path);
@@ -254,31 +268,17 @@ DString substituteKeywords(const DString &file,const DString &s,const KeywordSub
 
 int getPrefixIndex(const DString &name);
 
+DString convertNameToFile(const DString &name,bool allowDots=false,bool allowUnderscore=false);
+
+//---------------------------------------------------------------
+
 DString removeAnonymousScopes(const DString &s);
 
 DString replaceAnonymousScopes(const DString &s,const DString &replacement=DString());
 
-DString convertNameToFile(const DString &name,bool allowDots=false,bool allowUnderscore=false);
-
 DString insertTemplateSpecifierInScope(const DString &scope,const DString &templ);
 
 DString stripScope(const DString &name);
-
-DString convertToId(const DString &s);
-DString convertToHtml(const DString &s,bool keepEntities=true);
-DString convertToXML(const DString &s, bool keepEntities=false, bool citeEntry = false);
-DString convertToJSString(const DString &s,bool keepEntities=false,bool singleQuotes=false);
-
-void addMembersToMemberGroup(/* in,out */ MemberList *ml,
-                             /* in,out */ MemberGroupList *pMemberGroups,
-                             /* in */     const Definition *context);
-
-void extractNamespaceName(const DString &scopeName,
-                          DString &className,DString &namespaceName,
-                          bool allowEmptyClass=false);
-
-int extractClassNameFromType(const DString &type,int &pos,
-                              DString &name,DString &templSpec,SrcLangExt=SrcLangExt::Unknown);
 
 DString stripTemplateSpecifiersFromScope(const DString &fullName,
                                           bool parentOnly=true,
@@ -286,20 +286,25 @@ DString stripTemplateSpecifiersFromScope(const DString &fullName,
                                           DString scopeName=DString(),
                                           bool allowArtificial=true);
 
-DString resolveTypeDef(const Definition *d,const DString &name,
-                        const Definition **typedefContext=nullptr);
-
 DString mergeScopes(const DString &leftScope,const DString &rightScope);
 
 int getScopeFragment(const DString &s,int p,int *l);
 
-void addRefItem(const RefItemVector &sli,
-                const DString &key,
-                const DString &prefix,
-                const DString &name,
-                const DString &title,
-                const DString &args,
-                const Definition *scope);
+//---------------------------------------------------------------
+
+DString convertToId(const DString &s);
+DString convertToHtml(const DString &s,bool keepEntities=true);
+DString convertToXML(const DString &s, bool keepEntities=false, bool citeEntry = false);
+DString convertToJSString(const DString &s,bool keepEntities=false,bool singleQuotes=false);
+
+//---------------------------------------------------------------
+
+void extractNamespaceName(const DString &scopeName,
+                          DString &className,DString &namespaceName,
+                          bool allowEmptyClass=false);
+
+int extractClassNameFromType(const DString &type,int &pos,
+                              DString &name,DString &templSpec,SrcLangExt=SrcLangExt::Unknown);
 
 PageDef *addRelatedPage(const DString &name,
                         const DString &ptitle,

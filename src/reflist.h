@@ -132,4 +132,24 @@ class RefListManager final : public LinkedMap<RefList>
 
 using RefItemVector = std::vector<RefItem*>;
 
+inline void addRefItem(const RefItemVector &sli,
+    const DString &key, const DString &prefix, const DString &name,
+    const DString &title, const DString &args, const Definition *scope)
+{
+  //printf("addRefItem(sli=%d,key=%s,prefix=%s,name=%s,title=%s,args=%s)\n",(int)sli.size(),key,prefix,name,title,args);
+  if (!key.empty() && key[0]!='@') // check for @ to skip anonymous stuff (see bug427012)
+  {
+    for (RefItem *item : sli)
+    {
+        item->setPrefix(prefix);
+        item->setScope(scope);
+        item->setName(name);
+        item->setTitle(title);
+        item->setArgs(args);
+        item->setGroup(key);
+    }
+  }
+}
+
+
 #endif

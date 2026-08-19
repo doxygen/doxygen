@@ -130,4 +130,8 @@ struct MemberGroupInfo
 
 using MemberGroupInfoMap = std::unordered_map< int,std::unique_ptr<MemberGroupInfo> >;
 
+void addMembersToMemberGroup(/* in,out */ MemberList *ml,
+                             /* in,out */ MemberGroupList *pMemberGroups,
+                             /* in */     const Definition *context);
+
 #endif
