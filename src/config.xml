@@ -4229,7 +4229,9 @@ to be found in the default search path.
  When using PlantUML, the \c PLANTUML_JAVA_PATH tag can be used to specify the
  \c java executable that is used to run the jar file given via
  \ref cfg_plantuml_jar_path "PLANTUML_JAR_PATH".
- If left blank, the \c java executable is searched for in the default search path.
+ If left blank, the \c java executable of the Java runtime environment the
+ \c JAVA_HOME environment variable points to is used, if that variable is set, and
+ otherwise the \c java executable is searched for in the default search path.
  <br>Note that this tag is not used when \ref cfg_plantuml_tool "PLANTUML_TOOL" is set.
 ]]>
       </docs>

@@ -248,6 +248,13 @@ static DString javaExecutable()
 {
   DString javaPath = Config_getString(PLANTUML_JAVA_PATH);
   if (!javaPath.empty()) return javaPath;
+  DString javaHome = Portable::getenv("JAVA_HOME");
+  if (!javaHome.empty())
+  {
+    DString javaHomeExe = javaHome+"/bin/java"+Portable::commandExtension();
+    FileInfo fi(javaHomeExe.str());
+    if (fi.exists() && fi.isFile()) return javaHomeExe;
+  }
   return "java";
 }
 
