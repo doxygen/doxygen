@@ -51,14 +51,14 @@ try:
     import urllib.request as urlrequest
 except ImportError:
     import urllib as urlrequest
- 
+
 unicode_re = re.compile(r'.*?/unicode/(.*?).png\?.*')
- 
+
 def get_emojis():
     response  = urlrequest.urlopen('https://api.github.com/emojis')
     raw_data  = response.read()
     return json.loads(raw_data)
- 
+
 def download_images(dir_name, silent):
     if not os.path.exists(dir_name):
         os.makedirs(dir_name)
@@ -83,7 +83,7 @@ def download_images(dir_name, silent):
         else:
             if not silent:
                 print('%s/%s: skipping %s' % (cur_item,num_items,image_name))
- 
+
 def produce_table():
     json_data = get_emojis()
     lines = []
@@ -99,7 +99,7 @@ def produce_table():
     print("{")
     print(out_str)
     print("};")
- 
+
 if __name__=="__main__":
     parser = argparse.ArgumentParser()
 

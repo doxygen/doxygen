@@ -1,11 +1,11 @@
 #
-# 
+#
 #
 # Copyright (C) 1997-1999 by Dimitri van Heesch.
 #
 # Permission to use, copy, modify, and distribute this software and its
-# documentation under the terms of the GNU General Public License is hereby 
-# granted. No representations are made about the suitability of this software 
+# documentation under the terms of the GNU General Public License is hereby
+# granted. No representations are made about the suitability of this software
 # for any purpose. It is provided "as is" without express or implied warranty.
 # See the GNU General Public License for more details.
 #
@@ -16,8 +16,8 @@ PROJECT_NAME      = "Manual"
 PROJECT_LOGO      = doxygen_logo.svg height=35px
 PROJECT_ICON      = ../doc/doxygen.ico
 OUTPUT_DIRECTORY  = ..
-HTML_HEADER       = 
-HTML_FOOTER       = 
+HTML_HEADER       =
+HTML_FOOTER       =
 QUIET             = YES
 WARNINGS          = YES
 DISABLE_INDEX     = YES
@@ -43,7 +43,7 @@ INPUT             = $(INDEX_DOC) install.dox starting.dox docblocks.dox addition
                     autolink.dox output.dox searching.dox extsearch.dox customize.dox custcmd.dox \
                     external.dox faq.dox trouble.dox features.dox doxygen_usage.dox doxywizard_usage.dox \
                     config.dox commands.dox htmlcmds.dox xmlcmds.dox emojisup.dox language.dox i18n_guide.md \
-                    perlmod.dox arch.dox changelog.dox 
+                    perlmod.dox arch.dox changelog.dox
 FILE_PATTERNS     = *.cpp *.h
 EXAMPLE_PATH      = ../examples .
 RECURSIVE         = NO

@@ -1858,8 +1858,8 @@ Doxygen を使用して、使用した設定ファイルをテンプレート設
 <br>
 デフォルトのCDN URLは、生成されたドキュメントを表示する際にインターネットアクセスが必要です。オフライン使用の場合は、\c mermaid.esm.min.mjs をダウンロードしてこれを相対パスに設定するか、代わりに\c MERMAID_RENDER_MODE =CLIを使用して画像を事前生成します。
 \par 例：
- - 最新のv11（デフォルト）：<code>https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs</code> 
- - ピン留めされたバージョン：<code>https://cdn.jsdelivr.net/npm/mermaid@11.3.0/dist/mermaid.esm.min.mjs</code> 
+ - 最新のv11（デフォルト）：<code>https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs</code>
+ - ピン留めされたバージョン：<code>https://cdn.jsdelivr.net/npm/mermaid@11.3.0/dist/mermaid.esm.min.mjs</code>
  - ローカルコピー：<code>./mermaid.esm.min.mjs</code>（ユーザーはファイルをHTML出力ディレクトリに配置する必要があります）
 ]]>
       </docs>

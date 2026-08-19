@@ -47,7 +47,7 @@ if (SANITIZE_ADDRESS)
         "ASan")
 
     find_program(ASan_WRAPPER "asan-wrapper" PATHS ${CMAKE_MODULE_PATH})
-	mark_as_advanced(ASan_WRAPPER)
+    mark_as_advanced(ASan_WRAPPER)
 endif ()
 
 function (add_sanitize_address TARGET)

@@ -82,7 +82,7 @@ function(add_sanitizers ...)
             message(WARNING "Sanitizers for target ${TARGET} may not be"
                     " usable, because it uses no or an unknown compiler. "
                     "This is a false warning for targets using only "
-		    "object lib(s) as input.")
+                    "object lib(s) as input.")
         endif ()
 
         # Add sanitizers for target.
@@ -90,5 +90,5 @@ function(add_sanitizers ...)
         add_sanitize_thread(${TARGET})
         add_sanitize_memory(${TARGET})
         add_sanitize_undefined(${TARGET})
-	endforeach ()
+   endforeach ()
 endfunction(add_sanitizers)

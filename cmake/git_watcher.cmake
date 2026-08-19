@@ -111,7 +111,7 @@ function(GetGitState _working_dir _state)
             set(_success "false")
             set(_hashvar "GIT-NOTFOUND")
         endif()
-    
+
         # Get whether or not the working tree is dirty.
         execute_process(COMMAND
             "${GIT_EXECUTABLE}" status --porcelain
@@ -196,9 +196,9 @@ endfunction()
 function(SetupGitMonitoring)
     add_custom_target(check_git_repository
         ALL
-	DEPENDS ${PRE_CONFIGURE_GIT_VERSION_FILE}
-	BYPRODUCTS ${POST_CONFIGURE_GIT_VERSION_FILE}
-	BYPRODUCTS ${GIT_STATE_FILE}
+        DEPENDS ${PRE_CONFIGURE_GIT_VERSION_FILE}
+        BYPRODUCTS ${POST_CONFIGURE_GIT_VERSION_FILE}
+        BYPRODUCTS ${GIT_STATE_FILE}
         COMMENT "Checking the git repository for changes..."
         COMMAND
             ${CMAKE_COMMAND}
@@ -206,9 +206,9 @@ function(SetupGitMonitoring)
             -DGIT_WORKING_DIR=${GIT_WORKING_DIR}
             -DGIT_EXECUTABLE=${GIT_EXECUTABLE}
             -DGIT_STATE_FILE=${GIT_STATE_FILE}
-	    -DGIT_CONFIG_DIR=${GIT_CONFIG_DIR}
-	    -DPRE_CONFIGURE_GIT_VERSION_FILE=${PRE_CONFIGURE_GIT_VERSION_FILE}
-	    -DPOST_CONFIGURE_GIT_VERSION_FILE=${POST_CONFIGURE_GIT_VERSION_FILE}
+            -DGIT_CONFIG_DIR=${GIT_CONFIG_DIR}
+            -DPRE_CONFIGURE_GIT_VERSION_FILE=${PRE_CONFIGURE_GIT_VERSION_FILE}
+            -DPOST_CONFIGURE_GIT_VERSION_FILE=${POST_CONFIGURE_GIT_VERSION_FILE}
             -P "${CMAKE_CURRENT_LIST_FILE}")
 endfunction()
 
