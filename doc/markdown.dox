@@ -461,6 +461,20 @@ int func(int a,int b) { return a*b; }
 The dot is optional, the curly braces are optional when the that language name begins with an
 alphabetical character and further characters are alphanumerical characters or a plus sign.
 
+Following the Pandoc fenced-code attribute syntax, an attribute block can also contain
+an identifier and a caption. The identifier is converted to the corresponding Doxygen
+\ref cmdanchor "\\anchor" command and the caption is shown after the code block:
+
+    ~~~~~~~~~~~~~~~{.c #multiply-example caption="Multiplication function"}
+    int multiply(int a,int b) { return a*b; }
+    ~~~~~~~~~~~~~~~
+
+The language, identifier, and caption are independent. Use a class beginning with a
+dot for the language, an identifier beginning with c # for the anchor, and a quoted
+c caption value. This syntax is currently supported for ordinary fenced code blocks;
+fences for diagrams such as c dot, c msc, c plantuml, and c mermaid retain their
+existing specialized handling.
+
 Another way to denote fenced code blocks is to use 3 or more backticks (```):
 
 ~~~~~~{.unparsed}

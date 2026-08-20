@@ -1,14 +1,14 @@
-// objective: test exact Markdown code block output with the optional LaTeX listings backend
+// objective: test exact Markdown code block output and Pandoc-style attributes with the optional LaTeX listings backend
 // config: GENERATE_LATEX = YES
 // config: LATEX_OUTPUT = $TESTOUTDIR/latex
 // config: LATEX_USE_LISTINGS = YES
 // config: LATEX_LISTINGS_STYLE = MyStyle
-// latexcheck: index.tex:\begin{lstlisting}[style=MyStyle,language=c]\nint foo = 1;\n\end{lstlisting}
+// latexcheck: index.tex:\begin{lstlisting}[style=MyStyle,language=c]\nint foo = 1;\n\end{lstlisting}\nC example
 // latexcheck: index.tex:\begin{lstlisting}[style=MyStyle,language=yaml]\nname: example\n\end{lstlisting}
 // latexcheck: index.tex:\begin{lstlisting}[style=MyStyle]\n-option1 -option2-foo\nraw _ % # $ & { } ~ ^ \\\n\end{lstlisting}
 /** \mainpage LaTeX listings
 
-```c
+```{.c #listings-example caption="C example"}
 int foo = 1;
 ```
 

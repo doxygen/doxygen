@@ -459,6 +459,7 @@ void LatexDocVisitor::operator()(const DocVerbatim &s)
           m_t << "\n" << s.text();
           if (!s.text().empty() && s.text().back() != '\n') m_t << "\n";
           m_t << "\\end{lstlisting}\n";
+          if (s.hasCaption()) visitCaption(s.children());
         }
         else
         {
@@ -467,6 +468,7 @@ void LatexDocVisitor::operator()(const DocVerbatim &s)
                                         Config_getBool(STRIP_CODE_COMMENTS),
                                         CodeParserOptions().setExample(s.isExample(),s.exampleFile()));
           m_ci.endCodeFragment("DoxyCode");
+          if (s.hasCaption()) visitCaption(s.children());
         }
       }
       break;
