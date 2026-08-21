@@ -25,8 +25,8 @@ and the version in which they were introduced.
 \section cmdialias \\ialias{name}
 
  \addindex \\ialias
- This command is used to prevent endless recursive expansion of aliases. For an alias `name` the command `\ialias{name}` is 
- inserted after its expansion, and then the expanded string is reparsed, but until the `\ialias` is processed the `name` 
+ This command is used to prevent endless recursive expansion of aliases. For an alias `name` the command `\ialias{name}` is
+ inserted after its expansion, and then the expanded string is reparsed, but until the `\ialias` is processed the `name`
  is not considered for further alias expansion.
 
 \since doxygen version 1.11.0
@@ -103,7 +103,7 @@ and the version in which they were introduced.
   \addindex \\iliteral
 
   This command is to replace the Java documentation commands `{@literal .... }` and
-  `{@code ...}`. 
+  `{@code ...}`.
   The text in the blocks will not be interpreted by doxygen in any way.
   The text in the `{@literal` will put as is text in the output.
   The text in the `{@code` will be replaced by a code block with class `JavaDocCode`
@@ -147,7 +147,7 @@ and the version in which they were introduced.
   \addindex \\iskip
 
   Internal doxygen command to suppress evaluation of whitespace to determine the indentation
-  of a comment block. Evaluation will continue as normal when the matching 
+  of a comment block. Evaluation will continue as normal when the matching
   \ref cmdendiskip "\\endiskip" command is found.
   Inserted when processing commands that contain literal text like `\startuml`, `\verbatim`, `<code>` etc.
 
@@ -158,7 +158,7 @@ and the version in which they were introduced.
   \addindex \\iprefix
 
   Internal doxygen command to prefix section labels references for \c \\ref and \c \\link commands.
-  After processing `\iprefix "pf_"` for instance, a <code>\\ref s1</code> will be treated as 
+  After processing `\iprefix "pf_"` for instance, a <code>\\ref s1</code> will be treated as
   if <code>\\ref pf_s1</code> was written.
   Inserted internally when processing `\include{doc}` with the `prefix` option.
 

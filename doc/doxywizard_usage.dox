@@ -144,17 +144,17 @@ when "Hide documentation" s set in the tooltip of the settingo).
 </dl>
 
 
-Overview: 
+Overview:
 \image html doxywizard_expert.png "Some options from the Expert tab"
 \image latex doxywizard_expert.png "Some options from the Expert tab" width=15cm
 
 The search field:
-\image html doxywizard_expert_search.png "Search input field" 
+\image html doxywizard_expert_search.png "Search input field"
 \image latex doxywizard_expert_search.png "Search input field" width=15cm
 
-The text entered in this field is searched in the name of the settings and in the documentation 
+The text entered in this field is searched in the name of the settings and in the documentation
 of the settings, only the settings that match the search text will will be shown in the bottom left pane
-and in the bottom right pane. In the bottom right pane the found text will be highlighted (in case of 
+and in the bottom right pane. In the bottom right pane the found text will be highlighted (in case of
 "Hide documentation" set the highlighting will take place in the tooltip.
 
 

@@ -43,7 +43,7 @@ CHECK_REQUIRED_VARIABLE(POST_CONFIGURE_DOXYGEN_VERSION_FILE)
 CHECK_OPTIONAL_VARIABLE(DOXY_STATE_FILE "${PROJECT_SOURCE_DIR}/VERSION")
 
 # Function: DoxygenStateChangedAction
-# Description: this function is executed when the 
+# Description: this function is executed when the
 #              doxygen version file has changed.
 function(DoxygenStateChangedAction _state_as_list)
     # Set variables by index, then configure the file w/ these variables defined.
@@ -60,15 +60,15 @@ endfunction()
 function(SetupDoxyMonitoring)
     add_custom_target(check_doxygen_version
         ALL
-	DEPENDS ${PRE_CONFIGURE_DOXYGEN_VERSION_FILE}
-	BYPRODUCTS ${POST_CONFIGURE_DOXYGEN_VERSION_FILE}
+        DEPENDS ${PRE_CONFIGURE_DOXYGEN_VERSION_FILE}
+        BYPRODUCTS ${POST_CONFIGURE_DOXYGEN_VERSION_FILE}
         COMMENT "Checking the doxygen version for changes..."
         COMMAND
             ${CMAKE_COMMAND}
-	    -D_BUILD_TIME_CHECK_DOXY=TRUE
-	    -DDOXY_STATE_FILE=${DOXY_STATE_FILE}
-	    -DPRE_CONFIGURE_DOXYGEN_VERSION_FILE=${PRE_CONFIGURE_DOXYGEN_VERSION_FILE}
-	    -DPOST_CONFIGURE_DOXYGEN_VERSION_FILE=${POST_CONFIGURE_DOXYGEN_VERSION_FILE}
+            -D_BUILD_TIME_CHECK_DOXY=TRUE
+            -DDOXY_STATE_FILE=${DOXY_STATE_FILE}
+            -DPRE_CONFIGURE_DOXYGEN_VERSION_FILE=${PRE_CONFIGURE_DOXYGEN_VERSION_FILE}
+            -DPOST_CONFIGURE_DOXYGEN_VERSION_FILE=${POST_CONFIGURE_DOXYGEN_VERSION_FILE}
             -P "${CMAKE_CURRENT_LIST_FILE}")
 endfunction()
 
@@ -82,13 +82,13 @@ function(Main)
     if(_BUILD_TIME_CHECK_DOXY)
         # Check if the doxygen version file has changed.
         # If so, run the change action.
-	if(${DOXY_STATE_FILE} IS_NEWER_THAN ${POST_CONFIGURE_DOXYGEN_VERSION_FILE})
-	    DoxygenStateChangedAction("${DOXYGEN_VERSION}")
+        if(${DOXY_STATE_FILE} IS_NEWER_THAN ${POST_CONFIGURE_DOXYGEN_VERSION_FILE})
+            DoxygenStateChangedAction("${DOXYGEN_VERSION}")
         endif()
     else()
         # >> Executes at configure time.
-	SetupDoxyMonitoring()
-	DoxygenStateChangedAction("${DOXYGEN_VERSION}")
+        SetupDoxyMonitoring()
+        DoxygenStateChangedAction("${DOXYGEN_VERSION}")
     endif()
 endfunction()
 
