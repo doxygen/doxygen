@@ -3917,136 +3917,6 @@ found:
 
 //----------------------------------------------------------------------------
 
-PageDef *addRelatedPage(const DString &name,const DString &ptitle,
-    const DString &doc,
-    const DString &fileName,
-    int docLine,
-    int startLine,
-    const RefItemVector &sli,
-    GroupDef *gd,
-    const TagInfo *tagInfo,
-    bool xref,
-    SrcLangExt lang
-    )
-{
-  PageDef *pd=nullptr;
-  //printf("addRelatedPage(name=%s gd=%p)\n",qPrint(name),gd);
-  DString title=ptitle.stripWhiteSpace();
-  bool newPage = true;
-  if ((pd=Doxygen::pageLinkedMap->find(name)) && !pd->isReference())
-  {
-    if (!xref && !title.empty() && pd->title()!=pd->name() && pd->title()!=title)
-    {
-      warn(fileName,startLine,"multiple use of page label '{}' with different titles, (other occurrence: {}, line: {})",
-         name,pd->docFile(),pd->getStartBodyLine());
-    }
-    if (!title.empty() && pd->title()==pd->name()) // pd has no real title yet
-    {
-      pd->setTitle(title);
-      SectionInfo *si = SectionManager::instance().find(pd->name());
-      if (si)
-      {
-        si->setTitle(title);
-      }
-    }
-    // append documentation block to the page.
-    pd->setDocumentation(doc,fileName,docLine);
-    //printf("Adding page docs '%s' pi=%p name=%s\n",qPrint(doc),pd,name);
-    // append (x)refitems to the page.
-    pd->setRefItems(sli);
-    newPage = false;
-  }
-
-  if (newPage) // new page
-  {
-    DString baseName=name;
-    if (baseName.endsWith(".tex"))
-      baseName=baseName.left(baseName.length()-4);
-    else if (baseName.right(Doxygen::htmlFileExtension.length())==Doxygen::htmlFileExtension)
-      baseName=baseName.left(baseName.length()-Doxygen::htmlFileExtension.length());
-
-    //printf("Appending page '%s'\n",qPrint(baseName));
-    if (pd) // replace existing page
-    {
-      pd->setDocumentation(doc,fileName,docLine);
-      pd->setFileName(::convertNameToFile(baseName,false,true));
-      pd->setShowLineNo(false);
-      pd->setNestingLevel(0);
-      pd->setPageScope(nullptr);
-      pd->setTitle(title);
-      pd->setReference(DString());
-    }
-    else // newPage
-    {
-      pd = Doxygen::pageLinkedMap->add(baseName,
-             createPageDef(fileName,docLine,baseName,doc,title));
-    }
-    pd->setBodySegment(startLine,startLine,-1);
-
-    pd->setRefItems(sli);
-    pd->setLanguage(lang);
-
-    if (tagInfo)
-    {
-      pd->setReference(tagInfo->tagName);
-      pd->setFileName(tagInfo->fileName);
-    }
-
-    if (gd) gd->addPage(pd);
-
-    if (pd->hasTitle())
-    {
-      //outputList->writeTitle(pi->name,pi->title);
-
-      // a page name is a label as well!
-      DString file;
-      DString orgFile;
-      int line  = -1;
-      if (gd)
-      {
-        file=gd->getOutputFileBase();
-        orgFile=gd->getOutputFileBase();
-      }
-      else
-      {
-        file=pd->getOutputFileBase();
-        orgFile=pd->docFile();
-        line = pd->getStartBodyLine();
-      }
-      const SectionInfo *si = SectionManager::instance().find(pd->name());
-      if (si)
-      {
-        if (!si->ref().empty()) // we are from a tag file
-        {
-          SectionManager::instance().replace(pd->name(),
-              file,-1,pd->title(),SectionType::Page,0,pd->getReference());
-        }
-        else if (si->lineNr() != -1)
-        {
-          warn(orgFile,line,"multiple use of section label '{}', (first occurrence: {}, line {})",pd->name(),si->fileName(),si->lineNr());
-        }
-        else
-        {
-          warn(orgFile,line,"multiple use of section label '{}', (first occurrence: {})",pd->name(),si->fileName());
-        }
-      }
-      else
-      {
-        SectionManager::instance().add(pd->name(),
-            file,-1,pd->title(),SectionType::Page,0,pd->getReference());
-        //printf("si->label='%s' si->definition=%s si->fileName='%s'\n",
-        //      qPrint(si->label),si->definition?si->definition->name().data():"<none>",
-        //      qPrint(si->fileName));
-        //printf("  SectionInfo: sec=%p sec->fileName=%s\n",si,qPrint(si->fileName));
-        //printf("Adding section key=%s si->fileName=%s\n",qPrint(pageName),qPrint(si->fileName));
-      }
-    }
-  }
-  return pd;
-}
-
-//----------------------------------------------------------------------------
-
 static ModuleDef *findModuleDef(const Definition *d)
 {
   ModuleDef *mod = nullptr;
@@ -4171,45 +4041,6 @@ DString stripPath(const DString &s)
 DString makeBaseName(const DString &name, const DString &ext)
 {
   return stripExtensionGeneral(stripPath(name), ext);
-}
-
-/** removes occurrences of whole \a word from \a sentence,
- *  while keeps internal spaces and reducing multiple sequences of spaces.
- *  Example: sentence=` cat+ catfish cat cat concat cat`, word=`cat` returns: `+ catfish concat`
- */
-bool findAndRemoveWord(DString &sentence,const char *word)
-{
-  static reg::Ex re(R"(\s*(\<\a+\>)\s*)");
-  std::string s = sentence.str();
-  reg::Iterator it(s,re);
-  reg::Iterator end;
-  std::string result;
-  bool found=false;
-  size_t p=0;
-  for ( ; it!=end ; ++it)
-  {
-    const auto match = *it;
-    std::string part = match[1].str();
-    if (part!=word)
-    {
-      size_t i = match.position();
-      size_t l = match.length();
-      result+=s.substr(p,i-p);
-      result+=match.str();
-      p=i+l;
-    }
-    else
-    {
-      found=true;
-      size_t i = match[1].position();
-      size_t l = match[1].length();
-      result+=s.substr(p,i-p);
-      p=i+l;
-    }
-  }
-  result+=s.substr(p);
-  sentence = DString(result).simplifyWhiteSpace();
-  return found;
 }
 
 /** Special version of DString::stripWhiteSpace() that only strips
@@ -4840,71 +4671,13 @@ DString filterTitle(const DString &title)
   return tf;
 }
 
-//---------------------------------------------------------------------------------------------------
-
-template<class PatternList, class PatternElem, typename PatternGet = DString(*)(const PatternElem &)>
-bool genericPatternMatch(const FileInfo &fi,
-                         const PatternList &patList,
-                         PatternElem &elem,
-                         PatternGet getter)
-{
-  bool caseSenseNames = useCaseSenseNames();
-  bool found = false;
-
-  if (!patList.empty())
-  {
-    std::string fn = fi.fileName();
-    std::string fp = fi.filePath();
-    std::string afp= fi.absFilePath();
-
-    for (const auto &li : patList)
-    {
-      std::string pattern = getter(li).str();
-      if (!pattern.empty())
-      {
-        size_t i=pattern.find('=');
-        if (i!=std::string::npos) pattern=pattern.substr(0,i); // strip of the extension specific filter name
-
-        if (!caseSenseNames)
-        {
-          pattern = DString(pattern).lower().str();
-          fn      = DString(fn).lower().str();
-          fp      = DString(fp).lower().str();
-          afp     = DString(afp).lower().str();
-        }
-        reg::Ex re(pattern,reg::Ex::Mode::Wildcard);
-        found = re.isValid() && (reg::match(fn,re) ||
-                                 (fn!=fp && reg::match(fp,re)) ||
-                                 (fn!=afp && fp!=afp && reg::match(afp,re)));
-        if (found)
-        {
-          elem = li;
-          break;
-        }
-        //printf("Matching '%s' against pattern '%s' found=%d\n",
-        //    qPrint(fi->fileName()),qPrint(pattern),found);
-      }
-    }
-  }
-  return found;
-}
-
 //----------------------------------------------------------------------------
-// returns true if the name of the file represented by 'fi' matches
-// one of the file patterns in the 'patList' list.
-
-bool patternMatch(const FileInfo &fi,const StringVector &patList)
-{
-  std::string elem;
-  auto getter = [](std::string s) -> DString { return s; };
-  return genericPatternMatch(fi,patList,elem,getter);
-}
 
 DString getEncoding(const FileInfo &fi)
 {
   InputFileEncoding elem;
-  auto getter = [](const InputFileEncoding &e) -> DString { return e.pattern; };
-  if (genericPatternMatch(fi,Doxygen::inputFileEncodingList,elem,getter)) // check for file specific encoding
+  auto getter = [](const InputFileEncoding &e) { return e.pattern.str(); };
+  if (fi.match(Doxygen::inputFileEncodingList,useCaseSenseNames(),&elem,getter)) // check for file specific encoding
   {
     return elem.encoding;
   }
@@ -4927,7 +4700,6 @@ DString externalLinkTarget(const bool parent)
 
 DString createHtmlUrl(const DString &relPath,
                        const DString &ref,
-                       bool href,
                        bool isLocalFile,
                        const DString &targetFileName,
                        const DString &anchor)
@@ -4935,7 +4707,7 @@ DString createHtmlUrl(const DString &relPath,
   DString url;
   if (!ref.empty())
   {
-    url = externalRef(relPath,ref,href);
+    url = externalRef(relPath,ref);
   }
   if (!targetFileName.empty())
   {
@@ -4962,7 +4734,7 @@ DString createHtmlUrl(const DString &relPath,
   return url;
 }
 
-DString externalRef(const DString &relPath,const DString &ref,bool href)
+DString externalRef(const DString &relPath,const DString &ref)
 {
   DString result;
   if (!ref.empty())
@@ -4978,7 +4750,6 @@ DString externalRef(const DString &relPath,const DString &ref,bool href)
         l+=relPath.length();
       }
       if (l>0 && result.at(l-1)!='/') result+='/';
-      if (!href) result.append("\" ");
     }
   }
   else
@@ -5052,29 +4823,6 @@ bool copyFile(const DString &src,const DString &dest)
     return false;
   }
   return true;
-}
-
-/** Returns the line number of the line following the line with the marker.
- *  \sa routine extractBlock
- */
-int lineBlock(const DString &text,const DString &marker)
-{
-  int result = 1;
-
-  // find the character positions of the first marker
-  size_t m1 = text.find(marker);
-  if (m1==DString::npos) return result;
-
-  // find start line positions for the markers
-  bool found=false;
-  size_t p=0, i=0;
-  while (!found && (i=text.find('\n',p))!=DString::npos)
-  {
-    found = (p<=m1 && m1<i); // found the line with the start marker
-    p=i+1;
-    result++;
-  }
-  return result;
 }
 
 DString getLanguageSpecificSeparator(SrcLangExt lang,bool classScope)
@@ -5271,89 +5019,6 @@ void stripIndentationVerbatim(DString &doc,size_t indentationLevel, bool skipFir
   //printf("stripIndentationVerbatim: result=\n%s\n------\n",qPrint(doc));
 }
 
-bool fileVisibleInIndex(const FileDef *fd,bool &genSourceFile)
-{
-  bool allExternals = Config_getBool(ALLEXTERNALS);
-  bool isDocFile = fd->isDocumentationFile();
-  genSourceFile = !isDocFile && fd->generateSourceFile();
-  return ( ((allExternals && fd->isLinkable()) ||
-            fd->isLinkableInProject()
-           ) &&
-           !isDocFile
-         );
-}
-
-//--------------------------------------------------------------------------------------
-
-#if 0
-/*! @brief Get one unicode character as an unsigned integer from utf-8 string
- *
- * @param s utf-8 encoded string
- * @param idx byte position of given string \a s.
- * @return the unicode codepoint, 0 - MAX_UNICODE_CODEPOINT
- * @see getNextUtf8OrToLower()
- * @see getNextUtf8OrToUpper()
- */
-uint32_t getUtf8Code( const DString& s, int idx )
-{
-  const int length = s.length();
-  if (idx >= length) { return 0; }
-  const uint32_t c0 = (uint8_t)s.at(idx);
-  if ( c0 < 0xC2 || c0 >= 0xF8 ) // 1 byte character
-  {
-    return c0;
-  }
-  if (idx+1 >= length) { return 0; }
-  const uint32_t c1 = ((uint8_t)s.at(idx+1)) & 0x3f;
-  if ( c0 < 0xE0 ) // 2 byte character
-  {
-    return ((c0 & 0x1f) << 6) | c1;
-  }
-  if (idx+2 >= length) { return 0; }
-  const uint32_t c2 = ((uint8_t)s.at(idx+2)) & 0x3f;
-  if ( c0 < 0xF0 ) // 3 byte character
-  {
-    return ((c0 & 0x0f) << 12) | (c1 << 6) | c2;
-  }
-  if (idx+3 >= length) { return 0; }
-  // 4 byte character
-  const uint32_t c3 = ((uint8_t)s.at(idx+3)) & 0x3f;
-  return ((c0 & 0x07) << 18) | (c1 << 12) | (c2 << 6) | c3;
-}
-
-
-/*! @brief Returns one unicode character as an unsigned integer
- *  from utf-8 string, making the character lower case if it was upper case.
- *
- * @param s utf-8 encoded string
- * @param idx byte position of given string \a s.
- * @return the unicode codepoint, 0 - MAX_UNICODE_CODEPOINT, excludes 'A'-'Z'
- * @see getNextUtf8Code()
-*/
-uint32_t getUtf8CodeToLower( const DString& s, int idx )
-{
-  const uint32_t v = getUtf8Code( s, idx );
-  return v < 0x7f ? tolower( v ) : v;
-}
-
-
-/*! @brief Returns one unicode character as an unsigned integer
- *  from utf-8 string, making the character upper case if it was lower case.
- *
- * @param s utf-8 encoded string
- * @param idx byte position of given string \a s.
- * @return the unicode codepoint, 0 - MAX_UNICODE_CODEPOINT, excludes 'A'-'Z'
- * @see getNextUtf8Code()
- */
-uint32_t getUtf8CodeToUpper( const DString& s, int idx )
-{
-  const uint32_t v = getUtf8Code( s, idx );
-  return v < 0x7f ? toupper( v ) : v;
-}
-#endif
-
-
-
 //----------------------------------------------------------------------------
 
 /** Strip the direction part from docs and return it as a string in canonical form.
@@ -5529,90 +5194,7 @@ bool openOutputFile(const DString &outFile,std::ofstream &f)
   return fileOpened;
 }
 
-static bool keyWordsFortranC(const char *contents)
-{
-  static const std::unordered_set<std::string> fortran_C_keywords = {
-    "character", "call", "close", "common", "continue",
-    "case", "contains", "cycle", "class", "codimension",
-    "concurrent", "contiguous", "critical"
-  };
-
-  if (*contents != 'c' && *contents != 'C') return false;
-
-  const char *c = contents;
-  DString keyword;
-  while (*c && *c != ' ') {keyword += *c; c++;}
-  keyword = keyword.lower();
-
-  return (fortran_C_keywords.find(keyword.str()) != fortran_C_keywords.end());
-}
-
 //------------------------------------------------------
-// simplified way to know if this is fixed form
-bool recognizeFixedForm(const DString &contents, FortranFormat format)
-{
-  int column=0;
-  bool skipLine=false;
-
-  if (format == FortranFormat::Fixed) return true;
-  if (format == FortranFormat::Free)  return false;
-
-  int tabSize=Config_getInt(TAB_SIZE);
-  size_t sizCont = contents.length();
-  for (size_t i=0;i<sizCont;i++)
-  {
-    column++;
-
-    switch(contents.at(i))
-    {
-      case '\n':
-        column=0;
-        skipLine=false;
-        break;
-      case '\t':
-        column += tabSize-1;
-        break;
-      case ' ':
-        break;
-      case '\000':
-        return false;
-      case '#':
-        skipLine=true;
-        break;
-      case 'C':
-      case 'c':
-        if (column==1)
-        {
-          return !keyWordsFortranC(contents.data()+i);
-        }
-        // fallthrough
-      case '*':
-        if (column==1) return true;
-        if (skipLine) break;
-        return false;
-      case '!':
-        if (column!=6) skipLine=true;
-        break;
-      default:
-        if (skipLine) break;
-        if (column>=7) return true;
-        return false;
-    }
-  }
-  return false;
-}
-
-FortranFormat convertFileNameFortranParserCode(DString fn)
-{
-  DString ext = getFileNameExtension(fn);
-  DString parserName = Doxygen::parserManager->getParserName(ext);
-
-  if (parserName == "fortranfixed") return FortranFormat::Fixed;
-  else if (parserName == "fortranfree") return FortranFormat::Free;
-
-  return FortranFormat::Unknown;
-}
-//------------------------------------------------------------------------
 
 //! remove disabled blocks and all block markers from \a s and return the result as a string
 DString selectBlocks(const DString &s,const SelectionBlockList &blockList,const SelectionMarkerInfo &markerInfo)

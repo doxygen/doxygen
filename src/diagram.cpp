@@ -270,7 +270,7 @@ static void writeMapArea(TextStream &t,const ClassDef *cd,DString relPath,
       t << externalLinkTarget(true);
     }
     t << "href=\"";
-    t << externalRef(relPath,ref,true);
+    t << externalRef(relPath,ref);
     DString fn = cd->getOutputFileBase();
     addHtmlExtensionIfMissing(fn);
     t << fn;

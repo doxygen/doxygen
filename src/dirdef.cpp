@@ -400,7 +400,7 @@ void DirDefImpl::writeFileList(OutputList &ol)
   for (const auto &fd : m_fileList)
   {
     bool genSourceFile=false;
-    if (fileVisibleInIndex(fd,genSourceFile))
+    if (fd->visibleInIndex(genSourceFile))
     {
       numFiles++;
     }
@@ -421,7 +421,7 @@ void DirDefImpl::writeFileList(OutputList &ol)
     for (const auto &fd : m_fileList)
     {
       bool src = false;
-      bool doc = fileVisibleInIndex(fd,src);
+      bool doc = fd->visibleInIndex(src);
       if (doc || src)
       {
         ol.startMemberDeclaration();

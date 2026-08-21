@@ -570,7 +570,7 @@ void HtmlHelp::addContentsItem(bool isDir,
       addHtmlExtensionIfMissing(currFile);
       DString currAnc = anchor;
       p->cts << "<param name=\"Local\" value=\"";
-      if (!ref.empty()) p->cts << externalRef("",ref,true);
+      if (!ref.empty()) p->cts << externalRef("",ref);
       p->cts << currFile;
       if (p->prevFile == currFile && p->prevAnc.empty() && currAnc.empty())
       {

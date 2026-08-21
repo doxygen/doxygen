@@ -28,6 +28,7 @@
 #include "entry.h"
 #include "commentscan.h"
 #include "linkedmap.h"
+#include "pagedef.h"
 
 #include <map>
 #include <unordered_map>

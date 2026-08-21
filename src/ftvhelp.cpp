@@ -303,7 +303,7 @@ void FTVHelp::Private::generateLink(TextStream &t,const FTVNodePtr &n)
       t << "<a class=\"el\" ";
     }
     t << "href=\"";
-    t << externalRef("",n->ref,true);
+    t << externalRef("",n->ref);
     t << node2URL(n);
     if (!setTarget)
     {
@@ -564,7 +564,7 @@ static void generateJSLink(TextStream &t,const FTVNodePtr &n)
   else // link into other page
   {
     t << "\"" << link << "\", \"";
-    t << externalRef("",n->ref,true);
+    t << externalRef("",n->ref);
     t << node2URL(n);
     t << "\", ";
   }
@@ -641,7 +641,7 @@ static bool generateJSTree(NavIndexEntryList &navIndex,TextStream &t,
       {
         const FileDef *fd = toFileDef(n->def);
         bool src = false;
-        bool doc = fileVisibleInIndex(fd,src);
+        bool doc = fd->visibleInIndex(src);
         if (doc)
         {
           navIndex.emplace_back(node2URL(n,true,false),pathToNode(n,n));

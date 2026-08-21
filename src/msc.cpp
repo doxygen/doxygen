@@ -78,7 +78,7 @@ static bool convertMapFile(TextStream &t,const DString &mapName,const DString &r
         {
           link = true;
           t << "<area href=\"";
-          t << externalRef(relPath,df->ref(),true);
+          t << externalRef(relPath,df->ref());
         }
         if (!df->file().empty())
         {

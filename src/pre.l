@@ -63,6 +63,7 @@ typedef yyguts_t *yyscan_t;
 #include "trace.h"
 #include "stringutil.h"
 #include "filename.h"
+#include "fortranscanner.h"
 
 #define YY_NO_UNISTD_H 1
 
@@ -2361,7 +2362,7 @@ static std::unique_ptr<FileState> checkAndOpenFile(yyscan_t yyscanner,const DStr
   if (fi.exists() && fi.isFile())
   {
     StringVector exclPatterns = Config_getList(EXCLUDE_PATTERNS);
-    if (patternMatch(fi,exclPatterns)) return nullptr;
+    if (fi.match(exclPatterns,useCaseSenseNames())) return nullptr;
 
     DString absName = fi.absFilePath();
 

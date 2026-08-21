@@ -20,6 +20,7 @@
 
 class PageLinkedRefMap;
 class OutputList;
+struct TagInfo;
 
 /** @brief A model of a page symbol. */
 class PageDef : public DefinitionMutable, public Definition
@@ -60,6 +61,22 @@ class PageDef : public DefinitionMutable, public Definition
 };
 
 std::unique_ptr<PageDef> createPageDef(const DString &f,int l,const DString &n,const DString &d,const DString &t);
+
+// ----------------------
+
+[[maybe_unused]] PageDef *addRelatedPage(
+                        const DString &name,
+                        const DString &ptitle,
+                        const DString &doc,
+                        const DString &fileName,
+                        int docLine,
+                        int startLine,
+                        const RefItemVector &sli = RefItemVector(),
+                        GroupDef *gd=nullptr,
+                        const TagInfo *tagInfo=nullptr,
+                        bool xref=false,
+                        SrcLangExt lang=SrcLangExt::Unknown
+                       );
 
 // --- Cast functions
 

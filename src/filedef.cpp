@@ -207,6 +207,8 @@ class FileDefImpl final : public DefinitionMixin<FileDef>
     void overrideIncludeGraph(bool e) override;
     void overrideIncludedByGraph(bool e) override;
 
+    bool visibleInIndex(bool &genSourceFile) const override;
+
   private:
     void setDiskNameLocal(const DString &name);
     void acquireFileVersion();
@@ -1952,6 +1954,14 @@ bool FileDefImpl::hasIncludeGraph() const
 bool FileDefImpl::hasIncludedByGraph() const
 {
   return m_hasIncludedByGraph;
+}
+
+bool FileDefImpl::visibleInIndex(bool &genSourceFile) const
+{
+  bool allExternals = Config_getBool(ALLEXTERNALS);
+  bool isDocFile = isDocumentationFile();
+  genSourceFile = !isDocFile && generateSourceFile();
+  return ((allExternals && isLinkable()) || isLinkableInProject()) && !isDocFile;
 }
 
 // -----------------------

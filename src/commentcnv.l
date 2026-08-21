@@ -53,6 +53,7 @@ typedef yyguts_t *yyscan_t;
 #include "regex.h"
 #include "section.h"
 #include "filename.h"
+#include "fortranscanner.h"
 
 #include <assert.h>
 
@@ -1773,6 +1774,30 @@ static void handleCondSectionId(yyscan_t yyscanner,const char *expression)
     BEGIN(yyextra->condCtx);
   }
 }
+
+/** Returns the line number of the line following the line with the marker.
+ *  \sa routine extractBlock
+ */
+static int lineBlock(const DString &text,const DString &marker)
+{
+  int result = 1;
+
+  // find the character positions of the first marker
+  size_t m1 = text.find(marker);
+  if (m1==DString::npos) return result;
+
+  // find start line positions for the markers
+  bool found=false;
+  size_t p=0, i=0;
+  while (!found && (i=text.find('\n',p))!=DString::npos)
+  {
+    found = (p<=m1 && m1<i); // found the line with the start marker
+    p=i+1;
+    result++;
+  }
+  return result;
+}
+
 
 /** Returns the section of text, in between a pair of markers.
  *  Full lines are returned, excluding the lines on which the markers appear.

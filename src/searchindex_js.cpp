@@ -673,7 +673,7 @@ static void writeJavasScriptSearchDataPage(const DString &baseName,const DString
     DString fn  = d ? d->getOutputFileBase() : si ? si->fileName() : DString();
     DString ref = d ? d->getReference()      : si ? si->ref()      : DString();
     addHtmlExtensionIfMissing(fn);
-    DString extRef = externalRef("../",ref,true)+fn;
+    DString extRef = externalRef("../",ref)+fn;
     if (!anchor.empty())
     {
       extRef+="#"+anchor;

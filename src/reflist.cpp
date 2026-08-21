@@ -20,6 +20,7 @@
 #include "util.h"
 #include "definition.h"
 #include "config.h"
+#include "pagedef.h"
 
 RefList::RefList(const DString &listName, const DString &pageTitle, const DString &secTitle) :
        m_listName(listName), m_fileName(convertNameToFile(listName,false,true)),

@@ -2130,6 +2130,94 @@ const char* prepassFixedForm(const char* contents, int *hasContLine,int fixedCom
   return newContents;
 }
 
+
+//------------------------------------------------------
+static bool keyWordsFortranC(const char *contents)
+{
+  static const std::unordered_set<std::string> fortran_C_keywords = {
+    "character", "call", "close", "common", "continue",
+    "case", "contains", "cycle", "class", "codimension",
+    "concurrent", "contiguous", "critical"
+  };
+
+  if (*contents != 'c' && *contents != 'C') return false;
+
+  const char *c = contents;
+  DString keyword;
+  while (*c && *c != ' ') {keyword += *c; c++;}
+  keyword = keyword.lower();
+
+  return (fortran_C_keywords.find(keyword.str()) != fortran_C_keywords.end());
+}
+
+// simplified way to know if this is fixed form
+bool recognizeFixedForm(const DString &contents, FortranFormat format)
+{
+  int column=0;
+  bool skipLine=false;
+
+  if (format == FortranFormat::Fixed) return true;
+  if (format == FortranFormat::Free)  return false;
+
+  int tabSize=Config_getInt(TAB_SIZE);
+  size_t sizCont = contents.length();
+  for (size_t i=0;i<sizCont;i++)
+  {
+    column++;
+
+    switch(contents.at(i))
+    {
+      case '\n':
+        column=0;
+        skipLine=false;
+        break;
+      case '\t':
+        column += tabSize-1;
+        break;
+      case ' ':
+        break;
+      case '\000':
+        return false;
+      case '#':
+        skipLine=true;
+        break;
+      case 'C':
+      case 'c':
+        if (column==1)
+        {
+          return !keyWordsFortranC(contents.data()+i);
+        }
+        // fallthrough
+      case '*':
+        if (column==1) return true;
+        if (skipLine) break;
+        return false;
+      case '!':
+        if (column!=6) skipLine=true;
+        break;
+      default:
+        if (skipLine) break;
+        if (column>=7) return true;
+        return false;
+    }
+  }
+  return false;
+}
+
+FortranFormat convertFileNameFortranParserCode(const DString &fn)
+{
+  DString ext = getFileNameExtension(fn);
+  DString parserName = Doxygen::parserManager->getParserName(ext);
+
+  if (parserName == "fortranfixed") return FortranFormat::Fixed;
+  else if (parserName == "fortranfree") return FortranFormat::Free;
+
+  return FortranFormat::Unknown;
+}
+
+//------------------------------------------------------------------------
+
+
 static void pushBuffer(yyscan_t yyscanner,const DString &buffer)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;

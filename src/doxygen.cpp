@@ -3105,9 +3105,9 @@ static bool isVarWithConstructor(const Entry *root)
   }
   type = root->type;
   // remove qualifiers
-  findAndRemoveWord(type,"const");
-  findAndRemoveWord(type,"static");
-  findAndRemoveWord(type,"volatile");
+  type.findAndRemoveWord("const");
+  type.findAndRemoveWord("static");
+  type.findAndRemoveWord("volatile");
   typePtrType = type.find('*')!=DString::npos || type.find('&')!=DString::npos;
   if (!typePtrType)
   {
@@ -11149,13 +11149,15 @@ static void readDir(FileInfo *fi,
 
   StringVector dirResultList;
 
+  bool caseSenseNames = useCaseSenseNames();
+
   for (const auto &dirEntry : dir.iterator())
   {
     FileInfo cfi(dirEntry.path());
     auto checkPatterns = [&]() -> bool
     {
-      return (patList==nullptr     ||  patternMatch(cfi,*patList)) &&
-             (exclPatList==nullptr || !patternMatch(cfi,*exclPatList)) &&
+      return (patList==nullptr     ||  cfi.match(*patList,caseSenseNames)) &&
+             (exclPatList==nullptr || !cfi.match(*exclPatList,caseSenseNames)) &&
              (killSet==nullptr     ||  killSet->find(cfi.absFilePath())==killSet->end());
     };
 
@@ -11193,7 +11195,7 @@ static void readDir(FileInfo *fi,
       }
       else if (recursive &&
           cfi.isDir() &&
-          (exclPatList==nullptr || !patternMatch(cfi,*exclPatList)) &&
+          (exclPatList==nullptr || !cfi.match(*exclPatList,caseSenseNames)) &&
           cfi.fileName().at(0)!='.') // skip "." ".." and ".dir"
       {
         FileInfo acfi(cfi.absFilePath());

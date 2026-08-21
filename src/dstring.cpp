@@ -13,13 +13,14 @@
  *
  */
 
-#include "dstring.h"
-
 #include <limits.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include <ctype.h>
+
+#include "dstring.h"
+#include "regex.h"
 
 inline char toLowerChar(char c)
 {
@@ -650,6 +651,52 @@ DString DString::integerToRoman(int n, bool upper)
   }
 
   return result;
+}
+
+bool DString::findAndRemoveWord(const char *word)
+{
+  static reg::Ex re(R"(\s*(\<\a+\>)\s*)");
+  std::string s = m_rep;
+  reg::Iterator it(s,re);
+  reg::Iterator end;
+  std::string result;
+  bool found=false;
+  size_t p=0;
+  for ( ; it!=end ; ++it)
+  {
+    const auto match = *it;
+    std::string part = match[1].str();
+    if (part!=word)
+    {
+      size_t i = match.position();
+      size_t l = match.length();
+      result+=s.substr(p,i-p);
+      result+=match.str();
+      p=i+l;
+    }
+    else
+    {
+      found=true;
+      size_t i = match[1].position();
+      size_t l = match[1].length();
+      result+=s.substr(p,i-p);
+      p=i+l;
+    }
+  }
+  result+=s.substr(p);
+  m_rep = DString(result).simplifyWhiteSpace().str();
+  return found;
+}
+
+bool DString::containsWord(const char *word) const
+{
+  if (m_rep.empty() || word==nullptr) return false;
+  static const reg::Ex re(R"(\a+)");
+  for (reg::Iterator it(m_rep,re) ; it!=reg::Iterator() ; ++it)
+  {
+    if (it->str()==word) return true;
+  }
+  return false;
 }
 
 

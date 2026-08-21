@@ -25,6 +25,8 @@
 #include "reflist.h"
 #include "definitionimpl.h"
 #include "indexlist.h"
+#include "message.h"
+#include "entry.h"
 
 //------------------------------------------------------------------------------------------
 
@@ -513,6 +515,138 @@ DString PageDefImpl::titleAsText() const
 {
   return m_titleAsText;
 }
+
+// ----------------------
+
+PageDef *addRelatedPage(const DString &name,const DString &ptitle,
+    const DString &doc,
+    const DString &fileName,
+    int docLine,
+    int startLine,
+    const RefItemVector &sli,
+    GroupDef *gd,
+    const TagInfo *tagInfo,
+    bool xref,
+    SrcLangExt lang
+    )
+{
+  PageDef *pd=nullptr;
+  //printf("addRelatedPage(name=%s gd=%p)\n",qPrint(name),gd);
+  DString title=ptitle.stripWhiteSpace();
+  bool newPage = true;
+  if ((pd=Doxygen::pageLinkedMap->find(name)) && !pd->isReference())
+  {
+    if (!xref && !title.empty() && pd->title()!=pd->name() && pd->title()!=title)
+    {
+      warn(fileName,startLine,"multiple use of page label '{}' with different titles, (other occurrence: {}, line: {})",
+         name,pd->docFile(),pd->getStartBodyLine());
+    }
+    if (!title.empty() && pd->title()==pd->name()) // pd has no real title yet
+    {
+      pd->setTitle(title);
+      SectionInfo *si = SectionManager::instance().find(pd->name());
+      if (si)
+      {
+        si->setTitle(title);
+      }
+    }
+    // append documentation block to the page.
+    pd->setDocumentation(doc,fileName,docLine);
+    //printf("Adding page docs '%s' pi=%p name=%s\n",qPrint(doc),pd,name);
+    // append (x)refitems to the page.
+    pd->setRefItems(sli);
+    newPage = false;
+  }
+
+  if (newPage) // new page
+  {
+    DString baseName=name;
+    if (baseName.endsWith(".tex"))
+      baseName=baseName.left(baseName.length()-4);
+    else if (baseName.right(Doxygen::htmlFileExtension.length())==Doxygen::htmlFileExtension)
+      baseName=baseName.left(baseName.length()-Doxygen::htmlFileExtension.length());
+
+    //printf("Appending page '%s'\n",qPrint(baseName));
+    if (pd) // replace existing page
+    {
+      pd->setDocumentation(doc,fileName,docLine);
+      pd->setFileName(::convertNameToFile(baseName,false,true));
+      pd->setShowLineNo(false);
+      pd->setNestingLevel(0);
+      pd->setPageScope(nullptr);
+      pd->setTitle(title);
+      pd->setReference(DString());
+    }
+    else // newPage
+    {
+      pd = Doxygen::pageLinkedMap->add(baseName,
+             createPageDef(fileName,docLine,baseName,doc,title));
+    }
+    pd->setBodySegment(startLine,startLine,-1);
+
+    pd->setRefItems(sli);
+    pd->setLanguage(lang);
+
+    if (tagInfo)
+    {
+      pd->setReference(tagInfo->tagName);
+      pd->setFileName(tagInfo->fileName);
+    }
+
+    if (gd) gd->addPage(pd);
+
+    if (pd->hasTitle())
+    {
+      //outputList->writeTitle(pi->name,pi->title);
+
+      // a page name is a label as well!
+      DString file;
+      DString orgFile;
+      int line  = -1;
+      if (gd)
+      {
+        file=gd->getOutputFileBase();
+        orgFile=gd->getOutputFileBase();
+      }
+      else
+      {
+        file=pd->getOutputFileBase();
+        orgFile=pd->docFile();
+        line = pd->getStartBodyLine();
+      }
+      const SectionInfo *si = SectionManager::instance().find(pd->name());
+      if (si)
+      {
+        if (!si->ref().empty()) // we are from a tag file
+        {
+          SectionManager::instance().replace(pd->name(),
+              file,-1,pd->title(),SectionType::Page,0,pd->getReference());
+        }
+        else if (si->lineNr() != -1)
+        {
+          warn(orgFile,line,"multiple use of section label '{}', (first occurrence: {}, line {})",pd->name(),si->fileName(),si->lineNr());
+        }
+        else
+        {
+          warn(orgFile,line,"multiple use of section label '{}', (first occurrence: {})",pd->name(),si->fileName());
+        }
+      }
+      else
+      {
+        SectionManager::instance().add(pd->name(),
+            file,-1,pd->title(),SectionType::Page,0,pd->getReference());
+        //printf("si->label='%s' si->definition=%s si->fileName='%s'\n",
+        //      qPrint(si->label),si->definition?si->definition->name().data():"<none>",
+        //      qPrint(si->fileName));
+        //printf("  SectionInfo: sec=%p sec->fileName=%s\n",si,qPrint(si->fileName));
+        //printf("Adding section key=%s si->fileName=%s\n",qPrint(pageName),qPrint(si->fileName));
+      }
+    }
+  }
+  return pd;
+}
+
+
 
 // --- Cast functions
 

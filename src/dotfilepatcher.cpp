@@ -145,7 +145,7 @@ static DString replaceRef(const DString &buf,const DString &relPath,
         auto dfAst  { createRef( *parser.get(), link.mid(5), context ) };
         auto dfAstImpl = dynamic_cast<const DocNodeAST*>(dfAst.get());
         const DocRef *df = std::get_if<DocRef>(&dfAstImpl->root);
-        result+=externalRef(relPath,df->ref(),true);
+        result+=externalRef(relPath,df->ref());
         if (!df->file().empty())
         {
           DString fn = df->file();
@@ -176,7 +176,7 @@ static DString replaceRef(const DString &buf,const DString &relPath,
           if (!result.empty())targetAlreadySet=true;
         }
         result+= href+"=\"";
-        result+=externalRef(relPath,ref,true);
+        result+=externalRef(relPath,ref);
         result+= url + "\"";
       }
       else // should not happen, but handle properly anyway

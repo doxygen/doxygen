@@ -208,6 +208,11 @@ class FileDef : public DefinitionMutable, public Definition
 
     virtual void overrideIncludeGraph(bool e) = 0;
     virtual void overrideIncludedByGraph(bool e) = 0;
+
+    /** Returns true if this file is visible in the index.
+     *  The parameter \a genSourceFile is set to true if this file is only linkable as a source file.
+     */
+    virtual bool visibleInIndex(bool &genSourceFile) const = 0;
 };
 
 std::unique_ptr<FileDef> createFileDef(const DString &p,const DString &n,const DString &ref=DString(),const DString &dn=DString());

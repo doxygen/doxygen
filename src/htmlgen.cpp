@@ -1020,7 +1020,7 @@ void HtmlCodeGenerator::_writeCodeLink(const DString &className,
   *m_t << "href=\"";
   DString fn = f;
   addHtmlExtensionIfMissing(fn);
-  *m_t << createHtmlUrl(m_relPath,ref,true,
+  *m_t << createHtmlUrl(m_relPath,ref,
                         fileName()==fn,fn,anchor);
   *m_t << "\"";
   if (!tooltip.empty()) *m_t << " title=\"" << convertToHtml(tooltip) << "\"";
@@ -1042,7 +1042,7 @@ void HtmlCodeGenerator::writeTooltip(const DString &id, const DocLinkInfo &docIn
     *m_t << "<a href=\"";
     DString fn = docInfo.url;
     addHtmlExtensionIfMissing(fn);
-    *m_t << createHtmlUrl(m_relPath,docInfo.ref,true,
+    *m_t << createHtmlUrl(m_relPath,docInfo.ref,
                           fileName()==fn,fn,docInfo.anchor);
     *m_t << "\">";
   }
@@ -1075,7 +1075,7 @@ void HtmlCodeGenerator::writeTooltip(const DString &id, const DocLinkInfo &docIn
       *m_t << "<a href=\"";
       DString fn = defInfo.url;
       addHtmlExtensionIfMissing(fn);
-      *m_t << createHtmlUrl(m_relPath,defInfo.ref,true,
+      *m_t << createHtmlUrl(m_relPath,defInfo.ref,
                             fileName()==fn,fn,defInfo.anchor);
       *m_t << "\">";
     }
@@ -1094,7 +1094,7 @@ void HtmlCodeGenerator::writeTooltip(const DString &id, const DocLinkInfo &docIn
       *m_t << "<a href=\"";
       DString fn = declInfo.url;
       addHtmlExtensionIfMissing(fn);
-      *m_t << createHtmlUrl(m_relPath,declInfo.ref,true,
+      *m_t << createHtmlUrl(m_relPath,declInfo.ref,
                             fileName()==fn,fn,declInfo.anchor);
       *m_t << "\">";
     }
@@ -1902,7 +1902,7 @@ void HtmlGenerator::startIndexItem(const DString &ref,const DString &f)
       m_t << "<a class=\"el\" ";
     }
     m_t << "href=\"";
-    m_t << externalRef(m_relPath,ref,true);
+    m_t << externalRef(m_relPath,ref);
     if (!f.empty())
     {
       DString fn=f;
@@ -1957,7 +1957,7 @@ void HtmlGenerator::writeObjectLink(const DString &ref,const DString &f,
   m_t << "href=\"";
   DString fn = f;
   addHtmlExtensionIfMissing(fn);
-  m_t << createHtmlUrl(m_relPath,ref,true,
+  m_t << createHtmlUrl(m_relPath,ref,
                        fileName() == Config_getString(HTML_OUTPUT)+"/"+fn,
                        fn,
                        anchor);
@@ -1971,7 +1971,7 @@ void HtmlGenerator::startTextLink(const DString &f,const DString &anchor)
   m_t << "<a href=\"";
   DString fn = f;
   addHtmlExtensionIfMissing(fn);
-  m_t << createHtmlUrl(m_relPath,"",true,
+  m_t << createHtmlUrl(m_relPath,"",
                        fileName() == Config_getString(HTML_OUTPUT)+"/"+fn,
                        fn,
                        anchor);
@@ -3703,7 +3703,7 @@ void HtmlGenerator::writeInheritedSectionTitle(
   {
     classLink+= externalLinkTarget();
     classLink += " href=\"";
-    classLink+= externalRef(m_relPath,ref,true);
+    classLink+= externalRef(m_relPath,ref);
   }
   else
   {

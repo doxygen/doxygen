@@ -395,9 +395,25 @@ class DString
       return DString(result);
     }
 
-    /// return a copy of this string with leading and trailing whitespace removed and multiple
-    /// whitespace characters replaced by a single space
+    /** return a copy of this string with leading and trailing whitespace removed and multiple internal
+     *  whitespace characters replaced by a single space
+     */
     DString simplifyWhiteSpace() const;
+
+    /** removes occurrences of whole \a word from this string,
+     *  while keeping internal spaces and reducing multiple sequences of spaces.
+     *  Example: ` cat+ catfish cat cat concat cat`, word=`cat` returns: `+ catfish concat`
+     *
+     *  @param word The word to search for and remove from this string.
+     *  @returns true if at least one occurrence of \a word was found and removed, false otherwise
+     */
+    bool findAndRemoveWord(const char *word);
+
+    /** returns true if this string contains \a word as a whole word, false otherwise.
+     *  A whole word is defined as a sequence of characters that is not preceded or followed by
+     *  an identifier character (see isId()).
+     */
+    bool containsWord(const char *word) const;
 
     // Returns a copy of this string repeated n times
     DString repeat(unsigned int n) const

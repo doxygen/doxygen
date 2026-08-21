@@ -742,7 +742,7 @@ static bool dirHasVisibleChildren(const DirDef *dd)
   for (const auto &fd : dd->getFiles())
   {
     bool genSourceFile = false;
-    if (fileVisibleInIndex(fd,genSourceFile))
+    if (fd->visibleInIndex(genSourceFile))
     {
       return true;
     }
@@ -836,7 +836,7 @@ static void writeDirTreeNode(OutputList &ol, const DirDef *dd, int level, FTVHel
       //  fileCount++;
       //}
       bool genSourceFile = false;
-      if (fileVisibleInIndex(fd,genSourceFile))
+      if (fd->visibleInIndex(genSourceFile))
       {
         fileCount++;
       }
@@ -851,7 +851,7 @@ static void writeDirTreeNode(OutputList &ol, const DirDef *dd, int level, FTVHel
       for (const auto &fd : dd->getFiles())
       {
         bool src = false;
-        bool doc = fileVisibleInIndex(fd,src);
+        bool doc = fd->visibleInIndex(src);
         DString reference;
         DString outputBase;
         if (doc)
@@ -894,7 +894,7 @@ static void writeDirTreeNode(OutputList &ol, const DirDef *dd, int level, FTVHel
       for (const auto &fd : dd->getFiles())
       {
         bool src = false;
-        bool doc = fileVisibleInIndex(fd,src);
+        bool doc = fd->visibleInIndex(src);
         if (doc)
         {
           addMembersToIndex(fd,LayoutDocManager::File,fd->displayName(),DString(),
@@ -945,7 +945,7 @@ static void writeDirHierarchy(OutputList &ol, FTVHelp* ftv,bool addToIndex)
         if (fd->getDirDef()==nullptr) // top level file
         {
           bool src = false;
-          bool doc = fileVisibleInIndex(fd.get(),src);
+          bool doc = fd->visibleInIndex(src);
           DString reference, outputBase;
           if (doc)
           {
@@ -1476,7 +1476,7 @@ static void countFiles(int &allFiles,int &docFiles)
     for (const auto &fd: *fn)
     {
       bool src = false;
-      bool doc = fileVisibleInIndex(fd.get(),src);
+      bool doc = fd->visibleInIndex(src);
       if (doc || src)
       {
         allFiles++;

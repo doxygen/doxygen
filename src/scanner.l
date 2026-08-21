@@ -255,7 +255,6 @@ static void setJavaProtection(yyscan_t yyscanner);
 static void storeClangId(yyscan_t yyscanner,const char *id);
 static void startVerbatimBlock(yyscan_t yyscanner,const DString &blockName,size_t fencedSize=0,bool codeBlock=false);
 static bool endVerbatimBlock(yyscan_t yyscanner,const DString &blockName,size_t fencedSize=0);
-static bool containsWord(const DString &str,const char *word);
 static DString generateAnonymousAnchor(const DString &fileName,int count);
 
 
@@ -5597,7 +5596,7 @@ NONLopt [^\n]*
 <FuncQual>[{:;,]                        {
                                           if ( dstrcmp(yytext,";")==0 &&
                                                ((yyextra->insideJS || yyextra->insidePHP) &&
-                                                !containsWord(yyextra->current->type,"function")) )
+                                                !yyextra->current->type.containsWord("function")) )
                                           {
                                             yyextra->current->reset();
                                             initEntry(yyscanner);
@@ -6009,16 +6008,16 @@ NONLopt [^\n]*
                                           //printf("Adding entry '%s'\n",qPrint(yyextra->current->name));
                                           if ( yyextra->insidePHP)
                                           {
-                                            if (findAndRemoveWord(yyextra->current->type,"final"))
+                                            if (yyextra->current->type.findAndRemoveWord("final"))
                                             {
                                               yyextra->current->spec.setFinal(true);
                                             }
-                                            if (findAndRemoveWord(yyextra->current->type,"abstract"))
+                                            if (yyextra->current->type.findAndRemoveWord("abstract"))
                                             {
                                               yyextra->current->spec.setAbstract(true);
                                             }
                                           }
-                                          if ( yyextra->insidePHP && !containsWord(yyextra->current->type,"function"))
+                                          if ( yyextra->insidePHP && !yyextra->current->type.containsWord("function"))
                                           {
                                             initEntry(yyscanner);
                                             if ( *yytext == '{' )
@@ -6036,7 +6035,7 @@ NONLopt [^\n]*
                                           {
                                             if ( yyextra->insidePHP)
                                             {
-                                              findAndRemoveWord(yyextra->current->type,"function");
+                                              yyextra->current->type.findAndRemoveWord("function");
                                             }
                                             yyextra->previous = yyextra->current;
                                             yyextra->current_root->moveToSubEntryAndRefresh(yyextra->current);
@@ -7343,7 +7342,7 @@ NONLopt [^\n]*
                                             {
                                               yyextra->mtype = MethodTypes::Event;
                                             }
-                                            else if (containsWord(yyextra->current->type,"event")) // event
+                                            else if (yyextra->current->type.containsWord("event")) // event
                                             {
                                               yyextra->current->mtype = yyextra->mtype = MethodTypes::Event;
                                             }
@@ -8112,19 +8111,6 @@ static void initEntry(yyscan_t yyscanner)
 
 
 //-----------------------------------------------------------------------------
-
-/** returns \c true iff string \a s contains word \a w */
-static bool containsWord(const DString &str,const char *word)
-{
-  if (str.empty() || word==nullptr) return false;
-  static const reg::Ex re(R"(\a+)");
-  std::string s = str.str();
-  for (reg::Iterator it(s,re) ; it!=reg::Iterator() ; ++it)
-  {
-    if (it->str()==word) return true;
-  }
-  return false;
-}
 
 static DString generateAnonymousAnchor(const DString &fileName,int count)
 {

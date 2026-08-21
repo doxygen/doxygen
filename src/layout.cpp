@@ -168,7 +168,7 @@ DString LayoutNavEntry::url() const
     if (!df->file().empty() || !df->anchor().empty())
     {
       found = true;
-      url=externalRef(relPath,df->ref(),true);
+      url=externalRef(relPath,df->ref());
       if (!df->file().empty())
       {
         DString fn = df->file();

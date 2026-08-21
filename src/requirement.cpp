@@ -208,7 +208,7 @@ void RequirementManager::generatePage()
     {
       //printf("tagFile=%s extPage=%s\n",qPrint(tagFile),qPrint(req->getExtPage()));
       doc += "<a href=\"";
-      doc += createHtmlUrl(DString(),tagFile,true,false,req->getExtPage(),req->id());
+      doc += createHtmlUrl(DString(),tagFile,false,req->getExtPage(),req->id());
       doc +="\">"+req->id()+"</a>";
     }
     else

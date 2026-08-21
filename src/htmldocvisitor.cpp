@@ -2261,7 +2261,7 @@ void HtmlDocVisitor::startLink(const DString &ref,const DString &file,
   m_t << "href=\"";
   DString fn = file;
   addHtmlExtensionIfMissing(fn);
-  m_t << createHtmlUrl(relPath,ref,true,
+  m_t << createHtmlUrl(relPath,ref,
                        m_fileName == Config_getString(HTML_OUTPUT)+"/"+fn,
                        fn,
                        anchor);

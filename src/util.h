@@ -42,17 +42,11 @@
 
 class ClassDef;
 class FileDef;
-class MemberList;
 class NamespaceDef;
-class FileNameLinkedMap;
 class ArgumentList;
 class OutputList;
-class OutputDocInterface;
 class MemberDef;
 class GroupDef;
-struct TagInfo;
-class PageDef;
-class SectionInfo;
 class Definition;
 class FileInfo;
 class Dir;
@@ -152,6 +146,12 @@ bool resolveLink(/* in */  const DString &scName,
 DString resolveTypeDef(const Definition *d,const DString &name,
                        const Definition **typedefContext=nullptr);
 
+/*! Resolve a reference via a tagfile reference \a ref.
+ *  If after resolving the reference the result points to a relative path
+ *  then \a relPath is prepended to create the correct link.
+ */
+DString externalRef(const DString &relPath,const DString &ref);
+
 //----------------------------------------------------------------
 
 /*! Compares two parameter lists \a srcAl and \a dstAl and returns true if they match. */
@@ -238,16 +238,22 @@ void checkBlocks(const DString& s,const DString fileName, const SelectionMarkerI
 DString findExampleFilePath(const DString &file, bool &ambig);
 void writeExamples(OutputList &ol,const ExampleList &el);
 
-DString removeRedundantWhiteSpace(const DString &s);
+//----------------------------------------------------------------
 
+DString stripScope(const DString &name);
 DString stripAnonymousNamespaceScope(const DString &s);
-
 DString stripFromPath(const DString &path);
-
 DString stripFromIncludePath(const DString &path);
+DString stripPath(const DString &s);
+DString stripIndentation(const DString &s,bool skipFirstLine=false);
+void stripIndentationVerbatim(DString &doc,size_t indentationLevel, bool skipFirstLine=true);
+
+DString removeRedundantWhiteSpace(const DString &s);
+DString detab(const DString &s,size_t &refIndent);
+
+//---------------------------------------------------------------
 
 bool rightScopeMatch(const DString &scope, const DString &name);
-
 bool leftScopeMatch(const DString &scope, const DString &name);
 
 //---------------------------------------------------------------
@@ -266,9 +272,16 @@ DString substituteKeywords(const DString &file,const DString &s,const KeywordSub
 
 //---------------------------------------------------------------
 
+void addDirPrefix(DString &fileName);
 int getPrefixIndex(const DString &name);
+int computeQualifiedIndex(const DString &name);
+
+//---------------------------------------------------------------
 
 DString convertNameToFile(const DString &name,bool allowDots=false,bool allowUnderscore=false);
+DString escapeCharsInString(const DString &name,bool allowDots,bool allowUnderscore=false);
+DString unescapeCharsInString(const DString &s);
+DString linkToText(SrcLangExt lang,const DString &link,bool ignoreDots);
 
 //---------------------------------------------------------------
 
@@ -277,8 +290,6 @@ DString removeAnonymousScopes(const DString &s);
 DString replaceAnonymousScopes(const DString &s,const DString &replacement=DString());
 
 DString insertTemplateSpecifierInScope(const DString &scope,const DString &templ);
-
-DString stripScope(const DString &name);
 
 DString stripTemplateSpecifiersFromScope(const DString &fullName,
                                           bool parentOnly=true,
@@ -306,28 +317,11 @@ void extractNamespaceName(const DString &scopeName,
 int extractClassNameFromType(const DString &type,int &pos,
                               DString &name,DString &templSpec,SrcLangExt=SrcLangExt::Unknown);
 
-PageDef *addRelatedPage(const DString &name,
-                        const DString &ptitle,
-                        const DString &doc,
-                        const DString &fileName,
-                        int docLine,
-                        int startLine,
-                        const RefItemVector &sli = RefItemVector(),
-                        GroupDef *gd=nullptr,
-                        const TagInfo *tagInfo=nullptr,
-                        bool xref=false,
-                        SrcLangExt lang=SrcLangExt::Unknown
-                       );
 
 /** Returns true if the names of the symbols can be case sensitive. */
 bool useCaseSenseNames();
 
-DString escapeCharsInString(const DString &name,bool allowDots,bool allowUnderscore=false);
-DString unescapeCharsInString(const DString &s);
-
 void addGroupListToTitle(OutputList &ol,const Definition *d);
-
-DString linkToText(SrcLangExt lang,const DString &link,bool ignoreDots);
 
 bool checkExtension(const DString &fName, const DString &ext);
 void addHtmlExtensionIfMissing(DString &fName);
@@ -336,18 +330,9 @@ DString stripExtension(const DString &fName);
 
 DString makeBaseName(const DString &name, const DString &ext);
 
-int computeQualifiedIndex(const DString &name);
-
-void addDirPrefix(DString &fileName);
-
-DString relativePathToRoot(const DString &name);
 DString determineAbsoluteIncludeName(const DString &curFile,const DString &incFileName);
 
-void createSubDirs(const Dir &d);
-void clearSubDirs(const Dir &d);
-
 DString removeLongPathMarker(const DString &path);
-DString stripPath(const DString &s);
 
 bool findAndRemoveWord(DString &s,const char *word);
 
@@ -368,7 +353,6 @@ DString parseCommentAsText(const Definition *scope,const MemberDef *member,const
 DString parseCommentAsHtml(const Definition *scope,const MemberDef *member,const DString &doc,const DString &fileName,int lineNr);
 
 bool transcodeCharacterStringToUTF8(std::string &input,const char *inputEncoding);
-
 DString recodeString(const DString &str,const char *fromEncoding,const char *toEncoding);
 
 void writeTypeConstraints(OutputList &ol,const Definition *d,const ArgumentList &al);
@@ -377,16 +361,12 @@ void stackTrace();
 
 DString filterTitle(const DString &title);
 
-bool patternMatch(const FileInfo &fi,const StringVector &patList);
-
 DString externalLinkTarget(const bool parent = false);
 DString createHtmlUrl(const DString &relPath,
                        const DString &ref,
-                       bool href,
                        bool islocalFile,
                        const DString &targetFileName,
                        const DString &anchor);
-DString externalRef(const DString &relPath,const DString &ref,bool href);
 
 //---------------------------------------------------------------
 void writeMarkerList(OutputList &ol,const std::string &markerText,size_t numMarkers,
@@ -397,24 +377,30 @@ DString writeMarkerList(const std::string &markerText,size_t numMarkers,
 DString replaceColorMarkers(const DString &str);
 //---------------------------------------------------------------
 
+void createSubDirs(const Dir &d);
+void clearSubDirs(const Dir &d);
+DString relativePathToRoot(const DString &name);
+
+/*! Copies the file \a src to \a dest. Returns true if the copy was successful, false otherwise.
+ *  When a relative path is used, is is based on the current working directory.
+ */
 bool copyFile(const DString &src,const DString &dest);
 
-int lineBlock(const DString &text,const DString &marker);
+/*! Helper to open an output search \a f for writing. If the file already exists it will be renamed to .bak first.
+ *  If \a outFile is "-" then the output will be written to standard output.
+ */
+bool openOutputFile(const DString &outFile,std::ofstream &f);
+
+//---------------------------------------------------------------
 
 bool isURL(const DString &url);
 
 DString correctURL(const DString &url,const DString &relPath);
 
-DString processMarkup(const DString &s);
-
 bool protectionLevelVisible(Protection prot);
 
-DString stripIndentation(const DString &s,bool skipFirstLine=false);
-void stripIndentationVerbatim(DString &doc,size_t indentationLevel, bool skipFirstLine=true);
-
+/*! Returns the file extension to use for dot files as specified via the DOT_IMAGE_FORMAT configuration option. */
 DString getDotImageExtension();
-
-bool fileVisibleInIndex(const FileDef *fd,bool &genSourceFile);
 
 void convertProtectionLevel(
                    MemberListType inListType,
@@ -423,16 +409,10 @@ void convertProtectionLevel(
                    MemberListType *outListType2
                   );
 
-bool mainPageHasTitle();
-bool openOutputFile(const DString &outFile,std::ofstream &f);
-
-bool recognizeFixedForm(const DString &contents, FortranFormat format);
-FortranFormat convertFileNameFortranParserCode(DString fn);
 
 DString getEncoding(const FileInfo &fi);
 
-DString detab(const DString &s,size_t &refIndent);
-
+bool mainPageHasTitle();
 DString getProjectId();
 DString projectLogoFile();
 DString projectLogoSize();
@@ -442,9 +422,12 @@ void mergeMemberOverrideOptions(MemberDefMutable *md1,MemberDefMutable *md2);
 
 size_t updateColumnCount(const char *s,size_t col);
 
+//---------------------------------------------------------------
+
 DString mangleCSharpGenericName(const DString &name);
 DString demangleCSharpGenericName(const DString &name,const DString &templArgs);
 
+//---------------------------------------------------------------
 DString extractBeginRawStringDelimiter(const char *rawStart);
 DString extractEndRawStringDelimiter(const char *rawEnd);
 
