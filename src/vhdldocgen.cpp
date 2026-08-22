@@ -3100,7 +3100,7 @@ void FlowChart::writeFlowChart()
    printFlowTree();
 #endif
 
-  if (!Config_getString(PLANTUML_JAR_PATH).empty())
+  if (PlantumlManager::isEnabled())
   {
     printUmlTree();
     delFlowList();
