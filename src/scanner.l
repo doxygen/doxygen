@@ -8156,6 +8156,7 @@ static void lineCount(yyscan_t yyscanner)
     else if (*p=='\t')
     {
       yyextra->column+=tabSize - (yyextra->column%tabSize);
+      yyextra->yyColNr=1+yyextra->column;
     }
     else
     {

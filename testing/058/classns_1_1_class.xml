@@ -22,7 +22,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="058_strong_enum.cpp" line="21" column="1" bodyfile="058_strong_enum.cpp" bodystart="21" bodyend="23"/>
+        <location file="058_strong_enum.cpp" line="21" column="5" bodyfile="058_strong_enum.cpp" bodystart="21" bodyend="23"/>
       </memberdef>
       <memberdef kind="enum" id="classns_1_1_class_1a2f5b74a27a12bfc86e653a13178317e4" prot="public" static="no" strong="yes">
         <type/>
@@ -43,7 +43,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="058_strong_enum.cpp" line="25" column="1" bodyfile="058_strong_enum.cpp" bodystart="25" bodyend="27"/>
+        <location file="058_strong_enum.cpp" line="25" column="5" bodyfile="058_strong_enum.cpp" bodystart="25" bodyend="27"/>
       </memberdef>
     </sectiondef>
     <briefdescription>
